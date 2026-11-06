@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# 実行の出力・中間物
+*.out
+*.log
+*.tar.gz
+datas*.txt
+*.filt
+*.sad_time
