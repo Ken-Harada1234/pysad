@@ -9,6 +9,10 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - SAD の仕様と癖の一覧は `docs/11_sad_quirks.md`、SADHelp との対応は `docs/14_pysad_vs_sadhelp.md`。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
 
+- 本レポジトリは生出さんのソースをもとに、Claude code で全自動生成したものです。
+- 基本的に、自分の書いたSADスクリプトに対する動作確認しかしておりません。
+- うまくいかない場合は、そのままAIに渡して、作業メモやSADメモを読ませると、修正を続けることができます。（今後も随時修正すると共に、サンプルSADスクリプトを載せていきたいと思っています。）
+
 ## 必要なもの
 
 Python 3.12 と numpy, scipy, numba, pytest (`py -3.12 -m pip install numpy scipy numba pytest`)。
