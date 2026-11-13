@@ -1,3 +1,8 @@
+- 本レポジトリ（作業メモ、解説文書を含む）は生出さんのソースをもとに、Claude code で全自動生成したものです。
+- 基本的に、自分の書いたSADスクリプトに対する動作確認しかしておりません。
+- うまくいかない場合は、そのままAIに渡して、作業メモやSADメモを読ませると、修正を続けることができます。（今後も随時修正すると共に、サンプルSADスクリプトを載せていきたいと思っています。）
+- 下記、readmeもaiによる自動生成です。
+
 # pysad — SAD (K64 版) の Python 直訳
 
 加速器設計コード SAD (Strategic Accelerator Design) の K64 版 ([KatsOide/SAD](https://github.com/KatsOide/SAD)) の
@@ -8,10 +13,6 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - 文書は `docs/` (`docs/01_overview.md` から。作業メモは `docs/history/00_RESUME.md` と `docs/history/work_*.md`)。
 - SAD の仕様と癖の一覧は `docs/11_sad_quirks.md`、SADHelp との対応は `docs/14_pysad_vs_sadhelp.md`。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
-
-- 本レポジトリ（作業メモ、解説文書を含む）は生出さんのソースをもとに、Claude code で全自動生成したものです。
-- 基本的に、自分の書いたSADスクリプトに対する動作確認しかしておりません。
-- うまくいかない場合は、そのままAIに渡して、作業メモやSADメモを読ませると、修正を続けることができます。（今後も随時修正すると共に、サンプルSADスクリプトを載せていきたいと思っています。）
 
 ## 必要なもの
 
