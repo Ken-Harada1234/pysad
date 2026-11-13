@@ -1323,7 +1323,8 @@ class FFS:
         if w.startswith('NO') and w[2:] in self.flags:
             w, neg = w[2:], True
         if w not in self.flags:
-            raise SADError(f'?Undefined flag: {name}')
+            # フラグでなければ `?名前` は定義の問い合わせ (Information)。定義 1 つのリストを返す (KBFrame.n の ?ReturnToSAD)
+            return [Expr(S('Hold'), [Null])]
         v = bool(self.flags[w])
         return 1.0 if (v != neg) else 0.0
 

@@ -173,6 +173,8 @@ def install(I):
     B = I.builtins
 
     def apply(f, args):
+        if f is Null or (isinstance(f, Sym) and f.name in ('Null', 'Sequence')):
+            return Seq(list(args))           # Null@@{a, b} は引数列 a, b (SAD は Sequence = Null)
         return I.apply_value(f, list(args), f)
 
     def mq(p, x):
@@ -200,6 +202,10 @@ def install(I):
     def get_at(x, path):
         v = x
         for k in path:
+            if isinstance(v, Rule):
+                el = [v.lhs, v.rhs]               # a->b は 2 要素の式 (Extract[{a:>b}, {1, 2}] = b)
+                v = el[_norm_idx(k, 2) - 1]
+                continue
             if not _isseq(v):
                 raise SADError('General::index: Part specification out of range')
             el = _elems(v)
@@ -279,6 +285,15 @@ def install(I):
             a = a[:-1]
         if not a:
             return Expr(S('Union'), [])
+        head_alt = isinstance(a[0], Expr) and isinstance(a[0].head, Sym) and a[0].head.name == 'Alternatives'
+        if head_alt:
+            a = [list(x.args) if isinstance(x, Expr) else x for x in a]
+            res = _union(a + ([Rule(S('SameTest'), same)] if same is not None else []))
+            return Expr(S('Alternatives'), res)
+        if isinstance(a[0], Expr) and all(isinstance(x, Expr) and x.head == a[0].head for x in a):
+            # Union[Hold[], Hold[a]] のように同じ頭の式どうし: 引数を集めて同じ頭で返す (WidgetCopyList)
+            res = _union([list(x.args) for x in a] + ([Rule(S('SameTest'), same)] if same is not None else []))
+            return Expr(a[0].head, res)
         _lists_only(a, 'Union')
         items = sorted([y for x in a for y in x], key=ckey)
         if same is None:
@@ -364,6 +379,66 @@ def install(I):
             raise SADError('General::narg: Number of arguments is expected to be 2 in MatchQ')
         return tf(mq(a[1], a[0]))
     B['MatchQ'] = _matchq
+
+    # ---- Difference / SwitchCases / StringFill / Symbol (SAD K64 で確認)
+    def _sub(x, y):
+        if isinstance(x, list) and isinstance(y, list) and len(x) == len(y):
+            return [_sub(u, v) for u, v in zip(x, y)]
+        if is_num(x) and is_num(y):
+            return x - y
+        raise SADError('General::wrongtype: Argument must be Real number or List of them in Difference')
+
+    def _difference(a):
+        if len(a) != 1:
+            raise SADError('General::narg: Number of arguments is expected to be 1 in Difference')
+        x = a[0]
+        if not isinstance(x, list):
+            raise SADError('General::wrongtype: Argument must be List for #1 in Difference')
+        if len(x) < 2:
+            raise SADError('General::wrongleng: Length of #1 must be longer than 1 in Difference')
+        return [_sub(x[k + 1], x[k]) for k in range(len(x) - 1)]
+    B['Difference'] = _difference
+
+    def _switchcases(a):
+        """SwitchCases[list, {p1, p2, ...}] → {{p1 に一致する要素}, {p2 に一致する要素 (p1 に取られなかったもの)}, ...} (各要素は最初に一致したパターンへ)"""
+        if len(a) != 2:
+            raise SADError('General::narg: Number of arguments is expected to be 2 in SwitchCases')
+        x, pats = a
+        if isinstance(x, Expr):
+            x = list(x.args)                  # KBFGroup[Frame->0] のような式 (composition) は引数の列として扱う
+        if not isinstance(x, list):
+            raise SADError('General::wrongtype: Argument must be List for #1 in SwitchCases')
+        if not isinstance(pats, list):
+            raise SADError('General::wrongtype: Argument must be List for #2 in SwitchCases')
+        out = [[] for _ in pats]
+        for e in x:
+            for k, p in enumerate(pats):
+                if mq(p, e):
+                    out[k].append(e)
+                    break
+        return out
+    B['SwitchCases'] = _switchcases
+
+    def _stringfill(a):
+        """StringFill[s, sf, n] = (s//sf//sf...)[1,n]、StringFill[s, sf, -n] = (...sf//sf//s)[-n,-1]"""
+        if len(a) != 3 or not isinstance(a[0], str) or not isinstance(a[1], str) or not is_num(a[2]):
+            raise SADError('General::wrongtype: Argument must be Character-string, Character-string, Real in StringFill')
+        s0, sf, n = a[0], a[1], int(a[2])
+        if n == 0 or not sf:
+            return s0[:n] if n > 0 and not sf else ('' if n == 0 else s0[n:])
+        m = abs(n)
+        if n > 0:
+            t = s0 + sf * (m // len(sf) + 2)
+            return t[:m]
+        t = sf * (m // len(sf) + 2) + s0
+        return t[-m:]
+    B['StringFill'] = _stringfill
+
+    def _symbol(a):
+        if len(a) != 1 or not isinstance(a[0], str):
+            raise SADError('General::wrongtype: Argument must be Character-string in Symbol')
+        return S(a[0])
+    B['Symbol'] = _symbol
 
     def _position(a):
         if len(a) < 2 or len(a) > 4:
@@ -704,6 +779,8 @@ def install(I):
 
     # ======================================================================== リスト整形
     def _reverse(a):
+        if isinstance(a[0], Rule):
+            return Rule(a[0].rhs, a[0].lhs, a[0].delayed)       # Reverse[a->b] = b->a (Tkinter.n の Reverse/@XLFDslant)
         if not _isseq(a[0]):
             raise SADError('General::wrongtype: Argument must be List or composition in Reverse')
         return _rebuild(a[0], list(reversed(_elems(a[0]))))
@@ -718,6 +795,16 @@ def install(I):
         return g
     B['First'] = _first_last('First', lambda e: e[0])
     B['Last'] = _first_last('Last', lambda e: e[-1])
+
+    def _nth(name, k):
+        def g(a):
+            x = a[0]
+            if not _isseq(x) or len(_elems(x)) < k:
+                raise SADError(f'General::index: Index out of range in {name}')
+            return _elems(x)[k - 1]
+        return g
+    B['Second'] = _nth('Second', 2)           # Tkinter.n (XQueryTree の結果の取り出し) が使う
+    B['Third'] = _nth('Third', 3)
 
     def _rest(a):
         x = a[0]

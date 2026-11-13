@@ -51,6 +51,8 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
   追跡 (NORAD/RAD/FLUC、粒子損失)、DynamicApertureSurvey (NORAD)、RADINT、幾何 (GX…、GEO)、TRPT の加速、Touschek、誤差の実現、光学関数 (TransferMatrix 等)。詳細は `docs/15_implementation_summary.md` §3。
 - ユーザーの実スクリプト 86 本 (esrf 52、pf2 34) を SAD と同条件で走らせた結果: 数値一致 62、一部一致 18、例外 1、SAD 側無効 4、対象外 1 (`docs/12_user_scripts_status.md`)。
   一部一致の原因は SAD 側の仕様 (FITP>1 の GO で SAD が再起動、不安定域の壊れた値、RAD+FLUC の乱数のカオス) が主で、pysad の不具合ではないと確認済み。
+- GUI: SAD 自身の Tkinter.n / KBFrame.n / KBMainFrame.n を SADScript として解釈し、tkinter で表示する (`pysad/tclbridge.py`、`pysad/sadclass.py`、`docs/20_gui_tclbridge.md`)。
+  KBMainFrame と demo-LabelFrame のウィジェット木は SAD (WSL の gs) と一致。入れ子の部品 (KBFFrameToggled / KBFFrameTabed)、Canvas の描画、見た目と操作の一致は未確認。環境変数 `PYSAD_SAD_PACKAGES` が無ければ無効。
 - 未対応・制限は `docs/15_implementation_summary.md` §6 と `docs/01_overview.md` §6: SOL の emit・幾何、MULT の ANGLE≠0、TCAVI、COORD、MAP、UND、BEAMBEAM、POL (偏極)、
   SADHelp の関数のうち GaussianCoulomb・WakeFunction・RadiationField・ExternalMap など (優先度 低)、SynchroBetaEmittance (K64 に実体なし)。
 
@@ -59,7 +61,9 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 1. C6: CodCorr 系の補正量 (SAD の teigen が縮退固有値で丸めに依存する)。
 2. C8: 小さな数値差 (esrf の amp_dep_ts_dz で 1.3e-4、原因未調査)。
 3. fit の多解・FITP>1 (SAD が再起動するので参照値が取れない)、不安定域の閉軌道探索の初期値の差は、SAD 側の仕様なので記録のみ。
-4. 仕上げ (文書の整理、テストの整備)。必要になったら SADHelp の優先度 低の関数。
+4. GUI の残り: 入れ子の部品 (demo-KBFrame1)、Canvas / TabFrame の描画、見た目と操作の比較 (`docs/20_gui_tclbridge.md` §6、経緯は `work_gui_tclbridge.md`)。
+5. 次の実装 (利用者の指示、実例の台本なし): wake (WakeFunction ほか) と beam-beam (BEAMBEAM)。SADHelp と K64 のソースを根拠にする。
+6. 仕上げ (文書の整理、テストの整備)。必要になったら SADHelp の優先度 低の関数。
 
 ## 7. 新しい機能を足す・直すときの手順
 

@@ -76,6 +76,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | optics_fn.py | TransferMatrix / BeamMatrix / NormalCoordinates / OrbitGeo / GeoBase / SymplecticJ / SurvivedParticles / AccelerateParticles | Optics.n, emit.n, dapert.n (Python で書き直し) |
 | sadrandom.py | SAD の乱数 (LCG、Box–Muller、drndsr/tdusrn、ParabolaRandom) | random_plugin_sad.c, tfRandom_.c, drndsr.f |
 | sadscript.py / sadlist.py | SADScript インタプリタ (字句・Pratt 構文・評価、Module/Do/Table/純関数/パターン/REPEAT/UNTIL/IF、単位付き数値、`?FLAG`、fmt_real=autofg) とリスト・文字列関数 | tfetok.f, tfeval.f, tfstk.f iprior, autofg.f, functions.n, Misc.n |
+| tclbridge.py / sadclass.py | Tcl/Tk の接点 (tkinter) と SAD の Class。SAD 自身の Tkinter.n / KBFrame.n を SADScript として解釈して GUI を動かす ([20_gui_tclbridge.md](20_gui_tclbridge.md)) | tfTkInter_.c, tfTclArg.f, tfXlib_.c, Tkinter.n, KBFrame.n, KBMainFrame.n, TabFrame.n, SADHelp の Class |
 | ffscmd.py | FFS コマンド層 (tffsa の解釈順)、USE/CELL/INS/CALC/CALC6D/GO/EMIT/TYPE/DISP/SAVE/RESET/RADINT/CHROMATICITY/誤差コマンド (DELX…)、Twiss[]/LINE[]/FFS[]/Element[]/Emittance[]/TrackParticles[]/CalculateOptics/SeedRandom[]、EMIT の結果変数、FFS$SHOW | tffsa.f, tftwiss.f, tflag.f, terror.f, tftype.f, tfdisp.f |
 | diag_fit.py / diag_trace.py | 照合用の診断 (fit の反復表、追跡の途中値) | — |
 | run_sad.py (<repo> 直下) | `py -3.12 run_sad.py lattice script …` = `gs` に複数ファイルを連結して渡すのと同じ | — |
