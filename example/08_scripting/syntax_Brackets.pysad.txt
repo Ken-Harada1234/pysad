@@ -1,0 +1,10 @@
+() grouping 14 vs 10
+[] call     4 6
+{} list     {1,2,3} List
+[[ ]] part  20 {10,30} 40
+nested part 3 {2,4}
+string part bcd ef
+f[2] vs f@2 vs f /@ 4 4 {1,4}
+Head Real List Real String Symbol Plus
+pure function 9 3
+parts of a + b Plus 2 a

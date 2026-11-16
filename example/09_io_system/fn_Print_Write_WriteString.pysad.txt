@@ -1,0 +1,11 @@
+Print: a newline is appended. 1 2.5 str {1,2} x+y
+no args:
+
+real forms .3333333333333333 1.5e+10 123456789012 1e-5 -.5
+string vs symbol: text text
+read back 1: Write adds a newline 1 {1,2,3}
+read back 2: WriteString: no newline (same line) 3.5
+read back 3: a+b
+$Output = -1
+Write to $Output
+WriteString to $Output

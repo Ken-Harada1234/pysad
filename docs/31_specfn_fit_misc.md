@@ -7,7 +7,7 @@ scipy.special で実数引数の値を返す。K64 の実装 (gamma.f、hg.f、P
 
 | 区分 | 関数 |
 |---|---|
-| Arc 双曲線・対数ガンマ | ArcSinh ArcCosh ArcTanh LogGamma Gamma (複素も) Gamma0 (= E1) XSin |
+| Arc 双曲線・対数ガンマ | ArcSinh ArcCosh ArcTanh LogGamma LogGamma1 (= LogGamma[x+1]) Gamma (複素も) Gamma0 (= E1) XSin |
 | ガンマ族 | GammaRegularized(P/Q) PolyGamma Beta Pochhammer Factorial2 Binomial Multinomial HarmonicNumber |
 | ゼータ・多重対数 | Zeta HurwitzZeta PolyLog LerchPhi HurwitzLerchPhi BernoulliB |
 | 超幾何 | Hypergeometric0F1 1F1 2F1 U PFQ と Regularized |
@@ -25,7 +25,7 @@ scipy.special で実数引数の値を返す。K64 の実装 (gamma.f、hg.f、P
 - K64 の tffit1 / tfnewton を移植。K64 は式を記号微分して導関数にするが、ここでは常に数値微分の経路 (K64 が D を作れないときと同じ) を使う。
   gs で `Fit` の導関数が解析的な場合との差は線形な式で相対 1e-9、FindRoot の収束値で 1e-14。FitGaussian の出力は gs と 5e-10 で一致。
 - `Fit` のベクトル独立変数 (`{{x1,x2},y,dy}`) は対応するが、gs 側が誤った値を返す (docs/19 B52) ので照合なし。`FindRoot` の複素数は gs が壊れた値を返す (B61) ので実数だけ一致させ、複素は TypeError のまま。`FitGaussian` の Plot オプションは実装済み (下記 §4 の小さな組み込み)。
-- NIntegrate は D.n の分割細分 + 三次スプライン積分の移植 (Spline->False も)。scipy の CubicSpline を使うので、収束した値は gs と 1e-14 で合う。
+- NIntegrate は D.n の分割細分 + 三次スプライン積分の移植 (Spline->False も)。scipy の CubicSpline を使うので、収束した値は gs と 1e-14 で合う。被積分関数が複素数 (`Exp[I*x]`) でも、実部と虚部を別々に積分するのと同じ (スプラインは線形) 形で動く (gs と虚部 1e-15 で一致。実部は 1e-16 の雑音)。
 
 - gs と全桁一致を確認 (2026-11-16 夜、`local/wake/v1.sad`): `Spline[{{x,y},…}]` (自然スプライン)、`Sort[list, Greater]`、`Scan`。`Spline[data,0,0]` は gs も pysad も未評価のまま。
 

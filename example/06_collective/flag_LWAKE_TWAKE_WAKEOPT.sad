@@ -1,0 +1,38 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = () WK = ();   ! WK: ウェイクを付ける場所
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+LINE RINGW = (ORIGIN WK RF 24*CELL);   ! ORIGIN の直後に WK
+FFS;
+NORFSW; NORAD; NOFLUC;
+$FORM = "14.8";
+USE RINGW;
+TRPT; INS;
+PBUNCH = 1e10; NBUNCH = 1;
+W0 = 1e9;  Wt = 1e12;
+WakeFunction[Longitudinal, "WK"] = {{-1, W0}, {0, W0}, {1e-9, 0}, {1, 0}, {2, 0}};
+WakeFunction[Transverse,   "WK"] = {{-1, Wt}, {0, Wt}, {1e-9, 0}, {1, 0}, {2, 0}};
+np = 100;
+x0 = Table[1e-4 + 1e-5*Sin[0.37*i], {i, np}];
+z0 = Table[0.01*Sin[0.13*i], {i, np}];
+zero = Table[0, {i, np}];
+beam = {x0, zero, zero, zero, z0, zero, Table[1, {i, np}]};
+! (1) 追跡: フラグの組み合わせで WK の前後 (位置 3) の dp と px を見る
+Do[
+  FFS[{"NOLWAKE NOTWAKE", "LWAKE NOTWAKE", "NOLWAKE TWAKE", "LWAKE TWAKE"}[[k]]];     ! Do の中ではフラグを FFS[...] で切り替える
+  r = TrackParticles[{1, beam}, 3, 1][[2]];
+  Print["case ", k, ": max|dp|=", Max[Abs[r[[6]]]], "  max|px|=", Max[Abs[r[[2]]]]],
+  {k, 1, 4}];
+! (2) 光学: WAKEOPT + InitialOrbits で、ウェイクのある要素の前後で軌道どうしがキックを受ける
+LWAKE; TWAKE; WAKEOPT;
+InitialOrbits = {{1e-3, 0, 0, 0, -0.01, 0}, {-1e-3, 0, 0, 0, 0.01, 0}};
+FITP 2;
+CALC;
+Do[Print[k, " ", LINE["NAME", k], " DX=", Twiss["DX", k], " DPX=", Twiss["DPX", k], " DDP=", Twiss["DDP", k]], {k, 1, 4}];
+Exit;

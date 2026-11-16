@@ -1,0 +1,16 @@
+! Tkinter.n の Canvas (ラティスなし)。四角・楕円・線・文字を Tcl の create で描く
+FFS;
+TclEval["proc ff {w cls} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {lappend r $c}; set r [concat $r [ff $c $cls]]}; return $r}"];
+w=Window[];
+c=Canvas[w,Width->300,Height->200,Background->"white",Side->"top"];
+TclEval["update"];
+TclEval["set cv [lindex [ff . Canvas] 0]"];
+TclEval["$cv create rectangle 20 20 120 90 -fill lightblue -outline blue"];
+TclEval["$cv create oval 150 30 250 90 -fill pink -outline red"];
+TclEval["$cv create line 20 150 280 120 -fill darkgreen -width 3"];
+TclEval["$cv create text 150 180 -text {Canvas demo} -fill black"];
+TclEval["update"];
+Print["items=",TclEval["return [llength [$cv find all]]",String]];
+Print["types=",TclEval["set r {}; foreach i [$cv find all] {lappend r [$cv type $i]}; return $r",String]];
+Print["bbox oval=",TclEval["return [$cv bbox 2]",String]];
+Exit;

@@ -2069,6 +2069,8 @@ def _tsol_region(parts, elements, i, rad):
     for l in range(i + 1, ke + 1):
         el = elements[l]
         name = type(el).__name__
+        if _is_apert(el):
+            raise NotImplementedError('track6: ソレノイド領域内の APERT (tsol の tapert1) は未対応')
         if isinstance(el, Drift):
             for p in parts:
                 if bzs != 0.0:
@@ -2127,14 +2129,86 @@ def _step_el(p: _Particle, el, trf0, rfsw, rad):
         raise NotImplementedError(f'track6: 要素 {name} は未対応')
 
 
-def _tturn1(parts, elements, trf0, rfsw, rad):
+def _is_apert(el):
+    """parser が APERT を Drift (L=0) + _apert=True で作る (パラメータは AX AY DX DY DX1.. の属性)"""
+    return isinstance(el, Drift) and getattr(el, '_apert', False)
+
+
+def _apert_pass(parts, nal, el, zlost):
+    """tapert1 + tapert (tapert.f の直訳。numba 版は track6n.k_apert_gen)。parts[:nal] が生きている粒子。
+    落ちた粒子は末尾の生きている粒子と入れ替えて外す (SAD と同じ並べ替え)。新しい nal を返す。
+    LOSSAMPL による limittrack と最初の要素・15 要素ごとの tapert は track6 にはない (APERT 要素だけ)"""
+    f = lambda k: float(getattr(el, k, 0.0) or 0.0)
+    ax, ay, dx, dy, theta = f('AX'), f('AY'), f('DX'), f('DY'), f('ROTATION')
+    xl, xh = min(f('DX1'), f('DX2')), max(f('DX1'), f('DX2'))
+    yl, yh = min(f('DY1'), f('DY2')), max(f('DY1'), f('DY2'))
+    pxj, pyj, dpj = f('JDPX'), f('JDPY'), f('DP')
+    if pxj != 0.0 or pyj != 0.0:
+        xa = min(abs(xh), abs(xl))
+        ya = min(abs(yh), abs(yl))
+        ax1 = 1.0 / xa if xa != 0.0 else 0.0
+        ay1 = 1.0 / ya if ya != 0.0 else 0.0
+        for p in parts[:nal]:
+            c = p.c
+            if (ax1 * c[0]) ** 2 + (ay1 * c[2]) ** 2 > 1.0:
+                phi1 = 2.0 * math.pi * RNG.tran()
+                phi2 = 2.0 * math.pi * RNG.tran()
+                c[0] = xa * math.cos(phi1)
+                c[2] = ya * math.sin(phi1)
+                c[1] = pxj * math.cos(phi2)
+                c[3] = pyj * math.sin(phi2)
+                c[5] = c[5] + dpj
+        return nal
+    eli = ax != 0.0 and ay != 0.0
+    if eli and (xh == xl or yh == yl):
+        xl1, xh1, yl1, yh1 = -1e100, 1e100, -1e100, 1e100
+    else:
+        xl1, xh1, yl1, yh1 = xl, xh, yl, yh
+    ax1 = 1.0 / ax if ax != 0.0 else 0.0
+    ay1 = 1.0 / ay if ay != 0.0 else 0.0
+    cost, sint = (math.cos(theta), math.sin(theta)) if theta != 0.0 else (1.0, 0.0)
+    drop = [False] * nal
+    for i, p in enumerate(parts[:nal]):
+        x, y, z = p.c[0], p.c[2], p.c[4]
+        if theta != 0.0:
+            xa = cost * (x - dx) - sint * (y - dy)
+            ya = sint * (x - dx) + cost * (y - dy)
+        else:
+            xa, ya = x - dx, y - dy
+        ok = xl1 < xa < xh1 and yl1 < ya < yh1 and abs(z) <= zlost
+        if ok and eli:
+            ok = (ax1 * xa) ** 2 + (ay1 * ya) ** 2 <= 1.0
+        drop[i] = not ok            # NaN は比較が偽になるので落ちる (tapert.f のコメント)
+    i, np_ = 0, nal
+    while i < np_:
+        if drop[i]:
+            while i < np_ - 1 and drop[np_ - 1]:
+                np_ -= 1
+            if not drop[np_ - 1] and np_ - 1 != i:
+                parts[i], parts[np_ - 1] = parts[np_ - 1], parts[i]
+                drop[i], drop[np_ - 1] = False, True
+            np_ -= 1
+        i += 1
+    return np_
+
+
+def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0):
     """tturn.f tturn1: 要素を外側、粒子を内側に回す。放射ありの BEND/QUAD/MULT はスライスごとに
     全粒子を進めてから全粒子の tradk (SAD と同じ順で乱数を引く)"""
+    if nal is None:
+        nal = len(parts)
+    full = parts                     # 落ちた粒子は末尾へ寄せる (parts[:nal] が生きている)
     skip_to = -1
     for i, el in enumerate(elements):
         if i <= skip_to:
             continue
         name = type(el).__name__
+        parts = full[:nal]
+        if _is_apert(el):
+            nal = _apert_pass(full, nal, el, zlost)
+            if nal <= 0:
+                break
+            continue
         if name == 'Solenoid':
             if _g(el, 'BOUND') == 0.0:
                 raise NotImplementedError('track6: BOUND=0 の SOL (領域外)')
@@ -2153,12 +2227,14 @@ def _tturn1(parts, elements, trf0, rfsw, rad):
         for p in parts:
             if not np.all(np.isfinite(p.c)):
                 raise FloatingPointError(f'track6: {el.name} で発散: {p.c}')
+    return nal
 
 
 def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
                     trf0: float = 0.0, rfsw: bool = True, rad: bool = False, fluc: bool = False,
                     seed=None, charge: float = 1.0, amass: float = None, progress: int = 0,
-                    fshift: float = 0.0, circ: float = None, spins=None, radpol: bool = True):
+                    fshift: float = 0.0, circ: float = None, spins=None, radpol: bool = True,
+                    alive=None, zlost: float = 100.0):
     """TrackParticles[{1, coords}, 1, 1, nturn] 相当 (始点 = 終点 = ラティスの先頭)。
     coords: (np, 6) の {x, px/p0, y, py/p0, z, δ}。nturn 周後の座標を返す。
     trf0: Emittance[] (emit) で決まった同期位置 (SAD の global trf0)。
@@ -2180,30 +2256,44 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
     t0 = time.time()
     out = np.array(coords, dtype=float).copy()
     parts = [_Particle(out[ip], ph) for ip in range(out.shape[0])]
+    for ip, p in enumerate(parts):
+        p.idx = ip
     if spins is not None:
         for ip, p in enumerate(parts):
             p.s = np.array(spins[ip], dtype=float)
+    # alive: 長さ np の bool 配列 (入出力)。APERT (tapert) で落ちた粒子は False になり、以降は追跡しない (座標は落ちた時点のまま)
+    if alive is not None:
+        parts.sort(key=lambda p: not alive[p.idx])        # 生きている粒子が前 (入力の順を保つ)
+        nal = int(sum(1 for a in alive if a))
+    else:
+        nal = len(parts)
     try:
         for it in range(nturn):
             try:
-                _tturn1(parts, elements, trf0, rfsw, rad)
+                nal = _tturn1(parts, elements, trf0, rfsw, rad, nal, zlost)
             except FloatingPointError as e:
                 raise FloatingPointError(f'{it + 1} 周目: {e}') from None
             if not rfsw:
-                for p in parts:
+                for p in parts[:nal]:
                     p.c[4] = 0.0          # tturn: rfsw=F なら z=0
             if progress and ((it + 1) % progress == 0 or it + 1 == nturn):
-                for ip, p in enumerate(parts):
-                    print(f'    [track6] P{ip + 1} turn {it + 1}/{nturn} ({time.time() - t0:.1f} s) '
+                for p in sorted(parts, key=lambda q: q.idx):
+                    print(f'    [track6] P{p.idx + 1} turn {it + 1}/{nturn} ({time.time() - t0:.1f} s) '
                           + ' '.join(f'{v: .4e}' for v in p.out()), flush=True)
                 sys.stdout.flush()
     finally:
         _FLUC = False
         _POL = False
-    for ip, p in enumerate(parts):
-        out[ip] = p.out()
+    for p in parts:
+        out[p.idx] = p.out()
+    if alive is not None:
+        for p in parts[nal:]:
+            alive[p.idx] = False
     if spins is not None:
-        return out, np.array([p.s for p in parts])
+        sp = np.zeros((len(parts), 3))
+        for p in parts:
+            sp[p.idx] = p.s
+        return out, sp
     return out
 
 

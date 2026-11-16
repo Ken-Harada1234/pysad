@@ -85,3 +85,62 @@ cnt = TclEval["proc cnt {w c} {set n [expr {[winfo class $w] eq $c}]; foreach k 
 ''', 'script')
     assert str(interp.get('cnt')) == '4 2 6'
     assert '???' not in interp.out.getvalue()
+
+
+def test_widget_values_and_methods_like_gs(interp):
+    """gs: w=Window[]・e=Entry[w] の値は Widget[…]、e[Insert]・lb[Insert] が働く (Tkinter.n の `a$:=Widget[a$,w[master$]]`)。
+    ネストした規則の呼び出しで With[{a$=…}] が呼び出し元の同名の引数を見てしまい、ユーザーの w に遅延した値が付かなかった"""
+    interp.run('''
+w = Window[];
+ev = "abc";
+e = Entry[w, TextVariable:>ev, Width->20, Side->"top"];
+lb = ListBox[w, Height->3, Side->"top"];
+sv = 5;
+s = Scale[w, From->0, To->10, Orient->"horizontal", Variable:>sv, Side->"top"];
+hw = Head[w]; he = Head[e];
+e[Insert] = {"end", "XY"};
+lb[Insert] = {"end", "item1"};
+lb[Insert] = {"end", "item2"};
+TclEval["update"];
+en = TclEval["return [[lindex [ff . Entry] 0] get]", String];
+''', 'script')
+    interp.run('''TclEval["proc ff {w cls} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {lappend r $c}; set r [concat $r [ff $c $cls]]}; return $r}"];
+en = TclEval["return [[lindex [ff . Entry] 0] get]", String];
+ls = TclEval["return [[lindex [ff . Listbox] 0] size]", String];''', 'script')
+    assert interp.get('hw').name == 'Widget' and interp.get('he').name == 'Widget'
+    assert interp.get('en') == 'abcXY'
+    assert str(interp.get('ls')) in ('2', '2.0')
+
+
+def test_canvas_widget_assignment_runs_the_package_upvalue(interp):
+    """gs: `Canvas$Widget = c1` で Canvas.n の `(Canvas$Widget=Widget[c_,_Canvas])^:=…` が働き、描く先が c1 になる
+    (既定の窓を作らない)。UpValue の照合が、遅延した定義を持つ記号 (The$CanvasObject := …) を評価してしまい既定の Canvas を作っていた"""
+    interp.run('''
+w = KBMainFrame["plot", plotframe, Title->"Trajectory Plot"];
+c1 = Canvas[plotframe, Width->800, Height->500];
+$DisplayFunction = CanvasDrawer;
+Canvas$Widget = c1;
+x = CanvasGraphics@CanvasObject[c1];
+''', 'script')
+    out = interp.out.getvalue()
+    assert 'tclerror' not in out and 'DefaultCanvas' not in out
+    assert interp.get('x') is not None and str(interp.get('x')) != 'Null'
+
+
+def test_tkcanvaslastitem_keeps_counting_after_delete_all(interp):
+    """K64 の TkCanvasLastItem は Tk の nextId-1。`delete all` のあとも id は続くので、Canvas.n の `StartID=CanvasLastID+1`
+    (BelowFrame の `lower id StartID`) が古い 1 にならない (以前は ListContourPlot で tagOrId "1" doesn't match any items)"""
+    interp.run('''
+w = Window[];
+c = Canvas[w, Width->100, Height->100];
+p = TkPathName[c];
+TclEval[p//" create line 0 0 1 1"];
+TclEval[p//" create line 0 0 1 1"];
+TclEval[p//" create line 0 0 1 1"];
+l1 = TkCanvasLastItem[p];
+TclEval[p//" delete all"];
+l2 = TkCanvasLastItem[p];
+TclEval[p//" create line 0 0 1 1"];
+l3 = TkCanvasLastItem[p];
+''', 'script')
+    assert (interp.get('l1'), interp.get('l2'), interp.get('l3')) == (3, 3, 4)

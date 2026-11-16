@@ -1,0 +1,58 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 21:55:01 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! Fit / FitGaussian / FitEmit (ラティスなし。乱数なし、決定的なデータ)
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.10";
+ ! (1) Fit: y = 2 x + 1 + 0.1 sin(3x), x=1..10 を a + b x で当てはめる
+ dat=Table[{i,2*i+1+0.1*Sin[i*3]},{i,1,10}];
+ r=Fit[dat,a+b*x,x,{a,1},{b,1}];
+ Print["fit=",r];
+fit={a->1.0132993837,b->1.9967382434,ChiSquare->.0484421799,GoodnessOfFit->.4334701204,
+ ConfidenceInterval->{.0805438585,.0129808182},
+ CovarianceMatrix->{{.0028257938,-4.03684832185E-4},{-4.03684832185E-4,7.339724221541E-5}},
+ DesignMatrix->{{1,1},{1,2},{1,3},{1,4},{1,5},{1,6},{1,7},{1,8},{1,9},{1,10}}}
+ Print["R:a=",a/.r];
+R:a=1.0132993837
+ Print["R:b=",b/.r];
+R:b=1.9967382434
+ Print["R:chi=",ChiSquare/.r];
+R:chi=.0484421799
+ ! (2) FitGaussian: 正規分布の分位点 (sigma=0.8, mean=0.3) に小さな揺らぎ
+ n=400;
+ d=Table[Sqrt[2]*InverseErf[2*(i-0.5)/n-1]*0.8+0.3+0.05*Sin[i*1.3],{i,n}];
+ g=FitGaussian[d];
+ Print["fg=",g];
+fg={.8032255747,.300007049,{.0051058641,.0029114775},2.8971158618}
+ Print["R:sig=",g[[1]]];
+R:sig=.8032255747
+ Print["R:mean=",g[[2]]];
+R:mean=.300007049
+ ! (3) FitEmit: 独立な 2 つの正規分布から (x,px) を作る。eps=1e-6, beta=5, alpha=-1
+ n=300;
+ u=Table[Sqrt[2]*InverseErf[2*(i-0.5)/n-1],{i,n}];
+ v=Table[u[[Mod[i*37,n]+1]],{i,n}];
+ eps=1e-6; bet=5.; alp=-1.;
+ x=Sqrt[eps*bet]*u;
+ px=Sqrt[eps/bet]*(v-alp*u);
+ e=FitEmit[x,px];
+ Print["fe=",e];
+fe={{-1.26285876851E-4,-3.57255025023E-5,-1.0081380609,5.0646593893,8.778359965211E-7},
+ {1.0620239161E-5,2.727936103365E-6,.0081909065,.0815932911,1.414222014155E-8}}
+ Print["R:alpha=",e[[1,3]]];
+R:alpha=-1.0081380609
+ Print["R:beta=",e[[1,4]]];
+R:beta=5.0646593893
+ Print["R:emit=",e[[1,5]]];
+R:emit=8.778359965211E-7
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.009 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

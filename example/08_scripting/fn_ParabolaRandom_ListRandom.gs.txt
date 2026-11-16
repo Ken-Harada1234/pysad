@@ -1,0 +1,26 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 00:37:19 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ Print["ListRandom ", ListRandom[]];
+ListRandom {"SAD"}
+ Scan[(SeedRandom[#]; SeedRandom[3];
+       Print[#, ": ", Random[3], " ", GaussRandom[2], " ", ParabolaRandom[2]]) &, ListRandom[]];
+SAD: {.5341060513164848,.03693773481063545,.33255055896006525} {.09994773354912023,-1.35458877617577} {.15695444261655211,
+ -.044849725905805826}
+ SeedRandom[3];
+ x = ParabolaRandom[40000];
+ h = Table[Count[Floor[(x + 1)*5], k], {k, 0, 9}];
+ Print["parabola histogram (10 bins, N=40000) ", h];
+parabola histogram (10 bins, N=40000) {1194,3080,4517,5465,5963,5982,5336,4388,2999,1076}
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

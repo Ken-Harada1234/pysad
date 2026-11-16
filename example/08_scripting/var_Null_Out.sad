@@ -1,0 +1,14 @@
+FFS;
+x = Null;
+Print["Null Head ", Head[Null], "  x===Null ", x === Null];
+Print["Null in list ", {1, Null}, " ", Length[{Null, Null}]];
+Print["Null === 0 ", Null === 0];
+1 + 1
+Print["Out[1] ", Out[1]];
+Print["Out[-1] ", Out[-1]];
+Print["% ", %];
+Print["$Line = ", $Line];
+2 * 3
+Print["%% ", %%];
+Print["BoundQ ", BoundQ[zzz], BoundQ[x]];
+Exit;

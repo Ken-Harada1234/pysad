@@ -1,0 +1,24 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+! ABSW (既定): 変数の重みは値によらず一定。RELW: 値に比例
+$FORM = "10.6";
+USE RING; CELL; CALC;
+FREE QF QD;
+FIT $$$;
+NX 0.2 NY 0.2;
+GO;
+Print["ABSW : K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+QF K1 0.7; QD K1 -0.6;
+RELW;
+GO;
+Print["RELW : K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Exit;

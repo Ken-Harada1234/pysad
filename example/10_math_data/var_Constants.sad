@@ -1,0 +1,18 @@
+! 定数 (SADHelp constants: Degree GoldenRatio I INF Infinity NaN Pi SpeedOfLight)。ラティスなし
+FFS;
+$FORM="S17.15";
+Print["R:Pi=",Pi];
+Print["R:Degree=",Degree];
+Print["R:GoldenRatio=",GoldenRatio];
+Print["R:SpeedOfLight=",SpeedOfLight];
+Print["I*I=",I*I];
+Print["Infinity=",Infinity];
+Print["-Infinity=",-Infinity];
+Print["INF=",INF];
+Print["NaN=",NaN];
+Print["1/Infinity=",1/Infinity];
+Print["NaN==NaN: ",NaN==NaN,"  NaNQ: ",NaNQ[NaN]];
+Print["Max[1,Infinity]=",Max[1,Infinity]];
+Print["Exp[1000.]=",Exp[1000.]];
+Print["R:GoldenRatio_eq=",GoldenRatio^2-GoldenRatio-1];
+Exit;

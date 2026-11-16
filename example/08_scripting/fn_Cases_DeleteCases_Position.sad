@@ -1,0 +1,14 @@
+FFS;
+l = {1, 2, a, 3, b, 2, {4, 5}};
+Print["Cases _Real  ", Cases[l, _Real]];
+Print["Cases 2     ", Cases[l, 2]];
+Print["Cases _Symbol", Cases[l, _Symbol]];
+Print["Cases rule  ", Cases[{f[1], g[2], f[3]}, f[x_] -> x]];
+Print["DeleteCases ", DeleteCases[l, _Real]];
+Print["DeleteCases2", DeleteCases[l, 2]];
+Print["Position 2  ", Position[l, 2]];
+Print["Position a  ", Position[l, a]];
+Print["Position nested", Position[{{1, 2}, {3, 2}}, 2]];
+Print["Count 2     ", Count[l, 2]];
+Print["MemberQ     ", MemberQ[l, b], MemberQ[l, c]];
+Exit;

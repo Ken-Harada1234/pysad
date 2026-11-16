@@ -1,0 +1,14 @@
+! Plot (ラティスなし)。Plot[関数, {変数,最小,最大}]。画面表示は Canvas の窓に出る
+FFS;
+$FORM="S17.10";
+! 関数 2 本。SADHelp の例 (sin x / x と cos x)。ff[0] を定義して x=0 の 0/0 を避ける
+ff[x_]:=Sin[x]/x;
+ff[0]=1;
+g=Plot[{Cos[x],ff[x]},{x,0,10},Thickness->2];
+Print["Head=",Head[g]," Length=",Length[g]];
+Print["R:cos5=",Cos[5.]];
+! DisplayFunction->Identity なら窓を開かず Graphics の式だけを返す
+h=Plot[Sin[x],{x,0,6},DisplayFunction->Identity];
+Print["Head=",Head[h]," Length=",Length[h]];
+Update[];
+Exit;

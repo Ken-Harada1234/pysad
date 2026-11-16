@@ -1,0 +1,3 @@
+Head=List Length=3
+R:cos5=.2836621855
+Head=Graphics Length=2

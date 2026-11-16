@@ -1,0 +1,34 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+! QF から始まる並び (RADINT は先頭が SEXT だと DL=0 で NaN になるため。FODO_ring と同じ磁石列、位相だけ違う)
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+$FORM = "12.6";
+USE RING; CELL; CALC;
+RFSW; RAD; FLUC; INTRA;           ! INTRA を ON にして EMIT すると Touschek の損失率表が作られる
+MINCOUP = 0.01;                   ! 垂直エミッタンスの下限 (EMITX+EMITY)*MINCOUP: 理想リングは EMITY=0 になるため
+PBUNCH = 1e9;                     ! 1 バンチの粒子数
+EMIT;                             ! EMITX, EMITY, EMITZ, SIGE, SIGZ と TouschekTable が決まる
+Print["EMITX=", EMITX, " EMITY=", EMITY, " SIGE=", SIGE, " SIGZ=", SIGZ];
+Print["Touschek lifetime [s], momentum aperture nz*SIGE:"];
+Do[
+  nz = {4, 6, 8}[[k]];
+  Print["  nz=", nz, " (dp=", nz*SIGE, ")  tau=", TouschekLifetime[Infinity, Infinity, nz]],
+  {k, 1, 3}];
+Print["TouschekTable dimensions: ", Length[TouschekTable]];
+! 粒子数を 2 倍にして EMIT し直す: 損失率は粒子数に比例する (寿命は 1/2)
+tau1 = TouschekLifetime[Infinity, Infinity, 6];
+PBUNCH = 2e9;
+EMIT;
+tau2 = TouschekLifetime[Infinity, Infinity, 6];
+Print["nz=6: tau(PBUNCH=1e9)=", tau1, " tau(2e9)=", tau2, " ratio=", tau1/tau2];
+Exit;

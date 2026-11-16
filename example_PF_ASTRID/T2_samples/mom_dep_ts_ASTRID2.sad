@@ -1,0 +1,121 @@
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG ) 
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180 
+          BH 
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190 
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE) 
+
+	RING = (3*NCELL CAVI 3*NCELL)
+        RINGMPW = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+!+
+!  運動量依存チューンシフト: DP0 を -2% から +4% まで (点の中心が 0 だと PolynomialFit が SAD の癖で別の点まわりの展開を返すので、非対称にした) 0.5% 刻みで変えて CALC
+!  六極 ON (設計値) と OFF (S* 0) の 2 通り。多項式フィットで ξ1 ξ2 を出す。
+!-
+ON LOG RFSW RADCOD RAD COD;
+OFF FLUC;
+FFS;
+  $FORM = "12.8";
+  PageWidth = 1999;
+
+USE RING;
+  cell calc;
+  DP = 0;
+  tx = {}; ty = {};
+  dlist = Range[-0.02, 0.04, 0.005];
+  Do[
+      DP0 = dlist[i];
+      FFS["cell calc"];
+      nx = Twiss["NX","$$$"]/2/Pi; ny = Twiss["NY","$$$"]/2/Pi;
+      tx = Append[tx, {dlist[i], nx}];
+      ty = Append[ty, {dlist[i], ny}];
+      Print["SEXT-ON  ", dlist[i], " ", nx, " ", ny];
+  ,{i,1,Length[dlist]}];
+  cx = PolynomialFit[tx,3]; cy = PolynomialFit[ty,3];
+  Print["SEXT-ON fit x: ", cx];
+  Print["SEXT-ON fit y: ", cy];
+
+  DP0 = 0;
+  FFS["cell calc"];
+  ! 六極の寄与を式 (1/4pi) sum(+-) K2 EX B で数える (薄肉、要素の中点の値) 
+  sp = LINE["POSITION","S*"];
+  xsx = 0; xsy = 0;
+  Do[
+      k2 = LINE["K2", sp[i]];
+      ex = Twiss["EX", sp[i]+0.5];
+      xsx = xsx + k2*ex*Twiss["BX", sp[i]+0.5];
+      xsy = xsy - k2*ex*Twiss["BY", sp[i]+0.5];
+  ,{i,1,Length[sp]}];
+  Print["sextupole xi_x, xi_y from formula = ", xsx/4/Pi, " ", xsy/4/Pi, "   (#sext = ", Length[sp], ")"];
+  S* 0;
+  tx = {}; ty = {};
+  Do[
+      DP0 = dlist[i];
+      FFS["cell calc"];
+      nx = Twiss["NX","$$$"]/2/Pi; ny = Twiss["NY","$$$"]/2/Pi;
+      tx = Append[tx, {dlist[i], nx}];
+      ty = Append[ty, {dlist[i], ny}];
+      Print["SEXT-OFF ", dlist[i], " ", nx, " ", ny];
+  ,{i,1,Length[dlist]}];
+  cx = PolynomialFit[tx,3]; cy = PolynomialFit[ty,3];
+  Print["SEXT-OFF fit x: ", cx];
+  Print["SEXT-OFF fit y: ", cy];
+Exit;

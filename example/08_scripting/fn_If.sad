@@ -1,0 +1,20 @@
+FFS;
+f[x_] := If[x > 0, "pos", If[x < 0, "neg", "zero"]];
+Print["If      ", f /@ {-2, 0, 3}];
+Print["If 2arg true ", If[2 > 1, "yes"], "  false ", If[1 > 2, "yes"]];
+y = If[3 > 2, Print["evaluated: then"]; 10, Print["not evaluated"]; 20];
+Print["value ", y];
+Print["If[2,...] ", If[2, "nonzero is true", "false"], "  If[0,...] ", If[0, "true", "zero is false"]];
+Print["&& || ~ ", (1 && 0), (1 || 0), ~1, ~0];
+Print["short circuit ", (0 && Print["not printed"]), (1 || Print["not printed"])];
+n = 5;
+IF n < 0
+  Print["IF: negative"];
+ELSEIF n == 0
+  Print["IF: zero"];
+ELSEIF n < 10
+  Print["IF: small positive"];
+ELSE
+  Print["IF: large"];
+ENDIF;
+Exit;

@@ -1,0 +1,13 @@
+FFS;
+f[x_] := x^2 + 1;
+Print["Map      ", Map[f, {1, 2, 3}]];
+Print["/@       ", f /@ {1, 2, 3}];
+Print["pure fn  ", (#^2 &) /@ {1, 2, 3}];
+Print["level 2  ", Map[f, {{1, 2}, {3, 4}}, {2}]];
+Print["MapAll   ", f //@ {1, {2, 3}}];
+Print["MapThread", MapThread[Plus, {{1, 2, 3}, {10, 20, 30}}]];
+Print["MapThread", MapThread[List, {{1, 2, 3}, {a, b, c}}]];
+Print["MapThread 3", MapThread[#1*#2 + #3 &, {{1, 2}, {3, 4}, {5, 6}}]];
+g[x_, y_] := x - y;
+Print["MapThread g", MapThread[g, {{10, 20}, {1, 2}}]];
+Exit;

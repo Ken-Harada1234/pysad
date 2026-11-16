@@ -1,0 +1,12 @@
+a -> 1 : {1,b,1}
+list of rules {1,2}
+f[x, y] /. r f[1,2]
+Cases on rules {1}
+-> 1   :> 2
+-> {0,1,2}  :> {3,4,5}
+pattern rule {1,0,3,0}
+f[a_] rule {1,4}
+//. repeated {1,{2,3}}
+/. once y  //. z
+Replace 1
+lookup 2

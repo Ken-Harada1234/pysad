@@ -1,0 +1,16 @@
+f[3] = 9   g[3] = Null   Head[g[3]] = Symbol
+h = 3
+Module  4
+Module trailing ; Null
+If      11
+If trailing ; Null
+Block   10
+Do value Null
+CompoundExpression 3
+  (prints)
+Print returns Symbol
+k = 6
+step1
+step2
+r = 42
+Table with ; {1,4,9}

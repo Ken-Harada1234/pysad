@@ -1,0 +1,46 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 00:36:03 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ n = 1;
+ a = n + 1;
+ b := n + 1;
+ n = 10;
+ Print["= ", a, "  := ", b];
+= 2  := 11
+ Print["== ", 1 == 1, 1 == 2, {1, 2} == {1, 3}, "ab" == "ab"];
+== 10{1,0}1
+ Print["=== ", 1 === 1, {1, 2} === {1, 3}, {1, 2} === {1, 2}, f[x] === f[x], 1 === 1.0];
+=== 10111
+ Print["<> ", 1 <> 2, "  <=> ", 1 <=> 2];
+<> 1  <=> 1
+ v = 10; v += 5; v -= 3; v *= 2; v /= 4;
+ Print["+= -= *= /= : ", v];
++= -= *= /= : 6
+ i = 1; Print["i++ ", i++, " then ", i, "   ++i ", ++i, "  i-- ", i--, "  --i ", --i];
+i++ 1 then 2   ++i 3  i-- 3  --i 1
+ {p, q} = {1, 2}; Print["{p,q} = ", p, q];
+{p,q} = 12
+ {p, q} = {q, p}; Print["swap ", p, q];
+swap 21
+ t = {0, 0, 0}; t[[2]] = 5; Print["part set ", t];
+part set {0,5,0}
+ w = 3; w =.; Print["unset ", w];
+unset w
+ h[1] = "one"; h[2] = "two"; Print["h ", h[1], h[2], h[3]];
+h onetwoh[3]
+ Print["list arithmetic ", {1, 2} + {10, 20}, 2*{1, 2}, {1, 2}^2, {1, 2}.{3, 4}];
+list arithmetic {11,22}{2,4}{1,4}11
+ Print["precedence ", 2 + 3*4^2, " ", -2^2, " ", 2^3^2, " ", 1 - 2 - 3, " ", 12/3/2];
+precedence 50 -4 512 -4 2
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

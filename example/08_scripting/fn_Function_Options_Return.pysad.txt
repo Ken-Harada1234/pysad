@@ -1,0 +1,12 @@
+f1 3 6 16
+f2 10 28 32
+f3 negative found 2 none
+f4 8
+fact 3628800
+gcd 6
+hanoi 63
+  side effect x=4
+f5 16
+f6 noneonetwomany
+HoldAll twice k=2
+Definition Null

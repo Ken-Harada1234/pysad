@@ -1,0 +1,51 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 01:52:09 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! Gamma 族と誤差関数 (ラティスなし)
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.15";
+ Print["R:Gamma0.5=",Gamma[.5]];
+R:Gamma0.5=1.772453850905516
+ Print["R:Gamma5=",Gamma[5.]];
+R:Gamma5=24
+ Print["R:Gamma-1.5=",Gamma[-1.5]];
+R:Gamma-1.5=2.363271801207355
+ Print["R:LogGamma=",LogGamma[10.5]];
+R:LogGamma=13.94062521940376
+ Print["R:LogGamma1=",LogGamma1[10.5]];
+R:LogGamma1=16.29200047656724
+ Print["R:Factorial=",Factorial[5.5]];
+R:Factorial=287.8852778150444
+ Print["R:Factorial5=",Factorial[5]];
+R:Factorial5=120
+ Print["R:Erf=",Erf[.5]];
+R:Erf=.520499877813047
+ Print["R:Erfc=",Erfc[.5]];
+R:Erfc=.479500122186953
+ Print["R:ErfN=",Erf[-1.2]];
+R:ErfN=-.910313978229635
+ Print["R:InverseErf=",InverseErf[.5]];
+R:InverseErf=.476936271460083
+ Print["R:GammaReg=",GammaRegularized[2.,3.]];
+R:GammaReg=.199148273471456
+ Print["R:GammaRegP=",GammaRegularizedP[2.,3.]];
+R:GammaRegP=.800851726528544
+ Print["R:GammaRegQ=",GammaRegularizedQ[2.,3.]];
+R:GammaRegQ=.199148273471456
+ Print["R:Beta=",Beta[2.,3.]];
+R:Beta=.083333333333333
+ Print["GammaC=",Gamma[1.+I]];
+GammaC=(.498015668118356-.154949828301811 I)
+ Print["ErfC=",Erf[1.+I]];
+ErfC=(1.316151281697948+.190453469237834 I)
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

@@ -1,0 +1,24 @@
+FFS;
+x = 10;
+(* Module: 字句的な局所変数。呼び出しごとに新しい変数 *)
+m1[] := Module[{x = 1, y}, y = x + 1; x = x + 100; {x, y}];
+Print["Module ", m1[], " global x=", x];
+(* Block: 動的スコープ。値だけを一時的に差し替える *)
+show[] := x;
+b1[] := Block[{x = 7}, show[]];
+m2[] := Module[{x = 7}, show[]];
+Print["Block  ", b1[], "  Module ", m2[], "  global ", show[]];
+(* With: 定数の置換 (局所変数は書き換えられない) *)
+Print["With ", With[{a = 3, b = 4}, Sqrt[a^2 + b^2]]];
+(* 入れ子と初期化 *)
+n1[] := Module[{a = 1}, Module[{a = 2}, a] + a];
+Print["nested Module ", n1[]];
+(* Module が返す局所記号 *)
+c[] := Module[{t}, t];
+Print["Module symbol is not t: ", c[] === t];
+(* 局所変数が同じ名前の別関数を呼ぶ間も独立 *)
+cnt[] := Module[{n = 0}, Do[n++, {5}]; n];
+Print["cnt ", cnt[], cnt[]];
+(* 反復の中の Module *)
+Print[Table[Module[{s = 0}, Do[s += j, {j, i}]; s], {i, 5}]];
+Exit;

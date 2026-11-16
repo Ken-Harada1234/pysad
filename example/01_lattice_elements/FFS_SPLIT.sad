@@ -1,0 +1,21 @@
+! SPLIT は K64 では obsolete。代わりに MARK の OFFSET で要素の途中の光学を見る
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+MARK  PQF = (OFFSET=-0.5);
+LINE CELL = (SF DS QF PQF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN 24*CELL);
+FFS;
+$FORM = "10.6";
+USE RING; CELL; CALC;
+Print["nlat = ", LINE["LENGTH"], "  NX = ", Twiss["NX","$$$"]/2/Pi];
+SPLIT QF.1 0.1;
+Print["after SPLIT: nlat = ", LINE["LENGTH"]];
+p = LINE["POSITION","QF.1"];
+Print["BX at QF.1 entrance, QF.1 + 0.5, QF.1 exit = ", Twiss["BX",{p, p+0.5, p+1}]];
+Print["BX at PQF.1 (OFFSET=-0.5)                    = ", Twiss["BX","PQF.1"]];
+Print["S  at QF.1 + 0.5 = ", LINE["S",p+0.5], "   S at PQF.1 = ", LINE["S","PQF.1"]];
+Exit;

@@ -1,0 +1,4 @@
+For (4 args) t=30 i=5
+body i=0
+body i=1
+body i=2

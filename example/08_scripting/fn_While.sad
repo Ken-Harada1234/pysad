@@ -1,0 +1,6 @@
+FFS;
+n = 0; While[n < 5, n++]; Print["n=", n];
+k = 1; While[True, k *= 2; If[k > 100, Break[]]]; Print["Break k=", k];
+a = 100; b = 0; While[a > 1, a /= 2; b++]; Print["halvings ", b, " a=", a];
+m = 0; While[m < 6, m++; If[OddQ[m], Continue[]]; Print["even ", m]];
+Exit;

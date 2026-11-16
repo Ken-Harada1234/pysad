@@ -1,0 +1,26 @@
+FFS;
+(* 補助の .n (パッケージ) をこのスクリプト自身が書き出し、Get[] で読む *)
+file = "ex_stat_pkg.n";
+fd = OpenWrite[file];
+WriteString[fd, "BeginPackage[Stat`]\n"];
+WriteString[fd, "Begin[Stat`]\n"];
+WriteString[fd, "Counter = 0;\n"];
+WriteString[fd, "sq[x_] := x^2;\n"];
+WriteString[fd, "Mean2[l_List] := (Counter++; Plus @@ l/Length[l]);\n"];
+WriteString[fd, "Var2[l_List] := Plus @@ (sq /@ (l - Mean2[l]))/Length[l];\n"];
+WriteString[fd, "Calls[] := Counter;\n"];
+WriteString[fd, "End[]\n"];
+WriteString[fd, "EndPackage[]\n"];
+Close[fd];
+Print["Context before: ", Context[]];
+r = Get[file];
+Print["Context after : ", Context[]];
+Print["Stat`Mean2 ", Stat`Mean2[{1, 2, 3, 4}]];
+Print["Stat`Var2  ", Stat`Var2[{1, 2, 3, 4}]];
+Print["Stat`Calls ", Stat`Calls[]];
+Print["Stat`Counter ", Stat`Counter];
+Print["Context[Stat`sq] ", Context[Stat`sq]];
+Print["plain Mean2 (not on context path) ", Mean2[{1, 2}]];
+Print["Names ", Names["Stat`*"]];
+DeleteFile[file];
+Exit;

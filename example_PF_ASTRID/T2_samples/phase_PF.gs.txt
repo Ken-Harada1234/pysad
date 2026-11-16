@@ -1,0 +1,772 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:51:48 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!********************************************************************
+!*       PF-RING Super-Low Emittance Lattice Configuration          *
+!*       Normal Cell Phase Addvance 115  deg Version                *
+!*       Straight Section reinforcement                             *
+!*         Second edition with PMs & STRs                           *
+!*       SEXTUPOLE(SF,SD) 2 FAMILY CORRECTION                       *
+!*       Octupole                                                   *
+!********************************************************************
+ MOMENTUM=2.5 GEV;
+
+ MARK   MKD   =()
+        MKASYMST =()
+
+        INJ   =()
+        RMARK =()
+        HMARK =()
+        SMARK =()
+        TMARK =()
+
+        U02   =(bx=9 by=4 ax=0 ay=0 ex=0 epx=0)
+        U03   =()
+        U04   =()
+        U05   =()
+        U13   =()
+        U14   =()
+        U15   =()
+        U16   =()
+        U17   =()
+        U18   =()
+        U19   =()
+        U26   =()
+        U28   =()
+        U01   =()
+        MKSNWS  = ()
+        MKSNES  = ()
+        MKSSWS  = ()
+        MKSSES  = ()
+        MKNCWS  = ()
+        MKNCES  = ()
+
+        MKSNWE  = ()
+        MKSNEE  = ()
+        MKSSWE  = ()
+        MKSSEE  = ()
+        MKNCWE  = ()
+        MKNCEE  = ()
+
+        DM      = ()
+   ! BPM not used for user operation.
+   !   because signal processors are not caribrated.
+        MPM     = ()
+   ! PHV ; nothing is set up.
+        MPHV    = ()
+   ! PHV ; magnet and girder are already set.
+        MPHVM   = ()
+   ! PHV ; only girder is set.
+        MPHVG   = ()
+
+ ;
+ MONI
+        PM      =()
+ ;
+ CAVI   CAVI=(VOLT= 850000 FREQ=499990264.8)
+ ;
+ BEND   B02     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B03     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B04     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B05     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B06     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B07     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B08     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B09     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B10     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B11     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B12     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B13     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B14     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B15     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B16     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B17     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B18     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B19     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B20     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B21     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B22     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B23     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B24     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B25     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B26     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B27     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B28     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B01     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+ ;
+!VD : vertical dipole (slow corrector)
+!PV : vertical dipole for feedback (fast corrector)
+!PH : horizontal dipole for feedback (do not exist in the real machine)
+!VS : vertical dipole (correction coil of the sextupole magnet)
+
+  BEND  VD      =(L = 0.15 K0 = 0     ROTATE =-90 DEG )
+        PV      =(L = 0    K0 = 0     ROTATE =-90 DEG )
+        PH      =(L = 0    K0 = 0  )
+        VS      =(L = 0    K0 = 0     ROTATE =-90 DEG)
+ ;
+!SQ : skew quadrupole corrector (correction coil for the sextupole magnet)
+ QUAD   SQ      =(L = 0   K1 = .0 ROTATE=45  deg)
+ ;
+ QUAD   Q1      =(L =.4   K1 =.698096426338 )
+        Q2      =(L =.4   K1 =-.6928509495915 )
+        Q3      =(L =.3   K1 =-.7582257471804 )
+        Q4      =(L =.3   K1 =.8485774395228 )
+        Q5B     =(L =.4   K1 =-.7477651492198 )
+        Q6B     =(L =.4   K1 =.8213108186402 )
+        Q7B     =(L =.3   K1 =.3716972819766 )
+        Q8B     =(L =.4   K1 =-.8474940261361 )
+        Q9B     =(L =.4   K1 =.8733651289326 )
+        QAB     =(L =.3   K1 =.2752712073638 )
+        QDB     =(L =.25  K1 =-.516490934853 )
+        QFB     =(L =.4   K1 =.77169828379 )
+        QD      =(L =.25  K1 =-.4791910620324 )
+        QF      =(L =.4   K1 =.748319526303 )
+        QFA     =(L =.4   K1 =.7268201874174 )
+        QDA     =(L =.25  K1 =-.5977851575315 )
+        QAA     =(L =.4   K1 =.4027138035082 )
+        Q9A     =(L =.4   K1 =.8879679595581 )
+        Q8A     =(L =.4   K1 =-.9208219644329 )
+        Q7A     =(L =.3   K1 =.359209262548 )
+        Q6A     =(L =.4   K1 =.8530844358661 )
+        Q5A     =(L =.4   K1 =-.753353015542 )
+ ;
+ SEXT   SFH     =(L =.1   K2 =3.9242032090679 )
+        SDH     =(L =.1   K2 =-3.9053258695379 )
+ ;
+ SEXT   SFH     =(L =.1   K2 =3.960642832567334 )
+        SDH     =(L =.1   K2 =-3.917196460596791 )
+ ;
+ OCT    OCT     =(L = .2   K3 =  .0 )
+ ;
+ DRIFT  LLS1    =(L = 4.365 )
+        L250    =(L = 0.25 )
+        L400    =(L = 0.4 )
+        L350    =(L = 0.35 )
+        LLS2    =(L = 0.605 )
+        LLS3    =(L = 2.605 )
+        LLS32   =(L = 2.455 )
+        LLS33   =(L = 2.405 )
+        LLS4    =(L = 2.545 )
+        LLS42   =(L = 2.595 )
+        L110    =(L = 0.11 )
+        L300    =(L = 0.3 )
+        L100    =(L = 0.1 )
+        L600    =(L = 0.6 )
+        L200    =(L = 0.2 )
+        L325    =(L = 0.325 )
+        LLS5    =(L = 2.2125 )
+        LLS51   =(L = 2.2625 )
+        L050    =(L = 0.05 )
+        L075    =(L = 0.075)
+        L060    =(L = 0.060)
+        L090    =(L = 0.090)
+        L460    =(L = 0.460)
+        L130    =(L = 0.130)
+        L225    =(L = 0.225)
+        L220    =(L = 0.220)
+        L500    =(L = 0.5 )
+        L080    =(L = 0.080)
+ ;
+
+
+LINE
+! fast steering set
+        PHV    = (PH PV)
+! "MPHV" and "MPM" is the place where geometrically we can install steering magnets
+! and beam position monitors (but we do not install them, not decided yet).
+
+        STRNW  =(
+!                 MKASYMST
+!                 B01 L300 PHV   L050  PM    L050
+!                 Q2  L050 VD    L050
+!                 Q1  L050 PM    L050  MPHVM LLS1
+!                 MKSNEE
+                 MKSNWS
+                 U02  LLS1  PHV   L050   PM     L050
+                 Q1   L050  VD    L050
+                 Q2   L050  PM    L050   MPHVM  L300
+                 B02  L250  PHV   L050   PM     L050
+                 Q3   L050  VD    L050
+                 Q4   L050  MPM   L050   MPHVG  LLS2
+                 U03  LLS2  MPHVG L050   MPM    L050
+                 Q4   L050  VD    L050
+                 Q3   L050  PM    L050   MPHVG  L250
+                 B03  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B04  L300  PHV   L050   PM     L050
+                 Q8B  L050  VD    L050
+                 Q9B  L050  PM    L050   MPHVG  LLS4
+                 U05  LLS4  PHV   L050   PM     L050
+
+                 QAB L110 SFH VS   SFH  L250 MPHVM L050
+                 B05 L300
+                 QDB L050 PM  L050 SDH  VS    SDH   L220
+                                   OCT  L080  PHV   L050 PM L050
+                 QFB
+                 MKSNWE)
+
+
+
+        NCELW  =(MKNCWS
+                 L100            SFH  SQ SFH   L200            B06    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B07    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B08    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L220  OCT
+                                               L080  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B09    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B10    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B11    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050
+                 MKNCWE)
+
+
+        STRSW  =(MKSSWS
+                 QFA L100 SFH SQ    SFH L200
+                 B12 L300
+                 QDA L050 PM  L050  SDH VS   SDH  L225  MPHVM  L100
+                 QAA L050 PM  L050  PHV LLS5
+                 U13 LLS5 PHV L050  PM  L050
+                 Q9A L050 VD    L050
+                 Q8A L050 MPHVM L050 PM    L300
+                 B13 L300 PHV   L100
+                 Q7A L050 PM    L050 VD    L050  MPHVM  LLS33
+                 U14 LLS3 MPHVM L050 MPM   L050
+                 Q6A L050 VD    L050
+                 Q5A L050 PM    L050 MPHVM L300
+                 B14 L250 PHV   L050 PM    L050
+                 Q3  L050 VD    L050
+                 Q4  L050 MPM   L050 MPHVG LLS2
+                 U15 LLS2 MPHVG L050 MPM   L050
+                 Q4  L050 VD    L050
+                 Q3  L050 PM    L050 MPHVG L250
+                 B15 L300 PHV   L050 PM    L050
+                 Q2  L050 VD    L050
+                 Q1  L050 PM    L050 MPHVM LLS1
+                 MKSSWE)
+
+        STRSE  =(MKSSES
+                 U16  LLS1  PHV   L050   PM     L050
+                 Q1   L050  VD    L050
+                 Q2   L050  PM    L050   MPHVM  L300
+                 B16  L250  PHV   L050   PM     L050
+                 Q3   L050  VD    L050
+                 Q4   L050  MPM   L050   MPHVG  LLS2
+                 U17  LLS2  MPHVG L050   MPM    L050
+                 Q4   L050  VD    L050
+                 Q3   L050  PM    L050   MPHVG  L250
+                 B17  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B18  L300  PHV   L050   PM     L050
+                 Q8B  L050  VD    L050
+                 Q9B  L050  PM    L050   MPHVM  LLS4
+                 U19  LLS4  PHV   L050   PM     L050
+
+                 QAB L110 SFH VS   SFH  L250  MPHVM  L050
+                 B19 L300
+                 QDB L050 PM  L050 SDH  VS    SDH    L220
+                                   OCT  L080  PHV    L050 PM L050
+                 QFB
+                 MKSSEE)
+
+
+
+        NCELE  =(MKNCES
+                 L100            SFH  SQ SFH   L200            B20    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B21    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L220  OCT
+                                               L080  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B22    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B23    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B24    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B25    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500       L050        L050
+                 MKNCEE)
+
+        NCELL  = (MKNCES
+                 L100            SFH  SQ SFH   L200            B20    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 )
+        STRNE  =(MKSNES
+                 QFA L100 SFH SQ    SFH L200
+                 B26 L300
+                 QDA L050 PM    L050  SDH VS  SDH  L225  MPHV  L100
+                 QAA L050 PM    L050  PHV   LLS5
+                 INJ LLS5 MPHV  L050  PM    L050
+                 Q9A L050 VD    L050
+                 Q8A L050 PM    L050  PHV   L300
+                 B27 L300 MPHVM L100
+                 Q7A L050 PM    L050  VD    L050  MPHVM  LLS33
+                 U28 LLS3 MPHVM L050  PM    L050
+                 Q6A L050 VD    L050
+                 Q5A L050 MPM   L050  PHV   L300
+                 B28 L250 MPHVM L050  PM    L050
+                 Q3  L050 VD    L050
+                 Q4  L050 MPM   L050  MPHV  LLS2
+                 U01 LLS2 MPHVG L050  MPM   L050
+                 Q4  L050 VD    L050
+                 Q3  L050 PM    L050  MPHVG L250
+!)
+                 B01 L300 PHV   L050  PM    L050
+                 Q2  L050 VD    L050
+                 Q1  L050 PM    L050  MPHVM LLS1
+                 MKSNEE)
+
+        SF     = (SFH SFH)
+        SD     = (SDH SDH)
+
+   HALFW  =(STRNW NCELW STRSW)
+   HALFE  =(STRSE NCELE STRNE)
+   RING   =(HALFE HALFW RMARK)
+ ;
+ MARK   MKASYMST=(AX =.3267372759800573  BX =1.409231024878198    AY =-1.9881134939493714  BY =10.302237759757904
+           EX =.21692483832251194   EPX =-.22476522929754775 DP =.01   EMITX =1e-12   EMITY =1e-12 )
+        MPHVM   =(AX =.3637325771246263  BX =13.569208776052173   PSIX =1.4454136727838627 AY =.8740521022144008
+           BY =8.812044747193662    PSIY =.24586208188670342 EX =.002335158496149979  EPX =-1.0475391726686132e-05
+           DX =3.1073672905710446e-17    DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNEE  =(AX =-.0005108831032284241   BX =11.983746081648771   PSIX =1.794780533677079  AY =.00028029173427025425
+           BY =4.995583847607713    PSIY =.9638746750582431  EX =.002289433411263019  EPX =-1.0475391726686132e-05
+           DX =6.270332441232682e-18     DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNWS  =(AX =-.0005108831032284241   BX =11.983746081648771   PSIX =1.794780533677079  AY =.00028029173427025425
+           BY =4.995583847607713    PSIY =.9638746750582431  EX =.002289433411263019  EPX =-1.0475391726686132e-05
+           DX =6.270332441232682e-18     DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U02     =(AX =-.0005108831032284241   BX =11.983746081648771   PSIX =1.794780533677079  AY =.00028029173427025425
+           BY =4.995583847607713    PSIY =.9638746750582431  EX =.002289433411263019  EPX =-1.0475391726686132e-05
+           DX =6.270332441232682e-18     DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MPM     =(AX =.34344741932807943 BX =5.177933730946667    PSIX =4.106611817532601  AY =1.4970581750866492
+           BY =1.3307942572386908   PSIY =2.2365921637210064 EX =.5947197340332584    EPX =-7.379537725826753e-05
+           DX =7.061110331219293e-18     DPX =-1.968058513733374e-18   DZ =-2.1769518205381943e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MPHVG   =(AX =.3326520307818579  BX =5.144128758441171    PSIX =4.116300007346523  AY =1.3752819064424258
+           BY =1.187177253162237    PSIY =2.2763819279371726 EX =.5947160442643955    EPX =-7.379537725826753e-05
+           DX =6.962707405532624e-18     DPX =-1.968058513733374e-18   DZ =-2.1769518205381943e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U03     =(AX =.2020278293725771  BX =4.820647443047737    PSIX =4.2380926309300415 AY =-.09821094415267596
+           BY =.4145493209769384    PSIY =3.3163764777320233 EX =.5946713980611542    EPX =-7.379537725826753e-05
+           DX =5.772032004723933e-18     DPX =-1.968058513733374e-18   DZ =-2.1769518205381943e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MPHV    =(AX =2.283629443840094  BX =19.76008175577222    PSIX =6.583222985493425  AY =.8893228754992855
+           BY =8.112000032336457    PSIY =4.760572051357381  EX =.0011993217563830468 EPX =-3.115986196922111e-05
+           DX =2.9650229090803615e-17    DPX =-8.278455970564334e-18   DZ =-4.877194431725505e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U05     =(AX =.5415616002217872  BX =8.716787631620404    PSIX =9.796640159734489  AY =.4762308860675471
+           BY =5.784844171972641    PSIY =6.469825984667423  EX =.5921221904493906    EPX =-.0384301408027925
+           DX =2.2341729213444904e-18    DPX =-2.1566964130962843e-18  DZ =-4.047062133737118e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNWE  =(AX =1.6094510616949762 BX =5.474890370122926    PSIX =11.980370962201736 AY =-1.5133081382655638
+           BY =6.99698764018075     PSIY =7.496902428756162  EX =.4738921477501838    EPX =-.17690502266050454
+           DX =2.6614643922287938e-17    DPX =-1.1994677026840624e-17  DZ =-6.4504812014207036e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCWS  =(AX =1.6094510616949762 BX =5.474890370122926    PSIX =11.980370962201736 AY =-1.5133081382655638
+           BY =6.99698764018075     PSIY =7.496902428756162  EX =.4738921477501838    EPX =-.17690502266050454
+           DX =2.6614643922287938e-17    DPX =-1.1994677026840624e-17  DZ =-6.4504812014207036e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCWE  =(AX =-2.3789507273910497     BX =5.135413805642289    PSIX =22.117301503303633 AY =4.066372949202474
+           BY =7.936910315800754    PSIY =9.795249009945264  EX =.4714399277072946    EPX =.18551530508558994
+           DX =3.03359117723599e-17 DPX =9.882931770636707e-18    DZ =-1.1144332951704408e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSWS  =(AX =-2.3789507273910497     BX =5.135413805642289    PSIX =22.117301503303633 AY =4.066372949202474
+           BY =7.936910315800754    PSIY =9.795249009945264  EX =.4714399277072946    EPX =.18551530508558994
+           DX =3.03359117723599e-17 DPX =9.882931770636707e-18    DZ =-1.1144332951704408e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U13     =(AX =-1.08346397126322  BX =9.448575557372873    PSIX =24.018436956182736 AY =-.4001469523679511
+           BY =1.1552359241391243   PSIY =11.724275665575957 EX =.6343426056755612    EPX =.034138813304196325
+           DX =-4.004324259770587e-17    DPX =-8.679011988891885e-18   DZ =-1.2803129316602761e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U14     =(AX =-1.623980591076923 BX =7.966413757625221    PSIX =26.946487692866807 AY =-.2242659835382249
+           BY =5.728150233693729    PSIY =13.359999874341618 EX =.0008297097976650902 EPX =1.6409617863042954e-05
+           DX =3.952115991970268e-17     DPX =8.43555791239972e-18     DZ =-1.0386586962313201e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U15     =(AX =-.20240885872024705     BX =4.825500521737673    PSIX =29.502577612671633 AY =.09815160856382395
+           BY =.4143170034362868    PSIY =15.195997932566478 EX =.5947737730296431    EPX =.00010338713948287851
+           DX =-1.4774134062784297e-17   DPX =-7.477540137396037e-18   DZ =-1.3292823857583022e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSWE  =(AX =-.0005108831032304542   BX =11.983746081648764   PSIX =31.946311816489594 AY =.00028029173426571974
+           BY =4.995583847607729    PSIY =17.548217294309048 EX =.0022894334112622873 EPX =-1.047539172675039e-05
+           DX =1.440952728851967e-18     DPX =-1.3058253446370555e-18  DZ =-1.240428258495902e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSES  =(AX =-.0005108831032304542   BX =11.983746081648764   PSIX =31.946311816489594 AY =.00028029173426571974
+           BY =4.995583847607729    PSIY =17.548217294309048 EX =.0022894334112622873 EPX =-1.047539172675039e-05
+           DX =1.440952728851967e-18     DPX =-1.3058253446370555e-18  DZ =-1.240428258495902e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U16     =(AX =-.0005108831032304542   BX =11.983746081648764   PSIX =31.946311816489594 AY =.00028029173426571974
+           BY =4.995583847607729    PSIY =17.548217294309048 EX =.0022894334112622873 EPX =-1.047539172675039e-05
+           DX =1.440952728851967e-18     DPX =-1.3058253446370555e-18  DZ =-1.240428258495902e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U17     =(AX =.20202782937257657 BX =4.820647443047734    PSIX =34.389623913742554 AY =-.09821094415267853
+           BY =.4145493209769361    PSIY =19.900719096982826 EX =.5946713980611543    EPX =-7.379537725804483e-05
+           DX =2.0364870056324352e-17    DPX =-6.943699526028509e-18   DZ =-1.505327340272931e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U19     =(AX =.5415616002217872  BX =8.716787631620404    PSIX =39.94817144254696  AY =.476230886067542
+           BY =5.784844171972621    PSIY =23.05416860391824  EX =.5921221904493899    EPX =-.03843014080279216
+           DX =3.897465887694283e-17     DPX =-4.729506354878754e-18   DZ =-1.1821164678846433e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSEE  =(AX =1.6094510616949758 BX =5.4748903701229255   PSIX =42.13190224501421  AY =-1.5133081382655735
+           BY =6.996987640180786    PSIY =24.081245048006974 EX =.4738921477501853    EPX =-.17690502266050526
+           DX =-3.224423795256755e-17    DPX =5.334476643290474e-18    DZ =-1.2151133085277758e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCES  =(AX =1.6094510616949758 BX =5.4748903701229255   PSIX =42.13190224501421  AY =-1.5133081382655735
+           BY =6.996987640180786    PSIY =24.081245048006974 EX =.4738921477501853    EPX =-.17690502266050526
+           DX =-3.224423795256755e-17    DPX =5.334476643290474e-18    DZ =-1.2151133085277758e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCEE  =(AX =-2.3789507273910444     BX =5.135413805642286    PSIX =52.268832786116086 AY =4.066372949202498
+           BY =7.93691031580081     PSIY =26.37959162919607  EX =.47143992770729237   EPX =.18551530508558917
+           DX =-3.2278254789292236e-17   DPX =-1.9764898012767288e-17  DZ =-6.983552588214642e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNES  =(AX =-2.3789507273910444     BX =5.135413805642286    PSIX =52.268832786116086 AY =4.066372949202498
+           BY =7.93691031580081     PSIY =26.37959162919607  EX =.47143992770729237   EPX =.18551530508558917
+           DX =-3.2278254789292236e-17   DPX =-1.9764898012767288e-17  DZ =-6.983552588214642e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        INJ     =(AX =-1.0834639712632212     BX =9.44857555737288     PSIX =54.169968238995196 AY =-.4001469523679553
+           BY =1.1552359241391175   PSIY =28.308618284826764 EX =.6343426056755652    EPX =.03413881330419696
+           DX =-1.6019940998995788e-17   DPX =7.87334936580121e-20     DZ =-2.7773963407623497e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U28     =(AX =-1.6239805910769218     BX =7.966413757625202    PSIX =57.098018975679274 AY =-.22426598353821872
+           BY =5.7281502336937695   PSIY =29.944342493592416 EX =.0008297097976618083 EPX =1.64096178620915e-05
+           DX =-1.4532451619637123e-19   DPX =-6.656096717564205e-18   DZ =-5.596019971795468e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U01     =(AX =-.20240885872024364     BX =4.825500521737635    PSIX =59.65410889548409  AY =.09815160856380536
+           BY =.41431700343628386   PSIY =31.780340551817293 EX =.594773773029644     EPX =.00010338713948360205
+           DX =8.483924587116772e-18     DPX =-2.8927178504696506e-18  DZ =-5.562022482948131e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        RMARK   =(AX =.3267372759800518  BX =1.4092310248781927   PSIX =60.30306256562499  AY =-1.9881134939493725
+           BY =10.302237759757958   PSIY =33.1686852385016   EX =.21692483832251366   EPX =-.2247652292975474
+           DX =-1.4669722238346671e-18   DPX =-6.415427119490561e-18   DZ =-5.562022482948131e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+ ;
+ON LOG;
+OFF RAD FLUC;
+ON COD RFSW RADCOD;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     F     F     F     F     T     F     F     T     F     T
+ $FORM = "15.10";
+ PageWidth = 1999;
+ 
+ (* one-turn map at the start of the ring: tracking one particle for nturn turns at several initial x amplitudes *)
+ USE RING;
+Out[1]:= USE
+ cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.109E-4 $$$       f BX    #######  #  11.983746 $$$       f NX    #######  #   9.597530 $$$       f AY    #######  #  2.8029E-4 $$$       f BY    #######  #   4.995584 $$$       f NY    #######  #   5.278960
+$$$       f LENG  #######  #  187.03548
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -7.80E-7  -1.20E-6  1.13E-20  -1.4E-21  -1.63E-6  -3.60E-5
+      Exit :  -7.80E-7  -1.20E-6  1.13E-20  -1.4E-21  -1.63E-6  -3.60E-5
+
+    Extended Twiss Parameters
+AX: -6.54E-4 BX: 11.98566                            ZX: 4.130E-7  EX:  .001600
+           PSIX: -2.0E-22                           ZPX: -3.99E-7 EPX: -4.0E-17
+R1: -2.9E-16 R2: 3.09E-15 AY: 4.976E-4 BY: 4.989620  ZY: 3.71E-19  EY: -4.0E-17
+R3: -3.4E-17 R4: -3.6E-15            PSIY: 2.73E-38 ZPY: 1.11E-19 EPY: 5.08E-17
+                                                     AZ:  .020610  BZ: 13.31300
+                                                                 PSIZ: 2.93E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 1602864.0 Hz 
+Energy loss per turn U0 =  .3991454 MV  Effective voltage    Vc = 1.7000000 MV 
+Equilibrium position dz = 22.617279 mm  Momentum compact. alpha =  .0065627
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 311.93555
+Bucket height     dV/P0 =  .0118039     Synchrotron frequency   = 23522.241 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune:-0.4021798           0.2791903          -0.0146751
+
+    Damping per one revolution:
+          X : -8.231584E-05   Y : -7.980494E-05   Z : -1.571409E-04
+    Damping time (sec):
+          X :  7.579140E-03   Y :  7.817602E-03   Z :  3.970214E-03
+    Tune shift due to radiation:
+          X : -4.432916E-06   Y :  1.450768E-05   Z : -1.106994E-07
+    Damping partition number:
+          X :    1.0313       Y :    0.9999       Z :    1.9688
+
+Emittance X            = 3.45380E-8 m   Emittance Y            = 6.9966E-38 m
+Emittance Z            = 7.16265E-6 m   Energy spread          = 7.33656E-4
+Bunch Length           = 9.76502669 mm  Beam tilt              = 1.8323E-14 rad
+Beam size xi           =  .64339877 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+ alphax = Twiss["AX",1]; betax = Twiss["BX",1]; gammax = (1 + alphax^2)/betax;
+ sigmax = Sqrt[EMITX/gammax];
+ Print["alpha beta gamma at start = ", alphax, " ", betax, " ", gammax, "  EMITX = ", EMITX];
+alpha beta gamma at start =  -5.10883103E-4   11.9837460816     .0834463826  EMITX =  3.453799219E-8
+ nturn = 60;
+ ka = {1,10,20,30};
+ Do[
+   k = ka[kk];
+   x1 = {Sqrt[EMITX*betax]*k};
+   res = {1,{x1,{1E-9},{1E-9},{1E-9},{1E-9},{1E-9},{1}}};
+   Do[
+     res = TrackParticles[res,1];
+     x = res[2,1,1]; px = res[2,2,1];
+     Print["amp ", k, " sigma  turn ", i, "  x [mm] ", x*1000, "  px [mrad] ", px*1000, "  y [mm] ", res[2,3,1]*1000, "  z [mm] ", res[2,5,1]*1000, "  CSinv/EMITX ", (gammax*x^2 + 2*alphax*x*px + betax*px^2)/EMITX];
+   ,{i,1,nturn}];
+ ,{kk,1,4}];
+amp    1.0000000000 sigma  turn    1.0000000000  x [mm]    -.5258310106  px [mrad]     .0313241996  y [mm]  4.806192238E-6  z [mm]  -1.31879275E-5  CSinv/EMITX    1.0089794977
+amp    1.0000000000 sigma  turn    2.0000000000  x [mm]     .2114661424  px [mrad]    -.0507154726  y [mm]  -2.76367216E-6  z [mm]  -3.03609513E-4  CSinv/EMITX    1.0007938848
+amp    1.0000000000 sigma  turn    3.0000000000  x [mm]     .1733493269  px [mrad]     .0516707176  y [mm]  -3.90604295E-6  z [mm]  -7.10647793E-5  CSinv/EMITX     .9987080776
+amp    1.0000000000 sigma  turn    4.0000000000  x [mm]    -.4991093629  px [mrad]    -.0337399606  y [mm]  4.035905770E-6  z [mm]  -1.49026000E-4  CSinv/EMITX     .9963593373
+amp    1.0000000000 sigma  turn    5.0000000000  x [mm]     .6419140236  px [mrad]     .0041334771  y [mm]  2.348858018E-6  z [mm]  3.147712437E-5  CSinv/EMITX    1.0014022275
+amp    1.0000000000 sigma  turn    6.0000000000  x [mm]    -.5528584832  px [mrad]     .0278988599  y [mm]  -4.86588420E-6  z [mm]  2.670108300E-5  CSinv/EMITX    1.0090007760
+amp    1.0000000000 sigma  turn    7.0000000000  x [mm]     .2574759862  px [mrad]    -.0491742977  y [mm]  -4.79694230E-7  z [mm]  -2.45692541E-4  CSinv/EMITX     .9995646612
+amp    1.0000000000 sigma  turn    8.0000000000  x [mm]     .1250125855  px [mrad]     .0526176298  y [mm]  5.170497299E-6  z [mm]  -2.34391107E-5  CSinv/EMITX     .9981984424
+amp    1.0000000000 sigma  turn    9.0000000000  x [mm]    -.4664690980  px [mrad]    -.0368713429  y [mm]  -1.29174900E-6  z [mm]  -1.08054870E-4  CSinv/EMITX     .9969214150
+amp    1.0000000000 sigma  turn   10.0000000000  x [mm]     .6366603562  px [mrad]     .0082384841  y [mm]  -4.70634478E-6  z [mm]  1.109923924E-4  CSinv/EMITX    1.0027179890
+amp    1.0000000000 sigma  turn   11.0000000000  x [mm]    -.5766106053  px [mrad]     .0243079801  y [mm]  2.882503599E-6  z [mm]  1.145274342E-4  CSinv/EMITX    1.0087293896
+amp    1.0000000000 sigma  turn   12.0000000000  x [mm]     .3019772339  px [mrad]    -.0473384562  y [mm]  3.527115547E-6  z [mm]  -1.38757804E-4  CSinv/EMITX     .9982870997
+amp    1.0000000000 sigma  turn   13.0000000000  x [mm]     .0759358344  px [mrad]     .0532569159  y [mm]  -4.25120301E-6  z [mm]  6.924384180E-5  CSinv/EMITX     .9979308756
+amp    1.0000000000 sigma  turn   14.0000000000  x [mm]    -.4310925295  px [mrad]    -.0397845269  y [mm]  -1.99608100E-6  z [mm]  -2.67324937E-5  CSinv/EMITX     .9976894931
+amp    1.0000000000 sigma  turn   15.0000000000  x [mm]     .6276140421  px [mrad]     .0122917787  y [mm]  5.074479455E-6  z [mm]  2.242771801E-4  CSinv/EMITX    1.0038856452
+amp    1.0000000000 sigma  turn   16.0000000000  x [mm]    -.5969494904  px [mrad]     .0205723165  y [mm]  3.078177179E-7  z [mm]  2.328845139E-4  CSinv/EMITX    1.0081744388
+amp    1.0000000000 sigma  turn   17.0000000000  x [mm]     .3447066726  px [mrad]    -.0452192158  y [mm]  -5.09346826E-6  z [mm]  -1.93948609E-6  CSinv/EMITX     .9970279750
+amp    1.0000000000 sigma  turn   18.0000000000  x [mm]     .0264126853  px [mrad]     .0535850081  y [mm]  1.539976075E-6  z [mm]  1.867799186E-4  CSinv/EMITX     .9979252640
+amp    1.0000000000 sigma  turn   19.0000000000  x [mm]    -.3931872378  px [mrad]    -.0424616918  y [mm]  4.449264285E-6  z [mm]  7.367433461E-5  CSinv/EMITX     .9986125585
+amp    1.0000000000 sigma  turn   20.0000000000  x [mm]     .6148266541  px [mrad]     .0162695144  y [mm]  -3.29656488E-6  z [mm]  3.485405408E-4  CSinv/EMITX    1.0048517150
+amp    1.0000000000 sigma  turn   21.0000000000  x [mm]    -.6137575974  px [mrad]     .0167135143  y [mm]  -3.36445664E-6  z [mm]  3.576753189E-4  CSinv/EMITX    1.0073590068
+amp    1.0000000000 sigma  turn   22.0000000000  x [mm]     .3854110630  px [mrad]    -.0428295802  y [mm]  4.514910864E-6  z [mm]  1.397829103E-4  CSinv/EMITX     .9958538456
+amp    1.0000000000 sigma  turn   23.0000000000  x [mm]    -.0232608916  px [mrad]     .0536001037  y [mm]  1.816201329E-6  z [mm]  3.040676350E-4  CSinv/EMITX     .9981871667
+amp    1.0000000000 sigma  turn   24.0000000000  x [mm]    -.3529753355  px [mrad]    -.0448864089  y [mm]  -5.03794405E-6  z [mm]  1.680513001E-4  CSinv/EMITX     .9996312670
+amp    1.0000000000 sigma  turn   25.0000000000  x [mm]     .5983723965  px [mrad]     .0201483786  y [mm]  1.241028620E-7  z [mm]  4.582409974E-4  CSinv/EMITX    1.0055739883
+amp    1.0000000000 sigma  turn   26.0000000000  x [mm]    -.6269383754  px [mrad]     .0127539907  y [mm]  5.005506877E-6  z [mm]  4.630987426E-4  CSinv/EMITX    1.0063191281
+amp    1.0000000000 sigma  turn   27.0000000000  x [mm]     .4238486473  px [mrad]    -.0401842004  y [mm]  -2.03082270E-6  z [mm]  2.607337692E-4  CSinv/EMITX     .9948275074
+amp    1.0000000000 sigma  turn   28.0000000000  x [mm]    -.0727883818  px [mrad]     .0533021736  y [mm]  -4.40090170E-6  z [mm]  3.963649039E-4  CSinv/EMITX     .9987076419
+amp    1.0000000000 sigma  turn   29.0000000000  x [mm]    -.3106922074  px [mrad]    -.0470437530  y [mm]  3.512915410E-6  z [mm]  2.327598632E-4  CSinv/EMITX    1.0006812207
+amp    1.0000000000 sigma  turn   30.0000000000  x [mm]     .5783477095  px [mrad]     .0239057244  y [mm]  3.100976882E-6  z [mm]  5.304427229E-4  CSinv/EMITX    1.0060237706
+amp    1.0000000000 sigma  turn   31.0000000000  x [mm]    -.6364167810  px [mrad]     .0087168124  y [mm]  -4.54489598E-6  z [mm]  5.269993454E-4  CSinv/EMITX    1.0051020942
+amp    1.0000000000 sigma  turn   32.0000000000  x [mm]     .4597905994  px [mrad]    -.0372992764  y [mm]  -1.31459645E-6  z [mm]  3.398303316E-4  CSinv/EMITX     .9940046465
+amp    1.0000000000 sigma  turn   33.0000000000  x [mm]    -.1218745300  px [mrad]     .0526929620  y [mm]  5.126221959E-6  z [mm]  4.444610503E-4  CSinv/EMITX     .9994638162
+amp    1.0000000000 sigma  turn   34.0000000000  x [mm]    -.2665851828  px [mrad]    -.0489204047  y [mm]  -5.11343174E-7  z [mm]  2.506492812E-4  CSinv/EMITX    1.0016965262
+amp    1.0000000000 sigma  turn   35.0000000000  x [mm]     .5548707290  px [mrad]     .0275196957  y [mm]  -5.01432865E-6  z [mm]  5.496368664E-4  CSinv/EMITX    1.0061873705
+amp    1.0000000000 sigma  turn   36.0000000000  x [mm]    -.6421396648  px [mrad]     .0046255688  y [mm]  2.178621280E-6  z [mm]  5.354644738E-4  CSinv/EMITX    1.0037641587
+amp    1.0000000000 sigma  turn   37.0000000000  x [mm]     .4930224083  px [mrad]    -.0341924482  y [mm]  4.110941873E-6  z [mm]  3.649085539E-4  CSinv/EMITX     .9934308678
+amp    1.0000000000 sigma  turn   38.0000000000  x [mm]    -.1702271231  px [mrad]     .0517759774  y [mm]  -3.69045069E-6  z [mm]  4.386838919E-4  CSinv/EMITX    1.0004201538
+amp    1.0000000000 sigma  turn   39.0000000000  x [mm]    -.2209121481  px [mrad]    -.0505047433  y [mm]  -2.70894550E-6  z [mm]  2.147089255E-4  CSinv/EMITX    1.0026134342
+amp    1.0000000000 sigma  turn   40.0000000000  x [mm]     .5280806025  px [mrad]     .0309693468  y [mm]  4.806799536E-6  z [mm]  5.110202703E-4  CSinv/EMITX    1.0060667451
+amp    1.0000000000 sigma  turn   41.0000000000  x [mm]    -.6440760250  px [mrad]  5.042413894E-4  y [mm]  1.099012329E-6  z [mm]  4.857095761E-4  CSinv/EMITX    1.0023677446
+amp    1.0000000000 sigma  turn   42.0000000000  x [mm]     .5233451861  px [mrad]    -.0308826792  y [mm]  -5.17634756E-6  z [mm]  3.351841985E-4  CSinv/EMITX     .9931392509
+amp    1.0000000000 sigma  turn   43.0000000000  x [mm]    -.2175587409  px [mrad]     .0505564744  y [mm]  7.030016951E-7  z [mm]  3.809051608E-4  CSinv/EMITX    1.0015303461
+amp    1.0000000000 sigma  turn   44.0000000000  x [mm]    -.1739401034  px [mrad]    -.0517869272  y [mm]  4.796056382E-6  z [mm]  1.295965440E-4  CSinv/EMITX    1.0033738580
+amp    1.0000000000 sigma  turn   45.0000000000  x [mm]     .4981366646  px [mrad]     .0342347540  y [mm]  -2.56686131E-6  z [mm]  4.215457777E-4  CSinv/EMITX    1.0056792682
+amp    1.0000000000 sigma  turn   46.0000000000  x [mm]    -.6422171291  px [mrad]    -.0036229315  y [mm]  -3.91318402E-6  z [mm]  3.866498308E-4  CSinv/EMITX    1.0009782801
+amp    1.0000000000 sigma  turn   47.0000000000  x [mm]     .5505768921  px [mrad]    -.0273901300  y [mm]  4.057493802E-6  z [mm]  2.613369725E-4  CSinv/EMITX     .9931485629
+amp    1.0000000000 sigma  turn   48.0000000000  x [mm]    -.2635884670  px [mrad]     .0490414271  y [mm]  2.574835735E-6  z [mm]  2.841257878E-4  CSinv/EMITX    1.0027397171
+amp    1.0000000000 sigma  turn   49.0000000000  x [mm]    -.1259436700  px [mrad]    -.0527589638  y [mm]  -4.87132596E-6  z [mm]  1.072186379E-5  CSinv/EMITX    1.0039285780
+amp    1.0000000000 sigma  turn   50.0000000000  x [mm]     .4652174763  px [mrad]     .0372971206  y [mm]  -7.57183457E-7  z [mm]  2.985235184E-4  CSinv/EMITX    1.0050566413
+amp    1.0000000000 sigma  turn   51.0000000000  x [mm]    -.6365765026  px [mrad]    -.0077315923  y [mm]  5.084852481E-6  z [mm]  2.570391577E-4  CSinv/EMITX     .9996608215
+amp    1.0000000000 sigma  turn   52.0000000000  x [mm]     .5745534662  px [mrad]    -.0237360262  y [mm]  -1.22309157E-6  z [mm]  1.632019019E-4  CSinv/EMITX     .9934622174
+amp    1.0000000000 sigma  turn   53.0000000000  x [mm]    -.3080435501  px [mrad]     .0472394937  y [mm]  -4.76275390E-6  z [mm]  1.697282041E-4  CSinv/EMITX    1.0039880190
+amp    1.0000000000 sigma  turn   54.0000000000  x [mm]    -.0772035539  px [mrad]    -.0534147663  y [mm]  2.899405305E-6  z [mm]  -1.18924351E-4  CSinv/EMITX    1.0042399566
+amp    1.0000000000 sigma  turn   55.0000000000  x [mm]     .4295197330  px [mrad]     .0401388744  y [mm]  3.759034050E-6  z [mm]  1.660638526E-4  CSinv/EMITX    1.0042430185
+amp    1.0000000000 sigma  turn   56.0000000000  x [mm]    -.6271897870  px [mrad]    -.0117974051  y [mm]  -4.12419811E-6  z [mm]  1.215654638E-4  CSinv/EMITX     .9984766389
+amp    1.0000000000 sigma  turn   57.0000000000  x [mm]     .5951298627  px [mrad]    -.0199425199  y [mm]  -2.13203296E-6  z [mm]  6.555176183E-5  CSinv/EMITX     .9940680406
+amp    1.0000000000 sigma  turn   58.0000000000  x [mm]    -.3506610083  px [mrad]     .0451609717  y [mm]  4.942597412E-6  z [mm]  6.297025380E-5  CSinv/EMITX    1.0052124760
+amp    1.0000000000 sigma  turn   59.0000000000  x [mm]    -.0280049717  px [mrad]    -.0537501979  y [mm]  2.948176712E-7  z [mm]  -2.33534617E-4  CSinv/EMITX    1.0042840160
+amp    1.0000000000 sigma  turn   60.0000000000  x [mm]     .3912570497  px [mrad]     .0427437575  y [mm]  -5.16979510E-6  z [mm]  5.010328101E-5  CSinv/EMITX    1.0032924618
+amp   10.0000000000 sigma  turn    1.0000000000  x [mm]   -5.1851627141  px [mrad]     .3542749329  y [mm]  5.522965416E-6  z [mm]    -.0066607979  CSinv/EMITX  108.5615447386
+amp   10.0000000000 sigma  turn    2.0000000000  x [mm]    1.4483326509  px [mrad]    -.5297518405  y [mm]  -3.39577237E-6  z [mm]    -.0166448000  CSinv/EMITX  102.4642486305
+amp   10.0000000000 sigma  turn    3.0000000000  x [mm]    2.1868910051  px [mrad]     .5017312252  y [mm]  -5.36980699E-6  z [mm]    -.0156747736  CSinv/EMITX   98.8673443425
+amp   10.0000000000 sigma  turn    4.0000000000  x [mm]   -5.4133539657  px [mrad]    -.2695911478  y [mm]  3.704250556E-6  z [mm]     .0014245909  CSinv/EMITX   95.9762343673
+amp   10.0000000000 sigma  turn    5.0000000000  x [mm]    6.4470097043  px [mrad]     .0096379667  y [mm]  2.998845828E-6  z [mm]     .0035645377  CSinv/EMITX  100.4519781762
+amp   10.0000000000 sigma  turn    6.0000000000  x [mm]   -5.2569954956  px [mrad]     .3476973191  y [mm]  -4.62216787E-6  z [mm]    -.0017336188  CSinv/EMITX  108.7714680039
+amp   10.0000000000 sigma  turn    7.0000000000  x [mm]    1.5566998989  px [mrad]    -.5272573305  y [mm]  -1.05149507E-7  z [mm]    -.0110114916  CSinv/EMITX  102.3377496584
+amp   10.0000000000 sigma  turn    8.0000000000  x [mm]    2.0766712056  px [mrad]     .5049441241  y [mm]  6.130015751E-6  z [mm]    -.0095696788  CSinv/EMITX   98.8556295922
+amp   10.0000000000 sigma  turn    9.0000000000  x [mm]   -5.3537552683  px [mrad]    -.2782443274  y [mm]  -8.81305918E-7  z [mm]     .0082689471  CSinv/EMITX   96.0697614211
+amp   10.0000000000 sigma  turn   10.0000000000  x [mm]    6.4602828309  px [mrad]     .0192075638  y [mm]  -5.76380746E-6  z [mm]     .0115363867  CSinv/EMITX  100.9598461696
+amp   10.0000000000 sigma  turn   11.0000000000  x [mm]   -5.3283640955  px [mrad]     .3411699770  y [mm]  1.838551130E-6  z [mm]     .0073445333  CSinv/EMITX  109.0362728911
+amp   10.0000000000 sigma  turn   12.0000000000  x [mm]    1.6642868786  px [mrad]    -.5247516614  y [mm]  3.577847597E-6  z [mm]    -.0015258463  CSinv/EMITX  102.2619462971
+amp   10.0000000000 sigma  turn   13.0000000000  x [mm]    1.9672422618  px [mrad]     .5081423367  y [mm]  -4.36335250E-6  z [mm]  5.804197907E-5  CSinv/EMITX   98.9121286842
+amp   10.0000000000 sigma  turn   14.0000000000  x [mm]   -5.2947418971  px [mrad]    -.2868236632  y [mm]  -2.30040322E-6  z [mm]     .0182656571  CSinv/EMITX   96.2327253079
+amp   10.0000000000 sigma  turn   15.0000000000  x [mm]    6.4732707977  px [mrad]     .0286819117  y [mm]  6.152731376E-6  z [mm]     .0222621267  CSinv/EMITX  101.5213071401
+amp   10.0000000000 sigma  turn   16.0000000000  x [mm]   -5.3990860232  px [mrad]     .3347136862  y [mm]  1.684283946E-6  z [mm]     .0187719641  CSinv/EMITX  109.3548633543
+amp   10.0000000000 sigma  turn   17.0000000000  x [mm]    1.7707919276  px [mrad]    -.5222454441  y [mm]  -5.59778730E-6  z [mm]     .0098758076  CSinv/EMITX  102.2369397047
+amp   10.0000000000 sigma  turn   18.0000000000  x [mm]    1.8589257788  px [mrad]     .5113186149  y [mm]  8.022819391E-7  z [mm]     .0111602790  CSinv/EMITX   99.0358011483
+amp   10.0000000000 sigma  turn   19.0000000000  x [mm]   -5.2365065197  px [mrad]    -.2953055723  y [mm]  4.553986443E-6  z [mm]     .0292674062  CSinv/EMITX   96.4633496837
+amp   10.0000000000 sigma  turn   20.0000000000  x [mm]    6.4859741880  px [mrad]     .0380344688  y [mm]  -4.00317177E-6  z [mm]     .0335137343  CSinv/EMITX  102.1337516346
+amp   10.0000000000 sigma  turn   21.0000000000  x [mm]   -5.4689917975  px [mrad]     .3283487387  y [mm]  -4.50581589E-6  z [mm]     .0302584429  CSinv/EMITX  109.7257684898
+amp   10.0000000000 sigma  turn   22.0000000000  x [mm]    1.8759258500  px [mrad]    -.5197499689  y [mm]  5.330418938E-6  z [mm]     .0208606951  CSinv/EMITX  102.2625092009
+amp   10.0000000000 sigma  turn   23.0000000000  x [mm]    1.7520359941  px [mrad]     .5144667422  y [mm]  3.083123622E-6  z [mm]     .0213842530  CSinv/EMITX   99.2251909498
+amp   10.0000000000 sigma  turn   24.0000000000  x [mm]   -5.1792410118  px [mrad]    -.3036682811  y [mm]  -4.96666265E-6  z [mm]     .0389196324  CSinv/EMITX   96.7594713653
+amp   10.0000000000 sigma  turn   25.0000000000  x [mm]    6.4984061063  px [mrad]     .0472403601  y [mm]  1.999287279E-7  z [mm]     .0429541549  CSinv/EMITX  102.7943568860
+amp   10.0000000000 sigma  turn   26.0000000000  x [mm]   -5.5379264024  px [mrad]     .3220946497  y [mm]  5.477508276E-6  z [mm]     .0395025375  CSinv/EMITX  110.1471670985
+amp   10.0000000000 sigma  turn   27.0000000000  x [mm]    1.9794147444  px [mrad]    -.5172769967  y [mm]  -2.87603039E-6  z [mm]     .0291858054  CSinv/EMITX  102.3381078213
+amp   10.0000000000 sigma  turn   28.0000000000  x [mm]    1.6468767013  px [mrad]     .5175815509  y [mm]  -5.69216963E-6  z [mm]     .0285631260  CSinv/EMITX   99.4784590343
+amp   10.0000000000 sigma  turn   29.0000000000  x [mm]   -5.1231345043  px [mrad]    -.3118919839  y [mm]  3.369476482E-6  z [mm]     .0451516955  CSinv/EMITX   97.1186050767
+amp   10.0000000000 sigma  turn   30.0000000000  x [mm]    6.5105916485  px [mrad]     .0562765563  y [mm]  3.689495891E-6  z [mm]     .0486245597  CSinv/EMITX  103.5001578488
+amp   10.0000000000 sigma  turn   31.0000000000  x [mm]   -5.6057503852  px [mrad]     .3159699877  y [mm]  -4.21010589E-6  z [mm]     .0446712236  CSinv/EMITX  110.6169421166
+amp   10.0000000000 sigma  turn   32.0000000000  x [mm]    2.0810020194  px [mrad]    -.5148385912  y [mm]  -7.67575044E-7  z [mm]     .0331653062  CSinv/EMITX  102.4628787997
+amp   10.0000000000 sigma  turn   33.0000000000  x [mm]    1.5437387125  px [mrad]     .5206588881  y [mm]  5.952887319E-6  z [mm]     .0311677661  CSinv/EMITX   99.7934149005
+amp   10.0000000000 sigma  turn   34.0000000000  x [mm]   -5.0683719174  px [mrad]    -.3199588338  y [mm]  -4.06695483E-7  z [mm]     .0466087788  CSinv/EMITX   97.5379938375
+amp   10.0000000000 sigma  turn   35.0000000000  x [mm]    6.5225670668  px [mrad]     .0651218992  y [mm]  -6.06115865E-6  z [mm]     .0493527126  CSinv/EMITX  104.2481093834
+amp   10.0000000000 sigma  turn   36.0000000000  x [mm]   -5.6723405630  px [mrad]     .3099923363  y [mm]  1.229331879E-6  z [mm]     .0447817850  CSinv/EMITX  111.1327605107
+amp   10.0000000000 sigma  turn   37.0000000000  x [mm]    2.1804495487  px [mrad]    -.5124470106  y [mm]  4.110838893E-6  z [mm]     .0320217310  CSinv/EMITX  102.6356941379
+amp   10.0000000000 sigma  turn   38.0000000000  x [mm]    1.4428979582  px [mrad]     .5236955471  y [mm]  -3.76217852E-6  z [mm]     .0286255049  CSinv/EMITX  100.1675496739
+amp   10.0000000000 sigma  turn   39.0000000000  x [mm]   -5.0151330116  px [mrad]    -.3278527964  y [mm]  -2.72371914E-6  z [mm]     .0429344978  CSinv/EMITX   98.0146435503
+amp   10.0000000000 sigma  turn   40.0000000000  x [mm]    6.5343787317  px [mrad]     .0737569993  y [mm]  5.936107400E-6  z [mm]     .0449973452  CSinv/EMITX  105.0351361482
+amp   10.0000000000 sigma  turn   41.0000000000  x [mm]   -5.7375903309  px [mrad]     .3041783720  y [mm]  2.242171974E-6  z [mm]     .0399064158  CSinv/EMITX  111.6921695885
+amp   10.0000000000 sigma  turn   42.0000000000  x [mm]    2.2775380331  px [mrad]    -.5101146608  y [mm]  -5.78164241E-6  z [mm]     .0260477582  CSinv/EMITX  102.8552122876
+amp   10.0000000000 sigma  turn   43.0000000000  x [mm]    1.3446142522  px [mrad]     .5266891831  y [mm]  2.613375307E-8  z [mm]     .0214394674  CSinv/EMITX  100.5980739851
+amp   10.0000000000 sigma  turn   44.0000000000  x [mm]   -4.9635919050  px [mrad]    -.3355594156  y [mm]  4.754232422E-6  z [mm]     .0348453228  CSinv/EMITX   98.5453454133
+amp   10.0000000000 sigma  turn   45.0000000000  x [mm]    6.5460820089  px [mrad]     .0821640509  y [mm]  -3.36419107E-6  z [mm]     .0364776213  CSinv/EMITX  105.8581702114
+amp   10.0000000000 sigma  turn   46.0000000000  x [mm]   -5.8014095986  px [mrad]     .2985440217  y [mm]  -4.78622284E-6  z [mm]     .0311568960  CSinv/EMITX  112.2926978170
+amp   10.0000000000 sigma  turn   47.0000000000  x [mm]    2.3720667294  px [mrad]    -.5078540979  y [mm]  5.088705593E-6  z [mm]     .0165448793  CSinv/EMITX  103.1199482704
+amp   10.0000000000 sigma  turn   48.0000000000  x [mm]    1.2491306769  px [mrad]     .5296382310  y [mm]  3.715073296E-6  z [mm]     .0110836128  CSinv/EMITX  101.0819635536
+amp   10.0000000000 sigma  turn   49.0000000000  x [mm]   -4.9139169451  px [mrad]    -.3430655577  y [mm]  -4.86097734E-6  z [mm]     .0239813085  CSinv/EMITX   99.1266938413
+amp   10.0000000000 sigma  turn   50.0000000000  x [mm]    6.5577401555  px [mrad]     .0903266191  y [mm]  -5.96295749E-7  z [mm]     .0255815504  CSinv/EMITX  106.7141794055
+amp   10.0000000000 sigma  turn   51.0000000000  x [mm]   -5.8637244042  px [mrad]     .2931046484  y [mm]  5.368234214E-6  z [mm]     .0204525357  CSinv/EMITX  112.9319477274
+amp   10.0000000000 sigma  turn   52.0000000000  x [mm]    2.4638527600  px [mrad]    -.5056780566  y [mm]  -2.30768066E-6  z [mm]     .0055517376  CSinv/EMITX  103.4283471408
+amp   10.0000000000 sigma  turn   53.0000000000  x [mm]    1.1566734818  px [mrad]     .5325418394  y [mm]  -5.92227939E-6  z [mm]  -3.04643796E-4  CSinv/EMITX  101.6160139419
+amp   10.0000000000 sigma  turn   54.0000000000  x [mm]   -4.8662707852  px [mrad]    -.3503591911  y [mm]  2.998314431E-6  z [mm]     .0125642386  CSinv/EMITX   99.7551095472
+amp   10.0000000000 sigma  turn   55.0000000000  x [mm]    6.5694233070  px [mrad]     .0982294535  y [mm]  4.314684413E-6  z [mm]     .0145932662  CSinv/EMITX  107.6001913754
+amp   10.0000000000 sigma  turn   56.0000000000  x [mm]   -5.9244762762  px [mrad]     .2878752094  y [mm]  -3.75767797E-6  z [mm]     .0101197516  CSinv/EMITX  113.6076703167
+amp   10.0000000000 sigma  turn   57.0000000000  x [mm]    2.5527302396  px [mrad]    -.5035994737  y [mm]  -1.42861516E-6  z [mm]    -.0045812429  CSinv/EMITX  103.7788511386
+amp   10.0000000000 sigma  turn   58.0000000000  x [mm]    1.0674523341  px [mrad]     .5353998275  y [mm]  5.690383789E-6  z [mm]    -.0103701693  CSinv/EMITX  102.1969039561
+amp   10.0000000000 sigma  turn   59.0000000000  x [mm]   -4.8208104974  px [mrad]    -.3574292517  y [mm]  8.130971180E-8  z [mm]     .0029344425  CSinv/EMITX  100.4268767091
+amp   10.0000000000 sigma  turn   60.0000000000  x [mm]    6.5812075863  px [mrad]     .1058583722  y [mm]  -6.25976019E-6  z [mm]     .0058168497  CSinv/EMITX  108.5133188157
+amp   20.0000000000 sigma  turn    1.0000000000  x [mm]   -9.9795186112  px [mrad]     .7997381221  y [mm]  6.500694785E-6  z [mm]    -.0330904829  CSinv/EMITX  462.7722135797
+amp   20.0000000000 sigma  turn    2.0000000000  x [mm]     .8987970509  px [mrad]   -1.1126147970  y [mm]  -4.45470186E-6  z [mm]    -.0478656588  CSinv/EMITX  431.5031407981
+amp   20.0000000000 sigma  turn    3.0000000000  x [mm]    6.1082178222  px [mrad]     .9329875479  y [mm]  -7.08106539E-6  z [mm]    -.0503398897  CSinv/EMITX  392.0039514683
+amp   20.0000000000 sigma  turn    4.0000000000  x [mm]  -12.1626466807  px [mrad]    -.2598820219  y [mm]  2.941582605E-6  z [mm]     .0507044169  CSinv/EMITX  380.7505001520
+amp   20.0000000000 sigma  turn    5.0000000000  x [mm]   12.0615912638  px [mrad]    -.1763925668  y [mm]  3.447911364E-6  z [mm]     .0240893572  CSinv/EMITX  362.3541700381
+amp   20.0000000000 sigma  turn    6.0000000000  x [mm]   -8.3392684298  px [mrad]     .8754189982  y [mm]  -4.74298616E-6  z [mm]    -.0196327265  CSinv/EMITX  434.1436210163
+amp   20.0000000000 sigma  turn    7.0000000000  x [mm]    -.9915099365  px [mrad]   -1.0914074211  y [mm]  6.225986354E-7  z [mm]    -.0147971283  CSinv/EMITX  415.6469321157
+amp   20.0000000000 sigma  turn    8.0000000000  x [mm]    7.8536683138  px [mrad]     .8348500499  y [mm]  7.622799441E-6  z [mm]    -.0042691319  CSinv/EMITX  390.6610727075
+amp   20.0000000000 sigma  turn    9.0000000000  x [mm]  -12.5355670519  px [mrad]    -.0915972800  y [mm]  4.028445127E-7  z [mm]     .0875165995  CSinv/EMITX  382.5402610049
+amp   20.0000000000 sigma  turn   10.0000000000  x [mm]   10.8381748228  px [mrad]    -.3537125199  y [mm]  -6.65826863E-6  z [mm]     .0572357456  CSinv/EMITX  327.3308288603
+amp   20.0000000000 sigma  turn   11.0000000000  x [mm]   -6.4290627420  px [mrad]     .9276405584  y [mm]  1.286421781E-6  z [mm]     .0088952449  CSinv/EMITX  398.6157480546
+amp   20.0000000000 sigma  turn   12.0000000000  x [mm]   -2.8646056075  px [mrad]   -1.0292391765  y [mm]  3.172656780E-6  z [mm]     .0326758713  CSinv/EMITX  387.2989077704
+amp   20.0000000000 sigma  turn   13.0000000000  x [mm]    9.3635145560  px [mrad]     .7181952348  y [mm]  -5.74749232E-6  z [mm]     .0500052924  CSinv/EMITX  390.6015439835
+amp   20.0000000000 sigma  turn   14.0000000000  x [mm]  -12.6229580126  px [mrad]     .0751548193  y [mm]  -3.74536414E-6  z [mm]     .1257299103  CSinv/EMITX  386.9630095578
+amp   20.0000000000 sigma  turn   15.0000000000  x [mm]    9.4055220898  px [mrad]    -.5264729776  y [mm]  7.605153200E-6  z [mm]     .0916891864  CSinv/EMITX  310.0535721083
+amp   20.0000000000 sigma  turn   16.0000000000  x [mm]   -4.3965936110  px [mrad]     .9669352810  y [mm]  2.774073046E-6  z [mm]     .0432467292  CSinv/EMITX  371.2356652877
+amp   20.0000000000 sigma  turn   17.0000000000  x [mm]   -4.7225769884  px [mrad]    -.9425441242  y [mm]  -5.41615606E-6  z [mm]     .0847653878  CSinv/EMITX  362.0004179289
+amp   20.0000000000 sigma  turn   18.0000000000  x [mm]   10.6759737793  px [mrad]     .5931172012  y [mm]  2.029281371E-6  z [mm]     .1020029831  CSinv/EMITX  397.2491471479
+amp   20.0000000000 sigma  turn   19.0000000000  x [mm]  -12.5547555156  px [mrad]     .2394104740  y [mm]  5.657043434E-6  z [mm]     .1577545379  CSinv/EMITX  400.8028078981
+amp   20.0000000000 sigma  turn   20.0000000000  x [mm]    7.8840527464  px [mrad]    -.6925811911  y [mm]  -6.04347759E-6  z [mm]     .1196155729  CSinv/EMITX  316.7726536357
+amp   20.0000000000 sigma  turn   21.0000000000  x [mm]   -2.3129332187  px [mrad]     .9993658143  y [mm]  -6.09004312E-6  z [mm]     .0738656864  CSinv/EMITX  359.5264760202
+amp   20.0000000000 sigma  turn   22.0000000000  x [mm]   -6.5737081510  px [mrad]    -.8397066124  y [mm]  5.244863854E-6  z [mm]     .1324113434  CSinv/EMITX  348.8971572230
+amp   20.0000000000 sigma  turn   23.0000000000  x [mm]   11.8002368008  px [mrad]     .4626020556  y [mm]  2.407648547E-6  z [mm]     .1431464308  CSinv/EMITX  410.5187281020
+amp   20.0000000000 sigma  turn   24.0000000000  x [mm]  -12.3628164175  px [mrad]     .4004202836  y [mm]  -5.23626322E-6  z [mm]     .1760850873  CSinv/EMITX  425.0498867644
+amp   20.0000000000 sigma  turn   25.0000000000  x [mm]    6.2966648346  px [mrad]    -.8482079682  y [mm]  2.544092999E-6  z [mm]     .1347050831  CSinv/EMITX  345.5824919686
+amp   20.0000000000 sigma  turn   26.0000000000  x [mm]    -.1910100735  px [mrad]    1.0229723895  y [mm]  7.441249089E-6  z [mm]     .0937864426  CSinv/EMITX  363.1914950179
+amp   20.0000000000 sigma  turn   27.0000000000  x [mm]   -8.3817003458  px [mrad]    -.7210960464  y [mm]  -2.81883040E-6  z [mm]     .1685176849  CSinv/EMITX  349.9762578223
+amp   20.0000000000 sigma  turn   28.0000000000  x [mm]   12.6553743999  px [mrad]     .3238095492  y [mm]  -6.15307870E-6  z [mm]     .1676221035  CSinv/EMITX  423.2147482908
+amp   20.0000000000 sigma  turn   29.0000000000  x [mm]  -11.9686385053  px [mrad]     .5536931266  y [mm]  2.555304484E-6  z [mm]     .1753640224  CSinv/EMITX  452.6682988219
+amp   20.0000000000 sigma  turn   30.0000000000  x [mm]    4.6164129103  px [mrad]    -.9821315795  y [mm]  1.693079370E-6  z [mm]     .1338533018  CSinv/EMITX  386.3076870421
+amp   20.0000000000 sigma  turn   31.0000000000  x [mm]    1.9575977223  px [mrad]    1.0278105344  y [mm]  -6.23493393E-6  z [mm]     .1001351677  CSinv/EMITX  375.7395558992
+amp   20.0000000000 sigma  turn   32.0000000000  x [mm]  -10.0256062785  px [mrad]    -.5842390878  y [mm]  -7.33542590E-7  z [mm]     .1878689187  CSinv/EMITX  361.1072350912
+amp   20.0000000000 sigma  turn   33.0000000000  x [mm]   13.0696455456  px [mrad]     .1718579865  y [mm]  7.926255058E-6  z [mm]     .1725610630  CSinv/EMITX  422.8848529582
+amp   20.0000000000 sigma  turn   34.0000000000  x [mm]  -11.2254328739  px [mrad]     .6894399623  y [mm]  1.310561929E-6  z [mm]     .1543167696  CSinv/EMITX  469.6051394370
+amp   20.0000000000 sigma  turn   35.0000000000  x [mm]    2.8258727248  px [mrad]   -1.0755580586  y [mm]  -5.19329629E-6  z [mm]     .1178708571  CSinv/EMITX  420.7705529238
+amp   20.0000000000 sigma  turn   36.0000000000  x [mm]    4.0736682251  px [mrad]    1.0007847290  y [mm]  2.845628649E-6  z [mm]     .0936793583  CSinv/EMITX  387.4912453386
+amp   20.0000000000 sigma  turn   37.0000000000  x [mm]  -11.3224578303  px [mrad]    -.4299820567  y [mm]  3.821637993E-6  z [mm]     .1869276844  CSinv/EMITX  373.7420195864
+amp   20.0000000000 sigma  turn   38.0000000000  x [mm]   12.8819693313  px [mrad]     .0051473869  y [mm]  -7.06682437E-6  z [mm]     .1576970136  CSinv/EMITX  400.9431360552
+amp   20.0000000000 sigma  turn   39.0000000000  x [mm]  -10.0230432978  px [mrad]     .7970478612  y [mm]  -4.82053287E-6  z [mm]     .1163649807  CSinv/EMITX  463.3853773658
+amp   20.0000000000 sigma  turn   40.0000000000  x [mm]     .9552328352  px [mrad]   -1.1124147016  y [mm]  6.685208235E-6  z [mm]     .0904885376  CSinv/EMITX  431.6033168417
+amp   20.0000000000 sigma  turn   41.0000000000  x [mm]    6.0517053099  px [mrad]     .9354402181  y [mm]  1.517080312E-6  z [mm]     .0767210200  CSinv/EMITX  391.9348255725
+amp   20.0000000000 sigma  turn   42.0000000000  x [mm]  -12.1456028988  px [mrad]    -.2647067807  y [mm]  -5.12287321E-6  z [mm]     .1653482395  CSinv/EMITX  380.6261001221
+amp   20.0000000000 sigma  turn   43.0000000000  x [mm]   12.0921179675  px [mrad]    -.1711967359  y [mm]  3.872664776E-6  z [mm]     .1253455556  CSinv/EMITX  363.5072845370
+amp   20.0000000000 sigma  turn   44.0000000000  x [mm]   -8.3931795646  px [mrad]     .8736193519  y [mm]  6.709888342E-6  z [mm]     .0680338716  CSinv/EMITX  435.2318785059
+amp   20.0000000000 sigma  turn   45.0000000000  x [mm]    -.9360752782  px [mrad]   -1.0926658801  y [mm]  -5.62870436E-6  z [mm]     .0567458926  CSinv/EMITX  416.3441954040
+amp   20.0000000000 sigma  turn   46.0000000000  x [mm]    7.8050281373  px [mrad]     .8380046831  y [mm]  -5.38179533E-6  z [mm]     .0519549667  CSinv/EMITX  390.6524220693
+amp   20.0000000000 sigma  turn   47.0000000000  x [mm]  -12.5297867951  px [mrad]    -.0963191892  y [mm]  4.109630648E-6  z [mm]     .1279161399  CSinv/EMITX  382.4963528191
+amp   20.0000000000 sigma  turn   48.0000000000  x [mm]   10.8773623521  px [mrad]    -.3486859564  y [mm]  5.164258202E-7  z [mm]     .0810149020  CSinv/EMITX  328.1606088123
+amp   20.0000000000 sigma  turn   49.0000000000  x [mm]   -6.4879008983  px [mrad]     .9263859035  y [mm]  -6.35536792E-6  z [mm]     .0166540947  CSinv/EMITX  399.6462483670
+amp   20.0000000000 sigma  turn   50.0000000000  x [mm]   -2.8105895980  px [mrad]   -1.0313821629  y [mm]  2.502773176E-6  z [mm]     .0225887100  CSinv/EMITX  388.0919149227
+amp   20.0000000000 sigma  turn   51.0000000000  x [mm]    9.3219973622  px [mrad]     .7216675343  y [mm]  7.545505278E-6  z [mm]     .0236830001  CSinv/EMITX  390.4618875113
+amp   20.0000000000 sigma  turn   52.0000000000  x [mm]  -12.6234601950  px [mrad]     .0705504820  y [mm]  -1.18252123E-6  z [mm]     .0834507540  CSinv/EMITX  386.7591470338
+amp   20.0000000000 sigma  turn   53.0000000000  x [mm]    9.4482015757  px [mrad]    -.5216723239  y [mm]  -4.60425622E-6  z [mm]     .0330507976  CSinv/EMITX  310.2511394449
+amp   20.0000000000 sigma  turn   54.0000000000  x [mm]   -4.4569010359  px [mrad]     .9659322204  y [mm]  3.810599029E-6  z [mm]    -.0304430073  CSinv/EMITX  371.8545714979
+amp   20.0000000000 sigma  turn   55.0000000000  x [mm]   -4.6693795953  px [mrad]    -.9451916337  y [mm]  1.371450174E-6  z [mm]    -.0048954533  CSinv/EMITX  362.5284981356
+amp   20.0000000000 sigma  turn   56.0000000000  x [mm]   10.6403020490  px [mrad]     .5967306865  y [mm]  -7.33674192E-6  z [mm]    -.0014624383  CSinv/EMITX  396.9032891408
+amp   20.0000000000 sigma  turn   57.0000000000  x [mm]  -12.5587502464  px [mrad]     .2348679834  y [mm]  -2.48052124E-6  z [mm]     .0415610804  CSinv/EMITX  400.2960130084
+amp   20.0000000000 sigma  turn   58.0000000000  x [mm]    7.9284025725  px [mrad]    -.6880073990  y [mm]  7.056871173E-6  z [mm]    -.0092313479  CSinv/EMITX  316.2758649469
+amp   20.0000000000 sigma  turn   59.0000000000  x [mm]   -2.3738001270  px [mrad]     .9985366148  y [mm]  1.834457753E-7  z [mm]    -.0659308406  CSinv/EMITX  359.6426277378
+amp   20.0000000000 sigma  turn   60.0000000000  x [mm]   -6.5211054798  px [mrad]    -.8427860290  y [mm]  -4.37534694E-6  z [mm]    -.0183014459  CSinv/EMITX  349.0313234446
+amp   30.0000000000 sigma  turn    1.0000000000  x [mm]  -13.9928929847  px [mrad]    1.3288413670  y [mm]  7.740367232E-6  z [mm]    -.0975845154  CSinv/EMITX  1086.311549205
+amp   30.0000000000 sigma  turn    2.0000000000  x [mm]   -2.6118547974  px [mrad]   -1.6564645818  y [mm]  -5.87405664E-6  z [mm]    -.0375861115  CSinv/EMITX  968.4040906144
+amp   30.0000000000 sigma  turn    3.0000000000  x [mm]   12.9836139092  px [mrad]    1.1769832276  y [mm]  -8.16163332E-6  z [mm]    -.0470411390  CSinv/EMITX  887.4937853946
+amp   30.0000000000 sigma  turn    4.0000000000  x [mm]  -19.6091343109  px [mrad]     .2221338972  y [mm]  1.935339700E-6  z [mm]     .1862968520  CSinv/EMITX  946.2744280176
+amp   30.0000000000 sigma  turn    5.0000000000  x [mm]   12.8184468313  px [mrad]    -.8617109993  y [mm]  2.178800604E-6  z [mm]     .0876650739  CSinv/EMITX  654.9615660373
+amp   30.0000000000 sigma  turn    6.0000000000  x [mm]   -4.9450186166  px [mrad]    1.5017679513  y [mm]  -6.79282108E-6  z [mm]    -.0503767562  CSinv/EMITX  841.8308098922
+amp   30.0000000000 sigma  turn    7.0000000000  x [mm]  -10.9282144275  px [mrad]   -1.1598867148  y [mm]  9.279812398E-7  z [mm]     .1596036380  CSinv/EMITX  754.9623804102
+amp   30.0000000000 sigma  turn    8.0000000000  x [mm]   19.1702351248  px [mrad]     .6482959465  y [mm]  9.563035201E-6  z [mm]     .1339720694  CSinv/EMITX  1033.363294850
+amp   30.0000000000 sigma  turn    9.0000000000  x [mm]  -18.6525274160  px [mrad]     .9146466022  y [mm]  2.237773055E-6  z [mm]     .2023011118  CSinv/EMITX  1131.367783964
+amp   30.0000000000 sigma  turn   10.0000000000  x [mm]    5.1599991635  px [mrad]   -1.5909178519  y [mm]  -5.17470349E-6  z [mm]     .1468172360  CSinv/EMITX  942.7674103104
+amp   30.0000000000 sigma  turn   11.0000000000  x [mm]    4.6546275455  px [mrad]    1.5302768528  y [mm]  4.101845180E-6  z [mm]     .0648167168  CSinv/EMITX  864.6576420174
+amp   30.0000000000 sigma  turn   12.0000000000  x [mm]  -18.1174393402  px [mrad]    -.4575974970  y [mm]  3.888389963E-6  z [mm]     .3979465608  CSinv/EMITX  865.4656548408
+amp   30.0000000000 sigma  turn   13.0000000000  x [mm]   19.0150991395  px [mrad]    -.0529743879  y [mm]  -9.67541521E-6  z [mm]     .3021213368  CSinv/EMITX  874.5934289488
+amp   30.0000000000 sigma  turn   14.0000000000  x [mm]  -13.4842008516  px [mrad]    1.3443259269  y [mm]  -5.30786783E-6  z [mm]     .2006064409  CSinv/EMITX  1066.889510174
+amp   30.0000000000 sigma  turn   15.0000000000  x [mm]   -3.1325185513  px [mrad]   -1.6355251604  y [mm]  6.737040657E-6  z [mm]     .2708326467  CSinv/EMITX  951.6890651943
+amp   30.0000000000 sigma  turn   16.0000000000  x [mm]   13.4698254726  px [mrad]    1.1446738327  y [mm]  -1.08403111E-6  z [mm]     .2626325191  CSinv/EMITX  892.5383137236
+amp   30.0000000000 sigma  turn   17.0000000000  x [mm]  -19.5931903600  px [mrad]     .2677271127  y [mm]  -6.48523544E-6  z [mm]     .4818791278  CSinv/EMITX  952.5400169731
+amp   30.0000000000 sigma  turn   18.0000000000  x [mm]   12.3477366226  px [mrad]    -.9157942290  y [mm]  7.877397497E-6  z [mm]     .3775565730  CSinv/EMITX  659.7041665948
+amp   30.0000000000 sigma  turn   19.0000000000  x [mm]   -4.3399855277  px [mrad]    1.5103925441  y [mm]  7.620440338E-6  z [mm]     .2325222737  CSinv/EMITX  837.2460571215
+amp   30.0000000000 sigma  turn   20.0000000000  x [mm]  -11.4724854462  px [mrad]   -1.1195616632  y [mm]  -5.46721555E-6  z [mm]     .4415228000  CSinv/EMITX  752.5209483762
+amp   30.0000000000 sigma  turn   21.0000000000  x [mm]   19.4211258613  px [mrad]     .6116515261  y [mm]  -2.05952066E-6  z [mm]     .3980101962  CSinv/EMITX  1040.752742853
+amp   30.0000000000 sigma  turn   22.0000000000  x [mm]  -18.5051379395  px [mrad]     .9544281692  y [mm]  6.293416965E-6  z [mm]     .4393851208  CSinv/EMITX  1143.952650788
+amp   30.0000000000 sigma  turn   23.0000000000  x [mm]    4.6335844259  px [mrad]   -1.6206979681  y [mm]  -5.23374759E-6  z [mm]     .3713689656  CSinv/EMITX  963.4759535726
+amp   30.0000000000 sigma  turn   24.0000000000  x [mm]    5.2701445830  px [mrad]    1.5181197342  y [mm]  -9.19451984E-6  z [mm]     .2770941945  CSinv/EMITX  866.5324351094
+amp   30.0000000000 sigma  turn   25.0000000000  x [mm]  -18.3895893509  px [mrad]    -.4093085885  y [mm]  1.542658020E-6  z [mm]     .5884515241  CSinv/EMITX  874.9679252833
+amp   30.0000000000 sigma  turn   26.0000000000  x [mm]   18.6936182416  px [mrad]    -.1076437385  y [mm]  5.692593284E-6  z [mm]     .4675017222  CSinv/EMITX  848.3806989524
+amp   30.0000000000 sigma  turn   27.0000000000  x [mm]  -12.9537312608  px [mrad]    1.3590517997  y [mm]  -4.10768605E-6  z [mm]     .3355912195  CSinv/EMITX  1046.802615153
+amp   30.0000000000 sigma  turn   28.0000000000  x [mm]   -3.6630873785  px [mrad]   -1.6118080934  y [mm]  9.208915218E-7  z [mm]     .3879272944  CSinv/EMITX  933.6543255061
+amp   30.0000000000 sigma  turn   29.0000000000  x [mm]   13.9513316515  px [mrad]    1.1113576372  y [mm]  8.928251556E-6  z [mm]     .3565056338  CSinv/EMITX  898.3569932200
+amp   30.0000000000 sigma  turn   30.0000000000  x [mm]  -19.5725855906  px [mrad]     .3146191786  y [mm]  2.800648541E-6  z [mm]     .5379175170  CSinv/EMITX  960.0921628500
+amp   30.0000000000 sigma  turn   31.0000000000  x [mm]   11.8653460809  px [mrad]    -.9707919395  y [mm]  -7.60223557E-6  z [mm]     .4056478304  CSinv/EMITX  667.4914367907
+amp   30.0000000000 sigma  turn   32.0000000000  x [mm]   -3.7234077381  px [mrad]    1.5188755663  y [mm]  1.504311912E-6  z [mm]     .2360224373  CSinv/EMITX  834.1237007588
+amp   30.0000000000 sigma  turn   33.0000000000  x [mm]  -12.0282279840  px [mrad]   -1.0771800426  y [mm]  3.193003030E-6  z [mm]     .4269585014  CSinv/EMITX  751.7687147803
+amp   30.0000000000 sigma  turn   34.0000000000  x [mm]   19.6485130723  px [mrad]     .5732741463  y [mm]  -8.21017113E-6  z [mm]     .3510027343  CSinv/EMITX  1046.456830376
+amp   30.0000000000 sigma  turn   35.0000000000  x [mm]  -18.3350267538  px [mrad]     .9939091159  y [mm]  -6.81481363E-6  z [mm]     .3535563391  CSinv/EMITX  1155.517819887
+amp   30.0000000000 sigma  turn   36.0000000000  x [mm]    4.0901655939  px [mrad]   -1.6476193240  y [mm]  8.796341947E-6  z [mm]     .2640881628  CSinv/EMITX  982.5286760395
+amp   30.0000000000 sigma  turn   37.0000000000  x [mm]    5.8969315662  px [mrad]    1.5033423913  y [mm]  2.374780187E-6  z [mm]     .1520301277  CSinv/EMITX  867.9258311816
+amp   30.0000000000 sigma  turn   38.0000000000  x [mm]  -18.6358043981  px [mrad]    -.3600011403  y [mm]  -5.18212701E-6  z [mm]     .4367110986  CSinv/EMITX  883.8559562102
+amp   30.0000000000 sigma  turn   39.0000000000  x [mm]   18.3367622915  px [mrad]    -.1641806284  y [mm]  5.656151495E-6  z [mm]     .2902831901  CSinv/EMITX  821.8152949829
+amp   30.0000000000 sigma  turn   40.0000000000  x [mm]  -12.3952313375  px [mrad]    1.3730242659  y [mm]  8.185354427E-6  z [mm]     .1309037244  CSinv/EMITX  1025.825244423
+amp   30.0000000000 sigma  turn   41.0000000000  x [mm]   -4.2046509433  px [mrad]   -1.5855398826  y [mm]  -7.13539100E-6  z [mm]     .1709685229  CSinv/EMITX  914.7846075837
+amp   30.0000000000 sigma  turn   42.0000000000  x [mm]   14.4314033079  px [mrad]    1.0771417481  y [mm]  -5.10971750E-6  z [mm]     .1232785327  CSinv/EMITX  905.2948122233
+amp   30.0000000000 sigma  turn   43.0000000000  x [mm]  -19.5449219338  px [mrad]     .3620946332  y [mm]  4.593026277E-6  z [mm]     .2774184323  CSinv/EMITX  968.6521408799
+amp   30.0000000000 sigma  turn   44.0000000000  x [mm]   11.3735411961  px [mrad]   -1.0260650130  y [mm]  -2.53086655E-6  z [mm]     .1312121089  CSinv/EMITX  678.1788271954
+amp   30.0000000000 sigma  turn   45.0000000000  x [mm]   -3.0934354370  px [mrad]    1.5270001623  y [mm]  -8.76357136E-6  z [mm]    -.0476203286  CSinv/EMITX  832.3068574461
+amp   30.0000000000 sigma  turn   46.0000000000  x [mm]  -12.5870315117  px [mrad]   -1.0336424547  y [mm]  2.819313734E-6  z [mm]     .1444037945  CSinv/EMITX  753.1136112411
+amp   30.0000000000 sigma  turn   47.0000000000  x [mm]   19.8476363130  px [mrad]     .5334674346  y [mm]  7.905647750E-6  z [mm]     .0558684860  CSinv/EMITX  1050.192146422
+amp   30.0000000000 sigma  turn   48.0000000000  x [mm]  -18.1367089418  px [mrad]    1.0319693204  y [mm]  -1.42922547E-6  z [mm]     .0416585286  CSinv/EMITX  1164.810414594
+amp   30.0000000000 sigma  turn   49.0000000000  x [mm]    3.5390365128  px [mrad]   -1.6707857870  y [mm]  -1.05254679E-6  z [mm]    -.0427078410  CSinv/EMITX  999.0192119874
+amp   30.0000000000 sigma  turn   50.0000000000  x [mm]    6.5283427261  px [mrad]    1.4861804880  y [mm]  7.483968175E-6  z [mm]    -.1480758451  CSinv/EMITX  869.0545208486
+amp   30.0000000000 sigma  turn   51.0000000000  x [mm]  -18.8488949542  px [mrad]    -.3112845057  y [mm]  2.472413690E-6  z [mm]     .1366960625  CSinv/EMITX  891.8326028718
+amp   30.0000000000 sigma  turn   52.0000000000  x [mm]   17.9554996734  px [mrad]    -.2211309339  y [mm]  -9.60443410E-6  z [mm]    -.0055036129  CSinv/EMITX  796.0265844528
+amp   30.0000000000 sigma  turn   53.0000000000  x [mm]  -11.8187103465  px [mrad]    1.3859692027  y [mm]  -1.60449496E-6  z [mm]    -.1628629551  CSinv/EMITX  1004.470451771
+amp   30.0000000000 sigma  turn   54.0000000000  x [mm]   -4.7444842159  px [mrad]   -1.5576973908  y [mm]  4.237661335E-6  z [mm]    -.1028458312  CSinv/EMITX  896.0698277676
+amp   30.0000000000 sigma  turn   55.0000000000  x [mm]   14.9001503860  px [mrad]    1.0429554447  y [mm]  -5.39352092E-6  z [mm]    -.1376785895  CSinv/EMITX  913.3657560928
+amp   30.0000000000 sigma  turn   56.0000000000  x [mm]  -19.5096594354  px [mrad]     .4086679555  y [mm]  -6.32816037E-6  z [mm]     .0206890872  CSinv/EMITX  977.8065928603
+amp   30.0000000000 sigma  turn   57.0000000000  x [mm]   10.8847945482  px [mrad]   -1.0799644073  y [mm]  9.332683178E-6  z [mm]    -.1065097115  CSinv/EMITX  691.2838002257
+amp   30.0000000000 sigma  turn   58.0000000000  x [mm]   -2.4639681647  px [mrad]    1.5344391658  y [mm]  4.738001845E-6  z [mm]    -.2651482019  CSinv/EMITX  831.7290211166
+amp   30.0000000000 sigma  turn   59.0000000000  x [mm]  -13.1317035753  px [mrad]    -.9903154302  y [mm]  -5.23884689E-6  z [mm]    -.0407326721  CSinv/EMITX  756.5320658823
+amp   30.0000000000 sigma  turn   60.0000000000  x [mm]   20.0109569589  px [mrad]     .4931795124  y [mm]  2.660593021E-6  z [mm]    -.1126064203  CSinv/EMITX  1051.590110238
+ Exit;
+ FFS                  end:  CPU time =     0.016 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

@@ -1,0 +1,9 @@
+Head Real
+Read Real 102030
+ReadString next line
+Read Real, Word {3.5,"abc"}
+EOF EndOfFile
+key=a val=1
+key=b val=2
+key=c val=3
+Expression {1,2,1+x} f[3]

@@ -163,8 +163,14 @@ g=BeamPlot["QF.5",{"X","Y"},DisplayFunction->Identity,SizeFunction->"SIG"];
   `UseBG->True` の文字の背景 (描かない)。
 - 未確認: `BeamPlot` の描画 (上記)、`LatticePlot` を単独で呼ぶ使い方 (`OpticsPlot` の 3 枠目として動くことだけ確認)、上記の各オプションを窓に描いたときの見た目 (式は gs と一致するが、描画は未確認)、
   `CanvasCM.n`・`CANVASDRAW.n`、`TabFrame.n` の描画、色・フォント・大きさの見た目、マウス操作。
+- gs の実動作に合わせた細目 (2026-11-17): `ParametricPlot[…,{t,0,2*Pi}]` のように範囲に Pi などの定数式を書いても `x_Real` に照合する (HoldAll の引数の定数式 (Pi・E・Degree と数値関数) は値で照合する)。
+  曲線のリスト `ParametricPlot[{{…},{…}},…]` は List (曲線数+1 要素) を返す (保持引数位置の `Evaluate[…]` を評価)。`ListContourPlot` (MeshRange つきの SADHelp の例を含む) は Graphics を返し、窓への描画で Tcl エラーが出ない
+  (`_?(…)` の検査の中のエラーは不一致として扱う)。`PointSymbol` の名前の文字は、`{"CI","CL"}//""` がリストを `{"CI","CL"}` の形の文字列にする (gs と同じ) ことで一致し、Canvas の項目は gs と同じ 30。
+  `OpticsPlot` に自前のデータ (`{{{line1},{line2},…, 選択肢}}`。x は要素番号) を渡せる (定義の順に合わせた規則の優先順位と `MapThread` の非リスト要素の繰り返しを直した)。
+  `Canvas$Widget = c1` と `calc_traj_03` の窓は gs と同じ 114 項目 (再描画後 115)。
+- `OpticsPlot` の text 項目の数の差 (FODO 24 セルの例で gs 69、pysad 74) は、文字の大きさ (Tk のフォントの違い) による `RemoveOverlap` の結果。直せないので未対応として残す。
 - `Options[g]` の差: gs は Graphics の全オプションを返し、pysad は `{}` を返す (`local/wake/pl1.sad`、未修正)。
-- 文字の数と外接矩形は Tk のフォントで決まるので、`OpticsPlot` の text 項目の数は gs と一致しない (pysad は +14)。枠・矩形・線は一致する。
+- 文字の数と外接矩形は Tk のフォントで決まるので、`OpticsPlot` の text 項目の数は gs と一致しない (pysad は +5〜14)。枠・矩形・線は一致する。
 - 比較したのは 3 GeV の 12 セルの小さなリング (E1=E2=θ/2 の BEND を持つ FODO) と、数値の列だけ。実ラティスの `OpticsPlot` は比べていない。
 - 描画の窓は tkinter。Windows のほかは試していない (gs の比較は WSLg の X11)。
 - GUI の試験は全体実行で不安定なことがある (§5)。環境変数がないと skip になるので、評価器を変えたら `PYSAD_SAD_PACKAGES` を付けて試験を回すこと。

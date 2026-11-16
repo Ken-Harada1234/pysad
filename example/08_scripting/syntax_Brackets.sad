@@ -1,0 +1,14 @@
+FFS;
+Print["() grouping ", 2*(3 + 4), " vs ", 2*3 + 4];
+Print["[] call     ", Sqrt[16], " ", Plus[1, 2, 3]];
+Print["{} list     ", {1, 2, 3}, " ", Head[{1, 2, 3}]];
+l = {10, 20, 30, 40};
+Print["[[ ]] part  ", l[[2]], " ", l[[{1, 3}]], " ", l[[-1]]];
+Print["nested part ", {{1, 2}, {3, 4}}[[2, 1]], " ", {{1, 2}, {3, 4}}[[, 2]]];
+Print["string part ", "abcdef"[2, 4], " ", "abcdef"[-2, -1]];
+f[x_] := x^2;
+Print["f[2] vs f@2 vs f /@ ", f[2], " ", f@2, " ", f /@ {1, 2}];
+Print["Head ", Head[f[1]], " ", Head[{}], " ", Head[1.5], " ", Head["s"], " ", Head[a], " ", Head[1 + a]];
+Print["pure function ", (#^2 &)[3], " ", (#1 + #2 &)[1, 2]];
+Print["parts of a + b ", Head[a + b], " ", Length[a + b], " ", (a + b)[[1]]];
+Exit;

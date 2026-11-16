@@ -1,0 +1,13 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:00:26 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! BesselY と BesselJZero (ラティスなし)。gs の K64 ビルドでは BesselY / BesselJZero が NaN を返すか応答しなくなる
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.15";
+ Print["R:Y0=",BesselY[0,1.]];
+R:Y0=NaN
+ Print["R:Y1=",BesselY[1,2.5]];

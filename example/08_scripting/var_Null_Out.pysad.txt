@@ -1,0 +1,11 @@
+Null Head Symbol  x===Null 1
+Null in list {1,} 2
+Null === 0 0
+Out[1]:= 2
+Out[1] 2
+Out[-1] Out[-1]
+% 2
+$Line = 1
+Out[2]:= 6
+%% %%
+BoundQ BoundQ[zzz]BoundQ[]

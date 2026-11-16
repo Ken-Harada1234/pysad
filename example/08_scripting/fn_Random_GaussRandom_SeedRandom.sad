@@ -1,0 +1,27 @@
+FFS;
+SeedRandom[12345];
+r1 = Random[5];
+SeedRandom[12345];
+r2 = Random[5];
+Print["same seed same list ", r1 === r2];
+Print["Random[]   in [0,1) ", Random[] >= 0 && Random[] < 1];
+Print["Random[2,2] dims ", Dimensions[Random[2, 3]]];
+SeedRandom[1];
+u = Random[20000];
+Print["uniform mean ", (Plus @@ u)/20000, "  var ", Plus @@ ((u - 0.5)^2)/20000, " (1/12=", 1/12., ")"];
+SeedRandom[1];
+g = GaussRandom[20000];
+Print["gauss  mean ", (Plus @@ g)/20000, "  var ", Plus @@ (g^2)/20000, " max|g| ", Max[Abs[g]], " GCUT ", GCUT];
+SeedRandom[1];
+p = ParabolaRandom[20000];
+Print["parabola mean ", (Plus @@ p)/20000, "  var ", Plus @@ (p^2)/20000, " (1/5=", 1/5., ") range ", Min[p], " ", Max[p]];
+(* 状態の保存と復元 *)
+SeedRandom[7];
+st = SeedRandom[];
+a = Random[3];
+SeedRandom[st];
+b = Random[3];
+Print["restore state: same numbers? ", a === b, "  a=", a, " b=", b];
+Print["ListRandom ", ListRandom[]];
+Print["state head ", Length[st], " ", st[[1]]];
+Exit;

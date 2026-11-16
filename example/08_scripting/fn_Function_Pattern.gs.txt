@@ -1,0 +1,82 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:13:59 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ (* 定義 *)
+ sq[x_] := x^2;
+ add[x_, y_] := x + y;
+ Print["sq ", sq[3], " add ", add[1, 2]];
+sq 9 add 3
+ (* 定数引数は優先される *)
+ fib[0] = 0; fib[1] = 1;
+ fib[n_] := fib[n - 1] + fib[n - 2];
+ Print["fib ", fib /@ Range[0, 10]];
+fib {0,1,1,2,3,5,8,13,21,34,55}
+ (* 型付きパターン *)
+ kind[x_Real] := "real";
+ kind[x_String] := "string";
+ kind[x_List] := "list";
+ kind[x_] := "other";
+ Print["kind ", kind /@ {1.5, "a", {1}, f}];
+kind {"real","string","list","other"}
+ (* 検査つき: PatternTest (?) *)
+ pos[x_?Positive] := "positive";
+ pos[x_] := "non-positive";
+ Print["test ", pos[2], " ", pos[-2]];
+test positive non-positive
+ (* 列パターン *)
+ cnt[x___] := Length[{x}];
+ Print["x___ ", cnt[], cnt[1], cnt[1, 2, 3]];
+x___ 013
+ first[x_, y___] := x;
+ Print["first ", first[7, 8, 9]];
+first 7
+ sum[x__] := Plus[x];
+ Print["x__ ", sum[1, 2, 3]];
+x__ 6
+ (* 既定値 *)
+ pw[x_, n_:2] := x^n;
+ Print["default ", pw[3], " ", pw[3, 3]];
+default 9 27
+ (* 名前付きパターン *)
+ Print["x:pat ", Replace[f[2], f[a:_] -> g[a, a]]];
+x:pat g[2,2]
+ (* 規則 *)
+ Print["rules ", {1, 2, 3, 4} /. x_?EvenQ -> 0];
+rules {1,0,3,0}
+ Print["ReplaceAll ", f[a, b] /. a -> 1];
+ReplaceAll f[1,b]
+ Print["ReplaceRepeated ", {1, {2, {3}}} //. {x_} -> x];
+ReplaceRepeated {1,{2,3}}
+ Print["alternatives ", Cases[{1, a, 2, b, "s"}, _Real | "s"]];
+alternatives {1,2,"s"}
+ Print["MatchQ ", MatchQ[{1, 2}, {_, _}], MatchQ[{1, 2, 3}, {_, _}], MatchQ[f[1, 2], f[__]]];
+MatchQ 101
+ Print["PatternTest ", Cases[{1, 2, 3, 4}, _?OddQ]];
+PatternTest {1,3}
+ Print["Repeated ", MatchQ[f[1, 2, 3], f[_Real..]], MatchQ[f[], f[_Real..]], MatchQ[f[], f[_Real...]]];
+Repeated 101
+ (* 純関数 *)
+ Print["pure ", (#1 + #2 &)[1, 2], " ", Map[#^2 &, {1, 2, 3}], " ", (##&)[1, 2]];
+pure 3 {1,4,9} 12
+ (* UpSet / TagSet *)
+ tg /: tg[a_] := "tagged";
+ Print["TagSet ", tg[1]];
+TagSet tagged
+ (* 履歴・メモ化 *)
+ mem[n_] := mem[n] = (n^2);
+ mem[5]; Print["memo ", mem[5]];
+memo 25
+ Clear[sq]; Print["Clear ", sq[3]];
+Clear sq[3]
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

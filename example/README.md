@@ -1,0 +1,52 @@
+# example: SAD の機能・関数ごとの短い例 (gs と pysad の比較つき)
+
+SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの例は 4 ファイルで 1 式です。
+
+| ファイル | 内容 |
+|---|---|
+| `NAME.sad` | SAD スクリプト (サンプルのラティスを先頭に含み、そのまま走る) |
+| `NAME.gs.txt` | SAD (gs) で走らせたときの画面表示のリダイレクト |
+| `NAME.pysad.txt` | pysad で走らせたときの画面表示のリダイレクト |
+| `NAME.md` | 説明 (何を見る例か、結果の読み方、物理・解析式と数値の照合、gs と pysad の比較、未確認・限界) |
+
+ファイル名は SAD の機能・関数そのものの名前です。種別の接頭辞は `FFS_` (FFS コマンド)、`fn_` (関数)、`flag_` (フラグ)、`elem_` (要素)、`var_` (特殊変数)、`syntax_` (文法) です。図は同じフォルダの PNG を `.md` から埋め込んでいます。式は LaTeX (`$...$`) で書いてあり、GitHub で表示されます。
+
+## フォルダ
+
+| フォルダ | 分類 | 内容 |
+|---|---|---|
+| [`00_lattice`](00_lattice) | サンプルのラティス | `FODO_ring` (24 セル、3 GeV、周長 105.6 m) ほか |
+| [`01_lattice_elements`](01_lattice_elements) | ラティスと要素定義 | 要素、LINE、USE、SPLIT、TYPE、ORG、ワイルドカードなど |
+| [`02_optics_cod`](02_optics_cod) | 線形光学と COD | CALCULATE、チューン、クロマティシティ、転送行列、COD、ジオメトリ |
+| [`03_matching`](03_matching) | マッチング | FIT・FREE・FIX・GO、フラグ、OptimizeOptics |
+| [`04_emittance_radiation`](04_emittance_radiation) | エミッタンスと放射 | EMITTANCE、RADINT、RFSW・RAD・FLUC、放射積分の式 |
+| [`05_tracking`](05_tracking) | トラッキング | TrackParticles、DA、APERT、TRPT、JITTER |
+| [`06_collective`](06_collective) | 集団効果 | WAKE、BEAMBEAM、CSR、Touschek、IBS |
+| [`07_spin_solenoid_special`](07_spin_solenoid_special) | スピン・ソレノイド・特殊 | POL、SOL、MULT ANGLE、COORD、RADLIGHT |
+| [`08_scripting`](08_scripting) | SADScript | 制御構文、反復子、`;`、リスト・文字列、関数定義、Module・Class、乱数 |
+| [`09_io_system`](09_io_system) | 入出力・システム | Print・Write・Read、ファイル、$FORM、時間 |
+| [`10_math_data`](10_math_data) | 数値・データ処理 | Fit、Spline、NIntegrate、特殊関数、行列、定数 |
+| [`11_graphics`](11_graphics) | 描画 | Plot 系、OpticsPlot、BeamPlot、LaTeX |
+| [`12_gui_tkinter`](12_gui_tkinter) | Tkinter・GUI | Tkinter.n、KBFrame.n |
+| [`13_packages`](13_packages) | Packages/*.n | CorrectOrbit、MakeBump、optimize、D.n、TableForm など |
+| `tools` | 道具 | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか) |
+
+各フォルダの `README.md` に、そのフォルダの例の一覧と、gs と pysad の一致状況 (○ 一致、△ 差あり、× 未対応・失敗) があります。
+
+## 走らせ方
+
+```bash
+py -3.12 example/tools/run_example.py example/02_optics_cod/FFS_CALCULATE.sad
+```
+
+gs は WSL で、pysad は `PYSAD_SAD_PACKAGES` つきで走ります。`NAME.gs.txt` と `NAME.pysad.txt` が作り直されます。
+
+## 読むときの注意
+
+- 表示や数字の桁、テキストの微妙なずれは追っていません。基準は、完走することと、意味のある値が合うことです。
+- gs と pysad の差が大きいものは、各 `.md` の「gs と pysad の比較」と「未確認・限界」に書いてあります。主な pysad の未対応と差は、`For`・`Module` のスコープ・`BeginPackage`・`Read` の区切り・APERT の追跡・RADTAPER・SPAC・LOSSMAP・Tkinter ウィジェットのメソッドなどです。
+- gs が落ちる例 (RadiationField の SIGSEGV など) は、その旨を `.gs.txt` と `.md` に残しています。
+- gs の窓の画像は撮れていません。描画と GUI の図は、Canvas の項目を書き出した再描画と、pysad の窓の切り取りです。
+- SAD は `E1`・`E2` を ANGLE に対する比として読みます (端の角度 = E1×ANGLE)。`FODO_ring` の BEND はこの読みで解析式と合います。
+- ラティスはサンプルで、特定の実機のものではありません。エネルギー 3 GeV、周長 105.6 m、RF 電圧は例ごとに `.md` に書いてあります。
+- ほかに、KEK の SAD チュートリアルをもとにした PF・ASTRID2 の例集が [`../example_PF_ASTRID`](../example_PF_ASTRID) にあります (作成中の場合があります)。

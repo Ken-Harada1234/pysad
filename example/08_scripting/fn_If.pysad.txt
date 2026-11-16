@@ -1,0 +1,8 @@
+If      {"neg","zero","pos"}
+If 2arg true yes  false Null
+evaluated: then
+value 10
+If[2,...] nonzero is true  If[0,...] zero is false
+&& || ~ 0101
+short circuit 01
+IF: small positive

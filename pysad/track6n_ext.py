@@ -806,6 +806,8 @@ def compile_sol_region(prog, elements, i, ph):
         el = elements[l]
         name = type(el).__name__
         sm = SM_END if l == ke else SM_IN
+        if isinstance(el, Drift) and getattr(el, '_apert', False):
+            raise NotImplementedError('track6n_ext: ソレノイド領域内の APERT (tsol の tapert1) は未対応')
         if isinstance(el, Drift):
             prog._add(K_SOL_DRIFT, (el.L, bzs, g(el, 'RAD') == 0.0), el.name, True, sm)
         elif isinstance(el, Quadrupole):

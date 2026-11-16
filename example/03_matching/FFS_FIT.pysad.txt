@@ -1,0 +1,27 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #   7.586845 $$$       f NX    #######  #    .229110
+$$$       f AY    #######  #  -1.11E-16 $$$       f BY    #######  #   1.603552 $$$       f NY    #######  #    .229110
+$$$       f LENG  #######  #   4.600000
+initial cell phase NX NY /2pi =    .229110    .229110
+!    component1   component2   fun         goal-value     np     scale
+ FIT $$$                       NX         .250000000       1 ! * 6.283185307
+ FIT $$$                       NY         .250000000       1 ! * 6.283185307
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QFH          K1        .300000000000 !  .300000000  .300000000  -1.00000E10   1.000000E10 <--           1.00000000
+ QD           K1       -.600000000000 ! -.600000000 -.600000000  -1.00000E10   1.000000E10 <--           1.00000000
+       2        0   3.3837E-05  (NEWTON)    1.000          2
+ Matched. ( 3.5797E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.441E-16 $$$       f BX    #######  #   7.730307 $$$       f NX   .25       1    .250001
+$$$       f AY    #######  #  -1.67E-16 $$$       f BY    #######  #   1.367681 $$$       f NY   .25       1    .250001
+$$$       f LENG  #######  #   4.600000
+!    component1   component2   fun         goal-value     np     scale
+ FIT $$$                       NX         .250000000       1 ! * 6.283185307
+ FIT $$$                       NY         .250000000       1 ! * 6.283185307
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QFH          K1        .321805428432 !  .300000000  .321805428  -1.00000E10   1.000000E10 <--           1.00000000
+ QD           K1       -.643610856864 ! -.600000000 -.643610857  -1.00000E10   1.000000E10 <--           1.00000000
+matched K1 QFH (half) =    .321805  QD =   -.643611
+integrated QF (two halves) =    .643611  QD =   -.643611
+phase NX NY /2pi =    .250001    .250001
+BX BY at ORIGIN =   7.730307   1.367681
+max BX max BY   =   7.730307   7.365989

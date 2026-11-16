@@ -1,0 +1,6 @@
+FixedPoint Cos .7390851332157368
+FixedPoint sqrt 1.414213562373095
+Nest   f[f[f[x]]]
+NestList {1,2,4,8,16,32}
+FixedPointList len 68
+FixedPoint max 1.4142156862745097

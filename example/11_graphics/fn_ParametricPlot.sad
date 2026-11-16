@@ -1,0 +1,10 @@
+! ParametricPlot (ラティスなし)。リサジュー図形と楕円
+FFS;
+! A: SADHelp の例 (範囲に Pi を含む式)
+ga=ParametricPlot[{{2*Cos[t],2*Sin[t]},{2*Cos[t],Sin[t]},{Cos[t],2*Sin[t]},{Cos[t],Sin[t]}},{t,0,2*Pi},Legend->"Expressions"];
+Print["A Head=",Head[ga]," Length=",Length[ga]];
+! B: 範囲を数値にした 1 本 (pysad で確実に動く形)
+gb=ParametricPlot[{Sin[3*t],Cos[2*t]},{t,0,6.283185307},FrameLabel->{"x","y"}];
+Print["B Head=",Head[gb]," Length=",Length[gb]];
+Update[];
+Exit;

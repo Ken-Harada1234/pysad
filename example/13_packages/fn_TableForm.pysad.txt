@@ -1,0 +1,11 @@
+TableForm (matrix):
+ 1.5              2.25             3               
+ 4                5.125            6               
+ 7                8                9.0625          
+
+TableForm (vector):
+ 1                2                3                4               
+
+TableForm (scalar):
+ 3.5             
+

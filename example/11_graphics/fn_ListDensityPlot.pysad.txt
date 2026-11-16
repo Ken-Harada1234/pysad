@@ -1,0 +1,2 @@
+dims={41,41}
+Head=Graphics Length=2

@@ -1,0 +1,35 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+! BIPOL (既定): 変数の符号が変わってよい。UNIPOL: 符号を変えない
+$FORM = "10.6";
+USE RING; CELL; CALC;
+FREE QF QD;
+FIT $$$;
+! A: 符号が変わらずに解ける目標 (BIPOL でも UNIPOL でも同じ解)
+NX 6.2 NY 4.2;
+GO;
+Print["A BIPOL : K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+QF K1 0.7; QD K1 -0.6;
+UNIPOL;
+GO;
+Print["A UNIPOL: K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+! B: 解けない目標 (安定領域の外。収束せず、経路に依存する)
+BIPOL;
+QF K1 0.7; QD K1 -0.6;
+NX 0.2 NY 0.2;
+GO;
+Print["B BIPOL : K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+QF K1 0.7; QD K1 -0.6;
+UNIPOL;
+GO;
+Print["B UNIPOL: K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Exit;

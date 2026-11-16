@@ -75,9 +75,9 @@ _ROW_ATTR = {'AX': 'alfx', 'BX': 'betx', 'NX': 'mux', 'AY': 'alfy', 'BY': 'bety'
 
 # 既定の変数キーワード (tfinit.f: ival=2 は各要素型の 2 番目のキーワード)
 _DEFAULT_KEY = {'Drift': 'L', 'Bend': 'ANGLE', 'Quadrupole': 'K1', 'Sextupole': 'K2', 'Octupole': 'K3',
-                'Decapole': 'K4', 'Cavity': 'VOLT', 'Solenoid': 'BZ', 'Multipole': 'K1'}
+                'Decapole': 'K4', 'Dodecapole': 'K5', 'Cavity': 'VOLT', 'Solenoid': 'BZ', 'Multipole': 'K1'}
 # SAD の値 (積分値) ↔ pysad の属性 (長さあたり) の変換が要るもの
-_PER_LENGTH = {('Quadrupole', 'K1'), ('Bend', 'K1'), ('Sextupole', 'K2'), ('Octupole', 'K3'), ('Decapole', 'K4')}
+_PER_LENGTH = {('Quadrupole', 'K1'), ('Bend', 'K1'), ('Sextupole', 'K2'), ('Octupole', 'K3'), ('Decapole', 'K4'), ('Dodecapole', 'K5')}
 
 
 def _sad_get(el, key):
@@ -1125,7 +1125,7 @@ class Matcher:
         rl = abs(self.rsconv) * max(len(self.conditions), 1)
         out = self.out
         bestval = np.array([v['val'] for v in self.variables])
-        sexp = '  CALEXP'
+        sexp = '  CALEXP  ' if getattr(self, 'calexp', True) else '  NOCALEXP'
         wcal = True
         chgmod = True
         iter_ = 0
@@ -1178,17 +1178,17 @@ class Matcher:
                 convgo = r.res2r() <= rl
                 if convgo:
                     out(f' Matched. ({fmt_g(r.res2r())}) DP ={self.dpmax:8.5f}  DP0 ={self.dp0:8.5f}'
-                        f'  ExponentOfResidual ={self.wexponent:4.1f}  OffMomentumWeight ={self.offmw:8.3f}{sexp}  ')
+                        f'  ExponentOfResidual ={self.wexponent:4.1f}  OffMomentumWeight ={self.offmw:8.3f}{sexp}')
                     fitflg = False
                     exit9000 = True
                     break
                 if not fitflg:
                     if r.nstab == 0:
                         out(f' Residual ={fmt_g(r.r)}  DP ={self.dpmax:8.5f}  DP0 ={self.dp0:8.5f}'
-                            f'  ExponentOfResidual ={self.wexponent:4.1f}  OffMomentumWeight ={self.offmw:8.3f}{sexp}  ')
+                            f'  ExponentOfResidual ={self.wexponent:4.1f}  OffMomentumWeight ={self.offmw:8.3f}{sexp}')
                     else:
                         out(f'Unstable = {r.nstab:5d} Residual ={fmt_g(r.r)}  DP ={self.dpmax:8.5f}  DP0 ={self.dp0:8.5f}'
-                            f'  ExponentOfResidual ={self.wexponent:4.1f}  OffMomentumWeight ={self.offmw:8.3f}{sexp}  ')
+                            f'  ExponentOfResidual ={self.wexponent:4.1f}  OffMomentumWeight ={self.offmw:8.3f}{sexp}')
                     exit9000 = True
                     break
                 # ---- do1082

@@ -1,0 +1,10 @@
+Out[2]:= 3
+Out[4]:= "back on the console"
+--- content of ex_out.txt ---
+| Out[3]:= 7
+| Print inside OUTPUT is also redirected
+| Out[5]:= 30
+inside READ file x=11
+after READ x = 11
+inside READ file x=11
+after INPUT

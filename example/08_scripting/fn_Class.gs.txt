@@ -1,0 +1,54 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:13:51 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ (* Class[スーパークラス, クラス変数, インスタンス変数, メソッド] *)
+ Acc = Class[{},
+   {count = 0},
+   {v = 0, name = "none"},
+   Constructor[a___] := (count++; v = Plus[a]);
+   add[x_] := (v += x; v);
+   show[] := Print[name, ": v=", v, " count=", count];
+   sum2[] := v^2
+ ];
+ a1 = Acc[1, 2];
+ Print["a1@v ", a1@v];
+a1@v 3
+ a1@add[10];
+ a1@show[];
+none: v=13 count=1
+ a2 = Acc[100];
+ a2@name = "second";
+ a2@show[];
+second: v=100 count=2
+ Print["count (class var) ", Acc@count, " via a1: ", a1@count];
+count (class var) 2 via a1: 2
+ a1@v = 5;
+ Print["a1@sum2 ", a1@sum2[], " a2@v ", a2@v];
+a1@sum2 25 a2@v 100
+ (* 継承 *)
+ Sub = Class[{Acc}, {}, {w = 7},
+   add[x_] := (v += 2*x; v);
+   both[] := v + w
+ ];
+ s1 = Sub[1];
+ Print["Sub: v ", s1@v, " w ", s1@w, " add ", s1@add[3], " both ", s1@both[]];
+Sub: v 1 w 7 add 7 both 14
+ Print["Sub inherits sum2 ", s1@sum2[]];
+Sub inherits sum2 49
+ Print["Parents ", Sub@Parents[]];
+Parents {Acc`}
+ a1=.;
+ Print["after destroy a2 still ", a2@v];
+after destroy a2 still 100
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.003 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

@@ -1,0 +1,27 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+$FORM = "10.6";
+USE RING; CELL; CALC;
+Print["CELL: BX AX NX at end = ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["NX","$$$"]/2/Pi];
+bx0 = Twiss["BX",1]; ax0 = Twiss["AX",1]; by0 = Twiss["BY",1]; ay0 = Twiss["AY",1]; ex0 = Twiss["EX",1]; epx0 = Twiss["EPX",1];
+Print["periodic solution at start: BX AX BY AY EX EPX = ", bx0, " ", ax0, " ", by0, " ", ay0, " ", ex0, " ", epx0];
+INS;
+BXI bx0; AXI ax0; BYI by0; AYI ay0; EXI ex0; EPXI epx0;
+CALC;
+Print["INS matched start: BX AX NX at end = ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["NX","$$$"]/2/Pi];
+BXI 10; AXI 0; BYI 10; AYI 0; EXI 0; EPXI 0;
+CALC;
+Print["INS BX=10 start: BX AX at end = ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], "  BX at mid(100) = ", Twiss["BX",100]];
+CELL;
+CALC;
+Print["back to CELL: BX AX NX at end = ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["NX","$$$"]/2/Pi];
+Exit;

@@ -1,0 +1,91 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:31:26 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 1GEV;
+! RADLIGHT 用の短いライン (1 GeV、電子): 偏向は ANGLE=0, K0=0.1 の「ステアリング型」(BEND の中は記録されないため)
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  ST1 = (L=1.2 ANGLE=0 K0=0.1) ST2 = (L=1.2 ANGLE=0 K0=-0.1);
+MARK  ORIGIN = ();
+LINE  UND = (ORIGIN QF D2 ST1 D2 QD D1 QF D2 ST2 D2 QD D1);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "12.8";
+ USE UND; INS; NOFLUC;
+Out[1]:= USE
+ Print["NLAT=", LINE["LENGTH"]];
+NLAT= 14.00000000
+ RADLIGHT;                          ! TrackParticles が軌道 {t,x,y,z} を記録して返す (RAD と TRPT も ON になる)
+ np = 1;
+ x = Table[0, {7}, {np}];
+ Do[x[[7,i]] = 1, {i, np}];
+ d = {1, x};
+ res = TrackParticles[d, 14];
+ traj = res[[2,1]];
+ Print["flag RADLIGHT: Length[res]=", Length[res], "  trajectory dims=", Dimensions[traj]];
+flag RADLIGHT: Length[res]=  2.00000000  trajectory dims={  4.00000000, 11.00000000}
+ Print["t [m/c units: s]   =", traj[[1]]];
+t [m/c units: s]   ={   .00000000, 1.000692E-9, 2.668513E-9, 4.351437E-9, 5.362237E-9, 8.750744E-9, 9.761337E-9, 1.143548E-8,
+  1.317299E-8, 1.419048E-8, 1.758177E-8}
+ Print["x (go-direction)   =", traj[[2]]];
+x (go-direction)   ={   .00000000,   .30000000,   .80000000,  1.30000000,  1.60000000,  2.60000000,  2.90000000,  3.40000000,
+   3.90000000,  4.20000000,  5.20000000}
+ Print["t(end)*c =", traj[[1,-1]]*299792458, "  (記録点は BEND の後を含まないので、ライン長 14 m より短い)"];
+t(end)*c =  5.27088062  (記録点は BEND の後を含まないので、ライン長 14 m より短い)
+ ! RadiationSpectrum: τ は時間 [s]、λ は波長 [m] (位相 = 2 pi c τ/λ)。ガウスパルス f=exp(-(c τ)^2/(2 s^2)) のスペクトルは解析的:
+ !   c(k) = (s/c) Sqrt[2 Pi] exp(-k^2 s^2/2),  s(k) = 0   (k = 2 pi/λ)
+ cl = 299792458;
+ s = 1e-3;
+ n = 401;
+ tau = Table[(i - 201)*2e-5/cl, {i, n}];     ! c*τ = -4 mm ... +4 mm
+ f = Table[Exp[-(cl*tau[[i]])^2/(2*s^2)], {i, n}];
+ sp = RadiationSpectrum[{tau, f}, {1e-3, 5e-3, 5e-4}];
+ Print["spectrum dims=", Dimensions[sp]];
+spectrum dims={  3.00000000, 10.00000000}
+ Do[
+   Print["lambda=", 2*Pi/sp[[1,j]], " k=", sp[[1,j]], " c=", sp[[2,j]], " s=", sp[[3,j]], " analytic c=", (s/cl)*Sqrt[2*Pi]*Exp[-sp[[1,j]]^2*s^2/2]],
+   {j, 1, Length[sp[[1]]], 2}];
+lambda=   .00500000 k= 1256.637061 c= 3.79585E-12 s= -5.6407E-29 analytic c= 3.79633E-12
+lambda=   .00264706 k= 2373.647782 c= 5.00126E-13 s= 6.48486E-30 analytic c= 4.99824E-13
+lambda=   .00180000 k= 3490.658504 c= 1.90935E-14 s= -7.2524E-31 analytic c= 1.88971E-14
+lambda=   .00136364 k= 4607.669225 c= -1.3218E-16 s= -3.1396E-31 analytic c= 2.05163E-16
+lambda=   .00109756 k= 5724.679946 c= -8.7853E-17 s= 1.38983E-30 analytic c= 6.39629E-19
+ ! RadiationField[軌道, 観測点]: gs (このビルド) はここで SIGSEGV する
+ fld = RadiationField[traj, {20, 0.1, 0}];
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x76f6b662a494 in ???
+#1  0x76f6b6629085 in ???
+#2  0x76f6b6245caf in ???
+#3  0x76f6b6397a4d in ???
+#4  0x5fed695291a3 in ???
+#5  0x5fed695ff2f3 in ???
+#6  0x5fed69601473 in ???
+#7  0x5fed69549f5e in ???
+#8  0x5fed69540731 in ???
+#9  0x5fed6953645b in ???
+#10  0x5fed69537144 in ???
+#11  0x5fed6953540e in ???
+#12  0x5fed69536fd9 in ???
+#13  0x5fed69537144 in ???
+#14  0x5fed6953540e in ???
+#15  0x5fed6955331e in ???
+#16  0x5fed69526fa9 in ???
+#17  0x5fed695b13c4 in ???
+#18  0x5fed69573937 in ???
+#19  0x5fed6957a4a0 in ???
+#20  0x5fed6960e41f in ???
+#21  0x5fed69652bac in ???
+#22  0x5fed69673680 in ???
+#23  0x5fed69604c29 in ???
+#24  0x5fed6951b2de in ???
+#25  0x76f6b622a600 in ???
+#26  0x76f6b622a717 in ???
+#27  0x5fed6951b334 in ???
+#28  0xffffffffffffffff in ???
+bash: line 1: 68993 Segmentation fault         timeout 120 /mnt/d/work/SAD-master/SAD-master/bin/gs _ex_flag_RADLIGHT_fn_RadiationField_fn_RadiationSpectrum.sad < /dev/null

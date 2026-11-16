@@ -1,0 +1,31 @@
+! Entry / ListBox / Scale / RadioButton (ラティスなし)
+FFS;
+TclEval["proc dw {w d} {set o {}; foreach c [winfo children $w] {set t {}; catch {set t [$c cget -text]}; lappend o [format {%*s%s %s} $d {} [winfo class $c] $t]; foreach x [dw $c [expr {$d+2}]] {lappend o $x}}; return $o}"];
+TclEval["proc ff {w cls} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {lappend r $c}; set r [concat $r [ff $c $cls]]}; return $r}"];
+w=Window[];
+ev="abc";
+e=Entry[w,TextVariable:>ev,Width->20,Side->"top"];
+lb=ListBox[w,Height->3,Side->"top"];
+sv=5;
+s=Scale[w,From->0,To->10,Orient->"horizontal",Variable:>sv,Side->"top"];
+rv=1;
+r1=RadioButton[w,Text->"A",Value->1,Variable:>rv,Side->"top"];
+r2=RadioButton[w,Text->"B",Value->2,Variable:>rv,Side->"top"];
+TclEval["update"];
+Print["tree: ",TclEval["join [dw . 0] {; }",String]];
+! ウィジェットの値 (gs は Widget[...]、pysad は記号のまま)
+Print["Head[e]=",Head[e]];
+! Entry の中身 (TextVariable ev の値が入る)
+Print["entry=",TclEval["return [[lindex [ff . Entry] 0] get]",String]];
+! ウィジェットのメソッド e[Insert]=... (Tkinter.n の定義)
+e[Insert]={"end","XY"};
+lb[Insert]={"end","item1"};
+lb[Insert]={"end","item2"};
+TclEval["update"];
+Print["entry after Insert=",TclEval["return [[lindex [ff . Entry] 0] get]",String]];
+Print["listbox size=",TclEval["return [[lindex [ff . Listbox] 0] size]",String]];
+! ラジオボタン B を押すと rv=2。スケールを 8 にすると sv=8
+TclEval["[lindex [ff . Radiobutton] 1] invoke"];
+TclEval["[lindex [ff . Scale] 0] set 8"];
+Print["rv=",rv,"  sv=",sv];
+Exit;

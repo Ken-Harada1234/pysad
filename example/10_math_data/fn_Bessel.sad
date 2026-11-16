@@ -1,0 +1,14 @@
+! Bessel 関数 J, I, K (ラティスなし)。Y と JZero は fn_BesselY_JZero.sad
+FFS;
+$FORM="S17.15";
+Print["R:J0=",BesselJ[0,1.]];
+Print["R:J1=",BesselJ[1,2.5]];
+Print["R:J2.5=",BesselJ[2.5,3.]];
+Print["R:J3=",BesselJ[3,2.]];
+Print["R:J0_100=",BesselJ[0,100.]];
+Print["R:I0=",BesselI[0,1.]];
+Print["R:I1=",BesselI[1,2.5]];
+Print["R:I0_0=",BesselI[0,0.]];
+Print["R:K0=",BesselK[0,1.]];
+Print["R:K1=",BesselK[1,2.5]];
+Exit;

@@ -1,0 +1,7 @@
+$FORM   = 
+$Input  = 77
+$Output = -1
+Head Real Real
+   3.142     .333
+3.141592653589793
+writing to the console via $Output

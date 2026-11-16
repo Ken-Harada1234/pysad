@@ -1,0 +1,9 @@
+FFS;
+Scan[Print, {1, 2, 3}];
+Scan[Print["sq=", #^2] &, {4, 5}];
+s = 0;
+Scan[(s += #) &, Range[10]];
+Print["sum ", s];
+ScanThread[Print["pair ", #1, " ", #2] &, {{1, 2}, {a, b}}];
+ScanThread[Print, {{1, 2, 3}, {10, 20, 30}}];
+Exit;

@@ -1,0 +1,37 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+APERT AP0 = (AX=0.005 AY=0.005) AP1 = (DX1=-0.004 DX2=0.004 DY1=-0.004 DY2=0.004);
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+! APERT 入りのリング: ORIGIN の直後に楕円 AP0、2 セル目の後に矩形 AP1
+LINE RINGA = (ORIGIN AP0 RF 2*CELL AP1 22*CELL);
+FFS;
+NORFSW; NORAD; NOFLUC;
+$FORM = "12.6";
+n = 7;
+zero = Table[0, {i, n}];
+xs = {0, 1e-3, 3e-3, 6e-3, -6e-3, 0, 0};
+ys = {0, 0, 0, 0, 0, 4e-3, 8e-3};
+beam = {xs, zero, ys, zero, zero, zero, Table[1, {i, n}]};
+Print["x0 [mm] = ", xs*1e3];
+Print["y0 [mm] = ", ys*1e3];
+! (A) APERT 要素: RINGA = ORIGIN AP0(楕円 AX=AY=5mm) RF 2*CELL AP1(矩形 +-4mm) 22*CELL
+USE RINGA; CELL; CALC;
+Print["NLAT=", LINE["LENGTH"], " position of AP0=", LINE["POSITION","AP0"], " AP1=", LINE["POSITION","AP1"]];
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["(A) APERT in RINGA, 1 turn, flag: ", r[[2,7]]];
+! (B) APERT なしのリング + LOSSAMPL (全周で 15 要素ごとに判定される)
+USE RING; CELL; CALC;
+LOSSAMPL = 0.005;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["(B) RING, LOSSAMPL=5mm, 1 turn, flag: ", r[[2,7]]];
+LOSSAMPL = 1;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["(C) RING, LOSSAMPL=1 m (default), 1 turn, flag: ", r[[2,7]]];
+Exit;

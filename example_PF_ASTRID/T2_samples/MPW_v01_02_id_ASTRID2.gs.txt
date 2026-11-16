@@ -1,0 +1,251 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:46:52 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG )
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+        D14837MPW = (L = 0.5212 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180
+          BH
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE)
+
+	RING = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+ BEND
+
+! Kmpw = 32.7
+! lmpw = 0.175 [m]
+! Bmax = 2 [T]
+! rhomin = 0.9660907010809813 [m]
+! theta (average) / pole = lmpw / 2 / (Sqrt[2] * rhomin) = 0.0640435140143602
+
+       BMPW1I = ( L = .175/4 K0 =  0.0640435140143602/2           E2 =1)
+       BMPW1  = ( L = .175/2 K0 =  0.0640435140143602    E1 =.5    E2 =.5)
+       BMPW2  = ( L = .175/2 K0 = -0.0640435140143602    E1 =.5    E2 =.5)
+       BMPW1F = ( L = .175/4 K0 =  0.0640435140143602/2  E1 =1)
+ ;
+ MARK   MMPWS = ()
+        MMPWE = ()
+ ;
+ LINE   PMPW = (BMPW1 BMPW2)
+        MPW  = (MMPWS BMPW1I BMPW2 10*PMPW BMPW1F MMPWE)
+        TCELL
+             =(MKS
+              D14837 PM D0100 QF3  D0180 HV D0180
+              BH
+              D0190 SD D0120 QF2 D0120 SF
+              PM
+              SF D0120 QF2 D0120 SD D0190
+              BH D0180 HV D0180 QF3 D0100 PM D14837MPW
+              MPW
+              D14837MPW PM D0100 QF3  D0180 HV D0180
+              BH
+              D0190 SD D0120 QF2 D0120 SF
+              PM
+              SF D0120 QF2 D0120 SD D0190
+              BH D0180 HV D0180 QF3 D0100 PM D14837
+              MKE)
+
+        RINGMPW = (2*NCELL CAVI TCELL 2*NCELL)
+ ;
+!+
+!  MPW (ASTRID2, 11 周期、K=32.7、λ=0.175 m) を入れたリングと入れないリングの比較
+!  RING = MPW なし、RINGMPW = 2 セルの直線部 1 つを MPW 入りセルに置換
+!-
+ON LOG RFSW RADCOD RAD COD;
+OFF FLUC;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     F     F     F     T     F     F     T     F     T
+   $FORM = "12.6";
+   PageWidth = 1999;
+ 
+   USE RING;
+Out[1]:= USE
+   cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.050E-13 $$$       f BX    #######  #   3.891569 $$$       f NX    #######  #   5.179990 $$$       f AY    #######  #  4.047E-14 $$$       f BY    #######  #   1.622525 $$$       f NY    #######  #   2.140178
+$$$       f LENG  #######  #  45.704400
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -2.9E-11  -2.21E-7   .000000   .000000  -2.03E-7  -1.69E-9
+      Exit :  -2.9E-11  -2.21E-7   .000000   .000000  -2.03E-7  -1.69E-9
+
+    Extended Twiss Parameters
+AX: -3.36E-5 BX: 3.891569                            ZX: -5.55E-9  EX: -8.29E-4
+           PSIX: 1.26E-22                           ZPX: 3.740E-8 EPX:  .000000
+R1:  .000000 R2:  .000000 AY: 6.600E-6 BY: 1.622525  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY: 1.33E-21 ZPY:  .000000 EPY:  .000000
+                                                     AZ: -1.64E-8  BZ: 50.90567
+                                                                 PSIZ: 4.83E-21
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 =  .5800000 GeV Revolution freq.     f0 = 6559375.9 Hz 
+Energy loss per turn U0 =  .0061667 MV  Effective voltage    Vc =  .0500000 MV 
+Equilibrium position dz = 56.214079 mm  Momentum compact. alpha =  .0106695
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 15.999997
+Bucket height     dV/P0 =  .0161756     Synchrotron frequency   = 10000.253 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune: 0.1799899           0.1401776          -0.0015246
+
+    Damping per one revolution:
+          X : -7.310180E-06   Y : -5.316088E-06   Z : -8.638089E-06
+    Damping time (sec):
+          X :  2.085496E-02   Y :  2.867776E-02   Z :  1.764899E-02
+    Tune shift due to radiation:
+          X :  4.288852E-09   Y : -5.299016E-08   Z :  2.660841E-12
+    Damping partition number:
+          X :    1.3751       Y :    1.0000       Z :    1.6249
+
+Emittance X            = 1.26804E-8 m   Emittance Y            =  .00000000 m
+Emittance Z            = 9.52704E-6 m   Energy spread          = 4.32609E-4
+Bunch Length           = 22.0222763 mm  Beam tilt              =  .00000000 rad
+Beam size xi           =  .22214108 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  1.3162425     Polarization time      =   .0000000 min
+
+   disp $$$;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 2.1E-13 3.89157 5.17999 -8.3E-4 -8.E-15  $$$       .0     0          45.704400 4.0E-14 1.62252 2.14018  .0      .0      .0     200
+   em0 = Emittance[];
+   Print["noMPW  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+noMPW  NX NY =     5.179990     2.140178
+   Print["noMPW  U0[eV] = ", EnergyLossU0/.em0, "  emitx[nm] = ", (Emittances/.em0)[1]*1e9, "  sigE = ", MomentumSpread/.em0];
+noMPW  U0[eV] =  6166.703884  emitx[nm] =    12.680368  sigE =  4.326094E-4
+   Print["noMPW  BX BY (MKS of cell) = ", Twiss["BX",1], " ", Twiss["BY",1]];
+noMPW  BX BY (MKS of cell) =     3.891569     1.622525
+ 
+   USE RINGMPW;
+   cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.054E-13 $$$       f BX    #######  #   3.892115 $$$       f NX    #######  #   5.180010 $$$       f AY    #######  #  -1.40E-16 $$$       f BY    #######  #   1.027643 $$$       f NY    #######  #   2.249201
+$$$       f LENG  #######  #  45.704400
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -1.80E-7  -2.24E-7   .000000   .000000  -8.29E-5  -6.78E-4
+      Exit :  -1.80E-7  -2.24E-7   .000000   .000000  -8.29E-5  -6.78E-4
+
+    Extended Twiss Parameters
+AX: 1.552E-5 BX: 3.876814                            ZX: 1.855E-7  EX:  .001405
+           PSIX: -8.5E-22                           ZPX: -4.35E-8 EPX:  .000000
+R1:  .000000 R2:  .000000 AY: 3.314E-6 BY: 1.027924  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .001588  BZ: 51.01031
+                                                                 PSIZ: 6.22E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 =  .5800000 GeV Revolution freq.     f0 = 6559375.9 Hz 
+Energy loss per turn U0 =  .0078011 MV  Effective voltage    Vc =  .0500000 MV 
+Equilibrium position dz = 71.195755 mm  Momentum compact. alpha =  .0106635
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 15.999997
+Bucket height     dV/P0 =  .0157084     Synchrotron frequency   = 9974.2152 Hz 
+
+  Imag.tune: 0.0000000          -0.0000000           0.0000000
+  Real tune: 0.1800277           0.2493211          -0.0015206
+
+    Damping per one revolution:
+          X : -8.775281E-06   Y : -6.724443E-06   Z : -1.139482E-05
+    Damping time (sec):
+          X :  1.737307E-02   Y :  2.267155E-02   Z :  1.337920E-02
+    Tune shift due to radiation:
+          X :  6.531615E-09   Y : -6.634173E-08   Z :  1.443648E-09
+    Damping partition number:
+          X :    1.3051       Y :    1.0001       Z :    1.6947
+
+Emittance X            = 1.05597E-8 m   Emittance Y            =  .00000000 m
+Emittance Z            = 9.50572E-6 m   Energy spread          = 4.31682E-4
+Bunch Length           = 22.0202177 mm  Beam tilt              =  .00000000 rad
+Beam size xi           =  .20233245 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  1.3162425     Polarization time      =   .0000000 min
+
+   disp $$$;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 2.1E-13 3.89212 5.18001 -8.3E-4 -7.E-15  $$$       .0     0          45.704400 -1.E-16 1.02764 2.24920  .0      .0      .0     223
+   em1 = Emittance[];
+   Print["MPW    NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+MPW    NX NY =     5.180010     2.249201
+   Print["MPW    U0[eV] = ", EnergyLossU0/.em1, "  emitx[nm] = ", (Emittances/.em1)[1]*1e9, "  sigE = ", MomentumSpread/.em1];
+MPW    U0[eV] =  7801.111941  emitx[nm] =    10.559715  sigE =  4.316818E-4
+   Print["MPW    LENGTH(s) = ", Twiss["S","$$$"], "  #elements = ", LINE["LENGTH"]];
+MPW    LENGTH(s) =    45.704400  #elements =   223.000000
+ 
+   ! MPW 区間の BY, 磁石区間を Twiss で読む 
+   iS = LINE["POSITION","MMPWS"]; iE = LINE["POSITION","MMPWE"];
+   Print["MMPWS #", iS, " s=", Twiss["S",iS], " BY=", Twiss["BY",iS], "   MMPWE #", iE, " s=", Twiss["S",iE], " BY=", Twiss["BY",iE]];
+MMPWS #  100.000000 s=   21.889700 BY=    1.407944   MMPWE #  124.000000 s=   23.814700 BY=    1.407944
+   ssum = 0; wsum = 0;
+   Do[ ds = Twiss["S",i+1]-Twiss["S",i]; ssum = ssum + ds; wsum = wsum + ds*(Twiss["BY",i]+Twiss["BY",i+1])/2; , {i,iS,iE-1}];
+   Print["MPW length = ", ssum, "  <BY> in MPW = ", wsum/ssum];
+MPW length =     1.925000  <BY> in MPW =     1.058636
+   Print["dNY (MPW - noMPW) = ", Twiss["NY","$$$"]/2/Pi - 2.140178];
+dNY (MPW - noMPW) =      .109023
+ Exit;
+ FFS                  end:  CPU time =     0.044 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

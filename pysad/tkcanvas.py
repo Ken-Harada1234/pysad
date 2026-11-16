@@ -128,10 +128,21 @@ def install(br, B):
     B['TkCanvasCreateItem'] = create_item
     B['TkCanvasCreateItemDirect'] = create_item_direct
 
+    _last_id = {}
+
     def last_item(a):
-        r = tkcall(path_of(a[0]), 'find', 'all')
+        # K64 の TkCanvasLastItem は Tk の nextId-1 (最後に作った項目の id)。`delete all` のあとも id は続く。
+        # 全部消えても id が戻らないよう、その Canvas (パス名と X のウィンドウ id) で見た最大の id を覚えておく
+        pth = path_of(a[0])
+        r = tkcall(pth, 'find', 'all')
         ids = [int(x) for x in (r if isinstance(r, (tuple, list)) else str(r).split())]
-        return float(max(ids)) if ids else 0.0
+        try:
+            key = (pth, str(tkcall('winfo', 'id', pth)))
+        except Exception:
+            key = (pth, '')
+        m = max(max(ids) if ids else 0, _last_id.get(key, 0))
+        _last_id[key] = m
+        return float(m)
     B['TkCanvasLastItem'] = last_item
 
     def find_enclosed(a):

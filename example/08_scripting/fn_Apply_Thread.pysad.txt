@@ -1,0 +1,8 @@
+Apply     6
+@@        24
+Apply f   f[a,b]
+level     {f[1,2],f[3,4]}
+Thread    {f[1,x],f[2,x],f[3,x]}
+Thread 2  {f[1,a],f[2,b]}
+Thread =  {x->1,y->2}
+Thread =={1,0}

@@ -1,0 +1,24 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+$FORM = "10.6";
+USE RING; CELL; CALC;
+Print["ring end GX GZ CHI2 = ", LINE["GX","$$$"], " ", LINE["GZ","$$$"], " ", LINE["GCHI2","$$$"]];
+Print["B.1 entrance GX GZ CHI2 = ", LINE["GX","B.1"], " ", LINE["GZ","B.1"], " ", LINE["GCHI2","B.1"]];
+Print["B.2 entrance GX GZ CHI2 = ", LINE["GX","B.2"], " ", LINE["GZ","B.2"], " ", LINE["GCHI2","B.2"]];
+ORG B.1 0 0 0 0 0 0;
+CALC;
+Print["after ORG B.1: B.1 GX GZ CHI2 = ", LINE["GX","B.1"], " ", LINE["GZ","B.1"], " ", LINE["GCHI2","B.1"]];
+Print["after ORG B.1: B.2 GX GZ CHI2 = ", LINE["GX","B.2"], " ", LINE["GZ","B.2"], " ", LINE["GCHI2","B.2"]];
+ORG;
+CALC;
+Print["after ORG reset: B.2 GX GZ CHI2 = ", LINE["GX","B.2"], " ", LINE["GZ","B.2"], " ", LINE["GCHI2","B.2"]];
+Exit;

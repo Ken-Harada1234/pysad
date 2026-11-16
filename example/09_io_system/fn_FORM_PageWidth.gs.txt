@@ -1,0 +1,50 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:14:41 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ x = Pi*1000;
+ Print["default $FORM = ", $FORM];
+default $FORM =  
+ Print[x, " ", Pi/1000];
+3141.592653589793 .0031415926535897933
+ $FORM = "10.4"; Print["10.4  ", x, " ", Pi/1000, " ", 1];
+10.4   3141.5927      .0031     1.0000
+ $FORM = "S10.4"; Print["S10.4 ", x, " ", 2.5, " ", 1];
+S10.4 3141.5927 2.5 1
+ $FORM = "F10.4"; Print["F10.4 ", x, " ", Pi/1000, " ", 2.5];
+F10.4  3141.5927     0.0031     2.5000
+ $FORM = "M10.4"; Print["M10.4 ", x, " ", Pi/1000e10];
+M10.4  3141.5927 3.1416 10^-13
+ $FORM = "6.2"; Print["6.2   ", x, " ", {Pi, 2*Pi}];
+6.2    3141. {  3.14,  6.28}
+ $FORM = "12.8"; Print["12.8  ", Pi, " ", -Pi, " ", 100*Pi];
+12.8    3.14159265  -3.14159265  314.1592653
+ $FORM = "17.15"; Print["17.15 ", Pi];
+17.15  3.14159265358979
+ Print["StandardForm ", StandardForm[Pi]];
+StandardForm  3.14159265358979
+ $FORM = "10.4";
+ Print["$FORM stays ", $FORM, "  ", StandardForm[$FORM], "  ", $FORM];
+$FORM stays 10.4    10.4
+ $FORM = "S17.15";
+ Print["PageWidth = ", PageWidth];
+PageWidth = 131
+ PageWidth = 40;
+ Print["narrow ", Range[30]];
+narrow {1,2,3,4,5,6,7,8,9,10,11,12,13,
+ 14,15,16,17,18,19,20,21,22,23,24,25,
+ 26,27,28,29,30}
+ PageWidth = 130;
+ Print["wide ", Range[30]];
+wide {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30}
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

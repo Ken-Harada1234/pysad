@@ -1,0 +1,8 @@
+CSRInit: Dimensions={  2.00000000,  8.00000000,  8.00000000}  Length=  2.00000000
+initial rms z= 2.122046E-4 dp= 7.071168E-4 <z dp>= 1.010441E-9
+CSRTrack zl=0, r56=0.05 r65=-0.3, nturn=6 : (sigz, sigdp) per turn = { 2.137717E-4, 7.042655E-4, 2.178566E-4, 6.966857E-4,
+  2.240868E-4, 6.846814E-4, 2.319350E-4, 6.687556E-4, 2.407996E-4, 6.496119E-4, 2.500725E-4, 6.281577E-4}
+in-place: z1 changed? rms z1= 2.500725E-4  (z は書き換わる)
+inten=   .00000000  last (sigz, sigdp) =  2.500725E-4  6.281577E-4
+inten= 1.000000E-9  last (sigz, sigdp) =  2.500749E-4  6.281534E-4
+inten= 1.000000E-8  last (sigz, sigdp) =  2.500970E-4  6.281147E-4

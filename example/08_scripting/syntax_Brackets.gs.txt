@@ -1,0 +1,37 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:14:26 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ Print["() grouping ", 2*(3 + 4), " vs ", 2*3 + 4];
+() grouping 14 vs 10
+ Print["[] call     ", Sqrt[16], " ", Plus[1, 2, 3]];
+[] call     4 6
+ Print["{} list     ", {1, 2, 3}, " ", Head[{1, 2, 3}]];
+{} list     {1,2,3} List
+ l = {10, 20, 30, 40};
+ Print["[[ ]] part  ", l[[2]], " ", l[[{1, 3}]], " ", l[[-1]]];
+[[ ]] part  20 {10,30} 40
+ Print["nested part ", {{1, 2}, {3, 4}}[[2, 1]], " ", {{1, 2}, {3, 4}}[[, 2]]];
+nested part 3 {2,4}
+ Print["string part ", "abcdef"[2, 4], " ", "abcdef"[-2, -1]];
+string part bcd ef
+ f[x_] := x^2;
+ Print["f[2] vs f@2 vs f /@ ", f[2], " ", f@2, " ", f /@ {1, 2}];
+f[2] vs f@2 vs f /@ 4 4 {1,4}
+ Print["Head ", Head[f[1]], " ", Head[{}], " ", Head[1.5], " ", Head["s"], " ", Head[a], " ", Head[1 + a]];
+Head Real List Real String Symbol Plus
+ Print["pure function ", (#^2 &)[3], " ", (#1 + #2 &)[1, 2]];
+pure function 9 3
+ Print["parts of a + b ", Head[a + b], " ", Length[a + b], " ", (a + b)[[1]]];
+parts of a + b Plus 2 a
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

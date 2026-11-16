@@ -1,0 +1,24 @@
+! 行列演算 (Det Inverse LinearSolve Transpose Outer Inner IdentityMatrix Dot) (ラティスなし)
+FFS;
+$FORM="S17.15";
+a={{2.,1.,0.},{1.,3.,1.},{0.,1.,4.}};
+b={1.,2.,3.};
+Print["R:Det=",Det[a]];
+inv=Inverse[a];
+Print["Inverse=",inv];
+Print["R:inv11=",inv[[1,1]]];
+Print["R:inv12=",inv[[1,2]]];
+Print["R:inv23=",inv[[2,3]]];
+Print["I=",Chop[a.inv]];
+x=LinearSolve[a,b];
+Print["x=",x];
+Print["R:x1=",x[[1]]];
+Print["R:x2=",x[[2]]];
+Print["R:x3=",x[[3]]];
+Print["resid=",a.x-b];
+Print["Transpose=",Transpose[{{1,2,3},{4,5,6}}]];
+Print["Outer=",Outer[Times,{1,2},{3,4,5}]];
+Print["Inner=",Inner[Times,{1,2,3},{4,5,6},Plus]];
+Print["Identity=",IdentityMatrix[3]];
+Print["Dot=",{{1,2},{3,4}}.{{0,1},{1,0}}];
+Exit;

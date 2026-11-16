@@ -1,0 +1,11 @@
+Abs={3.5,2,5}
+Ceiling={3,-2}
+Floor={2,-3}
+Round={2,3,-3,3,4}
+Max={5,8,9}
+Min={1,2}
+MinMax={-1,7}
+Mod={1,2,1.5}
+Sign={-1,0,1}
+FractionalPart={.75,.25}
+Positive={1,0,1}

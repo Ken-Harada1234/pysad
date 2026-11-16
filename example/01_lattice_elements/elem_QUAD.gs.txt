@@ -1,0 +1,45 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:12:14 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! QUAD: 輸送路で転送行列と β の変換を見る (L=0.3, K1=0.7 は積分強度)
+MOMENTUM = 3GEV;
+QUAD Q = (L=0.3 K1=0.7) QT = (L=0.001 K1=0.021);
+DRIFT D1 = (L=1);
+MARK START = (BX=10 BY=10 AX=0 AY=0) FIN = ();
+LINE T = (START Q FIN);
+LINE TT = (START QT FIN);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "10.6";
+ USE T; INS; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   6.034373 $$$       f BX    #######  #   8.051333 $$$       f NX    #######  #    .005138
+$$$       f AY    #######  #  -8.056373 $$$       f BY    #######  #  12.260826 $$$       f NY    #######  #    .004465
+$$$       f LENG  #######  #    .300000
+ m = TransferMatrix["START","FIN"];
+ Print["thick Q  M11 M12 M21 M22 = ", m[[1,1]], " ", m[[1,2]], " ", m[[2,1]], " ", m[[2,2]]];
+thick Q  M11 M12 M21 M22 =    .896825    .289610   -.675756    .896825
+ Print["thick Q  M33 M34 M43 M44 = ", m[[3,3]], " ", m[[3,4]], " ", m[[4,3]], " ", m[[4,4]]];
+thick Q  M33 M34 M43 M44 =   1.106850    .310611    .724759   1.106850
+ Print["BX FIN = ", Twiss["BX","FIN"], "  BY FIN = ", Twiss["BY","FIN"]];
+BX FIN =   8.051333  BY FIN =  12.260826
+ Print["NX FIN = ", Twiss["NX","FIN"], "  NY FIN = ", Twiss["NY","FIN"]];
+NX FIN =    .032282  NY FIN =    .028055
+ USE TT; INS; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .209897 $$$       f BX    #######  #   9.999790 $$$       f NX    #######  #  1.5916E-5
+$$$       f AY    #######  #   -.210103 $$$       f BY    #######  #  10.000210 $$$       f NY    #######  #  1.5915E-5
+$$$       f LENG  #######  #    .001000
+ m = TransferMatrix["START","FIN"];
+ Print["thin QT  M21 = ", m[[2,1]], "  M43 = ", m[[4,3]]];
+thin QT  M21 =   -.021000  M43 =    .021000
+ Exit;
+ FFS                  end:  CPU time =     0.004 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

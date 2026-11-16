@@ -77,7 +77,8 @@ npara = min(NPARA, npz/npparamin + 1, ne*npz/npnlatmin + 1)     npparamin = 9, n
 | CAVI | `tcav` | VOLT+DVOLT, DPHI, APHI≠0 なら COD の z で位相補正 |
 | MARK | 何もしない | |
 | COORD / TCAVI / UND / MAP / MULT (ANGLE≠0) / BEAMBEAM | 専用ルーチン | pysad は `track6n` の `K_COORD`・`K_TCAV`・`K_UND`・`K_MAP`・`K_MULTA` と BEAMBEAM で対応 (§9)。track6 (低速) は COORD・TCAVI・UND を扱わない |
-| APERT/BEAM/INS/WIG | 専用ルーチン | APERT・INS は §7 と docs/history/work_unimpl.md (INS は gs と一致を確認)。BEAM・WIG は未確認 |
+| APERT | `tapert1` → `tapert` (§2.4) | pysad は `K_APERT` (numba) と `_apert_pass` (track6) で対応 |
+| INS/BEAM/WIG | 専用ルーチン | INS は docs/history/work_unimpl.md (gs と一致を確認)。BEAM・WIG は未確認 |
 
 ### 2.3 tapert — 15 要素ごとの損失判定
 
@@ -85,6 +86,18 @@ npara = min(NPARA, npz/npparamin + 1, ne*npz/npnlatmin + 1)     npparamin = 9, n
 - `tapert` はまず `limittrack` (tturn.f:7-18): `limitnan(a, x)` = `merge(x, merge(a, sign(x,a), |a| ≤ x), isnan(a))` — NaN は +x に、|a| > x は ±x に丸める。x, y は `xlimit = 3·LOSSAMPL`、px, py は 0.9999、z は 1e10。
 - 判定 (ax = ay = 0 の場合): `−alost < x < alost` かつ `−alost < y < alost` かつ `|z| ≤ zlost` を満たさない粒子を落とす。`alost = LOSSAMPL` (既定 1 m)、`zlost = LOSSDZ` (既定 100 m)。コメントにあるとおり NaN を落とすために「条件を否定した」形で書かれている。
 - 落ちた粒子は `kptbl(i,4) = l_track`, `kptbl(i,5) = kturn` を記録し、**末尾の生きている粒子と入れ替えて `np` を減らす** (tapert.f: Sweaping)。粒子の並びが変わるので、以後の乱数の消費順や §3.7 の癖に影響する。**`l_track` はセッション最初の TrackParticles では 0** なので、その最初の tapert では最初から LOSSAMPL の外にいる粒子の印が 0 (生きている) になり落ちない (詳細は §9.5)。
+
+
+### 2.4 APERT 要素 (tapert1)
+
+- キーワードの既定は全部 0: `DX1 DX2 DY1 DY2` (矩形)、`AX AY` (楕円)、`DX DY` (中心のずれ)、`ROTATE` (回転)、`JDPX JDPY DP`、`COUPLE` (tapert は使わない)。光学では L=0 のドリフト、追跡だけで効く (SADHelp の APERT)。
+- `tapert1` (tapert.f) は `xl=min(DX1,DX2)`, `xh=max(DX1,DX2)`, `yl, yh` も同様にして `tapert` を呼び、`tturn` の icAPRT の case は呼んだあと `la = 15` に戻して `exit` (la は減らさない。tturn.f:417-423)。
+- 判定 (落ちない条件、tapert.f:78-174): `eli = AX≠0 かつ AY≠0`。`eli` で `xh==xl` または `yh==yl` なら矩形は ±1e100 (楕円だけ)。`ROTATE≠0` なら `xa = cosθ(x−DX) − sinθ(y−DY)`, `ya = sinθ(x−DX) + cosθ(y−DY)`、0 なら `xa=x−DX, ya=y−DY`。落ちない条件は `(xa/AX)²+(ya/AY)² ≤ 1` (eli のとき) かつ `xl < xa < xh` かつ `yl < ya < yh` かつ `|z| ≤ LOSSDZ`。**全キーワード 0 の APERT は矩形が空なので全粒子が落ちる**。LOSSAMPL の判定は同じ式で ±LOSSAMPL の矩形・楕円なし・ずれなし。
+- `JDPX` か `JDPY` が 0 でないとき (tapert.f:32-60) は落とさず、`(x/xa)²+(y/ya)² > 1` (xa=min(|xh|,|xl|)、ya も同様。0 なら制約なし) の粒子を `tran_array` の 2 個の乱数で境界へ入れ直す: `x = xa cos φ1, y = ya sin φ1, px = JDPX cos φ2, py = JDPY sin φ2` (φ = 2π·乱数)、`g += DP`。`DP` はこの再入射のときだけ効く。dv は更新しない。
+- 落ちた粒子: `kptbl(i,4)=l_track` (= APERT 自身の要素番号)、`kptbl(i,5)=kturn` を記録して §2.3 と同じ入れ替え。TrackParticles の戻りの flag は 0、座標は落ちた時点の値 (`limittrack` の頭打ちを含む)。MAIN の TRACK の報告 `P. id lost in n-th turn at l(APERT名), amplitudes: x y z` は、TRPT でなければ出し、TRPT のときは l_track が APERT のときだけ出す (tapert.f:182-187)。
+- pysad: parser が APERT を `Drift(L=0)` に `_apert=True` と各キーワードの属性を付けて作る。`track6n.k_apert_gen` (numba、tapert.f 全体の直訳。LOSSAMPL の判定 `k_apert` も同じ関数)、`k_apert_el` (APERT 要素)、`Prog._compile` の `K_APERT`、`turn`。Python の追跡 (track6) は `_apert_pass` で同じ判定をし、落ちた粒子を末尾へ寄せる (`track_particles(alive=…, zlost=…)`)。track6 には LOSSAMPL の判定 (最初の要素・15 要素ごと) はない。
+- gs との一致: 楕円・矩形・楕円+矩形・DX DY・ROTATE・全部 0・APERT 2 個・3 周・JDPX JDPY DP の flag と落ちた時点の座標 (`tests/test_apert.py`、3 GeV の FODO リング、RFSW/RAD なし、粒子 16 個)。
+- 未確認・限界: ソレノイド領域内の APERT (tsol.f:789 は tapert1 を呼ぶ) は未対応で NotImplementedError。RAD・FLUC つき、TRPT、MAIN の TRACK の報告は gs と比べていない。JDPX/JDPY の乱数は粒子が 11 個以下なら gs と一致、12 個以上では gs が別の乱数列を使うように見え一致しない (原因は未調査)。`DAPERT` (動的口径) の追跡は APERT 要素を通すが、gs と比べていない。
 
 ---
 
@@ -210,7 +223,7 @@ tradk(np, …, al, phi0):  al ≠ 0 なら  rfluct ? tradkfn : tradkn
 ### 6.2 track6n.py (numba)
 
 - 粒子配列 `S(n, 11) = (x, px/(1+δ), y, py/(1+δ), z, δ, dv, pxr0, pyr0, zr0, dvfs)` に対する `@njit` カーネル (`k_drift`, `k_quad`, `k_thin`, `k_bend0`, `k_bendi`, `k_cav`, `k_steer0`, `k_apert`) を track6 と同じ演算順序で転記。`NJ = dict(cache=True, error_model='numpy', nogil=True)`: `error_model='numpy'` でゼロ除算や `sqrt(負)` が例外ではなく Fortran 風に NaN/inf になる。
-- `Prog(elements, ph)`: 要素を `(種類コード, パラメータ組)` の表に前処理 (フリンジ係数、回転の cos/sin、BEND の w/sqwh なども事前計算)。`turn(prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert)` が 1 周。`apert = (kid, lost_turn, kturn, alost, zlost)` を渡すと最初の要素・15 要素ごと・周末に `k_apert` (limitnan + 判定 + 末尾の生きている粒子との入れ替え) を行い新しい n を返す。`k_apert` は損失の記録も持ち、MAIN の TRACK の損失報告 (§8) が使う。
+- `Prog(elements, ph)`: 要素を `(種類コード, パラメータ組)` の表に前処理 (フリンジ係数、回転の cos/sin、BEND の w/sqwh なども事前計算)。`turn(prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert)` が 1 周。`apert = (kid, lost_turn, kturn, alost, zlost)` を渡すと最初の要素・15 要素ごと・周末に `k_apert` (limitnan + 判定 + 末尾の生きている粒子との入れ替え)、APERT 要素の位置で `k_apert_el` を行い新しい n を返す。`k_apert` は損失の記録も持ち、MAIN の TRACK の損失報告 (§8) が使う。
 - 乱数は `rs = np.array([seed], int64)` を持ち回り、`lcg` は `(48828125·seed) % 2³²` を符号付きに折り返す (int32 のオーバーフローの再現)。`tran`, `drndsr`, `tdusrn` も `@njit`。終了時に `_t6.RNG.seed` へ書き戻すので track6 と乱数の状態を共有する。
 - `fmax/fmin` と `NAN_MODE`: gfortran の `MAX/MIN` (x86-64 の maxsd/minsd, `a > b ? a : b`) は NaN が混じると後ろの引数を返すが、Python の `max/min` は前の引数を返す。発散した粒子の挙動を合わせるために `NAN_MODE = 1` で Fortran 流にしている (`tcav` の `max/min`、`sqrt1` の `max(1e-200,·)` など)。ただし `tradk` の `max(gmin, g + dg)` だけは SAD のコンパイル結果が逆 (NaN で gmin) なので `gfloor` を使う (サイトごとに違うので、新しい `max/min` を足すときは SAD のデバッグ版の再同期テストで確かめる)。`track6n.TRACE` は 1 要素ごとのデバッグ用フック。
 - 数学関数は mathfun の直訳: `sqrt1`/`pxy2dpz` (NaN の出方を含む)、`asinz` (`asinz(NaN) = −π/2`)、`norm2_3` (±inf の扱い)、`xsincos`/`xsincosh` (級数付き)。発散した粒子の値 (inf/NaN) の出方を SAD と揃えるためで、落ちる粒子の乱数消費 (§7) に効く。
@@ -287,7 +300,7 @@ SAD の MAIN の `TRACK USE=RING NPART= TURNS= NX=(..) NY=(..) NZ=(..);` (`ActTr
 ### 9.2 POL のスピン追跡 (`track6.py`、docs/34)
 
 `POL` かつ `RAD` が ON のときだけ、`TrackParticles` が粒子ごとのスピン (`_Particle.s`、`bsi`) を `photons.f` の `sprot` (tradk の中) の直訳で追う。RAD OFF ではスピンは変わらない (K64 も同じ)。
-POL ON・RAD ON の `fn_track` は高速追跡 (`TrackRun`) を使わず Python の追跡 (track6) に切り替えるので、**§2.3 の損失の処理 (tapert・flag) がなく粒子は落ちない**。
+POL ON・RAD ON の `fn_track` は高速追跡 (`TrackRun`) を使わず Python の追跡 (track6) に切り替えるので、**LOSSAMPL の損失の処理 (§2.3 の tapert・flag) がなく粒子は落ちない** (APERT 要素では落ちる。§2.4)。
 入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/|s|, flag}`、戻りの 7・8 列は `atan(sz, sx)` と `sy/|s|` (スピン = (st·cos 角度, sy, st·sin 角度)、st=√(1−sy²))。
 `bsi` (磁場の縦成分の積分) は四極 (tsolqur の各スライスの両端)、BEND (tbendcore の入口・出口、K1 のある BEND は tbendi の各スライス)、MULT (tmulti)、tdrift の ak0 付き、SOL 内のドリフトと四極 (bz·al) に入る。四極の ROTATE は tsolrot の chi3 のスピン回転。
 gs と 4e-12 以下 (NOFLUC・FLUC): 平面リング、ずれ・回転のあるリング、MULT (K1 K2 K3)、K1 の BEND、SEXT、薄い MULT、SOL 領域内のドリフト (`test_spin_track.py`)。
@@ -307,7 +320,7 @@ gs は偏向をほぼ無視し (BZ=0.5 T で ANGLE=0.1 でも位置・角度の�
 
 ### 9.5 損失の処理
 
-- 損失の判定・入れ替えは `tapert` (§2.3) のとおり。高速追跡 (`track6n.turn` の `apert`) と MAIN の TRACK (§8) にある。track6 (Python) 側の損失の扱いは未確認 (POL のスピン追跡では下記のとおり落ちない)。
+- 損失の判定・入れ替えは `tapert` (§2.3) のとおり。高速追跡 (`track6n.turn` の `apert`) と MAIN の TRACK (§8) にある。track6 (Python) 側は APERT 要素の損失だけ扱う (§2.4。LOSSAMPL の判定はなく、POL のスピン追跡でも LOSSAMPL では落ちない)。
 - **POL のスピン追跡は損失の処理なし** (9.2)。TRPT で最初から LOSSAMPL の外の粒子の扱いは次項。
 - **セッション最初の TrackParticles の `l_track=0`** (2026-11-16 に gs と照合して修正): K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書く。`l_track` は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。このため**最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり、最初から LOSSAMPL の外にいる粒子は落ちず**、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。pysad は以前、常に最初の要素で落としていた。`TrackRun.l_track0` と `k_apert` の lcur==0 で再現し、gs (1 回目・2 回目) と、元の K64 (B33 で SIGSEGV) を直した SAD (`b33.sad`: LOSSAMPL=1e-4、3 粒子 x0={1e-3,1e-6,2e-3}、NORAD、TRPT、2 周、15 値) と全桁一致 (`lm2`〜`lm4.sad`、`test_small_items.py`)。元の K64 は落ちるので「正しい基準」は直した版。**B29**: QUAD に `RAD=1` を書くと COD・エミッタンスが 0 になるのはバグではなく仕様 (K64 は `krad = (RAD_QUAD == 0) .and. al /= 0`: tturn.f:360、tsol.f:677、tturne.f:572。要素の RAD が 0 以外ならその要素の放射を止める)。
 - COORD は `tturn` の `exit` なので la を減らさない (9.1)。MAP は落とす粒子をフラグ 0 で返せ、フラグ≠0 なら復活する。

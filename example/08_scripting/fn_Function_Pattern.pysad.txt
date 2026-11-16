@@ -1,0 +1,20 @@
+sq 9 add 3
+fib {0,1,1,2,3,5,8,13,21,34,55}
+kind {"real","string","list","other"}
+test positive non-positive
+x___ 013
+first 7
+x__ 6
+default 9 27
+x:pat g[2,2]
+rules {1,0,3,0}
+ReplaceAll f[1,b]
+ReplaceRepeated {1,{2,3}}
+alternatives {1,2,"s"}
+MatchQ 101
+PatternTest {1,3}
+Repeated 101
+pure 3 {1,4,9} 12
+TagSet tagged
+memo 25
+Clear sq[3]

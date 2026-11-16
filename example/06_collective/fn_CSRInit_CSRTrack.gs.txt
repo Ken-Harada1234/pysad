@@ -1,0 +1,56 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:10:15 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "12.8";
+ ! (1) CSRInit: ダクト断面 (x 方向の各列の格子点数 pipe) 上でバンチの静電場を解く
+ r = CSRInit[{{0.5e-3, 0.5e-3}, 4, 1e-3, {4, 6, 8, 8, 8, 8, 6, 4}}];
+ Print["CSRInit: Dimensions=", Dimensions[r], "  Length=", Length[r]];
+CSRInit: Dimensions={  2.00000000,  8.00000000,  8.00000000}  Length=  2.00000000
+ ! (2) CSRTrack: ウェイクなし (zl=0)・減衰なし・RF なしで、1 周の縦線形写像 (r56, r65) だけ
+ nr = 256; dz = 2e-5; np = 2000;
+ rms[v_] := Sqrt[Plus@@(v^2)/Length[v]];
+ newz[] := Table[3e-4*Sin[0.37*i], {i, np}];       ! 決定的な粒子 (解析解と同じ入力を Python でも作れる)
+ newd[] := Table[1e-3*Cos[0.23*i], {i, np}];
+ z1 = newz[]; dp1 = newd[];
+ Print["initial rms z=", rms[z1], " dp=", rms[dp1], " <z dp>=", Plus@@(z1*dp1)/np];
+initial rms z= 2.122046E-4 dp= 7.071168E-4 <z dp>= 1.010441E-9
+ zl = Table[0, {i, nr}];
+ r = CSRTrack[z1, dp1, zl, {dz, 4, 0, 0.05, -0.3, 0, 0, 0, 0}, 6];
+ Print["CSRTrack zl=0, r56=0.05 r65=-0.3, nturn=6 : (sigz, sigdp) per turn = ", r];
+CSRTrack zl=0, r56=0.05 r65=-0.3, nturn=6 : (sigz, sigdp) per turn = { 2.137717E-4, 7.042655E-4, 2.178566E-4, 6.966857E-4,
+  2.240868E-4, 6.846814E-4, 2.319350E-4, 6.687556E-4, 2.407996E-4, 6.496119E-4, 2.500725E-4, 6.281577E-4}
+ Print["in-place: z1 changed? rms z1=", rms[z1], "  (z は書き換わる)"];
+in-place: z1 changed? rms z1= 2.500725E-4  (z は書き換わる)
+ ! (3) ウェイクあり (人工の zl): 強度 inten で σz, σdp が変わる。毎回同じ初期粒子から始める
+ zl = Table[0.02*Cos[0.3*i]/(1 + i/10.), {i, 1, nr}];
+ Do[
+   z1 = newz[]; dp1 = newd[];
+   inten = {0, 1e-9, 1e-8}[[k]];
+   r = CSRTrack[z1, dp1, zl, {dz, 4, inten, 0.05, -0.3, 0, 0, 0, 0}, 6];
+   Print["inten=", inten, "  last (sigz, sigdp) = ", r[[11]], " ", r[[12]]],
+   {k, 1, 3}];
+inten=   .00000000  last (sigz, sigdp) =  2.500725E-4  6.281577E-4
+inten= 1.000000E-9  last (sigz, sigdp) =  2.500749E-4  6.281534E-4
+inten= 1.000000E-8  last (sigz, sigdp) =  2.500970E-4  6.281147E-4
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

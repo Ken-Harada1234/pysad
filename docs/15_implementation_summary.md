@@ -14,7 +14,7 @@
 - 到達点: SAD の台本 (SADScript + FFS) を `py -3.12 run_sad.py lattice script` でそのまま動かす (SADScript インタプリタ + FFS コマンド層)。
 - 実行環境: Python 3.12 (`py -3.12`) に numba / scipy / pytest。`PYTHONIOENCODING=utf-8`。長い計算は `<work-perf>/lowprio.py` (IDLE 優先度) で 1 本ずつ。
 - 検証 (2026-11-16 夜の記録 `local/wake/verify_log.md`。今回の文書更新では再実行していない): `PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py` (QUICK なし) で **50 ベンチをすべて実行して FAIL 0** (205 s。QUICK で SKIP される 7・12t・13a・16a も PASS)。
-  `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **520 通過・3 skip (523 件収集)**。`--ignore` する 3 本は sys.exit で終わる旧式のスクリプト)。
+  `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **575 通過・3 skip (578 件収集)**。`--ignore` する 3 本は sys.exit で終わる旧式のスクリプト)。
   GUI 系 (test_plot、test_tclbridge) は全体実行で数回に 1 回失敗することがある (単独なら通る)。`PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` が無いと GUI 系は skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL 約 7 分)。
 
 ## 2. モジュール構成と行数 (`wc -l pysad/*.py`、67 本・計 50169 行。2026-11-16 に数え直した)
@@ -80,7 +80,7 @@
 | `__init__.py` / sadkw.py / constants.py | 121 / 34 / 10 | |
 | **非推奨**: ffs.py / tracking.py / matching.py / optics.py | 1599 / 1239 / 602 / 471 | 独自実装 (SAD 未照合。tracking.py は放射係数に疑い)。新規コードは使わない。`__init__.py` の export は旧 API のまま |
 
-テストは `pysad/tests/` (`test_*.py` 60 ファイル、`def test` 303 個 (パラメータ化で 523 件に展開))。
+テストは `pysad/tests/` (`test_*.py` 62 ファイル、`def test` 324 個 (パラメータ化で 551 件に展開))。
 
 ## 3. SAD 準拠状況
 
@@ -154,6 +154,6 @@ MON/MCOD/TCOD はこの SAD ビルドでは何もしない (式として評価�
   SynchroBetaEmittance、CSRInit・CSRMatrix mode 1000・CSRConvert、tdgeo (DRIFT の L と BEND の ANGLE・L だけ解析微分)、Skip・Read の型、`measure.py` (tlum・tluma)。
 - K64 の仕様の発見: SOL の長さは周長に入れない、MOMENTUM の既定は 30 GeV、tmulke の bsir0、B55〜B62 (docs/19)。
 - 解説文書: `36_wake_guide.md`、`37_beambeam_guide.md`、`38_csr_guide.md`、`39_tcltk_guide.md`、`40_graphics_guide.md`、`41_pol_guide.md`、`42_sol_guide.md`、`43_radlight_guide.md`。
-- 試験: 520 通過・3 skip (523 件収集)。回帰は 50 ベンチをすべて実行して FAIL 0。
+- 試験: 575 通過・3 skip (578 件収集)。回帰は 50 ベンチをすべて実行して FAIL 0。
 - 2026-11-16 夜の修正 (gs との照合で見つけた差): FIT の UNIPOL・RELW (フラグを match6 につないだ。docs/11 A54)、DUMP の DK・DDK 列の書式、MATRIX (名前だけの位置・ラティスに無い名前の読み飛ばし)、LDSolve (`DiagonalMatrix` の複素数・行列演算の虚部 0 の扱い)、OpenRead (開けないファイルで入力行を打ち切る。A53)、tapert (セッション最初の TrackParticles の l_track=0。A52)。
 - 未翻訳で確認した点: SPCH 要素は K64 の tturn.f:521 が PSPAC フラグで tpspac を呼ぶ空間電荷の要素で pysad は未翻訳 (PROF は K64 に無い)。LOSSMAP は gs が TrackParticles の戻りに 2 行 (落ちた要素と周) を足すが pysad は未実装。BIPOL の効果は FIT だけ。

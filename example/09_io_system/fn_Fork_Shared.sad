@@ -1,0 +1,9 @@
+FFS;
+s = OpenShared[64];
+Shared[s] = {1, 2, 3};
+Print["parent: Shared[s] = ", Shared[s], "   SharedSize[{1,2,3}] = ", SharedSize[{1, 2, 3}]];
+pid = Fork[];
+If[pid == 0, Shared[s] = {10, 20, 30}; Exit[0], Pause[0.5]; Print["parent: Fork returned a Real (child pid): ", Head[pid], " ", pid > 0]];
+Print["parent: after the child wrote Shared[s] = ", Shared[s]];
+Close[s];
+Exit;

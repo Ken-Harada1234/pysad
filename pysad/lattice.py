@@ -3760,7 +3760,7 @@ class Lattice:
         cod_end = np.array(cod0, dtype=float)
         ce = getattr(self, '_last_cod_exit', None)
         if ce is not None:
-            cod_end[:4] = ce[:4]
+            cod_end[:5] = ce[:5]            # DZ も周回の出口の値 (gs: Twiss["DZ","$$$"] は一周の経路長のずれ)
         cods = [m[1] for m in el_mats[1:]] + [cod_end]
 
         def _row(s, name, tw, c):

@@ -1,0 +1,12 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -9.242220 $$$       f BX    #######  #  35.358212 $$$       f NX    #######  #    .566554
+$$$       f AY    #######  #  -105.9526 $$$       f BY    #######  #  676.90693 $$$       f NY    #######  #    .058361
+$$$       f LENG  #######  #  10.300000
+initial  AX AY EPX =   1.000000  -1.000000    .100000
+exit     AX BX AY BY =  -9.242220  35.358212  -105.9526  676.90693
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -9.242220 $$$       f BX    #######  #  35.358212 $$$       f NX    #######  #    .566554
+$$$       f AY    #######  #  -105.9526 $$$       f BY    #######  #  676.90693 $$$       f NY    #######  #    .058361
+$$$       f LENG  #######  #  10.300000
+REVERSE: initial AX AY EPX =   1.000000  -1.000000    .100000
+REVERSE: exit    AX BX AY BY =  -9.242220  35.358212  -105.9526  676.90693

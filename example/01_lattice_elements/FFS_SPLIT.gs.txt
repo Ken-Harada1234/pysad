@@ -1,0 +1,46 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:11:50 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! SPLIT は K64 では obsolete。代わりに MARK の OFFSET で要素の途中の光学を見る
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+MARK  PQF = (OFFSET=-0.5);
+LINE CELL = (SF DS QF PQF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN 24*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "10.6";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+ Print["nlat = ", LINE["LENGTH"], "  NX = ", Twiss["NX","$$$"]/2/Pi];
+nlat =  266.00000  NX =   6.696329
+ SPLIT QF.1 0.1;
+ ???-FFS-Error-SPLIT is obsolete.   Use OFFSET of a marker. 
+Out[1]:= USE
+Out[2]:= .1
+ Print["after SPLIT: nlat = ", LINE["LENGTH"]];
+after SPLIT: nlat =  266.00000
+ p = LINE["POSITION","QF.1"];
+ Print["BX at QF.1 entrance, QF.1 + 0.5, QF.1 exit = ", Twiss["BX",{p, p+0.5, p+1}]];
+BX at QF.1 entrance, QF.1 + 0.5, QF.1 exit = {  6.426926,  6.846232,  6.846232}
+ Print["BX at PQF.1 (OFFSET=-0.5)                    = ", Twiss["BX","PQF.1"]];
+BX at PQF.1 (OFFSET=-0.5)                    =   6.846232
+ Print["S  at QF.1 + 0.5 = ", LINE["S",p+0.5], "   S at PQF.1 = ", LINE["S","PQF.1"]];
+S  at QF.1 + 0.5 =    .375000   S at PQF.1 =    .450000
+ Exit;
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[3]:=  ???-getbuf-end of input stream

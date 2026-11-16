@@ -1,0 +1,14 @@
+! DRIFT と MARK: MARK の初期 Twiss から INS で伝搬 (輸送路)
+MOMENTUM = 3GEV;
+DRIFT D5 = (L=5);
+MARK START = (BX=10 BY=10 AX=0 AY=0) MID = () FIN = ();
+LINE T = (START D5 MID D5 FIN);
+FFS;
+$FORM = "10.6";
+USE T; INS; CALC;
+DISP;
+Print["BX START,MID,FIN = ", Twiss["BX",{"START","MID","FIN"}]];
+Print["AX START,MID,FIN = ", Twiss["AX",{"START","MID","FIN"}]];
+Print["NX FIN = ", Twiss["NX","FIN"]];
+Print["S   START,MID,FIN = ", LINE["S",{"START","MID","FIN"}]];
+Exit;

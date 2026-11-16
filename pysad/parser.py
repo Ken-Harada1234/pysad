@@ -533,6 +533,17 @@ class SADEnvironment:
             return BeamBeam(name=name, params={k: float(v) for k, v in params.items()
                                                if isinstance(v, (int, float)) and not isinstance(v, bool)})
 
+        elif etype == 'APERT':
+            # 光学では L=0 のドリフト。追跡 (track6n / track6) は _apert=True を見て tapert の判定をする (全キーワードの既定は 0)
+            d = Drift(name=name, L=0.0)
+            d._apert = True
+            for k in ('AX', 'AY', 'DX1', 'DX2', 'DY1', 'DY2', 'JDPX', 'JDPY', 'DP', 'COUPLE', 'DX', 'DY'):
+                v = params.get(k, 0.0)
+                setattr(d, k, float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else 0.0)
+            v = params.get('ROTATE', 0.0)
+            d.ROTATION = float(v) if isinstance(v, (int, float)) and not isinstance(v, bool) else 0.0
+            return d
+
         elif etype in ('MULT', 'KICKER', 'HKICK', 'VKICK', 'CORS', 'CORR'):
             return Multipole(name=name, L=L)
 

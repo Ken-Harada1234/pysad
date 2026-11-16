@@ -1,0 +1,49 @@
+FFS;
+(* 定義 *)
+sq[x_] := x^2;
+add[x_, y_] := x + y;
+Print["sq ", sq[3], " add ", add[1, 2]];
+(* 定数引数は優先される *)
+fib[0] = 0; fib[1] = 1;
+fib[n_] := fib[n - 1] + fib[n - 2];
+Print["fib ", fib /@ Range[0, 10]];
+(* 型付きパターン *)
+kind[x_Real] := "real";
+kind[x_String] := "string";
+kind[x_List] := "list";
+kind[x_] := "other";
+Print["kind ", kind /@ {1.5, "a", {1}, f}];
+(* 検査つき: PatternTest (?) *)
+pos[x_?Positive] := "positive";
+pos[x_] := "non-positive";
+Print["test ", pos[2], " ", pos[-2]];
+(* 列パターン *)
+cnt[x___] := Length[{x}];
+Print["x___ ", cnt[], cnt[1], cnt[1, 2, 3]];
+first[x_, y___] := x;
+Print["first ", first[7, 8, 9]];
+sum[x__] := Plus[x];
+Print["x__ ", sum[1, 2, 3]];
+(* 既定値 *)
+pw[x_, n_:2] := x^n;
+Print["default ", pw[3], " ", pw[3, 3]];
+(* 名前付きパターン *)
+Print["x:pat ", Replace[f[2], f[a:_] -> g[a, a]]];
+(* 規則 *)
+Print["rules ", {1, 2, 3, 4} /. x_?EvenQ -> 0];
+Print["ReplaceAll ", f[a, b] /. a -> 1];
+Print["ReplaceRepeated ", {1, {2, {3}}} //. {x_} -> x];
+Print["alternatives ", Cases[{1, a, 2, b, "s"}, _Real | "s"]];
+Print["MatchQ ", MatchQ[{1, 2}, {_, _}], MatchQ[{1, 2, 3}, {_, _}], MatchQ[f[1, 2], f[__]]];
+Print["PatternTest ", Cases[{1, 2, 3, 4}, _?OddQ]];
+Print["Repeated ", MatchQ[f[1, 2, 3], f[_Real..]], MatchQ[f[], f[_Real..]], MatchQ[f[], f[_Real...]]];
+(* 純関数 *)
+Print["pure ", (#1 + #2 &)[1, 2], " ", Map[#^2 &, {1, 2, 3}], " ", (##&)[1, 2]];
+(* UpSet / TagSet *)
+tg /: tg[a_] := "tagged";
+Print["TagSet ", tg[1]];
+(* 履歴・メモ化 *)
+mem[n_] := mem[n] = (n^2);
+mem[5]; Print["memo ", mem[5]];
+Clear[sq]; Print["Clear ", sq[3]];
+Exit;

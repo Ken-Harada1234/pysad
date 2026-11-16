@@ -1,0 +1,7 @@
+FFS;
+(* SAD の For は Packages/functions.n で For[ini, cond, incr, body] := (ini; While[cond, body; incr]) と定義 *)
+t = 0;
+For[i = 0, i < 5, i++, t += i^2];
+Print["For (4 args) t=", t, " i=", i];
+For[i = 0, i < 3, i++, Print["body i=", i]];
+Exit;

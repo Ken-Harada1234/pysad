@@ -1,0 +1,19 @@
+! D.n 系の特殊関数 (LegendreP, HermiteH, 指数積分, Fresnel, Airy, Zeta, PolyLog) (ラティスなし)
+FFS;
+$FORM="S17.15";
+Print["R:LegendreP=",LegendreP[3,.5]];
+Print["R:HermiteH=",HermiteH[3,.5]];
+Print["R:ExpIntegralEi=",ExpIntegralEi[1.]];
+Print["R:ExpIntegralE=",ExpIntegralE[2,1.]];
+Print["R:SinIntegral=",SinIntegral[1.]];
+Print["R:CosIntegral=",CosIntegral[1.]];
+Print["R:FresnelS=",FresnelS[1.]];
+Print["R:FresnelC=",FresnelC[1.]];
+Print["R:AiryAi=",AiryAi[1.]];
+Print["R:AiryBi=",AiryBi[1.]];
+Print["R:Zeta2=",Zeta[2.]];
+Print["R:PolyLog=",PolyLog[2,.5]];
+Print["R:PolyGamma=",PolyGamma[1,1.]];
+Print["R:ProductLog=",ProductLog[1.]];
+Print["R:Hyper1F1=",Hypergeometric1F1[1.,2.,.5]];
+Exit;

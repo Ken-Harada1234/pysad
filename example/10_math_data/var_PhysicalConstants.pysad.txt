@@ -1,0 +1,16 @@
+R:SpeedOfLight=299792458
+R:PlanckConstant=6.62607015E-34
+R:PlanckHbar=1.05457181765E-34
+R:ElectronCharge=1.602176634E-19
+R:FineStructureConstant=.007297352569
+R:ElectronMass=510998.95
+R:ElectronRadius=2.81794032619E-15
+R:ProtonMass=938272088.1599999
+R:ProtonRadius=1.53469826718E-18
+R:SIMu0=1.256637062121E-6
+R:SIEpsilon0=8.85418781279E-12
+R:ElectronGminus2over2=.001159652181
+R:BoltzmannConstant=1.380649E-23
+R:re_formula=2.81794032619E-15
+R:mu0_formula=1.256637062121E-6
+R:eps0_formula=8.85418781279E-12

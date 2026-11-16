@@ -1,0 +1,11 @@
+Word     alpha
+Word     beta
+list {Word,Word,Real} {"gamma",12.5,7}
+Expression x+y
+{Real,Real}   {12,1}
+list     {2,3,4}
+Character5
+ReadString (rest) [ 6]
+next ReadString end of file
+WordSeparators ab
+ReadNewRecord->False a b

@@ -241,7 +241,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `EFFRFFREQ` | Fortran initb1.f,tturne.f | 参照あり (ffscmd.py) |
 | `EFFVC` | Fortran initb1.f,tturne.f | 参照あり (ffscmd.py) |
 | `EFFVCRATIO` | Fortran initb1.f,track.f,tturne.f | 参照あり (ffscmd.py) |
-| `ElementValues` | Fortran tffsa.f | 未対応 (参照なし) |
+| `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は未対応 (docs/32) |
 | `EMITX` | Fortran initb1.f,temit.f,tffs.f,…; .n emit.n | 参照あり (ffscmd.py, ffsextra.py, maintrack.py…) |
 | `EMITXE` | Fortran initb1.f,temit.f | 参照あり (ffscmd.py) |
 | `EMITY` | Fortran initb1.f,temit.f,tffs.f,… | 参照あり (ffscmd.py, ffsextra.py, maintrack.py…) |

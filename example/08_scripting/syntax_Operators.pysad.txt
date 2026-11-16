@@ -1,0 +1,13 @@
+= 2  := 11
+== 10{1,0}1
+=== 10111
+<> 1  <=> 1
++= -= *= /= : 6
+i++ 1 then 2   ++i 3  i-- 3  --i 1
+{p,q} = 12
+swap 21
+part set {0,5,0}
+unset w
+h onetwoh[3]
+list arithmetic {11,22}{2,4}{1,4}11
+precedence 50 -4 512 -4 2

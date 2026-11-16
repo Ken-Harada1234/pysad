@@ -1,0 +1,3 @@
+dims={10,10}
+Head=Graphics Length=2
+Head=Graphics Length=2

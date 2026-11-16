@@ -1,0 +1,26 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+! 名前のパターン: * % {abc} {^abc} |  (? は普通の文字)
+USE RING; CELL; CALC;
+Print["Q*      : ", Length[LINE["POSITION","Q*"]], " components"];
+Print["Q%.1    : ", LINE["NAME","Q%.1"]];
+Print["{QS}F.1 : ", LINE["NAME","{QS}F.1"]];
+Print["{^QS}*.1: ", LINE["NAME","{^QS}*.1"]];
+Print["QF.1|QD.2: ", LINE["NAME","QF.1|QD.2"]];
+Print["S*.1    : ", LINE["NAME","S*.1"]];
+Print["QF.*    count : ", Length[LINE["NAME","QF.*"]]];
+DISP QF.1 QD.2 Q*.3 1 10;
+SF K2 1.5;
+Print["K2 SF.1 SD.1 after SF K2 1.5 = ", LINE["K2",{"SF.1","SD.1"}]];
+S* K2 2;
+Print["K2 SF.1 SD.1 after S* K2 2 = ", LINE["K2",{"SF.1","SD.1"}]];
+Exit;

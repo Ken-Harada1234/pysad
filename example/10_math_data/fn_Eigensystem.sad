@@ -1,0 +1,23 @@
+! Eigensystem (ラティスなし)
+FFS;
+$FORM="S17.12";
+! (1) 実対称行列
+a={{2.,1.,0.},{1.,3.,1.},{0.,1.,4.}};
+e=Eigensystem[a];
+Print["e=",e];
+Print["R:l1=",e[[1,1]]];
+Print["R:l2=",e[[1,2]]];
+Print["R:l3=",e[[1,3]]];
+! (2) 1 ターン行列 (回転): 固有値 exp(+-i mu), mu=2 pi 0.28
+mu=2*Pi*0.28;
+m={{Cos[mu],Sin[mu]},{-Sin[mu],Cos[mu]}};
+f=Eigensystem[m];
+Print["f=",f];
+Print["R:abs1=",Abs[f[[1,1]]]];
+Print["R:arg1=",Abs[Arg[f[[1,1]]]]/(2*Pi)];
+! (3) 軌道の 1 ターン行列 (x,px,y,py), nu_x=.3 nu_y=.2 の非結合な場合
+r2=2*Pi*.3; r3=2*Pi*.2;
+mm={{Cos[r2],Sin[r2],0,0},{-Sin[r2],Cos[r2],0,0},{0,0,Cos[r3],Sin[r3]},{0,0,-Sin[r3],Cos[r3]}};
+g=Eigensystem[mm];
+Print["tunes=",Abs[Arg[g[[1]]]]/(2*Pi)];
+Exit;

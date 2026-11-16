@@ -1,0 +1,52 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:13:45 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+! SOL = ソレノイド領域の境界 (長さ 0)。BOUND=1 の SOL を対で置く。SA で BZ=5 T が始まり、SB で 0 に戻る。GEO=1 は片方だけ
+SOL   SA = (L=0 BZ=5 BOUND=1 GEO=1) SB = (L=0 BZ=0 BOUND=1);
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE CELLS = (SF DS QF D2 B D2 QD DS SD SA D1 SB);   ! 1 セル目の D1 (1 m) がソレノイド領域
+LINE RING = (ORIGIN RF 24*CELL);
+LINE RINGS = (ORIGIN RF CELLS 23*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ NORFSW; NORAD; NOFLUC;
+Out[1]:= NORFSW
+ $FORM = "12.8";
+ USE RINGS; CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.045808 $$$       f BX    #######  #   4.858667 $$$       f NX    #######  #   6.694188
+$$$       f AY    #######  #   -.256384 $$$       f BY    #######  #   1.376283 $$$       f NY    #######  #   4.974680
+$$$       f LENG  #######  #  105.60000
+ pa = LINE["POSITION","SA"]; pb = LINE["POSITION","SB"];
+ Print["SA position=", pa, " SB position=", pb, " MOMENTUM=", MOMENTUM];
+SA position= 12.00000000 SB position= 14.00000000 MOMENTUM= 3000000000.
+ Print["with solenoid (BZ=5 T, L=1 m): NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi, "  (結合しているので NX, NY は整数部以外ずれる)"];
+with solenoid (BZ=5 T, L=1 m): NX=  6.69418751 NY=  4.97467992  (結合しているので NX, NY は整数部以外ずれる)
+ ! 領域を 1 回通す: SA の位置から SB の次まで。初期条件 x, px, y, py をそれぞれ 1e-6 にして 4 粒子で 4x4 行列を作る
+ a = 1e-6;
+ z4 = {0, 0, 0, 0};
+ bx  = {{a, 0, 0, 0}, {0, a, 0, 0}, {0, 0, a, 0}, {0, 0, 0, a}};
+ beam = {{a, 0, 0, 0}, {0, a, 0, 0}, {0, 0, a, 0}, {0, 0, 0, a}, z4, z4, {1, 1, 1, 1}};
+ r = TrackParticles[{pa, beam}, pb+1, 1, 1][[2]];
+ Do[Print["M[", i, ",j] = ", r[[i,1]]/a, " ", r[[i,2]]/a, " ", r[[i,3]]/a, " ", r[[i,4]]/a], {i, 1, 4}];
+M[  1.00000000,j] =    .93887417    .95890728    .23956098    .24467258
+M[  2.00000000,j] =   -.05984881    .93887417   -.01527089    .23956098
+M[  3.00000000,j] =   -.23956098   -.24467258    .93887417    .95890728
+M[  4.00000000,j] =    .01527089   -.23956098   -.05984881    .93887417
+ Exit;
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

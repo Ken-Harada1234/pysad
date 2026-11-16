@@ -1,0 +1,16 @@
+! REVERSE: 入口の AX AY EPX EPY R2 R3 DPX DPY の符号を反転
+MOMENTUM = 3GEV;
+DRIFT D5 = (L=5);
+QUAD Q = (L=0.3 K1=0.7);
+MARK START = (BX=10 BY=10 AX=1 AY=-1 EX=0.5 EPX=0.1) FIN = ();
+LINE T = (START D5 Q D5 FIN);
+FFS;
+$FORM = "10.6";
+USE T; INS; CALC;
+Print["initial  AX AY EPX = ", Twiss["AX","START"], " ", Twiss["AY","START"], " ", Twiss["EPX","START"]];
+Print["exit     AX BX AY BY = ", Twiss["AX","FIN"], " ", Twiss["BX","FIN"], " ", Twiss["AY","FIN"], " ", Twiss["BY","FIN"]];
+REVERSE;
+CALC;
+Print["REVERSE: initial AX AY EPX = ", Twiss["AX","START"], " ", Twiss["AY","START"], " ", Twiss["EPX","START"]];
+Print["REVERSE: exit    AX BX AY BY = ", Twiss["AX","FIN"], " ", Twiss["BX","FIN"], " ", Twiss["AY","FIN"], " ", Twiss["BY","FIN"]];
+Exit;

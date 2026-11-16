@@ -1,0 +1,50 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 00:36:08 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ SeedRandom[12345];
+ r1 = Random[5];
+ SeedRandom[12345];
+ r2 = Random[5];
+ Print["same seed same list ", r1 === r2];
+same seed same list 1
+ Print["Random[]   in [0,1) ", Random[] >= 0 && Random[] < 1];
+Random[]   in [0,1) 1
+ Print["Random[2,2] dims ", Dimensions[Random[2, 3]]];
+Random[2,2] dims {2,3}
+ SeedRandom[1];
+ u = Random[20000];
+ Print["uniform mean ", (Plus @@ u)/20000, "  var ", Plus @@ ((u - 0.5)^2)/20000, " (1/12=", 1/12., ")"];
+uniform mean .503181122013554  var .08326611521178852 (1/12=.08333333333333333)
+ SeedRandom[1];
+ g = GaussRandom[20000];
+ Print["gauss  mean ", (Plus @@ g)/20000, "  var ", Plus @@ (g^2)/20000, " max|g| ", Max[Abs[g]], " GCUT ", GCUT];
+gauss  mean .013465545206602285  var .9939361845642233 max|g| 4.03258726603887 GCUT 1e+300
+ SeedRandom[1];
+ p = ParabolaRandom[20000];
+ Print["parabola mean ", (Plus @@ p)/20000, "  var ", Plus @@ (p^2)/20000, " (1/5=", 1/5., ") range ", Min[p], " ", Max[p]];
+parabola mean .0005214687548577786  var .19796478708449955 (1/5=.2) range -.9957448705099523 .9859872967936099
+ (* 状態の保存と復元 *)
+ SeedRandom[7];
+ st = SeedRandom[];
+ a = Random[3];
+ SeedRandom[st];
+ b = Random[3];
+ Print["restore state: same numbers? ", a === b, "  a=", a, " b=", b];
+restore state: same numbers? 0  a={.5795807864051312,.08618804789148271,.7759513042401522} b={.27735118358395994,
+ .26093554380349815,.34978018305264413}
+ Print["ListRandom ", ListRandom[]];
+ListRandom {"SAD"}
+ Print["state head ", Length[st], " ", st[[1]]];
+state head 5 SAD
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

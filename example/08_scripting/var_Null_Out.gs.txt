@@ -1,0 +1,37 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 00:36:07 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ x = Null;
+ Print["Null Head ", Head[Null], "  x===Null ", x === Null];
+Null Head Symbol  x===Null 1
+ Print["Null in list ", {1, Null}, " ", Length[{Null, Null}]];
+Null in list {1,} 2
+ Print["Null === 0 ", Null === 0];
+Null === 0 0
+ 1 + 1
+Out[1]:= 2
+ Print["Out[1] ", Out[1]];
+Out[1] 2
+ Print["Out[-1] ", Out[-1]];
+Out[-1] Out[-1]
+ Print["% ", %];
+% 2
+ Print["$Line = ", $Line];
+$Line = 1
+ 2 * 3
+Out[2]:= 6
+ Print["%% ", %%];
+%% %%
+ Print["BoundQ ", BoundQ[zzz], BoundQ[x]];
+BoundQ 01
+ Exit;
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[3]:=  ???-getbuf-end of input stream

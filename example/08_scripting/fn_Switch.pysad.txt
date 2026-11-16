@@ -1,0 +1,5 @@
+Switch  {"one","two-three","str","other","other"}
+no match Switch[9]
+Switch string 2
+by type string real list other
+Switch pattern variable (10 x)

@@ -297,11 +297,12 @@ def install(I):
             raise SADError(f'General::narg: Number of arguments is expected to be 2 in {name}')
         ls = a[1]
         need_list(ls)
-        if not all(isinstance(l, list) for l in ls):
+        if ls and not any(isinstance(l, list) for l in ls):
             raise SADError('General::wrongtype: Argument must be List of Lists')
-        if ls and len({len(l) for l in ls}) != 1:
+        if ls and len({len(l) for l in ls if isinstance(l, list)}) != 1:
             raise SADError(f'General::equalleng: Equal lengths of elements in Thread are expected in {name}')
-        return ls
+        n_ = max((len(l) for l in ls if isinstance(l, list)), default=0)
+        return [l if isinstance(l, list) else [l] * n_ for l in ls]        # gs: リストでない要素は全部に繰り返す (MapThread[List,{{1,2},3}] = {{1,3},{2,3}})
 
     def _mapthread(a):
         ls = _thread_lists(a, 'MapThread')
@@ -1331,6 +1332,9 @@ def install(I):
             if not lists:
                 return x
             if len({len(l) for l in lists}) != 1:
+                
+                def shp(z, d=0):
+                    return [len(z), shp(z[0], d+1)] if isinstance(z, list) and z and d < 4 else (len(z) if isinstance(z, list) else type(z).__name__)
                 raise SADError('General::equalleng: Equal lengths of elements in Thread are expected')
             n = len(lists[0])               # Thread[{a, {1,2}}] = {{a,1},{a,2}} (リストでない要素は全部に繰り返す。長さ 0 は {})
             return [[(y[k] if isinstance(y, list) else y) for y in x] for k in range(n)]

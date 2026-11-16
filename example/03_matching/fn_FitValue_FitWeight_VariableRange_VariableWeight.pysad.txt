@@ -1,0 +1,39 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+ Matched. ( 2.1222E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166586 $$$       f BX    #######  #   5.024309 $$$       f NX   6.7       1   6.700000
+$$$       f AY    #######  #   1.208500 $$$       f BY    #######  #   2.560992 $$$       f NY   4.9       1   4.899998
+$$$       f LENG  #######  #  105.60000
+plain      : K1 QF QD =    .700221   -.599636  NX NY =   6.700000   4.899998
+       2        0    2.079      (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ Residual =  2.079      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.183044 $$$       f BX    #######  #   5.029659 $$$       f NX   6.7       1   6.750000
+$$$       f AY    #######  #   1.212904 $$$       f BY    #######  #   2.559565 $$$       f NY   4.9       1   4.900000
+$$$       f LENG  #######  #  105.60000
+FitValue   : K1 QF QD =    .704275   -.600589  NX NY =   6.750000   4.900000
+       2        0    2.069      (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ Residual =  2.069      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166586 $$$       f BX    #######  #   5.024309 $$$       f NX   6.7       1   6.700000
+$$$       f AY    #######  #   1.208499 $$$       f BY    #######  #   2.560991 $$$       f NY   4.9       1   4.900000
+$$$       f LENG  #######  #  105.60000
+FitWeight  : K1 QF QD =    .700221   -.599636  NX NY =   6.700000   4.900000
+       2        0    4.840      (NEWTON)    1.000          1
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ Residual =  4.840      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.104762 $$$       f BX    #######  #   4.966546 $$$       f NX   6.7       1   6.625537
+$$$       f AY    #######  #   1.227650 $$$       f BY    #######  #   2.716296 $$$       f NY   4.9       1   4.645177
+$$$       f LENG  #######  #  105.60000
+VariableRange QD in [-0.58,0]: K1 QF QD =    .690787   -.580000  NX NY =   6.625537   4.645177
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ Residual =  2.069      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166586 $$$       f BX    #######  #   5.024309 $$$       f NX   6.7       1   6.700000
+$$$       f AY    #######  #   1.208500 $$$       f BY    #######  #   2.560992 $$$       f NY   4.9       1   4.899998
+$$$       f LENG  #######  #  105.60000
+VariableWeight: K1 QF QD =    .700221   -.599636  NX NY =   6.700000   4.899998

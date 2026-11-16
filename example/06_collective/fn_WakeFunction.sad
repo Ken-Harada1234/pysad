@@ -1,0 +1,38 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = () WK = ();   ! WK: ウェイクを付ける場所
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+LINE RINGW = (ORIGIN WK RF 24*CELL);   ! ORIGIN の直後に WK
+FFS;
+NORFSW; NORAD; NOFLUC;
+$FORM = "14.8";
+USE RINGW;
+TRPT; INS;                        ! ウェイクは TRPT の追跡 (TrackParticles) で効く。リングは INS (入口条件から追跡)
+PBUNCH = 1e10; NBUNCH = 1;        ! 1 バンチの粒子数、バンチ数
+W0 = 1e9;  Wt = 1e12;            ! 縦: V/C、横: V/C/m の一定値のウェイク (z の全域で一定)
+LWAKE; TWAKE;
+! dz = z(源) - z(受け手)。dz<=0 だけ一定値、dz>0 は 0 (表の最後の 1 行は追跡では使われないので 0 の行を 2 本置く)
+WakeFunction[Longitudinal, "WK"] = {{-1, W0}, {0, W0}, {1e-9, 0}, {1, 0}, {2, 0}};
+WakeFunction[Transverse,   "WK"] = {{-1, Wt}, {0, Wt}, {1e-9, 0}, {1, 0}, {2, 0}};
+Print["WakeFunction L: ", WakeFunction[Longitudinal, "WK"]];
+Print["WakeFunction T: ", WakeFunction[Transverse, "WK"]];
+np = 100;
+x0 = Table[1e-4 + 1e-5*Sin[0.37*i], {i, np}];
+z0 = Table[0.01*Sin[0.13*i], {i, np}];
+zero = Table[0, {i, np}];
+beam = {x0, zero, zero, zero, z0, zero, Table[1, {i, np}]};
+! WK の直後 (位置 3) まで 1 回追跡 (WK は位置 2、前後で半分ずつキック)
+r = TrackParticles[{1, beam}, 3, 1][[2]];
+Print["mean x0=", Plus@@x0/np];
+imax = Position[z0, Max[z0]][[1,1]]; imin = Position[z0, Min[z0]][[1,1]];
+Print["z max particle: z=", z0[[imax]], " dp=", r[[6,imax]], " px=", r[[2,imax]]];
+Print["z min particle: z=", z0[[imin]], " dp=", r[[6,imin]], " px=", r[[2,imin]]];
+Print["dp (縦) : mean=", Plus@@r[[6]]/np, " min=", Min[r[[6]]], " max=", Max[r[[6]]]];
+Print["px (横) : mean=", Plus@@r[[2]]/np, " min=", Min[r[[2]]], " max=", Max[r[[2]]]];
+Exit;

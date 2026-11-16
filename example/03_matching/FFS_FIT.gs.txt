@@ -1,0 +1,66 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:12:49 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! 対称 FODO セル (半分の QF + ドリフト + QD + ドリフト + 半分の QF)。周期解は CELL で求める
+DRIFT DD = (L=2.0);
+QUAD QFH = (L=0.15 K1=0.3) QD = (L=0.3 K1=-0.6);
+MARK ORIGIN = ();
+LINE C = (ORIGIN QFH DD QD DD QFH);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "10.6";
+ 
+ ! FIT (条件) FREE (変数) GO (実行) SHOW VARIABLES: 1 セル 90 度の FODO を作る
+ USE C; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.332E-15 $$$       f BX    #######  #   7.586845 $$$       f NX    #######  #    .229110
+$$$       f AY    #######  #  3.331E-16 $$$       f BY    #######  #   1.603552 $$$       f NY    #######  #    .229110
+$$$       f LENG  #######  #   4.600000
+ Print["initial cell phase NX NY /2pi = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+initial cell phase NX NY /2pi =    .229110    .229110
+ FREE QFH QD;
+ FIT $$$;
+ NX 0.25 NY 0.25;
+ SHOW;
+!    component1   component2   fun         goal-value     np     scale
+ FIT $$$                       NX         .250000000       1 ! * 6.283185307
+ FIT $$$                       NY         .250000000       1 ! * 6.283185307
+ VARIABLES;
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QFH          K1        .300000000000 !  .300000000  .300000000  -1.00000E10   1.000000E10 <--           1.00000000
+ QD           K1       -.600000000000 ! -.600000000 -.600000000  -1.00000E10   1.000000E10 <--           1.00000000
+ GO;
+       2        0   3.3837E-05  (NEWTON)    1.000          2
+ Matched. ( 3.5797E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  8.882E-16 $$$       f BX    #######  #   7.730307 $$$       f NX   .25       1    .250001
+$$$       f AY    #######  #  1.665E-16 $$$       f BY    #######  #   1.367681 $$$       f NY   .25       1    .250001
+$$$       f LENG  #######  #   4.600000
+ SHOW;
+!    component1   component2   fun         goal-value     np     scale
+ FIT $$$                       NX         .250000000       1 ! * 6.283185307
+ FIT $$$                       NY         .250000000       1 ! * 6.283185307
+ VARIABLES;
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QFH          K1        .321805428432 !  .300000000  .300000000  -1.00000E10   1.000000E10 <--           1.00000000
+ QD           K1       -.643610856864 ! -.600000000 -.600000000  -1.00000E10   1.000000E10 <--           1.00000000
+ Print["matched K1 QFH (half) = ", LINE["K1","QFH.1"], "  QD = ", LINE["K1","QD"]];
+matched K1 QFH (half) =    .321805  QD =   -.643611
+ Print["integrated QF (two halves) = ", LINE["K1","QFH.1"]+LINE["K1","QFH.2"], "  QD = ", LINE["K1","QD"]];
+integrated QF (two halves) =    .643611  QD =   -.643611
+ Print["phase NX NY /2pi = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+phase NX NY /2pi =    .250001    .250001
+ Print["BX BY at ORIGIN = ", Twiss["BX","ORIGIN"], " ", Twiss["BY","ORIGIN"]];
+BX BY at ORIGIN =   7.730307   1.367681
+ Print["max BX max BY   = ", Max[Twiss["BX"]], " ", Max[Twiss["BY"]]];
+max BX max BY   =   7.730307   7.365989
+ Exit;
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

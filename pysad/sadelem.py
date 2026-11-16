@@ -164,6 +164,7 @@ def install(ffs):
             r = [_sum(t) for t in r] if isinstance(r, list) and r and isinstance(r[0], list) else _sum(r) if not (isinstance(r, list) and not r) else r
         return r
     B['Element'] = fn_element
+    B['Element$'] = fn_element          # Element$[key, elem] (tfinitn.f)。Couple.n の ElementValues が使う
 
     def set_element(args, v):
         args = _strip_opts(list(args))

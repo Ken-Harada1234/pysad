@@ -1,0 +1,6 @@
+n=5
+Break k=128
+halvings 7 a=.78125
+even 2
+even 4
+even 6

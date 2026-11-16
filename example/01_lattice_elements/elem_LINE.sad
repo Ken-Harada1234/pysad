@@ -1,0 +1,18 @@
+! LINE の定義: 繰り返し n*、逆向き -、入れ子。先頭は MARK
+MOMENTUM = 3GEV;
+DRIFT D = (L=1);
+QUAD Q = (L=0.3 K1=0.5) QQ = (L=0.3 K1=-0.5);
+MARK M = (BX=1 BY=1);
+LINE HALF = (Q D QQ D);
+LINE TWICE = (M 2*HALF);
+LINE REVL = (M -HALF);
+LINE NEST = (M HALF -HALF 2*Q);
+FFS;
+USE TWICE; INS; CALC; DISP ALL;
+Print["nlat = ", LINE["LENGTH"]];
+USE REVL; INS; CALC; DISP ALL;
+Print["REVL nlat = ", LINE["LENGTH"], "  dir = ", LINE["DIR"]];
+USE NEST; INS; CALC; DISP ALL;
+Print["NEST names = ", LINE["NAME"]];
+Print["NEST length = ", LINE["S","$$$"]];
+Exit;

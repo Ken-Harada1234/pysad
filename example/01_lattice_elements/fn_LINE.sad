@@ -1,0 +1,27 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+$FORM = "10.6";
+USE RING; CELL; CALC;
+Print["LENGTH       = ", LINE["LENGTH"]];
+Print["NAME 1..8    = ", LINE["NAME",{1,2,3,4,5,6,7,8}]];
+Print["POSITION QF.2= ", LINE["POSITION","QF.2"]];
+Print["TYPENAME     = ", LINE["TYPENAME",{3,5,7}]];
+Print["ELEMENT      = ", LINE["ELEMENT",{3,5,7}]];
+Print["S at QF.1 B.1 $$$ = ", LINE["S",{"QF.1","B.1","$$$"}]];
+Print["S at 7.5 (mid of B.1) = ", LINE["S",7.5]];
+Print["K1 QF.1, QD.1 = ", LINE["K1",{"QF.1","QD.1"}], "  L B.1 = ", LINE["L","B.1"]];
+Print["MULT QF.1..QF.3 = ", LINE["MULT",{"QF.1","QF.2","QF.3"}]];
+Print["GEO B.1 = ", LINE["GEO","B.1"]];
+Print["GAMMA = ", LINE["GAMMA",1], "  GAMMABETA = ", LINE["GAMMABETA",1]];
+LINE["K1","QF.1"] = 0.75;
+Print["after LINE[K1,QF.1]=0.75: ", LINE["K1",{"QF.1","QF.2"}]];
+Exit;

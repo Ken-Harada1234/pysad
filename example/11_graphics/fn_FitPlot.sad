@@ -1,0 +1,10 @@
+! FitPlot (ラティスなし)。Fit の結果を点と曲線で描く
+FFS;
+$FORM="S17.10";
+dat=Table[{i,2*i+1+0.1*Sin[i*3]},{i,1,10}];
+g=FitPlot[dat,a+b*x,x,{a,1},{b,1}];
+Print["Head=",Head[g]," Length=",Length[g]];
+Print["R:a=",a/.g[[1]]];
+Print["R:b=",b/.g[[1]]];
+Update[];
+Exit;

@@ -1,0 +1,12 @@
+FFS;
+Print["Table 1   ", Table[i^2, {i, 5}]];
+Print["Table 2   ", Table[i*j, {i, 2}, {j, 3}]];
+Print["step      ", Table[x, {x, 0, 1, 0.25}]];
+Print["descending", Table[i, {i, 5, 1, -2}]];
+Print["n copies  ", Table[7, {3}]];
+Print["dependent ", Table[j, {i, 3}, {j, i}]];
+Print["Table of Table ", Table[Table[i + j, {j, 2}], {i, 2}]];
+Print["Sum    ", Sum[i, {i, 10}], " ", Sum[1/i^2, {i, 1, 100}]];
+Print["Product", Product[i, {i, 5}]];
+Print["Range vs Table ", Range[5] === Table[i, {i, 5}]];
+Exit;

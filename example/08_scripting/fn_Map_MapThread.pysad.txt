@@ -1,0 +1,9 @@
+Map      {2,5,10}
+/@       {2,5,10}
+pure fn  {1,4,9}
+level 2  {{2,5},{10,17}}
+MapAll   {5,{677,10202}}
+MapThread{11,22,33}
+MapThread{{1,a},{2,b},{3,c}}
+MapThread 3{8,14}
+MapThread g{9,18}

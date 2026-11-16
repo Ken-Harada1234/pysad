@@ -1,0 +1,26 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+       2        0    175.5      (NEWTON)    1.000          2
+       4        0    106.6      (NEWTON)   0.3975          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual =  106.6      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.039755 $$$       f BX    #######  #  13.000415 $$$       f NX   .2        1   1.275306
+$$$       f AY    #######  #   -.041996 $$$       f BY    #######  #  11.618401 $$$       f NY   .2        1   1.442643
+$$$       f LENG  #######  #  105.60000
+ABSW : K1 QF QD =   -.008547   -.008878  NX NY =   1.275306   1.442643
+       2        0    175.5      (NEWTON)    1.000          2
+       4        0    106.6      (NEWTON)   0.3975          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual =  106.6      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.039755 $$$       f BX    #######  #  13.000415 $$$       f NX   .2        1   1.275306
+$$$       f AY    #######  #   -.041996 $$$       f BY    #######  #  11.618401 $$$       f NY   .2        1   1.442643
+$$$       f LENG  #######  #  105.60000
+RELW : K1 QF QD =   -.008547   -.008878  NX NY =   1.275306   1.442643

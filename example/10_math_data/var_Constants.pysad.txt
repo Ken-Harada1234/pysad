@@ -1,0 +1,14 @@
+R:Pi=3.141592653589793
+R:Degree=.017453292519943
+R:GoldenRatio=1.618033988749895
+R:SpeedOfLight=299792458
+I*I=(-1+0 I)
+Infinity=INF
+-Infinity=-INF
+INF=INF
+NaN=NaN
+1/Infinity=0
+NaN==NaN: 0  NaNQ: 1
+Max[1,Infinity]=INF
+Exp[1000.]=INF
+R:GoldenRatio_eq=0

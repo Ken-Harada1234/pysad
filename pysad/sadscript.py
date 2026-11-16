@@ -21,6 +21,7 @@ import math
 import cmath
 import os
 import re
+import functools
 import sys
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
@@ -208,6 +209,62 @@ _UNITS = {'RAD': 1.0, 'MRAD': 1e-3, 'DEG': 3.141592653589793 / 180.0, 'M': 1.0, 
 _UNIT_SUFFIX = re.compile('(?:' + '|'.join(sorted(_UNITS, key=len, reverse=True)) + r')(?![A-Za-z0-9_$])', re.I)
 
 
+_HEXD = '0123456789abcdefABCDEF'
+
+
+_CMPSYM = {'Equal': '==', 'Unequal': '<>', 'Greater': '>', 'GreaterEqual': '>=', 'Less': '<', 'LessEqual': '<='}
+
+
+def _is_const(a):
+    """記号を含まない (数・文字列・それらのリスト/式/Blank) 引数"""
+    if isinstance(a, (float, int, str, complex)):
+        return True
+    if isinstance(a, list):
+        return all(_is_const(x) for x in a)
+    if isinstance(a, Expr):
+        if a.head == S('Blank'):
+            return True
+        return (isinstance(a.head, Sym) and a.head.name in ('List', 'Plus', 'Times', 'Power', 'Blank', 'Alternatives', 'Minus', 'Divide', 'Subtract')
+                and all(_is_const(x) for x in a.args))
+    return isinstance(a, Sym) and a.name in ('Pi', 'E', 'Degree')
+
+
+def _unescape_at(src, j, n):
+    r"""文字列の中の `\` の次の位置 j から 1 つの文字 (列) を読む。戻りは (文字列, 次の位置)。tfetok.f kxmakestring (gs で確認):
+    `\` + 8 進 1〜3 桁 (値は 256 で折り返す)、`\x` / `\X` + 16 進 0〜2 桁 (桁がなければ NUL)、`\u` / `\U` + 16 進 4 / 8 桁まで、
+    `\n` `\r` `\t` `\f` `\e` (ESC)、`\` + 改行は行継続 (何も入れない)。それ以外は `\` を落として次の文字をそのまま入れる (`\q` は q)"""
+    c = src[j]
+    if '0' <= c <= '7':
+        k = j + 1
+        v = int(c)
+        while k < n and k < j + 3 and '0' <= src[k] <= '7':
+            v = v * 8 + int(src[k])
+            k += 1
+        return chr(v % 256), k
+    if c in 'xX' and j + 1 < n:
+        k = j + 1
+        v = 0
+        while k < n and k < j + 3 and src[k] in _HEXD:
+            v = v * 16 + int(src[k], 16)
+            k += 1
+        return chr(v), k
+    if c in 'uU' and j + 1 < n:
+        k = j + 1
+        v = 0
+        while k < n and k < j + (9 if c == 'U' else 5) and src[k] in _HEXD:
+            v = v * 16 + int(src[k], 16)
+            k += 1
+        if k > j + 1:
+            try:
+                return chr(v), k
+            except (ValueError, OverflowError):
+                pass
+        return c, j + 1
+    if c == '\n':
+        return '', j + 1
+    return {'n': '\n', 'r': '\r', 't': '\t', 'f': '\f', 'e': '\x1b'}.get(c, c), j + 1
+
+
 def tokenize(src: str) -> List[Tok]:
     src = strip_comments(src)
     toks = []
@@ -236,9 +293,10 @@ def tokenize(src: str) -> List[Tok]:
             buf = []
             while j < n and src[j] != q:
                 if src[j] == '\\' and j + 1 < n:
-                    e = src[j + 1]
-                    buf.append({'n': '\n', 't': '\t', 'r': '\r', '"': '"', '\\': '\\'}.get(e, '\\' + e))
-                    j += 2
+                    if src[j + 1] == '\n':
+                        line += 1
+                    ch_, j = _unescape_at(src, j + 1, n)
+                    buf.append(ch_)
                 else:
                     if src[j] == '\n':
                         line += 1
@@ -246,6 +304,22 @@ def tokenize(src: str) -> List[Tok]:
                     j += 1
             toks.append(Tok('str', ''.join(buf), line, pre))
             i = j + 1
+            pre = False
+            continue
+        if c == '%':
+            # % は直前の出力 Out[$Line]、%n は Out[n] (gs)。%% は gs でも記号のまま
+            j = i + 1
+            while j < n and src[j].isdigit():
+                j += 1
+            if j < n and src[j] == '%':
+                toks.append(Tok('sym', '%%', line, pre))
+                i = j + 1
+            else:
+                toks.append(Tok('sym', 'Out', line, pre))
+                toks.append(Tok('op', '[', line, False))
+                toks.append(Tok('num', float(src[i + 1:j]), line, False) if j > i + 1 else Tok('sym', '$Line', line, False))
+                toks.append(Tok('op', ']', line, False))
+                i = j
             pre = False
             continue
         if c == '0' and i + 2 < n and src[i + 1] in 'xX' and src[i + 2] in '0123456789abcdefABCDEF':
@@ -1075,6 +1149,7 @@ class Frame(dict):
 
 
 import operator as _op
+_FOLD_HEADS = {'Plus', 'Times', 'Power', 'Divide', 'Subtract', 'Minus', 'Sin', 'Cos', 'Tan', 'Exp', 'Log', 'Sqrt', 'ArcTan', 'ArcSin', 'ArcCos', 'Abs', 'Sinh', 'Cosh', 'Tanh'}
 _FAST2 = {'Plus': _op.add, 'Times': _op.mul, 'Subtract': _op.sub, 'Divide': _op.truediv}
 
 
@@ -1100,6 +1175,9 @@ class Interp:
                              'PlanckHbar': 1.0545718176461565e-34, 'BoltzmannConstant': 1.380649e-23, 'ElectronGminus2over2': 0.001159652181280002,
                              'SIMu0': 1.2566370621210481e-6, 'MKSAMu0': 1.2566370621210481e-6, 'SIEpsilon0': 8.854187812793e-12, 'MKSAEpsilon0': 8.854187812793e-12})
         self.protected = set()
+        self.out_hist = {}                  # Out[n] (最上位の文の値。run_sad_string が echo_out を立てたとき)
+        self.out_line = 0
+        self.globals['$Line'] = 0.0
         self.rng = None     # SadRandom (ffs 側で設定)
         self.stopped = False
         self.set_hooks = {}
@@ -1153,6 +1231,7 @@ class Interp:
         result = Null
         self._run_depth = getattr(self, '_run_depth', 0) + 1
         stmts = self.split_statements(src)
+        semis = list(self._last_semis)
         k = 0
         # tffsa.f の REPEAT/UNTIL (levelr, nrpt, irptp) と tfif.f の IF/ELSEIF/ELSE/ENDIF (iflevel) は
         # 文の列を読む側の制御 (ファイル位置の巻き戻し/読み飛ばし) なので、最上位の FFS 文列でだけ働く
@@ -1179,10 +1258,20 @@ class Interp:
                             raise SADError(f'FFS command without handler: {stmt_src}')
                         self.ffs_handler(stmt_src.strip())
                         continue
-                    for node in parse(stmt_src):
+                    nodes_ = parse(stmt_src)
+                    for node in nodes_:
                         if self.stopped:
                             break
                         result = self.eval(node)
+                    if getattr(self, 'echo_out', False) and mode == 'ffs' and self._run_depth == 1 and nodes_                             and k - 1 < len(semis) and not semis[k - 1] and stmts[k - 1] is stmt_src:
+                        v_ = result
+                        if isinstance(nodes_[-1], Expr) and nodes_[-1].head == S('SetDelayed') and len(nodes_[-1].args) == 2:
+                            v_ = nodes_[-1].args[1]                 # gs: f[x_] := body の値は未評価の本体
+                        if v_ is not Null and not isinstance(v_, Seq):
+                            self.out_line += 1
+                            self.out_hist[self.out_line] = v_
+                            self.globals['$Line'] = float(self.out_line)
+                            self.out.write(self.wrap('Out[%d]:= %s' % (self.out_line, self.to_str(v_, None, True))) + chr(10))
                 except SADError as e:
                     # SAD は文の実行中のエラーを表示してその文を打ち切り、次の文に進む (最上位の run だけ)
                     if not getattr(self, 'continue_on_error', False) or self._run_depth > 1:
@@ -1195,6 +1284,11 @@ class Interp:
                         # SAD は打ち切った文を '... in 式' で示す (式の形は SAD の表示と違い、文の先頭 200 文字)
                         src1 = ' '.join(stmt_src.split())
                         self.out.write('... in ' + (src1[:200] + (' ...' if len(src1) > 200 else '')) + chr(10))
+                except (_Return, _Break, _Continue, _Throw):
+                    # gs: 関数の外の Return / Break / Continue / Throw はエラーでその文を打ち切る
+                    if not getattr(self, 'continue_on_error', False) or self._run_depth > 1:
+                        raise
+                    self.out.write('???General::unexpbreak:  Unexpected Break, Continue, Goto, Return, Throw' + chr(10))
                 except (TypeError, IndexError, ValueError, KeyError, ZeroDivisionError, AttributeError,
                         OverflowError) as e:
                     # 組み込み関数への不正な引数 (SAD では General::wrongtype 等で文を打ち切る)。Python 例外も同様に扱う
@@ -1350,6 +1444,7 @@ class Interp:
         """ソースを文 (文字列) に分ける: 括弧の外の ; と改行で区切る。演算子で終わる行は次の行に続く"""
         src = strip_comments(src)
         out = []
+        semis = self._last_semis = []          # 各文が ; で終わっていたか (最上位の Out[n]:= 表示の判定)
         i, n = 0, len(src)
         depth = 0
         stmt_start = 0
@@ -1380,6 +1475,7 @@ class Interp:
                         i += 1
                         continue
                     out.append(stmt)
+                    semis.append(c == ';')
                 stmt_start = i + 1
             i += 1
         return out
@@ -1667,6 +1763,8 @@ class Interp:
                             h_ = h_.v
                         if isinstance(h_, Expr) and h_.head == S('Unevaluated') and len(h_.args) == 1:
                             h_ = h_.args[0]                   # 保持引数の位置では Unevaluated[x] の外側を外す (Widget[Unevaluated[Root$Window], Null])
+                        elif isinstance(h_, Expr) and h_.head == S('Evaluate') and len(h_.args) == 1:
+                            h_ = self.eval(h_.args[0])        # 保持引数の位置の Evaluate[x] は評価する (ParametricPlot[Evaluate[ReleaseHold[a]], …])
                         args.append(_HeldArg(h_))
                     else:
                         v = self.eval(a)
@@ -1787,6 +1885,8 @@ class Interp:
                 i = n + 1 + i if i < 0 else i
                 j = n + 1 + j if j < 0 else j
                 return hv[max(i, 1) - 1:max(j, 0)]
+            if args and any(isinstance(x, str) for x in args):
+                return Expr(hv, args)        # "K1"["QD"] (ElementValues のキー) は評価せず式のまま (gs)
             return self.part(list(hv), args) if args else hv
         if isinstance(hv, Func):
             return self.apply_func(hv, args)
@@ -1815,16 +1915,11 @@ class Interp:
                 fr[p] = a
             self.frames.append(fr)
             try:
-                return self.eval(fn.body)
-            except _Return as r:
-                return r.value
+                return self.eval(fn.body)           # Return は純関数を抜けて、外側のユーザ定義関数まで届く (gs で確認)
             finally:
                 self.frames.pop()
         body = self.subst_slots(fn.body, args)
-        try:
-            return self.eval(body)
-        except _Return as r:
-            return r.value
+        return self.eval(body)
 
     def subst_slots(self, node, args):
         if isinstance(node, Expr):
@@ -1835,9 +1930,11 @@ class Interp:
                 return Null
             if node.head == S('SlotSequence'):
                 return Expr(S('Sequence'), [_Lit(a) for a in args])
-            if node.head == S('Function'):
-                return node       # 内側の純関数は置換しない
+            if node.head == S('Function') or node.head == S('Hold'):
+                return node       # 内側の純関数・Hold の中は置換しない (gs: (Hold[f[#]]&)[3] は Hold[f[#]])
             return Expr(self.subst_slots(node.head, args), [self.subst_slots(a, args) for a in node.args])
+        if isinstance(node, list) and any(isinstance(a, (Expr, list)) for a in node):
+            return [self.subst_slots(a, args) for a in node]
         return node
 
     def apply_downvalues(self, name, dv, args):
@@ -2145,9 +2242,37 @@ class Interp:
             return a.head.name == typ
         return False
 
+    def _const_fold(self, node):
+        """保持された引数が数と定数 (Pi・E・Degree) と組み込みの数値関数だけの式なら、その値 (gs は 2*Pi、Sin[1.]、1+2. を _Real に照合する)。そうでなければ None"""
+        def ok(x):
+            if is_num(x):
+                return True
+            if isinstance(x, Sym):
+                return x.name in ('Pi', 'E', 'Degree')
+            if isinstance(x, Expr) and isinstance(x.head, Sym) and x.args:
+                n_ = x.head.name
+                return n_ in self.builtins and n_ not in self.downvalues and n_ in _FOLD_HEADS and all(ok(y) for y in x.args)
+            return False
+        if isinstance(node, Expr) and ok(node):
+            try:
+                v = self.eval(node)
+            except (SADError, ArithmeticError, ValueError, TypeError):
+                return None
+            return v if is_num(v) else None
+        if isinstance(node, Sym) and ok(node):
+            return self.eval(node)
+        return None
+
     def _match_held(self, p, a, b) -> bool:
         """a は評価されていない引数 (_HeldArg)。リテラルは式として比べ、構造パターンは式の構造で照合する (束縛される値は保持された式)"""
         node = a.node.v if isinstance(a.node, _Lit) else a.node
+        if isinstance(p, Expr) and not is_num(node):
+            pt_ = p.args[1] if (p.head == S('Pattern') and len(p.args) == 2) else p
+            if isinstance(pt_, Expr) and pt_.head == S('Blank') and pt_.args:
+                fv_ = self._const_fold(node)
+                if fv_ is not None:
+                    a = _HeldArg(fv_)           # x_Real は定数式 (2*Pi など) の値に照合し、値を束縛する
+                    node = fv_
         if isinstance(p, _Lit):
             return self.same(p.v, node) or repr(p.v) == repr(node)
         if isinstance(p, Expr):
@@ -2167,7 +2292,10 @@ class Interp:
             if h == S('PatternTest'):
                 if not self._match_one(p.args[0], a, b):
                     return False
-                return truthy(self.eval(Expr(p.args[1], [_Lit(self.eval(node))]))) is True
+                try:
+                    return truthy(self.eval(Expr(p.args[1], [_Lit(self.eval(node))]))) is True
+                except SADError:
+                    return False
             if h == S('Alternatives'):
                 for q in p.args:
                     b2 = dict(b)
@@ -2236,8 +2364,9 @@ class Interp:
         if isinstance(p, _Lit):
             if self.same(p.v, a):
                 return True
-            if isinstance(a, Sym) and isinstance(p.v, Expr):
-                # 記号 (Canvas$Canvas) で来た引数は、その値でも照合する (UpValue 内の `m[c] = …` は c を評価した値で保存される)
+            if isinstance(a, Sym) and isinstance(p.v, Expr) and not any(d_[0] is None for d_ in (self.downvalues.get(a.name) or ())):
+                # 記号 (Canvas$Canvas) で来た引数は、その値でも照合する (UpValue 内の `m[c] = …` は c を評価した値で保存される)。
+                # 遅延した定義 (The$CanvasObject := …) を持つ記号は評価しない (評価すると代入の左辺の定義が走ってしまう)
                 try:
                     va = self.eval(a)
                 except Exception:
@@ -2274,7 +2403,10 @@ class Interp:
             if h == S('PatternTest'):
                 if not self._match_one(p.args[0], a, b):
                     return False
-                t = self.eval(Expr(p.args[1], [_Lit(a)]))
+                try:
+                    t = self.eval(Expr(p.args[1], [_Lit(a)]))
+                except SADError:
+                    return False                   # gs: 検査の中のエラー (Second[List] など) は不一致 (メッセージなし)
                 return truthy(t) is True
             if h == S('Alternatives'):
                 for q in p.args:
@@ -2411,6 +2543,10 @@ class Interp:
                 if isinstance(v.args[0], Expr) and v.args[0].head == S('Times') and len(v.args[0].args) >= 2:
                     base_ = '(' + base_ + ')'              # K64: Power の底の Times は括弧が 2 重 ((a x))^3
                 return base_ + '^' + self._paren_plus(v.args[1], form)
+            if hn == 'Blank' and len(v.args) <= 1:
+                return '_' + (self.to_str(v.args[0], form, True) if v.args else '')
+            if hn in _CMPSYM and len(v.args) == 2:
+                return self.to_str(v.args[0], form, True) + _CMPSYM[hn] + self.to_str(v.args[1], form, True)
             if hn == 'Dot' and len(v.args) == 2:
                 return self.to_str(v.args[0], form, True) + '.' + self.to_str(v.args[1], form, True)
             if hn == 'Minus' and len(v.args) == 1:
@@ -2448,7 +2584,7 @@ class Interp:
         return '\n'.join(lines)
 
     def write_unit(self, unit, text):
-        if unit == 6 or unit is None:
+        if unit == 6 or unit is None or unit == -1:        # $Output = -1
             self.out.write(text)
             self.out.flush()
         else:
@@ -2538,6 +2674,13 @@ class Interp:
                 lhs = Expr(lhs.head, [I.eval(a_) for a_ in lhs.args])        # f[x] = v は x を評価してから UpValue を探す (PkgConfig$Default[pkg, var] = val)
             if isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and not _is_pattern(lhs) and (I.downvalues.get('SetDelayed' if delayed else 'Set')):
                 lhs = Expr(lhs.head, [a_.v if isinstance(a_, _Lit) else I.eval(a_) for a_ in lhs.args])      # a$[op$] のように変数を引数に持つ f[x][op] = v: 引数は評価してから UpValue を探す
+            if (not delayed and isinstance(lhs, Sym) and lhs.name in I.autoload and lhs.name not in I.downvalues and lhs.name not in I.builtins
+                    and not any(lhs.name in fr_ for fr_ in I.frames)):
+                I._load_autoload(lhs.name)            # Canvas$Widget = c1: Canvas.n の `(Canvas$Widget=Widget[c_,_Canvas])^:=…` (UpValue) も読み込み後でないと引けない
+            if (not delayed and isinstance(rhs, Expr) and isinstance(rhs.head, Sym) and rhs.head.name in I.autoload
+                    and rhs.head.name not in I.downvalues and rhs.head.name not in I.builtins
+                    and os.path.basename(I.autoload.get(rhs.head.name) or '') in ('correction.n', 'bump.n', 'corutility.n')):
+                I._load_autoload(rhs.head.name)       # b = Bump[…]: パッケージの `(a_ = Bump[…]) ^:= …` (UpValue) は読み込み後でないと引けない
             dvh = I.downvalues.get('SetDelayed' if delayed else 'Set')
             if dvh and isinstance(lhs, (Sym, Expr)) and not _is_pattern(lhs):
                 if not delayed:
@@ -2891,6 +3034,8 @@ class Interp:
         B['While'] = _while
 
         def _for(args):
+            if len(args) != 4:
+                return Expr(S('For'), list(args))      # gs: For[ini_,cond_,incr_,body_] は 4 引数だけ (3 引数は未評価のまま)
             I.eval(args[0])
             try:
                 while truthy(I.eval(args[1])) is True:
@@ -2906,10 +3051,12 @@ class Interp:
         B['For'] = _for
 
         def _which(args):
+            if len(args) % 2 or not args:
+                raise SADError('General::narg:  Number of arguments is expected to be even number in Which[%s]' % ','.join(I.to_str(a) for a in args))
             for k in range(0, len(args) - 1, 2):
                 if truthy(I.eval(args[k])) is True:
                     return I.eval(args[k + 1])
-            return Null
+            return Expr(S('Which'), list(args))        # gs: 一致なしは式をそのまま返す
         B['Which'] = _which
 
         def _switch(args):
@@ -2922,7 +3069,12 @@ class Interp:
                         p = pv_                       # 変数が持つパターン (Switch[val, types, ...] の types = _Real)
                 if (isinstance(p, Expr) and p.head in (S('Blank'),) and not p.args) or I.same(I.eval(p), x) or I._match_one(p, x, {}):
                     return I.eval(args[k + 1])
-            return Null
+            if len(args) % 2 == 0:
+                raise SADError('General::narg:  Number of arguments is expected to be odd number in Switch[%s]' % ','.join(I.to_str(a) for a in args))
+            # gs: 一致なしは Switch[値, 規則…] を返す。引数がすべて定数なら読み込み時に畳まれて Switch[値] だけになる
+            if all(_is_const(a) for a in args):
+                return Expr(S('Switch'), [x])
+            return Expr(S('Switch'), [x] + list(args[1:]))
         B['Switch'] = _switch
 
         def _resolve(nm):
@@ -2969,7 +3121,66 @@ class Interp:
                 return r_
             finally:
                 I.frames.pop()
-        B['Module'] = _module
+        _modctr = [0]
+
+        def _rn(node, mp, fl):
+            """宣言した局所名を name$N に改名した式を返す (字句スコープ。fl に定義・純関数の有無を記録)"""
+            if isinstance(node, Sym):
+                n_ = mp.get(node.name)
+                return Sym(n_) if n_ is not None else node
+            if isinstance(node, Expr):
+                h_ = node.head
+                if isinstance(h_, Sym):
+                    hn_ = h_.name
+                    if hn_ == 'Function':
+                        fl[0] = True
+                    elif hn_ in ('Set', 'SetDelayed', 'UpSet', 'UpSetDelayed') and node.args and isinstance(node.args[0], Expr)                             and not (isinstance(node.args[0].head, Sym) and node.args[0].head.name in ('List', 'Part')):
+                        fl[0] = True
+                return Expr(_rn(h_, mp, fl), [_rn(a, mp, fl) for a in node.args])
+            if isinstance(node, Rule):
+                return Rule(_rn(node.lhs, mp, fl), _rn(node.rhs, mp, fl), node.delayed)
+            if isinstance(node, list):
+                return [_rn(a, mp, fl) for a in node]
+            return node
+
+        def _module_lex(args):
+            decl = args[0]
+            names = Interp._declared_names(decl)
+            if not names or any(_resolve(n_) != n_ for n_ in names):
+                return _module(args)
+            _modctr[0] += 1
+            mp = {n_: '%s$%d' % (n_, _modctr[0]) for n_ in names}
+            fl = [False]
+            items = decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl]
+            vals = {}
+            for it in items:                     # 初期値は外側の環境で評価する (Module[{x = 7, y = x}, y] の y は外側の x)
+                if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')):
+                    lhs, init = it.args[0], it.args[1]
+                    if isinstance(lhs, Expr) and lhs.head == S('List'):
+                        v_ = I.eval(init)
+                        for sym, x_ in zip(lhs.args, v_ if isinstance(v_, list) else [v_]):
+                            vals[mp[sym.name]] = _copy(x_)
+                    elif it.head == S('SetDelayed'):
+                        vals[mp[lhs.name]] = Expr(S('$Delayed'), [_rn(init, mp, fl)])
+                    else:
+                        vals[mp[lhs.name]] = _copy(I.eval(init))
+                elif isinstance(it, Sym):
+                    vals[mp[it.name]] = Sym(mp[it.name])
+            fr = Frame()
+            fr.update(vals)
+            I.frames.append(fr)
+            try:
+                r_ = Null
+                for body_ in args[1:]:
+                    r_ = I.eval(_rn(body_, mp, fl))
+            finally:
+                I.frames.pop()
+            if fl[0] or not isinstance(r_, (float, str, int, complex, list)) and r_ is not Null:
+                for k_, v_ in fr.items():            # 定義・純関数・記号の結果が局所名を参照しうるので、値を残す
+                    if k_ in fr and not (isinstance(v_, Sym) and v_.name == k_):
+                        I.globals[k_] = v_
+            return r_
+        B['Module'] = _module_lex
 
         def _block(args):
             # Block[{mesh}, …]: 局所にした記号の関数定義 (mesh[x_] := …) は入るとき退避して空にし、出るとき戻す
@@ -3022,6 +3233,8 @@ class Interp:
                 if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')):
                     nm_ = it.args[0].name
                     for fr0_ in reversed(I.frames):
+                        if nm_ not in fr0_ and getattr(fr0_, 'boundary', False):
+                            break                     # 別の関数 (規則) の呼び出しの外側の引数は見ない
                         if nm_ in fr0_:
                             if fr0_.immut and isinstance(fr0_[nm_], Sym):
                                 nm_ = fr0_[nm_].name      # 関数の引数 z が記号 x に束縛されているとき、With[{z = …}, …] は x を束縛する (SAD は引数を本体に文字どおり代入する)
@@ -3058,11 +3271,18 @@ class Interp:
         B['Priority'] = _priority
 
         def _function(args):
+            wf_ = [fr_ for fr_ in I.frames if getattr(fr_, 'is_with', False)]
             if len(args) == 1:
-                return Func(None, args[0])
+                body_ = args[0]
+                if wf_:
+                    body_ = _with_subst(body_)             # With[{f}, f&] は f の値を本体へ埋め込む (With は純関数の本体にも効く)
+                return Func(None, body_)
             params = args[0]
             names = [p.name for p in (params.args if isinstance(params, Expr) else [params])]
-            return Func(names, args[1])
+            body_ = args[1]
+            if wf_:
+                body_ = _with_subst(body_, set(names))
+            return Func(names, body_)
         B['Function'] = _function
 
         def _return(args):
@@ -3096,7 +3316,35 @@ class Interp:
                    'Literal', 'Unevaluated', 'SetOptions', 'DefineOptions', 'FFS$NumericalDerivative', 'Off', 'On'):
             B[nm] = lambda a, nm=nm: (I.eval(a[0]) if nm in ('HoldForm', 'Unevaluated') and a else Null)
         B['Literal'] = lambda a: a[0] if len(a) == 1 else Null     # Literal[x] は x そのもの (評価も改名もしない記号。Canvas.n の Literal[TickFontScale]->1)
-        B['Hold'] = lambda a: Expr(S('Hold'), list(a))                 # Hold[x] は x を評価しないまま Hold[x] を返す (WidgetCopyList = Hold[] に Union で足す)
+        def _with_subst(x, skip=()):
+            """With[{y=…}, Hold[y]] は Hold[…の値] (With は保持された式の中にも値を埋め込む)"""
+            if isinstance(x, Sym):
+                if x.name in skip:
+                    return x
+                for fr_ in reversed(I.frames):
+                    if x.name not in fr_ and getattr(fr_, 'boundary', False):
+                        break                              # 別の関数の呼び出しの内側では、呼び出し元の With の変数は見ない
+                    if x.name in fr_:
+                        if getattr(fr_, 'is_with', False):
+                            v_ = fr_[x.name]
+                            if not (isinstance(v_, Expr) and v_.head == S('$Delayed')):
+                                return v_
+                        return x
+                return x
+            if isinstance(x, Expr):
+                return Expr(_with_subst(x.head, skip), [_with_subst(a_, skip) for a_ in x.args])
+            if isinstance(x, list):
+                return [_with_subst(a_, skip) for a_ in x]
+            if isinstance(x, Rule):
+                return Rule(_with_subst(x.lhs, skip), _with_subst(x.rhs, skip), x.delayed)
+            return x
+
+        def _hold(a):
+            a = [x_.v if isinstance(x_, _Lit) else x_ for x_ in a]
+            if any(getattr(fr_, 'is_with', False) for fr_ in I.frames):
+                a = [_with_subst(x_) for x_ in a]
+            return Expr(S('Hold'), list(a))
+        B['Hold'] = _hold                 # Hold[x] は x を評価しないまま Hold[x] を返す (WidgetCopyList = Hold[] に Union で足す)
 
         def _setattrs(a):
             """SetAttributes[f, attr] / SetAttributes[{f1, f2}, {attr1, attr2}] (引数は保持されたまま来る)"""
@@ -3191,6 +3439,22 @@ class Interp:
                 return INF
         B['Power'] = lambda a: lmap2(_pow, a[0], a[1], 'Power')
 
+        def _is_rat(x):
+            return isinstance(x, Expr) and x.head == S('Rational')
+
+        def _wrap_rational(name, fn):
+            def w(a):
+                # rational.n を読んだあと: a-b は a+(-b)、a/b は a*(1/b) として Rational の規則 (UpValue) へ回す (gs は Subtract・Divide を Plus・Times に直す)
+                if len(a) == 2 and (_is_rat(a[0]) or _is_rat(a[1])) and I.downvalues.get('Rational'):
+                    if name == 'Subtract':
+                        return I.eval(Expr(S('Plus'), [_Lit(a[0]), Expr(S('Minus'), [_Lit(a[1])])]))
+                    if not (name == 'Divide' and a[0] == 1.0):
+                        return I.eval(Expr(S('Times'), [_Lit(a[0]), Expr(S('Divide'), [1.0, _Lit(a[1])])]))
+                return fn(a)
+            return w
+        B['Subtract'] = _wrap_rational('Subtract', B['Subtract'])
+        B['Divide'] = _wrap_rational('Divide', B['Divide'])
+
         def _fold(args, f, unit):
             r = unit
             for a in args:
@@ -3210,14 +3474,35 @@ class Interp:
                     return 1.0 if f(a, b) else 0.0
                 if is_num(a) and is_num(b):
                     return 1.0 if f(a, b) else 0.0
-                if isinstance(a, list) and isinstance(b, list):
-                    return lmap2(lambda x, y: 1.0 if f(x, y) else 0.0, a, b)
+                if isinstance(a, list) or isinstance(b, list):
+                    try:
+                        return lmap2(lambda x, y: 1.0 if f(x, y) else 0.0, a, b)       # gs: 比較はリストの要素ごと ({1,2}>=2 は {0,1})
+                    except Exception:
+                        return Expr(S('$Cmp'), args)
                 return Expr(S('$Cmp'), args)
             return g
         def _equal2(a):
             return (1.0 if I.same(a[0], a[1]) else 0.0) if not (is_num(a[0]) and is_num(a[1])) else (1.0 if a[0] == a[1] else 0.0)
-        B['Equal'] = lambda a: _equal2(a) if len(a) == 2 else (1.0 if all(_equal2([a[k], a[k + 1]]) == 1.0 for k in range(len(a) - 1)) else 0.0)
-        B['Unequal'] = lambda a: 1.0 - B['Equal'](a)
+        def _eqthread(x, y, neg):
+            # gs: リストどうしの == は要素ごと ({1,2}=={1,3} は {1,0})、入れ子も再帰。長さが違えば 0。リストとスカラーは未評価
+            if isinstance(x, list) and isinstance(y, list):
+                if len(x) != len(y):
+                    return 1.0 if neg else 0.0
+                return [_eqthread(p, q, neg) for p, q in zip(x, y)]
+            if isinstance(x, list) or isinstance(y, list):
+                return Expr(S('Unequal' if neg else 'Equal'), [x, y])
+            if I.same(x, y):
+                return 0.0 if neg else 1.0
+            if isinstance(x, (Sym, Expr)) or isinstance(y, (Sym, Expr)):
+                return Expr(S('Unequal' if neg else 'Equal'), [x, y])
+            return 1.0 if neg else 0.0
+
+        def _equal(a):
+            if len(a) == 2 and (isinstance(a[0], list) or isinstance(a[1], list)):
+                return _eqthread(a[0], a[1], False)
+            return _equal2(a) if len(a) == 2 else (1.0 if all(_equal2([a[k], a[k + 1]]) == 1.0 for k in range(len(a) - 1)) else 0.0)
+        B['Equal'] = _equal
+        B['Unequal'] = lambda a: _eqthread(a[0], a[1], True) if len(a) == 2 and (isinstance(a[0], list) or isinstance(a[1], list)) else 1.0 - _equal(a)
         B['Greater'] = _cmp(lambda x, y: x > y)
         B['GreaterEqual'] = _cmp(lambda x, y: x >= y)
         B['Less'] = _cmp(lambda x, y: x < y)
@@ -3374,7 +3659,12 @@ class Interp:
             n = int(math.floor((hi - lo) / d + 1e-9)) + 1
             return [lo + k * d for k in range(max(n, 0))]
         B['Range'] = _range
-        B['Part'] = lambda a: I.part(a[0], a[1:])
+        def _part_builtin(a):
+            r_ = I.part(a[0], a[1:])
+            if isinstance(a[0], Expr) and a[0].head == S('Hold') and isinstance(r_, (list, Expr)):
+                r_ = I.eval(Expr(S('List'), list(r_)) if isinstance(r_, list) else r_)            # Hold[…][[1]] は取り出した式を評価し直す (Couple.n: EVCompiled[[1]])
+            return r_
+        B['Part'] = _part_builtin
         B['First'] = lambda a: a[0][0]
         B['Last'] = lambda a: a[0][-1]
         B['Rest'] = lambda a: a[0][1:]
@@ -3543,7 +3833,7 @@ class Interp:
         B['SingularValues'] = lambda a: _tolist(np.linalg.svd(_mat(a[0]), compute_uv=False))
 
         # ---- 文字列
-        B['StringJoin'] = lambda a: ''.join(I.to_str(x) if not isinstance(x, list) else ''.join(I.to_str(y) for y in x) for x in a)
+        B['StringJoin'] = lambda a: ''.join(I.to_str(x) for x in a)         # gs: リストは文字列に連結せず {"a","b"} の形の文字列 (StringJoin[{"a","b"}] = {"a","b"})
         B['ToString'] = lambda a: I.to_str(a[0], a[1] if len(a) > 1 and isinstance(a[1], str) else None)
         B['ToExpression'] = lambda a: I.run(a[0], 'script') if isinstance(a[0], str) else a[0]
         B['StringLength'] = lambda a: float(len(a[0]))
@@ -3609,7 +3899,13 @@ class Interp:
                 out = out[:int(a[2])]
             return out
         B['StringPosition'] = _stringposition
-        B['StringMatchQ'] = lambda a: 1.0 if re.fullmatch(_wild(a[1]), a[0]) else 0.0
+        def _smq(a):
+            if len(a) != 2 or not isinstance(a[0], str) or not isinstance(a[1], str):
+                raise SADError('General::wrongtype:  Argument must be [String, Pattern-string] in StringMatchQ[%s]' % ','.join(I.to_str(x, None, True) for x in a))
+            if a[0] == '':
+                return 0.0                        # gs: 空文字列は何にも合わない
+            return 1.0 if _sad_wild_rx(a[1]).fullmatch(a[0]) else 0.0
+        B['StringMatchQ'] = _smq
         B['StringForm'] = lambda a: _string_form(a)
         B['StringTrim'] = lambda a: a[0].strip()
         B['StringQ'] = lambda a: 1.0 if isinstance(a[0], str) else 0.0
@@ -3738,17 +4034,23 @@ class Interp:
                                 fr_.immut = True
                                 I.frames.append(fr_)
                                 try:
-                                    return I.eval(r.rhs) if ev else I.subst_bindings(r.rhs, b_)
+                                    return I.eval(r.rhs) if ev else _unlit(I.subst_bindings(r.rhs, b_))
                                 finally:
                                     I.frames.pop()
                             return I.eval(I.subst_bindings(r.rhs, b_))
+                if isinstance(v, Func):
+                    return Func(v.params, _as_expr(rep(v.body, False)), v.env)        # (…&) /. Hold->Null: 純関数の本体にも規則を適用する
                 if isinstance(v, list):
                     return _splice([rep(y, ev) for y in v])
                 if isinstance(v, Rule):
                     return Rule(rep(v.lhs, ev), rep(v.rhs, ev and not v.delayed), v.delayed)       # a:>b の b は評価しない (Command:>KBF$AboutBox[])
                 if isinstance(v, Expr):
-                    if not ev:
-                        return Expr(rep(v.head, False), _splice([rep(y, False) for y in v.args]))
+                    if not ev or (v.head == S('Hold') and not any(isinstance(r_.lhs, Sym) and r_.lhs.name == 'Hold' for r_ in flat)):          # Hold[…] の中は規則の右辺 (:>) も評価せず埋め込む (Hold を別の頭部に替えるときは評価する)
+                        h_ = rep(v.head, False)
+                        a_ = _splice([rep(y, False) for y in v.args])
+                        if isinstance(h_, _Null) or h_ == S('Null'):
+                            return Seq(a_)                 # Hold->Null: Null[x, …] は並びとして外側のリストに展開される
+                        return Expr(h_, a_)
                     return I.eval(Expr(rep(v.head), [_Lit(y) for y in _splice([rep(y) for y in v.args])]))
                 return v
 
@@ -3773,6 +4075,8 @@ class Interp:
         B['Print'] = _print
 
         def _write(a):
+            if len(a) < 2:
+                raise SADError('General::narg:  Number of arguments is expected to be 2 or more in Write[%s]' % ','.join(I.to_str(x) for x in a))
             unit = a[0]
             s = ''.join(I.to_str(x) for x in a[1:])
             I.write_unit(unit if is_num(unit) else 6, I.wrap(s) + '\n')
@@ -3828,13 +4132,154 @@ class Interp:
         B['OpenRead'] = lambda a: _open(a, 'r')
 
         def _close(a):
+            if a and isinstance(a[0], list) and all(is_num(x) for x in a[0]):
+                for x_ in a[0]:                       # Close[{f, g}]: 複数のファイルを閉じる
+                    _close([x_])
+                return Null
             if not a or not is_num(a[0]):
                 raise SADError('General::wrongtype:  Argument must be Real number in Close$[%s]' % ','.join(I.to_str(x) for x in a))
-            f = I.files.pop(int(a[0]), None)
+            f = I.files.pop(int(a[0]), None) if int(a[0]) > 0 else None
             if f:
+                _rst.pop(id(f), None)
                 f.close()
             return Null
         B['Close'] = _close
+
+        _rst = {}          # 読み取りの状態: ストリーム → [現在の記録 (行 + 改行)、位置]。tfwrite.f の ipoint / lrecl に相当
+
+        def _rec_next(f, st):
+            line = f.readline()
+            if line == '':
+                return False
+            st[0] = line if line.endswith('\n') else line + '\n'
+            st[1] = 0
+            return True
+
+        def _rd_string(f, st, char1, new, delim, null):
+            """tfreadstringf: delim が空なら記録の残り (ReadString)。Word は delim で区切り、Character は 1 文字。EOF は None"""
+            while True:
+                if st[0] is None or st[1] >= len(st[0]):
+                    if not _rec_next(f, st):
+                        return None
+                rest = st[0][st[1]:]
+                nc = len(rest)
+                if char1:
+                    nw, nxt, is_ = 1, 2, 0
+                elif delim:
+                    if null:
+                        is_ = 0
+                        if rest[0] in delim:
+                            nw, nxt = 0, 2
+                        else:
+                            e = next((i for i in range(1, nc) if rest[i] in delim), None)
+                            nxt = (e + 2) if e is not None else nc + 1
+                            nw = e if e is not None else nc
+                    else:
+                        is_ = next((i for i in range(nc) if rest[i] not in delim), None)
+                        if is_ is None:
+                            if new:
+                                st[1] = len(st[0])
+                                continue
+                            nw, nxt, is_ = 0, nc + 1, nc
+                        else:
+                            e = next((i for i in range(is_ + 1, nc) if rest[i] in delim), None)
+                            nxt = (e + 2) if e is not None else nc + 1
+                            nw = (e if e is not None else nc) - is_
+                else:
+                    is_, nw, nxt = 0, nc, nc + 1
+                break
+            w = rest[is_:is_ + nw]
+            if new and nxt > nc:
+                st[1] = len(st[0])
+            else:
+                st[1] += nxt - 1
+            if w.endswith('\n'):
+                w = w[:-1]
+            return w
+
+        def _rd_expr(f, st):
+            """tfread1: 現在位置から式を 1 つ読む (隣り合う項で切る。括弧が閉じなければ次の行も使う)。評価して返す"""
+            while st[0] is None or not st[0][st[1]:].strip():
+                if not _rec_next(f, st):
+                    return S('EndOfFile')
+            txt = st[0][st[1]:]
+            while True:
+                depth = 0
+                inq = False
+                cut = None
+                last = ''
+                i = 0
+                while i < len(txt):
+                    c = txt[i]
+                    if inq:
+                        if c == '\\':
+                            i += 1
+                        elif c == '"':
+                            inq = False
+                    elif c == '"':
+                        inq = True
+                    elif c in '([{':
+                        depth += 1
+                    elif c in ')]}':
+                        depth -= 1
+                    elif c in ' \t' and depth == 0 and last:
+                        j = i
+                        while j < len(txt) and txt[j] in ' \t':
+                            j += 1
+                        if j < len(txt) and txt[j] != '\n' and (last.isalnum() or last in '$_.")]}') \
+                                and (txt[j].isalnum() or txt[j] in '$"({.'):
+                            cut = i
+                            break
+                    if c not in ' \t':
+                        last = c
+                    i += 1
+                if cut is None and (depth > 0 or inq):
+                    line2 = f.readline()
+                    if line2:
+                        txt += line2
+                        continue
+                break
+            if cut is None:
+                piece = txt
+                st[0], st[1] = txt, len(txt)
+            else:
+                piece = txt[:cut]
+                st[0], st[1] = txt, cut
+            return I.run(piece, 'script') if piece.strip() else Null
+
+        def _read_item(f, st, item, opts):
+            new, delim, null = opts
+            if isinstance(item, Sym):
+                t = item.name
+                if t == 'Expression':
+                    return _rd_expr(f, st)
+                if t == 'String':
+                    w = _rd_string(f, st, False, new, '', False)
+                    return S('EndOfFile') if w is None else w
+                if t in ('Word', 'Real', 'Character'):
+                    w = _rd_string(f, st, t == 'Character', new, delim, null)
+                    if w is None:
+                        return S('EndOfFile')
+                    if t != 'Real':
+                        return w
+                    if w == '':
+                        return Null
+                    try:
+                        return float(w)
+                    except ValueError:
+                        return I.run(w, 'script')
+            elif isinstance(item, list):
+                out = []
+                for it in item:
+                    v = _read_item(f, st, it, opts)
+                    if isinstance(v, Seq):
+                        out.extend(v.items)
+                    else:
+                        out.append(v)
+                return out
+            elif isinstance(item, Expr) and item.head == S('Times') and len(item.args) == 2 and is_num(item.args[0]):
+                return Seq([_read_item(f, st, item.args[1], opts) for _ in range(int(item.args[0]))])
+            raise SADError('General::wrongval:  (n*) BinaryDouble, BinaryInteger, BinaryReal,  BinaryShortInteger, Byte, Character, Expression,  BinaryFloat, Real, String, or Word is for 2nd arg')
 
         def _read(a):
             if not a or not is_num(a[0]):
@@ -3843,46 +4288,18 @@ class Interp:
             f = I.files.get(int(a[0]))
             if f is None:
                 return S('EndOfFile')
-            typ = a[1] if len(a) > 1 else S('Expression')
-            tname = typ.name if isinstance(typ, Sym) else 'Expression'
-            if tname == 'String':
-                line = f.readline()
-                return S('EndOfFile') if line == '' else line.rstrip('\n')
-            if tname == 'Character':
-                c = f.read(1)
-                return S('EndOfFile') if c == '' else c
-
-            def _skipws():
-                while True:
-                    pos_ = f.tell()
-                    c_ = f.read(1)
-                    if c_ == '':
-                        return False
-                    if not c_.isspace():
-                        f.seek(pos_)
-                        return True
-            # Real / Number / Word / Expression: 空白区切りの次の語。語のあとの空白 (改行を含む) も読み進める (gs で確認)
-            if not _skipws():
-                return S('EndOfFile')
-            w = ''
-            while True:
-                pos_ = f.tell()
-                c = f.read(1)
-                if c == '':
-                    break
-                if c.isspace():
-                    f.seek(pos_)
-                    break
-                w += c
-            _skipws()
-            if tname in ('Real', 'Number'):
-                try:
-                    return float(w)
-                except ValueError:
-                    return I.run(w, 'script')          # 数でない語は式として評価 (gs: Read[g,Real] が beta を返す)
-            if tname == 'Word':
-                return w
-            return I.run(w, 'script')
+            st = _rst.setdefault(id(f), [None, 0])
+            item = a[1] if len(a) > 1 else S('Expression')
+            new, delim, null = True, ' ,\n\t\r', False
+            for o in a[2:]:                       # オプション WordSeparators / ReadNewRecord / NullWords (SADHelp の Read)
+                if isinstance(o, Rule) and isinstance(o.lhs, Sym):
+                    if o.lhs.name == 'WordSeparators' and isinstance(o.rhs, str):
+                        delim = o.rhs
+                    elif o.lhs.name == 'ReadNewRecord' and is_num(o.rhs):
+                        new = o.rhs != 0
+                    elif o.lhs.name == 'NullWords' and is_num(o.rhs):
+                        null = o.rhs != 0
+            return _read_item(f, st, item, (new, delim, null))
         B['Read'] = _read
 
         def _skip(args):
@@ -3897,7 +4314,7 @@ class Interp:
                     break
             return r
         B['Skip'] = _skip
-        B['ReadString'] = lambda a: _read([a[0], S('String')])
+        B['ReadString'] = lambda a: _read([a[0], S('String')] + list(a[1:]))
         B['ReadList'] = lambda a: _readlist(a)
 
         def _readlist(a):
@@ -3926,12 +4343,37 @@ class Interp:
         B['System'] = lambda a: (I.write_unit(6, f'[pysad] System[{a[0]!r}] は実行しません\n'), 0.0)[1]
         B['Exit'] = lambda a: (_ for _ in ()).throw(SystemExit(0))
         B['Date'] = lambda a: [float(x) for x in time.localtime()[:6]]
-        B['DateString'] = lambda a: time.strftime('%m/%d/%Y %H:%M:%S')       # SAD (K64) の DateString[] は mm/dd/yyyy hh:mm:ss
+        def _datestring(a):
+            # DateString[] は現在、DateString[t] は t (1900-01-01 0:0:0 からの秒、または {Y,m,d[,H[,M[,S[,offset]]]]}) を mm/dd/yyyy hh:mm:ss に (SADHelp、gs で確認)
+            import datetime as _dt
+            if not a or a[0] is Null:
+                if len(a) > 1:
+                    raise SADError('General::narg:  Number of arguments is expected to be 0 or 1 (+ option) in DateString$[%s]' % ','.join(I.to_str(x) for x in a))
+                return time.strftime('%m/%d/%Y %H:%M:%S')
+            if len(a) > 1:
+                raise SADError('General::narg:  Number of arguments is expected to be 0 or 1 (+ option) in DateString$[%s]' % ','.join(I.to_str(x) for x in a))
+            x = a[0]
+            try:
+                if is_num(x):
+                    d = _dt.datetime(1900, 1, 1) + _dt.timedelta(seconds=float(x))
+                elif isinstance(x, list) and 3 <= len(x) <= 7 and all(is_num(v) for v in x):
+                    v = [int(t) for t in x[:6]] + [0] * (6 - min(len(x), 6))
+                    d = _dt.datetime(v[0], v[1], v[2], v[3], v[4], v[5])
+                else:
+                    raise ValueError
+            except (ValueError, OverflowError):
+                raise SADError('General::wrongtype:  Argument must be Null or Real number or {Y,m,d[,H[,M[,S[,offset]]]]} in DateString$[%s]' % I.to_str(x, None, True))
+            return d.strftime('%m/%d/%Y %H:%M:%S')
+        B['DateString'] = _datestring
         B['Pause'] = lambda a: Null
         B['TkWait'] = lambda a: Null
         B['Update'] = lambda a: Null
         B['FFSFlags'] = lambda a: Null
-        B['$Line'] = lambda a: Null
+        def _out(a):
+            if len(a) == 1 and is_num(a[0]) and int(a[0]) in I.out_hist and float(a[0]) == int(a[0]):
+                return I.out_hist[int(a[0])]
+            return Expr(S('Out'), list(a))
+        B['Out'] = _out
 
         # ---- 多項式フィット (SAD の PolynomialFit: {{x,y}...} と次数 → 係数 {c0, c1, ...})
         def _polyfit(a):
@@ -4000,7 +4442,9 @@ def _spec_score(pats):
             if h == S('Optional'):
                 return one(p.args[0]) if p.args else 0
             if h in (S('PatternTest'), S('Condition')):
-                return 8
+                # `{f_}?test` は検査つきの構造パターン (構造の特殊さ + 検査)。OpticsPlot.n の OpticsList1$[pr_,{f_}?(…)] は
+                # OpticsList1$[{pr1_,pr2_},f_,…] より先に試す (gs は定義の順)
+                return 8 + (one(p.args[0]) if p.args and isinstance(p.args[0], (Expr, list)) and not (isinstance(p.args[0], Expr) and p.args[0].head in (S('Blank'), S('Pattern'))) else 0)
             if _is_pattern(h):
                 return 3 + sum(one(a) for a in p.args)         # f_[y__] のように head もパターン: p_Plus (型つき Blank) より一般的
             return 20 + sum(one(a) for a in p.args)
@@ -4023,6 +4467,30 @@ def _spec_score(pats):
     walk(list(pats))
     score += sum(12 * (k - 1) for k in cnt.values() if k > 1)
     return score
+
+
+def _as_expr(x):
+    """式の中の Python のリストを List[…] の式に戻す (純関数の本体は評価のたびに要素を評価する)"""
+    if isinstance(x, list):
+        return Expr(S('List'), [_as_expr(a) for a in x])
+    if isinstance(x, Expr):
+        return Expr(_as_expr(x.head), [_as_expr(a) for a in x.args])
+    return x
+
+
+def _unlit(x):
+    """式の中の _Lit (評価済みの値を埋めるラッパー) を値に戻す"""
+    if isinstance(x, _Lit):
+        return _unlit(x.v)
+    if isinstance(x, Expr):
+        if x.head == S('List'):
+            return [_unlit(a) for a in x.args]
+        return Expr(_unlit(x.head), [_unlit(a) for a in x.args])
+    if isinstance(x, list):
+        return [_unlit(a) for a in x]
+    if isinstance(x, Rule):
+        return Rule(_unlit(x.lhs), _unlit(x.rhs), x.delayed)
+    return x
 
 
 class _Lit:
@@ -4145,6 +4613,37 @@ def _replace_part(lst, value, pos):
         v = v[int(k) - 1]
     v[int(idx[-1]) - 1] = value
     return out
+
+
+@functools.lru_cache(maxsize=1024)
+def _sad_wild_rx(p):
+    """StringMatchQ のワイルドカード (SADHelp の wildcards、gs で確認): * (0 個以上)、% (1 文字)、{abc} (集合。a-c は範囲でなく a - c の 3 文字)、
+    {^abc} (否定)、a|b (どちらか)。? は普通の文字。大文字小文字は区別する。閉じていない { は無視する"""
+    rx = ''
+    i = 0
+    while i < len(p):
+        c = p[i]
+        if c == '*':
+            rx += '.*'
+        elif c == '%':
+            rx += '.'
+        elif c == '{':
+            j = p.find('}', i)
+            if j < 0:
+                pass
+            else:
+                body = p[i + 1:j]
+                if body.startswith('^'):
+                    rx += '[^' + re.escape(body[1:]) + ']' if body[1:] else '.'
+                else:
+                    rx += '[' + re.escape(body) + ']' if body else '(?!)'
+                i = j
+        elif c == '|':
+            rx += '|'
+        else:
+            rx += re.escape(c)
+        i += 1
+    return re.compile(rx, re.S)
 
 
 def _wild(p):

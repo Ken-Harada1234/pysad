@@ -1,0 +1,10 @@
+TemporaryName is a String: String
+file number is Real: Real 1
+1: line 1
+2: line 2
+3: line 3 (appended)
+lines 3
+after OpenWrite: rewritten / EndOfFile
+FileType File  FileQ 1
+after delete None  FileQ 0
+Close[{a,b}] done

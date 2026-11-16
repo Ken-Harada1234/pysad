@@ -1,0 +1,38 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+USE RING; CELL; CALC;
+NORFSW; NORAD; NOFLUC;
+$FORM = "14.10";
+! 初期条件 (小振幅 = 線形領域)。ビームは {x,px,y,py,z,dp,flag}、各成分は粒子数長のリスト
+a0 = Twiss["AX","ORIGIN"]; b0 = Twiss["BX","ORIGIN"];
+Print["Twiss at ORIGIN: AX=", a0, " BX=", b0, " NX=", Twiss["NX","$$$"]/2/Pi];
+x0 = 1e-5; xp0 = 0;
+beam = {{x0},{xp0},{0},{0},{0},{0},{1}};
+! (1) 1 周 (dest 省略 = ラインの終端)
+r1 = TrackParticles[{1, beam}];
+Print["1 turn: pos=", r1[[1]], " x=", r1[[2,1,1]], " px=", r1[[2,2,1]], " flag=", r1[[2,7,1]]];
+! (2) N 周を一度に: TrackParticles[{1,beam}, 1, 1, N]
+rN = TrackParticles[{1, beam}, 1, 1, 10];
+Print["10 turns: x=", rN[[2,1,1]], " px=", rN[[2,2,1]]];
+! (3) 1 周ごとの座標: 戻り値の beam を次の入力にする
+b = beam; xs = {x0}; ps = {xp0};
+Do[ rr = TrackParticles[{1, b}, 1, n, n]; b = rr[[2]];
+    xs = Append[xs, b[[1,1]]]; ps = Append[ps, b[[2,1]]],
+    {n, 1, 20}];
+gm0 = (1 + a0^2)/b0;
+Do[ Print["turn ", n-1, " x=", xs[[n]], " px=", ps[[n]], " inv=", gm0*xs[[n]]^2 + 2*a0*xs[[n]]*ps[[n]] + b0*ps[[n]]^2],
+    {n, 1, 21, 4}];
+! 3 周の x から cos(mu) = (x[n+1]+x[n-1])/(2 x[n]) を出し、チューンの小数部を得る
+c = (xs[[3]] + xs[[1]])/(2*xs[[2]]);
+Print["cos(mu)=", c, "  1-nu_frac(mu)=", ArcCos[c]/(2*Pi)];
+Print["nu_x_frac(calc)=", Twiss["NX","$$$"]/2/Pi - 6];
+Exit;

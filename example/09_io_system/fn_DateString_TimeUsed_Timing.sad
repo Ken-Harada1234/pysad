@@ -1,0 +1,12 @@
+FFS;
+d = DateString[];
+Print["DateString length ", StringLength[d], "  format mm/dd/CCYY HH:MM:SS  (the digits depend on the run)"];
+Print["fixed date ", DateString[{2000, 1, 2, 3, 4, 5}]];
+Print["date from seconds ", DateString[0], "  ", DateString[86400*365]];
+t0 = TimeUsed[];
+Print["TimeUsed is Real >= 0: ", Head[t0], " ", t0 >= 0];
+r = Timing[s = 0; Do[s += Sin[i], {i, 20000}]; s];
+Print["Timing returns {cputime, result}: length ", Length[r], "  result ", r[[2]], "  cputime >= 0: ", r[[1]] >= 0];
+Print["TimeUsed increases: ", TimeUsed[] >= t0];
+Print["Date[] length ", Length[Date[]]];
+Exit;

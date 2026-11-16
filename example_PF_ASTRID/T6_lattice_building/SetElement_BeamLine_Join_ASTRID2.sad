@@ -1,0 +1,151 @@
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG ) 
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180 
+          BH 
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190 
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE) 
+
+	RING = (3*NCELL CAVI 3*NCELL)
+        RINGMPW = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+!+
+!  周期ラティスの作り方: ASTRID2 の 6 セルリングを、六極だけ全セル独立な要素にして組み直す。
+!  SetElement で新しい要素を作り、BeamLine でくくった区間を Join でつなぐ。
+!-
+ON LOG RFSW RADCOD RAD COD;
+OFF FLUC;
+FFS;
+  $FORM = "12.8";
+  PageWidth = 1999;
+
+  ! 元のリング RING (3*NCELL CAVI 3*NCELL) の値 
+  USE RING;
+  cell calc emit;
+  Print["RING   NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  #elem = ", LINE["LENGTH"]];
+  emit0 = (Emittances/.Emittance[])[1];
+  Print["RING   emitx = ", emit0];
+
+  ! 六極の L, K2 を元の要素から読む 
+  lsf = LINE["L","SF"]; ksf = LINE["K2","SF"];
+  lsd = LINE["L","SD"]; ksd = LINE["K2","SD"];
+  Print["SF L K2 = ", lsf, " ", ksf, "    SD L K2 = ", lsd, " ", ksd];
+
+  ncell = 6;
+  aa = {"01","02","03","04","05","06"};   ! セル番号の文字列 (名前の連結用) 
+  ! 六極 4 台/セル: SDA SFA SFB SDB を 1 セルごとに別の名前で作る 
+  Do[
+      id = aa[j];
+      SetElement["SDA"//id, "SEXT", {"L"->lsd}, {"K2"->ksd}];
+      SetElement["SFA"//id, "SEXT", {"L"->lsf}, {"K2"->ksf}];
+      SetElement["SFB"//id, "SEXT", {"L"->lsf}, {"K2"->ksf}];
+      SetElement["SDB"//id, "SEXT", {"L"->lsd}, {"K2"->ksd}];
+  ,{j,1,ncell}];
+
+  ! 六極以外の部分を BeamLine でくくる 
+  bl1 = BeamLine[MKS, D14837, PM, D0100, QF3, D0180, PH, PV, D0180, BH, D0190];  ! + SDA 
+  bl2 = BeamLine[D0120, QF2, D0120];                                          ! + SFA 
+  bl3 = BeamLine[PM];                                                         ! + SFB 
+  bl4 = BeamLine[D0120, QF2, D0120];                                          ! + SDB 
+  bl5 = BeamLine[D0190, BH, D0180, PH, PV, D0180, QF3, D0100, PM, D14837, MKE];
+
+  ! 空に近い BeamLine から出発して Join でつなぐ 
+  FFS["USE BeamLine[MKS];"];
+  bl = ExtractBeamLine[];
+  Do[
+      id = aa[j];
+      bl = Join[bl, bl1];
+      bl = Join[bl, BeamLine["SDA"//id]];
+      bl = Join[bl, bl2];
+      bl = Join[bl, BeamLine["SFA"//id]];
+      bl = Join[bl, bl3];
+      bl = Join[bl, BeamLine["SFB"//id]];
+      bl = Join[bl, bl4];
+      bl = Join[bl, BeamLine["SDB"//id]];
+      bl = Join[bl, bl5];
+      If[j == 3, bl = Join[bl, BeamLine[CAVI]]];
+  ,{j,1,ncell}];
+
+  FFS["USE Join[bl];"];
+  cell calc emit;
+  Print["NEWRING NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  #elem = ", LINE["LENGTH"]];
+  Print["NEWRING emitx = ", (Emittances/.Emittance[])[1], "   ratio to RING = ", (Emittances/.Emittance[])[1]/emit0];
+
+  ! 1 つのセルだけ六極を変える: ξ を有限差分で測る 
+  xi[] := Module[{nxp, nyp, nxm, nym, d = 1e-4},
+      DP0 = d;  FFS["cell calc"]; nxp = Twiss["NX","$$$"]/2/Pi; nyp = Twiss["NY","$$$"]/2/Pi;
+      DP0 = -d; FFS["cell calc"]; nxm = Twiss["NX","$$$"]/2/Pi; nym = Twiss["NY","$$$"]/2/Pi;
+      DP0 = 0;
+      {(nxp-nxm)/(2*d), (nyp-nym)/(2*d)}];
+  Print["xi (all same K2)        = ", xi[]];
+  ! 式: SF 2 台を外したときの ξ の変化 = -+ (1/4pi) sum K2 EX B (薄肉、要素の中点の値) 
+  pa = {LINE["POSITION","SFA*"][3], LINE["POSITION","SFB*"][3]};
+  dxx = 0; dxy = 0;
+  Do[
+      dxx = dxx - LINE["K2",pa[i]]*Twiss["EX",pa[i]+0.5]*Twiss["BX",pa[i]+0.5]/4/Pi;
+      dxy = dxy + LINE["K2",pa[i]]*Twiss["EX",pa[i]+0.5]*Twiss["BY",pa[i]+0.5]/4/Pi;
+  ,{i,1,2}];
+  Print["formula: change of xi by removing SFA03 SFB03 = ", dxx, " ", dxy];
+  LINE["K2","SFA03"] = 0;  LINE["K2","SFB03"] = 0;
+  FFS["cell calc"];
+  Print["SF of cell 3 -> 0 : xi = ", xi[]];
+  Print["   K2 of SFA* = ", LINE["K2","SFA*"]];
+  Print["   names of SFA* = ", Table[LINE["NAME",LINE["POSITION","SFA*"][i]],{i,1,6}]];
+Exit;

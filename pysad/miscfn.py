@@ -141,9 +141,14 @@ def install(I):
             raise SADError('General::narg: Number of arguments is expected to be 2 or more in DownhillSimplex')
         p0, f = a[0], a[1]
         opts = {}
-        for o in a[2:]:
-            if isinstance(o, Rule) and isinstance(o.lhs, Sym):
-                opts[o.lhs.name] = o.rhs
+
+        def _collect(xs):
+            for o in xs:
+                if isinstance(o, list):
+                    _collect(o)                          # OptimizeOptics は Join[{opt}, {VariableRange->limit}] (規則のリスト) を 1 つの引数で渡す
+                elif isinstance(o, Rule) and isinstance(o.lhs, Sym):
+                    opts[o.lhs.name] = o.rhs
+        _collect(a[2:])
         p = sorted(([float(t[0]), [float(x) for x in t[1]]] for t in p0), key=lambda t: (t[0], tuple(t[1])))
         nv = len(p[0][1])
         sx = Simplex()

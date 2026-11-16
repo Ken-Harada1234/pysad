@@ -1,0 +1,3 @@
+Which   {"neg","zero","small","large"}
+no True branch -> Which[1>2,"a",3>4,"b"]
+first match wins first

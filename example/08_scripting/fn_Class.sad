@@ -1,0 +1,32 @@
+FFS;
+(* Class[スーパークラス, クラス変数, インスタンス変数, メソッド] *)
+Acc = Class[{},
+  {count = 0},
+  {v = 0, name = "none"},
+  Constructor[a___] := (count++; v = Plus[a]);
+  add[x_] := (v += x; v);
+  show[] := Print[name, ": v=", v, " count=", count];
+  sum2[] := v^2
+];
+a1 = Acc[1, 2];
+Print["a1@v ", a1@v];
+a1@add[10];
+a1@show[];
+a2 = Acc[100];
+a2@name = "second";
+a2@show[];
+Print["count (class var) ", Acc@count, " via a1: ", a1@count];
+a1@v = 5;
+Print["a1@sum2 ", a1@sum2[], " a2@v ", a2@v];
+(* 継承 *)
+Sub = Class[{Acc}, {}, {w = 7},
+  add[x_] := (v += 2*x; v);
+  both[] := v + w
+];
+s1 = Sub[1];
+Print["Sub: v ", s1@v, " w ", s1@w, " add ", s1@add[3], " both ", s1@both[]];
+Print["Sub inherits sum2 ", s1@sum2[]];
+Print["Parents ", Sub@Parents[]];
+a1=.;
+Print["after destroy a2 still ", a2@v];
+Exit;

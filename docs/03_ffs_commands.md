@@ -217,14 +217,26 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | DELCOR / WAKE | `ffscmd._delcor` (tcorr・tvcorr。MARK は DETR・DPX に入る K64 の添字のずれまで再現。CAVI は未対応、docs/29)、`_wake_cmd` (§9) |
 | CSR 系・Fit 系・パッケージ | SADScript の関数として csr.py・fitroot.py・corr.py・pkgload.py が提供 (docs/31, 32, 34) |
 
-**既知の未対応** (2026-11-16 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, RENUM, ZAP, DIMAD, SYNCHROB, REF, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。11/06 に未対応と書いていた SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/33、REJECT は `ffscmd`)。そのほか:
+**既知の未対応** (2026-11-16 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。11/06 に未対応と書いていた SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/33、REJECT は `ffscmd`)。そのほか:
 
 - MCOD/TCOD/MON (この K64 ビルドでは FFS コマンドではなく式として評価されて何もしないので pysad も無視)。
 - MEASURE/TRCOD: gs で動かない (B42: TRCOD は SIGSEGV、MEASURE は何も出力しない) ので `tracke/ttinit/ttstat/trcoda/trackb` は未翻訳 (`tlum`/`tluma` だけ `measure.py`)。
 - INS での fit (Matcher は `cell=False` で安定判定を省くだけで、SAD の INS 条件照合は未了。INS のリングの Emittance[]・追跡は gs と一致を確認: `history/work_unimpl.md` の記録)。
 - FITP>1 のオフモメンタム条件と MatchingAmplitude (match6 に実装済みだが SAD との照合はない: §9)。
 - FIT の `@` (`SADError` で停止する)。
-- DISP のモード A/GA/B/P/D/Z と REFERENCE/DREFERENCE。
+- `NOKEEPEXP` (CALC ごとに tfvcomp で EXPAND を決める)、RENUMBER の INDX 属性による番号の初期値、`DISP B` の REFERENCE (gs も未実装)。
+- `Twiss["R…"/"D…"]` は整数位置だけ (参照光学は要素の入口の値のみ)。
+
+**gs に合わせた FFS の動作 (2026-11-17、gs で確認)**
+- FFS 内の `MOMENTUM = …;` は追跡・Emittance[]・光学に効き、`USE` で MAIN 側の値に戻らない (MAIN 側の値が変わったときだけ取り込む)。
+- `USE [NOEXPAND|EXPAND] line`、`CALC|GO [NOEXPAND|EXPAND]`: NOEXPAND は成分ごとのずれ (`LINE["K1","QF.2"]=…`) を残し、`???-FFS-Info-Element values are not expanded.` を出して表示が `NOCALEXP` になる。KEEPEXP なので次の CALC にも残る。`SAVE`・`EXPAND` は触れた値を代表 (最初の 1 台) に揃える。CALC と Emittance[] は揃え、TrackParticles は揃えない。
+- `名前.番号 K1 0.9;` のように要素の成分名を先頭にした文は式として評価され、何も設定しない (`LINE["K1","QF.3"]=0.9` を使う)。
+- `RENUMBER comp` は comp を起点に周回順で番号を振り直し、`LINE["MULT"]` もその番号 (同名が 1 台だけなら 0)。起点が無ければ ` ???-FFS-Error-Missing origin component for RENUM_BER `。
+- `REFERENCE` (参照光学の保存)、`Twiss["RBX"/"DBX"/"RALL"/"DALL"]`、`Twiss["LENGTH"/"GAMMA"/"GAMMABETA"/"S"]`。
+- `DISP` のモード R・O・P・GA・Z・A・B (BEAM、EMIT 後)・D・G・OG と REFERENCE・DREFERENCE (見出しの置換まで gs と同じ)。
+- `DUMP` の語は 20 文字で切れる (長い `A|B|…` は先頭 20 文字)。合う要素がなければ全要素。`DDK` は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ。
+- DODECA の K5 は積分強度 (TYPE・ATTRIBUTE・LINE・Element で同じ値)。
+- CELL の CALC の最後の行 ($$$) の DZ は一周の経路長のずれ (OrbitGeo[$$$] の GX が gs と一致)。
 - TYPE の PROF 等リスト値。
 - `FUNSCALE` (値を読み飛ばすだけで scale は変わらない)。
 - `DBEAM` (読み飛ばすだけ)。

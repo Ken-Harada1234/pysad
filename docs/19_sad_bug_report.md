@@ -1,6 +1,6 @@
 # 19. SAD K64 のバグ報告 (pysad 移植中に見つかったもの)
 
-最終更新: 2026-11-16 (現状のスナップショット。B63〜B70 は 2026-11-16 までに見つかった癖・疑いの追加。B01〜B62 は 11/06〜11/15 のまま)
+最終更新: 2026-11-16 (現状のスナップショット。B63〜B71 は 2026-11-17 までに見つかった癖・疑いの追加。B01〜B62 は 11/06〜11/15 のまま)
 
 > 対象: SAD K64 (github KatsOide/SAD、WSL Ubuntu でビルドした `bin/gs`)。ソースは `<SAD>/src`、`Packages/`。
 > 材料: docs/11_sad_quirks.md、docs/history/work_*.md、docs/history/00_RESUME.md。行番号は 2026-10-13〜16 の照合時点のソース。
@@ -85,6 +85,7 @@
 | B68 | SOL (BZ≠0) 領域内の四極 + RAD の追跡で、現在の gs (2026-10-19 ビルド) が、保存した参照 (`bench_level9`、10-14 の gs) と別の値を返す (S R T1 P1 の x が -.0027867898 から -.0014539780)。NORAD は一致 | tsol 系 (ソースのどこかは未特定) | 同じ入力で gs のビルドにより RAD の追跡結果が変わる。現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い (local/wake/verify_log.md の bench_level9 の項: `SB D1 QD SE` が `SB D1 SE` と 8 桁一致。10-19 と 11-14 -O0 の 2 ビルドは同値で、最適化の差ではない) | 中 | 疑いが強い (gs 側。ソースの箇所は未特定) | pysad は 10-14 の参照・物理と一致。現在の gs とは合わない |
 | B69 | SOL 領域 (BOUND≠0 の間) 内の直線の BEND (ANGLE か K0 付き) の偏向を gs がほぼ無視する (BZ=0.5 T の領域で ANGLE=0.1 でも位置・角度が 1e-5 しか変わらない)。K64 の tsol.f は `tdrift(al,bzs,phiy,phix,…)` を呼ぶので、その直訳は ANGLE·距離だけ曲がる | tsol.f、tpara (領域内の BEND への K0/ANGLE の入り方は未調査) | SOL 領域内の BEND の追跡 | 低 | 疑い (原因は未確認。K64 側の癖かもしれない)。生の gs の出力は `local/wake/ps23.sad`〜`ps28.sad` | 未対応 (NotImplementedError) |
 | B70 | `MessageName[f,"usage"]` (関数形) は f を無視して `Undefined MessageName General::"usage"` になる。`f::usage` の形は SAD の MessageName.n の表を引いて本文を返す | MessageName の処理 (未調査) | 関数形の MessageName が使えない | 低 | 実測 (gs で確認、原因は未調査) | `f::usage` の形は一致。関数形は見送り (docs/18) |
+| B71 | 組み込みの `For[ini,cond,incr,body]` は 4 番目の引数 (本体) を実行せず、3 番目 (incr) だけを繰り返す (`For[i=0,i<3,i++,Print[i]]` は何も印字せず i=3)。`Packages/functions.n` の定義 `For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)` は本体を実行するはずで、同じ式を別名 (For2) で定義すると gs も実行する。3 引数の `For` は未評価のまま | `Packages/functions.n:34` (読み込み時の名前解決と思われるが原因は未特定) | `For` の本体が動かない (`Do`・`While` は正常) | 低 | 実測 (gs で確認。`local/wake/` の f1〜f5 相当) | pysad は定義どおり本体を実行する。3 引数は gs と同じく未評価 |
 
 ## 1. 落ちる・動かない (重要度 高)
 
@@ -420,4 +421,4 @@
 ## 6. 本レポートに含めなかったもの (参考)
 
 - pysad 側の誤りだったもの: fmincube の `m_euler` (SAD はオイラー定数 γ、pysad がネイピア数 e を入れていた)、MASS の既定値、`MINCOUP` の既定値、`Cavity.PHI` の既定値、`lattice._tbendebody0_mat` の z 行の符号。
-- 仕様・癖: docs/11_sad_quirks.md の A1-A48 のうち上記 (B63〜B70) 以外、B1-B5、C1-C23、D1-D5。
+- 仕様・癖: docs/11_sad_quirks.md の A1-A48 のうち上記 (B63〜B71) 以外、B1-B5、C1-C23、D1-D5。

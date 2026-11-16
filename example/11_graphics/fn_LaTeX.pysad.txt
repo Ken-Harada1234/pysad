@@ -1,0 +1,2 @@
+HaveLaTeX=[]
+Head=Graphics Length=2

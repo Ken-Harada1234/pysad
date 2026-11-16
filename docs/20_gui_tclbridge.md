@@ -83,13 +83,11 @@ SADHelp の「Class」の節に沿った実装。`Class[親の列, クラス変�
 
 試験: `test_tclbridge.py` 4、`test_sadclass.py` 16、`test_gui_lang.py` 10 の計 30 本 (2026-11-16 に収集数を確認。全体の実行は `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` を付けたときだけ GUI 系を実行し、全試験の 520 通過・3 skip (523 件収集) の一部)。全体を回すと `test_tclbridge`・`test_plot` が数回に 1 回落ちることがある (単独では通る。Tk の窓の更新の待ち)。
 
-**未修正の既知の差 (2026-11-16 夜に gs と比べて確認、`local/wake/` の tk1〜tk5.sad・pv1.sad)**:
-- gs では `w=Window[]` の直後に `Head[w]=Widget` (値は `Widget[w,Window[Root$Window]]`)、`b=Button[w,…]` も `Widget[b,Button[w]]` を値に持つ。**pysad では w・b・e が裸のシンボルのまま** (`Head=Symbol`、`TkPathName[w]` が "")。
-- その結果、(1) ウィジェットのメソッド `e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]`・`l[Insert]` (Entry・ListBox) が pysad では効かない (Tcl 呼び出し 0 回、エラーもなし。gs では Entry の内容 AB→CD、Listbox 2 項目、`v=e[Get]`=AB が動く)。
-  (2) 親が w でなく Root になる (`winfo` で '.' の直下に並ぶ。gs は Toplevel の下)。ウィジェット自体は Tcl 側に作られる (`winfo children` に Entry・Listbox が出る)。
-- 原因の絞り込み: pysad は `w=Window[]` のあと `Tk$DefCount=1`・`Root$WindowWidget=w`・`TkPathName[Root$Window]="."` までは進むが、`Tkinter.n` の `DefineWidget` 内の `a$:=Widget[a$,w[master$]]` (`CreateWidget` の末尾 `w:=Widget[w,wid[master]]`) が w の値にならない。root の Window は toplevel を作らず `winfo children .` は空。
-  パターン変数への代入そのもの (`f[x_]:=(x=5); f[aa]` で aa=5) は pysad も gs と同じ。玩具の再現 (With と `x:=Widget[x,…]`、UpValue の `(a_=W[opt___])^:=…`) は UpValue の分岐までは gs と同じに動くが、`x:=Widget[x,…]` 自体は gs も pysad も再帰になり、実物がなぜ gs で再帰しないか (Widget の属性・評価の順) は未特定。
-  pysad は再帰のとき Python の RecursionError (「object type name: RecursionError」) で落ちる (gs は General::deep のメッセージ)。
+**Widget 値 (2026-11-17 に修正)**: `w=Window[]`・`e=Entry[w]` の値は gs と同じ `Widget[…]` (`Head[w]=Widget`)。`e[Insert]={"end","XY"}`・`lb[Insert]`・`e[Get]` も効く。
+- 原因: `DefineWidget` の `(a$_=w[opt$___])^:=(a$=w[Widget[Root$Window,Null],opt$])` が次の規則 `(a$$_=w[Widget[master$_,_],opt$___])^:=With[{a$=a$$,…},…]` を呼ぶ入れ子で、`With` が呼び出し元の規則の引数 `a$` (= ユーザーの `w`) を見つけて `a$` でなく `w` を束縛していた。
+  このため本体の `a$:=Widget[a$,…]` が別の名前に付いて、ユーザーの `w` に遅延した値が付かなかった。`With` の探索を別の規則の呼び出し (`boundary` の frame) で止めて直した (`sadscript._with`)。
+- `Canvas$Widget = c1` (Canvas.n の UpValue) は、左辺の記号が最初の使用で読み込みの引き金になり、UpValue の照合で遅延した定義 (`The$CanvasObject := …`) を持つ記号を評価しない。教材 `calc_traj_03` の `Canvas$Widget=c1` の tclerror が消え、窓の Canvas に 114 項目 (再描画後 115) で gs と同じ。
+- **残る差**: gs は最初の `Window[]` が Toplevel (`.5`、K64 起動時の `.` には「Return to SAD」ボタンがある) だが、pysad は `Window[]` が `.` 自身。木の段と `TextVariable` の名前の番号が違う。
 - 補足: `Insert` の位置に "End" (大文字) を渡すと gs は Tcl エラー 1501 (Tcl の添字は "end")。
 - 上の表の木の比較 (Window・Button・KBMainFrame など) は一致しているので、木の形の試験には影響しないが、メソッド呼び出しを使う台本 (`e[Get]` など) は pysad で動かない。
 

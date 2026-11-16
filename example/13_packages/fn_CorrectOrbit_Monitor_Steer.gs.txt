@@ -1,0 +1,168 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:24:15 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! FODO_ring.sad と同じ光学 (24 セル、3 GeV、周長 105.6 m) に、BPM (MARK) とステアラ (BEND ANGLE=0) を各セルに入れ、
+! 四極の据え付け誤差 DX・DY (乱数なし、式で決めた値、数 10〜100 um) を付けた誤差入りリング。補正・バンプ・光学最適化のパッケージの例に使う
+! BAk: QF の直後の BPM、BBk: QD の直後の BPM。SHk/SVk: 水平・垂直ステアラ (D1 の最初の 0.2 m を置き換えるのでセル長は同じ)
+DRIFT D2 = (L=0.5) DS = (L=0.1) D1S = (L=0.8);
+QUAD  QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+QUAD QF1 = (L=0.3 K1=0.7 DX=9.9166e-05 DY=-9.8748e-05);
+BEND SH1 = (L=0.1 ANGLE=0) SV1 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA1 = () BB1 = ();
+LINE C1 = (SF DS QF1 BA1 D2 B D2 QD BB1 DS SD SH1 SV1 D1S);
+QUAD QF2 = (L=0.3 K1=0.7 DX=-2.5554e-05 DY=7.7557e-05);
+BEND SH2 = (L=0.1 ANGLE=0) SV2 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA2 = () BB2 = ();
+LINE C2 = (SF DS QF2 BA2 D2 B D2 QD BB2 DS SD SH2 SV2 D1S);
+QUAD QF3 = (L=0.3 K1=0.7 DX=-9.2581e-05 DY=-4.6002e-06);
+BEND SH3 = (L=0.1 ANGLE=0) SV3 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA3 = () BB3 = ();
+LINE C3 = (SF DS QF3 BA3 D2 B D2 QD BB3 DS SD SH3 SV3 D1S);
+QUAD QF4 = (L=0.3 K1=0.7 DX=4.9411e-05 DY=-7.1427e-05);
+BEND SH4 = (L=0.1 ANGLE=0) SV4 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA4 = () BB4 = ();
+LINE C4 = (SF DS QF4 BA4 D2 B D2 QD BB4 DS SD SH4 SV4 D1S);
+QUAD QF5 = (L=0.3 K1=0.7 DX=7.9849e-05 DY=9.9780e-05);
+BEND SH5 = (L=0.1 ANGLE=0) SV5 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA5 = () BB5 = ();
+LINE C5 = (SF DS QF5 BA5 D2 B D2 QD BB5 DS SD SH5 SV5 D1S);
+QUAD QF6 = (L=0.3 K1=0.7 DX=-6.9987e-05 DY=-6.1535e-05);
+BEND SH6 = (L=0.1 ANGLE=0) SV6 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA6 = () BB6 = ();
+LINE C6 = (SF DS QF6 BA6 D2 B D2 QD BB6 DS SD SH6 SV6 D1S);
+QUAD QF7 = (L=0.3 K1=0.7 DX=-6.1814e-05 DY=-1.7781e-05);
+BEND SH7 = (L=0.1 ANGLE=0) SV7 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA7 = () BB7 = ();
+LINE C7 = (SF DS QF7 BA7 D2 B D2 QD BB7 DS SD SH7 SV7 D1S);
+QUAD QF8 = (L=0.3 K1=0.7 DX=8.5916e-05 DY=8.5229e-05);
+BEND SH8 = (L=0.1 ANGLE=0) SV8 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA8 = () BB8 = ();
+LINE C8 = (SF DS QF8 BA8 D2 B D2 QD BB8 DS SD SH8 SV8 D1S);
+QUAD QF9 = (L=0.3 K1=0.7 DX=3.9674e-05 DY=-9.5791e-05);
+BEND SH9 = (L=0.1 ANGLE=0) SV9 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA9 = () BB9 = ();
+LINE C9 = (SF DS QF9 BA9 D2 B D2 QD BB9 DS SD SH9 SV9 D1S);
+QUAD QF10 = (L=0.3 K1=0.7 DX=-9.6140e-05 DY=4.2418e-05);
+BEND SH10 = (L=0.1 ANGLE=0) SV10 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA10 = () BB10 = ();
+LINE C10 = (SF DS QF10 BA10 D2 B D2 QD BB10 DS SD SH10 SV10 D1S);
+QUAD QF11 = (L=0.3 K1=0.7 DX=-1.4900e-05 DY=3.9267e-05);
+BEND SH11 = (L=0.1 ANGLE=0) SV11 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA11 = () BB11 = ();
+LINE C11 = (SF DS QF11 BA11 D2 B D2 QD BB11 DS SD SH11 SV11 D1S);
+QUAD QF12 = (L=0.3 K1=0.7 DX=9.9979e-05 DY=-9.4744e-05);
+BEND SH12 = (L=0.1 ANGLE=0) SV12 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA12 = () BB12 = ();
+LINE C12 = (SF DS QF12 BA12 D2 B D2 QD BB12 DS SD SH12 SV12 D1S);
+QUAD QF13 = (L=0.3 K1=0.7 DX=-1.0864e-05 DY=8.6984e-05);
+BEND SH13 = (L=0.1 ANGLE=0) SV13 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA13 = () BB13 = ();
+LINE C13 = (SF DS QF13 BA13 D2 B D2 QD BB13 DS SD SH13 SV13 D1S);
+QUAD QF14 = (L=0.3 K1=0.7 DX=-9.7180e-05 DY=-2.1166e-05);
+BEND SH14 = (L=0.1 ANGLE=0) SV14 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA14 = () BB14 = ();
+LINE C14 = (SF DS QF14 BA14 D2 B D2 QD BB14 DS SD SH14 SV14 D1S);
+QUAD QF15 = (L=0.3 K1=0.7 DX=3.5906e-05 DY=-5.8778e-05);
+BEND SH15 = (L=0.1 ANGLE=0) SV15 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA15 = () BB15 = ();
+LINE C15 = (SF DS QF15 BA15 D2 B D2 QD BB15 DS SD SH15 SV15 D1S);
+QUAD QF16 = (L=0.3 K1=0.7 DX=8.7927e-05 DY=9.9492e-05);
+BEND SH16 = (L=0.1 ANGLE=0) SV16 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA16 = () BB16 = ();
+LINE C16 = (SF DS QF16 BA16 D2 B D2 QD BB16 DS SD SH16 SV16 D1S);
+QUAD QF17 = (L=0.3 K1=0.7 DX=-5.8564e-05 DY=-7.3799e-05);
+BEND SH17 = (L=0.1 ANGLE=0) SV17 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA17 = () BB17 = ();
+LINE C17 = (SF DS QF17 BA17 D2 B D2 QD BB17 DS SD SH17 SV17 D1S);
+QUAD QF18 = (L=0.3 K1=0.7 DX=-7.2836e-05 DY=-1.1501e-06);
+BEND SH18 = (L=0.1 ANGLE=0) SV18 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA18 = () BB18 = ();
+LINE C18 = (SF DS QF18 BA18 D2 B D2 QD BB18 DS SD SH18 SV18 D1S);
+QUAD QF19 = (L=0.3 K1=0.7 DX=7.7333e-05 DY=7.5332e-05);
+BEND SH19 = (L=0.1 ANGLE=0) SV19 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA19 = () BB19 = ();
+LINE C19 = (SF DS QF19 BA19 D2 B D2 QD BB19 DS SD SH19 SV19 D1S);
+QUAD QF20 = (L=0.3 K1=0.7 DX=5.2908e-05 DY=-9.9234e-05);
+BEND SH20 = (L=0.1 ANGLE=0) SV20 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA20 = () BB20 = ();
+LINE C20 = (SF DS QF20 BA20 D2 B D2 QD BB20 DS SD SH20 SV20 D1S);
+QUAD QF21 = (L=0.3 K1=0.7 DX=-9.0967e-05 DY=5.6902e-05);
+BEND SH21 = (L=0.1 ANGLE=0) SV21 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA21 = () BB21 = ();
+LINE C21 = (SF DS QF21 BA21 D2 B D2 QD BB21 DS SD SH21 SV21 D1S);
+QUAD QF22 = (L=0.3 K1=0.7 DX=-2.9467e-05 DY=2.3409e-05);
+BEND SH22 = (L=0.1 ANGLE=0) SV22 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA22 = () BB22 = ();
+LINE C22 = (SF DS QF22 BA22 D2 B D2 QD BB22 DS SD SH22 SV22 D1S);
+QUAD QF23 = (L=0.3 K1=0.7 DX=9.8560e-05 DY=-8.8095e-05);
+BEND SH23 = (L=0.1 ANGLE=0) SV23 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA23 = () BB23 = ();
+LINE C23 = (SF DS QF23 BA23 D2 B D2 QD BB23 DS SD SH23 SV23 D1S);
+QUAD QF24 = (L=0.3 K1=0.7 DX=4.0693e-06 DY=9.3983e-05);
+BEND SH24 = (L=0.1 ANGLE=0) SV24 = (L=0.1 ANGLE=0 ROTATE=1.5707963267948966);
+MARK BA24 = () BB24 = ();
+LINE C24 = (SF DS QF24 BA24 D2 B D2 QD BB24 DS SD SH24 SV24 D1S);
+LINE RING = (ORIGIN RF C1 C2 C3 C4 C5 C6 C7 C8 C9 C10 C11 C12 C13 C14 C15 C16 C17 C18 C19 C20 C21 C22 C23 C24);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.10";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.167647 $$$       f BX    #######  #   5.026154 $$$       f NX    #######  #   6.696382
+$$$       f AY    #######  #   1.207490 $$$       f BY    #######  #   2.555836 $$$       f NY    #######  #   4.906082
+$$$       f LENG  #######  #  105.60000
+ ! 各セルの QF の直後・QD の直後に BPM (BAk, BBk)、D1 に水平 (SHk)・垂直 (SVk) ステアラ
+ mon=Monitor[Flatten[Table[{"BA"//ToString[k],"BB"//ToString[k]},{k,1,24}]]];
+ sh=Steer[Table["SH"//ToString[k],{k,1,24}]];
+ sv=Steer[Table["SV"//ToString[k],{k,1,24}]];
+ Print["monitors=",Length[mon[[1]]],"  steerers=",Length[sh[[1]]],"+",Length[sv[[1]]]];
+monitors=48  steerers=24+24
+ rmy:=Sqrt[Plus@@Twiss["DY",mon[[1]]]^2/Length[mon[[1]]]];
+ rmx:=Sqrt[Plus@@Twiss["DX",mon[[1]]]^2/Length[mon[[1]]]];
+ Print["R:rmx0=",rmx];
+R:rmx0=4.184879624744E-5
+ Print["R:rmy0=",rmy];
+R:rmy0=2.790880895611E-6
+ ! 垂直: 応答行列を作る光学を得て、最小二乗で補正 (補正量を戻し、LINE の K0 にも足す)
+ opt=CalculateOptics[1,LINE["LENGTH"],Twiss["*",1],FLAG["CELL"],2];
+ r=CorrectOrbit["Y",mon,sv,opt];
+ ???-FFS-Info-Element values are not expanded. 
+ Print["nsteer=",Length[r],"  max kick=",Max[Abs[r]]];
+nsteer=24  max kick=2.212038084563E-5
+ CALC;
+ ???-FFS-Info-Element values are not expanded. 
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.167647 $$$       f BX    #######  #   5.026154 $$$       f NX    #######  #   6.696382
+$$$       f AY    #######  #   1.207490 $$$       f BY    #######  #   2.555838 $$$       f NY    #######  #   4.906082
+$$$       f LENG  #######  #  105.60000
+ Print["R:rmy1=",rmy];
+R:rmy1=4.510213978649E-7
+ ! 水平も同様
+ opt=CalculateOptics[1,LINE["LENGTH"],Twiss["*",1],FLAG["CELL"],2];
+ r=CorrectOrbit["X",mon,sh,opt];
+ ???-FFS-Info-Element values are not expanded. 
+ CALC;
+ ???-FFS-Info-Element values are not expanded. 
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.166229 $$$       f BX    #######  #   5.025068 $$$       f NX    #######  #   6.696331
+$$$       f AY    #######  #   1.207530 $$$       f BY    #######  #   2.557509 $$$       f NY    #######  #   4.906059
+$$$       f LENG  #######  #  105.60000
+ Print["R:rmx1=",rmx];
+R:rmx1=2.282492402168E-5
+ Print["R:rmy2=",rmy];
+R:rmy2=4.5023328531E-7
+ Exit;
+ FFS                  end:  CPU time =     0.010 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

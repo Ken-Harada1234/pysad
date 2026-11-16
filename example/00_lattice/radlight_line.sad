@@ -1,0 +1,7 @@
+MOMENTUM = 1GEV;
+! RADLIGHT 用の短いライン (1 GeV、電子): 偏向は ANGLE=0, K0=0.1 の「ステアリング型」(BEND の中は記録されないため)
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  ST1 = (L=1.2 ANGLE=0 K0=0.1) ST2 = (L=1.2 ANGLE=0 K0=-0.1);
+MARK  ORIGIN = ();
+LINE  UND = (ORIGIN QF D2 ST1 D2 QD D1 QF D2 ST2 D2 QD D1);

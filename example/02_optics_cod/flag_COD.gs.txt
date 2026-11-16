@@ -1,0 +1,73 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:12:39 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! FODO_ring.sad と同じ光学で、ずれのある四極を 2 台入れたリング (誤差入りの閉軌道用、乱数なし)
+! QFX (セル 1 の QF):  DX=+0.1 mm, DY=-0.2 mm      QDX (セル 13 の QD):  DY=+0.3 mm
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD  QFX = (L=0.3 K1=0.7 DX=1.0E-4 DY=-2.0E-4);
+QUAD  QDX = (L=0.3 K1=-0.6 DY=3.0E-4);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE CELLX = (SF DS QFX D2 B D2 QD DS SD D1);
+LINE CELLY = (SF DS QF D2 B D2 QDX DS SD D1);
+LINE RING = (ORIGIN RF CELLX 11*CELL CELLY 11*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ ! 誤差入りリング: ずれのある四極 QFX (DX=0.1mm DY=-0.2mm) と QDX (DY=0.3mm) による閉軌道
+ $FORM = "10.6";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166264 $$$       f BX    #######  #   5.025162 $$$       f NX    #######  #   6.696350
+$$$       f AY    #######  #   1.207539 $$$       f BY    #######  #   2.557504 $$$       f NY    #######  #   4.906095
+$$$       f LENG  #######  #  105.60000
+ pq = LINE["POSITION","QDX"];
+ ps = {1, 5, 6, 50, pq, pq+1, 200};
+ Print["positions = ", ps];
+positions = {  1.000000,  5.000000,  6.000000, 50.000000, 129.00000, 130.00000, 200.00000}
+ Print["COD ON : tune NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+COD ON : tune NX NY =   6.696350   4.906095
+ Print["COD DX = ", Twiss["DX",ps]];
+COD DX = { -1.284E-4, -1.577E-4, -1.595E-4, 1.2102E-4, 7.5953E-5, 5.2351E-5, 8.3776E-5}
+ Print["COD DY = ", Twiss["DY",ps]];
+COD DY = { 3.3544E-4, 3.8947E-4, 5.0839E-4, 1.2697E-4,  -.001559,  -.001567,   .001470}
+ Print["COD DPX = ", Twiss["DPX",ps]];
+COD DPX = { -9.782E-5, -9.782E-5, 8.6419E-5, 9.4234E-5, -9.881E-5, -6.089E-5, -2.874E-5}
+ Print["COD DPY = ", Twiss["DPY",ps]];
+COD DPY = { 1.8009E-4, 1.8009E-4, 6.2655E-4, 2.3166E-4, -5.932E-4, 5.4145E-4, -4.175E-4}
+ Print["max |DX| max |DY| = ", Max[Abs[Twiss["DX"]]], " ", Max[Abs[Twiss["DY"]]]];
+max |DX| max |DY| =  2.8504E-4    .002016
+ NOCOD;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166264 $$$       f BX    #######  #   5.025162 $$$       f NX    #######  #   6.696350
+$$$       f AY    #######  #   1.207539 $$$       f BY    #######  #   2.557504 $$$       f NY    #######  #   4.906095
+$$$       f LENG  #######  #  105.60000
+ Print["COD OFF: DX = ", Twiss["DX",ps], "  DY = ", Twiss["DY",ps]];
+COD OFF: DX = { -1.284E-4, -1.577E-4, -1.595E-4, 1.2102E-4, 7.5953E-5, 5.2351E-5, 8.3776E-5}  DY = { 3.3544E-4, 3.8947E-4,
+  5.0839E-4, 1.2697E-4,  -.001559,  -.001567,   .001470}
+ Print["COD OFF: tune NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+COD OFF: tune NX NY =   6.696350   4.906095
+ COD;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166264 $$$       f BX    #######  #   5.025162 $$$       f NX    #######  #   6.696350
+$$$       f AY    #######  #   1.207539 $$$       f BY    #######  #   2.557504 $$$       f NY    #######  #   4.906095
+$$$       f LENG  #######  #  105.60000
+ Print["COD ON : DX = ", Twiss["DX",ps], "  DY = ", Twiss["DY",ps]];
+COD ON : DX = { -1.284E-4, -1.577E-4, -1.595E-4, 1.2102E-4, 7.5953E-5, 5.2351E-5, 8.3776E-5}  DY = { 3.3544E-4, 3.8947E-4,
+  5.0839E-4, 1.2697E-4,  -.001559,  -.001567,   .001470}
+ Exit;
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

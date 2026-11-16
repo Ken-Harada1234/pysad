@@ -1,0 +1,38 @@
+MOMENTUM = 1GEV;
+! RADLIGHT 用の短いライン (1 GeV、電子): 偏向は ANGLE=0, K0=0.1 の「ステアリング型」(BEND の中は記録されないため)
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  ST1 = (L=1.2 ANGLE=0 K0=0.1) ST2 = (L=1.2 ANGLE=0 K0=-0.1);
+MARK  ORIGIN = ();
+LINE  UND = (ORIGIN QF D2 ST1 D2 QD D1 QF D2 ST2 D2 QD D1);
+FFS;
+$FORM = "12.8";
+USE UND; INS; NOFLUC;
+Print["NLAT=", LINE["LENGTH"]];
+RADLIGHT;                          ! TrackParticles が軌道 {t,x,y,z} を記録して返す (RAD と TRPT も ON になる)
+np = 1;
+x = Table[0, {7}, {np}];
+Do[x[[7,i]] = 1, {i, np}];
+d = {1, x};
+res = TrackParticles[d, 14];
+traj = res[[2,1]];
+Print["flag RADLIGHT: Length[res]=", Length[res], "  trajectory dims=", Dimensions[traj]];
+Print["t [m/c units: s]   =", traj[[1]]];
+Print["x (go-direction)   =", traj[[2]]];
+Print["t(end)*c =", traj[[1,-1]]*299792458, "  (記録点は BEND の後を含まないので、ライン長 14 m より短い)"];
+! RadiationSpectrum: τ は時間 [s]、λ は波長 [m] (位相 = 2 pi c τ/λ)。ガウスパルス f=exp(-(c τ)^2/(2 s^2)) のスペクトルは解析的:
+!   c(k) = (s/c) Sqrt[2 Pi] exp(-k^2 s^2/2),  s(k) = 0   (k = 2 pi/λ)
+cl = 299792458;
+s = 1e-3;
+n = 401;
+tau = Table[(i - 201)*2e-5/cl, {i, n}];     ! c*τ = -4 mm ... +4 mm
+f = Table[Exp[-(cl*tau[[i]])^2/(2*s^2)], {i, n}];
+sp = RadiationSpectrum[{tau, f}, {1e-3, 5e-3, 5e-4}];
+Print["spectrum dims=", Dimensions[sp]];
+Do[
+  Print["lambda=", 2*Pi/sp[[1,j]], " k=", sp[[1,j]], " c=", sp[[2,j]], " s=", sp[[3,j]], " analytic c=", (s/cl)*Sqrt[2*Pi]*Exp[-sp[[1,j]]^2*s^2/2]],
+  {j, 1, Length[sp[[1]]], 2}];
+! RadiationField[軌道, 観測点]: gs (このビルド) はここで SIGSEGV する
+fld = RadiationField[traj, {20, 0.1, 0}];
+Print["RadiationField dims=", Dimensions[fld]];
+Exit;

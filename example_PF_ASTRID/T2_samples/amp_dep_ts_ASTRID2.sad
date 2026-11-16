@@ -1,0 +1,141 @@
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG ) 
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180 
+          BH 
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190 
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE) 
+
+	RING = (3*NCELL CAVI 3*NCELL)
+        RINGMPW = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+!+
+!  振幅依存チューンシフト: リングの先頭 (MKS) に初期振幅を与え、INS 計算でチューンを読む。
+!  位相 theta (8 通り) で平均する。振幅は betatron の σ = Sqrt[emit*beta] の倍数 (水平のみ、垂直のみ)。
+!-
+ON LOG;
+ON RAD COD RFSW RADCOD;
+OFF FLUC;
+FFS;
+  $FORM = "12.8";
+  PageWidth = 1999;
+
+AmplitudeDependentTuneShift[nx_, ny_, thetadiv_] := (
+   FFS["cell calc emit"];
+   dth = 2 * Pi / thetadiv;
+   deptunetemp = Table[{1,2},{thetadiv}];
+   ith = 0;
+   Do[
+      ith = ith + 1;
+      inidx  = nx * Sqrt[w] * Sqrt[betax]*Cos[theta];
+      inidpx = nx * Sqrt[w] * 1/Sqrt[betax]*(Sin[theta]-alphax*Cos[theta]);
+      inidy  = ny * Sqrt[w] * Sqrt[betay]*Cos[theta];
+      inidpy = ny * Sqrt[w] * 1/Sqrt[betay]*(Sin[theta]-alphay*Cos[theta]);
+      deptunetemp[ith] = CalcAmpDepTS[inidx,inidpx,inidy,inidpy];
+   ,{theta, 0, 2 * Pi - dth/2, dth}];
+   deptune = {0,0};
+   Do[ deptune = deptune + deptunetemp[ith]; ,{ith,thetadiv}];
+   deptune = deptune / thetadiv;
+   deptune
+);
+
+CalcAmpDepTS[inidx_,inidpx_,inidy_,inidpy_] := (
+   ininame = LINE["NAME",1];
+   LINE["DX" ,ininame] = inidx;
+   LINE["DPX",ininame] = inidpx;
+   LINE["DY" ,ininame] = inidy;
+   LINE["DPY",ininame] = inidpy;
+   FFS["ins calc"];
+   nux = Twiss["NX","$$$"]/2/Pi;
+   nuy = Twiss["NY","$$$"]/2/Pi;
+   {nux,nuy}
+);
+
+SetInitialParameters[] := (
+   FFS["cell calc emit fix"];
+   alphax = Twiss["AX",1];  betax  = Twiss["BX",1];
+   alphay = Twiss["AY",1];  betay  = Twiss["BY",1];
+   w  = EMITX;
+);
+
+USE RING;
+cell calc emit;
+DP = 0;
+SetInitialParameters[];
+Print["EMITX = ", EMITX, "  betax betay at MKS = ", betax, " ", betay];
+nu0 = AmplitudeDependentTuneShift[0, 0, 1];
+Print["ADTS amplitude 0: ", nu0];
+
+amps = {10,20,30,40,60,80};
+Do[
+   SetInitialParameters[];
+   res = AmplitudeDependentTuneShift[amps[k],1,8];
+   Print["ADTS-X  ", amps[k], " sigma  ", res[1], " ", res[2]];
+,{k,1,6}];
+
+DX 0;  DY 0;  DPX 0;  DPY 0;
+cell calc emit;
+
+Do[
+   SetInitialParameters[];
+   res = AmplitudeDependentTuneShift[1, amps[k], 8];
+   Print["ADTS-Y  ", amps[k], " sigma  ", res[1], " ", res[2]];
+,{k,1,6}];
+Exit;

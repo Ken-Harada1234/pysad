@@ -1,0 +1,8 @@
+FFS;
+Print["FixedPoint Cos ", FixedPoint[Cos, 1.0]];
+Print["FixedPoint sqrt ", FixedPoint[(# + 2/#)/2 &, 1.0]];
+Print["Nest   ", Nest[f, x, 3]];
+Print["NestList ", NestList[2*# &, 1, 5]];
+Print["FixedPointList len ", Length[FixedPointList[Cos, 1.0]]];
+Print["FixedPoint max ", FixedPoint[(# + 2/#)/2 &, 1.0, 3]];
+Exit;

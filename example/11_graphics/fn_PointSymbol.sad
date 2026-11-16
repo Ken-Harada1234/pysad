@@ -1,0 +1,17 @@
+! PointSymbol (ラティスなし)。SADHelp の記号の一覧。pysad では未確認の機能
+FFS;
+sym={
+  {"CI","CL","1O"},{"LT","6O"},{"RT","7O"},{"DT","8O"},{"UT","9O"},
+  {"SQ","BX"},{"DI","RH","DM"},{"PL"},{"TI","ML","MU"},{Bar,"BA","BR"}};
+g=Show[
+  Graphics[Join[
+    Table[Point[{1+Floor[(k-1)/5]*0.5,5-Mod[k-1,5]},PointSymbol->sym[[k]][[1]],
+      PointSize->3],{k,Length[sym]}],
+    Table[Text[{(sym[[k]]//"")[2,-2],
+      {Scaled[1.1+Floor[(k-1)/5]*0.5],Scaled[5-Mod[k-1,5]]}}],{k,Length[sym]}]],
+    FrameLabel->{"","","PointSymbol"},
+    FrameTicks->{None,Both,None,None},
+    DataRange->{{0.9,1.9},{0,5.5}},GridLines->{None,Axis}]];
+Print["Head=",Head[g]];
+Update[];
+Exit;

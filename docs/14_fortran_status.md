@@ -22,7 +22,7 @@ SAD は K64 版、ソースは `<SAD>\src`。
 `ffs.py`, `matching.py`, `tracking.py`, `optics.py` は非推奨の旧 API (SAD 未照合の独自実装) で、表には数えない。
 calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ffscmd.py` から呼ばれる (CALC6D、解析微分、INTRA/TouschekLifetime、LINE["GX"..]/GEO/ORG、MULT/SOL の numba 追跡、Emittance[] のオプション)。
 
-試験の現状 (2026-11-16): `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **520 通過・3 skip (523 件収集)**。回帰は **50 ベンチをすべて実行して FAIL 0** (非 QUICK、205 s。QUICK で SKIP される 4 件 (7・12t・13a・16a) も実行して PASS: 5.0e-11、12t 3.5e-11、13a 4.3e-21、16a 1.4e-31)。出典は `local/wake/verify_log.md` (2026-11-16 夜の記録。今回の文書更新では再実行していない)。
+試験の現状 (2026-11-16): `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **548 通過・3 skip (551 件収集)**。回帰は **50 ベンチをすべて実行して FAIL 0** (非 QUICK、205 s。QUICK で SKIP される 4 件 (7・12t・13a・16a) も実行して PASS: 5.0e-11、12t 3.5e-11、13a 4.3e-21、16a 1.4e-31)。出典は `local/wake/verify_log.md` (2026-11-16 夜の記録。今回の文書更新では再実行していない)。
 
 照合桁の目安 (10_benchmarks): CALC 光学 ≤1e-10 (誤差・オフモメンタム・結合経由は 1e-7〜3e-7)、Emittance[] ≤1.3e-11 (Level 3C の結合は 7.8e-7)、追跡 ≤5e-11 (Level 7/9/11 の z・trf0 は ≤1.7e-10)、マッチング K1 ≤1e-10、DA は地図・Score 一致。
 
@@ -39,7 +39,7 @@ calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ff
 | tmulti.f | MULT (ANGLE=0, K0..K21, ずれ・回転) | track6 `_tmulti_ens`、numba 版 track6n_ext.py | 翻訳済み・照合済み (track6 経由) | ≤5.9e-11 (L11)。ext は track6 と 4e-17、seed 一致 |
 | tsolqu.f / tsol.f | ソレノイド領域 (bz 分岐、tsolqur) | track6 `_tsol_region`, `_tsolqu_bz_*`、track6n_ext.py | 翻訳済み・照合済み | ≤1.5e-10 (L9)。EPS≠1 は制限あり |
 | tphoton / photons.f の tradk | 放射キック (平均・FLUC) | track6 `_tradk`, sadrandom.py | 翻訳済み・照合済み | ≤4.9e-11、乱数状態一致 (L10) |
-| tapert.f | 損失判定 | track6n.py `k_apert`、dapert.py、`TrackRun.l_track0` | 翻訳済み・照合済み | DA の地図一致 (L16A)。ただし損失周の乱数消費は不一致 (RAD+FLUC)。K64 は落とす印に `kptbl(i,4)=l_track` を書くので、セッション最初の TrackParticles (l_track=0) の最初の tapert では最初から LOSSAMPL の外の粒子が落ちない。この癖を再現し gs (1・2 回目) と全桁一致 (B33 の出力座標の差は解消、docs/11 A52) |
+| tapert.f | 損失判定・APERT 要素 (tapert1) | track6n.py `k_apert_gen`・`k_apert`・`k_apert_el`、track6.py `_apert_pass`、dapert.py、`TrackRun.l_track0` | 翻訳済み・照合済み (APERT 要素: 楕円・矩形・DX DY・ROTATE・全部 0・複数周・JDPX JDPY DP が gs と一致、`tests/test_apert.py`。SOL 領域内の APERT・TRPT・RAD つきは未確認。JDPX の乱数は粒子 12 個以上で gs と不一致) | DA の地図一致 (L16A)。ただし損失周の乱数消費は不一致 (RAD+FLUC)。K64 は落とす印に `kptbl(i,4)=l_track` を書くので、セッション最初の TrackParticles (l_track=0) の最初の tapert では最初から LOSSAMPL の外の粒子が落ちない。この癖を再現し gs (1・2 回目) と全桁一致 (B33 の出力座標の差は解消、docs/11 A52) |
 | tsteer.f | BEND ANGLE=0, K0≠0, L≠0 | track6.py `_tsteer_ens` (F1/FB1/FB2 フリンジ付きは NotImplementedError) | 翻訳済み・照合済み | bendk1_* (history/work_bend_k0.md, history/work_trpt_acc.md 10 節) |
 | tmulta.f (tmulta, tmultae) | MULT ANGLE≠0 | multa.py (追跡)、multae.py (Twiss・Emittance[]) | 翻訳済み・照合済み (docs/26) | 追跡は相対 0、Twiss 1e-13、Emittance[] 1e-11。BZ・RF・F1・SK0 は未対応 |
 | ttcav.f, ttcave.f | TCAVI (クラブ空洞) の追跡と 6 次元写像 | pysad/tcav.py | 翻訳済み・照合済み (追跡 0、Emittance[] は L=0 のみ gs と一致。L≠0 は gs が壊れる) | docs/24_tcav.md |
@@ -102,7 +102,11 @@ calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ff
 |---|---|---|---|---|
 | tcod.f | 6D/4D COD、RADCOD | lattice.py, emit6d.py (6D Newton) | 翻訳済み・照合済み | 9〜10 桁 |
 | tffsmatch.f の変数の符号・重み (UNIPOL・RELW・BIPOL) | FIT のフラグ | ffscmd `matcher_` が match6 の bipol・absweit につなぐ | 翻訳済み・照合済み (UNIPOL は変数の符号を変えない、RELW は重みが変わる。fit1.sad の 3 通りで gs と全桁一致。以前はフラグと match6 がつながっていなかった)。BIPOL の効果は FIT だけ。GAUSS・CTIME・CONV・EMIOUT はソースで効果を確認 (GAUSS・CTIME・CONV は MAIN の TRACK・MEASURE、CPU 時間の表示、収束の表示。EMIOUT は EMIT 報告の追加行で、pysad は spin の行だけ対応) | test_item4.py |
-| DUMP コマンド | 要素の DK・DDK などの表 | ffscmd `_gwd` | 翻訳済み・照合済み (誤差入りリングで値は gs と一致。DK・DDK 列の書式 (Fortran の 1p g12.5: 0 → `0.0000`、小さい値 → `4.22829E-04`) が違ったのを直した) | test_ffsextra.py `test_dump_format_matches_gs` |
+| tfdisp.f (DISP のモード GA・Z・P・A・B・D と REFERENCE・DREFERENCE) | 光学関数の表 | ffscmd `_disp_show` | 翻訳済み・照合済み (gs と見出し・桁が一致。DISP B の REF は gs も未実装。雑音 1e-16 の列は 0) |
+| tffsa.f tfsetref、tftwiss.f の R・D 接頭辞 | REFERENCE、Twiss["RBX"/"DBX"/"RALL"/"DALL"] | ffscmd `_ref_rows`、`twiss_value`、`fn_twiss` | 翻訳済み・照合済み (全桁) |
+| tfinit.f tffsrenumber/tfinimult | RENUMBER、LINE["MULT"] | ffscmd `_renumber_cmd`、`line_value` | 翻訳済み・照合済み (INDX 属性の初期値は未対応) |
+| tffsa.f の USE/CALC/GO の EXPAND・NOEXPAND | 成分ごとの値を残す | ffscmd `use`、`calc`、`go`、`spread_pending` | 翻訳済み・照合済み (NOKEEPEXP は未対応) |
+| DUMP コマンド | 要素の DK・DDK などの表 | ffscmd `_gwd` | 翻訳済み・照合済み (パターンは 20 文字まで、DDK は K0 のある要素だけ。誤差入りリングで値は gs と一致。DK・DDK 列の書式 (Fortran の 1p g12.5: 0 → `0.0000`、小さい値 → `4.22829E-04`) が違ったのを直した) | test_ffsextra.py `test_dump_format_matches_gs` |
 | MATRIX コマンド | 2 点間の転送行列 | ffsextra | 翻訳済み・照合済み (名前だけ (gs は NAME.1 として扱う) を位置にでき、ラティスに無い名前は gs が読み飛ばす (to=$$$) のを再現) | test_ffsextra.py (mt1・mt2.sad) |
 | LDSolve.n、行列演算 (Dot・Inverse) | Optics.n・LDSolve.n の線形代数 | pysad の式評価 | 翻訳済み・照合済み (`DiagonalMatrix` が複素数の列を受けず失敗していたのを修正。行列の演算結果は要素ごとに虚部 0 の複素数を実数に戻す (gs と同じ)。LDSolve の終点と 3 通りの呼び出しが gs と一致。TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo も表示桁で一致)。PeriodicR は呼び出し方が不明で比較できず | test_evalfixes.py |
 | OpenRead (開けないファイル) | 入力ファイルの読み | pysad の IO | gs と同じ (開けなければメッセージを出して入力行を打ち切り、Read・Close は wrongtype) | test_evalfixes.py |

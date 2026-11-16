@@ -1,0 +1,17 @@
+! Tkinter.n の MenuButton / Menu (Button, Separator のエントリ) (ラティスなし)
+FFS;
+TclEval["proc dw {w d} {set o {}; foreach c [winfo children $w] {set t {}; catch {set t [$c cget -text]}; lappend o [format {%*s%s %s} $d {} [winfo class $c] $t]; foreach x [dw $c [expr {$d+2}]] {lappend o $x}}; return $o}"];
+TclEval["proc ff {w cls} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {lappend r $c}; set r [concat $r [ff $c $cls]]}; return $r}"];
+w=Window[];
+fl="none";
+mb=MenuButton[w,Text->"File",Side->"top"];
+m=Menu[mb,Add->{Button[Text->"Open",Command:>(fl="open")],Button[Text->"Save",Command:>(fl="save")],Separator[],Button[Text->"Quit",Command:>(fl="quit")]}];
+TclEval["update"];
+Print["tree: ",TclEval["join [dw . 0] {; }",String]];
+TclEval["set mn [lindex [ff . Menu] 0]"];
+Print["last index=",TclEval["return [$mn index end]",String]];
+Print["labels=",TclEval["set r {}; for {set i 0} {$i<=[$mn index end]} {incr i} {if {[$mn type $i] ne {separator}} {lappend r [$mn entrycget $i -label]} else {lappend r -}}; return $r",String]];
+! 「Save」(2 番目、添字 1) を選ぶ (invoke) と Command が評価される
+TclEval["$mn invoke 1"];
+Print["fl=",fl];
+Exit;

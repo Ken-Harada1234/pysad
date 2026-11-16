@@ -1,0 +1,20 @@
+! Packages/D.n の記号微分 D と記号積分 Integrate (ラティスなし)
+FFS;
+Print["D[x^3,x]=",D[x^3,x]];
+Print["D[Sin[x]*Exp[x],x]=",D[Sin[x]*Exp[x],x]];
+Print["D[Log[x^2+1],x]=",D[Log[x^2+1],x]];
+Print["D[x^2*y,y]=",D[x^2*y,y]];
+Print["D[Sin[x]^2,{x,2}]=",D[Sin[x]^2,{x,2}]];
+Print["D[Sqrt[1+x^2],x]=",D[Sqrt[1+x^2],x]];
+! 微分した式に数値を代入して差分と比べる
+f=D[Sin[x]*Exp[x],x];
+Print["R:dfx=",f/.x->0.7];
+Print["R:dnum=",(Sin[.7+1e-6]*Exp[.7+1e-6]-Sin[.7-1e-6]*Exp[.7-1e-6])/2e-6];
+! 記号積分
+Print["Integrate[x^2,x]=",Integrate[x^2,x]];
+Print["Integrate[Sin[x],x]=",Integrate[Sin[x],x]];
+Print["Integrate[Exp[2 x],x]=",Integrate[Exp[2*x],x]];
+Print["Integrate[1/x,x]=",Integrate[1/x,x]];
+! 定積分 (Spline の積分は fn_Spline)
+Print["R:defint=",Integrate[x^2,{x,0,3}]];
+Exit;

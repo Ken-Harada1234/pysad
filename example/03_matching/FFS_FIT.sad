@@ -1,0 +1,26 @@
+MOMENTUM = 3GEV;
+! 対称 FODO セル (半分の QF + ドリフト + QD + ドリフト + 半分の QF)。周期解は CELL で求める
+DRIFT DD = (L=2.0);
+QUAD QFH = (L=0.15 K1=0.3) QD = (L=0.3 K1=-0.6);
+MARK ORIGIN = ();
+LINE C = (ORIGIN QFH DD QD DD QFH);
+FFS;
+$FORM = "10.6";
+
+! FIT (条件) FREE (変数) GO (実行) SHOW VARIABLES: 1 セル 90 度の FODO を作る
+USE C; CELL; CALC;
+Print["initial cell phase NX NY /2pi = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+FREE QFH QD;
+FIT $$$;
+NX 0.25 NY 0.25;
+SHOW;
+VARIABLES;
+GO;
+SHOW;
+VARIABLES;
+Print["matched K1 QFH (half) = ", LINE["K1","QFH.1"], "  QD = ", LINE["K1","QD"]];
+Print["integrated QF (two halves) = ", LINE["K1","QFH.1"]+LINE["K1","QFH.2"], "  QD = ", LINE["K1","QD"]];
+Print["phase NX NY /2pi = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Print["BX BY at ORIGIN = ", Twiss["BX","ORIGIN"], " ", Twiss["BY","ORIGIN"]];
+Print["max BX max BY   = ", Max[Twiss["BX"]], " ", Max[Twiss["BY"]]];
+Exit;

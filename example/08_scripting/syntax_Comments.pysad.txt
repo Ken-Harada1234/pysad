@@ -1,0 +1,6 @@
+after ! comment
+after block comment
+inline (* hidden *) visible
+string with ! and (* not a comment *) inside
+multi 1 2
+3

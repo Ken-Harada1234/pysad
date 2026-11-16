@@ -1,0 +1,12 @@
+! ListPlot (ラティスなし)。点・折れ線・誤差棒・複数データ
+FFS;
+data1={{1,2},{3,5},{4,-1}};
+data2={{1,4},{2,-2},{3.5,3},{5,3}};
+g=ListPlot[{data1,data2},PlotJoined->{True,False},Thickness->2,PointSize->2,
+  FrameLabel->{"x","y"},Legend->{"data1","data2"}];
+Print["Head=",Head[g]," Length=",Length[g]];
+! y に誤差棒 {x,y,dy}
+e=ListPlot[{{1,2,.5},{2,3,.4},{3,5,.8},{4,4,.3}},FrameLabel->{"x","y +- dy"},DisplayFunction->Identity];
+Print["errbar Head=",Head[e]];
+Update[];
+Exit;

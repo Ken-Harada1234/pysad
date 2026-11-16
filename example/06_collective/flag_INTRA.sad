@@ -1,0 +1,28 @@
+MOMENTUM = 0.5GEV;   ! 0.5 GeV に下げた版 (IBS を見るため)
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+! QF から始まる並び (RADINT は先頭が SEXT だと DL=0 で NaN になるため。FODO_ring と同じ磁石列、位相だけ違う)
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+$FORM = "12.6";
+USE RING; CELL; CALC;
+RFSW; RAD; FLUC;
+MINCOUP = 0.01;                   ! 垂直エミッタンスの下限 = MINCOUP*(EMITX+EMITY) (理想リングの EMITY=0 を避ける)
+NOINTRA;
+em0 = Emittance[];
+Print["NOINTRA: Emittances=", Emittances/.em0, " SIGE=", MomentumSpread/.em0, " SIGZ=", BunchLength/.em0];
+INTRA;                            ! バンチ内散乱 (IBS) をエミッタンス計算に入れる
+Do[
+  PBUNCH = {1e4, 1e8, 3e8, 1e9, 3e9}[[k]];
+  em = Emittance[];
+  Print["INTRA PBUNCH=", PBUNCH, ": Emittances=", Emittances/.em, " SIGE=", MomentumSpread/.em, " SIGZ=", BunchLength/.em],
+  {k, 1, 5}];
+Exit;

@@ -1,0 +1,29 @@
+! 初等関数 (Sin Cos Tan, 逆三角, 双曲線, 逆双曲線, Exp Log Sqrt) (ラティスなし)
+FFS;
+$FORM="S17.15";
+Print["R:Sin=",Sin[1.]];
+Print["R:Cos=",Cos[1.]];
+Print["R:Tan=",Tan[1.]];
+Print["R:ArcSin=",ArcSin[.5]];
+Print["R:ArcCos=",ArcCos[.5]];
+Print["R:ArcTan=",ArcTan[2.]];
+Print["R:ArcTan2=",ArcTan[1.,-1.]];
+Print["R:Sinh=",Sinh[1.]];
+Print["R:Cosh=",Cosh[1.]];
+Print["R:Tanh=",Tanh[1.]];
+Print["R:ArcSinh=",ArcSinh[1.]];
+Print["R:ArcCosh=",ArcCosh[2.]];
+Print["R:ArcTanh=",ArcTanh[.5]];
+Print["R:Exp=",Exp[1.5]];
+Print["R:Log=",Log[10.]];
+Print["R:Sqrt=",Sqrt[2.]];
+Print["R:Degree=",Degree];
+Print["R:Sin30=",Sin[30*Degree]];
+! 範囲外・複素
+Print["LogNeg=",Log[-1.]];
+Print["ArcSin2=",ArcSin[2.]];
+Print["SqrtNeg=",Sqrt[-4.]];
+Print["ArcCosh.5=",ArcCosh[.5]];
+Print["ArcTanh2=",ArcTanh[2.]];
+Print["ExpI=",Exp[I*Pi/3]];
+Exit;

@@ -1,0 +1,3 @@
+parent: Shared[s] = {1,2,3}   SharedSize[{1,2,3}] = 1
+parent: Fork returned a Real (child pid): Real 1
+parent: after the child wrote Shared[s] = {1,2,3}

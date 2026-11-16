@@ -1,0 +1,10 @@
+! BesselY と BesselJZero (ラティスなし)。gs の K64 ビルドでは BesselY / BesselJZero が NaN を返すか応答しなくなる
+FFS;
+$FORM="S17.15";
+Print["R:Y0=",BesselY[0,1.]];
+Print["R:Y1=",BesselY[1,2.5]];
+Print["R:Y0_5=",BesselY[0,5.]];
+Print["R:JZero1=",BesselJZero[0,1]];
+Print["R:JZero3=",BesselJZero[0,3]];
+Print["R:JZero1_1=",BesselJZero[1,1]];
+Exit;

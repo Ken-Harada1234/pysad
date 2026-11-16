@@ -1,0 +1,27 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+! EMIT で平衡エミッタンスを求めてから BEAMSIZE
+$FORM = "10.6";
+USE RING; CELL; CALC;
+RF VOLT 6.0E6;
+CALC;
+RFSW; RAD; NOFLUC;
+EMIT;
+Print["EMITX EMITY SIGE SIGZ = ", EMITX, " ", EMITY, " ", SIGE, " ", SIGZ];
+MINCOUP = 0.01;
+BEAMSIZE;
+DISP BEAM 1 8;
+Print["sigx at QF.1, B.1 (mm) = ", LINE["SIGX",{"QF.1","B.1"}]*1E3];
+Print["sigy at QF.1, B.1 (mm) = ", LINE["SIGY",{"QF.1","B.1"}]*1E3];
+Print["BX EX at QF.1, B.1 = ", Twiss["BX",{"QF.1","B.1"}], " ", Twiss["EX",{"QF.1","B.1"}]];
+Print["BY at QF.1, B.1 = ", Twiss["BY",{"QF.1","B.1"}]];
+Exit;

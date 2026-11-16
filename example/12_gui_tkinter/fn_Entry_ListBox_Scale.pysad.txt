@@ -1,0 +1,6 @@
+tree: Entry s2tv_4; Listbox ; Scale ; Radiobutton A; Radiobutton B
+Head[e]=Widget
+entry=abc
+entry after Insert=abcXY
+listbox size=2
+rv=2  sv=8

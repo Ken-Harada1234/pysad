@@ -1,0 +1,67 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.301461 $$$       f BX    #######  #  11.708292 $$$       f NX    #######  #   9.597530 $$$       f AY    #######  #  -1.351651 $$$       f BY    #######  #   2.815064 $$$       f NY    #######  #   5.278960
+$$$       f LENG  #######  #  187.03548
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -2.99E-6  8.449E-7  6.67E-23  2.40E-22  -8.53E-7  -1.89E-5
+      Exit :  -2.99E-6  8.449E-7  5.62E-22  2.09E-22  -8.53E-7  -1.89E-5
+
+    Extended Twiss Parameters
+AX: -1.30160 BX: 11.70855                            ZX: 4.760E-6  EX:  .667150
+           PSIX: 3.52E-16                           ZPX: 5.856E-7 EPX: -2.9E-17
+R1: 2.02E-20 R2: 2.88E-21 AY: -1.35300 BY: 2.816043  ZY: 2.25E-19  EY: -2.9E-17
+R3: 9.51E-21 R4: -8.3E-20            PSIY: 5.59E-40 ZPY: -1.8E-20 EPY: -4.7E-18
+                                                     AZ:  .016938  BZ: 13.30988
+                                                                 PSIZ: 4.53E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 1602864.0 Hz 
+Energy loss per turn U0 =  .3991454 MV  Effective voltage    Vc = 1.7000000 MV 
+Equilibrium position dz = 22.611203 mm  Momentum compact. alpha =    .00656
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 312.00000
+Bucket height     dV/P0 =  .0118026     Synchrotron frequency   = 23524.817 Hz 
+
+  Imag.tune: 0.0000000           0.0000000          -0.0000000
+  Real tune:-0.4022024           0.2792930          -0.0146767
+
+    Damping per one revolution:
+          X : -8.231588E-05   Y : -7.980479E-05   Z : -1.571409E-04
+    Damping time (sec):
+          X :  7.579136E-03   Y :  7.817617E-03   Z :  3.970215E-03
+    Tune shift due to radiation:
+          X : -4.432999E-06   Y :  1.450628E-05   Z : -1.107058E-07
+    Damping partition number:
+          X :    1.0313       Y :    0.9999       Z :    1.9688
+
+Emittance X            = 3.45365E-8 m   Emittance Y            = 5.7308E-40 m
+Emittance Z            = 7.16196E-6 m   Energy spread          = 7.33656E-4
+Bunch Length           = 9.76350852 mm  Beam tilt              = 4.9684E-17 rad
+Beam size xi           =  .80244928 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -1.3014 11.7082 9.59753  .66669  .03414  $$$       .0     0         187.035488 -1.3516 2.81506 5.27896  .0      .0     .0      777
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.202409 $$$       f BX    #######  #   4.825501 $$$       f NX    #######  #   1.434969 $$$       f AY    #######  #    .098152 $$$       f BY    #######  #    .414317 $$$       f NY    #######  #    .913001
+$$$       f LENG  #######  #  27.735784
+kickers at element numbers {  17.0000000000,  46.0000000000,  50.0000000000,  79.0000000000}  INJ at   48.0000000000  line length  114.0000000000
+       2        0   6.3856E-02  (NEWTON)    1.000          4
+ Matched. ( 1.3646E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+INJ         DX   .015      1    .015000 INJ         DPX  .001      1    .001000 $$$       f AX    #######  #   -.228649 $$$       f BX    #######  #   4.578098 $$$       f NX    #######  #   1.444756 $$$       f AY    #######  #    .138958
+$$$       f BY    #######  #    .378717 $$$       f NY    #######  #    .901028 $$$       f DX   0         1  1.2812E-9 $$$       f DPX  0         1  -7.04E-10 $$$       f LENG  #######  #  27.735784
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -1.8187 3.32201  .24289  .39130  .18552  KK1       .30000  .0         3.460696 5.02081 11.8625  .04636  .0      .0     .0       17
+ -.69854 6.05046  .53150  .52153  .03259  KK2       .30000  .0         8.640392 1.66002 3.83006  .13598  .0      .0     .0       46
+ -1.5875 14.3147  .59499  .63574  .03259  KK3       .30000  .0        12.255392 -1.8847 4.64252  .47205  .0      .0     .0       50
+ -.71300 3.10330  .97268  .06888  .00274  KK4       .30000  .0        17.678088  .04833 5.49668  .56186  .0      .0     .0       79
+ Matched. ( 1.2986E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+INJ         DX   .015      1    .015000 INJ         DPX  .001      1    .001000 $$$       f AX    #######  #   -.228649 $$$       f BX    #######  #   4.578098 $$$       f NX    #######  #   1.444756 $$$       f AY    #######  #    .138958
+$$$       f BY    #######  #    .378717 $$$       f NY    #######  #    .901028 $$$       f DX   0         1  1.2812E-9 $$$       f DPX  0         1  -7.04E-10 $$$       f LENG  #######  #  27.735784
+DX, DPX at INJ [mm, mrad] =   14.9999958731     .9999996217
+DX, DPX at the end of the line [mm, mrad] =  1.281218817E-6  -7.03771509E-7
+KK1 K0 [mrad] =   -2.5210688817
+KK2 K0 [mrad] =    -.0095441626
+KK3 K0 [mrad] =   -1.9201882667
+KK4 K0 [mrad] =   -3.3750372824
+analytic DX at INJ [mm] (kickers upstream of INJ only) =   14.8965453680   at line end [mm] =     .0047406308

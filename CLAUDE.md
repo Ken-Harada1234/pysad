@@ -12,7 +12,7 @@ pysad は加速器設計コード SAD (K64 版) の Python への直訳。作業
 - 再導出せず直訳する。数値の根拠は K64 版のソース。ヘルプは CERN の SADHelp か K64 版同梱の SADHelp.html (KEK 公式サイトは別系統なので参照しない)。
 - 翻訳の対象は Fortran / C の物理計算。`Packages/*.n` は Python で書き直し、ファイル・リスト・GUI・描画は Python のライブラリに任せる。
   例外: GUI (Tkinter.n / KBFrame.n など) と SAD のパッケージ (CorrectOrbit など) は書き直さず、SAD 自身の `.n` を pysad のインタプリタで解釈する (`docs/20_gui_tclbridge.md`、`docs/32_sad_packages.md`)。
-- テストは `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を `--ignore`、手順は 00_RESUME.md §4)。520 通過・3 skip (523 件収集)、回帰は 50 ベンチすべて実行して FAIL 0 (QUICK=1 は 46 件。2026-11-16)。GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip。SAD 本体が無くても通る。
+- テストは `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を `--ignore`、手順は 00_RESUME.md §4)。575 通過・3 skip (578 件収集)、回帰は 50 ベンチすべて実行して FAIL 0 (QUICK=1 は 46 件。2026-11-17)。GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip。SAD 本体が無くても通る。
 - 解説文書 (`docs/*.md`) は履歴なしの現状。経緯は `docs/history/` に書く。未確認・限界・使った条件 (エネルギー、磁場、周長) を必ず書く。
 - gs の 10-19 ビルドは、保存済みの参照 (10-14) と値が違うことがある (00_RESUME.md §8)。
 - コミットしてよいのは追跡対象 (00_RESUME.md §9) だけ。出力や中間ファイルを入れない。

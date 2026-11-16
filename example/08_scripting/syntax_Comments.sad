@@ -1,0 +1,12 @@
+FFS;
+! comment from ! to the end of the line
+Print["after ! comment"]; ! trailing comment
+(* block comment *) Print["after block comment"];
+Print["inline (* hidden *) visible"];
+(* comment over
+   several lines *)
+Print["string with ! and (* not a comment *) inside"];
+Print["multi ", 1, (* between *) " ", 2];
+x = 1; (* comment after statement *) y = 2;
+Print[x + y];
+Exit;

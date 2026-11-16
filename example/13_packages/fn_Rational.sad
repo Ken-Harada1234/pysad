@@ -1,0 +1,18 @@
+! Packages/rational.n: Rational / ContinuedFraction / SmallPrime (ラティスなし)
+FFS;
+r1=Rational[1,3];
+r2=Rational[1,6];
+Print["1/3+1/6=",r1+r2];
+Print["1/3*3/4=",r1*Rational[3,4]];
+Print["Numerator,Denominator=",{Numerator[Rational[6,8]],Denominator[Rational[6,8]]}];
+Print["FromRational[Rational[7,4]]=",FromRational[Rational[7,4]]];
+Print["Rational[2,-4]=",Rational[2,-4]];
+Print["Rational[5,1]=",Rational[5,1]];
+! 連分数: pi の近似 (3.14159265358979 から 8 項)
+Print["R:cf=",ContinuedFraction[3.141592653589793,8]];
+Print["R:fcf=",FromContinuedFraction[{3,7,15,1}]];
+Print["R:fcf_ref=",3+1/(7+1/(15+1/1.))];
+Print["SmallPrime[1..10]=",Table[SmallPrime[i],{i,10}]];
+! チューンを有理数で近似する (ベータトロンのチューン 0.696329)
+Print["cf(0.696329)=",ContinuedFraction[0.696329,6]];
+Exit;

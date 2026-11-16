@@ -1,0 +1,24 @@
+StringLength 16
+StringJoin abcdef // x1y
+part Hello World H
+StringPosition {{2,4},{4,6},{6,8},{8,10}}{{2,4},{4,6}}
+StringReplace axyxcxyxc
+StringReplace 2 axypqrsbc
+StringTrim [pad]
+StringFill ab----- -----ab
+StringMatchQ * 10
+StringMatchQ % 101
+StringMatchQ {} 1011
+StringMatchQ ? (SAD の wildcard ではない) 0
+ToUpper/Lower HELLO, SAD WORLD hello, sad world
+Characters {"a","b","c"}
+ToCharacterCode {65,90} FromCharacterCode SADA
+ToExpression 7 {1,2,3}
+Symbol abc SymbolName abc
+DigitQ/LetterQ 1010
+StringDrop cdef abcd
+StringInsert ab-cdef
+escape tab quote {9,34}
+escape backslash {92}
+escape octal 101 {65}
+number to string x=1.5, n=3

@@ -1,0 +1,9 @@
+MOMENTUM = 100MEV;
+! 簡易 FODO 直線加速器: 5 セル、各セルに加速空洞 2 台 (L=1 m, 10 MV, 2.856 GHz)、入口 100 MeV、電子
+! QUAD の K1 は積分強度 (1/m)。PHI で加速位相を決める (dE = -e V sin(PHI)。flag_TRPT の例で確認)
+DRIFT DL = (L=0.5);
+QUAD  QF = (L=0.2 K1=0.4) QD = (L=0.2 K1=-0.4);
+CAVI  ACC = (L=1.0 VOLT=10E6 FREQ=2.856E9 PHI=-1.5707963267948966);
+MARK  ORIGIN = (AX=0 BX=5 AY=0 BY=5 EMITX=1E-8 EMITY=1E-8 DP=0);
+LINE  CEL = (QF DL ACC DL QD DL ACC DL);
+LINE  LINAC = (ORIGIN 5*CEL);

@@ -1,0 +1,161 @@
+       2        0   5.2096E-08  (NEWTON)    1.000          5
+ Matched. ( 1.2254E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKE         EX   0         1  -1.625E-9 MKE         EPX  0         1  2.078E-16 $$$       f AX   0         1  -9.82E-17 $$$       f BX    #######  #   3.968255 $$$       f NX   .8405     2    .840494 $$$       f AY   0         1  1.971E-15
+$$$       f BY    #######  #   1.853941 $$$       f NY   .3405     2    .340493 $$$       f LENG  #######  #   7.617400
+Chromaticity Correction
+ ;
+ SEXT   SD      =(L =.15  K2 =-12.090152275722296 )
+        SF      =(L =.075 K2 =9.233210063325034 )
+ ;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -1.E-16 3.96826  .84049 -1.6E-9 2.1E-16  $$$       .0     0           7.617400 2.0E-15 1.85394  .34049  .0      .0     .0       34
+ ;
+ QUAD   QF3     =(L =.18  K1 =1.0334751788701506 )
+        QF2     =(L =.18  K1 =1.0917925539175055 )
+ ;
+ BEND   BH      =(L =.85  ANGLE =.523599 K1 =-1.4062850478782605 )
+ ;
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax: 200.000
+         (Ymin:   1.000 Ymax:   1.000)
+          Zmin: -23.156 Zmax:  23.156
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.16 37 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPHPbe         .
+     0.00 38 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPmf41        .
+    23.16 39 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP5k         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:   114
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax:   1.000
+         (Ymin:   1.000 Ymax: 200.000)
+          Zmin: -23.156 Zmax:  23.156
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.16 36 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPH2P1. 2f      .
+     0.00 37 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP611.   1 1   .
+    23.16 37 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP74 .   2     .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:   110
+RESULT tunenx tuneny NXcell NYcell NXring(with errors) NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
+RESULT     .8400000000     .3400000000     .8404943347     .3404932150    5.0429741277    2.0432344084   37.0000000000   38.0000000000   39.0000000000   36.0000000000   37.0000000000   37.0000000000   14.1386151222    3.9682552734    1.8539406530    9.2332100633  -12.0901522757
+ Matched. ( 3.4179E-12) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKE         EX   0         1  4.0773E-8 MKE         EPX  0         1  -1.56E-12 $$$       f AX   0         1  -3.13E-12 $$$       f BX    #######  #   3.857688 $$$       f NX   .8805     2    .880493 $$$       f AY   0         1  -2.58E-12
+$$$       f BY    #######  #   1.796889 $$$       f NY   .3405     2    .340493 $$$       f LENG  #######  #   7.617400
+Chromaticity Correction
+ ;
+ SEXT   SD      =(L =.15  K2 =-11.381404831730192 )
+        SF      =(L =.075 K2 =8.300448707291162 )
+ ;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -3.E-12 3.85769  .88049 4.08E-8 -2.E-12  $$$       .0     0           7.617400 -3.E-12 1.79689  .34049 -5.E-13 -5.E-13 -4E-22   34
+ ;
+ QUAD   QF3     =(L =.18  K1 =1.0941176923153948 )
+        QF2     =(L =.18  K1 =1.0923650813800914 )
+ ;
+ BEND   BH      =(L =.85  ANGLE =.523599 K1 =-1.425344673816561 )
+ ;
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax: 200.000
+         (Ymin:   1.000 Ymax:   1.000)
+          Zmin: -23.113 Zmax:  23.113
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.11 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPh211      .         .
+     0.00 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPN211      .         .
+    23.11 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP11        .         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:    90
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax:   1.000
+         (Ymin:   1.000 Ymax: 200.000)
+          Zmin: -23.113 Zmax:  23.113
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.11 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPB1        .         .
+     0.00 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1         .         .
+    23.11 28 PPPPPPPPPPPPPPPPPPPPPPPPPPPP53.         .         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:    88
+RESULT tunenx tuneny NXcell NYcell NXring(with errors) NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
+RESULT     .8800000000     .3400000000     .8804933873     .3404930613    5.2829849698    2.0426970685   30.0000000000   30.0000000000   30.0000000000   30.0000000000   30.0000000000   28.0000000000   11.6030642487    3.8576876301    1.7968887595    8.3004487073  -11.3814048317
+ Matched. ( 1.5162E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKE         EX   0         1  -1.357E-8 MKE         EPX  0         1  -7.63E-11 $$$       f AX   0         1  -1.64E-10 $$$       f BX    #######  #   4.007658 $$$       f NX   .8405     2    .840494 $$$       f AY   0         1  -2.17E-10
+$$$       f BY    #######  #   1.369065 $$$       f NY   .3805     2    .380494 $$$       f LENG  #######  #   7.617400
+Chromaticity Correction
+ ;
+ SEXT   SD      =(L =.15  K2 =-12.282303536592647 )
+        SF      =(L =.075 K2 =9.26920920859318 )
+ ;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -2.E-10 4.00766  .84049 -1.4E-8 -8.E-11  $$$       .0     0           7.617400 -2.E-10 1.36907  .38049 7.1E-15 2.6E-14 -6E-25   34
+ ;
+ QUAD   QF3     =(L =.18  K1 =1.0367656024753624 )
+        QF2     =(L =.18  K1 =1.0924808589330461 )
+ ;
+ BEND   BH      =(L =.85  ANGLE =.523599 K1 =-1.4292028930203242 )
+ ;
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax: 200.000
+         (Ymin:   1.000 Ymax:   1.000)
+          Zmin: -23.100 Zmax:  23.100
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.10 25 PPPPPPPPPPPPPPPPPPPPPPPPP321111111      .         .
+     0.00 26 PPPPPPPPPPPPPPPPPPPPPPPPPP22111111      .         .
+    23.10 25 PPPPPPPPPPPPPPPPPPPPPPPPP42111111       .         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:    76
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax:   1.000
+         (Ymin:   1.000 Ymax: 200.000)
+          Zmin: -23.100 Zmax:  23.100
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.10 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP722.         .         .
+     0.00 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP514.         .         .
+    23.10 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP421.         .         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:    81
+RESULT tunenx tuneny NXcell NYcell NXring(with errors) NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
+RESULT     .8400000000     .3800000000     .8404941164     .3804936575    5.0428256257    2.2829514421   25.0000000000   26.0000000000   25.0000000000   27.0000000000   27.0000000000   27.0000000000   14.0613218645    4.0076581172    1.3690650410    9.2692092086  -12.2823035366
+ Matched. ( 1.3728E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKE         EX   0         1  4.0187E-8 MKE         EPX  0         1  -3.04E-13 $$$       f AX   0         1  -7.22E-13 $$$       f BX    #######  #   3.903093 $$$       f NX   .8805     2    .880493 $$$       f AY   0         1  -6.31E-13
+$$$       f BY    #######  #   1.323257 $$$       f NY   .3805     2    .380493 $$$       f LENG  #######  #   7.617400
+Chromaticity Correction
+ ;
+ SEXT   SD      =(L =.15  K2 =-11.5519748583636 )
+        SF      =(L =.075 K2 =8.324335695670467 )
+ ;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -7.E-13 3.90309  .88049 4.02E-8 -3.E-13  $$$       .0     0           7.617400 -6.E-13 1.32326  .38049 -3.E-15 -1.E-14 -6E-26   34
+ ;
+ QUAD   QF3     =(L =.18  K1 =1.0967647193844126 )
+        QF2     =(L =.18  K1 =1.0930096241376348 )
+ ;
+ BEND   BH      =(L =.85  ANGLE =.523599 K1 =-1.446844940159246 )
+ ;
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax: 200.000
+         (Ymin:   1.000 Ymax:   1.000)
+          Zmin: -23.062 Zmax:  23.062
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.06 18 PPPPPPPPPPPPPPPPPP2 .         .         .         .
+     0.00 19 PPPPPPPPPPPPPPPPPPP .         .         .         .
+    23.06 18 PPPPPPPPPPPPPPPPPPB .         .         .         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:    55
+ Turns = 200.0000000000 Maximum number of particles = 306.0000000000
+ Range    Xmin:   1.000 Xmax:   1.000
+         (Ymin:   1.000 Ymax: 200.000)
+          Zmin: -23.062 Zmax:  23.062
+ Display:     5 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+   -23.06 20 PPPPPPPPPPPPPPPPPPPPA         .         .         .
+     0.00 21 PPPPPPPPPPPPPPPPPPPPP         .         .         .
+    23.06 20 PPPPPPPPPPPPPPPPPPPP.         .         .         .
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    Score:    61
+RESULT tunenx tuneny NXcell NYcell NXring(with errors) NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
+RESULT     .8800000000     .3800000000     .8804932212     .3804926488    5.2827778568    2.2826335949   18.0000000000   19.0000000000   18.0000000000   20.0000000000   21.0000000000   20.0000000000    9.0145640745    3.9030927578    1.3232566864    8.3243356957  -11.5519748584

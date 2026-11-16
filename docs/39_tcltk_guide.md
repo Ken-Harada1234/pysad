@@ -124,7 +124,7 @@ TclEval["update"];
 同様に `Entry`、`ListBox`、`Scale`、`RadioButton`、`Canvas`、`TextEditor` を `Window` の下に作り `Pack` すると、`winfo children .` が
 `Entry Listbox Scale Radiobutton Canvas Text Button` の順に返った (エラーなし)。
 ウィジェットへの操作は `TclEval["... "]` で Tk の命令を直接送る形でも、`e[Insert]={"end","XY"}` (Entry・ListBox) の形でも書く (後者は `Tkinter.n` の定義)。Insert の位置は Tcl の添字なので **小文字の `"end"`** を使う。大文字の `"End"` は gs で Tcl エラー 1501 になる。
-注意 (2026-11-16 の gs との比較): `e=Entry[w]` のあと、**gs では `e` が `Widget[e,Entry[w]]` を値に持ち**、`e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]`・`l[Insert]` (Listbox) が効く (Entry の内容 AB→CD、Listbox 2 項目、`v=e[Get]` が AB)。**pysad では `e` が裸のシンボルのまま** (`Head[w]=Symbol`、gs は `Widget`) で、`e[Insert]=…`・`e[Get]` は何も呼ばない (Tcl 呼び出し 0 回、エラーもなし)。ウィジェット自体は作られる (`winfo children` に Entry・Listbox が出る)。`w=Window[]; b=Button[w,...]` でも同じで、pysad は親が `w` でなく Root になる (`winfo` で `.` の直下に並ぶ。gs は Toplevel の下)。これは**既知の差 (未修正)**: `Tkinter.n` の `DefineWidget` 内の `a$:=Widget[a$,w[master$]]` が pysad で `w` の値にならない。root の Window は toplevel を作らず、`TkPathName[w]` が "" のまま。`f[x_]:=(x=5); f[aa]` のようなパターン変数への代入は gs と同じに働くので、原因は未特定 (玩具の再現は gs も pysad も再帰になり、実物が gs で再帰しない条件は未特定)。pysad はこの再帰で Python の `RecursionError` で落ちることがある (gs は `General::deep`)。
+`e=Entry[w]` のあと `e` は gs と同じく `Widget[e,Entry[w]]` を値に持ち (`Head[e]=Widget`)、`e[Insert]={"end","XY"}`・`lb[Insert]=…`・`e[Get]`・`e[Delete]` が効く (Entry の内容 abc→abcXY、Listbox 2 項目、gs と一致)。 以前は `e` が裸のシンボルのままだった原因は、`Tkinter.n` の規則 `(a$$_=w[Widget[master$_,_],opt$___])^:=With[{a$=a$$,…}, …]` が、規則の呼び出しの入れ子 (`a$_=w[…]` の規則が `a$=w[Widget[Root$Window,Null],opt$]` を評価して次の規則を呼ぶ) のとき、呼び出し元の規則の引数 `a$` (ユーザーの `w`) を `With` が見て、`a$` でなく `w` を束縛していたこと。`With` は別の規則 (関数) の呼び出しの外側の引数を見ない (`boundary` で止める)。 **残る差**: gs は `Window[]` の最初が Toplevel (`.5`) で、`.` には K64 起動時の「Return to SAD」ボタンがある。pysad は最初の `Window[]` が `.` (root) そのもの (`TkPathName[w]` が `.`、Entry は `.3`)。ウィジェットの木に Button と Toplevel の 2 段が無く、`TextVariable` の変数名の番号 (`s6tv_8` 対 `s2tv_4`) も違う。
 
 ### 3.2 試験の台本の探し方
 
@@ -212,7 +212,7 @@ pysad が合わせた K64 の挙動。
   Windows の Tk は X11 の Tk と違う (フォント名、`-scriptfont`、`wm` の挙動、X のウィンドウ木)。表示の違いはここから出る。
 - 木を gs と比べたのは、上の表の台本 (Window 系、KBMainFrame、demo-LabelFrame、キャンバス系)。残りのサンプルは「エラー無しで木ができた」までで、gs とは未比較。
 - `Entry`・`ListBox`・`Scale`・`RadioButton`・`TextEditor`・`SpinBox`・`PanedWindow`・`OptionMenu`・`TextMessage`・`ScrollBar` は、
-  単体の台本で gs と木を比べていない。**ウィジェットのメソッド (`e[Insert]`・`e[Get]`・`e[Delete]`・`l[Insert]`) は gs では効くが pysad では効かない** (ウィジェットが `Widget` 値にならない既知の差、§3.1)。`TextVariable` で結んだ変数への値の反映は確認していない。
+  単体の台本で gs と木を比べていない (`Entry`・`ListBox`・`Scale`・`RadioButton` の例 `fn_Entry_ListBox_Scale` は、メソッドの結果は gs と一致し、木は root と Toplevel の段が違う。§3.1)。`TextVariable` で結んだ変数への値の反映は確認していない。
 - `TabFrame.n` の描画 (`KBFTabFrame`、`KBFToggleFrame`) は未検証。demo-KBFrame1 は入れ子の部品の配置で失敗する (`cf[13]` が未定義。原因は未解決)。
 - `Class` の未対応: `親` メンバーの書き方、上位値 (`h_[f_[arg___], b___] ^:= g`) の形のメソッド、`Members[]` / `Parents[]`。
 - キャンバス: `CanvasSymbol` (Tcl 文字列を返す版)、`Canvas3DClipTriangle`・`Canvas3DLightTriangle`・`Canvas3DProjection` (Canvas3D.n) は未対応。`BeamPlot` は比べていない。`UseBG->True` の文字の背景は描かない。

@@ -1,0 +1,82 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:13:02 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ ! BIPOL (既定): 変数の符号が変わってよい。UNIPOL: 符号を変えない
+ $FORM = "10.6";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+ FREE QF QD;
+ FIT $$$;
+ ! A: 符号が変わらずに解ける目標 (BIPOL でも UNIPOL でも同じ解)
+ NX 6.2 NY 4.2;
+ GO;
+       2        0   3.2061E-02  (NEWTON)    1.000          2
+       3        0   3.1196E-08  (NEWTON)    1.000          2
+ Matched. ( 4.9396E-20) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.917913 $$$       f BX    #######  #   4.877812 $$$       f NX   6.2       1   6.200000
+$$$       f AY    #######  #   1.243183 $$$       f BY    #######  #   3.047436 $$$       f NY   4.2       1   4.200000
+$$$       f LENG  #######  #  105.60000
+ Print["A BIPOL : K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+A BIPOL : K1 QF QD =    .648109   -.539021  NX NY =   6.200000   4.200000
+ QF K1 0.7; QD K1 -0.6;
+ UNIPOL;
+ GO;
+       2        0   3.2061E-02  (NEWTON)    1.000          2
+       3        0   3.1196E-08  (NEWTON)    1.000          2
+ Matched. ( 4.9396E-20) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.917913 $$$       f BX    #######  #   4.877812 $$$       f NX   6.2       1   6.200000
+$$$       f AY    #######  #   1.243183 $$$       f BY    #######  #   3.047436 $$$       f NY   4.2       1   4.200000
+$$$       f LENG  #######  #  105.60000
+ Print["A UNIPOL: K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+A UNIPOL: K1 QF QD =    .648109   -.539021  NX NY =   6.200000   4.200000
+ ! B: 解けない目標 (安定領域の外。収束せず、経路に依存する)
+ BIPOL;
+ QF K1 0.7; QD K1 -0.6;
+ NX 0.2 NY 0.2;
+ GO;
+       2        0    175.5      (NEWTON)    1.000          2
+       4        0    106.6      (NEWTON)   0.3975          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ Residual =  106.4      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.043785 $$$       f BX    #######  #  11.681713 $$$       f NX   .2        1   1.419608
+$$$       f AY    #######  #   -.037833 $$$       f BY    #######  #  12.894938 $$$       f NY   .2        1   1.299479
+$$$       f LENG  #######  #  105.60000
+ Print["B BIPOL : K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+B BIPOL : K1 QF QD =   -.005524   -.005792  NX NY =   1.419608   1.299479
+ QF K1 0.7; QD K1 -0.6;
+ UNIPOL;
+ GO;
+       2        0    175.5      (NEWTON)    1.000          2
+ Residual =  175.5      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.907003 $$$       f BX    #######  #  12.501523 $$$       f NX   .2        1   1.429525
+$$$       f AY    #######  #    .564859 $$$       f BY    #######  #   8.180766 $$$       f NY   .2        1   1.912971
+$$$       f LENG  #######  #  105.60000
+ Print["B UNIPOL: K1 QF QD = ", LINE["K1","QF.1"], " ", LINE["K1","QD.1"], "  NX NY = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+B UNIPOL: K1 QF QD =    .111921   -.138159  NX NY =   1.429525   1.912971
+ Exit;
+ FFS                  end:  CPU time =     0.014 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

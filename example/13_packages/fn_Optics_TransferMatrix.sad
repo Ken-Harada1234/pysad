@@ -1,0 +1,26 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+$FORM="S17.10";
+USE RING; CELL; CALC;
+! Optics.n: TransferMatrix[i,j] = 要素 i から j への 6x6 行列、BeamMatrix[i] = ビーム行列、NormalCoordinates[i]、OrbitGeo[i]
+t=TransferMatrix[1,$$$];
+Print["dims=",Dimensions[t]];
+Print["R:m11=",t[[1,1]]];
+Print["R:m12=",t[[1,2]]];
+Print["R:m21=",t[[2,1]]];
+Print["R:m22=",t[[2,2]]];
+Print["R:trace_x=",t[[1,1]]+t[[2,2]]];
+Print["R:cosmu=",Cos[Twiss["NX","$$$"]]];
+Print["R:det_x=",t[[1,1]]*t[[2,2]]-t[[1,2]]*t[[2,1]]];
+Print["BeamMatrix[1] diag=",Table[BeamMatrix[1][[i,i]],{i,6}]];
+Print["OrbitGeo[5]=",OrbitGeo[5]];
+Exit;

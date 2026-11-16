@@ -1,0 +1,43 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+! QF から始まる並び (RADINT は先頭が SEXT だと DL=0 で NaN になるため。FODO_ring と同じ磁石列、位相だけ違う)
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+USE RING; CELL; CALC;
+RFSW; RAD; NOFLUC;
+em = Emittance[];                 ! RF 同期位相、減衰率、平衡値を決める
+Print["U0=", EnergyLossU0/.em, " DampingRate=", DampingRate/.em];
+Print["SIGE=", MomentumSpread/.em, " Emittances=", Emittances/.em, " BunchLength=", BunchLength/.em];
+Print["ORIGIN: BX=", Twiss["BX","ORIGIN"], " EX=", Twiss["EX","ORIGIN"], " BY=", Twiss["BY","ORIGIN"]];
+$FORM = "14.8";
+NPARA = 1;                        ! 乱数列を gs と pysad で揃える (既定 4 は fork で乱数列が分かれる)
+b0 = Twiss["BY","ORIGIN"]; a0 = Twiss["AY","ORIGIN"]; g0 = (1+a0^2)/b0;
+! (1) RAD NOFLUC: 垂直振動 y が減衰 exp(-U0/(2 E0) * N)
+y0 = 1e-3;
+beam = {{0},{0},{y0},{0},{0},{0},{1}};
+Do[
+  nt = {200, 1000, 4000}[[k]];
+  r = TrackParticles[{1, beam}, 1, 1, nt][[2]];
+  inv = g0*r[[3,1]]^2 + 2*a0*r[[3,1]]*r[[4,1]] + b0*r[[4,1]]^2;
+  Print["NOFLUC nt=", nt, "  sqrt(inv/inv0)=", Sqrt[inv/(g0*y0^2)], " x=", r[[1,1]], " dp=", r[[6,1]]],
+  {k,1,3}];
+! (2) RAD FLUC: 零から始めて nt 周後の dp, x の分布
+FLUC;
+SeedRandom[17];
+np = 200;
+z0 = Table[0, {i, np}];
+beam = {z0, z0, z0, z0, z0, z0, Table[1, {i, np}]};
+nt = 500;
+r = TrackParticles[{1, beam}, 1, 1, nt][[2]];
+rms[v_] := Sqrt[Plus@@(v^2)/Length[v]];
+Print["FLUC nt=", nt, " np=", np, " rms dp=", rms[r[[6]]], " rms x=", rms[r[[1]]], " rms z=", rms[r[[5]]], " mean dp=", Plus@@r[[6]]/np];
+Exit;

@@ -1,0 +1,39 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:00:25 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! Bessel 関数 J, I, K (ラティスなし)。Y と JZero は fn_BesselY_JZero.sad
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.15";
+ Print["R:J0=",BesselJ[0,1.]];
+R:J0=.765197686557967
+ Print["R:J1=",BesselJ[1,2.5]];
+R:J1=.497094102464274
+ Print["R:J2.5=",BesselJ[2.5,3.]];
+R:J2.5=.412710032209716
+ Print["R:J3=",BesselJ[3,2.]];
+R:J3=.128943249474402
+ Print["R:J0_100=",BesselJ[0,100.]];
+R:J0_100=-1.4722077807E25
+ Print["R:I0=",BesselI[0,1.]];
+R:I0=1.266065877752008
+ Print["R:I1=",BesselI[1,2.5]];
+R:I1=2.516716245288698
+ Print["R:I0_0=",BesselI[0,0.]];
+R:I0_0=NaN
+ Print["R:K0=",BesselK[0,1.]];
+hgu   0.5000       1.000       2.000    
+R:K0=.421024438240708
+ Print["R:K1=",BesselK[1,2.5]];
+hgu    1.500       3.000       5.000    
+R:K1=.073890816347747
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

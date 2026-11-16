@@ -1,0 +1,166 @@
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG ) 
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180 
+          BH 
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190 
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE) 
+
+	RING = (3*NCELL CAVI 3*NCELL)
+        RINGMPW = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+!+
+!  チューンサーベイ (ノーマルセルだけ、小さい誤差あり): 縮小版
+!  tune_survey_ncell_ideal_ASTRID2 と同じ手順で、DA を測る直前にリングへ小さい誤差を入れる。
+!  誤差は乱数 (SeedRandom で固定)。gs と pysad は乱数列が違うので、値の一致ではなく傾向 (誤差なしからの DA の減り方) を見る。
+!-
+ON LOG RFSW RADCOD RAD COD DAPERT BIPOL;
+OFF FLUC;
+FFS;
+  NPARA = 4;
+  $FORM = "15.10";
+  PageWidth = 1999;
+  nturn = 200;
+  SeedRandom[187];
+  ae = 5E-6;   ! 位置ずれ [m]
+  fe = 5E-5;   ! 相対的な K の誤差
+  te = 1E-5;   ! 回転 [rad]
+
+  ChromCor[]:=(
+     FFS["FIT"];
+     FFS["NX tunenx+0.0005 2;"];
+     FFS["NY tuneny+0.0005 2;"];
+     FFS["SD MAX 0"];
+     FFS["SF MIN 0"];
+     DP=0.001;
+     FFS["FREE SF*,SD*"];
+     FFS["go;",6];
+     FFS["FITP 1;"];
+     FFS["cell calc;"];
+     Print["Chromaticity Correction"];
+     FFS["type S*;",6];
+  );
+
+  InitMag[]:=(
+     LINE["K1","QF3"]    = 5.939500*0.1800;
+     LINE["K1","QF2"]    = 6.070000*0.1800;
+     LINE["K1","BH"]     =-1.678200*0.8500;
+     LINE["K2","SD"]     = -11;
+     LINE["K2","SF"]     =  8.6;
+     FFS["cell calc"];
+     FFS["SAVE ALL;"];
+  );
+
+  ! DA はリング (6 セル + RF) で測る。1 セルだけでは emit の閉軌道が無く、σ 単位が決まらない 
+  DAsv[]:=(
+     DAPWIDTH = 51;
+     FFS["USE RING;"];
+     FFS["DELX   ae Q*;"];
+     FFS["DELY   ae Q*;"];
+     FFS["DELX   ae S*;"];
+     FFS["DELY   ae S*;"];
+     FFS["DK     fe B*;"];
+     FFS["DK     fe Q*;"];
+     FFS["DK     fe S*;"];
+     FFS["DTHETA te B*;"];
+     FFS["DTHETA te Q*;"];
+     FFS["DTHETA te S*;"];
+     FFS["cell calc emit"];
+     emitx1 = EMITX*1e9;
+     nxr = Twiss["NX","$$$"]/2/Pi; nyr = Twiss["NY","$$$"]/2/Pi;
+     dp = 0.01 / SIGE;
+     zrange   = Range[-1.0 * dp, 1.1 * dp, dp];
+     range    = {{1,200},{1,1},zrange};
+     resx = DynamicApertureSurvey[range,nturn,Output->6];
+     range    = {{1,1},{1,200},zrange};
+     resy = DynamicApertureSurvey[range,nturn,Output->6];
+     ! 誤差を戻す (USE NCELL で元の値に戻るが、位置ずれ・回転は明示的に 0 にする)
+     FFS["DELX 0 Q*;"]; FFS["DELY 0 Q*;"]; FFS["DELX 0 S*;"]; FFS["DELY 0 S*;"];
+     FFS["DK 0 B*;"]; FFS["DK 0 Q*;"]; FFS["DK 0 S*;"];
+     FFS["DTHETA 0 B*;"]; FFS["DTHETA 0 Q*;"]; FFS["DTHETA 0 S*;"];
+     FFS["USE NCELL;"];
+     FFS["cell calc;"];
+  );
+
+Do[
+  Do[
+     FFS["USE NCELL;"];
+     InitMag[];
+     FFS["cell calc;"];
+     FFS["fit NX tunenx + 0.0005;"];
+     FFS["fit NY tuneny + 0.0005;"];
+     FFS["fit MKE EX 0;"];
+     FFS["fit MKE EPX 0;"];
+     FFS["fit AX 0;"];
+     FFS["fit AY 0; "];
+     FFS["free Q*;"];
+     FFS["free B* K1;"];
+     FFS["go;"];
+     FFS["cell calc;"];
+     ChromCor[];
+     FFS["SAVE ALL;"];
+     FFS["disp $$$;",6];
+     FFS["type Q* B*;",6];
+     DAsv[];
+     Print["RESULT tunenx tuneny NXcell NYcell NXring(with errors) NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD"];
+     Print["RESULT ",tunenx," ",tuneny," ",Twiss["NX","$$$"]/2/Pi," ",Twiss["NY","$$$"]/2/Pi," ",nxr," ",nyr," ",resx[2,2,1,2]," ",resx[2,2,2,2]," ",resx[2,2,3,2]," ",resy[2,2,1,2]," ",resy[2,2,2,2]," ",resy[2,2,3,2]," ",emitx1," ",Twiss["BX","$$$"]," ",Twiss["BY","$$$"]," ",LINE["K2","SF"]," ",LINE["K2","SD"]];
+  ,{tunenx, 0.84, 0.88, 0.04}];
+,{tuneny, 0.34, 0.38, 0.04}];
+Exit;

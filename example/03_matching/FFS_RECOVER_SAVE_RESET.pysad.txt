@@ -1,0 +1,28 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+ Matched. ( 2.1222E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166586 $$$       f BX    #######  #   5.024309 $$$       f NX   6.7       1   6.700000
+$$$       f AY    #######  #   1.208500 $$$       f BY    #######  #   2.560992 $$$       f NY   4.9       1   4.899998
+$$$       f LENG  #######  #  105.60000
+after GO       : K1 QF QD =    .700221   -.599636  NX NY =   6.700000   4.899998
+ Residual = 1.9799E-03  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX   6.7       1   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY   4.9       1   4.906056
+$$$       f LENG  #######  #  105.60000
+after RECOVER  : K1 QF QD =    .700000   -.600000  NX NY =   6.696329   4.906056
+ Matched. ( 2.1222E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166586 $$$       f BX    #######  #   5.024309 $$$       f NX   6.7       1   6.700000
+$$$       f AY    #######  #   1.208500 $$$       f BY    #######  #   2.560992 $$$       f NY   4.9       1   4.899998
+$$$       f LENG  #######  #  105.60000
+RECOVER again  : K1 QF QD =    .700221   -.599636  NX NY =   6.700000   4.899998
+QF K1 0.5      : K1 QF QD =    .500000   -.599636
+?Missing value for QF
+?Missing value for QD
+after RESET    : K1 QF QD =    .700221   -.599636
+ Matched. ( 2.1222E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166586 $$$       f BX    #######  #   5.024309 $$$       f NX   6.7       1   6.700000
+$$$       f AY    #######  #   1.208500 $$$       f BY    #######  #   2.560992 $$$       f NY   4.9       1   4.899998
+$$$       f LENG  #######  #  105.60000
+NX NY =   6.700000   4.899998

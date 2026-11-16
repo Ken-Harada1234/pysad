@@ -1,0 +1,7 @@
+! LaTeX (ラティスなし)。文字列が "\@" で始まると LaTeX として解釈される (pdflatex と ImageMagick が必要)
+FFS;
+Print["HaveLaTeX=[",$HaveLaTeX,"]"];
+g=ListPlot[{{1,2},{2,3},{3,5}},PlotJoined->True,FrameLabel->{"\@$x$","\@$\sin\theta$"},PlotLabel->"\@$\int_0^1 x^2dx$"];
+Print["Head=",Head[g]," Length=",Length[g]];
+Update[];
+Exit;

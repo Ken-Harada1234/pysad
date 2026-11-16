@@ -34,7 +34,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 | 場所 | 内容 |
 |---|---|
 | `pysad/` | 本体。モジュールの地図は `docs/01_overview.md` §3、行数と準拠状況は `docs/15_implementation_summary.md` |
-| `pysad/tests/` | pytest 523 件収集 (60 ファイル)。SAD (gs) から取った参照値を埋め込み、または `data_*.npz` に持つ。ラティスファイルを読むテストあり (誤差入りラティスの 2 件は環境変数 `PYSAD_ERR_LATTICE` を指定したときだけ走る) |
+| `pysad/tests/` | pytest 578 件収集 (64 ファイル)。SAD (gs) から取った参照値を埋め込み、または `data_*.npz` に持つ。ラティスファイルを読むテストあり (誤差入りラティスの 2 件は環境変数 `PYSAD_ERR_LATTICE` を指定したときだけ走る) |
 | `run_sad.py` | `py -3.12 run_sad.py lattice.sad script.sad` (SAD の `gs` と同じ引数、複数ファイルは連結) |
 | `docs/` | 解説 (現状)。`01_overview.md` から。API は `13_pysad_api.md` |
 | `docs/history/` | この文書と `work_*.md` (項目ごとの経緯・照合の記録)、`review_notes.md`、`sad_patch/` (元の SAD の SIGSEGV を直す差分) |
@@ -56,7 +56,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 - Python 3.12 に numpy、scipy、numba、pytest。Windows では `py -3.12`。出力に日本語や記号が入るので `PYTHONIOENCODING=utf-8`。
 - テスト: `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`
-  (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**520 通過・3 skip** (523 件収集、2026-11-16 夜)。
+  (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**575 通過・3 skip** (578 件収集、2026-11-17)。
   - GUI 系 (`test_plot.py`、`test_tclbridge.py`) は環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` (K64 の `Packages` の場所) が無いと skip。評価器 (`sadscript.py` など) を変えたら、これを設定して全試験と回帰を回す。
   - 全体実行では GUI 系が数回に 1 回、窓の更新待ちで失敗することがある (単独なら通る)。
   - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。
@@ -70,10 +70,12 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 - 一致: CALC (4D/6D、CELL/INS、結合、オフモメンタム、不安定ラインの続行)、EMIT / Emittance[] (RFSW × RADCOD、INTRA、報告の全行)、FIT/GO (解析微分、DESCEND、fuzz、2 段目、INS、フック)、
   追跡 (NORAD/RAD/FLUC、粒子損失)、DynamicApertureSurvey (NORAD)、RADINT、幾何 (GX…、GEO。SOL 領域の tsgeo は翻訳済みで docs/27 に記述、gs との一致の度合いは docs/27 を参照)、TRPT の加速、Touschek、誤差の実現、光学関数 (TransferMatrix 等)。詳細は `docs/15_implementation_summary.md` §3。
-- 試験: 520 通過・3 skip (523 件収集)、回帰は 50 ベンチすべて実行して FAIL 0 (QUICK=1 は遅い 4 件を SKIP して 46 件。§4)。
+- 試験: 575 通過・3 skip (578 件収集)、回帰は 50 ベンチすべて実行して FAIL 0 (QUICK=1 は遅い 4 件を SKIP して 46 件。§4)。
 - 11/13〜11/16 に実装して gs と照合した要素・機能 (各文書に、一致の度合い・使った条件・未確認がある):
   COORD (23)、TCAVI (24。Emittance[] は L=0 のみ gs と一致、L≠0 は gs が壊れる B36)、UND (25。K64 は磁場を設定できずドリフト B37)、MULT ANGLE≠0 (26)、SOL の Twiss・Emittance[]・追跡 (27)、MAP/ExternalMap (28)、DELCOR (29)、
   GaussianCoulomb(Fitted)・BBBrem (30)、特殊関数 458 式・Fit・FindRoot (31)、SAD の Packages (CorrectOrbit・MakeBump ほか、32)、FFS の小コマンド (33)、POL/スピンと CSR (34)、描画 (ListPlot・OpticsPlot ほか、35)、GUI/Tcl (20)、WAKE (21)、BEAMBEAM (22)。
+- 11/17: APERT 要素の追跡 (楕円・矩形・DX DY・ROTATE・JDPX、gs と一致。`work_apert.md`)。
+- 11/17: SADScript・入出力を gs に合わせた (Module の字句スコープ、Return、Switch/Which、リストの ==、Out[n]・%、Read、StringMatchQ、エスケープ、Random・SeedRandom ほか。For の本体と BeginPackage の文脈は合わせず。`work_scriptgs.md`)。
 - 11/16 の追加 (詳細は `work_session_20261116.md`): POL の Emittance・EMIT のスピン (MULT・空洞・SOL まで) と TrackParticles のスピン追跡 (gs と 4e-12 以下)、RADLIGHT の軌道 (gs と差 0)、SynchroBetaEmittance (gs と相対 1e-5〜6e-6)、
   CSRInit・CSRMatrix mode 1000・CSRConvert・MakeZL、tdgeo (DRIFT の L と BEND の ANGLE・L だけ解析微分)、Skip・Read の型、`measure.py` (tlum/tluma)、SOL の長さを周長に入れない (K64 の癖)、初期の MOMENTUM は 30 GeV。
 - GUI: SAD 自身の Tkinter.n / KBFrame.n / KBMainFrame.n を SADScript として解釈し、tkinter で表示する (`pysad/tclbridge.py`、`pysad/sadclass.py`、`docs/20_gui_tclbridge.md`)。
@@ -88,7 +90,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 1. BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡すると gs と合わない (相対 0.7)。DX・DY・ROTATE だけなら 1e-13 で一致。
 2. L≠0 の CAVI に DX・DY を付けた RAD ON の追跡で 1e-3 ずれる。
 3. SOL (BZ≠0) 内の四極 + RAD の追跡で、現在の gs (2026-10-19 ビルド) が、保存済みの参照 (bench_level9、2026-10-14 に取得。pysad はこれと一致) と別の値を返す。**11/16 夜に絞り込み: gs は RAD ON かつ BZ≠0 の領域内で四極の力を入れていない疑いが強く (四極を外した場合と 8 桁一致、BZ=0.01 と 0.2 でほぼ同じ値で BZ に連続でない)、gs の疑い**。ただし K64 ソースのどこかは未特定 (落とし穴 §8、`work_session_20261116.md` §11.3)。
-3b. Tkinter の Widget 値: gs では `e=Entry[w]`・`w=Window[]` の値が `Widget[…]` になりメソッド (Insert・Get・Delete) が働くが、pysad は裸のシンボルのままで何も呼ばれない (ウィジェット自体は作られ、親が Root になる)。`Tkinter.n` の `w:=Widget[w,wid[master]]` が働く条件が未特定で未修正 (`work_gui_tclbridge.md`、`work_session_20261116.md` §11.3)。
+3b. (11/17 に解決) Tkinter の Widget 値: `e=Entry[w]`・`w=Window[]` が gs と同じ `Widget[…]` になり、メソッド (Insert・Get・Delete) が働く。原因は `With` が入れ子の規則の呼び出し元の引数名を見ていたこと (`work_example_fixes_20261117.md`)。残る差は最初の `Window[]` が Toplevel でなく `.` 自身であること。
 4. SOL 領域内の BEND・MULT・CAVI は未対応 (NotImplementedError)。BEND は K64 の tsol.f どおりに書いたが、gs が偏向をほぼ無視して合わず取り下げた。原因未確認。
 5. K3 が強くずれの大きい MULT リング (`local/wake/pm1.sad`: K3=300、ずれ 1e-4) で、pysad の CALC (qcod) の閉軌道が gs と別の解 (y=-0.033) になり Emittance が NaN。gs は小さい軌道で通る。qcod の初期値・後退の違いと疑うが未確認。
 6. `emit6d._tquade` (Python 版) の解析ヤコビアンが、x がずれた軌道で δ の微分を落とす (DX/DY のある QUAD を含むリングで T の δ 列が 1e-5、ε_y で 1e-4)。`emit_extra`・`calc6d._turn`・`touschek` が使う。`emit6d.tturne` (elkern) は 1e-12 で一致。SOL つきの Emittance[] を emit_extra に入れられないのもこのため (`work_unimpl.md` 後で直す一覧 1・2)。
@@ -111,7 +113,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 - C6: 補正量 (SAD の teigen が縮退固有値で丸めに依存する)。
 - fit の多解・FITP>1 (SAD が再起動するので参照値が取れない)、不安定域の閉軌道探索の初期値の差は、SAD 側の仕様なので記録のみ。
 - (11/16 夜に解決したので課題から外した: B33 の出力座標の差 = セッション最初の l_track=0、UNIPOL・RELW、DUMP の書式、MATRIX コマンド、LDSolve の複素行列。`work_session_20261116.md` §11.2)
-- GUI の残り: Widget 値 (6.1 の 3b)、入れ子の部品 (demo-KBFrame1)、Canvas / TabFrame の描画、見た目と操作の比較 (`docs/20_gui_tclbridge.md`、`work_gui_tclbridge.md`)。
+- GUI の残り: 最初の Window の親 (gs は Toplevel)、入れ子の部品 (demo-KBFrame1)、Canvas / TabFrame の描画、見た目と操作の比較 (`docs/20_gui_tclbridge.md`、`work_gui_tclbridge.md`)。
 - 未確認のまま: SynchroBetaEmittance の実用の大きなリング・不安定なチューン・結合・RFSW の組み合わせ。CSR の ScanTrack・OYStability などの長い流れ。tdgeo の動く例の試験。
 
 ## 7. 新しい機能を足す・直すときの手順
@@ -154,7 +156,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 ## 10. 履歴文書 (`docs/history/`) の索引
 
-- 最新: `work_unimpl.md` (未実装要素の実装と未解決の差、11/14〜)、`work_session_20261116.md` (11/16 の作業を話題別に)。
+- 最新: `work_example_fixes_20261117.md` (example 10〜13・PF T5 の gs との差の修正、11/17)、`work_unimpl.md` (未実装要素の実装と未解決の差、11/14〜)、`work_session_20261116.md` (11/16 の作業を話題別に)。
 - 要素別 (11/14〜): `work_wake.md`、`work_beambeam.md`、`work_gui_tclbridge.md`。
 - 10 月〜11/06 の作業 (ほぼ確定。各ファイル末尾に 2026-11-16 の確認がある): 解析微分 (`work_analytic_deriv`)、CALC6D (`work_calc6d`)、BEND K0 (`work_bend_k0`)、DESCEND (`work_descend`)、emit (`work_emit_extra`・`work_emit_report`・`work_emit_unstable`)、
   幾何 (`work_geo`・`work_geo_sig`)、INS (`work_ins_offset`)、統合 (`work_integration`)、item4・item6、K0 fit (`work_k0fit`)、損失の乱数 (`work_loss_rng`・`work_loss_rng2`)、MAIN の TRACK (`work_main_track`)、match (`work_match_fixes`)、性能 (`work_performance`・`work_perf2`・`work_perf3`)、

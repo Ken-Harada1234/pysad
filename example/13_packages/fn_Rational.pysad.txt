@@ -1,0 +1,11 @@
+1/3+1/6=Rational[3,6]
+1/3*3/4=Rational[1,4]
+Numerator,Denominator={6,8}
+FromRational[Rational[7,4]]=1.75
+Rational[2,-4]=Rational[-2,4]
+Rational[5,1]=5
+R:cf={3,7,15,1,292,1,1,1}
+R:fcf=Rational[355,113]
+R:fcf_ref=3.1415929203539825
+SmallPrime[1..10]={2,3,5,7,11,13,17,19,23,29}
+cf(0.696329)={0,1,2,3,2,2}

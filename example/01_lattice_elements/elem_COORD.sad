@@ -1,0 +1,18 @@
+! COORD: 座標変換 (ずらし DX DY DZ と回転 CHI1 CHI2 CHI3)。INS の軌道と幾何で見る
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1);
+COORD C1 = (DX=1E-3);
+COORD C2 = (CHI3=0.01);
+MARK START = (BX=10 BY=10 AX=0 AY=0) FIN = ();
+MARK START2 = (BX=10 BY=10 AX=0 AY=0 DX=1E-3);
+LINE T1 = (START C1 D1 FIN);
+LINE T2 = (START2 C2 D1 FIN);
+FFS;
+$FORM = "10.6";
+USE T1; INS; CALC;
+Print["C1 (DX=1mm): orbit DX DPX at FIN = ", Twiss["DX","FIN"], " ", Twiss["DPX","FIN"]];
+Print["C1 geometry GX GZ at FIN = ", LINE["GX","FIN"], " ", LINE["GZ","FIN"]];
+USE T2; INS; CALC;
+Print["C2 (CHI3=0.01): orbit DX DPX DY DPY at FIN = ", Twiss["DX","FIN"], " ", Twiss["DPX","FIN"], " ", Twiss["DY","FIN"], " ", Twiss["DPY","FIN"]];
+Print["C2 geometry GX GY GZ GCHI3 at FIN = ", LINE["GX","FIN"], " ", LINE["GY","FIN"], " ", LINE["GZ","FIN"], " ", LINE["GCHI3","FIN"]];
+Exit;

@@ -75,7 +75,7 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
   も同じ分岐を持つ。
 - `.` の直後が数字なら数値 (`eval2`)。数値は `1.5`, `.5`, `1e-3`, `1d-3` (Fortran 形式の `d` も可)。
 - **暗黙の積**: `2 Pi`, `a b`, `2 (x+1)`, `2Pi` は Times として解釈する (SAD と同じ)。改行をまたぐときは積にしない。
-- `!` から行末までがコメント。`(* ... *)` もコメント。文字列は `"..."` で `\n`, `\"` などのエスケープ可。
+- `!` から行末までがコメント。`(* ... *)` もコメント。文字列は `"..."` (または `'...'`) で、エスケープは tfetok.f の kxmakestring と同じ: `\n \r \t \f \e` (ESC)、`\` + 8 進 1〜3 桁 (`"\101"` は A、256 で折り返す)、`\x` + 16 進 2 桁まで、`\u` + 16 進 4 桁まで、`\` + 改行は行継続、それ以外は `\` を落として次の文字 (`\q` は q)。
   pysad は `strip_comments` で文字列の中を保護しつつ先に落とす。
 - `\` + 改行は行継続 (`tremovecont`)。
 - シンボルは英字・`$`・`` ` `` で始まり英数字・`$`・`` ` `` が続く。`x_`, `x__`, `x___`, `x_Real`, `_Real`
@@ -95,9 +95,9 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
 | 束縛 | `:=` 定義は引数を `Frame` に積んで本体を評価、`=` 定義は本体に `_Lit` を代入してから評価 |
 | 記号式 | 未定義シンボルを含む `+ - * / ^` は未評価の式にする。SAD と同じ整列と表示: `x+y+x → x+x+y`、`1+x+3 → 4+x`、`(2 x)`、`(x y)`、`x+(-y)`、`(x y^-1)`、`x^2`、`(-x)`。`Sin[x]` などの数学関数は未定義シンボルを渡すと未評価で返す。規則の右辺 (`Cases[l,{x_,y_}->x+y]`) に式を書く使い方が動く |
 | 純関数 | `body&` は `Slot` を引数に置換 (`subst_slots`、内側の `Function` には入らない)。`Function[{x,y}, body]` は名前束縛 |
-| 局所変数 | `Module` は新しい `Frame` に局所名を入れる。`Block` は動的スコープ (`x=3; f[]:=x; Block[{x=5}, f[]]` が 5 を返すことを 2026-11-16 に確認)。`{{x,b}=Thread[d]}` のようなリスト分解初期化、`x:=e` の遅延初期化 (`$Delayed`) も可。`With` は値を固定 |
+| 局所変数 | `Module` は字句スコープ (gs と同じ): 宣言した名前を呼び出しごとに `名前$N` へ改名して本体を評価するので、本体から呼ぶ別の関数には見えない (`x=10; show[]:=x; Module[{x=7}, show[]]` は 10)。初期値は外側の環境で評価する (`Module[{x=7, y=x}, y]` の y は外側の x)。値を持たない局所は `t$N` と表示する。定義 (`f[x_]:=…`) や純関数を含む Module は、出た後も局所値を残す。`Block` は動的スコープ (`x=3; f[]:=x; Block[{x=5}, f[]]` は 5)。`{{x,b}=Thread[d]}` のようなリスト分解初期化、`x:=e` の遅延初期化 (`$Delayed`) も可。`With` は値を固定 |
 | 反復 | `Do`, `Table`, `Sum`, `Product` の反復子 `{i, a, b, d}` / `{i, list}` / `{n}`。`Sum`/`Product` は複数反復子可。`Table/Do/Sum` の `{i,{a,b,c}}` 形式は SAD でエラー。反復変数は Module の局所名より優先して束縛する |
-| 制御 | `If`, `Which`, `Switch`, `While`, `For`, `Return` (例外 `_Return`)、`Break`/`Continue`、`Catch`/`Throw`、`Check[e, fail]` |
+| 制御 | `If`, `Which`, `Switch`, `While`, `For`, `Return` (例外 `_Return`)、`Break`/`Continue`、`Catch`/`Throw`、`Check[e, fail]`。`Return` は純関数・`Do`・`Scan`・`Module`・`Block` を抜けて、外側のユーザー定義関数 (`:=`) まで届く (gs で確認)。関数の外では `General::unexpbreak` でその文を打ち切る。`Which`/`Switch` は一致なしのとき式を返す (`Which[1>2,"a"]` は未評価のまま。`Switch[a,1,2]` は `Switch[5,1,2]`、引数がすべて定数なら gs が読み込み時に畳むので `Switch[9]`)。引数の個数の誤りは `General::narg`。`For` は 4 引数のときだけ評価し、3 引数は未評価で返す (gs と同じ。本体 (4 番目) は pysad では実行する。§6) |
 | 代入演算 | `++`, `--`, `+=` 等は `Set` を経由するので `a[[i]]++` も動く。`AppendTo` |
 | 改行と `;` | `split_statements` が括弧の外の `;` と改行で文を切る。行末が演算子 (`+ - * / ^ = , < > & | : @ . ~`) なら次行へ継続 (`_incomplete`)。ただし `free Q*` のように英数字直後の `*` で終わる行はワイルドカードなので継続しない。括弧の中では改行は空白 |
 | 式 head | `f[a][b]`、`(f@g)[x]`、`Function[..][x]` のように head が式でもよい |
@@ -107,11 +107,11 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
 
 - `Print[a, b, …]` は引数を文字列化して連結し、`PageWidth` (既定 131) で折り返して改行付きで出力。
   `Write[unit, …]` は同じく改行付き、`WriteString[unit, …]` は改行なし。unit 6 は標準出力。
-- `OpenWrite[path]`/`OpenAppend[path]`/`OpenRead[path]` はユニット番号 (10 から) を返し、`Close[unit]`。
+- `OpenWrite[path]`/`OpenAppend[path]`/`OpenRead[path]` はユニット番号 (10 から) を返し、`Close[unit]` か `Close[{u1,u2,…}]`。`$Output` (= -1) への `Write`・`WriteString` は標準出力 (unit 6 と同じ)。`Write[$Output]` (引数 1 つ) は `General::narg`。
   相対パスは `Interp.cwd` (run_sad では最後に渡したスクリプトのディレクトリ)。
   **OpenRead の失敗** (2026-11-16 に gs に合わせた): 開けなければメッセージを出して入力行を打ち切り (以前は Python の FileNotFoundError で落ちていた)、戻りの値に対する `Read[h,…]`・`Close[h]` は wrongtype になる (`rd3`・`rd4.sad`、`test_evalfixes.py`。入力ファイルが無い場合がこれに当たる)。
-- `Read[unit, Real|String|Word|Expression]`、`ReadList`、`Get[path]` (見つからなければ `?Get: file not found` を出して `$Failed`)。
-- `System[cmd]` は実行せず、その旨を表示して 0 を返す (EPICS の `Ca*` も動かさない)。`ToString[x, form]`, `StringJoin`, `StringForm` あり。
+- `Read[unit, item, opts]` は gs の `tfreadstringf` に合わせた (記録 = 1 行の中の位置を持つ)。`Word` は `WordSeparators` (既定は空白・`,`・タブ・改行) で区切り、語が記録の終わりなら次の記録へ (`ReadNewRecord->False` ならそのまま)、`NullWords->True` で隣り合う区切りの間に `""`。`Real` は語を読んで評価、`String` と `ReadString` は記録の残り、`Character` は 1 文字、`Expression` は現在位置から 1 つの式 (隣り合う項 `x+y  3*4` で切り、括弧が閉じなければ次の行も使う) を評価して返す。`{item,…}` はリスト、`n*item` は頭が Null のリスト (Print で連結される)。EOF は `EndOfFile`。`ReadList`・`Get` は §4 のとおり別。
+- `DateString[t]` は t (1900-01-01 0:0:0 からの秒、または `{Y,m,d[,H[,M[,S]]]}`) を `mm/dd/yyyy HH:MM:SS` にする (7 番目の offset は無視、未確認)。`System[cmd]` は実行せず、その旨を表示して 0 を返す (EPICS の `Ca*` も動かさない)。`ToString[x, form]`, `StringJoin`, `StringForm` あり。
 - リストの文字列化は `{1,2,3}` のように `,` だけで区切る (空白なし)。文字列はリストの中では `"..."` 付き。
   `PageWidth` を超えると SAD と同じく `,` の後で折り返し、続きの行は 1 空白から始める (`wrap`)。
   入れ子の長いリストの折り返しは SAD (要素の境界で改行、行の上限は pw-1) と pysad (区切りのカンマ、上限 pw) で異なる (PageWidth が十分大きければ一致)。
@@ -158,8 +158,11 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
 - **Override[rules…]**: 規則を平坦化し、同じ左辺は最初のものだけ残す (オプション処理用)。
 - **Random/GaussRandom/SeedRandom**: ffscmd.py が `sadrandom.SadRandom` (random_plugin_sad.c の
   LCG `seed ← 48828125·seed mod 2^32`、初期種 17、Box–Muller、GCUT 棄却) を割り当てるので、
-  追跡の FLUC と同じ乱数列を共有する。`Random[n]` は n 個のリスト (`Random[0]` は `{}`、リスト引数はエラー)、
-  `GaussRandom[]` はスカラー、`GaussRandom[n]` はリスト。
+  追跡の FLUC と同じ乱数列を共有する。`Random[n]` は n 個のリスト (`Random[0]` は `{}`、リスト引数は wrongtype、負は wrongnum)、
+  `Random[n,m,…]` は n×m×… の配列 (行優先に順に引く。小数は切り捨て。`GaussRandom`・`ParabolaRandom` も同じ)。`GaussRandom[]` はスカラー。
+  `SeedRandom[n]` は種、`SeedRandom[]` は `{"SAD", seed, filled, next の下位語, 上位語}`。`SeedRandom["SAD"]` と、先頭が文字列のリストは乱数の種類の選択だけで
+  状態は変わらない (`SeedRandom[状態]` で状態は復元されない: gs の tfRandom_.c はリストの数を読まない。数だけのリストは種 1 になる)。"SAD" 以外は `System::error`。
+- **StringMatchQ**: ワイルドカードは `*` (0 個以上)、`%` (1 文字)、`{abc}`・`{^abc}`、`a|b` (SADHelp の wildcards)。`?` は普通の文字、大文字小文字は区別、空文字列は何にも合わない (gs で確認)。
 
 ### 5.2 リスト・文字列・行列の関数 (`pysad/sadlist.py`)
 
@@ -206,6 +209,10 @@ EvenQ OddQ Positive.. Binomial FractionalPart Round Floor Ceiling Mod Max Min Le
 - 表示系 `Format`, `TableForm` (SAD の tableform.n は Packages で動く: docs/32)。`TkWait`・`Update`・`Pause` は sadscript の組み込みでは no-op (tclbridge が有効なときの挙動は未確認)
 - `System[]` の実行 (表示して 0 を返す)、EPICS (`CaGet` など)。2026-11-16 のソース確認: `CSR.n` の `TrackAnimate` は `System["import -silent -window …"]` (ImageMagick) と `System["mkdir …"]` を呼ぶので Windows の pysad では画像が作れない。`Wait[mem]` は `FreeMem[]` (top) と `Sleep` を使い、gs はこの環境で top が無く `FreeMem` が OpenRead エラーになる (`csr8.sad`)。pysad の `FreeMem` は psutil で代替して 1.0 を返す。並列を増やしても速くなるかは未確認 (pysad は fork しない)
 - **Tk ウィジェットの値 (差あり、未修正)**: `w=Window[]`・`b=Button[w,…]` の直後、gs では `Head[w]=Widget` (`Widget[w,Window[Root$Window]]`) で `e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]` が働くが、pysad では w・b・e が裸のシンボルのままで、メソッド呼び出しは何もせず (Tcl 呼び出し 0 回、エラーもなし)、親が toplevel でなく Root になる。`Tkinter.n` の `DefineWidget` 内 `a$:=Widget[a$,w[master$]]` が値にならないところまで絞ったが、gs が再帰しない理由 (属性・評価の順) は未特定。パターン変数への代入 (`f[x_]:=(x=5); f[aa]`) は gs と同じ。深い再帰では pysad は Python の RecursionError で落ちる (gs は `General::deep`)。`Insert` の位置に `"End"` (大文字) を渡すと gs は Tcl エラー 1501 (`tk1`〜`tk5.sad`、`pv1.sad`。docs/20・39)
+- **`BeginPackage`/`Begin` の文脈 (名前空間): 未対応** (gs の動作は調べた: 読み込み時に新しい記号を `Ctx`名` に作り、`Stat`Mean2[..]` の形で呼べ、`Context[]`・`$Context`・`$ContextPath` の値と `Names["Stat`*"]` (= `{"Stat`"}`) の表示が独特。pysad は文脈を無視して全部大域)。読み込み時の名前解決と `$ContextPath` の模倣が要り、SAD の `.n` パッケージ (文脈つきの名前を持つもの) の読み込みに影響するので見送った。
+- **`For` の本体 (4 番目の引数)**: gs は実行しない (`Packages/functions.n` の定義 `For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)` どおりなら実行するはずで、同じ式を別名で定義すると gs も実行する。原因は未特定の K64 の読み込み時の癖) が、pysad は定義どおり実行する (差あり、意図的)。
+- `Check[Return[1], 2]` は gs では Return を失敗として捕まえて 2 を返す。pysad は Return を通す。`Thread[a==b]` (a が値、b が未定義) は gs が `3==b` を返すが、pysad は `==` が 0 を返すので Thread の引数にならない。リストと記号の ==・数どうしでない `==` の未評価形は一部だけ (`{1,2}==1` は未評価、記号どうしは 0)。
+- `Out[n]:=` の表示は、最上位 (run_sad_string) の `;` なしの式文だけ。未定義の記号 1 つだけの文での gs の表示 (前の Out の値を繰り返す) は未対応。`%%` は gs でも記号のまま。
 - SAD に無い関数 (`Mean` `Cross` `StringSplit` など) は未評価のまま返る (SAD と同じ。`Total` は pysad の拡張で動く)
 - FFS 側: `MCOD/TCOD/MON` の COD 補正は K64 でも式として評価されて何もしない。`Steer`/`Monitor`/`CorrectOrbit` は `Packages/correction.n` を SADScript のまま実行して gs と一致 (docs/32。`PYSAD_SAD_PACKAGES` が必要)。FFS コマンド・関数の対応状況と未対応の一覧は 03_ffs_commands §8
 
@@ -224,7 +231,7 @@ print(o.getvalue())      # → 3 2 1 ab
 
 ラティス付きのスクリプトは `python run_sad.py lattice.sad script.sad` (SAD の `gs` に複数ファイルを
 連結して渡すのと同じ) で、`ffscmd.run_sad` が MAIN 部を parser.py に、FFS 部を `Interp.run(src, 'ffs')`
-に渡す。`pysad/tests/` (pytest 523 件を収集、2026-11-16 夜に 520 通過・3 skip) と `run_regression.py` (50 ベンチをすべて実行して FAIL 0、205 s。QUICK=1 は遅い 4 件 7・12t・13a・16a を SKIP して 46 件で、その 4 件も単独で実行して PASS) で回帰を取る。
+に渡す。`pysad/tests/` (pytest 578 件を収集、2026-11-17 に 575 通過・3 skip) と `run_regression.py` (50 ベンチをすべて実行して FAIL 0、205 s。QUICK=1 は遅い 4 件 7・12t・13a・16a を SKIP して 46 件で、その 4 件も単独で実行して PASS) で回帰を取る。
 
 SAD のベンチでの確認 (docs/history/00_RESUME.md、<work-olddocs>/sad_level3_4_benchmark_results.md Level 14 節):
 

@@ -1,0 +1,7 @@
+! HistoPlot (ラティスなし)。決定的なデータ (乱数なし)
+FFS;
+d=Table[Sin[i*1.7]+Cos[i*0.3],{i,1,200}];
+g=HistoPlot[d,Bins->12,FrameLabel->{"value","count"}];
+Print["Head=",Head[g]," Length=",Length[g]];
+Update[];
+Exit;

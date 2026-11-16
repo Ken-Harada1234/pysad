@@ -1,0 +1,13 @@
+FFS;
+t1 = TemporaryName[]; t2 = TemporaryName[];
+Print["two names differ: ", t1 <=> t2, "  Head ", Head[t1]];
+Print["name has a directory part: ", StringLength[t1] > 0];
+r = System["echo from-shell > " // t1];
+Print["System return code ", r];
+Print["file created ", FileQ[t1]];
+c = OpenRead[t1]; Print["content [", ReadString[c], "]"]; Close[c];
+Print["failing command return code <> 0 : ", System["exit 3"] <> 0];
+Print["Directory is a String: ", Head[Directory[]]];
+DeleteFile[t1];
+Print["GetEnv/Environment: ", Head[Environment["PATH"]]];
+Exit;

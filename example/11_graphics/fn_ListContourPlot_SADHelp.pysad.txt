@@ -1,0 +1,2 @@
+dims={20,20}
+Head=Graphics Length=2

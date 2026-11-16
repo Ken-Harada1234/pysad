@@ -1,0 +1,36 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+! QF から始まる並び (RADINT は先頭が SEXT だと DL=0 で NaN になるため。FODO_ring と同じ磁石列、位相だけ違う)
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+USE RING; CELL; CALC;
+RFSW; RAD; NOFLUC;
+em = Emittance[];                 ! RF の同期位相 (RAD ON の平衡) を決める
+NORAD;
+$FORM = "14.8";
+a0 = Twiss["AY","ORIGIN"]; b0 = Twiss["BY","ORIGIN"]; g0 = (1+a0^2)/b0;     ! 垂直 (分散なし) の Twiss
+p0 = MOMENTUM;
+dE = 1e6;                         ! 1 周あたり 1 MeV の加速 (運動量 p0 + dE*n)
+y0 = 1e-3;
+beam = {1, {{0},{0},{y0},{0},{0},{0},{1}}};     ! AccelerateParticles は {位置, 座標} の形を受ける
+zs = {}; dps = {}; xs = {};
+r = AccelerateParticles[beam, p0 + dE*n, {n, 120},
+      Synchronize->((zs = Append[zs, #2[[2,5,1]]]; dps = Append[dps, #2[[2,6,1]]])&)];
+b = r[[2]];
+p1 = MOMENTUM;
+Print["p0=", p0, " p1=", p1, " p0/p1=", p0/p1];
+inv0 = g0*y0^2;
+inv1 = g0*b[[3,1]]^2 + 2*a0*b[[3,1]]*b[[4,1]] + b0*b[[4,1]]^2;
+Print["inv0=", inv0, " inv1=", inv1, " inv1/inv0=", inv1/inv0];
+Print["z mean=", Plus@@zs/Length[zs], " zmax=", Max[zs], " zmin=", Min[zs], " dp max=", Max[dps], " min=", Min[dps]];
+Print["final: x=", b[[1,1]], " px=", b[[2,1]], " z=", b[[5,1]], " dp=", b[[6,1]], " flag=", b[[7,1]]];
+Exit;

@@ -29,5 +29,5 @@ K64 の tfvars.f・tfattr.f・tfmat.f・tshow.f・tffsa.f の直訳。表の書�
 ## 限界・K64 との差
 - `PRINT` の `Out[n]` は、USE が `Out[1]:= USE` を出したものとして 2 から数える (pysad は USE でこの行を出さない)。
 - `MATRIX` の 5 列目 (分散の項) は η(l2) − M·η(l1)。要素が 1e-16 程度の雑音を持つ箇所は gs が `-4.798E-16` などと出すのに対し、pysad は 0 を出す。
-- `RENUMBER`・`MEASURE` は未対応 (警告して無視)。`MEASURE` は gs が何も出力せず (B42、`TRCOD` は SIGSEGV)、参照が取れないので `tracke`・`ttinit`・`ttstat`・`trcoda`・`trackb` を翻訳していない。`tlum`・`tluma` だけ `pysad/measure.py` に直訳した (解析値との比較のみ)。`SPLIT` は K64 でも obsolete。`SEED` も obsolete。
+- `MEASURE` は未対応 (警告して無視。`RENUMBER` は対応済み)。`MEASURE` は gs が何も出力せず (B42、`TRCOD` は SIGSEGV)、参照が取れないので `tracke`・`ttinit`・`ttstat`・`trcoda`・`trackb` を翻訳していない。`tlum`・`tluma` だけ `pysad/measure.py` に直訳した (解析値との比較のみ)。`SPLIT` は K64 でも obsolete。`SEED` も obsolete。
 - gs は `TERMINATE INPUT` の後で入力が尽きて止まるが、pysad は続ける。

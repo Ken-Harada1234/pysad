@@ -1,0 +1,11 @@
+FFS;
+Do[Print["Do i=", i], {i, 3}];
+Do[Print["Do i=", i], {i, 2, 10, 4}];
+Do[Print["i,j=", i, ",", j], {i, 2}, {j, i}];
+Do[Print["n only"], {2}];
+s = 0; Do[s += i, {i, 100}]; Print["sum ", s];
+Do[If[i == 2, Continue[]]; Print["Continue i=", i], {i, 4}];
+Do[If[i == 3, Break[]]; Print["Break i=", i], {i, 10}];
+Print["Catch/Throw ", Catch[Do[If[i == 3, Throw[i*100]], {i, 10}]]];
+Print["Do value ", Do[1, {2}]];
+Exit;

@@ -1,0 +1,16 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   1.611106 $$$       f BX    #######  #   5.483463 $$$       f NX    #######  #    .270762 $$$       f AY    #######  #  -1.515299 $$$       f BY    #######  #   7.004064 $$$       f NY    #######  #    .062468
+$$$       f LENG  #######  #   4.292696
+one normal cell: tune {    .2707619291,    .0624684023} QF K1     .7483195263 QD K1    -.4791910620
+Matching Tune to     .3000000000     .1500000000
+Chromaticity Correction
+target     .3000000000     .1500000000 reached     .3000002475     .1499960114 K1 QF,QD     .8454477891    -.6098917802 K2 SFH,SDH    1.5843956445   -1.6967913782
+Matching Tune to     .3000000000     .2000000000
+Chromaticity Correction
+target     .3000000000     .2000000000 reached     .2999999988     .1999999973 K1 QF,QD     .8637290472    -.6932136515 K2 SFH,SDH    1.5750307695   -1.8363710732
+Matching Tune to     .3500000000     .1500000000
+Chromaticity Correction
+target     .3500000000     .1500000000 reached     .3500007679     .1499990471 K1 QF,QD     .9453394564    -.6398489297 K2 SFH,SDH    2.1992108071   -2.2731098973
+Matching Tune to     .3500000000     .2000000000
+Chromaticity Correction
+target     .3500000000     .2000000000 reached     .3500003965     .1999929547 K1 QF,QD     .9580098004    -.7174518371 K2 SFH,SDH    2.1698253255   -2.4234256772

@@ -1,0 +1,21 @@
+! Gamma 族と誤差関数 (ラティスなし)
+FFS;
+$FORM="S17.15";
+Print["R:Gamma0.5=",Gamma[.5]];
+Print["R:Gamma5=",Gamma[5.]];
+Print["R:Gamma-1.5=",Gamma[-1.5]];
+Print["R:LogGamma=",LogGamma[10.5]];
+Print["R:LogGamma1=",LogGamma1[10.5]];
+Print["R:Factorial=",Factorial[5.5]];
+Print["R:Factorial5=",Factorial[5]];
+Print["R:Erf=",Erf[.5]];
+Print["R:Erfc=",Erfc[.5]];
+Print["R:ErfN=",Erf[-1.2]];
+Print["R:InverseErf=",InverseErf[.5]];
+Print["R:GammaReg=",GammaRegularized[2.,3.]];
+Print["R:GammaRegP=",GammaRegularizedP[2.,3.]];
+Print["R:GammaRegQ=",GammaRegularizedQ[2.,3.]];
+Print["R:Beta=",Beta[2.,3.]];
+Print["GammaC=",Gamma[1.+I]];
+Print["ErfC=",Erf[1.+I]];
+Exit;

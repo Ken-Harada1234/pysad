@@ -1,0 +1,7 @@
+! ColumnPlot (ラティスなし)。棒グラフ。pysad では未確認の関数
+FFS;
+d={3,5,2,6,4,1};
+g=ColumnPlot[d,FrameLabel->{"bin","count"}];
+Print["Head=",Head[g]," Length=",Length[g]];
+Update[];
+Exit;

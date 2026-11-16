@@ -1,0 +1,20 @@
+! KBFrame.n の KBMainFrame / KBFComponentFrame / KBFGroup / KBFCheckButton (ラティスなし)
+! KEK の標準の窓の枠 (メニューバー: KEK File Edit Window Task Help、時計) に、チェックボタンの組を入れる
+FFS;
+TclEval["proc dw {w d} {set o {}; foreach c [winfo children $w] {set t {}; catch {set t [$c cget -text]}; lappend o [format {%*s%s %s} $d {} [winfo class $c] $t]; foreach x [dw $c [expr {$d+2}]] {lappend o $x}}; return $o}"];
+w = KBMainFrame["LabelFrameDemo", f, Title->"LabelFrame Demo"];
+cb[0] = CheckButton[Text->"Enable", Variable:>cbv[0],
+  Command:>(Scan[(cb[#][State] = If[cbv[0], "normal", "disabled"])&, Range[3]])];
+cf = KBFComponentFrame[f, Add->{
+  KBFHook[Command:>(cbv[0] = True)],
+  KBFGroup[WidgetOption->{LabelWidget->cb[0]}],
+  KBFCheckButton[Text->"A", Variable:>cbv[1], WidgetVariable:>cb[1]],
+  KBFCheckButton[Text->"B", Variable:>cbv[2], WidgetVariable:>cb[2]],
+  KBFCheckButton[Text->"C", Variable:>cbv[3], WidgetVariable:>cb[3]]}];
+TclEval["update"];
+tree=TclEval["join [dw . 0] {; }",String];
+Print["classes: ",StringLength[tree]," chars"];
+Print["Menubutton count=",TclEval["set n 0; proc cnt {w cls} {global n; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {incr n}; cnt $c $cls}}; cnt . Menubutton; return $n",String]];
+Print["Checkbutton count=",TclEval["set n 0; cnt . Checkbutton; return $n",String]];
+Print["Labelframe count=",TclEval["set n 0; cnt . Labelframe; return $n",String]];
+Exit;

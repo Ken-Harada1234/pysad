@@ -1,0 +1,21 @@
+! VISIT / BYE: 別のラインを一時的に使って戻る
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN 24*CELL);
+LINE ONECELL = (ORIGIN CELL);
+FFS;
+$FORM = "10.6";
+USE RING; CELL; CALC;
+Print["RING     : NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi, " nlat=", LINE["LENGTH"], " name=", BeamLineName[]];
+VISIT ONECELL; CELL; CALC;
+Print["ONECELL  : NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi, " nlat=", LINE["LENGTH"], " name=", BeamLineName[]];
+BYE;
+Print["after BYE: nlat=", LINE["LENGTH"], " name=", BeamLineName[]];
+CALC;
+Print["RING again: NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi];
+Exit;

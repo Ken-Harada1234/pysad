@@ -1,0 +1,680 @@
+!********************************************************************
+!*       PF-RING Super-Low Emittance Lattice Configuration          *
+!*       Normal Cell Phase Addvance 115  deg Version                *
+!*       Straight Section reinforcement                             * 
+!*         Second edition with PMs & STRs                           *      
+!*       SEXTUPOLE(SF,SD) 2 FAMILY CORRECTION                       *
+!*       Octupole                                                   *
+!********************************************************************
+ MOMENTUM=2.5 GEV;
+
+ MARK   MKD   =()
+        MKASYMST =()
+
+        INJ   =()
+        RMARK =()
+        HMARK =()
+        SMARK =()
+        TMARK =()
+
+        U02   =(bx=9 by=4 ax=0 ay=0 ex=0 epx=0)
+        U03   =()
+        U04   =()
+        U05   =()
+        U13   =()
+        U14   =()
+        U15   =()
+        U16   =()
+        U17   =()
+        U18   =()
+        U19   =()
+        U26   =()
+        U28   =()
+        U01   =()
+        U14a  = ()
+        U14s  = ()
+        U14e  = ()
+        MKSNWS  = ()
+        MKSNES  = ()
+        MKSSWS  = ()
+        MKSSES  = ()
+        MKNCWS  = ()
+        MKNCES  = ()
+
+        MKSNWE  = ()
+        MKSNEE  = ()
+        MKSSWE  = ()
+        MKSSEE  = ()
+        MKNCWE  = ()
+        MKNCEE  = ()
+        MKACC   =()
+        MKRC = ()
+        DM      = ()
+   ! BPM not used for user operation.
+   !   because signal processors are not caribrated.
+        MPM     = ()
+   ! PHV ; nothing is set up.
+        MPHV    = ()
+   ! PHV ; magnet and girder are already set.
+        MPHVM   = ()
+   ! PHV ; only girder is set.
+        MPHVG   = ()
+        MKNN1S  =()
+        MKNN1E = ()
+        MKLLS5 = ()
+        MKNCE2ST = ()
+ ;
+ MONI
+        PM      =()
+ ;
+ CAVI   CAVI=(VOLT= 850000 HARM = 312)
+ ;
+ BEND   B02     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B03     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B04     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B05     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B06     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B07     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B08     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B09     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B10     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B11     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B12     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B13     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B14     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B15     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B16     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B17     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B18     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B19     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B20     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B21     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B22     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B23     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B24     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B25     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B26     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B27     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B28     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B01     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+ ;
+!VD : vertical dipole (slow corrector)
+!PV : vertical dipole for feedback (fast corrector)
+!PH : horizontal dipole for feedback (do not exist in the real machine)
+!VS : vertical dipole (correction coil of the sextupole magnet)
+
+ BEND   VD      =(L = 0.15 K0 = 0     ROTATE =-90 DEG )
+        PV      =(L = 0    K0 = 0     ROTATE =-90 DEG ) 
+        PH      =(L = 0    K0 = 0  )
+        VS      =(L = 0    K0 = 0     ROTATE =-90 DEG)
+ ;
+!SQ : skew quadrupole corrector (correction coil for the sextupole magnet)
+ QUAD   SQ      =(L = 0   K1 = .0 ROTATE=45  deg)
+ ;
+ QUAD   Q1      =(L =.4   K1 =.698096426338 )
+        Q2      =(L =.4   K1 =-.6928509495915 )
+        Q3      =(L =.3   K1 =-.7582257471804 )
+        Q4      =(L =.3   K1 =.8485774395228 )
+        Q5B     =(L =.4   K1 =-.7477651492198 )
+        Q6B     =(L =.4   K1 =.8213108186402 )
+        Q7B     =(L =.3   K1 =.3716972819766 )
+        Q8B     =(L =.4   K1 =-.8474940261361 )
+        Q9B     =(L =.4   K1 =.8733651289326 )
+        QAB     =(L =.3   K1 =.2752712073638 )
+        QDB     =(L =.25  K1 =-.516490934853 )
+        QFB     =(L =.4   K1 =.77169828379 )
+        QD      =(L =.25  K1 =-.4791910620324 )
+        QF      =(L =.4   K1 =.748319526303 )
+        QFA     =(L =.4   K1 =.7268201874174 )
+        QDA     =(L =.25  K1 =-.5977851575315 )
+        QAA     =(L =.4   K1 =.4027138035082 )
+        Q9A     =(L =.4   K1 =.8879679595581 )
+        Q8A     =(L =.4   K1 =-.9208219644329 )
+        Q7A     =(L =.3   K1 =.359209262548 )
+        Q6A     =(L =.4   K1 =.8530844358661 )
+        Q5A     =(L =.4   K1 =-.753353015542 )
+ ;
+ SEXT   SFH     =(L =.1   K2 =3.9242032090679 )
+        SDH     =(L =.1   K2 =-3.9053258695379 )
+ ;
+ OCT    OCT     =(L = .2   K3 =  .0 )
+ ;
+
+ DRIFT  LLS1    =(L =4.365 ) L050    =(L =.05 )   L300    =(L =.3 )    L250    =(L =.25 )   LLS2    =(L =.605 )
+        LLS3    =(L =2.605 ) LLS32   =(L =2.455 ) L400    =(L =.4 )    LLS4    =(L =2.545 ) L110    =(L =.11 )   L220    =(L =.22 )
+        L080    =(L =.08 )   L100    =(L =.1 )    L200    =(L =.2 )    L500    =(L =.5 )    L225    =(L =.225 )
+        LLS5    =(L =2.2125 )       LLS33   =(L =2.405 ) LI5     =(L =.168 )  LI6     =(L =.132 )  LI1     =(L =.23 )
+        LI2     =(L =2.63 )  LI3     =(L =.685 )  LI4     =(L =.28 )   LLS331  =(L =.35 )   LLS332  =(L =1.755 )
+        LSX     =(L = .1)
+ ;
+
+LINE
+! fast steering set
+        PHV    = (PH PV) 
+! "MPHV" and "MPM" is the place where geometrically we can install steering magnets
+! and beam position monitors (but we do not install them, not decided yet).
+
+        N1     =(MKNCWS
+                 QF
+                 L100            SFH  SQ SFH   L200            B09    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050
+                 )
+        NCELL = (N1)
+        NN1    =(MKNN1S
+                 L175 PHV  L050    PM  L050
+                 QF
+                 L100            SFH  SQ SFH   L200            B09    L300  QD
+                 L050  PM  L050  SDH  VS SDH 
+                 L325 
+                 MKNN1E)
+;
+
+DRIFT   LLS1a = (L = 3.315)
+        LCC1  = (L = 0.125)
+        LCC2  = (L = 0.175)
+        LCC3  = (L = 0.4)
+        LCC4  = (L = 0.35) 
+;
+MARK   MCCa = () MCCs = () MCCe = ();
+LINE
+        
+        STRNW  =(
+!                 MKASYMST
+!                 B01 L300 PHV   L050  PM    L050
+!                 Q2  L050 VD    L050
+!                 Q1  L050 PM    L050  MPHVM LLS1
+!                 MKSNEE
+                 MKSNWS
+                 U02  
+!                 LLS1  
+                 LLS1a MCCa LCC1 LCC2 MCCs LCC3 MCCe LCC4
+                            PHV   L050   PM     L050
+                 Q1   L050  VD    L050 
+                 Q2   L050  PM    L050   MPHVM  L300
+                 B02  L250  PHV   L050   PM     L050
+                 Q3   L050  VD    L050
+                 Q4   L050  MPM   L050   MPHVG  LLS2
+                 U03  LLS2  MPHVG L050   MPM    L050
+                 Q4   L050  VD    L050   
+                 Q3   L050  PM    L050   MPHVG  L250
+                 MKB03
+                 B03  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B04  L300  PHV   L050   PM     L050
+                 Q8B  L050  VD    L050
+                 Q9B  L050  PM    L050   MPHVG  LLS4
+                 U05  LLS4  PHV   L050   PM     L050
+
+                 QAB L110 SFH VS   SFH  L250 MPHVM L050
+                 B05 L300  
+                 QDB L050 PM  L050 SDH  VS    SDH   L220  
+                                   OCT  L080  PHV   L050 PM L050
+                 QFB
+                 MKSNWE) 
+
+
+
+        NCELW  =(MKNCWS
+                 L100            SFH  SQ SFH   L200            B06    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B07    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B08    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L220  OCT  MKACC
+                                               L080  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B09    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B10    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B11    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050
+                 MKNCWE)
+
+;
+DRIFT
+        LLS3a = (L = 1.542)
+        LLS3b = (L =  .451)
+        LLS3c = (L = 1.64)
+        LLS3d = (L = 1.377)  
+;
+LINE
+
+        STRSW  =(MKSSWS
+                 QFA L100 SFH SQ    SFH L200
+                 B12 L300
+                 QDA L050 PM  L050  
+!                            SDH VS   SDH  
+                            LSX VS LSX
+                                           L225  MPHVM  L100
+                 QAA L050 PM  L050  PHV MKLLS5 LLS5
+                 U13 LLS5 PHV L050  PM  L050
+                 Q9A L050 VD    L050 
+                 Q8A L050 MPHVM L050 PM    L300
+                 B13 L300 PHV   L100
+                 Q7A L050 PM    L050 VD    L050  MPHVM
+
+!                 LLS33 U14 LLS3 
+                 LLS3a U14a LLS3b U14s LLS3c U14e LLS3d
+
+                 MPHVM L050 MPM   L050
+                 Q6A L050 VD    L050
+                 Q5A L050 PM    L050 MPHVM L300
+                 B14 L250 PHV   L050 PM    L050
+                 Q3  L050 VD    L050
+                 Q4  L050 MPM   L050 MPHVG LLS2
+                 U15 LLS2 MPHVG L050 MPM   L050
+                 Q4  L050 VD    L050
+                 Q3  L050 PM    L050 MPHVG L250
+                 B15 L300 PHV   L050 PM    L050
+                 Q2  L050 VD    L050
+                 Q1  L050 PM    L050 MPHVM LLS1
+                 MKSSWE)
+        STRSE  =(MKSSES
+                 U16  LLS1  PHV   L050   PM     L050
+                 Q1   L050  VD    L050
+                 Q2   L050  PM    L050   MPHVM  L300
+                 B16  L250  PHV   L050   PM     L050
+                 Q3   L050  VD    L050
+                 Q4   L050  MPM   L050   MPHVG  LLS2
+                 U17  LLS2  MPHVG L050   MPM    L050
+                 Q4   L050  VD    L050
+                 Q3   L050  PM    L050   MPHVG  L250
+                 B17  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B18  L300  PHV   L050   PM     L050
+                 Q8B  L050  VD    L050
+                 Q9B  L050  PM    L050   MPHVM  LLS4
+                 U19  LLS4  PHV   L050   PM     L050
+
+                 QAB L110 SFH VS   SFH  L250  MPHVM  L050
+                 B19 L300
+                 QDB L050 PM  L050 SDH  VS    SDH    L220
+                                   OCT  L080  PHV    L050 PM L050
+                 QFB
+                 MKSSEE)
+
+        NCELE1 =(MKNCES
+                 L100            SFH  SQ SFH   L200            B20    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B21    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L220  OCT
+                                               L080  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B22    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050 MKACC
+                                                                  PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B23    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B24    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 )
+       NCELE2 =( MKNCE2ST
+                 L100            SFH  SQ SFH   L200            
+                                                               B25    L300  QD
+                 L050  PM  L050  SDH  VS SDH   
+!                                               L500       L050        L050
+                                               LI5        KK1         LI6
+                 MKNCEE)
+        NCELE = (NCELE1 NCELE2)
+;
+
+BEND
+       KK1 = (L = 0.3)
+       KK2 = (L = 0.3)
+       KK3 = (L = 0.3)
+       KK4 = (L = 0.3)
+;
+
+DRIFT
+       LI1 = (L = 0.23)
+       LI2 = (L = 2.630)
+       LI3 = (L = 0.685)
+       LI4 = (L = 0.28)        
+       LI5 = (L = 0.168)
+       LI6 = (L = 0.132)
+
+        LLS331 = (L = 0.35)
+        LLS332 = (L = 1.755)
+;
+
+LINE
+        STRNE1  =(MKSNES
+                 QFA L100 SFH SQ    SFH L200
+                 B26 L300
+                 QDA L050 PM    L050  
+!                 SDH VS  SDH  
+                 LSX VS LSX
+                                     L225  MPHV  L100
+                 QAA 
+                   L050 PM    L050  PHV   
+!                   LLS5
+!                   INJ LLS5 
+
+                   LI1 KK2 LI2 )
+        STRNE2  =(
+                  INJ LI3 KK3 LI4  
+                   MPHV  L050  PM    L050
+                 Q9A L050 VD    L050
+                 Q8A L050 PM    L050  PHV   L300
+                 B27 L300 MPHVM L100
+                 Q7A 
+                 L050 PM    L050  VD    L050  MPHVM  
+!                 LLS33
+                 LLS331 KK4 LLS332
+                 U28 LLS3 MPHVM L050  PM    L050
+                 Q6A L050 VD    L050
+                 Q5A L050 MPM   L050  PHV   L300
+                 B28 L250 MPHVM L050  PM    L050
+                 Q3  L050 VD    L050
+                 Q4  L050 MPM   L050  MPHV  LLS2
+                )
+       STRNE3 = (
+                 U01 LLS2 MPHVG L050  MPM   L050
+                 Q4  L050 VD    L050
+                 Q3  L050 PM    L050  MPHVG L250
+                 B01 L300 PHV   L050  PM    L050
+                 Q2  L050 VD    L050
+                 Q1  L050 PM    L050  MPHVM LLS1
+                 MKSNEE
+                 )
+   STRNE = (STRNE1 STRNE2 STRNE3)
+        SF     = (SFH SFH)
+        SD     = (SDH SDH)
+
+   HALFW  =(STRNW NCELW STRSW)
+   HALFE  =(STRSE NCELE STRNE)
+!   RING   =(HALFW MKRC HALFE RMARK)
+!   RING   =(STRNEI2 STRNW NCELW STRSW STRSE NCELE STRNEI1)
+   RING   =(STRNE2 STRNE3 STRNW NCELW STRSW STRSE NCELE STRNE1)
+   INJL    =(NCELE2 STRNE1 STRNE2)
+ ;
+ SEXT   SFH     =(L =.1   K2 =3.8794420685930975 )
+        SDH     =(L =.1   K2 =-4.395767669319158 )
+ ;
+ MARK   INJ     =(AX =-1.3014613530087202     BX =11.70829230212066    AY =-1.351650785816789   BY =2.8150642810691715
+           EX =.6666891312812894    EPX =.034138813304196505 DP =.01   SIGZ =.009698812122206819     EMITX =3.536793518229371e-08
+           EMITY =1e-12 )
+        MPHV    =(AX =-1.5925079893232688     BX =15.369163520170623   PSIX =.09444183599737645 AY =-2.6219962732181283
+           BY =7.841727810748342    PSIY =.2726043855061678  EX =.7098747301110979    EPX =.034138813304196505 DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MPHVM   =(AX =-.9245187593892666 BX =1.8873474986688574   PSIX =2.0104922902770865 AY =2.7692456336212556
+           BY =7.244590894070782    PSIY =.533483316415124   EX =.0007092923496959281 EPX =.00029258888946925854
+           DX =2.229157846292102e-17     DZ =-3.037603477179668e-18    DP =.01   EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U28     =(AX =-1.6239805910769434     BX =7.96641375762526     PSIX =2.837844114071852  AY =-.2242659835382174
+           BY =5.728150233693787    PSIY =1.08252532883031   EX =.0008297097976635543 EPX =1.6409617862612708e-05
+           DX =-1.7170354768915414e-19   DPX =-7.864298812621978e-18   DZ =-3.037603477179668e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MPM     =(AX =2.3114465688470682 BX =5.638963230988005    PSIX =3.1567211211997632 AY =2.4994224965442817
+           BY =21.903645781231482   PSIY =1.5665917367162139 EX =.0003419553791816203 EPX =-.0003513600247455766
+           DX =-1.6588160980513442e-17   DPX =-2.0290703893795564e-18  DZ =-3.037603477179668e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U01     =(AX =-.2024088587202558 BX =4.825500521737639    PSIX =5.39393403387668   AY =.09815160856380938
+           BY =.4143170034362851    PSIY =2.918523387055181  EX =.5947737730296435    EPX =.00010338713948326885
+           DX =5.536970286270743e-18     DPX =-1.8879107917741057e-18  DZ =-2.1052990012083346e-18   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MPHVG   =(AX =-.3329210100600967 BX =5.149375092349752    PSIX =5.515602757883608  AY =-1.3761504514129574
+           BY =1.1875063033600197   PSIY =3.958759432756264  EX =.5948363222490309    EPX =.00010338713948326885
+           DX =4.3947842572474095e-18    DPX =-1.8879107917741057e-18  DZ =-2.1052990012083346e-18   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSNEE  =(AX =-.000510883103223715    BX =11.983746081648611   PSIX =7.837668237694634  AY =.0002802917342684409
+           BY =4.995583847607656    PSIY =5.2707427487977405 EX =.002289433411263856  EPX =-1.0475391726954416e-05
+           DX =6.00102582116702e-18 DPX =-5.438271120347286e-18   DZ =-4.819280383219183e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSNWS  =(AX =-.000510883103223715    BX =11.983746081648611   PSIX =7.837668237694634  AY =.0002802917342684409
+           BY =4.995583847607656    PSIY =5.2707427487977405 EX =.002289433411263856  EPX =-1.0475391726954416e-05
+           DX =6.00102582116702e-18 DPX =-5.438271120347286e-18   DZ =-4.819280383219183e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U02     =(AX =-.000510883103223715    BX =11.983746081648611   PSIX =7.837668237694634  AY =.0002802917342684409
+           BY =4.995583847607656    PSIY =5.2707427487977405 EX =.002289433411263856  EPX =-1.0475391726954416e-05
+           DX =6.00102582116702e-18 DPX =-5.438271120347286e-18   DZ =-4.819280383219183e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MCCa    =(AX =-.2771356415580587 BX =12.904144310900762   PSIX =8.107507968388619  AY =-.6633058598674876
+           BY =7.193513605969278    PSIY =5.856695321223759  EX =.00225470748768902   EPX =-1.0475391726954416e-05
+           DX =-1.2026842942784233e-17   DPX =-5.438271120347286e-18   DZ =-4.819280383219183e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MCCs    =(AX =-.3021695563503514 BX =13.077935870273286   PSIX =8.13060337733929   AY =-.7233589052613115
+           BY =7.609513035507916    PSIY =5.897254706820232  EX =.0022515648701709355 EPX =-1.0475391726954416e-05
+           DX =-1.3658324278888419e-17   DPX =-5.438271120347286e-18   DZ =-4.819280383219183e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MCCe    =(AX =-.3355481094067418 BX =13.333022936576125   PSIX =8.160899881330351  AY =-.8034296324530771
+           BY =8.220228450593671    PSIY =5.947851726233554  EX =.002247374713480156  EPX =-1.0475391726954416e-05
+           DX =-1.5833632727027333e-17   DPX =-5.438271120347286e-18   DZ =-4.819280383219183e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U03     =(AX =.20202782937259245 BX =4.820647443047744    PSIX =10.280980334947586 AY =-.09821094415266644
+           BY =.4145493209769379    PSIY =7.623244551471517  EX =.5946713980611524    EPX =-7.379537725798994e-05
+           DX =6.5857903188128465e-18    DPX =-2.245521281932385e-18   DZ =-4.2066830581859235e-18   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U05     =(AX =.5415616002217964  BX =8.716787631620523    PSIX =15.839527863752044 AY =.4762308860675545
+           BY =5.78484417197266     PSIY =10.776694058406918 EX =.5921221904493882    EPX =-.038430140802792445
+           DX =2.281556774217644e-18     DPX =-2.2024370916954675e-18  DZ =-6.06719438454021e-18     DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSNWE  =(AX =1.6094510616949589 BX =5.474890370122915    PSIX =18.023258666219288 AY =-1.5133081382655433
+           BY =6.996987640180688    PSIY =11.803770502495656 EX =.4738921477501845    EPX =-.17690502266050448
+           DX =2.6465739589956922e-17    DPX =-1.1927568882188264e-17  DZ =-8.43725619136469e-18     DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKNCWS  =(AX =1.6094510616949589 BX =5.474890370122915    PSIX =18.023258666219288 AY =-1.5133081382655433
+           BY =6.996987640180688    PSIY =11.803770502495656 EX =.4738921477501845    EPX =-.17690502266050448
+           DX =2.6465739589956922e-17    DPX =-1.1927568882188264e-17  DZ =-8.43725619136469e-18     DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKACC   =(AX =-2.150483179710765 BX =4.333878171957901    PSIX =23.017507231232532 AY =4.460304067483912
+           BY =9.468701765971877    PSIY =12.904861620574348 EX =.4377397979255558    EPX =.18558303570177376
+           DX =2.651143044104132e-17     DPX =9.175011538284161e-18    DZ =-1.0070339327199074e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKNCWE  =(AX =-2.3789507273910764     BX =5.135413805642345    PSIX =28.16018920732118  AY =4.0663729492025125
+           BY =7.936910315800821    PSIY =14.102117083684757 EX =.4714399277072929    EPX =.18551530508558908
+           DX =2.9999357384402183e-17    DPX =9.773287990082034e-18    DZ =-1.279640119641769e-17    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSSWS  =(AX =-2.3789507273910764     BX =5.135413805642345    PSIX =28.16018920732118  AY =4.0663729492025125
+           BY =7.936910315800821    PSIY =14.102117083684757 EX =.4714399277072929    EPX =.18551530508558908
+           DX =2.9999357384402183e-17    DPX =9.773287990082034e-18    DZ =-1.279640119641769e-17    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKLLS5  =(AX =-.5744199532031874 BX =5.780507374490873    PSIX =29.75728596178542  AY =1.8217023684822102
+           BY =4.300427282291894    PSIY =14.581741150950279 EX =.5588104812400261    EPX =.0341388133041966
+           DX =-2.125368352572732e-17    DPX =-8.677005235720082e-18   DZ =-1.4366925322640516e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U13     =(AX =-1.0834639712632175     BX =9.448575557372793    PSIX =30.061324660200288 AY =-.4001469523679625
+           BY =1.155235924139121    PSIY =16.03114373931546  EX =.634342605675561     EPX =.0341388133041966
+           DX =-4.0451557609758e-17 DPX =-8.677005235720082e-18   DZ =-1.4366925322640516e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U14a    =(AX =-1.2299512097077414     BX =5.503470613547984    PSIX =32.85866854737838  AY =-.06602907499088635
+           BY =5.477625598183138    PSIY =17.512185629420625 EX =.0008155482974503972 EPX =1.640961786285105e-05
+           DX =3.221537008171961e-17     DPX =8.466352473567943e-18    DZ =-1.1920877961769997e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U14s    =(AX =-1.4358692294035635     BX =6.7057556315871825   PSIX =32.9329762950645   AY =-.14872298664192288
+           BY =5.574478777979536    PSIY =17.593893064324828 EX =.0008229490351065393 EPX =1.640961786285105e-05
+           DX =3.6033695047298754e-17    DPX =8.466352473567943e-18    DZ =-1.1920877961769997e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U14e    =(AX =-2.1846620282974625     BX =12.643426894216864   PSIX =33.11204140085347  AY =-.4494281199184193
+           BY =6.555446592738496    PSIY =17.868630511314574 EX =.0008498608084016011 EPX =1.640961786285105e-05
+           DX =4.991851310395018e-17     DPX =8.466352473567943e-18    DZ =-1.1920877961769997e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U15     =(AX =-.2024088587202361 BX =4.825500521737635    PSIX =35.54546531668918  AY =.0981516085638087
+           BY =.4143170034362874    PSIY =19.502866006305982 EX =.5947737730296412    EPX =.00010338713948326709
+           DX =-1.46990223204288e-17     DPX =-7.503150581673388e-18   DZ =-1.4850010835763898e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSSWE  =(AX =-.0005108831032210221   BX =11.983746081648869   PSIX =37.98919952050715  AY =.000280291734263705
+           BY =4.995583847607665    PSIY =21.855085368048538 EX =.002289433411267414  EPX =-1.047539172685751e-05
+           DX =1.4372994512623932e-18    DPX =-1.3025146583307335e-18  DZ =-1.3957079469248092e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSSES  =(AX =-.0005108831032210221   BX =11.983746081648869   PSIX =37.98919952050715  AY =.000280291734263705
+           BY =4.995583847607665    PSIY =21.855085368048538 EX =.002289433411267414  EPX =-1.047539172685751e-05
+           DX =1.4372994512623932e-18    DPX =-1.3025146583307335e-18  DZ =-1.3957079469248092e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U16     =(AX =-.0005108831032210221   BX =11.983746081648869   PSIX =37.98919952050715  AY =.000280291734263705
+           BY =4.995583847607665    PSIY =21.855085368048538 EX =.002289433411267414  EPX =-1.047539172685751e-05
+           DX =1.4372994512623932e-18    DPX =-1.3025146583307335e-18  DZ =-1.3957079469248092e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U17     =(AX =.2020278293725732  BX =4.820647443047777    PSIX =40.43251161776011  AY =-.09821094415266331
+           BY =.41454932097693564   PSIY =24.207587170722306 EX =.5946713980611512    EPX =-7.379537725832238e-05
+           DX =2.0375909090609774e-17    DPX =-6.947463445804257e-18   DZ =-1.6609435266796607e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        U19     =(AX =.5415616002217758  BX =8.716787631620349    PSIX =45.99105914656454  AY =.47623088606755176
+           BY =5.784844171972633    PSIY =27.361036677657722 EX =.5921221904493883    EPX =-.038430140802792716
+           DX =3.897530166235886e-17     DPX =-4.730126849822458e-18   DZ =-1.337719632790634e-17    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSSEE  =(AX =1.609451061694977  BX =5.474890370122898    PSIX =48.17478994903179  AY =-1.5133081382655629
+           BY =6.996987640180725    PSIY =28.38811312174646  EX =.4738921477501826    EPX =-.1769050226605038
+           DX =-3.224625791353304e-17    DPX =5.3353869984866046e-18   DZ =-1.3706712226584556e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKNCES  =(AX =1.609451061694977  BX =5.474890370122898    PSIX =48.17478994903179  AY =-1.5133081382655629
+           BY =6.996987640180725    PSIY =28.38811312174646  EX =.4738921477501826    EPX =-.1769050226605038
+           DX =-3.224625791353304e-17    DPX =5.3353869984866046e-18   DZ =-1.3706712226584556e-17   DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKNCE2ST=(AX =1.6143970688426088 BX =5.490297802031443    PSIX =56.68081799876012  AY =-1.5164909837374525
+           BY =7.011360498312499    PSIY =30.350652745429876 EX =.47470372898325874   EPX =-.17743991456662306
+           DX =1.8836522268783028e-17    DPX =-8.346213513524113e-18   DZ =-8.937227865308196e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKNCEE  =(AX =-2.378950727391024 BX =5.1354138056422345   PSIX =58.31172049013366  AY =4.066372949202481
+           BY =7.936910315800768    PSIY =30.686459702935554 EX =.47143992770729237   EPX =.18551530508558833
+           DX =-3.228282031613623e-17    DPX =-1.9766385384916666e-17  DZ =-8.534591266865485e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+        MKSNES  =(AX =-2.378950727391024 BX =5.1354138056422345   PSIX =58.31172049013366  AY =4.066372949202481
+           BY =7.936910315800768    PSIY =30.686459702935554 EX =.47143992770729237   EPX =.18551530508558833
+           DX =-3.228282031613623e-17    DPX =-1.9766385384916666e-17  DZ =-8.534591266865485e-18    DP =.01
+           EMITX =3.536793518229371e-08  EMITY =1e-12 )
+ ;
+MARK
+   MKB03 = ()
+   MKRFABS =()
+;
+DRIFT
+!   LLS3    =(L = 2.605 )
+   LLS3t1    =(L = 1 )
+   LLS3t2    =(L = 1.605 )
+;
+LINE
+   TESTRF = (MKB03 B03  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3t1 MKRFABS LLS3t2
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B04)
+ ;
+!+
+!  PF 入射軌道 (その 3): 軌道のグラフ (OpticsPlot、ラティスの絵つき) と、キッカーを変える GUI。
+!  Tk の窓は KBMainFrame・Canvas・Entry・Button。台本の最後で Exit; の代わりに窓を残す版は gui_shot で撮る。
+!-
+ON LOG;
+OFF RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "12.6";
+  PageWidth = 1999;
+
+USE RING;
+  KK* 0;
+  cell calc;
+  emit;
+  SAVE ALL;
+
+USE INJL;
+  ins calc;
+  injposi = LINE["POSITION","INJ"];
+
+  CalcSBBump[] := (
+      Twiss["DX","^^^"] = 0;
+      Twiss["DPX","^^^"] = 0;
+      FFS["ins calc;"];
+  );
+
+  DispCSInv[dx0_,dxp0_] := (
+      b0 = Twiss["BX","$$$"];
+      a0 = Twiss["AX","$$$"];
+      g0 = (1+a0*a0)/b0;
+      csinv = g0*dx0*dx0 + 2*a0*dx0*dxp0 + b0*dxp0*dxp0;
+      csinv*1e9
+  );
+
+  ! 窓の入力欄は文字列になるので、数にして使う。入力欄用 (k0k1 ...) と計算用 (k0k1v ...) の変数を分ける 
+  GetKicker[] := (
+      k0k1 = LINE["K0","KK1"]*1000;  k0k2 = LINE["K0","KK2"]*1000;
+      k0k3 = LINE["K0","KK3"]*1000;  k0k4 = LINE["K0","KK4"]*1000;
+  );
+  SetKicker[] := (
+      k0k1v = ToExpression[ToString[k0k1]*1.00]*1.00;
+      k0k2v = ToExpression[ToString[k0k2]*1.00]*1.00;
+      k0k3v = ToExpression[ToString[k0k3]*1.00]*1.00;
+      k0k4v = ToExpression[ToString[k0k4]*1.00]*1.00;
+      LINE["K0","KK1"] = k0k1v/1000;  LINE["K0","KK2"] = k0k2v/1000;
+      LINE["K0","KK3"] = k0k3v/1000;  LINE["K0","KK4"] = k0k4v/1000;
+      FFS["ins calc;"];
+  );
+
+  CalcTrajectories[] := (
+      dxinjv  = ToExpression[ToString[dxinj]*1.00]*1.00;
+      dxpinjv = ToExpression[ToString[dxpinj]*1.00]*1.00;
+      dpinjv  = ToExpression[ToString[dpinj]*1.00]*1.00;
+      a = {0,0,0};  b = {1,1,1};  delp = {0,0,0};
+      res = {1,{a,a,a,a,a,delp,b}};
+      s1 = {res[1]};  x1 = {res[2,1,1]};  x2 = {res[2,1,2]};  x3 = {res[2,1,3]};
+      Do[
+         res = TrackParticles[res,i];
+         s1 = Append[s1,res[1]];  x1 = Append[x1,res[2,1,1]];  x2 = Append[x2,res[2,1,2]];  x3 = Append[x3,res[2,1,3]];
+      ,{i,2,injposi}];
+      res[2,1,2] = dxinjv/1000;   res[2,1,3] = dxinjv/1000;
+      res[2,2,2] = dxpinjv/1000;  res[2,2,3] = dxpinjv/1000;
+      res[2,6,3] = dpinjv/100;
+      Do[
+         res = TrackParticles[res,i];
+         s1 = Append[s1,res[1]];  x1 = Append[x1,res[2,1,1]];  x2 = Append[x2,res[2,1,2]];  x3 = Append[x3,res[2,1,3]];
+      ,{i,injposi+1,LINE["LENGTH"]}];
+      sbcs    = DispCSInv[res[2,1,1],res[2,2,1]];
+      injcs   = DispCSInv[res[2,1,2],res[2,2,2]];
+      injdpcs = DispCSInv[res[2,1,3],res[2,2,3]];
+  );
+
+  MakePlot[] := (
+      line1 = Thread[{s1,x1*1000}];
+      line2 = Thread[{s1,x2*1000}];
+      line3 = Thread[{s1,x3*1000}];
+      p2 = OpticsPlot[{{{line1},{line2},{line3}, PlotJoined -> True, Dashing -> {1,1,1,1,1},
+                        PlotColor -> {"black","red","blue","forest green"}, FrameLabel -> "Dx(mm)", TextSize -> 1.8, Legend -> False}},
+                        Lattice -> True, Names -> "B*"];
+  );
+
+  ! ---- 計算 (窓なしで一度) ---- 
+  dxinj = 21.5;  dxpinj = 2;  dpinj = 1;
+  LINE["K0","KK1"] = -1.89/1000;  LINE["K0","KK2"] = 0;
+  LINE["K0","KK3"] = -1.4/1000;   LINE["K0","KK4"] = -2.8/1000;
+  CalcSBBump[];
+  GetKicker[];
+  SetKicker[];
+  CalcSBBump[];
+  CalcTrajectories[];
+  Print["GUI-start  stored end x [mm] = ", res[2,1,1]*1000, "   CS invariant stored = ", sbcs];
+
+  ! ---- 窓 ---- 
+  w = KBMainFrame["plot", plotframe, Title->"Trajectory Plot"];
+  c1 = Canvas[plotframe, Width->800, Height->500];
+  $DisplayFunction = CanvasDrawer;
+  Canvas$Widget = c1;
+  expb0 = Button[w, Relief -> "flat", Width -> 90, Side -> "top", Text->"black : stored beam   red : injected beam    blue : injected beam with DP"];
+  MakePlot[];
+
+  f01 = Frame[w, Side -> "bottom"];
+  k1b1 = Button[f01, Relief -> "flat", Width -> 15, Side -> "left", Text->"KK1 [mrad]"];
+  k1b3 = Entry[f01, Width -> 9, TextVariable :> k0k1, Side -> "left"];
+  k4b1 = Button[f01, Relief -> "flat", Width -> 15, Side -> "left", Text->"KK4 [mrad]"];
+  k4b3 = Entry[f01, Width -> 9, TextVariable :> k0k4, Side -> "left"];
+  k4delta = 0.2;
+  k4deltaup[]   := (k0k4 = ToExpression[k0k4*1.00]*1.00 + k4delta);
+  k4deltadown[] := (k0k4 = ToExpression[k0k4*1.00]*1.00 - k4delta);
+  Recalc[] := (SetKicker[]; CalcSBBump[]; CalcTrajectories[]; MakePlot[]);
+  k4b5 = Button[f01, Text -> "Weaker", Width -> 8, Side -> "left", Command :> (k4deltaup[]; Recalc[])];
+  k4b6 = Button[f01, Text -> "Stronger", Width -> 8, Side -> "left", Command :> (k4deltadown[]; Recalc[])];
+  TclEval["update"];
+
+  TclEval["proc ff {w cls} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {lappend r $c}; set r [concat $r [ff $c $cls]]}; return $r}"];
+  TclEval["set cv [lindex [ff . Canvas] 0]"];
+  Print["canvas items = ", TclEval["return [llength [$cv find all]]", String]];
+
+  ! ボタンを押した代わり: Command の中身を直接呼ぶ (Weaker を 1 回) 
+  k4deltaup[]; Recalc[];
+  TclEval["update"];
+  Print["after Weaker: KK4 = ", k0k4, "  stored end x [mm] = ", res[2,1,1]*1000, "   CS invariant stored = ", sbcs];
+  Print["canvas items = ", TclEval["return [llength [$cv find all]]", String]];
+Exit;

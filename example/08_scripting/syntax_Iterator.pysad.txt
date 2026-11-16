@@ -1,0 +1,20 @@
+{n}       {x,x,x}
+{i,n}     {1,2,3,4}
+{i,a,b}   {2,3,4,5}
+{i,a,b,s} {1,4,7,10}
+real step {0,.25,.5,.75,1}
+negative  {3,2,1,0}
+???General::wrongtype: Argument must be {symbol, n}, {symbol, start, stop}, {symbol, start, stop, step}
+... in Print["{i,list} (not supported in SAD) ", Table[i, {i, {a, b, c}}]]
+multiple  {{{1,1},{1,2}},{{2,1},{2,2}}}
+dependent {{2},{3,4},{4,5,6}}
+Sum 2D    36
+Product   720
+Do {1,1}
+Do {2,1}
+Do {2,2}
+1
+2
+Map      {2,3}
+empty     {}
+Sum empty 0

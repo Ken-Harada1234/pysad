@@ -172,9 +172,9 @@ python -u run_regression.py 3b 12 13a                          # 指定したも
 - 回帰 (`PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py`、QUICK なし): 2026-11-16 夜に **50 ベンチをすべて実行して FAIL 0** (205 s)。`run_regression.py` の `BENCHES` は 50 キー (1, 2, 3a〜3d, 4〜11, 12/12t/12f, 13a, 13b, 14a, 16a, 22e, 24a〜24f, 26a〜26d, 27a/27b, 28a〜28d/28f, 29a〜29e/29a2, 30a/30b, 31a/31b)。
   `QUICK=1` は遅い 4 件 (7, 12t, 13a, 16a) を SKIP して 46 件を実行する。その 4 件も単独で実行して**すべて PASS** (最大差: 7 が 5.0e-11、12t が 3.5e-11、13a が 4.3e-21、16a が 1.4e-31。`local/wake/reg_slow4.txt`)。QUICK の 46 件と合わせて 50 ベンチ全部が FAIL 0。
   `run_regression.py` 自体は 2026-11-04 から変更なし。KNOWN (PASS*) は §4 の 3 件 (14A の EMIT dz、16A の損失周数 1 個、13A-2 の TWB)。
-- pytest (`py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`): **520 通過・3 skip** (523 件収集、2026-11-16 夜。11/16 昼の 511 通過・514 件からの増加分は、同じ夜の修正 (UNIPOL・RELW、DUMP の書式、MATRIX の名前だけの引数、LDSolve の複素行列、OpenRead の失敗、`l_track=0`) に付けた試験)。
+- pytest (`py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`): **532 通過・3 skip** (535 件収集、2026-11-16 夜。11/16 昼の 511 通過・514 件からの増加分は、同じ夜の修正 (UNIPOL・RELW、DUMP の書式、MATRIX の名前だけの引数、LDSolve の複素行列、OpenRead の失敗、`l_track=0`) に付けた試験)。
   - GUI 系 (`test_plot.py`, `test_tclbridge.py`) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` がないと GUI 系は skip する。
-  - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。通常の 520 通過にはこれは含まれない。
+  - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。通常の 575 通過にはこれは含まれない。
   - SAD 本体 (gs) が無くても通る (gs の値は試験の中か `pysad/tests/` のデータに埋め込み)。
 
 ## 6. 新しい gs 照合 (2026-11-13〜11-16)

@@ -1,0 +1,28 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+$FORM = "14.10";
+! GaussianCoulomb[x, y, sigx, sigy] = 大きさ (sigx, sigy) のガウス分布が (x, y) に作る力 fx + i fy
+Print["round: r/sigma = 0.01, 1, 3, 10 on x axis (sigx=sigy=1)"];
+Do[
+  xx = {0.01, 1, 3, 10}[[k]];
+  Print["  x=", xx, " GC=", GaussianCoulomb[xx, 0, 1, 1]],
+  {k, 1, 4}];
+Print["flat sigx=2 sigy=1: GC(0.01,0)=", GaussianCoulomb[0.01, 0, 2, 1], "  GC(0,0.01)=", GaussianCoulomb[0, 0.01, 2, 1]];
+Print["off axis (1,1,1,1) = ", GaussianCoulomb[1, 1, 1, 1]];
+Print["GaussianCoulombU(1,0,1,1)=", GaussianCoulombU[1, 0, 1, 1]];
+Print["GaussianCoulombFitted(1,0,1,1)=", GaussianCoulombFitted[1, 0, 1, 1]];
+! BBBrem1[sqrt(s) (eV), ds/s]: ビーム・ビーム制動放射の 1 事象 {4 元運動量, 近似断面積}
+SeedRandom[3];
+Do[
+  Print["BBBrem1 event ", k, ": ", BBBrem1[2*3e9, 1e-3]],
+  {k, 1, 3}];
+Exit;

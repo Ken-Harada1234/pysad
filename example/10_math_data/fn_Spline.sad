@@ -1,0 +1,20 @@
+! Spline (ラティスなし)
+FFS;
+$FORM="S17.10";
+! sin(x) を 0..pi で 7 点 (pi/6 刻み)。端で y''=0 の自然スプライン
+d=Table[{x,Sin[x]},{x,0,Pi,Pi/6}];
+sp=Spline[d];
+Print["R:s1=",sp[1.0]];
+Print["R:ds1=",Derivative[1][sp][1.0]];
+Print["R:dds1=",Derivative[2][sp][1.0]];
+Print["R:int=",Integrate[sp[x],{x,0,Pi}]];
+! 両端の傾きを指定 (Derivative->{dy1,dy2}): sin' = cos
+sc=Spline[d,Derivative->{1,-1}];
+Print["R:c1=",sc[1.0]];
+Print["R:dc1=",Derivative[1][sc][1.0]];
+Print["R:cint=",Integrate[sc[x],{x,0,Pi}]];
+! 2 本同時 {x,{y1,y2}} 
+d2=Table[{x,{Sin[x],Cos[x]}},{x,0,Pi,Pi/6}];
+s2=Spline[d2];
+Print["s2=",s2[1.0]];
+Exit;

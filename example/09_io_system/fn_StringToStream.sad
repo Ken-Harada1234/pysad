@@ -1,0 +1,18 @@
+FFS;
+s = "10 20 30\nnext line\n3.5 abc";
+c = StringToStream[s];
+Print["Head ", Head[c]];
+Print["Read Real ", Read[c, 3*Real]];
+Print["ReadString ", ReadString[c]];
+Print["Read Real, Word ", Read[c, {Real, Word}]];
+Print["EOF ", ReadString[c]];
+Close[c];
+text = "a 1\nb 2\nc 3";
+c = StringToStream[text];
+n = 0;
+While[n < 3 && Length[r = Read[c, {Word, Real}]] == 2, n++; Print["key=", r[[1]], " val=", r[[2]]]];
+Close[c];
+c = StringToStream["{1, 2, x+1} f[3]"];
+Print["Expression ", Read[c, Expression], " ", Read[c, Expression]];
+Close[c];
+Exit;

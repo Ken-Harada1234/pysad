@@ -1,0 +1,10 @@
+FFS;
+Print["Apply     ", Apply[Plus, {1, 2, 3}]];
+Print["@@        ", Times @@ {1, 2, 3, 4}];
+Print["Apply f   ", f @@ {a, b}];
+Print["level     ", Apply[f, {{1, 2}, {3, 4}}, {1}]];
+Print["Thread    ", Thread[f[{1, 2, 3}, x]]];
+Print["Thread 2  ", Thread[f[{1, 2}, {a, b}]]];
+Print["Thread =  ", Thread[{x, y} -> {1, 2}]];
+Print["Thread ==", Thread[{1, 2} == {1, 3}]];
+Exit;

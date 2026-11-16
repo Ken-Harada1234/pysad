@@ -1,0 +1,10 @@
+! ListContourPlot の SADHelp の例 (MeshRange つき、cos(sqrt((x^2+y^2)/2)))。pysad では失敗する
+FFS;
+xr0=0;xr=Table[xr0+=Sin[i*Pi/21],{i,20}];xr-=(xr[[1]]+xr[[-1]])/2;
+yr=xr;
+table=Outer[Cos[Sqrt[(#^2+#2^2)/2]]&,xr,yr];
+Print["dims=",Dimensions[table]];
+g=ListContourPlot[table,MeshRange->{xr,yr},AspectRatio->1,Contours->8,FrameLabel->{"x","y"}];
+Print["Head=",Head[g]," Length=",Length[g]];
+Update[];
+Exit;

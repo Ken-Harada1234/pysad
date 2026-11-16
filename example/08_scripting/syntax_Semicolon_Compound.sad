@@ -1,0 +1,22 @@
+FFS;
+(* 括弧・関数の中の ; は CompoundExpression の区切り。最後の式の値が返り、末尾が ; なら Null *)
+f[x_] := (a = x; a^2);
+g[x_] := (a = x; a^2;);
+Print["f[3] = ", f[3], "   g[3] = ", g[3], "   Head[g[3]] = ", Head[g[3]]];
+h = (1; 2; 3);
+Print["h = ", h];
+Print["Module  ", Module[{t = 2}, t; t^2]];
+Print["Module trailing ; ", Module[{t = 2}, t; t^2;]];
+Print["If      ", If[1 > 0, a = 1; a + 10, a = 2; a + 20]];
+Print["If trailing ; ", If[1 > 0, a = 1; a + 10;, 0]];
+Print["Block   ", Block[{u = 1}, u += 1; u*5]];
+Print["Do value ", Do[a = 1; a, {2}]];
+Print["CompoundExpression ", CompoundExpression[1, 2, 3]];
+Print["Print returns ", Head[Print["  (prints)"]]];
+k = 0;
+Do[k++; k++, {3}];
+Print["k = ", k];
+r = (Print["step1"]; Print["step2"]; 42);
+Print["r = ", r];
+Print["Table with ; ", Table[a = i; a^2, {i, 3}]];
+Exit;

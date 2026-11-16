@@ -1,0 +1,6 @@
+FFS;
+g[x_] := Which[x < 0, "neg", x == 0, "zero", x < 10, "small", True, "large"];
+Print["Which   ", g /@ {-1, 0, 5, 50}];
+Print["no True branch -> ", Which[1 > 2, "a", 3 > 4, "b"]];
+Print["first match wins ", Which[True, "first", True, "second"]];
+Exit;

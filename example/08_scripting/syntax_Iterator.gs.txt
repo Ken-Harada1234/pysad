@@ -1,0 +1,51 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:14:29 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ Print["{n}       ", Table[x, {3}]];
+{n}       {x,x,x}
+ Print["{i,n}     ", Table[i, {i, 4}]];
+{i,n}     {1,2,3,4}
+ Print["{i,a,b}   ", Table[i, {i, 2, 5}]];
+{i,a,b}   {2,3,4,5}
+ Print["{i,a,b,s} ", Table[i, {i, 1, 10, 3}]];
+{i,a,b,s} {1,4,7,10}
+ Print["real step ", Table[i, {i, 0, 1, 0.25}]];
+real step {0,.25,.5,.75,1}
+ Print["negative  ", Table[i, {i, 3, 0, -1}]];
+negative  {3,2,1,0}
+ Print["{i,list} (not supported in SAD) ", Table[i, {i, {a, b, c}}]];
+???General::wrongtype:  Argument must be {symbol, n}, {symbol, start, stop}, {symbol, start, stop, step} in Table[i,{i,{a,b,c}}]
+... in Print["{i,list} (not supported in SAD) ",Table[i,{i,{a,b,c}}]]
+ Print["multiple  ", Table[{i, j}, {i, 2}, {j, 2}]];
+multiple  {{{1,1},{1,2}},{{2,1},{2,2}}}
+ Print["dependent ", Table[i + j, {i, 3}, {j, 1, i}]];
+dependent {{2},{3,4},{4,5,6}}
+ Print["Sum 2D    ", Sum[i*j, {i, 3}, {j, 3}]];
+Sum 2D    36
+ Print["Product   ", Product[i, {i, 1, 6}]];
+Product   720
+ Do[Print["Do ", {i, j}], {i, 2}, {j, i}];
+Do {1,1}
+Do {2,1}
+Do {2,2}
+ Scan[Print, {1, 2}];
+1
+2
+ Print["Map      ", Map[# + 1 &, {1, 2}]];
+Map      {2,3}
+ Print["empty     ", Table[i, {i, 5, 1}]];
+empty     {}
+ Print["Sum empty ", Sum[i, {i, 5, 1}]];
+Sum empty 0
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

@@ -1,0 +1,8 @@
+FFS;
+l = {1, 2.5, "a", x, 3, "b", {1}, y};
+Print["SwitchCases  ", SwitchCases[l, {_String, _Real}]];
+Print["with rest    ", SwitchCases[l, {_String, _Real, _}]];
+Print["SelectCases  ", SelectCases[Range[10], {EvenQ, # > 7 &}]];
+Print["with rest    ", SelectCases[Range[10], {EvenQ, # > 7 &, True &}]];
+Print["Cases+Delete ", {Cases[l, _String], DeleteCases[l, _String]}];
+Exit;

@@ -1,0 +1,8 @@
+! ListDensityPlot (ラティスなし)。SADHelp の例: Sin[x]/Cos[x^2+y^2]
+FFS;
+data=Table[Sin[x]/Cos[x^2+y^2],{x,-2,2,0.1},{y,-2,2,0.1}];
+Print["dims=",Dimensions[data]];
+g=ListDensityPlot[data,PlotRange->{-5,5},MeshRange->{{-2,2},{-2,2}},FrameLabel->{"x","y"}];
+Print["Head=",Head[g]," Length=",Length[g]];
+Update[];
+Exit;

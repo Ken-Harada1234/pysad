@@ -1,0 +1,15 @@
+! 数値関数 (Abs Ceiling Floor Max Min MinMax Mod Round Sign FractionalPart) (ラティスなし)
+FFS;
+$FORM="S17.15";
+Print["Abs=",{Abs[-3.5],Abs[2],Abs[3+4I]}];
+Print["Ceiling=",{Ceiling[2.3],Ceiling[-2.3]}];
+Print["Floor=",{Floor[2.7],Floor[-2.3]}];
+Print["Round=",{Round[2.4],Round[2.6],Round[-2.6],Round[2.5],Round[3.5]}];
+Print["Max=",{Max[1,5,3],Max[{2,8,4}],Max[{1,9},{3,4}]}];
+Print["Min=",{Min[1,5,3],Min[{2,8,4}]}];
+Print["MinMax=",MinMax[{3,-1,7,2}]];
+Print["Mod=",{Mod[7,3],Mod[-7,3],Mod[7.5,2]}];
+Print["Sign=",{Sign[-2.],Sign[0],Sign[5]}];
+Print["FractionalPart=",{FractionalPart[3.75],FractionalPart[-3.75]}];
+Print["Positive=",{Positive[2],Negative[2],NonNegative[0]}];
+Exit;

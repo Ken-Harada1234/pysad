@@ -100,11 +100,17 @@ _COMMANDS = {'USE', 'VISIT', 'BYE', 'STOP', 'EXIT', 'QUIT', 'END', 'ABORT', 'SAV
              'DECOUP', 'DECOUPLE', 'INDEP', 'INDEPENDENT', 'DUMP', 'VARY', 'VARS', 'VARIABLES', 'REJ', 'REJECT', 'ORG', 'ORIGIN',
              'STAT', 'STATUS', 'SHOW', 'DRAW', 'GEO', 'MCOD', 'TCOD', 'MON', 'REC', 'RECOVER', 'INC', 'INCLUDE', 'REPEAT',
              'UNTIL', 'IF', 'ELSE', 'ENDIF', 'CHRO', 'CHROMATICITY', 'RADINT', 'BEAM', 'BEAMSIZE', 'EXPAND', 'SCALE',
-             'ALIGN', 'ATT', 'ATTRIBUTE', 'GCUT', 'DP', 'DP0', 'MATRIX', 'MAT', 'RENUM', 'REV', 'REVERSE', 'ZAP', 'DIMAD',
-             'SYNCHROB', 'INTRA', 'CODPLOT', 'NOCODPLOT', 'ON', 'OFF', 'REF', 'REFERENCE', 'PRINT', 'MEASURE', 'TRC', 'TRCOD', 'DELC', 'DELCO', 'DELCOR',
+             'ALIGN', 'ATT', 'ATTRIBUTE', 'GCUT', 'DP', 'DP0', 'MATRIX', 'MAT', 'RENUM', 'RENUMB', 'RENUMBE', 'RENUMBER', 'REV', 'REVERSE', 'ZAP', 'DIMAD',
+             'SYNCHROB', 'INTRA', 'CODPLOT', 'NOCODPLOT', 'ON', 'OFF', 'REF', 'REFE', 'REFER', 'REFERE', 'REFEREN', 'REFERENC', 'REFERENCE', 'PRINT', 'MEASURE', 'TRC', 'TRCOD', 'DELC', 'DELCO', 'DELCOR',
              'ATTR', 'VAR', 'EXEC', 'EXECUTE', 'PRI', 'SPLIT', 'OUTPUT', 'OUT', 'OUTP', 'APPEND', 'APP', 'CLOSE', 'CLO', 'TERMINATE', 'TERM',
              'INPUT', 'IN', 'READ', 'SUSPEND', 'SUSP', 'RESUME', 'RES'}
 _ERRCMDS = {'DELX', 'DELY', 'DTHETA', 'DL', 'DK', 'DDK', 'DBEAM', 'DUMP'}
+
+
+class _ZeroRow:
+    """REFERENCE 未設定のときの参照光学 (twiss(:,-1,:) は 0)"""
+    def __getattr__(self, name):
+        return 0.0
 
 
 def _shortest(v: float) -> str:
@@ -390,6 +396,7 @@ class FFS:
         if 'MOMENTUM' not in g:
             m = _env_get(script_env, 'MOMENTUM')
             g['MOMENTUM'] = float(m) if isinstance(m, (int, float)) else 30e9      # K64 initb1.f: RsetGL('MOMENTUM',30.d9)
+        self._env_mom_seen = _env_get(script_env, 'MOMENTUM')
         self.install(interp)
 
     # ------------------------------------------------------------------ 組み込み関数の登録
@@ -412,11 +419,32 @@ class FFS:
         self._optfn.install(B)                 # TransferMatrix, BeamMatrix, OrbitGeo, GeoBase, SymplecticJ, SurvivedParticles, AccelerateParticles
         B['FFS$SHOW'] = lambda a: self.ffs_show_list()
         B['FFS$FlagQ'] = lambda a: self.flag_query(a[0] if a else '')          # ?FLAG (SADScript の構文、sadscript.parse_prefix)
+        def _rdims(a, name, draw):
+            # Random[n]・Random[n, m, …]: n×m×… の配列 (小数は切り捨て、0 は {}、負は wrongnum)。リストの引数は wrongtype (gs)
+            if not all(is_num(x) for x in a):
+                raise SADError('General::wrongtype: Argument must be Real numbers in %s[%s]' % (name, ','.join(self.I.to_str(x, None, True) for x in a)))
+            dims = [int(x) for x in a]
+            if any(d < 0 for d in dims):
+                raise SADError('General::wrongnum:  Number must be positive or 0 in %s[%s]' % (name, ','.join(self.I.to_str(x) for x in a)))
+            tot = 1
+            for d in dims:
+                tot *= d
+            flat = draw(tot) if tot > 0 else []
+            flat = flat if isinstance(flat, list) else [flat]
+
+            def build(k, off):
+                if k == len(dims):
+                    return flat[off]
+                stride = 1
+                for d in dims[k + 1:]:
+                    stride *= d
+                return [build(k + 1, off + t * stride) for t in range(dims[k])]
+            return build(0, 0) if tot > 0 or len(dims) == 1 else build(0, 0) if dims[0] > 0 else []
+
         def _parabolarandom(a):
             if not a:
                 return self.rng.parabola(1)
-            v = self.rng.parabola(int(a[0]))
-            return v if isinstance(v, list) else [v]
+            return _rdims(a, 'ParabolaRandom', lambda n: self.rng.parabola(n))
         B['ParabolaRandom'] = _parabolarandom
         B['Element'] = self.fn_element
         B['SynchroBetaEmittance1'] = self.fn_synchrobeta
@@ -425,19 +453,15 @@ class FFS:
         B['TrackParticles'] = self.fn_track
         B['SeedRandom'] = self.fn_seedrandom
         def _gaussrandom(a):
-            # GaussRandom[] はスカラー、GaussRandom[n] は n 個のリスト (SadRandom.gauss は n==1 のとき float を返す)
             if not a:
                 return self.rng.gauss(1, self.gcut())
-            v = self.rng.gauss(int(a[0]), self.gcut())
-            return v if isinstance(v, list) else [v]
+            return _rdims(a, 'GaussRandom', lambda n: self.rng.gauss(n, self.gcut()))
         B['GaussRandom'] = _gaussrandom
+
         def _random(a):
-            # Random[] はスカラー、Random[n] は n 個のリスト (Random[0] は {})。リスト引数は SAD ではエラー
             if not a:
                 return self.rng.uniform0()
-            if not is_num(a[0]):
-                raise SADError('General::wrongtype: Argument must be Real numbers in Random')
-            return [self.rng.uniform0() for _ in range(int(a[0]))]
+            return _rdims(a, 'Random', lambda n: [self.rng.uniform0() for _ in range(n)])
         B['Random'] = _random
         B['BeamLineName'] = lambda a: self.name
         B['CalculateOptics'] = self.fn_calculate_optics
@@ -565,6 +589,34 @@ class FFS:
         ix['pat'].clear()
         return Null
 
+    def _renumber_cmd(self, words, i):
+        """RENUMBER comp (tfinit.f tffsrenumber/tfinimult): comp を先頭に、周回順に同名の要素の番号 (NAME.n の n) を 1 から付け直す。
+        comp が無ければ ' ???-FFS-Error-Missing origin component for RENUM_BER '。番号が 1 台だけのものは 0 (LINE["MULT"]) で名前に番号が付かない。
+        (未対応: 要素の INDX 属性による番号の初期値)"""
+        name = words[i + 1] if i + 1 < len(words) else None
+        k0 = None
+        if name is not None and not any(c in name for c in '*%{|?'):
+            pos = self.positions(name)
+            k0 = pos[0] if pos else None
+        if k0 is None:
+            self.write(' ???-FFS-Error-Missing origin component for RENUM_BER ' + chr(10))
+            return 1
+        ix = self._nidx()
+        n = self.nlat - 1
+        if k0 > n:
+            k0 = 1
+        count: Dict[str, int] = {}
+        renum: Dict[str, Dict[int, int]] = {}
+        for t in range(n):
+            pos = (k0 - 1 + t) % n + 1
+            nm = ix['names'][pos - 1]
+            count[nm] = c = count.get(nm, 0) + 1
+            ix['ords'][pos - 1] = c
+            renum.setdefault(nm, {})[c] = pos
+        ix['renum'] = renum
+        ix['pat'].clear()
+        return 2
+
     def positions(self, pat: str) -> List[int]:
         """パターン (または名前) に合う位置 (1 始まり) のリスト。tflinenamestk 相当"""
         p = pat.upper()
@@ -637,13 +689,13 @@ class FFS:
             if v is None:
                 v = getattr(el, _amap(el).get(key, key), 0.0)
             return float(v or 0.0)
-        if key in ('K0', 'K1', 'K2', 'K3', 'K4', 'ANGLE', 'L', 'E1', 'E2', 'VOLT', 'FREQ', 'HARM', 'PHI', 'BZ', 'F1', 'F2', 'FRINGE', 'DISFRIN', 'DX', 'DY', 'ROTATE', 'DROTATE', 'K1S', 'SK1'):
+        if key in ('K0', 'K1', 'K2', 'K3', 'K4', 'K5', 'ANGLE', 'L', 'E1', 'E2', 'VOLT', 'FREQ', 'HARM', 'PHI', 'BZ', 'F1', 'F2', 'FRINGE', 'DISFRIN', 'DX', 'DY', 'ROTATE', 'DROTATE', 'K1S', 'SK1'):
             if key in ('E1', 'E2') and tn == 'Bend':
                 return self._e_ratio(el, key)           # SAD の E1/E2 は ANGLE に対する比 (tffs.f:1261)
             if key == 'HARM':
                 return float(getattr(el, '_harm', 0) or 0)
-            v = _sad_get(el, key if key not in _ATTR else _amap(el).get(key, key)) if key in ('K1', 'K2', 'K3', 'K4') else float(getattr(el, _amap(el).get(key, key), 0.0) or 0.0)
-            v = v / getattr(el, '_errk', 1.0) if (key in ('K1', 'K2', 'K3', 'K4', 'ANGLE', 'VOLT') and key == self.default_key(el)) else v
+            v = _sad_get(el, key if key not in _ATTR else _amap(el).get(key, key)) if key in ('K1', 'K2', 'K3', 'K4', 'K5') else float(getattr(el, _amap(el).get(key, key), 0.0) or 0.0)
+            v = v / getattr(el, '_errk', 1.0) if (key in ('K1', 'K2', 'K3', 'K4', 'K5', 'ANGLE', 'VOLT') and key == self.default_key(el)) else v
             raw = getattr(el, '_raw', None)
             if raw is not None and key in raw and is_num(raw[key]) and abs(v - raw[key]) <= 1e-13 * abs(raw[key]):
                 return float(raw[key])              # 読み込んだ値のまま (L で割って掛け戻す丸めを消す)
@@ -683,7 +735,7 @@ class FFS:
             if hasattr(el, _amap(el).get(key, key)):
                 setattr(el, _amap(el).get(key, key), v)
             return
-        if key in ('K1', 'K2', 'K3', 'K4'):
+        if key in ('K1', 'K2', 'K3', 'K4', 'K5'):
             _sad_set(el, key, v * (getattr(el, '_errk', 1.0) if key == self.default_key(el) else 1.0))
         elif key == 'ANGLE' and tn == 'Bend':
             # E1/E2 は ANGLE に対する比なので、ANGLE を変えても比を保つ (SAD の psi1 = E1·ANGLE + AE1)
@@ -763,13 +815,30 @@ class FFS:
                                                     or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
                 raise SADError('SOL (BZ≠0 か BOUND≠0) を含む CALC6D・RADCOD つきの CALC は未対応 (追跡 TrackParticles、CALC/INS の Twiss、Emittance[]・EMIT は対応)')
 
+    def _apply_element_values(self):
+        """ElementValues = {"K1"["QD"] -> expr, …} (Couple.n): CALC の前に要素値を設定する (K64 の tfinitvar → SetCoupledElements)。
+        Packages (Couple.n) が無いときは何もできないので、ElementValues があれば SADError にする"""
+        ev = self.I.globals.get('ElementValues')
+        if not isinstance(ev, list) or not ev or getattr(self, '_in_ev', False):
+            return
+        from . import pkgload
+        if pkgload.packages_dir() is None:
+            raise SADError('ElementValues: SAD の Packages (Couple.n) が必要 (PYSAD_SAD_PACKAGES)')
+        self._in_ev = True
+        try:
+            self.I.eval(Sym('SetCoupledElements'))
+        finally:
+            self._in_ev = False
+
     def calc(self, quiet: bool = False, ini: bool = False):
         """CELL/INS の光学計算。self.rows[l-1] = 要素 l の入口 (SAD の twiss(l))。
         CELL は不安定 (|cos μ|>1 等) でも SAD の qcell1 と同じく Twiss を作って続行する (判定は self.lat._qstat)。quiet=True は qcod の報告を出さない"""
         self._check_sol_optics(calc_only=True)
         if self.lat is None:
             raise SADError('No beam line (USE first)')
-        self.spread_pending()
+        self._apply_element_values()
+        if self.flags.get('CALEXP', True):
+            self.spread_pending()               # CALEXP: tffsadjustvar (NOCALEXP のときは成分ごとの値をそのまま使う)
         delta = self.dp0()
         self.calc6d_result = None
         self.geo_dirty = True              # tffscalc: tfgeo(.not. fitflg) — CALC のたびに幾何を軸から計算し直す (GEOCAL)
@@ -1316,6 +1385,8 @@ class FFS:
               'DX': 'x_cod', 'DPX': 'px_cod', 'DY': 'y_cod', 'DPY': 'py_cod', 'DZ': 'z_cod', 'DDP': 'delta_cod',
               'AZ': 'alfz', 'BZ': 'betz', 'NZ': 'muz', 'ZX': 'zx', 'ZPX': 'zpx', 'ZY': 'zy', 'ZPY': 'zpy', 'S': 's', 'LENG': 's'}
 
+    _TWKEY_ALL = frozenset(list(_TWKEY) + ['GMX', 'GMY', 'GMZ'])
+
     def twiss_value(self, key: str, k: int, fr: float = 0.0):
         key = key.upper()
         r = self.row_frac(k, fr) if fr else self.row(k)
@@ -1330,6 +1401,21 @@ class FFS:
             raise SADError(f'General::wrongval:  #1 ({key}) is must be to be name of optical function in Twiss["{key}"]')
         if key.startswith('SIG') and key[3:4] != 'E' and not key.startswith('SIGMA'):
             return self.beam_size_value(key[3:], k, fr)          # tftwiss.f:270: SIG.. は tfline (ビームサイズ) へ
+        if len(key) > 1 and key[0] in 'RD' and key[1:] in self._TWKEY_ALL:
+            # tftwiss.f: R… は参照光学 (twiss(:,-1,:))、D… は現在 - 参照 (BX BY BZ は比)。小数の位置は不可
+            if fr:
+                raise SADError('General::wrongval:  #2 is must be to be integer position for reference optics')
+            ref = getattr(self, '_ref_rows', None)
+            r0 = ref[k - 1] if ref is not None else _ZeroRow()
+            rv = self._disp_val(r0, key[1:]) / (PI2 if False else 1.0)
+            if key[0] == 'R':
+                return rv
+            cv = self._disp_val(r, key[1:])
+            if key[1:] in ('BX', 'BY', 'BZ'):
+                return (cv - rv) / rv if rv else float('nan')
+            return cv - rv
+        if key in ('GAMMA', 'GAMMABETA', 'S') or key.startswith('SIZE'):
+            return self.line_value(key, k, fr)                # tftwiss.f:271: Twiss[…] はこれらを tfline (LINE と同じ) へ回す
         if key == 'PEX':
             return r.etx
         if key == 'PEPX':
@@ -1338,7 +1424,7 @@ class FFS:
             return r.ety
         if key == 'PEPY':
             return r.etpy
-        raise SADError(f'Twiss: unknown function {key}')
+        raise SADError(f'General::wrongval:  #1 ({key}) is must be to be name of optical function in Twiss["{key}"]')
 
     # ------------------------------------------------------------------ 組み込み: Twiss[], LINE[]
     def _resolve_loc(self, loc):
@@ -1379,13 +1465,17 @@ class FFS:
             return [self.fn_twiss([k] + list(args[1:])) for k in key]
         key = key.upper()
         if key == 'LENGTH':
+            if len(args) > 1:
+                raise SADError(f'General::narg:  Number of arguments is expected to be 1 in Twiss["LENGTH",{self.I.to_str(args[1], None, True)}]')
             return float(self.nlat)
-        if key in ('*', 'ALL'):
-            # tftwiss.f: Twiss["*"] / Twiss["*", loc] は ntwissfun=28 個の光学関数 (tffs.f mfitax..mfitzpy の順) のリスト
+        if key in ('*', 'ALL', 'RALL', 'DALL'):
+            # tftwiss.f: Twiss["*"] / Twiss["*", loc] は ntwissfun=28 個の光学関数 (tffs.f mfitax..mfitzpy の順) のリスト。RALL は参照光学、DALL は現在 - 参照
+            pre = key[0] if key in ('RALL', 'DALL') else ''
+            nm_ = lambda k2: (pre + k2) if pre else k2
             if len(args) == 1:
-                return [[self.twiss_value(k2, k) for k2 in _TWISS_ALL] for k in range(1, self.nlat + 1)]
+                return [[self.twiss_value(nm_(k2), k) for k2 in _TWISS_ALL] for k in range(1, self.nlat + 1)]
             locs = self._resolve_loc(args[1])
-            vals = [[self.twiss_value(k2, k, fr) for k2 in _TWISS_ALL] for k, fr in locs]
+            vals = [[self.twiss_value(nm_(k2), k, fr) for k2 in _TWISS_ALL] for k, fr in locs]
             # tftwiss.f tflinestk: 一致が 1 個 (isp == isp0+1) ならパターンの形に関わらずスカラー側 (リストでない)
             return vals[0] if len(vals) == 1 and not isinstance(args[1], list) else vals
         if len(args) == 1:
@@ -1434,7 +1524,10 @@ class FFS:
         if key == 'DK':
             return 0.0 if k >= self.nlat else getattr(self.els[k - 1], '_errk', 1.0)
         if key == 'MULT':
-            return 1.0
+            # tfinimult: 同名が複数ある要素は周回順の番号 (NAME.n の n)、1 台だけ (と $$$) は 0
+            if k >= self.nlat or len(self.instances(self.els[k - 1].name)) < 2:
+                return 0.0
+            return float(self._ordinal(k - 1))
         if key == 'DIR':
             # tftwiss.f:942 direlc: 反転配置 (LINE の `-`、cmp%ori=.false.) は -1
             return -1.0 if (0 < k < self.nlat and getattr(self.els[k - 1], '_rev', False)) else 1.0
@@ -1451,7 +1544,7 @@ class FFS:
             key = 'SIGZ'
         v = self.get_value(el, key)
         ek = getattr(el, '_errk', 1.0)
-        if ek != 1.0 and key in ('K1', 'K2', 'K3', 'K4', 'ANGLE', 'VOLT') and key == self.default_key(el):
+        if ek != 1.0 and key in ('K1', 'K2', 'K3', 'K4', 'K5', 'ANGLE', 'VOLT') and key == self.default_key(el):
             v = v * ek
         return v
 
@@ -1562,12 +1655,14 @@ class FFS:
                     self._spread_pending.add((el.name, key))
         self.invalidate()
 
-    def spread_pending(self):
+    def spread_pending(self, fams=None):
         """CALC の前に、LINE[key,"NAME.n"]= で設定されたファミリーの値を代表 (最初の 1 台) の値で全台に揃える。
         SAD の tftouch/tffsadjust と同じく、触ったキーは USE まで残り、CALC のたびに揃える
         (後から DELX/DELY 等で非代表に入れた誤差や tfadjst の共有値は、次の CALC で代表の値に戻る: bench_level31a の R11)"""
         pend = list(self._spread_pending)
         for fam, key in pend:
+            if fams is not None and fam not in fams:
+                continue
             inst = self.instances(fam)
             if len(inst) < 2:
                 continue
@@ -1724,9 +1819,30 @@ class FFS:
         return self.I.run(text, 'ffs')
 
     def fn_seedrandom(self, args):
+        """SeedRandom[n] は種 (n を uint32 に切り捨て)、SeedRandom["SAD"] は乱数の種類の選択 (状態は変えない。"SAD" 以外は System::error)、
+        SeedRandom[] は状態 {"SAD", seed, filled, next の下位語, 上位語} を返す。tfRandom_.c の癖 (gs で確認): リストは先頭が文字列なら種類の選択だけ
+        (状態は変わらず、続く数は読まない)、数のリストは要素の値を未初期化のまま詰める (gs では 0 になり種 1)"""
+        import struct
+        if len(args) > 1:
+            raise SADError('General::narg:  Number of arguments is expected to be 0 or 1 in SeedRandom[%s]' % ','.join(self.I.to_str(x, None, True) for x in args))
         if args:
-            self.rng.restore(int(args[0]))
-        return ['SAD', float(self.rng.seed % (1 << 32)), float(1 if self.rng.filled else 0), self.rng.next, 0.0]
+            x = args[0]
+            if is_num(x):
+                self.rng.restore(int(x) & 0xFFFFFFFF if int(x) >= 0 else int(x))
+            elif isinstance(x, str) or (isinstance(x, list) and x and isinstance(x[0], str)):
+                name = x if isinstance(x, str) else x[0]
+                if name != 'SAD':
+                    raise SADError('System::error:  No such random plugin in SeedRandom[%s]' % self.I.to_str(x, None, True))
+            elif isinstance(x, list):
+                nums = [v for v in x if is_num(v)]
+                if any(not is_num(v) and not isinstance(v, str) for v in x):
+                    raise SADError('General::wrongtype:  Argument must be Real in SeedRandom[%s]' % self.I.to_str(x, None, True))
+                if nums:
+                    self.rng.restore(0)
+            elif x is not Null:
+                raise SADError('General::wrongtype:  Argument must be String or Real or List or Null in SeedRandom[%s]' % self.I.to_str(x, None, True))
+        lo, hi = struct.unpack('<II', struct.pack('<d', float(self.rng.next)))
+        return ['SAD', float(self.rng.seed % (1 << 32)), float(1 if self.rng.filled else 0), float(lo), float(hi)]
 
     # ------------------------------------------------------------------ Emittance[] / TrackParticles[]
     def fn_emittance(self, args):
@@ -2156,7 +2272,6 @@ class FFS:
         mt>1 なら ls→nlat、(mt−2) 周、1→ld。mt==1 なら ls→ld。戻りの先頭は正規化した ld (merge(ld,ls,normal))。
         RFSW OFF では tturn ごと (区間ごと) に z=0 (tturn.f:142-145)。空洞の周波数は全周長 (omega0) で決まるので区間でも全周長を渡す"""
         from .track6n import track_particles_fast as track_particles
-        self.spread_pending()
         if not args or len(args) > 4:
             raise SADError('General::narg: Number of arguments is expected to be "1, 2, 3, or 4" in TrackParticles')
         beam = args[0]
@@ -2265,6 +2380,11 @@ class FFS:
                 raise SADError('RADLIGHT: この要素の並びは高速追跡 (TrackRun) で扱えない')
             rl = _RadLight(self.ensure_geo().geo[ls - 1], tr.ph, npart)
 
+        # track6 (Python) の追跡: APERT (tapert) で落ちた粒子は alive6 が False になる (LOSSAMPL/LOSSDZ の判定は numba 版だけ。zlost は APERT の |z| 判定)
+        from .track6 import _is_apert as _is_ap
+        alive6 = np.array([float(f) != 0.0 for f in flags])
+        zlost6 = float(g.get('LOSSDZ', 100.0) or 0.0)
+
         def seg(x, a, b):                        # tturn(ls=a, ld=b): 要素 a..b−1 (els[a−1:b−1])
             if b <= a:
                 return x
@@ -2284,9 +2404,13 @@ class FFS:
                 return x
             if spin_in is not None:
                 from .track6 import track_particles as _tp6
-                xo, sp_ = _tp6(els[a - 1:b - 1], x, 1, self.momentum(), spins=spin_in, radpol=bool(self.flags['RADPOL']), **kw)
+                xo, sp_ = _tp6(els[a - 1:b - 1], x, 1, self.momentum(), spins=spin_in, radpol=bool(self.flags['RADPOL']),
+                               alive=alive6, zlost=zlost6, **kw)
                 spin_in[:] = [list(v) for v in sp_]
                 return xo
+            if any(_is_ap(e) for e in els[a - 1:b - 1]):
+                from .track6 import track_particles as _tp6
+                return _tp6(els[a - 1:b - 1], x, 1, self.momentum(), alive=alive6, zlost=zlost6, **kw)
             return track_particles(els[a - 1:b - 1], x, 1, self.momentum(), **kw)
 
         if mt > 1:
@@ -2307,7 +2431,7 @@ class FFS:
         if photons_on:
             self.I.globals['PhotonList'] = list(_bbm.PHOTON_SINK or [])         # tphotonlist
             _bbm.PHOTON_SINK = None
-        alive = flags
+        alive = [fl if a else 0.0 for fl, a in zip(flags, alive6)]
         if tr is not None:
             x, alive = tr.result()               # tftrack.f ktfresetparticles: 番号順、alive (落ちた粒子は 0、座標は落ちた時点)
         res = [[float(x[i][j]) for i in range(npart)] for j in range(6)] + [list(alive)]
@@ -2712,6 +2836,13 @@ class FFS:
             return None
         if W == 'USE' or W == 'VISIT':
             nm = None
+            expnd, nskip = True, 0
+            if rest and _abbrev(rest[0].upper(), 'NOEXP_AND'):       # tffsa.f: USE [NOEXPAND|EXPAND] line
+                expnd, nskip = False, 1
+            elif rest and _abbrev(rest[0].upper(), 'EXP_AND'):
+                nskip = 1
+            if nskip:
+                rest = rest[1:]
             plain = bool(rest) and re.fullmatch(r'[A-Za-z0-9_$.]+', rest[0]) is not None
             if rest and self.env.resolve_beamline(rest[0]):
                 nm = self.env.resolve_beamline(rest[0])
@@ -2723,10 +2854,13 @@ class FFS:
                     self.write(' ???-FFS-Error-Missing beamline in USE. ' + chr(10))
                 else:
                     self.write('Missing beamline in USE.\n')
-                return 1 if not rest else len(words) - i
+                return 1 + nskip if not rest else len(words) - i
             if W == 'VISIT':
                 self._visit_stack.append(self.name)
-            self.use(nm)
+            if W == 'USE':
+                self.I.globals.pop('ElementValues', None)       # tffsa.f: tfunblocksym('`ElementValues') — USE で ElementValues は消える (VISIT の退避・BYE の復元は未対応)
+            self.use(nm, expand=expnd)
+            self.flags['CALEXP'] = expnd            # tffsa.f: calexp=expnd
             return len(words) - i
         if W == 'BYE':
             if self._visit_stack:
@@ -2739,13 +2873,23 @@ class FFS:
             return 1
         if _abbrev(W, 'CAL_CULATE'):
             n = 1
-            while i + n < len(words) and (words[i + n].upper().rstrip('-') in _FUNS or words[i + n].upper() in ('NOEXPAND', 'EXPAND', 'NOEXP', 'EXP')):
-                n += 1                      # CALC NOEXP: 要素値を定義から展開し直さない (pysad は元から展開しない)
+            while i + n < len(words) and (words[i + n].upper().rstrip('-') in _FUNS or _abbrev(words[i + n].upper(), 'NOEXP_AND')
+                                          or _abbrev(words[i + n].upper(), 'EXP_AND')):
+                n += 1
+            # tffsa.f: CALC [funs] の直後の語が NOEXPAND なら calexp=.false.、EXPAND なら .true. (KEEPEXP なので以後の CALC/GO に残る)
+            if n > 1 and _abbrev(words[i + n - 1].upper(), 'NOEXP_AND'):
+                self.flags['CALEXP'] = False
+            elif n > 1 and _abbrev(words[i + n - 1].upper(), 'EXP_AND') and words[i + n - 1].upper() not in _FUNS:
+                self.flags['CALEXP'] = True
             self.go(fit=False)
             return n
         if W == 'GO':
             n = 1
-            while i + n < len(words) and words[i + n].upper() in ('NOEXPAND', 'EXPAND', 'NOEXP', 'EXP'):
+            if i + n < len(words) and _abbrev(words[i + n].upper(), 'NOEXP_AND'):
+                self.flags['CALEXP'] = False
+                n += 1
+            elif i + n < len(words) and _abbrev(words[i + n].upper(), 'EXP_AND'):
+                self.flags['CALEXP'] = True
                 n += 1
             self.go(fit=True)
             return n
@@ -2838,6 +2982,13 @@ class FFS:
             if self.emit is None:
                 self.write('?BEAMSIZE: EMIT を先に実行してください (pysad: ビームサイズは EMIT の EMITX/EMITY/SIGE と Twiss から)' + chr(10))
             return 1
+        if _abbrev(W, 'RENUM_BER'):
+            return self._renumber_cmd(words, i)
+        if _abbrev(W, 'REF_ERENCE'):
+            # tfsetref: twiss(:,-1,:)=twiss(:,0,:) (直前の CALC の光学を参照光学にする)
+            import copy as _copy
+            self._ref_rows = [_copy.copy(r) for r in self.ensure_rows()]
+            return 1
         from . import ffsextra as _fx
         if W in _fx.COMMANDS:
             r_ = _fx.run(self, W, words, i)
@@ -2850,6 +3001,11 @@ class FFS:
             self.write(f'[pysad] FFS command {W} は未対応 (無視): {" ".join(words[i:])}\n')
             return len(words) - i
         # ---- 要素値 (tfgetv): "QF K1 0.5", "S* 0", "SDA MAX 0"
+        m_ = re.fullmatch(r'(.+)\.(\d+)', w)
+        if m_ and not any(c in w for c in '*%{|') and self.families(m_.group(1)):
+            # `QF.3 K1 0.9;`: 要素名の定義済みシンボル + 実数なので、gs (tfprint) は文全体を式として評価するだけで何も設定しない
+            # (成分ごとの設定は LINE["K1","QF.3"]=0.9)
+            return len(words) - i
         if self.families(w) or self._position(w) is not None:
             return self._element_value(words, i)
         if re.fullmatch(r'[-+]?(?:\d+\.?\d*|\.\d+)(?:[EeDd][-+]?\d+)?', w):
@@ -2890,9 +3046,14 @@ class FFS:
         self.env.define_beamline(nm, refs)
         return nm
 
-    def use(self, name: str):
+    def use(self, name: str, expand: bool = True):
         name = self.env.resolve_beamline(name) or name.upper()      # LINE 名は書かれたとおり (LinacPFBT)
-        lat = self.env.build_lattice(name)
+        # tffsa.f: ilist(2,idval(iuse)) <= 0 .or. expnd のときだけ expnln (展開済みの LINE を NOEXPAND で USE すると成分ごとの値が残る)
+        cache = self.__dict__.setdefault('_built_lines', {})
+        lat = cache.get(name) if not expand else None
+        if lat is None:
+            lat = self.env.build_lattice(name)
+        cache[name] = lat
         self.lat = lat
         self.name = name
         self.els = lat.elements
@@ -2925,8 +3086,10 @@ class FFS:
             g['DP0'] = float(raw.get('DDP', 0.0) or 0.0)
             if raw.get('DP'):
                 g['DP'] = float(raw['DP'])
+        # MAIN 側の MOMENTUM は、値が変わったときだけ FFS のグローバルへ写す (gs: FFS 内の MOMENTUM=… は USE で戻らない)
         m = _env_get(self.env, 'MOMENTUM')
-        if isinstance(m, (int, float)) and m > 0:
+        if isinstance(m, (int, float)) and m > 0 and m != getattr(self, '_env_mom_seen', None):
+            self._env_mom_seen = m
             g['MOMENTUM'] = float(m)
         self._set_omega0()
 
@@ -3304,6 +3467,9 @@ class FFS:
         m.var_range = self._var_range_hook if 'VariableRange' in self.I.downvalues else None
         m.var_weight = self._var_weight_hook if 'VariableWeight' in self.I.downvalues else None
         m.dlim = False
+        m.calexp = bool(self.flags.get('CALEXP', True))
+        if not m.calexp:
+            self.write(' ???-FFS-Info-Element values are not expanded. ' + chr(10))
         self.lat._mark_init = self._mark_init_raw()
         m.fit_function = self._fit_function_hook if ('FitFunction' in self.I.downvalues or self.I.has('FitFunction')) else None
         # 変数の set/get を FFS の errk/couple 付きに
@@ -3911,7 +4077,9 @@ class FFS:
         elif W == 'DL':
             el.L = max(0.0, (el.L if add else float(raw.get('L', el.L) or 0.0)) + eg)
         elif W == 'DDK':
-            if hasattr(el, 'K0'):
+            # terror.f: K0 のキーワードがある要素 (BEND・MULT・TCAVI) だけ。QUAD などの K0 属性 (pysad の内部) には入れない
+            from .sadkw import KEYWORDS
+            if hasattr(el, 'K0') and 'K0' in KEYWORDS.get(_TYPENAME.get(tn, ''), ()):
                 el.K0 = (el.K0 if add else float(raw.get('K0', 0.0) or 0.0)) + eg
         elif W == 'DELX':
             if hasattr(el, 'DX'):
@@ -3932,10 +4100,17 @@ class FFS:
 
     def _dump(self, pat):
         self.write('  element     DL(mm)    DK          DDK      DTHETA(mrad) DELX(mm) DELY(mm)\n')
+        pat = pat[:20]                  # terror.f: word1 は character*20 (長い `A|B|C…` は 20 文字で切れる)
+        if not self._dump_pass(pat):
+            self._dump_pass('*')        # どの要素にも合わなければ全要素 (all=.true.)
+
+    def _dump_pass(self, pat):
+        exist = False
         for k in range(1, self.nlat):
             el = self.els[k - 1]
             if not _wild_match(el.name, pat) and not _wild_match(self.elname(k), pat):
                 continue
+            exist = True
             raw = self.env._elements.get(el.name, {})
             dl = el.L - float(raw.get('L', el.L) or 0.0)
             dk = getattr(el, '_errk', 1.0) - 1.0
@@ -3948,6 +4123,7 @@ class FFS:
             dy = float(getattr(el, 'DY', 0.0) or 0.0) - float(raw.get('DY', 0.0) or 0.0)
             if any((dl, dk, ddk, dth, dx, dy)):
                 self.write(f' {self.elname(k):10s}{dl * 1e3:10.5f}{_gwd(dk, 12, 5)}{_gwd(ddk, 12, 5)}{dth * 1e3:10.5f}{dx * 1e3:10.5f}{dy * 1e3:10.5f}\n')
+        return exist
 
     # ------------------------------------------------------------------ COUPLE
     def _couple(self, words, i):
@@ -4187,7 +4363,6 @@ class FFS:
         それ以外は位置 (数式・NAME・NAME.n・NAME.n+2・$$$・^^^) として 1 つ目を loc1、続く 1 語が位置なら loc2 (そうでなければ loc2=loc1)。
         範囲 (id1, id2) は FFS に保持され (USE で 1..nlat に戻る)、位置を省くと前回の範囲が使われる。
         loc1==loc2 はその要素から $$$ まで (刻み nlat-loc2)、loc2<loc1 は nlat を超えて周回する。
-        未対応: モード A/G/GA/OG/B/P/D/Z、REFERENCE/DREFERENCE (メッセージを出して表示しない)。
         戻り値: 消費した語数 (DISP 自身を含む)。位置でない語に出会ったらそこで表示せずに止め、その語は次のコマンドとして読まれる。"""
         nlat = self.nlat
         id1, id2 = getattr(self, '_disp_id1', 1), getattr(self, '_disp_id2', nlat)
@@ -4195,7 +4370,7 @@ class FFS:
         word1 = None
         mdisp = None
         dpeak = False
-        unsupported = None
+        icolm, dref = 0, False
         n = 1
         while True:
             w = words[i + n] if i + n < len(words) else ' '
@@ -4221,8 +4396,11 @@ class FFS:
             if _abbrev(W, 'E_XTREMUM'):
                 dpeak = True
                 continue
-            if _abbrev(W, 'RE_FERENCE') or _abbrev(W, 'DRE_FERENCE'):
-                unsupported = 'REFERENCE'
+            if _abbrev(W, 'RE_FERENCE'):
+                icolm = -1
+                continue
+            if _abbrev(W, 'DRE_FERENCE'):
+                dref = True
                 continue
             break
         k1, msg = self._ielmex(W)
@@ -4249,10 +4427,7 @@ class FFS:
         if mdisp in ('G', 'OG'):
             self._disp_geo(id1, id2, mdisp, seldis, word1)
             return n
-        if mdisp in ('A', 'GA', 'B', 'P', 'D', 'Z') or unsupported:
-            self.write(f'[pysad] DISP のモード {unsupported or mdisp} は未対応 (表示なし)' + chr(10))
-            return n
-        self._disp_show(id1, id2, mdisp, seldis, word1, dpeak)
+        self._disp_show(id1, id2, mdisp, seldis, word1, dpeak, icolm, dref)
         return n
 
     def _disp_geo(self, id1, id2, mdisp, seldis, word1):
@@ -4313,9 +4488,27 @@ class FFS:
             self.write(('-' if rev else ' ') + name.ljust(18) + buff[:105] + f' {(k - 1) % 10000 + 1:5d}' + chr(10))
             lines += 1
 
-    def _disp_show(self, id1, id2, mdisp, seldis, word1, dpeak):
+    def _disp_val(self, row, key):
+        """DISP の 1 行の値 (twiss(l,icol,mf))。GMX/GMY/GMZ は (1+α²)/β (tgetgm)"""
+        if key == 'GMX':
+            return (1.0 + row.alfx ** 2) / row.betx
+        if key == 'GMY':
+            return (1.0 + row.alfy ** 2) / row.bety
+        if key == 'GMZ':
+            return (1.0 + row.alfz ** 2) / row.betz if row.betz else 0.0
+        return float(getattr(row, self._TWKEY[key], 0.0))
+
+    def _disp_show(self, id1, id2, mdisp, seldis, word1, dpeak, icolm=0, dref=False):
+        """tfdisp.f の表。mdisp: None (標準)・R・O・P・GA・Z・A・D・B。icolm=-1 は REFERENCE (参照光学)、dref は DREFERENCE (現在 - 参照、
+        BX BY BZ GMX GMY GMZ は比)"""
         nlat = self.nlat
         rows = self.ensure_rows()
+        ref = getattr(self, '_ref_rows', None)
+        if (icolm == -1 or dref) and ref is None:
+            ref = [_ZeroRow() for _ in rows]
+        if mdisp == 'B' and (dref or icolm != 0):
+            self.write(' ???-FFS-Info-REF and DREF not implemented for DISP B. ' + chr(10))
+            return
         if id1 == id2:
             id3, idstep = nlat, max(nlat - id2, 1)
         elif id2 < id1:
@@ -4323,14 +4516,58 @@ class FFS:
         else:
             id3, idstep = id2, 1
         # tfdisp.f:398 `if(mod(lines,nlc) == 0) write header` (nlc=66): ヘッダは 66 行ごとに繰り返す
+        left, mid, right = ('   AX      BX      NX      EX      EPX  ', ' Element   Length   Value      s(m)    ',
+                            '   AY      BY      NY      EY      EPY    DetR     #')
         if mdisp == 'R':
             mid = ' Element    R1     R2     R3     R4    '
+        elif mdisp == 'P':
+            mid = ' Element    PEX    PEPX   PEY    PEPY  '
+        elif mdisp == 'GA':
+            left = '   AX      BX      NX      GMX     GMX*L'
+            right = '   AY      BY      NY      GMY     GMY*L  DetR     #'
         elif mdisp == 'O':
             mid = ' Element    DX     DPX    DY     DPY   '
-        else:
-            mid = ' Element   Length   Value      s(m)    '
-        header = ('   AX      BX      NX      EX      EPX  ' + mid
-                  + '   AY      BY      NY      EY      EPY    DetR     #' + chr(10))
+        elif mdisp == 'B':
+            left = '   AXp     BXp    EMITXp   EXp     EPXp '
+            mid = ' Element   Sigx(mm)  Sigy(mm)  Rot(deg)'
+            right = '   AYp     BYp    EMITYp   EYp     EPYp   sigp     #'
+        elif mdisp == 'A':
+            mid = ' Element    p(GeV)emitx(m)emity(m) DDP '
+            right = '   AY      BY      NY      EY      EPY     DZ      #'
+        elif mdisp == 'Z':
+            left = '   AZ      BZ      NZ      DZ     DDP   '
+            right = '   ZX      ZPX     ZY      ZPY     GMZ    DetR     #'
+        header = left + mid + right
+        if (dref or icolm == -1) and mdisp != 'B':
+            h = list(header.ljust(131))
+
+            def put(pos, txt):
+                h[pos - 1:pos - 1 + len(txt)] = list(txt)
+            if dref:
+                for pos in (3, 11, 19, 27, 35, 82, 90, 98, 106, 114, 121):
+                    put(pos, 'd')
+                put(14, '/BX')
+                put(93, '/BY')
+                if mdisp == 'Z':
+                    put(14, '/BZ')
+                    put(93, 'X  ')
+                    put(114, ' ')
+                elif mdisp in ('O', 'R', 'P'):
+                    for pos in (52, 59, 66, 73):
+                        put(pos, 'd')
+                elif mdisp == 'A':
+                    put(121, ' d')
+            else:
+                for pos in (6, 14, 22, 30, 39, 85, 93, 101, 106, 118, 126):
+                    put(pos, 'R')
+                if mdisp == 'Z':
+                    put(118, ' ')
+                elif mdisp in ('O', 'R', 'P'):
+                    for pos in (55, 63, 69, 77):
+                        put(pos, 'R')
+                elif mdisp == 'A':
+                    put(125, 'R ')
+            header = ''.join(h).rstrip()
         f = fmt_real
 
         def tz(v, form):
@@ -4342,8 +4579,22 @@ class FFS:
                     s = s[:d + 2] + ' ' * (len(s) - d - 2)
             return s
 
+        cur = ref if icolm == -1 else rows
+
+        def tdv(k, key, form, a=None):
+            """tdispv"""
+            sc = PI2 if key in ('NX', 'NY', 'NZ') else 1.0
+            if dref:
+                c, r0 = self._disp_val(rows[k - 1], key), self._disp_val(ref[k - 1], key)
+                v = ((c - r0) / r0 if r0 else float('nan')) if key in ('BX', 'BY', 'BZ', 'GMX', 'GMY', 'GMZ') else c - r0
+            else:
+                v = self._disp_val(cur[k - 1], key) / sc
+                if a is not None:
+                    v = v * a
+            return tz(v, form)
+
         def bxby(k):
-            r = rows[min(k, nlat) - 1]
+            r = cur[min(k, nlat) - 1]
             return r.betx, r.bety
 
         if dpeak:
@@ -4361,9 +4612,8 @@ class FFS:
                 bx0, by0, bx1, by1 = bx1, by1, bx2, by2
                 if not peak:
                     continue
-            if lines % 66 == 0:
-                self.write(header)
             r = rows[k - 1]
+            key = None
             if k < nlat:
                 el = self.els[k - 1]
                 key = self.default_key(el)
@@ -4374,6 +4624,18 @@ class FFS:
             else:
                 val, L, name = 0.0, 0.0, '$$$'
                 rev = False
+            if mdisp == 'D':
+                # moded: 最初の行の前に scale の行、各行は 名前 (12 桁)・型番号 (I3)・28 個の光学関数 (12.8、scale で割る)
+                if lines == 0:
+                    self.write((' ' * 15 + ''.join(tz(PI2 if kk in ('NX', 'NY', 'NZ') else 1.0, '12.8').ljust(12) for kk in _TWISS_ALL)).rstrip() + chr(10))
+                idt = 0 if k >= nlat else int(_TYPECODE.get(_cls(self.els[k - 1]), 0))
+                vals = ''.join(tz(self._disp_val(cur[k - 1], kk) / (PI2 if kk in ('NX', 'NY', 'NZ') else 1.0), '12.8').ljust(12)
+                               for kk in _TWISS_ALL)
+                self.write((name.ljust(12) + f'{idt:3d}' + vals).rstrip() + chr(10))
+                lines += 1
+                continue
+            if lines % 66 == 0:
+                self.write(header + chr(10))
             # tfdisp.f:438-448: 反転配置 (cmp%ori=.false.、LINE の `-`) の要素は ' -'//name (行頭側の空白 2 つのうち 2 つ目が `-` になる)。
             # LINE["NAME"] / Twiss["NAME"] は elname で名前だけを返す (`-` は付かない)
             #   forward: lname<=8 → '  '//name を 10 桁、それより長い名前は ' '//name。reversed: ' -'//name を max(10, lname+2) 桁
@@ -4383,20 +4645,60 @@ class FFS:
                 bname = ('  ' + name).ljust(10)
             else:
                 bname = ' ' + name
-            head = f'{tz(r.alfx, "8.5")}{tz(r.betx, "8.5")}{tz(r.mux / PI2, "8.5")}{tz(r.etx, "8.5")}{tz(r.etpx, "8.5")}'
+            if mdisp == 'Z':
+                head = ''.join(tdv(k, kk, '8.5') for kk in ('AZ', 'BZ', 'NZ', 'DZ', 'DDP'))
+            elif mdisp == 'GA':
+                head = ''.join(tdv(k, kk, '8.5') for kk in ('AX', 'BX', 'NX', 'GMX')) + tdv(k, 'GMX', '8.5', L)
+            elif mdisp == 'B':
+                B = self.beam_matrix_twiss(k)
+                sigpp = B[5, 5]
+                etaxp, etapxp = B[0, 5] / sigpp, B[1, 5] / sigpp
+                sxx, sxpx, spxpx = B[0, 0] - etaxp ** 2 * sigpp, B[0, 1] - etaxp * etapxp * sigpp, B[1, 1] - etapxp ** 2 * sigpp
+                emixp = math.sqrt(sxx * spxpx - sxpx ** 2)
+                head = ''.join((tz(-sxpx / emixp, '8.5'), tz(sxx / emixp, '8.5'), tz(emixp, '8.5'), tz(etaxp, '8.5'), tz(etapxp, '8.5')))
+            else:
+                head = ''.join(tdv(k, kk, '8.5') for kk in ('AX', 'BX', 'NX', 'EX', 'EPX'))
             if mdisp == 'R':
-                mid_s = ''.join(tz(v, '7.4') for v in (r.r1, r.r2, r.r3, r.r4))
+                mid_s = ''.join(tdv(k, kk, '7.4') for kk in ('R1', 'R2', 'R3', 'R4'))
             elif mdisp == 'O':
-                mid_s = ''.join(tz(v, '7.4') for v in (r.x_cod, r.px_cod, r.y_cod, r.py_cod))
+                mid_s = ''.join(tdv(k, kk, '7.4') for kk in ('DX', 'DPX', 'DY', 'DPY'))
+            elif mdisp == 'P':
+                if dref:
+                    pe = [self._disp_val(rows[k - 1], kk) - self._disp_val(ref[k - 1], kk) for kk in ('EX', 'EPX', 'EY', 'EPY')]
+                else:
+                    pe = [self._disp_val(cur[k - 1], kk) for kk in ('EX', 'EPX', 'EY', 'EPY')]
+                mid_s = ''.join(f(v, '7.4') for v in pe)
+            elif mdisp == 'B':
+                mid_s = (tz(math.sqrt(B[0, 0]) * 1e3, '10.8') + tz(math.sqrt(B[2, 2]) * 1e3, '10.8')
+                         + tz(math.atan2(-2.0 * B[0, 2], B[0, 0] - B[2, 2]) * 90.0 / math.pi, '9.4'))
+            elif mdisp == 'A':
+                amass = float(self.I.get('MASS', 0.51099895e6) or 0.51099895e6)
+                rr = self._gammab_at(1) / self._gammab_at(k)
+                emx = float(self.I.get('EMITX', 0.0) or 0.0)
+                emy = float(self.I.get('EMITY', 0.0) or 0.0)
+                mid_s = (tz(self._gammab_at(k) * amass / 1e9, '8.6') + tz(emx * rr, '7.5') + tz(emy * rr, '7.5')
+                         + tz(cur[k - 1].delta_cod, '7.4'))
             else:
                 # Length は 8.5 (8 桁)、Value は vout=10.7 (10 桁。負の値も 7 桁出る)、s(m) は 11.6 (tfdisp.f の buff(51:58), (59:68), (69:79))
                 ls = '  .0    ' if L == 0.0 else f(L, '8.5')
                 # tfdisp.f:293-302: 既定キー (nelvx%ival) のある要素は tdtrimz(値,'10.7') (0 でも ' .0')、MARK/キー無しは ' 0'
                 vs = ' 0        ' if (k == nlat or not key) else tz(val, '10.7').ljust(10)
                 mid_s = f'{ls}{vs}{tz(r.s, "11.6")}'
-            mid_s = mid_s.ljust(29) if mdisp in ('R', 'O') else mid_s
-            tail = (f'{mid_s}{tz(r.alfy, "8.5")}{tz(r.bety, "8.5")}{tz(r.muy / PI2, "8.5")}{tz(r.ety, "8.5")}{tz(r.etpy, "8.5")}'
-                    f'{tz(r.detr, "7.5")}{k:5d}')
+            mid_s = mid_s.ljust(29) if mdisp in ('R', 'O', 'P') else mid_s
+            if mdisp == 'Z':
+                tail_cols = ''.join(tdv(k, kk, '8.5') for kk in ('ZX', 'ZPX', 'ZY', 'ZPY', 'GMZ')) + tdv(k, 'DETR', '7.4')
+            elif mdisp == 'GA':
+                tail_cols = ''.join(tdv(k, kk, '8.5') for kk in ('AY', 'BY', 'NY', 'GMY')) + tdv(k, 'GMY', '8.5', L) + tdv(k, 'DETR', '7.4')
+            elif mdisp == 'B':
+                etayp, etapyp = B[2, 5] / sigpp, B[3, 5] / sigpp
+                syy, sypy, spypy = B[2, 2] - etayp ** 2 * sigpp, B[2, 3] - etayp * etapyp * sigpp, B[3, 3] - etapyp ** 2 * sigpp
+                emiyp = math.sqrt(syy * spypy - sypy ** 2)
+                tail_cols = (tz(-sypy / emiyp, '8.5') + tz(syy / emiyp, '8.5') + tz(emiyp, '8.5') + tz(etayp, '8.5') + tz(etapyp, '8.5')
+                             + tz(math.sqrt(sigpp), '7.4'))
+            else:
+                tail_cols = (''.join(tdv(k, kk, '8.5') for kk in ('AY', 'BY', 'NY', 'EY', 'EPY'))
+                             + (tdv(k, 'DZ', '7.4') if mdisp == 'A' else tdv(k, 'DETR', '7.5')))
+            tail = mid_s + tail_cols + f'{k:5d}'
             # tfdisp.f:572-575: 名前が 10 桁を超えるときは、後ろの欄 (buff(51:131)) の連続空白を lname-10 個、足りなければ前の欄 (buff(1:40)) からも詰めて桁を保つ
             tail_sq, nsq = _squeeze_space(tail, len(bname) - 10)
             lb = len(tail) - nsq
@@ -4452,6 +4754,8 @@ class FFS:
             if p.upper() == 'ALL':
                 continue
             fams.extend(self.families(p))
+        # tfsave: LINE[key,"NAME.n"]= で触れた成分の値は、代表 (最初の 1 台) の値で全台に揃えられる (SAVE も EXPAND も同じ)
+        self.spread_pending(set(fams or self.families('*')))
         rows = self.ensure_rows() if self.rows is not None else None
         for fam in fams or self.families('*'):
             el0 = self.instances(fam)[0]
@@ -4540,6 +4844,7 @@ def run_sad_string(src: str, out=None, cwd: Optional[str] = None):
         I.cwd = cwd
     ffs = FFS(sc.env, I, out=out)
     I.continue_on_error = True        # SAD と同じく、エラーの文は表示して次の文へ進む
+    I.echo_out = True                 # SAD と同じく、; のない最上位の式の値を Out[n]:= で表示する
     # MAIN に TRACK 文があるときは、MAIN の命令 (ON/OFF, EMIT, `PHSPLOTS=..;`, TRACK, STOP) を書かれた順に実行する
     # (ON/OFF が EMIT/TRACK の前後で効き方が変わるため。TRACK の無いスクリプトは従来どおり ON/OFF を先に反映する)
     cmds = _parser.parse_main_commands(main_part(src))

@@ -1,0 +1,28 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+USE RING; CELL; CALC;
+NORFSW; NORAD; NOFLUC;
+LOSSAMPL = 0.05;
+$FORM = "12.6";
+x0 = {1e-3, 0.02, 0.04, 0.045, 1e-3};
+n = Length[x0];
+zero = Table[0, {i, n}];
+beam = {x0, zero, zero, zero, zero, zero, {1, 1, 1, 1, 0}};
+r = TrackParticles[{1, beam}, 1, 1, 20];
+Print["tracked : flag=", r[[2,7]]];
+s = SurvivedParticles[r[[2]]];
+Print["survived: dimensions=", Dimensions[s], " x=", s[[1]], " flag=", s[[7]]];
+! 全滅のとき: 長さ 0 のリスト 7 本
+b2 = {{0.06},{0},{0},{0},{0},{0},{1}};
+r3 = TrackParticles[{1, b2}, 1, 1, 2];
+Print["all lost: flag=", r3[[2,7]], " Survived=", SurvivedParticles[r3[[2]]]];
+Exit;

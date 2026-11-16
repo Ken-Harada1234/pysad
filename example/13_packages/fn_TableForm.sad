@@ -1,0 +1,10 @@
+! Packages/tableform.n: TableForm (ラティスなし)。リストを桁をそろえた表として出す
+FFS;
+m={{1.5,2.25,3},{4,5.125,6},{7,8,9.0625}};
+Print["TableForm (matrix):"];
+Print[TableForm[m]];
+Print["TableForm (vector):"];
+Print[TableForm[{1,2,3,4}]];
+Print["TableForm (scalar):"];
+Print[TableForm[3.5]];
+Exit;

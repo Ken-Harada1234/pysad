@@ -579,24 +579,25 @@ def install(I):
                     val = ev(f, {xn: float(t)})
                 except SADError:
                     val = 0.0
-                out.append(float(val) if is_num(val) else 0.0)
+                out.append((complex(val) if isinstance(val, complex) else float(val)) if is_num(val) else 0.0)
             return np.array(out)
 
         def sp_int(u, v):
             from scipy.interpolate import CubicSpline
-            return float(CubicSpline(u, v).integrate(u[0], u[-1]))
+            r_ = CubicSpline(u, v).integrate(u[0], u[-1])
+            return complex(r_) if np.iscomplexobj(r_) else float(r_)         # 複素数の被積分関数: スプラインは線形なので実部・虚部を別々に積分するのと同じ
 
         d = (x1 - x0) / n
         u = np.arange(n + 1) * d + x0
         v = fa(u)
         smax = float(np.sum(np.abs(v))) - 0.5 * (abs(v[0]) + abs(v[-1]))
-        s = sp_int(u, v) if spl else d * (float(np.sum(v)) - 0.5 * (v[0] + v[-1]))
+        s = sp_int(u, v) if spl else d * (np.sum(v) - 0.5 * (v[0] + v[-1]))
         while True:
             d *= 0.5
             u1 = u + d
             u1[-1] = x1
             v1 = fa(u1)
-            vv = np.empty(2 * len(v))
+            vv = np.empty(2 * len(v), dtype=np.result_type(v, v1))
             vv[0::2] = v
             vv[1::2] = v1
             v = vv[:-1]
@@ -605,7 +606,7 @@ def install(I):
             if spl:
                 s1 = sp_int(u, v)
             else:
-                s1 = 0.5 * s + d * float(np.sum(v1[:-1]))
+                s1 = 0.5 * s + d * np.sum(v1[:-1])
             ds = abs(s1 - s)
             s = s1
             smax += float(np.sum(np.abs(v1)))
@@ -614,5 +615,5 @@ def install(I):
             if n >= 20000:
                 print('???NIntegrate::conv:  Poor Convergence ' + repr(float(ds / (smax * abs(d)))), file=I.out)
                 break
-        return float(s)
+        return complex(s) if isinstance(s, (complex, np.complexfloating)) else float(s)
     B['NIntegrate'] = _nintegrate

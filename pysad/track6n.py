@@ -37,6 +37,7 @@ NJ = dict(cache=True, error_model='numpy', nogil=True)
 
 # 要素の種類
 K_DRIFT, K_QUAD, K_THIN, K_BEND, K_CAV, K_STEER0, K_NONE = 0, 1, 2, 3, 4, 5, 6
+K_APERT = 26           # APERT (tapert1。tapert の判定を要素の位置で行う)
 K_MAP = 25             # MAP (ExternalMap["TRACK"]。Python のコールバック)
 K_MULTA = 24           # MULT ANGLE≠0 (multa.py)
 MAP_HOOK = None        # f(l, nt, S, n, kid, lost_turn) → 新しい n (ffscmd が入れる)
@@ -1570,11 +1571,14 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
 
 # ============================================================================ 損失判定 (tapert) と詰め替え
 @njit(**NJ)
-def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur):
-    """limittrack + tapert (ax=ay=0)。落ちた粒子は末尾の生きている粒子と入れ替え (SAD と同じ)。
+def k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
+                ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta, dolog):
+    """limittrack + tapert (tapert.f の全引数。直訳)。落ちた粒子は末尾の生きている粒子と入れ替え (SAD と同じ)。
     kid[i] は粒子の ID (スロット→ID)、lost_turn[ID] に kturn を記録。戻り: 新しい n
+    ax ay dx dy: 楕円 (APERT の AX AY DX DY)、xl yl xh yh: 矩形 (min/max 済みの DX1 DY1 DX2 DY2)、pxj pyj dpj: JDPX JDPY DP、theta: ROTATE。
+    pxj≠0 または pyj≠0 のときは落とさず、外の粒子を境界上に乱数 (tran: rs) で再入射する (tapert.f:32-60)。
     log (m,6) / nlog[0]: MAIN の TRACK 用の損失報告 (tapert_report_dropped: スロット順に ID, l_track=lcur, x, y, z, kturn)。
-    log の行数が 0 なら記録しない (DA / TrackParticles は報告を出さない)"""
+    log の行数が 0 か dolog=False なら記録しない (DA / TrackParticles は報告を出さない)"""
     xlimit = alost * 3.0
     drop = np.zeros(n, dtype=np.bool_)
     for i in range(n):
@@ -1595,12 +1599,55 @@ def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur):
             S[i, 4] = 1e10
         elif abs(v) > 1e10:
             S[i, 4] = math.copysign(1e10, v)
+    if pxj != 0.0 or pyj != 0.0:
+        xa = min(abs(xh), abs(xl))
+        ya = min(abs(yh), abs(yl))
+        ax1 = 1.0 / xa if xa != 0.0 else 0.0
+        ay1 = 1.0 / ya if ya != 0.0 else 0.0
+        pi2 = 2.0 * math.pi
+        for i in range(n):
+            if (ax1 * S[i, 0]) ** 2 + (ay1 * S[i, 2]) ** 2 > 1.0:
+                phi1 = pi2 * tran(rs)
+                phi2 = pi2 * tran(rs)
+                S[i, 0] = xa * math.cos(phi1)
+                S[i, 2] = ya * math.sin(phi1)
+                S[i, 1] = pxj * math.cos(phi2)
+                S[i, 3] = pyj * math.sin(phi2)
+                S[i, 5] = S[i, 5] + dpj
+        return n
+    eli = (ax != 0.0) and (ay != 0.0)
+    if eli and (xh == xl or yh == yl):
+        xl1 = -1e100
+        xh1 = 1e100
+        yl1 = -1e100
+        yh1 = 1e100
+    else:
+        xl1 = xl
+        xh1 = xh
+        yl1 = yl
+        yh1 = yh
+    ax1 = 1.0 / ax if ax != 0.0 else 0.0
+    ay1 = 1.0 / ay if ay != 0.0 else 0.0
+    cost = 1.0
+    sint = 0.0
+    if theta != 0.0:
+        cost = math.cos(theta)
+        sint = math.sin(theta)
+    for i in range(n):
         x = S[i, 0]; y = S[i, 2]; z = S[i, 4]
-        ok = (-alost < x) and (x < alost) and (-alost < y) and (y < alost) and (abs(z) <= zlost)
+        if theta != 0.0:
+            xa = cost * (x - dx) - sint * (y - dy)
+            ya = sint * (x - dx) + cost * (y - dy)
+        else:
+            xa = x - dx
+            ya = y - dy
+        ok = (xl1 < xa) and (xa < xh1) and (yl1 < ya) and (ya < yh1) and (abs(z) <= zlost)
+        if ok and eli:
+            ok = (ax1 * xa) ** 2 + (ay1 * ya) ** 2 <= 1.0
         if not ok and lcur != 0:             # tapert.f: kptbl(i,4)=l_track。l_track=0 (セッションの最初の追跡の最初の tapert) は「生きている」と区別できず落ちない (gs で確かめた)
             drop[i] = True
             lost_turn[kid[i]] = kturn
-            if nlog[0] < log.shape[0]:
+            if dolog and nlog[0] < log.shape[0]:
                 r = nlog[0]
                 log[r, 0] = kid[i]
                 log[r, 1] = lcur
@@ -1624,6 +1671,28 @@ def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur):
             np_ -= 1
         i += 1
     return np_
+
+
+@njit(**NJ)
+def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, dolog=True):
+    """tturn の tapert 呼び出し (最初の要素・la<=0・周末): 矩形 ±LOSSAMPL、楕円なし、ずれなし"""
+    rs = np.zeros(1, dtype=np.int64)
+    return k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
+                       0.0, 0.0, 0.0, 0.0, -alost, -alost, alost, alost, 0.0, 0.0, 0.0, 0.0, dolog)
+
+
+@njit(**NJ)
+def k_apert_el(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs, pr, dolog):
+    """APERT 要素 (tapert1)。pr = [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta]"""
+    return k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
+                       pr[0], pr[1], pr[2], pr[3], pr[4], pr[5], pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], dolog)
+
+
+def apert_params(el):
+    """tapert1: APERT 要素の値 [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta] (xl.. は DX1 DX2 の min/max、DY1 DY2 も同様)"""
+    f = lambda k: float(getattr(el, k, 0.0) or 0.0)
+    return np.array([f('AX'), f('AY'), f('DX'), f('DY'), min(f('DX1'), f('DX2')), min(f('DY1'), f('DY2')),
+                     max(f('DX1'), f('DX2')), max(f('DY1'), f('DY2')), f('JDPX'), f('JDPY'), f('DP'), f('ROTATION')])
 
 
 def drop_particles(S, n, kid, drop):
@@ -1704,6 +1773,8 @@ class Prog:
     def _compile(el, ph):
         g = _t6._g
         tn = type(el).__name__
+        if isinstance(el, Drift) and getattr(el, '_apert', False):
+            return K_APERT, (apert_params(el),)
         if isinstance(el, Drift):
             return K_DRIFT, (el.L,)
         if isinstance(el, Quadrupole):
@@ -1857,14 +1928,20 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         kid, lost_turn, kturn, alost, zlost = apert[:5]
         log, nlog = apert[5:7] if len(apert) >= 7 else (_NOLOG, _NONLOG)
         nlat_ = len(prog.kinds) + 1      # SAD の nlat (要素数 + 1)。l_track の周回またぎの値 (前の周の最後 = nlat) に使う
+    def _rep(lc):
+        # tapert.f:182-184: 損失の報告は TRPT ではない、または l_track が APERT のときだけ
+        if not trpt:
+            return True
+        i = len(prog.kinds) - 1 if lc >= nlat_ else lc - 1
+        return 0 <= i < len(prog.kinds) and prog.kinds[i] == K_APERT
     nreg = 0                             # 領域内の要素数 (k+1..ke) の数え上げ (主ループの後処理用)
     for l_el, (kind, pr, cnt, sm) in enumerate(zip(prog.kinds, prog.params, prog.la_count, prog.sol_mode)):
         if apert is not None:
             if sm == SM_NONE or sm == SM_START:
                 if la <= 0:
                     # tapert の l_track は直前に処理した要素の番号 (tturn.f:243 の l_track=l は tapert の後)。周の最初は前の周の最後 (nlat)
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog,
-                                l_el if l_el >= 1 else (nlat_ if lt0 is None else lt0))
+                    lc = l_el if l_el >= 1 else (nlat_ if lt0 is None else lt0)
+                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lc, _rep(lc))
                     if n <= 0:
                         return 0
                     la = 15
@@ -1875,7 +1952,7 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             else:                        # tsol 内 (tsol.f:604-615)
                 nreg += 1
                 if la <= 0:
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el)
+                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el, _rep(l_el))
                     if n <= 0:
                         return 0
                     la = 15
@@ -1890,6 +1967,12 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
                 n = MAP_HOOK(prog.l0 + l_el + 1, kturn, S, n, kid, lost_turn)
                 if n <= 0:
                     return 0
+        elif kind == K_APERT:
+            if apert is not None:           # tturn.f:417: tapert1 のあと la=la1 (la は減らさず、MARK 同様 exit)
+                n = k_apert_el(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, prog.l0 + l_el + 1, rs, pr[0], _rep(l_el + 1))
+                if n <= 0:
+                    return 0
+                la = 15
         elif kind == K_MULTA:
             from . import multa as _ma
             (al, phi, psi1, psi2, ak, dx, dy, theta, dth, dchi2, alg, phig, eps0, radok, fb1, fb2, frmd, fringe) = pr
@@ -1975,13 +2058,13 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             la -= 1                      # 主ループ: 始点 SOL の 1020
             for _ in range(nreg):        # 主ループ: l=k+1..ke (sol=l<ke; go to 1020)
                 if la <= 0:
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el + 1)
+                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el + 1, _rep(l_el + 1))
                     if n <= 0:
                         return 0
                     la = 15
                 la -= 1
     if apert is not None:
-        n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, nlat_)
+        n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, nlat_, _rep(nlat_))
     return n
 
 

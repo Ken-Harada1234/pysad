@@ -1,0 +1,16 @@
+! TkinterCore.n: Tcl インタプリタを作り、Tk の版とフォント系を調べる (ラティスなし)
+FFS;
+Print["Tk version=",Tk$FullVersion];
+Print["FontSystem=",$FontSystem];
+Print["DefaultFont=",$DefaultFont];
+! TclEval は Tcl の文を評価して、既定は評価結果の文字列を返す。第 2 引数に型 (String など) を渡せる
+Print["expr 6*7=",TclEval["expr 6*7",String]];
+Print["string reverse=",TclEval["string reverse {abc}",String]];
+! Tk$Echo=1 にすると送った Tcl の文を標準出力に出す
+Tk$Echo=1;
+TclEval["set x 5"];
+Tk$Echo=0;
+! SAD の値を Tcl の変数にして戻す
+TclEval["set y [expr {$x*2}]"];
+Print["y=",TclEval["return $y",String]];
+Exit;

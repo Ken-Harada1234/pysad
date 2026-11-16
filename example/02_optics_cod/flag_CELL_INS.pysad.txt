@@ -1,0 +1,21 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+CELL: BX AX NX at end =   5.025185  -2.166305   6.696329
+periodic solution at start: BX AX BY AY EX EPX =   5.025185  -2.166305   2.557661   1.207630    .565228    .178139
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+INS matched start: BX AX NX at end =   5.025185  -2.166305   6.696329
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -19.44386 $$$       f BX    #######  #  31.606909 $$$       f NX    #######  #   6.957027
+$$$       f AY    #######  #   -.634763 $$$       f BY    #######  #    .454333 $$$       f NY    #######  #   4.883605
+$$$       f LENG  #######  #  105.60000
+INS BX=10 start: BX AX at end =  31.606909  -19.44386  BX at mid(100) =   9.092243
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+back to CELL: BX AX NX at end =   5.025185  -2.166305   6.696329

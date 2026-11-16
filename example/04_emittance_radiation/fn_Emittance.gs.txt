@@ -1,0 +1,67 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 21:55:05 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+! QF から始まる並び (RADINT は先頭が SEXT だと DL=0 で NaN になるため。FODO_ring と同じ磁石列、位相だけ違う)
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "10.6";
+ USE RINGQ;
+Out[1]:= USE
+ CELL;
+ CALCULATE;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.506166 $$$       f BX    #######  #   6.426926 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #    .919277 $$$       f BY    #######  #   1.919589 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+ 
+ RFSW;
+ RAD;
+ e = Emittance[];
+ Print[e];
+{Stable->  1.000000,Region->{  1.000000, 243.00000},Tunes->{  -.303759,  -.093944,  -.027625},EnergyLossU0-> 1563265.7,
+ RfVoltageVc-> 4000000.0,EquilibriumPosition->   .038316,MomentumCompaction->   .022184,OrbitDilation->   .000000,
+ BucketHeight->   .010035,HarmonicNumber-> 176.12184,
+ OrbitAtExit->{ 4.290E-18, -5.40E-18, -3.83E-33, -1.73E-32, 3.169E-18,   .000000},DampingRate->{ -2.514E-4, -2.606E-4, -5.300E-4},
+ Emittances->{ 1.7358E-7, 2.825E-38, 1.9069E-5},MomentumSpread->   .001191,BunchLength->   .016060,
+ TuneShiftByRadiation->{ -5.112E-5, 5.4112E-5, -1.795E-7},NominalSpinTune->  6.808148,PolarizationTime->   .000000,
+ SpinTune->   .000000,Polarization->   .000000,Polarizations->{   .000000,   .000000,   .000000},
+ PolarizationVector->{   .000000,   .000000,   .000000}}
+ Print["Emittances ", Emittances /. e];
+Emittances { 1.7358E-7, 2.825E-38, 1.9069E-5}
+ Print["MomentumSpread ", MomentumSpread /. e];
+MomentumSpread    .001191
+ Print["BunchLength ", BunchLength /. e];
+BunchLength    .016060
+ Print["EnergyLossU0 ", EnergyLossU0 /. e];
+EnergyLossU0  1563265.7
+ Print["MomentumCompaction ", MomentumCompaction /. e];
+MomentumCompaction    .022184
+ Print["DampingRate ", DampingRate /. e];
+DampingRate { -2.514E-4, -2.606E-4, -5.300E-4}
+ Print["Tunes ", Tunes /. e];
+Tunes {  -.303759,  -.093944,  -.027625}
+ Print["RfVoltageVc ", RfVoltageVc /. e];
+RfVoltageVc  4000000.0
+ Print["Stable ", Stable /. e];
+Stable   1.000000
+ Exit;
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

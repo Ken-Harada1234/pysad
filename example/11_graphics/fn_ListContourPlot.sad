@@ -1,0 +1,10 @@
+! ListContourPlot (ラティスなし)。2 次元リスト z[i][j]=sin(i/3) cos(j/3)
+FFS;
+table=Table[Sin[i/3.]*Cos[j/3.],{i,0,9},{j,0,9}];
+Print["dims=",Dimensions[table]];
+g=ListContourPlot[table,Contours->8,FrameLabel->{"i","j"}];
+Print["Head=",Head[g]," Length=",Length[g]];
+g2=ListContourPlot[table,Contours->8,MeshRange->{{0,9},{0,9}},FrameLabel->{"i","j"}];
+Print["Head=",Head[g2]," Length=",Length[g2]];
+Update[];
+Exit;

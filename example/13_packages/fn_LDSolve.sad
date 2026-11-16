@@ -1,0 +1,16 @@
+! Packages/LDSolve.n: 線形微分方程式 y' = A(s) y + b(s) を解く (ラティスなし)
+FFS;
+$FORM="S17.10";
+! y'' = -y, y(0)=1, y'(0)=0 → 行列形式 {y,y'}' = {{0,1},{-1,0}}{y,y'}。解は cos s
+u=LDSolve[{{0,1},{-1,0}},{0,0},{1,0},{s,0,1,0.1}];
+Print["Head=",Head[u]," Length=",Length[u]];
+Print["R:s_end=",u[[1,1,-1]]];
+Print["R:y1=",u[[1,2,-1,1]]];
+Print["R:yp1=",u[[1,2,-1,2]]];
+Print["R:cos1=",Cos[1.]];
+Print["R:msin1=",-Sin[1.]];
+! 非同次: y' = A y + b 
+v=LDSolve[{{0,s},{-1,0}},{0,Sin[s]},{1,0},{s,0,2,0.1}];
+Print["R:v2=",v[[1,2,-1,1]]];
+Print["R:vp2=",v[[1,2,-1,2]]];
+Exit;

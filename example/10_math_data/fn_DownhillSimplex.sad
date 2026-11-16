@@ -1,0 +1,32 @@
+! DownhillSimplex (ラティスなし。A は SADHelp の例)
+FFS;
+$FORM="S17.10";
+f:=Apply[Function[{x,y},((x^2+y^2)-1)*(x^2+y^2)-(x-.5)/3.],#]&;
+limit={{-0.5,-1.5},{0.65,1.5}};
+! A: SADHelp の例 (初期単体 v、制限 limit)。反復の様子が標準出力に出る
+v={{1.,1.},{0.,-1.},{0.,1.}};
+p=Sort[Map[{f[#],#}&,v]];
+Print["p=",p];
+r=DownhillSimplex[p,f,MaxIteration->100,Tolerance->1e-4,VariableRange->limit];
+Print["r=",r];
+Print["R:Ax=",r[[1,2,1]]];
+Print["R:Ay=",r[[1,2,2]]];
+Print["R:Af=",r[[1,1]]];
+! B: A と同じ初期単体、制限なし、許容を小さく (Output->0 で途中経過を出さない)
+r2=DownhillSimplex[p,f,MaxIteration->400,Tolerance->1e-12,Output->0];
+Print["R:Bx=",r2[[1,2,1]]];
+Print["R:By=",r2[[1,2,2]]];
+Print["R:Bf=",r2[[1,1]]];
+! C: 最小点の近くから始める。制限なし
+v3={{.5,.2},{.6,-.1},{.7,.1}};
+p3=Sort[Map[{f[#],#}&,v3]];
+r3=DownhillSimplex[p3,f,MaxIteration->400,Tolerance->1e-12,Output->0];
+Print["R:Cx=",r3[[1,2,1]]];
+Print["R:Cy=",r3[[1,2,2]]];
+Print["R:Cf=",r3[[1,1]]];
+! D: C と同じ初期単体、x<=0.65 の制限つき (最小は境界 x=0.65 上)
+r4=DownhillSimplex[p3,f,MaxIteration->400,Tolerance->1e-12,Output->0,VariableRange->limit];
+Print["R:Dx=",r4[[1,2,1]]];
+Print["R:Dy=",r4[[1,2,2]]];
+Print["R:Df=",r4[[1,1]]];
+Exit;

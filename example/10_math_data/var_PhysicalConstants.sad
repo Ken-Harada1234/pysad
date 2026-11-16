@@ -1,0 +1,21 @@
+! 物理定数 (SADHelp physical-constants)。ラティスなし
+FFS;
+$FORM="S17.12";
+Print["R:SpeedOfLight=",SpeedOfLight];
+Print["R:PlanckConstant=",PlanckConstant];
+Print["R:PlanckHbar=",PlanckHbar];
+Print["R:ElectronCharge=",ElectronCharge];
+Print["R:FineStructureConstant=",FineStructureConstant];
+Print["R:ElectronMass=",ElectronMass];
+Print["R:ElectronRadius=",ElectronRadius];
+Print["R:ProtonMass=",ProtonMass];
+Print["R:ProtonRadius=",ProtonRadius];
+Print["R:SIMu0=",SIMu0];
+Print["R:SIEpsilon0=",SIEpsilon0];
+Print["R:ElectronGminus2over2=",ElectronGminus2over2];
+Print["R:BoltzmannConstant=",BoltzmannConstant];
+! 定義式での再計算
+Print["R:re_formula=",FineStructureConstant*PlanckHbar*SpeedOfLight/(ElectronCharge*ElectronMass)];
+Print["R:mu0_formula=",2*FineStructureConstant*PlanckConstant/(SpeedOfLight*ElectronCharge^2)];
+Print["R:eps0_formula=",1/(SIMu0*SpeedOfLight^2)];
+Exit;

@@ -1,0 +1,571 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:50:45 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!********************************************************************
+!*       PF-RING Super-Low Emittance Lattice Configuration          *
+!*       Normal Cell Phase Addvance 115  deg Version                *
+!*       Straight Section reinforcement                             *
+!*         Second edition with PMs & STRs                           *
+!*       SEXTUPOLE(SF,SD) 2 FAMILY CORRECTION                       *
+!*       Octupole                                                   *
+!********************************************************************
+ MOMENTUM=2.5 GEV;
+
+ MARK   MKD   =()
+        MKASYMST =()
+
+        INJ   =()
+        RMARK =()
+        HMARK =()
+        SMARK =()
+        TMARK =()
+
+        U02   =(bx=9 by=4 ax=0 ay=0 ex=0 epx=0)
+        U03   =()
+        U04   =()
+        U05   =()
+        U13   =()
+        U14   =()
+        U15   =()
+        U16   =()
+        U17   =()
+        U18   =()
+        U19   =()
+        U26   =()
+        U28   =()
+        U01   =()
+        MKSNWS  = ()
+        MKSNES  = ()
+        MKSSWS  = ()
+        MKSSES  = ()
+        MKNCWS  = ()
+        MKNCES  = ()
+
+        MKSNWE  = ()
+        MKSNEE  = ()
+        MKSSWE  = ()
+        MKSSEE  = ()
+        MKNCWE  = ()
+        MKNCEE  = ()
+
+        DM      = ()
+   ! BPM not used for user operation.
+   !   because signal processors are not caribrated.
+        MPM     = ()
+   ! PHV ; nothing is set up.
+        MPHV    = ()
+   ! PHV ; magnet and girder are already set.
+        MPHVM   = ()
+   ! PHV ; only girder is set.
+        MPHVG   = ()
+
+ ;
+ MONI
+        PM      =()
+ ;
+ CAVI   CAVI=(VOLT= 850000 FREQ=499990264.8)
+ ;
+ BEND   B02     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B03     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B04     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B05     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B06     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B07     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B08     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B09     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B10     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B11     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B12     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B13     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B14     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B15     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B16     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B17     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B18     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B19     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B20     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B21     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B22     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B23     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B24     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B25     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B26     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B27     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B28     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+        B01     =(L = 1.942696 ANGLE = 0.22439947525641380274733167023425  E1 = 0.5 E2=0.5)
+ ;
+!VD : vertical dipole (slow corrector)
+!PV : vertical dipole for feedback (fast corrector)
+!PH : horizontal dipole for feedback (do not exist in the real machine)
+!VS : vertical dipole (correction coil of the sextupole magnet)
+
+  BEND  VD      =(L = 0.15 K0 = 0     ROTATE =-90 DEG )
+        PV      =(L = 0    K0 = 0     ROTATE =-90 DEG )
+        PH      =(L = 0    K0 = 0  )
+        VS      =(L = 0    K0 = 0     ROTATE =-90 DEG)
+ ;
+!SQ : skew quadrupole corrector (correction coil for the sextupole magnet)
+ QUAD   SQ      =(L = 0   K1 = .0 ROTATE=45  deg)
+ ;
+ QUAD   Q1      =(L =.4   K1 =.698096426338 )
+        Q2      =(L =.4   K1 =-.6928509495915 )
+        Q3      =(L =.3   K1 =-.7582257471804 )
+        Q4      =(L =.3   K1 =.8485774395228 )
+        Q5B     =(L =.4   K1 =-.7477651492198 )
+        Q6B     =(L =.4   K1 =.8213108186402 )
+        Q7B     =(L =.3   K1 =.3716972819766 )
+        Q8B     =(L =.4   K1 =-.8474940261361 )
+        Q9B     =(L =.4   K1 =.8733651289326 )
+        QAB     =(L =.3   K1 =.2752712073638 )
+        QDB     =(L =.25  K1 =-.516490934853 )
+        QFB     =(L =.4   K1 =.77169828379 )
+        QD      =(L =.25  K1 =-.4791910620324 )
+        QF      =(L =.4   K1 =.748319526303 )
+        QFA     =(L =.4   K1 =.7268201874174 )
+        QDA     =(L =.25  K1 =-.5977851575315 )
+        QAA     =(L =.4   K1 =.4027138035082 )
+        Q9A     =(L =.4   K1 =.8879679595581 )
+        Q8A     =(L =.4   K1 =-.9208219644329 )
+        Q7A     =(L =.3   K1 =.359209262548 )
+        Q6A     =(L =.4   K1 =.8530844358661 )
+        Q5A     =(L =.4   K1 =-.753353015542 )
+ ;
+ SEXT   SFH     =(L =.1   K2 =3.9242032090679 )
+        SDH     =(L =.1   K2 =-3.9053258695379 )
+ ;
+ SEXT   SFH     =(L =.1   K2 =3.960642832567334 )
+        SDH     =(L =.1   K2 =-3.917196460596791 )
+ ;
+ OCT    OCT     =(L = .2   K3 =  .0 )
+ ;
+ DRIFT  LLS1    =(L = 4.365 )
+        L250    =(L = 0.25 )
+        L400    =(L = 0.4 )
+        L350    =(L = 0.35 )
+        LLS2    =(L = 0.605 )
+        LLS3    =(L = 2.605 )
+        LLS32   =(L = 2.455 )
+        LLS33   =(L = 2.405 )
+        LLS4    =(L = 2.545 )
+        LLS42   =(L = 2.595 )
+        L110    =(L = 0.11 )
+        L300    =(L = 0.3 )
+        L100    =(L = 0.1 )
+        L600    =(L = 0.6 )
+        L200    =(L = 0.2 )
+        L325    =(L = 0.325 )
+        LLS5    =(L = 2.2125 )
+        LLS51   =(L = 2.2625 )
+        L050    =(L = 0.05 )
+        L075    =(L = 0.075)
+        L060    =(L = 0.060)
+        L090    =(L = 0.090)
+        L460    =(L = 0.460)
+        L130    =(L = 0.130)
+        L225    =(L = 0.225)
+        L220    =(L = 0.220)
+        L500    =(L = 0.5 )
+        L080    =(L = 0.080)
+ ;
+
+
+LINE
+! fast steering set
+        PHV    = (PH PV)
+! "MPHV" and "MPM" is the place where geometrically we can install steering magnets
+! and beam position monitors (but we do not install them, not decided yet).
+
+        STRNW  =(
+!                 MKASYMST
+!                 B01 L300 PHV   L050  PM    L050
+!                 Q2  L050 VD    L050
+!                 Q1  L050 PM    L050  MPHVM LLS1
+!                 MKSNEE
+                 MKSNWS
+                 U02  LLS1  PHV   L050   PM     L050
+                 Q1   L050  VD    L050
+                 Q2   L050  PM    L050   MPHVM  L300
+                 B02  L250  PHV   L050   PM     L050
+                 Q3   L050  VD    L050
+                 Q4   L050  MPM   L050   MPHVG  LLS2
+                 U03  LLS2  MPHVG L050   MPM    L050
+                 Q4   L050  VD    L050
+                 Q3   L050  PM    L050   MPHVG  L250
+                 B03  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B04  L300  PHV   L050   PM     L050
+                 Q8B  L050  VD    L050
+                 Q9B  L050  PM    L050   MPHVG  LLS4
+                 U05  LLS4  PHV   L050   PM     L050
+
+                 QAB L110 SFH VS   SFH  L250 MPHVM L050
+                 B05 L300
+                 QDB L050 PM  L050 SDH  VS    SDH   L220
+                                   OCT  L080  PHV   L050 PM L050
+                 QFB
+                 MKSNWE)
+
+
+
+        NCELW  =(MKNCWS
+                 L100            SFH  SQ SFH   L200            B06    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B07    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B08    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L220  OCT
+                                               L080  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B09    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B10    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B11    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050
+                 MKNCWE)
+
+
+        STRSW  =(MKSSWS
+                 QFA L100 SFH SQ    SFH L200
+                 B12 L300
+                 QDA L050 PM  L050  SDH VS   SDH  L225  MPHVM  L100
+                 QAA L050 PM  L050  PHV LLS5
+                 U13 LLS5 PHV L050  PM  L050
+                 Q9A L050 VD    L050
+                 Q8A L050 MPHVM L050 PM    L300
+                 B13 L300 PHV   L100
+                 Q7A L050 PM    L050 VD    L050  MPHVM  LLS33
+                 U14 LLS3 MPHVM L050 MPM   L050
+                 Q6A L050 VD    L050
+                 Q5A L050 PM    L050 MPHVM L300
+                 B14 L250 PHV   L050 PM    L050
+                 Q3  L050 VD    L050
+                 Q4  L050 MPM   L050 MPHVG LLS2
+                 U15 LLS2 MPHVG L050 MPM   L050
+                 Q4  L050 VD    L050
+                 Q3  L050 PM    L050 MPHVG L250
+                 B15 L300 PHV   L050 PM    L050
+                 Q2  L050 VD    L050
+                 Q1  L050 PM    L050 MPHVM LLS1
+                 MKSSWE)
+
+        STRSE  =(MKSSES
+                 U16  LLS1  PHV   L050   PM     L050
+                 Q1   L050  VD    L050
+                 Q2   L050  PM    L050   MPHVM  L300
+                 B16  L250  PHV   L050   PM     L050
+                 Q3   L050  VD    L050
+                 Q4   L050  MPM   L050   MPHVG  LLS2
+                 U17  LLS2  MPHVG L050   MPM    L050
+                 Q4   L050  VD    L050
+                 Q3   L050  PM    L050   MPHVG  L250
+                 B17  L300  PHV   L050   MPM    L050
+                 Q5B  L050  VD    L050
+                 Q6B  L050  PM    L050   MPHV   LLS3
+                 CAVI LLS32 VD    L050   PM     L050
+                 Q7B  L400
+                 B18  L300  PHV   L050   PM     L050
+                 Q8B  L050  VD    L050
+                 Q9B  L050  PM    L050   MPHVM  LLS4
+                 U19  LLS4  PHV   L050   PM     L050
+
+                 QAB L110 SFH VS   SFH  L250  MPHVM  L050
+                 B19 L300
+                 QDB L050 PM  L050 SDH  VS    SDH    L220
+                                   OCT  L080  PHV    L050 PM L050
+                 QFB
+                 MKSSEE)
+
+
+
+        NCELE  =(MKNCES
+                 L100            SFH  SQ SFH   L200            B20    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B21    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L220  OCT
+                                               L080  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B22    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B23    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B24    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 L100            SFH  SQ SFH   L200            B25    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500       L050        L050
+                 MKNCEE)
+
+        NCELL  = (MKNCES
+                 L100            SFH  SQ SFH   L200            B20    L300  QD
+                 L050  PM  L050  SDH  VS SDH   L500  PHV  L050    PM  L050  QF
+                 )
+        STRNE  =(MKSNES
+                 QFA L100 SFH SQ    SFH L200
+                 B26 L300
+                 QDA L050 PM    L050  SDH VS  SDH  L225  MPHV  L100
+                 QAA L050 PM    L050  PHV   LLS5
+                 INJ LLS5 MPHV  L050  PM    L050
+                 Q9A L050 VD    L050
+                 Q8A L050 PM    L050  PHV   L300
+                 B27 L300 MPHVM L100
+                 Q7A L050 PM    L050  VD    L050  MPHVM  LLS33
+                 U28 LLS3 MPHVM L050  PM    L050
+                 Q6A L050 VD    L050
+                 Q5A L050 MPM   L050  PHV   L300
+                 B28 L250 MPHVM L050  PM    L050
+                 Q3  L050 VD    L050
+                 Q4  L050 MPM   L050  MPHV  LLS2
+                 U01 LLS2 MPHVG L050  MPM   L050
+                 Q4  L050 VD    L050
+                 Q3  L050 PM    L050  MPHVG L250
+!)
+                 B01 L300 PHV   L050  PM    L050
+                 Q2  L050 VD    L050
+                 Q1  L050 PM    L050  MPHVM LLS1
+                 MKSNEE)
+
+        SF     = (SFH SFH)
+        SD     = (SDH SDH)
+
+   HALFW  =(STRNW NCELW STRSW)
+   HALFE  =(STRSE NCELE STRNE)
+   RING   =(HALFE HALFW RMARK)
+ ;
+ MARK   MKASYMST=(AX =.3267372759800573  BX =1.409231024878198    AY =-1.9881134939493714  BY =10.302237759757904
+           EX =.21692483832251194   EPX =-.22476522929754775 DP =.01   EMITX =1e-12   EMITY =1e-12 )
+        MPHVM   =(AX =.3637325771246263  BX =13.569208776052173   PSIX =1.4454136727838627 AY =.8740521022144008
+           BY =8.812044747193662    PSIY =.24586208188670342 EX =.002335158496149979  EPX =-1.0475391726686132e-05
+           DX =3.1073672905710446e-17    DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNEE  =(AX =-.0005108831032284241   BX =11.983746081648771   PSIX =1.794780533677079  AY =.00028029173427025425
+           BY =4.995583847607713    PSIY =.9638746750582431  EX =.002289433411263019  EPX =-1.0475391726686132e-05
+           DX =6.270332441232682e-18     DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNWS  =(AX =-.0005108831032284241   BX =11.983746081648771   PSIX =1.794780533677079  AY =.00028029173427025425
+           BY =4.995583847607713    PSIY =.9638746750582431  EX =.002289433411263019  EPX =-1.0475391726686132e-05
+           DX =6.270332441232682e-18     DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U02     =(AX =-.0005108831032284241   BX =11.983746081648771   PSIX =1.794780533677079  AY =.00028029173427025425
+           BY =4.995583847607713    PSIY =.9638746750582431  EX =.002289433411263019  EPX =-1.0475391726686132e-05
+           DX =6.270332441232682e-18     DPX =-5.68232313046455e-18    DZ =-3.037603477179668e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MPM     =(AX =.34344741932807943 BX =5.177933730946667    PSIX =4.106611817532601  AY =1.4970581750866492
+           BY =1.3307942572386908   PSIY =2.2365921637210064 EX =.5947197340332584    EPX =-7.379537725826753e-05
+           DX =7.061110331219293e-18     DPX =-1.968058513733374e-18   DZ =-2.1769518205381943e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MPHVG   =(AX =.3326520307818579  BX =5.144128758441171    PSIX =4.116300007346523  AY =1.3752819064424258
+           BY =1.187177253162237    PSIY =2.2763819279371726 EX =.5947160442643955    EPX =-7.379537725826753e-05
+           DX =6.962707405532624e-18     DPX =-1.968058513733374e-18   DZ =-2.1769518205381943e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U03     =(AX =.2020278293725771  BX =4.820647443047737    PSIX =4.2380926309300415 AY =-.09821094415267596
+           BY =.4145493209769384    PSIY =3.3163764777320233 EX =.5946713980611542    EPX =-7.379537725826753e-05
+           DX =5.772032004723933e-18     DPX =-1.968058513733374e-18   DZ =-2.1769518205381943e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MPHV    =(AX =2.283629443840094  BX =19.76008175577222    PSIX =6.583222985493425  AY =.8893228754992855
+           BY =8.112000032336457    PSIY =4.760572051357381  EX =.0011993217563830468 EPX =-3.115986196922111e-05
+           DX =2.9650229090803615e-17    DPX =-8.278455970564334e-18   DZ =-4.877194431725505e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U05     =(AX =.5415616002217872  BX =8.716787631620404    PSIX =9.796640159734489  AY =.4762308860675471
+           BY =5.784844171972641    PSIY =6.469825984667423  EX =.5921221904493906    EPX =-.0384301408027925
+           DX =2.2341729213444904e-18    DPX =-2.1566964130962843e-18  DZ =-4.047062133737118e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNWE  =(AX =1.6094510616949762 BX =5.474890370122926    PSIX =11.980370962201736 AY =-1.5133081382655638
+           BY =6.99698764018075     PSIY =7.496902428756162  EX =.4738921477501838    EPX =-.17690502266050454
+           DX =2.6614643922287938e-17    DPX =-1.1994677026840624e-17  DZ =-6.4504812014207036e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCWS  =(AX =1.6094510616949762 BX =5.474890370122926    PSIX =11.980370962201736 AY =-1.5133081382655638
+           BY =6.99698764018075     PSIY =7.496902428756162  EX =.4738921477501838    EPX =-.17690502266050454
+           DX =2.6614643922287938e-17    DPX =-1.1994677026840624e-17  DZ =-6.4504812014207036e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCWE  =(AX =-2.3789507273910497     BX =5.135413805642289    PSIX =22.117301503303633 AY =4.066372949202474
+           BY =7.936910315800754    PSIY =9.795249009945264  EX =.4714399277072946    EPX =.18551530508558994
+           DX =3.03359117723599e-17 DPX =9.882931770636707e-18    DZ =-1.1144332951704408e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSWS  =(AX =-2.3789507273910497     BX =5.135413805642289    PSIX =22.117301503303633 AY =4.066372949202474
+           BY =7.936910315800754    PSIY =9.795249009945264  EX =.4714399277072946    EPX =.18551530508558994
+           DX =3.03359117723599e-17 DPX =9.882931770636707e-18    DZ =-1.1144332951704408e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U13     =(AX =-1.08346397126322  BX =9.448575557372873    PSIX =24.018436956182736 AY =-.4001469523679511
+           BY =1.1552359241391243   PSIY =11.724275665575957 EX =.6343426056755612    EPX =.034138813304196325
+           DX =-4.004324259770587e-17    DPX =-8.679011988891885e-18   DZ =-1.2803129316602761e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U14     =(AX =-1.623980591076923 BX =7.966413757625221    PSIX =26.946487692866807 AY =-.2242659835382249
+           BY =5.728150233693729    PSIY =13.359999874341618 EX =.0008297097976650902 EPX =1.6409617863042954e-05
+           DX =3.952115991970268e-17     DPX =8.43555791239972e-18     DZ =-1.0386586962313201e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U15     =(AX =-.20240885872024705     BX =4.825500521737673    PSIX =29.502577612671633 AY =.09815160856382395
+           BY =.4143170034362868    PSIY =15.195997932566478 EX =.5947737730296431    EPX =.00010338713948287851
+           DX =-1.4774134062784297e-17   DPX =-7.477540137396037e-18   DZ =-1.3292823857583022e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSWE  =(AX =-.0005108831032304542   BX =11.983746081648764   PSIX =31.946311816489594 AY =.00028029173426571974
+           BY =4.995583847607729    PSIY =17.548217294309048 EX =.0022894334112622873 EPX =-1.047539172675039e-05
+           DX =1.440952728851967e-18     DPX =-1.3058253446370555e-18  DZ =-1.240428258495902e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSES  =(AX =-.0005108831032304542   BX =11.983746081648764   PSIX =31.946311816489594 AY =.00028029173426571974
+           BY =4.995583847607729    PSIY =17.548217294309048 EX =.0022894334112622873 EPX =-1.047539172675039e-05
+           DX =1.440952728851967e-18     DPX =-1.3058253446370555e-18  DZ =-1.240428258495902e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U16     =(AX =-.0005108831032304542   BX =11.983746081648764   PSIX =31.946311816489594 AY =.00028029173426571974
+           BY =4.995583847607729    PSIY =17.548217294309048 EX =.0022894334112622873 EPX =-1.047539172675039e-05
+           DX =1.440952728851967e-18     DPX =-1.3058253446370555e-18  DZ =-1.240428258495902e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U17     =(AX =.20202782937257657 BX =4.820647443047734    PSIX =34.389623913742554 AY =-.09821094415267853
+           BY =.4145493209769361    PSIY =19.900719096982826 EX =.5946713980611543    EPX =-7.379537725804483e-05
+           DX =2.0364870056324352e-17    DPX =-6.943699526028509e-18   DZ =-1.505327340272931e-17    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U19     =(AX =.5415616002217872  BX =8.716787631620404    PSIX =39.94817144254696  AY =.476230886067542
+           BY =5.784844171972621    PSIY =23.05416860391824  EX =.5921221904493899    EPX =-.03843014080279216
+           DX =3.897465887694283e-17     DPX =-4.729506354878754e-18   DZ =-1.1821164678846433e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSSEE  =(AX =1.6094510616949758 BX =5.4748903701229255   PSIX =42.13190224501421  AY =-1.5133081382655735
+           BY =6.996987640180786    PSIY =24.081245048006974 EX =.4738921477501853    EPX =-.17690502266050526
+           DX =-3.224423795256755e-17    DPX =5.334476643290474e-18    DZ =-1.2151133085277758e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCES  =(AX =1.6094510616949758 BX =5.4748903701229255   PSIX =42.13190224501421  AY =-1.5133081382655735
+           BY =6.996987640180786    PSIY =24.081245048006974 EX =.4738921477501853    EPX =-.17690502266050526
+           DX =-3.224423795256755e-17    DPX =5.334476643290474e-18    DZ =-1.2151133085277758e-17   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKNCEE  =(AX =-2.3789507273910444     BX =5.135413805642286    PSIX =52.268832786116086 AY =4.066372949202498
+           BY =7.93691031580081     PSIY =26.37959162919607  EX =.47143992770729237   EPX =.18551530508558917
+           DX =-3.2278254789292236e-17   DPX =-1.9764898012767288e-17  DZ =-6.983552588214642e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        MKSNES  =(AX =-2.3789507273910444     BX =5.135413805642286    PSIX =52.268832786116086 AY =4.066372949202498
+           BY =7.93691031580081     PSIY =26.37959162919607  EX =.47143992770729237   EPX =.18551530508558917
+           DX =-3.2278254789292236e-17   DPX =-1.9764898012767288e-17  DZ =-6.983552588214642e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        INJ     =(AX =-1.0834639712632212     BX =9.44857555737288     PSIX =54.169968238995196 AY =-.4001469523679553
+           BY =1.1552359241391175   PSIY =28.308618284826764 EX =.6343426056755652    EPX =.03413881330419696
+           DX =-1.6019940998995788e-17   DPX =7.87334936580121e-20     DZ =-2.7773963407623497e-18   DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U28     =(AX =-1.6239805910769218     BX =7.966413757625202    PSIX =57.098018975679274 AY =-.22426598353821872
+           BY =5.7281502336937695   PSIY =29.944342493592416 EX =.0008297097976618083 EPX =1.64096178620915e-05
+           DX =-1.4532451619637123e-19   DPX =-6.656096717564205e-18   DZ =-5.596019971795468e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        U01     =(AX =-.20240885872024364     BX =4.825500521737635    PSIX =59.65410889548409  AY =.09815160856380536
+           BY =.41431700343628386   PSIY =31.780340551817293 EX =.594773773029644     EPX =.00010338713948360205
+           DX =8.483924587116772e-18     DPX =-2.8927178504696506e-18  DZ =-5.562022482948131e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+        RMARK   =(AX =.3267372759800518  BX =1.4092310248781927   PSIX =60.30306256562499  AY =-1.9881134939493725
+           BY =10.302237759757958   PSIY =33.1686852385016   EX =.21692483832251366   EPX =-.2247652292975474
+           DX =-1.4669722238346671e-18   DPX =-6.415427119490561e-18   DZ =-5.562022482948131e-18    DP =.01   EMITX =1e-12
+           EMITY =1e-12 )
+ ;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ $FORM = "15.10";
+ PageWidth = 1999;
+ 
+ USE RING;
+Out[1]:= USE
+ cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.109E-4 $$$       f BX    #######  #  11.983746 $$$       f NX    #######  #   9.597530 $$$       f AY    #######  #  2.8029E-4 $$$       f BY    #######  #   4.995584 $$$       f NY    #######  #   5.278960
+$$$       f LENG  #######  #  187.03548
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -7.80E-7  -1.20E-6  1.13E-20  -1.4E-21  -1.63E-6  -3.60E-5
+      Exit :  -7.80E-7  -1.20E-6  1.13E-20  -1.4E-21  -1.63E-6  -3.60E-5
+
+    Extended Twiss Parameters
+AX: -6.54E-4 BX: 11.98566                            ZX: 4.130E-7  EX:  .001600
+           PSIX: -2.0E-22                           ZPX: -3.99E-7 EPX: -4.0E-17
+R1: -2.9E-16 R2: 3.09E-15 AY: 4.976E-4 BY: 4.989620  ZY: 3.71E-19  EY: -4.0E-17
+R3: -3.4E-17 R4: -3.6E-15            PSIY: 2.73E-38 ZPY: 1.11E-19 EPY: 5.08E-17
+                                                     AZ:  .020610  BZ: 13.31300
+                                                                 PSIZ: 2.93E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 1602864.0 Hz 
+Energy loss per turn U0 =  .3991454 MV  Effective voltage    Vc = 1.7000000 MV 
+Equilibrium position dz = 22.617279 mm  Momentum compact. alpha =  .0065627
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 311.93555
+Bucket height     dV/P0 =  .0118039     Synchrotron frequency   = 23522.241 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune:-0.4021798           0.2791903          -0.0146751
+
+    Damping per one revolution:
+          X : -8.231584E-05   Y : -7.980494E-05   Z : -1.571409E-04
+    Damping time (sec):
+          X :  7.579140E-03   Y :  7.817602E-03   Z :  3.970214E-03
+    Tune shift due to radiation:
+          X : -4.432916E-06   Y :  1.450768E-05   Z : -1.106994E-07
+    Damping partition number:
+          X :    1.0313       Y :    0.9999       Z :    1.9688
+
+Emittance X            = 3.45380E-8 m   Emittance Y            = 6.9966E-38 m
+Emittance Z            = 7.16265E-6 m   Energy spread          = 7.33656E-4
+Bunch Length           = 9.76502669 mm  Beam tilt              = 1.8323E-14 rad
+Beam size xi           =  .64339877 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+ kick = 1E-5;
+ dtnx = LINE["NAME","B*"];
+ npm  = Length[Twiss["BX","PM*"]];
+ Print["number of bends B* = ", Length[dtnx], "  number of PM* = ", npm];
+number of bends B* =   28.0000000000  number of PM* =   65.0000000000
+ tunex = Twiss["NX","$$$"]/2/Pi;
+ bpm = Twiss["BX","PM*"];
+ ppm = Twiss["NX","PM*"];
+ js = {1,10,20};
+ Do[
+   If[mode == 0, FFS["OFF RFSW"], FFS["ON RFSW"]];
+   Print["--- RFSW mode ", mode, "  (0: RF off = pure betatron response, 1: RF on = with path-length/energy term)"];
+   Do[
+     j = js[jj];
+     pb  = LINE["POSITION", dtnx[j]];
+     bb  = Twiss["BX", pb+0.5];
+     pb2 = Twiss["NX", pb+0.5];
+     LINE["K0", dtnx[j]] = kick;
+     FFS["cell calc;"];
+     sx = Twiss["DX","PM*"];
+     LINE["K0", dtnx[j]] = 0;
+     FFS["cell calc;"];
+     rms = 0; mx = 0;
+     Do[
+       an = -kick*0.5*Sqrt[bpm[i]*bb]*Cos[tunex*Pi - Abs[ppm[i]-pb2]]/Sin[tunex*Pi];
+       rms = rms + (sx[i]-an)^2; mx = Max[mx, Abs[sx[i]]];
+       If[i<=3, Print[dtnx[j], " PM#", i, "  SAD DX [um] ", sx[i]*1E6, "  analytic [um] ", an*1E6]];
+     ,{i,1,npm}];
+     Print[dtnx[j], ": max|DX| [um] ", mx*1E6, "  rms(SAD-analytic) [um] ", Sqrt[rms/npm]*1E6];
+   ,{jj,1,3}];
+ ,{mode,0,1}];
+--- RFSW mode     .0000000000  (0: RF off = pure betatron response, 1: RF on = with path-length/energy term)
+B16 PM#   1.0000000000  SAD DX [um]   -9.5809234598  analytic [um]   -9.6028475524
+B16 PM#   2.0000000000  SAD DX [um]   -3.2960599468  analytic [um]   -3.3041282250
+B16 PM#   3.0000000000  SAD DX [um]   -4.8079666437  analytic [um]   -4.8187905271
+B16: max|DX| [um]   26.2514466674  rms(SAD-analytic) [um]     .0211163352
+B25 PM#   1.0000000000  SAD DX [um]   10.6160262834  analytic [um]   10.6381555525
+B25 PM#   2.0000000000  SAD DX [um]    7.9086214404  analytic [um]    7.9253717257
+B25 PM#   3.0000000000  SAD DX [um]    9.0591492278  analytic [um]    9.0791382741
+B25: max|DX| [um]   34.5245511937  rms(SAD-analytic) [um]     .0258559854
+B07 PM#   1.0000000000  SAD DX [um]   23.7395231242  analytic [um]   23.7905586024
+B07 PM#   2.0000000000  SAD DX [um]   11.3600943619  analytic [um]   11.3845093283
+B07 PM#   3.0000000000  SAD DX [um]   -6.1746324671  analytic [um]   -6.1879260300
+B07: max|DX| [um]   30.7647033080  rms(SAD-analytic) [um]     .0270047705
+--- RFSW mode    1.0000000000  (0: RF off = pure betatron response, 1: RF on = with path-length/energy term)
+B16 PM#   1.0000000000  SAD DX [um]   -9.5809226916  analytic [um]   -9.6028486274
+B16 PM#   2.0000000000  SAD DX [um]   -3.2960595485  analytic [um]   -3.3041288285
+B16 PM#   3.0000000000  SAD DX [um]   -4.8079667153  analytic [um]   -4.8187902306
+B16: max|DX| [um]   26.2514476094  rms(SAD-analytic) [um]     .0211161085
+B25 PM#   1.0000000000  SAD DX [um]   10.6160262835  analytic [um]   10.6381555525
+B25 PM#   2.0000000000  SAD DX [um]    7.9086214405  analytic [um]    7.9253717257
+B25 PM#   3.0000000000  SAD DX [um]    9.0591492278  analytic [um]    9.0791382741
+B25: max|DX| [um]   34.5245511938  rms(SAD-analytic) [um]     .0258559853
+B07 PM#   1.0000000000  SAD DX [um]   23.7395231243  analytic [um]   23.7905586024
+B07 PM#   2.0000000000  SAD DX [um]   11.3600943619  analytic [um]   11.3845093283
+B07 PM#   3.0000000000  SAD DX [um]   -6.1746324671  analytic [um]   -6.1879260300
+B07: max|DX| [um]   30.7647033079  rms(SAD-analytic) [um]     .0270047705
+ Exit;
+ FFS                  end:  CPU time =     0.010 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

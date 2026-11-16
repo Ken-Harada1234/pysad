@@ -1,0 +1,22 @@
+! Tkinter.n の Window / TextLabel / Button / CheckButton (ラティスなし)
+! 画面表示が主役: 窓にラベル・ボタン・チェックボタンが縦に並ぶ。標準出力には部品の木と、ボタンを押した結果だけを出す
+FFS;
+! 補助の Tcl 手続き: dw = 部品の木 (クラスと -text)、ff = クラスが一致する部品のパス
+TclEval["proc dw {w d} {set o {}; foreach c [winfo children $w] {set t {}; catch {set t [$c cget -text]}; lappend o [format {%*s%s %s} $d {} [winfo class $c] $t]; foreach x [dw $c [expr {$d+2}]] {lappend o $x}}; return $o}"];
+TclEval["proc ff {w cls} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq $cls} {lappend r $c}; set r [concat $r [ff $c $cls]]}; return $r}"];
+w=Window[];
+l=TextLabel[w,Text->"Hello SAD",Side->"top"];
+n=0;
+b=Button[w,Text->"Count",Command:>(n=n+1),Side->"top"];
+ck=0;
+c=CheckButton[w,Text->"Option",Variable:>ck,Side->"top"];
+TclEval["update"];
+Print["tree: ",TclEval["join [dw . 0] {; }",String]];
+Print["Head[w]=",Head[w],"  Head[b]=",Head[b]];
+! ボタンを 2 回押す (Tcl の invoke) と Command が評価され n が 2 になる
+TclEval["foreach c [ff . Button] {$c invoke; $c invoke}"];
+Print["n=",n];
+! チェックボタンを押すと Variable に結んだ ck が変わる
+TclEval["foreach c [ff . Checkbutton] {$c invoke}"];
+Print["ck=",ck];
+Exit;

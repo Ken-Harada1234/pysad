@@ -444,6 +444,7 @@ def install(I):
     reg('ArcCosh', arccosh, 1)
     reg('ArcTanh', arctanh, 1)
     reg('LogGamma', _loggamma, 1)
+    reg('LogGamma1', lambda x: _loggamma(x + 1), 1)         # LogGamma1[x] = Log[x!] = LogGamma[x+1] (gs と 10.5 などで一致)
     reg('Gamma', lambda *a: _gamma(a[0]) if len(a) == 1 else float(sp.gammaincc(a[0], a[1]) * sp.gamma(a[0])))
     reg('Gamma0', lambda x: float(sp.exp1(x)), 1)
     reg('XSin', _xsin, 1)

@@ -1,0 +1,97 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.889E-15 $$$       f BX    #######  #   3.891569 $$$       f NX    #######  #   5.179990 $$$       f AY    #######  #  -1.27E-15 $$$       f BY    #######  #   1.622525 $$$       f NY    #######  #   2.140178
+$$$       f LENG  #######  #  45.704400
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -2.9E-11  -2.21E-7  -3.2E-24  -6.4E-26  -2.03E-7  -1.69E-9
+      Exit :  -2.9E-11  -2.21E-7  -2.1E-24  1.48E-24  -2.03E-7  -1.69E-9
+
+    Extended Twiss Parameters
+AX: -3.36E-5 BX: 3.891569                            ZX: -5.55E-9  EX: -8.29E-4
+           PSIX: 5.63E-17                           ZPX: 3.740E-8 EPX: 8.41E-18
+R1: 2.34E-23 R2: 5.08E-22 AY: 6.600E-6 BY: 1.622525  ZY: -5.1E-19  EY: 8.41E-18
+R3: -2.7E-23 R4: 5.84E-22            PSIY: 4.52E-43 ZPY: -1.1E-18 EPY: 2.16E-17
+                                                     AZ: -1.64E-8  BZ: 50.90567
+                                                                 PSIZ: 8.44E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 =  .5800000 GeV Revolution freq.     f0 = 6559375.9 Hz 
+Energy loss per turn U0 =  .0061667 MV  Effective voltage    Vc =  .0500000 MV 
+Equilibrium position dz = 56.214079 mm  Momentum compact. alpha =    .01067
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 15.999997
+Bucket height     dV/P0 =  .0161756     Synchrotron frequency   = 10000.253 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune: 0.1799899           0.1401776          -0.0015246
+
+    Damping per one revolution:
+          X : -7.310180E-06   Y : -5.316088E-06   Z : -8.638089E-06
+    Damping time (sec):
+          X :  2.085496E-02   Y :  2.867776E-02   Z :  1.764899E-02
+    Tune shift due to radiation:
+          X :  4.288852E-09   Y : -5.299016E-08   Z :  2.661737E-12
+    Damping partition number:
+          X :    1.3751       Y :    1.0000       Z :    1.6249
+
+Emittance X            = 1.26804E-8 m   Emittance Y            = -1.024E-35 m
+Emittance Z            = 9.52704E-6 m   Energy spread          = 4.32609E-4
+Bunch Length           = 22.0222763 mm  Beam tilt              = -5.046E-14 rad
+Beam size xi           =  .22214108 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  1.3162425     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 2.9E-15 3.89157 5.17999 -8.3E-4 -4.E-16  $$$       .0     0          45.704400 -1.E-15 1.62252 2.14018  .0      .0     .0      200
+noMPW  NX NY =     5.179990     2.140178
+noMPW  U0[eV] =  6166.703884  emitx[nm] =    12.680368  sigE =  4.326094E-4
+noMPW  BX BY (MKS of cell) =     3.891569     1.622525
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.789E-15 $$$       f BX    #######  #   3.892115 $$$       f NX    #######  #   5.180010 $$$       f AY    #######  #  5.604E-16 $$$       f BY    #######  #   1.027643 $$$       f NY    #######  #   2.249201
+$$$       f LENG  #######  #  45.704400
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -1.80E-7  -2.24E-7  -4.1E-21  8.78E-21  -8.29E-5  -6.78E-4
+      Exit :  -1.80E-7  -2.24E-7  9.01E-21  4.03E-21  -8.29E-5  -6.78E-4
+
+    Extended Twiss Parameters
+AX: 1.552E-5 BX: 3.876814                            ZX: 1.855E-7  EX:  .001405
+           PSIX: -3.6E-22                           ZPX: -4.35E-8 EPX: 2.17E-21
+R1: -8.2E-20 R2: -8.3E-19 AY: 3.314E-6 BY: 1.027924  ZY: -8.4E-25  EY: 2.17E-21
+R3: 5.08E-19 R4: -3.0E-20            PSIY: 5.22E-47 ZPY: 4.06E-25 EPY: 1.16E-20
+                                                     AZ:  .001588  BZ: 51.01031
+                                                                 PSIZ: 2.15E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 =  .5800000 GeV Revolution freq.     f0 = 6559375.9 Hz 
+Energy loss per turn U0 =  .0078011 MV  Effective voltage    Vc =  .0500000 MV 
+Equilibrium position dz = 71.195755 mm  Momentum compact. alpha =    .01066
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 15.999997
+Bucket height     dV/P0 =  .0157084     Synchrotron frequency   = 9974.2152 Hz 
+
+  Imag.tune: 0.0000000           0.0000000          -0.0000000
+  Real tune: 0.1800277           0.2493211          -0.0015206
+
+    Damping per one revolution:
+          X : -8.775281E-06   Y : -6.724443E-06   Z : -1.139482E-05
+    Damping time (sec):
+          X :  1.737307E-02   Y :  2.267155E-02   Z :  1.337920E-02
+    Tune shift due to radiation:
+          X :  6.531615E-09   Y : -6.634173E-08   Z :  1.443632E-09
+    Damping partition number:
+          X :    1.3051       Y :    1.0001       Z :    1.6947
+
+Emittance X            = 1.05597E-8 m   Emittance Y            = 6.8448E-26 m
+Emittance Z            = 9.50572E-6 m   Energy spread          = 4.31682E-4
+Bunch Length           = 22.0202176 mm  Beam tilt              = -5.440E-14 rad
+Beam size xi           =  .20233245 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  1.3162425     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 2.8E-15 3.89212 5.18001 -8.3E-4 -6.E-16  $$$       .0     0          45.704400 5.6E-16 1.02764 2.24920  .0      .0     .0      223
+MPW    NX NY =     5.180010     2.249201
+MPW    U0[eV] =  7801.111941  emitx[nm] =    10.559715  sigE =  4.316818E-4
+MPW    LENGTH(s) =    45.704400  #elements =   223.000000
+MMPWS #  100.000000 s=   21.889700 BY=    1.407944   MMPWE #  124.000000 s=   23.814700 BY=    1.407944
+MPW length =     1.925000  <BY> in MPW =     1.058636
+dNY (MPW - noMPW) =      .109023

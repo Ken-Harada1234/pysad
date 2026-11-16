@@ -1,0 +1,46 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 21:58:23 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! Eigensystem (ラティスなし)
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.12";
+ ! (1) 実対称行列
+ a={{2.,1.,0.},{1.,3.,1.},{0.,1.,4.}};
+ e=Eigensystem[a];
+ Print["e=",e];
+e={{1.267949192431,3,4.732050807569},
+ {{-.788675134595,.57735026919,-.211324865405},{-.57735026919,-.57735026919,.57735026919},{.211324865405,.57735026919,.788675134595
+   }}}
+ Print["R:l1=",e[[1,1]]];
+R:l1=1.267949192431
+ Print["R:l2=",e[[1,2]]];
+R:l2=3
+ Print["R:l3=",e[[1,3]]];
+R:l3=4.732050807569
+ ! (2) 1 ターン行列 (回転): 固有値 exp(+-i mu), mu=2 pi 0.28
+ mu=2*Pi*0.28;
+ m={{Cos[mu],Sin[mu]},{-Sin[mu],Cos[mu]}};
+ f=Eigensystem[m];
+ Print["f=",f];
+f={{(-.187381314586+.982287250729 I),(-.187381314586-.982287250729 I)},{{1,I},{1,(-I)}}}
+ Print["R:abs1=",Abs[f[[1,1]]]];
+R:abs1=1
+ Print["R:arg1=",Abs[Arg[f[[1,1]]]]/(2*Pi)];
+R:arg1=.28
+ ! (3) 軌道の 1 ターン行列 (x,px,y,py), nu_x=.3 nu_y=.2 の非結合な場合
+ r2=2*Pi*.3; r3=2*Pi*.2;
+ mm={{Cos[r2],Sin[r2],0,0},{-Sin[r2],Cos[r2],0,0},{0,0,Cos[r3],Sin[r3]},{0,0,-Sin[r3],Cos[r3]}};
+ g=Eigensystem[mm];
+ Print["tunes=",Abs[Arg[g[[1]]]]/(2*Pi)];
+tunes={.3,.3,.2,.2}
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

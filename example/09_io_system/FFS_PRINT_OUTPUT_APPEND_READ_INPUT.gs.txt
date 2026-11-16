@@ -1,0 +1,51 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:14:38 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ PRINT 1 + 2;
+Out[1]:= PRINT
+Out[2]:= 3
+ OUTPUT "ex_out.txt";
+ PRINT 3 + 4;
+ Print["Print inside OUTPUT is also redirected"];
+ CLOSE OUTPUT;
+ PRINT "back on the console";
+Out[4]:= "back on the console"
+ APPEND "ex_out.txt";
+ PRINT 5 * 6;
+ CLOSE OUTPUT;
+ c = OpenRead["ex_out.txt"];
+ Print["--- content of ex_out.txt ---"];
+--- content of ex_out.txt ---
+ While[(s = ReadString[c]) <=> EndOfFile, Print["| ", s]];
+| Out[3]:= 7
+| Print inside OUTPUT is also redirected
+| Out[5]:= 30
+ Close[c];
+ a = OpenWrite["ex_cmd.txt"];
+ Write[a, "x = 11;"];
+ Write[a, "Print[\"inside READ file x=\", x];"];
+ Close[a];
+ READ "ex_cmd.txt";
+ x = 11;
+ Print["inside READ file x=", x];
+inside READ file x=11
+ Print["after READ x = ", x];
+after READ x = 11
+ INPUT "ex_cmd.txt";
+ x = 11;
+ Print["inside READ file x=", x];
+inside READ file x=11
+ Print["after INPUT"];
+after INPUT
+ DeleteFile["ex_out.txt"]; DeleteFile["ex_cmd.txt"];
+ Exit;
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[6]:=  ???-getbuf-end of input stream

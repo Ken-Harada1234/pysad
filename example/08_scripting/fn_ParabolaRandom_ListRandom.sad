@@ -1,0 +1,9 @@
+FFS;
+Print["ListRandom ", ListRandom[]];
+Scan[(SeedRandom[#]; SeedRandom[3];
+      Print[#, ": ", Random[3], " ", GaussRandom[2], " ", ParabolaRandom[2]]) &, ListRandom[]];
+SeedRandom[3];
+x = ParabolaRandom[40000];
+h = Table[Count[Floor[(x + 1)*5], k], {k, 0, 9}];
+Print["parabola histogram (10 bins, N=40000) ", h];
+Exit;

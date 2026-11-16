@@ -1,0 +1,7 @@
+DateString length 19  format mm/dd/CCYY HH:MM:SS  (the digits depend on the run)
+fixed date 01/02/2000 03:04:05
+date from seconds 01/01/1900 00:00:00  01/01/1901 00:00:00
+TimeUsed is Real >= 0: Real 1
+Timing returns {cputime, result}: length 2  result .461960217373362  cputime >= 0: 1
+TimeUsed increases: 1
+Date[] length 6

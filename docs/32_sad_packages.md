@@ -9,11 +9,24 @@ pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に�
 |---|---|---|
 | correction.n (+ bump.n、corutility.n) | CorrectOrbit、CorrectLocal、MakeBump、Bump、Monitor、Steer、CorStat、RmsReport、NearestMonitors、ReadMonitorData … | gs と一致 (下記) |
 | optimize.n | OptimizeOptics、Amoeba、FindClosedOrbit (DownhillSimplex は Python で書いた `miscfn.py`) | OptimizeOptics が gs と 1e-10 で一致 |
-| rational.n、tableform.n、Couple.n、emit.n の Beamstrahlung 系 | Rational、TableForm、BeamstrahlungUpsilon … | 動く (gs と一致) |
+| rational.n、tableform.n、Couple.n、emit.n の Beamstrahlung 系 | Rational、TableForm、ElementValues (Couple.n の SetCoupledElements)、BeamstrahlungUpsilon … | 動く (gs と一致) |
 | D.n | Spline (K64 の Spline$ は miscfn.py)、記号微分 `D`、`Derivative`、`ReduceExpression`、`Integrate`、Spline、特殊関数 (HermiteH など) | `D` を含め動く (59 式が gs と文字列まで一致。下記) |
 | LDSolve.n、Optics.n | LDSolve、Optics の TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo | gs と一致 (下記「LDSolve・Optics.n」)。PeriodicR は未確認 |
 
 組み込み (Python) で持つ関数 (LinearSolve、Binomial、Spline など) は、パッケージの定義で上書きしない (`pkgload._protect_builtins`)。
+
+## UpValue を定義するパッケージ (MakeBump・Rational・ElementValues)
+- `bump.n` の `(a_=Bump[…])^:=…`、`rational.n` の `Plus[Rational[…],…]^:=…`、`Canvas.n` の `(Canvas$Widget=Widget[c_,_Canvas])^:=…` は、組み込みの `Set`・`Plus`・`Times`・`Power`・`Minus`・`Divide`・`Subtract` の定義として持ち込まれる。
+  `pkgload._protect_builtins` は、組み込みと同名の定義を捨てるが、この UpValue 由来の定義 (Set・SetDelayed・Plus・Times・Power・Minus・Divide・Subtract) だけは残す。
+  `b=Bump[…]` のように UpValue の名前 (Bump) が最初に使われる文でも読み込まれるよう、`(a_=Name[…])^:=` の形から名前を登録する (`_UPDEF`)。`Canvas$Widget=c1` のように左辺の記号が読み込みの引き金のときも読む。
+  `MakeBump` は gs と同じバンプ (ybump=.0010000141、使うステアラ 12 本) になる。
+- `Rational`: `1/3+1/6` は gs と同じ `Rational[3,6]` (`ReducedRational` が p^2>b で打ち切るため。gs も同じ)。`a-b`・`a/b` は Plus・Times の規則へ回す (`Subtract`・`Divide` は Rational を含むとき `a+(-b)`・`a*(1/b)`)。
+- `ElementValues = {"K1"["QD"] -> -0.8*"K1"["QF"]}` は、次の `CALC` の前に `SetCoupledElements` (Couple.n を SADScript のまま実行) で要素値に反映する。`USE` で消える (gs と同じ)。
+  `"K1"["QD"]` のような文字列を頭部に持つ式は評価せず式のまま (gs と同じ)。QD の K1 は -0.56、NX=6.788257 (gs と一致)。
+  **未対応**: VISIT での退避と BYE での復元、フィットの変数との連動 (`CouplingMatrix`・`CoupledKeys` を使う Fortran 側 `tffssetupcouple` は呼ばない)。
+- Couple.n や `With[{f}, f&]` を動かすため、`With` は保持された式 (`Hold[y]`) と純関数の本体にも値を埋め込む。`Hold[…]` の中の `#` は純関数の置換の対象にしない。`Hold[…]/.規則` は規則の右辺 (:>) を評価せず埋め込む (`Hold` を別の頭部に替えるときは評価)。
+  `Hold[…][[1]]` は取り出した式を評価し直す。`HoldAll` の引数位置の `Evaluate[x]` は評価する。`ReplaceAll` は純関数の本体にも働く。
+- `DownhillSimplex` の選択肢は、規則のリストを 1 つの引数で受けても読む (`OptimizeOptics` は `Join[{opt},{VariableRange->limit}]` を渡す)。`Output->0` で途中経過を出さず、`MaxIteration` も効く。
 
 ## 組み込み (K64 の Fortran) の翻訳 (`pysad/corr.py`)
 - **ResponseMatrix** (pgrmat.f): COD 応答行列 (リングは周期解、ライン、`X Y PX PY MX MY MPX MPY`、`Tune`)。
@@ -42,4 +55,5 @@ gs との比較 (`tests/test_corr.py`、`co5_corr.sad`: 12 セル、24 BPM、24 
 ## 未対応・限界
 - 記号式の標準形は gs と同じではない (`0*x` は gs が `(0 x)` のまま、`x^0` も `x^0` のまま、pysad は 0 と 1 にする)。D の出力は 59 式で一致するが、別の式では形が違いうる。パターンの Orderless 照合は、数を先頭にした標準順→順列 (6 引数まで)、素の Blank と列パターンが両方あるときは標準順だけ (K64 の挙動に合わせて経験的に決めた)。
 - `ResponseMatrix` の TRPT (加速、`gammab` の比) は未対応。
+- `OptimizeOptics` の最初に gs が表示する `{{`,System`},System`}` (BeginPackage の戻り値) は、pysad は `{$ContextPath,"`"}` (文脈を持たないため。差は残る)。
 - Matrix.n (`LinearSolve`、`Inverse` の SADScript 版) は読まない。`SingularValues`・`MatrixBalance` は Python (`miscfn.py`) で、特異ベクトルの符号は各 u の先頭成分が負になるよう揃えた (gs と一致を 3 行列で確認)。

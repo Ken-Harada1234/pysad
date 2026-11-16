@@ -18,6 +18,7 @@ from .sadscript import Sym
 _FILES = ('correction.n', 'bump.n', 'corutility.n')
 _TARGET = 'correction.n'          # この 1 本が bump.n と corutility.n を Get する
 _DEF = re.compile(r'^([A-Z][A-Za-z0-9$]*)\s*(?:\[[^\n]*\]\s*:=|=)', re.M)
+_UPDEF = re.compile(r'^\(\s*[a-z][A-Za-z0-9$]*_\s*=\s*([A-Z][A-Za-z0-9$]*)\[', re.M)      # (a_=Bump[…])^:= … (UpValue で定義する関数名)
 _SKIP = {'Protect', 'Chop'}
 _ALLOW = ('D.n', 'rational.n', 'tableform.n', 'LDSolve.n', 'Couple.n', 'optimize.n', 'emit.n', 'Optics.n',
           'ListPlot.n', 'Plots.n', 'OpticsPlot.n', 'GeometryPlot.n', 'CSR.n')
@@ -55,6 +56,11 @@ def register(I):
                 continue
             I.autoload.setdefault(name, path)
             n += 1
+        for m in _UPDEF.finditer(src):
+            name = m.group(1)
+            if name not in _SKIP and name not in I.builtins and name not in I.downvalues:
+                I.autoload.setdefault(name, path)
+                n += 1
     try:
         init = open(pk + 'init.n', encoding='utf-8', errors='replace').read()
     except OSError:
@@ -68,6 +74,10 @@ def register(I):
             if re.fullmatch(r'[A-Za-z][A-Za-z0-9$]*', nm) and nm not in I.builtins and nm not in I.downvalues:
                 I.autoload.setdefault(nm, pk + f)
                 n += 1
+    for nm in ('EVCompile', 'EVFun', 'EVMatrix', 'ClearEV', 'ElementValueExceptions', 'IgnoreCouplingMatrix'):      # Couple.n の補助 (init.n の表にあるのは SetCoupledElements・CouplingMatrix・CoupledKeys だけ)
+        if os.path.isfile(pk + 'Couple.n') and nm not in I.builtins and nm not in I.downvalues:
+            I.autoload.setdefault(nm, pk + 'Couple.n')
+            n += 1
     # init.n の `Get[PackagesDirectory//"PkgConfig.n"]` (OpticsPlot.n などが PkgConfig$DefaultList / PkgConfig を使う): 最初に使われたときに読む
     if os.path.isfile(pk + 'PkgConfig.n'):
         for nm in ('PkgConfig', 'PkgConfigList', 'PkgConfigMatch', 'PkgConfig$DefaultList', 'PkgConfig$TypeList',
@@ -115,6 +125,10 @@ def _protect_builtins(I):
             I._pkg_keep = saved_keep
         for k in before_b:
             if k in keep:
+                continue
+            if k in ('Set', 'SetDelayed', 'Plus', 'Times', 'Power', 'Minus', 'Divide', 'Subtract') and k in I.downvalues:
+                old_ = before_d.get(k, [])          # `(a_ = Bump[…]) ^:= …` (Set)、`Plus[Rational[…], …] ^:= …` (rational.n) などの UpValue は組み込みの定義として持ち込まれる。捨てずに加える
+                I.downvalues[k] = [d for d in I.downvalues[k] if not any(d is o for o in old_)] + old_
                 continue
             if k in I.downvalues:
                 if k in before_d:

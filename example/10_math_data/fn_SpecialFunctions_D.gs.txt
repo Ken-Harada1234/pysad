@@ -1,0 +1,48 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 21:58:19 Monday 11/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! D.n 系の特殊関数 (LegendreP, HermiteH, 指数積分, Fresnel, Airy, Zeta, PolyLog) (ラティスなし)
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="S17.15";
+ Print["R:LegendreP=",LegendreP[3,.5]];
+R:LegendreP=-.4375
+ Print["R:HermiteH=",HermiteH[3,.5]];
+hgu   -1.500      0.5000      0.2500    
+R:HermiteH=NaN
+ Print["R:ExpIntegralEi=",ExpIntegralEi[1.]];
+R:ExpIntegralEi=(.256476306443282-2.71642432200215 I)
+ Print["R:ExpIntegralE=",ExpIntegralE[2,1.]];
+R:ExpIntegralE=.148495506775922
+ Print["R:SinIntegral=",SinIntegral[1.]];
+R:SinIntegral=.946083070367183
+ Print["R:CosIntegral=",CosIntegral[1.]];
+R:CosIntegral=.337403922900968
+ Print["R:FresnelS=",FresnelS[1.]];
+R:FresnelS=.438259147390355
+ Print["R:FresnelC=",FresnelC[1.]];
+R:FresnelC=.779893400376823
+ Print["R:AiryAi=",AiryAi[1.]];
+R:AiryAi=.135292416312881
+ Print["R:AiryBi=",AiryBi[1.]];
+R:AiryBi=1.207423594952871
+ Print["R:Zeta2=",Zeta[2.]];
+R:Zeta2=1.644934066848226
+ Print["R:PolyLog=",PolyLog[2,.5]];
+R:PolyLog=(.582240526465012-7.2460401836E-16 I)
+ Print["R:PolyGamma=",PolyGamma[1,1.]];
+R:PolyGamma=1.644934066848226
+ Print["R:ProductLog=",ProductLog[1.]];
+R:ProductLog=.567143290409784
+ Print["R:Hyper1F1=",Hypergeometric1F1[1.,2.,.5]];
+R:Hyper1F1=1.297442541400256
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.004 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

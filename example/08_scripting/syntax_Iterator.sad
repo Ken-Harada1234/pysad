@@ -1,0 +1,18 @@
+FFS;
+Print["{n}       ", Table[x, {3}]];
+Print["{i,n}     ", Table[i, {i, 4}]];
+Print["{i,a,b}   ", Table[i, {i, 2, 5}]];
+Print["{i,a,b,s} ", Table[i, {i, 1, 10, 3}]];
+Print["real step ", Table[i, {i, 0, 1, 0.25}]];
+Print["negative  ", Table[i, {i, 3, 0, -1}]];
+Print["{i,list} (not supported in SAD) ", Table[i, {i, {a, b, c}}]];
+Print["multiple  ", Table[{i, j}, {i, 2}, {j, 2}]];
+Print["dependent ", Table[i + j, {i, 3}, {j, 1, i}]];
+Print["Sum 2D    ", Sum[i*j, {i, 3}, {j, 3}]];
+Print["Product   ", Product[i, {i, 1, 6}]];
+Do[Print["Do ", {i, j}], {i, 2}, {j, i}];
+Scan[Print, {1, 2}];
+Print["Map      ", Map[# + 1 &, {1, 2}]];
+Print["empty     ", Table[i, {i, 5, 1}]];
+Print["Sum empty ", Sum[i, {i, 5, 1}]];
+Exit;

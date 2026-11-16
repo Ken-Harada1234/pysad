@@ -1,0 +1,36 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+! MULT の ANGLE: 曲げのある多極。K1=0 K0=0 なら BEND と同じ。MA1 は K1 を持つ複合機能型
+MULT  MA0 = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747) MA1 = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747 K1=0.05);
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+LINE CMA0 = (SF DS QF D2 MA0 D2 QD DS SD D1);
+LINE CMA1 = (SF DS QF D2 MA1 D2 QD DS SD D1);
+LINE RINGMA0 = (ORIGIN RF 24*CMA0);   ! BEND を MULT(ANGLE) に置き換えたリング
+LINE RINGMA1 = (ORIGIN RF 24*CMA1);   ! 同、K1=0.05 付き
+FFS;
+NORFSW; NORAD; NOFLUC;
+$FORM = "12.8";
+! 同じ磁石列で BEND を MULT(ANGLE) に置き換えたリングを 3 種類比べる
+
+USE RING; CELL; CALC;
+Print["BEND ring        : NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi, " BX(ORIGIN)=", Twiss["BX","ORIGIN"], " EX(ORIGIN)=", Twiss["EX","ORIGIN"]];
+r = TrackParticles[{1, {{1e-5},{0},{1e-5},{0},{0},{0},{1}}}, 1, 1, 1][[2]];
+Print["BEND ring        : 1 turn tracking x=", r[[1,1]], " px=", r[[2,1]], " y=", r[[3,1]], " py=", r[[4,1]]];
+
+USE RINGMA0; CELL; CALC;
+Print["MULT ANGLE K1=0  : NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi, " BX(ORIGIN)=", Twiss["BX","ORIGIN"], " EX(ORIGIN)=", Twiss["EX","ORIGIN"]];
+r = TrackParticles[{1, {{1e-5},{0},{1e-5},{0},{0},{0},{1}}}, 1, 1, 1][[2]];
+Print["MULT ANGLE K1=0  : 1 turn tracking x=", r[[1,1]], " px=", r[[2,1]], " y=", r[[3,1]], " py=", r[[4,1]]];
+
+USE RINGMA1; CELL; CALC;
+Print["MULT ANGLE K1=.05: NX=", Twiss["NX","$$$"]/2/Pi, " NY=", Twiss["NY","$$$"]/2/Pi, " BX(ORIGIN)=", Twiss["BX","ORIGIN"], " EX(ORIGIN)=", Twiss["EX","ORIGIN"]];
+r = TrackParticles[{1, {{1e-5},{0},{1e-5},{0},{0},{0},{1}}}, 1, 1, 1][[2]];
+Print["MULT ANGLE K1=.05: 1 turn tracking x=", r[[1,1]], " px=", r[[2,1]], " y=", r[[3,1]], " py=", r[[4,1]]];
+Exit;

@@ -1,0 +1,29 @@
+MOMENTUM = 100MEV;
+! 簡易 FODO 直線加速器: 5 セル、各セルに加速空洞 2 台 (L=1 m, 10 MV, 2.856 GHz)、入口 100 MeV、電子
+! QUAD の K1 は積分強度 (1/m)。PHI で加速位相を決める (dE = -e V sin(PHI)。flag_TRPT の例で確認)
+DRIFT DL = (L=0.5);
+QUAD  QF = (L=0.2 K1=0.4) QD = (L=0.2 K1=-0.4);
+CAVI  ACC = (L=1.0 VOLT=10E6 FREQ=2.856E9 PHI=-1.5707963267948966);
+MARK  ORIGIN = (AX=0 BX=5 AY=0 BY=5 EMITX=1E-8 EMITY=1E-8 DP=0);
+LINE  CEL = (QF DL ACC DL QD DL ACC DL);
+LINE  LINAC = (ORIGIN 5*CEL);
+FFS;
+$FORM = "14.8";
+RFSW; NORAD; NOFLUC;
+USE LINAC;
+TRPT;                       ! 輸送ライン: 空洞で基準運動量が上がる (RING なら空洞はドリフト扱い)
+INS; CALC;
+Print["MOMENTUM(入口)=", MOMENTUM, " eV   TRPT 光学: NX(end)=", Twiss["NX","$$$"]/2/Pi, " BX(end)=", Twiss["BX","$$$"]];
+a0 = 0; b0 = 5; g0 = 1/b0;     ! MARK ORIGIN の入口 Twiss (AX=0 BX=5)
+phis = {0, -0.25*Pi, -0.5*Pi};
+Do[
+  Element["PHI","ACC"] = phis[[k]];
+  CALC;
+  b = {{1e-4},{0},{0},{0},{0},{0},{1}};
+  r = TrackParticles[{1,b}];
+  x = r[[2,1,1]]; px = r[[2,2,1]]; dp = r[[2,6,1]];
+  af = Twiss["AX","$$$"]; bf = Twiss["BX","$$$"]; gf = (1+af^2)/bf;
+  Print["PHI=", phis[[k]], " x=", x, " px=", px, " dp=", dp];
+  Print["   BXend=", bf, " AXend=", af, " inv0=", g0*1e-8, " invf=", gf*x^2 + 2*af*x*px + bf*px^2, " ratio=", (gf*x^2 + 2*af*x*px + bf*px^2)/(g0*1e-8)],
+  {k,1,3}];
+Exit;

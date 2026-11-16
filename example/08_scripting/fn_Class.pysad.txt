@@ -1,0 +1,9 @@
+a1@v 3
+none: v=13 count=1
+second: v=100 count=2
+count (class var) 2 via a1: 2
+a1@sum2 25 a2@v 100
+Sub: v 1 w 7 add 7 both 14
+Sub inherits sum2 49
+Parents SadClass#2@4
+after destroy a2 still 100

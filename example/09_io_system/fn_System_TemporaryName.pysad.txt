@@ -1,0 +1,15 @@
+two names differ: 1  Head String
+name has a directory part: 1
+[pysad] System['echo from-shell > C:/Users/coding/AppData/Local/Temp/tmp__00048813.6d0caa'] は実行しません
+System return code 0
+file created 0
+???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmp__00048813.6d0caa in OpenRead["C:/Users/coding/AppData/Local/Temp/tmp__00048813.6d0caa"]
+... in c = OpenRead[t1]
+???General::wrongtype:  Argument must be Real number or List of two Reals in Read[c,String]
+... in Print["content [", ReadString[c], "]"]
+???General::wrongtype:  Argument must be Real number in Close$[c]
+... in Close[c]
+[pysad] System['exit 3'] は実行しません
+failing command return code <> 0 : 0
+Directory is a String: String
+GetEnv/Environment: String

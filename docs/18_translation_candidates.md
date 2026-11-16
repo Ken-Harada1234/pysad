@@ -5,7 +5,7 @@
 目的: SAD-master (`src/*.f`、`Packages/*.n`、SADHelp) の機能ごとに、pysad での対応状況 (済み・見送りと理由) を並べる。
 難易度は SAD 側のルーチンの大きさと、pysad の既存モジュールからの距離による目安。照合は `bin/gs` (SAD の WSL ビルド) の出力との比較で、数値は各文書にある範囲 (小さなリング・試験の条件) のもの。実用のリングや強い非線形での確認は別である。
 
-試験は `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を除く) で 520 通過・3 skip (523 件収集。GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip)、回帰は 50 ベンチをすべて実行して FAIL 0 (2026-11-16 夜、`local/wake/verify_log.md`)。
+試験は `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を除く) で 575 通過・3 skip (578 件収集。GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip)、回帰は 50 ベンチをすべて実行して FAIL 0 (2026-11-16 夜、`local/wake/verify_log.md`)。
 
 ## 1. FFS のコマンド (`tffsa.f` ほか)
 
