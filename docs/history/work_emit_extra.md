@@ -1,5 +1,7 @@
 # 作業ログ: emit_extra.py (Emittance[] の OneTurnInformation / Orbit / Matrix の直訳) の解説と照合
 
+最終更新: 2026-11-16
+
 日付: 2026-10-15 / 対象: `pysad/emit_extra.py` (317 行)。コードは未変更。
 `bench_level21a_pysad.py` を実際に再実行し、保存済みの `bench_level21a_pysad.result` と時間行以外が完全に一致することを確認した
 (emittance_rules 11.7 s / 保存時 16.2 s)。
@@ -51,7 +53,7 @@
 
 ## 3. 照合: bench_level21a
 
-SAD 側 (`bench_level21a.sad`): pysad/tests/kek-ls_v03_12.lat、`CELL; RFSW; RAD; CALC6D; CALC;` のあと
+SAD 側 (`bench_level21a.sad`): テスト用ラティス、`CELL; RFSW; RAD; CALC6D; CALC;` のあと
 `e=Emittance[OneTurnInformation->True, Matrix->True]` の各規則と、`ClosedOrbit`/`TransferMatrices` の 8 点 (l = 1, 2, 100, 500, 1000, 2000, 3000, 3564)、
 `LINE["SIG",l]` (同 8 点)、`LINE["SIGX"/"SIGXY"/"SIGPX"/"SIGDP",100]`、`LINE["NAME",…]` を Print。
 判定は「配列最大値に対する最大絶対差 (ノルム相対差)」、目標 1e-9。再実行結果:
@@ -79,7 +81,7 @@ SAD 側 (`bench_level21a.sad`): pysad/tests/kek-ls_v03_12.lat、`CELL; RFSW; RAD
 | SZ (LINE["SIG",l]) 8 点 + SZB 2 点 | 1.5e-12 〜 2.0e-12 | 要素ごとでも ≤1.4e-9 |
 | SZX100 (σx, σxy, σpx, σδ) | 2.8e-13 | |
 | 自己検査 Σ(nlat) vs emitp | 5.4e-14 | |
-| NLAT / NAMES | {3564,3564,3564} 一致 / 名前の対応も一致 (SAD は MKS.1 のように通し番号付き) | |
+| NLAT / NAMES | {3564,3564,3564} 一致 / 名前の対応も一致 (SAD は NAME.1 のように通し番号付き) | |
 
 **最大 2.126e-10 (ODM)、判定 OK (≤1e-9)**。前担当の報告「全項目 2.1e-10 で一致」と再現された。
 
@@ -111,3 +113,7 @@ SAD 側 (`bench_level21a.sad`): pysad/tests/kek-ls_v03_12.lat、`CELL; RFSW; RAD
 
 emit_extra.py は SAD の Emittance[OneTurnInformation->True, Matrix->True] の全規則と LINE["SIG",l] を最大 2.1e-10 (ノルム相対) で再現する。
 偏極と SynchroBetaEmittance は未移植。次の手は上記の ffscmd.py 接続。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: `emit_extra.py` は 11/16 17:55 に更新された (POL のスピン: `_tturne1` に SOL 領域の分岐を足した。work_unimpl.md の「POL の SOL」)。`emit_extra._turn_record` は Python 版の `_tquade` を使い、DX/DY のある QUAD を含むリングで T の δ 列が 1e-5 ずれる既存の差が残る (work_unimpl.md 「後でまとめて直す一覧」1)。SOL つきの Emittance[] の Orbit・Matrix 規則は出ない (docs/27)。本文は変化なし。

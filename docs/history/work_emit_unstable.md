@@ -1,5 +1,7 @@
 # 不安定な光学の EMIT / INS + CALC6D / close_z の精度 (2026-10-16)
 
+最終更新: 2026-11-16
+
 docs/history/00_RESUME.md の未解決リストの 3 項目 (A, B, C) を、SAD (K64, WSL) の実測とソースの読みで 1 項目ずつ合わせた。
 担当: `pysad/emit6d.py`, `pysad/calc6d.py`, `pysad/ffscmd.py`、新規 `pysad/teigen.py`。
 
@@ -94,7 +96,7 @@ SAD の癖: 始点が鏡映対称 (α=0) だと、不安定な面の 2×2 ブロ
 - `ffscmd.calc`: `not CELL and CALC6D` なら `calc6d_ins` (`_mark_tw28` で MARK の 28 成分を読む。未設定は 0、BX/BY/BZ は 1、DDP は DP0)。trf0 は `self.trf0`。
 - `_twmov_to_mark` が縦方向の列 (AZ BZ PSIZ ZX ZPX ZY ZPY) も MARK に書く (4D の CALC のときは `_z_stale`)。
 
-### B.3 検証 `bench_level30a.sad` (ESRF、5 通り、先頭 MARK を含む 8 位置 × 28 列)
+### B.3 検証 `bench_level30a.sad` (5 通り、先頭 MARK を含む 8 位置 × 28 列)
 
 A: 4D の CELL CALC → `INS; CALC6D; CALC;`、B: 6D の CELL CALC6D → INS、C: 先頭 MARK に軌道オフセット (DX DPX DY DPY)、
 D: BXI/AXI/BYI/AYI と DDP=1e-3、BZ=5、AZ=0.01、E: RFSW RADCOD ON。
@@ -128,7 +130,7 @@ SAD の「途中で止まった値」と x で 5e-5 (相対)、px で 6e-9 ず�
   RFSW OFF の RADCOD OFF (z を閉じる δ の割線法) は変えていない (21 ベンチ以上が一致していて SAD の挙動が別に説明できているため)。
 - `calc6d._closed_orbit` と `emittance6d` は `closed_orbit6d` を共用するので CALC6D と Emittance[] の両方が直る。
 
-### C.3 検証 `bench_level30b.sad` (ESRF、`FSHIFT=1e-6`、`RFSW; NORADCOD;`)
+### C.3 検証 `bench_level30b.sad` (`FSHIFT=1e-6`、`RFSW; NORADCOD;`)
 
 FSHIFT = 1e-6 / 3e-7 / −2e-6 / 0 の 4 通りで `Emittance[Orbit->True]` の εx εy εz、U0・Equilibrium dz・Orbit dilation・α・バケット高さ・Vc、チューン、
 OrbitAtEntrance/Exit、σE・σz、DampingRate を比較。**最大相対差 1.2e-11** (旧: x が 5e-5、チューン 3e-7、U0 6e-9)。
@@ -150,3 +152,7 @@ OrbitAtEntrance/Exit、σE・σz、DampingRate を比較。**最大相対差 1.2
 3. RFSW OFF + RADCOD OFF の閉軌道 (δ の決まり方) は tcod の直訳ではなく近似のまま (SAD では `trs(:,5:6)=0` で δ が動かないはずなのに、実測は z を閉じる δ。
    temit の呼び出し側が cod の δ を決めている可能性 — 未調査)。
 4. INS + CALC6D の後の `Twiss[]` 以外 (GO/FIT で INS + CALC6D の条件を使う場合) は未確認。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 確認: 変化なし。根拠: この話題の記述は work_unimpl.md と docs/20〜35 に出てこない (grep で確認)、関係するモジュールに 11/06 以後この話題の変更の記録がない。この文書は 11/06 時点の記録のまま。

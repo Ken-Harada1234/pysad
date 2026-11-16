@@ -30,7 +30,7 @@ from . import emit6d as _e
 from . import lattice as _lat
 from . import track6 as _t6
 from . import track6n as _n
-from .track6n import (NJ, fmax, fmin, sqrt1, pxy2dpz, asinz, xsincos, xsincosh, drift1, rot1, setr0_1,
+from .track6n import (NJ, p2h, fmax, fmin, sqrt1, pxy2dpz, asinz, xsincos, xsincosh, drift1, rot1, setr0_1,
                       tradk_core1, tradk_all, tzsetparam0, tsolqu1, tsolqur_all, ttfrin_n_1, ndivrad,
                       k_apert, K_DRIFT, K_NONE, SM_NONE, SM_START, SM_IN, SM_END)
 from .elements import Drift, Quadrupole
@@ -529,15 +529,36 @@ def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, c
 
 
 # ============================================================================ ラティスの表 (track6n.Prog の拡張)
-def compile_mult(el):
-    """MULT → (K_MULT, params) / nmmax<0 → (K_DRIFT, (L,))。track6 _tmulti_ens と同じ前処理 (_lat._mult_params)"""
+def compile_mult(el, ph=None):
+    """MULT → (K_MULT, params) / nmmax<0 → (K_DRIFT, (L,))。track6 _tmulti_ens と同じ前処理 (_lat._mult_params)。
+    VOLT+DVOLT≠0 の MULT は ph (基準運動量 ph.omega0、charge、amass) を渡すと RF の引数 rf (tmulti1 → tmultiacc) を付ける。
+    実行時に (TRPT か RFSW) なら tmultiacc (mult_full)、そうでなければ RF なしの tmulti (k_mult)"""
     g = _t6._g
     pm = _lat._mult_params(el)
     al, nmmax, akr, ndiv = pm['al'], pm['nmmax'], pm['akr'], pm['ndiv']
-    if g(el, 'ANGLE') or g(el, 'F1') or g(el, 'FRINGE') or g(el, 'VOLT'):
-        raise NotImplementedError('track6n_ext: MULT の曲げ・F1・RF は未対応')
-    if nmmax < 0:
+    if g(el, 'ANGLE'):
+        from . import multa as _ma
+        return _ma.compile_multa(el, ph)
+    if g(el, 'ANGLE') or g(el, 'F1') or g(el, 'FRINGE'):
+        raise NotImplementedError('track6n_ext: MULT の曲げ・F1・FRINGE は未対応')
+    vc = g(el, 'VOLT') + g(el, 'DVOLT')
+    rf = None
+    if vc != 0.0:
+        if ph is None:
+            raise NotImplementedError('track6n_ext: MULT の RF は未対応')
+        if g(el, 'AUTOPHI') != 0.0:
+            raise NotImplementedError('track6n_ext: MULT の AUTOPHI は未対応 (位置の z が要る)')
+        harm = g(el, 'HARM')
+        w = 2.0 * math.pi * g(el, 'FREQ') / _n.CVELOC if harm == 0.0 else ph.omega0 * harm / _n.CVELOC
+        sgn = 1.0 if ph.charge >= 0 else -1.0
+        # tffs.f:1393: vnominal = VOLT/amass |charge| sin(-PHI sign(charge)) (TRPT のときだけ。DVOLT は含まない)
+        rf = (vc / ph.amass * abs(ph.charge), w, (1.0 / w if w != 0.0 else 0.0), (g(el, 'PHI') + g(el, 'DPHI')) * ph.charge,
+              g(el, 'VOLT') / ph.amass * abs(ph.charge) * math.sin(-g(el, 'PHI') * sgn))
+    if nmmax < 0 and rf is None:
         return K_DRIFT, (al,)
+    if nmmax < 0:
+        nmmax = 0
+        akr = [0.0]
     eps = pm['eps']
     if al != 0.0:
         dofr = [akr[m] != 0 and (m <= 2 or abs(akr[m]) / al * 0.05**(m + 1) / (m + 1) > eps)
@@ -547,7 +568,204 @@ def compile_mult(el):
     ct, st = math.cos(pm['theta2']), math.sin(pm['theta2'])
     return K_MULT, (al, nmmax, np.array(akr, dtype=np.complex128), np.array(dofr, dtype=np.bool_), ndiv,
                     pm['dx'], pm['dy'], ct, st, pm['fringe'], g(el, 'EPS'),
-                    g(el, 'RAD') == 0.0 and al != 0.0)
+                    g(el, 'RAD') == 0.0 and al != 0.0, rf)
+
+
+# ============================================================================ MULT の RF (tmulti.f tmultiacc, ANGLE=0)
+@njit(**NJ)
+def mult_qu_all(S, n, al1, ak1, eps0, ak0x, ak0y):
+    for i in range(n):
+        tsolqu_m1(i, S, al1, ak1, eps0, ak0x, ak0y, False)           # tmultiacc は tsolqu (tsolqum ではない)
+
+
+@njit(**NJ)
+def mult_kick_all(S, n, akrm, nmmax, nmin):
+    for i in range(n):
+        mult_kick1(i, S, akrm, nmmax, nmin)
+
+
+@njit(**NJ)
+def mult_rot_in(S, n, dx, dy, ct, st):
+    for i in range(n):
+        S[i, 0] -= dx
+        S[i, 2] -= dy
+        rot1(i, S, ct, st)
+
+
+@njit(**NJ)
+def mult_rot_out(S, n, dx, dy, ct, st):
+    for i in range(n):
+        rot1(i, S, ct, -st)
+        S[i, 0] += dx
+        S[i, 2] += dy
+
+
+@njit(**NJ)
+def mult_fringe_all(S, n, akr, dofr, nmmax, al, sgn, rev):
+    """ttfrins: 入口は n=0..nmmax の順に +akr、出口は n=nmmax..0 の順に −akr"""
+    for i in range(n):
+        if rev:
+            for m in range(nmmax, -1, -1):
+                if dofr[m]:
+                    ttfrins1(i, S, m * 2 + 2, sgn * akr[m].real, sgn * akr[m].imag, al)
+        else:
+            for m in range(nmmax + 1):
+                if dofr[m]:
+                    ttfrins1(i, S, m * 2 + 2, sgn * akr[m].real, sgn * akr[m].imag, al)
+
+
+@njit(**NJ)
+def mult_rf_kick_all(S, n, v, v20a, w, wi, dphis, offset, offset1, wsn, dzn, p0, h0):
+    """tmultiacc の do concurrent (電圧キック 1 分割。v1a=v11a=0、v20a=v02a)"""
+    pmin = 1e-10
+    oneev = 1.0 + 1e-6
+    tlim = 1e4
+    for i in range(n):
+        dp1r = S[i, 5]
+        p1r = 1.0 + dp1r
+        p1 = p0 * p1r
+        if S[i, 6] > 0.1:
+            h1 = p2h(p1)
+        else:
+            h1 = p1r * h0 / (1.0 - S[i, 6] + S[i, 10])
+        S[i, 4] -= dzn
+        t = fmin(tlim, fmax(-tlim, -S[i, 4] * h1 / p1))
+        ph = 0.5 * w * t
+        dh = fmax(oneev - h1, (v + v20a * S[i, 0] * S[i, 0] + v20a * S[i, 2] * S[i, 2])
+                  * (-2.0 * math.sin(ph) * math.cos(ph - dphis) + offset) * wsn)
+        h2 = h1 + dh
+        ah = fmax(dh * (h1 + h2) / (p1 * p1), -1.0 + pmin)
+        dpr = sqrt1(ah)
+        dp2r = fmax(dp1r + p1r * dpr, pmin - 1.0)
+        p2r = 1.0 + dp2r
+        S[i, 5] = dp2r
+        S[i, 6] = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + S[i, 10]
+        S[i, 4] = -t * p2r * p0 / h2 - dzn
+        av = -(math.cos(2.0 * ph - dphis) * wi - offset1 * t) * wsn / p0
+        dpx = 2.0 * v20a * S[i, 0] * av
+        dpy = 2.0 * v20a * S[i, 2] * av
+        S[i, 1] = (S[i, 1] * p1r + dpx) / p2r
+        S[i, 3] = (S[i, 3] * p1r + dpy) / p2r
+
+
+@njit(**NJ)
+def mult_exit_momentum(S, n, p0, p2, dp2p2, h2):
+    pmin = 1e-10
+    for i in range(n):
+        dp = fmax(S[i, 5], pmin - 1.0)
+        dp1 = dp * p0 / p2 - dp2p2
+        pr1 = 1.0 + dp1
+        S[i, 5] = dp1
+        h1 = p2h(p2 * pr1)
+        S[i, 6] = -dp1 * (1.0 + pr1) / h1 / (h1 + pr1 * h2) + S[i, 10]
+
+
+def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
+    """tmulti.f tmultiacc (ANGLE=0、F1/FRINGE なし)。RF のある MULT (TRPT か RFSW のとき)。
+    kick (WakeKick) と wk があれば分割ごとに txwake。新しい ph (空洞の後の基準運動量) を返す (tturn が周の終わりに元へ戻す)"""
+    import copy
+    (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps0, radok, rf) = pr
+    v, w, wi, phic, vnom_tp = rf
+    vnominal = vnom_tp if trpt else 0.0
+    p0, h0 = ph.p0, ph.h0
+    krad = rad and radok
+    nz = al != 0.0
+    mult_rot_in(S, n, dx, dy, ct, st)
+    akr1 = akr[1].real if nmmax >= 1 else 0.0
+    akr0 = akr[0]
+    ndiv = ndiv0
+    epsr = 1.0 if eps0 == 0.0 else eps0
+    ndivmax = 1000
+    if nz:
+        if krad:
+            for i in range(n):
+                setr0_1(i, S)
+            ndiv = max(ndiv, ndivrad(abs(akr0), akr1, 0.0, eps0, h0 * (10.0 if trpt else 1.0)))
+        ndiv = min(ndivmax, ndiv)
+    he = h0 + vnominal
+    pe = _n._h2p(he)
+    vcorr = v * (w * (0.5 / p0 + 0.5 / pe))**2 / 4.0
+    r = abs(vnominal * (1.0 / h0 + 1.0 / he))
+    ndiv = min(ndivmax, max(ndiv, 1 + int(min(abs(w * al), math.sqrt(r**2 / 3.0 / (epsr * 1e-3))))))
+    if abs(r) > 1e-6:
+        wl = math.asinh(r * (2.0 + r) / 2.0 / (1.0 + r))
+        ndiv = min(ndivmax, max(ndiv, int(math.floor(wl * 10.0 / epsr + 0.5))))
+        r1 = wl / ndiv / 2.0
+        ws1 = 2.0 * math.exp(r1) * math.sinh(r1)
+        we = 1.0 + ws1
+        ws = [0.0] * (ndiv + 2)
+        ws[1] = ws1 / r
+        for i in range(2, ndiv + 1):
+            ws[i] = ws[i - 1] * we
+    else:
+        ws = [0.0] + [1.0 / ndiv] * ndiv + [0.0]
+    ws[ndiv + 1] = 0.0
+    phis = 0.0 if trpt else w * trf0                  # autophi は未対応
+    dphis = phis - phic
+    if rad or trpt:
+        offset = math.sin(dphis)
+        offset1 = 0.0
+    else:
+        offset = math.sin(dphis) - math.sin(phis)
+        offset1 = math.sin(phis)
+    ak1 = akr1 * ws[1] * 0.5
+    al1 = al * ws[1] * 0.5
+    ak01 = akr0 * ws[1] * 0.5
+    if nz and fringe:
+        _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+        mult_fringe_all(S, n, akr, dofr, nmmax, al, 1.0, False)
+    fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
+    fw_save = kick.fw if kick is not None else 0.0
+    sv = 0.0
+    for m in range(1, ndiv + 1):
+        wsm = ws[m]
+        if kick is not None:
+            kick.fw = fw0 * ws[1] * 0.5 if m == 1 else fw0 * (wsm + ws[m - 1] * 0.5)
+            kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, m == 1, p0, h0)
+        akrm = akr[:nmmax + 1] * wsm
+        if nz:
+            mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag)
+            if krad:
+                tradk_all(S, n, al1, 0.0, fluc, rs, p0, ph.anrad, ph.cuc)
+            wm = 0.5 * (ws[m] + ws[m + 1])
+            al1 = al * wm
+            ak1 = akr1 * wm
+            ak01 = akr0 * wm
+            if nmmax >= 2:
+                mult_kick_all(S, n, akrm, nmmax, 2)
+        elif nmmax >= 1:
+            mult_kick_all(S, n, akrm, nmmax, 1)
+        dzn = 0.0
+        if vnominal != 0.0:
+            sv += vnominal * wsm
+            h2 = h0 + sv
+            p2 = _n._h2p(h2)
+            dp2 = sv * (h2 + h0) / (p2 + p0) / p0
+            pr2 = 1.0 + dp2
+            dvn = -dp2 * (1.0 + pr2) / h2 / (h2 + pr2 * h0)
+            dzn = -dvn * al * wsm * 0.5
+        mult_rf_kick_all(S, n, v, vcorr, w, wi, dphis, offset, offset1, wsm, dzn, p0, h0)
+    if kick is not None:
+        kick.fw = fw0 * ws[ndiv] * 0.5
+        kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
+        kick.fw = fw_save
+    if nz:
+        mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag)
+        if fringe:
+            mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
+            _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+        if krad:
+            tradk_all(S, n, al1, 0.0, fluc, rs, p0, ph.anrad, ph.cuc)
+    mult_rot_out(S, n, dx, dy, ct, st)
+    if vnominal != 0.0:
+        h2 = h0 + vnominal
+        p2 = _n._h2p(h2)
+        dp2p2 = vnominal * (h2 + h0) / (p2 + p0) / p2
+        mult_exit_momentum(S, n, p0, p2, dp2p2, h2)
+        ph2 = copy.copy(ph)
+        ph2.set_pgev(p2 * ph.amass)
+        return ph2
+    return ph
 
 
 def compile_sol_quad(el, bzs):
@@ -599,6 +817,8 @@ def compile_sol_region(prog, elements, i, ph):
                 raise NotImplementedError('track6n_ext: SOL のずれ・回転・F1')
             prog._add(K_SOL_FRIN, ((bz1 - bzs) if g(el, 'DISFRIN') == 0.0 else 0.0,), el.name, True, sm)
             bzs = bz1
+        elif name == 'BeamBeam':
+            raise NotImplementedError('track6n_ext: ソレノイド領域内の BEAMBEAM (K64 の tsol が SIGSEGV で落ちるので比較できない)')
         elif el.L == 0.0:
             prog._add(K_NONE, (), el.name, True, sm)
         else:
@@ -610,13 +830,14 @@ def compile_sol_region(prog, elements, i, ph):
 ProgExt = _n.Prog
 
 
-def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs):
+def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0):
     """1 要素分のカーネル呼び出し (track6n.turn の分岐 + 新しい kind)"""
     p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
+    hr = h0 * tm                                  # ndivrad だけに渡す (TRPT は 10 倍)
     if kind == K_MULT:
-        (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad, radok) = pr
+        (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad, radok, rf) = pr
         k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
-               rad and radok, fluc, rs, p0, h0, anrad, cuc)
+               rad and radok, fluc, rs, p0, hr, anrad, cuc)
     elif kind == K_SOL_FRIN:
         k_sol_frin(S, n, pr[0])
     elif kind == K_SOL_DRIFT:
@@ -624,13 +845,13 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs):
         k_sol_drift(S, n, al, bz, rad and radok, fluc, rs, p0, anrad, cuc)
     elif kind == K_SOL_QUAD:
         (L, ak, ct, st, fringe, bz, radok) = pr
-        k_sol_quad(S, n, L, ak, ct, st, fringe, bz, rad and radok, fluc, rs, p0, h0, anrad, cuc)
+        k_sol_quad(S, n, L, ak, ct, st, fringe, bz, rad and radok, fluc, rs, p0, hr, anrad, cuc)
     elif kind == _n.K_DRIFT:
         _n.k_drift(S, n, pr[0])
     elif kind == _n.K_QUAD:
         (L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2out, eps0, radok) = pr
         _n.k_quad(S, n, L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2out, eps0,
-                  rad and radok, fluc, rs, p0, h0, anrad, cuc)
+                  rad and radok, fluc, rs, p0, hr, anrad, cuc)
     elif kind == _n.K_THIN:
         (L, ak, kord, dx, dy, theta, ct, st, fringe, radok) = pr
         _n.k_thin(S, n, L, ak, kord, dx, dy, theta, ct, st, fringe, rad and radok, fluc, rs, p0, anrad, cuc)
@@ -641,13 +862,13 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs):
         if ak1 != 0.0:
             _n.k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak1, dx, dy, theta, dtheta, cost, sint,
                        dchi2, alg, phig, fb1, fb2, mfring, krad, fringe, eps0, True, True,
-                       fluc, rs, p0, h0, anrad, cuc)
+                       fluc, rs, p0, hr, anrad, cuc)
         else:
             _n.k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2, cosw, sinw, sqwh, sinwp1,
                        fb1, fb2, mfring, fringe, krad, True, True, eps0, dx, dy, cost, sint, dtheta, dchi2, alg, phig,
-                       fluc, rs, p0, h0, anrad, cuc)
+                       fluc, rs, p0, hr, anrad, cuc)
     elif kind == _n.K_CAV:
-        (al, v, w, wi, phic, fringe, mfring) = pr
+        (al, v, w, wi, phic, fringe, mfring) = pr[:7]
         phis = w * trf0
         dphis = phis - phic
         if rad:
@@ -662,7 +883,7 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs):
         _n.k_steer0(S, n, pr[0], pr[1], pr[2], pr[3], pr[4], pr[5])
     elif kind == _n.K_STEER:
         (al, phib, dx, dy, theta, cost, sint, tanp1, eps0, radok) = pr
-        _n.k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, ph.p0, ph.h0, ph.anrad, ph.cuc)
+        _n.k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, ph.p0, ph.h0 * tm, ph.anrad, ph.cuc)
 
 
 turn_ext = _n.turn

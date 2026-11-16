@@ -69,10 +69,21 @@ class TclBridge:
         B['XInternAtom'] = lambda a: 1.0
         B['XGetTextProperty'] = lambda a: '***'
         B['XGetWindowProperty'] = lambda a: '***'
-        B['XListFonts'] = lambda a: []
-        B['XGetFontPath'] = lambda a: []
+        # X サーバーの組み込みフォント (gs を WSLg の X で動かして得た一覧。XGetFontPath は {"built-ins"})。pattern は X の * と ?
+        _XFONTS = ['-misc-fixed-medium-r-semicondensed--13-100-100-100-c-60-iso8859-1',
+                   '-misc-fixed-medium-r-semicondensed--13-120-75-75-c-60-iso8859-1', '6x13', 'cursor', 'fixed',
+                   '-misc-fixed-medium-r-semicondensed--0-0-75-75-c-0-iso8859-1']
+
+        def _xlistfonts(a):
+            import fnmatch
+            pat = str(a[0]) if a else '*'
+            return [f for f in _XFONTS if fnmatch.fnmatchcase(f.lower(), pat.lower())]
+        B['XListFonts'] = _xlistfonts
+        B['XGetFontPath'] = lambda a: ['built-ins']
         B['XServerVendor'] = lambda a: 'pysad'
         B['XGetWindowAttributes'] = lambda a: []
+        from . import tkcanvas
+        tkcanvas.install(self, B)
         for nm in ('XFlush', 'XRaiseWindow', 'XLowerWindow', 'XRestackWindows', 'XSetTextProperty', 'XChangeProperty', 'XDeleteProperty'):
             B[nm] = lambda a: Null
 
@@ -136,8 +147,12 @@ class TclBridge:
             self.create_interp([])
         if os.environ.get('PYSAD_TRACE_TCL'):
             sys.stderr.write('Tcl> ' + a[0][:300] + chr(10))
+        cmd = a[0]
+        if ' create text ' in cmd and '-usebg' in cmd:
+            # K64 の Tk (改造版) の text 項目だけが持つ -usebg (文字の背景を塗る)。標準の Tk にはないので落とす (文字の背景は塗らない)
+            cmd = re.sub(r'\s-usebg\s+(?:"[^"]*"|\S+)', ' ', cmd)
         try:
-            r = self.root.tk.eval(a[0])
+            r = self.root.tk.eval(cmd)
         except Exception as e:                                     # tkinter.TclError
             try:
                 self.I.out.write(str(self.root.tk.eval('set errorInfo')) + chr(10))
@@ -174,10 +189,18 @@ class TclBridge:
         return Null
 
     def define_bitmap(self, a):
-        # TkDefineBitmap[name, data, width, height]: ビットマップ名を Tcl に定義する
+        """TkDefineBitmap[name, data, width, height] (Tk_DefineBitmap)。Windows の Tcl には名前つきビットマップを登録する手段が無いので、
+        XBM ファイルに書いて名前を覚えておく。-stipple / -bitmap の値にその名前が来たら `@ファイル` に置き換える (tkcanvas.create)"""
+        import tempfile
         name, data, w, h = a[0], a[1], int(a[2]), int(a[3])
         bits = ', '.join('0x%02x' % (int(x) & 255) for x in data) if isinstance(data, list) else ''
-        self.tcl(['image create bitmap ' + name + ' -data {#define x_width %d\n#define x_height %d\nstatic char x_bits[] = {\n %s };\n}' % (w, h, bits)])
+        if not hasattr(self, 'bitmap_files'):
+            self.bitmap_files = {}
+            self._bitmap_dir = tempfile.mkdtemp(prefix='pysad_bm_')
+        path = os.path.join(self._bitmap_dir, name + '.xbm').replace(chr(92), '/')
+        with open(path, 'w') as f:
+            f.write('#define x_width %d\n#define x_height %d\nstatic char x_bits[] = {\n %s };\n' % (w, h, bits))
+        self.bitmap_files[name] = '@' + path
         return Null
 
     # ------------------------------------------------------------------ TclArg (tfTclArg.f)

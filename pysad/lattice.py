@@ -1302,12 +1302,30 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
         c[1] -= re
         c[3] += im
         return c
+    def kick_cx(c):
+        """tmulke が bsir0 に使う、クリップ後のキックの虚部 (imag cx、局所座標の COD c は回転・ずれの前の値)"""
+        c = r_in(c)
+        cx0 = complex(c[0], c[2])
+        cx = 0j
+        if nz:
+            for kord in range(nmmax, 1, -1):
+                cx = (cx + akn[kord]) * cx0 / kord
+            cx = cx * cx0
+        else:
+            return 0.0
+        return max(-0.9999, min(0.9999, cx.imag))
     al1, ak1, ak0 = al1h, ak1h, ak0h
     for m in range(ndiv):
         if nz:
             seq += tsolque_pieces(al1, ak1, ak0)
             al1, ak1, ak0 = aln, akn1, akn0
-        seq.append(('map', wrap(kick)))
+        kf = wrap(kick)
+        if nz:                                   # al=0 (薄いキック) は tmulke の m=0 の枝で bsir0 を更新しない
+            kf.cxfun = kick_cx
+            kf.aln = aln
+            kf.ndiv = ndiv
+            kf.m = m + 1
+        seq.append(('map', kf))
     if nz:
         seq += tsolque_pieces(al1 * 0.5, ak1 * 0.5, ak0 * 0.5)
         if bfrm and ak0 != 0.0:
@@ -2156,8 +2174,22 @@ def _thin_step_fast(L, ak, kord, dx, dy, th, cod):
     return c, T
 
 
+MAP_HOOKS: dict = {}          # 'OPTICS': f(l, cod) → (cod1, trans) か None (ExternalMap["OPTICS", l, cod]。ffscmd が入れる)
+
+
+def _map_step(el, cod, delta):
+    """MAP 要素 (qemap): ExternalMap["OPTICS", l, cod] が {cod1, trans} を返せばそれ、そうでなければ恒等"""
+    h = MAP_HOOKS.get('OPTICS')
+    r = h(getattr(el, '_pos', 0), np.asarray(cod, dtype=float)) if (h is not None and getattr(el, '_pos', 0)) else None
+    if r is None:
+        return np.eye(6), np.array(cod, dtype=float)
+    return r[1], r[0]
+
+
 def _el_has_offset(el, delta) -> bool:
     """設計軌道 (delta=0, cod=0) でも線形転送行列で済ませられない要素か (ずれ・ロール・キック・フリンジ・薄い四極・MULT の双極/四極)"""
+    if type(el).__name__ == 'Map':
+        return 'OPTICS' in MAP_HOOKS
     return (bool(np.any(el.constant_kick(delta)))
             or float(getattr(el, 'DX', 0.0) or 0.0) != 0.0
             or float(getattr(el, 'DY', 0.0) or 0.0) != 0.0
@@ -2169,7 +2201,8 @@ def _el_has_offset(el, delta) -> bool:
             or (type(el).__name__ == 'Quadrupole' and el.L == 0.0
                 and float(getattr(el, 'K1', 0.0) or 0.0) != 0.0)      # 薄い四極 (SQ): transfer_matrix は恒等
             or (type(el).__name__ == 'Multipole'
-                and any(getattr(el, 'KnL', {}).get(k, 0.0) for k in (0, 1))))
+                and (any(getattr(el, 'KnL', {}).get(k, 0.0) for k in (0, 1))
+                     or float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0)))
 
 
 def _mult_is_drift(el) -> bool:
@@ -2184,17 +2217,33 @@ def _mult_is_drift(el) -> bool:
 def _el_cod_step(el, cod, delta):
     """1 要素分の (COD 依存 Jacobian M_el, 出口 COD)。_one_turn_cod_matrix の要素ごとの本体 (キャッシュしない版)"""
     from .elements import Drift as _Drift, Quadrupole as Quad
+    if hasattr(el, '_solmap'):
+        from .solmap import step as _sst
+        return _sst(el, cod)             # SOL 領域内 (tsole1)
+    if type(el).__name__ == 'Map':
+        r = _map_step(el, cod, delta)
+        el._nocache = object()           # _el_cod_step_cached に入れない (ユーザー関数は副作用を持ちうる)
+        return r
+    if type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
+        raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
+    if type(el).__name__ == 'TCavity' and RFSW:
+        raise NotImplementedError('TCAVI: RFSW ON の CALC (Twiss) は未対応 (Emittance[] と追跡は対応)')
+    if type(el).__name__ == 'Coord':
+        # COORD: qcoord → tcoorde の COD 写像と解析行列 (設計軌道上でも COD が動く)
+        from .coord import coord_map, params as _cprm
+        T_, out_ = coord_map(np.asarray(cod, dtype=float), _cprm(el))
+        return T_, out_
     # DX/DY オフセットや補正コイルキック (K0/ROTATE) があれば近道しない (設計軌道上のときだけ評価する)
     if delta == 0.0 and not np.any(cod[:4]) and not _el_has_offset(el, delta):
         # 設計軌道上 (dp=0, cod=0): COD 依存 Jacobian = 線形転送行列。
         # 数値微分の丸め誤差を避けるため解析行列を使う。
-        if type(el).__name__ == 'Cavity' and not RFSW:
+        if type(el).__name__ in ('Cavity', 'TCavity') and not RFSW:
             M_el = _drift_matrix_at_cod(el.L, delta, 0.0, 0.0)   # RFSW OFF: 空洞はドリフト (tcave rfsw=.false.)
         else:
             M_el = el.transfer_matrix(delta)
         return M_el, M_el @ cod
 
-    if isinstance(el, _Drift) or (type(el).__name__ == 'Cavity' and not RFSW) or _mult_is_drift(el):
+    if isinstance(el, _Drift) or (type(el).__name__ in ('Cavity', 'TCavity') and not RFSW) or _mult_is_drift(el):
         # SAD の CALC は RFSW OFF が既定: 空洞 (tcave, rfsw=.false.) は cod を変えず、行列は長さ分のドリフト。
         # K が全部 0 の MULT も tdrife0 (tmulte.f:130-135) = 厳密ドリフト (数値微分を使わない)
         pxi = cod[1]
@@ -2274,6 +2323,10 @@ def _el_cod_step(el, cod, delta):
             cod_out, M_el = r
         else:
             cod_out, M_el = _thin_cod_matrix(el.L, _ak, _kord, _dx, _dy, _th, cod)
+
+    elif type(el).__name__ == 'Multipole' and float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0:
+        from .multae import lattice_step as _mas
+        M_el, cod_out = _mas(el, cod, delta)
 
     elif type(el).__name__ == 'Multipole':
         # MULT (ANGLE=0, BZ=0): SAD qtwiss → tmulte の非線形 COD 写像 (tmulte.f 直訳の列)
@@ -2359,10 +2412,12 @@ def _pack_el(pk: '_TurnPack', i: int, el, delta: float):
     tn = type(el).__name__
     P = pk.P[i]
     P[:] = 0.0
-    if isinstance(el, _Drift) or (tn == 'Cavity' and not RFSW):
+    if hasattr(el, '_solmap') or tn == 'Map':
+        pk.kind[i] = _tk.K_PY             # SOL 領域内 (solmap)、MAP (ExternalMap)
+    elif isinstance(el, _Drift) or (tn in ('Cavity', 'TCavity') and not RFSW):
         pk.kind[i] = _tk.K_DRIFT
         P[0] = float(el.L)
-        P[1] = 1.0 if tn == 'Cavity' else 0.0
+        P[1] = 1.0 if tn in ('Cavity', 'TCavity') else 0.0
     elif isinstance(el, Bend):
         ang, k0, k1 = float(el.ANGLE), g('K0'), g('K1')
         if g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0 or (ang == 0.0 and k1 != 0.0 and k0 != 0.0):
@@ -2389,8 +2444,10 @@ def _pack_el(pk: '_TurnPack', i: int, el, delta: float):
         _K = g(_kn)
         pk.kind[i] = _tk.K_THIN
         P[0:6] = (float(el.L), _K * el.L if el.L != 0.0 else _K, _kord, g('DX'), g('DY'), g('ROTATION'))
-    elif tn == 'Multipole':
+    elif tn in ('Multipole', 'Coord'):
         pk.kind[i] = _tk.K_PY
+    elif tn == 'Solenoid' and (g('BZ') != 0.0 or g('BOUND') != 0.0):
+        raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
     else:
         pk.kind[i] = _tk.K_LIN
         pk.Mlin[i] = el.transfer_matrix(delta)

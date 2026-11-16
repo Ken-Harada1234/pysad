@@ -265,7 +265,7 @@ def _mm(a, b):
 
 @njit(**NJ)
 def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp, xpx, xpy, xpz, xpa, anp, uc, uct,
-              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu):
+              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0):
     """戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
     # transi = T @ tinv6(transr)、tinv6(r) = -J r^T J
     tinv = np.empty((6, 6))
@@ -278,10 +278,18 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     tr2 = _mm(T, tinv)
     if xpa == 0.0:
         return False, D, B
+    if bzh != 0.0:                       # photons.f: 正準運動量 → 力学的運動量 (ソレノイド内)
+        for j in range(6):
+            t2 = tr2[1, j] + bzh * tr2[2, j]
+            t4 = tr2[3, j] - bzh * tr2[0, j]
+            tr2[1, j] = t2
+            tr2[3, j] = t4
     dpxi = np.zeros(6)
     dpxi[1] = 1.0
+    dpxi[2] = bzhr0
     dpyi = np.zeros(6)
     dpyi[3] = 1.0
+    dpyi[0] = -bzhr0
     ddpz = np.empty(6)
     dpz00 = np.empty(6)
     dpxr0 = np.empty(6)
@@ -329,6 +337,12 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     tr1[2, 5] -= ddpy / pr
     tr1[1, 5] -= px * dg / pr
     tr1[3, 5] -= py * dg / pr
+    if bzh != 0.0:
+        for j in range(6):
+            t2 = tr1[1, j] - bzh * tr1[2, j]
+            t4 = tr1[3, j] + bzh * tr1[0, j]
+            tr1[1, j] = t2
+            tr1[3, j] = t4
     TD = T + D
     Dn = D + _mm(tr1, TD)
     Jm = tr1.copy()
@@ -339,9 +353,11 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     dee = anp * uc ** 2 * cuu
     pxm = pxi + px
     pym = pyi + py
-    d11 = (Bn[1, 1] + (pxm ** 2 + pxi ** 2 + px ** 2) / 6.0) * dee
-    d31 = (Bn[3, 1] + (pxm * pym + pxi * pyi + px * py) / 6.0) * dee
-    d33 = (Bn[3, 3] + (pym ** 2 + pyi ** 2 + py ** 2) / 6.0) * dee
+    b = bzh * 0.5
+    # K64 photons.f の dbeam(8) は beam(2)-beam(10)+b*beam(4) (= B12 - B44 + b B13): そのまま写す (B34 の誤記に見える。bzh=0 では効かない)
+    d11 = (Bn[1, 1] + b * (2.0 * Bn[1, 2] + b * Bn[2, 2]) + (pxm ** 2 + pxi ** 2 + px ** 2) / 6.0) * dee
+    d31 = (Bn[3, 1] - b * (Bn[0, 1] - Bn[3, 3] + b * Bn[0, 2]) + (pxm * pym + pxi * pyi + px * py) / 6.0) * dee
+    d33 = (Bn[3, 3] + b * (-2.0 * Bn[0, 3] + b * Bn[0, 0]) + (pym ** 2 + pyi ** 2 + py ** 2) / 6.0) * dee
     Bn[1, 1] += d11
     Bn[3, 1] += d31
     Bn[1, 3] += d31

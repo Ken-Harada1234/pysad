@@ -37,6 +37,13 @@ NJ = dict(cache=True, error_model='numpy', nogil=True)
 
 # 要素の種類
 K_DRIFT, K_QUAD, K_THIN, K_BEND, K_CAV, K_STEER0, K_NONE = 0, 1, 2, 3, 4, 5, 6
+K_MAP = 25             # MAP (ExternalMap["TRACK"]。Python のコールバック)
+K_MULTA = 24           # MULT ANGLE≠0 (multa.py)
+MAP_HOOK = None        # f(l, nt, S, n, kid, lost_turn) → 新しい n (ffscmd が入れる)
+K_UND = 23             # UND (und.py)
+K_TCAV = 22            # TCAVI (tcav.py)
+K_COORD = 21           # COORD (coord.py)
+K_BB = 20              # BEAMBEAM (beambeam.py)
 K_STEER = 14           # ANGLE=0 の BEND (L>0, K0≠0): tsteer (K_MULT.. = 10..13 は track6n_ext)
 
 
@@ -954,7 +961,7 @@ def tbendal(n, ndiv, f1r, f2r, aln):
 @njit(**NJ)
 def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
             cosw, sinw, sqwh, sinwp1, fb1, fb2, mfring, fringe, krad, first, last, eps0,
-            dx, dy, cost, sint, dtheta, dchi2, alg, phig, fluc, rs, p0, h0, anrad, cuc):
+            dx, dy, cost, sint, dtheta, dchi2, alg, phig, fluc, rs, p0, h0, anrad, cuc, ini=True):
     """tbend (K1=0): tbshift/tbrot → tbendcore (放射ありは tbendr のスライス) → 戻し"""
     for i in range(n):
         tbshift1(i, S, dx, dy, phi0, cost, sint, True)
@@ -966,8 +973,9 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
     n1 = 1; n2 = 0; ndiv = 1
     f1r = 0.0; f2r = 0.0
     if krad:
-        for i in range(n):
-            setr0_1(i, S)
+        if ini:
+            for i in range(n):
+                setr0_1(i, S)
         if first and fb1 != 0.0:
             n1 = -1
             f1r = fb1 * 0.5
@@ -1295,6 +1303,190 @@ def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, 
 
 
 @njit(**NJ)
+def k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0):
+    """k_cav の前段: 入口のフリンジ (tcav.f:80-83)。WakeFunction のある CAVI で k_cav を 3 段に分けて使う"""
+    if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
+        for i in range(n):
+            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+
+
+@njit(**NJ)
+def k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0):
+    """k_cav の中段: 前半のドリフトと電圧キック (ndiv=1、vnominal=0)。前段と後段の間に wake のキックが 2 回入る (tcav.f:94-170)"""
+    wsn = 1.0
+    vcorr = v * (w * (0.5 / p0 + 0.5 / p0))**2 / 4.0
+    v20a = vcorr
+    v02a = vcorr
+    for i in range(n):
+        if al != 0.0:
+            cav_drift1(i, S, al * wsn * 0.5)
+        dp1r = S[i, 5]
+        p1r = 1.0 + dp1r
+        p1 = p0 * p1r
+        if S[i, 6] > 0.1:
+            h1 = p2h(p1)
+        else:
+            h1 = p1r * h0 / (1.0 - S[i, 6] + S[i, 10])
+        t = fmin(tlim, fmax(-tlim, -S[i, 4] * h1 / p1))
+        phh = 0.5 * w * t
+        dh = fmax(1.0 + 3.83e-12 - h1,
+                 (v + v20a * S[i, 0]**2 + v02a * S[i, 2]**2)
+                 * (-2.0 * math.sin(phh) * math.cos(phh - dphis) + offset) * wsn)
+        h2 = h1 + dh
+        a = fmax(dh * (h1 + h2) / (p1 * p1), -1.0)
+        dpr = sqrt1(a)
+        dp2r = dp1r + p1r * dpr
+        p2r = 1.0 + dp2r
+        S[i, 5] = dp2r
+        S[i, 6] = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + S[i, 10]
+        av = -(math.cos(2.0 * phh - dphis) * wi - offset1 * t) * wsn / p0
+        dpx = 2.0 * v20a * S[i, 0] * av
+        dpy = 2.0 * v02a * S[i, 2] * av
+        S[i, 1] = (S[i, 1] * p1r + dpx) / p2r
+        S[i, 3] = (S[i, 3] * p1r + dpy) / p2r
+        S[i, 4] = -t * p2r * p0 / h2
+
+
+@njit(**NJ)
+def k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0):
+    """k_cav の後段: 後半のドリフトと出口のフリンジ"""
+    if al != 0.0:
+        for i in range(n):
+            cav_drift1(i, S, al * 0.5)
+            if fringe and mfring >= 0 and mfring != 1:
+                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0)
+
+
+@njit(**NJ)
+def cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0):
+    for i in range(n):
+        tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+
+
+@njit(**NJ)
+def cav_drift_all(S, n, alx):
+    for i in range(n):
+        cav_drift1(i, S, alx)
+
+
+@njit(**NJ)
+def cav_kick_all(S, n, v, v1a, v20a, v11a, v02a, w, wi, dphis, offset, offset1, tlim, wsn, dzn, p0, h0):
+    """tcav.f の do 20 (電圧キック 1 分割)"""
+    for i in range(n):
+        dp1r = S[i, 5]
+        p1r = 1.0 + dp1r
+        p1 = p0 * p1r
+        if S[i, 6] > 0.1:
+            h1 = p2h(p1)
+        else:
+            h1 = p1r * h0 / (1.0 - S[i, 6] + S[i, 10])
+        S[i, 4] -= dzn
+        t = fmin(tlim, fmax(-tlim, -S[i, 4] * h1 / p1))
+        ph = 0.5 * w * t
+        dh = fmax(1.0 + 3.83e-12 - h1,
+                 (v + (v1a + v20a * S[i, 0] + v11a * S[i, 2]) * S[i, 0] + v02a * S[i, 2]**2)
+                 * (-2.0 * math.sin(ph) * math.cos(ph - dphis) + offset) * wsn)
+        h2 = h1 + dh
+        a = fmax(dh * (h1 + h2) / (p1 * p1), -1.0)
+        dpr = sqrt1(a)
+        dp2r = dp1r + p1r * dpr
+        p2r = 1.0 + dp2r
+        S[i, 5] = dp2r
+        S[i, 6] = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + S[i, 10]
+        av = -(math.cos(2.0 * ph - dphis) * wi - offset1 * t) * wsn / p0
+        dpx = (v1a + 2.0 * v20a * S[i, 0] + v11a * S[i, 2]) * av
+        dpy = (v11a * S[i, 0] + 2.0 * v02a * S[i, 2]) * av
+        S[i, 1] = (S[i, 1] * p1r + dpx) / p2r
+        S[i, 3] = (S[i, 3] * p1r + dpy) / p2r
+        S[i, 4] = -t * p2r * p0 / h2 - dzn
+
+
+@njit(**NJ)
+def cav_to_exit_momentum(S, n, p0, pe, dpepe, he):
+    """tcav.f の do 210: g、dv を空洞後の基準運動量 pe に対するものに直す"""
+    for i in range(n):
+        dp = S[i, 5]
+        dp1 = dp * p0 / pe - dpepe
+        pr1 = 1.0 + dp1
+        S[i, 5] = dp1
+        h1 = p2h(pe * pr1)
+        S[i, 6] = -dp1 * (1.0 + pr1) / h1 / (h1 + pr1 * he) + S[i, 10]
+
+
+def _h2p(h):
+    if h > 1e3:
+        h2 = -1.0 / h**2
+        return h * (1.0 + h2 * (0.5 - h2 * 0.125))
+    return math.sqrt(h * h - 1.0)
+
+
+def cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, vnom, vq, kick, wk):
+    """tcav.f の全体 (vnominal≠0、ndiv 分割)。空洞の後の基準運動量に直した新しい ph を返す (tturn が周の終わりに元へ戻す)。
+    kick (WakeKick) と wk があれば分割ごとに txwake (tcav.f:94-102, 167-173)"""
+    import copy
+    p0, h0 = ph.p0, ph.h0
+    v1a, v20a, v11a, v02a = vq
+    he = h0 + vnom
+    pe = _h2p(he)
+    dpepe = vnom * (he + h0) / (pe + p0) / pe
+    vcorr = v * (w * (0.5 / p0 + 0.5 / pe))**2 / 4.0
+    v20a += vcorr
+    v02a += vcorr
+    r = abs(vnom * (1.0 / h0 + 1.0 / he))
+    eps = 1e-3
+    ndivmax = 1000
+    ndiv = 1 + int(min(abs(w * al), math.sqrt(r**2 / 3.0 / eps)))
+    if r > 1e-6:
+        wl = math.asinh(r * (2.0 + r) / 2.0 / (1.0 + r))
+        ndiv = min(ndivmax, max(ndiv, int(math.floor(wl * 10.0 + 0.5))))
+        r1 = wl / ndiv / 2.0
+        ws1 = 2.0 * math.exp(r1) * math.sinh(r1)
+        we = 1.0 + ws1
+        ws = [0.0] * (ndiv + 1)
+        ws[1] = ws1 / r
+        for i in range(2, ndiv + 1):
+            ws[i] = ws[i - 1] * we
+    else:
+        ws = [0.0] + [1.0 / ndiv] * ndiv
+    wsn = ws[ndiv]
+    if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
+        cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+    fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
+    fw_save = kick.fw if kick is not None else 0.0
+    sv = 0.0
+    for nn in range(1, ndiv + 1):
+        wsn = ws[nn]
+        if kick is not None:
+            kick.fw = fw0 * wsn * 0.5 if nn == 1 else fw0 * (wsn + ws[nn - 1] * 0.5)
+            kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, nn == 1, p0, h0)
+        dzn = 0.0
+        if al != 0.0:
+            alx = al * wsn * 0.5 if nn == 1 else al * (wsn + ws[nn - 1]) * 0.5
+            cav_drift_all(S, n, alx)
+            if vnom != 0.0:
+                sv += vnom * wsn
+                h2 = h0 + sv
+                p2 = _h2p(h2)
+                dp2 = sv * (h2 + h0) / (p2 + p0) / p0
+                pr2 = 1.0 + dp2
+                dvn = -dp2 * (1.0 + pr2) / h2 / (h2 + pr2 * h0)
+                dzn = -dvn * al * wsn * 0.5
+        cav_kick_all(S, n, v, v1a, v20a, v11a, v02a, w, wi, dphis, offset, offset1, tlim, wsn, dzn, p0, h0)
+    if kick is not None:
+        kick.fw = fw0 * wsn * 0.5
+        kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
+        kick.fw = fw_save
+    if al != 0.0:
+        cav_drift_all(S, n, al * ws[ndiv] * 0.5)
+        if fringe and mfring >= 0 and mfring != 1:
+            cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+    cav_to_exit_momentum(S, n, p0, pe, dpepe, he)
+    ph2 = copy.copy(ph)
+    ph2.set_pgev(pe * ph.amass)
+    return ph2
+
+
+@njit(**NJ)
 def k_steer0(S, n, phib, dx, dy, theta, cost, sint):
     """tthin(nord=2, ak=K0): px −= K0/(1+δ) (K0>0 は px を減らす)。ずれ・ロールは TENT/TEXIT (tthin の tent/texit)"""
     for i in range(n):
@@ -1405,7 +1597,7 @@ def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur):
             S[i, 4] = math.copysign(1e10, v)
         x = S[i, 0]; y = S[i, 2]; z = S[i, 4]
         ok = (-alost < x) and (x < alost) and (-alost < y) and (y < alost) and (abs(z) <= zlost)
-        if not ok:
+        if not ok and lcur != 0:             # tapert.f: kptbl(i,4)=l_track。l_track=0 (セッションの最初の追跡の最初の tapert) は「生きている」と区別できず落ちない (gs で確かめた)
             drop[i] = True
             lost_turn[kid[i]] = kturn
             if nlog[0] < log.shape[0]:
@@ -1427,6 +1619,26 @@ def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur):
                 for k in range(S.shape[1]):
                     tmp = S[i, k]; S[i, k] = S[np_ - 1, k]; S[np_ - 1, k] = tmp
                 tk = kid[i]; kid[i] = kid[np_ - 1]; kid[np_ - 1] = tk
+                drop[i] = False
+                drop[np_ - 1] = True
+            np_ -= 1
+        i += 1
+    return np_
+
+
+def drop_particles(S, n, kid, drop):
+    """drop[i] の粒子を末尾の生きている粒子と入れ替えて追跡から外す (k_apert と同じ並べ替え)。戻り: 新しい n"""
+    drop = drop.copy()
+    i = 0
+    np_ = n
+    while i < np_:
+        if drop[i]:
+            while i < np_ - 1 and drop[np_ - 1]:
+                np_ -= 1
+            if not drop[np_ - 1] and np_ - 1 != i:
+                for k in range(S.shape[1]):
+                    S[i, k], S[np_ - 1, k] = S[np_ - 1, k], S[i, k]
+                kid[i], kid[np_ - 1] = kid[np_ - 1], kid[i]
                 drop[i] = False
                 drop[np_ - 1] = True
             np_ -= 1
@@ -1456,6 +1668,7 @@ class Prog:
         # la を減らさない。parser が L=0 の BEND (VD/HD 等) を Drift にしたものは _sad_type='BEND' で見分ける
         self.la_count = []
         self.sol_mode = []              # ソレノイド領域内の要素の la の扱い (SM_*)
+        self.l0 = 0                     # この Prog の最初の要素の全体での位置 − 1 (TrackRun.segment が付ける。MAP の l 用)
         i = 0
         nel = len(elements)
         while i < nel:
@@ -1467,11 +1680,11 @@ class Prog:
                 i = _ext().compile_sol_region(self, elements, i, ph) + 1
                 continue
             if tn == 'Multipole':
-                k, p = _ext().compile_mult(el)
+                k, p = _ext().compile_mult(el, ph)
                 cnt = True
             else:
                 k, p = self._compile(el, ph)
-                if tn in ('Marker', 'Monitor'):
+                if tn in ('Marker', 'Monitor', 'Coord', 'Map'):       # tturn.f: icCOORD, icMAP は exit (la を減らさない)
                     cnt = False
                 elif isinstance(el, Drift):
                     cnt = getattr(el, '_sad_type', 'DRIFT') != 'DRIFT'
@@ -1581,18 +1794,40 @@ class Prog:
             return K_BEND, common
         if tn == 'Cavity':
             al = el.L
+            if g(el, 'AUTOPHI') != 0.0:
+                raise NotImplementedError('track6n: CAVI の AUTOPHI は未対応 (位置の z が要る)')
             vc = g(el, 'VOLT') + g(el, 'DVOLT')
             harm = g(el, 'HARM') or g(el, '_harm')
             freq = g(el, 'FREQ')
             w = 2.0 * math.pi * freq / CVELOC if harm == 0.0 else ph.omega0 * harm / CVELOC
             wi = 1.0 / w if w != 0.0 else 0.0
-            phic = g(el, 'PHI') * ph.charge
+            phic = (g(el, 'PHI') + g(el, 'DPHI')) * ph.charge      # tcav.f:33: (phi+dphi)*charge
             v = vc / ph.amass * abs(ph.charge)
-            return K_CAV, (al, v, w, wi, phic, g(el, 'DISFRIN') == 0.0, int(round(g(el, 'FRINGE'))))
-        if tn in ('Multipole', 'Solenoid', 'TCavity'):
+            # tffs.f:1455: vnominal = VOLT/amass |charge| sin(-PHI sign(charge)) (TRPT のときだけ使う。DVOLT は含まない)
+            vnom = g(el, 'VOLT') / ph.amass * abs(ph.charge) * math.sin(-g(el, 'PHI') * (1.0 if ph.charge >= 0 else -1.0))
+            qa = abs(ph.charge) / ph.amass
+            vq = (g(el, 'V1') * qa, 0.5 * g(el, 'V20') * qa, g(el, 'V11') * qa, 0.5 * g(el, 'V02') * qa)
+            return K_CAV, (al, v, w, wi, phic, g(el, 'DISFRIN') == 0.0, int(round(g(el, 'FRINGE'))), vnom, vq)
+        if tn in ('Multipole', 'Solenoid'):
             # Prog.__init__ が MULT/SOL を先に処理するので、ここに来るのは TCavity (と直接 _compile を呼んだ場合) だけ。
             # L=0 の MULT (薄い多極) や SOL を黙って無視しないよう、L==0 の判定より前に置く
             raise NotImplementedError(f'track6n: 要素 {tn} は未対応')
+        if tn == 'PhsRot':
+            raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/19 B38)。写さない')
+        if tn == 'Undulator':
+            from . import und as _un
+            return K_UND, _un.compile_und(el, ph.pgev)
+        if tn == 'TCavity':
+            from . import tcav as _tc
+            return K_TCAV, (_tc.compile_tcav(el),)
+        if tn == 'Coord':
+            from . import coord as _cd
+            return K_COORD, _cd.params(el)
+        if tn == 'BeamBeam':
+            from . import beambeam as _bb
+            return K_BB, (_bb.setup(el.params, ph.pgev, getattr(el, '_photon', None)),)
+        if tn == 'Map':
+            return K_MAP, ()
         if tn in ('Marker', 'Monitor'):
             return K_NONE, ()
         if el.L == 0.0 and tn in ('Drift', 'Sextupole', 'Octupole', 'Decapole', 'Dodecapole', 'Cavity'):
@@ -1607,14 +1842,17 @@ _NOLOG = np.zeros((0, 6))                      # 損失報告を記録しない�
 _NONLOG = np.zeros(1, dtype=np.int64)
 
 
-def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None):
+def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None, trpt=False, lt0=None):
     """1 周。apert=(kid, lost_turn, kturn, alost, zlost[, log, nlog]) を渡すと tapert を最初の要素・15 要素ごと・周末に行い、
     新しい n を返す。ソレノイド領域の la の扱いは SAD のまま:
       tturn1 の主ループは始点 SOL k で tapert 判定 → tsol → (1020) la-1、その後 l=k+1..ke も主ループを通り
       (`sol=l<ke; go to 1020`) 各 l で「la<=0 なら tapert, la=15」→ la-1 (座標は変わらないので判定は領域の出口で)。
-      tsol 内のループ (l=k+1..ke) は各要素の前に「la<=0 なら tapert, la=15、そうでなければ la-1」(tsol.f:604-615)"""
+      tsol 内のループ (l=k+1..ke) は各要素の前に「la<=0 なら tapert, la=15、そうでなければ la-1」(tsol.f:604-615)
+    wake: None か (kick, {要素の位置 (0 始まり): (wl, wt, dx, dy)})。位置の要素の前後で txwake (wake.WakeKick.apply) を呼ぶ (tturn.f:256-269, 562-575)。
+    kick.reset() は呼び出し側 (区間の始め)。Prog の要素数 = 位置の数のときだけ (SOL 領域の圧縮が無いとき)"""
     p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
-    la = 0
+    tm = 10.0 if trpt else 1.0          # tffs.f ndivrad: TRPT は放射の分割が 10 倍 (h0 は ndivrad だけに渡す h0*tm)
+    la = 0       # ph は加速のある CAVI (tcav の vnominal) で空洞の後の値に替わる。tturn の pgev00 に戻すのは周の終わり (呼び出し側の ph は変えない)
     if apert is not None:
         kid, lost_turn, kturn, alost, zlost = apert[:5]
         log, nlog = apert[5:7] if len(apert) >= 7 else (_NOLOG, _NONLOG)
@@ -1625,7 +1863,8 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None):
             if sm == SM_NONE or sm == SM_START:
                 if la <= 0:
                     # tapert の l_track は直前に処理した要素の番号 (tturn.f:243 の l_track=l は tapert の後)。周の最初は前の周の最後 (nlat)
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el if l_el >= 1 else nlat_)
+                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog,
+                                l_el if l_el >= 1 else (nlat_ if lt0 is None else lt0))
                     if n <= 0:
                         return 0
                     la = 15
@@ -1642,12 +1881,41 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None):
                     la = 15
                 else:
                     la -= 1
-        if kind == K_DRIFT:
+        wk = wake[1].get(l_el) if wake is not None else None
+        rfmult = kind == 10 and pr[-1] is not None and (trpt or rfsw)        # RF のある MULT (tmultiacc: wake は中で呼ぶ)
+        if wk is not None and kind != K_CAV and not rfmult:
+            wake[0].apply(S, n, wk[0], wk[1], wk[2], wk[3], True, p0, h0, wk[4])
+        if kind == K_MAP:
+            if MAP_HOOK is not None and apert is not None:
+                n = MAP_HOOK(prog.l0 + l_el + 1, kturn, S, n, kid, lost_turn)
+                if n <= 0:
+                    return 0
+        elif kind == K_MULTA:
+            from . import multa as _ma
+            (al, phi, psi1, psi2, ak, dx, dy, theta, dth, dchi2, alg, phig, eps0, radok, fb1, fb2, frmd, fringe) = pr
+            _ma.k_multa(S, n, al, phi, psi1, psi2, ak, dx, dy, theta, dth, dchi2, alg, phig, eps0, radok,
+                        fb1, fb2, frmd, fringe, _ma.GKN, _ma._FACT, rad, fluc, rs, p0, h0 * tm, anrad, cuc)
+        elif kind == K_UND:
+            from . import und as _un
+            _un.k_und(S, n, *pr, p0, h0)
+        elif kind == K_TCAV:
+            if rfsw:
+                from . import tcav as _tc
+                _tc.apply_tcav(S, n, pr[0], ph, rad, fluc, rs, apert[2] if apert is not None else 1)
+            else:
+                k_drift(S, n, pr[0]['al'])
+        elif kind == K_COORD:
+            from . import coord as _cd
+            _cd.k_coord(S, n, *pr)
+        elif kind == K_BB:
+            from . import beambeam as _bb
+            _bb.apply(S, n, pr[0], rs)
+        elif kind == K_DRIFT:
             k_drift(S, n, pr[0])
         elif kind == K_QUAD:
             (L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2out, eps0, radok) = pr
             k_quad(S, n, L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2out, eps0,
-                   rad and radok, fluc, rs, p0, h0, anrad, cuc)
+                   rad and radok, fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind == K_THIN:
             (L, ak, kord, dx, dy, theta, ct, st, fringe, radok) = pr
             k_thin(S, n, L, ak, kord, dx, dy, theta, ct, st, fringe, rad and radok, fluc, rs, p0, anrad, cuc)
@@ -1658,31 +1926,49 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None):
             if ak1 != 0.0:
                 k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak1, dx, dy, theta, dtheta, cost, sint,
                         dchi2, alg, phig, fb1, fb2, mfring, krad, fringe, eps0, True, True,
-                        fluc, rs, p0, h0, anrad, cuc)
+                        fluc, rs, p0, h0 * tm, anrad, cuc)
             else:
                 k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2, cosw, sinw, sqwh, sinwp1,
                         fb1, fb2, mfring, fringe, krad, True, True, eps0, dx, dy, cost, sint, dtheta, dchi2, alg, phig,
-                        fluc, rs, p0, h0, anrad, cuc)
+                        fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind == K_CAV:
-            (al, v, w, wi, phic, fringe, mfring) = pr
-            phis = w * trf0
+            (al, v, w, wi, phic, fringe, mfring, vnom, vq) = pr
+            phis = 0.0 if trpt else w * trf0      # tcav.f:50: TRPT は phis=0
             dphis = phis - phic
-            if rad:
+            if rad or trpt:                       # tcav.f:66: rad or trpt or autophi
                 offset = math.sin(dphis)
                 offset1 = 0.0
             else:
                 offset = math.sin(dphis) - math.sin(phis)
                 offset1 = math.sin(phis)
             tlim = 1e4 if rfsw else 0.0
-            k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0)
+            if trpt and vnom != 0.0:
+                # TRPT の加速 (vnominal≠0): ndiv 分割と、空洞の後の p0、h0 の更新 (tcav.f 全体)
+                ph = cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, vnom, vq,
+                              (wake[0] if wk is not None else None), wk)
+                p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
+            elif wk is not None:
+                # tcav.f: 入口フリンジ → [wake 前半 (init)] → 前半ドリフトと電圧キック → [wake 後半] → 後半ドリフトと出口フリンジ。dx, dy, theta は 0 を渡す
+                k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0)
+                wake[0].apply(S, n, wk[0], wk[1], 0.0, 0.0, True, p0, h0)
+                k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0)
+                wake[0].apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
+                k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0)
+            else:
+                k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0)
+        elif rfmult:
+            ph = _ext().mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, (wake[0] if wk is not None else None), wk)
+            p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
         elif kind == K_STEER0:
             k_steer0(S, n, pr[0], pr[1], pr[2], pr[3], pr[4], pr[5])
         elif kind == K_STEER:
             (al, phib, dx, dy, theta, cost, sint, tanp1, eps0, radok) = pr
-            k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, p0, h0, anrad, cuc)
+            k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind > K_NONE:
             # MULT / ソレノイド領域 (K_MULT, K_SOL_FRIN, K_SOL_DRIFT, K_SOL_QUAD)
-            _ext().step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs)
+            _ext().step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm)
+        if wk is not None and kind != K_CAV and not rfmult:
+            wake[0].apply(S, n, wk[0], wk[1], wk[2], wk[3], False, p0, h0, wk[4])
         if TRACE is not None:            # デバッグ用: 要素ごとのフック (切り分けスクリプトが設定する)
             TRACE(l_el, prog, S, n, la, rs)
         if apert is not None and sm == SM_END:
@@ -1738,8 +2024,9 @@ class TrackRun:
     |px|,|py|≤0.9999、|z|≤1e10 に抑えたもの)。Prog が未対応の要素を含むときは NotImplementedError (呼び出し側が track6 に落とす)"""
 
     def __init__(self, elements, coords, flags, momentum_eV, alost=1.0, zlost=100.0, kturn0=1, trf0=0.0, rfsw=True,
-                 rad=False, fluc=False, fshift=0.0, circ=None, charge=1.0, amass=None):
+                 rad=False, fluc=False, fshift=0.0, circ=None, charge=1.0, amass=None, trpt=False):
         self.elements = list(elements)
+        self.trpt = trpt
         if circ is None:
             circ = sum(el.L for el in self.elements)
         kw = {} if amass is None else {'amass': amass}
@@ -1761,6 +2048,11 @@ class TrackRun:
         self.rs = np.array([_t6.RNG.seed], dtype=np.int64)
         Prog(self.elements, ph)                  # 未対応の要素なら NotImplementedError (全体で 1 回確かめる)
         self._progs = {}
+        self.wake = None                         # (WakeKick, {全体の要素番号 (1 始まり): (wl, wt, dx, dy)})
+
+    def set_wake(self, kick, table):
+        """WakeFunction (wake.py)。CAVI / MULT(VOLT≠0) / SOL 領域の要素は未対応 (呼び出し側が確かめる)"""
+        self.wake = (kick, table)
 
     def segment(self, a, b):
         """tturn(ls=a, ld=b): 要素 a..b−1 を 1 回通す (tapert 付き)"""
@@ -1770,9 +2062,18 @@ class TrackRun:
         prog = self._progs.get(key)
         if prog is None:
             prog = self._progs[key] = Prog(self.elements[a - 1:b - 1], self.ph)
+            prog.l0 = a - 1
+        wake = None
+        lt0 = getattr(self, 'l_track0', None)        # セッションの最初の追跡では l_track=0 (tmacro の初期値)。tapert の落とす印 kptbl(i,4)=l_track が 0 では落ちない
+        self.l_track0 = None                          # 2 つ目の区間・周からは前の要素の番号
+        if self.wake is not None:
+            if len(prog.kinds) != b - a:
+                raise NotImplementedError('wake: SOL 領域を含む区間')
+            self.wake[0].reset()                 # tturn.f:200 dzwr=0
+            wake = (self.wake[0], {l - a: v for l, v in self.wake[1].items() if a <= l < b})
         with np.errstate(all='ignore'):
             self.n = turn(prog, self.S, self.n, self.ph, self.trf0, self.rfsw, self.rad, self.fl, self.rs,
-                          apert=(self.kid, self.lost_turn, self.kturn, self.alost, self.zlost))
+                          apert=(self.kid, self.lost_turn, self.kturn, self.alost, self.zlost), wake=wake, trpt=self.trpt, lt0=lt0)
         if self.n > 0 and not self.rfsw:
             self.S[:self.n, 4] = 0.0             # tturn.f:142-145: RFSW OFF は区間ごとに z=0
 

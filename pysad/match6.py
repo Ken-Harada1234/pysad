@@ -271,6 +271,9 @@ class Matcher:
         self._fam: Dict[int, dict] = {}                 # ix → dict(jfam=親の idp, kfam=番号 (x: 1..nfp, y: -1..-nfp), dfam=軌道のずれ 4)
         self._fam_def_done = False                      # GO (tffsa) ごとに 1 回だけ tffamsetup する
         self._cur_fam_id = 0                            # FitValue の id (kfam)
+        self.ini = None                                 # InitialOrbits (ffscmd.initial_orbits の戻り)。あれば軌道ごとの点 (idp=nfam1..nfam) を使う
+        self.ini_fn: Optional[Callable] = None          # () → InitialOrbits の dict または None
+        self.ini_optics: Optional[Callable] = None      # (ini, dp0) → {idp: rows} (wake の相互作用も含む)
         self.dlim = False                               # VariableRange が値を返したら真 (tffsvlimit の dlim)
         self.nlat = len(lattice.elements) + 1
         self._mfpnt = self.nlat
@@ -469,6 +472,8 @@ class Matcher:
     # ------------------------------------------------------------------ 残差 (tffscalc + tdfun + twfit)
     def _nfr(self):
         """オフモメンタム点の数 (tffsa: nfr = max((|mfitp|-1)/2))"""
+        if self.ini is not None:
+            return self.ini['nfr']               # tffsa.f:1131: InitialOrbits があれば nfr = 軌道の数から (オフモメンタム整合は無効)
         nfr = 0
         for c in self.conditions:
             if c['mfitp'] != 0:
@@ -477,6 +482,11 @@ class Matcher:
 
     def _dp_list(self, nfr):
         """dp(idp) = dpmax*idp/nfr (DPM 指定時は ±1 を DPM に)"""
+        if self.ini is not None:
+            dps = {i: 0.0 for i in range(-nfr, nfr + 1)}
+            for i, u in self.ini['uini'].items():
+                dps[i] = float(u[20])            # dp(nfam1:nfr) = uini(mfitddp, ·) (tffsa.f:1137)
+            return dps
         dps = {0: 0.0}
         for i in range(1, nfr + 1):
             dps[i] = self.dpmax * i / max(nfr, 1)
@@ -490,8 +500,21 @@ class Matcher:
         """tffscalc: idp=0 (δ=dp0) を計算し、±1, ±2, … を前の点の閉軌道を初期値に連鎖で計算する。
         戻り: (rows_by_idp, stab_by_idp, over_by_idp)。SAD の INTRES/HALFRES/SUMRES/DIFFRES の安定判定も行う。
         その後 fam 点 (MatchingAmplitude) を親の点の軌道 + 振幅で計算する (tffscalc の fam=.true. のループ)"""
+        if self.ini is not None:
+            return self._optics_ini()
         rows_by, stab, over = self._optics_idp(nfr)
         self._fam_points(nfr, rows_by, stab, over)
+        return rows_by, stab, over
+
+    def _optics_ini(self):
+        """tffscalc (InitialOrbits): 中心 (idp=0) と各軌道を INS で計算する (wake があれば互いにキックを与え合う)"""
+        rows_by = dict(self.ini_optics(self.ini, self.dp0))
+        stab = {i: (True, True) for i in rows_by}
+        over = {i: False for i in rows_by}
+        self.qstat_by = {i: None for i in rows_by}
+        self._rows_idp.update(rows_by)
+        if rows_by.get(0) is not None and getattr(self, 'ffs', None) is not None:
+            self.ffs.rows = rows_by[0]                   # Twiss[...] は中心 (idp=0) の軌道
         return rows_by, stab, over
 
     # ---- fam 点 (tffamsetup.f / tffscalc.f)
@@ -689,6 +712,8 @@ class Matcher:
         """tffscalc + tdfun + twfit。戻り: (dfs: dict (id, idp)→df·wiq, r: _Res, rows (idp=0))
         wcal: 重み wfit を計算し直す"""
         self._apply_vars()
+        if self.ini_fn is not None:
+            self.ini = self.ini_fn()
         if self.optics_prolog is not None:
             self.optics_prolog()          # tffscalc.f:64: OpticsProlog を評価してから光学計算
         self._geo = None                  # 変数を反映した要素で幾何を作り直す (必要なときに _tgfun が作る)
@@ -1351,6 +1376,8 @@ class Matcher:
                 return 'オフモメンタム条件 (FITP>1) は未検証'
             if cid < 0:
                 continue                                   # FitFunction は片側差分で別処理
+            if self._cond(cid)['kf'] in _GEO_KF:
+                continue                                   # 幾何 (GX..CHI3) は match6d.tdgeo_term (DRIFT・BEND の変数) と中心差分
             kf = _KF_INDEX.get(self._cond(cid)['kf'])
             if kf is None or (kf > MFITTRY and kf != LENG):
                 return f"条件 {self._cond(cid)['kf']} は未対応"

@@ -1,5 +1,7 @@
 # 作業ログ: touschek.py (TouschekTable / TouschekLifetime の直訳) の解説と照合
 
+最終更新: 2026-11-16
+
 日付: 2026-10-15 / 対象: `pysad/touschek.py` (861 行)。コードは未変更。照合は `bench_level17_pysad.py a|b` を実際に再実行した結果。
 
 ## 1. 何をするモジュールか
@@ -44,7 +46,7 @@ touschek.py はこの経路全体を直訳し、emit6d.py の `_State` / 要素�
 
 SAD 側: `bench_level17a.sad` は `RFSW; RAD; FLUC; INTRA; MINCOUP=0.019;` に `PBUNCH = 200/2.998/1.602*LINE["S","$$$"]/992*1e8`
 (= 2.5318e9 粒子/バンチ)、`emit`、TouschekTable の各部と `TouschekLifetime` 15 ケース (TL1..TL15) を Print。`17b` は RADCOD を加えただけ。
-ラティスは pysad/tests/kek-ls_v03_12.lat (nlat = 3564)。pysad 側は `bench_level17_pysad.py` をそのまま実行 (IBS 反復 it=5 で収束)。
+ラティスは <試験用ラティス>.lat (nlat = 3564)。pysad 側は `bench_level17_pysad.py` をそのまま実行 (IBS 反復 it=5 で収束)。
 
 所要時間: 17a は emittance6d 9.7 s + touschek_table 19.4 s、17b は 18.4 s + 14.3 s。
 
@@ -103,3 +105,7 @@ SAD 側の収束が途中打ち切りなので「SAD の数値の再現」は原
 
 touschek.py は RADCOD OFF で SAD と 1e-9〜1e-11 で一致 (TouschekLifetime 15 ケースは 7e-12 以下)、RADCOD ON では SAD の tcod 収束誤差 (1e-7) の範囲。
 次の手は上記 ffscmd.py 接続と、PBUNCH=0 / MINCOUP 既定値での動作確認 (本ベンチは MINCOUP=0.019 のみ)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: `touschek.py` は 11/14 に更新された (更新日時 11/14 16:57)。COORD・TCAVI・MULT ANGLE≠0 を含むリングでも Touschek が通る (docs/23・24・26 の表: `emit6d._tcoord`・`_ttcave`・`_tmulte` を使う)。SOL (BOUND≠0) と Touschek (INTRA) の組み合わせは未対応 (docs/27 §未対応)。`emit6d._tquade` の δ 微分の差 (1e-5、DX/DY のある QUAD) は touschek にも及ぶ (work_unimpl.md 「後でまとめて直す一覧」1)。MAIN の Touschek は MAP を恒等として通す (docs/28)。この文書の本文 (TouschekTable・TouschekLifetime の照合) は 10/15 時点のまま。

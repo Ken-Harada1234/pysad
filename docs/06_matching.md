@@ -1,6 +1,6 @@
 # 06. マッチング (FIT/FREE/GO) — tffsmatch の Newton/降下法と pysad の match6.py
 
-> 最終更新: 2026-11-06 (現状のスナップショット)。
+> 最終更新: 2026-11-16 (現状のスナップショット)。
 
 対象ソース: `src/tffsmatch.f` (tffsmatch, tweigh, tfsolv, tgrad, tffsvlimit, tffsddf)、`src/tffscalc.f` (tffscalc, twfit)、
 `src/qdcell.f` (tdfun, tdfun1, tdlfun, trdfun, tfgetfitval, tffsfitfun, tffsqu)、`src/tffsa.f` (nfr, dp(i))、
@@ -36,7 +36,7 @@ ve−vb を「現在値」として tdfun1 に渡す。最大フィットで df=
 - `FitWeight[loc, fun, {id,dp}, wfit]` (twfit) が実数を返せば wiq をそれに置き換える。
 - `FitFunction` (tffsfitfun) が実数か実数リストなら、それを重み 1・idp=0 の条件として末尾に追加 (iqcol=−i)。
 - SAD の内部の挙動 (各反復の変数値・条件値・重み) を調べるときは、これらのフックと `VariableRange`/`VariableWeight` (2 節) に Print を入れて取り出す
-  (VariableRange は Null を返して dlim に影響させない。<work-pf2>/e2.sad)。
+  (VariableRange は Null を返して dlim に影響させない)。
 
 ### 重み wfit (twfit) と残差 r
 
@@ -52,7 +52,7 @@ SAD は EMITX/EMITY を FFS に入った最初の 1 回だけマークから読�
 | R1..R4 | coup·sqrt(bx/by), coup/sqrt(bx·by), coup·sqrt(bx·by), coup·sqrt(by/bx) |
 | DX/DPX/DY/DPY | 1/sqrt(bx·emxx) など (EX 系から dpm を除いた形) |
 | LENG | max(νx,νy)/(pos(maxf)−pos(1)) |
-| DZ / GX..GZ | 0.01 (1e-3)·sqrt(max(νx,νy)/em/max(1, L)) |
+| DZ / GX..GZ | DZ は 0.01、GX GY GZ は 1e-3 を掛けた sqrt(max(νx,νy)/em/max(1, L)) |
 | BMAG* / CHI* | 3 / 1e3 |
 | AX BX NX AY BY NY など | 1 |
 
@@ -87,6 +87,19 @@ SAD の既定は解析微分 tffsqu (qdcell の dtwiss: 要素ごとの伝達行
 (`Matcher._derivative`; 未対応の条件・状況は自動的に以下の数値微分にフォールバック。history/work_integration.md §2)。
 INS (cell=False) でも解析微分 (`match6d.analytic_qu`) を使う。SAD の INS で数値微分 (`FFS$NumericalDerivative`) を使うと `qtwiss Overflow (fb)` で壊れる。
 `PYSAD_INS_NUMERIC=1` で pysad を INS の数値微分に戻せる (docs/history/work_item4.md §E)。
+
+### 幾何の条件 (GX GY GZ CHI1–3) と tdgeo
+
+- 条件の値 (`Matcher._tgfun`、tgfun.f): GX/GY/GZ は `geo(:,4,kp)`、CHI1–3 は `tfchi(geo(:,:,kp))`。幾何 `geo.py` は変数を反映した現在の要素から ORG 込みで作り直す (`ffscmd` が `geo_fn` を差し替える。CALC のたびに tfgeo が計算し直す)。
+- **目標値は任意** (`fit gx <値>`)。0 は**リングを閉じるための目標**で (`fit gx 0; fit gy 0; free <DRIFT の名前> L; go;` の形)、BT (輸送路) やセルでは任意の値を指定する。CHI1–3 の目標は度で書き、内部でラジアンにする (NX/NY/NZ は 2π 倍)。
+  GX..CHI の条件は idp≠0 では評価しない (LENG・TR* も同じ)。重みは GX GY GZ が 1e-3·sqrt(max(νx,νy)/em/max(1,L))、CHI が 1e3 (1 節の表)。
+- **解析微分 `match6d.tdgeo_term`** (tdgeo.f の直訳): 変数が DRIFT の L、BEND の ANGLE (ROTATE 付きも)・L のときだけ。**幾何の条件だけの行**に使う。BEND の L は K64 が出射の向き `geo(:,3,k+1)` で近似する式のまま
+  (有限差分とは O(ANGLE²) 違う)。DRIFT の L と BEND の ANGLE は幾何の有限差分と 1e-5 以内で一致 (`test_tdgeo.py`)。
+  **四極などの変数 (DX・DY。K64 は `qdtrans`・`tftmatu` を使う、未移植) と、Twiss の条件が同じ行にある列は中心差分のまま**。
+- 未確認: 不安定なリングの幾何の fit は gs が不安定の罰則を残差に入れず、pysad は入れるので結果が違う (比べていない)。COORD を含む区間の解析微分、SOL の幾何の fit も未確認。
+- **COORD を含むリングの FIT** (2026-11-16 に確認、`local/wake/cf1.sad`): COORD の対 (C1・C2、DX DY DZ CHI3 付き) を含むリングで NX・NY=0.2、QF K1・QD K1 を FREE にした fit (解析微分の経路) は、K1・チューンとも gs と全桁一致。**COORD のパラメータそのものを FIT 変数にする場合は未確認**のまま。
+- **フラグ UNIPOL・RELW の効果** (2026-11-16 に確認し、pysad を直した): gs は UNIPOL で変数の符号を変えず (tffsmatch.f:669)、RELW で重みが変わり、FIT の結果が変わる。以前の pysad は `match6` に `bipol`・`absweit` の実装があるのにフラグとつながっておらず、どれも既定の結果になっていた。`ffscmd.matcher_` でフラグをつなぎ、`fit1.sad` (QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit) の 3 通りが gs と全桁一致: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499 (`test_item4.py` 3 件)。この 2 変数の小さな例だけの確認で、多数の変数・条件の組での比較はしていない。
+- **DELCOR で OCT を対象に含める** (2026-11-16): チューンと QF の DX が gs と 12 桁で一致 (`dc1.sad`。OC 自体の DX は gs も pysad も 0 を返すので、OCT の効果そのものを見る強い比較ではない)。
 
 `FFS$NumericalDerivative=True` (または SOL を含むとき) は数値微分になり、pysad はこの経路を直訳している:
 
@@ -139,7 +152,7 @@ do9000:
 - tfsolv: 最大フィット条件 (mfitp<0) は最初は外して SVD (tsolva; 特異値 ≤ eps·最大 を落とす) で解き、解が外した条件を
   越える ((s−df)·df<0) ならその条件を入れて解き直す (最大 nqcol 回)。dg = w·Σ(−df·s) は方向微分で、>0 なら上り方向なので DESCEND へ。
 - fmincube (findr): g0=rp0 と (f1,g1),(f2,g2) の 3 次補間で極小を探し、[f1/16, γ·f1] に挟む (γ=0.5772 はオイラー定数。tfstk.f の `m_euler`。
-  ネイピア数 e ではない。この定数は不安定な試行点で直線探索が伸びたときの反復の経路に効く: matching02_r、docs/history/work_unstable.md)。
+  ネイピア数 e ではない。この定数は不安定な試行点で直線探索が伸びたときの反復の経路に効く: docs/history/work_unstable.md)。
 - 表示: `(i8,3x,i6,2x,1pG11.4,a,1pG11.4,i7)` = `iter nstab residual (NEWTON)/(DESCEND) fact nvara`、
   改善して `resle(r,rprint,1.02)` のときだけ出る。終了行は ` Matched. (res2r)` / ` Residual = r` / `Unstable = n Residual = r`
   の後に ` DP = f8.5  DP0 = f8.5  ExponentOfResidual = f4.1  OffMomentumWeight = f8.3  CALEXP`。
@@ -148,7 +161,7 @@ do9000:
 
 SAD の `tfsolv → tsolva → tsvd` は numpy の SVD (特異値 ≤ eps·最大を落とす) とは別物。2 重対角化の後、対角要素の最小値が `anorm*eps`
 (eps = TSTOL/fact = 1e-6) を超えれば **特異値を一つも落とさない** quick path、そうでなければ暗黙 QR で特異値を求めて滑らかに減衰 (`w=(s·v/anorm²)²`)。
-`pysad/tsvd.py` に直訳し `Matcher._tsolva` が使う (`PYSAD_TSVD_NUMPY=1` で numpy 版)。良条件の J (13a/13b/ESRF) では numpy と一致し、
+`pysad/tsvd.py` に直訳し `Matcher._tsolva` が使う (`PYSAD_TSVD_NUMPY=1` で numpy 版)。良条件の J (13a/13b/実ラティス) では numpy と一致し、
 条件数 1e6 以上 (INS のフィット: 9 条件 × 11 変数、特異値 1.6e7〜1.5) で SAD と同じ 1 歩目になる。
 
 ### DESCEND (最急降下) とモード切替 (詳細は history/work_descend.md)
@@ -159,7 +172,7 @@ SAD の `tfsolv → tsolva → tsvd` は numpy の SVD (特異値 ≤ eps·最�
   DESCEND 側は `aimprv>0.5` (改善が十分大きい) で NEWTON に戻る。`iter>10·itmax` で打ち切り。
 - **`wcal=chgmod` (重要)**: モード切替 (と最初の評価) の直後の `tffscalc` だけが `wcal=真` で、条件の重み `wfit` (EX/EPX/R1.. などは適合点の β, α と EMITX/EMITY に依存)、`etamax`、`avebeta`
   を **現在の光学から計算し直す**。それ以外の評価 (直線探索の途中、数値微分の評価) は前の重みを使う。切替のたびに重みが変わるので、切替後の残差・微分は切替前と同じ点でも値が違う。
-  pysad も同じ (`wcal` を最初の 1 回だけにすると、モード切替のある走りで DESCEND の 1 歩目から SAD と 16% ずれる。tune_sv_v30_24_1 の 2 段目は反復の表が SAD と全行一致)。
+  pysad も同じ (`wcal` を最初の 1 回だけにすると、モード切替のある走りで DESCEND の 1 歩目から SAD と 16% ずれる)。
 - 勾配は微分 `qu` の全成分に効く (NEWTON は特異値の小さい方向が SVD で効きにくいので、qu や重みの誤差が見えにくい)。DESCEND でずれが出たときは、df と qu の行・列ごとの比を SAD のデバッグ版と
   比べると、重みの違い (行ごとに一様な比) か微分の違い (列にも依存) かが分かる。
 
@@ -168,10 +181,10 @@ SAD の `tfsolv → tsolva → tsvd` は numpy の SVD (特異値 ≤ eps·最�
 残差が悪化すると crate<0 で `log10(crate)` は NaN になる。gfortran の MIN/MAX は NaN を無視して「NaN でない方」を返すので
 fuzz(NaN,…)=max(0,min(1,NaN))=1、よって badcnv=amedcv=0 となり、NEWTON ではモードを変えずに fmincube の直線探索に入る。
 Python の `max/min` は NaN を伝播する (比較が偽) ため、素直に書くと badcnv=1 → 即 DESCEND → nretry 消費 → 早く諦めて
-" Residual =" で終わる。pysad の `_fuzz` は x≠x のとき 1 を返して SAD を再現する (esrf/matching で効く)。
+" Residual =" で終わる。pysad の `_fuzz` は x≠x のとき 1 を返して SAD を再現する。
 
 crate=0 (残差が全く動かない。不安定ラインで qu が 0 になる点) は `log10(0)` = **-Infinity** (NaN ではない) で fuzz=0、badcnv=1 → モード切替になる。
-0 を NaN と同じに扱うと同じ点を無限に反復する (tune_sv 不安定ライン、history/work_unstable.md)。pysad の `_log10` は 0 → -inf、負 → NaN。
+0 を NaN と同じに扱うと同じ点を無限に反復する (不安定ライン、history/work_unstable.md)。pysad の `_log10` は 0 → -inf、負 → NaN。
 
 ## 5. オフモメンタム点 (FITP、"NX nx0 2")
 
@@ -186,7 +199,7 @@ crate=0 (残差が全く動かない。不安定ラインで qu が 0 になる�
 - 目標のずらし: kp==nlat の NX/NY で |idp|≤1 のとき目標に (dp(idp)−dp0)·XIX/XIY を足す (idp≠0 または mfitp が偶数のとき)。
 - LENG/GX..CHI/TR* は idp≠0 では条件にしない。DX..DPY は |idp|>nfr では条件にしない。
 - 注意: WSL ビルドの SAD は FITP>1 の GO で "*** Run time Environment" からスクリプトを再実行する (クラッシュ→再起動) ため、
-  bench_level15a/esrf chrom の参照値が取れていない。pysad 側はソースの直訳のまま未照合。
+  bench_level15a の参照値が取れていない。pysad 側はソースの直訳のまま未照合。
 
 ## 6. pysad の API と接続
 
@@ -218,11 +231,7 @@ EMITX/EMITY、XIX/XIY (×2π)、DPM、INTRES 等を Matcher に渡し、`FitValu
 |---|---|---|
 | 13A-1 (小リング) | fit NX 7.55 NY 7.18, free QF QD | 2 反復 NEWTON、反復行 `2 0 1.6776E-06 (NEWTON) 1.000 2` が同一、Matched 5.0763e-16 vs SAD 5.0759e-16、K1 ≤5e-11 |
 | 13A-2 | + ORG BX 17.5 BY 1.0, free QF QD QF2 (解なし) | SAD も収束せず " Residual = 2.5977E-03" で打ち切り。pysad も同じ経路 (qcod overflow → nstab) で残差・K1 (≤4.4e-11) が一致 |
-| 13B (ESRF v03_12, 7 ファミリー) | fit NX 47.6 NY 17.6, MKC BX/AX/BY/AY | 2 反復 Matched 3.3724e-10 (両者)、K1 28 台 ≤1.1e-10 |
-| esrf/matching (ARCA, 9 変数 11 条件, FitValue/FitFunction) | SAD: 残差 3e7 を経て 7 反復で Matched 8.7e-9 | pysad (数値微分の経路): 10 反復で Matched 2.1e-14 だが別解 (QFA1H 0.478 vs 0.400 など) |
-| esrf/chrom (NX nx0 2, FITP) | SAD は再起動して参照値なし | pysad は最後まで走るが GO で "?No variable." (FREE SD*,SF* の登録) → Residual 2.8e-3。要調査 |
-| <work-pf2> matching_v30_12 (NCELL → N2 → RING), matching_v31_23 | 解析微分 + tsvd | NEWTON/Matched/Residual の列が SAD と一致 (docs/history/work_item4.md §E) |
-| <work-pf2> tune_sv (2 段目), tune_sv_v30_24_1 | NEWTON↔DESCEND の切替を含む走り | 100 反復以上一致、反復の表が全行一致 (history/work_descend.md) |
-| matching02_r、tune_sv 不安定ライン | 不安定な試行点での直線探索・crate=0 | fmincube の γ と `_log10` の扱いで SAD の経路を再現 (docs/history/work_unstable.md) |
+| 13B (実ラティス 試験用のラティス, 7 ファミリー) | fit NX 47.6 NY 17.6, MKC BX/AX/BY/AY | 2 反復 Matched 3.3724e-10 (両者)、K1 28 台 ≤1.1e-10 |
+| 不安定ライン | 不安定な試行点での直線探索・crate=0 | fmincube の γ と `_log10` の扱いで SAD の経路を再現 (docs/history/work_unstable.md) |
 
 解が一意な問題 (13A/13B) では数値微分でも SAD と同じ解・同じ反復数になる。多解の問題で SAD と同じ経路を取るには解析微分 (既定の match6d、3 節) が要る。

@@ -123,3 +123,20 @@ def test_tracking_fshift_python_and_numba_agree():
     c0 = track6.track_particles(ffs.els, x, 2, ffs.momentum(), trf0=0.0, rfsw=False, rad=False, fshift=0.0)
     c1 = track6.track_particles(ffs.els, x, 2, ffs.momentum(), trf0=0.0, rfsw=False, rad=False, fshift=1e-6)
     assert np.array_equal(c0, c1)
+
+
+def test_first_tapert_of_session_does_not_drop_initially_lost_particles_like_gs():
+    """tapert は落とす印に kptbl(i,4)=l_track を書く。セッションの最初の TrackParticles では l_track=0 (tmacro の初期値) なので、最初から LOSSAMPL の外の粒子は
+    最初の tapert では落ちず (座標は 3·LOSSAMPL に頭打ち)、追跡を続けて後の tapert で落ちる。2 回目の呼び出しからは最初の要素で落ちる。参照は gs (local/wake/lm4.sad)"""
+    import io
+    import re
+    from pysad.ffscmd import run_sad_string
+    buf = io.StringIO()
+    run_sad_string('MOMENTUM = 3GEV;\nDRIFT D1 = (L=1) D2 = (L=0.5);\nQUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);\nBEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);\nMARK ST = ();\nLINE CELL1 = (QF D2 B D2 QD D1);\nLINE RING = (ST 6*CELL1);\nFFS;\n$FORM="18.14";\nPageWidth=1999;\nUSE RING;\nLOSSAMPL=1e-3;\n\nNORAD;\nx0={1e-4,1e-6,2e-2};px0={0,0,1e-4};y0={0,1e-6,0};py0={0,0,0};z0={0,0,0};dp0={0,0,0};fl0={1,1,1};\nr=TrackParticles[{1,{x0,px0,y0,py0,z0,dp0,fl0}},1,1,2];\nPrint["S ",r[[2,1]]];\nr=TrackParticles[{1,{x0,px0,y0,py0,z0,dp0,fl0}},1,1,1];\nPrint["S2 ",r[[2,1]]];\nExit;\n', out=buf)
+    got = {}
+    for l in buf.getvalue().splitlines():
+        m = re.match(r'^(S2?) (.*)', l)
+        if m:
+            got[m.group(1)] = [float(x) for x in re.findall(r'-?\d*\.\d+(?:E-?\d+)?', m.group(2))]
+    assert abs(got['S'][2] - (-0.003)) < 1e-12 and abs(got['S'][0] - 1.808308564271e-4) < 1e-14
+    assert abs(got['S2'][2] - 0.003) < 1e-12 and abs(got['S2'][0] - (-2.32161206172e-4)) < 1e-14

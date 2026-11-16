@@ -1,5 +1,7 @@
 # 作業ログ: 幾何の fit (GX/GY/GZ/CHI)・DISP G/OG・ビームサイズ (SIGX) (2026-11-05)
 
+最終更新: 2026-11-16
+
 残課題 2 の「DISP G モードと fit の GX/GY」「BEAMSIZE/Twiss["SIGX"]」。
 ユーザー指示 (11/05): ファイルの読み書きは Python ネイティブでやるので SAD の OpenRead/Write の失敗の扱いは移植しない。
 DISP G と GX/GY のマッチングは重要。SIGX/SIGY などは **EMIT の事前実行を条件に、エネルギー広がり・エミッタンス・Twiss からビームサイズを返す**
@@ -35,13 +37,10 @@ Chi1-3 (度、12.6)、#。OG は閉軌道 (DX DPX DY DPY) を乗せた幾何 (tf
 
 ## 4. 検証
 
-| スクリプト | 結果 |
+| ケース | 結果 |
 |---|---|
-| esrf matching_geo_hmba (`disp geo $$$`、fit gx/gy、free DRID1 L) | SAD と同じ出力 (Matched. 6.2796E-12 まで同じ、GY は 1e-13 の雑音) |
-| pf2 matching_geo_ring_r (fit MKRC GX/GY、free BMA → No variable) | SAD と同じ (`?No variable.` → Matched. の行だけ、GX/GY は 1e-14 の雑音) |
-| <work-perf>/geo_tiny1 (小さな輸送線: 回転 BEND 付き、disp geo/ogeo) | DISP G の全行が SAD と同一 (OG の 1e-33 の雑音を除く)、LINE["GX".."GCHI3"] が 1e-15 で一致 |
-| <work-perf>/geo_tiny2 (fit M2 GX/GZ で free D2 L, D3 L → fit $$$ CHI1/CHI3 で free B3/B2 ANGLE) | 反復の表示 (3〜12 回目) が SAD と同一、D2 L 2.784721292 (1e-12)、角度は 15 桁一致 |
-| pf2 beamsize_r (emit; beamsize; cell calc beamsize; Twiss["SIGX".."SIGPY"] の 146 行) | **146 行すべて SAD と同一** (1e-13 以下の雑音の列を除く) |
+| geo_tiny1 (小さな輸送線: 回転 BEND 付き、disp geo/ogeo) | DISP G の全行が SAD と同一 (OG の 1e-33 の雑音を除く)、LINE["GX".."GCHI3"] が 1e-15 で一致 |
+| geo_tiny2 (fit M2 GX/GZ で free D2 L, D3 L → fit $$$ CHI1/CHI3 で free B3/B2 ANGLE) | 反復の表示 (3〜12 回目) が SAD と同一、D2 L 2.784721292 (1e-12)、角度は 15 桁一致 |
 
 テスト: `pysad/tests/test_geo_fit_sig.py` (DISP G の行と LINE["GX"..]、幾何の fit の SAD 値、Twiss["SIG.."] の式と EMIT 前のエラー、BEAMSIZE)。
 pytest: 250 passed (34 s)。`QUICK=1 run_regression.py`: FAIL 0 (50 ベンチ、213 s)。
@@ -52,4 +51,8 @@ pytest: 250 passed (34 s)。`QUICK=1 run_regression.py`: FAIL 0 (50 ベンチ、
 - `pysad/ffscmd.py`: `_matcher_geo`、`fit_fun_value`、`print_fit_table` (幾何・CHI の度)、`_disp_geo` (DISP G/OG)、`beam_size_value`/`beam_matrix_twiss`、
   `twiss_value` の SIG..、`line_value` の SIG.. (CALC6D で分岐)、BEAM_SIZE コマンド、`_set_value` の `_raw` 更新、GO 後の条件表 (No variable)。
 - `pysad/tests/test_geo_fit_sig.py` (新規)。
-- `<work-perf>/`: patch5_geo.py、patch6_sig.py (差し替えの記録)、geo_tiny1/2.sad (+ _full.sad、.sad.out = SAD、.pysad.out)、geo_hmba.pysad.out、geo_ring.pysad.out、beamsize_r.pysad.out。
+- 作業フォルダ (リポジトリ外): patch5_geo.py、patch6_sig.py (差し替えの記録)、geo_tiny1/2.sad (+ _full.sad、.sad.out = SAD、.pysad.out)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: 幾何の fit の微分 tdgeo は、DRIFT の L と BEND の ANGLE・L について解析微分に直訳した (`match6d.tdgeo_term`、`test_tdgeo.py`)。それ以外の変数 (四極の DX・DY など、Twiss の条件が同じ行にある列) は中心差分のまま。gs との比較は work_unimpl.md の「幾何の FIT (tdgeo) の状況」。BEAMSIZE・SIGX・DISP G の記述 (この文書の主題) は変化なし。

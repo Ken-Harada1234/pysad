@@ -50,7 +50,7 @@ SAD 側の対応 (Packages/emit.n, tfemit.f, temit.f, tturne.f, tffs.f):
   BeamMatrices           [Σ_1, …, Σ_nlat] (各要素入口の平衡ビーム行列 = SAD の LINE["SIG",l])
   IntrabeamExcitation    INTRA 未対応 (touschek.py 参照) → 入れない
 
-未移植: SynchroBetaEmittance (temits.f)、Region (部分区間)、InitialOrbit/InitialBeamMatrix、TRPT 分岐。
+SynchroBetaEmittance は pysad/synchrobeta.py。未移植: Region (部分区間)、InitialOrbit/InitialBeamMatrix、TRPT 分岐。
 
 接続方法 (既存ファイルは触らない):
   from pysad.emit_extra import emittance_rules
@@ -68,7 +68,7 @@ import numpy as np
 
 from . import lattice as _lat
 from .elements import Element, Drift, Quadrupole, Bend
-from .emit6d import (_Phys, _State, _tdrife0, _tbende, _tquade, _tcave, _tmulte, _tthine,
+from .emit6d import (_ttcave, _tcoord, _Phys, _State, _tdrife0, _tbende, _tquade, _tcave, _tmulte, _tthine,
                      _rf_effective, _normal_form, _tsymp, _tinv6, tecalc, CVELOC, ELMASS)
 from .calc6d import _closed_orbit, tfetwiss
 
@@ -97,13 +97,14 @@ RULE_ORDER = ('Stable', 'Region', 'Tunes', 'EnergyLossU0', 'RfVoltageVc', 'Equil
 
 def _turn_record(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
                  rfsw: bool = False, radcod: bool = False,
-                 beam0: Optional[np.ndarray] = None, record: bool = True) -> _State:
+                 beam0: Optional[np.ndarray] = None, record: bool = True, calpol: bool = False) -> _State:
     """tturne1 (plot=.true.) 相当。
     beam0 : 入口のビーム行列 (6×6)。None なら 0 (temit の 1 周目 beam=beamin=0)。
             temit の最後の plot 一周は beam(1:21)=emitp から始める (temit.f:217)。
     record=True なら各要素入口 l=1..nlat で (T_{1→l}, cod_l, beam_l) を st.rec に積む
     (tturne1 の `if(plot)` の時点 = 要素 l を通す前。l=nlat は一周後 = tfsetplot(nlat))。"""
     st = _State(cod0, ph)
+    st.calpol = calpol
     st.trf0 = trf0
     st.rfsw = rfsw
     st.radcod = radcod
@@ -115,6 +116,10 @@ def _turn_record(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
         if record:
             rec.append((st.T.copy(), st.cod.copy(), st.B.copy()))
         st.setr0()                       # tturne1: 要素ごとに tsetr0
+        if hasattr(el, '_solmap'):
+            from . import solemit as _se
+            _se.emit(st, el)             # SOL 領域内 (tsole1): emit6d.tturne と同じ
+            continue
         if isinstance(el, Drift):
             _tdrife0(st, el.L)
         elif isinstance(el, Bend):
@@ -127,6 +132,17 @@ def _turn_record(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
             _tcave(st, el)
         elif type(el).__name__ == 'Multipole':
             _tmulte(st, el, enarad=True)
+        elif type(el).__name__ == 'Coord':
+            _tcoord(st, el)
+        elif type(el).__name__ == 'Map':
+            from .emit6d import _tmap
+            _tmap(st, el)
+        elif type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
+            raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
+        elif type(el).__name__ == 'Undulator':
+            continue          # UND: K64 の tturne は何もしない (恒等)
+        elif type(el).__name__ == 'TCavity':
+            _ttcave(st, el)
         elif el.L == 0.0:
             continue          # MARK, MONI など
         else:
@@ -141,10 +157,10 @@ def _turn_record(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
 # Emittance[opt] の規則一式
 # ---------------------------------------------------------------------------
 
-def emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False,
+def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False,
                     charge: float = 1.0, amass: float = ELMASS,
                     one_turn: bool = True, orbit: bool = True, matrix: bool = True,
-                    beam_matrices: Optional[bool] = None, fshift: float = 0.0) -> dict:
+                    beam_matrices: Optional[bool] = None, fshift: float = 0.0, pol: bool = False) -> dict:
     """
     SAD の Emittance[OneTurnInformation->one_turn, Orbit->orbit, Matrix->matrix] の戻り規則を
     dict (キー = SAD の規則名) で返す。emit.n と同じく Matrix ⊃ Orbit ⊃ OneTurnInformation。
@@ -162,7 +178,8 @@ def emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: boo
     dict。'_emit' に emit6d.tecalc の dict、'_state' に一周後の _State も入れる (デバッグ用)。
     """
     els = list(lattice.elements)
-    circ = sum(el.L for el in els)
+    from .emit6d import _emit_circ
+    circ = _emit_circ(els)
     ph = _Phys(momentum_eV, circ, amass=amass, charge=charge)
     ph.dvfs = fshift if rfsw else 0.0          # tsetdvfs (FSHIFT = Orbit dilation)
     mode = 3 if matrix else (2 if orbit else (1 if one_turn else 0))
@@ -177,10 +194,11 @@ def emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: boo
         codin = np.array(codin, dtype=float)
         # --- temit の 1 周目: trans=1, beam=0, cod=codin → tecalc ---
         st = _turn_record(els, codin, ph, trf0=trf0, rfsw=rfsw, radcod=radcod,
-                          beam0=None, record=(mode >= 2))
+                          beam0=None, record=(mode >= 2), calpol=pol)
     finally:
         _lat.RFSW = rfsw0
     em = tecalc(st, circ, rfsw=rfsw)
+    spinres = _spin_results(st, em, ph) if pol else None
     T = st.T.copy()
     D = st.D.copy()
     beamp = st.B.copy()                 # tecalc の beamp = 一周後の beam(1:21) (物理座標)
@@ -230,13 +248,14 @@ def emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: boo
         'BunchLength': em['bunch_length'],
         'TuneShiftByRadiation': cd[0:3].imag / (2.0 * math.pi),
         'NominalSpinTune': ph.h0 * GSPIN,
-        'PolarizationTime': 0.0,                    # calpol 未移植 (SAD は params=0 で初期化)
-        'SpinTune': 0.0,
-        'Polarization': 0.0,
-        'Polarizations': np.zeros(3),
-        'PolarizationVector': np.zeros(3),
+        'PolarizationTime': spinres['taup'] if pol else 0.0,       # POL OFF は params=0 のまま
+        'SpinTune': spinres['nup'] if pol else 0.0,
+        'Polarization': spinres['equpol'][0] if pol else 0.0,
+        'Polarizations': spinres['equpol'] if pol else np.zeros(3),
+        'PolarizationVector': spinres['sps'][:, 0] if pol else np.zeros(3),
         '_emit': em,
         '_state': st,
+        '_spin': spinres,
     }
     if mode >= 1:
         tw = tfetwiss(ri, cod, True)             # tecalc: params(iptwiss:) = tfetwiss(ri, cod, .true.)
@@ -248,7 +267,7 @@ def emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: boo
             'ExtendedTwissParameters': {k: float(v) for k, v in zip(TWISS_FUNS, tw)},
             'OneTurnExcitation': beamp,
             'EquilibriumBeamMatrix': np.array(emitp, dtype=float),
-            'SpinPrecessionMatrix': np.eye(3),       # srotinit の初期値 (calpol 未移植)
+            'SpinPrecessionMatrix': spinres['srot1'] if pol else np.eye(3),
         })
     if mode >= 2:
         out['ClosedOrbit'] = [c for (_, c, _) in st.rec]
@@ -266,6 +285,22 @@ def emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: boo
         out['BeamMatrices'] = [b for (_, _, b) in st2.rec]
         out['_state2'] = st2
     return out
+
+
+def emittance_rules(lattice, momentum_eV: float, *args, **kw) -> dict:
+    """Emittance[] の規則一式 (引数は _emittance_rules と同じ。pol=True は POL フラグ: 閉軌道の反復も含め全周でスピンの分割数などを変える)"""
+    from . import emit6d as _e6
+    pol0 = _e6.POL_MODE
+    _e6.POL_MODE = bool(kw.get('pol', False))
+    try:
+        return _emittance_rules(lattice, momentum_eV, *args, **kw)
+    finally:
+        _e6.POL_MODE = pol0
+
+
+def _spin_results(st, em, ph) -> dict:
+    from .spin import spin_results
+    return spin_results(st, em, ph)
 
 
 def beam_size_at(e: dict, l: int, key: str = '') -> np.ndarray | float:

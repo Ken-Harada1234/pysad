@@ -52,7 +52,7 @@ from . import lattice as _lat
 from .lattice import TwissRow
 from .elements import Element, Drift, Quadrupole, Bend
 from . import emit6d as _em
-from .emit6d import (_Phys, _State, _tdrife0, _tbende, _tquade, _tcave, _tmulte, _tthine,
+from .emit6d import (_ttcave, _tcoord, _Phys, _State, _tdrife0, _tbende, _tquade, _tcave, _tmulte, _tthine,
                      _rf_effective, _trf0_update, _normal_form, _tsymp, _tinv6,
                      tecalc, ELMASS)
 
@@ -313,11 +313,11 @@ class _State6d(_State):
         super().__init__(cod, ph)
         self.radiation = radiation
 
-    def tradke(self, al, phir0):
+    def tradke(self, al, phir0, bzh=0.0):
         if self.radiation:
-            super().tradke(al, phir0)
+            super().tradke(al, phir0, bzh)
         else:
-            self.setr0()        # tradke の末尾 (codr0/transr の更新) だけ
+            self.setr0(bzh)     # tradke の末尾 (codr0/transr の更新) だけ
 
 
 def _turn(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
@@ -348,6 +348,17 @@ def _turn(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
             _tcave(st, el)
         elif type(el).__name__ == 'Multipole':
             _tmulte(st, el, enarad=True)
+        elif type(el).__name__ == 'Coord':
+            _tcoord(st, el)
+        elif type(el).__name__ == 'Map':
+            from .emit6d import _tmap
+            _tmap(st, el)
+        elif type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
+            raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
+        elif type(el).__name__ == 'Undulator':
+            continue          # UND: K64 の tturne は何もしない (恒等)
+        elif type(el).__name__ == 'TCavity':
+            _ttcave(st, el)
         elif el.L == 0.0:
             continue          # MARK, MONI など
         else:

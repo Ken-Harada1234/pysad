@@ -68,8 +68,8 @@ _SAD_ELEMENT_TYPES = {
     'MULT', 'KICKER', 'HKICK', 'VKICK',
     'CAVI', 'CAVITY', 'RFCA', 'LCAV',
     'CORS', 'CORR', 'SOLENOID', 'SOL',
-    'DECA', 'DECAPOLE', 'DODECA', 'DODECAPOLE', 'TCAV', 'UND', 'WIG', 'APERT', 'ST', 'STEER',
-    'COORD', 'MAP', 'BEAMBEAM', 'PROF', 'INS', 'SPCH', 'TEST',
+    'DECA', 'DECAPOLE', 'DODECA', 'DODECAPOLE', 'TCAV', 'TCAVI', 'UND', 'WIG', 'APERT', 'ST', 'STEER',
+    'COORD', 'MAP', 'BEAMBEAM', 'PHSROT', 'PROF', 'INS', 'SPCH', 'TEST',
 }
 
 # 単位変換テーブル (SAD 単位 → SI/eV 基本単位)
@@ -366,6 +366,8 @@ class SADEnvironment:
 
     def _apply_extra_params(self, el, etype, params):
         tn = type(el).__name__
+        if tn in ('BeamBeam', 'Coord', 'TCavity', 'Undulator', 'PhsRot', 'Map'):
+            return                  # DX 等は変換のパラメータ (params)。誤差の属性にしない
         if tn in ('Drift', 'Marker', 'Monitor') and getattr(el, '_sad_type', None) != 'BEND':
             for k in ('DX', 'DY'):
                 if self._numv(params.get(k)):
@@ -379,7 +381,7 @@ class SADEnvironment:
         if self._numv(rot) and tn != 'Bend':
             el.ROTATION = float(rot)
         if tn == 'Cavity':
-            for k in ('PHI', 'DPHI', 'DVOLT'):
+            for k in ('PHI', 'DPHI', 'DVOLT', 'AUTOPHI'):
                 v = params.get(k)
                 if self._numv(v):
                     setattr(el, k, float(v))
@@ -399,12 +401,12 @@ class SADEnvironment:
                 el.KnL = knl
             if ksl:
                 el.KsL = ksl
-            for k in ('ANGLE', 'E1', 'E2', 'VOLT', 'FREQ', 'PHI', 'HARM', 'BZ'):
+            for k in ('ANGLE', 'E1', 'E2', 'VOLT', 'FREQ', 'PHI', 'HARM', 'BZ', 'DVOLT', 'DPHI', 'AUTOPHI', 'CHI2', 'TAPER'):
                 v = params.get(k)
                 if self._numv(v):
                     setattr(el, k, float(v))
         elif tn == 'Solenoid':
-            for k in ('BZ', 'BOUND', 'GEO'):
+            for k in ('BZ', 'BOUND', 'GEO', 'DPX', 'DPY', 'DX', 'DY', 'DISFRIN', 'DBZ'):
                 v = params.get(k)
                 if self._numv(v):
                     setattr(el, k, float(v))
@@ -500,6 +502,36 @@ class SADEnvironment:
 
         elif etype in ('MARK', 'MARKER'):
             return Marker(name=name)
+
+        elif etype in ('TCAVI', 'TCAV'):
+            from .elements import TCavity
+            return TCavity(name=name, L=L, params={k: float(v) for k, v in params.items()
+                                                   if isinstance(v, (int, float)) and not isinstance(v, bool)})
+
+        elif etype == 'UND':
+            from .elements import Undulator
+            return Undulator(name=name, L=L, params={k: float(v) for k, v in params.items()
+                                                     if isinstance(v, (int, float)) and not isinstance(v, bool)})
+
+        elif etype == 'PHSROT':
+            from .elements import PhsRot
+            return PhsRot(name=name, params={k: float(v) for k, v in params.items()
+                                             if isinstance(v, (int, float)) and not isinstance(v, bool)})
+
+        elif etype == 'MAP':
+            from .elements import Map
+            return Map(name=name, params={k: float(v) for k, v in params.items()
+                                          if isinstance(v, (int, float)) and not isinstance(v, bool)})
+
+        elif etype == 'COORD':
+            from .elements import Coord
+            return Coord(name=name, params={k: float(v) for k, v in params.items()
+                                            if isinstance(v, (int, float)) and not isinstance(v, bool)})
+
+        elif etype in ('BEAMBEAM',):
+            from .elements import BeamBeam
+            return BeamBeam(name=name, params={k: float(v) for k, v in params.items()
+                                               if isinstance(v, (int, float)) and not isinstance(v, bool)})
 
         elif etype in ('MULT', 'KICKER', 'HKICK', 'VKICK', 'CORS', 'CORR'):
             return Multipole(name=name, L=L)

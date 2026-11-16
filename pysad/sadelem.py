@@ -154,7 +154,15 @@ def install(ffs):
             return Null
         if K == 'UPDATE':
             return [0.0] * len(families())
-        return resolve(args[1] if len(args) > 1 else None, K)
+        plus = len(K) > 4 and K.endswith('$SUM')
+        if plus:
+            K = K[:-4]                     # tffs.f tfkeyv: KEY$SUM は KEY の値 (実数のリストならその和。pysad は SPLIT を持たないので値そのもの)
+        r = resolve(args[1] if len(args) > 1 else None, K)
+        if plus:
+            def _sum(x):
+                return float(sum(x)) if isinstance(x, list) and x and all(isinstance(t, (int, float)) for t in x) else x
+            r = [_sum(t) for t in r] if isinstance(r, list) and r and isinstance(r[0], list) else _sum(r) if not (isinstance(r, list) and not r) else r
+        return r
     B['Element'] = fn_element
 
     def set_element(args, v):

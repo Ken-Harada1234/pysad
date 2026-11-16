@@ -1,6 +1,8 @@
 # SAD/FFS & SADScript のコマンド・関数・変数一覧 (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出)
 
-出典: ローカル `<SAD>\Documents\SADHelp.html` (1.4.4.2k64 Updated: 10/19/2026。CERN の https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html は 1.4.0.0k64 2025-07-14 の同系統)。各行は見出しと、その説明の最初の行 (Usage があればその形)。括弧内は最短の省略形。pysad での対応状況は docs/03_ffs_commands.md §7 と docs/04_sadscript.md を参照。
+最終更新: 2026-11-16 (現状のスナップショット。SADHelp は 1.4.4.2k64 Updated: 10/19/2026 のまま。この文書は SADHelp.html の機械的な抽出で、pysad の状態は含まない。K64 版 `Documents/SADHelp.html` の項目数 (FFS コマンド 56) は 11/06 と同じ。KEK 公式の SAD ヘルプは別の SAD なので見ていない)
+
+出典: ローカル `<SAD>\Documents\SADHelp.html` (1.4.4.2k64 Updated: 10/19/2026。CERN の https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html は 1.4.0.0k64 2025-07-14 の同系統)。各行は見出しと、その説明の最初の行 (Usage があればその形)。括弧内は最短の省略形。pysad での対応状況は docs/14_pysad_vs_sadhelp.md (名前ごとの対応表、2026-11-16 に更新)、docs/15_sadhelp_purpose_policy.md (分類と方針)、docs/03_ffs_commands.md §7、docs/04_sadscript.md を参照。
 
 ## 1. FFS コマンド (56)
 

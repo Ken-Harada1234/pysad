@@ -1,5 +1,7 @@
 # CALC6D (6 次元 CALC) の移植 — pysad/calc6d.py 作業ログ
 
+最終更新: 2026-11-16
+
 日付: 2026-10-15
 対象: SAD K64 (src/qcell.f, temit.f, tturne.f, tffs.f, qtwiss.f, tcod.f) → `pysad/calc6d.py` (新規、既存ファイルは変更なし)
 照合: `bench_level18a.sad` (RFSW RAD), `18b` (NORFSW RAD), `18c` (RFSW NORAD) ↔ `bench_level18a_pysad.py`
@@ -88,14 +90,14 @@ pysad では意図どおり ri0 = etwiss2ri(twiss0) で伝搬する (twiss0 省�
 - `rad` 引数は受け取るだけ (SAD と同じく結果に影響しない)。
 - TwissRow の `name` は lattice.twiss_table と同じ規約 (rows[0]='*'、rows[i] = 要素 i の出口 = 要素 i+1 の入口なので
   要素 i の名前)。SAD の「要素 l の入口」は rows[l-1]。
-- 計算時間: ESRF (3563 要素) で 1 回の calc6d が約 7–10 s (閉軌道探索の数周 + 記録の一周。数値 Jacobian が主)。
+- 計算時間: 3563 要素のラティスで 1 回の calc6d が約 7–10 s (閉軌道探索の数周 + 記録の一周。数値 Jacobian が主)。
 
 ## 3. 照合結果 (bench_level18a_pysad.py)
 
-参照: `bench_level18{a,b,c}.sad` = pysad/tests/kek-ls_v03_12.lat + `FFS; $FORM="18.14"; PageWidth=1999; NPARA=1; USE RING; CELL; <flags>; CALC6D; CALC;`
-位置: `$$$`, `1`, `QFA1H.3`, `SFA.5`, `MKC.2`, `RFC`, `100`, `200.5` の 28 成分。
+参照: `bench_level18{a,b,c}.sad` = テスト用ラティス + `FFS; $FORM="18.14"; PageWidth=1999; NPARA=1; USE RING; CELL; <flags>; CALC6D; CALC;`
+位置: `$$$`、`1`、要素名で指定した 4 点、`100`、`200.5` の 28 成分。
 (`LINE["LENGTH","$$$"]` は narg エラーになり POS 行は出なかった → 位置は pysad 側で要素名の n 番目から求め、
-`LINE["NAME",{100,200,201}]` = {QFA8H.3, DR08.22, SDA.9} と NLAT=3564 で要素列の一致を確認)
+`LINE["NAME",{100,200,201}]` の名前と NLAT=3564 で要素列の一致を確認)
 
 | ケース | フラグ | 結果 |
 |---|---|---|
@@ -128,3 +130,7 @@ if self.flags['CELL'] and self.flags['CALC6D']:
 - INS (CELL OFF) + CALC6D は未実装 (qcell6d の else 分岐 = transport 伝搬。`calc6d` の不安定分岐と同じ手順で
   twiss0 を先頭 MARK の値にすれば作れる)。
 - 対応要素は emit6d.tturne と同じ (DRIFT, BEND, QUAD, SEXT/OCT…, CAVI, MULT (ANGLE=0), 長さ 0 の MARK/MONI)。SOL 等は NotImplementedError。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: CALC6D は COORD・TCAVI・MULT ANGLE≠0 を含むリングで動く (docs/23・24・26 の表)。SOL を含む CALC6D・RADCOD つきの CALC は未対応で、SADError で拒否する (docs/27)。`calc6d._turn` は Python 版の `_tquade` を使うので、DX/DY のある QUAD で 1e-5 の差が出る既存の差が残る (work_unimpl.md 「後でまとめて直す一覧」1)。本文 (10/15 の移植の記録) は変化なし。

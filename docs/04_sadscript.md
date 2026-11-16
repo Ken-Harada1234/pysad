@@ -1,9 +1,9 @@
 # 04. SADScript 言語と pysad の sadscript.py
 
-最終更新: 2026-11-06 (現状のスナップショット)
+最終更新: 2026-11-16 (現状のスナップショット)
 
-対象: `pysad/sadscript.py` (字句解析・Pratt 構文解析・評価器、約 2400 行)、`pysad/sadlist.py` (リスト・文字列・行列の関数)、
-`pysad/sadelem.py` (FFS 専用関数)、`pysad/teigen.py` (Eigensystem)。SAD 側の根拠は
+対象: `pysad/sadscript.py` (字句解析・Pratt 構文解析・評価器、約 4200 行)、`pysad/sadlist.py` (リスト・文字列・行列の関数)、
+`pysad/sadelem.py` (FFS 専用関数)、`pysad/teigen.py` (Eigensystem)、`pysad/sadclass.py` (Class)、`pysad/pkgload.py` (Packages/*.n の読み込み)、`pysad/specfn.py`・`fitroot.py`・`miscfn.py`・`fileops.py` (特殊関数・Fit・ファイル関数など)。SAD 側の根拠は
 `src/tfetok.f` (字句)、`src/tfstk.f` (演算子表 `opcode`/`iprior`)、`src/autofg.f` (数値書式)、
 `Packages/Fit.n` (PolynomialFit)、`src/tffsa.f` (FFS コマンドの振り分け)、`src/teigen.f`、`src/tmatch.f`。
 
@@ -25,8 +25,7 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
 モジュールは `Get["file"]` で読み込む。SAD は起動時に `Packages/init.n` を読み、`functions.n`,
 `MessageName.n` を `Get` し、`Fit.n` (`PolynomialFit`, `FindRoot`) や `Matrix.n`, `Optics.n` などは
 `AutoLoad[symbol, file]` で最初に使われたときに読む。pysad では `Get` はファイルを読んで
-`run(src, 'ffs')` するだけで、Packages は読まない (必要な関数は Python 側で組み込み、
-PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価する)。
+`run(src, 'ffs')` するだけ。Packages は、環境変数 `PYSAD_SAD_PACKAGES` (無ければ pysad の隣の `SAD-master/Packages`) が見つかるときだけ `pkgload.py` が `AutoLoad` と同じく最初に使われたときに読む (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational・tableform など。docs/32)。見つからなければ何も登録せず、必要な関数は Python 側の組み込みで動く (PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価する。Python で持つ関数はパッケージの定義で上書きしない `pkgload._protect_builtins`)。Tkinter.n・KBFrame.n・ListPlot.n・Plots.n・Canvas.n も同じ方法で読む (docs/20, 35)。
 
 ## 2. 演算子と字句
 
@@ -96,7 +95,7 @@ PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価す�
 | 束縛 | `:=` 定義は引数を `Frame` に積んで本体を評価、`=` 定義は本体に `_Lit` を代入してから評価 |
 | 記号式 | 未定義シンボルを含む `+ - * / ^` は未評価の式にする。SAD と同じ整列と表示: `x+y+x → x+x+y`、`1+x+3 → 4+x`、`(2 x)`、`(x y)`、`x+(-y)`、`(x y^-1)`、`x^2`、`(-x)`。`Sin[x]` などの数学関数は未定義シンボルを渡すと未評価で返す。規則の右辺 (`Cases[l,{x_,y_}->x+y]`) に式を書く使い方が動く |
 | 純関数 | `body&` は `Slot` を引数に置換 (`subst_slots`、内側の `Function` には入らない)。`Function[{x,y}, body]` は名前束縛 |
-| 局所変数 | `Module`/`Block` は新しい `Frame` に局所名を入れる (両者を区別しない)。`{{x,b}=Thread[d]}` のようなリスト分解初期化、`x:=e` の遅延初期化 (`$Delayed`) も可。`With` は値を固定 |
+| 局所変数 | `Module` は新しい `Frame` に局所名を入れる。`Block` は動的スコープ (`x=3; f[]:=x; Block[{x=5}, f[]]` が 5 を返すことを 2026-11-16 に確認)。`{{x,b}=Thread[d]}` のようなリスト分解初期化、`x:=e` の遅延初期化 (`$Delayed`) も可。`With` は値を固定 |
 | 反復 | `Do`, `Table`, `Sum`, `Product` の反復子 `{i, a, b, d}` / `{i, list}` / `{n}`。`Sum`/`Product` は複数反復子可。`Table/Do/Sum` の `{i,{a,b,c}}` 形式は SAD でエラー。反復変数は Module の局所名より優先して束縛する |
 | 制御 | `If`, `Which`, `Switch`, `While`, `For`, `Return` (例外 `_Return`)、`Break`/`Continue`、`Catch`/`Throw`、`Check[e, fail]` |
 | 代入演算 | `++`, `--`, `+=` 等は `Set` を経由するので `a[[i]]++` も動く。`AppendTo` |
@@ -110,8 +109,9 @@ PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価す�
   `Write[unit, …]` は同じく改行付き、`WriteString[unit, …]` は改行なし。unit 6 は標準出力。
 - `OpenWrite[path]`/`OpenAppend[path]`/`OpenRead[path]` はユニット番号 (10 から) を返し、`Close[unit]`。
   相対パスは `Interp.cwd` (run_sad では最後に渡したスクリプトのディレクトリ)。
+  **OpenRead の失敗** (2026-11-16 に gs に合わせた): 開けなければメッセージを出して入力行を打ち切り (以前は Python の FileNotFoundError で落ちていた)、戻りの値に対する `Read[h,…]`・`Close[h]` は wrongtype になる (`rd3`・`rd4.sad`、`test_evalfixes.py`。入力ファイルが無い場合がこれに当たる)。
 - `Read[unit, Real|String|Word|Expression]`、`ReadList`、`Get[path]` (見つからなければ `?Get: file not found` を出して `$Failed`)。
-- `System[cmd]` は実行せず、その旨を表示して 0 を返す。`ToString[x, form]`, `StringJoin`, `StringForm` あり。
+- `System[cmd]` は実行せず、その旨を表示して 0 を返す (EPICS の `Ca*` も動かさない)。`ToString[x, form]`, `StringJoin`, `StringForm` あり。
 - リストの文字列化は `{1,2,3}` のように `,` だけで区切る (空白なし)。文字列はリストの中では `"..."` 付き。
   `PageWidth` を超えると SAD と同じく `,` の後で折り返し、続きの行は 1 空白から始める (`wrap`)。
   入れ子の長いリストの折り返しは SAD (要素の境界で改行、行の上限は pw-1) と pysad (区切りのカンマ、上限 pw) で異なる (PageWidth が十分大きければ一致)。
@@ -148,10 +148,11 @@ PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価す�
   `xl=If[xa, Table[…], 1]` が**スカラー 1** になる (リストでない) ので、`cm = Table[...]/xl` の除算も
   スカラー除算になる、という SAD の癖も含めて再現する。戻り値は `{{c0, c1, …}, {Residual -> r}}`。
   numpy 版 `PolynomialFit$numpy` も残してあるが既定では使わない。
-- **Spline[{{x,y},…}]** は scipy の `CubicSpline` を包んだ純関数を返す (SAD の正確な境界条件までは未確認)。
+- **Spline[{{x,y},…}]** は scipy の `CubicSpline` を包んだ純関数を返す (境界条件は 2026-11-16 に確認済み: 自然スプライン `Spline[{{x,y},..}]` と `Spline[..,0,0]` の形・`Sort[list, Greater]`・`Scan` が gs と全桁一致 (`local/wake/v1.sad`)。`Spline[data,0,0]` は gs も pysad も未評価のまま)。
+- **複素行列の演算** (2026-11-16 に gs に合わせた): `Dot`・`Inverse` の結果は、gs が**要素ごと**に虚部が 0 の複素数を実数に戻すので、pysad も要素ごとに戻す (以前は全要素が実のときだけ)。`DiagonalMatrix` は複素数の列を受けて動く (以前は `float() argument must be … not 'complex'` で失敗し `LDSolve.n` が動かなかった)。`LDSolve` の終点 (cos 1, −sin 1) と 3 通りの呼び出しが gs と一致 (`ld2`・`ev1.sad`、`test_evalfixes.py` 2 件)。`Packages/Optics.n` の `TransferMatrix`・`BeamMatrix`・`NormalCoordinates`・`OrbitGeo` は gs と表示桁で一致 (gs は 1e-16 の雑音の要素を出し pysad は 0。`op1.sad`)。`PeriodicR` は呼び出し方が不明で比較できなかった (gs も引数エラー)。
 - **Eigensystem** (`{値, ベクトル}`): 実行列は teigen.f の直訳 (`pysad/teigen.py`) で解く。固有ベクトルは単位ベクトルではなく
   SAD 固有の規格化、複素固有値の対は 行 k = 実部+i虚部 / 行 k+1 = 実部-i虚部。実行列の対称・縮退でも虚部の雑音が出ない。
-  ただし n>8 の実対称行列は `np.linalg.eigh` (SAD の teigen は縮退で丸め依存、docs/history/work_codcorr.md)。n<=8 や非対称は teigen の直訳。
+  ただし n>8 の実対称行列は `np.linalg.eigh` (SAD の teigen は縮退で丸め依存)。n<=8 や非対称は teigen の直訳。
 - **LinearSolve** (最小二乗 `lstsq`)、`Inverse`, `Det`, `Dot`, `Transpose`, `DiagonalMatrix`, `IdentityMatrix`, `SingularValues`。
 - **Thread**: リストのリストは転置、`Rule` のリストは要素ごとの規則、式は引数リストで分配。
 - **Override[rules…]**: 規則を平坦化し、同じ左辺は最初のものだけ残す (オプション処理用)。
@@ -181,41 +182,34 @@ EvenQ OddQ Positive.. Binomial FractionalPart Round Floor Ceiling Mod Max Min Le
 - 名前パターン (tmatch.f): `* % {abc} {^abc} |`。`?` は普通の文字。
 - Twiss / LINE / FFS / Emittance / TrackParticles などの仕様は 03_ffs_commands §7。
 
-## 6. 対応していない構文・関数と esrf スクリプトでの頻度
+### 5.4 11/13 以降に足した関数群 (詳細は各文書)
+
+| 分野 | 内容 | 文書 |
+|---|---|---|
+| 特殊関数・数学関数 | Bessel・超幾何・ガンマ族・ゼータ・多重対数・D.n の特殊関数 (458 式が gs と一致)。K64 の `InverseErf` の誤差も再現。基本関数 (Log・ArcSin・Power・Erf・Factorial など) の複素・範囲外の扱いを gs に合わせた | docs/31 |
+| Fit・FindRoot・NIntegrate・FitGaussian・DownhillSimplex | 数値微分で gs と 5e-10〜1e-14。ベクトル独立変数・複素 FindRoot は gs が誤値 (B52, B61) で照合なし | docs/31 |
+| ファイル・文字列・システム関数 | FileQ・FileNames・CopyFile・ToDate・GetEnv など (Python の os・shutil で実装)、ARRAY・Len・StringInsert・Diagonal・Expand など | docs/31 |
+| 記号微分・パッケージ | `D[f,x]` は D.n を SADScript のまま実行 (59 式が gs と文字列まで一致)。CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・Rational・TableForm | docs/32 |
+| Class | `Class[親の列, クラス変数, インスタンス変数, メソッド…]`、`x@メンバー`、`Constructor`/`Destructor`、継承 (`sadclass.py`) | docs/20 |
+| Tk・描画 | `TclEval`・`TkEventLoop` など Tcl との接点、`TkCanvasCreateItem`・`CanvasClipLine`・`Vector` (ListPlot・Plot・OpticsPlot の下地) | docs/20, 35 |
+| CSR・GaussianCoulomb・BBBrem・RadiationField | 物理計算の関数 | docs/30, 34 |
+
+評価器の側で gs に合わせた主な点 (試験は `test_evalfixes.py`・`test_gui_lang.py`・`test_symbolic.py` ほか): 連鎖した比較 `a<x<b`、`Null[a,b]` (空の Sequence) の展開、UpValue (`^:=`・`a/:f[a]:=…`・SubValue `f[a][b]`)、保持属性 (HoldAll など) の引数への置き換え、`//.` の不動点までの反復、Plus・Times の Flat・Orderless 照合、`Part[l,{i,j},k]`、`With[{f[x_]:=…},…]`、`StandardForm`、数の既定の書式 (`1e6`→`1e6`、`1e10`→`1e+10`)、`Skip`・`Read` の型。`ElectronMass` は 510998.95 eV (以前の 510999.06 は誤り)。
+
+## 6. 対応していない構文・関数
 
 未対応 (parse はできるが未実装、または parse できない):
 
-- `Condition` (`/;`: SAD に演算子が無い)、`Literal`、`Hold` 系の厳密な保持、`Unevaluated`、`Message`、`Definition`、
-  `SetAttributes`/`Protect` (無視)、`Options` (常に空)、`Class`/`DefineOptions` (Class.n のオブジェクト)
-- `Module` と `Block` の区別 (動的スコープ)、`^=` による UpValue (Set と同じ扱い)、`//.` の反復適用 (ReplaceAll と同じ)
-- `ReplaceAll` の構造パターン (リテラルと単純なシンボル規則のみ)
-- `StandardForm`, `Format`, `TableForm` などの表示系、Tk/Canvas 系 (`TkWait`, `Update` は no-op)
-- `System[]` の実行、`Pause`
-- FFS 側: `MCOD/TCOD/MON` の COD 補正、`CalculateCODResponse`, `Steer`/`Monitor` など。FFS コマンド・関数の対応状況と未対応の一覧は 03_ffs_commands §8
+- `Condition` (`/;`: SAD に演算子が無い。`Condition[1,2]` は未評価のまま返ることを確認)、`Literal`、`Hold` 系の厳密な保持、`Message`、`Definition`、
+  `SetAttributes`/`Protect` (無視)、関数に対する `Options[f]` (常に `{}`。Class のインスタンスの `Options` は sadclass が扱う)、`DefineOptions`
+- 11/06 の文書は `Class`・`^=` による UpValue・`//.` の反復・`ReplaceAll` の構造パターン・`Module` と `Block` の区別を未対応と書いていたが、今は対応 (§3、§5.4、docs/20, 32)。ただし `Unevaluated` の扱いは `Unevaluated$[…]` の形の一部 (docs/20 §4)、`^:=` のパターン付き UpValue の一般形、`Hold` 系の厳密な保持は確かめていない (未確認)。
+- 表示系 `Format`, `TableForm` (SAD の tableform.n は Packages で動く: docs/32)。`TkWait`・`Update`・`Pause` は sadscript の組み込みでは no-op (tclbridge が有効なときの挙動は未確認)
+- `System[]` の実行 (表示して 0 を返す)、EPICS (`CaGet` など)。2026-11-16 のソース確認: `CSR.n` の `TrackAnimate` は `System["import -silent -window …"]` (ImageMagick) と `System["mkdir …"]` を呼ぶので Windows の pysad では画像が作れない。`Wait[mem]` は `FreeMem[]` (top) と `Sleep` を使い、gs はこの環境で top が無く `FreeMem` が OpenRead エラーになる (`csr8.sad`)。pysad の `FreeMem` は psutil で代替して 1.0 を返す。並列を増やしても速くなるかは未確認 (pysad は fork しない)
+- **Tk ウィジェットの値 (差あり、未修正)**: `w=Window[]`・`b=Button[w,…]` の直後、gs では `Head[w]=Widget` (`Widget[w,Window[Root$Window]]`) で `e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]` が働くが、pysad では w・b・e が裸のシンボルのままで、メソッド呼び出しは何もせず (Tcl 呼び出し 0 回、エラーもなし)、親が toplevel でなく Root になる。`Tkinter.n` の `DefineWidget` 内 `a$:=Widget[a$,w[master$]]` が値にならないところまで絞ったが、gs が再帰しない理由 (属性・評価の順) は未特定。パターン変数への代入 (`f[x_]:=(x=5); f[aa]`) は gs と同じ。深い再帰では pysad は Python の RecursionError で落ちる (gs は `General::deep`)。`Insert` の位置に `"End"` (大文字) を渡すと gs は Tcl エラー 1501 (`tk1`〜`tk5.sad`、`pv1.sad`。docs/20・39)
+- SAD に無い関数 (`Mean` `Cross` `StringSplit` など) は未評価のまま返る (SAD と同じ。`Total` は pysad の拡張で動く)
+- FFS 側: `MCOD/TCOD/MON` の COD 補正は K64 でも式として評価されて何もしない。`Steer`/`Monitor`/`CorrectOrbit` は `Packages/correction.n` を SADScript のまま実行して gs と一致 (docs/32。`PYSAD_SAD_PACKAGES` が必要)。FFS コマンド・関数の対応状況と未対応の一覧は 03_ffs_commands §8
 
-esrf スクリプト群 (`ユーザーの esrf ディレクトリ`) で使われる関数の頻度 (`name[` の出現数):
-
-| 関数 | 回数 | 状況 |
-|---|---|---|
-| Print | 735 | ✅ |
-| Twiss | 692 | ✅ (ffscmd) |
-| FFS | 663 | ✅ (`FFS["cmd", 6]`、unit 省略は表示なし) |
-| Get / Do / OpenAppend / LINE / If / Close / Write | 多数 | ✅ |
-| Abs / Sqrt / Sin / Table / Length / Range | 多数 | ✅ |
-| DynamicApertureSurvey | 213 | ✅ (dapert.py、遅い) |
-| FitValue | 186 | △ (match6 の FitFunction 経由) |
-| Read / SeedRandom / Transpose / Eigensystem / Sort / DiagonalMatrix | 数十〜百 | ✅ |
-| CalculateOptics | 100 前後 | ✅ (sadelem / ffscmd) |
-| CalculateCODResponse / Steer / Monitor / SetInitialParameters | 100 前後 | ✗ (COD 補正系) |
-| TouschekLifetime | 100 前後 | ✅ (ffscmd `fn_touschek`、03_ffs_commands §8) |
-| AmplitudeDependentTuneShift | 100 前後 | ユーザー定義関数 (下記) |
-
-ユーザー定義関数 (`DAsv`, `WriteGraphs`, `CodCorr`, `MatchingDef`, `AmplitudeDependentTuneShift`,
-`RMSWrite`, `res`, `tunex/tuney`, `resultsave` など) は `Get` で読む共通ファイルで `:=` 定義されるので、
-上記の組み込みが揃えばそのまま動く。全 399 ファイル (サブディレクトリ含む) で数え直すと
-`FFS[` 9533、`Twiss[` 4852、`LINE[` 4176、`Print[` 3126、`Do[` 2288、`If[` 1976 の順で、傾向は同じ。
-
-## 7. テスト方法と実スクリプトでの確認
+## 7. テスト方法と確認
 
 単体では次のように使う (FFS コマンドなしの `'script'` モード)。
 
@@ -230,16 +224,14 @@ print(o.getvalue())      # → 3 2 1 ab
 
 ラティス付きのスクリプトは `python run_sad.py lattice.sad script.sad` (SAD の `gs` に複数ファイルを
 連結して渡すのと同じ) で、`ffscmd.run_sad` が MAIN 部を parser.py に、FFS 部を `Interp.run(src, 'ffs')`
-に渡す。`pysad/tests/` (pytest 277 件) と `run_regression.py` (50 ベンチ) で回帰を取る。
+に渡す。`pysad/tests/` (pytest 523 件を収集、2026-11-16 夜に 520 通過・3 skip) と `run_regression.py` (50 ベンチをすべて実行して FAIL 0、205 s。QUICK=1 は遅い 4 件 7・12t・13a・16a を SKIP して 46 件で、その 4 件も単独で実行して PASS) で回帰を取る。
 
-実スクリプトでの確認 (docs/history/00_RESUME.md、<work-olddocs>/sad_level3_4_benchmark_results.md Level 14 節):
+SAD のベンチでの確認 (docs/history/00_RESUME.md、<work-olddocs>/sad_level3_4_benchmark_results.md Level 14 節):
 
 - `bench_level13a.sad` / `bench_level13b.sad` (FIT/FREE/GO + Print/LINE/Twiss/MatchingResidual) を
   そのまま実行し、反復行・`Matched` 行・条件表・Print の出力が SAD (`*.result`) と同じ (K1 ≤1e-10、
   残差 5.0763e-16 vs 5.0759e-16)。
-- `bench_level14a.sad` (= ESRF v03_12 + `esrf/calc_chromaticity.sad`: Get, OpenWrite, Table, Do,
+- `bench_level14a.sad` (= 20 セルのラティス + 色収差スキャンの台本: Get, OpenWrite, Table, Do,
   DP0 スキャン + `FFS["cell calc;"]`, PolynomialFit) で 21 点のチューンが ≤2e-8、PolynomialFit の係数は
   SAD の式どおり (相対差 ≤1e-5)。
-- `esrf/matching`, `disp`, `chrom`, `calc_chromaticity` は `run_sad.py` で最後まで走る
-  (`<work-esrf>/*.pysad.out` と SAD の `*.sad.out` を比較)。
 - Element / BeamLine 系は bench_level24f (164 タグ一致)。

@@ -1,5 +1,7 @@
 # 作業ログ: track6n_ext.py (MULT とソレノイド領域の numba カーネル) — 2026-10-15
 
+最終更新: 2026-11-16
+
 ## 1. 目的と成果物
 
 track6n.py (track6.py の numba 版) が未対応だった MULT (tmulti) とソレノイド領域 (tsol) を、
@@ -229,3 +231,7 @@ ext も track6 のまま eps0=0 にした。EPS≠1 のソレノイド内四極�
 - `pysad/track6n_ext.py` — 本体 (新規)
 - `docs/history/work_track6n_ext.md` — 本書
 - 検証スクリプト (scratchpad、成果物ではない): `test_ext.py` (照合)、`test_quirk.py` (並び依存)、`test_perf.py` (速度・apert)
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: `track6n_ext.py` は 11/14 19:00 に更新された (MULT ANGLE≠0 の追跡: `multa.py`、BEAMBEAM の K_BB、COORD などを追跡の核に接続。docs/22・23・26)。SOL (BZ≠0) 内の BEND・MULT・CAVI は未対応 (NotImplementedError)。SOL の長さを周長に入れない扱いを追跡の `circ` にも適用した。本文 (MULT とソレノイド領域のカーネル) は 10/15 のまま。

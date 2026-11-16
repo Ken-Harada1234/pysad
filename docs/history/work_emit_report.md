@@ -1,5 +1,7 @@
 # 作業ログ: EMIT 報告の全行 (temitprint) と四極・薄い多極の解析行列 (2026-10-16)
 
+最終更新: 2026-11-16
+
 担当: `pysad/ffscmd.py` (print_emit)、`pysad/emit6d.py`、`pysad/lattice.py`。課題 A (EMIT 報告の欠けている行)、課題 B (ずれ・ロール付き四極と薄い多極、線形フリンジ付き四極の解析行列)。
 SAD の参照は WSL の `gs` (K64 fork) で、ラティスを連結した 1 ファイル (`NPARA=1`) を実行して取った。
 
@@ -7,7 +9,7 @@ SAD の参照は WSL の `gs` (K64 fork) で、ラティスを連結した 1 フ
 
 | 項目 | 作業前 | 作業後 |
 |---|---|---|
-| EMIT 報告 (ESRF、RFSW × RADCOD の 4 通り、各 37 行) | Extended Twiss / dl / h / fs / Imag.tune / Damping time / Tune shift / 分配数 / spin の行が無い。`Real tune` の空白が 1 桁違う。RFSW OFF + RADCOD ON は SAD と値が違う (U0 7e-5、tune 1e-5) | **4 通り 148 行がすべて SAD と一致** (0 同然の雑音の桁 |値|<1e-11 の差 38 行だけ別。下記) |
+| EMIT 報告 (RFSW × RADCOD の 4 通り、各 37 行) | Extended Twiss / dl / h / fs / Imag.tune / Damping time / Tune shift / 分配数 / spin の行が無い。`Real tune` の空白が 1 桁違う。RFSW OFF + RADCOD ON は SAD と値が違う (U0 7e-5、tune 1e-5) | **4 通り 148 行がすべて SAD と一致** (0 同然の雑音の桁 |値|<1e-11 の差 38 行だけ別。下記) |
 | 22e CELL (DP0=0.004、四極ずれ、閉軌道≠0) | 最大 5.3e-10 | **1.4e-11** (目標 1e-10) |
 | 3C の EX/EPX (結合時の分散) | 既知の不一致として 3.2e-7 / 7e-8 としていたが、再測定すると 3.2e-11 / 6e-12 で、**この作業の前から解消済み** (10/15 の qmat2twiss と z 行の組み直しの効果。`bench_level3c_pysad.result` が古かった) | 3.2e-11 / 6e-12 (run_regression の既知リストから外した) |
 | 四極 FRINGE=1〜3 + ずれ・ロール + 六極のずれ・ロール (新 bench 26b) の CALC/Emittance[] | `Emittance[]` (C) の最大相対差 1.1e-5 (チューン。ε は 2.7e-7、数値微分と tqlfre の piece が数値微分) | CALC は 1e-12 級、Emittance[] は ≤1.3e-9 (SAD の tcod 収束の差) |
@@ -39,21 +41,21 @@ SAD の `temit.f` の `temitprint` (949-1250 行) を読み、`FFSState.print_em
 4 通りのうち **RFSW OFF、RADCOD ON** (R3) だけ値が違っていた。`closed_orbit6d` は RFSW OFF を RADCOD の指定に関係なく RADCOD OFF として扱っていた。
 SAD の `tcod` は `rfsw=.false.` の枝 (im=5: x,px,y,py だけを閉じる) を `radcod` で実行し、**一周の放射損失を含めた閉軌道** (出口の δ は −U0/P0 = −9.87e-5)、z のずれは trf0 (Equilibrium dz) に移す。
 `_tcod_radcod(rfsw=False)` (これは RFSW+RADCOD の前半と同じ関数) を RFSW OFF + RADCOD ON でも呼び、`emittance6d` の最後の一周も `radcod=radcod` で追うようにした。
-ESRF の R3: U0 .2960539 MV (旧 .2960749)、dz .0034267 mm (旧 0)、α_c、Q_z の tune shift、減衰率、ε、Bucket height が SAD に一致。**CALC6D と `Emittance[]` (T1〜T7) も一致** (`bench_level26d`: 最大 2.2e-11)。
+R3: U0 .2960539 MV (旧 .2960749)、dz .0034267 mm (旧 0)、α_c、Q_z の tune shift、減衰率、ε、Bucket height が SAD に一致。**CALC6D と `Emittance[]` (T1〜T7) も一致** (`bench_level26d`: 最大 2.2e-11)。
 
 ### FSHIFT (Orbit dilation) (docs/11 A33)
 
 `dl` 行は FSHIFT を反映するだけでなく、SAD は RFSW ON のとき `dvfs=FSHIFT` を全要素の `dv` に足す (tsetdvfs)。`_Phys.dvfs` を追加し、`emittance6d(fshift=)` から設定した (`run_emit` が FFS の `FSHIFT` を渡す)。
-FSHIFT=1e-6 の ESRF (RFSW+RADCOD) の報告 37 行が SAD と一致 (`bench_level26c`: 閉軌道 δ=−4.328e-3、U0=.2942751 MV、dl=−.6031200 mm)。
+FSHIFT=1e-6 (RFSW+RADCOD) の報告 37 行が SAD と一致 (`bench_level26c`: 閉軌道 δ=−4.328e-3、U0=.2942751 MV、dl=−.6031200 mm)。
 `Emittance[]` (`emit_extra.emittance_rules(fshift=)`、`OrbitDilation` 規則 = +FSHIFT·周長) と CALC6D (`calc6d(fshift=)`) も同じ `dvfs` を使う (`bench_level26c`: F1〜F6 が ≤1.5e-10 で一致)。未対応: 追跡 (track6/track6n) の dvfs。
 
 ### 照合 (`bench_level26a.sad`)
 
-ESRF `pysad/tests/kek-ls_v03_12.lat` を連結した 1 ファイル、`ON RAD FLUC COD`、`USE RING`、`RFSW/NORFSW × RADCOD/NORADCOD` の順に `CELL; CALC; EMIT;`。参照 `bench_level26a.result`、pysad `bench_level26a_pysad.result`。
+ラティスを連結した 1 ファイル、`ON RAD FLUC COD`、`USE RING`、`RFSW/NORFSW × RADCOD/NORADCOD` の順に `CELL; CALC; EMIT;`。参照 `bench_level26a.result`、pysad `bench_level26a_pysad.result`。
 比較は `cmp_emit_report.py` (行単位。数値以外の部分は空白を無視して完全一致、数値は |差|≤1e-11 または相対 ≤1e-9)。結果: **不一致 0 行、雑音の桁だけの差 38 行**。
 
 雑音の桁 (再現不能・しない): Closed orbit の y/py (1e-21〜1e-37)、Extended Twiss の R1〜R4・PSI・ZPX 等 (1e-16〜1e-39)、εy (SAD 1.4e-31 / pysad 0 など)、Beam tilt (1e-13 rad)、`Imag.tune` と RFSW OFF の z の `Real tune` の 0 の符号 (`-0.0000000` と ` 0.0000000`)。
-SAD の固有値分解 (teigenc) の丸めで決まる量で、論理は同じ。`<work-esrf>/disp.sad.out` (disp スクリプトの SAD 出力) の報告 1 つ目も `bench_level26a.result` の R1 と行単位で一致した。
+SAD の固有値分解 (teigenc) の丸めで決まる量で、論理は同じ。
 
 ## 2. 課題 B: 四極・薄い多極の解析行列
 
@@ -107,3 +109,7 @@ emit6d の薄い多極 (`_tthine_gen`) は既に `_jac_thin` + `_tchge_jac` だ�
 3. RFSW OFF の `Real tune` / `Imag.tune` の 0 の符号 (teigenc の丸め) は再現しない。0 同然の桁 (εy、Beam tilt、R1〜R4) は SAD の雑音とは一致しない (論理は同じ)。
 4. `CALC6D;` コマンド単独 (その後に `CELL; CALC;` なし) の直後に SAD の Twiss 配列が 6D の値に変わる件 (bench_level26d の最初の試行で見えた。`CALC6D; CELL; CALC;` なら両者一致) は pysad が再計算しない。
 5. tcod が収束しないときの SAD の挙動 (報告を出して続行) は NaN の報告の書式までは合わせた (docs/history/work_item6.md §6 の 4)。Entrance の値 (未初期化) は再現不能。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 確認: 変化なし。根拠: この話題の記述は work_unimpl.md と docs/20〜35 に出てこない (grep で確認)、関係するモジュールに 11/06 以後この話題の変更の記録がない。この文書は 11/06 時点の記録のまま。

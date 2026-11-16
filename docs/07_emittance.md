@@ -1,6 +1,6 @@
 # 07. Emittance[] / emit — SAD の temit と pysad の emit6d.py
 
-> 最終更新: 2026-11-06 (現状のスナップショット)。行番号は 2026-10 時点。
+> 最終更新: 2026-11-16 (現状のスナップショット)。行番号は 2026-10 時点。
 
 照合先: `Packages/emit.n`, `src/tfemit.f`, `temit.f`, `tcod.f`, `tturne.f`, `tquade.f`, `tbende.f`, `tthine.f`, `tcave.f`, `tmulte.f`, `photons.f (tradke)`, `tffs.f (module temw)`, `tnorm.f`, `tdrife.f` と `pysad/emit6d.py`, `pysad/ffscmd.py (print_emit)`。
 
@@ -43,7 +43,7 @@ SaveEMIT->False (既定) では計算後に EMITX/EMITY/EMITZ/SIGE/SIGZ を元�
 | DRIFT | `tdrife0(dvon=.true.)`: 放射なし、`z −= L·dv(δ)` |
 | BEND (tbende) | `ndiv = 1 (K1=0) / 1+int(\|phic/eps\|)`。enarad なら `nrad=1+int(\|L·crad·(h0 b)²/epsrad\|)`, `1+int(\|phib·h0·anrad\|/epsrad/1e6)` との max (×EMITDIV·EMITDIVB)。K1=0 は tbendebody0、K1≠0 は tbendecorr+tbendebody (tbendib の解析行列)。スライス間と出口エッジ後に tradke |
 | QUAD (tquade) | tsolrote → tsetr0 → tqfrie (DISFRIN=0) → tqlfre (FRINGE=1,3; F1) → `tradke(f1in)` か tsetr0 → tsolque×ndiv (`itgetqraddiv`: cod 依存) → 出口側を逆順 |
-| SEXT/OCT/… (tthine) | **放射なし** (`enarad=.false.`)。L/6 ドリフト → キック → 2L/3 → キック → L/6。ドリフトは `tdrife0(dvon=.true.)` なので **dv 項 `z −= L·dv(δ)` が付く** (落とすと ESRF (16b) で νs 2.8e-6, α_c 5.6e-6 の相対差、累積行列の (5,6) が六極 1 台ごとに 1.3e-9 ずれる) |
+| SEXT/OCT/… (tthine) | **放射なし** (`enarad=.false.`)。L/6 ドリフト → キック → 2L/3 → キック → L/6。ドリフトは `tdrife0(dvon=.true.)` なので **dv 項 `z −= L·dv(δ)` が付く** (落とすと 実ラティス (16b) で νs 2.8e-6, α_c 5.6e-6 の相対差、累積行列の (5,6) が六極 1 台ごとに 1.3e-9 ずれる) |
 | MULT (tmulte) | キック分割数と itgetqraddiv の max (≤300)、スライスごとに tradke |
 | CAVI (tcave) | `ndiv = 1+int(min(\|wL\|, sqrt((v(1/h0+1/h1))²/3/0.01)))`。RFSW: tcavfrie → [ドリフト → 薄いキック]×ndiv → ドリフト → tcavfrie。キック `dh = −va(sin φ + offset1)`, `φ = w t + PHI − trf0·w`, offset1 = sin(trf0 w) (RADCOD OFF) / 0 (ON)。RFSW OFF: 積算のみで長さ L のドリフト |
 
@@ -86,11 +86,11 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 - P0/f0 (f0 は `c·β/C`、β=p/h)、U0/Vc、dz/alpha、Orbit dilation `dl = -FSHIFT·周長` (RFSW ON のとき `dvfs=FSHIFT` が全要素の dv に入る: `_Phys.dvfs`)、h = `wrfeff c/ω0`、Bucket height、fs = `omegaz/2π`。
 - Imag.tune = `Re log λ/2π`、Real tune、Damping (一周あたり Re cd、Damping time = `-2π/ω0/Re cd`、Tune shift = `Im cd/2π`、分配数 `J = Re cd · 4/Σ Re cd`)。
 - Emittance X/Y/Z、Energy spread、Bunch Length、Beam tilt、Beam size xi/eta。Beam tilt = atan2(−2σxy, σxx−σyy)/2、xi/eta = 主軸方向の rms (temit.f:1126-1141、`emit6d.beam_tilt_sizes`)。
-- Nominal spin tune = `h0·GSPIN`、Polarization time (POL OFF は 0)。spin/偏極 (calpol) の行は POL ON のときだけ出るので未実装 (POL OFF の形は SAD と同じ)。
+- Nominal spin tune = `h0·GSPIN`、Polarization time (POL OFF は 0)。POL ON のスピンの行・表は 4b 節 (POL OFF の形は SAD と同じ)。
 
 書式: 実数は `fmt_real` (autofg 直訳)。`vout` は `autofg(x,'10.7')(1:10)` なので 7 桁目が**切り捨てに見える** (dz=20.61866962 mm → `20.618669`、f0=497069.3289 → `497069.32`) — `fmt_real(x,'10.7')`。
 `Damping` 系は gfortran の `1p g14.6` (`sadscript.fmt_g(v,14,6)`)、tune は `3(f10.7,10x)` (行末の X 編集は出力されない)。NaN の報告 (閉軌道なし) は幅に右詰めの `NaN`。
-ESRF の RFSW × RADCOD 4 通り (`bench_level26a`) の 148 行が SAD と一致 (0 同然の雑音の桁を除く)。
+実ラティスの RFSW × RADCOD 4 通り (`bench_level26a`) の 148 行が SAD と一致 (0 同然の雑音の桁を除く)。
 
 ## 3. 内部の座標・変数
 
@@ -126,15 +126,59 @@ ESRF の RFSW × RADCOD 4 通り (`bench_level26a`) の 148 行が SAD と一致
 - 理由 3 (フリンジ四極): tqlfre を含む四極を数値微分にすると ε・チューンに 1e-5〜2.7e-7 の差が出る (`bench_level26b`)。解析式で 1.3e-9。
 - z 行のシンプレクティック性: 数値微分の z 行をそのまま使うと T の誤差 6.6e-5、εy が 2% ずれる (Level 3C)。そのため z 行 (5,1..4) はシンプレクティック条件で組み直す (`_State.piece`)。
 
+## 4b. 2026-11 に加わった範囲
+
+### POL のスピン (docs/34_spin_csr.md)
+
+`POL;` を付けた `Emittance[]`/`EMIT` は、偏極時間 (`PolarizationTime`)・スピンチューン・偏極ベクトル・スピン歳差行列・1 周の脱偏極ベクトル (表) を出す (`pysad/spin.py` の `tradke_spin`、`spnorm`、`srequpol`)。
+放射の 1 ステップ (`tradke`) ごとに `srot` を回して積算し、`tchge` の回転 (ROTATE 付き偏向) でも回す。POL のとき BEND の分割数は `1+int(|φ|·h0·a/0.01)` 以上になる (K64 も同じ)。
+- 一致 (gs): 平面リングで偏極時間は全桁、スピンチューン 13 桁、偏極ベクトル 12 桁。縦ずれ・傾き・六極のあるリングで 13/12/10 桁以上。POL 付きの Emittances・DampingRate は 11〜12 桁。エネルギー 3.0〜3.08 GeV の格子 (aγ=6.8〜6.99) で確認した範囲。
+- **MULT**: K1・K2・K3 とずれのある MULT のリングが gs と 1e-11 (`test_mult_ring_matches_gs`、L=0 の薄い MULT は `test_thin_mult_ring_spin_tune_matches_gs`)。`tmulke` の bsir0 の更新も入れた (この例では効かない)。
+  K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4、`local/wake/pm1.sad`) は pysad の CALC (qcod) の閉軌道が gs と別の解になり Emittance が NaN (未解決、docs/05 4b)。
+- **SOL** (BOUND≠0 の領域): `emit_extra._tturne1` が SOL 領域 (`_solmap`) を通し、偏極時間・スピンチューン・偏極ベクトルが gs と一致 (`test_solenoid_ring_matches_gs`)。領域内の MULT・BEND・CAVI のスピンは未確認 (領域内の要素そのものが未対応)。
+- **空洞**: ROTATE+DX+DY 付きの空洞を含む結合リングのスピンは、2026-11-16 に gs と比べて確認済み (偏極時間 13 桁、スピンチューン 1e-14、偏極ベクトル 1e-13。`local/wake/v3a.sad`)。ただし専用の pytest はまだ無い (gs の出力との手動比較)。
+- **MULT ANGLE≠0 (`tmultae`)** の POL スピン: 2026-11-16 に確認済み (偏極時間 14 桁、スピンチューン 1e-14。`v3b.sad`。偏極ベクトルは平面リングなので 0,1,0 で、傾きのあるリングでの偏極ベクトルは見ていない)。**`tbrote`** (BEND の DROTATE+DX): 確認済み (偏極時間 14 桁、スピンチューン 1e-14、偏極ベクトル 1e-14。`v3c.sad`)。
+- **Polarization2**: gs の `Emittance[]` は Polarization2 の値を返さず (`Polarization2/.em` が未評価のまま)、pysad も同じ (2026-11-16 確認) (`v2.sad`)。
+- 未対応・未確認: `Polarization` (平衡偏極度) は K64 が NaN (B55)、pysad も NaN。`MAP` のスピン、SOL 内のスピン (`tsconv`) は未対応。
+  縦オフセットのある偏向磁石の `bsi2` の項は K64 でも捨てられる (B58)。POL ON は numba の速い経路を使えない (Python 経路)。
+- **TrackParticles のスピン追跡**は docs/08 §9 (POL かつ RAD ON のときだけ、`track6.py` の `sprot`、損失の処理なし)。
+
+### SynchroBetaEmittance (`pysad/synchrobeta.py`)
+
+K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の直訳。`Packages/emit.n` の `SynchroBetaEmittance` が `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` (`ffscmd.fn_synchrobeta`) を呼ぶ。
+運動量のずれ (2·ndims+1 点) ごとに `_tcod_radcod` で閉軌道、`tturne` で T・D・B を求め、(アクション J, 方位角モード m) の連立方程式を反復で解く。
+- gs との一致 (12 セルのリング + CAVI VOLT=2e6 HARM=64): nus=0.01・AzimuthalModes=9 で emitx 相対 6e-6 (conv は 2e-4)。nus=0.005〜0.02・AzimuthalModes=5 の 4 点で emitx 4e-7〜1e-5。emity は 1e-18 の雑音で符号も違う。試験は `test_synchrobeta.py` (許容 3e-5)。
+- 差の原因は閉軌道の収束の履歴と、条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) とみているが、確認していない。
+- 2026-11-16 の確認 (`sb11.sad`、`sb10.sad`): 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で emitx は gs と相対 1.4e-7〜1.4e-6 (3.7e-7、4.0e-7、1.4e-6、1.4e-7) で一致、emity は雑音 (gs −2.5e-19 など、pysad 1.3e-20 など)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。
+- 未確認: 不安定なチューン、`emiout`、結合のあるラティスでの gs との一致 (上のとおり gs が落ちる)、RFSW の組み合わせ。検証は最終の 6 つの値 (nus, emitx, emity, emitxp, emityp, conv) だけで、中間配列は比べていない。
+
+### SOL・COORD・TCAVI・UND・MAP・MULT (ANGLE≠0) と Emittance[]
+
+| 要素 | Emittance[]・EMIT の扱い | gs との一致 | 文書 |
+|---|---|---|---|
+| SOL (BOUND≠0 の領域) | `solemit.py` (領域内を K64 の `tsole1` の順に、写像は追跡カーネルの数値微分、放射は bz 付きの `_State.tradke(al, 0, bzh)`) | ε_x 2e-12〜4e-9、ε_y 4e-10〜2e-8、ε_z 1e-7〜3e-6、チューン 1e-13〜1e-11 (BZ=2 と BZ=5 の 12 セルのリング、RFSW) | docs/27 |
+| COORD | `emit6d._tcoord` (`piece`、z 行のシンプレクティック組み直しなし) | ε・チューン・COD・運動量収縮因子 5e-10 以下 | docs/23 |
+| TCAVI | `emit6d._ttcave` (tchge → 半ドリフト → キック → 半ドリフト [tradke] → tchge)。RFSW OFF はドリフト | **L=0 のみ gs と一致** (ε 1e-11)。L≠0 は gs が壊れる (B36: EnergyLossU0 が NaN など) ので pysad は NaN を再現せず自然な値を出す | docs/24 |
+| UND | 恒等 (K64 の `tturne` は `case default`)。K64 は磁場を設定できず磁場なしのドリフト (B37) | 1e-12 台 | docs/25 |
+| MAP | `emit6d._tmap` (`ExternalMap["EMIT", l, cod]` の `{cod1, trans[, dtrans, dbeam]}`)。定義がなければ恒等・長さ 0 | ε・チューン・減衰率・軌道 1e-11 | docs/28 |
+| MULT (ANGLE≠0) | `emit6d._tmulte` → `multae.emit` | ε 1e-11、チューン 1e-13 (12 セルのリング) | docs/26 |
+
+- **SOL の長さを周長に入れない**: K64 は SOL (BOUND≠0) の長さを周長 (omega0・MomentumCompaction・偏極時間・空洞の位相) に入れない。`emit6d._emit_circ` が同じにしている (PLANAR + SOL で周長 45.6 のときと偏極時間が 15 桁一致)。
+  追跡の `circ` も同じ。GEO のない SOL では K64 の S 座標が途切れて周長がさらに狂う (偏極時間が約半分) が、pysad は再現しない (GEO=1 の参照だけ照合)。
+- SOL を含む Emittance[] は `emit_extra.emittance_rules` (Orbit/Matrix の規則、BeamMatrices) を使わず `run_emit` に落ちる。EMT・TUN・ALP・COD は合うが、**Stable は 0、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない** (docs/27)。
+- SOL の限界: CALC6D・RADCOD つきの CALC・Touschek (INTRA) との組み合わせは未対応、RADCOD の閉軌道探索中に K64 が内部分割の間で固定するパラメータを pysad は毎スライスの δ で計算し直す (影響は 2 次とみているが未確認)、
+  領域内の MULT・BEND・CAVI は未対応、行列は数値微分なので解析行列の gs と 1e-10 程度の差。
+- MULT (ANGLE≠0) の限界: FB1/FB2・CHI2 は Twiss・Emittance[] で未対応、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/26)。
+
 ## 5. 注意点 (仕様と落とし穴)
 
 1. **Cavity PHI の既定は 0**。`phic = PHI·sign(charge)`、同期位相は trf0 で入る。
 2. **4D CALC では空洞は RFSW に依らずドリフト** (bench_level14a_dbg)。空洞が効くのは Emittance[] と追跡。
 3. **薄い多極の dv 項**: tthine 内のドリフトにも `z −= L·dv(δ)` が付く (2-1 節)。表示桁 (εx 5 桁、Level 12) の照合ではこの差は見えないので、照合は全桁 (`$FORM="18.14"`、16b/16e) で行う。
 4. **閉軌道の δ**: SAD の tcod は周長変化で δ≠0 を選ぶ (3C: δ=−4.85e-8)。close_z がないと U0・εx がずれる。
-5. **RADCOD ON の z と trf0 (Equilibrium dz)**: tcod は一周ごとに z を trf0 に移し、収束判定が緩い (z は 1e-7 まで) ので、分け方は反復の履歴で決まる。`_tcod_radcod` が tcod を直訳しているので trf0 は ESRF で 12 桁一致する (trf0 固定の厳密な Newton では dz が 8e-4 mm ずれる)。
+5. **RADCOD ON の z と trf0 (Equilibrium dz)**: tcod は一周ごとに z を trf0 に移し、収束判定が緩い (z は 1e-7 まで) ので、分け方は反復の履歴で決まる。`_tcod_radcod` が tcod を直訳しているので trf0 は 実ラティス で 12 桁一致する (trf0 固定の厳密な Newton では dz が 8e-4 mm ずれる)。
    逆に言うと cod と trf0 の「和」だけが物理で、SAD の cod 自体は 1e-9 (dp) 程度しか収束していない (出口と入口がその分違う) — それでも emittance 等は 1e-11 で一致する。
-6. **RFSW OFF の RADCOD**: SAD の tcod は RFSW OFF でも RADCOD ON なら放射込みの閉軌道を使う (`_tcod_radcod` の RFSW OFF 枝)。RFSW OFF を RADCOD OFF と同一視すると ESRF で U0 が 7e-5、α_c が 1e-4 ずれる。
+6. **RFSW OFF の RADCOD**: SAD の tcod は RFSW OFF でも RADCOD ON なら放射込みの閉軌道を使う (`_tcod_radcod` の RFSW OFF 枝)。RFSW OFF を RADCOD OFF と同一視すると 実ラティス で U0 が 7e-5、α_c が 1e-4 ずれる。
 7. **RFSW OFF の RF の量**: tturneg/tecalc は RFSW に関係なく空洞の積算量から Vc, wrfeff を作る (Vc, bh, dz, εz, σz は RFSW OFF でも 0 ではない)。
 8. **解析ヤコビアンの落とし穴**:
    (a) `lattice._tbendebody0_mat` の z 行 (5,6) (`xsn=sn−phi0`) は 4D の CALC では使われないので、z 行の検証は emit 側の照合 (`tests/test_emit_jac.py`) に依る。
@@ -153,16 +197,17 @@ ESRF の RFSW × RADCOD 4 通り (`bench_level26a`) の 148 行が SAD と一致
 | 11 | MULT K0/K1/K2 + DX/DY/ROTATE | trf0 2.6e-10 |
 | 28c/28d/28f | 不安定な光学 (V: QD×1.19、H: QF×0.9) の EMIT 報告・Emittance[] | V は行単位で一致 (雑音の桁のみ)、H は SAD の T の悪条件の範囲 (≤3e-5) |
 | 30b | RFSW ON + RADCOD OFF + FSHIFT = 1e-6, 3e-7, −2e-6, 0 | ≤1.2e-11 (tcod の直訳) |
-| 25a/25b/25c/25d/25h | ROTATE: 垂直ステアリング (ANGLE=0, ROTATE=−90 DEG, K0)、skew 四極、ROTATE 付き BEND (5/90 DEG, K1 付き)、六極・八極・十極・MULT の ROTATE、pf2 の VD/PV/VS と L=0 の SQ | εx/εy/U0 相対 ≤1e-8 (εy 2e-12〜1e-8)、TUN ≤4e-9 (25h は δ の収束差で 3e-8) |
+| 25a/25b/25c/25d/25h | ROTATE: 垂直ステアリング (ANGLE=0, ROTATE=−90 DEG, K0)、skew 四極、ROTATE 付き BEND (5/90 DEG, K1 付き)、六極・八極・十極・MULT の ROTATE、L=0 の SQ | εx/εy/U0 相対 ≤1e-8 (εy 2e-12〜1e-8)、TUN ≤4e-9 (25h は δ の収束差で 3e-8) |
 | 25e | ROTATE/DX/DY/DROTATE/K0 の組み合わせ (癖のない組) | εx/εy 相対 1.6e-6 (δ の収束差)、TUN 4.5e-8 |
 | 25f | th≠0 かつずれ≠0 の要素 (tchge の癖) | CALC・追跡は一致、Emittance[] の δ・チューンは SAD の tcod が閉じないため不一致 (2-1 節) |
-| 12 | ESRF v03_12 (3563 要素) | 表示桁 (相対 ≤2e-5) |
+| 12 | 試験用のラティス (3563 要素) | 表示桁 (相対 ≤2e-5) |
 | 16b/16e | 同、全桁 | εx, εz, σE, σz, νx, νy, νs, α_c, bh, trf0, U0 **≤1.3e-11** |
-| item6 (`bench_item6_emit.sad`) | ESRF v03_12, RFSW+**RADCOD**, `Emittance[Matrix->True]` の全桁 | εx 1.1e-12, εz 9e-12, σE 2e-14, σz 9e-12, α_c 2e-11, ν ≤9e-12, 減衰率 ≤8e-13, ビーム行列 ≤4e-11, U0・trf0 (dz) は全桁 |
-| item6 (`bench_item6_tiny.sad`) | ESRF 1 セルのリング (ν_s=2e-4): RFSW OFF / ON / RADCOD | 横方向・U0・trf0 ≤1.3e-11、縦方向 (RFSW ON) は 1e-9 (νs が小さく 1e4 倍に拡大)。テスト `test_emit_jac.py` |
-| 26a/26c/26d | EMIT 報告の全行 (ESRF の RFSW × RADCOD 4 通り、FSHIFT=1e-6)、RFSW OFF + RADCOD ON の Emittance[] と CALC6D | 報告 148 行 + 37 行すべて一致 (雑音の桁を除く)、26d ≤2.2e-11 |
+| item6 (`bench_item6_emit.sad`) | 試験用のラティス, RFSW+**RADCOD**, `Emittance[Matrix->True]` の全桁 | εx 1.1e-12, εz 9e-12, σE 2e-14, σz 9e-12, α_c 2e-11, ν ≤9e-12, 減衰率 ≤8e-13, ビーム行列 ≤4e-11, U0・trf0 (dz) は全桁 |
+| item6 (`bench_item6_tiny.sad`) | 実ラティス 1 セルのリング (ν_s=2e-4): RFSW OFF / ON / RADCOD | 横方向・U0・trf0 ≤1.3e-11、縦方向 (RFSW ON) は 1e-9 (νs が小さく 1e4 倍に拡大)。テスト `test_emit_jac.py` |
+| 26a/26c/26d | EMIT 報告の全行 (実ラティスの RFSW × RADCOD 4 通り、FSHIFT=1e-6)、RFSW OFF + RADCOD ON の Emittance[] と CALC6D | 報告 148 行 + 37 行すべて一致 (雑音の桁を除く)、26d ≤2.2e-11 |
 | 26b | FRINGE=1,2,3 付き四極、ずれ・ロール付き四極・六極 (小リング): CALC と Emittance[] | CALC ≤5e-13、Emittance[] ≤1.3e-9 (数値微分では 1.1e-5) |
 
 対応済み (別モジュール): INTRA (touschek.py: tintrb、TouschekTable/TouschekLifetime)、OneTurnInformation/Matrix 系 (emit_extra.py)、EMITXE/EMITYE/EMITZE の下限、CAVI の DX/DY/ROTATE。
 INTRA ON の EMIT 報告 (docs/11 A40): 零電流の報告 → Touschek の表 (運動量アクセプタンス 0.4〜24.2 % の寿命、Nx/Nz・Ny/Nz ごとの寿命/100s) → `Parameters with intrabeam scattering:` (PBUNCH/1e10、MINCOUP %、IBS 込みの EMITXC/EMITYC/EMITZC・SIGE・SIGZ)。PBUNCH の既定は 1e10 (A41)。`ffscmd._print_touschek`、`_print_emit_intra`。
-未対応: POL (calpol, spnorm, srequpol)、SOL (tsole)、OneTurnInformation の SpinPrecessionMatrix、Region (部分区間)、InitialBeamMatrix、TRPT 分岐、SynchroBetaEmittance (SAD K64 に実体なし)。
+対応済み (4b 節): POL (calpol, spnorm, srequpol)、SOL (tsole)、SpinPrecessionMatrix の表、SynchroBetaEmittance (`pysad/synchrobeta.py`、gs と相対 1e-5)。
+未対応: Region (部分区間)、InitialBeamMatrix、TRPT 分岐、`Polarization` (K64 が NaN)、SOL 領域内の MULT・BEND・CAVI。

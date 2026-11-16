@@ -457,6 +457,14 @@ def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
             _e._tcave(st, el)
         elif type(el).__name__ == 'Multipole':
             _e._tmulte(st, el, enarad=True)
+        elif type(el).__name__ == 'Coord':
+            _e._tcoord(st, el)
+        elif type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
+            raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
+        elif type(el).__name__ == 'Undulator':
+            continue          # UND: K64 の tturne は何もしない (恒等)
+        elif type(el).__name__ == 'TCavity':
+            _e._ttcave(st, el)
         elif el.L == 0.0:
             continue
         else:

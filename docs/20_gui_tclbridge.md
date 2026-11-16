@@ -1,6 +1,6 @@
 # 20. Tcl/Tk の GUI (Tkinter.n / KBFrame.n) を pysad で動かす仕組み
 
-最終更新: 2026-11-13 (現状のスナップショット。経緯は `history/` にある)
+最終更新: 2026-11-16 (現状のスナップショット。経緯は `history/` にある)
 
 対象: `pysad/tclbridge.py` (Tcl/Tk との接点)、`pysad/sadclass.py` (SAD の Class)、`pysad/sadscript.py` / `sadlist.py` の言語機能の追加分、
 試験 `pysad/tests/test_tclbridge.py` / `test_sadclass.py` / `test_gui_lang.py`。
@@ -81,11 +81,21 @@ SADHelp の「Class」の節に沿った実装。`Class[親の列, クラス変�
 サンプル一括実行 (2026-11-13): `D:\work\SAD\GUI` の台本 161 本を、EPICS と `System[]` を無効にした複製で実行した。Tk を開く約 50 本は全て最後まで走り、Tcl・pysad ともエラー無し。
 残り 81 本は Tk を使わない計算の台本。SAD との木の比較は上の表の 3 本だけで、他は「エラー無しで木ができた」までの確認。
 
-試験: `test_tclbridge.py` 4、`test_sadclass.py` 16、`test_gui_lang.py` 10 の計 30 本が通る (2026-11-14 確認)。
+試験: `test_tclbridge.py` 4、`test_sadclass.py` 16、`test_gui_lang.py` 10 の計 30 本 (2026-11-16 に収集数を確認。全体の実行は `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` を付けたときだけ GUI 系を実行し、全試験の 520 通過・3 skip (523 件収集) の一部)。全体を回すと `test_tclbridge`・`test_plot` が数回に 1 回落ちることがある (単独では通る。Tk の窓の更新の待ち)。
+
+**未修正の既知の差 (2026-11-16 夜に gs と比べて確認、`local/wake/` の tk1〜tk5.sad・pv1.sad)**:
+- gs では `w=Window[]` の直後に `Head[w]=Widget` (値は `Widget[w,Window[Root$Window]]`)、`b=Button[w,…]` も `Widget[b,Button[w]]` を値に持つ。**pysad では w・b・e が裸のシンボルのまま** (`Head=Symbol`、`TkPathName[w]` が "")。
+- その結果、(1) ウィジェットのメソッド `e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]`・`l[Insert]` (Entry・ListBox) が pysad では効かない (Tcl 呼び出し 0 回、エラーもなし。gs では Entry の内容 AB→CD、Listbox 2 項目、`v=e[Get]`=AB が動く)。
+  (2) 親が w でなく Root になる (`winfo` で '.' の直下に並ぶ。gs は Toplevel の下)。ウィジェット自体は Tcl 側に作られる (`winfo children` に Entry・Listbox が出る)。
+- 原因の絞り込み: pysad は `w=Window[]` のあと `Tk$DefCount=1`・`Root$WindowWidget=w`・`TkPathName[Root$Window]="."` までは進むが、`Tkinter.n` の `DefineWidget` 内の `a$:=Widget[a$,w[master$]]` (`CreateWidget` の末尾 `w:=Widget[w,wid[master]]`) が w の値にならない。root の Window は toplevel を作らず `winfo children .` は空。
+  パターン変数への代入そのもの (`f[x_]:=(x=5); f[aa]` で aa=5) は pysad も gs と同じ。玩具の再現 (With と `x:=Widget[x,…]`、UpValue の `(a_=W[opt___])^:=…`) は UpValue の分岐までは gs と同じに動くが、`x:=Widget[x,…]` 自体は gs も pysad も再帰になり、実物がなぜ gs で再帰しないか (Widget の属性・評価の順) は未特定。
+  pysad は再帰のとき Python の RecursionError (「object type name: RecursionError」) で落ちる (gs は General::deep のメッセージ)。
+- 補足: `Insert` の位置に "End" (大文字) を渡すと gs は Tcl エラー 1501 (Tcl の添字は "end")。
+- 上の表の木の比較 (Window・Button・KBMainFrame など) は一致しているので、木の形の試験には影響しないが、メソッド呼び出しを使う台本 (`e[Get]` など) は pysad で動かない。
 
 未確認・限界:
 - ウィジェット木 (クラス、文字、状態) は比べたが、見た目 (色、大きさ、フォント) と、操作したときの動作 (ボタンを押す、メニューを開く) は SAD と比べていない。
-- `Canvas.n` と `TabFrame.n` の描画 (`c[Create$Polygon] = …` など) は、C の `TkCanvas*` が最小限の実装のため未検証。
+- `Canvas.n` の描画は `pysad/tkcanvas.py` で実装し、`ListPlot` の 43 項目を gs と比べて一致 (docs/35)。`TabFrame.n` の描画は未検証。
 - EPICS 関係 (`CaGet` など) は動かさない。`System[]` も動かさない。
 - Windows の Tk は X11 の Tk と違う (フォント名、`-scriptfont`、`wm` の挙動、X のウィンドウ木)。表示の違いはここから出る。
 
@@ -97,3 +107,5 @@ py -3.12 -m pytest pysad/tests/test_tclbridge.py pysad/tests/test_sadclass.py py
 ```
 
 `PYSAD_SAD_PACKAGES` が無いか、tkinter が使えないときは GUI の試験は skip になる (GUI を使わない言語機能の試験は常に走る)。
+
+解説: docs/39_tcltk_guide.md (Tcl/Tk)、docs/40_graphics_guide.md (描画)

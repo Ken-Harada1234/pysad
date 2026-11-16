@@ -519,121 +519,16 @@ class Cavity(Element):
 @dataclass
 class TCavity(Element):
     """
-    TCAV 要素 (進行波横偏向空洞 / Transverse deflecting cavity)。
-
-    SAD コマンド: TCAV L=<長さ> AK=<偏向パラメータ> FREQ=<周波数[Hz]>
-                       PHI=<位相[rad]> HARM=<高調波数>;
-
-    物理
-    ----
-    偏向空洞は横方向 (x) に粒子を蹴り、Panofsky-Wenzel の定理により
-    縦方向 (z, δ) にも x に比例したエネルギー変化をもたらす。
-
-    基本作用 (非線形; ttcav.f より):
-      波数:         w = 2π·FREQ/c    (HARM=0 時), または w = OMEGA0·HARM/c
-      位相:         phic = PHI·sign(CHARGE)
-      通過時刻:     t = −z·h₁/p₁    (SAD 規約: z = −c·Δt)
-      RF 位相:      ph = w·t + phic
-      横方向キック: Δ(px/p₀) = −AK·sin(ph) / p₁r
-      エネルギー変化: Δh = v·x·cos(ph),  v = AK·P0·w
-      相対論的運動量更新: Newton 反復 (2回) で p₂r を求める
-
-    転送行列 (線形化; ttcave.f, 基準軌道 x=z=0 での近似):
-      主要結合要素 (0-indexed):
-        R[1,4] = AK·w/β₀·cos(phic)    (px ← z 結合; SAD trans1(2,5))
-        R[5,0] = AK·w/β₀·cos(phic)    (δ ← x 結合; SAD trans1(6,1))
-
-    パラメータ
-    ----------
-    AK      : float  偏向パラメータ [rad] (SAD の ak; ≈ 最大偏向角)
-                     AK = e·V_peak / (p₀·c)  (p₀ は基準運動量)
-    FREQ    : float  RF 周波数 [Hz]
-    HARM    : float  高調波数 (0 なら FREQ を使用)
-    PHI     : float  RF 位相 [rad]  (同期位相)
-    P0      : float  基準運動量 [自然単位: p₀/(m₀c), 無次元]
-                     = βγ = Lorentz factor × β
-                     例: 電子 6 GeV → P0 ≈ 11741
-    H0      : float  基準全エネルギー [自然単位: E₀/(m₀c²), 無次元]
-                     = γ = sqrt(1 + P0²).  指定しなければ自動計算。
-    CHARGE  : float  粒子電荷符号 (+1 or −1; 電子は −1)
-    OMEGA0  : float  周回角周波数 [rad/s]  (HARM ≠ 0 の場合に必要)
-
-    Notes
-    -----
-    * P0, H0 は「自然単位」(無次元): p₀/(m₀c) および E₀/(m₀c²)。
-      SI 単位からの変換:
-        P0 = p₀[eV/c] / (m₀c²[eV])   (例: 電子 m₀c² = 0.511 MeV)
-        H0 = E₀[eV] / (m₀c²[eV])
-
-    * SAD のグローバル変数 ``dvfs`` は小さい補正項のため dvfs=0 と近似。
+    TCAVI 要素 (横偏向空洞・クラブ空洞、K64 の ttcav.f / ttcave.f)。tcav.py。
+    params: 要素定義の数値キーワード (K0 HARM PHI FREQ DX DY ROTATE RANKICK RANPHASE RAD ...)。
+    RFSW OFF では長さ L のドリフト (tturn / ttcave とも)。
     """
-    AK:     float = 0.0    # 偏向パラメータ [rad] (SAD の ak)
-    FREQ:   float = 0.0    # RF 周波数 [Hz]
-    HARM:   float = 0.0    # 高調波数 (0 なら FREQ を直接使用)
-    PHI:    float = 0.0    # RF 位相 [rad]
-    P0:     float = 1.0    # 基準運動量 [自然単位] (βγ)
-    H0:     float = 0.0    # 基準エネルギー [自然単位] (γ). 0 なら自動計算
-    CHARGE: float = -1.0   # 電荷符号 (電子: −1, 陽電子: +1, 陽子: +1)
-    OMEGA0: float = 0.0    # 周回角周波数 [rad/s] (HARM≠0 時)
-
-    def __post_init__(self):
-        # H0 が未指定 (=0) なら P0 から自動計算: h0 = sqrt(1 + P0^2)
-        if self.H0 == 0.0:
-            self.H0 = float(np.sqrt(1.0 + self.P0**2))
-
-    def _wave_number(self) -> float:
-        """RF 波数 w [1/m] を返す。"""
-        from .constants import SpeedOfLight, TwoPi
-        if self.HARM == 0.0:
-            return TwoPi * self.FREQ / SpeedOfLight
-        else:
-            return self.OMEGA0 * self.HARM / SpeedOfLight
+    params: dict = field(default_factory=dict)
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """
-        TCAV の 6×6 線形転送行列 (SAD ttcave.f の近似実装)。
-
-        基準軌道 x=0, z=0 (on-axis, 同期粒子) での線形化。
-        空洞長 L がある場合は 半ドリフト–空洞キック–半ドリフト の構造。
-
-        算出される非自明な行列要素 (0-indexed):
-          R[1,4] = AK·w/β₀·cos(phic)   (px ← z)
-          R[5,0] = AK·w/β₀·cos(phic)   (δ ← x)
-
-        ここで β₀ = P0/H0 (基準粒子の速度/光速)。
-        """
-        w    = self._wave_number()
-        phic = self.PHI * float(np.sign(self.CHARGE))
-        cosp = np.cos(phic)
-        # sinp = np.sin(phic)  # COD 更新に使うが transfer_matrix には不要
-
-        # β₀ = v₁ = p₁/h₁ = P0/H0  (基準粒子速度)
-        beta0 = self.P0 / self.H0
-
-        # --- 空洞中央の薄レンズ転送行列 ---
-        # (基準軌道 x=z=0, delta=0 での近似)
-        Mcav = np.eye(6)
-        if self.AK != 0.0 and w != 0.0:
-            coupling = self.AK * w / beta0 * cosp
-            Mcav[1, 4] = coupling   # Δ(px/p₀) ← z  [SAD trans1(2,5)]
-            Mcav[5, 0] = coupling   # Δδ ← x         [SAD trans1(6,1)]
-            # delta ≠ 0 の場合の高次補正 (SAD trans1(2,6), (6,6) 等) は
-            # 基準軌道 t=0 の近似のため省略
-
-        if self.L == 0.0:
-            return Mcav
-
-        # --- 半ドリフト–キック–半ドリフト ---
-        Lhalf = self.L * 0.5 / (1.0 + delta)
-        Md = np.eye(6)
-        Md[0, 1] = Lhalf
-        Md[2, 3] = Lhalf
-        # z 方向ドリフト (線形近似: δ が大きくない範囲で)
-        # SAD tdrift_free: z += dpz * L; 線形化 dpz ≈ -0.5*(px^2+py^2) - δ/(1+δ)
-        # 一次近似: M[4,5] = -Lhalf (色収差ドリフト)
-        Md[4, 5] = -Lhalf
-
-        return Md @ Mcav @ Md
+        # RFSW OFF (CALC の既定) のドリフト。RFSW ON の写像は emit6d / track6n が tcav.py で扱う
+        from .lattice import _drift_matrix_at_cod
+        return _drift_matrix_at_cod(self.L, delta, 0.0, 0.0)
 
 
 # ---------------------------------------------------------------------------
@@ -671,6 +566,86 @@ class Marker(Element):
     def constant_kick(self, delta: float = 0.0) -> np.ndarray:
         """MARK はキックを与えない (常にゼロ)。"""
         return np.zeros(6)
+
+
+@dataclass
+class Undulator(Element):
+    """
+    UND 要素 (アンジュレータ、K64 の undulator.f)。und.py。追跡だけ。Twiss・Emittance[] では恒等 (長さは幾何にだけ入る)。
+    K64 では磁場のキーワード (FBX FBY) が使えず、磁場なしのドリフトになる (und.py の説明)。
+    params: 要素定義の数値キーワード (KX QY PHI SLICE POLE)。
+    """
+    params: dict = field(default_factory=dict)
+
+    def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
+        return np.eye(6)
+
+    def constant_kick(self, delta: float = 0.0) -> np.ndarray:
+        return np.zeros(6)
+
+
+@dataclass
+class PhsRot(Marker):
+    """
+    PHSROT 要素 (6 次元 Twiss による位相空間の回転、K64 の phsrot.f)。K64 では行列がすべて 0 になり動作しないので、追跡は
+    NotImplementedError (docs/19 B38)。Twiss・Emittance[] では恒等。
+    params: 要素定義の数値キーワード (AX BX PX AY BY PY R1..R4 EX.. ZX.. EMIX.. D11..D66 B11..B66 など)
+    """
+    params: dict = field(default_factory=dict)
+
+
+@dataclass
+class Map(Marker):
+    """
+    MAP 要素 (K64 の temap.f: ユーザー定義の写像 ExternalMap["TRACK"/"EMIT"/"OPTICS"/"GEO", ...])。docs/28_map.md。
+    ExternalMap が定義されていなければ恒等で、長さも 0 (pos(l+1)=pos(l)。MAP の L は K64 では使われない)。
+    params: 要素定義の数値キーワード (L だけ)。_pos は USE が付ける要素の位置 (1 始まり、LINE["POSITION"])。
+    """
+    params: dict = field(default_factory=dict)
+
+    def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
+        from . import lattice as _lat
+        c = np.zeros(6)
+        c[5] = delta
+        return _lat._map_step(self, c, delta)[0]
+
+    def constant_kick(self, delta: float = 0.0) -> np.ndarray:
+        from . import lattice as _lat
+        c = np.zeros(6)
+        c[5] = delta
+        return _lat._map_step(self, c, delta)[1] - c
+
+
+@dataclass
+class Coord(Marker):
+    """
+    COORD 要素 (座標変換 DX DY DZ CHI1 CHI2 CHI3 DIR、K64 の tcoord.f / tcoorde.f)。coord.py。
+    params: 要素定義の数値キーワード (ずれ・回転の誤差ではなく変換のパラメータなので、DX 等は属性にせず params に置く)
+    """
+    params: dict = field(default_factory=dict)
+
+    def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
+        from .coord import coord_map, params
+        c = np.zeros(6)
+        c[5] = delta
+        return coord_map(c, params(self))[0]
+
+    def constant_kick(self, delta: float = 0.0) -> np.ndarray:
+        from .coord import coord_map, params
+        c = np.zeros(6)
+        c[5] = delta
+        T, out = coord_map(c, params(self))
+        return out - T @ c
+
+
+@dataclass
+class BeamBeam(Marker):
+    """
+    BEAMBEAM 要素 (強弱ビームのビーム・ビーム相互作用、K64 の bbstrhl.f)。
+    光学 (Twiss) には効かない (恒等)。追跡 (track6n) だけがキックを与える。
+    params: 要素定義の数値キーワード (AX BX AY BY R1..R4 EX.. DX.. XANGLE EMIX EMIY DP AZ DZ SIGZ SLICE NP R11..R66 BSTRL)
+    """
+    params: dict = field(default_factory=dict)
 
 
 # ---------------------------------------------------------------------------

@@ -1,5 +1,7 @@
 # 作業ログ: MAIN レベルの TRACK コマンド (C-14)
 
+最終更新: 2026-11-16
+
 担当ファイル: `pysad/parser.py` (MAIN 命令の読み取り)、`pysad/ffscmd.py` (命令の実行)、`pysad/maintrack.py` (新規、TRACK 本体)、
 `pysad/track6n.py` (損失報告の記録だけ追加)。日付: 2026-10-16。作業用ファイルは `track_work/` (捨ててよい)。
 SAD 側の確認は WSL の `bin/gs` (K64 版)。
@@ -12,26 +14,13 @@ SAD 側の確認は WSL の `bin/gs` (K64 版)。
    `NX=(1,2)` のリストは K64 の MAIN では `list is not allowed` で拒否される (`NX=1` と書けば通るが、そのあと同じ場所で落ちる)。
    FFS 内の `EMIT` は `r` を作るが、FFS から MAIN に戻って TRACK を実行する経路は見つからなかった (`END;` のあとに入力が読まれない、`GetMAIN["file"]` は SADScript として読む)。
    → **MAIN の TRACK の出力そのものを SAD で取ることはできない** (§3)。
-2. ユーザースクリプトの TRACK は古典 SAD の書き方 (`ON/OFF` → `EMIT USE=RING;` → `PHSPLOTS=n;` → `TRACK USE=RING NPART= TURNS= NX=(..) NY=(..) NZ=(..);` → `STOP;`)。
+2. TRACK は古典 SAD の書き方 (`ON/OFF` → `EMIT USE=RING;` → `PHSPLOTS=n;` → `TRACK USE=RING NPART= TURNS= NX=(..) NY=(..) NZ=(..);` → `STOP;`)。
    ソース (`ActTra.f` → `track.f` → `tracka.f` と `tinip` `tsmear` `wjfit` `wtunem` `tcftr` `tapert`) を読んで直訳し、`pysad/maintrack.py` に実装した。
    描画 (`PHSPLOTS` の TopDrawer) 以外の数値出力は、フラグ一覧・損失の報告・smear の表・tune (FFT) の表・NX/NY/NZ の確認表示・`TunesByTracking` を含めて全部出る。
 3. 照合: K64 で動かないので、**同じ手順 (ActTra/tracka) を SADScript で書き、追跡だけ `TrackParticles` (= tturn) に任せた版** (`bench_level27a.sad`, `bench_level27b.sad`) を SAD で走らせ、
    pysad の MAIN TRACK の全桁データと比べた。RFSW ON/RAD OFF、RAD ON/FLUC OFF、RAD ON/FLUC ON (乱数列も) の 3 ケース (27a) と、粒子が落ちる 2 ケース (27b) で
    smear (全行)・最終座標・TunesByTracking の 8 本×3 面の周波数と振幅・損失した粒子と周が **SAD と一致 (座標 ≤5e-11、tune ≤5e-11、smear/振幅の相対 ≤7e-9 = SAD の印字桁)**。
    (初期分布の規格化振幅の割り当て (NX→x, NY→y, NZ→dp) は SAD ソースの読みで、SAD の MAIN からは確認できない。DA の `trackd`/`tinip1` (照合済み) と同じ式。)
-
-## 1. ユーザースクリプトでの使われ方 (`ユーザーの旧スクリプトのディレクトリ`, `sad`)
-
-`^ *TRACK +USE` の行を持つファイル **725 本** (VSX_Ring 492、PF_before_STRUG 145、DBA 26、Super_SOR 16、sad/PF 14、example 6、PLS 6、sad/3GSR 6 …)、TRACK 文 1727 個。
-FFS (`FFS;`) も含むものは 9 本だけで、残りは MAIN だけのスクリプト (ラティスファイルと連結して `gs lattice script`)。
-
-TRACK 文のキーワード (出現数): `USE` 1725、`NPART` 1726、`TURNS` 1726、`NX` 1740、`NY` 1573、`NZ` 1575。**これ以外 (XEMI YEMI SIGS SIGE ELEC POSI PROTON RADI SPAN CENTER AFTER AXIS SYNC) は 1 回も使われていない。**
-値はすべて数値定数 (`NPART=21 TURNS=1000` が 662 回、`NPART=20/150/41/25/10/11/200 TURNS=1000` など)。リストは `NX=(1,10,20,…)` (コンマ) と `NX=(1 5 10 …)` (空白) の両方。
-
-TRACK の前後の MAIN 命令の並び (文の先頭語の列、多い順):
-`ON OFF ON EMIT TRACK STOP` 182、`ON ON EMIT PHSPLOTS TRACK STOP` 90、`ON ON EMIT TRACK STOP` 75、`ON ON EMIT PHSPLOTS TRACK PHSPLOTS TRACK PHSPLOTS TRACK STOP` 61、
-`ON ON EMIT TRACK TRACK STOP` 42、`ON ON EMIT TRACK EMIT TRACK EMIT TRACK STOP` 22 … → 使われる MAIN 命令は **ON/OFF、EMIT、`PHSPLOTS=n;`、TRACK、STOP だけ**。
-`PHSPLOTS=` は 801 回 (描画ファイルの装置番号)、`OFF SMEAR` / `ON FOURIE` は example の 3 本だけ。
 
 ## 2. SAD の経路とコマンド表 (src/)
 
@@ -89,7 +78,6 @@ TRACK USE=RING NPART=1 TURNS=-1;    →  同じ SIGSEGV (trpt でも)
 
 - SIGSEGV のバックトレースのアドレスを `nm` (obj/AMD64-Linux5/sad1.exe) で引くと `toplvl_ → master.0.toplvl_ → doact_ → acttra_ → track_ → tracka_ → __trackdlib_MOD_tinip` (+0x1db)。
   `tinip` の `tmap(xa,-1)` が `use temw, only: rn=>r` の行列を使うので、EMIT が r を作っていないと落ちる。
-- 実スクリプト (`VSX_Ring/memory17/v18_67` + `phase`) も K64 では同じ結果 (リストの拒否 → ヘッダ → 落ちる)。
 - FFS 内で `USE RING; CELL; CALC; EMIT;` すると r ができるが、MAIN の TRACK を呼ぶ手段がない: `END;` で FFS を出ると `In[2]:=` (SADScript の対話) になり次の行が読まれず、
   `GetMAIN["file"]` (FFS 内) はファイルを SADScript として読んで `LALR(1) parser: syntax error`。
 - 結論: **MAIN の TRACK の参照出力は K64 では取れない。** 古典の SAD (KEK 本流の MAIN) では動くはずだが手元にない。
@@ -131,7 +119,7 @@ ActTra の `autofg` は `fmt_real`)、`Tracking end` の時間、MAIN の EMIT �
 - `maintrack.run_track`: 上の表のとおり。追跡は `track6n.Prog` + `track6n.turn` を 1 周ずつ呼ぶ (DA の `dapert.py` と同じ作り)。乱数は大域の `track6.RNG` を続けて使う (SAD は乱数列が 1 本)。
   `PYSAD_PROGRESS=100` を環境変数に付けると 100 周ごとに生存数と経過時間を表示する (長い追跡で止まったのか遅いのかを区別するため)。
 - `track6n.k_apert` に損失報告の記録 (`log`, `nlog`, `lcur`) を追加 (行数 0 の `log` なら何もしない = DA・TrackParticles は従来どおり)。`turn(apert=...)` は 5 要素 (従来) か 7 要素 (+log, nlog) のタプル。
-- 速度: ESRF リング (960 要素) の 21 粒子 1000 周 RAD+FLUC で約 21 秒 (EMIT 別)。
+- 速度: 960 要素のリング の 21 粒子 1000 周 RAD+FLUC で約 21 秒 (EMIT 別)。
 
 ## 6. 回帰とテスト
 
@@ -146,3 +134,7 @@ ActTra の `autofg` は `fmt_real`)、`Tracking end` の時間、MAIN の EMIT �
 - 13a/13b/14a/16a の `run_sad.py` 出力: 作業前 (`base_track/`) と作業後 (`after_track/`) で `cmp` 同一。
 - tar.gz: `pysad_20261016.tar.gz` を更新 (bench_level27a/27b の sad・main・result・pysad.py を含む)。
 - 既存の動作への影響: MAIN に TRACK 文を持つスクリプトだけ MAIN の命令を順に実行する新経路に入る。それ以外 (ラティス + FFS の bench) は従来どおり ON/OFF を先に反映する経路のまま。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 確認: 本文は変化なし。根拠: `pysad/maintrack.py` の更新日時は 11/06 8:45 のまま。MAIN の TRACK は MAP を恒等として通す (docs/28)。COORD・TCAVI・BEAMBEAM・MULT ANGLE≠0 などの新要素を MAIN の TRACK で通した gs との照合は未確認 (照合したのは TrackParticles。MAIN の TRACK の Fourier 解析 `wjfit/wfres/wfbin/wiord/wjdraw` は FFS から使えないので未翻訳: work_unimpl.md)。

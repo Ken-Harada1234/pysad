@@ -1319,6 +1319,80 @@ def _row_wiq(m: Matcher, cid: int, idp: int, rows) -> float:
     return wiq
 
 
+_GEO_NAMES = ('GX', 'GY', 'GZ', 'CHI1', 'CHI2', 'CHI3')
+
+
+def tdgeo_term(geo, kfname, ne, k, el, tname, key, s, iorgr=1):
+    """tdgeo.f の直訳 (DRIFT の L、BEND の ANGLE・L だけ)。geo[k-1, j, i] は geo(j+1, i+1, k) (i=0..2 が向きの行列の列、i=3 が位置)。
+    ne は条件の位置、k は変数の要素。返り値は qu に足す量 (s = couple·sign を掛けたもの。呼び出し側が渡す s は ±coup)"""
+    if ne == iorgr:
+        return 0.0
+    if (ne > iorgr and (k >= ne or k < iorgr)) or (ne < iorgr and (k < ne or k >= iorgr)):
+        return 0.0
+    s = s * (1.0 if ne - iorgr >= 0 else -1.0)
+    isg = kfname in ('GX', 'GY', 'GZ')
+    j = 'XYZ'.index(kfname[1]) if isg else None
+
+    def g(a, b, kk):                                   # Fortran geo(a, b, kk) (1 始まり)
+        return float(geo[kk - 1, a - 1, b - 1])
+    if tname in ('DRIFT', 'Drift'):
+        if key == 'L' and isg:
+            return s * g(j + 1, 3, k)
+        return 0.0
+    if tname in ('BEND', 'Bend'):
+        if key == 'ANGLE':
+            theta = float(getattr(el, 'ROTATE', 0.0) or 0.0)
+            if isg:
+                al = float(el.L)
+                jj = j + 1
+                j1 = jj % 3 + 1
+                j2 = 6 - jj - j1
+                drj1 = g(j1, 4, ne) - g(j1, 4, k + 1)
+                drj2 = g(j2, 4, ne) - g(j2, 4, k + 1)
+                v = float(el.ANGLE)
+                if v == 0.0:
+                    c1 = 0.0
+                    c2 = -0.5
+                else:
+                    c1 = _sinc(v) / v ** 2                      # mathfun の sinc (x cos x - sin x)
+                    c2 = (math.sin(v * 0.5) - v * math.cos(v * 0.5)) * 2.0 * math.sin(v * 0.5) / v ** 2
+                if theta != 0.0:
+                    cost, sint = math.cos(theta), math.sin(theta)
+                    yr1 = -cost * g(j1, 2, k) - sint * g(j1, 1, k)
+                    yr2 = -cost * g(j2, 2, k) - sint * g(j2, 1, k)
+                    xr = cost * g(jj, 1, k) - sint * g(jj, 2, k)
+                else:
+                    yr1 = -g(j1, 2, k)
+                    yr2 = -g(j2, 2, k)
+                    xr = g(jj, 1, k)
+                return (yr1 * drj2 - yr2 * drj1 + al * (c1 * g(jj, 3, k) + c2 * xr)) * s
+            if theta != 0.0:
+                cost, sint = math.cos(theta), math.sin(theta)
+                yr1 = -cost * g(1, 2, k) - sint * g(1, 1, k)
+                yr2 = -cost * g(2, 2, k) - sint * g(2, 1, k)
+                yr3 = -cost * g(3, 2, k) - sint * g(3, 1, k)
+            else:
+                yr1, yr2, yr3 = -g(1, 2, k), -g(2, 2, k), -g(3, 2, k)
+            if kfname == 'CHI2':
+                return s * (yr1 * g(2, 3, ne) - yr2 * g(1, 3, ne)) / math.hypot(g(1, 3, ne), g(2, 3, ne))
+            if kfname == 'CHI1':
+                dz1 = -g(2, 3, ne) * yr3 + g(3, 3, ne) * yr2
+                dz2 = -g(3, 3, ne) * yr1 + g(1, 3, ne) * yr3
+                return (g(1, 3, ne) * dz2 - g(2, 3, ne) * dz1) / (g(1, 3, ne) ** 2 + g(2, 3, ne) ** 2) * s
+            dx3 = -g(1, 1, ne) * yr2 + g(2, 1, ne) * yr1
+            dy3 = -g(1, 2, ne) * yr2 + g(2, 2, ne) * yr1
+            return (-g(3, 2, ne) * dx3 + g(3, 1, ne) * dy3) / (g(3, 1, ne) ** 2 + g(3, 2, ne) ** 2) * s
+        if key == 'L' and isg:
+            return s * g(j + 1, 3, k + 1)
+        return 0.0
+    return 0.0
+
+
+def _geo_var_supported(v):
+    """tdgeo をここで直訳した変数 (DRIFT の L、BEND の ANGLE・L)。それ以外は幾何の条件の列を中心差分にする"""
+    return (v['type'], v['key']) in (('Drift', 'L'), ('Bend', 'ANGLE'), ('Bend', 'L'))
+
+
 def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.ndarray, List[int]]:
     """tffsqu の直訳。ids は match6._tffscalc が返す dfs のキー [(cid, idp), ...] (行の順序)。
     rows_by[idp] は各オフモメンタム点の twiss_table。戻り: (qu0 [条件, 変数] (wiq, wvar を掛ける前), 数値微分が必要な列)。
@@ -1338,15 +1412,23 @@ def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.n
             continue
         c = m._cond(cid)
         kf = _KF_INDEX.get(c['kf'])
+        if c['kf'] in _GEO_NAMES:
+            kf = c['kf']                          # 幾何の条件 (tdgeo)。名前のまま持つ
         kpb, kpe = min(c['kp'], c['kp1']), max(c['kp'], c['kp1'])
         lfp1 = kpe
         lfp2 = kpb if c['kp'] != c['kp1'] else 0
         rowinfo.append((kf, lfp1, lfp2, idp))
     for ii, v in enumerate(m.variables):
         iv = _variable_iv(v)
-        if iv is None:
+        geo_rows = any(info is not None and isinstance(info[0], str) for info in rowinfo)
+        nongeo_rows = any(info is not None and not isinstance(info[0], str) for info in rowinfo)
+        if iv is None and not (geo_rows and not nongeo_rows and _geo_var_supported(v)):
             numeric_cols.append(ii)
             continue
+        if geo_rows and not _geo_var_supported(v):
+            numeric_cols.append(ii)                # 幾何の条件があり、変数が tdgeo の未移植の型 (四極の DX・DY など): この列は中心差分
+            continue
+        geo_arr = None
         for k in _positions(m, v):
             coup = 1.0                                     # couple(k)*wk (COUPLE 未使用、境界の分数なし)
             cache: Dict[tuple, np.ndarray] = {}
@@ -1355,6 +1437,19 @@ def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.n
                     continue
                 kf, lfp1, lfp2, idp = info
                 ctx = ctxs.get(idp)
+                if isinstance(kf, str):                 # 幾何 (tdgeo)
+                    if idp != 0:
+                        continue
+                    if geo_arr is None:
+                        g_ = m._geo if m._geo is not None else m._compute_geo()
+                        geo_arr = g_.geo
+                    el_k = m.lat.elements[k - 1]
+                    ssg = coup
+                    for lp in (lfp1, lfp2):
+                        if lp > 0:
+                            qu[i, ii] += tdgeo_term(geo_arr, kf, lp, k, el_k, v['type'], v['key'], ssg)
+                        ssg = -ssg
+                    continue
                 if ctx is None or kf is None:
                     continue
                 if kf == LENG:

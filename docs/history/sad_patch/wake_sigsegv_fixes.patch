@@ -1,0 +1,63 @@
+--- a/src/tffswake.f
++++ b/src/tffswake.f
+@@ -98,10 +98,20 @@
+           endif
+           iwl=abs(kwaketbl(1,iwp))
+           iwt=abs(kwaketbl(2,iwp))
+-          nlw=(ilist(1,iwl-1)-1)/2
+-          ntw=(ilist(1,iwt-1)-1)/2
+-          call c_f_pointer(c_loc(rlist(iwl)),wakel,[2,nlw])
+-          call c_f_pointer(c_loc(rlist(iwt)),waket,[2,ntw])
++          if(iwl /= 0)then
++            nlw=(ilist(1,iwl-1)-1)/2
++            call c_f_pointer(c_loc(rlist(iwl)),wakel,[2,nlw])
++          else
++            nlw=1
++            call c_f_pointer(c_loc(rlist(iwt)),wakel,[2,nlw])
++          endif
++          if(iwt /= 0)then
++            ntw=(ilist(1,iwt-1)-1)/2
++            call c_f_pointer(c_loc(rlist(iwt)),waket,[2,ntw])
++          else
++            ntw=1
++            call c_f_pointer(c_loc(rlist(iwl)),waket,[2,ntw])
++          endif
+           call tffswakekick(utwiss(1:ntwissfun,-nfam,iutp),utwiss1,
+      $         iwl,iwt,wakel,waket,nlw,ntw,
+      $         sigz,2.d0*gammab(ibound%le)*amass,nfam,nfam1,
+--- a/src/tturn.f
++++ b/src/tturn.f
+@@ -251,6 +251,7 @@
+               return
+             endif
+             sol=l < ke
++            aewak=.false.
+             go to 1020
+           endif
+ c          if(l == nextwake .and. lele /= icCAVI .and. lele /= icMULT)then
+@@ -407,6 +408,14 @@
+             exit
+ 
+           case (icSOL)
++            if(aewak)then
++              call txwake(np,x,px,y,py,z,g,dv,sx,sy,sz,
++     $             dx,dy,rot,int(anbunch),
++     $             fw,nwak1,p0,h0,.false.)
++              nwak=nwak+1
++              nextwake=merge(0,iwakeelm(nwak),nwak > nwakep)
++              aewak=.false.
++            endif
+             call tsol(np,x,px,y,py,z,g,dv,sx,sy,sz,
+      $           l,lend,
+      $           ke,sol,kptbl,la,n,nwak,nextwake,itab,izs,out)
+--- a/src/tapert.f
++++ b/src/tapert.f
+@@ -180,7 +180,7 @@
+ 
+ c     Reporting drop particles
+       if( (.not. dapert)
+-     $     .and. (.not. trpt .or. idtypec(l_track) == icAprt)
++     $     .and. (.not. trpt .or. (l_track > 0 .and. idtypec(max(1,l_track)) == icAprt))
+      $     .and. (outfl /= 0))then
+         call tapert_report_dropped(outfl,kturn,l_track,
+      $       np,x,px,y,py,z,g,sx,sy,sz,kptbl)

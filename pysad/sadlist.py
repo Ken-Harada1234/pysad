@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import functools
 import math
+import os
 import re
 
 import numpy as np
@@ -62,6 +63,10 @@ def _norm_idx(n, length, what='Index'):
     if k < 0:
         k = length + k + 1
     if not 1 <= k <= length:
+        if os.environ.get('PYSAD_TB'):
+            import traceback
+            print('NORM', n, length, flush=True)
+            traceback.print_stack(limit=9)
         raise SADError(f'General::index: {what} {int(_int(n))} out of range')
     return k
 
@@ -188,20 +193,60 @@ def install(I):
         return 1.0 if b else 0.0
 
     # ======================================================================== 位置指定の解釈
-    def positions(spec, allow_zero=False):
-        """Part の位置指定 → パスのリスト。n → [[n]]、{i,j,...} → [[i,j,...]]、{{..},{..}} → 複数"""
+    def _isblank(v):
+        return v is Null or v is None
+
+    def positions(spec, allow_zero=False, x=None):
+        """Part の位置指定 → パスのリスト。n → [[n]]、{i,j,...} → [[i,j,...]]、{{..},{..}} → 複数。
+        {,2} のように空の要素 (Null) は「その階層の全部」で、対象 x があるときは具体的な位置に展開する (ReplacePart[l, 0, {,2}])。{} は位置なし"""
         if is_num(spec):
             return [[spec]]
         if isinstance(spec, list):
-            if spec and all(isinstance(s, list) for s in spec):
-                return [list(s) for s in spec]
-            if all(is_num(s) for s in spec):
-                return [list(spec)]
+            if not spec:
+                return []
+            if all(isinstance(s, list) for s in spec):
+                paths = [list(s) for s in spec]
+            elif all(is_num(s) or _isblank(s) for s in spec):
+                paths = [list(spec)]
+            else:
+                raise SADError('General::wrongtype: Argument must be Real, List of Reals, or List of Lists')
+            if x is None:
+                return paths
+            out = []
+
+            def expand(v, path, done):
+                if not path:
+                    out.append(done)
+                    return
+                if _isblank(path[0]):
+                    if not _isseq(v):
+                        raise SADError('General::index: Part specification out of range')
+                    for k in range(1, len(_elems(v)) + 1):
+                        expand(_elems(v)[k - 1], path[1:], done + [float(k)])
+                elif is_num(path[0]) and path[0] == 0 and isinstance(v, (Expr, list)):
+                    expand(v.head if isinstance(v, Expr) else _LIST, path[1:], done + [path[0]])      # 頭部 (Part の 0)
+                else:
+                    el = _elems(v) if _isseq(v) else None
+                    if el is None:
+                        if isinstance(v, Rule):
+                            el = [v.lhs, v.rhs]
+                        else:
+                            raise SADError('General::index: Part specification out of range')
+                    expand(el[_norm_idx(path[0], len(el)) - 1], path[1:], done + [path[0]])
+            for p_ in paths:
+                if any(_isblank(q) for q in p_):
+                    expand(x, p_, [])
+                else:
+                    out.append(p_)
+            return out
         raise SADError('General::wrongtype: Argument must be Real, List of Reals, or List of Lists')
 
     def get_at(x, path):
         v = x
         for k in path:
+            if is_num(k) and k == 0 and isinstance(v, (Expr, list)):
+                v = v.head if isinstance(v, Expr) else _LIST          # Extract[…, {…,0,…}]: 頭部 (Plots.n の Extract[?contl, {…,1,0,1}])
+                continue
             if isinstance(v, Rule):
                 el = [v.lhs, v.rhs]               # a->b は 2 要素の式 (Extract[{a:>b}, {1, 2}] = b)
                 v = el[_norm_idx(k, 2) - 1]
@@ -216,6 +261,12 @@ def install(I):
         """path の位置の要素を fn(old) で置換した新しい式 (insert: その位置の前に fn(None) を挿入、delete: 削除)"""
         if not path:
             return fn(x)
+        if isinstance(x, Rule) and not insert and not delete:
+            # a->b は 2 要素の式。MapAt[f, a->b, {2}] は右辺を置き換える (Tkinter.n・KBMainFrame.n)
+            i = _norm_idx(path[0], 2) - 1
+            el = [x.lhs, x.rhs]
+            el[i] = modify_at(el[i], path[1:], fn, insert, delete)
+            return Rule(el[0], el[1], x.delayed)
         if not _isseq(x):
             raise SADError('General::index: Part specification out of range')
         el = list(_elems(x))
@@ -226,6 +277,10 @@ def install(I):
             if kk < 0:
                 kk = n + kk + 1
             if not 1 <= kk <= n + 1:
+                if os.environ.get('PYSAD_TB'):
+                    import traceback
+                    print('INSERT', repr(x)[:200], k, flush=True)
+                    traceback.print_stack(limit=7)
                 raise SADError(f'General::index: Index {int(_int(k))} out of range')
             el.insert(kk - 1, fn(None))
             return _rebuild(x, el)
@@ -252,7 +307,14 @@ def install(I):
         ls = _thread_lists(a, 'MapThread')
         if not ls:
             return []
-        return [apply(a[0], [l[k] for l in ls]) for k in range(len(ls[0]))]
+        out = []
+        for k in range(len(ls[0])):
+            r_ = apply(a[0], [l[k] for l in ls])
+            if isinstance(r_, Seq):
+                out.extend(r_.items)               # MapThread[If[…, Null[#2,#3], Null[]]&, …]: Sequence は展開して並べる
+            else:
+                out.append(r_)
+        return out
     B['MapThread'] = _mapthread
 
     def _scanthread(a):
@@ -267,7 +329,7 @@ def install(I):
         if len(a) != 3:
             raise SADError('General::narg: Number of arguments is expected to be 3 in MapAt')
         f, x, spec = a
-        for path in positions(spec):
+        for path in positions(spec, x=x):          # MapAt[f, v, {,,1}]: 空の位置は「全部」
             x = modify_at(x, path, lambda old: apply(f, [old]))
         return x
     B['MapAt'] = _mapat
@@ -470,7 +532,9 @@ def install(I):
             v = get_at(x, path)
             return apply(h, [v]) if h is not None else v
         if spec and all(isinstance(s, list) for s in spec):
-            return [one(p) for p in spec]
+            return [one(p) for q in spec for p in (positions(q, x=x) if any(_isblank(e) for e in q) else [q])]
+        if any(_isblank(e) for e in spec):
+            return [one(p) for p in positions(spec, x=x)]
         return one(spec)
     B['Extract'] = _extract
 
@@ -597,6 +661,61 @@ def install(I):
         return e1 if e1 is not None else e0
     B['FixedPoint'] = _fixedpoint
 
+    def _fixedpointlist(a):
+        """Packages/Misc.n FixedPointList$: Table[If[same[e1,e0],Break[]]; e1=e0; e0=f[e0], {n}] (初期値は含まない)"""
+        f, e0 = a[0], a[1]
+        n = INF
+        rest = list(a[2:])
+        if rest and is_num(rest[0]):
+            n = rest.pop(0)
+        same = None
+        thr, ath = 1e-12, 1e-20
+        for o in rest:
+            if isinstance(o, Rule) and isinstance(o.lhs, Sym):
+                if o.lhs.name == 'SameTest':
+                    same = o.rhs
+                elif o.lhs.name == 'Threshold':
+                    thr = o.rhs
+                elif o.lhs.name == 'AbsoluteThreshold':
+                    ath = o.rhs
+        if same is not None and isinstance(same, Sym) and same.name == 'NearlySameQ':
+            same = None
+        out = []
+        e1 = None
+        limit = 10 ** 6 if math.isinf(n) else int(n)
+        for _ in range(limit):
+            if e1 is not None:
+                if same is None:
+                    if nearly_same(e1, e0, thr, ath):
+                        break
+                elif truthy(apply(same, [e1, e0])) is True:
+                    break
+            e1 = e0
+            e0 = apply(f, [e0])
+            out.append(e0)
+        return out
+    B['FixedPointList'] = _fixedpointlist
+
+    def _selectcases(a):
+        """SelectCases[list, {t1, t2, ...}] → {{t1 が True になる要素}, {t2 が True (t1 に取られなかったもの)}, ...} (SwitchCases の述語版)"""
+        if len(a) != 2:
+            raise SADError('General::narg: Number of arguments is expected to be 2 in SelectCases')
+        x, tests = a
+        if isinstance(x, Expr):
+            x = list(x.args)
+        if not isinstance(x, list):
+            raise SADError('General::wrongtype: Argument must be List for #1 in SelectCases')
+        if not isinstance(tests, list):
+            raise SADError('General::wrongtype: Argument must be List for #2 in SelectCases')
+        out = [[] for _ in tests]
+        for e in x:
+            for k, t in enumerate(tests):
+                if truthy(apply(t, [e])) is True:
+                    out[k].append(e)
+                    break
+        return out
+    B['SelectCases'] = _selectcases
+
     # ======================================================================== 切り出し・挿入・削除
     def _take_range(x, spec, drop=False):
         el = list(_elems(x))
@@ -640,6 +759,8 @@ def install(I):
         if len(a) != 2:
             raise SADError('General::narg: Number of arguments is expected to be 2 in Drop')
         if not _isseq(a[0]):
+            if os.environ.get('PYSAD_TB'):
+                print('DROP', repr(a)[:300], flush=True)
             raise SADError('General::wrongtype: Argument must be List or composition in Drop')
         return _rebuild(a[0], _take_range(a[0], a[1], drop=True))
     B['Drop'] = _drop
@@ -688,13 +809,13 @@ def install(I):
             for r in rules:
                 if not isinstance(r, Rule):
                     raise SADError('General::wrongtype: Argument must be Rule or List of Rules in ReplacePart')
-                for p in positions(r.lhs):
+                for p in positions(r.lhs, x=x):
                     x = modify_at(x, p, lambda old, r=r: r.rhs)
             return x
         if len(a) != 3:
             raise SADError('General::narg: Number of arguments is expected to be 2 or 3 in ReplacePart')
         x, new, spec = a
-        for p in positions(spec):
+        for p in positions(spec, x=x):
             x = modify_at(x, p, lambda old: new)
         return x
     B['ReplacePart'] = _replacepart
@@ -726,7 +847,14 @@ def install(I):
             if not _isseq(y):
                 return y
             if hi < 0 or d < hi:
-                y = _rebuild(y, [rec(c, d + 1) for c in _elems(y)])
+                new_ = []
+                for c in _elems(y):
+                    r_ = rec(c, d + 1)
+                    if isinstance(r_, Seq):
+                        new_.extend(r_.items)               # f@@[l, {1}] で f が Null[] を返した要素は取り除く (gs は Null[] を要素に残すが、その後の処理は同じ結果。Plots.n の CP$JoinLine)
+                    else:
+                        new_.append(r_)
+                y = _rebuild(y, new_)
             if _in_level(lo, hi, d, y):
                 return apply(f, _elems(y))
             return y
@@ -741,7 +869,17 @@ def install(I):
 
         def rec(y, d):
             if _isseq(y) and (hi < 0 or d < hi):
-                y = _rebuild(y, [rec(c, d + 1) for c in _elems(y)])
+                new_ = []
+                for c in _elems(y):
+                    r_ = rec(c, d + 1)
+                    if isinstance(r_, Seq):
+                        new_.extend(r_.items)               # f が Null[] (空の Sequence) を返した要素は取り除く (K64 の Map)
+                    else:
+                        new_.append(r_)
+                if isinstance(y, Expr) and isinstance(y.head, Sym) and y.head.name in ('Plus', 'Times') and y.head.name in B:
+                    y = B[y.head.name](new_)            # f/@(a+b+c): 結果の Plus・Times は評価し直す (0+1+0 → 1)
+                else:
+                    y = _rebuild(y, new_)
             if _in_level(lo, hi, d, y):
                 return apply(f, [y])
             return y
@@ -809,6 +947,8 @@ def install(I):
     def _rest(a):
         x = a[0]
         if not _isseq(x) or not _elems(x):
+            if os.environ.get('PYSAD_TB'):
+                print('REST', repr(x)[:200], flush=True)
             raise SADError('General::index: Index out of range in Rest')
         return _rebuild(x, _elems(x)[1:])
     B['Rest'] = _rest
@@ -820,6 +960,8 @@ def install(I):
             raise SADError('General::wrongtype: Argument must be List or composition for all args in Join')
         h = _head_of(a[0])
         if not all(I.same(_head_of(x), h) for x in a):
+            if os.environ.get('PYSAD_TB'):
+                print('JOIN', [repr(x)[:200] for x in a], flush=True)
             raise SADError('General::samehead: Same heads are expected in Join')
         return _rebuild(a[0], [y for x in a for y in _elems(x)])
     B['Join'] = _join
@@ -1096,9 +1238,17 @@ def install(I):
         return (isinstance(m, list) and m and all(isinstance(r, list) and len(r) == len(m[0]) for r in m)
                 and all(is_num(v) for r in m for v in r))
 
+    def _narrow(x):
+        """gs: 虚部が厳密に 0 の複素数は実数に戻す (行列の要素ごと。{{1+I, 2+2I}, {6, 8}} の 6・8 は実数で出る)"""
+        if isinstance(x, list):
+            return [_narrow(v) for v in x]
+        if isinstance(x, complex) and x.imag == 0.0:
+            return x.real
+        return x
+
     def _tolist(m):
         if np.iscomplexobj(m):
-            m = m.real if np.all(np.abs(m.imag) == 0) else m
+            return _narrow(m.tolist()) if m.ndim else _narrow(complex(m))
         return m.tolist() if m.ndim else float(m)
 
     def _inverse(a):
@@ -1177,9 +1327,13 @@ def install(I):
         if is_num(x) or isinstance(x, str):
             raise SADError('General::wrongtype: Argument must be List or composition for #1 in Thread')
         if isinstance(x, list):
-            if x and all(isinstance(y, list) for y in x) and len({len(y) for y in x}) == 1:
-                return [list(r) for r in zip(*x)]
-            return x
+            lists = [y for y in x if isinstance(y, list)]
+            if not lists:
+                return x
+            if len({len(l) for l in lists}) != 1:
+                raise SADError('General::equalleng: Equal lengths of elements in Thread are expected')
+            n = len(lists[0])               # Thread[{a, {1,2}}] = {{a,1},{a,2}} (リストでない要素は全部に繰り返す。長さ 0 は {})
+            return [[(y[k] if isinstance(y, list) else y) for y in x] for k in range(n)]
         if isinstance(x, Rule):
             if isinstance(x.lhs, list) and isinstance(x.rhs, list):
                 if len(x.lhs) != len(x.rhs):
@@ -1237,7 +1391,12 @@ def install(I):
     B['ToExpression'] = _toexpression
 
     B['Evaluate'] = lambda a: a[0] if len(a) == 1 else Seq(list(a))
-    B['ReleaseHold'] = lambda a: a[0]
+    def _releasehold(a):
+        x = a[0]
+        if isinstance(x, Expr) and isinstance(x.head, Sym) and x.head.name in ('Hold', 'HoldForm') and len(x.args) == 1:
+            return I.eval(x.args[0])           # ReleaseHold[Hold[1+2]] = 3
+        return x
+    B['ReleaseHold'] = _releasehold
 
     # ======================================================================== 数学関数: 未定義シンボルには未評価のまま返す
     def _wrap_math(name):

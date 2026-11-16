@@ -1,6 +1,6 @@
 # 17. SAD ソース解析 総合リファレンスと pysad 対応表
 
-最終更新: 2026-11-06 (現状のスナップショット)
+最終更新: 2026-11-16 (現状のスナップショット。K64 ソースの構成 (ファイル数・行数) は 11/06 に数えたまま。pysad から呼ばれる部分の変化 (COORD・TCAVI・UND・MULT ANGLE≠0・SOL・MAP・WAKE・BEAMBEAM・POL・CSR・RADLIGHT など) は 11/16 に直した)
 
 対象 SAD は K64 版 (https://github.com/KatsOide/SAD)、コマンドの意味は CERN SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html) を先に見る。数値の根拠はローカルの `<SAD>\src`。行番号は 2026-10 時点。
 関連: 01_overview (モジュール地図)、10_benchmarks (Level 1〜16)、14_fortran_status (Fortran ファイル別の状況)、00_RESUME (時系列)、work_*.md (各モジュールの作業ログ)。
@@ -19,7 +19,7 @@ SAD (Strategic Accelerator Design) は KEK 発の加速器光学・追跡コー�
 | `src/inc/` | 35 エントリ (.inc 33 + changelog + k64.readme)。大半は全行コメントアウト |
 | `Packages/` | 82 エントリ (.n 73、.py 6 ほか) |
 | `mk/` | .mk 19 本 + Makefile 2 本 |
-| pysad (現行系統) | `pysad/*.py` 36,821 行 (非推奨の旧 API ffs/matching/tracking/optics 3,911 行を含む)。pytest 277 件 |
+| pysad (現行系統) | `pysad/*.py` 67 本、計 50,169 行 (2026-11-16 に数え直した。非推奨の旧 API ffs/matching/tracking/optics 3,911 行を含む)。試験は 514 件収集、511 通過・3 skip (GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip) |
 
 ファイル分類: 🔴A 物理コア / 🟡B 数学 / 🔵C インタープリタ / 🟢D グラフィックス / ⚫E ビルド / 🟣F SADScript パッケージ / 🟤G 外部ライブラリ。pysad の対象は A と B (C は `sadscript.py` + `ffscmd.py` で最小限を自前実装、D/E/G は不要)。
 
@@ -81,10 +81,10 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 
 | コマンド / 関数 | SAD 実装 (呼出チェーン) | pysad 対応 | 照合桁 |
 |---|---|---|---|
-| `TrackParticles[]` | tfinitn:917 (ID 1005) → tfefun1:70 → tftrack:8 → tturn:36 → tturn1:153 | `ffscmd.FFS.fn_track` → `track6n.track_particles_fast` (numba) / `track6.track_particles` | ≤5e-11 (Level 6〜11)、FLUC の乱数状態一致 |
+| `TrackParticles[]` | tfinitn:917 (ID 1005) → tfefun1:70 → tftrack:8 → tturn:36 → tturn1:153 | `ffscmd.FFS.fn_track` → `track6n.track_particles_fast` (numba) / `track6.track_particles`。POL かつ RAD ON は純 Python の `track6` (`sprot`・`bsi`)、RADLIGHT は `ffscmd._RadLight` (tlinit / tlstore / tlresult)、MULT ANGLE≠0 は `multa.py`、COORD・TCAVI・UND・BEAMBEAM・WAKE・MAP はそれぞれ `coord.py`・`tcav.py`・`und.py`・`beambeam.py`・`wake.py`・`elements.Map` | ≤5e-11 (Level 6〜11)、FLUC の乱数状態一致。スピン追跡は 4e-12 以下、RADLIGHT の軌道は差 0 (2026-11-16) |
 | FFS CALC (4D) | tffsa:544 → tffscalc:109 → qcell1 (qcell:27) → qcod/qtwiss1 | `lattice.Lattice.twiss`, `_qcod_periodic`, `_one_turn_cod_matrix` | 閉軌道 9-10 桁、Twiss ≤1e-10 (誤差・オフモメンタム付きは ≤3e-7、10_benchmarks §3.1) |
 | FFS CALC6D | tffscalc → qcell1 → qcell6d (qcell.f:404) | `calc6d.calc6d` (`tfetwiss`, `etwiss2ri`, `_closed_orbit`) | 1.7e-10 (Level 18a/b/c) |
-| FFS EMIT / `Emittance[]` | tffsa:988 → temitf → temit:78 → tcod → tturne → tecalc | `emit6d.emittance6d` / `tturne` / `tecalc`、規則一式は `emit_extra.emittance_rules` | 全量 ≤1.3e-11 (Level 16B)、OneTurn/Matrix 系 2.1e-10 (Level 21a) |
+| FFS EMIT / `Emittance[]` | tffsa:988 → temitf → temit:78 → tcod → tturne → tecalc | `emit6d.emittance6d` / `tturne` / `tecalc`、規則一式は `emit_extra.emittance_rules`。POL のスピンは `spin.py`、SOL 領域は `solemit.py`、COORD・TCAVI・UND・MULT ANGLE≠0・MAP は `coord.py`・`tcav.py`・`und.py`・`multae.py`・`elements.Map` | 全量 ≤1.3e-11 (Level 16B)、OneTurn/Matrix 系 2.1e-10 (Level 21a)。POL の MULT・空洞・SOL は gs と 1e-11 (`test_spin.py`) |
 | FFS RADINT | tffsa:617 → INTGRL:11 | `radint.py` (直訳)。`lattice._radiation_integrals_bend` は BEND のみの独自実装 | 7 桁 (Level 29a/29a2) |
 | FFS CHRO / 色収差 | tffsa:609 → tfchro.f | `CHROMATICITY` コマンドは対応 (18 の C-03)。色収差の値はチューンの DP0 スキャン + `PolynomialFit` (Fit.n) でも求める | チューン ≤2.5e-7 (Level 3A, 14A) |
 | FFS GO (FIT) | tffsa:1207 → tffsmatch:15 (tfsolv, tgrad, fmincube) | `match6.Matcher.go` (数値微分)、`match6d.AnalyticMatcher` (tffsqu/qdcell 解析微分) | 反復数・残差・K1 一致 (Level 13)。解析版は SAD の反復列と K1 を 12 桁 |
@@ -92,6 +92,11 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | `DynamicApertureSurvey` | dapert.n → tfdapert:1 → trackd:37 → tturn、損失は tapert | `dapert.dynamic_aperture` (trackd/tapert の独自実装)、追跡は track6n | NORAD は地図・Score 完全一致 (Level 16A)。RAD+FLUC は損失周の乱数が未一致 |
 | `TouschekLifetime` | emit.n → temit (INTRA ON: tintrb) の TouschekTable | `touschek.touschek_table` / `touschek_lifetime` | ≤7e-12 (Level 17a)、RADCOD ON は 1.7e-8 (17b) |
 | ジオメトリ (GX/GY/GZ/CHI) | tfgeo:1 (tfgeo/tfgeo1) / tgrot.f (geolib) | `geo.compute_geo` | 4.8e-13 (Level 19a/b/c) |
+| `SynchroBetaEmittance` | emit.n → tfemits / temits.f | `synchrobeta.py` | gs と相対 1e-5 (2026-11-16) |
+| `RadiationField` / `RadiationSpectrum` | tlinit.f の tlcalc ほか (RADLIGHT の軌道が入力) | `radfield.py` | RadiationField は gs が SIGSEGV (docs/19 B49) で、等速運動の場と相対 6e-3。軌道は gs と差 0 |
+| CSR 系 (`CSRTrack` `CSRHaissin` `CSRSetupOY` `CSRMatrix` `CSRInit` `CSRConvert`) | csrtrack.f、csroy.f、csrtest.f (csrhelmat) | `csr.py` | 11 桁 (CSRTrack・CSRHaissin)、1e-9〜1e-13 (CSRSetupOY・CSRMatrix・CSRInit)。CSROYMatrix は gs が wrongtype (B60) で未照合 |
+| `GaussianCoulomb(Fitted)` / BBBrem | tspac.f (bbkick1)、tintrb.f (twspu)、tbbbrem.f | `gausscoul.py`、`bbbrem.py` | docs/30 |
+| DELCOR | tcorr.f、tvcorr.f | `ffscmd._delcor` | チューン 1e-14、軌道 1e-10 (docs/29) |
 | MAIN TRACK | ActTra:257 → track.f:1 | `maintrack.py` (TRACK コマンドの手順を再現。PHSPLOTS の描画は無視、FOURIE ON は未対応) | SAD K64 の MAIN TRACK 自体は tinip で SIGSEGV のため、SADScript で同じ手順を書いた版 (bench_level27a/b) と照合 |
 
 ---
@@ -108,15 +113,20 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | tbend.f | tbend:531, tbendcore, tbshift, tbrot | BEND 追跡 | `track6._tbend`, `_tbendcore`, `_tbshift`, `_tbrot` (n 版 `tbendcore1` ほか) / ≤5e-11 (Level 6〜9)、K1≠0 は `_tbendi`/`k_bendi` ≤1.7e-10 (z のみ) |
 | tquad.f | tquad, tthin:118, ttfrin | QUAD / SEXT 以上の薄い多極 | `track6._tquad`, `_tthin_gen`, `_ttfrin*` (n 版 `k_quad`, `k_thin`) / ≤5e-11 |
 | tsolqu.f | tsolqu, tsolqum, tsolqur | bz 付き厚肉四極 | `track6._tsolqu`, `_tsolqur_ens`, `_tsolqu_bz_ens` / ≤1.5e-10 (Level 9)。n 版は `track6n.tsolqu1`、`track6n_ext.tsolqu_bz_all` (track6 と 4e-17) |
-| tsol.f | tsol:510 | ソレノイド領域 | `track6._tsol_region` (DRIFT/QUAD を含む領域のみ) / ≤1.5e-10。n 版 `track6n_ext.k_sol_*` / 4e-17 |
+| tsol.f | tsol:510 | ソレノイド領域 | `track6._tsol_region` (DRIFT/QUAD を含む領域のみ。領域内の BEND・MULT・CAVI は未対応) / ≤1.5e-10。n 版 `track6n_ext.k_sol_*` / 4e-17。K64 は SOL (BOUND≠0) の長さを周長に入れない (B63) ので追跡の `circ` も `emit6d._emit_circ` を使う |
 | tcav.f | tcav, tcavfrin | CAVI | `track6._tcav`, `_tcavfrin` (n 版 `k_cav`) / ≤5e-11 (長さ 0 と L≠0、Level 8) |
-| tmulti.f | tmulti:37, tmulk | MULT | `track6._tmulti_ens` (ANGLE=0、K0/K1/K2+) / ≤5.9e-11 (Level 11)。n 版 `track6n_ext.k_mult` / 4e-17 |
+| tmulti.f | tmulti:37, tmulk | MULT | `track6._tmulti_ens` (ANGLE=0、K0/K1/K2+) / ≤5.9e-11 (Level 11)。n 版 `track6n_ext.k_mult` / 4e-17。ANGLE≠0 (tmulta.f) は `multa.py` で gs と相対 0 (docs/26)。RF のある MULT は `track6n_ext.mult_full` |
 | tdrift.f | tdrift_free, tdrift_solenoid | ドリフト | `track6._tdrift_free`, `_tdrift_solenoid` / ≤5e-11 |
-| photons.f | tradk:1267, tradke:1362 | 放射 (追跡 / 行列側) | `track6._tradk`, `track6n.tradk_core1`, `sadrandom.drndsr/tdusrn` / ≤4.9e-11、FLUC の seed 一致 (Level 10) |
-| ttcav.f | ttcav | TCAVI | **未実装** |
-| tcoord.f | tcoord | COORD | **未実装** (CALC/EMIT 側 tcoorde も未) |
-| temap.f / tins.f | temap, tins | MAP (ExternalMap) / INS (線形挿入写像) | **未実装** (INS の CALC は `lattice.ins_twiss` で別途対応、Level 5) |
-| txwake.f / bbstrhl.f / undulator.f / phsrot.f / tspch_.c | — | WAKE / BEAMBEAM / UND / PHSROT / SPCH | **未実装** |
+| photons.f | tradk:1267, tradke:1362 | 放射 (追跡 / 行列側) | `track6._tradk`, `track6n.tradk_core1`, `sadrandom.drndsr/tdusrn` / ≤4.9e-11、FLUC の seed 一致 (Level 10)。スピンの歳差 `sprot` は `track6.sprot` (POL かつ RAD ON、4e-12 以下。損失の処理なし) |
+| tlinit.f | tlinit, tlstore, tlresult, tlcalc | RADLIGHT (軌道の記録)、RadiationField | `ffscmd._RadLight`、`radfield.py` / 軌道は gs と差 0 (docs/34・43) |
+| csrtrack.f / csroy.f / csrtest.f | CSRTrack ほか | CSR | `csr.py` (docs/34・38) |
+| ttcav.f | ttcav | TCAVI | `tcav.apply_tcav` (`track6n` の `K_TCAV`) / gs と相対 0 (RAD FLUC まで。docs/24) |
+| tcoord.f | tcoord | COORD | `coord.py` (追跡・tcoorde の Twiss・Emittance[]) / gs と一致 (docs/23)。track6 (低速) は未対応 |
+| temap.f / tins.f | temap, tins | MAP (ExternalMap) / INS (線形挿入写像) | MAP は `elements.Map` と `ffscmd._map_*` (ExternalMap の TRACK・EMIT・OPTICS が gs と一致。GEO・CompiledMap は未対応。docs/28)。INS の CALC は `lattice.ins_twiss` (Level 5)、追跡・Emittance[] も gs と一致を確認 (2026-11-16。追加の実装は不要) |
+| txwake.f | txwake | WAKE (LWAKE / TWAKE) | `wake.py` (`spsort` を含む)、光学は `wakeopt.py` / gs と一致 (docs/21) |
+| bbstrhl.f | beambeam, bbinit | BEAMBEAM | `beambeam.py` / gs と一致。傾き回転は K64 の誤り (B34) をそのまま写す (docs/22) |
+| undulator.f | undulator | UND | `und.py` / gs と一致。K64 は磁場を設定できず、磁場なしのドリフト (B37。docs/25) |
+| phsrot.f / tspch_.c (tspac.f) | — | PHSROT / SPCH | **未実装**。PHSROT は K64 で動作しない (B38)。空間電荷の追跡側は未翻訳 (bbkick1・twspu だけ `gausscoul.py`) |
 | tapert.f | tapert | 損失判定 (矩形 LOSSAMPL/LOSSDZ) | `track6n.k_apert`、`dapert` / 地図一致 |
 
 ### 5.2 線形光学・COD 🔴A
@@ -128,9 +138,9 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | tquade.f / tsolque.f | tquade, tsolque:313 | QUAD の写像 (bz 付き) | `lattice._tquade_cod`, `_tsolque_cod`, `_tqfrie_cod`, `_tqlfre_cod`, `_tqente_cod`、`emit6d._tquade` / ≤1e-11 (Level 5, 8) |
 | tbende.f / tbfrie.f | tbende:351, qbend:627, tbedge:88 | BEND 行列 | `lattice._bend_cod_update`, `_tbedge_cod`, `_tblfre_cod`、`emit6d._tbende`, `_tbendecorr`, `_tbendebody` / ≤1e-10 (K1≠0 は ≤3e-9)。ANGLE=0 の F1 分岐は未実装 |
 | tthine.f | tthine | SEXT 等の行列 | `lattice._tthine_cod`, `_thin_offset_map` / ≤1e-10 |
-| tmulte.f | tmulte | MULT 行列 | `lattice._mult_sequence`, `emit6d._tmulte` / Level 8/11 一致。ANGLE≠0 (tmultae) 未実装 |
+| tmulte.f | tmulte | MULT 行列 | `lattice._mult_sequence`, `emit6d._tmulte` / Level 8/11 一致。ANGLE≠0 (tmultae) は `multae.py` (Twiss 1e-13、Emittance[] 1e-11。BZ・RF・F1・SK0・FB1/FB2 の Twiss は未対応。docs/26)。tmulke の bsir0 の更新も写した (B64) |
 | tcave.f | tcave, tcavfrie | CAVI 行列 | `emit6d._tcave`, `_tcavfrie_map` / Level 8 一致 |
-| tsole.f / ttcave.f / tcoorde.f / tinse.f | — | SOL 行列 / TCAVI / COORD / INS | SOL・TCAVI・COORD は **未実装**。INS は `lattice.ins_twiss` |
+| tsole.f / ttcave.f / tcoorde.f / tinse.f | — | SOL 行列 / TCAVI / COORD / INS | SOL は `solmap.py` (Twiss) と `solemit.py` (Emittance[]・EMIT。領域内の BEND・MULT・CAVI は未対応。ずれ・傾きのある SOL も未対応)、TCAVI は `emit6d._ttcave` (RFSW ON の CALC は未対応、L≠0 の Emittance[] は gs が壊れる: B36)、COORD は `coord.py`、INS は `lattice.ins_twiss`。いずれも gs と一致 (docs/23・24・27) |
 | tturne.f | tturne:1, tturne1:334 | 6D 一周 (行列 + ビーム行列) | `emit6d.tturne` / ≤1.3e-11、`emit_extra._turn_record` |
 | tcod.f | tcod:31 | 6D COD (Newton) | `calc6d._closed_orbit`、`emit6d.emittance6d` 内の割線法 (RADCOD OFF は tcodz 相当) / δ, trf0 一致 (Level 7) |
 | tffsqu / qdcell.f | tffsqu, qdcell, qdtwis, qdquad, qdbend, qdmdia | 解析微分 | `match6d.tffsqu`, `qdcell`, `qdtwis`, `qdquad`, `qdbend`, `qdmdia` / 数値微分と 2e-8〜4e-7 |
@@ -148,6 +158,8 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | tfgeo.f / tgrot.f | tfgeo, tfgeo1, tfchi.. | ジオメトリ | `geo.compute_geo`, `tfchi`, `tfrotgeo`, `tgrot`, `tforbitgeo` / 4.8e-13 |
 | tintrb (temit 経由) | touckl, touckm, toucke | IBS・Touschek | `touschek._tintrb`, `touschek_table` / ≤7e-12 |
 | tfchro.f | — | CHRO | `CHROMATICITY` コマンドとして対応 (薄肉近似の表) |
+| tdgeo.f | tdgeo | fit の幾何 (GX..) の微分 | DRIFT の L と BEND の ANGLE・L だけ解析微分、ほかは中心差分 (2026-11-16) |
+| tlum.f | tlum, tluma | ルミノシティ | `measure.py` (MEASURE が gs で動かないので解析値との比較だけ) |
 | tfoptics.f | — | CalculateOptics | `ffscmd.fn_calculate_optics` (idim=3 は全周) |
 
 ### 5.4 数学 🟡B
@@ -159,17 +171,18 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | matrix.f / tmultr.f / tinitr.f | 6×6 行列 | numpy (`match6d.tmultr45`) |
 | spline.f | spline, splint | スプライン | `touschek.SadSpline`, `_spline_ddy` |
 | gaussn.f / drndsr.f / random_plugin_sad.c | 乱数 | `sadrandom.py` (LCG、Box-Muller、drndsr、tdusrn) / seed 一致 |
-| tffindroot.f | FindRoot / Fit | `sadscript.py` の Fit.n 部 (PolynomialFit) |
+| tffindroot.f | FindRoot / Fit | `fitroot.py` (tffit1・tfnewton の移植。FindRoot・Fit・FitGaussian・NIntegrate。gs と 5e-10〜1e-14)、PolynomialFit は `sadscript.py` で Fit.n を評価 (docs/31) |
+| gamma.f / hg.f / D.n | 特殊関数 | `specfn.py` (scipy.special。458 式が gs と一致。K64 が誤値を返す式 (B43〜B47) は真値を返す。docs/31) |
 
 ### 5.5 インタープリタ 🔵C / グラフィックス 🟢D / C ソース・sim・inc・Packages・extensions・contrib
 
 要約:
 
 - 🔵C: tfstk/tfetok/tfeval/tfestk/tfeeval/tfefun/tfefun1/tfinitn/tffs/tffsa/tffscalc/toplvl/terror/initb1。pysad は `sadscript.py` (字句・Pratt 構文・評価、Module/Do/Table/パターン/ファイル I/O、autofg 書式)、`sadlist.py` (MapThread, Cases, MatchQ 等のリスト系組み込み)、`parser.py` (MAIN 部)、`ffscmd.py` (tffsa の語の解釈順、tflag/terror/tftype) で必要分のみ再実装。
-- 🟢D: tfTkInter_.c、tfXlib_.c、sad_tcltk.c、sad_xlib.c、geodrw.f、Packages の Plots 系。**pysad では不要** (描画は matplotlib: `plot_optics.py`)。
+- 🟢D: tfTkInter_.c、tfXlib_.c、sad_tcltk.c、sad_xlib.c、geodrw.f、Packages の Plots 系。11/06 は「pysad では不要 (描画は matplotlib: `plot_optics.py`)」としたが、**11/16 の現状は例外あり**: GUI (Tkinter.n・KBFrame.n) と描画 (ListPlot・Plot・OpticsPlot など) は SAD 自身の .n を pysad のインタプリタで解釈し、tkinter のキャンバスに描く (`tclbridge.py`・`tkcanvas.py`・`pkgload.py`。docs/20・35)。tfTkInter_.c のキャンバス関数は `tkcanvas.py` が tkinter の Tcl に置き換える。matplotlib の描画 (`plot_optics.py`) は別に残る。
 - C: calc.c は SAD1 の数式用 (byacc 生成)、PySad.c は Python 2 API で非ビルド、tspch_.c/spch.c は空間電荷、tgauss_.c/random_driver.c/random_plugin_sad.c は乱数、sim/ は OS 抽象化 (unix_memory 系、sad_api、dynl 系ほか)。
 - inc/: 実コードを含むのは TENT/TEXIT/common/MACexpn/TFMACRO/TMACRO/TFSF/coroper 程度。要素コードの実定義は tfstk.f の module maccode (icDRFT=1, icBEND=2, icQUAD=4, icSEXT=6, icOCTU=8, icDECA=10, icDODECA=12, icUND=18, icWIG=19, icSOL=20, icST=21, icMULT=22, icCAVI=31, icTCAV=32, icMAP=33, icINS=34, icCOORD=35, icBEAM=36, icPROT=37, icSPCH=38, icMARK=41, icMONI=42, icAPRT=43, icLINE=100)。pysad の `ffscmd._TYPECODE` が SOL=20, MULT=22 を使う。
-- Packages: init.n (NPARA=4 など既定値)、Optics.n (CALC6D, NormalCoordinates)、emit.n (Emittance[] の規則名、TouschekLifetime)、dapert.n、Fit.n、correction.n、optimize.n、extmap.n。pysad が参照しているのは init.n / emit.n / Fit.n / dapert.n / Optics.n の挙動。
+- Packages: init.n (NPARA=4 など既定値)、Optics.n (CALC6D, NormalCoordinates)、emit.n (Emittance[] の規則名、TouschekLifetime)、dapert.n、Fit.n、correction.n、optimize.n、extmap.n。11/06 は init.n / emit.n / Fit.n / dapert.n / Optics.n の挙動だけを参照していたが、11/16 は `pkgload.py` が correction.n・bump.n・corutility.n・optimize.n・D.n・Plots.n・ListPlot.n・CSR.n などを SADScript のまま読む (`PYSAD_SAD_PACKAGES` が要る。docs/32)。
 - extensions: RandomMT (MT19937/SFMT、既定の乱数は "SAD" 合同法)、sad+ (大見氏の微分代数 C++)、Standard (Tkinter/Xlib)。pysad は使わない。
 - contrib: gdtoa、BBBrem_dir (BBBrem.C)、libtai、tcl/tk ほか。不要。
 
@@ -239,22 +252,22 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | 2 | icBEND | tbend:327 | ✓ `_tbend` (K1≠0 `_tbendi`)、DX/DY/DROTATE も可 |
 | 4 | icQUAD | tquad:355 → tsolqu | ✓ `_tquad` / `k_quad` |
 | 6,8,10,12 | SEXT/OCTU/DECA/DODECA | tthin:380 | ✓ `_tthin_gen` / `k_thin` (SEXT 厚肉放射も一致) |
-| 22 | icMULT | tmulti:395 | △ `_tmulti_ens` / `k_mult` (ANGLE=0、SK/F1/RF は未) |
-| 20 | icSOL | tsol:410 | △ `_tsol_region` / `k_sol_*` (DRIFT/QUAD を含む領域のみ。内部 BEND/MULT/CAVI、DX/DY/DZ/CHI、F1 は未) |
+| 22 | icMULT | tmulti:395 | △ `_tmulti_ens` / `k_mult` (ANGLE=0。RF は `mult_full`)。ANGLE≠0 は ✓ `multa.py` (tmulta)。SK0・F1・TAPER・VOLT は未 |
+| 20 | icSOL | tsol:410 | △ `_tsol_region` / `k_sol_*` (DRIFT/QUAD を含む領域のみ。内部 BEND/MULT/CAVI、DX/DY/DZ/CHI、F1 は未。領域内の BEND は gs が偏向をほぼ無視して合わず取り下げ: B69) |
 | 31 | icCAVI | tcav:443 | ✓ `_tcav` / `k_cav` |
 | 41,42 | MARK, MONI | — | ✓ (無作用) |
 | 43 | icAPRT | tapert1:418 | △ `k_apert` (損失判定のみ) |
-| 32 | icTCAV | ttcav:480 | ✗ |
-| 33 | icMAP | temap:490 | ✗ |
-| 34 | icINS | tins:502 | ✗ |
-| 35 | icCOORD | tcoord:506 | ✗ |
-| 36 | icBEAM | beambeam:498 | ✗ |
-| 37 | icPROT | phsrot:517 | ✗ |
+| 32 | icTCAV | ttcav:480 | ✓ `tcav.apply_tcav` (RANKICK・RANPHASE は未) |
+| 33 | icMAP | temap:490 | ✓ `elements.Map`・`ffscmd._map_*` (ExternalMap の TRACK) |
+| 34 | icINS | tins:502 | ✓ (gs と一致を確認。追加の実装は不要) |
+| 35 | icCOORD | tcoord:506 | ✓ `coord.py` |
+| 36 | icBEAM | beambeam:498 | ✓ `beambeam.py` |
+| 37 | icPROT | phsrot:517 | ✗ (K64 で動作しない: B38。NotImplementedError) |
 | 38 | icSPCH | tpspac:525 | ✗ |
-| 18 | icUND | undulator:537 | ✗ |
+| 18 | icUND | undulator:537 | ✓ `und.py` (磁場なしのドリフト: B37) |
 | 19 | icWIG | twig:541 (空スタブ) | — (SAD も無作用) |
 | 21 | icST | abort ("Use BEND with ANGLE=0") | — |
-| — | wake / wspac | txwake:266 / twspac:274 | ✗ |
+| — | wake / wspac | txwake:266 / twspac:274 | wake ✓ `wake.py`。wspac (空間電荷) ✗ |
 
 ### 7.2 tturne1 (tturne.f select case L470-675)
 
@@ -264,15 +277,15 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | 2 | icBEND | tbende:533 | ✓ `_tbende` (`_tbendecorr`, `_tbendebody`) |
 | 4 | icQUAD | tquade:569 | ✓ `_tquade` |
 | 6,8,10,12 | tthine:592 | tthine | ✓ (六極内のドリフトの dv 項を含む) |
-| 20 | icSOL | tsole:597 | ✗ (emit6d は SOL 未対応) |
+| 20 | icSOL | tsole:597 | △ `solemit.py` / `emit_extra._tturne1` の SOL 領域 (領域内は DRIFT・QUAD。POL のスピンも通る) |
 | 21 | icST | forcesf:602 | — |
-| 22 | icMULT | tmulte:621 | △ `_tmulte` (ANGLE=0。ANGLE≠0 の tmultae は未) |
+| 22 | icMULT | tmulte:621 | ✓ `_tmulte` (ANGLE=0)、`multae.py` (ANGLE≠0。BZ・RF・F1・SK0 は未) |
 | 31 | icCAVI | tcave:635 | ✓ `_tcave`, `_tcavfrie_map` |
-| 32 | icTCAV | ttcave:648 | ✗ |
-| 33 | icMAP | temape:661 / qemap:657 | ✗ |
-| 34 | icINS | tinse:665 | ✗ (CALC の INS は別実装) |
-| 35 | icCOORD | tcoorde:668 | ✗ |
-| — | default | 無作用 (WIG, UND, MARK, BEAMBEAM) | ✓ |
+| 32 | icTCAV | ttcave:648 | ✓ `emit6d._ttcave` (L≠0 は gs が壊れる: B36) |
+| 33 | icMAP | temape:661 / qemap:657 | ✓ `elements.Map` の EMIT・OPTICS フック |
+| 34 | icINS | tinse:665 | ✓ (`lattice.ins_twiss`。gs と一致) |
+| 35 | icCOORD | tcoorde:668 | ✓ `coord.py` |
+| — | default | 無作用 (WIG, MARK)。UND・BEAMBEAM は 11/16 から ✓ (`und.py`・`beambeam.py`) | ✓ |
 
 ---
 
@@ -289,9 +302,9 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | 機能 | 状態 | pysad |
 |---|---|---|
 | 追跡: DRIFT/BEND/QUAD/SEXT/CAVI/MARK | ✓ | track6/track6n |
-| 追跡: MULT (ANGLE=0)、SOL 領域 | △ 部分 | track6 / track6n_ext |
+| 追跡: MULT (ANGLE=0 と ANGLE≠0)、SOL 領域 | △ 部分 (SOL 領域内は DRIFT・QUAD のみ) | track6 / track6n_ext / multa |
 | qtwiss/qcell/qcod (CALC) | ✓ | lattice.py |
-| tturne/temit/tecalc (Emittance[]) | ✓ (DRIFT/QUAD/BEND/SEXT/CAVI/MULT ANGLE=0/MARK) | emit6d.py, emit_extra.py |
+| tturne/temit/tecalc (Emittance[]) | ✓ (DRIFT/QUAD/BEND/SEXT/CAVI/MULT/MARK、COORD・TCAVI・UND・MAP、SOL 領域、POL のスピン) | emit6d.py, emit_extra.py, solemit.py, spin.py |
 | tffsmatch/qdcell (GO) | ✓ 数値微分 + 解析微分 | match6.py, match6d.py |
 | INTGRL (RADINT) | ✓ 直訳 | radint.py |
 | qcell6d (CALC6D) | ✓ | calc6d.py |
@@ -305,17 +318,17 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 
 | 項目 | 状態 | 備考 |
 |---|---|---|
-| ttcav/ttcave, tcoord/tcoorde, temap, tins (追跡) | ✗ | 該当要素を使う格子で必要 |
-| emit6d の SOL、tmultae (MULT ANGLE≠0)、MULT の SK/F1 | ✗ | |
+| ttcav/ttcave, tcoord/tcoorde, temap, tins (追跡) | ✓ (11/16 に済み。INS は追加の実装が不要) | docs/23・24・28 |
+| emit6d の SOL、tmultae (MULT ANGLE≠0)、MULT の SK/F1 | SOL・tmultae は ✓ (11/16)。MULT の SK0・F1・TAPER・VOLT は ✗ | docs/26・27 |
 | BEND の F1 フリンジ ANGLE=0 分岐、INTGRL の RF 関係 | ✗ | |
 | qtwissfrac (端数位置の Twiss) の厳密化 | △ | 端数位置は補間 |
 | CALC の解析行列の残り (MULT、ANGLE=0 BEND、F1 付き BEND、DROTATE≠0 BEND、空洞) | △ | 数値微分 (eps=1e-7)。四極・薄い多極・BEND 本体は解析行列 |
-| 損失周の乱数消費 (RAD+FLUC の DA) | △ | 論理は再同期テストで SAD と一致。実寸 DAsv の最終 seed はカオスで一致しない |
-| 追跡の並列粒子 fork (NPARA) | ✗ | NPARA=1 前提で一致 |
+| 損失周の乱数消費 (RAD+FLUC の DA) | △ | 論理は再同期テストで SAD と一致。実寸の DA の最終 seed はカオスで一致しない |
+| 追跡の並列粒子 fork (NPARA) | ✗ (`Fork`・`Shared` は登録だけの限定版: docs/14) | NPARA=1 前提で一致 |
 
 ### 9.3 低・不要
 
-🔵C インタープリタ (最小限を sadscript で自前実装)、🟢D グラフィックス (matplotlib)、⚫E ビルド、🟤G contrib、デッドコード 10 件。
+🔵C インタープリタ (sadscript で自前実装。11/16 は SAD の .n パッケージもそのまま動かす)、🟢D グラフィックス (11/16 は SAD の .n を tkinter で動かす。docs/35)、⚫E ビルド、🟤G contrib、デッドコード 10 件。
 
 ### 9.4 旧 API (非推奨)
 
@@ -325,21 +338,24 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 
 ## 10. pysad 現状
 
-- 到達点: ベンチ bench_level1〜31 (run_regression.py の 50 ベンチ) が SAD と一致。線形光学 (CELL/INS/CALC6D/幾何/RADINT/TRPT の加速) ≤1e-10、
+- 到達点: ベンチ bench_level1〜31 (run_regression.py の 50 ベンチ。QUICK=1 では 46 件) が SAD と一致。線形光学 (CELL/INS/CALC6D/幾何/RADINT/TRPT の加速) ≤1e-10、
   Emittance ≤1e-11〜1e-9、Touschek ≤7e-12、追跡 ≤5e-11、マッチングは反復列と K1 を SAD と同じ桁で再現、DA の地図と Score (NORAD) が一致。
 - 現行モジュール (`pysad/`、行数) は `15_implementation_summary.md` §2 (lattice 4038、ffscmd 3568、sadscript 2831、emit6d 2265、track6 2054、parser 1876、track6n 1826、
   elkern 1723、match6d 1468、match6 1421、sadlist 1167、touschek 849、track6n_ext 696、calc6d 660、radint 630、geo 556、trptacc 334、optics_fn 315 ほか)。
   calc6d / match6d / geo / emit_extra / track6n_ext / touschek はすべて ffscmd から呼ばれる。
-- 実スクリプト: esrf 52 本 (数値一致 26、一部一致 13、例外 6、打ち切り 7)、pf2 34 本 (数値一致 22、一部一致 10、動くが不一致 2)。詳細は `12_user_scripts_status.md`。
+- 11/16 の追加 (要素・機能別の文書は docs/20〜35、大項目の解説は docs/36〜43): COORD・TCAVI・UND・MULT ANGLE≠0・MAP・DELCOR・SOL の Twiss/Emittance[]・WAKE・BEAMBEAM・POL (スピン)・CSR・RADLIGHT・GaussianCoulomb・特殊関数・SAD パッケージ・GUI/描画。回帰は 50 ベンチ FAIL 0 (`QUICK=1`)。
 
 ## 11. 未実装・未解決の解説
 
-1. **性能**: 誤差入り 6D emit × 多数の実現 (print_all_error)、DAsv 5000 周 × 969 粒子、CodCorr の全実現は 600 s を超える (SAD も DA 系は 300 s 超)。
+1. **性能**: 誤差入り 6D emit × 多数の実現、DA の 5000 周 × 969 粒子は 600 s を超える (SAD も DA 系は 300 s 超)。
 2. **FITP>1 の最終解**: SAD (WSL) が GO で再起動するため参照値がない。1 段目の解は一致、2 段目以降の多解は別解に着くことがある。fam 点は自己検証のみ。
-3. **FFS エラー時の Do の中断**: SAD は FFS::error で外側の Do を抜けるが pysad は続行する (chrom_b, disp_b, dx_sv)。
+3. **FFS エラー時の Do の中断**: SAD は FFS::error で外側の Do を抜けるが pysad は続行する。
 4. **不安定ラティス**: SAD の 1e199 級の値や NaN は再現しない (安定域は一致)。
-5. **追跡**: 損失周の乱数消費は論理が一致するが、実寸 DAsv の最終 seed はカオスで一致しない (Score の差 1〜3 %)。
-6. **要素未対応**: TCAVI、COORD、MAP、INS (追跡)、BEAMBEAM、PHSROT、SPCH、UND、WAKE。SOL の emit/幾何、MULT ANGLE≠0 (tmulta)、加速要素の K_n と VOLT の併用。
-7. **解析的でない部分**: fit の幾何条件の微分 (tdgeo)、MULT・ANGLE=0 BEND・F1 付き BEND・空洞の CALC 行列 (数値微分)。
+5. **追跡**: 損失周の乱数消費は論理が一致するが、実寸の DA の最終 seed はカオスで一致しない (Score の差 1〜3 %)。
+6. **要素未対応** (11/16): PHSROT (K64 で動作しない: B38)、SPCH (空間電荷の追跡)、SOL 領域内の BEND・MULT・CAVI、ずれ・傾きのある SOL、MULT ANGLE≠0 の BZ・RF・F1・SK0。TCAVI の RFSW ON の CALC と RANKICK・RANPHASE、MAP の GEO・CompiledMap。11/06 に未対応だった TCAVI・COORD・MAP・INS・BEAMBEAM・UND・WAKE・SOL の emit・MULT ANGLE≠0 は済み (docs/23〜28)。
+7. **解析的でない部分**: fit の幾何条件の微分 (tdgeo は DRIFT の L と BEND の ANGLE・L だけ解析微分、ほかは中心差分)、MULT・ANGLE=0 BEND・F1 付き BEND・空洞の CALC 行列 (数値微分)。
 8. **MON/MCOD/TCOD**: この SAD ビルドでは何もしない。pysad も受理のみで一致。
 9. 解析残り (「転記のみ・導出なし」「未検証」の一覧) は `docs/16_physics_guide.md` §22 を参照。RADINT と Emittance[] の 13% 差の主因 (16 の §11) は未特定。
+10. **pysad と gs が合わない未解決の差 (11/16)**: BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡 (相対 0.7)、L≠0 の CAVI の DX・DY (1e-3)、SOL (BZ≠0) 内の四極 + RAD の追跡で現在の gs が保存済みの参照と別の値を返す (docs/19 B68)、K3 が強くずれの大きい MULT リングの CALC (qcod) の閉軌道 (Emittance が NaN)。詳細は `docs/history/work_unimpl.md`。
+11. **この文書の §5・§7 の照合桁**は 11/06 までのベンチ (Level 1〜31) の値で、11/16 に足した行の桁は各要素の文書 (docs/20〜35) の gs との比較による。実用のリングや強い非線形での確認は別。
+

@@ -1,9 +1,10 @@
 # 16. SAD 物理計算ガイド
 
-最終更新: 2026-11-06 (現状のスナップショット)
+最終更新: 2026-11-16 (現状のスナップショット。§24〜§30 は 11/13〜11/16 に追加した要素・機能の節で、詳しい解説は docs/36〜43)
 
 式中心。SAD = K64 版 (github KatsOide/SAD)、ソースは `<SAD>/src`、ヘルプは CERN SADHelp。
 詳細・ベンチ結果は docs/05 (CALC)、06 (マッチング)、07 (emit)、08 (追跡)、09 (DA)、11 (癖)、work_*.md を参照。行番号は 2026-10 時点の src/ 以下。
+新しい要素・機能 (POL・SOL・WAKE・CSR・BEAM-BEAM・RADLIGHT など) は §24〜§30 に式の要点と大項目の解説文書への案内を置いた。
 凡例: [確認]=ソースを読んだ / [転記]=式は分かるが導出していない / [解釈]=コードからの推論。pysad の欄は 直訳=行単位の移植 / 独自=別実装 / 未=未実装。
 
 ## 1. 座標・単位・キーワード
@@ -16,6 +17,8 @@
 - 1.6 速度項 [転記] tturne.f:847-867:
   `dvemit = -(p1+p0)/h1/(p0*h1+p1*h0)*dp + dvfs`、`p1=p0(1+dp)`、dvfs=FSHIFT (RFSW のみ)。要素ごとに `z -= dvemit*L`。(5,6) 成分に `h0/h1^3*L`。
 - 1.7 **SAD の `sinc(x) = x cos x - sin x`**、`sinhc(x) = x cosh x - sinh x` (tfloor.f:369-395、小さい x は級数)。sin x/x ではない。qdbend 等の `a12 = rho/phi*sinc(phi)*dphi` はこの定義 (§17)。
+- 1.9 **MOMENTUM の初期値は 30 GeV** (initb1.f:1698 `RsetGL('MOMENTUM',30.d9)`)。以前の記述の 1 GeV は誤り。設定しないスクリプトは 30 GeV で計算される (docs/11 A43)。
+- 1.10 **周長 (周回周波数 ω0)**: K64 は SOL (BOUND≠0) の長さを周長に入れない。ω0、αp、空洞の位相、偏極時間に効く (docs/11 A42、§25)。
 - 1.8 FRINGE/DISFRIN の既定: pysad は FRINGE=0, DISFRIN=0 を仮定する。tqfrie は既定で入り、切るのは DISFRIN=1 (A15)。
 
 ## 2. 計算の流れ [確認]
@@ -62,7 +65,7 @@ x+=px ale; y+=py ale; z += dpz ale - dvemit L
 - フリンジ長補正 alcorr [転記] (tbende.f:381): `al = al0 - ((phi0 fb1)^2+(phi0 fb2)^2)/48/al0 * sin(.5(phi0(1-psi1-psi2)-apsi1-apsi2))/sin(.5 phi0)`。同式が pos (LINE["S"]) にも使われる (§20)。
 - 追跡 tbendcore (tbend.f:372-527): 入口端面・F1・本体・出口端面を閉じた式で 1 ステップ [転記]。K1≠0 は tbendi (§13)。
 - ロール誤差 DROTATE は中点まわりの 3 次元回転 (tbrote/tbgrote、LGEO=L/2, ANGLGEO=ANGLE/2; tfgeo.f:212)。回転の向き `x'=cos x - sin y`。DTHETA は QUAD では ROTATE、BEND では DROTATE。
-- pysad: tbende は lattice/emit6d に直訳 (F1・ANGLE=0 分岐は一部)。
+- pysad: tbende は lattice/emit6d に直訳 (F1・ANGLE=0 分岐は一部)。tmulke の bsir0 と tbendebody の bsi2 は POL のスピンに効く (§24)。
 
 ## 6. エッジ・フリンジ
 
@@ -76,7 +79,7 @@ x+=px ale; y+=py ale; z += dpz ale - dvemit L
 
 - tthine (CALC/6D, tthine.f:1-93) [確認]: `kord=nord/2-1; aki=ak/kord!`。L≠0: `drift(L/6) -> kick(aki/2) -> drift(2L/3) -> kick(aki/2) -> drift(L/6)`。kick: `cx=(x-iy)^kord; px -= aki Re cx; py -= aki Im cx`。行列は閉軌道上の微分 (feed-down)。enarad=.false.。
 - 追跡 tthin (tquad.f:118-322): 4 次積分 `alpha=1/sqrt12, beta=1/6-alpha/2, gamma=1/40-1/(24 sqrt3), alpha1=1/2-alpha`: drift(alpha1 L) -> 半キック -> drift(alpha L) -> 補正キック(beta,gamma) -> drift(alpha L) -> 半キック -> drift。入口出口で ttfrin、放射は最後に tradk(L) 1 回。キックは `aki=K/kord!/(1+d)`。
-- MULT: CALC は qmult1 -> tmulte (ANGLE=0)、追跡 tmulti: tsolrot -> ttfrins(n=0..2, dofr) -> [tsolqu/tsolqum + n>=2 キック]xndiv -> tsolqu -> ttfrins -> 戻し。放射は各 tsolqu の後。追跡の MULT にはフリンジ ttfrin が入り、emit の tmulte には入らない (A16)。ANGLE≠0 は tmulta (pysad 未)。
+- MULT: CALC は qmult1 -> tmulte (ANGLE=0)、追跡 tmulti: tsolrot -> ttfrins(n=0..2, dofr) -> [tsolqu/tsolqum + n>=2 キック]xndiv -> tsolqu -> ttfrins -> 戻し。放射は各 tsolqu の後。追跡の MULT にはフリンジ ttfrin が入り、emit の tmulte には入らない (A16)。ANGLE≠0 は tmulta (追跡) / tmultae (Twiss・Emittance[]): 曲がり (tbend の分割スライス) と曲率つきの多極キック (gkn の表) を ndiv 回繰り返す。pysad は `multa.py` / `multae.py` (docs/26。BZ・RF・F1・SK0 は未対応)。
 
 ## 8. 空洞
 
@@ -108,7 +111,7 @@ r <= conv: 収束。Newton: (T-I) cod0_new = T cod0 - cod_end を tsolvg (SVD, 1
 ## 11. 放射積分 RADINT (INTGRL.f)
 
 RADINT コマンドだけが使う (Emittance[] は INTGRL を使わない; 結合 BEND では 13% 差 [原因未特定。INTGRL は 4D の積分で、bendib の rhob/rho0 を設定せず直前の値 (最後の BEND の L/ANGLE) を全 BEND に使う癖があり (docs/11 A34)、候補の 1 つ])。
-**pysad は `pysad/radint.py` が INTGRL.f の直訳で、FFS の RADINT コマンドに接続済み** (ESRF 6 通り、小リング 3 通りが SAD と 7 桁一致。history/work_small_items.md A)。
+**pysad は `pysad/radint.py` が INTGRL.f の直訳で、FFS の RADINT コマンドに接続済み** (6 通りの大型リングと小リング 3 通りが SAD と 7 桁一致。history/work_small_items.md A)。
 `COEFF=(elradi/elmass^3/3)1e27`, 対象は BEND/QUAD/SEXT/CAVI。BEND: `IR=min(14,max(1,int(|ANG|/.002))), IRP=2IR`、SYMPS (複合 Simpson)。K0, AE1, F1 は読まない。
 被積分: `I2=CURV^2 DL, I3=|CURV|^3 DL, I4 = (CKL0X + 2CKL1X/CURV) CURV^2 (R11 EU + R12 EPU), I5 = |CURV|^3 (GU EU^2 + 2AU EPU EU + BU EPU^2) DL`。エッジ項 TEDGE (CURV tan e)。出力: `DAMPU=1-I4/I2`, `EMITU = CO5 E^2 I5/(I2-I4)`, `SIG = CO4 E sqrt(I3/(2I2+I4u+I4v))`。SEXT の DKL2 は未代入 (寄与実質 0、バグの疑い)。lattice の `_radiation_integrals_bend` は BEND のみ・非結合の別実装。
 
@@ -122,7 +125,7 @@ RADINT コマンドだけが使う (Emittance[] は INTGRL を使わない; 結�
 - **tecalc の定義** (temit.f:235-510): `rx=T` (RFSW OFF なら `rx(6,1:5)=0, rx(6,6)=1`) -> teigenc -> tnorm (各モードのシンプレクティック積 s=1、z 成分最大を第 3 モード、残りを x 成分で並べる) -> `r=tsymp(r), ri=tinv6(r)`。`rd=ri D r`、対角 2x2 から `cd`: `taurd=-2pi/omega0/Re cd; J=4 Re cd/sum Re cd`。B を ri で正規座標へ、`btr` (21x21) を組み `tsolva(btr, beam, emitn, 1e-8)` (SVD) で `Sigma = M Sigma M^T + B` を解く。`eemx=sqrt|e11 e22-e12^2|, emitp=r emitn r^T, sige=sqrt(emitp(6,6))`。
   synchm=(rfsw and Im cd6≠0): 真 `alphap = -Im(cd6)|Im(cd6)|/(c 2pi/omega0)/(dvcacc/pgev)`、`sigz=sqrt emitp(5,5)`、`bh=sqrt|Vc/(pi|a|h pgev)(2cos phi - (pi-2phi)U0/Vc)|`、`phi=asin(U0/Vc)`。偽: `alphap=-R56/C` (`-rx(5,6)/2pi/c/p0 h0 omega0`)、`sigz=|alphap| sige c p0/h0/omegaz`、z の行列は 0。
 - 単位: EnergyLossU0, RfVoltageVc は **eV**。TransferMatrices は先頭からの**累積**行列。
-- pysad emit6d.py: 全桁 1.3e-11 (ESRF v03_12、16b/16e)。RADCOD ON も SAD と 2e-11 以内 (tcod の直訳 + 解析ヤコビアン)。INTRA は §19、SynchroBetaEmittance(temits)・POL は未。
+- pysad emit6d.py: 全桁 1.3e-11 (16b/16e)。RADCOD ON も SAD と 2e-11 以内 (tcod の直訳 + 解析ヤコビアン)。INTRA は §19、POL は §24、SynchroBetaEmittance (temits) は `synchrobeta.py` (§30、gs と 4e-7〜1e-5)。
 
 ## 13. 粒子追跡と放射 (tturn.f, photons.f)
 
@@ -141,12 +144,12 @@ dv = -g(1+pr)/h2/(h2+p2) + dvfs  (tgetdv の h2+pr h0 とは違うが SAD のま
   基準点 pxr0, pyr0, zr0 は要素入口と各 tradk の後で更新。tradke (emit) は別式 (dg=-cave anp uc)。
 - tdusrn (drndsr.f:71): `p=tran()` を**必ず 1 回**引き (光子 0 個でも)、`p<=pn` になるまで光子を加える (ポアソン累積、打ち切り pn>0.9999 または 10000 個)。光子ごとに drndsr (横谷の逆関数近似) と位置用 `tran()` を 1 回ずつ。NaN の粒子では両条件が偽になり 10000 回ループし約 20001 個の乱数を消費する (gfortran の MAX/MIN は NaN を無視; D2)。損失周の乱数のずれの原因候補 (B6、未解決)。
 - 乱数 (random_plugin_sad.c): `seed <- 48828125 seed` (int32 折り返し)、`Random[]=(seed+2^31)/2^32`、GaussRandom は Box-Muller (`rho=sqrt(-2 log(seed/2^32+.5))`, rho sin を次回へ)、`SeedRandom[n]: seed=|n/2| 2+1`、初期 17。FLUC は要素外側・粒子内側、放射ありの BEND/QUAD/MULT はスライスごとに全粒子の本体 -> 全粒子の tradk (B4)。NPARA の既定は 4 (init.n)、9 粒子以上で fork し乱数列が分かれるので比較は NPARA=1。
-- RADTAPER [未]、PHOTONS 光子リスト [未]。pysad: track6.py/track6n.py (numba)、Level 6-12・16 で ≤5e-11、乱数状態まで一致。
+- RADTAPER [未]。PHOTONS の光子リストは BEAMBEAM の光子だけ実装 (§27、docs/37)、他の要素の光子 (tphrec) は [未]。pysad: track6.py/track6n.py (numba)、Level 6-12・16 で ≤5e-11、乱数状態まで一致。
 
 ## 14. マッチング (tffsmatch.f, tffscalc.f, qdcell.f) — 詳細は docs/06
 
 - 残差: BX,BY は `log目標 - log値`、AX,AY は atan、NX 等は差 (qdcell.f tdfun1)。`r = wsum (sum|df wiq|^p/wsum)^(2/p)`、p=ExponentOfResidual。off-momentum は `wi=(OffMomentumWeight/2/sqrt|mfitp|)^2` (ヘルプは sqrt(点数) と違う)。
-- 重み wfit (tffscalc.f:442-501) [転記]: EX `dpm/sqrt(emxx bx)`、R1..R4 `coup sqrt(bx/by)` 等。emx が NaN のとき gfortran の MAX/MIN は NaN を無視し `emxx=0.01/1.01 emminv(1e-15)=9.9e-18` となり EX/EPX の重みが 1e6 前後になる (esrf/matching で別解になる原因、work_analytic_deriv)。
+- 重み wfit (tffscalc.f:442-501) [転記]: EX `dpm/sqrt(emxx bx)`、R1..R4 `coup sqrt(bx/by)` 等。emx が NaN のとき gfortran の MAX/MIN は NaN を無視し `emxx=0.01/1.01 emminv(1e-15)=9.9e-18` となり EX/EPX の重みが 1e6 前後になる (別解になる原因、work_analytic_deriv)。
 - 反復: Newton `qu dval = df` を tsolva(eps=1e-6/fact) で解く、dg>0 なら最急降下、非改善は fmincube の 3 次補間。モード切替は fuzz(`max(0,min(1,(x-a)/(b-a)))`): crate<0 で log10 が NaN -> fuzz=1 -> モードを変えず直線探索 (C7)。収束 `res2r(r) <= CONVERGENCE max(nfcol,1)`、MAXITERATION は上限そのものではない。
 - 微分は既定で**解析的** (§17)。FFS$NumericalDerivative=True や SOL があると数値微分。
 - pysad: match6.py (Matcher; ループ・fuzz・fmincube・数値微分は直訳)、解析微分は match6d.py。matching.py (Nelder-Mead) は非推奨の旧 API で SAD 非準拠。
@@ -176,30 +179,30 @@ qu の定義: `qu[cond,var] = df/dv wiq / wvar` (tffsmatch.f:395)。f は比較�
   `dpsi = (dx12(b_k x11 - a_k x12) - x12(b_k dx11 - a_k dx12))/(x12^2 + (b_k x11 - a_k x12)^2)`、`deta_l = trans1(1,5)+(R の項)`。
 - 周期補正 (CELL): 一周行列の微分 `dM_l = d(M_{k->l}) M_{l->k}`、qdmdia で dr1..dr4、`dmd = dS (M S^-1) + S (dM S^-1) + S (M dS^-1)` から
   `d mu = -(da11+da22)/(2 sin mu)`, `d alpha = (.5(da11-da22) - alpha cos mu d mu)/sin mu`, `db/b = (da12 - b cos mu d mu)/(b sin mu)`。位相: k<l は `dpsi_l = d mu + sin psi'[(cos psi' + a sin psi') db/b - sin psi' da]` (psi'=mu-psi_l)、k>=l は `-sin psi_l[(cos psi_l - a sin psi_l) db/b + sin psi_l da]`。閉軌道 `dx=(I-X)^-1(dM x + dx_k)` (det=4 sin^2(mu/2))。
-- 照合: 数値微分と 2e-8 (RING)/4e-7 (ARCA)。esrf/matching の SAD 反復列 (8.7338E-09) と K1 を 12-13 桁再現。未移植: qdthin、qdini、qddtwiss、BMAG、COUPLE、qdtrans (数値で代用)。
+- 照合: 数値微分と 2e-8 (RING)/4e-7 (ARCA)。SAD の反復列 (8.7338E-09) と K1 を 12-13 桁再現。未移植: qdthin、qdini、qddtwiss、BMAG、COUPLE、qdtrans (数値で代用)。
 
 ## 18. CALC6D の拡張 Twiss (qcell.f:404 qcell6d, tffs.f:2413 tfetwiss, tturne.f:775) [確認、pysad calc6d.py]
 
 `CELL; CALC6D; CALC;` で qcell1 -> qcell6d -> `temit(plot=.true.)` (Emittance[] と同じ)。tcod -> tturne -> tecalc (stab=|Re log lambda|<1e-6) -> 一周を plot 付きで再実行し、要素入口ごとに `tsetetwiss`: `ti = ri inv(trans)` (l=1 のみ temw の ri を掛ける)、`twi = tfetwiss(ti, cod)`、`NX = NX(1) + twi(NX)` (twi<-toln=-0.1 なら +2pi)。NZ は 2pi 補正なし。tfadjustn が NX,NY を単調化。RAD は結果に影響せず (temit は放射減衰込み)、RADCOD は閉軌道に放射損失、RFSW は閉軌道の z と tecalc の rx 6 行目。不安定時 "qcell6d---> Unstable optics" で cell=.false. にし transport 伝搬。
 tfetwiss(ri, cod): z ブロック `az=sqrt det ri[5:6,5:6]`, `uz = ri[5:6,5:6]/az`、x,y と z の結合 hx, hy -> H(6x6)、`hi = ri H`、`detm=(det_12 + det_34)/2`、**detm<=xyth(0.375) なら x-y モードが入れ替わりとみなし行を入れ替え**。`axy=sqrt detm`、`R1..R4=R/axy`、`bx=(hi12^2+hi22^2)/axy^2`、`NX=atan2(-hi12, hi22)`、`EX..ZPY = axy h +- R h`、`DETR=R1 R4-R2 R3`、`DX..DDP`=閉軌道、`AZ=bz21 bz22, BZ=crz^2, NZ=atan2(sz,cz)`。逆変換 etwiss2ri (tffs.f:2569)。RFSW OFF では z 固有値が 1 (Jordan) で `r(:,5)=e5, r(:,6)=(eta,0,1)` となり BZ,AZ,NZ は R56 に対する擬似 Twiss (18b: BZ=1.019)。分数位置は qtwissfrac の calc6d 分岐で `trans=inv(etwiss2ri(twiss(l)))` から部分要素 (irad=6) を伝搬。FFS 起動時 calc6d は .false. に固定 (track.f:104)。
-照合 (bench_level18a/b/c): ESRF 全 28 成分 1.7e-10。pysad は不安定時の ri を ri0 とする点が SAD と違う可能性あり (未検証)。
+照合 (bench_level18a/b/c): 全 28 成分 1.7e-10。pysad は不安定時の ri を ri0 とする点が SAD と違う可能性あり (未検証)。
 
 ## 19. Touschek と IBS (temit.f, tintrb.f, Packages/emit.n) [確認、pysad touschek.py]
 
 INTRA ON の emit は一周追跡の各要素で `tintrb` を呼び、(a) IBS 拡散を beam(1:21) に加え (b) 最終パスで Touschek 損失率表 (touckl/touckm/toucke) を積算する。`temit.f` の converge ループ (`ITMAX=100, RESIB=3e-6, DCMIN=1e-6`、MINCOUP 下限)、`eintrb` で加速、収束後 `caltouck=T` でもう一周。
 - 部品: `touckf(x)` (emit.n TouschekF, C(x)/x の近似; x=0 で 1e200)、`fintrbu` (IBS 被積分)、`bint.f` (台形則の細分 + Simpson 外挿)、`teigens33` (thess3+tqr3)、`sols33`、`tmulbs(calint=T)` で beam(22:42) も同じ J で変換、`tradke` は `B2_new = B_new + J (B2 - B) J^T`。表: dp=0.004-0.242 (0.002 刻み, 120)、振幅表 tampl(34,3)、`TouschekTable = [id, [dp, 1/tau], [[nx,ny,nz], mx(34x25), my(34x25)], toucke(nlat x 120)]`。
 - `TouschekLifetime[nx,ny,nz]` (emit.n Touschek): spz, spxz, spyz の自然スプライン (spline.f, 範囲外は端区間で外挿)。nx,ny が両方 INF なら dp 受容、片方 INF なら振幅-nz の 2 次元補間、両方有限は NaN。PBUNCH=0 なら IBS も Touschek も 0。
-- pysad: 3x3 固有値だけ LAPACK でなく 2 側 Jacobi (eigh は絶対誤差で sigma_y^2 が 1% 狂う)。17a (RADCOD OFF) 寿命 15 ケース 7e-12、17b (RADCOD ON) 1.7e-8。FFS 接続 (run_emit/fn_touschek) は未。
+- pysad: 3x3 固有値だけ LAPACK でなく 2 側 Jacobi (eigh は絶対誤差で sigma_y^2 が 1% 狂う)。17a (RADCOD OFF) 寿命 15 ケース 7e-12、17b (RADCOD ON) 1.7e-8。FFS 接続は済み (`ffscmd.run_emit` → `_print_touschek` → `_print_emit_intra`、docs/11 A40)。
 
 ## 20. 要素幾何 GEO (tfgeo.f, tgrot.f, qtwiss.f qfraccomp) [確認、pysad geo.py]
 
 `geo(3,4,k)`: 要素 k 入口のビーム x,y,z 軸の実験室系方向余弦と位置。初期値 geoini: x軸=(0,-1,0), y軸=(0,0,-1), z軸=(1,0,0) (正の ANGLE で GY 増)。角度 (tfchi): `CHI1=atan2(zy,zx), CHI2=asinz(zz), CHI3=atan2(xz,-yz)`。FFS からは `LINE["GX"|"GCHI1"|"GEO"|"OGX"..., loc]` (Twiss["GX"] は K64 ではエラー)。
 BEND/MULT (ANGLE=phi≠0): ROTATE=theta (≠0 なら x'=cos x - sin y, y'=sin x + cos y)、`rho=Lgeo/phi, (sp,.,cp,dc)=xsincos(phi), r1=rho sp, r2=-rho dc`、`pos' = pos + r1 z - r2 x'`、`x'' = cp x' + sp z`、`z' = -sp x' + cp z`。ANGLE=0 は直進 (ROTATE=-90 の VD でも)。COORD は回転・並進、MARK の OFFSET は後処理で geo をコピー (整数) か部分要素 (小数)。
-`Lgeo = L - ((phi fb1)^2+(phi fb2)^2)/L/48 sin(.5(phi(1-E1-E2)-AE1-AE2))/sin(.5 phi)` (FRINGE≠0 のみ; §5 の alcorr)、これが `pos(i+1)=pos(i)+Lgeo` (LINE["S"]) にも使われる。部分要素は §16 の qfraccomp (E1 は E1/r)。loc が nlat を超えると k-nlat に周回。ORG コマンド: `geo(:,4,:) -= dgo; geo(:,1:4,k) = geo2 geo(:,1:4,k)`、chi は度。getvad は負数を式と読む (`1.5 -2.5` は -1.0)。GEOCAL/GEOFIX フラグ。未: SOL (tsgeo)、MAP (tgmap)、SORG、逆向き要素の部分要素。照合 19A 4.8e-13、19B/19C 1e-13。
+`Lgeo = L - ((phi fb1)^2+(phi fb2)^2)/L/48 sin(.5(phi(1-E1-E2)-AE1-AE2))/sin(.5 phi)` (FRINGE≠0 のみ; §5 の alcorr)、これが `pos(i+1)=pos(i)+Lgeo` (LINE["S"]) にも使われる。部分要素は §16 の qfraccomp (E1 は E1/r)。loc が nlat を超えると k-nlat に周回。ORG コマンド: `geo(:,4,:) -= dgo; geo(:,1:4,k) = geo2 geo(:,1:4,k)`、chi は度。getvad は負数を式と読む (`1.5 -2.5` は -1.0)。GEOCAL/GEOFIX フラグ。SOL (tsgeo) は `sgeo.py` に翻訳済み (docs/27、領域内の BEND・MULT・CAVI は未)。未: MAP の GEO (tgmap)、SORG、逆向き要素の部分要素。照合 19A 4.8e-13、19B/19C 1e-13。
 
 ## 21. MULT と SOL 領域の追跡 (tmulti.f, tsol.f, tsolqu.f; pysad track6n_ext.py)
 
-- MULT: §7。ANGLE≠0 (tmulta)、F1/FRINGE/VOLT≠0 は未。`akr[n] = K_n cr1^(n+1)` (cr1=theta2 の回転)、ndiv0 は tpara が ampmaxm=0.05 から決め `ndiv=max(ndiv0, ndivrad(|K0|,K1))` (<=1000)。ak=0 で K0 のみの MULT は厳密ドリフトのキック (tdrift_kick)。多極キックは Horner `cx` 複素で n>=2。
+- MULT: §7。ANGLE≠0 は tmulta (`multa.py`、§7)。F1 は未。VOLT≠0 は TRPT か RFSW のとき `mult_full` (tmultiacc、21_wake.md §2b)。`akr[n] = K_n cr1^(n+1)` (cr1=theta2 の回転)、ndiv0 は tpara が ampmaxm=0.05 から決め `ndiv=max(ndiv0, ndivrad(|K0|,K1))` (<=1000)。ak=0 で K0 のみの MULT は厳密ドリフトのキック (tdrift_kick)。多極キックは Horner `cx` 複素で n>=2。
 - SOL 領域 (tsol.f:510-): BOUND=1 の SOL から次の BOUND=1 の SOL まで。`bzs = charge (BZ+DBZ)/(p0/c)` (tfbzs)。入口 trots -> `tradks`(F1≠0) -> `tsfrin(bzs)` (DISFRIN=0)、出口 `tsfrin(-bzs)`。領域内: DRIFT `tdrift_solenoid` (`px += bzp y/2` で回転)、QUAD `tquad(bz)` -> ttfrin の bz 分岐 + tsolqu/tsolqur の bz≠0 分岐 (tzsetparams; §4 の bzp の癖)、CAVI `tmultiacc`。tapert の la カウンタは領域内で tsol のループ (tsol.f:604) と主ループの両方で数える (損失周の番号付けのみに影響)。
 - track6n_ext: track6.py の直訳を numba 化 (演算順序・括弧も同じ)、track6 と 3e-17、FFS 乱数 seed 一致。ソレノイド内四極は EPS を使わない (eps0=0、EPS≠1 で SAD と分割数が違い得る)。
 
@@ -207,7 +210,7 @@ BEND/MULT (ANGLE=phi≠0): ROTATE=theta (≠0 なら x'=cos x - sin y, y'=sin x 
 
 [転記のみ・導出なし]: dvemit と (5,6) (tturne.f:847)、tsolque の z 補正 (tsolque.f:420)、tbendecorr、tbendcore/tbendi (追跡)、tbedgebody (tbfrie.f:127)、tqfrie の高次項 t、tthin 4 次積分の係数、qmdiag の c,r、qcell の A,B ブロック (qcell.f:144)、tfetwiss の H 構成、tecalc の btr と SVD (temit.f:371)、dbeam の dee 以外の成分、tdusrn の p 打ち切り、wfit、expnln、IBS 被積分 fintrbu、tintrb の Touschek 積分、tsolvg の SVD 細部。
 
-[未検証]: qdthin/qdini/qddtwiss、ttfrin の一般次数の導出、tmulta、tsole1/qsol (SOL の CALC)、tsgeo、tcavfrie 中身、TCAV (ttcav, ttcave)、temits (SynchroBeta)、POL (calpol, spnorm)、INTRA の wspac 分岐、INTGRL の BMAG 状態依存 (bendib)、RADINT と Emittance[] の 13% 差、CHRX の意味、FFS 内 FLUC 初期値、OffMomentumWeight とヘルプの差、DA の Output->0、既定 keyword の個別変更 (`LINE["K1","QD.5"]`)、tinip1 の r 定義、損失周の乱数消費 (B6)、qcell6d 不安定時の ri (§18)、FITP>1 の GO (WSL ビルドで再起動 D1)。
+[未検証]: qdthin/qdini/qddtwiss、ttfrin の一般次数の導出、tmulta の式の導出 (翻訳は gs と一致)、tsole1/qsol (SOL の CALC。翻訳は数値微分)、tcavfrie 中身、TCAV (ttcav, ttcave。式の導出)、temits (SynchroBeta の式の導出)、POL (calpol, spnorm。式の導出と `Polarization` の有限値の妥当性)、INTRA の wspac 分岐、INTGRL の BMAG 状態依存 (bendib)、RADINT と Emittance[] の 13% 差、CHRX の意味、FFS 内 FLUC 初期値、OffMomentumWeight とヘルプの差、DA の Output->0、既定 keyword の個別変更 (`LINE["K1","QD.5"]`)、tinip1 の r 定義、損失周の乱数消費 (B6)、qcell6d 不安定時の ri (§18)、FITP>1 の GO (WSL ビルドで再起動 D1)。
 
 ## 23. pysad 対応表
 
@@ -236,5 +239,88 @@ BEND/MULT (ANGLE=phi≠0): ROTATE=theta (≠0 なら x'=cos x - sin y, y'=sin x 
 | DA | trackd, tapert | dapert `dynamic_aperture`, `rad62`; track6n `k_apert`; ffscmd `fn_dasurvey` | 直訳 (Damping 等は未) |
 | RADINT | INTGRL | `radint.compute/report` (FFS `RADINT`) | 直訳 (BEND/QUAD/SEXT、結合、エッジ、SAD の癖込み)。`lattice._radiation_integrals_bend` は BEND のみ・非結合の別実装 |
 | 要素値・誤差 | tffsadjust, terror | Lattice.set_element/set_error, ffscmd `set_family`, `_error_cmd` | 独自 |
-| 物理分散 PEX, 逆向き要素の mfring, SOL の CALC, qmult(ANGLE≠0), POL, temits | tgetphysdispu 等 | — | 未 |
+| MULT ANGLE≠0 | tmulta, tmultae | multa.py `k_multa`、multae.py | 直訳 (BZ・RF・F1・SK0 は未対応。docs/26) |
+| COORD / TCAVI / UND / MAP | tcoord(e)、ttcav(e)、undulator、temap | coord.py、tcav.py、und.py、`elements.Map` + `ffscmd._map_*` | 直訳 (docs/23〜25、28。TCAVI の Emittance[] は L=0 のみ、UND は磁場なし) |
+| SOL 領域 (Twiss・Emittance[]・追跡・幾何) | tsole1、tsolqu(r)、tsgeo | solmap.py、solemit.py、track6n_ext.py、sgeo.py | 直訳 (行列は追跡カーネルの数値微分。領域内の BEND・MULT・CAVI は未。docs/27、42) |
+| POL | tradke のスピン部、spnorm、srequpol、spdepol、sprot | spin.py、track6.py `sprot` | 直訳 (`Polarization` は K64 が NaN。docs/34、41) |
+| WAKE | txwake、tffswake | wake.py、wakeopt.py | 直訳 (docs/21、36) |
+| BEAMBEAM | bbstrhl、bbinit、bbtool | beambeam.py | 直訳 (光学は恒等。docs/22、37) |
+| CSR | csrtrack、csroy、csrtest | csr.py | 直訳 (CSROYMatrix は未照合。docs/34、38) |
+| RADLIGHT・RadiationField | tlinit、tlfield、tlcalc | `ffscmd._RadLight`、radfield.py | 直訳 (docs/43) |
+| SynchroBetaEmittance | temits 一式 | synchrobeta.py | 直訳 (4 点だけ照合) |
+| 物理分散 PEX, 逆向き要素の mfring | tgetphysdispu 等 | — | 未 |
 | matching.py (非推奨の旧 API; Nelder-Mead 等) | — | matching `Match`, `DynamicApertureSurvey` | 独自 (SAD 非準拠) |
+
+## 24. POL (スピンと偏極) [確認、pysad spin.py、track6.py、docs/34・41]
+
+K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フラグのとき放射 1 ステップごとにスピン歳差を積算する。a = g = 1.15965e-3、γ = h1、pr = 1+δ。
+- **1 ステップ**: 運動量の変化 (px, py, pz の前後) から磁場の外積 (xpx, xpy, xpz) を作り、縦の磁場の補正 `bsir0` と SOL の `bzh` を足す (`xpzb = xpz + (bsir0 + 2 bzh al) pr²`)。スライス中央の運動方向への射影から縦成分 bl と横成分 bt を取り、スピン方程式の回転ベクトルは `g = (1+aγ) bt + (1+a) bl`。`srot` (3×9: 列 1〜3 が歳差の 1 周行列、列 4〜9 が座標微分) を g のまわりに |g| 回す。
+- **Sokolov-Ternov の傾き** `gintd += (srot ĝ)[:3] sflc anp (bt γ p/al1)²`、`sflc = 0.75 (ELRADI/FINEST)²`。1 周で `sdamp = n·gintd`、`PolarizationTime = 1/sdamp/f_rev` (f_rev = ω0/2π。**SOL の長さを周長に入れない K64 の癖が効く**: docs/11 A42)。
+- **偏極ベクトル・スピンチューン (spnorm)**: 1 周行列 `srot(:,1:3)` を直交化し、反対称部分から不変軸 n の初期値を作り、`(R−1)δ = n − R n` の最小ノルム解 (tsvd) で補正。`SpinTune = smu/2π`。
+- **平衡偏極度 (srequpol、spdepol)**: `equpol = PST sdamp/(sdamp − rm1[0,0])`、PST = 8√3/15。**K64 では `Polarization` が NaN** (`exp(cb²−cφ) cerfc(cb)` が |cb|>18 で 0·∞。docs/19 B55)。pysad は K64 の式のまま NaN を返す。PolarizationTime・SpinTune・PolarizationVector は有限。
+- **追跡のスピン (sprot)**: RAD ON のときだけスピンが動く (tradk の中で計算するため)。RADPOL が ON で放射エネルギー ucde>0 のステップは `dst = (PST − s·b̂t) CFPD (pp p0/γ²)² ucde/|bt|` (CFPD = 5√3/8) を bt の向きに足してから回す。
+- **bsir0 / bsi の更新**: 偏向磁石の入口・出口 (`bsi1 yi/rhob`。`bsi2` の項は K64 では捨てられる: B58)、tmulke (MULT の Im(cx)/al。L=0 の薄いキックでは更新しない)、tsolqur の四極スライスの両端、tdrift_solenoid (bz al)。
+- 偏向磁石の分割は POL のとき `1+int(|φ| h0 a/0.01)` 以上。tbrote の srot 更新は行を逐次更新する (rr·srot の行列積ではない: B56)。
+- 照合 (gs): 平面リングの PolarizationTime は全桁、縦ずれ・傾き・六極のあるリングは 13 桁、追跡のスピンは 4e-12 以下 (ずれ・回転した四極・偏向・六極、MULT、K1 のある BEND、SEXT、SOL 内のドリフト)。
+- **未確認・限界**: `Polarization` の有限値が物理的に妥当か (K64 の式か単位の誤りの疑い。erfcx 版は 4e-5〜8e-5 % で 92% 級の理論値から遠い)、SOL 領域内の MULT・BEND・CAVI のスピン、SOL 内の四極 + RAD のスピン追跡 (現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い。B68)、スピン追跡の粒子損失。エネルギー・周長の条件は試験のリングごと (docs/41 §7)。
+- 解説: `docs/41_pol_guide.md`、要素ごとの照合: `docs/34_spin_csr.md`。
+
+## 25. ソレノイド (SOL) [確認、pysad solmap.py・solemit.py・sgeo.py・track6n_ext.py、docs/27・42]
+
+- 領域: `BOUND≠0` の SOL から次の `BOUND≠0` の SOL まで。領域内は正準運動量 (力学的運動量は `px + bz/2 y`、`py − bz/2 x`) で動き、横方向が結合する。`bzs = charge (BZ+DBZ)/(p0/c)` (tfbzs)。GEO=1 は対の片方だけ。
+- 領域内の要素: DRIFT は `tdrift_solenoid`、QUAD は `tquad(bz)` (tsolqu/tsolqur の bz≠0 分岐。RAD ON の bzp の癖は A1)、L=0 の要素、SOL (領域内で BZ を変える)。入口 `tsfrin(bzs)`、出口 `tsfrin(−bzs)` (DISFRIN=0)。
+- Twiss (tsole1) と Emittance[] (tradke の `bzh = bzs/2`) は追跡と同じカーネルの 1 粒子の数値微分 (中心差分 1e-7) で行列を作る。解析行列の gs と 1e-10 程度の差が残る。
+- **SOL の長さは周長に入れない** (docs/11 A42)。GEO のない SOL では S 座標が途切れ、周長がさらに狂う (pysad は再現しない)。
+- 照合 (gs): Twiss は領域内の β・α・分散・結合 1e-11、Emittance[] は εx 2e-12〜4e-9、εy 4e-10〜2e-8、チューン 1e-11。**条件: GEO=1 の SOL、エネルギー 1.7〜3 GeV (追跡は 2.5 GeV)、BZ 0.3〜5 T の範囲だけ**。
+- **未確認・限界**: 領域内の BEND (K64 の tsol.f どおりに実装したが gs が偏向をほぼ無視して合わず取り下げた)・MULT・CAVI は未対応。SOL (BZ≠0) 内の四極 + RAD の追跡は現在の gs が保存参照と別の値を返す。現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い (B68、単一粒子の 1 周追跡、2.5 GeV、BZ 0.01 T。ソースの箇所は未特定)。SOL の DX DY DZ CHI・F1 は未対応。CALC6D・Touschek は未翻訳。
+- 解説: `docs/42_sol_guide.md`、`docs/27_sol_optics.md`。
+
+## 26. WAKE (ウェイク場) [確認、pysad wake.py・wakeopt.py、docs/21・36]
+
+- 追跡 (txwake.f): 粒子を z の昇順に並べ、NBUNCH と z の間隔から切片 (NBUNCH=1 なら約 √np 個) に分け、切片ごとの粒子数 ws と x・y・z の平均を取る。切片の組の距離 `dz = zs(m)−zs(n)` で表を線形補間し、縦は `wz(n) += W(dz) ws(m)`、横は `wx(n) += Wt(dz) xs(m)`、`wy(n) += Wt(dz) ys(m)`。各粒子は両隣の切片の値を線形補間して dp・px・py・dv を更新する。係数 `fw = |charge| e PBUNCH NBUNCH/amass/NP/2`。要素の前に半分、後に残り半分 (tturn.f:256-269, 562-575)。
+- 光学 (tffswake.f、WAKEOPT): InitialOrbits の軌道を INS でウェイクのある要素まで伝搬し、全軌道の z・x・y から各軌道の dpx・dpy・ddp へキックする (前後で同じ大きさを 1 回ずつ)。縦は `dz = z_i − z_j` (境界は `sigg = max(1e-5, SIGZ/np/NBUNCH)` で滑らかにする)、横は `dz + 0.3989 sigg`。
+- 旧 WAKE コマンドは K64 では WAKECOMMAND.n (配布に無い) を呼ぶので移植不要。
+- 照合 (gs): 追跡 10 桁、光学も一致 (普通の要素、CAVI、SOL の領域の内側)。K64 の SIGSEGV 3 件 (B31〜B33) は直した SAD と同じ動作にした (B33 は未対応)。
+- **未確認・限界**: RF のある MULT は F1・FRINGE・AUTOPHI なし。実機のウェイク関数・エネルギーでの妥当性は未確認 (試験の人工的な表のみ)。
+- 解説: `docs/36_wake_guide.md`、`docs/21_wake.md`。
+
+## 27. BEAM-BEAM (BEAMBEAM、BSTRL、PHOTONS、LuminosityMonitor、BBBrem) [確認、pysad beambeam.py・bbbrem.py、docs/22・37・30]
+
+- 弱-強 (bbstrhl.f): ①包絡 Σ6 = HRB·E·HRBᵀ (E = diag(EMIX, EMIX, EMIY, EMIY, DP SIGZ, DP SIGZ))、XANGLE≠0 なら交差角の変換を掛ける。②スライスの条件付き包絡 (Σ⁻¹ の 5 次元部分 A、z との結合 b から Σ5 = A⁻¹、重心 v = −Σ5 b)。③スライス位置は等確率の Gauss 分位 (`gauinv`、K64 の 6.4e-4 の近似のまま)。④追跡: 交差角・傾きの回転 → 各スライスで z の差の半分だけ drift → `cerrf` (Bassetti-Erskine) のキック (丸い・水平に広い・垂直に広いの 3 通り) と pz のキック → 戻す。
+- BSTRL (ビームストラールング) は乱数 (tran) の引き方まで直訳。PHOTONS は BEAMBEAM の分の光子だけ。LuminosityMonitor は tlum (`measure.py`)、BBBrem1 は Kleiss-Burkhardt の 1 事象の生成 (`bbbrem.py`)。
+- **光学 (Twiss・Emittance) には効かず恒等**。K64 の癖: 傾き tilt の `sint`・`cost` の取り違え (B34、強ビームに x-y 結合があると座標が潰れる)、cerrf の 3.2 は単精度、丸いビームで x=y=0 の粒子は NaN。
+- 照合 (gs): 追跡は一致 (検証は 1.7 GeV の小さな人工リングだけ)。**未確認・限界**: 強-強はない。光学 (Twiss・Emittance・EMIT) では BEAMBEAM は Marker 扱いで、ビーム・ビームのチューンシフト・ダイナミック β は計算に入らない (Emittance の gs 比較は未確認)。340 粒子以上の BSTRL は個々の粒子が gs と一致しない (原因未調査)。TRPT の加速で MOMENTUM が変わる場合は Prog 作成時の運動量を使う (K64 は更新時)。実際の衝突型リングの規模での比較は未確認。
+- 解説: `docs/37_beambeam_guide.md`、`docs/22_beambeam.md`、`docs/30_gaussiancoulomb_bbbrem.md`。
+
+## 28. CSR (コヒーレント放射) [確認、pysad csr.py、docs/34・38]
+
+- ダクト断面のモデル (CSR.n と csrtest.f): 軌道の列の高さ `pipe[i]` で表し、波数 ω ごとに縦 (22, 33) と横 (23, 32) の場を行列にして `RealEig` で固有値・固有ベクトルを求める。`CSRMatrix` の係数は `ωρ` を含む (曲がったダクトでは `(ωρ)² → 1` に特異点)。境界付近の格子の補正係数 `fudge0〜3` は円形・角形ダクトの固有値に合わせた当てはめ値で、物理の導出値ではない。
+- ウェイクの追跡 (csrtrack.f の CSRTrack): 1 周を ndiv 回に分け、`z += (r56/ndiv) dp` → 粒子を nr のビンに配分して密度 ρ → ρ の実 FFT に ZL を掛けてウェイク → 3 次スプラインで各粒子に補間して `dp += (inten/np/ndiv) W` → 分割の真ん中で `r65 z` (RF ありは `vr sin(ωz+φ) − dpr`) の復元力 → `ad = 1 − 2 damp/ndiv` の減衰と `bd` の量子励起。
+- Haissinski (CSRHaissin): ρ = exp(u)、`u = u0 − aw (W*ρ)`、`aw = inten/(r65 σz²)` を規格化条件つきの Newton 法 (しきい 1e-5、最大 100 回) で解く。Oide-Yokoya (CSRSetupOY・CSROYMatrix): 定常分布のまわりの線形摂動を作用 J・方位角 φ の格子で展開した 1 周写像に直し、固有値の平方根の虚部が成長率。
+- 照合 (gs): CSRTrack・CSRHaissin 11 桁、CSRSetupOY 1e-9、CSRMatrix・CSRConvert・CSRInit 1e-10〜1e-13、MakeZL 1e-10 (3 周波数・1 区間)。K64 の癖: `CSRSetupOY` が dpjn を zjn と同じ記憶域に割り当てる (B59)。CSROYMatrix は gs が wrongtype (B60) で未照合。
+- **未確認・限界**: 試験は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、ダクト、周長) での物理的な妥当性の検証ではない。CSR のウェイク・Haissinski・OY の式の独立な導出や実験との比較はしていない。`CSR.n` 全体は描画が要るので読み込まない。ScanTrack・OYStability などの長い流れは未照合。
+- 解説: `docs/38_csr_guide.md`、`docs/34_spin_csr.md`。
+
+## 29. RADLIGHT・RadiationField・RadiationSpectrum [確認、pysad `ffscmd._RadLight`・radfield.py、docs/43]
+
+- `RADLIGHT` のとき TrackParticles は RAD・TRPT を ON にし、戻りを `{{ls または ld, 座標}, 軌道}` にする (軌道は粒子ごとに {t, x, y, z})。**K64 は BEND の中を記録せず、横方向の座標も入れない** (docs/11 A44)。
+- RadiationField[traj, obs]: Feynman-Heaviside の時間領域の場 `E = (μ0 e CHARGE/4π)(c² n/R² + R/c d(c² n/R²)/dt + d²n/dt²)`、微分は自然スプライン (K64 の spline)。戻りは τ、E、H (= n×E/Z0)、S (= E×H) の 10 本の表。RadiationSpectrum[{τ, f}, {λ1, λ2, dλ}] は場の cos・sin 積分 (区分線形近似の解析解)。
+- 照合: RADLIGHT の軌道は gs と差 0 (2 粒子・複数周・始点 ls≠1)。RadiationSpectrum は gs と一致。**RadiationField は gs が SIGSEGV (B49) で、等速運動の電荷の速度場と相対 6e-3 で比べただけ**。BEND の中を記録しない仕様のため、意味のある場には `example.oide.sad` の流れ (B を ANGLE=0 の STEER にする) が要る。NPARA の fork 並列は逐次。
+- 解説: `docs/43_radlight_guide.md`。
+
+## 30. その他の新しい要素・機能への案内
+
+| 項目 | 内容の要点 | 文書 |
+|---|---|---|
+| COORD | 座標変換 (並進 DX DY DZ と回転 CHI1..3)。追跡 0、Twiss・幾何 1e-11、Emittance[] 5e-10 | docs/23 |
+| TCAVI | 横偏向空洞 (クラブ空洞)。追跡は RAD FLUC まで gs と一致、Emittance[] は L=0 のみ (L≠0 は gs が壊れる: B36) | docs/24 |
+| UND | K64 は磁場を設定できず (B37) 磁場なしのドリフト | docs/25 |
+| MAP | ExternalMap の TRACK・EMIT・OPTICS (GEO・CompiledMap は未) | docs/28 |
+| DELCOR | 相関付き補正。MARK は DETR・DPX に入る (B40)、CAVI は未対応 | docs/29 |
+| GaussianCoulomb(U・Fitted)・BBBrem1 | 空間電荷関数と制動放射 | docs/30、37 |
+| 特殊関数・Fit・FindRoot | 458 式が gs と一致。K64 が誤値を返す式 (B43〜B47、B53、B54) は真値 | docs/31 |
+| SynchroBetaEmittance | シンクロトロン運動と色収差下の平衡エミッタンス。δ ごとの閉軌道・1 周写像・拡散行列から (J, 方位角モード m) の連立方程式を解く。12 セルのリング + CAVI で emitx が 4e-7〜1e-5、24 セルの平面リング + CAVI VOLT=2e6 (AzimuthalModes->7) で 1.4e-7〜1.4e-6 (結合のあるラティスは gs が SIGSEGV で比較不能、不安定なチューンは未確認) | `pysad/synchrobeta.py` |
+| SAD パッケージ・FFS の小コマンド | CorrectOrbit・MakeBump など `.n` をそのまま実行 | docs/32、33 |
+| GUI (Tcl/Tk)・描画 | SAD の `.n` を pysad のインタプリタで tkinter に表示 | docs/20、35、39 `39_tcltk_guide.md`、40 `40_graphics_guide.md` |
+
+大項目の解説文書: `docs/36_wake_guide.md`、`37_beambeam_guide.md`、`38_csr_guide.md`、`39_tcltk_guide.md`、`40_graphics_guide.md`、`41_pol_guide.md`、`42_sol_guide.md`、`43_radlight_guide.md`。

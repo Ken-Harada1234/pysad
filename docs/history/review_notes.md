@@ -1,5 +1,7 @@
 # docs レビューメモ (2026-10-15)
 
+最終更新: 2026-11-16
+
 対象: 01_overview, 02_lattice_main, 03_ffs_commands, 04_sadscript, 05_calc_optics, 06_matching, 07_emittance, 08_tracking, 09_dynamic_aperture, 11_sad_quirks (10/12 は執筆中のため未読)。
 照合先: `<SAD>/src`, `Packages/`, `pysad/*.py` (コードは変更していない)。
 
@@ -56,3 +58,7 @@
 - 「閉軌道」と「COD」、「オフモメンタム」と「off-momentum」(11 A13)、「放射あり」と「RAD ON」が混在するが、いずれも文脈で判別できる。
 - 追跡側の `tsolrot`/`tbshift`/`tbrot` と CALC/emit 側の `tsolrote`/`tchge`/`tbrote` は別ルーチンなので、表記の違いは誤りではない (08 §4 の注記どおり)。
 - Level 12 の「3563 要素」(要素数) と「NLAT=3564」($$$ 込み) は上記のとおり統一した。00_RESUME.md:203 にも「3564 要素」があるが、対象外のため未修正。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 確認: 変化なし。根拠: 対象は 10/15 時点の docs 01〜12 のレビューで、その後の文書の更新 (11/06 のスナップショット、11/13〜11/16 の docs/20〜43) は含まない。この文書は 10/15 時点の記録のまま。

@@ -81,3 +81,26 @@ def test_flag_and_element_forms():
     assert any(x.strip() == '{"M","Q","D"}' for x in lines)
     assert any(x.strip() == '.5' for x in lines)
     assert any(x.strip() == '{.5}' for x in lines)
+
+
+import pytest as _pytest_f
+
+
+@_pytest_f.mark.parametrize('flag,want', [
+    ('', (-.0068645845, -.0057261776, .6455084914, .6181401358)),
+    ('UNIPOL;', (.3289522375, -.3239879365, 1.3452078073, 1.1332498275)),
+    ('RELW;', (-.0024047842, -.0107636499, .6394800610, .6247311232)),
+])
+def test_fit_flags_unipol_and_relw_match_gs(flag, want):
+    """UNIPOL (NOBIPOL: tffsmatch.f:669、変数の符号を変えない) と RELW (NOABSW: tweigh の重み) の FIT への効果。参照は gs (local/wake/fit1.sad)"""
+    import io
+    import re
+    from pysad.ffscmd import run_sad_string
+    src = 'MOMENTUM = 3GEV;\nDRIFT D1 = (L=1) D2 = (L=0.5);\nQUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);\nBEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);\nMARK ST = ();\nLINE CELL1 = (QF D2 B D2 QD D1);\nLINE RING = (ST 12*CELL1);\nFFS;\n$FORM="14.10";\nPageWidth=1999;\nUSE RING; CELL; CALC;\nFIT $$$ NX 0.2 NY 0.2;\nFREE QF K1 QD K1;\nGO;\nPrint["K ",LINE["K1","QF"]," ",LINE["K1","QD"]," ",Twiss["NX","$$$"]/2/Pi," ",Twiss["NY","$$$"]/2/Pi];\nExit;\n'
+    buf = io.StringIO()
+    run_sad_string(src.replace('USE RING; CELL; CALC;', 'USE RING; CELL; CALC; ' + flag), out=buf)
+    line = [l for l in buf.getvalue().splitlines() if l.startswith('K ')][0]
+    got = [float(x) for x in re.findall(r'-?\d*\.\d+', line)]
+    assert len(got) == 4
+    for g, w in zip(got, want):
+        assert abs(g - w) < 1e-8

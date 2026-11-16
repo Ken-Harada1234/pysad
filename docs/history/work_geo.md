@@ -1,5 +1,7 @@
 # 作業ログ: 要素幾何 (GX/GY/GZ/CHI1-3) の移植 — pysad/geo.py (2026-10-15)
 
+最終更新: 2026-11-16
+
 対象: SAD K64 `src/tfgeo.f` (tfgeo, tfgeo1), `src/tgrot.f` (module geolib: geoini, tfchi, tfchitogeo, tfrotgeo,
 tfderotgeo, tgrot, tforbitgeo, tfgeofrac), `src/tfloor.f` (xsincos, asinz), `src/qtwiss.f` (qfraccomp),
 `src/tftwiss.f` (tfline の 'GX'..'GCHI3', 'GEO', 'OGX'.., ktfgeol), `src/tffsa.f` (ORG コマンド)。
@@ -11,11 +13,11 @@ tfderotgeo, tgrot, tforbitgeo, tfgeofrac), `src/tfloor.f` (xsincos, asinz), `src
   `geo(:,3,k)` = z 軸 (進行方向) の実験室系での単位ベクトル (方向余弦)、`geo(:,4,k)` = 入口の位置 (GX, GY, GZ)。
   `pos(nlat)` = 入口の経路長 s。nlat = 要素数 + 1 で末尾が `$$$`。
 - 初期値 `geoini` (tgrot.f):  x 軸 = (0,−1,0), y 軸 = (0,0,−1), z 軸 = (1,0,0), 位置 = 0。
-  つまり実験室系 X が進行方向、ビームの x は −Y、y は −Z。ESRF では正の ANGLE で GY が増える。
+  つまり実験室系 X が進行方向、ビームの x は −Y、y は −Z。正の ANGLE で GY が増える。
 - 角度 (tgrot.f `tfchi(geo,i)`): z 軸 = (zx, zy, zz), x 軸の第 3 成分 xz, y 軸の第 3 成分 yz として
   | キー | 定義 | 備考 |
   |---|---|---|
-  | CHI1 | atan2(zy, zx) | zy = 0 なら 0。水平方位角。ESRF では 1 セルで π/10 |
+  | CHI1 | atan2(zy, zx) | zy = 0 なら 0。水平方位角。|
   | CHI2 | asinz(zz) | 仰角。asinz は [−1,1] に切った asin (小さい値は級数) |
   | CHI3 | atan2(xz, −yz) | ロール角。xz = 0 なら 0 |
 - **FFS からの参照は `LINE[key, loc]`**: key = `"GX" "GY" "GZ" "GCHI1" "GCHI2" "GCHI3"` (スカラー)、`"GEO"`
@@ -52,7 +54,7 @@ tfderotgeo, tgrot, tforbitgeo, tfgeofrac), `src/tfloor.f` (xsincos, asinz), `src
 | 要素 | 式 (tfgeo1 の直訳) |
 |---|---|
 | ANGLE キーを持つ型 (BEND, MULT) で ANGLE=φ≠0 | θ=ROTATE。θ≠0 なら x' = cosθ x − sinθ y, y' = sinθ x + cosθ y、θ=0 なら x'=x。ρ=L_geo/φ, (sp,·,cp,dc)=xsincos(φ), r1=ρ sp, r2=−ρ dc。位置' = 位置 + r1 z − r2 x'、x'' = cp x' + sp z、z' = −sp x' + cp z。θ≠0: y_new = −sinθ x'' + cosθ y', x_new = cosθ x'' + sinθ y'。θ=0: y_new = y |
-| 同型で ANGLE=0 (ESRF の HD/VD: ROTATE=−90° でも) | 直進: 位置' = 位置 + z·L_geo、軸不変 |
+| 同型で ANGLE=0 (ROTATE=−90° でも) | 直進: 位置' = 位置 + z·L_geo、軸不変 |
 | COORD | CHI1..3, DX/DY/DZ, DIR の回転・並進 (`_coord`; 行列 r11..r33 をそのまま写した) |
 | MARK (OFFSET≠0) | 本ループでは直進 (L=0)、後処理で `geo(:,:,i)=geo(:,:,xp)` |
 | その他 (DRIFT, QUAD, SEXT, CAVI, MONI, MARK, ...) | 直進 |
@@ -109,11 +111,11 @@ gx=−1.0, gy=0.5, gz=10, chi1=20, chi2=30, chi3 欠落 → `?ORG-Missing parame
 
 ## 6. 照合結果
 
-### 6.1 Level 19A — ESRF (bench_level19a.sad → bench_level19a.result, bench_level19a_pysad.py → bench_level19a_pysad.result)
+### 6.1 Level 19A (bench_level19a.sad → bench_level19a.result, bench_level19a_pysad.py → bench_level19a_pysad.result)
 
-pysad/tests/kek-ls_v03_12.lat + `USE RING; CELL; CALC;` で `LINE[{GX,GY,GZ,GCHI1,GCHI2,GCHI3}, loc]` を 21 箇所
-(`$$$`, QFA1H.3, BPI6.3, VD.1, HD.5, SFA.5, MKC.2, RFC, QDA2.7, BID5.20, BPI7.13, 2, 100, 500, 1000, 2000, 3000, 4000,
-200.5, 1500.25, `^^^`)、`LINE["GEO",...]` 2 箇所、`LINE["S",locs]`。nlat=3564。
+ラティスに `USE RING; CELL; CALC;` で `LINE[{GX,GY,GZ,GCHI1,GCHI2,GCHI3}, loc]` を 21 箇所
+(`$$$`、要素名 11 箇所、位置番号 2, 100, 500, 1000, 2000, 3000, 4000,
+200.5, 1500.25, `^^^`)、`LINE["GEO",...]` 2 箇所、`LINE["S",locs]`。
 
 | 項目 | 最大 |差| |
 |---|---|
@@ -124,7 +126,7 @@ pysad/tests/kek-ls_v03_12.lat + `USE RING; CELL; CALC;` で `LINE[{GX,GY,GZ,GCHI
 | **全体** | **4.8e-13 (目標 1e-10 達成)** |
 
 周回の確認: `$$$` で GX=−1.513e-7, GY=−5e-14, CHI1=−1.58e-9 (SAD) と同じ値 (角度の和が 2π から 1.6e-9 ずれている
-ラティスそのものの性質を再現)。loc=4000 は SAD の周回規則 (k−nlat=436, QFA8H.9) に合わせた。ESRF は平面リングなので
+ラティスそのものの性質を再現)。loc=4000 は SAD の周回規則 (k−nlat) に合わせた。平面リングなので
 GZ, CHI2, CHI3 は全て 0 → 19B で分岐を別途確認。
 
 ### 6.2 Level 19B — 分岐テスト (bench_level19b.sad / .result, bench_level19b_pysad.py / .result)
@@ -187,7 +189,7 @@ gx/gy/gz のみ、chi1 のみ (10°)、chi2 のみ (20°)、chi3 のみ (30°)�
 ## 9. ファイル
 
 - `pysad/geo.py` — 新規 (本体)
-- `bench_level19a.sad` / `.result` / `bench_level19a_pysad.py` / `bench_level19a_pysad.result` — ESRF 照合
+- `bench_level19a.sad` / `.result` / `bench_level19a_pysad.py` / `bench_level19a_pysad.result` — 19A 照合
 - `bench_level19b.sad` / `.result` / `bench_level19b_pysad.py` / `bench_level19b_pysad.result` — 分岐テスト
 - `bench_level19c.sad` / `.result` / `bench_level19c_pysad.py` / `bench_level19c_pysad.result` — ORG
 - SAD 実行: `wsl -d Ubuntu -- bash -lc 'cd "<repo>" && <SAD>/bin/gs bench_level19a.sad > bench_level19a.result'`
@@ -197,6 +199,10 @@ gx/gy/gz のみ、chi1 のみ (10°)、chi2 のみ (20°)、chi3 のみ (30°)�
 
 1. tfgeo.f / tsgeo.f / tgrot.f / tfloor.f (xsincos, asinz) / tftwiss.f (tfline の GX..) / tffsa.f (ORG) / tffscalc.f / qtwiss.f (qfraccomp) を読み、
    `Twiss["GX"]` が K64 では使えないことを SAD 実行で確認 → ベンチは `LINE[]` に変更。
-2. geo.py を書き、19A (ESRF) で 4.8e-13 一致。loc=4000 は SAD の周回 (k−nlat) と判明。
+2. geo.py を書き、19A で 4.8e-13 一致。loc=4000 は SAD の周回 (k−nlat) と判明。
 3. 19B で ROTATE/垂直偏向/フリンジ長補正/OFFSET/部分要素を確認。部分要素の E1 の扱い (E1/r) を qfraccomp に合わせて修正。
 4. ORG の引数解釈 (式として読まれる負数、欠落 chi3=0) を 19C で切り分け、6 通り全て 1e-13 で一致。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: (1) 「SOL の tsgeo は未移植」(§表と §5) は古い。11/14 に `sgeo.py` (tsgeo・tsgeo1) に翻訳した (docs/27)。ただし領域内の BEND・MULT・CAVI とずれ・傾きのある SOL の CHI1..3 (tsconv) は未対応。(2) tdgeo は `match6d.tdgeo_term` に直訳した (DRIFT の L、BEND の ANGLE・L の解析微分。他の変数は中心差分のまま。試験 `test_tdgeo.py`、経緯は work_unimpl.md「幾何の FIT (tdgeo)」)。(3) GEO のない SOL では K64 の S 座標が途切れ周長が狂うが、pysad は再現しない。(4) tgmap (MAP の幾何) は ExternalMap["GEO"] とともに未対応。根拠: `pysad/sgeo.py`・`geo.py` の更新 (11/14)、work_unimpl.md。

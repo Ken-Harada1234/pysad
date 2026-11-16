@@ -1,5 +1,7 @@
 # 小項目 A〜E の作業ログ (2026-10-16): RADINT・DISP の位置範囲・CALC6D 単独・FFS 内の ON/OFF・FSHIFT の追跡
 
+最終更新: 2026-11-16
+
 担当: pysad/ffscmd.py, lattice.py, calc6d.py, track6.py, track6n.py, sadscript.py (新規 radint.py、周辺に track6n_ext.py / maintrack.py / dapert.py の 1〜2 行)。
 docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) の実測とソースの読みで 1 項目ずつ合わせた。
 
@@ -7,7 +9,7 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
 
 | 項目 | 結果 | ベンチ (SAD 参照 `.result` 付き) | 一致 |
 |---|---|---|---|
-| A. RADINT | **実装** (INTGRL.f の直訳 `pysad/radint.py`)。SAD の癖 (直前の rhob/rho0 の使い回し、単精度定数 ほか) も再現 | 29a (ESRF 6 ブロック 246 行)、29a2 (小リング 3 ブロック 120 行) | 29a 最大相対差 1.8e-7 (SAD の表示 7 桁)、29a2 3e-5 (V 面の小さい量だけ) |
+| A. RADINT | **実装** (INTGRL.f の直訳 `pysad/radint.py`)。SAD の癖 (直前の rhob/rho0 の使い回し、単精度定数 ほか) も再現 | 29a (3564 要素のリング、6 ブロック 246 行)、29a2 (小リング 3 ブロック 120 行) | 29a 最大相対差 1.8e-7 (SAD の表示 7 桁)、29a2 3e-5 (V 面の小さい量だけ) |
 | B. DISP の位置範囲 | **実装** (tfdisp.f の解析の直訳: 数値・名前・NAME.n±k・パターン・ALL・周回・R/O/E モード) | 29b (36 ブロック) | 行単位で全一致 (0 同然の雑音の桁を除く) |
 | C. `CALC6D;` 単独 | **SAD は再計算しない** (想定していた挙動は無かった)。代わりに別の癖を見つけて合わせた: 4D の CALC は縦の列 (AZ..ZPY) を作り直さず直前の 6D の先頭行の値を全行に残す | 29c (14 ケース) | 全一致 (3.4e-12) |
 | D. FFS 内の `ON/OFF flag;` | **ON/OFF の語は無効** (`Out[1]:= USE` を出すだけ) で、後ろの語は普通にフラグとして読まれる。`OFF INTRA;` は INTRA を**立てる**。pysad を合わせた | 29d (36 ブロック) | 全一致 |
@@ -29,7 +31,7 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
 ### A.2 SAD の癖 (docs/11 A34)
 
 1. **tbendebody は bendib モジュールの rhob/rho0 を使うが INTGRL は設定しない** → 「直前に tbend 系 (tbend/tbende/tbendi/tsteee) が設定した値」= **ビーム順で最後に処理した曲率のある BEND の L/ANGLE** が**全 BEND**に使われる。
-   ESRF ではリングの最後が反転した ARCAH2 なので最後の曲がりは BID5 (L/ANGLE = 20.757 m)。この値で I1X…I9 が SAD と 7 桁一致し、別の値 (BPI7 の 37.6 や BID1 の 77.5) だと I9 が 8e-4〜1e-3 ずれる (感度が高いので、この仮定は一致で裏づけられた)。
+   試験のリング (3564 要素) では最後の曲がりの BEND の L/ANGLE = 20.757 m。この値で I1X…I9 が SAD と 7 桁一致し、別の BEND の値 (37.6 や 77.5) だと I9 が 8e-4〜1e-3 ずれる (感度が高いので、この仮定は一致で裏づけられた)。
    EMIT の後 (tbende が rhob を設定) でも最後の曲がりは同じなので結果は変わらない。pysad は `radint.default_stale_rho(els)` で同じ規則 (最後の BEND の L/ANGLE)、`compute(..., stale_rho=)` で上書き可。
    (docs/16 §11 の「RADINT と Emittance[] の 13% 差」の候補の 1 つ。因果は未検証。)
 2. 六極のブロックは DL を設定しない: TCAL は**直前の BEND/QUAD の最後のスライス長 DL** を使う (I9, I10 = γ·DL が六極でも足される)。DKL2 は代入されないので六極の CKL0X/CKL1X は常に 0。RLE=0 の六極は TCAL の**後で** `DL=0.2` (単精度の 0.2) にして ` L(SEXTUPOLE) EQ 0. SET L=0.2` を出す。DL, TETA, R0/R0I, FUNI などモジュール変数はプロセス中ずっと残る (2 回目の RADINT の DL の初期値は前回の最後の値)。pysad も `radint._STATE` に残す。
@@ -46,10 +48,10 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
 
 ### A.4 照合 (SAD の `.result` との行単位比較 `cmp_radint.py`、0 同然の V 面の量 <1e-10 は雑音として一致扱い)
 
-- `bench_level29a.sad` (ESRF 連結): R1 CELL CALC 後、R2 EMIT 後、R3 NORFSW、R4 結合 (`LINE["DY","QDA2.1"]=2e-6`、`LINE["ROTATE","QFA4.1"]=5e-4`、`LINE["ROTATE","BID3H.1"]=5e-4`)、R5 `DP0=0.003`、R6 `DX QFA4 1e-4` (閉軌道≠0 の四極キック)。6 ブロック 246 行が最大相対差 1.8e-7 (SAD の表示が 7 桁) で一致。
-  (R4 は最初 `DY 1e-4` を全 QDA2 に入れて R≈0.3 の強結合にしたら I4U が 5e-6 ずれた。ずれは BEND の I4/I9 の 1e-6 で、Twiss 入力 1e-9 の差が打ち消し合う項で拡大されたもの。要素ごとの DI を SAD の write 入りデバッグ版と比べて、四極・六極は ≤1e-8、BEND の大半も ≤1e-8 と確認し、ベンチは中程度の結合に変えた。)
+- `bench_level29a.sad` (3564 要素のリング): R1 CELL CALC 後、R2 EMIT 後、R3 NORFSW、R4 結合 (四極の `DY`、四極と BEND の `ROTATE`)、R5 `DP0=0.003`、R6 四極の `DX` (閉軌道≠0 の四極キック)。6 ブロック 246 行が最大相対差 1.8e-7 (SAD の表示が 7 桁) で一致。
+  (R4 は最初 `DY 1e-4` を全四極の 1 ファミリーに入れて R≈0.3 の強結合にしたら I4U が 5e-6 ずれた。ずれは BEND の I4/I9 の 1e-6 で、Twiss 入力 1e-9 の差が打ち消し合う項で拡大されたもの。要素ごとの DI を SAD の write 入りデバッグ版と比べて、四極・六極は ≤1e-8、BEND の大半も ≤1e-8 と確認し、ベンチは中程度の結合に変えた。)
 - `bench_level29a2.sad` (13a の小リング: E1=E2=0.5·ANGLE の BEND、RF なし → `NOT ENOUGH RF VOLTS` の行が 17 桁・空白まで一致、RF あり、ロール付き四極 + DY): 3 ブロック 120 行が ≤3.2e-5 (V 面の EY ~1e-9 の絶対精度が I5V/I4V で拡大される量だけ)。
-- 道具: `cmp_radint.py` (RADINT ブロックの比較)、`<work-scratch>/` (SAD のデバッグ版 (WSL のホームの作業フォルダ) の INTGRL.f に `DBGI` の write を入れる `patch_intgrl.py`、要素ごとの DI を比べる `t_dbg.py` `t_pat.py` `t_scan.py`)。
+- 道具: `cmp_radint.py` (RADINT ブロックの比較)、SAD のデバッグ版 (WSL のホームの作業フォルダ) の INTGRL.f に `DBGI` の write を入れて要素ごとの DI を比べた。
 
 ## B. DISP の位置範囲 (tfdisp.f)
 
@@ -71,7 +73,7 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
 
 ### B.3 照合 `bench_level29b.sad` (`cmp_blocks.py`)
 
-D1 `disp 94 98`、D2 名前 (`QFA1H.1 QDA2.1`)、D3 単独の数値、D4 `disp;` (前回の範囲の繰り返し)、D5 周回 (`3550 20`)、D6/D18 パターン (前回の範囲・指定範囲)、D7 `ALL QFA4.2`、D8 負の位置、D9 小数 (`94.4 98.6`)、D10/D31 `NAME.n±k`、D11 `$$$`、D12 `^^^ 5`、D13 `QD* 94 400`、D14〜D17、D20 `ALL` (3618 行)、D21 R、D22 O、D23 E、D24 未定義 (`ZZ.1`)、D25/D26 1 台だけの要素 (`RFC`, `RFC.1`)、D27/D28 範囲外 (3563 3570, 0 3)、D29 `QFA4.2 QFA4.3`、D30、D32 `disp 94 CALC` (DISP の後に CALC)、D33 `2*47 100` (パターン扱い)、D34 `{QB}FA1H.%`、D35 `QFA1H*|BID5*`、D36 USE のあと範囲が戻る。**36 ブロック全部が行単位で一致** (SAD の 1e-17 などの丸め雑音の桁と pysad の 0 は一致扱い)。
+D1 `disp 94 98`、D2 名前 (2 要素)、D3 単独の数値、D4 `disp;` (前回の範囲の繰り返し)、D5 周回 (`3550 20`)、D6/D18 パターン (前回の範囲・指定範囲)、D7 `ALL` と要素名、D8 負の位置、D9 小数 (`94.4 98.6`)、D10/D31 `NAME.n±k`、D11 `$$$`、D12 `^^^ 5`、D13 パターンと位置、D14〜D17、D20 `ALL` (3618 行)、D21 R、D22 O、D23 E、D24 未定義 (`ZZ.1`)、D25/D26 1 台だけの要素 (`RFC`, `RFC.1`)、D27/D28 範囲外 (3563 3570, 0 3)、D29 名前 2 つ、D30、D32 `disp 94 CALC` (DISP の後に CALC)、D33 `2*47 100` (パターン扱い)、D34 `{..}` と `%` のパターン、D35 `|` のパターン、D36 USE のあと範囲が戻る。**36 ブロック全部が行単位で一致** (SAD の 1e-17 などの丸め雑音の桁と pysad の 0 は一致扱い)。
 
 ## C. `CALC6D;` 単独 (CALC なし) の直後
 
@@ -103,7 +105,7 @@ D1 `disp 94 98`、D2 名前 (`QFA1H.1 QDA2.1`)、D3 単独の数値、D4 `disp;`
 | `ON;` | `Out[1]:= USE` |
 
 → **FFS 内の ON/OFF の語は無効** (`Out[1]:= USE` を出すだけ) で、後ろの語は普通に次の文として読まれる (フラグ名なら立てる、`NO`+名なら下ろす)。つまり `ON INTRA;` ≡ `INTRA;`、`OFF INTRA;` も ≡ `INTRA;` (立てる)。INTRA を切るには `NOINTRA;`。
-MAIN 部 (FFS; の前) の `ON/OFF` は別で有効 (`parser.parse_main_commands` → `FFS.main_exec`)。ユーザースクリプト 57 本の FFS 内 `ON INTRA` は、メッセージが出て INTRA が立つ点で期待どおりに動く (OFF を FFS 内に書いたものは INTRA が立ってしまう)。
+MAIN 部 (FFS; の前) の `ON/OFF` は別で有効 (`parser.parse_main_commands` → `FFS.main_exec`)。FFS 内の `ON INTRA` は、メッセージが出て INTRA が立つ (FFS 内に書いた `OFF` は無効で INTRA が立ってしまう)。
 
 ### D.2 pysad
 
@@ -128,7 +130,7 @@ MAIN 部 (FFS; の前) の `ON/OFF` は別で有効 (`parser.parse_main_commands
 - track6n.py (numba): 粒子状態 S を (n, 10) → **(n, 11)** にして最後の列に dvfs を持たせた (カーネルの引数を増やさずに済む。`make_state` が `ph.dvfs` を入れる)。`tradk_core1`、`tcavfrin1`、`k_cav` の dv に `+S[i,10]`。
 - 呼び出し側: `FFS.fn_track` (TrackParticles)、`FFS.fn_dasurvey` → `dapert.dynamic_aperture(fshift=)`、`maintrack.run_track` (MAIN の TRACK) が `FSHIFT` (RFSW ON のとき) を渡す。
 
-### E.3 照合 `bench_level29e.sad` (ESRF、`ON RAD FLUC COD RFSW RADCOD`、`FSHIFT=1e-6`、5 粒子 (閉軌道のまわり、δ≠0・z≠0 を含む))
+### E.3 照合 `bench_level29e.sad` (`ON RAD FLUC COD RFSW RADCOD`、`FSHIFT=1e-6`、5 粒子 (閉軌道のまわり、δ≠0・z≠0 を含む))
 
 N1/N10 (NORAD 1 周・10 周)、R1/R10 (RAD NOFLUC)、F10 (RAD+FLUC、`SeedRandom[17]`、乱数の最終 seed も) の 40 行が**座標 ≤1.9e-11** で一致 (dvfs を 0 にすると 10 周後に x が 6e-6、z が 5.9e-3 ずれるので、影響の大きい項目)。
 - 課題の `FSHIFT=1e-4` は **SAD 自身が成り立たない** (周長 603 m で dl=−60 mm、閉軌道の δ=−0.094、`???-Emittance[]-closed orbit not found.`、粒子はすべて落ちる)。1e-6 (δ=−4.3e-3) を使った。
@@ -148,3 +150,12 @@ N1/N10 (NORAD 1 周・10 周)、R1/R10 (RAD NOFLUC)、F10 (RAD+FLUC、`SeedRando
 2. DISP: モード A/G/GA/OG/B/P/D/Z と REFERENCE/DREFERENCE (SAD の列の定義は tfdisp.f にある。tdrefheader/trefheader の見出しの書き換えも要る)。
 3. FFS の `RFSW ON + RADCOD OFF + FSHIFT≠0` の Emittance[] の閉軌道 (上記 E.3)。
 4. `CALC6D;` 単独に関する想定は消えた (SAD は再計算しない)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: (1) `Skip` と `Read` の型 (Character・Real・Word の読み方、数でない語の Real は式の値) を gs に合わせた (`test_evalfixes.py`)。(2) `MessageName[f,"usage"]` の関数形は gs が "Undefined MessageName" を出し、pysad は `f::usage` と同じ表を引くので不一致のまま、見送り。(3) `Short`・`Inequality`・`Fork` を gs に合わせ、`ToInputString` は一致、スクリプトの `ElectronMass` を 510998.95 (K64 の値) に直した。(4) FFS の小コマンドは docs/33。RADINT・DISP の範囲・CALC6D 単独・FSHIFT の記述 (この文書の A〜E) は変化なし。
+- 2026-11-16 夜の追記 (gs と照合して直した小項目。詳細は `work_session_20261116.md` §11.2):
+  - DUMP: 誤差入りのリングで値は一致したが DK・DDK 列の書式が違った (gs は Fortran の `1p g12.5`: 0 → `0.0000`、小さい値 → `4.22829E-04`。pysad は `0`・`0.00042283`)。`ffscmd._gwd` で一致 (dm2.sad、`test_ffsextra.py` の `test_dump_format_matches_gs`)。
+  - MATRIX: 名前だけの引数 (gs は NAME.1 として扱う) を位置にでき、ラティスに無い名前は gs が読み飛ばす (to=$$$) のを再現した (mt1・mt2.sad、`test_ffsextra.py`)。
+  - UNIPOL (NOBIPOL)・RELW (NOABSW): gs は UNIPOL で変数の符号を変えず (`tffsmatch.f:669`)、RELW で重みが変わり FIT の結果が変わる。pysad は `match6` に実装があるのにフラグとつながっていなかったので `ffscmd.matcher_` でつなぎ、3 通りとも gs と全桁一致 (fit1.sad: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499)。`test_item4.py` に 3 件。docs/18 の「効果の有無は未確認」は解消。
+  - フラグ GAUSS・CTIME・CONV・EMIOUT・BIPOL の効果はソースの読解のみ (動かしてはいない)。EMIOUT は pysad が spin の行だけ対応。MON・MCOD・TCOD のコマンドは K64 に無い。B29 (QUAD の RAD=1 で放射なし) は仕様。

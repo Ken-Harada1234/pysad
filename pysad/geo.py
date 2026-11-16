@@ -77,7 +77,7 @@ _SADTYPE_CODE = {'DRIFT': 1, 'BEND': 2, 'QUAD': 4, 'SEXT': 6, 'OCT': 8, 'DECA': 
                  'MAP': 33, 'INS': 34, 'COORD': 35, 'BEAM': 36, 'PROT': 37, 'MARK': 41, 'MONI': 42, 'APRT': 43}
 _CLS2SADTYPE = {'Drift': 'DRIFT', 'Bend': 'BEND', 'Quadrupole': 'QUAD', 'Sextupole': 'SEXT', 'Octupole': 'OCT',
                 'Decapole': 'DECA', 'Dodecapole': 'DODECA', 'Multipole': 'MULT', 'Solenoid': 'SOL',
-                'Cavity': 'CAVI', 'TCavity': 'TCAV', 'Monitor': 'MONI', 'Marker': 'MARK'}
+                'Cavity': 'CAVI', 'TCavity': 'TCAV', 'Monitor': 'MONI', 'Marker': 'MARK', 'Coord': 'COORD', 'Undulator': 'UND'}
 
 
 # ---------------------------------------------------------------- 数学関数 (tfloor.f mathfun)
@@ -487,7 +487,7 @@ class GeoResult:
 # ---------------------------------------------------------------- 本体 (tfgeo + tfgeo1)
 def compute_geo(elements: Sequence, gx0: float = 0.0, gy0: float = 0.0, gz0: float = 0.0,
                 chi0: Sequence[float] = (0.0, 0.0, 0.0), iorg: int = 1,
-                geo_init: Optional[np.ndarray] = None, warn=None) -> GeoResult:
+                geo_init: Optional[np.ndarray] = None, warn=None, momentum_eV: Optional[float] = None) -> GeoResult:
     """SAD tfgeo (GEOCAL 時, calgeo=.true.) の直訳。
 
     elements: pysad の要素列 (lat.elements / FFS.els)。要素数 n に対し nlat=n+1 で末尾が $$$。
@@ -503,16 +503,33 @@ def compute_geo(elements: Sequence, gx0: float = 0.0, gy0: float = 0.0, gz0: flo
     pos = np.zeros(nlat)
     geo[0] = GEOINI if geo_init is None else np.asarray(geo_init, dtype=float)
     # ---- tfgeo1(1, nlat): 要素ごとに進める
-    for i in range(n):
+    i = 0
+    while i < n:
         el = elements[i]
         st = _sad_type(el)
-        if st == 'SOL':
-            # tsgeo (ソレノイド境界内の軌道で幾何を決める) は未移植。BOUND/GEO 付きの SOL は正しく出ない
-            if _val(el, 'BOUND') != 0.0 or _val(el, 'GEO') != 0.0:
-                warnings.append(f'SOL {getattr(el, "name", "?")} (位置 {i + 1}): tsgeo 未移植、直進扱い')
+        if st == 'SOL' and _val(el, 'BOUND') != 0.0:
+            # tsgeo: GEO 付きの SOL 領域は、SOL のずれ・向きで決めた軌道に沿って幾何を作る (軌道が軸上なら直進と同じなので近道)
+            done = False
+            if momentum_eV is not None:
+                try:
+                    from . import sgeo as _sg
+                    from .emit6d import _Phys
+                    ke = next((j for j in range(i + 1, n) if _sad_type(elements[j]) == 'SOL' and _val(elements[j], 'BOUND') != 0.0), None)
+                    ends = [el] + ([elements[ke]] if ke is not None else [])
+                    off_axis = any(_val(e, k) != 0.0 for e in ends if _val(e, 'GEO') != 0.0 for k in ('DX', 'DY', 'DPX', 'DPY'))
+                    if off_axis:
+                        res = _sg.tsgeo(elements, i + 1, geo, pos, _Phys(momentum_eV, 1.0), warnings.append)
+                        if res is not None:
+                            i = res[1] - 1
+                            done = True
+                except NotImplementedError as e:
+                    warnings.append(f'SOL {getattr(el, "name", "?")} (位置 {i + 1}): {e} (直進扱い)')
+            if done:
+                continue
         ali = _geo_length(el, st)
         pos[i + 1] = pos[i] + ali
         geo[i + 1] = _advance(geo[i], el, st, ali)
+        i += 1
     # ---- tfgeo: MARK の OFFSET (tffsmarkoffset)
     for i in range(n):
         el = elements[i]

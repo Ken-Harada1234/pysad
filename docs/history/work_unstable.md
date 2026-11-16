@@ -1,9 +1,11 @@
 # 不安定ラインでの CELL CALC の続行と nstab の判定 (2026-10-16)
 
+最終更新: 2026-11-16
+
 担当: pysad/lattice.py, ffscmd.py, match6.py (run_regression.py にベンチを追加)。課題は docs/history/work_descend.md の「残った点」:
 
-- pf2 の tune_sv の `USE RING; cell calc emit` で SAD は νy=7.0293 を返して `ny not matched` に進むが、pysad は `periodic_optics` が sin μy≈0 で ValueError、qcod の閉軌道が見つからずスクリプトが止まる。
-- matching02_r (解なし) で SAD は r=3.74 < rbest=4.44 の試行点を不採用にする (nstab を先に比べるので試行点が不安定扱い)。pysad は試行点を採用していた。
+- 不安定なラインの `USE RING; cell calc emit` で SAD は νy=7.0293 を返して続行するが、pysad は `periodic_optics` が sin μy≈0 で ValueError、qcod の閉軌道が見つからずスクリプトが止まる。
+- 解のない fit で SAD は r=3.74 < rbest=4.44 の試行点を不採用にする (nstab を先に比べるので試行点が不安定扱い)。pysad は試行点を採用していた。
 
 ## 1. 結論
 
@@ -16,9 +18,9 @@
 | 2 | qtwiss1 の over (伝搬中に βx, βy ≤ 0 になる) で以降の行を直前の正常な行のコピーにして stabx=staby=偽 | lattice.py `twiss()` | `_transport_twiss(clamp=False)` で β の下限 1e-12 の丸めを外して判定 |
 | 3 | tfsetupcell が CELL の GO/CALC で条件の最後に `AX(1→$$$)=0, AY(1→$$$)=0` の 2 条件 (周期性) を足す。周期解が安定なら |df|<1e-8 で捨てられるが、1/cosμ に置き換えた「周期解」では 1 周で閉じず、残差と微分に効く | match6.py `go()` | 条件を一時的に追加 (`cellcond`)。`rl=CONVERGENCE·nfcol` も +2 |
 | 4 | tdfun は `|mfitp|` が奇数 (mp·2+1=|mfitp|) の条件を idp=0 では評価しない (中心を除く)。tfsetupcell の条件は mfitp=max|mfitp| なので、ユーザー条件がないとき (mfitp=1) は評価されず `Matched.` になる | match6.py `_tffscalc` | 同じ条件で idp=0 を飛ばす |
-| 5 | qcod が overflow (一周行列が NaN) で戻ったとき、SAD は twiss を書かず前回の値が残り、残差はその値で評価される (先頭行は MARK = 最後に安定だった周期解)。オフモメンタム点 (idp≠0) も、前の点が over ならその idp の utwiss の前回の値で評価される。pysad は条件を落として r=0 にしていた (r=0 は crate=1 の「大改善」に見えて、FITP の GO で反復の経路が変わる: pf2 の matching_v31_23 の最後の GO) | match6.py `_stale_rows`、`_rows_idp` | 前回の rows で評価。nstab は残差が非 0 の idp ごとに +2 |
+| 5 | qcod が overflow (一周行列が NaN) で戻ったとき、SAD は twiss を書かず前回の値が残り、残差はその値で評価される (先頭行は MARK = 最後に安定だった周期解)。オフモメンタム点 (idp≠0) も、前の点が over ならその idp の utwiss の前回の値で評価される。pysad は条件を落として r=0 にしていた (r=0 は crate=1 の「大改善」に見えて、FITP の GO で反復の経路が変わる) | match6.py `_stale_rows`、`_rows_idp` | 前回の rows で評価。nstab は残差が非 0 の idp ごとに +2 |
 | 6 | `log10(0)` を NaN にしていた (Fortran は -Infinity)。勾配が 0 になる点で crate=0 → badcnv=1 → モード切替になるはずが、NaN の fuzz=1 → badcnv=0 で**同じ点を無限に反復**した | match6.py `_log10` | 0 は -inf |
-| 7 | `fmincube` の上限 `min(m_euler·f1, …)` の `m_euler` を**ネイピア数 e (2.718)** にしていた。tfstk.f の `m_euler` は**オイラー定数 γ (0.5772)**。直線探索で fmincube の結果が 0.577·f1 を超えるとき (試行点が不安定で r が小さくなりすぎ、探索が伸びるとき) に違いが出る。これが matching02_r の `fact` の列のずれの原因だった (不安定判定だけの問題ではなかった) | match6.py `M_EULER` | γ に修正 |
+| 7 | `fmincube` の上限 `min(m_euler·f1, …)` の `m_euler` を**ネイピア数 e (2.718)** にしていた。tfstk.f の `m_euler` は**オイラー定数 γ (0.5772)**。直線探索で fmincube の結果が 0.577·f1 を超えるとき (試行点が不安定で r が小さくなりすぎ、探索が伸びるとき) に違いが出る。これが解のない fit の `fact` の列のずれの原因だった (不安定判定だけの問題ではなかった) | match6.py `M_EULER` | γ に修正 |
 
 | 8 | qcod は一周行列を `limitnan(·,1e10)` で ±1e10 に抑えてから Twiss を作る (NaN は +1e10)。一周行列の成分が 1e10 を超えるほど不安定なとき (QF ×1.16: 成分 7e15) の Twiss は抑えた行列から作られる。さらに成分が 1e18 を超えると SAD では COD の丸め雑音 (1e-18) が一周で非線形領域まで増幅され NaN → `*****qcod---> Overflow` になる (pysad の COD は厳密に 0 で収束するので再現できない → 1e18 超を overflow とする目安) | lattice.py `_qcod_periodic` (`_TRMAX`, `_LAST_MMAX`, `_MOVERFLOW`) | QF ×1.16 は NX 62.1509174812、NY .5、BX 1.4605585589、BY 4.141200142E41 まで SAD と一致 |
 
@@ -61,7 +63,7 @@
 - tffsmatch: メッセージ回数 `nmes` (cellm の変数、<nmmax=4 のとき出す。反復表を 1 行出すたびと GO の終わりに 0 に戻る)。`lout` は qmdiag が `lfno=0` にするので和共鳴のメッセージは次の表示まで 1 回だけ。
   `rlist(inr)=r%r` (NetResidual)、`rlist(imr)=res2r(r)` (MatchingResidual)、`rlist(isl)=nstab` だが `isl=ktfsymbolz('UnstableLevel',14)-4` の `14` は名前の長さ 13 より 1 大きく、**UnstableLevel 自体は更新されない (常に 0)**。
   → pysad も `UnstableLevel=0` 固定、`NetResidual=r.r` (nstab を含まない)。
-- resle (tffs.f:1644): `nstab` が小さい方が常に良く、同じなら `r1%r ≤ r2%r/tol`。pysad の `_Res.le` は同じ (読み直して一致を確認。matching02_r の原因は nstab の数え方・over の扱い・fmincube の上限だった)。
+- resle (tffs.f:1644): `nstab` が小さい方が常に良く、同じなら `r1%r ≤ r2%r/tol`。pysad の `_Res.le` は同じ (読み直して一致を確認。解のない fit の原因は nstab の数え方・over の扱い・fmincube の上限だった)。
 
 ### FFS のフラグ (重要な落とし穴)
 - FFS 内の `ON INTRES;` / `OFF INTRES;` は**何も変えず**、`Out[1]:= USE` を出すだけ (`FFSFlags[]` で確認: 値は変わらない)。FFS のフラグは `INTRES;` (ON) / `NOINTRES;` (OFF) と書く (`RFSW; NORADCOD;` と同じ)。
@@ -80,7 +82,7 @@
 
 ## 4. ベンチ
 
-`bench_level28a.sad` (ESRF pysad/tests/kek-ls_v03_12.lat 連結、NPARA=1。結果 `bench_level28a.result`):
+`bench_level28a.sad` (3564 要素のリングを連結、NPARA=1。結果 `bench_level28a.result`):
 - V: QDA* ×1.19 → 垂直だけ不安定 (BY=90、NY=30.2494)。CALC → `Vertical Unstable.` と `MKS.1/$$$ BMAGY 124207.53`。
   FIT NX NY / free QDA* / go → SAD の反復表 `5 0 4769 (DESCEND)`, `7 …1041 (NEWTON)` … (反復 1〜4 は nstab>0 で表に出ない。反復 2 で qcod overflow) まで全行一致、K1 は 1e-10 以下。
 - H: QFA* ×0.9 → 水平だけ不安定 (BX=27043、AX=-9619)。GO は安定に戻れず `Unstable = 1 Residual = 2124`。反復表 `2 1 2157 (NEWTON)` まで一致。
@@ -91,20 +93,17 @@
 `run_regression.py 28a 28b` (`check_level28`): Print[] の行 (相対 1e-8、TWF_H だけ 1e-3、K1F_H 1e-6 — 不安定の縁の解は丸めが拡大される)、反復表、`Unstable.` / `Unstable = n` / qcod の報告の行の列が SAD と一致。
 
 ### 照合 (SAD との差)
-- tune_sv_v30_24_1: 2 段目のあとの `USE RING; cell calc emit` が `Vertical Unstable.`、`BMAGY 1.069469`、BX 26.664801、BY .241658、NY 7.029326 で SAD と一致し、`ny not matched` に進む (スクリプトは最後まで走る)。
-- matching02_r: 反復表 (6 → 4.280、9 → 4.164、12 → 4.072) と最終 `Residual = 4.072` が SAD と全行一致。デバッグ版 SAD ((WSL のホームの作業フォルダ)、`<work-scratch>/addS.sh addF.sh` で nstab と fmincube の入力を印字) で
-  試行点の (r, nstab) が 1 反復目から一致 (r=3.7402426870 nstab=2、2.5941223246 nstab=1、…) することを確認した後、fmincube の `m_euler` の違いに行き着いた。
+- 解のない fit (不安定な試行点が出るもの): 反復表と最終 `Residual` が SAD と全行一致。デバッグ版 SAD ((WSL のホームの作業フォルダ) の write 文で nstab と fmincube の入力を印字) で
+  試行点の (r, nstab) が 1 反復目から一致することを確認した後、fmincube の `m_euler` の違いに行き着いた。
 - 不安定の程度を 20 通り (QD/QF のスケール) 変えた CALC: β が 1e5 程度までは NX, NY, BX, BY が 1e-10 で一致、`Unstable.` の判定・メッセージも一致。
   成分が 1e10〜1e16 の強い不安定 (QF ×1.16) も `limitnan` で一致。1e18 を超えると SAD は COD の丸め雑音で NaN/`Closed orbit not found` になり再現できない。
-- pf2 の他のスクリプト: matching_v30_12_r (最後の FITP の GO 含む)、matching_v31_23_r の反復表・Matched/Residual は SAD と一致のまま (v31_23 の `Matched. (1.3021E-12)` と SAD の `1.3022E-12` の最下位桁だけ既知)。
-  (最初の版は v31_23 の最後の GO、DP=0.001 の FITP で、overflow した idp≠0 の点を条件なし (r=0) にして反復が SAD と違う経路を通り止まらなくなった。overflow した点は前回の rows で評価する (`_rows_idp`) ことで直した。)
+- FITP (オフモメンタム点) を含む GO: overflow した idp≠0 の点を条件なし (r=0) にすると反復が SAD と違う経路を通り止まらなくなった。overflow した点は前回の rows で評価する (`_rows_idp`) ことで直した。
 
 ## 5. 回帰
 
 - 作業前 (`base_unst_pre/`) と作業後 (`base_unst_post2/`) の 13a/13b/14a/16a/22a/23a の `run_sad.py` 出力: 数値は不変 (違いは条件表の名前の 11 桁目 `f` の位置 (SAD に合わせた)、13a の `*****qcod---> Overflow ... 1/2` の 2 行 (SAD の bench_level13a.result の 78-79 行と同じ)、警告の行番号のみ)。
 - pytest (`test_bend_feeddown` `test_coord` `test_sext_radiation` を `--ignore`): **153 pass** (146 + 新規 `test_unstable.py` 7 本)。
 - `QUICK=1 python run_regression.py`: **37 ベンチ FAIL 0 (188 s)** (28a/28b を含む)。`run_regression.py 13a 16a`: FAIL 0 (13A-2 の TWB だけ既知 KNOWN、work_integration.md §2)。
-- pf2: tune_sv_v30_24_1 (最後まで走り SAD と同じ表示)、matching02_r、matching_v30_12_r、matching_v31_23_r の反復表・Matched/Residual は SAD と一致。
 
 ## 6. 未解決・次の作業
 
@@ -118,6 +117,9 @@
 
 ## 7. 道具
 
-- `<work-scratch>/make_28.py`: bench_level28a/b/c.sad の生成。`<work-scratch>/gen_scan.py`、`runsad.sh`: ESRF の K1 をスケールして CALC の結果を並べる探索。
-- デバッグ版 SAD の追加の write 文: `<work-scratch>/addS.sh` (DBGS: r%nstab と rbest%nstab)、`addF.sh` (DBGM: fmincube の入力 f1 f2 g1 g2 rp0 dg)。
-  `<work-scratch>/runsad.sh <sad> <名>` で実行。`PYSAD_MATCH_DEBUG=1` の pysad の印字と反復ごとに比べる (pysad の `iter=` は SAD の `DBGA iter` より 1 少ない)。
+- 作業フォルダ (リポジトリに含まれない): bench_level28a/b/c.sad の生成スクリプト、K1 をスケールして CALC の結果を並べる探索スクリプト、デバッグ版 SAD に write 文を足すスクリプト (DBGS: r%nstab と rbest%nstab、DBGM: fmincube の入力 f1 f2 g1 g2 rp0 dg)。
+  `PYSAD_MATCH_DEBUG=1` の pysad の印字と反復ごとに比べる (pysad の `iter=` は SAD の `DBGA iter` より 1 少ない)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 確認: 変化なし。根拠: 不安定ラインでの CALC の続行と nstab の判定に関する変更は work_unimpl.md・docs/20〜35 に無い (`teigen.py` の更新日時は 11/06)。不安定な光学での fit の罰則の差 (gs が罰則を入れない場合) は work_unimpl.md の幾何の FIT の節に追記がある。

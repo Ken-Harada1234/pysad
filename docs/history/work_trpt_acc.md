@@ -1,11 +1,13 @@
 # 作業ログ: USE の大文字小文字、TRPT の加速 (gammab / tcave / tmulte)、MARK OFFSET、K=0 の QUAD/MULT (2026-11-06)
 
-残課題「USE LinacPFBT (disp_bt_r)」。調べると USE 自体は 1 行の不具合で、その先に線形加速器 (13.2 MeV から) の加速と MARK の OFFSET が
-未実装という本体があった。disp_bt_r (linac-pfbt.sad、3546 行の表) は最終的に **全列が印字精度で SAD と一致**。
+最終更新: 2026-11-16
+
+残課題「大文字小文字の混じった名前のラインを USE できない」。調べると USE 自体は 1 行の不具合で、その先に線形加速器 (13.2 MeV から) の加速と MARK の OFFSET が
+未実装という本体があった。
 
 ## 1. USE の大文字小文字 (直接の原因)
 
-linac-pfbt.sad の `LINE LinacPFBT=` は大文字小文字混じり。parser は書かれたとおりに登録するが、ffscmd の USE / use() /
+`LINE` の名前が大文字小文字混じりのとき、parser は書かれたとおりに登録するが、ffscmd の USE / use() /
 sadelem の ExtractBeamLine は名前を大文字にして引いていた → 「Missing beamline in USE.」。
 `Env.resolve_beamline(name)` (書かれたとおり → 大文字 → 大文字小文字を無視) を足し、USE / use() / build_lattice / ExtractBeamLine が
 それで引く。`ffs.name` は登録名のまま (BeamLineName[] も)。MAIN の `TRACK USE=` / `EMIT USE=` の比較は大文字小文字を無視。
@@ -42,10 +44,10 @@ pysad:
 
 OFFSET≠0 の MARK は位置 xp = OFFSET + l (逆向きなら (OFFSET−.5)(−1)+.5) の Twiss を自分の行にする: lx=int(xp)、fr=xp−lx、
 fr=0 なら twiss(l)=twiss(lx)、そうでなければ qtwissfrac1(lx, fr)。xp が MARK を指すならその MARK の OFFSET を辿る (最大 256 回、?Recursive OFFSET)。
-linac-pfbt.sad では 5 個 (OFFSET=−.5 が 4 個: 直前の QUAD の中央 = 対称点、−0.1618 が 1 個)。
+線形加速器のラインでは OFFSET=−.5 (直前の QUAD の中央 = 対称点) などが使われる。
 pysad: `FFS._mark_offsets(rows)` (calc の 4D 経路の末尾、CELL/INS 両方)。`row_frac(k, fr, rows=)` に rows 引数を足した。
 s は `_rows_pos` が tfgeo の pos (geo.py: OFFSET MARK の位置と BEND/MULT のフリンジの長さ補正 `L − ((φ·fb1)²+(φ·fb2)²)/L/48·sin(…)/sin(φ/2)`)
-に置き換える (OFFSET MARK か FRINGE≠0 かつ F1/FB1/FB2≠0 の BEND/MULT があるときだけ。linac-pfbt の BMR01 (F1=.06 FRINGE=1) で 2.1e-5 m)。
+に置き換える (OFFSET MARK か FRINGE≠0 かつ F1/FB1/FB2≠0 の BEND/MULT があるときだけ。F1=.06 FRINGE=1 の BEND で 2.1e-5 m)。
 6D (CALC6D) の経路にはまだ入れていない。
 
 ## 4. ついでに直した pysad 自身の不具合
@@ -61,8 +63,7 @@ s は `_rows_pos` が tfgeo の pos (geo.py: OFFSET MARK の位置と BEND/MULT 
 
 | 項目 | 結果 |
 |---|---|
-| pf2 disp_bt_r (linac-pfbt.sad、TRPT、CAVI 2 本 + 加速管 MULT 130 本、OFFSET MARK 5 個、3546 行) | 表の **13 列すべてが印字精度で SAD と一致** (<work-perf> の cmp。EX/EPX/EY/EPY の 1e-12 以下と DetR の 1e-33 の雑音を除く)。条件表の行も同じ。0.8 s |
-| <work-perf>/linac_tiny.sad (20 MeV、CAVI 8 MV、MULT 12 MV、K=0 の MULT/QUAD、F1 付き BEND、OFFSET=−.5/1.25 の MARK、DX=1e-4 の軌道) | 要素ごとの DX..DDP, AX..BY が B1 (F1 付き BEND、δ=1.5e-8 の軌道) の前まで 1e-10 で一致、その後 1e-9〜3e-8 (BEND のフリンジの経路、追わない)。OFFSET MARK の s (4.8, 6.825) と Twiss が一致。DZ は 1e-11 の差 (tdrife0 の dv 項: 追わない) |
+| linac_tiny.sad (20 MeV、CAVI 8 MV、MULT 12 MV、K=0 の MULT/QUAD、F1 付き BEND、OFFSET=−.5/1.25 の MARK、DX=1e-4 の軌道) | 要素ごとの DX..DDP, AX..BY が B1 (F1 付き BEND、δ=1.5e-8 の軌道) の前まで 1e-10 で一致、その後 1e-9〜3e-8 (BEND のフリンジの経路、追わない)。OFFSET MARK の s (4.8, 6.825) と Twiss が一致。DZ は 1e-11 の差 (tdrife0 の dv 項: 追わない) |
 
 テスト: `pysad/tests/test_trpt_acc.py` (6 件: USE の大文字小文字、加速の SAD 値、OFFSET MARK、RING では加速なし、K=0 の QUAD/MULT のドリフト、DISP の Value 欄)。
 pytest: 256 passed (18 s)。回帰 `QUICK=1`: FAIL 0 (50 ベンチ、113 s)。
@@ -75,18 +76,17 @@ pytest: 256 passed (18 s)。回帰 `QUICK=1`: FAIL 0 (50 ベンチ、113 s)。
   `_tquade_cod` K1=0、`_mult_sequence` nmmax<0、`_dv_drift`。
 - `pysad/ffscmd.py`: USE/use()、`_trpt_acc`、`_mark_offsets`/`_mark_offset`/`_elm_offset`/`_rows_pos`、`_mark_offset_value`、calc の末尾、
   `row_frac(rows=)`、`_disp_show` の Value 欄、EMIT USE= の比較。
-- `<work-perf>/`: patch8_usecase.py、patch9_trpt.py (差し替えの記録)、linac_tiny.sad / linac_tiny2.sad (+ .sad.out = SAD、.pysad.out)、regression_quick5/6.log、pytest_full5.log。
-  <work-pf2>/disp_bt_r.pysad.out は一致した出力に更新。
+- 作業フォルダ (リポジトリに含まれない): 差し替えの記録 (patch8_usecase.py、patch9_trpt.py)、linac_tiny.sad / linac_tiny2.sad (+ .sad.out = SAD、.pysad.out)、各種ログ。
 
-## 7. 裸の要素名シンボル (disp_q_K1_r、同日)
+## 7. 裸の要素名シンボル (同日)
 
-`qlist = {Q1A,Q2A,…}; Print[LINE["K1", qlist[i]]]` の Q1A は未定義のシンボル。SAD の tflinestk は tfgetstrns で文字列でもシンボルでも名前を取る
+`LINE["K1", Q1]` の Q1 のように、未定義のシンボルで要素名を渡す形。SAD の tflinestk は tfgetstrns で文字列でもシンボルでも名前を取る
 (tftwiss.f: LINE / Twiss / Element に共通)。pysad は `_resolve_loc` (LINE/Twiss の位置引数) と `fn_element` が `Sym` を名前にする。
-ついでに: v31_24 の `TEST = (-N2 2*NCELL)` は TEST が要素の型名 (icTEST) と同じなので `_parse_line_block` が LINE ブロックを終えてしまい、
-`[pysad parser] Warning line 222: bad operand type for unary -` が出て TEST が登録されなかった → 次のトークンが `=` なら LINE の続きとして読む。
-結果: K1 14 個と K2×2 2 個が SAD と同じ (<work-pf2>/disp_q_K1_r.pysad.out)。テスト `pysad/tests/test_symbol_names.py`。
+ついでに: LINE の名前が要素の型名 (icTEST など) と同じだと `_parse_line_block` が LINE ブロックを終えてしまい、
+`[pysad parser] Warning: bad operand type for unary -` が出て登録されなかった → 次のトークンが `=` なら LINE の続きとして読む。
+テスト `pysad/tests/test_symbol_names.py`。
 
-## 8. FITP の fam 点 = MatchingAmplitude / NFAMP の有限振幅ファミリー (同日、ユーザー指示「自己検証で十分」)
+## 8. FITP の fam 点 = MatchingAmplitude / NFAMP の有限振幅ファミリー (同日、自己検証)
 
 SAD (tffamsetup.f, tffsa.f:1183, tffscalc.f:147-215, qdcell.f tdfun, qcell.f qcell1 の fam):
 - `MatchingAmplitude = {{dp, xamp, yamp}, …}` と `NFAMP` (≤12) があると、GO/CALC のたび (tffsa) に tffamsetup が FITP の各 dp 点 k
@@ -114,19 +114,18 @@ SAD(WSL) は FITP>1 の GO で再起動するので SAD との照合はない。
 ## 9. CAVI/SOL の ROTATE (同日)
 
 残課題「CAVI/TCAV/MONI/SOL の ROTATE」(10/16 の ROTATE 全面対応で残したもの)。調べると:
-- ユーザーのラティスの CAVI は VOLT/HARM だけ (DX/DY/ROTATE なし)、TCAV・SOL は無く、MONI に ROTATE もない。
 - SAD: tcave.f (emit / CALC6D) は入口・出口で tchge(dx,dy,0,theta,…) (回してからずらす)、tmulte.f (VOLT 付き MULT) は tsolrote (ずらしてから回す)。
   追跡の tcav.f は dx,dy,theta を受け取るが**使わない** (無視)。pysad の track6 もそのまま。
 - **実装**: emit6d `_tcave` と trptacc `acc_step` に tchge (CAVI) / tsolrote (MULT、行列は数値微分) を入れた。ROTATE だけなら軸対称な空洞では
   結果は変わらず、DX/DY と組むと tcavfrie の集束 (x·dpt) が回った座標でかかって x-y 結合を生む。
-- **SAD との一致**: <work-perf>/cavrot.sad (CAVI L=0.5 VOLT=2 MV HARM=24 DX=2e-3 DY=−1e-3 ROTATE=30°、CELL CALC6D + emit): Twiss["DX".."R2"] と
+- **SAD との一致**: cavrot.sad (CAVI L=0.5 VOLT=2 MV HARM=24 DX=2e-3 DY=−1e-3 ROTATE=30°、CELL CALC6D + emit): Twiss["DX".."R2"] と
   EMITX/EMITY/EMITZ/SIGE/SIGZ が 1e-11 で一致 (EMITY=1.74e-7、Beam tilt .2927 rad が結合の証拠。外すと EMITY=0)。
-  <work-perf>/linac_rot.sad (TRPT の CAVI と加速管 MULT に DX/DY/ROTATE): 要素ごとの軌道と Twiss が B1 の前まで 1e-9 (DZ は 1.5e-10)。
+  linac_rot.sad (TRPT の CAVI と加速管 MULT に DX/DY/ROTATE): 要素ごとの軌道と Twiss が B1 の前まで 1e-9 (DZ は 1.5e-10)。
 - 残り (使用なし): SOL の ROTATE (SOL 自体の幾何 tsgeo が未移植)、TCAV (要素は読むが CALC/追跡の写像が未実装)、MONI の ROTATE (読み値の回転)。
 
 テスト: `pysad/tests/test_cavrot.py` (2 件)。
 
-## 10. ANGLE=0 K1≠0 BEND の追跡、TrackParticles の粒子損失、LINE["GAMMABETA"]、plot_inj_r (同日、残課題 A)
+## 10. ANGLE=0 K1≠0 BEND の追跡、TrackParticles の粒子損失、LINE["GAMMABETA"](同日、残課題 A)
 
 - **ANGLE=0, K1≠0 の BEND の追跡** (tbend.f:566-590): K0=0 なら tquad(al, K1, bz=0, dx, dy, theta+dtheta, theta+dtheta, krad, chro=T, fringe,
   f1in=f2in=f1out=f2out=0, mfring=0, eps)、K0≠0 なら tmulti (akm(0)=K0, akm(1)=K1、theta+dtheta)。pysad: `track6._bend_k1_proxy` が QUAD / MULT の
@@ -139,23 +138,21 @@ SAD(WSL) は FITP>1 の GO で再起動するので SAD との照合はない。
   番号順に alive (落ちたら 0) と落ちた時点の座標 (limittrack: |x|,|y|≤3·LOSSAMPL、|px|,|py|≤0.9999、|z|≤1e10) で返す。初期フラグ 0 は追跡しない。
   numba の表に無い要素 (SOL 等) は従来の track6 (損失なし)。
 - **LINE["GAMMABETA"] / ["GAMMA"]** (tftwiss.f:837): gammab(k) (p/mc、TRPT の加速分布込み、分数位置は補間)。GAMMABETA は未実装で 0 を返していた。
-- **plot_inj_r**: 原因は `emix = gemx/LINE["GAMMABETA","^^^"]` が INF → 初期ビーム INF → 追跡が発散。両方を直して完走 (0.5 s)。
-  1000 粒子の PAR/INI (GaussRandom の既定シードの乱数まで) と生存数 1000 が SAD と同じ、XMEAN −.0118282 と −.0118276 は FLUC の乱数の差 (da_xy_r と同じ既知)。
-  決定論的な 5 粒子 (<work-perf>/plot_inj_trk.sad: x=30 mm 注入 + KK3/KK4 のバンプ) は 1 周 (全粒子生存)、3 周 (注入粒子 3 個が落ちる、座標と alive)、
-  RAD FLUC + SeedRandom[17] の 1 周とも SAD と全桁同じ。ListPlot/Tk 以降は対象外 (SAD は core dump)。
+- **初期ビームの規格化**: `emix = gemx/LINE["GAMMABETA","^^^"]` が INF になって初期ビームが INF → 追跡が発散していた。GAMMABETA と損失の両方を直して完走。
+  決定論的な 5 粒子 (x=30 mm 注入 + バンプ) は 1 周 (全粒子生存)、3 周 (注入粒子 3 個が落ちる、座標と alive)、
+  RAD FLUC + SeedRandom[17] の 1 周とも SAD と全桁同じ。
 
 | 照合 | 結果 |
 |---|---|
-| <work-perf>/bendk1_{plain,rot,dxy,drot}.sad (BEND ANGLE=0 K1=−0.5 に ROTATE/DX,DY/DROTATE、NORAD 3 周と RAD 1 周、5 粒子) | 全変種・全粒子が SAD と同一 (生存粒子は 12 桁、落ちた粒子は抑えた座標 3/.9999/1e10 と −.999999 まで同じ) |
-| <work-perf>/bendk1_quad.sad (等価な回した・ずらした QUAD) | 同一 |
-| pf2 plot_inj_trk / plot_inj_cnt | 上記 |
+| bendk1_{plain,rot,dxy,drot}.sad (BEND ANGLE=0 K1=−0.5 に ROTATE/DX,DY/DROTATE、NORAD 3 周と RAD 1 周、5 粒子) | 全変種・全粒子が SAD と同一 (生存粒子は 12 桁、落ちた粒子は抑えた座標 3/.9999/1e10 と −.999999 まで同じ) |
+| bendk1_quad.sad (等価な回した・ずらした QUAD) | 同一 |
 
 テスト: `pysad/tests/test_bendk1_track.py` (2 件)、`test_trpt_acc.py` に GAMMABETA (1 件)。
 
 ## 11. SADHelp 照合で未対応だった物理関数・変数の優先度 高・中 (同日、docs/15_sadhelp_purpose_policy.md の続き)
 
-ユーザー指示「物理関数で未対応のもので対応した方がよいものをリストアップして」→「優先度高、中を順に進めて」。SAD 側の定義を読んで pysad に入れ、
-<work-perf>/hiprio*.sad (RING: 7 セル + RFC、QD に ROTATE=3 DEG、MOMENTUM=1GEV) で SAD K64 と照合した。新規モジュール `pysad/optics_fn.py`。
+SADHelp から物理関数で未対応のものを挙げ、優先度高・中を順に進めた。SAD 側の定義を読んで pysad に入れ、
+hiprio*.sad (RING: 7 セル + RFC、QD に ROTATE=3 DEG、MOMENTUM=1GEV) で SAD K64 と照合した。新規モジュール `pysad/optics_fn.py`。
 
 | # | 項目 | SAD 側 | pysad | SAD との照合 |
 |---|---|---|---|---|
@@ -170,7 +167,7 @@ SAD(WSL) は FITP>1 の GO で再起動するので SAD との照合はない。
 | 中8 | **AccelerateParticles[beam, p(n), {n, nmax}]** | dapert.n (HoldAll): 各周で MOMENTUM を p(n) にして TrackParticles、MOMENTUM は変えたまま返す | `optics_fn.OpticsFunctions.fn_accelerate_particles` (`sadscript._HOLD` に追加) | 生存粒子は 6e-10、落ちた粒子の座標は SAD と異なる (下) |
 | 中9 | **OrbitGeo[p] / GeoBase[{χ1,χ2,χ3}] / SymplecticJ[n]** | Optics.n の tforbitgeo (DISP OG の値)、回転角→3×3 基底、emit.n の J 行列 | `optics_fn.orbit_geo / geo_base / symplectic_j` (SymplecticInverse も) | 1e-9 |
 | 中10 | **FFS$SHOW[]** (= FFS["SHOW"]) | Fortran tffs.f: 現在の fit 条件を {{n1, n2, fun, goal, \|mfitp\|-1, scale}, …} の平らなリストで返す | `ffs_show_list` (Matcher.conditions から) | 4 条件が同じ |
-| 中11 | **InitialOrbits / ElementValues** | tffsa.f | **保留** (ユーザースクリプトに使用なし) | — |
+| 中11 | **InitialOrbits / ElementValues** | tffsa.f | **保留** | — |
 | 中12 | **ParabolaRandom[n]** | C tfRandom_.c: 一様乱数 2 個の和から放物線分布 | `sadrandom.parabola` | SeedRandom[5] の 6 個が 1e-11 |
 
 ついでに直したもの:
@@ -186,6 +183,10 @@ AccelerateParticles の落ちた粒子: SAD は周ごとに TrackParticles を�
 
 | 照合 | 結果 |
 |---|---|
-| <work-perf>/hiprio.sad〜hiprio11.sad (TM1-4, BM1, NC, GB, OG1, SJ, OM, EV, EYE, SHOW, SV, PR, TM6, BM6, NC6, AP) | 上の表。AP は生存粒子のみ |
+| hiprio.sad〜hiprio11.sad (TM1-4, BM1, NC, GB, OG1, SJ, OM, EV, EYE, SHOW, SV, PR, TM6, BM6, NC6, AP) | 上の表。AP は生存粒子のみ |
 
 テスト: `pysad/tests/test_optics_fn.py` (8 件)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: 本文は変化なし。TRPT の放射の分割 (ndivrad ×10、四極の分割 gs 4) を gs に合わせた (work_unimpl.md、docs/22 §4)。加速のある CAVI (tcav の vnominal) と RF のある MULT (tmultiacc) の追跡は docs/21 §2a・2b。TCAVI の追跡は docs/24。

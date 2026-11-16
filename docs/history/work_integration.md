@@ -1,11 +1,13 @@
 # 作業ログ: 完成済みモジュール 6 本 (+ track6n) の ffscmd への接続 (2026-10-15 夜)
 
+最終更新: 2026-11-16
+
 対象: `pysad/ffscmd.py` (FFS 層) に未接続だった match6d / calc6d / touschek / geo / emit_extra / track6n_ext の接続と、
 EMIT 失敗時の NaN。手順は「1 ステップごとに SAD の参照ベンチと比較して一致を確認 → 回帰を実行」。
 
 ## 0. 回帰の方法と基準値
 
-- 基準値: 作業開始時の `run_sad.py bench_level13a/13b/14a/16a.sad` の出力と、当日の `<work-regression>/*.txt` (12:56〜12:58 の実行)。
+- 基準値: 作業開始時の `run_sad.py bench_level13a/13b/14a/16a.sad` の出力と、当日の回帰の出力 (12:56〜12:58 の実行)。
   両者は同一だった (13a は stdout/stderr の混ざり方だけ違う)。
 - 各ステップの後: (a) 上の 4 本の出力 (K1A/K1B/RESA/RESB/TUNE*/TWB/Score/RES/RDAP、反復行、Matched 行) を基準と比較、
   (b) `python -m pytest -q pysad/tests/test_pysad.py pysad/tests/test_new_features.py pysad/tests/test_error_spreading.py` (49 pass)、
@@ -27,16 +29,6 @@ EMIT 失敗時の NaN。手順は「1 ステップごとに SAD の参照ベン�
 - `Matcher.coumin` を追加し、ffscmd が `MINCOUP` グローバルを渡す。
 - **ついでに直した別のバグ**: ffscmd の `MINCOUP` の既定値が 0.0 だった (SAD は initb1.f で 1e-2)。0.01 にした。
 
-検証 (<work-esrf>/matching1_dbg.sad = ESRF の esrf/matching + calc 直後の診断出力。SAD 参照 `matching1_dbg.sad.out`):
-
-| 項目 | SAD | pysad |
-|---|---|---|
-| `cell calc emit` 後の {EMITX,EMITY,EMITZ} | {NaN,NaN,NaN} | {NaN,NaN,NaN} |
-| `calc` 直後の MatchingResidual | 41205475.56577 | **41205475.56577** (4.1205E+07) |
-
-(ステップ 1 だけの時点では微分は数値微分のままなので、GO の反復列は 3〜7 の後 `Matched. ( 8.7339E-09)` で、SAD の
-`8.7338E-09` と末尾 1 桁違う。解析微分化 (§2) で反復列は完全に一致した。)
-
 ## 2. 解析微分の既定化 (match6.Matcher._derivative)
 
 変更 (docs/history/work_analytic_deriv.md §7 の統合案どおり):
@@ -55,8 +47,6 @@ EMIT 失敗時の NaN。手順は「1 ステップごとに SAD の参照ベン�
 
 | ベンチ | 結果 |
 |---|---|
-| <work-esrf>/matching1_dbg.sad | 反復列 `3 2.9742E+07 (NEWTON) 0.4561 / 4 7.2238E+06 / 5 5.1917E+05 / 6 7.340 / 7 0.1633 / Matched. (8.7337E-09)` が SAD と同じ (SAD は 8.7338E-09、RES1 は pysad 8.73374E-9 / SAD 8.73375E-9)。K1 9 変数が SAD と 12 桁一致 (例 QFA1H .40014410823162 vs .40014410823166、BPI6 −.94963999852662 vs −.94963999852666) |
-| `FFS$NumericalDerivative=True` を calc の前に置いた同スクリプト | 数値微分の経路 (Matched 8.7339E-09) になる = 切替が効く |
 | 13a (13A-1 Matched) | `Matched. (5.0759E-16)` = **SAD の 5.0759E-16** (数値微分では 5.0763E-16 だった)。K1A、TUNE0/TUNEA は不変 |
 | 13a (13A-2, 解なし) | `Residual = 2.5977E-03` 不変。**K1B が SAD から相対 7e-10、TWB (BX@ORG) が絶対 4.7e-8 (相対 2.7e-9) ずれる** (数値微分では SAD と 10 桁一致していた)。§2.1 |
 | 13b | 反復数・Matched 行は同じ。`RESB 3.37240E-10` = **SAD の 3.37240E-10** (数値微分では 3.37243E-10)。K1B は 2.5e-10 以内で SAD と同じ |
@@ -101,7 +91,7 @@ run_regression の 13a は K1B/TWB の差が 1e-7 以内なら KNOWN にした (
 - `FFS.row_frac()`: 直近の CALC が CALC6D なら `calc6d.twiss_frac(self.calc6d_result, k, fr)` (qtwissfrac の calc6d 分岐)。
 - `Twiss[]` は既に AZ/BZ/NZ/ZX.. を含むのでそのまま動く。
 
-検証 (`run_sad.py bench_level18{a,b,c}.sad` の `TW_*` 行を `.result` と数値比較、ESRF 3564 要素、各 16 s):
+検証 (`run_sad.py bench_level18{a,b,c}.sad` の `TW_*` 行を `.result` と数値比較、3564 要素のリング、各 16 s):
 
 | ケース | 結果 (8 位置 × 28 成分) |
 |---|---|
@@ -157,7 +147,7 @@ run_regression の 13a は K1B/TWB の差が 1e-7 以内なら KNOWN にした (
 
 | ベンチ | 結果 |
 |---|---|
-| 19a (ESRF, 21 箇所 + GEO 3 + POS) | LN 最大 4.3e-13 (値 ~190 m)、GEO 4.2e-13、POS 0 (loc 4000 の周回含む) |
+| 19a (3564 要素のリング, 21 箇所 + GEO 3 + POS) | LN 最大 4.3e-13 (値 ~190 m)、GEO 4.2e-13、POS 0 (loc 4000 の周回含む) |
 | 19b (分岐テスト 35 箇所 + ORG B3) | LN ≤1.1e-14、POS 0、ORG ≤1e-14 |
 | 19c (ORG 6 通り × 18 点) | ≤1e-14 |
 
@@ -195,9 +185,6 @@ run_regression の 13a は K1B/TWB の差が 1e-7 以内なら KNOWN にした (
 | 16b (NORAD NOFLUC, Emittance[] 既定) | EMT 3e-18、SIG 1e-14、TUN 2.8e-11、ALP 1.6e-13 (min(絶対,相対))、DMP 1e-16、COD 1.8e-17 (SAD と同値)。`BM5 EquilibriumBeamMatrix[5]` の表示も SAD と同じ |
 | 21a (OneTurnInformation+Matrix, 51 s→32 s) | STB/REG/TSR/NSP/POL/SPM/NLAT 一致、TUN 2.8e-11、U0V 1.6e-13、DMP/EMT/SIG ≤1e-14、OTM 3.3e-10 (norm 相対 1.7e-10 と同じ桁)、ODM 5.9e-14、NCO 6.3e-12、ETK 名前一致、ETW 1.3e-11、OTE/EBM ≤3e-17、CO×8 1.8e-17、TM×8 6.3e-10 (周回で累積)、SZ×8 + SZB×2 + SZX100 ≤3e-17 |
 | 18a の `EMIT` 行 (Emittance[] の後に EMITX を Print) | SAD と同じく MARK の値 (1.8058612106805e-09) のまま — 以前は 1.549e-10 に書き換わっていた (§3 のメモ) |
-
-<work-esrf>/calc_RadInt.sad (`Emittance[]` を使う実スクリプト) も最後まで走り、`NaN…` の表示パターンまで SAD と同じ (以前は
-`TypeError: must be real number, not complex` で止まっていたのが §5 のエラー継続で進むようになった)。
 
 ## 7. track6n の MULT/SOL
 
@@ -248,21 +235,20 @@ work_track6n_ext.md §5 の差分案を、ファイルを大きくしない形�
 | L13A | 初回は FAIL (13A-2 の TWB 4.7e-8 > 2e-8)。§2.1 の調査のあと run_regression.py の 13a の判定を修正し **PASS\*** (13A-2 の K1B/TWB が 1e-7 以内なら KNOWN、note に理由) | TWB 4.7e-8 |
 
 (`run_regression.py` の変更はこの 1 か所だけ: `check_level13` の末尾。元のファイルは scratchpad に退避。)
-`<work-regression>/13a.txt`, `13b.txt` は最後に 13a/13b だけを単独で走らせたときの出力に置き換わっている (ほかのファイルは今朝のまま)。
-追加で手動確認したもの (いずれも SAD の `.result` と比較済み): 16b, 17a/b, 18a/b/c, 19a/b/c, 21a, <work-esrf>/matching1_dbg.sad。
+回帰の出力のうち 13a, 13b は最後に 13a/13b だけを単独で走らせたときの出力に置き換わっている (ほかのファイルは今朝のまま)。
+追加で手動確認したもの (いずれも SAD の `.result` と比較済み): 16b, 17a/b, 18a/b/c, 19a/b/c, 21a。
 
 ## 9. 未解決・判断が必要な点・気付いた点
 
 1. **【要判断】13A-2 (解なしの停留点) が SAD の最終点と一致しなくなった (解析微分の既定化の副作用)。** 指示の「13a/13b の出力不変」を満たさない唯一の項目。
    原因は §2.1 (解析微分は真の最小点に着き、SAD は残差の 1e-15 の雑音で隣の点に落ちる。J の誤りではない)。
-   ステップを戻す手もあったが、そうすると同じステップの主目的 (esrf/matching の反復列 `… Matched 8.7338E-09` の再現: 数値微分では 8.7339E-09)、
-   13A-1 の RESA 5.0759E-16、13b の RESB 3.37240E-10 (どちらも SAD の既定の値) を失うので、既定は解析微分のまま残し、
+   ステップを戻す手もあったが、そうすると同じステップの主目的 (13A-1 の RESA 5.0759E-16、13b の RESB 3.37240E-10 (どちらも SAD の既定の値) の再現) を失うので、既定は解析微分のまま残し、
    run_regression の 13a は K1B/TWB だけ KNOWN にした。**スクリプトの先頭に `FFS$NumericalDerivative=True;` を置けば従来 (= 13A-2 を SAD と 10 桁一致) に戻る。**
    戻したい場合は `ffscmd.go()` の `m.numerical_derivative = …` の既定を True にするだけでよい (match6.py 側は変更不要)。
 2. COUPLE した 2 変数をともに free にして GO すると `match6._tfsolv` で `IndexError: arrays used as indices must be of integer type`
    (`qu[fitsel]` の fitsel が空リスト = float 配列になる)。統合前のコード (ステップ 1 時点) でも同じ例外が出る既存の不具合 (解析微分とは無関係)。
    解析微分側は COUPLE 使用中は中心差分にフォールバックするので別問題。
-3. 条件表 (`print_fit_table`) の書式が SAD と少し違う (統合前から; <work-esrf>/matching1_dbg.sad の GO 後の表で確認): SAD は `MKS.1       BY   3.6 …`、
+3. 条件表 (`print_fit_table`) の書式が SAD と少し違う (統合前から; GO 後の表で確認): SAD は `MKS.1       BY   3.6 …`、
    pysad は `MKS.1     f BY   3.6 …` (名前列の幅と、11 桁目の `f` を付ける条件の選び方が違う)。数値には影響しない。
 4. 解析微分 (match6d) を使わない状況 (全体を中心差分にする): INS、COUPLE、FITP>1、BMAG/幾何条件、DK 付き変数、L=0 の QUAD。
    FITP>1 は match6d の `idp≠0` を SAD と照合していないための安全側の措置。照合できれば `_analytic_unsupported` の該当行を外せる。
@@ -270,10 +256,13 @@ work_track6n_ext.md §5 の差分案を、ファイルを大きくしない形�
    SAD は CALC6D の temit が `DTSYNCH` グローバルを設定するが pysad は未定義 (18a の `EMIT` 行に出る)。
 6. GEO: SOL の `tsgeo` と `SORG` は未移植 (geo.py の警告が出る)。`GEO` コマンド (表示) は従来どおり未対応。
 7. Emittance[]: `Region`/`InitialOrbit`/`InitialBeamMatrix`/`IntrabeamExcitation` は未対応。`LINE["SIG..",l]` は整数位置のみ。
-   INTRA ON の `Emittance[]` は run_emit (IBS 反復) の後で emittance_rules を再計算するので 2 重に時間がかかる (ESRF で +10 s)。
+   INTRA ON の `Emittance[]` は run_emit (IBS 反復) の後で emittance_rules を再計算するので 2 重に時間がかかる (3564 要素のリングで +10 s)。
 8. 挙動が変わったもの (SAD に合わせた結果、既存スクリプトに影響しうる): `Twiss["GX"/"GY"]` はエラー (γ は `GMX`/`GMY`)、
    `Emittance[]` の既定の戻りから `EquilibriumBeamMatrix`/`OneTurnTransferMatrix` が消えた (mode≥1 のみ)、`Emittance[]` が EMITX 等を書き換えなくなった (`SaveEMIT->True` で書く)、
    `run_sad` 経由では文のエラーを表示して続行、`LINE["LENGTH", loc]` は narg エラー、`MINCOUP` の既定が 0.01。
 9. track6n に MULT/SOL を統合したので、DynamicApertureSurvey (dapert.py) も MULT/SOL を含むラティスで numba が使えるようになったが、
    その DA の SAD との照合 (損失周の la の扱いを含む) は未実施 (単体テストは track6 との座標・seed 一致と損失判定の動作確認のみ)。
-10. `<work-esrf>/calc_RadInt.sad` などの旧 `.pysad.out` は統合前のコードの出力 (calc_RadInt は途中で TypeError で止まっていた) で、今回の再実行結果とは別物。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: 本文は 10/15 の ffscmd への接続の記録。11/14 以後は ffscmd に COORD・TCAVI・UND・MULT・SOL・MAP・DELCOR・CSR・POL・RADLIGHT などの接続が足された (各文書 docs/23〜35 と work_unimpl.md)。EMIT 失敗時の NaN の扱いは変化なし。

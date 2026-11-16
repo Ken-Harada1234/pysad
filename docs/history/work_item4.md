@@ -1,5 +1,7 @@
 # 作業ログ: item4 (SADScript 関数・CHROMATICITY・REPEAT/UNTIL/IF・CalculateOptics・2 段目フィット) (2026-10-15〜16)
 
+最終更新: 2026-11-16
+
 担当: pysad/sadscript.py, pysad/sadlist.py (新規), pysad/tsvd.py (新規), pysad/ffscmd.py, pysad/match6.py, pysad/lattice.py。
 方針: 1 項目ずつ SAD (WSL の `gs`) で参照出力を取り、pysad の出力と突き合わせる。各項目の前後で回帰
 (`QUICK=1 run_regression.py`、`pytest` 57 本、13a/16a の全実行) を取り、変化がないことを確認した。
@@ -66,7 +68,7 @@ pytest 57 pass。13a は PASS* (TWB 4.7e-8、既知)、16a は PASS* (DA の損�
   - 六極 (MULT の K2 も): `ξx = (βx(i)ηx(i)+βx(i+1)ηx(i+1))·K2/2`、`ξy = -(βy(i)ηx(i)+βy(i+1)ηx(i+1))·K2/2` (垂直の分散は使わない)
   - 六極単独の ξy は Fortran の代入 (`xiy=-(..)*v*.5`) なので K2=0 のとき `-0.000` と出る (MULT は足し込みなので出ない)。
 - pysad: `ffscmd.py` に `chro_cmd` を追加 (`CHRO`/`CHROMATICITY` の略記を `_abbrev` で受理。従来は「未対応」と警告して無視)。
-- 照合: `bench_level24b.sad` (pysad/tests/kek-ls_v03_12.lat 連結、`CELL; CALC; CHROMATICITY;`): 要素 960 行 + ヘッダ + TOTAL の 962 行が**文字列で全行一致** (TOTAL -85.752 / 751.974)。
+- 照合: `bench_level24b.sad` (<試験用ラティス>.lat 連結、`CELL; CALC; CHROMATICITY;`): 要素 960 行 + ヘッダ + TOTAL の 962 行が**文字列で全行一致** (TOTAL -85.752 / 751.974)。
   `bench_level24b2.sad` (小リング: QUAD/SEXT/MULT(K1,K2)/BEND、DP0=0.002 での 2 回目も): 244 行すべて一致 (MULT 経路の検証)。
 
 ---------------------------------------------------------------------------------------------------
@@ -99,17 +101,17 @@ pytest 57 pass。13a は PASS* (TWB 4.7e-8、既知)、16a は PASS* (DA の損�
     INS で初期軌道がある場合の `DZ` (Twiss["DZ"]) が SAD と 1.9 倍ずれていた (bench_level24d の D30 で発見)。
 - 照合: `bench_level24d.sad` (小リング 181 点: cell=1 全周、cell=0 で BX/AX を変えた伝搬、区間 3..9、名前で範囲指定、R1..R4 つきの初期条件、初期軌道 (DX,DPX) つき、分散つき、DP0≠0、
   不安定 (QF を強く)): 29 タグすべて数値一致 (`cmp_tags.py --num 1e-8 1e-7`。R1.. など 1e-16 級の雑音は SAD の丸め誤差)。
-  `bench_level24d2.sad` (ESRF 3564 点、idim=3 の 6 次元周期解と idim=2): 6 タグ一致 (6 次元の Twiss 28 成分 3 点とも 1e-8 以内)。
+  `bench_level24d2.sad` (3564 点のリング、idim=3 の 6 次元周期解と idim=2): 6 タグ一致 (6 次元の Twiss 28 成分 3 点とも 1e-8 以内)。
 
 ---------------------------------------------------------------------------------------------------
 
-## E. 2 段目以降のフィットの発散 (<work-pf2>/matching_v30_12_r ほか)
+## E. 2 段目以降のフィットの発散
 
 ### 症状と調べ方
-- 症状 (work_pf2_survey.md): 1 段目 (CELL、NCELL の 2 変数) は SAD と NEWTON 残差が 5 桁一致するが、2 段目 (`USE N2; ins calc; Fit MKDM EX 0 …; free Q*A*; go`、INS で 9 条件 × 11 変数) は
-  初期残差が SAD の 1e6〜1e13 倍 (1.9e23 vs 4.0e6) で `optics calculation failed`。現行コードでは失敗はしないが、残差の列が SAD と違い (初回 1.5e5 vs SAD 3.979E+06、最終 0.755 vs 0.832)、別の解に着いていた。
-- SAD の内部を見るため、スクリプトに **FitValue / FitWeight / VariableRange / VariableWeight のフック** を定義して Print させ、SAD の各反復の変数値・条件ごとの現在値・重みを取り出した
-  (`FitValue[loc_,fn_,{id_,dp_},goal_,now_]:=(Print[..];goal)`、VariableRange は `Null` を返して dlim に影響しないようにする)。pysad でも同じ出力を取って比較した (<work-pf2>/e2.sad)。
+- 症状: 1 段目 (CELL、2 変数) は SAD と NEWTON 残差が 5 桁一致するが、2 段目 (`USE N2; ins calc; Fit MKDM EX 0 …; free Q*A*; go`、INS で 9 条件 × 11 変数) は
+  初期残差が SAD と大きく違い (1e6〜1e13 倍の差)、残差の列も別の解に着いていた。
+- SAD の内部を見るため、台本に **FitValue / FitWeight / VariableRange / VariableWeight のフック** を定義して Print させ、SAD の各反復の変数値・条件ごとの現在値・重みを取り出した
+  (`FitValue[loc_,fn_,{id_,dp_},goal_,now_]:=(Print[..];goal)`、VariableRange は `Null` を返して dlim に影響しないようにする)。pysad でも同じ出力を取って比較した。
 - 比較の結果、**初期の条件値 (9 条件) と、SAD の 1 歩目の変数値での条件値は pysad と 10 桁一致** (光学の計算は正しい)。違ったのは (1) 重み、(2) 1 歩目の Newton の解。
 
 ### 原因と修正 (4 つ)
@@ -121,24 +123,19 @@ pytest 57 pass。13a は PASS* (TWB 4.7e-8、既知)、16a は PASS* (DA の損�
    2 重対角化 (Householder/Givens) の後、対角要素の最小値が `anorm*eps` を超えれば **特異値を一つも落とさずに** 2 重対角系を直接解く (quick path)。numpy 版 (特異値 ≤ 1e-6·最大 を落とす最小ノルム解) とは
    この問題で解が大きく違い、SAD の 1 歩目は条件をほぼ完全に満たす (残差 5e9 → 0.53) 大きな歩だった。
    → `pysad/tsvd.py` (新規) に tsvd の svd=.false. の経路 (quick path と暗黙 QR + 滑らかな減衰 w=(s·v/anorm²)²) を直訳。良条件の行列では numpy の pinv と 1e-14 で一致 (n<m, n=m, n>m)。
-   pf2 の J で SAD の 1 歩目の K1 変化 (10 桁) を再現する (`pysad/tests/test_item4.py` と `data_tsvd_sad.npz`)。環境変数 `PYSAD_TSVD_NUMPY=1` で従来の numpy 版に戻せる。
+   SAD の 1 歩目の K1 変化 (10 桁) を再現する (`pysad/tests/test_item4.py` と `data_tsvd_sad.npz`)。環境変数 `PYSAD_TSVD_NUMPY=1` で従来の numpy 版に戻せる。
 3. **INS のフィットが数値微分だった** (`Matcher._analytic_unsupported` が「INS は未検証」で全体を中心差分にしていた): SAD は INS でも解析微分 (tffsqu→qdcell→qdtwis、cell=False で周期解の補正なし) を使う
    (数値微分は `FFS$NumericalDerivative` のときだけ。SAD の INS 数値微分は `qtwiss Overflow (fb)` で壊れるので比較にも使えない)。
    match6d の解析微分は cell=False に対応していたので制限を外した (`PYSAD_INS_NUMERIC=1` で数値微分に戻せる)。tune_sv の 2 段目は 100 反復以上 SAD と同じ列になった (数値微分では 55 行目から 1e-5 ずれていた)。
 4. フィットの条件フック: SAD は `FitValue[component, function, {id_,dp_}, goal_, now_]` (2 点条件は `FitValue[comp1, comp2, fn, {id,dp}, goal, now1, now2]`)、`FitWeight[comp, fn, {id_,dp_}, w_]` を呼ぶ。
    pysad は dp を裸の実数で渡していたため `{_,dp_}` のパターンに一致せずフックが呼ばれていなかった → `[0.0, dp]` のリスト (id は通常 0) で渡す。
-   **VariableRange[element, keyword, v_]** と **VariableWeight[element, keyword, v_]** (tffsvarfun) を実装 (従来は未実装で無視。ユーザースクリプトの 81 ファイルが使う)。VariableRange が実数を返せば dlim が真になり、
+   **VariableRange[element, keyword, v_]** と **VariableWeight[element, keyword, v_]** (tffsvarfun) を実装 (従来は未実装で無視)。VariableRange が実数を返せば dlim が真になり、
    反復の終わりに範囲に収め直す。0/偽なら変更前の値に戻す。`{min,max}` なら範囲を狭める。
 - 副産物: `fmt_g` の 1PG11.4 で整数に近い値を `1080.` と出す (従来は `1080`)、`CALC` で光学が計算できないとき Python の RuntimeError で全体が止まっていたのを、`*****qcod---> Overflow ...` を出してエラーの文として続行するように。
 
-### 結果 (SAD の `*_r.sad.out` との比較: <work-pf2>/*.E3*.out、cmpfit.py)
-| スクリプト | 結果 |
-|---|---|
-| matching_v30_12_r (NCELL → N2 → RING) | NEWTON/Residual 13 行が SAD と一致 (`6.1874E+04` と `6.1875E+04` の末尾 1 桁の丸めのみ)。最終 `Print` の νx=12.0851271700, νy=6.7307624317 一致。238 s |
-| matching_v31_23_r | 1 段目 Matched 2.6724E-11、2 段目 1.3019E-12 (SAD 1.3022E-12)、最終 Residual 2.1319E-08 が一致 (従来は 2 段目が別解)。318 s |
-| tune_sv_v30_24_1 | 2 段目 (12 変数) は **SAD と反復表が全行一致** (10/16 に解消: 113 反復目の DESCEND の分岐は、モード切替後に重みを計算し直す `wcal=chgmod` の欠落が原因で、丸めではなかった。docs/history/work_descend.md)。最終 Residual 1.8569E-02。 続く `USE RING` の `cell calc` は SAD でも不安定 (Vertical Unstable) だが pysad は例外で全体が止まっていた → 続行するよう修正 |
-| chrom_r (FITP、FREE S*) | 173 s で完走、Residual 7.9187E-08 (SAD の 1 反復 7.9e-8 と同じ) |
-| matching02_r (NCELL, 変数 1 個の解なし) | 不変 (最終 Residual 4.069 vs SAD 4.072。`fact` の列が違う別件: work_integration.md §2) |
+### 結果
+- INS の 2 段目のフィットの反復表が SAD と全行一致した (12 変数の例)。113 反復目の DESCEND の分岐は、モード切替後に重みを計算し直す `wcal=chgmod` の欠落が原因で、丸めではなかった (10/16 に解消。docs/history/work_descend.md)。
+- `USE RING` の `cell calc` が SAD でも不安定 (Vertical Unstable) になる場合に、pysad は例外で全体が止まっていたのを続行するよう修正した。
 - 回帰: QUICK=1 + 13a + 16a (全 21 ベンチ) FAIL 1 (3c の EMITY、既存)、13a の TWB 4.74e-8 も不変 (tsvd は 13a の良条件の J では numpy と同じ解)。pytest 63 pass (新規 test_item4.py 6 本)。
 
 ---------------------------------------------------------------------------------------------------
@@ -185,3 +182,7 @@ pytest 57 pass。13a は PASS* (TWB 4.7e-8、既知)、16a は PASS* (DA の損�
 `PYTHONIOENCODING=utf-8 python run_regression.py` 全 28 ベンチ (既存 21 + 新規 24a/24b/24b2/24c/24d/24d2/24f): FAIL 1 (3c の Emittance[] EMITY 5.29e-16 / 許容 3e-16 — 作業前から同じ)、
 KNOWN は作業前と同じ (3c EX/EPX、13a TWB、14a dz、16a DA の損失周数 ±1)。13a/14a/16a の出力は作業前と差なし、13b は 1e-14 級の雑音の桁のみ。pytest 63 pass。
 参照用ファイルの整理: 調査用の probe スクリプトと SAD の出力は `probes_item4/` に移した (`lat_extra.sad` は bench_level24f が GetMAIN で読むのでルートに残す)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 確認: 変化なし。根拠: この話題の記述は work_unimpl.md と docs/20〜35 に出てこない (grep で確認)、関係するモジュールに 11/06 以後この話題の変更の記録がない。この文書は 11/06 時点の記録のまま。

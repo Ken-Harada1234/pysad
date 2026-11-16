@@ -34,6 +34,12 @@ _GMIN = -0.999999        # photons.f module tspin の gmin (tradkn の max(gmin,
 # 乱数 (SAD 既定プラグイン "SAD")。FLUC の追跡はここから引く。track_particles(seed=...) で SeedRandom[seed] 相当
 RNG = SadRandom(17)
 _FLUC = False            # rfluct (RAD と FLUC が ON)
+_POL = False             # calpol (POL と RAD が ON): 粒子ごとのスピンを追う (tradk の sprot、bsi)
+_RADPOL = True           # radpol (放射による偏極 Sokolov-Ternov)
+_GSPIN = 0.001159652181280002      # tspin: g-2 (spin.GSPIN と同じ)
+_CL = 1.0 + _GSPIN
+_PST = 8.0 * math.sqrt(3.0) / 15.0
+_CFPD = 5.0 * math.sqrt(3.0) / 8.0
 
 
 # ---------------------------------------------------------------------------
@@ -81,6 +87,8 @@ class _Particle:
         self.c = c
         self.ph = ph
         self.dv = ph.dv(c[5])          # tconvm (dv = ... + dvfs: ph.dv が dvfs を含む)
+        self.s = np.array([0.0, 0.0, 1.0])     # スピン (sx, sy, sz)。POL のときだけ使う
+        self.bsi = 0.0                          # kradlib bsi (磁場の縦成分の積分: tradk のスピン歳差に使う)
         self.setr0()
 
     def setr0(self):
@@ -96,10 +104,54 @@ class _Particle:
         return c
 
 
+def _sprot(p, pxm, pym, bx0, by0, bz0, bsi, h, pp, ucde, cphi0, sphi0):
+    """photons.f sprot: 1 粒子のスピン歳差 (磁場の方向 (bx0, by0, bz0) = 運動量の変化、bsi = 縦の磁場)。
+    K64 のまま: 最後の sx 更新の後の sz は更新後の sx を使う"""
+    s = p.s
+    sx, sy, sz = s[0], s[1], s[2]
+    pzm = 1.0 + _pxy2dpz(pxm, pym)
+    bx = bx0 / pzm
+    by = by0 / pzm
+    bz = bz0 / pzm + bsi
+    bp = bx * pxm + by * pym + bz * pzm
+    blx = bp * pxm
+    bly = bp * pym
+    blz = bp * pzm
+    btx = bx - blx
+    bty = by - bly
+    btz = bz - blz
+    ct = 1.0 + h * _GSPIN
+    gx = ct * btx + _CL * blx
+    gy = ct * bty + _CL * bly
+    gz = ct * btz + _CL * blz
+    if ucde > 0.0 and _RADPOL:
+        bt = math.sqrt(btx**2 + bty**2 + btz**2)
+        if bt != 0.0:
+            st = (sx * btx + sy * bty + sz * btz) / bt
+            dst = (_PST - st) * _CFPD * (pp * p.ph.p0 / h**2)**2 * ucde / bt
+            sx = sx + dst * btx
+            sy = sy + dst * bty
+            sz = sz + dst * btz
+    g = math.sqrt(gx**2 + gy**2 + gz**2)
+    if g != 0.0:
+        sinu, _xs, cosu, dcosu = _xsincos(g)
+        sw = -(sx * gx + sy * gy + sz * gz) * dcosu / g**2
+        sinu = sinu / g
+        sux = sy * gz - sz * gy
+        suy = sz * gx - sx * gz
+        suz = sx * gy - sy * gx
+        sx, sy, sz = cosu * sx + sinu * sux + sw * gx, cosu * sy + sinu * suy + sw * gy, cosu * sz + sinu * suz + sw * gz
+    sx = sx * cphi0 + sz * sphi0
+    sz = (sz - sx * sphi0) / cphi0
+    s[0], s[1], s[2] = sx, sy, sz
+
+
 def _tradk(p: _Particle, al, phi0):
     """photons.f kradlib tradk → tradkn (rfluct=F, calpol=F)。最後に基準点を更新。"""
     _tradk_core(p, al, phi0)
     p.setr0()
+    if _POL:
+        p.bsi = 0.0                    # tradk: calpol なら bsi=0
 
 
 def _tradk_core(p: _Particle, al, phi0):
@@ -131,6 +183,8 @@ def _tradk_core(p: _Particle, al, phi0):
         if _FLUC:
             dph, r1, r2, an = tdusrn(RNG, anp)
             if an == 0.0:
+                if _POL:
+                    _sprot(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, p.bsi, h1, pp, 0.0, cphi0, sphi0)
                 return
             rho = al1 / theta
             uc = ph.cuc * h1**3 / ph.p0 / rho
@@ -141,6 +195,7 @@ def _tradk_core(p: _Particle, al, phi0):
             ddpy = -r1 * dpy * dg
             c[0] += r2 * ddpx * al1
             c[2] += r2 * ddpy * al1
+            ucde = uc * de
         else:
             uc = ph.cuc * h1**3 / ph.p0 * theta / al1
             de = _e.CAVE * anp * uc
@@ -150,6 +205,7 @@ def _tradk_core(p: _Particle, al, phi0):
             ddpy = -0.5 * dpy * dg
             c[0] += ddpx * al1 / 3.0
             c[2] += ddpy * al1 / 3.0
+            ucde = uc * de
         c[1] += ddpx
         c[3] += ddpy
         pr = 1.0 + c[5]
@@ -157,6 +213,8 @@ def _tradk_core(p: _Particle, al, phi0):
         h2 = _e._p2h(p2)
         p.dv = -c[5] * (1.0 + pr) / h2 / (h2 + p2) + ph.dvfs       # SAD のまま (h2+p2)。+dvfs (tradkn)
         c[4] = c[4] * p2 / h2 * h1 / pp
+        if _POL:
+            _sprot(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, p.bsi, h1, pp, ucde, cphi0, sphi0)
 
 
 # ---------------------------------------------------------------------------
@@ -214,7 +272,7 @@ def _tzsetparam0(dp, aln0, akk):
     return w1, s1, xs1, dc1, sh2, xsh2, dch2
 
 
-def _tsolqu(p: _Particle, al, ak, eps0=0.0, ak0x=0.0, ak0y=0.0, qum=False):
+def _tsolqu(p: _Particle, al, ak, eps0=0.0, ak0x=0.0, ak0y=0.0, qum=False, ibsi=-1):
     """tsolqu.f tsolqu / tsolqum (bz=0, 放射なし)。ak = |K1|L > 0。ak0x/ak0y は MULT の K0 (dx0 = ak0x/ak)。
     ak = 0 なら tdrift (ak0 付きの厳密ドリフト)。
     qum=True は tsolqum (tmulti の放射なしで使う版): z の dv の項が tsolqu と違い
@@ -232,6 +290,11 @@ def _tsolqu(p: _Particle, al, ak, eps0=0.0, ak0x=0.0, ak0y=0.0, qum=False):
     w1, s1, xs1, dc1, sh2, xsh2, dch2 = _tzsetparam0(c[5], aln0, akk)
     x, px, y, py, z = c[0], c[1], c[2], c[3], c[4]
     dv = p.dv
+    if _POL:
+        if ibsi == 1:
+            p.bsi = akk * (x + dx0) * (y + dy0)
+        elif ibsi >= 0:
+            p.bsi = 0.0
     for n in range(ndiv):
         pxi, pyi = px, py
         ap = pxi**2 + pyi**2
@@ -266,22 +329,34 @@ def _tsolqu(p: _Particle, al, ak, eps0=0.0, ak0x=0.0, ak0y=0.0, qum=False):
     y += py * r
     z -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
     c[0], c[1], c[2], c[3], c[4] = x, px, y, py, z
+    if _POL and ibsi == 2:
+        p.bsi = -akk * (x + dx0) * (y + dy0)
 
 
-def _tdrift_kick(p: _Particle, al, ak0x, ak0y, enarad):
-    """tdrift.f tdrift (bz=0, ak0x/ak0y ≠ 0): 一定の双極キック付きの厳密ドリフト (tsolconv)。
+def _tdrift_kick(p: _Particle, al, ak0x, ak0y, enarad, bz=0.0):
+    """tdrift.f tdrift (ak0x/ak0y ≠ 0): 一定の双極キック付きの厳密ドリフト (tsolconv)。bz≠0 は SOL 領域内 (BEND の直線は tdrift(al, bzs, phiy, phix))。
     内部座標 px/(1+δ)。放射は tradk1 (基準 px0, py0, z0 = 入口)。"""
     if ak0x == 0.0 and ak0y == 0.0:
-        _tdrift_free(p, al)
+        if bz == 0.0:
+            _tdrift_free(p, al)
+        else:
+            _tdrift_solenoid(p, al, bz, enarad)
         return
     c = p.c
-    b = math.hypot(ak0x, ak0y)
+    if enarad and _POL:
+        p.bsi = 0.0
+    b = math.sqrt(ak0x**2 + ak0y**2 + (bz * al)**2)
     phix = ak0y / b
     phiy = ak0x / b
-    phiz = 0.0
+    phiz = bz * al / b
     dphizsq = phix**2 + phiy**2
     pr = 1.0 + c[5]
     alb = al * pr / b
+    bsi0 = bz * al + ak0x * c[2] + ak0y * c[0]
+    bzp = bz / pr
+    if bz != 0.0:
+        c[1] = c[1] + bzp * c[2] * 0.5
+        c[3] = c[3] - bzp * c[0] * 0.5
     px0, py0, z0 = c[1], c[3], c[4]
     dpz0 = _pxy2dpz(c[1], c[3])
     pz0 = 1.0 + dpz0
@@ -306,12 +381,14 @@ def _tdrift_kick(p: _Particle, al, ak0x, ak0y, enarad):
     px1 = px0 + ptx * dcosphi + pbx * sinphi
     py1 = py0 + pty * dcosphi + pby * sinphi
     if enarad:
+        if _POL:
+            p.bsi += bsi0 - ak0x * c[2] - ak0y * c[0]          # tdrift: bsi += bsi0 − ak0x·y − ak0y·x (bz=0 なので bsi0 = ak0x·y0 + ak0y·x0)
         c[1], c[3] = px1, py1
         p.pxr0, p.pyr0, p.zr0 = px0, py0, z0
         _tradk_core(p, al, 0.0)
         px1, py1 = c[1], c[3]
-    c[1] = px1
-    c[3] = py1
+    c[1] = px1 - bzp * c[2] * 0.5
+    c[3] = py1 + bzp * c[0] * 0.5
 
 
 def _ndivrad(phi, ak, bz, eps, h0, trpt=False):
@@ -334,6 +411,8 @@ def _tsolqur_ens(parts, al, ak, eps0=0.0):
         for p in parts:
             c = p.c
             w1, s1, xs1, dc1, sh2, xsh2, dch2 = _tzsetparam0(c[5], aln, akk)
+            if _POL:
+                p.bsi = akk * c[0] * c[2] if n == 0 else 0.0
             ap = c[1]**2 + c[3]**2
             dpz = _sqrt1(-ap)
             r = -dpz / (1.0 + dpz) * alr
@@ -353,6 +432,8 @@ def _tsolqur_ens(parts, al, ak, eps0=0.0):
             c[4] = (c[4] - 0.25 * (w1 * (xi**2 * xs1 - yi**2 * xsh2) + (b**2 + d**2) * aln
                                    + u1 * (u2 + b) + xi * b * dc1 + v1 * (v2 + d) + yi * d * dch2)
                     - p.dv * aln)
+            if _POL and n == ndiv - 1:
+                p.bsi = -akk * c[0] * c[2]
         for p in parts:
             _tradk(p, aln, 0.0)
     for p in parts:
@@ -409,6 +490,19 @@ def _tqlfr(p: _Particle, a1, b1):
     c[3] = pyf
 
 
+def _spin_rot_z(p, chi3, ent):
+    """tsolrot の calpol (chi1=chi2=0): スピンを z 軸まわりに chi3 回す (入口)、逆に戻す (出口)。trot33"""
+    if _POL and chi3 != 0.0:
+        c3, s3 = math.cos(chi3), math.sin(chi3)
+        sx, sy = p.s[0], p.s[1]
+        if ent:
+            p.s[0] = c3 * sx - s3 * sy
+            p.s[1] = s3 * sx + c3 * sy
+        else:
+            p.s[0] = c3 * sx + s3 * sy
+            p.s[1] = -s3 * sx + c3 * sy
+
+
 def _tquad_ens(parts, el, krad):
     """tquad.f tquad (bz=0)。全粒子をまとめて (放射ありは tsolqur の順で)。
     ROTATE は tsolrot の chi3 (theta2)、F1/F2/FRINGE は tsetfringep の係数。"""
@@ -440,8 +534,11 @@ def _tquad_ens(parts, el, krad):
         c[0] -= dx                       # tsolrot (ent): ずらす → 回す
         c[2] -= dy
         _rot(c, ct, st)
+        _spin_rot_z(p, th2, True)
         if krad:
             p.setr0()
+            if _POL:
+                p.bsi = 0.0
         if fringe and mfring > -4 and mfring != 2:
             _ttfrin4(p, ak, L)
         if mfring in (1, 3):
@@ -467,6 +564,7 @@ def _tquad_ens(parts, el, krad):
     for p in parts:
         c = p.c
         _rot(c, ct, -st)                 # tsolrot (exit): 回し戻す → ずらし戻す
+        _spin_rot_z(p, th2, False)
         c[0] += dx
         c[2] += dy
 
@@ -699,8 +797,9 @@ def _tthin_sext(p: _Particle, el, krad):
 # ---------------------------------------------------------------------------
 
 def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fringe,
-               cosw, sinw, sqwh, sinwp1, krad, alr, bp):
-    """tbend.f tbendcore。bp = (rhob, rho0, drhob, fb1, fb2) (tbendcom のモジュール変数)。"""
+               cosw, sinw, sqwh, sinwp1, krad, alr, bp, bsi1=0.0, bsi2=0.0):
+    """tbend.f tbendcore。bp = (rhob, rho0, drhob, fb1, fb2) (tbendcom のモジュール変数)。
+    bsi1, bsi2: POL の bsi の入口・出口の寄与 (最初・最後のスライスで 1)"""
     rhob, rho0, drhob, fb1, fb2 = bp
     if (mfring > 0 or mfring == -1) and fb1 != 0.0:
         dxfr1 = fb1**2 / rhob / 24.0
@@ -725,6 +824,8 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     cosp1p2 = cosp1 * cosp2
     smin = 1e-4
     c = p.c
+    if _POL:
+        p.bsi += bsi1 * c[2] / rhob
     dp = c[5]
     pp = 1.0 + dp
     pinv = 1.0 / pp
@@ -798,6 +899,8 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     c[2] = y3 + py4 * dz4
     c[3] = py4
     c[4] = z4 - dz4
+    if _POL:
+        p.bsi -= bsi2 * c[2] / rhob
     if krad:
         _tradk(p, alr, phi0)
 
@@ -1000,6 +1103,8 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     alc = al
     if krad:
         p.setr0()
+        if _POL:
+            p.bsi = 0.0
         if first and fb1 != 0.0:
             f1r = 0.5 * fb1
             n1 = -1
@@ -1047,12 +1152,16 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         _tbendicorr(m, (akxn[n] + akx0) * 0.5, (alx[n] + alx0) * 0.5, (phixn[n] + phix0) * 0.5)
         akx0, alx0, phix0 = akxn[n], alx[n], phixn[n]
         _tbendibody(m, alx0)
+        if krad and _POL:
+            p.bsi += akxn[n] / alx[n] * m.xi * m.yi          # tbendi: bsi(i) += akxn(n)/alx(n)·xi·yi
         if krad and n != n2:
             # tradk1 (cphi0 = cos(phixn(n)))。dp, dv(i) が更新される
             c[0], c[1], c[2], c[3], c[4], c[5] = m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp
             _tradk_core(p, alr[n], phixn[n])
             m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp = c[0], c[1], c[2], c[3], c[4], c[5]
             p.setr0()
+            if _POL:
+                p.bsi = 0.0
     _tbendicorr(m, akx0 * 0.5, alx0 * 0.5, phix0 * 0.5)
     m.zi = m.zi - p.dv * al
     px = m.pxi + tanp2 * m.xi / m.rhoe
@@ -1313,7 +1422,7 @@ def _tbend0_ens(parts, el, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2,
     if n1 == n2:
         for p in parts:
             _tbendcore(p, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fringe,
-                       cosw, sinw, sqwh, sinwp1, krad, al, bp)
+                       cosw, sinw, sqwh, sinwp1, krad, al, bp, 1.0, 1.0)
         return
     # tbendr
     aln = (al - f1r - f2r) / ndiv
@@ -1338,7 +1447,8 @@ def _tbend0_ens(parts, el, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2,
             sinwpn = math.sin(phi0n - psi2n)
         for p in parts:
             _tbendcore(p, alx, phi0n, cosp1n, sinp1n, cosp2n, sinp2n, mfr1, fringe,
-                       coswn, sinwn, -sqwhn, sinwpn, False, alr, bp)
+                       coswn, sinwn, -sqwhn, sinwpn, False, alr, bp,
+                       1.0 if n == n1 else 0.0, 1.0 if (n == n2 and n != n1) else 0.0)
         for p in parts:
             _tradk(p, alr, phi0n)
 
@@ -1583,11 +1693,20 @@ def _tmulti_ens(parts, el, krad):
     al1 = al * wi * 0.5
     ak01 = akr0 * wi * 0.5
     akrm = [a * wi for a in akr]
+    ibsi = 1
     for m in range(1, ndiv + 1):
         if nz:
             for p in parts:
-                _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=not krad)   # 放射なしは tsolqum
+                _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=not krad, ibsi=ibsi)   # 放射なしは tsolqum
+            ibsi = 0
             if krad:
+                if m == 1 and _POL:
+                    for p in parts:               # tmulti: bsi(i) += Im(.5·cx·cx1²)/al (cx は akr(n)·cx1·aninv(n+1) の和)
+                        cx1 = complex(p.c[0], p.c[2])
+                        cx = 0j
+                        for n in range(nmmax, 1, -1):
+                            cx = (cx + akr[n]) * cx1 / (n + 1)
+                        p.bsi += (0.5 * cx * cx1**2).imag / al
                 for p in parts:
                     _tradk(p, al1, 0.0)
             wm = wi * 0.5 if m == ndiv else wi
@@ -1616,13 +1735,20 @@ def _tmulti_ens(parts, el, krad):
                 c[3] += cx.imag
     if nz:
         for p in parts:
-            _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=not krad)
+            _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=not krad, ibsi=2)
         if fringe:
             for p in parts:
                 for n in range(nmmax, -1, -1):
                     if dofr[n]:
                         _ttfrins(p, n * 2 + 2, -akr[n], al)
         if krad:
+            if _POL and nmmax >= 2:
+                for p in parts:                   # tmulti: bsi(i) −= Im(.5·cx·cx1²)/al
+                    cx1 = complex(p.c[0], p.c[2])
+                    cx = akr[nmmax] * cx1 / (nmmax + 1)
+                    for n in range(nmmax - 1, 1, -1):
+                        cx = (cx + akr[n]) * cx1 / (n + 1)
+                    p.bsi -= (0.5 * cx * cx1**2).imag / al
             for p in parts:
                 _tradk(p, al1, 0.0)
     for p in parts:                      # tsolrot (exit)
@@ -1672,6 +1798,8 @@ def _tsfrin(p: _Particle, dbz):
 def _tdrift_solenoid(p: _Particle, al, bz, enarad):
     """tdrift.f tdrift_solenoid"""
     c = p.c
+    if enarad and _POL:
+        p.bsi = 0.0
     pr = 1.0 + c[5]
     bzp = bz / pr
     pxi = c[1] + bzp * c[2] * 0.5
@@ -1689,6 +1817,8 @@ def _tdrift_solenoid(p: _Particle, al, bz, enarad):
     py1 = -a24 * pxi + a22 * pyi
     if enarad:
         # tradk1 (cphi0=1, sphi0=0) で基準は (pxi, pyi, zi)
+        if _POL:
+            p.bsi = bz * al
         c[1], c[3] = px1, py1
         p.pxr0, p.pyr0, p.zr0 = pxi, pyi, zi
         _tradk_core(p, al, 0.0)
@@ -1815,6 +1945,9 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
             tz = _TZ(c[5], aln0, akk, bz)
             tzs[ip] = tz
             bzp = tz.bzp
+            if krad and _POL:
+                alr_ = aln0 * 0.5 if n == 0 else aln0
+                p.bsi = (akk * c[0] * c[2] + bzp * alr_) if n == 0 else bzp * alr_
             ap = c[1]**2 + c[3]**2
             dpz = _sqrt1(-ap)
             r = -dpz / (1.0 + dpz) * aln0
@@ -1847,6 +1980,8 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
             dz2 = tz.tztafs(-dwu, -pyi, pxi, tz.aw2, -tz.w12, ws, -wss, tz.g2)
             c[4] = (c[4] + bzp * (-((awu * dwu * tz.dxs**2) / tz.akkp) + tz.ca1 * pxi * pyi * wss)
                     + dz1 + dz2 - aln0 * p.dv)
+            if krad and _POL and n == ndiv - 1:
+                p.bsi = -akk * c[0] * c[2] + bzp * aln0 * 0.5
         if krad:
             for p in parts:
                 _tradk(p, aln0, 0.0)
@@ -1950,6 +2085,8 @@ def _tsol_region(parts, elements, i, rad):
                 for p in parts:
                     _tsfrin(p, bz1 - bzs)
             bzs = bz1
+        elif name == 'BeamBeam':
+            raise NotImplementedError('track6: ソレノイド領域内の BEAMBEAM は未対応 (K64 の tsol が落ちる)')
         elif el.L == 0.0:
             continue
         else:
@@ -1974,6 +2111,16 @@ def _step_el(p: _Particle, el, trf0, rfsw, rad):
         _tthin_sext(p, el, rad and _g(el, 'RAD') == 0.0 and el.L != 0.0)
     elif name == 'Cavity':
         _tcav(p, el, trf0, rfsw, rad)
+    elif name == 'BeamBeam':
+        raise NotImplementedError('track6: BEAMBEAM は track6n (高速追跡) だけが扱う')
+    elif name == 'Coord':
+        raise NotImplementedError('track6: COORD は track6n (高速追跡) だけが扱う')
+    elif name == 'TCavity':
+        raise NotImplementedError('track6: TCAVI は track6n (高速追跡) だけが扱う')
+    elif name == 'Undulator':
+        raise NotImplementedError('track6: UND は track6n (高速追跡) だけが扱う')
+    elif name == 'PhsRot':
+        raise NotImplementedError('track6: PHSROT は K64 で動作しない (docs/19 B38)')
     elif el.L == 0.0:
         return          # MARK など
     else:
@@ -2011,7 +2158,7 @@ def _tturn1(parts, elements, trf0, rfsw, rad):
 def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
                     trf0: float = 0.0, rfsw: bool = True, rad: bool = False, fluc: bool = False,
                     seed=None, charge: float = 1.0, amass: float = None, progress: int = 0,
-                    fshift: float = 0.0, circ: float = None) -> np.ndarray:
+                    fshift: float = 0.0, circ: float = None, spins=None, radpol: bool = True):
     """TrackParticles[{1, coords}, 1, 1, nturn] 相当 (始点 = 終点 = ラティスの先頭)。
     coords: (np, 6) の {x, px/p0, y, py/p0, z, δ}。nturn 周後の座標を返す。
     trf0: Emittance[] (emit) で決まった同期位置 (SAD の global trf0)。
@@ -2019,7 +2166,7 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
     (None なら RNG の現在の状態から続ける)。progress>0 なら progress 周ごとに経過を表示。
     SAD と同じく全粒子を要素ごとに進めるので、粒子の並びが結果に影響する場合 (ソレノイド内の
     放射あり四極) も、乱数を引く順番 (FLUC) も SAD と同じになる。"""
-    global _FLUC
+    global _FLUC, _POL, _RADPOL
     if circ is None:                                        # 区間追跡 (TrackParticles の ls→ld) では全周長を渡す
         circ = sum(el.L for el in elements)
     kw = {} if amass is None else {'amass': amass}
@@ -2028,9 +2175,14 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
     if seed is not None:
         RNG.restore(seed)
     _FLUC = bool(rad and fluc)
+    _POL = bool(spins is not None and rad)        # calpol: スピンは RAD が ON のときだけ動く (tradk の中で歳差)
+    _RADPOL = bool(radpol)
     t0 = time.time()
     out = np.array(coords, dtype=float).copy()
     parts = [_Particle(out[ip], ph) for ip in range(out.shape[0])]
+    if spins is not None:
+        for ip, p in enumerate(parts):
+            p.s = np.array(spins[ip], dtype=float)
     try:
         for it in range(nturn):
             try:
@@ -2047,8 +2199,11 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
                 sys.stdout.flush()
     finally:
         _FLUC = False
+        _POL = False
     for ip, p in enumerate(parts):
         out[ip] = p.out()
+    if spins is not None:
+        return out, np.array([p.s for p in parts])
     return out
 
 

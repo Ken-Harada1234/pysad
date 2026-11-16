@@ -27,7 +27,7 @@ from . import lattice as _lat
 from .lattice import TwissRow
 from .match6 import Matcher, _FUNS, _sad_get, _sad_set, _PER_LENGTH, PI2
 from .sadrandom import SadRandom
-from .sadscript import Interp, Sym, Rule, Null, Expr, SADError, S, fmt_real, is_num, _Lit, truthy
+from .sadscript import _is_pattern, Interp, Sym, Rule, Null, Expr, SADError, S, fmt_real, is_num, _Lit, truthy
 
 # SAD の要素型コード (idtype)
 # Twiss["*"] の並び (tffs.f tffitcode: mfitax=1 .. mfitzpy=ntwissfun=28)
@@ -79,13 +79,13 @@ def _amap(el):
 # FFS のフラグ (tffs.f fname/sino)。値は initb1.f の既定
 # RFSW の既定は True (track.f:146-148: FFS 進入時に trpt=.false., rfsw=.true. に強制)
 _FLAGS_DEFAULT = {'TRPT': False, 'CELL': False, 'RFSW': True, 'RAD': False, 'FLUC': True, 'RADCOD': False, 'RADTAPER': False,
-                  'CALC6D': False, 'KEEPEXP': False, 'CALEXP': True, 'EMIOUT': False, 'CODPLOT': False, 'COD': True, 'INTRA': False,
+                  'CALC6D': False, 'KEEPEXP': True, 'CALEXP': True, 'EMIOUT': False, 'CODPLOT': False, 'COD': True, 'INTRA': False,
                   'POL': False, 'RADPOL': True, 'LWAKE': False, 'TWAKE': False, 'WSPAC': False, 'SPAC': False, 'SELFCOD': False,
                   'CONV': False, 'STABLE': True, 'GEOCAL': True, 'RADLIGHT': False, 'PHOTONS': False, 'LOSSMAP': False, 'SORG': False,
                   'INTRES': True, 'HALFRES': True, 'SUMRES': True, 'DIFFRES': False, 'FFSPRMPT': False, 'CONVCASE': True,
-                  'PRSVCASE': False, 'SUS': False, 'K64': True, 'GAUSS': False, 'FIXSEED': True, 'BIPOL': True, 'PSPAC': False,
+                  'PRSVCASE': False, 'SUS': True, 'K64': True, 'GAUSS': False, 'FIXSEED': True, 'BIPOL': True, 'PSPAC': False,
                   'ORBITCAL': True, 'CALOPT': True, 'DAPERT': False, 'IDEAL': False, 'FOURIER': False, 'TRACKSIZ': False,
-                  'SIMULATE': True, 'ABSW': True, 'JITTER': True, 'TRGAUSS': True, 'BARYCOD': False, 'WAKEOPT': False,
+                  'SIMULATE': True, 'ABSW': True, 'JITTER': True, 'TRGAUSS': True, 'BARYCOD': True, 'WAKEOPT': False,
                   'LOG': False, 'ECHO': False, 'DEBUG': False, 'CTIME': False, 'SMEAR': True}
 # sino (反対語): word → (flag, 値)。NO+sino は逆
 _SINO = {'RING': 'TRPT', 'INS': 'CELL', 'DAMPONLY': 'FLUC', 'CALC4D': 'CALC6D', 'UNSTABLE': 'STABLE', 'GEOFIX': 'GEOCAL',
@@ -101,7 +101,9 @@ _COMMANDS = {'USE', 'VISIT', 'BYE', 'STOP', 'EXIT', 'QUIT', 'END', 'ABORT', 'SAV
              'STAT', 'STATUS', 'SHOW', 'DRAW', 'GEO', 'MCOD', 'TCOD', 'MON', 'REC', 'RECOVER', 'INC', 'INCLUDE', 'REPEAT',
              'UNTIL', 'IF', 'ELSE', 'ENDIF', 'CHRO', 'CHROMATICITY', 'RADINT', 'BEAM', 'BEAMSIZE', 'EXPAND', 'SCALE',
              'ALIGN', 'ATT', 'ATTRIBUTE', 'GCUT', 'DP', 'DP0', 'MATRIX', 'MAT', 'RENUM', 'REV', 'REVERSE', 'ZAP', 'DIMAD',
-             'SYNCHROB', 'INTRA', 'CODPLOT', 'NOCODPLOT', 'ON', 'OFF', 'REF', 'REFERENCE', 'PRINT', 'MEASURE', 'TRC', 'TRCOD'}
+             'SYNCHROB', 'INTRA', 'CODPLOT', 'NOCODPLOT', 'ON', 'OFF', 'REF', 'REFERENCE', 'PRINT', 'MEASURE', 'TRC', 'TRCOD', 'DELC', 'DELCO', 'DELCOR',
+             'ATTR', 'VAR', 'EXEC', 'EXECUTE', 'PRI', 'SPLIT', 'OUTPUT', 'OUT', 'OUTP', 'APPEND', 'APP', 'CLOSE', 'CLO', 'TERMINATE', 'TERM',
+             'INPUT', 'IN', 'READ', 'SUSPEND', 'SUSP', 'RESUME', 'RES'}
 _ERRCMDS = {'DELX', 'DELY', 'DTHETA', 'DL', 'DK', 'DDK', 'DBEAM', 'DUMP'}
 
 
@@ -171,14 +173,46 @@ def _f107(v):
     return _ff(v, 10, 7)
 
 
-def _line9013(vals):
+def _line9013(vals, labs=('X :', 'Y :', 'Z :')):
     """temitprint 9013: 10x, 3(a, 1p g14.6, 3x) の 'X :' 'Y :' 'Z :' 行 (行末の 3x は出力されない)"""
     from .sadscript import fmt_g
 
     def g(v):
         v = float(v)
         return 'NaN'.rjust(14) if v != v else fmt_g(v, 14, 6)
-    return '          ' + '   '.join(f'{lab}{g(v)}' for lab, v in zip(('X :', 'Y :', 'Z :'), vals)) + '\n'
+    return '          ' + '   '.join(f'{lab}{g(v)}' for lab, v in zip(labs, vals)) + '\n'
+
+
+def _gwd(v, w, d):
+    """Fortran (gfortran) の 1p gw.d: 0.1<=|x|<10^d は小数 d-k 桁 (k = 整数部の桁数) の F + 4 空白、0 は '0.' + d-1 桁の 0 + 4 空白、それ以外は E 形式"""
+    v = float(v)
+    if v != v:
+        return 'NaN'.rjust(w)
+    a = abs(v)
+    if a == 0.0:
+        s = '0.' + '0' * (d - 1)
+    elif 0.1 <= a < 10.0**d:
+        k = len(str(int(a))) if a >= 1.0 else 0
+        s = f'{v:.{d - k}f}'
+    else:
+        return f'{v:.{d}E}'.rjust(w)                  # 1p の E は小数 d 桁 (gs: 4.22829E-04)
+    return (s + '    ').rjust(w)
+
+
+def _g157(v):
+    """Fortran の 1p g15.7 (gfortran): 0.1<=|x|<1e7 は小数 7-k 桁 (k = 整数部の桁数) の F + 4 空白、それ以外は 1.2345678E-02"""
+    v = float(v)
+    if v != v:
+        return 'NaN'.rjust(15)
+    a = abs(v)
+    if a == 0.0:
+        s = '0.000000'
+    elif 0.1 <= a < 1e7:
+        k = len(str(int(a))) if a >= 1.0 else 0
+        s = f'{v:.{7 - k}f}'
+    else:
+        return f'{v:.7E}'.rjust(15)
+    return (s + '    ').rjust(15)
 
 
 def _abbrev(word: str, full: str) -> bool:
@@ -251,6 +285,43 @@ def _mark_offset_value(el) -> float:
         return 0.0
 
 
+class _RadLight:
+    """RADLIGHT (tlinit.f tlinit / tlstore / tlresult): 粒子の軌道 {t, x, y, z} (GEO 座標) を要素ごとに記録する。
+    記録するのは区間の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけ (tturn.f:555。BEND と曲げのある MULT の中は記録しない: K64 のまま)。
+    geo = ls の位置の幾何 (3×4: 列 0..2 が x, y, z の軸、列 3 が位置)"""
+
+    def __init__(self, geo, ph, npart):
+        g = np.array(geo, dtype=float)
+        self.geo0 = g.copy()                 # tlinit: geo0(:,3)=geo(:,3)、位置 = geo(:,4)。軸 1・2 は書かない (common block の初期値 0 のまま: K64 の癖。
+        self.geo0[:, :2] = 0.0               # gs で確かめた: 横方向の座標は軌道に入らず、進行方向 (geo の z 軸) に沿った点だけが記録される)
+        self.t0 = 0.0
+        self.v0 = ph.p0 / ph.h0 * 299792458.0
+        self.npart = npart
+        self.pts = [[[], [], [], []] for _ in range(npart)]
+
+    def store(self, tr, dl):
+        """tlstore (dphi=0, keep=True)。dl は要素の長さ (開始点は 0)"""
+        g0 = self.geo0
+        v0 = self.v0
+        gpos = g0[:, 3] + dl * g0[:, 2]
+        gt = self.t0 + dl / v0
+        geoi = g0[:, :3]
+        S = tr.S
+        dvfs = tr.ph.dvfs
+        for s in range(tr.n if tr.S is not None else 0):
+            i = int(tr.kid[s])
+            x, y, z, dv = S[s, 0], S[s, 2], S[s, 4], S[s, 6]
+            self.pts[i][0].append(gt - z / (v0 * (1.0 - dv + dvfs)))
+            self.pts[i][1].append(float(gpos[0] + x * geoi[0, 0] + y * geoi[0, 1]))
+            self.pts[i][2].append(float(gpos[1] + x * geoi[1, 0] + y * geoi[1, 1]))
+            self.pts[i][3].append(float(gpos[2] + x * geoi[2, 0] + y * geoi[2, 1]))
+        self.geo0[:, 3] = gpos
+        self.t0 = gt
+
+    def result(self):
+        return [[[float(v) for v in row] for row in pt] for pt in self.pts]
+
+
 class FFS:
     def __init__(self, script_env, interp: Interp, out=None):
         self.env = script_env           # parser.SADEnvironment (要素定義・ビームライン)
@@ -318,7 +389,7 @@ class FFS:
         g.setdefault('MASS', 0.51099895e6)          # SAD K64 の elmass (tfstk.f, CODATA 2018)
         if 'MOMENTUM' not in g:
             m = _env_get(script_env, 'MOMENTUM')
-            g['MOMENTUM'] = float(m) if isinstance(m, (int, float)) else 1e9
+            g['MOMENTUM'] = float(m) if isinstance(m, (int, float)) else 30e9      # K64 initb1.f: RsetGL('MOMENTUM',30.d9)
         self.install(interp)
 
     # ------------------------------------------------------------------ 組み込み関数の登録
@@ -328,8 +399,17 @@ class FFS:
         B = I.builtins
         B['Twiss'] = self.fn_twiss
         B['LINE'] = self.fn_line
+        B['Master'] = self.fn_master
+
+        B['RenumberElement'] = self.fn_renumber_element
+        B['ResponseMatrix'] = self.fn_response_matrix
+        from . import corr as _corr
+        _corr.install(I)
+        from . import pkgload as _pkgload
+        _pkgload.register(I)
         from .optics_fn import OpticsFunctions
-        OpticsFunctions(self).install(B)                 # TransferMatrix, BeamMatrix, OrbitGeo, GeoBase, SymplecticJ, SurvivedParticles, AccelerateParticles
+        self._optfn = OpticsFunctions(self)
+        self._optfn.install(B)                 # TransferMatrix, BeamMatrix, OrbitGeo, GeoBase, SymplecticJ, SurvivedParticles, AccelerateParticles
         B['FFS$SHOW'] = lambda a: self.ffs_show_list()
         B['FFS$FlagQ'] = lambda a: self.flag_query(a[0] if a else '')          # ?FLAG (SADScript の構文、sadscript.parse_prefix)
         def _parabolarandom(a):
@@ -339,6 +419,7 @@ class FFS:
             return v if isinstance(v, list) else [v]
         B['ParabolaRandom'] = _parabolarandom
         B['Element'] = self.fn_element
+        B['SynchroBetaEmittance1'] = self.fn_synchrobeta
         B['FFS'] = self.fn_ffs
         B['Emittance'] = self.fn_emittance
         B['TrackParticles'] = self.fn_track
@@ -396,7 +477,7 @@ class FFS:
         return float(self.I.get('DP0', 0.0))
 
     def momentum(self):
-        return float(self.I.get('MOMENTUM', 1e9))
+        return float(self.I.get('MOMENTUM', 30e9))
 
     def is_word(self, word: str) -> bool:
         w = word.upper()
@@ -440,10 +521,49 @@ class FFS:
         if not num.isdigit():
             return None
         k = int(num)
-        lst = self._nidx()['fam'].get(fam)
+        ix = self._nidx()
+        rn = ix.get('renum', {}).get(fam)
+        if rn is not None:
+            return rn.get(k)                     # RenumberElement で付け替えた番号
+        lst = ix['fam'].get(fam)
         if lst and 1 <= k <= len(lst):
             return lst[k - 1]
         return None
+
+    def fn_renumber_element(self, args):
+        """RenumberElement[name, {n1, n2, ..}] (tfrenumber_element.f): 名前が name の要素の連番 (NAME.n の n) を n1 n2 .. に付け替える。
+        足りない分は最大の番号から続ける。USE のやり直しで元に戻る"""
+        if len(args) != 2:
+            raise SADError('General::narg: Number of arguments is expected to be 2 in RenumberElement')
+        name, nums = args
+        if not isinstance(name, str) or any(c in name for c in '*%{<|.'):
+            raise SADError('General::wrongtype: Argument must be Name of component family for #1')
+        if not isinstance(nums, list):
+            raise SADError('General::wrongtype: Argument must be List of positive sequence numbers for #2')
+        ix = self._nidx()
+        lst = ix['fam'].get(name.upper())
+        if not lst:
+            raise SADError('General::wrongtype: Argument must be Name of component family for #1')
+        if len(lst) < 2 or not nums:
+            return Null
+        fwd = [int(x) for x in nums[:min(len(nums), len(lst))]]
+        last = 0
+        for j, v in enumerate(fwd):
+            if v < 1 or v in fwd[:j] and v <= last:
+                raise SADError('General::wrongtype: Argument must be List of positive sequence numbers for #2')
+            last = max(last, v)
+        newmap = {}
+        for j, pos in enumerate(lst):
+            if j < len(fwd):
+                num = fwd[j]
+            else:
+                last += 1
+                num = last
+            ix['ords'][pos - 1] = num
+            newmap[num] = pos
+        ix.setdefault('renum', {})[name.upper()] = newmap
+        ix['pat'].clear()
+        return Null
 
     def positions(self, pat: str) -> List[int]:
         """パターン (または名前) に合う位置 (1 始まり) のリスト。tflinenamestk 相当"""
@@ -602,6 +722,9 @@ class FFS:
         self.invalidate()
 
     def default_key(self, el) -> Optional[str]:
+        vk = getattr(el, '_vary_key', None)
+        if vk:
+            return vk                            # VARY で変えた既定のキー
         tn = type(el).__name__
         if tn == 'Drift':
             return 'L'
@@ -628,9 +751,22 @@ class FFS:
             self.lat._twiss_cache = None
 
     # ------------------------------------------------------------------ 光学計算
-    def calc(self, quiet: bool = False):
+    def _check_sol_optics(self, calc_only=False, emit=False):
+        """SOL 領域の Twiss (CALC/INS) は solmap (追跡と同じ写像の数値微分)、Emittance[]・EMIT は solemit (放射は bz 付きの tradke)。
+        CALC6D・RADCOD つきの CALC は未対応なので拒否する。SOL を無視して黙って違う値を出さない"""
+        if emit or (calc_only and not (self.flags['CALC6D'] or self.flags['RADCOD'])):
+            from . import solmap as _sm
+            if self.els is not None and _sm.annotate(self.els, self.momentum()):
+                return
+        for el in self.els:
+            if type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0
+                                                    or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
+                raise SADError('SOL (BZ≠0 か BOUND≠0) を含む CALC6D・RADCOD つきの CALC は未対応 (追跡 TrackParticles、CALC/INS の Twiss、Emittance[]・EMIT は対応)')
+
+    def calc(self, quiet: bool = False, ini: bool = False):
         """CELL/INS の光学計算。self.rows[l-1] = 要素 l の入口 (SAD の twiss(l))。
         CELL は不安定 (|cos μ|>1 等) でも SAD の qcell1 と同じく Twiss を作って続行する (判定は self.lat._qstat)。quiet=True は qcod の報告を出さない"""
+        self._check_sol_optics(calc_only=True)
         if self.lat is None:
             raise SADError('No beam line (USE first)')
         self.spread_pending()
@@ -679,6 +815,11 @@ class FFS:
             return self.rows
         # 4 次元の CALC (qtwiss) では空洞はドリフト (RFSW に依らない: SAD で確認)
         _lat.RFSW = False
+        if ini and not self.flags['CELL']:
+            io = self.initial_orbits()             # CALC/GO の後の Twiss は InitialOrbits の中心 (idp=0) の軌道 (wake があればそのキック込み)
+            if io is not None:
+                self.rows = self.ini_optics(io, delta)[0]
+                return self.rows
         try:
             if self.flags['CELL']:
                 # tffscalc.f:93 twmov(..,.true.): 閉軌道探索 (qcod) の初期値は先頭 MARK の DX DPX DY DPY (直前の CELL の周期解か、
@@ -764,15 +905,23 @@ class FFS:
         raw = self.env._elements.setdefault(m0.name, {'TYPE': 'MARK'})
         raw.update(vals)
 
-    def _ins_rows(self, delta, cod0=None):
+    def _ins_start(self):
+        """INS の入口条件: 先頭 MARK の Twiss (AX..DETR) と軌道 (DX DPX DY DPY DZ)。DDP は delta = DP0 と同じ"""
         m0 = self.els[0]
         raw = self.env._elements.get(m0.name, {}) if type(m0).__name__ == 'Marker' else {}
         g = lambda k, d=0.0: float(raw.get(k, d) or 0.0)
         tw0 = dict(ax=g('AX'), bx=g('BX', 1.0), ay=g('AY'), by=g('BY', 1.0), ex=g('EX'), epx=g('EPX'), ey=g('EY'), epy=g('EPY'),
                    r1=g('R1'), r2=g('R2'), r3=g('R3'), r4=g('R4'), detr=g('DETR'))
+        return tw0, [g('DX'), g('DPX'), g('DY'), g('DPY'), g('DZ')]
+
+    def _ins_rows(self, delta, cod0=None):
+        tw0, cod_m = self._ins_start()
         # 初期軌道 = MARK の DX DPX DY DPY DZ (DDP は delta = DP0 と同じ: DP0 は LINE["DDP",1] の別名)
-        cod0 = [g('DX'), g('DPX'), g('DY'), g('DPY'), g('DZ')] if cod0 is None else [float(v) for v in cod0[:5]]
+        cod0 = cod_m if cod0 is None else [float(v) for v in cod0[:5]]
         tws = _lat.ins_twiss(self.els, tw0, cod0, delta, acc=self._trpt_acc())
+        return self._rows_from_tws(tws)
+
+    def _rows_from_tws(self, tws):
         rows = []
         s = 0.0
         for i, tw in enumerate(tws):
@@ -786,6 +935,118 @@ class FFS:
             if i < len(self.els):
                 s += self.els[i].L
         return rows
+
+    # ------------------------------------------------------------------ InitialOrbits / WAKEOPT (tffsinitialcond, tffswake)
+    def initial_orbits(self):
+        """tffsinitialcond: シンボル InitialOrbits = {{x, px, y, py, z, dp}, ...} (6 個) か {{28 個の Twiss}, ...} のリスト。
+        未定義 (シンボルのまま、Null) なら None。形が違えば SADError ('Error in InitialOrbits')。
+        軌道は idp = nfr1..nfr (0 を除く) の順に入る (nfr=(n+1)/2、nfr1=−(n/2))。0 は中心の軌道 (ずれなし)。
+        戻り: dict(nfr, nfam1, nfam, uini={idp: 28 個の配列}, has_tw={idp: 28 個形式で BX>0}, iuid={idp: 1 始まりの番号})"""
+        v = self.I.get('InitialOrbits')
+        if isinstance(v, Sym) or v is Null or v is None:
+            return None
+        if not isinstance(v, list) or not v:
+            raise SADError('Error in InitialOrbits')
+        n = len(v)
+        nfr = (n + 1) // 2
+        nfr1 = -(n // 2)
+        uini, has_tw, iuid = {}, {}, {}
+        j = 0
+        for i in range(nfr1, nfr + 1):
+            if i == 0:
+                uini[0] = np.zeros(len(_TWISS_ALL))
+                has_tw[0] = False
+                iuid[0] = 0
+                continue
+            e = v[j]
+            j += 1
+            if not (isinstance(e, list) and all(is_num(x) for x in e)):
+                raise SADError('Error in InitialOrbits')
+            u = np.zeros(len(_TWISS_ALL))
+            if len(e) == 6:
+                u[15:21] = [float(x) for x in e]
+                has_tw[i] = False
+            elif len(e) == len(_TWISS_ALL):
+                u[:] = [float(x) for x in e]
+                has_tw[i] = u[1] > 0.0
+            else:
+                raise SADError('Error in InitialOrbits')
+            uini[i] = u
+            iuid[i] = j
+        nfam = nfr
+        nfam1 = -nfam if n % 2 == 0 else 1 - nfam
+        return dict(nfr=nfr, nfam1=nfam1, nfam=nfam, uini=uini, has_tw=has_tw, iuid=iuid)
+
+    def wake_optics_on(self):
+        """tffsa.f:1186: wake = (TWAKE | LWAKE) & TRPT & WAKEOPT"""
+        return bool((self.flags['TWAKE'] or self.flags['LWAKE']) and self.flags['TRPT'] and self.flags['WAKEOPT'])
+
+    def _wake_opt_tables(self):
+        """tffssetupwake: 各要素 i (1..nlat−1) の WakeFunction[Longitudinal/Transverse, 要素名]。{i: (縦, 横, DX, DY)}。
+        LWAKE/TWAKE の ON/OFF は見ない (キックの側で見る)。どちらの表も無い要素は含めない"""
+        out = {}
+        for i in range(1, self.nlat):
+            nm = self.elname(i)
+            tabs = []
+            for tag in ('Longitudinal', 'Transverse'):
+                try:
+                    r = self.I.eval(Expr(S('WakeFunction'), [S(tag), _Lit(nm)]))
+                except SADError:
+                    r = None
+                a = None
+                if isinstance(r, list) and r and all(isinstance(q, list) and len(q) == 2 and all(is_num(x) for x in q) for q in r):
+                    a = np.array(r, dtype=float)
+                tabs.append(a)
+            if tabs[0] is None and tabs[1] is None:
+                continue
+            el = self.els[i - 1]
+            out[i] = (tabs[0], tabs[1], float(getattr(el, 'DX', 0.0) or 0.0), float(getattr(el, 'DY', 0.0) or 0.0))
+        return out
+
+    def ini_optics(self, ini, dp0):
+        """tffscalc の InitialOrbits の部分 (INS): 中心 (idp=0) と各軌道の Twiss と軌道を計算する。
+        WAKEOPT (wake_optics_on) で WakeFunction を持つ要素があれば、要素の前後で全軌道が互いにキックを与え合う (wakeopt.wake_orbits)。
+        そうでなければ各軌道は独立 (qcell1(fam=.true.) = 中心の入口の Twiss (28 個形式なら自分の Twiss) と、中心の入口の軌道 + ずれ)。
+        戻り: {idp: TwissRow のリスト (位置 1..nlat)}"""
+        if self.flags['CELL']:
+            raise SADError('InitialOrbits: CELL は未対応 (INS のみ)')
+        if self._trpt_acc() is not None:
+            raise SADError('InitialOrbits: TRPT で加速要素があるときは未対応')
+        tw0, cod_m = self._ins_start()
+        tw_keys = ('ax', 'bx', 'nx', 'ay', 'by', 'ny', 'ex', 'epx', 'ey', 'epy', 'r1', 'r2', 'r3', 'r4', 'detr')
+        slots = {}
+        for idp in range(ini['nfam1'], ini['nfam'] + 1):
+            u = ini['uini'][idp]
+            if idp != 0 and ini['has_tw'][idp]:
+                tw = {k: float(u[a]) for a, k in enumerate(tw_keys)}
+            else:
+                tw = dict(tw0)
+                tw['nx'] = tw['ny'] = 0.0
+            cod =np.array(cod_m + [dp0], dtype=float) + (u[15:21] if idp != 0 else 0.0)
+            slots[idp] = (tw, cod)
+        wake = None
+        if self.wake_optics_on():
+            tables = self._wake_opt_tables()
+            if tables:
+                wake = tables
+        out = {}
+        if wake is None:
+            for idp, (tw, cod) in slots.items():
+                tw = dict(tw)
+                if idp != 0:
+                    tw['nx'] = tw['ny'] = 0.0             # tffscalc.f:188
+                out[idp] = self._rows_from_tws(_lat.ins_twiss(self.els, tw, cod[:5], float(cod[5])))
+            return out
+        from .wakeopt import wake_orbits
+        g = self.I.globals
+        amass = float(g.get('MASS', 0.51099895e6) or 0.51099895e6)
+        res = wake_orbits(self.els, slots, wake, sigz=float(g.get('SIGZ', 0.0) or 0.0),
+                          nbunch=float(g.get('NBUNCH', 1.0) or 1.0), charge=float(g.get('CHARGE', 1.0) or 1.0),
+                          pbunch=float(g.get('PBUNCH', 0.0) or 0.0), lwake=bool(self.flags['LWAKE']),
+                          twake=bool(self.flags['TWAKE']), gammab=self._gammab_at, amass=amass)
+        for idp, d in res.items():
+            out[idp] = self._rows_from_tws([d[k] for k in range(1, self.nlat + 1)])
+        return out
 
     def _gammab_at(self, k, fr=0.0):
         """gammab(k) = 基準運動量 p/mc (単位 MASS)。TRPT かつ RFSW で加速要素があれば tfgeo1 の分布 (trptacc)、なければ一定。
@@ -904,7 +1165,7 @@ class FFS:
                     self._geo_warned.add(m)
                     self.write(f'[pysad] 幾何: {m}' + chr(10))
             gx, gy, gz = self.org_g
-            self.geo = _geo.compute_geo(self.els, gx0=gx, gy0=gy, gz0=gz, chi0=tuple(self.org_chi), iorg=self.org_k, warn=warn)
+            self.geo = _geo.compute_geo(self.els, gx0=gx, gy0=gy, gz0=gz, chi0=tuple(self.org_chi), iorg=self.org_k, warn=warn, momentum_eV=self.momentum())
             self.geo_dirty = False
         return self.geo
 
@@ -1138,6 +1399,10 @@ class FFS:
 
     def line_value(self, key: str, k: int, fr: float = 0.0):
         key = key.upper()
+        if len(key) > 4 and key.endswith('$SUM'):
+            # tffs.f tfkeyv: KEY$SUM は KEY の値。値が実数のリスト (SPLIT した要素の分割ごとの値) ならその和 (pysad は SPLIT を持たないので値そのもの)
+            v = self.line_value(key[:-4], k, fr)
+            return float(sum(v)) if isinstance(v, list) and all(isinstance(t, (int, float)) for t in v) else v
         if key == 'NAME':
             return self.elname(k)
         if key == 'ELEMENT':
@@ -1190,6 +1455,18 @@ class FFS:
             v = v * ek
         return v
 
+    def fn_synchrobeta(self, args):
+        """SynchroBetaEmittance1[nus0, nus1, dnus, mphi] (tfemit.f tfemits → temits.f)。Packages/emit.n の SynchroBetaEmittance が呼ぶ。
+        戻り: {{nus, emitx, emity, emitxp, emityp, conv}, …} (pysad/synchrobeta.py)"""
+        if len(args) != 4 or not all(is_num(a) for a in args):
+            raise SADError('General::wrongtype: "[{nusstart,nusstop,nusstep},mphi]"')
+        if self.lat is None:
+            raise SADError('No beam line (USE first)')
+        from .synchrobeta import synchro_beta_emittance
+        res = synchro_beta_emittance(self.lat, self.momentum(), args[0] * 2.0 * math.pi, args[1] * 2.0 * math.pi,
+                                     args[2] * 2.0 * math.pi, int(args[3]))
+        return [[float(v) for v in row] for row in res]
+
     def fn_line(self, args):
         key = args[0]
         if isinstance(key, list):
@@ -1209,6 +1486,62 @@ class FFS:
         if len(vals) == 1 and not isinstance(args[1], list):
             return vals[0]
         return vals
+
+
+    def fn_master(self, args):
+        """Master[] (pgmast.f): 各要素の「マスター」。分割された要素 (同じ icomp が続くもの) の先頭は最後の分割の位置、残りは -先頭。
+        BEND/QUAD/SEXT/OCT/MULT(22)/31/SOL 以外は 0。pysad は SPLIT を持たないので、対象の要素は自分自身 (長さ 0 の要素が続いても同じ)"""
+        if len(args) > 1:
+            raise SADError('General::narg: Number of arguments is expected to be 1 in Master')
+        n = self.nlat
+        out = [0.0] * n
+        for i in range(1, n):
+            id_ = int(self.line_value('TYPE', i))
+            if (id_ > 8 and id_ != 31 and id_ != 22 and id_ != 20) or id_ == 1:
+                continue
+            out[i - 1] = float(i)
+        return out
+
+    def fn_response_matrix(self, args):
+        """ResponseMatrix[mon, st, stt, opt, periodic, kind (, tune)] (pgrmat.f)。mon がリストなら行ごと"""
+        from . import corr as _corr
+        if len(args) < 6 or len(args) > 7:
+            raise SADError('General::narg: Number of arguments is expected to be 6 or 7 in ResponseMatrix')
+        mon = args[0]
+        if isinstance(mon, list):
+            return [self.fn_response_matrix([m] + list(args[1:])) for m in mon]
+        st, stt, opt, periodic, kind = args[1], args[2], args[3], args[4], args[5]
+        if not isinstance(opt, list) or not opt or not isinstance(opt[0], list):
+            raise SADError('General::wrongtype: Argument must be List for #4')
+        if not is_num(periodic):
+            raise SADError('General::wrongtype: Argument must be Real for #5')
+        if not isinstance(kind, str):
+            raise SADError('General::wrongtype: Argument must be String for #6')
+        tune = [0.0, 0.0]
+        if len(args) == 7:
+            t = args[6]
+            if not isinstance(t, list) or len(t) != 2:
+                raise SADError('General::wrongleng: #7 must be a list of length 2')
+            tune = [float(t[0]), float(t[1])]
+        locs = self._resolve_loc(mon)
+        if not locs:
+            raise SADError('General::wrongval: ResponseMatrix: invalid element for #1')
+        im = int(locs[0][0])
+        rows = opt[0]
+
+        def rot(js):
+            if js < 1 or js > self.nlat:
+                return None
+            if int(self.line_value('TYPE', js)) == 2:
+                return -float(self.line_value('ROTATE', js))
+            return None
+        scalar = not isinstance(st, list)
+        stl = [st] if scalar else st
+        sttl = [stt] if not isinstance(stt, list) else stt
+        if len(sttl) < len(stl):
+            raise SADError('General::equalleng: #2 and #3')
+        ar = _corr.response_row(im, stl, sttl, rows, rot, bool(periodic), kind, tune[0], tune[1])
+        return float(ar[0]) if scalar else [float(v) for v in ar]
 
     def set_line(self, args, v):
         key = args[0].upper()
@@ -1269,6 +1602,8 @@ class FFS:
             return Null
         if cmd.strip().upper() == 'SHOW':
             return self.ffs_show_list()                 # FFS["SHOW"] = FFS$SHOW[] (tfshow.f ret=.true.)
+        if cmd.strip().upper() in ('VAR', 'VARS', 'VARIABLES'):
+            return self.ffs_var_list()                  # FFS["VAR"] = tfvars (ret=.true.)
         unit = args[1] if len(args) > 1 else 0.0        # SAD: 出力ユニット省略時は 0 (表示しない)
         saved = self.out
         target = saved
@@ -1296,6 +1631,26 @@ class FFS:
             raise SADError('FFS::error:  Error in FFS command %d in FFS["%s"]' % (max(1, len(cmds)), cmd))
         return Null
 
+
+    def ffs_var_list(self):
+        """FFS["VAR"] (tfvars.f): 変数ごとに {名前, キー, Now, Previous, Saved(要素の現在値), Minimum, Maximum, 結合先の要素名, 係数}"""
+        m = self.matcher_()
+        rows = []
+        for v in m.variables:
+            el0 = v['els'][0]
+            val = float(self.get_value(el0, v['key']))
+            lo, hi = v['vlim'][0], v['vlim'][1]
+            rows.append([v['family'], v['key'], float(v.get('val', val)), float(v.get('val', val)), val, float(lo), float(hi),
+                         self.elname_of(el0), 1.0])
+        return rows
+
+    def elname_of(self, el):
+        """要素オブジェクトの '.n' 付き名前 (最初の 1 台なら NAME.1)"""
+        for k in range(1, self.nlat):
+            if self.els[k - 1] is el:
+                return self.elname(k)
+        return el.name
+
     def ffs_show_list(self):
         """FFS$SHOW[] / FFS["SHOW"] (tfinitn.f 1025): 現在の fit 条件のリスト。各要素は SAD の出力どおり
         {comp1, comp2 ("" なら 1 点), fun (maxfit なら名前+'M'), goal, 運動量点の数 |mfitp|, scale (NX/NY/NZ は 2π、CHI は π/180、他 1)}"""
@@ -1313,6 +1668,30 @@ class FFS:
             conds.append([n1, n2, fun, goal, float(abs(c['mfitp']) - 1), sc])       # pysad の mfitp は SAD の npoints+1
         return conds
 
+    def _definition_of(self, name):
+        """?名前 = Definition[名前]: Hold[{名前:=名前, 定義 …}]。K64 は定義を内部のハッシュ表の順に返す (再現できない) ので、pysad は
+        書いた順 (記号の値、具体的な添字の定義、パターンの定義の順) で返す。Plots.n の Delete[?contl, {{1,1},{1,-1}}] は先頭の `名前:=名前` と
+        末尾のパターンの定義 (contl[_][_]) を除く"""
+        from .sadscript import _Lit
+        I = self.I
+        dv = [d for d in I.downvalues.get(name, []) if d[0] is not None]
+        sv = list(I.subvalues.get(name, []))
+        if not dv and not sv and name not in I.globals:
+            return None
+
+        def un(p):
+            return p.v if isinstance(p, _Lit) else p
+
+        lit, pat = [], []
+        for pats, body, delayed in dv:
+            lhs = Expr(S(name), [un(p) for p in pats])
+            (pat if any(_is_pattern(un(p)) for p in pats) else lit).append(Expr(S('SetDelayed'), [lhs, body]))
+        for hp, ap, body, delayed in sv:
+            lhs = Expr(Expr(S(name), [un(p) for p in hp]), [un(p) for p in ap])
+            (pat if any(_is_pattern(un(p)) for p in list(hp) + list(ap)) else lit).append(Expr(S('SetDelayed'), [lhs, body]))
+        first = [Expr(S('SetDelayed'), [S(name), S(name)])]
+        return Expr(S('Hold'), [first + lit[::-1] + pat[::-1]])
+
     def flag_query(self, name) -> float:
         """?FLAG: フラグの値 (True → 1.0、False → 0.0)。NOxxx と sino (RING/INS/UNIFORM …) も受ける"""
         w = str(name).upper()
@@ -1324,7 +1703,8 @@ class FFS:
             w, neg = w[2:], True
         if w not in self.flags:
             # フラグでなければ `?名前` は定義の問い合わせ (Information)。定義 1 つのリストを返す (KBFrame.n の ?ReturnToSAD)
-            return [Expr(S('Hold'), [Null])]
+            d = self._definition_of(str(name))
+            return d if d is not None else [Expr(S('Hold'), [Null])]
         v = bool(self.flags[w])
         return 1.0 if (v != neg) else 0.0
 
@@ -1370,13 +1750,15 @@ class FFS:
         mode = 3 if matrix else (2 if orbit else (1 if onet else 0))
         g = self.I.globals
         keep = {k: g.get(k) for k in ('EMITX', 'EMITY', 'EMITZ', 'SIGE', 'SIGZ')}
+        self._check_sol_optics(emit=True)
         e = x = None
         try:
             if self.flags['INTRA']:
                 e = self.run_emit(quiet=True)          # IBS の反復と TouschekTable (グローバル)
             _lat.RFSW = self.flags['RFSW']
             x = emittance_rules(self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
-                                one_turn=onet, orbit=orbit, matrix=matrix, beam_matrices=False, fshift=self._fshift())
+                                one_turn=onet, orbit=orbit, matrix=matrix, beam_matrices=False, fshift=self._fshift(),
+                                pol=bool(self.flags['POL']))
         except Exception:
             x = None
         if x is None:
@@ -1514,6 +1896,7 @@ class FFS:
         return float(self.I.globals.get('FSHIFT', 0.0) or 0.0)
 
     def run_emit(self, quiet=False):
+        self._check_sol_optics(emit=True)
         from .emit6d import emittance6d
         if self.lat is None:
             raise SADError('No beam line')
@@ -1522,7 +1905,7 @@ class FFS:
             gg = self.I.globals
             floor = tuple(float(gg.get(k, 0.0) or 0.0) for k in ('EMITXE', 'EMITYE', 'EMITZE'))
             e = emittance6d(self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
-                            fshift=self._fshift(), emit_floor=floor)
+                            fshift=self._fshift(), emit_floor=floor, pol=bool(self.flags['POL']))
         except Exception:
             # SAD: "???-Emittance[]-closed orbit not found." と表示して NaN の報告を出し、続行する
             self.write(' ???-Emittance[]-closed orbit not found.' + chr(10))
@@ -1719,7 +2102,33 @@ class FFS:
         from .emit_extra import GSPIN
         h0 = e.get('h0') or math.sqrt(1.0 + pn * pn)
         nnu = h0 * GSPIN if h0 is not None else float('nan')
-        w(f'Nominal spin tune      ={_fr(nnu, "11.7")}     Polarization time      ={_fr(0.0, "11.7")} min\n\n')
+        sp = e.get('spin')
+        taup = sp['taup'] / 60.0 if sp is not None else 0.0
+        w(f'Nominal spin tune      ={_fr(nnu, "11.7")}     Polarization time      ={_fr(taup, "11.7")} min\n\n')
+        if sp is not None:
+            self._print_emit_spin(e, sp)
+
+    def _print_emit_spin(self, e, sp):
+        """temitprint の calpol 部 (temit.f:1188-1225)。1p3g15.7 / 1p6g15.7 は Fortran の G 編集 (_g157)"""
+        w = self.write
+        w('   Polarization vector at entrance:\n')
+        w(_line9013(sp['sps'][:, 0], ('x :', 'y :', 'z :')))
+        if self.I.globals.get('EMIOUT') or self.flags.get('EMIOUT'):
+            w(' \n   Spin precession matrix:\n')
+            w('                 sx             sy             sz\n')
+            for lab, row in zip(('sx', 'sy', 'sz'), sp['srot1']):
+                w('        ' + lab + ''.join(_g157(v) for v in row) + '\n')
+            w(' \n   One-turn depolarization vectors:\n')
+            w('                 x              px             y              py             z              pz\n')
+            srot = sp['srot']
+            for lab, row in zip(('gx', 'gy', 'gz'), srot[:, 3:9]):
+                w('        ' + lab + ''.join(_g157(v) for v in row) + '\n')
+            srotn = srot[:, 3:9] @ e['normal_r'] if e.get('normal_r') is not None else srot[:, 3:9]
+            w(' \n                 X              Px             Y              Py             Z              Pz\n')
+            for lab, row in zip(('gx', 'gy', 'gz'), srotn):
+                w('        ' + lab + ''.join(_g157(v) for v in row) + '\n')
+        w('\nSpin tune              =' + _fr(sp['nup'], '11.8') + '     Equil. polarization    ='
+          + _fr(sp['equpol'][0] * 100.0, '11.8') + ' %\n\n')
 
     def _print_emit_exttwiss(self, e):
         """temitprint 9001: Extended Twiss Parameters (params(iptws0+i) = tfetwiss(ri, cod) を autofg '9.6' で)。
@@ -1782,25 +2191,102 @@ class FFS:
             raise SADError('TrackParticles: beam columns expected')
         npart = len(cols[0])
         x = np.array([[cols[j][i] for j in range(6)] for i in range(npart)], dtype=float)
-        flags = list(cols[6]) if len(cols) > 6 else [1.0] * npart
+        pol = bool(self.flags['POL'])
+        spin_in = None
+        if pol:
+            # tftrack.f: POL ON のときは 9〜11 列 ({x,px,y,py,z,dp, 角度, sy/|s|, flag}…)。スピン (sx, sy, sz) = (st·cos, sy, st·sin)、st = sqrt(1−sy²)
+            if not (9 <= len(cols) <= 11):
+                raise SADError('General::wrongtype: Beam must be a list of 9 to 11 lists with POL in TrackParticles')
+            spin_in = []
+            for i in range(npart):
+                sy_ = float(cols[7][i])
+                st_ = 1.0 + (-sy_ * sy_) / (1.0 + math.sqrt(1.0 - sy_ * sy_))
+                ang = float(cols[6][i])
+                spin_in.append([st_ * math.cos(ang), sy_, st_ * math.sin(ang)])
+            flags = list(cols[8])
+        else:
+            flags = list(cols[6]) if len(cols) > 6 else [1.0] * npart
         els = self.els
-        circ = sum(el.L for el in els)
-        kw = dict(trf0=self.trf0, rfsw=self.flags['RFSW'], rad=self.flags['RAD'], fluc=self.flags['FLUC'],
+        from .emit6d import _emit_circ
+        circ = _emit_circ(els)                  # K64 は SOL (BOUND≠0) の長さを周長に入れない (omega0・空洞の位相)
+        radlight = bool(self.flags['RADLIGHT'])
+        kw = dict(trf0=self.trf0, rfsw=self.flags['RFSW'], rad=self.flags['RAD'] or radlight, fluc=self.flags['FLUC'],
                   fshift=self._fshift(), circ=circ)
         g = self.I.globals
+        from . import beambeam as _bbm
+        _bbm.PHOTON_SINK = None
+        photons_on = bool(self.flags['PHOTONS'])
+        if photons_on:
+            if not (self.flags['RAD'] and self.flags['FLUC']):
+                raise SADError('Track::photons:  PHTONS requires RAD & FULC in TrackParticles')
+            for e in els:
+                if type(e).__name__ in ('Bend', 'Multipole') and float(getattr(e, 'ANGLE', 0.0) or 0.0) != 0.0:
+                    raise SADError('PHOTONS: BEND の光子 (tbend の放射) は未対応。BEAMBEAM の光子だけ扱う')
+            gg = self.ensure_geo().geo
+            for i, e in enumerate(els):
+                if type(e).__name__ == 'BeamBeam':
+                    e._photon = (i + 1, np.array(gg[i], dtype=float))      # bbinit の tsetphotongeo (l_track = この要素)
+            _bbm.PHOTON_SINK = []                # tphotoninit
+            _bbm.PHOTON_OUT = self.write
         try:
+            if pol and self.flags['RAD']:
+                raise NotImplementedError('POL: スピンは Python の追跡 (track6) で追う')
             from .track6n import TrackRun
             tr = TrackRun(els, x, flags, self.momentum(), alost=float(g.get('LOSSAMPL', 1.0) or 0.0),
-                          zlost=float(g.get('LOSSDZ', 100.0) or 0.0), kturn0=nt, **kw)
+                          zlost=float(g.get('LOSSDZ', 100.0) or 0.0), kturn0=nt,
+                          trpt=bool(self.flags['TRPT'] or radlight), **kw)
+            if not getattr(self, '_tracked_once', False):
+                tr.l_track0 = 0                      # セッションの最初の TrackParticles: l_track=0 (gs で確かめた: 最初から LOSSAMPL の外の粒子は最初の tapert で落ちない)
+            self._tracked_once = True
         except NotImplementedError:
             tr = None                            # numba の表に無い要素 (SOL 等): 損失なしの track6 で追う (以前どおり)
+        from . import track6n as _t6n
+        if tr is not None and any(type(e).__name__ == 'Map' for e in els):
+            _t6n.MAP_HOOK = lambda l, nt_, S_, n_, kid_, lost_: self._map_track(tr, npart, l, nt_, S_, n_, kid_, lost_)
+        else:
+            _t6n.MAP_HOOK = None
+        wake_on = (self.flags['LWAKE'] or self.flags['TWAKE']) and self.flags['TRPT']      # tftrack.f:120
+        if wake_on:
+            table = self._wake_table()
+            if table:
+                if tr is None:
+                    raise SADError('WakeFunction: この要素の並びは高速追跡 (TrackRun) で扱えないため未対応')
+                from .wake import WakeKick, kick_factor
+                fw = kick_factor(float(g.get('CHARGE', 1.0) or 1.0), float(g.get('PBUNCH', 0.0) or 0.0),
+                                 float(g.get('NBUNCH', 1.0) or 1.0), npart, tr.ph.amass)
+                tr.set_wake(WakeKick(tr.ph.p0, tr.ph.h0, fw, int(float(g.get('NBUNCH', 1.0) or 1.0))), table)
+
+        from . import beambeam as _bbm
+        if any(type(e).__name__ == 'BeamBeam' for e in els):
+            _bbm.LUM_CB = self._luminosity_hook   # bbstrhl.f: symbol LuminosityMonitor に値、LuminosityMonitor[lum] を呼ぶ
+        rl = None
+        if radlight:
+            if tr is None:
+                raise SADError('RADLIGHT: この要素の並びは高速追跡 (TrackRun) で扱えない')
+            rl = _RadLight(self.ensure_geo().geo[ls - 1], tr.ph, npart)
 
         def seg(x, a, b):                        # tturn(ls=a, ld=b): 要素 a..b−1 (els[a−1:b−1])
             if b <= a:
                 return x
+            if rl is not None:
+                rl.store(tr, 0.0)                  # tturn.f:61 tlstore(…, dl=0): 区間の始めの点
+                for l in range(a, b):
+                    tr.segment(l, l + 1)
+                    e = els[l - 1]
+                    tn = type(e).__name__
+                    if tn == 'Bend' or (tn == 'Multipole' and float(getattr(e, 'ANGLE', 0.0) or 0.0) != 0.0):
+                        continue                   # tturn.f:555: BEND と曲げのある MULT は記録しない (K64 のまま)
+                    if _TYPECODE.get(tn, 99) < 31 and e.L != 0.0:
+                        rl.store(tr, float(e.L))
+                return x
             if tr is not None:
                 tr.segment(a, b)
                 return x
+            if spin_in is not None:
+                from .track6 import track_particles as _tp6
+                xo, sp_ = _tp6(els[a - 1:b - 1], x, 1, self.momentum(), spins=spin_in, radpol=bool(self.flags['RADPOL']), **kw)
+                spin_in[:] = [list(v) for v in sp_]
+                return xo
             return track_particles(els[a - 1:b - 1], x, 1, self.momentum(), **kw)
 
         if mt > 1:
@@ -1818,11 +2304,67 @@ class FFS:
             normal = False
         else:
             x = seg(x, ls, ld)
+        if photons_on:
+            self.I.globals['PhotonList'] = list(_bbm.PHOTON_SINK or [])         # tphotonlist
+            _bbm.PHOTON_SINK = None
         alive = flags
         if tr is not None:
             x, alive = tr.result()               # tftrack.f ktfresetparticles: 番号順、alive (落ちた粒子は 0、座標は落ちた時点)
         res = [[float(x[i][j]) for i in range(npart)] for j in range(6)] + [list(alive)]
+        if rl is not None:
+            return [[float(ld if normal else ls), res], rl.result()]
+        if spin_in is not None:
+            # ktfresetparticles: 7 列目 = atan(sz, sx)、8 列目 = sy/|s|、9 列目 = flag
+            ang = [math.atan2(sv[2], sv[0]) for sv in spin_in]
+            syn = [sv[1] / math.sqrt(sv[0]**2 + sv[1]**2 + sv[2]**2) for sv in spin_in]
+            res = res[:6] + [ang, syn, list(alive)]
         return [float(ld if normal else ls), res]
+
+    def _wake_table(self):
+        """tffssetupwake: 各要素 i について WakeFunction[Longitudinal, 要素名] と WakeFunction[Transverse, 要素名] を評価し、
+        {i: (縦の表, 横の表, dx, dy)} を返す (表は (行, 2) の配列か None。数のリスト {{z, w}, ...} でなければ None)。
+        LWAKE が OFF なら縦は使わず、TWAKE が OFF なら横は使わない (txwake の lwl, lwt)。
+        CAVI / MULT(VOLT≠0) の要素に表があるときは SADError (tcav.f / tmulti.f の中での呼び出しは未対応)"""
+        out = {}
+        in_sol = False                  # tsol の領域 (BOUND≠0 の SOL から次の BOUND≠0 の SOL まで)
+        for i in range(1, self.nlat):
+            el0 = self.els[i - 1]
+            is_sol = type(el0).__name__ == 'Solenoid' and float(getattr(el0, 'BOUND', 0.0) or 0.0) != 0.0
+            region_inner = in_sol and not is_sol          # tsol の中の要素 (回転 ROTATE を正しく使う: tsol.f:628-631)
+            if is_sol:
+                if in_sol:
+                    in_sol = False
+                else:
+                    in_sol = True
+            nm = self.elname(i)
+            tabs = []
+            for tag, on in (('Longitudinal', self.flags['LWAKE']), ('Transverse', self.flags['TWAKE'])):
+                try:
+                    r = self.I.eval(Expr(S('WakeFunction'), [S(tag), _Lit(nm)]))
+                except SADError:
+                    r = None
+                a = None
+                if isinstance(r, list) and r and all(isinstance(q, list) and len(q) == 2 and all(is_num(v) for v in q) for q in r):
+                    a = np.array(r, dtype=float)
+                tabs.append(a if on else None)
+            if tabs[0] is None and tabs[1] is None:
+                continue
+            el = self.els[i - 1]
+            tn = type(el).__name__
+            if tn == 'Cavity':
+                out[i] = (tabs[0], tabs[1], 0.0, 0.0, 0.0)      # tcav.f は txwake に dx=dy=theta=0 を渡す
+                continue
+            if tn == 'Multipole' and (float(getattr(el, 'VOLT', 0.0) or 0.0) + float(getattr(el, 'DVOLT', 0.0) or 0.0)) != 0.0:
+                out[i] = (tabs[0], tabs[1], 0.0, 0.0, 0.0)      # tmulti.f tmultiacc は txwake に dx=dy=theta=0 を渡す
+                continue
+            rot_ = float(getattr(el, 'ROTATE' if tn == 'Bend' else 'ROTATION', 0.0) or 0.0)      # SAD の ROTATE (Bend だけ Bend.ROTATE、他は ROTATION)
+            if region_inner or (is_sol and not in_sol):
+                # tsol.f: dx=DX、dy=DY、theta=ROTATE
+                out[i] = (tabs[0], tabs[1], float(getattr(el, 'DX', 0.0) or 0.0), float(getattr(el, 'DY', 0.0) or 0.0), rot_)
+            else:
+                # tturn.f:263-264 の癖: dy=ROTATE の値、theta は未初期化 (0 とする)
+                out[i] = (tabs[0], tabs[1], float(getattr(el, 'DX', 0.0) or 0.0), rot_, 0.0)
+        return out
 
     def fn_calculate_optics(self, args):
         """CalculateOptics[lb, le, inicond, cell, idim (, geocal)] (tfoptics.f → qcell1)。
@@ -2197,8 +2739,8 @@ class FFS:
             return 1
         if _abbrev(W, 'CAL_CULATE'):
             n = 1
-            while i + n < len(words) and words[i + n].upper().rstrip('-') in _FUNS:
-                n += 1
+            while i + n < len(words) and (words[i + n].upper().rstrip('-') in _FUNS or words[i + n].upper() in ('NOEXPAND', 'EXPAND', 'NOEXP', 'EXP')):
+                n += 1                      # CALC NOEXP: 要素値を定義から展開し直さない (pysad は元から展開しない)
             self.go(fit=False)
             return n
         if W == 'GO':
@@ -2256,6 +2798,10 @@ class FFS:
                     break
                 n += 1
             return n
+        if _abbrev(W, 'DELC_OR'):
+            return self._delcor(words, i)
+        if W == 'WAKE':
+            return self._wake_cmd(words, i)
         if _abbrev(W, 'COUP_LE'):
             return self._couple(words, i)
         if _abbrev(W, 'DECOUP_LE') or _abbrev(W, 'INDEP_ENDENT'):
@@ -2292,6 +2838,11 @@ class FFS:
             if self.emit is None:
                 self.write('?BEAMSIZE: EMIT を先に実行してください (pysad: ビームサイズは EMIT の EMITX/EMITY/SIGE と Twiss から)' + chr(10))
             return 1
+        from . import ffsextra as _fx
+        if W in _fx.COMMANDS:
+            r_ = _fx.run(self, W, words, i)
+            if r_ is not None:
+                return r_
         if W in ('DRAW', 'GEO', 'SHOW', 'STAT', 'STATUS', 'VARS', 'VARIABLES', 'VARY',
                  'BEAM', 'MATRIX', 'MAT', 'ALIGN', 'ATT', 'ATTRIBUTE',
                  'INC', 'INCLUDE', 'REC', 'RECOVER', 'REJ', 'REJECT', 'SCALE', 'RENUM', 'REV', 'REVERSE', 'ZAP', 'DIMAD',
@@ -2346,6 +2897,7 @@ class FFS:
         self.name = name
         self.els = lat.elements
         self.nlat = len(self.els) + 1
+        self._install_map_hooks()
         for el in self.els:
             if not hasattr(el, '_errk'):
                 el._errk = 1.0
@@ -2378,16 +2930,133 @@ class FFS:
             g['MOMENTUM'] = float(m)
         self._set_omega0()
 
+    # ------------------------------------------------------------------ MAP (temap.f、ExternalMap)
+    def _install_map_hooks(self):
+        """MAP 要素があるときだけ ExternalMap["OPTICS"/"EMIT"/"TRACK"] へのコールバックを入れる (なければ外す)"""
+        from . import emit6d as _e6, track6n as _t6n
+        has = False
+        for i, el in enumerate(self.els):
+            if type(el).__name__ == 'Map':
+                el._pos = i + 1
+                has = True
+        if has:
+            _lat.MAP_HOOKS['OPTICS'] = self._map_optics
+            _e6.MAP_EMIT_HOOK = self._map_emit
+        else:
+            _lat.MAP_HOOKS.pop('OPTICS', None)
+            _e6.MAP_EMIT_HOOK = None
+        _t6n.MAP_HOOK = None
+
+    def _extmap(self, *args):
+        """ExternalMap[args] を評価。定義がなければ None (K64: 評価されずに返る → 何もしない)"""
+        if 'ExternalMap' not in self.I.downvalues:
+            return None
+        r = self.I.apply_value(S('ExternalMap'), list(args))
+        if isinstance(r, Expr):
+            return None
+        return r
+
+    @staticmethod
+    def _mat66(m):
+        a = np.array(m, dtype=float)
+        return a if a.shape == (6, 6) else None
+
+    def _map_optics(self, l, cod):
+        r = self._extmap('OPTICS', float(l), [float(v) for v in cod])
+        if not (isinstance(r, list) and len(r) == 2):
+            return None
+        c1 = np.array(r[0], dtype=float)
+        M = self._mat66(r[1])
+        if c1.shape != (6,) or M is None:
+            self.write("ExternalMap(OPTICS) of %d element did not return {cod(6), trans(6,6)}.\n" % l)
+            return None
+        return c1, M
+
+    def _map_emit(self, l, cod):
+        r = self._extmap('EMIT', float(l), [float(v) for v in cod])
+        if not isinstance(r, list) or len(r) not in (2, 4):
+            if r is not None:
+                self.write("ExternalMap(EMIT) of %d element did not return {cod(6), trans(6,6)} or {cod(6), trans(6,6), dtrans(6,6), dbeam(6,6)}.\n" % l)
+            return None
+        c1 = np.array(r[0], dtype=float)
+        M = self._mat66(r[1])
+        if c1.shape != (6,) or M is None:
+            self.write("ExternalMap(EMIT) of %d element did not return {cod(6), trans(6,6)} or {cod(6), trans(6,6), dtrans(6,6), dbeam(6,6)}.\n" % l)
+            return None
+        if len(r) == 2:
+            return c1, M, None, None
+        dM, dB = self._mat66(r[2]), self._mat66(r[3])
+        if dM is None or dB is None:
+            return None
+        return c1, M, dM, dB
+
+    def _map_track(self, tr, npart, l, nt, S_, n, kid, lost_turn):
+        """temap: ExternalMap["TRACK", l, nt, x] (x は (7, 粒子数) の実数のリスト: x px*(1+δ) y py*(1+δ) z δ 生存フラグ、粒子の番号順)。
+        同じ形のリストが返れば座標を置き換え、フラグ 0 の粒子は落とす (落ちた粒子の復活は未対応)。返らなければ何もしない"""
+        if 'ExternalMap' not in self.I.downvalues:
+            return n
+        X = [[0.0] * npart for _ in range(7)]
+        for s in range(n):
+            i = int(kid[s])
+            pr = 1.0 + S_[s, 5]
+            X[0][i], X[1][i], X[2][i], X[3][i] = float(S_[s, 0]), float(S_[s, 1] * pr), float(S_[s, 2]), float(S_[s, 3] * pr)
+            X[4][i], X[5][i], X[6][i] = float(S_[s, 4]), float(S_[s, 5]), 1.0
+        r = self._extmap('TRACK', float(l), float(nt), X)
+        if not (isinstance(r, list) and len(r) == 7 and all(isinstance(v, list) and len(v) == npart for v in r)):
+            return n
+        from .track6n import drop_particles, MAXTURN_LOST
+        drop = np.zeros(n, dtype=bool)
+        for s in range(n):
+            i = int(kid[s])
+            if float(r[6][i]) == 0.0:
+                drop[s] = True
+                lost_turn[i] = nt
+                continue
+            self._map_set(tr, S_, s, r, i)
+        n = drop_particles(S_, n, kid, drop)
+        # 落ちている粒子 (x(j) が生き返る): K64 の doinject。返された座標で生き返らせる (flag≠0 なら)
+        for i in range(npart):
+            if float(r[6][i]) == 0.0:
+                continue
+            if i in set(int(kid[q]) for q in range(n)):
+                continue
+            s = next((q for q in range(n, S_.shape[0]) if int(kid[q]) == i), None)
+            if s is None:
+                raise SADError('ExternalMap["TRACK"]: 最初から追跡していない粒子 (flag=0) の復活は未対応')
+            self._map_set(tr, S_, s, r, i)
+            lost_turn[i] = MAXTURN_LOST
+            for k in range(S_.shape[1]):
+                S_[s, k], S_[n, k] = S_[n, k], S_[s, k]
+            kid[s], kid[n] = kid[n], kid[s]
+            n += 1
+        return n
+
+    @staticmethod
+    def _map_set(tr, S_, s, r, i):
+        g = float(r[5][i])
+        pr = 1.0 + g
+        S_[s, 0], S_[s, 2], S_[s, 4], S_[s, 5] = float(r[0][i]), float(r[2][i]), float(r[4][i]), g
+        S_[s, 1], S_[s, 3] = float(r[1][i]) / pr, float(r[3][i]) / pr
+        S_[s, 6] = tr.ph.dv(g)
+
+
     def matcher_(self) -> Matcher:
         if self.lat is None:
             raise SADError('No beam line (USE first)')
+        if self.matcher is not None:
+            self.matcher.bipol = bool(self.flags['BIPOL'])        # tffsmatch.f:669: UNIPOL (NOBIPOL) は変数の符号を変えない (gs で確かめた)
+            self.matcher.absweit = bool(self.flags['ABSW'])       # RELW (NOABSW): tweigh の重み (gs で確かめた)
         if self.matcher is None:
             self.matcher = Matcher(self.lat, cell=self.flags['CELL'], out=lambda s: self.write(s + '\n'))
+            self.matcher.bipol = bool(self.flags['BIPOL'])
+            self.matcher.absweit = bool(self.flags['ABSW'])
             self.matcher.ffs = self
             self.matcher._calc_optics = self._matcher_optics
             self.matcher.geo_fn = self._matcher_geo
             self.matcher.fam_setup = self._fam_setup
             self.matcher.calc_optics_fixed = self._matcher_optics_fixed
+            self.matcher.ini_fn = self.initial_orbits
+            self.matcher.ini_optics = self.ini_optics
             # tffscalc.f:64/398: シンボル OpticsProlog/OpticsEpilog を評価する (:= の定義があればそれが走る。未定義なら何もしない)
             self.matcher.optics_prolog = lambda: self.I.run('OpticsProlog', 'script')
             self.matcher.optics_epilog = lambda: self.I.run('OpticsEpilog', 'script')
@@ -2432,7 +3101,7 @@ class FFS:
         from . import geo as _geo
         gx, gy, gz = self.org_g
         self.geo = _geo.compute_geo(self.els, gx0=gx, gy0=gy, gz0=gz, chi0=tuple(self.org_chi), iorg=self.org_k,
-                                    warn=lambda m: None)
+                                    warn=lambda m: None, momentum_eV=self.momentum())
         self.geo_dirty = False
         return self.geo
 
@@ -2449,6 +3118,7 @@ class FFS:
         """Matcher._calc_optics の差し替え: CELL/INS と δ (オフモメンタム点) に対応"""
         if self.lat is None:
             return None
+        self._check_sol_optics(calc_only=True)       # SOL 領域の要素に写像を付ける (付けないと _pack_el が拒否して qcod の誤報が出る)
         d = self.dp0() if delta is None else delta
         _lat.RFSW = False
         m = self.matcher
@@ -2604,7 +3274,7 @@ class FFS:
             return
         if any(v['family'] == fam and v['key'] == k for v in m.variables):
             return
-        m.variables.append(dict(family=fam, key=k, els=els, type=tn, val=self.get_value(el0, k),
+        m.variables.append(dict(family=fam, key=k, els=els, type=tn, val=self.get_value(el0, k), val2=self.get_value(el0, k),
                                 vlim=list(getattr(el0, '_vlim', {}).get(k, [0.1, 1e10] if tn == 'Drift' and k == 'L' else [-1e10, 1e10]))))
         m.variables.sort(key=lambda v: self.els.index(v['els'][0]))
 
@@ -2639,6 +3309,8 @@ class FFS:
         # 変数の set/get を FFS の errk/couple 付きに
         for v in m.variables:
             v['val'] = self.get_value(v['els'][0], v['key'])
+            if fit:
+                v['val2'] = v['val']             # VARIABLES の Previous / RECOVER の交換相手: GO の前の値
         self._patch_matcher_setters(m)
         try:
             r = m.go(calc_only=not fit)
@@ -2653,7 +3325,7 @@ class FFS:
         # UnstableLevel 自体は更新されず常に 0 のまま (不安定なまま終わっても MatchingResidual は 10^n·nstab+r で、UnstableLevel は 0。bench_level28)
         g['UnstableLevel'] = 0.0
         self.rows = None
-        self.calc(quiet=True)
+        self.calc(quiet=True, ini=True)
         if not getattr(m, 'no_variable', False):
             self.print_fit_table()               # tffscalc の '?No variable.' (error=.true.) のときは Matched. の行だけ (条件表なし)
         self.print_unstable()
@@ -2725,6 +3397,14 @@ class FFS:
             return None
         return float(r) if is_num(r) and not isinstance(r, complex) else None
 
+    def _luminosity_hook(self, lum):
+        self.I.globals['LuminosityMonitor'] = float(lum)
+        if 'LuminosityMonitor' in self.I.downvalues:
+            try:
+                self.I.eval(Expr(S('LuminosityMonitor'), [_Lit(float(lum))]))
+            except SADError:
+                pass
+
     def _fit_function_hook(self):
         """FitFunction (:= で遅延定義されることが多い) を評価して実数/実数リストを返す。他は無視"""
         try:
@@ -2744,6 +3424,58 @@ class FFS:
         r = self.I.eval(Expr(S('FitWeight'), [_Lit(fam), _Lit(kf), _Lit([0.0, dp]), _Lit(w)]))
         return float(r) if is_num(r) else w
 
+    def _show_orbit_header(self, m, fitted):
+        """tfshow.f:70-170 (InitialOrbits): 軌道ごとの列の幅 lf、表示する軌道 jshow (残差の大きいもの nn 本、dp の昇順)、
+        DP / Orbit ID / Res. の 3 行を書く。戻り: dict(form, jshow, lf, lfs)"""
+        ini = m.ini
+        nfam, nfam1 = ini['nfam'], ini['nfam1']
+        lw = max(79, min(256, int(self.I.get('PageWidth', 131.0))))
+        lcf = 20
+        lf = max(6, min(10, (lw - lcf) // (2 * nfam + 2)))
+        fmm = any(c['fmin'] != c['fmax'] for c in fitted.values())
+        if lf > 6:
+            lfs = max(6, min(8, lf, lw - lf * (2 * nfam + 1) - lcf - 2))
+            if fmm:
+                lfs += 4
+            nn = (lw - lcf - 2 - lfs) // lf
+        else:
+            lfs = max(6, min(8, lf, lw - lf * (2 * nfam + 1) - lcf))
+            if fmm:
+                lfs += 4
+            nn = (lw - lcf - lfs) // lf
+        form = f'{lf}.{min(6, lf - 3)}'
+        nn = min(nn, nfam - nfam1 + 1)
+        res = getattr(m, '_res1', {})
+        dps = m._dps_show
+        jshow = []
+        for i in range(nfam1, nfam + 1):
+            for k, jk in enumerate(jshow):
+                if res.get(jk, 0.0) <= res.get(i, 0.0):
+                    jshow.insert(k, i)
+                    break
+            else:
+                jshow.append(i)
+            jshow = jshow[:nn]
+        if 0 not in jshow:
+            jshow[nn - 1] = 0
+        for i in range(1, nn):
+            ji = jshow[i]
+            for j in range(i):
+                if dps[jshow[j]] > dps[ji]:
+                    del jshow[i]
+                    jshow.insert(j, ji)
+                    break
+        pre = ' ' * 11 if lfs > 6 else ' ' * 10
+        mid = ' ' * 7 if lfs > 6 else ' ' * 6
+
+        def line(label, cells):
+            vout = label.ljust(lfs + 3)
+            self.write((pre + vout + mid + ''.join(cells)).rstrip() + chr(10))
+        line(' DP ', [fmt_real(dps[j] + m.dp0, form) for j in jshow])
+        line(' Orbit ID ', [f'{ini["iuid"][j]:6d}'.ljust(lf) for j in jshow])
+        line(' Res.', [fmt_real(res.get(j, 0.0), form) for j in jshow])
+        return dict(form=form, jshow=jshow, lf=lf, lfs=lfs)
+
     def print_fit_table(self):
         """CALC/GO 後の条件表示 (SAD の twelm 風): 位置ごとに、$$$ は AX BX NX AY BY NY LENG を全部、
         他は fit した関数だけ。書式: 名前 a10, 'f '/'  ', 関数 a5, 目標 a10 (S 書式), 点数 1 桁 or '#', 1x, 現在値 (10.6)"""
@@ -2755,6 +3487,10 @@ class FFS:
             if c['mfitp'] != 0:
                 fitted[(c['kp'], c['kf'])] = c
         locs = sorted({kp for kp, _ in fitted} | {self.nlat})
+        multi = getattr(m, 'ini', None) is not None
+        cols = None
+        if multi:
+            cols = self._show_orbit_header(m, fitted)
         cells = []
         for kp in locs:
             funs = ['AX', 'BX', 'NX', 'AY', 'BY', 'NY', 'LENG'] if kp == self.nlat else []
@@ -2764,13 +3500,17 @@ class FFS:
                 v = self.fit_fun_value(kf, kp)
                 sc = PI2 if kf in ('NX', 'NY', 'NZ') else (math.pi / 180.0 if kf.startswith('CHI') else 1.0)
                 c = fitted.get((kp, kf))
+                vs = fmt_real(v / sc, "10.6")
+                if multi and kf in _FUNS and _FUNS.index(kf) <= _FUNS.index('TRY') and kf not in ('LENG',):
+                    # tfshow: k <= mfittry (軌道ごとの値) は表示する軌道の数だけ並べる (幅 lf)
+                    vs = ''.join(fmt_real(m._tgfun(m._rows_idp[j], kf, kp) / sc, cols['form']) for j in cols['jshow'])
                 # 名前の 11 桁目の 'f' は tfshow の kpa==mfpnta .and. kpb==mfpnta1 (現在の FIT 位置の行)
                 fm = 'f' if (kp == m._mfpnt and kp == m._mfpnt1) else ' '
                 if c is not None:
                     goal = fmt_real(c['fmin'] / sc, 'S10.6')
-                    cells.append(f'{self.elname(kp):10s}{fm} {kf:5s}{goal:10s}{abs(c["mfitp"]) - 1:1d} {fmt_real(v / sc, "10.6")}')
+                    cells.append(f'{self.elname(kp):10s}{fm} {kf:5s}{goal:10s}{abs(c["mfitp"]) - 1:1d} {vs}')
                 else:
-                    cells.append(f'{self.elname(kp):10s}{fm} {kf:5s} #######  # {fmt_real(v / sc, "10.6")}')
+                    cells.append(f'{self.elname(kp):10s}{fm} {kf:5s} #######  # {vs}')
         if m.cell and not m.cellstab:
             # tfshow: CELL が不安定 (cellstab=偽) なら 1/$$$ の BMAGX, BMAGY (tgetbmagu2: 先頭と終点の Twiss の不一致) を追加で出す
             rw = self.rows
@@ -2959,6 +3699,145 @@ class FFS:
         self.invalidate()
         return n
 
+    # ------------------------------------------------------------------ WAKE (tffsa.f:972)
+    def _wake_cmd(self, words, i):
+        """WAKE: K64 の tffsa.f は tfwake.f (Fortran の旧 WAKE 構文) を呼ばず、SADScript の WAKECOMMAND[] を評価する (init.n で
+        Packages/WAKECOMMAND.n を AutoLoad。この配布には無い)。gs で確かめた: ファイルが無いと fileopen のエラーを出し、WAKECOMMAND[] は True にならず
+        その行の残りを捨てる。ここも同じ (WAKECOMMAND.n があればそれが評価される)"""
+        try:
+            ok = self.I.run('WAKECOMMAND[]', 'script')
+        except SADError:
+            ok = None
+        if not (isinstance(ok, Sym) and ok.name == 'True'):
+            return max(1, len(words) - i)
+        return 1
+
+    # ------------------------------------------------------------------ DELCOR (tcorr.f, tvcorr.f)
+    def _delcor(self, words, i):
+        """DELCOR [ADD] corlength delx dely element [element1 ...]: リングに沿った相関のあるランダムなずれ (tcorr.f)。
+        corlength=0 は ランダムウォーク (両端を引き戻す)、≠0 は相関長 corlength のガウス過程 (tvcorr.f: 周波数空間で exp(-(k·2π cl/2L)²/4)
+        の重みを付けた複素ガウス乱数を逆 FFT)。要素の中心の位置 s での値 (周期的に線形補間) × (delx, dely) を DX, DY に入れる (ADD は足す)"""
+        n = 1
+        add = False
+        if i + 1 < len(words) and _abbrev(words[i + 1].upper(), 'A_DD'):
+            add = True
+            n += 1
+        vals = []
+        for _ in range(3):
+            v, k = self._getva(words, i + n)
+            if v is None:
+                self.write('Syntax: DELCOR corlength delx dely element [element1...]\n')
+                return max(n, len(words) - i)
+            vals.append(float(v))
+            n += k
+        cl, dx, dy = vals
+        els = self.els
+        nlat = self.nlat
+        pos = [0.0] * (nlat + 1)
+        for k in range(1, nlat):
+            pos[k + 1] = pos[k] + float(getattr(els[k - 1], 'L', 0.0) or 0.0)
+        al = pos[nlat]
+        if not self.flags['CELL']:
+            al *= 2.0
+        nc = 128
+        while nc <= 32768 and nc * 0.5 < al:
+            nc *= 2
+        cv = self._tvcorr(cl, al, nc)
+        master = self._master_array()
+        design = lambda el, key: float(self.env._elements.get(el.name, {}).get(key, 0.0) or 0.0)
+        exist1 = False
+        while i + n < len(words):
+            w = words[i + n]
+            if w.upper() in _COMMANDS or w.upper() in _ERRCMDS:
+                break
+            abb = any(c in w for c in '*%{}')
+            exist = False
+            for i1 in sorted(self.positions(w)):
+                if i1 >= nlat:
+                    continue
+                el_i = els[i1 - 1]
+                id_ = _TYPECODE.get(_cls(el_i), 0)
+                if id_ == 1 or (id_ > 8 and id_ not in (20, 31, 41)):
+                    continue
+                exist = True
+                ie = i1 if id_ == 41 else master[i1]
+                if ie <= 0:
+                    continue
+                s = 0.5 * (pos[i1] + pos[ie + 1])
+                ns = (int(nc * s / al) + nc // 2) % nc + 1
+                ns1 = ns % nc + 1
+                wt = (nc * s / al + nc // 2 - (ns - 1)) % 1.0
+                delx = (cv[ns - 1].real * (1.0 - wt) + cv[ns1 - 1].real * wt) * dx
+                dely = (cv[ns - 1].imag * (1.0 - wt) + cv[ns1 - 1].imag * wt) * dy
+                for j in range(i1, ie + 1):
+                    if master[j] != 0 or id_ == 41:
+                        ej = els[j - 1]
+                        if id_ == 41:
+                            # K64 のまま: MARK には latt+15, +17 に書く。値の添字では ky_DETR_Mark=15、ky_DPX_Mark=17 (DX=16、DY=18 ではない)。
+                            # INS の始点が読む raw の DETR (R の行列式) と DPX (初期の傾き) に入る
+                            raw = self.env._elements.setdefault(ej.name, {})
+                            ox = float(raw.get('DETR', 0.0) or 0.0)
+                            oy = float(raw.get('DPX', 0.0) or 0.0)
+                            raw['DETR'] = ox + delx if add else delx
+                            raw['DPX'] = oy + dely if add else dely
+                            continue
+                        if id_ == 31:
+                            # K64 (tcorr.f): CAVI は latt+3, +4 = HARM と PHI に (DX, DY ではなく) 書く。add でなければ設計の DX・DY (idvalc+13, +14) から
+                            # delx・dely を引いた値、add なら -delx・-dely を足す (K64 の添字のずれ。gs で確かめた: docs/19 B62)
+                            dxo = float(getattr(ej, 'DX', 0.0) or 0.0)
+                            dyo = float(getattr(ej, 'DY', 0.0) or 0.0)
+                            if add:
+                                ej._harm = float(getattr(ej, '_harm', 0) or 0) - delx          # HARM は (整数でなく) 実数のまま持つ
+                                ej.PHI = float(getattr(ej, 'PHI', 0.0) or 0.0) - dely
+                            else:
+                                ej._harm = dxo - delx
+                                ej.PHI = dyo - dely
+                            continue
+                        if not (hasattr(ej, 'DX') or id_ == 41):
+                            continue
+                        ej.DX = (float(getattr(ej, 'DX', 0.0) or 0.0) + delx) if add else delx
+                        ej.DY = (float(getattr(ej, 'DY', 0.0) or 0.0) + dely) if add else dely
+                if not abb:
+                    break
+            self._tfadjst()
+            exist1 = exist1 or exist
+            n += 1
+            if not exist and not abb:
+                if not exist1:
+                    self.write('?Undefined element ' + w + '\n')
+                break
+        self.invalidate()
+        return n
+
+    def _tvcorr(self, x0, al, n):
+        """tvcorr.f: 相関のある複素ガウス過程 cv (n 点)"""
+        g = lambda: float(self.rng.gauss(1, self.gcut()))
+        cv = np.zeros(n, dtype=complex)
+        if x0 == 0.0:
+            w = math.sqrt(al / n)
+            for k in range(1, n):
+                re_ = w * g()
+                im_ = w * g()
+                cv[k] = cv[k - 1] + complex(re_, im_)
+            cd = cv[n - 1] / n
+            for k in range(1, n):
+                cv[k] = cv[k] - cd * k
+            return cv
+        x = x0 / al
+        s = 0.0
+        x1 = 0.25 * (x * 2.0 * math.pi) ** 2
+        for k in range(2, n // 2 + 1):             # Fortran の添字 i = k (1 始まり)
+            w = math.exp(-((k - 1) ** 2) * x1)
+            re_ = w * g(); im_ = w * g()
+            cv[k - 1] = complex(re_, im_)
+            re_ = w * g(); im_ = w * g()
+            cv[n - k] = complex(re_, im_)
+            s += w * w
+        cv[0] = complex(g(), g())
+        s = 1.0 / math.sqrt(4.0 * s + 2.0)
+        cv = np.fft.ifft(cv) * n * s             # tcftr (conj=.false.) = exp(+2πi jk/n) の和
+        return cv
+
     def _master_array(self):
         """tmast.f: master[i] (1 始まり、nlat-1 まで)。磁石 (BEND/QUAD/SEXT/OCT/DECA/DODECA/MULT/CAVI/TCAV) の先頭 i は
         同じ要素 (名前が同じ) の最後の位置 ie、同じ要素の 2 番目以降 j は -i、それ以外 (ドリフト・ソレノイド・マーカー・
@@ -3068,7 +3947,7 @@ class FFS:
             dx = float(getattr(el, 'DX', 0.0) or 0.0) - float(raw.get('DX', 0.0) or 0.0)
             dy = float(getattr(el, 'DY', 0.0) or 0.0) - float(raw.get('DY', 0.0) or 0.0)
             if any((dl, dk, ddk, dth, dx, dy)):
-                self.write(f' {self.elname(k):10s}{dl * 1e3:10.5f}{dk:12.5g}{ddk:12.5g}{dth * 1e3:10.5f}{dx * 1e3:10.5f}{dy * 1e3:10.5f}\n')
+                self.write(f' {self.elname(k):10s}{dl * 1e3:10.5f}{_gwd(dk, 12, 5)}{_gwd(ddk, 12, 5)}{dth * 1e3:10.5f}{dx * 1e3:10.5f}{dy * 1e3:10.5f}\n')
 
     # ------------------------------------------------------------------ COUPLE
     def _couple(self, words, i):
@@ -3140,12 +4019,47 @@ class FFS:
             for fam in self.families(pat):
                 el = self.instances(fam)[0]
                 groups.setdefault(_TYPENAME.get(_cls(el), 'DRIFT'), []).append(fam)
+            lpw = 131 - 2 + 2                    # itfgetrecl の幅 (twbuf の右端は lpw、値は lpw-2)
+            lpw = 131
+            st = {'buff': '', 'ip': 0}
+
+            def twbuf(word, unit, ilmgn, irmgn, itab, icmd):
+                """twbuf.f の直訳 (行の組み立て。単語はタブ位置 itab の倍数に置く。幅を超えたら改行)"""
+                if icmd == 0:
+                    st['ip'] = 0
+                    return
+                if icmd == -1:
+                    if st['ip'] > ilmgn - 1:
+                        self.write(st['buff'][:st['ip']] + chr(10))
+                    st['ip'] = 0
+                    return
+                while True:
+                    ip = st['ip']
+                    ip1 = (max(ip, ilmgn - 1) + itab - 1) // itab * itab
+                    if ip1 >= irmgn:
+                        self.write(st['buff'][:ip] + chr(10))
+                        st['ip'] = 0
+                        continue
+                    lw = len(word.rstrip())
+                    ln = lw + len(unit) + 1
+                    if ln > 1:
+                        if ip1 + ln > irmgn:
+                            self.write(st['buff'][:ip] + chr(10))
+                            st['ip'] = 0
+                            continue
+                        buf = st['buff'][:ip].ljust(ip1 + 1) + word[:lw] + unit
+                        st['buff'] = buf
+                        st['ip'] = ip1 + ln
+                    return
+
             for tname in self._TYPE_ORDER:
                 fams = groups.get(tname)
                 if not fams:
                     continue
+                mulc = tname != 'DRIFT'              # kytbl(kwMAX, lt) > ky_MAX_DRFT: DRIFT 以外は 1 要素ごとに改行、DRIFT は詰めて並べる
                 self.write(' ;' + chr(10))
-                first = True
+                twbuf(' ', '', 1, lpw, 0, 0)
+                twbuf(tname, '', 1, lpw, 7, 1)
                 for fam in fams:
                     el = self.instances(fam)[0]
                     l = self.els.index(el) + 1
@@ -3162,31 +4076,21 @@ class FFS:
                                 pairs.append((k, deg, ' DEG'))
                             else:
                                 pairs.append((k, v, ''))
-                    head = f' {tname:6s} ' if first else ' ' * 8
-                    first = False
+                    nm = f'{fam:8s}'
                     if not pairs:
-                        self.write(f'{head}{fam:8s}=()' + chr(10))
-                        continue
-                    line = f'{head}{fam:8s}=('
-                    col = len(line)                      # 18
-                    lpw = 131 - 2                        # twbuf の幅 (lpw=min(131, recl)、tftyp1 は lpw-2)
-                    for n, (k, v, unit) in enumerate(pairs):
-                        seg = f'{k} ={_shortest(v)}{unit}'
-                        if n > 0 and col + len(seg) > lpw:
-                            # 幅を超えるときは折り返し (twbuf: 続きの行は 11 桁の空白の後)
-                            self.write(line.rstrip() + chr(10))
-                            line = ' ' * 11
-                            col = 11
-                        line += seg
-                        col += len(seg)
-                        if n < len(pairs) - 1:
-                            # タブ位置 26, 31, 36, … (次の位置まで空白、最低 1 つ)
-                            nxt = 26 if col < 26 else 26 + 5 * ((col - 26) // 5 + 1)
-                            line += ' ' * (nxt - col)
-                            col = nxt
-                        else:
-                            line += ' )'
-                    self.write(line + chr(10))
+                        twbuf(nm, '=()', 7, lpw, 7, 1)
+                    else:
+                        for n, (k, v, unit) in enumerate(pairs):
+                            vout = f'{k} ={_shortest(v)}'
+                            if n == 0:
+                                twbuf(nm + '=(' + vout, unit.rstrip(), 7, lpw - 2, 7, 1)
+                            else:
+                                twbuf(vout, unit.rstrip(), 10, lpw - 2, 5, 1)
+                        twbuf(')', '', 10, lpw, 1, 1)
+                    if mulc:
+                        twbuf(' ', '', 10, lpw, 0, -1)
+                if not mulc:
+                    twbuf(' ', '', 10, lpw, 0, -1)
         self.write(' ;' + chr(10))
 
     # ------------------------------------------------------------------ DISP (tfdisp.f)

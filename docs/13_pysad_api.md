@@ -1,9 +1,9 @@
 # 13. pysad 公開 API リファレンス
 
-最終更新: 2026-11-06 (現状のスナップショット)
+最終更新: 2026-11-16 (現状のスナップショット。新しい API は §16)
 
 > 場所: `pysad/`。全体像は `01_overview.md`、各計算の直訳メモは 05〜09、SAD の癖は `11_sad_quirks.md`。
-> 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `pysad/tests/kek-ls_v03_12.lat` と本文中の小さな FODO リング)。
+> 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `<試験用ラティス>.lat` と本文中の小さな FODO リング)。
 > `pysad/__init__.py` の `from pysad import ...` は旧 API (§15) を export しているので、**各モジュールを直接 import する** (`from pysad.parser import load_sad_file` など)。
 
 ## 0. 共通の約束 (単位・座標・位置)
@@ -41,7 +41,7 @@ SAD の要素ファミリー vs 誤差 (インスタンス) の区別は `Lattic
 
 ```python
 from pysad.parser import load_sad_file
-sc = load_sad_file(r'pysad/tests/kek-ls_v03_12.lat')
+sc = load_sad_file(r'<試験用ラティス>.lat')
 lat = sc.build_lattice('RING')          # Lattice('LATTICE', nelem=3563, C=603.120 m)
 qf = [e for e in lat.elements if e.name == 'QFA1H'][0]
 qf.K1, qf._raw                          # 長さあたりの K1、{'L': .125, 'K1': ...} (SAD の積分値)
@@ -203,7 +203,7 @@ x = track_particles_fast(lat.elements, x0, 10, 3.0e9, trf0=em['trf0'], rad=True,
 | `alost`, `zlost` | `LOSSAMPL`, `LOSSDZ` |
 | `out` | 地図の出力先 (`sys.stdout.write` など)。None で表示しない |
 
-戻り: `score` (= `Σ nsc`) と `result = [[[a2min,a2max],[a3min,a3max],[a1min,a1max]], [[a1, nsc, [ntloss×51]], ...]]` (SAD の `ResultOfDAPERT`)。`ntloss` は損失までの完了周数 (生存は nturn)。未対応: `Damping->True`、`DAPWIDTH` の窓。
+戻り: `score` (= `Σ nsc`) と `result = [[[a2min,a2max],[a3min,a3max],[a1min,a1max]], [[a1, nsc, [ntloss×51]], ...]]` (SAD の `ResultOfDAPERT`)。`ntloss` は損失までの完了周数 (生存は nturn)。未対応: `Damping->True`、`DAPWIDTH` の窓 (2026-11-16 の `dapert.py` でも同じ)。
 
 ```python
 from pysad.dapert import dynamic_aperture
@@ -273,7 +273,7 @@ fmt_real(1.2345678901234e-3, '15.10')   # '    .0012345679'
 | `run_sad(paths, out=None, cwd=None) -> (FFS, Interp)` | 複数ファイルを連結して実行 (`gs lattice script` と同じ)。`cwd` 既定は最後のファイルのディレクトリ |
 | `run_sad_string(src, out=None, cwd=None) -> (FFS, Interp)` | 文字列版。`FFS;` 行で MAIN 部と FFS 部に分け、MAIN 部の `ON/OFF flag;` をフラグに反映 |
 | `split_main_ffs(src) -> (main, ffs_src, flags)` | 上の分割だけ |
-| `FFS(script_env, interp, out=None)` | `parser` の `env` と `Interp` を結び、組み込み `Twiss, LINE, Element, FFS, Emittance, TrackParticles, SeedRandom, GaussRandom, Random, DynamicApertureSurvey, FFSCalc, BeamLineName` を登録 (`install`) |
+| `FFS(script_env, interp, out=None)` | `parser` の `env` と `Interp` を結び、組み込み `Twiss, LINE, Element, FFS, Emittance, TrackParticles, SeedRandom, GaussRandom, Random, DynamicApertureSurvey, FFSCalc, BeamLineName` のほか、`CalculateOptics, TouschekLifetime, Master, RenumberElement, ResponseMatrix, ParabolaRandom, SynchroBetaEmittance1` などを登録 (`install`)。全体の一覧は §16.1 |
 | `FFS.execute(stmt)` / `FFS.run_text(text)` | FFS コマンド 1 文 / コマンド列 (`FFS["..."]`) |
 | `FFS.use(name)`, `FFS.calc()`, `FFS.run_emit(quiet)`, `FFS.go(fit)` | `USE`, `CALC` (→ `FFS.rows`: `TwissRow`、`rows[l-1]` = SAD の `twiss(l)`), `EMIT`, `GO`/`CALC` |
 | `FFS.twiss_value(key, k, fr=0.0)`, `FFS.line_value(key, k, fr)` | `Twiss[key, k+fr]`, `LINE[key, k+fr]` (k は 1 始まり、fr は要素内の割合) |
@@ -314,7 +314,7 @@ Emittance X            = 1.5494E-10 m   Emittance Y            = 1.2747E-21 m
 
 ```
 cd "<repo>"
-PYTHONIOENCODING=utf-8 python -u run_sad.py pysad/tests/kek-ls_v03_12.lat <work-esrf>\matching_full.sad
+PYTHONIOENCODING=utf-8 python -u run_sad.py <試験用ラティス>.lat <台本ファイル>
 ```
 
 引数のファイルを順に連結して `run_sad_string` に渡す。SAD の `gs` に複数ファイルを渡すのと同じ。進捗表示は環境変数 `PYSAD_PROGRESS=n` または SADScript 変数 `PYSAD$PROGRESS` (DA の n 周ごと)。
@@ -358,7 +358,7 @@ tau = touschek_lifetime(tt['table'], None, None, 10.0, em['momentum_spread'])   
 
 ## 14. 通しの使用例 (Python から直接)
 
-下の例は `load_sad_string` の FODO リング (170 要素) で、各段を順に実行したもの (全体で数秒)。esrf の実ラティスでも同じ呼び方で動く (§3〜§7 の時間を参照)。
+下の例は `load_sad_string` の FODO リング (170 要素) で、各段を順に実行したもの (全体で数秒)。実ラティスでも同じ呼び方で動く (§3〜§7 の時間を参照)。
 
 ```python
 import sys, math, numpy as np
@@ -402,3 +402,72 @@ print(score)                                               # 144
 ## 15. 旧 API (非推奨)
 
 `ffs.py`, `matching.py`, `tracking.py`, `optics.py` (`FFSState`, `Match`, `track_particles`(旧), `dynamic_aperture`(旧), `periodic_optics` 等) と `parser.SADScript.ffs` / `run_ffs` は独自実装で SAD と未照合 (tracking.py は放射係数に疑い)。`pysad/__init__.py` がこれらを export しているが、新規コードでは使わず、本書のモジュールを直接 import すること。`lattice.py` の `chromaticity()` / `summary()` / `emittance()` も同じ系統。
+
+## 16. 2026-11-06 以後に加わった API (2026-11-16 現在)
+
+組み込み関数は `Interp.builtins` (名前 → f(引数のリスト)) に登録される。ここでは前節までに無い物を書く。
+各項目の gs との一致の程度と限界は、対応する要素別の文書 (docs/20〜35) と docs/10 §6 にある。ここの関数名と引数の形は `pysad/*.py` のソース (登録箇所とドキュメント文字列) で確認したもので、この更新で実行して値を確かめたものではない。
+
+### 16.1 組み込み関数の登録場所 (一覧)
+
+| モジュール | 登録される名前 (`B['...']`) |
+|---|---|
+| `sadscript.py` (214 個) | 数学・文字列・リスト・入出力・制御の基本関数、`Read`・`Skip`・`ReadString`・`ReadList`、`GaussianCoulomb`・`GaussianCoulombU`・`GaussianCoulombFitted`・`BBBrem1` ほか |
+| `sadlist.py` (88 個) | `Append, Apply, Cases, Complement, Count, Delete, DeleteCases, Dimensions, Dot, Drop, Extract` などのリスト関数 |
+| `ffscmd.py` (22 個) | `Twiss, LINE, Element, FFS, Emittance, TrackParticles, SeedRandom, GaussRandom, Random, DynamicApertureSurvey, TouschekLifetime, CalculateOptics, Master, RenumberElement, ResponseMatrix, ParabolaRandom, FFSCalc, BeamLineName, SynchroBetaEmittance1, Set` ほか |
+| `sadelem.py` (8) | `Element, SetElement, FLAG, BeamLine, WriteBeamLine, ExtractBeamLine, PrintBeamLine, GetMAIN` |
+| `specfn.py` (22) | `HypergeometricPFQ(Regularized), LegendreP, Fourier, InverseFourier, Multinomial, BitwiseAnd/Or/Xor, Complex, Union1` ほか (特殊関数は 458 式で gs と照合: docs/31) |
+| `fitroot.py` (5) | `FindRoot, Fit, FitEmit, FitGaussian, NIntegrate` |
+| `vecfn.py` (2) | `Vector, ReleaseVector` |
+| `miscfn.py` (26) | `DownhillSimplex, StringToStream, TemporaryName, ListRandom, Fork, Short, Inequality, ToInputString, MessageName, SingularValues, MatrixBalance` ほか |
+| `fileops.py` (35) | `OpenShared, ReadShared, WriteShared, Parallelize, FileNames, FileQ, CopyFile, RenameFile, DirectoryName, Environment` ほか |
+| `optics_fn.py` (9) | `BeamMatrix, GeoBase, NormalCoordinates, OrbitGeo, SymplecticJ, SymplecticInverse, TransferMatrix, AccelerateParticles, SurvivedParticles` |
+| `csr.py` (7) | `CSRInit, CSRMatrix, CSRConvert, CSRTrack, CSRHaissin, CSRSetupOY, CSROYMatrix` |
+| `radfield.py` (2) | `RadiationField, RadiationSpectrum` |
+| `corr.py` (1) | `LinearSolveConditioned` (CorrectOrbit・MakeBump などは SAD の `Packages/*.n` を `pkgload.py` 経由でそのまま実行) |
+| `sadclass.py` (2) | `Class, At` (SAD のクラスの機構) |
+| `tclbridge.py`・`tkcanvas.py` | `Tcl*`・`Tk*`・`X*` (GUI: docs/20)、`TkCanvas*` (描画: docs/35) |
+
+(表の数は `B['名前'] = ...` の形で代入している箇所を数えたもの。`B.update(...)` や関数経由で登録される名前は数えていないので全数ではない。)
+
+### 16.2 新しい関数
+
+| 関数 | 形式 | 説明 |
+|---|---|---|
+| `SynchroBetaEmittance1` | `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` → `{{nus, emitx, emity, emitxp, emityp, conv}, …}` | K64 の `tfemits`/`temits` (シンクロ・ベータ結合の平衡エミッタンス)。`Packages/emit.n` の `SynchroBetaEmittance` が呼ぶ。`USE` 後に使う。実装は `synchrobeta.py` (`synchro_beta_emittance`)。gs との差・未確認は docs/10 §6。24 セルの平面リング + CAVI で emitx が gs と 1.4e-7〜1.4e-6、結合のあるラティスは gs が SIGSEGV で比較不能 (pysad は NaN の ValueError で失敗) |
+| `CSRInit`, `CSRMatrix`, `CSRConvert` | `CSRMatrix[pipe, {dx,dy,f0..f3,tilt}, omega, rho, center, mode]`、`CSRConvert[v または m, pipe]` | CSR の行列。mode 22・33・23・32・110・220・330・1000 (らせん断面 `csrhelmat`)。`CSRConvert` は K64 の `tfcsrvec` と同じ。docs/34 |
+| `CSRTrack`, `CSRHaissin`, `CSRSetupOY`, `CSROYMatrix` | `CSRTrack[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]` ほか | 縦方向のマクロ粒子追跡 (z・dp を**その場で更新**する)、Haissinski 方程式、OY の方法。`Packages/CSR.n` の `Track` などが呼ぶ |
+| `RadiationField`, `RadiationSpectrum` | `RadiationField[traj, obs]`、`RadiationSpectrum[{τ, f}, {λ1, λ2, dλ}]` | `traj = {{t..},{x..},{y..},{z..}}` (RADLIGHT の軌道) と観測点 `{x,y,z}` から放射場 (`radfield.py`、K64 の tlfield/tlcalc/tlspect)。`RadiationSpectrum` は NPARA の fork 並列なし (逐次) |
+| `GaussianCoulomb`, `GaussianCoulombU`, `GaussianCoulombFitted` | `GaussianCoulombFitted[x, y, sx, sy]` (実数 4 つ、リストを返す) | 横方向ガウス分布のクーロン場。`Fitted` は K64 の `twspfu` (フィット式、`gausscoul.py`)。docs/30 |
+| `BBBrem1` | `BBBrem1[e, ds/s]` (ds/s は 0〜1 の外でエラー) | 制動放射のモンテカルロ (`bbbrem.py`、docs/30) |
+| `Skip` | `Skip[unit, type, n]` | 型 (Character・Real・Word など) の項目を n 個読み飛ばし、最後に読んだ項目を返す。EOF なら `EndOfFile`。n≤0 や Record などは gs と同じく未評価で返す |
+| `Read` | `Read[unit, type]` | 型の読み方を gs に合わせた。`Real` で数でない語は式として評価した値を返す。`Word` は語の文字列 |
+| `FindRoot`, `Fit`, `NIntegrate`, `FitGaussian`, `FitEmit` | | 数値微分で gs と 5e-10〜1e-9。ベクトルの独立変数は実装、複素 `FindRoot` は未対応 (gs が壊れた値: B61) |
+| `DownhillSimplex` ほか | | `optimize.n` の Amoeba を移植 (gs と 1e-13) |
+
+注: `MessageName[f, "usage"]` の関数形は gs と違う (gs は `Undefined MessageName` を出し、pysad は `f::usage` と同じ表を引く)。`f::usage` の形は一致。
+
+### 16.3 既存の関数の拡張
+
+| 関数 | 変更 |
+|---|---|
+| `TrackParticles` | (1) POL ON かつ RAD ON のとき、粒子ごとにスピンを追跡する (`track6.py` の `sprot`・`bsi`)。入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/|s|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/|s|`。**損失の処理は無い**。この場合は高速追跡 (track6n) でなく Python の追跡 (track6) を使う。(2) RADLIGHT が ON のとき `{結果, 軌道}` を返す: 軌道は粒子ごとに `{t, x, y, z}` の 4 本の表 (`ffscmd._RadLight`)。K64 は BEND の中を記録せず、横方向の座標も入れない。(3) TRPT かつ LWAKE/TWAKE のときウェイクを適用 (`wake.py`、docs/21) |
+| `Emittance[]` | POL のスピン量 (偏極時間・スピンチューン・偏極ベクトル。MULT・空洞・SOL (ドリフトのある領域) まで)、SOL 領域を含む Twiss・Emittance[] (`solmap.py`、`solemit.py`)、COORD・TCAVI (L=0)・UND・MULT ANGLE≠0・ExternalMap の要素 |
+| FIT の幾何の条件 (`GX GY GZ CHI1..3`) | DRIFT の L・BEND の ANGLE・L は K64 の `tdgeo` の解析微分 (`match6d.tdgeo_term`)、他の変数は中心差分 |
+| `obj@name[...]` | クラスのメンバーでない名前は式のまま (K64 と同じ) |
+| `ElectronMass` (スクリプト) | 510998.95 (K64 の値。以前の pysad は 510999.06) |
+
+### 16.4 `run_sad` と `run_sad_string` の現状
+
+§11 の記述 (`run_sad(paths, out=None, cwd=None)`、`run_sad_string(src, out=None, cwd=None)`、どちらも `(FFS, Interp)` を返す) は 2026-11-16 のソース (`ffscmd.py`) で確認した通りで、シグネチャは変わっていない。補足:
+
+- `run_sad_string` は `FFS;` の行で MAIN 部と FFS 部に分ける。MAIN 部に `TRACK` 文があるときは、MAIN の命令 (ON/OFF, EMIT, 代入, TRACK, STOP) を書かれた順に実行する (`ffs.main_exec`)。
+- 実行中のエラーは `I.continue_on_error = True` で、SAD と同じく表示して次の文へ進む。`SystemExit` は捕まえて戻る。
+- 初期の `MOMENTUM` は 30 GeV (K64 の `initb1.f`)。以前の文書は 1 GeV と書いていた。
+- SAD の `Packages/*.n` (CorrectOrbit, MakeBump, OptimizeOptics, `CSR.n` の MakeZL・SkinDepth など) は `pkgload.py` 経由で SADScript のまま読み込まれる (docs/32)。
+
+### 16.5 限界・未確認
+
+- 引数の検査 (引数の数・型のエラー文) は関数ごとに違うので、細部は各モジュールのソースを見ること。実行例は作っていない。
+- `B['名前']` の数え上げは全数ではない (§16.1 の注)。
+- 未翻訳: MEASURE/TRCOD (`tracke/ttinit/ttstat/trcoda/trackb`)、`wjfit/wfres/wfbin/wiord/wjdraw`、SOL 領域内の MULT・BEND・CAVI、`Polarization` (K64 が NaN)、PHSROT (K64 で動作しない)。`tlum/tluma` は `measure.py` にあるが MEASURE が gs で動かないので解析値との比較だけ。

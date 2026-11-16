@@ -33,6 +33,7 @@ from .perfkern import tradke_db as _tradke_db
 from .perfkern_bend import apply_tdb as _apply_tdb, bendecorr as _k_bendecorr, bendebody as _k_bendebody
 from . import elkern as _ek
 
+POL_MODE = False      # POL フラグ (emittance6d / emittance_rules が一時的に True にする。_State.calpol の既定値)
 _USE_ELKERN = os.environ.get('PYSAD_NO_ELKERN') != '1'    # False: 要素カーネルを使わず従来の Python の piece で追う (比較用)
 
 # ---------------------------------------------------------------------------
@@ -155,6 +156,17 @@ class _Phys:
         self.emidiq = emidiq
         self.dvfs = 0.0          # tsetdvfs: RFSW ON のとき FSHIFT (RF 周波数のずらし = Orbit dilation)。emittance6d が設定する
 
+    def set_pgev(self, pgev):
+        """tphyzp: 基準運動量を変える (加速のある CAVI の後)。p0、h0、brhoz、crad、urad が変わる (anrad、cuc は変わらない)"""
+        self.pgev = pgev
+        self.brhoz = pgev / CVELOC
+        self.p0 = pgev / self.amass
+        self.h0 = _p2h(self.p0)
+        sgn = 1.0 if self.charge >= 0 else -1.0
+        rclassic = self.charge**2 * ELRADI
+        self.crad = sgn * abs(rclassic * (CVELOC / self.amass)**2 / self.p0 / 1.5)
+        self.urad = sgn * abs(1.5 * PLANKR * CVELOC / self.p0 / self.amass / ELEMCH)
+
     def dv(self, dp):
         """tesetdv / tgetdv: dvemit = -(p1+p0)/h1/(p0 h1+p1 h0) dp + dvfs"""
         p1 = self.p0 * (1.0 + dp)
@@ -184,11 +196,18 @@ class _State:
         self.ddvcacc = 0.0
         self.codr0 = self.cod.copy()
         self.transr = self.T.copy()
+        self.bzhr0 = 0.0        # tsetr0 / tradke が残すソレノイド場の半分 (temw の bzhr0)
         self.want_jac = True    # False: cod だけ追う (ヤコビアン T も作らない)。閉軌道の収束判定だけに使う反復用
         self.want_db = True     # False: SAD の irad=6 (tcod の反復用)。放射による cod の変化と u0 だけ追い、D・B 行列は作らない
         p1 = ph.p0 * (1.0 + self.cod[5])
         self._S = np.array([0.0, _p2h(p1), ph.dv(self.cod[5])])   # [u0, h1emit, dvemit] (elkern のカーネルと共有)
         self.PH = _ek.phys_array(ph)
+        # スピン (POL): srot(3,9), gintd(3), bsir0。calpol=True のときだけ tradke / tchge が更新する (pysad/spin.py)
+        self.calpol = POL_MODE
+        self.srot = np.zeros((3, 9))
+        self.srot[0, 0] = self.srot[1, 1] = self.srot[2, 2] = 1.0
+        self.gintd = np.zeros(3)
+        self.bsir0 = 0.0
 
     @property
     def u0(self):
@@ -240,29 +259,34 @@ class _State:
         self.apply(J)
 
     # temw tsetr0
-    def setr0(self):
+    def setr0(self, bzh=0.0):
         self.codr0 = self.cod.copy()
         self.transr = self.T.copy()
+        self.bzhr0 = bzh
+        self.bsir0 = 0.0         # tsetr0(trans,cod,bzh,bsi0=0)
 
     # photons.f tradke (bzh=0, radcod=F, calpol=F, irad=12)
-    def tradke(self, al, phir0):
+    def tradke(self, al, phir0, bzh=0.0):
         if not self.want_jac and not self.radcod:
+            self.bzhr0 = bzh
             return          # cod も変えず、u0・D・B も使わない一周 (z_slip 等)
         ph = self.ph
         cod = self.cod
         codr0 = self.codr0
+        bzhr0 = self.bzhr0
         gi = codr0[5]
         pr = 1.0 + gi
         th = math.tan(0.5 * phir0)
         sp = 2.0 * th / (1.0 + th**2)
         cp = 1.0 - th * sp
-        pxi = codr0[1]
-        pyi = codr0[3]
+        # codr0, cod の運動量は正準 (ソレノイド内): 力学的運動量にして使う
+        pxi = codr0[1] + bzhr0 * codr0[2]
+        pyi = codr0[3] - bzhr0 * codr0[0]
         pz00 = pr * (1.0 + _pxy2dpz(pxi / pr, pyi / pr))
         pxr0 = cp * pxi + sp * pz00
         pz0 = -sp * pxi + cp * pz00
-        px = cod[1]
-        py = cod[3]
+        px = cod[1] + bzh * cod[2]
+        py = cod[3] - bzh * cod[0]
         pz = pr * (1.0 + _pxy2dpz(px / pr, py / pr))
         dpx = px - pxr0
         dpy = py - pyi
@@ -289,8 +313,8 @@ class _State:
             cod = self.cod.copy()
             cod[0] += ddpx * c1
             cod[2] += ddpy * c1
-            cod[1] = px * pr1 / pr + ddpx
-            cod[3] = py * pr1 / pr + ddpy
+            cod[1] = px * pr1 / pr + ddpx - bzh * cod[2]
+            cod[3] = py * pr1 / pr + ddpy + bzh * cod[0]
             cod[5] = g
             p2 = ph.p0 * pr1
             h2 = _p2h(p2)
@@ -303,15 +327,23 @@ class _State:
         if not self.want_db:
             self.codr0 = self.cod.copy()
             self.transr = self.T.copy()
+            self.bzhr0 = bzh
             return
         # D・B の更新は numba カーネル (perfkern.tradke_db: 下の numpy 版と同じ式。numpy の小行列演算の連続が 0.5 ms/回かかるため)
         ok, Dn, Bn = _tradke_db(self.T, self.transr, self.D, self.B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
-                                xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU)
+                                xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU, bzh, bzhr0)
         if ok:
             self.D = Dn
             self.B = Bn
+        if self.calpol:
+            from . import spin as _spin
+            _spin.tradke_spin(self, dict(pr=pr, px=px, py=py, pz=pz, pxi=pxi, pyi=pyi, pz00=pz00, pz0=pz0, pxr0=pxr0,
+                                         cp=cp, sp=sp, xpx=xpx, xpy=xpy, xpz=xpz, xpa=xpa, bzh=bzh, bzhr0=bzhr0,
+                                         al=al, h1=h1, p=p, p0=ph.p0, al1=al1, anp=anp))
         self.codr0 = self.cod.copy()
         self.transr = self.T.copy()
+        self.bzhr0 = bzh
+        self.bsir0 = 0.0
 
 
 # ---------------------------------------------------------------------------
@@ -829,7 +861,7 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
     if rot:
         Rin_t = _ROT_IN @ Rin_t
     Rout_t = Rin_t.T.copy()
-    plain = (not rot) and th == 0.0
+    plain = (not rot) and th == 0.0 and dx == 0.0 and dy == 0.0     # ずれがあるとヤコビアンは r_in(c) (ずらした座標) で評価する
 
     def wrapj(Jc):
         if Jc is None:
@@ -1020,12 +1052,15 @@ def _tbendecorr(st: _State, ak1, al, rho0):
     st.cod = cod
 
 
-def _tbendebody(st: _State, al, phin, ak1, alr, rhob, rho0, enarad):
+def _tbendebody(st: _State, al, phin, ak1, alr, rhob, rho0, enarad, bsi1=0.0):
     """tbende.f tbendebody (tbinit=.true. で毎回 tbendeinit。本体は perfkern_bend.bendebody)"""
+    xi, yi = st.cod[0], st.cod[2]
     t, cod = _k_bendebody(st.cod, al, phin, ak1, rhob, rho0, st.ph.h0, st.h1emit, st.dvemit, PSQMAX)
     st.apply(t)
     st.cod = cod
     if enarad:
+        if st.calpol:
+            st.bsir0 += bsi1 * (yi / rhob + ak1 * xi * yi)       # bsi2 の項は最後のスライス (enarad=F) にしか付かない
         st.tradke(alr, phin)
 
 
@@ -1100,10 +1135,15 @@ def _tbende(st: _State, el: Bend, enarad: bool = True):
     core = _lat._bend_noerr(el)
     st.piece(lambda c: _lat._tchge_cod(c, dx, dy, dz, th, dth, alg, phig, True),
              jac=lambda c: _lat._tchge_jac(c, dx, dy, dz, th, dth, alg, phig, True))
+    if st.calpol:
+        from . import spin as _spin
+        _spin.tchge_spin(st, dx, dy, dz, th, dth, alg, phig, True)
     _tbende_core(st, core, enarad)
     al0, phi0 = (el.L, float(el.ANGLE)) if phig != 0.0 else (0.0, 0.0)
     st.piece(lambda c: _lat._tchge_cod(c, dx, dy, dz, th, dth, alg - al0, phig - phi0, False),
              jac=lambda c: _lat._tchge_jac(c, dx, dy, dz, th, dth, alg - al0, phig - phi0, False))
+    if st.calpol:
+        _spin.tchge_spin(st, dx, dy, dz, th, dth, alg - al0, phig - phi0, False)
 
 
 def _tbende_core(st: _State, el: Bend, enarad: bool = True):
@@ -1141,6 +1181,9 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
         ndiv = max(ndiv, int(nrad * ph.emidiv * ph.emidib),
                    1 + int(abs(phib * ph.h0 * ph.anrad) / epsr1 / 1e6
                            * ph.emidiv * ph.emidib))
+    if st.calpol:
+        from .spin import GSPIN as _GSPIN
+        ndiv = max(ndiv, 1 + int(max(abs(phic), 1e-6) * ph.h0 * _GSPIN / 1e-2))     # dphipol=1e-2
     # 入口エッジ (解析ヤコビアン: tbfrie.f の trans を段ごとに掛けたもの)
     st.piece(lambda c: _lat._tbedge_cod(c, rhob, pe1, True),
              jac=lambda c: _lat._bend_edge_chain(c, _EYE6, rhob, pe1, True)[1])
@@ -1149,6 +1192,8 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
     phin = phic / ndiv
     if ak == 0.0:
         for n in range(1, ndiv + 1):
+            yi0 = st.cod[2]
+
             def f(c):
                 c = _lat._tbendebody0_cod(c, phin, rhob, rhob - rho0)
                 c = c.copy()
@@ -1161,6 +1206,8 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
                 return J
             st.piece(f, jac=jbody)
             if enarad and n < ndiv:
+                if st.calpol and n == 1:
+                    st.bsir0 += yi0 / rhob                      # tbendebody0: bsi1·yi/rhob (最初のスライスだけ)
                 st.tradke(aln, phin)
         alr = aln
         phi1 = phin
@@ -1179,7 +1226,7 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
             akx0 = akx
             alx0 = alx
             _tbendebody(st, alx, phi1, akx, alr, rhob, rho0,
-                        enarad and n != ndiv)
+                        enarad and n != ndiv, 1.0 if n == 1 else 0.0)
         _tbendecorr(st, akx0 * 0.5, alx0 * 0.5, rho0)
     # 出口エッジ
     st.piece(lambda c: _lat._tbedge_cod(c, rhob, pe2, False),
@@ -1346,6 +1393,10 @@ def _tmulte(st: _State, el, enarad: bool = True):
     ndiv (放射あり) = min(300, max(ndiv_kick, itgetqraddiv(cod, K1, L)))。
     追跡側 (tmulti) と違い、六極などのフリンジ ttfrin は入らず、キックは (1+δ) で割らない。
     """
+    if float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0:
+        from . import multae as _ma
+        _ma.emit(st, el, enarad)           # tmultae (曲げつき)
+        return
     al = el.L
     if any(float(getattr(el, k, 0.0) or 0.0) for k in ('ANGLE', 'F1', 'FRINGE', 'VOLT')):
         raise NotImplementedError('emit6d: MULT の曲げ・F1・RF は未対応')
@@ -1364,6 +1415,11 @@ def _tmulte(st: _State, el, enarad: bool = True):
     first = True
     for kind, f in seq:
         if kind == 'map':
+            if st.calpol and hasattr(f, 'cxfun'):
+                im = f.cxfun(st.cod) / f.aln              # tmulke: bsir0 = merge(bsir0 + imag(cx)/aln, 0, m == 1); m == ndiv で − imag(cx)/aln
+                st.bsir0 = st.bsir0 + im if f.m == 1 else 0.0
+                if f.m == f.ndiv:
+                    st.bsir0 -= im
             st.piece(f)
             if first and krad:
                 st.setr0()      # tmulte: フリンジの後 (f1in=0) に tsetr0
@@ -1512,6 +1568,72 @@ def _nonfinite_state(st) -> bool:
     return True
 
 
+def _ttcave(st, el, enarad=True):
+    """ttcave.f (TCAVI): RFSW OFF は L のドリフト。RFSW ON は tchge → [tsetr0] → 半ドリフト → キック → 半ドリフト [tradke] → tchge"""
+    from . import tcav as _tc
+    pr = _tc.params(el)
+    al = pr['al']
+    if not st.rfsw:
+        _tdrife0(st, al)
+        return
+    dx, dy, th = pr['dx'], pr['dy'], pr['theta']
+    if dx != 0.0 or dy != 0.0 or th != 0.0:
+        st.piece(lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, True),
+                 jac=lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, True))
+    krad = enarad and pr['rad'] and al != 0.0
+    if al != 0.0:
+        if krad:
+            st.setr0()
+        _tdrife0(st, al * 0.5)
+    f, jac = _tc.tcav_kick(pr, st.ph)
+    st.piece(f, symp_z=False, jac=jac)
+    if al != 0.0:
+        _tdrife0(st, al * 0.5)
+        if krad:
+            st.tradke(al, 0.0)
+    if dx != 0.0 or dy != 0.0 or th != 0.0:
+        st.piece(lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, False),
+                 jac=lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, False))
+
+
+MAP_EMIT_HOOK = None          # f(l, cod) → (cod1, trans, dtrans, dbeam) (後ろ 2 つは None のことがある) か None (ExternalMap["EMIT", l, cod]。ffscmd が入れる)
+
+
+def _tmap(st, el):
+    """temape.f (MAP): ExternalMap["EMIT", l, cod] が {cod1, trans} か {cod1, trans, dtrans, dbeam} を返せばそれ、そうでなければ恒等。
+    {cod1, trans}: T ← trans·T、D ← trans·D、B ← trans B transᵀ。4 つ組: T, D は同じ、B ← (trans+dtrans) B (trans+dtrans)ᵀ + dbeam (上三角)、D += dtrans (T+D)"""
+    h = MAP_EMIT_HOOK
+    pos = getattr(el, '_pos', 0)
+    r = h(pos, st.cod.copy()) if (h is not None and pos) else None
+    if r is None:
+        return
+    cod1, J, dJ, dB = r
+    if not st.want_jac:
+        st.cod = np.array(cod1, dtype=float)
+        return
+    st.cod = np.array(cod1, dtype=float)
+    if dJ is None:
+        st.apply(J)
+        return
+    B0 = st.B.copy()
+    st.T = J @ st.T
+    st.D = J @ st.D
+    Jb = J + dJ
+    iu = np.triu_indices(6)
+    add = np.zeros((6, 6))
+    add[iu] = np.asarray(dB, dtype=float)[iu]
+    add = add + np.triu(add, 1).T
+    st.B = Jb @ B0 @ Jb.T + add
+    st.D = st.D + dJ @ (st.T + st.D)
+
+
+def _tcoord(st, el):
+    """tcoorde.f (COORD): COD 写像と解析行列 (z の行のシンプレクティック組み直しはしない)"""
+    from .coord import coord_map, params as _cprm
+    _pc = _cprm(el)
+    st.piece(lambda c, _p=_pc: coord_map(c, _p)[1], symp_z=False, jac=lambda c, _p=_pc: coord_map(c, _p)[0])
+
+
 def tturne(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
            rfsw: bool = False, radcod: bool = False, want_db: bool = True, want_jac: bool = True) -> _State:
     """tturne1 相当: 放射込み 6D 一周追跡。want_db=False は SAD の irad=6 (tcod の反復用: D・B 行列を作らない)"""
@@ -1522,8 +1644,12 @@ def tturne(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
     st.rfsw = rfsw
     st.radcod = radcod
     st.setr0()
-    fast = _USE_ELKERN
+    fast = _USE_ELKERN and not POL_MODE      # POL は Python の経路 (spin.py) だけが srot を更新する
     for el in elements:
+        if hasattr(el, '_solmap'):
+            from . import solemit as _se
+            _se.emit(st, el)
+            continue
         if isinstance(el, Drift):
             if not fast or _ek.k_drift(st.cod, st.T, st.D, st.B, st._S, st.PH, float(el.L), True, True,
                                        st.want_jac, st.want_db) != 0:
@@ -1549,6 +1675,16 @@ def tturne(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
             _tcave(st, el)
         elif type(el).__name__ == 'Multipole':
             _tmulte(st, el, enarad=True)
+        elif type(el).__name__ == 'Coord':
+            _tcoord(st, el)
+        elif type(el).__name__ == 'Map':
+            _tmap(st, el)
+        elif type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
+            raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
+        elif type(el).__name__ == 'Undulator':
+            continue          # UND: K64 の tturne は何もしない (恒等)
+        elif type(el).__name__ == 'TCavity':
+            _ttcave(st, el)
         elif el.L == 0.0:
             continue          # MARK など
         else:
@@ -1809,6 +1945,7 @@ def tecalc(st: _State, circ: float, rfsw: bool = False, emit_floor=(0.0, 0.0, 0.
                             (rd[i, i + 1] - rd[i + 1, i]) * 0.5) / cc[i]
     params['damping'] = cd[0:3].real
     beam = _pack(ri @ st.B @ ri.T)
+    beamn = beam.copy()                  # tecalc の beamn (規格化モード座標のビーム行列。スピンの平衡偏極が使う)
     rdb = np.zeros((6, 12))
     rdb[:, :6] = rd
     if not synchm:
@@ -1912,7 +2049,7 @@ def tecalc(st: _State, circ: float, rfsw: bool = False, emit_floor=(0.0, 0.0, 0.
         'closed_orbit': st.cod.copy(),
         'energy_loss_eV': st.u0 * ph.pgev,
         'tunes': params['tunes'], 'damping_rate': params['damping'],
-        'beam_matrix': emitp, 'one_turn_matrix': T + st.D,
+        'beam_matrix': emitp, 'beamn': beamn, 'one_turn_matrix': T + st.D,
         'rx': rx,                                 # temit の rx (RFSW OFF なら z 行を 0,1 に置き換えた T)。temitprint の symplectic 偏差用
         'normal_r': r, 'normal_ri': ri,          # temw の r / ri (正規モード座標 → 物理座標とその逆)
         # temitprint の報告用 (Extended Twiss, h, fs, Imag.tune, Tune shift, Damping time/partition)
@@ -2230,7 +2367,8 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
 
 def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
                 amass: float = ELMASS, close_z: bool = True,
-                rfsw: bool = False, radcod: bool = False, fshift: float = 0.0, emit_floor=(0.0, 0.0, 0.0)) -> dict:
+                rfsw: bool = False, radcod: bool = False, fshift: float = 0.0, emit_floor=(0.0, 0.0, 0.0),
+                pol: bool = False) -> dict:
     """
     SAD の Emittance[] 相当 (temit: tcod → tturne (irad=12) → tecalc)。emit_floor = (EMITXE, EMITYE, EMITZE)。
 
@@ -2243,8 +2381,24 @@ def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
     Returns dict: emittance_x, emittance_y, momentum_spread,
                   momentum_compaction, energy_loss_eV, ...
     """
+    global POL_MODE
+    pol0 = POL_MODE
+    POL_MODE = bool(pol)
+    try:
+        return _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fshift, emit_floor, pol)
+    finally:
+        POL_MODE = pol0
+
+
+def _emit_circ(els):
+    """Emittance 系の周長 (omega0・MomentumCompaction・偏極時間の周回周波数)。K64 (gs で確かめた) は SOL (BOUND≠0) の長さを入れない
+    (PLANAR リングに L=0.3 でも 0.6 でも BZ=0 でも GEO のある SOL を足して、周長 45.6 のときと偏極時間が 15 桁一致)"""
+    return sum(el.L for el in els if not (type(el).__name__ == 'Solenoid' and float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0))
+
+
+def _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fshift, emit_floor, pol):
     els = lattice.elements
-    circ = sum(el.L for el in els)
+    circ = _emit_circ(els)
     ph = _Phys(momentum_eV, circ, amass=amass, charge=charge)
     ph.dvfs = fshift if rfsw else 0.0          # tsetdvfs
     cod, trf0, _found, st_full = closed_orbit6d(els, ph, rfsw, radcod, close_z)
@@ -2252,6 +2406,9 @@ def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
     # RFSW OFF でも RADCOD ON なら放射込みで追う (SAD の tturne は rfsw に関係なく radcod を見る。以前は RADCOD OFF として追っていた)
     st = st_full if st_full is not None else tturne(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
     out = tecalc(st, circ, rfsw=rfsw, emit_floor=emit_floor)
+    if pol:
+        from .spin import spin_results
+        out['spin'] = spin_results(st, out, ph)
     # temitprint の Closed orbit の Entrance (tcod の cod) と Exit (最後の一周の出口)
     out['orbit_entrance'] = np.array(cod, dtype=float)
     out['orbit_exit'] = np.array(st.cod, dtype=float)

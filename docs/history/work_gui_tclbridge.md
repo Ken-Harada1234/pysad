@@ -1,5 +1,7 @@
 # GUI (Tkinter.n / KBFrame.n) の実装記録
 
+最終更新: 2026-11-16
+
 作業日: 2026-11-12 〜 2026-11-14。現状の説明は `docs/20_gui_tclbridge.md`。ここは経緯と落とし穴。
 
 ## 依頼
@@ -35,3 +37,12 @@ SAD 自身の `Tkinter.n` / `KBFrame.n` / `KBMainFrame.n` / `TabFrame.n` / `Canv
 
 ## 次の作業
 利用者の指示: GUI が終わったら wake と beam-beam の実装に入る。実例の台本は無いので、SADHelp (CERN) と K64 のソースを根拠にする。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: `tclbridge.py` は 11/15 14:33、`sadclass.py` は 11/16 18:24 に更新された (「クラスのメンバーでない名前の `obj@name[...]` は式のまま」を gs に合わせた)。GUI の試験 (`test_plot.py`、`test_tclbridge.py`、`test_gui_lang.py`) は `PYSAD_SAD_PACKAGES` が無いと skip で、全体実行では数回に 1 回落ちる (単独なら通る)。
+- 2026-11-16 夜の追記 (Widget 値の件、差を発見・未修正): gs では `e=Entry[w]` のあと e は `Widget[e,Entry[w]]` を値に持ち、`e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]`・`l[Insert]` (Entry・ListBox) が働く (Entry の内容 AB→CD、Listbox 2 項目、`v=e[Get]`=AB)。`w=Window[]; b=Button[w,…]` の直後も gs は `Head[w]=Widget` (値は `Widget[w,Window[Root$Window]]`)。
+  **pysad では w・b・e が裸のシンボルのまま** (Head=Symbol) で、メソッド呼び出しは何も呼ばない (Tcl 呼び出し 0 回、エラーもなし)。ウィジェット自体は作られる (winfo children に Entry・Listbox) が、親が w でなく Root になる (winfo では '.' の直下。gs は Toplevel の下)。
+  原因の絞り込み: `w=Window[]` の直後、pysad は `Tk$DefCount=1`・`Root$WindowWidget=w`・`TkPathName[Root$Window]="."` まで進むが、`TkPathName[w]` が "" で、最初の Window (root) の `a$:=Widget[a$,w[master$]]` (`Tkinter.n` の DefineWidget 内) が w の値にならない。root の Window は toplevel を作らず `winfo children .` は空。`f[x_]:=(x=5); f[aa]` は pysad も gs と同じ aa=5 で、パターン変数への代入は問題ない。
+  玩具の再現 (With と `x:=Widget[x,…]`、UpValue の `(a_=W[opt___])^:=…`) は UpValue の分岐までは gs と同じに動くが、`x:=Widget[x,…]` 自体は gs も pysad も再帰になり、実物が gs でなぜ再帰しないか (Widget の属性・評価の順) は未特定のため未修正。pysad は再帰で RecursionError を出して落ちる (gs は General::deep)。Insert の位置に "End" (大文字) を渡すと gs は Tcl エラー 1501 (Tcl の添字は "end")。根拠: `local/wake/tk1〜tk5.sad`・`pv1.sad` (リポジトリ外)、`work_session_20261116.md` §11.3。
+- 残課題 (入れ子の部品、Canvas・TabFrame の描画、見た目と操作) は変化なし。上の Widget 値の件を加える。現状の解説は docs/20 と docs/39 (docs/39 の記述が Widget 値の差に触れているかは未確認)。

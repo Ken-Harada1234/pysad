@@ -1,6 +1,10 @@
 # 09. DynamicApertureSurvey — dapert.n → tfdapert → trackd と pysad の dapert.py
 
-最終更新: 2026-11-06 (現状のスナップショット)。
+最終更新: 2026-11-16 (現状のスナップショット)。
+
+2026-11-16 の確認: DA の実装と DA のベンチに変化は無い。`pysad/dapert.py` の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14 で、本文の内容 (未対応の範囲・照合結果) は 11-06 のまま。
+根拠: `dapert.py` の冒頭と `ffscmd.fn_dasurvey` で、`Damping->True` は SADError、`DampEnough`・`ReferenceOrbit` は読まないままであることを確認した。回帰 16a は FAIL 0 と報告されている (docs/10 §5.1)。
+2026-11-16 夜の確認: 回帰の 50 ベンチをすべて実行して FAIL 0 (205 s)。DA の 16a (QUICK=1 では SKIP される 4 件の 1 つ) も単独で実行して PASS (最大差 1.4e-31、`local/wake/reg_slow4.txt`)。したがって 2026-11-14 の `pysad/track6n.py` の更新 (追跡の拡張) が 16a の結果 (RAD+FLUC の乱数列を含む) を変えていないことは確認済み。未確認: 20 small (実ラティス、RAD+FLUC、100 周) や実寸の DynamicApertureSurvey (5000 周) の再実行はしていない (長い計算になるため)。同じ夜の `l_track=0` の修正 (セッション最初の TrackParticles で最初から LOSSAMPL の外にいる粒子は最初の tapert で落ちない) は TrackParticles (`TrackRun`) 側の変更で、DA の `tapert` (`dapert.py`) への影響は 16a が通る範囲でしか見ていない (未確認)。
 
 > 出典 (すべてソースで確認): `Packages/dapert.n`, `src/tfdapert.f`, `src/trackd.f` (trackd, tinip1, tpdamp, rad62a),
 > `src/tday.f` (rad62), `src/tapert.f`, `src/tturn.f`, `src/tconv.f`, `src/initb1.f`;
@@ -76,7 +80,7 @@ dapert.n の 201 と tfdapert の 200、trackd の `n1p0=256` と上限が三重
 | minnp | 16 | 並列数の上限 `np0/minnp` に使う |
 
 - `a2step = (a2max−a2min)/50`, `a3step = (a3max−a3min)/50`。j 番目 (1..51) の振幅は `a2min + a2step*(j−1)`。
-  ivar2 と ivar3 は **同じ j** で同時に動く (ESRF の `{1,400},{1,1}` では y は常に 1)。
+  ivar2 と ivar3 は **同じ j** で同時に動く (`{1,400},{1,1}` では y は常に 1)。
 - `a1i(1:n1p) = r1` (n1p = min(256, n1))、a1min/a1max はその min/max。`n1==0` の経路 (`tftrad` 用、r1(3) を刻みにする) は DynamicApertureSurvey では使われない。
 - `emx = sqrt(|EMITX|+|EMITY|)`、`emz = sqrt(|EMITZ|)` (RFSW) または `|SIGE|` (RFSW でないとき)。
 - `muls` (1 文字あたりの周数): muld=1, mule=1 から `muld*mule*62 < nturn` の間 1→2→5→(1, mule×10) と進める。
@@ -162,24 +166,23 @@ nw=16 周ごとの詰め替え (全粒子を同時に起動するので不要)�
 
 | ベンチ | 条件 | 結果 |
 |---|---|---|
-| 16a | ESRF 20 セル、NORAD/NOFLUC、`{{1,400},{1,1},{-0.5,0,0.5}}`、100 周、DAPWIDTH=51 | 地図 3 行×51 文字と Score 63、nsc=21×3 が一致。ntloss も track6n 版で一致 (z=0.5 行 j=35 の 1 点は損失境界で SAD 14、muls=2 なので文字は同じ `7`)。SAD 0.52 s (CPU)、pysad は numba 版 track6n で数秒 (初回は JIT 込み。純 Python の track6 では 6.5 分) |
+| 16a | 20 セルの実ラティス、NORAD/NOFLUC、`{{1,400},{1,1},{-0.5,0,0.5}}`、100 周、DAPWIDTH=51 | 地図 3 行×51 文字と Score 63、nsc=21×3 が一致。ntloss も track6n 版で一致 (z=0.5 行 j=35 の 1 点は損失境界で SAD 14、muls=2 なので文字は同じ `7`)。SAD 0.52 s (CPU)、pysad は numba 版 track6n で数秒 (初回は JIT 込み。純 Python の track6 では 6.5 分) |
 | 16g / 16g_np1 | RAD+FLUC、`{{1,20},{1,1},{0}}`、20 周、SeedRandom[17] | 損失なし。NPARA=1 の SAD と最終 seed (221051865) まで一致。NPARA 既定 (4) の SAD は fork で乱数列が分かれ seed 3308107025 |
 | 16f / 16f_np1 | RAD+FLUC、16a と同じ range、100 周 | Score 63・nsc は一致するが、損失粒子の周数 (地図の中央部) が一部違い、最終 seed も違う (SAD 3824086097、pysad 4221456353)。理由は下記 (カオス) |
 | 16l_j22/25/27 | 単粒子を TrackParticles で 1,2,4,10 周 | 12 件すべて最終 seed 一致 (`history/work_loss_rng.md`) |
-| 20 small (`bench_level20_dasv_small.sad`) | esrf リング、RAD+FLUC、`{{0,400},{1,1},{-0.5,0,0.5}}`、100 周、SeedRandom[17] | Score 63・nsc=21×3 一致。1・2 周目の損失周は SAD と完全一致、3 周目以降は一部違い、最終 seed は不一致 (SAD 966470477、pysad 620061457)。再同期テスト (SAD デバッグ版との要素ごとの突き合わせ) は 30 周・93 030 記録で seed 全一致 |
+| 20 small (`bench_level20_dasv_small.sad`) | 実ラティス、RAD+FLUC、`{{0,400},{1,1},{-0.5,0,0.5}}`、100 周、SeedRandom[17] | Score 63・nsc=21×3 一致。1・2 周目の損失周は SAD と完全一致、3 周目以降は一部違い、最終 seed は不一致 (SAD 966470477、pysad 620061457)。再同期テスト (SAD デバッグ版との要素ごとの突き合わせ) は 30 周・93 030 記録で seed 全一致 |
 
 - 損失周・最終 seed が一致しない理由 (`history/work_loss_rng2.md`): 落ちる粒子は発散している間も光子の乱数を引き続け (θ=π/2, anp≈94 なら約 100 個、NaN なら 1 個)、
   発散の途中の値は丸め誤差の 1 ulp で別の分岐 (有限か inf/NaN か) に入る。SAD 自身も 1 周目の初期座標に相対 1e-16 の摂動を入れるだけで最終 seed が変わる (12 回中 2 回)ので、
   pysad (numba) と SAD (gfortran -Ofast + glibc) の演算順序・libm の差 (1 要素あたり 1〜数 ulp) が 600 要素で 1e-11 に増えると、落ちる粒子 1 個の分かれ目が逆になって以後の seed が全部変わる。
   NaN の扱いの論理 (`rot1`、`gfloor`、`xsincos`) は再同期テストで SAD と揃えてあるので、残りは丸めの運。判定は再同期テストの seed 一致で行う。
-- esrf の `DAsv[]` (modules_general.n): DAPWIDTH=51、z を `Range[-4.5dp, 4.6dp, dp/2]` の 19 点、5000 周、x と y の 2 回。
-  1 回分は 19×51 = 969 粒子 × 5000 周 × 要素数 (ESRF 20 セルで数千) ≈ 1.7e10 粒子・要素。176 ns/粒子・要素なら **約 50 分** (損失で粒子が減る分は短くなる)。
+- 本番サイズの見積り (DAPWIDTH=51、z を 19 点、5000 周): 1 回分は 19×51 = 969 粒子 × 5000 周 × 要素数 (20 セルのラティスで数千) ≈ 1.7e10 粒子・要素。176 ns/粒子・要素なら **約 50 分** (損失で粒子が減る分は短くなる)。
 
 ## 7. 使い方
 
 ```
 cd "<repo>"
-python run_sad.py pysad/tests/kek-ls_v03_12.lat bench_level16a.sad        # ラティス + スクリプト (SAD の gs と同じ連結)
+python run_sad.py <試験用ラティス>.lat bench_level16a.sad        # ラティス + スクリプト (SAD の gs と同じ連結)
 set PYSAD_PROGRESS=100 && python run_sad.py lat.lat da.sad   # 100 周ごとに "[dapert] turn n/N alive k/M (s)" を表示
 ```
 

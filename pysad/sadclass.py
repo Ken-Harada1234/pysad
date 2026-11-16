@@ -78,6 +78,22 @@ def install(I):
                         out.append((nm.name, val))
         return out
 
+    def _mentions_member(node, cls):
+        """式 node が、このクラスのメンバー (クラス変数・インスタンス変数・これまでに定義したメソッド) の記号を含むか"""
+        names = set(cls.cmap) | {n for n, _ in cls.ivars} | {m[0] for m in cls.methods}
+        stack = [node]
+        while stack:
+            x = stack.pop()
+            if isinstance(x, Sym):
+                if x.name in names:
+                    return True
+            elif isinstance(x, Expr):
+                stack.append(x.head)
+                stack.extend(x.args)
+            elif isinstance(x, list):
+                stack.extend(x)
+        return False
+
     # ------------------------------------------------------------------ メソッド定義の収集
     def _collect(node, cls, frames_note):
         """クラスの本体の中のメソッド定義 (f[...] := g、With[_, …]、If[_, …]、a; b) を cls.methods に集める"""
@@ -104,15 +120,43 @@ def install(I):
                 decl = node.args[0]
                 items = decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl]
                 for it in items:
+                    if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')) and isinstance(it.args[0], Expr)                             and isinstance(it.args[0].head, Sym):
+                        _collect(it, cls, frames_note)         # With[{TickFun[ft_, a_] := …}, …]: 宣言の関数定義もメソッド
+                        continue
+                    if isinstance(it, Expr) and it.head == S('SetDelayed') and isinstance(it.args[0], Sym):
+                        fr[it.args[0].name] = Expr(S('$Delayed'), [it.args[1]])     # With[{cdr := System`CanvasDrawer}, …]: 評価せずに式を埋め込む
+                        continue
                     if isinstance(it, Expr) and it.head == S('Set') and isinstance(it.args[0], Sym):
-                        fr[it.args[0].name] = I.eval(it.args[1])
+                        v = it.args[1]
+                        # With[{W=Extract[メンバー,{1},Unevaluated$]}, …] (Canvas.n)
+                        if (isinstance(v, Expr) and v.head == S('Extract') and len(v.args) == 3 and isinstance(v.args[0], Sym)
+                                and isinstance(v.args[2], Sym) and v.args[2].name == 'Unevaluated$'
+                                and isinstance(v.args[1], Expr) and v.args[1].head == S('List') and v.args[1].args == [1.0]):
+                            # Extract[メンバー, {1}, Unevaluated$] は評価しないメンバー自身 (Unevaluated$[メンバー])。CanvasW[Create$Line] = … は
+                            # CanvasWidget[Create$Line] = … と同じ (インスタンス作成時にメンバーが各インスタンスの記号に改名される)
+                            fr[it.args[0].name] = Expr(S('Unevaluated$'), [v.args[0]])
+                        elif _mentions_member(v, cls):
+                            # With[{def = {PlotColor -> PlotColorDefault[$DisplayFunction]}}, …]: 値がクラスのメンバー (PlotColorDefault) を使うときは、
+                            # いま (クラスの定義時) 評価せずに式を埋め込む。メンバーはインスタンスごとの名前に改名され、メソッドの実行時に評価される
+                            fr[it.args[0].name] = Expr(S('$Delayed'), [v])
+                        else:
+                            fr[it.args[0].name] = I.eval(v)
                 I.frames.append(fr)
                 try:
                     before = len(cls.methods)
                     _collect(node.args[1], cls, frames_note)
                     for k in range(before, len(cls.methods)):
                         nm, pats, rhs, dl = cls.methods[k]
-                        cls.methods[k] = (nm, pats, I._close(rhs), dl)
+                        pn_ = _pat_names(pats, set()) if pats is not None else set()    # 定義自身のパターン変数は外側の同名の値に置き換えない
+                        old_xs_ = I._xs
+                        I._xs = old_xs_ | pn_
+                        try:
+                            if pats is not None:
+                                # With[{cdr := CanvasDrawer}, PCD[cdr] = …]: 定義の左辺の引数 (パターンでない式) にも With の値を埋め込む
+                                pats = [p_ if _is_pattern(p_) else I._close(p_) for p_ in pats]
+                            cls.methods[k] = (nm, pats, I._close(rhs), dl)
+                        finally:
+                            I._xs = old_xs_
                 finally:
                     I.frames.pop()
                 return
@@ -189,15 +233,25 @@ def install(I):
             return node
         if isinstance(node, Expr):
             h = node.head
+            if isinstance(h, Sym) and h.name == 'Literal' and len(node.args) == 1:
+                return node                      # Literal[x] の x はメンバーに改名しない (オプション名の記号 TickFontScale など)
             if isinstance(h, Sym) and h.name in _LOCAL_SCOPES and node.args and isinstance(node.args[0], (Expr, Sym)):
                 loc = _local_names(node.args[0])
                 decl = node.args[0]
+                if h.name == 'With':
+                    # With[{x}, …] の x は局所変数ではなく「今の x の値」を埋め込む指定 (Canvas.n: With[{Canvas$PlotRange, DPI}, …])。
+                    # メンバーなら改名して、局所名から外す
+                    bare = {it.name for it in (decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl])
+                            if isinstance(it, Sym)}
+                    loc = loc - bare
                 # 宣言の初期値は外側の環境、本体は局所名を除いた環境
                 if isinstance(decl, Expr) and decl.head == S('List'):
                     items = []
                     for it in decl.args:
                         if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')):
                             items.append(Expr(it.head, [it.args[0], _rename(it.args[1], mp, excl, inst)]))
+                        elif h.name == 'With' and isinstance(it, Sym):
+                            items.append(_rename(it, mp, excl, inst))
                         else:
                             items.append(it)
                     ndecl = Expr(S('List'), items)
@@ -278,6 +332,7 @@ def install(I):
                     rest.append(a)
             I.assign(mp['Options'], opts)
             # メソッドの登録 (子クラスの定義を先に試す)
+            origin_ = {}                       # downvalue の項目 → それを登録したクラス
             for c in mro:                      # 親から順に登録し、子の同じ形の定義が親のものを置き換える
                 for nm, pats, body, delayed in c.methods:
                     sym = mp[nm]
@@ -292,10 +347,16 @@ def install(I):
                     sc_ = _spec_score(npats)
                     pos = len(dv)
                     for k, d in enumerate(dv):
-                        if d[0] is not None and _spec_score(d[0]) <= sc_:
+                        if d[0] is None:
+                            continue
+                        sd_ = _spec_score(d[0])
+                        # 同じ特殊さなら、子クラスの定義は親の定義より先、同じクラスの中では書いた順 (Canvas.n の Primitive[Rectangle[…]] の 3 本)
+                        if sd_ < sc_ or (sd_ == sc_ and origin_.get(id(d)) is not c):
                             pos = k
                             break
-                    dv.insert(pos, (npats, nb, delayed if delayed else True))
+                    ent_ = (npats, nb, delayed if delayed else True)
+                    origin_[id(ent_)] = c
+                    dv.insert(pos, ent_)
         finally:
             I.frames = saved
         # Constructor
@@ -319,7 +380,15 @@ def install(I):
         else:
             sym = obj.cmap.get(name)
         if sym is None:
-            raise SADError('Class::nomember: %s is not a member of %r' % (name, obj))
+            # クラス本体の中の `Class@メンバー` は、メンバー名が先に本体の改名 (x$c2) を受けている (Canvas.n の CanvasGraphics@$DefaultWindowOrigin)。
+            # 接尾辞 $c<数> / $i<数> を落として引き直す
+            import re as _re
+            m = _re.match(r'^(.*)\$[ci]\d+$', name)
+            if m:
+                base = m.group(1)
+                sym = (obj.map if isinstance(obj, SadInstance) else obj.cmap).get(base)
+        if sym is None:
+            return None                # gs: メンバーでない名前は式のまま (メッセージなし。obj@name[...] が未評価で残る)
         return Sym(sym)
     I.member_sym = member_sym
 
@@ -328,7 +397,10 @@ def install(I):
             return Null
         obj = I.eval(args[0])
         if isinstance(obj, (SadInstance, SadClass)) and isinstance(args[1], Sym):
-            return I.eval(member_sym(obj, args[1].name))
+            ms = member_sym(obj, args[1].name)
+            if ms is None:
+                return Expr(S('At'), [obj, args[1]])
+            return I.eval(ms)
         return I.eval(Expr(args[0], [args[1]]))
     B['At'] = _at
 
@@ -337,7 +409,7 @@ def install(I):
         if isinstance(head, Expr) and head.head == S('At') and len(head.args) == 2 and isinstance(head.args[1], Sym):
             obj = I.eval(head.args[0])
             if isinstance(obj, (SadInstance, SadClass)):
-                return member_sym(obj, head.args[1].name)
+                return member_sym(obj, head.args[1].name)          # メンバーでなければ None (式のまま)
         return None
     I.resolve_member_head = resolve_head
 

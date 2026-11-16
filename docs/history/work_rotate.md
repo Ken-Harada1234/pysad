@@ -1,14 +1,16 @@
 # 作業ログ: ROTATE (ROT/TILT) 引数への全面対応 (2026-10-16)
 
+最終更新: 2026-11-16
+
 ## 1. 結論
 
 SAD の `ROTATE` (= `ROT` = `TILT`) を BEND・QUAD・SEXT/OCT/DECA・MULT のすべてで、CALC (4D)・CALC6D・Emittance[]・TrackParticles・GEO の全経路で SAD K64 と一致させた
-(参照ベンチ bench_level25a〜f, 25h と 1 要素の写像テスト)。
+(参照ベンチ bench_level25a〜f と 1 要素の写像テスト)。
 
 | 要素 | 状況 |
 |---|---|
-| (1) ANGLE=0 の BEND に ROTATE=−90 DEG (垂直ステアリング VD/PV/VS) と K0 | parser が Drift にしていたのをやめ、`Bend` (ANGLE=0) として保持。CALC・emit・追跡とも一致。pf2 の v9_25 (VD L=.15, PV/VS L=0) でも一致 |
-| (2) skew 四極 (QUAD の ROTATE + K1) | 元から一致 (tsolrote の経路)。**L=0 の QUAD (pf2 の SQ: `L=0 K1 ROTATE=45 deg`) は K1 が無視されていた** → tquade の al=0 → tthine(nord=4) の薄い四極として CALC・emit・追跡に追加 |
+| (1) ANGLE=0 の BEND に ROTATE=−90 DEG (垂直ステアリング) と K0 | parser が Drift にしていたのをやめ、`Bend` (ANGLE=0) として保持。CALC・emit・追跡とも一致 (L>0 と L=0 の両方) |
+| (2) skew 四極 (QUAD の ROTATE + K1) | 元から一致 (tsolrote の経路)。**L=0 の QUAD (`L=0 K1 ROTATE=45 deg`) は K1 が無視されていた** → tquade の al=0 → tthine(nord=4) の薄い四極として CALC・emit・追跡に追加 |
 | (3) ROTATE 付きの BEND (ANGLE≠0, 5 DEG / 90 DEG / K1 付き / K0) | 一致。回転とずれ・DROTATE の組み合わせ順を tchge の直訳に直した (ずらす→回す、行列の作り方まで) |
 | (4) 六極・八極・十極・MULT の ROTATE | 一致。ずれ DX/DY との組み合わせで SAD の癖 (後述 §3) があり、それも再現 |
 
@@ -38,7 +40,7 @@ SAD の `ROTATE` (= `ROT` = `TILT`) を BEND・QUAD・SEXT/OCT/DECA・MULT の�
 tchge.f の入口で `th≠0` のとき回転行列 `trans1` を作って `transa=>trans1` とし、続けて `dx_rot≠0 (または dz≠0, dtheta≠0)` なら **同じ `transa` を tbrote に渡す**。
 tbrote → tbgrote (および tdrife1) は `trans` を「掛ける」のではなく「上書き」する (tinitr してから代入) ので、**入口では COD は回るが行列には回転が入らない**。
 出口 (`th≠0`) は `tmultr5(transa,trans1)` で掛けるので回転が入る。結果、一周行列は R^T·M (非対称) になり、**th≠0 かつずれ≠0 の要素 (BEND, 六極などの薄い多極) は結合 (R1..R4)・チューンが物理とずれる**。
-R1 が 1e-4 → 0.26 になるほどで、ESRF のリングに rotate 30° + DX=1e-3 の六極 1 台を入れるとチューンが 0.01 動く。
+R1 が 1e-4 → 0.26 になるほどで、3564 要素のリングに rotate 30° + DX=1e-3 の六極 1 台を入れるとチューンが 0.01 動く。
 
 - 再現: `lattice._tchge_jac` (入口で th≠0 かつ tbrote を呼ぶとき、tbrote だけの行列 = 単位行列 ((5,6) だけ dpzi(pr+1)/pzi) か、phig≠0 なら tdrife1 (長さ dz1=dxr·sin φ の BEND 中点ドリフト) を含む合成の数値微分)。
   th=0 のときは普通に (回転なしで) tbrote の行列。1 要素の写像テスト (bench_level25g) で BEND (K1=0/K1≠0)・六極とも 1e-11 で一致 (この癖を入れる前は 1e-7)。
@@ -69,34 +71,31 @@ R1 が 1e-4 → 0.26 になるほどで、ESRF のリングに rotate 30° + DX=
   `track6n_ext.py` の step_kind 呼び出しを新しい引数に合わせた。
 - `ffscmd.py`: `LINE["ROTATE",BEND]` は `Bend.ROTATE` (他の型は ROTATION)、`DROTATE` は DROTATE 属性、`DTHETA` (BEND/MULT → DROTATE、他 → ROTATION で、設計値 + 誤差)、`_dump`、
   FFS で ROTATE/ANGLE を変えたとき `el._raw` も更新 (geo.py は `_raw` を先に見る。以前は CALC の GEO が古い値のまま)。
-- `match6d.py`: BEND の qdbend の theta に ROTATE を足した (解析微分。VD は Bend になったので回転つきで微分される)。
-- `bench_level12_pysad.py`: 読み込みの ROTATE 照合に Bend.ROTATE を足した (VD が Drift ではなくなったため)。
+- `match6d.py`: BEND の qdbend の theta に ROTATE を足した (解析微分。ANGLE=0 の垂直ステアリングは Bend になったので回転つきで微分される)。
+- `bench_level12_pysad.py`: 読み込みの ROTATE 照合に Bend.ROTATE を足した (ANGLE=0 の垂直ステアリングが Drift ではなくなったため)。
 - 新規テスト `pysad/tests/test_rotate.py` (16 件: parser、tchge の行列と癖、垂直ステアリングの向き、25a〜d の CALC を SAD の .result と照合)。
 
 ## 6. 参照ベンチ (SAD K64 を WSL で実行して .result を保存、pysad は `python run_sad.py bench_level25X.sad` → `_pysad.result`)
 
-ラティスは esrf (bench_level23f の ARCA に要素を挿入) と pf2 v9_25。比較は `tmp25/cmp3.py` / `tmp25/summary.py` (Print の数値行を突き合わせ、絶対差)。生成は `tmp25/make25*.py`。
+ラティスは bench_level23f のリングに要素を挿入したもの。比較は `tmp25/cmp3.py` / `tmp25/summary.py` (Print の数値行を突き合わせ、絶対差)。生成は `tmp25/make25*.py`。
 
 | ベンチ | 内容 | 結果 |
 |---|---|---|
 | 25a | `VL=(L=.15 ROTATE=-90 DEG)` と `PV=(L=0 ROTATE=-90 DEG)` を各セルに挿入。`LINE["K0","VL.1"]=1e-4`、`PV.1`=−2e-4。CALC の DY/DPY/EY/NY ほか、LINE["GX"/"GY"]、Emittance[]、TrackParticles NORAD/RAD 1,20 周 | CALC 9e-10 (3 段)、GEO 4e-13、emit εy 2.7e-14 (相対 1e-8)、TUN 1.6e-8、追跡 7e-16 / RAD 3e-13 |
-| 25b | skew 四極 `QS1` (ROTATE=1 DEG)、`QS2` (K1<0, −2 DEG)、`QS3` (FFS で ROTATE=.7 deg)、ほか QDA3 の ROTATE を FFS で変更。R1..R4, DETR, 全 Twiss 列 | CALC 2e-12、εy 相対 2e-12、TUN 5e-14、追跡 1e-14 |
+| 25b | skew 四極 `QS1` (ROTATE=1 DEG)、`QS2` (K1<0, −2 DEG)、`QS3` (FFS で ROTATE=.7 deg)、ほか四極の ROTATE を FFS で変更。R1..R4, DETR, 全 Twiss 列 | CALC 2e-12、εy 相対 2e-12、TUN 5e-14、追跡 1e-14 |
 | 25c | ROTATE 付き BEND: 5 DEG の対 (BR1 は E1/E2=.5、BR2 は ANGLE 逆符号)、90 DEG (垂直偏向、E1/E2) の対、K1 付き (3 DEG / −70 DEG)。T0、GEO (GX,GY,GZ,GCHI1..3)、emit、FFS で ROTATE と K0 を変更 (T1) | CALC 6e-10、GEO 8.5e-14、emit 相対 8e-10、TUN 4e-9、追跡 1e-15 / RAD 4e-13 |
 | 25d | SEXT (L>0 ROTATE=10/30 DEG、L=0 −20 DEG)、OCT (L>0, L=0)、DECA、MULT (K1/K2/K3 + ROTATE、L=0 の K0 + DX/DY + ROTATE)。FFS で ROTATE と DX/DY を変更 | CALC 7e-9 (BX≈10)、emit 相対 3e-12、TUN 1.5e-11、追跡 3e-16 |
 | 25e | 組み合わせ (癖が出ない組): ROTATE+K0 の BEND、DX/DY+K0 の BEND、K1 付き BEND の ROTATE=−40 DEG +K0、DX/DY+DROTATE、DROTATE+E1/E2、垂直ステアリング (L>0, L=0) + K0、水平ステアリング + DX/DY、QUAD ROTATE+DX/DY、MULT K0+ROTATE+DX/DY。FFS で変更した T1 も | CALC 3.6e-9、GEO 5e-13、追跡 1e-16、emit 相対 1.6e-6 / TUN 4.5e-8 (δ の収束の差: 25c/23g と同じ程度) |
 | 25f | 癖が出る組 (th≠0 かつずれ≠0): BEND (ROTATE=20 DEG, DX/DY, K0) の対、垂直ステアリング (L>0, L=0) に DX/DY + K0、六極 (ROTATE=30 DEG, DX=1e-3, DY=−5e-4)。CALC の R1..R4 ほか全列 | CALC 9.6e-10、追跡 1e-16。Emittance[] は §3 のとおり一致しない (参考値) |
-| 25h | pf2 v9_25 (USE RING): VD (L=.15)、PV (L=0)、VS (L=0) の K0 (ファミリー展開) を 1 つずつ + 3 つ同時、SQ (L=0 skew 四極) の K1、追跡 | CALC 6.4e-10 (V, P, S, M)、SQ 3.5e-12、追跡 1e-16、emit 相対 1.5e-6 / TUN 3e-8 |
 | 25g | 1 要素の INS (`tmp25/maptest.py`): 入口に大きな COD (DX=1e-3, DPX=5e-4, DY=−5e-4, DPY=2e-4) を与え、出口の COD・Twiss・R1..R4 を比較。13 種 (BEND/K1 付き BEND の ROTATE/K0/DX/DY/DROTATE、垂直ステアリング、QUAD、SEXT、MULT) | すべて ≤ 5e-11 (出力 10 桁の表示桁以内を含む)。癖を入れる前は BEND (ずれ+ROTATE) が 1e-7 |
 
-<work-pf2> の垂直バンプ系 (`grep -l "VS\|PV\|VD" <work-pf2>/*_r`) は、実際に垂直補正コイルへ K0 を入れて動かす SAD 出力が揃っているスクリプトがなかった (correct_cod_9_16 は `dtny` に K0 を入れるが、以前の記録どおり別の理由 (CalculateOptics, 長さ 0 の四極の追跡) で pysad が止まっていた。今回 L=0 の四極の追跡は入れたが、CalculateOptics の未実装は残る)。
-代わりに pf2 の lattice (v9_25) で 25h を作り、VD/PV/VS の K0 と SQ の K1 を直接照合した。
 
 ## 7. 回帰
 
 - 作業前に 13a/13b/14a/16a/16b/18a/19a/22a/23a の pysad 出力を `base_pre/` に保存し、作業後 (`base_post/`) と diff: 13b/14a/16a/19a/22a/23a は完全一致 (経過時間・警告の行番号を除く)、
-  16b は 1e-11、18a は 1e-10 → 1e-13 (ESRF の VD が Drift から Bend になり、理想のリングの Twiss が SAD に近づいた)。
+  16b は 1e-11、18a は 1e-10 → 1e-13 (ANGLE=0 の垂直ステアリングが Drift から Bend になり、理想のリングの Twiss が SAD に近づいた)。
 - `QUICK=1 PYTHONIOENCODING=utf-8 python run_regression.py`: 28 ベンチ **FAIL 0** (3c の EMITY も PASS)。QUICK で飛ばす 7, 12t, 13a, 16a も実行 → 7: PASS (5e-11)、12t PASS、13a PASS* (13A-2 の既知)、16a PASS。
-  (最初の実行で [12] の「ラティス読み込み ROTATE」が FAIL: VD が Bend になり ROTATE の照合式 (`ROTATION`、Drift は除外) が合わなくなったため。照合式を Bend.ROTATE に直した。)
+  (最初の実行で [12] の「ラティス読み込み ROTATE」が FAIL: ANGLE=0 の垂直ステアリングが Bend になり ROTATE の照合式 (`ROTATION`、Drift は除外) が合わなくなったため。照合式を Bend.ROTATE に直した。)
 - `python -m pytest -q pysad/tests --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`: 85 passed → test_rotate.py を足して **101 passed**。
 
 ## 8. 未解決・既知
@@ -105,9 +104,13 @@ R1 が 1e-4 → 0.26 になるほどで、ESRF のリングに rotate 30° + DX=
 - ANGLE=0, K1≠0, K0≠0 の BEND: SAD が落ちるので照合不可 (§4)。追跡は NotImplementedError。ANGLE=0, K1≠0, K0=0 の BEND の追跡 (tquad の theta+dtheta) も NotImplementedError のまま (CALC/emit は tquade で実装済み、未照合)。
 - CAVI/TCAV/MONI の ROTATE: SAD は ROT を持つ (`ky_ROT_CAVI` …) が pysad は無視 (CALC/emit/追跡)。ソレノイドの ROTATE (trots) も同様。
 - ANGLE=0 の BEND の F1/FB1/FB2 フリンジ (tsteee/tsteer) は NotImplementedError のまま。
-- Emittance[] の δ は SAD の tcod の収束 (z の 1e-7 打ち切り) の分だけ揺れる (25e/25h の TUN 3e-8〜4.5e-8、εz 1.5e-6 相対)。回帰の許容 1e-6 をわずかに超えるので、25e/25h は「δ の収束差」として記録。
+- Emittance[] の δ は SAD の tcod の収束 (z の 1e-7 打ち切り) の分だけ揺れる (25e の TUN 4.5e-8、emit 相対 1.6e-6)。回帰の許容 1e-6 をわずかに超えるので、25e は「δ の収束差」として記録。
 
 ## 9. 作業用ファイル (`tmp25/`)
 
 `gen25.py` (23f のラティスに要素を挿入する生成関数)、`make25a〜f.py`、`bis.py` / `bis*.py` (SAD と pysad を両方走らせて要素単位で二分する)、`maptest.py` (§6 の 25g)、
 `dbg_*.py` (一周行列・COD の残差)、`cmp.py` / `cmp3.py` / `summary.py` (比較)、`runsad.sh` (SAD の実行: PowerShell から `wsl -d Ubuntu -- bash -lc` でクォートが外れるので `;` でつなぐ)。
+
+## 2026-11-16 の確認・追記
+
+- 2026-11-16 追記: 本文は変化なし。新要素について: MULT の回転キーワードは `ROTATE` (`ROTATION` は gs で Undefined keyword)、parser は MULT の `CHI2`・`TAPER` を読むようにした (work_unimpl.md 「見つけたこと」)。POL のスピンでは四極の ROTATE の chi3 回転 (tsolrot) を入れた。BEND の DX・DY・ROTATE だけなら RAD ON の追跡は 1e-13 で一致。
