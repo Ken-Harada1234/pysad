@@ -26,7 +26,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 pip install pysad-k64
 ```
 
-PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v1.0.0** (ソースに忠実な翻訳。2026-11-17 に PyPI へ登録) が登録済みです。版を固定するときは `pip install pysad-k64==1.0.0`。このリポジトリの `main` (v2.0.0、K64 のバグの修正と機能の追加) は、PyPI に出すまでは `git clone` で使ってください。
+PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.0.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作) が最新です。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
 
 ## 必要なもの
 
