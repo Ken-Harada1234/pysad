@@ -2,9 +2,13 @@
 
 バージョンは `vメジャー.マイナー.パッチ` の形です。メジャーの区切りに GitHub のリリースを作ります。
 
+**バージョンの方針**
+- **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
+- **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
+
 ## v1.0.0 (2026-11-17)
 
-pysad の最初の区切りです。SAD (K64 版) の Python への直訳で、SAD スクリプトを gs と同じ引数で実行できます (`py -3.12 run_sad.py lattice.sad script.sad`)。
+pysad の最初の区切りで、**ソースに忠実な翻訳**の版です。SAD (K64 版) の Python への直訳で、SAD スクリプトを gs と同じ引数で実行できます (`py -3.12 run_sad.py lattice.sad script.sad`)。
 
 **この版に含まれるもの**
 - `pysad/` 本体: 67 モジュール。SADScript の評価器、FFS のコマンド層、光学 (CELL/INS、CALC)、マッチング (FIT)、エミッタンス (EMIT、`Emittance[]`)、粒子追跡 (`TrackParticles`)、ダイナミックアパーチャ、WAKE・BEAMBEAM・CSR・POL・SOL・RADLIGHT、特殊関数・Fit、SAD の `Packages/*.n` の読み込み、Tk の GUI・描画。
@@ -27,4 +31,7 @@ pysad の最初の区切りです。SAD (K64 版) の Python への直訳で、S
 
 ## 次の版 (v2 系)
 
-`main` で続けます。未対応・未確認の一覧 (docs/46) の項目を減らす作業が中心です。
+v2 は、ソースに忠実な v1 とは別に、K64 のバグの修正と機能の追加を行う版です。続きは `main` で進めます。v1 系の保守 (翻訳の漏れ・誤りの修正) が必要になったら、`v1.0.0` から `v1` ブランチを切ります。
+
+- v2 に入れる候補: [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) の K64 側の不具合 (B01〜B71) の修正、`For` の本体の実行などの癖の解消、未翻訳の機能 (`docs/46`) の追加。
+- v1 との差は、v2 のリリースノートに「v1 と結果が変わるもの」として一覧にします。
