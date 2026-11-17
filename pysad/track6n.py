@@ -1045,6 +1045,92 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
 
 
 @njit(**NJ)
+def _edge_drift1(i, S, psi):
+    """tbfrie.f tbedgedrift の座標更新 (lattice._tbedgedrift_cod)。S[i] を in-place"""
+    pr = 1.0 + S[i, 5]
+    cosp = math.cos(psi)
+    sinp = math.sin(psi)
+    pxi = min(pr, max(-pr, S[i, 1]))
+    pyi = min(pr, max(-pr, S[i, 3]))
+    pzi = math.sqrt(max(0.0, pr * pr - pxi * pxi - pyi * pyi))
+    f = cosp - pxi / pzi * sinp
+    S[i, 0] = S[i, 0] / f
+    sx = S[i, 0] * sinp
+    S[i, 1] = pxi * cosp + pzi * sinp
+    S[i, 2] = S[i, 2] + pyi / pzi * sx
+    S[i, 4] = S[i, 4] - pr / pzi * sx
+
+
+@njit(**NJ)
+def _edge_maxwell1(i, S, rhob):
+    """tbfrie.f tbedgemaxwell の座標更新 (lattice._tbedgemaxwell_cod)"""
+    pr = 1.0 + S[i, 5]
+    pxi = min(pr, max(-pr, S[i, 1]))
+    pvi2 = max(1e-30, (pr - pxi) * (pr + pxi))
+    pvi = math.sqrt(pvi2)
+    yi = S[i, 2]
+    yr = (yi / rhob)**2
+    a = 1.0 - yr / 6.0
+    af = a * yi / rhob / pvi
+    b = 0.5 - yr / 24.0
+    bf = b * yi * yi / rhob / pvi2 / pvi
+    S[i, 0] = S[i, 0] + bf * pr
+    S[i, 3] = min(pr, max(-pr, S[i, 3] - af * pxi))
+    S[i, 4] = S[i, 4] - bf * pxi
+
+
+@njit(**NJ)
+def _edge_body1(i, S, rhob, psi):
+    """tbfrie.f tbedgebody の座標更新 (lattice._tbedgebody_cod)"""
+    ampmin = 1e-6
+    ampmax = 1.0 - ampmin
+    pr = 1.0 + S[i, 5]
+    cosp = math.cos(psi)
+    sinp = math.sin(psi)
+    sinsq = 2.0 * math.sin(0.5 * psi)**2
+    pxi = min(pr, max(-pr, S[i, 1]))
+    pyi = min(pr, max(-pr, S[i, 3]))
+    s = min(ampmax, pxi * pxi + pyi * pyi)
+    sqrs = pr * math.sqrt(max(ampmin, 1.0 - s / pr**2))
+    dpzi = -s / (pr + sqrs)
+    pzi = pr + dpzi
+    phsq = pzi * pzi + pxi * pxi
+    px0 = pxi * cosp - pzi * sinp
+    dpz0 = pxi * sinp + dpzi * cosp - pr * sinsq
+    xi = S[i, 0]
+    pxf = px0 + xi * sinp / rhob
+    S[i, 1] = min(pr, max(-pr, pxf))
+    s1 = min(ampmax, pyi * pyi + pxf * pxf)
+    sqrs1 = pr * math.sqrt(max(ampmin, 1.0 - s1 / pr**2))
+    dpzf = -s1 / (pr + sqrs1)
+    ddpz = (s - s1) / (sqrs + sqrs1) + (dpzi + pr) * sinsq - pxi * sinp
+    S[i, 0] = rhob * ddpz + xi * cosp
+    a = pr * xi * sinp / rhob + dpz0 * pxf - dpzf * px0
+    theta = math.asin(min(ampmax, max(-ampmax, a / phsq)))
+    S[i, 2] = S[i, 2] - rhob * theta * pyi
+    S[i, 4] = S[i, 4] + rhob * theta * pr
+
+
+@njit(**NJ)
+def edge_exact1(i, S, rhob, psi, entrance):
+    """tbfrie.f tbedge (psi≠0): 入口は drift → maxwell(rhob) → body、出口は body → maxwell(−rhob) → drift。
+    v2 (v2next B1): K1≠0 の BEND の追跡 (tbendi) の端に、K64 の薄い端の写像の代わりに使う (CALC の tbende と同じ厳密な端)"""
+    p = 1.0 + S[i, 5]
+    S[i, 1] = S[i, 1] * p            # 追跡の px・py は運動量で割ったもの (tbendi の pxi = px/p)。tbedge は正準運動量 (/p0)
+    S[i, 3] = S[i, 3] * p
+    if entrance:
+        _edge_drift1(i, S, psi)
+        _edge_maxwell1(i, S, rhob)
+        _edge_body1(i, S, rhob, psi)
+    else:
+        _edge_body1(i, S, rhob, psi)
+        _edge_maxwell1(i, S, -rhob)
+        _edge_drift1(i, S, psi)
+    S[i, 1] = S[i, 1] / p
+    S[i, 3] = S[i, 3] / p
+
+
+@njit(**NJ)
 def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta, dtheta, cost, sint,
             dchi2, alg, phig, fb1, fb2, mfring, enarad, fringe, eps0, first, last,
             fluc, rs, p0, h0, anrad, cuc):
@@ -1072,6 +1158,7 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
     ndiv = fmin(1000, ndiv)
     n2 = ndiv + n2
     af = 1.0 if fringe else 0.0
+    v2edge = fringe and (rs.shape[0] > 1 and rs[1] == 1)       # v2 (B1): DISFRIN=0 のとき端は厳密な tbedge (sinp≠0 の端だけ)
     aln = alc / ndiv
     alr_e = 0.0; phi_e = 0.0
     for i in range(n):
@@ -1098,14 +1185,19 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
         m_p = 1.0 + m_dp
         rhoe = rhob * m_p            # bendib の rhoe: 入口で 1 回だけ決める (放射で dp が変わっても更新しない)
         yi = S[i, 2]
-        f = yi / rhoe
-        fpx = af * S[i, 1]
-        m_pyi = S[i, 3] - (tanp1 + fpx) * f
-        ff = af * yi * f * 0.5
-        m_xi = S[i, 0] + ff
-        m_zi = S[i, 4] - ff * fpx
-        m_pxi = S[i, 1] + tanp1 * m_xi / rhoe
-        m_yi = yi
+        if v2edge and sinp1 != 0.0:
+            # v2 (v2next B1): 入口の端は CALC (tbende) と同じ厳密な tbedge (K64 の薄い端は x の 2 次で数値微分と 1e-5 の差)
+            edge_exact1(i, S, rhob, math.atan2(sinp1, cosp1), True)
+            m_xi = S[i, 0]; m_pxi = S[i, 1]; m_yi = S[i, 2]; m_pyi = S[i, 3]; m_zi = S[i, 4]
+        else:
+            f = yi / rhoe
+            fpx = af * S[i, 1]
+            m_pyi = S[i, 3] - (tanp1 + fpx) * f
+            ff = af * yi * f * 0.5
+            m_xi = S[i, 0] + ff
+            m_zi = S[i, 4] - ff * fpx
+            m_pxi = S[i, 1] + tanp1 * m_xi / rhoe
+            m_yi = yi
         akx0 = 0.0; alx0 = 0.0; phix0 = 0.0
         # tbendiinit の値
         rhosq = 0.0; drhop = 0.0; akk = 0.0; akxsq = 0.0; akysq = 0.0
@@ -1216,16 +1308,20 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
         xr = m_xi / rho0
         m_pxi = m_pxi - ak1c * m_xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m_p
         m_zi = m_zi - S[i, 6] * al
-        px = m_pxi + tanp2 * m_xi / rhoe
-        f = m_yi / rhoe
-        fpx = af * px
-        S[i, 1] = px
-        S[i, 2] = m_yi
-        S[i, 3] = m_pyi - (tanp2 - fpx) * f
-        ff = af * m_yi * f * 0.5
-        S[i, 0] = m_xi - ff
-        S[i, 4] = m_zi + ff * fpx
-        S[i, 5] = m_dp
+        if v2edge and sinp2 != 0.0:
+            S[i, 0] = m_xi; S[i, 1] = m_pxi; S[i, 2] = m_yi; S[i, 3] = m_pyi; S[i, 4] = m_zi; S[i, 5] = m_dp
+            edge_exact1(i, S, rhob, math.atan2(sinp2, cosp2), False)       # v2 (B1): 出口も厳密な tbedge
+        else:
+            px = m_pxi + tanp2 * m_xi / rhoe
+            f = m_yi / rhoe
+            fpx = af * px
+            S[i, 1] = px
+            S[i, 2] = m_yi
+            S[i, 3] = m_pyi - (tanp2 - fpx) * f
+            ff = af * m_yi * f * 0.5
+            S[i, 0] = m_xi - ff
+            S[i, 4] = m_zi + ff * fpx
+            S[i, 5] = m_dp
         if fb2 != 0.0:
             dxfr2 = fb2 * fb2 / rhob / 24.0
             dyfr2 = fb2 / (rhob * rhob) / 6.0
@@ -1288,6 +1384,62 @@ def tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0):
 
 
 @njit(**NJ)
+def tent_all(S, n, dx, dy, theta):
+    """inc/TENT.inc (全粒子): ずらす → 回す。|cos|≥|sin| では y を更新後の x から求める SAD の書き方のまま (tcav の DX・DY・ROTATE)"""
+    cost = 1.0
+    sint = 0.0
+    if theta != 0.0:
+        cost = math.cos(theta)
+        sint = math.sin(theta)
+    for i in range(n):
+        if dx != 0.0:
+            S[i, 0] -= dx
+        if dy != 0.0:
+            S[i, 2] -= dy
+        if theta != 0.0:
+            if abs(cost) >= abs(sint):
+                S[i, 0] = cost * S[i, 0] - sint * S[i, 2]
+                S[i, 2] = (sint * S[i, 0] + S[i, 2]) / cost
+                S[i, 1] = cost * S[i, 1] - sint * S[i, 3]
+                S[i, 3] = (sint * S[i, 1] + S[i, 3]) / cost
+            else:
+                xi = S[i, 0]
+                S[i, 0] = xi * cost - S[i, 2] * sint
+                S[i, 2] = xi * sint + S[i, 2] * cost
+                pxi = S[i, 1]
+                S[i, 1] = pxi * cost - S[i, 3] * sint
+                S[i, 3] = pxi * sint + S[i, 3] * cost
+
+
+@njit(**NJ)
+def texit_all(S, n, dx, dy, theta):
+    """inc/TEXIT.inc (全粒子): 回し戻す → ずらし戻す"""
+    cost = 1.0
+    sint = 0.0
+    if theta != 0.0:
+        cost = math.cos(theta)
+        sint = math.sin(theta)
+    for i in range(n):
+        if theta != 0.0:
+            if abs(cost) >= abs(sint):
+                S[i, 0] = cost * S[i, 0] + sint * S[i, 2]
+                S[i, 2] = (-sint * S[i, 0] + S[i, 2]) / cost
+                S[i, 1] = cost * S[i, 1] + sint * S[i, 3]
+                S[i, 3] = (-sint * S[i, 1] + S[i, 3]) / cost
+            else:
+                xi = S[i, 0]
+                S[i, 0] = xi * cost + S[i, 2] * sint
+                S[i, 2] = -xi * sint + S[i, 2] * cost
+                pxi = S[i, 1]
+                S[i, 1] = pxi * cost + S[i, 3] * sint
+                S[i, 3] = -pxi * sint + S[i, 3] * cost
+        if dy != 0.0:
+            S[i, 2] += dy
+        if dx != 0.0:
+            S[i, 0] += dx
+
+
+@njit(**NJ)
 def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0):
     """tcav (vnominal=0, ndiv=1)。v = vc/amass·|charge|、w = 2π f/c、dphis = phis − phic、offset は rad で切替済み"""
     wsn = 1.0
@@ -1321,6 +1473,50 @@ def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, 
         av = -(math.cos(2.0 * phh - dphis) * wi - offset1 * t) * wsn / p0
         dpx = 2.0 * v20a * S[i, 0] * av
         dpy = 2.0 * v02a * S[i, 2] * av
+        S[i, 1] = (S[i, 1] * p1r + dpx) / p2r
+        S[i, 3] = (S[i, 3] * p1r + dpy) / p2r
+        S[i, 4] = -t * p2r * p0 / h2
+        if al != 0.0:
+            cav_drift1(i, S, al * wsn * 0.5)
+            if fringe and mfring >= 0 and mfring != 1:
+                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0)
+
+
+@njit(**NJ)
+def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, v1a, v20q, v11a, v02q):
+    """k_cav (vnominal=0, ndiv=1) に CAVI の V1・V20・V11・V02 (横方向の電圧の依存。tcav.f の v1a, v20a, v11a, v02a) を入れたもの。
+    v20q = V20/2·|charge|/amass、v02q = V02/2·|charge|/amass (vcorr は中で足す)。V1=V20=V11=V02=0 なら k_cav と同じ式だが丸めが違うので、呼び出し側が分ける"""
+    wsn = 1.0
+    vcorr = v * (w * (0.5 / p0 + 0.5 / p0))**2 / 4.0
+    v20a = v20q + vcorr
+    v02a = v02q + vcorr
+    for i in range(n):
+        if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
+            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+        if al != 0.0:
+            cav_drift1(i, S, al * wsn * 0.5)
+        dp1r = S[i, 5]
+        p1r = 1.0 + dp1r
+        p1 = p0 * p1r
+        if S[i, 6] > 0.1:
+            h1 = p2h(p1)
+        else:
+            h1 = p1r * h0 / (1.0 - S[i, 6] + S[i, 10])
+        t = fmin(tlim, fmax(-tlim, -S[i, 4] * h1 / p1))
+        phh = 0.5 * w * t
+        dh = fmax(1.0 + 3.83e-12 - h1,
+                 (v + (v1a + v20a * S[i, 0] + v11a * S[i, 2]) * S[i, 0] + v02a * S[i, 2]**2)
+                 * (-2.0 * math.sin(phh) * math.cos(phh - dphis) + offset) * wsn)
+        h2 = h1 + dh
+        a = fmax(dh * (h1 + h2) / (p1 * p1), -1.0)
+        dpr = sqrt1(a)
+        dp2r = dp1r + p1r * dpr
+        p2r = 1.0 + dp2r
+        S[i, 5] = dp2r
+        S[i, 6] = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + S[i, 10]
+        av = -(math.cos(2.0 * phh - dphis) * wi - offset1 * t) * wsn / p0
+        dpx = (v1a + 2.0 * v20a * S[i, 0] + v11a * S[i, 2]) * av
+        dpy = (v11a * S[i, 0] + 2.0 * v02a * S[i, 2]) * av
         S[i, 1] = (S[i, 1] * p1r + dpx) / p2r
         S[i, 3] = (S[i, 3] * p1r + dpy) / p2r
         S[i, 4] = -t * p2r * p0 / h2
@@ -1769,9 +1965,48 @@ def _ext():
     return track6n_ext
 
 
+def _bend_type(el):
+    """idtypec が BEND か (parser が L=0 の BEND を Drift にしたものは _sad_type='BEND')"""
+    if isinstance(el, Drift):
+        return getattr(el, '_sad_type', 'DRIFT') == 'BEND'
+    return type(el).__name__ == 'Bend'
+
+
+def bend_links(elements):
+    """tfgeo.f の inext・iprev (BEND の前後に長さ 0 の要素だけを挟んで隣り合う BEND がいるか) から、BEND ごとの (first, last) を返す。
+    first = iprev(l) == 0、last = inext(l) == 0。K64 の tbend・tbendi は放射のとき、F1 (FB1・FB2) の端の分割 (長さ F1/2 の 2 つの断片に放射を入れる)
+    を first なら入口側、last なら出口側にだけ入れる (隣の BEND と続いているときは入れない)。リングの終わりは先頭に回って探す (1 個しかない BEND や
+    輸送路の先頭 MARK が長さ 0 のときは自分自身に繋がる)。戻り: {要素の番号 (0 始まり): (first, last)} (BEND だけ)"""
+    n = len(elements)
+    pos = [0.0] * (n + 1)
+    for i, el in enumerate(elements):
+        pos[i + 1] = pos[i] + float(el.L)
+    isb = [_bend_type(el) for el in elements] + [False]            # n 番目 = 終端 (MARK)
+    nxt = {}
+    prv = {}
+    for i in range(1, n + 1):                                   # tfgeo: i = 1..nlat-1 (nlat = n+1)
+        if not isb[i - 1]:
+            continue
+        j = i + 1
+        posi = pos[j - 1]
+        for _guard in range(4 * (n + 2)):
+            pj = pos[j - 1] if j >= 1 else pos[0]
+            if pj != posi:
+                break
+            if j == n + 1:
+                j = 0
+                posi = pos[0]
+            elif isb[j - 1]:
+                nxt[i] = j
+                prv[j] = i
+                break
+            j += 1
+    return {i - 1: (i not in prv, i not in nxt) for i in range(1, n + 1) if isb[i - 1]}
+
+
 class Prog:
     """要素ごとの (種類, パラメータ) の列。MULT (K_MULT) とソレノイド領域 (K_SOL_*) は track6n_ext で compile する"""
-    def __init__(self, elements, ph, l0=0):
+    def __init__(self, elements, ph, l0=0, links=None):
         self.kinds = []
         self.params = []
         self.names = []
@@ -1781,6 +2016,10 @@ class Prog:
         self.sol_mode = []              # ソレノイド領域内の要素の la の扱い (SM_*)
         self.l0 = l0                    # この Prog の最初の要素の全体での位置 − 1 (TrackRun.segment が付ける。MAP の l 用)
         self.autophi = {}               # v2 (C2): AUTOPHI の CAVI の添字 (この Prog の中での位置)
+        if links is None and l0 == 0 and len(elements) > 1 and any(_bend_type(e) for e in elements):
+            links = bend_links(elements)      # 全体の並びを渡されたとき (maintrack・dapert)。TrackRun は全体から作って渡す
+        self.bfl = {}                   # BEND の (first, last) = (iprev == 0, inext == 0) (この Prog の中での位置 → 全体の links[l0 + 位置])
+        self._links = links
         self._idx = 0
         i = 0
         nel = len(elements)
@@ -1798,6 +2037,8 @@ class Prog:
                 cnt = True
             else:
                 k, p = self._compile(el, ph)
+                if k == K_BEND and links is not None and (self.l0 + i) in links:
+                    self.bfl[len(self.kinds)] = links[self.l0 + i]
                 if k == K_CAV and _t6._g(el, 'AUTOPHI') != 0.0:
                     # v2 (C2) AUTOPHI: tturn.f の ph = DPHI + DZ·w。位相の基準は設計軌道の到着時刻 (turn が phis = 0 にする)
                     p = p[:4] + (p[4] + autophi_dz(self.l0 + i) * p[2] * ph.charge,) + p[5:]
@@ -1930,7 +2171,8 @@ class Prog:
             vnom = g(el, 'VOLT') / ph.amass * abs(ph.charge) * math.sin(-g(el, 'PHI') * (1.0 if ph.charge >= 0 else -1.0))
             qa = abs(ph.charge) / ph.amass
             vq = (g(el, 'V1') * qa, 0.5 * g(el, 'V20') * qa, g(el, 'V11') * qa, 0.5 * g(el, 'V02') * qa)
-            return K_CAV, (al, v, w, wi, phic, g(el, 'DISFRIN') == 0.0, int(round(g(el, 'FRINGE'))), vnom, vq)
+            return K_CAV, (al, v, w, wi, phic, g(el, 'DISFRIN') == 0.0, int(round(g(el, 'FRINGE'))), vnom, vq,
+                           g(el, 'DX'), g(el, 'DY'), g(el, 'ROTATION'))      # tcav の TENT・TEXIT (DX・DY・ROTATE)
         if tn in ('Multipole', 'Solenoid'):
             # Prog.__init__ が MULT/SOL を先に処理するので、ここに来るのは TCavity (と直接 _compile を呼んだ場合) だけ。
             # L=0 の MULT (薄い多極) や SOL を黙って無視しないよう、L==0 の判定より前に置く
@@ -2083,16 +2325,19 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             (al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2, cosw, sinw, sqwh, sinwp1,
              fb1, fb2, mfring, fringe, eps0, dx, dy, cost, sint, dtheta, dchi2, alg, phig, ak1, theta, radok) = pr
             krad = rad and radok
+            bfirst, blast = prog.bfl.get(l_el, (True, True))
             if ak1 != 0.0:
                 k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak1, dx, dy, theta, dtheta, cost, sint,
-                        dchi2, alg, phig, fb1, fb2, mfring, krad, fringe, eps0, True, True,
+                        dchi2, alg, phig, fb1, fb2, mfring, krad, fringe, eps0, bfirst, blast,
                         fluc, rs, p0, h0 * tm, anrad, cuc)
             else:
                 k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2, cosw, sinw, sqwh, sinwp1,
-                        fb1, fb2, mfring, fringe, krad, True, True, eps0, dx, dy, cost, sint, dtheta, dchi2, alg, phig,
+                        fb1, fb2, mfring, fringe, krad, bfirst, blast, eps0, dx, dy, cost, sint, dtheta, dchi2, alg, phig,
                         fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind == K_CAV:
-            (al, v, w, wi, phic, fringe, mfring, vnom, vq) = pr
+            (al, v, w, wi, phic, fringe, mfring, vnom, vq, cdx, cdy, cth) = pr
+            if cdx != 0.0 or cdy != 0.0 or cth != 0.0:
+                tent_all(S, n, cdx, cdy, cth)         # tcav.f: include 'inc/TENT.inc' (空洞の DX・DY・ROTATE。K64 は L≠0 でも L=0 でも入れる)
             aphi_ = l_el in prog.autophi          # v2 (C2): AUTOPHI。K64 は TRPT でないと phis = phic (位相の差が消える) にする
             phis = 0.0 if (trpt or aphi_) else w * trf0      # tcav.f:50: TRPT は phis=0
             dphis = phis - phic
@@ -2109,14 +2354,20 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
                               (wake[0] if wk is not None else None), wk)
                 p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
             elif wk is not None:
+                if any(q != 0.0 for q in vq):
+                    raise NotImplementedError('track6n: WakeFunction のある CAVI の V1・V20・V11・V02 は未対応')
                 # tcav.f: 入口フリンジ → [wake 前半 (init)] → 前半ドリフトと電圧キック → [wake 後半] → 後半ドリフトと出口フリンジ。dx, dy, theta は 0 を渡す
                 k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0)
                 wake[0].apply(S, n, wk[0], wk[1], 0.0, 0.0, True, p0, h0)
                 k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0)
                 wake[0].apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
                 k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0)
+            elif any(q != 0.0 for q in vq):
+                k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, vq[0], vq[1], vq[2], vq[3])
             else:
                 k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0)
+            if cdx != 0.0 or cdy != 0.0 or cth != 0.0:
+                texit_all(S, n, cdx, cdy, cth)        # inc/TEXIT.inc
         elif rfmult:
             ph = _ext().mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, (wake[0] if wk is not None else None), wk)
             p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
@@ -2217,7 +2468,8 @@ class TrackRun:
         self.n = len(idx)
         self.S = make_state(self.coords0[idx], ph) if idx else None
         self.rs = make_rs(_t6.RNG.seed)
-        Prog(self.elements, ph)                  # 未対応の要素なら NotImplementedError (全体で 1 回確かめる)
+        self.links = bend_links(self.elements) if any(_bend_type(e) for e in self.elements) else None
+        Prog(self.elements, ph, links=self.links)                  # 未対応の要素なら NotImplementedError (全体で 1 回確かめる)
         self._progs = {}
         self.wake = None                         # (WakeKick, {全体の要素番号 (1 始まり): (wl, wt, dx, dy)})
         self.spch = None                         # v2: 空間電荷 (spch.SpaceCharge。ffscmd が SPAC / PSPAC のとき入れる)
@@ -2233,7 +2485,7 @@ class TrackRun:
         key = (a, b)
         prog = self._progs.get(key)
         if prog is None:
-            prog = self._progs[key] = Prog(self.elements[a - 1:b - 1], self.ph, l0=a - 1)
+            prog = self._progs[key] = Prog(self.elements[a - 1:b - 1], self.ph, l0=a - 1, links=self.links)
             prog.l0 = a - 1
         wake = None
         lt0 = getattr(self, 'l_track0', None)        # セッションの最初の追跡では l_track=0 (tmacro の初期値)。tapert の落とす印 kptbl(i,4)=l_track が 0 では落ちない
@@ -2284,7 +2536,7 @@ class TrackRun:
 
 
 def track_particles_fast(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=True, rad=False, fluc=False,
-                         seed=None, charge=1.0, amass=None, progress=0, fshift=0.0, circ=None):
+                         seed=None, charge=1.0, amass=None, progress=0, fshift=0.0, circ=None, links=None, links_off=0):
     """track6.track_particles と同じ仕様 (MULT/SOL があれば track6 にフォールバック)。
     circ: 全周長 (omega0 = 2πc/circ、空洞の周波数)。elements が区間のときに渡す。None なら elements の長さの和"""
     import time
@@ -2294,9 +2546,10 @@ def track_particles_fast(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=Tr
     ph = _e._Phys(momentum_eV, circ, charge=charge, **kw)
     ph.dvfs = fshift if rfsw else 0.0
     try:
-        prog = Prog(elements, ph)
+        prog = Prog(elements, ph, links=({k - links_off: v for k, v in links.items()} if links is not None else None))
     except NotImplementedError:
-        return _t6.track_particles(elements, coords, nturn, momentum_eV, trf0, rfsw, rad, fluc, seed, charge, amass, progress, fshift, circ)
+        return _t6.track_particles(elements, coords, nturn, momentum_eV, trf0, rfsw, rad, fluc, seed, charge, amass, progress, fshift, circ,
+                                   links=links, links_off=links_off)
     if seed is not None:
         _t6.RNG.restore(seed)
     rs = make_rs(_t6.RNG.seed)

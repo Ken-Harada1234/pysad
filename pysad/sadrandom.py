@@ -160,3 +160,38 @@ def tdusrn(rng: SadRandom, anp: float):
         r2 = r2 / r1 * 0.5
         r1 = r1 / dph
     return dph, r1, r2, an
+
+
+def tdusrnpl(rng: SadRandom, anp: float):
+    """drndsr.f tdusrnpl (tdusrn と同じ乱数の引き方で、光子ごとのエネルギー dpr (uc 単位) と位置 rph (0..1) も返す)。
+    戻り (dph, r1, r2, an, dpr, rph)"""
+    from . import compat
+    if compat.v2() and not math.isfinite(anp):
+        rng.tran()
+        return 0.0, 0.0, 0.0, 0.0, [], []
+    p0 = math.exp(-anp)
+    pn = p0
+    p = rng.tran()
+    r1 = r2 = an = dph = 0.0
+    x = 1.0
+    dpr = []
+    rph = []
+    for _ in range(_NPMAX):
+        if p <= pn:
+            break
+        an += 1.0
+        x = x * anp / an
+        pn = pn + x * p0
+        dph1 = drndsr(rng)
+        dph += dph1
+        r = rng.tran()
+        r1 += r * dph1
+        r2 += r * r * dph1
+        dpr.append(dph1)
+        rph.append(r)
+        if pn > _CUTOFF:
+            break
+    if r1 != 0.0:
+        r2 = r2 / r1 * 0.5
+        r1 = r1 / dph
+    return dph, r1, r2, an, dpr, rph

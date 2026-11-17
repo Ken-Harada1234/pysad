@@ -102,8 +102,13 @@ def test_sol_optics_matches_gs(name):
             assert abs(a - b) <= 2e-9 * max(abs(b), 1.0) + 1e-9, (name, t, n, v, w)
 
 
-def test_sol_calc6d_is_refused():
-    """CALC6D・RADCOD つきの CALC は未対応 (Emittance[]・EMIT は solemit。tests/test_sol_emit.py)"""
-    src = SRC['s1'].split('CELL;')[0] + 'CELL; RFSW; NORAD; NOFLUC; CALC6D; CALC; Exit;'
+def test_sol_calc6d_runs():
+    """(v2next B1 で変更。旧: test_sol_calc6d_is_refused) CALC6D・RADCOD つきの CALC は SOL 領域でも動く (solmap の写像を calc6d._turn が solemit で通す)。
+    gs との数値の一致は tests/test_v2_B1_optics.py"""
+    src = SRC['s1'].split('CELL;')[0] + 'CELL; CALC; Print["N4 ", Twiss["NX","$$$"]/(2Pi)]; RFSW; NORAD; NOFLUC; CALC6D; CALC; Print["N6 ", Twiss["NX","$$$"]/(2Pi)]; Exit;'
     out = _out(src)
-    assert '未対応' in out or 'Error' in out or '???' in out
+    assert '未対応' not in out and 'Unstable' not in out
+    import re
+    n4 = float(re.search(r'\nN4\s+([-\d.eE+]+)', out).group(1))
+    n6 = float(re.search(r'\nN6\s+([-\d.eE+]+)', out).group(1))
+    assert abs(n4 - n6) < 1e-2 and n4 == n4 and n6 == n6

@@ -22,6 +22,8 @@ from __future__ import annotations
 import copy
 import math
 
+from . import compat as _compat
+
 import numpy as np
 
 TAPMAX = 0.3
@@ -72,7 +74,7 @@ def factors(els, ddp, u, tracking=False):
     out = []
     for l, el in enumerate(els):
         a, b = ddp[l], ddp[l + 1]
-        if type(el).__name__ == 'Bend' and not tracking:
+        if type(el).__name__ == 'Bend' and (not tracking or _compat.v2()):     # v2: 追跡も BEND に tturne と同じ重み (K64 の追跡は (δ_l + δ_l+1)/2)
             t = 1.0 + (3.0 * a + b) * 0.25 + u
         else:
             t = 1.0 + (a + b) * 0.5 + u

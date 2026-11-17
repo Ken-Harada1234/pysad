@@ -41,7 +41,7 @@ def interp():
 
 def test_tk_version_and_font_system(interp):
     interp.run('v = Tk$FullVersion; fs = $FontSystem;', 'script')
-    assert str(interp.get('v')).startswith('8.6')
+    assert str(interp.get('v')).startswith(('8.6', '9.0'))     # Python 3.12 以前は Tk 8.6、3.14 は同梱の Tk 9.0
     assert interp.get('fs') == 'X11'
 
 

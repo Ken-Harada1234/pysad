@@ -34,14 +34,16 @@ XTHASX = (2.0**-52 * 13312.0 / 231.0 / 6.0)**0.1     # tfloor.f xthasx
 
 # PH の並び
 P0, H0, ANRAD, CUC, CRAD, BRHOZ, EMIDIV, EMIDIB, EMIDIQ, DVFS, PGEV = range(11)
+RSGN = 11            # tradke の ddpx の符号 (K64 = +1、v2 = −1。v2next A1 項目 7: K64 の追跡 tradkn と逆)
 # S の並び
 U0, H1EMIT, DVEMIT = range(3)
 
 
 def phys_array(ph):
     """emit6d._Phys → PH 配列"""
+    from . import compat as _cmp
     return np.array([ph.p0, ph.h0, ph.anrad, ph.cuc, ph.crad, ph.brhoz, ph.emidiv, ph.emidib, ph.emidiq,
-                     ph.dvfs, ph.pgev], dtype=float)
+                     ph.dvfs, ph.pgev, -1.0 if _cmp.v2() else 1.0], dtype=float)
 
 
 # ---------------------------------------------------------------------------
@@ -178,8 +180,8 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
     uc = uct * theta
     dg = -CAVE * anp * uc
     S[U0] -= dg
-    ddpx = 0.5 * dpx * dg
-    ddpy = 0.5 * dpy * dg
+    ddpx = PH[RSGN] * 0.5 * dpx * dg      # v2: 符号を反転 (K64 の追跡 tradkn は ddpx = −0.5 dpx dg)
+    ddpy = PH[RSGN] * 0.5 * dpy * dg
     c1 = al1 / pr / 3.0
     if radcod:
         g = max(GMIN, gi + dg)
@@ -199,7 +201,7 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
         return
     ok, Dn, Bn = _tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
                             xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, PH[P0], PH[ANRAD], CAVE, CUU,
-                            0.0, 0.0, tin, tout, False)
+                            0.0, 0.0, tin, tout, False, PH[RSGN])
     if ok:
         for i in range(6):
             for j in range(6):
@@ -378,9 +380,11 @@ def _rotmat(ct, st, ent):
 
 
 @njit(**NJ)
-def _quirk56(c):
+def _quirk56(c, v2=False):
     """tbgrote (dr=0) の trans: 単位行列で (5,6) だけ dpzi·(pr+1)/pzi (lattice._tchge_jac の simple 分岐)"""
     J = np.eye(6)
+    if v2:
+        return J            # v2 (B109): dr=0 の写像は恒等なので (5,6) = 0
     pr = 1.0 + c[5]
     a = (c[1] / pr)**2 + (c[3] / pr)**2
     dpzi = (math.sqrt(1.0 - a) - 1.0) * pr
@@ -405,7 +409,7 @@ def _tchge_simple(c, T, D, B, dx0, dy, th, ent, want_jac, want_db, symp_fix, v2=
             _rot4(c, ct, st)
             c[2] -= st * dx0 + ct * dy
             if dxr != 0.0:
-                J = _quirk56(c)
+                J = _quirk56(c, v2)
                 if v2:
                     J = _mm(J, _rotmat(ct, st, True))      # v2 (B09): 入口の回転を行列に掛ける
             else:
@@ -505,7 +509,7 @@ def _tdrife1(c, dv, al):
 
 
 @njit(**NJ)
-def _tbgrote(c, dr, dx, dz):
+def _tbgrote(c, dr, dx, dz, v2=False):
     """tchge.f tbgrote: cod 更新 (in-place) と trans"""
     xi = c[0] + dx
     yi = c[2]
@@ -560,13 +564,16 @@ def _tbgrote(c, dr, dx, dz):
     t[4, 2] = dr[2, 1] * prpzf
     t[4, 3] = -zfpzf * prpzf * (dr[2, 1] + r33 * dpzidpy)
     t[4, 4] = 1.0
-    t[4, 5] = r33 * (dpzf * prpzf + dpzi / pzi) - dr[2, 2]
+    if v2:
+        t[4, 5] = zfpzf * (1.0 - prpzf * r33 * dpzidp)      # v2 (B109): 写像の厳密な微分 (K64 のコメントアウトされた式)
+    else:
+        t[4, 5] = r33 * (dpzf * prpzf + dpzi / pzi) - dr[2, 2]
     t[5, 5] = 1.0
     return t
 
 
 @njit(**NJ)
-def _tbrote(c, alg, phig, dx, dz, dtheta, ent):
+def _tbrote(c, alg, phig, dx, dz, dtheta, ent, v2=False):
     """tchge.f tbrote (dchi2=0): cod 更新 (in-place) と trans (lattice._tbrote_jac)"""
     if phig == 0.0:
         c0 = 1.0
@@ -596,18 +603,22 @@ def _tbrote(c, alg, phig, dx, dz, dtheta, ent):
         c[0] -= dx1
         if dz1 != 0.0:
             J1 = _tdrife1(c, 1.0, dz1)
-            J2 = _tbgrote(c, rr, dl * s0, -dl * c0)
+            J2 = _tbgrote(c, rr, dl * s0, -dl * c0, v2)
             return _mm(J2, J1)
-        return _tbgrote(c, rr, dl * s0, -dl * c0)
+        return _tbgrote(c, rr, dl * s0, -dl * c0, v2)
     rr[1, 0] = s0 * s2 - c0 * c2 * st
     rr[2, 0] = c0 * ((dct - dc2) * s0 - c0 * s2 * st)
     rr[0, 1] = -ct * s0 * s2 + c0 * st
     rr[2, 1] = c0 * ct * s2 + s0 * st
     rr[0, 2] = s0 * (c0 * (dct - dc2) + s0 * s2 * st)
     rr[1, 2] = -c0 * s2 - c2 * s0 * st
-    J = _tbgrote(c, rr, dl * s0, -dl * c0)
-    dx1 = dx * c0 + dz * s0
-    dz1 = dz * c0 - dx * s0
+    J = _tbgrote(c, rr, dl * s0, -dl * c0, v2)
+    if v2:
+        dx1 = dx * c0 - dz * s0         # v2 (A2): lattice._tbrote_cod と同じ (出口の (dx, dz) の回し方の符号)
+        dz1 = dz * c0 + dx * s0
+    else:
+        dx1 = dx * c0 + dz * s0
+        dz1 = dz * c0 - dx * s0
     if dz1 != 0.0:
         J2 = _tdrife1(c, 1.0, -dz1)
         J = _mm(J2, J)
@@ -636,10 +647,10 @@ def _tchge(c, T, D, B, dx0, dy, dz, theta, dtheta, alg, phig, ent, want_jac, wan
             c[2] -= st * dx0 + ct * dy
             if brote:
                 if simple:
-                    J = _quirk56(c)
-                    _tbrote(c, alg, phig, dxr, dz, dtheta, True)
+                    J = _quirk56(c, v2)
+                    _tbrote(c, alg, phig, dxr, dz, dtheta, True, v2)
                 else:
-                    J = _tbrote(c, alg, phig, dxr, dz, dtheta, True)
+                    J = _tbrote(c, alg, phig, dxr, dz, dtheta, True, v2)
                 if v2:
                     J = _mm(J, _rotmat(ct, st, True))      # v2 (B09): 入口の回転を行列に掛ける (K64 は tbrote が上書きして落とす)
             else:
@@ -648,16 +659,16 @@ def _tchge(c, T, D, B, dx0, dy, dz, theta, dtheta, alg, phig, ent, want_jac, wan
             c[2] -= dy
             if brote:
                 if simple:
-                    _tbrote(c, alg, phig, dxr, dz, dtheta, True)
+                    _tbrote(c, alg, phig, dxr, dz, dtheta, True, v2)
                 else:
-                    J = _tbrote(c, alg, phig, dxr, dz, dtheta, True)
+                    J = _tbrote(c, alg, phig, dxr, dz, dtheta, True, v2)
         _piece(J, T, D, B, want_jac, want_db, symp_fix)
         return
     if brote:
         if simple:
-            _tbrote(c, alg, phig, dxr, dz, dtheta, False)
+            _tbrote(c, alg, phig, dxr, dz, dtheta, False, v2)
         else:
-            J = _tbrote(c, alg, phig, dxr, dz, dtheta, False)
+            J = _tbrote(c, alg, phig, dxr, dz, dtheta, False, v2)
     if th != 0.0:
         c[2] += st * dx0 + ct * dy
         _rot4(c, ct, -st)
@@ -1578,7 +1589,7 @@ def k_quad(cod, T, D, B, codr0, transr, S, PH, L, K1, dx, dy, th, fringe, f1in, 
 # ---------------------------------------------------------------------------
 
 @njit(**NJ)
-def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, symp_fix, want_jac, want_db, radcod):
+def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, symp_fix, want_jac, want_db, radcod, edgefix=False):
     """emit6d._tsteee (ずれは呼び出し側の tchge。F1 なし)。エッジ・本体の行列は SAD の解析式 (lattice._bend_edge_chain, _tsteee_body)"""
     if al == 0.0:
         if k0 != 0.0:
@@ -1602,17 +1613,21 @@ def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, sy
     aln = al / ndiv
     M = _edge_chain(c, rhoe, e1, True)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
+    # v2 (B108): 端の角 (AE1・AE2) のある面では場の中の行路が x·tan(e) だけ短い (_bend_core の edgefix と同じ)
+    tin = math.tan(e1) if edgefix else 0.0
+    tout = math.tan(e2) if edgefix else 0.0
     for n in range(1, ndiv + 1):
         dvemit = _dv(PH, c[5]) if use_dv else 0.0
         dvzL = _dvz(PH, c[5]) * aln if use_dv else 0.0
         t = _tsteee_body(c, aln, rhob, dvemit, dvzL)
         _piece(t, T, D, B, want_jac, want_db, symp_fix)
         if n != ndiv and krad:
-            _tradke(c, T, D, B, codr0, transr, S, PH, aln, 0.0, want_jac, want_db, radcod)
+            _tradke(c, T, D, B, codr0, transr, S, PH, aln, 0.0, want_jac, want_db, radcod, tin, 0.0)
+            tin = 0.0
     M = _edge_chain(c, rhoe, e2, False)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
     if krad:
-        _tradke(c, T, D, B, codr0, transr, S, PH, aln, 0.0, want_jac, want_db, radcod)
+        _tradke(c, T, D, B, codr0, transr, S, PH, aln, 0.0, want_jac, want_db, radcod, tin, tout)
     return 0
 
 
@@ -1625,7 +1640,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
     if phi0 == 0.0:
         if ak == 0.0:
             return _tsteee(c, T, D, B, codr0, transr, S, PH, al0, k0, e1, e2, enarad, use_dv, symp_fix,
-                           want_jac, want_db, radcod)
+                           want_jac, want_db, radcod, edgefix)
         elif phib == 0.0:
             # tquade (ずれなし): emit6d は Quadrupole(L, K1=ak/al0) を作って _tquade(krad=enarad)
             return k_quad(c, T, D, B, codr0, transr, S, PH, al0, ak / al0, 0.0, 0.0, 0.0, True, 0.0, 0.0, 0.0, 0.0, 0,

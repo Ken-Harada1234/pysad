@@ -291,8 +291,16 @@ class TclBridge:
             os.environ.setdefault('KBFRAMEDIR', share)
             I.assign('KBF$ConfDir', share)           # KBFrame の設定ファイル・画像の置き場 (SAD の share/KBFrame)
         # SAD (X11) の既定フォント。init.n が C 側から受け取る値 (WSL の gs で実測)
+        fixed_ = 'courier'
+        try:
+            import tkinter as _tk
+            if _tk.TkVersion >= 9.0 and sys.platform == 'win32':
+                # Windows の Tk 9.0 は `courier` を別名の Courier New に置き換えず、行の高さ 13 px の Courier (Tk 8.6 は Courier New の 16 px) にする
+                fixed_ = 'Courier New'
+        except Exception:
+            pass
         for k_, v_ in (('$DefaultFont', ['helvetica neue', 12.0]), ('$DefaultSansSerifFont', 'helvetica neue'), ('$DefaultSerifFont', 'utopia'),
-                       ('$DefaultFixedFont', 'courier'), ('$DefaultTerminalFont', 'fixed'), ('$DefaultSymbolFont', 'symbol'),
+                       ('$DefaultFixedFont', fixed_), ('$DefaultTerminalFont', 'fixed'), ('$DefaultSymbolFont', 'symbol'),
                        ('$DefaultFontSize', 12.0), ('$DefaultFontSlant', 'roman'), ('$DefaultFontWeight', 'medium'), ('System$Names', [])):
             if not I.has(k_):
                 I.assign(k_, v_)

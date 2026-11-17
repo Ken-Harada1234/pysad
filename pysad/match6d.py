@@ -1323,9 +1323,15 @@ def _row_wiq(m: Matcher, cid: int, idp: int, rows) -> float:
 _GEO_NAMES = ('GX', 'GY', 'GZ', 'CHI1', 'CHI2', 'CHI3')
 
 
-def tdgeo_term(geo, kfname, ne, k, el, tname, key, s, iorgr=1):
-    """tdgeo.f の直訳 (DRIFT の L、BEND の ANGLE・L だけ)。geo[k-1, j, i] は geo(j+1, i+1, k) (i=0..2 が向きの行列の列、i=3 が位置)。
-    ne は条件の位置、k は変数の要素。返り値は qu に足す量 (s = couple·sign を掛けたもの。呼び出し側が渡す s は ±coup)"""
+_QDX_TYPES = ('Quadrupole', 'Sextupole', 'Octupole', 'Decapole', 'Dodecapole', 'Multipole')
+
+
+def tdgeo_term(geo, kfname, ne, k, el, tname, key, s, iorgr=1, dcod=None, kbe=0):
+    """tdgeo.f の直訳 (DRIFT の L、BEND の ANGLE・L、四極などの DX・DY)。geo[k-1, j, i] は geo(j+1, i+1, k) (i=0..2 が向きの行列の列、i=3 が位置)。
+    ne は条件の位置、k は変数の要素。返り値は qu に足す量 (s = couple·sign を掛けたもの。呼び出し側が渡す s は ±coup)。
+    四極などの DX・DY (v2next B3): SOL 領域 (BOUND≠0 の SOL の間) の外 (kbe=0) は幾何を動かさないので 0。領域の中 (kbe = 領域の終端の SOL の位置)
+    は、要素の出口の軌道の変化 dcod0 を終端まで運んだ dcod = (dx, dpx, dy, dpy) (呼び出し側が sol_dcod で作る) で、終端の位置・向きの変化から
+    条件の位置 ne の幾何を出す (tdgeo.f 91-143 行目)"""
     if ne == iorgr:
         return 0.0
     if (ne > iorgr and (k >= ne or k < iorgr)) or (ne < iorgr and (k < ne or k >= iorgr)):
@@ -1336,6 +1342,30 @@ def tdgeo_term(geo, kfname, ne, k, el, tname, key, s, iorgr=1):
 
     def g(a, b, kk):                                   # Fortran geo(a, b, kk) (1 始まり)
         return float(geo[kk - 1, a - 1, b - 1])
+    if tname in _QDX_TYPES and key in ('DX', 'DY'):
+        if kbe == 0 or dcod is None:
+            return 0.0
+        yr1 = -dcod[3] * g(1, 1, kbe) + dcod[1] * g(1, 2, kbe)
+        yr2 = -dcod[3] * g(2, 1, kbe) + dcod[1] * g(2, 2, kbe)
+        yr3 = -dcod[3] * g(3, 1, kbe) + dcod[1] * g(3, 2, kbe)
+        dr1 = g(1, 4, ne) - g(1, 4, kbe)
+        dr2 = g(2, 4, ne) - g(2, 4, kbe)
+        dr3 = g(3, 4, ne) - g(3, 4, kbe)
+        if kfname == 'GX':
+            return s * (-dr2 * yr3 + dr3 * yr2 + dcod[0] * g(1, 1, kbe) + dcod[2] * g(1, 2, kbe))
+        if kfname == 'GY':
+            return s * (-dr3 * yr1 + dr1 * yr3 + dcod[0] * g(2, 1, kbe) + dcod[2] * g(2, 2, kbe))
+        if kfname == 'GZ':
+            return s * (-dr1 * yr2 + dr2 * yr1 + dcod[0] * g(3, 1, kbe) + dcod[2] * g(3, 2, kbe))
+        if kfname == 'CHI2':
+            return s * (yr1 * g(2, 3, ne) - yr2 * g(1, 3, ne)) / math.hypot(g(1, 3, ne), g(2, 3, ne))
+        if kfname == 'CHI1':
+            dz1 = -g(2, 3, ne) * yr3 + g(3, 3, ne) * yr2
+            dz2 = -g(3, 3, ne) * yr1 + g(1, 3, ne) * yr3
+            return (g(1, 3, ne) * dz2 - g(2, 3, ne) * dz1) / (g(1, 3, ne) ** 2 + g(2, 3, ne) ** 2) * s
+        dx3 = -g(1, 1, ne) * yr2 + g(2, 1, ne) * yr1
+        dy3 = -g(1, 2, ne) * yr2 + g(2, 2, ne) * yr1
+        return (-g(3, 2, ne) * dx3 + g(3, 1, ne) * dy3) / (g(3, 1, ne) ** 2 + g(3, 2, ne) ** 2) * s
     if tname in ('DRIFT', 'Drift'):
         if key == 'L' and isg:
             return s * g(j + 1, 3, k)
@@ -1393,6 +1423,8 @@ def _geo_var_supported(v, m=None):
     """tdgeo をここで直訳した変数 (DRIFT の L、BEND の ANGLE・L)。それ以外は幾何の条件の列を中心差分にする。
     v2 (C2): SOL 領域 (BOUND≠0 の SOL の間) の中の要素は、軌道がソレノイドの軸を外れていると L や ANGLE を変えたときに
     出口の位置・向きが軸方向の伸び以外にも動く (tsgeo が軌道を追う)。K64 の tdgeo は領域の外と同じ式を使うが、v2 は中心差分にする"""
+    if v['type'] in _QDX_TYPES and v['key'] in ('DX', 'DY') and _compat.v2():
+        return True                       # v2next B3: 四極などの DX・DY の解析微分 (領域の外は 0、中は sol_dcod)
     if (v['type'], v['key']) not in (('Drift', 'L'), ('Bend', 'ANGLE'), ('Bend', 'L')):
         return False
     if m is not None and _compat.v2():
@@ -1400,6 +1432,46 @@ def _geo_var_supported(v, m=None):
         if inside and any(k in inside for k in _positions(m, v)):
             return False
     return True
+
+
+def _sol_region_end(elements, k):
+    """tfbndsol: 要素 k (1 始まり) が SOL 領域 (BOUND≠0 の SOL の組の間) の中なら、領域の終端の SOL の位置 (1 始まり)。外なら 0"""
+    start = None
+    for i, el in enumerate(elements, start=1):
+        if type(el).__name__ == 'Solenoid' and float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0:
+            if start is None:
+                start = i
+            else:
+                if start < k < i:
+                    return i
+                start = None
+    return 0
+
+
+def sol_dcod(elements, rows, k, kbe, key):
+    """qdtrans + tftmatu (tdgeo.f): SOL 領域の中の四極などのずれ DX・DY (key) を変えたときの、領域の終端 kbe の軌道の変化 (dx, dpx, dy, dpy)。
+    解析微分 (v2next B3): 要素の写像は c_out = F(c − t) + t (座標をずらし、一様磁場のゲージが変わる分だけ正準運動量もずらす:
+    t = (DX, −(bz/2)DY, DY, (bz/2)DX))。したがって d c_out/d DX = (I − J) ∂t/∂DX、J は要素の Jacobian (ずれた軌道での値)。
+    K64 の qdtrans は eps=1e-6 の中心差分 (qtwiss1 を 2 回)。終端までの運び方は tftmatu (utwiss からの写像) の代わりに、
+    要素 k+1…kbe−1 の写像 (軌道に依存する Jacobian) の積。rows は twiss_table (入口の軌道を使う)"""
+    from . import lattice as _lat
+    el = elements[k - 1]
+    sm = getattr(el, '_solmap', None)
+    bz = float(sm[1][5]) if (sm is not None and len(sm[1]) > 5) else 0.0
+    r = rows[k - 1]
+    c = np.array([r.x_cod, r.px_cod, r.y_cod, r.py_cod, r.z_cod, r.delta_cod], dtype=float)
+    M, cout = _lat._el_cod_step(el, c, float(r.delta_cod))
+    tv = np.zeros(6)
+    if key == 'DX':
+        tv[0], tv[3] = 1.0, 0.5 * bz
+    else:
+        tv[1], tv[2] = -0.5 * bz, 1.0
+    dc = (np.eye(6) - M) @ tv
+    c = cout
+    for l in range(k + 1, kbe):
+        Ml, c = _lat._el_cod_step(elements[l - 1], c, float(r.delta_cod))
+        dc = Ml @ dc
+    return dc[:4]
 
 
 def _sol_region_positions(elements):
@@ -1468,9 +1540,14 @@ def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.n
                         geo_arr = g_.geo
                     el_k = m.lat.elements[k - 1]
                     ssg = coup
+                    kbe_, dcod_ = 0, None
+                    if v['type'] in _QDX_TYPES and v['key'] in ('DX', 'DY'):
+                        kbe_ = _sol_region_end(m.lat.elements, k)
+                        if kbe_:
+                            dcod_ = sol_dcod(m.lat.elements, rows_by[0], k, kbe_, v['key'])
                     for lp in (lfp1, lfp2):
                         if lp > 0:
-                            qu[i, ii] += tdgeo_term(geo_arr, kf, lp, k, el_k, v['type'], v['key'], ssg)
+                            qu[i, ii] += tdgeo_term(geo_arr, kf, lp, k, el_k, v['type'], v['key'], ssg, dcod=dcod_, kbe=kbe_)
                         ssg = -ssg
                     continue
                 if ctx is None or kf is None:

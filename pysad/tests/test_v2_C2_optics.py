@@ -175,8 +175,8 @@ def test_radtaper_in_calc6d(v2_mode):
     out = _out(src)
     ca, cb, em = _line(out, 'CA'), _line(out, 'CB'), _line(out, 'E')
     assert abs(ca[0] / -7.887e-5 - 1) < 1e-3
-    assert abs(cb[0] / em[0] - 1) < 1e-6 and abs(cb[0] / -2.1732e-7 - 1) < 1e-4       # テーパーで軌道が設計軌道に戻る
-    assert abs(cb[1]) < 1e-9 and abs(cb[2] / 3.911239e-4 - 1) < 1e-6 and abs(cb[3] / 2.606813e-4 - 1) < 1e-6 and abs(cb[4]) < 1e-12
+    assert abs(cb[0] / em[0] - 1) < 1e-6 and abs(cb[0] / -2.1732e-7 - 1) < 5e-3       # テーパーで軌道が設計軌道に戻る (v2: tradke の ddpx の符号 (A1 項目 7) で gs の値から 3e-3 ずれる)
+    assert abs(cb[1]) < 1e-9 and abs(cb[2] / 3.911239e-4 - 1) < 1e-5 and abs(cb[3] / 2.606813e-4 - 1) < 1e-5 and abs(cb[4]) < 1e-12
     assert 'Unstable' not in out
     compat.set_mode('k64')
     try:
@@ -184,4 +184,4 @@ def test_radtaper_in_calc6d(v2_mode):
     finally:
         compat.set_mode('v2')
     cbk = _line(out, 'CB')
-    assert abs(cbk[0] / -7.887e-5 - 1) < 1e-3                 # k64 モードは従来どおり (CALC6D にテーパーなし)
+    assert abs(cbk[0] / -2.1736e-7 - 1) < 1e-3                # k64 も CALC6D に RADTAPER を入れる (v2next B1: gs で確かめた。gs の DX(1) = -2.46e-7、チューン 6.696366849 と 2e-9 で一致)

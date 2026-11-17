@@ -243,12 +243,14 @@ def install_parallel(I):
     - Fork[] は POSIX (Linux・WSL・macOS) では本当にプロセスを分ける (親には子の pid、子には 0)。子は Exit[] か最上位の文の終わりで
       os._exit する (呼び出し元の Python に戻らない)。Windows には fork が無いので、v2 モードでは分かるエラーにし
       (k64 モードは従来どおり「親の側」として pid を返す)、並列の計算は Parallelize (逐次) を使う。
-    - Parallelize[f, n, lshare, npara, opts] は逐次: {f[1], …, f[n]} (失敗は $Failed)。Completion->g があれば結果に g を適用する。"""
+    - Parallelize[f, n, lshare, npara, opts] は {f[1], …, f[n]} (失敗は $Failed)。POSIX で npara > 1・n > 1 なら fork した子で npara 個まで同時に計算する
+      (環境変数 PYSAD_PARALLELIZE=serial で逐次)。Windows (fork が無い) と npara = 1 は逐次。Completion->g があれば結果に g を適用する。"""
     import mmap
     import pickle
     import struct
     import time
-    from .sadscript import SADError, Rule, Expr
+    import sys
+    from .sadscript import SADError, Rule, Expr, is_num, _exit_child
     from . import compat
     B = I.builtins
     store = {}                       # 番号 → (mmap, n バイト)
@@ -491,6 +493,92 @@ def install_parallel(I):
     for nm_, v_ in (('WNOHANG', 1.0), ('WUNTRACED', 2.0), ('WCONTINUED', 4.0)):
         I.globals.setdefault(nm_, v_)
 
+    def _parallel_fork(f, n, lshare, npara, tmo):
+        """POSIX: f[1..n] を fork した子で同時に npara 個まで計算する (shared.n の Parallelize と同じ分担。結果は子が一時ファイルに書き、親が読む)。
+        子は親の複製なので、f が書き換える変数は親に戻らない (K64 と同じ)。子の Print は親と同じ出力先に出る。
+        結果が lshare バイト (SharedSize) を超えると、子が Shared::toolarge を出し、その結果は $Failed。Timeout 秒を超えた子は殺して $Failed"""
+        import tempfile
+        d = tempfile.mkdtemp(prefix='pysad_par_')
+        for st in (getattr(I, 'out', None), sys.stdout, sys.stderr):
+            try:
+                st.flush()
+            except Exception:
+                pass
+        running = {}                                     # pid -> (k, 開始時刻)
+        status = {}
+        results = [S('$Failed')] * n
+
+        def reap(block):
+            while running:
+                try:
+                    pid, st = os.waitpid(-1, 0 if block else os.WNOHANG)
+                except ChildProcessError:
+                    running.clear()
+                    return
+                if pid == 0:
+                    return
+                if pid in running:
+                    k0, _t0 = running.pop(pid)
+                    status[k0] = st
+                    return
+        try:
+            for k in range(1, n + 1):
+                while len(running) >= npara:
+                    now = time.time()
+                    for pid, (k0, t0) in list(running.items()):
+                        if now - t0 > tmo:
+                            try:
+                                os.kill(pid, 9)
+                            except OSError:
+                                pass
+                    reap(False)
+                    if len(running) >= npara:
+                        time.sleep(0.005)
+                pid = os.fork()
+                if pid == 0:
+                    I._forked_child = True
+                    code = 0
+                    try:
+                        try:
+                            v = I.apply_value(f, [float(k)], f)
+                        except SADError as e:
+                            I.write_unit(6, '???' + str(e) + chr(10))
+                            v = S('$Failed')
+                        if isinstance(v, (str, list, Expr, Rule)) and max(0, nwords(v) - 2) * 8 > lshare:
+                            I.write_unit(6, '???Shared::toolarge:  Value is larger than the shared area by %d bytes (Parallelize lshare = %d)'
+                                         % (max(0, nwords(v) - 2) * 8 - lshare, lshare) + chr(10))
+                            v = S('$Failed')
+                        with open(os.path.join(d, '%d' % k), 'wb') as fh:
+                            pickle.dump(enc(v), fh, protocol=4)
+                    except BaseException:
+                        code = 1
+                    _exit_child(I, code)
+                running[pid] = (k, time.time())
+            deadline_check = time.time()
+            while running:
+                now = time.time()
+                for pid, (k0, t0) in list(running.items()):
+                    if now - t0 > tmo:
+                        try:
+                            os.kill(pid, 9)
+                        except OSError:
+                            pass
+                reap(False)
+                if running:
+                    time.sleep(0.005)
+            for k in range(1, n + 1):
+                p = os.path.join(d, '%d' % k)
+                if os.path.exists(p):
+                    try:
+                        with open(p, 'rb') as fh:
+                            results[k - 1] = dec(pickle.load(fh))
+                    except Exception:
+                        results[k - 1] = S('$Failed')
+            return list(results)
+        finally:
+            import shutil
+            shutil.rmtree(d, ignore_errors=True)
+
     def parallelize(a):
         if len(a) < 4:
             raise SADError('General::narg: Number of arguments is expected to be 4 or more in Parallelize')
@@ -499,12 +587,23 @@ def install_parallel(I):
         for o in a[4:]:
             if isinstance(o, Rule) and isinstance(o.lhs, Sym) and o.lhs.name == 'Completion':
                 comp = o.rhs
-        out = []
-        for k in range(1, n + 1):
-            try:
-                out.append(I.apply_value(f, [float(k)], f))
-            except SADError:
-                out.append(S('$Failed'))
+        npara = int(a[3]) if is_num(a[3]) and not isinstance(a[3], complex) else 1
+        lshare = int(a[2]) if is_num(a[2]) and not isinstance(a[2], complex) else 0
+        tmo = 2000.0
+        for o in a[4:]:
+            if isinstance(o, Rule) and isinstance(o.lhs, Sym) and o.lhs.name == 'Timeout' and is_num(o.rhs):
+                tmo = float(o.rhs)
+        out = None
+        if (hasattr(os, 'fork') and not getattr(I, '_forked_child', False) and npara > 1 and n > 1
+                and os.environ.get('PYSAD_PARALLELIZE', '').lower() != 'serial'):
+            out = _parallel_fork(f, n, lshare, npara, tmo)
+        if out is None:
+            out = []
+            for k in range(1, n + 1):
+                try:
+                    out.append(I.apply_value(f, [float(k)], f))
+                except SADError:
+                    out.append(S('$Failed'))
         if comp is not None and comp != []:
             I.apply_value(comp, [out], comp)
         return out

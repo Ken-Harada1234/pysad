@@ -236,6 +236,7 @@ class _IntraContext:
         self.rclassic = rclassic
         self.coumin = coumin        # MINCOUP
         self.intra = True
+        self.wspac = False          # WSPAC (tintrb.f の twspace: ビーム行列の自己無撞着な空間電荷。v2next B1)
         self.calint = False
         self.caltouck = False
         # temw: 正規化行列 r (diagr), ri (diagri)、エミッタンス、減衰時間
@@ -261,6 +262,45 @@ class _IntraContext:
 # ---------------------------------------------------------------------------
 # tintrb.f (wspac なし、optics=.false.)
 # ---------------------------------------------------------------------------
+
+def _twspace(cod, al, beam, ph, ctx, closing=False):
+    """tintrb.f twspace: ビーム行列 beam (6×6、スライス中心) のガウス分布の空間電荷の線形レンズ (6×6、px と py の行だけ)。
+    k = 2 N r0 L / (p1² h1 (σx+σy) √(2π σz²)) / σ (σ = 主軸の σx、σy)、p1 = p0 (1+δ) (K64 は gammab の平均 = 加速なしでは p0)"""
+    sigzsq = beam[4, 4]
+    xx1 = beam[0, 0] - beam[4, 0]**2 / sigzsq
+    yy1 = beam[2, 2] - beam[4, 2]**2 / sigzsq
+    xy1 = beam[2, 0] - beam[4, 0] * beam[4, 2] / sigzsq
+    u = xx1 - yy1
+    v = 2.0 * xy1
+    a = math.hypot(u, v)
+    if a == 0.0:
+        c2, s2 = 1.0, 0.0
+    else:
+        c2, s2 = u / a, v / a
+    sx = (xx1 + yy1) * 0.5
+    sy = math.sqrt(sx - a * 0.5)
+    sx = math.sqrt(sx + a * 0.5)
+    p1 = (1.0 + cod[5]) * ph.p0
+    if closing:
+        # 一周の最後のスライス (l = nlat、tturne の iend+1) で K64 の twspace は gammab(l+1) = gammab(nlat+1) を読む。配列の外で 0 なので
+        # p1 = (1+δ)(gammab(nlat) + 0)/2 = 半分になり、最後のレンズ (ドリフトの 1/4) が 8 倍 (∝ 1/(p1² h1)) に強くなる (D1: gs のチューンシフトが
+        # 4% (x)・3% (y) 強い原因)。k64 はそのまま再現し、v2 は物理的な p1 = (1+δ) p0 を使う
+        from . import compat as _compat
+        if _compat.k64():
+            p1 *= 0.5
+    h1 = _p2h(p1)
+    f = 2.0 * ctx.pbunch * ctx.rclassic * al / (p1**2 * h1 * (sx + sy) * math.sqrt(2.0 * math.pi * sigzsq))
+    akx = f / sx
+    aky = f / sy
+    aks = (akx + aky) * 0.5
+    akd = (akx - aky) * 0.5
+    t = np.eye(6)
+    t[1, 0] = aks + akd * c2
+    t[1, 2] = akd * s2
+    t[3, 0] = t[1, 2]
+    t[3, 2] = aks - akd * c2
+    return t
+
 
 def _tintrb(st: _IntraState, al: float, al1: float, l: int, ctx: _IntraContext):
     """tintrb の直訳。
@@ -293,7 +333,13 @@ def _tintrb(st: _IntraState, al: float, al1: float, l: int, ctx: _IntraContext):
     trans1[4, 3] = trans1[2, 5]
     hi = _p2h(p0 * pr)
     trans1[4, 5] = h0 / hi**3 * alx + s * alz
-    # wspac (空間電荷) は未対応
+    if ctx.wspac:
+        # tintrb.f: bmi = beam(22:42)+beam(1:21) をスライス中心へ送り、twspace のレンズ (transsp) をスライス中心に入れる:
+        # trans2 = trans1⁻¹·transsp·trans1。trans と beam(1:21) だけに掛ける (tmulbs の beamr=.false.: beam(22:42) には掛けない)
+        bmi_w = trans1 @ (st.B2 + st.B) @ trans1.T
+        transsp = _twspace(st.cod, al, bmi_w, ph, ctx, closing=(l == ctx.nlat))
+        trans2w = _tinv6(trans1) @ transsp @ trans1
+        _State.apply(st, trans2w)
     if not ctx.intra:
         return np.zeros((6, 6))
     bmi = st.B2 + st.B
@@ -415,13 +461,15 @@ def _tintrb(st: _IntraState, al: float, al1: float, l: int, ctx: _IntraContext):
 # ---------------------------------------------------------------------------
 
 def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
-                  ctx: _IntraContext, B2) -> _IntraState:
+                  ctx: _IntraContext, B2, B0=None, rec=None) -> _IntraState:
     """emit6d.tturne と同じ要素分岐に、tturne.f の calint 処理 (tintrb の呼び出し、
     ドリフトの 2 分割) を加えたもの。"""
     st = _IntraState(cod0, ph, B2)
     st.trf0 = trf0
     st.rfsw = rfsw
     st.radcod = radcod
+    if B0 is not None:
+        st.B = np.array(B0, dtype=float).copy()      # temit の最後の plot 一周: beam(1:21) = emitp
     st.setr0()
     if ctx.calint:
         ctx.reset_tables()
@@ -430,6 +478,8 @@ def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
     for idx, el in enumerate(els):
         l = idx + 1
         al = float(el.L)
+        if rec is not None:
+            rec.append((st.cod.copy(), (st.B + st.B2).copy(), st.T.copy()))       # 要素 l の入口のビーム行列 (tfsetplot) と T_{1→l}
         if ctx.calint:
             als = al
             if als != 0.0:
@@ -441,7 +491,7 @@ def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
                     alid1 = als * 0.5
                 _tintrb(st, alib, alid, l, ctx)
                 alid = alid1
-        if type(el).__name__ == 'PhsRot' and hasattr(el, '_solmap'):      # v2: PHSROT (phsrot.annotate)
+        if hasattr(el, '_solmap') and type(el).__name__ != 'Undulator':      # SOL 領域内 (solmap.annotate)・v2: PHSROT (phsrot.annotate)
             from . import solemit as _se
             _se.emit(st, el)
             continue
@@ -479,6 +529,8 @@ def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
     if ctx.calint:
         if alid != 0.0:
             _tintrb(st, alid, alid, nels + 1, ctx)
+    if rec is not None:
+        rec.append((st.cod.copy(), (st.B + st.B2).copy(), st.T.copy()))           # 一周の終わり (要素 nlat。最後のスライスのレンズを含む)
     return st
 
 
@@ -508,7 +560,7 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
                    nbunch: float = 1.0, mincoup: float = 1e-2,
                    rfsw: bool = True, radcod: bool = False,
                    charge: float = 1.0, amass: float = _e.ELMASS,
-                   verbose: bool = True) -> dict:
+                   verbose: bool = True, intra: bool = True, wspac: bool = False) -> dict:
     """SAD の `emit` (INTRA ON) 相当: IBS 反復を収束させ、TouschekTable を作る。
 
     Parameters
@@ -531,11 +583,13 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
       'touckl','touckm','toucke','tampl' : tf を掛ける前の生の表 (numpy)
     """
     els = lattice.elements
-    circ = sum(el.L for el in els)
+    circ = _e._emit_circ(els)
     ph = _Phys(momentum_eV, circ, amass=amass, charge=charge)
     rclassic = charge**2 * ELRADI
     nlat = len(els) + 1
     ctx = _IntraContext(nlat, float(pbunch), rclassic, float(mincoup))
+    ctx.intra = bool(intra)
+    ctx.wspac = bool(wspac)
     cod0 = np.array(em['closed_orbit'], dtype=float)
     trf0 = float(em.get('trf0', 0.0))
     p0 = ph.p0
@@ -728,8 +782,23 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
     out['toucke'] = ctx.toucke.copy()
     out['tampl'] = ctx.tampl.copy()
     out['pbunch'] = pbunch
+    out['_state'] = st        # 最終パスの _State (T、D、B。Emittance[] の規則が使う)
     out['B2'] = B2            # 最終パスで使った beam(22:42) の初期値 (診断用)
     out['_ctx'] = ctx         # 最終パスの文脈 (診断用)
+    if wspac:
+        # temit.f 末尾 (plot .and. postcal): beam(1:21) = emitp から一周し、各要素の入口のビーム行列を記録する (空間電荷つき。
+        # CALC の WSPAC (qtwiss の qwspac) と追跡の WSPAC (twspac) が使う beamsize)。ctx.calint のまま (tintrb の wspac のレンズが入る)
+        rec = []
+        # (K64 は emitp から始める。垂直のエミッタンスが 0 の平らなリングでは emitp の σy = 0 で twspace が 0/0 になるので、
+        #  MINCOUP の下限をかけた反復の ビーム行列 B2 (収束した自己無撞着な値) から始める)
+        _tturne_intra(els, cod0, ph, trf0, rfsw, radcod, ctx, np.zeros((6, 6)), B0=np.array(B2), rec=rec)
+        out['BeamMatricesSC'] = [np.array(b) for (_c, b, _t) in rec]
+        out['ClosedOrbitSC'] = [np.array(c) for (c, _b, _t) in rec]
+        # CALC6D の Twiss 行用: 最後の反復の一周と同じ入力 (beam(1:21)=0、beam(22:42)=B2) でもう一周し、(T_{1→l}, cod) を記録する。
+        # この T の一周は反復の最終パスの T と同じなので、tecalc の正規形 (ri) と各要素の T_{1→l} が整合する (周期的な Twiss が出る)
+        rec2 = []
+        _tturne_intra(els, cod0, ph, trf0, rfsw, radcod, ctx, B2, rec=rec2)
+        out['RecSC'] = [(np.array(t), np.array(c)) for (c, _b, t) in rec2]
     return out
 
 

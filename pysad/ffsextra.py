@@ -51,14 +51,16 @@ def cmd_variables(ffs, words, i):
     ffs.write('!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient\n')
     rows = []
     for v in m.variables:
-        if pat is not None and not _match_name(pat, v['family']):
+        if pat is not None and not _match_name(pat, v.get('label', v['family'])):
             continue
         el0 = v['els'][0]
         saved = float(ffs.get_value(el0, v['key']))
         now = float(v.get('val', saved))
         prev = float(v.get('val2', now))
         lo, hi = v['vlim'][0], v['vlim'][1]
-        rows.append((v['family'], v['key'], now, prev, saved, lo, hi, '<--', 1.0))
+        # Couple の欄: 既定のキーの変数は、その成分が結合している先 (自分が先頭なら <--)。ほかのキー (ROTATE や BEND の K1) は空 (gs)
+        rows.append((v.get('label', v['family']), v['key'], now, prev, saved, lo, hi,
+                     '<--' if v['key'] == (ffs.default_key(el0) or '').upper() else '', 1.0))
     if not rows and m.variables and pat is not None and not any(c in pat for c in '*%{'):
         pass
     for name, key, now, prev, saved, lo, hi, nc, co in rows:
@@ -214,7 +216,7 @@ def cmd_recover(ffs, words, i):
         now = float(v.get('val', 0.0))
         prev = float(v.get('val2', now))
         v['val'], v['val2'] = prev, now
-        ffs.set_family(v['family'], v['key'], prev)
+        ffs.set_var(v, prev)
     ffs.invalidate()
     return 1
 

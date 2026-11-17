@@ -265,7 +265,7 @@ def _mm(a, b):
 
 @njit(**NJ)
 def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp, xpx, xpy, xpz, xpa, anp, uc, uct,
-              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False):
+              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False, rsgn=1.0):
     """戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
     # transi = T @ tinv6(transr)、tinv6(r) = -J r^T J
     tinv = np.empty((6, 6))
@@ -329,8 +329,8 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     dddpx = np.empty(6)
     dddpy = np.empty(6)
     for j in range(6):
-        dddpx[j] = 0.5 * ((tr2[1, j] - dpxr0[j]) * dg + ddpx * ddg[j])
-        dddpy[j] = 0.5 * ((tr2[3, j] - dpyi[j]) * dg + ddpy * ddg[j])
+        dddpx[j] = 0.5 * (rsgn * (tr2[1, j] - dpxr0[j]) * dg + ddpx * ddg[j])        # rsgn: v2 は ddpx の符号を反転 (ddpx は符号つきで渡る)
+        dddpy[j] = 0.5 * (rsgn * (tr2[3, j] - dpyi[j]) * dg + ddpy * ddg[j])
     tr1 = np.zeros((6, 6))
     for j in range(6):
         tr1[0, j] = c1 * dddpx[j]
@@ -358,7 +358,10 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     dee = anp * uc ** 2 * cuu
     pxm = pxi + px
     pym = pyi + py
-    b = bzh * 0.5
+    if fixb39:
+        b = bzh     # v2 (B106): 力学的運動量は px + bzh y なので ビームの広がりの項の b も bzh (K64: bzh*0.5)
+    else:
+        b = bzh * 0.5
     # K64 photons.f の dbeam(8) は beam(2)-beam(10)+b*beam(4) (= B12 - B44 + b B13): そのまま写す (B34 の誤記に見える。bzh=0 では効かない)
     d11 = (Bn[1, 1] + b * (2.0 * Bn[1, 2] + b * Bn[2, 2]) + (pxm ** 2 + pxi ** 2 + px ** 2) / 6.0) * dee
     if fixb39:

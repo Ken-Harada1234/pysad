@@ -68,12 +68,17 @@ def test_tradke_px_py_diffusion_uses_b_y_py_v2():
     _b0, bv = out['v2']
     dee = bk[5, 5]
     assert dee > 0.0
-    b = bzh * 0.5
-    assert abs((bv[3, 1] - bk[3, 1]) / (b * (b0[2, 3] - b0[3, 3]) * dee) - 1.0) < 2e-2
+    bk_, bv_ = bzh * 0.5, bzh      # k64: b = bzh/2、v2: B106 で b = bzh (力学的運動量 px + bzh y)
+    want = dee * (-bv_ * (b0[0, 1] - b0[2, 3] + bv_ * b0[0, 2]) + bk_ * (b0[0, 1] - b0[3, 3] + bk_ * b0[0, 2]))
+    assert abs((bv[3, 1] - bk[3, 1]) / want - 1.0) < 2e-2
+    # B106: px・px、py・py の拡散も b = bzh (K64 は bzh/2)
+    w11 = dee * (bv_ * (2 * b0[1, 2] + bv_ * b0[2, 2]) - bk_ * (2 * b0[1, 2] + bk_ * b0[2, 2]))
+    w33 = dee * (bv_ * (-2 * b0[0, 3] + bv_ * b0[0, 0]) - bk_ * (-2 * b0[0, 3] + bk_ * b0[0, 0]))
+    assert abs((bv[1, 1] - bk[1, 1]) / w11 - 1.0) < 2e-2 and abs((bv[3, 3] - bk[3, 3]) / w33 - 1.0) < 2e-2
     for i in range(6):
         for j in range(6):
-            if (i, j) not in ((3, 1), (1, 3)):
-                assert bv[i, j] == bk[i, j]
+            if (i, j) not in ((3, 1), (1, 3), (1, 1), (3, 3)):
+                assert abs(bv[i, j] - bk[i, j]) <= 1e-10 * max(abs(bk[i, j]), 1e-12)      # v2: tradke の ddpx の符号 (A1 項目 7) で丸めの差だけ
 
 
 # ------------------------------------------------------------------ B58・B64: 1 要素のスピン回転 (Emittance[] の写像と追跡)
@@ -248,14 +253,14 @@ def test_polarization_with_orbit_errors_v2(v2_mode):
     """四極の縦ずれ 3 mm (閉軌道 y 6 mm、n の傾き 0.04 rad): v2 は 88.4%。脱偏極率は 5.5e-11 /周 (ずれの 2 乗に比例)、
     平衡分布での n の広がり (1/2)<|N u|²> = 6.4e-6 (FLUC つきの追跡で測った 1−<S·n0> の 3e-6〜1.2e-5 と合う)"""
     ffs, pol, _tau = _pol('3e-3')
-    assert abs(pol - 0.8840) < 3e-3
+    assert abs(pol - 0.8798) < 3e-3          # 線形の式は 0.8840、v2next B3 の側帯の項 (+13%) で 0.8798
     e = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)
     sp = e['spin']
-    assert abs(sp['depol_rate'] / 5.52e-11 - 1) < 0.05
+    assert abs(sp['depol_rate_linear'] / 5.52e-11 - 1) < 0.05        # 線形の式 (SLIM)。v2next B3 で側帯の項を足した depol_rate は +13% (test_v2_B3_pol.py)
     assert abs(sp['spin_spread'] / 6.36e-6 - 1) < 0.05
     _f1, pol1, _t = _pol('1e-3')
     e1 = emit6d.emittance6d(_f1.lat, _f1.momentum(), rfsw=True, radcod=True, pol=True)
-    assert abs(sp['depol_rate'] / e1['spin']['depol_rate'] / 9.0 - 1) < 0.1     # ずれの 2 乗に比例
+    assert abs(sp['depol_rate_linear'] / e1['spin']['depol_rate_linear'] / 9.0 - 1) < 0.1     # ずれの 2 乗に比例
 
 
 def test_spin_orbit_response_matches_tracking_v2(v2_mode):

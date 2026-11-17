@@ -15,6 +15,8 @@ import os
 import tempfile
 
 from .sadscript import Sym, Expr, Rule, SADError, S, Null, is_num, INF, truthy
+from . import compat as _compat
+from .sadscript import _Lit
 
 
 def install(I):
@@ -316,6 +318,86 @@ def install_small(I):
         return Expr(S('MessageName'), list(a))
     B['MessageName'] = messagename
 
+    def message(args):
+        # gs: Message[f::tag, v1, v2, …] は「???f::tag:  本文」を出力 (本文の `n` を v_n で置き換える)。本文が無ければ General::tag、
+        # それも無ければ "Undefined MessageName General::tag"。Message の第 1 引数が f::tag の形でないとき (文字列・記号) は何も出さず Null
+        if not args:
+            return Null
+        if is_num(args[0]) and len(args) > 1:
+            args = args[1:]                  # Message[9, CA::open] (先頭の数は重大度)
+        first = args[0]
+        if not (isinstance(first, Expr) and isinstance(first.head, Sym) and first.head.name == 'MessageName' and len(first.args) == 2):
+            return Null
+        sym, tag = first.args
+        tag = tag if isinstance(tag, str) else (tag.name if isinstance(tag, Sym) else str(tag))
+        nm = sym.name if isinstance(sym, Sym) else I.to_str(sym)
+        text = I.eval(Expr(S('MessageName'), [sym, tag]))
+        if not isinstance(text, str):
+            return Null
+        if text.startswith('Undefined MessageName'):
+            text = 'Argument must be `1`' if (nm, tag) == ('General', 'wrongtype') else 'Undefined MessageName General::%s' % tag
+        if (nm, tag) == ('Tkinter', 'undef'):
+            return Null                      # Tkinter.n の未定義メソッド: pysad の Tcl 橋が gs と違う経路で通ることがあり、gs が出さない表示になるので出さない
+        if getattr(I, '_in_message', False):
+            return Null                      # 引数の評価がまた Message を呼ぶとき (Tkinter の未定義メソッドなど) は何も出さない
+        I._in_message = True
+        try:
+            vals = []
+            for x in args[1:]:
+                try:
+                    vals.append(I.eval(x))
+                except (SADError, RecursionError):
+                    vals.append(x)
+        finally:
+            I._in_message = False
+        for k, v in enumerate(vals, 1):
+            text = text.replace('`%d`' % k, I.to_str(v))
+        I.write_unit(6, '???%s::%s:  %s' % (nm, tag, text) + chr(10))
+        return Null
+    B['Message'] = message
+
+    def log2dollar(a):
+        # functions.n: Log2$[10,x] = Log[x]/Log[10]、Log2$[b,x] = Log[x]/Log[b]
+        if len(a) == 2 and all(is_num(x) and not isinstance(x, complex) for x in a):
+            import math
+            return math.log(a[1]) * (1.0 / math.log(a[0]))          # K64 の a/b は a*(1/b) (最後の桁が直接の割り算と違う: Log[100]/Log[10] = 1.9999999999999998)
+        return Expr(S('Log2$'), list(a))
+    B['Log2$'] = log2dollar
+
+    def functiondefinition(args):
+        # Misc.n: FunctionDefinition[f[args]] (HoldAll) = {Hold[左辺], Hold[右辺], Hold[args を代入した右辺]}。f の最初に合う定義 (組み込みや定義が無ければ Null)
+        if len(args) != 1 or not (isinstance(args[0], Expr) and isinstance(args[0].head, Sym)):
+            return Null
+        node = args[0]
+        name = node.head.name
+        dv = I.downvalues.get(name)
+        if not dv:
+            return Null
+        try:
+            vals = I.eval_args(node.args)
+        except SADError:
+            return Null
+        for pats, body, delayed in dv:
+            if pats is None:
+                continue
+            b = I.match_args(pats, vals)
+            if b is None:
+                continue
+            def _sj(x):
+                # gs: 代入した結果の文字列どうしの x//y は、Hold の中でも連結される (Hold["aa"])。ほかの式 (3^2) は評価しない
+                if isinstance(x, Expr):
+                    args = [_sj(t) for t in x.args]
+                    if isinstance(x.head, Sym) and x.head.name == 'StringJoin' and args and all(isinstance(t, str) for t in args):
+                        return ''.join(args)
+                    return Expr(x.head, args)
+                if isinstance(x, _Lit):
+                    return x.v
+                return x
+            return [Expr(S('Hold'), [Expr(S(name), list(pats))]), Expr(S('Hold'), [body]),
+                    Expr(S('Hold'), [_sj(I.subst_bindings(body, b) if b else body)])]
+        return Null
+    B['FunctionDefinition'] = functiondefinition
+
     # Fork[] は fileops.install_parallel (POSIX では本当に分ける。Windows は v2 でエラー、k64 で従来どおり pid を返す)
 
 
@@ -442,15 +524,19 @@ def install_system(I):
     def context(a):
         # Context[] は System` (gs)。Context[sym] は記号の文脈: 文脈つきの名前 (Stat`x) はその文脈、利用者が作った大域の記号は `、組み込みは System`
         if not a:
-            return 'System`'
+            return S('System`')
         x = a[0]
+        if isinstance(x, str):
+            if _compat.k64():
+                raise SADError('General::wrongtype:  Argument must be Symbol in Context[%s]' % I.to_str(x, None, True))
+            x = S(x)             # v2: "Stat`x" の文字列も、その名前の記号として扱う (gs は文字列を拒否する)
         if isinstance(x, Sym):
             n = x.name
             if '`' in n and not n.endswith('`'):
-                return n[:n.rindex('`') + 1]
+                return S(n[:n.rindex('`') + 1])         # gs: Context は文脈の記号 (A`) を返す
             if n not in I._root_syms and (n in B or n in I.autoload):
-                return 'System`'
-        return '`'
+                return S('System`')
+        return S('`')
     B['Context'] = context
     B['SetEnv'] = lambda a: (os.environ.__setitem__(str(a[0]), str(a[1])), Null)[1]
     B['GetEnv'] = lambda a: os.environ.get(str(a[0]), '')

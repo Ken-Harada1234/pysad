@@ -25,6 +25,7 @@ import re
 import numpy as np
 
 from .sadscript import (Sym, Expr, Rule, Func, Seq, SADError, S, Null, is_num, truthy, _hkey, INF, NAN, _Lit)
+from . import compat as _compat
 
 _LIST = S('List')
 
@@ -361,6 +362,10 @@ def install(I):
         items = sorted([y for x in a for y in x], key=ckey)
         if same is None:
             return _uniq_sorted(items)
+        if _compat.k64():
+            # gs (functions.n: Union[x__,SameTest->f_] := Union1[Join[x], f]): SameTest を付けると、並べ替えも比較もせず、結合した先頭の要素 1 つだけが残る (K64 の誤り)
+            joined = [y for x in a for y in x]
+            return joined[:1]
         out = []
         for y in items:
             if out and truthy(apply(same, [out[-1], y])) is True:
@@ -500,7 +505,16 @@ def install(I):
     def _symbol(a):
         if len(a) != 1 or not isinstance(a[0], str):
             raise SADError('General::wrongtype: Argument must be Character-string in Symbol')
-        return S(a[0])
+        # gs: Symbol["x"] は記号 x の値 (x=5 なら 5、未定義なら x)。文脈の中では現在の文脈・$ContextPath の順に探す
+        nm = a[0]
+        try:
+            if I._ctx_track and not I._pkg_loading and (I._ctx_cur != '`' or I._ctx_path != ['`', 'System`']):
+                nm = I._ctx_resolve(nm)
+        except AttributeError:
+            pass
+        if nm in I.globals:
+            return I.globals[nm]
+        return I.eval(S(nm))
     B['Symbol'] = _symbol
 
     def _position(a):
@@ -928,6 +942,8 @@ def install(I):
     def _first_last(name, pick):
         def g(a):
             x = a[0]
+            if isinstance(x, Rule):
+                return pick([x.lhs, x.rhs])          # gs: First[a->b] = a、Last[a->b] = b (Rule は 2 引数の式)
             if not _isseq(x) or not _elems(x):
                 raise SADError(f'General::index: Index out of range in {name}')
             return pick(_elems(x))
@@ -1072,6 +1088,8 @@ def install(I):
         if len(a) != 1:
             raise SADError('General::narg: Number of arguments is expected to be 1 in Length')
         x = a[0]
+        if isinstance(x, Rule):
+            return 2.0
         return float(len(_elems(x))) if _isseq(x) else 0.0
     B['Length'] = _length
 

@@ -12,6 +12,7 @@ import math
 
 import numpy as np
 
+from . import compat as _compat
 from .sadscript import SADError, is_num, S, Sym, Expr, Null
 from .tsvd import tsvd
 
@@ -221,7 +222,14 @@ def pmicad(a, b, nx0, norm, eps, solvf=True):
         a[l:m, l - 1] = 0.0
     x = np.ones(n)
     if solvf:
-        x = tsvd(a, b, eps)
+        if _compat.v2():
+            # v2: 選んだ nx 本の補正量を、ハウスホルダー変換後の上三角部分 a[:nx,:nx]・b[:nx] だけで解く (旧 `tsolva(a,b,x,nx,nx,mdim,eps)`)。
+            # K64 は新しい tsvd (配列の大きさを size() で取る) に替えたとき nx を渡し忘れ、全 n 本の最小二乗解を解いて先頭の nx 個だけ使う
+            # (選ばなかった補正量の寄与が落ちるので、軌道がむしろ悪化する)
+            x = np.zeros(n)
+            x[:nx] = tsvd(a[:nx, :nx].copy(), b[:nx].copy(), eps)
+        else:
+            x = tsvd(a, b, eps)
     x[nx:] = 0.0
     if not solvf:
         x[:nx] = 1.0

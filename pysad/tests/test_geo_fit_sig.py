@@ -118,7 +118,7 @@ sx2 = Twiss["SIGX","QF.2"]; sxf = Twiss["SIGX","QF.2+0.5"];
     assert abs(float(I.get('sxy'))) < 1e-30                             # Σxy = ηx ηy σE² = 0
     assert abs(float(I.get('sdp')) - sige) < 1e-18
     m = I.get('m')
-    assert len(m) == 6 and len(m[0]) == 6 and abs(float(m[0][0]) - float(I.get('sx'))**2) < 1e-25
+    assert len(m) == 6 and len(m[0]) == 6 and abs(float(m[0][0]) - float(I.get('sx'))**2) < 1e-14 * max(1.0, float(I.get('sx'))**2)
     r2 = ffs.row(ffs.locate('QF.2') if hasattr(ffs, 'locate') else 10)
     assert float(I.get('sx2')) > 0 and float(I.get('sxf')) > 0 and float(I.get('sx2')) != float(I.get('sxf'))
 

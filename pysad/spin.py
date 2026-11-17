@@ -24,6 +24,9 @@ CL = 1.0 + GSPIN
 PST = 8.0 * math.sqrt(3.0) / 15.0
 CFPD = 5.0 * math.sqrt(3.0) / 8.0
 CEZLIM = 18.0
+SOL_BPAR = True            # v2 (E): SOL 領域の中の Emittance[] の POL は、運動量の向きの磁場の積分 B∥ を向きの変化から作る B⊥ と分けて足す。False で K64 のまま (bsi を z 軸の向きに足す)
+SPIN_ANGLE_EXACT = True    # v2 (E): tradke_spin の向きの変化の大きさを sin θ でなく θ にする (追跡と同じ。False で A の v2 のまま)
+SIDEBAND = True       # v2 (B3): Polarization の脱偏極率にシンクロトロン側帯 (スピンの位相変調) を入れる。False で線形の式 (A の B55) だけ
 M_2PI = 2.0 * math.pi
 M_SQRTPI = math.sqrt(math.pi)
 
@@ -85,14 +88,6 @@ def tradke_spin(st, c):
     dh1r = p * p0 / h1 ** 2
 
     bsir0 = st.bsir0
-    xpzb = xpz + (bsir0 + bzh * 2.0 * al) * pr ** 2
-    dxpzb = dxpz.copy()
-    dxpzb[5] += 2.0 * (bsir0 + bzh * 2.0 * al) * pr
-    bd0 = getattr(st, 'bsi_d0', None)
-    if bd0 is not None and (bd0.any() or st.bsi_d1.any()):
-        # v2 (B58): bsir0 (端の縦磁場の積分 ψ(x, y)) の軌道についての微分。K64 は bsir0 を定数として扱い、
-        # スピン軌道結合 (脱偏極ベクトル) に端の縦磁場の y・x 依存が入らない (追跡のスピンの軌道依存と BEND で 6 倍違う)
-        dxpzb = dxpzb + (bd0 + st.bsi_d1 @ tr2) * pr ** 2
     pxh = (pxr0 + px) / pr * 0.5
     pyh = (pyi + py) / pr * 0.5
     dpxh = (tr2[1, :] + dpxr0) / pr * 0.5
@@ -101,22 +96,88 @@ def tradke_spin(st, c):
     dpyh[5] -= pyh / pr
     pzh = 1.0 + _pxy2dpz(pxh, pyh)
     dpzh = -(pxh * dpxh + pyh * dpyh) / pzh
-    bp = (xpx * pxh + xpy * pyh + xpzb * pzh) / pr ** 2
-    dbp = (dxpx * pxh + xpx * dpxh + dxpy * pyh + xpy * dpyh + dxpzb * pzh + xpzb * dpzh) / pr ** 2
-    dbp[5] -= 2.0 * bp / pr
-    blx, bly, blz = bp * pxh, bp * pyh, bp * pzh
-    btx = xpx / pr ** 2 - blx
-    bty = xpy / pr ** 2 - bly
-    btz = xpzb / pr ** 2 - blz
-    dblx = dbp * pxh + bp * dpxh
-    dbly = dbp * pyh + bp * dpyh
-    dblz = dbp * pzh + bp * dpzh
-    dbtx = dxpx / pr ** 2 - dblx
-    dbtx[5] -= 2.0 * xpx / pr ** 3
-    dbty = dxpy / pr ** 2 - dbly
-    dbty[5] -= 2.0 * xpy / pr ** 3
-    dbtz = dxpzb / pr - dblz                       # K64 のまま (pr**2 ではなく pr)
-    dbtz[5] -= 2.0 * xpzb / pr ** 3
+    hint = getattr(st, 'bhint', None)
+    st.bhint = None
+    from . import compat as _compat
+    if hint is not None and _compat.v2():
+        # v2 (E): SOL 領域の中。K64 は bsir0 + bz·al = ∫Bs ds (p0 で規格化) を z 軸の向きの磁場として足す。運動量が z 軸から傾いていると
+        # (傾いた・ずれたソレノイドの軌道、軸を外れた粒子)、(1) 運動量に垂直な成分が B⊥ に二重に入り (向きの変化 xpx.. はすでに B⊥)、
+        # (2) δ≠0 で (1+a)B∥ の歳差が 1/(1+δ) 倍にならない。追跡 (track6._sprot の bpar) と同じく、向きの変化から作る B⊥ と、
+        # 運動量の向きの磁場の積分 B∥ = [bz·al + (bx px + by py)·al/pz + ψ]/(1+δ) を分けて足す。(bx, by) は刻みの中点での横磁場の成分 (p0 で規格化。
+        # hint['gb'] はその (x, y) についての勾配)、ψ は端の縦磁場の積分 (bsir0 と bsi_d0/d1)。向きの変化の大きさは角そのもの (asin。追跡の _sprot と同じ)
+        b = np.array([xpx, xpy, xpz]) / pr ** 2
+        db = np.array([dxpx, dxpy, dxpz]) / pr ** 2
+        db[:, 5] -= 2.0 * b / pr
+        ppa = float(np.linalg.norm(b))
+        if ppa > 1e-12:
+            fs = math.asin(min(1.0, ppa)) / ppa
+            b = b * fs
+            db = db * fs
+        ph3 = np.array([pxh, pyh, pzh])
+        dph3 = np.array([dpxh, dpyh, dpzh])
+        bpk = float(b @ ph3)
+        dbpk = db.T @ ph3 + dph3.T @ b
+        bt3 = b - bpk * ph3
+        dbt3 = db - np.outer(ph3, dbpk) - bpk * dph3
+        bzf, bxf, byf = hint.get('bz', 0.0), hint.get('bx', 0.0), hint.get('by', 0.0)
+        pxy = bxf * pxh + byf * pyh
+        num = bzf * al + pxy * al / pzh + bsir0
+        dnum = (bxf * dpxh + byf * dpyh) * al / pzh - pxy * al / pzh ** 2 * dpzh
+        gb = hint.get('gb')
+        if gb is not None:
+            # 場の (bx, by) は刻みの中点の位置 (x_m, y_m) の関数。∂x_m/∂r0 = (e_x + tr2[0])/2、∂y_m/∂r0 = (e_y + tr2[2])/2
+            dxm = 0.5 * tr2[0, :].copy()
+            dxm[0] += 0.5
+            dym = 0.5 * tr2[2, :].copy()
+            dym[2] += 0.5
+            dbx = gb[0][0] * dxm + gb[0][1] * dym
+            dby = gb[1][0] * dxm + gb[1][1] * dym
+            dnum = dnum + (dbx * pxh + dby * pyh) * al / pzh
+        bd0 = getattr(st, 'bsi_d0', None)
+        if bd0 is not None and (bd0.any() or st.bsi_d1.any()):
+            dnum = dnum + bd0 + st.bsi_d1 @ tr2
+        bpar = num / pr
+        dbpar = dnum / pr
+        dbpar[5] -= num / pr ** 2
+        bl3 = bpar * ph3
+        dbl3 = np.outer(ph3, dbpar) + bpar * dph3
+        blx, bly, blz = bl3
+        btx, bty, btz = bt3
+        dblx, dbly, dblz = dbl3
+        dbtx, dbty, dbtz = dbt3
+    else:
+        if _compat.v2() and SPIN_ANGLE_EXACT:
+            # v2 (E、A の N8): 向きの変化 xpx.. = sin(θ) pr² の大きさを、追跡 (track6._sprot の v2) と同じ角 θ = asin(..) にする。K64 は sin θ のまま
+            # (刻みの角 θ に対し相対 θ²/6 小さい。0.5 GeV の平面リングでスピンチューンが 2.6e-5 違った)。θ の微分の項 (θ²/6 の微分) は入れない
+            _ppa = math.sqrt(xpx * xpx + xpy * xpy + xpz * xpz) / pr ** 2
+            if _ppa > 1e-12:
+                _fs = math.asin(min(1.0, _ppa)) / _ppa
+                xpx, xpy, xpz = xpx * _fs, xpy * _fs, xpz * _fs
+                dxpx, dxpy, dxpz = dxpx * _fs, dxpy * _fs, dxpz * _fs
+        xpzb = xpz + (bsir0 + bzh * 2.0 * al) * pr ** 2
+        dxpzb = dxpz.copy()
+        dxpzb[5] += 2.0 * (bsir0 + bzh * 2.0 * al) * pr
+        bd0 = getattr(st, 'bsi_d0', None)
+        if bd0 is not None and (bd0.any() or st.bsi_d1.any()):
+            # v2 (B58): bsir0 (端の縦磁場の積分 ψ(x, y)) の軌道についての微分。K64 は bsir0 を定数として扱い、
+            # スピン軌道結合 (脱偏極ベクトル) に端の縦磁場の y・x 依存が入らない (追跡のスピンの軌道依存と BEND で 6 倍違う)
+            dxpzb = dxpzb + (bd0 + st.bsi_d1 @ tr2) * pr ** 2
+        bp = (xpx * pxh + xpy * pyh + xpzb * pzh) / pr ** 2
+        dbp = (dxpx * pxh + xpx * dpxh + dxpy * pyh + xpy * dpyh + dxpzb * pzh + xpzb * dpzh) / pr ** 2
+        dbp[5] -= 2.0 * bp / pr
+        blx, bly, blz = bp * pxh, bp * pyh, bp * pzh
+        btx = xpx / pr ** 2 - blx
+        bty = xpy / pr ** 2 - bly
+        btz = xpzb / pr ** 2 - blz
+        dblx = dbp * pxh + bp * dpxh
+        dbly = dbp * pyh + bp * dpyh
+        dblz = dbp * pzh + bp * dpzh
+        dbtx = dxpx / pr ** 2 - dblx
+        dbtx[5] -= 2.0 * xpx / pr ** 3
+        dbty = dxpy / pr ** 2 - dbly
+        dbty[5] -= 2.0 * xpy / pr ** 3
+        dbtz = dxpzb / pr - dblz                       # K64 のまま (pr**2 ではなく pr)
+        dbtz[5] -= 2.0 * xpzb / pr ** 3
     ct = h1 * GSPIN
     dct = ct * dh1r
     ct += 1.0
@@ -141,6 +202,8 @@ def tradke_spin(st, c):
         sx, sy, sz = srot[0].copy(), srot[1].copy(), srot[2].copy()
         sw = (sx * gx + sy * gy + sz * gz) / g
         st.gintd = st.gintd + sw[0:3] * sflc() * anp * (bt * h1 * p / al1) ** 2
+        _w = sflc() * anp * (bt * h1 * p / al1) ** 2
+        st.gintd2 = st.gintd2 + np.outer(sw[0:3], sw[0:3]) * _w       # v2 (A2): 磁場の向きの符号に依らない緩和率 Σ r (b·n)² 用 (k64 の結果には使わない)
         sw = -sw * dcosu / g
         sux = sy * gz - sz * gy
         suy = sz * gx - sx * gz
@@ -327,7 +390,7 @@ def _cerfc(z):
     """gamma.f cerfc: |z|>18 は漸近展開、そうでなければ erfc"""
     z = complex(z)
     if abs(z) > CEZLIM:
-        x = 0.5 / z ** 2
+        x = 0.5 / (z * z)       # z ** 2 は Python 3.14 では桁あふれで OverflowError (3.12 以前は inf・nan)。z * z は同じ値
         base = 1.0 if z.real == 0.0 else 1.0 - math.copysign(1.0, z.real)
         with np.errstate(all='ignore'):
             return base + (1.0 - x * (1.0 - 3.0 * x * (1.0 - 5.0 * x * (1.0 - 7.0 * x * (1.0 - 9.0 * x)))))\
@@ -371,12 +434,16 @@ def _spintrm(rm, dx, amx, ams, ssprd):
                 cm = cm0
             else:
                 cb = -_cexp1(-cphi) / a
+                if not (math.isfinite(cb.real) and math.isfinite(cb.imag)):
+                    # 桁あふれ (不安定なリング)。Python 3.12 以前は inf を含む複素数の割り算が nan+nanj になる。3.14 (C99 Annex G) は inf を残し、
+                    # 続く `_cerfc` が 0 割りになるので、3.12 と同じ nan+nanj にそろえる (k64 の値は 3.12 と同じ)
+                    cb = complex(float('nan'), float('nan'))
                 if _v2:
                     # v2 (B55): exp(cb²)·erfc(cb) を桁あふれしない形 (Faddeeva 関数 w(i·cb)) で計算する。
                     # K64 は |cb|>18 で exp(cb²-cφ) → 0 と erfc の漸近式の exp(-cb²) → ∞ を別々に計算して NaN になる
                     cm = -mat * M_2PI * M_SQRTPI * np.exp(-cphi) * _erfcx(cb) / a
                 else:
-                    cm = -mat * M_2PI * M_SQRTPI * np.exp(cb ** 2 - cphi) * _cerfc(cb) / a
+                    cm = -mat * M_2PI * M_SQRTPI * np.exp(cb * cb - cphi) * _cerfc(cb) / a
         rm[ind] = cm0
         k0 = ind[:6] + (0,) * 7
         if k0 in rm:
@@ -463,7 +530,112 @@ def _cross_mat(v):
     return np.array([[0.0, -v[2], v[1]], [v[2], 0.0, -v[0]], [-v[1], v[0], 0.0]])
 
 
-def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False):
+def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, modulate=True, seed=20261118):
+    """シンクロトロン側帯 (スピンの位相変調) を入れた 1 周あたりの脱偏極率 (v2 の Polarization、B3)。独立な導出 (docs/history/v2next_B3.md §2)。
+
+    線形の式 (slim_depolarization) は、スピン軸の場 n(u) = n0 + N u を軌道 u の 1 次で置き、放射の跳び ξ (共分散 B_i) あたり ½|N ξ|² だけ偏極が減ると
+    数える。スピンの 1 周の歳差の位相は 2π ν(u) = 2π ν0 + P·u (P はエネルギー (δ) 依存が主) で、シンクロトロン振動で δ が振動すると位相が変調され
+    (変調指数 ~ aγ σδ/νs)、n(u) は u について非線形になる (周波数 ν0 ± kνs の側帯の共鳴)。ここでは変調を厳密に取り (u の 1 次の結合は残す)、
+    n 軸の場の勾配 ∂n/∂u を、軌道の分布 (ガウス分布、`s0` = 入口のビーム行列) の各点で求めて平均する。
+
+    導出: スピンのずれを複素数 α = s·(m + i l) (n0 のまわりの回転座標、m×l = n) で表すと、要素 i の (D_i u による余分の回転) で
+        α' = e^{i p_i·u} α + g_i·u,   p_i = −n_i·D_i,  g_i = i (m_i + i l_i)·D_i
+    (K64 の回転の向き s' = (I − [D u]×) R s)。1 周では α_{n+1} = e^{iμ} (e^{i P·u_n} α_n + G·u_n) (P = Σ p_i Φ_i、G = Σ g_i Φ_i、Φ_i は入口から要素 i への軌道の写像)。
+    不変な場 (放射の跳びが無いとき保存される量 α − α*(u))は未来の軌道について和を取って
+        α*(u) = −Σ_{k≥0} e^{−iμk} exp(−i S_k) G·M^k u,   S_k = Σ_{t=0}^{k} P·M^t u
+    (M は減衰つきの 1 周写像。|eig M| < 1 で収束)。変調を切る (P=0) と N = −G (1 − e^{−iμ}M)^{-1}(線形の周期解) に一致する。
+    ξ の跳びでの偏極の減少は ½|∂α*/∂u · ξ|² で、勾配は
+        ∂α*/∂u = −Σ_k e^{−iμk} e^{−iS_k} [G M^k − i (G M^k u) Q_k],   Q_k = Σ_{t≤k} P M^t
+    要素 i の出口の勾配は、鎖 G_{i+1} = [e^{i p_i u_i} G_i + i α*_i e^{i p_i u_i} p_i + g_i] T_i^{-1}、α*_{i+1} = e^{i p_i u_i} α*_i + g_i u_i で伝える。
+    脱偏極率 rate = ½ Σ_i ⟨G_{i+1} B_i G_{i+1}^†⟩ (⟨⟩ は u の分布での平均: Sobol 列の 1024 点)。modulate=False で線形の式 (slim_depolarization) に一致する。
+    secs = [(T_i, B_i, R_i, D_i)]、n0 は入口のスピン軸、s0 は入口のビーム行列。
+    戻り dict(rate, spread (½⟨|α*_0|²⟩ = 入口での n の広がり), kturns (使った K))
+    限界: 結合 b の u の 2 次の項 (変調 × 結合) は入れない (相対 ~aγδ·θ)。|eig M| が 1 に近い (放射減衰が弱い) ときは K が大きく遅い。
+    縦の減衰が無い (RF OFF) 場合は呼ばない (和が収束しない)。"""
+    N = len(secs)
+    m0, l0, ms, ls, ns, mu = _spin_frames(secs, n0)
+    p = [-(ns[i] @ secs[i][3]) for i in range(N)]
+    g = [1j * ((ms[i] + 1j * ls[i]) @ secs[i][3]) for i in range(N)]
+    if not modulate:
+        p = [np.zeros(6) for _ in range(N)]
+    Phi = np.eye(6)
+    Pt = np.zeros(6, dtype=complex)
+    Gt = np.zeros(6, dtype=complex)
+    for i in range(N):
+        Pt = Pt + p[i] @ Phi
+        Gt = Gt + g[i] @ Phi
+        Phi = secs[i][0] @ Phi
+    w, V = np.linalg.eig(Phi)
+    lam = float(np.abs(w).max())
+    if not lam < 1.0 - 1e-9:
+        raise ValueError('側帯の式: 1 周写像に減衰が無い (RF OFF か放射が無い)')
+    Vi = np.linalg.inv(V)
+    K = int(min(kmax, math.log(tol) / math.log(lam))) + 1
+    k = np.arange(K)
+    lamk = w[None, :] ** k[:, None]
+    GV = Gt @ V
+    PV = Pt @ V
+    geo = (1.0 - w[None, :] ** (k[:, None] + 1)) / (1.0 - w[None, :])
+    GMk = (lamk * GV[None, :]) @ Vi
+    Qk = (geo * PV[None, :]) @ Vi
+    from scipy.stats import norm, qmc
+    m2 = max(1, int(round(math.log2(nsamp))))
+    z = norm.ppf(np.clip(qmc.Sobol(d=6, scramble=True, seed=seed).random_base2(m2), 1e-12, 1 - 1e-12))
+    ev, evec = np.linalg.eigh(0.5 * (s0 + s0.T))
+    L = evec * np.sqrt(np.clip(ev, 0.0, None))
+    us = z @ L.T
+    ns_ = us.shape[0]
+    phs = np.exp(-1j * mu * k)
+    G0 = np.zeros((ns_, 6), dtype=complex)
+    a0 = np.zeros(ns_, dtype=complex)
+    batch = max(1, int(4.0e6 // K))                # (batch × K) の複素配列を数個: 4e6 × 16 B × 4 ≈ 250 MB 以下
+    for b in range(0, ns_, batch):
+        u = us[b:b + batch]
+        c = u @ Vi.T
+        gk = (c * GV[None, :]) @ lamk.T
+        if modulate:
+            ph = phs[None, :] * np.exp(-1j * ((c * PV[None, :]) @ geo.T))
+            a0[b:b + batch] = -(ph * gk).sum(1)
+            G0[b:b + batch] = -(ph @ GMk) + (1j * (ph * gk)) @ Qk
+        else:
+            ph = np.broadcast_to(phs[None, :], gk.shape)
+            a0[b:b + batch] = -(ph * gk).sum(1)
+            G0[b:b + batch] = -(ph @ GMk)
+    u = us.copy()
+    G = G0
+    a = a0
+    rate = 0.0
+    for i in range(N):
+        T, B, _R, _D = secs[i]
+        e = np.exp(1j * (u @ p[i])) if modulate else np.ones(ns_)
+        Gn = (e[:, None] * G + ((1j * e * a)[:, None] * p[i][None, :] if modulate else 0.0) + g[i][None, :]) @ np.linalg.inv(T)
+        a = e * a + u @ g[i]
+        u = u @ T.T
+        G = Gn
+        rate += 0.5 * float(np.mean(np.einsum('si,ij,sj->s', G, B, G.conj()).real))
+    return dict(rate=rate, spread=0.5 * float(np.mean(np.abs(a0) ** 2)), kturns=K)
+
+
+def _spin_frames(secs, n0):
+    """n0 に垂直な基底 (m0, l0) (m×l = n) を閉軌道のスピンの歳差 R_i で運んだ (m_i, l_i, n_i) と、1 周の歳差角 μ"""
+    a = np.array([1.0, 0.0, 0.0]) if abs(n0[0]) < 0.9 else np.array([0.0, 1.0, 0.0])
+    m0 = a - (a @ n0) * n0
+    m0 = m0 / np.linalg.norm(m0)
+    l0 = np.cross(n0, m0)
+    ms, ls, ns_ = [], [], []
+    m, l, n = m0, l0, n0
+    for _T, _B, R, _D in secs:
+        n = R @ n
+        m = R @ m
+        l = R @ l
+        ms.append(m)
+        ls.append(l)
+        ns_.append(n)
+    mu = math.atan2(float(m @ l0), float(m @ m0))
+    return m0, l0, ms, ls, ns_, mu
+
+
+def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_matrix=None, sideband=False):
     """線形のスピン軌道結合 (SLIM / Derbenev-Kondratenko の脱偏極項) による 1 周あたりの脱偏極率 (v2 の Polarization が使う)。
 
     要素 i ごとに emit6d.tturne (POL) で、軌道の行列 T_i (減衰込み)、その要素の放射の拡散行列 B_i (要素の出口での共分散)、
@@ -521,7 +693,15 @@ def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False):
     for (_T, B, _R, _D), (N, n) in zip(secs, out):
         npp = (np.eye(3) - np.outer(n, n)) @ N
         rate += 0.5 * float(np.trace(npp @ B @ npp.T))
-    return dict(rate=rate, n0=n0, N0=nn0)
+    out_ = dict(rate=rate, n0=n0, N0=nn0, rate_linear=rate)
+    if sideband and beam_matrix is not None:
+        # v2 (B3): シンクロトロン側帯 (スピンの位相変調) を入れた脱偏極率。縦の減衰が無い場合は線形のまま
+        try:
+            sb = sideband_depolarization([(T, B, R, D) for (T, B, R, D) in secs], n0, np.asarray(beam_matrix, dtype=float))
+            out_.update(rate=sb['rate'], spread_sb=sb['spread'], sideband_kturns=sb['kturns'])
+        except Exception as exc:
+            out_['sideband_error'] = str(exc)
+    return out_
 
 
 def spin_results(st, em, ph, els=None, cod=None, trf0=0.0, rfsw=False, radcod=False) -> dict:
@@ -540,14 +720,30 @@ def spin_results(st, em, ph, els=None, cod=None, trf0=0.0, rfsw=False, radcod=Fa
         taup = 1.0 / sdamp / frev if sdamp != 0.0 else float('inf')
     res = dict(srot=srot.copy(), srot1=srot1, sps=sps, smu=smu, sdamp=sdamp, nup=smu / M_2PI,
                equpol=equpol, spm=spm, taup=taup, gintd=st.gintd.copy())
+    n_ax = sps[:, 0]
+    sdamp_rel = float(n_ax @ getattr(st, 'gintd2', np.zeros((3, 3))) @ n_ax)       # Σ r_i (b_i·n)²: ST の緩和率 (符号に依らない)
+    res['sdamp_rel'] = sdamp_rel
     if compat.v2() and els is not None and cod is not None:
         res['equpol_k64'] = equpol                      # K64 の spdepol の式 (桁あふれだけ直したもの)。参考値
         try:
-            sl = slim_depolarization(els, ph, cod, trf0=trf0, rfsw=rfsw, radcod=radcod)
+            if not np.all(np.isfinite(cod)):
+                raise ValueError('closed orbit not found (unstable optics)')        # D1: 要素ごとの tturne を 2000 回回さない
+            sl = slim_depolarization(els, ph, cod, trf0=trf0, rfsw=rfsw, radcod=radcod,
+                                     beam_matrix=em.get('beam_matrix') if (SIDEBAND and rfsw) else None, sideband=SIDEBAND and rfsw)
             rate = sl['rate']
+            # v2 (A2): dP/dt = PST·Σ r_i (b_i·n) − P·(Σ r_i (b_i·n)² + rate)。K64 の sdamp = n·gintd は符号つきの Σ r_i (b_i·n) で、
+            # 逆向きの磁場 (挿入光源の交互の極) があると緩和率に使えない (P = PST (一定)、τ が実際より長く出る)。
+            # 緩和率は Σ r_i (b_i·n)² (向きの符号に依らない)。一方向の曲げだけのリングでは sdamp と同じ (正の曲げだけ: 完全に一致)
+            srel = sdamp_rel if sdamp_rel > 0.0 else sdamp
             with np.errstate(all='ignore'):
-                pol = PST * sdamp / (sdamp + rate) if (sdamp + rate) != 0.0 else float('nan')
+                pol = PST * sdamp / (srel + rate) if (srel + rate) != 0.0 else float('nan')
+            if srel > 0.0:
+                with np.errstate(all='ignore'):
+                    res['taup'] = 1.0 / srel / frev
             npp = (np.eye(3) - np.outer(sl['n0'], sl['n0'])) @ sl['N0']
+            res.update(depol_rate_linear=sl.get('rate_linear', rate), depol_sideband=('spread_sb' in sl), spin_spread_sb=sl.get('spread_sb'))
+            if 'sideband_error' in sl:
+                res['sideband_error'] = sl['sideband_error']
             res.update(equpol=np.array([pol, 0.0, 0.0]), depol_rate=rate, spin_orbit=sl['N0'],
                        spin_spread=0.5 * float(np.trace(npp @ em['beam_matrix'] @ npp.T)),
                        taudep=(1.0 / rate / frev if rate > 0.0 else float('inf')))

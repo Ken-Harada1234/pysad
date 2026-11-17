@@ -381,7 +381,7 @@ class SADEnvironment:
         if self._numv(rot) and tn != 'Bend':
             el.ROTATION = float(rot)
         if tn == 'Cavity':
-            for k in ('PHI', 'DPHI', 'DVOLT', 'AUTOPHI'):
+            for k in ('PHI', 'DPHI', 'DVOLT', 'AUTOPHI', 'V1', 'V20', 'V11', 'V02'):      # V1 V20 V11 V02: 横方向の電圧の依存 (tcav.f の v1a v20a v11a v02a)
                 v = params.get(k)
                 if self._numv(v):
                     setattr(el, k, float(v))
@@ -867,6 +867,10 @@ class _Parser:
                     # 値なし → キーだけ (例: ROTATE)
                     params[key] = True
                     continue
+                ok, val = self._parse_main_value()
+                if ok:
+                    params[key] = val
+                    continue
                 val = self.parse_expr()
                 # 単位サフィックス処理
                 unit_tok = self.peek()
@@ -880,6 +884,61 @@ class _Parser:
                 # 予期しないトークンはスキップ
                 self.consume()
         return params
+
+    def _parse_main_value(self):
+        """要素定義 `KEY=式` の式を gs の MAIN の文法で読む (`ANGLE=PI/8`、`K1=2*SIN(0.1)`、`L=10 CM + 1 MM`、前に代入した変数)。
+        戻り値 (True, 値) なら読んだ字句を消費済み。式でない値 (文字列・リスト・`->` など) は (False, None) で位置を変えない (従来の読み取りへ)。
+        式の形で gs が構文エラーにする (`2*-1`、`1.5 PI`、`pi`、未定義の名前) ものは SyntaxError (gs は構文エラーで止まる)。
+        数だけの値 (`L=1`) は従来の読み取りに任せる (整数のまま)"""
+        toks = []
+        depth = 0
+        i = self.pos
+        while i < len(self.tokens):
+            t = self.tokens[i]
+            if t.type == 'NUMBER':
+                toks.append(('num', t.value))
+            elif t.type == 'IDENT':
+                toks.append(('id', t.value))
+            elif t.type == 'OP' and t.value in '+-*/^,=' and len(t.value) == 1:
+                toks.append(('op', t.value))
+            elif t.type == 'LPAREN':
+                depth += 1
+                toks.append(('op', '('))
+            elif t.type == 'RPAREN':
+                if depth == 0:
+                    break
+                depth -= 1
+                toks.append(('op', ')'))
+            else:
+                break
+            i += 1
+        if not toks or toks[0][0] == 'op' and toks[0][1] not in ('-', '+', '('):
+            return False, None
+
+        def getvar(name):
+            v = self.env.get(name)
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                raise ValueError(name)
+            if name in SADEnvironment._BUILTINS and v == SADEnvironment._BUILTINS[name]:
+                raise ValueError(name)      # SADScript の定数 (Pi・E・Degree …) は MAIN の式の名前ではない (gs は `pi`・`Pi` を構文エラーにする)
+            return v
+        try:
+            x, n = _main_expr_parse(toks, {}, getvar, stream=True)
+        except (ValueError, RecursionError):
+            # 識別子だけの値 (`L=name` の参照) など、式にならないものは従来の読み取りへ。数・演算子・関数で始まる式の誤りは構文エラー
+            if toks[0][0] == 'id' and (len(toks) == 1 or toks[1][0] == 'id' or toks[1] == ('op', '=')):
+                return False, None
+            raise SyntaxError('syntax error in MAIN expression (gs: LALR(1) parser: syntax error): '
+                              + ' '.join(v for _, v in toks[:8]))
+        if n < len(toks) and toks[n][0] == 'id' and not (n + 1 < len(toks) and toks[n + 1] == ('op', '=')):
+            u = toks[n][1].upper()
+            if u in _SAD_UNITS or u == 'PI' or u in _MAIN_FUNCS1 or u == 'ATAN2':
+                raise SyntaxError('syntax error in MAIN expression (gs: Undefined keyword: %s): ' % toks[n][1]
+                                  + ' '.join(v for _, v in toks[:8]))
+        if n == 1 and toks[0][0] == 'num':
+            return False, None
+        self.pos += n
+        return True, x
 
     # ------------------------------------------------------------------
     # SAD ネイティブ構文: LINE name = (ref1 ref2 ref3 ...)
@@ -1160,7 +1219,10 @@ class _Parser:
             if op == '*':
                 left = left * right
             else:
-                left = left / right if right != 0 else float('nan')
+                if isinstance(left, (int, float)) and isinstance(right, (int, float)):
+                    left = _main_div(float(left), float(right)) if right == 0 else left / right
+                else:
+                    left = left / right if right != 0 else float('nan')
         return left
 
     def _parse_power(self) -> Any:
@@ -1928,7 +1990,7 @@ def parse_main_commands(src: str) -> List[dict]:
 # MAIN の式で使える関数 (gs で確かめたもの: LOG は常用対数、LN は自然対数。ABS・ASIN・ACOS・Sqrt[...] は gs でも構文エラー)
 _MAIN_FUNCS = {'SIN': math.sin, 'COS': math.cos, 'TAN': math.tan, 'ATAN': math.atan, 'SQRT': math.sqrt,
                'EXP': math.exp, 'LOG': math.log10, 'LN': math.log, 'COSH': math.cosh}
-_MAIN_TOKEN = re.compile(r'\s*(?:(?P<num>(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)|(?P<id>[A-Za-z_$][\w$]*)|(?P<op>[-+*/^()]))')
+_MAIN_TOKEN = re.compile(r'\s*(?:(?P<num>(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)|(?P<id>[A-Za-z_$][\w$]*)|(?P<op>[-+*/^(),=]))')
 
 
 def _blank_comments(src: str) -> str:
@@ -1959,24 +2021,71 @@ def _blank_comments(src: str) -> str:
     return ''.join(out)
 
 
-def _eval_main_expr(text: str, vars_: dict) -> float:
-    """MAIN の式 (gs の MAIN の文法のうち、gs で動作を確かめた範囲) を評価する。評価できなければ ValueError。
-      数 [単位] (`10 DEG`、`1.5 M + 20 CM`。単位は大文字小文字を問わない)、+ - * / ^ (^ は右結合)、( )、先頭の符号、
-      関数 SIN COS TAN ATAN SQRT EXP LOG(常用) LN COSH (丸括弧、大文字小文字を問わない)、PI、前に代入した変数 (大文字小文字を区別)。
-    gs でエラーになる形 (`2*-A`、`2^-1`、`2 A`、`Sqrt[16]`、未定義の名前) は ValueError (gs は変数に前の値などを入れる。pysad は代入しない)"""
-    toks = []
-    pos = 0
-    t = text.rstrip()
-    while pos < len(t):
-        m = _MAIN_TOKEN.match(t, pos)
-        if not m:
-            raise ValueError(text)
-        toks.append((m.lastgroup, m.group(m.lastgroup)))
-        pos = m.end()
+def _main_div(x: float, y: float) -> float:
+    """gs の除算 (0 での割り算はエラーでなく ±Infinity・NaN)"""
+    if y == 0.0:
+        if x == 0.0 or x != x:
+            return float('nan')
+        neg = (x < 0) != (math.copysign(1.0, y) < 0)
+        return float('-inf') if neg else float('inf')
+    return x / y
+
+
+def _main_pow(x: float, y: float) -> float:
+    try:
+        r = x ** y
+    except ZeroDivisionError:
+        return float('inf')
+    except OverflowError:
+        return float('inf') if (x > 0 or y % 2 == 0) else float('-inf')
+    return float('nan') if isinstance(r, complex) else float(r)
+
+
+def _main_func1(f):
+    """gs の関数 (定義域の外は NaN、特異点は ±Infinity、桁あふれは Infinity)"""
+    def g(x):
+        try:
+            return float(f(x))
+        except ValueError:
+            if f is math.log10 or f is math.log:
+                return float('-inf') if x == 0 else float('nan')
+            return float('nan')
+        except OverflowError:
+            return float('inf')
+    return g
+
+
+_MAIN_FUNCS1 = {k: _main_func1(f) for k, f in {
+    'SIN': math.sin, 'COS': math.cos, 'TAN': math.tan, 'ATAN': math.atan, 'SQRT': math.sqrt,
+    'EXP': math.exp, 'LOG': math.log10, 'LN': math.log, 'SINH': math.sinh, 'COSH': math.cosh, 'TANH': math.tanh}.items()}
+
+
+def _main_expr_parse(toks, vars_, getvar=None, stream=False):
+    """MAIN の式 (gs の MAIN の文法、gs で動作を確かめた範囲) を字句 `(種類, 値)` の並び (種類は 'num'・'id'・'op'、'op' は + - * / ^ ( ) , =) から読む。
+      数 [単位] (単位は数の直後だけ。`10 DEG`、`1.5 M + 20 CM`。大文字小文字を問わない)、+ - * / ^ (^ は右結合)、( )、先頭の符号 (演算子の直後の符号は gs でも構文エラー)、
+      関数 SIN COS TAN ATAN SQRT EXP LOG(常用) LN SINH COSH TANH (丸括弧、大文字小文字を問わない)・ATAN2(y,x)、大文字の PI、変数 (`vars_` か `getvar(名前)`、大文字小文字を区別)。
+      0 での割り算は ±Infinity・NaN、定義域の外の関数は NaN (gs と同じ)。
+    戻り値 (値, 読んだ字句の数)。構文が違えば ValueError。stream=False は全部読み切らなければ ValueError。
+    stream=True は式が終わった所 (演算子でない字句) で止まる (要素定義の `ANGLE=PI/8 K1=0` のように、続きに次のキーが来る場合)"""
     p = [0]
 
     def peek():
         return toks[p[0]] if p[0] < len(toks) else (None, None)
+
+    def bad():
+        raise ValueError('MAIN expression')
+
+    def args(n):
+        out = [expr()]
+        while peek() == ('op', ','):
+            p[0] += 1
+            out.append(expr())
+        if peek() != ('op', ')'):
+            bad()
+        p[0] += 1
+        if len(out) != n:
+            bad()
+        return out
 
     def atom():
         k, v = peek()
@@ -1984,47 +2093,45 @@ def _eval_main_expr(text: str, vars_: dict) -> float:
         if k == 'num':
             x = float(v)
             k2, v2 = peek()
-            if k2 == 'id':
-                if v2.upper() not in _SAD_UNITS:
-                    raise ValueError(text)
+            if k2 == 'id' and v2.upper() in _SAD_UNITS and not (p[0] + 1 < len(toks) and toks[p[0] + 1] == ('op', '=')):
                 p[0] += 1
                 x *= _SAD_UNITS[v2.upper()]
+            elif k2 == 'id' and not stream:
+                bad()
             return x
         if k == 'id':
             if peek() == ('op', '('):
-                f = _MAIN_FUNCS.get(v.upper())
+                U = v.upper()
+                p[0] += 1
+                if U == 'ATAN2':
+                    y, x = args(2)
+                    return float(math.atan2(y, x))
+                f = _MAIN_FUNCS1.get(U)
                 if f is None:
-                    raise ValueError(text)
-                p[0] += 1
-                x = expr()
-                if peek() != ('op', ')'):
-                    raise ValueError(text)
-                p[0] += 1
-                try:
-                    return float(f(x))
-                except (ValueError, OverflowError):
-                    raise ValueError(text)
-            if v in vars_:
-                return float(vars_[v])
+                    bad()
+                return f(args(1)[0])
+            if peek() == ('op', '='):
+                bad()          # 次のキー (`KEY=`)
             if v == 'PI':
                 return math.pi
-            raise ValueError(text)
+            if v in vars_:
+                return float(vars_[v])
+            if getvar is not None:
+                return float(getvar(v))
+            bad()
         if (k, v) == ('op', '('):
             x = expr()
             if peek() != ('op', ')'):
-                raise ValueError(text)
+                bad()
             p[0] += 1
             return x
-        raise ValueError(text)
+        bad()
 
     def power():
         x = atom()
         if peek() == ('op', '^'):
             p[0] += 1
-            try:
-                return float(x ** power())
-            except (ZeroDivisionError, OverflowError, TypeError):
-                raise ValueError(text)
+            return _main_pow(x, power())
         return x
 
     def term():
@@ -2033,12 +2140,7 @@ def _eval_main_expr(text: str, vars_: dict) -> float:
             o = peek()[1]
             p[0] += 1
             y = power()
-            if o == '*':
-                x *= y
-            else:
-                if y == 0.0:
-                    raise ValueError(text)
-                x /= y
+            x = x * y if o == '*' else _main_div(x, y)
         return x
 
     def expr():
@@ -2055,7 +2157,26 @@ def _eval_main_expr(text: str, vars_: dict) -> float:
         return x
 
     x = expr()
-    if p[0] != len(toks) or isinstance(x, complex):
+    if not stream and p[0] != len(toks):
+        bad()
+    return x, p[0]
+
+
+def _eval_main_expr(text: str, vars_: dict) -> float:
+    """MAIN の式 (文法は `_main_expr_parse`) を評価する。評価できなければ ValueError。
+    gs でエラーになる形 (`2*-A`、`2^-1`、`2 A`、`Sqrt[16]`、`pi`、未定義の名前) は ValueError (gs は変数に前の値などを入れる。pysad は代入しない)"""
+    toks = []
+    pos = 0
+    t = text.rstrip()
+    while pos < len(t):
+        m = _MAIN_TOKEN.match(t, pos)
+        if not m:
+            raise ValueError(text)
+        toks.append((m.lastgroup, m.group(m.lastgroup)))
+        pos = m.end()
+    try:
+        x, _ = _main_expr_parse(toks, vars_)
+    except RecursionError:
         raise ValueError(text)
     return x
 

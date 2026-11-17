@@ -445,7 +445,9 @@ class Solver2D:
     """PSPAC のソルバー (K64 の spch.c と同じモデル)。nx, ny: セル数 (ノードは nx+1)、dx, dy: 幅。境界 (ノード 0 と nx) で Φ=0。
     nz, dz: 縦のメッシュ (K64: 中心 0、ノード k は z = (k − nz/2) dz)。nz<4 なら、バンチに合わせて自動で 64 ノードを張る"""
 
-    def __init__(self, nx=128, ny=128, nz=1, dx=1e-3, dy=1e-3, dz=1e-3):
+    def __init__(self, nx=128, ny=128, nz=1, dx=1e-3, dy=1e-3, dz=1e-3, warn=None):
+        self.warn = warn
+        self._warned = set()
         if nx < 4 or ny < 4:
             raise SpaceChargeError('PSPAC: PSPACNX, PSPACNY は 4 以上')
         self.nx, self.ny, self.nz = int(nx), int(ny), int(nz)
@@ -470,7 +472,34 @@ class Solver2D:
         phi[1:nx, 1:ny] = _fft.idstn(_fft.dstn(rhs, type=1) / self._eig * self._sharp, type=1)
         return phi
 
+    def _w(self, key, msg):
+        if key not in self._warned:
+            self._warned.add(key)
+            if self.warn is not None:
+                self.warn(msg)
+
+    def check_resolution(self, x, y, z):
+        """メッシュに対してバンチが粗いと、キックが小さく出る (K64 の gs との差もここから: docs/history/v2next_A1.md 項目 8)。
+        一様な円のビームで、半径 a が 1 セル (DX) で −13%、2 セルで −3%、4 セルで −1%、10 セルで −0.6%。縦のメッシュを与えたとき
+        (PSPACNZ≥4) は、一様なバンチの長さ lb が 4 セル (DZ) で −12%、10 セルで −4%、20 セルで −2%"""
+        sx, sy = float(np.std(x)), float(np.std(y))
+        if min(sx / self.dx, sy / self.dy) < 1.5:
+            self._w('xy', ' ???-PSPAC-Warning-the transverse mesh is too coarse: rms size x, y = %.3g, %.3g m is only %.1f, %.1f cells of '
+                    'PSPACDX, PSPACDY = %.3g, %.3g m (the kick is under-estimated by more than 10%%). Use PSPACDX, PSPACDY <= rms/3.'
+                    % (sx, sy, sx / self.dx, sy / self.dy, self.dx, self.dy) + chr(10))
+        ins = (np.abs(x) < 0.5 * self.nx * self.dx) & (np.abs(y) < 0.5 * self.ny * self.dy)
+        if ins.size and (1.0 - ins.mean()) > 0.01:
+            self._w('out', ' ???-PSPAC-Warning-%.1f%% of the particles are outside the mesh (PSPACNX x PSPACDX, PSPACNY x PSPACDY); they get no kick.'
+                    % (100.0 * (1.0 - ins.mean())) + chr(10))
+        if self.nz >= 4:
+            sz = float(np.std(z))
+            if sz / self.dz < 1.5:
+                self._w('z', ' ???-PSPAC-Warning-the longitudinal mesh is too coarse: rms length %.3g m is only %.1f cells of PSPACDZ = %.3g m '
+                        '(the line density is under-estimated). Use PSPACDZ <= rms/3 or PSPACNZ < 4 (automatic mesh).'
+                        % (sz, sz / self.dz, self.dz) + chr(10))
+
     def solve(self, x, y, z):
+        self.check_resolution(x, y, z)
         nx, ny = self.nx, self.ny
         ux = x / self.dx + nx // 2
         uy = y / self.dy + ny // 2
@@ -748,7 +777,7 @@ class SpaceCharge:
         self.s2 = None
         if self.pspac:
             self.s2 = Solver2D(conf.get('PSPACNX', 128), conf.get('PSPACNY', 128), conf.get('PSPACNZ', 1),
-                               conf.get('PSPACDX', 1e-3), conf.get('PSPACDY', 1e-3), conf.get('PSPACDZ', 1e-3))
+                               conf.get('PSPACDX', 1e-3), conf.get('PSPACDY', 1e-3), conf.get('PSPACDZ', 1e-3), warn=warn)
         self.nturncalc = int(conf.get('PSPACNTURNCALC', 0) or 0)
         self._frozen = {}
         self._turn0 = None

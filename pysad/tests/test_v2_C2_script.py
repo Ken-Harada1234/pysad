@@ -268,7 +268,6 @@ def test_parse_main_assignments_units():
     a = parse_main_assignments('A = 1.5; ! c\nDRIFT D = (L = A);\nf[x_] := (y = 2; x);\nB = A + 1 (* c *) ;\nMOMENTUM = 2 GEV; C = MOMENTUM/1E9')
     assert [(x['name'], x['kind'], x['value']) for x in a] == [('A', 'VAR', 1.5), ('B', 'VAR', 2.5), ('MOMENTUM', 'MOMENTUM', 2e9),
                                                                ('C', 'VAR', 2.0)]
-    with pytest.raises(ValueError):
-        _eval_main_expr('1/0', {})
-    with pytest.raises(ValueError):
-        _eval_main_expr('SQRT(-1)', {})
+    # gs (2026-11-18 に実測): 0 での割り算は Infinity、SQRT(-1) は NaN (エラーにならない)
+    assert _eval_main_expr('1/0', {}) == float('inf')
+    assert _eval_main_expr('SQRT(-1)', {}) != _eval_main_expr('SQRT(-1)', {})

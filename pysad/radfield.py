@@ -27,9 +27,28 @@ def _natural_ddy(x, y):
     return CubicSpline(x, y, bc_type='natural')(x, 2) / 6.0
 
 
+def _drop_repeated_points(xt):
+    """RADLIGHT の複数区間 (複数周) の軌道は、区間の始めの点が直前の要素の後の点と重なる (同じ時刻・同じ位置)。
+    スプラインは時刻が狭義の増加を要求するので、直前の点と完全に同じ点を除く。時刻が戻る・同じ時刻で位置が違う点は軌道の誤りなので SADError。
+    (K64 では gs が RadiationField で SIGSEGV するので、この動作は gs と比べられない。重複点は場への寄与がない: 同じ点を 2 回数えない)"""
+    if xt.shape[0] < 2:
+        return xt
+    keep = np.ones(xt.shape[0], dtype=bool)
+    last = 0
+    for i in range(1, xt.shape[0]):
+        if xt[i, 0] > xt[last, 0]:
+            last = i
+        elif xt[i, 0] == xt[last, 0] and np.all(xt[i, 1:] == xt[last, 1:]):
+            keep[i] = False
+        else:
+            raise SADError('General::wrongval: RadiationField: 軌道の時刻が増加していない (%d 番目の点: t = %.12g, 前の点 %.12g)' % (i + 1, xt[i, 0], xt[last, 0]))
+    return xt[keep]
+
+
 def radiation_field(traj, obs, charge=-1.0, e=_ELEMCH):
     """tlcalc。traj: (m, 4) = [t, x, y, z]。戻り: (m, 10)"""
     xt = np.array(traj, dtype=float)
+    xt = _drop_repeated_points(xt)
     m = xt.shape[0]
     tx, ty, tz = [float(v) for v in obs]
     c = _C

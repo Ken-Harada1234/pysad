@@ -784,6 +784,9 @@ _SYS_FIXED = ('Real', 'String', 'List', 'Symbol', 'Complex', 'Null', 'True', 'Fa
               'Rule', 'RuleDelayed', 'Constant', 'HoldAll', 'HoldFirst', 'HoldRest', 'HoldNone', 'Undefined', 'Automatic', 'All', 'None',
               'Vector', 'Pattern', 'Blank', 'Integer', 'Number', 'Expression', 'Character', 'Word', 'Byte', 'EndOfFile')
 _SYSNAMES = None
+_GS_GLOBAL_NAMES = ('ExternalMap', 'a', 'act', 'al', 'arg', 'argv', 'b', 'body', 'c', 'cmd', 'd', 'e', 'env', 'f', 'file', 'g', 'h', 'i', 'id', 'in',
+                    'j', 'k', 'l', 'le', 'lin', 'lout', 'lr', 'm', 'mask', 'n', 'n1', 'n2', 'nt', 'op', 'opt', 'out', 'p', 'p1', 'p2', 'pid',
+                    'pw2', 'r', 'ret', 's', 'src', 't', 'u', 'v', 'x', 'y', 'z')
 
 
 def _sysnames():
@@ -1183,7 +1186,7 @@ _HOLD = {'Fit', 'FindRoot', 'NIntegrate', 'AccelerateParticles', 'Set', 'SetDela
          'CompoundExpression', 'SetAttributes', 'Protect', 'Unprotect', 'Clear', 'Hold', 'HoldForm', 'RuleDelayed',
          'Catch', 'Pattern', 'Blank', 'BlankSequence', 'BlankNullSequence', 'Optional', 'PatternTest', 'Condition',
          'Literal', 'TagSet', 'Return', 'Break', 'Continue', 'Message', 'Definition', 'Slot', 'SlotSequence',
-         'FFS$NumericalDerivative', 'Unevaluated', 'SetOptions', 'DefineOptions', 'Class', 'AutoLoad', 'AutoLoadSet', 'WithPriority', 'Priority', 'And', 'Or', 'At', 'StandardForm', 'Context'}
+         'FFS$NumericalDerivative', 'Unevaluated', 'SetOptions', 'DefineOptions', 'Class', 'AutoLoad', 'AutoLoadSet', 'WithPriority', 'Priority', 'And', 'Or', 'At', 'StandardForm', 'Context', 'WithContext', 'FunctionDefinition'}
 
 
 def is_num(v):
@@ -1253,18 +1256,52 @@ class Interp:
         self._ctx_stack = []
         self._pkg_stack = []
         self._ctx_syms = set()
-        self._root_syms = set()
+        # gs の起動直後に大域 (`) にある名前 (init.n が読まれた後。gs で Begin[Q`] の中から Context[名前] を調べた実測)。
+        # 文脈の中でこの名前を読むと、新しい文脈の記号を作らずに、この大域の記号に当たる (gs: Begin[A`]; x=1; のあと Context[x] は `)
+        self._root_syms = set(_GS_GLOBAL_NAMES)
         self._pkg_loading = 0
         self._ctx_track = False
         self._install_builtins()
         self.run(_PRELUDE, 'script')
         self._ctx_track = True
+        self.set_hooks['$Context'] = self._hook_context
+        self.set_hooks['$ContextPath'] = self._hook_contextpath
         self._ctx_publish()
 
     # ------------------------------------------------------------------ 文脈 (名前空間)
     def _ctx_publish(self):
         self.globals['$Context'] = Sym(self._ctx_cur)
         self.globals['$ContextPath'] = [Sym(c) for c in self._ctx_path]
+
+    def _ctx_arg(self, v, fn='$SetContext'):
+        """文脈を表す値 (`A`B`` の記号、または "A`B`" の文字列) を正規化した名前にする。文脈でなければ None"""
+        if isinstance(v, Sym) and v.name.endswith('`'):
+            return _ctx_norm(v.name)
+        if isinstance(v, str) and v.endswith('`') and len(v) > 0:
+            return _ctx_norm(v)
+        return None
+
+    def _hook_context(self, v):
+        """`$Context = c`: gs は $SetContext[c] (init.n の ($Context=a_)^:=)。読み取りの文脈が変わる。Begin と違い、End で戻る対象 ($ContextStack) には積まない"""
+        if self._pkg_loading or not self._ctx_track:
+            return v
+        c = self._ctx_arg(v)
+        if c is None:
+            self.out.write('???General::wrongtype:  Argument must be Context (Symbol ending `) in $SetContext[%s]\n' % self.to_str(v, None, True))
+            return Sym(self._ctx_cur)
+        self._ctx_cur = c
+        return Sym(c)
+
+    def _hook_contextpath(self, v):
+        """`$ContextPath = {c1, c2, …}`: gs は $SetContextPath[ToContext /@ a]。要素は文脈の記号か "A`" の文字列"""
+        if self._pkg_loading or not self._ctx_track:
+            return v
+        cs = [self._ctx_arg(x) for x in v] if isinstance(v, list) else None
+        if cs is None or any(c is None for c in cs):
+            self.out.write('???General::wrongtype:  Argument must be List of Contexts in $SetContextPath[%s]\n' % self.to_str(v, None, True))
+            return [Sym(c) for c in self._ctx_path]
+        self._ctx_path = cs
+        return [Sym(c) for c in cs]
 
     def _ctx_known(self, n):
         return (n in self.builtins or n in self.globals or n in self.downvalues or n in self.autoload
@@ -1839,6 +1876,11 @@ class Interp:
                 if compat.v2():
                     return hit
                 return sorted({n[:n.rindex('`') + 1] for n in hit})
+            if _compat.k64():
+                # gs: Names[パターン] は大域 (`) に作られた記号だけ (System` の組み込み・自動読み込みの関数は出ない: Names["Sin"] = {}、Names["Si*"] = {"Single"})
+                own = {n for n in I._root_syms if '`' not in n}
+                own |= {n for n in set(I.globals) | set(I.downvalues) if n in I._root_syms}
+                return sorted(n for n in own if fnmatch.fnmatchcase(n, pat) and n not in I.builtins and n not in I.autoload)
             allnames = set(I.builtins) | set(I.downvalues) | set(I.globals) | set(I.autoload)
             return sorted(n for n in allnames if fnmatch.fnmatchcase(n, pat))
         self.builtins['Names'] = _names
@@ -2713,13 +2755,23 @@ class Interp:
             return '' if quote else 'Null'
         if isinstance(v, Sym):
             n = v.name
+            if n.endswith('`') and _compat.k64() and self._ctx_track and not self._pkg_loading and '`' not in self._ctx_path:
+                return '`' + n                       # gs: 文脈の記号 (A`) の文脈は大域 (`)。$ContextPath に ` が無ければ文脈名を付けて表示する (`A`、``)
             if '`' in n and self._ctx_path != _ROOT_PATH and not n.endswith('`') and n[:n.rindex('`') + 1] in self._ctx_path:
                 return n[n.rindex('`') + 1:]          # gs: $ContextPath にある文脈の記号は、文脈名を付けずに表示する
             return n
         if isinstance(v, Rule):
             return self.to_str(v.lhs, form, True) + (':>' if v.delayed else '->') + self.to_str(v.rhs, form, True)
+        if isinstance(v, _Lit):
+            return self.to_str(v.v, form, quote)
         if isinstance(v, Expr):
             hn = v.head.name if isinstance(v.head, Sym) else None
+            if hn == 'Pattern' and len(v.args) == 2 and isinstance(v.args[0], Sym) and isinstance(v.args[1], Expr) \
+                    and isinstance(v.args[1].head, Sym) and v.args[1].head.name in ('Blank', 'BlankSequence', 'BlankNullSequence'):
+                bl = {'Blank': '_', 'BlankSequence': '__', 'BlankNullSequence': '___'}[v.args[1].head.name]
+                return v.args[0].name + bl + ''.join(self.to_str(t, form, True) for t in v.args[1].args)       # x_Real
+            if hn == 'StringJoin' and len(v.args) >= 2:
+                return '//'.join(self.to_str(a, form, True) for a in v.args)                                     # x//y
             if hn == 'Plus' and len(v.args) >= 2:
                 return '+'.join(self.to_str(a, form, True) for a in v.args)
             if hn == 'Times' and len(v.args) >= 2:
@@ -3055,7 +3107,7 @@ class Interp:
                 lhs = I._close(lhs, True)         # i++ の i が変数 n を指す引数 (Unevaluated$[n]) なら n を進める
             old = I.eval(lhs)
             new = num(old) + d
-            _set([lhs, _Lit(new)])
+            B['Set']([lhs, _Lit(new)])           # B['Set'] は FFS が LINE[..]・Element[..] 用に包み直す (ここの _set を直接呼ぶと、Element[..]++ が利用者の規則になる)
             return new if pre else old
         B['Increment'] = lambda a: _inc(a, 1.0, False)
         B['Decrement'] = lambda a: _inc(a, -1.0, False)
@@ -3067,7 +3119,7 @@ class Interp:
             old = I.eval(lhs)
             v = I.eval(args[1])
             new = op(old, v)
-            _set([lhs, _Lit(new)])
+            B['Set']([lhs, _Lit(new)])           # 同上
             return new
         B['AddTo'] = lambda a: _opassign(a, lambda x, y: I.builtins['Plus']([x, y]))
         B['SubtractFrom'] = lambda a: _opassign(a, lambda x, y: I.builtins['Subtract']([x, y]))
@@ -3514,7 +3566,7 @@ class Interp:
             return [time.time() - t0, v]
         B['Timing'] = _timing
         B['TimeUsed'] = lambda a: time.process_time()
-        for nm in ('Protect', 'Unprotect', 'Hold', 'HoldForm', 'Message', 'Definition',
+        for nm in ('Protect', 'Unprotect', 'Hold', 'HoldForm', 'Definition',
                    'Literal', 'Unevaluated', 'SetOptions', 'DefineOptions', 'FFS$NumericalDerivative', 'Off', 'On'):
             B[nm] = lambda a, nm=nm: (I.eval(a[0]) if nm in ('HoldForm', 'Unevaluated') and a else Null)
         B['Literal'] = lambda a: a[0] if len(a) == 1 else Null     # Literal[x] は x そのもの (評価も改名もしない記号。Canvas.n の Literal[TickFontScale]->1)
@@ -4584,6 +4636,10 @@ class Interp:
             cs = _ctxargs('Begin', a)
             if len(cs) != 1:
                 raise SADError('General::narg: Number of arguments is expected to be 1 in Begin')
+            if not (isinstance(a[0], Sym) and a[0].name.endswith('`')) and not (isinstance(a[0], str) and a[0].endswith('`') and _compat.v2()):
+                # gs: Begin は $SetContext[a] に引数をそのまま渡し、文脈の記号 (A`) でなければ (文字列 "A`" も) 拒否して Return[]。v2 は文字列も受ける
+                I.out.write('???General::wrongtype:  Argument must be Context (Symbol ending `) in $SetContext[%s]\n' % I.to_str(a[0], None, True))
+                return Null
             I._ctx_stack.append(I._ctx_cur)
             I._ctx_cur = cs[0]
             I._ctx_publish()
@@ -4597,6 +4653,23 @@ class Interp:
             I._ctx_publish()
             return Null
         B['End'] = _end
+
+        def _withcontext(args):
+            # init.n: WithContext[{c__}, body] := First[{BeginPackage[c]; Begin[First[{c}]]; body, End[]; EndPackage[]}] (HoldRest)。
+            # body の名前は文の読み取りの時点で解決済みなので、body の中の名前は文脈の影響を受けない (gs と同じ)
+            if len(args) != 2:
+                raise SADError('General::narg: Number of arguments is expected to be 2 in WithContext')
+            cs = I.eval(args[0])
+            if not isinstance(cs, list) or not cs:
+                return Expr(S('WithContext'), list(args))
+            B['BeginPackage'](cs)
+            B['Begin']([cs[0]])
+            try:
+                return I.eval(args[1])
+            finally:
+                B['End']([])
+                B['EndPackage']([])
+        B['WithContext'] = _withcontext
         from . import miscfn as _miscfn
         B['System'] = lambda a: _miscfn.system_command(I, a)
         def _exit(a):

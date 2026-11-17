@@ -1100,9 +1100,15 @@ def _mult_params(el) -> dict:
         for n in range(2, nmmax + 1):
             ndiv = max(ndiv, int(math.sqrt(0.05**(n - 1) / 6.0 / math.factorial(n - 1) / eps
                                            * abs(complex(knl.get(n, 0.0), ksl.get(n, 0.0)) * al))) + 1)
+    # tsetfringepe (tffs.f): MULT の F1・F2 (四極の線形フリンジ tqlfre の長さ) は L≠0 かつ K1 (か SK1) ≠ 0 のときだけ有効。f1in = F1+F1K1F、
+    # f2in = F2+F2K1F、f1out = F1+F1K1B、f2out = F2+F2K1B。fb1・fb2 は MULT の FB1・FB2 (K0 の端のフリンジ tbfrme の長さ)
+    if al != 0.0 and (knl.get(1, 0.0) != 0.0 or ksl.get(1, 0.0) != 0.0):
+        f1in, f2in, f1out, f2out = g('F1') + g('F1K1F'), g('F2') + g('F2K1F'), g('F1') + g('F1K1B'), g('F2') + g('F2K1B')
+    else:
+        f1in = f2in = f1out = f2out = 0.0
     return dict(al=al, knl=knl, nmmax=nmmax, cr1=cr1, theta2=theta2, akr=akr, ndiv=ndiv, eps=eps,
                 dx=g('DX'), dy=g('DY'), fringe=g('DISFRIN') == 0.0, mfring=int(round(g('FRINGE'))),
-                bfrm=g('K0FR') == 0.0)
+                bfrm=g('K0FR') == 0.0, f1in=f1in, f2in=f2in, f1out=f1out, f2out=f2out, fb1=g('FB1'), fb2=g('FB2'))
 
 
 def _mult_rot_in(c, dx, dy, ct, st):
@@ -1126,13 +1132,49 @@ def _mult_rot_out(c, dx, dy, ct, st):
     return c
 
 
-def _tbfrme_cod(cod: np.ndarray, ak: complex, ent: bool) -> np.ndarray:
-    """tbfrie.f tbfrme (fb1=0) の COD 更新: MULT の K0 (双極) のハードエッジフリンジ。
+def _tbfrmle_params(akx, aky, fb1):
+    """tbfrie.f tbfrme の (dxfrx, dyfrx, dyfrax, dxfry, dyfry, dxfray) (fb1≠0 の線形フリンジの係数)"""
+    dxfrx = dyfrx = dyfrax = dxfry = dyfry = dxfray = 0.0
+    if akx != 0.0 and fb1 != 0.0:
+        rhob = 1.0 / akx
+        dxfrx = fb1**2 / rhob / 24.0
+        dyfrx = fb1 / rhob**2 / 6.0
+        dyfrax = 4.0 * dyfrx / fb1**2
+    if aky != 0.0 and fb1 != 0.0:
+        rhob = -1.0 / aky
+        dyfry = fb1**2 / rhob / 24.0
+        dxfry = fb1 / rhob**2 / 6.0
+        dxfray = 4.0 * dxfry / fb1**2
+    return dxfrx, dyfrx, dyfrax, dxfry, dyfry, dxfray
+
+
+def _tbfrmle_cod(cod: np.ndarray, dxfrx, dyfrx, dyfrax, dxfry, dyfry, dxfray) -> np.ndarray:
+    """tbfrie.f tbfrmle の COD 更新"""
+    cod = cod.copy()
+    pr = 1.0 + cod[5]
+    xi = cod[0] + dxfrx * cod[5] / pr
+    yi = cod[2] - dyfry * cod[5] / pr
+    cod[1] = cod[1] + (dxfry - dxfray * xi**2) / pr * xi
+    cod[3] = cod[3] + (dyfrx - dyfrax * yi**2) / pr * yi
+    dz = (dxfrx * cod[1] - dyfry * cod[3] + (0.5 * dyfrx - 0.25 * dyfrax * yi**2) * yi**2
+          + (0.5 * dxfry - 0.25 * dxfray * xi**2) * xi**2) / pr**2
+    cod[0] = xi
+    cod[2] = yi
+    cod[4] = cod[4] + dz
+    return cod
+
+
+def _tbfrme_cod(cod: np.ndarray, ak: complex, ent: bool, fb1: float = 0.0) -> np.ndarray:
+    """tbfrie.f tbfrme の COD 更新: MULT の K0 (双極) のハードエッジフリンジ。fb1≠0 は線形フリンジ (tbfrmle: 入口は前、出口は後)。
     ak = ak0n/al1 (長さあたりの複素 K0)。akx = Re, aky = −Im。"""
     cod = cod.copy()
     pr = 1.0 + cod[5]
     akx = ak.real
     aky = -ak.imag
+    fr = _tbfrmle_params(akx, aky, fb1)
+    if (fr[0] != 0.0 or fr[4] != 0.0) and ent:
+        cod = _tbfrmle_cod(cod, *fr)
+        pr = 1.0 + cod[5]
     xi, yi = cod[0], cod[2]
     pxi = min(pr, max(-pr, cod[1]))
     pyi = min(pr, max(-pr, cod[3]))
@@ -1149,6 +1191,8 @@ def _tbfrme_cod(cod: np.ndarray, ak: complex, ent: bool) -> np.ndarray:
     cod[2] = yi + dy
     cod[3] = pyi + dpy
     cod[4] += dz
+    if (fr[0] != 0.0 or fr[4] != 0.0) and not ent:
+        cod = _tbfrmle_cod(cod, *fr)
     return cod
 
 
@@ -1271,15 +1315,24 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
     akn0 = akn[0]
     nz = al != 0.0
     fringe, mfring, bfrm = pm['fringe'], pm['mfring'], pm['bfrm']
+    f1in, f2in, f1out, f2out, fb1, fb2 = pm['f1in'], pm['f2in'], pm['f1out'], pm['f2out'], pm['fb1'], pm['fb2']
     ak1h, al1h, ak0h = akn1 * 0.5, aln * 0.5, akn0 * 0.5
 
     def wrap(f):
         return lambda c, f=f: r_out(f(r_in(c)))
     if nz:
+        # tmulte.f の入口 (fringe .and. mfring /= 2 の tqfrie、bfrm の tbfrme (mfring = 1, 3 は fb1 つき、2 以外は fb なし)、
+        # mfring = 1, 3 の tqlfre)。そのあと tradke(f1in) か tsetr0 (= 'radstart': 放射の基準点)
         if fringe and mfring != 2 and ak1h != 0.0:
             seq.append(('map', wrap(lambda c: _tqfrie_cod(c, ak1h, al1h))))
         if bfrm and ak0h != 0.0:
-            seq.append(('map', wrap(lambda c: _tbfrme_cod(c, ak0h / al1h, True))))
+            if mfring == 1 or mfring == 3:
+                seq.append(('map', wrap(lambda c: _tbfrme_cod(c, ak0h / al1h, True, fb1))))
+            elif mfring != 2:
+                seq.append(('map', wrap(lambda c: _tbfrme_cod(c, ak0h / al1h, True))))
+        if mfring == 1 or mfring == 3:
+            seq.append(('map', wrap(lambda c: _tqlfre_cod(c, al1h, ak1h, f1in, f2in))))
+        seq.append(('radstart', f1in))
 
     def tsolque_pieces(al1, ak1, ak0):
         """tsolque(al1, ak1, 0, Re ak0, Im ak0): 部分スライスごとの写像と放射点"""
@@ -1352,10 +1405,17 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
         seq.append(('map', kf))
     if nz:
         seq += tsolque_pieces(al1 * 0.5, ak1 * 0.5, ak0 * 0.5)
+        if mfring == 2 or mfring == 3:
+            seq.append(('map', wrap(lambda c: _tqlfre_cod(c, al1, ak1, -f1out, f2out))))
         if bfrm and ak0 != 0.0:
-            seq.append(('map', wrap(lambda c: _tbfrme_cod(c, -ak0 / al1, False))))
+            if mfring == 2 or mfring == 3:
+                seq.append(('map', wrap(lambda c: _tbfrme_cod(c, -ak0 / al1, False, fb2))))
+            elif mfring != 1:
+                seq.append(('map', wrap(lambda c: _tbfrme_cod(c, -ak0 / al1, False))))
         if fringe and mfring != 1 and ak1 != 0.0:
             seq.append(('map', wrap(lambda c: _tqfrie_cod(c, -ak1, al1))))
+        if f1out != 0.0:
+            seq.append(('rad', f1out))                # tradke(f1out)
     return seq
 
 
@@ -1686,8 +1746,15 @@ def _tbrote_cod(cod, alg, phig, dx, dz, dtheta, dchi2, ent):
     rr[0][2] = s0 * (c0 * (dct - dc2) + s0 * s2 * st)
     rr[1][2] = -c0 * s2 - c2 * s0 * st
     cod = _tbgrote_cod(cod, rr, dl * s0, -dl * c0)
-    dx1 = dx * c0 + dz * s0
-    dz1 = dz * c0 - dx * s0
+    if _compat.v2():
+        # v2 (A2、docs/history/v2next_A2.md §4): 出口の (dx1, dz1) は、入口と同じく中点の座標の (dx, dz) を出口の座標へ回したもの
+        # (R(phig) (dx, dz))。K64 (tchge.f) は s0 の項の符号が逆で、ずれた BEND の出口のドリフトが逆向きになる
+        # (DX=2 mm、15 度の BEND で 2 dx sin(θ/2) = 5.2e-4 m の行路・M12 の差)。
+        dx1 = dx * c0 - dz * s0
+        dz1 = dz * c0 + dx * s0
+    else:
+        dx1 = dx * c0 + dz * s0
+        dz1 = dz * c0 - dx * s0
     if dz1 != 0.0:
         cod = _tdrife1_cod(cod, 1.0, -dz1)         # tchge.f: call tdrife1(trans2,cod,1.d0,0.d0,-dz1)
     cod = cod.copy()
@@ -1872,7 +1939,11 @@ def _tbgrote_mat(cod, dr, dx, dz):
     t[4, 2] = dr[2][1] * prpzf
     t[4, 3] = -zfpzf * prpzf * (dr[2][1] + r33 * dpzidpy)
     t[4, 4] = 1.0
-    t[4, 5] = r33 * (dpzf * prpzf + dpzi / pzi) - dr[2][2]
+    if _compat.v2():
+        # v2 (B109): 写像 z += pr zf/pzf の厳密な微分 zf/pzf (1 − pr/pzf r33 dpzidp) (K64 でコメントアウトされた式)。dr=0 なら 0
+        t[4, 5] = zfpzf * (1.0 - prpzf * r33 * dpzidp)
+    else:
+        t[4, 5] = r33 * (dpzf * prpzf + dpzi / pzi) - dr[2][2]
     t[5, 5] = 1.0
     return c, t
 
@@ -1916,8 +1987,12 @@ def _tbrote_jac(cod, alg, phig, dx, dz, dtheta, dchi2, ent):
     rr[0][2] = s0 * (c0 * (dct - dc2) + s0 * s2 * st)
     rr[1][2] = -c0 * s2 - c2 * s0 * st
     cod, J = _tbgrote_mat(cod, rr, dl * s0, -dl * c0)
-    dx1 = dx * c0 + dz * s0
-    dz1 = dz * c0 - dx * s0
+    if _compat.v2():
+        dx1 = dx * c0 - dz * s0         # v2 (A2): _tbrote_cod と同じ
+        dz1 = dz * c0 + dx * s0
+    else:
+        dx1 = dx * c0 + dz * s0
+        dz1 = dz * c0 - dx * s0
     if dz1 != 0.0:
         J2 = _tdrife1_mat(cod, 1.0, 0.0, -dz1)
         cod = _tdrife1_cod(cod, 1.0, -dz1)
@@ -1957,7 +2032,8 @@ def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
             pr = 1.0 + c[5]
             a = (c[1] / pr)**2 + (c[3] / pr)**2
             dpzi = (math.sqrt(1.0 - a) - 1.0) * pr
-            J[4, 5] = dpzi * (pr + 1.0) / (pr + dpzi)
+            if not _compat.v2():
+                J[4, 5] = dpzi * (pr + 1.0) / (pr + dpzi)       # v2 (B109): dr=0 の写像は恒等なので (5,6) = 0
         else:
             J = _tbrote_jac(c, alg, phig, dxr, dz, dtheta, 0.0, True)[1]
         if _compat.v2():
@@ -2074,6 +2150,12 @@ def _bend_core_cod_matrix(el, cod: np.ndarray):
         # ANGLE=0 の BEND (ステアリング): tbende.f の phi0==0 の分岐。K1=0 は tsteee / 薄いキック / ドリフト、
         # K1≠0 かつ K0≠0 は tmulte (K0=0 の K1≠0 は下の K1≠0 の分岐で tquade)
         if abs(g('K1')) < 1e-10:
+            if el.L != 0.0 and g('K0') != 0.0 and (g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0 or g('FRINGE') in (-1.0, -2.0)):
+                # E: tsteee の F1・FB1・FB2・FRINGE (tblfre と断片 n = −1, 0 / ndiv+1, ndiv+2)。emit6d._tsteee (放射なし) と同じ写像
+                from .emit6d import _Phys, _State, _tsteee
+                _st = _State(cod, _Phys(1e9, 1.0))
+                _tsteee(_st, el, enarad=False)
+                return _st.cod.copy(), _st.T.copy()
             return _tsteee_cod_matrix(el, cod)
         _f = _mult_cod_map(_bend_as_mult(el))
         return _f(cod), _num_jacobian(_f, cod)
@@ -2156,6 +2238,8 @@ def _bend_step_fast(el, cod):
     from . import elkern as _ek
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     if g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0:
+        return None
+    if float(el.ANGLE) == 0.0 and g('FRINGE') in (-1.0, -2.0):
         return None
     ang = float(el.ANGLE)
     k0 = g('K0')
@@ -2450,7 +2534,8 @@ def _pack_el(pk: '_TurnPack', i: int, el, delta: float):
         P[1] = 1.0 if tn in ('Cavity', 'TCavity') else 0.0
     elif isinstance(el, Bend):
         ang, k0, k1 = float(el.ANGLE), g('K0'), g('K1')
-        if g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0 or (ang == 0.0 and k1 != 0.0 and k0 != 0.0):
+        if (g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0 or (ang == 0.0 and k1 != 0.0 and k0 != 0.0)
+                or (ang == 0.0 and g('FRINGE') in (-1.0, -2.0))):
             pk.kind[i] = _tk.K_PY
             return
         pk.kind[i] = _tk.K_BEND

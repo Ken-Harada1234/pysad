@@ -301,7 +301,12 @@ class RadInt:
         self.CKL0X = math.cos(teta1) * self.DKL0
         self.CKL0Y = -math.sin(teta1) * self.DKL0
         self.CKL1X = math.cos(teta1) * self.DKL1
-        self.CKL1Y = -math.cos(teta1) * self.DKL1
+        if _compat.v2():
+            # B107: 磁場の勾配ベクトルは偏向方向 (cos, -sin) に沿う。y 成分は CKL0Y と同じ向きで +sin
+            # (F4 の式が CKL0Y - 2 CKL1Y/CURV なので -sin(θ)(DKL0 + 2 DKL1/CURV) になる)。θ=0 では y 成分 0
+            self.CKL1Y = math.sin(teta1) * self.DKL1
+        else:
+            self.CKL1Y = -math.cos(teta1) * self.DKL1
         self.TO, self.VO = self.trot(self.TM, self.VM, teta1)
 
     def quadru(self, teta1, dx, dy):
@@ -339,8 +344,10 @@ class RadInt:
         self.CKL0X = self.DKL1 * (dx * math.cos(tet2) - dy * math.sin(tet2))
         dr = math.hypot(dx, dy)
         if dr > 0.0:
-            self.CKL1X = self.DKL1 * dx / dr
-            self.CKL1Y = -self.DKL1 * dy / dr
+            # v2 (B107b): |B| = |k| r の勾配ベクトルは |k| (dx, dy)/r。K64 は DKL1 の符号つきで、K1<0 (QD) の I4 の項が逆符号になる
+            dk1 = abs(self.DKL1) if _compat.v2() else self.DKL1
+            self.CKL1X = dk1 * dx / dr
+            self.CKL1Y = -dk1 * dy / dr
         else:
             self.CKL1X = self.DKL1
             self.CKL1Y = -self.DKL1
@@ -473,6 +480,21 @@ def compute(ffs, rows, stale_rho=None):
                     g.bedge(e2)
                     g.tedge(dieg)
                 did = True
+            elif v2 and rle != 0.0 and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0:
+                # v2 (A2、docs/history/v2next_A2.md §3): ANGLE=0 で K0≠0 の BEND (挿入光源の極: 基準軌道は曲がらず、場だけがある) は、K64 では
+                # 放射積分に入らない (Emittance[] と追跡には入る)。K0 を曲げ角として扱う (端の角はなし。tbende の ANGLE=0 の枝と同じ)。
+                # 基準軌道の回転は無いので TOTAL BENDING ANGLE には足さない。極の中の分散の伝搬は扇形磁石の行列の近似 (θ² の相対誤差)
+                k0 = float(el.K0)
+                ir = min(14, max(1, int(abs(k0) / 0.002)))
+                irp = 2 * ir
+                g.DL = rle / irp
+                g.DKL0 = k0 / irp
+                g.DKL1 = rkl1 / irp
+                for i in range(1, irp + 1):
+                    g.bmag(g.TETA, rle / k0, rle / k0)
+                    g.tcal(i, 0)
+                g.tcal(irp + 1, 1)
+                did = True
         elif cls == 'Quadrupole':
             rkl1 = ffs.get_value(el, 'K1')
             g.TETA = float(getattr(el, 'ROTATION', 0.0) or 0.0)
@@ -485,8 +507,14 @@ def compute(ffs, rows, stale_rho=None):
                 irp = 2 * ir
                 g.DL = rle / irp
                 g.DKL1 = rkl1 / irp
+                # v2 (B107b): 場の中心に対する軌道の位置 = 閉軌道 − 要素のずれ DX・DY (K64 は閉軌道だけを使い、四極自身のずれを無視する)
+                if v2:
+                    qdx = float(ffs.get_value(el, 'DX') or 0.0)
+                    qdy = float(ffs.get_value(el, 'DY') or 0.0)
+                else:
+                    qdx = qdy = 0.0
                 for i in range(1, irp + 1):
-                    g.quadru(g.TETA, g.TWPMG[DXC], g.TWPMG[DYC])
+                    g.quadru(g.TETA, g.TWPMG[DXC] - qdx, g.TWPMG[DYC] - qdy)
                     g.tcal(i, 0)
                 g.tcal(irp + 1, 1)
                 did = True

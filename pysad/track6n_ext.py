@@ -327,6 +327,16 @@ def k_sol_drift(S, n, al, bz, krad, fluc, rs, p0, anrad, cuc):
         for i in range(n):
             drift1(i, S, al)
         return
+    if krad and (rs.shape[0] > 1 and rs[1] == 1):
+        # v2 (B1): 放射は 1 刻みの前後の向きの変化 (弦) から損失を出すので、らせんの回転角 bz·al が大きいと小さく出る (k_sol_bend と同じ。
+        # bz·al/ndiv ≤ 0.02)。K64 の tdrift_solenoid は 1 刻み (k64 モードは今まで通り)
+        ndiv = 1 + int(abs(bz * al) / 0.02)
+        if ndiv > 1:
+            w = al / ndiv
+            for m in range(ndiv):
+                for i in range(n):
+                    tdrift_solenoid1(i, S, w, bz, krad, fluc, rs, p0, anrad, cuc)
+            return
     for i in range(n):
         tdrift_solenoid1(i, S, al, bz, krad, fluc, rs, p0, anrad, cuc)
 
@@ -579,10 +589,18 @@ def tsolqu_bz_all(S, n, al, ak, bz, eps0, krad, fluc, rs, p0, h0, anrad, cuc):
 
 
 @njit(**NJ)
-def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, cuc):
-    """tsol.f の icQUAD → tquad (bz=bzs; DX=DY=F1=FRINGE=0) = track6 _tquad_sol。ak = |K1|L > 0"""
+def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, cuc, dx, dy):
+    """tsol.f の icQUAD → tquad (bz=bzs; F1=FRINGE=0) = track6 _tquad_sol。ak = |K1|L > 0。
+    dx, dy (v2next B3): 四極のずれ。tsolrot の (dx, dy) = 座標をずらし (x − dx、y − dy)、ソレノイドの一様磁場のベクトルポテンシャルのゲージが
+    変わる分だけ正準運動量もずらす (px + (bz/2)dy、py − (bz/2)dx、bz は運動量で規格化)。出口は逆。回転 (ROTATE) はずらしの後 (出口は前)"""
     for i in range(n):
-        rot1(i, S, ct, st)               # tsolrot (dx=dy=0): 回転のみ
+        if dx != 0.0 or dy != 0.0:
+            bzp = bz / (1.0 + S[i, 5])
+            S[i, 0] -= dx
+            S[i, 2] -= dy
+            S[i, 1] += 0.5 * bzp * dy
+            S[i, 3] -= 0.5 * bzp * dx
+        rot1(i, S, ct, st)               # tsolrot: 回転
         if krad:
             setr0_1(i, S)
         if fringe:
@@ -607,6 +625,12 @@ def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, c
         if fringe:
             ttfrin4_bz1(i, S, -ak, L, bz)
         rot1(i, S, ct, -st)
+        if dx != 0.0 or dy != 0.0:
+            bzp = bz / (1.0 + S[i, 5])
+            S[i, 0] += dx
+            S[i, 2] += dy
+            S[i, 1] -= 0.5 * bzp * dy
+            S[i, 3] += 0.5 * bzp * dx
 
 
 # ============================================================================ SOL の端 (v2、C2): ずれ・回転 trots と F1 の放射 tradks
@@ -1136,12 +1160,12 @@ def compile_sol_quad(el, bzs):
     K1L = g(el, 'K1') * L
     if L == 0.0 or K1L == 0.0:
         raise NotImplementedError('track6n_ext: ソレノイド内の L=0 / K1=0 の四極')
-    if any(g(el, k) for k in ('DX', 'DY', 'F1', 'FRINGE')):
-        raise NotImplementedError('track6n_ext: ソレノイド内の四極のずれ / F1 / FRINGE')
+    if any(g(el, k) for k in ('F1', 'FRINGE')):
+        raise NotImplementedError('track6n_ext: ソレノイド内の四極の F1 / FRINGE')
     ak = abs(K1L)
     th2 = g(el, 'ROTATION') + (0.5 * math.pi if K1L < 0 else 0.0)
     return K_SOL_QUAD, (L, ak, math.cos(th2), math.sin(th2), g(el, 'DISFRIN') == 0.0, bzs,
-                        g(el, 'RAD') == 0.0 and L != 0.0)
+                        g(el, 'RAD') == 0.0 and L != 0.0, g(el, 'DX'), g(el, 'DY'))
 
 
 def compile_sol_region(prog, elements, i, ph):
@@ -1262,12 +1286,14 @@ def _compile_sol_v2(prog, el, name, bzs, ph, sm, idx=None):
                 prog.autophi[len(prog.kinds)] = True
         prog._add(k, p, el.name, True, sm)
         return
-    (al, v, w, wi, phic, fringe, mfring, vnom, vq) = p
+    (al, v, w, wi, phic, fringe, mfring, vnom, vq) = p[:9]
     if any(q != 0.0 for q in vq):
         raise NotImplementedError(f'SOL 領域内の CAVI {el.name}: V1・V20・V11・V02 は未対応')
     rot = g(el, 'ROTATION')
+    # v2 (E): 領域内の CAVI も放射とスピンの歳差の刻み (hook) を通す。K64 の tsol は CAVI を krad=.false. で tmultiacc に渡すので、
+    # ソレノイド磁場の中の空洞のスピンが歳差しない (縦磁場 (1+a)bz·L のぶん、Emittance[] (solemit) と追跡が食い違う)。v2 は物理的に歳差・放射させる
     prm = (al, 0, np.array([0j]), np.array([False]), 1, g(el, 'DX'), g(el, 'DY'), math.cos(rot), math.sin(rot),
-           fringe, 0.0, False, ((v, w, wi, phic + dz_ * w * ph.charge, vnom, True, dz_) if aphi else (v, w, wi, phic, vnom)))
+           fringe, 0.0, al != 0.0, ((v, w, wi, phic + dz_ * w * ph.charge, vnom, True, dz_) if aphi else (v, w, wi, phic, vnom)))
     prog._add(K_SOL_MULT, (prm, bzs), el.name, True, sm)
 
 
@@ -1316,8 +1342,8 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, 
     elif kind == _n.K_APERT:
         pass                                  # 行列・COD の写像 (solmap) では絞りは恒等。追跡は track6n.turn が扱う
     elif kind == K_SOL_QUAD:
-        (L, ak, ct, st, fringe, bz, radok) = pr
-        k_sol_quad(S, n, L, ak, ct, st, fringe, bz, rad and radok, fluc, rs, p0, hr, anrad, cuc)
+        (L, ak, ct, st, fringe, bz, radok, qdx, qdy) = pr
+        k_sol_quad(S, n, L, ak, ct, st, fringe, bz, rad and radok, fluc, rs, p0, hr, anrad, cuc, qdx, qdy)
     elif kind == _n.K_UND:
         from . import und as _un
         if pr[1] != 0.0 or pr[2] != 0.0:

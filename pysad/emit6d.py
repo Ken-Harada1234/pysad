@@ -132,6 +132,14 @@ def _unpack(v):
 EMITDIV = [1.0, 1.0, 1.0]      # 大域変数 EMITDIV, EMITDIVB, EMITDIVQ (tfsetparam.f)。ffscmd が Emittance[]・EMIT の前に入れる
 
 
+def _rclass0(amass):
+    """tphyzp の re0 (電荷 1 の粒子の古典半径)。K64 は質量によらず電子の古典半径 elradi を使う (放射の係数が
+    電子以外で mp/me 倍ずれる。記録 v2next_A1 項目 2)。v2 は粒子の質量で re = elradi·elmass/amass。電子 (amass = elmass) は両モードとも同じ値"""
+    if _compat.v2() and amass != ELMASS:
+        return ELRADI * ELMASS / amass
+    return ELRADI
+
+
 class _Phys:
     def __init__(self, pgev: float, circ: float, amass: float = ELMASS,
                  charge: float = 1.0, emidiv: Optional[float] = None,
@@ -148,7 +156,7 @@ class _Phys:
         self.brhoz = pgev / c
         self.p0 = pgev / amass
         self.h0 = _p2h(self.p0)
-        re0 = ELRADI
+        re0 = _rclass0(amass)
         rclassic = charge**2 * re0
         sgn = 1.0 if charge >= 0 else -1.0
         self.crad = sgn * abs(rclassic * (c / amass)**2 / self.p0 / 1.5)
@@ -170,7 +178,7 @@ class _Phys:
         self.p0 = pgev / self.amass
         self.h0 = _p2h(self.p0)
         sgn = 1.0 if self.charge >= 0 else -1.0
-        rclassic = self.charge**2 * ELRADI
+        rclassic = self.charge**2 * _rclass0(self.amass)
         self.crad = sgn * abs(rclassic * (CVELOC / self.amass)**2 / self.p0 / 1.5)
         self.urad = sgn * abs(1.5 * PLANKR * CVELOC / self.p0 / self.amass / ELEMCH)
 
@@ -214,6 +222,7 @@ class _State:
         self.srot = np.zeros((3, 9))
         self.srot[0, 0] = self.srot[1, 1] = self.srot[2, 2] = 1.0
         self.gintd = np.zeros(3)
+        self.gintd2 = np.zeros((3, 3))     # v2 (A2): Σ r (b̂ b̂ᵀ) (緩和率。spin.py)
         self.bsir0 = 0.0
         # v2: bsir0 (端の縦磁場の積分) の軌道についての微分。bsi_d0 は放射の基準点 (r0) の座標、bsi_d1 は tradke の時点の座標に掛かる係数。
         # K64 の tradke は bsir0 を定数として扱い、スピン軌道結合 (srot(:,4:9)) にこの微分が入らない (docs/history/v2_changes_A.md の B58)
@@ -319,8 +328,9 @@ class _State:
         uc = uct * theta
         dg = -CAVE * anp * uc
         self.u0 -= dg
-        ddpx = 0.5 * dpx * dg
-        ddpy = 0.5 * dpy * dg
+        rsgn = -1.0 if _compat.v2() else 1.0       # v2: ddpx の符号を反転 (K64 の追跡 tradkn は ddpx = −0.5 dpx dg。tradke は +0.5。v2next A1 項目 7)
+        ddpx = rsgn * 0.5 * dpx * dg
+        ddpy = rsgn * 0.5 * dpy * dg
         c1 = al1 / pr / 3.0
         if self.radcod:
             # photons.f tradke (radcod): 放射で cod を変える (bzh=0)
@@ -348,7 +358,7 @@ class _State:
         # D・B の更新は numba カーネル (perfkern.tradke_db: 下の numpy 版と同じ式。numpy の小行列演算の連続が 0.5 ms/回かかるため)
         ok, Dn, Bn = _tradke_db(self.T, self.transr, self.D, self.B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
                                 xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU, bzh, bzhr0,
-                                tin, tout, _compat.v2())
+                                tin, tout, _compat.v2(), rsgn)
         if ok:
             self.D = Dn
             self.B = Bn
@@ -644,6 +654,17 @@ def _jac_tsolque_body(c, aln1, kappa, dvz):
            + v1_r * pyf + v1 * pyf_r
            + y * (q_r * dch + q * sh * dphi))
     J[4, 5] = -0.25 * Z_r + dvz * aln1
+    if _compat.v2():
+        # v2: z' = z - Z/4 の x, px, y, py についての微分 (K64 の trans(5,1..4))。K64 モードでは入れない (軌道が x, y でずれると z 行が 0 で、
+        # 1 周の写像のシンプレクティック性が 1e-5 崩れる pysad の不具合をそのまま再現する)
+        Zx = 2.0 * w * x * xs + dc * pxf - w * sn * u1 + p * dc
+        Zp = 2.0 * p * aln1 + sn / w * pxf + u1 * cs + x * dc
+        Zy = -2.0 * w * y * xsh + dch * pyf + w * sh * v1 + q * dch
+        Zq = 2.0 * q * aln1 + sh / w * pyf + v1 * ch + y * dch
+        J[4, 0] = -0.25 * Zx
+        J[4, 1] = -0.25 * Zp / pr
+        J[4, 2] = -0.25 * Zy
+        J[4, 3] = -0.25 * Zq / pr
     return J
 
 
@@ -861,7 +882,8 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
     fringe = float(getattr(el, 'DISFRIN', 0.0) or 0.0) == 0.0
     fr = _lat._quad_fringe_params(el)
     f1in, f2in, f1out, f2out, mfring = fr
-    if not krad or (not np.any(st.cod[:4]) and dx == 0.0 and dy == 0.0 and th == 0.0):
+    if not krad or (not np.any(st.cod[:4]) and dx == 0.0 and dy == 0.0 and th == 0.0 and not st.calpol):
+        # (E: POL ON では軌道ゼロでも tradke を通す。D・B・U0 の寄与は 0 だが、スピン軌道結合 srot(:,4:9) は xpx の微分で 0 にならない。K64 の tquade は常に通す)
         jq = lambda c: _jac_quad_full(c, L, K1, fringe, fr, ph, dx, dy, th)
         st.piece(_quad_map(L, K1, ph, dx, dy, th, fringe, fr), jac=jq)
         if krad:
@@ -1140,8 +1162,6 @@ def _tsteee(st: _State, el: Bend, enarad: bool = True):
     if k0 == 0.0:
         _tdrife0(st, al)
         return
-    if g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0:
-        raise NotImplementedError('emit6d: ANGLE=0 の BEND (tsteee) の F1/FB1/FB2 フリンジは未対応')
     if dx != 0.0 or dy != 0.0:
         def shift_in(c):
             c = c.copy()
@@ -1154,21 +1174,50 @@ def _tsteee(st: _State, el: Bend, enarad: bool = True):
         st.setr0()
     rhoe = al / k0
     rhob = -rhoe
+    # F1・FB1・FB2・FRINGE (tsteee.f: fb1 = F1+FB1、fb2 = F1+FB2、mfring = FRINGE)。入口は tblfre (dxfr1 = −fb1²/ρb/24、dyfr1 = fb1/ρb²/6) の後に
+    # 長さ f1r = fb1/2 の断片 2 つ (n = −1, 0)、出口は断片 2 つ (n = ndiv+1, ndiv+2) の後に tblfre (dxfr2 = +fb2²/ρb/24)。本体の長さは alc = al·rbc
+    fb1, fb2, mfring, fringe_fl = _lat._bend_fringe_params(el)
+    f1r = f2r = 0.0
+    rbc = 1.0
+    n1, n2 = 1, 0
+    if fb1 != 0.0 and (mfring > 0 or mfring == -1):
+        dyfr1 = fb1 / rhob**2 / 6.0
+        _tblfre(st, -fb1**2 / rhob / 24.0, dyfr1, 4.0 * dyfr1 / fb1**2 if fringe_fl else 0.0)
+        f1r = 0.5 * fb1
+        rbc -= f1r / al
+        n1 = -1
+    if fb2 != 0.0 and (mfring > 0 or mfring == -2):
+        f2r = 0.5 * fb2
+        rbc -= f2r / al
+        n2 = 2
+    alc = al * rbc
     ndiv = 1
     if krad:
         b = -ph.brhoz / rhob
-        nrad = 1 + int(abs(al / EPSRAD * ph.crad * (ph.h0 * b)**2))
+        nrad = 1 + int(abs(alc / EPSRAD * ph.crad * (ph.h0 * b)**2))
         ndiv = max(int(nrad * ph.emidiv * ph.emidib),
                    1 + int(abs(k0 * ph.h0 * ph.anrad) / EPSRAD / 1e6 * ph.emidiv * ph.emidib))
-    aln = al / ndiv
-    st.piece(lambda c: _lat._tbedge_cod(c, rhoe, g('E1'), True))
-    for n in range(1, ndiv + 1):
-        st.piece(lambda c: _lat._tsteee_body(c, aln, rhob, ph.dv(c[5]))[0])
-        if n != ndiv and krad:
-            st.tradke(aln, 0.0)
-    st.piece(lambda c: _lat._tbedge_cod(c, rhoe, g('E2'), False))
+    aln = alc / ndiv
+    if mfring != -2:
+        st.piece(lambda c: _lat._tbedge_cod(c, rhoe, g('E1'), True))
+    # v2 (B108): 端の角 (AE1・AE2) のある面では場の中の行路が x·tan(e) だけ短い。K64 の tsteee は端の蹴りを偏向角に入れるが、tradke の行路は
+    # 変えないので、I4 の端の項 −η tan(e)/ρ² が 2 倍になる (ANGLE≠0 の BEND の B75 と同じ。_tbende_core の tin・tout)
+    tin = math.tan(g('E1')) if _compat.v2() else 0.0
+    tout = math.tan(g('E2')) if _compat.v2() else 0.0
+    alr = aln
+    for n in range(n1, ndiv + n2 + 1):
+        alx, alr = _tbendal(n, ndiv, f1r, f2r, aln)
+        st.piece(lambda c: _lat._tsteee_body(c, alx, rhob, ph.dv(c[5]))[0])
+        if n != ndiv + n2 and krad:
+            st.tradke(alr, 0.0, tin=tin)
+            tin = 0.0
+    if mfring != -1:
+        st.piece(lambda c: _lat._tbedge_cod(c, rhoe, g('E2'), False))
+    if f2r != 0.0:
+        dyfr2 = fb2 / rhob**2 / 6.0
+        _tblfre(st, fb2**2 / rhob / 24.0, dyfr2, 4.0 * dyfr2 / fb2**2 if fringe_fl else 0.0)
     if krad:
-        st.tradke(aln, 0.0)
+        st.tradke(alr, 0.0, tin=tin, tout=tout)
     if dx != 0.0 or dy != 0.0:
         def shift_out(c):
             c = c.copy()
@@ -1201,6 +1250,36 @@ def _tbende(st: _State, el: Bend, enarad: bool = True):
         _spin.tchge_spin(st, dx, dy, dz, th, dth, alg - al0, phig - phi0, False)
 
 
+def _tbendal(n, ndiv, f1r, f2r, aln):
+    """tbend.f tbendal: 断片 n の (長さ alx、放射の長さ alr)。n = -1, 0: F1 入口 (rbl, rbh)、1..ndiv: 本体、ndiv+1, ndiv+2: F1 出口 (rbh, rbl)"""
+    if 0 < n <= ndiv:
+        return aln, aln
+    if n == -1:
+        return _lat._RBL * f1r, f1r
+    if n == 0:
+        return _lat._RBH * f1r, f1r
+    if n == ndiv + 1:
+        return _lat._RBH * f2r, f2r
+    return _lat._RBL * f2r, f2r
+
+
+def _tblfre(st: _State, dxfr, dyfr, dyfra):
+    """tbende.f tblfre (BEND の F1 の線形フリンジ)。行列は K64 の trans1 のとおり (trans1(4,6) は dyfra の項を含まない近似)"""
+    def jac(c):
+        pr = 1.0 + c[5]
+        ysq = c[2]**2
+        dyfraysq = ysq * dyfra
+        J = np.eye(6)
+        J[0, 5] = dxfr / pr**2
+        J[3, 2] = (dyfr - 3.0 * dyfraysq) / pr
+        J[3, 5] = -dyfr * c[2] / pr**2
+        J[4, 1] = J[0, 5]
+        J[4, 2] = -J[3, 5]
+        J[4, 5] = -(2.0 * dxfr * c[1] + (dyfr - 0.5 * dyfraysq) * ysq) / pr**3
+        return J
+    st.piece(lambda c: _lat._tblfre_cod(c, dxfr, dyfr, dyfra), jac=jac)
+
+
 def _tbende_core(st: _State, el: Bend, enarad: bool = True):
     """tbende.f tbende (phib=phi0=ANGLE, F1=0, mfring=0, ずれ・ロールなし)"""
     ph = st.ph
@@ -1219,13 +1298,27 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
         else:
             _tmulte(st, _lat._bend_as_mult(el), enarad)
         return
-    al = al0
+    # F1・FRINGE (tbende.f: alcorr の長さ補正、tblfre、tbendef1。fb1 = F1+FB1、fb2 = F1+FB2、mfring = FRINGE)
+    fb1, fb2, mfring, fringe_fl = _lat._bend_fringe_params(el)
+    if mfring != 0 and al0 != 0.0 and phi0 != 0.0:
+        al = al0 - ((phi0 * fb1)**2 + (phi0 * fb2)**2) / 48.0 / al0             * math.sin(0.5 * (phi0 - pe1 - pe2)) / math.sin(0.5 * phi0)
+    else:
+        al = al0
     if enarad:
         st.setr0()
     phibl = phib / al
     rhob = 1.0 / phibl
     rho0 = al / phi0
-    rbc = 1.0
+    drhob = rhob - rho0
+    f1r = 0.0
+    f2r = 0.0
+    if fb1 != 0.0 and (mfring > 0 or mfring == -1):
+        dyfr1 = fb1 * phibl**2 / 6.0
+        _tblfre(st, fb1**2 * phibl / 24.0, dyfr1, 4.0 * dyfr1 / fb1**2 if fringe_fl else 0.0)
+        f1r = 0.5 * fb1
+    if (fb2 != 0.0 and mfring > 0) or mfring == -2:
+        f2r = 0.5 * fb2
+    rbc = 1.0 - (f1r + f2r) / al0
     phic = phi0 * rbc
     eps = EPSBEND
     b = ph.brhoz / rhob
@@ -1248,61 +1341,89 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
     alc = al * rbc
     aln = alc / ndiv
     phin = phic / ndiv
+    v2 = _compat.v2()
+
+    def body0(phi, aln_, alr_, krad_, first):
+        """tbendebody0 (K1=0 の本体・F1 の断片 1 つ)。first: 先頭の断片 (bsi1)"""
+        nonlocal tin
+        yi0 = st.cod[2]
+
+        def f(c):
+            c = _lat._tbendebody0_cod(c, phi, rhob, drhob)
+            c = c.copy()
+            c[4] -= ph.dv(c[5]) * aln_
+            return c
+
+        def jbody(c):
+            J = _lat._tbendebody0_mat(c, phi, rhob, drhob)
+            J[4, 5] += _dvz(ph, c[5]) * aln_          # z -= dv(δ)·aln の δ 微分 (SAD の h0/h1emit**3·aln)
+            return J
+        st.piece(f, jac=jbody)
+        if enarad and st.calpol and first and v2:
+            st.add_bsi(yi0 / rhob, 0.0, 1.0 / rhob, True)   # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ (断片が 1 つでも入れる)
+        if krad_:
+            if st.calpol and first and not v2:
+                st.bsir0 += yi0 / rhob                      # tbendebody0: bsi1·yi/rhob (最初の断片だけ)
+            st.tradke(alr_, phi, tin=tin)
+            tin = 0.0
+
     if ak == 0.0:
-        for n in range(1, ndiv + 1):
-            yi0 = st.cod[2]
-
-            def f(c):
-                c = _lat._tbendebody0_cod(c, phin, rhob, rhob - rho0)
-                c = c.copy()
-                c[4] -= ph.dv(c[5]) * aln
-                return c
-
-            def jbody(c, phin=phin, aln=aln):
-                J = _lat._tbendebody0_mat(c, phin, rhob, rhob - rho0)
-                J[4, 5] += _dvz(ph, c[5]) * aln          # z -= dv(δ)·aln の δ 微分 (SAD の h0/h1emit**3·aln)
-                return J
-            st.piece(f, jac=jbody)
-            if enarad and st.calpol and n == 1 and _compat.v2():
-                st.add_bsi(yi0 / rhob, 0.0, 1.0 / rhob, True)   # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ (スライスが 1 つでも入れる)
-            if enarad and n < ndiv:
-                if st.calpol and n == 1 and not _compat.v2():
-                    st.bsir0 += yi0 / rhob                      # tbendebody0: bsi1·yi/rhob (最初のスライスだけ)
-                st.tradke(aln, phin, tin=tin)
-                tin = 0.0
-        if enarad and st.calpol and _compat.v2():
-            st.add_bsi(-st.cod[2] / rhob, 0.0, -1.0 / rhob, False)   # v2 (B58): 出口の端 -y/ρ (K64 は bsi2 の項が常に捨てられる)
+        # tbende.f の K1=0 の分岐: n = 0 (F1 入口の断片 2 つ: tbendef1)、1..ndiv (本体)、ndiv+1 (F1 出口の断片 2 つ、放射なし)
+        n1 = 0 if f1r != 0.0 else 1
+        n2 = ndiv + 1 if f2r != 0.0 else ndiv
         alr = aln
         phi1 = phin
+        first = True
+        for n in range(n1, n2 + 1):
+            if n == 0 or n == ndiv + 1:
+                fb, rb, kr = (fb1, _lat._RBL, True) if n == 0 else (fb2, _lat._RBH, False)
+                for _ in range(2):
+                    fl = 0.5 * fb * rb
+                    body0(phi0 * fl / al0, fl, 0.5 * fb, enarad and kr, first and n == 0 and rb < 0.5)
+                    rb = 1.0 / 6.0 / rb
+                if n == ndiv + 1:
+                    alr = f2r
+                    phi1 = alr * _lat._RBL / al0 * phi0
+            else:
+                body0(phin, aln, aln, enarad and (n < ndiv or n2 != ndiv), first)
+                alr = aln
+                phi1 = phin
+            first = False
+        if enarad and st.calpol and v2:
+            st.add_bsi(-st.cod[2] / rhob, 0.0, -1.0 / rhob, False)   # v2 (B58): 出口の端 -y/ρ (K64 は bsi2 の項が常に捨てられる)
     else:
+        n1 = -1 if f1r != 0.0 else 1
+        n2 = ndiv + 2 if f2r != 0.0 else ndiv
         alx0 = 0.0
         akx0 = 0.0
         akx = 0.0
         alr = aln
         phi1 = phin
-        for n in range(1, ndiv + 1):
-            alx = aln
-            alr = aln
+        for n in range(n1, n2 + 1):
+            alx, alr = _tbendal(n, ndiv, f1r, f2r, aln)
             akx = ak * alx / al0
             phi1 = phi0 * alx / al0
             _tbendecorr(st, (akx + akx0) * 0.5, (alx + alx0) * 0.5, rho0)
             akx0 = akx
             alx0 = alx
-            if enarad and st.calpol and n == 1 and _compat.v2():
+            if enarad and st.calpol and n == n1 and v2:
                 # v2 (B58): 入口の端の ∫Bs ds = y/ρ + k·x·y (k = K1/L。K64 は積分値 akx を掛けていて次元が合わない)
                 kb = ak / al0
                 st.add_bsi(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2], kb * st.cod[2], 1.0 / rhob + kb * st.cod[0], True)
             _tbendebody(st, alx, phi1, akx, alr, rhob, rho0,
-                        enarad and n != ndiv, 1.0 if n == 1 else 0.0, tin=tin)
-            if enarad and n != ndiv:
+                        enarad and n != n2, 1.0 if n == n1 else 0.0, tin=tin)
+            if enarad and n != n2:
                 tin = 0.0
-        if enarad and st.calpol and _compat.v2():
+        if enarad and st.calpol and v2:
             kb = ak / al0                                                          # v2 (B58): 出口の端
             st.add_bsi(-(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2]), -kb * st.cod[2], -(1.0 / rhob + kb * st.cod[0]), False)
         _tbendecorr(st, akx0 * 0.5, alx0 * 0.5, rho0)
     # 出口エッジ
     st.piece(lambda c: _lat._tbedge_cod(c, rhob, pe2, False),
              jac=lambda c: _lat._bend_edge_chain(c, _EYE6, rhob, pe2, False)[1])
+    if f2r != 0.0:
+        dyfr2 = fb2 / rhob**2 / 6.0
+        _tblfre(st, -fb2**2 / rhob / 24.0, dyfr2, 4.0 * dyfr2 / fb2**2 if fringe_fl else 0.0)
     if enarad:
         st.tradke(alr, phi1, tin=tin, tout=tout)
 
@@ -1475,7 +1596,7 @@ def _itgetqraddiv(ph, c, ak1, L):
 
 def _tmulte(st: _State, el, enarad: bool = True):
     """
-    SAD tmulte.f の直訳 (ANGLE=0, BZ=0, SK なし, RF なし, F1 なし)。K0/K1/K2… とずれ・回転に対応。
+    SAD tmulte.f の直訳 (ANGLE=0, BZ=0, RF なし)。K0/K1/K2… とずれ・回転、F1・F2 (四極の線形フリンジ tqlfre、FRINGE=1・2・3)・FB1・FB2 に対応。
     写像の列は lattice._mult_sequence (tsolrote → tqfrie/tbfrme → [tsolque → tmulke]×ndiv → tsolque →
     tbfrme/tqfrie → 戻し)。放射あり: tsolrote の後に tsetr0、tsolque の部分スライスごとに tradke。
     ndiv (放射あり) = min(300, max(ndiv_kick, itgetqraddiv(cod, K1, L)))。
@@ -1486,8 +1607,8 @@ def _tmulte(st: _State, el, enarad: bool = True):
         _ma.emit(st, el, enarad)           # tmultae (曲げつき)
         return
     al = el.L
-    if any(float(getattr(el, k, 0.0) or 0.0) for k in ('ANGLE', 'F1', 'FRINGE', 'VOLT')):
-        raise NotImplementedError('emit6d: MULT の曲げ・F1・RF は未対応')
+    if float(getattr(el, 'VOLT', 0.0) or 0.0) != 0.0:
+        raise NotImplementedError('emit6d: MULT の RF は未対応 (bz≠0 の SOL 領域の中は solemit)')
     pm = _lat._mult_params(el)
     krad = enarad and al != 0.0
     if pm['nmmax'] < 0:
@@ -1502,13 +1623,12 @@ def _tmulte(st: _State, el, enarad: bool = True):
             nq = max(nq, _npolq(pm['knl'].get(1, 0.0), al))
         st.setr0()
     seq = _lat._mult_sequence(el, st.ph.dv, nq)
-    first = True
     # v2 (B64): 端の縦磁場の積分 ∫Bs ds = ψ(x,y) (横磁場のスカラーポテンシャル、ψ = Im Σ k_n z^(n+1)/(n+1)!) を
     # 入口で足し、出口で引く。K64 の tmulke は imag(cx)/aln (横磁場そのもの、次元 1/m) を使う
     psi = _lat._mult_fringe_psi(el) if (st.calpol and krad and _compat.v2()) else None
     psi_in = psi(st.cod) if psi is not None else 0.0
     gpsi_in = _grad_xy(psi, st.cod) if psi is not None else (0.0, 0.0)
-    last_rad = max((i for i, (k, _f) in enumerate(seq) if k != 'map'), default=-1)
+    last_rad = max((i for i, (k, _f) in enumerate(seq) if k not in ('map', 'radstart')), default=-1)
     for i, (kind, f) in enumerate(seq):
         if kind == 'map':
             if st.calpol and hasattr(f, 'cxfun') and psi is None:
@@ -1517,11 +1637,15 @@ def _tmulte(st: _State, el, enarad: bool = True):
                 if f.m == f.ndiv:
                     st.bsir0 -= im
             st.piece(f)
-            if first and krad:
-                st.setr0()      # tmulte: フリンジの後 (f1in=0) に tsetr0
+        elif kind == 'radstart':
+            if krad:
+                # tmulte: 入口のフリンジ (tqfrie・tbfrme・tqlfre) の後、f1in≠0 なら tradke(f1in)、そうでなければ tsetr0 (放射の基準点)
+                if f != 0.0:
+                    st.tradke(f, 0.0)
+                else:
+                    st.setr0()
                 if psi is not None:
                     st.add_bsi(psi_in, gpsi_in[0], gpsi_in[1], True)
-            first = False
         elif krad:
             if psi is not None and i == last_rad:
                 gp = _grad_xy(psi, st.cod)
@@ -1618,8 +1742,10 @@ def _bende_fast(st, el, enarad):
     ang = float(el.ANGLE)
     k0 = _g0(el, 'K0')
     k1 = _g0(el, 'K1')
-    if ang == 0.0 and k1 == 0.0 and (_g0(el, 'F1') != 0.0 or _g0(el, 'FB1') != 0.0 or _g0(el, 'FB2') != 0.0):
-        return 1
+    if (_g0(el, 'F1') != 0.0 or _g0(el, 'FB1') != 0.0 or _g0(el, 'FB2') != 0.0) and (ang == 0.0 or _g0(el, 'FRINGE') != 0.0):
+        return 1        # F1 (FRINGE≠0) は Python の経路 (_tbende_core の tblfre・tbendef1、ANGLE=0 は _tsteee)
+    if ang == 0.0 and _g0(el, 'FRINGE') in (-1.0, -2.0):
+        return 1        # ANGLE=0 の FRINGE=−1・−2: tsteee は入口・出口のエッジの片方を省く (k_bend は常に両方)
     chg = _lat._bend_chg_args(el)
     if chg is None:
         has_chg = False
@@ -2395,6 +2521,8 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
             if fnd:
                 return cod_t, trf0_t, True, st_full
         st1 = tturne(els, cod0, ph, trf0=0.0, rfsw=True)
+        if not np.all(np.isfinite(st1.cod)):
+            return cod0, 0.0, False, None          # D1: 不安定 (軌道が発散して NaN): 30 回の Newton 法をやらない
         wrf, vce = _rf_effective(st1)
         trf0 = _trf0_update(st1, wrf, vce) if wrf != 0.0 else 0.0
         cod = cod0.copy()
@@ -2406,6 +2534,8 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
             if np.max(np.abs(res)) < 1e-15:
                 found = True
                 break
+            if not np.all(np.isfinite(res)):
+                break          # D1: 不安定なリング (軌道が発散して NaN) では 30 回も繰り返さない (POL では 1 周が 20 秒かかり 10 分以上になった)
             M = st.T + st.D
             cod = cod - np.linalg.solve(M - np.eye(6), res)
         if not found:
@@ -2452,7 +2582,11 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
         return st0.cod[4] - c[4], c
     dp0 = 0.0
     z0, cod0 = z_slip(dp0)
-    if close_z and z0 != 0.0:
+    # 空洞があって RFSW OFF のとき、K64 の tcod (im=5) は x,px,y,py だけを閉じ (trs(:,5:6)=0, dcod1(5:6)=0)、z の戻りは tturne の update が
+    # RF の位相の基準 trf0 に吸収して δ を動かさない (gs の OrbitAtExit: δ = 0、z ≠ 0)。D1: 以前は z の戻りを δ で閉じていて、閉軌道のずれ (DX) が
+    # あるとき gs と εx が 1.8〜4% 違った。空洞がないリング (bench_level3c・3d・26b の gs の値で確認) と RFSW ON の探索は従来どおり δ で閉じる
+    has_cav = any(type(el).__name__ == 'Cavity' for el in els)
+    if close_z and z0 != 0.0 and not (has_cav and not rfsw):
         dp1 = 1e-7
         z1, cod1 = z_slip(dp1)
         for _ in range(30):      # 4 回では K0 の総和が 0 でないとき (δ が 1e-3 近く動く) 収束しない
@@ -2498,6 +2632,20 @@ def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
     """
     global POL_MODE
     pol0 = POL_MODE
+    if pol and rfsw and radcod:
+        # D1: 不安定なリング (閉軌道が見つからず NaN) の POL は、スピンの刻み (v2 は四極・MULT を細かく分割する) で 1 周が 20〜60 秒かかり、
+        # 大きなリング B (8 GeV、1998 要素) では 4〜20 分以上になった。スピンなしの速い経路で先に確かめ、NaN ならスピンの計算をしない
+        POL_MODE = False
+        try:
+            out0 = _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fshift, emit_floor, False)
+        finally:
+            POL_MODE = pol0
+        if not (np.all(np.isfinite(out0['orbit_entrance'])) and np.all(np.isfinite(out0['orbit_exit']))):
+            nan3 = np.full((3, 3), float('nan'))
+            out0['spin'] = dict(srot=np.full((3, 9), float('nan')), srot1=nan3.copy(), sps=nan3.copy(), smu=float('nan'), sdamp=float('nan'),
+                                nup=float('nan'), equpol=np.array([float('nan'), 0.0, 0.0]), spm=nan3.copy(), taup=float('nan'),
+                                gintd=np.full(3, float('nan')), depol_error='closed orbit not found (unstable optics)')
+            return out0
     POL_MODE = bool(pol)
     try:
         return _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fshift, emit_floor, pol)
@@ -2508,7 +2656,18 @@ def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
 def _emit_circ(els):
     """Emittance 系の周長 (omega0・MomentumCompaction・偏極時間の周回周波数)。K64 (gs で確かめた) は SOL (BOUND≠0) の長さを入れない
     (PLANAR リングに L=0.3 でも 0.6 でも BZ=0 でも GEO のある SOL を足して、周長 45.6 のときと偏極時間が 15 桁一致)"""
-    return sum(el.L for el in els if not (type(el).__name__ == 'Solenoid' and float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0))
+    tot = 0.0
+    for el in els:
+        tn = type(el).__name__
+        if tn == 'Solenoid' and float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0:
+            continue
+        if tn == 'Bend' and float(getattr(el, 'FRINGE', 0.0) or 0.0) != 0.0 and float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0:
+            # K64 の circ = pos(nlat) − pos(1): BEND の F1・FRINGE の長さ補正 (tfgeo1 の ali) を含む。F1 の無い BEND は L (今まで通り)
+            from .geo import _geo_length
+            tot += _geo_length(el, 'BEND')
+        else:
+            tot += el.L
+    return tot
 
 
 def _z_into_trf0(cod, trf0, ph):
@@ -2533,7 +2692,17 @@ def _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fsh
         cod, trf0 = cod
     # temit の最後の tturne (irad=12, update なし): tcod の最後の反復が D・B 付きの完全な一周ならそれと同じ。
     # RFSW OFF でも RADCOD ON なら放射込みで追う (SAD の tturne は rfsw に関係なく radcod を見る。以前は RADCOD OFF として追っていた)
-    st = st_full if st_full is not None else tturne(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
+    if st_full is not None:
+        st = st_full
+    elif POL_MODE and not np.all(np.isfinite(cod)):
+        _pm0 = POL_MODE
+        globals()['POL_MODE'] = False          # D1: 軌道が見つからない (不安定) ときはスピンの刻みをやらない (NaN の 1 周が 20〜60 秒かかる)
+        try:
+            st = tturne(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
+        finally:
+            globals()['POL_MODE'] = _pm0
+    else:
+        st = tturne(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
     out = tecalc(st, circ, rfsw=rfsw, emit_floor=emit_floor)
     if pol:
         from .spin import spin_results

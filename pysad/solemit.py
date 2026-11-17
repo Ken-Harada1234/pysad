@@ -20,6 +20,8 @@ import numpy as np
 from . import track6n as _n
 from . import track6n_ext as _x
 from . import emit6d as _e
+from . import compat as _compat
+from . import spin as _spin
 
 EPS = 1e-7
 EPSRAD = _e.EPSRAD
@@ -67,6 +69,76 @@ def _tocan(S, i, bz):
     S[i, 3] += bzp * S[i, 0] * 0.5
 
 
+def _trk(st, al, bzh, **fld):
+    """tradke(al, 0, bzh)。v2 (POL) は spin.tradke_spin に、その刻みの磁場の成分を渡す (E): bz (p0 で規格化。指定がなければ 2·bzh)、
+    bx・by (刻みの中点の横磁場)、gb (その (x, y) 勾配 ((∂bx/∂x, ∂bx/∂y), (∂by/∂x, ∂by/∂y)))。端の縦磁場の積分 ψ は st.add_bsi で入れる。
+    spin.tradke_spin は運動量の向きの磁場の積分 B∥ を、向きの変化から作る B⊥ と分けて足す (K64 の bsi は z 軸の向きに足す)"""
+    if st.calpol and _compat.v2() and _spin.SOL_BPAR:
+        h = dict(fld)
+        h.setdefault('bz', 2.0 * bzh)
+        st.bhint = h
+    st.tradke(al, 0.0, bzh)
+
+
+def _mult_fld(prm):
+    """領域内の MULT の横磁場 (p0 で規格化) F(x, y) → (bx, by, ψ) (実験室系の (x, y))。By + i Bx = Σ k_n z^n/n! (k_n = 積分強度/L、z = 局所座標 x + iy:
+    ずらして theta2 だけ回した座標。track6._RadHook._field と同じ式)、ψ = Im Σ k_n z^(n+1)/(n+1)! (端の縦磁場の積分。∂ψ/∂x = Bx、∂ψ/∂y = By)。
+    磁場のベクトルは実験室系に回し戻す"""
+    al, nmmax, akr, _dofr, _nd, dx, dy, ct, stt = prm[:9]
+    k = [a / al for a in akr[:nmmax + 1]]
+
+    def F(x, y):
+        xl, yl = x - dx, y - dy
+        z = complex(ct * xl - stt * yl, stt * xl + ct * yl)
+        f = 0j
+        g = 0j
+        zn = 1.0 + 0j
+        fact = 1.0
+        for n, kn in enumerate(k):
+            f += kn * zn / fact
+            zn *= z
+            fact *= (n + 1)
+            g += kn * zn / fact
+        bxl, byl = f.imag, f.real
+        return ct * bxl + stt * byl, -stt * bxl + ct * byl, g.imag
+    return F
+
+
+def _mult_trk(st, F, al, bzh):
+    """領域内の MULT の 1 刻みの tradke: 刻みの中点の横磁場 (bx, by) とその勾配を渡す (v2 の POL)"""
+    if not (st.calpol and _compat.v2() and _spin.SOL_BPAR):
+        st.tradke(al, 0.0, bzh)
+        return
+    xm = 0.5 * (st.codr0[0] + st.cod[0])
+    ym = 0.5 * (st.codr0[2] + st.cod[2])
+    h = 1e-6
+    bx, by, _ = F(xm, ym)
+    bxp, byp, _ = F(xm + h, ym)
+    bxm, bym, _ = F(xm - h, ym)
+    bxq, byq, _ = F(xm, ym + h)
+    bxr, byr, _ = F(xm, ym - h)
+    gb = (((bxp - bxm) / (2 * h), (bxq - bxr) / (2 * h)), ((byp - bym) / (2 * h), (byq - byr) / (2 * h)))
+    _trk(st, al, bzh, bx=bx, by=by, gb=gb)
+
+
+def _mult_psi(st, F, sgn, at_r0):
+    """端の縦磁場の積分 sgn·ψ(x, y) (入口 +、出口 −) を bsir0 に足す (勾配も)"""
+    if not (st.calpol and _compat.v2() and _spin.SOL_BPAR):
+        return
+    x, y = st.cod[0], st.cod[2]
+    bx, by, psi = F(x, y)
+    st.add_bsi(sgn * psi, sgn * bx, sgn * by, at_r0)
+
+
+def _spin_rot(st, th, ent):
+    """tsolrote の calpol (chi1=chi2=0): スピンを z 軸まわりに th 回す (入口)、戻す (出口)。座標の _n.rot1(ct, ±stt) と同じ向き"""
+    if not st.calpol or th == 0.0:
+        return
+    c, s = math.cos(th), math.sin(th)
+    r = np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
+    st.srot = (r if ent else r.T) @ st.srot
+
+
 def _itgetqraddiv(ph, c, ak, al, bzh):
     """tsolque.f itgetqraddiv (bz あり)。c は正準運動量のままの cod"""
     xk = abs(ak) * max(1e-6, abs(c[0]) + abs(c[2]))
@@ -78,7 +150,7 @@ def _itgetqraddiv(ph, c, ak, al, bzh):
                int(abs(ph.h0 * b / ph.brhoz * ph.anrad) / EPSRAD / 1e6 * ph.emidiv * ph.emidib))
 
 
-def _tsolque(st, aln, akn, bz, eps0, enarad):
+def _tsolque(st, aln, akn, bz, eps0, enarad, psi_out=None):
     """tsolque.f (bz≠0, ak0x=ak0y=0): 内部分割 ndiv、スライスごとに [tqente + 本体] → tradke (最後以外)、最後に tqente(半分) → tradke"""
     bzh = 0.5 * bz
     eps = 0.1 if eps0 == 0.0 else 0.1 * eps0
@@ -94,25 +166,36 @@ def _tsolque(st, aln, akn, bz, eps0, enarad):
             _tocan(S, i, bz)
         _piece(st, body)
         if enarad and n != ndiv:
-            st.tradke(aln1, 0.0, bzh)
+            _trk(st, aln1, bzh)
 
     def last(S, i):
         _tomech(S, i, bz)
         _x.tsolqu_bz_final1(i, S, aln1, bz / (1.0 + S[i, 5]))        # 最後に正準運動量へ戻す所まで入っている
     _piece(st, last)
     if enarad:
-        st.tradke(aln1, 0.0, bzh)
+        if psi_out is not None:
+            psi_out()                      # v2 (E): 四極の出口の端の縦磁場の積分 −k x y
+        _trk(st, aln1, bzh)
 
 
 def _tquade(st, pr):
     """tquade (bz≠0 か bz=0 の K1≠0。F1=FRINGE=0、ずれなし)"""
-    L, ak, ct, stt, fringe, bz, radok = pr
+    L, ak, ct, stt, fringe, bz, radok = pr[:7]
+    qdx, qdy = (pr[7], pr[8]) if len(pr) > 8 else (0.0, 0.0)      # v2next B3: 四極のずれ (tsolrot の dx, dy。ゲージの分だけ正準運動量もずらす)
     bzh = 0.5 * bz
     krad = radok and L != 0.0
+    th2 = math.atan2(stt, ct)
 
     def rin(S, i):
+        if qdx != 0.0 or qdy != 0.0:
+            bzp = bz / (1.0 + S[i, 5])
+            S[i, 0] -= qdx
+            S[i, 2] -= qdy
+            S[i, 1] += 0.5 * bzp * qdy
+            S[i, 3] -= 0.5 * bzp * qdx
         _n.rot1(i, S, ct, stt)
     _piece(st, rin)
+    _spin_rot(st, th2, True)                   # tsolrote (calpol): スピンも回す (E。K64 は srot = rr·srot)
     if krad:
         st.setr0(bzh)
     if fringe:
@@ -122,16 +205,35 @@ def _tquade(st, pr):
         nq = min(1000, max(1, _itgetqraddiv(st.ph, st.cod, ak, L, bzh)))
     else:
         nq = 1
+    if krad and st.calpol and _compat.v2():
+        # v2 (POL): らせんの回転角が大きいと、1 刻みの放射・スピンの歳差の微分は弦から出るので不正確。bz·L/nq ≤ 0.02 に刻む (領域内の DRIFT・BEND と同じ)
+        nq = min(1000, max(nq, 1 + int(abs(bz * L) / 0.02)))
     aln = L / nq
     akn = ak / nq
-    for _ in range(nq):
-        _tsolque(st, aln, akn, bz, 0.0, krad)
+    kq = ak / L                                # 四極の勾配 (|K1|、回した座標系で By = kq x、Bx = kq y)
+    if krad and st.calpol and _compat.v2() and _spin.SOL_BPAR:
+        # v2 (E): 端の縦磁場の積分 ψ = kq x y を入口で +、出口で − (追跡 track6._tsolqu_bz_ens と同じ)
+        st.add_bsi(kq * st.cod[0] * st.cod[2], kq * st.cod[2], kq * st.cod[0], True)
+
+        def _psi_out():
+            st.add_bsi(-kq * st.cod[0] * st.cod[2], -kq * st.cod[2], -kq * st.cod[0], False)
+    else:
+        _psi_out = None
+    for iq in range(nq):
+        _tsolque(st, aln, akn, bz, 0.0, krad, psi_out=_psi_out if iq == nq - 1 else None)
     if fringe:
         _piece(st, lambda S, i: _x.ttfrin4_bz1(i, S, -ak, L, bz))
 
     def rout(S, i):
         _n.rot1(i, S, ct, -stt)
+        if qdx != 0.0 or qdy != 0.0:
+            bzp = bz / (1.0 + S[i, 5])
+            S[i, 0] += qdx
+            S[i, 2] += qdy
+            S[i, 1] -= 0.5 * bzp * qdy
+            S[i, 3] += 0.5 * bzp * qdx
     _piece(st, rout)
+    _spin_rot(st, th2, False)
 
 
 def _cav_fringe(st, el, al, sgn):
@@ -193,7 +295,7 @@ def emit(st, el):
         if dbz != 0.0:
             _piece(st, lambda S, i: _x.tsfrin1(i, S, dbz))
         if radok:
-            st.tradke(f1, 0.0, 0.5 * bz1)
+            _trk(st, f1, 0.5 * bz1, bz=0.0)         # v2 (E): 端の放射は縦磁場の積分なし (追跡の _sol_edge は bpar = 0)
         if rot == -1:
             _piece(st, lambda S, i: _x.trots1(i, S, r, dx, dy, dz, False))
             if st.calpol:
@@ -210,9 +312,12 @@ def emit(st, el):
             return
         rs = np.array([1], dtype=np.int64)
         ph = st.ph
-        _piece(st, lambda S, i: _x.tdrift_solenoid1(i, S, al, bz, False, False, rs, ph.p0, ph.anrad, ph.cuc))
-        if radok:
-            st.tradke(al, 0.0, bzh)
+        # v2 (B1・E): らせんの回転角 bz·al が大きいと、1 刻みの放射・スピンの歳差は弦から出るので不正確 (追跡 k_sol_drift・track6._sol_drift_v2 と同じ刻み)
+        nd = (1 + int(abs(bz * al) / 0.02)) if (radok and _compat.v2()) else 1
+        for _ in range(nd):
+            _piece(st, lambda S, i: _x.tdrift_solenoid1(i, S, al / nd, bz, False, False, rs, ph.p0, ph.anrad, ph.cuc))
+            if radok:
+                _trk(st, al / nd, bzh)
         return
     if kind == _x.K_SOL_QUAD:
         if pr[5] == 0.0:
@@ -232,7 +337,7 @@ def emit(st, el):
         for _ in range(nd):
             _piece(st, lambda S, i: _x.tdrift_bz1(i, S, al / nd, bz, kx / nd, ky / nd, False, False, rs, 0.0, 0.0, 0.0))
             if radok:
-                st.tradke(al / nd, 0.0, bzh)
+                _trk(st, al / nd, bzh, bx=ky / al, by=kx / al)       # 一様な双極磁場 (By = kx/al、Bx = ky/al)
         return
     if kind == _x.K_SOL_MULT:
         # v2: 領域内の MULT・CAVI。nd 個に分け (端のフリンジは最初と最後だけ)、分けた要素ごとに写像 → tradke
@@ -252,8 +357,11 @@ def emit(st, el):
             thin = _NS(L=0.0, VOLT=gv('VOLT') / nd, DVOLT=gv('DVOLT') / nd, HARM=gv('HARM'), _harm=gv('_harm'), FREQ=gv('FREQ'),
                        PHI=gv('PHI'), DISFRIN=1.0, FRINGE=0.0, DX=0.0, DY=0.0, ROTATION=0.0, AUTOPHI=gv('AUTOPHI'), name=el.name)
             hl = al / nd * 0.5
+            F = _mult_fld(prm)
             if fringe:
                 _cav_fringe(st, el, al, 1.0)
+            if radok and al != 0.0:
+                _mult_psi(st, F, 1.0, True)
             for k in range(nd):
                 for half in (0, 1):
                     sub = (hl, nmmax, akr / (2 * nd), dofr, ndiv0, dx, dy, ct, stt, fringe, eps0, False, None)
@@ -264,7 +372,9 @@ def emit(st, el):
                         _x.sol_mult_full(T, 1, ph, sub, bz, 0.0, False, False, False, False, rs, fr_in=fi, fr_out=fo)
                     _piece(st, f)
                     if radok and al != 0.0:
-                        st.tradke(hl, 0.0, bzh)
+                        if fo:
+                            _mult_psi(st, F, -1.0, False)
+                        _mult_trk(st, F, hl, bzh)
                     if half == 0:
                         _e._tcave(st, thin)
                         st.setr0(bzh)
@@ -274,7 +384,7 @@ def emit(st, el):
         if rf is not None:
             # CAVI: [ソレノイドのドリフト半分 → 薄い空洞 (emit6d._tcave: RF の積算量 vc0 なども更新) → 半分] × nd
             import copy as _copy
-            nd = 1 + int(abs(bz * al) / 0.1) + int(abs(rf[1] * al))
+            nd = 1 + int(abs(bz * al) / (0.02 if (st.calpol and _compat.v2()) else 0.1)) + int(abs(rf[1] * al))      # v2 (POL): スピンの歳差の刻み
             thin = _copy.copy(el)
             thin.L = 0.0
             thin.VOLT = float(getattr(el, 'VOLT', 0.0) or 0.0) / nd
@@ -286,12 +396,12 @@ def emit(st, el):
             for _ in range(nd):
                 if h != 0.0:
                     _piece(st, lambda S, i: _x.tdrift_solenoid1(i, S, h, bz, False, False, rs, ph.p0, ph.anrad, ph.cuc))
-                    st.tradke(h, 0.0, bzh)
+                    _trk(st, h, bzh)
                 _e._tcave(st, thin)
                 st.setr0(bzh)
                 if h != 0.0:
                     _piece(st, lambda S, i: _x.tdrift_solenoid1(i, S, h, bz, False, False, rs, ph.p0, ph.anrad, ph.cuc))
-                    st.tradke(h, 0.0, bzh)
+                    _trk(st, h, bzh)
             if fringe:
                 _cav_fringe(st, el, al, -1.0)
             return
@@ -300,6 +410,9 @@ def emit(st, el):
         else:
             k1 = abs(akr[1]) if nmmax >= 1 else 0.0
             nd = max(1 + int(abs(bz * al) / 0.02), 1 + int((abs(akr[0]) + k1 * 1e-2) / 0.005))
+        F = _mult_fld(prm)
+        if radok and al != 0.0:
+            _mult_psi(st, F, 1.0, True)                # 入口の端の縦磁場の積分 +ψ (st.setr0 の後)
         for k in range(nd):
             sub = (al / nd, nmmax, akr / nd, dofr, ndiv0, dx, dy, ct, stt, fringe, eps0, False, None)
             fi, fo = k == 0, k == nd - 1
@@ -309,7 +422,9 @@ def emit(st, el):
                 _x.sol_mult_full(T, 1, ph, sub, bz, 0.0, False, False, False, False, rs, fr_in=fi, fr_out=fo)
             _piece(st, f)
             if radok and al != 0.0:
-                st.tradke(al / nd, 0.0, bzh)
+                if k == nd - 1:
+                    _mult_psi(st, F, -1.0, False)
+                _mult_trk(st, F, al / nd, bzh)
         return
     # C2: bz = 0 の領域の中の CAVI・MULT・DRIFT は、領域の外と同じ写像 (compile_sol_region が普通の kind にする)
     if kind == _n.K_CAV:

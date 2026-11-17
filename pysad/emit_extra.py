@@ -160,7 +160,8 @@ def _turn_record(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
 def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False,
                     charge: float = 1.0, amass: float = ELMASS,
                     one_turn: bool = True, orbit: bool = True, matrix: bool = True,
-                    beam_matrices: Optional[bool] = None, fshift: float = 0.0, pol: bool = False) -> dict:
+                    beam_matrices: Optional[bool] = None, fshift: float = 0.0, pol: bool = False,
+                    sc: Optional[dict] = None) -> dict:
     """
     SAD の Emittance[OneTurnInformation->one_turn, Orbit->orbit, Matrix->matrix] の戻り規則を
     dict (キー = SAD の規則名) で返す。emit.n と同じく Matrix ⊃ Orbit ⊃ OneTurnInformation。
@@ -201,6 +202,16 @@ def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bo
     finally:
         _lat.RFSW = rfsw0
     em = tecalc(st, circ, rfsw=rfsw)
+    sc_out = None
+    if sc:
+        # WSPAC (空間電荷): temit の反復 (tintraconv) でビーム行列を自己無撞着にし、空間電荷のレンズを含む一周の T・tecalc を使う
+        # (K64 temit.f: calint1 = wspac or intra)。sc = dict(pbunch, mincoup, intra)。v2next B1
+        from .touschek import touschek_table
+        sc_out = touschek_table(lattice, momentum_eV, dict(closed_orbit=codin, trf0=trf0), float(sc.get('pbunch', 0.0)),
+                                mincoup=float(sc.get('mincoup', 1e-2)), rfsw=rfsw, radcod=radcod, charge=charge, amass=amass,
+                                verbose=False, intra=bool(sc.get('intra', False)), wspac=True)
+        st = sc_out['_state']
+        em = sc_out['tecalc']
     spinres = _spin_results(st, em, ph, els=els, cod=codin, trf0=trf0, rfsw=rfsw, radcod=radcod) if pol else None
     T = st.T.copy()
     D = st.D.copy()
@@ -287,6 +298,10 @@ def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bo
             _lat.RFSW = rfsw0
         out['BeamMatrices'] = [b for (_, _, b) in st2.rec]
         out['_state2'] = st2
+        if sc_out is not None:
+            out['BeamMatrices'] = [np.array(b) for b in sc_out['BeamMatricesSC']]      # 空間電荷つきの自己無撞着なビーム行列
+    if sc_out is not None:
+        out['_sc'] = sc_out
     return out
 
 

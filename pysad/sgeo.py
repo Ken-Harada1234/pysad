@@ -47,11 +47,14 @@ def _tsfrin(x, px, y, py, z, dbz, ph):
 
 
 def _quad_step(el, bz, xi, pxi, yi, pyi, dir_, f, ph):
-    """tsgeo1 の QUAD: tquad (bz*dir) を 1 粒子に使う"""
+    """tsgeo1 の QUAD: tquad (bz*dir) を 1 粒子に使う。DX・DY つきの四極 (v2next B3、gs と同じ): tquad の tsolrot の (dx, dy) のずれは、
+    座標をずらし、ソレノイドの一様磁場のベクトルポテンシャルのゲージが変わる分だけ正準運動量もずらす (x → x − dx、y → y − dy で
+    px → px + (bz/2) dy、py → py − (bz/2) dx。出口は逆)"""
     k, pr = _x.compile_sol_quad(el, bz)
-    L, ak, ct, st, fringe, _bz, radok = pr
+    L, ak, ct, st, fringe, _bz, radok, qdx, qdy = pr
     S = _n.make_state(np.array([[xi, (pxi - f * yi) * dir_, yi, (pyi + f * xi) * dir_, 0.0, 0.0]]), ph)
-    _x.k_sol_quad(S, 1, L, ak, ct, st, fringe, bz * dir_, False, False, _RS, ph.p0, ph.h0, ph.anrad, ph.cuc)
+    bzk = bz * dir_
+    _x.k_sol_quad(S, 1, L, ak, ct, st, fringe, bzk, False, False, _RS, ph.p0, ph.h0, ph.anrad, ph.cuc, qdx, qdy)
     xf, pxf, yf, pyf, zf = (float(S[0, 0]), float(S[0, 1]), float(S[0, 2]), float(S[0, 3]), float(S[0, 4]))
     return xf, pxf * dir_ + f * yf, yf, pyf * dir_ - f * xf, -zf
 

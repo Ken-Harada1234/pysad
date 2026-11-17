@@ -11,7 +11,8 @@ K64 が誤った値を返す箇所 (docs/21 の B43〜) はそちらに合わせ
   Pochhammer、超幾何関数 (0F1 1F1 2F1 U PFQ とその Regularized)、Bessel J/Y/I/K、D.n の特殊関数 (ExpIntegralE/Ei, LogIntegral, Sin/Cos/Sinh/CoshIntegral,
   Whittaker M/W, HermiteH, Fresnel S/C, Airy, LegendreP, BesselJZero, Binomial, Multinomial, InverseErfc, HarmonicNumber, Factorial2, XSin, Gamma0)。
 複素引数は Bessel J/Y/I/K (実数の次数)、Hypergeometric0F1・1F1・2F1 (実数のパラメータ)、Airy が使える (scipy)。PolyLog の非整数次は |z| の上限なし (_polylog_far)。
-未対応: 複素引数の HypergeometricU・PolyLog・Zeta ほか、複素の次数・パラメータ、Derivative の記号微分 (D.n の D)。
+複素引数の Zeta・HurwitzZeta・PolyLog (複素の z、実数の次数)・HypergeometricU (複素の z、負の実数の z) は `specfn_cx.py` (v2 で追加。gs の値と、gs の誤る範囲は docs/history/v2next_B2.md)。
+未対応: 複素の次数の PolyLog、複素の a・b の HypergeometricU (Re a ≤ 0)、Derivative の記号微分 (D.n の D)。
 """
 from __future__ import annotations
 
@@ -65,7 +66,28 @@ def _zeta_real(s):
     return float(sp.zetac(s)) + 1.0
 
 
+def _zeta_any(s):
+    if isinstance(s, complex):
+        s = _real(s)
+        if isinstance(s, complex):
+            from . import specfn_cx
+            return _real(specfn_cx.zeta_c(s))
+    return _zeta_real(s)
+
+
+def _hyperu_any(a, b, z):
+    if not (isinstance(a, complex) or isinstance(b, complex) or isinstance(z, complex)) and z > 0.0:
+        return float(sp.hyperu(a, b, z))
+    from . import specfn_cx
+    return _real(specfn_cx.hyperu_c(_real(a) if isinstance(a, complex) else a, _real(b) if isinstance(b, complex) else b, z))
+
+
 def _hurwitz(s, q):
+    if isinstance(s, complex) or isinstance(q, complex):
+        s, q = _real(s), _real(q)
+        if isinstance(s, complex) or isinstance(q, complex):
+            from . import specfn_cx
+            return _real(specfn_cx.hurwitz_c(s, q))
     if q <= 0.0:
         if q == math.floor(q):
             return NAN
@@ -160,7 +182,10 @@ def _polylog(s, z):
     if isinstance(z, complex):
         z = _real(z)
         if isinstance(z, complex):
-            raise SADError('PolyLog: complex z is not supported')
+            if isinstance(s, complex) and s.imag != 0.0:
+                raise SADError('PolyLog: complex order is not supported')
+            from . import specfn_cx
+            return _real(specfn_cx.polylog_c(float(s.real if isinstance(s, complex) else s), z))      # 複素の z (主値。specfn_cx)
     if z == 0.0:
         return 0.0
     if z == 1.0:
@@ -551,7 +576,7 @@ def install(I):
     reg('GammaRegularizedP', lambda a, z: float(sp.gammainc(a, z)), 2)
     reg('PolyGamma', lambda *a: _polygamma(0, a[0]) if len(a) == 1 else _polygamma(a[0], a[1]), (1, 2))
     reg('Beta', lambda a, b: float(sp.beta(a, b)), 2)
-    reg('Zeta', _zeta_real, 1)
+    reg('Zeta', _zeta_any, 1)
     reg('HurwitzZeta', _hurwitz, 2)
     reg('PolyLog', _polylog, 2)
     reg('LerchPhi', _lerch, 3)
@@ -565,7 +590,7 @@ def install(I):
     reg('Hypergeometric1F1Regularized', lambda a, b, z: _cx(sp.hyp1f1(a, b, z)) / _gamma(b), 3)
     reg('Hypergeometric2F1', lambda a, b, c, z: _cx(sp.hyp2f1(a, b, c, z)), 4)
     reg('Hypergeometric2F1Regularized', lambda a, b, c, z: _cx(sp.hyp2f1(a, b, c, z)) / _gamma(c), 4)
-    reg('HypergeometricU', lambda a, b, z: float(sp.hyperu(a, b, z)), 3)
+    reg('HypergeometricU', _hyperu_any, 3)
     B['HypergeometricPFQ'] = lambda a: _pfq(a[0], a[1], a[2])
     B['HypergeometricPFQRegularized'] = lambda a: _pfq(a[0], a[1], a[2], True)
     reg('BesselJ', lambda n, x: _cx(sp.jv(n, x)), 2)

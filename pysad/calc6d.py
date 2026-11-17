@@ -336,7 +336,7 @@ def _turn(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
         if record:
             rec.append((st.T.copy(), st.cod.copy()))
         st.setr0()                       # tturne1: 要素ごとに tsetr0
-        if type(el).__name__ == 'PhsRot' and hasattr(el, '_solmap'):      # v2: PHSROT (phsrot.annotate)
+        if hasattr(el, '_solmap') and type(el).__name__ != 'Undulator':      # SOL 領域内 (solmap.annotate)・v2: PHSROT (phsrot.annotate)
             from . import solemit as _se
             _se.emit(st, el)
             continue
@@ -509,7 +509,7 @@ def _rows_from_turn(st, ri, normali, elements, cod_start=None, stable=True, row0
 def calc6d(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False,
            rad: bool = True, charge: float = 1.0, amass: float = ELMASS,
            twiss0: Optional[TwissRow] = None, radiation: Optional[bool] = None,
-           out=None, with_emit: bool = True, fshift: float = 0.0) -> Calc6DResult:
+           out=None, with_emit: bool = True, fshift: float = 0.0, sc: Optional[dict] = None) -> Calc6DResult:
     """
     SAD の CELL; CALC6D; CALC; (qcell6d) の直訳。
 
@@ -550,6 +550,15 @@ def calc6d(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False
         # temit: 一周して trans(6,12)、tecalc で r, ri、安定判定
         st = _turn(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod,
                    radiation=radiation, record=True)
+        if sc:
+            # v2next B1: WSPAC (空間電荷)。temit の反復 (tintraconv) でビーム行列を自己無撞着にし、空間電荷のレンズを含む T・各要素の
+            # T_{1→l} から Twiss を作る (qcell6d: temit(calint1 = wspac or intra))。sc = dict(pbunch, mincoup, intra)
+            from .touschek import touschek_table
+            so = touschek_table(lattice, momentum_eV, dict(closed_orbit=cod, trf0=trf0), float(sc.get('pbunch', 0.0)),
+                                mincoup=float(sc.get('mincoup', 1e-2)), rfsw=rfsw, radcod=radcod, charge=charge, amass=amass,
+                                verbose=False, intra=bool(sc.get('intra', False)), wspac=True)
+            st = so['_state']
+            st.rec = list(so['RecSC'])
     finally:
         _lat.RFSW = rfsw0
     rx = st.T.copy()

@@ -235,9 +235,9 @@ Begin[Stat`]; qq = 8; End[];
 Print["12 ", qq, " ", Stat`qq];
 BeginPackage[Stat`]; pp = 6; EndPackage[];
 Print["14 ", pp, " ", Stat`pp];''')
-    assert _line(r, '1 ') == '{Stat`,System`} {Stat`,System`}'
-    assert _line(r, '2 ') == 'Stat`'
-    assert _line(r, '3 ') == 'ug uf[1] 5 Real 9 Stat` Stat`'                    # 大域の ug・uf は ` が $ContextPath に無いと見えない。`ug は大域
+    assert _line(r, '1 ') == '{`Stat`,`System`} {`Stat`,`System`}'               # gs: ` が $ContextPath に無いと、文脈の記号は `Stat` と表示される
+    assert _line(r, '2 ') == '`Stat`'
+    assert _line(r, '3 ') == 'ug uf[1] 5 Real 9 `Stat` `Stat`'                    # 大域の ug・uf は ` が $ContextPath に無いと見えない。`ug は大域
     assert _nums(_line(r, '4 ')) == [9.0, 2.0, 77.0]                            # End の後: 現在の文脈 (大域) の Counter が先
     assert _line(r, '5 ') == '` {`,System`}'
     assert _line(r, '6 ') == 'sq[3] | 9 | 77 | 1 | 9 | 4 | Stat`gl'

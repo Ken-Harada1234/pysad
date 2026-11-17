@@ -270,10 +270,7 @@ def install(ffs):
         keys = sadkw.KEYWORDS.get(tn, [])
         vals = []
         for k in keys:
-            if fam_in_line and tn != 'MARK':
-                x = ffs.get_value(first_el(NAME), k)
-            else:
-                x = old.get(k, 0.0)        # MARK のキーワードは MAIN の定義値 (CALC で書き戻される Twiss ではない)
+            x = old.get(k, 0.0)        # gs で確かめた: 戻り値は MAIN の定義の値 (FFS で Element[..]・LINE[..] を変えた値ではない。MARK の Twiss も同じ)
             try:
                 x = float(x if x is not None else 0.0)
             except (TypeError, ValueError):
@@ -407,7 +404,10 @@ def install(ffs):
         if names is None:
             names = [None] * len(bls)
         elif not isinstance(names, list):
-            names = [names]
+            if _fc._compat.k64():
+                names = []            # gs: Name->"L2" (文字列) は Length[name] = 0 < Length[b] で Insufficient number of Names (K64 の誤り。Name->{"L2"} と書く)
+            else:
+                names = [names]
         if len(names) < len(bls):
             I.out.write('WriteBeamLine - Insufficient number of Names' + chr(10))
             return Null
@@ -415,6 +415,8 @@ def install(ffs):
             write_beamline1(f, b, [Rule(S('Name'), Sym('None') if nm is None else nm)] + opts, nm)
         return Null
     B['WriteBeamLine'] = fn_writebeamline
+    B['Fill$String'] = lambda a: _fill_string(str(a[0]), int(a[1])) if len(a) == 2 and isinstance(a[0], str) and is_num(a[1]) else Expr(S('Fill$String'), list(a))
+    B['Remove$Paren'] = lambda a: _remove_paren(a[0]) if len(a) == 1 and isinstance(a[0], str) else Expr(S('Remove$Paren'), list(a))
     B['PrintBeamLine'] = lambda a: fn_writebeamline([6.0] + list(a))
 
     # ------------------------------------------------------------------ GetMAIN
