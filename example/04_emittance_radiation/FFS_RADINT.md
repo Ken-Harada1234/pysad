@@ -48,6 +48,8 @@ RADINT;
 $I_4$ の端の項の係数 (-1 か -2) と EMIT との関係は FFS_EMITTANCE.md。色収差 $\xi=-\frac1{4\pi}\oint\beta K ds$ は RADINT の BEND 成分を含まないので、ここでは値の表示だけ (docs/11 C20)。
 
 ## gs と pysad の比較
+**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+
 ○ 一致 (表示 7 桁)。差は $I_{1Y}, I_{4V}, I_{5V}$ など 0 同然の V 面の量だけ (gs 1e-33〜1e-49、pysad 0)。
 
 ## 未確認・限界

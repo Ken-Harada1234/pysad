@@ -1,15 +1,15 @@
 two names differ: 1  Head String
 name has a directory part: 1
-[pysad] System['echo from-shell > C:/Users/coding/AppData/Local/Temp/tmp__00048813.6d0caa'] は実行しません
-System return code 0
+ ???-pysad-System['echo from-shell > C:/Users/coding/AppData/Local/Temp/tmp__00029849.31c024'] is not executed: shell commands are disabled by default. To allow, set the environment variable PYSAD_ALLOW_SYSTEM=1 or call pysad.miscfn.allow_system(True). 
+System return code $Failed
 file created 0
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmp__00048813.6d0caa in OpenRead["C:/Users/coding/AppData/Local/Temp/tmp__00048813.6d0caa"]
+???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmp__00029849.31c024 in OpenRead["C:/Users/coding/AppData/Local/Temp/tmp__00029849.31c024"]
 ... in c = OpenRead[t1]
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Read[c,String]
 ... in Print["content [", ReadString[c], "]"]
 ???General::wrongtype:  Argument must be Real number in Close$[c]
 ... in Close[c]
-[pysad] System['exit 3'] は実行しません
-failing command return code <> 0 : 0
+ ???-pysad-System['exit 3'] is not executed: shell commands are disabled by default. To allow, set the environment variable PYSAD_ALLOW_SYSTEM=1 or call pysad.miscfn.allow_system(True). 
+failing command return code <> 0 : 1
 Directory is a String: String
 GetEnv/Environment: String

@@ -11,8 +11,9 @@
 - 目的: SAD の光学計算・エミッタンス・マッチング・粒子追跡・DA を Python で再現し、SAD スクリプトを `run_sad.py` でそのまま動かす。
 - 方針: **再導出せず直訳**。SAD の Fortran の式・分割数・反復順序・乱数の引き方を写し、SAD の数値 (印字精度 1e-10〜1e-11) を再現することを一致の基準にする。SAD の癖 (バグに見えるものも) は再現する (→ `11_sad_quirks.md`)。
 - 進め方: SAD スクリプトを下書き → ユーザーが確認・改修 → WSL で実行して参照値 (`bench_level*.result`) → pysad で直訳して一致させる。長い計算は進捗表示 + 発散で停止。返答・コメントは日本語。
-- 対象外: EPICS、`System[]` の実行、Python ブリッジ (SAD 側の PySad.c は非コンパイル)。Tcl/Tk の GUI と描画 (`ListPlot`・`Plot`・`OpticsPlot` など) は、SAD 自身の `Packages/*.n` を pysad のインタプリタで解釈して tkinter に表示する方式で対応した ([22_gui_tclbridge.md](22_gui_tclbridge.md)、[37_plot_canvas.md](37_plot_canvas.md))。ただし見た目 (色・大きさ・フォント)・操作の動作は SAD と比べておらず、`Canvas3D*` は未対応。11/16 夜の確認: `ListPlot`・`Plot` のオプション 10 例で戻りの Graphics 式は gs と文字列で完全一致 (見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は `{}`)。**差あり**: 最初の `Window[]` の親が、gs では Toplevel、pysad ではルート窓。`OpticsPlot` の text 項目数が gs と違う (FODO 24 セルで gs 69、pysad 74。Tk のフォントによる `RemoveOverlap` の差)。`w=Window[]`・`e=Entry[w]` は `Widget[…]` 値になり、`e[Insert]`・`e[Get]`・`e[Delete]` は gs と同じく働く (docs/22・41)。
-- 要素: DRIFT/BEND/QUAD/SEXT/OCT/DECA/DODECA/MULT (ANGLE≠0 を含む)/SOL/CAVI/TCAVI/UND/COORD/MAP/BEAMBEAM/MARK/MONI/APERT/INS を扱う。PHSROT は K64 で動作しない (行列が 0、B38) ため追跡は NotImplementedError。SPCH・PROF は parser が読むだけで物理の翻訳はない (11/16 に K64 のソースで確認: tturn.f:521 の `case (icSPCH)` が PSPAC フラグのとき `tpspac` (粒子のメッシュによる空間電荷) を呼ぶが、pysad は未翻訳で PSPAC・WSPAC・SPAC フラグも効果なし。PROF は K64 のソースに現れない)。要素別の状況は §6 と各要素の文書 (23〜30)。
+- **v1 と v2**: v1 系は K64 に忠実な翻訳 (上の方針)。v2 系 (v2.0.0 から) は K64 のバグの修正・物理の誤りの修正・機能の追加を含み、互換モード `pysad/compat.py` で切り替える。既定は `v2` (修正した動作)。`PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` で v1 と同じ K64 (gs) の動作になる。**gs と数値を比べるときは k64 モード**にする (既存の試験と回帰は k64 で走る)。v2 の変更の一覧は [47_v2_changes.md](47_v2_changes.md)。この本文の「再導出せず直訳」「癖も再現」は k64 モードの方針で、v2 モードで変わった箇所は各文書の「v2 モード」の節に分けて書いた。
+- 対象外: EPICS、Python ブリッジ (SAD 側の PySad.c は非コンパイル)。`System[]` は既定で実行しない (環境変数 `PYSAD_ALLOW_SYSTEM=1` で許可。docs/04)。Tcl/Tk の GUI と描画 (`ListPlot`・`Plot`・`OpticsPlot` など) は、SAD 自身の `Packages/*.n` を pysad のインタプリタで解釈して tkinter に表示する方式で対応した ([22_gui_tclbridge.md](22_gui_tclbridge.md)、[37_plot_canvas.md](37_plot_canvas.md))。ただし見た目 (色・大きさ・フォント)・操作の動作は SAD と比べておらず、`Canvas3D*` は未対応。11/16 夜の確認: `ListPlot`・`Plot` のオプション 10 例で戻りの Graphics 式は gs と文字列で完全一致 (見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は `{}`)。**差あり**: 最初の `Window[]` の親が、gs では Toplevel、pysad ではルート窓。`OpticsPlot` の text 項目数が gs と違う (FODO 24 セルで gs 69、pysad 74。Tk のフォントによる `RemoveOverlap` の差)。`w=Window[]`・`e=Entry[w]` は `Widget[…]` 値になり、`e[Insert]`・`e[Get]`・`e[Delete]` は gs と同じく働く (docs/22・41)。
+- 要素: DRIFT/BEND/QUAD/SEXT/OCT/DECA/DODECA/MULT (ANGLE≠0 を含む)/SOL/CAVI/TCAVI/UND/COORD/MAP/BEAMBEAM/MARK/MONI/APERT/INS を扱う。PHSROT は K64 で動作しない (行列が 0、B38) ため k64 モードでは追跡が NotImplementedError、v2 モードは意図された写像を実装した (docs/08 §9.7)。SPCH は K64 の tturn.f:521 の `case (icSPCH)` が PSPAC フラグのとき `tpspac` (粒子のメッシュによる空間電荷) を呼ぶ要素で、**v2 モードでは SPAC・PSPAC・WSPAC が `TrackParticles` に入る** (k64 モードは従来どおり入らない。docs/08 §9.7)。PROF は K64 のソースに現れず、parser が読むだけ。要素別の状況は §6 と各要素の文書 (23〜30)。
 
 ## 2. SAD の構造
 
@@ -79,21 +80,25 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | dapert.py | DynamicApertureSurvey (スロット順・tapert・Score・62 進地図) | dapert.n, tfdapert.f, trackd.f |
 | maintrack.py | MAIN 層の TRACK コマンド (`TRACK USE= NPART= TURNS= …`) | trackm (K64 では動かない機能) |
 | optics_fn.py | TransferMatrix / BeamMatrix / NormalCoordinates / OrbitGeo / GeoBase / SymplecticJ / SurvivedParticles / AccelerateParticles | Optics.n, emit.n, dapert.n (Python で書き直し) |
-| sgeo.py | SOL 領域の幾何 (tsgeo。領域内の BEND・MULT・CAVI と tdgeo の領域幾何は未対応。docs/29) | tsgeo.f |
+| sgeo.py | SOL 領域の幾何 (tsgeo。k64 モードは領域内の BEND・MULT・CAVI と tdgeo の領域幾何が未対応。v2 モードは対応。docs/29、44) | tsgeo.f |
 | gausscoul.py / bbbrem.py | GaussianCoulomb(U・Fitted) (bbkick1・twspu・twspfu)、BBBrem1 (docs/32) | tspac.f, tintrb.f, bint.f, tbbbrem.f |
 | beambeam.py | BEAMBEAM 要素 (強弱ビーム、ビームストラールング、ルミノシティ。追跡のみで Twiss には効かない。docs/24) | bbstrhl.f, bbtool.f, matrix.f |
-| coord.py / tcav.py / und.py | COORD (追跡・6 次元写像・幾何、docs/25)、TCAVI (追跡 RAD FLUC まで、Emittance[] は L=0 のみ gs と一致、docs/26)、UND (追跡のみ。K64 は磁場を設定できず磁場なしのドリフト、docs/27) | tcoord.f, tcoorde.f, qcoord.f, ttcav.f, ttcave.f, undulator.f |
+| coord.py / tcav.py / und.py | COORD (追跡・6 次元写像・幾何、docs/25)、TCAVI (追跡 RAD FLUC まで、Emittance[] は L=0 のみ gs と一致、docs/26)、UND (K64 は磁場を設定できず磁場なしのドリフト。v2 モードは `FBX`・`FBY` の磁場つきで追跡・Twiss・Emittance[] に入る、docs/27) | tcoord.f, tcoorde.f, qcoord.f, ttcav.f, ttcave.f, undulator.f |
+| compat.py | **互換モード** (v2.0.0 から)。`mode()`・`set_mode()`・`v2()`・`k64()`。環境変数 `PYSAD_COMPAT=k64\|v2`。docs/12 §16.6、docs/47 | — (pysad 独自) |
+| phsrot.py | PHSROT (位相空間の回転。v2 モードだけ。追跡・CALC・Emittance[]・EMIT。docs/08 §9.7) | phsrot.f, matrix.f |
+| radtaper.py | RADTAPER (磁石の強さを閉軌道の局所の運動量に合わせる。Emittance[]・EMIT・追跡。両モード。docs/08 §9.7) | tcod.f, tturne.f, tturn.f の radtaper |
+| spch.py | 空間電荷 (SPAC・PSPAC・WSPAC。v2 モードだけ。`TrackParticles` に入る。docs/08 §9.7) | spkick.f, tspch_.c・spch.c・psn.c, tintrb.f twspac |
 | specfn.py | 特殊関数・数学関数 (Bessel・超幾何・ガンマ族・ゼータ・多重対数・D.n の特殊関数など。K64 の InverseErf の誤差も再現。docs/33) | gamma.f, hg.f, Packages/D.n |
 | fitroot.py / miscfn.py / fileops.py | Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/33) | tffindroot.f, Fit.n, D.n, optimize.n, Matrix.n, FileSystem.n, shared.n |
 | corr.py / pkgload.py | ResponseMatrix・LinearSolveConditioned・Master と、Packages/*.n (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational など) の自動読み込み (docs/34) | pgrmat.f, pgsolvcond.f, pmicad.f, pgmast.f, correction.n ほか |
 | ffsextra.py | FFS の VARIABLES・ATTRIBUTE・MATRIX・SHOW・VARY・RECOVER・REVERSE・STATUS・PRINT・EXECUTE・OUTPUT/APPEND/CLOSE・INPUT/READ (docs/35) | tfvars.f, tfattr.f, tfmat.f, tshow.f, tffsa.f |
 | spin.py | POL (スピン): tradke のスピン部・tchge の srot 回転・spnorm・srequpol/spdepol・Emittance[]/EMIT の PolarizationTime/SpinTune/PolarizationVector (MULT・空洞・SOL まで。`Polarization` は K64 が NaN: B55。docs/36) | photons.f (tradke, tspin), tchge.f, temit.f |
 | synchrobeta.py | SynchroBetaEmittance1 (シンクロ・ベータ結合のエミッタンス。運動量のずれごとの閉軌道と tturne を取り方位角モード展開を解く。gs と emitx 相対 4e-7〜1e-5) | tfemit.f tfemits, temits.f ほか |
-| measure.py | tlum / tluma (ルミノシティの推定)。MEASURE が gs で動かない (B42) ので解析値との比較のみ | tlum.f |
+| measure.py | MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE (v2 モードだけ。K64 のソースの読み。gs との比較は無い: docs/03) と tlum / tluma (ルミノシティの推定。解析値との比較のみ) | trackb.f, tracke.f, trcoda.f, ttinit.f, ttstat.f, tbdecoup.f, tlum.f |
 | csr.py | CSRTrack・CSRHaissin・CSRSetupOY・CSROYMatrix・CSRMatrix (mode 1000 = csrhelmat を含む)・CSRConvert (= tfcsrvec)・CSRInit と実FFT・spline1 (docs/36。`Packages/CSR.n` の MakeZL などは gs と一致、ScanTrack・OYStability は未照合) | csrtrack.f, csroy.f, csrtest.f, tcftr.f, spline.f |
 | tkcanvas.py | Tk のキャンバスの組み込み関数 (TkCanvasCreateItem、CanvasClipLine、CanvasSymbolDirect …)。ListPlot・Plot の描画 (docs/37) | tfTkInter_.c, tfcanvasclip.f |
 | vecfn.py | Vector・ReleaseVector (ベクトル評価。Plots.n の PlotInterpolate) | — |
-| radfield.py | RadiationField・RadiationSpectrum。RADLIGHT の軌道記録 (`TrackParticles` が `{結果, 軌道{t,x,y,z}}` を返す) は `ffscmd._RadLight` (gs と差 0、docs/45) | tlinit.f, tlstore, tlresult |
+| radfield.py | RadiationField・RadiationSpectrum。RADLIGHT の軌道記録 (`TrackParticles` が `{結果, 軌道{t,x,y,z}}` を返す) は `ffscmd._RadLight` (k64 モードは gs と差 0、v2 モードは 3 次元の軌道で BEND の中も記録。docs/45) | tlinit.f, tlstore, tlresult |
 | sadrandom.py | SAD の乱数 (LCG、Box–Muller、drndsr/tdusrn、ParabolaRandom) | random_plugin_sad.c, tfRandom_.c, drndsr.f |
 | sadscript.py / sadlist.py | SADScript インタプリタ (字句・Pratt 構文・評価、Module/Do/Table/純関数/パターン/REPEAT/UNTIL/IF、単位付き数値、`?FLAG`、fmt_real=autofg) とリスト・文字列関数 | tfetok.f, tfeval.f, tfstk.f iprior, autofg.f, functions.n, Misc.n |
 | wake.py | 追跡へのウェイク場の適用 (WakeFunction、LWAKE/TWAKE。TrackParticles の TRPT のみ) ([23_wake.md](23_wake.md)) | txwake.f, tffssetupwake (tffswake.f), tcav.f / tturn.f の呼び出し箇所 |
@@ -103,7 +108,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | run_sad.py (<repo> 直下) | `py -3.12 run_sad.py lattice script …` = `gs` に複数ファイルを連結して渡すのと同じ | — |
 | **非推奨** ffs.py / matching.py / tracking.py / optics.py | 独自実装 (SAD 未照合。tracking.py は放射係数に疑い)。新規コードは使わない。`__init__.py` の export は旧 API のまま残っている | — |
 
-テスト: `pysad/tests/` (pytest 578 件を収集。11/17 の実行で **575 通過・3 skip**。回帰 `run_regression.py` は 50 ベンチをすべて実行して FAIL 0 (205 s、QUICK=1 は遅い 4 件 7・12t・13a・16a を SKIP して 46 件で、4 件も単独で実行して PASS)。`--ignore` する 3 本 `test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py` は sys.exit で終わる旧式のスクリプト。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがあり (単独なら通る)、環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/` (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は `pysad/tests/OUTPUTS.md`。
+テスト: `pysad/tests/` (pytest 941 件を収集。11/17 の実行で **937 通過・4 skip**。既存の試験と回帰は gs との比較なので k64 モードで走る (`conftest.py`)。v2 の試験は `test_v2_*.py` 29 本 (363 件) で v2 を明示する。回帰 `run_regression.py` (`QUICK=1`) は 50 ベンチ FAIL 0。`--ignore` する 3 本 `test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py` は sys.exit で終わる旧式のスクリプト。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがあり (単独なら通る)、環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/` (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は `pysad/tests/OUTPUTS.md`。
 ベンチ: `bench_level1〜31*.sad/.result` と `*_pysad.py/.result`、`run_regression.py` (50 ベンチ。QUICK=1 は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行、`QUICK=1` で短縮。11/16 に FAIL 0)。
 
 ## 4. docs/ の案内
@@ -133,11 +138,11 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | [24_beambeam.md](24_beambeam.md) | BEAMBEAM 要素 (強弱ビームのビーム・ビーム相互作用、ビームストラールング) |
 | [25_coord.md](25_coord.md) | COORD 要素 (座標変換: ずれと回転) の追跡・Twiss・幾何・Emittance[] |
 | [26_tcav.md](26_tcav.md) | TCAVI (横偏向空洞・クラブ空洞)。追跡は RAD FLUC まで、Emittance[] は L=0 のみ |
-| [27_und.md](27_und.md) | UND (アンジュレータ)。追跡のみ。K64 は磁場を設定できずドリフト (B37) |
+| [27_und.md](27_und.md) | UND (アンジュレータ)。K64 は磁場を設定できずドリフト (B37)。v2 モードは `FBX`・`FBY` の磁場つき |
 | [28_mult_angle.md](28_mult_angle.md) | MULT の ANGLE≠0 (曲げつき多極) の追跡・Twiss・Emittance[] |
-| [29_sol_optics.md](29_sol_optics.md) | SOL 領域の Twiss (CALC/INS)・Emittance[]/EMIT・幾何 (tsgeo)。領域内の MULT・BEND・CAVI は未対応 |
+| [29_sol_optics.md](29_sol_optics.md) | SOL 領域の Twiss (CALC/INS)・Emittance[]/EMIT・幾何 (tsgeo)。領域内の MULT・BEND・CAVI は k64 モードでは未対応、v2 モードで対応 |
 | [30_map.md](30_map.md) | MAP (ExternalMap) の追跡・Emittance[]・Twiss。GEO・CompiledMap は未対応 |
-| [31_delcor.md](31_delcor.md) | DELCOR (相関のあるずれ)。tcorr・tvcorr と乱数列まで gs と一致。CAVI は未対応 |
+| [31_delcor.md](31_delcor.md) | DELCOR (相関のあるずれ)。k64 モードは tcorr・tvcorr と乱数列まで gs と一致 (CAVI は HARM・PHI に入る K64 のまま)。v2 モードは MARK・CAVI も DX・DY、規格化を直した |
 | [32_gaussiancoulomb_bbbrem.md](32_gaussiancoulomb_bbbrem.md) | GaussianCoulomb(U・Fitted) と BBBrem1 |
 | [33_specfn_fit_misc.md](33_specfn_fit_misc.md) | 特殊関数・数学関数、Fit・FindRoot・NIntegrate、DownhillSimplex、ファイル・文字列の小さな関数 |
 | [34_sad_packages.md](34_sad_packages.md) | `Packages/*.n` (CorrectOrbit・MakeBump・OptimizeOptics・D など) を SADScript のまま使う仕組み |
@@ -199,9 +204,9 @@ SAD と一致しているもの (詳細は 10_benchmarks.md):
 | FITP>1 の最終解 | SAD (WSL) が GO で再起動するため参照値がない。1 段目・初回の解は一致、2 段目以降の多解は別解に着くことがある。fam 点は自己検証のみ |
 | 不安定ラティス | SAD の 1e199 級の値や NaN は再現しない (安定域は一致) |
 | 損失周の乱数 | 論理は SAD と同じだが、5000 周の DynamicApertureSurvey の最終 seed はカオスで一致しない (Score の差 1〜3 %) |
-| 要素 | **SOL 領域 (BZ≠0) 内の BEND・MULT・CAVI** (追跡は NotImplementedError。BEND は K64 の tsol.f どおりに書いたが gs が偏向をほぼ無視して合わず取り下げた)、SOL の CALC6D・Touschek、SOL の BZ≠0 内の四極 + RAD の追跡 (現在の gs は保存済みの参照 bench_level9 と別の値を返す。11/16 に単一粒子で切り分けた: 領域内がドリフトだけなら gs = pysad、四極が入り RAD ON かつ BZ≠0 のとき gs は四極の収束・発散力を入れていないように振る舞う (四極なしと 8 桁で一致)。gs の 2 つのビルドは同じ値で、現在の gs が SOL 領域内の四極 + RAD を誤って扱う疑いが強い。ソースのどこかは未特定、保存済みの参照を出した旧版の実行ファイルは動かず確認できない。docs/10 §6)、MAP の GEO・CompiledMap、他の要素の光子 (PHOTONS の tphrec)、POL のスピンで SOL 領域内の MULT・BEND・CAVI、PHSROT (K64 で動作しない: B38) |
-| コマンド・関数 | MEASURE/TRCOD (`tracke/ttinit/ttstat/trcoda/trackb`: gs で動かない (B42) うえ使うスクリプトも無く未翻訳。`tlum` は `measure.py`)、DRAW/GEO 描画コマンド、FFS の `SYNCHROB` 語・`INC`・`ALIGN`・`SCALE`・`ZAP`・`DIMAD`・`BEAM` は未対応 (警告して無視。関数 `SynchroBetaEmittance` は実装済み)、`Polarization` (K64 が NaN: B55)、旧式の MAIN の TRACK の Fourier 解析 (`wjfit/wfres/wfbin/wiord/wjdraw`。FFS から使えない)、`MessageName[f,"usage"]` の関数形 (gs と挙動が違う。`f::usage` の形は一致)、ElementValues の VISIT/BYE の退避・復元 (CALC の前の反映は docs/34)。WakeFunction は追跡も光学 (WAKEOPT、InitialOrbits) も実装済み: [23_wake.md](23_wake.md)。旧 WAKE コマンドは K64 でも `WAKECOMMAND.n` (配布に無い) を呼ぶので同じ経路 |
-| 対象外 | EPICS・`System[]` の実行、ファイル入出力の失敗の扱い (Python ネイティブで行う)。Tk・描画は tkinter で対応済み (docs/22, 35。見た目と操作は SAD と未比較) |
+| 要素 | **SOL 領域 (BZ≠0) 内の BEND・MULT・CAVI** (k64 モードの追跡は NotImplementedError。BEND は K64 の tsol.f どおりに書いたが gs が偏向をほぼ無視して合わず取り下げた。v2 モードは実装した: ローレンツ力の数値積分との一致で、gs との比較ではない。docs/44 §7a)、SOL の CALC6D・Touschek、SOL の BZ≠0 内の四極 + RAD の追跡 (現在の gs は保存済みの参照 bench_level9 と別の値を返す。11/16 に単一粒子で切り分けた: 領域内がドリフトだけなら gs = pysad、四極が入り RAD ON かつ BZ≠0 のとき gs は四極の収束・発散力を入れていないように振る舞う (四極なしと 8 桁で一致)。gs の 2 つのビルドは同じ値で、現在の gs が SOL 領域内の四極 + RAD を誤って扱う疑いが強い。ソースのどこかは未特定、保存済みの参照を出した旧版の実行ファイルは動かず確認できない。docs/10 §6)、MAP の GEO・CompiledMap、他の要素の光子 (PHOTONS の tphrec)、v2 モードの Emittance[] の POL の量の SOL 領域内 (K64 の式のまま。docs/43 §8a) |
+| コマンド・関数 | MEASURE/TRCOD は v2 モードで実装した (K64 のソースの読み。gs で動かない (B42) ので gs との比較は無い。k64 モードは未対応で無視)、DRAW/GEO 描画コマンド、FFS の `SYNCHROB` 語・`INC`・`ALIGN` (単独)・`SCALE`・`ZAP`・`DIMAD`・`BEAM` は未対応 (警告して無視。関数 `SynchroBetaEmittance` は実装済み)、`Polarization` は v2 モードで有限値 (k64 モードは K64 が NaN: B55)、旧式の MAIN の TRACK の Fourier 解析 (`wjfit/wfres/wfbin/wiord/wjdraw`。FFS から使えない)、ElementValues の VISIT/BYE の退避・復元 (CALC の前の反映は docs/34)。WakeFunction は追跡も光学 (WAKEOPT、InitialOrbits) も実装済み: [23_wake.md](23_wake.md)。旧 WAKE コマンドは K64 では `WAKECOMMAND.n` (配布に無い) を呼ぶので k64 モードは同じ経路、v2 モードは `WAKE … ENDWAKE` の表を読む。複素引数の PolyLog・HypergeometricU・Zeta、光学 (CALC)・Emittance への空間電荷 (WSPAC のビーム行列は空間電荷なしの平衡値) は未対応。一覧は [46_unimplemented_and_unverified.md](46_unimplemented_and_unverified.md) |
+| 対象外 | EPICS、`System[]` の既定での実行 (許可があれば実行する。docs/04)、ファイル入出力の失敗の扱い (Python ネイティブで行う)。Tk・描画は tkinter で対応済み (docs/22, 35。見た目と操作は SAD と未比較) |
 | 意図的な差 | SADScript の `1GEV` は pysad では単位を掛ける (SAD は `1*GEV` = 1、11_sad_quirks C24)。MAIN の `MOMENTUM=` の初期値は K64 の initb1.f に合わせて 30 GeV |
 | 未解決の差 | BEND に `F1=0.1 FRINGE=3` を付けて RAD ON で追跡すると gs と合わない (相対 0.7)。L≠0 の CAVI に DX・DY を付けた追跡が 1e-3 ずれる。K3 が強くずれの大きい MULT リングで pysad の CALC (qcod) の閉軌道が gs と別の解になり Emittance が NaN 。いずれも原因未調査 (`history/work_unimpl.md`。2026-11-16 夜の確認では取り上げていない)。`emit6d._tquade` (Python 版) の解析ヤコビアンは x がずれた軌道で δ の微分を落とし、`emit_extra`・`calc6d._turn`・`touschek` で 1e-5 ずれる (`tturne` の経路は 1e-12。`history/work_unimpl.md` の記録。直したかは今回コードで確かめていない = 未確認) |
 

@@ -11,5 +11,5 @@
 | [`calc_chromaticity_PF`](calc_chromaticity_PF.md) | `PolynomialFit` の 6 次、自然色収差、四極・六極の和の式 | ○ |
 | [`calc_dispersion_PF`](calc_dispersion_PF.md) | 分散の差分と $\alpha_c$ の確認 | ○ |
 | [`calc_respx_PF`](calc_respx_PF.md) | 軌道応答 (K0 → モニター) と解析式、符号と RFSW の確認 | ○ (応答は解析式と 0.08% で一致) |
-| [`fn_PolynomialFit_PF`](fn_PolynomialFit_PF.md) | チューン対運動量、`DP0`、`PolynomialFit` (SAD の係数の癖あり) | ○ |
+| [`fn_PolynomialFit_PF`](fn_PolynomialFit_PF.md) | チューン対運動量、`DP0`、`PolynomialFit` (SAD の係数の癖あり) | ○ (k64 モード。v2 の既定は x の平均が 0 のデータで真の係数を返し gs の壊れた係数と違う: B18) |
 | [`fn_Twiss_LINE_PF`](fn_Twiss_LINE_PF.md) | `Twiss[]`・`LINE[]` | ○ |

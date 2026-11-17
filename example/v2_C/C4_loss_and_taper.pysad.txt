@@ -1,0 +1,11 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.506166 $$$       f BX    #######  #   6.426926 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #    .919277 $$$       f BY    #######  #   1.919589 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+flag      = {    1.000000,     .000000,     .000000,     .000000,     .000000}
+lost elem = {     .000000,  242.000000,  242.000000,  242.000000,  242.000000}  (0: alive)
+lost turn = {   31.000000,    4.000000,    1.000000,    1.000000,    1.000000}  (31 = turns+1: alive)
+  the last particle starts outside LOSSAMPL: v2 drops it at the first check (K64 keeps tracking it in the first call of a session)
+closed orbit x at exit: no taper  -7.88706E-5, RADTAPER  -2.17319E-7
+U0: no taper  1563263.219, RADTAPER  1564904.006
+DDP at elements 1, 60, 121, 243 = {     .000000, 3.911240E-4, 2.606813E-4, -6.1905E-20}

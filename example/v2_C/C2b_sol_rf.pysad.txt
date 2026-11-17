@@ -1,0 +1,16 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.189000 $$$       f BX    #######  #  12.876418 $$$       f NX    #######  #    .417167
+$$$       f AY    #######  #   1.605018 $$$       f BY    #######  #  33.073650 $$$       f NY    #######  #    .091977
+$$$       f LENG  #######  #   5.900000
+momentum p/mc at entrance, exit : { 1956.951183, 2486.414000}
+CALC orbit at exit (DZ, DDP)    : {   .00300000,   .00741817}
+CALC BX BY R1 at exit           : { 12.87641753, 33.07364957,   .34355092}
+track design particle (z, dp)   :    .00300000    .00741817
+track particle 2 (x, y, dp)     :  -2.84717E-5  -1.54673E-4    .00820522
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.201117 $$$       f BX    #######  #  12.984161 $$$       f NX    #######  #    .417103
+$$$       f AY    #######  #   1.655873 $$$       f BY    #######  #  33.351756 $$$       f NY    #######  #    .091918
+$$$       f LENG  #######  #   5.900000
+AUTOPHI: CALC DDP at exit       :  2.15179E-10
+AUTOPHI: track design particle  :  2.15179E-10
+wake: change of dp (3 particles): { -6.86709E-9, -6.46693E-9, -7.28654E-5}

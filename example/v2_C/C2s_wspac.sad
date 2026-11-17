@@ -1,0 +1,75 @@
+! v2 (担当 C2): WSPAC (ビーム行列のガウス分布による空間電荷。強-弱のモデル。K64 の twspac) の追跡 (spch.py)
+! 0.5 GeV の電子リング (8 セル、周長 35.3 m)。ビームの大きさは Emittance の平衡のビーム行列 (K64 と同じ。各要素の入口) から取る。
+! 平らなリングは垂直のエミッタンスが 0 でガウス分布の式が使えないので、弱いスキュー四極 QS で結合を入れてある。
+! この例の C2s_wspac.pysad.txt は pysad の v2 モード (既定) の出力。PYSAD_COMPAT=k64 では WSPAC は追跡に入らない
+MOMENTUM = 0.5GEV;
+DRIFT D1 = (L=0.5);
+BEND  B1 = (L=1.0 ANGLE=0.39269908169872414);
+QUAD  QF = (L=0.2 K1=0.5) QD = (L=0.2 K1=-0.5) QS = (L=0.1 K1=0.02 ROTATE=45 DEG);
+CAVI  CA = (VOLT=0.2MV HARM=20 PHI=0);
+MARK  ORIGIN = ();
+LINE CELL = (QF D1 B1 D1 QD D1 B1 D1);
+LINE RING = (ORIGIN CA QS 8*CELL);
+FFS;
+RFSW; RAD; NOFLUC; RADCOD;
+USE RING; CELL; CALC;
+$FORM = "12.6";
+re = 2.8179403205e-15;
+pp = 0.5e9/0.51099895e6; gam = Sqrt[1+pp^2]; bet = pp/gam;
+Print["Twiss: nux=", Twiss["NX", $$$]/(2*Pi), " nuy=", Twiss["NY", $$$]/(2*Pi)];
+e = Emittance[];
+{emx, emy, emz} = Emittances /. e; sz = BunchLength /. e; sige = MomentumSpread /. e;
+Print["Emittance: ex=", emx, " ey=", emy, " sigz=", sz, " sige=", sige];
+NORAD; NORADCOD;                            ! 追跡は放射なし (チューンだけを見る)
+PBUNCH = 2e10;
+! 試験粒子 (WSPAC は強-弱のモデルで、粒子同士の力は無い。粒子の数によらない)
+dd = 1e-7; zero5 = {0, 0, 0, 0, 0};
+trk[] := TrackParticles[{1, {{0, dd, 0, 0, 0}, {0, 0, dd, 0, 0}, {0, 0, 0, dd, 0}, {0, 0, 0, 0, dd}, zero5, zero5, {1, 1, 1, 1, 1}}}, 1, 1, 1][[2]];
+tune[] := Module[{r = trk[]},
+  {ArcCos[((r[[1, 2]]-r[[1, 1]]) + (r[[2, 3]]-r[[2, 1]]))/(2*dd)]/(2*Pi), ArcCos[((r[[3, 4]]-r[[3, 1]]) + (r[[4, 5]]-r[[4, 1]]))/(2*dd)]/(2*Pi)}];
+NOWSPAC;
+nu0 = tune[];
+Print["NOWSPAC fractional tune x=", nu0[[1]], " y=", nu0[[2]]];
+WSPAC;
+nu1 = tune[];
+Print["WSPAC   fractional tune x=", nu1[[1]], " y=", nu1[[2]]];
+Print["tracking: dnux=", nu1[[1]]-nu0[[1]], " dnuy=", nu1[[2]]-nu0[[2]]];
+! Laslett (1 次の摂動): dnu_u = -(1/4 pi) Sum beta_u k_u。追跡と同じ区切り (要素 k の入口で、前の要素の中点から要素 k の中点までの長さ) で和を取る。
+! ビームの大きさは Emittance のビーム行列 (CALC6D のとき LINE["SIGX", k] などがその値を返す)。主軸 (傾き th) の s1、s2 で
+! k1 = kp L/(s1 (s1+s2))、k2 = kp L/(s2 (s1+s2))、k_x = k1 cos^2 + k2 sin^2、k_y = k1 sin^2 + k2 cos^2
+kp = 2*re*PBUNCH/(Sqrt[2*Pi]*sz)/(bet^2*gam^3);
+CALC6D;
+nlat = LINE["LENGTH"];
+sxa = 0; sya = 0; sl = 0;
+Do[
+  sm = If[k < nlat, LINE["S", k] + LINE["L", k]/2, LINE["S", nlat]];
+  len = sm - sl; sl = sm;
+  If[len > 0,
+    xx = LINE["SIGX", k]^2; yy = LINE["SIGY", k]^2; xy = LINE["SIGXY", k];
+    aa = Sqrt[(xx-yy)^2 + 4*xy^2]; th = ArcTan[xx-yy, 2*xy]/2;
+    s1 = Sqrt[(xx+yy)/2 + aa/2]; s2 = Sqrt[(xx+yy)/2 - aa/2];
+    k1 = kp*len/(s1*(s1+s2)); k2 = kp*len/(s2*(s1+s2));
+    sxa = sxa + Twiss["BX", k]*(k1*Cos[th]^2 + k2*Sin[th]^2); sya = sya + Twiss["BY", k]*(k1*Sin[th]^2 + k2*Cos[th]^2)],
+  {k, 1, nlat}];
+Print["beam size at ORIGIN: sx=", LINE["SIGX", 1], " sy=", LINE["SIGY", 1], " sz=", LINE["SIGZ", 1]];
+CALC4D;
+Print["Laslett:  dnux=", -sxa/(4*Pi), " dnuy=", -sya/(4*Pi)];
+! SELFCOD: 力の中心を粒子の重心にする (既定は閉軌道)。中心から y = 20 um (約 1 sigma_y) ずれた小さな集団が QS (0.1 m) までに受ける正味のキック
+off = Table[2e-5 + 1e-7*Sin[1.7*i], {i, 50}]; z50 = Table[0, {i, 50}];
+ob = {z50, z50, off, z50, z50, z50, Table[1, {i, 50}]};
+NOWSPAC;
+r = TrackParticles[{1, ob}, 4, 1, 1][[2]]; py0 = Plus@@r[[4]]/50;
+WSPAC; NOSELFCOD;
+r = TrackParticles[{1, ob}, 4, 1, 1][[2]];
+Print["NOSELFCOD: mean space-charge kick py [nrad] = ", 1e9*(Plus@@r[[4]]/50 - py0)];
+SELFCOD;
+r = TrackParticles[{1, ob}, 4, 1, 1][[2]];
+Print["SELFCOD:   mean space-charge kick py [nrad] = ", 1e9*(Plus@@r[[4]]/50 - py0)];
+NOSELFCOD;
+! 垂直のエミッタンスが 0 の平らなリング (QS = 0) では、エラーで知らせる。WSPACBEAM = {ex, ey, sigz, sige} を与えれば走る
+Element["K1", "QS"] = 0;
+CALC;
+r = TrackParticles[{1, ob}, 4, 1, 1];
+WSPACBEAM = {emx, 0.01*emx, sz, sige};
+nu1 = tune[];
+Print["flat ring + WSPACBEAM (ey = 1% ex): dnux=", nu1[[1]]-nu0[[1]], " dnuy=", nu1[[2]]-nu0[[2]]];

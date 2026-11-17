@@ -44,7 +44,7 @@ $$M=\begin{pmatrix}C^2&SC/K&SC&S^2/K\\-KSC&C^2&-KS^2&SC\\-SC&-S^2/K&C^2&SC/K\\KS
 ○ 一致。全 7 行が印字桁まで同じ (チューン、4×4 行列の 16 要素)。
 
 ## 未確認・限界
-- 領域は DRIFT だけ (BZ=5 T、L=1 m、3 GeV)。BEND・MULT・CAVI が領域内にあるリング、BOUND=0 で BZ≠0 の SOL、DX・DY・CHI のずれは pysad 未対応 (docs/44 §1)。
+- 領域は DRIFT だけ (BZ=5 T、L=1 m、3 GeV)。この例の最初の版では、BEND・MULT・CAVI が領域内にあるリングと DX・DY・CHI のずれたソレノイドは pysad 未対応だった。v2 で対応した (`docs/47_v2_changes.md` の B69・B80 と「ずれて傾いたソレノイド」。追跡・CALC・Emittance[]・EMIT。bz = 0.3〜3 1/m で確認)。ただしこの例では使っておらず、gs との比較もしていない (gs は領域内の BEND の偏向をほぼ無視し、領域内の四極 + RAD も保存値と食い違う: B68・B69)。BOUND=0 で BZ≠0 の SOL は未確認。
 - 結合したリングのチューン (6.69418751, 4.97467992) は、解析式で確認していない (gs と pysad の一致のみ)。
 - RAD ON の領域内の四極、放射とスピン (POL) の組み合わせは見ていない。
-- SOL を含む CALC6D と RADCOD つき CALC は pysad で拒否される (docs/44)。
+- SOL を含む CALC6D と RADCOD つき CALC は pysad で拒否される (docs/44)。v2 での扱いの変化は未確認。

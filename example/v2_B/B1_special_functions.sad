@@ -1,0 +1,23 @@
+FFS;
+(* v2 (pysad 2.0.0) の特殊関数: K64 (gs) が誤値・NaN・INF・無応答になる式。右のコメントは真値と K64 の値 *)
+$FORM = "18.12";
+Print["Hypergeometric2F1[.5,.5,1,.99] = ", Hypergeometric2F1[.5, .5, 1, .99]];   (* 2.352715816780   K64: 2.348414 *)
+Print["BesselJ[.5,30.]               = ", BesselJ[.5, 30.]];                    (* -.143929653370   K64: -.143924709693 *)
+Print["ExpIntegralEi[1.5]            = ", ExpIntegralEi[1.5]];                  (* 3.301285449130   K64: .164-2.985 I *)
+Print["ExpIntegralEi[-.1]            = ", ExpIntegralEi[-.1]];                  (* -1.822923958419  K64: -2.2265 *)
+Print["HermiteH[3,.7]                = ", HermiteH[3, .7]];                     (* -5.656           K64: NaN *)
+Print["LegendreP[3,1,.4]             = ", LegendreP[3, 1, .4]];                 (* .274954541697    K64: NaN *)
+Print["Binomial[-3,2]                = ", Binomial[-3, 2]];                     (* 6                K64: NaN *)
+Print["HypergeometricU[1,2,.5]       = ", HypergeometricU[1, 2, .5]];           (* 2                K64: INF *)
+Print["BesselY[0,.1]                 = ", BesselY[0, .1]];                      (* -1.534238651350  K64: NaN *)
+Print["BesselK[1.5,.7]               = ", BesselK[1.5, .7]];                    (* 1.806573612779   K64: INF *)
+Print["BesselJ[0,100.]               = ", BesselJ[0, 100.]];                    (* .019985850304    K64: 不正確 *)
+Print["FresnelS[6.1], FresnelC[6.1]  = ", FresnelS[6.1], " ", FresnelC[6.1]];   (* .516477 .549502  K64: 1.3e7 -2.1e7 *)
+Print["AiryAi[15.5]                  = ", AiryAi[15.5]];                        (* 3.0475e-19       K64: -16 *)
+Print["InverseErf[.3]                = ", InverseErf[.3]];                      (* .272462714727 (v2)  K64 と k64 モード: .272462711811 *)
+Print["PolyLog[2,.5]                 = ", PolyLog[2, .5]];                      (* .582240526465 (実数) *)
+Print["PolyLog[2.5,-1e6]             = ", PolyLog[2.5, -1e6]];                  (* 非整数次・大きい |z| (以前は NaN) *)
+Print["PolyLog[2.5,200.]             = ", PolyLog[2.5, 200.]];                  (* z > 1 は複素数 (切断線の下側) *)
+Print["BesselJ[0,1.+2.*I]            = ", BesselJ[0, 1. + 2.*I]];               (* 複素引数 *)
+Print["Hypergeometric2F1[.5,1.5,2,.3+.4*I] = ", Hypergeometric2F1[.5, 1.5, 2, .3 + .4*I]];
+Exit;

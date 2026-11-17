@@ -18,6 +18,8 @@ topdrawer の `NEWFRAME`、`SET LIMIT`、`TITLE`、`JOIN 1 TEXT` は topdrawer �
   (上の `.td` の内容を matplotlib で描き直した図。`td` は入っていないので `.td` の描画は試していない。)
 
 ## gs と pysad の比較
+**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。保存してあった旧い出力は `PYSAD_COMPAT=k64` の出力と同じ (確認済み)。v2 は K64 のバグを直したので (`docs/47_v2_changes.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+
 - 手書きの出力 (`Print`): ○ 全桁一致。
 - チュートリアルの書き方の `draw` コマンド:
   - gs: `draw bx & by & ex b*;` は表示のない環境では何も出さずに通る。`$DisplayFunction = TopDrawer;` を付けると戻らなくなる (25 秒待って止まったまま)。`FFS["draw bx",12];` は `FFSCanvasDraw` の内部エラーで落ちた。この K64 版の `draw` は Tk のキャンバス (`FFSCanvasDraw`) に描く実装に置き換わっていて、topdrawer への出力は `OpticsPlot` などの `TopDrawer` 関数 (`Packages/TopDrawer.n`、`fort.9` に書く) が受け持つと見ている。

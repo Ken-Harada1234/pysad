@@ -1,3 +1,4 @@
-parent: Shared[s] = {1,2,3}   SharedSize[{1,2,3}] = 1
-parent: Fork returned a Real (child pid): Real 1
+parent: Shared[s] = {1,2,3}   SharedSize[{1,2,3}] = 32
+???System::error: Fork[] is not available on this platform (Windows has no fork). Use Parallelize[f, n, lshare, npara] (runs serially in pysad), or run pysad on Linux/WSL
+parent: Fork returned a Real (child pid): Symbol $Cmp[pid,0]
 parent: after the child wrote Shared[s] = {1,2,3}

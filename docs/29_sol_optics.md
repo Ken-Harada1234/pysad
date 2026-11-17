@@ -11,6 +11,8 @@ LINE BL = (ST QF DR B DR2 QD DR SA DR2 QF DR2 QD DR2 SB DR B DR);
 
 BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域の中は BZ のあるソレノイド内の正準運動量で動き、横方向が結合する。
 
+**モードによる違い**: この文書の本文 (作り方・検証・限界) は **k64 モード** (領域内は DRIFT・QUAD・L=0 の要素・SOL。gs と比較した範囲) の説明。**v2 モード** (既定) は、領域内の BEND・MULT・CAVI・K1=0 の四極、領域内の空洞の TRPT の加速・wake・AUTOPHI、ずれて傾いたソレノイド (`DX DY DZ CHI1..3`・`F1`) も Twiss・Emittance[]・EMIT・追跡に入る。これらは gs ではなくローレンツ力の数値積分などで確かめたもので、使える範囲・使えない範囲・根拠は docs/44_sol_guide.md §7a に書いた (下の「v2 モードで追加された範囲」に要約)。
+
 ## 作り方
 
 領域内の要素の写像は、追跡 (K64 の `tsol.f`) と同じ座標なので、追跡の numba カーネル (`track6n_ext` の `K_SOL_FRIN` `K_SOL_DRIFT` `K_SOL_QUAD`) を
@@ -60,10 +62,10 @@ BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域の中�
   (SOL と無関係。SOL なしの QFE にずれのあるリングで確認)。`emittance6d.tturne` (elkern) は gs と 1e-12 で合う。そのためフックを入れなかった。
 - RADCOD の閉軌道探索中は K64 の tsolque が内部の分割の間でパラメータを固定するが、solemit は各スライスの δ で計算し直す (δ の変化は 1 スライスあたり 1e-9 程度で影響は 2 次。確認はしていない)。
 - QUAD の FRMD の向き (逆向きの LINE の `direlc<0` で FRMD を入れ替える所) は写していない。
-- 領域内に置ける要素は追跡と同じ: DRIFT、QUAD (K1≠0、ずれ・F1・FRINGE なし)、L=0 の要素、SOL (ずれ・回転・F1 なし)。MULT・BEND・CAVI は NotImplementedError。
+- (k64 モード) 領域内に置ける要素は追跡と同じ: DRIFT、QUAD (K1≠0、ずれ・F1・FRINGE なし)、L=0 の要素、SOL (ずれ・回転・F1 なし)。MULT・BEND・CAVI は NotImplementedError (v2 モードは下の節)。
 - **領域内の BEND** は K64 の `tsol.f` どおりに `tdrift(al, bzs, phiy, phix, …)` で直訳 (`track6._tdrift_kick` を bz≠0 に一般化) して試したが、現在の gs は偏向をほぼ無視する
-  (BZ=0.5 T の領域で ANGLE=0.1 でも位置・角度が 1e-5 しか変わらない。直訳は ANGLE×距離だけ曲がる) ので合わず、実装を取り下げた。原因は未確認 (tpara で K0・ANGLE が領域内の BEND に入らないなど K64 側の癖かもしれない)。
-  領域内の MULT・CAVI は未着手 (docs/history/work_unimpl.md)。
+  (BZ=0.5 T の領域で ANGLE=0.1 でも位置・角度が 1e-5 しか変わらない。直訳は ANGLE×距離だけ曲がる) ので合わず、k64 モードの実装は取り下げた。原因は未確認 (tpara で K0・ANGLE が領域内の BEND に入らないなど K64 側の癖かもしれない)。
+  v2 モードは直訳した BEND をローレンツ力の数値積分との一致で確かめて入れた (docs/44 §7a。gs との比較ではない)。
 - **追跡の食い違い (SOL BZ≠0 の領域内の四極 + RAD)**: 保存した gs の出力 (`bench_level9.sad`、2026-10-14) は pysad と一致するが、現在の gs (2026-10-19 ビルド) は同じ入力で別の値を返す
   (S R T1 P1 の x が -.0027867898 から -.0014539780)。NORAD は両方で一致する。保存した出力と現在の gs のどちらが正しいかは、2026-11-16 夜の単一粒子 (粒子の並びの癖が効かない) の 1 周追跡 (2.5 GeV、RAD NOFLUC、emit のあと、SOL の BZ を 0 → 0.01 T) で絞り込んだ:
   (1) 領域内がドリフトだけ (`SB D1 SE`): gs = pysad (BZ=0・0.01 とも 9 桁以上で一致)。
@@ -83,8 +85,22 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 
 - 検証 (`pysad/tests/test_sol_geo.py`): GEO が始端 (前向き、回転四極 K1>0、領域内の SOL) と終端 (後ろ向き、K1<0) の 2 通りで、S・GX・GZ・GCHI2・GCHI3 の 18 要素が gs と 1e-9 (絶対 1e-13) で一致。
 - `Solenoid` の DPX DPY DX DY DISFRIN DBZ を parser が読む (BZ BOUND GEO とあわせる)。
-- 未対応: 領域内の BEND・MULT・CAVI (NotImplementedError → 警告を出して直進扱い。BEND は上の「限界」のとおり gs と合わず取り下げた)、領域内の L=0 / K1=0 の四極。
-- **ずれ・傾きのある SOL の追跡・Twiss・Emittance[] は未対応のまま** (tsconv の CHI1..3 を使う `tsrote`)。幾何だけが gs と合う。
+- 未対応 (k64 モード): 領域内の BEND・MULT・CAVI (NotImplementedError → 警告を出して直進扱い。BEND は上の「限界」のとおり gs と合わず取り下げた)、領域内の L=0 / K1=0 の四極。v2 モードは、領域内の BEND・MULT・CAVI・K1=0 の四極の軌道も追う (追跡と同じカーネル)。
+- **ずれ・傾きのある SOL の追跡・Twiss・Emittance[] は k64 モードでは未対応のまま** (tsconv の CHI1..3 を使う `tsrote`)。幾何だけが gs と合う。v2 モードは対応 (下の節)。
 - `GEO` がない SOL 領域は K64 と同じ文面の警告 (` Missing GEO of Solenoid …`) を出して直進扱い (K64 は S 座標が途切れる: 上の限界を参照)。
+
+## v2 モードで追加された範囲 (要約。詳細・根拠・限界は docs/44_sol_guide.md §7a)
+
+| 項目 | k64 モード | v2 モード |
+| --- | --- | --- |
+| 領域内の BEND | NotImplementedError (幾何は直進扱い) | 直線の座標のままの一様な双極磁場 (`ANGLE + K0`、`ROTATE + DROTATE`、RAD)。`K1`・`DX`・`DY` は NotImplementedError |
+| 領域内の MULT | NotImplementedError | K0..Kn・SK0..SKn、`DX DY ROTATE`、端のフリンジ、RAD、`VOLT` (RFSW か TRPT) |
+| 領域内の CAVI | NotImplementedError | `L VOLT PHI DX DY ROTATE`、端のフリンジ。TRPT の加速、wake、`AUTOPHI`。使えない: `V1 V20 V11 V02`、ANGLE≠0 の MULT |
+| 領域内の APERT | NotImplementedError | 領域の外と同じ判定で落ちる |
+| ずれ・傾き `DX DY DZ CHI1..3`、`F1` | 追跡・Twiss・Emittance[] は未対応 | 対応 (GEO=1 の SOL に `DX DY DPX DPY`、軸はソレノイドの軸、F1 は端の放射の長さ) |
+| 領域内の K1=0 の四極・BEND・MULT・CAVI の幾何と、領域内の変数の `tdgeo` | 未対応 | 対応 (幾何は追跡と同じカーネル、fit の微分は中心差分) |
+| CALC6D・RADCOD つきの CALC | SADError | SADError (両モード同じ) |
+
+v2 の領域内の BEND・MULT・CAVI の条件と確認の範囲: 電子、0.5〜3 GeV、bz = 0.3〜3 1/m、ローレンツ力の数値積分と 1e-14〜1e-8。gs との数値比較は無い。bz ≥ 3 1/m を超える場、領域内の MULT・CAVI の POL (Emittance[])、RF つき MULT の RAD は未確認。
 
 解説: docs/44_sol_guide.md (SOL)

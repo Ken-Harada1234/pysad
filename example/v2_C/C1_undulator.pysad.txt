@@ -1,0 +1,15 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.879932 $$$       f BX    #######  #  10.065637 $$$       f NX    #######  #   1.877120
+$$$       f AY    #######  #    .917890 $$$       f BY    #######  #   1.555327 $$$       f NY    #######  #   1.310225
+$$$       f LENG  #######  #  31.400000
+drift : nux, nuy =     1.87711965     1.31022461
+drift : U0 =  293112.321307 eV, emittances = { 3.66402115E-7,     .00000000, 9.12121358E-6}
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.879932 $$$       f BX    #######  #  10.065637 $$$       f NX    #######  #   1.877120
+$$$       f AY    #######  #    .939383 $$$       f BY    #######  #   1.550412 $$$       f NY    #######  #   1.313926
+$$$       f LENG  #######  #  31.400000
+UND   : nux, nuy =     1.87711965     1.31392617
+UND   : U0 =  311554.840025 eV, emittances = { 3.74871578E-7, 2.4759088E-41, 9.10641503E-6}
+analytic dU0 = (2/3) r_e gamma^3 (F0^2/2) L E =  18449.2805733 eV, pysad dU0 =  18442.5187183
+damping-rate sum / (2 U0/E) =      .99991207
+tracking through the ring up to the UND exit: y, py =  4.73671079E-5  -1.1175266E-4

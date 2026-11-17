@@ -38,7 +38,7 @@ $$c(k)=\int f\cos(kc\tau)\,d\tau=\frac{s}{c}\sqrt{2\pi}\,e^{-k^2s^2/2},\qquad s(
 差は、場を 401 点の区分線形で近似する離散化誤差で、ピーク値 ($c(k)\sim4\times10^{-12}$) の $10^{-4}$ 程度 (絶対で $10^{-16}$ 台)。高周波側ではこの絶対誤差の床に達する。$s(k)$ は $10^{-29}$ 〜 $10^{-31}$ (0)。
 
 ## gs と pysad の比較
-- 軌道の記録 (`RADLIGHT`)、`RadiationSpectrum`: ○ 一致 (軌道の点列、スペクトルの $k$、$c$ が同じ)。
+- 軌道の記録 (`RADLIGHT`)、`RadiationSpectrum`: ○ 一致 (軌道の点列、スペクトルの $k$、$c$ が同じ)。**ただし v2 (既定) では軌道の点列が gs と違う** (2026-11-17 の再実行): v2 は BEND の中も円弧で進めて記録する (B65。1/γ の角度あたり `RADLIGHTDIV` 点、既定 16) ので、軌道の点が 11 点から 13 点になり、`t(end)*c` が 5.27 m から 7.67 m、`RadiationField` の戻りの寸法が {10,11} から {10,13} になる。K64 は BEND の中を記録しない。`PYSAD_COMPAT=k64` では保存してあった旧い出力 (11 点) と同じで gs と一致。`.pysad.txt` は v2 の出力。以下の「11 点」は k64 の値。
 - `RadiationField`: × **gs が `Program received signal SIGSEGV` で落ちる** (K64 の既知の不具合 B49。引数を変えても落ちる)。pysad は動き、戻りの寸法は $\{10,11\}$ (τ、E、H、S の 10 本 × 11 点)。そのため `RadiationField` の値は gs と比べられない。
 
 ## 未確認・限界

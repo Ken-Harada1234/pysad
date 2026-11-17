@@ -1,0 +1,19 @@
+FFS;
+(* 共有メモリ (OpenShared / Shared)、Parallelize、Fork、System。
+   - Fork[] は Linux・WSL・macOS では本当にプロセスを分ける。Windows には fork が無いので v2 はエラーにする (Parallelize は逐次で動く)。
+   - System[cmd] は既定では実行しない。環境変数 PYSAD_ALLOW_SYSTEM=1 (または Python から pysad.miscfn.allow_system(True)) で許可したときだけ実行し、終了コードを返す *)
+s = OpenShared[256];
+Shared[s] = {1, 2, 3};
+Shared[s] = Append[Shared[s], "text"];
+Print["Shared[s] = ", Shared[s], "   SharedSize[{1,2,3}] = ", SharedSize[{1, 2, 3}]];
+Close[s];
+f[k_] := k^2 + 1;
+Print["Parallelize[f,4,64,2] = ", Parallelize[f, 4, 64, 2]];
+r = System["echo hello-from-shell"];
+Print["System の戻り値 = ", r, "   (許可なし: $Failed、許可あり: 0)"];
+Print["System[\"[ -d . ]\"] = ", System["[ -d . ]"], "   (存在確認だけは許可なしでも判定: 0 は真)"];
+sh = OpenShared[64];
+pid = Check[Fork[], -1];
+If[pid === 0, Shared[sh] = "written by child"; Exit[0]];
+If[pid > 0, Wait4[pid]; Print["child wrote: ", Shared[sh]], Print["Fork[] はこの環境では使えない (Windows)"]];
+Exit;

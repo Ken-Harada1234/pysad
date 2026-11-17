@@ -1,0 +1,8 @@
+corlength =    5.00000 m:  rms(DX)/delx =    1.02087   rms(DY)/dely =    1.04272
+corlength =  5000.0000 m:  rms(DX)/delx =    1.03004   rms(DY)/dely =     .94042
+corlength = 5000 m, one shot: DX of QF.1 =  -9.709E-5  spread (max-min)/|DX| =  2.792E-16
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.155769 $$$       f BX    #######  #   5.009353 $$$       f NX    #######  #   2.706758
+$$$       f AY    #######  #   1.397232 $$$       f BY    #######  #   2.654699 $$$       f NY    #######  #   1.866872
+$$$       f LENG  #######  #  45.600000
+tunes with the offsets removed:    2.70676    1.86687

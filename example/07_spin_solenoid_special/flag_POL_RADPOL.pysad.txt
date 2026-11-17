@@ -5,5 +5,5 @@ $$$       f LENG  #######  #  105.60000
 PolarizationTime [s]=  143.3652012269
 SpinTune=    -.1918545590  NominalSpinTune=    6.8081482248
 PolarizationVector={     .0000000000,    1.0000000000,     .0000000000}
-nturn=  500.0000000000 RADPOL  : spin angle=     .8793923838 sy/|s|= 1.1349035543E-6
-nturn=  500.0000000000 NORADPOL: spin angle=     .8793923838 sy/|s|= 9.423008520E-21
+nturn=  500.0000000000 RADPOL  : spin angle=    1.1515563959 sy/|s|= 1.1349055194E-6
+nturn=  500.0000000000 NORADPOL: spin angle=    1.1515563959 sy/|s|= -1.13708309E-18

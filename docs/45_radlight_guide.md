@@ -15,7 +15,7 @@ K64 のソースは `tlinit.f` (`tlinit`、`tlstore`、`tlresult`、`tlcalc`、`
 
 | 機能 | 状況 | 実装 |
 | --- | --- | --- |
-| RADLIGHT フラグ、TrackParticles の戻り `{結果, 軌道}` | 対応 (gs と差 0) | `ffscmd._RadLight`、`FFS.track_particles` 付近 |
+| RADLIGHT フラグ、TrackParticles の戻り `{結果, 軌道}` | 対応。k64 モードは gs と差 0 (K64 の癖: 横方向なし・BEND の中なし)。v2 モードは 3 次元の軌道で BEND の中も記録 (§3a) | `ffscmd._RadLight`、`FFS.track_particles` 付近 |
 | `RadiationField` | 対応 (gs がこのビルドで落ちるので gs 照合なし) | `radfield.radiation_field` |
 | `RadiationSpectrum` | 対応 (gs と全桁一致。NPARA の fork 並列なし、逐次) | `radfield.radiation_spectrum` |
 | PHOTONS と `PhotonList` | **BEAMBEAM の光子だけ** 対応 | `beambeam.py`、`ffscmd` |
@@ -85,7 +85,7 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 
 これは格子 (USE 済み) の続きで書かれたスニペットで、1 本で完結しない。この流れ (B を `ANGLE=0 K0=0.1` の STEER にして 1 周、RADLIGHT → `RadiationField` → `FindPeak` → `RadiationSpectrum`) は pysad で最後まで通る (2026-11-16。軌道 8 点 {4,8}、f が {10,8}、ピーク位置 3、スペクトル {3,1001})。gs は `RadiationField` で SIGSEGV (B49) するので通しの比較はできない。軌道 (TrackParticles の戻り) の部分だけ gs と一致する。複数区間の軌道は §3 の 5 の限界に当たる。
 
-## 3. K64 の癖 (tlinit / tlstore / tlresult)
+## 3. K64 の癖 (tlinit / tlstore / tlresult。k64 モードの動作。v2 モードは §3a)
 
 1. **BEND の中を記録しない**。記録するのは「区間 (`tturn`) の始め」と「L≠0 で型が CAVI より小さい要素 (BEND 以外) の後」だけ (K64 `tturn.f:555`)。
    `BEND` と曲げのある `MULT` (ANGLE≠0) は後も記録されないので、偏向磁石の円弧に沿った放射が軌跡の点列に入らない。意味のある放射場を得るには、Oide の例のように B を `ANGLE 0` にするなどの工夫が要る。
@@ -94,6 +94,16 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 4. 時刻は `t = gt − z/(v0·(1−dv+dvfs))`。点は粒子ごとに保持され、損失した粒子の扱いは未確認 (損失のない試験だけ)。
 5. 同じ位置の点が 2 つ並ぶことがある (区間の始めの点と、直前の要素の後の点。試験の S2 で 7.8 が 2 回出る)。**複数区間 (複数周) の軌道では区間の始めの点が重なり (t が同じ点が 2 つ)、pysad の `RadiationField` は `x must be strictly increasing sequence` で失敗する** (未修正の限界)。gs は `RadiationField` が SIGSEGV するので比較できない。
 6. `RadiationField` は **gs (この K64 ビルド) で SIGSEGV する** (どの引数でも。`tlcalc` の `loc_sad(ktfaddr(ka)-3,dl)` が不正な番地を指すとみられる。B49)。そのため `RadiationField` の gs 参照は取れていない。
+
+## 3a. v2 モードの軌道 (B65)
+
+K64 の §3 の癖 1〜3 (BEND の中を記録しない、横方向の座標が入らない、BEND で向きが変わらない) を、v2 モードでは直した。試験 `test_v2_C_radlight.py` (3 件)、例 `example/v2_C/C5_radlight.sad`。
+
+- **横の軸を幾何から取る**: 軌道の x・y・z は幾何 (`LINE["GX"/"GY"/"GZ"]` と同じ GEO 座標)。振幅 0 の粒子の点は幾何と一致する (ROTATE つき・負の角を含む。1e-11)。時刻 = 行路長/(βc) (1e-9)。
+- **BEND は円弧で進め、中も記録する**: tlstore の dphi≠0 の式で進め、1/γ の角度あたり `RADLIGHTDIV` 点 (既定 16) を記録する。`RADLIGHTDIV = n;` で変える。高いエネルギーでは点数が γ に比例して増える (3 GeV・0.26 rad の BEND で 2.5 万点)。曲げのある MULT は出口だけ、CAVI も記録する。
+- 中の点は、状態の写しを刻んだ BEND で進めて作る (本当の追跡は要素全体を 1 回)。DX・DY・F1・FRINGE のある BEND は中の点だけ 1e-6 m 程度ずれる。
+- **根拠**: 偏向磁石の放射場のピーク E = e β²/(4πε0 ρ R (1−β)²) (Liénard-Wiechert) と `RadiationField` が 0.25% (RADLIGHTDIV = 16)、5e-5 (64)。条件は 10.2 MeV (γ = 20) の電子。**gs との比較は無い** (gs は `RadiationField` で落ち、k64 モードの軌道は別物)。
+- **使えない・未確認**: SOL 領域を含む区間 (SADError。両モード)、COORD による幾何の変化、曲げのある MULT の中の点 (出口だけ)。複数周の軌道で区間の始めの点が重なり `RadiationField` が失敗する限界 (§3 の 5) が v2 でも残るかは再確認していない (要確認)。高エネルギー・多数粒子の規模は未確認。
 
 ## 4. RadiationField と RadiationSpectrum (`pysad/radfield.py`)
 
@@ -135,8 +145,8 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 ## 7. 限界・未確認
 
 - **RadiationField の gs 参照がない** (gs は SIGSEGV で落ちる。B49。2026-11-16 にも引数を変えて再確認できず)。等速運動の解析解との比較だけ。K64 の式との照合は読みによるだけで、数値の一致は未確認。
-- **BEND の中を記録しない**ので、そのままの BEND では放射場の主要な部分 (偏向の円弧) が入らない (K64 の仕様どおり)。Oide の例の流れ (B を ANGLE=0、K0=0.1) は 1 周の軌道なら pysad で通る (§2)。複数区間の軌道では `RadiationField` が失敗する (§3 の 5)。gs は `RadiationField` で落ちるため通しの照合は無い。
-- 横方向の座標が軌道に入らない (K64 の癖)。粒子の横位置のずれ (x、y) は軌道の x・y に反映されない。
+- **k64 モードでは BEND の中を記録しない**ので、そのままの BEND では放射場の主要な部分 (偏向の円弧) が入らない (K64 の仕様どおり。v2 モードは §3a)。Oide の例の流れ (B を ANGLE=0、K0=0.1) は 1 周の軌道なら pysad で通る (§2)。複数区間の軌道では `RadiationField` が失敗する (§3 の 5)。gs は `RadiationField` で落ちるため通しの照合は無い。
+- k64 モードでは横方向の座標が軌道に入らない (K64 の癖)。粒子の横位置のずれ (x、y) は軌道の x・y に反映されない (v2 モードは §3a)。
 - 損失した粒子の記録、ずれのある要素、RF 加速 (TRPT) 中の軌道の記録は未確認。試験は損失なしの条件だけ。
 - `RadiationSpectrum` の NPARA の fork 並列は未実装 (逐次)。
 - 試験の条件はエネルギー 1 GeV (RADLIGHT)、観測点は 1 点のみ。他のエネルギー、近接場・遠方場の使い分けは未確認。

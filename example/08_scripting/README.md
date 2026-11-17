@@ -8,10 +8,10 @@ SADScript の関数・文法・クラス化・乱数の例。ラティスは使�
 | fn_Class | fn_Class (Class[], メンバー・メソッド・継承・コンストラクタ) | ○ |
 | fn_Do | fn_Do (Do, Break, Continue, Catch, Throw) | ○ |
 | fn_FixedPoint | fn_FixedPoint (FixedPoint, FixedPointList, Nest, NestList) | ○ |
-| fn_For | fn_For (For、本体を実行しない gs の癖) | △ |
+| fn_For | fn_For (For、本体を実行しない gs の癖) | △ (v2 は K64 のバグ B71 を直したので gs と違う。k64 モードは一致) |
 | fn_Function_Options_Return | fn_Function_Options_Return (オプション・既定値・Return・再帰) | ○ |
 | fn_Function_Pattern | fn_Function_Pattern (defining-functions, pattern) | ○ |
-| fn_Get_Needs_BeginPackage | fn_Get_Needs_BeginPackage (Get, BeginPackage, Begin, End, EndPackage, 文脈) | △ |
+| fn_Get_Needs_BeginPackage | fn_Get_Needs_BeginPackage (Get, BeginPackage, Begin, End, EndPackage, 文脈) | △ (`Names["Stat`*"]` だけ違う。k64 モードは一致) |
 | fn_If | fn_If (If, 論理演算, FORTRAN 風 IF-ELSEIF-ELSE-ENDIF) | ○ |
 | fn_List_functions | fn_List_functions (Take, Drop, Join, Flatten, Sort, ...) | ○ |
 | fn_Map_MapThread | fn_Map_MapThread (Map, /@, MapAll, MapThread) | ○ |
@@ -36,4 +36,4 @@ SADScript の関数・文法・クラス化・乱数の例。ラティスは使�
 
 ○一致 / △差あり (原因は各 .md) / ×gs 失敗 / ×pysad 未対応。
 
-見つけた差のうち、`Module` の字句スコープ、`Return` の範囲、`Switch`/`Which` の一致なし、`{1,2}=={1,3}`・`Thread`、`Out[n]`・`%`、`StringMatchQ`・8 進エスケープ、`Random[n,m]`・`SeedRandom` は 2026-11-17 に gs に合わせた。残る差は `For` (gs は本体を実行しない K64 の癖。pysad は定義どおり実行、docs/21 B71) と `BeginPackage`/`Begin` の文脈 (未対応)。乱数の列は一致した。
+見つけた差のうち、`Module` の字句スコープ、`Return` の範囲、`Switch`/`Which` の一致なし、`{1,2}=={1,3}`・`Thread`、`Out[n]`・`%`、`StringMatchQ`・8 進エスケープ、`Random[n,m]`・`SeedRandom` は 2026-11-17 に gs に合わせた。残る差は `For` (gs は本体を実行しない K64 の癖。pysad v2 は定義どおり実行、docs/21 B71。k64 モードは gs と同じ) と `BeginPackage`/`Begin` の `Names["Stat`*"]` (v2 は文脈の記号の一覧、gs は `{"Stat`"}`)。文脈そのものは v2 で対応した (2026-11-17 に再実行して gs と一致を確認)。乱数の列は一致した。

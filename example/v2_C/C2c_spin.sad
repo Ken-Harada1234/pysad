@@ -1,0 +1,43 @@
+! C2c: スピン追跡 (POL + RAD) の SOL 領域・UND (pysad v2)。スピンは {角度 atan(sz/sx), sy} で与える
+! (1) 平面リング + ソレノイド: 1 周のスピンの回転角 mu は cos(mu/2) = cos(pi a gamma) cos(phi/2)、phi = (1 + a) bz L
+MOMENTUM = 0.5 GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS=(L=0.5);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+BEND  BK = (L=0.4 K0=0.02);
+UND   U1 = (L=0.5 FBX=1.0 POLE=5 SLICE=400);
+MARK  ORIGIN = ();
+SOL SA = (L=0 BZ=1 BOUND=1 GEO=1) SB = (L=0 BZ=0 BOUND=1) SC = (L=0 BZ=0 BOUND=1 GEO=1 DISFRIN=1) SD = (L=0 BZ=0 BOUND=1 DISFRIN=1);
+LINE CELLQ = (QF D2 B D2 QD D1);
+LINE CELLS = (QF D2 B D2 QD SA DS DS SB);
+LINE RINGQ = (ORIGIN 12*CELLQ CELLS 11*CELLQ);
+LINE TB = (ORIGIN SC BK SD);
+LINE TU = (ORIGIN U1);
+FFS;
+USE RINGQ;
+CELL; CALC;
+$FORM = "12.8";
+RAD; NOFLUC; POL; NORFSW;
+zero = {0};
+sp[a_, sy_] := TrackParticles[{1, {zero, zero, zero, zero, zero, zero, {a}, {sy}, {1}}}, 1, 1, 1][[2]];
+vec[r_] := Module[{st = Sqrt[1 - r[[8,1]]^2]}, {st*Cos[r[[7,1]]], r[[8,1]], st*Sin[r[[7,1]]]}];
+m = {vec[sp[0, 0]], vec[sp[0, 1]], vec[sp[Pi/2, 0]]};      ! 行 = スピン (1,0,0) (0,1,0) (0,0,1) の 1 周後
+cmu = (m[[1,1]] + m[[2,2]] + m[[3,3]] - 1)/2;
+ag = 0.001159652181280002*Sqrt[1 + (MOMENTUM/MASS)^2];
+phi = (1 + 0.001159652181280002)*(1*299792458/MOMENTUM)*1.0;
+Print["ring + solenoid: cos(mu) tracking = ", cmu, "   formula = ", 2*(Cos[Pi*ag]*Cos[phi/2])^2 - 1];
+NOPOL;
+! (2) 領域内の BEND (直線の座標の双極): スピンと運動量のなす角 = a gamma x 偏向角
+USE TB; INS; CALC;
+POL;
+r = TrackParticles[{1, {zero, zero, zero, zero, zero, zero, {Pi/2}, {0}, {1}}}, LINE["LENGTH"]][[2]];
+th = ArcTan[r[[2,1]]/Sqrt[1 - r[[2,1]]^2]];
+Print["bend: (spin angle - momentum angle)/(a gamma theta) = ", (Pi/2 - r[[7,1]] - th)/(ag*th)];
+NOPOL;
+! (3) UND (5 周期、1 T): 周期の整数倍なのでスピンは元に戻る
+USE TU; INS; CALC;
+POL;
+r = TrackParticles[{1, {{1e-3}, zero, {2e-3}, zero, zero, zero, {Pi/2}, {0}, {1}}}, LINE["LENGTH"]][[2]];
+Print["undulator: spin after 5 periods (angle - pi/2, sy) = ", r[[7,1]] - Pi/2, " ", r[[8,1]]];
+NOPOL;
+Exit;

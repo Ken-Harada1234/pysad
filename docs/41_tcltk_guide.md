@@ -165,7 +165,7 @@ TclEval["update"];
 
 - 通常: `set PYSAD_SAD_PACKAGES=...` のうえで
   `py -3.12 -m pytest pysad/tests/test_tclbridge.py pysad/tests/test_sadclass.py pysad/tests/test_gui_lang.py pysad/tests/test_plot.py -q`。
-  全体は `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で 575 通過・3 skip (578 件収集、2026-11-17)。
+  全体は `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で 937 通過・4 skip (941 件収集、2026-11-17)。
 - 試験の fixture は `PYSAD_TK_NOLOOP=1` を設定し、`tkinter.Tk()` が作れなければ skip する (画面が無い環境)。
 - Windows の Tcl はまれに起動直後に "Can't find a usable tk.tcl" で失敗するので、`tkinter.Tk()` は最大 5 回やり直す (ブリッジ側は 4 回)。
 - **窓を出さずに描画だけ確かめる**: `PYSAD_NO_DISPLAY=1` で `ListPlot` などを呼ぶと `Graphics[...]` の式 (`Head` = Graphics、`Length` = 2) が返る (`test_listplot_returns_graphics_and_plot_matches_gs`)。

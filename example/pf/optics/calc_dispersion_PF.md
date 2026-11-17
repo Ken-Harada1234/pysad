@@ -27,6 +27,8 @@ RF を切る (`OFF RFSW`) のは、RF があると運動量を変えても平衡
 $\eta_x = dx/d\delta$ と $\alpha_c = \frac1C\oint\frac{\eta_x}{\rho}ds = \frac1C\sum_{\rm bends}\theta\langle\eta\rangle$。どちらも数値と合う (差は 1e-5 の差分誤差と Simpson の誤差)。
 
 ## gs と pysad の比較
+**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。保存してあった旧い出力は `PYSAD_COMPAT=k64` の出力と同じ (確認済み)。v2 は K64 のバグを直したので (`docs/47_v2_changes.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+
 ○ 全桁一致 (差分の max は 2.10852e-6 と 2.10848e-6 で、1e-10 の丸め)。pysad の emit の表は α を `.00656` と 3 桁で表示する (値は同じ)。
 
 ## 未確認・限界

@@ -44,17 +44,18 @@ EMIOUT; EMIT;          (* スピン歳差行列と 1 周の脱偏極ベクトル
 
 ### 1.4 限界・未確認
 
-- `Polarization` (平衡偏極度) は K64 が NaN (B55) で、pysad も同じ式で NaN になる。有限値になる gs の例は不安定な光学の 1 つだけで、pysad はその光学の閉軌道を作れない (正規形が不安定で失敗) ため、`spdepol` の有限値側 (|cb|≤18 の cerfc) は gs で確認できていない。
+- **v2 モード**: `Polarization` は有限値 (平面リングで 92.376%)。線形のスピン軌道結合 (SLIM 相当) から脱偏極率を求める式に置き換えた。誤差のあるリングで追跡の脱偏極率と 0.5〜1.6 倍 (3 例、16 粒子)、高次の側帯共鳴・運動論的偏極の項は入れていない。詳細と限界は docs/43 §8a。以下の記述は k64 モード。
+- `Polarization` (平衡偏極度) は K64 が NaN (B55) で、k64 モードの pysad も同じ式で NaN になる。有限値になる gs の例は不安定な光学の 1 つだけで、pysad はその光学の閉軌道を作れない (正規形が不安定で失敗) ため、`spdepol` の有限値側 (|cb|≤18 の cerfc) は gs で確認できていない。
   erfcx で桁あふれを避けると 4e-7〜8e-7 の有限値になる (この値も理論値から遠く、K64 の式か単位の疑い)。
 - Emittance[] / EMIT のスピンは次まで対応し gs と一致する (`test_spin.py`): MULT (K1・K2・K3・ずれ。`tmulke` の bsir0 更新も入れた。L=0 の薄い MULT を含む)、空洞 (試験のリングはどれも `CAVI RFC=(VOLT=1.5e6 HARM=64)` を含む)、
   SOL (`emit_extra._tturne1` が SOL 領域 `_solmap` を通す。GEO は 1 つだけ、`test_solenoid_ring_matches_gs`)。K64 は SOL (BOUND≠0) の長さを周長に入れず (omega0・MomentumCompaction・偏極時間に効く)、`emit6d._emit_circ` で同じにした
   (PLANAR + SOL の偏極時間が、SOL を除いた周長 45.6 のときと 15 桁一致)。GEO のない SOL では K64 の S 座標が途切れて周長がさらに狂う (偏極時間が約半分) が、pysad は再現しない。
 - 2026-11-16 夜に追加で gs と一致を確認 (CALC・POL の Emittance): ROTATE+DX+DY 付きの空洞 (結合リング。偏極時間 13 桁、スピンチューン 1e-14、偏極ベクトル 1e-13)、ANGLE≠0 の MULT (`tmultae`、docs/28。偏極時間 14 桁、スピンチューン 1e-14。平面リングなので偏極ベクトルは 0,1,0)、BEND の DROTATE+DX (`tbrote`。偏極時間 14 桁、スピンチューン 1e-14、偏極ベクトル 1e-14)。いずれも 1 つのリングでの照合で、広い格子ではない。
-- 未対応・未確認: `MAP` のスピン、SOL の領域内の MULT・BEND・CAVI (領域内の要素そのものが未対応: docs/29)。
+- 未対応・未確認: `MAP` のスピン、SOL の領域内の MULT・BEND・CAVI (k64 モードでは領域内の要素そのものが未対応: docs/29。v2 モードは追跡のスピンが通るが、Emittance[] の POL の量は領域内だけ K64 の式のまま: docs/43 §8a)。
   K3 が強くずれの大きい MULT のリング (K3=300、ずれ 1e-4) は、pysad の `CALC` (qcod) の閉軌道が gs と別の大きい値 (y=-0.033) になり、Emittance が NaN になる (gs は小さい軌道で通る)。qcod の初期値・後退の違いの可能性で未調査。
-  縦のオフセットのある偏向磁石の bsi の項 (`bsi2`) は K64 でも捨てられる (B58)。
+  縦のオフセットのある偏向磁石の bsi の項 (`bsi2`) は K64 では捨てられる (B58。k64 モード。v2 モードは入れる。docs/43 §8a)。
 - スロー経路 (`PYSAD_NO_ELKERN=1` 相当) の `_tquade` は、ずれ (DX/DY) だけで回転のない四極のヤコビアンを、ずらした後の座標で評価する (ずらす前の座標で評価すると、POL は numba の速い経路を使えないので εy に 7e-5 の誤差が出る)。
-- K64 の癖は B55〜B58 (docs/21)。
+- K64 の癖は B55〜B58 (docs/21)。v2 モードで直したもの (B55 の有限値、B56 の tbrote の srot の行列積、B58・B64 の端の縦磁場、B81〜B83 の bsi・刻みの角) は docs/43 §8a。
 
 ## 2. CSR
 
@@ -98,20 +99,20 @@ K64 の癖は B59・B60。
 ## 3. スピン追跡 (TrackParticles、POL)
 
 POL と RAD が ON のとき、`TrackParticles` は粒子ごとのスピンを追う (K64 では tradk の中の `sprot` で歳差と放射偏極を計算するので、RAD OFF ではスピンは変わらない)。
-実装は `pysad/track6.py` (Python の追跡。高速追跡 TrackRun は使わないので、粒子の損失 (flag) の処理はない)。
+実装は `pysad/track6.py` (Python の追跡。高速追跡 TrackRun は使わない)。k64 モードでは粒子の損失 (flag) の処理がない。v2 モードでは track6 の経路でも tapert で落とす (LOSSMAP の 2 行も付く)。
 
 - 入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/|s|, flag}`、戻りの 7・8 列は `atan(sz, sx)` と `sy/|s|` (tftrack.f の `tfsetparticles` / `ktfresetparticles`)。スピン (sx, sy, sz) = (st·cos 角度, sy, st·sin 角度)、st = √(1−sy²)。
 - bsi (磁場の縦成分の積分) が入る場所: 四極 (tsolqur の各スライスの両端)、BEND (tbendcore の入口・出口、K1 のある BEND は tbendi の各スライス)、MULT (tmulti)、tdrift の ak0 付き、SOL 内のドリフトと四極 (bz·al)。四極の ROTATE は tsolrot の chi3 のスピン回転。
 - gs と一致 (4e-12 以下、NOFLUC・FLUC): 平面リング、ずれ・回転のあるリング、MULT (K1 K2 K3)、K1 の BEND、SEXT、薄い MULT、SOL 領域内のドリフト。`test_spin_track.py`。
 - 限界: SOL (bz≠0) 内の四極のスピンは gs と照合できていない (SOL + 四極 + RAD の追跡そのものが、現在の gs (2026-10-19 ビルド) と保存済みの参照 (bench_level9、10-14) で食い違う。11-16 の単一粒子の調べでは、gs が RAD ON・BZ≠0 の領域内で四極の力を入れていない疑いが強く、pysad は物理と保存済みの参照に合う。ソースのどこかは未特定: docs/29、docs/history/work_unimpl.md)。
   BEND の `F1=0.1 FRINGE=3` (RAD ON、相対 0.7) と L≠0 の CAVI の DX・DY (相対 1e-3) は、スピンなしでも追跡が gs と合わない (未調査)。DX・DY・ROTATE だけの BEND は 1e-13 で一致する。
-- 損失 (flag) の処理はない (高速追跡 TrackRun を使わないため、粒子は落ちない)。スピンは POL かつ RAD が ON のときだけ動く。K64 の `tradk` の中の計算なので、RAD OFF ではスピンは変わらない。ほかに、SOL 領域内の MULT・BEND・CAVI は追跡そのものが未対応 (docs/29)。
+- 損失 (flag) の処理は k64 モードにはない (高速追跡 TrackRun を使わないため、粒子は落ちない。v2 モードは落とす)。スピンは POL かつ RAD が ON のときだけ動く。K64 の `tradk` の中の計算なので、RAD OFF ではスピンは変わらない。ほかに、k64 モードでは SOL 領域内の MULT・BEND・CAVI は追跡そのものが未対応 (docs/29)。v2 モードでは SOL 領域内の BEND・MULT・CAVI・ずれ・F1、UND (磁場つき)、PHSROT がスピン追跡で通る (docs/43 §8a。領域内の APERT のスピン追跡は NotImplementedError)。
 
 ## 4. RADLIGHT
 
 `TrackParticles` は RADLIGHT のとき RAD・TRPT を ON にし、`{{ls または ld, 座標}, 軌道}` を返す。軌道は粒子ごとに {t, x, y, z} の表 (`RadiationField` の入力)。
-K64 の tlinit / tlstore / tlresult の直訳 (`ffscmd._RadLight`、gs と差 0: `test_radlight.py`)。K64 の癖: 記録するのは区間 (tturn) の始めと、L≠0 の BEND 以外の要素の後だけで、BEND の中は記録しない。
-横方向の座標は軌道に入らない (tlinit が geo0 の軸 1・2 を設定しない)。位置は straight (dphi=0) の積み上げで BEND で向きが変わらない。
+K64 の tlinit / tlstore / tlresult の直訳 (`ffscmd._RadLight`、gs と差 0: `test_radlight.py`。k64 モード)。K64 の癖: 記録するのは区間 (tturn) の始めと、L≠0 の BEND 以外の要素の後だけで、BEND の中は記録しない。
+横方向の座標は軌道に入らない (tlinit が geo0 の軸 1・2 を設定しない)。位置は straight (dphi=0) の積み上げで BEND で向きが変わらない。**v2 モードは軌道が実際の 3 次元の軌道になり、BEND の中も記録する** (docs/45)。以下は k64 モード。
 `RadiationField`・`RadiationSpectrum` は実装済み。BEND の中を記録しない K64 の仕様のため、SAD 付属の例の流れ (B を ANGLE 0 の STEER にする) でないと意味のある場にならない。
 2026-11-16 夜の確認:
 - 軌道の「進行方向」は局所 z 軸で、`geo[0]=[[0,0,1,0],[-1,0,0,0],[0,-1,0,0]]` から局所 z 軸の大域成分は (1,0,0) なので、進行方向の距離は大域 x (軌道の 2 行目) に出る。

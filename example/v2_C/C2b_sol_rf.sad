@@ -1,0 +1,36 @@
+! C2b: SOL 領域 (BZ = 1 T) の中の空洞: TRPT の加速、RF つき MULT、wake、AUTOPHI (pysad v2)
+MOMENTUM = 1 GEV;
+MARK M0 = (BX=8 BY=3 AX=0.5 AY=-0.3 DZ=0.003) M1=();
+DRIFT D1 = (L=1.0) DS=(L=0.3);
+QUAD QF = (L=0.3 K1=0.25) QD=(L=0.3 K1=-0.25) QS=(L=0.2 K1=0.1);
+CAVI CA = (L=0.5 VOLT=2E8 FREQ=1.3E9 PHI=-1.2);                ! 電荷 +1: VOLT sin(-PHI) = +186 MV
+MULT MA = (L=0.4 VOLT=1E8 FREQ=1.3E9 PHI=-1.0 K1=0.05);         ! RF つきの MULT (+84 MV)
+SOL SA=(L=0 BZ=1 BOUND=1 GEO=1) SB=(L=0 BZ=0 BOUND=1);
+LINE TL = (M0 QF D1 SA DS CA DS QS DS MA DS SB D1 QD D1 M1);
+FFS;
+USE TL;
+TRPT; RFSW; INS; CALC;
+$FORM = "12.8";
+Print["momentum p/mc at entrance, exit : ", LINE["GAMMABETA",{1,"M1"}]];
+Print["CALC orbit at exit (DZ, DDP)    : ", Twiss[{"DZ","DDP"},"M1"]];
+Print["CALC BX BY R1 at exit           : ", Twiss[{"BX","BY","R1"},"M1"]];
+b = {{0, 1e-4}, {0, 2e-5}, {0, -1e-4}, {0, 1e-5}, {0.003, 0.003}, {0, 1e-3}, {1, 1}};
+r = TrackParticles[{1, b}, LINE["LENGTH"]][[2]];
+Print["track design particle (z, dp)   : ", r[[5,1]], " ", r[[6,1]]];
+Print["track particle 2 (x, y, dp)     : ", r[[1,2]], " ", r[[3,2]], " ", r[[6,2]]];
+! AUTOPHI: 空洞の位相の基準を設計軌道の到着時刻 (DZ = 3 mm) にする → 設計軌道は公称の加速 (DDP = 0)
+Element["AUTOPHI","CA"] = 1; Element["AUTOPHI","MA"] = 1;
+CALC;
+Print["AUTOPHI: CALC DDP at exit       : ", Twiss["DDP","M1"]];
+r = TrackParticles[{1, b}, LINE["LENGTH"]][[2]];
+Print["AUTOPHI: track design particle  : ", r[[6,1]]];
+! wake: 領域内の空洞の中で分割ごとに蹴る
+PBUNCH = 1e11;
+WakeFunction[Longitudinal,"CA"] = {{-1,0},{0,0},{0,1e13},{0.001,1e13},{0.01,5e12},{1,0}};
+bw = {{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0.003,0.004,0.002},{0,0,0},{1,1,1}};
+NOLWAKE;
+r0 = TrackParticles[{1, bw}, LINE["LENGTH"]][[2]];
+LWAKE;
+r1 = TrackParticles[{1, bw}, LINE["LENGTH"]][[2]];
+Print["wake: change of dp (3 particles): ", r1[[6]] - r0[[6]]];
+Exit;

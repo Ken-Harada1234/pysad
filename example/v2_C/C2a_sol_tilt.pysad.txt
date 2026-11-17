@@ -1,0 +1,19 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.033555 $$$       f BX    #######  #   4.605255 $$$       f NX    #######  #   5.411967
+$$$       f AY    #######  #   1.446352 $$$       f BY    #######  #   2.693807 $$$       f NY    #######  #   3.735466
+$$$       f LENG  #######  #  91.350000
+tunes (CALC)            :   5.41196663   3.73546647
+closed orbit at entrance: {   .00000000,   .00000000,   .00000000,   .00000000}
+orbit just inside SOL   : {   .00200000,  -.00299999,  -.00100000,  -.00200000}   (solenoid frame: DX DY of SA)
+orbit at exit           : { 4.29342E-17, 6.59195E-17, -4.3370E-18, -3.6863E-18}
+geometry at MS (GX GY GZ): { -4.86978003, 28.25494353, -1.60334E-4}
+1 turn, design particle : x= -1.4619E-17 y= 1.64238E-17
+1 turn, 0.1 mm particle : x= -2.13474E-4 y= -1.07122E-4
+emittances              : { 2.856328E-7, 3.389556E-8, 2.107360E-5}
+U0 with F1=0.1 - F1=0   :   2.11372586 eV
+       2        0   5.6920E-07  (NEWTON)    1.000          1
+ Matched. ( 5.4109E-19) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MS        f GZ   -2E-4     1  -2.000E-4 $$$         AX    #######  #  -1.999801 $$$         BX    #######  #   4.420714
+$$$         NX    #######  #   5.406681 $$$         AY    #######  #   1.370180 $$$         BY    #######  #   2.699460
+$$$         NY    #######  #   3.747969 $$$         LENG  #######  #  91.350000
+after fit GZ at MS      :  -2.00000E-4  K1(QS1) =    .06934430

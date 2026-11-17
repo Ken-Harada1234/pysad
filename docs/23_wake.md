@@ -50,13 +50,20 @@ wake の有無によらず効く。`phis=0`、`offset=sin(dphis)` (TRPT) も入�
 ## 2b. RF のある MULT (tmulti.f tmultiacc)
 
 `VOLT + DVOLT ≠ 0` の MULT は、(TRPT か RFSW) のとき `tmulti1` が `tmultiacc` を呼ぶ。そうでなければ RF なしの `tmulti` (従来の `k_mult`)。
-pysad は `track6n_ext.mult_full` (ANGLE=0、F1・FRINGE なしの MULT。AUTOPHI は未対応):
+pysad は `track6n_ext.mult_full` (ANGLE=0、F1・FRINGE なしの MULT。AUTOPHI は k64 モードでは未対応、v2 モードでは対応):
 
 - CAVI と同じ `ndiv` 分割と `ws` (加速があるとき)。1 分割ごとに、wake → ソレノイド・四極 (`tsolqu`、K0 と K1) → 放射 (`tradk`) → n≥2 の多極キック → `dzn` と電圧キック。
 - 電圧キックの定数と式は tcav と少し違う: `oneev = 1+1e-6`、`pmin = 1e-10` での下限、`tlim = 1e4`、`v20a = v02a = v (w (1/2p0 + 1/2pe))² / 4` (`vcorr`)、`v1a = v11a = 0`。
 - フリンジ (`DISFRIN=0`): 入口で `tcavfrin` → `ttfrins`、出口で `ttfrins` の逆順 → `tcavfrin(−v)`。
 - vnominal≠0 (TRPT) のとき、末尾で基準運動量を `pe` に付け替える (`cav_full` と同じ)。
 - MULT の DVOLT、DPHI、AUTOPHI は parser が属性に付ける。
+
+## 2c. v2 モードで変わる点 (k64 モードは K64 のまま)
+
+- **wake の重み (B84。K64 の誤り)**: `tcav.f`・`tmulti.f` の `fw=fw0*(wsn+ws(n-1)*.5d0)` は、空洞が 2 つ以上に分割されると wake の蹴りの合計が (1.5n − 0.5)/n 倍になる。**k64 モードはこれを再現し (1.25〜1.5 倍)、v2 モードは台形の重み fw0·(ws(n) + ws(n−1))/2 (合計 1) にする**。領域の外の空洞・RF つき MULT も。位置によらない表では、エネルギーの変化が空洞の電圧 (= 分割数) によらない: 20 MV (1 分割) と 200 MV (4 分割以上) で 5e-3 (`test_wake_weight_sum_is_one_in_v2_and_one_and_half_in_k64`)。分割が 1 のとき (薄い空洞) は両モードで同じ。
+- **領域内の CAVI・RF つき MULT の wake** (v2 モード): SOL 領域内の CAVI と VOLT≠0 の MULT で、tsol.f の ewak どおり tmultiacc の中で分割ごとに txwake を呼ぶ。縦の wake によるエネルギーの変化の合計が、領域の外の同じ空洞と同じ (bz → 0 で 1e-6、BZ = 1 T でも同じ)。横の蹴りの合計は 2% 以内 (分割して入るので位置の変化は少し違う)。wake が働くのは TRPT のとき (従来どおり)。横の蹴りを gs と比べてはいない。k64 モードは領域内の CAVI・MULT が未対応。
+- **AUTOPHI** (v2 モード): CAVI・RF つき MULT の `AUTOPHI=1` は、空洞の位相 PHI + DPHI を設計軌道がその空洞に着く時刻 (Twiss の DZ) を基準に測る (docs/44)。k64 モードは NotImplementedError。
+- **旧式の `WAKE` コマンド** (B66): v2 モードは tfwake.f の構文 `WAKE LONGITUDINAL|TRANSVERSE 要素 s1 w1 s2 w2 … ENDWAKE` を WakeFunction の表として登録する (CAVI だけ)。表は行をまたいで書ける (`ENDWAKE` か `;` が来るまで続く。1 行に何組でも、注釈 `!` 可、`ENDWAKE` の後の同じ行の続き (`ENDWAKE; CALC;`) も実行する。要素名はワイルドカード可)。同じ表を `WakeFunction[…] = …` で与えた追跡と同じ結果 (6 点・5 点の表で gs の参照値と 2e-9、400 点の表・2 台の CAVI で WakeFunction と 1e-12)。点数の上限は無い (400 点で確認。K64 の tfwake.f は約 8000 組まで)。値は数か式 (`1e9*2`)。使えない: 表の途中の `;` (エラー)、CAVI 以外の要素、k64 モード (WAKE は `WAKECOMMAND[]` のままで、文は行ごと)。`ENDWAKE` を書き忘れると次の `;` までを表として読んでエラーにする。エラーの文は `?Missing ENDWAKE.`・`?Missing value of wake.`・`?WAKE: QF は CAVI ではない`・`?Undefined element`・`?No wake data.` (エラーの後も台本は続く)。例 `example/v2_C/C2w_wake_table.sad`。試験 `test_v2_C_wakecmd.py`・`test_v2_C2_wakecmd.py`。
 
 ## 3. K64 の癖 (そのまま写した。gs で確認したもの)
 
@@ -99,11 +106,11 @@ SAD K64 (WSL の gs) と同じ台本を走らせて比べた。粒子 200〜400 
      最初の `tapert` では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされたまま追跡が続き、後の `tapert` で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。
      pysad は `TrackRun.l_track0`・`k_apert` の lcur==0 で再現する。gs (1 回目・2 回目の呼び出し) と直した SAD (LOSSAMPL=1e-4、3 粒子、2 周、NORAD、TRPT、15 値) と全桁一致 (`test_small_items.py` に 1 件)。
      元の gs は SIGSEGV で落ちるので、比べた基準は直した SAD。
-- **WAKE コマンドの旧式の入力 (`tfwake.f`) は移植しない**。K64 の `tffsa.f:972` は `tfwake.f` を呼ばず `WAKECOMMAND[]` (`init.n` の AutoLoad。`Packages/WAKECOMMAND.n` は配布にない) を評価する。
-  gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路で、エラー文の表示だけ未再現 (2026-11-16 に確認。SADHelp にない旧機能)。
+- **WAKE コマンドの旧式の入力 (`tfwake.f`)**: k64 モードでは移植しない。K64 の `tffsa.f:972` は `tfwake.f` を呼ばず `WAKECOMMAND[]` (`init.n` の AutoLoad。`Packages/WAKECOMMAND.n` は配布にない) を評価する。
+  gs は fileopen のエラーを出して行の残りを捨てる。k64 モードの pysad も同じ経路で、エラー文の表示だけ未再現 (2026-11-16 に確認。SADHelp にない旧機能)。v2 モードは §2c のとおり表を読む。
 - `txwdefslice` で、バンチの間隔がバンチ数 NBUNCH を超えて空くときは Fortran が配列の外へ書く (`mb(nb+1)`)。pysad は読める値として扱う。結果が不定なので比較できない。
 - RAD ON の追跡は、wake の有無によらず gs と 1e-6 程度ずれる (wake なしでも 8.9e-7、同じ量が wake ありでも出る)。wake とは別の、TrackParticles の放射 (TRPT) の差。
-- MULT の AUTOPHI、CAVI の AUTOPHI (位置の z が要る)。`NotImplementedError`。MULT の F1・FRINGE。`mult_full` (RF のある MULT の wake 付き経路) は ANGLE=0 だけで、ANGLE≠0 の MULT そのものの追跡は docs/28 (`multa.py`) にあるが、wake・RF との併用は未確認。
+- MULT の AUTOPHI、CAVI の AUTOPHI: k64 モードでは `NotImplementedError` (v2 モードは §2c)。MULT の F1・FRINGE (両モードで未対応)。`mult_full` (RF のある MULT の wake 付き経路) は ANGLE=0 だけで、ANGLE≠0 の MULT そのものの追跡は docs/28 (`multa.py`) にあるが、wake・RF との併用は未確認。
 - wake と COORD・TCAVI (docs/25・26)・UND・MAP の併用、SOL 領域内の TCAVI は確認していない。
 - 並列追跡 (NPARA) は wake があると 1 本になる (tftrack.f:133)。pysad は元から 1 本。
 

@@ -16,7 +16,7 @@ CALC;                               (* 軌道を計算し直す。CALC NOEXP で
 `Twiss["DY",名前]` の BPM での値から rms を作る。
 
 ## 結果の読み方
-`R:rmx0`・`R:rmy0` は補正前の水平・垂直の rms、`rmy1` は垂直補正後、`rmx1` は水平補正後、`rmy2` は水平補正後の垂直の rms。`nsteer=24`、`max kick` は最大のキック [rad]。gs は `Element values are not expanded` という注意を出すことがある。
+`R:rmx0`・`R:rmy0` は補正前の水平・垂直の rms、`rmy1` は垂直補正後、`rmx1` は水平補正後、`rmy2` は水平補正後の垂直の rms。`nsteer=24`、`max kick` は最大のキック [rad]。gs は `Element values are not expanded` という注意を出すことがある。pysad も 2026-11-17 の再実行 (v2.0.0) で同じ注意と `NOCALEXP` の表示を出し、gs と同じになった (`NOKEEPEXP`・EXPAND の gs に合わせた対応による。最初の版の `.pysad.txt` は出していなかった。補正の数値は変わらない)。
 
 ## gs と pysad の比較
 | 量 | gs | pysad |

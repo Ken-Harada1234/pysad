@@ -69,7 +69,7 @@ C (<code>src/*.c</code> の REGn: System、Tk、ファイル、乱数、プロ�
 <tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="実装" data-sad="Fortran" data-name="calculate(cal)"><td>コマンド</td><td><code>CALCULATE(CAL)</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-実装">実装</td><td class="pol-直接翻訳">直接翻訳</td></tr>
 <tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="実装" data-sad="Fortran" data-name="chromaticity(chro)"><td>コマンド</td><td><code>CHROMATICITY(CHRO)</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-実装">実装</td><td class="pol-直接翻訳">直接翻訳</td></tr>
 <tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="実装" data-sad="Fortran" data-name="emittance(emit)"><td>コマンド</td><td><code>EMITTANCE(EMIT)</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-実装">実装</td><td class="pol-直接翻訳">直接翻訳</td></tr>
-<tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="無視" data-sad="Fortran" data-name="measure(mea)"><td>コマンド</td><td><code>MEASURE(MEA)</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-無視">無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)。tlum / tluma だけ `pysad/measure.py` に直訳。ほかの MEASURE/TRCOD の経路は未翻訳 (gs が動かない B42。docs/20)</td><td class="pol-直接翻訳">直接翻訳</td></tr>
+<tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="未対応" data-sad="Fortran" data-name="measure(mea)"><td>コマンド</td><td><code>MEASURE(MEA)</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-未対応">v2 モードで実装 (`pysad/measure.py`。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)</td><td class="pol-直接翻訳">直接翻訳</td></tr>
 <tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="実装" data-sad="Fortran" data-name="org"><td>コマンド</td><td><code>ORG</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-実装">実装</td><td class="pol-直接翻訳">直接翻訳</td></tr>
 <tr data-kind="コマンド" data-cat="物理計算" data-pol="直接翻訳" data-st="実装" data-sad="Fortran" data-name="radint"><td>コマンド</td><td><code>RADINT</code></td><td>物理計算</td><td>Fortran tffsa.f</td><td class="st-実装">実装</td><td class="pol-直接翻訳">直接翻訳</td></tr>
 <tr data-kind="関数" data-cat="物理計算" data-pol="Python で書き直し (.n)" data-st="実装" data-sad=".n" data-name="accelerateparticles"><td>関数</td><td><code>AccelerateParticles</code></td><td>物理計算</td><td>.n dapert.n</td><td class="st-実装">実装</td><td class="pol-書き直し">Python で書き直し (.n)</td></tr>
@@ -194,11 +194,11 @@ C (<code>src/*.c</code> の REGn: System、Tk、ファイル、乱数、プロ�
 <tr data-kind="関数" data-cat="GUI・描画" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="parametricplot"><td>関数</td><td><code>ParametricPlot</code></td><td>GUI・描画</td><td>.n Plots.n</td><td class="st-実装">実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/37)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
 <tr data-kind="関数" data-cat="GUI・描画" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="plot"><td>関数</td><td><code>Plot</code></td><td>GUI・描画</td><td>.n Plots.n</td><td class="st-実装">実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。ListPlot と同じオプションを与えた戻りの Graphics 式も gs と文字列で一致。docs/37)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
 <tr data-kind="関数" data-cat="GUI・描画" data-pol="Python ライブラリで代替" data-st="未対応" data-sad=".n" data-name="pointsymbol"><td>関数</td><td><code>PointSymbol</code></td><td>GUI・描画</td><td>.n? CSR.n,Canvas.n,ListPlot.n,…</td><td class="st-未対応">ListPlot が内部で使う (`CanvasSymbolDirect`)。単独では未確認</td><td class="pol-代替">Python ライブラリで代替</td></tr>
-<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="C" data-name="fork"><td>関数</td><td><code>Fork</code></td><td>システム・プロセス・並列</td><td>C tfProcess_.c</td><td class="st-実装">実装 (限定: 本当には fork せず、自分のプロセス番号を返す)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
-<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="openshared"><td>関数</td><td><code>OpenShared</code></td><td>システム・プロセス・並列</td><td>.n shared.n</td><td class="st-実装">実装 (限定: プロセス内の辞書。別プロセスとは共有しない)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
-<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="shared"><td>関数</td><td><code>Shared</code></td><td>システム・プロセス・並列</td><td>.n CSR.n,shared.n</td><td class="st-実装">実装 (限定: 同上)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
-<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="Fortran" data-name="sharedsize"><td>関数</td><td><code>SharedSize</code></td><td>システム・プロセス・並列</td><td>Fortran tfinitn.f</td><td class="st-実装">実装 (限定: 同上。辞書の項目数)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
-<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="C" data-name="system"><td>関数</td><td><code>System</code></td><td>システム・プロセス・並列</td><td>C tfProcess_.c</td><td class="st-実装">実装</td><td class="pol-代替">Python ライブラリで代替</td></tr>
+<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="C" data-name="fork"><td>関数</td><td><code>Fork</code></td><td>システム・プロセス・並列</td><td>C tfProcess_.c</td><td class="st-実装">実装。v2 モード: POSIX では `os.fork` で本当に分ける、Windows はエラー。k64 モード: 本当には fork せず自分のプロセス番号を返す (限定)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
+<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="openshared"><td>関数</td><td><code>OpenShared</code></td><td>システム・プロセス・並列</td><td>.n shared.n</td><td class="st-実装">実装 (無名の mmap に値を符号化して書く。fork した子と共有する)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
+<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="shared"><td>関数</td><td><code>Shared</code></td><td>システム・プロセス・並列</td><td>.n CSR.n,shared.n</td><td class="st-実装">実装 (同上)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
+<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="Fortran" data-name="sharedsize"><td>関数</td><td><code>SharedSize</code></td><td>システム・プロセス・並列</td><td>Fortran tfinitn.f</td><td class="st-実装">実装 (K64 と同じ式)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
+<tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="C" data-name="system"><td>関数</td><td><code>System</code></td><td>システム・プロセス・並列</td><td>C tfProcess_.c</td><td class="st-実装">実装。既定では実行しない (`PYSAD_ALLOW_SYSTEM=1` で許可。docs/04 §6)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
 <tr data-kind="関数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="Fortran" data-name="temporaryname"><td>関数</td><td><code>TemporaryName</code></td><td>システム・プロセス・並列</td><td>Fortran tfinitn.f</td><td class="st-実装">実装</td><td class="pol-代替">Python ライブラリで代替</td></tr>
 <tr data-kind="変数" data-cat="システム・プロセス・並列" data-pol="Python ライブラリで代替" data-st="実装" data-sad="Fortran" data-name="npara"><td>変数</td><td><code>NPARA</code></td><td>システム・プロセス・並列</td><td>Fortran initb1.f,tfefun1.f,tfsetparam.f,…; .n init.kekb.n,init.n,init.skekb.n</td><td class="st-実装">参照あり (ffscmd.py, ffsextra.py, parser.py)</td><td class="pol-代替">Python ライブラリで代替</td></tr>
 <tr data-kind="関数" data-cat="ユーティリティ (時刻・計測・デバッグ)" data-pol="Python ライブラリで代替" data-st="実装" data-sad=".n" data-name="datestring"><td>関数</td><td><code>DateString</code></td><td>ユーティリティ (時刻・計測・デバッグ)</td><td>.n init.n</td><td class="st-実装">実装</td><td class="pol-代替">Python ライブラリで代替</td></tr>
@@ -320,26 +320,26 @@ C (<code>src/*.c</code> の REGn: System、Tk、ファイル、乱数、プロ�
 <tr><td><code>JITTER</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>KEEPEXP</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>LOG</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
-<tr><td><code>LOSSMAP</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
+<tr><td><code>LOSSMAP</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (`TrackParticles` の戻りに落ちた要素・落ちた周の 2 行を足す。両モード。docs/08 §9.7)</td></tr>
 <tr><td><code>LWAKE</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
 <tr><td><code>MOVESEED</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>PHOTONS</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
 <tr><td><code>POL</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py。Emittance・EMIT のスピンと、RAD ON のときの TrackParticles のスピン追跡。docs/36)</td></tr>
 <tr><td><code>PRSVCASE</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
-<tr><td><code>PSPAC</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
+<tr><td><code>PSPAC</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (v2 モード: `SPCH` 要素の空間電荷が `TrackParticles` に入る。k64 モードは値を保持するだけ。docs/08 §9.7)</td></tr>
 <tr><td><code>QUIET</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>RAD</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
 <tr><td><code>RADCOD</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
 <tr><td><code>RADLIGHT</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (TrackParticles が軌道 {t,x,y,z} を返す。K64 は BEND の中を記録せず横方向の座標も入れない。docs/36)</td></tr>
 <tr><td><code>RADPOL</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
-<tr><td><code>RADTAPER</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
+<tr><td><code>RADTAPER</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (Emittance[]・EMIT・追跡に入る。両モード。docs/08 §9.7)</td></tr>
 <tr><td><code>REAL</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>RELW</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>RFSW</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py, maintrack.py)</td></tr>
 <tr><td><code>RING</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
-<tr><td><code>SELFCOD</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
+<tr><td><code>SELFCOD</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (v2 モード: WSPAC の力の中心を粒子の重心にする。k64 モードは値を保持するだけ)</td></tr>
 <tr><td><code>SORG</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
-<tr><td><code>SPAC</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
+<tr><td><code>SPAC</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (v2 モード: `DRIFT`・`MULT` の `RADIUS` の空間電荷が `TrackParticles` に入る。k64 モードは値を保持するだけ。K64 の SPAC は力が 1/γ 倍に弱い (B89))</td></tr>
 <tr><td><code>STABLE</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>SUMRES</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
 <tr><td><code>SUS</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
@@ -349,7 +349,7 @@ C (<code>src/*.c</code> の REGn: System、Tk、ファイル、乱数、プロ�
 <tr><td><code>UNIPOL</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>UNSTABLE</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
 <tr><td><code>WAKEOPT</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (参照 ffscmd.py)</td></tr>
-<tr><td><code>WSPAC</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (値を保持するだけ)</td></tr>
+<tr><td><code>WSPAC</code></td><td>Fortran tffs.f (fname/sino)</td><td>実装 (v2 モード: ビーム行列のガウス分布の力が `TrackParticles` に入る。光学・Emittance へは未対応。k64 モードは値を保持するだけ)</td></tr>
 </table>
 <h2>5. 要素の型とキーワード (13 型)</h2><p class="small">SAD 側はすべて Fortran (initb1.f の sethtb/kytbl、kyparam)。pysad の型は parser._SAD_ELEMENT_TYPES、キーワードは sadkw の表。</p>
 <table><tr><th>型</th><th>pysad の型</th><th>キーワード (SADHelp)</th><th>pysad に無いキーワード</th></tr>

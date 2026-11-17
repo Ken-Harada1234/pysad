@@ -1,13 +1,21 @@
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.000000 $$$       f BX    #######  #   2.000000 $$$       f NX    #######  #    .125000
+$$$       f AY    #######  #  -1.000000 $$$       f BY    #######  #   2.000000 $$$       f NY    #######  #    .125000
+$$$       f LENG  #######  #   1.000000
+(A) NOSPAC rms x= 5.002783E-4 y= 4.997272E-4 alive= 2000.000000
+(A) SPAC   rms x= 7.158986E-4 y= 7.150713E-4 alive= 2000.000000
+(A) K =  9.397019E-7  envelope rms: K ->  7.196521E-4  K/gamma (K64 SPC1) ->  5.059884E-4
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
 $$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
 $$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
 $$$       f LENG  #######  #  105.60000
-initial rms x= 1.510947E-4 y= 1.493365E-4  RADIUS(D1)=     .000000
-(A) NOSPAC     1.000000 turns: rms x= 2.590798E-4 y= 2.375053E-5 alive=  200.000000
-(A) SPAC       1.000000 turns: rms x= 2.590798E-4 y= 2.375053E-5 alive=  200.000000
-(A) NOSPAC    20.000000 turns: rms x= 2.779886E-4 y= 2.327285E-4 alive=  200.000000
-(A) SPAC      20.000000 turns: rms x= 2.779886E-4 y= 2.327285E-4 alive=  200.000000
-(A) NOSPAC   100.000000 turns: rms x= 1.629154E-4 y= 2.303494E-4 alive=  200.000000
-(A) SPAC     100.000000 turns: rms x= 1.629154E-4 y= 2.303494E-4 alive=  200.000000
-(B) SPAC RADIUS=-0.4 mm, 2 turns: alive=  200.000000
-(B) NOSPAC RADIUS=-0.4 mm, 2 turns: alive=  200.000000
+(B) Twiss: nux=    6.696329 nuy=    4.906056
+(B) NOSPAC fractional tune (ArcCos) x=     .303671 y=     .093944
+(B) SPAC   fractional tune (ArcCos) x=     .315466 y=     .107171
+(B) tracking  dnux=    -.011795 dnuy=    -.013227
+(B) Laslett (DRIFT only,    52.800000 m of   105.600000 m): dnux=    -.011087 dnuy=    -.012541
+(B) Laslett (whole ring):  dnux=    -.022172 dnuy=    -.025083
+(B) Laslett (DRIFT only)/gamma (K64 SPC1): dnux= -2.83176E-4 dnuy= -3.20305E-4
+(C) initial rms x= 1.510947E-4 y= 1.493365E-4  RADIUS(D1)=     .030000
+(C) SPAC RADIUS=-0.4 mm, 2 turns: alive=   84.000000
+(C) NOSPAC RADIUS=-0.4 mm, 2 turns: alive=  200.000000

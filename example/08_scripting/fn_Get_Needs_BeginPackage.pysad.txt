@@ -1,9 +1,9 @@
 Context before: System`
 Context after : System`
-Stat`Mean2 Stat`Mean2[{1,2,3,4}]
-Stat`Var2  Stat`Var2[{1,2,3,4}]
-Stat`Calls Stat`Calls[]
-Stat`Counter Stat`Counter
-Context[Stat`sq] `
-plain Mean2 (not on context path) 1.5
-Names {}
+Stat`Mean2 2.5
+Stat`Var2  1.25
+Stat`Calls 2
+Stat`Counter 2
+Context[Stat`sq] Stat`
+plain Mean2 (not on context path) Mean2[{1,2}]
+Names {"Stat`Calls","Stat`Counter","Stat`Mean2","Stat`Var2","Stat`l","Stat`sq","Stat`x"}

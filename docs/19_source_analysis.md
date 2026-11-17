@@ -19,7 +19,7 @@ SAD (Strategic Accelerator Design) は KEK 発の加速器光学・追跡コー�
 | `src/inc/` | 35 エントリ (.inc 33 + changelog + k64.readme)。大半は全行コメントアウト |
 | `Packages/` | 82 エントリ (.n 73、.py 6 ほか) |
 | `mk/` | .mk 19 本 + Makefile 2 本 |
-| pysad (現行系統) | `pysad/*.py` 67 本、計 50,169 行 (2026-11-16 に数え直した。非推奨の旧 API ffs/matching/tracking/optics 3,911 行を含む)。試験は 578 件収集、575 通過・3 skip (GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip) |
+| pysad (現行系統) | `pysad/*.py` 71 本、計 57,124 行 (2026-11-17 に数え直した。非推奨の旧 API ffs/matching/tracking/optics 3,911 行を含む)。試験は 941 件収集、937 通過・4 skip (GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip) |
 
 ファイル分類: 🔴A 物理コア / 🟡B 数学 / 🔵C インタープリタ / 🟢D グラフィックス / ⚫E ビルド / 🟣F SADScript パッケージ / 🟤G 外部ライブラリ。pysad の対象は A と B (C は `sadscript.py` + `ffscmd.py` で最小限を自前実装、D/E/G は不要)。
 

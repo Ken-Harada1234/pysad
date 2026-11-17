@@ -1,0 +1,26 @@
+FFS;
+(* BeginPackage / Begin の文脈 (名前空間)。パッケージの中の名前は Stat`名 になり、大域の同名の変数・関数と衝突しない。
+   大域に公開する名前は `名前 (先頭にバッククォート) で定義する。パッケージのファイルはこのスクリプトが書き出して Get で読む *)
+Counter = 77;                         (* 大域の変数 (パッケージの Counter とは別) *)
+file = "v2_B_stat_pkg.n";
+fd = OpenWrite[file];
+WriteString[fd, "BeginPackage[Stat`];\n"];
+WriteString[fd, "Begin[Stat`];\n"];
+WriteString[fd, "Counter = 0;\n"];
+WriteString[fd, "sq[x_] := x^2;\n"];
+WriteString[fd, "Mean2[l_List] := (Counter++; Plus @@ l/Length[l]);\n"];
+WriteString[fd, "Var2[l_List] := Plus @@ (sq /@ (l - Mean2[l]))/Length[l];\n"];
+WriteString[fd, "`Sigma[l_List] := Sqrt[Var2[l]];\n"];
+WriteString[fd, "End[];\n"];
+WriteString[fd, "EndPackage[];\n"];
+Close[fd];
+Get[file];
+Print["Stat`Mean2[{1,2,3,4}] = ", Stat`Mean2[{1, 2, 3, 4}]];
+Print["Stat`Var2[{1,2,3,4}]  = ", Stat`Var2[{1, 2, 3, 4}]];
+Print["Sigma[{1,2,3,4}]      = ", Sigma[{1, 2, 3, 4}], "   (`Sigma で大域に公開)"];
+Print["Stat`Counter = ", Stat`Counter, "   大域の Counter = ", Counter];
+Print["Mean2[{1,2}] (文脈なし) = ", Mean2[{1, 2}], "   (見えないので未評価)"];
+Print["Context[Stat`sq] = ", Context[Stat`sq], "   $Context = ", $Context, "   $ContextPath = ", $ContextPath];
+Print["Names[\"Stat`*\"] = ", Names["Stat`*"]];
+DeleteFile[file];
+Exit;

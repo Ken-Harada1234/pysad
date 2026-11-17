@@ -27,30 +27,30 @@ R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
 
 Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 2838943.6 Hz 
 Energy loss per turn U0 = 1.5632657 MV  Effective voltage    Vc = 6.0000000 MV 
-Equilibrium position dz = 25.153187 mm  Momentum compact. alpha =    .02221
+Equilibrium position dz = 25.153187 mm  Momentum compact. alpha =    .02212
 Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 176.12184
-Bucket height     dV/P0 =  .0142615     Synchrotron frequency   = 98432.193 Hz 
+Bucket height     dV/P0 =  .0142897     Synchrotron frequency   = 98432.193 Hz 
 
   Imag.tune:-0.0000000          -0.0000000           0.0000000
   Real tune:-0.3038107          -0.0939440          -0.0346721
 
     Damping per one revolution:
-          X : -2.513846E-04   Y : -2.605594E-04   Z : -5.299733E-04
+          X : -2.455944E-04   Y : -2.605594E-04   Z : -5.357608E-04
     Damping time (sec):
-          X :  1.401214E-03   Y :  1.351875E-03   Z :  6.646443E-04
+          X :  1.434250E-03   Y :  1.351875E-03   Z :  6.574645E-04
     Tune shift due to radiation:
-          X : -5.111995E-05   Y :  5.411244E-05   Z : -2.269443E-07
+          X : -5.093840E-05   Y :  5.411244E-05   Z : -2.262476E-07
     Damping partition number:
-          X :    0.9651       Y :    1.0003       Z :    2.0346
+          X :    0.9429       Y :    1.0003       Z :    2.0568
 
-Emittance X            = 1.73611E-7 m   Emittance Y            =  .00000000 m
-Emittance Z            = 1.51934E-5 m   Energy spread          =  .00119227
-Bunch Length           = 12.8116597 mm  Beam tilt              =  .00000000 rad
-Beam size xi           = 1.15654032 mm  Beam size eta          =  .00000000 mm
+Emittance X            = 1.77705E-7 m   Emittance Y            =  .00000000 m
+Emittance Z            = 1.50292E-5 m   Energy spread          =  .00118581
+Bunch Length           = 12.7422570 mm  Beam tilt              =  .00000000 rad
+Beam size xi           = 1.16322801 mm  Beam size eta          =  .00000000 mm
 Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
 
 BeamMatrix size = {  6.000000,  6.000000}
-sqrt(b11) sqrt(b33) sqrt(b66) =    .005729    .000000    .010000
-EMITX EMITY SIGE =  1.7361E-7    .000000    .001192
+sqrt(b11) sqrt(b33) sqrt(b66) =    .005731    .000000    .010000
+EMITX EMITY SIGE =  1.7770E-7    .000000    .001186
 DP (special variable) =    .010000   b66 =  1.0000E-4
-EMITX*BX + (EX*SIGE)^2 =  1.3266E-6   EMITX*BX + (EX*DP)^2 =  3.2821E-5   b11 =  3.2821E-5
+EMITX*BX + (EX*SIGE)^2 =  1.3422E-6   EMITX*BX + (EX*DP)^2 =  3.2841E-5   b11 =  3.2841E-5

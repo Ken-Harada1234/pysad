@@ -1,0 +1,18 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.182990 $$$       f BX    #######  #    .350519 $$$       f NX    #######  #    .293708
+$$$       f AY    #######  #  -18.42696 $$$       f BY    #######  #  10.993016 $$$       f NY    #######  #    .079087
+$$$       f LENG  #######  #   1.000000
+(1) NOSPAC 2 rms x=     .001154 y=     .004283 alive= 4000.000000
+(1) SPAC   2 rms x=     .002109 y=     .006779 alive= 4000.000000
+(1) envelope (K =  5.984881E-6): X, Y = {     .002121,     .006813}   K = 0: {     .001151,     .004300}
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.774913 $$$       f BX    #######  #   2.951982 $$$       f NX    #######  #    .785597
+$$$       f AY    #######  #    .821224 $$$       f BY    #######  #   1.253937 $$$       f NY    #######  #    .646824
+$$$       f LENG  #######  #   8.000000
+(2) Twiss: nux=     .785597 nuy=     .646824
+(2) no space charge: nux=     .785597 nuy=     .646824
+(2) SPAC  (3D, MULT + DRIFT = whole ring): dnux=    -.004463 dnuy=    -.007066
+(2) PSPAC (2D, at SPCH):                   dnux=    -.004343 dnuy=    -.006568
+(2) WSPAC (Gaussian, element entrances):   dnux=    -.004263 dnuy=    -.006726
+(2) Laslett (whole ring):  dnux=    -.004264 dnuy=    -.006671
+(2) Laslett (DRIFT only = QUAD で書いた場合に SPAC が入る分): dnux=    -.003414 dnuy=    -.005331

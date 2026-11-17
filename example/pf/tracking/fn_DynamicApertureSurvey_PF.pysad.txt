@@ -4,84 +4,84 @@ $$$       f LENG  #######  #  187.03548
 
     Closed orbit:
                   x     px/p0         y     py/p0         z     dp/p0 
-  Entrance :  -7.80E-7  -1.20E-6  -6.9E-23  3.59E-22  -1.63E-6  -3.60E-5
-      Exit :  -7.80E-7  -1.20E-6  1.77E-21  -5.2E-23  -1.63E-6  -3.60E-5
+  Entrance :  -7.80E-7  -1.20E-6  -3.8E-22  1.03E-24  -1.65E-6  -3.60E-5
+      Exit :  -7.80E-7  -1.20E-6  7.34E-23  7.38E-23  -1.65E-6  -3.60E-5
 
     Extended Twiss Parameters
 AX: -6.54E-4 BX: 11.98566                            ZX: 4.130E-7  EX:  .001600
-           PSIX: 1.02E-18                           ZPX: -3.99E-7 EPX: 3.97E-21
-R1: 1.31E-20 R2: -3.3E-20 AY: 4.976E-4 BY: 4.989620  ZY: -7.9E-23  EY: 3.97E-21
-R3: 2.57E-21 R4: -8.2E-20            PSIY: 1.84E-46 ZPY: -9.2E-24 EPY: -1.6E-21
+           PSIX: 1.02E-18                           ZPX: -3.99E-7 EPX: -1.6E-21
+R1: -1.2E-20 R2: -1.0E-19 AY: 4.976E-4 BY: 4.989620  ZY: 1.69E-23  EY: -1.6E-21
+R3: -2.7E-21 R4: 2.06E-20            PSIY: 2.01E-47 ZPY: -2.9E-24 EPY: -1.9E-22
                                                      AZ:  .020610  BZ: 13.31300
-                                                                 PSIZ: 1.81E-20
+                                                                 PSIZ: 2.86E-20
     Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
 
 Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 1602864.0 Hz 
 Energy loss per turn U0 =  .3991454 MV  Effective voltage    Vc = 1.7000000 MV 
-Equilibrium position dz = 22.617279 mm  Momentum compact. alpha =    .00656
+Equilibrium position dz = 22.617300 mm  Momentum compact. alpha =    .00656
 Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 311.93555
-Bucket height     dV/P0 =  .0118039     Synchrotron frequency   = 23522.241 Hz 
+Bucket height     dV/P0 =  .0118081     Synchrotron frequency   = 23522.241 Hz 
 
-  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Imag.tune: 0.0000000          -0.0000000          -0.0000000
   Real tune:-0.4021798           0.2791903          -0.0146751
 
     Damping per one revolution:
-          X : -8.231584E-05   Y : -7.980494E-05   Z : -1.571409E-04
+          X : -8.022231E-05   Y : -7.980494E-05   Z : -1.592410E-04
     Damping time (sec):
-          X :  7.579140E-03   Y :  7.817602E-03   Z :  3.970214E-03
+          X :  7.776929E-03   Y :  7.817602E-03   Z :  3.917856E-03
     Tune shift due to radiation:
-          X : -4.432916E-06   Y :  1.450768E-05   Z : -1.106994E-07
+          X : -4.391556E-06   Y :  1.450769E-05   Z : -1.108680E-07
     Damping partition number:
-          X :    1.0313       Y :    0.9999       Z :    1.9688
+          X :    1.0051       Y :    0.9998       Z :    1.9951
 
-Emittance X            = 3.45380E-8 m   Emittance Y            = -3.354E-43 m
-Emittance Z            = 7.16265E-6 m   Energy spread          = 7.33656E-4
-Bunch Length           = 9.76502669 mm  Beam tilt              = 2.2514E-16 rad
-Beam size xi           =  .64339877 mm  Beam size eta          =  .00000000 mm
+Emittance X            = 3.54393E-8 m   Emittance Y            = 1.7204E-43 m
+Emittance Z            = 7.06818E-6 m   Energy spread          = 7.28802E-4
+Bunch Length           = 9.70041309 mm  Beam tilt              = -2.988E-17 rad
+Beam size xi           =  .65174015 mm  Beam size eta          =  .00000000 mm
 Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
 
-sigx sigy [mm]     .6433463520     .4153762582   1% of dp/p =   13.6303644924 sigma_E
+sigx sigy [mm]     .6516870833     .4207614473   1% of dp/p =   13.7211547970 sigma_E
  Turns = 1000.000000000 Maximum number of particles = 714.0000000000
  Range    Xmin:   1.000 Xmax: 100.000
          (Ymin:   1.000 Ymax:   1.000)
-          Zmin: -20.446 Zmax:  20.446
+          Zmin: -20.582 Zmax:  20.582
  Display:    20 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -20.45  0 7777777777777777776666666555165666544  6.       1 .
-   -13.63 21 UUUUUUUUUUUUUUUUUUUUU88322  2112111    1.         .
-    -6.82 19 UUUUUUUUUUUUUUUUUUUfKT21 1 12 .1        .         .
-     0.00 22 UUUUUUUUUUUUUUUUUUUUUU1  111  .         .         .
-     6.82 19 UUUUUUUUUUUUUUUUUUUcQ13 111   .         .         .
-    13.63 19 UUUUUUUUUUUUUUUUUUUO1144  1   .         .         .
-    20.45  0 999999999999999988887795      .         .         .
+   -20.58  0 77777777777777777665665555551545555434  .         .
+   -13.72 21 UUUUUUUUUUUUUUUUUUUUUa82211211111111   1.         .
+    -6.86 20 UUUUUUUUUUUUUUUUUUUUc621   12 11  1     .         .
+     0.00 22 UUUUUUUUUUUUUUUUUUUUUU   2 11 3         .         .
+     6.86 19 UUUUUUUUUUUUUUUUUUUm4 3213 1  .         .         .
+    13.72 20 UUUUUUUUUUUUUUUUUUUU3136      .         .         .
+    20.58  0 999999999999999988888821      .         .         .
       NZ     0----|----1----|----2----|----3----|----4----|----5
-    Score:   100
- -20.4455467387     .0000000000   -1.2866927039
- -13.6303644924   21.0000000000   25.7338540782
-  -6.8151822462   19.0000000000   23.1604686704
-    .0000000000   22.0000000000   27.0205467821
-   6.8151822462   19.0000000000   23.1604686704
-  13.6303644924   19.0000000000   23.1604686704
-  20.4455467387     .0000000000   -1.2866927039
+    Score:   102
+ -20.5817321955     .0000000000   -1.3033741665
+ -13.7211547970   21.0000000000   26.0674833301
+  -6.8605773985   20.0000000000   24.7641091636
+    .0000000000   22.0000000000   27.3708574967
+   6.8605773985   19.0000000000   23.4607349971
+  13.7211547970   20.0000000000   24.7641091636
+  20.5817321955     .0000000000   -1.3033741665
  Turns = 1000.000000000 Maximum number of particles = 714.0000000000
  Range    Xmin:   1.000 Xmax:   1.000
          (Ymin:   1.000 Ymax: 100.000)
-          Zmin: -20.446 Zmax:  20.446
+          Zmin: -20.582 Zmax:  20.582
  Display:    20 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -20.45  0 7777776576555534 231.         .         .         .
-   -13.63 13 UUUUUUUUUUUUU36d32 1.         .         .         .
-    -6.82 13 UUUUUUUUUUUUUelFgU1 .         .         .         .
-     0.00 18 UUUUUUUUUUUUUUUUUU2 .1  2     .         .         .
-     6.82 14 UUUUUUUUUUUUUUnS69321 1       .         .         .
-    13.63 14 UUUUUUUUUUUUUU5f71191         .         .         .
-    20.45  0 999999998887856754 565        .         .         .
+   -20.58  0 777777766666545452 2.         .         .         .
+   -13.72 12 UUUUUUUUUUUU7m4947 2.         .         .         .
+    -6.86 13 UUUUUUUUUUUUU7iDA311.         .         .         .
+     0.00 18 UUUUUUUUUUUUUUUUUU  11        .         .         .
+     6.86 15 UUUUUUUUUUUUUUUC4bF .    1    .         .         .
+    13.72 13 UUUUUUUUUUUUUObbb13b.4        .         .         .
+    20.58  0 99999988888776676  566        .         .         .
       NZ     0----|----1----|----2----|----3----|----4----|----5
-    Score:    72
- -20.4455467387     .0000000000    -.8307525165
- -13.6303644924   13.0000000000    9.9690301978
-  -6.8151822462   13.0000000000    9.9690301978
-    .0000000000   18.0000000000   14.1227927803
-   6.8151822462   14.0000000000   10.7997827143
-  13.6303644924   14.0000000000   10.7997827143
-  20.4455467387     .0000000000    -.8307525165
+    Score:    71
+ -20.5817321955     .0000000000    -.8415228947
+ -13.7211547970   12.0000000000    9.2567518414
+  -6.8605773985   13.0000000000   10.0982747361
+    .0000000000   18.0000000000   14.3058892095
+   6.8605773985   15.0000000000   11.7813205254
+  13.7211547970   13.0000000000   10.0982747361
+  20.5817321955     .0000000000    -.8415228947

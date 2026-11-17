@@ -32,6 +32,8 @@
 $\delta$ の励起の成長は $\sigma_\delta^2(n)=\sigma_{\delta0}^2\,[1-e^{-2nT_0/\tau_\epsilon}]$ ($\tau_\epsilon=0.6646$ ms、100 周 = 35.2 μs なので $1-e^{-0.1060}=0.1006$)。$\sigma_{\delta0}=1.1914\times10^{-3}$ なので $\sigma_\delta\simeq3.78\times10^{-4}$ で、gs・pysad の量子励起分 (3.3、3.7)E-4 と同じ桁 (200 粒子の統計誤差は 5% 程度、同期振動の位相の影響もある)。
 
 ## gs と pysad の比較
+**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+
 - `Emittance[]` は、表の 7 行とも ○ 一致。
 - 追跡の FLUC ON は △。同じ種 (`SeedRandom[7]`) でも、`TrackParticles` の量子励起の乱数列が gs と pysad で異なり、rms が 7% 違う。NOFLUC は一致。`Random[]`・`GaussRandom[]` の列そのものは一致する (08 の fn_Random_GaussRandom_SeedRandom) ので、差は放射の光子の引き方にある (原因は未調査)。
 

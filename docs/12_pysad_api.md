@@ -1,10 +1,11 @@
 # 12. pysad 公開 API リファレンス
 
-最終更新: 2026-11-17 (現状のスナップショット。新しい API は §16)
+最終更新: 2026-11-17 (現状のスナップショット。新しい API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6)
 
 > 場所: `pysad/`。全体像は `01_overview.md`、各計算の直訳メモは 05〜09、SAD の癖は `11_sad_quirks.md`。
 > 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `<試験用ラティス>.lat` と本文中の小さな FODO リング)。
 > `pysad/__init__.py` の `from pysad import ...` は旧 API (§15) を export しているので、**各モジュールを直接 import する** (`from pysad.parser import load_sad_file` など)。
+> **互換モード**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ値が要るときは `PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` (§16.6)。本書の「K64 の動作」の記述は k64 モードのもの。モードで変わる箇所は docs/47。
 
 ## 0. 共通の約束 (単位・座標・位置)
 
@@ -442,17 +443,17 @@ print(score)                                               # 144
 | `BBBrem1` | `BBBrem1[e, ds/s]` (ds/s は 0〜1 の外でエラー) | 制動放射のモンテカルロ (`bbbrem.py`、docs/32) |
 | `Skip` | `Skip[unit, type, n]` | 型 (Character・Real・Word など) の項目を n 個読み飛ばし、最後に読んだ項目を返す。EOF なら `EndOfFile`。n≤0 や Record などは gs と同じく未評価で返す |
 | `Read` | `Read[unit, type]` | 型の読み方を gs に合わせた。`Real` で数でない語は式として評価した値を返す。`Word` は語の文字列 |
-| `FindRoot`, `Fit`, `NIntegrate`, `FitGaussian`, `FitEmit` | | 数値微分で gs と 5e-10〜1e-9。ベクトルの独立変数は実装、複素 `FindRoot` は未対応 (gs が壊れた値: B61) |
+| `FindRoot`, `Fit`, `NIntegrate`, `FitGaussian`, `FitEmit` | | 数値微分で gs と 5e-10〜1e-9。ベクトルの独立変数は実装。複素 `FindRoot` は v2 モードで実装 (複素の Newton 法。k64 モードは TypeError。gs は壊れた値: B61)。docs/04、33 |
 | `DownhillSimplex` ほか | | `optimize.n` の Amoeba を移植 (gs と 1e-13) |
 
-注: `MessageName[f, "usage"]` の関数形は gs と違う (gs は `Undefined MessageName` を出し、pysad は `f::usage` と同じ表を引く)。`f::usage` の形は一致。
+注: `MessageName[f, "usage"]` の関数形は、gs は f を無視して `Undefined MessageName` を出す (B70)。v2 モードは f の本文を返す (`f::usage` と同じ。無ければ `General::tag`)。`f::usage` の形は一致。
 
 ### 16.3 既存の関数の拡張
 
 | 関数 | 変更 |
 |---|---|
-| `TrackParticles` | (1) POL ON かつ RAD ON のとき、粒子ごとにスピンを追跡する (`track6.py` の `sprot`・`bsi`)。入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/\|s\|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/\|s\|`。**損失の処理は無い**。この場合は高速追跡 (track6n) でなく Python の追跡 (track6) を使う。(2) RADLIGHT が ON のとき `{結果, 軌道}` を返す: 軌道は粒子ごとに `{t, x, y, z}` の 4 本の表 (`ffscmd._RadLight`)。K64 は BEND の中を記録せず、横方向の座標も入れない。(3) TRPT かつ LWAKE/TWAKE のときウェイクを適用 (`wake.py`、docs/23) |
-| `Emittance[]` | POL のスピン量 (偏極時間・スピンチューン・偏極ベクトル。MULT・空洞・SOL (ドリフトのある領域) まで)、SOL 領域を含む Twiss・Emittance[] (`solmap.py`、`solemit.py`)、COORD・TCAVI (L=0)・UND・MULT ANGLE≠0・ExternalMap の要素 |
+| `TrackParticles` | (1) POL ON かつ RAD ON のとき、粒子ごとにスピンを追跡する (`track6.py` の `sprot`・`bsi`)。入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/\|s\|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/\|s\|`。この場合は高速追跡 (track6n) でなく Python の追跡 (track6) を使う。k64 モードは損失の処理が無く、v2 モードは落とす。(2) RADLIGHT が ON のとき `{結果, 軌道}` を返す: 軌道は粒子ごとに `{t, x, y, z}` の 4 本の表 (`ffscmd._RadLight`)。k64 モードは K64 と同じで BEND の中を記録せず横方向の座標も入れない。v2 モードは 3 次元の軌道 (BEND の中も `RADLIGHTDIV` 点)。(3) TRPT かつ LWAKE/TWAKE のときウェイクを適用 (`wake.py`、docs/23)。(4) `LOSSMAP` が ON のとき戻りに落ちた要素・落ちた周の 2 行を足す (両モード。POL のときは 10・11 行目)。(5) v2 モードで `SPAC`・`PSPAC`・`WSPAC` が ON のとき空間電荷を入れる (`spch.make`。docs/08 §9.7)。(6) `RADTAPER` が ON のとき直前の Emittance[] の係数でテーパーを入れる |
+| `Emittance[]` | POL のスピン量 (偏極時間・スピンチューン・偏極ベクトル。MULT・空洞・SOL (ドリフトのある領域) まで。`Polarization` は v2 モードで有限値)、SOL 領域を含む Twiss・Emittance[] (`solmap.py`、`solemit.py`。v2 モードは領域内の BEND・MULT・CAVI・ずれ・F1 も)、COORD・TCAVI (L=0)・UND (v2 は磁場つき)・PHSROT (v2)・MULT ANGLE≠0・ExternalMap の要素。`RADTAPER`・`EMITDIV` が効く |
 | FIT の幾何の条件 (`GX GY GZ CHI1..3`) | DRIFT の L・BEND の ANGLE・L は K64 の `tdgeo` の解析微分 (`match6d.tdgeo_term`)、他の変数は中心差分 |
 | `obj@name[...]` | クラスのメンバーでない名前は式のまま (K64 と同じ) |
 | `ElectronMass` (スクリプト) | 510998.95 (K64 の値) |
@@ -470,4 +471,41 @@ print(score)                                               # 144
 
 - 引数の検査 (引数の数・型のエラー文) は関数ごとに違うので、細部は各モジュールのソースを見ること。実行例は作っていない。
 - `B['名前']` の数え上げは全数ではない (§16.1 の注)。
-- 未翻訳: MEASURE/TRCOD (`tracke/ttinit/ttstat/trcoda/trackb`)、`wjfit/wfres/wfbin/wiord/wjdraw`、SOL 領域内の MULT・BEND・CAVI、`Polarization` (K64 が NaN)、PHSROT (K64 で動作しない)。`tlum/tluma` は `measure.py` にあるが MEASURE が gs で動かないので解析値との比較だけ。
+- 未翻訳: `wjfit/wfres/wfbin/wiord/wjdraw` (MAIN の TRACK の Fourier 解析)。k64 モードでは MEASURE/TRCOD、SOL 領域内の MULT・BEND・CAVI、PHSROT、空間電荷、`Polarization` の有限値は動かない (v2 モードで実装。§16.6)。`measure.py` の `tlum/tluma`・MEASURE 系は gs と数値比較ができない (gs で MEASURE が動かない)。
+
+### 16.6 互換モード `pysad.compat` と v2 で追加した API
+
+**互換モード** (`pysad/compat.py`)
+
+| 関数・変数 | 内容 |
+|---|---|
+| `compat.mode()` | 現在のモード (`'v2'` か `'k64'`)。環境変数 `PYSAD_COMPAT` を毎回読む (`set_mode` で上書きしていなければ)。環境変数が `k64`・`v1`・`compat` なら k64、それ以外 (既定) は v2 |
+| `compat.set_mode(m)` | `'v2'` または `'k64'` を設定する。`None` で環境変数に戻す。それ以外は ValueError |
+| `compat.v2()`・`compat.k64()` | 真偽。コードは `if compat.v2(): <修正した動作> else: <K64 の動作>` と書く |
+| SADScript の `Compat$V2[]` | 互換モードが v2 なら 1 (prelude の `PolynomialFit` が使う) |
+
+- 既定は v2。`py -3.12 run_sad.py lattice.sad script.sad` も v2 で走るので、gs と数値を比べるときは `PYSAD_COMPAT=k64` を付ける。
+- 既存の試験と回帰は k64 で走る (`pysad/tests/conftest.py`、`run_regression.py`)。v2 の試験 (`test_v2_*.py`) はフィクスチャ `v2_mode` で明示する。
+- 追跡のカーネルは `rs[1]` (v2 の印) を読むので、乱数状態 `rs` は必ず `track6n.make_rs()` で作る (`dapert.py`・`solmap.py`・`maintrack.py` も同じ)。
+- 互換モードで切り替えない変更 (pysad 自身の不具合の修正、K64 に無い機能・gs と同じ結果が出る機能) の一覧は docs/47。
+
+**v2 で追加したモジュール** (`pysad/*.py`)
+
+| モジュール | 内容 | 文書 |
+|---|---|---|
+| `compat.py` | 互換モード (上) | docs/47 |
+| `phsrot.py` | PHSROT (v2 だけ)。`matrices(params, rad, fluc)` (M0・減衰・拡散)、`k_phsrot` (numba の追跡カーネル)、`annotate`、`step`、`emit` (Emittance[] の T・D・B) | docs/08 §9.7 |
+| `radtaper.py` | RADTAPER。`solve(els, momentum_eV, dp0, fshift, charge, amass, tol, maxit)` が閉軌道の δ の分布と係数を外側の反復で求める。`scaled`・`factors`・`tapered` が磁石の強さに係数を掛ける | docs/08 §9.7 |
+| `spch.py` | 空間電荷 (v2 だけ)。`make(ffs, tr, npart)` (`TrackParticles` から。SPAC・PSPAC・WSPAC)、`SpaceCharge` (追跡に挿入するフック)、`Solver3D`・`kick3d` (SPAC の 3 次元)、`Solver2D`・`kick2d` (PSPAC)、`WSpace`・`gauss_field`・`gauss_potential`・`make_wspace` (WSPAC)、`SpaceChargeError` | docs/08 §9.7 |
+| `measure.py` | MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE (v2 だけ)。`ttinit(mark, np0, rng, ...)` (初期分布)、`ttstat`・`ttstat_lines` (統計の表示)、`Tracker`、`cmd_measure`・`cmd_trcod`・`cmd_align`・`cmd_orbitjitter`・`cmd_putmeasure`・`cmd_getmeasure`、`trcod_fix`・`trcod_move`・`trcod_restore`・`trcod_reference` (基準の軌道)、`track_trpt` (MAIN の `TRACK … TURNS=-1`)、`close_measure_files`。`tlum`・`tluma` は従来のまま | docs/03 |
+
+**v2 で追加・変更した主な API**
+
+- `emit6d.emittance6d(lat, p, rfsw=True, radcod=True, pol=True)['spin']` に、v2 の平衡偏極度の量が入る: `equpol` (偏極度)、`depol_rate` (1 周あたりの脱偏極率)、`taudep` (脱偏極時間 [s])、`spin_spread` (平衡分布での n の広がり)、`spin_orbit` (入口の ∂n/∂u、3x6)、`equpol_k64` (K64 の式の参考値)。docs/43 §8a。
+- `miscfn.allow_system(True)`: `System[cmd]` の実行を許可する (環境変数 `PYSAD_ALLOW_SYSTEM=1` でも)。許可がなければ v2 は実行しない。docs/04 §6。
+- `track6.SolRegionError`: SOL 領域内に置けない要素 (v2)。
+- 環境変数: `PYSAD_COMPAT`、`PYSAD_ALLOW_SYSTEM`、`PYSAD_SYSTEM_SHELL` (許可があるときのシェル。sh・bash の実行ファイルを書くと `<shell> -c cmd`)、`PYSAD_SAD_PACKAGES` (SAD の `Packages` のある場所。GUI 系の試験・読み込みが使う)。
+- FFS の変数・フラグ (v2): `SPACSTEP`・`SPACNX/NY/NZ`・`PSPACNX/NY/DX/DY/NZ/DZ/NTURNCALC`・`WSPACBEAM`・`WSPACRADIUS`・`PBUNCH`、`RADLIGHTDIV`、`EMITDIV`・`EMITDIVB`・`EMITDIVQ` (両モード)。
+- `ffs.track_results` (MAIN の `TRACK … TURNS=-1` の戻り): entrance / exit の (重心, 分散行列)、final、alive (v2)。
+
+**使えない範囲・未確認**: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。`spch.py` は電子以外の粒子の式を `TrackRun(amass=…)` を直接作る試験で確かめただけで、`TrackParticles` は `MASS`・`CHARGE` を追跡に渡さないので SAD スクリプトからは使えない。上のモジュールの公開関数名はソースの `def`・`class` から書いたもので、引数の細部は各ファイルの docstring を見ること。

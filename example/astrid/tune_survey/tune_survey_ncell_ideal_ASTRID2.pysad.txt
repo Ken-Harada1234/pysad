@@ -22,23 +22,23 @@ Chromaticity Correction
  Display:     5 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
    -23.16 49 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPjD
-     0.00 48 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPg3.
-    23.16 46 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPHA  .
+     0.00 46 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPoPI4.
+    23.16 46 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPJ4  .
       NZ     0----|----1----|----2----|----3----|----4----|----5
-    Score:   143
+    Score:   141
  Turns = 200.0000000000 Maximum number of particles = 306.0000000000
  Range    Xmin:   1.000 Xmax:   1.000
          (Ymin:   1.000 Ymax: 200.000)
           Zmin: -23.156 Zmax:  23.156
  Display:     5 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -23.16 38 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPmg3311      .
-     0.00 36 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPgPaA3a3       .
-    23.16 38 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP257N31      .
+   -23.16 38 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPcd3311      .
+     0.00 38 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPb53C3       .
+    23.16 38 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP257P31      .
       NZ     0----|----1----|----2----|----3----|----4----|----5
-    Score:   112
+    Score:   114
 RESULT tunenx tuneny NXcell NYcell NXring NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
-RESULT     .8400000000     .3400000000     .8404943347     .3404932150    5.0429660083    2.0429592902   49.0000000000   48.0000000000   46.0000000000   38.0000000000   36.0000000000   38.0000000000   14.2669717113    3.9682552737    1.8539406528    9.2332100633  -12.0901522757
+RESULT     .8400000000     .3400000000     .8404943347     .3404932150    5.0429660083    2.0429592902   49.0000000000   46.0000000000   46.0000000000   38.0000000000   38.0000000000   38.0000000000   14.2669717113    3.9682552737    1.8539406528    9.2332100633  -12.0901522757
  Matched. ( 3.4177E-12) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
 MKE         EX   0         1  4.0788E-8 MKE         EPX  0         1  1.670E-17 $$$       f AX   0         1  1.003E-15 $$$       f BX    #######  #   3.857688 $$$       f NX   .8805     2    .880493 $$$       f AY   0         1  -4.41E-16
 $$$       f BY    #######  #   1.796889 $$$       f NY   .3405     2    .340493 $$$       f LENG  #######  #   7.617400
@@ -72,7 +72,7 @@ Chromaticity Correction
           Zmin: -23.114 Zmax:  23.114
  Display:     5 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -23.11 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPD1        .         .
+   -23.11 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPc1        .         .
      0.00 30 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPP1         .         .
     23.11 28 PPPPPPPPPPPPPPPPPPPPPPPPPPPP1 .         .         .
       NZ     0----|----1----|----2----|----3----|----4----|----5
@@ -112,9 +112,9 @@ Chromaticity Correction
           Zmin: -23.105 Zmax:  23.105
  Display:     5 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -23.11 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP322.         .         .
-     0.00 27 PPPPPPPPPPPPPPPPPPPPPPPPPPPF66.         .         .
-    23.11 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP222.         .         .
+   -23.11 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP323.         .         .
+     0.00 27 PPPPPPPPPPPPPPPPPPPPPPPPPPPa49.         .         .
+    23.11 27 PPPPPPPPPPPPPPPPPPPPPPPPPPP221.         .         .
       NZ     0----|----1----|----2----|----3----|----4----|----5
     Score:    81
 RESULT tunenx tuneny NXcell NYcell NXring NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
@@ -141,21 +141,21 @@ Chromaticity Correction
           Zmin: -23.066 Zmax:  23.066
  Display:     5 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -23.07 27 PPPPPPPPPPPPPPPPPPPPPPPPPPPJ64911111    .         .
-     0.00 28 PPPPPPPPPPPPPPPPPPPPPPPPPPPP744211      .         .
-    23.07 28 PPPPPPPPPPPPPPPPPPPPPPPPPPPPHa21        .         .
+   -23.07 27 PPPPPPPPPPPPPPPPPPPPPPPPPPPb54c11111    .         .
+     0.00 28 PPPPPPPPPPPPPPPPPPPPPPPPPPPPD45211      .         .
+    23.07 29 PPPPPPPPPPPPPPPPPPPPPPPPPPPPPA21        .         .
       NZ     0----|----1----|----2----|----3----|----4----|----5
-    Score:    83
+    Score:    84
  Turns = 200.0000000000 Maximum number of particles = 306.0000000000
  Range    Xmin:   1.000 Xmax:   1.000
          (Ymin:   1.000 Ymax: 200.000)
           Zmin: -23.066 Zmax:  23.066
  Display:     5 turns/character
       NZ     0----|----1----|----2----|----3----|----4----|----5
-   -23.07 23 PPPPPPPPPPPPPPPPPPPPPPPl5hE1  .         .         .
-     0.00 24 PPPPPPPPPPPPPPPPPPPPPPPP243D  .         .         .
+   -23.07 23 PPPPPPPPPPPPPPPPPPPPPPPe5kP1  .         .         .
+     0.00 24 PPPPPPPPPPPPPPPPPPPPPPPP2433  .         .         .
     23.07 24 PPPPPPPPPPPPPPPPPPPPPPPP2P1   .         .         .
       NZ     0----|----1----|----2----|----3----|----4----|----5
     Score:    71
 RESULT tunenx tuneny NXcell NYcell NXring NYring DAx(dp-,0,+) DAy(dp-,0,+) emitx[nm] BX BY K2SF K2SD
-RESULT     .8800000000     .3800000000     .8804932212     .3804926487    5.2829593270    2.2829558925   27.0000000000   28.0000000000   28.0000000000   23.0000000000   24.0000000000   24.0000000000   11.4424115841    3.9030927578    1.3232566865    8.3243357005  -11.5519748614
+RESULT     .8800000000     .3800000000     .8804932212     .3804926487    5.2829593270    2.2829558925   27.0000000000   28.0000000000   29.0000000000   23.0000000000   24.0000000000   24.0000000000   11.4424115841    3.9030927578    1.3232566865    8.3243357005  -11.5519748614

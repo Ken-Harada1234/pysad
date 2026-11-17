@@ -1,0 +1,32 @@
+! LOSSMAP (戻りの 2 行: 落ちた要素の番号と周)、B33 (最初の tapert)、RADTAPER
+! 条件: 3 GeV、周長 105.6 m の FODO 24 セル、RF 4 MV・500 MHz
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SD = (L=0.2 K2=0) SF = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+$FORM = "12.6";
+USE RINGQ; CELL; CALC;
+NORFSW; NORAD; NOFLUC;
+LOSSAMPL = 0.05; LOSSMAP;
+x0 = {1e-3, 0.02, 0.025, 0.03, 0.06};
+zero = Table[0, {5}];
+r = TrackParticles[{1, {x0, zero, zero, zero, zero, zero, Table[1, {5}]}}, 1, 1, 30];
+Print["flag      = ", r[[2,7]]];
+Print["lost elem = ", r[[2,8]], "  (0: alive)"];
+Print["lost turn = ", r[[2,9]], "  (31 = turns+1: alive)"];
+Print["  the last particle starts outside LOSSAMPL: v2 drops it at the first check (K64 keeps tracking it in the first call of a session)"];
+NOLOSSMAP;
+RFSW; RAD; RADCOD;
+e0 = Emittance[];
+RADTAPER;
+e1 = Emittance[];
+Print["closed orbit x at exit: no taper ", (OrbitAtExit/.e0)[[1]], ", RADTAPER ", (OrbitAtExit/.e1)[[1]]];
+Print["U0: no taper ", EnergyLossU0/.e0, ", RADTAPER ", EnergyLossU0/.e1];
+Print["DDP at elements 1, 60, 121, 243 = ", Twiss["DDP", {1, 60, 121, 243}]];
+Exit;

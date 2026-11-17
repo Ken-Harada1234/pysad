@@ -5,8 +5,8 @@ $$$       f LENG  #######  #  105.60000
 --- NOLOSSMAP (既定): 戻りの列数 ---
 Dimensions={    7.000000,    5.000000} flag={    1.000000,    1.000000,     .000000,     .000000,     .000000}
 --- LOSSMAP: 8 列目に損失した要素番号、9 列目に損失した周 ---
-Dimensions={    7.000000,    5.000000}
+Dimensions={    9.000000,    5.000000}
 flag      ={    1.000000,    1.000000,     .000000,     .000000,     .000000}
-???Part: index 8 out of range (length 7)
-???Part: index 9 out of range (length 7)
-???Part: index 8 out of range (length 7)
+lost elem ={     .000000,     .000000,  242.000000,  242.000000,  242.000000}
+lost turn ={   31.000000,   31.000000,    4.000000,    1.000000,    1.000000}
+element name at loss: {"-","-","D1.24","D1.24","D1.24"}

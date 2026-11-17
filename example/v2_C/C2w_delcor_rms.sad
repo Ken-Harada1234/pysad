@@ -1,0 +1,32 @@
+! v2 (担当 C2): DELCOR の corlength≠0 の規格化。v2 は DX の rms = delx、DY の rms = dely (K64 は delx/√2、dely/√2)。
+! 条件: 3 GeV、12 セルのリング (周長 62.4 m、四極 24 台)、相関長 5 m と 5 km、delx = 1e-4 m、dely = 2e-4 m、150 回の DELCOR の統計。
+! 限界: rms は多数回の平均としての値 (1 回の DELCOR の 24 台の rms はばらつく)。GCUT を掛けると rms はその分小さくなる。
+!       相関長が格子間隔 (周長/nc、nc ≥ 128) より短いと、線形補間の分だけ rms が小さくなる。corlength = 0 の枝は別の量
+!       (両端を引き戻したランダムウォーク: 分散 = delx² · s(1 − s/周長) [m]) で、v2 でも変えていない。
+! この例の C2w_delcor_rms.pysad.txt は pysad の v2 モード (既定) の出力。PYSAD_COMPAT=k64 では rms の比が 0.71 前後になる。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1);
+FFS USE RING;
+CELL;
+$FORM = "10.5";
+stat[cl_] := Module[{sx = 0, sy = 0, m = 150, dx, dy},
+  Do[
+    FFS["DELCOR "//cl//" 1e-4 2e-4 Q*"];
+    dx = LINE["DX","Q*"]; dy = LINE["DY","Q*"];
+    sx = sx + Plus@@(dx^2)/Length[dx]; sy = sy + Plus@@(dy^2)/Length[dy], {m}];
+  Print["corlength = ", cl, " m:  rms(DX)/delx = ", Sqrt[sx/m]/1e-4, "   rms(DY)/dely = ", Sqrt[sy/m]/2e-4]];
+stat[5];
+stat[5000];
+! 相関長 5 km ≫ 周長: 全要素が同じ値だけずれる
+DELCOR 5000 1e-4 2e-4 Q*;
+dx = LINE["DX","Q*"];
+Print["corlength = 5000 m, one shot: DX of QF.1 = ", dx[[1]], "  spread (max-min)/|DX| = ", (Max[dx]-Min[dx])/Abs[dx[[1]]]];
+DELCOR 0 0 0 Q*;
+CALC;
+Print["tunes with the offsets removed: ", Twiss["NX","$$$"]/(2 Pi), " ", Twiss["NY","$$$"]/(2 Pi)];
+Exit;

@@ -1,0 +1,26 @@
+! 小さな試験用リング (周長 7.1 m)。MOMENTUM をわざと書いていない (v2 は追跡のときに警告する。K64 は黙って 30 GeV)
+DRIFT D1=(L=1);
+QUAD QF=(L=.2 K1=.1 INDEX=5) QD=(L=.2 K1=-.1);
+BEND B3=(L=1 ANGLE=.1);
+MARK M1=(BX=10 BY=10);
+MONI PM1=();
+LINE RING=(M1 QF D1 QD D1 QF D1 QD D1 QF D1 B3 PM1);
+OFF RFSW;
+FFS;
+USE RING;
+INS; CALC;
+Print["RFSW (MAIN の OFF RFSW が届く: v2 は 0、K64 は 1) = ", FLAG[{"RFSW"}]];
+Print["INDEX=5 の QF の名前 = ", LINE["NAME", "QF.*"], "   LINE[\"MULT\"] = ", LINE["MULT"]];
+MON 0 0 0 0 PM*;
+ORG B3 1.5 -2.5 0.5 10 20 30;
+Print["ORG のあとの B3 の座標 = ", LINE["GX", "B3"], " ", LINE["GY", "B3"], " ", LINE["GZ", "B3"]];
+Print["要素数 LINE[\"LENGTH\"] = ", LINE["LENGTH"], "   末尾の位置 = ", LINE["POSITION", "$$$"], "   軌道長 = ", LINE["S", "$$$"]];
+NOKEEPEXP;
+LINE["K1", "QF.6"] = 0.3;
+CALC NOEXPAND;
+Print["CALC NOEXPAND: K1 = ", LINE["K1", "QF.*"], "  BX = ", Twiss["BX", "$$$"]];
+CALC;
+Print["NOKEEPEXP の CALC: K1 = ", LINE["K1", "QF.*"], "  BX = ", Twiss["BX", "$$$"], "   (成分ごとの値は代表の値に戻る)"];
+x = TrackParticles[{1, {{1e-3}, {0}, {0}, {0}, {0}, {0}, {1}}}, LINE["LENGTH"]];
+Print["追跡後の x = ", x[[2, 1, 1]]];
+Exit;

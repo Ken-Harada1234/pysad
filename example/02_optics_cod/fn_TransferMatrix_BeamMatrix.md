@@ -35,6 +35,8 @@ b = BeamMatrix[1];     Print["sqrt(b11) sqrt(b33) sqrt(b66) = ", Sqrt[b[[1,1]]],
 (上段: EMITX·BX+(EX·DP)² を計算した値、下段: EMITX·BX+(EX·SIGE)²。BeamMatrix の b11 は上段と合う = DP を使っている。)
 
 ## gs と pysad の比較
+**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+
 全桁一致 (行列、BeamMatrix の値)。EMIT の表の `alpha` の桁だけ違う (0.0222107 と 0.02221)。
 
 ## 未確認・限界

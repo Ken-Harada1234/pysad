@@ -51,7 +51,7 @@ e=FitEmit[x,px];                   (* {{xmean,pxmean,alpha,beta,emittance},{同�
 ## gs と pysad の比較
 - `Fit`: ChiSquare、GoodnessOfFit、ConfidenceInterval、CovarianceMatrix は 9 桁以上一致。a と b は 3e-9 の差 (pysad は常に数値微分の経路、K64 は解析的な導関数を使う)。
   DesignMatrix の中身が違う: gs は {1,1},{1,2},... と正確な値だが、pysad は 1.0000000028、0.9999999984 のように数値微分の誤差の混じった値を返す。
-- `FitGaussian`: 全桁一致。
+- `FitGaussian`: 全桁一致 (k64 モード)。v2 (既定) は `InverseErf` が真値になる (B47) ので、σ が 8 桁 (.8032255801 と gs の .8032255747)、他の値が 1e-8 の桁で変わる。`FitEmit` も alpha・beta・emittance が 1e-8 以内の差 (gs の alpha -1.0081380609、v2 -1.0081380566)。`.pysad.txt` は v2 の出力。`PYSAD_COMPAT=k64` では保存してあった旧い出力と同じ。
 - `FitEmit`: alpha、beta、emittance が 1e-9 以内で一致。
 - 判定: ○ (値は一致。DesignMatrix の表示だけ pysad が数値微分の値)。
 

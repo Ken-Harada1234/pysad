@@ -1,0 +1,21 @@
+! v2 (B38): PHSROT (6 次元 Twiss による位相空間の回転)。位相 PX PY PZ (チューンの単位)、減衰 Dij、拡散 Bij (phsrot.py)
+! リング 1 周を 1 個の PHSROT で表す例。平衡エミッタンスは b/(2d - d^2)
+MOMENTUM = 3GEV;
+PHSROT PR = (AX=0.5 BX=4 PX=0.31 AY=-0.3 BY=2 PY=0.22 AZ=0 BZ=10 PZ=0.01
+ D11=1e-3 D22=1e-3 D33=2e-3 D44=2e-3 D55=3e-3 D66=3e-3 B11=2e-11 B22=2e-11 B33=1e-13 B44=1e-13 B55=6e-8 B66=6e-8);
+MARK ST = ();
+LINE RING = (ST PR);
+FFS;
+USE RING; CELL; CALC;
+$FORM = "14.8";
+Print["CALC  : nux, nuy = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  BX, AX, BY, AY = ", Twiss["BX",1], " ", Twiss["AX",1], " ", Twiss["BY",1], " ", Twiss["AY",1]];
+e = Emittance[];
+Print["Emittance[]: ", Emittances/.e, "  b/(2d-d^2) = ", {2e-11/(2e-3-1e-6), 1e-13/(4e-3-4e-6), 6e-8/(6e-3-9e-6)}];
+Print["damping rates = ", DampingRate/.e, ", tunes = ", Tunes/.e];
+RAD; FLUC;
+n = 1000;
+z = Table[0, {n}];
+b = {z, z, z, z, z, z, Table[1, {n}]};
+r = TrackParticles[{1, b}, 1, 1, 3000][[2]];
+Print["tracking (1000 particles, 3000 turns, RAD FLUC): <x^2>/(emit_x BX) = ", (Plus@@(r[[1]]^2)/n)/((Emittances/.e)[[1]] 4), ", <y^2>/(emit_y BY) = ", (Plus@@(r[[3]]^2)/n)/((Emittances/.e)[[2]] 2)];
+Exit;

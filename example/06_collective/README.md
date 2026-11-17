@@ -9,7 +9,7 @@
 | [fn_WakeFunction](fn_WakeFunction.md) | ウェイク関数の表と、ウェイクによるキックの最大値 | ○ |
 | [flag_LWAKE_TWAKE_WAKEOPT](flag_LWAKE_TWAKE_WAKEOPT.md) | LWAKE / TWAKE / WAKEOPT の組み合わせ | ○ |
 | [fn_CSRInit_CSRTrack](fn_CSRInit_CSRTrack.md) | CSRInit と CSRTrack (縦の線形写像) | ○ |
-| [fn_TouschekLifetime](fn_TouschekLifetime.md) | Touschek 寿命 (INTRA + EMIT) | ○ |
+| [fn_TouschekLifetime](fn_TouschekLifetime.md) | Touschek 寿命 (INTRA + EMIT) | ○ (k64 モード。v2 の既定では寿命が約 2% 違う: Jx の修正 B75) |
 | [fn_GaussianCoulomb_BBBrem](fn_GaussianCoulomb_BBBrem.md) | ガウス分布の力、BBBrem1 の事象 | ○ |
 | [flag_INTRA](flag_INTRA.md) | バンチ内散乱 (IBS) による平衡値の増加 | ○ |
 | [fn_ExternalMap](fn_ExternalMap.md) | MAP 要素の ExternalMap (TRACK/OPTICS) | ○ |

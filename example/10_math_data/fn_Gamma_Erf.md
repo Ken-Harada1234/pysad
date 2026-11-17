@@ -43,7 +43,7 @@ $\mathrm{erf}\,x=\frac2{\sqrt\pi}\int_0^xe^{-t^2}dt$、$\mathrm{erfc}=1-\mathrm{
 - 14 値は 15 桁一致 (○。`Gamma[-1.5]` だけ末尾 1 桁違い)。
 - `LogGamma1[10.5]` = 16.29200047656724 は gs と一致 (○。2026-11-17 に対応。`LogGamma1[x]=LogGamma[x+1]`、負の引数の複素数の虚部も gs と同じ)。
 - 複素引数の `Gamma`・`Erf` は一致。
-- `InverseErf[.5]` は gs・pysad とも真値と相対 1e-8 ずれる (K64 の近似の誤差を pysad が同じに再現している。docs/33)。
+- `InverseErf[.5]`: gs は真値 (0.476936276204) と相対 1e-8 ずれる (K64 の近似の誤差。B47)。pysad は **v2 (既定) では真値 .47693627620447 を返す** (K64 のバグを直した。`docs/47_v2_changes.md`)。`PYSAD_COMPAT=k64` では gs と同じ .476936271460083。上の表の pysad 列と相対差は k64 の値 (v1 と同じ)。`.pysad.txt` は v2 の出力なので、この行だけ違う。
 
 ## 未確認・限界
 `Gamma` の極 (0、負の整数)、大きな引数、`GammaRegularized` の端の値は試していない。複素数の参照値は教科書値で、桁数は 10 桁までしか確かめていない。

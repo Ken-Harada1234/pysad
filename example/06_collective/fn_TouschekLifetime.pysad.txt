@@ -19,77 +19,77 @@ R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
 
 Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 2838943.6 Hz 
 Energy loss per turn U0 = 1.5632657 MV  Effective voltage    Vc = 4.0000000 MV 
-Equilibrium position dz = 38.315657 mm  Momentum compact. alpha =    .02218
+Equilibrium position dz = 38.315657 mm  Momentum compact. alpha =    .02213
 Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 176.12184
-Bucket height     dV/P0 =  .0100348     Synchrotron frequency   = 78426.782 Hz 
+Bucket height     dV/P0 =  .0100474     Synchrotron frequency   = 78426.782 Hz 
 
   Imag.tune:-0.0000000          -0.0000000           0.0000000
   Real tune:-0.3037592          -0.0939440          -0.0276253
 
     Damping per one revolution:
-          X : -2.513861E-04   Y : -2.605594E-04   Z : -5.299718E-04
+          X : -2.455959E-04   Y : -2.605594E-04   Z : -5.357593E-04
     Damping time (sec):
-          X :  1.401206E-03   Y :  1.351875E-03   Z :  6.646461E-04
+          X :  1.434241E-03   Y :  1.351875E-03   Z :  6.574663E-04
     Tune shift due to radiation:
-          X : -5.111962E-05   Y :  5.411244E-05   Z : -1.794984E-07
+          X : -5.093806E-05   Y :  5.411244E-05   Z : -1.789479E-07
     Damping partition number:
-          X :    0.9651       Y :    1.0003       Z :    2.0346
+          X :    0.9429       Y :    1.0003       Z :    2.0568
 
-Emittance X            = 1.73577E-7 m   Emittance Y            =  .00000000 m
-Emittance Z            = 1.90686E-5 m   Energy spread          =  .00119140
-Bunch Length           = 16.0597178 mm  Beam tilt              =  .00000000 rad
-Beam size xi           = 1.15441690 mm  Beam size eta          =  .00000000 mm
+Emittance X            = 1.77671E-7 m   Emittance Y            =  .00000000 m
+Emittance Z            = 1.88625E-5 m   Energy spread          =  .00118494
+Bunch Length           = 15.9727108 mm  Beam tilt              =  .00000000 rad
+Beam size xi           = 1.16114229 mm  Beam size eta          =  .00000000 mm
 Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
 
 
  Momentum acceptance:       0.4       0.6       0.8       1.0       1.2    %
- Touschek lifetime:     1023084.  2511928.  4774586.  7883154.  11902749  sec
+ Touschek lifetime:     1044275.  2563465.  4871776.  8042510.  12141847  sec
  Momentum acceptance:       1.4       1.6       1.8       2.0       2.2    %
- Touschek lifetime:     16893936  22914088  30018231  38259611  47690099  sec
+ Touschek lifetime:     17231317  23369190  30611332  39011791  48623201  sec
  Momentum acceptance:       2.4       2.6       2.8       3.0       3.2    %
- Touschek lifetime:     58360488  70320716  83620047  98307203  1.1443E8  sec
+ Touschek lifetime:     59497093  71684116  85234225  1.0020E8  1.1662E8  sec
  Momentum acceptance:       3.4       3.6       3.8       4.0       4.2    %
- Touschek lifetime:     1.3204E8  1.5118E8  1.7190E8  1.9424E8  2.1826E8  sec
+ Touschek lifetime:     1.3455E8  1.5405E8  1.7515E8  1.9790E8  2.2236E8  sec
  Momentum acceptance:       4.4       4.6       4.8       5.0       5.2    %
- Touschek lifetime:     2.4400E8  2.7151E8  3.0084E8  3.3203E8  3.6513E8  sec
+ Touschek lifetime:     2.4856E8  2.7657E8  3.0642E8  3.3816E8  3.7185E8  sec
  Momentum acceptance:       5.4       5.6       5.8       6.0       6.2    %
- Touschek lifetime:     4.0018E8  4.3725E8  4.7637E8  5.1759E8  5.6096E8  sec
+ Touschek lifetime:     4.0753E8  4.4525E8  4.8505E8  5.2699E8  5.7112E8  sec
  Momentum acceptance:       6.4       6.6       6.8       7.0       7.2    %
- Touschek lifetime:     6.0654E8  6.5435E8  7.0447E8  7.5693E8  8.1179E8  sec
+ Touschek lifetime:     6.1748E8  6.6612E8  7.1709E8  7.7045E8  8.2624E8  sec
  Momentum acceptance:       7.4       7.6       7.8       8.0       8.2    %
- Touschek lifetime:     8.6909E8  9.2889E8  9.9124E8  1.0562E9  1.1238E9  sec
+ Touschek lifetime:     8.8451E8  9.4531E8  1.0087E9  1.0747E9  1.1434E9  sec
  Momentum acceptance:       8.4       8.6       8.8       9.0       9.2    %
- Touschek lifetime:     1.1941E9  1.2671E9  1.3429E9  1.4216E9  1.5032E9  sec
+ Touschek lifetime:     1.2149E9  1.2891E9  1.3662E9  1.4462E9  1.5291E9  sec
  Momentum acceptance:       9.4       9.6       9.8      10.0      10.2    %
- Touschek lifetime:     1.5878E9  1.6753E9  1.7660E9  1.8597E9  1.9567E9  sec
+ Touschek lifetime:     1.6150E9  1.7040E9  1.7961E9  1.8914E9  1.9898E9  sec
  Momentum acceptance:      10.4      10.6      10.8      11.0      11.2    %
- Touschek lifetime:     2.0568E9  2.1603E9  2.2671E9  2.3773E9  2.4909E9  sec
+ Touschek lifetime:     2.0916E9  2.1967E9  2.3051E9  2.4171E9  2.5325E9  sec
  Momentum acceptance:      11.4      11.6      11.8      12.0      12.2    %
- Touschek lifetime:     2.6081E9  2.7288E9  2.8532E9  2.9812E9  3.1130E9  sec
+ Touschek lifetime:     2.6514E9  2.7740E9  2.9003E9  3.0303E9  3.1641E9  sec
  Momentum acceptance:      12.4      12.6      12.8      13.0      13.2    %
- Touschek lifetime:     3.2486E9  3.3880E9  3.5314E9  3.6787E9  3.8301E9  sec
+ Touschek lifetime:     3.3017E9  3.4433E9  3.5888E9  3.7384E9  3.8920E9  sec
  Momentum acceptance:      13.4      13.6      13.8      14.0      14.2    %
- Touschek lifetime:     3.9856E9  4.1453E9  4.3092E9  4.4774E9  4.6500E9  sec
+ Touschek lifetime:     4.0498E9  4.2119E9  4.3782E9  4.5488E9  4.7239E9  sec
  Momentum acceptance:      14.4      14.6      14.8      15.0      15.2    %
- Touschek lifetime:     4.8269E9  5.0084E9  5.1944E9  5.3851E9  5.5804E9  sec
+ Touschek lifetime:     4.9035E9  5.0876E9  5.2763E9  5.4696E9  5.6677E9  sec
  Momentum acceptance:      15.4      15.6      15.8      16.0      16.2    %
- Touschek lifetime:     5.7804E9  5.9853E9  6.1951E9  6.4099E9  6.6296E9  sec
+ Touschek lifetime:     5.8707E9  6.0785E9  6.2912E9  6.5089E9  6.7318E9  sec
  Momentum acceptance:      16.4      16.6      16.8      17.0      17.2    %
- Touschek lifetime:     6.8545E9  7.0845E9  7.3198E9  7.5603E9  7.8063E9  sec
+ Touschek lifetime:     6.9598E9  7.1930E9  7.4315E9  7.6754E9  7.9247E9  sec
  Momentum acceptance:      17.4      17.6      17.8      18.0      18.2    %
- Touschek lifetime:     8.0577E9  8.3146E9  8.5771E9  8.8453E9  9.1193E9  sec
+ Touschek lifetime:     8.1795E9  8.4399E9  8.7060E9  8.9778E9  9.2554E9  sec
  Momentum acceptance:      18.4      18.6      18.8      19.0      19.2    %
- Touschek lifetime:     9.3991E9  9.6848E9  9.9764E9  1.027E10  1.058E10  sec
+ Touschek lifetime:     9.5389E9  9.8284E9  1.012E10  1.043E10  1.073E10  sec
  Momentum acceptance:      19.4      19.6      19.8      20.0      20.2    %
- Touschek lifetime:     1.089E10  1.120E10  1.153E10  1.186E10  1.219E10  sec
+ Touschek lifetime:     1.105E10  1.137E10  1.169E10  1.203E10  1.237E10  sec
  Momentum acceptance:      20.4      20.6      20.8      21.0      21.2    %
- Touschek lifetime:     1.253E10  1.288E10  1.324E10  1.360E10  1.397E10  sec
+ Touschek lifetime:     1.272E10  1.307E10  1.343E10  1.380E10  1.417E10  sec
  Momentum acceptance:      21.4      21.6      21.8      22.0      22.2    %
- Touschek lifetime:     1.435E10  1.473E10  1.512E10  1.552E10  1.593E10  sec
+ Touschek lifetime:     1.455E10  1.494E10  1.534E10  1.574E10  1.615E10  sec
  Momentum acceptance:      22.4      22.6      22.8      23.0      23.2    %
- Touschek lifetime:     1.634E10  1.676E10  1.719E10  1.763E10  1.807E10  sec
+ Touschek lifetime:     1.657E10  1.700E10  1.743E10  1.787E10  1.832E10  sec
  Momentum acceptance:      23.4      23.6      23.8      24.0      24.2    %
- Touschek lifetime:     1.852E10  1.898E10  1.945E10  1.993E10  2.042E10  sec
+ Touschek lifetime:     1.878E10  1.924E10  1.972E10  2.020E10  2.069E10  sec
 
  Touschek lifetime/100s for aperture 2Jx/(Nx**2 emitx') + 2Jz/(Nz**2 emitz) < 1:
   Nz: 4.6 5.3   6 6.8 7.7 8.8  10  11  13  15  17  19  21  24  28  32  36  41  46  53  60  68  77  88 100
@@ -168,17 +168,17 @@ Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
     Parameters with intrabeam scattering:
 
 Particles/bunch/1e10   =  .10000000     Minimum coupling       = 1.00000000 %  
-Emittance X            = 1.73577E-7 m   Emittance Y            = 1.73577E-9 m
-Emittance Z            = 1.90686E-5 m   Energy spread          =  .00119140
-Bunch Length           = 16.0597180 mm  Beam tilt              =  .00000000 rad
-Beam size xi           = 1.15441692 mm  Beam size eta          = 7.42005E-8 mm
+Emittance X            = 1.77671E-7 m   Emittance Y            = 1.77671E-9 m
+Emittance Z            = 1.88625E-5 m   Energy spread          =  .00118494
+Bunch Length           = 15.9727110 mm  Beam tilt              =  .00000000 rad
+Beam size xi           = 1.16114231 mm  Beam size eta          = 7.42005E-8 mm
 Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
 
-EMITX= 1.735775E-7 EMITY= 2.15946E-21 SIGE=     .001191 SIGZ=     .016060
+EMITX= 1.776708E-7 EMITY= 2.11230E-21 SIGE=     .001185 SIGZ=     .015973
 Touschek lifetime [s], momentum aperture nz*SIGE:
-  nz=    4.000000 (dp=     .004766)  tau= 1381729.599
-  nz=    6.000000 (dp=     .007148)  tau= 3908993.086
-  nz=    8.000000 (dp=     .009531)  tau= 6981234.367
+  nz=    4.000000 (dp=     .004740)  tau= 1394470.699
+  nz=    6.000000 (dp=     .007110)  tau= 3944954.693
+  nz=    8.000000 (dp=     .009480)  tau= 7026242.187
 TouschekTable dimensions:     4.000000
 
     Closed orbit:
@@ -197,82 +197,82 @@ R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
 
 Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 2838943.6 Hz 
 Energy loss per turn U0 = 1.5632657 MV  Effective voltage    Vc = 4.0000000 MV 
-Equilibrium position dz = 38.315657 mm  Momentum compact. alpha =    .02218
+Equilibrium position dz = 38.315657 mm  Momentum compact. alpha =    .02213
 Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 176.12184
-Bucket height     dV/P0 =  .0100348     Synchrotron frequency   = 78426.782 Hz 
+Bucket height     dV/P0 =  .0100474     Synchrotron frequency   = 78426.782 Hz 
 
   Imag.tune:-0.0000000          -0.0000000           0.0000000
   Real tune:-0.3037592          -0.0939440          -0.0276253
 
     Damping per one revolution:
-          X : -2.513861E-04   Y : -2.605594E-04   Z : -5.299718E-04
+          X : -2.455959E-04   Y : -2.605594E-04   Z : -5.357593E-04
     Damping time (sec):
-          X :  1.401206E-03   Y :  1.351875E-03   Z :  6.646461E-04
+          X :  1.434241E-03   Y :  1.351875E-03   Z :  6.574663E-04
     Tune shift due to radiation:
-          X : -5.111962E-05   Y :  5.411244E-05   Z : -1.794984E-07
+          X : -5.093806E-05   Y :  5.411244E-05   Z : -1.789479E-07
     Damping partition number:
-          X :    0.9651       Y :    1.0003       Z :    2.0346
+          X :    0.9429       Y :    1.0003       Z :    2.0568
 
-Emittance X            = 1.73577E-7 m   Emittance Y            =  .00000000 m
-Emittance Z            = 1.90686E-5 m   Energy spread          =  .00119140
-Bunch Length           = 16.0597178 mm  Beam tilt              =  .00000000 rad
-Beam size xi           = 1.15441690 mm  Beam size eta          =  .00000000 mm
+Emittance X            = 1.77671E-7 m   Emittance Y            =  .00000000 m
+Emittance Z            = 1.88625E-5 m   Energy spread          =  .00118494
+Bunch Length           = 15.9727108 mm  Beam tilt              =  .00000000 rad
+Beam size xi           = 1.16114229 mm  Beam size eta          =  .00000000 mm
 Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
 
 
  Momentum acceptance:       0.4       0.6       0.8       1.0       1.2    %
- Touschek lifetime:     511542.3  1255964.  2387293.  3941577.  5951374.  sec
+ Touschek lifetime:     522137.7  1281732.  2435888.  4021255.  6070923.  sec
  Momentum acceptance:       1.4       1.6       1.8       2.0       2.2    %
- Touschek lifetime:     8446968.  11457045  15009116  19129806  23845051  sec
+ Touschek lifetime:     8615659.  11684596  15305667  19505896  24311602  sec
  Momentum acceptance:       2.4       2.6       2.8       3.0       3.2    %
- Touschek lifetime:     29180246  35160360  41810026  49153604  57215247  sec
+ Touschek lifetime:     29748548  35842060  42617115  50098412  58310431  sec
  Momentum acceptance:       3.4       3.6       3.8       4.0       4.2    %
- Touschek lifetime:     66018942  75588550  85947841  97120524  1.0913E8  sec
+ Touschek lifetime:     67277480  77023737  87573283  98950130  1.1118E8  sec
  Momentum acceptance:       4.4       4.6       4.8       5.0       5.2    %
- Touschek lifetime:     1.2200E8  1.3576E8  1.5042E8  1.6601E8  1.8256E8  sec
+ Touschek lifetime:     1.2428E8  1.3828E8  1.5321E8  1.6908E8  1.8593E8  sec
  Momentum acceptance:       5.4       5.6       5.8       6.0       6.2    %
- Touschek lifetime:     2.0009E8  2.1863E8  2.3818E8  2.5880E8  2.8048E8  sec
+ Touschek lifetime:     2.0377E8  2.2262E8  2.4253E8  2.6350E8  2.8556E8  sec
  Momentum acceptance:       6.4       6.6       6.8       7.0       7.2    %
- Touschek lifetime:     3.0327E8  3.2718E8  3.5224E8  3.7847E8  4.0590E8  sec
+ Touschek lifetime:     3.0874E8  3.3306E8  3.5855E8  3.8522E8  4.1312E8  sec
  Momentum acceptance:       7.4       7.6       7.8       8.0       8.2    %
- Touschek lifetime:     4.3455E8  4.6445E8  4.9562E8  5.2809E8  5.6188E8  sec
+ Touschek lifetime:     4.4225E8  4.7266E8  5.0435E8  5.3736E8  5.7172E8  sec
  Momentum acceptance:       8.4       8.6       8.8       9.0       9.2    %
- Touschek lifetime:     5.9703E8  6.3354E8  6.7146E8  7.1081E8  7.5161E8  sec
+ Touschek lifetime:     6.0744E8  6.4456E8  6.8310E8  7.2309E8  7.6455E8  sec
  Momentum acceptance:       9.4       9.6       9.8      10.0      10.2    %
- Touschek lifetime:     7.9389E8  8.3767E8  8.8299E8  9.2987E8  9.7834E8  sec
+ Touschek lifetime:     8.0751E8  8.5200E8  8.9805E8  9.4568E8  9.9492E8  sec
  Momentum acceptance:      10.4      10.6      10.8      11.0      11.2    %
- Touschek lifetime:     1.0284E9  1.0801E9  1.1335E9  1.1886E9  1.2455E9  sec
+ Touschek lifetime:     1.0458E9  1.0983E9  1.1526E9  1.2085E9  1.2662E9  sec
  Momentum acceptance:      11.4      11.6      11.8      12.0      12.2    %
- Touschek lifetime:     1.3040E9  1.3644E9  1.4266E9  1.4906E9  1.5565E9  sec
+ Touschek lifetime:     1.3257E9  1.3870E9  1.4501E9  1.5151E9  1.5820E9  sec
  Momentum acceptance:      12.4      12.6      12.8      13.0      13.2    %
- Touschek lifetime:     1.6243E9  1.6940E9  1.7657E9  1.8394E9  1.9151E9  sec
+ Touschek lifetime:     1.6509E9  1.7216E9  1.7944E9  1.8692E9  1.9460E9  sec
  Momentum acceptance:      13.4      13.6      13.8      14.0      14.2    %
- Touschek lifetime:     1.9928E9  2.0726E9  2.1546E9  2.2387E9  2.3250E9  sec
+ Touschek lifetime:     2.0249E9  2.1059E9  2.1891E9  2.2744E9  2.3620E9  sec
  Momentum acceptance:      14.4      14.6      14.8      15.0      15.2    %
- Touschek lifetime:     2.4135E9  2.5042E9  2.5972E9  2.6925E9  2.7902E9  sec
+ Touschek lifetime:     2.4517E9  2.5438E9  2.6381E9  2.7348E9  2.8339E9  sec
  Momentum acceptance:      15.4      15.6      15.8      16.0      16.2    %
- Touschek lifetime:     2.8902E9  2.9927E9  3.0976E9  3.2049E9  3.3148E9  sec
+ Touschek lifetime:     2.9353E9  3.0392E9  3.1456E9  3.2545E9  3.3659E9  sec
  Momentum acceptance:      16.4      16.6      16.8      17.0      17.2    %
- Touschek lifetime:     3.4272E9  3.5422E9  3.6599E9  3.7802E9  3.9031E9  sec
+ Touschek lifetime:     3.4799E9  3.5965E9  3.7157E9  3.8377E9  3.9623E9  sec
  Momentum acceptance:      17.4      17.6      17.8      18.0      18.2    %
- Touschek lifetime:     4.0288E9  4.1573E9  4.2886E9  4.4227E9  4.5597E9  sec
+ Touschek lifetime:     4.0897E9  4.2200E9  4.3530E9  4.4889E9  4.6277E9  sec
  Momentum acceptance:      18.4      18.6      18.8      19.0      19.2    %
- Touschek lifetime:     4.6995E9  4.8424E9  4.9882E9  5.1371E9  5.2890E9  sec
+ Touschek lifetime:     4.7695E9  4.9142E9  5.0620E9  5.2128E9  5.3667E9  sec
  Momentum acceptance:      19.4      19.6      19.8      20.0      20.2    %
- Touschek lifetime:     5.4441E9  5.6023E9  5.7636E9  5.9283E9  6.0961E9  sec
+ Touschek lifetime:     5.5238E9  5.6840E9  5.8475E9  6.0142E9  6.1842E9  sec
  Momentum acceptance:      20.4      20.6      20.8      21.0      21.2    %
- Touschek lifetime:     6.2673E9  6.4419E9  6.6199E9  6.8012E9  6.9861E9  sec
+ Touschek lifetime:     6.3576E9  6.5344E9  6.7145E9  6.8982E9  7.0854E9  sec
  Momentum acceptance:      21.4      21.6      21.8      22.0      22.2    %
- Touschek lifetime:     7.1745E9  7.3665E9  7.5621E9  7.7613E9  7.9643E9  sec
+ Touschek lifetime:     7.2761E9  7.4705E9  7.6684E9  7.8701E9  8.0755E9  sec
  Momentum acceptance:      22.4      22.6      22.8      23.0      23.2    %
- Touschek lifetime:     8.1709E9  8.3814E9  8.5958E9  8.8140E9  9.0361E9  sec
+ Touschek lifetime:     8.2847E9  8.4978E9  8.7147E9  8.9355E9  9.1603E9  sec
  Momentum acceptance:      23.4      23.6      23.8      24.0      24.2    %
- Touschek lifetime:     9.2623E9  9.4924E9  9.7267E9  9.9650E9  1.021E10  sec
+ Touschek lifetime:     9.3891E9  9.6219E9  9.8589E9  1.010E10  1.035E10  sec
 
  Touschek lifetime/100s for aperture 2Jx/(Nx**2 emitx') + 2Jz/(Nz**2 emitz) < 1:
   Nz: 4.6 5.3   6 6.8 7.7 8.8  10  11  13  15  17  19  21  24  28  32  36  41  46  53  60  68  77  88 100
   Nx!---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1---1
-   1! 503 512 518 523 527 530 532 534 536 537 538 538 539 539 540 540 540 540 540 541 541 541 541 541 541
+   1! 526 535 542 547 551 555 557 559 561 562 563 564 564 565 565 565 566 566 566 566 566 566 566 566 566
    2! 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999
    3! 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999
    4! 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999 999
@@ -346,10 +346,10 @@ Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
     Parameters with intrabeam scattering:
 
 Particles/bunch/1e10   =  .20000000     Minimum coupling       = 1.00000000 %  
-Emittance X            = 1.73577E-7 m   Emittance Y            = 1.73577E-9 m
-Emittance Z            = 1.90686E-5 m   Energy spread          =  .00119140
-Bunch Length           = 16.0597182 mm  Beam tilt              =  .00000000 rad
-Beam size xi           = 1.15441694 mm  Beam size eta          = 1.05940E-7 mm
+Emittance X            = 1.77671E-7 m   Emittance Y            = 1.77671E-9 m
+Emittance Z            = 1.88625E-5 m   Energy spread          =  .00118494
+Bunch Length           = 15.9727111 mm  Beam tilt              =  .00000000 rad
+Beam size xi           = 1.16114232 mm  Beam size eta          = 1.04935E-7 mm
 Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
 
-nz=6: tau(PBUNCH=1e9)= 3908993.086 tau(2e9)= 1954496.710 ratio=    2.000000
+nz=6: tau(PBUNCH=1e9)= 3944954.693 tau(2e9)= 1972477.513 ratio=    2.000000

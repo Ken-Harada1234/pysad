@@ -1,0 +1,6 @@
+Shared[s] = {1,2,3,"text"}   SharedSize[{1,2,3}] = 32
+Parallelize[f,4,64,2] = {2,5,10,17}
+ ???-pysad-System['echo hello-from-shell'] is not executed: shell commands are disabled by default. To allow, set the environment variable PYSAD_ALLOW_SYSTEM=1 or call pysad.miscfn.allow_system(True). 
+System の戻り値 = $Failed   (許可なし: $Failed、許可あり: 0)
+System["[ -d . ]"] = 0   (存在確認だけは許可なしでも判定: 0 は真)
+Fork[] はこの環境では使えない (Windows)

@@ -28,6 +28,8 @@ Do[ res = TrackParticles[res, 1];  x = res[2,1,1]; px = res[2,2,1]; Print[...] ,
 線形運動では $\gamma x^2 + 2\alpha x x' + \beta x'^2$ は保存 (Courant-Snyder)、点は楕円 $\gamma x^2 + 2\alpha x x'+\beta x'^2 = \epsilon$ の上を回る。1σ ではこれが 1% 以内で保存されている (上の表)。
 
 ## gs と pysad の比較
+**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。保存してあった旧い出力は `PYSAD_COMPAT=k64` の出力と同じ (確認済み)。v2 は K64 のバグを直したので (`docs/47_v2_changes.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+
 ○ 全 240 点の (x, x', y, z) が 10 桁一致 (z の値だけ最後の桁が 1 違う)。
 
 ## 未確認・限界

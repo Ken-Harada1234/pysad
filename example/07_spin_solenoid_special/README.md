@@ -5,11 +5,11 @@
 
 | 名前 | 1 行説明 | gs と pysad |
 |---|---|---|
-| [flag_POL_RADPOL](flag_POL_RADPOL.md) | 偏極時間・スピンチューン・Sokolov-Ternov の立ち上がり | ○ |
+| [flag_POL_RADPOL](flag_POL_RADPOL.md) | 偏極時間・スピンチューン・Sokolov-Ternov の立ち上がり | ○ (k64 モード。v2 の既定ではスピン追跡の `spin angle` が gs と違う: 原因は未確認) |
 | [elem_SOL](elem_SOL.md) | ソレノイド領域の 4×4 伝達行列 (結合) | ○ |
 | [elem_MULT_ANGLE](elem_MULT_ANGLE.md) | ANGLE 付き MULT (BEND と同じ・複合機能型) | ○ |
 | [elem_COORD](elem_COORD.md) | 座標変換 (ずらし・回転)、挟んだリングと打ち消し | ○ |
-| [flag_RADLIGHT_fn_RadiationField_fn_RadiationSpectrum](flag_RADLIGHT_fn_RadiationField_fn_RadiationSpectrum.md) | 軌道の記録とスペクトル (ガウスパルスと照合) | △ (軌道・スペクトルは ○、**RadiationField は gs が SIGSEGV で失敗**、pysad は動く) |
+| [flag_RADLIGHT_fn_RadiationField_fn_RadiationSpectrum](flag_RADLIGHT_fn_RadiationField_fn_RadiationSpectrum.md) | 軌道の記録とスペクトル (ガウスパルスと照合) | △ (軌道・スペクトルは k64 モードで ○。v2 の既定は BEND の中も記録するので点数が 13 で gs の 11 と違う: B65。**RadiationField は gs が SIGSEGV で失敗**、pysad は動く) |
 | [fn_SymplecticJ](fn_SymplecticJ.md) | シンプレクティック行列 J と M^T J M = J | ○ |
 
 図: `flag_RADLIGHT_spectrum.png`。

@@ -1,0 +1,22 @@
+! v2 (B65): RADLIGHT の軌道 {t, x, y, z} に横方向の座標が入り、BEND の中も記録する (1/γ の角度あたり RADLIGHTDIV 点、既定 16)
+! 偏向磁石 (ρ = 1 m、γ = 20) の放射場のピークを、接線上 100 m の観測点で Lienard-Wiechert の式と比べる
+MOMENTUM = 10.2069e6;
+DRIFT D1 = (L=0.5);
+BEND B = (L=0.5 ANGLE=0.5);
+MARK ST = ();
+LINE BL = (ST D1 B D1);
+FFS;
+USE BL; INS; CALC;
+RADLIGHT; NORAD;
+$FORM = "14.8";
+r = TrackParticles[{1, {{0},{0},{0},{0},{0},{0},{1}}}, 5, 1, 1];
+t = r[[2,1]];
+Print["trajectory points = ", Length[t[[1]]], ", end point = ", {t[[2,-1]], t[[3,-1]], t[[4,-1]]}, ", GEO = ", {LINE["GX",5], LINE["GY",5], LINE["GZ",5]}];
+R = 100;
+sg = Sign[LINE["GY",4]];
+obs = {0.5+Sin[0.25]+R Cos[0.25], sg (1-Cos[0.25])+sg R Sin[0.25], 0};
+f = RadiationField[t, obs];
+g = Sqrt[1+(10.2069e6/510998.95)^2];
+bt = Sqrt[1-1/g^2];
+Print["peak |E| = ", Max[Sqrt[f[[2]]^2+f[[3]]^2]], " V/m,  e beta^2/(4 pi eps0 rho R (1-beta)^2) = ", 1.602176634e-19/(4 Pi 8.8541878128e-12) bt^2/(1 R (1-bt)^2), " V/m"];
+Exit;

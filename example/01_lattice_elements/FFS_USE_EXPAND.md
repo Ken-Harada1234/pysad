@@ -35,5 +35,5 @@ QF 1 台の K1 を 0.7→0.6 に弱めたときのチューンの変化は、線
 
 ## 未確認・限界
 - `QF.3 K1 0.9;` のように `名前.番号` を先頭にした値設定は、gs では式として評価されて何も設定されない。pysad も同じ (何もしない) にした。成分だけの設定は `LINE["K1","QF.3"]=0.9`。
-- `NOKEEPEXP` (CALC のたびに tfvcomp で EXPAND を決める) は未対応。
+- `NOKEEPEXP` (CALC のたびに tfvcomp で EXPAND を決める): 最初の版では未対応だった。v2 で gs に合わせて対応した (`docs/47_v2_changes.md`。gs の実測と一致と記録されている)。ただし pysad の `tfvcomp` は常に偽 (成分ごとの FREE が無い)。この例では使っておらず、再実行していない。
 - `KEEPEXP`/`CALEXP` フラグ、`USE BeamLine[...]` は未確認。

@@ -68,7 +68,7 @@ pysad: `FFSState._twmov_to_mark(rows)` が CELL CALC (4D/CALC6D) の後に MARK 
 | MULT (ANGLE≠0) | `tmultae` | 曲げつき多極。ndiv 個のスライスで [半曲げ → キック → 全曲げ → … → 半曲げ]。COD 写像は解析、行列は各段の解析行列の積 | `multae.lattice_step` (`lattice._el_cod_step`)。詳細・限界は docs/28_mult_angle.md |
 | COORD | `qcoord` → `tcoorde` | 座標変換 (DX DY DZ のずらしと CHI1-3 の回転、DIR≠0 は逆変換)。COD が設計軌道上でなくても動く | `lattice._el_cod_step` の Coord。詳細は docs/25_coord.md |
 | TCAVI | `ttcave` | RFSW OFF (CALC の既定) は長さ L のドリフト。**RFSW ON の CALC は未対応** (NotImplementedError) | docs/26_tcav.md |
-| UND | `case default` | 恒等 (長さは幾何にだけ入る)。K64 の UND は磁場を設定できない (docs/27_und.md) | 恒等 |
+| UND | `case default` | 恒等 (長さは幾何にだけ入る)。K64 の UND は磁場を設定できない。**v2 モードは磁場なしでも長さ L のドリフトとして光学に入り、`FBX`・`FBY` の磁場つきの UND は追跡の写像の数値微分が入る** (docs/27_und.md) | k64: 恒等。v2: 追跡のカーネルの数値微分 |
 | MAP | `qemap` | `ExternalMap["OPTICS", l, cod]` が `{cod1, trans}` を返す。定義がなければ恒等で長さ 0 | `lattice._map_step` (docs/30_map.md) |
 | CAVI | `qcav` → `tcave` | `qcav` は `rfsw = rfsw .and. trpt` にして呼ぶので、**リングの 4 次元 CALC では RFSW に依らずドリフト** (bench_level14a_dbg で確認) | `lattice.RFSW=False` で `_drift_matrix_at_cod(L)` |
 | SOL | `tfbndsol` で区間判定 → `qsol` → `tsole1`。SOL 要素単体は "implementation error" | BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域内は BZ のあるソレノイド内の正準運動量で動き、横方向が結合する | `solmap.py` (追跡の numba カーネルを 1 粒子に使い COD での中心差分 1e-7 を行列にする。`tsolque` の解析行列は写していない)。CALC・INS・CELL・RAD ON・DP≠0 でチューン 1e-15、領域内の Twiss 1e-11 (gs と一致、`test_sol_optics.py`)。限界は 6 節と docs/29_sol_optics.md |
@@ -78,7 +78,7 @@ pysad: `FFSState._twmov_to_mark(rows)` が CELL CALC (4D/CALC6D) の後に MARK 
 **ROTATE (ROT/TILT) の扱い (docs/history/work_rotate.md)**: BEND は `tchge` (入口: theta で回す→回した座標系でずらす→tbrote、出口は逆) を外側に付けて中身 (tsteee / tbendebody0 / K1≠0 の tbendebody / tquade / tmulte) を誤差なしで計算する
 (`lattice._bend_element_cod_matrix`、`_bend_chg_args` が tbende.f の分岐ごとの theta (ANGLE=0 の tsteee は DROTATE を渡さない、K0=0 はドリフトで tchge を呼ばない) を決める)。
 薄い多極 (SEXT/OCT/DECA/DODECA と L=0 の四極) は tthine の先頭・末尾の tchge (`_thin_cod_matrix`)。四極と MULT の ROT は tsolrote (ずらす→回す)。
-**SAD の癖**: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。`_tchge_jac` が再現 (docs/11 A25)。
+**SAD の癖 (k64 モード)**: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。`_tchge_jac` が再現 (docs/11 A25)。**v2 モードでは直した** (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。`_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致し、ロール + ずれのある六極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (六極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。`test_v2_A_tchge.py`)。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。
 
 ### BEND の K0 と ANGLE=0 のステアリング (docs/history/work_bend_k0.md)
 
@@ -146,10 +146,23 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 
 - **CALC6D** (`qcell6d`、列 22–28): `calc6d.py`。`CELL`/`INS` に関わらず `qcell6d` に入る (1 節)。SOL を含む CALC6D と、RADCOD つきの SOL の CALC は未対応 (SADError、docs/29)。
 - **SOL の CALC**: 領域内の Twiss の座標は領域内の正準運動量での値 (`tsole1` と同じ)。K64 は SOL (BOUND≠0) の長さを周長 (omega0・MomentumCompaction など) に入れない。SOL には GEO=1 が要り、ないと K64 は S 座標が途切れて周長が狂う
-  (pysad は GEO の有無で値を変えず、`Missing GEO of Solenoid` の警告を出して直進扱い)。ずれ・傾きのある SOL の Twiss は未対応 (幾何 `sgeo.py` だけ gs と一致)。
+  (pysad は GEO の有無で値を変えず、`Missing GEO of Solenoid` の警告を出して直進扱い)。ずれ・傾きのある SOL の Twiss は k64 モードでは未対応 (幾何 `sgeo.py` だけ gs と一致)、v2 モードでは対応 (docs/44)。
 - **COORD・MULT (ANGLE≠0)**: 上の表のとおり CALC の COD 写像と行列を持つ。MULT (ANGLE≠0) で Twiss・Emittance[] が未対応なのは FB1/FB2 (tblfre) と CHI2、BZ≠0、VOLT、F1、TAPER、SK0、L=0 (docs/28)。
   K0 + DX DY + ROTATE を同時に与えた MULT のリングは gs と閉軌道が一致しない (docs/28)。
 - **閉軌道の既知の差**: K3 が強く (K3=300、ずれ 1e-4 など) ずれの大きい MULT リングでは、pysad の CALC (qcod) の閉軌道が gs と別の解 (y=−0.033) に落ち、Emittance[] が NaN になる (docs/history/work_unimpl.md)。gs は小さい軌道で通る。qcod の初期値・後退の違いの可能性で、未解決。
+
+### v2 モードで変わった CALC・光学の動作 (k64 モードは K64 のまま)
+
+| 項目 | k64 モード | v2 モード | 根拠・試験 |
+|---|---|---|---|
+| 4D の CALC の縦方向の Twiss 列 (B11) | AZ BZ NZ ZX ZPX ZY ZPY を作り直さず、前の 6D の値が残る | 既定値 (AZ=0、BZ=1、他 0)。4D では縦方向を計算しない | `test_v2_A_ffs.py::test_calc4d_resets_longitudinal_columns_v2` |
+| `UnstableLevel` (B15) | 常に 0 | 不安定な点の数 nstab。MatchingResidual = 10·nstab + NetResidual (例: 2 と 20) | `test_unstable_level_v2` |
+| `CalculateOptics` の stabz・tracez (B16) | 未初期化 (pysad は 1 と 0 を返す) | idim=3 は tracez = 2cos(μz) と stabz、idim=2 は stabz=1・tracez=0 | Emittance[] のシンクロトロンチューンと 2e-3 (`test_calculate_optics_idim3_returns_z_trace_v2`) |
+| 周期解を使う 4D の CALC の tchge | 回転が行列に入らない (上記) | 入る | 上記 |
+
+モードによらない修正 (pysad の不具合): **`CalculateOptics` が TRPT の加速を入れなかった** (CALC は入れる) のを直した。TRPT かつ RFSW の加速を区間に入れる (区間の途中からでも)。gs と終端の BX AX BY AY EX EPX NX NY が全桁、CalculateOptics − CALC = 0 (`test_calculate_optics_includes_trpt_acceleration`)。また、加速区間の分散の qmat2twiss の gr (= gammab(出口)/gammab(入口) を入口の分散に掛ける) の向きが逆だった (入口に分散のある加速区間の EX EPX が gs と合わなかった: 0.1109 / 0.0734) のを直した。gs と全桁 (薄い空洞・厚い空洞。`test_dispersion_through_accelerating_cavity_matches_gs`)。
+
+**ソレノイド領域の CALC** (docs/29・44): v2 モードは領域内の BEND・MULT・CAVI・K1=0 の四極、ずれて傾いたソレノイド (`DX DY DZ CHI1..3`・`F1`) を Twiss と閉軌道に入れる (solmap)。領域内の CAVI・RF つき MULT の TRPT の加速は CALC に入る (追跡と 2e-9)。**CALC6D・RADCOD つきの CALC は、SOL があると従来どおり SADError** (両モード)。**RADTAPER つきの CALC6D** は v2 で入る (Emittance[] と同じ閉軌道・係数。4 次元の CALC は K64 と同じくテーパーなし。`test_radtaper_in_calc6d`)。
 
 ## 5. ベンチマークの要約 (CALC 関連)
 
@@ -178,7 +191,7 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 未対応:
 - **GEO 系の端数位置** (`qtwissfracgeo`): 確認した範囲: 平面の 12 セルのリングで、端数位置 3.5・4.25・4.5 (BEND の内側)・リスト指定の `Twiss["BX","AX","NX","EX"]` と `LINE["GX","GY","GZ","GCHI3","S"]` が gs と 1e-14 で一致。結合のあるリング・SOL・COORD を含むリングの端数位置の幾何は未確認。
 - **Optics.n の関数** (確認済み): `TransferMatrix`・`BeamMatrix`・`NormalCoordinates`・`OrbitGeo` は gs と表示桁で一致 (gs は 1e-16 の雑音の要素を出し、pysad は 0)。`LDSolve` は gs と一致 (docs/04)。`PeriodicR` は呼び出し方が不明で比較できなかった。
-- **SOL の CALC の残り**: 領域内の BEND・MULT・CAVI (NotImplementedError → 警告して直進扱い)、領域内の L=0/K1=0 の四極、BOUND=0 で BZ≠0 の SOL、ずれ・傾きのある SOL、CALC6D・RADCOD つきの CALC (4b 節)。
+- **SOL の CALC の残り**: k64 モードでは領域内の BEND・MULT・CAVI (NotImplementedError → 警告して直進扱い)、領域内の L=0/K1=0 の四極、ずれ・傾きのある SOL が未対応 (v2 モードは対応。上の「v2 モードで変わった CALC」)。両モード共通で未対応: BOUND=0 で BZ≠0 の SOL、CALC6D・RADCOD つきの CALC (4b 節)。v2 の領域内の TRPT 加速では、`V1 V20 V11 V02`、ANGLE≠0 の MULT が使えない (docs/44)。
 - **TCAVI の RFSW ON の CALC** (NotImplementedError)。
 - **モード入れ替え**: 一周の位相の小数部は `periodic_optics` のモード (qcell と同じ) だが、`periodic_optics` はモード入れ替え (`normal=.false.`) を扱わない。
 - **端数位置** `row_frac`: 線形行列の近似 (qfraccomp の K1·r、フリンジ切り替え未対応)。

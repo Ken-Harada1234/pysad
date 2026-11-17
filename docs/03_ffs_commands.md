@@ -22,7 +22,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | 8 | コマンド群 | `STOP/EXIT/QUIT/ABORT/USE/VISIT/BYE/SPLIT/MAXI_TERATION/ATT_RIBUTE/SAVE/EXPAND/RESET/FREE/FIX/FIT/FITP_OINTS/CAL_CULATE/GO/REC_OVER/T_YPE/DISP_LAY/SCALE/AP_ERTURE/MAT_RIX/CHRO_MATICITY/RADINT/REF_ERENCE/DIMAD/ZAP/TRC_OD/PUSHS_EED…/DELW_AVE` | 第 1 群 |
 | 9 | | `VARY/REJ_ECT/COUP_LE/DECOUP_LE/INDEP_ENDENT/ORI_GIN(ORG)/SHOW/STAT_US/VAR_IABLES(VARS)/RENUM_BER/REV_ERSE/DRAW/GEO/PRI_NT` | 第 2 群 |
 | 10 | | `MEA_SURE/ORBITJ_ITTER/PUTM_EASURE/GET_MEASURE/LOGM_EASURE` | 第 3 群 |
-| 11 | | `WAKE/DELC_OR/LTR_ACK/EMIT_TANCE/SYNCHROB_ETA/BEAM_SIZE/ALI_GN` | 第 4 群。pysad: `DELCOR` は実装 (docs/31)、`WAKE` は K64 と同じ経路 (§9)、`SYNCHROB`・`ALIGN` の語は未対応 (§8) |
+| 11 | | `WAKE/DELC_OR/LTR_ACK/EMIT_TANCE/SYNCHROB_ETA/BEAM_SIZE/ALI_GN` | 第 4 群。pysad: `DELCOR` は実装 (docs/31)、`WAKE` は k64 モードでは K64 と同じ経路・v2 モードでは表を読む (§9)、`SYNCHROB` の語と `ALIGN` (単独。`TRCOD ALIGN` は v2 で実装) は未対応 (§8)。第 3 群の `MEA_SURE/ORBITJ_ITTER/PUTM_EASURE/GET_MEASURE/LOGM_EASURE` と `TRC_OD` は v2 モードで実装 (§8) |
 | 12 | label 7000 `tfgetv` | 要素値 | 失敗なら `?Undefined command or element:` |
 
 **abbrev の記法** (abbrev.f): `abbrev(word,'CAL_CULATE','_')` は `_` より前 (`CAL`) が必須部分、以後は省略可能な接尾辞。`CAL`, `CALC`, `CALCU`, … `CALCULATE` のどれでも真、`CALCULATED` のように長い語や `CAX` は偽。`_` のない参照は完全一致。pysad では `_abbrev(word, 'CAL_CULATE')` が同じ規則。
@@ -212,21 +212,22 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | Twiss/LINE/Element/FFS/Emittance/TrackParticles/SeedRandom | `fn_twiss`/`fn_line`/`fn_element`/`fn_ffs`/`fn_emittance`/`fn_track`/`fn_seedrandom`、代入は `set_line`/`set_element` (Set をラップ)。位置解決は `_resolve_loc` → `positions` (tflinenamestk 相当: `$$$`, `NAME.*`, パターン, `NAME.n`, `NAME±k`) |
 | Element/SetElement/BeamLine 系 | `pysad/sadelem.py` (§7) |
 | FFS の小さなコマンド | `pysad/ffsextra.py` の `COMMANDS` (`ffscmd` が `_fx.run` で先に呼ぶ): VARIABLES(VARS/VAR)・ATTRIBUTE(ATTR/ATT)・MATRIX(MAT。名前だけの引数は NAME.1 として扱い、ラティスに無い名前は gs と同じく読み飛ばす (to=`$$$`)。`test_ffsextra.py`)・SHOW・VARY・RECOVER(REC)・REVERSE(REV)・PRINT(PRI)・EXECUTE(EXEC)・OUTPUT/APPEND/CLOSE・INPUT/READ・STATUS(STAT)・SUSPEND/RESUME (docs/35) |
-| DELCOR / WAKE | `ffscmd._delcor` (tcorr・tvcorr。MARK は DETR・DPX に入る K64 の添字のずれまで再現。CAVI は未対応、docs/31)、`_wake_cmd` (§9) |
+| DELCOR / WAKE | `ffscmd._delcor` (tcorr・tvcorr。k64 モードは MARK が DETR・DPX、CAVI が HARM・PHI に入る K64 の添字のずれまで再現、v2 モードは DX・DY。docs/31)、`_wake_cmd` (§9) |
+| MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE | v2 モードだけ。`pysad/measure.py`。使い方は下の「v2 モードの MEASURE・TRCOD」 |
 | CSR 系・Fit 系・パッケージ | SADScript の関数として csr.py・fitroot.py・corr.py・pkgload.py が提供 (docs/33, 32, 34) |
 
-**既知の未対応** (2026-11-17 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/35、REJECT は `ffscmd`)。そのほか:
+**既知の未対応** (`ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN (単独)、INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB。k64 モードでは MEASURE・TRC(TRCOD) と ORBITJITTER・PUTMEASURE・GETMEASURE も同じ扱い (v2 モードでは実装した。下記)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (grep で 0 件確認。FFS では式として評価されて何もしない。v2 モードは「K64 に無いコマンド」と警告して文全体を読み飛ばす。B22)。SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/35、REJECT は `ffscmd`)。そのほか:
 
-- MCOD/TCOD/MON (この K64 ビルドでは FFS コマンドではなく式として評価されて何もしないので pysad も無視)。
-- MEASURE/TRCOD: gs で動かない (B42: TRCOD は SIGSEGV、MEASURE は何も出力しない) ので `tracke/ttinit/ttstat/trcoda/trackb` は未翻訳 (`tlum`/`tluma` だけ `measure.py`)。
+- MON/MCOD/TCOD: v2 でも機能は実装しない (K64 にコマンドが無く、古い SAD の MON の書式・意味を確かめる資料が無い。軌道補正は CorrectOrbit パッケージ、docs/34)。
 - INS での fit (Matcher は `cell=False` で安定判定を省くだけで、SAD の INS 条件照合は未了。INS のリングの Emittance[]・追跡は gs と一致を確認: `history/work_unimpl.md` の記録)。
 - FITP>1 のオフモメンタム条件と MatchingAmplitude (match6 に実装済みだが SAD との照合はない: §9)。
 - FIT の `@` (`SADError` で停止する)。
-- `NOKEEPEXP` (CALC ごとに tfvcomp で EXPAND を決める)、RENUMBER の INDX 属性による番号の初期値。
+- `NOKEEPEXP` の tfvcomp: 常に偽として実装している (成分ごとの FREE が無いため真になる場合が無い。成分ごとの FREE を実装するときに `FFS._tfvcomp` を直す)。NOKEEPEXP と RENUMBER の INDEX 属性による番号の初期値は実装した (両モード。gs の実測と一致。下記)。
 - `Twiss["R…"/"D…"/"RALL"/"DALL"]` は整数位置だけ (参照光学は要素の入口の値のみ)。
 
 **gs に合わせた FFS の動作 (2026-11-17、gs で確認)**
 - FFS 内の `MOMENTUM = …;` は追跡・Emittance[]・光学に効き、`USE` で MAIN 側の値に戻らない (MAIN 側の値が変わったときだけ取り込む)。
+- `NOKEEPEXP` のとき、EXPAND/NOEXPAND を付けない CALC・GO は `calexp = .not. tfvcomp()` (tffsa.f:553、569 を写した。gs の実測 10 行と一致。`test_nokeepexp_matches_gs`)。`RENUMBER` は BEND・QUAD・SEXT… の `INDEX` 属性が 2 以上なら、同名の要素の番号をその値から振る (QF の INDEX=5 → QF.5 QF.6 …。USE でも RENUMBER でも。`LINE["INDEX",…]` も読める。tfinit.f tfinimult を写した。`test_renumber_with_index_attribute_matches_gs`)。両モードで同じ。
 - `USE [NOEXPAND|EXPAND] line`、`CALC|GO [NOEXPAND|EXPAND]`: NOEXPAND は成分ごとのずれ (`LINE["K1","QF.2"]=…`) を残し、`???-FFS-Info-Element values are not expanded.` を出して表示が `NOCALEXP` になる。KEEPEXP なので次の CALC にも残る。`SAVE`・`EXPAND` は触れた値を代表 (最初の 1 台) に揃える。CALC と Emittance[] は揃え、TrackParticles は揃えない。
 - `名前.番号 K1 0.9;` のように要素の成分名を先頭にした文は式として評価され、何も設定しない (`LINE["K1","QF.3"]=0.9` を使う)。
 - `RENUMBER comp` は comp を起点に周回順で番号を振り直し、`LINE["MULT"]` もその番号 (同名が 1 台だけなら 0)。起点が無ければ ` ???-FFS-Error-Missing origin component for RENUM_BER `。
@@ -241,6 +242,33 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - FFS の termes エラーでの外側 Do の中断、`FFS["…"]` 文字列内の REPEAT/UNTIL、一致なしパターンの無言処理。
 - GO の幾何の条件 (GX GY GZ CHI1..3) の解析微分 (`tdgeo` の直訳 `match6d.tdgeo_term`) は、幾何の条件だけの行で、変数が DRIFT の L・BEND の ANGLE・L のときだけ。四極などの DX・DY や、Twiss の条件が同じ行にある列は中心差分のまま (`test_tdgeo.py`)。半セル + `fit gx 20; free DRID1 L` の例では gs とのフィット後の L が相対 5.5e-7 違う (収束判定と微分の差。不安定な光学の fit は罰則の扱いが違い比べていない)。
 
+### v2 モードの MEASURE・TRCOD と、台本の読み方・小さな修正
+
+**v2 モードの MEASURE・TRCOD・LOGMEASURE** (`pysad/measure.py`。k64 モードは従来どおり `FFS command MEASURE は未対応 (無視)`)。K64 の実行ファイル (gs) は MEASURE が無出力、TRCOD が SIGSEGV (B42)、MAIN の TRACK も落ちるので、**gs との数値比較は 1 件もない**。実装は K64 のソース (`tffsa.f`、`trackb.f`、`tracke.f`、`trcoda.f`、`ttinit.f`、`ttstat.f`、`tbdecoup.f`) の読みで、値は解析式と pysad の独立な経路 (CALC の Twiss、EMIT、TrackParticles) で確かめた。表示の書式は gfortran で同じ FORMAT を出して合わせた (gs の実出力との比較ではない)。
+
+- `MEASURE [位置]` (省略形 `MEA`): 先頭 MARK の入口条件 (Twiss、EMITX、EMITY、DP、SIGZ、AZ) の分布の NP 個 (既定 1000) の粒子を位置の入口まで追い、重心・6×6 の分散行列・射影/非結合の emittance と Twiss・ビームサイズを表示する。位置は要素名・`NAME.n`・`$$$`・`^^^`。省略すると前回の MEASURE / TRCOD の位置 (最初は終端)。`FFS["MEASURE 位置"]` は `{np, {重心 6}, {分散行列 6×6}}`。`LOGMEASURE` (`LOGM`) は xa ya xxa xya yya を表示する。
+- `TRCOD [位置]` (`TRC`): JITTER を OFF 扱いにして分布を作り、位置 1 から指定位置まで、各要素の入口の重心を Twiss の DX DPX DY DPY に、<u·dp>/<dp²> を EX EPX EY EPY に書く。次の CALC で Twiss は計算し直される。
+- `TRCOD FIXCOD [位置]` / `MVCOD [位置]` / `STNCOD`: 軌道・分散の「基準」を取っておき、`Twiss["RDX", k]` で基準、`Twiss["DDX", k]` で現在 − 基準 (EX EPX EY EPY DX DPX DY DPY)。基準は REFERENCE と同じ参照光学に置く (K64 の `twiss(*,ndim,*)` を利用者が読む手段が無いため。`REF;` で上書きされるので戻すには `TRCOD STNCOD;`)。`TRCOD ALIGN 要素1 要素2`: 要素1 の DX・DY を、その次から 要素2 までの BEND QUAD SEXT OCT DECA DODECA MULT の DX・DY に書く (DECA DODECA MULT は v2 で足した。回転・縦のずれは揃えない)。`ORBITJITTER xj yj`: Twiss の DX・DY に位置ごとの正規乱数を足す。
+- `PUTMEASURE` / `GETMEASURE [alpha]`: 環境変数 SADPOUT / SADPIN のファイルで測定値 (重心 x、y と <xx> <xy> <yy>) を受け渡し、GETMEASURE は measp の 1 点の fit 条件の DX・DY の目標値を (相手の重心 − 自分の重心)/2·alpha + 今の値·(1 − alpha) にする。Windows は FIFO が無いので普通のファイル (待たない)。
+- 初期分布の注意: MARK に DP を書かないと DP は 0.01 (既定) で、運動量の広がり 1% (一様) の分布になる。0 にするには `DP=0;`。リングでは `CELL; CALC;` の後 (周期解が先頭 MARK に入る)。MOMENTUM を設定すること。
+- MEASURE と TRPT: K64 は `trpt=.true.` にしたまま戻さないが、v2 は追跡の間だけ ON にして戻す (後の計算に副作用を残さない。K64 のとおりにしたければ MEASURE の後に `TRPT;`)。MAIN の `TRACK … TURNS=-1` は、v2 は K64 のソースどおり輸送路の 1 回通過 (Entrance / Exit の統計を表示)、k64 モードは 1 周のリングの追跡として扱う。
+- 使えない・未確認 (要判断を含む): GETMEASURE の対象の関数 (DX・DY) は K64 の関数番号 32・34 (今の番号では PEPY・PZPX) からは確定できず、式から軌道の関数と判断した。FIFO での待ち合わせ (二つの SAD を同時に走らせる使い方) は未確認。`TRCOD ALIGN` の SOL・MONI は動かさない。`Twiss["DETR"]` が CALC の後で常に 0 になる pysad の不具合 (docs/47 §(e) の N12。未修正) のため、モードが入れ替わる強い結合のリングの MEASURE は未確認。TWAKE / LWAKE ON の MEASURE は z の分布を作る (K64 は全粒子 z = 0 にするので K64 と違う。一様・階段状の wake の重心と広がりだけ確認)。`DRAW` の中の粒子追跡 (`tdrwdt.f`) は K64 でも動かない死んだコードで実装しない。TRCOD の途中の統計 (K64 は標準エラーに出す) は出さない。
+- 実効面積 (tlum) と垂直の 4・6・8 次のモーメントは K64 の MEASURE からは呼ばれない (`measure.ttstat_lines(…, lum=True)` で出せる)。
+- 詳細: `docs/history/v2_changes_C_measure.md`、`docs/history/v2_changes_C2_measure.md`。試験 `test_v2_C_measure.py` (19)・`test_v2_C2_measure.py` (20)。例 `example/v2_C/C2m_trcod_reference.sad`・`C2m_putget_measure.sad`。
+
+**台本の読み方と FFS の小さな修正** (`test_v2_B_ffs.py`、`test_v2_C2_script.py`)
+
+| 項目 | k64 モード | v2 モード | 根拠 |
+|---|---|---|---|
+| MAIN の `OFF RFSW` (B30) | FFS に届かない (FFS は RFSW ON で始まる。K64 と同じ) | 届く (`ON RFSW` も)。FFS の中の `RFSW;`・`NORFSW;` が後から優先 | FFS の `NORFSW;` と全桁同じ追跡結果 (δ が保存) |
+| `ORG B3 1.5 -2.5 0.5 10 20 30` (B26) | `1.5-2.5` と読まれ値が 1 つ足りなくなる | 空白で区切った `-2.5` は別の値。`3/2`、`2 *5` などの式も書ける。k64 モードは K64 と同じ読み方のまま | K64 で曖昧さのない書き方 (`1.5 0-2.5 …`) と同じ ORG の値 (gx=1.5, gy=-2.5) |
+| MOMENTUM の警告 (B67) | 警告なし | MOMENTUM を MAIN でも FFS でも設定しないまま、運動量を使う計算 (追跡・EMIT・Emittance・RADINT・CALC6D・DA ほか) に入ると 1 度だけ警告 (値は変えず 30 GeV)。CALC (4D) と幾何では出さない | 明示の `MOMENTUM=30e9` では出ない |
+| `MON`・`MCOD`・`TCOD` (B22) | 後ろの語が式として読まれ `Missing value for PM*` で文が止まる | 「K64 に無いコマンド」と警告して文全体を読み飛ばす (定義はしない。k64 モードは K64 と同じ) | K64 の tffsa.f に無い |
+| `FFS;` の書き方 | (gs の動作) | gs に合わせた (モードによらない)。`FFS USE RING;`・`FFS USE=RING;`・行の途中の `FFS;`・`FFS NPARA=3;` (gs と同じエラー) | 台本 15 本を gs と照合。同じ行の `FFS;NPARA=3;` の `NPARA=3;` は FFS 部では実行されない (gs と同じ) |
+| MAIN の一般の代入 `NAME = 式;` | 無視されていた | gs と同じ式の文法 (単位つき数、`^`、`SIN COS TAN ATAN SQRT EXP LOG LN COSH`、`PI`、`MOMENTUM`、前の変数) で FFS に届く。gs で構文エラーになる形は代入しない | 32 個の式を gs の値と 2e-14 (モードによらない) |
+
+`FFS;` と MAIN の代入の残した違い: `Ffs;` (大文字小文字まじり) は gs では読めないが pysad は読む、`FFS` (`;` なし) の次の行が USE 以外の文のとき gs はエラーにして行の残りを捨てるが pysad は FFS 部として実行する、`A = 3 B = 4;` は gs では A = 3 (エラーつき) だが pysad は代入しない、要素定義の中に直接書いた MAIN の関数 (`L=2*SIN(A)`) は従来の読み取りのまま (未確認)、`LINE[{"EMITY",…},1]` は gs が MAIN の値、pysad が MARK に書いた値 (0)。k64 モードでも MAIN で PBUNCH・EMITX・MASS などを代入している TRACK なしの台本は、これまで無視されていた値が効くようになる (gs と同じ向き)。
+
 ## 9. この SAD ビルド (WSL, K64) で分かった注意
 
 - **NPARA の既定は 4** (Packages/init.n:219 `NPARA=4;`。initb1.f の `RsetGL('NPARA',1)` を init.n が上書き)。TrackParticles は粒子 9 個以上で fork するため乱数列が分岐し、pysad と比較するには `NPARA=1;` をスクリプトに入れる。
@@ -250,7 +278,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - **MAXITERATION はこのビルドでは GO の反復数に効かない** (`MAXITERATION 1` でも 7 反復)。pysad はコマンドを受理する。
 - EMIT は `codin=twiss(1,0,DX:DDP)` を初期軌道にし、終了後 `gauss=.true.`。DISP/TYPE の前には `tfsetparam` が呼ばれる。
 - **MOMENTUM の初期値は 30 GeV** (K64 initb1.f の `RsetGL('MOMENTUM',30.d9)`)。MAIN で書かなければ FFS も 30 GeV で計算する (pysad の `ffscmd` も同じ既定)。
-- **旧 WAKE コマンド**: K64 の tffsa.f は tfwake.f を呼ばず `WAKECOMMAND[]` (init.n の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価する。gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路 (エラー文の表示だけ未再現)。tfwake.f の移植は不要と判断した (docs/23)。
-- **`Skip`・`Read` の型** (Character・Real・Word の読み方、数でない語の Real は式の値) は gs に合わせた (`test_evalfixes.py`)。`MessageName[f,"usage"]` の関数形は gs が `Undefined MessageName` を出すのに pysad は `f::usage` と同じ表を引く (関数形を直接呼ぶスクリプトは見つかっていないので見送り)。
-- **MEASURE** は INS; CALC のあとでも gs は何も出力しない。TRCOD は SIGSEGV (B42)。
+- **旧 WAKE コマンド**: K64 の tffsa.f は tfwake.f を呼ばず `WAKECOMMAND[]` (init.n の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価する。gs は fileopen のエラーを出して行の残りを捨てる。k64 モードの pysad も同じ経路 (エラー文の表示だけ未再現)。v2 モードは tfwake.f の構文 `WAKE L|T 要素 s1 w1 … ENDWAKE` を WakeFunction の表として登録する (CAVI だけ。docs/23、38)。
+- **`Skip`・`Read` の型** (Character・Real・Word の読み方、数でない語の Real は式の値) は gs に合わせた (`test_evalfixes.py`)。`MessageName[f,"usage"]` の関数形は、gs は f を無視して `Undefined MessageName General::"usage"` を出す (B70)。v2 モードは f の本文を返す (`f::usage` と同じ。無ければ `General::tag` の本文)。k64 モードの pysad も以前から f を見る (`General::tag` への継承を足した)。
+- **MEASURE** は INS; CALC のあとでも gs は何も出力しない。TRCOD は SIGSEGV (B42)。v2 モードの pysad は K64 のソースの読みで実装した (上の「v2 モードの MEASURE・TRCOD」)。
 - **SOL (BOUND≠0) の長さ**は周長に入れない (K64。`emit6d._emit_circ`、追跡の circ も)。GEO の無い SOL では K64 の S 座標が途切れて周長が狂うが pysad は再現しない (docs/29)。

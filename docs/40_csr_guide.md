@@ -64,7 +64,7 @@ m=CSROYMatrix[s,{dz,1e-8,0.01,3e-4,1e-3}];             (* {dz, inten, nus, sigz,
 Print[Dimensions[m]];                                  (* {18,18} = nj*nphi の正方行列 *)
 ```
 
-`CSRSetupOY` は作用角 J の `nj` 点の格子、方位角のモード `nphi` で線形化する。戻りは {wi, J, ω, zj, dpj, rhoj}。**`CSROYMatrix` は K64 (gs) では動かない** (4 節の B60)。pysad は動く (行列を返すが gs との照合はできない)。
+`CSRSetupOY` は作用角 J の `nj` 点の格子、方位角のモード `nphi` で線形化する。戻りは {wi, J, ω, zj, dpj, rhoj}。4 番目 (zj) と 5 番目 (dpj) は、v2 モードでは位置と運動量、k64 モードでは K64 の取り違え (4 節の B59) のまま。**`CSROYMatrix` は K64 (gs) では動かない** (4 節の B60)。pysad は動く (行列を返すが gs との照合はできない)。
 
 ### 2.4 ダクト断面の行列と電場
 
@@ -155,9 +155,9 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 
 ## 4. K64 の癖
 
-(`docs/21_sad_bug_report.md` の B59・B60。いずれも pysad は K64 どおりに再現する。)
+(`docs/21_sad_bug_report.md` の B59・B60。B60 は pysad が K64 どおり。B59 は k64 モードが K64 どおりに再現し、v2 モードは直した。)
 
-- **B59**: `CSRSetupOY` は `dpjn` を `zjn` と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く `CSROYMatrix` は zj を位置として使うので、行列は物理的には狂う。pysad は同じ上書きを写した。
+- **B59** (k64 と v2 で違う): `CSRSetupOY` は `dpjn` を `zjn` と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く `CSROYMatrix` は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。**k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる** (点が無ければ失敗 `CSR::irreg`。`CSROYMatrix` は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 (`test_v2_C_csr.py` 2 件)。**`CSROYMatrix` の行列そのものは未照合のまま** (gs が wrongtype を返す。B60)。
 - **B60**: `CSROYMatrix` が、`CSRSetupOY` の出力でも手で作った実数リストでも `General::wrongtype` を返す (この K64 ビルドで再現)。登録名は `CSRSetupOY`・`CSROYMatrix` だが、ソース内の関数名は `tfcsroysetup`・`tfcsroymat` で綴りが違う。原因は未調査。pysad はソースどおりに翻訳して動くが、gs と照合できない。したがって `OYStability` と `OYScan` は gs では完走しない可能性が高い (gs で確かめていない)。
 - `CSRInit` の実数 1 つの dx は常に `wrongtype` (dx を読まない)。
 - `CSRMatrix` mode 1000 は、K64 が `phix(0:nphimax)` を `csrphimesh` の `phix(*)` に渡すため、点の添字が 1 つずれる (pysad も同様)。また `{4,4,4,4}` などの断面は gs 自体が SIGABRT/SIGSEGV で落ちる (参照なし)。

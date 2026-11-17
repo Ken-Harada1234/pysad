@@ -14,7 +14,7 @@ PF のラティスを使った、SAD の基本的な使い方と計算の例で�
 | [`optics/`](optics/README.md) | [`calc_chromaticity_PF`](optics/calc_chromaticity_PF.md) | `PolynomialFit` の 6 次、自然色収差、四極・六極の和の式 | ○ |
 | [`optics/`](optics/README.md) | [`calc_dispersion_PF`](optics/calc_dispersion_PF.md) | 分散の差分と $\alpha_c$ の確認 | ○ |
 | [`optics/`](optics/README.md) | [`calc_respx_PF`](optics/calc_respx_PF.md) | 軌道応答 (K0 → モニター) と解析式、符号と RFSW の確認 | ○ (応答は解析式と 0.08% で一致) |
-| [`optics/`](optics/README.md) | [`fn_PolynomialFit_PF`](optics/fn_PolynomialFit_PF.md) | チューン対運動量、`DP0`、`PolynomialFit` (SAD の係数の癖あり) | ○ |
+| [`optics/`](optics/README.md) | [`fn_PolynomialFit_PF`](optics/fn_PolynomialFit_PF.md) | チューン対運動量、`DP0`、`PolynomialFit` (SAD の係数の癖あり) | ○ (k64 モード。v2 の既定は x の平均が 0 のデータで真の係数を返し gs の壊れた係数と違う: B18) |
 | [`optics/`](optics/README.md) | [`fn_Twiss_LINE_PF`](optics/fn_Twiss_LINE_PF.md) | `Twiss[]`・`LINE[]` | ○ |
 | [`matching/`](matching/README.md) | [`FFS_FIT_chrom_PF`](matching/FFS_FIT_chrom_PF.md) | 色収差補正の六極フィット (設計値が戻る) | ○ |
 | [`matching/`](matching/README.md) | [`FFS_FIT_injbump_PF`](matching/FFS_FIT_injbump_PF.md) | 入射バンプ (`ins`、`fit INJ DX`、`free KK* K0`) と解析式 | ○ |

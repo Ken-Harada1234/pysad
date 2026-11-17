@@ -1,0 +1,98 @@
+! v2 (担当 C2): MULT の RADIUS の空間電荷 (SPAC)。四極を MULT で書くと、SPAC の空間電荷が全周に入る (spch.py)
+! (1) 四極 (MULT) の中の KV ビームの包絡を、収束力つきの包絡方程式と比べる
+! (2) 小さなリングのチューンシフトを 3 つの方法 (SPAC、PSPAC、WSPAC) と Laslett の式で比べる
+! K64 (gs) は MULT の中の spkick の呼び出しが壊れているので、この例は pysad v2 専用 (PYSAD_COMPAT=k64 では空間電荷なしで走る)
+MOMENTUM = 5MEV;
+DRIFT D1 = (L=0.8 RADIUS=0.03);
+MULT  QF = (L=0.2 K1=1.2 RADIUS=0.03) QD = (L=0.2 K1=-1.1 RADIUS=0.03);     ! RADIUS>0: 真空ダクトの半径 (軸は磁石の軸)
+MULT  Q1 = (L=1.0 K1=3.0 RADIUS=0.02);
+SPCH  SP = ();                                                             ! PSPAC 用 (前の SPCH からの長さの分をここで蹴る)
+MARK  ORIGIN = ();
+LINE TL = (ORIGIN Q1);
+LINE CELL = (QF D1 SP QD D1 SP);
+LINE RING = (ORIGIN 4*CELL);
+FFS;
+RFSW; NORAD; NOFLUC;             ! フラグは最上位に書く。空間電荷 (SPAC・PSPAC) は RFSW が要る
+$FORM = "12.6";
+rms[v_] := Sqrt[Plus@@(v^2)/Length[v]];
+fr[x_] := x - Floor[x];
+gs[k_, c_] := Table[Sqrt[-2*Log[fr[i*k+0.5]+1e-12]]*Cos[2*Pi*fr[i*c]], {i, np}];   ! ガウス分布 (乱数を使わない)
+re = 2.8179403205e-15;
+pp = 5e6/0.51099895e6; gam = Sqrt[1+pp^2]; bet = pp/gam;
+
+! ==== (1) 1 m の四極 (K1 = 3 /m) の中の KV ビーム
+USE TL; INS; CALC;
+np = 4000;
+PBUNCH = 1e11;
+a0 = 1e-3; eps = 2e-6; lb = 0.1;            ! 半径 1 mm、エミッタンス 2e-6 m (KV: 4 次元の球面の一様分布)、長さ 0.1 m の一様なバンチ
+u1 = gs[0.6180339887, 0.7548776662]; u2 = gs[0.5698402910, 0.8191725134];
+u3 = gs[0.6710436067, 0.4502835858]; u4 = gs[0.8566748839, 0.7338918566];
+nr = Sqrt[u1^2 + u2^2 + u3^2 + u4^2];
+x0 = a0*u1/nr; px0 = eps/a0*u2/nr; y0 = a0*u3/nr; py0 = eps/a0*u4/nr;
+z0 = Table[lb*(fr[i*0.7071067812]-0.5), {i, np}];
+zero = Table[0, {i, np}];
+beam = {x0, px0, y0, py0, z0, zero, Table[1, {i, np}]};
+NOSPAC;
+r = TrackParticles[{1, beam}][[2]];
+Print["(1) NOSPAC 2 rms x=", 2*rms[r[[1]]], " y=", 2*rms[r[[3]]], " alive=", Plus@@r[[7]]];
+SPAC;
+r = TrackParticles[{1, beam}][[2]];
+Print["(1) SPAC   2 rms x=", 2*rms[r[[1]]], " y=", 2*rms[r[[3]]], " alive=", Plus@@r[[7]]];
+! 包絡方程式 X'' = -k X + 2K/(X+Y) + eps^2/X^3、Y'' = +k Y + 2K/(X+Y) + eps^2/Y^3、K = 2 r_e (PBUNCH/lb)/(beta^2 gamma^3)
+kperv = 2*re*(PBUNCH/lb)/(bet^2*gam^3);
+env[kk_, kq_] := Module[{xa = a0, xp = 0, ya = a0, yp = 0, h = 2.5e-4, ax, ay},
+  ax[] := -kq*xa + 2*kk/(xa+ya) + eps^2/xa^3; ay[] := kq*ya + 2*kk/(xa+ya) + eps^2/ya^3;
+  Do[xp = xp + h/2*ax[]; yp = yp + h/2*ay[]; xa = xa + h*xp; ya = ya + h*yp; xp = xp + h/2*ax[]; yp = yp + h/2*ay[], {i, 4000}];
+  {xa, ya}];
+Print["(1) envelope (K = ", kperv, "): X, Y = ", env[kperv, 3.0], "   K = 0: ", env[0, 3.0]];
+
+! ==== (2) 4 セルの FODO リング (周長 8 m): チューンシフト
+USE RING; CELL; CALC;
+Print["(2) Twiss: nux=", Twiss["NX", $$$]/(2*Pi), " nuy=", Twiss["NY", $$$]/(2*Pi)];
+np = 4000;
+PBUNCH = 2.5e8;
+ex = 1e-6; ey = 0.5e-6; sz = 0.05;          ! 整合したガウスビーム
+PSPACNX = 64; PSPACNY = 64; PSPACDX = 4e-4; PSPACDY = 4e-4;      ! PSPAC の横のメッシュ (±12.8 mm)
+WSPACBEAM = {ex, ey, sz};                    ! WSPAC のビーム (v2 で追加: εx、εy、σz[、σδ]。無ければ Emittance の平衡のビーム行列)
+bx = Twiss["BX", 1]; ax = Twiss["AX", 1]; by = Twiss["BY", 1]; ay = Twiss["AY", 1];
+u1 = gs[0.6180339887, 0.7548776662]; u2 = gs[0.5698402910, 0.8191725134];
+u3 = gs[0.6710436067, 0.4502835858]; u4 = gs[0.8566748839, 0.7338918566];
+x0 = Sqrt[ex*bx]*u1; px0 = Sqrt[ex/bx]*(u2 - ax*u1);
+y0 = Sqrt[ey*by]*u3; py0 = Sqrt[ey/by]*(u4 - ay*u3);
+z0 = sz*gs[0.7071067812, 0.3247179572];
+zero = Table[0, {i, np}];
+dd = 1e-6;                                  ! 試験粒子 1 個をビームと一緒に 1 周させ、ずれ dd への応答から 1 周の行列の対角和を作る
+trk[t_] := Module[{b, r},
+  b = {Append[x0, t[[1]]], Append[px0, t[[2]]], Append[y0, t[[3]]], Append[py0, t[[4]]], Append[z0, 0], Append[zero, 0], Table[1, {i, np+1}]};
+  r = TrackParticles[{1, b}, 1, 1, 1][[2]];
+  {r[[1, np+1]], r[[2, np+1]], r[[3, np+1]], r[[4, np+1]]}];
+tune[] := Module[{c0, cx, cp, cy, cq},
+  c0 = trk[{0, 0, 0, 0}]; cx = trk[{dd, 0, 0, 0}]; cp = trk[{0, dd, 0, 0}]; cy = trk[{0, 0, dd, 0}]; cq = trk[{0, 0, 0, dd}];
+  {1 - ArcCos[((cx[[1]]-c0[[1]]) + (cp[[2]]-c0[[2]]))/(2*dd)]/(2*Pi), 1 - ArcCos[((cy[[3]]-c0[[3]]) + (cq[[4]]-c0[[4]]))/(2*dd)]/(2*Pi)}];
+NOSPAC; NOPSPAC; NOWSPAC;
+nu0 = tune[];
+Print["(2) no space charge: nux=", nu0[[1]], " nuy=", nu0[[2]]];
+SPAC;
+nu1 = tune[];
+Print["(2) SPAC  (3D, MULT + DRIFT = whole ring): dnux=", nu1[[1]]-nu0[[1]], " dnuy=", nu1[[2]]-nu0[[2]]];
+NOSPAC; PSPAC;
+nu1 = tune[];
+Print["(2) PSPAC (2D, at SPCH):                   dnux=", nu1[[1]]-nu0[[1]], " dnuy=", nu1[[2]]-nu0[[2]]];
+NOPSPAC; WSPAC;
+nu1 = tune[];
+Print["(2) WSPAC (Gaussian, element entrances):   dnux=", nu1[[1]]-nu0[[1]], " dnuy=", nu1[[2]]-nu0[[2]]];
+NOWSPAC;
+! Laslett: dnu_u = -(1/4 pi) Int beta_u k_u ds、k_x = kp/(sx (sx+sy))、kp = 2 r_e PBUNCH/(Sqrt[2 pi] sz beta^2 gamma^3)、s_u = Sqrt[beta_u eps_u]
+kp = 2*re*PBUNCH/(Sqrt[2*Pi]*sz)/(bet^2*gam^3);
+fx[k_] := Module[{b1 = Twiss["BX", k], b2 = Twiss["BY", k]}, b1*kp/(Sqrt[ex*b1]*(Sqrt[ex*b1]+Sqrt[ey*b2]))];
+fy[k_] := Module[{b1 = Twiss["BX", k], b2 = Twiss["BY", k]}, b2*kp/(Sqrt[ey*b2]*(Sqrt[ex*b1]+Sqrt[ey*b2]))];
+sxd = 0; syd = 0; sxa = 0; sya = 0;
+Do[
+  len = LINE["L", k];
+  If[len > 0,
+    wx = (fx[k] + 4*fx[k+0.5] + fx[k+1])/6*len; wy = (fy[k] + 4*fy[k+0.5] + fy[k+1])/6*len;
+    sxa = sxa + wx; sya = sya + wy;
+    If[LINE["TYPENAME", k] == "DRIFT", sxd = sxd + wx; syd = syd + wy]],
+  {k, 1, LINE["LENGTH"]-1}];
+Print["(2) Laslett (whole ring):  dnux=", -sxa/(4*Pi), " dnuy=", -sya/(4*Pi)];
+Print["(2) Laslett (DRIFT only = QUAD で書いた場合に SPAC が入る分): dnux=", -sxd/(4*Pi), " dnuy=", -syd/(4*Pi)];

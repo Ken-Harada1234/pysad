@@ -1,0 +1,7 @@
+Stat`Mean2[{1,2,3,4}] = 2.5
+Stat`Var2[{1,2,3,4}]  = 1.25
+Sigma[{1,2,3,4}]      = 1.118033988749895   (`Sigma で大域に公開)
+Stat`Counter = 3   大域の Counter = 77
+Mean2[{1,2}] (文脈なし) = Mean2[{1,2}]   (見えないので未評価)
+Context[Stat`sq] = Stat`   $Context = `   $ContextPath = {`,System`}
+Names["Stat`*"] = {"Stat`Counter","Stat`Mean2","Stat`Var2","Stat`l","Stat`sq","Stat`x"}

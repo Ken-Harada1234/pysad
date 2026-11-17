@@ -2,12 +2,12 @@
 $$$       f AX    #######  #  -2.506166 $$$       f BX    #######  #   6.426926 $$$       f NX    #######  #   6.696329
 $$$       f AY    #######  #    .919277 $$$       f BY    #######  #   1.919589 $$$       f NY    #######  #   4.906056
 $$$       f LENG  #######  #  105.60000
-RFSW=0 RAD=0 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7355E-7 sigE=   .001190 sigz=   .016315 Stable=  1.000000
-RFSW=0 RAD=1 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7355E-7 sigE=   .001190 sigz=   .016315 Stable=  1.000000
-RFSW=1 RAD=0 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7358E-7 sigE=   .001191 sigz=   .016060 Stable=  1.000000
-RFSW=1 RAD=1 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7358E-7 sigE=   .001191 sigz=   .016060 Stable=  1.000000
-RFSW=1 RAD=1 RADCOD=1 FLUC=1 U0= 1563263.2 Vc= 4000000.0 dz=   .038316 ex= 1.7358E-7 sigE=   .001191 sigz=   .016060 Stable=  1.000000
-RFSW=0 RAD=1 RADCOD=1 FLUC=1 U0= 1562441.8 Vc= 4000000.0 dz= 3.0206E-4 ex= 1.7201E-7 sigE=   .001192 sigz=   .016334 Stable=  1.000000
-RFSW=1 RAD=1 RADCOD=0 FLUC=0 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7358E-7 sigE=   .001191 sigz=   .016060 Stable=  1.000000
-FLUC  rms dp after 100 turns (RFSW RAD)  4.5223E-4
+RFSW=0 RAD=0 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7764E-7 sigE=   .001183 sigz=   .015955 Stable=  1.000000
+RFSW=0 RAD=1 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7764E-7 sigE=   .001183 sigz=   .015955 Stable=  1.000000
+RFSW=1 RAD=0 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7767E-7 sigE=   .001185 sigz=   .015973 Stable=  1.000000
+RFSW=1 RAD=1 RADCOD=0 FLUC=1 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7767E-7 sigE=   .001185 sigz=   .015973 Stable=  1.000000
+RFSW=1 RAD=1 RADCOD=1 FLUC=1 U0= 1563263.2 Vc= 4000000.0 dz=   .038316 ex= 1.7767E-7 sigE=   .001185 sigz=   .015973 Stable=  1.000000
+RFSW=0 RAD=1 RADCOD=1 FLUC=1 U0= 1562432.7 Vc= 4000000.0 dz= 3.0206E-4 ex= 1.7604E-7 sigE=   .001185 sigz=   .015971 Stable=  1.000000
+RFSW=1 RAD=1 RADCOD=0 FLUC=0 U0= 1563265.7 Vc= 4000000.0 dz=   .038316 ex= 1.7767E-7 sigE=   .001185 sigz=   .015973 Stable=  1.000000
+FLUC  rms dp after 100 turns (RFSW RAD)  4.6102E-4
 NOFLUC rms dp after 100 turns (RFSW RAD)  2.6063E-4

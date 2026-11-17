@@ -15,7 +15,7 @@ FIT・FREE・FIX・VARY・GO・SHOW・VARIABLES・REJECT・RECOVER/SAVE/RESET、
 | [flag_UNIPOL_BIPOL](flag_UNIPOL_BIPOL.md) | UNIPOL と BIPOL | △ (収束しない B の BIPOL で gs と pysad が別の点で止まる) |
 | [flag_ABSW_RELW](flag_ABSW_RELW.md) | ABSW と RELW | △ (収束しない問題。pysad は RELW が効かない) |
 | [fn_FitValue_FitWeight_VariableRange_VariableWeight](fn_FitValue_FitWeight_VariableRange_VariableWeight.md) | FitValue・FitWeight・VariableRange・VariableWeight | ○ (FitValue 時の残差の表示のみ) |
-| [fn_OptimizeOptics](fn_OptimizeOptics.md) | OptimizeOptics (ダウンヒルシンプレックス) | ○ (5e-6 以内、反復の表示が違う) |
+| [fn_OptimizeOptics](fn_OptimizeOptics.md) | OptimizeOptics (ダウンヒルシンプレックス) | ○ (v2 で gs と同じ値・同じ反復。デバッグ表示の 2 行だけ違う) |
 | [var_CONVERGENCE](var_CONVERGENCE.md) | CONVERGENCE・MAXITERATION・DP・DP0 など | ○ |
 
 FITP>1 は docs/03 では gs が再起動するとあるが、今回の `FFS_FITPOINTS` では gs は完走した。

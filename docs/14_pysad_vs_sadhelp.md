@@ -40,7 +40,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `IF` | Fortran tfif.f | 実装 |
 | `INPUT(IN)` | Fortran tffile.f | 実装 |
 | `MATRIX(MAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
-| `MEASURE(MEA)` | Fortran tffsa.f | 無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)。tlum / tluma だけ `pysad/measure.py` に直訳。ほかの MEASURE/TRCOD の経路は未翻訳 (gs が動かない B42。docs/20) |
+| `MEASURE(MEA)` | Fortran tffsa.f | v2 モードで実装 (`pysad/measure.py`。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示) |
 | `ORG` | Fortran tffsa.f | 実装 |
 | `OUTPUT(OUT)` | Fortran phdrw.f,pstati.f,tffile.f | 実装 |
 | `PRINT(PRI)` | Fortran tffsa.f | 実装 |
@@ -71,7 +71,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `VISIT` | Fortran tffsa.f | 実装 |
 
 **未対応**: `SEED` (K64 でも obsolete)  
-**無視 (読み飛ばし)**: `DRAW`、`MEASURE(MEA)` (SADHelp の表にない `GEO`・`TRCOD` なども警告して無視)
+**無視 (読み飛ばし)**: `DRAW`。k64 モードでは `MEASURE(MEA)` も (SADHelp の表にない `GEO`・`TRCOD` なども警告して無視)。v2 モードでは `MEASURE`・`TRCOD`・`LOGMEASURE`・`ORBITJITTER`・`PUTMEASURE`・`GETMEASURE` を実装した
 
 ## 2. SADScript / FFS の関数 (94、pysad 実装 86)
 
@@ -184,10 +184,10 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 
 | 関数 | SAD 側 | pysad |
 |---|---|---|
-| `Fork` | C tfProcess_.c | 実装 (限定: 本当には fork せず、自分のプロセス番号を返す) |
-| `OpenShared` | .n shared.n | 実装 (限定: プロセス内の辞書。別プロセスとは共有しない) |
-| `Shared` | .n CSR.n,shared.n | 実装 (限定: 同上) |
-| `SharedSize` | Fortran tfinitn.f | 実装 (限定: 同上。辞書の項目数) |
+| `Fork` | C tfProcess_.c | 実装。v2 モード: POSIX (Linux・WSL・macOS) では `os.fork` で本当に分ける (`Wait`・`Wait4`・`Kill`・`Sleep` も)。Windows はエラー (fork が無い)。k64 モード: 本当には fork せず、自分のプロセス番号を返す (限定) |
+| `OpenShared` | .n shared.n | 実装 (無名の mmap に値を符号化して書く。fork した子と共有する。両モード) |
+| `Shared` | .n CSR.n,shared.n | 実装 (同上) |
+| `SharedSize` | Fortran tfinitn.f | 実装 (K64 と同じ式: `SharedSize[{1,2,3}]` = 32。両モード) |
 
 ### Object-oriented-programing (1、pysad 実装 1)
 
@@ -209,7 +209,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 
 | 関数 | SAD 側 | pysad |
 |---|---|---|
-| `System` | C tfProcess_.c | 実装 |
+| `System` | C tfProcess_.c | 実装。**既定では実行しない** (`PYSAD_ALLOW_SYSTEM=1` か `miscfn.allow_system(True)` で許可。許可があれば実行して終了コードを返す (v2)。許可がなければ v2 は `$Failed`、k64 は 0 を返す。docs/04 §6) |
 | `TemporaryName` | Fortran tfinitn.f | 実装 |
 
 ### Utilities (5、pysad 実装 5)
@@ -315,26 +315,26 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `JITTER` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `KEEPEXP` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `LOG` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
-| `LOSSMAP` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
+| `LOSSMAP` | Fortran tffs.f (fname/sino) | 実装 (`TrackParticles` の戻りに落ちた要素・落ちた周の 2 行を足す。両モード。docs/08 §9.7) |
 | `LWAKE` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `MOVESEED` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `PHOTONS` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `POL` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py。Emittance・EMIT のスピンと、RAD ON のときの TrackParticles のスピン追跡。docs/36) |
 | `PRSVCASE` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
-| `PSPAC` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
+| `PSPAC` | Fortran tffs.f (fname/sino) | 実装 (v2 モード: `SPCH` 要素の空間電荷が `TrackParticles` に入る。k64 モードは値を保持するだけ。docs/08 §9.7) |
 | `QUIET` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `RAD` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `RADCOD` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `RADLIGHT` | Fortran tffs.f (fname/sino) | 実装 (TrackParticles が軌道 {t,x,y,z} を返す。K64 は BEND の中を記録せず横方向の座標も入れない。docs/36) |
 | `RADPOL` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
-| `RADTAPER` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
+| `RADTAPER` | Fortran tffs.f (fname/sino) | 実装 (Emittance[]・EMIT・追跡に入る。両モード。docs/08 §9.7) |
 | `REAL` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `RELW` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `RFSW` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py, maintrack.py) |
 | `RING` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
-| `SELFCOD` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
+| `SELFCOD` | Fortran tffs.f (fname/sino) | 実装 (v2 モード: WSPAC の力の中心を粒子の重心にする。k64 モードは値を保持するだけ) |
 | `SORG` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
-| `SPAC` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
+| `SPAC` | Fortran tffs.f (fname/sino) | 実装 (v2 モード: `DRIFT`・`MULT` の `RADIUS` の空間電荷が `TrackParticles` に入る。k64 モードは値を保持するだけ。K64 の SPAC は力が 1/γ 倍に弱い (B89)) |
 | `STABLE` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `SUMRES` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `SUS` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
@@ -344,7 +344,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `UNIPOL` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `UNSTABLE` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `WAKEOPT` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
-| `WSPAC` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
+| `WSPAC` | Fortran tffs.f (fname/sino) | 実装 (v2 モード: ビーム行列のガウス分布の力が `TrackParticles` に入る。光学・Emittance へは未対応。k64 モードは値を保持するだけ) |
 
 ## 5. 要素の型とキーワード (13 型)
 
@@ -368,9 +368,9 @@ SAD 側はいずれも Fortran (src/initb1.f の sethtb/kytbl、kyparam)。pysad
 
 ## 6. 手で直した行 (機械照合を作り直したら戻す)
 
-- §1: MATRIX・RECOVER・REVERSE・SHOW・STATUS・VARY (ffsextra.py)、ELSEIF (sadscript.py)、MEASURE・RENUMBER・SEED・READ の注。
+- §1: MATRIX・RECOVER・REVERSE・SHOW・STATUS・VARY (ffsextra.py)、ELSEIF (sadscript.py)、MEASURE・RENUMBER・SEED・READ の注 (2026-11-17 に MEASURE の行を v2 の実装に直した)。
 - §2: SynchroBetaEmittance・OptimizeOptics・PolynomialFit (.n を動かすもの)、ExternalMap・VariableRange・VariableWeight・WakeFunction (ユーザー定義のフック)、
-  Graphics の行 (Plots.n などを動かす)、Fork・OpenShared・Shared・SharedSize・ListRandom・MemoryCheck・TracePrint (限定の代用)、
+  Graphics の行 (Plots.n などを動かす)、ListRandom・MemoryCheck・TracePrint (限定の代用)、Fork・OpenShared・Shared・SharedSize・System (2026-11-17 に v2 の実装に直した)、LOSSMAP・PSPAC・RADTAPER・SELFCOD・SPAC・WSPAC (同)、
   Read・StandardForm・Fit・GaussianCoulomb・RadiationField・RadiationSpectrum・TrackParticles の注。
 - §3・§4: MOMENTUM の注、POL・RADLIGHT の注。
 
@@ -378,7 +378,8 @@ SAD 側はいずれも Fortran (src/initb1.f の sethtb/kytbl、kyparam)。pysad
 
 - 「実装」は名前が登録されているという意味で、挙動が K64 と一致するかは要素ごとの文書による。Interp.builtins の登録名は 2026-11-16 に実行時に集めた (462 個。11/06 は 281 個)。
 - 特別変数 (§3) は「ソース中に名前の文字列があるか」だけの照合。`CASE`・`TITLE`・`Track$Excitation` は参照が無く未対応。`ElementValues` は機械照合では参照なしに見えるが、Couple.n 経由で実装済み (§3 の行。VISIT/BYE の退避・復元は未対応)。
-- `MessageName` は式のまま返す形だけ (関数形 `MessageName[f, "usage"]` の評価は見送り。docs/20)。`Skip` は gs に合わせた。
-- `Polarization` (K64 が NaN: B55)、PHSROT (K64 で動作しない: B38) は pysad に無い。
+- `MessageName` の関数形 `MessageName[f, "usage"]` は、v2 モードで f の本文を返す (gs は f を無視する: B70)。`Skip` は gs に合わせた。
+- `Polarization` (K64 が NaN: B55)、PHSROT (K64 で動作しない: B38) は v2 モードで実装した (k64 モードは NaN・NotImplementedError)。docs/43 §8a、08 §9.7。
+- 要素のキーワード表 (§5) は 2026-11-16 の機械照合のまま。v2 で足したキーワード (`UND` の `FBX`・`FBY`、`PHSROT` の `PX PY PZ`・`Dij`・`Bij`、`SOL` の `DZ`・`CHI1..3`・`AUTOPHI`、`CAVI`・`MULT` の `AUTOPHI`、`MARK` の `JDX JDPX JDY JDPY` の読み方など) は反映していない (要確認)。
 - SADHelp は K64 版 `Documents/SADHelp.html` (1.4.4.2k64 Updated: 10/19/2026)。CERN の SADHelp は 1.4.0.0k64 2025-07-14 で同系統。KEK 公式の SAD ヘルプは別の SAD なので見ていない。
 

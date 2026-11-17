@@ -111,7 +111,7 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
   相対パスは `Interp.cwd` (run_sad では最後に渡したスクリプトのディレクトリ)。
   **OpenRead の失敗** (gs に合わせた): 開けなければメッセージを出して入力行を打ち切り、戻りの値に対する `Read[h,…]`・`Close[h]` は wrongtype になる (`test_evalfixes.py`。入力ファイルが無い場合がこれに当たる)。
 - `Read[unit, item, opts]` は gs の `tfreadstringf` に合わせた (記録 = 1 行の中の位置を持つ)。`Word` は `WordSeparators` (既定は空白・`,`・タブ・改行) で区切り、語が記録の終わりなら次の記録へ (`ReadNewRecord->False` ならそのまま)、`NullWords->True` で隣り合う区切りの間に `""`。`Real` は語を読んで評価、`String` と `ReadString` は記録の残り、`Character` は 1 文字、`Expression` は現在位置から 1 つの式 (隣り合う項 `x+y  3*4` で切り、括弧が閉じなければ次の行も使う) を評価して返す。`{item,…}` はリスト、`n*item` は頭が Null のリスト (Print で連結される)。EOF は `EndOfFile`。`ReadList`・`Get` は §4 のとおり別。
-- `DateString[t]` は t (1900-01-01 0:0:0 からの秒、または `{Y,m,d[,H[,M[,S]]]}`) を `mm/dd/yyyy HH:MM:SS` にする (7 番目の offset は無視、未確認)。`System[cmd]` は実行せず、その旨を表示して 0 を返す (EPICS の `Ca*` も動かさない)。`ToString[x, form]`, `StringJoin`, `StringForm` あり。
+- `DateString[t]` は t (1900-01-01 0:0:0 からの秒、または `{Y,m,d[,H[,M[,S]]]}`) を `mm/dd/yyyy HH:MM:SS` にする (7 番目の offset は無視、未確認)。`System[cmd]` は、既定では実行しない (下の §6。EPICS の `Ca*` も動かさない)。`ToString[x, form]`, `StringJoin`, `StringForm` あり。
 - リストの文字列化は `{1,2,3}` のように `,` だけで区切る (空白なし)。文字列はリストの中では `"..."` 付き。
   `PageWidth` を超えると SAD と同じく `,` の後で折り返し、続きの行は 1 空白から始める (`wrap`)。
   入れ子の長いリストの折り返しは SAD (要素の境界で改行、行の上限は pw-1) と pysad (区切りのカンマ、上限 pw) で異なる (PageWidth が十分大きければ一致)。
@@ -142,7 +142,7 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
 
 ### 5.1 数値・行列・乱数
 
-- **PolynomialFit[data, nord]**: `Packages/Fit.n` の定義を `_PRELUDE` としてそのまま評価する。
+- **PolynomialFit[data, nord]** (B18): `Packages/Fit.n` の定義を `_PRELUDE` としてそのまま評価する。**v2 モードは x の平均が 0 のときの係数の誤りを直す** (下の `xl=1` の癖は k64 モードの動作)。例: `{{-1,1},{0,0},{1,1},{2,4.1},{-2,4}}` の 2 次で k64 は {1.0257, 2.0486, 1.0143}、v2 は {-.0085714, .02, 1.0142857} (numpy.polyfit と 1e-13 で一致。`test_b18_polynomialfit_mean_zero_v2`・`_k64_and_nonzero_mean`)。平均が 0 でないデータは両モードで同じ。v2 の判定は `Compat$V2[]` (互換モードが v2 なら 1) を prelude が使う。以下は k64 モードの説明。
   データの x を平均 `xa` と `scale=1/Max[Abs[x-xa]]` で正規化し `LinearSolve` で最小二乗解を求めてから、
   係数を元のスケールに戻す。ただし `Abs[xa]*scale < 0.1` なら `xa=0` とし、そのとき
   `xl=If[xa, Table[…], 1]` が**スカラー 1** になる (リストでない) ので、`cm = Table[...]/xl` の除算も
@@ -207,10 +207,31 @@ EvenQ OddQ Positive.. Binomial FractionalPart Round Floor Ceiling Mod Max Min Le
   `SetAttributes`/`Protect` (無視)、関数に対する `Options[f]` (常に `{}`。Class のインスタンスの `Options` は sadclass が扱う)、`DefineOptions`
 - `Class`・`^=` による UpValue・`//.` の反復・`ReplaceAll` の構造パターン・`Module` と `Block` の区別は対応済み (§3、§5.4、docs/22, 32)。ただし `Unevaluated` の扱いは `Unevaluated$[…]` の形の一部 (docs/22 §4)、`^:=` のパターン付き UpValue の一般形、`Hold` 系の厳密な保持は確かめていない (未確認)。
 - 表示系 `Format`, `TableForm` (SAD の tableform.n は Packages で動く: docs/34)。`TkWait`・`Update`・`Pause` は sadscript の組み込みでは no-op (tclbridge が有効なときの挙動は未確認)
-- `System[]` の実行 (表示して 0 を返す)、EPICS (`CaGet` など)。ソース確認: `CSR.n` の `TrackAnimate` は `System["import -silent -window …"]` (ImageMagick) と `System["mkdir …"]` を呼ぶので Windows の pysad では画像が作れない。`Wait[mem]` は `FreeMem[]` (top) と `Sleep` を使い、gs はこの環境で top が無く `FreeMem` が OpenRead エラーになる。pysad の `FreeMem` は psutil で代替して 1.0 を返す。並列を増やしても速くなるかは未確認 (pysad は fork しない)
+- `System[]`: **既定では実行しない** (任意のシェルコマンドを実行できるため)。v2 モードは 1 行の案内を出して `$Failed` を返し、`[ -e path ]`・`[ -d path ]`・`[ -f path ]`・`[ -r path ]`・`[ -s path ]`・`test …` の形だけはシェルを使わずに判定して 0 (真)・1 (偽) を返す (KBFrame などの `System["[ -d dir ]"]==0` のため)。k64 モードは「実行しません」を出して 0。許可: 環境変数 `PYSAD_ALLOW_SYSTEM=1` (pysad を起動する前に設定)、または Python から `pysad.miscfn.allow_system(True)` (SADScript の中からは変えられない)。許可があるとき: シェルで実行し (作業ディレクトリ `Directory[]`、標準入力は空。Windows は cmd.exe、ほかは /bin/sh、`PYSAD_SYSTEM_SHELL` に sh・bash を書けば `<shell> -c cmd`)、戻り値は v2 が終了コード (成功 0)、k64 が 1 (K64 は起動できれば常に 1)。確かめた範囲は Windows (cmd.exe) と WSL (sh) の `echo … > file`・`exit 3`・標準出力で、SAD の Packages が呼ぶ個々のコマンドは未確認 (`test_system_is_disabled_by_default`、`test_system_runs_only_with_permission`)。EPICS (`CaGet` など) は未対応。ソース確認: `CSR.n` の `TrackAnimate` は `System["import -silent -window …"]` (ImageMagick) と `System["mkdir …"]` を呼ぶので Windows の pysad では画像が作れない。`Wait[mem]` は `FreeMem[]` (top) と `Sleep` を使い、gs はこの環境で top が無く `FreeMem` が OpenRead エラーになる。pysad の `FreeMem` は psutil で代替して 1.0 を返す。並列を増やしても速くなるかは未確認 (`Fork` は下の「Fork・Shared」。`Parallelize` は逐次)
 - **Tk ウィジェットの値**: `w=Window[]`・`e=Entry[w,…]` の値は gs と同じ `Widget[…]` (`Head[w]=Widget`) で、`e[Insert]`・`e[Get]`・`e[Delete]` (Entry・ListBox・Scale のメソッド) も働く (docs/22)。差が残るのは、最初の `Window[]` の親 (gs は Toplevel、pysad は `.` 自身で、`TextVariable` の名前の番号が違う) と、`OpticsPlot` の text 項目の数 (フォントの測り方、docs/42)。パターン変数への代入 (`f[x_]:=(x=5); f[aa]`) は gs と同じ。深い再帰では pysad は Python の RecursionError で落ちる (gs は `General::deep`)。`Insert` の位置に `"End"` (大文字) を渡すと gs は Tcl エラー 1501 (docs/22・39)
-- **`BeginPackage`/`Begin` の文脈 (名前空間): 未対応** (gs の動作は調べた: 読み込み時に新しい記号を ``Ctx`名`` に作り、``Stat`Mean2[..]`` の形で呼べ、`Context[]`・`$Context`・`$ContextPath` の値と ``Names["Stat`*"]`` (= ``{"Stat`"}``) の表示が独特。pysad は文脈を無視して全部大域)。読み込み時の名前解決と `$ContextPath` の模倣が要り、SAD の `.n` パッケージ (文脈つきの名前を持つもの) の読み込みに影響するので見送った。
-- **`For` の本体 (4 番目の引数)**: gs は実行しない (`Packages/functions.n` の定義 ``For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)`` どおりなら実行するはずで、同じ式を別名で定義すると gs も実行する。原因は未特定の K64 の読み込み時の癖) が、pysad は定義どおり実行する (差あり、意図的)。
+- **`BeginPackage`/`Begin` の文脈 (名前空間)**: 利用者のコードでは**両モードで実装した** (下の「文脈」)。SAD 自身の Packages (`.n`) の読み込みは従来どおり文脈を無視して大域で読む。
+
+#### 文脈 (`BeginPackage`・`Begin`・`End`・`EndPackage`)
+
+K64 (init.n の定義と gs の実測 15 行の調査) の規則を写した。名前は「現在の文脈 (`$Context`) → `$ContextPath` の順」に探し、無ければ現在の文脈に作る。`BeginPackage[c1,c2,…]` は `$ContextPath` を `{c1,c2,…,System`}` にし、`Begin[c]` は `$Context` を c にする。`` `x `` は大域の x。文脈の中の記号は ``Stat`名`` という名前になり、外からは ``Stat`名`` で呼ぶ。`$Context`・`$ContextPath`・`Context[sym]` が読める。
+
+- 使い方: `example/v2_B/B2_package_context.sad`。大域に公開する関数は `` `Name[…] := … `` と定義する。大域の変数を使うときは `` `var `` と書くか、`BeginPackage[My`, `]` のように `$ContextPath` に大域を入れる。組み込み関数・FFS の関数 (Twiss、LINE、FFS[…]、DP0 など) はそのまま使える。
+- k64 モードと v2 モードの違いは `Names` だけ: ``Names["Stat`*"]`` は v2 がその文脈の記号の一覧、k64 が gs と同じ ``{"Stat`"}``。k64 モードで以前と変わった点: 以前は利用者のコードの `BeginPackage`・`Begin` を無視して全部大域だった。
+- K64 との差 (意図的): (1) pysad の ``System` `` は組み込み関数 + pysad が記号として扱う名前 (`AccuracyGoal`・`Plot` などのオプション名を含む) で K64 より広い (K64 ではパッケージの中の `AccuracyGoal` は ``Stat`AccuracyGoal`` になり、`` `AccuracyGoal `` と書かないとオプションとして効かない。pysad はどちらでも効く)。(2) 表示: K64 は `$ContextPath` に無い文脈の記号に文脈名を付けて表示する (大域の記号が `` `sq `` になるなど)。pysad は文脈つきの名前だけ、`$ContextPath` にある文脈名を省く。(3) ``Symbol["Stat`x"]`` は K64 が値を返し、pysad は記号を返す。
+- 使えない・未確認: `$Context = …`・`$ContextPath = …` への代入、`WithContext`、文字列を `ToExpression` するときの文脈は「その時点の現在の文脈」。入れ子の文脈 (``A`B``) は名前としては通るが確かめていない。`BeginPackage` の戻り値 (`{$ContextPath,"`"}`) の gs との一致は v2 の記録では確かめていない (要確認)。SAD の Packages の読み込み (`load_package`、`PackagesDirectory` の下の `Get`) は変えていない (`PYSAD_SAD_PACKAGES` つきで GUI・描画・パッケージ系の試験が通る)。
+- 試験: `test_context_package_file`、`test_context_resolution_rules`、`test_context_package_using_ffs_and_builtins`、`test_chromaticity_scan_in_user_package` (`test_v2_B_script.py`)。
+
+#### `For`、`FindRoot` の複素、`MessageName` の関数形
+
+- **`For[ini,cond,incr,body]`** (B71): gs は 4 番目の引数 (本体) を実行せず、incr だけ繰り返す (3 引数は未評価)。`Packages/functions.n` の定義 ``For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)`` どおりなら実行するはずで、同じ式を別名で定義すると gs も実行する (原因は未特定の K64 の読み込み時の癖)。**k64 モードは gs と同じ**にした (本体を実行しない。以前の pysad は本体を実行していた。SAD の Packages は `For` を使っていない)。**v2 モードは本体を実行する** (Break・Continue も効く。3 引数は本体なしのループ。t = Σ i² = 30)。`test_b71_for_body_v2`・`_k64`。
+- **複素の初期値の `FindRoot`** (B61): v2 モードは複素の Newton 法で解く (前進差分のヤコビアンと最小二乗の Newton 法、歩幅を半分にする減速つき)。`FindRoot[z^2+1==0,{z,1.+1.*I}]` → `{z->(…+I),Residual->0}`。連立も可 (`{z*w==I,z+w==2}`)。`MaxIterations`・`AccuracyGoal` が効く。確かめた: z² = −1 → i、e^z = 2 → ln 2、z³ = 1、連立 zw = i・z + w = 2 (残差 1e-12 以下)。使えない: 変数の範囲 `{var, ini, {min, max}}` は複素では無視する、正則でない式 (Abs・Conjugate・Re・Im を含む) は収束を保証しない、実数の初期値で複素の値になる式は従来どおり `General::wrongval`。k64 モードは従来どおり TypeError。
+- **`MessageName[f,"usage"]`** (B70): K64 (gs) は関数形で f を無視して `Undefined MessageName General::"usage"` を返す。v2 モードは f の本文を返す (`f::usage` と同じ。無ければ `General::tag` の本文。`General::mytag` の継承は gs の `h::mytag` の実測と同じ)。k64 モードの pysad も以前から f を見る (`General::tag` への継承だけ足した)。`Message[f::usage]` の表示は gs が `???f::usage:  本文` を出し pysad は何も出さない (差が残る)。
+
+#### `Fork`・`Shared`・`Wait`
+
+- **共有メモリ** (両モード): `s = OpenShared[n]` (n バイト)、`Shared[s] = 値`、`Shared[s]`、`Shared[s]++`、`Shared[s] += v`、`Close[s]`。値は数・文字列・記号・リスト・式・規則 (無名の mmap に符号化して書く)。`SharedSize[値]` が n を超えると `Shared::toolarge` (K64 と同じ式: リストは (1 + 要素数) × 8 + 中身。`SharedSize[{1,2,3}]` = 32)。
+- **`Fork[]`**: Linux・WSL・macOS では `os.fork` で本当に分ける (親には子の pid、子には 0。子は `Exit[]` か最上位の文の終わりで `os._exit`)。`Wait[]` は `{pid, status}`、`Wait4[pid, flags…]` は `{pid, 終了コード, Exited->…, …}`、`Kill[pid]` はこの pysad が作った子だけ (安全のための制限)、`Sleep[t]` は本当に待って 1 を返す、`Pause[t]` は子がいる間だけ待つ。**Windows には fork が無い**: v2 は `System::error: Fork[] is not available on this platform …` を出して文を打ち切る (k64 モードは従来どおり pid を返し子は作らない)。並列の計算は `Parallelize[f, n, lshare, npara]` (逐次で `{f[1],…,f[n]}` を返す)。
+- 確かめた範囲: WSL (Ubuntu、Python 3.14、numba は代用の空モジュール) で例 (`example/v2_B/B3_shared_system.sad`) と 3 個の子の試験。ラティスを使う重い計算を子で走らせる使い方 (numba のスレッドと fork の併用) は未確認。子の `Print` は親と同じ出力先に出る (出力先が Python の StringIO のときは親に届かない)。`Parallelize` を Fork で本当の並列にすることは見送った。
 - `Check[Return[1], 2]` は gs では Return を失敗として捕まえて 2 を返す。pysad は Return を `General::unexpbreak` で文ごと打ち切る (2 を返さない)。`Thread[a==b]` (a が値、b が未定義) は gs が `3==b` を返すが、pysad は `==` が 0 を返すので Thread の引数にならない。リストと記号の ==・数どうしでない `==` の未評価形は一部だけ (`{1,2}==1` は未評価、記号どうしは 0)。
 - `Out[n]:=` の表示は、最上位 (run_sad_string) の `;` なしの式文だけ。未定義の記号 1 つだけの文での gs の表示 (前の Out の値を繰り返す) は未対応。`%%` は gs でも記号のまま。
 - SAD に無い関数 (`Mean` `Cross` `StringSplit` など) は未評価のまま返る (SAD と同じ。`Total` は pysad の拡張で動く)
@@ -231,7 +252,7 @@ print(o.getvalue())      # → 3 2 1 ab
 
 ラティス付きのスクリプトは `python run_sad.py lattice.sad script.sad` (SAD の `gs` に複数ファイルを
 連結して渡すのと同じ) で、`ffscmd.run_sad` が MAIN 部を parser.py に、FFS 部を `Interp.run(src, 'ffs')`
-に渡す。`pysad/tests/` (pytest 578 件を収集、2026-11-17 に 575 通過・3 skip) と `run_regression.py` (50 ベンチをすべて実行して FAIL 0、205 s。QUICK=1 は遅い 4 件 7・12t・13a・16a を SKIP して 46 件で、その 4 件も単独で実行して PASS) で回帰を取る。
+に渡す。`pysad/tests/` (pytest 941 件を収集、2026-11-17 に 937 通過・4 skip。k64 モードが既定) と `run_regression.py` (`QUICK=1` で 50 ベンチ FAIL 0。k64 モード) で回帰を取る。
 
 SAD のベンチでの確認 (docs/history/00_RESUME.md、<work-olddocs>/sad_level3_4_benchmark_results.md Level 14 節):
 

@@ -3,18 +3,18 @@ $$$       f AX    #######  #  -2.506166 $$$       f BX    #######  #   6.426926 
 $$$       f AY    #######  #    .919277 $$$       f BY    #######  #   1.919589 $$$       f NY    #######  #   4.906056
 $$$       f LENG  #######  #  105.60000
 {Stable->  1.000000,Region->{  1.000000, 243.00000},Tunes->{  -.303759,  -.093944,  -.027625},EnergyLossU0-> 1563265.7,
- RfVoltageVc-> 4000000.0,EquilibriumPosition->   .038316,MomentumCompaction->   .022184,OrbitDilation->   .000000,
- BucketHeight->   .010035,HarmonicNumber-> 176.12184,OrbitAtExit->{ 3.546E-17, 2.054E-17, 3.500E-33, -2.69E-33, 2.749E-17,
-  7.401E-20},DampingRate->{ -2.514E-4, -2.606E-4, -5.300E-4},Emittances->{ 1.7358E-7, 1.170E-67, 1.9069E-5},
- MomentumSpread->   .001191,BunchLength->   .016060,TuneShiftByRadiation->{ -5.112E-5, 5.4112E-5, -1.795E-7},
+ RfVoltageVc-> 4000000.0,EquilibriumPosition->   .038316,MomentumCompaction->   .022128,OrbitDilation->   .000000,
+ BucketHeight->   .010047,HarmonicNumber-> 176.12184,OrbitAtExit->{ 3.546E-17, 2.054E-17, 3.500E-33, -2.69E-33, 2.749E-17,
+  7.401E-20},DampingRate->{ -2.456E-4, -2.606E-4, -5.358E-4},Emittances->{ 1.7767E-7, 1.169E-67, 1.8862E-5},
+ MomentumSpread->   .001185,BunchLength->   .015973,TuneShiftByRadiation->{ -5.094E-5, 5.4112E-5, -1.789E-7},
  NominalSpinTune->  6.808148,PolarizationTime->   .000000,SpinTune->   .000000,Polarization->   .000000,Polarizations->{   .000000,
     .000000,   .000000},PolarizationVector->{   .000000,   .000000,   .000000}}
-Emittances { 1.7358E-7, 1.170E-67, 1.9069E-5}
-MomentumSpread    .001191
-BunchLength    .016060
+Emittances { 1.7767E-7, 1.169E-67, 1.8862E-5}
+MomentumSpread    .001185
+BunchLength    .015973
 EnergyLossU0  1563265.7
-MomentumCompaction    .022184
-DampingRate { -2.514E-4, -2.606E-4, -5.300E-4}
+MomentumCompaction    .022128
+DampingRate { -2.456E-4, -2.606E-4, -5.358E-4}
 Tunes {  -.303759,  -.093944,  -.027625}
 RfVoltageVc  4000000.0
 Stable   1.000000
