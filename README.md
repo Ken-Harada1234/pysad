@@ -3,6 +3,10 @@
 - うまくいかない場合は、そのまま AI に渡して、作業メモや SAD メモを読ませると、修正を続けられます。（随時修正しています。サンプルの SAD スクリプト（それも自動生成）も載せました。）
 - 以下の README も AI による自動生成です。
 
+> **注意 / Notice**: この PyPI パッケージ `pysad-k64` は、加速器設計コード SAD (Strategic Accelerator Design) の K64 版の Python への直訳です。PyPI にある異常検知ライブラリ `pysad` (Streaming anomaly detection) とは**無関係の別物**です。import 名はどちらも `pysad` なので、**同じ Python 環境に両方をインストールしないでください** (どちらかが動かなくなります。仮想環境を分けてください)。
+>
+> This PyPI package `pysad-k64` is a Python translation of the SAD (Strategic Accelerator Design) accelerator code, K64 version. It is **unrelated** to the streaming anomaly-detection library `pysad` on PyPI. Both use the import name `pysad`, so **do not install both into the same Python environment** (use separate virtual environments).
+
 # pysad — SAD (K64 版) の Python 直訳
 
 加速器設計コード SAD (Strategic Accelerator Design) の K64 版 ([KatsOide/SAD](https://github.com/KatsOide/SAD)) の
