@@ -12,7 +12,7 @@ ExternalMap["OPTICS", LINE["POSITION","P1"], cod_]   := {cod1, trans};
 ```
 
 MAP はユーザーが SADScript の関数 `ExternalMap` で写像を与える要素。**定義がなければ恒等で、長さも 0** (`L` は K64 では使われない。`tgmap` の既定は `pos(l+1)=pos(l)`)。
-以前の pysad は MAP を長さ L のドリフトにしていた (周長が L だけ増えていた)。
+MAP を長さ L のドリフトにすると周長が L だけ増えるので、pysad は長さ 0 にしている。
 
 ## 使われる所
 

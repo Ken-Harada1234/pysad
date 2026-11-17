@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット)
 
-対象: `pysad/sadscript.py` (字句解析・Pratt 構文解析・評価器、約 4200 行)、`pysad/sadlist.py` (リスト・文字列・行列の関数)、
+対象: `pysad/sadscript.py` (字句解析・Pratt 構文解析・評価器、約 4800 行)、`pysad/sadlist.py` (リスト・文字列・行列の関数)、
 `pysad/sadelem.py` (FFS 専用関数)、`pysad/teigen.py` (Eigensystem)、`pysad/sadclass.py` (Class)、`pysad/pkgload.py` (Packages/*.n の読み込み)、`pysad/specfn.py`・`fitroot.py`・`miscfn.py`・`fileops.py` (特殊関数・Fit・ファイル関数など)。SAD 側の根拠は
 `src/tfetok.f` (字句)、`src/tfstk.f` (演算子表 `opcode`/`iprior`)、`src/autofg.f` (数値書式)、
 `Packages/Fit.n` (PolynomialFit)、`src/tffsa.f` (FFS コマンドの振り分け)、`src/teigen.f`、`src/tmatch.f`。
@@ -208,10 +208,10 @@ EvenQ OddQ Positive.. Binomial FractionalPart Round Floor Ceiling Mod Max Min Le
 - `Class`・`^=` による UpValue・`//.` の反復・`ReplaceAll` の構造パターン・`Module` と `Block` の区別は対応済み (§3、§5.4、docs/22, 32)。ただし `Unevaluated` の扱いは `Unevaluated$[…]` の形の一部 (docs/22 §4)、`^:=` のパターン付き UpValue の一般形、`Hold` 系の厳密な保持は確かめていない (未確認)。
 - 表示系 `Format`, `TableForm` (SAD の tableform.n は Packages で動く: docs/34)。`TkWait`・`Update`・`Pause` は sadscript の組み込みでは no-op (tclbridge が有効なときの挙動は未確認)
 - `System[]` の実行 (表示して 0 を返す)、EPICS (`CaGet` など)。ソース確認: `CSR.n` の `TrackAnimate` は `System["import -silent -window …"]` (ImageMagick) と `System["mkdir …"]` を呼ぶので Windows の pysad では画像が作れない。`Wait[mem]` は `FreeMem[]` (top) と `Sleep` を使い、gs はこの環境で top が無く `FreeMem` が OpenRead エラーになる。pysad の `FreeMem` は psutil で代替して 1.0 を返す。並列を増やしても速くなるかは未確認 (pysad は fork しない)
-- **Tk ウィジェットの値 (差あり、未修正)**: `w=Window[]`・`b=Button[w,…]` の直後、gs では `Head[w]=Widget` (`Widget[w,Window[Root$Window]]`) で `e[Insert]={0,"AB"}`・`e[Get]`・`e[Delete]` が働くが、pysad では w・b・e が裸のシンボルのままで、メソッド呼び出しは何もせず (Tcl 呼び出し 0 回、エラーもなし)、親が toplevel でなく Root になる。`Tkinter.n` の `DefineWidget` 内 `a$:=Widget[a$,w[master$]]` が値にならないところまで絞ったが、gs が再帰しない理由 (属性・評価の順) は未特定。パターン変数への代入 (`f[x_]:=(x=5); f[aa]`) は gs と同じ。深い再帰では pysad は Python の RecursionError で落ちる (gs は `General::deep`)。`Insert` の位置に `"End"` (大文字) を渡すと gs は Tcl エラー 1501 (docs/22・39)
+- **Tk ウィジェットの値**: `w=Window[]`・`e=Entry[w,…]` の値は gs と同じ `Widget[…]` (`Head[w]=Widget`) で、`e[Insert]`・`e[Get]`・`e[Delete]` (Entry・ListBox・Scale のメソッド) も働く (docs/22)。差が残るのは、最初の `Window[]` の親 (gs は Toplevel、pysad は `.` 自身で、`TextVariable` の名前の番号が違う) と、`OpticsPlot` の text 項目の数 (フォントの測り方、docs/42)。パターン変数への代入 (`f[x_]:=(x=5); f[aa]`) は gs と同じ。深い再帰では pysad は Python の RecursionError で落ちる (gs は `General::deep`)。`Insert` の位置に `"End"` (大文字) を渡すと gs は Tcl エラー 1501 (docs/22・39)
 - **`BeginPackage`/`Begin` の文脈 (名前空間): 未対応** (gs の動作は調べた: 読み込み時に新しい記号を ``Ctx`名`` に作り、``Stat`Mean2[..]`` の形で呼べ、`Context[]`・`$Context`・`$ContextPath` の値と ``Names["Stat`*"]`` (= ``{"Stat`"}``) の表示が独特。pysad は文脈を無視して全部大域)。読み込み時の名前解決と `$ContextPath` の模倣が要り、SAD の `.n` パッケージ (文脈つきの名前を持つもの) の読み込みに影響するので見送った。
 - **`For` の本体 (4 番目の引数)**: gs は実行しない (`Packages/functions.n` の定義 ``For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)`` どおりなら実行するはずで、同じ式を別名で定義すると gs も実行する。原因は未特定の K64 の読み込み時の癖) が、pysad は定義どおり実行する (差あり、意図的)。
-- `Check[Return[1], 2]` は gs では Return を失敗として捕まえて 2 を返す。pysad は Return を通す。`Thread[a==b]` (a が値、b が未定義) は gs が `3==b` を返すが、pysad は `==` が 0 を返すので Thread の引数にならない。リストと記号の ==・数どうしでない `==` の未評価形は一部だけ (`{1,2}==1` は未評価、記号どうしは 0)。
+- `Check[Return[1], 2]` は gs では Return を失敗として捕まえて 2 を返す。pysad は Return を `General::unexpbreak` で文ごと打ち切る (2 を返さない)。`Thread[a==b]` (a が値、b が未定義) は gs が `3==b` を返すが、pysad は `==` が 0 を返すので Thread の引数にならない。リストと記号の ==・数どうしでない `==` の未評価形は一部だけ (`{1,2}==1` は未評価、記号どうしは 0)。
 - `Out[n]:=` の表示は、最上位 (run_sad_string) の `;` なしの式文だけ。未定義の記号 1 つだけの文での gs の表示 (前の Out の値を繰り返す) は未対応。`%%` は gs でも記号のまま。
 - SAD に無い関数 (`Mean` `Cross` `StringSplit` など) は未評価のまま返る (SAD と同じ。`Total` は pysad の拡張で動く)
 - FFS 側: `MCOD/TCOD/MON` の COD 補正は K64 でも式として評価されて何もしない。`Steer`/`Monitor`/`CorrectOrbit` は `Packages/correction.n` を SADScript のまま実行して gs と一致 (docs/34。`PYSAD_SAD_PACKAGES` が必要)。FFS コマンド・関数の対応状況と未対応の一覧は 03_ffs_commands §8

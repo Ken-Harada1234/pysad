@@ -14,7 +14,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - SAD の仕様と癖の一覧は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、SADHelp との対応は [`docs/14_pysad_vs_sadhelp.md`](docs/14_pysad_vs_sadhelp.md)。
 - 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
   大きな項目の解説文書は [`docs/38_wake_guide.md`](docs/38_wake_guide.md) (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
-- 現状 (2026-11-16): pytest 575 通過・3 skip (578 件収集)、回帰は 50 ベンチをすべて実行して FAIL 0 (QUICK=1 は遅い 4 件を SKIP して 46 件)。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: BEND の F1 FRINGE=3 の RAD 追跡、SOL 領域内の四極 + RAD (gs の疑い)、Tkinter の Widget 値、SOL 領域内の BEND・MULT・CAVI)。
+- 現状 (2026-11-17): pytest 575 通過・3 skip (578 件収集)、回帰は 50 ベンチをすべて実行して FAIL 0 (QUICK=1 は遅い 4 件を SKIP して 46 件)。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: BEND の F1 FRINGE=3 の RAD 追跡、SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、SOL 領域内の BEND・MULT・CAVI)。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
 
 ## 必要なもの
@@ -51,7 +51,7 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 ## 構成
 
 Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`、`README.md`、`LICENSE`、`CLAUDE.md`、`.gitignore` ([`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §9)。
-ベンチ・回帰スクリプト・出力は入れない (`.gitignore`)。以下の一覧は 2026-11-16 の作業ツリー。
+ベンチ・回帰スクリプト・出力は入れない (`.gitignore`)。以下の一覧は 2026-11-17 の作業ツリー。
 
 ### トップ
 

@@ -54,7 +54,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
 
 どれも gs で同じ式を実行して比べて直した (試験は `test_evalfixes.py`)。
 
-- 連鎖した比較 `a<x<b`、`a==b==c` (以前は左から 2 つずつ評価して範囲外でも真になった)。
+- 連鎖した比較 `a<x<b`、`a==b==c` (連鎖全体を評価する。左から 2 つずつ評価すると範囲外でも真になる)。
 - `Map`・`Table`・`MapThread`・`/.` の結果の `Null[]` (空の Sequence) は取り除き、`Null[a,b]` は a, b を並べる。
 - `StringPosition[s, {"x","+"}]`・`"a"|"b"` (選択肢を与えた順に、重なる一致も数える)、`Thread[{a,{1,2}}]` (リストでない要素を繰り返す)、
   `ReplacePart[l, 0, {,2}]`・`Extract[l, {,2}]` (空の位置は「全部」)。
@@ -71,7 +71,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
   - Module の局所変数への `h := Sqrt[Abs[#]]&` と `h[4]` (遅延した純関数の適用)、大域の `fun := …&` の `fun[4]`。
   - `SetAttributes[f, HoldNone]` は `HoldAll` などを外す。
   - `MapAt[f, v, {,,1}]` の空の位置、`Override[…]` の結果は左辺の標準順 (文字列、続いて記号を大小無視、同じなら小文字が先)。
-  - `opt:((_Rule|_RuleDelayed)...)` は要素がすべて規則のときだけ合う (以前はなんでも合った)。同じ特殊さの定義は、クラスの中でも書いた順に試す
+  - `opt:((_Rule|_RuleDelayed)...)` は要素がすべて規則のときだけ合う (1 つでも規則でない要素があれば合わない)。同じ特殊さの定義は、クラスの中でも書いた順に試す
     (親子のクラスでは子が先)。`__`・`___` は Blank を並べた定義よりわずかに一般的 (`OpticsList[__]={}` は後の定義が先)。
   - `G[x_] = Round[{H[x], x}*3]` のように右辺を評価した値のリストが x を含むとき、呼び出しで x を置き換える (Canvas.n の `CoordLimited`)。
   - `PlotRange :> With[…]` の遅延規則の右辺にも、外側の `With[{s1, leng}, …]` の値を埋め込む。`With[{c := X}, f[c] = …]` (クラスの中) は左辺にも埋め込む。
@@ -90,19 +90,19 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
   - `Module[{vars}, {init}, body]` (本体が 2 つ以上) は順に評価して最後の値。HoldRest の `par0__` は使うときに呼び出し側の環境で 1 つずつ評価する。
     `Fit[data, fun, x, par0]` の `fun`・`x`・`par0` は、関数の引数が束縛している式・記号・列に置き換える。
 - Plot・ParametricPlot を x 以外の変数名 (`Plot[Sin[t], {t,0,6}]`) や関数のリスト (`Plot[{Sin[y], Cos[y]}, {y,0,6}]`) で動かすために直したもの
-  (以前は `Plot[Sin[x], {x,…}]` だけで確かめていた): HoldAll の関数の `x_Symbol` は `Held[y]` に束縛されるので、`Block[{x}]` はその記号 y を局所にする。
+  (`x` 以外の名前でも動く): HoldAll の関数の `x_Symbol` は `Held[y]` に束縛されるので、`Block[{x}]` はその記号 y を局所にする。
   `x_List` は保持された (評価前の) `{…}` にも合う。`Hold[Sin[y]] /. Hold -> Null` は `Null[Sin[y]]` = Sin[y]。
   関数の中の `With[{z = …}]` は `Hold[Sin[y]]` の中の記号にも値を埋め込む。gs と比べて ListDensityPlot (全項目一致)・Plot・ParametricPlot・Plot[リスト] も全項目一致。
 - GeometryPlot (`GeometryPlot.n`) を動かすために直したもの: `LINE["L$SUM", i]`・`LINE["ANGLE$SUM", i]`・`Element["ANGLE$SUM", name]` (tffs.f の tfkeyv:
   `KEY$SUM` は KEY の値で、実数のリストならその和。pysad は SPLIT を持たないので値そのもの)、記号の直後の `(` は積 (`s2(_Real|_String)`)、
   `Fill->Null` などの値が Null の規則は Tk の項目に渡さない (gs は既定の色: 線は X11 で `#000000`、Windows の Tk で `SystemButtonText`)。
   12 セルのリングの `GeometryPlot[]` は gs と項目の種類・数 (line 74、polygon 37)・座標が同じ (線の既定色だけ Tk の違い)。
-- `pkgload.py` の「組み込みと同名の定義を捨てる」処理が、GUI のパッケージ (`Window`・`Canvas` …) の定義まで捨てていた (FFS ドライバ経由だと GUI が動かなかった)。直した。
+- `pkgload.py` の「組み込みと同名の定義を捨てる」処理は、GUI のパッケージ (`Window`・`Canvas` …) の定義を捨てない (FFS ドライバ経由でも GUI が動く)。
 
 ## 5. 限界・未確認
 
 - 描画の項目は ListPlot の折れ線、OpticsPlot (上記)、HistoPlot (38 項目が全部一致)、ListContourPlot (種類と数が一致、等高線の始点・向きが違う)、
-  FitPlot (キャンバス 43 項目、当てはめの値は gs と 1e-8 の相対差) で比べた。`ListDensityPlot`・`Plot`・`ParametricPlot` は全項目が gs と一致。`GeometryPlot` も一致 (上記)。`BeamPlot` は比べていない。`UseBG->True` の文字の背景は描かない。
+  FitPlot (キャンバス 43 項目、当てはめの値は gs と 1e-8 の相対差) で比べた。`ListDensityPlot`・`Plot`・`ParametricPlot` は全項目が gs と一致。`GeometryPlot` も一致 (上記)。`BeamPlot` は gs が `SIGXX=0` で楕円を描かず、比べられない (docs/42 §6)。`UseBG->True` の文字の背景は描かない。
 - オプション付きの `ListPlot`・`Plot` の戻りの Graphics 式 (2026-11-16 夜、10 例): PlotRange (指定値)、Scale->{Linear,Log}・{Log,Log}、PlotLabel、GridLines->None と {{1,2},{5,10}}、Frame->False、Legend、FontScale、Prolog・Epilog・Background、Plot->False、AspectRatio->1 を与えたとき、gs と pysad で**文字列として完全に一致**。窓に描いた見た目ではなく式の比較。
   差: `Options[g]` (g は Graphics 式) は gs が Graphics の全オプションを返し、pysad は `{}` を返す (未修正)。
 - 見た目 (色・フォント・大きさ) と操作 (クリック・拡大) は比べていない。文字の大きさは Tk のフォントで違う。

@@ -64,7 +64,7 @@ BEAMBEAM BB = (BX=0.5 BY=0.01 EMIX=1e-8 EMIY=1e-10 SIGZ=0.005 DP=1e-3 SLICE=5 NP
 - `cerrf` の `3.2` は単精度の定数。
 - 丸いビームで x=y=0 の粒子は 0/0 → NaN → px=+1e4。
 - スライスの境界 (`dsz`) はビームストラールングだけが使う。
-- **TRPT の放射の分割** (pysad の以前の差を直した): gs の `ndivrad` (tffs.f) は TRPT のとき `int(1+h0/100·aka·10)`、そうでなければ `int(1+h0/100·aka)`。pysad は 10 倍を落としていたため、TRPT の RAD FLUC で放射の分割数が少なく (四極 1 分割に対し gs は 4)、乱数を引く数が gs と違った (放射の効果が小さいと結果は見えないが、あとの乱数列がずれる)。`track6n.turn` で TRPT のとき ndivrad に渡す h0 を 10 倍にして一致した (TRPT の放射ありの結果は gs に近づく方向に変わる)。
+- **TRPT の放射の分割** : gs の `ndivrad` (tffs.f) は TRPT のとき `int(1+h0/100·aka·10)`、そうでなければ `int(1+h0/100·aka)`。pysad は `track6n.turn` で TRPT のとき ndivrad に渡す h0 を 10 倍にして同じ分割数にする (四極 1 分割に対し gs は 4。10 倍しないと乱数を引く数が gs と違い、放射の効果が小さくてもあとの乱数列がずれる)。
 
 ## 5. 未対応・限界
 

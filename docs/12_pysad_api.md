@@ -412,10 +412,10 @@ print(score)                                               # 144
 
 | モジュール | 登録される名前 (`B['...']`) |
 |---|---|
-| `sadscript.py` (214 個) | 数学・文字列・リスト・入出力・制御の基本関数、`Read`・`Skip`・`ReadString`・`ReadList`、`GaussianCoulomb`・`GaussianCoulombU`・`GaussianCoulombFitted`・`BBBrem1` ほか |
+| `sadscript.py` (216 個) | 数学・文字列・リスト・入出力・制御の基本関数、`Read`・`Skip`・`ReadString`・`ReadList`、`GaussianCoulomb`・`GaussianCoulombU`・`GaussianCoulombFitted`・`BBBrem1` ほか |
 | `sadlist.py` (88 個) | `Append, Apply, Cases, Complement, Count, Delete, DeleteCases, Dimensions, Dot, Drop, Extract` などのリスト関数 |
 | `ffscmd.py` (22 個) | `Twiss, LINE, Element, FFS, Emittance, TrackParticles, SeedRandom, GaussRandom, Random, DynamicApertureSurvey, TouschekLifetime, CalculateOptics, Master, RenumberElement, ResponseMatrix, ParabolaRandom, FFSCalc, BeamLineName, SynchroBetaEmittance1, Set` ほか |
-| `sadelem.py` (8) | `Element, SetElement, FLAG, BeamLine, WriteBeamLine, ExtractBeamLine, PrintBeamLine, GetMAIN` |
+| `sadelem.py` (9) | `Element, Element$, SetElement, FLAG, BeamLine, WriteBeamLine, ExtractBeamLine, PrintBeamLine, GetMAIN` |
 | `specfn.py` (22) | `HypergeometricPFQ(Regularized), LegendreP, Fourier, InverseFourier, Multinomial, BitwiseAnd/Or/Xor, Complex, Union1` ほか (特殊関数は 458 式で gs と照合: docs/33) |
 | `fitroot.py` (5) | `FindRoot, Fit, FitEmit, FitGaussian, NIntegrate` |
 | `vecfn.py` (2) | `Vector, ReleaseVector` |

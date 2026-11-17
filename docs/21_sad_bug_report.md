@@ -1,6 +1,6 @@
 # 21. SAD K64 のバグ報告 (pysad 移植中に見つかったもの)
 
-最終更新: 2026-11-17 (現状のスナップショット。B63〜B71 は 2026-11-17 までに見つかった癖・疑いの追加。B01〜B62 は 11/06〜11/15 のまま)
+最終更新: 2026-11-17 (現状のスナップショット。B01〜B71 の 71 件。B61・B62・B71 の確認は 2026-11-17)
 
 > 対象: SAD K64 (github KatsOide/SAD、WSL Ubuntu でビルドした `bin/gs`)。ソースは `<SAD>/src`、`Packages/`。
 > 材料: docs/11_sad_quirks.md、docs/history/work_*.md、docs/history/00_RESUME.md。行番号は 2026-10-13〜16 の照合時点のソース。
@@ -39,7 +39,7 @@
 | B22 | MON/MCOD/TCOD が何もせず、`MON 0 0 0 0 PM*` が "Missing value for PM*" | FFS コマンド表 (K64 の tffsa.f に MON・MCOD・TCOD のコマンドは無い。ソースで確認 2026-11-16) | 補正スクリプトが止まる | 低〜中 | 実測 + ソース | 無視 |
 | B23 | Extended Twiss の EPX の欄に EY が出る | temit.f :1010-1017 | 表示のみ | 低 | 確定 | 再現 |
 | B24 | `LINE["LENGTH","$$$"]` が narg エラー | LINE[] の引数処理 | 位置が取れない | 低 | 実測 | 再現 |
-| B25 | TrackParticles の POL ON 列順がソース内で自己矛盾 | tftrack.f :344 と :502 | 文書・メッセージの不整合 | 低 | ソース | 未対応 (POL) |
+| B25 | TrackParticles の POL ON 列順がソース内で自己矛盾 | tftrack.f :344 と :502 | 文書・メッセージの不整合 | 低 | ソース | 実コードの列順 (コメント側) で対応 (POL ON の TrackParticles は 9〜11 列) |
 | B26 | `ORG` の引数が式として読まれ `ORG B3 1.5 -2.5 ...` が `1.5-2.5` になる | tffsa.f ORG、getvad | 負数の書き方で値が変わる | 低 | 確定 | 再現 |
 | B27 | SeedRandom[] の表示と seed の末尾桁の丸め | 表示ルーチン | 表示のみ | 低 | 実測 (調査浅い) | 符号なし表示に修正 |
 | B28 | 未初期化変数の値が出力に出る (EMIT 報告の Closed orbit Entrance、MAIN TRACK の l_track) | temit.f、tracka.f | 表示のゴミ | 低 | 実測 | 再現せず |
@@ -72,8 +72,8 @@
 | B58 | `tbendebody`・`tbendebody0` の `bsir0` の更新で `bsi2` の項は enarad が偽の最後のスライスにしか付かず、常に捨てられる (`bsi2=1` は n==n2 のときだけで、そのとき `enarad .and. n /= n2` は偽)。意図は偏向磁石の出口の bsi の補正とみられる | tbende.f:215・313、535-537 | 縦のオフセットがある偏向磁石の POL で出口側の bsi が入らない | 低 | ソースの読み | 捨てる (K64 と同じ) |
 | B59 | `CSRSetupOY` (tfcsroysetup) は dpjn を zjn と同じ記憶域に割り当てる (`c_f_pointer(c_loc(rlist(kazjn)),dpjn,…)` が 2 回、dpjn 用の `kadpjn` を使わない)。`zjn(k,i)=z` の直後に `dpjn(k,i)=p` が同じ場所を上書きするので、返す 4 番目の表 (zj) は z ではなく dp の値になり、5 番目 (dpj) は書かれない (0 のまま)。続く `CSROYMatrix` は zj を位置として使うので行列が狂う。`csrfindc` は見つけた値を返した後の `csrfindc=0.d0` で常に 0 を返す (未使用)。`csrjasign` は `rho` がしきい値以上の点が無いと `i1` が未初期化 | csroy.f:tfcsroysetup (kazjn, dpjn)、csrfindc | CSROY の行列が使えない | 中 | ソースの読みと gs の出力 (dpj の和が 0、zj の値が p のスケール) | K64 と同じ (zj に p を入れ、dpj は 0) |
 | B60 | `CSROYMatrix[{wi,J,omega,zj,dpj,rhoj},{dz,inten,nus,sigz,sige}]` が gs (この K64 ビルド) で、`CSRSetupOY` の出力でも手で作った実数リストでも General::wrongtype を返す。登録名は `CSRSetupOY`・`CSROYMatrix` (tfinitn.f:1044-1045。ソース内の関数名 tfcsroysetup・tfcsroymat と綴りが違う) | csroy.f:tfcsroymat | CSROYMatrix の参照が取れない | 低 | 確定 (gs で再現)、原因は未調査 | ソースどおりに翻訳 (gs 未照合) |
-| B61 | `FindRoot` に複素の初期値を与えると壊れた結果になる (`FindRoot[z^2+1==0,{z,1.+1.*I}]` が `{z->Restrict[(.25+I),-Infinity,Infinity],Residual->0}`、`Exp[z]==2` も同様)。pysad は実数の `FindRoot` だけ gs と一致させ、複素は TypeError のまま (gs の壊れた値は再現しない) | K64 | — | — | — | — |
-| B62 | `DELCOR` (tvcorr) の corlength≠0 の枝は `cv(n)` を設定せず、`ktaloc` の古い内容が入る (2 回目以降の DELCOR で値が数 % 変わる)。CAVI への DELCOR は DX・DY ではなく HARM・PHI に書く (tcorr.f の `latt+3`、添字のずれ) | K64 | — | — | — | — |
+| B61 | `FindRoot` に複素の初期値を与えると壊れた結果になる (`FindRoot[z^2+1==0,{z,1.+1.*I}]` が `{z->Restrict[(.25+I),-Infinity,Infinity],Residual->0}`、`Exp[z]==2` も同様) | tffindroot.f:tfsetupvars (352-435。初期値は実数だけ受け付ける作りで、:414-418 が複素に `General::wrongval` を出す経路。`Restrict[…]` が返る理由は未調査) | 複素の根が求まらない (実数の初期値なら正常: `FindRoot[x^2-2==0,{x,1.}]` は gs と pysad が 1e-14 で一致) | 低 | 確定 (gs で再現、2026-11-17。原因の特定はソースの読みのみ) | pysad は実数の `FindRoot` だけ gs と一致させ、複素は TypeError のまま (gs の壊れた値は再現しない) |
+| B62 | `DELCOR` (tvcorr) の corlength≠0 の枝は `cv(n)` を設定せず、`ktaloc` の古い内容が入る (2 回目以降の DELCOR で値が数 % 変わる)。CAVI への DELCOR は DX・DY ではなく HARM・PHI に書く (tcorr.f の `latt+3`、添字のずれ) | tvcorr.f:22-29 (`cv(2..n/2)`・`cv(n/2+1..n-1)`・`cv(1)` だけ設定、`cv(n)` なし)。tcorr.f:83-102 (CAVI の `le=latt(j)+3` 系の添字) | 2 回目以降の corlength≠0 の DELCOR が再現できない (乱数の列は同じ)。CAVI は DX・DY が変わらず HARM・PHI が変わる | 中 (CAVI)・低 (`cv(n)`) | 確定 (gs で再現。確かめた組み合わせは docs/31。CAVI は `CAVI RFC=(VOLT=1.5e6 HARM=64 DX=1e-5 DY=2e-5)` で HARM・PHI の値が gs と一致。`cv(n)` の原因は未初期化の読みで、ソースの読みと gs の実測) | CAVI は K64 のとおり HARM・PHI に書く (`test_delcor_cavity_writes_harm_and_phi_like_gs`)。`cv(n)` は再現できないので 0 のまま (2 回目以降の corlength≠0 は gs と数 % 違う) |
 | B31 | 光学の wake (WAKEOPT) で、縦と横の表の片方しかない要素があると SIGSEGV | tffswake.f:102 | 落ちる | 高 | 確定 (gdb 相当: addr2line、修正して確認) | 直した SAD と同じ動作 |
 | B32 | TrackParticles (TRPT、wake) で SOL 領域の始点の SOL にウェイクがあると SIGSEGV | tturn.f:567 (twxiwp) | 落ちる | 高 | 確定 | 直した SAD と同じ動作 |
 | B33 | TRPT で、最初の `tapert` の時点で LOSSAMPL の外にいる粒子があると SIGSEGV | tapert.f:184 (`idtypec(l_track)`、l_track=0) | 落ちる | 高 | 確定 | 再現 (最初の tapert は l_track=0 で落とす印が 0 になる癖を `TrackRun.l_track0` で写した。直した SAD と全桁一致。出力座標の差は解消) |
@@ -341,7 +341,7 @@
 - 原因: エラーメッセージ (:344) は `{z},{dp}[,{sz},{psis}],{flg}`、コメント (:502) は `(x, x', y, y', z, delta, phis, sz, alive)`。実コード (:455-460) は kaj(7)=atan(...)=psis、kaj(8)=zx(8)/|zx(7:9)|=sz の順で、コメントと一致する。メッセージが誤り (または逆)。
 - 影響: 列順の文書不整合 (POL ON を使う場合)。
 - 重要度: 低。
-- pysad での扱い: POL は未対応 (docs/history/review_notes.md に保留)。
+- pysad での扱い: POL ON の TrackParticles は実コード・コメントの列順 `(x, x', y, y', z, delta, phis, sz, alive[, lost])` で読む (`ffscmd` の TrackParticles、スピン追跡は `track6.py`。docs/36・43)。メッセージ (:344) の `{sz},{psis}` の順は使わない。
 
 ### B26 ORG の引数が式として読まれる
 
@@ -395,9 +395,9 @@
 - B33: `tapert` の「落ちた粒子を報告する」条件が `idtypec(l_track) == icAprt` を Fortran の非短絡の `.or.` で評価する。最初の `tapert` は `tturn` の最初の要素の前に呼ばれ、`l_track` はまだ 0。最初から LOSSAMPL の外にいる粒子があると落ちる (wake とも SOL とも無関係。w3 の LOSSAMPL=0.0009 で再現)。
   直した SAD の出力座標が pysad と合わなかった件は 2026-11-16 に原因が分かり解消した: `tapert` は落とす印に `kptbl(i,4)=l_track` を書くので、セッション最初の TrackParticles (l_track=0) の最初の `tapert` では印が 0 (生きている) になり、最初から LOSSAMPL の外の粒子は落ちず (座標は 3·LOSSAMPL に頭打ちされて追跡を続け)、後の `tapert` で落ちる。2 回目の TrackParticles からは最初の要素で落ちる。pysad は `TrackRun.l_track0` でこれを写し、gs (1・2 回目) と直した SAD に全桁一致 (test_small_items.py)。
 
-### B63-B70 2026-11-16 までに見つかった癖・疑い
+### B63-B71 後から見つかった癖・疑い
 
-どれも `docs/history/work_unimpl.md` と docs/11_sad_quirks.md (A42〜A48) に経緯がある。「確定」は gs の実測、「疑い」は原因・意図が未確認のもの。
+B63〜B70 は `docs/history/work_unimpl.md` と docs/11_sad_quirks.md (A42〜A48) に経緯がある。B71 は gs の実測 (下)。「確定」は gs の実測、「疑い」は原因・意図が未確認のもの。
 
 - B63: 確かめた条件は、PLANAR のリングに SOL (BOUND≠0、L=0.3・0.6、BZ=0) を足した周長の比較 (偏極時間が 15 桁一致。docs/29・docs/44)。ほかの磁場・エネルギーでの確認はしていない。GEO のない SOL の S 座標の途切れは、pysad が GEO を見ないので再現しない (docs/29)。
 - B64: 疑いのまま。pysad は K64 と同じに写したが、gs と差の出る例が無く (試験のリングでは効かない)、この `merge` が意図かどうかと、結果に効くかは未確認。
@@ -406,6 +406,8 @@
 - B67: 仕様と考えられるが、1 GeV と思い込んだ文書が過去にあったため載せた。
 - B68: 現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い (証拠は local/wake/verify_log.md の bench_level9 の項。単一粒子 1 周追跡で、領域内がドリフトだけなら gs=pysad、四極ありは BZ≠0 で gs が四極なしの結果と一致)。ソースのどこかは未特定、保存した参照 (10-14 の gs) を出した版は今は動かず確認できない。
 - B69: どちらが正しいか決められない。pysad 側の誤りの可能性も残る。pysad と gs が合わない未解決の差のうち、B68・B69 以外 (BEND の F1=0.1 FRINGE=3 の RAD ON 追跡で相対 0.7、L≠0 の CAVI の DX・DY で 1e-3、K3 が強い MULT リングの CALC (qcod) の閉軌道) は、SAD の誤りか pysad の誤りかも未判定なのでこの表に載せていない (docs/history/work_unimpl.md)。
+- B70: gs で `MessageName[Sin,"usage"]` が `Undefined MessageName General::"usage"` を返すことを 2026-11-17 に再確認 (原因は未調査)。
+- B71: gs で `For[i=0,i<3,i++,Print[i]]` が何も印字せず `i` は 3 になることを 2026-11-17 に再確認 (pysad は 0 1 2 を印字して i=3)。`Packages/functions.n:34` の定義は本体を実行する形なので、組み込みの `For` が先に評価されると思われるが、原因は未特定。
 
 ## 5. 開発者への依頼の要点
 

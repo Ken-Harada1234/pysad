@@ -132,7 +132,7 @@ TclEval["update"];
 
 ### 3.2 試験の台本の探し方
 
-- `pysad/tests/test_tclbridge.py` (4 本): Tk の版と `$FontSystem`、簡単な部品、`KBMainFrame` のメニューバー、`KBFComponentFrame`。
+- `pysad/tests/test_tclbridge.py` (7 本): Tk の版と `$FontSystem`、簡単な部品、`KBMainFrame` のメニューバー、`KBFComponentFrame`、`Entry`・`ListBox` の Widget 値とメソッド、`Canvas$Widget` の UpValue。
 - `pysad/tests/test_gui_lang.py` (10 本): GUI を使わない言語機能 (`Sym::tag`、`f@@[x,{1}]`、`Null[]`、`0x33`、UpValue、SubValue、Hold 属性、`Difference`、`SwitchCases`、`StringFill`、`BaseForm` など)。
   `Tkinter.n` を動かすために足したもので、`PYSAD_SAD_PACKAGES` が無くても走る。
 - `pysad/tests/test_sadclass.py` (16 本): `Class` (docs/22 §5)。
@@ -171,9 +171,9 @@ TclEval["update"];
 - **窓を出さずに描画だけ確かめる**: `PYSAD_NO_DISPLAY=1` で `ListPlot` などを呼ぶと `Graphics[...]` の式 (`Head` = Graphics、`Length` = 2) が返る (`test_listplot_returns_graphics_and_plot_matches_gs`)。
   この方式では Tk を使わない。
 - **ウィジェット木で比べる**: 台本を走らせたあと `winfo children` を再帰して、クラス・`-text`・`-state`・`-title` を書き出し、SAD (gs) の同じ台本の木と比べる。
-  `local/gui_baseline/run_py_tree.py` がその道具 (`PYSAD_SAD_PACKAGES` と `PYTHONPATH` を設定して `py -3.12 run_py_tree.py demo.sad`)。
+  `PYSAD_SAD_PACKAGES` を設定して台本を走らせたあと、`TclEval` で木を辿る。
 - **キャンバスの項目で比べる**: `$c find all` と `$c type`・`$c coords`・`$c gettags` を書き出す (`test_plot.py` の台本)。
-- **サンプル一括**: `local/gui_samples/run_all.sh` が、サニタイズした台本の写し (EPICS と `System[]` を `$off` の名前に替えたもの) を 1 本ずつ 120 秒の制限で走らせる。
+- **サンプル一括**: 台本の写し (EPICS と `System[]` を `$off` の名前に替えたもの) を 1 本ずつ 120 秒の制限で走らせる。
 - 全体試験では GUI 系 (`test_plot`、`test_tclbridge`) が数回に 1 回、単独なら通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら単独で回し直す。
 
 ## 6. K64 の癖
@@ -202,13 +202,13 @@ pysad が合わせた K64 の挙動。
 | demo-LabelFrame (`KBFComponentFrame`、`KBFGroup`、`KBFCheckButton`) | 木 36 行 | 一致。差は時刻の文字列と、状態行の進捗表示の Label が 1 個多いこと (原因未確認) |
 | demo-KBFrame1 (`KBFFrameToggled`・`KBFFrameTabed`) | 木 | **途中まで** (SAD 57 行に対し pysad 43 行)。入れ子の部品の配置 `KBF$ArrangeComponents` で失敗 |
 | `Canvas` (ListPlot・Plot・ParametricPlot・ListDensityPlot・HistoPlot・GeometryPlot) | キャンバスの全項目 (種類・座標・タグ) | gs と一致 (文字の外接矩形だけ Tk のフォントで違う)。詳細は docs/37 §2、§5 |
-| `OpticsPlot` | 枠・矩形・線 | 一致。text は gs 58 に対し pysad 72 (フォントで `RemoveOverlap` が変わる) |
+| `OpticsPlot` | 枠・矩形・線 | 一致。text は gs 58 に対し pysad 72 (12 セルの例。FODO 24 セルでは 69 対 74。フォントで `RemoveOverlap` が変わる) |
 | `ListContourPlot` | 種類と数 | 一致。等高線の始点・向きは違う |
-| サンプル 161 本 (`D:\work\SAD\GUI`) | EPICS と `System[]` を無効にした複製で実行 | Tk を開く約 50 本は最後まで走りエラー無し。残り約 81 本は Tk を使わない計算の台本 |
+| GUI のサンプル台本 161 本 | EPICS と `System[]` を無効にした複製で実行 | Tk を開く約 50 本は最後まで走りエラー無し。残り約 81 本は Tk を使わない計算の台本 |
 | `Entry`・`ListBox`・`Scale`・`RadioButton`・`Canvas`・`TextEditor` (単体) | 作成し `Pack` して `update` (2026-11-16) | エラー無しで作成された (木のクラス名のみ確認) |
 | `Button` の `Command` | Tcl から `invoke` | SAD の式が評価された (`n = 5`) |
 
-試験: `test_tclbridge.py` 4、`test_sadclass.py` 16、`test_gui_lang.py` 10、`test_plot.py` 8。
+試験: `test_tclbridge.py` 7、`test_sadclass.py` 16、`test_gui_lang.py` 10、`test_plot.py` 8。
 
 ## 8. 限界・未確認
 
@@ -219,7 +219,7 @@ pysad が合わせた K64 の挙動。
   単体の台本で gs と木を比べていない (`Entry`・`ListBox`・`Scale`・`RadioButton` の例は、メソッドの結果は gs と一致し、木は root と Toplevel の段が違う。§3.1)。`TextVariable` で結んだ変数への値の反映は確認していない。
 - `TabFrame.n` の描画 (`KBFTabFrame`、`KBFToggleFrame`) は未検証。demo-KBFrame1 は入れ子の部品の配置で失敗する (`cf[13]` が未定義。原因は未解決)。
 - `Class` の未対応: `親` メンバーの書き方、上位値 (`h_[f_[arg___], b___] ^:= g`) の形のメソッド、`Members[]` / `Parents[]`。
-- キャンバス: `CanvasSymbol` (Tcl 文字列を返す版)、`Canvas3DClipTriangle`・`Canvas3DLightTriangle`・`Canvas3DProjection` (Canvas3D.n) は未対応。`BeamPlot` は比べていない。`UseBG->True` の文字の背景は描かない。
+- キャンバス: `CanvasSymbol` (Tcl 文字列を返す版)、`Canvas3DClipTriangle`・`Canvas3DLightTriangle`・`Canvas3DProjection` (Canvas3D.n) は未対応。`BeamPlot` は gs が `SIGXX=0` で楕円を描かず、比べられない (docs/42 §6)。`UseBG->True` の文字の背景は描かない。
 - EPICS 関係 (`CaGet` など) と `System[]` は動かさない。
 - 使った環境の制約: Windows、Python 3.12、Tk 8.6 (tkinter)。画面が無いと Tk の試験は skip になる。GUI の台本は、本物の mainloop で長く動かし続ける使い方 (ユーザーの操作に反応し続ける) は確認していない。
 

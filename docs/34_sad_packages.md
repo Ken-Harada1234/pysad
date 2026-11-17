@@ -50,7 +50,7 @@ gs との比較 (`tests/test_corr.py`: 12 セル、24 BPM、24 ステアラ、DX
 - `With[{g:=e/2}, f[e_]:=g*3]` は定義の中へ式を埋め込む。
 - `CALC NOEXP`・`CALC EXP` を受理 (pysad は元から要素値を展開し直さないので `CALC` と同じ)。
 - 数の既定の書式 (`autos`) を gdtoa に合わせた: `1e6` → `1e6`、`1e10` → `1e+10`、`123456789012345678.` → `123456789012345680`。`$FORM=" "` は既定と同じ。
-- 物理定数 (`ElectronCharge`、`ElectronMass` = 510998.95 eV (旧: 510999.06)、`ElectronRadius`、`PlanckConstant` …) をスクリプトから参照できる。
+- 物理定数 (`ElectronCharge`、`ElectronMass` = 510998.95 eV、`ElectronRadius`、`PlanckConstant` …) をスクリプトから参照できる。
 
 ## 未対応・限界
 - 記号式の標準形は gs と同じではない (`0*x` は gs が `(0 x)` のまま、`x^0` も `x^0` のまま、pysad は 0 と 1 にする)。D の出力は 59 式で一致するが、別の式では形が違いうる。パターンの Orderless 照合は、数を先頭にした標準順→順列 (6 引数まで)、素の Blank と列パターンが両方あるときは標準順だけ (K64 の挙動に合わせて経験的に決めた)。

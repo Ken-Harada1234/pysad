@@ -18,7 +18,7 @@ scipy.special で実数引数の値を返す。K64 の実装 (gamma.f、hg.f、P
 
 - **K64 と値を合わせたもの**: `InverseErf` (B47。相対 1e-8 の誤差まで再現)、`ArcCosh[.5]` の符号 (-1.047 I)、`ArcTanh[2.]` = NaN、`Inner` (gs の `Inner[f,x,y,g]` は `g@@f[x,y]`)、`Fourier` の符号 (gs は e^{+2πi jk/n}/√n)。
 - **K64 が誤値を返すので真値にしたもの**: docs/21 B43〜B46。
-- **未対応**: 複素引数の Bessel・超幾何・PolyLog、PolyLog の |z|>=150 (非整数次)。PolyLog の整数次 n>=2 の z>1 は実装済み (gs と同じく切断線の下側の複素数。試験 test_polylog_above_one_is_complex_like_gs)、HurwitzZeta の q<=0、D.n の記号微分 (`D`、`Derivative`、`ReduceExpression`)、
+- **未対応**: 複素引数の Bessel・超幾何・PolyLog、PolyLog の |z|>=150 (非整数次)。PolyLog の整数次 n>=2 の z>1 は実装済み (gs と同じく切断線の下側の複素数。試験 test_polylog_above_one_is_complex_like_gs)、HurwitzZeta の q が非正の整数 (`HurwitzZeta[2,-1]` は gs が 2.6449 = 極の項を除いた和、pysad は NaN。2026-11-17 に gs で確認)、D.n の記号微分 (`D`、`Derivative`、`ReduceExpression`)、
   `Short`、`Skip`、`Inequality`、`MessageName`、`ToInputString`。
 
 ## 2. Fit・FindRoot・NIntegrate (`pysad/fitroot.py`)

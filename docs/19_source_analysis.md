@@ -127,7 +127,7 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | bbstrhl.f | beambeam, bbinit | BEAMBEAM | `beambeam.py` / gs と一致。傾き回転は K64 の誤り (B34) をそのまま写す (docs/24) |
 | undulator.f | undulator | UND | `und.py` / gs と一致。K64 は磁場を設定できず、磁場なしのドリフト (B37。docs/27) |
 | phsrot.f / tspch_.c (tspac.f) | — | PHSROT / SPCH | **未実装**。PHSROT は K64 で動作しない (B38)。空間電荷の追跡側は未翻訳 (bbkick1・twspu だけ `gausscoul.py`) |
-| tapert.f | tapert | 損失判定 (矩形 LOSSAMPL/LOSSDZ) | `track6n.k_apert`、`dapert` / 地図一致 |
+| tapert.f | tapert、tapert1 | 損失判定 (LOSSAMPL/LOSSDZ) と APERT 要素 (楕円・矩形・DX DY・ROTATE・JDPX/JDPY/DP) | `track6n.k_apert_gen`・`k_apert`・`k_apert_el`、`dapert` / 地図一致、APERT 要素は gs と一致 (SOL 領域内は NotImplementedError) |
 
 ### 5.2 線形光学・COD 🔴A
 
@@ -199,7 +199,7 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | tturn:36 → tturn1:153 | `track6._tturn1` / `track6n.turn` (要素外側・粒子内側) |
 | 要素 select case | `track6._step_el` / `track6n.Prog` の kind 表 |
 | 放射 tradk (photons) | `track6._tradk` → `_tradk_core`、`track6n.tradk_core1` |
-| tapert (損失判定) | `track6n.k_apert` |
+| tapert (損失判定) | `track6n.k_apert_gen`・`k_apert` |
 
 ### 6.2 Emittance
 
@@ -238,7 +238,7 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | dapert.n → tfdapert:1 | `ffscmd.FFS.fn_dasurvey` → `dapert.dynamic_aperture` |
 | trackd:37 (走査・境界探索・Score) | `dapert.dynamic_aperture` (独自実装。スロット順・DAPWIDTH 窓・62 進地図 `rad62`) |
 | tturn (1 周) | `track6n.turn` |
-| tapert:1 (損失) | `track6n.k_apert` |
+| tapert:1 (損失) | `track6n.k_apert_gen`・`k_apert_el` |
 
 ---
 
@@ -256,7 +256,7 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | 20 | icSOL | tsol:410 | △ `_tsol_region` / `k_sol_*` (DRIFT/QUAD を含む領域のみ。内部 BEND/MULT/CAVI、DX/DY/DZ/CHI、F1 は未。領域内の BEND は gs が偏向をほぼ無視して合わず取り下げ: B69) |
 | 31 | icCAVI | tcav:443 | ✓ `_tcav` / `k_cav` |
 | 41,42 | MARK, MONI | — | ✓ (無作用) |
-| 43 | icAPRT | tapert1:418 | △ `k_apert` (損失判定のみ) |
+| 43 | icAPRT | tapert1:418 | ✓ `k_apert_el` (SOL 領域内の tapert1 は未翻訳) |
 | 32 | icTCAV | ttcav:480 | ✓ `tcav.apply_tcav` (RANKICK・RANPHASE は未) |
 | 33 | icMAP | temap:490 | ✓ `elements.Map`・`ffscmd._map_*` (ExternalMap の TRACK) |
 | 34 | icINS | tins:502 | ✓ (gs と一致を確認。追加の実装は不要) |
@@ -352,10 +352,10 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 3. **FFS エラー時の Do の中断**: SAD は FFS::error で外側の Do を抜けるが pysad は続行する。
 4. **不安定ラティス**: SAD の 1e199 級の値や NaN は再現しない (安定域は一致)。
 5. **追跡**: 損失周の乱数消費は論理が一致するが、実寸の DA の最終 seed はカオスで一致しない (Score の差 1〜3 %)。
-6. **要素未対応** (11/16): PHSROT (K64 で動作しない: B38)、SPCH (空間電荷の追跡)、SOL 領域内の BEND・MULT・CAVI、ずれ・傾きのある SOL、MULT ANGLE≠0 の BZ・RF・F1・SK0。TCAVI の RFSW ON の CALC と RANKICK・RANPHASE、MAP の GEO・CompiledMap。11/06 に未対応だった TCAVI・COORD・MAP・INS・BEAMBEAM・UND・WAKE・SOL の emit・MULT ANGLE≠0 は済み (docs/23〜30)。
+6. **要素未対応**: PHSROT (K64 で動作しない: B38)、SPCH (空間電荷の追跡)、SOL 領域内の BEND・MULT・CAVI・APERT、SOL の DX DY DZ CHI・F1 (Twiss・Emittance[]・追跡。幾何 tsgeo は対応)、MULT ANGLE≠0 の BZ・RF・F1・SK0。TCAVI の RFSW ON の CALC と RANKICK・RANPHASE、MAP の GEO・CompiledMap。TCAVI・COORD・MAP・INS・BEAMBEAM・UND・WAKE・SOL の emit・MULT ANGLE≠0 は済み (docs/23〜30)。
 7. **解析的でない部分**: fit の幾何条件の微分 (tdgeo は DRIFT の L と BEND の ANGLE・L だけ解析微分、ほかは中心差分)、MULT・ANGLE=0 BEND・F1 付き BEND・空洞の CALC 行列 (数値微分)。
 8. **MON/MCOD/TCOD**: この SAD ビルドでは何もしない。pysad も受理のみで一致。
 9. 解析残り (「転記のみ・導出なし」「未検証」の一覧) は `docs/18_physics_guide.md` §22 を参照。RADINT と Emittance[] の 13% 差の主因 (docs/18 の §11) は未特定。
-10. **pysad と gs が合わない未解決の差 (11/16)**: BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡 (相対 0.7)、L≠0 の CAVI の DX・DY (1e-3)、SOL (BZ≠0) 内の四極 + RAD の追跡で現在の gs が保存済みの参照と別の値を返す (docs/21 B68)、K3 が強くずれの大きい MULT リングの CALC (qcod) の閉軌道 (Emittance が NaN)。詳細は `docs/history/work_unimpl.md`。
+10. **pysad と gs が合わない未解決の差**: BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡 (相対 0.7)、L≠0 の CAVI の DX・DY (1e-3)、SOL (BZ≠0) 内の四極 + RAD の追跡で現在の gs が保存済みの参照と別の値を返す (docs/21 B68)、K3 が強くずれの大きい MULT リングの CALC (qcod) の閉軌道 (Emittance が NaN)。詳細は `docs/history/work_unimpl.md`。
 11. **この文書の §5・§7 の照合桁**は 11/06 までのベンチ (Level 1〜31) の値で、11/16 に足した行の桁は各要素の文書 (docs/22〜37) の gs との比較による。実用のリングや強い非線形での確認は別。
 

@@ -58,7 +58,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | CONV | | | GO の収束 (内部)。11/16 に K64 のソースで確認: 収束の判定・表示 (tcod.f・qtwiss.f・temit.f) に効く。EMIOUT は EMIT 報告の追加行 (temit.f:992 ほか。pysad は spin の行だけ対応)、CTIME は CPU 時間の表示 (cputix.f ほか) |
 | STABLE | UNSTABLE | T | 不安定でも条件に入れるか (cellstab) |
 | GEOCAL | GEOFIX | T | 幾何の再計算 |
-| RADLIGHT / PHOTONS / LOSSMAP / SORG | | F | RADLIGHT は TrackParticles が放射点の軌道を返す (§7、docs/36・docs/45)。PHOTONS・LOSSMAP・SORG の物理は未翻訳 (未確認。ただし `PhotonList` の 12 列は 11/16 に photons.f tphotonlist の定義と照合済み: 1 エネルギー=\|p\|·amass·gammab、2-4 位置、5-7 方向、8-10 偏光、11 粒子番号、12 要素番号) |
+| RADLIGHT / PHOTONS / LOSSMAP / SORG | | F | RADLIGHT は TrackParticles が放射点の軌道を返す (§7、docs/36・docs/45)。PHOTONS・LOSSMAP・SORG の物理は未翻訳 (LOSSMAP は gs が `TrackParticles` の戻りに足す損失要素・損失周の 2 列を pysad は足さない。未確認。ただし `PhotonList` の 12 列は 11/16 に photons.f tphotonlist の定義と照合済み: 1 エネルギー=\|p\|·amass·gammab、2-4 位置、5-7 方向、8-10 偏光、11 粒子番号、12 要素番号) |
 | INTRES / HALFRES / SUMRES / DIFFRES | | T / T / T / F | GO で整数・半整数・和・差共鳴をまたぐ解を不安定扱い |
 | FFSPRMPT / CONVCASE / PRSVCASE / SUS | | | 入力の大文字化など |
 | K64 | LEGACY | T | K64 仕様 (TYPE で DETR/BZ/NZ/DZ を出す等) |
@@ -144,7 +144,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - **T_YPE [pat …]** (tftype.f): 型 (ltyp の順: DRIFT, BEND, QUAD, SEXT, OCT, DECA, DODECA, MULT, SOL, CAVI, TCAVI, MAP, BEAM, SPCH, INS, COORD, APRT, MONI, MARK) ごとに ` ;` 行→型名→`NAME    =(KW =v KW =v )` を `twbuf` (タブ 7/5、行幅 lpw-2) で折り返す。値は `autos1` の最短表現、0 の項目は既定キーワード以外省略、`ROTATE` は DEG。MARK は twiss(l,0,:) (l=1 は保存値) と EMITX/EMITY/EMITZ/SIGZ/SIGE/DP。
 - **DISP_LAY [opts] [loc [loc1]] [pat]** (tfdisp.f): オプション `ALL, A_CCELERATION, G_EOMETRY, GA_MMA, OG_EOMETRY, O_RBIT, R_MATRIX, B_EAM, P_HYSICAL, D_UMPOPTICS, Z, E_XTREMUM, RE_FERENCE, DRE_FERENCE`。既定ヘッダ `   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #`、各行は 8.5 幅の tdispv (NX/NY は /2π)、Length 10.6、Value は既定キーワードの値、s(m) は 11.6 (値 0 は `tdtrimz` で `.0`)、Value は 10.7、`(a,a,a,1x,i5)` で位置番号。ヘッダは 66 行ごとに繰り返す (`nlc=66`)。パターンに一致した行だけを出す (`$$$` は一致したときだけ)。名前が 10 桁を超えると後ろの欄の連続空白を詰めて桁を保つ (`tfsqueezespace`)。
   s(m) は tfgeo の pos (F1/FB1/FB2 付き BEND/MULT のフリンジの長さ補正、OFFSET MARK の位置、§6)。Value 欄は既定キーのある要素なら値が 0 でも ` .0`、MARK や既定キーの無い要素は ` 0`。
-  **位置の指定**: 語を 1 つずつ読み、`| < { * %` を含む語はパターン (表示する要素名の絞り込み `temat`)、`ALL` は範囲 1..nlat、モード語、それ以外は位置 (数式・`NAME`・`NAME.n`・`NAME.n±k`・`$$$`・`^^^`)。1 つ目が loc1、続く 1 語が位置なら loc2 (そうでなければ loc2=loc1 で、その語は次のコマンド)。位置でない語に出会うと何も表示せずに戻る。**範囲 (id1, id2) は FFS が保持** (USE で 1..nlat に戻る) し、位置を省いた `DISP;` や `DISP QF*;` は前回の範囲を使う。`loc1==loc2` はその要素から `$$$` まで (2 行)、`loc2<loc1` は nlat を超えて周回する。数式は `int(v+0.499)` (負は `nlat+1+v+0.5`) で 1..nlat に収める。`NAME` は 1 台だけの要素かファミリーの代表、`NAME.n` は同名が複数あるときの n 番目 (1 台だけの `RFC.1` は未定義)。未定義の `NAME.n` は ` ???-FFS-Error-?Undefined location NAME.n` + `Out[1]:= USE`。パターン (temat) は標準名 (`NAME`/`NAME.n`)、1 台だけの要素の `NAME.1`、複数ある要素の代表のファミリー名に合うもの (`2*47` のように `*` を含む語は数式でなくパターン)。モード R (R1〜R4)・O (DX DPX DY DPY)・E (β の極値のみ)・**G/OG (幾何: Gx Gy Gz, s, Length, Value, Chi1-3 (度)。OG は閉軌道を乗せた tforbitgeo。docs/history/work_geo_sig.md)** は実装、A/GA/B/P/D/Z と REFERENCE/DREFERENCE は未対応 (pysad の解析は docs/history/work_small_items.md B)。
+  **位置の指定**: 語を 1 つずつ読み、`| < { * %` を含む語はパターン (表示する要素名の絞り込み `temat`)、`ALL` は範囲 1..nlat、モード語、それ以外は位置 (数式・`NAME`・`NAME.n`・`NAME.n±k`・`$$$`・`^^^`)。1 つ目が loc1、続く 1 語が位置なら loc2 (そうでなければ loc2=loc1 で、その語は次のコマンド)。位置でない語に出会うと何も表示せずに戻る。**範囲 (id1, id2) は FFS が保持** (USE で 1..nlat に戻る) し、位置を省いた `DISP;` や `DISP QF*;` は前回の範囲を使う。`loc1==loc2` はその要素から `$$$` まで (2 行)、`loc2<loc1` は nlat を超えて周回する。数式は `int(v+0.499)` (負は `nlat+1+v+0.5`) で 1..nlat に収める。`NAME` は 1 台だけの要素かファミリーの代表、`NAME.n` は同名が複数あるときの n 番目 (1 台だけの `RFC.1` は未定義)。未定義の `NAME.n` は ` ???-FFS-Error-?Undefined location NAME.n` + `Out[1]:= USE`。パターン (temat) は標準名 (`NAME`/`NAME.n`)、1 台だけの要素の `NAME.1`、複数ある要素の代表のファミリー名に合うもの (`2*47` のように `*` を含む語は数式でなくパターン)。モード R (R1〜R4)・O (DX DPX DY DPY)・E (β の極値のみ)・**G/OG (幾何: Gx Gy Gz, s, Length, Value, Chi1-3 (度)。OG は閉軌道を乗せた tforbitgeo。docs/history/work_geo_sig.md)** は実装、A/GA/B/P/D/Z と REFERENCE/DREFERENCE も実装 (見出しの文字の置換は tfdisp.f の trefheader/tdrefheader のとおり。`bench_level29b`、`example/02_optics_cod/FFS_DISPLAY`・`FFS_REFERENCE`。`test_ffs_gs_match.py` は GA・Z・B・REFERENCE・DREFERENCE。pysad の解析は docs/history/work_small_items.md B)。
   **反転配置 (LINE の `-`、`cmp%ori=.false.`) の要素名は `' -'//name`** (`max(10,lname+2)` 桁。通常は `lname<=8` で `'  '//name` を 10 桁、それより長ければ `' '//name`、tfdisp.f:438-448)。`-` が付くのは DISP の表だけで、
   `LINE["NAME"]`・`LINE["ELEMENT"]`・`Twiss[…]` の返値には付かない (`Twiss["NAME",k]` は SAD ではエラー)。`LINE["DIR",k]` が −1。pysad は parser が立てる `el._rev` を見る。66 行ごとに端末なら `(c_ontinue, q_uit, a_ll)?`。
 - **SAVE [ALL] [pat…]** (tfsave.f): 現在値を設計値 `idval` に書き戻す (既定キーワードは `/errk`)。MARK は twiss(l,0,:) (l=1 は現在の初期値) と EMITX 等を保存。`EXPAND` も同じ。**RESET [ALL|TOTAL] [pat]** (tfrst) は設計値を現在値に戻す (`TOTAL` は `tffsresetall`)。
@@ -200,7 +200,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | 微分 (GO) | `go()` が `FFS$NumericalDerivative` を `Matcher.numerical_derivative` に渡す。既定は `match6d.analytic_qu` (INS でも解析微分。未対応の条件・状況は中心差分に自動フォールバック: `Matcher._analytic_unsupported`) |
 | EMIT | `run_emit` (emit6d) + `print_emit` |
 | CHRO | `chro_cmd` (bench_level24b/24b2 で全行一致) |
-| TYPE / DISP | `type_cmd` (型順・タブ 26,31,…) / `disp_cmd` (tfdisp の解析の直訳: 位置範囲・パターン・ALL・R/O/E/G/OG モード、bench_level29b 36 ブロック一致。A/GA/B/P/D/Z と REF は未対応。反転配置の `-` と桁は SAD と一致、docs/history/work_item6.md / docs/history/work_small_items.md B) |
+| TYPE / DISP | `type_cmd` (型順・タブ 26,31,…) / `disp_cmd` (tfdisp の解析の直訳: 位置範囲・パターン・ALL・R/O/E/G/OG モード、bench_level29b 36 ブロック一致。A/GA/B/P/D/Z と REFERENCE/DREFERENCE も実装 (`test_ffs_gs_match.py`、FFS_DISPLAY・FFS_REFERENCE)。反転配置の `-` と桁は SAD と一致、docs/history/work_item6.md / docs/history/work_small_items.md B) |
 | CALC6D | `calc()` が CELL + CALC6D で `calc6d.calc6d` を呼び `self.rows` (拡張 Twiss 28 成分) と `self.calc6d_result` を作る。分数位置は `row_frac` → `calc6d.twiss_frac` |
 | TRPT の加速 | `pysad/trptacc.py` (§6) |
 | INTRA / TouschekLifetime | `run_emit` が INTRA ON で `touschek.touschek_table` を呼び EMITX.. / EMITXC.. / `TouschekTable` をグローバルに入れる。`fn_touschek` = `touschek.touschek_lifetime` |
@@ -215,15 +215,15 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | DELCOR / WAKE | `ffscmd._delcor` (tcorr・tvcorr。MARK は DETR・DPX に入る K64 の添字のずれまで再現。CAVI は未対応、docs/31)、`_wake_cmd` (§9) |
 | CSR 系・Fit 系・パッケージ | SADScript の関数として csr.py・fitroot.py・corr.py・pkgload.py が提供 (docs/33, 32, 34) |
 
-**既知の未対応** (2026-11-16 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/35、REJECT は `ffscmd`)。そのほか:
+**既知の未対応** (2026-11-17 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/35、REJECT は `ffscmd`)。そのほか:
 
 - MCOD/TCOD/MON (この K64 ビルドでは FFS コマンドではなく式として評価されて何もしないので pysad も無視)。
 - MEASURE/TRCOD: gs で動かない (B42: TRCOD は SIGSEGV、MEASURE は何も出力しない) ので `tracke/ttinit/ttstat/trcoda/trackb` は未翻訳 (`tlum`/`tluma` だけ `measure.py`)。
 - INS での fit (Matcher は `cell=False` で安定判定を省くだけで、SAD の INS 条件照合は未了。INS のリングの Emittance[]・追跡は gs と一致を確認: `history/work_unimpl.md` の記録)。
 - FITP>1 のオフモメンタム条件と MatchingAmplitude (match6 に実装済みだが SAD との照合はない: §9)。
 - FIT の `@` (`SADError` で停止する)。
-- `NOKEEPEXP` (CALC ごとに tfvcomp で EXPAND を決める)、RENUMBER の INDX 属性による番号の初期値、`DISP B` の REFERENCE (gs も未実装)。
-- `Twiss["R…"/"D…"]` は整数位置だけ (参照光学は要素の入口の値のみ)。
+- `NOKEEPEXP` (CALC ごとに tfvcomp で EXPAND を決める)、RENUMBER の INDX 属性による番号の初期値。
+- `Twiss["R…"/"D…"/"RALL"/"DALL"]` は整数位置だけ (参照光学は要素の入口の値のみ)。
 
 **gs に合わせた FFS の動作 (2026-11-17、gs で確認)**
 - FFS 内の `MOMENTUM = …;` は追跡・Emittance[]・光学に効き、`USE` で MAIN 側の値に戻らない (MAIN 側の値が変わったときだけ取り込む)。

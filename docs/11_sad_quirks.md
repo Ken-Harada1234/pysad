@@ -64,6 +64,10 @@
 | A52 | **セッション最初の TrackParticles では、最初の `tapert` が最初から LOSSAMPL の外の粒子を落とさない**: K64 の tapert は落とす印に `kptbl(i,4)=l_track` を書く。`l_track` は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは l_track≠0 で最初の要素で落ちる (B33 の元の SIGSEGV はこの l_track=0 の `idtypec(l_track)` 参照) | tapert.f:184、gs の 1・2 回目の呼び出しと直した SAD (15 値) で確認 | `TrackRun.l_track0`・`k_apert` の lcur==0 で再現。全桁一致 (`test_small_items.py`) |
 | A53 | **gs は開けない `OpenRead` で入力行を打ち切る**: ファイルが開けないとメッセージを出して入力行を打ち切り、続く `Read[h,…]`・`Close[h]` は wrongtype になる (例外で止まらない) | gs の実測 | pysad も同じ振る舞い。`test_evalfixes.py` |
 | A54 | **gs の FIT は UNIPOL・RELW で結果が変わる**: UNIPOL (NOBIPOL) は変数の符号を変えない (tffsmatch.f:669)、RELW (NOABSW) は重みを変える。QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit した例で、既定・UNIPOL・RELW の 3 通りの K が全部違う。BIPOL の効果は FIT だけ (tffsmatch.f のみ) | tffsmatch.f | pysad は `ffscmd.matcher_` で match6 の bipol・absweit にフラグをつなぎ、3 通りとも gs と全桁一致 (`test_item4.py` に 3 件) |
+| A55 | **FFS 内の `MOMENTUM = …;` は `USE` で上書きされない**: `USE` は MAIN 側の MOMENTUM が変わったときだけ取り込む。1 GeV の FFS 内設定は追跡・Emittance[] (SIGE) に効く | tffsa.f、gs の実測 (x 2.237707E-4、SIGE 3.916263E-4) | `ffscmd` が MAIN 側の値の変化だけ取り込む。`test_ffs_gs_match.py` |
+| A56 | **NOEXPAND と成分ごとの値**: `USE NOEXPAND`・`CALC NOEXPAND` は成分ごとの値 (`LINE["K1","QF.2"]=…`) を残す。`TrackParticles` は成分ごとの値を揃えない (1 台だけ変えた K1・K0・DX が効く)。CALC・Emittance[]・SAVE・EXPAND は揃える | gs の実測 | pysad も同じ。`test_ffs_gs_match.py` |
+| A57 | **`DUMP` の語は 20 文字で切れる** (`word1` が `character*20`)。`DDK` は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ。合う要素がなければ全要素。`名前.番号 K1 0.9;` は式として評価され何も設定しない | tferror 系、gs の実測 | pysad も同じ。`test_ffs_gs_match.py` |
+| A58 | **SADScript の `Module` は字句スコープ、`Return` は純関数・`Do`・`Scan`・`Module` などを抜けて外側の `:=` の関数まで届く**。`Check[Return[1],2]` は Return を失敗として捕まえて 2 を返す (pysad は未対応) | gs の実測 | `sadscript._module_lex` (局所名を `名前$N` に改名)。`test_scriptgs.py` |
 
 ## B. 乱数と並列 (再現には順序が重要)
 
@@ -131,4 +135,6 @@
   4. SOL 領域内の BEND・MULT・CAVI は未対応。BEND は K64 の tsol.f どおり (`tdrift(al,bzs,phiy,phix,…)`) に実装したが、gs が偏向をほぼ無視して (ANGLE=0.1 でも 1e-5) 合わず取り下げた。原因は未確認。
   5. K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4) で pysad の CALC (qcod) の閉軌道が gs と違う解 (y=-0.033) になり Emittance が NaN。gs は小さい軌道で通る。
   6. `emit6d._tquade` (Python 版) の解析ヤコビアンが軌道のある QUAD で δ の微分を落とし、`emit_extra`・`calc6d`・`touschek` で 1e-5 (εy 1e-4) ずれる (`emit6d.tturne` は 1e-12)。
+  7. EMIT のあとに `USE` して TrackParticles を呼ぶと、gs は EMIT の効果が残って EMIT 前と違う値になる。pysad は USE で EMIT を捨てる。原因未調査。
+  8. `Check[Return[1],2]`・`Thread[a==b]` (a が値、b が未定義)・`Out[n]` の繰り返し表示など SADScript の細部 (docs/04 §6)。
 - 未翻訳のまま (理由つき): MEASURE/TRCOD (gs が動かない: B42)、MAIN の TRACK の Fourier 解析 (wjfit・wfres・wfbin・wiord・wjdraw)、`tspac.f` の追跡側、PHSROT (K64 で動作しない: B38)。一覧は `16_fortran_status.md` 末尾。

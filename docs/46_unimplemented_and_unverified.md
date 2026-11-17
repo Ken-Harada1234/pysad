@@ -4,8 +4,8 @@
 
 この文書は、オリジナルの SAD (K64 版、`src/*.f`・`Packages/*.n`・SADHelp) に対して、pysad が**まだ対応していないもの**と**対応したが gs で確かめていないもの**を、1 か所にまとめたものです。
 
-- 出所: [16_fortran_status.md](16_fortran_status.md) §9、[history/work_unimpl.md](history/work_unimpl.md)、[21_sad_bug_report.md](21_sad_bug_report.md)、`example/` の各例の「gs と pysad の比較」・「未確認・限界」節、[34_sad_packages.md](34_sad_packages.md) ほか各解説文書。
-- この一覧のために、改めて pysad を走らせて確かめたものではありません。各項目の根拠は出所の文書にあります。
+- 出所: [16_fortran_status.md](16_fortran_status.md) §9、[history/work_unimpl.md](history/work_unimpl.md)、[history/work_example_fixes_20261117.md](history/work_example_fixes_20261117.md)、[history/work_apert.md](history/work_apert.md)、[history/work_ffs_gs_match.md](history/work_ffs_gs_match.md)、[21_sad_bug_report.md](21_sad_bug_report.md)、`example/` の各例の「gs と pysad の比較」・「未確認・限界」節、[34_sad_packages.md](34_sad_packages.md) ほか各解説文書。
+- 各項目の根拠は出所の文書にあります。2026-11-17 に、DELCOR の CAVI・APERT の追跡 (試験 test_delcor・test_apert を実行)、RENUMBER の実装、複素 `FindRoot` の gs の挙動 (B61)、`For` の本体 (B71) は、コード・試験・gs の実行で確かめ直しました。ほかは出所の記載のままです。
 - 基準は gs (SAD K64) の実動作です。gs が落ちる・誤った値を返すものは「gs 側の問題」に分けています。
 - `例` の欄は、その項目を示す `example/` の例です (パスは `example/` からの相対)。
 
@@ -35,7 +35,6 @@
 |---|---|---|
 | MULT `ANGLE`≠0 | Twiss の `BZ`・`RF`・`F1`・`SK0`・`FB1/FB2` (追跡は `FB1/FB2` まで対応) | 07_spin_solenoid_special/elem_MULT_ANGLE |
 | MAP | `GEO`・`CompiledMap`。MAIN の TRACK・DA・Touschek は ExternalMap を呼ばない | 06_collective/fn_ExternalMap |
-| DELCOR | `CAVI`、`OCT` | |
 | POL | SOL 領域内の MULT・BEND・CAVI のスピン。スピン追跡は損失の処理なし | 07_spin_solenoid_special/flag_POL_RADPOL |
 | TCAVI | `RANKICK`・`RANPHASE`。`Emittance[]` は L=0 のみ gs と一致 (L≠0 は gs が壊れる) | |
 | UND | 磁場なしのドリフトのみ (K64 が磁場を設定できない) | |
@@ -44,7 +43,8 @@
 | `ResponseMatrix` | TRPT (加速) の経路 | |
 | `tsteer` | `F1/FB1/FB2` つきは NotImplementedError | |
 | `FindRoot`・特殊関数 | 複素 `FindRoot`、複素引数の Bessel・超幾何 | 10_math_data/fn_Gamma_Erf |
-| `ElementValues` (`Couple.n`) | `VISIT` / `BYE` の退避・復元 | 13_packages/fn_Couple |
+| `ElementValues` (`Couple.n`) | `VISIT` / `BYE` の退避・復元、フィット変数との連動 (`CouplingMatrix`・`CoupledKeys`) | 13_packages/fn_Couple |
+| SADScript の細部 | `LINE["POSITION",{{1,2},{3,4}}]` (入れ子のリスト。gs は入れ子のまま返し pysad は平らにする)、`LINE["POSITION",0.5]` (gs は 244、pysad は 1)。`f[x_]:=Hold[x]` の仮引数 x や `Hold[1+2]` の算術の評価 (gs は値を埋め込む / 評価する)。`BeginPackage` の戻り値 (`{$ContextPath,"`"}`) | 13_packages/fn_OptimizeOptics ほか |
 | 描画 | `CanvasSymbol`、`Canvas3D*`、`UseBG->True` の文字背景。`OpticsPlot` の text 項目数 (gs 69、pysad 74。Tk のフォントによる `RemoveOverlap` の差)。`BeamPlot` (gs は `SIGXX=0` で楕円を描かない) | 11_graphics/fn_OpticsPlot、fn_BeamPlot |
 | GUI | 最初の `Window[]` の親 (gs は Toplevel、pysad はルート窓)。起動時の窓の再現が要る | 12_gui_tkinter/README |
 | `Packages/CSR.n` | 全体は読み込まない (必要な部分だけ) | 06_collective/fn_CSRInit_CSRTrack |

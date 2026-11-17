@@ -1,6 +1,6 @@
 # SADHelp (1.4.4.2k64 Updated: 10/19/2026) の項目の目的別分類と翻訳方針
 
-最終更新: 2026-11-17 (現状のスナップショット。pysad の列は docs/14_pysad_vs_sadhelp.md の 2026-11-16 の照合による)
+最終更新: 2026-11-17 (現状のスナップショット。pysad の列は docs/14_pysad_vs_sadhelp.md の 2026-11-16 の照合による。RENUMBER・ElementValues の 2 行は 2026-11-17 に手で直した)
 
 ユーザー方針 (2026-11-06): **直接翻訳するのは、ソースが Fortran/C で内容が物理計算のもの**。**ソースが .n のものは Python で書き直す** (直訳ではない)。**ファイル操作・リスト操作・GUI・描画は Python のライブラリ (open, list/numpy, matplotlib 等) に置き換える**ので翻訳対象外 (必要なら Python で書き直す)。
 
@@ -281,7 +281,7 @@
 | コマンド | `COUPLE(COUP)` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `EXPAND` | Fortran tffsa.f,tftwiss.f | 実装 | Python で書き直し |
 | コマンド | `RECOVER(REC)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
-| コマンド | `RENUMBER(RENUM)` | Fortran tffsa.f | 未対応 (何もしない。docs/35) | Python で書き直し |
+| コマンド | `RENUMBER(RENUM)` | Fortran tffsa.f | 実装 (tffsrenumber の直訳。gs と一致) | Python で書き直し |
 | コマンド | `RESET` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `REVERSE(REV)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
 | コマンド | `SAVE` | Fortran tffsa.f,tracke.f | 実装 | Python で書き直し |
@@ -319,7 +319,7 @@
 | 変数 | `LOSSDZ` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, maintrack.py, parser.py) | 直接翻訳 |
 | 変数 | `MASS` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, ffsextra.py, optics_fn.py…) | 直接翻訳 |
 | 変数 | `MINCOUP` | Fortran initb1.f,tfbeam.f,tffs.f,… | 参照あり (ffscmd.py, ffsextra.py, parser.py) | 直接翻訳 |
-| 変数 | `MOMENTUM` | Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n | 参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (以前の文書の 1 GeV は誤り。docs/21) | 直接翻訳 |
+| 変数 | `MOMENTUM` | Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n | 参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (docs/21 B67) | 直接翻訳 |
 | 変数 | `NBUNCH` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, ffsextra.py, parser.py) | 直接翻訳 |
 | 変数 | `NP` | Fortran initb1.f,tfdapert.f,tffsa.f,…; .n dapert.n | 参照あり (beambeam.py, ffscmd.py, ffsextra.py…) | 直接翻訳 |
 | 変数 | `OMEGA0` | Fortran ActTra.f,initb1.f,tfgeo.f,… | 参照あり (ffscmd.py) | 直接翻訳 |
@@ -344,19 +344,19 @@
 
 | 種別 | 名前 | SAD 側 | pysad | 方針 |
 |---|---|---|---|---|
-| 変数 | `ElementValues` | Fortran tffsa.f | 未対応 (参照なし) | 直接翻訳 |
+| 変数 | `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は未対応 (docs/14 §3) | 直接翻訳 |
 | 変数 | `FitFunction` | Fortran qdcell.f,tdfun.f,tffsa.f | 参照あり (ffscmd.py) | 直接翻訳 |
 | 変数 | `InitialOrbits` | Fortran tffsa.f | 実装 (INS。参照 ffscmd.py) | 直接翻訳 |
 | 変数 | `MatchingAmplitude` | Fortran tffamsetup.f | 参照あり (ffscmd.py) | 直接翻訳 |
 | 変数 | `OpticsEpilog` | Fortran tffsa.f,tffscalc.f | 参照あり (ffscmd.py) | 直接翻訳 |
 | 変数 | `OpticsProlog` | Fortran tffsa.f,tffscalc.f | 参照あり (ffscmd.py) | 直接翻訳 |
 
-## 現状 (2026-11-16) の補足
+## 現状 (2026-11-17) の補足
 
-- 上の方針は 2026-11-06 のユーザー方針で、その後に方針が実際に変わったのは GUI・描画だけ (上の表のとおり SAD の .n を動かす)。
-- 11/06 の表で「未対応」だった項目のうち、11/16 までに実装したもの (docs/16 §2・§6): Fit・FitEmit・FitGaussian・NIntegrate・PolynomialFit、GaussianCoulomb 系、
+- 上の方針は 2026-11-06 のユーザー方針で、GUI・描画だけは実際には SAD の .n を pysad のインタプリタで動かす (上の表のとおり)。
+- 実装した項目 (docs/16 §2・§6): Fit・FitEmit・FitGaussian・NIntegrate・PolynomialFit、GaussianCoulomb 系、
   RadiationField・RadiationSpectrum、SynchroBetaEmittance、OptimizeOptics、ExternalMap・VariableRange・VariableWeight・WakeFunction (ユーザー定義のフックを呼ぶ)、
-  Difference・FixedPointList・SelectCases・SwitchCases・StringToStream・TemporaryName、Plot 系の描画、MATRIX・SHOW・STATUS・VARY・RECOVER・REVERSE、ELSEIF。
+  Difference・FixedPointList・SelectCases・SwitchCases・StringToStream・TemporaryName、Plot 系の描画、MATRIX・SHOW・STATUS・VARY・RECOVER・REVERSE、RENUMBER、ELSEIF、LogGamma1。
 - Fork・OpenShared・Shared・SharedSize・ListRandom・MemoryCheck・TracePrint は登録だけの限定版 (プロセスを分けず、値は固定)。翻訳対象外の方針どおり。
 - 見送ったもの: `MessageName` の関数形、MEASURE/TRCOD の経路 (gs が動かない B42)、`Polarization` (K64 が NaN)、PHSROT (K64 で動作しない)。理由は docs/20。
 - 件数の「実装・参照あり」は名前の登録と参照があるという意味で、挙動の一致は要素ごとの文書による (docs/16 §7)。

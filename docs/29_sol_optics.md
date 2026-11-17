@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `tsole.f` (`tsole1`、`qsol`)。`pysad/solmap.py`。追跡 (`TrackParticles`) は以前から対応 (docs/08。スピン追跡は docs/36)。Twiss の写像・行列は `solmap.py`、放射込みの 1 周 (Emittance[]・EMIT) は `pysad/solemit.py`。
+K64 の `tsole.f` (`tsole1`、`qsol`)。`pysad/solmap.py`。追跡 (`TrackParticles`) は対応済み (docs/08。スピン追跡は docs/36)。Twiss の写像・行列は `solmap.py`、放射込みの 1 周 (Emittance[]・EMIT) は `pysad/solemit.py`。
 
 ```
 SOL SA = (L=0 BZ=0.3 BOUND=1) SB = (L=0 BZ=0 BOUND=1);
@@ -82,7 +82,7 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 (フリンジは `tsfrin1`、四極は `k_sol_quad` を 1 粒子に使う)。軌道が軸上 (DX DY DPX DPY が 0) のときは直進と同じなので従来の経路。
 
 - 検証 (`pysad/tests/test_sol_geo.py`): GEO が始端 (前向き、回転四極 K1>0、領域内の SOL) と終端 (後ろ向き、K1<0) の 2 通りで、S・GX・GZ・GCHI2・GCHI3 の 18 要素が gs と 1e-9 (絶対 1e-13) で一致。
-- `Solenoid` の DPX DPY DX DY DISFRIN DBZ を parser が読むようにした (以前は BZ BOUND GEO だけ)。
+- `Solenoid` の DPX DPY DX DY DISFRIN DBZ を parser が読む (BZ BOUND GEO とあわせる)。
 - 未対応: 領域内の BEND・MULT・CAVI (NotImplementedError → 警告を出して直進扱い。BEND は上の「限界」のとおり gs と合わず取り下げた)、領域内の L=0 / K1=0 の四極。
 - **ずれ・傾きのある SOL の追跡・Twiss・Emittance[] は未対応のまま** (tsconv の CHI1..3 を使う `tsrote`)。幾何だけが gs と合う。
 - `GEO` がない SOL 領域は K64 と同じ文面の警告 (` Missing GEO of Solenoid …`) を出して直進扱い (K64 は S 座標が途切れる: 上の限界を参照)。

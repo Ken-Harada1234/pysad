@@ -5,7 +5,7 @@
 目的: SAD-master (`src/*.f`、`Packages/*.n`、SADHelp) の機能ごとに、pysad での対応状況 (済み・見送りと理由) を並べる。
 難易度は SAD 側のルーチンの大きさと、pysad の既存モジュールからの距離による目安。照合は `bin/gs` (SAD の WSL ビルド) の出力との比較で、数値は各文書にある範囲 (小さなリング・試験の条件) のもの。実用のリングや強い非線形での確認は別である。
 
-試験は `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を除く) で 575 通過・3 skip (578 件収集。GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip)、回帰は 50 ベンチをすべて実行して FAIL 0 (2026-11-16 夜、`local/wake/verify_log.md`)。
+試験は `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を除く) で 575 通過・3 skip (578 件収集。GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip)、回帰は 50 ベンチをすべて実行して FAIL 0 (QUICK なしは 2026-11-16 夜の `local/wake/verify_log.md`、`QUICK=1` の 46 件は 2026-11-17)。
 
 ## 1. FFS のコマンド (`tffsa.f` ほか)
 
@@ -23,10 +23,11 @@
 | CHROMATICITY (CHRO) | `tfchro.f` (QUAD / SEXT / MULT ごとの薄肉近似) | 済み |
 | MAIN の TRACK (`TRACK USE= NPART= TURNS= NX= NY= NZ=`) | `track.f`、`tracka.f`、`ttinit.f` | 済み (`pysad/maintrack.py`。K64 の MAIN の TRACK は SIGSEGV で動かず、SADScript で同じ手順を書いた版と一致)。PHSPLOTS の描画は無視、FOURIE ON は未対応 (docs/history/work_main_track.md) |
 | PRINT / REF / ORG / SHOW / STATUS / MATRIX / BEAMSIZE / VARY / RECOVER / REVERSE | `tffsa.f` の各分岐、`tfmat.f` (MATRIX) | 済み (docs/35) |
-| RENUM (要素番号の振り直し)・GEO・DRAW | `HelpMessages.n:332`、`tfgeo.f` | 警告して無視 (描画・表示系) |
+| RENUMBER (要素番号の振り直し) | `tfinit.f` の tffsrenumber、tfinimult | 済み (`ffscmd._renumber_cmd`、`LINE["MULT"]` も。gs と一致。INDX 属性の初期値は未対応) |
+| GEO・DRAW | `tfgeo.f` | 警告して無視 (描画・表示系) |
 | RADINT | `INTGRL.f` (693 行) | 済み (`radint.py` を FFS RADINT に接続。6 通りと小リング 3 通りが SAD と 7 桁一致) |
 | APERTURE / ZAP | `tfaprt.f`、`tfzap.f` | tapert (追跡側の損失判定) は翻訳済み。コマンドは未対応 (表示系) |
-| DELCOR | `tcorr.f`、`tvcorr.f`、`tffsa.f:982` | 済み (gs と一致。CAVI・OCT は未対応。docs/31) |
+| DELCOR | `tcorr.f`、`tvcorr.f`、`tffsa.f:982` | 済み (gs と一致。CAVI は HARM・PHI に書く K64 のとおり、OCT も gs と一致。docs/31) |
 | MON / MCOD / TCOD | | 受理のみ (K64 ビルドでは SAD も何もしない) |
 | MEASURE / PUTMEASURE / GETMEASURE / LOGMEASURE / ORBITJITTER / TRCOD / FIXCOD / MVCOD / STNCOD / LTRACK / PKSEED / PUSHSEED / POPSEED / EXCGSEED / DELWAVE | `tffsa.f:639-985`、`trcoda.f`、`trackb.f` | 受理のみ (TRCOD、MEASURE) または未定義。見送り (gs で TRCOD が SIGSEGV、MEASURE は何も出力しない: B42) |
 
@@ -64,11 +65,11 @@
 | CorrectOrbit / MakeBump | P (correction.n、bump.n) | `pgrmat.f` (応答行列)、`pgsolvcond.f` (条件付き SVD) | 済み (SAD の .n を動かす。ResponseMatrix・LinearSolveConditioned・Master は `corr.py` に直訳。補正量は gs と相対 1e-7。docs/34) |
 | OptimizeOptics / DownhillSimplex | P (optimize.n) | | 済み (K1・チューンが gs と 1e-10。DownhillSimplex は `miscfn.py` で gs と 1e-13。docs/34・33) |
 | TransferMatrix / BeamMatrix / NormalCoordinates / SymplecticInverse | P (Optics.n、emit.n) | | 済み (optics_fn.py、SAD と 1e-9) |
-| PolynomialFit / Fit / FitEmit / FitGaussian / Spline / NIntegrate / Integrate / FindRoot / D | P (Fit.n、D.n) | | 済み (`fitroot.py`。gs と 5e-10〜1e-14。ベクトル独立変数と複素 FindRoot は未対応。D・Integrate は D.n を動かす。docs/33・34) |
+| PolynomialFit / Fit / FitEmit / FitGaussian / Spline / NIntegrate / Integrate / FindRoot / D | P (Fit.n、D.n) | | 済み (`fitroot.py`。gs と 5e-10〜1e-14。ベクトル独立変数は対応 (gs が誤値: B52)、複素 FindRoot は未対応 (gs が壊れた値: B61)。NIntegrate は複素数の被積分関数も可。D・Integrate は D.n を動かす。docs/33・34) |
 | TouschekLifetime / TouschekTable | P (emit.n:129-) | `temit.f` の intra | 済み (15 ケース ≤7e-12) |
 | SynchroBetaEmittance | B (`tfemit.f:144` の tfemits) | `temits.f` (1325 行) | 済み (`synchrobeta.py`、gs と相対 1e-5。24 セルの平面リング + CAVI。結合のあるラティスは gs が SIGSEGV で比較不能。不安定なチューンは未確認) |
 | SeedRandom / GaussRandom / Random | B | | 済み (SAD と同じ乱数列) |
-| LDSolve ほか (ExpMatrix、rational.n、extmap.n、Misc.n) | P | | SAD 自身の `.n` を解釈する方式で動く (docs/34)。LDSolve は複素数・行列演算の虚部の扱いを直して gs と一致。他は個別の照合なし |
+| LDSolve ほか (ExpMatrix、rational.n、extmap.n、Misc.n) | P | | SAD 自身の `.n` を解釈する方式で動く (docs/34)。LDSolve は複素数・行列演算の虚部の扱いも含めて gs と一致。rational.n (Rational の和・積) と Couple.n の ElementValues (VISIT/BYE の退避・復元を除く) も gs と一致 (docs/34)。他は個別の照合なし |
 | Polarization / SpinTune / PolarizationTime | | `temit.f:491,1188` の calpol、`polpar.f`、`photons.f`・`tturn.f` の spin 部 | 済み (Emittance[]・EMIT のスピン (MULT・空洞・SOL まで) と、POL かつ RAD ON の TrackParticles のスピン追跡。gs と 1e-11〜4e-12)。`Polarization` は K64 が NaN (B55) なので値の照合なし (docs/36・43) |
 | PHOTONS (`PhotonList`) | | `tftrack.f:144,315`、`photons.f` の kphlist | 一部対応 (BEAMBEAM の光子だけ。他の要素の光子 tphrec は未対応。RADLIGHT の軌道と RadiationField・RadiationSpectrum は docs/45) |
 | LMA | | | SAD に組み込みはない |
@@ -118,7 +119,7 @@ Tkinter.n・Plots.n・OpticsPlot.n などを SAD の .n のまま tkinter で動
 | PHSROT | K64 で動作しない (B38) |
 | `MessageName` の関数形 | gs は f を無視する (B70)。`f::usage` の形は一致 |
 | 複素引数の Bessel・超幾何、PolyLog の \|z\|≥150 (非整数次) | 未着手 |
-| DELCOR の CAVI・OCT、MAP の GEO・CompiledMap、BeamPlot の比較 | 未着手 |
+| MAP の GEO・CompiledMap、BeamPlot の比較 (gs は SIGXX=0 で楕円なし) | 未着手 |
 | FFSFlags の内容 | 未対応 |
 | SAD の MON / MCOD / TCOD | K64 でも無効 (SAD 側で参照が取れない) |
 | FITP>1 の GO | SAD が再起動を繰り返して落ちる (参照が取れない) |

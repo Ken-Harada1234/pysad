@@ -56,7 +56,7 @@ pysad は `track6n_ext.mult_full` (ANGLE=0、F1・FRINGE なしの MULT。AUTOPH
 - 電圧キックの定数と式は tcav と少し違う: `oneev = 1+1e-6`、`pmin = 1e-10` での下限、`tlim = 1e4`、`v20a = v02a = v (w (1/2p0 + 1/2pe))² / 4` (`vcorr`)、`v1a = v11a = 0`。
 - フリンジ (`DISFRIN=0`): 入口で `tcavfrin` → `ttfrins`、出口で `ttfrins` の逆順 → `tcavfrin(−v)`。
 - vnominal≠0 (TRPT) のとき、末尾で基準運動量を `pe` に付け替える (`cav_full` と同じ)。
-- MULT の DVOLT、DPHI、AUTOPHI は parser が属性に付ける (以前は DVOLT・DPHI を落としていた)。
+- MULT の DVOLT、DPHI、AUTOPHI は parser が属性に付ける。
 
 ## 3. K64 の癖 (そのまま写した。gs で確認したもの)
 
@@ -97,7 +97,7 @@ SAD K64 (WSL の gs) と同じ台本を走らせて比べた。粒子 200〜400 
   2. 光学の wake で、縦と横の表の片方しかない要素。
   3. TRPT で、追跡の最初の `tapert` の時点で LOSSAMPL の外にいる粒子がある (wake・SOL と無関係。§8)。この場合の出力座標の差は **解消済み** (2026-11-16 夜): K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書き、`l_track` はセッション最初の TrackParticles では 0 (CALC をしても変わらない) なので、
      最初の `tapert` では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされたまま追跡が続き、後の `tapert` で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。
-     pysad は以前は常に最初の要素で落としていたので、`TrackRun.l_track0`・`k_apert` の lcur==0 で再現した。gs (1 回目・2 回目の呼び出し) と直した SAD (LOSSAMPL=1e-4、3 粒子、2 周、NORAD、TRPT、15 値) と全桁一致 (`test_small_items.py` に 1 件)。
+     pysad は `TrackRun.l_track0`・`k_apert` の lcur==0 で再現する。gs (1 回目・2 回目の呼び出し) と直した SAD (LOSSAMPL=1e-4、3 粒子、2 周、NORAD、TRPT、15 値) と全桁一致 (`test_small_items.py` に 1 件)。
      元の gs は SIGSEGV で落ちるので、比べた基準は直した SAD。
 - **WAKE コマンドの旧式の入力 (`tfwake.f`) は移植しない**。K64 の `tffsa.f:972` は `tfwake.f` を呼ばず `WAKECOMMAND[]` (`init.n` の AutoLoad。`Packages/WAKECOMMAND.n` は配布にない) を評価する。
   gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路で、エラー文の表示だけ未再現 (2026-11-16 に確認。SADHelp にない旧機能)。
@@ -177,7 +177,7 @@ SAD を `-O0 -g` で作り直し (WSL に複製、`~/sad_dbg`)、落ちた場所
 | SOL 領域の始点にウェイク | `tturn.f:567` → `twxiwp` | `tsol` は領域全体を進めて戻る。その間 `sol` の分岐が `aewak` を古いままにして、領域の各要素で後半キックを重ねて呼び、`nwak` が表の数を超える。始点の後半キックを `tsol` の後で呼ぶため、領域内のウェイクの `nextwake` も古いままになる | `tsol` の前に始点の後半キックと `nwak` の更新を済ませ、`aewak` を偽にする |
 | TRPT で最初から LOSSAMPL の外の粒子 | `tapert.f:184` | `idtypec(l_track)` を評価するが、最初の `tapert` は要素の前 (`l_track=0`) | `l_track>0` のときだけ評価する |
 
-3 つ目は元の SAD の別の不具合で、wake も SOL も要らない (LOSSAMPL=0.0009 で、wake なしでも落ちる)。以前「SOL 領域内で粒子が落ちると落ちる」としたのは誤りで、LOSSAMPL=0.0009 の台本は初期の振幅がすでに外だった。
+3 つ目は元の SAD の別の不具合で、wake も SOL も要らない (LOSSAMPL=0.0009 で、wake なしでも落ちる)。「SOL 領域内で粒子が落ちると落ちる」のではなく、LOSSAMPL=0.0009 の台本は初期の振幅がすでに外だった。
 LOSSAMPL=0.002 (領域内・後で落ちる) は元の SAD でも落ちず、pysad と 10 桁一致する。
 
 直した SAD の結果は、pysad の追跡と一致した: SOL 領域の始点の wake (単独と、領域内の wake との併用) で 0 差、光学の縦だけの表の中心軌道で一致。

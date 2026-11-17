@@ -167,10 +167,10 @@ python -u run_regression.py 3b 12 13a                          # 指定したも
 
 直近の実行結果は `<work-regression>/<key>.txt` (各ベンチの出力) と `run_regression.py` の標準出力で確認する。表 (§3) の「現在の結果」はこれらの値。
 
-### 5.1 2026-11-16 時点の現状
+### 5.1 2026-11-17 時点の現状
 
-- 回帰 (`PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py`、QUICK なし): 2026-11-16 夜に **50 ベンチをすべて実行して FAIL 0** (205 s)。`run_regression.py` の `BENCHES` は 50 キー (1, 2, 3a〜3d, 4〜11, 12/12t/12f, 13a, 13b, 14a, 16a, 22e, 24a〜24f, 26a〜26d, 27a/27b, 28a〜28d/28f, 29a〜29e/29a2, 30a/30b, 31a/31b)。
-  `QUICK=1` は遅い 4 件 (7, 12t, 13a, 16a) を SKIP して 46 件を実行する。その 4 件も単独で実行して**すべて PASS** (最大差: 7 が 5.0e-11、12t が 3.5e-11、13a が 4.3e-21、16a が 1.4e-31)。QUICK の 46 件と合わせて 50 ベンチ全部が FAIL 0。
+- 回帰 (`PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py`、QUICK なし): **50 ベンチをすべて実行して FAIL 0** (2026-11-16 夜、205 s。11/17 の追跡の更新 (APERT) のあとは QUICK=1 の 46 件と、SKIP される 4 件の単独実行で FAIL 0)。`run_regression.py` の `BENCHES` は 50 キー (1, 2, 3a〜3d, 4〜11, 12/12t/12f, 13a, 13b, 14a, 16a, 22e, 24a〜24f, 26a〜26d, 27a/27b, 28a〜28d/28f, 29a〜29e/29a2, 30a/30b, 31a/31b)。
+  `QUICK=1` は遅い 4 件 (7, 12t, 13a, 16a) を SKIP して 46 件を実行する。その 4 件も 2026-11-17 に単独で実行して**すべて PASS** (最大差: 7 が 5.0e-11、12t が 3.5e-11、13a が 4.3e-21、16a が 1.4e-31)。QUICK の 46 件と合わせて 50 ベンチ全部が FAIL 0。
   `run_regression.py` 自体は 2026-11-04 から変更なし。KNOWN (PASS*) は §4 の 3 件 (14A の EMIT dz、16A の損失周数 1 個、13A-2 の TWB)。
 - pytest (`py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`): **575 通過・3 skip** (578 件収集、2026-11-17)。
   - GUI 系 (`test_plot.py`, `test_tclbridge.py`) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` がないと GUI 系は skip する。

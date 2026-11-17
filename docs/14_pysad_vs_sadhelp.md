@@ -9,7 +9,7 @@
 SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSAD_SAD_PACKAGES` が要る。docs/34)。機械照合が見るのは組み込みの登録名と FFS の表だけなので、
 そうした行とユーザー定義フックの行は手で直してある。この表を `perf_work/pysad_vs_sadhelp.py` で作り直すと、手で直した行は消える。§6 を見て戻すこと。
 
-## 1. FFS コマンド (56): 実装 52、未対応 2、無視 2
+## 1. FFS コマンド (56): 実装 53、未対応 1、無視 2
 
 | コマンド | SAD 側 | pysad |
 |---|---|---|
@@ -50,7 +50,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `RECOVER(REC)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `REFERENCE(REF)` | Fortran tfdisp.f,tffsa.f | 実装 |
 | `REJECT(REJ)` | Fortran tffsa.f | 実装 |
-| `RENUMBER(RENUM)` | Fortran tffsa.f | 未対応 (何もしない。docs/35) |
+| `RENUMBER(RENUM)` | Fortran tffsa.f | 実装 (tffsrenumber の直訳。gs と一致。INDX 属性の初期値は未対応) |
 | `REPEAT(REP)` | Fortran tffsa.f | 実装 |
 | `RESET` | Fortran tffsa.f | 実装 |
 | `RESUME(RES)` | Fortran tffile.f | 実装 |
@@ -70,7 +70,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `VARY` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `VISIT` | Fortran tffsa.f | 実装 |
 
-**未対応**: `RENUMBER(RENUM)`、`SEED` (K64 でも obsolete)  
+**未対応**: `SEED` (K64 でも obsolete)  
 **無視 (読み飛ばし)**: `DRAW`、`MEASURE(MEA)` (SADHelp の表にない `GEO`・`TRCOD` なども警告して無視)
 
 ## 2. SADScript / FFS の関数 (94、pysad 実装 86)
@@ -377,7 +377,7 @@ SAD 側はいずれも Fortran (src/initb1.f の sethtb/kytbl、kyparam)。pysad
 ## 7. 未確認・限界
 
 - 「実装」は名前が登録されているという意味で、挙動が K64 と一致するかは要素ごとの文書による。Interp.builtins の登録名は 2026-11-16 に実行時に集めた (462 個。11/06 は 281 個)。
-- 特別変数 (§3) は「ソース中に名前の文字列があるか」だけの照合。`CASE`・`ElementValues`・`TITLE`・`Track$Excitation` は参照が無い (未対応のまま)。
+- 特別変数 (§3) は「ソース中に名前の文字列があるか」だけの照合。`CASE`・`TITLE`・`Track$Excitation` は参照が無く未対応。`ElementValues` は機械照合では参照なしに見えるが、Couple.n 経由で実装済み (§3 の行。VISIT/BYE の退避・復元は未対応)。
 - `MessageName` は式のまま返す形だけ (関数形 `MessageName[f, "usage"]` の評価は見送り。docs/20)。`Skip` は gs に合わせた。
 - `Polarization` (K64 が NaN: B55)、PHSROT (K64 で動作しない: B38) は pysad に無い。
 - SADHelp は K64 版 `Documents/SADHelp.html` (1.4.4.2k64 Updated: 10/19/2026)。CERN の SADHelp は 1.4.0.0k64 2025-07-14 で同系統。KEK 公式の SAD ヘルプは別の SAD なので見ていない。

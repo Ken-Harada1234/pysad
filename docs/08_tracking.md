@@ -22,7 +22,7 @@ TrackParticles[{loc, beam}, dest, nbegin, nend]
 - `beam` = `{{x…},{px…},{y…},{py…},{z…},{dp…},{flag…}[,{lost-pos…},{lost-turn…}]}`。POL OFF なら 7〜9 列、POL ON なら 9〜11 列 (phis, sz が加わる) でなければエラー (tftrack.f:106-116, tfsetparticles のコメント)。
 - **px, py は px/p0** (基準運動量で割った値) で渡し、同じ形で返る。内部では別の座標を使う (§2)。
 - `flag` が 0 の粒子は最初から損失扱い。`tfsetparticles` が `kptbl` (粒子 ID ↔ 配列位置の対応表、損失位置、損失ターン) を初期化し、**死んだ粒子を配列の末尾へ寄せる** (tftrack.f:480-)。生きている粒子数 `npa` だけが追跡に使われる。
-- 戻り値は `{位置, 粒子リスト}`。位置は区間が順方向なら `dest`、逆向きなら `loc`。flag 列は生存 1 / 損失 0。LOSSMAP ON のときは損失要素番号と損失ターンの列が加わる。
+- 戻り値は `{位置, 粒子リスト}`。位置は区間が順方向なら `dest`、逆向きなら `loc`。flag 列は生存 1 / 損失 0。gs は LOSSMAP ON のとき損失要素番号と損失ターンの 2 列 (8・9 列目) を戻りに足す。pysad は足さない (戻りは 7 列のまま。未対応。`example/05_tracking/flag_LOSSMAP`)。
 - `NP` (FFS 変数) は粒子数の上限ではなく、`DynamicApertureSurvey` 等が使う既定の粒子数。TrackParticles は渡した粒子をそのまま追跡する。
 
 ### 1.1 周回ループ (tftrack.f:243-281)

@@ -18,7 +18,7 @@
   `dvemit = -(p1+p0)/h1/(p0*h1+p1*h0)*dp + dvfs`、`p1=p0(1+dp)`、dvfs=FSHIFT (RFSW のみ)。要素ごとに `z -= dvemit*L`。(5,6) 成分に `h0/h1^3*L`。
 - 1.7 **SAD の `sinc(x) = x cos x - sin x`**、`sinhc(x) = x cosh x - sinh x` (tfloor.f:369-395、小さい x は級数)。sin x/x ではない。qdbend 等の `a12 = rho/phi*sinc(phi)*dphi` はこの定義 (§17)。
 - 1.8 FRINGE/DISFRIN の既定: pysad は FRINGE=0, DISFRIN=0 を仮定する。tqfrie は既定で入り、切るのは DISFRIN=1 (A15)。
-- 1.9 **MOMENTUM の初期値は 30 GeV** (initb1.f:1698 `RsetGL('MOMENTUM',30.d9)`)。以前の記述の 1 GeV は誤り。設定しないスクリプトは 30 GeV で計算される (docs/11 A43)。
+- 1.9 **MOMENTUM の初期値は 30 GeV** (initb1.f:1698 `RsetGL('MOMENTUM',30.d9)`)。設定しないスクリプトは 30 GeV で計算される (docs/11 A43)。
 - 1.10 **周長 (周回周波数 ω0)**: K64 は SOL (BOUND≠0) の長さを周長に入れない。ω0、αp、空洞の位相、偏極時間に効く (docs/11 A42、§25)。
 
 ## 2. 計算の流れ [確認]
@@ -280,7 +280,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - 追跡 (txwake.f): 粒子を z の昇順に並べ、NBUNCH と z の間隔から切片 (NBUNCH=1 なら約 √np 個) に分け、切片ごとの粒子数 ws と x・y・z の平均を取る。切片の組の距離 `dz = zs(m)−zs(n)` で表を線形補間し、縦は `wz(n) += W(dz) ws(m)`、横は `wx(n) += Wt(dz) xs(m)`、`wy(n) += Wt(dz) ys(m)`。各粒子は両隣の切片の値を線形補間して dp・px・py・dv を更新する。係数 `fw = |charge| e PBUNCH NBUNCH/amass/NP/2`。要素の前に半分、後に残り半分 (tturn.f:256-269, 562-575)。
 - 光学 (tffswake.f、WAKEOPT): InitialOrbits の軌道を INS でウェイクのある要素まで伝搬し、全軌道の z・x・y から各軌道の dpx・dpy・ddp へキックする (前後で同じ大きさを 1 回ずつ)。縦は `dz = z_i − z_j` (境界は `sigg = max(1e-5, SIGZ/np/NBUNCH)` で滑らかにする)、横は `dz + 0.3989 sigg`。
 - 旧 WAKE コマンドは K64 では WAKECOMMAND.n (配布に無い) を呼ぶので移植不要。
-- 照合 (gs): 追跡 10 桁、光学も一致 (普通の要素、CAVI、SOL の領域の内側)。K64 の SIGSEGV 3 件 (B31〜B33) は直した SAD と同じ動作にした (B33 は未対応)。
+- 照合 (gs): 追跡 10 桁、光学も一致 (普通の要素、CAVI、SOL の領域の内側)。K64 の SIGSEGV 3 件 (B31〜B33) は直した SAD と同じ動作にした (B33 の最初の tapert の癖は `TrackRun.l_track0` で再現)。
 - **未確認・限界**: RF のある MULT は F1・FRINGE・AUTOPHI なし。実機のウェイク関数・エネルギーでの妥当性は未確認 (試験の人工的な表のみ)。
 - 解説: `docs/38_wake_guide.md`、`docs/23_wake.md`。
 
@@ -316,7 +316,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 | TCAVI | 横偏向空洞 (クラブ空洞)。追跡は RAD FLUC まで gs と一致、Emittance[] は L=0 のみ (L≠0 は gs が壊れる: B36) | docs/26 |
 | UND | K64 は磁場を設定できず (B37) 磁場なしのドリフト | docs/27 |
 | MAP | ExternalMap の TRACK・EMIT・OPTICS (GEO・CompiledMap は未) | docs/30 |
-| DELCOR | 相関付き補正。MARK は DETR・DPX に入る (B40)、CAVI は未対応 | docs/31 |
+| DELCOR | 相関付き補正。MARK は DETR・DPX に入る (B40)、CAVI は HARM・PHI に入る (K64 の添字のずれ。gs と一致) | docs/31 |
 | GaussianCoulomb(U・Fitted)・BBBrem1 | 空間電荷関数と制動放射 | docs/32 |
 | 特殊関数・Fit・FindRoot | 458 式が gs と一致。K64 が誤値を返す式 (B43〜B47、B53、B54) は真値 | docs/33 |
 | SynchroBetaEmittance | シンクロトロン運動と色収差下の平衡エミッタンス。δ ごとの閉軌道・1 周写像・拡散行列から (J, 方位角モード m) の連立方程式を解く。12 セルのリング + CAVI で emitx が 4e-7〜1e-5、24 セルの平面リング + CAVI VOLT=2e6 (AzimuthalModes->7) で 1.4e-7〜1.4e-6 (結合のあるラティスは gs が SIGSEGV で比較不能、不安定なチューンは未確認) | `pysad/synchrobeta.py` |

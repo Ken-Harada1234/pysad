@@ -212,7 +212,7 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 - `cerrf` の `3.2` は単精度の定数。
 - 丸いビームで x=y=0 の粒子は 0/0 → NaN → px=+1e4。
 - スライスの境界 (`dsz`) はビームストラールングだけが使う。
-- **TRPT の放射の分割**: gs の `ndivrad` (tffs.f) は TRPT のとき h0 を 10 倍して分割数を決める。pysad は以前この 10 倍を落としていて、TRPT の RAD FLUC で乱数を引く数が gs と違った。`track6n.turn` で直した (TRPT の放射ありの結果は gs に近づく方向に変わった)。BEAMBEAM に限らず TRPT 全体に効く変更である。
+- **TRPT の放射の分割**: gs の `ndivrad` (tffs.f) は TRPT のとき h0 を 10 倍して分割数を決める。pysad は `track6n.turn` で同じ 10 倍にして、TRPT の RAD FLUC で乱数を引く数を gs と合わせる。BEAMBEAM に限らず TRPT 全体に効く。
 - SOL 領域 (SOL BOUND=1 の間) に BEAMBEAM があると **K64 が SIGSEGV で落ちる** (tsol.f:798 付近。docs/21 B35。メッセージの write を消しても落ちる。原因は未特定)。pysad は NotImplementedError にする。
 - `TrackParticles[..., 5, 1]` の 5 は終点の要素番号 (周回数ではない)。初期の比較はこの誤解で BB を 1 回通るだけだった (取り直し済み、同じ結果)。
 

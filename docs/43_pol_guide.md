@@ -147,7 +147,7 @@ RADPOL が ON で、そのステップに放射エネルギー `ucde > 0` があ
 
 ### 5.2 MULT
 
-K1・K2・K3 とずれ (DX・DY) のある MULT のリングは Emittance[] で gs と 1e-11 で一致 (`test_mult_ring_matches_gs`。K3=300 まで)。`tmulke` の `bsir0` の更新 (`kick_cx`、`_tmulte`) を写した。L=0 の薄い MULT では更新しない (以前は 0 割りになっていた: `test_thin_mult_ring_spin_tune_matches_gs`)。
+K1・K2・K3 とずれ (DX・DY) のある MULT のリングは Emittance[] で gs と 1e-11 で一致 (`test_mult_ring_matches_gs`。K3=300 まで)。`tmulke` の `bsir0` の更新 (`kick_cx`、`_tmulte`) を写した。L=0 の薄い MULT では更新しない (0 割りになるため: `test_thin_mult_ring_spin_tune_matches_gs`)。
 追跡も K1 K2 K3 の MULT と薄い MULT で 4e-12 以下 (`pt5`、`pt7`、`pt7b`)。ANGLE≠0 の MULT (`tmultae`) の POL スピンも gs と一致 (偏極時間 14 桁、スピンチューン 1e-14。偏極ベクトルは平面リングで 0,1,0。2026-11-16)。
 
 ### 5.3 空洞
@@ -203,7 +203,7 @@ B55 を参照。gs で再現し、pysad も同じ式で NaN になる。試し�
 - 追跡は損失の処理なし、numba の高速追跡 (`TrackRun`) を使わないので遅い (Python の追跡)。
 - `tbrote` の更新 (ずれ・DROTATE・CHI2 のある偏向磁石) は gs で確認していない (B56)。
 - `Emittance[]` が SOL を含むときの偏極の量は上記の SOL の例 (四極 1 つ + ドリフト) だけ照合している。SOL の中の BEND・MULT・CAVI がないリングに限る。
-- スロー経路 (`PYSAD_NO_ELKERN=1` 相当) の `_tquade` が、ずれだけで回転のない四極のヤコビアンをずらす前の座標で評価していた誤りは直した (POL は numba の速い経路を使えないので εy に 7e-5 出ていた)。
+- スロー経路 (`PYSAD_NO_ELKERN=1` 相当) の `_tquade` は、ずれだけで回転のない四極のヤコビアンを、ずらした後の座標で評価する (ずらす前だと POL は numba の速い経路を使えないので εy に 7e-5 の誤差が出る)。
 
 ## 9. 関連文書
 
