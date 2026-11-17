@@ -265,7 +265,7 @@ def _mm(a, b):
 
 @njit(**NJ)
 def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp, xpx, xpy, xpz, xpa, anp, uc, uct,
-              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0):
+              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False):
     """戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
     # transi = T @ tinv6(transr)、tinv6(r) = -J r^T J
     tinv = np.empty((6, 6))
@@ -314,6 +314,11 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     for j in range(6):
         dal[j] = -tr2[4, j]
     dal[4] += 1.0
+    if tin != 0.0 or tout != 0.0:
+        # v2: 偏向磁石の端の角による場の中の行路の変化 (al1 = al - dz - tin*x0 - tout*x) の微分
+        dal[0] -= tin
+        for j in range(6):
+            dal[j] -= tout * tr2[0, j]
     das = 1.0 / math.sqrt(1.0 - xpa ** 2)
     dtheta = dxpa * das
     danp = anrad * h1 * dtheta
@@ -356,7 +361,11 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     b = bzh * 0.5
     # K64 photons.f の dbeam(8) は beam(2)-beam(10)+b*beam(4) (= B12 - B44 + b B13): そのまま写す (B34 の誤記に見える。bzh=0 では効かない)
     d11 = (Bn[1, 1] + b * (2.0 * Bn[1, 2] + b * Bn[2, 2]) + (pxm ** 2 + pxi ** 2 + px ** 2) / 6.0) * dee
-    d31 = (Bn[3, 1] - b * (Bn[0, 1] - Bn[3, 3] + b * Bn[0, 2]) + (pxm * pym + pxi * pyi + px * py) / 6.0) * dee
+    if fixb39:
+        # v2 (B39): <(px+b y)(py-b x)> = B[py,px] - b (B[x,px] - B[y,py] + b B[x,y])
+        d31 = (Bn[3, 1] - b * (Bn[0, 1] - Bn[2, 3] + b * Bn[0, 2]) + (pxm * pym + pxi * pyi + px * py) / 6.0) * dee
+    else:
+        d31 = (Bn[3, 1] - b * (Bn[0, 1] - Bn[3, 3] + b * Bn[0, 2]) + (pxm * pym + pxi * pyi + px * py) / 6.0) * dee
     d33 = (Bn[3, 3] + b * (-2.0 * Bn[0, 3] + b * Bn[0, 0]) + (pym ** 2 + pyi ** 2 + py ** 2) / 6.0) * dee
     Bn[1, 1] += d11
     Bn[3, 1] += d31

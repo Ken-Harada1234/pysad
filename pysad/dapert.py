@@ -114,7 +114,7 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
     S = _tn.make_state(coords, ph)
     kid = np.array(ids, dtype=np.int64)
     lost_turn = np.full(n1p * N2P, MAXTURN, dtype=np.int64)
-    rs = np.array([_t6.RNG.seed], dtype=np.int64)
+    rs = _tn.make_rs(_t6.RNG.seed)          # [seed, v2 の印] (カーネルが rs[1] を読む)
     fl = bool(rad and fluc)
     n = S.shape[0]
     t0 = time.time()

@@ -14,6 +14,7 @@ import math
 
 import numpy as np
 
+from . import compat as _compat
 from . import track6n as _n
 from . import track6n_ext as _x
 from . import geo as _g
@@ -53,6 +54,69 @@ def _quad_step(el, bz, xi, pxi, yi, pyi, dir_, f, ph):
     _x.k_sol_quad(S, 1, L, ak, ct, st, fringe, bz * dir_, False, False, _RS, ph.p0, ph.h0, ph.anrad, ph.cuc)
     xf, pxf, yf, pyf, zf = (float(S[0, 0]), float(S[0, 1]), float(S[0, 2]), float(S[0, 3]), float(S[0, 4]))
     return xf, pxf * dir_ + f * yf, yf, pyf * dir_ - f * xf, -zf
+
+
+class _Collect:
+    def __init__(self):
+        self.items = []
+
+    def _add(self, k, p, name, cnt, sm):
+        self.items.append((k, p))
+
+
+def _kernel_step(kind, pr, xi, pxi, yi, pyi, dir_, f, ph):
+    """tsgeo1 の要素: (xi, 力学的運動量 pxi pyi) → 追跡のカーネル (正準運動量、後ろ向きは運動量の符号を変える) → (xf, pxf, yf, pyf, dl)"""
+    S = _n.make_state(np.array([[xi, (pxi - f * yi) * dir_, yi, (pyi + f * xi) * dir_, 0.0, 0.0]]), ph)
+    _x.step_kind(kind, pr, S, 1, ph, 0.0, False, False, False, _n.make_rs(1))
+    xf, pxf, yf, pyf, zf = (float(S[0, 0]), float(S[0, 1]), float(S[0, 2]), float(S[0, 3]), float(S[0, 4]))
+    return xf, pxf * dir_ + f * yf, yf, pyf * dir_ - f * xf, -zf
+
+
+def rot33(chi1, chi2, chi3):
+    """tffs.f tpara の icSOL: CHI1..3 → R11..R33 (trots が使う回転行列。sol モジュールの trot33(ent=.true.) と同じ)"""
+    c1, c2, c3 = math.cos(chi1), math.cos(chi2), math.cos(chi3)
+    s1, s2, s3 = math.sin(chi1), math.sin(chi2), math.sin(chi3)
+    return np.array([[c1 * c3 + s1 * s2 * s3, -c2 * s3, s1 * c3 - c1 * s2 * s3],
+                     [-s1 * s2 * c3 + c1 * s3, c2 * c3, c1 * s2 * c3 + s1 * s3],
+                     [-s1 * c2, -s2, c1 * c2]])
+
+
+def region_frames(elements, i, ph):
+    """SOL 領域 (elements[i] が始端の BOUND≠0 の SOL) の両端の座標変換 (tsol.f の trots の引数)。
+    戻り値 (ent, ext): それぞれ (R (3×3), dx, dy, dz) か None (恒等)。
+    K64 は tsgeo が SOL の要素に書いた値を使う: GEO≠0 の SOL は利用者の DX DY (と DPX DPY から決まる CHI1..3、DZ = 0)、
+    もう一方の SOL は領域の中の設計軌道の出口の位置 (DX, DY) と行路長の差 DZ、幾何から決まる CHI1..3。
+    GEO が無い (か両端にある) 領域は tsgeo が働かないので、要素に書かれた DX DY DZ CHI1..3 をそのまま使う"""
+    sb = elements[i]
+    ke = next((j for j in range(i + 1, len(elements))
+               if type(elements[j]).__name__ == 'Solenoid' and _val(elements[j], 'BOUND') != 0.0), None)
+    if ke is None:
+        return None, None
+    se = elements[ke]
+
+    def pack(r, dx, dy, dz):
+        if dx == 0.0 and dy == 0.0 and dz == 0.0 and np.array_equal(r, np.eye(3)):
+            return None
+        return (np.ascontiguousarray(r, dtype=float), float(dx), float(dy), float(dz))
+
+    ngeo = (1 if _val(sb, 'GEO') != 0.0 else 0) + (1 if _val(se, 'GEO') != 0.0 else 0)
+    if ngeo != 1:
+        raw = lambda e: pack(rot33(_val(e, 'CHI1'), _val(e, 'CHI2'), _val(e, 'CHI3')), _val(e, 'DX'), _val(e, 'DY'), _val(e, 'DZ'))
+        return raw(sb), raw(se)
+    gs = sb if _val(sb, 'GEO') != 0.0 else se
+    if not any(_val(gs, k) != 0.0 for k in ('DX', 'DY', 'DPX', 'DPY')):
+        return None, None                       # 軌道が軸上: 直進と同じ
+    res = _g.compute_geo(elements, warn=lambda s: None, momentum_eV=ph.pgev)
+    reg = (res.regions or {}).get(i + 1)
+    if reg is None:
+        raise NotImplementedError('SOL 領域 (' + str(getattr(sb, 'name', '?')) + '): ずれ・傾きのある軌道の幾何 (tsgeo) が作れない: '
+                                  + '; '.join(w for w in res.warnings if 'SOL' in w or 'Solenoid' in w))
+    k1, kee = i + 1, ke + 1                      # 1 始まり
+    xe, ye, ds = reg.sol_values[('end', kee if gs is sb else k1)]
+    re_, rx = rot33(*reg.sol_values[k1]), rot33(*reg.sol_values[kee])
+    if gs is sb:
+        return pack(re_, _val(sb, 'DX'), _val(sb, 'DY'), 0.0), pack(rx, xe, ye, ds)
+    return pack(re_, xe, ye, ds), pack(rx, _val(se, 'DX'), _val(se, 'DY'), 0.0)
 
 
 def _bz_after(elements, k, ke, ph):
@@ -192,6 +256,9 @@ def _tsgeo1(elements, i, state, geo, pos, idir, dir_, bza, ph):
             xf, pxf, yf, pyf, dl = _quad_step(el, bzs, xi, pxi, yi, pyi, dir_, f, ph)
             dx, dy = xf - xi, yf - yi
             xi, yi = xf, yf
+        elif _compat.v2():
+            # C2: K1=0 の四極はソレノイドの中のドリフト (tquad の ak=0 の枝)、L=0 は恒等
+            xi, pxf, yi, pyf, dl = _kernel_step(_x.K_SOL_DRIFT, (al, bzs * dir_, False), xi, pxi, yi, pyi, dir_, f, ph)
         else:
             raise NotImplementedError('tsgeo: 領域内の L=0 / K1=0 の四極')
     elif tn == 'Solenoid':
@@ -224,6 +291,14 @@ def _tsgeo1(elements, i, state, geo, pos, idir, dir_, bza, ph):
             state[:] = [xi, pxi, yi, pyi, ds, bzs]
             return
         al = 0.0
+    elif tn in ('Bend', 'Multipole', 'Cavity') and _compat.v2():
+        # C2 (v2): 領域内の BEND・MULT・CAVI (tsgeo1 の icBEND → tdrift、icMULT → tmulte1、icCAVI → tmulte)。追跡と同じカーネルを
+        # 1 粒子に使う (後ろ向きは運動量と bz の符号を変える)。CAVI の RF は入れない (設計軌道は RF によらないとする。K64 は VOLT·dir を渡す)
+        col = _Collect()
+        _x._compile_sol_v2(col, el, tn, bzs * dir_, ph, _n.SM_IN)
+        kind, pr = col.items[0]
+        f = 0.5 * bzs
+        xi, pxf, yi, pyf, dl = _kernel_step(kind, pr, xi, pxi, yi, pyi, dir_, f, ph)
     elif tn in ('Bend', 'Multipole', 'Cavity') or (tn == 'Drift' and getattr(el, '_sad_type', 'DRIFT') != 'DRIFT' and al != 0.0):
         raise NotImplementedError(f'tsgeo: 領域内の {tn} は未対応 (SOL にずれ・傾きがあるときの幾何)')
     else:

@@ -24,6 +24,7 @@ from typing import List
 import numpy as np
 
 from . import emit6d as _e
+from . import compat as _compat
 from . import lattice as _lat
 from .elements import Drift, Bend, Quadrupole
 from .sadrandom import SadRandom, tdusrn
@@ -89,6 +90,7 @@ class _Particle:
         self.dv = ph.dv(c[5])          # tconvm (dv = ... + dvfs: ph.dv が dvfs を含む)
         self.s = np.array([0.0, 0.0, 1.0])     # スピン (sx, sy, sz)。POL のときだけ使う
         self.bsi = 0.0                          # kradlib bsi (磁場の縦成分の積分: tradk のスピン歳差に使う)
+        self.bpar = None                        # v2 (C2): 運動量の向きの磁場の積分 ∫B∥dl/(Bρ)。None でなければ sprot は bsi の代わりにこれを使う
         self.setr0()
 
     def setr0(self):
@@ -110,16 +112,38 @@ def _sprot(p, pxm, pym, bx0, by0, bz0, bsi, h, pp, ucde, cphi0, sphi0):
     s = p.s
     sx, sy, sz = s[0], s[1], s[2]
     pzm = 1.0 + _pxy2dpz(pxm, pym)
+    if _compat.v2():
+        # v2 (C2): (bx0, by0, bz0) は刻みの前後の向き (単位ベクトル) の外積で、大きさは sin θ (θ は向きの変化の角)。K64 は
+        # 中点の pz (≈ cos(θ/2)) で割るので歳差の角が (1+aγ)·2 sin(θ/2) になり、刻みが粗いと θ²/24 だけ小さい
+        # (偏向角 0.26 rad の BEND を 3 刻みで 3e-4)。一様な磁場の刻みで厳密な θ にする
+        ppa_ = math.sqrt(bx0 * bx0 + by0 * by0 + bz0 * bz0)
+        if ppa_ > 1e-12:
+            f_ = math.asin(min(1.0, ppa_)) / ppa_ * pzm
+            bx0, by0, bz0 = bx0 * f_, by0 * f_, bz0 * f_
     bx = bx0 / pzm
     by = by0 / pzm
-    bz = bz0 / pzm + bsi
-    bp = bx * pxm + by * pym + bz * pzm
-    blx = bp * pxm
-    bly = bp * pym
-    blz = bp * pzm
-    btx = bx - blx
-    bty = by - bly
-    btz = bz - blz
+    if p.bpar is not None:
+        # v2 (C2、SOL 領域・UND): 向きの変化から出した (bx, by, bz) は運動量に垂直な磁場の積分 B⊥。運動量の向きの成分は
+        # p.bpar = ∫B∥dl/(Bρ) (粒子の運動量で規格化) を運動量の向きに置く。
+        # K64 の式 (下) は bsi = bz·al (p0 で規格化) を z 軸の向きに足すので、(1) δ≠0 で (1+a)B∥ の歳差が 1/(1+δ) 倍にならず、
+        # (2) 軌道が傾いていると bsi·ẑ の運動量に垂直な成分が B⊥ に二重に入る
+        bz = bz0 / pzm
+        bp = bx * pxm + by * pym + bz * pzm
+        btx = bx - bp * pxm
+        bty = by - bp * pym
+        btz = bz - bp * pzm
+        blx = p.bpar * pxm
+        bly = p.bpar * pym
+        blz = p.bpar * pzm
+    else:
+        bz = bz0 / pzm + bsi
+        bp = bx * pxm + by * pym + bz * pzm
+        blx = bp * pxm
+        bly = bp * pym
+        blz = bp * pzm
+        btx = bx - blx
+        bty = by - bly
+        btz = bz - blz
     ct = 1.0 + h * _GSPIN
     gx = ct * btx + _CL * blx
     gy = ct * bty + _CL * bly
@@ -902,6 +926,8 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     if _POL:
         p.bsi -= bsi2 * c[2] / rhob
     if krad:
+        if sinp2 != 0.0 and _compat.v2():
+            p.zr0 -= sinp2 / cosp2 * c[0]      # v2: 出口の端の角で場の中の行路が x*tan(psi2) 短い (tradk の al1 = al - z + zr0 に入れる)
         _tradk(p, alr, phi0)
 
 
@@ -1101,8 +1127,11 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     f1r = f2r = 0.0
     n1, n2 = 1, 0
     alc = al
+    v2 = _compat.v2()
     if krad:
         p.setr0()
+        if v2:
+            p.zr0 -= tanp1 * p.c[0]            # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い
         if _POL:
             p.bsi = 0.0
         if first and fb1 != 0.0:
@@ -1151,15 +1180,22 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         _tbendiinit(m, akxn[n], alx[n])
         _tbendicorr(m, (akxn[n] + akx0) * 0.5, (alx[n] + alx0) * 0.5, (phixn[n] + phix0) * 0.5)
         akx0, alx0, phix0 = akxn[n], alx[n], phixn[n]
+        if krad and _POL and v2 and n == n1:
+            # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ + k·x·y (K1=0 の tbend と同じ。K64 の tbendi は y/ρ がなく、k·x·y を全スライスで足す)
+            p.bsi += m.yi / m.rhob + ak / al * m.xi * m.yi
         _tbendibody(m, alx0)
-        if krad and _POL:
+        if krad and _POL and not v2:
             p.bsi += akxn[n] / alx[n] * m.xi * m.yi          # tbendi: bsi(i) += akxn(n)/alx(n)·xi·yi
+        if krad and _POL and v2 and n == n2:
+            p.bsi -= m.yi / m.rhob + ak / al * m.xi * m.yi   # v2 (B58): 出口の端
         if krad and n != n2:
             # tradk1 (cphi0 = cos(phixn(n)))。dp, dv(i) が更新される
             c[0], c[1], c[2], c[3], c[4], c[5] = m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp
             _tradk_core(p, alr[n], phixn[n])
             m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp = c[0], c[1], c[2], c[3], c[4], c[5]
             p.setr0()
+            if v2:
+                m.rhoe = m.rhob * (1.0 + m.dp)     # v2: 放射で変わった運動量で曲率半径を更新する (K64 は入口の値のまま: 減衰の和則が崩れる)
             if _POL:
                 p.bsi = 0.0
     _tbendicorr(m, akx0 * 0.5, alx0 * 0.5, phix0 * 0.5)
@@ -1185,6 +1221,8 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         c[4] = c[4] - (dxfr2 * c[1] - (0.5 * dyfr2 - 0.25 * dyfra2 * c[2]**2) * c[2]**2 / pr) / pr
     if fringe and mfring > -4 and mfring != 1:
         _ttfrin4(p, -ak, al)
+    if krad and v2:
+        p.zr0 -= tanp2 * c[0]                  # v2: 出口の端の角の分
     # 最後の tradk (全粒子分をまとめて: tbendi.f は粒子ループの後に call tradk(np,…,alr(n2),phixn(n2)))
     # と tbrot/tbshift の戻しは呼び出し側 (_tbend_ens) で行う
     return (alr[n2], phixn[n2], dtheta, dchi2, alg, phig, dx, dy, cost, sint)
@@ -1407,9 +1445,12 @@ def _tbend0_ens(parts, el, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2,
     bp = (rhob, rho0, drhob, fb1, fb2)
     n1, n2, ndiv = 1, 0, 1
     f1r = f2r = 0.0
+    v2 = _compat.v2()
     if krad:
         for p in parts:
             p.setr0()
+            if v2 and sinp1 != 0.0:
+                p.zr0 -= sinp1 / cosp1 * p.c[0]    # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い
         if first and fb1 != 0.0:
             n1 = -1
             f1r = fb1 * 0.5
@@ -1450,6 +1491,8 @@ def _tbend0_ens(parts, el, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2,
                        coswn, sinwn, -sqwhn, sinwpn, False, alr, bp,
                        1.0 if n == n1 else 0.0, 1.0 if (n == n2 and n != n1) else 0.0)
         for p in parts:
+            if n == n2 and v2 and sinp2 != 0.0:
+                p.zr0 -= sinp2 / cosp2 * p.c[0]    # v2: 出口の端の角の分
             _tradk(p, alr, phi0n)
 
 
@@ -1697,7 +1740,7 @@ def _tmulti_ens(parts, el, krad):
     for m in range(1, ndiv + 1):
         if nz:
             for p in parts:
-                _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=not krad, ibsi=ibsi)   # 放射なしは tsolqum
+                _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=(not krad) and not _compat.v2(), ibsi=ibsi)   # 放射なしは tsolqum (v2 (B14) は tsolqu の z の式)
             ibsi = 0
             if krad:
                 if m == 1 and _POL:
@@ -1735,7 +1778,7 @@ def _tmulti_ens(parts, el, krad):
                 c[3] += cx.imag
     if nz:
         for p in parts:
-            _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=not krad, ibsi=2)
+            _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=(not krad) and not _compat.v2(), ibsi=2)
         if fringe:
             for p in parts:
                 for n in range(nmmax, -1, -1):
@@ -1767,6 +1810,22 @@ def _tmulti(p: _Particle, el, krad):
 #   (tfinit.f tfbzs)。中に置けるのは DRIFT, 直線 BEND, QUAD, MULT, CAVI (ここでは DRIFT/QUAD のみ対応)。
 #   CHI1/2/3=DX=DY=DZ=0 なら trots は恒等。F1=0 なら SOL の端で放射しない (tradks を呼ばない)。
 # ---------------------------------------------------------------------------
+
+class SolRegionError(NotImplementedError):
+    """SOL 領域 (BOUND≠0 の SOL の間) に置けない要素がある (v2: K64 の tsol.f が出すはずの文で止める。K64 は SIGSEGV、docs/21 B35)"""
+
+
+_SOL_OK = ('Drift', 'Bend', 'Quadrupole', 'Solenoid', 'Multipole', 'Cavity', 'Map', 'Marker', 'Monitor')
+
+
+def _sol_check_type(el):
+    """v2 (B35): tsol.f の select case が受け付ける型 (DRIFT BEND QUAD SOL MULT CAVI MAP APERT MARK MON) 以外は明確なエラー。
+    k64 モードでは何もしない (今までの NotImplementedError・L=0 の素通し)"""
+    from . import compat
+    if compat.v2() and type(el).__name__ not in _SOL_OK:
+        raise SolRegionError('Only DRIFT, BEND, QUAD, SOL, MULT, CAVI, MAP, APERT, MARK, MON are supported within SOL: '
+                             f'{el.name} ({type(el).__name__})')
+
 
 def _tfbzs(el, ph):
     """tfinit.f tfbzs: bzs = charge·(BZ+DBZ)·dir/(amass·(p0/amass)/c) = charge·BZ[T]/(p0[eV]/c) [1/m]。
@@ -1948,6 +2007,10 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
             if krad and _POL:
                 alr_ = aln0 * 0.5 if n == 0 else aln0
                 p.bsi = (akk * c[0] * c[2] + bzp * alr_) if n == 0 else bzp * alr_
+                if _compat.v2():
+                    # v2 (C2): 縦の磁場の積分は 1 スライスに bz·aln0/(1+δ)、入口の端で + k x y/(1+δ) (出口で −)。
+                    # K64 は最初のスライスを半分、最後のスライスを半分 (上書き) にするので、全体で 1 スライス分足りない
+                    p.bpar = bzp * aln0 + (akk * c[0] * c[2] / (1.0 + c[5]) if n == 0 else 0.0)
             ap = c[1]**2 + c[3]**2
             dpz = _sqrt1(-ap)
             r = -dpz / (1.0 + dpz) * aln0
@@ -1982,10 +2045,16 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
                     + dz1 + dz2 - aln0 * p.dv)
             if krad and _POL and n == ndiv - 1:
                 p.bsi = -akk * c[0] * c[2] + bzp * aln0 * 0.5
+                if _compat.v2():
+                    p.bpar -= akk * c[0] * c[2] / (1.0 + c[5])
         if krad:
             for p in parts:
                 _tradk(p, aln0, 0.0)
-    if krad:
+                p.bpar = None
+    if krad and _compat.v2():
+        for p in parts:
+            _tsolqu_bz_final(p, aln0, bz / (1.0 + p.c[5]))      # v2 (B08): 粒子ごとの bzp
+    elif krad:
         for p in parts:
             _tsolqu_bz_final(p, aln0, tzs[-1].bzp)
     else:
@@ -2031,6 +2100,11 @@ def _tquad_sol(parts, el, bzs, krad):
             _ttfrin4_bz(p, ak, L, bzs)
         if krad:
             p.setr0()
+            if bzs != 0.0 and _compat.v2():
+                # v2 (C2): 放射の基準の向きは力学的運動量 (track6n_ext.k_sol_quad と同じ)
+                bzp_ = bzs / (1.0 + p.c[5])
+                p.pxr0 = p.c[1] + bzp_ * p.c[2] * 0.5
+                p.pyr0 = p.c[3] - bzp_ * p.c[0] * 0.5
     if bzs == 0.0:                   # tsolqu/tsolqur の bz=0 分岐
         if krad:
             _tsolqur_ens(parts, L, ak)
@@ -2045,9 +2119,376 @@ def _tquad_sol(parts, el, bzs, krad):
         _rot(p.c, ct, -st)
 
 
-def _tsol_region(parts, elements, i, rad):
+# ---------------------------------------------------------------------------
+# v2 (C2): スピン追跡 (POL + RAD) の経路での、SOL 領域の端のずれ・回転と F1、領域内の BEND・MULT・CAVI、UND、PHSROT。
+#   写像は高速追跡 (track6n・track6n_ext・und・phsrot) のカーネルを 1 回分ずつ呼び、放射とスピンの歳差 (sprot: Thomas-BMT) は
+#   この module の tradk (Python) で行う。高速追跡と同じ軌道になる (FLUC OFF)。
+# ---------------------------------------------------------------------------
+
+def _state_of(parts):
+    """粒子 → 高速追跡の状態 S (n, 11)。S[:, :6] は内部座標 (px は p で割った値)"""
+    from . import track6n as _n
+    ph = parts[0].ph
+    S = _n.make_state(np.zeros((len(parts), 6)), ph)
+    for k, p in enumerate(parts):
+        S[k, :6] = p.c
+        S[k, 6] = p.dv
+        S[k, 7], S[k, 8], S[k, 9] = p.pxr0, p.pyr0, p.zr0
+    return S
+
+
+def _state_back(parts, S):
+    for k, p in enumerate(parts):
+        p.c[:] = S[k, :6]
+        p.dv = float(S[k, 6])
+        p.pxr0, p.pyr0, p.zr0 = float(S[k, 7]), float(S[k, 8]), float(S[k, 9])
+
+
+def _kernel_rs():
+    from . import track6n as _n
+    return _n.make_rs(RNG.seed)
+
+
+def _tradk_sol(p: _Particle, al, bz, bx=0.0, by=0.0, psi=0.0):
+    """v2: SOL 領域の中の放射とスピンの歳差。p.c は力学的運動量、p.pxr0.. は刻みの前の力学的運動量。
+    bz、(bx, by) はその刻みの磁場 (1/m、p0 で規格化)、psi は端の縦磁場の積分 (入口 +ψ、出口 −ψ。ψ = Im Σ k_n (x+iy)^(n+1)/(n+1)!)。
+    運動量の向きの磁場の積分 ∫B∥dl/(Bρ) = [(bz pz + bx px + by py)·al/pz + psi]/(1+δ) を sprot に渡す"""
+    if _POL:
+        c = p.c
+        pxm = 0.5 * (p.pxr0 + c[1])
+        pym = 0.5 * (p.pyr0 + c[3])
+        pzm = 1.0 + _pxy2dpz(pxm, pym)
+        p.bpar = (bz * al + (bx * pxm + by * pym) * al / pzm + psi) / (1.0 + c[5])
+    _tradk_core(p, al, 0.0)
+    p.bpar = None
+
+
+def _spin_only(p: _Particle, px0, py0, px1, py1):
+    """v2: 長さのない蹴り (向き (px0, py0) → (px1, py1)) のスピンの歳差だけ (放射なし)。垂直な磁場による回転 (1 + aγ)θ"""
+    if not _POL or (px0 == px1 and py0 == py1):
+        return
+    dpz0 = _pxy2dpz(px0, py0)
+    dpz = _pxy2dpz(px1, py1)
+    dpx = px1 - px0
+    dpy = py1 - py0
+    ppx = py1 * dpz0 - dpz * py0 + dpy
+    ppy = dpz * px0 - px1 * dpz0 - dpx
+    ppz = px1 * py0 - py1 * px0
+    pp = p.ph.p0 * (1.0 + p.c[5])
+    keep = p.bpar
+    p.bpar = 0.0
+    _sprot(p, px0 + dpx * 0.5, py0 + dpy * 0.5, ppx, ppy, ppz, 0.0, _e._p2h(pp), pp, 0.0, 1.0, 0.0)
+    p.bpar = keep
+
+
+def _sol_drift_v2(p: _Particle, al, bz, krad):
+    """v2: 領域内の DRIFT。写像と放射は tdrift_solenoid と同じ (高速追跡と同じ軌道)、スピンは _tradk_sol"""
+    if not (krad and _POL) or bz == 0.0:
+        if bz != 0.0:
+            _tdrift_solenoid(p, al, bz, krad)
+        else:
+            _tdrift_free(p, al)
+        return
+    c = p.c
+    bzp = bz / (1.0 + c[5])
+    pxi = c[1] + bzp * c[2] * 0.5
+    pyi = c[3] - bzp * c[0] * 0.5
+    zi = c[4]
+    _tdrift_solenoid(p, al, bz, False)
+    c[1] += bzp * c[2] * 0.5
+    c[3] -= bzp * c[0] * 0.5
+    p.pxr0, p.pyr0, p.zr0 = pxi, pyi, zi
+    _tradk_sol(p, al, bz)
+    bzp = bz / (1.0 + c[5])
+    c[1] -= bzp * c[2] * 0.5
+    c[3] += bzp * c[0] * 0.5
+
+
+def _sol_bend_v2(p: _Particle, al, bz, kx, ky, krad):
+    """v2: 領域内の BEND の 1 刻み (一様な双極 By = kx/al、Bx = ky/al とソレノイド)。写像と放射は tdrift (高速追跡の tdrift_bz1 と同じ)"""
+    if not (krad and _POL):
+        _tdrift_kick(p, al, kx, ky, krad, bz)
+        return
+    c = p.c
+    bzp = bz / (1.0 + c[5])
+    pxi = c[1] + bzp * c[2] * 0.5
+    pyi = c[3] - bzp * c[0] * 0.5
+    zi = c[4]
+    _tdrift_kick(p, al, kx, ky, False, bz)
+    c[1] += bzp * c[2] * 0.5
+    c[3] -= bzp * c[0] * 0.5
+    p.pxr0, p.pyr0, p.zr0 = pxi, pyi, zi
+    _tradk_sol(p, al, bz, ky / al, kx / al)
+    bzp = bz / (1.0 + c[5])
+    c[1] -= bzp * c[2] * 0.5
+    c[3] += bzp * c[0] * 0.5
+
+
+class _RadHook:
+    """track6n_ext.sol_mult_full の放射を、この module の tradk (スピンつき) で行う"""
+
+    def __init__(self, parts, prm=None):
+        self.parts = parts
+        self.first = True
+        self.last = False
+        self.akr = None
+        if prm is not None and prm[0] != 0.0:
+            self.akr = [a / prm[0] for a in prm[2][:prm[1] + 1]]       # K_n/L (回した系)
+
+    def _field(self, x, y):
+        """(bx, by, ψ): By + i Bx = Σ k_n z^n/n!、ψ = Im Σ k_n z^(n+1)/(n+1)!"""
+        if self.akr is None:
+            return 0.0, 0.0, 0.0
+        z = complex(x, y)
+        f = 0j
+        g = 0j
+        zn = 1.0 + 0j
+        fact = 1.0
+        for n, k in enumerate(self.akr):
+            f += k * zn / fact
+            zn *= z
+            fact *= (n + 1)
+            g += k * zn / fact
+        return f.imag, f.real, g.imag
+
+    def setr0(self, S, n, bz):
+        if _POL:
+            for p in self.parts:
+                p.bsi = 0.0
+
+    def tradk(self, S, n, al, bz):
+        for k, p in enumerate(self.parts):
+            c = S[k, :6]                      # 行の view
+            keep = p.c
+            p.c = c
+            p.dv = float(S[k, 6])
+            p.pxr0, p.pyr0, p.zr0 = float(S[k, 7]), float(S[k, 8]), float(S[k, 9])
+            bzp = bz / (1.0 + c[5])
+            c[1] += bzp * c[2] * 0.5
+            c[3] -= bzp * c[0] * 0.5
+            bx, by, psi = self._field(c[0], c[2]) if _POL else (0.0, 0.0, 0.0)
+            _tradk_sol(p, al, bz, bx, by, (psi if self.first else 0.0) - (psi if self.last else 0.0))
+            p.setr0()
+            S[k, 7], S[k, 8], S[k, 9] = p.pxr0, p.pyr0, p.zr0
+            bzp = bz / (1.0 + c[5])
+            c[1] -= bzp * c[2] * 0.5
+            c[3] += bzp * c[0] * 0.5
+            S[k, 6] = p.dv
+            p.c = keep
+        self.first = False
+
+
+def _trots(p: _Particle, fr, ent):
+    """tsol.f trots (track6n_ext.trots1 と同じ式) + スピンの回転 (rad かつ calpol: s ← R s)"""
+    r, dx, dy, dz = fr
+    c = p.c
+    pxi, pyi = c[1], c[3]
+    pzi = 1.0 + _pxy2dpz(pxi, pyi)
+    xi, yi = (c[0], c[2]) if ent else (c[0] - dx, c[2] - dy)
+    xf = r[0, 0] * xi + r[0, 1] * yi
+    yf = r[1, 0] * xi + r[1, 1] * yi
+    zf = r[2, 0] * xi + r[2, 1] * yi
+    pxf = r[0, 0] * pxi + r[0, 1] * pyi + r[0, 2] * pzi
+    pyf = r[1, 0] * pxi + r[1, 1] * pyi + r[1, 2] * pzi
+    pzf = r[2, 0] * pxi + r[2, 1] * pyi + r[2, 2] * pzi
+    c[1], c[3] = pxf, pyf
+    if ent:
+        c[0] = xf - pxf / pzf * zf + dx
+        c[2] = yf - pyf / pzf * zf + dy
+    else:
+        c[0] = xf - pxf / pzf * zf
+        c[2] = yf - pyf / pzf * zf
+    c[4] = c[4] + zf / pzf + dz - p.dv * dz
+    if _POL:
+        p.s = r @ p.s
+
+
+def _sol_edge(p: _Particle, pr, rad):
+    """SOL の端 (track6n_ext.k_sol_edge と同じ): trots、tsfrin、F1 の放射 (tradks。スピンの歳差も)"""
+    rot, r, dx, dy, dz, dbz, bz0, bz1, f1, radok = pr
+    c = p.c
+    krad = rad and radok
+    if rot == 1:
+        _trots(p, (r, dx, dy, dz), True)
+    if krad:
+        bzp = 0.5 * bz0 / (1.0 + c[5])
+        p.pxr0 = c[1] + bzp * c[2]
+        p.pyr0 = c[3] - bzp * c[0]
+        p.zr0 = c[4]
+        if _POL:
+            p.bsi = 0.0
+    _tsfrin(p, dbz)
+    if krad:
+        bzp = 0.5 * bz1 / (1.0 + c[5])
+        c[1] += bzp * c[2]
+        c[3] -= bzp * c[0]
+        _tradk_sol(p, f1, 0.0)
+        bzp = 0.5 * bz1 / (1.0 + c[5])
+        c[1] -= bzp * c[2]
+        c[3] += bzp * c[0]
+        p.setr0()
+    if rot == -1:
+        _trots(p, (r, dx, dy, dz), False)
+
+
+def _tsol_region_v2(parts, elements, i, rad, trf0, rfsw):
+    """v2: SOL 領域を track6n_ext.compile_sol_region の表 (高速追跡と同じ) に沿って進める。戻り値は終点の添字"""
+    from . import track6n as _n
+    from . import track6n_ext as _x
+    ph = parts[0].ph
+
+    class _Col:
+        def __init__(self):
+            self.items = []
+
+        def _add(self, k, p, name, cnt, sm):
+            self.items.append((k, p))
+    col = _Col()
+    ke = _x.compile_sol_region(col, elements, i, ph)
+    for j, (kind, pr) in enumerate(col.items):
+        el = elements[i + j]
+        if kind == _n.K_NONE:
+            continue
+        if kind == _x.K_SOL_FRIN:
+            for p in parts:
+                _tsfrin(p, pr[0])
+        elif kind == _x.K_SOL_EDGE:
+            for p in parts:
+                _sol_edge(p, pr, rad)
+        elif kind == _x.K_SOL_DRIFT:
+            al, bz, radok = pr
+            for p in parts:
+                _sol_drift_v2(p, al, bz, rad and radok)
+        elif kind == _x.K_SOL_QUAD:
+            _tquad_sol(parts, el, pr[5], rad and pr[6])
+        elif kind == _x.K_SOL_BEND:
+            al, bz, kx, ky, radok = pr
+            nd = (1 + int(abs(bz * al) / 0.02)) if (rad and radok) else 1        # k_sol_bend と同じ刻み
+            for _ in range(nd):
+                for p in parts:
+                    _sol_bend_v2(p, al / nd, bz, kx / nd, ky / nd, rad and radok)
+        elif kind == _x.K_SOL_MULT:
+            prm, bz = pr
+            S = _state_of(parts)
+            th = math.atan2(prm[8], prm[7])
+            for p in parts:
+                _spin_rot_z(p, th, True)
+            _x.sol_mult_full(S, len(parts), ph, prm, bz, trf0, False, rfsw, rad, _FLUC, _kernel_rs(), hook=_RadHook(parts, prm))
+            _state_back(parts, S)
+            for p in parts:
+                _spin_rot_z(p, th, False)
+        elif kind == _x.K_MULT:
+            _tmulti_ens(parts, el, rad and _g(el, 'RAD') == 0.0 and el.L != 0.0)
+        elif kind == _n.K_CAV or kind == _n.K_DRIFT:
+            for p in parts:
+                _step_el(p, el, trf0, rfsw, rad)
+        elif kind == _n.K_APERT:
+            raise NotImplementedError('track6: ソレノイド領域内の APERT (スピン追跡の経路) は未対応')
+        else:
+            raise NotImplementedError(f'track6: ソレノイド内の要素 {type(el).__name__} ({el.name}) は未対応')
+        for p in parts:
+            if not np.all(np.isfinite(p.c)):
+                raise FloatingPointError(f'track6: {el.name} で発散: {p.c}')
+    return ke
+
+
+def _und_b(x, y, s, F0, G0, dph, Kz, Kx, Ky, Qx, Qy):
+    """アンジュレータの磁場 (Bx, By, Bs) = rot A、A = (ff, gg, 0) (und._und_a のポテンシャル。1/m、p0 で規格化)"""
+    sn, cs = math.sin(Kz * s), math.cos(Kz * s)
+    snp, csp = math.sin(Kz * s + dph), math.cos(Kz * s + dph)
+    fy = (Ky * F0 / Kz * math.cos(Kx * x) * math.sinh(Ky * y) * sn
+          - Qy * Qy * G0 / Qx / Kz * math.sinh(Qx * x) * math.cos(Qy * y) * snp)
+    gx = (-G0 * Qx / Kz * math.cos(Qy * y) * math.sinh(Qx * x) * snp
+          + Kx * Kx * F0 / Ky / Kz * math.sinh(Ky * y) * math.cos(Kx * x) * sn)
+    by = F0 * math.cos(Kx * x) * math.cosh(Ky * y) * cs - Qy * G0 / Qx * math.sinh(Qx * x) * math.sin(Qy * y) * csp
+    bx = G0 * math.cos(Qy * y) * math.cosh(Qx * x) * csp - Kx * F0 / Ky * math.sinh(Ky * y) * math.sin(Kx * x) * cs
+    return bx, by, gx - fy
+
+
+def _und_v2(parts, el, rad):
+    """v2: UND (und.py) を track6 の経路で。磁場があれば刻みごとに [写像 (und_seg1) → 放射とスピンの歳差 (tradk)]"""
+    from . import und as _un
+    ph = parts[0].ph
+    pr = _un.compile_und(el, ph.pgev)
+    S = _state_of(parts)
+    n = len(parts)
+    rs = _kernel_rs()
+    if pr[1] == 0.0 and pr[2] == 0.0:
+        _un.k_und(S, n, *pr, ph.p0, ph.h0)
+        _state_back(parts, S)
+        return
+    (nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds) = pr
+    krad = rad and _g(el, 'RAD') == 0.0
+    if not krad:
+        _un.k_und_field(S, n, *pr, ph.p0, ph.h0, False, False, rs, ph.anrad, ph.cuc)
+        _state_back(parts, S)
+        return
+    for k, p in enumerate(parts):
+        c = S[k, :6]
+        keep = p.c
+        p.c = c
+        if _POL:
+            p.bsi = 0.0
+        for j in range(nslice):
+            # 刻みの前の向き (力学的運動量 / p)。入口 (j=0) は und_seg1 が正準運動量からポテンシャルを引く
+            if j == 0:
+                a0x, a0y = _un._und_a(c[0], c[2], 0.0, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
+                pn = 1.0 + c[5]
+                vx0, vy0 = c[1] - a0x / pn, c[3] - a0y / pn
+                _spin_only(p, c[1], c[3], vx0, vy0)          # 入口のポテンシャルの飛び (PHI≠0 のとき) は薄い蹴り
+            else:
+                vx0, vy0 = c[1], c[3]
+            z0 = c[4]
+            aox, aoy = _un._und_a(c[0], c[2], (j + 1) * ds, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
+            _un.und_seg1(k, S, j, j + 1, nslice + 1, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, False, False, rs, ph.p0, ph.anrad, ph.cuc)
+            # 高速追跡 (und_seg1 の rad の枝) と同じ: 刻みの後の向きは、刻みの前の位置のポテンシャルで作った (px − ax)/p
+            anx, any_ = _un._und_a(c[0], c[2], (j + 1) * ds, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
+            pn = 1.0 + c[5]
+            c[1] += (anx - aox) / pn
+            c[3] += (any_ - aoy) / pn
+            p.pxr0, p.pyr0, p.zr0 = vx0, vy0, z0
+            p.dv = float(S[k, 6])
+            if _POL:
+                bx_, by_, bs_ = _und_b(c[0], c[2], (j + 0.5) * ds, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
+                _tradk_sol(p, ds, bs_, bx_, by_)       # 運動量の向きの磁場 (軸を外れると Bs≠0) も歳差に入れる
+            else:
+                _tradk_sol(p, ds, 0.0)
+            S[k, 6] = p.dv
+        # 出口: 力学的運動量の向き → 正準運動量 (外側。出口の位置のポテンシャルを足す: und_seg1 の j1 = nslice と同じ)
+        a1x, a1y = _un._und_a(c[0], c[2], nslice * ds, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
+        pn = 1.0 + c[5]
+        _spin_only(p, c[1], c[3], c[1] + a1x / pn, c[3] + a1y / pn)      # 出口のポテンシャルの飛び (周期の途中で終わるとき) は薄い蹴り
+        c[1] += a1x / pn
+        c[3] += a1y / pn
+        h1 = math.sqrt(1.0 + (pn * ph.p0)**2)
+        S[k, 6] = -c[5] * (1.0 + pn) / h1 / (h1 + pn * ph.h0) + S[k, 10]
+        p.c = keep
+    _state_back(parts, S)
+    for p in parts:
+        p.setr0()
+
+
+def _phsrot_v2(parts, el, rad):
+    """v2: PHSROT (phsrot.py) を track6 の経路で。位相空間の写像 (減衰・拡散つき) だけで、スピンは動かさない
+    (PHSROT は磁場を持たないので歳差の大きさが決まらない)"""
+    from . import phsrot as _prt
+    ph = parts[0].ph
+    pr = _prt.compile_phsrot(el)
+    S = _state_of(parts)
+    rs = _kernel_rs()
+    _prt.k_phsrot(S, len(parts), *pr, rad, _FLUC, rs, ph.p0, ph.h0)
+    RNG.seed = int(rs[0])
+    _state_back(parts, S)
+    for p in parts:
+        p.setr0()
+
+
+def _tsol_region(parts, elements, i, rad, trf0=0.0, rfsw=False):
     """tsol.f tsol: elements[i] が BOUND≠0 の SOL (始点)。終点 (次の BOUND≠0 の SOL) まで全粒子を追跡し、
-    終点の添字を返す。GEO/CHI/DX/DY/DZ=0 (trots 恒等)、F1=0 (tradks なし) のみ。"""
+    終点の添字を返す。GEO/CHI/DX/DY/DZ=0 (trots 恒等)、F1=0 (tradks なし) のみ。
+    v2 は _tsol_region_v2 (ずれ・回転・F1、領域内の BEND・MULT・CAVI も)"""
+    if _compat.v2():
+        return _tsol_region_v2(parts, elements, i, rad, trf0, rfsw)
     ph = parts[0].ph
     sb = elements[i]
     if any(_g(sb, k) for k in ('DX', 'DY', 'DZ', 'CHI1', 'CHI2', 'CHI3')):
@@ -2069,6 +2510,7 @@ def _tsol_region(parts, elements, i, rad):
     for l in range(i + 1, ke + 1):
         el = elements[l]
         name = type(el).__name__
+        _sol_check_type(el)
         if _is_apert(el):
             raise NotImplementedError('track6: ソレノイド領域内の APERT (tsol の tapert1) は未対応')
         if isinstance(el, Drift):
@@ -2120,8 +2562,14 @@ def _step_el(p: _Particle, el, trf0, rfsw, rad):
     elif name == 'TCavity':
         raise NotImplementedError('track6: TCAVI は track6n (高速追跡) だけが扱う')
     elif name == 'Undulator':
+        if _compat.v2():
+            _und_v2([p], el, rad)
+            return
         raise NotImplementedError('track6: UND は track6n (高速追跡) だけが扱う')
     elif name == 'PhsRot':
+        if _compat.v2():
+            _phsrot_v2([p], el, rad)
+            return
         raise NotImplementedError('track6: PHSROT は K64 で動作しない (docs/21 B38)')
     elif el.L == 0.0:
         return          # MARK など
@@ -2192,27 +2640,83 @@ def _apert_pass(parts, nal, el, zlost):
     return np_
 
 
-def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0):
+def _tapert_loss(full, nal, alost, zlost, mark, nodrop=False):
+    """tturn の tapert (limittrack + 矩形 ±LOSSAMPL、|z| ≤ LOSSDZ)。track6n.k_apert と同じ判定。落ちた粒子は末尾へ寄せ、
+    p.lost = mark (要素の番号 l_track, 周) を付ける。新しい nal を返す"""
+    xlim = alost * 3.0
+    drop = [False] * nal
+    for i, p in enumerate(full[:nal]):
+        c = p.c
+        for k in (0, 2):
+            v = c[k]
+            if v != v:
+                c[k] = xlim
+            elif abs(v) > xlim:
+                c[k] = math.copysign(xlim, v)
+        for k in (1, 3):
+            v = c[k]
+            if v != v:
+                c[k] = 0.9999
+            elif abs(v) > 0.9999:
+                c[k] = math.copysign(0.9999, v)
+        v = c[4]
+        if v != v:
+            c[4] = 1e10
+        elif abs(v) > 1e10:
+            c[4] = math.copysign(1e10, v)
+        ok = -alost < c[0] < alost and -alost < c[2] < alost and abs(c[4]) <= zlost and c[5] == c[5]
+        drop[i] = (not ok) and not nodrop      # nodrop: K64 の最初の tapert (l_track=0) は落とす印が 0 になり落ちない (B33)
+        if drop[i]:
+            p.lost = mark
+    i, np_ = 0, nal
+    while i < np_:
+        if drop[i]:
+            while i < np_ - 1 and drop[np_ - 1]:
+                np_ -= 1
+            if not drop[np_ - 1] and np_ - 1 != i:
+                full[i], full[np_ - 1] = full[np_ - 1], full[i]
+                drop[i], drop[np_ - 1] = False, True
+            np_ -= 1
+        i += 1
+    return np_
+
+
+def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0, alost=None, l0=0, kturn=1, lt_prev=0, nodrop_first=False):
     """tturn.f tturn1: 要素を外側、粒子を内側に回す。放射ありの BEND/QUAD/MULT はスライスごとに
-    全粒子を進めてから全粒子の tradk (SAD と同じ順で乱数を引く)"""
+    全粒子を進めてから全粒子の tradk (SAD と同じ順で乱数を引く)。
+    alost (LOSSAMPL) を渡すと、最初の要素の前・15 要素ごと・区間の終わりに tapert (LOSSAMPL・LOSSDZ) を行い、発散した粒子も
+    例外にせず落とす (スピン追跡など track6 の経路の損失)。l0: 区間の最初の要素の番号 − 1、kturn: 周の番号、lt_prev: 直前の l_track"""
     if nal is None:
         nal = len(parts)
     full = parts                     # 落ちた粒子は末尾へ寄せる (parts[:nal] が生きている)
     skip_to = -1
+    la = 0
     for i, el in enumerate(elements):
         if i <= skip_to:
             continue
         name = type(el).__name__
+        if alost is not None:
+            if la <= 0:
+                nal = _tapert_loss(full, nal, alost, zlost, (l0 + i if i >= 1 else lt_prev, kturn),
+                                   nodrop=nodrop_first and i == 0)
+                if nal <= 0:
+                    break
+                la = 15
+            la -= 1
         parts = full[:nal]
         if _is_apert(el):
+            n0 = nal
             nal = _apert_pass(full, nal, el, zlost)
+            for p in full[nal:n0]:
+                p.lost = (l0 + i + 1, kturn)
             if nal <= 0:
                 break
+            la = 15
             continue
         if name == 'Solenoid':
             if _g(el, 'BOUND') == 0.0:
                 raise NotImplementedError('track6: BOUND=0 の SOL (領域外)')
-            skip_to = _tsol_region(parts, elements, i, rad)
+            skip_to = _tsol_region(parts, elements, i, rad, trf0, rfsw)
             continue
         krad = rad and _g(el, 'RAD') == 0.0 and el.L != 0.0
         if isinstance(el, Bend):
@@ -2224,9 +2728,18 @@ def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0):
         else:
             for p in parts:
                 _step_el(p, el, trf0, rfsw, rad)
+        if alost is not None:
+            if any(not np.all(np.isfinite(p.c)) for p in parts):
+                nal = _tapert_loss(full, nal, alost, zlost, (l0 + i + 1, kturn))      # 発散した粒子はここで落とす
+                la = 15
+                if nal <= 0:
+                    break
+            continue
         for p in parts:
             if not np.all(np.isfinite(p.c)):
                 raise FloatingPointError(f'track6: {el.name} で発散: {p.c}')
+    if alost is not None and nal > 0:
+        nal = _tapert_loss(full, nal, alost, zlost, (l0 + len(elements), kturn))
     return nal
 
 
@@ -2234,7 +2747,8 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
                     trf0: float = 0.0, rfsw: bool = True, rad: bool = False, fluc: bool = False,
                     seed=None, charge: float = 1.0, amass: float = None, progress: int = 0,
                     fshift: float = 0.0, circ: float = None, spins=None, radpol: bool = True,
-                    alive=None, zlost: float = 100.0):
+                    alive=None, zlost: float = 100.0, alost=None, l0: int = 0, kturn0: int = 1, lt_prev: int = 0,
+                    lost_info=None, nodrop_first: bool = False):
     """TrackParticles[{1, coords}, 1, 1, nturn] 相当 (始点 = 終点 = ラティスの先頭)。
     coords: (np, 6) の {x, px/p0, y, py/p0, z, δ}。nturn 周後の座標を返す。
     trf0: Emittance[] (emit) で決まった同期位置 (SAD の global trf0)。
@@ -2270,7 +2784,9 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
     try:
         for it in range(nturn):
             try:
-                nal = _tturn1(parts, elements, trf0, rfsw, rad, nal, zlost)
+                nal = _tturn1(parts, elements, trf0, rfsw, rad, nal, zlost, alost=alost, l0=l0, kturn=kturn0 + it,
+                              lt_prev=(lt_prev if it == 0 else l0 + len(elements)),
+                              nodrop_first=nodrop_first and it == 0)
             except FloatingPointError as e:
                 raise FloatingPointError(f'{it + 1} 周目: {e}') from None
             if not rfsw:
@@ -2286,6 +2802,11 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
         _POL = False
     for p in parts:
         out[p.idx] = p.out()
+    if lost_info is not None:
+        for p in parts[nal:]:
+            lm = getattr(p, 'lost', None)
+            if lm is not None and p.idx not in lost_info:
+                lost_info[p.idx] = lm
     if alive is not None:
         for p in parts[nal:]:
             alive[p.idx] = False

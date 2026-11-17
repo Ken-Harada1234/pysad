@@ -369,7 +369,7 @@ class SADEnvironment:
         if tn in ('BeamBeam', 'Coord', 'TCavity', 'Undulator', 'PhsRot', 'Map'):
             return                  # DX 等は変換のパラメータ (params)。誤差の属性にしない
         if tn in ('Drift', 'Marker', 'Monitor') and getattr(el, '_sad_type', None) != 'BEND':
-            for k in ('DX', 'DY'):
+            for k in ('DX', 'DY', 'RADIUS'):     # RADIUS: DRIFT の真空ダクトの半径 (SPAC。spch.py。Element["RADIUS", ..] で読める)
                 if self._numv(params.get(k)):
                     setattr(el, k, float(params[k]))
             return
@@ -401,7 +401,7 @@ class SADEnvironment:
                 el.KnL = knl
             if ksl:
                 el.KsL = ksl
-            for k in ('ANGLE', 'E1', 'E2', 'VOLT', 'FREQ', 'PHI', 'HARM', 'BZ', 'DVOLT', 'DPHI', 'AUTOPHI', 'CHI2', 'TAPER'):
+            for k in ('ANGLE', 'E1', 'E2', 'VOLT', 'FREQ', 'PHI', 'HARM', 'BZ', 'DVOLT', 'DPHI', 'AUTOPHI', 'CHI2', 'TAPER', 'RADIUS'):
                 v = params.get(k)
                 if self._numv(v):
                     setattr(el, k, float(v))
@@ -486,7 +486,9 @@ class SADEnvironment:
 
         elif etype in ('SOL', 'SOLENOID'):
             from .elements import Solenoid
-            return Solenoid(name=name, L=L)
+            # SOL に長さのキーワードは無い (SADHelp: BZ DX DY DZ DPX DPY BOUND GEO CHI1 CHI2 CHI3 DBZ DISFRIN)。
+            # L を書いても K64 (gs) は軌道・光学・S 座標 (LENG)・周長のどれにも使わないので、要素の長さは 0 にする
+            return Solenoid(name=name, L=0.0)
 
         elif etype in ('CAVI', 'CAVITY', 'RFCA', 'LCAV'):
             # HARM: 高調波数 → FREQ = HARM * c / C (C = 周長)
@@ -1917,3 +1919,195 @@ def parse_main_commands(src: str) -> List[dict]:
             except ValueError:
                 pass
     return cmds
+
+
+# ---------------------------------------------------------------------------
+# MAIN 部の一般の代入 `NAME = 式;` (gs で確かめた MAIN の式の読み方。docs/history/v2_changes_C2_misc.md §4)
+# ---------------------------------------------------------------------------
+
+# MAIN の式で使える関数 (gs で確かめたもの: LOG は常用対数、LN は自然対数。ABS・ASIN・ACOS・Sqrt[...] は gs でも構文エラー)
+_MAIN_FUNCS = {'SIN': math.sin, 'COS': math.cos, 'TAN': math.tan, 'ATAN': math.atan, 'SQRT': math.sqrt,
+               'EXP': math.exp, 'LOG': math.log10, 'LN': math.log, 'COSH': math.cosh}
+_MAIN_TOKEN = re.compile(r'\s*(?:(?P<num>(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?)|(?P<id>[A-Za-z_$][\w$]*)|(?P<op>[-+*/^()]))')
+
+
+def _blank_comments(src: str) -> str:
+    """注釈 `! ... 行末` と `(* ... *)` を同じ長さの空白にする (改行と文字の位置は変えない。文字列の中の ! は残す)"""
+    out = list(src)
+    i, n, q = 0, len(src), False
+    while i < n:
+        c = src[i]
+        if q:
+            if c == '"':
+                q = False
+        elif c == '"':
+            q = True
+        elif c == '!':
+            while i < n and src[i] != '\n':
+                out[i] = ' '
+                i += 1
+            continue
+        elif c == '(' and src[i + 1:i + 2] == '*':
+            j = src.find('*)', i + 2)
+            j = n if j < 0 else j + 2
+            for k in range(i, j):
+                if src[k] != '\n':
+                    out[k] = ' '
+            i = j
+            continue
+        i += 1
+    return ''.join(out)
+
+
+def _eval_main_expr(text: str, vars_: dict) -> float:
+    """MAIN の式 (gs の MAIN の文法のうち、gs で動作を確かめた範囲) を評価する。評価できなければ ValueError。
+      数 [単位] (`10 DEG`、`1.5 M + 20 CM`。単位は大文字小文字を問わない)、+ - * / ^ (^ は右結合)、( )、先頭の符号、
+      関数 SIN COS TAN ATAN SQRT EXP LOG(常用) LN COSH (丸括弧、大文字小文字を問わない)、PI、前に代入した変数 (大文字小文字を区別)。
+    gs でエラーになる形 (`2*-A`、`2^-1`、`2 A`、`Sqrt[16]`、未定義の名前) は ValueError (gs は変数に前の値などを入れる。pysad は代入しない)"""
+    toks = []
+    pos = 0
+    t = text.rstrip()
+    while pos < len(t):
+        m = _MAIN_TOKEN.match(t, pos)
+        if not m:
+            raise ValueError(text)
+        toks.append((m.lastgroup, m.group(m.lastgroup)))
+        pos = m.end()
+    p = [0]
+
+    def peek():
+        return toks[p[0]] if p[0] < len(toks) else (None, None)
+
+    def atom():
+        k, v = peek()
+        p[0] += 1
+        if k == 'num':
+            x = float(v)
+            k2, v2 = peek()
+            if k2 == 'id':
+                if v2.upper() not in _SAD_UNITS:
+                    raise ValueError(text)
+                p[0] += 1
+                x *= _SAD_UNITS[v2.upper()]
+            return x
+        if k == 'id':
+            if peek() == ('op', '('):
+                f = _MAIN_FUNCS.get(v.upper())
+                if f is None:
+                    raise ValueError(text)
+                p[0] += 1
+                x = expr()
+                if peek() != ('op', ')'):
+                    raise ValueError(text)
+                p[0] += 1
+                try:
+                    return float(f(x))
+                except (ValueError, OverflowError):
+                    raise ValueError(text)
+            if v in vars_:
+                return float(vars_[v])
+            if v == 'PI':
+                return math.pi
+            raise ValueError(text)
+        if (k, v) == ('op', '('):
+            x = expr()
+            if peek() != ('op', ')'):
+                raise ValueError(text)
+            p[0] += 1
+            return x
+        raise ValueError(text)
+
+    def power():
+        x = atom()
+        if peek() == ('op', '^'):
+            p[0] += 1
+            try:
+                return float(x ** power())
+            except (ZeroDivisionError, OverflowError, TypeError):
+                raise ValueError(text)
+        return x
+
+    def term():
+        x = power()
+        while peek() in (('op', '*'), ('op', '/')):
+            o = peek()[1]
+            p[0] += 1
+            y = power()
+            if o == '*':
+                x *= y
+            else:
+                if y == 0.0:
+                    raise ValueError(text)
+                x /= y
+        return x
+
+    def expr():
+        sign = 1.0
+        if peek() in (('op', '-'), ('op', '+')):
+            sign = -1.0 if peek()[1] == '-' else 1.0
+            p[0] += 1
+        x = sign * term()
+        while peek() in (('op', '+'), ('op', '-')):
+            o = peek()[1]
+            p[0] += 1
+            y = term()
+            x = x + y if o == '+' else x - y
+        return x
+
+    x = expr()
+    if p[0] != len(toks) or isinstance(x, complex):
+        raise ValueError(text)
+    return x
+
+
+def parse_main_assignments(src: str) -> List[dict]:
+    """MAIN 部の `NAME = 式;` を書かれた順に拾う (要素・ビームラインの定義、`:=`、括弧の中の文は拾わない)。
+    戻り値の各項: {'name' (書かれたままの名前), 'kind' ('MOMENTUM' | 'SET' (_MAIN_SET_NAMES) | 'VAR'), 'value' (float。評価できなければ None),
+                  'start', 'end' (右辺の src の中の位置)}。式の中の変数は、それより前の代入の値 (gs と同じく定義の時点の値)"""
+    b = _blank_comments(src)
+    out: List[dict] = []
+    vars_: dict = {}
+    depth, q, st = 0, False, 0
+    n = len(b)
+    for i in range(n + 1):
+        c = b[i] if i < n else ';'
+        if q:
+            if c == '"':
+                q = False
+            continue
+        if c == '"':
+            q = True
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth = max(0, depth - 1)
+        elif c == ';' and (depth == 0 or i == n):
+            stmt = b[st:i]
+            m = re.match(r'\s*([A-Za-z_$][\w$]*)\s*=(?![=.>])', stmt)
+            if m:
+                name = m.group(1)
+                U = name.upper()
+                kind = 'MOMENTUM' if U == 'MOMENTUM' else ('SET' if U in _MAIN_SET_NAMES else 'VAR')
+                try:
+                    val = _eval_main_expr(stmt[m.end():], vars_)
+                except (ValueError, RecursionError):
+                    val = None
+                if val is not None:
+                    vars_[name] = val
+                    if kind != 'VAR':
+                        vars_[U] = val
+                out.append({'name': name, 'kind': kind, 'value': val, 'start': st + m.end(), 'end': i})
+            st = i + 1
+    return out
+
+
+def rewrite_main_assignments(src: str, assigns: List[dict]) -> str:
+    """一般の代入のうち、右辺が MAIN の関数 `SIN(…)` や PI を含むもの (下の SADScript 風の読み取りでは評価できない) を、評価した数値に書き換える。
+    後の要素定義 `L=名前` がその値を使えるようにするため。ほかの文は変えない"""
+    for a in reversed(assigns):
+        if a['kind'] != 'VAR' or a['value'] is None:
+            continue
+        rhs = src[a['start']:a['end']]
+        if re.search(r'[A-Za-z_$][\w$]*\s*\(', rhs) or re.search(r'(?<![\w$])PI(?![\w$])', rhs):
+            src = src[:a['start']] + ' ' + repr(float(a['value'])) + src[a['end']:]
+    return src

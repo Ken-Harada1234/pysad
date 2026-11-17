@@ -5,10 +5,13 @@
     srot[:, 0:3]  スピン歳差の 1 周行列 (srotinit で単位行列)
     srot[:, 3:9]  (x,px,y,py,z,pz) の初期座標に対する 1 周のスピン微分 (脱偏極ベクトル)
     gintd[3]      sflc·anp·(bt·h1·p/al1)² のスピン軸成分の積算 (Sokolov-Ternov の傾き)。1/sdamp が偏極時間
-K64 の癖をそのまま写している (docs/21 B55〜B57):
+K64 の癖 (docs/21 B55〜B57) と v2 (compat.v2()) の扱い (docs/history/v2_changes_A.md):
   - tadddsg の呼び出しは dgz に dgx を渡す (dsg は spequ でしか使わず、spequ は呼ばれないので無影響。ここでは dsg を持たない)
-  - tbrote の srot 更新は列ごとに行を逐次更新する (rr·srot の行列積ではない: 2 行目が更新後の 1 行目を使う)
-  - serot は c1 を更新してから c2 の更新に使う
+  - tbrote の srot 更新は列ごとに行を逐次更新する (rr·srot の行列積ではない: 2 行目が更新後の 1 行目を使う)。v2 は行列積 (B56)
+  - serot の c2 = (−s·c1' + c2)/c と、tradke の末尾の srot(3,:) = (−sp·srot(1,:)' + srot(3,:))/cp は、更新後の値 (') を使うが、
+    展開すると −s·c1 + c·c2 で、正しい回転をその場で計算する書き方 (誤りではない。v2 でも同じ)
+  - 平衡偏極度: K64 の spdepol は NaN (cerfc の桁あふれ)。v2 は桁あふれを直したうえで、線形のスピン軌道結合の脱偏極率
+    (slim_depolarization) を使う (B55)
 """
 from __future__ import annotations
 
@@ -85,6 +88,11 @@ def tradke_spin(st, c):
     xpzb = xpz + (bsir0 + bzh * 2.0 * al) * pr ** 2
     dxpzb = dxpz.copy()
     dxpzb[5] += 2.0 * (bsir0 + bzh * 2.0 * al) * pr
+    bd0 = getattr(st, 'bsi_d0', None)
+    if bd0 is not None and (bd0.any() or st.bsi_d1.any()):
+        # v2 (B58): bsir0 (端の縦磁場の積分 ψ(x, y)) の軌道についての微分。K64 は bsir0 を定数として扱い、
+        # スピン軌道結合 (脱偏極ベクトル) に端の縦磁場の y・x 依存が入らない (追跡のスピンの軌道依存と BEND で 6 倍違う)
+        dxpzb = dxpzb + (bd0 + st.bsi_d1 @ tr2) * pr ** 2
     pxh = (pxr0 + px) / pr * 0.5
     pyh = (pyi + py) / pr * 0.5
     dpxh = (tr2[1, :] + dpxr0) / pr * 0.5
@@ -196,6 +204,11 @@ def tbrote_rr(alg, phig, dtheta, dchi2, ent):
 def tbrote_spin(st, alg, phig, dtheta, dchi2, ent):
     rr = tbrote_rr(alg, phig, dtheta, dchi2, ent)
     srot = st.srot
+    from . import compat
+    if compat.v2():
+        # v2 (B56): 行列積 (I + rr)·srot。回転 (直交行列) なので srot(:,1:3) の直交性が保たれる
+        st.srot[:, :] = srot + rr @ srot
+        return
     for i in range(9):                            # K64: 行を逐次更新 (2 行目以降は更新後の値を使う)
         srot[0, i] = rr[0, :] @ srot[:, i] + srot[0, i]
         srot[1, i] = rr[1, :] @ srot[:, i] + srot[1, i]
@@ -337,7 +350,15 @@ def _indn(i, i1, i2, idx, imx, is_):
     return tuple(ind)
 
 
+def _erfcx(z):
+    """exp(z²)·erfc(z) (複素数、桁あふれなし) = w(i z) (Faddeeva 関数)"""
+    from scipy.special import wofz
+    return complex(wofz(1j * complex(z)))
+
+
 def _spintrm(rm, dx, amx, ams, ssprd):
+    from . import compat
+    _v2 = compat.v2()
     for ind in list(rm.keys()):
         mat = rm[ind]
         cphi = complex(-(ind[6] * dx[0] + ind[7] * dx[1] + ind[8] * dx[2]),
@@ -350,7 +371,12 @@ def _spintrm(rm, dx, amx, ams, ssprd):
                 cm = cm0
             else:
                 cb = -_cexp1(-cphi) / a
-                cm = -mat * M_2PI * M_SQRTPI * np.exp(cb ** 2 - cphi) * _cerfc(cb) / a
+                if _v2:
+                    # v2 (B55): exp(cb²)·erfc(cb) を桁あふれしない形 (Faddeeva 関数 w(i·cb)) で計算する。
+                    # K64 は |cb|>18 で exp(cb²-cφ) → 0 と erfc の漸近式の exp(-cb²) → ∞ を別々に計算して NaN になる
+                    cm = -mat * M_2PI * M_SQRTPI * np.exp(-cphi) * _erfcx(cb) / a
+                else:
+                    cm = -mat * M_2PI * M_SQRTPI * np.exp(cb ** 2 - cphi) * _cerfc(cb) / a
         rm[ind] = cm0
         k0 = ind[:6] + (0,) * 7
         if k0 in rm:
@@ -433,8 +459,76 @@ def srequpol(srot, sps, params, demit, sdamp, r):
     return equpol, rm1
 
 
-def spin_results(st, em, ph) -> dict:
-    """temit.f tecalc の calpol 部: srot1 = srot(:,1:3) → spnorm → srequpol。偏極時間 = 1/sdamp/revolution frequency [s]"""
+def _cross_mat(v):
+    return np.array([[0.0, -v[2], v[1]], [v[2], 0.0, -v[0]], [-v[1], v[0], 0.0]])
+
+
+def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False):
+    """線形のスピン軌道結合 (SLIM / Derbenev-Kondratenko の脱偏極項) による 1 周あたりの脱偏極率 (v2 の Polarization が使う)。
+
+    要素 i ごとに emit6d.tturne (POL) で、軌道の行列 T_i (減衰込み)、その要素の放射の拡散行列 B_i (要素の出口での共分散)、
+    スピンの回転 R_i、スピン軌道結合 D_i (軌道のずれ u による余分の回転ベクトル D_i u。K64 の回転の向きは ds = s × g なので
+    s' = (1 − [D_i u]×) R_i s。追跡 (track6 のスピン) の 1 周の応答と 2〜6% で一致することを確かめた) を取る。
+    スピンの周期解 n(u) = n0 + N u (N は 3x6) は  N_{i+1} = (R_i N_i + [n0_{i+1}]× D_i) T_i^{-1}、N_N = N_0 を満たす。
+    放射で軌道が ξ (共分散 B_i) だけ跳ぶと、スピンは変わらず n が N ξ だけ動くので、偏極は 1 周あたり
+        rate = (1/2) Σ_i tr(N⊥ B_i N⊥ᵀ)   (N⊥ は n0 に垂直な成分)
+    だけ減る。これは DK の式の (11/18)|γ ∂n/∂γ|² の項と同じ (B_i の δδ 成分 = (55/24√3) r_e ƛ γ^5/|ρ|³ ds)。
+    戻り dict(rate, n0, N0 (入口の ∂n/∂u)、rev (平衡分布での n の広がり (1/2) tr(N⊥ Σ N⊥ᵀ) を呼び出し側が作るための N0))。
+    限界: 軌道の振幅について 1 次 (シンクロトロン側帯などの高次の共鳴は入らない)、運動論的偏極 (b·γ∂n/∂γ) の項は入らない"""
+    from . import emit6d as _e6
+    old = _e6.POL_MODE
+    _e6.POL_MODE = True
+    secs = []
+    c = np.array(cod, dtype=float)
+    try:
+        for el in els:
+            st = _e6.tturne([el], c, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
+            secs.append((st.T + st.D, st.B.copy(), st.srot[:, 0:3].copy(), st.srot[:, 3:9].copy()))
+            c = st.cod.copy()
+    finally:
+        _e6.POL_MODE = old
+    rtot = np.eye(3)
+    for _T, _B, R, _D in secs:
+        rtot = R @ rtot
+    w, v = np.linalg.eig(rtot)
+    k = int(np.argmin(np.abs(w - 1.0)))
+    n0 = np.real(v[:, k])
+    n0 = n0 / np.linalg.norm(n0)
+    if abs(min(n0)) > abs(max(n0)):
+        n0 = -n0
+    tinv = [np.linalg.inv(T) for T, _B, _R, _D in secs]
+
+    def prop(N):
+        n = n0
+        out = []
+        for (T, _B, R, D), ti in zip(secs, tinv):
+            n = R @ n
+            N = (R @ N + _cross_mat(n) @ D) @ ti
+            out.append((N, n))
+        return N, out
+    cvec, _ = prop(np.zeros((3, 6)))
+    a = np.zeros((18, 18))
+    for j in range(18):
+        e = np.zeros(18)
+        e[j] = 1.0
+        a[:, j] = (prop(e.reshape(3, 6))[0] - cvec).ravel()
+    try:
+        nn0 = np.linalg.solve(np.eye(18) - a, cvec.ravel()).reshape(3, 6)
+    except np.linalg.LinAlgError:
+        nn0 = np.linalg.lstsq(np.eye(18) - a, cvec.ravel(), rcond=None)[0].reshape(3, 6)
+    _, out = prop(nn0)
+    rate = 0.0
+    for (_T, B, _R, _D), (N, n) in zip(secs, out):
+        npp = (np.eye(3) - np.outer(n, n)) @ N
+        rate += 0.5 * float(np.trace(npp @ B @ npp.T))
+    return dict(rate=rate, n0=n0, N0=nn0)
+
+
+def spin_results(st, em, ph, els=None, cod=None, trf0=0.0, rfsw=False, radcod=False) -> dict:
+    """temit.f tecalc の calpol 部: srot1 = srot(:,1:3) → spnorm → srequpol。偏極時間 = 1/sdamp/revolution frequency [s]。
+    v2 (B55) で els・cod が渡されたとき: 平衡偏極度は線形のスピン軌道結合 (slim_depolarization) の脱偏極率から
+    P = (8/5√3)·sdamp/(sdamp + rate) とする (K64 の spdepol は NaN、桁あふれを直しても追跡と 3 桁以上合わない)"""
+    from . import compat
     srot = st.srot
     srot1 = srot[:, 0:3].copy()
     sps, smu, sdamp = spnorm(srot, st.gintd)
@@ -444,5 +538,19 @@ def spin_results(st, em, ph) -> dict:
     frev = ph.omega0 / M_2PI
     with np.errstate(all='ignore'):
         taup = 1.0 / sdamp / frev if sdamp != 0.0 else float('inf')
-    return dict(srot=srot.copy(), srot1=srot1, sps=sps, smu=smu, sdamp=sdamp, nup=smu / M_2PI,
-                equpol=equpol, spm=spm, taup=taup, gintd=st.gintd.copy())
+    res = dict(srot=srot.copy(), srot1=srot1, sps=sps, smu=smu, sdamp=sdamp, nup=smu / M_2PI,
+               equpol=equpol, spm=spm, taup=taup, gintd=st.gintd.copy())
+    if compat.v2() and els is not None and cod is not None:
+        res['equpol_k64'] = equpol                      # K64 の spdepol の式 (桁あふれだけ直したもの)。参考値
+        try:
+            sl = slim_depolarization(els, ph, cod, trf0=trf0, rfsw=rfsw, radcod=radcod)
+            rate = sl['rate']
+            with np.errstate(all='ignore'):
+                pol = PST * sdamp / (sdamp + rate) if (sdamp + rate) != 0.0 else float('nan')
+            npp = (np.eye(3) - np.outer(sl['n0'], sl['n0'])) @ sl['N0']
+            res.update(equpol=np.array([pol, 0.0, 0.0]), depol_rate=rate, spin_orbit=sl['N0'],
+                       spin_spread=0.5 * float(np.trace(npp @ em['beam_matrix'] @ npp.T)),
+                       taudep=(1.0 / rate / frev if rate > 0.0 else float('inf')))
+        except Exception as exc:            # 求まらないときは NaN (K64 と同じ表示) にして理由を残す
+            res.update(equpol=np.array([float('nan'), 0.0, 0.0]), depol_error=str(exc))
+    return res

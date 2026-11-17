@@ -368,6 +368,12 @@ def csroysetup(rho, zl, aw, r56, r65, dz, nj, mphi, zspan, dt):
     aj = np.zeros(nj)
     omega = np.zeros(nj)
     zjn = np.zeros((nj, mphi))        # [j, k] = zjn(k+1, j+1)
+    dpjn = np.zeros((nj, mphi))
+    from . import compat as _compat
+    _v2 = _compat.v2()
+    if _v2 and i1 == 0:
+        # v2: しきい値 rhoth 以上の点が無い (K64 の csrjasign は i1 が未初期化のまま進む)。失敗として返す
+        return wi, np.zeros(nj), np.zeros(nj), zjn, dpjn, np.zeros(nj), -1
     rhoj = np.zeros(nj)
     # csrjasign
     dj = ajz[i1 - 1] / nj if i1 > 0 else 0.0
@@ -402,13 +408,17 @@ def csroysetup(rho, zl, aw, r56, r65, dz, nj, mphi, zspan, dt):
         rhoj[i] = rho[iz - 1] + (zi_ - iz) * (rho[iz] - rho[iz - 1])
         srho += rhoj[i]
         for kk in range(mphi):
-            zjn[i, kk] = p                 # zjn(k,i)=z の後の dpjn(k,i)=p が同じ記憶域を上書きする (B59)
+            if _v2:
+                zjn[i, kk] = z             # v2 (B59 の修正): zjn は位置、dpjn は運動量 (別の記憶域)
+                dpjn[i, kk] = p
+            else:
+                zjn[i, kk] = p             # zjn(k,i)=z の後の dpjn(k,i)=p が同じ記憶域を上書きする (B59)
             z = z + p * r56 * dt1
             f = csrwkick(nrh, z, zc, dz, v, ddv, aw, r65)
             p = p + dt1 * f
     srho = 1.0 / 2.0 / math.pi / srho
     rhoj = np.sqrt(rhoj * srho)
-    return wi, aj, omega, zjn, np.zeros((nj, mphi)), rhoj, 0
+    return wi, aj, omega, zjn, dpjn, rhoj, 0
 
 
 def csroymat(wi0, omega, zjn, rhoj, bw, dz, nj, nphi, nr):

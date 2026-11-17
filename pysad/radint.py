@@ -23,6 +23,7 @@ from typing import List
 import numpy as np
 
 from . import emit6d as _E
+from . import compat as _compat
 from .maintrack import fmt_g, fmt_f
 
 NRI = 12
@@ -36,11 +37,19 @@ ELRADI = _E.ELRADI
 FINEST = _E.FINEST
 CVELOC = _E.CVELOC
 def _f32(x):
-    """Fortran の単精度定数 (INTGRL.f は 1e27, 0.2, 1.E-6, 2.3026 を倍精度の式に単精度のまま書いている)"""
+    """Fortran の単精度定数 (INTGRL.f は 1e27, 0.2, 1.E-6, 2.3026 を倍精度の式に単精度のまま書いている)。
+    v2 (B12) は倍精度の値をそのまま使う"""
+    if _compat.v2():
+        return float(x)
     return float(np.float32(x))
 
 
-COEFF = (ELRADI / (ELMASS ** 3) / 3.0) * _f32(1e27)       # 1e27 は単精度 (9.99999988e26): ELOSS が相対 1.15e-8 小さくなる
+def _coeff():
+    """COEFF = r_e/(mc²)³/3·1e27。K64 は 1e27 が単精度 (B12)、v2 は倍精度"""
+    return (ELRADI / (ELMASS ** 3) / 3.0) * _f32(1e27)
+
+
+COEFF = (ELRADI / (ELMASS ** 3) / 3.0) * float(np.float32(1e27))   # K64 の値: 1e27 は単精度 (9.99999988e26)。ELOSS が相対 1.15e-8 小さくなる (v2 は _coeff())
 CO4 = math.sqrt(55.0 / 32.0 / math.sqrt(3.0) * ELRADI / FINEST) / ELMASS * 1e9
 CO5 = CO4 ** 2
 
@@ -400,7 +409,14 @@ def compute(ffs, rows, stale_rho=None):
     nlat = ffs.nlat
     g.msgs = []
     g.dp0 = ffs.dp0()
+    v2 = _compat.v2()
+    if v2:
+        # v2: モジュール変数の使い回しをやめる (B07: 2 回目の RADINT の DL の初期値が前回の値、先頭が SEXT だと DL=0 で NaN)
+        g.DL = g.DKL0 = g.DKL1 = g.DKL2 = 0.0
     rhob, rho0 = stale_rho if stale_rho is not None else default_stale_rho(els)
+    ncav = 0
+    freqs = []
+    skipped = []
     p0 = ffs.momentum()
     amass = float(ffs.I.get('MASS', ELMASS))            # SAD の amass = 大域変数 MASS (既定 elmass)
     ph = _E._Phys(p0, 1.0, amass=amass)                  # _Phys の第 1 引数は運動量 [eV]
@@ -444,6 +460,8 @@ def compute(ffs, rows, stale_rho=None):
                 g.DKL0 = ang / irp
                 g.DKL1 = rkl1 / irp
                 totang = totang + ang
+                if v2 and stale_rho is None and rle != 0.0:
+                    rhob = rho0 = rle / ang          # v2 (B06): その BEND 自身の L/ANGLE
                 if e1 != 0.0:
                     g.bedge(e1)
                     g.tedge(dieg)
@@ -472,6 +490,16 @@ def compute(ffs, rows, stale_rho=None):
                     g.tcal(i, 0)
                 g.tcal(irp + 1, 1)
                 did = True
+        elif cls == 'Sextupole' and v2:
+            # v2 (B07): 六極は自分の長さを DL に、K2 を DKL2 に使う (軌道のずれによる双極・四極成分)。L=0 の薄い六極は放射積分に寄与しない
+            g.TETA = float(getattr(el, 'ROTATION', 0.0) or 0.0)
+            if rle != 0.0:
+                g.DL = rle
+                g.DKL2 = ffs.get_value(el, 'K2')
+                g.sextu(g.TETA, g.TWPMG[DXC], g.TWPMG[DYC])
+                ir = 0
+                g.tcal(1, 1)
+                did = True
         elif cls == 'Sextupole':
             g.TETA = float(getattr(el, 'ROTATION', 0.0) or 0.0)
             g.sextu(g.TETA, g.TWPMG[DXC], g.TWPMG[DYC])
@@ -482,12 +510,24 @@ def compute(ffs, rows, stale_rho=None):
                 g.msgs.append(' L(SEXTUPOLE) EQ 0. SET L=0.2')
             did = True
         elif cls == 'Cavity':
-            rfv = ffs.get_value(el, 'VOLT')
-            rharm = ffs.get_value(el, 'HARM')
-            freq = ffs.get_value(el, 'FREQ')
+            v1 = ffs.get_value(el, 'VOLT')
+            rharm1 = ffs.get_value(el, 'HARM')
+            freq1 = ffs.get_value(el, 'FREQ')
             raw = ffs.env._elements.get(el.name, {})
-            if float(raw.get('FREQ', 0.0) or 0.0) == 0.0 and rharm != 0.0:
-                freq = 0.0                     # HARM だけの定義 (pysad の parser が FREQ を補った分は SAD の値 0 に戻す)
+            if float(raw.get('FREQ', 0.0) or 0.0) == 0.0 and rharm1 != 0.0:
+                freq1 = 0.0                    # HARM だけの定義 (pysad の parser が FREQ を補った分は SAD の値 0 に戻す)
+            if v2:
+                # v2 (B13): 電圧は総和 (位相 PHI は見ない)。周波数・ハーモニックは電圧のある最初の空洞のもの
+                if v1 != 0.0:
+                    rfv = rfv + v1
+                    freqs.append((freq1, rharm1))
+                    if ncav == 0:
+                        rharm, freq = rharm1, freq1
+                    ncav += 1
+            else:
+                rfv, rharm, freq = v1, rharm1, freq1
+        elif v2 and cls in ('Multipole', 'Solenoid') and _has_field(ffs, el):
+            skipped.append(el.name)
         if did:
             for i in range(1, NRI + 1):
                 di[i] = _symps(g.FUNI[i, 1:], ir) + dieg[i]
@@ -497,8 +537,30 @@ def compute(ffs, rows, stale_rho=None):
     last = rows[nlat - 1]
     qx = last.mux / (2.0 * math.pi)
     qy = last.muy / (2.0 * math.pi)
+    if v2:
+        if skipped:
+            names = sorted(set(skipped))
+            g.msgs.append(' RADINT: MULT/SOL with fields are NOT included (%d elements: %s%s)'
+                          % (len(skipped), ' '.join(names[:6]), ' ...' if len(names) > 6 else ''))
+        if len(set(freqs)) > 1:
+            g.msgs.append(' RADINT: cavities have different FREQ/HARM; RF quantities use the first cavity and the sum of VOLT')
     res = dict(RI=RI, energy=energy, rlt=rlt, totang=totang, rfv=rfv, rharm=rharm, freq=freq, qx=qx, qy=qy)
     return res, g.msgs
+
+
+def _has_field(ffs, el):
+    """MULT・SOL が場を持つか (RADINT は MULT と SOL を積分しない: v2 は警告を出す)"""
+    for k in ('KnL', 'KsL'):
+        d = getattr(el, k, None)
+        if isinstance(d, dict) and any(float(v or 0.0) != 0.0 for v in d.values()):
+            return True
+    for k in ('K0', 'BZ', 'ANGLE'):
+        try:
+            if float(getattr(el, k, 0.0) or 0.0) != 0.0:
+                return True
+        except (TypeError, ValueError):
+            pass
+    return False
 
 
 def _fd(x, w, d):
@@ -511,8 +573,9 @@ def _fd(x, w, d):
     return (mant + f'D{int(e):+03d}').rjust(w)
 
 
-def report(ffs, rows, stale_rho=None) -> List[str]:
-    """INTGRL の出力 (1 行 1 要素のリスト、末尾の改行なし)"""
+def report(ffs, rows, stale_rho=None, chrom=None) -> List[str]:
+    """INTGRL の出力 (1 行 1 要素のリスト、末尾の改行なし)。
+    chrom = (GX, GY): v2 (R2) で ffscmd が渡す、運動量をずらした光学のチューンの微分 dν/dδ。None なら K64 の積分 -I9/4π (磁石の中だけの ∮γ ds で、色収差にならない)"""
     res, msgs = compute(ffs, rows, stale_rho)
     RI = res['RI']
     energy = res['energy']
@@ -563,6 +626,7 @@ def report(ffs, rows, stale_rho=None) -> List[str]:
     w('   I4U = ' + fmt_g(RI[4], 15, 7) + '    I4V = ' + fmt_g(RI[7], 15, 7))
     w('   I5U = ' + fmt_g(RI[5], 15, 7) + '    I5V = ' + fmt_g(RI[8], 15, 7))
     with np.errstate(all='ignore'):
+        COEFF = _coeff()
         eloss = 2.0e6 * COEFF * RI[2] * energy ** 4
         alphax = RI[1] / rlt
         alphay = RI[6] / rlt
@@ -577,6 +641,8 @@ def report(ffs, rows, stale_rho=None) -> List[str]:
         emitv = CO5 * energy * energy * RI[8] / (RI[2] - RI[7])
         chrx = -RI[9] / 4.0 / pi
         chry = -RI[10] / 4.0 / pi
+        if chrom is not None:
+            chrx, chry = chrom
     w('')
     w(' NU-X-  = ' + fmt_f(res['qx'], 8, 5) + '    NU-Y- = ' + fmt_f(res['qy'], 8, 5))
     w(' MOMENTUM COMPACTION FAC X  = ' + fmt_g(alphax, 12, 4))
@@ -609,10 +675,13 @@ def report(ffs, rows, stale_rho=None) -> List[str]:
         w(' NATURAL BUNCH LENGTH (mm)  = ' + fmt_f(sigl, 12, 6))
         if xi < 100:
             tauq = taue / 1000.0 * math.exp(xi) / 2.0 / xi
-            try:
-                tauq = math.exp(_f32(2.3026) * tauq)
-            except OverflowError:
-                tauq = float('inf')
+            if _compat.v2():
+                tauq = tauq / 3600.0           # v2 (R1): 秒 → 時間。K64 は exp(2.3026·tauq) = 10^(秒) を「hours」として出す
+            else:
+                try:
+                    tauq = math.exp(_f32(2.3026) * tauq)
+                except OverflowError:
+                    tauq = float('inf')
             w(' QUANTUM LIFETIME(hours)    = ' + _fd(tauq, 12, 4))
         else:
             w(' Q.LIFE IS TOO LONG      XI = ' + _fd(xi, 12, 4))

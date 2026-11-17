@@ -241,6 +241,13 @@ def run_track(ffs, spec: dict, write):
         return None
     if np0 <= 0:
         raise SADError('TRACK: NPART must be positive')
+    if nturn == -1:
+        # track.f:157: TURNS=-1 は trpt=.true. (輸送路の 1 回通過: tracka.f の ttinit → Entrance / Exit の統計)。
+        # v2 だけ (measure.track_trpt)。k64 は従来どおり下のリングの経路 (gs は MAIN の TRACK が SIGSEGV で参照が無い)
+        from . import compat as _compat
+        if _compat.v2():
+            from .measure import track_trpt
+            return track_trpt(ffs, spec, write)
     nturn = abs(nturn)
     t_start = time.time()
     # emit の結果 (正規モード行列 r と閉軌道 codin)。MAIN の EMIT が作る。まだなら黙って作る
@@ -274,7 +281,7 @@ def run_track(ffs, spec: dict, write):
     lost_turn = np.full(np0, _MAXTURN, dtype=np.int64)
     log = np.zeros((np0, 6))
     nlog = np.zeros(1, dtype=np.int64)
-    rs = np.array([_t6.RNG.seed], dtype=np.int64)
+    rs = _tn.make_rs(_t6.RNG.seed)
     flc = bool(rad and fluc)
     alost = float(g.get('LOSSAMPL', 1.0))
     zlost = float(g.get('LOSSDZ', 100.0))

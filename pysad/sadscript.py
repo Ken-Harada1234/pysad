@@ -28,6 +28,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 
+from . import compat as _compat
+
 # ============================================================================ 値の型
 INF = float('inf')
 NAN = float('nan')
@@ -347,8 +349,8 @@ def tokenize(src: str) -> List[Tok]:
         if m:
             nm_ = m.group(0)
             # `X・System`X・Global`X は、Begin[…] で文脈を作らない限り大域の X (OpticsPlot.n は `OpticsPlot=System`OpticsPlot=…)
-            if '`' in nm_ and nm_.count('`') == 1 and (nm_[0] == '`' or nm_.startswith(('System`', 'Global`'))) and len(nm_) > nm_.index('`') + 1:
-                nm_ = nm_[nm_.index('`') + 1:]
+            if '`' in nm_ and nm_.count('`') == 1 and (nm_[0] == '`' or nm_.startswith(('System`', 'Global`'))) and len(nm_) > nm_.index('`') + 1                     and not (_CUR is not None and (_CUR._ctx_cur != '`' or _CUR._ctx_path != _ROOT_PATH)):
+                nm_ = nm_[nm_.index('`') + 1:]          # 文脈の中 (BeginPackage / Begin) では _ctx_resolve が大域の記号として解決する
             toks.append(Tok('sym', nm_, line, pre))
             i = m.end()
             pre = False
@@ -770,7 +772,58 @@ def tokenize_full(src: str) -> List[Tok]:
             out.append(Tok('pat', (name, len(blanks), typ), t.line, t.pre))
         else:
             out.append(t)
+    if _CUR is not None:
+        out = _CUR._ctx_tokens(out)          # 文脈 (BeginPackage / Begin) の名前解決。利用者のコードを読むときだけ
     return out
+
+
+# ---- 文脈 (名前空間)。_CUR はいま利用者のコードを読んでいる Interp (SAD の Packages を読む間と初期化中は None)
+_CUR = None
+_ROOT_PATH = ['`', 'System`']
+_SYS_FIXED = ('Real', 'String', 'List', 'Symbol', 'Complex', 'Null', 'True', 'False', 'Infinity', 'INF', 'NaN', 'Pi', 'E', 'I', 'Function',
+              'Rule', 'RuleDelayed', 'Constant', 'HoldAll', 'HoldFirst', 'HoldRest', 'HoldNone', 'Undefined', 'Automatic', 'All', 'None',
+              'Vector', 'Pattern', 'Blank', 'Integer', 'Number', 'Expression', 'Character', 'Word', 'Byte', 'EndOfFile')
+_SYSNAMES = None
+
+
+def _sysnames():
+    """pysad が記号として扱う名前 (pysad のソース中の S('Name')・.name == 'Name' の文字列)。文脈の名前解決で System` の記号とみなす。
+    大文字か $ で始まる 2 文字以上の名前だけ (1 文字は I・E・D・N)。最初に文脈を使ったときに 1 回だけ集める"""
+    global _SYSNAMES
+    if _SYSNAMES is None:
+        names = set(_SYS_FIXED)
+        rx1 = re.compile(r"\bS\(\s*'([A-Z$][A-Za-z0-9$]*)'\s*\)|\.name\s*(?:==|!=)\s*'([A-Z$][A-Za-z0-9$]*)'")
+        rx2 = re.compile(r"\.name\s+(?:not\s+)?in\s+\(([^)]*)\)")
+        rx3 = re.compile(r"'([A-Z$][A-Za-z0-9$]*)'")
+        here = os.path.dirname(os.path.abspath(__file__))
+        try:
+            files = [f for f in os.listdir(here) if f.endswith('.py')]
+        except OSError:
+            files = []
+        for f in files:
+            try:
+                txt = open(os.path.join(here, f), encoding='utf-8', errors='replace').read()
+            except OSError:
+                continue
+            for m in rx1.finditer(txt):
+                names.add(m.group(1) or m.group(2))
+            for m in rx2.finditer(txt):
+                names.update(rx3.findall(m.group(1)))
+        _SYSNAMES = {n for n in names if len(n) > 1 or n in ('I', 'E', 'D', 'N')}
+    return _SYSNAMES
+
+
+def _ctx_norm(c):
+    """文脈名の正規化: Stat`・`Stat`・"Stat`" → 'Stat`'、`・Global` → '`'"""
+    if isinstance(c, Sym):
+        c = c.name
+    if not isinstance(c, str) or not c:
+        raise SADError('General::wrongtype: Argument must be a context name (Name`)')
+    if not c.endswith('`'):
+        c += '`'
+    if len(c) > 1 and c[0] == '`':
+        c = c[1:]
+    return '`' if c in ('`', 'Global`') else c
 
 
 def _parse_prefix_pat(self: Parser, t: Tok):
@@ -1088,6 +1141,7 @@ def _autos(x) -> str:
 
 
 # SAD の Packages/Fit.n (PolynomialFit) をそのまま評価する。xa=0 のとき xl=1 になる SAD の癖もそのまま
+# v2 (compat.v2()、B18): xa=0 のときは平行移動が無いので係数は sl そのもの (K64 は xl=1 のまま二項係数の和を取って係数が壊れる)
 _PRELUDE = '''
 PolynomialFit[d_,nord_]:=Module[{{x,b}=Thread[d],
   s=Table[1,{Length[d]}],a,xa,sl,xl,cm,n,m,sx},
@@ -1104,12 +1158,22 @@ PolynomialFit[d_,nord_]:=Module[{{x,b}=Thread[d],
   xl=If[xa,Table[First[{xl,xl*=-xa}],{nord+1}],
       1];
   sx=sl*xl;
-  cm=Table[
+  cm=If[xa==0&&Compat$V2[],sl,Table[
     Take[sx,{m+1,nord+1}].
     Table[Factorial[n]/Factorial[n-m]/Factorial[m],{n,m,nord}],
-    {m,0,nord}]/xl;
+    {m,0,nord}]/xl];
   {cm,{Residual->Sqrt[(Plus@@((a.s-b)^2))/Length[d]]}}];
 '''
+
+
+def _exit_child(I, code=0):
+    """Fork[] の子プロセスを終える (バッファを流して os._exit。親と共有する後始末は走らせない: K64 の exit_without_hooks)"""
+    for st in (getattr(I, 'out', None), sys.stdout, sys.stderr):
+        try:
+            st.flush()
+        except Exception:
+            pass
+    os._exit(code)
 
 
 # ============================================================================ 評価器
@@ -1119,7 +1183,7 @@ _HOLD = {'Fit', 'FindRoot', 'NIntegrate', 'AccelerateParticles', 'Set', 'SetDela
          'CompoundExpression', 'SetAttributes', 'Protect', 'Unprotect', 'Clear', 'Hold', 'HoldForm', 'RuleDelayed',
          'Catch', 'Pattern', 'Blank', 'BlankSequence', 'BlankNullSequence', 'Optional', 'PatternTest', 'Condition',
          'Literal', 'TagSet', 'Return', 'Break', 'Continue', 'Message', 'Definition', 'Slot', 'SlotSequence',
-         'FFS$NumericalDerivative', 'Unevaluated', 'SetOptions', 'DefineOptions', 'Class', 'AutoLoad', 'AutoLoadSet', 'WithPriority', 'Priority', 'And', 'Or', 'At', 'StandardForm'}
+         'FFS$NumericalDerivative', 'Unevaluated', 'SetOptions', 'DefineOptions', 'Class', 'AutoLoad', 'AutoLoadSet', 'WithPriority', 'Priority', 'And', 'Or', 'At', 'StandardForm', 'Context'}
 
 
 def is_num(v):
@@ -1182,8 +1246,99 @@ class Interp:
         self.stopped = False
         self.set_hooks = {}
         self.globals['Null'] = Null
+        # 文脈 (BeginPackage / Begin)。_ctx_cur は $Context、_ctx_path は $ContextPath、_ctx_syms は文脈つきの記号 ('Stat`x')、
+        # _root_syms は利用者のコードが大域 (`) に作った記号。_pkg_loading > 0 の間 (SAD の Packages の読み込み) は文脈を無視する
+        self._ctx_cur = '`'
+        self._ctx_path = list(_ROOT_PATH)
+        self._ctx_stack = []
+        self._pkg_stack = []
+        self._ctx_syms = set()
+        self._root_syms = set()
+        self._pkg_loading = 0
+        self._ctx_track = False
         self._install_builtins()
         self.run(_PRELUDE, 'script')
+        self._ctx_track = True
+        self._ctx_publish()
+
+    # ------------------------------------------------------------------ 文脈 (名前空間)
+    def _ctx_publish(self):
+        self.globals['$Context'] = Sym(self._ctx_cur)
+        self.globals['$ContextPath'] = [Sym(c) for c in self._ctx_path]
+
+    def _ctx_known(self, n):
+        return (n in self.builtins or n in self.globals or n in self.downvalues or n in self.autoload
+                or n in getattr(self, 'attributes', ()))
+
+    def _ctx_is_system(self, n):
+        return n in _sysnames() or (n not in self._root_syms and self._ctx_known(n))
+
+    def _ctx_resolve(self, n):
+        """文脈の中で読んだ名前 n を、記号の実際の名前にする (K64: 現在の文脈、$ContextPath の順に探し、無ければ現在の文脈に作る)"""
+        if n.endswith('`'):
+            return n                                  # 文脈名そのもの (Stat`)
+        if '`' in n:
+            ctx, _, base = n.rpartition('`')
+            ctx = _ctx_norm(ctx + '`')
+            if ctx in ('`', 'System`'):
+                if ctx == '`' and base not in self._root_syms and not self._ctx_known(base):
+                    self._root_syms.add(base)         # `x: 文脈の中から大域 (`) に作る記号
+                return base
+            self._ctx_syms.add(ctx + base)
+            return ctx + base
+        cur = self._ctx_cur
+        if cur == '`':
+            if n in self._root_syms:
+                return n
+        elif cur + n in self._ctx_syms:
+            return cur + n
+        for c in self._ctx_path:
+            if c == cur:
+                continue
+            if c == '`':
+                if n in self._root_syms:
+                    return n
+            elif c == 'System`':
+                if self._ctx_is_system(n):
+                    return n
+            elif c + n in self._ctx_syms:
+                return c + n
+        if cur == '`':
+            self._root_syms.add(n)
+            return n
+        self._ctx_syms.add(cur + n)
+        return cur + n
+
+    def _ctx_tokens(self, toks):
+        active = self._ctx_cur != '`' or self._ctx_path != _ROOT_PATH
+        if not active:
+            # 文脈を使っていない間は、利用者のコードが新しく作った大域の記号を覚えるだけ (あとで文脈に入ったときに System` の記号と区別する)
+            rs = self._root_syms
+            for t in toks:
+                if t.kind == 'sym':
+                    n = t.val
+                    if n not in rs and '`' not in n and not self._ctx_known(n):
+                        rs.add(n)
+                    elif '`' in n and not n.endswith('`'):
+                        self._ctx_syms.add(n)
+                elif t.kind == 'pat' and t.val[0]:
+                    n = t.val[0]
+                    if n not in rs and '`' not in n and not self._ctx_known(n):
+                        rs.add(n)
+            return toks
+        out = []
+        prev = None
+        for t in toks:
+            if t.kind == 'sym' and not (prev is not None and prev.kind == 'op' and prev.val in ('::', '?', '@')):
+                n2 = self._ctx_resolve(t.val)
+                if n2 != t.val:
+                    t = Tok('sym', n2, t.line, t.pre)
+            elif t.kind == 'pat':
+                name, nb, typ = t.val
+                t = Tok('pat', (self._ctx_resolve(name) if name else name, nb, self._ctx_resolve(typ) if typ else typ), t.line, t.pre)
+            out.append(t)
+            prev = t
+        return out
 
     # ------------------------------------------------------------------ 変数
     def lookup(self, name):
@@ -1229,6 +1384,9 @@ class Interp:
     def run(self, src: str, mode: str = 'ffs'):
         """mode 'ffs': 文の先頭語が FFS コマンドなら ffs_handler へ。'script': SADScript のみ"""
         result = Null
+        global _CUR
+        cur_saved = _CUR
+        _CUR = self if (getattr(self, '_ctx_track', False) and not self._pkg_loading) else None
         self._run_depth = getattr(self, '_run_depth', 0) + 1
         stmts = self.split_statements(src)
         semis = list(self._last_semis)
@@ -1299,7 +1457,10 @@ class Interp:
                         traceback.print_exc()
                     self.out.write('???General::wrongtype: ' + type(e).__name__ + ': ' + str(e) + chr(10))
         finally:
+            _CUR = cur_saved
             self._run_depth -= 1
+            if self._run_depth == 0 and getattr(self, '_forked_child', False):
+                _exit_child(self, 0)            # Fork[] の子は、最上位の文が尽きたら終わる (呼び出し元の Python に戻らない)
         return result
 
     _CTL = re.compile(r'\s*(REP(?:E(?:A(?:T)?)?)?|UNTIL|IF|ELSEIF|ELSE|ENDIF)(?![A-Za-z0-9$_])(.*)$', re.I | re.S)
@@ -1471,7 +1632,7 @@ class Interp:
                 depth = max(depth, 0)
                 stmt = src[stmt_start:i]
                 if stmt.strip():
-                    if c == chr(10) and self._incomplete(stmt):
+                    if c == chr(10) and (self._incomplete(stmt) or self._wake_table_open(stmt)):
                         i += 1
                         continue
                     out.append(stmt)
@@ -1488,6 +1649,17 @@ class Interp:
         if s[-1] == '*' and len(s) > 1 and (s[-2].isalnum() or s[-2] in '$_.}'):
             return False          # "free Q*" のようなワイルドカード (演算子ではない)
         return s[-1] in '+-*/^=,<>&|:@.~' and not s.endswith('=.')
+
+    @staticmethod
+    def _wake_table_open(stmt: str) -> bool:
+        """v2: 旧式の `WAKE L|T 要素 s1 w1 … ENDWAKE` (K64 の tfwake.f) の表は行をまたいでよい。ENDWAKE (または ;) が来るまで次の行に続く。
+        k64 モードでは従来どおり行で切る (K64 は WAKE を WAKECOMMAND[] に渡すだけで、表を読まない)"""
+        s = stmt.lstrip()
+        if s[:4].upper() != 'WAKE' or not _compat.v2():
+            return False
+        m = re.match(r'WAKE\s+([A-Za-z]+)(?:\s|$)', s, re.I)
+        return (m is not None and ('LONGITUDINAL'.startswith(m.group(1).upper()) or 'TRANSVERSE'.startswith(m.group(1).upper()))
+                and re.search(r'(?<![\w$])ENDWAKE(?![\w$])', s, re.I) is None)
 
     def _is_ffs_command(self, stmt: str) -> bool:
         s = stmt.strip()
@@ -1660,6 +1832,13 @@ class Interp:
         def _names(a):
             import fnmatch
             pat = a[0] if a and isinstance(a[0], str) else '*'
+            if '`' in pat:
+                # 文脈つきの名前。K64 は Names["Stat`*"] に {"Stat`"} を返す (文脈名だけ)。v2 はその文脈の記号の名前の一覧
+                from . import compat
+                hit = sorted(n for n in I._ctx_syms if fnmatch.fnmatchcase(n, pat) or fnmatch.fnmatchcase(n, pat.lstrip('`')))
+                if compat.v2():
+                    return hit
+                return sorted({n[:n.rindex('`') + 1] for n in hit})
             allnames = set(I.builtins) | set(I.downvalues) | set(I.globals) | set(I.autoload)
             return sorted(n for n in allnames if fnmatch.fnmatchcase(n, pat))
         self.builtins['Names'] = _names
@@ -1701,6 +1880,10 @@ class Interp:
         self._run_depth = depth + 1
         saved_frames = self.frames
         self.frames = []      # 関数の途中で自動読み込みされても、呼び出し元の引数・局所変数をパッケージに見せない
+        global _CUR
+        cur_saved = _CUR
+        _CUR = None           # SAD の Packages は文脈を無視して全部大域で読む (従来どおり)
+        self._pkg_loading += 1
         try:
             for st in self.split_statements(src):
                 try:
@@ -1711,6 +1894,8 @@ class Interp:
                         sys.stderr.write('[load %s] %s: %s\n    %s\n' % (os.path.basename(path), type(e).__name__, str(e)[:160],
                                                                          ' '.join(st.split())[:200]))
         finally:
+            self._pkg_loading -= 1
+            _CUR = cur_saved
             self._run_depth = depth
             self.frames = saved_frames
 
@@ -2527,7 +2712,10 @@ class Interp:
             # SAD: Print[Null] / ToString[Null] は "Null"。リストや関数の引数の中 (quote=True の再帰呼出し) では空
             return '' if quote else 'Null'
         if isinstance(v, Sym):
-            return v.name
+            n = v.name
+            if '`' in n and self._ctx_path != _ROOT_PATH and not n.endswith('`') and n[:n.rindex('`') + 1] in self._ctx_path:
+                return n[n.rindex('`') + 1:]          # gs: $ContextPath にある文脈の記号は、文脈名を付けずに表示する
+            return n
         if isinstance(v, Rule):
             return self.to_str(v.lhs, form, True) + (':>' if v.delayed else '->') + self.to_str(v.rhs, form, True)
         if isinstance(v, Expr):
@@ -2666,6 +2854,10 @@ class Interp:
                     rhs = I._close(rhs)
                 finally:
                     I._xs = old_xs_
+            if (not delayed and isinstance(lhs, Expr) and isinstance(lhs.head, Sym) and lhs.head.name == 'Shared' and len(lhs.args) == 1
+                    and not _is_pattern(lhs) and 'WriteShared' in I.builtins):
+                # shared.n: (Shared[n_]=v_)^:=WriteShared[n,v] (++・+= なども _set を通る)
+                return I.builtins['WriteShared']([I.eval(lhs.args[0]), I.eval(rhs)])
             # `(lhs = x_) ^:= body` で定義された UpValue (Tkinter.n のウィジェットの `w[Text]="abc"` や Tk$Echo=0 など)。
             # Set / SetDelayed の downvalue として保持してあるので、通常の代入の前に引く (第 1 引数は評価せずに照合する)
             if (isinstance(lhs, Expr) and isinstance(lhs.head, Sym) and not _is_pattern(lhs) and lhs.args and lhs.head.name not in ('Part', 'List', 'Symbol', 'Set', 'SetDelayed')
@@ -3034,13 +3226,18 @@ class Interp:
         B['While'] = _while
 
         def _for(args):
+            from . import compat
+            v2 = compat.v2()
             if len(args) != 4:
-                return Expr(S('For'), list(args))      # gs: For[ini_,cond_,incr_,body_] は 4 引数だけ (3 引数は未評価のまま)
+                if v2 and len(args) == 3:
+                    args = list(args) + [Null]         # v2: For[ini,cond,incr] は本体なしのループ (K64 は未評価のまま)
+                else:
+                    return Expr(S('For'), list(args))      # gs: For[ini_,cond_,incr_,body_] は 4 引数だけ (3 引数は未評価のまま)
             I.eval(args[0])
             try:
                 while truthy(I.eval(args[1])) is True:
                     try:
-                        if len(args) > 3:
+                        if v2:                         # K64 (gs) は 4 番目の引数 (本体) を実行せず incr だけを繰り返す (B71)
                             I.eval(args[3])
                     except _Continue:
                         pass
@@ -3049,6 +3246,11 @@ class Interp:
                 pass
             return Null
         B['For'] = _for
+
+        def _compat_v2(args):
+            from . import compat
+            return 1.0 if compat.v2() else 0.0
+        B['Compat$V2'] = _compat_v2
 
         def _which(args):
             if len(args) % 2 or not args:
@@ -4338,10 +4540,70 @@ class Interp:
                 I.write_unit(6, f'?Get: file not found {a[0]}\n')
                 return S('$Failed')
             src = open(path, encoding='utf-8', errors='replace').read()
+            pk = I.globals.get('PackagesDirectory')
+            if isinstance(pk, str) and pk and os.path.normcase(os.path.abspath(path)).startswith(os.path.normcase(os.path.abspath(pk))):
+                I._pkg_loading += 1            # SAD 自身の Packages: 文脈 (BeginPackage / Begin) は無視して大域で読む (load_package と同じ)
+                try:
+                    return I.run(src, 'ffs')
+                finally:
+                    I._pkg_loading -= 1
             return I.run(src, 'ffs')
         B['Get'] = _get
-        B['System'] = lambda a: (I.write_unit(6, f'[pysad] System[{a[0]!r}] は実行しません\n'), 0.0)[1]
-        B['Exit'] = lambda a: (_ for _ in ()).throw(SystemExit(0))
+
+        # ---- 文脈 (名前空間): BeginPackage / Begin / End / EndPackage / Context (init.n の定義と gs の実測に合わせた)
+        def _ctxargs(name, a):
+            return [_ctx_norm(x) for x in a if x is not Null]
+
+        def _beginpackage(a):
+            if I._pkg_loading or not I._ctx_track:
+                return Expr(S('BeginPackage'), list(a))
+            cs = _ctxargs('BeginPackage', a)
+            if not cs:
+                raise SADError('General::narg: Number of arguments is expected to be 1 or more in BeginPackage')
+            I._pkg_stack.append(list(I._ctx_path))
+            path = []
+            for c in cs + ['System`']:
+                if c not in path:
+                    path.append(c)
+            I._ctx_path = path
+            I._ctx_publish()
+            return [Sym(c) for c in path]
+        B['BeginPackage'] = _beginpackage
+
+        def _endpackage(a):
+            if I._pkg_loading or not I._ctx_track:
+                return Expr(S('EndPackage'), list(a))
+            I._ctx_path = I._pkg_stack.pop() if I._pkg_stack else list(_ROOT_PATH)
+            I._ctx_publish()
+            return [Sym(c) for c in I._ctx_path]
+        B['EndPackage'] = _endpackage
+
+        def _begin(a):
+            if I._pkg_loading or not I._ctx_track:
+                return Expr(S('Begin'), list(a))
+            cs = _ctxargs('Begin', a)
+            if len(cs) != 1:
+                raise SADError('General::narg: Number of arguments is expected to be 1 in Begin')
+            I._ctx_stack.append(I._ctx_cur)
+            I._ctx_cur = cs[0]
+            I._ctx_publish()
+            return Null
+        B['Begin'] = _begin
+
+        def _end(a):
+            if I._pkg_loading or not I._ctx_track:
+                return Expr(S('End'), list(a))
+            I._ctx_cur = I._ctx_stack.pop() if I._ctx_stack else '`'
+            I._ctx_publish()
+            return Null
+        B['End'] = _end
+        from . import miscfn as _miscfn
+        B['System'] = lambda a: _miscfn.system_command(I, a)
+        def _exit(a):
+            if getattr(I, '_forked_child', False):
+                _exit_child(I, int(a[0]) if a and is_num(a[0]) and not isinstance(a[0], complex) else 0)
+            raise SystemExit(0)
+        B['Exit'] = _exit
         B['Date'] = lambda a: [float(x) for x in time.localtime()[:6]]
         def _datestring(a):
             # DateString[] は現在、DateString[t] は t (1900-01-01 0:0:0 からの秒、または {Y,m,d[,H[,M[,S[,offset]]]]}) を mm/dd/yyyy hh:mm:ss に (SADHelp、gs で確認)

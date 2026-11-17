@@ -235,25 +235,261 @@ def install_misc(I):
 
 
 def install_parallel(I):
-    """shared.n の Parallelize (逐次実行) と Shared / OpenShared$ / ReadShared / WriteShared (プロセス内の表)。
-    K64 は fork して共有メモリで結果を集める。pysad は逐次: Parallelize[f, n, lshare, npara, opts] = {f[1], …, f[n]} (失敗は $Failed)。
-    Completion->g があれば結果に g を適用する。Fork は未対応 (プロセスの分岐は移植しない)"""
-    from .sadscript import SADError, Rule
+    """shared.n の Parallelize (逐次実行) と、共有メモリ OpenShared / Shared / ReadShared / WriteShared / SharedSize、
+    プロセスの関数 Fork / Wait / Wait4 / Kill / Sleep (K64 の tfProcess_.c、tfrbuf.f、tfshared.f)。
+
+    - 共有メモリは無名の mmap (POSIX では fork した子と共有される)。値は符号化して書く。OpenShared[n] の n はバイト数で、
+      K64 と同じく SharedSize[値] が n を超える値は Shared::toolarge。
+    - Fork[] は POSIX (Linux・WSL・macOS) では本当にプロセスを分ける (親には子の pid、子には 0)。子は Exit[] か最上位の文の終わりで
+      os._exit する (呼び出し元の Python に戻らない)。Windows には fork が無いので、v2 モードでは分かるエラーにし
+      (k64 モードは従来どおり「親の側」として pid を返す)、並列の計算は Parallelize (逐次) を使う。
+    - Parallelize[f, n, lshare, npara, opts] は逐次: {f[1], …, f[n]} (失敗は $Failed)。Completion->g があれば結果に g を適用する。"""
+    import mmap
+    import pickle
+    import struct
+    import time
+    from .sadscript import SADError, Rule, Expr
+    from . import compat
     B = I.builtins
-    store = {}
+    store = {}                       # 番号 → (mmap, n バイト)
     counter = [1024]
+    UNDEF = S('Undefined')
+    T_NULL, T_SYM, T_RULE, T_EXPR = '#N', '#S', '#R', '#E'
+
+    def enc(v):
+        if isinstance(v, (float, int, complex, str)):
+            return v
+        if isinstance(v, list):
+            return [enc(x) for x in v]
+        if v is Null:
+            return (T_NULL,)
+        if isinstance(v, Sym):
+            return (T_SYM, v.name)
+        if isinstance(v, Rule):
+            return (T_RULE, enc(v.lhs), enc(v.rhs), bool(v.delayed))
+        if isinstance(v, Expr):
+            return (T_EXPR, enc(v.head), [enc(x) for x in v.args])
+        raise SADError('General::wrongtype: Shared: value must be numbers, strings, symbols, lists or expressions')
+
+    def dec(v):
+        if isinstance(v, list):
+            return [dec(x) for x in v]
+        if isinstance(v, tuple):
+            if v[0] == T_NULL:
+                return Null
+            if v[0] == T_SYM:
+                return S(v[1])
+            if v[0] == T_RULE:
+                return Rule(dec(v[1]), dec(v[2]), v[3])
+            if v[0] == T_EXPR:
+                return Expr(dec(v[1]), [dec(x) for x in v[2]])
+        return v
+
+    def nwords(v):
+        """tfshared.f tfsharedsize: 実数・記号は 1 語、文字列は 3+(len+7)/8 語、リストは 3+len 語 + 中の実体 (それぞれ -1)"""
+        if isinstance(v, str):
+            return 3 + (len(v.encode('utf-8', 'replace')) + 7) // 8
+        if isinstance(v, (list, Expr, Rule)):
+            items = v if isinstance(v, list) else ([v.lhs, v.rhs] if isinstance(v, Rule) else v.args)
+            n = 3 + len(items)
+            for x in items:
+                if isinstance(x, (str, list, Expr, Rule)):
+                    n += nwords(x) - 1
+            return n
+        return 1
+
+    def sharedsize(a):
+        if len(a) != 1:
+            raise SADError('General::narg: Number of arguments is expected to be 1 in SharedSize')
+        return float(max(0, nwords(a[0]) - 2) * 8)
+    B['SharedSize'] = sharedsize
 
     def openshared(a):
+        if len(a) != 1 or not isinstance(a[0], (int, float)) or isinstance(a[0], bool):
+            raise SADError('General::wrongtype: Argument must be Real in OpenShared')
+        n = int(a[0])
+        if n < 0:
+            return S('$Failed')
         counter[0] += 1
-        store[counter[0]] = float('nan') if False else S('Undefined')
+        mm = mmap.mmap(-1, 8 + 64 * (n + 8) + 4096)        # 符号化 (pickle) の分の余裕。上限の判定は SharedSize で K64 と同じにする
+        mm[0:8] = struct.pack('<q', -1)                       # -1: まだ書かれていない (Undefined)
+        store[counter[0]] = (mm, n)
         return float(counter[0])
     B['OpenShared'] = openshared
     B['OpenShared$'] = openshared
-    B['CloseShared'] = lambda a: (store.pop(int(a[0]), None), Null)[1]
-    B['ReadShared'] = lambda a: store.get(int(a[0]), S('Undefined'))
-    B['WriteShared'] = lambda a: (store.__setitem__(int(a[0]), a[1]), a[1])[1]
-    B['Shared'] = lambda a: store.get(int(a[0]), S('Undefined'))
-    B['SharedSize'] = lambda a: float(len(store))
+
+    def _slot(x, name):
+        if not isinstance(x, (int, float)) or int(x) not in store:
+            raise SADError('Shared::notopen: Shared memory is not open in %s' % name)
+        return store[int(x)]
+
+    def readshared(a):
+        mm, _n = _slot(a[0], 'ReadShared')
+        ln = struct.unpack('<q', mm[0:8])[0]
+        if ln < 0:
+            return UNDEF
+        return dec(pickle.loads(mm[8:8 + ln]))
+
+    def writeshared(a):
+        mm, n = _slot(a[0], 'WriteShared')
+        v = a[1]
+        if isinstance(v, (str, list, Expr, Rule)):
+            over = max(0, nwords(v) - 2) * 8 - n
+            if over > 0:
+                raise SADError('Shared::toolarge: Value is larger than the shared area by %d bytes (give a larger size to OpenShared)' % over)
+        data = pickle.dumps(enc(v), protocol=4)
+        if 8 + len(data) > len(mm):
+            raise SADError('Shared::toolarge: Value is larger than the shared area by %d bytes (give a larger size to OpenShared)' % (8 + len(data) - len(mm)))
+        mm[0:8] = struct.pack('<q', -1)                       # 書いている間は未定義 (読む側が半端な値を見ない)
+        mm[8:8 + len(data)] = data
+        mm[0:8] = struct.pack('<q', len(data))
+        return v
+
+    def closeshared(a):
+        ent = store.pop(int(a[0]), None) if a and isinstance(a[0], (int, float)) else None
+        if ent is not None:
+            try:
+                ent[0].close()
+            except (BufferError, ValueError):
+                pass
+        return Null
+    B['CloseShared'] = closeshared
+    B['ReadShared'] = readshared
+    B['WriteShared'] = writeshared
+    B['Shared'] = lambda a: readshared(a) if len(a) == 1 and isinstance(a[0], (int, float)) else Expr(S('Shared'), list(a))
+    _close0 = B.get('Close')
+
+    def close(a):
+        if len(a) == 1 and isinstance(a[0], (int, float)) and int(a[0]) in store:
+            return closeshared(a)
+        return _close0(a) if _close0 is not None else Null
+    B['Close'] = close
+
+    # ---- プロセス (tfProcess_.c)
+    children = set()
+    I._forked_child = False
+
+    def fork(a):
+        if a and not (len(a) == 1 and a[0] is Null):
+            raise SADError('General::narg: Number of arguments is expected to be 0 in Fork')
+        if not hasattr(os, 'fork'):
+            if compat.v2():
+                raise SADError('System::error: Fork[] is not available on this platform (Windows has no fork). '
+                               'Use Parallelize[f, n, lshare, npara] (runs serially in pysad), or run pysad on Linux/WSL')
+            return float(os.getpid())            # k64 モード: 従来どおり (子は作らず、親の側として pid を返す)
+        import sys as _sys
+        for st in (I.out, _sys.stdout, _sys.stderr):
+            try:
+                st.flush()
+            except Exception:
+                pass
+        pid = os.fork()
+        if pid == 0:
+            I._forked_child = True               # 子: Exit[] と最上位の文の終わりで os._exit (sadscript.Interp.run)
+            children.clear()
+            return 0.0
+        children.add(pid)
+        return float(pid)
+    B['Fork'] = fork
+
+    def _nochild():
+        if compat.v2():
+            raise SADError('System::error: no child process (Fork[] is not available on this platform)')
+
+    def wait(a):
+        if a and not (len(a) == 1 and a[0] is Null):
+            return Expr(S('Wait'), list(a))       # Wait[mem] (CSR.n) などの別の定義のための形
+        if not hasattr(os, 'fork'):
+            _nochild()
+            return [0.0, 0.0]
+        try:
+            pid, status = os.wait()
+        except ChildProcessError:
+            raise SADError('System::error: No child processes in Wait[]')
+        children.discard(pid)
+        return [float(pid), float(status)]
+    B['Wait'] = wait
+
+    def wait4(a):
+        if not a or (len(a) == 1 and a[0] is Null):
+            wpid = -1
+            flags = []
+        elif isinstance(a[0], (int, float)):
+            wpid = int(a[0])
+            flags = a[1:]
+        else:
+            raise SADError('General::wrongtype: Argument must be wpid for #1 in Wait4')
+        if not hasattr(os, 'fork'):
+            _nochild()
+            return [0.0, 0.0]
+        opt0 = 0
+        for f in flags:
+            if not isinstance(f, (int, float)):
+                raise SADError('General::wrongtype: Argument must be Wait flag for ##2 in Wait4')
+            opt0 |= int(f)
+        opt = (os.WNOHANG if opt0 & 1 else 0) | (os.WUNTRACED if opt0 & 2 else 0) | (getattr(os, 'WCONTINUED', 0) if opt0 & 4 else 0)
+        try:
+            pid, status, ru = os.wait4(wpid, opt)
+        except ChildProcessError:
+            return [0.0, 0.0]
+        except InterruptedError:
+            return [-1.0, 0.0]
+        if pid == 0:
+            return [0.0, 0.0]
+        children.discard(pid)
+        b = lambda x: 1.0 if x else 0.0
+        out = [float(pid), float(os.WEXITSTATUS(status)) if os.WIFEXITED(status) else 0.0]
+        if hasattr(os, 'WIFCONTINUED'):
+            out.append(Rule(S('Continued'), b(os.WIFCONTINUED(status))))
+        out += [Rule(S('Exited'), b(os.WIFEXITED(status))), Rule(S('Signaled'), b(os.WIFSIGNALED(status))),
+                Rule(S('Stopped'), b(os.WIFSTOPPED(status)))]
+        if os.WIFSIGNALED(status):
+            out += [Rule(S('Signal'), float(os.WTERMSIG(status))), Rule(S('Core'), b(os.WCOREDUMP(status)))]
+        if os.WIFSTOPPED(status):
+            out.append(Rule(S('Signal'), float(os.WSTOPSIG(status))))
+        out += [Rule(S('UserTime'), float(ru.ru_utime)), Rule(S('SystemTime'), float(ru.ru_utime))]      # K64 は SystemTime にも utime を入れる
+        return out
+    B['Wait4'] = wait4
+
+    def kill(a):
+        if len(a) not in (1, 2):
+            raise SADError('General::narg: Number of arguments is expected to be 1 or 2 in Kill')
+        if not isinstance(a[0], (int, float)):
+            raise SADError('General::wrongtype: Argument must be Process ID for #1 in Kill')
+        import signal
+        sig = int(a[1]) if len(a) == 2 else signal.SIGTERM
+        pid = int(a[0])
+        if pid not in children:
+            # 安全のため、この pysad が Fork[] で作った子だけに信号を送る (K64 は任意の pid に送れる)
+            raise SADError('System::error: Kill[pid]: pid %d is not a child created by Fork[] in this session' % pid)
+        try:
+            os.kill(pid, sig)
+        except OSError as e:
+            raise SADError('System::error: Kill: %s' % e)
+        return Null
+    B['Kill'] = kill
+
+    def sleep(a):
+        if len(a) != 1:
+            raise SADError('General::narg: Number of arguments is expected to be 1 in Sleep')
+        if not isinstance(a[0], (int, float)):
+            raise SADError('General::wrongtype: Argument must be Real number (seconds) in Sleep')
+        if a[0] > 0:
+            time.sleep(float(a[0]))
+        return 1.0
+    _sleep0 = B.get('Sleep')
+    if _sleep0 is None:
+        B['Sleep'] = sleep
+    _pause0 = B.get('Pause')
+
+    def pause(a):
+        # Pause は K64 では Sleep と同じ。pysad は従来どおり待たない (描画の間などに使われる) が、Fork[] の子がいる間は本当に待つ
+        if children and len(a) == 1 and isinstance(a[0], (int, float)):
+            return sleep(a)
+        return _pause0(a) if _pause0 is not None else Null
+    B['Pause'] = pause
+    for nm_, v_ in (('WNOHANG', 1.0), ('WUNTRACED', 2.0), ('WCONTINUED', 4.0)):
+        I.globals.setdefault(nm_, v_)
 
     def parallelize(a):
         if len(a) < 4:

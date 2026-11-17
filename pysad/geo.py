@@ -270,6 +270,8 @@ def _edge_sum(el) -> Tuple[float, float, float, float]:
 
 def _geo_length(el, sad_type: str) -> float:
     """tfgeo1 の ali: L に BEND/MULT のフリンジ補正 (FRINGE≠0 かつ F1/FB1/FB2≠0) を入れたもの"""
+    if sad_type == 'SOL':
+        return 0.0          # SOL に長さは無い (L を書いても gs の S 座標・幾何に入らない: LENG で確かめた)
     ali = _val(el, 'L')
     if not _has_angle_key(sad_type):
         return ali
@@ -415,6 +417,7 @@ class GeoResult:
     pos: np.ndarray          # (nlat,)  入口の s
     elements: Sequence       # 要素列 (部分要素の計算に使う)
     warnings: List[str]
+    regions: dict = None     # {SOL 領域の始点 (1 始まり): sgeo.SolRegion} (ずれ・傾きのある GEO つきの領域だけ。C2)
 
     @property
     def nlat(self) -> int:
@@ -502,6 +505,7 @@ def compute_geo(elements: Sequence, gx0: float = 0.0, gy0: float = 0.0, gz0: flo
     geo = np.zeros((nlat, 3, 4))
     pos = np.zeros(nlat)
     geo[0] = GEOINI if geo_init is None else np.asarray(geo_init, dtype=float)
+    regions = {}
     # ---- tfgeo1(1, nlat): 要素ごとに進める
     i = 0
     while i < n:
@@ -520,6 +524,7 @@ def compute_geo(elements: Sequence, gx0: float = 0.0, gy0: float = 0.0, gz0: flo
                     if off_axis:
                         res = _sg.tsgeo(elements, i + 1, geo, pos, _Phys(momentum_eV, 1.0), warnings.append)
                         if res is not None:
+                            regions[i + 1] = res[0]
                             i = res[1] - 1
                             done = True
                 except NotImplementedError as e:
@@ -570,4 +575,6 @@ def compute_geo(elements: Sequence, gx0: float = 0.0, gy0: float = 0.0, gz0: flo
         warn = lambda s: print(s, file=sys.stderr)
     for w in warnings:
         warn(w)
-    return GeoResult(geo, pos, elements, warnings)
+    out = GeoResult(geo, pos, elements, warnings)
+    out.regions = regions
+    return out

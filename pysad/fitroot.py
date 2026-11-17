@@ -4,7 +4,8 @@ FindRoot / Fit / FitGaussian / FitEmit / NIntegrate。K64 の tffindroot.f (tffi
 K64 は式を記号微分 (D) して導関数を作り、微分できなかったときだけ数値微分に落ちる。ここでは常に数値微分の経路を使う
 (tfnewton の svi=max(|v|*frac, sv)、tffit1 の svi=min(max(svmin,|v|*frac),(vmax-vmin)*factmin) をそのまま移植)。
 そのため解析微分で解く gs とは、線形な式で相対 1e-9 程度、非線形でも収束値が数桁 (反復の打ち切り条件に依存) 違いうる。
-未対応: 複素数の FindRoot (gs も壊れた値: docs/21 B61)、Fit の Cutoff 以外の位置引数形式 {{x1,x2..},y,dy} (ベクトル独立変数)。FitGaussian の Plot オプションは実装済み。
+複素の初期値の FindRoot は v2 モードだけ (複素 Newton 法。k64 モードは TypeError のまま。gs は壊れた値: docs/21 B61)。
+未対応: Fit の Cutoff 以外の位置引数形式 {{x1,x2..},y,dy} (ベクトル独立変数)。FitGaussian の Plot オプションは実装済み。
 """
 from __future__ import annotations
 
@@ -118,13 +119,85 @@ def install(I):
             rest.append(a)
         return opts, rest
 
+    # ------------------------------------------------------------------ FindRoot (複素、v2 だけ)
+    def _findroot_complex(eq, specs, opts):
+        """複素の初期値の FindRoot (v2)。式は変数について正則と仮定し、前進差分のヤコビアンで Newton 法 (減速つき)。
+        変数の範囲 {min, max} は無視する。戻りは実数版と同じ {var->値, …, Residual->Σ|f-g|^2}"""
+        names, v0 = [], []
+        for sp in specs:
+            if isinstance(sp, list):
+                sp = Expr(S('List'), list(sp))
+            if not head_is(sp, 'List') or len(sp.args) not in (2, 3) or not isinstance(sp.args[0], Sym):
+                raise SADError('General::wrongtype: Argument must be {var, ini} or {var, ini, {min, max}}')
+            ini = I.eval(sp.args[1])
+            if not is_num(ini):
+                raise SADError('General::wrongval: initial value must be a number')
+            names.append(sp.args[0].name)
+            v0.append(complex(ini))
+        v0 = np.array(v0, dtype=complex)
+        maxi = int(opts.get('MaxIterations', 50))
+        eps = float(opts.get('AccuracyGoal', 1e-20))
+        if head_is(eq, 'Equal') and len(eq.args) == 2:
+            pairs = [(eq.args[0], eq.args[1])]
+        elif head_is(eq, 'List') and all(head_is(e, 'Equal') and len(e.args) == 2 for e in eq.args):
+            pairs = [(e.args[0], e.args[1]) for e in eq.args]
+        else:
+            raise SADError('General::wrongtype: Argument must be f == g or List of them')
+        neq, nvar = len(pairs), len(names)
+
+        def resid(v):
+            env = {n: (complex(x) if complex(x).imag != 0.0 else float(complex(x).real)) for n, x in zip(names, v)}
+            f = np.zeros(neq, dtype=complex)
+            am = 0.0
+            for i, (l, r) in enumerate(pairs):
+                a = ev(l, env)
+                b = ev(r, env)
+                if not is_num(a) or not is_num(b):
+                    raise SADError('General::wrongval: results must be numbers')
+                f[i] = complex(a) - complex(b)
+                am += abs(a) ** 2 + abs(b) ** 2
+            return f, am, float(np.sum(np.abs(f) ** 2))
+
+        f0, am, d0 = resid(v0)
+        it = 0
+        while d0 > am * eps and it < maxi:
+            it += 1
+            jac = np.zeros((neq, nvar), dtype=complex)
+            for i in range(nvar):
+                h = max(abs(v0[i]) * 1e-7, 1e-7)
+                v = v0.copy()
+                v[i] += h
+                jac[:, i] = (resid(v)[0] - f0) / h
+            dv = np.linalg.lstsq(jac, -f0, rcond=1e-12)[0]
+            fact = 1.0
+            ok = False
+            while fact >= 1e-4:
+                f1, am1, d1 = resid(v0 + fact * dv)
+                if d1 < d0:
+                    v0, f0, am, d0 = v0 + fact * dv, f1, am1, d1
+                    ok = True
+                    break
+                fact *= 0.5
+            if not ok:
+                break
+        out = [Rule(S(n), (complex(x) if abs(x.imag) > 0.0 else float(x.real))) for n, x in zip(names, v0)]
+        out.append(Rule(S('Residual'), float(d0)))
+        return out
+
     # ------------------------------------------------------------------ FindRoot
     def _findroot(args):
         if len(args) < 2:
             raise SADError('General::narg: Number of arguments is expected to be 2 or more in FindRoot')
         eq = args[0]
         opts, rest = get_opts(args[1:])
-        names, v0, vmin, vmax = parse_vars(rest)
+        try:
+            names, v0, vmin, vmax = parse_vars(rest)
+        except TypeError:
+            # 複素の初期値。K64 は壊れた値を返し (B61)、k64 モードは今までどおり TypeError。v2 は複素の Newton 法で解く
+            from . import compat
+            if not compat.v2():
+                raise
+            return _findroot_complex(args[0], rest, opts)
         maxi = int(opts.get('MaxIterations', 50))
         eps = float(opts.get('AccuracyGoal', 1e-20))
         trace = bool(opts.get('Trace', 0)) and opts.get('Trace') is not False

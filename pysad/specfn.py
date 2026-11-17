@@ -10,7 +10,8 @@ K64 が誤った値を返す箇所 (docs/21 の B43〜) はそちらに合わせ
 対応: Arc 双曲線関数、LogGamma、Gamma (複素)、GammaRegularized/P/Q、PolyGamma、Beta、Zeta、HurwitzZeta、PolyLog、LerchPhi、BernoulliB、ProductLog、
   Pochhammer、超幾何関数 (0F1 1F1 2F1 U PFQ とその Regularized)、Bessel J/Y/I/K、D.n の特殊関数 (ExpIntegralE/Ei, LogIntegral, Sin/Cos/Sinh/CoshIntegral,
   Whittaker M/W, HermiteH, Fresnel S/C, Airy, LegendreP, BesselJZero, Binomial, Multinomial, InverseErfc, HarmonicNumber, Factorial2, XSin, Gamma0)。
-未対応: 複素引数の多くの関数 (Bessel、超幾何、PolyLog)、PolyLog の |z|>=150 (非整数次)、Derivative の記号微分 (D.n の D)。
+複素引数は Bessel J/Y/I/K (実数の次数)、Hypergeometric0F1・1F1・2F1 (実数のパラメータ)、Airy が使える (scipy)。PolyLog の非整数次は |z| の上限なし (_polylog_far)。
+未対応: 複素引数の HypergeometricU・PolyLog・Zeta ほか、複素の次数・パラメータ、Derivative の記号微分 (D.n の D)。
 """
 from __future__ import annotations
 
@@ -184,6 +185,10 @@ def _polylog(s, z):
             k += 1
             t *= z
         return tot
+    if s != int(s) and (z < -12.0 or z > 60.0):
+        # 下の μ = ln z の展開は |μ| → 2π で収束が遅く、z < -12・z > 60 で精度が落ちる (z = -140 で相対 1e-5〜1、|z| ≥ 150 は打ち切りで NaN だった)。
+        # ここからは反転公式 (s < 2.2) と積分表示 (s ≥ 2.2) を使う。z < -1 は実数
+        return _polylog_far(s, z)
     if (z > 1.0 or z < -1.0) and s != int(s) and abs(z) < 150.0:
         # Li_s(z) = Γ(1-s) (-μ)^{s-1} + Σ ζ(s-k) μ^k / k! (μ = ln z、|μ| < 2π)。z > 1 は μ = ln z で (-μ) = μ e^{iπ} (gs の符号)、z < -1 は μ = ln|z| + iπ
         if z > 1.0:
@@ -233,6 +238,89 @@ def _polylog(s, z):
 
 def _real_part(v):
     return v.real if isinstance(v, complex) else v
+
+
+def _hurwitz_c(s, a, N=18, M=16):
+    """ζ(s, a) (実数 s ≠ 1、複素数 a、Re a ≥ 0、a ≠ 0)。Euler–Maclaurin: Σ_{k<N}(a+k)^-s + (a+N)^{1-s}/(s-1) + (a+N)^-s/2 + Σ_j B_2j/(2j)! (s)_{2j-1} (a+N)^{-s-2j+1}"""
+    a = complex(a)
+    re, im = [], []
+    for k in range(N):
+        t = (a + k) ** (-s)
+        re.append(t.real)
+        im.append(t.imag)
+    x = a + N
+    for t in (x ** (1.0 - s) / (s - 1.0), 0.5 * x ** (-s)):
+        re.append(t.real)
+        im.append(t.imag)
+    p = s
+    xp = x ** (-s - 1.0)
+    for j in range(1, M + 1):
+        t = float(_bernoulli(2 * j)) / math.factorial(2 * j) * p * xp
+        re.append(t.real)
+        im.append(t.imag)
+        p *= (s + 2 * j - 1) * (s + 2 * j)
+        xp /= x * x
+    return complex(math.fsum(re), math.fsum(im))
+
+
+def _polylog_far(s, z):
+    """Li_s(z) (非整数の実数 s、実数 z < -1 または z > 1)。z > 1 は切断線の下側の値 (Im = -π ln^{s-1} z / Γ(s)。Li_2(2) = π²/4 - iπ ln 2 と同じ向き)。
+    - s < 2.2: 反転公式 Li_s(z) = Γ(1-s)/(2π)^{1-s} [ i^{1-s} ζ(1-s, 1/2 + u) + i^{-(1-s)} ζ(1-s, 1/2 - u) ]、u = ln(-z)/(2πi)
+      (ζ は Euler–Maclaurin の _hurwitz_c。s が大きいと 2 項の桁落ちが増えるので s < 2.2 に限る: 相対 1e-12 以内)
+    - s ≥ 2.2: Li_s(z) = z/Γ(s) ∫_0^∞ t^{s-1}/(e^t - z) dt。z < -1 は実軸 (Fermi–Dirac 積分)、z > 1 は極 t = ln z を避けて
+      t = r e^{iθ} (tan θ = π/ln z) の半直線で積分する (相対 1e-13 程度)。
+    独立な確認 (2026-11-17): z = 40・80 で従来の展開と 1e-15、s = 2.5 で 2 つの方法が 1e-12 以内、Im が上の閉じた式と 1e-15 で一致"""
+    if s < 2.2:
+        lg = complex(math.log(-z), 0.0) if z < 0.0 else complex(math.log(z), math.pi)
+        u = lg / (2j * math.pi)
+        g = _gamma(1.0 - s) / (2.0 * math.pi) ** (1.0 - s)
+        ip = cmath.exp(0.5j * math.pi * (1.0 - s))
+        v = g * (ip * _hurwitz_c(1.0 - s, 0.5 + u) + _hurwitz_c(1.0 - s, 0.5 - u) / ip)
+        return v.real if z < 0.0 else v
+    lg_ = math.lgamma(s)
+    if z < 0.0:
+        w = math.log(-z)
+
+        def f(t):
+            if t <= 0.0 or t - w > 700.0:
+                return 0.0
+            return math.exp((s - 1.0) * math.log(t) - lg_) / (math.exp(t - w) + 1.0)
+        return -(_quad(f, 0.0, w) + _quad(f, w, w + 60.0 + 4.0 * s))
+    lz = math.log(z)
+    th = math.atan(math.pi / lz)
+    e = cmath.exp(1j * th)
+
+    def fc(r):
+        if r <= 0.0:
+            return 0j
+        t = r * e
+        if t.real > lz:
+            q = cmath.exp(lz - t)                 # z/(e^t - z) = q/(1 - q)、q = z e^-t (大きい t で溢れない形)
+            k = q / (1.0 - q)
+        else:
+            k = z / (cmath.exp(t) - z)
+        return cmath.exp((s - 1.0) * cmath.log(t) - lg_) * e * k
+    r0 = lz / math.cos(th)
+    tot = 0j
+    for a, b in ((0.0, r0), (r0, 2.0 * r0), (2.0 * r0, 2.0 * r0 + 90.0 + 6.0 * s)):
+        tot += complex(_quad(lambda r: fc(r).real, a, b), _quad(lambda r: fc(r).imag, a, b))
+    return tot
+
+
+def _quad(f, a, b):
+    """scipy.integrate.quad (相対 1e-13)。丸めの警告は出さない (値は試験で独立に確かめてある)"""
+    import warnings
+    from scipy import integrate
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        return integrate.quad(f, a, b, epsabs=0, epsrel=1e-13, limit=400)[0]
+
+
+def _cx(v):
+    """scipy の結果を実数 (float) か複素数に (虚部 0 の複素数は実数)"""
+    if isinstance(v, (complex, np.complexfloating)):
+        return _real(complex(v))
+    return float(v)
 
 
 def _lerch(z, s, a):
@@ -308,7 +396,9 @@ def _legendre_p(n, m, z):
         m = int(m)
         n = int(n)
         if m >= 0:
-            return (-1) ** m * float(sp.lpmv(m, n, z)) if m <= n else 0.0
+            # lpmv は Condon-Shortley の位相つきで、D.n の式 (m → 整数の極限) と同じ符号。以前は (-1)^m を掛けていて奇数 m の符号が逆だった
+            # (LegendreP[3,1,.4] = +.274954541697。gs は NaN (B45) なので参照が無かった。2026-11-17 に m=1±1e-6 の式の値で確認)
+            return float(sp.lpmv(m, n, z)) if m <= n else 0.0
     if m == 0:
         return float(sp.hyp2f1(-n, n + 1, 1.0, (1.0 - z) / 2.0))
     g = _gamma(1.0 - m)
@@ -339,6 +429,14 @@ def _besseljzero(n, k):
 def inverseerf(x):
     """gamma.f inverseerf の直訳。K64 は Newton の係数に sqrt(pi/2) を使い (正しくは sqrt(pi)/2)、反復を df^2 <= no f1^2 eps で止めるので、
     真値から相対 1e-8 ほどずれる (InverseErf[.3] = .272462711811; 真値は .272462714727)。Fit.n の FitGaussian がこれを使う"""
+    from . import compat
+    if compat.v2():
+        # v2 (B47): 真値。scipy の erfinv (試験は erf(InverseErf(x)) = x と Newton の独立計算で確認)
+        if x != x or abs(x) > 1.0:
+            return NAN
+        if abs(x) == 1.0:
+            return math.copysign(INF, x)
+        return float(sp.erfinv(x))
     nolog = 8
     eps = 5e-17
     c = math.sqrt(math.pi / 2.0)
@@ -461,25 +559,30 @@ def install(I):
     reg('BernoulliB', lambda n, *x: float(_bernoulli(int(n))) if not x else _bernoulli_poly(int(n), x[0]), (1, 2))
     reg('ProductLog', lambda z: float(sp.lambertw(z).real) if z >= -1.0 / math.e else NAN, 1)
     reg('Pochhammer', _pochhammer, 2)
-    reg('Hypergeometric0F1', lambda b, z: float(sp.hyp0f1(b, z)), 2)
-    reg('Hypergeometric0F1Regularized', lambda b, z: float(sp.hyp0f1(b, z)) / _gamma(b), 2)
-    reg('Hypergeometric1F1', lambda a, b, z: float(sp.hyp1f1(a, b, z)), 3)
-    reg('Hypergeometric1F1Regularized', lambda a, b, z: float(sp.hyp1f1(a, b, z)) / _gamma(b), 3)
-    reg('Hypergeometric2F1', lambda a, b, c, z: float(sp.hyp2f1(a, b, c, z)), 4)
-    reg('Hypergeometric2F1Regularized', lambda a, b, c, z: float(sp.hyp2f1(a, b, c, z)) / _gamma(c), 4)
+    reg('Hypergeometric0F1', lambda b, z: _cx(sp.hyp0f1(b, z)), 2)
+    reg('Hypergeometric0F1Regularized', lambda b, z: _cx(sp.hyp0f1(b, z)) / _gamma(b), 2)
+    reg('Hypergeometric1F1', lambda a, b, z: _cx(sp.hyp1f1(a, b, z)), 3)
+    reg('Hypergeometric1F1Regularized', lambda a, b, z: _cx(sp.hyp1f1(a, b, z)) / _gamma(b), 3)
+    reg('Hypergeometric2F1', lambda a, b, c, z: _cx(sp.hyp2f1(a, b, c, z)), 4)
+    reg('Hypergeometric2F1Regularized', lambda a, b, c, z: _cx(sp.hyp2f1(a, b, c, z)) / _gamma(c), 4)
     reg('HypergeometricU', lambda a, b, z: float(sp.hyperu(a, b, z)), 3)
     B['HypergeometricPFQ'] = lambda a: _pfq(a[0], a[1], a[2])
     B['HypergeometricPFQRegularized'] = lambda a: _pfq(a[0], a[1], a[2], True)
-    reg('BesselJ', lambda n, x: float(sp.jv(n, x)), 2)
-    reg('BesselY', lambda n, x: float(sp.yv(n, x)), 2)
-    reg('BesselI', lambda n, x: float(sp.iv(n, x)), 2)
-    reg('BesselK', lambda n, x: float(sp.kv(n, x)), 2)
+    reg('BesselJ', lambda n, x: _cx(sp.jv(n, x)), 2)
+    reg('BesselY', lambda n, x: _cx(sp.yv(n, x)), 2)
+    reg('BesselI', lambda n, x: _cx(sp.iv(n, x)), 2)
+    reg('BesselK', lambda n, x: _cx(sp.kv(n, x)), 2)
     B['Fourier'] = lambda a: _fourier(a[0])
     B['InverseFourier'] = lambda a: _fourier(a[0], True)
 
     # ---- D.n の特殊関数
     reg('InverseErf', inverseerf, 1)
-    reg('InverseErfc', lambda z: inverseerf(1.0 - z), 1)
+    def inverseerfc(z):
+        from . import compat
+        if compat.v2() and 0.0 < z < 2.0:
+            return float(sp.erfcinv(z))               # v2: 1-z の桁落ちを避ける (小さい z)
+        return inverseerf(1.0 - z)
+    reg('InverseErfc', inverseerfc, 1)
     reg('HarmonicNumber', lambda z, *r: float(EULER + sp.digamma(z + 1.0)) if not r else _zeta_real(r[0]) - _hurwitz(r[0], z + 1.0), (1, 2))
     reg('Factorial2', lambda n: (2.0 / math.pi) ** (math.sin(n * math.pi / 2.0) ** 2 / 2.0) * 2.0 ** (n / 2.0) * _gamma(1.0 + n / 2.0), 1)
     reg('ExpIntegralE', lambda n, z: float(sp.expn(int(n), z)) if n == int(n) and n >= 0 else z ** (n - 1) * math.exp(-z) * float(sp.hyperu(n, n, z)), 2)
@@ -494,10 +597,10 @@ def install(I):
     reg('HermiteH', _hermite, 2)
     reg('FresnelS', lambda z: float(sp.fresnel(z)[0]), 1)
     reg('FresnelC', lambda z: float(sp.fresnel(z)[1]), 1)
-    reg('AiryAi', lambda z: float(sp.airy(z)[0]), 1)
-    reg('AiryBi', lambda z: float(sp.airy(z)[2]), 1)
-    reg('AiryAiPrime', lambda z: float(sp.airy(z)[1]), 1)
-    reg('AiryBiPrime', lambda z: float(sp.airy(z)[3]), 1)
+    reg('AiryAi', lambda z: _cx(sp.airy(z)[0]), 1)
+    reg('AiryBi', lambda z: _cx(sp.airy(z)[2]), 1)
+    reg('AiryAiPrime', lambda z: _cx(sp.airy(z)[1]), 1)
+    reg('AiryBiPrime', lambda z: _cx(sp.airy(z)[3]), 1)
     B['LegendreP'] = lambda a: _thread(lambda *x: _legendre_p(x[0], 0.0, x[1]) if len(x) == 2 else _legendre_p(x[0], x[1], x[-1]), a) if len(a) in (2, 3, 4) else (_ for _ in ()).throw(SADError('General::narg: LegendreP'))
     reg('BesselJZero', _besseljzero, 2)
 

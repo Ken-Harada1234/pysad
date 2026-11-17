@@ -21,11 +21,13 @@ track6n.py は別担当が編集中なので変更せず、ここでは
 """
 from __future__ import annotations
 
+import copy
 import math
 
 import numpy as np
 from numba import njit
 
+from . import compat as _compat
 from . import emit6d as _e
 from . import lattice as _lat
 from . import track6 as _t6
@@ -232,7 +234,8 @@ def k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
     for m in range(1, ndiv + 1):
         if nz:
             for i in range(n):
-                tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, not krad)   # 放射なしは tsolqum
+                # 放射なしは tsolqum (K64)。v2 (B14, rs[1]=1) は tsolqu と同じ z の式 (-dv·aln0) を使う
+                tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, (not krad) and not (rs.shape[0] > 1 and rs[1] == 1))
             if krad:
                 tradk_all(S, n, al1, 0.0, fluc, rs, p0, anrad, cuc)
             wm = wi * 0.5 if m == ndiv else wi
@@ -247,7 +250,7 @@ def k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
                 mult_kick1(i, S, akrm, nmmax, 1)
     if nz:
         for i in range(n):
-            tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, not krad)
+            tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, (not krad) and not (rs.shape[0] > 1 and rs[1] == 1))
         if fringe:
             for i in range(n):
                 for m in range(nmmax, -1, -1):
@@ -326,6 +329,77 @@ def k_sol_drift(S, n, al, bz, krad, fluc, rs, p0, anrad, cuc):
         return
     for i in range(n):
         tdrift_solenoid1(i, S, al, bz, krad, fluc, rs, p0, anrad, cuc)
+
+
+@njit(**NJ)
+def tdrift_bz1(i, S, al, bz, ak0x, ak0y, enarad, fluc, rs, p0, anrad, cuc):
+    """tdrift.f tdrift (bz と ak0x・ak0y の両方がある一様磁場の中の厳密な運動: らせん)。tsol.f の領域内の BEND が呼ぶ
+    (tdrift(al, bzs, phiy, phix, krad))。S の px, py は正準運動量 (ソレノイドのゲージ)、中では力学的運動量にして使う。
+    放射は tradk1 (基準は入口の力学的運動量)。出口で正準運動量に戻すときの p は放射の後の値 (K64 は放射の前の値)"""
+    if ak0x == 0.0 and ak0y == 0.0:
+        if bz == 0.0:
+            drift1(i, S, al)
+        else:
+            tdrift_solenoid1(i, S, al, bz, enarad, fluc, rs, p0, anrad, cuc)
+        return
+    b = math.sqrt(ak0x * ak0x + ak0y * ak0y + (bz * al)**2)
+    phix = ak0y / b
+    phiy = ak0x / b
+    phiz = bz * al / b
+    dphizsq = phix * phix + phiy * phiy
+    pr = 1.0 + S[i, 5]
+    alb = al * pr / b
+    bzp = bz / pr
+    px0 = S[i, 1] + bzp * S[i, 2] * 0.5
+    py0 = S[i, 3] - bzp * S[i, 0] * 0.5
+    z0 = S[i, 4]
+    dpz0 = pxy2dpz(px0, py0)
+    pz0 = 1.0 + dpz0
+    dpl = px0 * phix + py0 * phiy + dpz0 * phiz
+    pl = phiz + dpl
+    plx = pl * phix; ply = pl * phiy; plz = pl * phiz
+    ptx = px0 - plx
+    pty = py0 - ply
+    ptz = dpz0 - dpl * phiz + dphizsq
+    pbx = pty * phiz - ptz * phiy
+    pby = ptz * phix - ptx * phiz
+    pbz = ptx * phiy - pty * phix
+    bpr = b / pr
+    db = bpr - pbz
+    ap = math.hypot(pz0, pbz)
+    dphi = -math.atan2(pbz, pz0)
+    phi = asinz(db / ap) - dphi
+    phi, sinphi, xsinphi, cosphi, dcosphi = tsolconv(pz0, plz, pbz, bpr, phi)
+    S[i, 0] += (plx * phi + ptx * sinphi - pbx * dcosphi) * alb
+    S[i, 2] += (ply * phi + pty * sinphi - pby * dcosphi) * alb
+    S[i, 4] += ((dpl * phiz - dphizsq) * xsinphi + dpz0 * sinphi - pbz * dcosphi) * alb - S[i, 6] * al
+    px1 = px0 + ptx * dcosphi + pbx * sinphi
+    py1 = py0 + pty * dcosphi + pby * sinphi
+    if enarad:
+        S[i, 1] = px1; S[i, 3] = py1
+        S[i, 7] = px0; S[i, 8] = py0; S[i, 9] = z0
+        tradk_core1(i, S, al, 0.0, fluc, rs, p0, anrad, cuc)
+        px1 = S[i, 1]; py1 = S[i, 3]
+    pr = 1.0 + S[i, 5]
+    bzp = bz / pr
+    S[i, 1] = px1 - bzp * S[i, 2] * 0.5
+    S[i, 3] = py1 + bzp * S[i, 0] * 0.5
+
+
+@njit(**NJ)
+def k_sol_bend(S, n, al, bz, ak0x, ak0y, krad, fluc, rs, p0, anrad, cuc):
+    """ソレノイド領域内の BEND (直線の座標のまま一様な双極磁場: tsol.f の icBEND → tdrift(al, bzs, phiy, phix))"""
+    if not krad:
+        for i in range(n):
+            tdrift_bz1(i, S, al, bz, ak0x, ak0y, False, fluc, rs, p0, anrad, cuc)
+        return
+    # 放射: tradk は刻みの前後の向きの変化 (弦) から損失を出すので、磁場の向きが回る (らせん) と 1 刻みでは小さく出る
+    # (相対 (bz·al)²/12)。bz·al/ndiv ≤ 0.02 に刻む (K64 の tdrift は 1 刻み)
+    ndiv = 1 + int(abs(bz * al) / 0.02)
+    w = 1.0 / ndiv
+    for m in range(ndiv):
+        for i in range(n):
+            tdrift_bz1(i, S, al * w, bz, ak0x * w, ak0y * w, True, fluc, rs, p0, anrad, cuc)
 
 
 # ============================================================================ ソレノイド内の四極
@@ -495,10 +569,11 @@ def tsolqu_bz_all(S, n, al, ak, bz, eps0, krad, fluc, rs, p0, h0, anrad, cuc):
             bzp_last = tz_step1(i, S, aln0, akk, bz, m == 0)
         if krad:
             tradk_all(S, n, aln0, 0.0, fluc, rs, p0, anrad, cuc)
-    if krad:
+    if krad and not (rs.shape[0] > 1 and rs[1] == 1):
         for i in range(n):
             tsolqu_bz_final1(i, S, aln0, bzp_last)
     else:
+        # 放射なし、または v2 (B08): 粒子ごとの bzp (K64 の tsolqur は最後の粒子の値を全粒子に使う)
         for i in range(n):
             tsolqu_bz_final1(i, S, aln0, bz / (1.0 + S[i, 5]))
 
@@ -514,6 +589,12 @@ def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, c
             ttfrin4_bz1(i, S, ak, L, bz)
         if krad:
             setr0_1(i, S)
+            if bz != 0.0 and rs.shape[0] > 1 and rs[1] == 1:
+                # v2 (C2): 放射の基準の向きは力学的運動量。K64 (tquad → tsolqur) は正準運動量のまま pxr0 に入れるので、
+                # 最初のスライスの放射に (bz/2)(y, −x) の見かけの偏向が入る (軸を外れた粒子の損失が増える)
+                bzp = bz / (1.0 + S[i, 5])
+                S[i, 7] = S[i, 1] + bzp * S[i, 2] * 0.5
+                S[i, 8] = S[i, 3] - bzp * S[i, 0] * 0.5
     if bz == 0.0:                        # tsolqu/tsolqur の bz=0 分岐 (EPS は使わない: track6 と同じ)
         if krad:
             tsolqur_all(S, n, L, ak, 0.0, fluc, rs, p0, h0, anrad, cuc)
@@ -528,8 +609,282 @@ def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, c
         rot1(i, S, ct, -st)
 
 
+# ============================================================================ SOL の端 (v2、C2): ずれ・回転 trots と F1 の放射 tradks
+K_SOL_EDGE = 17
+
+
+@njit(**NJ)
+def trots1(i, S, r, dx, dy, dz, ent):
+    """tsol.f trots: SOL の端の座標変換。r (3×3) は tpara の R11..R33 (CHI1..3 から)、dx dy dz は SOL の DX DY DZ。
+    入口 (ent): 回して、新しい z=0 の面まで直進し、(dx, dy) を足す。出口: (dx, dy) を引いて回し、直進する。
+    運動量 (S[:,1], S[:,3] は p で割った値) は回すだけ。SOL の外側 (bz=0) で使うので正準運動量 = 力学的運動量。
+    z: 設計の行路長が dz だけ伸びる分は dz·(1 − dv) (z = −v(t − t0) で、基準粒子の時刻が dz/v0 進む)。
+    K64 は出口だけ −dv·dz を入れ、入口は dz だけ (入口の DZ≠0 は GEO が出口側の SOL にあるとき)。v2 は両方に入れる"""
+    pxi = S[i, 1]
+    pyi = S[i, 3]
+    pzi = 1.0 + pxy2dpz(pxi, pyi)
+    if ent:
+        xi = S[i, 0]
+        yi = S[i, 2]
+    else:
+        xi = S[i, 0] - dx
+        yi = S[i, 2] - dy
+    xf = r[0, 0] * xi + r[0, 1] * yi
+    yf = r[1, 0] * xi + r[1, 1] * yi
+    zf = r[2, 0] * xi + r[2, 1] * yi
+    pxf = r[0, 0] * pxi + r[0, 1] * pyi + r[0, 2] * pzi
+    pyf = r[1, 0] * pxi + r[1, 1] * pyi + r[1, 2] * pzi
+    pzf = r[2, 0] * pxi + r[2, 1] * pyi + r[2, 2] * pzi
+    S[i, 1] = pxf
+    S[i, 3] = pyf
+    if ent:
+        S[i, 0] = xf - pxf / pzf * zf + dx
+        S[i, 2] = yf - pyf / pzf * zf + dy
+    else:
+        S[i, 0] = xf - pxf / pzf * zf
+        S[i, 2] = yf - pyf / pzf * zf
+    S[i, 4] = S[i, 4] + zf / pzf + dz - S[i, 6] * dz
+
+
+@njit(**NJ)
+def k_sol_edge(S, n, rot, r, dx, dy, dz, dbz, bz0, bz1, f1, krad, fluc, rs, p0, anrad, cuc):
+    """SOL の端 (tsol.f): rot = 1 入口 (trots → tsfrin → 放射)、−1 出口 (tsfrin → 放射 → trots)、0 領域内の SOL (回転なし)。
+    dbz はフリンジの bz の段差 (DISFRIN なら 0)、bz0・bz1 は端の前後の bz。
+    放射 (krad: RAD かつ F1≠0 かつ RAD=0 かつ bz が変わる): 端の前の力学的運動量の向きを基準に、tsfrin の後の向きとの差を
+    長さ F1 の間の一様な偏向として tradk に渡す (tradks)"""
+    for i in range(n):
+        if rot == 1:
+            trots1(i, S, r, dx, dy, dz, True)
+        if krad:
+            bzp = 0.5 * bz0 / (1.0 + S[i, 5])
+            S[i, 7] = S[i, 1] + bzp * S[i, 2]
+            S[i, 8] = S[i, 3] - bzp * S[i, 0]
+            S[i, 9] = S[i, 4]
+        if dbz != 0.0:
+            tsfrin1(i, S, dbz)
+        if krad:
+            bzp = 0.5 * bz1 / (1.0 + S[i, 5])
+            S[i, 1] += bzp * S[i, 2]
+            S[i, 3] -= bzp * S[i, 0]
+            tradk_core1(i, S, f1, 0.0, fluc, rs, p0, anrad, cuc)
+            bzp = 0.5 * bz1 / (1.0 + S[i, 5])
+            S[i, 1] -= bzp * S[i, 2]
+            S[i, 3] += bzp * S[i, 0]
+        if rot == -1:
+            trots1(i, S, r, dx, dy, dz, False)
+
+
+# ============================================================================ ソレノイド領域内の MULT・CAVI (v2)
+K_SOL_BEND, K_SOL_MULT = 15, 16
+
+
+@njit(**NJ)
+def sol_body_all(S, n, al, ak1, bz, ak0x, ak0y, rs):
+    """領域内の MULT の本体 (放射なし): K1=0 は一様磁場 (ソレノイド + 双極) の厳密解 tdrift_bz1、
+    K1≠0 は ソレノイド + 四極 の厳密解 tsolqu の bz≠0 の枝 (双極は四極の中心のずれとして入れる)"""
+    if al == 0.0:
+        return
+    if ak1 == 0.0:
+        for i in range(n):
+            tdrift_bz1(i, S, al, bz, ak0x, ak0y, False, False, rs, 0.0, 0.0, 0.0)
+    else:
+        # 四極 + 双極 = 中心が (-a, -b) にずれた四極: By + i Bx = (K1/L)((x + a) + i (y + b))、a = Re K0/K1、b = Im K0/K1。
+        # 座標をずらすと、一様な bz のベクトルポテンシャルのゲージが変わる分だけ正準運動量もずれる (px - bz b/2、py + bz a/2)
+        a = ak0x / ak1
+        b = ak0y / ak1
+        if a != 0.0 or b != 0.0:
+            for i in range(n):
+                bzp = bz / (1.0 + S[i, 5])
+                S[i, 0] += a
+                S[i, 2] += b
+                S[i, 1] -= bzp * b * 0.5
+                S[i, 3] += bzp * a * 0.5
+        tsolqu_bz_all(S, n, al, ak1, bz, 0.0, False, False, rs, 0.0, 0.0, 0.0, 0.0)
+        if a != 0.0 or b != 0.0:
+            for i in range(n):
+                bzp = bz / (1.0 + S[i, 5])
+                S[i, 0] -= a
+                S[i, 2] -= b
+                S[i, 1] += bzp * b * 0.5
+                S[i, 3] -= bzp * a * 0.5
+
+
+@njit(**NJ)
+def sol_k0_kick_all(S, n, kre, kim):
+    for i in range(n):
+        pr = 1.0 + S[i, 5]
+        S[i, 1] -= kre / pr
+        S[i, 3] += kim / pr
+
+
+@njit(**NJ)
+def sol_setr0_kin(S, n, bz):
+    """放射の基準点 (力学的運動量の向き)"""
+    for i in range(n):
+        bzp = bz / (1.0 + S[i, 5])
+        S[i, 7] = S[i, 1] + bzp * S[i, 2] * 0.5
+        S[i, 8] = S[i, 3] - bzp * S[i, 0] * 0.5
+        S[i, 9] = S[i, 4]
+
+
+@njit(**NJ)
+def sol_tradk_all(S, n, al, bz, fluc, rs, p0, anrad, cuc):
+    """tradk を力学的運動量で (正準 → 力学 → tradk → 基準点の更新 → 正準。正準へ戻すときの p は放射の後の値)"""
+    for i in range(n):
+        bzp = bz / (1.0 + S[i, 5])
+        S[i, 1] += bzp * S[i, 2] * 0.5
+        S[i, 3] -= bzp * S[i, 0] * 0.5
+        tradk_core1(i, S, al, 0.0, fluc, rs, p0, anrad, cuc)
+        setr0_1(i, S)
+        bzp = bz / (1.0 + S[i, 5])
+        S[i, 1] -= bzp * S[i, 2] * 0.5
+        S[i, 3] += bzp * S[i, 0] * 0.5
+
+
+def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True, fr_out=True, hook=None, kick=None, wk=None):
+    """v2: ソレノイド領域 (bz≠0) の中の MULT と CAVI (tsol.f の icMULT → tmulti1、icCAVI → tmultiacc を bz つきで)。
+    K64 の tmulti の骨組み (半分の本体、[多極の蹴り、RF の蹴り、本体] × ndiv、端のフリンジ) はそのままで、本体を
+    「ソレノイド + 四極」または「ソレノイド + 双極」の厳密解にする。蹴りは位置を変えないので正準運動量にそのまま足せる。
+    放射 (RAD) は本体と蹴りを合わせた向きの変化から、分割ごとに力学的運動量で tradk。
+    C2: TRPT の加速 (vnominal = VOLT·sin(PHI)≠0: tmultiacc と同じ重み ws の分割、空洞の後の基準運動量 p2 に規格化し直して
+    新しい ph を返す。bz はこの要素の入口の運動量で規格化した値のまま)、wake (kick・wk: 分割ごとに txwake)、
+    AUTOPHI (rf[5]: 位相の基準を設計軌道の到着時刻にする。rf[3] の phic に w·DZ が入っている)。
+    戻り値: 加速したときは新しい ph、そうでなければ None"""
+    (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps0, radok, rf) = pr
+    p0, h0 = ph.p0, ph.h0
+    use_rf = rf is not None and (trpt or rfsw)
+    vnominal = 0.0
+    aphi = False
+    if use_rf:
+        v, w, wi, phic, vnom_tp = rf[:5]
+        aphi = len(rf) > 5 and bool(rf[5])
+        vnominal = vnom_tp if trpt else 0.0
+    krad = rad and radok
+    nz = al != 0.0
+    mult_rot_in(S, n, dx, dy, ct, st)
+    akr1 = akr[1].real if nmmax >= 1 else 0.0
+    if akr1 < 0.0:
+        raise NotImplementedError('SOL 領域内の MULT: K1 の符号 (theta2 の回転後に負)')
+    akr0 = akr[0]
+    ndiv = max(ndiv0, 1 + int(abs(bz * al) / 0.1))
+    if nz and krad:
+        sol_setr0_kin(S, n, bz)
+        if hook is not None:
+            hook.setr0(S, n, bz)
+        ndiv = max(ndiv, 1 + int(abs(bz * al) / 0.02))     # 放射の刻み (k_sol_bend と同じ理由)
+        ndiv = max(ndiv, ndivrad(abs(akr0), akr1, bz, eps0, h0 * (10.0 if trpt else 1.0)))
+    if use_rf:
+        ndiv = max(ndiv, 1 + int(abs(w * al)))
+    ndiv = min(1000, ndiv)
+    uniform = True
+    if vnominal != 0.0:
+        # tmultiacc: 加速があるときは、運動量が指数関数的に変わるのに合わせて重み ws を等比にする
+        epsr = 1.0 if eps0 == 0.0 else eps0
+        he = h0 + vnominal
+        r = abs(vnominal * (1.0 / h0 + 1.0 / he))
+        ndiv = min(1000, max(ndiv, 1 + int(min(abs(w * al), math.sqrt(r**2 / 3.0 / (epsr * 1e-3))))))
+        if abs(r) > 1e-6:
+            wl = math.asinh(r * (2.0 + r) / 2.0 / (1.0 + r))
+            ndiv = min(1000, max(ndiv, int(math.floor(wl * 10.0 / epsr + 0.5))))
+            r1 = wl / ndiv / 2.0
+            ws1 = 2.0 * math.exp(r1) * math.sinh(r1)
+            we = 1.0 + ws1
+            ws = [0.0] * (ndiv + 2)
+            ws[1] = ws1 / r
+            for i in range(2, ndiv + 1):
+                ws[i] = ws[i - 1] * we
+            uniform = False
+    if uniform:
+        ws = [0.0] + [1.0 / ndiv] * ndiv + [0.0]
+    ws[ndiv + 1] = 0.0
+    if use_rf:
+        pe = _n._h2p(h0 + vnominal) if vnominal != 0.0 else p0
+        vcorr = v * (w * (0.5 / p0 + 0.5 / pe))**2 / 4.0
+        phis = 0.0 if (trpt or aphi) else w * trf0
+        dphis = phis - phic
+        if rad or trpt or aphi:
+            offset = math.sin(dphis)
+            offset1 = 0.0
+        else:
+            offset = math.sin(dphis) - math.sin(phis)
+            offset1 = math.sin(phis)
+    ak1 = akr1 * ws[1] * 0.5
+    al1 = al * ws[1] * 0.5
+    ak01 = akr0 * ws[1] * 0.5
+    if nz and fringe and fr_in:
+        if use_rf:
+            _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+        mult_fringe_all(S, n, akr, dofr, nmmax, al, 1.0, False)
+    fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
+    fw_save = kick.fw if kick is not None else 0.0
+    sv = 0.0
+    for m in range(1, ndiv + 1):
+        wsm = ws[m]
+        if kick is not None:
+            # wake の重み: K64 (tcav.f・tmulti.f) は fw0·(ws(n) + ws(n−1)·0.5) で、分割が 2 以上だと合計が 1.5 倍になる。v2 (C2) は台形の重み
+            kick.fw = fw0 * ws[1] * 0.5 if m == 1 else fw0 * (wsm + ws[m - 1]) * 0.5
+            kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, m == 1, p0, h0)
+        akrm = akr[:nmmax + 1] * wsm
+        if nz:
+            sol_body_all(S, n, al1, ak1, bz, ak01.real, ak01.imag, rs)
+            if krad:
+                if hook is not None:
+                    hook.tradk(S, n, al1, bz)              # track6 の経路 (スピン追跡): 放射とスピンの歳差を Python の tradk で
+                else:
+                    sol_tradk_all(S, n, al1, bz, fluc, rs, p0, ph.anrad, ph.cuc)
+            wm = 0.5 * (ws[m] + ws[m + 1])
+            al1 = al * wm
+            ak1 = akr1 * wm
+            ak01 = akr0 * wm
+            if nmmax >= 2:
+                mult_kick_all(S, n, akrm, nmmax, 2)
+        elif nmmax >= 1:
+            mult_kick_all(S, n, akrm, nmmax, 1)
+        elif akrm[0] != 0.0:
+            sol_k0_kick_all(S, n, akrm[0].real, akrm[0].imag)
+        if use_rf:
+            dzn = 0.0
+            if vnominal != 0.0:
+                sv += vnominal * wsm
+                h2 = h0 + sv
+                p2 = _n._h2p(h2)
+                dp2 = sv * (h2 + h0) / (p2 + p0) / p0
+                pr2 = 1.0 + dp2
+                dvn = -dp2 * (1.0 + pr2) / h2 / (h2 + pr2 * h0)
+                dzn = -dvn * al * wsm * 0.5
+            mult_rf_kick_all(S, n, v, vcorr, w, wi, dphis, offset, offset1, wsm, dzn, p0, h0)
+    if kick is not None:
+        kick.fw = fw0 * ws[ndiv] * 0.5
+        kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
+        kick.fw = fw_save
+    if nz:
+        sol_body_all(S, n, al1, ak1, bz, ak01.real, ak01.imag, rs)
+        if fringe and fr_out:
+            mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
+            if use_rf:
+                _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+        if krad:
+            if hook is not None:
+                hook.last = True
+                hook.tradk(S, n, al1, bz)
+            else:
+                sol_tradk_all(S, n, al1, bz, fluc, rs, p0, ph.anrad, ph.cuc)
+    mult_rot_out(S, n, dx, dy, ct, st)
+    if vnominal != 0.0:
+        h2 = h0 + vnominal
+        p2 = _n._h2p(h2)
+        dp2p2 = vnominal * (h2 + h0) / (p2 + p0) / p2
+        # 正準運動量 px = (力学的) − bz·y/2 の bz は入口の p0 で規格化した値。出口では p2 で規格化し直す: S[:,1] は p で割った値
+        # (粒子の p は変わらない) なので、そのままで領域の次の要素 (bz·p0/p2) の正準運動量になっている
+        mult_exit_momentum(S, n, p0, p2, dp2p2, h2)
+        ph2 = copy.copy(ph)
+        ph2.set_pgev(p2 * ph.amass)
+        return ph2
+    return None
+
+
 # ============================================================================ ラティスの表 (track6n.Prog の拡張)
-def compile_mult(el, ph=None):
+def compile_mult(el, ph=None, dz=0.0):
     """MULT → (K_MULT, params) / nmmax<0 → (K_DRIFT, (L,))。track6 _tmulti_ens と同じ前処理 (_lat._mult_params)。
     VOLT+DVOLT≠0 の MULT は ph (基準運動量 ph.omega0、charge、amass) を渡すと RF の引数 rf (tmulti1 → tmultiacc) を付ける。
     実行時に (TRPT か RFSW) なら tmultiacc (mult_full)、そうでなければ RF なしの tmulti (k_mult)"""
@@ -546,7 +901,8 @@ def compile_mult(el, ph=None):
     if vc != 0.0:
         if ph is None:
             raise NotImplementedError('track6n_ext: MULT の RF は未対応')
-        if g(el, 'AUTOPHI') != 0.0:
+        aphi = g(el, 'AUTOPHI') != 0.0
+        if aphi and not _compat.v2():
             raise NotImplementedError('track6n_ext: MULT の AUTOPHI は未対応 (位置の z が要る)')
         harm = g(el, 'HARM')
         w = 2.0 * math.pi * g(el, 'FREQ') / _n.CVELOC if harm == 0.0 else ph.omega0 * harm / _n.CVELOC
@@ -554,6 +910,9 @@ def compile_mult(el, ph=None):
         # tffs.f:1393: vnominal = VOLT/amass |charge| sin(-PHI sign(charge)) (TRPT のときだけ。DVOLT は含まない)
         rf = (vc / ph.amass * abs(ph.charge), w, (1.0 / w if w != 0.0 else 0.0), (g(el, 'PHI') + g(el, 'DPHI')) * ph.charge,
               g(el, 'VOLT') / ph.amass * abs(ph.charge) * math.sin(-g(el, 'PHI') * sgn))
+        if aphi:
+            # v2 (C2): AUTOPHI (tturn.f: ph = DPHI + DZ·w)
+            rf = (rf[0], rf[1], rf[2], rf[3] + dz * w * ph.charge, rf[4], True, dz)
     if nmmax < 0 and rf is None:
         return K_DRIFT, (al,)
     if nmmax < 0:
@@ -665,7 +1024,8 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
     kick (WakeKick) と wk があれば分割ごとに txwake。新しい ph (空洞の後の基準運動量) を返す (tturn が周の終わりに元へ戻す)"""
     import copy
     (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps0, radok, rf) = pr
-    v, w, wi, phic, vnom_tp = rf
+    v, w, wi, phic, vnom_tp = rf[:5]
+    aphi = len(rf) > 5 and bool(rf[5])          # v2 (C2): AUTOPHI (位相の基準は設計軌道の到着時刻。phic に w·DZ が入っている)
     vnominal = vnom_tp if trpt else 0.0
     p0, h0 = ph.p0, ph.h0
     krad = rad and radok
@@ -700,9 +1060,9 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
     else:
         ws = [0.0] + [1.0 / ndiv] * ndiv + [0.0]
     ws[ndiv + 1] = 0.0
-    phis = 0.0 if trpt else w * trf0                  # autophi は未対応
+    phis = 0.0 if (trpt or aphi) else w * trf0
     dphis = phis - phic
-    if rad or trpt:
+    if rad or trpt or aphi:
         offset = math.sin(dphis)
         offset1 = 0.0
     else:
@@ -720,7 +1080,8 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
     for m in range(1, ndiv + 1):
         wsm = ws[m]
         if kick is not None:
-            kick.fw = fw0 * ws[1] * 0.5 if m == 1 else fw0 * (wsm + ws[m - 1] * 0.5)
+            # wake の重み: K64 (tcav.f・tmulti.f) は fw0·(ws(n) + ws(n−1)·0.5) で、分割が 2 以上だと合計が 1.5 倍になる。v2 (C2) は台形の重み
+            kick.fw = fw0 * ws[1] * 0.5 if m == 1 else (fw0 * (wsm + ws[m - 1]) * 0.5 if _compat.v2() else fw0 * (wsm + ws[m - 1] * 0.5))
             kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, m == 1, p0, h0)
         akrm = akr[:nmmax + 1] * wsm
         if nz:
@@ -788,10 +1149,12 @@ def compile_sol_region(prog, elements, i, ph):
     (track6 _tsol_region と同じ制限)。track6n.Prog.__init__ から呼ばれる"""
     g = _t6._g
     sb = elements[i]
-    if any(g(sb, k) for k in ('DX', 'DY', 'DZ', 'CHI1', 'CHI2', 'CHI3')):
-        raise NotImplementedError('track6n_ext: SOL のずれ・回転 (trots)')
-    if g(sb, 'F1') != 0.0:
-        raise NotImplementedError('track6n_ext: SOL の F1 (tradks)')
+    v2 = _compat.v2()
+    if not v2:
+        if any(g(sb, k) for k in ('DX', 'DY', 'DZ', 'CHI1', 'CHI2', 'CHI3')):
+            raise NotImplementedError('track6n_ext: SOL のずれ・回転 (trots)')
+        if g(sb, 'F1') != 0.0:
+            raise NotImplementedError('track6n_ext: SOL の F1 (tradks)')
     ke = None
     for j in range(i + 1, len(elements)):
         e = elements[j]
@@ -801,24 +1164,54 @@ def compile_sol_region(prog, elements, i, ph):
     if ke is None:
         raise ValueError('track6n_ext: ソレノイドの終端 (SOL BOUND=1) がない')
     bzs = _t6._tfbzs(sb, ph)
-    prog._add(K_SOL_FRIN, (bzs if g(sb, 'DISFRIN') == 0.0 else 0.0,), sb.name, True, SM_START)
+    try:
+        ph.p0_ref = ph.p0                    # この表の bz を規格化した基準運動量 (step_kind が加速の後に p0_ref/p0 を掛ける)
+    except AttributeError:
+        pass
+    fent = fext = None
+    if v2:
+        # C2: SOL のずれ・回転 (tsgeo が決める DX DY DZ CHI1..3) と F1 の放射
+        from . import sgeo as _sg
+        fent, fext = _sg.region_frames(elements, i, ph)
+
+    def edge(el, rot, frame, bz0, bz1):
+        dbz = (bz1 - bz0) if g(el, 'DISFRIN') == 0.0 else 0.0
+        f1 = g(el, 'F1') if v2 else 0.0
+        if frame is None and f1 == 0.0:
+            return K_SOL_FRIN, (dbz,)
+        r, dx, dy, dz = frame if frame is not None else (np.eye(3), 0.0, 0.0, 0.0)
+        return K_SOL_EDGE, (rot if frame is not None else 0, r, dx, dy, dz, dbz, bz0, bz1, f1,
+                            g(el, 'RAD') == 0.0 and f1 != 0.0 and bz0 != bz1)
+
+    k_, p_ = edge(sb, 1, fent, 0.0, bzs)
+    prog._add(k_, p_, sb.name, True, SM_START)
     for l in range(i + 1, ke + 1):
         el = elements[l]
         name = type(el).__name__
         sm = SM_END if l == ke else SM_IN
+        _t6._sol_check_type(el)
         if isinstance(el, Drift) and getattr(el, '_apert', False):
-            raise NotImplementedError('track6n_ext: ソレノイド領域内の APERT (tsol の tapert1) は未対応')
+            # tsol.f の icAprt → tapert1 (領域の外と同じ。x, y だけを見るので正準運動量のままでよい)。la は変えない (track6n.turn)
+            prog._add(_n.K_APERT, (_n.apert_params(el),), el.name, True, sm)
+            continue
         if isinstance(el, Drift):
             prog._add(K_SOL_DRIFT, (el.L, bzs, g(el, 'RAD') == 0.0), el.name, True, sm)
         elif isinstance(el, Quadrupole):
-            k, p = compile_sol_quad(el, bzs)
-            prog._add(k, p, el.name, True, sm)
+            if v2 and g(el, 'K1') * el.L == 0.0 and not any(g(el, k) for k in ('F1', 'FRINGE')):
+                # C2: K1=0 (か L=0) の四極はソレノイドの中のドリフト (tquad の ak=0)
+                prog._add(K_SOL_DRIFT, (el.L, bzs, g(el, 'RAD') == 0.0), el.name, True, sm)
+            else:
+                k, p = compile_sol_quad(el, bzs)
+                prog._add(k, p, el.name, True, sm)
         elif name == 'Solenoid':
             bz1 = 0.0 if l == ke else _t6._tfbzs(el, ph)
-            if any(g(el, k) for k in ('DX', 'DY', 'DZ', 'CHI1', 'CHI2', 'CHI3')) or g(el, 'F1') != 0.0:
+            if not v2 and (any(g(el, k) for k in ('DX', 'DY', 'DZ', 'CHI1', 'CHI2', 'CHI3')) or g(el, 'F1') != 0.0):
                 raise NotImplementedError('track6n_ext: SOL のずれ・回転・F1')
-            prog._add(K_SOL_FRIN, ((bz1 - bzs) if g(el, 'DISFRIN') == 0.0 else 0.0,), el.name, True, sm)
+            k_, p_ = edge(el, -1, fext if l == ke else None, bzs, bz1)
+            prog._add(k_, p_, el.name, True, sm)
             bzs = bz1
+        elif name in ('Bend', 'Multipole', 'Cavity') and _compat.v2():
+            _compile_sol_v2(prog, el, name, bzs, ph, sm, l)
         elif name == 'BeamBeam':
             raise NotImplementedError('track6n_ext: ソレノイド領域内の BEAMBEAM (K64 の tsol が SIGSEGV で落ちるので比較できない)')
         elif el.L == 0.0:
@@ -828,26 +1221,109 @@ def compile_sol_region(prog, elements, i, ph):
     return ke
 
 
+def _compile_sol_v2(prog, el, name, bzs, ph, sm, idx=None):
+    """v2: ソレノイド領域内の BEND・MULT・CAVI (docs/21 B69、docs/46)。K64 の tsol.f の呼び出しの意図どおり:
+    BEND は直線の座標のまま一様な双極磁場 (tdrift(al, bzs, phiy, phix))、MULT は tmulti1、CAVI は tmultiacc (どちらも bz つき)。
+    gs (この K64 のビルド) は領域内の偏向をほぼ無視するので、根拠は一様磁場の中の運動方程式の数値積分との一致 (test_v2_C_sol.py)"""
+    g = _t6._g
+    if name == 'Bend':
+        if g(el, 'K1') != 0.0 or g(el, 'DX') != 0.0 or g(el, 'DY') != 0.0:
+            raise NotImplementedError(f'SOL 領域内の BEND {el.name}: K1・DX・DY は未対応 (tsol.f も使わない。四極成分は QUAD か MULT で入れる)')
+        theta = g(el, 'ROTATE') + g(el, 'DROTATE')
+        phi = float(el.ANGLE) + g(el, 'K0')
+        al = float(el.L)
+        if al == 0.0:
+            # 長さ 0 の双極: 蹴りだけ
+            prog._add(K_SOL_MULT, ((0.0, 0, np.array([complex(phi * math.cos(theta), phi * math.sin(theta))]), np.array([False]), 1,
+                                    0.0, 0.0, 1.0, 0.0, False, 0.0, False, None), bzs), el.name, True, sm)
+            return
+        prog._add(K_SOL_BEND, (al, bzs, phi * math.cos(theta), phi * math.sin(theta), g(el, 'RAD') == 0.0), el.name, True, sm)
+        return
+    if name == 'Multipole':
+        if g(el, 'ANGLE') != 0.0:
+            raise NotImplementedError(f'SOL 領域内の MULT {el.name}: ANGLE≠0 は未対応')
+        k, p = compile_mult(el, ph, dz=(_n.autophi_dz(getattr(prog, 'l0', 0) + idx) if idx is not None else 0.0))
+        if k == K_DRIFT:
+            prog._add(K_SOL_DRIFT, (p[0], bzs, g(el, 'RAD') == 0.0), el.name, True, sm)
+        elif bzs == 0.0:
+            prog._add(k, p, el.name, True, sm)               # bz=0 の領域内は普通の MULT
+        else:
+            prog._add(K_SOL_MULT, (p, bzs), el.name, True, sm)
+        return
+    # Cavity
+    sub = _n.Prog([el], ph, l0=-10**9)                # (AUTOPHI の DZ はここでは足さない: 下で領域の中の位置の DZ を足す)
+    k, p = sub.kinds[0], sub.params[0]
+    aphi = g(el, 'AUTOPHI') != 0.0 and k == _n.K_CAV
+    dz_ = _n.autophi_dz(getattr(prog, 'l0', 0) + idx) if (aphi and idx is not None) else 0.0
+    if bzs == 0.0 or k != _n.K_CAV:
+        if aphi:
+            p = p[:4] + (p[4] + dz_ * p[2] * ph.charge,) + p[5:]
+            if hasattr(prog, 'autophi'):
+                prog.autophi[len(prog.kinds)] = True
+        prog._add(k, p, el.name, True, sm)
+        return
+    (al, v, w, wi, phic, fringe, mfring, vnom, vq) = p
+    if any(q != 0.0 for q in vq):
+        raise NotImplementedError(f'SOL 領域内の CAVI {el.name}: V1・V20・V11・V02 は未対応')
+    rot = g(el, 'ROTATION')
+    prm = (al, 0, np.array([0j]), np.array([False]), 1, g(el, 'DX'), g(el, 'DY'), math.cos(rot), math.sin(rot),
+           fringe, 0.0, False, ((v, w, wi, phic + dz_ * w * ph.charge, vnom, True, dz_) if aphi else (v, w, wi, phic, vnom)))
+    prog._add(K_SOL_MULT, (prm, bzs), el.name, True, sm)
+
+
 # track6n に統合済み: ProgExt / turn_ext は track6n.Prog / track6n.turn の別名 (互換のため残す)
 ProgExt = _n.Prog
 
 
-def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0):
-    """1 要素分のカーネル呼び出し (track6n.turn の分岐 + 新しい kind)"""
+def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, wk=None):
+    """1 要素分のカーネル呼び出し (track6n.turn の分岐 + 新しい kind)。
+    C2: 領域内の CAVI・MULT が TRPT で加速したときは新しい ph を返す (ほかは None)。SOL 領域の bz は compile のときの基準運動量
+    (ph.p0_ref) で規格化してあるので、上流で加速していれば p0_ref/p0 を掛ける (K64 の tfbzs(l) は要素 l の入口の運動量で規格化)"""
     p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
     hr = h0 * tm                                  # ndivrad だけに渡す (TRPT は 10 倍)
+    pref = getattr(ph, 'p0_ref', None)
+    if pref is not None and pref != p0 and kind in (K_SOL_FRIN, K_SOL_EDGE, K_SOL_DRIFT, K_SOL_BEND, K_SOL_MULT, K_SOL_QUAD):
+        sc = pref / p0
+        if kind == K_SOL_FRIN:
+            pr = (pr[0] * sc,)
+        elif kind == K_SOL_EDGE:
+            pr = pr[:5] + (pr[5] * sc, pr[6] * sc, pr[7] * sc) + pr[8:]
+        elif kind == K_SOL_DRIFT:
+            pr = (pr[0], pr[1] * sc, pr[2])
+        elif kind == K_SOL_BEND:
+            pr = (pr[0], pr[1] * sc) + pr[2:]
+        elif kind == K_SOL_MULT:
+            pr = (pr[0], pr[1] * sc)
+        else:
+            pr = pr[:5] + (pr[5] * sc,) + pr[6:]
     if kind == K_MULT:
         (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad, radok, rf) = pr
         k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
                rad and radok, fluc, rs, p0, hr, anrad, cuc)
     elif kind == K_SOL_FRIN:
         k_sol_frin(S, n, pr[0])
+    elif kind == K_SOL_EDGE:
+        (rot, r, dx, dy, dz, dbz, bz0, bz1, f1, radok) = pr
+        k_sol_edge(S, n, rot, r, dx, dy, dz, dbz, bz0, bz1, f1, rad and radok, fluc, rs, p0, anrad, cuc)
     elif kind == K_SOL_DRIFT:
         (al, bz, radok) = pr
         k_sol_drift(S, n, al, bz, rad and radok, fluc, rs, p0, anrad, cuc)
+    elif kind == K_SOL_BEND:
+        (al, bz, ak0x, ak0y, radok) = pr
+        k_sol_bend(S, n, al, bz, ak0x, ak0y, rad and radok, fluc, rs, p0, anrad, cuc)
+    elif kind == K_SOL_MULT:
+        return sol_mult_full(S, n, ph, pr[0], pr[1], trf0, tm != 1.0, rfsw, rad, fluc, rs, kick=kick, wk=wk)
+    elif kind == _n.K_APERT:
+        pass                                  # 行列・COD の写像 (solmap) では絞りは恒等。追跡は track6n.turn が扱う
     elif kind == K_SOL_QUAD:
         (L, ak, ct, st, fringe, bz, radok) = pr
         k_sol_quad(S, n, L, ak, ct, st, fringe, bz, rad and radok, fluc, rs, p0, hr, anrad, cuc)
+    elif kind == _n.K_UND:
+        from . import und as _un
+        if pr[1] != 0.0 or pr[2] != 0.0:
+            _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc)
+        else:
+            _un.k_und(S, n, *pr, p0, h0)
     elif kind == _n.K_DRIFT:
         _n.k_drift(S, n, pr[0])
     elif kind == _n.K_QUAD:
@@ -902,7 +1378,7 @@ def track_particles_ext(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=Tru
     prog = ProgExt(elements, ph)
     if seed is not None:
         _t6.RNG.restore(seed)
-    rs = np.array([_t6.RNG.seed], dtype=np.int64)
+    rs = _n.make_rs(_t6.RNG.seed)
     fl = bool(rad and fluc)
     S = _n.make_state(coords, ph)
     n = S.shape[0]

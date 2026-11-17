@@ -201,6 +201,82 @@ def install(I):
     B['DownhillSimplex'] = _downhillsimplex
 
 
+_ALLOW_SYSTEM = None
+# 環境変数はプロセスの起動時 (このモジュールの import 時) の値だけを見る。スクリプトが SetEnv・Environment で後から書き換えても許可にならない
+_ALLOW_SYSTEM_ENV = os.environ.get('PYSAD_ALLOW_SYSTEM', '').strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+def allow_system(flag=True):
+    """System[cmd] (任意のシェルコマンドの実行) を許可する (True) / 禁止する (False) / 環境変数に従う (None)。
+    既定は禁止。環境変数 PYSAD_ALLOW_SYSTEM=1 (pysad の起動前に設定) でも許可できる。SADScript の中からは変えられない (スクリプトが自分で許可できないように)"""
+    global _ALLOW_SYSTEM
+    _ALLOW_SYSTEM = None if flag is None else bool(flag)
+
+
+def system_allowed():
+    if _ALLOW_SYSTEM is not None:
+        return _ALLOW_SYSTEM
+    return _ALLOW_SYSTEM_ENV
+
+
+def _system_test(I, cmd):
+    """`[ -e path ]`・`[ -d path ]`・`[ -f path ]`・`test -e path` だけは、シェルを使わずに Python で判定する (0: 真、1: 偽)。それ以外は None"""
+    import re
+    import shlex
+    m = re.fullmatch(r'\s*(?:\[\s+(.*?)\s+\]|test\s+(.*?))\s*', cmd, re.S)
+    if not m:
+        return None
+    try:
+        w = shlex.split(m.group(1) if m.group(1) is not None else m.group(2))
+    except ValueError:
+        return None
+    if len(w) != 2 or w[0] not in ('-e', '-d', '-f', '-r', '-s'):
+        return None
+    p = w[1]
+    if not os.path.isabs(p):
+        p = os.path.join(getattr(I, 'cwd', None) or os.getcwd(), p)
+    ok = {'-e': os.path.exists, '-d': os.path.isdir, '-f': os.path.isfile, '-r': lambda q: os.access(q, os.R_OK),
+          '-s': lambda q: os.path.isfile(q) and os.path.getsize(q) > 0}[w[0]](p)
+    return 0.0 if ok else 1.0
+
+
+def system_command(I, a):
+    """System[cmd] (tfProcess_.c System)。任意のコマンドを実行するので、既定では実行しない。
+    許可 (allow_system(True) か PYSAD_ALLOW_SYSTEM=1) があるときだけ、シェルで実行する (作業ディレクトリは Interp.cwd、標準出力は出力先へ)。
+    シェルは既定で OS のもの (Windows は cmd.exe、ほかは /bin/sh)。環境変数 PYSAD_SYSTEM_SHELL に sh・bash の実行ファイルを書くと `<shell> -c cmd`。
+    戻り値: v2 は終了コード (SADHelp の "system return code"。成功は 0)。k64 は K64 と同じ 1 (K64 は起動できれば終了コードに関係なく True を返す)。
+    許可が無いとき: v2 は $Failed (`[ -e path ]` などの存在確認だけは Python で判定して 0/1 を返す)、k64 は従来どおり 0"""
+    import subprocess
+    from . import compat
+    from .sadscript import S, SADError
+    if len(a) != 1:
+        raise SADError('General::narg: Number of arguments is expected to be 1 in System')
+    cmd = a[0]
+    if not isinstance(cmd, str):
+        raise SADError('General::wrongtype: Argument must be Character-string in System')
+    v2 = compat.v2()
+    if not system_allowed():
+        if v2:
+            t = _system_test(I, cmd)
+            if t is not None:
+                return t
+            I.write_unit(6, ' ???-pysad-System[%r] is not executed: shell commands are disabled by default. '
+                            'To allow, set the environment variable PYSAD_ALLOW_SYSTEM=1 or call pysad.miscfn.allow_system(True). \n' % cmd)
+            return S('$Failed')
+        I.write_unit(6, f'[pysad] System[{cmd!r}] は実行しません\n')
+        return 0.0
+    sh = os.environ.get('PYSAD_SYSTEM_SHELL', '').strip()
+    try:
+        r = subprocess.run([sh, '-c', cmd] if sh else cmd, shell=not sh, cwd=getattr(I, 'cwd', None) or None,
+                           stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    except OSError as e:
+        raise SADError('System::error: System: %s' % e)
+    out = r.stdout.decode('utf-8', 'replace') if r.stdout else ''
+    if out:
+        I.write_unit(6, out if out.endswith('\n') else out + '\n')
+    return float(r.returncode) if v2 else 1.0
+
+
 def install_small(I):
     """Short[x, n] (出力: x を書いて Null。n は無視 — gs で確認)、Inequality[a, op1, b, op2, c, …] (連なった比較)"""
     B = I.builtins
@@ -229,14 +305,18 @@ def install_small(I):
 
     def messagename(a):
         # gs: MessageName[f, "tag"] の関数形は f を見ず、General::tag の本文 (未定義なら下の文字列) を返す。f::tag の形 (Message の本文) とは別
+        # ここに来るのは f::tag が未定義のとき (定義済みなら規則が先に当たり、関数形 MessageName[f,"tag"] でも f の本文を返す: B70 の修正にあたる)。
+        # General::tag が定義されていればその本文 (gs: General::mytag="my `1`" のあと h::mytag は "my `1`")
         if len(a) == 2 and isinstance(a[1], str):
+            if not (isinstance(a[0], Sym) and a[0].name == 'General'):
+                g = I.eval(Expr(S('MessageName'), [S('General'), a[1]]))
+                if isinstance(g, str) and not g.startswith('Undefined MessageName'):
+                    return g
             return 'Undefined MessageName General::"%s"' % a[1]
         return Expr(S('MessageName'), list(a))
     B['MessageName'] = messagename
 
-    # Fork[]: 親では子のプロセス番号 (正の実数)、子では 0。pysad は fork しないので常に親の側 (子のための分岐は実行しない)。
-    # 並列の計算は Parallelize (fileops.py) が逐次で行う
-    B['Fork'] = lambda a: float(os.getpid())
+    # Fork[] は fileops.install_parallel (POSIX では本当に分ける。Windows は v2 でエラー、k64 で従来どおり pid を返す)
 
 
 def install_matrix(I):
@@ -359,7 +439,19 @@ def install_system(I):
         return out or [S('None')]
     B['Attributes'] = attributes
     B['ToInputString'] = lambda a: I.to_str(a[0], quote=True)
-    B['Context'] = lambda a: 'System`' if not a else '`'
+    def context(a):
+        # Context[] は System` (gs)。Context[sym] は記号の文脈: 文脈つきの名前 (Stat`x) はその文脈、利用者が作った大域の記号は `、組み込みは System`
+        if not a:
+            return 'System`'
+        x = a[0]
+        if isinstance(x, Sym):
+            n = x.name
+            if '`' in n and not n.endswith('`'):
+                return n[:n.rindex('`') + 1]
+            if n not in I._root_syms and (n in B or n in I.autoload):
+                return 'System`'
+        return '`'
+    B['Context'] = context
     B['SetEnv'] = lambda a: (os.environ.__setitem__(str(a[0]), str(a[1])), Null)[1]
     B['GetEnv'] = lambda a: os.environ.get(str(a[0]), '')
     B['GetGID'] = lambda a: float(os.getgid()) if hasattr(os, 'getgid') else 0.0

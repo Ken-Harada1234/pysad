@@ -277,11 +277,20 @@ def acc_step(el, cod_in, gb0: float, gb1: float, charge: float = 1.0, amass: flo
     v20a = vn * (w * (0.5 / p0 + 0.5 / p1g))**2 / 4.0
     v02a = v20a
     dhg = (p1g - p0) * (p1g + p0) / (h1g + h0) / ndiv if p1g != p0 else 0.0
+    # v2 (C2) AUTOPHI: 軌道は到着時刻によらず位相 phic で通る (tcave.f・tmulte.f の autophi: phii = phic)
+    from . import compat as _cmp
+    aphi = _g(el, 'AUTOPHI') != 0.0 and _cmp.v2()
+
+    def _phs():
+        if not aphi:
+            return phis
+        p1_ = p0 * (1.0 + st.cod[5])
+        return w * (-st.cod[4] / (p1_ / _p2h(p1_)))
     if rfsw:
         offset1 = 0.0
         s0 = 0.0
         if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
-            _cavfrie_piece(st, al, v, w, phis - phic, s0, p0)
+            _cavfrie_piece(st, al, v, w, _phs() - phic, s0, p0)
         dgb = 0.0
         for n in range(ndiv):
             if al != 0.0:
@@ -290,13 +299,13 @@ def acc_step(el, cod_in, gb0: float, gb1: float, charge: float = 1.0, amass: flo
                 else:
                     _tdrife0(st, aln)
                     st.cod[4] += _tgetdvh(p0, h0, dgb) * aln
-            _acc_kick_piece(st, p0, vn, w, wi, phic, phis, offset1, v20a, v02a)
+            _acc_kick_piece(st, p0, vn, w, wi, phic, _phs(), offset1, v20a, v02a)
             dgb += dhg
         if al != 0.0:
             _tdrife0(st, aln * 0.5)
             st.cod[4] += _tgetdvh(p0, h0, dgb) * aln * 0.5
             if fringe and mfring >= 0 and mfring != 1:
-                _cavfrie_piece(st, al, -v, w, phis - phic, s0, p0)
+                _cavfrie_piece(st, al, -v, w, _phs() - phic, s0, p0)
     else:
         if al != 0.0:
             _tdrife0(st, al)
@@ -329,6 +338,11 @@ def make_acc(elements, p0: float, charge: float = 1.0, amass: float = ELMASS, om
     gb = gammab_profile(elements, p0, charge, amass)
 
     def step(el, i, cod):
+        sm = getattr(el, '_solmap', None)
+        if sm is not None and sm[0] == 16:
+            # C2: SOL 領域 (bz≠0) の中の CAVI・RF つき MULT (track6n_ext.K_SOL_MULT): 追跡のカーネル (tmultiacc を bz つきで) の数値微分
+            from . import solmap as _sm
+            return _sm.step(el, cod, p0=gb[i], trpt=True)
         return acc_step(el, cod, gb[i], gb[i + 1], charge=charge, amass=amass, omega0=omega0,
                         trf0=trf0, radcod=radcod, rfsw=rfsw)
     return {'gb': gb, 'idx': idx, 'step': step}

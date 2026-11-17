@@ -43,6 +43,7 @@ import numpy as np
 from .match6 import Matcher, _sad_get, EPS, EPS1, _fuzz, _log10, _fmincube, _Res, PI2, M_EULER, \
     FLIM1, FLIM2, AIMP1, AIMP2, BADC1, BADC2, AMEDC1, AMEDC2, ALIT, WLMIN, RTOL1, AMTOL
 from .sadscript import fmt_g
+from . import compat as _compat
 
 # ---------------------------------------------------------------------------
 # tffitcode の添字 (tffs.f 104 行目〜)
@@ -1388,9 +1389,31 @@ def tdgeo_term(geo, kfname, ne, k, el, tname, key, s, iorgr=1):
     return 0.0
 
 
-def _geo_var_supported(v):
-    """tdgeo をここで直訳した変数 (DRIFT の L、BEND の ANGLE・L)。それ以外は幾何の条件の列を中心差分にする"""
-    return (v['type'], v['key']) in (('Drift', 'L'), ('Bend', 'ANGLE'), ('Bend', 'L'))
+def _geo_var_supported(v, m=None):
+    """tdgeo をここで直訳した変数 (DRIFT の L、BEND の ANGLE・L)。それ以外は幾何の条件の列を中心差分にする。
+    v2 (C2): SOL 領域 (BOUND≠0 の SOL の間) の中の要素は、軌道がソレノイドの軸を外れていると L や ANGLE を変えたときに
+    出口の位置・向きが軸方向の伸び以外にも動く (tsgeo が軌道を追う)。K64 の tdgeo は領域の外と同じ式を使うが、v2 は中心差分にする"""
+    if (v['type'], v['key']) not in (('Drift', 'L'), ('Bend', 'ANGLE'), ('Bend', 'L')):
+        return False
+    if m is not None and _compat.v2():
+        inside = _sol_region_positions(m.lat.elements)
+        if inside and any(k in inside for k in _positions(m, v)):
+            return False
+    return True
+
+
+def _sol_region_positions(elements):
+    """SOL 領域の中にある要素の位置 (1 始まり) の集合"""
+    out = set()
+    start = None
+    for k, el in enumerate(elements, start=1):
+        if type(el).__name__ == 'Solenoid' and float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0:
+            if start is None:
+                start = k
+            else:
+                out.update(range(start + 1, k))
+                start = None
+    return out
 
 
 def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.ndarray, List[int]]:
@@ -1422,10 +1445,10 @@ def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.n
         iv = _variable_iv(v)
         geo_rows = any(info is not None and isinstance(info[0], str) for info in rowinfo)
         nongeo_rows = any(info is not None and not isinstance(info[0], str) for info in rowinfo)
-        if iv is None and not (geo_rows and not nongeo_rows and _geo_var_supported(v)):
+        if iv is None and not (geo_rows and not nongeo_rows and _geo_var_supported(v, m)):
             numeric_cols.append(ii)
             continue
-        if geo_rows and not _geo_var_supported(v):
+        if geo_rows and not _geo_var_supported(v, m):
             numeric_cols.append(ii)                # 幾何の条件があり、変数が tdgeo の未移植の型 (四極の DX・DY など): この列は中心差分
             continue
         geo_arr = None

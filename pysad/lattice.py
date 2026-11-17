@@ -202,6 +202,7 @@ _XYTH = 0.375      # tffs.f:210 xyth (x-y モードの入れ替え判定)
 
 
 from .perfkern import twiss_chain as _twiss_chain_nb, TW_KEYS as _TW_KEYS
+from . import compat as _compat
 
 
 def _chain(tw_cur: dict, el_mats, clamp: bool, check: bool):
@@ -227,7 +228,7 @@ def _transport_twiss(twiss0: dict, M: np.ndarray, clamp: bool = True, gr: float 
     twiss0 : dict  入口 Twiss パラメータ (ax bx ay by nx ny ex epx ey epy r1..r4 detr)
     M      : ndarray (6,6) 転送行列
 
-    gr     : float  qmat2twiss の trpt の gr = gammab(l)/gammab(l+1) (加速要素)。非結合の枝で入口の分散に掛ける
+    gr     : float  qmat2twiss の trpt の gr = gammab(出口)/gammab(入口) (加速要素)。非結合の枝で入口の分散に掛ける
                     (結合の枝では SAD も掛けない)
 
     Returns
@@ -1083,20 +1084,22 @@ def _mult_params(el) -> dict:
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     al = el.L
     knl = {int(k): float(v) for k, v in (getattr(el, 'KnL', {}) or {}).items() if v}
-    nmmax = max(knl) if knl else -1
-    th1, cr1 = _akang(knl.get(1, 0.0), 0.0, al)
+    # スキュー成分 SK_n (tpara: akr(n) = cmplx(K_n, SK_n)·cr1^(n+1)、cr1 は複素 K1 の主軸)。以前は無視していた (pysad の不具合)
+    ksl = {int(k): float(v) for k, v in (getattr(el, 'KsL', {}) or {}).items() if v}
+    nmmax = max(list(knl) + list(ksl)) if (knl or ksl) else -1
+    th1, cr1 = _akang(knl.get(1, 0.0), ksl.get(1, 0.0), al)
     theta2 = g('ROTATION') + g('DROTATE') + th1
     akr = []
     cr = cr1
     for n in range(nmmax + 1):
-        akr.append(knl.get(n, 0.0) * cr)
+        akr.append((complex(knl.get(n, 0.0), ksl[n]) if n in ksl else knl.get(n, 0.0)) * cr)
         cr = cr * cr1
     eps = 0.005 * (g('EPS') or 1.0)
     ndiv = 1
     if al != 0.0:
         for n in range(2, nmmax + 1):
             ndiv = max(ndiv, int(math.sqrt(0.05**(n - 1) / 6.0 / math.factorial(n - 1) / eps
-                                           * abs(knl.get(n, 0.0) * al))) + 1)
+                                           * abs(complex(knl.get(n, 0.0), ksl.get(n, 0.0)) * al))) + 1)
     return dict(al=al, knl=knl, nmmax=nmmax, cr1=cr1, theta2=theta2, akr=akr, ndiv=ndiv, eps=eps,
                 dx=g('DX'), dy=g('DY'), fringe=g('DISFRIN') == 0.0, mfring=int(round(g('FRINGE'))),
                 bfrm=g('K0FR') == 0.0)
@@ -1219,6 +1222,27 @@ def _tsoldz_cod(cod: np.ndarray, al: float, bxs: float, bys: float, dv: float) -
     cod[3] = pyi + pty * dcosphi + pby * sinphi
     cod[4] += ((dpl * phiz - dphizsq * pr) * xsinphi + dpz0 * sinphi - pbz * dcosphi) * alb - dv * al
     return cod
+
+
+def _mult_fringe_psi(el):
+    """MULT (L≠0) の端の縦磁場の積分 ∫Bs ds/(Bρ) = ψ(x, y): 横磁場 By + i Bx = Σ k_n z^n/n! (k_n = 積分強度/L、z = x + i y) の
+    スカラーポテンシャル ψ = Im Σ k_n z^(n+1)/(n+1)! (∂ψ/∂x = Bx、∂ψ/∂y = By)。座標は要素の局所座標 (ずれ・回転の後)。
+    v2 の Emittance[] (POL) が入口で +ψ、出口で -ψ を bsir0 に入れる。追跡の tmulti・tsolqu と同じ量"""
+    pm = _mult_params(el)
+    al, nmmax, akr = pm['al'], pm['nmmax'], pm['akr']
+    ct, st = math.cos(pm['theta2']), math.sin(pm['theta2'])
+    dx, dy = pm['dx'], pm['dy']
+
+    def psi(c):
+        if al == 0.0 or nmmax < 0:
+            return 0.0
+        cl = _mult_rot_in(c, dx, dy, ct, st)
+        z = complex(cl[0], cl[2])
+        g = 0j
+        for n in range(nmmax, -1, -1):
+            g = (g + akr[n]) * z / (n + 1)
+        return g.imag / al
+    return psi
 
 
 def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
@@ -1934,8 +1958,14 @@ def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
             a = (c[1] / pr)**2 + (c[3] / pr)**2
             dpzi = (math.sqrt(1.0 - a) - 1.0) * pr
             J[4, 5] = dpzi * (pr + 1.0) / (pr + dpzi)
-            return J
-        return _tbrote_jac(c, alg, phig, dxr, dz, dtheta, 0.0, True)[1]
+        else:
+            J = _tbrote_jac(c, alg, phig, dxr, dz, dtheta, 0.0, True)[1]
+        if _compat.v2():
+            # v2 (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。K64 は tbrote が回転行列を上書きして落とす
+            R = np.eye(6)
+            R[:4, :4] = [[ct, 0., -st, 0.], [0., ct, 0., -st], [st, 0., ct, 0.], [0., st, 0., ct]]
+            J = J @ R
+        return J
     if simple:
         J = np.eye(6)
         if th != 0.0:
@@ -2143,7 +2173,7 @@ def _bend_step_fast(el, cod):
     T = np.eye(6)
     r = _ek.k_bend(c, T, _EK_Z66, _EK_Z66, _EK_Z6, _EK_Z66, _EK_S3, _ek_ph4(), float(el.L), ang, k0, k1,
                    g('E1'), g('E2'), has_chg, dx, dy, dz, th, dth, alg, phig,
-                   False, False, False, True, False, False)
+                   False, False, False, True, False, False, _compat.v2())
     if r != 0:
         return None
     return c, T
@@ -2168,7 +2198,7 @@ def _thin_step_fast(L, ak, kord, dx, dy, th, cod):
     c = np.array(cod, dtype=float)
     T = np.eye(6)
     r = _ek.k_thin(c, T, _EK_Z66, _EK_Z66, _EK_S3, _ek_ph4(), float(L), float(ak), int(kord), dx, dy, th,
-                   False, False, True, False)
+                   False, False, True, False, _compat.v2())
     if r != 0:
         return None
     return c, T
@@ -2520,7 +2550,7 @@ def _one_turn_cod_matrix(elements, delta: float,
     i = 0
     while i < n:
         i, why = turn4(i, pack.kind, pack.has_off, pack.P, pack.Mlin, pack.Klin, pack.T0, pack.hasT0,
-                       cod, M_total, mats, cods, delta, _ek_ph4(), _EK_S3)
+                       cod, M_total, mats, cods, delta, _ek_ph4(), _EK_S3, _compat.v2())
         if i >= n:
             break
         el = elements[i]
@@ -3148,9 +3178,16 @@ def _ins_twiss_acc(elements, twiss0: dict, c0: np.ndarray, delta: float, acc: di
             if g1 != g0:
                 M = M.copy()
                 M[:4, :] *= math.sqrt(g1 / g0)
-                gr = g0 / g1
+                # qmat2twiss: gr = gammab(l)/gammab(l1)、l は要素の出口・l1 = l − 1 は入口 → gr = g1/g0 (δ = Δp/p は加速で g0/g1 倍に
+                # 縮むので、分散 dx/dδ は g1/g0 倍)。以前は逆数 g0/g1 で、入口に分散のある加速区間の EX EPX が gs と合わなかった (C2 で修正)
+                gr = g1 / g0
             else:
                 gr = 1.0
+        elif hasattr(el, '_solmap') and gb[i] != gb[0] and type(el).__name__ not in ('Undulator', 'PhsRot'):
+            # C2: 加速の後の SOL 領域の要素は、bz をその場所の基準運動量で規格化する (tfbzs(l) は gammab(l) を使う)
+            from . import solmap as _sm
+            M, cod_out = _sm.step(el, cod, p0=float(gb[i]))
+            gr = 1.0
         else:
             # qtwiss の各要素は軌道の cod(6) を運動量のずれに使う (加速の後は cod(6) が DP0 からずれる)
             M, cod_out = step(el, cod, float(cod[5]))

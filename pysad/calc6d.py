@@ -313,9 +313,9 @@ class _State6d(_State):
         super().__init__(cod, ph)
         self.radiation = radiation
 
-    def tradke(self, al, phir0, bzh=0.0):
+    def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0):
         if self.radiation:
-            super().tradke(al, phir0, bzh)
+            super().tradke(al, phir0, bzh, tin=tin, tout=tout)
         else:
             self.setr0(bzh)     # tradke の末尾 (codr0/transr の更新) だけ
 
@@ -336,6 +336,10 @@ def _turn(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
         if record:
             rec.append((st.T.copy(), st.cod.copy()))
         st.setr0()                       # tturne1: 要素ごとに tsetr0
+        if type(el).__name__ == 'PhsRot' and hasattr(el, '_solmap'):      # v2: PHSROT (phsrot.annotate)
+            from . import solemit as _se
+            _se.emit(st, el)
+            continue
         if isinstance(el, Drift):
             _tdrife0(st, el.L)
         elif isinstance(el, Bend):
@@ -356,6 +360,9 @@ def _turn(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
         elif type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
             raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
         elif type(el).__name__ == 'Undulator':
+            if hasattr(el, '_solmap'):       # v2: 磁場のある UND (und.annotate)
+                from . import solemit as _se
+                _se.emit(st, el)
             continue          # UND: K64 の tturne は何もしない (恒等)
         elif type(el).__name__ == 'TCavity':
             _ttcave(st, el)
@@ -537,6 +544,9 @@ def calc6d(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False
     _lat.RFSW = rfsw
     try:
         cod, trf0, found = _closed_orbit(els, ph, rfsw, radcod, radiation)
+        if getattr(lattice, '_z_into_trf0', False) and found and rfsw and radcod:
+            from .emit6d import _z_into_trf0
+            cod, trf0 = _z_into_trf0(cod, trf0, ph)          # RADTAPER (C2): z を trf0 に移す
         # temit: 一周して trans(6,12)、tecalc で r, ri、安定判定
         st = _turn(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod,
                    radiation=radiation, record=True)

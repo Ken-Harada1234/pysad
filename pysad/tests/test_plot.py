@@ -12,6 +12,18 @@ PK = os.environ.get('PYSAD_SAD_PACKAGES')
 needs_pk = pytest.mark.skipif(not PK or not os.path.isdir(PK), reason='環境変数 PYSAD_SAD_PACKAGES (SAD の Packages) が必要')
 
 
+def _read_items(path):
+    """キャンバスの項目の一覧を読む。Tk はマウスの下にある項目に `current` というタグを自動で付ける (試験を走らせたときの
+    マウスの位置で変わる) ので、それだけを外す。種類・座標・ほかのタグはそのまま比べる"""
+    out = []
+    for l in open(path, encoding='utf-8').read().splitlines():
+        l = l.rstrip()
+        if l.endswith(' current'):
+            l = l[:-len(' current')].rstrip()
+        out.append(l)
+    return out
+
+
 def _run(body, display=False, raw=False):
     from pysad.ffscmd import run_sad_string
     if not display:
@@ -64,7 +76,7 @@ TclEval["proc fc {w} {set r {}; foreach c [winfo children $w] {if {[winfo class 
 ''', display=True)
     path = 'pysad_plot_items.txt'
     try:
-        lines = [l.rstrip() for l in open(path, encoding='utf-8').read().splitlines()]
+        lines = _read_items(path)
     finally:
         if os.path.exists(path):
             os.remove(path)
@@ -103,7 +115,7 @@ TclEval["proc fc {w} {set r {}; foreach c [winfo children $w] {if {[winfo class 
     assert 'HEAD Graphics 2' in out
     path = 'pysad_optics_items.txt'
     try:
-        lines = [l.rstrip() for l in open(path, encoding='utf-8').read().splitlines()]
+        lines = _read_items(path)
     finally:
         if os.path.exists(path):
             os.remove(path)
@@ -125,7 +137,7 @@ def _items(name, body, raw=False):
     path = 'pysad_%s_items.txt' % name
     _run(body + _DUMP.replace('PATH', path), display=True, raw=raw)
     try:
-        lines = [l.rstrip() for l in open(path, encoding='utf-8').read().splitlines()]
+        lines = _read_items(path)
     finally:
         if os.path.exists(path):
             os.remove(path)

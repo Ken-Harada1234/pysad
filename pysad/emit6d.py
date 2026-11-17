@@ -32,6 +32,7 @@ from .elements import Element, Drift, Quadrupole, Bend
 from .perfkern import tradke_db as _tradke_db
 from .perfkern_bend import apply_tdb as _apply_tdb, bendecorr as _k_bendecorr, bendebody as _k_bendebody
 from . import elkern as _ek
+from . import compat as _compat
 
 POL_MODE = False      # POL フラグ (emittance6d / emittance_rules が一時的に True にする。_State.calpol の既定値)
 _USE_ELKERN = os.environ.get('PYSAD_NO_ELKERN') != '1'    # False: 要素カーネルを使わず従来の Python の piece で追う (比較用)
@@ -128,10 +129,16 @@ def _unpack(v):
 # tphyzp: エネルギーから決まる定数
 # ---------------------------------------------------------------------------
 
+EMITDIV = [1.0, 1.0, 1.0]      # 大域変数 EMITDIV, EMITDIVB, EMITDIVQ (tfsetparam.f)。ffscmd が Emittance[]・EMIT の前に入れる
+
+
 class _Phys:
     def __init__(self, pgev: float, circ: float, amass: float = ELMASS,
-                 charge: float = 1.0, emidiv: float = 1.0,
-                 emidib: float = 1.0, emidiq: float = 1.0):
+                 charge: float = 1.0, emidiv: Optional[float] = None,
+                 emidib: Optional[float] = None, emidiq: Optional[float] = None):
+        emidiv = EMITDIV[0] if emidiv is None else emidiv
+        emidib = EMITDIV[1] if emidib is None else emidib
+        emidiq = EMITDIV[2] if emidiq is None else emidiq
         hp = PLANKR
         e = ELEMCH
         c = CVELOC
@@ -208,6 +215,10 @@ class _State:
         self.srot[0, 0] = self.srot[1, 1] = self.srot[2, 2] = 1.0
         self.gintd = np.zeros(3)
         self.bsir0 = 0.0
+        # v2: bsir0 (端の縦磁場の積分) の軌道についての微分。bsi_d0 は放射の基準点 (r0) の座標、bsi_d1 は tradke の時点の座標に掛かる係数。
+        # K64 の tradke は bsir0 を定数として扱い、スピン軌道結合 (srot(:,4:9)) にこの微分が入らない (docs/history/v2_changes_A.md の B58)
+        self.bsi_d0 = np.zeros(6)
+        self.bsi_d1 = np.zeros(6)
 
     @property
     def u0(self):
@@ -264,9 +275,12 @@ class _State:
         self.transr = self.T.copy()
         self.bzhr0 = bzh
         self.bsir0 = 0.0         # tsetr0(trans,cod,bzh,bsi0=0)
+        self.bsi_d0 = np.zeros(6)
+        self.bsi_d1 = np.zeros(6)
 
     # photons.f tradke (bzh=0, radcod=F, calpol=F, irad=12)
-    def tradke(self, al, phir0, bzh=0.0):
+    def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0):
+        # tin, tout (v2 のみ非 0): 偏向磁石の端の角 e の tan。場の中の行路は al1 - tin*x(基準点) - tout*x(現在)
         if not self.want_jac and not self.radcod:
             self.bzhr0 = bzh
             return          # cod も変えず、u0・D・B も使わない一周 (z_slip 等)
@@ -298,6 +312,8 @@ class _State:
         p = ph.p0 * pr
         h1 = _p2h(p)
         al1 = al - cod[4] + codr0[4]
+        if tin != 0.0 or tout != 0.0:
+            al1 = al1 - tin * codr0[0] - tout * cod[0]
         anp = ph.anrad * h1 * theta
         uct = ph.cuc * h1**3 / ph.p0 / al1
         uc = uct * theta
@@ -331,7 +347,8 @@ class _State:
             return
         # D・B の更新は numba カーネル (perfkern.tradke_db: 下の numpy 版と同じ式。numpy の小行列演算の連続が 0.5 ms/回かかるため)
         ok, Dn, Bn = _tradke_db(self.T, self.transr, self.D, self.B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
-                                xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU, bzh, bzhr0)
+                                xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU, bzh, bzhr0,
+                                tin, tout, _compat.v2())
         if ok:
             self.D = Dn
             self.B = Bn
@@ -344,6 +361,16 @@ class _State:
         self.transr = self.T.copy()
         self.bzhr0 = bzh
         self.bsir0 = 0.0
+        self.bsi_d0 = np.zeros(6)
+        self.bsi_d1 = np.zeros(6)
+
+    def add_bsi(self, val, gx, gy, at_r0):
+        """v2: bsir0 に端の縦磁場の積分 val = ±ψ(x, y) を足し、その勾配 (gx, gy) = ±(∂ψ/∂x, ∂ψ/∂y) も覚える。
+        at_r0=True は入口 (座標 = 放射の基準点)、False は出口 (座標 = 次の tradke の時点)"""
+        self.bsir0 += val
+        d = self.bsi_d0 if at_r0 else self.bsi_d1
+        d[0] += gx
+        d[2] += gy
 
 
 # ---------------------------------------------------------------------------
@@ -793,6 +820,25 @@ def _quad_map(L, K1, ph, dx=0.0, dy=0.0, theta=0.0, fringe=True, fr=(0.0, 0.0, 0
     return f
 
 
+def _npolq(ak1, al):
+    """v2 (POL): 四極 (積分強度 ak1、長さ al) を、スピン軌道結合 (歳差の軌道についての微分) が収束する数に分割する: k·(al/n)² ≤ 2e-3。
+    K64 は放射の大きさだけで分割を決め (軌道が小さいと 1 個)、四極の中の縦方向の歳差の微分が 50% ずれる (追跡のスピンとの比較)"""
+    return 1 + int(math.sqrt(abs(ak1 * al) / 2.0e-3))
+
+
+def _grad_xy(psi, cod, h=1.0e-6):
+    """ψ(cod) の x・y についての勾配 (中心差分。ψ は多項式なので丸めだけ)"""
+    c = np.array(cod, dtype=float)
+    g = []
+    for j in (0, 2):
+        cp = c.copy()
+        cm = c.copy()
+        cp[j] += h
+        cm[j] -= h
+        g.append((psi(cp) - psi(cm)) / (2.0 * h))
+    return g[0], g[1]
+
+
 def _tquade(st: _State, el: Quadrupole, krad: bool = True):
     """tquade (bz=0, 誤差なし, F1=0, FRINGE=0, DISFRIN=0)。
     放射: tsetr0 → tqfrie → tsetr0 → tsolque スライス毎に tradke → tqfrie
@@ -884,6 +930,10 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
         st.tradke(f1in, 0.0)         # SAD のまま: 長さの引数に F1 (長さ) を渡す
     else:
         st.setr0()
+    # v2 (B64 と同じ物理): 四極の端の縦磁場の積分 ∫Bs ds = k·x·y を入口で足し、出口で引く (K64 の tquade は入れない。追跡 tsolqu は入れる)
+    qpsi = (lambda cc: (ak1 / L) * r_in(cc)[0] * r_in(cc)[2]) if (st.calpol and _compat.v2()) else None
+    if qpsi is not None:
+        st.add_bsi(qpsi(st.cod), *_grad_xy(qpsi, st.cod), True)
     # itgetqraddiv
     c = r_in(st.cod)
     xk = ak1 * max(1e-6, abs(c[0]) + abs(c[2]))
@@ -895,9 +945,11 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
              int(abs(ph.h0 * b / ph.brhoz * ph.anrad) / EPSRAD / 1e6
                  * ph.emidiv * ph.emidib))
     nq = min(1000, max(1, nq))
+    if st.calpol and _compat.v2():
+        nq = min(1000, max(nq, _npolq(ak1, L)))      # v2 (POL): スピンの歳差の微分のための分割 (K64 は BEND だけ分割を増やす)
     aln = L / nq
     akn = ak1 / nq
-    for _ in range(nq):
+    for iq in range(nq):
         # tsolque(aln, akn, krad): 内部分割 + スライス毎 tradke
         ndiv = min(1000, 1 + int(abs(aln * akn) / 0.1))
         aln1 = aln / ndiv
@@ -925,6 +977,9 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
             al1 = aln1
         st.piece(lambda cc: r_out(_lat._tqente_cod(r_in(cc), aln1 * 0.5)),
                  jac=jfun(lambda c: _jac_tqente(c, aln1 * 0.5)))
+        if qpsi is not None and iq == nq - 1:
+            gq = _grad_xy(qpsi, st.cod)
+            st.add_bsi(-qpsi(st.cod), -gq[0], -gq[1], False)
         st.tradke(aln1, 0.0)
     if mfring in (2, 3):
         st.piece(lambda c: r_out(_lat._tqlfre_cod(r_in(c), L, ak1, -f1out, f2out)),
@@ -1052,16 +1107,16 @@ def _tbendecorr(st: _State, ak1, al, rho0):
     st.cod = cod
 
 
-def _tbendebody(st: _State, al, phin, ak1, alr, rhob, rho0, enarad, bsi1=0.0):
+def _tbendebody(st: _State, al, phin, ak1, alr, rhob, rho0, enarad, bsi1=0.0, tin=0.0):
     """tbende.f tbendebody (tbinit=.true. で毎回 tbendeinit。本体は perfkern_bend.bendebody)"""
     xi, yi = st.cod[0], st.cod[2]
     t, cod = _k_bendebody(st.cod, al, phin, ak1, rhob, rho0, st.ph.h0, st.h1emit, st.dvemit, PSQMAX)
     st.apply(t)
     st.cod = cod
     if enarad:
-        if st.calpol:
+        if st.calpol and not _compat.v2():
             st.bsir0 += bsi1 * (yi / rhob + ak1 * xi * yi)       # bsi2 の項は最後のスライス (enarad=F) にしか付かない
-        st.tradke(alr, phin)
+        st.tradke(alr, phin, tin=tin)
 
 
 def _tsteee(st: _State, el: Bend, enarad: bool = True):
@@ -1187,6 +1242,9 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
     # 入口エッジ (解析ヤコビアン: tbfrie.f の trans を段ごとに掛けたもの)
     st.piece(lambda c: _lat._tbedge_cod(c, rhob, pe1, True),
              jac=lambda c: _lat._bend_edge_chain(c, _EYE6, rhob, pe1, True)[1])
+    # v2: 端の角 e のある面では場の中の行路が x*tan(e) だけ短い (K64 の tradke は端の蹴りを偏向角に入れるが長さは変えず、端の項が 2 倍になる)
+    tin = math.tan(pe1) if _compat.v2() else 0.0
+    tout = math.tan(pe2) if _compat.v2() else 0.0
     alc = al * rbc
     aln = alc / ndiv
     phin = phic / ndiv
@@ -1205,10 +1263,15 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
                 J[4, 5] += _dvz(ph, c[5]) * aln          # z -= dv(δ)·aln の δ 微分 (SAD の h0/h1emit**3·aln)
                 return J
             st.piece(f, jac=jbody)
+            if enarad and st.calpol and n == 1 and _compat.v2():
+                st.add_bsi(yi0 / rhob, 0.0, 1.0 / rhob, True)   # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ (スライスが 1 つでも入れる)
             if enarad and n < ndiv:
-                if st.calpol and n == 1:
+                if st.calpol and n == 1 and not _compat.v2():
                     st.bsir0 += yi0 / rhob                      # tbendebody0: bsi1·yi/rhob (最初のスライスだけ)
-                st.tradke(aln, phin)
+                st.tradke(aln, phin, tin=tin)
+                tin = 0.0
+        if enarad and st.calpol and _compat.v2():
+            st.add_bsi(-st.cod[2] / rhob, 0.0, -1.0 / rhob, False)   # v2 (B58): 出口の端 -y/ρ (K64 は bsi2 の項が常に捨てられる)
         alr = aln
         phi1 = phin
     else:
@@ -1225,14 +1288,23 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
             _tbendecorr(st, (akx + akx0) * 0.5, (alx + alx0) * 0.5, rho0)
             akx0 = akx
             alx0 = alx
+            if enarad and st.calpol and n == 1 and _compat.v2():
+                # v2 (B58): 入口の端の ∫Bs ds = y/ρ + k·x·y (k = K1/L。K64 は積分値 akx を掛けていて次元が合わない)
+                kb = ak / al0
+                st.add_bsi(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2], kb * st.cod[2], 1.0 / rhob + kb * st.cod[0], True)
             _tbendebody(st, alx, phi1, akx, alr, rhob, rho0,
-                        enarad and n != ndiv, 1.0 if n == 1 else 0.0)
+                        enarad and n != ndiv, 1.0 if n == 1 else 0.0, tin=tin)
+            if enarad and n != ndiv:
+                tin = 0.0
+        if enarad and st.calpol and _compat.v2():
+            kb = ak / al0                                                          # v2 (B58): 出口の端
+            st.add_bsi(-(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2]), -kb * st.cod[2], -(1.0 / rhob + kb * st.cod[0]), False)
         _tbendecorr(st, akx0 * 0.5, alx0 * 0.5, rho0)
     # 出口エッジ
     st.piece(lambda c: _lat._tbedge_cod(c, rhob, pe2, False),
              jac=lambda c: _lat._bend_edge_chain(c, _EYE6, rhob, pe2, False)[1])
     if enarad:
-        st.tradke(alr, phi1)
+        st.tradke(alr, phi1, tin=tin, tout=tout)
 
 
 def _h2p(h):
@@ -1314,15 +1386,23 @@ def _tcave(st: _State, el):
     if ph.omega0 != 0.0:
         st.hvc0 += (c * w) / ph.omega0 * vc
     oneev = 1.0 + 3.83e-12
+    # v2 (C2) AUTOPHI (tcave.f の autophi): 軌道 (cod) は到着時刻によらず位相 phic で空洞を通る (phii = phic)。行列はその位相での
+    # 傾きを持つ。位相の基準 trf0 は使わない (offset1 = 0)。dvcacc・ddvcacc は足さない (K64 と同じ)
+    aphi = float(getattr(el, 'AUTOPHI', 0.0) or 0.0) != 0.0 and _compat.v2()
+    tcod = [0.0]
+
+    def _tc():
+        p1_ = p0 * (1.0 + st.cod[5])
+        return -st.cod[4] / (p1_ / _p2h(p1_))
     if st.rfsw:
-        if st.radcod:
+        if st.radcod or aphi:
             offset1 = 0.0
             s0 = 0.0
         else:
             s0 = math.sin(phis)
             offset1 = math.sin(phis)
         if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
-            st.piece(_tcavfrie_map(al, v, w, phis - phic, s0, p0), symp_z=False)
+            st.piece(_tcavfrie_map(al, v, w, (w * _tc() - phic) if aphi else (phis - phic), s0, p0), symp_z=False)
 
         def f(cc):
             cc = cc.copy()
@@ -1331,7 +1411,7 @@ def _tcave(st: _State, el):
             v1 = p1 / h1
             t = -cc[4] / v1
             va = vn + v20a * cc[0]**2 + v02a * cc[2]**2
-            phii = w * t + phic - phis
+            phii = (w * (t - tcod[0]) + phic) if aphi else (w * t + phic - phis)
             sp, cp = math.sin(phii), math.cos(phii)
             dh = max(oneev - h1, -va * (sp + offset1))
             h2 = h1 + dh
@@ -1352,16 +1432,24 @@ def _tcave(st: _State, el):
             p1 = p0 * (1.0 + st.cod[5])
             v1 = p1 / _p2h(p1)
             t = -st.cod[4] / v1
-            phii = w * t + phic - phis
-            sp, cp = math.sin(phii), math.cos(phii)
-            st.dvcacc += vcn * cp * w
-            st.ddvcacc += vcn * sp * w**2
+            if aphi:
+                tcod[0] = t
+                sp, cp = math.sin(phic), math.cos(phic)
+                # (K64 は autophi のとき dvcacc・ddvcacc を足さない: 空洞がすべて AUTOPHI だと実効の RF 電圧の傾きが 0 になり
+                #  バケットの量が決まらない。v2 は軌道の位相 phic での傾きを足す)
+                st.dvcacc += vcn * cp * w
+                st.ddvcacc += vcn * sp * w**2
+            else:
+                phii = w * t + phic - phis
+                sp, cp = math.sin(phii), math.cos(phii)
+                st.dvcacc += vcn * cp * w
+                st.ddvcacc += vcn * sp * w**2
             st.vcacc -= vcn * sp
             st.piece(f, symp_z=False)
         if al != 0.0:
             _tdrife0(st, aln * 0.5)
             if fringe and mfring >= 0 and mfring != 1:
-                st.piece(_tcavfrie_map(al, -v, w, phis - phic, s0, p0), symp_z=False)
+                st.piece(_tcavfrie_map(al, -v, w, (w * _tc() - phic) if aphi else (phis - phic), s0, p0), symp_z=False)
     else:
         sp, cp = math.sin(phic), math.cos(phic)
         st.dvcacc += vc * cp * w
@@ -1410,12 +1498,20 @@ def _tmulte(st: _State, el, enarad: bool = True):
         ct, stt = math.cos(pm['theta2']), math.sin(pm['theta2'])
         c = _lat._mult_rot_in(st.cod, pm['dx'], pm['dy'], ct, stt)
         nq = _itgetqraddiv(st.ph, c, pm['knl'].get(1, 0.0), al)
+        if st.calpol and _compat.v2():
+            nq = max(nq, _npolq(pm['knl'].get(1, 0.0), al))
         st.setr0()
     seq = _lat._mult_sequence(el, st.ph.dv, nq)
     first = True
-    for kind, f in seq:
+    # v2 (B64): 端の縦磁場の積分 ∫Bs ds = ψ(x,y) (横磁場のスカラーポテンシャル、ψ = Im Σ k_n z^(n+1)/(n+1)!) を
+    # 入口で足し、出口で引く。K64 の tmulke は imag(cx)/aln (横磁場そのもの、次元 1/m) を使う
+    psi = _lat._mult_fringe_psi(el) if (st.calpol and krad and _compat.v2()) else None
+    psi_in = psi(st.cod) if psi is not None else 0.0
+    gpsi_in = _grad_xy(psi, st.cod) if psi is not None else (0.0, 0.0)
+    last_rad = max((i for i, (k, _f) in enumerate(seq) if k != 'map'), default=-1)
+    for i, (kind, f) in enumerate(seq):
         if kind == 'map':
-            if st.calpol and hasattr(f, 'cxfun'):
+            if st.calpol and hasattr(f, 'cxfun') and psi is None:
                 im = f.cxfun(st.cod) / f.aln              # tmulke: bsir0 = merge(bsir0 + imag(cx)/aln, 0, m == 1); m == ndiv で − imag(cx)/aln
                 st.bsir0 = st.bsir0 + im if f.m == 1 else 0.0
                 if f.m == f.ndiv:
@@ -1423,8 +1519,13 @@ def _tmulte(st: _State, el, enarad: bool = True):
             st.piece(f)
             if first and krad:
                 st.setr0()      # tmulte: フリンジの後 (f1in=0) に tsetr0
+                if psi is not None:
+                    st.add_bsi(psi_in, gpsi_in[0], gpsi_in[1], True)
             first = False
         elif krad:
+            if psi is not None and i == last_rad:
+                gp = _grad_xy(psi, st.cod)
+                st.add_bsi(-psi(st.cod), -gp[0], -gp[1], False)
             st.tradke(f, 0.0)
 
 def _rf_effective(st: _State):
@@ -1528,7 +1629,7 @@ def _bende_fast(st, el, enarad):
         dx, dy, dz, th, dth, alg, phig = chg
     return _ek.k_bend(st.cod, st.T, st.D, st.B, st.codr0, st.transr, st._S, st.PH, float(el.L), ang, k0, k1,
                       _g0(el, 'E1'), _g0(el, 'E2'), has_chg, dx, dy, dz, th, dth, alg, phig,
-                      enarad, True, True, st.want_jac, st.want_db, st.radcod)
+                      enarad, True, True, st.want_jac, st.want_db, st.radcod, _compat.v2())
 
 
 def _quade_fast(st, el, krad):
@@ -1537,7 +1638,7 @@ def _quade_fast(st, el, krad):
     K1 = _g0(el, 'K1')
     if L == 0.0 and K1 != 0.0:
         return _ek.k_thin(st.cod, st.T, st.D, st.B, st._S, st.PH, 0.0, K1, 1, _g0(el, 'DX'), _g0(el, 'DY'),
-                          _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db)
+                          _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2())
     if L == 0.0 or K1 == 0.0:
         return _ek.k_drift(st.cod, st.T, st.D, st.B, st._S, st.PH, L, True, True, st.want_jac, st.want_db)
     f1in, f2in, f1out, f2out, mfring = _lat._quad_fringe_params(el)
@@ -1553,7 +1654,7 @@ def _thine_fast(st, el):
     L = float(el.L)
     ak = K * L if L != 0.0 else K
     return _ek.k_thin(st.cod, st.T, st.D, st.B, st._S, st.PH, L, ak, int(kord), _g0(el, 'DX'), _g0(el, 'DY'),
-                      _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db)
+                      _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2())
 
 
 def _nonfinite_state(st) -> bool:
@@ -1919,13 +2020,27 @@ def tecalc(st: _State, circ: float, rfsw: bool = False, emit_floor=(0.0, 0.0, 0.
     synchm = rfsw and cd[5].imag != 0.0
     if synchm:
         if wrfeff != 0.0:
-            alphap = (-cd[5].imag * abs(cd[5].imag)
+            mus2 = cd[5].imag * abs(cd[5].imag)
+            if _compat.v2():
+                # v2 (ALPHA): 薄い空洞の縦の 2x2 行列は 2 − Tr = 4 sin²(μ/2) = α C·(RF の傾き)。K64 は μ² を使い、α が μ²/12 だけ大きく出る
+                mus2 = math.copysign(4.0 * math.sin(0.5 * cd[5].imag)**2, cd[5].imag)
+            alphap = (-mus2
                       / (CVELOC * 2 * math.pi / ph.omega0) / (st.dvcacc / ph.pgev))
         else:
             alphap = 0.0
         omegaz = abs(cd[5].imag) * ph.omega0 / (2 * math.pi)
     else:
-        alphap = -rx[4, 5] / (2 * math.pi) / CVELOC / ph.p0 * ph.h0 * ph.omega0
+        r56 = rx[4, 5]
+        if _compat.v2():
+            # v2 (ALPHA): 運動量圧縮は分散つきの行路の微分 −(R56 + Σ R5j η_j)/C。K64 は R56 だけで、入口に分散があると値が変わる
+            try:
+                eta = np.linalg.solve(np.eye(4) - rx[:4, :4], rx[:4, 5])
+                r56c = r56 + float(rx[4, :4] @ eta)
+                if math.isfinite(r56c):
+                    r56 = r56c
+            except np.linalg.LinAlgError:
+                pass
+        alphap = -r56 / (2 * math.pi) / CVELOC / ph.p0 * ph.h0 * ph.omega0
         # temit.f tecalc: omegaz=sqrt(|alphap 2π heff vceff/pgev cos(phirf)|) ω0/2π (RF の効果を RFSW OFF でも見積もる)
         omegaz = (math.sqrt(abs(alphap * 2.0 * math.pi * heff * vceff / ph.pgev * math.cos(phirf)))
                   * ph.omega0 / (2.0 * math.pi)) if vceff != 0.0 else 0.0
@@ -2396,19 +2511,33 @@ def _emit_circ(els):
     return sum(el.L for el in els if not (type(el).__name__ == 'Solenoid' and float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0))
 
 
+def _z_into_trf0(cod, trf0, ph):
+    """RADTAPER の閉軌道 (C2): 閉軌道の z を RF の位相の基準 trf0 に移す (z → 0、trf0 → trf0 + z/v0)。物理は同じ解で、
+    K64 の tcod が収束したときの分け方 (gs で CODCONV を小さくすると z → 0、trf0 が同じ和になる) に合わせる。
+    TrackParticles の z は trf0 からの距離なので、分け方が違うと z=0 の粒子の RF の位相が変わる"""
+    cod = np.array(cod, dtype=float)
+    v0 = ph.p0 / ph.h0
+    trf0 = trf0 + cod[4] / v0
+    cod[4] = 0.0
+    return cod, trf0
+
+
 def _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fshift, emit_floor, pol):
     els = lattice.elements
     circ = _emit_circ(els)
     ph = _Phys(momentum_eV, circ, amass=amass, charge=charge)
     ph.dvfs = fshift if rfsw else 0.0          # tsetdvfs
     cod, trf0, _found, st_full = closed_orbit6d(els, ph, rfsw, radcod, close_z)
+    if getattr(lattice, '_z_into_trf0', False) and _found and rfsw and radcod:
+        cod, trf0, st_full = _z_into_trf0(cod, trf0, ph), None, None
+        cod, trf0 = cod
     # temit の最後の tturne (irad=12, update なし): tcod の最後の反復が D・B 付きの完全な一周ならそれと同じ。
     # RFSW OFF でも RADCOD ON なら放射込みで追う (SAD の tturne は rfsw に関係なく radcod を見る。以前は RADCOD OFF として追っていた)
     st = st_full if st_full is not None else tturne(els, cod, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
     out = tecalc(st, circ, rfsw=rfsw, emit_floor=emit_floor)
     if pol:
         from .spin import spin_results
-        out['spin'] = spin_results(st, out, ph)
+        out['spin'] = spin_results(st, out, ph, els=els, cod=cod, trf0=trf0, rfsw=rfsw, radcod=radcod)
     # temitprint の Closed orbit の Entrance (tcod の cod) と Exit (最後の一周の出口)
     out['orbit_entrance'] = np.array(cod, dtype=float)
     out['orbit_exit'] = np.array(st.cod, dtype=float)

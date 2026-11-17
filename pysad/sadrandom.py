@@ -134,6 +134,10 @@ def tdusrn(rng: SadRandom, anp: float):
     """tdusrn: 期待光子数 anp のポアソン分布で光子を出し、
     dph = Σ u_n/uc, r1 = Σ r_n u_n / Σ u_n, r2 = Σ r_n² u_n / Σ r_n u_n / 2, an = 光子数。
     乱数は p (1 回) と光子ごとに drndsr (1 回) + r (1 回)。"""
+    from . import compat
+    if compat.v2() and not math.isfinite(anp):
+        rng.tran()              # v2 (B10): 非有限の anp では光子を出さない (K64 は NaN で 10000 回まわる)
+        return 0.0, 0.0, 0.0, 0.0
     p0 = math.exp(-anp)
     pn = p0
     p = rng.tran()

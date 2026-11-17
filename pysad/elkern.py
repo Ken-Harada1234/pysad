@@ -145,7 +145,7 @@ def _setr0(cod, T, codr0, transr):
 # ---------------------------------------------------------------------------
 
 @njit(**NJ)
-def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, radcod):
+def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, radcod, tin=0.0, tout=0.0):
     if not want_jac and not radcod:
         return
     gi = codr0[5]
@@ -171,6 +171,8 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
     p = PH[P0] * pr
     h1 = _p2h(p)
     al1 = al - cod[4] + codr0[4]
+    if tin != 0.0 or tout != 0.0:
+        al1 = al1 - tin * codr0[0] - tout * cod[0]      # v2: 端の角による場の中の行路の変化
     anp = PH[ANRAD] * h1 * theta
     uct = PH[CUC] * h1**3 / PH[P0] / al1
     uc = uct * theta
@@ -196,7 +198,8 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
         _setr0(cod, T, codr0, transr)
         return
     ok, Dn, Bn = _tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
-                            xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, PH[P0], PH[ANRAD], CAVE, CUU)
+                            xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, PH[P0], PH[ANRAD], CAVE, CUU,
+                            0.0, 0.0, tin, tout, False)
     if ok:
         for i in range(6):
             for j in range(6):
@@ -386,7 +389,7 @@ def _quirk56(c):
 
 
 @njit(**NJ)
-def _tchge_simple(c, T, D, B, dx0, dy, th, ent, want_jac, want_db, symp_fix):
+def _tchge_simple(c, T, D, B, dx0, dy, th, ent, want_jac, want_db, symp_fix, v2=False):
     """tchge (alg=phig=dz=dtheta=0): 薄い多極・四極のずれ dx0,dy とロール th。lattice._tchge_cod/_tchge_jac と同じ
     (入口: 回す → ずらす。th≠0 かつ dxr≠0 のとき行列には回転が入らない SAD の癖。出口: 戻す → 回転)"""
     if th != 0.0:
@@ -403,6 +406,8 @@ def _tchge_simple(c, T, D, B, dx0, dy, th, ent, want_jac, want_db, symp_fix):
             c[2] -= st * dx0 + ct * dy
             if dxr != 0.0:
                 J = _quirk56(c)
+                if v2:
+                    J = _mm(J, _rotmat(ct, st, True))      # v2 (B09): 入口の回転を行列に掛ける
             else:
                 J = _rotmat(ct, st, True)
         else:
@@ -442,7 +447,7 @@ def k_drift(cod, T, D, B, S, PH, L, use_dv, symp_fix, want_jac, want_db):
 
 
 @njit(**NJ)
-def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_jac, want_db):
+def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_jac, want_db, v2=False):
     """tthine (emit6d._tthine_gen): tchge(入口) → ドリフト/キック + dv → tchge(出口)。状態の複製で計算し成功時だけ書き戻す"""
     c = cod.copy()
     Tl = T.copy()
@@ -450,7 +455,7 @@ def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_
     Bl = B.copy()
     shift = ak != 0.0 and (dx != 0.0 or dy != 0.0 or th != 0.0)
     if shift:
-        _tchge_simple(c, Tl, Dl, Bl, dx, dy, th, True, want_jac, want_db, symp_fix)
+        _tchge_simple(c, Tl, Dl, Bl, dx, dy, th, True, want_jac, want_db, symp_fix, v2)
     if want_jac:
         dvzL = _dvz(PH, c[5]) * L if use_dv else 0.0
         ok, J = _jac_thin(c, L, ak, kord, dvzL)
@@ -461,7 +466,7 @@ def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_
     if use_dv:
         c[4] -= _dv(PH, c[5]) * L
     if shift:
-        _tchge_simple(c, Tl, Dl, Bl, dx, dy, th, False, want_jac, want_db, symp_fix)
+        _tchge_simple(c, Tl, Dl, Bl, dx, dy, th, False, want_jac, want_db, symp_fix, v2)
     cod[:] = c
     T[:, :] = Tl
     D[:, :] = Dl
@@ -611,7 +616,7 @@ def _tbrote(c, alg, phig, dx, dz, dtheta, ent):
 
 
 @njit(**NJ)
-def _tchge(c, T, D, B, dx0, dy, dz, theta, dtheta, alg, phig, ent, want_jac, want_db, symp_fix):
+def _tchge(c, T, D, B, dx0, dy, dz, theta, dtheta, alg, phig, ent, want_jac, want_db, symp_fix, v2=False):
     """lattice._tchge_cod + _tchge_jac を 1 つの piece として適用 (in-place)"""
     th = theta if phig != 0.0 else theta + dtheta
     if th != 0.0:
@@ -635,6 +640,8 @@ def _tchge(c, T, D, B, dx0, dy, dz, theta, dtheta, alg, phig, ent, want_jac, wan
                     _tbrote(c, alg, phig, dxr, dz, dtheta, True)
                 else:
                     J = _tbrote(c, alg, phig, dxr, dz, dtheta, True)
+                if v2:
+                    J = _mm(J, _rotmat(ct, st, True))      # v2 (B09): 入口の回転を行列に掛ける (K64 は tbrote が上書きして落とす)
             else:
                 J = _rotmat(ct, st, True)
         else:
@@ -1611,7 +1618,7 @@ def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, sy
 
 @njit(**NJ)
 def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enarad, use_dv, symp_fix,
-               want_jac, want_db, radcod):
+               want_jac, want_db, radcod, edgefix=False):
     """emit6d._tbende_core (F1=0, mfring=0, ずれ・ロールなし)。戻り 0: 成功、1: Python に戻す、2: tmulte (未対応)"""
     phib = phi0 + k0
     ak = k1 * al0
@@ -1640,6 +1647,9 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
                    1 + int(abs(phib * PH[H0] * PH[ANRAD]) / EPSRAD / 1e6 * PH[EMIDIV] * PH[EMIDIB]))
     M = _edge_chain(c, rhob, e1, True)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
+    # v2 (edgefix): 端の角 e のある面では、場の中の行路が x*tan(e) だけ短い。最初の tradke に入口、最後の tradke に出口の分を渡す
+    tin = math.tan(e1) if edgefix else 0.0
+    tout = math.tan(e2) if edgefix else 0.0
     alc = al * rbc
     aln = alc / ndiv
     phin = phic / ndiv
@@ -1651,7 +1661,8 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
                 c[4] -= _dv(PH, c[5]) * aln
             _piece(t, T, D, B, want_jac, want_db, symp_fix)
             if enarad and n < ndiv:
-                _tradke(c, T, D, B, codr0, transr, S, PH, aln, phin, want_jac, want_db, radcod)
+                _tradke(c, T, D, B, codr0, transr, S, PH, aln, phin, want_jac, want_db, radcod, tin, 0.0)
+                tin = 0.0
         alr = aln
         phi1 = phin
     else:
@@ -1675,22 +1686,24 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
             _apply_tdb(t, T, D, B, want_db)
             c[:] = cn
             if enarad and n != ndiv:
-                _tradke(c, T, D, B, codr0, transr, S, PH, alr, phi1, want_jac, want_db, radcod)
+                _tradke(c, T, D, B, codr0, transr, S, PH, alr, phi1, want_jac, want_db, radcod, tin, 0.0)
+                tin = 0.0
         t, cn = _bendecorr(c, akx0 * 0.5, alx0 * 0.5, rho0, PSQMAX)
         _apply_tdb(t, T, D, B, want_db)
         c[:] = cn
     M = _edge_chain(c, rhob, e2, False)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
     if enarad:
-        _tradke(c, T, D, B, codr0, transr, S, PH, alr, phi1, want_jac, want_db, radcod)
+        _tradke(c, T, D, B, codr0, transr, S, PH, alr, phi1, want_jac, want_db, radcod, tin, tout)
     return 0
 
 
 @njit(**NJ)
 def k_bend(cod, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2,
            has_chg, dx, dy, dz, th, dth, alg, phig,
-           enarad, use_dv, symp_fix, want_jac, want_db, radcod):
+           enarad, use_dv, symp_fix, want_jac, want_db, radcod, edgefix=False):
     """emit6d._tbende: (has_chg なら tchge 入口) → _bend_core → (tchge 出口)。状態の複製で計算し成功時だけ書き戻す。
+    edgefix = compat.v2(): 端の角の放射の行路 (JX1) と tchge の入口の回転行列 (B09) を直した動作にする。
     戻り 0: 成功、それ以外: Python に戻す"""
     c = cod.copy()
     Tl = T.copy()
@@ -1700,9 +1713,9 @@ def k_bend(cod, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2,
     trl = transr.copy()
     Sl = S.copy()
     if has_chg:
-        _tchge(c, Tl, Dl, Bl, dx, dy, dz, th, dth, alg, phig, True, want_jac, want_db, symp_fix)
+        _tchge(c, Tl, Dl, Bl, dx, dy, dz, th, dth, alg, phig, True, want_jac, want_db, symp_fix, edgefix)
     st = _bend_core(c, Tl, Dl, Bl, r0, trl, Sl, PH, al0, phi0, k0, k1, e1, e2, enarad, use_dv, symp_fix,
-                    want_jac, want_db, radcod)
+                    want_jac, want_db, radcod, edgefix)
     if st != 0:
         return st
     if has_chg:
@@ -1712,7 +1725,7 @@ def k_bend(cod, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2,
         else:
             a0 = 0.0
             p0 = 0.0
-        _tchge(c, Tl, Dl, Bl, dx, dy, dz, th, dth, alg - a0, phig - p0, False, want_jac, want_db, symp_fix)
+        _tchge(c, Tl, Dl, Bl, dx, dy, dz, th, dth, alg - a0, phig - p0, False, want_jac, want_db, symp_fix, edgefix)
     cod[:] = c
     T[:, :] = Tl
     D[:, :] = Dl

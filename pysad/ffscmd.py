@@ -28,6 +28,16 @@ from .lattice import TwissRow
 from .match6 import Matcher, _FUNS, _sad_get, _sad_set, _PER_LENGTH, PI2
 from .sadrandom import SadRandom
 from .sadscript import _is_pattern, Interp, Sym, Rule, Null, Expr, SADError, S, fmt_real, is_num, _Lit, truthy
+from . import compat as _compat
+
+
+
+def _compat_v2():
+    from . import compat
+    return compat.v2()
+
+class _DefaultMomentum(float):
+    """MOMENTUM が未設定で、K64 の既定 (30 GeV) のままであることの印 (v2 の警告用。B67)"""
 
 # SAD の要素型コード (idtype)
 # Twiss["*"] の並び (tffs.f tffitcode: mfitax=1 .. mfitzpy=ntwissfun=28)
@@ -293,36 +303,99 @@ def _mark_offset_value(el) -> float:
 
 class _RadLight:
     """RADLIGHT (tlinit.f tlinit / tlstore / tlresult): 粒子の軌道 {t, x, y, z} (GEO 座標) を要素ごとに記録する。
-    記録するのは区間の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけ (tturn.f:555。BEND と曲げのある MULT の中は記録しない: K64 のまま)。
+    k64: 記録するのは区間の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけ (tturn.f:555。BEND と曲げのある MULT の中は記録しない: K64 のまま)。
+         横方向の軸は 0 (tlinit が geo0 の軸 1・2 を書かない) で、BEND で向きも変わらない (docs/21 B65)。
+    v2 (B65 の修正): 横方向の軸を幾何から取り、BEND では tlstore の dphi≠0 の式 (円弧) で位置と向きを進める。BEND の中は
+         1/γ の角度あたり RADLIGHTDIV 点 (既定 16) に刻んで記録する (放射場の時間構造は 1/γ の角度で決まる)。
     geo = ls の位置の幾何 (3×4: 列 0..2 が x, y, z の軸、列 3 が位置)"""
 
-    def __init__(self, geo, ph, npart):
+    def __init__(self, geo, ph, npart, v2=False, div=16.0):
         g = np.array(geo, dtype=float)
         self.geo0 = g.copy()                 # tlinit: geo0(:,3)=geo(:,3)、位置 = geo(:,4)。軸 1・2 は書かない (common block の初期値 0 のまま: K64 の癖。
-        self.geo0[:, :2] = 0.0               # gs で確かめた: 横方向の座標は軌道に入らず、進行方向 (geo の z 軸) に沿った点だけが記録される)
+        self.v2 = v2
+        if not v2:
+            self.geo0[:, :2] = 0.0           # gs で確かめた: 横方向の座標は軌道に入らず、進行方向 (geo の z 軸) に沿った点だけが記録される)
         self.t0 = 0.0
         self.v0 = ph.p0 / ph.h0 * 299792458.0
+        self.gamma = ph.h0
+        self.div = div
         self.npart = npart
         self.pts = [[[], [], [], []] for _ in range(npart)]
+        self._bprog = {}
 
-    def store(self, tr, dl):
-        """tlstore (dphi=0, keep=True)。dl は要素の長さ (開始点は 0)"""
+    def store(self, tr, dl, dphi=0.0, rho0=0.0, theta=0.0, S=None, n=None, kid=None):
+        """tlstore (keep=True)。dl は要素の長さ (開始点は 0)。dphi≠0 (v2 だけ) は偏向角 dphi・曲率半径 rho0・回転 theta の円弧"""
         g0 = self.geo0
         v0 = self.v0
-        gpos = g0[:, 3] + dl * g0[:, 2]
-        gt = self.t0 + dl / v0
-        geoi = g0[:, :3]
-        S = tr.S
+        if dphi == 0.0:
+            gpos = g0[:, 3] + dl * g0[:, 2]
+            gt = self.t0 + dl / v0
+            geoi = g0[:, :3].copy()
+        else:
+            c, s_ = math.cos(theta), math.sin(theta)
+            ex = c * g0[:, 0] - s_ * g0[:, 1]            # 偏向面の軸 (ROTATE だけ回した x)
+            ey = s_ * g0[:, 0] + c * g0[:, 1]
+            ez = g0[:, 2]
+            sp0, cp0 = math.sin(dphi), math.cos(dphi)
+            r1 = rho0 * sp0
+            r2 = rho0 * sp0**2 / (1.0 + cp0) if cp0 >= 0.0 else rho0 * (1.0 - cp0)
+            gpos = g0[:, 3] + (r1 * ez - r2 * ex)
+            ex1 = cp0 * ex + sp0 * ez
+            ez1 = -sp0 * ex + cp0 * ez
+            geoi = np.empty((3, 3))
+            geoi[:, 0] = c * ex1 + s_ * ey               # 回転を戻した出口の軸 (粒子の x, y はこの軸の座標)
+            geoi[:, 1] = -s_ * ex1 + c * ey
+            geoi[:, 2] = ez1
+            gt = self.t0 + abs(rho0 * dphi) / v0
+        if S is None:
+            S, n, kid = tr.S, (tr.n if tr.S is not None else 0), tr.kid
         dvfs = tr.ph.dvfs
-        for s in range(tr.n if tr.S is not None else 0):
-            i = int(tr.kid[s])
+        for s in range(n):
+            i = int(kid[s])
             x, y, z, dv = S[s, 0], S[s, 2], S[s, 4], S[s, 6]
             self.pts[i][0].append(gt - z / (v0 * (1.0 - dv + dvfs)))
             self.pts[i][1].append(float(gpos[0] + x * geoi[0, 0] + y * geoi[0, 1]))
             self.pts[i][2].append(float(gpos[1] + x * geoi[1, 0] + y * geoi[1, 1]))
             self.pts[i][3].append(float(gpos[2] + x * geoi[2, 0] + y * geoi[2, 1]))
+        self.geo0[:, :3] = geoi
         self.geo0[:, 3] = gpos
         self.t0 = gt
+
+    def bend(self, tr, el, l):
+        """v2: BEND (ANGLE≠0、L≠0) を n 個に刻み、刻みの終わりごとに記録する。粒子の本当の追跡は要素全体を 1 回 (tr.segment) で、
+        中の点は状態の写しを刻んだ BEND (端の角は最初と最後だけ) で進めて作る (放射の揺らぎなし)。
+        刻みと全体の一致は ずれ・F1・FRINGE がなければ 1e-11 以下、あれば 1e-6 m 程度 (中の点だけ)"""
+        import copy as _copy
+        from .track6n import Prog, turn
+        ang = float(el.ANGLE)
+        n = max(1, int(math.ceil(abs(ang) * self.gamma * self.div)))
+        rho0 = float(el.L) / ang
+        theta = float(getattr(el, 'ROTATE', 0.0) or 0.0)
+        if n > 1 and tr.n > 0:
+            key = (id(el), n)
+            progs = self._bprog.get(key)
+            if progs is None:
+                progs = []
+                for k in (0, 1):                 # 最初の刻み (入口の端)、中の刻み
+                    e = _copy.copy(el)
+                    e.L = el.L / n
+                    e.ANGLE = ang / n
+                    e.E1 = el.E1 if k == 0 else 0.0
+                    e.E2 = 0.0
+                    if hasattr(e, 'K0'):
+                        e.K0 = float(el.K0 or 0.0) / n
+                    progs.append(Prog([e], tr.ph))
+                self._bprog[key] = progs
+            S = tr.S.copy()
+            n0 = tr.n
+            kid = tr.kid.copy()
+            rs = tr.rs.copy()
+            with np.errstate(all='ignore'):
+                for k in range(n - 1):
+                    turn(progs[0 if k == 0 else 1], S, n0, tr.ph, tr.trf0, tr.rfsw, tr.rad, False, rs, trpt=tr.trpt)
+                    self.store(tr, 0.0, ang / n, rho0, theta, S=S, n=n0, kid=kid)
+        tr.segment(l, l + 1)
+        self.store(tr, 0.0, ang / n, rho0, theta)
 
     def result(self):
         return [[[float(v) for v in row] for row in pt] for pt in self.pts]
@@ -396,6 +469,8 @@ class FFS:
         if 'MOMENTUM' not in g:
             m = _env_get(script_env, 'MOMENTUM')
             g['MOMENTUM'] = float(m) if isinstance(m, (int, float)) else 30e9      # K64 initb1.f: RsetGL('MOMENTUM',30.d9)
+            if not isinstance(m, (int, float)) and _compat.v2():
+                g['MOMENTUM'] = _DefaultMomentum(30e9)      # v2 (B67): 既定のままかを見分ける印 (値は同じ 30e9。代入されると普通の実数になる)
         self._env_mom_seen = _env_get(script_env, 'MOMENTUM')
         self.install(interp)
 
@@ -500,13 +575,25 @@ class FFS:
     def dp0(self):
         return float(self.I.get('DP0', 0.0))
 
-    def momentum(self):
-        return float(self.I.get('MOMENTUM', 30e9))
+    def momentum(self, warn: bool = True):
+        """設計運動量 [eV/c]。v2 (B67): MAIN でも FFS でも MOMENTUM が設定されないまま、運動量を使う計算
+        (EMIT・Emittance・追跡・RADINT・CALC6D・DA ほか) に入ったら、1 度だけ警告する (K64 は黙って 30 GeV)"""
+        m = self.I.get('MOMENTUM', 30e9)
+        if warn and type(m) is _DefaultMomentum and not getattr(self, '_mom_warned', False) and _compat.v2():
+            self._mom_warned = True
+            self.write(' ???-FFS-Warning-MOMENTUM is not set: using the default 30 GeV (K64 initb1.f). '
+                       'Set it as "MOMENTUM = 3 GEV;" in MAIN or "MOMENTUM = 3e9;" in FFS. ' + chr(10))
+        return float(m)
 
     def is_word(self, word: str) -> bool:
         w = word.upper()
         if w in _COMMANDS or w in _ERRCMDS or w in self.flags or (w.startswith('NO') and w[2:] in self.flags) or w in _FLAG_ALT:
             return True
+        if _compat.v2() and (_abbrev(w, 'MEA_SURE') or _abbrev(w, 'TRC_OD') or _abbrev(w, 'LOGM_EASURE')
+                             or _abbrev(w, 'ORBITJ_ITTER') or _abbrev(w, 'PUTM_EASURE') or _abbrev(w, 'GET_MEASURE')):
+            return True                                 # v2: MEASURE / TRCOD / LOGMEASURE / ORBITJITTER / PUTMEASURE / GETMEASURE の省略形 (measure.py)
+        if w == 'WAKE' and _compat.v2():
+            return True                                 # v2: 旧式の WAKE コマンド (_wake_cmd_v2)
         if w in _FUNS or (w[:-1] in _FUNS and w[-1:] in ('M', 'I')) or w.endswith('SCALE') and w[:-5] in _FUNS:
             return True
         if any(c in w for c in '*%{|?'):
@@ -527,8 +614,31 @@ class FFS:
             lst.append(i + 1)
             ords.append(len(lst))
         c = {'key': key, 'names': names, 'fam': fam, 'ords': ords, 'pat': {}}
+        # tfinimult: BEND・QUAD・薄肉 (SEXT…) の INDEX 属性が 2 以上なら、同名の要素の番号はその値から始まる (QF の INDEX=5 → QF.5 QF.6 …)
+        renum = {}
+        for n, lst in fam.items():
+            base = self._index_base(self.els[lst[0] - 1]) if len(lst) > 1 else 1
+            if base > 1:
+                for j, pos in enumerate(lst):
+                    ords[pos - 1] = base + j
+                renum[n] = {base + j: pos for j, pos in enumerate(lst)}
+        if renum:
+            c['renum'] = renum
         self._nidx_cache = c
         return c
+
+    def _index_base(self, el) -> int:
+        """要素の INDEX 属性 (K64 の kwINDX: BEND・QUAD・SEXT・OCT・DECA・DODECA) による番号の初期値。無ければ 1 (tfinit.f tfinimult: max(1, int(INDEX)))"""
+        if _TYPENAME.get(_cls(el), '') not in ('BEND', 'QUAD', 'SEXT', 'OCT', 'DECA', 'DODECA'):
+            return 1
+        raw = getattr(el, '_raw', None) or {}
+        v = raw.get('INDEX')
+        if v is None:
+            v = (self.env._elements.get(el.name, {}) or {}).get('INDEX', 0.0)
+        try:
+            return max(1, int(float(v or 0.0)))
+        except (TypeError, ValueError):
+            return 1
 
     def _family(self, name):
         lst = self._nidx()['fam'].get(name.upper())
@@ -592,7 +702,7 @@ class FFS:
     def _renumber_cmd(self, words, i):
         """RENUMBER comp (tfinit.f tffsrenumber/tfinimult): comp を先頭に、周回順に同名の要素の番号 (NAME.n の n) を 1 から付け直す。
         comp が無ければ ' ???-FFS-Error-Missing origin component for RENUM_BER '。番号が 1 台だけのものは 0 (LINE["MULT"]) で名前に番号が付かない。
-        (未対応: 要素の INDX 属性による番号の初期値)"""
+        要素の INDEX 属性 (kwINDX) が 2 以上なら、番号はその値から始まる (_index_base)"""
         name = words[i + 1] if i + 1 < len(words) else None
         k0 = None
         if name is not None and not any(c in name for c in '*%{|?'):
@@ -610,7 +720,9 @@ class FFS:
         for t in range(n):
             pos = (k0 - 1 + t) % n + 1
             nm = ix['names'][pos - 1]
-            count[nm] = c = count.get(nm, 0) + 1
+            if nm not in count:                  # INDEX 属性による番号の初期値 (tfinimult。gs: INDEX=5 の QF は RENUMBER 後も QF.5 から)
+                count[nm] = (self._index_base(self.els[pos - 1]) - 1) if len(ix['fam'].get(nm, ())) > 1 else 0
+            count[nm] = c = count[nm] + 1
             ix['ords'][pos - 1] = c
             renum.setdefault(nm, {})[c] = pos
         ix['renum'] = renum
@@ -700,6 +812,8 @@ class FFS:
             if raw is not None and key in raw and is_num(raw[key]) and abs(v - raw[key]) <= 1e-13 * abs(raw[key]):
                 return float(raw[key])              # 読み込んだ値のまま (L で割って掛け戻す丸めを消す)
             return v
+        if key == 'INDEX' and not hasattr(el, 'INDEX'):
+            return float((getattr(el, '_raw', None) or {}).get('INDEX', 0.0) or 0.0)     # 番号の初期値 (kwINDX)。gs: LINE["INDEX","QF"] は定義の値
         return float(getattr(el, _amap(el).get(key, key), 0.0) or 0.0)
 
     @staticmethod
@@ -806,9 +920,14 @@ class FFS:
     def _check_sol_optics(self, calc_only=False, emit=False):
         """SOL 領域の Twiss (CALC/INS) は solmap (追跡と同じ写像の数値微分)、Emittance[]・EMIT は solemit (放射は bz 付きの tradke)。
         CALC6D・RADCOD つきの CALC は未対応なので拒否する。SOL を無視して黙って違う値を出さない"""
+        if self.els is not None:
+            from . import und as _und
+            _und.annotate(self.els, self.momentum(warn=False))       # v2: 磁場のある UND の写像 (k64 では何もしない)
+            from . import phsrot as _phsrot
+            _phsrot.annotate(self.els, self.momentum(warn=False))    # v2: PHSROT の写像
         if emit or (calc_only and not (self.flags['CALC6D'] or self.flags['RADCOD'])):
             from . import solmap as _sm
-            if self.els is not None and _sm.annotate(self.els, self.momentum()):
+            if self.els is not None and _sm.annotate(self.els, self.momentum(warn=False)):
                 return
         for el in self.els:
             if type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0
@@ -866,7 +985,9 @@ class FFS:
             from .calc6d import calc6d
             prev = self.rows[0] if self.rows else None        # 不安定時の初期値 (SAD の直前の twiss(1))
             try:
-                res = calc6d(self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
+                # v2 (C2): RADTAPER を CALC6D にも入れる (Emittance[] と同じ閉軌道・同じ係数)。K64 の qcell6d は rt=radtaper を渡すが、
+                # gs は 'qcell6d---> Unstable optics' を出して入口の軌道がテーパーなしの値のまま (動作しない)。k64 モードは従来どおりテーパーなし
+                res = calc6d(self._radtaper_lattice() if _compat.v2() else self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
                              rad=self.flags['RAD'], twiss0=prev, out=self, fshift=self._fshift())
             except (ValueError, RuntimeError, FloatingPointError, ZeroDivisionError, np.linalg.LinAlgError) as e:
                 self.write(' *****qcod---> Overflow & closed orbit not found            1' + chr(10))
@@ -917,6 +1038,8 @@ class FFS:
         # 4 次元の CALC は先頭行の縦方向の列 (AZ BZ NZ ZX ZPX ZY ZPY = 22〜28 列目) を作り直さない (tffscalc.f:90 は ntfun=15 列だけ入れ直す)。
         # 各行は qtwiss1 (qtwiss.f:536) で直前の行から写されるので、直前の 6D の CALC の先頭行の値が全行に残る (bench_level29c)
         zs = getattr(self, '_z_stale', None)
+        if _compat.v2():
+            zs = None              # v2 (B11): 4 次元の CALC は縦方向の列を既定値 (AZ=0, BZ=1, 他 0) にする (古い 6D の値を残さない)
         if zs is not None:
             for r in rows:
                 for k, v in zip(self._ZCOLS, zs):
@@ -966,6 +1089,8 @@ class FFS:
         # twmov(..,.false.) は 28 成分全部を書く。縦方向の列 (AZ BZ PSIZ ZX ZPX ZY ZPY) は 6D の CALC のときはその値、
         # 4D の CALC のときは直前の 6D の先頭行の値 (作り直されない: _z_stale、まだなければ AZ=0 BZ=1 他 0)
         zs = getattr(self, '_z_stale', None)
+        if _compat.v2() and not self.flags.get('CALC6D'):
+            zs = None              # v2 (B11): 4 次元の CALC のあとは MARK にも既定値を書く
         if zs is None:
             zs = (0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0)
         for k, v in zip(('AZ', 'BZ', 'PSIZ', 'ZX', 'ZPX', 'ZY', 'ZPY'), zs):
@@ -1234,7 +1359,7 @@ class FFS:
                     self._geo_warned.add(m)
                     self.write(f'[pysad] 幾何: {m}' + chr(10))
             gx, gy, gz = self.org_g
-            self.geo = _geo.compute_geo(self.els, gx0=gx, gy0=gy, gz0=gz, chi0=tuple(self.org_chi), iorg=self.org_k, warn=warn, momentum_eV=self.momentum())
+            self.geo = _geo.compute_geo(self.els, gx0=gx, gy0=gy, gz0=gz, chi0=tuple(self.org_chi), iorg=self.org_k, warn=warn, momentum_eV=self.momentum(warn=False))
             self.geo_dirty = False
         return self.geo
 
@@ -1254,7 +1379,8 @@ class FFS:
         # 式のグループ化 (各グループは語のリスト)。+/- などで始まる語、または演算子で終わる語の次の語は前の式の続き
         groups = []
         for w in words[i + 2:]:
-            if groups and (w[0] in '+-*/^' or groups[-1][-1][-1] in '+-*/^('):
+            # v2 (B26): 空白で区切った +/- で始まる語は別の値 (`ORG B3 1.5 -2.5 ..` は gx=1.5, gy=-2.5)。K64 は前の式の続き (1.5-2.5)
+            if groups and (w[0] in ('*/^' if _compat.v2() else '+-*/^') or groups[-1][-1][-1] in '+-*/^('):
                 groups[-1].append(w)
             else:
                 groups.append([w])
@@ -1567,6 +1693,10 @@ class FFS:
         key = key.upper()
         if key == 'LENGTH':
             if len(args) > 1:
+                if _compat.v2():
+                    # v2 (B24): K64 のソース (tftwiss.f) も LENGTH は引数 1 個だけ (要素数を返す)。エラーのままにして、位置の取り方を知らせる
+                    raise SADError(f'General::narg:  Number of arguments is expected to be 1 in LINE["LENGTH","{args[1]}"]'
+                                   f' (LINE["LENGTH"] is the number of components; use LINE["POSITION",loc] for the index, LINE["LENG",loc] or LINE["S",loc] for the orbit length)')
                 raise SADError(f'General::narg:  Number of arguments is expected to be 1 in LINE["LENGTH","{args[1]}"]')
             return float(self.nlat)
         if key == 'EXPAND':
@@ -1634,6 +1764,16 @@ class FFS:
         if len(sttl) < len(stl):
             raise SADError('General::equalleng: #2 and #3')
         ar = _corr.response_row(im, stl, sttl, rows, rot, bool(periodic), kind, tune[0], tune[1])
+        if self.flags['TRPT']:
+            # pgrmat.f:354・498: TRPT (加速のある輸送路) は sqrt(gammab(補正磁石)/gammab(モニタ)) を掛ける (断熱減衰:
+            # 規格化した座標の応答に、基準運動量の比の平方根が掛かる)。加速がなければ 1
+            from .trptacc import gammab_profile
+            from .emit6d import ELMASS as _EM
+            gb = gammab_profile(self.els, self.momentum() / _EM)
+            for i_ in range(len(stl)):
+                js_ = int(sttl[i_]) + 1               # pgrmat1: ループの後の js は stt(i)+1 (補正磁石の終端の次の位置)
+                if 1 <= js_ <= len(gb) and 1 <= im <= len(gb):
+                    ar[i_] = ar[i_] * math.sqrt(gb[js_ - 1] / gb[im - 1])
         return float(ar[0]) if scalar else [float(v) for v in ar]
 
     def set_line(self, args, v):
@@ -1708,6 +1848,7 @@ class FFS:
             target = self.I.files[int(unit)]
         rec = _RecOut(target)
         self.out = rec
+        self._measure_ret = None                        # v2 の MEASURE が入れる戻り値 (trackb.f ret: {np, 重心, 分散行列})
         try:
             self.run_text(cmd)
         finally:
@@ -1724,6 +1865,9 @@ class FFS:
                     saved.write(ln + chr(10))
             cmds = [c for c in cmd.split(';') if c.strip()]
             raise SADError('FFS::error:  Error in FFS command %d in FFS["%s"]' % (max(1, len(cmds)), cmd))
+        if getattr(self, '_measure_ret', None) is not None:
+            ret_, self._measure_ret = self._measure_ret, None
+            return ret_                                 # FFS["MEASURE …"] (v2 だけ。k64 では _measure_ret は常に None)
         return Null
 
 
@@ -1811,7 +1955,7 @@ class FFS:
         if circ <= 0.0:
             return
         amass = float(self.I.get('MASS', 0.51099895e6) or 0.51099895e6)
-        p0 = self.momentum() / amass
+        p0 = self.momentum(warn=False) / amass
         self.I.globals['OMEGA0'] = 2.0 * math.pi * 299792458.0 * p0 / math.sqrt(1.0 + p0 * p0) / circ
 
     def run_text(self, text: str):
@@ -1872,7 +2016,8 @@ class FFS:
             if self.flags['INTRA']:
                 e = self.run_emit(quiet=True)          # IBS の反復と TouschekTable (グローバル)
             _lat.RFSW = self.flags['RFSW']
-            x = emittance_rules(self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
+            self._sync_emitdiv()
+            x = emittance_rules(self._radtaper_lattice(), self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
                                 one_turn=onet, orbit=orbit, matrix=matrix, beam_matrices=False, fshift=self._fshift(),
                                 pol=bool(self.flags['POL']))
         except Exception:
@@ -2001,15 +2146,52 @@ class FFS:
         if cache is None or cache[0] != key:
             from .emit_extra import emittance_rules
             _lat.RFSW = self.flags['RFSW']
-            x = emittance_rules(self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
+            self._sync_emitdiv()
+            x = emittance_rules(self._radtaper_lattice(), self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
                                 one_turn=False, orbit=False, matrix=False, beam_matrices=True, fshift=self._fshift())
             cache = (key, x['BeamMatrices'])
             self._beam_cache = cache
         return cache[1][k - 1]
 
+    def _sync_emitdiv(self):
+        """大域変数 EMITDIV・EMITDIVB・EMITDIVQ (放射の分割数の倍率。既定 1) を emit6d に渡す (K64 の tfsetparam)"""
+        from . import emit6d as _e6
+        for i, k in enumerate(('EMITDIV', 'EMITDIVB', 'EMITDIVQ')):
+            try:
+                v = float(self.I.get(k, 1.0))          # MAIN の `EMITDIV = 20;` も FFS の `EMITDIV=20;` も同じ変数
+            except (TypeError, ValueError):
+                v = 1.0
+            _e6.EMITDIV[i] = v if (v == v and v > 0.0) else 1.0
+
     def _fshift(self):
         """グローバル FSHIFT (Orbit dilation)。emit の閉軌道・報告で RFSW ON のとき dv に足される"""
         return float(self.I.globals.get('FSHIFT', 0.0) or 0.0)
+
+    def _radtaper_on(self):
+        f = self.flags
+        return bool(f['RAD'] and f['RADCOD'] and f['RADTAPER'] and f['RFSW'])
+
+    def _radtaper_lattice(self):
+        """RADTAPER (radtaper.py): RAD・RADCOD・RADTAPER・RFSW が ON なら、閉軌道の局所の運動量に磁石の強さを合わせた要素の列の
+        Lattice を返す (Emittance[]・EMIT 用)。Twiss の DDP (閉軌道の δ) と、追跡用の状態 self._taper を作る。そうでなければ self.lat"""
+        self._taper = None
+        if not self._radtaper_on():
+            return self.lat
+        import copy as _copy
+        from . import radtaper as _rt
+        r = _rt.solve(self.els, self.momentum(), dp0=self.dp0(), fshift=self._fshift())
+        if not r['found']:
+            self.write(' ???-RADTAPER-closed orbit with taper not found; taper is not applied.' + chr(10))
+            return self.lat
+        self._taper = dict(ddp=r['ddp'], shape=r['shape'], u=r['u'], dptaper=r['dptaper'], key=(id(self.els), len(self.els)))
+        if self.rows is not None and len(self.rows) == len(r['ddp']):
+            for row, d in zip(self.rows, r['ddp']):
+                row.delta_cod = float(d)              # tturne.f: twiss(l, mfitddp) = cod(6)
+        lat = _copy.copy(self.lat)
+        lat.elements = r['els']
+        lat._twiss_cache = None
+        lat._z_into_trf0 = True                   # 閉軌道の z を trf0 に移す (emit6d._z_into_trf0)
+        return lat
 
     def run_emit(self, quiet=False):
         self._check_sol_optics(emit=True)
@@ -2017,10 +2199,12 @@ class FFS:
         if self.lat is None:
             raise SADError('No beam line')
         _lat.RFSW = self.flags['RFSW']
+        self._sync_emitdiv()
         try:
             gg = self.I.globals
             floor = tuple(float(gg.get(k, 0.0) or 0.0) for k in ('EMITXE', 'EMITYE', 'EMITZE'))
-            e = emittance6d(self.lat, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
+            lat_ = self._radtaper_lattice()
+            e = emittance6d(lat_, self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
                             fshift=self._fshift(), emit_floor=floor, pol=bool(self.flags['POL']))
         except Exception:
             # SAD: "???-Emittance[]-closed orbit not found." と表示して NaN の報告を出し、続行する
@@ -2322,6 +2506,17 @@ class FFS:
         else:
             flags = list(cols[6]) if len(cols) > 6 else [1.0] * npart
         els = self.els
+        # v2 (C2) AUTOPHI: 空洞の位相の基準にする設計軌道の到着時刻 (Twiss の DZ) を追跡に渡す (tturn.f: gettwiss(mfitdz, l))
+        from . import track6n as _n6
+        _n6.AUTOPHI_DZ = None
+        if _compat.v2() and any(float(getattr(e, 'AUTOPHI', 0.0) or 0.0) != 0.0 for e in els):
+            rows_ = self.rows if self.rows is not None else self.calc(quiet=True)
+            _n6.AUTOPHI_DZ = [float(r.z_cod) for r in rows_]
+        tp_ = getattr(self, '_taper', None)
+        if tp_ is not None and self._radtaper_on() and tp_['key'] == (id(self.els), len(self.els)):
+            # RADTAPER (tturn.f): 直前の Emittance[]・EMIT が作った閉軌道の δ (Twiss の DDP) と dptaper で磁石の強さを変える
+            from . import radtaper as _rt
+            els = _rt.tapered(self.els, tp_['shape'], tp_['u'], tracking=True)
         from .emit6d import _emit_circ
         circ = _emit_circ(els)                  # K64 は SOL (BOUND≠0) の長さを周長に入れない (omega0・空洞の位相)
         radlight = bool(self.flags['RADLIGHT'])
@@ -2350,9 +2545,16 @@ class FFS:
             tr = TrackRun(els, x, flags, self.momentum(), alost=float(g.get('LOSSAMPL', 1.0) or 0.0),
                           zlost=float(g.get('LOSSDZ', 100.0) or 0.0), kturn0=nt,
                           trpt=bool(self.flags['TRPT'] or radlight), **kw)
-            if not getattr(self, '_tracked_once', False):
-                tr.l_track0 = 0                      # セッションの最初の TrackParticles: l_track=0 (gs で確かめた: 最初から LOSSAMPL の外の粒子は最初の tapert で落ちない)
+            if _compat.k64() and not getattr(self, '_tracked_once', False):   # v2 (B33): 最初の tapert でも落とす
+                tr.l_track0 = 0                    # セッションの最初の TrackParticles: l_track=0 (gs で確かめた: 最初から LOSSAMPL の外の粒子は最初の tapert で落ちない)
             self._tracked_once = True
+            if True:
+                # LOSSMAP: l_track (最後に処理した要素の番号) はセッションを通じて残る (K64 の tmacro の変数。最初は 0)。
+                # v2 は最初の値を「始点の 1 つ前の要素」(周回で数える) にする
+                lt_ = getattr(self, '_l_track', None)
+                if lt_ is None:
+                    lt_ = 0 if not _compat_v2() else (ls - 1 if ls > 1 else nlat - 1)
+                tr.lmap = [lt_]
         except NotImplementedError:
             tr = None                            # numba の表に無い要素 (SOL 等): 損失なしの track6 で追う (以前どおり)
         from . import track6n as _t6n
@@ -2370,6 +2572,12 @@ class FFS:
                 fw = kick_factor(float(g.get('CHARGE', 1.0) or 1.0), float(g.get('PBUNCH', 0.0) or 0.0),
                                  float(g.get('NBUNCH', 1.0) or 1.0), npart, tr.ph.amass)
                 tr.set_wake(WakeKick(tr.ph.p0, tr.ph.h0, fw, int(float(g.get('NBUNCH', 1.0) or 1.0))), table)
+        if self.flags.get('SPAC') or self.flags.get('PSPAC') or self.flags.get('WSPAC'):
+            # v2: 空間電荷 (spch.py: SPAC + DRIFT・MULT の RADIUS、PSPAC + SPCH 要素、WSPAC)。k64 モードでは今までどおり入れない
+            from . import compat as _cmp_spch, spch as _spch     # (この関数の _compat は上の try の中の局所変数)
+            _sc = _spch.make(self, tr, npart) if _cmp_spch.v2() else None
+            if _sc is not None:
+                tr.spch = _sc
 
         from . import beambeam as _bbm
         if any(type(e).__name__ == 'BeamBeam' for e in els):
@@ -2378,12 +2586,24 @@ class FFS:
         if radlight:
             if tr is None:
                 raise SADError('RADLIGHT: この要素の並びは高速追跡 (TrackRun) で扱えない')
-            rl = _RadLight(self.ensure_geo().geo[ls - 1], tr.ph, npart)
+            rl = _RadLight(self.ensure_geo().geo[ls - 1], tr.ph, npart, v2=_compat_v2(),
+                           div=float(g.get('RADLIGHTDIV', 16.0) or 16.0))
 
         # track6 (Python) の追跡: APERT (tapert) で落ちた粒子は alive6 が False になる (LOSSAMPL/LOSSDZ の判定は numba 版だけ。zlost は APERT の |z| 判定)
         from .track6 import _is_apert as _is_ap
         alive6 = np.array([float(f) != 0.0 for f in flags])
         zlost6 = float(g.get('LOSSDZ', 100.0) or 0.0)
+        # スピン追跡 (POL + RAD) の損失: tturn の tapert (LOSSAMPL・LOSSDZ、最初の要素・15 要素ごと・区間の終わり) を track6 の経路でも行う。
+        # 落ちた要素と周は lost6 に入る (LOSSMAP)
+        alost6 = float(g.get('LOSSAMPL', 1.0) or 0.0)
+        lost6 = {}
+        kt6 = [nt]
+        lt6 = [getattr(self, '_l_track', None)]
+        first6 = [False]
+        if lt6[0] is None:
+            # セッションの最初の追跡: K64 は l_track=0 で、最初の tapert は落とさない (B33)。v2 は始点の 1 つ前の要素として落とす
+            lt6[0] = (ls - 1 if ls > 1 else nlat - 1) if _compat_v2() else 0
+            first6[0] = not _compat_v2()
 
         def seg(x, a, b):                        # tturn(ls=a, ld=b): 要素 a..b−1 (els[a−1:b−1])
             if b <= a:
@@ -2391,9 +2611,22 @@ class FFS:
             if rl is not None:
                 rl.store(tr, 0.0)                  # tturn.f:61 tlstore(…, dl=0): 区間の始めの点
                 for l in range(a, b):
-                    tr.segment(l, l + 1)
                     e = els[l - 1]
                     tn = type(e).__name__
+                    if rl.v2:
+                        # v2 (B65): BEND は円弧で進めて中も記録、曲げのある MULT は出口だけ、ほかは長さのある要素すべて (CAVI も)
+                        ang_ = float(getattr(e, 'ANGLE', 0.0) or 0.0)
+                        if tn == 'Bend' and ang_ != 0.0 and e.L != 0.0:
+                            rl.bend(tr, e, l)
+                            continue
+                        tr.segment(l, l + 1)
+                        if e.L != 0.0:
+                            if tn == 'Multipole' and ang_ != 0.0:
+                                rl.store(tr, 0.0, ang_, float(e.L) / ang_, float(getattr(e, 'ROTATION', 0.0) or 0.0))
+                            else:
+                                rl.store(tr, float(e.L))
+                        continue
+                    tr.segment(l, l + 1)
                     if tn == 'Bend' or (tn == 'Multipole' and float(getattr(e, 'ANGLE', 0.0) or 0.0) != 0.0):
                         continue                   # tturn.f:555: BEND と曲げのある MULT は記録しない (K64 のまま)
                     if _TYPECODE.get(tn, 99) < 31 and e.L != 0.0:
@@ -2405,7 +2638,12 @@ class FFS:
             if spin_in is not None:
                 from .track6 import track_particles as _tp6
                 xo, sp_ = _tp6(els[a - 1:b - 1], x, 1, self.momentum(), spins=spin_in, radpol=bool(self.flags['RADPOL']),
-                               alive=alive6, zlost=zlost6, **kw)
+                               alive=alive6, zlost=zlost6, alost=alost6, l0=a - 1, kturn0=kt6[0], lt_prev=lt6[0],
+                               lost_info=lost6, nodrop_first=first6[0], **kw)
+                lt6[0] = b - 1
+                first6[0] = False
+                self._l_track = lt6[0]
+                self._tracked_once = True
                 spin_in[:] = [list(v) for v in sp_]
                 return xo
             if any(_is_ap(e) for e in els[a - 1:b - 1]):
@@ -2417,12 +2655,14 @@ class FFS:
             x = seg(x, ls, nlat)
             if tr is not None:
                 tr.next_turn()
+            kt6[0] += 1
             ls = 1
             mt -= 1
         for _ in range(mt - 1):
             x = seg(x, 1, nlat)
             if tr is not None:
                 tr.next_turn()
+            kt6[0] += 1
         normal = True
         if ld <= ls:
             normal = False
@@ -2435,13 +2675,28 @@ class FFS:
         if tr is not None:
             x, alive = tr.result()               # tftrack.f ktfresetparticles: 番号順、alive (落ちた粒子は 0、座標は落ちた時点)
         res = [[float(x[i][j]) for i in range(npart)] for j in range(6)] + [list(alive)]
+        lm_rows = None
+        if tr is not None and getattr(tr, 'lmap', None) is not None:
+            self._l_track = tr.lmap[0]
+        if self.flags['LOSSMAP']:
+            # tftrack.f ktfresetparticles: flag の後に 2 行 (落ちた要素の番号 l_track、落ちた周。落ちていなければ 0 と nend+1) を足す
+            if tr is not None and getattr(tr, 'lmap', None) is not None:
+                lm_rows = [list(r_) for r_ in tr.lossmap(nend, nlat, v2=_compat_v2())]
+            elif spin_in is not None:
+                # スピン追跡 (track6 の経路): lost6 = {粒子: (要素, 周)}
+                lm_rows = [[float(lost6[i][0]) if i in lost6 else 0.0 for i in range(npart)],
+                           [float(lost6[i][1]) if i in lost6 else float(nend + 1) for i in range(npart)]]
+                self._l_track = lt6[0]
+            else:
+                raise SADError('LOSSMAP: この要素の並び・フラグは高速追跡 (TrackRun) で扱えず、損失の位置を記録できない')
+            res = res + lm_rows
         if rl is not None:
             return [[float(ld if normal else ls), res], rl.result()]
         if spin_in is not None:
             # ktfresetparticles: 7 列目 = atan(sz, sx)、8 列目 = sy/|s|、9 列目 = flag
             ang = [math.atan2(sv[2], sv[0]) for sv in spin_in]
             syn = [sv[1] / math.sqrt(sv[0]**2 + sv[1]**2 + sv[2]**2) for sv in spin_in]
-            res = res[:6] + [ang, syn, list(alive)]
+            res = res[:6] + [ang, syn, list(alive)] + (lm_rows or [])
         return [float(ld if normal else ls), res]
 
     def _wake_table(self):
@@ -2567,7 +2822,14 @@ class FFS:
         else:
             tw0 = dict(ax=ini[0], bx=ini[1], nx=ini[2], ay=ini[3], by=ini[4], ny=ini[5], ex=ini[6], epx=ini[7], ey=ini[8],
                        epy=ini[9], r1=ini[10], r2=ini[11], r3=ini[12], r4=ini[13], detr=ini[14])
-            tws = _lat.ins_twiss(els, tw0, ini[15:20], delta)
+            # N3 (pysad の不具合の修正、モードによらない): TRPT かつ RFSW の加速 (CALC の _ins_rows と同じ trptacc) を区間に入れる
+            acc = self._trpt_acc()
+            if acc is not None:
+                o = lb - 1
+                sidx = {i - o for i in acc['idx'] if o <= i < le - 1}
+                acc = ({'gb': acc['gb'][o:], 'idx': sidx, 'step': (lambda el, i, cod, _s=acc['step'], _o=o: _s(el, i + _o, cod))}
+                       if sidx else None)
+            tws = _lat.ins_twiss(els, tw0, ini[15:20], delta, acc=acc)
             new = []
             for i, tw in enumerate(tws):
                 c = tw['cod']
@@ -2607,7 +2869,17 @@ class FFS:
             st = [bool(qq['stabx']), bool(qq['staby'])]       # qcell1 の判定そのもの (qmdiag の stab、codfnd、over も含む)
             trace = [qq['tracex'], qq['tracey']]
         out = [[self.twiss_value(k2, k) for k2 in _TWISS_ALL] for k in range(lb, le + 1)]
-        return [out, [1.0 if st[0] else 0.0, 1.0 if st[1] else 0.0, 1.0], [trace[0], trace[1], 0.0]]
+        stz, trz = 1.0, 0.0
+        if _compat.v2() and idim == 3:
+            # v2 (B16): idim=3 は縦方向の対角和と安定性も返す (K64 は未初期化)。idim=2 は縦を計算しないので stabz=1、tracez=0 と決める
+            try:
+                d = e.muz - b.muz
+                trz = (math.sqrt(e.betz / b.betz) * (math.cos(d) + b.alfz * math.sin(d))
+                       + math.sqrt(b.betz / e.betz) * (math.cos(d) - e.alfz * math.sin(d)))
+                stz = 1.0 if (math.isfinite(trz) and abs(trz) <= 2.0) else 0.0
+            except (ValueError, ZeroDivisionError, AttributeError):
+                stz, trz = 0.0, 0.0
+        return [out, [1.0 if st[0] else 0.0, 1.0 if st[1] else 0.0, stz], [trace[0], trace[1], trz]]
 
     def _calcopt_6d(self, lb, le, ini, cell, rows):
         """CalculateOptics の idim=3 (qcell6d): 区間全体 (lb=1, le=nlat) の周期 6 次元解のみ"""
@@ -2706,6 +2978,8 @@ class FFS:
                     break
                 if name == 'RFSW':               # $RFSW$ は MAIN の TRACK 用。FFS の RFSW は常に ON で始まる (track.f:149)
                     self.main_flags['RFSW'] = val
+                    if _compat.v2():
+                        self.flags['RFSW'] = val     # v2 (B30): MAIN の ON/OFF RFSW を、ほかのフラグと同じく FFS に届ける
                 else:
                     self.flags[name] = val
         elif k == 'EMIT':
@@ -2881,6 +3155,8 @@ class FFS:
                 self.flags['CALEXP'] = False
             elif n > 1 and _abbrev(words[i + n - 1].upper(), 'EXP_AND') and words[i + n - 1].upper() not in _FUNS:
                 self.flags['CALEXP'] = True
+            elif not self.flags.get('KEEPEXP', True):
+                self.flags['CALEXP'] = not self._tfvcomp()      # NOKEEPEXP (tffsa.f:553): calexp=.not. tfvcomp()
             self.go(fit=False)
             return n
         if W == 'GO':
@@ -2891,6 +3167,8 @@ class FFS:
             elif i + n < len(words) and _abbrev(words[i + n].upper(), 'EXP_AND'):
                 self.flags['CALEXP'] = True
                 n += 1
+            elif not self.flags.get('KEEPEXP', True):
+                self.flags['CALEXP'] = not self._tfvcomp()      # NOKEEPEXP (tffsa.f:569)
             self.go(fit=True)
             return n
         if W == 'EMIT':
@@ -2968,6 +3246,11 @@ class FFS:
             # この K64 ビルドの SAD では MON/MCOD/TCOD は FFS コマンドではなく式として評価されて何もしない (SAD で確認)。
             # 後ろの語は普通に次の文として読まれるので、`MON 0 0 0 0 PM*` は `PM*` の値が無く ?Missing value for PM* になる
             # (<work-userscripts>/esrf correct_cod, print_emittance: SAD は FFS::error で Do を抜ける)
+            if _compat.v2():
+                # v2 (B22): K64 にこのコマンドは無い。文の残りを式として読んで別のエラー (Missing value for PM*) で止まるのを避け、
+                # 無いことを知らせて文全体を読み飛ばす (軌道補正は CorrectOrbit パッケージ: docs/34)
+                self.write(f' ???-FFS-Warning-{W} is not a command of SAD K64 (ignored): {" ".join(words[i:])} ' + chr(10))
+                return len(words) - i
             return 1
         if W == 'ORG' or _abbrev(W, 'ORI_GIN'):
             return self._org(words, i)
@@ -2989,6 +3272,15 @@ class FFS:
             import copy as _copy
             self._ref_rows = [_copy.copy(r) for r in self.ensure_rows()]
             return 1
+        if (_abbrev(W, 'MEA_SURE') or _abbrev(W, 'TRC_OD') or _abbrev(W, 'LOGM_EASURE')
+                or (_compat.v2() and (_abbrev(W, 'ORBITJ_ITTER') or _abbrev(W, 'PUTM_EASURE') or _abbrev(W, 'GET_MEASURE')))):
+            # v2: MEASURE / TRCOD / LOGMEASURE と ORBITJITTER / PUTMEASURE / GETMEASURE (measure.py)。k64 は従来どおり (gs は MEASURE が無出力、TRCOD は SIGSEGV: B42)
+            # (_compat はモジュールの先頭で import 済み。この関数の中で import し直すと、前の方の _compat の参照が UnboundLocalError になる)
+            if _compat.v2():
+                from . import measure as _ms
+                r_ = _ms.ffs_command(self, W, words, i)
+                if r_ is not None:
+                    return r_
         from . import ffsextra as _fx
         if W in _fx.COMMANDS:
             r_ = _fx.run(self, W, words, i)
@@ -3082,7 +3374,9 @@ class FFS:
             m0 = self.els[0]
             raw = self.env._elements.get(m0.name, {}) if type(m0).__name__ == 'Marker' else {}
             for k, gk in (('EMITX', 'EMITX'), ('EMITY', 'EMITY'), ('EMITZ', 'EMITZ'), ('SIGZ', 'SIGZ'), ('SIGE', 'SIGE')):
-                g[gk] = float(raw.get(k, 0.0) or 0.0)
+                # MARK に書かれていない (0 の) ものは、MAIN で代入した値を残す (gs で確かめた: MAIN の `EMITY=2E-11;` は MARK に EMITY が
+                # 無ければ FFS でも 2E-11、MARK の EMITX=5E-9 は MAIN の EMITX=1E-9 より優先)。MAIN で代入していなければ従来どおり 0
+                g[gk] = float(raw.get(k, 0.0) or g.get(gk, 0.0) or 0.0)
             g['DP0'] = float(raw.get('DDP', 0.0) or 0.0)
             if raw.get('DP'):
                 g['DP'] = float(raw['DP'])
@@ -3264,7 +3558,7 @@ class FFS:
         from . import geo as _geo
         gx, gy, gz = self.org_g
         self.geo = _geo.compute_geo(self.els, gx0=gx, gy0=gy, gz0=gz, chi0=tuple(self.org_chi), iorg=self.org_k,
-                                    warn=lambda m: None, momentum_eV=self.momentum())
+                                    warn=lambda m: None, momentum_eV=self.momentum(warn=False))
         self.geo_dirty = False
         return self.geo
 
@@ -3418,6 +3712,11 @@ class FFS:
                 m.fix(pat, key)
         return n
 
+    def _tfvcomp(self) -> bool:
+        """tffsa.f tfvcomp: 成分ごとのフィット変数 (ivcomp≠0) で、既定以外のキーワードのものがあれば真。
+        pysad の FREE はファミリー単位で、成分ごとの変数を持たないので常に偽 (NOKEEPEXP のとき、EXPAND/NOEXPAND を付けない CALC・GO は CALEXP に戻る)"""
+        return False
+
     def _kw_of_pattern(self, pat: str, kw: str) -> bool:
         """pat に合うファミリーのどれかの型 (SAD の型) のキーワード一覧に kw があるか (tffsfreefix の tfkwrd 照合)"""
         from .sadkw import KEYWORDS
@@ -3490,6 +3789,8 @@ class FFS:
         # SAD K64 の tffscalc は rlist(isl) (isl=ktfsymbolz('UnstableLevel',14)-4: 名前は 13 文字なのに 14 を渡している) に nstab を書くので、
         # UnstableLevel 自体は更新されず常に 0 のまま (不安定なまま終わっても MatchingResidual は 10^n·nstab+r で、UnstableLevel は 0。bench_level28)
         g['UnstableLevel'] = 0.0
+        if _compat.v2():
+            g['UnstableLevel'] = float(m.residual.nstab)     # v2 (B15): 不安定な点の数 (MatchingResidual = 10^n·nstab + r の nstab)
         self.rows = None
         self.calc(quiet=True, ini=True)
         if not getattr(m, 'no_variable', False):
@@ -3870,6 +4171,9 @@ class FFS:
         """WAKE: K64 の tffsa.f は tfwake.f (Fortran の旧 WAKE 構文) を呼ばず、SADScript の WAKECOMMAND[] を評価する (init.n で
         Packages/WAKECOMMAND.n を AutoLoad。この配布には無い)。gs で確かめた: ファイルが無いと fileopen のエラーを出し、WAKECOMMAND[] は True にならず
         その行の残りを捨てる。ここも同じ (WAKECOMMAND.n があればそれが評価される)"""
+        if _compat_v2() and i + 1 < len(words) and (_abbrev(words[i + 1].upper(), 'L_ONGITUDINAL')
+                                                   or _abbrev(words[i + 1].upper(), 'T_RANSVERSE')):
+            return self._wake_cmd_v2(words, i)
         try:
             ok = self.I.run('WAKECOMMAND[]', 'script')
         except SADError:
@@ -3877,6 +4181,56 @@ class FFS:
         if not (isinstance(ok, Sym) and ok.name == 'True'):
             return max(1, len(words) - i)
         return 1
+
+    def _wake_cmd_v2(self, words, i):
+        """v2 (B66): 旧式の WAKE コマンド (K64 の tfwake.f の構文。K64 では呼ばれない死んだコード)。
+          WAKE L_ONGITUDINAL|T_RANSVERSE 要素 s1 w1 s2 w2 ... ENDWAKE
+        名前 (ワイルドカード可) に合う CAVI に、表 {{s, w}, ...} を WakeFunction[Longitudinal|Transverse, 要素名] として登録する
+        (追跡は WakeFunction と同じ: TRPT と LWAKE / TWAKE が ON のとき TrackParticles で効く。s: m、w: V/C (縦)、V/C/m (横))。
+        表は行をまたいで書ける (tfwake.f と同じ: 1 行に何組でも、注釈 `!` 可。Interp._wake_table_open が ENDWAKE まで 1 文にする)。
+        表の途中に `;` は書けない (tfwake.f も `;` で ?Missing ENDWAKE.)。ENDWAKE の後の `;` はあってもなくてもよい"""
+        tag = 'Longitudinal' if _abbrev(words[i + 1].upper(), 'L_ONGITUDINAL') else 'Transverse'
+        if i + 2 >= len(words) or words[i + 2].upper() == 'ENDWAKE':
+            self.write('?Missing element for WAKE. (書き方: WAKE L|T 要素 s1 w1 s2 w2 ... ENDWAKE;)' + chr(10))
+            return len(words) - i
+        pat = words[i + 2]
+        n = 3
+        vals = []
+        while True:
+            if i + n >= len(words):
+                self.write('?Missing ENDWAKE. (WAKE %s: 表は ENDWAKE で閉じる。表の途中に ; は書けない。%d 個の値まで読んだ)'
+                           % (pat, len(vals)) + chr(10))
+                return len(words) - i
+            if words[i + n].upper() == 'ENDWAKE':
+                n += 1
+                break
+            v, k = self._getva(words, i + n)
+            if v is None or isinstance(v, list) or isinstance(v, complex):
+                self.write(('?Missing value of wake.' if len(vals) % 2 else '?Missing ENDWAKE.')
+                           + ' (WAKE %s: %d 個の値の後の "%s" は数として読めない。ENDWAKE を忘れていないか)'
+                           % (pat, len(vals), words[i + n][:30]) + chr(10))
+                return len(words) - i
+            vals.append(float(v))
+            n += k
+        if len(vals) % 2:
+            self.write('?Missing value of wake. (WAKE %s: 値が %d 個 (奇数)。s と w の組で書く)' % (pat, len(vals)) + chr(10))
+            return n
+        if not vals:
+            self.write('?No wake data. (WAKE %s: WAKE と ENDWAKE の間に s w の組が無い)' % pat + chr(10))
+            return n
+        allp = [k for k in sorted(self.positions(pat)) if k < self.nlat]
+        hit = [k for k in allp if type(self.els[k - 1]).__name__ == 'Cavity']
+        if not hit:
+            if allp:
+                self.write('?WAKE: %s は CAVI ではない (%s)。旧式の WAKE は CAVI だけ'
+                           % (pat, _cls(self.els[allp[0] - 1])) + chr(10))
+            else:
+                self.write('?Undefined element ' + pat + ' (WAKE は CAVI だけ)' + chr(10))
+            return n
+        tab = '{' + ','.join('{%r,%r}' % (vals[2 * j], vals[2 * j + 1]) for j in range(len(vals) // 2)) + '}'
+        for k in hit:
+            self.I.run('WakeFunction[%s,"%s"]=%s' % (tag, self.elname(k), tab), 'script')
+        return n
 
     # ------------------------------------------------------------------ DELCOR (tcorr.f, tvcorr.f)
     def _delcor(self, words, i):
@@ -3941,11 +4295,19 @@ class FFS:
                         if id_ == 41:
                             # K64 のまま: MARK には latt+15, +17 に書く。値の添字では ky_DETR_Mark=15、ky_DPX_Mark=17 (DX=16、DY=18 ではない)。
                             # INS の始点が読む raw の DETR (R の行列式) と DPX (初期の傾き) に入る
+                            # v2 (B40): 意図どおり MARK の DX・DY (ky_DX_Mark=16、ky_DY_Mark=18) に書く
                             raw = self.env._elements.setdefault(ej.name, {})
-                            ox = float(raw.get('DETR', 0.0) or 0.0)
-                            oy = float(raw.get('DPX', 0.0) or 0.0)
-                            raw['DETR'] = ox + delx if add else delx
-                            raw['DPX'] = oy + dely if add else dely
+                            kx_, ky_ = ('DX', 'DY') if _compat_v2() else ('DETR', 'DPX')
+                            ox = float(raw.get(kx_, 0.0) or 0.0)
+                            oy = float(raw.get(ky_, 0.0) or 0.0)
+                            raw[kx_] = ox + delx if add else delx
+                            raw[ky_] = oy + dely if add else dely
+                            continue
+                        if id_ == 31 and _compat_v2():
+                            # v2 (B40・B62): CAVI も他の磁石と同じく DX・DY に、同じ符号のずれ (+delx, +dely) を入れる。
+                            # K64 は HARM・PHI に (設計の DX・DY) - (delx, dely) を書く (添字のずれ)
+                            ej.DX = (float(getattr(ej, 'DX', 0.0) or 0.0) + delx) if add else delx
+                            ej.DY = (float(getattr(ej, 'DY', 0.0) or 0.0) + dely) if add else dely
                             continue
                         if id_ == 31:
                             # K64 (tcorr.f): CAVI は latt+3, +4 = HARM と PHI に (DX, DY ではなく) 書く。add でなければ設計の DX・DY (idvalc+13, +14) から
@@ -3997,11 +4359,21 @@ class FFS:
             re_ = w * g(); im_ = w * g()
             cv[k - 1] = complex(re_, im_)
             re_ = w * g(); im_ = w * g()
-            cv[n - k] = complex(re_, im_)
+            if _compat_v2():
+                # v2 (B62): 波数 +(k-1) の相手は -(k-1) (Fortran の添字 n-k+2)。K64 は cv(n-k+1) = 波数 -k に置き、
+                # cv(n) (波数 -1) が未設定 (ktaloc の古い内容) で、2 回目以降の DELCOR が再現できない
+                cv[n - k + 1] = complex(re_, im_)
+            else:
+                cv[n - k] = complex(re_, im_)
             s += w * w
         cv[0] = complex(g(), g())
-        s = 1.0 / math.sqrt(4.0 * s + 2.0)
-        cv = np.fft.ifft(cv) * n * s             # tcftr (conj=.false.) = exp(+2πi jk/n) の和
+        if _compat_v2():
+            # v2 (C2): 実部 (DX に使う)・虚部 (DY に使う) それぞれの分散を 1 にする。Var(Re) = Σ_k w_k² = 2Σw² + 1。
+            # K64 は複素数の絶対値の 2 乗平均を 1 にする (4Σw² + 2) ので、DX の rms が delx/√2 になる
+            s = 1.0 / math.sqrt(2.0 * s + 1.0)
+        else:
+            s = 1.0 / math.sqrt(4.0 * s + 2.0)
+        cv = np.fft.ifft(cv) * n * s           # tcftr (conj=.false.) = exp(+2πi jk/n) の和
         return cv
 
     def _master_array(self):
@@ -4710,8 +5082,47 @@ class FFS:
         """RADINT: INTGRL.f の直訳 (pysad/radint.py)。直前の CALC の Twiss (DP0 の行) を使う。"""
         from . import radint as _radint
         rows = self.ensure_rows()
-        for line in _radint.report(self, rows):
+        chrom = None
+        if _compat.v2():
+            # v2 (R2): LINEAR CHROMATICITY は運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (六極・偏向磁石の寄与を含む)。
+            # K64 の式 -I9/4π は磁石の中だけの ∮γ ds で、色収差にならない
+            chrom = self._chrom_fd()
+            if chrom is None:
+                self.write(' RADINT: off-momentum optics not found; GX/GY below are the K64 integral (not a chromaticity)' + chr(10))
+        for line in _radint.report(self, rows, chrom=chrom):
             self.write(line + chr(10))
+
+    def _chrom_fd(self, h=1.0e-4):
+        """一次の色収差 (dνx/dδ, dνy/dδ): DP0±h の 4 次元の光学 (CELL は周期解、そうでなければ先頭の条件からの伝搬) の位相の差分。
+        求まらなければ None。状態 (rows、安定判定) は変えない"""
+        d0 = self.dp0()
+        q0 = getattr(self.lat, '_qstat', None)
+        rf0 = _lat.RFSW
+        _lat.RFSW = False
+        try:
+            nu = []
+            for sgn in (1.0, -1.0):
+                d = d0 + sgn * h
+                if self.flags['CELL']:
+                    rows = list(self.lat.twiss_table(delta=d, sad_stab={'intres': bool(self.flags['INTRES']),
+                                                                        'halfres': bool(self.flags['HALFRES'])}))
+                    q = self.lat._qstat
+                    if q is not None and not (q['stabx'] and q['staby'] and not q['over']):
+                        return None
+                else:
+                    rows = self._ins_rows(d)
+                last = rows[len(self.els)] if len(rows) > len(self.els) else rows[-1]
+                nu.append((last.mux / (2.0 * math.pi), last.muy / (2.0 * math.pi)))
+            gx = (nu[0][0] - nu[1][0]) / (2.0 * h)
+            gy = (nu[0][1] - nu[1][1]) / (2.0 * h)
+            if not (math.isfinite(gx) and math.isfinite(gy)):
+                return None
+            return gx, gy
+        except Exception:
+            return None
+        finally:
+            _lat.RFSW = rf0
+            self.lat._qstat = q0
 
     def chro_cmd(self):
         """CHROMATICITY: tfchro.f の直訳。四極・六極・多極 (MULT) の寄与を 1 要素ずつ表示し、最後に合計。
@@ -4790,17 +5201,83 @@ class FFS:
 
 
 # ---------------------------------------------------------------------------- 実行
-def split_main_ffs(src: str):
-    """FFS; の行で MAIN 部と FFS 部に分ける。MAIN 部の ON/OFF 行は [(flag, bool)] で返す"""
-    lines = src.split('\n')
-    main, rest = [], []
-    in_ffs = False
-    for ln in lines:
-        s = ln.split('!')[0].strip()
-        if not in_ffs and re.fullmatch(r'FFS\s*;?', s, re.I):
-            in_ffs = True
+def _locate_ffs(src: str):
+    """MAIN 部の `FFS` 文を探す (gs で確かめた読み方)。無ければ None。
+      - `FFS` は行の先頭か、同じ行の前の文の `;` の直後に書ける (`LINE RING = (...); FFS;`)。大文字小文字は問わない
+        (gs は FFS と ffs だけ。Ffs は gs では読めないが、pysad は従来どおり受ける)。
+      - 文は次の `;` まで。`FFS USE RING;` / `FFS USE=RING;` は FFS 部の最初に USE RING をしたのと同じ。
+      - FFS 部は、その `;` のある行の次の行から。`;` の後ろの同じ行の残り (`FFS;NPARA=1;` の NPARA=1;) は FFS 部では実行されない
+        (gs は FFS を抜けた後に MAIN の文として読む)。
+      - `;` の無い `FFS` だけの行は従来どおり、次の行から FFS 部 (gs は次の `;` までを FFS の引数として読む)。
+    戻り値: {'main_end' (MAIN 部の終わり = FFS の語の位置), 'ffs_start' (FFS 部の始まり), 'use' (名前 | None), 'bad' (読めない引数), 'dropped' (捨てた残り)}"""
+    from . import parser as _parser
+    b = _parser._blank_comments(src)
+    n = len(b)
+    depth, q = 0, False
+    i = 0
+    at_start = True                       # 文の始まり (行の先頭の空白の後、または深さ 0 の ; の後)
+    line_start = True                     # 行の先頭 (空白だけが前にある)
+    while i < n:
+        c = b[i]
+        if q:
+            if c == '"':
+                q = False
+            i += 1
             continue
-        (rest if in_ffs else main).append(ln)
+        if c == '\n':
+            line_start = True
+            i += 1
+            continue
+        if c in ' \t\r':
+            i += 1
+            continue
+        if ((depth == 0 and at_start) or line_start) and b[i:i + 3].upper() == 'FFS' and (i + 3 >= n or b[i + 3] in ' \t\r\n;'):
+            eol = b.find('\n', i)
+            eol = n if eol < 0 else eol
+            own = b[i + 3:eol]
+            if (depth == 0 and at_start) or re.fullmatch(r'\s*;?\s*', own):      # 文の途中の行頭の FFS は、行が FFS だけのとき (従来の規則)
+                if ';' not in own:
+                    if own.strip():
+                        k = b.find(';', eol)
+                    else:
+                        k = -1
+                    if k < 0:
+                        args, tail_end, dropped = own, eol, ''
+                    else:
+                        tail_end = b.find('\n', k)
+                        tail_end = n if tail_end < 0 else tail_end
+                        args, dropped = b[i + 3:k], b[k + 1:tail_end]
+                else:
+                    k = i + 3 + own.index(';')
+                    args, tail_end, dropped = b[i + 3:k], eol, b[k + 1:eol]
+                args = ' '.join(args.split())
+                m = re.fullmatch(r'USE\s*=?\s*([A-Za-z_$][\w$.]*)', args, re.I)
+                return {'main_end': i, 'ffs_start': min(n, tail_end + 1), 'use': m.group(1) if m else None,
+                        'bad': '' if (m or not args) else args, 'dropped': dropped.strip()}
+        at_start = False
+        line_start = False
+        if c == '"':
+            q = True
+        elif c in '([{':
+            depth += 1
+        elif c in ')]}':
+            depth = max(0, depth - 1)
+        elif c == ';' and depth == 0:
+            at_start = True
+        i += 1
+    return None
+
+
+def split_main_ffs(src: str):
+    """FFS の文で MAIN 部と FFS 部に分ける (_locate_ffs)。MAIN 部の ON/OFF 行は [(flag, bool)] で返す"""
+    loc = _locate_ffs(src)
+    if loc is None:
+        main, rest = src.split('\n'), []
+    else:
+        main = src[:loc['main_end']].split('\n')
+        rest = src[loc['ffs_start']:].split('\n')
+        if loc['use']:
+            rest.insert(0, 'USE ' + loc['use'] + ';')
     flags = []
     main2 = []
     for ln in main:
@@ -4824,25 +5301,36 @@ def run_sad(paths: List[str], out=None, cwd: Optional[str] = None):
 
 
 def main_part(src: str) -> str:
-    """FFS; の行より前 (MAIN 部) の原文 (ON/OFF も残す)"""
-    out = []
-    for ln in src.split(chr(10)):
-        s = ln.split('!')[0].strip()
-        if re.fullmatch(r'FFS\s*;?', s, re.I):
-            break
-        out.append(ln)
-    return chr(10).join(out)
+    """FFS の文より前 (MAIN 部) の原文 (ON/OFF も残す)"""
+    loc = _locate_ffs(src)
+    return src if loc is None else src[:loc['main_end']]
 
 
 def run_sad_string(src: str, out=None, cwd: Optional[str] = None):
     from . import parser as _parser
     out = out or sys.stdout
     main, ffs_src, flags = split_main_ffs(src)
+    # MAIN 部の一般の代入 `NAME = 式;` (gs と同じく FFS に入ってからも見える。関数形・PI の値は要素定義でも使えるように数値に直す)
+    assigns = _parser.parse_main_assignments(main)
+    main = _parser.rewrite_main_assignments(main, assigns)
     sc = _parser.load_sad_string(main)
     I = Interp(out=out)
     if cwd:
         I.cwd = cwd
+    consts = set(I.globals)           # E・Pi などの定数 (MAIN の `E = …` は gs でも FFS の E を変えない)
     ffs = FFS(sc.env, I, out=out)
+    for a in assigns:
+        if a['kind'] != 'VAR' or a['name'] in consts:
+            continue
+        if a['value'] is not None:    # MAIN の式として読めない右辺 (gs でも構文エラー) は代入しない
+            I.assign(a['name'], float(a['value']))
+    loc = _locate_ffs(src)
+    if loc is not None and loc['bad']:
+        out.write('  *** $FFS *** syntax error:undefined variable $%s (FFS の後に書けるのは ; か USE 名前; だけ)\n' % loc['bad'].split()[0])
+    if loc is not None and loc['dropped']:
+        out.write(' (pysad) FFS の文と同じ行の残り "%s" は実行しない (gs と同じ。FFS 部は次の行から)\n' % loc['dropped'][:60])
+    from . import emit6d as _e6
+    _e6.EMITDIV[:] = [1.0, 1.0, 1.0]  # 前の台本の EMITDIV を持ち越さない (Emittance[]・EMIT のたびに _sync_emitdiv が入れ直す)
     I.continue_on_error = True        # SAD と同じく、エラーの文は表示して次の文へ進む
     I.echo_out = True                 # SAD と同じく、; のない最上位の式の値を Out[n]:= で表示する
     # MAIN に TRACK 文があるときは、MAIN の命令 (ON/OFF, EMIT, `PHSPLOTS=..;`, TRACK, STOP) を書かれた順に実行する
@@ -4859,11 +5347,19 @@ def run_sad_string(src: str, out=None, cwd: Optional[str] = None):
         except SystemExit:
             pass
         return ffs, I
+    for a in assigns:
+        # MAIN の `EMITDIV = 20;`、`PBUNCH = 2E10;`、`EMITX = 1E-9;` など (_MAIN_SET_NAMES) を FFS に渡す (gs で確かめた: FFS に入っても値が残る)。
+        # NPARA・DP・DP0・CHARGE は gs でも FFS の入口で既定値に戻るので渡さない
+        U = a['name'].upper()
+        if a['kind'] == 'SET' and a['value'] is not None and U not in ('NPARA', 'DP', 'DP0', 'CHARGE'):
+            I.globals[U] = float(a['value'])
     for f, v in flags:
         if f in _FLAG_ALT:
             f, v = _FLAG_ALT[f][0], (_FLAG_ALT[f][1] if v else not _FLAG_ALT[f][1])
         if f == 'RFSW':                   # MAIN の $RFSW$ は FFS に届かない (track.f:149 rfsw=.true.; main_exec と同じ)
             ffs.main_flags['RFSW'] = v
+            if _compat.v2():
+                ffs.flags['RFSW'] = v         # v2 (B30): FFS に届ける (K64 は FFS 入口で rfsw=.true. に固定)
         elif f in ffs.flags:
             ffs.flags[f] = v
     try:

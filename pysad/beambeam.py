@@ -15,6 +15,7 @@ import math
 import numpy as np
 from numba import njit
 
+from . import compat
 from .emit6d import ELMASS, ELRADI, FINEST, CVELOC
 from .track6n import tran, lcg, pxy2dpz
 
@@ -699,6 +700,13 @@ def apply(S, n, bb, rs=None):
     if ns <= 0 or n <= 0:
         return 0.0, 0.0
     xa = bb['xangle']
+    tilt_on = xa[4] != 0.0
+    if compat.v2() and tilt_on:
+        # B34 の修正: 傾きの回転は (cos t, sin t) を使う (bbinit は xangle(6)=sin、(7)=cos を書くが、K64 の beambeam は
+        # sint=xangle(5)=t、cost=xangle(6)=sin t を読む)。bb_kick は xangle[4] を sint、xangle[5] を cost として読む。
+        xa = xa.copy()
+        xa[4] = bb['xangle'][5]
+        xa[5] = bb['xangle'][6]
     cod = bb['cod']
     info = np.zeros(4)
     photon = bool(bb['bstrl']) and bb.get('photon') is not None and PHOTON_SINK is not None
@@ -713,7 +721,7 @@ def apply(S, n, bb, rs=None):
         dsz = np.zeros(1)
         rs = np.zeros(1, dtype=np.int64)
     bb_kick(S, n, ns, bb['gamma'], bb['gambet'], bb['ce'], xa, cod, bb['benv5'], bb['vcen'], bb['zc'], bb['sigz'],
-            xa[4] != 0.0, xa[0] != 0.0, bool(np.any(bb['vcen'][:4] != 0.0)), bool(np.any(cod[:4] != 0.0)),
+            tilt_on, xa[0] != 0.0, bool(np.any(bb['vcen'][:4] != 0.0)), bool(np.any(cod[:4] != 0.0)),
             bool(bb['bstrl']), bb.get('cnbs', 0.0), bb.get('cubs', 0.0), dsz, xit, swit, rs, info, photon, prec)
     if info[0] > 0.0:
         raise ValueError(f'BEAMBEAM: Nbs is too large ({info[0]}) (K64 は stop する)')

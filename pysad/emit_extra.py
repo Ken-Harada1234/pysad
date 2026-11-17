@@ -192,13 +192,16 @@ def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bo
     try:
         codin, trf0, found = _closed_orbit(els, ph, rfsw, radcod, True)
         codin = np.array(codin, dtype=float)
+        if getattr(lattice, '_z_into_trf0', False) and found and rfsw and radcod:
+            from .emit6d import _z_into_trf0
+            codin, trf0 = _z_into_trf0(codin, trf0, ph)          # RADTAPER (C2): z を trf0 に移す
         # --- temit の 1 周目: trans=1, beam=0, cod=codin → tecalc ---
         st = _turn_record(els, codin, ph, trf0=trf0, rfsw=rfsw, radcod=radcod,
                           beam0=None, record=(mode >= 2), calpol=pol)
     finally:
         _lat.RFSW = rfsw0
     em = tecalc(st, circ, rfsw=rfsw)
-    spinres = _spin_results(st, em, ph) if pol else None
+    spinres = _spin_results(st, em, ph, els=els, cod=codin, trf0=trf0, rfsw=rfsw, radcod=radcod) if pol else None
     T = st.T.copy()
     D = st.D.copy()
     beamp = st.B.copy()                 # tecalc の beamp = 一周後の beam(1:21) (物理座標)
@@ -298,9 +301,9 @@ def emittance_rules(lattice, momentum_eV: float, *args, **kw) -> dict:
         _e6.POL_MODE = pol0
 
 
-def _spin_results(st, em, ph) -> dict:
+def _spin_results(st, em, ph, **kw) -> dict:
     from .spin import spin_results
-    return spin_results(st, em, ph)
+    return spin_results(st, em, ph, **kw)
 
 
 def beam_size_at(e: dict, l: int, key: str = '') -> np.ndarray | float:

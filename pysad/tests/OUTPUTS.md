@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17
 
-pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD スクリプト (試験の中の文字列の台本) を、そのまま `scripts/NAME.sad` に取り出し、同じ台本を pysad と gs で走らせた画面表示を `NAME.pysad.txt`・`NAME.gs.txt` として並べたものです。ファイル名は `<試験ファイル名 (test_ を除く)>__<試験関数 (クラス名を含む)>` で、同じ試験に台本が複数あるときは `_2`、`_3`…が付きます。表は `py -3.12 pysad/tests/make_outputs_md.py` で作ります。
+pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD スクリプト (試験の中の文字列の台本) を、そのまま `scripts/NAME.sad` に取り出し、同じ台本を pysad と gs で走らせた画面表示を `NAME.pysad.txt`・`NAME.gs.txt` として並べたものです。ファイル名は `<試験ファイル名 (test_ を除く)>__<試験関数 (クラス名を含む)>` で、同じ試験に台本が複数あるときは `_2`、`_3`…が付きます。表は `py -3.12 pysad/tests/make_outputs_md.py` で作ります。`scripts/` の `.pysad.txt` は、試験が走るときの互換モード (`k64`、gs と同じ K64 の動作。`pysad/tests/conftest.py`) での出力で、既定の `v2` モードの出力ではありません。
 
 ## 読むときの注意
 

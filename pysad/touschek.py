@@ -211,14 +211,14 @@ class _IntraState(_State):
         super().apply(J)
         self.B2 = J @ self.B2 @ J.T
 
-    def tradke(self, al, phir0):
+    def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0):
         # emit6d の tradke は B(1:21) に対して B ← J B J^T + dbeam(B) (J = I + tr1) を行う。
         # SAD は beam(22:42) ← J beam(22:42) J^T + dbeam(beam(1:21)) なので
         # B2_new = B_new + J (B2 - B) J^T。tr1 は D の更新 D_new = D0 + tr1 (T + D0) から復元する。
         D0 = self.D.copy()
         T0 = self.T.copy()
         B0 = self.B.copy()
-        super().tradke(al, phir0)
+        super().tradke(al, phir0, bzh, tin=tin, tout=tout)
         if not np.array_equal(self.D, D0):
             tr1 = np.linalg.solve((T0 + D0).T, (self.D - D0).T).T
             J = np.eye(6) + tr1
@@ -441,6 +441,10 @@ def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
                     alid1 = als * 0.5
                 _tintrb(st, alib, alid, l, ctx)
                 alid = alid1
+        if type(el).__name__ == 'PhsRot' and hasattr(el, '_solmap'):      # v2: PHSROT (phsrot.annotate)
+            from . import solemit as _se
+            _se.emit(st, el)
+            continue
         if isinstance(el, Drift):
             if ctx.calint and al != 0.0:
                 al = al * 0.5
@@ -462,6 +466,9 @@ def _tturne_intra(els, cod0, ph: _Phys, trf0: float, rfsw: bool, radcod: bool,
         elif type(el).__name__ == 'Solenoid' and (float(getattr(el, 'BZ', 0.0) or 0.0) != 0.0 or float(getattr(el, 'BOUND', 0.0) or 0.0) != 0.0):
             raise NotImplementedError('SOL (BZ≠0 か BOUND≠0) を含む Twiss / Emittance[] (tsole / tsolque) は未対応 (追跡 TrackParticles は対応)')
         elif type(el).__name__ == 'Undulator':
+            if hasattr(el, '_solmap'):       # v2: 磁場のある UND (und.annotate)
+                from . import solemit as _se
+                _se.emit(st, el)
             continue          # UND: K64 の tturne は何もしない (恒等)
         elif type(el).__name__ == 'TCavity':
             _e._ttcave(st, el)

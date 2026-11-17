@@ -179,8 +179,20 @@ def drndsr(rs):
     return (674.99117 * t + 148.32871) / ((t - 225.45670) * t - 692.23986) + t
 
 
+def make_rs(seed):
+    """乱数の状態の配列 [seed, v2 の印]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
+    njit の中からは compat を読めないので、状態の配列に印を載せて渡す (k64 では 0 で、今までと同じ動作)"""
+    from . import compat
+    return np.array([seed, 1 if compat.v2() else 0], dtype=np.int64)
+
+
 @njit(**NJ)
 def tdusrn(rs, anp):
+    if rs.shape[0] > 1 and rs[1] != 0 and not (abs(anp) < 1e300):
+        # v2 (B10・B17 の修正): anp が NaN・±Inf なら光子を出さない。K64 は NaN で npmax=10000 回まわり乱数を 20001 個引く。
+        # 乱数は通常の「光子なし」と同じく 1 個だけ引く
+        tran(rs)
+        return 0.0, 0.0, 0.0, 0.0
     p0 = math.exp(-anp)
     pn = p0
     p = tran(rs)
@@ -977,6 +989,9 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
         if ini:
             for i in range(n):
                 setr0_1(i, S)
+        if (rs.shape[0] > 1 and rs[1] == 1) and sinp1 != 0.0:
+            for i in range(n):
+                S[i, 9] -= sinp1 / cosp1 * S[i, 0]     # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い (tradk の al1 に入れる)
         if first and fb1 != 0.0:
             n1 = -1
             f1r = fb1 * 0.5
@@ -991,6 +1006,9 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
             tbendcore1(i, S, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fringe,
                        cosw, sinw, sqwh, sinwp1, rhob, rho0, drhob, fb1, fb2)
         if krad:
+            if (rs.shape[0] > 1 and rs[1] == 1) and sinp2 != 0.0:
+                for i in range(n):
+                    S[i, 9] -= sinp2 / cosp2 * S[i, 0]     # v2: 出口の端の角の分
             tradk_all(S, n, al, phi0, fluc, rs, p0, anrad, cuc)
     else:
         aln = (al - f1r - f2r) / ndiv
@@ -1016,6 +1034,9 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
             for i in range(n):
                 tbendcore1(i, S, alx, phi0n, cosp1n, sinp1n, cosp2n, sinp2n, mfr1, fringe,
                            coswn, sinwn, -sqwhn, sinwpn, rhob, rho0, drhob, fb1, fb2)
+            if m == n2 and (rs.shape[0] > 1 and rs[1] == 1) and sinp2 != 0.0:
+                for i in range(n):
+                    S[i, 9] -= sinp2 / cosp2 * S[i, 0]     # v2: 出口の端の角の分
             tradk_all(S, n, alr, phi0n, fluc, rs, p0, anrad, cuc)
     for i in range(n):
         if dtheta != 0.0 or dchi2 != 0.0:
@@ -1059,6 +1080,8 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
             tbrot1(i, S, alg, phig, dtheta, dchi2, True)
         if krad:
             setr0_1(i, S)
+            if (rs.shape[0] > 1 and rs[1] == 1):
+                S[i, 9] -= tanp1 * S[i, 0]     # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い (tradk の al1 = al - z + zr0 に入れる)
         if fringe and mfring > -4 and mfring != 2:
             ttfrin4_1(i, S, ak, al)
         if fb1 != 0.0:
@@ -1175,6 +1198,8 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
                 tradk_core1(i, S, alr, phixn, fluc, rs, p0, anrad, cuc)
                 m_xi = S[i, 0]; m_pxi = S[i, 1]; m_yi = S[i, 2]; m_pyi = S[i, 3]; m_zi = S[i, 4]; m_dp = S[i, 5]
                 setr0_1(i, S)
+                if (rs.shape[0] > 1 and rs[1] == 1):
+                    rhoe = rhob * (1.0 + m_dp)     # v2: 放射で変わった運動量で曲率半径を更新する (K64 は入口の値のまま)
             alr_e = alr
             phi_e = phixn
         # tbendicorr(m, akx0/2, alx0/2, phix0/2)
@@ -1213,6 +1238,8 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
             S[i, 4] = S[i, 4] - (dxfr2 * S[i, 1] - (0.5 * dyfr2 - 0.25 * dyfra2 * y * y) * y * y / pr) / pr
         if fringe and mfring > -4 and mfring != 1:
             ttfrin4_1(i, S, -ak, al)
+        if krad and (rs.shape[0] > 1 and rs[1] == 1):
+            S[i, 9] -= tanp2 * S[i, 0]         # v2: 出口の端の角の分
     if krad:
         tradk_all(S, n, alr_e, phi_e, fluc, rs, p0, anrad, cuc)
     for i in range(n):
@@ -1454,11 +1481,14 @@ def cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfrin
         cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
     fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
     fw_save = kick.fw if kick is not None else 0.0
+    from . import compat as _cmpw
+    v2w = _cmpw.v2()
     sv = 0.0
     for nn in range(1, ndiv + 1):
         wsn = ws[nn]
         if kick is not None:
-            kick.fw = fw0 * wsn * 0.5 if nn == 1 else fw0 * (wsn + ws[nn - 1] * 0.5)
+            # wake の重み: K64 (tcav.f・tmulti.f) は fw0·(ws(n) + ws(n−1)·0.5) で、分割が 2 以上だと合計が 1.5 倍になる。v2 (C2) は台形の重み
+            kick.fw = fw0 * wsn * 0.5 if nn == 1 else (fw0 * (wsn + ws[nn - 1]) * 0.5 if v2w else fw0 * (wsn + ws[nn - 1] * 0.5))
             kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, nn == 1, p0, h0)
         dzn = 0.0
         if al != 0.0:
@@ -1720,6 +1750,18 @@ def drop_particles(S, n, kid, drop):
 SM_NONE, SM_START, SM_IN, SM_END = 0, 1, 2, 3
 
 
+# v2 (C2) AUTOPHI: 空洞の位相の基準を設計軌道の到着時刻 (Twiss の DZ) にする。FFS の TrackParticles が、位置ごとの DZ の列を
+# ここに入れてから追跡する (K64 の tturn.f: ph = DPHI + gettwiss(mfitdz, l)·w)。None なら DZ = 0
+AUTOPHI_DZ = None
+
+
+def autophi_dz(k):
+    """位置 k (0 始まりの要素番号) の入口の Twiss の DZ"""
+    if AUTOPHI_DZ is None or k < 0 or k >= len(AUTOPHI_DZ):
+        return 0.0
+    return float(AUTOPHI_DZ[k])
+
+
 def _ext():
     """MULT / ソレノイド領域のカーネル (track6n_ext.py)。必要になったときに import する
     (track6n_ext が track6n のヘルパーを import するので、循環 import を避けるため遅延させる)"""
@@ -1729,7 +1771,7 @@ def _ext():
 
 class Prog:
     """要素ごとの (種類, パラメータ) の列。MULT (K_MULT) とソレノイド領域 (K_SOL_*) は track6n_ext で compile する"""
-    def __init__(self, elements, ph):
+    def __init__(self, elements, ph, l0=0):
         self.kinds = []
         self.params = []
         self.names = []
@@ -1737,7 +1779,9 @@ class Prog:
         # la を減らさない。parser が L=0 の BEND (VD/HD 等) を Drift にしたものは _sad_type='BEND' で見分ける
         self.la_count = []
         self.sol_mode = []              # ソレノイド領域内の要素の la の扱い (SM_*)
-        self.l0 = 0                     # この Prog の最初の要素の全体での位置 − 1 (TrackRun.segment が付ける。MAP の l 用)
+        self.l0 = l0                    # この Prog の最初の要素の全体での位置 − 1 (TrackRun.segment が付ける。MAP の l 用)
+        self.autophi = {}               # v2 (C2): AUTOPHI の CAVI の添字 (この Prog の中での位置)
+        self._idx = 0
         i = 0
         nel = len(elements)
         while i < nel:
@@ -1748,11 +1792,16 @@ class Prog:
                     raise NotImplementedError('track6n: BOUND=0 の SOL (領域外)')
                 i = _ext().compile_sol_region(self, elements, i, ph) + 1
                 continue
+            self._idx = i
             if tn == 'Multipole':
-                k, p = _ext().compile_mult(el, ph)
+                k, p = _ext().compile_mult(el, ph, dz=autophi_dz(self.l0 + i))
                 cnt = True
             else:
                 k, p = self._compile(el, ph)
+                if k == K_CAV and _t6._g(el, 'AUTOPHI') != 0.0:
+                    # v2 (C2) AUTOPHI: tturn.f の ph = DPHI + DZ·w。位相の基準は設計軌道の到着時刻 (turn が phis = 0 にする)
+                    p = p[:4] + (p[4] + autophi_dz(self.l0 + i) * p[2] * ph.charge,) + p[5:]
+                    self.autophi[i] = True
                 if tn in ('Marker', 'Monitor', 'Coord', 'Map'):       # tturn.f: icCOORD, icMAP は exit (la を減らさない)
                     cnt = False
                 elif isinstance(el, Drift):
@@ -1865,8 +1914,11 @@ class Prog:
             return K_BEND, common
         if tn == 'Cavity':
             al = el.L
-            if g(el, 'AUTOPHI') != 0.0:
-                raise NotImplementedError('track6n: CAVI の AUTOPHI は未対応 (位置の z が要る)')
+            aphi = g(el, 'AUTOPHI') != 0.0
+            if aphi:
+                from . import compat as _cmpa
+                if not _cmpa.v2():
+                    raise NotImplementedError('track6n: CAVI の AUTOPHI は未対応 (位置の z が要る)')
             vc = g(el, 'VOLT') + g(el, 'DVOLT')
             harm = g(el, 'HARM') or g(el, '_harm')
             freq = g(el, 'FREQ')
@@ -1884,7 +1936,8 @@ class Prog:
             # L=0 の MULT (薄い多極) や SOL を黙って無視しないよう、L==0 の判定より前に置く
             raise NotImplementedError(f'track6n: 要素 {tn} は未対応')
         if tn == 'PhsRot':
-            raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/21 B38)。写さない')
+            from . import phsrot as _pr          # v2 だけ (k64 は NotImplementedError: K64 では動作しない、docs/21 B38)
+            return _pr.K_PHSROT, _pr.compile_phsrot(el)
         if tn == 'Undulator':
             from . import und as _un
             return K_UND, _un.compile_und(el, ph.pgev)
@@ -1913,7 +1966,7 @@ _NOLOG = np.zeros((0, 6))                      # 損失報告を記録しない�
 _NONLOG = np.zeros(1, dtype=np.int64)
 
 
-def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None, trpt=False, lt0=None):
+def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None, trpt=False, lt0=None, spch=None, lmap=None):
     """1 周。apert=(kid, lost_turn, kturn, alost, zlost[, log, nlog]) を渡すと tapert を最初の要素・15 要素ごと・周末に行い、
     新しい n を返す。ソレノイド領域の la の扱いは SAD のまま:
       tturn1 の主ループは始点 SOL k で tapert 判定 → tsol → (1020) la-1、その後 l=k+1..ke も主ループを通り
@@ -1928,6 +1981,11 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         kid, lost_turn, kturn, alost, zlost = apert[:5]
         log, nlog = apert[5:7] if len(apert) >= 7 else (_NOLOG, _NONLOG)
         nlat_ = len(prog.kinds) + 1      # SAD の nlat (要素数 + 1)。l_track の周回またぎの値 (前の周の最後 = nlat) に使う
+
+    def _kt(lt):
+        # LOSSMAP (lmap = [直前の l_track]): 落ちた要素の番号 l_track を lost_turn の上位ビットに載せる (kturn + l_track·2^40)。
+        # l_track は K64 の tmacro の変数 (最後に処理した要素の番号。tapert.f が kptbl(i,4) に書く)
+        return kturn if lmap is None else kturn + (int(lt) << 40)
     def _rep(lc):
         # tapert.f:182-184: 損失の報告は TRPT ではない、または l_track が APERT のときだけ
         if not trpt:
@@ -1935,13 +1993,16 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         i = len(prog.kinds) - 1 if lc >= nlat_ else lc - 1
         return 0 <= i < len(prog.kinds) and prog.kinds[i] == K_APERT
     nreg = 0                             # 領域内の要素数 (k+1..ke) の数え上げ (主ループの後処理用)
+    if spch is not None:                 # v2: 空間電荷 (spch.py。SPAC の DRIFT RADIUS≠0、PSPAC の SPCH 要素)
+        spch.begin(prog, apert)
+        spch.ctx = (rad, fluc, rs, tm)   # MULT の RADIUS (SPAC) の中の放射用
     for l_el, (kind, pr, cnt, sm) in enumerate(zip(prog.kinds, prog.params, prog.la_count, prog.sol_mode)):
         if apert is not None:
             if sm == SM_NONE or sm == SM_START:
                 if la <= 0:
                     # tapert の l_track は直前に処理した要素の番号 (tturn.f:243 の l_track=l は tapert の後)。周の最初は前の周の最後 (nlat)
                     lc = l_el if l_el >= 1 else (nlat_ if lt0 is None else lt0)
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lc, _rep(lc))
+                    n = k_apert(S, n, kid, lost_turn, _kt(prog.l0 + l_el if l_el >= 1 else (lmap[0] if lmap is not None else 0)), alost, zlost, log, nlog, lc, _rep(lc))
                     if n <= 0:
                         return 0
                     la = 15
@@ -1952,7 +2013,7 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             else:                        # tsol 内 (tsol.f:604-615)
                 nreg += 1
                 if la <= 0:
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el, _rep(l_el))
+                    n = k_apert(S, n, kid, lost_turn, _kt(prog.l0 + l_el + 1), alost, zlost, log, nlog, l_el, _rep(l_el))
                     if n <= 0:
                         return 0
                     la = 15
@@ -1960,19 +2021,29 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
                     la -= 1
         wk = wake[1].get(l_el) if wake is not None else None
         rfmult = kind == 10 and pr[-1] is not None and (trpt or rfsw)        # RF のある MULT (tmultiacc: wake は中で呼ぶ)
-        if wk is not None and kind != K_CAV and not rfmult:
+        # C2: SOL 領域内の CAVI・RF つき MULT (K_SOL_MULT = 16。tsol.f の ewak: wake は tmultiacc の中で分割ごとに呼ぶ)
+        solrf = kind == 16 and pr[0][12] is not None and (trpt or rfsw)
+        if wk is not None and kind != K_CAV and not rfmult and not solrf:
             wake[0].apply(S, n, wk[0], wk[1], wk[2], wk[3], True, p0, h0, wk[4])
-        if kind == K_MAP:
+        if spch is not None and spch.wspac:      # v2: WSPAC (twspac。要素の入口で、前の要素の中点からこの要素の中点までの分)
+            spch.wkick(S, n, prog.l0 + l_el, ph)
+        if spch is not None and spch.handles(kind, prog.l0 + l_el):
+            n = spch.element(S, n, kind, pr, prog.l0 + l_el, ph, apert, k_drift,
+                             lambda S_, n_, a_, bz_: _ext().k_sol_drift(S_, n_, a_, bz_, False, fluc, rs, p0, anrad, cuc))
+            if n <= 0:
+                return 0
+        elif kind == K_MAP:
             if MAP_HOOK is not None and apert is not None:
                 n = MAP_HOOK(prog.l0 + l_el + 1, kturn, S, n, kid, lost_turn)
                 if n <= 0:
                     return 0
         elif kind == K_APERT:
             if apert is not None:           # tturn.f:417: tapert1 のあと la=la1 (la は減らさず、MARK 同様 exit)
-                n = k_apert_el(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, prog.l0 + l_el + 1, rs, pr[0], _rep(l_el + 1))
+                n = k_apert_el(S, n, kid, lost_turn, _kt(prog.l0 + l_el + 1), alost, zlost, log, nlog, prog.l0 + l_el + 1, rs, pr[0], _rep(l_el + 1))
                 if n <= 0:
                     return 0
-                la = 15
+                if sm == SM_NONE:
+                    la = 15                 # 領域内 (tsol.f の icAprt) は la を変えない
         elif kind == K_MULTA:
             from . import multa as _ma
             (al, phi, psi1, psi2, ak, dx, dy, theta, dth, dchi2, alg, phig, eps0, radok, fb1, fb2, frmd, fringe) = pr
@@ -1980,7 +2051,10 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
                         fb1, fb2, frmd, fringe, _ma.GKN, _ma._FACT, rad, fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind == K_UND:
             from . import und as _un
-            _un.k_und(S, n, *pr, p0, h0)
+            if pr[1] != 0.0 or pr[2] != 0.0:        # v2: 磁場あり (FBX・FBY。k64 では常に 0)
+                _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc)
+            else:
+                _un.k_und(S, n, *pr, p0, h0)
         elif kind == K_TCAV:
             if rfsw:
                 from . import tcav as _tc
@@ -1990,6 +2064,9 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         elif kind == K_COORD:
             from . import coord as _cd
             _cd.k_coord(S, n, *pr)
+        elif kind == 41:                    # phsrot.K_PHSROT (v2)
+            from . import phsrot as _prt
+            _prt.k_phsrot(S, n, *pr, rad, fluc, rs, p0, h0)
         elif kind == K_BB:
             from . import beambeam as _bb
             _bb.apply(S, n, pr[0], rs)
@@ -2016,9 +2093,10 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
                         fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind == K_CAV:
             (al, v, w, wi, phic, fringe, mfring, vnom, vq) = pr
-            phis = 0.0 if trpt else w * trf0      # tcav.f:50: TRPT は phis=0
+            aphi_ = l_el in prog.autophi          # v2 (C2): AUTOPHI。K64 は TRPT でないと phis = phic (位相の差が消える) にする
+            phis = 0.0 if (trpt or aphi_) else w * trf0      # tcav.f:50: TRPT は phis=0
             dphis = phis - phic
-            if rad or trpt:                       # tcav.f:66: rad or trpt or autophi
+            if rad or trpt or aphi_:              # tcav.f:66: rad or trpt or autophi
                 offset = math.sin(dphis)
                 offset1 = 0.0
             else:
@@ -2049,8 +2127,12 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, p0, h0 * tm, anrad, cuc)
         elif kind > K_NONE:
             # MULT / ソレノイド領域 (K_MULT, K_SOL_FRIN, K_SOL_DRIFT, K_SOL_QUAD)
-            _ext().step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm)
-        if wk is not None and kind != K_CAV and not rfmult:
+            ph_ = _ext().step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm,
+                                   kick=(wake[0] if (wk is not None and solrf) else None), wk=(wk if solrf else None))
+            if ph_ is not None:               # 領域内の空洞の加速 (TRPT): 基準運動量が変わった
+                ph = ph_
+                p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
+        if wk is not None and kind != K_CAV and not rfmult and not solrf:
             wake[0].apply(S, n, wk[0], wk[1], wk[2], wk[3], False, p0, h0, wk[4])
         if TRACE is not None:            # デバッグ用: 要素ごとのフック (切り分けスクリプトが設定する)
             TRACE(l_el, prog, S, n, la, rs)
@@ -2058,13 +2140,19 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             la -= 1                      # 主ループ: 始点 SOL の 1020
             for _ in range(nreg):        # 主ループ: l=k+1..ke (sol=l<ke; go to 1020)
                 if la <= 0:
-                    n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, l_el + 1, _rep(l_el + 1))
+                    n = k_apert(S, n, kid, lost_turn, _kt(prog.l0 + l_el + 1), alost, zlost, log, nlog, l_el + 1, _rep(l_el + 1))
                     if n <= 0:
                         return 0
                     la = 15
                 la -= 1
+    if spch is not None:
+        n = spch.end(S, n, prog.l0 + len(prog.kinds), ph, apert)
+        if n <= 0:
+            return 0
     if apert is not None:
-        n = k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, nlat_, _rep(nlat_))
+        n = k_apert(S, n, kid, lost_turn, _kt(prog.l0 + len(prog.kinds)), alost, zlost, log, nlog, nlat_, _rep(nlat_))
+    if lmap is not None:
+        lmap[0] = prog.l0 + len(prog.kinds)
     return n
 
 
@@ -2128,10 +2216,11 @@ class TrackRun:
         self.lost_turn = np.full(max(npart, 1), MAXTURN_LOST, dtype=np.int64)
         self.n = len(idx)
         self.S = make_state(self.coords0[idx], ph) if idx else None
-        self.rs = np.array([_t6.RNG.seed], dtype=np.int64)
+        self.rs = make_rs(_t6.RNG.seed)
         Prog(self.elements, ph)                  # 未対応の要素なら NotImplementedError (全体で 1 回確かめる)
         self._progs = {}
         self.wake = None                         # (WakeKick, {全体の要素番号 (1 始まり): (wl, wt, dx, dy)})
+        self.spch = None                         # v2: 空間電荷 (spch.SpaceCharge。ffscmd が SPAC / PSPAC のとき入れる)
 
     def set_wake(self, kick, table):
         """WakeFunction (wake.py)。CAVI / MULT(VOLT≠0) / SOL 領域の要素は未対応 (呼び出し側が確かめる)"""
@@ -2144,7 +2233,7 @@ class TrackRun:
         key = (a, b)
         prog = self._progs.get(key)
         if prog is None:
-            prog = self._progs[key] = Prog(self.elements[a - 1:b - 1], self.ph)
+            prog = self._progs[key] = Prog(self.elements[a - 1:b - 1], self.ph, l0=a - 1)
             prog.l0 = a - 1
         wake = None
         lt0 = getattr(self, 'l_track0', None)        # セッションの最初の追跡では l_track=0 (tmacro の初期値)。tapert の落とす印 kptbl(i,4)=l_track が 0 では落ちない
@@ -2156,12 +2245,29 @@ class TrackRun:
             wake = (self.wake[0], {l - a: v for l, v in self.wake[1].items() if a <= l < b})
         with np.errstate(all='ignore'):
             self.n = turn(prog, self.S, self.n, self.ph, self.trf0, self.rfsw, self.rad, self.fl, self.rs,
-                          apert=(self.kid, self.lost_turn, self.kturn, self.alost, self.zlost), wake=wake, trpt=self.trpt, lt0=lt0)
+                          apert=(self.kid, self.lost_turn, self.kturn, self.alost, self.zlost), wake=wake, trpt=self.trpt, lt0=lt0,
+                          spch=self.spch, lmap=getattr(self, 'lmap', None))
         if self.n > 0 and not self.rfsw:
             self.S[:self.n, 4] = 0.0             # tturn.f:142-145: RFSW OFF は区間ごとに z=0
 
     def next_turn(self):
         self.kturn += 1
+
+    def lossmap(self, tend, nlat, v2=False):
+        """LOSSMAP (tftrack.f ktfresetparticles): (落ちた要素の番号, 落ちた周) を粒子の番号順に返す。self.lmap = [l_track] を設定して追跡したとき。
+        落ちていない粒子は (0, tend+1)。K64 は要素の番号が 0 の粒子 (l_track=0 のときに落ちた) も (0, tend+1) にする (v2 は落ちた周を返す)"""
+        n = len(self.alive_in)
+        el = [0.0] * n
+        tn = [float(tend + 1)] * n
+        for i in range(n):
+            v = int(self.lost_turn[i])
+            if v == MAXTURN_LOST or not self.alive_in[i]:
+                continue
+            k, t = v >> 40, v & ((1 << 40) - 1)
+            el[i] = float(k) if -nlat <= k <= nlat else 0.0
+            if k != 0 or v2:
+                tn[i] = float(t)
+        return el, tn
 
     def result(self):
         """(座標 (npart,6) 粒子の番号順, alive のリスト)"""
@@ -2193,7 +2299,7 @@ def track_particles_fast(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=Tr
         return _t6.track_particles(elements, coords, nturn, momentum_eV, trf0, rfsw, rad, fluc, seed, charge, amass, progress, fshift, circ)
     if seed is not None:
         _t6.RNG.restore(seed)
-    rs = np.array([_t6.RNG.seed], dtype=np.int64)
+    rs = make_rs(_t6.RNG.seed)
     fl = bool(rad and fluc)
     S = make_state(coords, ph)
     n = S.shape[0]
