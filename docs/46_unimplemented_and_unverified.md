@@ -109,6 +109,7 @@ v2 モードの実装は、特記がなければ**gs と比べていない** (gs
 | `BeamPlot`・`ColumnPlot`・`LaTeX`・`PointSymbol` の見た目 | 両 | 動くことだけ確認。LaTeX は `$HaveLaTeX` が空の状態での一致 | 11_graphics |
 | Tkinter の見た目・操作 | 両 | 色・大きさ・フォントは SAD と比べていない | 12_gui_tkinter |
 | `dapert.n`、`element.n`、`emit.n`、`beamline.n`、`functions.n`、`Misc.n` | 両 | ファイル単位で gs と比べた記録がない | |
+| Python 3.14 (Tcl/Tk 9.0) | 両 | 全試験は 935 通過・2 失敗 (2026-11-17、v2.0.0)。(1) 3.14 に同梱の Tcl/Tk が 9.0 (3.10・3.12 は 8.6) で、`test_tk_version_and_font_system` が 8.6 を期待して失敗。Tk 9.0 での GUI の見た目・操作は未確認。(2) K3=300 の強い MULT でずれた不安定なリングの `test_mult_ring_matches_gs` で、閉軌道が見つからない (同じ numpy の 3.12 では通る。浮動小数点の違いで反復の経路が変わると見られるが、原因は未調査)。3.10・3.12 は全通過、3.13 は未確認 | |
 | 乱数列 (FLUC つきの追跡) | 両 | δ の rms が gs 4.21e-4、pysad 4.52e-4 (乱数列が違う) | 04_emittance_radiation/flag_RFSW_RAD_RADCOD_FLUC |
 | 乱数の消費の NaN の扱い (B17) | 両 | 決定済み: 現状のまま。`asinz(NaN)`・`gfloor`・`sqrt1` の下限は、発散した粒子が落ちるまでの座標の埋め方にだけ効く。「NaN になった粒子をその場で落とす」に変えると落ちる要素・周が K64 と変わる (LOSSMAP の値)。マッチングの fuzz (tffsmatch) は未確認 | |
 | k64 モードの最初の呼び出しのスピン追跡の損失 | k64 | K64 の B33 の癖 (落とす印 0 の粒子が後で入れ替えで戻る) は track6 の経路では近似 (gs は要素 60、pysad は 15)。高速追跡 (track6n) は全桁一致 | |
