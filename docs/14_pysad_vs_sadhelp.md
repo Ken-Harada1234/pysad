@@ -75,6 +75,8 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 
 ## 2. SADScript / FFS の関数 (94、pysad 実装 86)
 
+数え方: 94 は `functions` 節の分類の中の関数の数 (CERN の SADHelp 1.4.0.0k64 の目次で 2026-11-17 に数え直した)。分類に入らない `DownhillSimplex` (pysad 実装) を加えると 95。FFS-dedicated-functions は関数 28 と下位項目 3 (見出しの 31)。
+
 ### Data-Manipulation (6、pysad 実装 6)
 
 | 関数 | SAD 側 | pysad |
