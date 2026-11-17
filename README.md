@@ -64,6 +64,7 @@ Git で追跡するのは `pysad/`、`docs/`、`run_sad.py`、`README.md`、`LIC
 | `.gitignore` | 追跡しないもの (出力、ログ、キャッシュ) |
 | `pysad/` | 本体 (下の表) |
 | `pysad/tests/` | 試験 (下の表) |
+| `example/` | 機能・関数ごとの短い例 (gs と pysad の画面表示つき。下の表) |
 | `docs/` | 解説文書 (下の表。現状のスナップショット) |
 | `docs/history/` | 作業履歴 (下の表) |
 
@@ -167,6 +168,32 @@ Git で追跡するのは `pysad/`、`docs/`、`run_sad.py`、`README.md`、`LIC
 | `test_radfield.py`、`test_radlight.py` | RadiationField、RADLIGHT |
 | `test_delcor.py`、`test_corr.py`、`test_optics_fn.py` | DELCOR、軌道補正、光学の補助関数 |
 | `test_sadclass.py`、`test_gui_lang.py`、`test_tclbridge.py`、`test_plot.py` | Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は `PYSAD_SAD_PACKAGES` が必要) |
+
+### `example/` (SAD の機能・関数ごとの短い例)
+
+SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの例は 4 ファイルで、`NAME.sad` (台本。サンプルのラティスを先頭に含み、そのまま走る)、`NAME.gs.txt` (gs で走らせた画面表示のリダイレクト)、`NAME.pysad.txt` (pysad で走らせた画面表示のリダイレクト)、`NAME.md` (説明。式と数値の照合、gs と pysad の比較、未確認・限界) です。ファイル名は SAD の機能・関数の名前そのままで、接頭辞は `FFS_` (コマンド)、`fn_` (関数)、`flag_` (フラグ)、`elem_` (要素)、`var_` (特殊変数)、`syntax_` (文法) です。図は同じフォルダの PNG を `.md` から埋め込んでいます。一覧と読み方は [`example/README.md`](example/README.md)。走らせ方: `py -3.12 example/tools/run_example.py example/02_optics_cod/FFS_CALCULATE.sad` (gs は WSL、pysad は `PYSAD_SAD_PACKAGES` つき)。
+
+| フォルダ | 内容 |
+|---|---|
+| `example/00_lattice/` | サンプルのラティス (`FODO_ring`: 24 セル、3 GeV、周長 105.6 m ほか) |
+| `example/01_lattice_elements/` | ラティスと要素定義 (要素、LINE、USE、SPLIT、TYPE、ワイルドカード) |
+| `example/02_optics_cod/` | 線形光学と COD (CALCULATE、チューン、クロマティシティ、転送行列、ジオメトリ) |
+| `example/03_matching/` | マッチング (FIT・FREE・FIX・GO、フラグ、OptimizeOptics) |
+| `example/04_emittance_radiation/` | エミッタンスと放射 (EMITTANCE、RADINT、RFSW・RAD・FLUC) |
+| `example/05_tracking/` | トラッキング (TrackParticles、DA、APERT、TRPT、JITTER) |
+| `example/06_collective/` | 集団効果 (WAKE、BEAMBEAM、CSR、Touschek、IBS) |
+| `example/07_spin_solenoid_special/` | スピン・ソレノイド・特殊要素 (POL、SOL、MULT ANGLE、COORD、RADLIGHT) |
+| `example/08_scripting/` | SADScript (制御構文、反復子、`;`、リスト・文字列、関数定義、Module・Class、乱数) |
+| `example/09_io_system/` | 入出力・システム (Print・Write・Read、ファイル、`$FORM`、時間) |
+| `example/10_math_data/` | 数値・データ処理 (Fit、Spline、NIntegrate、特殊関数、行列、定数) |
+| `example/11_graphics/` | 描画 (Plot 系、OpticsPlot、BeamPlot、LaTeX) |
+| `example/12_gui_tkinter/` | Tkinter・GUI (`Tkinter.n`、`KBFrame.n`) |
+| `example/13_packages/` | `Packages/*.n` (CorrectOrbit、MakeBump、optimize、D.n、TableForm) |
+| `example/pf/` | PF (2.5 GeV) のラティスでの例集 (光学、マッチング、チューンシフト、放射積分、トラッキング、入射軌道)。索引は [`example/pf/README.md`](example/pf/README.md) |
+| `example/astrid/` | ASTRID2 (0.58 GeV) のラティスでの例集 (チューンサーベイ、MPW、位相空間、ラティスの作り方)。索引は [`example/astrid/README.md`](example/astrid/README.md) |
+| `example/tools/` | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか) |
+
+pysad の試験が走らせる台本と、その gs・pysad の画面表示は `pysad/tests/scripts/` にあります (対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md))。`example/` とは別のスクリプトなので、それぞれのフォルダに、それぞれの結果を置いています。
 
 ### `docs/` (解説文書。現状のスナップショットで、履歴は書かない)
 
