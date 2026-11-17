@@ -1,12 +1,13 @@
 # FFS RADINT
-種別: FFS コマンド / フォルダ: 04_emittance_radiation / ラティス: `00_lattice/FODO_ring_V4MV.sad` (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる `RINGQ` を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz/ フラグ: RFSW, RAD (EMIT の後に RADINT)。
-
-- **ラティスについて**: `FODO_ring.sad` の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで **RF 電圧 4 MV の `FODO_ring_V4MV.sad` を新しく追加**した。
-- RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと `DL=0. IN TCAL` で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の `RINGQ = (ORIGIN RF 24*CELLQ)` を使う (磁石の並びは同じ、位相だけ違う)。
-- SAD の BEND の `E1`, `E2` は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の `K1` は積分強度 (k=K1/L)。
+種別: FFS コマンド / フォルダ: 04_emittance_radiation / ラティス: `00_lattice/FODO_ring_V4MV.sad` (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる `RINGQ` を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz / フラグ: RFSW, RAD (EMIT の後に RADINT)。
 
 ## 何を見る例か
-`RADINT;` が放射積分 $I_1\ldots I_5$、$U_0$、減衰時間、$\epsilon_x$、$\sigma_\delta$、$\nu_s$、色収差を表示する。$I_1\ldots I_5$ を自前に積分した値と比べる。
+`RADINT;` は、放射積分 $I_1\ldots I_5$、$U_0$、減衰時間、$\epsilon_x$、$\sigma_\delta$、$\nu_s$、色収差を表示する。$I_1\ldots I_5$ を自前で積分した値と比べる。
+
+## ラティスについて
+- `FODO_ring.sad` の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで RF 電圧を 4 MV にした `FODO_ring_V4MV.sad` を追加した。
+- RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと `DL=0. IN TCAL` で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の `RINGQ = (ORIGIN RF 24*CELLQ)` を使う (磁石の並びは同じ、位相だけ違う)。
+- SAD の BEND の `E1`, `E2` は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の `K1` は積分強度 (k=K1/L)。
 
 ## スクリプト
 ```
@@ -34,7 +35,7 @@ RADINT;
 | LINEAR CHROMATICITY GX / GY | -2.705921 / -2.347256 |
 
 ## 物理・解析式
-式は FFS_EMITTANCE.md と同じ。曲率が一様な偏向だけなので $I_2=2\pi/\rho=1.370778$、$I_3=2\pi/\rho^2=0.299058$ ($\rho=L/\theta=1.2/0.261799=4.5837$ m)。gs・pysad・自前の積分がすべて 7 桁一致した。
+式は FFS_EMITTANCE.md と同じ。曲率が一様な偏向だけなので $I_2=2\pi/\rho=1.370778$、$I_3=2\pi/\rho^2=0.299058$ ($\rho=L/\theta=1.2/0.261799=4.5837$ m)。gs・pysad・自前の積分がすべて 7 桁で一致した。
 
 | 量 | 自前の積分 | RADINT gs | RADINT pysad |
 |---|---|---|---|

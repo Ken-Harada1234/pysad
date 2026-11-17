@@ -1,0 +1,11 @@
+FFS;
+PageWidth=1999;
+Print["A ",Block[{mesh},mesh[x_]:=x+1;Block[{mesh},mesh[x_]:=x*100;mesh[2]]+mesh[2]]];
+Block[{mesh},mesh[x_]:=x+1;
+  Print["B ",mesh[1]];
+  Block[{mesh},mesh[x_]:=x*100; Print["C ",mesh[1]]];
+  Print["D ",mesh[1]]];
+Print["E ",mesh[1]];
+Block[{nx},nx=3;Print["G ",nx]];
+Print["H ",nx];
+Exit;

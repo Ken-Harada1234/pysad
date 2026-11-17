@@ -1,5 +1,5 @@
 # fn_TouschekLifetime
-関数・06_collective・ラティス `00_lattice/FODO_ring_V4MV.sad` (RF 4 MV)、3 GeV、`RFSW; RAD; FLUC; INTRA; MINCOUP=0.01; PBUNCH=1e9`
+種別: 関数 / フォルダ: 06_collective / ラティス: `00_lattice/FODO_ring_V4MV.sad` (RF 4 MV、3 GeV) / フラグ: `RFSW; RAD; FLUC; INTRA; MINCOUP=0.01; PBUNCH=1e9`
 
 ## 何を見る例か
 `INTRA` を ON にして `EMIT` を実行すると、バンチ内散乱 (IBS) の拡散と同時に、Touschek 散乱の損失率の表 (`TouschekTable`) が作られる。`TouschekLifetime[nx, ny, nz]` は、その表から寿命 [秒] を補間して返す。`TouschekLifetime[Infinity, Infinity, nz]` は運動量アクセプタンス $nz\cdot\mathrm{SIGE}$ での寿命。

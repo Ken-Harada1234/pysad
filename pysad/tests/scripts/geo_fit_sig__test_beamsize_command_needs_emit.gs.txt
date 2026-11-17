@@ -1,0 +1,27 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:08 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5);
+BEND B = (L=1 ANGLE=0.39269908169872414 E1=0.5 E2=0.5);
+QUAD QF = (L=0.3 K1=1.2) QD = (L=0.3 K1=-1.1);
+MARK MK = ();
+LINE CELL = (MK QF D B D QD D B D);
+LINE RING = (8*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -117925.7 $$$       f BX    #######  #  303706.77 $$$       f NX    #######  #   3.750002
+$$$       f AY    #######  #  -44416.35 $$$       f BY    #######  #  37376.275 $$$       f NY    #######  #   4.249997
+$$$       f LENG  #######  #  36.800000 MK.1/$$$    BMAGX #######  #  1.0484E10 MK.1/$$$    BMAGY #######  #  5.88853E9
+ Horizontal/Vertical Unstable.
+ beamsize;
+ In[2]:=  ???-getbuf-end of input stream

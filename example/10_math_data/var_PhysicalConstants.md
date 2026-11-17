@@ -1,6 +1,5 @@
 # var_PhysicalConstants (物理定数)
-
-種別: 変数 (SADHelp の physical-constants)・フォルダ 10_math_data・ラティスなし
+種別: 変数 (SADHelp の physical-constants) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 FFS から参照できる物理定数 (`SpeedOfLight` `PlanckConstant` `PlanckHbar` `ElectronCharge` `FineStructureConstant` `ElectronMass` `ElectronRadius` `ProtonMass` `ProtonRadius` `SIMu0` `SIEpsilon0` `ElectronGminus2over2` `BoltzmannConstant`) を表示し、SADHelp が書く定義値・定義式と照合する。
@@ -43,4 +42,4 @@ $$r_e=\frac{\alpha\hbar c}{e\,m_e}\ [\mathrm m],\qquad \mu_0=\frac{2\alpha h}{c\
 全 16 行が 12 桁で一致 (○)。`ProtonMass` は gs・pysad とも `938272088.1599999` (浮動小数点の表現による。値は 938272088.16)。
 
 ## 未確認・限界
-SADHelp の定義値は CODATA 2018 相当。`ProtonRadius` の定義式は推定。旧版の `ElectronMass` (510999.06) からの変更 (docs/32) は、この例の範囲では gs の値が 510998.95 であることまで確認。
+SADHelp の定義値は CODATA 2018 相当。`ProtonRadius` の定義式は推定。旧版の `ElectronMass` (510999.06) からの変更 (docs/34) は、この例の範囲では gs の値が 510998.95 であることまで確認。

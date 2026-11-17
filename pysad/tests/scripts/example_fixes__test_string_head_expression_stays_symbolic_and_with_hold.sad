@@ -1,0 +1,7 @@
+FFS;
+Print["A ",Head["K1"["QD"]]];
+Print["B ",{"K1"["QD"]->-0.8*"K1"["QF"]}];
+y={1,2};
+Print["C ",With[{y},Hold[y]]];
+Print["D ",With[{y=5},Hold[y]]];
+Exit;

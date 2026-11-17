@@ -1,13 +1,13 @@
 # pysad と SADHelp (1.4.4.2k64 Updated: 10/19/2026) の対応表 — SAD 側の定義場所つき
 
-最終更新: 2026-11-16 (現状のスナップショット。SADHelp は 1.4.4.2k64 Updated: 10/19/2026 のまま。pysad 側の列は 2026-11-16 の Interp.builtins と FFS の表から再照合)
+最終更新: 2026-11-17 (現状のスナップショット。SADHelp は 1.4.4.2k64 Updated: 10/19/2026 のまま。pysad 側の列は 2026-11-16 の Interp.builtins と FFS の表から再照合した)
 
 機械照合 (`perf_work/pysad_vs_sadhelp.py`)。「SAD 側」は名前が登録・定義されているソース: Fortran (src/*.f)、C (src/*.c の REGn)、.n (Packages/*.n の定義)。`?` 付きは登録の形が見つからず文字列として出現するだけのもの。「pysad」は名前の登録の有無 (実装の深さは docs/03・04・12 を参照): コマンドは FFS._COMMANDS/_abbrev、関数は Interp.builtins、変数はソース中の参照、フラグは _FLAGS_DEFAULT/_SINO、要素は parser/sadkw。
 
-**読み方 (2026-11-16)**: 「実装」は名前の登録があるという意味で、gs (K64 の SAD) との一致の度合いは各要素の文書 (docs/20〜35 と 36〜43) にある。
-中身が簡単な代用のものは行に「(限定: …)」と書いた。`Packages/*.n` の関数 (Plot・OptimizeOptics・CorrectOrbit など) は、組み込みの登録ではなく
-SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSAD_SAD_PACKAGES` が要る。docs/32)。元の機械照合は組み込みの登録名と FFS の表だけを見るので、
-そうした行とユーザー定義フックの行は手で直してある (この表を `perf_work/pysad_vs_sadhelp.py` で作り直すと手で直した行は消える。§6 を見て戻す)。
+**読み方 (2026-11-16)**: 「実装」は名前の登録があるという意味で、gs (K64 の SAD) との一致の度合いは各要素の文書 (docs/22〜37 と 38〜45) にある。
+中身が簡単な代用にとどまるものは、行に「(限定: …)」と書いた。`Packages/*.n` の関数 (Plot・OptimizeOptics・CorrectOrbit など) は、組み込みの登録ではなく
+SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSAD_SAD_PACKAGES` が要る。docs/34)。機械照合が見るのは組み込みの登録名と FFS の表だけなので、
+そうした行とユーザー定義フックの行は手で直してある。この表を `perf_work/pysad_vs_sadhelp.py` で作り直すと、手で直した行は消える。§6 を見て戻すこと。
 
 ## 1. FFS コマンド (56): 実装 52、未対応 2、無視 2
 
@@ -39,27 +39,27 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `GO` | Fortran tffsa.f | 実装 |
 | `IF` | Fortran tfif.f | 実装 |
 | `INPUT(IN)` | Fortran tffile.f | 実装 |
-| `MATRIX(MAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) |
-| `MEASURE(MEA)` | Fortran tffsa.f | 無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)。tlum / tluma だけ `pysad/measure.py` に直訳。ほかの MEASURE/TRCOD の経路は未翻訳 (gs が動かない B42。docs/18) |
+| `MATRIX(MAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
+| `MEASURE(MEA)` | Fortran tffsa.f | 無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)。tlum / tluma だけ `pysad/measure.py` に直訳。ほかの MEASURE/TRCOD の経路は未翻訳 (gs が動かない B42。docs/20) |
 | `ORG` | Fortran tffsa.f | 実装 |
 | `OUTPUT(OUT)` | Fortran phdrw.f,pstati.f,tffile.f | 実装 |
 | `PRINT(PRI)` | Fortran tffsa.f | 実装 |
 | `QUIT` | Fortran tffsa.f | 実装 |
 | `RADINT` | Fortran tffsa.f | 実装 |
 | `READ` | Fortran tffile.f | 実装 (ファイルの文を続けて実行。関数 `Read` の型は §2) |
-| `RECOVER(REC)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) |
+| `RECOVER(REC)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `REFERENCE(REF)` | Fortran tfdisp.f,tffsa.f | 実装 |
 | `REJECT(REJ)` | Fortran tffsa.f | 実装 |
-| `RENUMBER(RENUM)` | Fortran tffsa.f | 未対応 (何もしない。docs/33) |
+| `RENUMBER(RENUM)` | Fortran tffsa.f | 未対応 (何もしない。docs/35) |
 | `REPEAT(REP)` | Fortran tffsa.f | 実装 |
 | `RESET` | Fortran tffsa.f | 実装 |
 | `RESUME(RES)` | Fortran tffile.f | 実装 |
-| `REVERSE(REV)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) |
+| `REVERSE(REV)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `SAVE` | Fortran tffsa.f,tracke.f | 実装 |
-| `SEED` | Fortran? initb1.f,tfinitn.f | 未対応 (K64 でも obsolete。docs/33) |
-| `SHOW` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) |
+| `SEED` | Fortran? initb1.f,tfinitn.f | 未対応 (K64 でも obsolete。docs/35) |
+| `SHOW` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `SPLIT` | Fortran tffsa.f | 実装 |
-| `STATUS(STAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) |
+| `STATUS(STAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `STOP` | Fortran pstati.f,tffsa.f | 実装 |
 | `SUSPEND(SUSP)` | Fortran tffile.f | 実装 |
 | `TERMINATE(TERM)` | Fortran tffile.f | 実装 |
@@ -67,7 +67,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `UNTIL` | Fortran tffsa.f | 実装 |
 | `USE` | Fortran tffsa.f | 実装 |
 | `VARIABLES(VAR)` | Fortran tffsa.f | 実装 |
-| `VARY` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) |
+| `VARY` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
 | `VISIT` | Fortran tffsa.f | 実装 |
 
 **未対応**: `RENUMBER(RENUM)`、`SEED` (K64 でも obsolete)  
@@ -79,7 +79,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 
 | 関数 | SAD 側 | pysad |
 |---|---|---|
-| `Fit` | .n Fit.n | 実装 (pysad/fitroot.py。導関数は数値微分。docs/31) |
+| `Fit` | .n Fit.n | 実装 (pysad/fitroot.py。導関数は数値微分。docs/33) |
 | `FitEmit` | .n Fit.n | 実装 |
 | `FitGaussian` | .n Fit.n | 実装 |
 | `NIntegrate` | .n D.n,OpticsPlot_230724b.n | 実装 |
@@ -114,49 +114,49 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `DynamicApertureSurvey` | .n dapert.n | 実装 |
 | `Element` | .n element.n | 実装 |
 | `Emittance` | .n emit.n | 実装 |
-| `ExternalMap` | .n init.n | 実装 (MAP 要素が呼ぶユーザー定義のフック `ExternalMap["TRACK"/"EMIT"/"OPTICS"]` を pysad が評価。docs/28) |
+| `ExternalMap` | .n init.n | 実装 (MAP 要素が呼ぶユーザー定義のフック `ExternalMap["TRACK"/"EMIT"/"OPTICS"]` を pysad が評価。docs/30) |
 | `FFS` | Fortran tfinitn.f | 実装 |
 | `FFS$SHOW` | Fortran tfinitn.f | 実装 |
 | `FitValue` | Fortran? qdcell.f,tdfun.f,tffsa.f | 実装 (ユーザー定義のフック (tfgetfitval) を pysad が呼ぶ) |
 | `FitWeight` | Fortran? tffscalc.f | 実装 (ユーザー定義のフック (twfit) を pysad が呼ぶ) |
-| `GaussianCoulomb` | Fortran tfinitn.f | 実装 (`GaussianCoulombFitted`・`GaussianCoulombU` も。pysad/gausscoul.py、docs/30) |
+| `GaussianCoulomb` | Fortran tfinitn.f | 実装 (`GaussianCoulombFitted`・`GaussianCoulombU` も。pysad/gausscoul.py、docs/32) |
 | `GeoBase` | .n Optics.n | 実装 |
 | `LINE` | Fortran tfinitn.f; .n OpticsPlot.n,OpticsPlot_230724a.n,correction.n,… | 実装 |
-| `OptimizeOptics` | .n optimize.n | 実装 (SAD の optimize.n を pysad のインタプリタで動かす。K1・チューンは gs と 1e-10。docs/32) |
+| `OptimizeOptics` | .n optimize.n | 実装 (SAD の optimize.n を pysad のインタプリタで動かす。K1・チューンは gs と 1e-10。docs/34) |
 | `OrbitGeo` | .n Optics.n | 実装 |
-| `RadiationField` | Fortran tfinitn.f | 実装 (pysad/radfield.py。BEND の中を記録しない K64 の仕様のまま。gs の RadiationField は SIGSEGV (docs/19 B49) なので値の照合は等速運動の場との比較だけ。docs/34) |
-| `RadiationSpectrum` | Fortran tfinitn.f | 実装 (pysad/radfield.py。docs/34) |
+| `RadiationField` | Fortran tfinitn.f | 実装 (pysad/radfield.py。BEND の中を記録しない K64 の仕様のまま。gs の RadiationField は SIGSEGV (docs/21 B49) なので値の照合は等速運動の場との比較だけ。docs/36) |
+| `RadiationSpectrum` | Fortran tfinitn.f | 実装 (pysad/radfield.py。docs/36) |
 | `SetElement` | .n element.n | 実装 |
 | `SurvivedParticles` | Fortran tfinitn.f | 実装 |
 | `SymplecticJ` | .n emit.n | 実装 |
 | `SynchroBetaEmittance` | .n emit.n | 実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。結合のあるラティスは gs が SIGSEGV で比較不能。組み込みの登録ではなく emit.n の呼び出しを置き換える) |
 | `TouschekLifetime` | .n emit.n | 実装 |
-| `TrackParticles` | Fortran tfinitn.f | 実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で `{結果, 軌道{t,x,y,z}}` を返す。docs/34) |
+| `TrackParticles` | Fortran tfinitn.f | 実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で `{結果, 軌道{t,x,y,z}}` を返す。docs/36) |
 | `TransferMatrix` | .n Optics.n | 実装 (Optics.n の TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo が gs と表示桁で一致。gs は 1e-16 の雑音の要素を出し pysad は 0。11-16) |
 | `Twiss` | Fortran tfinitn.f; .n correction.n,corutility.n,optimize.n | 実装 |
 | `VariableRange` | Fortran? tffsmatch.f,tfvars.f | 実装 (ユーザー定義のフック (tffsvarfun) を pysad が呼ぶ) |
 | `VariableWeight` | Fortran? tffsmatch.f | 実装 (ユーザー定義のフック (tffsvarfun) を pysad が呼ぶ) |
-| `WakeFunction` | Fortran? tffswake.f | 実装 (ユーザー定義の表 `WakeFunction[Longitudinal/Transverse, 要素名]` を pysad が読み、ウェイク追跡と WAKEOPT に使う。docs/21) |
+| `WakeFunction` | Fortran? tffswake.f | 実装 (ユーザー定義の表 `WakeFunction[Longitudinal/Transverse, 要素名]` を pysad が読み、ウェイク追跡と WAKEOPT に使う。docs/23) |
 
 ### Graphics (13、pysad 実装 9)
 
 | 関数 | SAD 側 | pysad |
 |---|---|---|
-| `BeamPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | .n は読み込めるが gs との比較はしていない (未確認。docs/35) |
+| `BeamPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | .n は読み込めるが gs との比較はしていない (未確認。docs/37) |
 | `ColumnPlot` | .n Plots.n | .n は読み込めるが動作は未確認 |
-| `FitPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。43 項目。当てはめの値は 1e-8 相対。docs/35) |
-| `GeometryPlot` | .n GeometryPlot.n | 実装 (SAD の .n を動かし tkinter に描く。線 74・多角形 37 が gs と一致。docs/35) |
-| `HistoPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。38 項目が全部一致。docs/35) |
+| `FitPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。43 項目。当てはめの値は 1e-8 相対。docs/37) |
+| `GeometryPlot` | .n GeometryPlot.n | 実装 (SAD の .n を動かし tkinter に描く。線 74・多角形 37 が gs と一致。docs/37) |
+| `HistoPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。38 項目が全部一致。docs/37) |
 | `LaTeX` | .n latex.n | 未確認 (`$HaveLaTeX` は gs と同じく `""`) |
-| `ListContourPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。種類と数は一致、等高線の始点・向きが違う。docs/35) |
-| `ListDensityPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/35) |
-| `ListPlot` | .n ListPlot.n | 実装 (SAD の .n を動かし tkinter に描く。キャンバスの 43 項目が gs と全部一致。オプション (PlotRange・Scale・PlotLabel・GridLines・Frame・Legend・FontScale・Prolog・Epilog・Background・Plot->False・AspectRatio) を与えた戻りの Graphics 式も gs と文字列で完全に一致 (10 例。窓の見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は {} の差)。docs/35) |
-| `OpticsPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | 実装 (SAD の .n を動かし tkinter に描く。枠・矩形・線は一致、文字の数は Tk のフォントで違う。docs/35) |
-| `ParametricPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/35) |
-| `Plot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。ListPlot と同じオプションを与えた戻りの Graphics 式も gs と文字列で一致。docs/35) |
+| `ListContourPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。種類と数は一致、等高線の始点・向きが違う。docs/37) |
+| `ListDensityPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/37) |
+| `ListPlot` | .n ListPlot.n | 実装 (SAD の .n を動かし tkinter に描く。キャンバスの 43 項目が gs と全部一致。オプション (PlotRange・Scale・PlotLabel・GridLines・Frame・Legend・FontScale・Prolog・Epilog・Background・Plot->False・AspectRatio) を与えた戻りの Graphics 式も gs と文字列で完全に一致 (10 例。窓の見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は {} の差)。docs/37) |
+| `OpticsPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | 実装 (SAD の .n を動かし tkinter に描く。枠・矩形・線は一致、文字の数は Tk のフォントで違う。docs/37) |
+| `ParametricPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/37) |
+| `Plot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。ListPlot と同じオプションを与えた戻りの Graphics 式も gs と文字列で一致。docs/37) |
 | `PointSymbol` | .n? CSR.n,Canvas.n,ListPlot.n,… | ListPlot が内部で使う (`CanvasSymbolDirect`)。単独では未確認 |
 
-**未確認 (.n は読めるが gs と比べていないもの。2026-11-16 の確認ログ (local/wake/verify_log.md) にも答えが無く、未確認のまま)**: `BeamPlot`、`ColumnPlot`、`LaTeX`、`PointSymbol`。`CanvasSymbol` (Tcl 文字列を返す版)・`Canvas3D*` は未対応 (docs/35)。
+**未確認 (.n は読めるが gs と比べていないもの。2026-11-16 の確認ログ (local/wake/verify_log.md) にも結果がなく、未確認のまま)**: `BeamPlot`、`ColumnPlot`、`LaTeX`、`PointSymbol`。`CanvasSymbol` (Tcl 文字列を返す版)・`Canvas3D*` は未対応 (docs/37)。
 
 ### Input/Output (15、pysad 実装 11)
 
@@ -171,7 +171,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `OpenWrite` | Fortran tfinitn.f | 実装 |
 | `PageWidth` | .n latex.n | 文字列参照あり |
 | `Print` | Fortran tfinitn.f; .n Class.n | 実装 |
-| `Read` | Fortran tfinitn.f | 実装 (型は gs に合わせた。docs/31・33) |
+| `Read` | Fortran tfinitn.f | 実装 (型は gs に合わせた。docs/33・33) |
 | `ReadString` | Fortran tfinitn.f | 実装 |
 | `StandardForm` | Fortran tfinitn.f; .n KBMainFrame.n | 実装 (sadscript.py。HoldAll の表示形) |
 | `StringToStream` | Fortran tfinitn.f | 実装 |
@@ -241,7 +241,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `EFFRFFREQ` | Fortran initb1.f,tturne.f | 参照あり (ffscmd.py) |
 | `EFFVC` | Fortran initb1.f,tturne.f | 参照あり (ffscmd.py) |
 | `EFFVCRATIO` | Fortran initb1.f,track.f,tturne.f | 参照あり (ffscmd.py) |
-| `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は未対応 (docs/32) |
+| `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は未対応 (docs/34) |
 | `EMITX` | Fortran initb1.f,temit.f,tffs.f,…; .n emit.n | 参照あり (ffscmd.py, ffsextra.py, maintrack.py…) |
 | `EMITXE` | Fortran initb1.f,temit.f | 参照あり (ffscmd.py) |
 | `EMITY` | Fortran initb1.f,temit.f,tffs.f,… | 参照あり (ffscmd.py, ffsextra.py, maintrack.py…) |
@@ -260,7 +260,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `MatchingResidual` | Fortran tffscalc.f | 参照あり (ffscmd.py) |
 | `MASS` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, ffsextra.py, optics_fn.py…) |
 | `MINCOUP` | Fortran initb1.f,tfbeam.f,tffs.f,… | 参照あり (ffscmd.py, ffsextra.py, parser.py) |
-| `MOMENTUM` | Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n | 参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (以前の文書の 1 GeV は誤り。docs/19) |
+| `MOMENTUM` | Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n | 参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (以前の文書の 1 GeV は誤り。docs/21) |
 | `NBUNCH` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, ffsextra.py, parser.py) |
 | `NetResidual` | Fortran tffscalc.f | 参照あり (ffscmd.py) |
 | `NP` | Fortran initb1.f,tfdapert.f,tffsa.f,…; .n dapert.n | 参照あり (beambeam.py, ffscmd.py, ffsextra.py…) |
@@ -317,13 +317,13 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `LWAKE` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `MOVESEED` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `PHOTONS` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
-| `POL` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py。Emittance・EMIT のスピンと、RAD ON のときの TrackParticles のスピン追跡。docs/34) |
+| `POL` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py。Emittance・EMIT のスピンと、RAD ON のときの TrackParticles のスピン追跡。docs/36) |
 | `PRSVCASE` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `PSPAC` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `QUIET` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `RAD` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `RADCOD` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
-| `RADLIGHT` | Fortran tffs.f (fname/sino) | 実装 (TrackParticles が軌道 {t,x,y,z} を返す。K64 は BEND の中を記録せず横方向の座標も入れない。docs/34) |
+| `RADLIGHT` | Fortran tffs.f (fname/sino) | 実装 (TrackParticles が軌道 {t,x,y,z} を返す。K64 は BEND の中を記録せず横方向の座標も入れない。docs/36) |
 | `RADPOL` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
 | `RADTAPER` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `REAL` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
@@ -376,7 +376,7 @@ SAD 側はいずれも Fortran (src/initb1.f の sethtb/kytbl、kyparam)。pysad
 
 - 「実装」は名前が登録されているという意味で、挙動が K64 と一致するかは要素ごとの文書による。Interp.builtins の登録名は 2026-11-16 に実行時に集めた (462 個。11/06 は 281 個)。
 - 特別変数 (§3) は「ソース中に名前の文字列があるか」だけの照合。`CASE`・`ElementValues`・`TITLE`・`Track$Excitation` は参照が無い (未対応のまま)。
-- `MessageName` は式のまま返す形だけ (関数形 `MessageName[f, "usage"]` の評価は見送り。docs/18)。`Skip` は gs に合わせた。
+- `MessageName` は式のまま返す形だけ (関数形 `MessageName[f, "usage"]` の評価は見送り。docs/20)。`Skip` は gs に合わせた。
 - `Polarization` (K64 が NaN: B55)、PHSROT (K64 で動作しない: B38) は pysad に無い。
 - SADHelp は K64 版 `Documents/SADHelp.html` (1.4.4.2k64 Updated: 10/19/2026)。CERN の SADHelp は 1.4.0.0k64 2025-07-14 で同系統。KEK 公式の SAD ヘルプは別の SAD なので見ていない。
 

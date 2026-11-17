@@ -1,0 +1,10 @@
+FFS;
+sym={{"CI","CL","1O"},{Bar,"BA","BR"}};
+Print["A ",(sym[[1]]//"")[2,-2]];
+Print["B ",(sym[[2]]//"")[2,-2]];
+Print["C ",StringJoin[{"a","b"}]];
+Print["D ",StringJoin["x",{"b",1}]];
+Print["E ",StringJoin["a","b",3]];
+Print["F ","ab"//"cd"];
+Print["G ",{1.5,"b"}//"-"];
+Exit;

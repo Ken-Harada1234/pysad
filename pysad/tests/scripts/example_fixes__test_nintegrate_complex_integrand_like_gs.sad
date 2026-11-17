@@ -1,0 +1,5 @@
+FFS;
+Print["A ",NIntegrate[Exp[I*x],{x,0,Pi}]];
+Print["B ",NIntegrate[Exp[I*x],{x,0,Pi},Spline->False]];
+Print["C ",NIntegrate[Sin[x],{x,0,Pi}]];
+Exit;

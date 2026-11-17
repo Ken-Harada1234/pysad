@@ -1,0 +1,11 @@
+
+MOMENTUM = 1GEV;
+DRIFT D0 = (L=0) D1 = (L=1);
+QUAD Q0 = (L=0.2 K1=0);
+MARK M1 = (BX=5 BY=5);
+LINE L1 = (M1 D0 D1 Q0);
+FFS;
+USE L1;
+INS;
+CALC;
+disp;

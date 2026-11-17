@@ -36,4 +36,4 @@ GEOCAL;   CALC;                       Print["GEOCAL again ..."];
 全桁一致。GEOFIX の間は幾何が古いまま (値が変わらない) の動作も同じ。
 
 ## 未確認・限界
-- GEOFIX の用途 (ソレノイド内のずれ) の実例は 07 の担当。`MARK` の `GEO` キーワードとの関係は未確認。
+- GEOFIX の用途 (ソレノイド内のずれ) の実例は 07_spin_solenoid_special の例で扱う。`MARK` の `GEO` キーワードとの関係は未確認。

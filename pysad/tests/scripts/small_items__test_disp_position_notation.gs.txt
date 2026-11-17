@@ -1,0 +1,23 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:24 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM=1 GEV;
+DRIFT D=(L=1);
+QUAD QQ=(L=.2 K1=.5);
+MARK MM=();
+LINE RR=(MM D QQ D QQ D QQ D MM);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RR;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.64E-15 $$$       f BX    #######  #    .598503 $$$       f NX    #######  #    .453163
+$$$       f AY    #######  #  -6.366172 $$$       f BY    #######  #  13.894406 $$$       f NY    #######  #    .225203
+$$$       f LENG  #######  #   4.600000 MM.1/$$$    BMAGX #######  #   1.000000 MM.1/$$$    BMAGY #######  #  82.056283
+ Vertical Unstable.
+ In[2]:=  ???-getbuf-end of input stream

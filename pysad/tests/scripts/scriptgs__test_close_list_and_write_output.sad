@@ -1,0 +1,12 @@
+FFS;
+PageWidth=1999;
+f = OpenWrite["C:/Users/coding/AppData/Local/Temp/tmpl8udzr04/a.txt"]; g = OpenWrite["C:/Users/coding/AppData/Local/Temp/tmpl8udzr04/b.txt"];
+Write[f, "x"]; Write[g, "y"];
+Print["A ", Close[{f, g}]];
+Write[$Output, "w1 ", 3, {1, 2}];
+WriteString[$Output, "ws\n"];
+Write[-1, "m1"];
+Print["B ", Write[$Output, 1]];
+Print[Write[$Output]];
+
+Exit;

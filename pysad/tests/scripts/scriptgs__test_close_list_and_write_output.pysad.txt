@@ -1,0 +1,8 @@
+A Null
+w1 3{1,2}
+ws
+m1
+1
+B Null
+???General::narg:  Number of arguments is expected to be 2 or more in Write[-1]
+... in Print[Write[$Output]]

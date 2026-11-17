@@ -1,0 +1,7 @@
+1 d 1 $Failed
+2 1 File Directory None 14
+3 1 $Failed 1 0
+4 Null $Failed {"d"}
+5 {2020,1,2,3,4,5}
+6 1 1 $Failed Null 0
+7 /a/b/ /a/ /a/b/c/ a/b/c

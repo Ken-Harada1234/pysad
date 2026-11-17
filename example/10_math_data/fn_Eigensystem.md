@@ -1,6 +1,5 @@
 # fn_Eigensystem (Eigensystem)
-
-種別: 関数 (SADHelp functions の Matrix-operations)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (SADHelp functions の Matrix-operations) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 `Eigensystem[m]` は `{固有値のリスト, 固有ベクトルのリスト}` を返す。(1) 実対称行列 (固有値が実)、(2) 2×2 の回転行列 (固有値が共役複素数)、(3) 加速器の 1 ターン行列の形 (x・y が非結合の 4×4 で、固有値の偏角からチューンが出る) の 3 つ。

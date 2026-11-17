@@ -2122,7 +2122,7 @@ def _step_el(p: _Particle, el, trf0, rfsw, rad):
     elif name == 'Undulator':
         raise NotImplementedError('track6: UND は track6n (高速追跡) だけが扱う')
     elif name == 'PhsRot':
-        raise NotImplementedError('track6: PHSROT は K64 で動作しない (docs/19 B38)')
+        raise NotImplementedError('track6: PHSROT は K64 で動作しない (docs/21 B38)')
     elif el.L == 0.0:
         return          # MARK など
     else:

@@ -1,0 +1,13 @@
+FFS;
+PageWidth=1999;
+Print["A ", Switch[9, 1, "one"]];
+Print["B ", Switch[9, 1, "a", _String, "b"]];
+a = 3;
+Print["C ", Switch[a, 1, 2]];
+Print["D ", Switch[{1, 2}, {1}, 1]];
+Print["E ", Which[1 > 2, "a", 3 > 4, "b"]];
+b = 5;
+Print["F ", Which[b < 0, b]];
+Print["G ", Switch[2, 1, "x", 2, "y"], Which[False, 1, True, 2]];
+
+Exit;

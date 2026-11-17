@@ -1,5 +1,5 @@
 # flag_RADLIGHT、fn_RadiationField、fn_RadiationSpectrum
-フラグと関数・07_spin_solenoid_special・ラティス `00_lattice/radlight_line.sad` (新規: 1 GeV の短い直線 `UND`、偏向は `ANGLE=0 K0=±0.1` のステアリング型)。参考: `docs/43_radlight_guide.md`
+種別: フラグと関数 / フォルダ: 07_spin_solenoid_special / ラティス: `00_lattice/radlight_line.sad` (新規。1 GeV の短い直線 `UND`。偏向は `ANGLE=0 K0=±0.1` のステアリング型) / フラグ: `RADLIGHT`。参考: `docs/45_radlight_guide.md`
 
 ## 何を見る例か
 粒子の軌道から放射場とスペクトルを計算する一連の機能。(1) `RADLIGHT` を ON にして `TrackParticles` を呼ぶと、軌道 `{t, x, y, z}` が記録されて戻る。(2) `RadiationField[軌道, 観測点]` は観測点での電磁場の時間変化。(3) `RadiationSpectrum[{τ, f}, {λ1, λ2, dλ}]` は場の cos・sin 積分 (スペクトル)。`RadiationSpectrum` はガウスパルスの解析的なフーリエ変換と照合する。
@@ -35,13 +35,13 @@ $$c(k)=\int f\cos(kc\tau)\,d\tau=\frac{s}{c}\sqrt{2\pi}\,e^{-k^2s^2/2},\qquad s(
 | 1.800 | 3490.66 | $1.88971\times10^{-14}$ | $1.90935\times10^{-14}$ | $1.90935\times10^{-14}$ |
 | 1.364 | 4607.67 | $2.05\times10^{-16}$ | $-1.32\times10^{-16}$ | $-1.32\times10^{-16}$ |
 
-差は、場を 401 点の区分線形で近似する離散化誤差 (ピークの $10^{-4}$ 〜 $10^{-1}$ 以下の高周波は絶対誤差 $10^{-16}$ の床)。$s(k)$ は $10^{-29}$ 〜 $10^{-31}$ (0)。
+差は、場を 401 点の区分線形で近似する離散化誤差で、ピーク値 ($c(k)\sim4\times10^{-12}$) の $10^{-4}$ 程度 (絶対で $10^{-16}$ 台)。高周波側ではこの絶対誤差の床に達する。$s(k)$ は $10^{-29}$ 〜 $10^{-31}$ (0)。
 
 ## gs と pysad の比較
 - 軌道の記録 (`RADLIGHT`)、`RadiationSpectrum`: ○ 一致 (軌道の点列、スペクトルの $k$、$c$ が同じ)。
 - `RadiationField`: × **gs が `Program received signal SIGSEGV` で落ちる** (K64 の既知の不具合 B49。引数を変えても落ちる)。pysad は動き、戻りの寸法は $\{10,11\}$ (τ、E、H、S の 10 本 × 11 点)。そのため `RadiationField` の値は gs と比べられない。
 
 ## 未確認・限界
-- `RadiationField` の値の検証は、等速直線運動の Liénard-Wiechert の解 (docs/43 の試験、相対 6e-3) だけ。この例の軌道 (BEND 内が記録されない 11 点) の場の値は式と比べていない。
-- 軌道に横方向の座標が入らない (K64 の癖) ので、放射場の物理的な意味は限定的。複数周の軌道 (時刻が重なる) は pysad の `RadiationField` が失敗する (docs/43 §3)。
+- `RadiationField` の値の検証は、等速直線運動の Liénard-Wiechert の解 (docs/45 の試験、相対 6e-3) だけ。この例の軌道 (BEND 内が記録されない 11 点) の場の値は式と比べていない。
+- 軌道に横方向の座標が入らない (K64 の癖) ので、放射場の物理的な意味は限定的。複数周の軌道 (時刻が重なる) は pysad の `RadiationField` が失敗する (docs/45 §3)。
 - 1 GeV、粒子 1 個、観測点 1 点。PHOTONS (光子リスト) は BEAMBEAM の分だけ pysad 対応で、この例では使っていない。

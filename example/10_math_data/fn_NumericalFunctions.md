@@ -1,6 +1,5 @@
 # fn_NumericalFunctions (Abs Ceiling Floor Round Max Min MinMax Mod Sign FractionalPart ほか)
-
-種別: 関数 (SADHelp functions の Numerical-functions)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (SADHelp functions の Numerical-functions) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 数値を整える・比べる関数の約束 (端数処理の向き、負数の `Mod`、`FractionalPart` の符号など) を、小さな入力で確かめる。

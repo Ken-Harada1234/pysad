@@ -1,0 +1,58 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:25 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3 = (L=0.7) D4 = (L=0.4) D5 = (L=0.6);
+QUAD QF = (L=0.3 K1=0.5) QD = (L=0.3 K1=-0.45) QS = (L=0.2 K1=0.1 ROTATE=0.4) QT = (L=0.25 K1=-0.2);
+BEND B = (L=1.2 ANGLE=0.15 E1=0.075 E2=0.075);
+SOL SA = (L=0 BZ=1.2 BOUND=1) SM = (L=0 BZ=0.5) SB = (L=0 BZ=0 BOUND=1);
+MARK ST = ();
+LINE BL = (ST QF D1 B D2 QD D1 SA D3 QS D4 SM D5 QT D2 SB D1 B D2);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE BL;
+Out[1]:= USE
+  Missing GEO of Solenoid SA
+  Missing BOUND of Solenoid SM
+  Missing BOUND of Solenoid SB
+ INS; RAD; NOFLUC;
+ DP=0.002;
+ 
+ CALC;
+  Missing GEO of Solenoid SA
+  Missing BOUND of Solenoid SM
+  Missing BOUND of Solenoid SB
+ Matched. (  0.000    ) DP = 0.00200  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -75.03404 $$$       f BX    #######  #  473.51414 $$$       f NX    #######  #    .294776
+$$$       f AY    #######  #  -1.033300 $$$       f BY    #######  #   2.228700 $$$       f NY    #######  #    .507464
+$$$       f LENG  #######  #   2.700000
+ Print["TUN ", Twiss["NX", "$$$"]/(2 Pi), " ", Twiss["NY", "$$$"]/(2 Pi)];
+TUN .29477636002692437 .5074643094495893
+ Print["TW D3 ", Twiss["BX","D3"], " ", Twiss["BY","D3"], " ", Twiss["AX","D3"], " ", Twiss["EX","D3"], " ", Twiss["R2","D3"], " ", Twiss["R3","D3"]];
+TW D3 31.406098060594395 11.740953714674696 -13.069815167584059 .4572646047808035 -7.3258141645236e-17 5.507562798683353e-17
+ Print["TW QS ", Twiss["BX","QS"], " ", Twiss["BY","QS"], " ", Twiss["AX","QS"], " ", Twiss["EX","QS"], " ", Twiss["R2","QS"], " ", Twiss["R3","QS"]];
+TW QS 52.306241468769244 8.760108312352344 -16.769998661159242 .6216833066064101 -1.734723475976807e-16 5.603969979034451e-17
+ Print["TW D4 ", Twiss["BX","D4"], " ", Twiss["BY","D4"], " ", Twiss["AX","D4"], " ", Twiss["EX","D4"], " ", Twiss["R2","D4"], " ", Twiss["R3","D4"]];
+TW D4 58.40381866204118 8.120948707818721 -13.553389460085693 .6638699158700763 .0008704124069437279 -.06482156976309505
+ Print["TW SM ", Twiss["BX","SM"], " ", Twiss["BY","SM"], " ", Twiss["AX","SM"], " ", Twiss["EX","SM"], " ", Twiss["R2","SM"], " ", Twiss["R3","SM"]];
+TW SM 69.8117959168413 7.148913007785871 -14.825750163228465 .7389746238692476 .016473640883945886 -.06486827605999296
+ Print["TW D5 ", Twiss["BX","D5"], " ", Twiss["BY","D5"], " ", Twiss["AX","D5"], " ", Twiss["EX","D5"], " ", Twiss["R2","D5"], " ", Twiss["R3","D5"]];
+TW D5 69.8117959168413 7.148913007785871 -14.825750163228465 .7389746238692475 .016473640883945886 -.06486827605999296
+ Print["TW QT ", Twiss["BX","QT"], " ", Twiss["BY","QT"], " ", Twiss["AX","QT"], " ", Twiss["EX","QT"], " ", Twiss["R2","QT"], " ", Twiss["R3","QT"]];
+TW QT 88.8740001460526 5.867094024365463 -16.773273418904875 .8517792843127536 .0788850697860075 -.06491268757823443
+ Print["TW D2 ", Twiss["BX","D2"], " ", Twiss["BY","D2"], " ", Twiss["AX","D2"], " ", Twiss["EX","D2"], " ", Twiss["R2","D2"], " ", Twiss["R3","D2"]];
+TW D2 5.375859730753708 11.98542008967992 -2.150043613974747 .08983137651166206 0 0
+ Print["TW SB ", Twiss["BX","SB"], " ", Twiss["BY","SB"], " ", Twiss["AX","SB"], " ", Twiss["EX","SB"], " ", Twiss["R2","SB"], " ", Twiss["R3","SB"]];
+TW SB 143.74810371541773 3.4057692131281745 -44.758224556212646 1.1035056481397376 .23678729773363905 -.09967235133273888
+ Exit;
+  Missing GEO of Solenoid SA
+  Missing BOUND of Solenoid SM
+  Missing BOUND of Solenoid SB
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

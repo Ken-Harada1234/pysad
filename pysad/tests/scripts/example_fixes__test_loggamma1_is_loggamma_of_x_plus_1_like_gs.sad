@@ -1,0 +1,7 @@
+FFS;
+Print["A ",LogGamma1[10.5]];
+Print["B ",LogGamma1[0.5]];
+Print["C ",LogGamma1[{1.5,2.5}]];
+Print["D ",LogGamma1[-1.5]];
+Print["E ",LogGamma1[x]];
+Exit;

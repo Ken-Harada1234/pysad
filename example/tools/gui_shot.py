@@ -3,7 +3,7 @@
 
 使い方: py -3.12 example/tools/gui_shot.py example/12_gui_tkinter/fn_X.sad example/12_gui_tkinter/fn_X_window.png
 .sad の最後の Exit; を外した台本を pysad で走らせ、tkinter のルート窓の位置と大きさを取り、PIL の ImageGrab で画面から切り取る。
-(pysad では Window[] が別の窓を作らず、部品はルート窓 `.` の下に並ぶ。docs/20 の既知の差。)
+(pysad では Window[] が別の窓を作らず、部品はルート窓 `.` の下に並ぶ。docs/22 の既知の差。)
 gs の窓 (WSLg の X11) は撮らない (撮る道具が WSL に無い)。
 """
 import os, sys, time

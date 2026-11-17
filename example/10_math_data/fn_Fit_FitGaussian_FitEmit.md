@@ -1,6 +1,5 @@
 # fn_Fit_FitGaussian_FitEmit (Fit・FitGaussian・FitEmit)
-
-種別: 関数 (データ当てはめ)・フォルダ 10_math_data・ラティスなし (乱数なし、決定的なデータ)・`FFS;` の後に直接書く
+種別: 関数 (データ当てはめ) / フォルダ: 10_math_data / ラティスなし (乱数なし、決定的なデータ)、`FFS;` の後に直接書く
 
 ## 何を見る例か
 非線形最小二乗 `Fit`、1 次元データのガウス分布当てはめ `FitGaussian`、位相空間の粒子分布から $\alpha,\beta,\epsilon$ を求める `FitEmit` の 3 つ。

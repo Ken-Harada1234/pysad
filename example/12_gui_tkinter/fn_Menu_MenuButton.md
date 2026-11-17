@@ -23,7 +23,7 @@ TclEval["$mn invoke 1"];      (* 2 番目のエントリ「Save」を選ぶ *)
 
 ## gs と pysad の比較
 - `labels=`・`fl=save` は gs と pysad で一致 (○)。
-- **窓の親が違う (pysad の既知の差、docs/39 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。2026-11-17 の修正で Menu が Menubutton の下に入る段は gs と同じになった (`Menubutton File;   Menu`)。残る差は pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
+- **窓の親が違う (pysad の既知の差、docs/41 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。2026-11-17 の修正で Menu が Menubutton の下に入る段は gs と同じになった (`Menubutton File;   Menu`)。残る差は、pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
 
 ## 未確認・限界
 Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は `update` で窓を作り、Tcl の `invoke` で操作を模している)。 メニューを実際に開いた画面 (ポップアップ) は撮っていない。`CheckButton`・`Cascade` のエントリは試していない。

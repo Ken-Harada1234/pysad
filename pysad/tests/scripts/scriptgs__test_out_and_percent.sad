@@ -1,0 +1,13 @@
+FFS;
+PageWidth=1999;
+x = 5
+x + 1;
+2 * 3
+Print["a ", %, " ", Out[1], " ", $Line];
+{1, 2}
+Print[Length[%], " ", %1, " ", Out[2]];
+y = 4; z = 5
+f[t_] := t
+Print[$Line];
+
+Exit;

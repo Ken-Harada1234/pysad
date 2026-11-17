@@ -1,0 +1,6 @@
+FFS;
+PageWidth=1999;
+Print["B ",GaussianCoulombFitted[1e-3,2e-3,1e-3,0.5e-3]];
+Print["C ",GaussianCoulombFitted[5e-3,1e-3,1e-3,0.5e-3]];
+Print["F ",GaussianCoulombFitted[2e-4,5e-3,2e-3,0.7e-3]];
+Exit;

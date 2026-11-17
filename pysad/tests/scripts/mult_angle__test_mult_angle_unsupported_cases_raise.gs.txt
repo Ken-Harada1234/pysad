@@ -1,0 +1,9 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:13 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+MULT M1 = (L=1 ANGLE=0.05 BZ=0.1 K1=0.1 K2=0.5);
+  *** rdkwdl *** invalid key word name: $BZ ercode =            0
+ 16<= error level < 32

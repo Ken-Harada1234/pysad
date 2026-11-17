@@ -1,6 +1,5 @@
 # fn_SpecialFunctions_D (D.n 系の特殊関数)
-
-種別: 関数 (特殊関数。`Packages/D.n` と K64 の組み込み)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (特殊関数。`Packages/D.n` と K64 の組み込み) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 多項式 (`LegendreP`、`HermiteH`)、指数・三角積分 (`ExpIntegralEi`、`ExpIntegralE`、`SinIntegral`、`CosIntegral`)、Fresnel、Airy、`Zeta`、`PolyLog`、`PolyGamma`、`ProductLog`、`Hypergeometric1F1` を 1 点ずつ評価して式の値と比べる。
@@ -41,7 +40,7 @@ $W(1)e^{W(1)}=1$、${}_1F_1(1;2;z)=(e^z-1)/z$。
 - 13 値は一致 (表の相対差が 1e-14 以下)。`AiryBi`・`PolyLog` は末尾 1〜2 桁の違い。
 - **`HermiteH[3,.5]`: gs は `NaN`** (真値 -5)。pysad は -5。
 - **`ExpIntegralEi[1.]`: gs は複素数 (.2565-2.7164 I)** (真値は実数 1.8951)。pysad は 1.895118。
-- この 2 件は gs (K64 ビルド) の誤りで、pysad は真値を返す (docs/19 の方針)。△。
+- この 2 件は gs (K64 ビルド) の誤りで、pysad は真値を返す (docs/21 の方針)。△。
 
 ## 未確認・限界
 1 点ずつの確認のみ。引数の範囲 (負、大きい)、複素引数 (pysad は未対応)、次数の高い場合は試していない。`HermiteH`・`ExpIntegralEi` の gs の誤りの条件 (どの引数で誤るか) は調べていない。

@@ -1,0 +1,7 @@
+A Switch[9]
+B Switch[9]
+C Switch[3,1,2]
+D Switch[{1,2}]
+E Which[1>2,"a",3>4,"b"]
+F Which[b<0,b]
+G y2

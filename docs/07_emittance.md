@@ -1,6 +1,6 @@
 # 07. Emittance[] / emit — SAD の temit と pysad の emit6d.py
 
-> 最終更新: 2026-11-16 (現状のスナップショット)。行番号は 2026-10 時点。
+> 最終更新: 2026-11-17 (現状のスナップショット)。行番号は 2026-10 時点。
 
 照合先: `Packages/emit.n`, `src/tfemit.f`, `temit.f`, `tcod.f`, `tturne.f`, `tquade.f`, `tbende.f`, `tthine.f`, `tcave.f`, `tmulte.f`, `photons.f (tradke)`, `tffs.f (module temw)`, `tnorm.f`, `tdrife.f` と `pysad/emit6d.py`, `pysad/ffscmd.py (print_emit)`。
 
@@ -126,19 +126,19 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 - 理由 3 (フリンジ四極): tqlfre を含む四極を数値微分にすると ε・チューンに 1e-5〜2.7e-7 の差が出る (`bench_level26b`)。解析式で 1.3e-9。
 - z 行のシンプレクティック性: 数値微分の z 行をそのまま使うと T の誤差 6.6e-5、εy が 2% ずれる (Level 3C)。そのため z 行 (5,1..4) はシンプレクティック条件で組み直す (`_State.piece`)。
 
-## 4b. 2026-11 に加わった範囲
+## 4b. 追加した要素・機能の範囲
 
-### POL のスピン (docs/34_spin_csr.md)
+### POL のスピン (docs/36_spin_csr.md)
 
 `POL;` を付けた `Emittance[]`/`EMIT` は、偏極時間 (`PolarizationTime`)・スピンチューン・偏極ベクトル・スピン歳差行列・1 周の脱偏極ベクトル (表) を出す (`pysad/spin.py` の `tradke_spin`、`spnorm`、`srequpol`)。
 放射の 1 ステップ (`tradke`) ごとに `srot` を回して積算し、`tchge` の回転 (ROTATE 付き偏向) でも回す。POL のとき BEND の分割数は `1+int(|φ|·h0·a/0.01)` 以上になる (K64 も同じ)。
 - 一致 (gs): 平面リングで偏極時間は全桁、スピンチューン 13 桁、偏極ベクトル 12 桁。縦ずれ・傾き・六極のあるリングで 13/12/10 桁以上。POL 付きの Emittances・DampingRate は 11〜12 桁。エネルギー 3.0〜3.08 GeV の格子 (aγ=6.8〜6.99) で確認した範囲。
 - **MULT**: K1・K2・K3 とずれのある MULT のリングが gs と 1e-11 (`test_mult_ring_matches_gs`、L=0 の薄い MULT は `test_thin_mult_ring_spin_tune_matches_gs`)。`tmulke` の bsir0 の更新も入れた (この例では効かない)。
-  K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4、`local/wake/pm1.sad`) は pysad の CALC (qcod) の閉軌道が gs と別の解になり Emittance が NaN (未解決、docs/05 4b)。
+  K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4) は pysad の CALC (qcod) の閉軌道が gs と別の解になり Emittance が NaN (未解決、docs/05 4b)。
 - **SOL** (BOUND≠0 の領域): `emit_extra._tturne1` が SOL 領域 (`_solmap`) を通し、偏極時間・スピンチューン・偏極ベクトルが gs と一致 (`test_solenoid_ring_matches_gs`)。領域内の MULT・BEND・CAVI のスピンは未確認 (領域内の要素そのものが未対応)。
-- **空洞**: ROTATE+DX+DY 付きの空洞を含む結合リングのスピンは、2026-11-16 に gs と比べて確認済み (偏極時間 13 桁、スピンチューン 1e-14、偏極ベクトル 1e-13。`local/wake/v3a.sad`)。ただし専用の pytest はまだ無い (gs の出力との手動比較)。
-- **MULT ANGLE≠0 (`tmultae`)** の POL スピン: 2026-11-16 に確認済み (偏極時間 14 桁、スピンチューン 1e-14。`v3b.sad`。偏極ベクトルは平面リングなので 0,1,0 で、傾きのあるリングでの偏極ベクトルは見ていない)。**`tbrote`** (BEND の DROTATE+DX): 確認済み (偏極時間 14 桁、スピンチューン 1e-14、偏極ベクトル 1e-14。`v3c.sad`)。
-- **Polarization2**: gs の `Emittance[]` は Polarization2 の値を返さず (`Polarization2/.em` が未評価のまま)、pysad も同じ (2026-11-16 確認) (`v2.sad`)。
+- **空洞**: ROTATE+DX+DY 付きの空洞を含む結合リングのスピンは、2026-11-16 に gs と比べて確認済み (偏極時間 13 桁、スピンチューン 1e-14、偏極ベクトル 1e-13)。ただし専用の pytest はまだ無い (gs の出力との手動比較)。
+- **MULT ANGLE≠0 (`tmultae`)** の POL スピン: 2026-11-16 に確認済み (偏極時間 14 桁、スピンチューン 1e-14。偏極ベクトルは平面リングなので 0,1,0 で、傾きのあるリングでの偏極ベクトルは見ていない)。**`tbrote`** (BEND の DROTATE+DX): 確認済み (偏極時間 14 桁、スピンチューン 1e-14、偏極ベクトル 1e-14)。
+- **Polarization2**: gs の `Emittance[]` は Polarization2 の値を返さず (`Polarization2/.em` が未評価のまま)、pysad も同じ (2026-11-16 確認)。
 - 未対応・未確認: `Polarization` (平衡偏極度) は K64 が NaN (B55)、pysad も NaN。`MAP` のスピン、SOL 内のスピン (`tsconv`) は未対応。
   縦オフセットのある偏向磁石の `bsi2` の項は K64 でも捨てられる (B58)。POL ON は numba の速い経路を使えない (Python 経路)。
 - **TrackParticles のスピン追跡**は docs/08 §9 (POL かつ RAD ON のときだけ、`track6.py` の `sprot`、損失の処理なし)。
@@ -149,26 +149,26 @@ K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の
 運動量のずれ (2·ndims+1 点) ごとに `_tcod_radcod` で閉軌道、`tturne` で T・D・B を求め、(アクション J, 方位角モード m) の連立方程式を反復で解く。
 - gs との一致 (12 セルのリング + CAVI VOLT=2e6 HARM=64): nus=0.01・AzimuthalModes=9 で emitx 相対 6e-6 (conv は 2e-4)。nus=0.005〜0.02・AzimuthalModes=5 の 4 点で emitx 4e-7〜1e-5。emity は 1e-18 の雑音で符号も違う。試験は `test_synchrobeta.py` (許容 3e-5)。
 - 差の原因は閉軌道の収束の履歴と、条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) とみているが、確認していない。
-- 2026-11-16 の確認 (`sb11.sad`、`sb10.sad`): 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で emitx は gs と相対 1.4e-7〜1.4e-6 (3.7e-7、4.0e-7、1.4e-6、1.4e-7) で一致、emity は雑音 (gs −2.5e-19 など、pysad 1.3e-20 など)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。
+- 2026-11-16 の確認: 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で emitx は gs と相対 1.4e-7〜1.4e-6 (3.7e-7、4.0e-7、1.4e-6、1.4e-7) で一致、emity は雑音 (gs −2.5e-19 など、pysad 1.3e-20 など)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。
 - 未確認: 不安定なチューン、`emiout`、結合のあるラティスでの gs との一致 (上のとおり gs が落ちる)、RFSW の組み合わせ。検証は最終の 6 つの値 (nus, emitx, emity, emitxp, emityp, conv) だけで、中間配列は比べていない。
 
 ### SOL・COORD・TCAVI・UND・MAP・MULT (ANGLE≠0) と Emittance[]
 
 | 要素 | Emittance[]・EMIT の扱い | gs との一致 | 文書 |
 |---|---|---|---|
-| SOL (BOUND≠0 の領域) | `solemit.py` (領域内を K64 の `tsole1` の順に、写像は追跡カーネルの数値微分、放射は bz 付きの `_State.tradke(al, 0, bzh)`) | ε_x 2e-12〜4e-9、ε_y 4e-10〜2e-8、ε_z 1e-7〜3e-6、チューン 1e-13〜1e-11 (BZ=2 と BZ=5 の 12 セルのリング、RFSW) | docs/27 |
-| COORD | `emit6d._tcoord` (`piece`、z 行のシンプレクティック組み直しなし) | ε・チューン・COD・運動量収縮因子 5e-10 以下 | docs/23 |
-| TCAVI | `emit6d._ttcave` (tchge → 半ドリフト → キック → 半ドリフト [tradke] → tchge)。RFSW OFF はドリフト | **L=0 のみ gs と一致** (ε 1e-11)。L≠0 は gs が壊れる (B36: EnergyLossU0 が NaN など) ので pysad は NaN を再現せず自然な値を出す | docs/24 |
-| UND | 恒等 (K64 の `tturne` は `case default`)。K64 は磁場を設定できず磁場なしのドリフト (B37) | 1e-12 台 | docs/25 |
-| MAP | `emit6d._tmap` (`ExternalMap["EMIT", l, cod]` の `{cod1, trans[, dtrans, dbeam]}`)。定義がなければ恒等・長さ 0 | ε・チューン・減衰率・軌道 1e-11 | docs/28 |
-| MULT (ANGLE≠0) | `emit6d._tmulte` → `multae.emit` | ε 1e-11、チューン 1e-13 (12 セルのリング) | docs/26 |
+| SOL (BOUND≠0 の領域) | `solemit.py` (領域内を K64 の `tsole1` の順に、写像は追跡カーネルの数値微分、放射は bz 付きの `_State.tradke(al, 0, bzh)`) | ε_x 2e-12〜4e-9、ε_y 4e-10〜2e-8、ε_z 1e-7〜3e-6、チューン 1e-13〜1e-11 (BZ=2 と BZ=5 の 12 セルのリング、RFSW) | docs/29 |
+| COORD | `emit6d._tcoord` (`piece`、z 行のシンプレクティック組み直しなし) | ε・チューン・COD・運動量収縮因子 5e-10 以下 | docs/25 |
+| TCAVI | `emit6d._ttcave` (tchge → 半ドリフト → キック → 半ドリフト [tradke] → tchge)。RFSW OFF はドリフト | **L=0 のみ gs と一致** (ε 1e-11)。L≠0 は gs が壊れる (B36: EnergyLossU0 が NaN など) ので pysad は NaN を再現せず自然な値を出す | docs/26 |
+| UND | 恒等 (K64 の `tturne` は `case default`)。K64 は磁場を設定できず磁場なしのドリフト (B37) | 1e-12 台 | docs/27 |
+| MAP | `emit6d._tmap` (`ExternalMap["EMIT", l, cod]` の `{cod1, trans[, dtrans, dbeam]}`)。定義がなければ恒等・長さ 0 | ε・チューン・減衰率・軌道 1e-11 | docs/30 |
+| MULT (ANGLE≠0) | `emit6d._tmulte` → `multae.emit` | ε 1e-11、チューン 1e-13 (12 セルのリング) | docs/28 |
 
 - **SOL の長さを周長に入れない**: K64 は SOL (BOUND≠0) の長さを周長 (omega0・MomentumCompaction・偏極時間・空洞の位相) に入れない。`emit6d._emit_circ` が同じにしている (PLANAR + SOL で周長 45.6 のときと偏極時間が 15 桁一致)。
   追跡の `circ` も同じ。GEO のない SOL では K64 の S 座標が途切れて周長がさらに狂う (偏極時間が約半分) が、pysad は再現しない (GEO=1 の参照だけ照合)。
-- SOL を含む Emittance[] は `emit_extra.emittance_rules` (Orbit/Matrix の規則、BeamMatrices) を使わず `run_emit` に落ちる。EMT・TUN・ALP・COD は合うが、**Stable は 0、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない** (docs/27)。
+- SOL を含む Emittance[] は `emit_extra.emittance_rules` (Orbit/Matrix の規則、BeamMatrices) を使わず `run_emit` に落ちる。EMT・TUN・ALP・COD は合うが、**Stable は 0、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない** (docs/29)。
 - SOL の限界: CALC6D・RADCOD つきの CALC・Touschek (INTRA) との組み合わせは未対応、RADCOD の閉軌道探索中に K64 が内部分割の間で固定するパラメータを pysad は毎スライスの δ で計算し直す (影響は 2 次とみているが未確認)、
   領域内の MULT・BEND・CAVI は未対応、行列は数値微分なので解析行列の gs と 1e-10 程度の差。
-- MULT (ANGLE≠0) の限界: FB1/FB2・CHI2 は Twiss・Emittance[] で未対応、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/26)。
+- MULT (ANGLE≠0) の限界: FB1/FB2・CHI2 は Twiss・Emittance[] で未対応、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/28)。
 
 ## 5. 注意点 (仕様と落とし穴)
 

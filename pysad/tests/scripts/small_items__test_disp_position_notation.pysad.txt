@@ -1,0 +1,5 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.174E-15 $$$       f BX    #######  #    .598503 $$$       f NX    #######  #    .453163
+$$$       f AY    #######  #  -6.366172 $$$       f BY    #######  #  13.894406 $$$       f NY    #######  #    .225203
+$$$       f LENG  #######  #   4.600000 MM.1/$$$    BMAGX #######  #   1.000000 MM.1/$$$    BMAGY #######  #  82.056283
+ Vertical Unstable.

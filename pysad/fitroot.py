@@ -4,7 +4,7 @@ FindRoot / Fit / FitGaussian / FitEmit / NIntegrate。K64 の tffindroot.f (tffi
 K64 は式を記号微分 (D) して導関数を作り、微分できなかったときだけ数値微分に落ちる。ここでは常に数値微分の経路を使う
 (tfnewton の svi=max(|v|*frac, sv)、tffit1 の svi=min(max(svmin,|v|*frac),(vmax-vmin)*factmin) をそのまま移植)。
 そのため解析微分で解く gs とは、線形な式で相対 1e-9 程度、非線形でも収束値が数桁 (反復の打ち切り条件に依存) 違いうる。
-未対応: 複素数の FindRoot (gs も壊れた値: docs/19 B61)、Fit の Cutoff 以外の位置引数形式 {{x1,x2..},y,dy} (ベクトル独立変数)。FitGaussian の Plot オプションは実装済み。
+未対応: 複素数の FindRoot (gs も壊れた値: docs/21 B61)、Fit の Cutoff 以外の位置引数形式 {{x1,x2..},y,dy} (ベクトル独立変数)。FitGaussian の Plot オプションは実装済み。
 """
 from __future__ import annotations
 

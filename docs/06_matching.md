@@ -1,6 +1,6 @@
 # 06. マッチング (FIT/FREE/GO) — tffsmatch の Newton/降下法と pysad の match6.py
 
-> 最終更新: 2026-11-16 (現状のスナップショット)。
+> 最終更新: 2026-11-17 (現状のスナップショット)。
 
 対象ソース: `src/tffsmatch.f` (tffsmatch, tweigh, tfsolv, tgrad, tffsvlimit, tffsddf)、`src/tffscalc.f` (tffscalc, twfit)、
 `src/qdcell.f` (tdfun, tdfun1, tdlfun, trdfun, tfgetfitval, tffsfitfun, tffsqu)、`src/tffsa.f` (nfr, dp(i))、
@@ -19,9 +19,9 @@ tdfun1 の差は「目標 − 現在値」で、関数により変換がかか�
 | 関数 | 通常フィット (tdlfun) | 最大フィット (mfitp<0) |
 |---|---|---|
 | BX BY BZ GMX GMY GMZ | log 空間: tdlfun(log fmin, log fmax, log v) | v>fmax なら log(fmax/v)、他は 0 |
-| AX AY AZ | atan 空間: tdlfun(atan fmin, atan fmax, atan v) | |v|>|fmin| のとき ±atan|fmin| − atan v |
+| AX AY AZ | atan 空間: tdlfun(atan fmin, atan fmax, atan v) | \|v\|>\|fmin\| のとき ±atan\|fmin\| − atan v |
 | NX NY NZ | 線形 (ttrans なら 2π に折り返し) | min(0, fmin − v) |
-| EX EY, その他 | 線形 | |v|>|f| のとき |f| − v、または max(−|f|−v, 0) |
+| EX EY, その他 | 線形 | \|v\|>\|f\| のとき \|f\| − v、または max(−\|f\|−v, 0) |
 
 tdlfun(fmin,fmax,f) は範囲フィット: fmin==fmax なら fmin−f、fmin<fmax なら範囲外のときだけ端との差、
 fmin>fmax (反転指定) は中点 fmid を基準に外側へ追い出す。2 点間フィット (kp≠kp1) は trdfun(kf,vb,ve) = ve/vb (log 系) または
@@ -97,9 +97,9 @@ INS (cell=False) でも解析微分 (`match6d.analytic_qu`) を使う。SAD の 
   (有限差分とは O(ANGLE²) 違う)。DRIFT の L と BEND の ANGLE は幾何の有限差分と 1e-5 以内で一致 (`test_tdgeo.py`)。
   **四極などの変数 (DX・DY。K64 は `qdtrans`・`tftmatu` を使う、未移植) と、Twiss の条件が同じ行にある列は中心差分のまま**。
 - 未確認: 不安定なリングの幾何の fit は gs が不安定の罰則を残差に入れず、pysad は入れるので結果が違う (比べていない)。COORD を含む区間の解析微分、SOL の幾何の fit も未確認。
-- **COORD を含むリングの FIT** (2026-11-16 に確認、`local/wake/cf1.sad`): COORD の対 (C1・C2、DX DY DZ CHI3 付き) を含むリングで NX・NY=0.2、QF K1・QD K1 を FREE にした fit (解析微分の経路) は、K1・チューンとも gs と全桁一致。**COORD のパラメータそのものを FIT 変数にする場合は未確認**のまま。
-- **フラグ UNIPOL・RELW の効果** (2026-11-16 に確認し、pysad を直した): gs は UNIPOL で変数の符号を変えず (tffsmatch.f:669)、RELW で重みが変わり、FIT の結果が変わる。以前の pysad は `match6` に `bipol`・`absweit` の実装があるのにフラグとつながっておらず、どれも既定の結果になっていた。`ffscmd.matcher_` でフラグをつなぎ、`fit1.sad` (QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit) の 3 通りが gs と全桁一致: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499 (`test_item4.py` 3 件)。この 2 変数の小さな例だけの確認で、多数の変数・条件の組での比較はしていない。
-- **DELCOR で OCT を対象に含める** (2026-11-16): チューンと QF の DX が gs と 12 桁で一致 (`dc1.sad`。OC 自体の DX は gs も pysad も 0 を返すので、OCT の効果そのものを見る強い比較ではない)。
+- **COORD を含むリングの FIT** (確認済み): COORD の対 (C1・C2、DX DY DZ CHI3 付き) を含むリングで NX・NY=0.2、QF K1・QD K1 を FREE にした fit (解析微分の経路) は、K1・チューンとも gs と全桁一致。**COORD のパラメータそのものを FIT 変数にする場合は未確認**のまま。
+- **フラグ UNIPOL・RELW の効果**: gs は UNIPOL で変数の符号を変えず (tffsmatch.f:669)、RELW で重みが変わり、FIT の結果が変わる。pysad は `ffscmd.matcher_` でフラグを `match6` の `bipol`・`absweit` につなぐ。QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit した 3 通りが gs と全桁一致: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499 (`test_item4.py` 3 件)。この 2 変数の小さな例だけの確認で、多数の変数・条件の組での比較はしていない。
+- **DELCOR で OCT を対象に含める**: チューンと QF の DX が gs と 12 桁で一致 (OC 自体の DX は gs も pysad も 0 を返すので、OCT の効果そのものを見る強い比較ではない)。
 
 `FFS$NumericalDerivative=True` (または SOL を含むとき) は数値微分になり、pysad はこの経路を直訳している:
 
@@ -207,7 +207,7 @@ crate=0 (残差が全く動かない。不安定ラインで qu が 0 になる�
 
 | メソッド | SAD | 備考 |
 |---|---|---|
-| `fit_at(loc[, loc1])` | `FIT loc [loc1]` | 以後の条件の位置 (mfpnt/mfpnt1)。省略で $$$ |
+| `fit_at(loc[, loc1])` | `FIT loc [loc1]` | 以後の条件の位置 (mfpnt/mfpnt1)。省略で `$$$` |
 | `fit(fun, value[, npoints], loc=, loc1=)` | `fit loc BX 1.2`, `NX nx0 2`, `BXM`, `{min,max}` | NX/NY は 2π 倍、CHI は度→rad、BX/BY ≤0 はエラー |
 | `fit_clear()` / `fitp(n)` | `FIT;` / `FITP n` | fitp は mfitp>2 の条件にだけ効く |
 | `free(pattern[, key])` / `fix(...)` | `FREE Q*,SF` / `FIX` | ワイルドカード、ivarele 順に並べる |

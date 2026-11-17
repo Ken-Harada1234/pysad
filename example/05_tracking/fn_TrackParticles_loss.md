@@ -1,5 +1,5 @@
 # fn_TrackParticles (損失の扱い)
-関数・05_tracking・ラティス `00_lattice/FODO_ring.sad` (3 GeV)・`LOSSAMPL=0.05`・`NORFSW NORAD NOFLUC`
+種別: 関数 / フォルダ: 05_tracking / ラティス: `00_lattice/FODO_ring.sad` (3 GeV) / フラグ: `LOSSAMPL=0.05`、`NORFSW NORAD NOFLUC`
 
 ## 何を見る例か
 `TrackParticles` の戻りの 7 列目 (flag) の意味。大振幅の粒子は `LOSSAMPL` (m) を超えた所で損失扱い (flag=0) になり、以後は追跡されない。最初から flag=0 で渡した粒子は損失のまま。

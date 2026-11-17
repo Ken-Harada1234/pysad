@@ -1,0 +1,6 @@
+01/02/2020 03:04:05
+07/15/1947 02:40:00
+01/01/1900 00:00:00
+01/02/2020 00:00:00
+???General::narg:  Number of arguments is expected to be 0 or 1 (+ option) in DateString$[1,2]
+... in Print[DateString[1, 2]]

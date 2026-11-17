@@ -1,0 +1,5 @@
+FFS;
+PageWidth=1999;
+Print["A ",Short[{1,2,3},2]];
+Print["C ",Inequality[1,Less,2,Less,3]," ",Inequality[1,Less,3,Less,2]," ",Inequality[1,Less,2,LessEqual,2]];
+Exit;

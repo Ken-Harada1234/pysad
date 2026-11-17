@@ -20,7 +20,7 @@
 - 表示: 比較式は `a>b` の中置、`Blank` は `_String`。
 
 ## 直さなかったこと
-- **For の本体**: gs は実行しない。ソース (`Packages/functions.n:34` の定義 `For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)`) は本体を実行する形で、`src/` に For の組み込みはなく (`While` は tfmap.f の `tfwhile`)、同じ式を `For2` として定義すると gs も本体を実行する。`Clear[For]` して再定義しても実行する。名前解決の癖と思われるが原因は未特定。SAD の意図は「本体を実行する」と判断し、pysad は変えない (docs/19 B71)。3 引数の For は gs と同じく未評価で返すようにした。
+- **For の本体**: gs は実行しない。ソース (`Packages/functions.n:34` の定義 `For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)`) は本体を実行する形で、`src/` に For の組み込みはなく (`While` は tfmap.f の `tfwhile`)、同じ式を `For2` として定義すると gs も本体を実行する。`Clear[For]` して再定義しても実行する。名前解決の癖と思われるが原因は未特定。SAD の意図は「本体を実行する」と判断し、pysad は変えない (docs/21 B71)。3 引数の For は gs と同じく未評価で返すようにした。
 - **BeginPackage/Begin の文脈**: gs の動作を調べた (読み込み時に新しい記号が `Ctx`名` になる。`Context[]`・`$Context`・`$ContextPath`・`Names["Stat`*"]` の値が独特で、EndPackage のあとも文脈なしの名前は見えない)。読み込み時の名前解決の模倣が要り、SAD の Packages の読み込みに影響するので未対応とした (docs/04 §6)。
 - `Check[Return[1],2]` (gs は 2 を返す)、`Thread[a==b]` (a に値、b が未定義: gs は `3==b`)、記号どうしの `==` の未評価形、未定義の記号だけの文の Out の繰り返し、`"x\\y"` の `\\` に見える 2 重解釈 (結果は pysad も gs と同じだったので触っていない)、`DateString` の offset。
 - `System`・`Fork`・`Shared` (09 の差) は今回の課題の外。

@@ -1,0 +1,14 @@
+FFS;
+$FORM="18.14";
+PageWidth=1999;
+SeedRandom[12];
+nr=256; dz=2e-5; np=2000;
+zl=Table[0.02*Cos[0.3 i]/(1+i/10.), {i,1,nr}];
+z=3e-4*GaussRandom[np]; dp=1e-3*GaussRandom[np];
+r=CSRTrack[z,dp,zl,{dz,4,0.5,0.1,-0.5,0,0,1e-3,1e-3},5];
+Print["R ",r];
+Print["Z1 ",Plus@@(z^2)," ",Plus@@(dp^2)];
+r=CSRTrack[z,dp,zl,{dz,5,0.5,0.1,-0.5,1.3e9,0.2,1e-3,1e-3},3];
+Print["R2 ",r];
+Print["Z2 ",Plus@@z," ",Plus@@(z^2)," ",Plus@@(dp^2)];
+Exit;

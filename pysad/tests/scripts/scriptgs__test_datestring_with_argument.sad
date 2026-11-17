@@ -1,0 +1,9 @@
+FFS;
+PageWidth=1999;
+Print[DateString[{2020, 1, 2, 3, 4, 5}]];
+Print[DateString[1.5e9]];
+Print[DateString[0]];
+Print[DateString[{2020, 1, 2}]];
+Print[DateString[1, 2]];
+
+Exit;

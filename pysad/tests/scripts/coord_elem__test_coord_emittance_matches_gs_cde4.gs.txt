@@ -1,0 +1,46 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:58:52 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.19634954084936207 E1=0.0981747704 E2=0.0981747704);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+COORD CA = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.002 CHI2=-0.003 CHI3=0.004);
+COORD CB = (DX=0 DY=0 DZ=0);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 3*CELL1 CA CELL1 CELL1 CB 3*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="18.14";
+ PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ ***qmdiag---> Sum resonance: (TrA-TrB)^2 =  -2.7827135756066691E-004
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -12.47687 $$$       f BX    #######  #  30.529137 $$$       f NX    #######  #   1.818580 $$$       f AY    #######  #   5.072633 $$$       f BY    #######  #   9.741461 $$$       f NY    #######  #   1.165106
+$$$       f LENG  #######  #  30.400000 ST/$$$      BMAGX #######  #  17.830516 ST/$$$      BMAGY #######  #   6.242784
+ Horizontal/Vertical Unstable.
+ RFSW;
+ NORAD; NOFLUC;
+ em = Emittance[];
+ Print["EMT ", Emittances/.em];
+EMT { 7.828873451474E-8, 8.08853338797E-10, 1.202889604914E-5}
+ Print["TUN ", Tunes/.em];
+TUN {  -.20307436659491,   .24092794492589,  -.00954263376754}
+ Print["ALP ", {MomentumCompaction/.em, EnergyLossU0/.em, EquilibriumPosition/.em}];
+ALP {   .01821961609694, 288287.9162909016,   .01462040952675}
+ Print["COD ", OrbitAtExit/.em];
+COD {  -.00861885629107,  -.00126549840725,   .00334030405576,  -.00263936455351, -2.1876554116E-12,  -.01135465274094}
+ Exit;
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

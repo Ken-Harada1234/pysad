@@ -1,0 +1,48 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:35 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5) QX = (L=0.3 K1=0.4 ROTATE=0.2);
+SOL SA = (L=0 BZ=0.5 BOUND=1) SB = (L=0 BZ=0 BOUND=1);
+MARK ST = ();
+LINE BL = (ST QF DR SA DR2 QX DR2 SB DR QD DR);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE BL;
+Out[1]:= USE
+  Missing GEO of Solenoid SA
+  Missing BOUND of Solenoid SB
+ TRPT; INS; LWAKE; TWAKE; NORAD; NOFLUC;
+ PBUNCH = 1E12; NBUNCH = 1;
+ WakeFunction[Longitudinal, "QX"] = {{-0.1, 2e9}, {-0.02, 1e9}, {0, 5e8}, {0.02, -1e9}, {0.1, -2e9}, {0.2, -1e9}};
+ WakeFunction[Transverse, "QX"] = {{0, 1e12}, {0.01, 5e11}, {0.05, 1e11}, {0.2, 0}, {0.3, 0}};
+ n = 200;
+ x0  = Table[1e-3*Sin[0.37*i], {i, n}];
+ px0 = Table[1e-4*Cos[0.11*i], {i, n}];
+ y0  = Table[1e-3*Cos[0.23*i], {i, n}];
+ py0 = Table[1e-4*Sin[0.71*i], {i, n}];
+ z0  = Table[0.01*Sin[0.13*i]+1e-4*i-0.01, {i, n}];
+ dp0 = Table[1e-3*Cos[0.31*i], {i, n}];
+ fl0 = Table[1, {i, n}];
+ r = TrackParticles[{1, {x0, px0, y0, py0, z0, dp0, fl0}}, 12, 1];
+ $FORM = "16.10";
+ res = r[[2]];
+ Do[Print[k, " ", Plus@@res[[k]], " ", res[[k, 1]], " ", res[[k, 77]], " ", res[[k, 200]]], {k, 6}];
+    1.0000000000      .0012123278      .0012611047  7.9751747932E-4      .0010946808
+    2.0000000000  5.4652364465E-4  5.3429903322E-4  3.9623369810E-4  5.7280554560E-4
+    3.0000000000      .0126696472      .0039099742      .0010574483     -.0019367024
+    4.0000000000     -.0029067829  -8.752114379E-4  -2.864050398E-4  4.0686419420E-4
+    5.0000000000      .0405271827     -.0086066187     -.0078241806      .0176244350
+    6.0000000000     -.0025336477  9.5234971495E-4  3.0321764227E-4  6.7342171240E-4
+ Exit;
+  Missing GEO of Solenoid SA
+  Missing BOUND of Solenoid SB
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

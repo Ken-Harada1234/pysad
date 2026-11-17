@@ -1,0 +1,11 @@
+FFS;
+$DisplayFunction=Identity;
+Print["A ",Position[{{1,2},{3,4}},_?(Second[#]>3&),1,1]];
+Print["B ",Cases[{{1,2},{3,4}},_?(Second[#]>3&),1]];
+xr0=0;xr=Table[xr0+=Sin[i*Pi/21],{i,20}];xr-=(xr[[1]]+xr[[-1]])/2;
+yr=xr;
+table=Outer[Cos[Sqrt[(#^2+#2^2)/2]]&,xr,yr];
+g=ListContourPlot[table,MeshRange->{xr,yr},AspectRatio->1,Contours->8,FrameLabel->{"x","y"}];
+Print["C ",Head[g]," ",Length[g]];
+Print["D ",DataRange/.g[[2]]];
+Exit;

@@ -1,0 +1,8 @@
+FFS;
+f1[x_*y_]:={x,y};
+f9[b___*Sin[x_]*Cos[x_]]:={b,x};
+f10[Sin[x_]^2+Cos[x_]^2]:=one[x];
+Print["A ",f1[2 x]," ",f1[x*2]," ",f9[w*Cos[z]*Sin[z]]," ",f10[Cos[t]^2+Sin[t]^2]];
+Print["B ",(f[f[f[a]]])//.f[z_]:>z," ",f/@(a+b+c)];
+Print["C ",(2 x)^2," ",-x//Length];
+Exit;

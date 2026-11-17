@@ -1,0 +1,8 @@
+DODECA D6 = (L=0.2 K5=10000);
+MARK M=();
+LINE T=(M D6);
+FFS;
+USE T; INS; CALC;
+TYPE D6;
+Print["K5 ", LINE["K5","D6"]];
+Exit;

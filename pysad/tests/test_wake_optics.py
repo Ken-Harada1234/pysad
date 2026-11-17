@@ -1,5 +1,5 @@
 """WAKEOPT (光学の wake) と InitialOrbits。参照は SAD K64 (gs)。表 (CALC/GO の後の条件表) は文字列で、中心軌道の Twiss は数で比べる。
-参照の作り方: local/wake/a*.sad、e*.sad、f1.sad を gs で実行 (docs/21_wake.md §6)。"""
+参照の作り方: local/wake/a*.sad、e*.sad、f1.sad を gs で実行 (docs/23_wake.md §6)。"""
 import io
 import re
 

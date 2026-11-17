@@ -1,0 +1,30 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:31 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+
+MOMENTUM = 1GEV;
+DRIFT D0 = (L=0) D1 = (L=1);
+QUAD Q0 = (L=0.2 K1=0);
+MARK M1 = (BX=5 BY=5);
+LINE L1 = (M1 D0 D1 Q0);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE L1;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.240000 $$$       f BX    #######  #   5.288000 $$$       f NX    #######  #    .037488
+$$$       f AY    #######  #   -.240000 $$$       f BY    #######  #   5.288000 $$$       f NY    #######  #    .037488
+$$$       f LENG  #######  #   1.200000
+ disp;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+  .0     5.00000  .0      .0      .0      M1        .0     0            .0       .0     5.00000  .0      .0      .0      .0       1
+  .0     5.00000  .0      .0      .0      D0        .0      .0          .0       .0     5.00000  .0      .0      .0      .0       2
+  .0     5.00000  .0      .0      .0      D1       1.00000 1.0000000    .0       .0     5.00000  .0      .0      .0      .0       3
+ -.20000 5.20000  .03142  .0      .0      Q0        .20000  .0         1.000000 -.20000 5.20000  .03142  .0      .0      .0       4
+ -.24000 5.28800  .03749  .0      .0      $$$       .0     0           1.200000 -.24000 5.28800  .03749  .0      .0      .0       5
+ In[2]:=  ???-getbuf-end of input stream

@@ -1,0 +1,1 @@
+???SOL (BZ≠0 か BOUND≠0) を含む CALC6D・RADCOD つきの CALC は未対応 (追跡 TrackParticles、CALC/INS の Twiss、Emittance[]・EMIT は対応)

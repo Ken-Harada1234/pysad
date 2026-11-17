@@ -116,4 +116,4 @@ emit_extra.py は SAD の Emittance[OneTurnInformation->True, Matrix->True] の�
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: `emit_extra.py` は 11/16 17:55 に更新された (POL のスピン: `_tturne1` に SOL 領域の分岐を足した。work_unimpl.md の「POL の SOL」)。`emit_extra._turn_record` は Python 版の `_tquade` を使い、DX/DY のある QUAD を含むリングで T の δ 列が 1e-5 ずれる既存の差が残る (work_unimpl.md 「後でまとめて直す一覧」1)。SOL つきの Emittance[] の Orbit・Matrix 規則は出ない (docs/27)。本文は変化なし。
+- 2026-11-16 追記: `emit_extra.py` は 11/16 17:55 に更新された (POL のスピン: `_tturne1` に SOL 領域の分岐を足した。work_unimpl.md の「POL の SOL」)。`emit_extra._turn_record` は Python 版の `_tquade` を使い、DX/DY のある QUAD を含むリングで T の δ 列が 1e-5 ずれる既存の差が残る (work_unimpl.md 「後でまとめて直す一覧」1)。SOL つきの Emittance[] の Orbit・Matrix 規則は出ない (docs/29)。本文は変化なし。

@@ -13,7 +13,7 @@ CloseFileList: Close[{a, b}];   DeleteFile[f];   FileType[f];
 ```
 
 ## 結果の読み方
-`OpenWrite` のファイル番号 (gs では 1 など。実数) を返し、3 行が読める (`line 1`、`line 2`、`line 3 (appended)`)。`OpenWrite` で開き直すと内容が置き換わる (`rewritten` だけ、次の `ReadString` は `EndOfFile`)。`FileType` は `File`、削除後は `None`、`FileQ` は 1→0。
+`OpenWrite` はファイル番号 (実数) を返す。書き込み後、3 行が読める (`line 1`、`line 2`、`line 3 (appended)`)。`OpenWrite` で開き直すと内容が置き換わる (`rewritten` だけ、次の `ReadString` は `EndOfFile`)。`FileType` は `File`、削除後は `None`、`FileQ` は 1→0。
 
 ## gs と pysad の比較
 ○ 一致する (2026-11-17 に修正: `Close[{a, b}]` でリストの複数のファイルを閉じる)。

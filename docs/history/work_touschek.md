@@ -108,4 +108,4 @@ touschek.py は RADCOD OFF で SAD と 1e-9〜1e-11 で一致 (TouschekLifetime 
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: `touschek.py` は 11/14 に更新された (更新日時 11/14 16:57)。COORD・TCAVI・MULT ANGLE≠0 を含むリングでも Touschek が通る (docs/23・24・26 の表: `emit6d._tcoord`・`_ttcave`・`_tmulte` を使う)。SOL (BOUND≠0) と Touschek (INTRA) の組み合わせは未対応 (docs/27 §未対応)。`emit6d._tquade` の δ 微分の差 (1e-5、DX/DY のある QUAD) は touschek にも及ぶ (work_unimpl.md 「後でまとめて直す一覧」1)。MAIN の Touschek は MAP を恒等として通す (docs/28)。この文書の本文 (TouschekTable・TouschekLifetime の照合) は 10/15 時点のまま。
+- 2026-11-16 追記: `touschek.py` は 11/14 に更新された (更新日時 11/14 16:57)。COORD・TCAVI・MULT ANGLE≠0 を含むリングでも Touschek が通る (docs/25・24・26 の表: `emit6d._tcoord`・`_ttcave`・`_tmulte` を使う)。SOL (BOUND≠0) と Touschek (INTRA) の組み合わせは未対応 (docs/29 §未対応)。`emit6d._tquade` の δ 微分の差 (1e-5、DX/DY のある QUAD) は touschek にも及ぶ (work_unimpl.md 「後でまとめて直す一覧」1)。MAIN の Touschek は MAP を恒等として通す (docs/30)。この文書の本文 (TouschekTable・TouschekLifetime の照合) は 10/15 時点のまま。

@@ -1,6 +1,6 @@
 # 03. FFS のコマンド解釈 (src/tffsa.f) と pysad の ffscmd.py
 
-最終更新: 2026-11-16 (現状のスナップショット)
+最終更新: 2026-11-17 (現状のスナップショット)
 
 対象: SAD K64 (<SAD>\src) と pysad (<repo>\pysad)。
 すべて Fortran ソースと pysad のコードで確認した内容。行番号は 2026-10 時点のもの。
@@ -22,7 +22,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | 8 | コマンド群 | `STOP/EXIT/QUIT/ABORT/USE/VISIT/BYE/SPLIT/MAXI_TERATION/ATT_RIBUTE/SAVE/EXPAND/RESET/FREE/FIX/FIT/FITP_OINTS/CAL_CULATE/GO/REC_OVER/T_YPE/DISP_LAY/SCALE/AP_ERTURE/MAT_RIX/CHRO_MATICITY/RADINT/REF_ERENCE/DIMAD/ZAP/TRC_OD/PUSHS_EED…/DELW_AVE` | 第 1 群 |
 | 9 | | `VARY/REJ_ECT/COUP_LE/DECOUP_LE/INDEP_ENDENT/ORI_GIN(ORG)/SHOW/STAT_US/VAR_IABLES(VARS)/RENUM_BER/REV_ERSE/DRAW/GEO/PRI_NT` | 第 2 群 |
 | 10 | | `MEA_SURE/ORBITJ_ITTER/PUTM_EASURE/GET_MEASURE/LOGM_EASURE` | 第 3 群 |
-| 11 | | `WAKE/DELC_OR/LTR_ACK/EMIT_TANCE/SYNCHROB_ETA/BEAM_SIZE/ALI_GN` | 第 4 群。pysad: `DELCOR` は実装 (docs/29)、`WAKE` は K64 と同じ経路 (§9)、`SYNCHROB`・`ALIGN` の語は未対応 (§8) |
+| 11 | | `WAKE/DELC_OR/LTR_ACK/EMIT_TANCE/SYNCHROB_ETA/BEAM_SIZE/ALI_GN` | 第 4 群。pysad: `DELCOR` は実装 (docs/31)、`WAKE` は K64 と同じ経路 (§9)、`SYNCHROB`・`ALIGN` の語は未対応 (§8) |
 | 12 | label 7000 `tfgetv` | 要素値 | 失敗なら `?Undefined command or element:` |
 
 **abbrev の記法** (abbrev.f): `abbrev(word,'CAL_CULATE','_')` は `_` より前 (`CAL`) が必須部分、以後は省略可能な接尾辞。`CAL`, `CALC`, `CALCU`, … `CALCULATE` のどれでも真、`CALCULATED` のように長い語や `CAX` は偽。`_` のない参照は完全一致。pysad では `_abbrev(word, 'CAL_CULATE')` が同じ規則。
@@ -52,25 +52,25 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | CODPLOT | | F | EMIT で 6D ビームサイズも |
 | COD | | T | 閉軌道計算 |
 | INTRA | | F | 粒子内散乱 |
-| POL / RADPOL | | F / T | 偏極 (POL を立てると Emittance[]・EMIT・TrackParticles (RAD ON のとき) がスピンを計算する。docs/34) |
-| LWAKE / TWAKE / WSPAC / SPAC / PSPAC | | F | ウェーク (LWAKE/TWAKE は TrackParticles の TRPT で実装、docs/21)・空間電荷 (SPAC 系は未翻訳) |
+| POL / RADPOL | | F / T | 偏極 (POL を立てると Emittance[]・EMIT・TrackParticles (RAD ON のとき) がスピンを計算する。docs/36) |
+| LWAKE / TWAKE / WSPAC / SPAC / PSPAC | | F | ウェーク (LWAKE/TWAKE は TrackParticles の TRPT で実装、docs/23)・空間電荷 (SPAC 系は未翻訳) |
 | SELFCOD | | F | |
 | CONV | | | GO の収束 (内部)。11/16 に K64 のソースで確認: 収束の判定・表示 (tcod.f・qtwiss.f・temit.f) に効く。EMIOUT は EMIT 報告の追加行 (temit.f:992 ほか。pysad は spin の行だけ対応)、CTIME は CPU 時間の表示 (cputix.f ほか) |
 | STABLE | UNSTABLE | T | 不安定でも条件に入れるか (cellstab) |
 | GEOCAL | GEOFIX | T | 幾何の再計算 |
-| RADLIGHT / PHOTONS / LOSSMAP / SORG | | F | RADLIGHT は TrackParticles が放射点の軌道を返す (§7、docs/34・docs/43)。PHOTONS・LOSSMAP・SORG の物理は未翻訳 (未確認。ただし `PhotonList` の 12 列は 11/16 に photons.f tphotonlist の定義と照合済み: 1 エネルギー=|p|·amass·gammab、2-4 位置、5-7 方向、8-10 偏光、11 粒子番号、12 要素番号) |
+| RADLIGHT / PHOTONS / LOSSMAP / SORG | | F | RADLIGHT は TrackParticles が放射点の軌道を返す (§7、docs/36・docs/45)。PHOTONS・LOSSMAP・SORG の物理は未翻訳 (未確認。ただし `PhotonList` の 12 列は 11/16 に photons.f tphotonlist の定義と照合済み: 1 エネルギー=\|p\|·amass·gammab、2-4 位置、5-7 方向、8-10 偏光、11 粒子番号、12 要素番号) |
 | INTRES / HALFRES / SUMRES / DIFFRES | | T / T / T / F | GO で整数・半整数・和・差共鳴をまたぐ解を不安定扱い |
 | FFSPRMPT / CONVCASE / PRSVCASE / SUS | | | 入力の大文字化など |
 | K64 | LEGACY | T | K64 仕様 (TYPE で DETR/BZ/NZ/DZ を出す等) |
 | GAUSS | UNIFORM | F | 追跡の初期分布 (11/16 に K64 のソースで確認: MAIN の TRACK・MEASURE の初期分布 (ttinit.f:139、track.f) にだけ効く) |
 | FIXSEED | MOVESEED | T | 乱数種の固定 |
-| BIPOL | UNIPOL | T | FIT の変数の符号を変えない (tffsmatch.f:669)。11/16 に FIT へつないだ (旧: `match6` に `bipol` の実装はあるがフラグとつながっていなかった)。`fit1.sad` (QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit) で既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365 と gs と全桁一致 (`test_item4.py`)。BIPOL は tffsmatch.f だけで効く |
+| BIPOL | UNIPOL | T | FIT の変数の符号を変えない (tffsmatch.f:669)。FIT につないである (`ffscmd.matcher_` から `match6` の `bipol` へ)。QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit した例で既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365 と gs と全桁一致 (`test_item4.py`)。BIPOL は tffsmatch.f だけで効く |
 | ORBITCAL / CALOPT (ORBONLY) | | T | |
 | DAPERT | | F | |
 | IDEAL | REAL | F | 誤差なしの理想値で計算 |
 | FOURIER / TRACKSIZ | | F | |
 | SIMULATE | OPERATE | T | |
-| ABSW | RELW | T | FIT 重みを絶対/相対。11/16 に `ffscmd.matcher_` で `match6` の `absweit` につないだ (旧: フラグと未接続で既定の結果)。`fit1.sad` で RELW の K=−.0024047842/−.0107636499 が gs と全桁一致 (`test_item4.py`) |
+| ABSW | RELW | T | FIT 重みを絶対/相対。`ffscmd.matcher_` で `match6` の `absweit` につないである。同じ fit 例で RELW の K=−.0024047842/−.0107636499 が gs と全桁一致 (`test_item4.py`) |
 | JITTER | QUIET | T | |
 | TRGAUSS | TRUNI | | 追跡の運動量分布 |
 | BARYCOD / WAKEOPT | | F | |
@@ -87,7 +87,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 
 - `FIT ALL` → `mfpnt=1, mfpnt1=nlat`。
 - `FIT loc` → `mfpnt=mfpnt1=ielme(loc)`。`FIT loc loc1` → 区間 (ifitp=min, ifitp1=max は tgetfv で正規化)。
-- 位置が解決できない語 (`FIT NX 7.5` の `NX`、`FIT;` の空語) は `ielmf` が `nlat` ($$$) を返すので **`FIT;` は位置を末尾 $$$ に戻すだけで条件は消さない** (消すのは `REJECT TOTAL`)。位置は次の `FIT` まで保持され、以後の `NX …` はその位置に付く。
+- 位置が解決できない語 (`FIT NX 7.5` の `NX`、`FIT;` の空語) は `ielmf` が `nlat` (`$$$`) を返すので **`FIT;` は位置を末尾 `$$$` に戻すだけで条件は消さない** (消すのは `REJECT TOTAL`)。位置は次の `FIT` まで保持され、以後の `NX …` はその位置に付く。
 - `ielmf` (ielm.f): `$$$`/`***` → nlat、`^^^` → 1、`NAME.n` (n は式も可)、`NAME+k`/`NAME-k` (k は式、小数部は要素内の割合)。`fit QF` のようにファミリー名だけなら `ielmh(name,0)` = 単独要素か多重要素の **先頭 (代表)**。
 
 ### 3.2 関数: `FUN value [npoints]`
@@ -127,10 +127,8 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - 各要素 (パターン一致、DRFT 以外は `master(i)` の先頭から成分列) に `errg = sigma*tgauss()` (uni なら sigma、coherent なら 1 回だけ引いた値を共用) を加える。**乱数は要素ごとに 1 回**引く (tgauss は GCUT で切る正規乱数、追跡と同じ乱数列)。
 - master グループ (tmast.f): 同じ要素の分割片 (間にゼロ長要素のみ) はグループの先頭ごとに乱数を 1 回引き、同じ誤差を共有する。pysad は `_master_array`。
 - 代入先: DELX→DX、DELY→DY、DTHETA→DROT (無ければ ROT)、DL→L (`max(0, …)`)、DDK→K0、DK→`errk(1,j)=1+errg` (ADD なら `errk+errg`) で、既定キーワードの実効値 `= 設計値/er*errk*couple(j)`。PUT の基準は設計値 `idval` (SAVE で更新)、ADD は現在値。DK は主強さだけに掛ける。`LINE["K1"/"ANGLE", …]` は DK 込みの値を返し、`Element[]` は設計値を返す。
-- `DBEAM` は先頭の Twiss を揺らす。`DUMP pat` は `element DL(mm) DK DDK DTHETA(mrad) DELX(mm) DELY(mm)` を `(1x,a,3p,f10.5,1p,2g12.5,3p,3f10.5)` で、ずれのある要素だけ表示。DK・DDK 列は Fortran の `1p g12.5` (0 → `0.0000`、小さい値 → `4.22829E-04`) に合わせる (`ffscmd._gwd`。2026-11-16 に誤差入りリングで gs と比べ、値は一致したが書式が `0`・`0.00042283` と違っていたのを直した。`test_ffsextra.py::test_dump_format_matches_gs`、`dm2.sad`)。
+- `DBEAM` は先頭の Twiss を揺らす。`DUMP pat` は `element DL(mm) DK DDK DTHETA(mrad) DELX(mm) DELY(mm)` を `(1x,a,3p,f10.5,1p,2g12.5,3p,3f10.5)` で、ずれのある要素だけ表示。DK・DDK 列は Fortran の `1p g12.5` (0 → `0.0000`、小さい値 → `4.22829E-04`) に合わせる (`ffscmd._gwd`。誤差入りリングで gs と値・書式が一致。`test_ffsextra.py::test_dump_format_matches_gs`)。
 - uni でなければ最後に `tfadjst` (tfadjst.f): 隙間なく並ぶ磁石の鎖は先頭磁石の DX/DY のずれを共有する。pysad は `_tfadjst`。
-
-
 
 ## 5. USE / CELL / CALC / GO / EMIT / TYPE / DISP / SAVE / RESET / COUPLE / CHRO
 
@@ -139,7 +137,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - **CELL/INS** はフラグ。CELL では周期解を求め、INS では MARK の初期値 (twiss(1,0,:)) から伝搬する。
 - **CALC の閉軌道 (qcod)**: 一周行列の跡が NaN なら over で打ち切り、twiss は前回の値のまま (pysad `_qcod_periodic`、`_last_rows`)。
 - **CALC/GO 後の表示** (tffsmatch.f:170-191): 収束で ` Matched. (res)` 、未収束で ` Residual =res`、不安定で `Unstable = n Residual =res`。書式 `(a,1pG11.4,a,' DP =',0pf8.5,'  DP0 =',f8.5,'  ExponentOfResidual =',f4.1,a,' OffMomentumWeight =',f8.3,a)`、末尾は `  CALEXP`/`  NOCALEXP`。続いて `tfshow` (tfshow.f) が条件表: nfam>0 なら ` DP `/`Res.` 行、各条件は `名前(11 桁, FIT 位置なら 11 桁目 'f')`+`関数(5)`+`目標値 (voutfv, S 書式)`+`点数 (|mfitp|-1, I3)`+`現在値 (autofg, 幅 lf=6..10)`。未登録の表示関数は ` #######  #`。区間条件は `名/名1` と差 (BX 等は比、BMAG は tgetbmagu2)。
-- **EMIT_TANCE [pspan]** → `temitf` (EMIT は自動的に RING)。閉軌道、P0/f0、U0/Vc、dz/alpha、Bucket height、Real tune、Damping、Emittance X/Y/Z、Energy spread、Bunch Length、**Beam tilt、Beam size xi/eta** を表示し EMITX… を更新。pysad `print_emit` はこの書式を再現 (Extended Twiss・Orbit dilation・h・fs・Imag.tune・Damping time・Tune shift・partition の行は未出力。POL ON で `EMIOUT; EMIT;` のときのスピン歳差行列と 1 周の脱偏極ベクトルの表は書式まで gs と一致: docs/34)。
+- **EMIT_TANCE [pspan]** → `temitf` (EMIT は自動的に RING)。閉軌道、P0/f0、U0/Vc、dz/alpha、Bucket height、Real tune、Damping、Emittance X/Y/Z、Energy spread、Bunch Length、**Beam tilt、Beam size xi/eta** を表示し EMITX… を更新。pysad `print_emit` はこの書式を再現 (Extended Twiss・Orbit dilation・h・fs・Imag.tune・Damping time・Tune shift・partition の行は未出力。POL ON で `EMIOUT; EMIT;` のときのスピン歳差行列と 1 周の脱偏極ベクトルの表は書式まで gs と一致: docs/36)。
   7 桁目は `autofg('10.7')(1:10)` で切り捨てに見える (dz, f0)。f0=c·β/C。
   EMIT の後に DTSYNCH / PHICAV / EFFVCRATIO / EFFVC / EFFRFFREQ も書き出す。OMEGA0 は USE と EMIT で更新。EMITXE/EMITYE/EMITZE はエミッタンスの下限。EMIT は GAUSS を ON にする (§2)。
 - **CHRO_MATICITY** (tffsa.f:609 → tfchro.f): 四極・六極・MULT の寄与を `1x,a12,1x,2f17.3` で 1 要素ずつ + `TOTAL`。BEND は数えない。六極単独の ξy は代入なので K2=0 で `-0.000`。pysad は `FFS.chro_cmd`。960 要素のラティスと MULT 入りの小リングで全行一致 (bench_level24b/24b2)。
@@ -171,13 +169,13 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - **FFS["cmd" [, unit]]** (`tfffs`): 文字列をファイルとして開き `tffsa(lfnp+1, …)` で実行。unit 省略時 `outfl=0` で **出力は抑制**、`-1` は現在の出力、OpenWrite 等の番号へ向ける。`CAL/GO/VAR/SHOW` は結果のリスト (`{dp, kind, {residual,xstab,ystab}, function-values}`) を返す。エラーは `FFS::error`。IF/REPEAT は 1 回の FFS[] 内で完結させる。`FFS$SHOW[]` = `FFS["SHOW"]` (fit 条件の平らなリスト)。
 - **Element[key, name [, Saved->True]]** (`tfelement`): `LENGTH` (=nele), `EXPAND` (`tffsadjust`), `NAME`, `VALUE` (既定キーワード), その他キーワード。name はファミリー名。`Element / SetElement / FLAG / ExtractBeamLine / BeamLine / PrintBeamLine / WriteBeamLine / GetMAIN` (Packages/element.n, beamline.n, src/tftwiss.f) は pysad では `pysad/sadelem.py` (bench_level24f で 164 タグ一致)。
 - **CalculateOptics[lb,le,inicond,cell,idim]** (tfoptics.f → qcell1): `{各位置の 28 個の Twiss, {stab}, {trace}}` を返し、大域の Twiss も書き換える。pysad は `FFS.fn_calculate_optics` (cell は周期解、cell=0 は `ins_twiss`、idim=3 は全周の CALC6D)。stabz と idim=3 の stab/trace は SAD で未初期化。
-- **Emittance[]**: Packages (`CalculateEmittance` 内部関数 1004) で、`Stable, Tunes, EnergyLossU0, RfVoltageVc, EquilibriumPosition, MomentumCompaction, BucketHeight, OrbitAtExit, DampingRate, Emittances, MomentumSpread, BunchLength, EquilibriumBeamMatrix, OneTurnTransferMatrix` の規則リスト。POL ON のときは `PolarizationTime, SpinTune, PolarizationVector, SpinPrecessionMatrix` も (`Polarization` は K64 が NaN: B55。docs/34)。SOL・COORD・MULT ANGLE≠0・MAP・TCAVI (L=0) を含むリングも扱う (docs/23〜28)。SOL を含む Emittance[] は `run_emit` の値に落ち、Stable=0・HarmonicNumber=NaN・Matrix 系の規則なし (docs/27、work_unimpl)。
-- **SynchroBetaEmittance1[nus0, nus1, dnus, mphi]** (`ffscmd.fn_synchrobeta`、`pysad/synchrobeta.py`): `Packages/emit.n` の `SynchroBetaEmittance` が呼ぶ。gs と emitx 相対 4e-7〜1e-5 (12 セルのリング + CAVI で確認)。2026-11-16 に大きなリング (24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7) の 4 点で emitx が gs と相対 1.4e-7〜1.4e-6 で一致 (emity は雑音: gs −2.5e-19 など、pysad 1.3e-20 など。`sb11.sad`)。**限界**: 結合のあるラティス (QT・SF・DY のずれ入り 8+4 セルのリング) では gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い。`sb10.sad`)。不安定なチューン・`emiout` は未確認。
+- **Emittance[]**: Packages (`CalculateEmittance` 内部関数 1004) で、`Stable, Tunes, EnergyLossU0, RfVoltageVc, EquilibriumPosition, MomentumCompaction, BucketHeight, OrbitAtExit, DampingRate, Emittances, MomentumSpread, BunchLength, EquilibriumBeamMatrix, OneTurnTransferMatrix` の規則リスト。POL ON のときは `PolarizationTime, SpinTune, PolarizationVector, SpinPrecessionMatrix` も (`Polarization` は K64 が NaN: B55。docs/36)。SOL・COORD・MULT ANGLE≠0・MAP・TCAVI (L=0) を含むリングも扱う (docs/25〜28)。SOL を含む Emittance[] は `run_emit` の値に落ち、Stable=0・HarmonicNumber=NaN・Matrix 系の規則なし (docs/29、work_unimpl)。
+- **SynchroBetaEmittance1[nus0, nus1, dnus, mphi]** (`ffscmd.fn_synchrobeta`、`pysad/synchrobeta.py`): `Packages/emit.n` の `SynchroBetaEmittance` が呼ぶ。gs と emitx 相対 4e-7〜1e-5 (12 セルのリング + CAVI で確認)。2026-11-16 に大きなリング (24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7) の 4 点で emitx が gs と相対 1.4e-7〜1.4e-6 で一致 (emity は雑音: gs −2.5e-19 など、pysad 1.3e-20 など)。**限界**: 結合のあるラティス (QT・SF・DY のずれ入り 8+4 セルのリング) では gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。不安定なチューン・`emiout` は未確認。
 - **光学関数ほか** (SADHelp の仕様に合わせたもの): `TransferMatrix[p1, p2, Fold->False, Symplectic->False]`、`BeamMatrix[p]`、`NormalCoordinates[p]` (4D は R 行列+Twiss、CALC6D なら 6×6)、`OrbitGeo[p]`、`GeoBase[{χ1,χ2,χ3}]`、`SymplecticJ[n]`、`SymplecticInverse[m]`、`SurvivedParticles[beam]`、`AccelerateParticles[beam, p(n), {n, nmax}]`、`ParabolaRandom[n]`。位置 p は要素名か番号。(docs/history/work_trpt_acc.md 11 節)
-- **TrackParticles[beam, dest, nbegin, nend]** (tftrack.f:35-100): beam は `{loc, {{x..},{px..},{y..},{py..},{z..},{dp..}[,{sz},{psi}],{flag..}[,{lost..}]}}`。dest は到達位置 (省略 nlat)、nbegin/nend で周回数 (`#4 >= #3`)。`loc` と dest は nlat-1 を法として巻く (ls∈[1,nlat]、ld∈[2,nlat]; ld<=ls なら 1 周足す)。mt=nend−nbegin+1 周: mt>1 なら ls→nlat、(mt−2) 周、1→ld、mt==1 なら ls→ld。戻りは `{正規化した ld, 座標}` (`merge(ld,ls,normal)`)。RFSW OFF では tturn (区間) ごとに z=0。NPARA≥2 で粒子 9 個以上なら fork。tapert (LOSSAMPL/LOSSDZ) で落ちた粒子は alive=0 になり、座標は落ちた時点の値 (limittrack で抑えたもの) で返る。初期フラグ 0 は追跡しない。**セッション最初の TrackParticles は `l_track=0`** (K64 の tmacro のセッション変数。CALC をしても変わらない): 最初から LOSSAMPL の外にいる粒子は、最初の tapert (tturn の最初の要素) で落ちる印 `kptbl(i,4)=l_track` が 0 = 「生きている」になり落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。pysad は 11/16 に `TrackRun.l_track0` と `k_apert` の lcur==0 で再現し、gs (1 回目・2 回目) と全桁一致 (`lm2`〜`lm4.sad`、`b33.sad` 15 値、`test_small_items.py`)。(元の K64 は B33 でこの状況に SIGSEGV するため、基準は gs を直した版。)ANGLE=0 で K1≠0 の BEND の追跡は tbend の tquad/tmulti 呼び出しに従う (K1<0 の符号を失う SAD の癖、docs/11 A38)。pysad `fn_track` は区間ごとに `track_particles_fast(els[a-1:b-1], …, circ=全周長)` (docs/history/work_zdp.md)。
-  **POL のスピン追跡** (POL かつ RAD が ON のときだけ): 純 Python の追跡 (`track6.py` の `sprot`・`bsi`) に切り替わり、入力の 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/|s|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/|s|` (tftrack.f の ktfresetparticles と tfsetparticles)。gs と 4e-12 以下 (`test_spin_track.py`)。限界: 損失 (flag) の処理が無く粒子は落ちない、SOL 領域内の MULT・BEND・CAVI のスピンは未確認 (docs/34)。
+- **TrackParticles[beam, dest, nbegin, nend]** (tftrack.f:35-100): beam は `{loc, {{x..},{px..},{y..},{py..},{z..},{dp..}[,{sz},{psi}],{flag..}[,{lost..}]}}`。dest は到達位置 (省略 nlat)、nbegin/nend で周回数 (`#4 >= #3`)。`loc` と dest は nlat-1 を法として巻く (ls∈[1,nlat]、ld∈[2,nlat]; ld<=ls なら 1 周足す)。mt=nend−nbegin+1 周: mt>1 なら ls→nlat、(mt−2) 周、1→ld、mt==1 なら ls→ld。戻りは `{正規化した ld, 座標}` (`merge(ld,ls,normal)`)。RFSW OFF では tturn (区間) ごとに z=0。NPARA≥2 で粒子 9 個以上なら fork。tapert (LOSSAMPL/LOSSDZ) で落ちた粒子は alive=0 になり、座標は落ちた時点の値 (limittrack で抑えたもの) で返る。初期フラグ 0 は追跡しない。**セッション最初の TrackParticles は `l_track=0`** (K64 の tmacro のセッション変数。CALC をしても変わらない): 最初から LOSSAMPL の外にいる粒子は、最初の tapert (tturn の最初の要素) で落ちる印 `kptbl(i,4)=l_track` が 0 = 「生きている」になり落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。pysad は 11/16 に `TrackRun.l_track0` と `k_apert` の lcur==0 で再現し、gs (1 回目・2 回目) と全桁一致 (15 値、`test_small_items.py`)。(元の K64 は B33 でこの状況に SIGSEGV するため、基準は gs を直した版。)ANGLE=0 で K1≠0 の BEND の追跡は tbend の tquad/tmulti 呼び出しに従う (K1<0 の符号を失う SAD の癖、docs/11 A38)。pysad `fn_track` は区間ごとに `track_particles_fast(els[a-1:b-1], …, circ=全周長)` (docs/history/work_zdp.md)。
+  **POL のスピン追跡** (POL かつ RAD が ON のときだけ): 純 Python の追跡 (`track6.py` の `sprot`・`bsi`) に切り替わり、入力の 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/|s|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/|s|` (tftrack.f の ktfresetparticles と tfsetparticles)。gs と 4e-12 以下 (`test_spin_track.py`)。限界: 損失 (flag) の処理が無く粒子は落ちない、SOL 領域内の MULT・BEND・CAVI のスピンは未確認 (docs/36)。
   **RADLIGHT**: RADLIGHT のとき RAD・TRPT を ON にし、戻りは `{{ls または ld, 座標}, 軌道}` (軌道は粒子ごとに `{t,x,y,z}` の 4 本の表)。gs と差 0 (`test_radlight.py`)。K64 は BEND と曲げのある MULT の中を記録せず (各区間の始めと、L≠0 の BEND 以外の要素の後だけ)、横方向の座標も軌道に入れない。
-  **SOL (BZ≠0) 領域内の BEND・MULT・CAVI** は未対応 (NotImplementedError)。MAP は `ExternalMap["TRACK",…]`、TCAVI は RANKICK・RANPHASE 未対応 (docs/24)。
+  **SOL (BZ≠0) 領域内の BEND・MULT・CAVI** は未対応 (NotImplementedError)。MAP は `ExternalMap["TRACK",…]`、TCAVI は RANKICK・RANPHASE 未対応 (docs/26)。
 - **SeedRandom[n]** (tfRandom_.c): 種を設定し `{"SAD", seed, …}` 形式の状態リストを返す。`tfaddseed` は第 2 要素に kseed を足して再設定。
 - **Random[]** は RandomUniform0 (tfRandom_.c `REG8("Random", RandomUniform0)`) = random_plugin_sad.c の RANDOM_UNIFORM0: (seed + 2³¹)/2³² の [0,1)。RANDOM_UNIFORM (0,1) は +0.5 の式で別物 (こちらを使うと seed 列が稀に 2 ずれる)。GaussRandom[] は tgauss (Box–Muller、GCUT 付き)。
 - **単位付き数値**: SADScript の `1GEV` `30DEG` `3MM` は SAD では `1*GEV` = 1 になる (docs/11 C24)。pysad は単位を掛けて読む (仕様差)。
@@ -192,8 +190,8 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | REPEAT/UNTIL, IF/ELSEIF/ELSE/ENDIF | `Interp.run` の最上位 FFS 文列の添字ループ + `_control_word`/`_control`、`_if_cond`/`_skip_if` (§1) |
 | abbrev | `_abbrev(word,'CAL_CULATE')` |
 | tflag | `self.flags` + `_FLAG_ALT` (sino/NOsino) |
-| tgetfv | `_fit_condition` → `Matcher.fit(fun[+'M'], value, npoints)` (match6.py)。`{min,max}`, `*` 対応、`@` は未対応 (`SADError`)。`_fit_location` が `FIT [loc [loc1]]` (`FIT;` は位置を $$$ に戻すだけ) |
-| FITP | `Matcher.fitp(n)` (|mfitp|>2 のみ変更)。FITP>1 の MatchingAmplitude/NFAMP も実装 (§3.2) |
+| tgetfv | `_fit_condition` → `Matcher.fit(fun[+'M'], value, npoints)` (match6.py)。`{min,max}`, `*` 対応、`@` は未対応 (`SADError`)。`_fit_location` が `FIT [loc [loc1]]` (`FIT;` は位置を `$$$` に戻すだけ) |
+| FITP | `Matcher.fitp(n)` (\|mfitp\|>2 のみ変更)。FITP>1 の MatchingAmplitude/NFAMP も実装 (§3.2) |
 | FREE/FIX | `_freefix` → `_free_family` (既定キーワードは `default_key`: DRIFT は L、他は `_KEYS[型][1]`、MARK/MONI は不可、vlim は DRIFT L [0.1,1e10]) / `Matcher.fix` |
 | tfgetv | `_element_value` (R/MAX/MIN/MAXABS、キーワード、`set_family` で couple も反映、`_vlim`) |
 | terror | `_error_cmd`/`_apply_error` (`errk` は `el._errk`、PUT の基準は `env._elements` の設計値、乱数は `self.rng.gauss` = track6 と同じ `SadRandom`、master グループは `_master_array`、`_tfadjst`)、`_dump` |
@@ -213,11 +211,11 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | COUPLE | `_couple` → `self.couples[slave]=(master,coef)`; DECOUPLE/INDEPENDENT で全解除 |
 | Twiss/LINE/Element/FFS/Emittance/TrackParticles/SeedRandom | `fn_twiss`/`fn_line`/`fn_element`/`fn_ffs`/`fn_emittance`/`fn_track`/`fn_seedrandom`、代入は `set_line`/`set_element` (Set をラップ)。位置解決は `_resolve_loc` → `positions` (tflinenamestk 相当: `$$$`, `NAME.*`, パターン, `NAME.n`, `NAME±k`) |
 | Element/SetElement/BeamLine 系 | `pysad/sadelem.py` (§7) |
-| FFS の小さなコマンド | `pysad/ffsextra.py` の `COMMANDS` (`ffscmd` が `_fx.run` で先に呼ぶ): VARIABLES(VARS/VAR)・ATTRIBUTE(ATTR/ATT)・MATRIX(MAT。11/16 に名前だけの引数 `MKSFA1` を NAME.1 として扱い、ラティスに無い名前 (`MKSFA2`) は gs と同じく読み飛ばす (to=$$$) ように直した。`mt1`・`mt2.sad`、`test_ffsextra.py`)・SHOW・VARY・RECOVER(REC)・REVERSE(REV)・PRINT(PRI)・EXECUTE(EXEC)・OUTPUT/APPEND/CLOSE・INPUT/READ・STATUS(STAT)・SUSPEND/RESUME (docs/33) |
-| DELCOR / WAKE | `ffscmd._delcor` (tcorr・tvcorr。MARK は DETR・DPX に入る K64 の添字のずれまで再現。CAVI は未対応、docs/29)、`_wake_cmd` (§9) |
-| CSR 系・Fit 系・パッケージ | SADScript の関数として csr.py・fitroot.py・corr.py・pkgload.py が提供 (docs/31, 32, 34) |
+| FFS の小さなコマンド | `pysad/ffsextra.py` の `COMMANDS` (`ffscmd` が `_fx.run` で先に呼ぶ): VARIABLES(VARS/VAR)・ATTRIBUTE(ATTR/ATT)・MATRIX(MAT。名前だけの引数は NAME.1 として扱い、ラティスに無い名前は gs と同じく読み飛ばす (to=`$$$`)。`test_ffsextra.py`)・SHOW・VARY・RECOVER(REC)・REVERSE(REV)・PRINT(PRI)・EXECUTE(EXEC)・OUTPUT/APPEND/CLOSE・INPUT/READ・STATUS(STAT)・SUSPEND/RESUME (docs/35) |
+| DELCOR / WAKE | `ffscmd._delcor` (tcorr・tvcorr。MARK は DETR・DPX に入る K64 の添字のずれまで再現。CAVI は未対応、docs/31)、`_wake_cmd` (§9) |
+| CSR 系・Fit 系・パッケージ | SADScript の関数として csr.py・fitroot.py・corr.py・pkgload.py が提供 (docs/33, 32, 34) |
 
-**既知の未対応** (2026-11-16 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。11/06 に未対応と書いていた SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/33、REJECT は `ffscmd`)。そのほか:
+**既知の未対応** (2026-11-16 に `ffscmd.py` で確認。`[pysad] FFS command … は未対応 (無視)` と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN, INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB, MEASURE, TRC(TRCOD)。`MON`・`MCOD`・`TCOD` のコマンドは K64 の tffsa.f にも無い (11/16 に grep で 0 件確認。FFS では式として評価されて何もしない)。SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/35、REJECT は `ffscmd`)。そのほか:
 
 - MCOD/TCOD/MON (この K64 ビルドでは FFS コマンドではなく式として評価されて何もしないので pysad も無視)。
 - MEASURE/TRCOD: gs で動かない (B42: TRCOD は SIGSEGV、MEASURE は何も出力しない) ので `tracke/ttinit/ttstat/trcoda/trackb` は未翻訳 (`tlum`/`tluma` だけ `measure.py`)。
@@ -236,7 +234,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - `DISP` のモード R・O・P・GA・Z・A・B (BEAM、EMIT 後)・D・G・OG と REFERENCE・DREFERENCE (見出しの置換まで gs と同じ)。
 - `DUMP` の語は 20 文字で切れる (長い `A|B|…` は先頭 20 文字)。合う要素がなければ全要素。`DDK` は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ。
 - DODECA の K5 は積分強度 (TYPE・ATTRIBUTE・LINE・Element で同じ値)。
-- CELL の CALC の最後の行 ($$$) の DZ は一周の経路長のずれ (OrbitGeo[$$$] の GX が gs と一致)。
+- CELL の CALC の最後の行 (`$$$`) の DZ は一周の経路長のずれ (`OrbitGeo[$$$]` の GX が gs と一致)。
 - TYPE の PROF 等リスト値。
 - `FUNSCALE` (値を読み飛ばすだけで scale は変わらない)。
 - `DBEAM` (読み飛ばすだけ)。
@@ -251,8 +249,8 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - **FFS["…"] の unit 省略は非表示** (`outfl=0`)。画面に出すには `FFS["…", 6]` か `-1`。
 - **MAXITERATION はこのビルドでは GO の反復数に効かない** (`MAXITERATION 1` でも 7 反復)。pysad はコマンドを受理する。
 - EMIT は `codin=twiss(1,0,DX:DDP)` を初期軌道にし、終了後 `gauss=.true.`。DISP/TYPE の前には `tfsetparam` が呼ばれる。
-- **MOMENTUM の初期値は 30 GeV** (K64 initb1.f の `RsetGL('MOMENTUM',30.d9)`)。MAIN で書かなければ FFS も 30 GeV で計算する (pysad の `ffscmd` も同じ既定。以前の文書は 1 GeV と書いていた)。
-- **旧 WAKE コマンド**: K64 の tffsa.f は tfwake.f を呼ばず `WAKECOMMAND[]` (init.n の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価する。gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路 (エラー文の表示だけ未再現)。tfwake.f の移植は不要と判断した (docs/21)。
+- **MOMENTUM の初期値は 30 GeV** (K64 initb1.f の `RsetGL('MOMENTUM',30.d9)`)。MAIN で書かなければ FFS も 30 GeV で計算する (pysad の `ffscmd` も同じ既定)。
+- **旧 WAKE コマンド**: K64 の tffsa.f は tfwake.f を呼ばず `WAKECOMMAND[]` (init.n の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価する。gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路 (エラー文の表示だけ未再現)。tfwake.f の移植は不要と判断した (docs/23)。
 - **`Skip`・`Read` の型** (Character・Real・Word の読み方、数でない語の Real は式の値) は gs に合わせた (`test_evalfixes.py`)。`MessageName[f,"usage"]` の関数形は gs が `Undefined MessageName` を出すのに pysad は `f::usage` と同じ表を引く (関数形を直接呼ぶスクリプトは見つかっていないので見送り)。
 - **MEASURE** は INS; CALC のあとでも gs は何も出力しない。TRCOD は SIGSEGV (B42)。
-- **SOL (BOUND≠0) の長さ**は周長に入れない (K64。`emit6d._emit_circ`、追跡の circ も)。GEO の無い SOL では K64 の S 座標が途切れて周長が狂うが pysad は再現しない (docs/27)。
+- **SOL (BOUND≠0) の長さ**は周長に入れない (K64。`emit6d._emit_circ`、追跡の circ も)。GEO の無い SOL では K64 の S 座標が途切れて周長が狂うが pysad は再現しない (docs/29)。

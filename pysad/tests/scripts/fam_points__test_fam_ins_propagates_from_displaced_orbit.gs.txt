@@ -1,0 +1,584 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:02 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5) DS = (L=0.2);
+BEND B = (L=1 ANGLE=0.39269908169872414 E1=0.5 E2=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+SEXT SF = (L=0.1 K2=8.0) SD = (L=0.1 K2=-12.0);
+MARK MK = (AX=-1.7 BX=6.3 AY=0.9 BY=3.1);
+LINE CELL = (MK QF DS SF D B D QD DS SD D B D);
+LINE RING = (8*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.168345 $$$       f BX    #######  #   9.510696 $$$       f NX    #######  #   2.254604
+$$$       f AY    #######  #   -.250174 $$$       f BY    #######  #   2.027125 $$$       f NY    #######  #   2.458879
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ go;
+       2        0    60.61      (NEWTON)    1.000          2
+       3        0    14.61      (NEWTON)    1.000          2
+       4        0   5.2960E-02  (NEWTON)    1.000          2
+       5        0   8.6796E-03  (NEWTON)    1.000          2
+ Residual = 8.6685E-03  DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+            DP                -.001000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .001000
+                                         x1       x3       x4       y3       y1       x2                y4       y2
+            Res.               .003091  .001247  .001053 7.843E-5 2.822E-5 2.822E-5 2.492E-5 1.875E-5 5.256E-6 5.256E-6  .003089
+$$$       f AX    #######  #  -1.74364 -1.89551 -1.61582 -1.58516 -1.73297 -1.73297 -1.91942 -1.73509 -1.75543 -1.75543 -1.73559
+$$$       f BX    #######  #  6.244286 6.287293 6.491292 5.792880 6.290101 6.290101 6.933593 6.318434 6.359783 6.359783 6.388814
+$$$       f NX   2.21      3  2.184194 2.230049 2.192438 2.212383 2.209783 2.209783 2.209254 2.209575 2.209255 2.209255 2.237121
+$$$       f AY    #######  #   .798455  .755196 1.143347 1.093565  .904896  .904896  .781329  .928569  .927511  .927511  .999273
+$$$       f BY    #######  #  3.080120 2.985827 3.448876 3.852751 3.125701 3.125701 2.534963 3.129600 3.069276 3.069276 2.973777
+$$$       f NY   1.31      3  1.285777 1.320171 1.299124 1.304891 1.313375 1.313375 1.313089 1.309457 1.311255 1.311255 1.332720
+$$$       f LENG  #######  #  41.600000
+ In[2]:=  ???-getbuf-end of input stream

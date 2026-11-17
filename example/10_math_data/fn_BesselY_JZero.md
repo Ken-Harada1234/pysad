@@ -1,6 +1,5 @@
 # fn_BesselY_JZero (BesselY・BesselJZero)
-
-種別: 関数 (Special-functions)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (Special-functions) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 `BesselY[n,x]` (第 2 種) と `BesselJZero[n,k]` ($J_n$ の $k$ 番目のゼロ点) の値。**gs (この K64 ビルド) では動かない** ことを残す例。
@@ -9,7 +8,7 @@
 ```
 BesselY[0,1.]  BesselY[1,2.5]  BesselY[0,5.]  BesselJZero[0,1]  BesselJZero[0,3]  BesselJZero[1,1]
 ```
-gs が応答しなくなるので、`run_example.py` の制限時間を 12 秒にして走らせた (`.gs.txt` はそこで途切れる)。
+gs が応答しなくなるので、実行の制限時間を 12 秒にして走らせた (`.gs.txt` はそこで途切れる)。
 
 ## 結果の読み方
 gs: 最初の `BesselY[0,1.]` が `NaN` を返し、次の `BesselY[1,2.5]` で応答がなくなる (10 秒待っても戻らない。CPU を使い続けているのか止まっているのかは未確認)。単独で試すと、`BesselY[0,x]` は $x=1,2.5,5$ で `NaN`、`BesselY[1,1.]`・`BesselY[1,2.5]`・`BesselY[2,5.]`・`BesselJZero[0,1]`・`BesselJZero[0,2]` は応答なし (10 秒で打ち切り)。`BesselJZero[1,1]` だけは単独なら 3.831706 を返した。pysad は全値を返す。
@@ -30,7 +29,7 @@ $Y_n(x)=\frac{J_n\cos n\pi-J_{-n}}{\sin n\pi}$ (整数次は極限)。$j_{n,k}$ 
 
 ## gs と pysad の比較
 - gs: 失敗 (NaN または応答なし)。pysad: 全値が式の値と 14 桁一致。
-- 判定: ×gs 失敗 (pysad は値を返す)。K64 のビルドの問題か、この環境の設定の問題かは切り分けていない。`BesselJZero[1,1]` は gs が上の通り応答しないはずだが、`fn_Bessel` の前身の試行では 3.8317 を返した。再現性は不安定 (未調査)。
+- 判定: ×gs 失敗 (pysad は値を返す)。K64 のビルドの問題か、この環境の設定の問題かは切り分けていない。`BesselJZero[1,1]` は、表では (出力なし) だが、単独で試すと gs も 3.8317 を返した (結果の読み方のとおり)。再現性は不安定で、原因は未調査。
 
 ## 未確認・限界
 応答がなくなる原因 (無限ループか)、K64 の別ビルドでの動作は未確認。

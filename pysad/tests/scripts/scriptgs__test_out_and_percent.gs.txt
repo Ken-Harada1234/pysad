@@ -1,0 +1,33 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:22 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ PageWidth=1999;
+ x = 5
+Out[1]:= 5
+ x + 1;
+ 2 * 3
+Out[2]:= 6
+ Print["a ", %, " ", Out[1], " ", $Line];
+a 6 5 2
+ {1, 2}
+Out[3]:= {1,2}
+ Print[Length[%], " ", %1, " ", Out[2]];
+2 5 6
+ y = 4; z = 5
+Out[4]:= 5
+ f[t_] := t
+Out[5]:= t
+ Print[$Line];
+5
+ 
+ Exit;
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[6]:=  ???-getbuf-end of input stream

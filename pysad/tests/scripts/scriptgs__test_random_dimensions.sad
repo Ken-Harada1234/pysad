@@ -1,0 +1,12 @@
+FFS;
+PageWidth=1999;
+SeedRandom[1];
+Print[Dimensions[Random[2, 3]], Dimensions[Random[2, 3, 4]], Random[0], Random[3, 0], Dimensions[Random[3, 2, 2]]];
+Print[Dimensions[GaussRandom[2, 3]], Dimensions[ParabolaRandom[2, 3]], GaussRandom[0]];
+SeedRandom[1];
+a = Random[2, 3]; SeedRandom[1]; b = Random[6];
+Print[Flatten[a] === b];
+Print[Random[-1]];
+Print[Random[{2, 3}]];
+
+Exit;

@@ -1,0 +1,44 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:28 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+MARK ST = ();
+MULT MM = (L=0.1 K1=0.05 K2=2.0 DY=1e-4);
+MULT MQ = (L=0.2 K1=0.02 K3=20 DY=-3e-5 DX=2e-5);
+LINE CELL1 = (QF D2 B D2 MM QD D1 MQ);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="18.14";
+ PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.193948 $$$       f BX    #######  #   5.376919 $$$       f NX    #######  #   3.153482 $$$       f AY    #######  #   1.429193 $$$       f BY    #######  #   2.947637 $$$       f NY    #######  #   1.712774
+$$$       f LENG  #######  #  49.200000
+ RFSW; RAD; NOFLUC;
+ POL;
+ em = Emittance[];
+ Print["EM ",{SpinTune,NominalSpinTune}/.em];
+EM {   .40406451492315,  6.80814822478217}
+ x0={1e-4,0};px0={0,0};y0={0,1e-4};py0={0,0};z0={0,0};dp0={0,1e-3};
+ r=TrackParticles[{1, {x0,px0,y0,py0,z0,dp0,{0,0},{0.1,0.2},{1,1},{1,1}}}, 20, 1, 5];
+ Print["R ",Length[r]," ",Dimensions[r[[2]]]];
+R   2.00000000000000 {  9.00000000000000,  2.00000000000000}
+ Print["S ",r[[2]]];
+S {{ -3.32347468850E-4, 1.840810918590E-4},{ 7.564606709837E-6, -5.39379562111E-5},{ -1.33621629576E-5, 1.797387437109E-4},{ -9.38444590722E-6, 4.221302552685E-5},{ 5.429204656226E-4,  -.00429068856584},{ -3.73355207485E-5, 9.190395784645E-4},{  1.14157814490935,  1.22999193806627},{   .09995579568639,   .19986294825146},{  1.00000000000000,  1.00000000000000}}
+ Exit;
+ FFS                  end:  CPU time =     0.009 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     T     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

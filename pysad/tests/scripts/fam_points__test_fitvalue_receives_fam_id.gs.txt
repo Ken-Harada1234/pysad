@@ -1,0 +1,1023 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:04 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5) DS = (L=0.2);
+BEND B = (L=1 ANGLE=0.39269908169872414 E1=0.5 E2=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+SEXT SF = (L=0.1 K2=0.0) SD = (L=0.1 K2=0.0);
+MARK MK = (AX=-1.7 BX=6.3 AY=0.9 BY=3.1);
+LINE CELL = (MK QF DS SF D B D QD DS SD D B D);
+LINE RING = (8*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ 
+ ids = {};
+ FitValue[comp_, fn_, {id_, dp_}, goal_, now_] := (ids = Append[ids, id]; goal);
+ go;
+       2        0   0.2489      (NEWTON)    1.000          2
+       3        0   7.3562E-05  (NEWTON)    1.000          2
+       4        0   2.5891E-05  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 2.5891E-05  DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+            DP                -.001000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .001000
+                                         x3       x1       x4       x2                y4       y2       y3       y1
+            Res.              1.109E-5 1.595E-6 1.163E-6 6.038E-7 5.909E-7 2.367E-9 2.205E-9 2.205E-9 1.25E-10 1.25E-10 1.085E-5
+$$$       f AX    #######  #  -1.72858 -1.72935 -1.72516 -1.72458 -1.72902 -1.72690 -1.72690 -1.72690 -1.72691 -1.72691 -1.72527
+$$$       f BX    #######  #  6.342517 6.351498 6.324629 6.335584 6.336630 6.336725 6.336677 6.336677 6.336740 6.336740 6.330974
+$$$       f NX   2.21      3  2.211164 2.209985 2.210030 2.209720 2.210308 2.209994 2.210015 2.210015 2.209998 2.209998 2.208859
+$$$       f AY    #######  #   .916786  .916732  .918075  .916544  .918308  .917425  .917534  .917534  .917382  .917382  .918045
+$$$       f BY    #######  #  3.125907 3.129962 3.127148 3.128723 3.128452 3.128592 3.129122 3.129122 3.128495 3.128495 3.131244
+$$$       f NY   1.31      3  1.311771 1.310087 1.309927 1.310080 1.309925 1.309995 1.310021 1.310021 1.310000 1.310000 1.308241
+$$$       f LENG  #######  #  41.600000
+ In[2]:=  ???-getbuf-end of input stream

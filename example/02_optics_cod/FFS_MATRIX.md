@@ -2,7 +2,7 @@
 種別: FFS コマンド。フォルダ: 02_optics_cod。ラティス: `00_lattice/FODO_ring.sad`。エネルギー 3 GeV。フラグ: CELL、CALC4D (4x5 行列)。
 
 ## 何を見る例か
-`MATRIX [SYMPLECTIC|PHYSICAL] [from to]` は from から to までの転送行列を表示する (CALC4D のときは 4x5: x px y py と運動量偏差 δ の 5 列目。5 列目はδに対する変位)。
+`MATRIX [SYMPLECTIC|PHYSICAL] [from to]` は from から to までの転送行列を表示する (CALC4D のときは 4x5。4 列は x px y py、5 列目は運動量偏差 δ に対する変位)。
 `SYMPLECTIC` (既定) は規格化された座標での行列、`PHYSICAL` は TRPT (輸送路で加速があるとき) の物理座標の行列。リングでは同じ。
 関数形 `TransferMatrix[from, to]` の戻り値 (4x4) から、1 セルのトレースと行列式、位相進みも確かめる。
 
@@ -38,4 +38,4 @@ $$\cos\mu_x=-0.18129,\quad \mu_x/2\pi=0.279014,\quad \nu_x/24=0.279014$$
 
 ## 未確認・限界
 - CALC6D の 6x6 行列は flag_CALC4D_CALC6D。TRPT (加速のある輸送路) の PHYSICAL と SYMPLECTIC の違いは未確認 (リングでは同じ)。
-- `MATRIX` の引数が名前だけのとき (`NAME.1` 扱い、docs/33) は MATRIX QF.1 QD.1 の形で使った (一致)。
+- `MATRIX` の引数が名前だけのとき (`NAME.1` 扱い、docs/35) は MATRIX QF.1 QD.1 の形で使った (一致)。

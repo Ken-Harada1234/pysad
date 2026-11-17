@@ -1,0 +1,42 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:11 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+MULT B = (L=1.2 ANGLE=0.2617993877991494 K1=0.1 K2=2 DX=1e-4 DY=-1e-4);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="18.14";
+ PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.045722 $$$       f BX    #######  #   4.509184 $$$       f NX    #######  #   3.009320 $$$       f AY    #######  #   2.001291 $$$       f BY    #######  #   3.806767 $$$       f NY    #######  #   1.350183
+$$$       f LENG  #######  #  45.600000
+ RFSW;
+ NORAD; NOFLUC;
+ em = Emittance[];
+ Print["EMT ", Emittances/.em];
+EMT { 7.777446522218E-6, 1.32519029231E-12, 2.227947338116E-5}
+ Print["TUN ", Tunes/.em];
+TUN {   .00926282463643,   .34887233068320,  -.01073052820523}
+ Print["ALP ", {MomentumCompaction/.em, EnergyLossU0/.em, EquilibriumPosition/.em}];
+ALP {   .02649295295753, 781937.5696280303,   .06218331372415}
+ Print["COD ", OrbitAtExit/.em];
+COD { 1.468375897069E-4, 5.224624920284E-5, 6.575689487070E-5, -3.46534434889E-5, -9.5165975808E-14, 1.943360218779E-4}
+ Exit;
+ FFS                  end:  CPU time =     0.019 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

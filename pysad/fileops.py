@@ -4,7 +4,7 @@ Packages/FileSystem.n のファイル・ディレクトリ関数 (K64 は System
 FileQ DirectoryQ FileNames DirectoryName ToFileName CreateDirectory DeleteDirectory RenameDirectory CopyDirectory
 CopyFile RenameFile DeleteFile FileDate SetFileDate FileType FileByteCount と $HomeDirectory。
 
-K64 との差: FileByteCount は K64 が `wc -l` (行数) を返す誤り (docs/19 B50) なので、pysad はバイト数を返す。
+K64 との差: FileByteCount は K64 が `wc -l` (行数) を返す誤り (docs/21 B50) なので、pysad はバイト数を返す。
 失敗は $Failed。ファイルの相対パスは Interp.cwd から。
 """
 from __future__ import annotations

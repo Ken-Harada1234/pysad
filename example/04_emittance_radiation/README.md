@@ -11,4 +11,6 @@
 | flag_CALC6D | CALC6D の縦の光学 | ○ |
 | fn_SynchroBetaEmittance | シンクロ・ベータ結合の emitx (平面リング) | ○ (結合のあるラティスは gs が落ちる) |
 
-見つけたこと: (1) RADINT の $J_x$ (0.9415) と EMIT の $J_x$ (0.9651) は 2.4% 違う。$I_4$ の端の項を 2 倍にすると EMIT に近づく (FFS_EMITTANCE.md)。(2) `FODO_ring` の RF 1.5 MV は $U_0$ より小さくバケットがない。
+## このフォルダで分かったこと
+- RADINT の $J_x$ (0.9415) と EMIT の $J_x$ (0.9651) は 2.4% 違う。$I_4$ の端の項を 2 倍にすると EMIT に近づく (FFS_EMITTANCE.md)。
+- `FODO_ring` の RF 1.5 MV は $U_0$ より小さく、バケットがない。

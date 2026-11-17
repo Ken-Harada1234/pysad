@@ -1,0 +1,14 @@
+FFS;
+$FORM="";
+Print["1 ",CreateDirectory["d"]," ",DirectoryQ["d"]," ",CreateDirectory["d"]];
+f=OpenWrite["d/a.txt"];WriteString[f,"hello
+world
+"];Close[f];
+Print["2 ",FileQ["d/a.txt"]," ",FileType["d/a.txt"]," ",FileType["d"]," ",FileType["zzz"]," ",FileByteCount["d/a.txt"]];
+Print["3 ",CopyFile["d/a.txt","d/b.txt"]<=>$Failed," ",CopyFile["d/a.txt","d/b.txt"]," ",RenameFile["d/b.txt","d/c.txt"]<=>$Failed," ",FileQ["d/b.txt"]];
+Print["4 ",DeleteFile["d/c.txt"]," ",DeleteFile["d/zz"]," ",FileNames["*"]];
+SetFileDate["d/a.txt",{2020,1,2,3,4,5}];
+Print["5 ",FileDate["d/a.txt"]];
+Print["6 ",CopyDirectory["d","e"]<=>$Failed," ",FileQ["e/a.txt"]," ",DeleteDirectory["d"]," ",DeleteDirectory["d",DeleteContents->True]," ",DirectoryQ["d"]];
+Print["7 ",DirectoryName["/a/b/c.txt"]," ",DirectoryName["/a/b/c.txt",2]," ",ToFileName[{"/a","b","c"}]," ",ToFileName[{"a","b"},"c"]];
+Exit;

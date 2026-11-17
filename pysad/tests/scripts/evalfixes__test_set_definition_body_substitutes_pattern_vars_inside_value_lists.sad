@@ -1,0 +1,11 @@
+FFS;
+PageWidth=1999;
+H[x_]:=Restrict[x,0,1];
+G5[x_]=Round[{H[x],x}*3];
+Print["E ",G5[0.5]];
+G6[x_]=Round[{x}*3];
+Print["F ",G6[0.5]];
+Block[{x,y},
+  F[{x_,y_}]=Round[{H[x],y}*10]];
+Print["A ",F[{0.5,1.5}]];
+Exit;

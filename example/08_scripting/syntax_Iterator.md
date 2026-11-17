@@ -1,5 +1,5 @@
 # syntax_Iterator
-種別: 文法 (反復子) / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は `run_sad_string`。
+種別: 文法 / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は `run_sad_string`。
 
 ## 何を見る例か
 反復子の書き方一覧: `{n}`、`{i,n}`、`{i,a,b}`、`{i,a,b,step}`、実数刻み、負の刻み、多重 (`{i,..},{j,..}`)、$i$ に依存する内側の範囲。`Table`・`Do`・`Sum`・`Product`・`Scan`・`Map` で使う。

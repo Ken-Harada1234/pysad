@@ -38,4 +38,4 @@ b = BeamMatrix[1];     Print["sqrt(b11) sqrt(b33) sqrt(b66) = ", Sqrt[b[[1,1]]],
 全桁一致 (行列、BeamMatrix の値)。EMIT の表の `alpha` の桁だけ違う (0.0222107 と 0.02221)。
 
 ## 未確認・限界
-- CALC6D の 6x6 の `TransferMatrix`、`Fold->True`、`Symplectic->True` は未確認。RAD 付き 6D ビーム行列の平衡値 (`Emittance[...,Matrix->True]` の `EquilibriumBeamMatrix`) は 04 の担当。
+- CALC6D の 6x6 の `TransferMatrix`、`Fold->True`、`Symplectic->True` は未確認。RAD 付き 6D ビーム行列の平衡値 (`Emittance[...,Matrix->True]` の `EquilibriumBeamMatrix`) は 04_emittance_radiation の例で扱う。

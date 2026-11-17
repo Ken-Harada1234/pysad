@@ -3,7 +3,7 @@
 種別: 関数 (描画)・フォルダ 11_graphics・ラティスなし
 
 ## 何を見る例か
-2 次元リスト $z_{ij}=\sin(i/3)\cos(j/3)$ ($10\times10$) の等高線を描く。オプション `Contours->8`、`MeshRange`。SADHelp の例 (別データ) は pysad が失敗するので fn_ListContourPlot_SADHelp に分けた。
+2 次元リスト $z_{ij}=\sin(i/3)\cos(j/3)$ ($10\times10$) の等高線を描く。オプション `Contours->8`、`MeshRange`。SADHelp の例はデータが違うので fn_ListContourPlot_SADHelp に分けた。
 
 ## スクリプト
 ```
@@ -28,4 +28,4 @@ pysad の側の保存の仕方: 台本の `Exit;` の前に、全 Canvas の `fi
 - 以前の pysad は、2 つ目 (`MeshRange` つき) の描画中に `tagOrId "1" doesn't match any items` / `.1r.2b lower ...` の Tcl エラー (`Tkinter::tclerror: 1501`) を 9 回出した。原因は `TkCanvasLastItem`: K64 では Tk の `nextId-1` (`delete all` のあとも id は続く) だが、pysad は `find all` の最大値を返したので、再描画で全項目を消した直後は 0 になり、Canvas.n の `StartID=CanvasLastID+1` が古い 1 のままで `lower 85 1` (BelowFrame の矩形を枠の下へ) が存在しない項目 1 を指した。Canvas ごとに見た最大の id を覚えるようにした (試験 `test_tkcanvaslastitem_keeps_counting_after_delete_all`)。
 
 ## 未確認・限界
-色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/40 §7)。比べたのは Canvas の項目の種類・数 (図の題)。 等高線の始点・向きは gs と pysad で違いうる (docs/40 §5)。`ColorFunction`・`Smoothing` は試していない。
+色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/42 §7)。比べたのは Canvas の項目の種類・数 (図の題)。等高線の始点・向きは gs と pysad で違いうる (docs/42 §5)。`ColorFunction`・`Smoothing` は試していない。

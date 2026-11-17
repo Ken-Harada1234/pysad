@@ -1,0 +1,39 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:06 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x7f18ba62a494 in ???
+#1  0x7f18ba629085 in ???
+#2  0x7f18ba045caf in ???
+#3  0x5ab2e60eefb1 in ???
+#4  0x5ab2e6346916 in ???
+#5  0x5ab2e60cb697 in ???
+#6  0x5ab2e60c145b in ???
+#7  0x5ab2e60c2144 in ???
+#8  0x5ab2e60c040e in ???
+#9  0x5ab2e60de31e in ???
+#10  0x5ab2e60b1fa9 in ???
+#11  0x5ab2e613c3c4 in ???
+#12  0x5ab2e60fe937 in ???
+#13  0x5ab2e61054a0 in ???
+#14  0x5ab2e619941f in ???
+#15  0x5ab2e61ddbac in ???
+#16  0x5ab2e61fe680 in ???
+#17  0x5ab2e618fc29 in ???
+#18  0x5ab2e60a62de in ???
+#19  0x7f18ba02a600 in ???
+#20  0x7f18ba02a717 in ???
+#21  0x5ab2e60a6334 in ???
+#22  0xffffffffffffffff in ???

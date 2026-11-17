@@ -1,0 +1,34 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:23 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ PageWidth=1999;
+ SeedRandom[5];
+ Print[SeedRandom[]];
+{"SAD",5,0,0,0}
+ Print[SeedRandom["SAD"]];
+{"SAD",5,0,0,0}
+ SeedRandom["x"];
+???System::error:  No such random plugin in SeedRandom["x"]
+ Print[SeedRandom[{"SAD", 5, 0, 0, 0}]];
+{"SAD",5,0,0,0}
+ SeedRandom[-5]; Print[SeedRandom[]];
+{"SAD",4294967291,0,0,0}
+ SeedRandom[{7}]; Print[SeedRandom[]];
+{"SAD",1,0,0,0}
+ SeedRandom[3]; g = GaussRandom[]; Print[SeedRandom[]];
+{"SAD",2306130011,1,787469756,1071741574}
+ SeedRandom[1, 2];
+???General::narg:  Number of arguments is expected to be 0 or 1 in SeedRandom[1,2]
+ 
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

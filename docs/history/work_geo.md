@@ -205,4 +205,4 @@ gx/gy/gz のみ、chi1 のみ (10°)、chi2 のみ (20°)、chi3 のみ (30°)�
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: (1) 「SOL の tsgeo は未移植」(§表と §5) は古い。11/14 に `sgeo.py` (tsgeo・tsgeo1) に翻訳した (docs/27)。ただし領域内の BEND・MULT・CAVI とずれ・傾きのある SOL の CHI1..3 (tsconv) は未対応。(2) tdgeo は `match6d.tdgeo_term` に直訳した (DRIFT の L、BEND の ANGLE・L の解析微分。他の変数は中心差分のまま。試験 `test_tdgeo.py`、経緯は work_unimpl.md「幾何の FIT (tdgeo)」)。(3) GEO のない SOL では K64 の S 座標が途切れ周長が狂うが、pysad は再現しない。(4) tgmap (MAP の幾何) は ExternalMap["GEO"] とともに未対応。根拠: `pysad/sgeo.py`・`geo.py` の更新 (11/14)、work_unimpl.md。
+- 2026-11-16 追記: (1) 「SOL の tsgeo は未移植」(§表と §5) は古い。11/14 に `sgeo.py` (tsgeo・tsgeo1) に翻訳した (docs/29)。ただし領域内の BEND・MULT・CAVI とずれ・傾きのある SOL の CHI1..3 (tsconv) は未対応。(2) tdgeo は `match6d.tdgeo_term` に直訳した (DRIFT の L、BEND の ANGLE・L の解析微分。他の変数は中心差分のまま。試験 `test_tdgeo.py`、経緯は work_unimpl.md「幾何の FIT (tdgeo)」)。(3) GEO のない SOL では K64 の S 座標が途切れ周長が狂うが、pysad は再現しない。(4) tgmap (MAP の幾何) は ExternalMap["GEO"] とともに未対応。根拠: `pysad/sgeo.py`・`geo.py` の更新 (11/14)、work_unimpl.md。

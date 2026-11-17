@@ -1,0 +1,13 @@
+FFS;
+PageWidth=1999;
+Print[ToCharacterCode["\101"]];
+Print[ToCharacterCode["\101B\60"]];
+Print[ToCharacterCode["\1234"]];
+Print[ToCharacterCode["\18"]];
+Print[ToCharacterCode["\8"]];
+Print[ToCharacterCode["\777"]];
+Print[ToCharacterCode["\x41"]];
+Print[ToCharacterCode["\xg"]];
+Print[ToCharacterCode["a\qb\e\f"]];
+
+Exit;

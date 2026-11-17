@@ -1,0 +1,20 @@
+MOMENTUM=1GEV;
+DRIFT D=(L=1);
+LINE L=(D D);
+FFS;
+k=0;
+REPEAT 5
+ k=k+1;
+UNTIL k>=3
+Print["k=",k];
+IF k==3
+ Print["then"];
+ELSE
+ Print["else"];
+ENDIF
+IF k==4
+ Print["A"];
+ELSEIF k==3
+ Print["B"];
+ENDIF
+stop;

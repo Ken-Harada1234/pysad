@@ -1,0 +1,6 @@
+A negative found none
+B 2
+C 3
+D 3
+E 4
+F 1

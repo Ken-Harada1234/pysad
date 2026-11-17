@@ -5,7 +5,7 @@
     srot[:, 0:3]  スピン歳差の 1 周行列 (srotinit で単位行列)
     srot[:, 3:9]  (x,px,y,py,z,pz) の初期座標に対する 1 周のスピン微分 (脱偏極ベクトル)
     gintd[3]      sflc·anp·(bt·h1·p/al1)² のスピン軸成分の積算 (Sokolov-Ternov の傾き)。1/sdamp が偏極時間
-K64 の癖をそのまま写している (docs/19 B55〜B57):
+K64 の癖をそのまま写している (docs/21 B55〜B57):
   - tadddsg の呼び出しは dgz に dgx を渡す (dsg は spequ でしか使わず、spequ は呼ばれないので無影響。ここでは dsg を持たない)
   - tbrote の srot 更新は列ごとに行を逐次更新する (rr·srot の行列積ではない: 2 行目が更新後の 1 行目を使う)
   - serot は c1 を更新してから c2 の更新に使う

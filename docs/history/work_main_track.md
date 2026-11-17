@@ -137,4 +137,4 @@ ActTra の `autofg` は `fmt_real`)、`Tracking end` の時間、MAIN の EMIT �
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 確認: 本文は変化なし。根拠: `pysad/maintrack.py` の更新日時は 11/06 8:45 のまま。MAIN の TRACK は MAP を恒等として通す (docs/28)。COORD・TCAVI・BEAMBEAM・MULT ANGLE≠0 などの新要素を MAIN の TRACK で通した gs との照合は未確認 (照合したのは TrackParticles。MAIN の TRACK の Fourier 解析 `wjfit/wfres/wfbin/wiord/wjdraw` は FFS から使えないので未翻訳: work_unimpl.md)。
+- 2026-11-16 確認: 本文は変化なし。根拠: `pysad/maintrack.py` の更新日時は 11/06 8:45 のまま。MAIN の TRACK は MAP を恒等として通す (docs/30)。COORD・TCAVI・BEAMBEAM・MULT ANGLE≠0 などの新要素を MAIN の TRACK で通した gs との照合は未確認 (照合したのは TrackParticles。MAIN の TRACK の Fourier 解析 `wjfit/wfres/wfbin/wiord/wjdraw` は FFS から使えないので未翻訳: work_unimpl.md)。

@@ -1,0 +1,10 @@
+???General::fileopen:  Open error for file no_such_file_xyz.csv in OpenRead["no_such_file_xyz.csv"]
+... in h=OpenRead["no_such_file_xyz.csv"]
+A h
+???General::wrongtype:  Argument must be Real number or List of two Reals in Read[h,Real]
+... in x=Read[h,Real]
+B x
+???General::wrongtype:  Argument must be Real number in Close$[h]
+... in Close[h]
+???General::fileopen:  Open error for file /no_such_dir_xyz/x.txt:
+C $Failed

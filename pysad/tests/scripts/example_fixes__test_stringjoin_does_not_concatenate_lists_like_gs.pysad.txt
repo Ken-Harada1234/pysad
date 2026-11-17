@@ -1,0 +1,7 @@
+A "CI","CL","1O"
+B Bar,"BA","BR"
+C {"a","b"}
+D x{"b",1}
+E ab3
+F abcd
+G {1.5,"b"}-

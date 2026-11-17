@@ -1,8 +1,8 @@
 """BEAMBEAM (強弱ビームのビーム・ビーム相互作用)。参照は SAD K64 (gs) の TrackParticles の出力 (全周を 5 周、200 粒子 (bs10 は 300) の 1・77・200 番目と成分ごとの和)。
-BSTRL (bs1、bs10) は SeedRandom[7] と 330 粒子以下で乱数列まで gs と一致する (330 粒子を超えると gs の乱数列が変わるので、分布だけが一致する: docs/22_beambeam.md)。
+BSTRL (bs1、bs10) は SeedRandom[7] と 330 粒子以下で乱数列まで gs と一致する (330 粒子を超えると gs の乱数列が変わるので、分布だけが一致する: docs/24_beambeam.md)。
 b6・b9 は K64 の傾き回転の癖 (cost=sin) で座標がほぼ 0 に潰れる場合 (相対 1e-6 で比べる)。
 lm* は LuminosityMonitor (シンボルの値と、利用者が定義した関数の呼び出し)。
-参照の作り方: local/wake/genbb.py で b*.sad を作り gs で実行 (docs/22_beambeam.md)。"""
+参照の作り方: local/wake/genbb.py で b*.sad を作り gs で実行 (docs/24_beambeam.md)。"""
 import io
 
 import pytest

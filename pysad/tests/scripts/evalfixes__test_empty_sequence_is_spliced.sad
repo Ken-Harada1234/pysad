@@ -1,0 +1,8 @@
+FFS;
+PageWidth=1999;
+Print["A ",If[#=="a",Null[],#]&/@{"a","b","c"}];
+Print["B ",MapThread[If[#>1,Null[#,#2],Null[]]&,{{1,2,3},{4,5,6}}]];
+Print["C ",Table[If[i==2,Null[],i],{i,4}]," ",Table[If[i==2,Null[i,i],i],{i,3}]];
+Print["D ",{1,INF,3}/.INF:>Null[]];
+Print["E ",Join[Switch[#," ",With[{o=""},o],_,Null[]]&/@Characters["ab cd"],{"x"}]];
+Exit;

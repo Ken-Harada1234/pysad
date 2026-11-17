@@ -1,0 +1,4 @@
+FFS;
+Print["A ",FromDate[]>3e9," ",FromDate[Tick->0.01]>3e9," ",FromDate[{2020,1,2,3,4,5}]];
+Print["B ",MapAt[f,a->b,{2}]];
+Exit;

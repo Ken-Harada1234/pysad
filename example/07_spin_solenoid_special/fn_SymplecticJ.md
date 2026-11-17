@@ -1,5 +1,5 @@
 # fn_SymplecticJ
-関数・07_spin_solenoid_special・ラティスなし (行列計算)
+種別: 関数 / フォルダ: 07_spin_solenoid_special / ラティス: なし (行列計算)
 
 ## 何を見る例か
 `SymplecticJ[n]` は $n\times n$ のシンプレクティック行列 $J$ (対角ブロックが $\begin{pmatrix}0&1\\-1&0\end{pmatrix}$、$n$ は偶数) を返す。転送行列 $M$ のシンプレクティック条件 $M^TJM=J$ を確かめるのに使う。

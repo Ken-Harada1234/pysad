@@ -1,6 +1,6 @@
-# 02 SAD の MAIN レベル (ラティス定義) と pysad parser.py
+# 02. SAD の MAIN レベル (ラティス定義) と pysad parser.py
 
-最終更新: 2026-11-16 (現状のスナップショット)。照合対象: `<SAD>\src` (K64 版 SAD, Fortran) と `pysad/parser.py`。SAD ソースの行番号は 2026-10 時点。
+最終更新: 2026-11-17 (現状のスナップショット)。照合対象: `<SAD>\src` (K64 版 SAD, Fortran) と `pysad/parser.py`。SAD ソースの行番号は 2026-10 時点。
 表記: 無印 = コードで確認した事実 / 「解釈」= 推論 / 「未検証」= 未確認。parser.py は改訂が続くため行番号ではなく関数名で示す。
 
 ---
@@ -23,7 +23,7 @@
 
 - `!` から行末まではコメント (gettok.f:55 `if (curc == '!') call myfflush`)。文の区切りは `;`、ブロックは `{ }` でも囲める (`doelem`/`doline` は `{` を任意で受ける)。
 - `FFS;` で ActTra に入り、FFS 内の `STOP`/`END` で MAIN に戻る。MAIN の `STOP;` (`dostop`) で SAD が終了する (bench_level12.result 末尾の `*** dostop *** Good Bye!`)。
-- 初期の `MOMENTUM` は 30 GeV (initb1.f の `RsetGL('MOMENTUM',30.d9)`。pysad も `ffscmd` で同じ既定、以前は 1 GeV としていた)。MAIN で `MOMENTUM=` を書かない台本は FFS の `USE` 以後も 30 GeV で計算される。
+- 初期の `MOMENTUM` は 30 GeV (initb1.f の `RsetGL('MOMENTUM',30.d9)`。pysad も `ffscmd` で同じ既定)。MAIN で `MOMENTUM=` を書かない台本は FFS の `USE` 以後も 30 GeV で計算される。
 - **gs の慣習**: ラティスファイル (MAIN 部のみ) と FFS スクリプトを連結して 1 本の `.sad` として `bin/gs` に渡す。本プロジェクトでは `bench_level12.sad` = `<試験用ラティス>.lat` + FFS 部であり、pysad 側は `load_sad_files(lat, script)` / `run_sad.py lattice script` が同じ連結を行う (docs/history/00_RESUME.md Level 14)。
 
 ### 1.2 `MOMENTUM=`, グローバル変数, 式と単位
@@ -35,7 +35,7 @@
 
 ### 1.3 `ON`/`OFF` 行 (doflag.f)
 
-`ON ECHO; OFF LOG;` は `$ECHO$`, `$LOG$` という整数フラグ (icFLAG) に FLAGON/FLAGOF を入れる。未定義の名前は新規フラグとして定義され "New flag … is defined." と表示される (doflag.f:36-48)。MAIN の `$RAD$ $FLUC$ $COD$ $RADCOD$ $INTRA$ $POL$ $DAPERT$ $EMIOUT$ …` は FFS 入口 (track.f:80-107、`IgetGL('$RAD$')` 等) で FFS のフラグに写される (<work-item>/mflag*.sad での実測: `OFF RAD FLUC COD RFSW RADCOD;` で RAD/FLUC/COD/RADCOD が F)。**`$RFSW$` だけは届かない**: `isynch=IgetGL('$RFSW$')` を読んだ後、FFS に入るとき `rfsw=.true.` に固定される (track.f:149)。FFS 入口の表 `RFSW RADCOD RAD …` の RFSW 列は `$RFSW$` の値 (既定 F) で、FFS の `FLAG[{"RFSW"}]` は 1。pysad: `run_sad_string`/`main_exec` は RFSW を `main_flags` (MAIN の TRACK 用) に入れ、FFS の RFSW は ON のまま (docs/history/work_zdp.md)。既定で ON の MAIN フラグは FLUC と COD。
+`ON ECHO; OFF LOG;` は `$ECHO$`, `$LOG$` という整数フラグ (icFLAG) に FLAGON/FLAGOF を入れる。未定義の名前は新規フラグとして定義され "New flag … is defined." と表示される (doflag.f:36-48)。MAIN の `$RAD$ $FLUC$ $COD$ $RADCOD$ $INTRA$ $POL$ $DAPERT$ $EMIOUT$ …` は FFS 入口 (track.f:80-107、`IgetGL('$RAD$')` 等) で FFS のフラグに写される (実測: `OFF RAD FLUC COD RFSW RADCOD;` で RAD/FLUC/COD/RADCOD が F)。**`$RFSW$` だけは届かない**: `isynch=IgetGL('$RFSW$')` を読んだ後、FFS に入るとき `rfsw=.true.` に固定される (track.f:149)。FFS 入口の表 `RFSW RADCOD RAD …` の RFSW 列は `$RFSW$` の値 (既定 F) で、FFS の `FLAG[{"RFSW"}]` は 1。pysad: `run_sad_string`/`main_exec` は RFSW を `main_flags` (MAIN の TRACK 用) に入れ、FFS の RFSW は ON のまま (docs/history/work_zdp.md)。既定で ON の MAIN フラグは FLUC と COD。
 
 ### 1.4 要素定義 (doelem.f, rdkwdl.f, rdexpr.f)
 
@@ -70,7 +70,7 @@ LINE  ARCA = (ARCAH -ARCAH2)
 `TRACK USE=RING NPART=21 TURNS=1000 NX=(1,10,20) NY=(0) NZ=(1);` は `initbl.f` が icACT として登録 (`ActTra.f` → `track.f` → `tracka.f`)。
 キーワードは USE TURNS NPART XEMI YEMI SIGS SIGE ELEC POSI PROTON RADI SPAN CENTER AFTER AXIS SYNC NX NY NZ。
 粒子 j の規格化振幅 = (x,px,y,py,z,dp) = (NX[j], 0, NY[j], 0, 0, NZ[j]) (リストは繰り返し、無ければ x=y=1, dp=0)、初期座標 = r·(振幅×(emx,emx,emx,emx,emz,emz)) + codin
-(r, codin, EMITX/Y/Z, SIGE は直前の `EMIT USE=..;` が作る古典 SAD の意味)。出力は 追跡前のフラグ一覧、損失の報告、smear の表 (SMEAR ON 既定)、tune (FFT ピーク 8 本) の表、`Tracking end:`、NX=/NY=/NZ= の確認。
+(r, codin, EMITX/Y/Z, SIGE は直前の `EMIT USE=..;` が作る古典 SAD の意味)。出力は、追跡前のフラグ一覧、損失の報告、smear の表 (SMEAR ON 既定)、tune (FFT ピーク 8 本) の表、`Tracking end:`、NX=/NY=/NZ= の確認。
 `PHSPLOTS=n;` の TopDrawer 描画は無視してよい。
 **K64 版では MAIN の EMIT は何もせず (`Use EMIT_TANCE or Emittance[] within FFS.`)、TRACK は `tinip` で SIGSEGV する**ので SAD で出力を取れない。
 pysad は `parser.parse_main_commands` (ON/OFF, EMIT, `NAME=値`, TRACK, STOP を順に読む) + `FFS.main_exec` + `maintrack.run_track` で古典の意味に実装している (SADScript で同じ手順を書いた版と一致)。
@@ -88,16 +88,16 @@ pysad は `parser.parse_main_commands` (ON/OFF, EMIT, `NAME=値`, TRACK, STOP �
 | BEND (1008-1042) | L, ANGLE, E1, E2, ROTATE, DISRAD, K1, DX, DY, K0, DISFRIN, EPS, RANKICK, F1, FRINGE, COUPLE, DROTATE, AE1, AE2, FB1, FB2, INDEX, AX, AY, LDEV, LRAD, CHI2, DZ | ANGLE [rad] = 基準座標系の偏向角 (phi0)。**K0 [rad] は追加の双極場で、磁場の偏向角は phib = ANGLE+K0** (tbend.f:565, qtwiss.f:281)。**E1/E2 は ANGLE に対する比**: 実エッジ角 psi1 = E1·ANGLE + AE1 (tffs.f:1261)。**K1 は積分値 K1·L [1/m]** (tbend.f:566-573 で tquad に渡す)。ROTATE [rad] = 設計ロール角 (tffs.f:1294 で cos/sin を取る)。DX/DY [m] 据え付けずれ。DISFRIN=0 でフリンジ有効 (tturn.f:342)。FRINGE ≤0 のとき FB1/FB2 を 0 にする (−1 で入口のみ, −2 で出口のみ残す; tffs.f:1271-1278)。F1+FB1/FB2 は有効長補正 `al −= ((φ·fb1)²+(φ·fb2)²)/al/48·sin(w/2)/sin(φ/2)` (tffs.f:1280-1284)。 |
 | QUAD (1044-1073) | L, K1, ROTATE, DX, DY, DISRAD, ACHROMA, DISFRIN, F1, F2, FRINGE, EPS, DISKIN, COUPLE, INDEX, AX, AY, LDEV, LRAD, F1K1F… | **K1 は積分値 K1·L [1/m]**: `akk = K1/al` (tffs.f:1316)、L=0 なら薄レンズ強度 (tquad.f:22-24)。ROTATE [rad] (tffs.f:1312)。 |
 | SEXT/OCT/DECA/DODECA (1076-1106, THIN 共通) | L, K2/K3/K4/K5 (同じスロット `ky_K_THIN`), ROTATE, DX, DY, DISRAD, DISFRIN, COUPLE, INDEX, AX, AY, LDEV, LRAD | K は積分値 (tthine で K/fact(n)/2 のキック; Level 3A で SAD の色収差と一致, docs/history/00_RESUME.md)。 |
-| MULT (1110-) | L, DX, DY, DZ, CHI1, CHI2, CHI3=ROTATE, EPS, DISRAD, DISFRIN, F1, F2, FRINGE, VOLT, DVOLT, HARM, PHI, FREQ, COUPLE, ANGLE(23), K0..K21 (30,32,…), SK0..SK21 (31,33,…) | K_n の単位は未検証 (解釈: 積分値。tffs.f:1440 の分割数推定は K/al を使う)。ANGLE≠0 (曲げつき多極) の追跡・Twiss・Emittance[] は docs/26 のとおり gs と一致 (BZ・RF・F1・SK0・FB1/FB2 を伴う Twiss は未対応)。回転キーワードは `ROTATE` (`ROTATION` は gs で Undefined keyword)、`CHI2`・`TAPER` も読む。 |
-| SOL (1239-1258) | L, BZ, DX, DY, DZ, DPX, DPY, BOUND, CHI1-3, GEO, F1, DBZ, COUPLE, DISFRIN, DISRAD, FLAT | BZ [T]。BOUND≠0 から次の BOUND≠0 までが領域で、領域内は tsole1 の写像 (docs/27)。K64 は BOUND≠0 の SOL の長さを周長に入れない (pysad の `emit6d._emit_circ`、追跡の circ も同じ)。領域内の BEND・MULT・CAVI は未対応。 |
+| MULT (1110-) | L, DX, DY, DZ, CHI1, CHI2, CHI3=ROTATE, EPS, DISRAD, DISFRIN, F1, F2, FRINGE, VOLT, DVOLT, HARM, PHI, FREQ, COUPLE, ANGLE(23), K0..K21 (30,32,…), SK0..SK21 (31,33,…) | K_n の単位は未検証 (解釈: 積分値。tffs.f:1440 の分割数推定は K/al を使う)。ANGLE≠0 (曲げつき多極) の追跡・Twiss・Emittance[] は docs/28 のとおり gs と一致 (BZ・RF・F1・SK0・FB1/FB2 を伴う Twiss は未対応)。回転キーワードは `ROTATE` (`ROTATION` は gs で Undefined keyword)、`CHI2`・`TAPER` も読む。 |
+| SOL (1239-1258) | L, BZ, DX, DY, DZ, DPX, DPY, BOUND, CHI1-3, GEO, F1, DBZ, COUPLE, DISFRIN, DISRAD, FLAT | BZ [T]。BOUND≠0 から次の BOUND≠0 までが領域で、領域内は tsole1 の写像 (docs/29)。K64 は BOUND≠0 の SOL の長さを周長に入れない (pysad の `emit6d._emit_circ`、追跡の circ も同じ)。領域内の BEND・MULT・CAVI は未対応。 |
 | CAVI (1268-1295) | L, VOLT, DVOLT, HARM, PHI, FREQ, RANVOLT, RANPHASE, LWAKE, TWAKE, DX, DY, ROTATE, V1, V20, V11, V02, COUPLE, DPHI, DISFRIN, FRINGE, AX, AY, LDEV, AUTOPHI | VOLT [V], FREQ [Hz], PHI [rad] (**既定 0**: ゼロクリア)。波数 `w = 2π·FREQ/c` (HARM=0) または `ω0·HARM/c`、`ω0 = 2π c p0/h0/C` (tffs.f:1452-1454, tfsetparam.f:124) → FREQ = HARM·βc/C。 |
 | MARK (1512-1556) | AX, BX, PSIX, AY, BY, PSIY, EX, EPX, EY, EPY, R1-R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, PSIZ, ZX, ZPX, ZY, ZPY, DP(29), OFFSET, SIGZ, SIGE, GEO, JDX…, EMITX(40), EMITY, EMITZ, COUPLE | 先頭 1..28 は FFS の mfit 順と同じ (ky_AX_Mark=1; tffsmatch.f:133 `rlist(latt(1)+mfitddp)`)。`tffsinitparam` (tffs.f:2904-2965): 先頭 MARK の EMITX/EMITY/EMITZ/SIGE/SIGZ が >0 ならグローバルを上書き、DP ≤0 なら `DP` 変数 → それも 0 なら 0.01、BX/BY/BZ ≤0 なら 1。 |
 | MONI (1576-1582) | DX, DY, OFFSET, COUPLE, ROTATE | **L なし** (L を書くとエラー)。 |
-| TCAVI (docs/24) | L, K0 (偏向の強さ)、FREQ/HARM、PHI、DX、DY、ROTATE、RAD、RANKICK、RANPHASE | 横偏向空洞。RFSW OFF では長さ L のドリフト。追跡は RANKICK・RANPHASE 未対応。 |
-| UND (docs/25) | L, KX, QY, POLE, SLICE, PHI | **K64 は磁場のキーワード (FBX など) が Undefined keyword になり設定できない** (B37)。磁場なしのドリフトとして動く。 |
-| COORD (docs/23) | DX, DY, DZ, CHI1, CHI2, CHI3, DIR | 座標変換 (ずれと回転)。DIR≠0 は逆変換。長さを持たない。 |
-| MAP (docs/28) | L (K64 は使わない) | `ExternalMap[...]` で写像をユーザーが与える。定義が無ければ恒等で長さ 0。 |
-| BEAMBEAM (docs/22) | AX BX AY BY, R1..R4, EMIX EMIY, DP, SIGZ, XANGLE, SLICE, NP, BSTRL など | 強弱ビームのビーム・ビーム。追跡のみ (光学には効かない)。 |
+| TCAVI (docs/26) | L, K0 (偏向の強さ)、FREQ/HARM、PHI、DX、DY、ROTATE、RAD、RANKICK、RANPHASE | 横偏向空洞。RFSW OFF では長さ L のドリフト。追跡は RANKICK・RANPHASE 未対応。 |
+| UND (docs/27) | L, KX, QY, POLE, SLICE, PHI | **K64 は磁場のキーワード (FBX など) が Undefined keyword になり設定できない** (B37)。磁場なしのドリフトとして動く。 |
+| COORD (docs/25) | DX, DY, DZ, CHI1, CHI2, CHI3, DIR | 座標変換 (ずれと回転)。DIR≠0 は逆変換。長さを持たない。 |
+| MAP (docs/30) | L (K64 は使わない) | `ExternalMap[...]` で写像をユーザーが与える。定義が無ければ恒等で長さ 0。 |
+| BEAMBEAM (docs/24) | AX BX AY BY, R1..R4, EMIX EMIY, DP, SIGZ, XANGLE, SLICE, NP, BSTRL など | 強弱ビームのビーム・ビーム。追跡のみ (光学には効かない)。 |
 | PHSROT | (K64 で動作しない: B38) | 行列が全部 0、PX PY PZ が指定できない。pysad は読むが追跡は NotImplementedError。 |
 | INS | (領域の区切り) | INS を含むリングの `Emittance[]` のチューン (相対 1e-15)・`TrackParticles` (1e-13) は gs と一致を 2026-11-16 に確認 (3 セルのリング、BEND E1・E2 付き)。 |
 
@@ -130,11 +130,11 @@ pysad は `parser.parse_main_commands` (ON/OFF, EMIT, `NAME=値`, TRACK, STOP �
 | SEXT K2 / OCT K3 / DECA K4 | `Sextupole(K2/L)`, `Octupole(K3/L)`, `Decapole(K4/L)` | 積分値 → 長さあたり (L=0 ならそのまま) |
 | CAVI VOLT, FREQ, HARM | `Cavity(VOLT, FREQ)` + `_harm` | FREQ=0 かつ HARM>0 なら `_harm` を記録 → build_lattice で FREQ = HARM·c/C。物理計算 (emit6d.py, track6.py) は `_harm` と ω0 から SAD と同じ `w` を作るので β=1 近似の FREQ は使われない。 |
 | MONI / MARK | `Monitor(L)`, `Marker()` | MARK の Twiss キーワード (BX, AX, EMITX, DP, …) は `_raw` と `env._elements` に残り、ffscmd/ffs が参照する。 |
-| MULT | `Multipole(L)` | `_apply_extra_params` が K0..K21 を `KnL`、SK0..SK21 を `KsL` に、ANGLE・E1・E2・VOLT・FREQ・PHI・HARM・BZ・DVOLT・DPHI・AUTOPHI・CHI2・TAPER を属性に渡す (ANGLE≠0 は docs/26)。 |
-| SOL | `Solenoid(L)` | BZ・BOUND・GEO・DPX・DPY・DX・DY・DISFRIN・DBZ を属性に渡す。領域の扱いは docs/27。 |
+| MULT | `Multipole(L)` | `_apply_extra_params` が K0..K21 を `KnL`、SK0..SK21 を `KsL` に、ANGLE・E1・E2・VOLT・FREQ・PHI・HARM・BZ・DVOLT・DPHI・AUTOPHI・CHI2・TAPER を属性に渡す (ANGLE≠0 は docs/28)。 |
+| SOL | `Solenoid(L)` | BZ・BOUND・GEO・DPX・DPY・DX・DY・DISFRIN・DBZ を属性に渡す。領域の扱いは docs/29。 |
 | TCAVI / UND / PHSROT / MAP / COORD / BEAMBEAM | `TCavity` / `Undulator` / `PhsRot` / `Map` / `Coord` / `BeamBeam` | 数値キーワードを全部 `params` に入れる (DX 等は誤差の属性にせず変換のパラメータ。`_apply_extra_params` は何もしない)。PhsRot・Map・Coord・BeamBeam は Marker の派生 (長さ 0)。 |
 | 不明な型 (SPCH、PROF、TEST など) | `Drift(L)` | キーワードは無視 (SPCH・PROF の物理は未翻訳。11/16 に K64 のソースで確認: tturn.f:521 の `case (icSPCH)` が PSPAC フラグのとき `tpspac` を呼ぶので SPCH は K64 では物理を持つが pysad は未翻訳。PROF は K64 のソースに現れない) |
-| BEAMBEAM を含むリング (補足) | Marker 扱い | 11/16 に gs と比較: Twiss のチューン 1e-14、運動量収縮 4e-12 で一致 (`local/wake/v4.sad`)。`STURN`・`COUPLE` は K64 のソースでキーワードの登録 (initb1.f) 以外に参照がなく使われない |
+| BEAMBEAM を含むリング (補足) | Marker 扱い | 11/16 に gs と比較: Twiss のチューン 1e-14、運動量収縮 4e-12 で一致。`STURN`・`COUPLE` は K64 のソースでキーワードの登録 (initb1.f) 以外に参照がなく使われない |
 
 ### 3.3 既知の制限・SAD との差 (2026-11-16 に確認)
 

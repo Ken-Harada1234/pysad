@@ -24,9 +24,9 @@ Print["R:ybump=",Twiss["DY","BA5"]];
 | BA1 の $y$ (補正前 → 後) | -7.8194e-6 → -7.8075e-6 | -7.8194e-6 → -7.8075e-6 |
 | BA10 の $y$ (補正前 → 後) | 9.6899e-6 → 9.7066e-6 | 9.6899e-6 → 9.7066e-6 |
 
-- **○ 一致**。バンプの高さは目標の 1 mm に一致 (1.0000141e-3)。範囲の外側の BPM はバンプの約 1% しか動かず、ほぼ閉じている。使ったステアラは 12 本 (gs・pysad とも)。下位 1〜2 桁 (1e-17 程度) の雑音の差だけ。
-- 以前の pysad は `???Set: list assignment length mismatch` で失敗した。`b=Bump[…]` は `bump.n` の `(a_=Bump[…])^:=…` (Set の UpValue) で、pysad は (1) `Bump` を自動読み込みの表に持たず、(2) 読み込んだ UpValue を組み込みの `Set` の定義として捨てていた。直した (docs/32、`work_example_fixes_20261117.md`)。
-- gs の `Element values are not expanded` の注意は `CALC NOEXP` を内部で使うため (docs/32)。pysad も同じ文を出す。
+- **○ 一致**。バンプの高さは目標の 1 mm に一致 (1.0000141e-3)。範囲の外側の BPM はバンプの約 1% しか動かず、ほぼ閉じている。使ったステアラは 12 本 (gs・pysad とも)。差は下位の桁 ($10^{-17}$ 程度) の雑音だけ。
+- 以前の pysad は `???Set: list assignment length mismatch` で失敗した。`b=Bump[…]` は `bump.n` の `(a_=Bump[…])^:=…` (Set の UpValue) で、pysad は (1) `Bump` を自動読み込みの表に持たず、(2) 読み込んだ UpValue を組み込みの `Set` の定義として捨てていた。直した (docs/34、`work_example_fixes_20261117.md`)。
+- gs の `Element values are not expanded` の注意は `CALC NOEXP` を内部で使うため (docs/34)。pysad も同じ文を出す。
 
 ## 未確認・限界
 `Bump` の `Center`・`NumberOfSteers` の形 (3 バンプなど)、`CorrectOrbit` の `Bump->` オプション、水平のバンプは試していない。使ったステアラ 12 個の内訳 (水平・垂直) も見ていない。

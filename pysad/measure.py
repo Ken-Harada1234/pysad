@@ -1,7 +1,7 @@
 """
 MEASURE / DRAW / TRCOD の統計の部品 (tlum.f)。K64 の tlum / tluma の直訳 (ルミノシティの推定: 二つのビームの粒子数の分布の重なり)。
 ttstat.f (MEASURE の統計) から呼ばれる。FFS のコマンドとしての MEASURE / TRCOD (tracke.f、ttinit.f、ttstat.f、trcoda.f) は
-gs が動かない (MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる: docs/19 B42) ので、翻訳していない (参照が取れない)。
+gs が動かない (MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる: docs/21 B42) ので、翻訳していない (参照が取れない)。
 bin は real*4 (K64 の `real*4 bin(2,0:nmesh,0:nmesh), alum`)。足し込みは単精度に丸める。
 """
 from __future__ import annotations

@@ -1,0 +1,7 @@
+FFS;
+PageWidth=1999;
+g=ListPlot[{1,4,9,16},PlotJoined->True];
+Print["A ",Head[g]," ",Length[g]];
+h=Plot[Sin[x],{x,0,6}];
+Print["B ",Head[h]," ",Length[h]];
+Exit;

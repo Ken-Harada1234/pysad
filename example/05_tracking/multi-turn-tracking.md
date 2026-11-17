@@ -1,8 +1,8 @@
 # multi-turn-tracking
-SADHelp の項目 (多周回追跡)・05_tracking・ラティス `00_lattice/FODO_ring_V4MV.sad`・`RFSW; RAD; EMIT; NORAD; NORFSW`
+種別: SADHelp の項目 (多周回追跡) / フォルダ: 05_tracking / ラティス: `00_lattice/FODO_ring_V4MV.sad` (RF 4 MV、3 GeV) / フラグ: `RFSW; RAD; EMIT; NORAD; NORFSW`
 
 ## 何を見る例か
-SADHelp の multi-turn-tracking: 多周回追跡 (`TrackParticles`、`DynamicApertureSurvey`) は閉軌道・規格化座標・平衡エミッタンスを使うので、先に `EMIT` (または `Emittance[]`) を 1 回行う。ここでは EMIT で得た `EMITX` を使って、水平 $n\sigma$ ($\sigma=\sqrt{\mathrm{EMITX}\,\beta_x}$) の粒子を 200 周追跡し、毎周の規格化座標から位相の進み (チューン) と不変量のばらつき (smear) を出す。振幅を大きくするとチューンが変わる (振幅依存性) ことを見る。
+SADHelp の multi-turn-tracking の項目。多周回追跡 (`TrackParticles`、`DynamicApertureSurvey`) は閉軌道・規格化座標・平衡エミッタンスを使うので、先に `EMIT` (または `Emittance[]`) を 1 回実行する。ここでは、EMIT で得た `EMITX` を使い、水平 $n\sigma$ ($\sigma=\sqrt{\mathrm{EMITX}\,\beta_x}$) の粒子を 200 周追跡する。毎周の規格化座標から、位相の進み (チューン) と不変量のばらつき (smear) を出す。振幅を大きくするとチューンが変わる (振幅依存性) ことを見る。
 
 ## スクリプト
 ```
@@ -39,7 +39,7 @@ MAIN レベルの `TRACK USE=… NX=… NY=…` 文 (`ActTra.f`) は K64 では�
 | 20σ | 0.01484 | 0.01489 |
 | 30σ | 0.03339 | 0.03374 |
 
-(1σ の追跡値 0.696366−0.696329=$3.7\times10^{-5}$ から $\kappa$ を決め、10σ の値は $\kappa\times100$ と比べた。10σ が 0.00370 と一致するのは 2 次の依存性の確認、20σ・30σ は 4 次以上の項で 1% 程度ずれる。) smear は振幅に比例してほぼ線形に増える (解析式は用意していない)。
+(1σ の追跡値 0.696366−0.696329=$3.7\times10^{-5}$ から $\kappa$ を決め、10σ の値は $\kappa\times100$ と比べた。10σ で 0.00370 と一致するので、2 次の依存性が確認できる。20σ・30σ は 4 次以上の項のため、式と 0.3%、1% ずれる。) smear は振幅に比例してほぼ線形に増える (解析式は用意していない)。
 
 ## gs と pysad の比較
 ○ 一致 (全 5 行が印字桁まで同じ)。

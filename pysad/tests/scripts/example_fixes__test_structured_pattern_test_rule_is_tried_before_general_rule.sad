@@ -1,0 +1,6 @@
+FFS;
+l1={{1,2},{3,4},{5,6}};
+g[pr_,{f_}?(Length[Dimensions[#]]>=3&),opt___]:=(Print["U"];g[pr,f,opt]);
+g[{p1_,p2_},f_,opt___]:=Print["G ",Length[f]];
+g[{1,2},{l1},PlotColor->"red"];
+Exit;

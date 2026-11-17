@@ -1,0 +1,82 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:24 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! bench_level29a2.sad -- RADINT: 小リング (E1/E2 付き BEND、RF なし/あり、結合) 13a のラティス
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF  = (L=0.3 K1= 1.8*0.3)
+      QD  = (L=0.3 K1=-1.7*0.3)
+      QF2 = (L=0.3 K1= 1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL2 = (ORG QF2 DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELLP = (CELL CELL2);
+LINE RING  = (10*CELLP);
+;
+CAVI RFC = (VOLT=2e6 HARM=300);
+LINE RING2 = (RING RFC);
+;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING2;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654735 $$$       f BX    #######  #  17.037700 $$$       f NX    #######  #   7.421023
+$$$       f AY    #######  #    .420675 $$$       f BY    #######  #    .960619 $$$       f NY    #######  #   7.157653
+$$$       f LENG  #######  #  140.00000
+ EMIT;
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -8.1E-17  -1.9E-17  9.64E-32  -1.1E-31  -1.4E-17   .000000
+      Exit :  3.23E-16  9.71E-17  7.25E-32  -2.5E-31  3.28E-18  4.44E-20
+
+    Extended Twiss Parameters
+AX: -4.65718 BX: 17.04661                            ZX: -.004670  EX:  .919732
+           PSIX: 2.10E-18                           ZPX: -.001209 EPX: -3.4E-16
+R1: -5.5E-16 R2: 9.00E-16 AY:  .420675 BY:  .960619  ZY: 2.22E-18  EY: -3.4E-16
+R3: 1.82E-15 R4: -6.4E-15            PSIY: 6.33E-35 ZPY: -4.0E-18 EPY: 8.93E-17
+                                                     AZ: -.092644  BZ: 18.28666
+                                                                 PSIZ: -2.5E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 2141374.6 Hz 
+Energy loss per turn U0 =  .6785008 MV  Effective voltage    Vc = 2.0000000 MV 
+Equilibrium position dz = 25.707124 mm  Momentum compact. alpha =  .0240645
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 300.00000
+Bucket height     dV/P0 =  .0060871     Synchrotron frequency   = 62968.277 Hz 
+
+  Imag.tune:-0.0000000           0.0000000          -0.0000000
+  Real tune: 0.4209834           0.1576531          -0.0294055
+
+    Damping per one revolution:
+          X : -1.505248E-04   Y : -1.356530E-04   Z : -2.564953E-04
+    Damping time (sec):
+          X :  3.102410E-03   Y :  3.442531E-03   Z :  1.820656E-03
+    Tune shift due to radiation:
+          X :  1.407689E-06   Y :  2.961292E-07   Z :  7.935851E-09
+    Damping partition number:
+          X :    1.1095       Y :    0.9999       Z :    1.8906
+
+Emittance X            = 1.39814E-7 m   Emittance Y            = 3.4149E-37 m
+Emittance Z            = 1.73192E-5 m   Energy spread          = 9.77388E-4
+Bunch Length           = 17.7971156 mm  Beam tilt              = 4.0457E-15 rad
+Beam size xi           = 1.78456152 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+ In[2]:=  ???-getbuf-end of input stream

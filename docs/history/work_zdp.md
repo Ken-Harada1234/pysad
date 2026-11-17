@@ -29,7 +29,7 @@ MAIN の TRACK (bench_level27a/b_main.sad) は `ON RFSW;` を書いているの�
 - `pysad/ffscmd.py`: `fn_track` (書き直し)、`main_flags` (`__init__`)、`main_exec` と `run_sad_string` の RFSW の扱い。
 - `pysad/track6n.py` `track_particles_fast(..., circ=None)`、`pysad/track6.py` `track_particles(..., circ=None)`。
 - `pysad/maintrack.py`: RFSW を `main_flags` から。
-- docs: 02_lattice_main.md §1.3 (MAIN の ON/OFF が FFS に届く範囲)、03_ffs_commands.md (TrackParticles)、19_sad_bug_report.md B30、00_RESUME.md。
+- docs: 02_lattice_main.md §1.3 (MAIN の ON/OFF が FFS に届く範囲)、03_ffs_commands.md (TrackParticles)、21_sad_bug_report.md B30、00_RESUME.md。
 
 
 ## 2026-11-16 の確認・追記

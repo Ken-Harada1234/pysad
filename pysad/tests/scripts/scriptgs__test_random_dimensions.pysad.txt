@@ -1,0 +1,7 @@
+{2,3}{2,3,4}{}{{},{},{}}{3,2,2}
+{2,3}{2,3}{}
+1
+???General::wrongnum:  Number must be positive or 0 in Random[-1]
+... in Print[Random[-1]]
+???General::wrongtype: Argument must be Real numbers in Random[{2,3}]
+... in Print[Random[{2, 3}]]

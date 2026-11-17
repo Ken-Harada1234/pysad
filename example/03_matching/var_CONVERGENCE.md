@@ -43,4 +43,4 @@ DP0 = 0.001;   CALC;
 
 ## 未確認・限界
 - `ExponentOfResidual`、`OffMomentumWeight` を変えた GO は未確認 (オフモメンタム条件がある FFS_FITPOINTS の設定で変えると効くはず)。
-- `MAXITERATION` の効き (反復が上限で止まるケース) は、反復が多く必要な問題で未確認。`TRPT`・`SIGE` など、マッチング以外の特殊変数は 04 以降の担当。
+- `MAXITERATION` の効き (反復が上限で止まるケース) は、反復が多く必要な問題で未確認。`TRPT`・`SIGE` など、マッチング以外の特殊変数は 04_emittance_radiation 以降の例で扱う。

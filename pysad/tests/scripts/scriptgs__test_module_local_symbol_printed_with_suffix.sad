@@ -1,0 +1,4 @@
+FFS;
+PageWidth=1999;
+Print["A ", Module[{t}, t]];
+Exit;

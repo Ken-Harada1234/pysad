@@ -1,0 +1,17 @@
+FFS;
+PageWidth=1999;
+f3[l_List] := Module[{r = 0}, Scan[If[# < 0, Return["negative found"]] &, l]; "none"];
+Print["A ", f3[{1, -1}], " ", f3[{1, 2}]];
+f4[] := (Map[If[# == 2, Return[#]] &, {1, 2, 3}]; "after");
+Print["B ", f4[]];
+f5[] := (Do[If[i > 2, Return[i]], {i, 5}]; "after");
+Print["C ", f5[]];
+f6[] := ((Return[3] &)[1]; 4);
+Print["D ", f6[]];
+g[] := Return[7];
+f7[] := (g[]; 4);
+Print["E ", f7[]];
+h[] := (Module[{}, Return[1]]; 2);
+Print["F ", h[]];
+
+Exit;

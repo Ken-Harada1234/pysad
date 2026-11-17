@@ -1,0 +1,54 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:10 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+MAP P1 = (L=0.2);
+MARK ST = ();
+LINE BL = (ST QF DR P1 DR2 QD DR P1 DR);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE BL;
+Out[1]:= USE
+ TRPT; INS; NORAD; NOFLUC;
+ n = 20;
+ x0  = Table[1e-3*Sin[0.37*i], {i, n}];
+ px0 = Table[1e-5*Cos[0.11*i], {i, n}];
+ y0  = Table[1e-3*Cos[0.23*i], {i, n}];
+ py0 = Table[1e-5*Sin[0.71*i], {i, n}];
+ z0  = Table[0.01*Sin[0.13*i]+1e-4*i-0.01, {i, n}];
+ dp0 = Table[1e-3*Cos[0.31*i], {i, n}];
+ fl0 = Table[1, {i, n}];
+ ExternalMap["TRACK", LINE["POSITION","P1"], nt_, x_] := (Print["MAPA ", nt, " ", Length[x[[1]]], " ", Plus@@x[[1]], " ", Plus@@x[[7]]];
+   {x[[1]]*0.9+1e-4, x[[2]]+2e-5, x[[3]], x[[4]]*1.1, x[[5]], x[[6]], x[[7]]});
+ ExternalMap["TRACK", LINE["POSITION","P1.2"], nt_, x_] := (Print["MAPB ", nt, " ", Length[x[[1]]], " ", Plus@@x[[1]], " ", Plus@@x[[7]]];
+   {x[[1]], x[[2]], x[[3]], x[[4]], x[[5]], x[[6]], If[Abs[#]<1.2e-3,1,0]&/@x[[1]]});
+ r = TrackParticles[{1, {x0, px0, y0, py0, z0, dp0, fl0}}, 10, 1, 4];
+MAPA 1 20 .0007244572433262667 20
+MAPB 1 20 .002750226764543056 20
+MAPA 2 20 .0016109970242288055 20
+MAPB 2 20 .0031896297262501176 20
+MAPA 3 20 -.0016161574953568244 16
+MAPB 3 20 .0032850078720438203 16
+MAPA 4 20 .00405920137659319 20
+MAPB 4 20 .007081826474673882 20
+ $FORM = "16.10";
+ res = r[[2]];
+ Do[Print[k, " ", Plus@@res[[k]], " ", res[[k, 1]], " ", res[[k, 7]], " ", res[[k, 20]]], {k, 7}];
+    1.0000000000      .0088177573  4.7840973948E-4  7.3524242822E-4      .0013525168
+    2.0000000000      .0017371436  9.1177348133E-5  1.5043571838E-4  2.9335671473E-4
+    3.0000000000      .0013428423     -.0011457198  4.5490737252E-5  1.3333826213E-4
+    4.0000000000  6.2701984991E-6  -2.682971047E-5  1.2515344479E-5  -1.021616653E-5
+    5.0000000000     -.0383242336     -.0086051241     -.0014052117     -.0028459803
+    6.0000000000      .0025284101  9.5233356989E-4  -5.639850576E-4  9.9654209702E-4
+    7.0000000000    20.0000000000     1.0000000000     1.0000000000     1.0000000000
+ Exit;
+ FFS                  end:  CPU time =     0.003 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

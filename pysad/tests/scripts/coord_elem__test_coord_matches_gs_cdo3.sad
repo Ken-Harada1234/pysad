@@ -1,0 +1,14 @@
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+BEND B = (L=1 ANGLE=0.1 E1=0.05 E2=0.05);
+COORD CO = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03);
+MARK ST = ();
+LINE BL = (ST QF DR B DR CO DR2 QD DR B DR);
+FFS;
+USE BL;
+INS; CALC;
+$FORM = "16.10";
+Do[Print[k, " ", Twiss["BX",k], " ", Twiss["BY",k], " ", Twiss["NX",k], " ", Twiss["R1",k]," ", Twiss["R3",k], " ", Twiss["EX",k], " ", Twiss["DX",k], " ", Twiss["DY",k]], {k, 1, 12}];
+Do[Print[k, " ", LINE["GX",k], " ", LINE["GY",k], " ", LINE["GZ",k], " ", LINE["GCHI1",k], " ", LINE["GCHI2",k], " ", LINE["GCHI3",k]], {k, 1, 12}];
+Exit;

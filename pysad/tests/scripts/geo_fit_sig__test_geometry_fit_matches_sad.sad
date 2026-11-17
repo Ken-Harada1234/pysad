@@ -1,0 +1,26 @@
+
+MOMENTUM = 1GEV;
+DRIFT D1 = (L=1) D2 = (L=2) D3 = (L=1.5);
+BEND B1 = (L=1 ANGLE=0.3 E1=0.15 E2=0.15) B2 = (L=1 ANGLE=-0.2 E1=-0.1 E2=-0.1) B3 = (L=0.5 ANGLE=0.1 ROTATE=90 DEG);
+QUAD QF = (L=0.3 K1=1) QD = (L=0.3 K1=-1);
+MARK M1 = (BX=5 BY=5) M2 = ();
+LINE L1 = (M1 D1 QF D2 B1 D3 QD D1 B3 D2 B2 D1 M2);
+FFS;
+USE L1;
+INS;
+CALC;
+$FORM = "20.15";
+
+fit M2 GX 11.5;
+fit M2 GZ -0.5;
+free D2 L;
+free D3 L;
+go;
+r1 = {LINE["GX","$$$"], LINE["GY","$$$"], LINE["GZ","$$$"], LINE["L","D2"], LINE["L","D3"]};
+fit;
+fit $$$ CHI1 6;
+fit $$$ CHI3 1.2;
+free B3 ANGLE;
+free B2 ANGLE;
+go;
+r2 = {LINE["GCHI1","$$$"], LINE["GCHI2","$$$"], LINE["GCHI3","$$$"], LINE["ANGLE","B3"], LINE["ANGLE","B2"]};

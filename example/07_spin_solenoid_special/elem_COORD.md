@@ -1,5 +1,5 @@
 # elem_COORD
-要素・07_spin_solenoid_special・ラティス `00_lattice/coord_ring.sad` (新規: FODO_ring に COORD 要素を入れた RINGC、RINGC3、RINGCP)、3 GeV、`NORFSW NORAD NOFLUC`。参考: `docs/23_coord.md`
+種別: 要素 / フォルダ: 07_spin_solenoid_special / ラティス: `00_lattice/coord_ring.sad` (新規。`FODO_ring.sad` に COORD 要素を入れた `RINGC`、`RINGC3`、`RINGCP`)。3 GeV / フラグ: `NORFSW NORAD NOFLUC`。参考: `docs/25_coord.md`
 
 ## 何を見る例か
 `COORD` は座標系を変える要素 (ずらし `DX DY DZ`、回転 `CHI1 CHI2 CHI3`)。(1) 1 要素の変換を解析式と照合、(2) COORD で挟んだ (座標系ごとずらした) リングと、COORD の直後に逆変換を置いたリングの違いを確かめる。

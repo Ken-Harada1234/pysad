@@ -1,0 +1,24 @@
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5);
+QUAD QF = (L=0.3 K1=1.2) QD = (L=0.3 K1=-1.1);
+SEXT SF = (L=0.1 K2=3) SD = (L=0.1 K2=-4);
+MARK MK = ();
+LINE CELL = (MK QF D SF D QD D SD D)
+     N2 = (CELL CELL)
+     TEST = (-N2 2*CELL)
+     RING = (8*CELL);
+FFS;
+USE RING;
+CELL;
+CALC;
+qlist = {QF, QD};
+slist = {SF, SD};
+k1 = Table[LINE["K1", qlist[i]], {i, 1, Length[qlist]}];
+k2 = Table[LINE["K2", slist[i]] * 2, {i, 1, Length[slist]}];
+bx = Twiss["BX", QF];
+bxs = Twiss["BX", "QF"];
+el = Element["K1", QD];
+USE TEST;
+INS;
+CALC;

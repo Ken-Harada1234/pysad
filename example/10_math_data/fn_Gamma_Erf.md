@@ -1,6 +1,5 @@
 # fn_Gamma_Erf (Gamma 族と誤差関数)
-
-種別: 関数 (SADHelp functions の Special-functions)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (SADHelp functions の Special-functions) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 `Gamma`、`LogGamma`、`LogGamma1`、`Factorial`、`Erf`、`Erfc`、`InverseErf`、`GammaRegularized`・`GammaRegularizedP`・`GammaRegularizedQ`、`Beta` の実数値と、複素引数の `Gamma`・`Erf`。
@@ -26,7 +25,7 @@ $\mathrm{erf}\,x=\frac2{\sqrt\pi}\int_0^xe^{-t^2}dt$、$\mathrm{erfc}=1-\mathrm{
 | $\Gamma(5)=24$ | 24 | 24 | 24 | 0.0e+00 | 0.0e+00 |
 | $\Gamma(-3/2)=\frac{4\sqrt\pi}3$ | 2.36327180121 | 2.363271801207355 | 2.363271801207354 | 0.0e+00 | 3.8e-16 |
 | LogGamma[10.5] = $\ln\Gamma(10.5)$ | 13.9406252194 | 13.94062521940376 | 13.94062521940376 | 2.5e-16 | 2.5e-16 |
-| LogGamma1[10.5] = $\ln\Gamma(11.5)$ (出力から推定した定義) | 16.2920004766 | 16.29200047656724 | LogGamma1[10.5] | 2.2e-16 | - |
+| LogGamma1[10.5] = $\ln\Gamma(11.5)$ (出力から推定した定義) | 16.2920004766 | 16.29200047656724 | 16.29200047656724 | 2.2e-16 | 2.2e-16 |
 | Factorial[5.5] = $\Gamma(6.5)$ | 287.885277815 | 287.8852778150444 | 287.8852778150444 | 2.0e-16 | 2.0e-16 |
 | Factorial[5] = 120 | 120 | 120 | 120 | 0.0e+00 | 0.0e+00 |
 | Erf[.5] | 0.520499877813 | .520499877813047 | .520499877813047 | 8.5e-16 | 8.5e-16 |
@@ -44,7 +43,7 @@ $\mathrm{erf}\,x=\frac2{\sqrt\pi}\int_0^xe^{-t^2}dt$、$\mathrm{erfc}=1-\mathrm{
 - 14 値は 15 桁一致 (○。`Gamma[-1.5]` だけ末尾 1 桁違い)。
 - `LogGamma1[10.5]` = 16.29200047656724 は gs と一致 (○。2026-11-17 に対応。`LogGamma1[x]=LogGamma[x+1]`、負の引数の複素数の虚部も gs と同じ)。
 - 複素引数の `Gamma`・`Erf` は一致。
-- `InverseErf[.5]` は gs・pysad とも真値と相対 1e-8 ずれる (K64 の近似の誤差を pysad が同じに再現している。docs/31)。
+- `InverseErf[.5]` は gs・pysad とも真値と相対 1e-8 ずれる (K64 の近似の誤差を pysad が同じに再現している。docs/33)。
 
 ## 未確認・限界
 `Gamma` の極 (0、負の整数)、大きな引数、`GammaRegularized` の端の値は試していない。複素数の参照値は教科書値で、桁数は 10 桁までしか確かめていない。

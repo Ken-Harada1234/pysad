@@ -189,4 +189,4 @@ AccelerateParticles の落ちた粒子: SAD は周ごとに TrackParticles を�
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: 本文は変化なし。TRPT の放射の分割 (ndivrad ×10、四極の分割 gs 4) を gs に合わせた (work_unimpl.md、docs/22 §4)。加速のある CAVI (tcav の vnominal) と RF のある MULT (tmultiacc) の追跡は docs/21 §2a・2b。TCAVI の追跡は docs/24。
+- 2026-11-16 追記: 本文は変化なし。TRPT の放射の分割 (ndivrad ×10、四極の分割 gs 4) を gs に合わせた (work_unimpl.md、docs/24 §4)。加速のある CAVI (tcav の vnominal) と RF のある MULT (tmultiacc) の追跡は docs/23 §2a・2b。TCAVI の追跡は docs/26。

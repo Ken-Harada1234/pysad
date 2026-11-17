@@ -1,0 +1,10 @@
+A 1
+B Rational[7,6]
+C Rational[2,9]
+D Rational[-1,3]
+E 3
+F Rational[2.5,3]
+H Rational[1,6]
+K Rational[3,6]
+N Rational[3,6]
+L 3

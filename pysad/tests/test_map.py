@@ -1,7 +1,7 @@
 """MAP 要素 (ExternalMap の OPTICS / EMIT / TRACK)。参照は SAD K64 (gs) の出力。
 mp1: OPTICS と EMIT (CALC のチューンと軌道)。mp2c: EMIT の {cod1, trans} (Emittance[])、mp2d: {cod1, trans, dtrans, dbeam}。
 mp3: TRACK (座標の書き換え、フラグ 0 で粒子を落とす、落ちた粒子の復活)。
-参照の作り方: local/wake/mp*.sad を gs で実行 (docs/28_map.md)。"""
+参照の作り方: local/wake/mp*.sad を gs で実行 (docs/30_map.md)。"""
 import io
 import re
 

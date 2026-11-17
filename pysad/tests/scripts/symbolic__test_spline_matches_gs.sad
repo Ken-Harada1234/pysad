@@ -1,0 +1,8 @@
+FFS;
+$FORM="14.10";
+s=Spline[{{0,0},{1,1},{2,4},{3,9},{4,16}}];
+Print["1 ",s[1.5]," ",s[0.2]," ",s[3.9]," ",s[{0.5,2.5}]];
+Print["2 ",Head[s]," ",Derivative[1][s][1.5]," ",Derivative[2][s][1.5]];
+Print["3 ",NIntegrate[s[x],{x,0,4}]," ",Integrate[s[x],{x,0.5,3.2}]];
+Print["5 ",Spline[{{0,{0,1}},{1,{1,2}},{2,{4,3}}}][0.5]];
+Exit;

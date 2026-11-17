@@ -16,10 +16,10 @@ LINE NEST  = (M HALF -HALF 2*Q);  ! 入れ子
 FFS;
 USE TWICE; INS; CALC; DISP ALL;   Print["nlat = ", LINE["LENGTH"]];
 ```
-`DISP ALL;` は全要素を表示 (66 行ごとの停止を省く)。`LINE["LENGTH"]` は要素 (成分) の個数 ($$$ を含む)。全文は `.sad`。
+`DISP ALL;` は全要素を表示 (66 行ごとの停止を省く)。`LINE["LENGTH"]` は要素 (成分) の個数 (`$$$` を含む)。全文は `.sad`。
 
 ## 結果の読み方
-- TWICE: 10 行 (M、Q.1…D.4、$$$)、`s(m)` の最終 5.2 m = 2×(0.3+1+0.3+1)。
+- TWICE: 10 行 (M、Q.1…D.4、`$$$`)、`s(m)` の最終 5.2 m = 2×(0.3+1+0.3+1)。
 - REVL: 要素名の前に `-` が付き (`-D.1`、`-QQ` …)、並びが逆 (D QQ D Q の順)、`LINE["DIR"]` = {1,-1,-1,-1,-1,1}。
 - NEST: 展開後の名前は `M Q.1 D.1 QQ.1 D.2 D.3 QQ.2 D.4 Q.2 Q.3 Q.4 $$$`、全長 5.8 m (HALF 2.6 + 逆向き HALF 2.6 + 2×0.3 = 5.8)。
 

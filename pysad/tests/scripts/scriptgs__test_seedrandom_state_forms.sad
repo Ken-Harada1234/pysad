@@ -1,0 +1,13 @@
+FFS;
+PageWidth=1999;
+SeedRandom[5];
+Print[SeedRandom[]];
+Print[SeedRandom["SAD"]];
+SeedRandom["x"];
+Print[SeedRandom[{"SAD", 5, 0, 0, 0}]];
+SeedRandom[-5]; Print[SeedRandom[]];
+SeedRandom[{7}]; Print[SeedRandom[]];
+SeedRandom[3]; g = GaussRandom[]; Print[SeedRandom[]];
+SeedRandom[1, 2];
+
+Exit;

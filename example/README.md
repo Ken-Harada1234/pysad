@@ -1,6 +1,6 @@
 # example: SAD の機能・関数ごとの短い例 (gs と pysad の比較つき)
 
-SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの例は 4 ファイルで 1 式です。
+SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの例は 4 つのファイルで 1 組です。
 
 | ファイル | 内容 |
 |---|---|
@@ -24,12 +24,14 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 | [`06_collective`](06_collective) | 集団効果 | WAKE、BEAMBEAM、CSR、Touschek、IBS |
 | [`07_spin_solenoid_special`](07_spin_solenoid_special) | スピン・ソレノイド・特殊 | POL、SOL、MULT ANGLE、COORD、RADLIGHT |
 | [`08_scripting`](08_scripting) | SADScript | 制御構文、反復子、`;`、リスト・文字列、関数定義、Module・Class、乱数 |
-| [`09_io_system`](09_io_system) | 入出力・システム | Print・Write・Read、ファイル、$FORM、時間 |
+| [`09_io_system`](09_io_system) | 入出力・システム | Print・Write・Read、ファイル、`$FORM`、時間 |
 | [`10_math_data`](10_math_data) | 数値・データ処理 | Fit、Spline、NIntegrate、特殊関数、行列、定数 |
 | [`11_graphics`](11_graphics) | 描画 | Plot 系、OpticsPlot、BeamPlot、LaTeX |
 | [`12_gui_tkinter`](12_gui_tkinter) | Tkinter・GUI | Tkinter.n、KBFrame.n |
 | [`13_packages`](13_packages) | Packages/*.n | CorrectOrbit、MakeBump、optimize、D.n、TableForm など |
-| `tools` | 道具 | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか) |
+| [`pf`](pf) | PF (2.5 GeV) の例集 | 実機ラティスでの光学・マッチング・チューンシフト・放射積分・トラッキング・入射軌道。索引は [`pf/README.md`](pf/README.md) |
+| [`astrid`](astrid) | ASTRID2 (0.58 GeV) の例集 | チューンサーベイ、MPW、位相空間、ラティスの作り方。索引は [`astrid/README.md`](astrid/README.md) |
+| `tools` | 道具 | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか。`pf_astrid/` は pf・astrid の作成用で、パスは整理前のまま) |
 
 各フォルダの `README.md` に、そのフォルダの例の一覧と、gs と pysad の一致状況 (○ 一致、△ 差あり、× 未対応・失敗) があります。
 
@@ -49,4 +51,4 @@ gs は WSL で、pysad は `PYSAD_SAD_PACKAGES` つきで走ります。`NAME.gs
 - gs の窓の画像は撮れていません。描画と GUI の図は、Canvas の項目を書き出した再描画と、pysad の窓の切り取りです。
 - SAD は `E1`・`E2` を ANGLE に対する比として読みます (端の角度 = E1×ANGLE)。`FODO_ring` の BEND はこの読みで解析式と合います。
 - ラティスはサンプルで、特定の実機のものではありません。エネルギー 3 GeV、周長 105.6 m、RF 電圧は例ごとに `.md` に書いてあります。
-- ほかに、KEK の SAD チュートリアルをもとにした PF・ASTRID2 の例集が [`../example_PF_ASTRID`](../example_PF_ASTRID) にあります (作成中の場合があります)。
+- `pf` と `astrid` は、PF と ASTRID2 の実際のラティスを使った例集です。KEK の SAD チュートリアルの話題を、手元のラティスで作り直しました。

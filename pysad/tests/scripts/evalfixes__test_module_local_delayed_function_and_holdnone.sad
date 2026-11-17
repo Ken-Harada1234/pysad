@@ -1,0 +1,14 @@
+FFS;
+PageWidth=1999;
+Print["A ",Module[{h},h:=3+1;h]];
+Print["C ",Module[{h},h:=Sqrt[Abs[#]]&;h[4]]];
+Print["D ",Module[{h},h:=Sqrt[Abs[#]]&;Table[h[i],{i,2}]]];
+Plot$DefaultColor={"red","blue"};
+With[{tdr:=TopDrawer,cdr:=System`CanvasDrawer},
+  SetAttributes[PCD,HoldAll];
+  PCD[tdr]={"black"};
+  PCD[cdr]=Plot$DefaultColor;
+  SetAttributes[PCD,HoldNone]];
+$DisplayFunction=CanvasDrawer;
+Print["E ",PCD[$DisplayFunction]," ",PCD[TopDrawer]];
+Exit;

@@ -1,0 +1,17 @@
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1);
+QUAD QF = (L=0.3 K1=0.6 DX=2e-4) QD = (L=0.3 K1=-0.5 DY=-1e-4);
+BEND B = (L=1 ANGLE=0.1 E1=0.05 E2=0.05);
+MARK ST = () WK = () WK2 = ();
+LINE BL = (ST QF DR B DR QD DR WK DR B DR QF DR WK2 DR QD DR QF);
+FFS;
+USE BL;
+TRPT; INS; NORAD; NOFLUC;
+LWAKE; WAKEOPT; PBUNCH=1E12; NBUNCH=1;
+WakeFunction[Longitudinal, "WK"] = {{-0.2, 1e9}, {-0.05, 2e9}, {0, 3e9}, {0.05, 1e9}, {0.2, -1e9}, {0.3, 0}};
+WakeFunction[Transverse, "WK"] = {{-0.1, 1e12}, {0.0, 3e12}, {0.05, 1e12}, {0.1, 0}, {0.3, 0}};
+InitialOrbits = {{1e-3,1e-4,2e-3,0,-0.05,1e-3},{-1e-3,0,1e-3,2e-4,0.05,0},{0,1e-4,0,0,0.02,-5e-4}};
+CALC;
+$FORM = "16.10";
+Do[Print[k, " ", Twiss["DX",k], " ", Twiss["DPX",k], " ", Twiss["DY",k], " ", Twiss["DPY",k], " ", Twiss["DZ",k], " ",Twiss["DDP",k]], {k, 1, 18}];
+Exit;

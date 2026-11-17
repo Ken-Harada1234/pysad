@@ -27,18 +27,18 @@
 
 | 要素 | 結果 | 文書 |
 | --- | --- | --- |
-| COORD | 追跡・Twiss・幾何・Emittance[] が gs と一致 (`pysad/coord.py`) | docs/23_coord.md |
-| TCAVI | 追跡 (RAD FLUC まで) が gs と一致。Emittance[] は L=0 のみ gs と一致、L≠0 は gs が壊れる (B36) | docs/24_tcav.md |
-| UND | 追跡・Twiss・Emittance[] が gs と一致。K64 は磁場を設定できず、磁場なしのドリフト (B37) | docs/25_und.md |
-| MULT ANGLE≠0 | 追跡 (11 通り、RAD FLUC 含む) は相対 0、Twiss 1e-13、Emittance[] 1e-11 で gs と一致 (`pysad/multa.py` `multae.py`)。BZ・RF・F1・SK0・FB1/FB2 の Twiss は未対応 | docs/26_mult_angle.md |
-| DELCOR | tcorr/tvcorr が gs と一致 (チューン 1e-14、軌道 1e-10、乱数列も同じ)。MARK は DETR・DPX に入る (K64 の添字のずれ)。CAVI は未対応 (`ffscmd._delcor`) | docs/29_delcor.md |
-| MAP | ExternalMap の TRACK・EMIT・OPTICS が gs と一致 (追跡 10 桁、Emittance[] 1e-11、CALC 1e-11)。GEO・CompiledMap は未対応 (`Map`、`ffscmd._map_*`) | docs/28_map.md |
-| SOL の Twiss・Emittance[] | CALC / INS の Twiss が gs と一致 (チューン 1e-15、領域内の β・α・分散・結合 1e-11)。Emittance[]・EMIT は ε_x 2e-12〜4e-9、ε_y 4e-10〜2e-8、チューン 1e-11、軌道 1e-9 で一致 (`pysad/solmap.py` `solemit.py`)。CALC6D・Touschek・幾何 (tsgeo) は未対応 | docs/27_sol_optics.md |
-| 特殊関数・数学関数 | 458 式が gs と一致 (specfn.py、基本関数の複素対応)。K64 が誤値を返す式 (B43〜B47) は真値 | docs/31_specfn_fit_misc.md |
-| Fit / FindRoot / NIntegrate / FitGaussian / FitEmit | 数値微分で gs と 5e-10 (Fit は線形で 1e-9)。ベクトル独立変数・複素 FindRoot は未対応 (`fitroot.py`) | docs/31_specfn_fit_misc.md |
-| DownhillSimplex ほか | optimize.n の Amoeba を移植 (gs と 1e-13)。StringToStream / TemporaryName / ListRandom / FixedPointList / SelectCases (`miscfn.py`、`sadlist.py`) | docs/31_specfn_fit_misc.md |
-| 軌道補正・最適化パッケージ | CorrectOrbit / MakeBump / Monitor / Steer / OptimizeOptics など (correction.n、bump.n、corutility.n、optimize.n、rational.n、tableform.n) を SADScript のまま実行し gs と一致。ResponseMatrix・LinearSolveConditioned・Master・FFS["VAR"] を翻訳 (`corr.py`、`pkgload.py`) | docs/32_sad_packages.md |
-| PHSROT | K64 で動作しない (行列がすべて 0、PX PY PZ が指定できない: B38)。追跡は NotImplementedError | docs/19 B38 |
+| COORD | 追跡・Twiss・幾何・Emittance[] が gs と一致 (`pysad/coord.py`) | docs/25_coord.md |
+| TCAVI | 追跡 (RAD FLUC まで) が gs と一致。Emittance[] は L=0 のみ gs と一致、L≠0 は gs が壊れる (B36) | docs/26_tcav.md |
+| UND | 追跡・Twiss・Emittance[] が gs と一致。K64 は磁場を設定できず、磁場なしのドリフト (B37) | docs/27_und.md |
+| MULT ANGLE≠0 | 追跡 (11 通り、RAD FLUC 含む) は相対 0、Twiss 1e-13、Emittance[] 1e-11 で gs と一致 (`pysad/multa.py` `multae.py`)。BZ・RF・F1・SK0・FB1/FB2 の Twiss は未対応 | docs/28_mult_angle.md |
+| DELCOR | tcorr/tvcorr が gs と一致 (チューン 1e-14、軌道 1e-10、乱数列も同じ)。MARK は DETR・DPX に入る (K64 の添字のずれ)。CAVI は未対応 (`ffscmd._delcor`) | docs/31_delcor.md |
+| MAP | ExternalMap の TRACK・EMIT・OPTICS が gs と一致 (追跡 10 桁、Emittance[] 1e-11、CALC 1e-11)。GEO・CompiledMap は未対応 (`Map`、`ffscmd._map_*`) | docs/30_map.md |
+| SOL の Twiss・Emittance[] | CALC / INS の Twiss が gs と一致 (チューン 1e-15、領域内の β・α・分散・結合 1e-11)。Emittance[]・EMIT は ε_x 2e-12〜4e-9、ε_y 4e-10〜2e-8、チューン 1e-11、軌道 1e-9 で一致 (`pysad/solmap.py` `solemit.py`)。CALC6D・Touschek・幾何 (tsgeo) は未対応 | docs/29_sol_optics.md |
+| 特殊関数・数学関数 | 458 式が gs と一致 (specfn.py、基本関数の複素対応)。K64 が誤値を返す式 (B43〜B47) は真値 | docs/33_specfn_fit_misc.md |
+| Fit / FindRoot / NIntegrate / FitGaussian / FitEmit | 数値微分で gs と 5e-10 (Fit は線形で 1e-9)。ベクトル独立変数・複素 FindRoot は未対応 (`fitroot.py`) | docs/33_specfn_fit_misc.md |
+| DownhillSimplex ほか | optimize.n の Amoeba を移植 (gs と 1e-13)。StringToStream / TemporaryName / ListRandom / FixedPointList / SelectCases (`miscfn.py`、`sadlist.py`) | docs/33_specfn_fit_misc.md |
+| 軌道補正・最適化パッケージ | CorrectOrbit / MakeBump / Monitor / Steer / OptimizeOptics など (correction.n、bump.n、corutility.n、optimize.n、rational.n、tableform.n) を SADScript のまま実行し gs と一致。ResponseMatrix・LinearSolveConditioned・Master・FFS["VAR"] を翻訳 (`corr.py`、`pkgload.py`) | docs/34_sad_packages.md |
+| PHSROT | K64 で動作しない (行列がすべて 0、PX PY PZ が指定できない: B38)。追跡は NotImplementedError | docs/21 B38 |
 
 ## 見つけたこと
 
@@ -48,13 +48,13 @@
 
 - parser は COORD / TCAVI / UND / PHSROT / BEAMBEAM を黙ってドリフトにしていた。専用の要素クラスにし、`DX` などは誤差の属性にせず `params` に置いた。
 - **SOL (BZ≠0) を含む CALC・EMIT・Emittance[] は pysad が SOL を無視して黙って違う値 (結合が 0) を出していた**。gs は結合を持つ。実装の前に、`SADError` で拒否するようにした (`ffscmd._check_sol_optics`)。
-- TRPT の放射の分割 (ndivrad ×10) は BEAMBEAM の作業で直した (docs/22 §4)。
+- TRPT の放射の分割 (ndivrad ×10) は BEAMBEAM の作業で直した (docs/24 §4)。
 
 - SOL の Emittance[] (solemit): K64 の `dbeam(8)` が `beam(10)` を使う誤記らしい箇所 (B34 から数えて次の B39 とする) をそのまま写した。SOL に GEO=1 がないと K64 は S 座標が途切れ、MomentumCompaction が周長の誤りで 100 倍になる (pysad は GEO を見ないので影響を受けない)。
 - `emit_extra.emittance_rules` (Emittance[] の Orbit・Matrix 規則) と `calc6d._turn` は Python 版の `_tquade` を使い、軌道のある QUAD で gs と 1e-5 (ε_y 1e-4) ずれる。SOL なしでも出る既存の差で、`emit6d.tturne` (elkern) は 1e-12 で合う。未調査。
 - SOL つきの Emittance[] は emit_extra に入れず `run_emit` の値に落ちる (Stable=0、HarmonicNumber=NaN、Matrix 系の規則なし)。上の差を直せば emit_extra にもフックを入れられる。
 
-## 次 (11/14 夜の記録。11/16 時点で、MEASURE/TRCOD 以外は下記の節のとおり済みまたは判断済み: tlum は `measure.py`、GaussianCoulomb は docs/30、CSR は docs/34、BBBrem は docs/30、tdgeo は DRIFT・BEND だけ解析微分)
+## 次 (11/14 夜の記録。11/16 時点で、MEASURE/TRCOD 以外は下記の節のとおり済みまたは判断済み: tlum は `measure.py`、GaussianCoulomb は docs/32、CSR は docs/36、BBBrem は docs/32、tdgeo は DRIFT・BEND だけ解析微分)
 
 - SOL の残り: CALC6D・Touschek、領域内の MULT・BEND・CAVI (tmulte1)、tsgeo/tdgeo の幾何 (GEO=1 のとき S 座標を領域でつなぐ)。Twiss と Emittance[] は済み。参考: gs は領域ごとに `tsole1` (tdrife0・tquade・tmulte1 に bz を渡す、tsconv、tsfrie) で、Twiss の各要素の出力も別の座標系。pysad は track6n_ext で追跡だけある。
 - MEASURE / TRCOD (trackb / tracke / trcoda)、tlum、GaussianCoulomb (tspac)、CSR、BBBrem。
@@ -71,17 +71,17 @@
    原因は `_jac_tqente` / `_jac_tsolque_body` の δ 依存 (集束が 1/(1+δ) で変わる項) が x ≠ 0 のとき抜けていること。
    直し方の候補: `_tquade` の軌道つきの経路を数値微分にする、または解析式に δ 項を足す。
 2. `emit_extra.emittance_rules` が SOL を含むと使えず、`ffscmd.emittance` が `run_emit` の値に落ちる (Stable=0、HarmonicNumber=NaN、Orbit・Matrix 規則なし)。
-   1 を直せば `solemit` を emit_extra / calc6d に入れて解消できる (フックの一行は docs/27 に書いた)。
+   1 を直せば `solemit` を emit_extra / calc6d に入れて解消できる (フックの一行は docs/29 に書いた)。
 3. SOL 領域の CALC (数値微分) は gs の解析行列と 1e-10 程度の差が残る。`tsolque` の解析行列を写せば消える。
 4. USE 直後の `Matcher._calc_optics` で SOL 領域を annotate していなかった (直した: `_matcher_optics`)。同種の入口が他にもあるかもしれない (`calc` を経由しない光学計算)。
-5. pysad は GEO がない SOL 領域で K64 のように S 座標を途切れさせない (警告だけ。K64 は周長が狂う)。tsgeo は翻訳した (`sgeo.py`、docs/27) が、領域内の BEND・MULT・CAVI は未対応で、
+5. pysad は GEO がない SOL 領域で K64 のように S 座標を途切れさせない (警告だけ。K64 は周長が狂う)。tsgeo は翻訳した (`sgeo.py`、docs/29) が、領域内の BEND・MULT・CAVI は未対応で、
    ずれ・傾きのある SOL の追跡・Twiss・Emittance[] (tsconv の CHI1..3) も未対応。
 6. MAP: ExternalMap["GEO"] と CompiledMap は未対応。TRACK は TrackParticles だけ (MAIN の TRACK・DA・Touschek は ExternalMap を呼ばない)。
 7. DELCOR: CAVI は未対応。OCT は確かめていない。
-8. GaussianCoulombFitted (twspfu) は実装済み (docs/30)。BBBrem パッケージの `Parallelize` は動作未確認。
-9. (11/16: 担当を分けて全文書を更新中。html は `make_html.py` で作り直す) ドキュメント: docs/html/*、docs/15_implementation_summary.md は (11/14 時点で) 新しいモジュール (solmap, solemit, multa, multae, tcav, und, coord, gausscoul, bbbrem) を反映していない。
+8. GaussianCoulombFitted (twspfu) は実装済み (docs/32)。BBBrem パッケージの `Parallelize` は動作未確認。
+9. (11/16: 担当を分けて全文書を更新中。html は `make_html.py` で作り直す) ドキュメント: docs/html/*、docs/17_implementation_summary.md は (11/14 時点で) 新しいモジュール (solmap, solemit, multa, multae, tcav, und, coord, gausscoul, bbbrem) を反映していない。
 
-### K64 側の不具合・疑い (docs/19 に B39, B40 を記録済み。以下を追加)
+### K64 側の不具合・疑い (docs/21 に B39, B40 を記録済み。以下を追加)
 
 - B39 (疑い): photons.f tradke の dbeam(8) が beam(10) を使う。
 - B40 (確定): tcorr.f が MARK の DETR・DPX に書く。CAVI は書く欄と読む欄が食い違う。
@@ -93,20 +93,20 @@
 
 ### 未翻訳のまま残した物理計算 (規模順)
 
-- POL / calpol: 実装済み (docs/34。Emittance[]・EMIT・TrackParticles の偏極時間・スピンチューン・偏極ベクトル・スピンは gs と一致。MULT・空洞・SOL (ドリフトのある領域) まで済み)。残り: SOL 領域内の MULT・BEND・CAVI (領域内の要素そのものが未対応)、`Polarization` (K64 が NaN: B55)。
-- CSR: CSRTrack・CSRHaissin・CSRSetupOY・CSROYMatrix・CSRMatrix (mode 1000 を含む)・CSRConvert (K64 の tfcsrvec と同じ)・CSRInit は実装済み (docs/34)。`Packages/CSR.n` の MakeZL・SkinDepth・PathDifference・StandardKList・VariableMesh・ZThre などは gs と一致。ScanTrack・OYStability などの長い流れは未照合。
-- tdgeo (fit の GX..): DRIFT・BEND の変数は解析微分、四極の DX・DY などは中心差分。tlum / tluma は `measure.py` に直訳 (MEASURE が gs で動かないので、解析値との比較だけ)。wfres / wfbin / wjfit は MAIN の TRACK (tracka.f) の Fourier 解析で、FFS からは使えない。旧式の WAKE は K64 では WAKECOMMAND.n (配布に無い) を呼ぶので移植不要 (docs/21)。
+- POL / calpol: 実装済み (docs/36。Emittance[]・EMIT・TrackParticles の偏極時間・スピンチューン・偏極ベクトル・スピンは gs と一致。MULT・空洞・SOL (ドリフトのある領域) まで済み)。残り: SOL 領域内の MULT・BEND・CAVI (領域内の要素そのものが未対応)、`Polarization` (K64 が NaN: B55)。
+- CSR: CSRTrack・CSRHaissin・CSRSetupOY・CSROYMatrix・CSRMatrix (mode 1000 を含む)・CSRConvert (K64 の tfcsrvec と同じ)・CSRInit は実装済み (docs/36)。`Packages/CSR.n` の MakeZL・SkinDepth・PathDifference・StandardKList・VariableMesh・ZThre などは gs と一致。ScanTrack・OYStability などの長い流れは未照合。
+- tdgeo (fit の GX..): DRIFT・BEND の変数は解析微分、四極の DX・DY などは中心差分。tlum / tluma は `measure.py` に直訳 (MEASURE が gs で動かないので、解析値との比較だけ)。wfres / wfbin / wjfit は MAIN の TRACK (tracka.f) の Fourier 解析で、FFS からは使えない。旧式の WAKE は K64 では WAKECOMMAND.n (配布に無い) を呼ぶので移植不要 (docs/23)。
 - MEASURE / TRCOD (tracke・ttinit・ttstat・trcoda・trackb): gs で参照が取れない (B42) うえ、使うスクリプトも見つからなかったので翻訳していない。
-- 描画: BeamPlot の描画の gs との比較、CanvasSymbol、Canvas3D*、`UseBG->True` の文字背景 (docs/35。OpticsPlot・LatticePlot は枠・矩形・線が gs と一致、文字の数はフォント依存)。
+- 描画: BeamPlot の描画の gs との比較、CanvasSymbol、Canvas3D*、`UseBG->True` の文字背景 (docs/37。OpticsPlot・LatticePlot は枠・矩形・線が gs と一致、文字の数はフォント依存)。
 - RadiationField・RadiationSpectrum と、その入力の RADLIGHT の軌道は実装済み (gs と一致: test_radlight.py)。
 
-10. (済) 記号微分 `D[f,x]` は D.n を SADScript のまま実行して gs と一致 (59 式)。記号式の標準形 (`0*x` や `x^0` を簡約しない) は gs と少し違う (docs/32)。
+10. (済) 記号微分 `D[f,x]` は D.n を SADScript のまま実行して gs と一致 (59 式)。記号式の標準形 (`0*x` や `x^0` を簡約しない) は gs と少し違う (docs/34)。
 11. 複素 FindRoot は gs が壊れた値を返す (B61)。FitGaussian の Plot オプションは実装済み (gs と同じ項目数)。Fit のベクトル独立変数は実装 (gs が誤値: B52)。
 12. ResponseMatrix の TRPT (加速) 経路。LDSolve.n・Optics.n は読み込みだけ確認。
-13. 複素引数の Bessel・超幾何、PolyLog の |z|>=150 の非整数次 (PolyLog の z>1・z<-1 の非整数次と HurwitzZeta の q<=0 は実装済み: docs/31)。
+13. 複素引数の Bessel・超幾何、PolyLog の |z|>=150 の非整数次 (PolyLog の z>1・z<-1 の非整数次と HurwitzZeta の q<=0 は実装済み: docs/33)。
 14. (`Skip` と `Read` の型 (Character・Real・Word の読み方、数でない語の Real は式の値) は gs に合わせた。test_evalfixes.py)。`MessageName[f, "usage"]` の関数形 (gs は "Undefined MessageName" を出す。見送り)、(`Short`・`Inequality`・`Fork` は gs に合わせた。`ToInputString` は一致)。
-    (11/16 時点: GaussianCoulombFitted は docs/30、RadiationField・RadiationSpectrum と RADLIGHT の軌道記録は「RADLIGHT」節のとおり実装済み。この項の以前の記述は「未対応」だった。)
-15. 前回までの pysad の誤り: スクリプトの `ElectronMass` が 510999.06 だった (K64 は 510998.95)。数の書式 (`1e6`、`1e+10`)、`Part`、`Head`、`VectorQ` の差は修正済み (docs/32)。
+    (11/16 時点: GaussianCoulombFitted は docs/32、RadiationField・RadiationSpectrum と RADLIGHT の軌道記録は「RADLIGHT」節のとおり実装済み。この項の以前の記述は「未対応」だった。)
+15. 前回までの pysad の誤り: スクリプトの `ElectronMass` が 510999.06 だった (K64 は 510998.95)。数の書式 (`1e6`、`1e+10`)、`Part`、`Head`、`VectorQ` の差は修正済み (docs/34)。
 
 ## SynchroBetaEmittance (2026-11-16 に移植した)
 

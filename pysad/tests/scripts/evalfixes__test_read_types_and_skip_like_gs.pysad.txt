@@ -1,0 +1,6 @@
+A a l pha beta 1.5
+B 2 . 5
+C 3.5 l ine2
+D x y z EndOfFile
+E beta
+F 1.5

@@ -1,0 +1,44 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:31 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.19634954084936207 E1=0.0981747704 E2=0.0981747704);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+UND CA = (L=0.5 KX=0.1 POLE=4 SLICE=2);
+DRIFT CB = (L=0.2);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 3*CELL1 CA CELL1 CELL1 CB 3*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="18.14";
+ PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.913532 $$$       f BX    #######  #   4.610832 $$$       f NX    #######  #   1.793743 $$$       f AY    #######  #   1.384865 $$$       f BY    #######  #   2.495818 $$$       f NY    #######  #   1.238706
+$$$       f LENG  #######  #  31.100000
+ RFSW;
+ NORAD; NOFLUC;
+ em = Emittance[];
+ Print["EMT ", Emittances/.em];
+EMT { 1.173205048517E-7, -2.5511736867E-31, 1.003472792376E-5}
+ Print["TUN ", Tunes/.em];
+TUN {  -.20628736801641,   .23870613953742,  -.00952897059415}
+ Print["ALP ", {MomentumCompaction/.em, EnergyLossU0/.em, EquilibriumPosition/.em}];
+ALP {   .01817924942795, 293112.3213069903,   .01521061514100}
+ Print["COD ", OrbitAtExit/.em];
+COD {   .00000000000000,   .00000000000000,   .00000000000000,   .00000000000000, -3.4694469520E-18, -2.7755576018E-20}
+ Exit;
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

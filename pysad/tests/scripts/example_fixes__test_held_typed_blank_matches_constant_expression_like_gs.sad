@@ -1,0 +1,11 @@
+FFS;
+SetAttributes[f,HoldAll];
+f[x_Real]:=1;
+f[x_]:=2;
+y=3.;
+Print["A ",f[2*Pi]];
+Print["B ",f[Sin[1.]]];
+Print["C ",f[1+2.]];
+Print["D ",f[y]];
+Print["E ",f[Pi]];
+Exit;

@@ -1,0 +1,40 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.296107 $$$       f BX    #######  #   5.256546 $$$       f NX    #######  #   2.817385
+$$$       f AY    #######  #   1.453076 $$$       f BY    #######  #   2.646613 $$$       f NY    #######  #   1.963723
+$$$       f LENG  #######  #  48.000000
+TUN {  2.8173851815,  1.9637233095}
+MON  24.0000000000  24.0000000000
+RM0  1.57207490E-5  1.34249935E-4
+A { 24.0000000000, 24.0000000000} {   .0059489760, -10.977135647,  -.0024236166, -4.8041058095} {  -.0072504851,  6.4297931926,
+    .0023309646, -4.4153369156}
+ *****qcod---> Overflow & closed orbit not found            1
+R  24.0000000000 {   .1492707525, -2.1547312E-6,   .1998077673, -3.2440806E-5,   .0721791517, -5.8430972E-5}
+ ???-FFS-Info-Element values are not expanded. 
+ *****qcod---> Overflow & closed orbit not found            1
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.296107 $$$       f BX    #######  #   5.256546 $$$       f NX    #######  #   2.817385
+$$$       f AY    #######  #   1.453076 $$$       f BY    #######  #   2.646613 $$$       f NY    #######  #   1.963723
+$$$       f LENG  #######  #  48.000000 ST/$$$      BMAGX #######  #   1.000000 ST/$$$      BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+RMS  1.57207490E-5  1.34249935E-4
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            1
+RX  24.0000000000 { -4.1636051E-4,   .8831154312, 1.47288518E-4, -2.5537930504, 1.28814950E-4,  2.2358640256}
+ ???-FFS-Info-Element values are not expanded. 
+ *****qcod---> Overflow & closed orbit not found            1
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.296107 $$$       f BX    #######  #   5.256546 $$$       f NX    #######  #   2.817385
+$$$       f AY    #######  #   1.453076 $$$       f BY    #######  #   2.646613 $$$       f NY    #######  #   1.963723
+$$$       f LENG  #######  #  48.000000 ST/$$$      BMAGX #######  #   1.000000 ST/$$$      BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+RMSX  1.57207490E-5  1.34249935E-4
+ *****qcod---> Overflow & closed orbit not found            1
+RM  24.0000000000 {   .0000000000,   .0000000000,   .0000000000,   .0000000000,   .0000000000, 3.51893198E-5}
+ ???-FFS-Info-Element values are not expanded. 
+ *****qcod---> Overflow & closed orbit not found            1
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.296107 $$$       f BX    #######  #   5.256546 $$$       f NX    #######  #   2.817385
+$$$       f AY    #######  #   1.453076 $$$       f BY    #######  #   2.646613 $$$       f NY    #######  #   1.963723
+$$$       f LENG  #######  #  48.000000 ST/$$$      BMAGX #######  #   1.000000 ST/$$$      BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+RMSM  1.57207490E-5  1.34249935E-4

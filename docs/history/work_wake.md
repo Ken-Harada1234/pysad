@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-16
 
-作業日: 2026-11-14。現状の説明は `docs/21_wake.md`。
+作業日: 2026-11-14。現状の説明は `docs/23_wake.md`。
 
 ## 依頼
 GUI の次に wake と beam-beam を実装する (実例の台本なし)。このメモは wake。根拠は SADHelp (CERN)、K64 のソース (`txwake.f`、`tffswake.f`、`tturn.f`、`tcav.f`)、WSL の gs での実測。
@@ -50,7 +50,7 @@ GUI の次に wake と beam-beam を実装する (実例の台本なし)。こ�
   - `HostArch` が今は `AMD64-Linux6` を返すが、ビルド済みは `AMD64-Linux5`。`obj/AMD64-Linux5` で直接 `make exe`、`obj/.../config.mk` の SADDIR と `sad.conf` の `SAD_ROOT` を複製に向ける、`.*_done` の印を touch する (tcl/tk を作り直さない)。
   - `libsad.a` は Fortran の `.o` を中に持つ。`FOPT` を変えたら `*.o` のうち `src/*.f` があるものと `libsad.a`、`sad1.exe` を消す。`sad.conf` の `FOPT=` は 3 行ある (ubuntu 以外も)。
   - `bin/gs` の `SAD_ARCH` を `AMD64-Linux5` に固定した `gs_dbg` を作る。`setarch -R` + `addr2line -f -e sad1.exe (アドレス − 0x555555554000)` で行番号が出る (gdb は無い)。
-- 原因は 3 つ。1) `tffswake.f:102` (表なしの添字 0)、2) `tturn.f:567` (SOL 領域で `aewak` が古いまま、`nwak` が表の外)、3) `tapert.f:184` (`l_track=0` の `idtypec`、wake・SOL と無関係)。詳細は `docs/21_wake.md` §8。
+- 原因は 3 つ。1) `tffswake.f:102` (表なしの添字 0)、2) `tturn.f:567` (SOL 領域で `aewak` が古いまま、`nwak` が表の外)、3) `tapert.f:184` (`l_track=0` の `idtypec`、wake・SOL と無関係)。詳細は `docs/23_wake.md` §8。
 - 修正は `docs/history/sad_patch/wake_sigsegv_fixes.patch` (元の SAD に当てる差分)。直した SAD の出力は pysad と一致 (始点 SOL の wake 単独・領域内との併用で 0 差、光学の縦だけの表)。
 - pysad: 領域始点の SOL の wake と、光学の片方だけの表を `SADError` にしていたのをやめた (直した SAD と同じ動作)。試験の参照は直した SAD の出力。
 - 誤りの訂正: 「SOL 領域内で粒子が落ちると SIGSEGV」としたのは、台本の LOSSAMPL が初期の振幅より小さかった (最初の tapert で落ちる) ためで、SOL とは無関係だった。
@@ -66,7 +66,7 @@ GUI の次に wake と beam-beam を実装する (実例の台本なし)。こ�
 - bash の heredoc での python は文字が壊れる (`\` など)。`chr(92)` を使うか、ファイルに書く。
 
 ## 未解決
-`docs/21_wake.md` §5 (VOLT≠0 の CAVI と MULT、SOL の中、光学の WAKEOPT、ROTATE のずれ、flag=0 の粒子、バンチ間隔の多い場合)。
+`docs/23_wake.md` §5 (VOLT≠0 の CAVI と MULT、SOL の中、光学の WAKEOPT、ROTATE のずれ、flag=0 の粒子、バンチ間隔の多い場合)。
 
 ## 次の作業
 beam-beam (`bbstrhl.f` ほか)。
@@ -75,4 +75,4 @@ beam-beam (`bbstrhl.f` ほか)。
 
 - 2026-11-16 追記: 旧式の WAKE コマンド (tfwake.f) は移植しない。K64 の `tffsa.f:972` は tfwake.f を呼ばず `WAKECOMMAND[]` (`init.n` の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価し、gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路 (エラー文の表示だけ未再現)。
 - 2026-11-16 夜の追記 (B33 の差の解消): TRPT で最初から LOSSAMPL の外にいる粒子 (B33、元の gs は SIGSEGV で、直した SAD で比べていた) の出力座標が pysad と合わなかった原因が分かり、解消した。K64 の tapert は落とす印に `kptbl(i,4)=l_track` を書き、l_track はセッション最初の TrackParticles では 0 なので、最初の tapert では粒子が落ちず (座標は 3·LOSSAMPL に頭打ちで追跡を続け、後の tapert で落ちる)、2 回目の TrackParticles からは最初の要素で落ちる。pysad は常に最初の要素で落としていたので、`TrackRun.l_track0`・`k_apert` で再現した。直した SAD (`~/sad_dbg` の gs5) の 15 値と全桁一致 (b33.sad、lm2〜lm4.sad)、試験は `test_small_items.py` に 1 件。根拠: `work_session_20261116.md` §11.2・§11.3。
-- 他の本文 (WakeFunction、WAKEOPT、SIGSEGV の修正) は 11/14 のまま。`wake.py`・`wakeopt.py` は 11/14 以後変更なし。wake の SOL 領域を含む区間の分岐 (`track6n`) は、Prog が SOL 領域でも 1 要素 1 kind なので当たらない防御と確認した (夜)。現状の解説は docs/21 と docs/36。
+- 他の本文 (WakeFunction、WAKEOPT、SIGSEGV の修正) は 11/14 のまま。`wake.py`・`wakeopt.py` は 11/14 以後変更なし。wake の SOL 領域を含む区間の分岐 (`track6n`) は、Prog が SOL 領域でも 1 要素 1 kind なので当たらない防御と確認した (夜)。現状の解説は docs/23 と docs/38。

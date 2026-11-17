@@ -1,0 +1,4 @@
+FFS;
+PageWidth=1999;
+j = 0; For[j = 0, j < 3, j++]; Print["A ", j];
+Exit;

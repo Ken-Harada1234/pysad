@@ -1,0 +1,15 @@
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.3) QD = (L=0.3 K1=-0.25);
+BEND B = (L=1 ANGLE=0.2);
+SOL SA = (L=0 BZ=0.3 BOUND=1) SB = (L=0 BZ=0 BOUND=1);
+MARK ST = ();
+LINE BL = (ST QF DR B DR2 QD DR SA DR2 QF DR2 QD DR2 SB DR B DR);
+FFS;
+USE BL;
+CELL; NORAD; NOFLUC;
+CALC;
+Print["TUN ", Twiss["NX", "$$$"]/(2 Pi), " ", Twiss["NY", "$$$"]/(2 Pi)];
+Print["BX  ", Twiss["BX", "$$$"], " ", Twiss["BY", "$$$"]];
+Print["EX  ", Twiss["EX", "$$$"], " ", Twiss["EY", "$$$"]];
+Exit;

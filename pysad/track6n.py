@@ -1884,7 +1884,7 @@ class Prog:
             # L=0 の MULT (薄い多極) や SOL を黙って無視しないよう、L==0 の判定より前に置く
             raise NotImplementedError(f'track6n: 要素 {tn} は未対応')
         if tn == 'PhsRot':
-            raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/19 B38)。写さない')
+            raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/21 B38)。写さない')
         if tn == 'Undulator':
             from . import und as _un
             return K_UND, _un.compile_und(el, ph.pgev)

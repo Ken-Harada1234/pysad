@@ -588,7 +588,7 @@ class Undulator(Element):
 class PhsRot(Marker):
     """
     PHSROT 要素 (6 次元 Twiss による位相空間の回転、K64 の phsrot.f)。K64 では行列がすべて 0 になり動作しないので、追跡は
-    NotImplementedError (docs/19 B38)。Twiss・Emittance[] では恒等。
+    NotImplementedError (docs/21 B38)。Twiss・Emittance[] では恒等。
     params: 要素定義の数値キーワード (AX BX PX AY BY PY R1..R4 EX.. ZX.. EMIX.. D11..D66 B11..B66 など)
     """
     params: dict = field(default_factory=dict)
@@ -597,7 +597,7 @@ class PhsRot(Marker):
 @dataclass
 class Map(Marker):
     """
-    MAP 要素 (K64 の temap.f: ユーザー定義の写像 ExternalMap["TRACK"/"EMIT"/"OPTICS"/"GEO", ...])。docs/28_map.md。
+    MAP 要素 (K64 の temap.f: ユーザー定義の写像 ExternalMap["TRACK"/"EMIT"/"OPTICS"/"GEO", ...])。docs/30_map.md。
     ExternalMap が定義されていなければ恒等で、長さも 0 (pos(l+1)=pos(l)。MAP の L は K64 では使われない)。
     params: 要素定義の数値キーワード (L だけ)。_pos は USE が付ける要素の位置 (1 始まり、LINE["POSITION"])。
     """

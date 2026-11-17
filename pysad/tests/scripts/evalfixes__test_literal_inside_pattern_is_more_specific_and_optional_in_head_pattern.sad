@@ -1,0 +1,14 @@
+FFS;
+PageWidth=1999;
+D1[Default]:=1;
+D1[{x_,y_}]:=2;
+D1[{x_,Default}]:=3;
+D1[{Default,y_}]:=4;
+Print["A ",D1[Default]," ",D1[{1,2}]," ",D1[{1,Default}]," ",D1[{Default,2}]];
+RP[min_,max_,Default|Null]:={min,max};
+RP[min_,max_,Right[sep_:0]]:={"R",sep};
+Print["B ",RP[1,2,Default]," ",RP[1,2,Right[]]," ",RP[1,2,Right[3]]];
+FR[s_,{Automatic,Automatic},{b1_,b2_}]:="both";
+FR[s_,{Automatic,r2_},{b1_,_}]:="first";
+Print["C ",FR[1,{Automatic,Automatic},{1,2}]," ",FR[1,{Automatic,3},{1,2}]];
+Exit;

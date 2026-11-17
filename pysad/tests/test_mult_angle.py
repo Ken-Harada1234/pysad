@@ -1,6 +1,6 @@
 """MULT (ANGLE≠0) (K64 の tmulta / tmultae)。参照は SAD K64 (gs) の出力。
 ma1..ma11: TrackParticles (20 粒子、3 周)。mae*: Emittance[] (12 セル + RFC、MULT が曲げ磁石)。
-参照の作り方: local/wake/genma.py genmae.py で .sad を作り gs で実行 (docs/26_mult_angle.md)。"""
+参照の作り方: local/wake/genma.py genmae.py で .sad を作り gs で実行 (docs/28_mult_angle.md)。"""
 import io
 import re
 

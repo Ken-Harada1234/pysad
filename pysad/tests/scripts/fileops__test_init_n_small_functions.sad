@@ -1,0 +1,7 @@
+FFS;
+$FORM="";
+Print["1 ",ARRAY[2,3]," ",Len["abcd"]," ",StringInsert["abcdef","XY",3]," ",StringInsert["abcdef","XY",{2,4}]," ",Diagonal[{{1,2},{3,4}}]];
+Print["2 ",Expand[(a+b)*(c+d)]," ",Expand[(a+b)^2]," ",SymbolNameRoot[x$12]," ",SymbolNameRoot[abc]];
+Put[1,{2,3},"p.txt"];
+Print["3 ",ReadString[OpenRead["p.txt"]]];
+Exit;

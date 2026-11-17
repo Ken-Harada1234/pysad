@@ -265,4 +265,4 @@ work_track6n_ext.md §5 の差分案を、ファイルを大きくしない形�
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: 本文は 10/15 の ffscmd への接続の記録。11/14 以後は ffscmd に COORD・TCAVI・UND・MULT・SOL・MAP・DELCOR・CSR・POL・RADLIGHT などの接続が足された (各文書 docs/23〜35 と work_unimpl.md)。EMIT 失敗時の NaN の扱いは変化なし。
+- 2026-11-16 追記: 本文は 10/15 の ffscmd への接続の記録。11/14 以後は ffscmd に COORD・TCAVI・UND・MULT・SOL・MAP・DELCOR・CSR・POL・RADLIGHT などの接続が足された (各文書 docs/25〜35 と work_unimpl.md)。EMIT 失敗時の NaN の扱いは変化なし。

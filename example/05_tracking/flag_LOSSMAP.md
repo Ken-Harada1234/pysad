@@ -1,5 +1,5 @@
 # flag_LOSSMAP
-フラグ・05_tracking・ラティス `00_lattice/FODO_ring.sad` (3 GeV)・`LOSSAMPL=0.05`・`NORFSW NORAD NOFLUC`
+種別: フラグ / フォルダ: 05_tracking / ラティス: `00_lattice/FODO_ring.sad` (3 GeV) / フラグ: `LOSSMAP`、`NORFSW NORAD NOFLUC`、`LOSSAMPL=0.05`
 
 ## 何を見る例か
 `LOSSMAP` を ON にすると、`TrackParticles` の戻りに損失した要素番号 (8 列目) と損失した周 (9 列目) が加わる (POL ON なら 10・11 列目)。既定は `NOLOSSMAP` (戻りは 7 列)。

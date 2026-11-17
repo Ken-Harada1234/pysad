@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-16
 
-作業日: 2026-11-12 〜 2026-11-14。現状の説明は `docs/20_gui_tclbridge.md`。ここは経緯と落とし穴。
+作業日: 2026-11-12 〜 2026-11-14。現状の説明は `docs/22_gui_tclbridge.md`。ここは経緯と落とし穴。
 
 ## 依頼
 「リスト処理、KBFrame 関数、Tcl/Tk の GUI 関数の実装へ進んで」。SAD の GUI 台本をそのまま動かすため、コードの翻訳ではなく、
@@ -45,4 +45,4 @@ SAD 自身の `Tkinter.n` / `KBFrame.n` / `KBMainFrame.n` / `TabFrame.n` / `Canv
   **pysad では w・b・e が裸のシンボルのまま** (Head=Symbol) で、メソッド呼び出しは何も呼ばない (Tcl 呼び出し 0 回、エラーもなし)。ウィジェット自体は作られる (winfo children に Entry・Listbox) が、親が w でなく Root になる (winfo では '.' の直下。gs は Toplevel の下)。
   原因の絞り込み: `w=Window[]` の直後、pysad は `Tk$DefCount=1`・`Root$WindowWidget=w`・`TkPathName[Root$Window]="."` まで進むが、`TkPathName[w]` が "" で、最初の Window (root) の `a$:=Widget[a$,w[master$]]` (`Tkinter.n` の DefineWidget 内) が w の値にならない。root の Window は toplevel を作らず `winfo children .` は空。`f[x_]:=(x=5); f[aa]` は pysad も gs と同じ aa=5 で、パターン変数への代入は問題ない。
   玩具の再現 (With と `x:=Widget[x,…]`、UpValue の `(a_=W[opt___])^:=…`) は UpValue の分岐までは gs と同じに動くが、`x:=Widget[x,…]` 自体は gs も pysad も再帰になり、実物が gs でなぜ再帰しないか (Widget の属性・評価の順) は未特定のため未修正。pysad は再帰で RecursionError を出して落ちる (gs は General::deep)。Insert の位置に "End" (大文字) を渡すと gs は Tcl エラー 1501 (Tcl の添字は "end")。根拠: `local/wake/tk1〜tk5.sad`・`pv1.sad` (リポジトリ外)、`work_session_20261116.md` §11.3。
-- 残課題 (入れ子の部品、Canvas・TabFrame の描画、見た目と操作) は変化なし。上の Widget 値の件を加える。現状の解説は docs/20 と docs/39 (docs/39 の記述が Widget 値の差に触れているかは未確認)。
+- 残課題 (入れ子の部品、Canvas・TabFrame の描画、見た目と操作) は変化なし。上の Widget 値の件を加える。現状の解説は docs/22 と docs/41 (docs/41 の記述が Widget 値の差に触れているかは未確認)。

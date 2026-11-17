@@ -1,0 +1,6 @@
+FFS;
+PageWidth=1999;
+g=Plot[{Sin[y],Cos[y]},{y,0,6}];
+Sleep[0.3]; TclEval["update"]; Sleep[0.3]; TclEval["update"];
+TclEval["proc fc {w} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq {Canvas}} {foreach i [$c find all] {lappend r \"[$c type $i] [$c coords $i] [$c gettags $i]\"}} else {set r [concat $r [fc $c]]}}; return $r}; set d {}; foreach l [fc .] {dict incr d [lindex $l 0]}; set fh [open pysad_plist_items.txt w]; puts $fh $d; foreach l [fc .] {puts $fh $l}; close $fh"];
+Exit;

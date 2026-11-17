@@ -1,0 +1,12 @@
+FFS;
+$DisplayFunction=Identity;
+g1=ParametricPlot[{Sin[3*t],Cos[2*t]},{t,0,2*Pi}];
+Print["A ",Head[g1]," ",Length[g1]];
+g2=ParametricPlot[{{2*Cos[t],2*Sin[t]},{Cos[t],Sin[t]}},{t,0,6.28}];
+Print["B ",Head[g2]," ",Length[g2]];
+g3=ParametricPlot[{{2*Cos[t],2*Sin[t]},{Cos[t],Sin[t]}},{t,0,2*Pi},Legend->"Expressions"];
+Print["C ",Head[g3]," ",Length[g3]];
+a=Hold[{Cos[t],Sin[t]}];
+g4=ParametricPlot[Evaluate[ReleaseHold[a]],{t,0,Pi}];
+Print["D ",Head[g4]," ",Length[g4]];
+Exit;

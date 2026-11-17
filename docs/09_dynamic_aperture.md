@@ -1,10 +1,10 @@
 # 09. DynamicApertureSurvey — dapert.n → tfdapert → trackd と pysad の dapert.py
 
-最終更新: 2026-11-16 (現状のスナップショット)。
+最終更新: 2026-11-17 (現状のスナップショット)。
 
-2026-11-16 の確認: DA の実装と DA のベンチに変化は無い。`pysad/dapert.py` の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14 で、本文の内容 (未対応の範囲・照合結果) は 11-06 のまま。
-根拠: `dapert.py` の冒頭と `ffscmd.fn_dasurvey` で、`Damping->True` は SADError、`DampEnough`・`ReferenceOrbit` は読まないままであることを確認した。回帰 16a は FAIL 0 と報告されている (docs/10 §5.1)。
-2026-11-16 夜の確認: 回帰の 50 ベンチをすべて実行して FAIL 0 (205 s)。DA の 16a (QUICK=1 では SKIP される 4 件の 1 つ) も単独で実行して PASS (最大差 1.4e-31、`local/wake/reg_slow4.txt`)。したがって 2026-11-14 の `pysad/track6n.py` の更新 (追跡の拡張) が 16a の結果 (RAD+FLUC の乱数列を含む) を変えていないことは確認済み。未確認: 20 small (実ラティス、RAD+FLUC、100 周) や実寸の DynamicApertureSurvey (5000 周) の再実行はしていない (長い計算になるため)。同じ夜の `l_track=0` の修正 (セッション最初の TrackParticles で最初から LOSSAMPL の外にいる粒子は最初の tapert で落ちない) は TrackParticles (`TrackRun`) 側の変更で、DA の `tapert` (`dapert.py`) への影響は 16a が通る範囲でしか見ていない (未確認)。
+確認状況 (2026-11-16 時点): `pysad/dapert.py` の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14 で、DA の実装と DA のベンチに変化はない。`Damping->True` は SADError、`DampEnough`・`ReferenceOrbit` は読まない (`dapert.py` の冒頭と `ffscmd.fn_dasurvey` で確認)。
+回帰の 50 ベンチをすべて実行して FAIL 0 (205 s)。DA の 16a (QUICK=1 では SKIP される 4 件の 1 つ) も単独で実行して PASS (最大差 1.4e-31)。したがって 2026-11-14 の `pysad/track6n.py` の更新 (追跡の拡張) は、16a の結果 (RAD+FLUC の乱数列を含む) を変えていない。
+未確認: 20 small (実ラティス、RAD+FLUC、100 周) と実寸の DynamicApertureSurvey (5000 周) は再実行していない (長い計算のため)。`l_track=0` の修正 (セッション最初の TrackParticles で、最初から LOSSAMPL の外にいる粒子は最初の tapert で落ちない) は TrackParticles (`TrackRun`) 側の変更である。DA の `tapert` (`dapert.py`) への影響は、16a が通る範囲でしか見ていない。
 
 > 出典 (すべてソースで確認): `Packages/dapert.n`, `src/tfdapert.f`, `src/trackd.f` (trackd, tinip1, tpdamp, rad62a),
 > `src/tday.f` (rad62), `src/tapert.f`, `src/tturn.f`, `src/tconv.f`, `src/initb1.f`;
@@ -156,7 +156,7 @@ DampEnough 用の閾値 `aenox/y/z = (振幅²)·em²·dampenough` もここで�
 | rad62 / rad62a / muls / 書式 | 同名関数、f-string で `f8.2 i3` | 153 文字の地図が一致 |
 | ResultOfDAPERT | `g['ResultOfDAPERT']`、戻りは `[score, [range, rows]]` | ReplacePart と同じ |
 | 進捗 | `progress` 引数 / 環境変数 `PYSAD_PROGRESS` / グローバル `PYSAD$PROGRESS` | N 周ごとに生存数と経過秒を表示 |
-| 落ちる粒子の乱数 | `track6n` の `sqrt1`/`pxy2dpz` (max(1e-200,·))、`asinz(NaN)=-π/2`、`norm2_3`、`gfloor` (NaN で gmin)、`rot1` (th2=0 は回さない)、`Prog.la_count` (DRIFT/MARK/MONI は la を減らさない) | 発散した粒子が tapert で除かれるまでの乱数の引き方 (θ=π/2 なら約 100 個、NaN なら 1 個) を SAD と揃える。SAD デバッグ版との再同期テスト (`<work-scratch>/r2_resync.py`) で 30 周分の seed が一致 (`history/work_loss_rng.md`, `history/work_loss_rng2.md`、docs/08 §7) |
+| 落ちる粒子の乱数 | `track6n` の `sqrt1`/`pxy2dpz` (max(1e-200,·))、`asinz(NaN)=-π/2`、`norm2_3`、`gfloor` (NaN で gmin)、`rot1` (th2=0 は回さない)、`Prog.la_count` (DRIFT/MARK/MONI は la を減らさない) | 発散した粒子が tapert で除かれるまでの乱数の引き方 (θ=π/2 なら約 100 個、NaN なら 1 個) を SAD と揃える。SAD デバッグ版との再同期テスト で 30 周分の seed が一致 (`history/work_loss_rng.md`, `history/work_loss_rng2.md`、docs/08 §7) |
 
 **未対応**: `Damping->True` (SADError)、`DampEnough` (無視)、`ReferenceOrbit` (読まない)、`ExpandElementValues`、
 DAPWIDTH<51 の窓 (常に行全体を起動するので、損失が多いときの起動順と NP 上限が SAD と異なる)、NPARA>1 の fork、
@@ -183,7 +183,7 @@ nw=16 周ごとの詰め替え (全粒子を同時に起動するので不要)�
 ```
 cd "<repo>"
 python run_sad.py <試験用ラティス>.lat bench_level16a.sad        # ラティス + スクリプト (SAD の gs と同じ連結)
-set PYSAD_PROGRESS=100 && python run_sad.py lat.lat da.sad   # 100 周ごとに "[dapert] turn n/N alive k/M (s)" を表示
+set PYSAD_PROGRESS=100 && python run_sad.py <ラティス>.lat <台本>.sad   # 100 周ごとに "[dapert] turn n/N alive k/M (s)" を表示
 ```
 
 SAD 側は WSL で `<SAD>/bin/gs bench_level16a.sad`。RAD+FLUC の参照を取るときは

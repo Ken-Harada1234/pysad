@@ -1,0 +1,40 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:26 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+MARK ST = ();
+MULT MM = (L=0.1 K1=0.05 K2=2.0 DY=1e-4);
+MULT MQ = (L=0.2 K1=0.4 K3=300 DY=-3e-5 DX=2e-5);
+LINE CELL1 = (QF D2 B D2 MM QD D1 MQ);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="18.14";
+ PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -19.82463 $$$       f BX    #######  #  93.429689 $$$       f NX    #######  #   5.841550 $$$       f AY    #######  #  61.190858 $$$       f BY    #######  #  695.87493 $$$       f NY    #######  #    .248879
+$$$       f LENG  #######  #  49.200000 ST/$$$      BMAGX #######  #   5.757640 ST/$$$      BMAGY #######  #  40293.667
+ Horizontal/Vertical Unstable.
+ RFSW; RAD; NOFLUC;
+ POL;
+ em = Emittance[];
+ TSVD convergence failed:          6  8.2472650E+78            NaN  2.9565710E+89
+ Print["OUT ", {PolarizationTime, SpinTune, NominalSpinTune, Polarization, PolarizationVector}/.em];
+OUT { 133.6117332301700,   .40379908026905,  6.80814822478217, 2.0750118723E-108,{ 4.722099251248E-6,   .99999998116143, -1.94048561191E-4}}
+ Exit;
+ FFS                  end:  CPU time =     0.009 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     T     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

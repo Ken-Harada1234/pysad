@@ -34,5 +34,5 @@ $$GX(B.2)=1.1+\rho\sin\theta+3.2\cos\theta$$
 全桁一致 (`ORG` の設定・解除とも)。
 
 ## 未確認・限界
-- 原点を回転 (`dchi1 dchi2 dchi3`) や上下 (`dgy`) でずらした場合は未確認。`GEO` (MARK の `GEO` キーワードによる原点指定) は別。
-- SOL 内の幾何は 07 の担当。
+- 原点を回転 (`dchi1 dchi2 dchi3`) や上下 (`dgy`) でずらした場合は未確認。MARK の `GEO` キーワードによる原点指定は別の話。
+- SOL 内の幾何は 07_spin_solenoid_special の例で扱う。

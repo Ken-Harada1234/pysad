@@ -1,6 +1,5 @@
 # fn_Matrix_LinearAlgebra (Det・Inverse・LinearSolve・Transpose・Outer・Inner・IdentityMatrix・Dot)
-
-種別: 関数 (SADHelp functions の Matrix-operations)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (SADHelp functions の Matrix-operations) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 3×3 の実対称行列 $A=\begin{pmatrix}2&1&0\\1&3&1\\0&1&4\end{pmatrix}$ について、行列式、逆行列、連立一次方程式 $Ax=b$ ($b=(1,2,3)$)、積、転置、外積・内積を一通り使う。

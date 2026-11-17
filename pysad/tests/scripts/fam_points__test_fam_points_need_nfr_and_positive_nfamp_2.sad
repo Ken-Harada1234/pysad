@@ -1,0 +1,20 @@
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5) DS = (L=0.2);
+BEND B = (L=1 ANGLE=0.39269908169872414 E1=0.5 E2=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+SEXT SF = (L=0.1 K2=8.0) SD = (L=0.1 K2=-12.0);
+MARK MK = (AX=-1.7 BX=6.3 AY=0.9 BY=3.1);
+LINE CELL = (MK QF DS SF D B D QD DS SD D B D);
+LINE RING = (8*CELL);
+FFS;
+USE RING;
+CELL;
+CALC;
+EMITX = 1E-6; EMITY = 1E-7;
+DP = 0.001;
+fit $$$ NX 2.21 NY 1.31;
+free QF K1 QD K1;
+MatchingAmplitude = {{0, 1, 1}};
+NFAMP = 4;
+go;

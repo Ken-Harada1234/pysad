@@ -1,6 +1,6 @@
 # 08. TrackParticles — SAD の tturn 系粒子追跡と pysad の track6.py / track6n.py
 
-最終更新: 2026-11-16 (現状のスナップショット)。SAD ソースの行番号は 2026-10 時点。
+最終更新: 2026-11-17 (現状のスナップショット)。SAD ソースの行番号は 2026-10 時点。
 
 > 照合対象: `<SAD>\src` (tftrack.f, tturn.f, tapert.f, tdrift.f, tquad.f, tsolqu.f, tbend.f, tbendi.f, tcav.f, tmulti.f, tsol.f, photons.f, drndsr.f, random_plugin_sad.c, tgauss_.c, tfRandom_.c) と `pysad/track6.py`, `pysad/track6n.py`, `pysad/sadrandom.py`。
 > 追跡 (TrackParticles) は CALC/Emittance[] の経路 (tturne: tquade, tbende, tthine, tcave, tradke) とは**別のルーチン**を使う。pysad もそれに合わせ、光学計算 (lattice.py / emit6d.py) とは独立に track6.py を書いている。
@@ -43,7 +43,7 @@ npara = min(NPARA, npz/npparamin + 1, ne*npz/npnlatmin + 1)     npparamin = 9, n
 
 - **粒子が 9 個以上**で分岐が起こる (8 個以下なら `npz/9 + 1 = 1`)。
 - 子プロセスごとに `kseed = kseed + 2` として `tfaddseed(kseed)` を呼び、`SeedRandom[現在の種 + kseed]` で乱数の種をずらす (tftrack.f:629-)。したがって FLUC の乱数列を SAD と pysad で一致させるには **`NPARA = 1` をスクリプトに入れる**必要がある (親子で別の乱数列になるため)。
-- wake 有効時は並列化しない (tftrack.f:133)。wake は実装済み ([21_wake.md](21_wake.md))。
+- wake 有効時は並列化しない (tftrack.f:133)。wake は実装済み ([23_wake.md](23_wake.md))。
 
 ---
 
@@ -141,7 +141,7 @@ TENT (DX/DY/ROT の入口変換) → `ttfrin(nord)` (DISFRIN=0; 六極 nord=6 �
 - `phis = 0 (TRPT) / phic (APHI≠0) / w·trf0`。`trf0` は Emittance[]/CALC が決める同期位相 (pysad は `track_particles(trf0=…)` で与える)。
 - `offset` の切り替え: `rad .or. trpt .or. autophi` なら `offset = sin(dphis), offset1 = 0`、それ以外は `offset = sin(dphis) − sin(phis), offset1 = sin(phis)`。RAD OFF では平均のエネルギー損失ぶんのキックを消す (放射損失がないので同期位相のぶんだけ打ち消す)。
 - `tlim = 1e4 (RFSW) / 0 (NORFSW)`。`t = clamp(−z·h1/p1, ±tlim)`、`dh = max(oneev − h1, V·(−2 sin(ph) cos(ph − dphis) + offset)·wsn)`、`z = −t·p2r·p0/h2 − dzn`。h1 は `dv ≤ 0.1` のとき `p1r·h0/(1 − dv + dvfs)` から取る。
-- TRPT で VOLT≠0 の空洞は `vnominal ≠ 0` で基準運動量が上がる。`track6n.cav_full` が tcav.f の ndiv 分割と p0、h0 の更新を写している ([21_wake.md](21_wake.md) §2a)。
+- TRPT で VOLT≠0 の空洞は `vnominal ≠ 0` で基準運動量が上がる。`track6n.cav_full` が tcav.f の ndiv 分割と p0、h0 の更新を写している ([23_wake.md](23_wake.md) §2a)。
 - 長さのある空洞: `vnominal = 0` (リング) なら `ndiv = 1 + int(min(|w·L|, …))`、`tcavfrin` (DISFRIN=0, mfring ≥ 0) が入口・出口で x, y に比例した横キックとエネルギー変化。
 
 ### 3.6 多極 `tmulti` (tmulti.f:37-)
@@ -167,7 +167,7 @@ tradk(np, …, al, phi0):  al ≠ 0 なら  rfluct ? tradkfn : tradkn
 
 | 項目 | 式 (tradkn: FLUC なし) | tradkfn (FLUC あり) |
 |---|---|---|
-| 曲がり角 | 基準点 (pxr0, pyr0) を phi0 だけ回した px0 と現在の px, py の外積 `(ppx, ppy, ppz)` から `theta = asinz(|pp|)` | 同じ (ただし `dpz0` を回転後に再計算) |
+| 曲がり角 | 基準点 (pxr0, pyr0) を phi0 だけ回した px0 と現在の px, py の外積 `(ppx, ppy, ppz)` から `theta = asinz(\|pp\|)` | 同じ (ただし `dpz0` を回転後に再計算) |
 | 光子数 | `anp = anrad·h1·theta`, `anrad = 5/(2√3)·rcratio` | 同じ `anp` を `tdusrn` に渡す |
 | 臨界エネルギー | `uc = cuc·h1³/p0·theta/al1`, `al1 = al − z + zr0`, `cuc = 1.5·rclassic/rcratio` | `rho = al1/theta`, `uc = cuc·h1³/p0/rho` |
 | エネルギー損失 | `de = cave·anp·uc`, `cave = 8/(15√3)` | `de = dph·uc` (dph = Σ 光子エネルギー/uc) |
@@ -189,8 +189,8 @@ tradk(np, …, al, phi0):  al ≠ 0 なら  rfluct ? tradkfn : tradkn
 |---|---|
 | 生成法 | 32 bit 符号付き合同法 `seed ← 48828125·seed` (int32 のオーバーフローで mod 2³²)。乗数 A = 5¹¹ |
 | `tran()` / `Random[]` | RANDOM_UNIFORM0: `(seed + 2³¹)/2³²` ∈ [0, 1) |
-| `tgauss()` / `GaussRandom[]` | Box–Muller: `φ = seed·π/2³¹`, `ρ = √(−2 log(seed/2³² + 0.5))`。`ρ cos φ` を返し `ρ sin φ` を `next` に保持 (`filled`)。`|値| > GCUT` は棄却 |
-| `SeedRandom[n]` | `seed = |n/2|·2 + 1` (奇数化、負なら符号付き)、`filled = 0`, `next = 0`。起動時の初期値 **17** |
+| `tgauss()` / `GaussRandom[]` | Box–Muller: `φ = seed·π/2³¹`, `ρ = √(−2 log(seed/2³² + 0.5))`。`ρ cos φ` を返し `ρ sin φ` を `next` に保持 (`filled`)。`\|値\| > GCUT` は棄却 |
+| `SeedRandom[n]` | `seed = \|n/2\|·2 + 1` (奇数化、負なら符号付き)、`filled = 0`, `next = 0`。起動時の初期値 **17** |
 | `SeedRandom[]` の戻り | `{"SAD", seed, filled, next}` (内部状態を uint32 4 語で dump: seed, filled, next の下位/上位 → 数値 4 個 + 名前で 5 要素。tfRandom_.c:177-195)。pysad の `SadRandom.dump()` が対応し、FFS 層は `{"SAD", seed, filled, next, 0}` で表示 (seed は符号なし表示) |
 
 `tfaddseed(kseed)` (NPARA > 1 の子プロセス) は `SeedRandom[]` の 2 番目の要素 (seed) に kseed を足して `SeedRandom[seed + kseed]` を呼ぶ。
@@ -253,12 +253,11 @@ tradk(np, …, al, phi0):  al ≠ 0 なら  rfluct ? tradkfn : tradkn
 | Level 20 small | DynamicApertureSurvey RAD+FLUC 153 粒子 × 100 周 (実ラティス) | 地図・Score 63 一致。最終 seed は不一致 (カオス、下記)。再同期テストは 30 周で seed 全一致 |
 
 **落ちる粒子の乱数消費** (詳細は `docs/history/work_loss_rng.md`, `docs/history/work_loss_rng2.md`): 粒子が落ちる周は、発散した粒子が tapert で除かれるまで光子の乱数を引き続ける (θ=π/2, anp≈94 なら約 100 個、NaN なら 1 個; §4) ので、その間の消費数を SAD と揃える必要がある。pysad が SAD に合わせている点は、`sqrt1`/`pxy2dpz`/`asinz`/`norm2`/`xsincos` の inf/NaN の出方 (§6.2)、`tapert` の la の数え方 (§2.3)、`rot1` が th2=0 のとき回さないこと (§3.2)、tradkfn の `max(gmin, g+dg)` が NaN で gmin を返すこと (`gfloor`, §4)。
-判定は**再同期テスト** (`<work-scratch>/r2_resync.py`) で行う: SAD のデバッグ版 (各要素の全粒子の状態と seed を印字) の状態から pysad の次の 1 要素を走らせて seed・座標を比べる。30 周 (小規模 DynamicApertureSurvey の 153 粒子、93 030 記録) のすべてで seed が SAD と一致する。
+判定は**再同期テスト**で行う: SAD のデバッグ版 (各要素の全粒子の状態と seed を印字) の状態から pysad の次の 1 要素を走らせて seed・座標を比べる。30 周 (小規模 DynamicApertureSurvey の 153 粒子、93 030 記録) のすべてで seed が SAD と一致する。
 **自由に走らせた最終 seed は一致しない**: 落ちる粒子は発散中に光子を引き続け、その有無が 1e-11 の入力差 (丸め誤差の増幅) で逆になる。
 SAD 自身も初期座標の相対 1e-16 の摂動で 1 周後の seed が変わる (12 回中 2 回、1e-10 では 12 回中 12 回) ので、この基準での一致は期待できない。
-判定は再同期テストの seed 一致で行う。
 
-**未対応**: PHOTONS (tdusrnpl / tphrec の光子リスト)、NPARA > 1 の fork、BOUND=0 の SOL、SOL の DX/DY/DZ/CHI と F1、SOL 領域内の BEND・MULT・CAVI (§9)、空間電荷、wake のうち MULT の AUTOPHI・F1・FRINGE (21_wake.md)、BEAM/WIG 要素、LOSSMAP の出力列。
+**未対応**: PHOTONS (tdusrnpl / tphrec の光子リスト)、NPARA > 1 の fork、BOUND=0 の SOL、SOL の DX/DY/DZ/CHI と F1、SOL 領域内の BEND・MULT・CAVI (§9)、空間電荷、wake のうち MULT の AUTOPHI・F1・FRINGE (23_wake.md)、BEAM/WIG 要素、LOSSMAP の出力列。
 (POL のスピン追跡、tmulta、COORD・TCAVI・UND・MAP、WAKE、BEAMBEAM は §9 で対応済み。)
 
 ---
@@ -282,22 +281,22 @@ SAD の MAIN の `TRACK USE=RING NPART= TURNS= NX=(..) NY=(..) NZ=(..);` (`ActTr
 
 ---
 
-## 9. 2026-11 に加わった追跡の範囲と既知の差
+## 9. 追加した要素・機能の追跡の範囲と既知の差
 
 ### 9.1 要素ごとの対応 (gs と照合した範囲は各文書)
 
 | 要素・機能 | 追跡の実装 | 一致の範囲 | 文書 |
 |---|---|---|---|
-| WAKE | `track6n.turn`・`TrackRun.set_wake` (TRPT かつ LWAKE/TWAKE のときだけ有効)、CAVI の分割 `cav_full`、`mult_full` | docs/21 の範囲 (RAD ON は wake と別に 1e-6 程度ずれる記述あり。docs/21 §参照) | docs/21 |
-| BEAMBEAM | `pysad/beambeam.py` (弱ビームが強ビームから z スライスごとにキック)。光学には効かない | docs/22 | docs/22 |
-| COORD | `K_COORD`。`tturn` の icCOORD は `exit` なので tapert までの要素数 la を減らさない。`dv` は更新しない | 200 粒子 3 周で相対 0 | docs/23 |
-| TCAVI | `K_TCAV` (`tcav.apply_tcav`)。放射は RAD と FLUC の両方が ON のときだけ。RANKICK・RANPHASE は NotImplementedError | 200 粒子 3 周、RAD FLUC まで相対 0 | docs/24 |
-| UND | `K_UND`。K64 は磁場を設定できず磁場なしのドリフト (B37) | 20 粒子 3 周で相対 0 | docs/25 |
-| MAP | `K_MAP` → `ffscmd._map_track` (`ExternalMap["TRACK", l, nt, x]`)。落ちた粒子もフラグ≠0 なら復活する (K64 の `doinject`) | 10 桁。MAIN の TRACK・DA・Touschek は MAP を恒等で通す | docs/28 |
-| MULT (ANGLE≠0) | `K_MULTA` (`multa.k_multa`)。放射・FLUC・TRPT の ndivrad ×10 も BEND と同じ | 11 通り 20 粒子 3 周で相対 0 | docs/26 |
-| SOL | `K_SOL_*`。BOUND≠0 の領域。K64 は SOL (BOUND≠0) の長さを周長 `circ` に入れない (`emit6d._emit_circ`、追跡も同じ) | Level 9 (§7) | docs/27 |
+| WAKE | `track6n.turn`・`TrackRun.set_wake` (TRPT かつ LWAKE/TWAKE のときだけ有効)、CAVI の分割 `cav_full`、`mult_full` | docs/23 の範囲 (RAD ON は wake と別に 1e-6 程度ずれる記述あり。docs/23 §参照) | docs/23 |
+| BEAMBEAM | `pysad/beambeam.py` (弱ビームが強ビームから z スライスごとにキック)。光学には効かない | docs/24 | docs/24 |
+| COORD | `K_COORD`。`tturn` の icCOORD は `exit` なので tapert までの要素数 la を減らさない。`dv` は更新しない | 200 粒子 3 周で相対 0 | docs/25 |
+| TCAVI | `K_TCAV` (`tcav.apply_tcav`)。放射は RAD と FLUC の両方が ON のときだけ。RANKICK・RANPHASE は NotImplementedError | 200 粒子 3 周、RAD FLUC まで相対 0 | docs/26 |
+| UND | `K_UND`。K64 は磁場を設定できず磁場なしのドリフト (B37) | 20 粒子 3 周で相対 0 | docs/27 |
+| MAP | `K_MAP` → `ffscmd._map_track` (`ExternalMap["TRACK", l, nt, x]`)。落ちた粒子もフラグ≠0 なら復活する (K64 の `doinject`) | 10 桁。MAIN の TRACK・DA・Touschek は MAP を恒等で通す | docs/30 |
+| MULT (ANGLE≠0) | `K_MULTA` (`multa.k_multa`)。放射・FLUC・TRPT の ndivrad ×10 も BEND と同じ | 11 通り 20 粒子 3 周で相対 0 | docs/28 |
+| SOL | `K_SOL_*`。BOUND≠0 の領域。K64 は SOL (BOUND≠0) の長さを周長 `circ` に入れない (`emit6d._emit_circ`、追跡も同じ) | Level 9 (§7) | docs/29 |
 
-### 9.2 POL のスピン追跡 (`track6.py`、docs/34)
+### 9.2 POL のスピン追跡 (`track6.py`、docs/36)
 
 `POL` かつ `RAD` が ON のときだけ、`TrackParticles` が粒子ごとのスピン (`_Particle.s`、`bsi`) を `photons.f` の `sprot` (tradk の中) の直訳で追う。RAD OFF ではスピンは変わらない (K64 も同じ)。
 POL ON・RAD ON の `fn_track` は高速追跡 (`TrackRun`) を使わず Python の追跡 (track6) に切り替えるので、**LOSSAMPL の損失の処理 (§2.3 の tapert・flag) がなく粒子は落ちない** (APERT 要素では落ちる。§2.4)。
@@ -306,23 +305,23 @@ POL ON・RAD ON の `fn_track` は高速追跡 (`TrackRun`) を使わず Python 
 gs と 4e-12 以下 (NOFLUC・FLUC): 平面リング、ずれ・回転のあるリング、MULT (K1 K2 K3)、K1 の BEND、SEXT、薄い MULT、SOL 領域内のドリフト (`test_spin_track.py`)。
 未確認: SOL (bz≠0) 内の四極のスピン (下の差 ③ のため)、空洞・MAP のスピン。
 
-### 9.3 RADLIGHT の軌道 (`ffscmd._RadLight`、docs/34)
+### 9.3 RADLIGHT の軌道 (`ffscmd._RadLight`、docs/36)
 
 `TrackParticles` は RADLIGHT のとき RAD と TRPT を ON にし、`{{ls または ld, 座標}, 軌道}` を返す。軌道は粒子ごとの {t, x, y, z} の 4 本の表で、`RadiationField` の入力になる。
 K64 の `tlinit`・`tlstore`・`tlresult` の直訳で、gs と差 0 (2 粒子・複数周・始点 ls≠1、`test_radlight.py`)。K64 の癖: 記録するのは各区間 (tturn) の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけで、**BEND と曲げのある MULT の中は記録しない**。
 `tlinit` が geo0 の軸 1・2 を設定しないので**横方向の座標は軌道に入らない** (進行方向に沿った点だけが並ぶ)。位置は straight (dphi=0) の積み上げで、BEND で向きが変わらない。
-そのため `example.oide.sad` のように B を ANGLE=0 の STEER にする流れでないと、意味のある場にならない。
+そのため、B を ANGLE=0 の STEER にする流れでないと、意味のある場にならない。
 
 ### 9.4 SOL 領域の追跡の限界
 
 領域内に置ける要素は DRIFT、QUAD (K1≠0)、L=0 の要素、SOL。BEND・MULT・CAVI は未対応 (NotImplementedError)。領域内の直線 BEND は K64 の `tsol.f` どおりに `tdrift(al, bzs, phiy, phix, …)` を呼ぶ直訳を試したが、
-gs は偏向をほぼ無視し (BZ=0.5 T で ANGLE=0.1 でも位置・角度の変化が 1e-5)、pysad の直訳 (ANGLE·距離だけ曲がる) と合わないので取り下げた。原因は未確認 (K64 側の癖かもしれない)。生の gs の出力は `local/wake/ps23.sad`〜`ps28.sad`。MULT・CAVI の領域内は未着手。
+gs は偏向をほぼ無視し (BZ=0.5 T で ANGLE=0.1 でも位置・角度の変化が 1e-5)、pysad の直訳 (ANGLE·距離だけ曲がる) と合わないので取り下げた。原因は未確認 (K64 側の癖かもしれない)。MULT・CAVI の領域内は未着手。
 
 ### 9.5 損失の処理
 
 - 損失の判定・入れ替えは `tapert` (§2.3) のとおり。高速追跡 (`track6n.turn` の `apert`) と MAIN の TRACK (§8) にある。track6 (Python) 側は APERT 要素の損失だけ扱う (§2.4。LOSSAMPL の判定はなく、POL のスピン追跡でも LOSSAMPL では落ちない)。
 - **POL のスピン追跡は損失の処理なし** (9.2)。TRPT で最初から LOSSAMPL の外の粒子の扱いは次項。
-- **セッション最初の TrackParticles の `l_track=0`** (2026-11-16 に gs と照合して修正): K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書く。`l_track` は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。このため**最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり、最初から LOSSAMPL の外にいる粒子は落ちず**、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。pysad は以前、常に最初の要素で落としていた。`TrackRun.l_track0` と `k_apert` の lcur==0 で再現し、gs (1 回目・2 回目) と、元の K64 (B33 で SIGSEGV) を直した SAD (`b33.sad`: LOSSAMPL=1e-4、3 粒子 x0={1e-3,1e-6,2e-3}、NORAD、TRPT、2 周、15 値) と全桁一致 (`lm2`〜`lm4.sad`、`test_small_items.py`)。元の K64 は落ちるので「正しい基準」は直した版。**B29**: QUAD に `RAD=1` を書くと COD・エミッタンスが 0 になるのはバグではなく仕様 (K64 は `krad = (RAD_QUAD == 0) .and. al /= 0`: tturn.f:360、tsol.f:677、tturne.f:572。要素の RAD が 0 以外ならその要素の放射を止める)。
+- **セッション最初の TrackParticles の `l_track=0`** (gs と照合済み): K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書く。`l_track` は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。このため**最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり、最初から LOSSAMPL の外にいる粒子は落ちず**、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。`TrackRun.l_track0` と `k_apert` の lcur==0 で再現し、gs (1 回目・2 回目) と、元の K64 (B33 で SIGSEGV) を直した SAD (LOSSAMPL=1e-4、3 粒子 x0={1e-3,1e-6,2e-3}、NORAD、TRPT、2 周、15 値) と全桁一致 (`test_small_items.py`)。元の K64 は落ちるので「正しい基準」は直した版。**B29**: QUAD に `RAD=1` を書くと COD・エミッタンスが 0 になるのはバグではなく仕様 (K64 は `krad = (RAD_QUAD == 0) .and. al /= 0`: tturn.f:360、tsol.f:677、tturne.f:572。要素の RAD が 0 以外ならその要素の放射を止める)。
 - COORD は `tturn` の `exit` なので la を減らさない (9.1)。MAP は落とす粒子をフラグ 0 で返せ、フラグ≠0 なら復活する。
 
 ### 9.6 既知の差 (gs と合わない。いずれも `docs/history/work_unimpl.md`、スピンなしでも出る・未調査)
@@ -330,7 +329,7 @@ gs は偏向をほぼ無視し (BZ=0.5 T で ANGLE=0.1 でも位置・角度の�
 1. **BEND に `F1=0.1 FRINGE=3` を付けて RAD ON で追跡すると gs と合わない** (相対 0.7)。DX・DY・ROTATE だけなら 1e-13 で一致する。原因は特定していない (2026-11-16 夜の確認では取り上げていない)。NORAD でも合うかは未確認。
 2. **L≠0 の CAVI に DX・DY を付けた追跡が RAD ON で gs と 1e-3 (相対) ずれる**。原因は未調査 (2026-11-16 夜の確認では取り上げていない)。
 3. **SOL (BZ≠0) 領域内の四極 + RAD の追跡**: 保存済みの参照 `bench_level9.sad` (gs の出力、2026-10-14) は pysad と一致するが、現在の gs (2026-10-19 ビルド) は同じ入力で別の値を返す (`S R T1 P1` の x が −.0027867898 から −.0014539780)。NORAD は両方で一致。
-   **保存済みの参照と現在の gs のどちらが正しいかは断定できないが、2026-11-16 夜の切り分け (単一粒子の 1 周追跡、2.5 GeV、RAD NOFLUC、emit のあと。`b9a`〜`b9d.sad`) で、pysad ではなく現在の gs が誤っている疑いが強くなった**。SOL の BZ を 0 → 0.01 T に変えると:
+   **保存済みの参照と現在の gs のどちらが正しいかは断定できないが、2026-11-16 夜の切り分け (単一粒子の 1 周追跡、2.5 GeV、RAD NOFLUC、emit のあと) で、pysad ではなく現在の gs が誤っている疑いが強くなった**。SOL の BZ を 0 → 0.01 T に変えると:
    (1) 領域内がドリフトだけ (`SB D1 SE`): gs = pysad (BZ=0・0.01 とも 9 桁以上で一致)。
    (2) 領域内が四極 (`SB QD SE`): BZ=0 は gs = pysad。BZ=0.01 で gs は x=6.33e-4、y=−5.6e-16 (横の結合なし)、pysad は x=4.04e-4、y=1.1e-8 (BZ に連続)。
    (3) `SB D1 QD SE`、BZ=0.01: gs の結果が四極なしの `SB D1 SE` と 8 桁で一致する (x=1.194038e-4、px=−5.363477e-4)。**gs は RAD ON かつ BZ≠0 の領域内で四極の収束・発散力を入れていないように振る舞う**。BZ=0.01 と 0.2 でも gs の x はほぼ同じ (2.95e-5、BZ=0 の −2.23e-4 とは大きく違う) ので BZ に連続でない。

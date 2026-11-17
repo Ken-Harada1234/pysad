@@ -25,9 +25,9 @@ e[Insert]={"end","XY"};   lb[Insert]={"end","item1"};   lb[Insert]={"end","item2
 
 ## gs と pysad の比較
 - 変数との結びつき (`entry=abc`、`rv=2`、`sv=8`) は gs・pysad で一致 (○)。
-- **○ メソッドも一致 (2026-11-17 に修正)**: `e[Insert]={"end","XY"}` で Entry が `abcXY`、`lb[Insert]` 2 回で ListBox が 2 項目、`Head[e]` は `Widget` で gs と同じ。以前は `Head[e]` が `Symbol` で `e[...]` が何も呼ばなかった (`Tkinter.n` の入れ子の規則で `With` が呼び出し元の引数名 (ユーザーの `w`) を見て、`a$:=Widget[a$,…]` が別名に付いていた。docs/20、試験 `test_widget_values_and_methods_like_gs`)。
-- **窓の親が違う (pysad の既知の差、docs/39 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
+- **○ メソッドも一致 (2026-11-17 に修正)**: `e[Insert]={"end","XY"}` で Entry が `abcXY`、`lb[Insert]` 2 回で ListBox が 2 項目、`Head[e]` は `Widget` で gs と同じ。以前は `Head[e]` が `Symbol` で `e[...]` が何も呼ばなかった (`Tkinter.n` の入れ子の規則で `With` が呼び出し元の引数名 (ユーザーの `w`) を見て、`a$:=Widget[a$,…]` が別名に付いていた。docs/22、試験 `test_widget_values_and_methods_like_gs`)。
+- **窓の親が違う (pysad の既知の差、docs/41 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
 - **`Head[w]`・`Head[b]`**: gs・pysad とも `Widget` (○)。`tree:` の `Entry s6tv_8` (gs) と `Entry s2tv_4` (pysad) の番号の差は、gs が起動時に「Return to SAD」ボタンなどのウィジェットを先に作っていることによる (表示の番号の差)。
 
 ## 未確認・限界
-Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は `update` で窓を作り、Tcl の `invoke` で操作を模している)。 `SpinBox`・`OptionMenu`・`ScrollBar`・`TextEditor` は例にしていない。
+Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は `update` で窓を作り、Tcl の `invoke` で操作を模している)。`SpinBox`・`OptionMenu`・`ScrollBar`・`TextEditor` は例にしていない。

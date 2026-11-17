@@ -1,12 +1,13 @@
 # FFS EMIT (EMITTANCE)
-種別: FFS コマンド / フォルダ: 04_emittance_radiation / ラティス: `00_lattice/FODO_ring_V4MV.sad` (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる `RINGQ` を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz/ フラグ: RFSW ON, RAD ON。
-
-- **ラティスについて**: `FODO_ring.sad` の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで **RF 電圧 4 MV の `FODO_ring_V4MV.sad` を新しく追加**した。
-- RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと `DL=0. IN TCAL` で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の `RINGQ = (ORIGIN RF 24*CELLQ)` を使う (磁石の並びは同じ、位相だけ違う)。
-- SAD の BEND の `E1`, `E2` は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の `K1` は積分強度 (k=K1/L)。
+種別: FFS コマンド / フォルダ: 04_emittance_radiation / ラティス: `00_lattice/FODO_ring_V4MV.sad` (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる `RINGQ` を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz / フラグ: RFSW ON, RAD ON。
 
 ## 何を見る例か
-`EMIT;` が閉軌道、拡張 Twiss、$U_0$、減衰、平衡エミッタンス・エネルギー拡がり・バンチ長・シンクロトロン振動数を一度に表示する。その値を放射積分の式 ($I_1\ldots I_5$) で検算する。
+`EMIT;` は、閉軌道、拡張 Twiss、$U_0$、減衰、平衡エミッタンス、エネルギー拡がり、バンチ長、シンクロトロン振動数を一度に表示する。この値を放射積分 ($I_1\ldots I_5$) の式で検算する。
+
+## ラティスについて
+- `FODO_ring.sad` の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで RF 電圧を 4 MV にした `FODO_ring_V4MV.sad` を追加した。
+- RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと `DL=0. IN TCAL` で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の `RINGQ = (ORIGIN RF 24*CELLQ)` を使う (磁石の並びは同じ、位相だけ違う)。
+- SAD の BEND の `E1`, `E2` は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の `K1` は積分強度 (k=K1/L)。
 
 ## スクリプト
 ```
@@ -14,7 +15,7 @@ USE RINGQ;  CELL;  CALCULATE;
 RFSW;  RAD;
 EMIT;
 ```
-全文は `FFS_EMITTANCE.sad`。式の検算は `formula_check.py` (SAD を使わず、3x3 行列で $I_1\ldots I_5$ を自前に積分し、結果を `formula_check.txt` に書く)。
+全文は `FFS_EMITTANCE.sad`。式の検算は `formula_check.py` が行う (SAD を使わず、3x3 行列で $I_1\ldots I_5$ を自前で積分し、結果を `formula_check.txt` に書く)。
 
 ## 結果の読み方 (gs の出力から)
 | 行 | 値 | 意味 |
@@ -41,7 +42,7 @@ $$\epsilon_x=C_q\gamma^2\frac{I_5}{J_xI_2},\quad \sigma_\delta^2=C_q\gamma^2\fra
 
 $C_\gamma=\frac{4\pi}{3}\frac{r_e}{(mc^2)^3}=8.846\times10^{-5}$ m/GeV³、$C_q=\frac{55}{32\sqrt3}\frac{\hbar}{mc}=3.832\times10^{-13}$ m、$T_0=C/c$、$h=f_{RF}/f_0$。
 
-`formula_check.py` の結果 (自前に積分した $I$ で式を計算):
+`formula_check.py` の結果 (自前で積分した $I$ から式で計算した値):
 
 | 量 | 式 (I4 の端の項 係数 -1) | 式 (係数 -2) | RADINT gs | EMIT gs | EMIT pysad |
 |---|---|---|---|---|---|
@@ -52,17 +53,17 @@ $C_\gamma=\frac{4\pi}{3}\frac{r_e}{(mc^2)^3}=8.846\times10^{-5}$ m/GeV³、$C_q=
 | $\tau_z$ [s] | 6.56755e-4 | 6.64057e-4 | 6.568e-4 | 6.64646e-4 | 6.64646e-4 |
 | $\epsilon_x$ [m] | 1.7767e-7 | 1.73499e-7 | 1.7767e-7 | 1.73577e-7 | 1.73577e-7 |
 | $\sigma_\delta$ | 1.18311e-3 | 1.18967e-3 | 1.1831e-3 | 1.1914e-3 | 1.1914e-3 |
-| $\alpha_c$ | 0.0221368 | 0.0221368 | 0.022137 | 0.0221837 | 0.022180 (表示桁) |
+| $\alpha_c$ | 0.0221368 | 0.0221368 | 0.022137 | 0.0221837 | 0.02218 (表示桁) |
 | $\nu_s$ | 0.0275961 | 0.0275961 | 0.027596 | 0.0276253 | 0.0276253 |
 | $\sigma_z$ [m] | 0.0159506 | 0.016039 | 0.0159506 | 0.0160597 | 0.0160597 |
 
 - 「係数 -1」の列は、SAD の RADINT と同じ $I_4$ (= 0.0802372。自前の積分も 0.0802373 と一致)。式は RADINT の表示と相対 7e-5 以内で一致した ($\epsilon_x$ は 1.6e-6、$J_x$ は 3e-8)。
-- **EMIT (6D の一周写像から求める) の $J_x=0.9651$ は RADINT の 0.9415 と 2.4% 違う。** 原因を切り分けた: RFSW OFF でも同じ (0.96487)、したがって RF 空洞の分散位置ではない。$I_4$ の端の項 (BEND の端の角 $\epsilon$ の項 $\eta\tan\epsilon/\rho^2$) の係数を -1 (RADINT) から -2 にすると $J_x=0.9641$ になり、EMIT の 0.9651 に 0.1% まで近づく。つまり RADINT (INTGRL.f) は端の項を片側 1 回分しか入れておらず、EMIT のほうが一周写像に忠実、というのが現時点の見立て (**ソースでは確認していない**。端の点の曲率を 1/(2ρ) とみなす扱いかもしれない)。この差は $\epsilon_x$ に 2.4%、$\sigma_\delta$ に 0.7% の差として出る。
+- **EMIT (6D の一周写像から求める) の $J_x=0.9651$ は RADINT の 0.9415 と 2.4% 違う。** 原因を切り分けた。RFSW OFF でも同じ (0.96487) なので、RF 空洞の分散位置が原因ではない。$I_4$ の端の項 (BEND の端の角 $\epsilon$ の項 $\eta\tan\epsilon/\rho^2$) の係数を -1 (RADINT) から -2 にすると $J_x=0.9641$ になり、EMIT の 0.9651 に 0.1% まで近づく。つまり RADINT (INTGRL.f) は端の項を片側 1 回分しか入れておらず、EMIT のほうが一周写像に忠実、というのが現時点の見立て (**ソースでは確認していない**。端の点の曲率を 1/(2ρ) とみなす扱いかもしれない)。この差は $\epsilon_x$ に 2.4%、$\sigma_\delta$ に 0.7% の差として出る。
 - $\alpha_c$: RADINT の $I_1/C=0.022137$ と EMIT の 6D の $\alpha=0.0221837$ は 0.2% 違う (SAD の MomentumCompaction は 6D の値で、RADINT とは別。docs/10 の level 1)。$\nu_s$ に EMIT の $\alpha$ を入れた式の値は 0.0276253 で EMIT と 6 桁一致。
 - $\sigma_z=\alpha_cc\,\sigma_\delta/(2\pi f_s)$ に EMIT の値を入れると 16.079 mm (EMIT の Bunch Length 16.060 mm、0.12% 差)。
 
 ## gs と pysad の比較
-○ 一致。EMIT 報告の全行が表示桁で一致する。差は 0 同然の量だけ: Emittance Y が gs 2.8e-38、pysad 2.4e-50 (どちらも 0)、Beam tilt、`alpha` の表示桁 (gs `.0221837`、pysad `.02218`)。
+○ 一致。EMIT 報告の全行が表示桁で一致する。差は 0 同然の量だけ: Emittance Y (gs 2.8e-38、pysad 2.4e-50。どちらも 0 とみなせる)、Beam tilt、`alpha` の表示桁 (gs `.0221837`、pysad `.02218`)。
 
 ## 未確認・限界
 - 使った条件: 3 GeV、周長 105.6 m、$V_{RF}=4$ MV、$f_{RF}=500$ MHz、RAD ON、FLUC は既定、結合なし (平面リング)、六極は K2=0。

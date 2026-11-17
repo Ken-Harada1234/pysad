@@ -1,0 +1,47 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:07 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ Print["NI ",NIntegrate[x^2,{x,0,1}]];
+???NIntegrate::conv:  Poor Convergence 2.28315984406594e-13
+NI .3333333333333481
+ Print["NI2 ",NIntegrate[Sin[x],{x,0,Pi},AccuracyGoal->1e-8]];
+NI2 1.9999999995870694
+ r=Fit[{{0,1},{1,3},{2,7},{3,13.2}},a+b x+c x^2,x,{a,0},{b,0},{c,1}];
+ Print["Fa ",{a,b,c}/.r];
+Fa {1.01,.9100000000000006,1.0499999999999996}
+ Print["Fc ",ChiSquare/.r];
+Fc .0019999999999999814
+ Print["Fg ",GoodnessOfFit/.r];
+Fg .3173105078629139
+ Print["Fi ",ConfidenceInterval/.r];
+Fi {.08185845541235924,.13145732335355942,.04199250159410424}
+ r=Fit[{{0,1,.1},{1,3,.1},{2,7,.2},{3,13.2,.1}},a+b x+c x^2,x,{a,0},{b,0},{c,1}];
+ Print["Fb ",{a,b,c}/.r];
+Fb {1.004255319148937,.9425531914893619,1.0404255319148934}
+ Print["Fd ",ChiSquare/.r];
+Fd .08510638297872336
+ r=FindRoot[x^2==2,{x,1}];
+ Print["FR ",x/.r];
+FR 1.4142135623746899
+ r=FindRoot[{x+y==3,x y==2},{x,0.5},{y,2.5}];
+ Print["FS ",{x,y}/.r];
+FS {.9999999999999991,2.000000000000001}
+ Print["FG ",FitGaussian[Table[Sin[1.7 k]+Cos[3.1 k^2]*.3,{k,100}]]];
+FG {.8275559516159802,.012067673076785912,{.011240680298617984,.010540347287583861},403.26814032862774}
+ r=Fit[{{0,1.05,.1,.1},{1,2.9,.1,.1},{2,5.2,.2,.1},{3,6.8,.1,.2},{4,9.3,.1,.1}},a+b*x,x,{a,0},{b,1}];
+ Print["FX ",{a,b}/.r," ",ChiSquare/.r];
+FX {.9489011871879525,2.0510404949161267} 2.038854352369017
+ Print["SC ",SelectCases[{1,2,3,4,5},{EvenQ,True&}]];
+SC {{2,4},{1,3,5}}
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.013 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

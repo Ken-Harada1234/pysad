@@ -1,0 +1,55 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:09 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+
+! MAIN レベルの TRACK (古典 SAD の書き方)。SAD K64 では EMIT/TRACK が動かないので pysad だけで実行する
+! (SAD 側の参照は bench_level27a.sad: 同じ手順を SADScript の TrackParticles で書いたもの)
+
+ON RFSW;
+OFF RAD;
+EMIT USE=RING;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x7706e9c2a494 in ???
+#1  0x7706e9c29085 in ???
+#2  0x7706e9645caf in ???
+#3  0x5fa73ab84e75 in ???
+#4  0x5fa73ab82c93 in ???
+#5  0x5fa73ab80af5 in ???
+#6  0x5fa73abc5bac in ???
+#7  0x5fa73abe6680 in ???
+#8  0x5fa73ab77c29 in ???
+#9  0x5fa73aa8e2de in ???
+#10  0x7706e962a600 in ???
+#11  0x7706e962a717 in ???
+#12  0x5fa73aa8e334 in ???
+#13  0xffffffffffffffff in ???

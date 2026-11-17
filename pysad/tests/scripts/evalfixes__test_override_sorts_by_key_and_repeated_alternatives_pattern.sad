@@ -1,0 +1,13 @@
+FFS;
+PageWidth=1999;
+Print["A ",Override[{b->1,B->2,a->3,Zed->4,"x"->5,c->1},{c->9}]];
+Print["B ",Override[{b->1},{a->2},{b->3}]];
+Print["D ",Override[{Z->1,z->2,Y->3,y->4}]];
+P[R[min_,max_,opt:((_Rule|_RuleDelayed)...)]]:=1;
+P[R[min0_,max0_,g__,opt:((_Rule|_RuleDelayed)..)]]:=2;
+P[R[min_,max_,g__]]:=3;
+Print["E ",P[R[1,2]]," ",P[R[1,2,a->1]]," ",P[R[1,2,a->1,b->"x"]]," ",P[R[1,2,{q}]]," ",P[R[1,2,{q},a->1]]," ",P[R[1,2,{q},{r}]]];
+Q[__]={};
+Q[a_,b_]:=2;
+Print["F ",Q[1,2]," ",Q[1,2,3]];
+Exit;

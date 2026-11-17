@@ -1,6 +1,6 @@
 # 05. CELL/INS の光学計算 (CALC) — SAD の qcell/qcod/qtwiss と pysad の lattice.py
 
-> 最終更新: 2026-11-16 (現状のスナップショット)。SAD ソース (`<SAD>/src`) と `pysad/lattice.py`, `pysad/ffscmd.py`, `pysad/match6.py` を照合して記述。行番号は 2026-10 時点。
+> 最終更新: 2026-11-17 (現状のスナップショット)。SAD ソース (`<SAD>/src`) と `pysad/lattice.py`, `pysad/ffscmd.py`, `pysad/match6.py` を照合して記述。行番号は 2026-10 時点。
 > 旧版ノート (`<work-olddocs>/sad_cell_calc_sources.md`, `sad_cod_notes.md`, `sad_twiss_storage_notes.md`) の内容は本書に含む。
 
 ## 1. 全体の流れ
@@ -23,7 +23,7 @@ tffsa (CALC)            FFS コマンド解釈。cell なら tfsetupcell、dp(-n
 |---|---|---|
 | 1 周の評価 | `qtwiss1(mat=.true.)`: 軌道 cod の上で要素ごとの 4×5 行列 (第5列 = ∂/∂δ) を積算 | `_one_turn_cod_matrix`: 要素ごとの 6×6 Jacobian と出口軌道 |
 | 閉じる成分 | (x, px, y, py) のみ。δ は固定、z は閉じない | 同じ (`cod0[5]=delta`, `cod0[4]=0`) |
-| 収束判定 | `conv = min(1e-10, 1e-18(1+(δ/0.001)²+nlat))`、残差 `r = dx²/βx + βx(dpx+αx/βx·dx)² + (y 同様)` (1 周のずれの Courant–Snyder 不変量)。α, β は一周行列から `cx=(T11+T22)/2`、`|cx|>1 なら 1/cx` で推定 | `_qcod_periodic` に同式を直訳 |
+| 収束判定 | `conv = min(1e-10, 1e-18(1+(δ/0.001)²+nlat))`、残差 `r = dx²/βx + βx(dpx+αx/βx·dx)² + (y 同様)` (1 周のずれの Courant–Snyder 不変量)。α, β は一周行列から `cx=(T11+T22)/2`、`\|cx\|>1 なら 1/cx` で推定 | `_qcod_periodic` に同式を直訳 |
 | 更新 | Newton: `(T−I)·cod0_new = T·cod0 − cod_end` を `tsolvg` (SVD, 閾値 1e-8) で解く | `np.linalg.solve` |
 | 減衰 | r が悪化: `fact≥1e-3` なら `cod0=(1−fact)·cod00+fact·cod0`, fact を半減。`fact<1e-3` なら fact×16 で逆方向に外挿。改善時は `fact=min(0.5,2fact)` | 同じ |
 | 上限 | itmax=10 (最大 11 周) | 同じ |
@@ -61,18 +61,17 @@ pysad: `FFSState._twmov_to_mark(rows)` が CELL CALC (4D/CALC6D) の後に MARK 
 | 要素 | SAD の経路 | 内容 | pysad |
 |---|---|---|---|
 | DRIFT | インライン | `pzi = (1+δ)+dpz`, `a12 = L/pzi + px²·L/pzi³` など正準運動量での厳密ドリフト。`cod(5) += dpz·ale − dvemit·L` | `_drift_matrix_at_cod` + 同式で cod 更新 |
-| QUAD | `qquad` → `tquade` | `L=0` なら tthine(nord=4, ak=K1 の積分値、K1<0 の −90° 回転なし。`L=0 K1 ROTATE=45 deg` の SQ が該当)、`K1=0` なら tdrife0。`K1·L<0` は θ−π/2 回転して `−K1`。`tsolrote(…,.true.)` で DX/DY/ROT の座標へ入り、`tqfrie` (ハードエッジのフリンジ、`DISFRIN=0` のとき)、`tqlfre` (線形フリンジ、`FRINGE=1,3` で入口、`2,3` で出口。係数は `tsetfringepe`: f1in = F1+F1K1F 等、`K1≠0, L≠0` のときだけ)、`tsolque` 本体 (`ndiv = 1+int(|L·K1|/0.1)`)、出口で逆順に戻す。z 写像は `xs = x − sin x` | `_quad_offset_map` → `_tquade_cod` (`_tqfrie_cod`, `_tqlfre_cod`, `_tsolque_cod`)。F1/F2/FRINGE/DISFRIN を `_quad_fringe_params` で読む。逆向き要素の mfr 変換は未対応 |
+| QUAD | `qquad` → `tquade` | `L=0` なら tthine(nord=4, ak=K1 の積分値、K1<0 の −90° 回転なし。`L=0 K1 ROTATE=45 deg` の SQ が該当)、`K1=0` なら tdrife0。`K1·L<0` は θ−π/2 回転して `−K1`。`tsolrote(…,.true.)` で DX/DY/ROT の座標へ入り、`tqfrie` (ハードエッジのフリンジ、`DISFRIN=0` のとき)、`tqlfre` (線形フリンジ、`FRINGE=1,3` で入口、`2,3` で出口。係数は `tsetfringepe`: f1in = F1+F1K1F 等、`K1≠0, L≠0` のときだけ)、`tsolque` 本体 (`ndiv = 1+int(\|L·K1\|/0.1)`)、出口で逆順に戻す。z 写像は `xs = x − sin x` | `_quad_offset_map` → `_tquade_cod` (`_tqfrie_cod`, `_tqlfre_cod`, `_tsolque_cod`)。F1/F2/FRINGE/DISFRIN を `_quad_fringe_params` で読む。逆向き要素の mfr 変換は未対応 |
 | BEND | `qbend` → `tbende` | 入口角 `pe1 = E1·ANGLE + AE1` (E1 は ANGLE 比)。`fb1 = F1+FB1`, `fb2 = F1+FB2`。`phib = ANGLE+K0`。`tchge` (DX/DY/DZ/ROT/DROTATE/CHI2) → `tblfre` (F1) → `tbedge` → 本体 → `tbedge` → 逆変換。`K1=0`: `tbendebody0` (F1≠0 なら `tbendef1` の 2 区間)。`K1≠0`: `tbendiinit` + `[tbendecorr + tbendebody]×ndiv` | `_bend_cod_update` (`_tbedge_cod`, `_tbendebody0_cod`, `_tblfre_cod`)、K1≠0 は `emit6d._tbende` を流用した `_bend_k1_cod_matrix` (入口・出口エッジは解析行列に差し替え)。**K1=0 でずれ・F1 のないものと K1≠0 でずれのないものは、行列を SAD の解析式 (`_tbedge*_mat`, `_tbendebody0_mat`) で作る**。ロール誤差は `_tbrote_cod` (`tchge`→`tbrote`、LGEO=L/2, ANGLGEO=ANGLE/2 まわり) |
 | SEXT/OCT/DECA/DODECA | `qthin` → `tthine` | `ak=K` (積分値), `kord = nord/2−1`, `aki = ak/kord!`。L≠0 なら `L/6` ドリフト → キック (aki/2) → `2L/3` ドリフト → キック → `L/6` ドリフト。キック: `px −= aki·Re((x−iy)^kord)`, `py −= aki·Im((x−iy)^kord)`。DX/DY/ROT は `tchge` (alg=phig=0) | `_tthine_cod`, `_thin_offset_map`。pysad の K は長さあたりなので `K·L` を渡す (L=0 なら K そのまま) |
-
 | MULT | `qmult1` → `tmulte` (seg なら `qmultseg`) | ANGLE=0, BZ=0 の多極写像 (分割数は tpara の式) | `_mult_cod_map` (`_mult_sequence`) |
-| MULT (ANGLE≠0) | `tmultae` | 曲げつき多極。ndiv 個のスライスで [半曲げ → キック → 全曲げ → … → 半曲げ]。COD 写像は解析、行列は各段の解析行列の積 | `multae.lattice_step` (`lattice._el_cod_step`)。詳細・限界は docs/26_mult_angle.md |
-| COORD | `qcoord` → `tcoorde` | 座標変換 (DX DY DZ のずらしと CHI1-3 の回転、DIR≠0 は逆変換)。COD が設計軌道上でなくても動く | `lattice._el_cod_step` の Coord。詳細は docs/23_coord.md |
-| TCAVI | `ttcave` | RFSW OFF (CALC の既定) は長さ L のドリフト。**RFSW ON の CALC は未対応** (NotImplementedError) | docs/24_tcav.md |
-| UND | `case default` | 恒等 (長さは幾何にだけ入る)。K64 の UND は磁場を設定できない (docs/25_und.md) | 恒等 |
-| MAP | `qemap` | `ExternalMap["OPTICS", l, cod]` が `{cod1, trans}` を返す。定義がなければ恒等で長さ 0 | `lattice._map_step` (docs/28_map.md) |
+| MULT (ANGLE≠0) | `tmultae` | 曲げつき多極。ndiv 個のスライスで [半曲げ → キック → 全曲げ → … → 半曲げ]。COD 写像は解析、行列は各段の解析行列の積 | `multae.lattice_step` (`lattice._el_cod_step`)。詳細・限界は docs/28_mult_angle.md |
+| COORD | `qcoord` → `tcoorde` | 座標変換 (DX DY DZ のずらしと CHI1-3 の回転、DIR≠0 は逆変換)。COD が設計軌道上でなくても動く | `lattice._el_cod_step` の Coord。詳細は docs/25_coord.md |
+| TCAVI | `ttcave` | RFSW OFF (CALC の既定) は長さ L のドリフト。**RFSW ON の CALC は未対応** (NotImplementedError) | docs/26_tcav.md |
+| UND | `case default` | 恒等 (長さは幾何にだけ入る)。K64 の UND は磁場を設定できない (docs/27_und.md) | 恒等 |
+| MAP | `qemap` | `ExternalMap["OPTICS", l, cod]` が `{cod1, trans}` を返す。定義がなければ恒等で長さ 0 | `lattice._map_step` (docs/30_map.md) |
 | CAVI | `qcav` → `tcave` | `qcav` は `rfsw = rfsw .and. trpt` にして呼ぶので、**リングの 4 次元 CALC では RFSW に依らずドリフト** (bench_level14a_dbg で確認) | `lattice.RFSW=False` で `_drift_matrix_at_cod(L)` |
-| SOL | `tfbndsol` で区間判定 → `qsol` → `tsole1`。SOL 要素単体は "implementation error" | BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域内は BZ のあるソレノイド内の正準運動量で動き、横方向が結合する | `solmap.py` (追跡の numba カーネルを 1 粒子に使い COD での中心差分 1e-7 を行列にする。`tsolque` の解析行列は写していない)。CALC・INS・CELL・RAD ON・DP≠0 でチューン 1e-15、領域内の Twiss 1e-11 (gs と一致、`test_sol_optics.py`)。限界は 6 節と docs/27_sol_optics.md |
+| SOL | `tfbndsol` で区間判定 → `qsol` → `tsole1`。SOL 要素単体は "implementation error" | BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域内は BZ のあるソレノイド内の正準運動量で動き、横方向が結合する | `solmap.py` (追跡の numba カーネルを 1 粒子に使い COD での中心差分 1e-7 を行列にする。`tsolque` の解析行列は写していない)。CALC・INS・CELL・RAD ON・DP≠0 でチューン 1e-15、領域内の Twiss 1e-11 (gs と一致、`test_sol_optics.py`)。限界は 6 節と docs/29_sol_optics.md |
 | STEER | abort ("Use BEND with ANGLE=0") | — | — |
 | MARK, MONI 等 | 前の値をコピー | — | 単位行列 |
 
@@ -135,7 +134,7 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 |---|---|---|
 | qcod のオーバーフロー / 非収束 | `over` (一周の途中で行列の和が NaN) → `*****qcod---> Overflow & closed orbit not found n`、twiss を書かずに戻る (前回の値が残る、条件はその値で評価、nstab は両面 +2)。収束しないだけ (`codfnd` 偽) → `*****qcod---> Closed orbit not found n` を出して stab=偽にし、Twiss は続けて計算する。メッセージは nmes<4、反復表を 1 行出すたびに 0 に戻る。qcod は一周行列を `limitnan(·,1e10)` で ±1e10 に抑える | `twiss(sad_stab=)` が一周行列を ±1e10 に抑え (`_TRMAX`)、`_LAST_QCOD_FOUND` で codfnd を返す。非有限・成分が 1e18 超 (SAD は COD の丸め雑音 1e-18 が増幅されて NaN になる) は RuntimeError → `Matcher._calc_optics` が同じメッセージ (nmes 付き) を出し、`_stale_rows` で前回の rows の残差を評価。`tsolvg` は特異に近いときだけ `tsvd` |
 | qmdiag | `(TrA−TrB)² < 0` → `***qmdiag---> Sum resonance: …` (lfno=0 で次の表示まで 1 回)、`stab=.false.` (twiss(lb) は以前の値のまま); NaN も不安定。trab2 の絶対値が 1e-14 以下は特殊 6 分岐 | `lattice._qmdiag` (全分岐の直訳)。通常の場合は従来の `periodic_optics` (ビット単位で不変) |
-| `|cosμ| > 1` (`qcell.f:209-248`) | 常に `cosμ := 1/cosμ` に置き換えて α, β を計算し続ける。`INTRES` (cosμ>1) / `HALFRES` (cosμ<−1) が立っていれば `stabx=.false.`、立っていなければ trace も `2cosμ` にして安定扱い。分散は stabx で dcosμ≠0 のときだけ書く (不安定な面は以前の値のまま) | `lattice._qcell_periodic_sad` (直訳)。不安定な面の分散の「以前の値」は `Lattice._mark_init` (ffscmd が先頭 MARK の値を入れる)。**FFS のフラグは `NOINTRES;` と書く (`OFF INTRES;` は SAD では無効)** |
+| `\|cosμ\| > 1` (`qcell.f:209-248`) | 常に `cosμ := 1/cosμ` に置き換えて α, β を計算し続ける。`INTRES` (cosμ>1) / `HALFRES` (cosμ<−1) が立っていれば `stabx=.false.`、立っていなければ trace も `2cosμ` にして安定扱い。分散は stabx で dcosμ≠0 のときだけ書く (不安定な面は以前の値のまま) | `lattice._qcell_periodic_sad` (直訳)。不安定な面の分散の「以前の値」は `Lattice._mark_init` (ffscmd が先頭 MARK の値を入れる)。**FFS のフラグは `NOINTRES;` と書く (`OFF INTRES;` は SAD では無効)** |
 | 伝搬 (qtwiss1) | 要素に入る前に βx, βy > 0 でなければ over: 直前の正常な行のコピーで以降を埋め stabx=staby=偽 | `twiss(sad_stab=)` の伝搬 (`_transport_twiss(clamp=False)`) |
 | 伝搬後の再判定 (`qcell.f:351-397`) | lb と終点の Twiss から trace=x11+x22 を作り直し、CELL では再び INTRES/HALFRES 判定 (`fam` では判定しない。立っていなければ trace=4/trace)、最後に `stab .and. (codfnd .or. fam)` | `twiss(sad_stab=)` (`Lattice._qstat` の tracex, tracey, stabx, staby) |
 | 不安定の表示 | `tffsa.f:1229-1247`: 全 idp の optstat に偽があれば `Horizontal` / `Vertical` / `Horizontal/Vertical` + ` Unstable.`。CALC/GO の条件表に `1/$$$ BMAGX/BMAGY` が加わる (tfshow: cellstab が偽)。nstab は残差が 0 でない idp ごとに偽を数える (条件が何もなければ 0 で `Matched.`) | `FFSState.print_unstable`、`print_fit_table`、`Matcher._tffscalc` (`cellstab`, `last_stab`) |
@@ -145,12 +144,12 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 
 ## 4b. CALC6D と新しい要素の Twiss の範囲
 
-- **CALC6D** (`qcell6d`、列 22–28): `calc6d.py`。`CELL`/`INS` に関わらず `qcell6d` に入る (1 節)。SOL を含む CALC6D と、RADCOD つきの SOL の CALC は未対応 (SADError、docs/27)。
+- **CALC6D** (`qcell6d`、列 22–28): `calc6d.py`。`CELL`/`INS` に関わらず `qcell6d` に入る (1 節)。SOL を含む CALC6D と、RADCOD つきの SOL の CALC は未対応 (SADError、docs/29)。
 - **SOL の CALC**: 領域内の Twiss の座標は領域内の正準運動量での値 (`tsole1` と同じ)。K64 は SOL (BOUND≠0) の長さを周長 (omega0・MomentumCompaction など) に入れない。SOL には GEO=1 が要り、ないと K64 は S 座標が途切れて周長が狂う
   (pysad は GEO の有無で値を変えず、`Missing GEO of Solenoid` の警告を出して直進扱い)。ずれ・傾きのある SOL の Twiss は未対応 (幾何 `sgeo.py` だけ gs と一致)。
-- **COORD・MULT (ANGLE≠0)**: 上の表のとおり CALC の COD 写像と行列を持つ。MULT (ANGLE≠0) で Twiss・Emittance[] が未対応なのは FB1/FB2 (tblfre) と CHI2、BZ≠0、VOLT、F1、TAPER、SK0、L=0 (docs/26)。
-  K0 + DX DY + ROTATE を同時に与えた MULT のリングは gs と閉軌道が一致しない (docs/26)。
-- **閉軌道の既知の差**: K3 が強く (K3=300、ずれ 1e-4 など) ずれの大きい MULT リングでは、pysad の CALC (qcod) の閉軌道が gs と別の解 (y=−0.033) に落ち、Emittance[] が NaN になる (`local/wake/pm1.sad`、docs/history/work_unimpl.md)。gs は小さい軌道で通る。qcod の初期値・後退の違いの可能性で、未解決。
+- **COORD・MULT (ANGLE≠0)**: 上の表のとおり CALC の COD 写像と行列を持つ。MULT (ANGLE≠0) で Twiss・Emittance[] が未対応なのは FB1/FB2 (tblfre) と CHI2、BZ≠0、VOLT、F1、TAPER、SK0、L=0 (docs/28)。
+  K0 + DX DY + ROTATE を同時に与えた MULT のリングは gs と閉軌道が一致しない (docs/28)。
+- **閉軌道の既知の差**: K3 が強く (K3=300、ずれ 1e-4 など) ずれの大きい MULT リングでは、pysad の CALC (qcod) の閉軌道が gs と別の解 (y=−0.033) に落ち、Emittance[] が NaN になる (docs/history/work_unimpl.md)。gs は小さい軌道で通る。qcod の初期値・後退の違いの可能性で、未解決。
 
 ## 5. ベンチマークの要約 (CALC 関連)
 
@@ -177,8 +176,8 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 - **結合時の途中要素の位相**: `qmat2twiss` の coup 分岐を `_transport_twiss` に移植済み。
 
 未対応:
-- **GEO 系の端数位置** (`qtwissfracgeo`): **確認済み** (2026-11-16、`local/wake/fr1.sad`): 平面の 12 セルのリングで、端数位置 3.5・4.25・4.5 (BEND の内側)・リスト指定の `Twiss["BX","AX","NX","EX"]` と `LINE["GX","GY","GZ","GCHI3","S"]` が gs と 1e-14 で一致。結合のあるリング・SOL・COORD を含むリングの端数位置の幾何は未確認。
-- **Optics.n の関数** (確認済み、`op1.sad`): `TransferMatrix`・`BeamMatrix`・`NormalCoordinates`・`OrbitGeo` は gs と表示桁で一致 (gs は 1e-16 の雑音の要素を出し、pysad は 0)。`LDSolve` は複素行列の対角化で pysad が失敗していたのを直して gs と一致 (docs/04)。`PeriodicR` は呼び出し方が不明で比較できなかった。
+- **GEO 系の端数位置** (`qtwissfracgeo`): 確認した範囲: 平面の 12 セルのリングで、端数位置 3.5・4.25・4.5 (BEND の内側)・リスト指定の `Twiss["BX","AX","NX","EX"]` と `LINE["GX","GY","GZ","GCHI3","S"]` が gs と 1e-14 で一致。結合のあるリング・SOL・COORD を含むリングの端数位置の幾何は未確認。
+- **Optics.n の関数** (確認済み): `TransferMatrix`・`BeamMatrix`・`NormalCoordinates`・`OrbitGeo` は gs と表示桁で一致 (gs は 1e-16 の雑音の要素を出し、pysad は 0)。`LDSolve` は gs と一致 (docs/04)。`PeriodicR` は呼び出し方が不明で比較できなかった。
 - **SOL の CALC の残り**: 領域内の BEND・MULT・CAVI (NotImplementedError → 警告して直進扱い)、領域内の L=0/K1=0 の四極、BOUND=0 で BZ≠0 の SOL、ずれ・傾きのある SOL、CALC6D・RADCOD つきの CALC (4b 節)。
 - **TCAVI の RFSW ON の CALC** (NotImplementedError)。
 - **モード入れ替え**: 一周の位相の小数部は `periodic_optics` のモード (qcell と同じ) だが、`periodic_optics` はモード入れ替え (`normal=.false.`) を扱わない。

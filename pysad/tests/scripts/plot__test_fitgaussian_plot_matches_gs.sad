@@ -1,0 +1,8 @@
+FFS;
+PageWidth=1999;
+d=Table[Sqrt[2]*InverseErf[2*(i-0.5)/400-1]*0.8+0.3+0.05*Sin[i*1.3],{i,400}];
+r=FitGaussian[d,Plot->True];
+Print["P ",Head[r]," ",Length[r]," ",Round[r[[1]]*10^8]/10^8," ",Round[r[[2]]*10^8]/10^8];
+Sleep[0.3]; TclEval["update"]; Sleep[0.3]; TclEval["update"];
+TclEval["proc fc {w} {set r {}; foreach c [winfo children $w] {if {[winfo class $c] eq {Canvas}} {foreach i [$c find all] {lappend r \"[$c type $i] [$c coords $i] [$c gettags $i]\"}} else {set r [concat $r [fc $c]]}}; return $r}; set d {}; foreach l [fc .] {dict incr d [lindex $l 0]}; set fh [open pysad_fitg_items.txt w]; puts $fh $d; foreach l [fc .] {puts $fh $l}; close $fh"];
+Exit;

@@ -1,5 +1,5 @@
 # elem_MULT_ANGLE
-要素 (MULT の ANGLE)・07_spin_solenoid_special・ラティス `00_lattice/multa_ring.sad` (新規: FODO_ring の偏向磁石を `MULT` (ANGLE 付き) に置き換えた RINGMA0 と RINGMA1)、3 GeV、`NORFSW NORAD NOFLUC`。参考: `docs/26_mult_angle.md`
+種別: 要素 (ANGLE 付きの MULT) / フォルダ: 07_spin_solenoid_special / ラティス: `00_lattice/multa_ring.sad` (新規。`FODO_ring.sad` の偏向磁石を ANGLE 付きの `MULT` に置き換えた `RINGMA0` と `RINGMA1`)。3 GeV / フラグ: `NORFSW NORAD NOFLUC`。参考: `docs/28_mult_angle.md`
 
 ## 何を見る例か
 `MULT` は多極磁石だが、`ANGLE`≠0 を与えると曲げ磁石の上に多極成分 ($K_0$、$K_1$、$K_2$、…) をのせた要素になる (`tmulta`)。ANGLE 付きの MULT で、(1) 多極成分なしなら BEND と同じ結果になること、(2) $K_1\ne0$ の複合機能型磁石を、解析式 (行列の積) と照合する。

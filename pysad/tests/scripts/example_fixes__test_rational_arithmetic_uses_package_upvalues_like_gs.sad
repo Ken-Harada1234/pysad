@@ -1,0 +1,13 @@
+FFS;
+a=Rational[1,3];b=Rational[2,3];c=Rational[1,6];
+Print["A ",a+b];
+Print["B ",a+c+b];
+Print["C ",a*b];
+Print["D ",-a];
+Print["E ",1/a];
+Print["F ",0.5+a];
+Print["H ",a-c];
+Print["K ",a/b];
+Print["N ",Rational[1,3]+Rational[1,6]];
+Print["L ",1+2];
+Exit;

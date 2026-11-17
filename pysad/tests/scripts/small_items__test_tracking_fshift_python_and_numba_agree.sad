@@ -1,0 +1,30 @@
+! bench_level29a2.sad -- RADINT: 小リング (E1/E2 付き BEND、RF なし/あり、結合) 13a のラティス
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF  = (L=0.3 K1= 1.8*0.3)
+      QD  = (L=0.3 K1=-1.7*0.3)
+      QF2 = (L=0.3 K1= 1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL2 = (ORG QF2 DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELLP = (CELL CELL2);
+LINE RING  = (10*CELLP);
+;
+CAVI RFC = (VOLT=2e6 HARM=300);
+LINE RING2 = (RING RFC);
+;
+FFS;
+USE RING2;
+CELL;
+CALC;
+EMIT;

@@ -1,0 +1,41 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:13 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+MULT M1 = (L=1 ANGLE=0.05 K1=0.1 K2=0.5);
+MARK ST = ();
+LINE BL = (ST QF DR M1 DR2 QD DR);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE BL;
+Out[1]:= USE
+ TRPT; INS; RAD; NOFLUC;
+ n = 20;
+ x0  = Table[1e-4*Sin[0.37*i], {i, n}];
+ px0 = Table[1e-5*Cos[0.11*i], {i, n}];
+ y0  = Table[1e-4*Cos[0.23*i], {i, n}];
+ py0 = Table[1e-5*Sin[0.71*i], {i, n}];
+ z0  = Table[0.01*Sin[0.13*i]+1e-4*i-0.01, {i, n}];
+ dp0 = Table[1e-3*Cos[0.31*i], {i, n}];
+ fl0 = Table[1, {i, n}];
+ r = TrackParticles[{1, {x0, px0, y0, py0, z0, dp0, fl0}}, 8, 1, 3];
+ $FORM = "16.10";
+ res = r[[2]];
+ Do[Print[k, " ", Plus@@res[[k]], " ", res[[k, 1]], " ", res[[k, 7]], " ", res[[k, 20]]], {k, 6}];
+    1.0000000000  -1.047540457E-4  1.6914597388E-4  -7.138405744E-5  3.0496162292E-4
+    2.0000000000  8.5703256796E-6  4.0567601188E-5  7.5817061291E-6  1.1885401091E-4
+    3.0000000000     -.0016572062  4.1095620023E-4  -8.616987868E-5  3.2352369834E-5
+    4.0000000000  6.9462909436E-4  -1.685129688E-4  3.3211219972E-5  -1.072400334E-5
+    5.0000000000     -.0337774252     -.0086183314     -.0013917014     -.0028509958
+    6.0000000000  -2.779852581E-4  9.5181352814E-4  -5.645030830E-4  9.9602218800E-4
+ Exit;
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

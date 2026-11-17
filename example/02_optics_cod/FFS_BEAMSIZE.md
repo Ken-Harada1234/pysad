@@ -41,4 +41,4 @@ $$\sigma_x^2=\epsilon_x\beta_x+(\eta_x\sigma_\delta)^2,\qquad \sigma_y^2=\max\bi
 
 ## 未確認・限界
 - 6 次元のビームサイズ (EMIT + CODPLOT の `SIZE...`)、結合のあるリングの回転角 (`Rot(deg)`)、結合のあるリングの `DISP BEAM` は未確認。
-- RF 電圧を 6 MV に変えたことでエミッタンス自体は変わらない (放射積分で決まる。04 の担当)。
+- RF 電圧を 6 MV に変えたことでエミッタンス自体は変わらない (放射積分で決まる。04_emittance_radiation の例で扱う)。

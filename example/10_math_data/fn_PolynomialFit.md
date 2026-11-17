@@ -1,6 +1,5 @@
 # fn_PolynomialFit (PolynomialFit)
-
-種別: 関数 (多項式回帰)・フォルダ 10_math_data・ラティスなし・乱数なし
+種別: 関数 (多項式回帰) / フォルダ: 10_math_data / ラティスなし、乱数なし
 
 ## 何を見る例か
 `PolynomialFit[data, n]` は $\{x_i,y_i\}$ の列を $n$ 次の多項式 $y=c_0+c_1x+\dots+c_nx^n$ で最小二乗回帰し、`{{c0,..,cn}, {Residual->res}}` を返す。

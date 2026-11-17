@@ -133,4 +133,4 @@ if self.flags['CELL'] and self.flags['CALC6D']:
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: CALC6D は COORD・TCAVI・MULT ANGLE≠0 を含むリングで動く (docs/23・24・26 の表)。SOL を含む CALC6D・RADCOD つきの CALC は未対応で、SADError で拒否する (docs/27)。`calc6d._turn` は Python 版の `_tquade` を使うので、DX/DY のある QUAD で 1e-5 の差が出る既存の差が残る (work_unimpl.md 「後でまとめて直す一覧」1)。本文 (10/15 の移植の記録) は変化なし。
+- 2026-11-16 追記: CALC6D は COORD・TCAVI・MULT ANGLE≠0 を含むリングで動く (docs/25・24・26 の表)。SOL を含む CALC6D・RADCOD つきの CALC は未対応で、SADError で拒否する (docs/29)。`calc6d._turn` は Python 版の `_tquade` を使うので、DX/DY のある QUAD で 1e-5 の差が出る既存の差が残る (work_unimpl.md 「後でまとめて直す一覧」1)。本文 (10/15 の移植の記録) は変化なし。

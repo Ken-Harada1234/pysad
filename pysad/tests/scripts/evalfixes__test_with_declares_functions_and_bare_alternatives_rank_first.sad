@@ -1,0 +1,11 @@
+FFS;
+PageWidth=1999;
+With[{TF[ft_,a_]:=Switch[ft,a,Null[],{Tk,_List},ft[[-1]],_,Throw[]]},
+  G[x_]:=TF[x,True];
+  H[x_]:=Catch[TF[x,Both]]];
+Print["A ",G[True]," ",G[{Tk,{1,2}}]];
+Print["B ",H[{Tk,{3,4}}]," ",H[7]];
+U[""|" ",__]=Null;
+U[e_,t_,f_,"e"]:=("second");
+Print["C ",U["",1,2,"e"]," ",U[" ",1,2,"e"]," ",U["a",1,2,"e"]];
+Exit;

@@ -1,5 +1,5 @@
 # fn_SurvivedParticles
-関数・05_tracking・ラティス `00_lattice/FODO_ring.sad` (3 GeV)・`LOSSAMPL=0.05`
+種別: 関数 / フォルダ: 05_tracking / ラティス: `00_lattice/FODO_ring.sad` (3 GeV) / フラグ: `LOSSAMPL=0.05`
 
 ## 何を見る例か
 `SurvivedParticles[x]` は、`TrackParticles` の戻りのビーム (7 列) から、flag=1 の粒子の列だけを取り出す。全滅のときは長さ 0 のリスト 7 本。

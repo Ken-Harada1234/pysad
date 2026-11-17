@@ -33,7 +33,7 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
 1. **tbendebody は bendib モジュールの rhob/rho0 を使うが INTGRL は設定しない** → 「直前に tbend 系 (tbend/tbende/tbendi/tsteee) が設定した値」= **ビーム順で最後に処理した曲率のある BEND の L/ANGLE** が**全 BEND**に使われる。
    試験のリング (3564 要素) では最後の曲がりの BEND の L/ANGLE = 20.757 m。この値で I1X…I9 が SAD と 7 桁一致し、別の BEND の値 (37.6 や 77.5) だと I9 が 8e-4〜1e-3 ずれる (感度が高いので、この仮定は一致で裏づけられた)。
    EMIT の後 (tbende が rhob を設定) でも最後の曲がりは同じなので結果は変わらない。pysad は `radint.default_stale_rho(els)` で同じ規則 (最後の BEND の L/ANGLE)、`compute(..., stale_rho=)` で上書き可。
-   (docs/16 §11 の「RADINT と Emittance[] の 13% 差」の候補の 1 つ。因果は未検証。)
+   (docs/18 §11 の「RADINT と Emittance[] の 13% 差」の候補の 1 つ。因果は未検証。)
 2. 六極のブロックは DL を設定しない: TCAL は**直前の BEND/QUAD の最後のスライス長 DL** を使う (I9, I10 = γ·DL が六極でも足される)。DKL2 は代入されないので六極の CKL0X/CKL1X は常に 0。RLE=0 の六極は TCAL の**後で** `DL=0.2` (単精度の 0.2) にして ` L(SEXTUPOLE) EQ 0. SET L=0.2` を出す。DL, TETA, R0/R0I, FUNI などモジュール変数はプロセス中ずっと残る (2 回目の RADINT の DL の初期値は前回の最後の値)。pysad も `radint._STATE` に残す。
 3. **単精度定数**: `COEFF=(…)*1e27` の `1e27` は単精度 (9.99999988e26) なので ELOSS が相対 1.15e-8 小さい。`FREQ*1.E-6`、`DL=0.2`、`EXP(2.3026*TAUQ)` も単精度。SAD の ELOSS (678.50075327596767) が 17 桁で一致して確認した。
 4. エネルギーは `amass/1e9*H0` で amass は大域 `MASS` (既定 `elmass`=0.51099895e6、tfstk.f:232)。**pysad の MASS の既定値は 0.51099906e6 で SAD と違っていた** → 0.51099895e6 に修正 (ffscmd.py。影響は gamma を使う 1 箇所だけ)。
@@ -153,9 +153,9 @@ N1/N10 (NORAD 1 周・10 周)、R1/R10 (RAD NOFLUC)、F10 (RAD+FLUC、`SeedRando
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: (1) `Skip` と `Read` の型 (Character・Real・Word の読み方、数でない語の Real は式の値) を gs に合わせた (`test_evalfixes.py`)。(2) `MessageName[f,"usage"]` の関数形は gs が "Undefined MessageName" を出し、pysad は `f::usage` と同じ表を引くので不一致のまま、見送り。(3) `Short`・`Inequality`・`Fork` を gs に合わせ、`ToInputString` は一致、スクリプトの `ElectronMass` を 510998.95 (K64 の値) に直した。(4) FFS の小コマンドは docs/33。RADINT・DISP の範囲・CALC6D 単独・FSHIFT の記述 (この文書の A〜E) は変化なし。
+- 2026-11-16 追記: (1) `Skip` と `Read` の型 (Character・Real・Word の読み方、数でない語の Real は式の値) を gs に合わせた (`test_evalfixes.py`)。(2) `MessageName[f,"usage"]` の関数形は gs が "Undefined MessageName" を出し、pysad は `f::usage` と同じ表を引くので不一致のまま、見送り。(3) `Short`・`Inequality`・`Fork` を gs に合わせ、`ToInputString` は一致、スクリプトの `ElectronMass` を 510998.95 (K64 の値) に直した。(4) FFS の小コマンドは docs/35。RADINT・DISP の範囲・CALC6D 単独・FSHIFT の記述 (この文書の A〜E) は変化なし。
 - 2026-11-16 夜の追記 (gs と照合して直した小項目。詳細は `work_session_20261116.md` §11.2):
   - DUMP: 誤差入りのリングで値は一致したが DK・DDK 列の書式が違った (gs は Fortran の `1p g12.5`: 0 → `0.0000`、小さい値 → `4.22829E-04`。pysad は `0`・`0.00042283`)。`ffscmd._gwd` で一致 (dm2.sad、`test_ffsextra.py` の `test_dump_format_matches_gs`)。
   - MATRIX: 名前だけの引数 (gs は NAME.1 として扱う) を位置にでき、ラティスに無い名前は gs が読み飛ばす (to=$$$) のを再現した (mt1・mt2.sad、`test_ffsextra.py`)。
-  - UNIPOL (NOBIPOL)・RELW (NOABSW): gs は UNIPOL で変数の符号を変えず (`tffsmatch.f:669`)、RELW で重みが変わり FIT の結果が変わる。pysad は `match6` に実装があるのにフラグとつながっていなかったので `ffscmd.matcher_` でつなぎ、3 通りとも gs と全桁一致 (fit1.sad: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499)。`test_item4.py` に 3 件。docs/18 の「効果の有無は未確認」は解消。
+  - UNIPOL (NOBIPOL)・RELW (NOABSW): gs は UNIPOL で変数の符号を変えず (`tffsmatch.f:669`)、RELW で重みが変わり FIT の結果が変わる。pysad は `match6` に実装があるのにフラグとつながっていなかったので `ffscmd.matcher_` でつなぎ、3 通りとも gs と全桁一致 (fit1.sad: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499)。`test_item4.py` に 3 件。docs/20 の「効果の有無は未確認」は解消。
   - フラグ GAUSS・CTIME・CONV・EMIOUT・BIPOL の効果はソースの読解のみ (動かしてはいない)。EMIOUT は pysad が spin の行だけ対応。MON・MCOD・TCOD のコマンドは K64 に無い。B29 (QUAD の RAD=1 で放射なし) は仕様。

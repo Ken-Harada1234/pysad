@@ -1,0 +1,62 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:03 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5) DS = (L=0.2);
+BEND B = (L=1 ANGLE=0.39269908169872414 E1=0.5 E2=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5);
+SEXT SF = (L=0.1 K2=8.0) SD = (L=0.1 K2=-12.0);
+MARK MK = (AX=-1.7 BX=6.3 AY=0.9 BY=3.1);
+LINE CELL = (MK QF DS SF D B D QD DS SD D B D);
+LINE RING = (8*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ calc;
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.394908 $$$       f BX    #######  #   7.923250 $$$       f NX    #######  #   2.215460
+$$$       f AY    #######  #    .503903 $$$       f BY    #######  #   1.239725 $$$       f NY    #######  #   2.413589
+$$$       f LENG  #######  #  41.600000
+ EMITX = 1E-6; EMITY = 1E-7;
+ DP = 0.001;
+ fit $$$ NX 2.21 3 NY 1.31 3;
+ free QF K1 QD K1;
+ MatchingAmplitude = {{0, 1, 1}};
+ NFAMP = 4;
+ calc;
+ Residual =  78.22      DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+            DP                -.001000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .000000  .001000
+                                                  x3       x2       y3       y1       y4       y2       x1       x4
+            Res.              2.796889 48.08229 3.059093 3.050886 3.020630 3.020630 3.008777 3.008777 2.984918 2.956056 3.234607
+$$$       f AX    #######  #  -2.30620 -2.39490 -2.67047 -2.51865 -2.39591 -2.39591 -2.39197 -2.39197 -2.19223 -2.32994 -2.48734
+$$$       f BX    #######  #  7.840284 7.923250 8.621870 7.672042 7.945779 7.945779 7.891799 7.891799 7.465660 8.370898 8.018115
+$$$       f NX   2.21      3  2.161741 2.215460 2.225278 2.241851 2.216025 2.216025 2.216902 2.216902 2.206452 2.192965 2.270170
+$$$       f AY    #######  #   .494112  .503903  .539473  .502005  .490495  .490495  .517198  .517198  .464938  .520450  .513601
+$$$       f BY    #######  #  1.287021 1.239725 1.274030 1.296622 1.253904 1.253904 1.231125 1.231125 1.224413 1.178075 1.194941
+$$$       f NY   1.31      3  2.373582 2.413589 2.421542 2.421499 2.416424 2.416424 2.414245 2.414245 2.408602 2.404361 2.453379
+$$$       f LENG  #######  #  41.600000
+ In[2]:=  ???-getbuf-end of input stream

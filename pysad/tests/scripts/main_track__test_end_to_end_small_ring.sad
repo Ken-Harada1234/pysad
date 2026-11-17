@@ -1,0 +1,35 @@
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+
+! MAIN レベルの TRACK (古典 SAD の書き方)。SAD K64 では EMIT/TRACK が動かないので pysad だけで実行する
+! (SAD 側の参照は bench_level27a.sad: 同じ手順を SADScript の TrackParticles で書いたもの)
+
+ON RFSW;
+OFF RAD;
+EMIT USE=RING;
+TRACK USE=RING NPART=3 TURNS=20 NX=(1,2) NY=(1) NZ=(0);
+STOP;

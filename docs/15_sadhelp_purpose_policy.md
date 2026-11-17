@@ -1,8 +1,8 @@
 # SADHelp (1.4.4.2k64 Updated: 10/19/2026) の項目の目的別分類と翻訳方針
 
-最終更新: 2026-11-16 (現状のスナップショット。pysad の列は docs/14_pysad_vs_sadhelp.md の 2026-11-16 の照合を引く)
+最終更新: 2026-11-17 (現状のスナップショット。pysad の列は docs/14_pysad_vs_sadhelp.md の 2026-11-16 の照合による)
 
-ユーザー方針 (2026-11-06): **直接翻訳するのはソースが Fortran/C で内容が物理計算のもの**。**ソースが .n のものは Python で書き直す** (直訳ではない)。**ファイル操作・リスト操作・GUI・描画は Python のライブラリ (open, list/numpy, matplotlib 等) に置き換える**ので翻訳対象外 (必要なら Python で書き直す)。
+ユーザー方針 (2026-11-06): **直接翻訳するのは、ソースが Fortran/C で内容が物理計算のもの**。**ソースが .n のものは Python で書き直す** (直訳ではない)。**ファイル操作・リスト操作・GUI・描画は Python のライブラリ (open, list/numpy, matplotlib 等) に置き換える**ので翻訳対象外 (必要なら Python で書き直す)。
 
 分類と SAD 側・pysad の列は docs/14_pysad_vs_sadhelp.md と同じ機械照合 (生成: `perf_work/sadhelp_purpose.py`、分類は手で割り当て)。
 
@@ -18,15 +18,15 @@
 | リスト・関数型 (言語機能) (21) | Python で書き直し (インタプリタ) | SADScript を走らせるために sadscript.py が Python のリスト演算で実装する。pysad を Python から直接使うときは list/numpy |
 | 文字列・式 (言語機能) (13) | Python で書き直し (インタプリタ) | sadscript.py が Python の str で実装。直接使うときは str |
 | ファイル・入出力 (15) | Python ライブラリで代替 | open/print/csv/json に置き換える。翻訳対象外 (OpenRead の失敗の扱いは gs に合わせた: 開けなければ入力行を打ち切る。11-16) |
-| GUI・描画 (14) | Python ライブラリで代替 | 2026-11-06 の方針は matplotlib への置き換え。**現状 (2026-11-16) は例外**: GUI (Tkinter.n・KBFrame.n など) と描画 (ListPlot・Plot・OpticsPlot など) は SAD 自身の .n を pysad のインタプリタで解釈し、tkinter に表示する (docs/20・35)。matplotlib の描画 (`plot_optics.py`) は別に残る |
+| GUI・描画 (14) | Python ライブラリで代替 | 2026-11-06 の方針は matplotlib への置き換え。**現状 (2026-11-16) は例外**: GUI (Tkinter.n・KBFrame.n など) と描画 (ListPlot・Plot・OpticsPlot など) は SAD 自身の .n を pysad のインタプリタで解釈し、tkinter に表示する (docs/22・37)。matplotlib の描画 (`plot_optics.py`) は別に残る |
 | システム・プロセス・並列 (7) | Python ライブラリで代替 | subprocess / multiprocessing / tempfile に置き換える。翻訳対象外 |
 | ユーティリティ (時刻・計測・デバッグ) (5) | Python ライブラリで代替 | time / datetime / logging に置き換える。翻訳対象外 |
-| 表示 (表・一覧) (9) | Python で書き直し | DISP/TYPE のように SAD と同じ文字列を出すものは照合のため書き直す。それ以外 (SHOW, STATUS, MATRIX 等) は 2026-11-14 に ffsextra.py へ実装済み (docs/33) |
+| 表示 (表・一覧) (9) | Python で書き直し | DISP/TYPE のように SAD と同じ文字列を出すものは照合のため書き直す。それ以外 (SHOW, STATUS, MATRIX 等) は 2026-11-14 に ffsextra.py へ実装済み (docs/35) |
 | 制御・入出力 (FFS コマンド) (19) | Python ライブラリで代替 | 入力の切り替え・停止・中断は Python の制御構造とファイル操作で置き換える。翻訳対象外 |
 | 要素編集・変数 (FFS コマンド) (12) | Python で書き直し | FREE/FIX/SAVE/RESET/COUPLE 等は pysad の要素値の仕組みで書く |
 | 誤差 (FFS コマンド) (1) | 直接翻訳 | terror.f の乱数の引き方まで写す (照合済み) |
 | FFS フラグ・物理パラメータ (変数) (30) | 直接翻訳 | tfsetparam/tffsa が読む意味のとおりに使う |
-| 表示・書式 (変数) (4) | Python で書き直し | $FORM/PageWidth/TITLE/CASE は出力の書式。照合に要る $FORM/PageWidth は書き直し済み、描画用は対象外 |
+| 表示・書式 (変数) (4) | Python で書き直し | `$FORM`/PageWidth/TITLE/CASE は出力の書式。照合に要る `$FORM`/PageWidth は書き直し済み、描画用は対象外 |
 | フック・特殊 (変数) (6) | 直接翻訳 | FitFunction/MatchingAmplitude/InitialOrbits/OpticsProlog 等は SAD が評価する仕組みごと写す |
 
 ## 件数 (方針別)
@@ -47,28 +47,28 @@
 | コマンド | `CALCULATE(CAL)` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | コマンド | `CHROMATICITY(CHRO)` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | コマンド | `EMITTANCE(EMIT)` | Fortran tffsa.f | 実装 | 直接翻訳 |
-| コマンド | `MEASURE(MEA)` | Fortran tffsa.f | 無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)。tlum / tluma だけ `pysad/measure.py` に直訳。ほかの MEASURE/TRCOD の経路は未翻訳 (gs が動かない B42。docs/18) | 直接翻訳 |
+| コマンド | `MEASURE(MEA)` | Fortran tffsa.f | 無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)。tlum / tluma だけ `pysad/measure.py` に直訳。ほかの MEASURE/TRCOD の経路は未翻訳 (gs が動かない B42。docs/20) | 直接翻訳 |
 | コマンド | `ORG` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | コマンド | `RADINT` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | 関数 | `AccelerateParticles` | .n dapert.n | 実装 | Python で書き直し (.n) |
 | 関数 | `BeamMatrix` | .n Optics.n | 実装 | Python で書き直し (.n) |
 | 関数 | `DynamicApertureSurvey` | .n dapert.n | 実装 | Python で書き直し (.n) |
 | 関数 | `Emittance` | .n emit.n | 実装 | Python で書き直し (.n) |
-| 関数 | `ExternalMap` | .n init.n | 実装 (MAP 要素が呼ぶユーザー定義のフック `ExternalMap["TRACK"/"EMIT"/"OPTICS"]` を pysad が評価。docs/28) | Python で書き直し (.n) |
-| 関数 | `GaussianCoulomb` | Fortran tfinitn.f | 実装 (`GaussianCoulombFitted`・`GaussianCoulombU` も。pysad/gausscoul.py、docs/30) | 直接翻訳 |
+| 関数 | `ExternalMap` | .n init.n | 実装 (MAP 要素が呼ぶユーザー定義のフック `ExternalMap["TRACK"/"EMIT"/"OPTICS"]` を pysad が評価。docs/30) | Python で書き直し (.n) |
+| 関数 | `GaussianCoulomb` | Fortran tfinitn.f | 実装 (`GaussianCoulombFitted`・`GaussianCoulombU` も。pysad/gausscoul.py、docs/32) | 直接翻訳 |
 | 関数 | `GeoBase` | .n Optics.n | 実装 | Python で書き直し (.n) |
 | 関数 | `LINE` | Fortran tfinitn.f; .n OpticsPlot.n,OpticsPlot_230724a.n,correction.n,… | 実装 | 直接翻訳 |
 | 関数 | `OrbitGeo` | .n Optics.n | 実装 | Python で書き直し (.n) |
-| 関数 | `RadiationField` | Fortran tfinitn.f | 実装 (pysad/radfield.py。BEND の中を記録しない K64 の仕様のまま。gs の RadiationField は SIGSEGV (docs/19 B49) なので値の照合は等速運動の場との比較だけ。docs/34) | 直接翻訳 |
-| 関数 | `RadiationSpectrum` | Fortran tfinitn.f | 実装 (pysad/radfield.py。docs/34) | 直接翻訳 |
+| 関数 | `RadiationField` | Fortran tfinitn.f | 実装 (pysad/radfield.py。BEND の中を記録しない K64 の仕様のまま。gs の RadiationField は SIGSEGV (docs/21 B49) なので値の照合は等速運動の場との比較だけ。docs/36) | 直接翻訳 |
+| 関数 | `RadiationSpectrum` | Fortran tfinitn.f | 実装 (pysad/radfield.py。docs/36) | 直接翻訳 |
 | 関数 | `SurvivedParticles` | Fortran tfinitn.f | 実装 | 直接翻訳 |
 | 関数 | `SymplecticJ` | .n emit.n | 実装 | Python で書き直し (.n) |
 | 関数 | `SynchroBetaEmittance` | .n emit.n | 実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。結合のあるラティスは gs が SIGSEGV で比較不能。組み込みの登録ではなく emit.n の呼び出しを置き換える) | Python で書き直し (.n) |
 | 関数 | `TouschekLifetime` | .n emit.n | 実装 | Python で書き直し (.n) |
-| 関数 | `TrackParticles` | Fortran tfinitn.f | 実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で `{結果, 軌道{t,x,y,z}}` を返す。docs/34) | 直接翻訳 |
+| 関数 | `TrackParticles` | Fortran tfinitn.f | 実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で `{結果, 軌道{t,x,y,z}}` を返す。docs/36) | 直接翻訳 |
 | 関数 | `TransferMatrix` | .n Optics.n | 実装 (Optics.n の TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo が gs と表示桁で一致。gs は 1e-16 の雑音の要素を出し pysad は 0。11-16) | Python で書き直し (.n) |
 | 関数 | `Twiss` | Fortran tfinitn.f; .n correction.n,corutility.n,optimize.n | 実装 | 直接翻訳 |
-| 関数 | `WakeFunction` | Fortran txwake.f, tffswake.f | 実装 (ユーザー定義の表 `WakeFunction[Longitudinal/Transverse, 要素名]` を pysad が読み、ウェイク追跡と WAKEOPT に使う。docs/21) | 直接翻訳 |
+| 関数 | `WakeFunction` | Fortran txwake.f, tffswake.f | 実装 (ユーザー定義の表 `WakeFunction[Longitudinal/Transverse, 要素名]` を pysad が読み、ウェイク追跡と WAKEOPT に使う。docs/23) | 直接翻訳 |
 
 ## マッチング・最適化の仕組み (21) — 方針: 直接翻訳
 
@@ -84,7 +84,7 @@
 | 関数 | `FFS$SHOW` | Fortran tfinitn.f | 実装 | 直接翻訳 |
 | 関数 | `FitValue` | Fortran? qdcell.f,tdfun.f,tffsa.f | 実装 (ユーザー定義のフック (tfgetfitval) を pysad が呼ぶ) | 直接翻訳 |
 | 関数 | `FitWeight` | Fortran? tffscalc.f | 実装 (ユーザー定義のフック (twfit) を pysad が呼ぶ) | 直接翻訳 |
-| 関数 | `OptimizeOptics` | .n optimize.n | 実装 (SAD の optimize.n を pysad のインタプリタで動かす。K1・チューンは gs と 1e-10。docs/32) | Python で書き直し (.n) |
+| 関数 | `OptimizeOptics` | .n optimize.n | 実装 (SAD の optimize.n を pysad のインタプリタで動かす。K1・チューンは gs と 1e-10。docs/34) | Python で書き直し (.n) |
 | 関数 | `VariableRange` | Fortran? tffsmatch.f,tfvars.f | 実装 (ユーザー定義のフック (tffsvarfun) を pysad が呼ぶ) | 直接翻訳 |
 | 関数 | `VariableWeight` | Fortran? tffsmatch.f | 実装 (ユーザー定義のフック (tffsvarfun) を pysad が呼ぶ) | 直接翻訳 |
 | 関数 | `DownhillSimplex` | .n optimize.n | 実装 | Python で書き直し (.n) |
@@ -112,7 +112,7 @@
 
 | 種別 | 名前 | SAD 側 | pysad | 方針 |
 |---|---|---|---|---|
-| コマンド | `SEED` | Fortran? initb1.f,tfinitn.f | 未対応 (K64 でも obsolete。docs/33) | 直接翻訳 |
+| コマンド | `SEED` | Fortran? initb1.f,tfinitn.f | 未対応 (K64 でも obsolete。docs/35) | 直接翻訳 |
 | 関数 | `Random` | C tfRandom_.c | 実装 | 直接翻訳 |
 | 関数 | `GaussRandom` | C tfRandom_.c | 実装 | 直接翻訳 |
 | 関数 | `ParabolaRandom` | C tfRandom_.c | 実装 | 直接翻訳 |
@@ -123,7 +123,7 @@
 
 | 種別 | 名前 | SAD 側 | pysad | 方針 |
 |---|---|---|---|---|
-| 関数 | `Fit` | .n Fit.n | 実装 (pysad/fitroot.py。導関数は数値微分。docs/31) | Python ライブラリで代替 |
+| 関数 | `Fit` | .n Fit.n | 実装 (pysad/fitroot.py。導関数は数値微分。docs/33) | Python ライブラリで代替 |
 | 関数 | `FitEmit` | .n Fit.n | 実装 | Python ライブラリで代替 |
 | 関数 | `FitGaussian` | .n Fit.n | 実装 | Python ライブラリで代替 |
 | 関数 | `NIntegrate` | .n D.n,OpticsPlot_230724b.n | 実装 | Python ライブラリで代替 |
@@ -187,7 +187,7 @@
 | 関数 | `OpenWrite` | Fortran tfinitn.f | 実装 | Python ライブラリで代替 |
 | 関数 | `PageWidth` | .n latex.n | 文字列参照あり | Python ライブラリで代替 |
 | 関数 | `Print` | Fortran tfinitn.f; .n Class.n | 実装 | Python ライブラリで代替 |
-| 関数 | `Read` | Fortran tfinitn.f | 実装 (型は gs に合わせた。docs/31・33) | Python ライブラリで代替 |
+| 関数 | `Read` | Fortran tfinitn.f | 実装 (型は gs に合わせた。docs/33・33) | Python ライブラリで代替 |
 | 関数 | `ReadString` | Fortran tfinitn.f | 実装 | Python ライブラリで代替 |
 | 関数 | `StandardForm` | Fortran tfinitn.f; .n KBMainFrame.n | 実装 (sadscript.py。HoldAll の表示形) | Python ライブラリで代替 |
 | 関数 | `StringToStream` | Fortran tfinitn.f | 実装 | Python ライブラリで代替 |
@@ -199,18 +199,18 @@
 | 種別 | 名前 | SAD 側 | pysad | 方針 |
 |---|---|---|---|---|
 | コマンド | `DRAW` | Fortran tffsa.f | 無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示) | Python ライブラリで代替 |
-| 関数 | `BeamPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | .n は読み込めるが gs との比較はしていない (未確認。docs/35) | Python ライブラリで代替 |
+| 関数 | `BeamPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | .n は読み込めるが gs との比較はしていない (未確認。docs/37) | Python ライブラリで代替 |
 | 関数 | `ColumnPlot` | .n Plots.n | .n は読み込めるが動作は未確認 | Python ライブラリで代替 |
-| 関数 | `FitPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。43 項目。当てはめの値は 1e-8 相対。docs/35) | Python ライブラリで代替 |
-| 関数 | `GeometryPlot` | .n GeometryPlot.n | 実装 (SAD の .n を動かし tkinter に描く。線 74・多角形 37 が gs と一致。docs/35) | Python ライブラリで代替 |
-| 関数 | `HistoPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。38 項目が全部一致。docs/35) | Python ライブラリで代替 |
+| 関数 | `FitPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。43 項目。当てはめの値は 1e-8 相対。docs/37) | Python ライブラリで代替 |
+| 関数 | `GeometryPlot` | .n GeometryPlot.n | 実装 (SAD の .n を動かし tkinter に描く。線 74・多角形 37 が gs と一致。docs/37) | Python ライブラリで代替 |
+| 関数 | `HistoPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。38 項目が全部一致。docs/37) | Python ライブラリで代替 |
 | 関数 | `LaTeX` | .n latex.n | 未確認 (`$HaveLaTeX` は gs と同じく `""`) | Python ライブラリで代替 |
-| 関数 | `ListContourPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。種類と数は一致、等高線の始点・向きが違う。docs/35) | Python ライブラリで代替 |
-| 関数 | `ListDensityPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/35) | Python ライブラリで代替 |
-| 関数 | `ListPlot` | .n ListPlot.n | 実装 (SAD の .n を動かし tkinter に描く。キャンバスの 43 項目が gs と全部一致。オプション (PlotRange・Scale・PlotLabel・GridLines・Frame・Legend・FontScale・Prolog・Epilog・Background・Plot->False・AspectRatio) を与えた戻りの Graphics 式も gs と文字列で完全に一致 (10 例。窓の見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は {} の差)。docs/35) | Python ライブラリで代替 |
-| 関数 | `OpticsPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | 実装 (SAD の .n を動かし tkinter に描く。枠・矩形・線は一致、文字の数は Tk のフォントで違う。docs/35) | Python ライブラリで代替 |
-| 関数 | `ParametricPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/35) | Python ライブラリで代替 |
-| 関数 | `Plot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。ListPlot と同じオプションを与えた戻りの Graphics 式も gs と文字列で一致。docs/35) | Python ライブラリで代替 |
+| 関数 | `ListContourPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。種類と数は一致、等高線の始点・向きが違う。docs/37) | Python ライブラリで代替 |
+| 関数 | `ListDensityPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/37) | Python ライブラリで代替 |
+| 関数 | `ListPlot` | .n ListPlot.n | 実装 (SAD の .n を動かし tkinter に描く。キャンバスの 43 項目が gs と全部一致。オプション (PlotRange・Scale・PlotLabel・GridLines・Frame・Legend・FontScale・Prolog・Epilog・Background・Plot->False・AspectRatio) を与えた戻りの Graphics 式も gs と文字列で完全に一致 (10 例。窓の見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は {} の差)。docs/37) | Python ライブラリで代替 |
+| 関数 | `OpticsPlot` | .n OpticsPlot.n,OpticsPlot_230724a.n | 実装 (SAD の .n を動かし tkinter に描く。枠・矩形・線は一致、文字の数は Tk のフォントで違う。docs/37) | Python ライブラリで代替 |
+| 関数 | `ParametricPlot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/37) | Python ライブラリで代替 |
+| 関数 | `Plot` | .n Plots.n | 実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。ListPlot と同じオプションを与えた戻りの Graphics 式も gs と文字列で一致。docs/37) | Python ライブラリで代替 |
 | 関数 | `PointSymbol` | .n? CSR.n,Canvas.n,ListPlot.n,… | ListPlot が内部で使う (`CanvasSymbolDirect`)。単独では未確認 | Python ライブラリで代替 |
 
 ## システム・プロセス・並列 (7) — 方針: Python ライブラリで代替
@@ -241,11 +241,11 @@
 |---|---|---|---|---|
 | コマンド | `ATTRIBUTE(ATTR)` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `DISPLAY(DISP)` | Fortran tffsa.f,tracke.f | 実装 | Python で書き直し |
-| コマンド | `MATRIX(MAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) | Python で書き直し |
+| コマンド | `MATRIX(MAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
 | コマンド | `PRINT(PRI)` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `REFERENCE(REF)` | Fortran tfdisp.f,tffsa.f | 実装 | Python で書き直し |
-| コマンド | `SHOW` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) | Python で書き直し |
-| コマンド | `STATUS(STAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) | Python で書き直し |
+| コマンド | `SHOW` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
+| コマンド | `STATUS(STAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
 | コマンド | `TYPE(T)` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `VARIABLES(VAR)` | Fortran tffsa.f | 実装 | Python で書き直し |
 
@@ -280,14 +280,14 @@
 | コマンド | `BYE` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `COUPLE(COUP)` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `EXPAND` | Fortran tffsa.f,tftwiss.f | 実装 | Python で書き直し |
-| コマンド | `RECOVER(REC)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) | Python で書き直し |
-| コマンド | `RENUMBER(RENUM)` | Fortran tffsa.f | 未対応 (何もしない。docs/33) | Python で書き直し |
+| コマンド | `RECOVER(REC)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
+| コマンド | `RENUMBER(RENUM)` | Fortran tffsa.f | 未対応 (何もしない。docs/35) | Python で書き直し |
 | コマンド | `RESET` | Fortran tffsa.f | 実装 | Python で書き直し |
-| コマンド | `REVERSE(REV)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) | Python で書き直し |
+| コマンド | `REVERSE(REV)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
 | コマンド | `SAVE` | Fortran tffsa.f,tracke.f | 実装 | Python で書き直し |
 | コマンド | `SPLIT` | Fortran tffsa.f | 実装 | Python で書き直し |
 | コマンド | `USE` | Fortran tffsa.f | 実装 | Python で書き直し |
-| コマンド | `VARY` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/33。表の書式は gs と同じ) | Python で書き直し |
+| コマンド | `VARY` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) | Python で書き直し |
 | コマンド | `VISIT` | Fortran tffsa.f | 実装 | Python で書き直し |
 
 ## 誤差 (FFS コマンド) (1) — 方針: 直接翻訳
@@ -319,7 +319,7 @@
 | 変数 | `LOSSDZ` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, maintrack.py, parser.py) | 直接翻訳 |
 | 変数 | `MASS` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, ffsextra.py, optics_fn.py…) | 直接翻訳 |
 | 変数 | `MINCOUP` | Fortran initb1.f,tfbeam.f,tffs.f,… | 参照あり (ffscmd.py, ffsextra.py, parser.py) | 直接翻訳 |
-| 変数 | `MOMENTUM` | Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n | 参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (以前の文書の 1 GeV は誤り。docs/19) | 直接翻訳 |
+| 変数 | `MOMENTUM` | Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n | 参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (以前の文書の 1 GeV は誤り。docs/21) | 直接翻訳 |
 | 変数 | `NBUNCH` | Fortran initb1.f,tfsetparam.f,track.f | 参照あり (ffscmd.py, ffsextra.py, parser.py) | 直接翻訳 |
 | 変数 | `NP` | Fortran initb1.f,tfdapert.f,tffsa.f,…; .n dapert.n | 参照あり (beambeam.py, ffscmd.py, ffsextra.py…) | 直接翻訳 |
 | 変数 | `OMEGA0` | Fortran ActTra.f,initb1.f,tfgeo.f,… | 参照あり (ffscmd.py) | 直接翻訳 |
@@ -354,10 +354,10 @@
 ## 現状 (2026-11-16) の補足
 
 - 上の方針は 2026-11-06 のユーザー方針で、その後に方針が実際に変わったのは GUI・描画だけ (上の表のとおり SAD の .n を動かす)。
-- 11/06 の表で「未対応」だった項目のうち、11/16 までに実装したもの (docs/14 §2・§6): Fit・FitEmit・FitGaussian・NIntegrate・PolynomialFit、GaussianCoulomb 系、
+- 11/06 の表で「未対応」だった項目のうち、11/16 までに実装したもの (docs/16 §2・§6): Fit・FitEmit・FitGaussian・NIntegrate・PolynomialFit、GaussianCoulomb 系、
   RadiationField・RadiationSpectrum、SynchroBetaEmittance、OptimizeOptics、ExternalMap・VariableRange・VariableWeight・WakeFunction (ユーザー定義のフックを呼ぶ)、
   Difference・FixedPointList・SelectCases・SwitchCases・StringToStream・TemporaryName、Plot 系の描画、MATRIX・SHOW・STATUS・VARY・RECOVER・REVERSE、ELSEIF。
 - Fork・OpenShared・Shared・SharedSize・ListRandom・MemoryCheck・TracePrint は登録だけの限定版 (プロセスを分けず、値は固定)。翻訳対象外の方針どおり。
-- 見送ったもの: `MessageName` の関数形、MEASURE/TRCOD の経路 (gs が動かない B42)、`Polarization` (K64 が NaN)、PHSROT (K64 で動作しない)。理由は docs/18。
-- 件数の「実装・参照あり」は名前の登録と参照があるという意味で、挙動の一致は要素ごとの文書による (docs/14 §7)。
+- 見送ったもの: `MessageName` の関数形、MEASURE/TRCOD の経路 (gs が動かない B42)、`Polarization` (K64 が NaN)、PHSROT (K64 で動作しない)。理由は docs/20。
+- 件数の「実装・参照あり」は名前の登録と参照があるという意味で、挙動の一致は要素ごとの文書による (docs/16 §7)。
 

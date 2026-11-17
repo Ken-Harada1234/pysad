@@ -1,0 +1,5 @@
+FFS;
+PageWidth=1999;
+Print["A ",MessageName[g,"usage"]];
+Print["E ",MessageName[General,"wrongtype"]];
+Exit;

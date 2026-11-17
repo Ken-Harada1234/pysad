@@ -1,0 +1,7 @@
+FFS;
+PageWidth=1999;
+Print["A ",Thread[{a,{}}]," ",Thread[{a,{1,2}}]," ",Thread[{{a,b},{1,2}}]];
+l={{1,2},{3,4},{5,6}};
+Print["B ",ReplacePart[l,0,{,2}]," ",ReplacePart[l,0,{2,}]," ",Extract[l,{,2}]];
+Print["C ",ReplacePart[{1,2,3},9,{}]];
+Exit;

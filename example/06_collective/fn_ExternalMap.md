@@ -1,5 +1,5 @@
 # fn_ExternalMap
-関数 (ユーザー定義写像)・06_collective・ラティス `00_lattice/map_ring.sad` (新規: FODO_ring の ORIGIN の直後に `MAP MP`。RINGM)、3 GeV、`NORFSW NORAD NOFLUC`
+種別: 関数 (ユーザー定義の写像) / フォルダ: 06_collective / ラティス: `00_lattice/map_ring.sad` (新規。`FODO_ring.sad` の ORIGIN の直後に `MAP MP` を置いた `RINGM`)。3 GeV / フラグ: `NORFSW NORAD NOFLUC`
 
 ## 何を見る例か
 `MAP` 要素は、SADScript の関数 `ExternalMap` で写像を与えるための要素 (定義がなければ恒等で長さ 0)。追跡 (`"TRACK"`) と光学 (`"OPTICS"`) の両方に、薄い四極 (集束 $px\to px-kx$、非集束 $py\to py+ky$) を与え、チューンが解析式どおり変わることを確かめる。
@@ -42,4 +42,4 @@ CALC;                                ! OPTICS の写像で Twiss
 
 ## 未確認・限界
 - 6×6 の恒等に近い単純な写像 (薄い四極) だけ。`"EMIT"` (Emittance[] 用) と `"GEO"` は見ていない。落ちた粒子の復活、`ExternalMap` が受け取る `nt` は見ていない。
-- docs/28 のとおり、MAIN の `TRACK`・`DynamicApertureSurvey`・Touschek の経路は MAP を恒等として通す (ExternalMap を呼ばない)。
+- docs/30 のとおり、MAIN の `TRACK`・`DynamicApertureSurvey`・Touschek の経路は MAP を恒等として通す (ExternalMap を呼ばない)。

@@ -1,6 +1,5 @@
 # fn_DownhillSimplex (DownhillSimplex)
-
-種別: 関数 (最小化、ネルダー・ミード法)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (最小化、ネルダー・ミード法) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 `DownhillSimplex[initial, f, options]` で 2 変数関数

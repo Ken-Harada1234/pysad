@@ -1,0 +1,9 @@
+{"SAD",5,0,0,0}
+{"SAD",5,0,0,0}
+???System::error:  No such random plugin in SeedRandom["x"]
+{"SAD",5,0,0,0}
+{"SAD",4294967291,0,0,0}
+{"SAD",1,0,0,0}
+{"SAD",2306130011,1,787469756,1071741574}
+???General::narg:  Number of arguments is expected to be 0 or 1 in SeedRandom[1,2]
+... in SeedRandom[1, 2]

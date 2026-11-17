@@ -1,0 +1,55 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:08 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+
+MOMENTUM = 1GEV;
+DRIFT D1 = (L=1) D2 = (L=2) D3 = (L=1.5);
+BEND B1 = (L=1 ANGLE=0.3 E1=0.15 E2=0.15) B2 = (L=1 ANGLE=-0.2 E1=-0.1 E2=-0.1) B3 = (L=0.5 ANGLE=0.1 ROTATE=90 DEG);
+QUAD QF = (L=0.3 K1=1) QD = (L=0.3 K1=-1);
+MARK M1 = (BX=5 BY=5) M2 = ();
+LINE L1 = (M1 D1 QF D2 B1 D3 QD D1 B3 D2 B2 D1 M2);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE L1;
+Out[1]:= USE
+ INS;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -447.1658 $$$       f BX    #######  #  3540.5190 $$$       f NX    #######  #    .496531
+$$$       f AY    #######  #  -543.4719 $$$       f BY    #######  #  2345.2861 $$$       f NY    #######  #    .557714
+$$$       f LENG  #######  #  11.600000
+ $FORM = "20.15";
+ 
+ fit M2 GX 11.5;
+ fit M2 GZ -0.5;
+ free D2 L;
+ free D3 L;
+ go;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+M2        f GX   11.5      1  11.500000 M2        f GZ   -.5       1   -.500000 $$$         AX    #######  #  -363.6223
+$$$         BX    #######  #  3379.7109 $$$         NX    #######  #    .494753 $$$         AY    #######  #  -516.5080
+$$$         BY    #######  #  2604.1023 $$$         NY    #######  #    .556870 $$$         LENG  #######  #  11.774460
+ r1 = {LINE["GX","$$$"], LINE["GY","$$$"], LINE["GZ","$$$"], LINE["L","D2"], LINE["L","D3"]};
+ fit;
+ fit $$$ CHI1 6;
+ fit $$$ CHI3 1.2;
+ free B3 ANGLE;
+ free B2 ANGLE;
+ go;
+       3        0    29.47      (NEWTON)   6.2500E-02      4
+       4        0    26.22      (NEWTON)   0.2500          4
+       6        0    23.65      (NEWTON)   6.2500E-02      4
+       7        0    21.88      (NEWTON)   0.2500          4
+       9        0    18.24      (NEWTON)   0.1171          4
+      11        0    7.767      (NEWTON)    1.000          4
+      12        0   4.5146E-08  (NEWTON)    1.000          4
+ Matched. ( 7.8241E-28) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+M2          GX   11.5      1  11.500000 M2          GZ   -.5       1   -.500000 $$$       f AX    #######  #  -428.5677
+$$$       f BX    #######  #  3637.5783 $$$       f NX    #######  #    .495863 $$$       f AY    #######  #  -553.1597
+$$$       f BY    #######  #  2601.7836 $$$       f NY    #######  #    .557443 $$$       f LENG  #######  #  11.795201
+$$$       f CHI1 6         1   6.000000 $$$       f CHI3 1.2       1   1.200000
+ r2 = {LINE["GCHI1","$$$"], LINE["GCHI2","$$$"], LINE["GCHI3","$$$"], LINE["ANGLE","B3"], LINE["ANGLE","B2"]};
+ In[2]:=  ???-getbuf-end of input stream

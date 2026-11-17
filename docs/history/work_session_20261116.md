@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-16
 
-時系列ではなく話題別に書く。各項目に根拠のファイル (コード、試験、記録、gs の出力) を付ける。未解決の差の一覧は `work_unimpl.md`、現状の解説は `docs/34_spin_csr.md` ほか。
+時系列ではなく話題別に書く。各項目に根拠のファイル (コード、試験、記録、gs の出力) を付ける。未解決の差の一覧は `work_unimpl.md`、現状の解説は `docs/36_spin_csr.md` ほか。
 gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` は作業者のローカルの作業フォルダ (リポジトリに含まれない)。
 
 ## 1. POL のスピン追跡 (TrackParticles)
@@ -13,7 +13,7 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 - 一致の度合い: gs と 4e-12 以下 (NOFLUC・FLUC とも)。平面リング、ずれ・回転した四極と偏向・六極のリング、MULT (K1 K2 K3 とずれ)、K1 のある BEND、SEXT・薄い MULT (L=0)、SOL 領域内のドリフト (BZ=0.05)。根拠: `pysad/tests/test_spin_track.py`。
 - 限界・未確認: 損失 (flag) の処理は高速追跡 (TrackRun) にしかないので、POL のスピン追跡では粒子が落ちない。SOL 領域内の MULT・BEND・CAVI のスピンは未確認 (領域内の要素そのものが未対応)。
 - Emittance・EMIT のスピン: MULT (K1・K2・K3 とずれのあるリングで gs と 1e-11。tmulke の bsir0 の更新も入れた: `lattice.py` の `kick_cx`、`emit6d.py` の `_tmulte`)、空洞、SOL (`emit_extra._tturne1` に SOL 領域の分岐) まで。偏極時間・スピンチューン・偏極ベクトルが gs と一致 (`test_spin.py`、SOL は `test_solenoid_ring_matches_gs`)。
-- 根拠のファイル: `pysad/spin.py`、`pysad/track6.py`、`pysad/emit_extra.py`、`pysad/tests/test_spin.py`、`test_spin_track.py`、`work_unimpl.md` (「POL の MULT」「POL の SOL」「POL の TrackParticles」)、`docs/34_spin_csr.md`。
+- 根拠のファイル: `pysad/spin.py`、`pysad/track6.py`、`pysad/emit_extra.py`、`pysad/tests/test_spin.py`、`test_spin_track.py`、`work_unimpl.md` (「POL の MULT」「POL の SOL」「POL の TrackParticles」)、`docs/36_spin_csr.md`。
 - 使った条件: 小さな試験ラティス (平面リング、BZ=0.05 の SOL など)。エネルギーは試験の既定 (試験ファイルを参照)。実用の大きなリングは未確認。`Polarization` は K64 が NaN (B55) で、pysad も NaN。
 
 ## 2. RADLIGHT
@@ -22,7 +22,7 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 - 一致の度合い: gs と差 0 (2 粒子・複数周・始点 ls≠1)。根拠: `pysad/tests/test_radlight.py`。RadiationField・RadiationSpectrum は実装済み (`pysad/radfield.py`、`test_radfield.py`)。
 - K64 の癖 (gs で確かめた): ① 記録するのは各区間 (tturn) の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけで、BEND と曲げのある MULT の中は記録しない。② tlinit は geo0 の軸 1・2 を設定せず (common の初期値 0)、横方向の座標は軌道に入らない (進行方向の z 軸に沿った点だけが並ぶ)。③ 位置は straight (dphi=0) の積み上げで、BEND で向きが変わらない。
 - 限界: BEND を記録しない K64 の仕様のため、`example.oide.sad` の流れ (B を ANGLE 0 の STEER にする) でないと意味のある場にならない。
-- 根拠のファイル: `pysad/ffscmd.py` (`_RadLight`)、`test_radlight.py`、`work_unimpl.md` (「RADLIGHT」)、`docs/43_radlight_guide.md`。
+- 根拠のファイル: `pysad/ffscmd.py` (`_RadLight`)、`test_radlight.py`、`work_unimpl.md` (「RADLIGHT」)、`docs/45_radlight_guide.md`。
 
 ## 3. MULT のスピンと SOL のスピン・周長
 
@@ -31,23 +31,23 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 - SOL の周長: K64 は SOL (BOUND≠0) の長さを周長 (周回周波数・空洞の位相・MomentumCompaction・偏極時間) に入れない。PLANAR + SOL で周長 45.6 のときと偏極時間が 15 桁一致する。`emit6d._emit_circ` で同じにし、追跡の `circ` (`fn_track`) にも使った。
   GEO のない SOL では K64 の S 座標が途切れて周長がさらに狂う (偏極時間が約半分、MomentumCompaction が 100 倍) が、pysad は GEO を見ないので再現しない。
 - SOL の領域内の BEND (直線、ANGLE か K0 のある): K64 の tsol.f は `tdrift(al, bzs, phiy, phix, …)` を呼ぶので直訳 (`track6._tdrift_kick` を bz≠0 に一般化) を試したが、gs は偏向をほぼ無視する (BZ=0.5 T の領域で ANGLE=0.1 でも位置・角度が 1e-5 しか変わらない。pysad の直訳は ANGLE·距離だけ曲がる)。原因は未確認 (tpara で K0/ANGLE が領域内の BEND に入らないなど K64 側の癖かもしれない)。合わないので未対応 (NotImplementedError)。gs の出力は `local/wake/ps23.sad`〜`ps28.sad`。MULT・CAVI の領域内は未着手。
-- 根拠のファイル: `pysad/emit6d.py` (`_emit_circ`)、`test_spin.py`、`work_unimpl.md`、`docs/27_sol_optics.md`、`docs/42_sol_guide.md`。
+- 根拠のファイル: `pysad/emit6d.py` (`_emit_circ`)、`test_spin.py`、`work_unimpl.md`、`docs/29_sol_optics.md`、`docs/44_sol_guide.md`。
 
 ## 4. 旧 WAKE コマンド
 
 - 旧式の WAKE コマンド (tfwake.f) は移植しないと判断した。K64 の `tffsa.f:972` は tfwake.f を呼ばず `WAKECOMMAND[]` (`init.n` の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価し、gs は fileopen のエラーを出して行の残りを捨てる。pysad も同じ経路 (エラー文の表示だけ未再現)。
-- 根拠: K64 のソース `src/tffsa.f`、`Packages/init.n`、gs の出力、`work_unimpl.md`、`docs/21_wake.md`、`docs/36_wake_guide.md`。
+- 根拠: K64 のソース `src/tffsa.f`、`Packages/init.n`、gs の出力、`work_unimpl.md`、`docs/23_wake.md`、`docs/38_wake_guide.md`。
 
 ## 5. tlum・tluma (measure.py)
 
-- `pysad/measure.py` に K64 の tlum・tluma を直訳した。MEASURE が gs で動かない (B42) ので、gs との比較はできず、解析値との比較だけ (`pysad/tests/test_measure.py`)。MEASURE/TRCOD (`tracke`・`ttinit`・`ttstat`・`trcoda`・`trackb`) は gs の参照が取れず、使うスクリプトも見つからないので翻訳していない (docs/19 B41・B42)。
+- `pysad/measure.py` に K64 の tlum・tluma を直訳した。MEASURE が gs で動かない (B42) ので、gs との比較はできず、解析値との比較だけ (`pysad/tests/test_measure.py`)。MEASURE/TRCOD (`tracke`・`ttinit`・`ttstat`・`trcoda`・`trackb`) は gs の参照が取れず、使うスクリプトも見つからないので翻訳していない (docs/21 B41・B42)。
 - 根拠のファイル: `pysad/measure.py`、`test_measure.py`、`work_unimpl.md`。
 
 ## 6. CSR の確認
 
 - 実装 (gs と照合): CSRTrack・CSRHaissin・CSRSetupOY・CSROYMatrix・CSRMatrix (mode 1000 = csrhelmat を含む)・CSRConvert (K64 の tfcsrvec と同じ)・CSRInit。`Packages/CSR.n` の MakeZL・SkinDepth・PathDifference・StandardKList・VariableMesh・ZThre などは gs と 1e-10〜1e-13 で一致。
-- 限界・未確認: ScanTrack・OYStability などの長い流れは未照合。遅い試験 (MakeZL、約 7 分) は `PYSAD_SLOW=1` のときだけ走る。K64 の癖は docs/19 B55〜B60。
-- 根拠のファイル: `pysad/csr.py`、`pysad/tests/test_csr.py`、`docs/34_spin_csr.md`、`docs/38_csr_guide.md`。
+- 限界・未確認: ScanTrack・OYStability などの長い流れは未照合。遅い試験 (MakeZL、約 7 分) は `PYSAD_SLOW=1` のときだけ走る。K64 の癖は docs/21 B55〜B60。
+- 根拠のファイル: `pysad/csr.py`、`pysad/tests/test_csr.py`、`docs/36_spin_csr.md`、`docs/40_csr_guide.md`。
 
 ## 7. MOMENTUM の既定
 
@@ -57,13 +57,13 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 ## 8. クラスのメンバー
 
 - クラスのメンバーでない名前の `obj@name[...]` は式のまま (gs に合わせた)。評価器は `pysad/sadclass.py`・`sadscript.py`。GUI の試験は `PYSAD_SAD_PACKAGES` が無いと skip になるので、評価器を変えたら設定して全試験を回す (全体実行では GUI 系が数回に 1 回落ちる。単独なら通る)。
-- 同日に gs に合わせた SADScript の小さな差: `Skip`・`Read` の型 (`test_evalfixes.py`)、数の書式、連鎖比較、`Null[]` の展開、With・Block の引数の局所化 (`work_unimpl.md`、`docs/32`・`35`)。`MessageName[f,"usage"]` の関数形は不一致のまま見送り。
+- 同日に gs に合わせた SADScript の小さな差: `Skip`・`Read` の型 (`test_evalfixes.py`)、数の書式、連鎖比較、`Null[]` の展開、With・Block の引数の局所化 (`work_unimpl.md`、`docs/34`・`35`)。`MessageName[f,"usage"]` の関数形は不一致のまま見送り。
 
 ## 9. そのほかの同日の追加
 
 - `SynchroBetaEmittance` (`pysad/synchrobeta.py`): 12 セルのリング + CAVI (VOLT=2e6 HARM=64) で gs と emitx 相対 4e-7〜1e-5 (許容 3e-5: `test_synchrobeta.py`)。emity は 1e-18 の雑音。未確認: 実用の大きなリング、不安定なチューン、`emiout`、結合、RFSW の組み合わせ。
 - tdgeo (`match6d.tdgeo_term`): DRIFT の L と BEND の ANGLE・L だけ解析微分 (他は中心差分)。`test_tdgeo.py`。Twiss の条件が同じ行にある fit は数値微分のままで、収束位置が gs と 1e-6 の程度違う。
-- INS を含むリングの追跡・Emittance[] は gs と一致 (追加の実装は不要)。DELCOR の CAVI (B62)、PolyLog・HurwitzZeta の複素の領域 (docs/31)、CSR の MakeZL、GaussianCoulombFitted (docs/30)。
+- INS を含むリングの追跡・Emittance[] は gs と一致 (追加の実装は不要)。DELCOR の CAVI (B62)、PolyLog・HurwitzZeta の複素の領域 (docs/33)、CSR の MakeZL、GaussianCoulombFitted (docs/32)。
 - 試験の全体 (昼の時点): 511 通過・3 skip (514 件収集)。回帰 `QUICK=1 run_regression.py` は FAIL 0 (遅い 4 件を SKIP して 46 件)。夜の修正後は 520 通過・3 skip (523 件収集)、50 ベンチすべて実行して FAIL 0 (§11)。
 
 ## 10. 見つけた未解決の差
@@ -88,7 +88,7 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 - POL のスピン (Emittance[]): ROTATE+DX+DY 付き空洞 (結合リング。偏極時間 13 桁、スピンチューン 1e-14、偏極ベクトル 1e-13: v3a.sad)、ANGLE≠0 の MULT (偏極時間 14 桁、スピンチューン 1e-14: v3b.sad)、BEND の DROTATE+DX (偏極時間 14 桁、偏極ベクトル 1e-14: v3c.sad)。
 - BEAMBEAM を含むリングの CALC・Emittance (Twiss のチューン 1e-14、運動量収縮 4e-12。BEAMBEAM は Marker 扱い: v4.sad)。STURN・COUPLE (BEAMBEAM) は K64 のソースでキーワードの登録 (`initb1.f`) 以外に参照がなく、使われない。
 - PhotonList の 12 列は `photons.f` の `tphotonlist` の定義と一致。`track6n` の「wake: SOL 領域を含む区間」の分岐は、Prog が SOL 領域でも 1 要素 1 kind なので当たらない防御。
-- RADLIGHT の軌道: geo[0] から局所 z 軸の大域成分は (1,0,0) で、進行方向の距離は軌道の 2 行目 (大域 x) に出る。`docs/34` の「geo の z 軸」は正しい。RADLIGHT → RadiationField → FindPeak → RadiationSpectrum は pysad で最後まで通る (軌道 8 点、スペクトル {3,1001})。gs は RadiationField で SIGSEGV (B49) なので通し比較はできず、軌道の部分だけ gs と一致。
+- RADLIGHT の軌道: geo[0] から局所 z 軸の大域成分は (1,0,0) で、進行方向の距離は軌道の 2 行目 (大域 x) に出る。`docs/36` の「geo の z 軸」は正しい。RADLIGHT → RadiationField → FindPeak → RadiationSpectrum は pysad で最後まで通る (軌道 8 点、スペクトル {3,1001})。gs は RadiationField で SIGSEGV (B49) なので通し比較はできず、軌道の部分だけ gs と一致。
 - 回帰 QUICK が SKIP していた 4 件 (7・12t・13a・16a) を実行し、すべて PASS (7: 5.0e-11、12t: 3.5e-11、13a: 4.3e-21、16a: 1.4e-31)。50 ベンチすべて実行して FAIL 0 (`reg_slow4.txt`)。
 - SynchroBetaEmittance の大きなリング (24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7): emitx は gs と相対 1.4e-7〜1.4e-6 (4 点)。emity は雑音 (sb11.sad)。
 - ListPlot・Plot のオプション (PlotRange、Scale、PlotLabel、GridLines、Frame、Legend、FontScale、Prolog・Epilog・Background、Plot->False、AspectRatio) の戻りの Graphics 式は gs と文字列で完全に一致 (10 例: pl2・pl3.sad。窓の見た目ではなく式の比較)。`Options[g]` は gs が全オプションを返し pysad は {} を返す (差のまま。pl1.sad)。
@@ -98,11 +98,11 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 
 ### 11.2 差を見つけて pysad を直したもの
 
-- **UNIPOL・RELW** (`docs/18` は「効果の有無は未確認」): gs は UNIPOL で変数の符号を変えず (`tffsmatch.f:669`)、RELW で重みが変わり、FIT の結果が変わる (fit1.sad: QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit。既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499)。pysad は `match6` に bipol・absweit の実装はあるがフラグとつながらず、どれも既定の結果だった。`ffscmd.matcher_` でつなぎ、3 通りとも gs と全桁一致。試験: `test_item4.py` に 3 件。
+- **UNIPOL・RELW** (`docs/20` は「効果の有無は未確認」): gs は UNIPOL で変数の符号を変えず (`tffsmatch.f:669`)、RELW で重みが変わり、FIT の結果が変わる (fit1.sad: QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit。既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499)。pysad は `match6` に bipol・absweit の実装はあるがフラグとつながらず、どれも既定の結果だった。`ffscmd.matcher_` でつなぎ、3 通りとも gs と全桁一致。試験: `test_item4.py` に 3 件。
 - **DUMP**: 誤差入りのリングで値は一致したが、DK・DDK 列の書式が違った (gs は Fortran の `1p g12.5`: 0 → `0.0000`、小さい値 → `4.22829E-04`。pysad は `0`・`0.00042283`)。`ffscmd._gwd` を足して一致 (dm2.sad、`test_ffsextra.py` の `test_dump_format_matches_gs`)。
 - **MATRIX コマンド**: 名前だけの引数 (gs は NAME.1 として扱う) を位置にできず、ラティスに無い名前は gs が読み飛ばす (to=$$$) のを再現していなかった。直した (mt1・mt2.sad、`test_ffsextra.py`)。
 - **LDSolve.n (複素行列)**: `DiagonalMatrix` が複素数の列を受けず失敗していた (`float() argument must be … not 'complex'`)。あわせて、行列の演算 (Dot・Inverse) の結果は gs が要素ごとに虚部 0 の複素数を実数に戻すので、pysad も要素ごとに戻すようにした (以前は全要素が実のときだけ)。LDSolve の終点 (cos 1, −sin 1) と 3 通りの呼び出しが gs と一致 (ld2・ev1.sad、`test_evalfixes.py` に 2 件)。`PeriodicR` は呼び方が不明で比較できず (gs も引数エラー)。
-- **セッション最初の l_track=0** (B33 の差の原因。§11.3 と `work_wake.md`): K64 の tapert は落とす印に `kptbl(i,4)=l_track` を書く。l_track は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない) なので、最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり落ちない。座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは最初の要素で落ちる。pysad は常に最初の要素で落としていた。`TrackRun.l_track0`・`k_apert` の lcur==0 で再現し、gs (1 回目・2 回目の呼び出し) と直した SAD (b33.sad、15 値) と全桁一致 (lm2〜lm4.sad、`test_small_items.py` に 1 件)。`docs/36` の「B33 の出力座標が合わない」は解消。
+- **セッション最初の l_track=0** (B33 の差の原因。§11.3 と `work_wake.md`): K64 の tapert は落とす印に `kptbl(i,4)=l_track` を書く。l_track は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない) なので、最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり落ちない。座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは最初の要素で落ちる。pysad は常に最初の要素で落としていた。`TrackRun.l_track0`・`k_apert` の lcur==0 で再現し、gs (1 回目・2 回目の呼び出し) と直した SAD (b33.sad、15 値) と全桁一致 (lm2〜lm4.sad、`test_small_items.py` に 1 件)。`docs/38` の「B33 の出力座標が合わない」は解消。
 - **OpenRead の失敗の gs 互換**: 入力ファイルが無いとき、失敗の出方が OpenRead の FileNotFoundError だった。gs と同じに、開けなければメッセージを出して入力行を打ち切り、`Read[h,…]`・`Close[h]` は wrongtype にした (rd3・rd4.sad、`test_evalfixes.py`)。
 
 ### 11.3 原因を絞り込んだもの (未修正)

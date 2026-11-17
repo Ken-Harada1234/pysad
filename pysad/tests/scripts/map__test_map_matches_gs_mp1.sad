@@ -1,0 +1,21 @@
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MAP P1 = (L=0.5);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 P1);
+FFS;
+$FORM="18.14";
+USE RING;
+CELL;
+ExternalMap["OPTICS",LINE["POSITION","P1"],cod_]:=(
+  {cod+{0,0.0003,0,0,0,0}, {{1,0.1,0,0,0,0},{0,1,0,0,0,0},{0,0,1,0,0,0},{0,0,0,1,0,0},{0,0,0,0,1,0},{0,0,0,0,0,1}}});
+ExternalMap["EMIT",LINE["POSITION","P1"],cod_]:=(
+  {cod+{0,0.0003,0,0,0,0}, {{1,0.1,0,0,0,0},{0,1,0,0,0,0},{0,0,1,0,0,0},{0,0,0,1,0,0},{0,0,0,0,1,0},{0,0,0,0,0,1}}});
+CALC;
+Print["TUN ", Twiss["NX","$$$"]/(2 Pi), " ", Twiss["NY","$$$"]/(2 Pi)];
+Print["COD ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"]];
+Print["BX ", Twiss["BX","$$$"], " ", Twiss["BX", 3]];
+Exit;

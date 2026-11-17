@@ -1,4 +1,4 @@
-# var_Null_Out (Null, Out[n], %, $Line)
+# var_Null_Out (Null, Out[n], %, `$Line`)
 種別: 特殊変数 / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は `run_sad_string`。
 
 ## 何を見る例か
@@ -19,4 +19,4 @@ gs: `Null` の `Head` は `Symbol`、`Length[{Null,Null}]`=2、`{1,Null}` の表
 ○ `%`・`%n`・`Out[n]`・`$Line` は一致 (2026-11-17 に修正: `%` は `Out[$Line]`、`%%` は gs でも記号のまま、未定義の `Out[-1]` は未評価)。差が残るのは `BoundQ` (gs は `BoundQ[zzz]` を 0、`BoundQ[x]` を 1 と評価、pysad は未評価): 今回の対象外。
 
 ## 未確認・限界
-- `Out[n]` の番号付けは、`Print` や `;` 付きの行に付かないので、数える対象は gs の画面で確認すること。
+- `Out[n]` の番号は、`Print` の行や `;` で終わる行には付かない。どの行が番号を持つかは gs の画面で確認する。

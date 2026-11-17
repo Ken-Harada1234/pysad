@@ -4,15 +4,15 @@
 | ファイル | 説明 | gs と pysad |
 |---|---|---|
 | FFS_PRINT_OUTPUT_APPEND_READ_INPUT | FFS PRINT・OUTPUT・APPEND・CLOSE・READ・INPUT | ○ |
-| fn_DateString_TimeUsed_Timing | fn_DateString_TimeUsed_Timing | ○ |
-| fn_FORM_PageWidth | fn_FORM_PageWidth ($FORM, PageWidth, StandardForm) | ○ |
+| fn_DateString_TimeUsed_Timing | fn_DateString_TimeUsed_Timing (DateString, TimeUsed, Timing) | ○ |
+| fn_FORM_PageWidth | fn_FORM_PageWidth (`$FORM`, PageWidth, StandardForm) | ○ |
 | fn_Fork_Shared | fn_Fork_Shared (Fork, OpenShared, Shared, SharedSize) | × |
-| fn_OpenRead_OpenWrite_OpenAppend_Close | fn_OpenRead_OpenWrite_OpenAppend_Close | ○ |
-| fn_Print_Write_WriteString | fn_Print_Write_WriteString | △ |
-| fn_Read_ReadString | fn_Read_ReadString | ○ |
-| fn_StringToStream | fn_StringToStream | ○ |
+| fn_OpenRead_OpenWrite_OpenAppend_Close | fn_OpenRead_OpenWrite_OpenAppend_Close (OpenRead, OpenWrite, OpenAppend, Close) | ○ |
+| fn_Print_Write_WriteString | fn_Print_Write_WriteString (Print, Write, WriteString) | △ |
+| fn_Read_ReadString | fn_Read_ReadString (Read, ReadString) | ○ |
+| fn_StringToStream | fn_StringToStream (StringToStream) | ○ |
 | fn_System_TemporaryName | fn_System_TemporaryName (System, TemporaryName, Directory, Environment) | × |
-| var_FORM_Input_Output | var_FORM_Input_Output ($FORM, $Input, $Output) | ○ |
+| var_FORM_Input_Output | var_FORM_Input_Output (`$FORM`, `$Input`, `$Output`) | ○ |
 
 ○一致 / △差あり / ×gs 失敗 / ×pysad 未対応。
 

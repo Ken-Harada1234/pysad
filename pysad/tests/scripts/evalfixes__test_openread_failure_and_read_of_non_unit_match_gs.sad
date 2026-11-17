@@ -1,0 +1,9 @@
+FFS;
+h=OpenRead["no_such_file_xyz.csv"];
+Print["A ",h];
+x=Read[h,Real];
+Print["B ",x];
+Close[h];
+f=OpenWrite["/no_such_dir_xyz/x.txt"];
+Print["C ",f];
+Exit;

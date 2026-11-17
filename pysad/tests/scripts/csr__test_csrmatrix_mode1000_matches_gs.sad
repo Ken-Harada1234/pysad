@@ -1,0 +1,12 @@
+FFS;
+$FORM="18.14";
+PageWidth=1999;
+a=CSRMatrix[{2,2,2},{1e-3,2e-3,1.1,1.3,0.9,0.7,0.1},3e3,5.0,2,1000];
+n=Length[a];
+Print["D ",Dimensions[a]];
+Print["S ",Plus@@Flatten[a]," ",Plus@@Abs[Flatten[a]]];
+Print["E ",a[[1,1]]," ",a[[2,3]]," ",a[[n,n]]," ",a[[n,1]]," ",a[[1,n]]];
+b=CSRMatrix[{5,5,5,5,5,5},{1e-3,2e-3,1.1,1.3,0.9,0.7,0.1},3e3,5.0,2,1000];
+m=Length[b];
+Print["F ",Dimensions[b]," ",Plus@@Flatten[b]," ",b[[1,1]]," ",b[[m,m]]];
+Exit;

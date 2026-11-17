@@ -1,0 +1,9 @@
+FFS;
+$FORM="18.14";
+PageWidth=1999;
+r=CSRInit[{{0.5e-3,0.5e-3},4,1e-3,{4,6,8,8,8,8,6,4}}];
+Print["A ",Dimensions[r]," ",Plus@@Flatten[r[[1]]]," ",Plus@@Flatten[r[[2]]]," ",Max[Abs[Flatten[r]]]];
+Print["B ",r[[2,3,4]]," ",r[[1,2,3]]," ",r[[1,8,8]]];
+r2=CSRInit[{{0.5e-3,0.25e-3},3,2e-3,{3,5,5,5,3}}];
+Print["C ",Plus@@Flatten[r2[[1]]]," ",Plus@@Flatten[r2[[2]]]," ",r2[[1,3,2]]];
+Exit;

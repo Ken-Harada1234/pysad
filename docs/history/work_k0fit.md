@@ -24,8 +24,8 @@ FFS コマンドの構文解釈の差の修正 (K0 を fit 変数にしたとき
 - 変更ファイル: `pysad/ffscmd.py` (`_fit_location`, `_freefix`, `_kw_of_pattern`, `type_cmd`, `_type_value`, `_TYPE_ORDER`)、`pysad/tests/test_emit_report.py`、`cmp_emit_report.py`、`run_regression.py` (26c の許容)。
 
 ## 残り (この 3 本から)
-- なし。docs/12 の §4 項目 6 は解消。
+- なし。
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 確認: 変化なし。根拠: この話題の記述は work_unimpl.md と docs/20〜35 に出てこない (grep で確認)、関係するモジュールに 11/06 以後この話題の変更の記録がない。この文書は 11/06 時点の記録のまま。
+- 2026-11-16 確認: 変化なし。根拠: この話題の記述は work_unimpl.md と docs/22〜35 に出てこない (grep で確認)、関係するモジュールに 11/06 以後この話題の変更の記録がない。この文書は 11/06 時点の記録のまま。

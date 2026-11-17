@@ -1,5 +1,5 @@
 # flag_SPAC
-フラグ・05_tracking・ラティス `00_lattice/spac_ring.sad` (新規: FODO_ring の DRIFT に `RADIUS=0.03`、運動量 20 MeV)・`NORFSW NORAD NOFLUC`
+種別: フラグ / フォルダ: 05_tracking / ラティス: `00_lattice/spac_ring.sad` (`FODO_ring.sad` の `DRIFT` に `RADIUS=0.03` を付けた新規の版。運動量 20 MeV) / フラグ: `SPAC`、`NORFSW NORAD NOFLUC`
 
 ## 何を見る例か
 `SPAC` を ON にすると追跡で空間電荷が入る (実粒子数 `PBUNCH`、マクロ粒子数 `NP`)。ダクトは円筒対称とし、半径を `DRIFT` と `MULT` の `RADIUS` で与える: RADIUS>0 なら空間電荷を入れ、かつその半径で損失の絞りを置く。RADIUS<0 なら空間電荷なし、半径 |RADIUS| の絞りだけ。RADIUS=0 は空間電荷なし (SADHelp)。
@@ -11,7 +11,7 @@ NOSPAC;  r = TrackParticles[{1, beam}, 1, 1, nt];    ! nt = 1, 20, 100 (A)
 SPAC;    r = TrackParticles[{1, beam}, 1, 1, nt];
 Element["RADIUS","D1"] = -4e-4; ...                   ! (B) 負の RADIUS = 絞りだけ
 ```
-- 低エネルギー (20 MeV、$\gamma=40$) にするため、ラティス側の `MOMENTUM = 20MEV` を使う。`FFS` に入った後で `MOMENTUM=20e6` と書くと gs では効くが pysad は追跡に反映しない (下)。
+- 低エネルギー (20 MeV、$\gamma=40$) にするため、ラティス側の `MOMENTUM = 20MEV` を使う。`FFS` に入った後で `MOMENTUM=20e6` と書く方法は、当時の pysad が追跡に反映しなかったので避けた (下の「別件」)。
 - 粒子は $x\sim3\times10^{-4}$ sin 型の決定的な 200 粒子 (乱数を使わない)。
 
 ## 結果の読み方
@@ -29,7 +29,7 @@ Element["RADIUS","D1"] = -4e-4; ...                   ! (B) 負の RADIUS = 絞�
 
 ## gs と pysad の比較
 × **pysad は未対応**: `SPAC` は値を保持するだけで追跡に効かず、RADIUS も読まない (docs/08 §7 の未対応一覧)。(B) の絞りも効かない (生存数 200)。
-さらに gs 側も、(A) の `RADIUS=+0.03` で空間電荷の効果は何も出なかった。RADIUS>0 で小さい値 (0.4 mm など、粒子のビームが半径内に収まらない設定) では gs は不正終了 (SIGSEGV 相当のバックトレース) した。したがって gs でも「空間電荷が働く」ことは確認できていない。働くのは負の RADIUS の絞りだけ。
+gs 側でも、(A) の `RADIUS=+0.03` では空間電荷の効果が何も出なかった。RADIUS>0 で小さい値 (0.4 mm など。ビームが半径内に収まらない設定) では、gs は不正終了した (SIGSEGV 相当のバックトレース)。したがって gs でも「空間電荷が働く」ことは確認できていない。働くのは負の RADIUS の絞りだけ。
 
 別件: `MOMENTUM = 20e6;` を FFS の中 (`USE` の前) で再設定した最初の版では、gs は新しい運動量を使い (NOSPAC でも rms x が 3 GeV のときと 0.07〜14% 違った)、当時の pysad は 3 GeV のままの結果を返した (`Emittance[]` も同様に変わらなかった: SIGE=1.1914e-3 のまま)。この例ではラティスの先頭 (MAIN レベル) に運動量を置いて避けた。この差は 2026-11-17 に直した (FFS 内の MOMENTUM は USE で MAIN 側の値に戻らない)。
 

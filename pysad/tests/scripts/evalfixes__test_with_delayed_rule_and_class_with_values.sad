@@ -1,0 +1,22 @@
+FFS;
+PageWidth=1999;
+F[a_]:=Module[{s1=3,leng=4,ss=2},
+  With[{s1,leng,ss},
+    G[#,{DataRange->{{s1,s1+leng}*ss,{-1,1}},
+      PlotRange:>With[{XR=ZZ}, {If[Head[XR]===List,XR,ss*{s1-0.001,s1+leng+0.001}],{-1,1}}]}]&/@{a}]];
+r=F[1];
+Print["A ",PlotRange/.r[[1,2]]];
+Plot$Color={"red","blue"};
+OP=Class[{},{},{},
+ With[{tdr:=TopDrawer,cdr:=System`CanvasDrawer},
+  SetAttributes[PCD2,HoldAll];
+  PCD2[tdr]={"black"};
+  PCD2[cdr]=Plot$Color;
+  SetAttributes[PCD2,HoldNone]];
+ With[{def={PlotColor->PCD2[$DisplayFunction]}},
+  Test[]:=Override[{},def]]];
+$DisplayFunction=CanvasDrawer;
+o=OP[];
+Print["B ",o@Test[]];
+Plot$Color2={"x"};
+Exit;

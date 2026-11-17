@@ -26,4 +26,4 @@ pysad の側の保存の仕方: 台本の `Exit;` の前に、全 Canvas の `fi
 - エラーなし。Canvas の項目 43 個ずつで同数 (○)。
 
 ## 未確認・限界
-色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/40 §7)。比べたのは Canvas の項目の種類・数 (図の題)。 `PlotStyle->ListPlot`・`FitPlot`・`Orientation->Horizontal`、複数データは試していない。
+色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/42 §7)。比べたのは Canvas の項目の種類・数 (図の題)。`PlotStyle->ListPlot`・`FitPlot`・`Orientation->Horizontal`、複数データは試していない。

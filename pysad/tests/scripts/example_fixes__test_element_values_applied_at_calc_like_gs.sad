@@ -1,0 +1,15 @@
+MARK ORIGIN=();
+DRIFT D=(L=1);
+QUAD QF=(L=.3 K1=.7) QD=(L=.3 K1=-.6);
+LINE R=(ORIGIN QF D QD D QF D QD D);
+FFS;
+USE R; CELL; CALC;
+ElementValues={"K1"["QD"]->-0.8*"K1"["QF"]};
+CALC;
+Print["B ",LINE["K1","QD"]];
+Print["N ",Twiss["NX","$$$"]/(2Pi)];
+USE R;
+Print["C ",ElementValues];
+CALC;
+Print["D ",LINE["K1","QD"]];
+Exit;

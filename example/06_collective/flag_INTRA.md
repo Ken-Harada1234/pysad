@@ -1,5 +1,5 @@
 # flag_INTRA
-フラグ・06_collective・ラティス `00_lattice/FODO_ring_V4MV_0p5GeV.sad` (新規: FODO_ring_V4MV の運動量を 0.5 GeV に下げた版)、`RFSW; RAD; FLUC; MINCOUP=0.01`
+種別: フラグ / フォルダ: 06_collective / ラティス: `00_lattice/FODO_ring_V4MV_0p5GeV.sad` (新規。`FODO_ring_V4MV.sad` の運動量を 0.5 GeV に下げた版) / フラグ: `RFSW; RAD; FLUC; MINCOUP=0.01`
 
 ## 何を見る例か
 `INTRA` を ON にすると、エミッタンス計算 (`Emittance[]`、`EMIT`) にバンチ内散乱 (IBS: 同じバンチの粒子どうしのクーロン散乱) が入る。バンチの粒子数 `PBUNCH` を変えて、平衡エミッタンス・エネルギー広がり・バンチ長がどう増えるかを見る。3 GeV では IBS が小さすぎて見えないので 0.5 GeV にした。
@@ -13,7 +13,7 @@ Do[ PBUNCH = {1e4, 1e8, 3e8, 1e9, 3e9}[[k]];
     Print[Emittances/.em, MomentumSpread/.em, BunchLength/.em], {k, 1, 5}];
 ```
 - `MINCOUP`: IBS の計算で使う垂直エミッタンスの下限 = `MINCOUP*(EMITX+EMITY)` (理想リングは $\varepsilon_y=0$ で、IBS が非現実的に大きくなるのを避ける)。
-- 運動量はラティス側 (MAIN レベル) で 0.5 GeV にした。`FFS` の中で `MOMENTUM=0.5e9` と書くと gs は反映するが pysad は反映しなかった ([flag_SPAC](../05_tracking/flag_SPAC.md))。
+- 運動量はラティス側 (MAIN レベル) で 0.5 GeV にした。`FFS` の中で `MOMENTUM=0.5e9` と書く方法は、gs は反映するが、当時の pysad は反映しなかったので避けた (現在の pysad は反映する。[flag_SPAC](../05_tracking/flag_SPAC.md))。
 
 ## 結果の読み方
 | PBUNCH | $\varepsilon_x$ [m] | $\varepsilon_y$ [m] | $\varepsilon_z$ [m] | $\sigma_\delta$ | $\sigma_z$ [mm] |
@@ -43,5 +43,5 @@ Do[ PBUNCH = {1e4, 1e8, 3e8, 1e9, 3e9}[[k]];
 
 ## 未確認・限界
 - 0.5 GeV (電子)、RF 4 MV、理想リング (垂直エミッタンスが MINCOUP の下限)、粒子数 $10^4$〜$3\times10^9$。実機のパラメータではない。
-- IBS の絶対値の式 (Piwinski、Bjorken-Mtingwa、Bane の高エネルギー近似) との照合は未実施。$N^{1/3}$ 的な傾きは経験値で、理論的な導出はしていない。
-- pysad は `INTRA` を `SOL` のあるリングとは併用できない (docs/42)。
+- IBS の絶対値の式 (Piwinski、Bjorken-Mtingwa、Bane の高エネルギー近似) との照合は未実施。$N^{1/3}$ に近い傾きは計算結果から読んだもので、理論的な導出はしていない。
+- pysad は `INTRA` を `SOL` のあるリングとは併用できない (docs/44)。

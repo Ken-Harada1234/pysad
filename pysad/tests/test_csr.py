@@ -1,5 +1,5 @@
 """CSR (csr.py): CSRTrack / CSRHaissin / CSRSetupOY / CSRMatrix / CSRConvert。参照は SAD K64 (gs) の出力 (local/wake/csr1〜csr6.sad)。
-CSROYMatrix は gs が有効な引数でも wrongtype を返す (docs/19 B60) ので参照なし (ソースどおりの翻訳)。"""
+CSROYMatrix は gs が有効な引数でも wrongtype を返す (docs/21 B60) ので参照なし (ソースどおりの翻訳)。"""
 import io
 import os
 import re

@@ -12,7 +12,7 @@ gb=ParametricPlot[{Sin[3*t],Cos[2*t]},{t,0,6.283185307},FrameLabel->{"x","y"}];
 ```
 
 ## 結果の読み方
-gs: `A Head=List Length=5`、`B Head=Graphics Length=2`。pysad: A で `???Part: index 1 out of range (length 0)` が出て `A Head=Symbol` (描かれない)、B は `Graphics 2`。
+gs・pysad とも `A Head=List Length=5`、`B Head=Graphics Length=2`。修正前の pysad は A で `???Part: index 1 out of range (length 0)` が出て `A Head=Symbol` (描かれない) だった。
 
 ## 図
 ![gs と pysad の Canvas を再描画した図](fn_ParametricPlot_plot.png)
@@ -28,4 +28,4 @@ pysad の側の保存の仕方: 台本の `Exit;` の前に、全 Canvas の `fi
 - 図 (`fn_ParametricPlot_plot.png`) は 2026-11-16 のもの (A が描けなかった時点)。
 
 ## 未確認・限界
-色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/40 §7)。比べたのは Canvas の項目の種類・数 (図の題)。
+色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/42 §7)。比べたのは Canvas の項目の種類・数 (図の題)。

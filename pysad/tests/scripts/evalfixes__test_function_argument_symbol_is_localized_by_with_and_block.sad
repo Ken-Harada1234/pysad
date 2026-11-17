@@ -1,0 +1,15 @@
+FFS;
+PageWidth=1999;
+g[fxin_,{z_Symbol,a_,b_}]:=Module[{fx,zl,xl},
+  fx= With[{z = Vector[#]}, Check[ReleaseVector[fxin], 0]]&;
+  zl=Range[0,4]*0.5+a;
+  xl=Re[fx[zl]];
+  xl];
+Print["A ",g[Sin[x],{x,0.,6.}]];
+h[{u_,fxin_},{z_Symbol,a_,b_}]:=Block[{z},Module[{fx,zl,xl},
+  fx= With[{z = Vector[#]}, Check[ReleaseVector[fxin], 0]]&;
+  zl=Range[0,4]*0.5+a;
+  xl=Re[fx[zl]];
+  xl]];
+Print["B ",h[{x,Sin[x]},{x,0.,6.}]];
+Exit;

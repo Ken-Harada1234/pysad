@@ -39,4 +39,4 @@ $$\nu_s=\sqrt{\frac{h\,\alpha_c\,eV\cos\phi_s}{2\pi E}},\qquad h=176,\ E=3\ \tex
 ## 未確認・限界
 - RF のあるリングでの Twiss は RF の影響を受けない (SAD の仕様)。6 次元の Twiss は CALC6D (flag_CALC4D_CALC6D) を参照。
 - 空洞のフリンジ (`FRINGE`、`DISFRIN`)、`V1`/`V20` (横方向の電圧勾配)、`DX`/`DY`、`RANVOLT` は未確認。
-- 追跡での加速・減速は 05 の担当。
+- 追跡での加速・減速は 05_tracking の例で扱う。

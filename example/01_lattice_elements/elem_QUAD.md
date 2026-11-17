@@ -37,7 +37,7 @@ M_y=\begin{pmatrix}\cosh\phi&\sinh\phi/\sqrt k\\\sqrt k\sinh\phi&\cosh\phi\end{p
 | BX(FIN) | 8.05133 | 8.05133 | 8.05133 |
 | BY(FIN) | 12.2608 | 12.2608 | 12.2608 |
 | 薄レンズ M21 = -K1 | -0.021 | -0.021 | -0.021 |
-| 薄レンズ M43 = +K1 | 0.021 | 43 | 43 |
+| 薄レンズ M43 = +K1 | 0.021 | 0.021 | 0.021 |
 
 
 ## gs と pysad の比較
@@ -45,4 +45,4 @@ M_y=\begin{pmatrix}\cosh\phi&\sinh\phi/\sqrt k\\\sqrt k\sinh\phi&\cosh\phi\end{p
 
 ## 未確認・限界
 - ずれ `DX DY`、回転 `ROTATE` (スキュー四極)、フリンジ (`DISFRIN`、`FRINGE`) は扱っていない。
-- 非線形 (K1 に依らない高次) は追跡の例 (05) の担当。
+- 非線形 (K1 に依らない高次) は 05_tracking の例で扱う。

@@ -1,0 +1,4 @@
+???General::narg:  Number of arguments is expected to be odd number in Switch[3,1]
+... in Print[Switch[3, 1]]
+???General::narg:  Number of arguments is expected to be even number in Which[1]
+... in Print[Which[1]]

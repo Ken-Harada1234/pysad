@@ -1,0 +1,9 @@
+MOMENTUM=1GEV;
+MARK M=();
+QUAD Q=(L=0.3 K1=0.5);
+DRIFT D=(L=1);
+LINE L=(M Q D Q D);
+FFS;
+USE L;
+Print[Element["NAME"]]; Print[Element["K1","Q"]]; Print[Element["K1",{"Q"}]];Print[Element["POSITION","Q"]]; Print[FLAG["CELL"]];
+stop;

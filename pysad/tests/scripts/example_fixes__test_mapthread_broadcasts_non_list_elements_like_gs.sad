@@ -1,0 +1,7 @@
+FFS;
+Print["A ",MapThread[List,{{1,2},3}]];
+Print["B ",MapThread[List,{{1,2},False}]];
+Print["C ",MapThread[List,{{1,2},{3,4},"x"}]];
+Print["D ",MapThread[#+#2&,{{1,2},{10,20}}]];
+Print["E ",MapThread[List,{{1,2},{3}}]];
+Exit;

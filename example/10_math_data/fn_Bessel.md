@@ -1,6 +1,5 @@
 # fn_Bessel (Bessel 関数 J・I・K)
-
-種別: 関数 (SADHelp functions の Special-functions)・フォルダ 10_math_data・ラティスなし (`BesselY`・`BesselJZero` は fn_BesselY_JZero)
+種別: 関数 (SADHelp functions の Special-functions) / フォルダ: 10_math_data / ラティスなし (`BesselY`・`BesselJZero` は fn_BesselY_JZero)
 
 ## 何を見る例か
 `BesselJ[n,x]`、`BesselI[n,x]`、`BesselK[n,x]` を、整数次・半整数次、小さい引数・大きい引数 ($J_0(100)$)・ゼロ ($I_0(0)$) で評価し、式の値と比べる。
@@ -32,7 +31,7 @@ $J_n(x)=\sum_k\frac{(-1)^k}{k!\,\Gamma(n+k+1)}(x/2)^{2k+n}$、$I_n(x)=i^{-n}J_n(
 
 ## gs と pysad の比較
 - J・I・K の通常の値は 14 桁以上一致 (pysad は scipy)。
-- **gs の誤り (2 件)**: `BesselJ[0,100.]` が -1.47E25 (真値 0.01999)、`BesselI[0,0.]` が `NaN` (真値 1)。pysad は正しい値を返す。どちらが「SAD の動作」かといえば gs (K64 ビルド) の出力は上記で、pysad は真値にしている (docs/19 の方針)。△
+- **gs の誤り (2 件)**: `BesselJ[0,100.]` が -1.47E25 (真値 0.01999)、`BesselI[0,0.]` が `NaN` (真値 1)。pysad は正しい値を返す。SAD (K64 ビルド) の実際の出力は gs の値だが、pysad は真値を返す (docs/21 の方針)。△
 - 他の誤りは確認していない。
 
 ## 未確認・限界

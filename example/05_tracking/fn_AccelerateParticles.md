@@ -1,5 +1,5 @@
 # fn_AccelerateParticles
-関数・05_tracking・ラティス `00_lattice/FODO_ring_V4MV.sad` (RF 4 MV、3 GeV)・`RFSW; RAD; NOFLUC; Emittance[]; NORAD`・120 周
+種別: 関数 / フォルダ: 05_tracking / ラティス: `00_lattice/FODO_ring_V4MV.sad` (RF 4 MV、3 GeV) / フラグ: `RFSW; RAD; NOFLUC` で `Emittance[]` を呼んだあと `NORAD`。120 周
 
 ## 何を見る例か
 `AccelerateParticles[beam, mom, {n, nturn}]` はリングで運動量を周回ごとに変えながら追跡する (断熱減衰が自動で入る)。`mom` は周回番号 `n` の式で、ここでは `p0 + 1e6 n` (1 周あたり 1 MeV/c、120 周で 3.12 GeV/c)。

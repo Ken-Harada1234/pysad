@@ -1,5 +1,5 @@
 # fn_GaussianCoulomb と fn_BBBrem1
-関数・06_collective・ラティスなし (関数値だけ)。参考: `docs/30_gaussiancoulomb_bbbrem.md`
+種別: 関数 / フォルダ: 06_collective / ラティス: なし (関数値だけ)。参考: `docs/32_gaussiancoulomb_bbbrem.md`
 
 ## 何を見る例か
 `GaussianCoulomb[x, y, sigx, sigy]` は大きさ $(\sigma_x,\sigma_y)$ の 2 次元ガウス分布が点 $(x,y)$ に作る力 $f_x+if_y$ (ビーム・ビームの Bassetti-Erskine の力。複素数で、虚部が 0 なら実数)。`GaussianCoulombU` はポテンシャル、`GaussianCoulombFitted` は力・ポテンシャル・勾配の補間版。`BBBrem1[sqrt(s), ds/s]` は、ビーム・ビーム制動放射の 1 事象 (4 元運動量と近似断面積) を乱数で生成する。
@@ -38,9 +38,9 @@ $$f_r=-\frac{2}{r}\left(1-e^{-r^2/2\sigma^2}\right),\qquad f_x=f_r\frac{x}{r},\ 
 | $(1,1)$、σ=1 ($f_x=f_y=-(1-e^{-1})$) | −0.6321205588 −0.6321205588 i | −0.6321205588 −0.6321205588 i |
 | $U(1,0)$ (σ=1) | Ein(0.5)=0.4438421 | 0.4438420791 |
 
-平たいビームの小振幅の値の差 ($10^{-5}$ 台) は、式が $x\to0$ の極限で、$x=0.01$ の高次項があるため。
+平たいビームの小振幅の値の差 (相対で $10^{-5}$ 台) は、式が $x\to0$ の極限であり、$x=0.01$ では高次項があるため。
 
-`BBBrem1` には解析式を用意していない (乱数の事象。docs/30 に、`SeedRandom[3]` からの 6 事象が相対 $10^{-15}$ で gs と一致という記録がある)。
+`BBBrem1` には解析式を用意していない (乱数の事象。docs/32 に、`SeedRandom[3]` からの 6 事象が相対 $10^{-15}$ で gs と一致という記録がある)。
 
 ## gs と pysad の比較
 ○ 一致 (全 15 行が印字桁まで同じ。BBBrem1 の 3 事象の 4 元運動量と断面積を含む)。
@@ -48,4 +48,4 @@ $$f_r=-\frac{2}{r}\left(1-e^{-r^2/2\sigma^2}\right),\qquad f_x=f_r\frac{x}{r},\ 
 ## 未確認・限界
 - `BBBrem1` の戻りの 4 元運動量がどの粒子のものか (光子か、散乱電子か) と、第 2 引数 `ds/s` の意味は、SADHelp とソース (`tbbbrem.f`) の記述を精読していない。値の再現性 (SeedRandom 固定で gs と一致) だけを確認した。
 - `GaussianCoulombFitted` の第 2 成分は 0 の丸め誤差 (gs は $1.1\times10^{-16}$、pysad は $7\times10^{-18}$) で、桁の差は雑音。
-- 点は軸上と対角の少数だけ (docs/30 の検証は 15 点)。
+- 点は軸上と対角の少数だけ (docs/32 の検証は 15 点)。

@@ -2,7 +2,7 @@
 特殊関数・数学関数。K64 の組み込み (src/tfinitn.f の itfunaloc、tfunc*.f) と Packages/D.n の SADScript 定義の置き換え。
 
 SAD の実数引数の結果を scipy.special で計算する (K64 は Fortran の自前実装)。値は標準の数学的な値で、
-K64 が誤った値を返す箇所 (docs/19 の B43〜) はそちらに合わせず、正しい値を返す:
+K64 が誤った値を返す箇所 (docs/21 の B43〜) はそちらに合わせず、正しい値を返す:
   - ExpIntegralEi: D.n の式が実引数で複素数の誤値になる (Ei[1.5] → .164-2.985 I; 正しくは 3.3012)
   - HermiteH[3,.7] (整数 n、Gamma[(1-n)/2] の極で NaN)、LegendreP[n,m,z] (整数 m で NaN)、Binomial[-3,2] (NaN)
   - HypergeometricU[1,2,.5] (INF; 正しくは 2)、BesselY[0,.1] (NaN)、BesselK[1.5,.7] (INF)、BesselJ[-1,1.5]/BesselY[1,2.5] (gs が応答しない)

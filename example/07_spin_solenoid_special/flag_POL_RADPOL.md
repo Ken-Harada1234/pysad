@@ -1,5 +1,5 @@
 # flag_POL_RADPOL
-フラグ・07_spin_solenoid_special・ラティス `00_lattice/FODO_ring_V4MV.sad` (3 GeV、RF 4 MV、平面リング)・`RFSW; RAD; NOFLUC; POL`。参考: `docs/41_pol_guide.md`
+種別: フラグ / フォルダ: 07_spin_solenoid_special / ラティス: `00_lattice/FODO_ring_V4MV.sad` (3 GeV、RF 4 MV、平面リング) / フラグ: `RFSW; RAD; NOFLUC; POL`。参考: `docs/43_pol_guide.md`
 
 ## 何を見る例か
 `POL` はスピン追跡と偏極の量 (偏極時間、スピンチューン、偏極ベクトル) の計算を有効にするフラグ (既定 OFF)。`RADPOL` (既定 ON) は、POL が ON のとき追跡に Sokolov-Ternov 効果 (放射によるスピンの偏極) を入れる。(1) `Emittance[]` の偏極の量を式と照合、(2) `TrackParticles` のスピンの `sy` が Sokolov-Ternov の式で立ち上がること、`NORADPOL` で止まることを確かめる。
@@ -24,8 +24,8 @@ FFS["NORADPOL"]; r = TrackParticles[{1, beam}, 1, 1, 500][[2]];
 | `SpinTune` | −0.1918545590 | −0.1918545590 |
 | `NominalSpinTune` | 6.8081482248 | 6.8081482248 |
 | `PolarizationVector` | {1.5e-32, 1, 1.3e-31} | {0, 1, 0} |
-| 500 周、RADPOL: $s_y/|s|$ | $1.1349035543\times10^{-6}$ | $1.1349035543\times10^{-6}$ |
-| 500 周、NORADPOL: $s_y/|s|$ | $9.4\times10^{-21}$ (0) | $9.4\times10^{-21}$ |
+| 500 周、RADPOL: $s_y/\lvert s\rvert$ | $1.1349035543\times10^{-6}$ | $1.1349035543\times10^{-6}$ |
+| 500 周、NORADPOL: $s_y/\lvert s\rvert$ | $9.4\times10^{-21}$ (0) | $9.4\times10^{-21}$ |
 | 500 周のスピン角 (両者とも) | 0.8793923838 | 0.8793923838 |
 
 ## 物理・解析式
@@ -44,7 +44,7 @@ $$\frac{1}{\tau_{ST}}=\frac{5\sqrt3}{8}\,r_e\,\lambdabar_C\,c\,\gamma^5\langle\r
 | $s_y$ (500 周、RADPOL) | $1.134825\times10^{-6}$ | $1.134904\times10^{-6}$ (差 $7\times10^{-5}$: 平衡位置と放射の離散化) |
 | $s_y$ (NORADPOL) | 0 | $9.4\times10^{-21}$ |
 
-偏極ベクトルは平面リングなので鉛直 {0, 1, 0}。`Polarization` (平衡偏極度) は K64 が NaN を返す (docs/41 B55) ので出していない。
+偏極ベクトルは平面リングなので鉛直 {0, 1, 0}。`Polarization` (平衡偏極度) は K64 が NaN を返す (docs/43 B55) ので出していない。
 
 ## gs と pysad の比較
 ○ 一致。上の表のすべての行が印字桁まで同じ。ただし `PolarizationVector` の成分は gs が $10^{-31}$ 程度の数値雑音、pysad が厳密な 0。
@@ -52,5 +52,5 @@ $$\frac{1}{\tau_{ST}}=\frac{5\sqrt3}{8}\,r_e\,\lambdabar_C\,c\,\gamma^5\langle\r
 ## 未確認・限界
 - 平面リングだけ (偏極ベクトルは鉛直)。スピン共鳴、傾いた偏極ベクトル、ソレノイドのあるリング、`Polarization` (平衡偏極度) は見ていない。
 - 500 周後のスピン角 (0.8794 rad) は、残る $dp$ の振動とスピンチューンの積算が入るので解析的に説明していない。
-- 追跡は RAD NOFLUC (ゆらぎなし) の 1 粒子。FLUC のとき (乱数あり) の確認は docs/41 に gs 一致の記録がある。
+- 追跡は RAD NOFLUC (ゆらぎなし) の 1 粒子。FLUC のとき (乱数あり) の確認は docs/43 に gs 一致の記録がある。
 - 偏極時間の式は、勾配 (四極) による補正の項を入れていない。この平面リングでは式と 7.6e-7 で一致した。

@@ -1,0 +1,7 @@
+FFS;
+PageWidth=1999;
+{v,u}=Eigensystem[{{0,1},{-1,0}}];
+Print["A ",Dot[{{1+I,0},{0,2}},{{1,2},{3,4}}]];
+Print["B ",Inverse[u]];
+Print["C ",Transpose[u].DiagonalMatrix[Exp[v*0.1]].Inverse[Transpose[u]]];
+Exit;

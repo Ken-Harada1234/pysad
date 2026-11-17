@@ -1,0 +1,9 @@
+FFS;
+PageWidth=1999;
+s="800x600+10+20";
+Print["A ",StringPosition[s,"x"]];
+Print["B ",StringPosition[s,{"x","+","+"}]];
+Print["C ",StringPosition[s,"0"|"6"]];
+Print["E ",StringPosition["aaaa","aa"]];
+Print["F ",StringPosition[s,"+"|"x",2]];
+Exit;

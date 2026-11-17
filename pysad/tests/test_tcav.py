@@ -1,8 +1,8 @@
 """TCAVI (横偏向空洞、K64 の ttcav.f / ttcave.f)。参照は SAD K64 (gs) の出力。
 tct*: TrackParticles (RFSW ON、全周を 3 周)。tct7、tct8 は RAD FLUC (20 粒子: 乱数列まで一致)。
 tce4、tce5: Emittance[] (L=0 の TCAVI。tce5 はずれと回転付きで、COD・チューン・運動量収縮因子だけ比べる)。
-L≠0 の Emittance[] は gs が NaN や不自然な値を出す (docs/19 B36) ので比べない。
-参照の作り方: local/wake/gentc.py (docs/24_tcav.md)。"""
+L≠0 の Emittance[] は gs が NaN や不自然な値を出す (docs/21 B36) ので比べない。
+参照の作り方: local/wake/gentc.py (docs/26_tcav.md)。"""
 import io
 import re
 

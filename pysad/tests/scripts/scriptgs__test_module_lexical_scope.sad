@@ -1,0 +1,18 @@
+FFS;
+PageWidth=1999;
+x = 10;
+show[] := x;
+m2[] := Module[{x = 7}, show[]];
+Print["A ", m2[]];
+Print["B ", Module[{x = 7, y = x}, y]];
+Print["C ", Module[{x = 7}, Module[{x = x + 1}, x]]];
+Print["D ", Module[{t}, t] === t, " ", Module[{x}, Head[x]]];
+f[y_] := y + 1;
+Print["E ", Module[{f}, f[x_] := x^2; f[4]], " ", f[4]];
+mk[] := Module[{n = 0}, (n++ &)];
+g = mk[]; g[]; Print["F ", g[]];
+Print["G ", Module[{x = 7}, Map[# + x &, {1, 2}]]];
+Print["H ", Module[{l}, l = {1, 2}; l[[2]] = 9; l]];
+Print["I ", Module[{a, b}, {a, b} = {3, 4}; a + b]];
+
+Exit;

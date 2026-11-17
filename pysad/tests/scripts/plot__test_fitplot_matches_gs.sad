@@ -1,0 +1,5 @@
+FFS;
+PageWidth=1999;
+g=FitPlot[Table[{i,2*i+1+0.1*Sin[i*3]},{i,1,10}],a+b*x,x,{a,1},{b,1}];
+Print["A ",Head[g]," ",Length[g]," ",Round[10^6*(a/.g[[1]])]/10^6," ",Round[10^6*(b/.g[[1]])]/10^6," ",Round[10^5*(ChiSquare/.g[[1]])]/10^5];
+Exit;

@@ -1,6 +1,6 @@
 """
 CSRTrack / CSRHaissin (csrtrack.f) の直訳: CSR ウェイクによる縦方向のマクロ粒子追跡と Haissinski 方程式の解。
-Packages/CSR.n (Track、InitializeParticles) が呼ぶ。CSRInit / CSRMatrix / CSROy* は別 (docs/34)。
+Packages/CSR.n (Track、InitializeParticles) が呼ぶ。CSRInit / CSRMatrix / CSROy* は別 (docs/36)。
 
 実FFT は K64 の ftr モジュール (tcftr / trftr / tftrr) の配置: a(0:m-1) に (Re f0, Re f(m/2)) と (Re, Im) の組を詰める。
 乱数 tgauss_array は SadRandom.gauss(np, GCUT) (ffs の乱数と共通)。
@@ -332,7 +332,7 @@ def csrgetj(nrh, z1, zc, dz, v, ddv, aw, r56, r65, dt):
 def csroysetup(rho, zl, aw, r56, r65, dz, nj, mphi, zspan, dt):
     """戻り: (wi, aj, omega, zjn(nj,mphi), dpjn(nj,mphi), rhoj, irtc)。
     K64 は dpjn を zjn と同じ記憶域に割り当てる (tfcsroysetup: c_loc(rlist(kazjn)) を 2 回) ので、zjn(k,i) の後に dpjn(k,i) を書くと
-    zjn が dp の値で上書きされる (docs/19 B59)。返す zjn は dp の値、dpjn の記憶域は書かれない (0)"""
+    zjn が dp の値で上書きされる (docs/21 B59)。返す zjn は dp の値、dpjn の記憶域は書かれない (0)"""
     nr = len(rho)
     nrh = nr // 2
     dk = math.pi / dz / nr

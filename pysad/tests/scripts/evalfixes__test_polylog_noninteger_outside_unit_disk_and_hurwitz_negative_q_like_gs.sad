@@ -1,0 +1,5 @@
+FFS;
+PageWidth=1999;
+Print["A ",PolyLog[2.5,3.]," ",PolyLog[1.5,-4.]];
+Print["B ",HurwitzZeta[2.5,-0.5]," ",HurwitzZeta[3,-1.5]];
+Exit;

@@ -1,0 +1,28 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:58:54 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x71fd72a2a494 in ???
+#1  0x71fd72a29085 in ???
+#2  0x71fd72445caf in ???
+#3  0x71fd72d14c63 in ???
+#4  0x71fd72d12df1 in ???
+#5  0x5e90c79b1731 in ???
+#6  0x5e90c79b1c6b in ???
+#7  0x5e90c79b28ad in ???
+#8  0x5e90c7974937 in ???
+#9  0x5e90c797b4a0 in ???
+#10  0x5e90c7a0f41f in ???
+#11  0x5e90c7a53bac in ???
+#12  0x5e90c7a74680 in ???
+#13  0x5e90c7a05c29 in ???
+#14  0x5e90c791c2de in ???
+#15  0x71fd7242a600 in ???
+#16  0x71fd7242a717 in ???
+#17  0x5e90c791c334 in ???
+#18  0xffffffffffffffff in ???

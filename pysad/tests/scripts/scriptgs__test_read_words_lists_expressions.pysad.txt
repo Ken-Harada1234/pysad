@@ -1,0 +1,17 @@
+A alpha
+B beta
+C {"gamma",12.5,7}
+D x+y
+E {12,1}
+F {2,3,4}
+G 5
+H [ 6]
+I end of file
+J EndOfFile
+K ab
+L a b
+M 102030
+N next line
+O {3.5,"abc"}
+P EndOfFile
+Q {1,2,1+x} f[3]

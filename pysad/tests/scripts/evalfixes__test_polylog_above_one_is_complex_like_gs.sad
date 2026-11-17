@@ -1,0 +1,4 @@
+FFS;
+PageWidth=1999;
+Print["G ",PolyLog[2,2.]," ",PolyLog[3,2.]," ",PolyLog[4,1.5]];
+Exit;

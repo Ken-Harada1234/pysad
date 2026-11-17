@@ -1,0 +1,31 @@
+
+MOMENTUM = 1GEV;
+DRIFT D = (L=0.5) DS = (L=0.2);
+BEND B = (L=1 ANGLE=0.39269908169872414 E1=0.5 E2=0.5);
+QUAD QF = (L=0.3 K1=0.6) QD = (L=0.3 K1=-0.5 ROTATE=3 DEG);
+SEXT SF = (L=0.1 K2=2) SD = (L=0.1 K2=-3);
+CAVI RFC = (L=0.5 VOLT=2E6 HARM=24);
+MARK MK = ();
+LINE CELL = (MK QF DS SF D B D QD DS SD D B D);
+LINE RING = (7*CELL MK QF DS SF D B D QD DS SD D B RFC D);
+FFS;
+USE RING;
+CELL;
+CALC;
+
+x0  = { 1E-3, 0.5, 0,     1E-3,  0    };
+px0 = { 0,    0,    0,     1E-4,  0    };
+y0  = { 0,    0,    1E-3,  0.9,  0    };
+py0 = { 0,    0,    0,     0,     0    };
+z0  = { 0,    0,    0,     0,     1E-3 };
+dp0 = { 0,    0,    0,     1E-3,  1E-3 };
+fl0 = { 1,    1,    1,     1,     1    };
+beam0 = {1, {x0, px0, y0, py0, z0, dp0, fl0}};
+emit;
+NORAD; NOFLUC;
+b1 = TrackParticles[beam0, 1, 1, 2];
+sv = SurvivedParticles[b1[2]];
+SeedRandom[5];
+pr = ParabolaRandom[6];
+b2 = AccelerateParticles[beam0, 1E9*(1+0.01*n), {n, 3}];
+mom = MOMENTUM;

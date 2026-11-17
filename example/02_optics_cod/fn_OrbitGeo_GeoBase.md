@@ -30,7 +30,7 @@ Print["GeoBase[{Pi/6,0,0}] = ", GeoBase[{Pi/6, 0, 0}]];
 
 ## gs と pysad の比較
 - `LINE["GX"]`、`OrbitGeo[8]`、`GeoBase` は全桁一致。
-- `OrbitGeo[$$$]` も一致 (2026-11-17 に対応: GX = -5.338e-05、GY = 1.2836e-4、GZ = -3.354e-4)。原因は `OrbitGeo` の式 (Optics.n) が一周の経路長のずれ `Twiss["DZ",$$$]` (= -5.338e-5) を進行方向に足すことで、pysad は最後の行 ($$$) の DZ を 0 にしていた。$$$ の DZ は周回の出口の値にした (CELL の 4D の CALC)。
+- `OrbitGeo[$$$]` も一致 (2026-11-17 に対応: GX = -5.338e-05、GY = 1.2836e-4、GZ = -3.354e-4)。原因は `OrbitGeo` の式 (Optics.n) が一周の経路長のずれ `Twiss["DZ",$$$]` (= -5.338e-5) を進行方向に足すことで、pysad は最後の行 (`$$$`) の DZ を 0 にしていた。`$$$` の DZ は周回の出口の値にした (CELL の 4D の CALC)。
 
 ## 未確認・限界
 - 垂直の曲がり (CHI2 に出る) や SOL を含む幾何、`OGEO` キー (`LINE["OGEO",k]` は OrbitGeo と同じ量) は未確認。GeoBase の行・列の規約は SADHelp の記述だけで、式との照合は直交性の確認にとどまる。

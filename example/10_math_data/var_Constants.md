@@ -1,6 +1,5 @@
 # var_Constants (定数 Pi Degree GoldenRatio I INF Infinity NaN SpeedOfLight)
-
-種別: 変数 (SADHelp functions の Constants)・フォルダ 10_math_data・ラティスなし
+種別: 変数 (SADHelp functions の Constants) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 `Degree GoldenRatio I INF* Infinity NaN* Pi SpeedOfLight` の値と、`INF`・`NaN` の算術・比較での振る舞い。

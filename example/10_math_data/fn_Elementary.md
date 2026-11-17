@@ -1,6 +1,5 @@
 # fn_Elementary (初等関数)
-
-種別: 関数 (SADHelp functions の Elementary-functions)・フォルダ 10_math_data・ラティスなし
+種別: 関数 (SADHelp functions の Elementary-functions) / フォルダ: 10_math_data / ラティスなし
 
 ## 何を見る例か
 `Sin Cos Tan ArcSin ArcCos ArcTan Sinh Cosh Tanh ArcSinh ArcCosh ArcTanh Exp Log Sqrt` と定数 `Degree`。実数の値を式の値と比べ、定義域の外 (負の `Log`、$|x|>1$ の `ArcSin`、負の `Sqrt`) の複素数の扱いを見る。
@@ -44,7 +43,7 @@ Log[-1.]  ArcSin[2.]  Sqrt[-4.]  ArcCosh[.5]  ArcTanh[2.]  Exp[I*Pi/3]
 `ArcCosh[.5]` は $-1.0472\,i$ ($=-i\pi/3$。$\arccos .5=\pi/3$ の分枝で符号が負、K64 の符号を pysad が合わせたもの)。`ArcTanh[2.]` は数学的には複素数だが、gs も pysad も `NaN`。
 
 ## gs と pysad の比較
-実数の 18 値は 15 桁すべて一致 (○)。複素数の例は、`ArcSin[2.]` の虚部の末尾 1 桁 (gs ...816、pysad ...817) と、`ArcCosh[.5]` の実部 (gs は丸め誤差の -5.55E-17、pysad は 0) が違う。
+実数の 18 値は、gs と pysad が表示した全桁で一致 (○)。複素数の例は、`ArcSin[2.]` の虚部の末尾 1 桁 (gs ...816、pysad ...817) と、`ArcCosh[.5]` の実部 (gs は丸め誤差の -5.55E-17、pysad は 0) が違う。
 
 ## 未確認・限界
 大きな引数 (オーバーフロー、桁落ち)、`Tan` の極の近傍、複素引数の双曲線関数は試していない (`Exp[1000.]` は var_Constants で `INF` を確認)。

@@ -1,0 +1,8 @@
+FFS;
+PageWidth=1999;
+Print["A ",Vector[{1,2,3}]];
+Print["B ",ReleaseVector[Sin[Vector[{0.,1.,2.}]]]];
+f=With[{x=Vector[#]},Check[ReleaseVector[Sin[x]],0]]&;
+Print["C ",f[{0.5,1.5}]];
+Print["D ",ReleaseVector[Vector[{1,2}]+3]];
+Exit;

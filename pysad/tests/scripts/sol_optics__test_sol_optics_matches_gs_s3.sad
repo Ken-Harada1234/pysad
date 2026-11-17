@@ -1,0 +1,23 @@
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3 = (L=0.7) D4 = (L=0.4) D5 = (L=0.6);
+QUAD QF = (L=0.3 K1=0.5) QD = (L=0.3 K1=-0.45) QS = (L=0.2 K1=0.1 ROTATE=0.4) QT = (L=0.25 K1=-0.2);
+BEND B = (L=1.2 ANGLE=0.15 E1=0.075 E2=0.075);
+SOL SA = (L=0 BZ=1.2 BOUND=1) SM = (L=0 BZ=0.5) SB = (L=0 BZ=0 BOUND=1);
+MARK ST = ();
+LINE BL = (ST QF D1 B D2 QD D1 SA D3 QS D4 SM D5 QT D2 SB D1 B D2);
+FFS;
+USE BL;
+INS; RAD; NOFLUC;
+DP=0.002;
+
+CALC;
+Print["TUN ", Twiss["NX", "$$$"]/(2 Pi), " ", Twiss["NY", "$$$"]/(2 Pi)];
+Print["TW D3 ", Twiss["BX","D3"], " ", Twiss["BY","D3"], " ", Twiss["AX","D3"], " ", Twiss["EX","D3"], " ", Twiss["R2","D3"], " ", Twiss["R3","D3"]];
+Print["TW QS ", Twiss["BX","QS"], " ", Twiss["BY","QS"], " ", Twiss["AX","QS"], " ", Twiss["EX","QS"], " ", Twiss["R2","QS"], " ", Twiss["R3","QS"]];
+Print["TW D4 ", Twiss["BX","D4"], " ", Twiss["BY","D4"], " ", Twiss["AX","D4"], " ", Twiss["EX","D4"], " ", Twiss["R2","D4"], " ", Twiss["R3","D4"]];
+Print["TW SM ", Twiss["BX","SM"], " ", Twiss["BY","SM"], " ", Twiss["AX","SM"], " ", Twiss["EX","SM"], " ", Twiss["R2","SM"], " ", Twiss["R3","SM"]];
+Print["TW D5 ", Twiss["BX","D5"], " ", Twiss["BY","D5"], " ", Twiss["AX","D5"], " ", Twiss["EX","D5"], " ", Twiss["R2","D5"], " ", Twiss["R3","D5"]];
+Print["TW QT ", Twiss["BX","QT"], " ", Twiss["BY","QT"], " ", Twiss["AX","QT"], " ", Twiss["EX","QT"], " ", Twiss["R2","QT"], " ", Twiss["R3","QT"]];
+Print["TW D2 ", Twiss["BX","D2"], " ", Twiss["BY","D2"], " ", Twiss["AX","D2"], " ", Twiss["EX","D2"], " ", Twiss["R2","D2"], " ", Twiss["R3","D2"]];
+Print["TW SB ", Twiss["BX","SB"], " ", Twiss["BY","SB"], " ", Twiss["AX","SB"], " ", Twiss["EX","SB"], " ", Twiss["R2","SB"], " ", Twiss["R3","SB"]];
+Exit;

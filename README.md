@@ -1,7 +1,7 @@
-- 本レポジトリ（作業メモ、解説文書を含む）は生出さんのソースをもとに、Claude code で全自動生成したものです。
-- 基本的に、自分の書いたSADスクリプトに対する動作確認しかしておりません。
-- うまくいかない場合は、そのままAIに渡して、作業メモやSADメモを読ませると、修正を続けることができます。（今後も随時修正すると共に、サンプルSADスクリプトを載せていきたいと思っています。）
-- 下記、readmeもaiによる自動生成です。
+- 本リポジトリ（作業メモ、解説文書を含む）は、生出さんのソースをもとに、Claude Code で全自動生成したものです。
+- 動作確認は、基本的に自分で書いた SAD スクリプトに対してしかしていません。
+- うまくいかない場合は、そのまま AI に渡して、作業メモや SAD メモを読ませると、修正を続けられます。（今後も随時修正し、サンプルの SAD スクリプトも載せていきたいと思っています。）
+- 以下の README も AI による自動生成です。
 
 # pysad — SAD (K64 版) の Python 直訳
 
@@ -12,8 +12,8 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 
 - 文書は `docs/` (`docs/01_overview.md` から。作業メモは `docs/history/00_RESUME.md` と `docs/history/work_*.md`)。
 - SAD の仕様と癖の一覧は `docs/11_sad_quirks.md`、SADHelp との対応は `docs/14_pysad_vs_sadhelp.md`。
-- 要素・機能別の文書は `docs/20_*.md`〜`docs/35_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
-  大きな項目の解説文書は `docs/36_wake_guide.md` (WAKE)、`37_beambeam_guide.md`、`38_csr_guide.md`、`39_tcltk_guide.md`、`40_graphics_guide.md`、`41_pol_guide.md`、`42_sol_guide.md`、`43_radlight_guide.md`。
+- 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
+  大きな項目の解説文書は `docs/38_wake_guide.md` (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
 - 現状 (2026-11-16): pytest 575 通過・3 skip (578 件収集)、回帰は 50 ベンチをすべて実行して FAIL 0 (QUICK=1 は遅い 4 件を SKIP して 46 件)。gs と合わない箇所・未対応は `docs/history/work_unimpl.md` と `docs/history/00_RESUME.md` §6 (例: BEND の F1 FRINGE=3 の RAD 追跡、SOL 領域内の四極 + RAD (gs の疑い)、Tkinter の Widget 値、SOL 領域内の BEND・MULT・CAVI)。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
 
@@ -39,7 +39,7 @@ print(I.get('EMITX'), ffs.rows[-1].betx)
 ffs.run_text('fit NX 47.3; free QF* K1; go;')
 ```
 
-下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は `docs/13_pysad_api.md`。
+下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は `docs/12_pysad_api.md`。
 
 ## 検証
 
@@ -142,7 +142,7 @@ Git で追跡するのは `pysad/`、`docs/`、`run_sad.py`、`README.md`、`LIC
 
 ### `pysad/tests/` (試験)
 
-575 通過・3 skip (578 件収集、2026-11-17)。参照は多くが SAD K64 (`gs`) の出力。
+575 通過・3 skip (578 件収集、2026-11-17)。参照は多くが SAD K64 (`gs`) の出力。試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/`、対応表は `pysad/tests/OUTPUTS.md`。
 
 | ファイル | 試験の対象 |
 |---|---|
@@ -183,40 +183,40 @@ Git で追跡するのは `pysad/`、`docs/`、`run_sad.py`、`README.md`、`LIC
 | `09_dynamic_aperture.md` | `DynamicApertureSurvey` (`dapert.py`) |
 | `10_benchmarks.md` | SAD (K64) との照合ベンチマーク一覧と回帰・試験の現状 |
 | `11_sad_quirks.md` | SAD の癖・仕様・ビルド依存の挙動と pysad での扱い |
-| `13_pysad_api.md` | pysad の公開 API のリファレンス |
+| `12_pysad_api.md` | pysad の公開 API のリファレンス |
 | `13_sad_help_index.md` | SADHelp (CERN 版) から機械的に抽出したコマンド・関数・変数の一覧 |
-| `14_fortran_status.md` | SAD の Fortran ファイル別の翻訳状況と未翻訳の一覧 |
 | `14_pysad_vs_sadhelp.md` | SADHelp の項目と pysad の対応表 |
-| `15_implementation_summary.md` | 実装のまとめ (モジュール表、準拠状況、未対応) |
 | `15_sadhelp_purpose_policy.md` | SADHelp の項目の目的別分類と翻訳方針 |
-| `16_physics_guide.md` | SAD の物理計算ガイド (式と K64 の実装) |
-| `17_source_analysis.md` | SAD ソースの解析と pysad の対応表 |
-| `18_translation_candidates.md` | 翻訳候補の調査 (ユーザー全スクリプト × SAD 機能) と済み・見送り |
-| `19_sad_bug_report.md` | pysad の移植中に見つかった SAD K64 のバグ・癖の報告 (B 番号) |
-| `20_gui_tclbridge.md` | Tcl/Tk の GUI (`Tkinter.n`・`KBFrame.n`) を pysad で動かす仕組み |
-| `21_wake.md` | ウェイク場 (WakeFunction、LWAKE/TWAKE、WAKEOPT) の現状 |
-| `22_beambeam.md` | BEAMBEAM (強弱ビームのビーム・ビーム相互作用) の現状 |
-| `23_coord.md` | COORD (座標変換) の現状 |
-| `24_tcav.md` | TCAVI (横偏向空洞) の現状 |
-| `25_und.md` | UND (アンジュレータ) の現状 |
-| `26_mult_angle.md` | MULT (ANGLE≠0、曲げつき多極) の現状 |
-| `27_sol_optics.md` | SOL 領域の Twiss・Emittance・EMIT の現状 |
-| `28_map.md` | MAP (ExternalMap) の現状 |
-| `29_delcor.md` | DELCOR (相関のあるずれ) の現状 |
-| `30_gaussiancoulomb_bbbrem.md` | GaussianCoulomb と BBBrem1 の現状 |
-| `31_specfn_fit_misc.md` | 特殊関数、Fit・FindRoot・NIntegrate、DownhillSimplex などの現状 |
-| `32_sad_packages.md` | SAD の `Packages/*.n` を SADScript のまま使う (軌道補正・最適化・数学) |
-| `33_ffs_small_commands.md` | FFS の小さなコマンド (`ffsextra.py`) |
-| `34_spin_csr.md` | POL (スピン) と CSR の現状 |
-| `35_plot_canvas.md` | 描画 (ListPlot・Plot と Tk のキャンバス) の現状 |
-| `36_wake_guide.md` | 解説: WAKE (使い方、式、K64 の癖、限界) |
-| `37_beambeam_guide.md` | 解説: BEAM-BEAM (BEAMBEAM、BSTRL、光子、ルミノシティ、BBBrem) |
-| `38_csr_guide.md` | 解説: CSR (`CSR.n` と組み込み関数の使い方、物理、限界) |
-| `39_tcltk_guide.md` | 解説: Tcl/Tk の GUI (部品、使い方、ヘッドレス試験) |
-| `40_graphics_guide.md` | 解説: グラフィック描画 (Plot 系、OpticsPlot、Canvas、gs との比較) |
-| `41_pol_guide.md` | 解説: POL (スピンと偏極、TrackParticles のスピン追跡) |
-| `42_sol_guide.md` | 解説: ソレノイド (SOL 領域の仕組みと対応範囲) |
-| `43_radlight_guide.md` | 解説: RADLIGHT と放射場 (RadiationField・RadiationSpectrum) |
+| `16_fortran_status.md` | SAD の Fortran ファイル別の翻訳状況と未翻訳の一覧 |
+| `17_implementation_summary.md` | 実装のまとめ (モジュール表、準拠状況、未対応) |
+| `18_physics_guide.md` | SAD の物理計算ガイド (式と K64 の実装) |
+| `19_source_analysis.md` | SAD ソースの解析と pysad の対応表 |
+| `20_translation_candidates.md` | pysad の翻訳候補と状況 (SAD の機能別、済み・見送りと理由) |
+| `21_sad_bug_report.md` | pysad の移植中に見つかった SAD K64 のバグ・癖の報告 (B 番号) |
+| `22_gui_tclbridge.md` | Tcl/Tk の GUI (`Tkinter.n`・`KBFrame.n`) を pysad で動かす仕組み |
+| `23_wake.md` | ウェイク場 (WakeFunction、LWAKE/TWAKE、WAKEOPT) の現状 |
+| `24_beambeam.md` | BEAMBEAM (強弱ビームのビーム・ビーム相互作用) の現状 |
+| `25_coord.md` | COORD (座標変換) の現状 |
+| `26_tcav.md` | TCAVI (横偏向空洞) の現状 |
+| `27_und.md` | UND (アンジュレータ) の現状 |
+| `28_mult_angle.md` | MULT (ANGLE≠0、曲げつき多極) の現状 |
+| `29_sol_optics.md` | SOL 領域の Twiss・Emittance・EMIT の現状 |
+| `30_map.md` | MAP (ExternalMap) の現状 |
+| `31_delcor.md` | DELCOR (相関のあるずれ) の現状 |
+| `32_gaussiancoulomb_bbbrem.md` | GaussianCoulomb と BBBrem1 の現状 |
+| `33_specfn_fit_misc.md` | 特殊関数、Fit・FindRoot・NIntegrate、DownhillSimplex などの現状 |
+| `34_sad_packages.md` | SAD の `Packages/*.n` を SADScript のまま使う (軌道補正・最適化・数学) |
+| `35_ffs_small_commands.md` | FFS の小さなコマンド (`ffsextra.py`) |
+| `36_spin_csr.md` | POL (スピン) と CSR の現状 |
+| `37_plot_canvas.md` | 描画 (ListPlot・Plot と Tk のキャンバス) の現状 |
+| `38_wake_guide.md` | 解説: WAKE (使い方、式、K64 の癖、限界) |
+| `39_beambeam_guide.md` | 解説: BEAM-BEAM (BEAMBEAM、BSTRL、光子、ルミノシティ、BBBrem) |
+| `40_csr_guide.md` | 解説: CSR (`CSR.n` と組み込み関数の使い方、物理、限界) |
+| `41_tcltk_guide.md` | 解説: Tcl/Tk の GUI (部品、使い方、ヘッドレス試験) |
+| `42_graphics_guide.md` | 解説: グラフィック描画 (Plot 系、OpticsPlot、Canvas、gs との比較) |
+| `43_pol_guide.md` | 解説: POL (スピンと偏極、TrackParticles のスピン追跡) |
+| `44_sol_guide.md` | 解説: ソレノイド (SOL 領域の仕組みと対応範囲) |
+| `45_radlight_guide.md` | 解説: RADLIGHT と放射場 (RadiationField・RadiationSpectrum) |
 | `sadhelp_summary.html` | SADHelp 対応文書 (13・14・15) の要約 (リポジトリ外の `perf_work/sadhelp_html.py` で md から生成) |
 | `html/` | 上の md を html にしたもの (`make_html.py` で生成。追跡しない)。手書きの `sad_wake_sigsegv_fixes_v001.html` (2026-11-14) と `_v002.html` (2026-11-16、B33 の差の原因と解消を追記) は K64 の wake まわりの SIGSEGV 3 件 (B31〜B33) の原因と修正の報告。差分は `docs/history/sad_patch/wake_sigsegv_fixes.patch` |
 

@@ -1,0 +1,35 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:58:54 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="18.14";
+ PageWidth=1999;
+ nr=256; dz=2e-5;
+ zl=Table[0.02*Cos[0.3 i]/(1+i/10.), {i,1,nr}];
+ rho=CSRHaissin[zl,{dz,1e-8,-0.3,3e-4}];
+ s=CSRSetupOY[rho,zl,{dz,6,3,1e-8,0.05,-0.3,3}];
+ Print["S ",Length/@s];
+S { 256.0000000000000,  6.00000000000000,  6.00000000000000, 288.0000000000000, 288.0000000000000,  6.00000000000000}
+ Print["AJ ",s[[2]]];
+AJ { 1.598877766878E-8, 4.801962255995E-8, 8.001652161176E-8, 1.119885529838E-7, 1.440141918819E-7, 1.760343431927E-7}
+ Print["OM ",s[[3]]];
+OM {   .12244341109984,   .12244819337127,   .12245250160718,   .12245635032843,   .12245977046611,   .12246278316010}
+ Print["RJ ",s[[6]]];
+RJ {   .22047618866441,   .19067736090131,   .16492735497839,   .14269848454815,   .12341352148526,   .10673588977341}
+ Print["ZS ",Plus@@s[[5]]];
+ZS    .00000000000000
+ m=CSROYMatrix[s,{dz,1e-8,0.01,3e-4,1e-3}];
+???General::wrongtype:  Argument must be {wi, J, omega, zj, dpj, rhoj}, {dz, inten, nus, sigz, sige} in CSROYMatrix[{{-.0006789471463155565,-.0007565470013229435,-.0008137784335569827,-.0008755032513644973,-.0009161534074046706,-.0009606616597411286,-.0009828836843906528,-.0010081244075804594,-.0010092155008240768, ... ,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},{.220476188664407,.19067736090131446,.1649273549783916,.14269848454815434,.1234135214852564,.10673588977341204}},{2e-5,1e-8,.01,.0003,.001}]
+ Print["M ",Dimensions[m]];
+M {}
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.004 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

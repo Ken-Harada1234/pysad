@@ -1,0 +1,10 @@
+FFS;
+PageWidth=1999;
+SetAttributes[FP,HoldRest];
+FP[data_,fun_,x_,par0__]:=Module[{s,{opt,par}=SwitchCases[{par0},{_Rule|_RuleDelayed,_}]},
+  {{w}={3},lp=Length[par]},
+  s=Fit[data,fun,x,par0];
+  {lp,s[[1]]}];
+r=FP[Table[{i,2*i+1+0.1*Sin[i*3]},{i,1,6}],a+b*u,u,{a,1},{b,1}];
+Print["A ",r[[1]]," ",Head[r[[2]]]," ",Round[10^6*(a/.r[[2]])]/10^6];
+Exit;

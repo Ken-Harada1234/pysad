@@ -32,5 +32,5 @@ Print["1st call: flag = ", r[[2,7]], "  x = ", r[[2,1]]];
 `TYPE AP` も違う: gs は `APERT AP =(AX =.01 AY =.005 )`、pysad は `DRIFT AP =(L =0 )` (APERT を長さ 0 のドリフトとして読んでいる)。原因はコードまでは追っていない。pysad の `ffscmd.py`/`parser.py` には APERT の語はあるので、キーワード (AX AY) の取り込みか TrackParticles 側のどこかと思われる。
 
 ## 未確認・限界
-- DX DY (開口の中心)、矩形 (DX1 DX2 DY1 DY2)、DA (動的口径) での使い方 (09_dynamic_aperture は別の担当) は未確認。
+- DX DY (開口の中心)、矩形 (DX1 DX2 DY1 DY2)、DA (動的口径) での使い方 (動的口径は 05_tracking の例で扱う) は未確認。
 - LOSSAMPL・LOSSDZ (特殊変数の外側の開口) とは別のもの。

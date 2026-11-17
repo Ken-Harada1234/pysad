@@ -29,4 +29,4 @@ USE RINGQ; CELL; CALC;   ...   USE RINGM; CELL; CALC;   ...   TYPE MF MB;
 
 ## 未確認・限界
 - K2 以上、スキュー成分、`ANGLE`≠0 で `K1`≠0 の複合機能、`ROTATE`/`DX`/`DY`、放射 (`DISRAD`)、追跡は確認していない。
-- docs/26 によれば `MULT` の ANGLE≠0 の Twiss・Emittance・追跡は別の機会に gs と照合済み (この例では再確認していない)。
+- docs/28 によれば `MULT` の ANGLE≠0 の Twiss・Emittance・追跡は別の機会に gs と照合済み (この例では再確認していない)。

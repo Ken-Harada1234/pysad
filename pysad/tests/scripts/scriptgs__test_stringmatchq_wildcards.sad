@@ -1,0 +1,27 @@
+FFS;
+PageWidth=1999;
+Print["Q1|Q%|", StringMatchQ["Q1", "Q%"]];
+Print["Q12|Q%|", StringMatchQ["Q12", "Q%"]];
+Print["Q12|Q%%|", StringMatchQ["Q12", "Q%%"]];
+Print["Q|Q%|", StringMatchQ["Q", "Q%"]];
+Print["QF|Q{FD}|", StringMatchQ["QF", "Q{FD}"]];
+Print["QX|Q{FD}|", StringMatchQ["QX", "Q{FD}"]];
+Print["QF|Q{^FD}|", StringMatchQ["QF", "Q{^FD}"]];
+Print["QX|Q{^FD}|", StringMatchQ["QX", "Q{^FD}"]];
+Print["QFD|Q{FD}*|", StringMatchQ["QFD", "Q{FD}*"]];
+Print["QFD|Q{FD}{FD}|", StringMatchQ["QFD", "Q{FD}{FD}"]];
+Print["QF|Q?|", StringMatchQ["QF", "Q?"]];
+Print["Q?|Q?|", StringMatchQ["Q?", "Q?"]];
+Print["QF1|*F%|", StringMatchQ["QF1", "*F%"]];
+Print["QD|QF|QD|", StringMatchQ["QD", "QF|QD"]];
+Print["QD|QF|Q*|", StringMatchQ["QD", "QF|Q*"]];
+Print["qf|QF|", StringMatchQ["qf", "QF"]];
+Print["|*|", StringMatchQ["", "*"]];
+Print["a|{a-c}|", StringMatchQ["a", "{a-c}"]];
+Print["b|{a-c}|", StringMatchQ["b", "{a-c}"]];
+Print["a{b|a{b|", StringMatchQ["a{b", "a{b"]];
+Print["a|{a|", StringMatchQ["a", "{a"]];
+Print["Q|Q*|", StringMatchQ["Q", "Q*"]];
+Print["ab|a|b|", StringMatchQ["ab", "a|b"]];
+
+Exit;

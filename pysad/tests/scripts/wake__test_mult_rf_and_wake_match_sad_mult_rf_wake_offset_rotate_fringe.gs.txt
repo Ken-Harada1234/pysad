@@ -1,0 +1,48 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 08:59:33 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 1.7GEV;
+DRIFT DR = (L=1);
+QUAD QF = (L=0.3 K1=0.6 DX=2e-4) QD = (L=0.3 K1=-0.5 DY=-1e-4);
+BEND B = (L=1 ANGLE=0.1 E1=0.05 E2=0.05);
+MARK ST = ();
+MULT WK2 = (L=0.5 K1=0.2 K2=3 DX=1e-3 ROTATE=0.2 VOLT=3e6 HARM=100 PHI=0.3 DISFRIN=0);
+LINE BL = (ST QF DR B DR QD DR WK2 DR B DR QF DR QD DR QF);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE BL;
+Out[1]:= USE
+ TRPT; INS; LWAKE; TWAKE; NORAD; NOFLUC;
+ PBUNCH = 1E12; NBUNCH = 1;
+ WakeFunction[Longitudinal, "QF.1"] = {{-0.1, 2e9}, {-0.02, 1e9}, {0, 5e8}, {0.02, -1e9}, {0.1, -2e9}, {0.2, -1e9}};
+ WakeFunction[Transverse, "QF.1"] = {{0, 1e12}, {0.01, 5e11}, {0.05, 1e11}, {0.2, 0}, {0.3, 0}};
+ WakeFunction[Longitudinal, "WK2"] = {{-0.2, 1e9}, {0, 3e9}, {0.2, -1e9}, {0.3, 0}};
+ WakeFunction[Transverse, "WK2"] = {{-0.1, 1e12}, {0.0, 3e12}, {0.1, 0}, {0.3, 0}};
+ n = 400;
+ x0  = Table[1e-3*Sin[0.37*i], {i, n}];
+ px0 = Table[1e-4*Cos[0.11*i], {i, n}];
+ y0  = Table[1e-3*Cos[0.23*i], {i, n}];
+ py0 = Table[1e-4*Sin[0.71*i], {i, n}];
+ z0  = Table[0.01*Sin[0.13*i]+1e-4*i-0.02, {i, n}];
+ dp0 = Table[1e-3*Cos[0.31*i], {i, n}];
+ fl0 = Table[1, {i, n}];
+ r = TrackParticles[{1, {x0, px0, y0, py0, z0, dp0, fl0}}, 17, 1];
+ $FORM = "16.10";
+ res = r[[2]];
+ Do[Print[k, " ", Plus@@res[[k]], " ", res[[k, 1]], " ", res[[k, 77]], " ", res[[k, 400]]], {k, 7}];
+    1.0000000000      .3178499409  9.4894154422E-4  6.7639921742E-4      .0013106180
+    2.0000000000     -.2075877282  -7.561644951E-4  -6.814838805E-4     -.0013640245
+    3.0000000000     -.2945604109     -.0014030976     -.0012356577  9.0438401266E-4
+    4.0000000000     -.1626292512     -.0010116886  -7.281509715E-4  5.3534449860E-4
+    5.0000000000      .0506041728     -.0188340831     -.0180224597      .0294947100
+    6.0000000000      .0544592747  -2.539975392E-4  -8.849080305E-4      .0021696406
+    7.0000000000   400.0000000000     1.0000000000     1.0000000000     1.0000000000
+ Exit;
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

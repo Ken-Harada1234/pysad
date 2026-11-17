@@ -234,4 +234,4 @@ ext も track6 のまま eps0=0 にした。EPS≠1 のソレノイド内四極�
 
 ## 2026-11-16 の確認・追記
 
-- 2026-11-16 追記: `track6n_ext.py` は 11/14 19:00 に更新された (MULT ANGLE≠0 の追跡: `multa.py`、BEAMBEAM の K_BB、COORD などを追跡の核に接続。docs/22・23・26)。SOL (BZ≠0) 内の BEND・MULT・CAVI は未対応 (NotImplementedError)。SOL の長さを周長に入れない扱いを追跡の `circ` にも適用した。本文 (MULT とソレノイド領域のカーネル) は 10/15 のまま。
+- 2026-11-16 追記: `track6n_ext.py` は 11/14 19:00 に更新された (MULT ANGLE≠0 の追跡: `multa.py`、BEAMBEAM の K_BB、COORD などを追跡の核に接続。docs/24・23・26)。SOL (BZ≠0) 内の BEND・MULT・CAVI は未対応 (NotImplementedError)。SOL の長さを周長に入れない扱いを追跡の `circ` にも適用した。本文 (MULT とソレノイド領域のカーネル) は 10/15 のまま。

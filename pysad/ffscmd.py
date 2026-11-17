@@ -3949,7 +3949,7 @@ class FFS:
                             continue
                         if id_ == 31:
                             # K64 (tcorr.f): CAVI は latt+3, +4 = HARM と PHI に (DX, DY ではなく) 書く。add でなければ設計の DX・DY (idvalc+13, +14) から
-                            # delx・dely を引いた値、add なら -delx・-dely を足す (K64 の添字のずれ。gs で確かめた: docs/19 B62)
+                            # delx・dely を引いた値、add なら -delx・-dely を足す (K64 の添字のずれ。gs で確かめた: docs/21 B62)
                             dxo = float(getattr(ej, 'DX', 0.0) or 0.0)
                             dyo = float(getattr(ej, 'DY', 0.0) or 0.0)
                             if add:

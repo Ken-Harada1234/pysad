@@ -3,7 +3,7 @@
 最終更新: 2026-11-16
 
 このリポジトリを clone / pull して作業を始めるときに最初に読む文書。時系列の詳細ログは置かない (作業者のローカル用メモは git に入れていない)。
-経緯と照合の記録は項目ごとに `docs/history/work_*.md` (一覧は §10)、現状の説明は `docs/01_overview.md` 〜 `docs/43_radlight_guide.md` (地図は §3)、SAD の癖は `docs/11_sad_quirks.md`、SAD 自身の誤りは `docs/19_sad_bug_report.md`。
+経緯と照合の記録は項目ごとに `docs/history/work_*.md` (一覧は §10)、現状の説明は `docs/01_overview.md` 〜 `docs/45_radlight_guide.md` (地図は §3)、SAD の癖は `docs/11_sad_quirks.md`、SAD 自身の誤りは `docs/21_sad_bug_report.md`。
 AI アシスタント (Claude Code など) は、リポジトリ直下の `CLAUDE.md` からここに来る。
 未対応・未翻訳・未解決の差の最新の一覧は `docs/history/work_unimpl.md`。この文書の §6 はその要約。
 
@@ -15,11 +15,11 @@ AI アシスタント (Claude Code など) は、リポジトリ直下の `CLAUD
 
 pysad は加速器設計コード SAD (K64 版、https://github.com/KatsOide/SAD) の Python への**直訳**。目的は、SAD のスクリプト (MAIN のラティス + FFS + SADScript) を
 そのまま実行して、SAD と同じ数値を出すこと。一致の基準は SAD の印字精度 (1e-10〜1e-11)。物理を再導出せず、Fortran / C の式・分割数・反復順序・乱数の引き方を写す。
-SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md`)。SAD 自身のバグは再現せず `docs/19_sad_bug_report.md` (B1〜B62) に集める。
+SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md`)。SAD 自身のバグは再現せず `docs/21_sad_bug_report.md` (B1〜B62) に集める。
 
 ## 2. 方針 (作業者の指示。守ること)
 
-- **翻訳の対象**: Fortran / C で書かれた物理計算は直接翻訳する。SADScript (`Packages/*.n`) は Python で書き直す (直訳ではない)。ただし GUI と、SAD の `Packages/*.n` のうち SADScript のまま動かせるもの (CorrectOrbit・MakeBump・D など) は、pysad のインタプリタでそのまま実行する (`docs/20_gui_tclbridge.md`、`docs/32_sad_packages.md`)。
+- **翻訳の対象**: Fortran / C で書かれた物理計算は直接翻訳する。SADScript (`Packages/*.n`) は Python で書き直す (直訳ではない)。ただし GUI と、SAD の `Packages/*.n` のうち SADScript のまま動かせるもの (CorrectOrbit・MakeBump・D など) は、pysad のインタプリタでそのまま実行する (`docs/22_gui_tclbridge.md`、`docs/34_sad_packages.md`)。
   ファイル操作・リスト操作・描画は Python のライブラリ (open、list/numpy、matplotlib、tkinter) に任せ、翻訳しない (`docs/15_sadhelp_purpose_policy.md`)。
 - **照合の基準**: 「物理量が SAD と有意に一致する」。1e-10 以下の雑音、表示の桁・空白、丸めカオス後の乱数 seed は追わない。検証の基準は SAD (WSL の gs) の出力。
 - **SAD の参照先**: コマンドや関数の意味は CERN の SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html) か K64 版ソース同梱の `Documents/SADHelp.html`。
@@ -33,10 +33,10 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 | 場所 | 内容 |
 |---|---|
-| `pysad/` | 本体。モジュールの地図は `docs/01_overview.md` §3、行数と準拠状況は `docs/15_implementation_summary.md` |
+| `pysad/` | 本体。モジュールの地図は `docs/01_overview.md` §3、行数と準拠状況は `docs/17_implementation_summary.md` |
 | `pysad/tests/` | pytest 578 件収集 (64 ファイル)。SAD (gs) から取った参照値を埋め込み、または `data_*.npz` に持つ。ラティスファイルを読むテストあり (誤差入りラティスの 2 件は環境変数 `PYSAD_ERR_LATTICE` を指定したときだけ走る) |
 | `run_sad.py` | `py -3.12 run_sad.py lattice.sad script.sad` (SAD の `gs` と同じ引数、複数ファイルは連結) |
-| `docs/` | 解説 (現状)。`01_overview.md` から。API は `13_pysad_api.md` |
+| `docs/` | 解説 (現状)。`01_overview.md` から。API は `12_pysad_api.md` |
 | `docs/history/` | この文書と `work_*.md` (項目ごとの経緯・照合の記録)、`review_notes.md`、`sad_patch/` (元の SAD の SIGSEGV を直す差分) |
 
 `docs/` の一覧 (番号順):
@@ -44,10 +44,10 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 | 番号 | 内容 |
 |---|---|
 | 01〜12 | 全体像、ラティスと MAIN、FFS、SADScript、CALC、マッチング、エミッタンス、追跡、DA、ベンチ、SAD の癖 (11) |
-| 13〜15 | API (13_pysad_api)、SADHelp の索引 (13_sad_help_index)、Fortran の状況 (14_fortran_status)、SADHelp との対応 (14_pysad_vs_sadhelp)、実装の要約 (15_implementation_summary)、SADHelp の目的と方針 (15_sadhelp_purpose_policy) |
+| 13〜15 | API (12_pysad_api)、SADHelp の索引 (13_sad_help_index)、Fortran の状況 (16_fortran_status)、SADHelp との対応 (14_pysad_vs_sadhelp)、実装の要約 (17_implementation_summary)、SADHelp の目的と方針 (15_sadhelp_purpose_policy) |
 | 16〜19 | 物理ガイド、ソース解析、翻訳候補、SAD のバグ報告 (B1〜B62) |
 | 20〜35 | 要素・機能別: GUI/Tcl (20)、WAKE (21)、BEAMBEAM (22)、COORD (23)、TCAVI (24)、UND (25)、MULT ANGLE≠0 (26)、SOL の光学 (27)、MAP (28)、DELCOR (29)、GaussianCoulomb・BBBrem (30)、特殊関数・Fit (31)、SAD パッケージ (32)、FFS の小コマンド (33)、POL/スピンと CSR (34)、描画 (35) |
-| 36〜43 | 大項目の解説文書 (何ができるか、使い方の例、物理と K64 の式、実装の構成、K64 の癖、gs との一致、限界): `36_wake_guide.md`、`37_beambeam_guide.md`、`38_csr_guide.md`、`39_tcltk_guide.md`、`40_graphics_guide.md`、`41_pol_guide.md`、`42_sol_guide.md`、`43_radlight_guide.md` |
+| 36〜43 | 大項目の解説文書 (何ができるか、使い方の例、物理と K64 の式、実装の構成、K64 の癖、gs との一致、限界): `38_wake_guide.md`、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md` |
 | `sadhelp_summary.html`、`html/` | SADHelp の要約と、文書の html 版 (`make_html.py` で作る生成物。手で編集しない) |
 
 使わない旧モジュール: `pysad/ffs.py`, `matching.py`, `tracking.py`, `optics.py` (SAD 未照合の独自実装、非推奨)。新しいコードでは使わない。
@@ -59,6 +59,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
   (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**575 通過・3 skip** (578 件収集、2026-11-17)。
   - GUI 系 (`test_plot.py`、`test_tclbridge.py`) は環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` (K64 の `Packages` の場所) が無いと skip。評価器 (`sadscript.py` など) を変えたら、これを設定して全試験と回帰を回す。
   - 全体実行では GUI 系が数回に 1 回、窓の更新待ちで失敗することがある (単独なら通る)。
+  - 試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/`、対応表は `pysad/tests/OUTPUTS.md` (`py -3.12 pysad/tests/make_outputs_md.py` で作る。取り出し方は `docs/history/work_test_outputs.md`)。
   - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。
 - 回帰 (ローカルの `run_regression.py`、リポジトリには含まない): `QUICK=1 PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py` は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件。夜に 4 件も実行し、**50 ベンチすべて実行して FAIL 0** (非 QUICK で 205 s、2026-11-16)。
 - SAD 本体 (参照値を新しく取るとき): K64 版をビルドした `bin/gs` が必要 (このリポジトリには含まない)。WSL で `gs file.sad > file.out`。ラティスとスクリプトは**1 ファイルに連結**して渡す
@@ -69,7 +70,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 ## 5. 現状 (SAD と一致しているもの、していないもの) — 2026-11-16
 
 - 一致: CALC (4D/6D、CELL/INS、結合、オフモメンタム、不安定ラインの続行)、EMIT / Emittance[] (RFSW × RADCOD、INTRA、報告の全行)、FIT/GO (解析微分、DESCEND、fuzz、2 段目、INS、フック)、
-  追跡 (NORAD/RAD/FLUC、粒子損失)、DynamicApertureSurvey (NORAD)、RADINT、幾何 (GX…、GEO。SOL 領域の tsgeo は翻訳済みで docs/27 に記述、gs との一致の度合いは docs/27 を参照)、TRPT の加速、Touschek、誤差の実現、光学関数 (TransferMatrix 等)。詳細は `docs/15_implementation_summary.md` §3。
+  追跡 (NORAD/RAD/FLUC、粒子損失)、DynamicApertureSurvey (NORAD)、RADINT、幾何 (GX…、GEO。SOL 領域の tsgeo は翻訳済みで docs/29 に記述、gs との一致の度合いは docs/29 を参照)、TRPT の加速、Touschek、誤差の実現、光学関数 (TransferMatrix 等)。詳細は `docs/17_implementation_summary.md` §3。
 - 試験: 575 通過・3 skip (578 件収集)、回帰は 50 ベンチすべて実行して FAIL 0 (QUICK=1 は遅い 4 件を SKIP して 46 件。§4)。
 - 11/13〜11/16 に実装して gs と照合した要素・機能 (各文書に、一致の度合い・使った条件・未確認がある):
   COORD (23)、TCAVI (24。Emittance[] は L=0 のみ gs と一致、L≠0 は gs が壊れる B36)、UND (25。K64 は磁場を設定できずドリフト B37)、MULT ANGLE≠0 (26)、SOL の Twiss・Emittance[]・追跡 (27)、MAP/ExternalMap (28)、DELCOR (29)、
@@ -78,10 +79,10 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 - 11/17: SADScript・入出力を gs に合わせた (Module の字句スコープ、Return、Switch/Which、リストの ==、Out[n]・%、Read、StringMatchQ、エスケープ、Random・SeedRandom ほか。For の本体と BeginPackage の文脈は合わせず。`work_scriptgs.md`)。
 - 11/16 の追加 (詳細は `work_session_20261116.md`): POL の Emittance・EMIT のスピン (MULT・空洞・SOL まで) と TrackParticles のスピン追跡 (gs と 4e-12 以下)、RADLIGHT の軌道 (gs と差 0)、SynchroBetaEmittance (gs と相対 1e-5〜6e-6)、
   CSRInit・CSRMatrix mode 1000・CSRConvert・MakeZL、tdgeo (DRIFT の L と BEND の ANGLE・L だけ解析微分)、Skip・Read の型、`measure.py` (tlum/tluma)、SOL の長さを周長に入れない (K64 の癖)、初期の MOMENTUM は 30 GeV。
-- GUI: SAD 自身の Tkinter.n / KBFrame.n / KBMainFrame.n を SADScript として解釈し、tkinter で表示する (`pysad/tclbridge.py`、`pysad/sadclass.py`、`docs/20_gui_tclbridge.md`)。
+- GUI: SAD 自身の Tkinter.n / KBFrame.n / KBMainFrame.n を SADScript として解釈し、tkinter で表示する (`pysad/tclbridge.py`、`pysad/sadclass.py`、`docs/22_gui_tclbridge.md`)。
   KBMainFrame と demo-LabelFrame のウィジェット木は SAD (WSL の gs) と一致。入れ子の部品 (KBFFrameToggled / KBFFrameTabed)、見た目と操作の一致は未確認。`PYSAD_SAD_PACKAGES` が無ければ無効。
-- WAKE: 追跡 (TRPT、LWAKE / TWAKE) と光学 (WAKEOPT、InitialOrbits) を実装 (`pysad/wake.py`、`wakeopt.py`、`docs/21_wake.md`)。gs と 10 桁一致。旧式の WAKE コマンドは K64 では `WAKECOMMAND.n` (配布に無い) を呼ぶので、pysad も同じ経路 (tfwake.f は移植しない)。
-- BEAMBEAM: 追跡・BSTRL・LuminosityMonitor・PHOTONS (BEAMBEAM の光子だけ) が gs と一致 (`pysad/beambeam.py`、`docs/22_beambeam.md`)。
+- WAKE: 追跡 (TRPT、LWAKE / TWAKE) と光学 (WAKEOPT、InitialOrbits) を実装 (`pysad/wake.py`、`wakeopt.py`、`docs/23_wake.md`)。gs と 10 桁一致。旧式の WAKE コマンドは K64 では `WAKECOMMAND.n` (配布に無い) を呼ぶので、pysad も同じ経路 (tfwake.f は移植しない)。
+- BEAMBEAM: 追跡・BSTRL・LuminosityMonitor・PHOTONS (BEAMBEAM の光子だけ) が gs と一致 (`pysad/beambeam.py`、`docs/24_beambeam.md`)。
 
 ## 6. 残課題 (優先順。最新の詳細は `docs/history/work_unimpl.md`)
 
@@ -113,7 +114,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 - C6: 補正量 (SAD の teigen が縮退固有値で丸めに依存する)。
 - fit の多解・FITP>1 (SAD が再起動するので参照値が取れない)、不安定域の閉軌道探索の初期値の差は、SAD 側の仕様なので記録のみ。
 - (11/16 夜に解決したので課題から外した: B33 の出力座標の差 = セッション最初の l_track=0、UNIPOL・RELW、DUMP の書式、MATRIX コマンド、LDSolve の複素行列。`work_session_20261116.md` §11.2)
-- GUI の残り: 最初の Window の親 (gs は Toplevel)、入れ子の部品 (demo-KBFrame1)、Canvas / TabFrame の描画、見た目と操作の比較 (`docs/20_gui_tclbridge.md`、`work_gui_tclbridge.md`)。
+- GUI の残り: 最初の Window の親 (gs は Toplevel)、入れ子の部品 (demo-KBFrame1)、Canvas / TabFrame の描画、見た目と操作の比較 (`docs/22_gui_tclbridge.md`、`work_gui_tclbridge.md`)。
 - 未確認のまま: SynchroBetaEmittance の実用の大きなリング・不安定なチューン・結合・RFSW の組み合わせ。CSR の ScanTrack・OYStability などの長い流れ。tdgeo の動く例の試験。
 
 ## 7. 新しい機能を足す・直すときの手順
@@ -123,7 +124,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 3. 式・分割数・反復順序・乱数の引き方を Python に写す。数値微分や厳密な式への置き換えをしない (SAD の解析行列は厳密微分と 2e-8 ずれる)。
 4. 小さなラティス (7 セル + RFC 程度) と短い SAD スクリプトを書き、SAD の `gs` で実行して pysad の出力と照合する。差が出たら SAD のソースに戻る。gs が SIGSEGV で落ちる・何も出さない場合 (B35、B42) は原因を特定して記録する。
 5. 照合したケースを `pysad/tests/` に参照値付きで足す。GUI 系の試験は `PYSAD_SAD_PACKAGES` を設定して回す。
-6. 文書: 解説文書の主題の節に現状として書く (未確認と限界、使った条件も)。SAD の癖は `docs/11_sad_quirks.md` に、SAD の誤りは `docs/19_sad_bug_report.md` に番号付きで足す。経緯と照合の記録は `docs/history/work_*.md` に書く。
+6. 文書: 解説文書の主題の節に現状として書く (未確認と限界、使った条件も)。SAD の癖は `docs/11_sad_quirks.md` に、SAD の誤りは `docs/21_sad_bug_report.md` に番号付きで足す。経緯と照合の記録は `docs/history/work_*.md` に書く。
 7. 未実装のものを黙ってドリフトや 0 にしない。`SADError` / `NotImplementedError` で拒否する (過去に COORD・TCAVI・UND・BEAMBEAM は黙ってドリフトに、SOL は無視されて結合 0 になっていた)。
 
 ## 8. 落とし穴
@@ -140,7 +141,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 - SOL (BOUND≠0) の長さは K64 では周長 (周回周波数・空洞の位相・MomentumCompaction・偏極時間) に入らない。`emit6d._emit_circ` と追跡の `circ` が同じ扱いにしてある。
 - GEO のない SOL では K64 の S 座標が途切れ、周長が狂う (MomentumCompaction が 100 倍、偏極時間が約半分)。pysad は GEO を見ないので影響を受けず、再現しない。
 - クラスのメンバーでない名前の `obj@name[...]` は式のまま (gs に合わせた)。`MessageName` の `f::usage` の形は一致、関数形は不一致。
-- RADLIGHT の軌道: K64 は BEND の中を記録せず、横方向の座標も入れない。`example.oide.sad` の流れ (B を ANGLE 0 の STEER にする) でないと意味のある場にならない (`docs/43_radlight_guide.md`)。
+- RADLIGHT の軌道: K64 は BEND の中を記録せず、横方向の座標も入れない。`example.oide.sad` の流れ (B を ANGLE 0 の STEER にする) でないと意味のある場にならない (`docs/45_radlight_guide.md`)。
 - **gs は開けない OpenRead で入力行を打ち切る**: ファイルが無いと gs はメッセージを出して、その行の残りを捨てる (`Read[h,…]`・`Close[h]` は wrongtype)。pysad も同じにしてある (FileNotFoundError で落とさない)。
 - **l_track=0 の最初の tapert**: K64 の tapert は落とす印に `kptbl(i,4)=l_track` を書く。l_track はセッション最初の TrackParticles では 0 (CALC をしても変わらない) なので、最初の要素では粒子が落ちず (座標は 3·LOSSAMPL に頭打ち)、後の tapert で落ちる。2 回目の TrackParticles からは最初の要素で落ちる。pysad は `TrackRun.l_track0` で再現。同じセッションで比べるときは、gs の何回目の呼び出しかを揃える (B33)。
 - RAD=1 は「その要素は放射しない」(K64 の仕様、B29 はバグではない: `krad = (RAD_QUAD==0) .and. al/=0`)。MON・MCOD・TCOD のコマンドは K64 に無い。

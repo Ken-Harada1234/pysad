@@ -1,0 +1,10 @@
+FFS;
+PageWidth=1999;
+Print["A ",MinMax[0,{{3,4},{14,1}}]," ",MinMax[{2,5}]];
+c[1][5]=7;c[1][6]=8;c[2][5]=9;
+c[1][5]=.;
+Print["C ",Length[First[?c]]," ",c[1][6]," ",c[1][5]];
+c[_][_]={{}};
+Print["D ",Length[First[?c]]," ",c[1][5]];
+Print["E ",Extract[Delete[?c,{{1,1},{1,-1}}],{{1,,2},{1,,1,0,1}}]];
+Exit;

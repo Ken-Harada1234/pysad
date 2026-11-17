@@ -1,4 +1,4 @@
-# var_FORM_Input_Output ($FORM, $Input, $Output)
+# var_FORM_Input_Output (`$FORM`, `$Input`, `$Output`)
 種別: 特殊変数 / フォルダ: 09_io_system / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は `run_sad_string`。ファイルは `TemporaryName[]` か実行ディレクトリの作業ファイルで、最後に `DeleteFile` で消す。
 
 ## 何を見る例か
@@ -11,7 +11,7 @@ Write[$Output, "writing to the console via $Output"];
 ```
 
 ## 結果の読み方
-`$Output`=-1、`$FORM` の初期値は空白 1 文字、`$Input` は gs・pysad とも 77 (SADHelp は既定 -1 だが、スクリプトを読み込んでいる間はそのファイルの番号 77 になる)。どちらも `Head` は `Real`。`$FORM="8.3"` で `Pi`→`   3.142` (幅 8、小数 3)、`1/3`→`    .333`。`Write[$Output, ...]` は画面に出る。
+`$Output`=-1、`$FORM` の初期値は空白 1 文字、`$Input` は gs・pysad とも 77 (SADHelp は既定 -1 だが、スクリプトを読み込んでいる間はそのファイルの番号 77 になる)。`$Input` と `$Output` の `Head` はどちらも `Real`。`$FORM="8.3"` で `Pi`→`   3.142` (幅 8、小数 3)、`1/3`→`    .333`。`Write[$Output, ...]` は画面に出る。
 
 ## gs と pysad の比較
 ○ 一致する (2026-11-17 に `Write[$Output, ...]` を修正)。`$FORM`・`$Input`・`$Output` の値は一致。
