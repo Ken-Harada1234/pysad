@@ -60,6 +60,7 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 | [`run_sad.py`](run_sad.py) | SAD スクリプトの実行 (`gs` と同じ引数: `py -3.12 run_sad.py lattice.sad script.sad`) |
 | [`README.md`](README.md) | この文書 |
 | [`CLAUDE.md`](CLAUDE.md) | AI アシスタント向けの読み順と要点 |
+| [`CHANGELOG.md`](CHANGELOG.md) | 変更履歴 (リリースごとの内容、未対応・未確認の要点) |
 | [`LICENSE`](LICENSE) | SAD の利用条件 (KEK Accelerator Laboratory) |
 | [`.gitignore`](.gitignore) | 追跡しないもの (出力、ログ、キャッシュ) |
 | [`pysad/`](pysad/) | 本体 (下の表) |
