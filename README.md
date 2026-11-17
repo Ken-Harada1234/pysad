@@ -244,6 +244,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | [`43_pol_guide.md`](docs/43_pol_guide.md) | 解説: POL (スピンと偏極、TrackParticles のスピン追跡) |
 | [`44_sol_guide.md`](docs/44_sol_guide.md) | 解説: ソレノイド (SOL 領域の仕組みと対応範囲) |
 | [`45_radlight_guide.md`](docs/45_radlight_guide.md) | 解説: RADLIGHT と放射場 (RadiationField・RadiationSpectrum) |
+| [`46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md) | オリジナル SAD (K64) に対する pysad の未対応・未確認の一覧 (未翻訳、一部未対応、未確認、既知の差、gs 側の問題、優先度) |
 | [`sadhelp_summary.html`](docs/sadhelp_summary.html) | SADHelp 対応文書 (13・14・15) の要約 (リポジトリ外の `perf_work/sadhelp_html.py` で md から生成) |
 | [`html/`](docs/html/) | 上の md を html にしたもの (`make_html.py` で生成。追跡しない)。手書きの `sad_wake_sigsegv_fixes_v001.html` (2026-11-14) と `_v002.html` (2026-11-16、B33 の差の原因と解消を追記) は K64 の wake まわりの SIGSEGV 3 件 (B31〜B33) の原因と修正の報告。差分は `docs/history/sad_patch/wake_sigsegv_fixes.patch` |
 

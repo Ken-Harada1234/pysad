@@ -4,7 +4,7 @@ pysad は加速器設計コード SAD (K64 版) の Python への直訳。作業
 
 1. `docs/history/00_RESUME.md`: 引き継ぎメモ (方針、構成、環境、現状、残課題、手順、落とし穴)。未解決の差の最新は `docs/history/work_unimpl.md`。
 2. `docs/01_overview.md`: 全体像とモジュールの地図。
-3. 必要に応じて `docs/11_sad_quirks.md` (SAD の癖)、`docs/12_pysad_api.md` (API)。
+3. 必要に応じて `docs/11_sad_quirks.md` (SAD の癖)、`docs/12_pysad_api.md` (API)、`docs/46_unimplemented_and_unverified.md` (未対応・未確認の一覧)。
 4. 要素・機能別: `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT ANGLE、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
    大項目の解説文書: `docs/38_wake_guide.md`、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
 
