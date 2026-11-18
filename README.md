@@ -18,7 +18,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - SAD の仕様と癖の一覧は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、SADHelp との対応は [`docs/14_pysad_vs_sadhelp.md`](docs/14_pysad_vs_sadhelp.md)。
 - 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
   大きな項目の解説文書は [`docs/38_wake_guide.md`](docs/38_wake_guide.md) (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
-- 現状 (2026-11-18、v2.1.0。PyPI は v2.0.0 まで公開): pytest 1345 通過・8 skip・失敗 0 (1353 件収集。`PYSAD_SAD_PACKAGES` つき。担当 E の 2026-11-18 の実行)、回帰 (`QUICK=1`) は 50 ベンチ FAIL 0。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`SynchroBetaEmittance` の大きなリングの不一致、`Polarization` の過小評価)。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
+- 現状 (2026-11-18、v2.1.0。PyPI は v2.1.0 まで公開): pytest 1345 通過・8 skip・失敗 0 (1353 件収集。`PYSAD_SAD_PACKAGES` つき。担当 E の 2026-11-18 の実行)、回帰 (`QUICK=1`) は 50 ベンチ FAIL 0。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`SynchroBetaEmittance` の大きなリングの不一致、`Polarization` の過小評価)。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
 - **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B134)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
 
@@ -28,7 +28,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 pip install pysad-k64
 ```
 
-PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.0.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作) が最新です。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
+PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.1.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作。v2 は直訳ではありません) が最新です。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
 
 ## 必要なもの
 
