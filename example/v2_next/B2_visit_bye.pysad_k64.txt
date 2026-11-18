@@ -1,0 +1,12 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.030478 $$$       f BX    #######  #   3.639144 $$$       f NX    #######  #    .121594
+$$$       f AY    #######  #   1.158726 $$$       f BY    #######  #   4.407174 $$$       f NY    #######  #    .059726
+$$$       f LENG  #######  #   2.100000
+A {K1[QF]:>.5} 3 7 11 12
+B ElementValues FitFunction FitValue OpticsProlog OpticsEpilog
+D {K1[QF]:>.5} 3 7 11 12
+E ElementValues
+F {K1[QD]:>.1}
+G {K1[QF]:>.5}
+H ElementValues FitFunction FitValue OpticsProlog OpticsEpilog
+ ???-FFS-Error-BYE without VISIT. 

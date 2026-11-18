@@ -1,6 +1,6 @@
 # SOL 領域の Twiss (CALC / INS) と Emittance[] / EMIT
 
-最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
+最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット。経緯は `history/` にある)
 
 K64 の `tsole.f` (`tsole1`、`qsol`)。`pysad/solmap.py`。追跡 (`TrackParticles`) は対応済み (docs/08。スピン追跡は docs/36)。Twiss の写像・行列は `solmap.py`、放射込みの 1 周 (Emittance[]・EMIT) は `pysad/solemit.py`。
 
@@ -55,7 +55,7 @@ BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域の中�
   ただし Emittance[] の周長は GEO の有無で変わらない (pysad は S 座標を途切れさせない。gs は GEO なしだと Emittance[] の αp が 100 倍以上になる)。参照の gs は GEO=1 で作った。`tdgeo` (fit の GX.. の領域内の幾何微分) は領域の部分を翻訳していない。
 - **K64 は SOL (BOUND≠0) の長さを周長に入れない**。omega0・MomentumCompaction・偏極時間・追跡の周回周波数 (空洞の位相) に効く。gs で確かめた: PLANAR のリングに GEO のある SOL (L=0.3、0.6、BZ=0) を足しても、
   周長 45.6 のときと偏極時間が 15 桁一致する。pysad は `emit6d._emit_circ` で同じにした (Emittance 系と、`fn_track` の `circ`)。確認は偏極時間 (`test_spin.py` の `test_solenoid_ring_matches_gs`) による。Twiss (CALC) だけの量 (チューンなど) への影響は未確認。
-- **CALC6D・RADCOD つきの CALC は未対応** (SADError)。Touschek (INTRA) と SOL の組み合わせも未対応。
+- **CALC6D・RADCOD つきの CALC、Touschek (INTRA) と SOL の組み合わせは v2.1.0 で対応した (両モード。k64 は gs と 1e-9。docs/44 の CALC6D の節)**。TouschekLifetime の値は SOL のあるリングで未確認 (gs が NaN)。BOUND=0 の SOL (BZ≠0) の CALC・RADTAPER + SOL・WSPAC + SOL の値は未確認。
 - Emittance[] は `emit_extra.emittance_rules` (Orbit/Matrix の規則、BeamMatrices) を SOL では使わず、`run_emit` (emittance6d) の値に落ちる
   (`ffscmd.emittance` の except)。EMT・TUN・ALP・COD は上のとおり合うが、**Stable は 0 (不安定扱い)、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない**。
   理由: 同じ経路の `emit_extra` / `calc6d` の要素ループは Python 版の `_tquade` を使い、軌道のある QUAD で gs と 1e-5 (ε_y は 1e-4) ずれる
@@ -99,8 +99,8 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 | 領域内の APERT | NotImplementedError | 領域の外と同じ判定で落ちる |
 | ずれ・傾き `DX DY DZ CHI1..3`、`F1` | 追跡・Twiss・Emittance[] は未対応 | 対応 (GEO=1 の SOL に `DX DY DPX DPY`、軸はソレノイドの軸、F1 は端の放射の長さ) |
 | 領域内の K1=0 の四極・BEND・MULT・CAVI の幾何と、領域内の変数の `tdgeo` | 未対応 | 対応 (幾何は追跡と同じカーネル、fit の微分は中心差分) |
-| CALC6D・RADCOD つきの CALC | SADError | SADError (両モード同じ) |
+| CALC6D・RADCOD つきの CALC・Touschek (INTRA) | v2.1.0 で対応 (k64 も gs と 1e-9) | 対応 (両モード同じ) |
 
-v2 の領域内の BEND・MULT・CAVI の条件と確認の範囲: 電子、0.5〜3 GeV、bz = 0.3〜3 1/m、ローレンツ力の数値積分と 1e-14〜1e-8。gs との数値比較は無い。bz ≥ 3 1/m を超える場、領域内の MULT・CAVI の POL (Emittance[])、RF つき MULT の RAD は未確認。
+v2 の領域内の BEND・MULT・CAVI の条件と確認の範囲: 電子、0.5〜3 GeV、bz = 0.3〜3 1/m、ローレンツ力の数値積分と 1e-14〜1e-8。gs との数値比較は無い。bz ≥ 3 1/m を超える場、領域内の MULT・CAVI の POL (Emittance[]) は v2.1.0 で確認 (docs/44 の v2.1.0 の節。bz = 20 まで)。加速する CAVI の POL (Emittance[]) は未確認。領域内の四極の DX・DY (追跡・Emittance[]・幾何) は v2.1.0 で対応 (gs と全桁)。
 
 解説: docs/44_sol_guide.md (SOL)

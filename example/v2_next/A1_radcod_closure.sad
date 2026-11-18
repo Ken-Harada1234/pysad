@@ -1,0 +1,27 @@
+! v2next A1 項目 7: RADTAPER・RADCOD の閉軌道が、追跡 (RAD) の 1 周で閉じるか。Emittance[] の閉軌道から始めた 1 周の動き (z は 0 から)。
+! K64 の tradke (Emittance[]) は ddpx = +0.5 dpx dg、tradkn (追跡) は ddpx = -0.5 dpx dg で符号が逆 (エネルギーを失うと同じ磁場で偏向が強くなるので追跡が正しい)。
+! v2: tradke の符号を反転し、RADTAPER の追跡の BEND の係数を tturne と同じ (3δ_l + δ_l+1)/4 にする。k64 モードは gs と同じ (閉じない)。
+! 条件: 3 GeV、周長 105.6 m の FODO 24 セル、RF 4 MV・500 MHz。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SD = (L=0.2 K2=0) SF = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+$FORM = "12.6";
+USE RINGQ; CELL; CALC;
+RFSW; RAD; RADCOD; NOFLUC;
+e0 = Emittance[];
+c0 = OrbitAtExit/.e0; c0[[5]] = 0;
+r = TrackParticles[{1, Append[Table[{c0[[i]]},{i,1,6}],{1}]}, 1, 1, 1];
+Print["no taper: closed orbit x, px at exit = ", c0[[1]], ", ", c0[[2]], "; one-turn change (x px y py z dp) = ", Flatten[Take[r[[2]],6]]-c0];
+RADTAPER;
+e1 = Emittance[];
+c0 = OrbitAtExit/.e1; c0[[5]] = 0;
+r = TrackParticles[{1, Append[Table[{c0[[i]]},{i,1,6}],{1}]}, 1, 1, 1];
+Print["RADTAPER: one-turn change (x px y py z dp) = ", Flatten[Take[r[[2]],6]]-c0];
+Exit;

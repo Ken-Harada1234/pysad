@@ -1,0 +1,21 @@
+! v2next A1 項目 6: EMIT (Emittance[]・CALC6D) のあとの USE。K64 の trf0 (同期位置の時間) は大域変数で、temit と CALC6D だけが更新する。
+! USE では 0 に戻らない。旧 pysad は USE で 0 に戻し、追跡の RF の位相が EMIT 前の値に戻った (δ が 87% 違った)。gs と全桁一致。
+! 条件: 3 GeV、12 セル FODO、RF 1.5 MV・h=64・PHI=0.1。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=1.5e6 HARM=64 PHI=0.1);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+$FORM="14.8";
+bm={{1e-3,0,1e-3},{1e-4,0,0},{1e-3,0,-1e-3},{0,0,0},{0,0,0},{0,1e-3,-1e-2},{1,1,1}};
+USE RING; CELL; CALC; RFSW; RAD; NOFLUC;
+r=TrackParticles[{1,bm},1,1,1]; Print["A  before EMIT: dp ", r[[2,6]]];
+EMIT;
+r=TrackParticles[{1,bm},1,1,1]; Print["B  after  EMIT: dp ", r[[2,6]]];
+USE RING;
+r=TrackParticles[{1,bm},1,1,1]; Print["C  after USE  : dp ", r[[2,6]], "   (= B in gs)"];
+Exit;

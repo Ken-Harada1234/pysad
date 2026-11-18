@@ -1,0 +1,59 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 03:01:52 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next C3 項目 1: TRCOD の閉軌道の測定。24 セルの平面 FODO (3 GeV)、リングの先頭に薄いキック (L=0 の BEND、K0=1e-5)。
+! TRCOD (NP=2、ε=0、DP=0: 重心の追跡) が測った軌道を、CALC の閉軌道と、解析式 x(s) = θ √(β_s β_k)/(2 sin πν) cos(πν − |φ_s − φ_k|) と比べる。
+! 結果 (v2): TRCOD と CALC の最大の差 / 最大の軌道 = 2e-9 程度、解析式との差は 1e-6 程度 (六極なし)。gs は TRCOD で SIGSEGV (B42) なので gs の出力は無い。
+! 大きなリング (PF 187 m・大きなリング A 603 m・ASTRID2) では試験 test_v2_C3_measure.py (差 6e-7〜1.3e-5、解析式との差 4e-4〜1.9e-3 (六極のフィードダウン))。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORG0 = ();
+BEND  KICK = (L=0 ANGLE=0 K0=1E-5);
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGK = (ORG0 KICK RF 24*CELLQ);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "14.8";
+ USE RINGK; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.506170 $$$       f BX    #######  #   6.426929 $$$       f NX    #######  #   6.696328
+$$$       f AY    #######  #    .919258 $$$       f BY    #######  #   1.919572 $$$       f NY    #######  #   4.906055
+$$$       f LENG  #######  #  105.60000
+ NP = 2; DP = 0; EMITX = 0; EMITY = 0; SIGZ = 0;
+ nl = LINE["LENGTH"];
+ ox = Table[Twiss["DX", i], {i, 1, 200, 20}];
+ Print["CALC  DX (every 20th element) = ", ox];
+CALC  DX (every 20th element) = { 2.27856510E-5, -1.2562916E-5, 5.73906652E-6, 1.83895288E-6, -9.1754748E-6, 1.53055921E-5,
+  -1.9423606E-5, 2.09881020E-5, -1.9793427E-5, 1.59964844E-5}
+ TRCOD;
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x7bfb7902a494 in ???
+#1  0x7bfb79029085 in ???
+#2  0x7bfb78a45caf in ???
+#3  0x62e44876324a in ???
+#4  0x62e448877137 in ???
+#5  0x62e4488156f2 in ???
+#6  0x62e448815beb in ???
+#7  0x62e448775372 in ???
+#8  0x62e4487794a0 in ???
+#9  0x62e44880d41f in ???
+#10  0x62e448851bac in ???
+#11  0x62e448872680 in ???
+#12  0x62e448803c29 in ???
+#13  0x62e44871a2de in ???
+#14  0x7bfb78a2a600 in ???
+#15  0x7bfb78a2a717 in ???
+#16  0x62e44871a334 in ???
+#17  0xffffffffffffffff in ???
+bash: line 1: 115818 Segmentation fault         timeout 120 /mnt/d/work/SAD-master/SAD-master/bin/gs _ex_C3_trcod_orbit.sad < /dev/null

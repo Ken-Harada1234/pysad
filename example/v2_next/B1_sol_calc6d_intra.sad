@@ -1,0 +1,36 @@
+! v2next B1 項目 4: SOL 領域のあるリングの CALC6D、RADCOD つきの CALC、INTRA (IBS)。以前は SADError・NotImplementedError。
+! 条件: 3 GeV、周長 45.8 m の 12 セル FODO。1 セルに SOL 領域 (SA BZ=2 T GEO=1 〜 SB)、領域内に回転四極 QS・SOL SM (BZ=0.8)。QFE は DX DY のずれ (軌道が領域を斜めに通る)。
+! k64 モード (PYSAD_COMPAT=k64): gs と C4D 2.73475252978800、C6D 2.73495437251036、C6DRC 2.73497629185364 (1e-9 以内で一致)、INTRA の εx も。
+! RADCOD の CALC6D の後の 4D の CALC (C4DRC): DP0 は LINE["DDP",1] の別名なので、閉軌道の δ = 3.56e-5 のエネルギーで光学を計算する (gs 2.73465818826401)。
+MOMENTUM = 3GEV;
+PBUNCH = 1E10;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3 = (L=0.25);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6) QFE = (L=0.3 K1=0.7 DX=3e-4 DY=-2e-4) QS = (L=0.2 K1=0.05 ROTATE=0.3);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+SOL SA = (L=0 BZ=2 BOUND=1 GEO=1) SM = (L=0 BZ=0.8) SB = (L=0 BZ=0 BOUND=1);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELLS = (QFE D2 B D2 QD D3 SA D3 QS D3 SB D3);
+LINE RING = (ST 11*CELL1 CELLS RFC);
+FFS;
+$FORM="18.14";
+PageWidth = 1999;
+USE RING;
+CELL;
+CALC;
+Print["C4D    ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["BX",{1,30,70}]];
+RFSW; NORAD; NOFLUC; CALC6D;
+CALC;
+Print["C6D    ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["NZ","$$$"]/(2Pi), Twiss["BX",{1,30,70}]];
+RAD; RADCOD;
+CALC;
+Print["C6DRC  ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["NZ","$$$"]/(2Pi), Twiss["DX",1], Twiss["DDP",1]];
+NOCALC6D;
+CALC;
+Print["C4DRC  ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["BX",{1,30,70}]];
+NORADCOD; DP0 = 0; INTRA;
+em = Emittance[];
+Print["INTRA Emittances ", Emittances/.em];
+Print["INTRA EMITC ", EMITXC, EMITYC, EMITZC];
+Exit;

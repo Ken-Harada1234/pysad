@@ -1,0 +1,20 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.000000 $$$       f BX    #######  #   2.000000 $$$       f NX    #######  #    .125000
+$$$       f AY    #######  #  -1.000000 $$$       f BY    #######  #   2.000000 $$$       f NY    #######  #    .125000
+$$$       f LENG  #######  #   1.000000
+lb =      .100000 m: rms x, y [m] =      .001227,      .001228
+  ???-PSPAC-Warning-the longitudinal mesh is too coarse: rms length 0.00577 m is only 1.2 cells of PSPACDZ = 0.005 m (the line density is under-estimated). Use PSPACDZ <= rms/3 or PSPACNZ < 4 (automatic mesh).
+
+  ???-PSPAC-Warning-15.2% of the particles are outside the mesh (PSPACNX x PSPACDX, PSPACNY x PSPACDY); they get no kick.
+
+lb =      .020000 m: rms x, y [m] =      .003737,      .003738
+  ???-PSPAC-Warning-the longitudinal mesh is too coarse: rms length 0.00289 m is only 0.6 cells of PSPACDZ = 0.005 m (the line density is under-estimated). Use PSPACDZ <= rms/3 or PSPACNZ < 4 (automatic mesh).
+
+  ???-PSPAC-Warning-58.7% of the particles are outside the mesh (PSPACNX x PSPACDX, PSPACNY x PSPACDY); they get no kick.
+
+lb =      .010000 m: rms x, y [m] =      .005862,      .005862
+  ???-PSPAC-Warning-the longitudinal mesh is too coarse: rms length 0.00144 m is only 0.3 cells of PSPACDZ = 0.005 m (the line density is under-estimated). Use PSPACDZ <= rms/3 or PSPACNZ < 4 (automatic mesh).
+
+  ???-PSPAC-Warning-79.2% of the particles are outside the mesh (PSPACNX x PSPACDX, PSPACNY x PSPACDY); they get no kick.
+
+lb =      .005000 m: rms x, y [m] =      .007995,      .007996

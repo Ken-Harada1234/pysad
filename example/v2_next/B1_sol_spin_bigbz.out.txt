@@ -1,0 +1,30 @@
+D:\work\SAD-master\Claude outputs\example\v2_next\..\..\pysad\tsvd.py:317: RuntimeWarning: overflow encountered in scalar power
+  f = ((w - z) * (w + z) - h ** 2 + g ** 2 / y) / w
+D:\work\SAD-master\Claude outputs\example\v2_next\..\..\pysad\tsvd.py:328: RuntimeWarning: invalid value encountered in scalar divide
+  c = f / z
+(a) 領域内の DRIFT のスピン (0.4 m、δ = 1e-3・−5e-3 の粒子 3 つ × 3 つのスピン): Thomas-BMT との最大の差
+  v2  p = 0.1 GeV  bz = 4.50 1/m  最大の差 2.3e-07
+  v2  p = 0.1 GeV  bz = 8.99 1/m  最大の差 8.9e-07
+  v2  p = 0.3 GeV  bz = 3.00 1/m  最大の差 4.5e-08
+  k64 p = 0.1 GeV  bz = 4.50 1/m  最大の差 8.8e-03
+  k64 p = 0.1 GeV  bz = 8.99 1/m  最大の差 1.6e-02
+  k64 p = 0.3 GeV  bz = 3.00 1/m  最大の差 5.6e-03
+(b) POL の Emittance[] の SpinTune: ソレノイドの領域 (L = 1 m) の解析式との差 (bz = 4.5・9 1/m は 0.1 GeV)
+  drift        p = 0.5 GeV  bz = 0.60 1/m  SpinTune 0.142402571327  解析 0.142402571327  差 2.2e-16
+  drift        p = 0.1 GeV  bz = 4.50 1/m  SpinTune 0.394251582139  解析 0.394251582139  差 1.1e-16
+  drift        p = 0.1 GeV  bz = 8.99 1/m  SpinTune 0.341980851748  解析 0.341980851748  差 0.0e+00
+  MULT         p = 0.5 GeV  bz = 0.60 1/m  SpinTune 0.163424945063  解析 0.163424945063  差 7.5e-16
+  MULT         p = 0.1 GeV  bz = 4.50 1/m  SpinTune 0.341980851748  解析 0.341980851748  差 5.6e-17
+  MULT         p = 0.1 GeV  bz = 8.99 1/m  SpinTune 0.449474462574  解析 0.449474462574  差 1.1e-16
+  CAVI VOLT=0  p = 0.5 GeV  bz = 0.60 1/m  SpinTune 0.163424945063  解析 0.163424945063  差 8.9e-16
+  CAVI VOLT=0  p = 0.1 GeV  bz = 4.50 1/m  SpinTune 0.341980851748  解析 0.341980851748  差 5.6e-17
+  CAVI VOLT=0  p = 0.1 GeV  bz = 8.99 1/m  SpinTune 0.449474462574  解析 0.449474462574  差 0.0e+00
+(c) 領域内の RF つき MULT (3 GeV、θ0 = 1e-2、L = 0.5 m) の放射損失 (RAD ON − OFF) / 式
+  bz = 3 1/m  VOLT = 0e+00 V (p2/p0 = 1.0000)  比 1.00002
+  bz = 3 1/m  VOLT = 1e+06 V (p2/p0 = 1.0003)  比 1.00002
+  bz = 3 1/m  VOLT = 2e+07 V (p2/p0 = 1.0062)  比 1.00004
+  bz = 3 1/m  VOLT = 1e+08 V (p2/p0 = 1.0311)  比 0.99903
+  bz = 9 1/m  VOLT = 0e+00 V (p2/p0 = 1.0000)  比 1.00002
+  bz = 9 1/m  VOLT = 1e+06 V (p2/p0 = 1.0003)  比 1.00002
+  bz = 9 1/m  VOLT = 2e+07 V (p2/p0 = 1.0062)  比 1.00004
+  bz = 9 1/m  VOLT = 1e+08 V (p2/p0 = 1.0311)  比 1.00017

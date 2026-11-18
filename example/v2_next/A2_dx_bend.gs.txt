@@ -1,0 +1,43 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:03:11 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next A2 項目 4: ずれた BEND の CALC (tbende の tchge) と追跡 (tbend の tbshift) の差。矩形磁石 (E1=E2=0.5) 1 台を DX=2 mm ずらす。
+! 弦に垂直な方向への平行移動は、矩形磁石 (平行な面) の光学を変えない (厳密)。追跡は変わらない。k64/gs の CALC は出口のドリフトが逆向きで、
+! チューンが 2.7e-5 動く。v2 は動かない。条件: 3 GeV、24 セル FODO (周長 105.6 m)。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5);
+BEND  BE = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5 DX=2E-3);
+MARK  ORIGIN = ();
+LINE CELLQ = (QF D2 B D2 QD DS D1);
+LINE CELLE = (QF D2 BE D2 QD DS D1);
+LINE RING0 = (ORIGIN 24*CELLQ);
+LINE RING  = (ORIGIN CELLE 23*CELLQ);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "16.10";
+ USE RING0; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.238276 $$$       f BX    #######  #   5.410264 $$$       f NX    #######  #   5.383695
+$$$       f AY    #######  #   1.183226 $$$       f BY    #######  #   2.272634 $$$       f NY    #######  #   4.269865
+$$$       f LENG  #######  #  93.600000
+ Print["unshifted : NX NY = ", Twiss["NX","$$$"]/(2*Pi), Twiss["NY","$$$"]/(2*Pi)];
+unshifted : NX NY =     5.3836953567    4.2698645878
+ USE RING; CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.237793 $$$       f BX    #######  #   5.408935 $$$       f NX    #######  #   5.383668
+$$$       f AY    #######  #   1.183187 $$$       f BY    #######  #   2.272771 $$$       f NY    #######  #   4.269845
+$$$       f LENG  #######  #  93.600000
+ Print["one BEND DX=2mm : NX NY = ", Twiss["NX","$$$"]/(2*Pi), Twiss["NY","$$$"]/(2*Pi)];
+one BEND DX=2mm : NX NY =     5.3836683090    4.2698448750
+ Exit;
+ FFS                  end:  CPU time =     0.001 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

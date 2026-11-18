@@ -1,6 +1,6 @@
 # 12. pysad 公開 API リファレンス
 
-最終更新: 2026-11-17 (現状のスナップショット。新しい API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6)
+最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット。新しい API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6、v2.1.0 の `naff`・`specfn_cx`・`nbcache` は §16.7)
 
 > 場所: `pysad/`。全体像は `01_overview.md`、各計算の直訳メモは 05〜09、SAD の癖は `11_sad_quirks.md`。
 > 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `<試験用ラティス>.lat` と本文中の小さな FODO リング)。
@@ -471,7 +471,7 @@ print(score)                                               # 144
 
 - 引数の検査 (引数の数・型のエラー文) は関数ごとに違うので、細部は各モジュールのソースを見ること。実行例は作っていない。
 - `B['名前']` の数え上げは全数ではない (§16.1 の注)。
-- 未翻訳: `wjfit/wfres/wfbin/wiord/wjdraw` (MAIN の TRACK の Fourier 解析)。k64 モードでは MEASURE/TRCOD、SOL 領域内の MULT・BEND・CAVI、PHSROT、空間電荷、`Polarization` の有限値は動かない (v2 モードで実装。§16.6)。`measure.py` の `tlum/tluma`・MEASURE 系は gs と数値比較ができない (gs で MEASURE が動かない)。
+- 未翻訳: `wjfit/wfres/wfbin/wiord/wjdraw` (MAIN の TRACK の Fourier 解析。gs も SIGSEGV で参照が無い。チューンの抽出は v2.1.0 の `pysad.naff`: §16.7)。k64 モードでは MEASURE/TRCOD、SOL 領域内の MULT・BEND・CAVI、PHSROT、空間電荷、`Polarization` の有限値は動かない (v2 モードで実装。§16.6)。`measure.py` の `tlum/tluma`・MEASURE 系は gs と数値比較ができない (gs で MEASURE が動かない)。
 
 ### 16.6 互換モード `pysad.compat` と v2 で追加した API
 
@@ -508,4 +508,25 @@ print(score)                                               # 144
 - FFS の変数・フラグ (v2): `SPACSTEP`・`SPACNX/NY/NZ`・`PSPACNX/NY/DX/DY/NZ/DZ/NTURNCALC`・`WSPACBEAM`・`WSPACRADIUS`・`PBUNCH`、`RADLIGHTDIV`、`EMITDIV`・`EMITDIVB`・`EMITDIVQ` (両モード)。
 - `ffs.track_results` (MAIN の `TRACK … TURNS=-1` の戻り): entrance / exit の (重心, 分散行列)、final、alive (v2)。
 
-**使えない範囲・未確認**: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。`spch.py` は電子以外の粒子の式を `TrackRun(amass=…)` を直接作る試験で確かめただけで、`TrackParticles` は `MASS`・`CHARGE` を追跡に渡さないので SAD スクリプトからは使えない。上のモジュールの公開関数名はソースの `def`・`class` から書いたもので、引数の細部は各ファイルの docstring を見ること。
+**使えない範囲・未確認**: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。`spch.py` の電子以外の粒子の式は 100 MeV の陽子で確かめた (`TrackParticles` は v2.1.0 から `MASS`・`CHARGE` を追跡に渡す。SAD スクリプトからの空間電荷の使用は未確認)。上のモジュールの公開関数名はソースの `def`・`class` から書いたもので、引数の細部は各ファイルの docstring を見ること。
+
+### 16.7 v2.1.0 で追加したモジュール (`pysad/*.py`)
+
+互換モード (`pysad.compat`) と切り替えない追加 (どちらのモードでも同じ関数)。使い方・範囲は docs/47 の v2.1.0 の (b)。
+
+| モジュール | 内容 | 文書 |
+|---|---|---|
+| `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/47 v2.1.0 (b)、`example/v2_next/B3_naff_tunes.py` |
+| `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/33 | docs/33 |
+| `nbcache.py` | numba のキャッシュの無効化。`py -3.12 -m pysad.nbcache [--force]` (`purge(dry_run=False, force=False)`、`stale_modules()`、`cached_modules()`)。numba の `cache=True` の索引 (`.nbi`) は関数を定義したファイル 1 つの内容のハッシュでしか無効にならないので、呼ばれる側 (別のファイルの njit 関数や、`emit6d.ELMASS` などの大域の定数) を編集しても呼ぶ側のキャッシュが古いまま残る。`__pycache__/nbdeps.json` にモジュールごとの依存先の内容のハッシュ (改行の違いは無視) を覚え、変わっていたら呼ぶ側の `.nbi`・`.nbc` を捨てる。最初の 1 回は記録だけ (最初から古いものがあるかもしれないときは `--force`)。**kernel (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py` など) を編集したら、試験の前に 1 回走らせる** (自動では呼ばない) | docs/47 v2.1.0 (b)、`test_nbcache_purges_caller_when_callee_file_changes` |
+
+**v2.1.0 で追加・変更した主な API**
+
+- `spin.sideband_depolarization(...)`: 偏極の脱偏極率にスピンの歳差の位相の変調 (シンクロトロン側帯) を厳密に取った項を入れる。`emit6d.emittance6d(..., pol=True)['spin']` に `depol_rate` (側帯込み)・`depol_rate_linear` (線形)・`spin_spread_sb`・`sideband_error`。`spin.SIDEBAND = False` で線形の式だけに戻る。`spin.SOL_BPAR = False` で K64 の縦磁場の足し方 (B130) に戻る。docs/43。
+- `track6n.bend_links` (tfgeo の inext・iprev の再現。B113)、`track6n.tent_all`・`texit_all`・`k_cav_q` (CAVI の DX・DY と V1 V20 V11 V02)、`track6n.edge_exact1` (K1≠0 の BEND の追跡の厳密な端。B117)。
+- `emit6d._tbende_core`・`_tblfre`・`_tbendal` (BEND の F1・FRINGE の Emittance[])、`emit6d._tsteee`・`_tmulte` (ANGLE=0 の BEND・MULT の F1)。
+- `match6d.sol_dcod` (領域内の四極の DX・DY の解析微分)、`sgeo._quad_step`・`solemit._tquade` (領域内の四極のずれ)。
+- `ffscmd._mass_charge()` (電子と同じ値のときは何も渡さない。`TrackParticles`・Emittance[]・CALC6D に `MASS`・`CHARGE` を渡す)、`ffscmd.FFS._npara_chunks`・`_fn_track_npara` (`NPARA=n;` の fork の分け方)。
+- `radfield._drop_repeated_points` (複数区間の `RadiationField`)。`fileops` の `Parallelize` (POSIX の fork。`PYSAD_PARALLELIZE=serial` で逐次)。
+- 環境変数: `PYSAD_PARALLELIZE` (`serial` で `Parallelize` を逐次にする)。
+- FFS: `NPARA=n;` (FLUC の追跡の子プロセスの分け方)。

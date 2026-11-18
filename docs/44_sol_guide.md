@@ -1,6 +1,6 @@
 # 44. ソレノイド (SOL) の解説
 
-最終更新: 2026-11-17
+最終更新: 2026-11-18 (v2.1.0 の後)
 
 SOL 領域の仕組み、置ける要素、Twiss・Emittance・追跡・幾何それぞれの対応、K64 の癖、動く SAD スクリプト、gs との一致の度合い、限界を、初めて読む人向けにまとめる。
 詳細な検証表は `docs/29_sol_optics.md` (Twiss・Emittance[]・幾何)、追跡の式は `docs/08_tracking.md` §3.7。
@@ -13,9 +13,9 @@ SOL 領域の仕組み、置ける要素、Twiss・Emittance・追跡・幾何�
 | CALC / INS の Twiss (CELL も) | 対応 | `solmap.py` |
 | Emittance[] / EMIT (放射込み) | 対応 | `solemit.py` |
 | 幾何 (S・GX・GZ・GCHI2・GCHI3) | 対応 (領域内に DRIFT・QUAD・SOL) | `sgeo.py` (tsgeo) |
-| POL のスピン (Emittance[]・EMIT・追跡) | 対応 (k64 モード: 領域内は DRIFT・QUAD。v2 モード: 追跡のスピンは領域内の BEND・MULT・CAVI・ずれ・F1 も。Emittance[] の POL の量は領域内だけ K64 の式) | `docs/36_spin_csr.md`、docs/43 §8a |
-| CALC6D、RADCOD つきの CALC | 未対応 (SADError) | `ffscmd._check_sol_optics` |
-| Touschek (INTRA) との組み合わせ | 未対応 | |
+| POL のスピン (Emittance[]・EMIT・追跡) | 対応 (k64 モード: 領域内は DRIFT・QUAD。v2 モード: 追跡のスピンは領域内の BEND・MULT・CAVI・ずれ・F1 も。Emittance[] の POL の量は k64 では領域内が K64 の式、v2 は v2.1.0 で修正: B130) | `docs/36_spin_csr.md`、docs/43 §8a |
+| CALC6D、RADCOD つきの CALC | **v2.1.0 で対応 (両モード)**。k64 は gs と 1e-9 | `ffscmd._check_sol_optics`、`calc6d._turn` |
+| Touschek (INTRA) との組み合わせ | **v2.1.0 で対応 (両モード)**。INTRA + SOL の Emittances は gs と εx・εy 2e-8、εz 9e-8 (相対)。TouschekLifetime は gs・pysad とも NaN (この条件で確認できず) | `touschek._tturne_intra` |
 | 領域内の BEND・MULT・CAVI | k64 モード: 未対応。v2 モード: 対応 (§7a) | §5、§7a |
 | BOUND=0 で BZ≠0 の SOL (領域の外のソレノイド) の Twiss | 未対応 (NotImplementedError) | `solmap.annotate` |
 | ずれ・傾き (DX DY DPX DPY DZ CHI) と F1 のある SOL の追跡・Twiss・Emittance[] | k64 モード: 未対応 (幾何だけ対応)。v2 モード: 対応 (§7a) | |
@@ -106,7 +106,7 @@ K64 の `tsole1` の放射の経路。写像は追跡カーネルの数値微分
 
 ### CALC6D
 
-未対応。SOL (BZ≠0 または BOUND≠0) を含む CALC6D と RADCOD つきの CALC は `SADError` で拒否する (黙って SOL を無視して結合 0 の値を出さないため)。
+**v2.1.0 で対応した (両モード。pysad の不足を gs に合わせた: gate なし)**。SOL (BZ≠0 または BOUND≠0) を含む CALC6D と RADCOD つきの CALC は、`_check_sol_optics` が領域を annotate して通し、`calc6d._turn`・`touschek._tturne_intra` が領域内の要素 (`_solmap`) を `solemit.emit` で通す (`emit_extra` と同じ)。K64 は `qtwiss` の 4D が領域を `qsol` (`tsole1(.. enarad=.false.)`)、CALC6D が `qtwissfrac` の `tsole1(…, .true., .true.)`、INTRA の `tturne` が領域内の要素を `tsole1` で通す。確認 (gs、SOL 領域のあるリング、3 GeV、BZ = 2 T、回転四極、QFE の DX・DY): CALC 4D 2.73475252978800・1.87531224259842 (pysad k64 2.73475252978794)、CALC6D 2.73495437251036・1.87554377922481・NZ −.01173531080122 (2.73495437251039 など。1e-9、NZ は絶対 1e-9)、RADCOD つき CALC6D 2.73497629185364 (1e-10)、RADCOD の CALC6D のあとの 4D の CALC 2.73465818826401 (pysad 2.73465818826743。CELL CALC6D のあと `DP0` を先頭の `DDP` にする)、β (1・30・70 番) も 1e-9。INTRA + SOL の Emittances は {2.706114556595e-7、2.245979910482e-8、2.778701736555e-5}。未確認: TouschekLifetime の値 (gs が NaN)、BOUND=0 の SOL (BZ≠0) の CALC (NotImplementedError)、RADTAPER + SOL、WSPAC・INTRA + SOL の併用の値。例 `example/v2_next/B1_sol_calc6d_intra.sad`。
 
 ### 幾何 (`sgeo.py`、K64 の `tsgeo.f`)
 
@@ -161,7 +161,7 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 6. QUAD の FRMD の向き (逆向きの LINE の `direlc<0` での入れ替え) は写していない。
 7. SOL の DX DY DZ CHI1..3 と F1 は、k64 モードでは追跡 (numba・Python)・Twiss・Emittance[] で未対応 (tsconv の CHI を使う `tsrote`)。幾何だけ対応。v2 モードは §7a。
 8. 領域内の L=0 / K1=0 の四極の幾何は k64 モードでは未対応 (v2 モードは対応)。
-9. k64 モードでは領域内の MULT・BEND・CAVI の `tmulte1` と、`tsgeo` の領域幾何、CALC6D、Touschek は未翻訳。`tdgeo` の領域内の変数は v2 モードで中心差分に対応 (§7a)。CALC6D・Touschek は両モードで未対応。
+9. k64 モードでは領域内の MULT・BEND・CAVI の `tmulte1` と、`tsgeo` の領域幾何、CALC6D、Touschek は未翻訳。`tdgeo` の領域内の変数は v2 モードで中心差分に対応 (§7a)。CALC6D・Touschek (INTRA) は v2.1.0 で両モードとも対応 (上の CALC6D の節)。
 10. 上の一致の数値は、GEO=1 を付けた SOL (GEO 無しは S 座標が途切れる K64 の癖があり、pysad は再現しない。§5)、エネルギー 1.7〜3 GeV (追跡は 2.5 GeV)、BZ は 0.3〜5 T の範囲だけで取った。これ以外 (低エネルギー、BZ が極端に大きい場合) は未確認。
 
 ## 7a. v2 モードの SOL 領域 (k64 モードは上のとおり)
@@ -178,7 +178,7 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 - 使える計算: 追跡 (高速追跡)、CALC (INS/CELL) の Twiss と閉軌道 (`solmap`: 追跡の写像の数値微分)、Emittance[]・EMIT (`solemit`)。
 - 根拠の数値: ローレンツ力の積分と力学的運動量で、BEND・K0 だけの MULT 1e-14、K1 つき 1e-10、六極・八極・スキューは bz = 0 の MULT と同じ分割誤差 (1e-8、EPS で減る)。放射損失 (2/3) r_e γ³ (K0/L)² L が bz = 0・0.4・2 で 2e-4。bz → 0 の領域内の要素 = 領域の外の要素 (リングの Twiss・Emittance[] が 2e-7)。CALC の軌道 = 追跡 (1e-12)。bz = 3 T のリングで減衰率の和 = 2U0/E (2e-3)。
 - 放射の注意 (K64 の癖。docs/21 B80): ソレノイド + 双極の中の放射 (tradk) は 1 刻みの前後の向きの変化 (弦) から損失を出すので、らせんの回転角 bz·L が大きいと小さく出る (相対 (bz·L)²/12。bz·L = 1 で 8%)。v2 の領域内の BEND・MULT は bz·L/ndiv ≤ 0.02 に刻む。
-- **使えない (明確なエラー)**: `V1 V20 V11 V02` (CAVI の高次の項)、ANGLE≠0 の MULT、RF つき MULT の Emittance[] のうち bz = 0 の領域と領域の外 (従来どおり未対応)、SEXT・COORD・BEAMBEAM など (`SolRegionError`)、CALC6D・RADCOD つきの CALC (SOL があると従来どおり SADError)、track6 の経路 (POL + RAD) での領域内の TRPT の加速 (RF は入るが基準運動量は変えない)。
+- **使えない (明確なエラー)**: `V1 V20 V11 V02` (CAVI の高次の項)、ANGLE≠0 の MULT、RF つき MULT の Emittance[] のうち bz = 0 の領域と領域の外 (従来どおり未対応)、SEXT・COORD・BEAMBEAM など (`SolRegionError`)、track6 の経路 (POL + RAD) での領域内の TRPT の加速 (v2.1.0 で領域の外の CAVI は実装したが領域内は SADError)。(CALC6D・RADCOD つきの CALC は v2.1.0 で対応。)
 - **未確認**: 領域内の MULT・CAVI の POL (Emittance[])、RF つき MULT の RAD、領域内の空洞の wake の横の蹴りを gs と比べること、加速 + RAD の組み合わせ。
 
 ### 領域内の空洞 (CAVI・RF つき MULT)
@@ -202,14 +202,25 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 - 使える: `TrackParticles` (高速追跡、POL + RAD のスピン追跡)、CALC (CELL・INS) の Twiss と軌道、Emittance[]・EMIT、幾何 (`LINE["GX"…]`)、幾何の fit、MEASURE。リング: CALC の閉軌道は領域の外で 0、中はソレノイドの系で。CALC のチューン = 追跡の 1 周の行列の固有値 (2e-7)、減衰率の和 = −2 U0/E (2e-3)、BZ → 0 なら SOL なしのリングと同じ (チューン 1e-6、ε 1e-5)。
 - 根拠: 実験室系の合成 (幾何からソレノイドの面と軸を置き、[直進 → 端の蹴り → ローレンツ力の積分 → 蹴り → 直進])。ドリフトだけの領域で 2e-12、四極・BEND・MULT つきは 1e-8。設計軌道の粒子は出口で 0 (1e-13)。BZ = 0 なら入口と出口の変換が打ち消して直進と同じ (1e-14)。30 MeV (v≠c の z の項)。
 - **領域の幾何 (tsgeo) と `tdgeo`**: 領域内の BEND・MULT・CAVI・K1=0 の四極も軌道を追う (追跡と同じカーネル。設計軌道の粒子が出口で 0 に戻る: 領域内に BEND + MULT で 1e-12、ほかの粒子はローレンツ力の積分と 1e-8)。fit の幾何の条件は、変数が領域の中にあると中心差分 (軌道の回転の変化が入る) で、GY・GZ が領域内の四極の K1・ドリフトの L で収束し目標に 1e-8。
-- **使えない**: k64 モード。CALC6D・RADCOD つきの CALC (SOL があると従来どおり SADError)。追跡を領域の途中から始める・途中で終える (`TrackParticles` の区間の端が領域の中: `ソレノイドの終端がない` のエラー。従来どおり)。領域より上流の幾何に軸まわりの回転 (GCHI3≠0) があるラティスで、追跡を先頭以外から始めた場合 (区間ごとに幾何を作るので CHI3 が入らない)。領域内の APERT のスピン追跡 (NotImplementedError)。
+- **使えない**: k64 モード (CALC6D・RADCOD つきの CALC は v2.1.0 で k64 も対応)。追跡を領域の途中から始める・途中で終える (`TrackParticles` の区間の端が領域の中: `ソレノイドの終端がない` のエラー。従来どおり)。領域より上流の幾何に軸まわりの回転 (GCHI3≠0) があるラティスで、追跡を先頭以外から始めた場合 (区間ごとに幾何を作るので CHI3 が入らない)。領域内の APERT のスピン追跡 (NotImplementedError)。領域内の四極の DX・DY のある POL の追跡 (track6) は NotImplementedError。領域内の光子は記録しない (乱数だけ K64 と同じに引く)。
 - **未確認**: ソレノイドの軸が設計軌道と大きく (10 mrad 以上) ずれる場合、領域内の SOL (BOUND=0) にずれ・回転を書いた場合 (K64 は使わない。pysad も無視)、GEO のない領域に手で書いた CHI の符号の約束 (ソースの式どおりだが、gs と比べていない)。gs との数値比較は行っていない。
 
 ### スピン追跡と Emittance[] の POL
 
 - スピン追跡 (`POL; RAD;`): 領域内の BEND・MULT・CAVI・SOL (ずれ・回転・F1 つき) で通る。写像は高速追跡のカーネル、放射とスピンの歳差は track6 の tradk (Python)。Thomas-BMT の積分と、DRIFT 5e-7、BEND 3e-6、BEND + bz 1e-5、QUAD + bz 3e-6、MULT (K0+K1) + bz 5e-5 (1 GeV、0.4 m)。B81〜B83 (bsi、領域内の四極の bsi と放射の基準、刻みの角) は docs/43 §8a。K64 の領域内の四極 (RAD) は、軸上の粒子のスピンの回転が (1+a) bz L の半分、軸外の放射損失が 2.2 倍になる誤りがあり、v2 は直した (k64 モードはそのまま)。
-- **Emittance[]・EMIT の POL の量は、領域の中だけ K64 の式のまま**。軸上のソレノイドでは追跡と 2e-5 で合うが、ずれて傾いたソレノイドではスピンチューンで 2.3e-4、n0 の向きで 4e-3 rad 違う (未着手)。
+- **Emittance[]・EMIT の POL の量 (v2.1.0 で v2 は修正。B130)**: k64 は領域の中が K64 の式のまま: 軸上のソレノイドでは追跡と 2e-5 で合うが、ずれて傾いたソレノイドではスピンチューンで 1.5e-4〜1.1e-3、n0 の向きで 2.5e-3〜1.5e-2 rad 違う (縦磁場の積分を z 軸の向きに足す)。**v2 は B⊥ と B∥ を運動量の向きに分けて足す**: SpinTune の追跡との差 1e-13〜5e-7、n0 の差 0〜1e-5 rad (傾き 3・10 mrad、ずれ 2・4 mm、BZ = 2 T・0.8 m の領域。小さな FODO・ASTRID2・MPW 入り・PF・大きなリング A)。回転した縦磁場の歳差の閉じた式と追跡が 5e-7 (傾き 1〜50 mrad・1〜3 T・0.3〜1 GeV)。領域内の DRIFT・QUAD の放射・スピンの刻みは bz·L/n ≤ 0.02 (DRIFT の刻みは B1 で追跡にも入れた: bz = 4.5 で 1.5e-3、9 で 8.7e-3 ずれていたスピンが 2.3e-7・8.9e-7、らせんの放射損失が 1e-4)。使えない・未確認: bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (放射の分割が EPS 由来)、領域内の QUAD の端の ψ は追跡と同じ模型 (hard edge の Bs なし。軌道が数 mm の範囲で確認、cm のずれは未確認)、領域内の CAVI の POL (Emittance[]) は VOLT=0 だけ確認、領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y')。docs/43 の「傾いてずれたソレノイドの POL の量」。
 
+### v2.1.0 の追加 (領域内の四極のずれ・bz ≥ 3・領域内の CAVI のスピン)
+
+試験 `test_v2_B1_sol.py` (45 件)・`test_v2_B3_geofit.py`・`test_v2_E_spinsol.py`。記録 `history/v2next_B1.md`・`B3.md`・`E.md`。
+
+- **領域内の四極の `DX`・`DY`** (B3。両モード。gs と同じ): K64 の `tquad` は `tsolrot` で座標を (dx, dy) ずらす。ソレノイドの一様磁場のベクトルポテンシャルのゲージが変わるので正準運動量もずれる: x → x − dx、y → y − dy で px → px + (bz/2)dy、py → py − (bz/2)dx (出口は逆)。追跡のカーネル (`k_sol_quad`)・`solemit`・`sgeo` に入れた。gs と `LINE["GX"…]` が全桁一致 (領域内の DX・DY・ROTATE つきの 2 台)。**幾何の fit** (QF の DX、QD の DY で M2 の GY = 0.0008、GZ = −0.0035): gs と v2 (解析微分 `match6d.sol_dcod`: 要素の写像 c_out = F(c − t) + t、t = (DX, −(bz/2)DY, DY, (bz/2)DX) より d c_out/d DX = (I − J) ∂t/∂DX) は 2 回の Newton で収束し、QF DX = 2.78848432670e-3 (gs) / 2.78848432669e-3 (v2)、QD DY = 2.66798056318e-3 (両方)。解析微分は幾何の有限差分と 2e-3。K64 の CHI3 の微分の式は領域の終端で GCHI3 が 0 に戻される (tsgeo の `tfderotgeo`) ので幾何の変化と合わない (9e-4 を返すが幾何は動かない): CHI3 を使う fit は K64 でも収束しない (B124)。使える範囲: 領域内の四極 (K1≠0・F1=FRINGE=0)。SEXT・OCT・MULT は `_QDX_TYPES` に入れたが領域内のずれは未確認。四極の F1・FRINGE と領域内の BEND・MULT のずれは未対応。k64 モードは SOL 自体のずれ (trots) が未対応でずれた SOL の fit は使えない。例 `example/v2_next/B3_geofit_quad_dx.sad`。
+- **bz ≥ 3 1/m** (B1): 領域内の DRIFT・BEND・MULT (K0・K1・K2) の写像 (力学的運動量) がローレンツ力の積分と bz = 6・10・20 1/m で 1.2e-8 以内 (多極の分割 EPS の分)。放射損失 −(2/3) r_e γ³ (K0/L)² L が bz = 6・20 で 4e-5。**DRIFT の刻みを足した** (v2): 領域内の BEND・MULT は bz·al/ndiv ≤ 0.02 に刻んでいたが DRIFT は 1 刻みだったため、軸を外れた粒子 (δ = 1e-3・−5e-3、0.4 m) のスピンが Thomas-BMT の積分と bz = 4.5 (0.1 GeV) で 1.5e-3、9 で 8.7e-3 (0.3 GeV の bz = 3 で 1.3e-4) ずれ、放射も bz = 9 で 1.7 倍外れていた (`track6n_ext.k_sol_drift`・`track6._sol_drift_v2`。ndiv = 1 + int(\|bz·al\|/0.02)。結果 2.3e-7・8.9e-7・4.5e-8、放射 1e-4)。k64 は 1 刻み (K64 のまま)。QUAD (K1 = 0.3、0.4 m) のスピンは bz = 4.5・9 で 2.0e-5・9.0e-5、MULT (K0 + K1) は 1.3e-4〜1.6e-4、BEND は 6e-7・9e-7 (放射の分割が EPS 由来で bz·al/ndiv ≤ 0.2 のため。v2 の既存の試験値を変えないため足していない)。
+- **POL の Emittance[] (MULT・CAVI)**: 平面リング (24 台の偏向磁石、0.5 GeV: aγ = 1.135、0.1 GeV: aγ = 0.227) の SOL 領域 (DRIFT・MULT (K1 = 0・0.05)・VOLT=0 の CAVI) の SpinTune が cos(μ/2) = cos(π ν0) cos(φ/2)、φ = (1+a) bz L と 1e-9 以内で一致 (bz = 0.6・4.5・9 1/m)。加速する CAVI の POL (Emittance[]) は未確認 (一周でエネルギーが元に戻る解析式は縦の運動を含む)。
+- **加速 + RAD**: 領域内の RF つき MULT (TRPT、VOLT = 0〜100 MV、基準運動量 +0〜3.1%) の放射損失が −(2/3) r_e mc² (bz γ0² θ0)² L/E2 (θ0 = 1e-2、3 GeV、L = 0.5 m、bz = 3・9 1/m) と 1e-3 以内で一致 (加速しても損失は変わらない: 横運動量はソレノイドの縦磁場で変わらず曲率 κ ∝ p⊥/p² なので γ⁴κ² は一定)。
+- **領域内の CAVI のスピン (B131)**: v2 は CAVI も放射・スピンの刻みに通す (K64 の `tsol` は CAVI を `krad = .false.` で呼ぶのでスピンが歳差しない。Thomas-BMT と 1e-9 台)。k64 は K64 のまま。
+- **領域内の四極 (K1<0 の −90°、ROTATE) のスピンの座標系** (E。pysad の不具合。両モード): 回していなかったのを直した (track6 の `_tquad_sol`・`solemit._tquade`。K64 の `tsolrote` は `srot = rr·srot`)。k64 の Emittance[] の srot が gs と全桁一致 (BZ = 1 T、K1<0・ROTATE つきの四極)。
+- **POL + TRPT の加速** (track6): SOL 領域の外の CAVI は v2 で実装。領域内は SADError (docs/43)。
 ## 8. 関連文書
 
 - `docs/29_sol_optics.md`: Twiss・Emittance[]・幾何の検証の詳細。

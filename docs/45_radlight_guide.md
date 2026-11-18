@@ -1,6 +1,6 @@
 # 45. RADLIGHT と放射場 (RadiationField・RadiationSpectrum) の解説
 
-最終更新: 2026-11-17
+最終更新: 2026-11-18 (v2.1.0 の後)
 
 粒子の軌道を記録して、観測点での放射場とスペクトルを計算する一連の機能 (RADLIGHT、`RadiationField`、`RadiationSpectrum`) と、関連する PHOTONS (光子のリスト) の解説。初めて読む人向けに、使い方、K64 の癖、gs との一致、限界をまとめる。
 K64 のソースは `tlinit.f` (`tlinit`、`tlstore`、`tlresult`、`tlcalc`、`tlspect`)。短い記録は `docs/36_spin_csr.md` の RADLIGHT の節、gs で RadiationField が落ちる件は `docs/21_sad_bug_report.md` B49。
@@ -18,8 +18,8 @@ K64 のソースは `tlinit.f` (`tlinit`、`tlstore`、`tlresult`、`tlcalc`、`
 | RADLIGHT フラグ、TrackParticles の戻り `{結果, 軌道}` | 対応。k64 モードは gs と差 0 (K64 の癖: 横方向なし・BEND の中なし)。v2 モードは 3 次元の軌道で BEND の中も記録 (§3a) | `ffscmd._RadLight`、`FFS.track_particles` 付近 |
 | `RadiationField` | 対応 (gs がこのビルドで落ちるので gs 照合なし) | `radfield.radiation_field` |
 | `RadiationSpectrum` | 対応 (gs と全桁一致。NPARA の fork 並列なし、逐次) | `radfield.radiation_spectrum` |
-| PHOTONS と `PhotonList` | **BEAMBEAM の光子だけ** 対応 | `beambeam.py`、`ffscmd` |
-| BEND・四極など他の要素の光子 | 未対応 (BEND・曲げのある MULT を含むと SADError) | |
+| PHOTONS と `PhotonList` | BEAMBEAM の光子に加え、v2.1.0 で **BEND・QUAD・MULT・SEXT・OCT・磁場つきドリフト・BEAMBEAM + BEND の光子** に対応 (§6) | `beambeam.py`、`track6.py`、`ffscmd` |
+| SOL 領域内の要素・COORD・TCAVI・MAP のあるラティスの光子 | 未対応 (SOL 領域内は記録しない。乱数だけ引く) | |
 
 ## 2. RADLIGHT フラグと TrackParticles の戻り
 
@@ -92,7 +92,7 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 2. **横方向の座標が軌道に入らない**。`tlinit` が `geo0` の軸 1・2 を設定しない (common ブロックの初期値 0 のまま)。軌道に現れるのは進行方向 (geo の第 3 軸) に沿った点だけ (gs で確認)。試験の台本では 2 行目 (軌道の x) に 0.3, 0.8, 1.3 … と進行方向の距離が並び、3・4 行目 (y, z) の表はすべて 0 だった。進行方向は局所の第 3 軸で、大域では x に出る (2026-11-16 確認: `geo[0]=[[0,0,1,0],[-1,0,0,0],[0,-1,0,0]]` で局所 z 軸の大域成分は (1,0,0)。進行方向の距離は軌道の 2 行目に出る)。geo の向きが別なら出る行も変わる。
 3. 位置は straight (`dphi=0`) の積み上げで、BEND で向きが変わらない。
 4. 時刻は `t = gt − z/(v0·(1−dv+dvfs))`。点は粒子ごとに保持され、損失した粒子の扱いは未確認 (損失のない試験だけ)。
-5. 同じ位置の点が 2 つ並ぶことがある (区間の始めの点と、直前の要素の後の点。試験の S2 で 7.8 が 2 回出る)。**複数区間 (複数周) の軌道では区間の始めの点が重なり (t が同じ点が 2 つ)、pysad の `RadiationField` は `x must be strictly increasing sequence` で失敗する** (未修正の限界)。gs は `RadiationField` が SIGSEGV するので比較できない。
+5. 同じ位置の点が 2 つ並ぶことがある (区間の始めの点と、直前の要素の後の点。試験の S2 で 7.8 が 2 回出る)。**複数区間 (複数周) の軌道では区間の始めの点が重なり (t が同じ点が 2 つ)、以前の pysad の `RadiationField` は `x must be strictly increasing sequence` で失敗した** (v2.1.0 で直した: 両モード。完全に同じ点を除く。時刻が戻る・同じ時刻で位置が違う点は SADError)。gs は `RadiationField` が SIGSEGV するので比較できない。
 6. `RadiationField` は **gs (この K64 ビルド) で SIGSEGV する** (どの引数でも。`tlcalc` の `loc_sad(ktfaddr(ka)-3,dl)` が不正な番地を指すとみられる。B49)。そのため `RadiationField` の gs 参照は取れていない。
 
 ## 3a. v2 モードの軌道 (B65)
@@ -103,7 +103,7 @@ K64 の §3 の癖 1〜3 (BEND の中を記録しない、横方向の座標が�
 - **BEND は円弧で進め、中も記録する**: tlstore の dphi≠0 の式で進め、1/γ の角度あたり `RADLIGHTDIV` 点 (既定 16) を記録する。`RADLIGHTDIV = n;` で変える。高いエネルギーでは点数が γ に比例して増える (3 GeV・0.26 rad の BEND で 2.5 万点)。曲げのある MULT は出口だけ、CAVI も記録する。
 - 中の点は、状態の写しを刻んだ BEND で進めて作る (本当の追跡は要素全体を 1 回)。DX・DY・F1・FRINGE のある BEND は中の点だけ 1e-6 m 程度ずれる。
 - **根拠**: 偏向磁石の放射場のピーク E = e β²/(4πε0 ρ R (1−β)²) (Liénard-Wiechert) と `RadiationField` が 0.25% (RADLIGHTDIV = 16)、5e-5 (64)。条件は 10.2 MeV (γ = 20) の電子。**gs との比較は無い** (gs は `RadiationField` で落ち、k64 モードの軌道は別物)。
-- **使えない・未確認**: SOL 領域を含む区間 (SADError。両モード)、COORD による幾何の変化、曲げのある MULT の中の点 (出口だけ)。複数周の軌道で区間の始めの点が重なり `RadiationField` が失敗する限界 (§3 の 5) が v2 でも残るかは再確認していない (要確認)。高エネルギー・多数粒子の規模は未確認。
+- **使えない・未確認**: SOL 領域を含む区間 (SADError。両モード)、COORD による幾何の変化、曲げのある MULT の中の点 (出口だけ)。複数周の軌道の `RadiationField` は v2.1.0 で動く (重なった点を除く。k64・v2。`TrackParticles[d, 9, 1, 2]` の軌道 22 点・32814 点で場を返す)。高エネルギー・多数粒子の規模は未確認。
 
 ## 4. RadiationField と RadiationSpectrum (`pysad/radfield.py`)
 
@@ -129,7 +129,18 @@ K64 の §3 の癖 1〜3 (BEND の中を記録しない、横方向の座標が�
 | `RadiationSpectrum` | `test_radfield.py::test_radiation_spectrum_matches_gs` (参照は gs の出力) | 60 点のガウス × cos、λ 1〜5 mm | 相対 2e-6 以内の試験 (gs と全桁一致) |
 | `RadiationField` | `test_radfield.py::test_radiation_field_of_uniform_motion` | 等速直線運動 (β=0.8)、観測点 {0.3, 0.1, 2.0} | gs 参照なし。Liénard-Wiechert の速度場と内部の点で相対 6e-3 (スプライン微分の離散化誤差) |
 
-注意: `RadiationField` は **gs と比べていない**。上の 6e-3 は物理の解析解との比較で、K64 の式 (微分の取り方) の翻訳が gs と同じ値を返すことは未確認。放射光 (BEND 内の円運動) の場、ピークの位置・強度なども未確認。
+注意: `RadiationField` は **gs と比べていない** (gs は SIGSEGV)。上の 6e-3 は物理の解析解との比較。**v2.1.0 で Liénard-Wiechert の厳密な数値計算と比べた** (C。独立な計算 `pysad/tests/_c3_indep.py`: 円弧・直線の軌道 (解析的な位置・速度・加速度) で、観測時刻 τ ごとに遅延時間 t' を `brentq` で解き、E = q/(4πε0)[(n−β)/(γ²(1−n·β)³R²) + n×((n−β)×β̇)/(c(1−n·β)³R)] を評価)。pysad の `RadiationField` は K64 の Feynman-Heaviside の式 (軌道の点列と自然スプラインの微分)。試験 `test_v2_C3_radfield.py` (8 件)、例 `example/v2_next/C3_radfield_bend.sad`:
+
+| 確かめたこと | 条件 | 結果 |
+|---|---|---|
+| 振幅・位相 (τ ごとの場の一致) | 電子 γ = 20、ρ = 1 m、弧 ±0.5 rad の接線 50 m。点 2001・4001・8001 | 主成分 (水平) の最大の差 / ピーク: 6.7e-5 → 1.7e-5 → 4.2e-6 (2 次収束)。全成分の差を全体の最大値で規格化して 2e-5 以内 (8001 点) |
+| 振幅 (v2 の RADLIGHT の軌道) | 10.2 MeV、ρ = 1 m、BEND 0.4 rad、`RADLIGHTDIV` = 16・64、観測点 50 m | \|E\| の最大の差: 16 点で 2.6e-3、64 点で 1.6e-4 |
+| スペクトル | 同、観測点 500 m。`RadiationSpectrum` の \|c + is\|² → d²I/dωdΩ | Jackson の式 (e²/4πε0)/(3π²c)(ωρ/c)²γ⁻⁴K²₂/₃(ωρ/3cγ³) と ω = 0.1〜2.6 ωc で 1% 以内 (実測 0.3%)。ピークの位置も ωc = 3γ³c/2ρ と一致 |
+| 全エネルギー | 観測点を水平 ±0.5 rad の弧の接線方向に置き、垂直 ±0.3 rad (31 点)で ε0 c R² ∫\|E\|² dτ cosθ dθ | 偏向 1 rad あたり e²γ⁴β³/(6πε0ρ) (Larmor の式 × 弧の時間) と 1e-3 以内 (4e-4〜1e-3) |
+| 複数セグメント | 直線・円弧 (+)・直線・円弧 (−) のシケイン、区間の境目の点を重ねた 6001 点 | 厳密な LW (2 つのパルス) と最大値の 1.5e-4。重なった点が除かれる |
+| 1 GeV の RADLIGHT | BEND L = 1.2 m・ANGLE = 0.2618、8200 点、`RADLIGHTDIV` = 16、軸上のスペクトル、観測点 5 km (ω = 0.2〜5 ωc、λc = 2.56 nm) | Jackson の式と 4e-4 (ω によらず一定)。観測点が 50 m だと光源の大きさ ρ/γ に対し Fresnel 領域で 4.6% 小さい (物理) |
+
+使える範囲: 電子の円運動・直線の軌道 (RADLIGHT の v2 の軌道)、点の間隔が 1/γ の角度あたり 16 点以上 (振幅 3e-3)、64 点で 2e-4。観測点はスペクトルの λ で Fraunhofer の距離 (≫ (ρ/γ)²/λ)。使えない・注意: k64 モードの軌道は BEND の中を記録しないので放射場が意味を持たない。軌道の点に位置・時刻のずれがあると、パルスの時間幅 ρ/(2γ³c) (1 GeV で 1e-18 s、位置 3e-10 m) の精度が要る (v2 の RADLIGHT の位置・時刻は 1e-13 m だが、RAD が ON のため軌道が放射で変わる (1 GeV の 1 台の偏向磁石で横方向に 8e-8 m): 同じ軌道を別の計算に渡すときは放射の効果が同じかを確認する)。
 
 ## 6. PHOTONS と光子
 
@@ -137,20 +148,22 @@ K64 の §3 の癖 1〜3 (BEND の中を記録しない、横方向の座標が�
 
 - **RAD と FLUC が必要**。なければ `Track::photons:  PHTONS requires RAD & FULC in TrackParticles` (gs と同じ文面。綴りも同じ) で止まる。
 - 光子の行は位置・方向・偏光・粒子番号・要素番号・エネルギー。
-- **BEAMBEAM の光子 (ビームストラールング) だけ** 対応。`docs/24_beambeam.md` の試験で 7 個の光子の位置・方向・偏光・粒子番号・要素番号が一致、エネルギーは相対 3e-9。
-- 他の要素 (四極・BEND・MULT など) が放射する光子 (`tphrec`) は含まれず、その乱数 (光子ごとに `tgauss` 2 回) も引かない。RAD FLUC で他の要素が光子を出すと、その後の乱数列が gs とずれる (3 周の台本で gs 43 個、pysad 12 個の例)。
-  BEND と ANGLE≠0 の MULT を含む並びは SADError (`PHOTONS: BEND の光子 (tbend の放射) は未対応`)。
+- **対応する要素 (v2.1.0。両モード)**: BEND (K1=0: `tbend` の刻みごと、K1≠0: `tbendi` の刻みごと + 最後。ROTATE・DX・DY・DROTATE)、QUAD (`tquad`、`tsolqur` の刻み)、MULT (K0・K1・K2・DX・DY・ROTATE)、SEXT・OCT (DX・ROTATE)、磁場つきドリフト、BEAMBEAM (ビームストラールング)、BEAMBEAM + BEND (TRPT つきでも)。`tdusrnpl` (`tdusrn` と同じ乱数の引き方で光子ごとのエネルギーと位置も返す)・`radangle1` (放射角と偏光。`tgauss` を 2 回)・`tphrec` (放射点 xr = x − r(px − dpx r/2)al、`tphchge`・`tforbitgeo`・`tfgeofrac`) の直訳で、K64 と同じ乱数の順序・`pcvt%fr0` の進め方 (tbend.f:367、tbendi.f:141,178、tquad.f:71,108、tsolqu.f:453)。PhotonList の行 = [E (eV)、gx gy gz、ux uy uz、xi1 xi2 xi3、粒子番号、要素番号]。BEND・QUAD・MULT・SEXT・OCT があるラティスは Python の追跡 (`track6`) になり遅い (24 セルで 1 粒子 1 周 1 ms 程度)。
+- **gs との照合 (k64 モード)**: 3 GeV、2 セル (K1=−0.05 の BEND に DX=1 mm・DY=−0.5 mm・DROTATE=2 mrad、ROTATE=15 度・DX・DY・DROTATE の BEND、普通の BEND、四極)、4 粒子、`SeedRandom[7]` で光子 358 個 (BEND 6 個で 62・57・67・61・40・70 と QUAD で 1) が、光子数・位置 (GX GY GZ 全桁)・方向余弦 (10 桁)・偏光 (10 桁)・粒子番号・要素番号まで一致 (`example/v2_next/B3_photons_bend.sad`)。MULT・QUAD・BEND の 325 個 (K0・K1・K2・DX・DY・ROTATE つきの MULT、DX・ROTATE つきの SEXT・OCT。`D1_photons_mult.sad`) が全列一致 (E の最大 2.7e-14)。1.7 GeV・TRPT の BEAMBEAM + BEND + QUAD の 71 個 (BEAMBEAM 7、BEND 64) と追跡後の乱数の状態・座標の和まで一致 (BEAMBEAM の行の E は 2e-9。`D1_photons_bb_bend.sad`)。**E 列は K64 が γ でなく gammab = p/(mc) = βγ を掛ける** (相対 1/(2γ²)、3 GeV で 1.45e-8。B132) ので、k64 は p0、v2 は γ (h0) を掛ける。
+- **偏光の xi1 (K64 の誤り。B123)**: `tphrec` の `c1 = (cost·ppx1 + sint·ppy1)/pp` は、すでに規格化した `ppx1 = ppx/pp`・`ppy1 = ppy/pp` をさらに pp (≈ 曲げ角、数 mrad) で割るので、K64 の xi1 は ±1 を超え 1e3〜1e6 (gs の PhotonList の 8 列目が −3735.37、−1.0015e6 など)。k64 は gs と同じ (全列一致)、**v2 は pp で割らない** (|xi1|、|xi3| ≤ 1、xi1² + xi2² + xi3² ≈ 1)。
+- **解析式との照合 (v2)**: 24 セル FODO (3 GeV、ρ = 4.58 m、100 粒子 1 回通過、光子 58 221 個): 光子数 (5/(2√3)) α γ θ × 24 磁石 × 100 粒子 = 58 280 に対し −0.10% (Poisson の 1σ = 0.41%)、⟨u⟩/u_c = 8/(15√3) = 0.3079 に対し 0.3059 ± 0.0023 (u_c = (3/2) ħcγ³/ρ = 13 067 eV)、⟨u²⟩/u_c² = 11/27 = 0.4074 に対し 0.3986、スペクトル (3/(5π)) ∫_y^∞ K_{5/3} の KS 検定 (1% 点 1.63/√N) を通る、位置は円弧からの距離 2 mm 未満、方向は接線から rms 0.3〜3 /γ (u > 0.5 u_c)。SEXT (K2 = 40、DX = 1 cm: θ = ½K2 DX² = 2e-3)・OCT (K3 = 1.2e4: θ = K3 DX³/6)・MULT (K0 = 0.02) の光子数が 4σ 以内、⟨u⟩ が統計の範囲 (6000 粒子)。
+- **使えない・未確認**: SOL 領域内の要素・磁場なしのドリフトの光子は記録しない (乱数だけ K64 と同じに引く。位置の情報 `tsetpcvt` を領域内の要素に足し、領域の座標系の `geo_frac` の使い方を確かめる必要)。COORD・TCAVI・MAP のあるラティスは従来の高速追跡で、BEND があっても光子を記録しない。POL の追跡との併用は未確認。QUAD の光子の位置は gs と未照合 (BEND は全桁)。強い六極・八極で不安定になる条件。track6 の `_ndivrad` が TRPT の 10 倍を見ていなかったのを直した (POL・RADPOL・光子の追跡の TRPT の結果が gs に近づく)。
 - RADLIGHT の軌道と PhotonList は独立の機能で、RADLIGHT の軌道は光子の位置とは無関係 (放射場 `RadiationField` は軌道そのものから場を作る)。
 
 ## 7. 限界・未確認
 
-- **RadiationField の gs 参照がない** (gs は SIGSEGV で落ちる。B49。2026-11-16 にも引数を変えて再確認できず)。等速運動の解析解との比較だけ。K64 の式との照合は読みによるだけで、数値の一致は未確認。
-- **k64 モードでは BEND の中を記録しない**ので、そのままの BEND では放射場の主要な部分 (偏向の円弧) が入らない (K64 の仕様どおり。v2 モードは §3a)。Oide の例の流れ (B を ANGLE=0、K0=0.1) は 1 周の軌道なら pysad で通る (§2)。複数区間の軌道では `RadiationField` が失敗する (§3 の 5)。gs は `RadiationField` で落ちるため通しの照合は無い。
+- **RadiationField の gs 参照がない** (gs は SIGSEGV で落ちる。B49。引数を変えても再確認できず)。等速運動の解析解と、v2.1.0 の Liénard-Wiechert の厳密な数値 (§5) との比較。K64 の式との照合は読みによる。
+- **k64 モードでは BEND の中を記録しない**ので、そのままの BEND では放射場の主要な部分 (偏向の円弧) が入らない (K64 の仕様どおり。v2 モードは §3a)。Oide の例の流れ (B を ANGLE=0、K0=0.1) は 1 周の軌道なら pysad で通る (§2)。複数区間・複数周の軌道の `RadiationField` は v2.1.0 で動く (§3 の 5)。gs は `RadiationField` で落ちるため通しの照合は無い。
 - k64 モードでは横方向の座標が軌道に入らない (K64 の癖)。粒子の横位置のずれ (x、y) は軌道の x・y に反映されない (v2 モードは §3a)。
 - 損失した粒子の記録、ずれのある要素、RF 加速 (TRPT) 中の軌道の記録は未確認。試験は損失なしの条件だけ。
 - `RadiationSpectrum` の NPARA の fork 並列は未実装 (逐次)。
 - 試験の条件はエネルギー 1 GeV (RADLIGHT)、観測点は 1 点のみ。他のエネルギー、近接場・遠方場の使い分けは未確認。
-- PHOTONS は BEAMBEAM の光子だけ。BEND などの光子の出力と乱数列は未対応。
+- PHOTONS の記録しない範囲は §6。`RadiationField` は Liénard-Wiechert の厳密な数値と合う (§5)。gs の `RadiationField` は SIGSEGV で、ほかの引数の渡し方でも落ちる (B49。`C3_radfield_bend.gs.txt`)。
 
 ## 8. 関連文書
 

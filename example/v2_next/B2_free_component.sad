@@ -1,0 +1,34 @@
+! v2next B2 項目 1: 成分ごとの FREE (`FREE QF.1 K1;`・`FREE B.3 K1;`)。K64 の tffsfreefix の comp 分岐。
+! 条件: 3 GeV、周長 18.4 m の FODO (QF・QD 各 4 台、BEND B 8 台 L=0.5 ANGLE=0.1)。実機の大きなリングでは確かめていない。
+! 規則 (gs で確認): 既定のキー (QUAD の K1) の成分の変数は要素全体の値 (成分は先頭の成分に結合)。先頭 (QF.1) は要素全体と同じで、結合先を Info で知らせる。
+!   先頭でない成分 (QF.3) の変数は値を持たず効かない (pysad はこの変数を作らず Info だけ出す: 反復の行の最後の数 (変数の数) と VAR の行が 1 つ少ない)。
+!   既定でないキー (BEND の K1、ROTATE) の成分の変数は、その成分だけの値。NOKEEPEXP のとき GO は展開しない (NOCALEXP)。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+MARK ST = ();
+BEND B = (L=0.5 ANGLE=0.1);
+LINE CELL1 = (QF D2 B D1 QD D2 B D1);
+LINE RING = (ST 4*CELL1);
+FFS;
+USE RING; CELL; CALC;
+! (a) B.3 だけの K1 で NX を 1.30 にする (gs: 残差 2.1729E-03、4.8421E-08、3.2593E-17。NX = 8.168140905042474、NY = 4.915571256742764)
+FIT $$$ NX 1.30;
+FREE B.3 K1;
+GO;
+Print["A ",Twiss["NX","$$$"]," ",Twiss["NY","$$$"]];
+FIX *;
+! (b) 混ぜる: QF.1 (要素全体と同じ)、B.3・B.6 (成分)、QF.3 (効かない)。同じ要素の変数は、後から FREE したものが先に並ぶ
+FIT $$$ NX 1.30 NY 0.95;
+FREE QF.1 K1; FREE B.3 K1; FREE B.6 K1; FREE QF.3 K1; FREE B.3 K1; FREE B K1;
+VAR;
+GO;
+Print["B ",Twiss["NX","$$$"]," ",Twiss["NY","$$$"]," ",LINE["K1","QF.1"]," ",LINE["K1","QF.3"]," ",LINE["K1","B.3"]," ",LINE["K1","B.6"]," ",LINE["K1","B.4"]];
+! (c) FIX: FIX B.3 は成分だけ、FIX B (要素全体の語) は成分の変数に触れない、FIX B* は成分も消す
+FIX B.3 K1;
+VAR;
+FIX B K1;
+VAR;
+FIX B*;
+VAR;
+Exit;

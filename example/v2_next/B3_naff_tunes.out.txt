@@ -1,0 +1,16 @@
+12 セル FODO (3 GeV、45.6 m、六極つき)
+   CALC   nu_x = -0.4824886541   nu_y = 0.4769848437   (端数)
+   NAFF   差 3.16e-09   2.43e-10
+   wtunem 差 6.61e-05   -1.58e-04   (FFT の放物線補間: MAIN の TRACK、TunesByTracking)
+大きなリング A (kek-ls_v03_12.lat、3 GeV、603 m、3563 要素)
+   CALC   nu_x = -0.4199657615   nu_y = -0.3799558197   (端数)
+   NAFF   差 6.35e-10   -8.47e-10
+   wtunem 差 4.37e-05   7.21e-05   (FFT の放物線補間: MAIN の TRACK、TunesByTracking)
+PF リング (2.5 GeV、187 m)
+   CALC   nu_x = -0.4024695091   nu_y = 0.2789602116   (端数)
+   NAFF   差 1.43e-10   1.27e-10
+   wtunem 差 1.21e-04   2.25e-04   (FFT の放物線補間: MAIN の TRACK、TunesByTracking)
+ASTRID2 (0.58 GeV、45.7 m)
+   CALC   nu_x = 0.1799898807   nu_y = 0.1401775719   (端数)
+   NAFF   差 4.93e-11   5.22e-11
+   wtunem 差 -2.26e-04   1.13e-04   (FFT の放物線補間: MAIN の TRACK、TunesByTracking)

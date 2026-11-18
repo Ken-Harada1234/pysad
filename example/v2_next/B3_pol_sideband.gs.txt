@@ -1,0 +1,40 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 02:44:48 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next B3: シンクロトロン側帯 (スピンの位相変調) を入れた Polarization。
+! 12 セル FODO (偏向磁石 15 度 x 12 = 180 度、四極の縦ずれ +-3 mm、RF 調和数 64)、4.2 GeV、RF 12 MV (nu_s = 0.030、スピンチューンの端数 -0.236)。
+! K64 (gs) の Polarization = 1.27e-4 (spdepol の式が 3 桁以上大きい脱偏極率を出す)、偏極時間 23.06 s。
+! v2: 線形 (SLIM) の脱偏極率から P = 0.205、側帯の項を入れると P = 0.119 (偏極時間 23.08 s、脱偏極時間 3.4 s)。
+! (FLUC つきのスピン追跡の脱偏極率: 4.2 GeV・12 MV で (9.2 +- 2.3)e-8 /周。線形の式 2.3e-8、側帯の式 4.5e-8、線形の軌道 + 厳密なスピン回転の MC 5.0e-8。
+!  docs/history/v2next_B3.md §2)
+MOMENTUM = 4.2GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3=(L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD QFE = (L=0.3 K1=0.7 DY=3e-3) QDE = (L=0.3 K1=-0.6 DY=-3e-3);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (VOLT=12e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELL2 = (QFE D2 B D2 QD D1);
+LINE CELL3 = (QF D2 B D2 QDE D1);
+LINE RING = (ST 2*CELL1 CELL2 4*CELL1 CELL3 4*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING; CELL; CALC; RFSW; RAD; NOFLUC; POL;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.156995 $$$       f BX    #######  #   5.011637 $$$       f NX    #######  #   2.708309
+$$$       f AY    #######  #   1.391310 $$$       f BY    #######  #   2.628826 $$$       f NY    #######  #   1.869810
+$$$       f LENG  #######  #  45.600000
+ em = Emittance[];
+ Print["Polarization, PolarizationTime[s] = ", {Polarization, PolarizationTime}/.em];
+Polarization, PolarizationTime[s] = {.000126537680429558,23.059636257973718}
+ Exit;
+ FFS                  end:  CPU time =     0.014 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     T     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

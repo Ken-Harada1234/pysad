@@ -1,0 +1,5 @@
+ *****qcod---> Overflow & closed orbit not found            1
+???track6n_ext: SOL のずれ・回転 (trots)
+ *****qcod---> Overflow & closed orbit not found            1
+???track6n_ext: SOL のずれ・回転 (trots)
+G1 ={   .00312194423448,  -.00284642410964}    .00000000000000    .00000000000000

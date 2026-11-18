@@ -1,0 +1,47 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:03:09 Tuesday 11/17/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next A1 項目 7: RADTAPER・RADCOD の閉軌道が、追跡 (RAD) の 1 周で閉じるか。Emittance[] の閉軌道から始めた 1 周の動き (z は 0 から)。
+! K64 の tradke (Emittance[]) は ddpx = +0.5 dpx dg、tradkn (追跡) は ddpx = -0.5 dpx dg で符号が逆 (エネルギーを失うと同じ磁場で偏向が強くなるので追跡が正しい)。
+! v2: tradke の符号を反転し、RADTAPER の追跡の BEND の係数を tturne と同じ (3δ_l + δ_l+1)/4 にする。k64 モードは gs と同じ (閉じない)。
+! 条件: 3 GeV、周長 105.6 m の FODO 24 セル、RF 4 MV・500 MHz。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SD = (L=0.2 K2=0) SF = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "12.6";
+ USE RINGQ; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.506166 $$$       f BX    #######  #   6.426926 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #    .919277 $$$       f BY    #######  #   1.919589 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+ RFSW; RAD; RADCOD; NOFLUC;
+ e0 = Emittance[];
+ c0 = OrbitAtExit/.e0; c0[[5]] = 0;
+ r = TrackParticles[{1, Append[Table[{c0[[i]]},{i,1,6}],{1}]}, 1, 1, 1];
+ Print["no taper: closed orbit x, px at exit = ", c0[[1]], ", ", c0[[2]], "; one-turn change (x px y py z dp) = ", Flatten[Take[r[[2]],6]]-c0];
+no taper: closed orbit x, px at exit =  -7.88716E-5,  -4.94779E-5; one-turn change (x px y py z dp) = { -4.34924E-7, 1.857490E-9,
+  -1.3083E-19, 6.89678E-20, 2.375270E-6, 1.978796E-9}
+ RADTAPER;
+ e1 = Emittance[];
+ c0 = OrbitAtExit/.e1; c0[[5]] = 0;
+ r = TrackParticles[{1, Append[Table[{c0[[i]]},{i,1,6}],{1}]}, 1, 1, 1];
+ Print["RADTAPER: one-turn change (x px y py z dp) = ", Flatten[Take[r[[2]],6]]-c0];
+RADTAPER: one-turn change (x px y py z dp) = { 1.967412E-6, -1.15364E-8, -2.8466E-22, 3.47343E-22, -1.07723E-5, 1.085749E-8}
+ Exit;
+ FFS                  end:  CPU time =     0.015 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

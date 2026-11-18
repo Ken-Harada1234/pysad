@@ -1,0 +1,19 @@
+! v2next A2 項目 3: 結合のあるリング (45 度傾いた四極 4 台、積分強度 0.05) の RADINT の I4V。
+! 独立な確認 (試験 test_v2_A2_radint.py): (a) I4U + I4V = 結合のある 5x5 行列の η_x から求めた物理的な I4 (1e-5)、
+! (b) DU・DV・Je = 4-DU-DV が、自前の 6x6 行列と放射の 1 次の摂動論 (固有ベクトル) による各モードの減衰分配と 3e-3 以内。
+! 追跡 (RAD の 6 次元の一周写像の固有値) とは νs が νy から離れていて放射が弱いとき (1.5 GeV) 合う。条件: 3 GeV、RF 1.8 MV、24 セル FODO (周長 120 m)。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD  SQ = (L=0.2 K1=0.05 ROTATE=0.7853981633974483);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.8E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE CELLS = (QF D2 B D2 SQ QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 4*(CELLS 5*CELLQ));
+FFS;
+USE RINGQ; CELL; CALC; RFSW; RAD; NOFLUC;
+RADINT;
+Exit;

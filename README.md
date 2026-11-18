@@ -18,8 +18,8 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - SAD の仕様と癖の一覧は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、SADHelp との対応は [`docs/14_pysad_vs_sadhelp.md`](docs/14_pysad_vs_sadhelp.md)。
 - 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
   大きな項目の解説文書は [`docs/38_wake_guide.md`](docs/38_wake_guide.md) (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
-- 現状 (2026-11-17、v2.0.0): pytest 937 通過・4 skip (941 件収集。`PYSAD_SAD_PACKAGES` つき)、回帰 (`QUICK=1`) は 50 ベンチ FAIL 0。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: BEND の F1 FRINGE=3 の RAD 追跡、SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel))。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
-- **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B110)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
+- 現状 (2026-11-18、v2.1.0。PyPI は v2.0.0 まで公開): pytest 1345 通過・8 skip・失敗 0 (1353 件収集。`PYSAD_SAD_PACKAGES` つき。担当 E の 2026-11-18 の実行)、回帰 (`QUICK=1`) は 50 ベンチ FAIL 0。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`SynchroBetaEmittance` の大きなリングの不一致、`Polarization` の過小評価)。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
+- **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B134)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
 
 ## インストール (PyPI)
@@ -34,7 +34,7 @@ PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パ�
 
 Python 3.12 と numpy, scipy, numba, pytest (`py -3.12 -m pip install numpy scipy numba pytest`)。
 
-確認した Python の版 (v2.0.0、全試験): **3.12** と **3.10** は全通過 (937 通過・4 skip)。**3.14** は 935 通過・2 失敗 (3.14 に同梱の Tcl/Tk が 9.0 で、試験が 8.6 を期待していること、数値的に脆い 1 試験の閉軌道の収束の違い。詳細は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md) §3)。3.13 は未確認。
+確認した Python の版 (v2.0.0、全試験): **3.12** と **3.10** は全通過 (937 通過・4 skip)。**3.14** は 935 通過・2 失敗 (3.14 に同梱の Tcl/Tk が 9.0 で、試験が 8.6 を期待していること、数値的に脆い 1 試験の閉軌道の収束の違い)。v2.1.0 では 2 件とも直し、3.14 で GUI 系と D2 の試験 (計 115 件) が通ることを確かめた (全試験は 3.14 では走らせていない。詳細は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md) §3)。3.13 は未確認。
 
 ## 使い方
 
@@ -66,7 +66,7 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 ## 構成
 
 Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`、`README.md`、`LICENSE`、`CLAUDE.md`、`.gitignore` ([`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §9)。
-ベンチ・回帰スクリプト・出力は入れない (`.gitignore`)。以下の一覧は 2026-11-17 の作業ツリー。
+ベンチ・回帰スクリプト・出力は入れない (`.gitignore`)。以下の一覧は 2026-11-18 の作業ツリー。
 
 ### トップ
 
@@ -101,6 +101,7 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 | [`vecfn.py`](pysad/vecfn.py) | `Vector` / `ReleaseVector` |
 | [`miscfn.py`](pysad/miscfn.py) | 小さな組み込み関数と `Packages/optimize.n` の翻訳 |
 | [`specfn.py`](pysad/specfn.py) | 特殊関数・数学関数 |
+| [`specfn_cx.py`](pysad/specfn_cx.py) | 複素の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` (v2.1.0) |
 | [`fitroot.py`](pysad/fitroot.py) | `FindRoot`・`Fit`・`FitGaussian`・`FitEmit`・`NIntegrate` |
 | [`fileops.py`](pysad/fileops.py) | ファイル・ディレクトリ関数 (`Packages/FileSystem.n` の置き換え) |
 | [`pkgload.py`](pysad/pkgload.py) | SAD の `Packages/*.n` を SADScript のまま読み込む仕組み |
@@ -108,6 +109,7 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 | [`ffsextra.py`](pysad/ffsextra.py) | FFS の小さなコマンド (VARIABLES・ATTRIBUTE・MATRIX・SHOW など) |
 | [`maintrack.py`](pysad/maintrack.py) | MAIN レベルの `TRACK` コマンド |
 | [`radint.py`](pysad/radint.py) | `RADINT` (放射積分) |
+| [`nbcache.py`](pysad/nbcache.py) | numba のキャッシュの無効化 (`py -3.12 -m pysad.nbcache`。kernel を編集したら試験の前に走らせる。v2.1.0)。docs/12 §16.7 |
 | [`compat.py`](pysad/compat.py) | 互換モード (`v2` が既定、`PYSAD_COMPAT=k64` か `compat.set_mode('k64')` で K64 (gs) の動作)。docs/47 |
 | [`elements.py`](pysad/elements.py) | 要素の定義 |
 | [`constants.py`](pysad/constants.py) | 物理定数 |
@@ -140,7 +142,8 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 | [`wake.py`](pysad/wake.py)、[`wakeopt.py`](pysad/wakeopt.py) | ウェイク場 (追跡と光学) |
 | [`beambeam.py`](pysad/beambeam.py)、[`bbbrem.py`](pysad/bbbrem.py)、[`gausscoul.py`](pysad/gausscoul.py) | BEAMBEAM 要素、BBBrem1、GaussianCoulomb |
 | [`csr.py`](pysad/csr.py) | CSR (CSRTrack・CSRHaissin・CSRInit・CSRMatrix ほか) |
-| [`spin.py`](pysad/spin.py) | POL (スピンと偏極) |
+| [`spin.py`](pysad/spin.py) | POL (スピンと偏極。v2.1.0 でシンクロトロン側帯の項) |
+| [`naff.py`](pysad/naff.py) | NAFF 風のチューン抽出 (`naff`・`naff_real`・`tune_xp`・`tunes_from_coords`。v2.1.0)。docs/12 §16.7 |
 | [`radfield.py`](pysad/radfield.py) | `RadiationField`・`RadiationSpectrum` |
 | [`measure.py`](pysad/measure.py) | `tlum`・`tluma`、MEASURE・TRCOD・LOGMEASURE・MAIN の `TRACK TURNS=-1` (v2 モード)、TRCOD FIXCOD など |
 | [`coord.py`](pysad/coord.py) | COORD (座標変換) |
@@ -163,12 +166,13 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 
 ### `pysad/tests/` (試験)
 
-937 通過・4 skip (941 件収集、2026-11-17。`PYSAD_SAD_PACKAGES` つき)。参照は多くが SAD K64 (`gs`) の出力で、既存の試験は互換モード k64 で走る ([`conftest.py`](pysad/tests/conftest.py))。試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/scripts/`](pysad/tests/scripts/)、対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
+1345 通過・8 skip・失敗 0 (1353 件収集、2026-11-18。`PYSAD_SAD_PACKAGES` つき。v2.0.0 は 937 通過・4 skip)。参照は多くが SAD K64 (`gs`) の出力で、既存の試験は互換モード k64 で走る ([`conftest.py`](pysad/tests/conftest.py))。試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/scripts/`](pysad/tests/scripts/)、対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
 
 | ファイル | 試験の対象 |
 |---|---|
 | [`conftest.py`](pysad/tests/conftest.py) | 試験の共通設定 (互換モードの既定を `k64` にする。フィクスチャ `v2_mode`・`k64_mode`) |
 | `test_v2_A_*.py`、`test_v2_B_*.py`、`test_v2_C_*.py`、`test_v2_C2_*.py` | v2.0.0 の変更の試験 (29 ファイル 363 件: 放射・エミッタンス・スピン、特殊関数・スクリプト・FFS、追跡・集団効果・要素、残りの仕上げ)。v2 の動作は試験の中で `compat.set_mode('v2')` を明示する。一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) |
+| `test_v2_A1_next.py`、`test_v2_A2_*.py`、`test_v2_B1_*.py`、`test_v2_B2_*.py`、`test_v2_B3_*.py`、`test_v2_C3_*.py`、`test_v2_D1_emit.py`、`test_v2_D2_*.py`、`test_v2_E_*.py` | v2.1.0 の変更の試験 (25 ファイル 412 件: 放射・F1・CAVI・MASS/CHARGE、スピン角・Polarization・RADINT、Emittance の F1・WSPAC・SOL、FREE・複素の特殊関数・Parallelize、側帯・光子・NAFF、MEASURE・RadiationField・NPARA、NORFSW・光子・POL + 加速、MAIN の式・Micado・nbcache、傾いたソレノイドの POL・ステアリングの F1)。補助の独立な計算は `_a2_indep.py`・`_c3_indep.py`・`_e_spinkick.py`。遅い試験は `PYSAD_SLOW=1` |
 | [`test_pysad.py`](pysad/tests/test_pysad.py)、[`test_new_features.py`](pysad/tests/test_new_features.py) | 基本の数値検証、新機能 |
 | [`test_item4.py`](pysad/tests/test_item4.py)、[`test_small_items.py`](pysad/tests/test_small_items.py)、[`test_error_spreading.py`](pysad/tests/test_error_spreading.py) | SADScript のリスト関数・tsvd・小項目 A〜E・誤差の spreading |
 | [`test_evalfixes.py`](pysad/tests/test_evalfixes.py)、[`test_symbol_names.py`](pysad/tests/test_symbol_names.py)、[`test_symbolic.py`](pysad/tests/test_symbolic.py)、[`test_miscfn.py`](pysad/tests/test_miscfn.py) | gs に合わせた評価器の修正、シンボル名、記号微分 D、DownhillSimplex など |
@@ -215,6 +219,7 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 | [`example/astrid/`](example/astrid/) | ASTRID2 (0.58 GeV) のラティスでの例集 (チューンサーベイ、MPW、位相空間、ラティスの作り方)。索引は [`example/astrid/README.md`](example/astrid/README.md) |
 | [`example/v2_B/`](example/v2_B/README.md) | v2.0.0 の例 (特殊関数、文脈、共有メモリ・System・Fork、FFS の小項目)。既定の v2 モードで走る (pysad の出力のみ) |
 | [`example/v2_C/`](example/v2_C/README.md) | v2.0.0 の例 (UND の磁場、PHSROT、SOL 領域内、ずれたソレノイド、スピン追跡、RADTAPER、LOSSMAP、RADLIGHT、MEASURE・TRCOD、空間電荷 ほか)。既定の v2 モードで走る (pysad の出力のみ) |
+| [`example/v2_next/`](example/v2_next/) | v2.1.0 の例 (放射・F1・CAVI・陽子の追跡・PSPAC、スピン・MPW・RADINT、Emittance の F1・WSPAC・SOL、FREE・複素の特殊関数・Parallelize・文脈・Packages、偏極の側帯・光子・NAFF・幾何の fit、MEASURE・RadiationField・NPARA、NORFSW・光子・POL + 加速、MAIN の式・Micado・CSROYMatrix、ステアリングの F1・B108)。台本・gs の出力 (`.gs.txt`)・pysad の v2 (`.pysad.txt`)・k64 (`.pysad_k64.txt`)。A1・B1・B3・C3・D2 は README (`A1_README.md` ほか) |
 | [`example/tools/`](example/tools/) | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか) |
 
 pysad の試験が走らせる台本と、その gs・pysad の画面表示は [`pysad/tests/scripts/`](pysad/tests/scripts/) にあります (対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md))。`example/` とは別のスクリプトなので、それぞれのフォルダに、それぞれの結果を置いています。
@@ -269,7 +274,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | [`44_sol_guide.md`](docs/44_sol_guide.md) | 解説: ソレノイド (SOL 領域の仕組みと対応範囲) |
 | [`45_radlight_guide.md`](docs/45_radlight_guide.md) | 解説: RADLIGHT と放射場 (RadiationField・RadiationSpectrum) |
 | [`46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md) | オリジナル SAD (K64) に対する pysad の未対応・未確認の一覧 (未翻訳、一部未対応、未確認、既知の差、gs 側の問題、優先度) |
-| [`47_v2_changes.md`](docs/47_v2_changes.md) | pysad v2 の変更の一覧 (v1 = K64 に忠実な翻訳との違い。互換モード、v2 で結果が変わるもの、新しい機能、v1 の不具合の修正、要判断、試験の状態) |
+| [`47_v2_changes.md`](docs/47_v2_changes.md) | pysad v2 の変更の一覧 (v2.0.0 と v2.1.0。v1 = K64 に忠実な翻訳との違い。互換モード、v2 で結果が変わるもの、新しい機能、pysad の不具合の修正、要判断、試験の状態) |
 | [`sadhelp_summary.html`](docs/sadhelp_summary.html) | SADHelp 対応文書 (13・14・15) の要約 (リポジトリ外の `perf_work/sadhelp_html.py` で md から生成) |
 | [`html/`](docs/html/) | 上の md を html にしたもの (`make_html.py` で生成。追跡しない)。手書きの `sad_wake_sigsegv_fixes_v001.html` (2026-11-14) と `_v002.html` (2026-11-16、B33 の差の原因と解消を追記) は K64 の wake まわりの SIGSEGV 3 件 (B31〜B33) の原因と修正の報告。差分は `docs/history/sad_patch/wake_sigsegv_fixes.patch` |
 
@@ -288,6 +293,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | [`work_touschek.md`](docs/history/work_touschek.md)、[`work_track6n_ext.md`](docs/history/work_track6n_ext.md)、[`work_loss_rng.md`](docs/history/work_loss_rng.md)、[`work_loss_rng2.md`](docs/history/work_loss_rng2.md)、[`work_zdp.md`](docs/history/work_zdp.md)、[`work_trpt_acc.md`](docs/history/work_trpt_acc.md)、[`work_main_track.md`](docs/history/work_main_track.md) | Touschek、numba の追跡の拡張、粒子損失の乱数、z/dp、TRPT の加速、MAIN の TRACK |
 | [`work_integration.md`](docs/history/work_integration.md)、[`work_item4.md`](docs/history/work_item4.md)、[`work_item6.md`](docs/history/work_item6.md)、[`work_small_items.md`](docs/history/work_small_items.md)、[`work_unstable.md`](docs/history/work_unstable.md) | モジュールの接続、SADScript と FFS の拡張、disp/emit の出力、小項目、不安定ライン |
 | [`v2_changes_A.md`](docs/history/v2_changes_A.md)、[`B`](docs/history/v2_changes_B.md)、[`C`](docs/history/v2_changes_C.md)、[`C_measure`](docs/history/v2_changes_C_measure.md)、[`C_spch`](docs/history/v2_changes_C_spch.md)、[`C2`](docs/history/v2_changes_C2.md)、[`C2_measure`](docs/history/v2_changes_C2_measure.md)、[`C2_misc`](docs/history/v2_changes_C2_misc.md)、[`C2_spch`](docs/history/v2_changes_C2_spch.md) | v2.0.0 の作業の記録 (根拠の数値、試験、使える範囲、要判断)。まとめは [`docs/47_v2_changes.md`](docs/47_v2_changes.md) |
+| [`v2next_A1.md`](docs/history/v2next_A1.md)、[`A2`](docs/history/v2next_A2.md)、[`B1`](docs/history/v2next_B1.md)、[`B2`](docs/history/v2next_B2.md)、[`B3`](docs/history/v2next_B3.md)、[`C`](docs/history/v2next_C.md)、[`D1`](docs/history/v2next_D1.md)、[`D2`](docs/history/v2next_D2.md)、[`E`](docs/history/v2next_E.md) | v2.1.0 の作業の記録 (根拠の数値、試験、使える範囲、要判断)。まとめは [`docs/47_v2_changes.md`](docs/47_v2_changes.md) |
 | [`work_perf2.md`](docs/history/work_perf2.md)、[`work_perf3.md`](docs/history/work_perf3.md)、[`work_performance.md`](docs/history/work_performance.md) | 性能改善 (numba カーネル化) |
 
 ## ライセンス

@@ -1,0 +1,12 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+default EPS : 1 turn spin angle =    -1.1935299209
+default EPS : 500 turns spin angle =      .3947557710
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+EPS=1E-5    : 1 turn spin angle =    -1.1935395636
+EPS=1E-5    : 500 turns spin angle =      .3969798119

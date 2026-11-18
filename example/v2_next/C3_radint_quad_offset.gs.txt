@@ -1,0 +1,85 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 03:01:20 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next C3 項目 5 (B107b): 据え付けのずれた四極の RADINT。軌道は四極の中心からずれ、四極が放射する (h = k x_o、I4 の項 2 k² x_o η)。
+! 24 セルの平面 FODO (3 GeV)。QF の DX = 1e-4、QD の DX = 2.2974e-4 (経路長が変わらない組: 閉軌道の δ のずれが出ない)。
+! 独立な値 (試験 test_v2_C3_radint.py): 平面の 3x3 行列の放射積分 Jx = 0.949255 (ずれなし 0.941465)、RAD つき 6 次元追跡の ΔJx = +0.00781、
+! Emittance[] の ΔJx = +0.00786。v2 の RADINT の ΔJx = +0.0078。k64 (= gs) は ΔJx = +0.0028: 四極自身の DX を無視 (閉軌道だけを使う)、K1<0 の勾配の符号が逆。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7 DX=1E-4) QD = (L=0.3 K1=-0.6 DX=2.2974164568085882E-4);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.8E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RINGQ; CELL; CALC; RFSW; RAD; NOFLUC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.506134 $$$       f BX    #######  #   6.426894 $$$       f NX    #######  #   6.696273
+$$$       f AY    #######  #    .919281 $$$       f BY    #######  #   1.919622 $$$       f NY    #######  #   4.905997
+$$$       f LENG  #######  #  105.60000
+ RADINT;
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   105.600
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.281399    
+ RF VOLTAGE (kV)            =    1800.000    
+ HARMONIC NUMBER            =   176.
+ RF FREQUENCY (MHz)         =   500.0000
+
+ RADIATION INTEGRALS  
+   I1X =    2.336192        I1Y =  -6.5371135E-35
+   I2  =    1.370779    
+   I3  =   0.2990575    
+   I4U =   7.6417150E-02    I4V =   1.0586824E-32
+   I5U =   1.7353736E-02    I5V =   2.8996008E-33
+
+ NU-X-  =  6.69627    NU-Y- =  4.90600
+ MOMENTUM COMPACTION FAC X  =   2.2123E-02
+ MOMENTUM COMPACTION FAC Y  =  -6.1904E-37
+ ENERGY LOSS PER TURN (kV)  =    1563.    
+ DU=1-I4U/I2                =   0.94425274
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    1.432    
+                TAUV (msec) =    1.352    
+                TAUE (msec) =   0.6576    
+ ENERGY SPREAD (SIG) DE/E   =   1.1839E-03
+            EMITTANCE U     =   1.7708E-07
+            EMITTANCE V     =   2.7938E-38
+
+ NU-S                       =     0.013581
+ BUCKET HIGHT   DEMAX/E     =     0.002107
+ NATURAL BUNCH LENGTH (mm)  =    32.412623
+ QUANTUM LIFETIME(hours)    =   1.0023D+00
+
+ LINEAR CHROMATICITY GX     =    -2.705929
+ LINEAR CHROMATICITY GY     =    -2.347239
+ Exit;
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

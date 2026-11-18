@@ -1,0 +1,10 @@
+FFS;
+(* v2next B2 項目 3: Parallelize[f, n, lshare, npara]。POSIX (Linux・WSL) は fork した子で npara 個まで同時に計算する。Windows は逐次 (fork が無い)。
+   gs と同じ: 子の代入は親に戻らない (E の x)、結果の並び (A B C)。pysad の逐次 (Windows) は x が残る (E: 3)。
+   gs の D (結果が lshare を超える) は Timeout (2000 秒) まで待つので、この台本には入れていない (pysad の POSIX は $Failed)。 *)
+r=Parallelize[(#^2)&,5,200,2]; Print["A ",r];
+r=Parallelize[Function[k,Table[k*i,{i,3}]],4,500,4]; Print["B ",r];
+r=Parallelize[Function[k,If[k==2,1/0,k]],3,200,3]; Print["C ",r];
+x=0; r=Parallelize[Function[k,x=k;k],3,100,3]; Print["E ",x," ",r];
+r=Parallelize[Function[k,Print["child ",k];k],2,100,2]; Print["F ",r];
+Exit;

@@ -1,0 +1,34 @@
+! v2next B2 項目 5: VISIT で FitFunction・FitValue・ElementValues・OpticsProlog・OpticsEpilog を退避し、BYE で戻す (USE は 5 つとも消す)。gs と全行一致。
+! 条件: 3 GeV の小さな LINE 2 本 (RING、R2)。ElementValues は Packages/Couple.n の変数。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+MARK ST = ();
+LINE RING = (ST QF D2 QD D1);
+LINE R2 = (ST QD D2 QF);
+FFS;
+USE RING; CELL; CALC;
+ElementValues={K1[QF]:>0.5};
+FitFunction:=1+2;
+FitValue=7;
+OpticsProlog=11;
+OpticsEpilog=12;
+Print["A ",ElementValues," ",FitFunction," ",FitValue," ",OpticsProlog," ",OpticsEpilog];
+VISIT R2;
+Print["B ",ElementValues," ",FitFunction," ",FitValue," ",OpticsProlog," ",OpticsEpilog];
+ElementValues={K1[QD]:>0.1};
+FitValue=99;
+BYE;
+Print["D ",ElementValues," ",FitFunction," ",FitValue," ",OpticsProlog," ",OpticsEpilog];
+VISIT R2;
+ElementValues={K1[QD]:>0.1};
+VISIT RING;
+Print["E ",ElementValues];
+BYE;
+Print["F ",ElementValues];
+BYE;
+Print["G ",ElementValues];
+USE R2;
+Print["H ",ElementValues," ",FitFunction," ",FitValue," ",OpticsProlog," ",OpticsEpilog];
+BYE;
+Exit;

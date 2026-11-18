@@ -131,7 +131,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `SetElement` | .n element.n | 実装 |
 | `SurvivedParticles` | Fortran tfinitn.f | 実装 |
 | `SymplecticJ` | .n emit.n | 実装 |
-| `SynchroBetaEmittance` | .n emit.n | 実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。結合のあるラティスは gs が SIGSEGV で比較不能。組み込みの登録ではなく emit.n の呼び出しを置き換える) |
+| `SynchroBetaEmittance` | .n emit.n | 実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。24 セル FODO + skew 四極の結合のあるリングは gs と 7 桁一致。大きなリング A では使えない (B128)。組み込みの登録ではなく emit.n の呼び出しを置き換える) |
 | `TouschekLifetime` | .n emit.n | 実装 |
 | `TrackParticles` | Fortran tfinitn.f | 実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で `{結果, 軌道{t,x,y,z}}` を返す。docs/36) |
 | `TransferMatrix` | .n Optics.n | 実装 (Optics.n の TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo が gs と表示桁で一致。gs は 1e-16 の雑音の要素を出し pysad は 0。11-16) |
@@ -243,7 +243,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `EFFRFFREQ` | Fortran initb1.f,tturne.f | 参照あり (ffscmd.py) |
 | `EFFVC` | Fortran initb1.f,tturne.f | 参照あり (ffscmd.py) |
 | `EFFVCRATIO` | Fortran initb1.f,track.f,tturne.f | 参照あり (ffscmd.py) |
-| `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は未対応 (docs/34) |
+| `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は v2.1.0 で実装 (docs/04) |
 | `EMITX` | Fortran initb1.f,temit.f,tffs.f,…; .n emit.n | 参照あり (ffscmd.py, ffsextra.py, maintrack.py…) |
 | `EMITXE` | Fortran initb1.f,temit.f | 参照あり (ffscmd.py) |
 | `EMITY` | Fortran initb1.f,temit.f,tffs.f,… | 参照あり (ffscmd.py, ffsextra.py, maintrack.py…) |
@@ -344,7 +344,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `UNIPOL` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `UNSTABLE` | Fortran tffs.f (fname/sino) | 実装 (値を保持するだけ) |
 | `WAKEOPT` | Fortran tffs.f (fname/sino) | 実装 (参照 ffscmd.py) |
-| `WSPAC` | Fortran tffs.f (fname/sino) | 実装 (v2 モード: ビーム行列のガウス分布の力が `TrackParticles` に入る。光学・Emittance へは未対応。k64 モードは値を保持するだけ) |
+| `WSPAC` | Fortran tffs.f (fname/sino) | 実装 (v2 モード: ビーム行列のガウス分布の力が `TrackParticles` に入る。Emittance[]・EMIT・CALC6D・CALC (RFSW ON) へも v2.1.0 で対応 (Emittance[]・EMIT は k64 も gs と全桁)。k64 モードの追跡は値を保持するだけ) |
 
 ## 5. 要素の型とキーワード (13 型)
 

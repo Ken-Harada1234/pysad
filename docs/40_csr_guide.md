@@ -1,6 +1,6 @@
 # 40. CSR (コヒーレント放射) の解説
 
-最終更新: 2026-11-17
+最終更新: 2026-11-18 (v2.1.0 の後)
 
 偏向磁石の中でバンチが出す CSR (coherent synchrotron radiation) のウェイクを、SAD K64 で計算・追跡する道具の解説。
 対象は 2 層ある。K64 本体の組み込み関数 (Fortran: `csrtrack.f`、`csroy.f`、`csrtest.f`) と、`Packages/CSR.n` の 2 つのクラス `CSR` (ダクトの断面からインピーダンスを求める) と `CSRStability` (ウェイクを使う追跡と安定性)。
@@ -155,10 +155,10 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 
 ## 4. K64 の癖
 
-(`docs/21_sad_bug_report.md` の B59・B60。B60 は pysad が K64 どおり。B59 は k64 モードが K64 どおりに再現し、v2 モードは直した。)
+(`docs/21_sad_bug_report.md` の B59・B60。B60 は v2.1.0 で原因を特定した。pysad の `CSRSetupOY` は両モードで正しい形の出力を返し、gs の wrongtype は再現しない。B59 は k64 モードが K64 どおりに再現し、v2 モードは直した。)
 
 - **B59** (k64 と v2 で違う): `CSRSetupOY` は `dpjn` を `zjn` と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く `CSROYMatrix` は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。**k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる** (点が無ければ失敗 `CSR::irreg`。`CSROYMatrix` は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 (`test_v2_C_csr.py` 2 件)。**`CSROYMatrix` の行列そのものは未照合のまま** (gs が wrongtype を返す。B60)。
-- **B60**: `CSROYMatrix` が、`CSRSetupOY` の出力でも手で作った実数リストでも `General::wrongtype` を返す (この K64 ビルドで再現)。登録名は `CSRSetupOY`・`CSROYMatrix` だが、ソース内の関数名は `tfcsroysetup`・`tfcsroymat` で綴りが違う。原因は未調査。pysad はソースどおりに翻訳して動くが、gs と照合できない。したがって `OYStability` と `OYScan` は gs では完走しない可能性が高い (gs で確かめていない)。
+- **B60**: `CSROYMatrix` が、`CSRSetupOY` の出力を渡すと `General::wrongtype` を返す (この K64 ビルドで再現)。**手で作った正しい形の実数リストなら gs でも動く** (以前の「手で作った実数リストでも」は誤り)。原因 (D2 の調査、v2.1.0): `tfcsroysetup` (csroy.f) が 4 番目 (zj) の実数リストへ `c_f_pointer(c_loc(rlist(kazjn)), zjn, [mphi,nj])` で書くとき、先頭の語 `rlist(kazjn)` (リストの頭 = head) から書き始める (要素は `rlist(kazjn+1)` から書くべきで、ほかの 4 つの配列は `rlist(k+1:…)` で正しい)。head が zjn(1,1) で上書きされるので、`tfcsroymat` の `tfreallistq(las%dbody(4), lazj)` が偽になる (B59 の `dpjn` と `zjn` が同じ記憶域も同じ箇所)。gs で `CSRSetupOY` の出力の各要素の `Head` を調べ、4 番目が実数 (1.2952814481588496e-5) で List でないことを確認した。登録名は `CSRSetupOY`・`CSROYMatrix` だが、ソース内の関数名は `tfcsroysetup`・`tfcsroymat` で綴りが違う。`OYStability` と `OYScan` は gs で完走しない (K64 の誤り)。pysad は両モードで正しい形の出力を返して動く (k64 で wrongtype を再現するかは要判断)。手で作った入力 (nr=64、nj=3、nphi=2) の 6x6 の行列 (36 要素) は gs と相対 4e-20 で一致 (`example/v2_next/D2_csroymatrix.sad`、`test_csroymatrix_hand_made_input_matches_gs`)。
 - `CSRInit` の実数 1 つの dx は常に `wrongtype` (dx を読まない)。
 - `CSRMatrix` mode 1000 は、K64 が `phix(0:nphimax)` を `csrphimesh` の `phix(*)` に渡すため、点の添字が 1 つずれる (pysad も同様)。また `{4,4,4,4}` などの断面は gs 自体が SIGABRT/SIGSEGV で落ちる (参照なし)。
 - `CSR.n` の `FreeMem[]` は `top` の出力 (`OSTYPE` で Switch) を読むので、非対話の WSL では `OSTYPE` が空で `OpenRead` が失敗する。gs の参照を取るときは WSL に `top` を入れるか、`Mem: ... free ...` を出す代用を PATH に置き、`OSTYPE=linux` を設定した。pysad は Windows などの `top` のない環境では代用の行を内部で作る。
@@ -196,7 +196,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 
 - `ScanTrack`・`OYStability`・`OYScan`・`GuessOYStability*`・`ScanBL`・`TrackAnimate` (画像の生成は pysad では不可、上記)・`SetupZL`・`GetZL`・`CSRStability` のコンストラクタ・`ReadWake`・`MakeEz` の長い流れは、gs と照合していない (pysad での完走の試験もない)。`OYStability` は B60 により gs では参照が取れない。
 - 描画 (`WLPlot` `ZLPlot` `PipePlot` `EzPlot` `Er0Plot`) の出力は確認していない。
-- `CSROYMatrix` の値は gs と未照合 (ソースどおりの翻訳)。
+- `CSROYMatrix` の値は、手で作った入力 (nr=64、nj=3、nphi=2) で gs と一致、`CSRSetupOY` の出力から作ったものは gs が作れず未照合。nj・nphi が大きい手作りの入力、`OYStability`・`OYScan` の gs との比較は未確認。
 - 抵抗壁 (`Resistive->True`、`ResDamp`) と `Adaptive->True` の経路は gs と照合していない。
 - 中心がダクトの中央でない (`Center≠PipeWidth/2`) 場合、`PipeFun` が定数でない断面、`MeshRatio` が 1 でない場合の一致は、`MakeZL` の 1 例 (`Center=0.02`、`PipeWidth=0.04`、`MeshRatio->{2,2}`、一定の高さ) 以外は未確認。
 - `CSRMatrix` mode 1000 は小さな断面 2 例のみ。{4,4,4,4} など gs が落ちる断面は参照がない。

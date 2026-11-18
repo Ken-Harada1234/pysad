@@ -1,6 +1,6 @@
 # 特殊関数・数学関数、Fit・FindRoot・NIntegrate、DownhillSimplex など
 
-最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
+最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット。経緯は `history/` にある)
 
 ## 1. 特殊関数 (`pysad/specfn.py`)
 scipy.special で実数引数の値を返す。K64 の実装 (gamma.f、hg.f、Packages/D.n) の値と、gs で 458 式を突き合わせて一致 (`tests/specfn_ref.json`、`tests/test_specfn.py`)。
@@ -18,7 +18,7 @@ scipy.special で実数引数の値を返す。K64 の実装 (gamma.f、hg.f、P
 
 - **K64 と値を合わせたもの** (k64 モードの動作。v2 モードの違いは下の「v2 モードで変わった値」): `InverseErf` (B47。k64 モードは相対 1e-8 の誤差まで再現)、`ArcCosh[.5]` の符号 (-1.047 I)、`ArcTanh[2.]` = NaN、`Inner` (gs の `Inner[f,x,y,g]` は `g@@f[x,y]`)、`Fourier` の符号 (gs は e^{+2πi jk/n}/√n)。
 - **K64 が誤値を返すので真値にしたもの**: docs/21 B43〜B46。
-- **未対応**: 複素引数の PolyLog・HypergeometricU・Zeta (scipy に複素の実装が無いか、分岐の向きを確かめる独立な参照が無い。SADError・TypeError)。PolyLog の整数次 n>=2 の z>1 は実装済み (gs と同じく切断線の下側の複素数。試験 test_polylog_above_one_is_complex_like_gs)、HurwitzZeta の q が非正の整数 (`HurwitzZeta[2,-1]` は gs が 2.6449 = 極の項を除いた和、pysad は NaN。2026-11-17 に gs で確認)、D.n の記号微分 (`D`、`Derivative`、`ReduceExpression`)、
+- **複素引数の PolyLog・HypergeometricU・Zeta・HurwitzZeta は v2.1.0 で実装した** (下の「複素の特殊関数」)。**未対応**: 複素の次数の PolyLog、Re a ≤ 0 の複素の a・b の HypergeometricU (SADError)、z = 0 の U。PolyLog の整数次 n>=2 の z>1 は実装済み (gs と同じく切断線の下側の複素数。試験 test_polylog_above_one_is_complex_like_gs)、HurwitzZeta の q が非正の整数 (`HurwitzZeta[2,-1]` は gs が 2.6449 = 極の項を除いた和、pysad は NaN。2026-11-17 に gs で確認)、D.n の記号微分 (`D`、`Derivative`、`ReduceExpression`)、
   `Short`、`Skip`、`Inequality`、`MessageName`、`ToInputString`。
 
 ## 2. Fit・FindRoot・NIntegrate (`pysad/fitroot.py`)
@@ -74,4 +74,14 @@ StringToStream (文字列を開く)、TemporaryName、ListRandom (`{"SAD"}`)、M
 
 **複素の FindRoot** (v2): 初期値に複素数があると、式を変数について正則と仮定して、前進差分のヤコビアンと最小二乗 (numpy lstsq) の Newton 法 (歩幅を半分にする減速つき) で解く。z² = -1 → i、e^z = 2 → ln 2、z³ = 1、連立 zw = i・z + w = 2 が残差 1e-12 以下。使い方・使えない範囲は docs/04。
 
-**未対応のまま**: 複素引数の PolyLog・HypergeometricU・Zeta。
+**複素の特殊関数** (v2.1.0。`pysad/specfn_cx.py`。両モード。mpmath はこの環境に無いので、級数・Euler–Maclaurin・解析接続・積分表示を自前で実装した。試験 `test_v2_B2_specfn_cx.py`、例 `example/v2_next/B2_special_functions_complex.sad`):
+
+| 関数 | 実装 (複素の z・s。主値) | 使える範囲 | 参照との一致 |
+|---|---|---|---|
+| `Zeta[s]`・`HurwitzZeta[s,a]` | Euler–Maclaurin (N = 20 + \|s\|/1.5 + \|Im a\|/2 項と補正 16 項)。Re s < 0 の Zeta は関数等式 | \|s\| ≤ 500 (\|s\| = 100 で相対 1e-11) | Zeta: Borwein のアルゴリズムと関数等式と相対 1e-11 (30 点)。HurwitzZeta: 別に書いた Euler–Maclaurin と 1e-10 |
+| `PolyLog[s,z]` | \|z\| ≤ 0.5 は冪級数、\|ln z\| ≤ 4 は μ = ln z の展開 (110 項まで)、それより大きいときは倍角の公式の再帰 (\|z\| = 1e8 で 5 段)、s が 0 以下の整数は有理関数。**負の実数の z は上側 (arg z = +π)**。実軸上の z > 1 は従来どおり切断線の下側 | 実数の次数、\|z\| ≤ 1e8 (s = 0.5〜7.3) | 冪級数・`scipy.special.spence`・積分表示・整数次の反転公式と 2e-11 |
+| `HypergeometricU[a,b,z]` | Re a > 0 は積分表示 (被積分関数が減衰する向きに回した経路。山の付近で区間を分け、a < 1 は t = u^{1/a} で端点の特異性を除く)、a が負の整数は多項式、それ以外は a の漸化式と Kummer の変換 | \|z\| ≤ 30。b が整数でも動く | 積分表示・接続公式・多項式・漸近展開と 1e-10 (a・b の極の場合は b を ±1e-3 振った平均と 1e-5) |
+
+- **gs が誤る点でも pysad は両モードで真値を返す** (k64 も。B118〜B120): (i) `HurwitzZeta[s,a]` の s が複素で、a を 1 以下に畳んだ値が 0.5 以上 1 未満 (a = 0.5・1.5・3.5 など。0.25・1・2・10 は正しい) のとき相対 1e-6〜1e9 の誤り (例 `HurwitzZeta[2+I,.5]` = gs 3.9549+2.1791 I、真値 3.5075+2.0314 I)、(ii) 非整数次の PolyLog で Re z < 0・Im z ≤ 0・\|z\| > 1 (例 `PolyLog[1.5,-3.28-3.54 I]` = gs 3.47+9.43 I、真値 -2.09-1.06 I)、(iii) `HypergeometricU` で b が整数なら NaN (複素の z でも。実数の z の B46 と同じ)、(iv) U の \|z\| = 20 で相対 1e-8、(v) `Zeta[s]` の臨界線上の零点は 1e-16 の雑音。gs が正しい 18 点は gs と相対 2e-13。gs の値を調べた点は乱数 230 点 (Zeta 40、HurwitzZeta 80、PolyLog 60、HypergeometricU 50) と 26 点の格子。**「k64 は gs と同じ」の規則はこの関数では満たしていない** (gs の誤った値の再現には K64 の `gamma.f` の複素の不完全ガンマ `cgamma2`・`czconvb`・`cpolylogl` の直訳が要る。要判断。gs の値が必要なら gs を使う)。
+- 実数引数の値は変えていない (`test_real_arguments_are_unchanged`)。
+- 使えない・未確認: 複素の次数の PolyLog、Re a ≤ 0 の複素の a・b の HypergeometricU (SADError)、z = 0 の U、\|s\| > 500 (Zeta・HurwitzZeta)、\|z\| > 1e8 (PolyLog)・\|z\| > 30 (HypergeometricU)。

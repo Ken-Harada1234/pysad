@@ -1,0 +1,62 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 01:40:06 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next B1 項目 3: 空間電荷 (WSPAC) の Emittance[]・EMIT・CALC6D・CALC。K64 の tintrb の twspace (ビーム行列 σ のガウス分布の線形レンズ
+! k = 2 N r0 L / (β²γ³ (σx+σy) √(2π) σz σ_u)) をスライスの中心に入れ、temit の反復 (tintraconv) でビーム行列を自己無撞着にする。
+! 条件: 0.2 GeV、周長 45.6 m の 12 セル FODO、RF 0.2 MV・h=64、PBUNCH = 1e8 個、MINCOUP = 0.5 (εy の下限 = 0.5 (εx+εy))。
+! 結果 (pysad v2 の ZERO・SC): チューンが空間電荷で下がる (x −4.1e-3、y −8.5e-3)。一次のラスレットの式と 0.15% (試験 test_wspac_tune_shift_equals_first_order_laslett_formula)。
+! gs (Emittance[] だけ動く): ZERO は全桁一致、SC は gs の方がシフトが 4% (x)・3% (y) 強い (原因未特定。シフトは PBUNCH・σz・εy に依らず比が一定)。
+!   gs の CALC・CALC6D は WSPAC ON で先頭以外の Twiss が NaN になる (K64 の誤り)。v2 の CALC6D (と RFSW ON の CALC) は空間電荷つきの周期的な Twiss を返す。
+MOMENTUM = 0.2GEV;
+PBUNCH = 1E8;
+MINCOUP = 0.5;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=0.2e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="14.10";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.155769 $$$       f BX    #######  #   5.009353 $$$       f NX    #######  #   2.706758
+$$$       f AY    #######  #   1.397232 $$$       f BY    #######  #   2.654699 $$$       f NY    #######  #   1.866872
+$$$       f LENG  #######  #  45.600000
+ RFSW; RAD; NOFLUC; CALC6D;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.155277 $$$       f BX    #######  #   5.007421 $$$       f NX    #######  #   2.706679
+$$$       f AY    #######  #   1.397232 $$$       f BY    #######  #   2.654699 $$$       f NY    #######  #   1.866872
+$$$       f LENG  #######  #  45.600000
+ Print["CALC6D, no SC: NX NY NZ BX(1) BX($$$) ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["NZ","$$$"]/(2Pi), Twiss["BX",1], Twiss["BX","$$$"]];
+CALC6D, no SC: NX NY NZ BX(1) BX($$$)   2.7066791303  1.8668723036  -.0182327790  5.0074210419  5.0074210419
+ NOCALC6D;
+ e0 = Emittance[];
+ Print["ZERO ", Tunes/.e0, Emittances/.e0];
+ZERO {  -.2933208697,  -.1331276964,  -.0182327790}{ 1.27163116E-9, -7.676631E-33, 8.14125607E-8}
+ WSPAC;
+ e = Emittance[];
+ Print["SC   ", Tunes/.e, Emittances/.e];
+SC   {  -.2976763273,  -.1419755207,  -.0182639185}{ 1.27780330E-9, -9.010285E-31, 8.15449114E-8}
+ Print["EMITC (EMITXC EMITYC EMITZC) ", EMITXC, EMITYC, EMITZC];
+EMITC (EMITXC EMITYC EMITZC)  1.27780330E-9 6.3890165E-10 8.15449114E-8
+ CALC6D; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #        NaN $$$       f BX    #######  #        NaN $$$       f NX    #######  #        NaN
+$$$       f AY    #######  #        NaN $$$       f BY    #######  #        NaN $$$       f NY    #######  #        NaN
+$$$       f LENG  #######  #  45.600000
+ Print["CALC6D, SC: NX NY NZ BX(1) BX($$$) ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["NZ","$$$"]/(2Pi), Twiss["BX",1], Twiss["BX","$$$"]];
+CALC6D, SC: NX NY NZ BX(1) BX($$$) NaNNaNNaN  5.0157502217NaN
+ Exit;
+ FFS                  end:  CPU time =     0.010 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

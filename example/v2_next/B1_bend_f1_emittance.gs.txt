@@ -1,0 +1,61 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 01:39:57 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next B1 項目 1: Emittance[]・EMIT・CALC6D の BEND の F1・FRINGE。K64 の tbende の F1 (tblfre、tbendef1 の 2 断片、alcorr の長さの補正) と
+! 周長 (tfgeo の pos: BEND の F1 の長さ補正) を入れた。旧 pysad は F1 を黙って無視した (U0 が 5%、チューンが 0.006 違った)。
+! 条件: 3 GeV、周長 45.6 m の 12 セル FODO、RF 3 MV・h=64、BEND 1.2 m (15 度、E1=E2=7.5 度) に F1=0.1 FRINGE=3。K1≠0 の複合機能の BEND も。
+! k64 モード (PYSAD_COMPAT=k64) は gs と全桁一致 (表示 10 桁)。v2 は端の角の場の中の行路の補正 (A の項目) が入るので U0 が 1e-3 ほど違う。
+! 検算: NORFSW NORAD の Emittance[] のチューン (6D の一周写像) = CALC のチューン (4D) が F1 込みで 1e-9。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747 F1=0.1 FRINGE=3);
+BEND BK = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747 K1=-0.05 F1=0.1 FRINGE=3);
+CAVI RFC = (L=0 VOLT=3e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELLK = (QF D2 BK D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+LINE RINGK = (ST 12*CELLK RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="14.10";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.155756 $$$       f BX    #######  #   5.009328 $$$       f NX    #######  #   2.706749
+$$$       f AY    #######  #   1.402559 $$$       f BY    #######  #   2.665074 $$$       f NY    #######  #   1.860430
+$$$       f LENG  #######  #  45.599789
+ Print["CALC tunes ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi)];
+CALC tunes   2.7067491184  1.8604295242
+ NORFSW; NORAD;
+ e = Emittance[];
+ Print["no-RF no-RAD Emittance[] tunes (= 1 - frac of CALC) ", Tunes/.e];
+no-RF no-RAD Emittance[] tunes (= 1 - frac of CALC) {  -.2932508816,  -.1395704758,   .0000000000}
+ RFSW; RAD; NOFLUC;
+ e = Emittance[];
+ Print["F1 ring: Tunes ", Tunes/.e];
+F1 ring: Tunes {  -.2933271700,  -.1395704757,  -.0179539450}
+ Print["F1 ring: U0 [eV], EquilibriumPosition, MomentumCompaction ", {EnergyLossU0, EquilibriumPosition, MomentumCompaction}/.e];
+F1 ring: U0 [eV], EquilibriumPosition, MomentumCompaction { 739673.742271,   .0282503369,   .0326541595}
+ Print["F1 ring: DampingRate, Emittances ", {DampingRate, Emittances}/.e];
+F1 ring: DampingRate, Emittances {{ -1.1197068E-4, -1.2327925E-4, -2.5598166E-4},{ 2.74590083E-7, 6.4539993E-38, 1.81388544E-5}}
+ USE RINGK; CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.225384 $$$       f BX    #######  #   5.283550 $$$       f NX    #######  #   2.569358
+$$$       f AY    #######  #   1.251197 $$$       f BY    #######  #   2.376749 $$$       f NY    #######  #   2.049956
+$$$       f LENG  #######  #  45.599789
+ e = Emittance[];
+ Print["K1 BEND with F1: Tunes ", Tunes/.e];
+K1 BEND with F1: Tunes {  -.4307280113,   .0499557121,  -.0188202545}
+ Print["K1 BEND with F1: U0 [eV], EquilibriumPosition, MomentumCompaction ", {EnergyLossU0, EquilibriumPosition, MomentumCompaction}/.e];
+K1 BEND with F1: U0 [eV], EquilibriumPosition, MomentumCompaction { 759910.329928,   .0290403357,   .0359460096}
+ Exit;
+ FFS                  end:  CPU time =     0.010 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

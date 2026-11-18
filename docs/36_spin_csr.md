@@ -1,6 +1,6 @@
 # 36. POL (スピン) と CSR
 
-最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
+最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット。経緯は `history/` にある)
 
 `POL;` を付けた `Emittance[]` / `EMIT` のスピン (偏極時間・スピンチューン・偏極ベクトル・スピン歳差行列) と、`TrackParticles` のスピン追跡 (§3)、CSR のウェイク追跡の関数 (§2)、RADLIGHT (§4)。
 K64 の `photons.f` (tradke、tspin モジュール)、`tchge.f`、`temit.f`、`csrtrack.f`、`csroy.f`、`csrtest.f` の直訳。
@@ -44,8 +44,8 @@ EMIOUT; EMIT;          (* スピン歳差行列と 1 周の脱偏極ベクトル
 
 ### 1.4 限界・未確認
 
-- **v2 モード**: `Polarization` は有限値 (平面リングで 92.376%)。線形のスピン軌道結合 (SLIM 相当) から脱偏極率を求める式に置き換えた。誤差のあるリングで追跡の脱偏極率と 0.5〜1.6 倍 (3 例、16 粒子)、高次の側帯共鳴・運動論的偏極の項は入れていない。詳細と限界は docs/43 §8a。以下の記述は k64 モード。
-- `Polarization` (平衡偏極度) は K64 が NaN (B55) で、k64 モードの pysad も同じ式で NaN になる。有限値になる gs の例は不安定な光学の 1 つだけで、pysad はその光学の閉軌道を作れない (正規形が不安定で失敗) ため、`spdepol` の有限値側 (|cb|≤18 の cerfc) は gs で確認できていない。
+- **v2 モード**: `Polarization` は有限値 (平面リングで 92.376%)。線形のスピン軌道結合 (SLIM 相当) から脱偏極率を求める式に置き換えた。v2.1.0 でシンクロトロン側帯の項を足した (B125)。誤差のあるリングの脱偏極率は 3 GeV 前後で追跡の 0.5〜1.6 倍 (3 例、16 粒子)、4.2 GeV・12 MV の 12 セル FODO では側帯込みで 0.43 倍 (480 粒子。軌道の非線形で過小評価が残る)。運動論的偏極の項は入れていない。逆向きの BEND (挿入光源) は符号に依らない緩和率 (B116)。傾いてずれたソレノイドの POL の量は v2.1.0 で追跡と一致 (B130)。詳細と限界は docs/43 §8a。以下の記述は k64 モード。
+- `Polarization` (平衡偏極度) は K64 が NaN (B55) で、k64 モードの pysad も同じ式で NaN になる。有限値になる gs の例は不安定な光学の 1 つだけで、pysad はその光学の閉軌道を作れない (正規形が不安定で失敗) ため、`spdepol` の有限値側 (|cb|≤18 の cerfc) は gs で確認できていない。桁あふれを直しても K64 の率は emittance/減衰率に比例し、独立な率の約 1000 倍 (誤りの位置は v2.1.0 で特定: B125。docs/43 §8a)。
   erfcx で桁あふれを避けると 4e-7〜8e-7 の有限値になる (この値も理論値から遠く、K64 の式か単位の疑い)。
 - Emittance[] / EMIT のスピンは次まで対応し gs と一致する (`test_spin.py`): MULT (K1・K2・K3・ずれ。`tmulke` の bsir0 更新も入れた。L=0 の薄い MULT を含む)、空洞 (試験のリングはどれも `CAVI RFC=(VOLT=1.5e6 HARM=64)` を含む)、
   SOL (`emit_extra._tturne1` が SOL 領域 `_solmap` を通す。GEO は 1 つだけ、`test_solenoid_ring_matches_gs`)。K64 は SOL (BOUND≠0) の長さを周長に入れず (omega0・MomentumCompaction・偏極時間に効く)、`emit6d._emit_circ` で同じにした
@@ -55,7 +55,7 @@ EMIOUT; EMIT;          (* スピン歳差行列と 1 周の脱偏極ベクトル
   K3 が強くずれの大きい MULT のリング (K3=300、ずれ 1e-4) は、pysad の `CALC` (qcod) の閉軌道が gs と別の大きい値 (y=-0.033) になり、Emittance が NaN になる (gs は小さい軌道で通る)。qcod の初期値・後退の違いの可能性で未調査。
   縦のオフセットのある偏向磁石の bsi の項 (`bsi2`) は K64 では捨てられる (B58。k64 モード。v2 モードは入れる。docs/43 §8a)。
 - スロー経路 (`PYSAD_NO_ELKERN=1` 相当) の `_tquade` は、ずれ (DX/DY) だけで回転のない四極のヤコビアンを、ずらした後の座標で評価する (ずらす前の座標で評価すると、POL は numba の速い経路を使えないので εy に 7e-5 の誤差が出る)。
-- K64 の癖は B55〜B58 (docs/21)。v2 モードで直したもの (B55 の有限値、B56 の tbrote の srot の行列積、B58・B64 の端の縦磁場、B81〜B83 の bsi・刻みの角) は docs/43 §8a。
+- K64 の癖は B55〜B58 (docs/21)。v2 モードで直したもの (B55 の有限値、B56 の tbrote の srot の行列積、B58・B64 の端の縦磁場、B81〜B83 の bsi・刻みの角。v2.1.0 の B116・B125・B130・B131 も) は docs/43 §8a。
 
 ## 2. CSR
 
@@ -66,7 +66,7 @@ EMIOUT; EMIT;          (* スピン歳差行列と 1 周の脱偏極ベクトル
 | `CSRTrack[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]` | gs と 11 桁一致 (乱数は ffs と共通の SadRandom、z・dp はその場で更新、発散後は 0、RF あり・なし) |
 | `CSRHaissin[zl, {dz, inten, r65, sigz}]` | gs と 11 桁一致 (Newton 反復。tsolvg は pysad/tsvd.py) |
 | `CSRSetupOY[rho, zl, {dz, nj, nphi, inten, r56, r65, zspan}]` | gs と J・ω 1e-9、rhoj 1e-9 (周回の離散計算のため)。dpjn の記憶域の重なり (B59) を再現 |
-| `CSROYMatrix[...]` | ソースどおりに翻訳 (gs が wrongtype を返すので未照合: B60) |
+| `CSROYMatrix[...]` | ソースどおりに翻訳。手で作った入力 (nr=64、nj=3、nphi=2) の行列は gs と 4e-20 で一致。`CSRSetupOY` の出力を渡すと gs は wrongtype (原因は特定: B60) |
 | `CSRMatrix[pipe, {dx,dy,f0..f3,tilt}, omega, rho, center, mode]` | mode 22・33・23・32・110・220・330 は gs と全要素一致。mode 1000 (らせん断面 `csrhelmat`) は実装済みで 2 断面が相対 1e-13 で一致 (§2.1) |
 | `CSRConvert[v or m, pipe]` | gs と一致 (K64 の tfcsrvec と同じ) |
 | `CSRInit[{{dx,dy}, center, rho, pipe}]` | 実装済み、gs と相対 1e-10 (§2.1) |
@@ -88,7 +88,7 @@ EMIOUT; EMIT;          (* スピン歳差行列と 1 周の脱偏極ベクトル
 - gs の参照を取るには、WSL に `top` を入れるか、PATH に `top` の代用 (`Mem: …k total, …k used, …k free, …k buffers` を出すスクリプト) を置き、`OSTYPE=linux` を設定する
   (非対話の WSL では OSTYPE が空で、`FreeMem` の `Switch` が未評価になり OpenRead が失敗する)。
 - `Packages/CSR.n` (1088 行) は `pkgload.py` の許可リストにあり、読み込める (描画の `ListPlot.n`・`Plots.n` なども許可リストにある)。
-- **未照合 (gs と比べていない)**: `CSROYMatrix` (gs が wrongtype を返す: B60)、`CSR.n` の `ScanTrack`・`OYStability` などの長い流れ、実用の大きさのメッシュの `MakeZL` (試験の 3 周波数・2000〜6000 の範囲以外)、
+- **未照合 (gs と比べていない)**: `CSRSetupOY` の出力から作る `CSROYMatrix` (gs が wrongtype を返す: B60。手作りの入力は gs と一致)、`CSR.n` の `ScanTrack`・`OYStability` などの長い流れ、実用の大きさのメッシュの `MakeZL` (試験の 3 周波数・2000〜6000 の範囲以外)、
   mode 1000 の {4,4,4,4} など gs が落ちる断面 (参照なし)、実数 1 つの `CSRInit` (K64 のバグで常に wrongtype)。`CSR.n` の `SkinDepth`・`PathDifference`・`StandardKList`・`VariableMesh`・`ZThre` は gs と一致 (docs/history/work_unimpl.md の記録。試験は MakeZL だけ)。
 
 - 2026-11-16 夜にソースで確認: `CSR.n` の `TrackAnimate` は `ListPlot` を呼んだあと `System["import -silent -window … -format -jpeg …"]` (ImageMagick) と `System["mkdir …"]` を呼ぶので、Windows の pysad (System は実行しない) では画像は作れない。
@@ -105,7 +105,7 @@ POL と RAD が ON のとき、`TrackParticles` は粒子ごとのスピンを�
 - bsi (磁場の縦成分の積分) が入る場所: 四極 (tsolqur の各スライスの両端)、BEND (tbendcore の入口・出口、K1 のある BEND は tbendi の各スライス)、MULT (tmulti)、tdrift の ak0 付き、SOL 内のドリフトと四極 (bz·al)。四極の ROTATE は tsolrot の chi3 のスピン回転。
 - gs と一致 (4e-12 以下、NOFLUC・FLUC): 平面リング、ずれ・回転のあるリング、MULT (K1 K2 K3)、K1 の BEND、SEXT、薄い MULT、SOL 領域内のドリフト。`test_spin_track.py`。
 - 限界: SOL (bz≠0) 内の四極のスピンは gs と照合できていない (SOL + 四極 + RAD の追跡そのものが、現在の gs (2026-10-19 ビルド) と保存済みの参照 (bench_level9、10-14) で食い違う。11-16 の単一粒子の調べでは、gs が RAD ON・BZ≠0 の領域内で四極の力を入れていない疑いが強く、pysad は物理と保存済みの参照に合う。ソースのどこかは未特定: docs/29、docs/history/work_unimpl.md)。
-  BEND の `F1=0.1 FRINGE=3` (RAD ON、相対 0.7) と L≠0 の CAVI の DX・DY (相対 1e-3) は、スピンなしでも追跡が gs と合わない (未調査)。DX・DY・ROTATE だけの BEND は 1e-13 で一致する。
+  BEND の `F1=0.1 FRINGE=3` (RAD ON、相対 0.7) と L≠0 の CAVI の DX・DY (相対 1e-3) の追跡の差は v2.1.0 で解決した (tfgeo の inext・iprev の再現 B113、CAVI の TENT・TEXIT。POL の Python の追跡も gs と一致)。
 - 損失 (flag) の処理は k64 モードにはない (高速追跡 TrackRun を使わないため、粒子は落ちない。v2 モードは落とす)。スピンは POL かつ RAD が ON のときだけ動く。K64 の `tradk` の中の計算なので、RAD OFF ではスピンは変わらない。ほかに、k64 モードでは SOL 領域内の MULT・BEND・CAVI は追跡そのものが未対応 (docs/29)。v2 モードでは SOL 領域内の BEND・MULT・CAVI・ずれ・F1、UND (磁場つき)、PHSROT がスピン追跡で通る (docs/43 §8a。領域内の APERT のスピン追跡は NotImplementedError)。
 
 ## 4. RADLIGHT

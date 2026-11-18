@@ -1,6 +1,6 @@
 # FFS の小さなコマンド (`pysad/ffsextra.py`)
 
-最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
+最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット。経緯は `history/` にある)
 
 K64 の tfvars.f・tfattr.f・tfmat.f・tshow.f・tffsa.f の直訳。表の書式は autofg (`'12.9'` など) まで gs の出力と同じ (`tests/test_ffsextra.py`)。
 
@@ -28,7 +28,7 @@ K64 の tfvars.f・tfattr.f・tfmat.f・tshow.f・tffsa.f の直訳。表の書�
 
 - `DUMP pat`: gs の語の変数は `character*20` で、パターンは 20 文字で切れる。合う要素がなければ全要素。DDK 列は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ (QUAD にはない)。
 - `DISP` のモード R・O・P・GA・Z・A・B (BEAM、EMIT 後)・D・G・OG と REFERENCE・DREFERENCE (見出しの文字の置換は tfdisp.f の trefheader/tdrefheader のとおり)、`REFERENCE` コマンド、`Twiss["R…"/"D…"/"RALL"/"DALL"]` は gs と一致 (`test_ffs_gs_match.py`。詳細は docs/03 §8)。
-- `RENUMBER comp` と `LINE["MULT"]` (tfinimult の直訳。同名 1 台だけは 0)、`USE [NO]EXPAND`・`CALC|GO [NO]EXPAND` は gs と一致 (docs/03)。`NOKEEPEXP` (tffsa.f の `calexp = .not. tfvcomp()`) と RENUMBER の INDEX 属性 (2 以上なら同名の要素の番号をその値から振る。`LINE["INDEX",…]` も読める) は実装した (両モード。gs の実測と一致)。`tfvcomp` は常に偽 (成分ごとの FREE が無いため)。
+- `RENUMBER comp` と `LINE["MULT"]` (tfinimult の直訳。同名 1 台だけは 0)、`USE [NO]EXPAND`・`CALC|GO [NO]EXPAND` は gs と一致 (docs/03)。`NOKEEPEXP` (tffsa.f の `calexp = .not. tfvcomp()`) と RENUMBER の INDEX 属性 (2 以上なら同名の要素の番号をその値から振る。`LINE["INDEX",…]` も読める) は実装した (両モード。gs の実測と一致)。`tfvcomp` は、既定でないキーの成分の変数 (成分ごとの FREE) があれば真 (v2.1.0 から。docs/03 §3.3)。
 - `QF.3 K1 0.9;` のように `名前.番号` で始まる文は、gs では式として評価されて何も設定しない。pysad も何も設定しない。出力の `Out[n]:=` 行は再現しない。
 
 ## 限界・K64 との差

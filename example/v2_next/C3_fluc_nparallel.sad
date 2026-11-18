@@ -1,0 +1,27 @@
+! v2next C3 項目 7: FLUC つきの追跡の乱数列。gs の既定は NPARA=4 (tftrack.f: 粒子を子プロセスに分け、子の乱数の種は 親の種 + 2k)。
+! NPARA=1 では pysad (k64) は gs と全桁一致 (粒子ごとの値・最終の種まで)。NPARA=4 は pysad が `NPARA=4;` で同じ分け方 (np/9+1・ne·np/3000+1 の制限つき) を再現する。
+! 以前の記録の「gs 4.21e-4、pysad 4.52e-4 (乱数列が違う)」は、gs の既定 NPARA=4 と pysad の NPARA=1 を比べていたため。
+! pysad の NPARA の既定は 1 (gs の既定は計算機の設定)。v2 は追跡の放射の式 (ddpx の符号など A1・A2 の修正) が違うので 1e-9 のずれがある。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+FFS;
+$FORM = "20.14"; PageWidth=1999;
+USE RINGQ;
+CELL;
+CALCULATE;
+FLUC; RFSW; RAD; NORADCOD;
+np = 200;
+NPARA = 1; SeedRandom[7];
+beam = {Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[1,{np}]};
+Do[ beam = TrackParticles[{1, beam}, 1, 1, 1][[2]]; If[k==1 || k==10 || k==100, Print["NPARA=1 turn ", k, " rms dp = ", Sqrt[Plus @@ (beam[[6]]^2)/np], "  seed = ", SeedRandom[][[2]]]], {k,100}];
+NPARA = 4; SeedRandom[7];
+beam = {Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[0,{np}],Table[1,{np}]};
+Do[ beam = TrackParticles[{1, beam}, 1, 1, 1][[2]]; If[k==1 || k==10 || k==100, Print["NPARA=4 turn ", k, " rms dp = ", Sqrt[Plus @@ (beam[[6]]^2)/np], "  seed = ", SeedRandom[][[2]]]], {k,100}];
+Exit;

@@ -1,16 +1,194 @@
-# 47. pysad v2 の変更の一覧 (v1 = K64 に忠実な翻訳との違い)
+# 47. pysad v2 の変更の一覧 (v2.0.0・v2.1.0。v1 = K64 に忠実な翻訳との違い)
 
-最終更新: 2026-11-17 (v2.0.0)。
+最終更新: 2026-11-18 (v2.1.0)。節は新しい版が先: v2.1.0 (下の (a)〜(f))、v2.0.0。
 
 - v1 系は SAD (K64 版) のソースに忠実な翻訳で、K64 のバグや癖も gs の実動作に合わせて再現した。v2 系は、K64 のバグの修正、物理の誤りの修正、機能の追加を行う ([`../CHANGELOG.md`](../CHANGELOG.md))。
-- この文書は一覧。根拠の数値・条件・使い方の詳細は作業の記録 (`history/v2_changes_*.md`) にある。記録と例の対応は文書の末尾の「記録と例」。
-- K64 の側のバグの番号 (B01〜B110) は [`21_sad_bug_report.md`](21_sad_bug_report.md)。B72 以降は v2 の作業で新しく見つけたもの。
+- この文書は一覧。根拠の数値・条件・使い方の詳細は作業の記録 (v2.0.0 は `history/v2_changes_*.md`、v2.1.0 は `history/v2next_*.md`) にある。記録と例の対応は文書の末尾の「記録と例」。
+- K64 の側のバグの番号 (B01〜B134) は [`21_sad_bug_report.md`](21_sad_bug_report.md)。B72〜B110 は v2.0.0、B111〜B134 は v2.1.0 の作業で新しく見つけたもの。
 - 使った条件: 電子。3 GeV の FODO リング (24 セル 105.6 m / 91.2 m、12 セル 45.6 m / 62.4 m)、1 GeV・3 GeV の短い輸送路、0.5 GeV・2 GeV のリング、ソレノイドは 0.3〜3 T/(Bρ) 相当、
   RADLIGHT は 10.2 MeV、空間電荷は 5〜50 MeV。個別の条件は各表と記録に書いた。**実機の大きなリング・挿入光源・強い結合では確かめていない。**
 - v2 の値の根拠は、解析式、独立な数値計算 (scipy の solve_ivp によるローレンツ力・Thomas-BMT の積分など)、保存則、別のコードとの一致で、gs ではない。
   gs (SAD 1.4.4.2k64、2026-10-19 ビルド) は「K64 の動作の確認」と「K64 が正しく動く機能の参照」に使った。
 
-## (a) 互換モードの使い方
+## v2.1.0 (2026-11-18)
+
+v2.0.0 の「未対応・未確認」を追求して直した版 (記録は `history/v2next_A1.md`・`A2`・`B1`・`B2`・`B3`・`C`・`D1`・`D2`・`E`、例は `example/v2_next/`)。互換モード (`pysad/compat.py`、既定 v2、`PYSAD_COMPAT=k64` で K64 の動作) の使い方は下の v2.0.0 の (a) と同じ。**v2.0.0 の節は変えずに残す**。この節の (a)〜(f) は v2.1.0 だけの一覧で、v2.0.0 の (a)〜(f) とは別。
+
+- 使ったリング: 小さなリング (12 セル・24 セルの FODO、周長 41.8〜105.6 m、0.2〜4.2 GeV)、大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、周長 603 m、3563 要素)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、MPW 入りは `ASTRID2_v01_02_id.sad`、0.58 GeV、45.7 m)。大きなリング B (8 GeV、周長 1436 m、4 回対称、矩形の偏向磁石 88 台) は数値だけ確認に使った (A2 の RADINT・Polarization、D1・D2 の NORFSW・COD・Emittance[])。
+- K64 の側のバグの番号は B111〜B134 ([`21_sad_bug_report.md`](21_sad_bug_report.md))。記録の項目名との対応は `local/wake/v21_bnum.md`。
+- 根拠の種類は v2.0.0 と同じ (解析式、独立な数値計算、gs)。gs は 2026-11-17〜18 の 10-19 ビルド。gs で確かめられない v2 の値は「v2 の値は独立な根拠だけ」と書いた。
+
+### (a) v2.1.0 で結果が変わるもの (K64 = k64 モードの動作との違い)
+
+「K64」は gs の動作で、k64 モードの動作でもある。k64 モードを変えないのが原則 (v2.1.0 で k64 モードの結果を変えたのは、pysad 自身の不具合の修正 (下の (c)) だけ)。
+
+| ID | 項目 | K64 | v2 | 根拠 | 試験 |
+|---|---|---|---|---|---|
+| B111 | 放射の反作用の角度の符号 (tradke と tradkn)・RADTAPER の追跡の BEND の重み | tradke (Emittance[]・閉軌道) の `ddpx` の符号が tradkn (追跡) と逆。Emittance[] の閉軌道から追跡を 1 周すると x −4.3e-7 m、z 2.4e-6 m 動く (小リング)。RADTAPER の追跡の BEND の重みは (δ_l + δ_l+1)/2 | 符号を反転。RADTAPER の追跡の重みを (3δ_l + δ_l+1)/4 (tturne と同じ) | 閉軌道の 1 周の追跡の動き (v2 / k64): 小リング x 1.4e-9 / −4.35e-7 m、大きなリング A (RADCOD) −4.5e-11 / −2.0e-8 m、PF 2.7e-11 / −6.2e-9 m、ASTRID2 (MPW 入り) −5.4e-9 / −1.17e-7 m。**v2 の Emittance[] (RADCOD) は gs と相対 1e-4〜1e-3 ずれる** (k64 は全桁一致)。符号の根拠は導出と「閉軌道が閉じる」ことで、K64 の作者の意図の裏づけは無い | `test_v2_A1_next.py::test_radcod_closed_orbit_closes_in_tracking_v2`・`…_does_not_close_k64`・`test_tradke_python_and_numba_agree_v2` |
+| B112 | 放射の古典半径 (MASS≠電子) | `re0 = elradi` (質量によらない)。30 GeV/c の陽子の U0 が 1.2651 eV | `re0 = elradi·elmass/amass`。U0 = 6.88e-4 eV (古典式) | 古典式 U0 = (2/3) r_p mc² β³γ⁴ Σθ²/L と追跡の 1 周の δ の変化が 1e-6 (質量 1×・2× 陽子)。**電子の放射は両モードでビット単位で同じ** | `test_v2_A1_next.py::test_proton_radiation_loss_v2`・`…_k64`・`test_electron_radiation_same_in_both_modes` |
+| B114 | ずれた BEND の CALC (tbrote の出口) | 出口のドリフトが逆向き。矩形磁石 1 台の DX = 2 mm でチューンが 2.7e-5 動く (追跡は動かない) | 出口も入口と同じ回し方 | 厳密な幾何 (弦に垂直なずれの帯の中の円弧) と CALC が 2e-8。矩形は光学が不変 | `test_v2_A2_dx.py` (10 件) |
+| B115 | RADINT の ANGLE=0・K0≠0 の BEND (挿入光源の極) | 無視 (ASTRID2 + MPW で U0 6.17 keV) | K0 を曲げ角として積分に入れる (U0 7.81 keV) | I2 = Σ(ANGLE+K0)²/L と 1e-6、U0 は Emittance[] と 1.1e-3。**Jx 0.7%・εx 3.5% は Emittance[] とずれる** | `test_v2_A2_radint.py::test_radint_includes_k0_poles_of_insertion_device_v2` |
+| B116 | Polarization・PolarizationTime (逆向きの BEND = 挿入光源の極) | 符号つきの率 Σ r (b·n) で極が相殺 (ASTRID2 + MPW で P = 92.376%、τ = 28842 s) | 符号に依らない Σ r (b·n)² (P = 0.70190、τ = 21915 s) | 独立な式 P = 0.70163、τ = 21886 s と 2e-3。K64 の追跡の緩和率の比 (MPW あり/なし 1.311) が v2 1.315、式 1.317 | `test_v2_A2_pol.py` (7 件) |
+| B117 | K1≠0 の BEND の追跡の端 (tbendi) | 薄い端の写像。CALC と x-px の行列が 1.1e-5 違う (x0 = 1 mm) | `DISFRIN=0` かつ端の角 ≠ 0 で CALC と同じ厳密な tbedge | 厳密な写像 (ローレンツ力の数値積分) と 1e-10 (K64 は 1e-10〜9e-9)。CALC との行列の差 4e-8 | `test_v2_B1_optics.py::test_k1_bend_*` |
+| B121・B122 | `Union[…, SameTest->f]`・`WriteBeamLine[…, Name->"L2"]` (文字列) | 先頭の要素だけを返す・`Insufficient number of Names` | 真値 (`{1,3,5}`)・文字列の Name も受ける | gs の実測と定義 | `test_v2_B2_script.py::test_union_samplest_true_value_in_v2`・`test_writebeamline_name_string_k64_vs_v2` |
+| B123 | 光子の偏光 ξ1 (tphrec) | pp で 2 回割り \|ξ1\| が 1e3〜1e6 | pp で割らない (\|ξ1\|, \|ξ3\| ≤ 1) | ξ1² + ξ2² + ξ3² ≈ 1。k64 は gs と全列一致 | `test_v2_B3_photons.py` (`test_stokes_*`) |
+| B125 | `Polarization` の脱偏極率 (spdepol) | emittance/減衰率に比例 (4.2 GeV・12 MV の FODO で P = 1.27e-4。独立な率の約 1000 倍) | 側帯 (シンクロトロン振動によるスピンの位相の変調) を厳密に取った独立な式。`depol_rate` (側帯込み)・`depol_rate_linear` | 線形の軌道 + 厳密なスピン回転の MC と 10% 以内。FLUC つきの追跡には 0.43 倍 (過小評価。(d) 参照) | `test_v2_B3_pol.py` (7 件)、`test_v2_D1_emit.py::test_k64_spdepol_rate_scales_as_emittance_over_damping_v2` |
+| B107・B126・B109・B106 | RADINT の BMAG の CKL1Y・QUADRU の軌道のずれ、tbgrote の (5,6)、tradke の b | CKL1Y = −cos θ·DKL1、QUADRU は四極自身の DX・DY を引かず K1<0 で符号が逆、(5,6) に px² + py² が残る、b = bzh·0.5 | CKL1Y = +sin θ·DKL1、(dx, dy) = 閉軌道 − 要素のずれ、コメントアウトされた式、b = bzh | I4U + I4V が物理的な I4 と 1e-7 (K64 は 1.6〜2.7% ずれる)。ΔJx = +0.0078 (追跡 +0.00781、K64 +0.0028)。(5,6) は有限差分と 4e-12。**B106 の数値の効果は 1e-13 以下** | `test_v2_C3_radint.py` (21 件)、`test_v2_C3_misc.py` |
+| B108 | ANGLE=0 の BEND (補正磁石・挿入光源の極) の端の角 AE1・AE2 の放射 | 端の項が約 2 倍 (B75 と同じ) | 行路を x tan(e) 短くする (ANGLE≠0 の `tbende` と同じ) | 厳密な幾何 + ロビンソンの定理: ΔJx が 厳密 : v2 : k64 = 1 : 1.03 : 2.08 (傾き 5 mrad の極)。傾き 30 mrad では v2 は 0.02〜0.03 ずれる | `test_v2_E_steer.py::test_steering_edge_angle_*` |
+| B127 | WSPAC の Emittance[]・EMIT のチューンシフト | 最後のスライスの `gammab(nlat+1) = 0` でレンズが 8 倍強く、シフトが 3〜4% 強い | p1 = (1+δ) p0 | 一次のラスレットの積分と 0.2〜1.8% (大きなリング A・PF・ASTRID2。K64 は 0.9〜7%)。k64 は gs と全桁一致 | `test_v2_D1_emit.py::test_wspac_*` (4 件) |
+| B128 | SynchroBetaEmittance の収束の警告 | 警告なし (大きなリング A で 40 倍違う値を返す) | **値は変えず**、AzimuthalModes m と 1.5 倍の m の emitx が 20% 以上違えば警告 | 大きなリング A で m = 9 が 5.1e-9、m = 14 が 2.5e-9 → 警告。B・ASTRID2 は警告なし | `test_v2_D1_emit.py` (警告 2 件。1 件は `PYSAD_SLOW=1`) |
+| B129 | CorrectOrbit の `Solver->{"Micado",n}` | 全補正量の最小二乗の先頭 nx 個を使い、補正が悪化する | 選んだ nx 本だけを解く | 選んだ列の `lstsq` と 1e-9。24 セルで n = 1 から 24 まで単調に下がる (4.74e-5 → 2.06e-5 m) | `test_v2_D2_packages.py::test_micado_*` (4 件) |
+| B130 | Emittance[]・EMIT の POL の量 (傾いた・ずれたソレノイド) | 縦磁場を z 軸の向きに足す (SpinTune が追跡と 1.5e-4〜1.1e-3、n0 が 2.5e-3〜1.5e-2 rad 違う) | B⊥ と B∥ を運動量の向きに分けて足す。領域内の DRIFT・QUAD の放射・スピンの刻みも bz·L/n ≤ 0.02。向きの変化の大きさを sin θ でなく θ に (領域の外にも効く: N8、平面リングで SpinTune が 2.6e-5 変わる) | 回転した縦磁場の歳差の閉じた式と 5e-7。SpinTune の差 1e-13〜5e-7、n0 の差 0〜1e-5 rad (大きなリング A・PF・ASTRID2・ASTRID2 + MPW でも) | `test_v2_E_spinsol.py` (20 件) |
+| B131 | SOL 領域内の CAVI のスピン (追跡) | 歳差しない | 放射・スピンの刻みに通す | Thomas-BMT と 1e-9 台 | `test_v2_E_spinsol.py` |
+| B132 | PhotonList のエネルギー列 | γ でなく βγ を掛ける (3 GeV で 1.45e-8) | γ を掛ける | gs と E 列だけ 1.4e-8 違う (k64 は全列一致) | `test_v2_D1_emit.py::test_photons_*` |
+| B133 | WSPAC ON の CALC・CALC6D | NaN (gs)。k64 は従来どおり空間電荷を入れない | 空間電荷を入れる (6D の経路。RFSW ON の 4D の CALC も) | 一次のラスレットの積分と 0.15%、Emittance[] のチューンと 2e-6。K64 の `qwspac` の直訳ではない (gs で比べられない) | `test_v2_B1_optics.py::test_wspac_*` |
+| B83 (N8) | 平面リングのスピン角 (example/07 の 500 周) | 刻みの誤差が積算 (0.8794 rad) | 厳密な θ (1.1516 rad) | 刻みを EPS=1E-5 に細かくすると gs と v2 が 1e-8 で一致。**保存値 0.8794 rad は K64 の刻みの誤差で物理の値ではない** | `test_v2_A2_spin.py` (9 件) |
+| (B1) | SOL 領域内の DRIFT のスピン・放射の刻み | 1 刻み (bz = 9 で放射が 1.7 倍外れ、スピンが 1e-2) | ndiv = 1 + int(\|bz·al\|/0.02) | Thomas-BMT の積分と 2.3e-7〜8.9e-7、らせんの放射損失と 1e-4 (3 GeV、bz = 3・9) | `test_v2_B1_sol.py::test_spin_in_sol_drift_at_large_bz_matches_thomas_bmt`・`test_sol_region_drift_radiation_*` |
+| (A1) | PSPAC のメッシュ | (PSPAC は v2 だけ) | 結果は変えず、粗いメッシュの警告 (`???-PSPAC-Warning-…`) | 横の rms が 1.5 セル未満・縦の rms が 1.5 セル未満・粒子の 1% 以上がメッシュの外。メッシュが十分細かいと解析式と 1〜2%、gs と 1% | `test_v2_A1_next.py::test_pspac_resolution_vs_analytic_and_gs` |
+
+- B99 (DELCOR の規格化)・B40 (CAVI の符号) は v2.0.0 のまま。規格化の根拠 (K64 は複素数の ⟨\|c\|²⟩ = 1) と、CAVI の符号は追跡に効かず観測できないことが確定した (`history/v2next_C.md` §3.4)。
+- B83 の行の根拠の数値は 24 セルの FODO (3 GeV、RF 4 MV)。k64 の 1 周のスピン角 −1.1940907 rad、v2 −1.1935299 rad、EPS=1E-5 で gs −1.1935395510、v2 −1.1935395636。
+
+### (b) モードによらない追加・修正と、新しく使える機能
+
+「モード」の列: **v2** = v2 モードだけ、**両** = 両モードで同じ (pysad の追加・修正、または gs と同じ結果が出る機能)。例は `example/v2_next/` (各担当の README・`.gs.txt` が gs、`.pysad.txt` が v2、`.pysad_k64.txt` が k64)。
+
+| 機能 | モード | 使える範囲と条件 | 使えない・未確認 | 例・記録 |
+|---|---|---|---|---|
+| **NAFF** (チューンの抽出。`pysad/naff.py`: `naff`・`naff_real`・`tune_xp`・`tunes_from_coords`) | 両 (新しい関数) | 放射を切った追跡の座標列 (1/周回の単位)。周波数の間隔が約 2/N 以上の成分。既知の信号で周波数 1e-11。追跡の座標列 (1024 周) のチューンが CALC と 12 セル FODO 3e-9、大きなリング A 6e-10・8e-10、PF 1.4e-10、ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4 | 放射減衰のある列 (包絡 exp(−λn) で周波数がずれる)、共鳴線の近傍 (間隔 < 1/N)、六極つきで振幅が大きいと振幅依存のチューン。**MAIN の TRACK の FOURIER (wjfit・wfres・wfbin・wiord) は未翻訳** (gs は SIGSEGV で比べられない。pysad は FOURIER を無視する) | `B3_naff_tunes.py`、B3 §6 |
+| **光子 (PhotonList)** (RAD・FLUC・PHOTONS ON の TrackParticles) | 両 (xi1 の誤りと E 列は v2 だけ直す) | BEND (K1=0・K1≠0・ROTATE・DX・DY・DROTATE)・QUAD・MULT (K0・K1・K2・DX・DY・ROTATE)・SEXT・OCT (DX・ROTATE)・磁場つきドリフト・BEAMBEAM + BEND (TRPT つきでも)。k64 は gs と光子 358 個・325 個・71 個が全列一致 (E 列は B132)。v2 は光子数が解析式の 4σ 以内、⟨u⟩/u_c = 8/(15√3)、スペクトルの KS 検定。条件: 3 GeV の 12・24 セル FODO (1 粒子 1 周 1 ms 程度)、1.7 GeV (BEAMBEAM) | **SOL 領域内の要素の光子は記録しない** (乱数だけ K64 と同じに引く)。COORD・TCAVI・MAP があるラティスは従来の高速追跡 (BEND がなければ光子なし)。POL の追跡との併用は未確認。QUAD の光子の位置は gs と未照合 (BEND は全桁)。BEND があると Python の追跡になり遅い | `B3_photons_bend.sad`、`D1_photons_mult.sad`、`D1_photons_bb_bend.sad`、docs/45 |
+| **WSPAC の Emittance[]・EMIT・CALC6D・RFSW ON の CALC** | Emittance[]・EMIT は両、CALC・CALC6D は v2 | 反復して空間電荷つきの一周の写像からチューン・エミッタンス・Twiss を作る (INTRA とも併用可)。0.2 GeV の 12 セル FODO (PBUNCH 1e5〜1e8、MINCOUP 0.5・0.2)。**k64 は gs と全桁一致** (小リング、大きなリング A・PF・ASTRID2 で、PBUNCH 1e9〜1e10)。v2 は一次のラスレットと 0.2〜1.8% | 追跡の WSPAC のビーム行列は空間電荷なし・MINCOUP なしの平衡値のまま (`LINE["SIG…"]`)。強い空間電荷 (0.2 GeV で PBUNCH ≳ 1e9 は反復が収束しない)、RF なしの CALC、TouschekLifetime との併用、実機の大きなリング | `B1_wspac_emittance.sad`、`test_v2_B1_optics.py`、`test_v2_D1_emit.py`、B1 項目 3、D1 項目 2 |
+| **成分ごとの FREE** (`FREE QF.3 K1`・`FIX B.3` など) | 両 (pysad の修正) | 語に `.` があれば成分の変数。既定のキー (QUAD の K1 など) は先頭の成分に結合 (`???-FFS-Info-Component QF.2 is coupled to QF.1 .`)、既定でないキー (BEND の K1・ROTATE) はその成分だけ。CALC・GO・VAR・FIX・NOKEEPEXP。小さな FODO で反復の残差・NX が gs と全桁。大きなリング A (`FREE BPI6.2 K1; FREE BPI7.5 K1`) でも反復の行・チューン・K1 が gs と一致 | **先頭でない成分の既定のキーの変数は作らない** (gs は値を持たない変数として数える: 反復の行の変数の数が 1 つ違い、その変数だけで GO すると pysad は `?No variable.`)。COUPLE で結合した要素の成分、`USE NOEXPAND` の展開済みの成分は未確認 | `B2_free_component.sad`、`test_v2_B2_free.py` |
+| **複素の PolyLog・HypergeometricU・Zeta・HurwitzZeta** (`pysad/specfn_cx.py`) | 両 (**k64 も真値**) | 複素の z・s。Zeta・HurwitzZeta は \|s\| ≤ 500、PolyLog は実数の次数・\|z\| ≤ 1e8、HypergeometricU は \|z\| ≤ 30 (Re a > 0 は積分表示、a が負の整数は多項式、ほかは漸化式と Kummer の変換)。独立な参照 (Borwein、Euler–Maclaurin、spence、積分表示、接続公式) と 1e-10〜1e-11。gs の誤り (B118〜B120) の点でも真値。負の実数の z は上側 | **k64 が gs の誤った値を再現しない** (再現には K64 の複素の不完全ガンマなどの直訳が要る。要判断)。複素の次数の PolyLog、Re a ≤ 0 の複素の a・b の HypergeometricU (SADError)、z = 0 の U、\|z\| が範囲外 | `B2_special_functions_complex.sad`、`test_v2_B2_specfn_cx.py` |
+| **文脈・`Symbol`・`Message`・VISIT/BYE・`Ffs;`** | 両 (gs に合わせた) | `$Context` への文脈の記号 (名前の末尾にバッククォートを付けたもの) の代入と `$ContextPath` への代入が `Begin` と同じ規則で働く、`WithContext`、入れ子の文脈 (台本の 19 行が gs と全行一致)。大域の名前 51 個を最初から持つ。`Symbol["x"]` は値を返す、`Message[f::tag, 値…]` は `???f::tag:  本文`、`General::tag` へ。VISIT・BYE・USE が FitFunction・FitValue・ElementValues・OpticsProlog・OpticsEpilog を退避・復元 (8 行が gs と一致)。`FFS` と `ffs` だけが FFS の語 (`Ffs;` は構文エラー)。LINE 名は書かれたとおり。**`Begin` に文脈を文字列で渡す形は k64 が拒否、v2 は受ける** | 文脈つきの `Names` (規則が決められない)、init.n が大域に作る名前の全部 (51 個しか調べていない)、`Off[f::tag]`、`BYE ALL` の gs との比較 (gs は SIGSEGV)、VISIT の未定義の LINE のメッセージ | `B2_context.sad`・`B2_symbol_message.sad`・`B2_visit_bye.sad`、`test_v2_B2_script.py` |
+| **`Parallelize`** (`pysad/fileops.py`) | 両 | POSIX (Linux・WSL・macOS) は npara 個まで fork で同時に計算 (結果の並びは gs と同じ。子の代入は親に戻らない。lshare 超過は `Shared::toolarge` で `$Failed`、Timeout 秒で子を殺す)。WSL で 4 つの `Sleep[1]` が 1.02 秒。`PYSAD_PARALLELIZE=serial` で逐次。親でカーネルを一度走らせてコンパイル・キャッシュを済ませてから呼ぶ | **Windows は逐次** (spawn では Interp・FFS・ラティスを pickle できない)。numba と fork の併用は実際には試せていない (WSL に numba が無い) | `B2_parallelize.sad`、`test_v2_B2_script.py` |
+| **`TrackParticles` の MASS・CHARGE** | 両 (放射の古典半径は v2 だけ: B112) | FFS の中で与えた陽子・重い粒子・多価イオンの TrackParticles・Emittance[]・CALC6D・RF の位相・ソレノイド。k64 は gs と全桁一致 (30 GeV/c の陽子、大きなリング A の 3 GeV/c の陽子)。ドリフトの z、ソレノイドのラーモア回転 (電荷 1・−1・2)、Qs が解析式と 1e-3〜1e-4 | `CHARGE` は FFS に入るたびに 1 に戻る (gs と同じ)。放射の β の因子 (β < 0.99 では U0 の 1/β² 倍)、TouschekLifetime・Intrabeam・RADINT の古典半径は電子の値のまま (陽子での確認なし) | `A1_proton_ring.sad`、`test_v2_A1_next.py` |
+| **Emittance[]・EMIT・CALC6D の BEND の F1・FRINGE**、**ANGLE=0 の BEND (補正磁石) と MULT の F1** | 両 (K64 の動作の追加) | k64 は gs と全桁一致: BEND (K1 の有無、FRINGE = 1・2・3・−1・−2、F1・FB1・FB2、K0、DX・DY・ROTATE) を小リング 9 通り、大きなリング A・PF・ASTRID2・MPW 入りの全偏向磁石に F1 を付けて。ステアリング (L = 0.2 m) と MULT (K1 = 0.7・−0.6) の F1 は FODO 14 通りと、大きなリング A・PF・ASTRID2 に 2 台挿入して gs と全桁。CALC のチューン = Emittance[] のチューン (RF・RAD なし、1e-9)。F1 のある BEND は numba の `k_bend` を使わず Python の経路 | **TrackParticles の F1 (ANGLE=0 の BEND の `tsteer`、MULT の `tmulti`) は未対応**。MULT の AE1・AE2 は読まない。`tbfrmle` の行列は数値微分。逆向きの要素 (`direlc<0`) の F1 の入れ替え。ステアリングに ROTATE と DX/DY を同時に付けると gs と CALC のチューンが 1e-4 違う (F1 に関係なく既存、未調査)。MULT の FB1・FB2 の `tblfre` (`multae.py`) は NotImplementedError のまま | `B1_bend_f1_emittance.sad`、`E_steer_f1.sad`、`E_mult_f1.sad`、`test_v2_B1_optics.py`・`test_v2_E_steer.py` |
+| **TrackParticles の BEND の F1・FRINGE (B113)・CAVI の DX・DY と V1 V20 V11 V02** | 両 (gate なし) | `track6n.bend_links` が tfgeo の inext・iprev を再現。CAVI は TENT・TEXIT と V1 V20 V11 V02。gs と全桁一致 (NORAD・RAD、POL の Python の追跡も)。大きなリング A (空洞に DX = 2e-4・DY = −3e-4、QDA2 を 0.03 rad 回して RAD の 5 周追跡) で差 0 | WakeFunction のある CAVI・SOL 領域内の CAVI の V1 V20 V11 V02 (NotImplementedError)、Emittance[] の CAVI の V1 V20 V11 V02 (`tcave` は V = 0 を前提) | `A1_bend_f1_adjacent.sad`・`A1_cavity_offset.sad`、`test_v2_A1_next.py` |
+| **EMIT のあとの `USE`** | 両 (K64 の仕様) | `trf0` を `USE` で持ち越す (EMIT・Emittance[]・CALC6D のあとの追跡の RF の位相が EMIT の値のまま)。gs と全桁 | `emit`・Touschek の結果は USE で捨てる (K64 での残り方は未確認) | `A1_use_after_emit.sad`、`test_v2_A1_next.py::test_use_after_emit_keeps_trf0` |
+| **CALC6D・RADCOD つきの CALC・INTRA と SOL 領域**、**`DP0` の別名** | 両 (gate なし) | SOL 領域のあるリングの CALC (4D・6D・RADCOD)・Emittance[]・EMIT・INTRA。k64 は gs と 1e-9 (SOL 領域のあるリング、3 GeV、BZ = 2 T)。CELL CALC6D のあと `DP0` を先頭の `DDP` にする。CALC6D + RADTAPER は k64 もテーパーを入れる (gs と 8e-8) | TouschekLifetime は SOL のあるリングで未確認 (gs が NaN)。BOUND=0 の SOL (BZ≠0) の CALC は NotImplementedError。RADTAPER + SOL・WSPAC・INTRA + SOL の併用は走るが値の確認なし。**4 次元の CALC は RADTAPER を見ない (K64 の仕様。実装しない)** | `B1_sol_calc6d_intra.sad`、`test_v2_B1_optics.py` |
+| **傾いたソレノイドの POL** (B130 の修正の機能面) | v2 | v2 の Emittance[]・EMIT の POL (SpinTune・n0・Polarization・脱偏極ベクトル) が、ずれ・傾き・F1 つきの SOL 領域 (領域内は DRIFT・QUAD・BEND・MULT・CAVI・RF つき MULT・SOL) で追跡と一致。1〜3 T・0.3〜3 GeV | bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台。領域内の QUAD の端の ψ は hard edge の Bs なし (軌道が数 mm の範囲で確認、cm のずれは未確認)。領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y') は K64 も追跡も入れていない | `E_sol_tilt_spin.py`、`test_v2_E_spinsol.py` |
+| **POL + TRPT + 加速** (スピン追跡 track6 の VOLT≠0 の CAVI) | v2 | SOL 領域の外の CAVI。DX・DY・ROTATE も。断熱加速の解析式 Φ = aγ1θ1 + aγ2θ2 と 5e-7 (1 GeV、扇形の偏向磁石の間に 0・0.2・0.5 GV)。track6 の `_ndivrad` が TRPT の 10 倍を見ていなかったのを直した (POL・RADPOL・光子の追跡の TRPT の結果が gs に近づく) | SOL 領域内の加速、RF つき MULT・TCAVI の加速、リングの何周もの TRPT (K64 の TRPT は輸送路用)、スピン追跡の損失の処理 (これらは SADError)。k64 は従来どおり明示のエラー | `D1_spin_accel.py`、`test_v2_D1_emit.py::test_spin_tracking_with_trpt_*` |
+| **領域内の四極の DX・DY と幾何の fit** | 両 (領域内の四極のずれは k64 も gs と同じ) | 追跡・`solemit`・`sgeo` で領域内の四極の DX・DY (gs と LINE["GX"…] が全桁一致)。幾何の fit (QF の DX、QD の DY) が gs と同じ 2 回の Newton で収束 (変数 1e-12)。解析微分は幾何の有限差分と 2e-3 | SEXT・OCT・MULT の領域内のずれは未確認。四極の F1・FRINGE と領域内の BEND・MULT のずれは未対応。領域内の四極のずれの POL の追跡 (track6) は NotImplementedError。k64 は SOL 自体のずれが未対応。CHI3 の fit は K64 でも収束しない (B124) | `B3_geofit_quad_dx.sad`、`test_v2_B3_geofit.py` |
+| **`NPARA=n;`** (FLUC の追跡の子プロセスへの分け方) | 両 (既定は NPARA=1 のまま) | gs の既定 NPARA=4 と同じ分け方 (`TrackParticles` は np ≥ 13 で粒子を分け、子の乱数の種は親の種 + 2k)。RAD + FLUC の追跡だけ (POL・RADLIGHT・PHOTONS・WAKE は分けない)。NPARA=1 と 4 の rms dp・最終の乱数の種が gs と全桁一致 (FODO、np = 200、1・10・100 周。PF リング、np = 40) | v2 は A1・A2 の放射の式の修正で rms が 6e-6 (1 周)〜1e-3 (100 周) 違う (乱数の引き方・最終の種は同じ) | `C3_fluc_nparallel.sad`、`test_v2_C3_misc.py::test_fluc_*` |
+| **MAIN の要素定義の式** (`ANGLE=PI/8`・`SIN(...)`・`10 DEG`) | 両 (pysad の不足) | gs の文法 (約 100 通りの実測): `PI`・`SIN COS TAN ATAN SQRT EXP LOG LN SINH COSH TANH ATAN2`・`+ - * / ^`・単位は数の直後だけ。大きなリング A・B、PF、ASTRID2 の全要素の値が v2.0.0 の読み取りとビット一致 | gs が構文エラーにするが pysad が受ける形 (`45DEG`、`SIN[0.1]`、未定義の名前)。gs が受けるが pysad が構文エラーにする形 (末尾の `1+`)。MAIN の変数を `E`・`Pi`・`Degree` で代入しても要素定義の式の `E` は SADScript の定数 | `D2_main_expr.sad`、`test_v2_D2_parser.py` |
+| **Packages の関数**: `Log2$`・`FunctionDefinition`・`Fill$String`・`Remove$Paren`・`Emittance->False`・`TURNS` の既定・`Element[..]+=` | 両 (pysad の不足) | 小さな台本を gs と行ごとに突き合わせた (functions.n・Misc.n・element.n・beamline.n・emit.n・dapert.n)。`Element["K1","QF"]+=0.1`・`LINE[..]+=` がフックを通らない不具合を直した。`SetElement` の戻り値、`Touschek` のメッセージ、`DynamicApertureSurvey` の TURNS の既定 −1 | `DAPWIDTH` の既定 (gs は 7 で窓の追跡、pysad は 51 で全点)、`Axes->"XZ"` の z が 3 点のとき、`Names`、`PROFILE` の代入、`Through` の文言、除算 `a/b` が gs では `a*(1/b)` (最後の桁の 1 ulp) | `B2_packages_compare.sad`、`test_v2_B2_script.py` |
+| **PeriodicR・CorrectLocal** | 両 | 4x4 の一周行列 6 通りで R・A・B の 12 成分が gs と 3e-16。CorrectLocal (12 セル FODO、領域 {BA3, BA8}、垂直) の補正量・BPM の DY が 1e-14 | 水平・2 平面同時の Micado、`Bump`・`SVDmode->1` つきの Micado は未確認。PeriodicR は `PeriodicOptics` を先に呼ぶ (gs も同じ) | `D2_periodicr.sad`・`D2_correctlocal.sad`・`D2_micado.sad`、`test_v2_D2_packages.py` |
+| **`pysad.nbcache`** (numba のキャッシュの無効化) | 両 | `py -3.12 -m pysad.nbcache`。numba の索引は関数を定義したファイルの内容でだけ無効になり、呼ばれる側 (別のファイル) の変更で無効にならない。`__pycache__/nbdeps.json` に依存先のハッシュを覚えて、変わったモジュールの `.nbi`・`.nbc` を捨てる。**kernel (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py`) を編集したら試験の前に 1 回走らせる** | 自動では呼ばない。最初の 1 回は記録だけ (`--force`) | `test_nbcache_purges_caller_when_callee_file_changes` |
+| **Python 3.14 (Tk 9.0) の GUI** | 両 | `test_tclbridge.py`・`test_plot.py`・`test_gui_lang.py` の 25 件と `example/12_gui_tkinter` の 6 本が通る。Windows の Tk 9.0 で `$DefaultFixedFont` を `Courier New` にする。3.12 と 3.14 で `test_spin.py` の値が同じ (複素数の inf の扱いの差を吸収) | 実際の画面の撮影、マウス操作、macOS・Linux。Tk 9.0 の `cget` が長さを pt で返す (`4p`) のを `.n` が数として使うと壊れる (未確認) | `D2_README.md`、D2 §2.2 |
+
+### (c) pysad 自身の不具合の修正 (K64 のバグではない。B 番号を付けていない)
+
+| 項目 | 不具合 | 修正 | モード・根拠 |
+|---|---|---|---|
+| `Twiss["DETR"]` が INS の CALC の後で 0 (N12) | `ffscmd._rows_from_tws` が `detr` を渡していなかった | 渡す | 両。小さな結合リング・大きなリング A・PF リングで gs と全桁 (DETR < 1)。**DETR ≥ 1 (モードが入れ替わる) の INS と MEASURE は未確認** |
+| `TrackParticles` が MASS・CHARGE を渡さない | 電子の質量・電荷 1 のまま追跡 | 渡す (`ffscmd._mass_charge()`) | 両。gs と全桁 |
+| BEND の F1 の放射の断片 (A1) | `first`・`last` を常に True にして、隣り合う BEND と 1 個の BEND の輸送路で F1 の断片を余計に入れた | tfgeo の inext・iprev を再現 (B113) | 両。RAD の追跡が gs と 1e-6 (8 桁表示の丸め) |
+| CAVI の DX・DY・ROTATE と V1 V20 V11 V02 | 追跡の CAVI に TENT・TEXIT が無く、パーサが V1 V20 V11 V02 を捨てていた | `tent_all`・`texit_all`、`k_cav_q`、パーサ | 両。gs と全桁 |
+| EMIT のあとの `USE` で `trf0` が 0 に戻る | `USE` で `self.trf0 = 0.0` | 持ち越す | 両。gs と全桁 |
+| NORFSW; RAD の Emittance[] の閉軌道 (D1 項目 1) | 空洞があって RFSW OFF のとき、z の戻りを δ で閉じていた (K64 の tcod は δ も z も動かさない) | 「空洞があって RFSW OFF」のときだけ z を δ で閉じない | 両。大きなリング B (QF5 に DX = 5e-5): gs 7.1529048e-9、k64 7.1529045e-9 (以前 6.8685e-9)。大きなリング A・PF も gs と同じ。空洞のないリングは従来どおり (回帰 3c・3d・26b) |
+| `_tquade` の軌道ゼロの四極のスピン軌道結合 D が 0 (POL ON、E の (a)) | tradke を通らない | `calpol` のときは通す | 両。斜め四極つきのリングで D の 18 成分が gs と全桁 |
+| 領域内の四極 (K1<0 の −90°、ROTATE) でスピンの座標系を回さない (E の (b)) | `track6._tquad_sol`・`solemit._tquade` | `_spin_rot_z`・`solemit._spin_rot` | 両 (k64 の Emittance[] の srot が gs と全桁)。Thomas-BMT と比べて K1<0 で 2.4e-3 ずれていた |
+| `RadiationField` の複数区間・複数周 (C) | 区間の始めの点と直前の要素の後の点が同じで `x must be strictly increasing` | 完全に同じ点を除く (時刻が戻る点は SADError) | 両。Liénard-Wiechert の厳密な数値と振幅・位相・スペクトル・全エネルギーで一致 (gs は RadiationField で SIGSEGV: B49) |
+| 不安定なリングの POL の Emittance[] が 20 分以上 (D1 項目 8) | NaN の閉軌道の 1 周 (POL では 21〜65 秒) を 30 回以上繰り返す | NaN で打ち切り、`depol_error` つきの NaN を返す | 両。大きなリング B (四極 60 台に DY 0.1 mm) 20 分以上 → 2 秒 |
+| `FREE QF.3 K1` がファミリー全体の変数になる | gs は成分の変数 | 成分ごとの FREE (上の (b)) | 両。gs と全桁 |
+| `Element[..]+=`・`LINE[..]+=` が利用者の規則を作る | 複合代入がフックを通らない | 包み直した `Set` を呼ぶ | 両。gs と一致 |
+| 要素定義の式 `ANGLE=PI/8` で要素を捨てる | `PI`・関数を文字列として扱い警告 | gs の文法で評価 (上の (b)) | 両。gs の 37 通りの値と 19 通りの構文エラー。**v2.0.0 の `C2` の試験の台本 `PHI=-Pi/2` は gs で構文エラーの形** で、`PHI=-PI/2` に直した |
+| Python 3.14 で `test_spin.py::test_mult_ring_matches_gs` が失敗 | 不安定なリングの `_spintrm` で inf を含む複素数の演算が例外 (3.14 の複素数の扱いの変更) | `cb` が有限でなければ `nan+nanj`、`_cerfc` の `z ** 2` を `z * z` | 両。3.12 の結果と全桁同じ (k64 の値は変わらない) |
+| Tk 9.0 (Windows) の固定幅フォント | `courier` が Courier New に置き換わらない | `$DefaultFixedFont` を `Courier New` に | Tk 9.0 の Windows だけ |
+| `emit6d._tquade` の解析ヤコビアンの z の行 | 関数単体として z の行 (列 x px y py) が 0 | v2 は完全にした (結果は変わらない: `State.piece` が組み直していた) | v2。数値微分と 1e-10。**旧記述 (T の δ 列が 1e-5 ずれる) は再現しなかった** |
+| 改行 (LF/CRLF) の整理 | 作業コピーが HEAD と違う改行の 7 ファイル | HEAD の改行に戻した | 内容は変えていない |
+
+### (d) 要判断・未解決
+
+各記録の「要判断」「残した項目」を、v2.1.0 で解決したものを除いて集めた。
+
+**放射・エミッタンス・スピン**
+- **tradke の符号 (B111) と RADTAPER の追跡の重み**: どちらも「閉軌道が追跡で閉じる」を根拠にした選択で、K64 の作者の意図の裏づけは無い。v2 の Emittance[] (RADCOD) は gs と 1e-4〜1e-3 ずれる。RADTAPER の重みのどちらが物理的かは未判断。SOL 領域内の `tradke` (bzh ≠ 0) も符号が変わるが、追跡 (`tsolqur` など) との整合は未確認。U0/E が大きいリング (8 GeV、周長 1.4 km: 大きなリング B 相当) は未確認。
+- **v2 の Emittance[] と RADINT の差 (矩形磁石)**: 大きなリング B で v2 の εx 6.9651e-9 は RADINT の 6.9554e-9 より 1.4e-3 大きい (k64 は 1e-4 で整合)。v2 の修正 (A1・A2・C の矩形の BEND の E1・E2 と放射) の側の問題かもしれない (D2 が指摘、未調査)。
+- **v2 の Polarization は脱偏極率を過小評価する**: 4.2 GeV・12 MV の 12 セル FODO で FLUC つきの追跡の 0.43 倍 (4 本・480 粒子で 3.7σ)。残りの 2 倍は式の導出ではなく軌道の非線形の効果 (確定的な蹴りへの応答で、追跡のスピン軸の応答が線形の軌道モデルの 2.07 ± 0.24 倍。δ の応答 1.9 倍、水平 1.3 倍、垂直 1.0 倍。振幅 2σ 以上、シンクロトロン + ベータトロンとともに増える)。低エネルギー (ASTRID2) では 1.0。どの非線形かは未分離。**式には入れられず**、限界の表 (E §4.4) にした。使える範囲の目安: 変調指数 aγσδ/νs ≲ 0.3。≳ 0.5 の高エネルギー・高 RF 電圧のリングでは追跡 (FLUC) で確かめる。その他: 結合項 b の u の 2 次の項を入れていない (MC に対し −10%)、全座標の応答の比は 12 試料・位置 1 か所・4.2 GeV・12 MV のみ (6 MV・24 MV・PF は未測定)、ゼロ振幅の線形応答が追跡で 13% 小さい (領域の外の偏向磁石の B∥ = B_y y' を入れると変わるか未確認)。
+- **大きなリング A に鉛直の四極の誤差 rms 0.2・0.4 mm を入れると光学が不安定** (x の固有値 1.2)。側帯の項は不安定なリングでは線形の式に戻す。Polarization は 0.1 mm だけ意味がある。大きなリング B の POL は四極 60 台に 0.1 mm で不安定 (NaN)。
+- **n が傾く・非平面のリングの緩和率** (B116: Σ r (b·n)² が最適か。ST の厳密式の (1 − 2/9 (n·v)²) の項を入れていない)。ずれのある MPW のリングの P・τ は未確認。
+- **B108 の残り**: K1≠0・K0≠0 の ANGLE=0 BEND と MULT の端の角 (pysad が AE を読まない)。追跡 (`tsteer`) の端の放射は未確認。軌道の傾き 30 mrad の極で独立な値と 0.02〜0.03 違う。
+- **RADINT**: K0 の極の εx は Emittance[] と 3.5%、Jx は 0.7% 違う (扇形の行列による近似)。軌道のずれ (B126) は SEXT・BEND を入れていない。結合リングで νy ≈ νs のときの J は RADINT と追跡・Emittance[] が 0.015 違う (モードが混ざり定義できない条件)。K1≠0 の BEND の傾き θ ≠ 0 の CKL1Y は数値の確認が無い。RADINT の空洞の位相は VOLT を単純に足す (v2.0.0 のまま)。
+- **SynchroBetaEmittance (B128)**: 大きなリング A で 40 倍違う (K64 の式の限界か、gs・pysad k64 が共通に持つ未特定の誤りか)。原因は未特定。確かめて原因ではないもの: 閉軌道の探索、二次の分散、クロマティシティ、RF の位置の分散。SB の式の導出 (temits の `amus`・`dispp`) か、6 次元追跡の長時間の平衡 (4τ ≈ 50000 周) との比較が要る。
+- **WSPAC**: 追跡の WSPAC のビーム行列は空間電荷なし・MINCOUP なしのまま。CALC (4D) の WSPAC は CALC6D と同じ 6D の経路 (K64 が NaN を返す機能なので直訳の検証ができない)。
+- **その他の K64 の疑い**: CHI3 を使う幾何の fit (B124)、CALC の DISFRIN=1 の Maxwell のフリンジ (B134)、PhotonList 以外の光子 (MULT・SEXT・SOL 内・ドリフトの SOL 領域内は記録しない)、POL の追跡 (track6) の領域内の四極のずれ、K1=0 の BEND の追跡のスピン (tbend + tradk) が Emittance[]・tbendi (v2) と 2e-5 rad 違う (放射の分割が粗い K64 の精度の範囲)。
+- **MAIN の TRACK の FOURIER** (wjfit の maxord > 0): gs が SIGSEGV で比べられない。NAFF だけ追加。
+
+**追跡・要素・SOL**
+- **DELCOR (B99)**: 規格化の根拠は確定 (複素数の ⟨\|c\|²⟩ = 1) だが、「rms = delx」が作者の意図かは推定のまま。CAVI の符号 (B40) は追跡に効かず観測できない。
+- 領域内の QUAD・MULT のスピン (bz ≥ 3) は 1e-4 台、領域内の CAVI の POL (Emittance[]) は VOLT=0 だけ確認、SOL 領域内の光子・加速 (POL)、RF つき MULT・TCAVI の加速 (POL)。大きなリング A への SOL の確認は小リングのみ。
+- **K1≠0 の BEND の端の模型** (四極が半径方向の面で始まる): CALC・追跡とも同じ K64 の仕様。端面で始める厳密な硬い端の磁石とは x0 tan e に比例する差 (x0 = 1 mm、E=0.5 で 2.3e-5)。CALC の解析行列は y ≠ 0 の軌道で自身の写像の数値微分と y = 2 mm で 1.5e-6 違う。
+- **RADCOD の 1 周の解析 T と写像の数値微分の差** 2e-3 (K64 の `tradke` の微分が近似。k64・v2 とも)。BEND の T[z, δ] の近似 (`tbendebody0` の (5,6)) による 2e-5 (大きなリング A。K64 の仕様)。
+- 放射の β の因子 (B112)、TouschekLifetime・Intrabeam・RADINT の古典半径 (陽子)。
+- **DETR ≥ 1 の INS と MEASURE** (モードが入れ替わる結合リング) は未確認。
+- 4 次元の CALC の RADTAPER は実装しない (K64 の仕様)。SOL 領域 + RADTAPER は未確認。
+
+**集団効果**
+- PSPAC: gs の x と y の 16% の非対称は再現しない (元の例の乱数のビームか SPC8 の状態の持ち越しの可能性)。粗いメッシュの定量値は gs と違う (K64 の形状関数 (CIC・双 3 次・「ほぼ最近接」) を入れていない。k64 モードに K64 の形状関数の PSPAC を入れる案)。gs は PSPAC の状態を C の static 変数に持つので、1 つのセッションで TrackParticles を繰り返すと 2 回目から PSPAC が働かない (SPC8)。
+- WSPAC の Emittance[] が gs と 4% (x)・3% (y) 違う件は B127 で解決。
+- 空間電荷の k64 モード (K64 の動作 = 空間電荷なし)・空間電荷の未確認項目 (ウェーク・放射との組み合わせ、SOL 領域内の四極・MULT など) は v2.0.0 のまま。
+
+**スクリプト・FFS・特殊関数・パッケージ**
+- **複素の特殊関数の k64 モードの値**: gs が誤る点でも真値を返す (B118〜B120)。k64 は「gs と同じ」の規則を満たしていない。再現には K64 の gamma.f (複素の不完全ガンマ `cgamma2`・`czconvb`・`cpolylogl`) の直訳が要る。
+- 先頭でない成分の既定のキーの変数は作らない。`DAPWIDTH` の窓 (既定 51 のまま。trackd.f の追跡順の直訳が要る)。評価器の除算の逆数の積 (1 ulp。全試験の基準値に影響)。文脈の `Names`。init.n が大域に作る名前の全部 (51 個)。`Message` の `Tkinter::undef`。
+- `45DEG`・`SIN[0.1]`・未定義の名前を pysad が受ける、`1+` を受けない、MAIN の `E`・`Pi` の代入。Tk 9.0 の `cget` の単位つきの値 (`4p`)。
+- `Parallelize` の Windows の並列、numba と fork の併用。
+- CSROYMatrix (B60) の gs の wrongtype を k64 で再現するか (今は再現しない)。`OYStability`・`OYScan` の gs との比較 (gs が完走しない)。tffamsetup (fam 点): 独立な基準を 2 つ作った (Courant-Snyder の不変量、八極の薄いキックのヤコビアン) が、有限振幅の周期解の条件そのもの・振幅依存チューンシフトを目標にした FIT の収束・結合や六極のあるラティスの fam 点は未確認 (追跡の NAFF か六極の解析的な振幅依存チューンシフトが要る)。
+- FITP>1 の最終解: pysad は独立な最小値と 5e-8 で一致、gs は最小値の手前で止まる (残差が相対 5e-5 大きい)。
+- Micado: 水平・2 平面同時・`Bump`・`SVDmode->1` は未確認。
+- numba のキャッシュの自動無効化は入れていない (`pysad.nbcache` を手で走らせる)。
+
+**MEASURE・TRCOD** (v2.0.0 の (e) のまま): gs との比較は 1 件も無い。C の確認 (閉軌道の式、固有エミッタンス、ビームサイズ、FIXCOD・ALIGN) は独立な基準で誤りが見つからなかった。周期解を matched 分布として 1 周追う試験は、δ が大きいと色収差で崩れる (DP = 1e-3 で 40%)。
+
+### (e) 試験と回帰の状態 (2026-11-18)
+
+| 項目 | 結果 |
+|---|---|
+| 全試験 | `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本 `test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py` を `--ignore`、`PYSAD_SAD_PACKAGES` つき、互換モードは k64 が既定): **1345 通過・8 skip・失敗 0** (担当 E の報告、2026-11-18)。DOC が収集だけを確かめた件数は 1353 件 (E の実行より 6 件多い。**要確認: 最終の通過数は再実行して更新する**) |
+| v2.1.0 の追加分 | `test_v2_{A1_next,A2_*,B1_*,B2_*,B3_*,C3_*,D1_emit,D2_*,E_*}.py` の 412 件 (A1 40、A2 38、B1 87、B2 30、B3 32、C 53、D1 22、D2 67、E 43)。ほかに独立な計算の補助 `_a2_indep.py`・`_c3_indep.py`・`_e_spinkick.py` |
+| 回帰 | `run_regression.py` (`QUICK=1`): **50 ベンチ FAIL 0** (k64。E の実行で 159 s) |
+| 既存の試験の変更 | 動作が変わったための更新 (期待値の追従): `test_v2_A_spin.py` の 4 か所 (側帯の `depol_rate_linear`、b = bzh、B の他の成分を相対 1e-10)、`test_v2_C_track.py::test_radtaper_matches_gs`・`test_v2_C2_optics.py::test_radtaper_in_calc6d`・`test_v2_C2_spch.py` の 3 件 (RADTAPER の符号反転で v2 の Emittance[] が gs と 1e-6〜3e-3 ずれるため許容誤差を v2 だけ緩めた、k64 は同じ)、`test_sol_optics.py::test_sol_calc6d_is_refused` → `test_sol_calc6d_runs`、A1 の警告の試験の置き換え、B1 の `test_emittance_f1_unsupported_…` → `…_implemented_by_e`、B3 の光子の試験 (BEAMBEAM + BEND)、`test_geo_fit_sig.py` (絶対許容 1e-25 を相対 1e-14 に)、`test_tclbridge.py::test_tk_version_and_font_system` (Tk 8.6 か 9.0)、`test_v2_C2_script.py` (`1/0`・`SQRT(-1)` を gs の値に) |
+| skip | GUI 系は `PYSAD_SAD_PACKAGES` が無いと skip。`PYSAD_SLOW=1` で遅い試験が走る (SB の収束の警告、POL の kick の応答、大きなリング A の MEASURE)。5 skip の内訳は未確認 |
+| Python 3.14 | `py314` の venv で GUI 系 25 件と D2 の 90 件 (`test_v2_D2_*`・`test_spin.py`・`test_corr.py`・`test_csr.py`・`test_fam_points.py`) が通る。全試験は 3.14 では走らせていない |
+| 限界 | v2 の値は gs では確かめていない (gs が K64 のバグを持つため)。大きなリング B (8 GeV) は数値だけ (試験・例に使わない)。実機の強い結合・挿入光源のずれは未確認 |
+
+### (f) v2.0.0 の (e) 「要判断・未解決」のうち v2.1.0 で解決したものの扱い
+
+下の v2.0.0 の (e) は変えていない。次の項目は v2.1.0 で解決・更新した (残りは (d) に引き継いだものか、v2.0.0 のまま)。
+
+| v2.0.0 の (e) の項目 | v2.1.0 での扱い |
+|---|---|
+| スピン追跡の 500 周後の `spin angle` (example/07) | **解決**: 原因は N8 (B83) の刻みの誤差。K64 の 0.8794 rad は物理の値ではない。EPS=1E-5 で gs と v2 が 1e-8 |
+| tradke の b (B106)、tbgrote (B109)、RADINT の CKL1Y (B107)、ANGLE=0 の BEND の端の角 (B108) | **解決・修正**: 全部 v2 で修正。B107 は QUADRU も (B126)。B108 は K64 の誤りと確定 (端の項が約 2 倍) |
+| K64 の spdepol・v2 の Polarization の限界 | **更新**: 側帯の項を入れた (B125)。追跡との差は 0.25 → 0.43。残りは (d) |
+| CALC (tbende) と追跡 (tbend) の、ずれた BEND | **解決**: B114 (出口の符号)。K1≠0 は B117 |
+| B21 の tcod.f (rfsw=.false. は δ を動かさない) | **解決**: D1 項目 1 で pysad の不具合を直した (空洞があって RFSW OFF) |
+| RADINT の BEND の K0 (B74) | **解決**: ANGLE=0 の K0 は B115 で v2 が入れる。ANGLE≠0 の BEND の K0 は変えていない |
+| DELCOR の規格化 (B99)・CAVI の符号 (B40) | **確定 (一部)**: 規格化の根拠は確定、意図は推定のまま。CAVI の符号は観測できない |
+| RADTAPER の追跡の閉軌道 | **解決**: B111 (RADTAPER の追跡の重みも) |
+| CALC (4 次元) の RADTAPER | **解決 (実装しない)**: K64 の 4D の CALC は RADTAPER を見ない (gs で確認) |
+| Emittance[]・EMIT の POL の量 (SOL 領域内) | **解決**: B130 |
+| N12: `Twiss["DETR"]` | **解決**: (c)。DETR ≥ 1 は未確認 |
+| gs との差の未解決 (BEND の F1 + RAD、L≠0 の CAVI の DX・DY、EMIT のあとの USE) | **解決**: gs と全桁一致 |
+| 未対応 (SOL・UND まわり): track6 の TRPT の加速 | **解決 (一部)**: SOL 領域の外の CAVI は実装 (POL + TRPT + 加速)。SOL 領域内・RF つき MULT・TCAVI は SADError のまま |
+| 領域内の未確認 (領域内の MULT・CAVI の POL、RF つき MULT の RAD、bz ≥ 3、加速 + RAD) | **確認**: B1 項目 6、E (bz = 20 まで、SpinTune の解析式 1e-9、放射損失 1e-3)。QUAD・MULT のスピンは 1e-4 台 |
+| `TrackParticles` が MASS・CHARGE を渡さない | **解決**: (c) |
+| 光学・Emittance への WSPAC | **解決**: (b)。gs との差の 4% は B127 |
+| PSPAC の gs との 16% の差 | **原因を特定**: メッシュの分解能 (16% は再現しない)。警告を足した |
+| NOKEEPEXP の `tfvcomp` | **解決**: 成分ごとの FREE |
+| 複素引数の PolyLog・HypergeometricU・Zeta | **解決**: (b) |
+| `Parallelize` の本当の並列 | **解決 (POSIX)**: Windows は逐次 |
+| `Symbol["x"]`・`Message[f::usage]`・文脈の未確認・`Ffs;` | **解決**: (b) |
+| B60 (CSROYMatrix)・B68 | B60 は原因を特定 (zj の head の上書き)。B68 は未解決のまま |
+| MEASURE・TRCOD の gs との比較・MEASURE の初期分布 | v2.0.0 のまま (gs との比較は無い) |
+
+## v2.0.0 (2026-11-17)
+
+以下は v2.0.0 の一覧 (変更していない。v2.1.0 で解決したものの扱いは上の v2.1.0 の (f))。互換モードの使い方 (a) は v2.1.0 でも同じ。
+
+### (a) 互換モードの使い方
 
 | 項目 | 内容 |
 |---|---|
@@ -24,12 +202,12 @@
 - **k64 モードは「v1 と同じ」ではない点が 2 つある** (gs に合わせて変えた): (1) `For` の本体を実行しない (B71。v1 の pysad は実行していた)。(2) 利用者のコードの `BeginPackage`・`Begin` が名前空間を作る (v1 は無視して全部大域。SAD の `Packages` の読み込みは変えていない)。
 - 内部の約束: 追跡のカーネルが `rs[1]` (v2 の印) を読むので、`rs` は必ず `track6n.make_rs()` で作る。
 
-## (b) v2 で結果が変わるもの (K64 = k64 モードの動作との違い)
+### (b) v2 で結果が変わるもの (K64 = k64 モードの動作との違い)
 
 表の「K64」は K64 (gs) の動作で、k64 モードの動作でもある (例外は注記)。ID は [`21_sad_bug_report.md`](21_sad_bug_report.md) の B 番号。
 k64 モードを持たず「従来どおり未対応」のものは「K64」の欄にそう書いた。試験名は `pysad/tests/` の下。
 
-### 放射・エミッタンス・光学 (記録 A)
+#### 放射・エミッタンス・光学 (記録 A)
 
 試験は `test_v2_A_*.py` (67 件)。使った条件: 3 GeV の FODO リング、偏向磁石 L=1.2 m・15 度 (ρ=4.58 m)、RF 500 MHz。
 
@@ -55,7 +233,7 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | B64 | MULT の bsir0 (Emittance[] の POL) | imag(cx)/aln (次元 1/m)。四極は入れない。分割は放射の大きさだけで決まる | ψ = Im Σ k_n z^(n+1)/(n+1)! を入口で足し出口で引く。四極は k x y。POL のときは四極・MULT を k·(L/n)² ≤ 2e-3 になる数に分割 | MULT (K2=30) 3.1e-7 (K64 9.4e-5)、MULT (K1・K2・SK2) 3.8e-6 (3.1e-4)。四極の分割が 1 個だと歳差の微分が追跡の差分と 50% 違い、細かくすると 2% で合う | 同上 |
 | B55 | `Polarization` (POL の平衡偏極度) | NaN (spintrm の exp(cb²−cφ)·cerfc(cb) が 0·∞)。k64 モードも NaN | (1) exp(cb²)·erfc(cb) を Faddeeva 関数 w(i·cb) で。(2) 平衡偏極度は線形のスピン軌道結合 (DK の (11/18)\|γ∂n/∂γ\|² の項) の脱偏極率 rate から P = (8/5√3)·sdamp/(sdamp+rate) | 平面リングで 92.376% (Sokolov–Ternov)。誤差のあるリングは FLUC つきのスピン追跡で測った脱偏極率と 0.5〜1.6 倍で合う (3 例: 3 GeV 1.6 倍、2.903 GeV 1.2 倍、4.2 GeV 0.53 倍。16 粒子、統計 ±25%)。K64 の式 (桁あふれだけ直す) は 3 桁以上大きい | `test_v2_A_spin.py` (5 件) |
 
-### 追跡・要素 (記録 A・C・C2・C_measure)
+#### 追跡・要素 (記録 A・C・C2・C_measure)
 
 試験は `test_v2_A_track.py`、`test_v2_C_*.py`、`test_v2_C2_*.py`。使った条件: 電子、0.5・1・3 GeV、周長 91 m の FODO リングと 4〜6 m の輸送路、ソレノイド 1〜3 T (bz = 0.3〜3 1/m)。
 
@@ -81,7 +259,7 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | B42 (MEASURE・TRCOD) | MEASURE・TRCOD・LOGMEASURE・MAIN の `TRACK TURNS=-1` | MEASURE は無出力、TRCOD は SIGSEGV、MAIN の TRACK は落ちる。k64 モードは MEASURE・TRCOD を「未対応 (無視)」、TURNS=-1 は 1 周のリングの追跡 | K64 のソースの意図どおりに動く (§(c))。MEASURE の間だけ TRPT を ON にして戻す | 初期分布の 2 次モーメント (n=100000) が統計誤差 1.3% 以内、tbdecoup の非結合 emittance が 4×4 行列の固有値と 1e-10、MEASURE の出口の分散行列 M Σ0 Mᵀ と 1.9e-7、TRCOD の軌道が CALC (INS) と 5.4e-11。**gs との比較は無い** | `test_v2_C_measure.py` (19) |
 | B100〜B105 | TRCOD の FIXCOD・MVCOD・STNCOD・ALIGN、ORBITJITTER、PUTMEASURE・GETMEASURE | ソースの誤り・旧い番号の名残 (docs/21 の B100〜B105)。K64 の FFS からは基準を読めない。k64 モードは語として認識しない / 未対応 | §(c) の機能として実装 (基準は REFERENCE と同じ参照光学に置き `Twiss["RDX"]`・`Twiss["DDX"]` で読む) | FIXCOD の差 Δx が解析式と相対 1e-5 (輸送路)・1e-4 (リング)、ALIGN が平行移動と 1e-13 (BEND を含むと 4e-10)、PUTMEASURE → GETMEASURE が 7 桁。**gs との比較は無い** | `test_v2_C2_measure.py` (20) |
 
-### 集団効果 (記録 C・C2・C_spch・C2_spch)
+#### 集団効果 (記録 C・C2・C_spch・C2_spch)
 
 | ID | 項目 | K64 | v2 | 根拠 | 試験 |
 |---|---|---|---|---|---|
@@ -93,7 +271,7 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | B91 (SPC3) | MULT の `RADIUS` の空間電荷 | spkick の呼び出しの引数が合っていない。最後の回だけ長さが半分 | ANGLE=0・VOLT=0・SOL 領域の外の MULT に入れる。四極を MULT で書くと全周に入る | 四極の中の KV ビームの包絡 2·rms 0.07%・0.2%、リングのチューンシフト 追跡/モデル 0.94〜0.97 (SPAC)・Laslett の式と 1% | `test_v2_C2_spch.py` |
 | B93〜B98 (SPC5〜SPC10) | PSPAC (SPCH 要素) と SPAC の小粒子数 | `PSPACNZ=1` (既定) で gs が SIGSEGV (B93)。λ(z) の配分の不連続 (B94)。周の終わりのキックの長さ (B95)。状態が static (B96)。tspac は死んだコード (B97)。SPAC の np が少ないと SIGSEGV・Bus error・NaN (B98) | `PSPACNZ<4` はバンチに合わせた 64 ノードを自動で張る。2 次 B スプライン。区間の始めから数え終わりに残りを入れる。呼び出しごとに作り直す。粒子数によらず走る (2・5・15・33・81 個) | PSPAC の 3 周後の rms が gs と 4 桁目まで (1.777/1.042 mm と 1.776/1.042 mm)、Laslett の式 (PSPAC: 追跡/モデル 0.98・1.004)。B98 は gs で np = 2〜300 を走らせて原因を特定 | 同上 |
 
-### 特殊関数・数値 (記録 B。pysad 自身の不具合も含む)
+#### 特殊関数・数値 (記録 B。pysad 自身の不具合も含む)
 
 試験は `test_v2_B_specfn.py` (13 件)。実数の倍精度。mpmath は無く、scipy.special と scipy に依らない独立な計算 (閉じた式、級数、AGM、積分表示、Wronskian) の 2 つを突き合わせた。
 
@@ -110,7 +288,7 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | B52 | `Fit[data,fun,{x1,x2},…]` | narg を出して最小にならない値 | 最小二乗解 (モードによらない) | numpy.linalg.lstsq と一致 (係数 1e-6、ChiSquare 1e-8) | `test_b52_*` |
 | B61 | 複素の初期値の `FindRoot` | 壊れた値 (`{z->Restrict[(.25+I),…]}`)。k64 モードは TypeError | 複素の Newton 法 (§(c)) | z² = −1 → i、e^z = 2 → ln 2、z³ = 1、連立 zw = i・z + w = 2 の残差 1e-12 以下 | `test_b61_findroot_complex_v2` |
 
-### スクリプト・FFS (記録 B)
+#### スクリプト・FFS (記録 B)
 
 試験は `test_v2_B_script.py` (25 件、うち 1 件は POSIX だけ)、`test_v2_B_ffs.py` (14 件)。使った条件: 1 GeV・周長 6〜7 m の四極だけのリング、3 GeV・周長 105.6 m の FODO 24 セル。
 
@@ -124,12 +302,12 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | B30 | MAIN の `OFF RFSW` | FFS に届かない (FFS は RFSW ON で始まる) | 届く (`ON RFSW` も)。FFS の中の `RFSW;`・`NORFSW;` が後から優先 | FFS の `NORFSW;` と全桁同じ追跡結果 | `test_b30_main_off_rfsw_reaches_ffs` |
 | B67 | MOMENTUM の既定 | 30 GeV で、書き忘れても何も出ない | 既定は同じ 30 GeV。MOMENTUM を MAIN でも FFS でも設定しないまま運動量を使う計算 (追跡・EMIT・Emittance・RADINT・CALC6D・DA ほか) に入ると 1 度だけ警告 | 明示の `MOMENTUM=30e9` では警告しない | `test_b67_momentum_warning` |
 
-## (c) 新しく使える機能と、モードによらない追加・修正
+### (c) 新しく使える機能と、モードによらない追加・修正
 
 「モード」の列: **v2** = v2 モードだけ (k64 モードは従来どおり未対応・無視・恒等)、**両** = 両モードで同じ (pysad の追加・修正、または gs と同じ結果が出る機能)。
 例は `example/v2_B/`・`example/v2_C/` (README に表がある)。使える範囲は「確かめた条件」で、それ以外は未確認。
 
-### 放射・光学・要素
+#### 放射・光学・要素
 
 | 機能 | モード | 使える範囲と条件 | 使えない範囲 | 例・記録 |
 |---|---|---|---|---|
@@ -150,21 +328,21 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | **RADINT の警告** (B74) | v2 | 場のある MULT・SOL があれば「入っていない」と表示 | — | A §1 |
 | **EMITDIV・EMITDIVB・EMITDIVQ** | 両 (pysad の修正) | Emittance[] の放射の分割の倍率。MAIN の `EMITDIV = 20;` も効く。gs: `EMITDIV=20` で DampingRate が −.000286831320204 (pysad k64 と 12 桁一致) | — | §(d) |
 
-### MEASURE・TRCOD と周辺
+#### MEASURE・TRCOD と周辺
 
 | 機能 | モード | 使える範囲と条件 | 使えない範囲 | 例・記録 |
 |---|---|---|---|---|
 | **MEASURE・TRCOD・LOGMEASURE・MAIN の `TRACK TURNS=-1`** (B41・B42) | v2 (K64 の gs は MEASURE が無出力、TRCOD が SIGSEGV) | 先頭が MARK のビームライン (輸送路、リング。リングは `CELL; CALC;` の後)。NP ≥ 2。MOMENTUM を設定する。輸送路は先頭 MARK に BX BY AX AY (と EX.. DX..) を書き EMITX EMITY DP SIGZ を MARK か FFS の変数で与える。**MARK に DP を書かないと DP は 0.01 (既定) で運動量の広がり 1% (一様) の分布**。追跡は TrackParticles と同じ経路 (RAD・FLUC・RFSW・APERT の損失)。`FFS["MEASURE 位置"]` は `{np, {重心 6}, {分散行列 6×6}}`。MEASURE の TRPT は追跡の間だけ ON (K64 は戻さない) | **gs との比較は無い**。`DRAW` の中の粒子追跡 (K64 でも死んだコード)。TRGAUSS OFF の分布と TWAKE/LWAKE ON の MEASURE は動くが独立な検証は薄い (LWAKE・TWAKE は一様・階段状のウェイクで重心と広がりを確認)。**強い結合のリング (モードが入れ替わる形) の MEASURE は未確認** (`Twiss["DETR"]` が常に 0: §(e))。MAIN の TRACK TURNS=-1 は粒子種の語 (PROTON など) を見ない | `C2m_*.sad`、C_measure、C2_measure |
 | **TRCOD FIXCOD / MVCOD / STNCOD / ALIGN、ORBITJITTER、PUTMEASURE / GETMEASURE** | v2 | FIXCOD: EX EPX EY EPY DX DPX DY DPY を基準として保存し `Twiss["RDX",k]` (基準)・`Twiss["DDX",k]` (差) で読む (REFERENCE と同じ参照光学に置く。`REF;` は基準も上書きするので戻すには `TRCOD STNCOD;`)。ALIGN: 対象は BEND QUAD SEXT OCT DECA DODECA MULT の DX・DY だけ。ORBITJITTER: 今の Twiss の DX・DY に位置ごとの正規乱数。PUTMEASURE・GETMEASURE: 環境変数 SADPOUT・SADPIN のファイル (Windows は普通のファイル、Linux・WSL は FIFO を想定) | ALIGN の SOL・MONI。GETMEASURE の対象 (DX・DY) は判断。FIFO の待ち合わせは未確認。区間に BEND を含む ALIGN は平行移動と 4e-10 m まで | `C2m_trcod_reference.sad`、`C2m_putget_measure.sad`、C2_measure |
 
-### 集団効果
+#### 集団効果
 
 | 機能 | モード | 使える範囲と条件 | 使えない範囲 | 例・記録 |
 |---|---|---|---|---|
 | **空間電荷 SPAC・PSPAC (+ SPCH 要素)** (B89〜B98) | v2 | `TrackParticles` の中。SPAC は `DRIFT` (`RADIUS>0`) と SOL 領域内のドリフト、MULT の `RADIUS` (ANGLE=0・VOLT=0・領域外。`SPACSTEP`)、PSPAC は `SPCH` 要素。電子 5 MeV〜50 MeV、1e8〜1e12 個/バンチ、ビーム半径 0.1〜2 mm、ダクト 3 mm〜3 cm。マクロ粒子は 1000 個以上 (チューンシフトを数 % で見るなら 4000 個以上)。条件: 粒子に z の広がり、`RFSW` ON (`NORFSW` はエラー。`RADIUS<0` の絞りだけなら走る)、ビームの外縁が 0.9 R 以内。FFS の変数 `PBUNCH`・`SPACSTEP`・`SPACNX/NY/NZ`・`PSPACNX/NY/DX/DY/NZ/DZ/NTURNCALC`・`WSPACBEAM`・`WSPACRADIUS`。フラグは FFS の最上位に書く (`Do[...]` の中では切り替わらない) | **k64 モードは空間電荷を追跡に入れない**。MULT の `ANGLE≠0`・`VOLT≠0`・SOL 領域内の MULT (メッセージを出して空間電荷なし)。四極・偏向・六極の中 (偏向のあるリングでは SPAC は全周に入らない。全周は PSPAC + SPCH か WSPAC)。光学・Emittance への空間電荷。MAIN の TRACK、DA、スピン追跡。複数バンチ、壁の抵抗、円でないダクト。未確認: 空間電荷とウェーク・放射の組み合わせ、バンチの静止系で相対論的になる場合 (γ·x' ≳ 1)、電子以外 (式は確かめたが SAD スクリプトからは使えない: `TrackParticles` が MASS・CHARGE を追跡に渡さない) | `C2s_mult_radius.sad`、`example/05_tracking/flag_SPAC` (作り直した)、C_spch、C2_spch |
 | **WSPAC・SELFCOD** (強-弱のモデル) | v2 | 各要素の入口でガウス分布の力を蹴る。ビーム行列は既定で Emittance の平衡値、`WSPACBEAM = {εx, εy, σz[, σδ]}` で Twiss から作る。`WSPACRADIUS` で縦の力の電位の基準。電子 5 MeV (WSPACBEAM)・0.5 GeV (Emittance)、Δν = −3e-5〜−0.025。gs と 1% (0.5 GeV のリング、2e10 個) | 光学 (CALC)・Emittance への空間電荷 (ビーム行列は空間電荷なしの平衡値)。垂直のエミッタンスが 0 のリングは `WSPACBEAM` を与える。SOL 領域内・SELFCOD と閉軌道のあるリング・放射との組み合わせは値の確認なし | `C2s_wspac.sad`、C2_spch §2 |
 
-### スクリプト・FFS・特殊関数 (モードによらない追加・修正)
+#### スクリプト・FFS・特殊関数 (モードによらない追加・修正)
 
 | 機能 | モード | 使える範囲と条件 | 使えない範囲 | 例・記録 |
 |---|---|---|---|---|
@@ -177,7 +355,7 @@ k64 モードを持たず「従来どおり未対応」のものは「K64」の�
 | **MAIN の代入と `FFS` の文の読み方** | 両 (pysad の修正) | gs の動作 (小さな台本 15 本) に合わせた: MAIN の `NAME = 式;` (数 [単位]、`+ - * /`、`^` (右結合)、関数 `SIN COS TAN ATAN SQRT EXP LOG LN COSH`、`PI`、`MOMENTUM`) が要素定義と FFS に届く。`FFS USE RING;`、行の途中の `FFS`、`FFS;NPARA=3;` の読み。32 個の式を gs の値と 2e-14 | gs で構文エラーになる形は代入しない (`Sqrt[16]`、`ABS(…)`、`2*-A` など。`(1+2)*3` だけは読む)。残した違い: `Ffs;` (大小まじり)・`ffs use ring;` は pysad は読む、`FFS` の次の行が USE 以外のとき、gs が FFS の終了後に MAIN の文として読む残りは pysad は読まない、`A = 3 B = 4;` は代入しない、`LINE[{"EMITY",…},1]` は MARK の値 (0) を返す、要素定義の中の MAIN の関数 (`L=2*SIN(A)`) は未確認 | `C2w_main_script.sad`、C2_misc §3・§4 |
 | **NOKEEPEXP・RENUMBER の INDEX・`LINE["INDEX",…]`** | 両 (gs と同じ結果) | `NOKEEPEXP` のとき EXPAND/NOEXPAND を付けない CALC・GO は `calexp = .not. tfvcomp()`。INDEX 属性が 2 以上の要素の番号はその値から。gs の実測と一致 | `tfvcomp` は常に偽 (成分ごとの FREE が無い)。RENUMBER 後の `LINE["POSITION",…]` の gs の癖は写していない | `B4_ffs_v2.sad`、B §1 |
 
-## (d) pysad v1 の不具合の修正
+### (d) pysad v1 の不具合の修正
 
 K64 のバグではなく、pysad 自身の誤り・未対応だったもの (K64 の番号 B72 以降には入れていない: [`21_sad_bug_report.md`](21_sad_bug_report.md) §6)。記載は「モードによらない」ものを含む。
 
@@ -196,14 +374,15 @@ K64 のバグではなく、pysad 自身の誤り・未対応だったもの (K6
 | 描画の試験 (`test_plot.py`) | Tk がマウスの下の項目に付ける `current` タグで判定が変わる | 読み取りで `current` を外す (判定は同じ) | — |
 | 例 `example/05_tracking/flag_SPAC` | `NOSPAC;`・`SPAC;` を `Do[...]` の中に書き、フラグが切り替わらず「gs でも SPAC の効果が出ない」と誤記 | 最上位に書き、解析式と比べる例に作り直した (gs は力が 1/γ: B89) | — |
 
-## (e) 要判断・未解決
+### (e) 要判断・未解決
+
+**v2.1.0 で解決したものは上の v2.1.0 の (f) に対応を書いた (この節の文面は v2.0.0 のときのまま)。**
 
 各記録の「要判断」「残した違い」「使えない範囲」を、解決済みのものを除いて集めた。「決定済み」は親の判断で変更していないもの。
 
-### 放射・エミッタンス・スピン (記録 A)
+#### 放射・エミッタンス・スピン (記録 A)
 
 - **スピン追跡の 500 周後の `spin angle` (`example/07_spin_solenoid_special/flag_POL_RADPOL`)**: v2 の既定では 1.1516 rad で、gs と k64 モードの 0.8794 rad と違う。原因は特定していない (A の B58・B56・K1 つき BEND の追跡の修正のいずれかによる意図した違いの可能性が高いが、独立な根拠で 500 周後の値を確かめていない)。小さなリングの 1 周あたりのスピンの回転角を解析式 (スピンチューン aγ と、ソレノイド・K1 つき BEND の端の項) で確かめる試験が要る。
-u_s=a\gamma$ とソレノイド・K1 つき BEND の端の項) で確かめる試験が要る。
 
 | 項目 | 見つけたこと | 直さなかった理由・状態 |
 |---|---|---|
@@ -221,7 +400,7 @@ u_s=a\gamma$ とソレノイド・K1 つき BEND の端の項) で確かめる�
 | 小さな Jx の残り | 既定の分割 (EMITDIV=1) では Emittance[] の Jx が 1.5e-3 大きい (K64 の精度)。Jx+Jy+Je = 3.9990 (U0/2E の 2 次) | `EMITDIV=20;` で 1e-4 まで合う |
 | 範囲の限界 | 大きなリング・挿入光源・強い結合では確かめていない。RADINT の V 面 (I4V) は確かめていない。SOL 領域内の MULT・BEND のスピンは (Emittance[]) 未対応 | — |
 
-### 追跡・要素 (記録 C・C2)
+#### 追跡・要素 (記録 C・C2)
 
 | 項目 | 状態 |
 |---|---|
@@ -239,7 +418,7 @@ u_s=a\gamma$ とソレノイド・K1 つき BEND の端の項) で確かめる�
 | 領域内の未確認 | 領域内の MULT・CAVI の POL、RF つき MULT の RAD、bz ≥ 3 1/m を超える場、領域内の空洞の wake の横の蹴り (gs と未比較)、加速 + RAD。gs は SOL + 四極 + RAD で保存値と食い違う (B68) |
 | gs との差の未解決 (docs/46) | BEND の `F1 FRINGE=3` + RAD の追跡、L≠0 の CAVI + `DX`・`DY`、EMIT のあとに `USE` したときの追跡 は v2 でも未解決 |
 
-### MEASURE・TRCOD (記録 C_measure・C2_measure)
+#### MEASURE・TRCOD (記録 C_measure・C2_measure)
 
 | 項目 | 状態 |
 |---|---|
@@ -251,7 +430,7 @@ u_s=a\gamma$ とソレノイド・K1 つき BEND の端の項) で確かめる�
 | 前任の試験の古くなった 1 行 | C2 の記録では `test_v2_C_measure.py::test_measure_particle_loss_and_errors` の `'?TRCOD FIXCOD: not supported'` の 1 行 (FIXCOD の実装で出なくなる) と `test_v2_C_delcor.py` の ⟨\|c\|²⟩ の期待値が古くなっていた。現在の試験は `'  trcodf'` と 2.0 を見ていて、全試験は通る (解決済み) |
 | 未翻訳 | `DRAW` の中の粒子追跡 (K64 でも死んだコード)、PUTMEASURE・GETMEASURE を FIFO で使う待ち合わせ (未確認)、ORBITJITTER のパイプ |
 
-### 集団効果 (記録 C・C_spch・C2_spch)
+#### 集団効果 (記録 C・C_spch・C2_spch)
 
 | 項目 | 状態 |
 |---|---|
@@ -261,7 +440,7 @@ u_s=a\gamma$ とソレノイド・K1 つき BEND の端の項) で確かめる�
 | 空間電荷の未確認 | ウェーク・放射との組み合わせ、SOL 領域内の四極・MULT、`ANGLE≠0` の MULT、静止系で相対論的な運動、放射 + 空間電荷の MULT (走るが PBUNCH=0 の一致だけ)。PSPAC の gs との 16% の差 (直線の例で x と y が違う) は原因を調べていない |
 | 文書の更新 | `docs/46`・`docs/01` などの「SPAC は読むだけ」「gs でも効果が確認できない」の記述 (別の担当が更新) |
 
-### 特殊関数・スクリプト・FFS (記録 B・C2_misc)
+#### 特殊関数・スクリプト・FFS (記録 B・C2_misc)
 
 | 項目 | 判断 | 理由・調べたこと |
 |---|---|---|
@@ -276,11 +455,11 @@ u_s=a\gamma$ とソレノイド・K1 つき BEND の端の項) で確かめる�
 | 文脈の未確認 | `$Context = …` への代入、`WithContext`、入れ子の文脈 | §(c) |
 | `Ffs;`・`ffs use ring;` など | pysad が gs より寛容 | §(c) の「残した違い」 |
 
-### K64 側の未解決 (docs/21)
+#### K64 側の未解決 (docs/21)
 
 B68 (gs の 10-19 ビルドが SOL + 四極 + RAD で保存した参照と食い違う: 現在の gs が領域内の四極の力を入れていない疑い)、B60 (CSROYMatrix が gs で wrongtype)、B49・B51 (RadiationField・RenumberElement が gs で SIGSEGV) などは v2 でも比べられない。B72〜B110 のうち確度が「疑い」のもの (B88、B99、B106〜B109) は K64 の作者の意図を確かめていない。
 
-## (f) 試験と回帰の状態 (2026-11-17 20:30 に実行)
+### (f) 試験と回帰の状態 (2026-11-17 20:30 に実行)
 
 | 項目 | 結果 |
 |---|---|
@@ -298,9 +477,11 @@ B68 (gs の 10-19 ビルドが SOL + 四極 + RAD で保存した参照と食い
 | [`v2_changes_A.md`](history/v2_changes_A.md) | 放射・エミッタンス・スピン・RADINT・tchge (B06〜B16、B39、B55・B56・B58・B64 ほか、Jx の 2.4% の差の結論、平衡偏極度) |
 | [`v2_changes_B.md`](history/v2_changes_B.md) | 特殊関数・数値、SADScript、FFS の小項目 (文脈、Fork・Shared、System、複素の FindRoot) |
 | [`v2_changes_C.md`](history/v2_changes_C.md)、[`C_measure`](history/v2_changes_C_measure.md)、[`C_spch`](history/v2_changes_C_spch.md) | 追跡・集団効果・要素 (UND、PHSROT、SOL 領域内、LOSSMAP、RADTAPER、RADLIGHT、旧 WAKE)、MEASURE・TRCOD、空間電荷 |
+| [`v2next_A1.md`](history/v2next_A1.md)・[`A2`](history/v2next_A2.md)・[`B1`](history/v2next_B1.md)・[`B2`](history/v2next_B2.md)・[`B3`](history/v2next_B3.md)・[`C`](history/v2next_C.md)・[`D1`](history/v2next_D1.md)・[`D2`](history/v2next_D2.md)・[`E`](history/v2next_E.md) | v2.1.0。A1: 放射 (反作用の符号、古典半径、F1 の追跡)・CAVI・RADTAPER・PSPAC、A2: スピン角・Polarization の検証・RADINT・ずれた BEND、B1: Emittance[] の F1・K1≠0 の BEND の端・WSPAC・SOL の CALC6D、B2: FREE・複素の特殊関数・Parallelize・文脈・Packages、B3: 偏極の側帯・光子・幾何の fit・NAFF、C: MEASURE・RadiationField・SynchroBeta・DELCOR・B106〜B109・FLUC の乱数、D1: NORFSW・WSPAC の 8 倍・POL + 加速・光子・spdepol、D2: 要素定義の式・Tk 9.0・Micado・CSROYMatrix・nbcache、E: 傾いたソレノイドの POL・ANGLE=0 の BEND の F1・B108・脱偏極率の応答 |
 | [`v2_changes_C2.md`](history/v2_changes_C2.md)、[`C2_measure`](history/v2_changes_C2_measure.md)、[`C2_misc`](history/v2_changes_C2_misc.md)、[`C2_spch`](history/v2_changes_C2_spch.md) | 残りの仕上げ (ずれたソレノイド、領域内の空洞、スピン追跡、RADTAPER の収束、TRCOD の残り、旧 WAKE の表・DELCOR・台本の読み方、MULT の RADIUS・WSPAC) |
 
 | 例 | 内容 |
 |---|---|
 | [`example/v2_B/`](../example/v2_B/README.md) | `B1_special_functions`・`B2_package_context`・`B3_shared_system`・`B4_ffs_v2` (特殊関数、文脈、共有メモリ・System・Fork、FFS の小項目) |
 | [`example/v2_C/`](../example/v2_C/README.md) | `C1_undulator`、`C2_phsrot`、`C3_sol_region`、`C4_loss_and_taper`、`C5_radlight`、`C6_misc`、`C2a_sol_tilt`、`C2b_sol_rf`、`C2c_spin`、`C2d_taper_optics`、`C2s_mult_radius`、`C2s_wspac`、`C2m_trcod_reference`、`C2m_putget_measure`、`C2w_wake_table`、`C2w_delcor_rms`、`C2w_main_script` |
+| [`example/v2_next/`](../example/v2_next/) | v2.1.0 の例。A1・B1・B3・C3・D2 は README (`A1_README.md`・`B1_README.md`・`B3_README.md`・`C3_README.md`・`D2_README.md`)、そのほかは台本 (`A2_*`・`B2_*`・`D1_*`・`E_*`) と出力 (`.gs.txt` = gs、`.pysad.txt` = v2、`.pysad_k64.txt` = k64、`.out.txt` = Python の例) |

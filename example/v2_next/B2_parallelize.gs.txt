@@ -1,0 +1,30 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 01:36:03 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+FFS;
+ *** SADScript Initialization: <SAD>/Packages/init.n ***
+ *** Run time Environment:     <SAD>/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ (* v2next B2 項目 3: Parallelize[f, n, lshare, npara]。POSIX (Linux・WSL) は fork した子で npara 個まで同時に計算する。Windows は逐次 (fork が無い)。
+    gs と同じ: 子の代入は親に戻らない (E の x)、結果の並び (A B C)。pysad の逐次 (Windows) は x が残る (E: 3)。
+    gs の D (結果が lshare を超える) は Timeout (2000 秒) まで待つので、この台本には入れていない (pysad の POSIX は $Failed)。 *)
+ r=Parallelize[(#^2)&,5,200,2]; Print["A ",r];
+A {1,4,9,16,25}
+ r=Parallelize[Function[k,Table[k*i,{i,3}]],4,500,4]; Print["B ",r];
+B {{1,2,3},{2,4,6},{3,6,9},{4,8,12}}
+ r=Parallelize[Function[k,If[k==2,1/0,k]],3,200,3]; Print["C ",r];
+C {1,Infinity,3}
+ x=0; r=Parallelize[Function[k,x=k;k],3,100,3]; Print["E ",x," ",r];
+E 0 {1,2,3}
+ r=Parallelize[Function[k,Print["child ",k];k],2,100,2]; Print["F ",r];
+child 1
+child 2
+F {1,2}
+ Exit;
+Out[1]:= Exit
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

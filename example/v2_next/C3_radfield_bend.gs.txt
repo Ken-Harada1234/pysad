@@ -1,0 +1,68 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 03:03:46 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next C3 項目 2: RadiationField を Liénard-Wiechert の式と比べる (電子 10.2 MeV (γ = 20)、偏向磁石 L=0.4 m・ANGLE=0.4 rad、ρ=1 m)。
+! 軌道は RADLIGHT で記録 (v2 は BEND の中も円弧で記録。RADLIGHTDIV=64 点/(1/γ))。観測点は弧の中央の接線方向 50 m。
+! ピークの電場 E = e β² / (4π ε0 ρ R (1−β)²) (R = 観測点までの距離。近似式) と RadiationField の |E| の最大値が 0.5% 以内で一致する
+! (厳密な Liénard-Wiechert の式 (遅延時間を解く) とは 2e-4: 試験 test_field_of_a_bend_equals_lienard_wiechert_amplitude_and_phase)。
+! gs (K64) は RadiationField で SIGSEGV する (docs/21 B49) ので、gs の出力は無い (.gs.txt はその記録)。
+! 独立な全比較 (振幅・位相・スペクトル・全エネルギー・複数セグメント) は試験 pysad/tests/test_v2_C3_radfield.py。
+MOMENTUM = 10.2e6;
+BEND B = (L=0.4 ANGLE=0.4);
+MARK ST = ();
+LINE RING = (ST B);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING; INS; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .000000 $$$       f BX    #######  #   1.000000 $$$       f NX    #######  #    .063662
+$$$       f AY    #######  #   -.400000 $$$       f BY    #######  #   1.160000 $$$       f NY    #######  #    .060559
+$$$       f LENG  #######  #    .400000
+ RADLIGHT; RADLIGHTDIV = 64;
+ np = 1;
+ x = Table[0,{7},{np}];
+ Do[x[[7,i]] = 1, {i,np}];
+ res = TrackParticles[{1, x}, 3];
+ traj = res[[2,1]];
+ Print["trajectory points = ", Length[traj[[1]]]];
+trajectory points = 1
+ phi = 0.2; dist = 50;
+ f = RadiationField[traj, {dist*Cos[phi], dist*Sin[phi], 0}];
+
+Program received signal SIGSEGV: Segmentation fault - invalid memory reference.
+
+Backtrace for this error:
+#0  0x709f2282a494 in ???
+#1  0x709f22829085 in ???
+#2  0x709f22245caf in ???
+#3  0x709f22397ac0 in ???
+#4  0x5e23cf6521a3 in ???
+#5  0x5e23cf7282f3 in ???
+#6  0x5e23cf72a473 in ???
+#7  0x5e23cf672f5e in ???
+#8  0x5e23cf669731 in ???
+#9  0x5e23cf65f45b in ???
+#10  0x5e23cf660144 in ???
+#11  0x5e23cf65e40e in ???
+#12  0x5e23cf65ffd9 in ???
+#13  0x5e23cf660144 in ???
+#14  0x5e23cf65e40e in ???
+#15  0x5e23cf67c31e in ???
+#16  0x5e23cf64ffa9 in ???
+#17  0x5e23cf6da3c4 in ???
+#18  0x5e23cf69c937 in ???
+#19  0x5e23cf6a34a0 in ???
+#20  0x5e23cf73741f in ???
+#21  0x5e23cf77bbac in ???
+#22  0x5e23cf79c680 in ???
+#23  0x5e23cf72dc29 in ???
+#24  0x5e23cf6442de in ???
+#25  0x709f2222a600 in ???
+#26  0x709f2222a717 in ???
+#27  0x5e23cf644334 in ???
+#28  0xffffffffffffffff in ???
+bash: line 1: 116082 Segmentation fault         timeout 120 /mnt/d/work/SAD-master/SAD-master/bin/gs _ex_C3_radfield_bend.sad < /dev/null

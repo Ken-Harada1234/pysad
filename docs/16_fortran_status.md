@@ -1,6 +1,6 @@
 # 16. SAD Fortran ファイル別 pysad 翻訳状況
 
-最終更新: 2026-11-17 (現状のスナップショット。内容は `history/work_unimpl.md` と `pysad/*.py` の docstring、v2 の作業の記録 `history/v2_changes_*.md` で裏を取った。§9 は [46_unimplemented_and_unverified.md](46_unimplemented_and_unverified.md) と同じ状態)
+最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット。内容は `history/work_unimpl.md` と `pysad/*.py` の docstring、v2 の作業の記録 `history/v2_changes_*.md` で裏を取った。§9 は [46_unimplemented_and_unverified.md](46_unimplemented_and_unverified.md) と同じ状態)
 
 **互換モード**: 表の「状態」は、特記がなければ **k64 モード** (K64 (gs) と同じ動作。gs との照合はこのモード) のもの。v2 モード (v2.0.0 から既定) で変わった動作は「v2 モード:」と書いた (一覧は [47_v2_changes.md](47_v2_changes.md))。v2 の値は gs ではなく解析式・独立な数値計算で確かめたもので、gs と比較できないものがある (MEASURE・TRCOD、空間電荷の SPAC、領域内の SOL の要素など)。
 
@@ -57,7 +57,7 @@ calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ff
 | track.f, tracka.f, ActTra.f, ttinit.f | MAIN の TRACK コマンド・初期分布 | ffscmd `TrackParticles[]` (SADScript 関数経由)、MAIN の TRACK コマンドは maintrack.py | 翻訳済み・照合済み | TrackParticles は L6〜12。MAIN TRACK は SADScript で同じ手順を書いた版 (bench_level27a/b) と照合 (SAD K64 の MAIN TRACK 自体は tinip で SIGSEGV)。PHSPLOTS の描画は無視、FOURIE ON は未対応 |
 | trackb.f, tracke.f, trcoda.f, ttinit.f, ttstat.f, tbdecoup.f, nalign.f, tfojit.f, tfgetm.f | MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE、MAIN の `TRACK TURNS=-1` | `measure.py` | **v2 モードで翻訳** (K64 のソースの読み。TRCOD の FIXCOD/MVCOD/STNCOD/ALIGN も)。k64 モードは語を受理するのみ (無視)。**gs との比較は無い** (gs で TRCOD は SIGSEGV、MEASURE は出力なし: docs/21 B42)。解析式と pysad の独立な経路で確認。ttinit の読みの誤り B41 は v2 で直した。DRAW の中の粒子追跡 (tdrwdt.f) は K64 でも動かない死んだコードで翻訳しない (B105) | test_v2_C_measure.py、test_v2_C2_measure.py、docs/03 |
 | tturn.f・tcod.f・tturne.f の radtaper | RADTAPER (磁石の強さを閉軌道の局所の運動量に合わせる) | `radtaper.py` | 翻訳済み・gs と照合 (両モード。CODCONV=1e-4 の gs と x 6 桁・U0 10 桁・チューン全桁)。K64 の tcod の反復の直訳ではなく同じ不動点を外側の反復で求める。4 次元の CALC のテーパーは K64 も無い | test_v2_C_track.py、test_v2_C2_optics.py |
-| spkick.f、tspch_.c・spch.c・psn.c、tintrb.f twspac | 空間電荷 SPAC・PSPAC・WSPAC | `spch.py` | **v2 モードで翻訳** (k64 モードは入れない)。K64 の SPAC は力が 1/γ 倍に弱い (B89) ほか B90〜B98 の誤りがあり、v2 は直した。PSPAC は gs と 3〜4 桁、WSPAC は gs と 1% (Δν)、SPAC は gs の誤りのため解析式 (包絡方程式・Laslett の式) と比較。光学・Emittance への空間電荷は未対応 | test_v2_C_spch.py、test_v2_C2_spch.py、docs/08 §9.7 |
+| spkick.f、tspch_.c・spch.c・psn.c、tintrb.f twspac | 空間電荷 SPAC・PSPAC・WSPAC | `spch.py` | **v2 モードで翻訳** (k64 モードは入れない)。K64 の SPAC は力が 1/γ 倍に弱い (B89) ほか B90〜B98 の誤りがあり、v2 は直した。PSPAC は gs と 3〜4 桁、WSPAC は gs と 1% (Δν)、SPAC は gs の誤りのため解析式 (包絡方程式・Laslett の式) と比較。Emittance[]・EMIT・CALC6D・CALC (RFSW ON) の WSPAC は v2.1.0 で実装 (Emittance[]・EMIT は k64 も gs と全桁。K64 の最後のスライスのレンズが 8 倍強い誤り: B127)。追跡の WSPAC のビーム行列は空間電荷なしのまま | test_v2_C_spch.py、test_v2_C2_spch.py、docs/08 §9.7 |
 | trackd.f / tfdapert.f | DynamicAperture 本体 | dapert.py | 翻訳済み・照合済み | 地図 153/153、Score 一致 (L16A、NORAD) |
 | tquads, tquase, tbrad, tmulbs, ttdr, bb, hg 等 | Obsolete・非リンク | — | 対象外 | — |
 
@@ -162,39 +162,42 @@ calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ff
 | wjfit、wfres、wfbin、wiord、wjdraw | MAIN の TRACK の Fourier 解析・共鳴の描画 | — | 未翻訳 (FFS から使えない。maintrack.py の `FOURIE ON` も未対応) | — |
 | tspac.f (GaussianCoulomb) / tintrb.f (twspu、twspfu) | 空間電荷関数 | gausscoul.py | GaussianCoulomb・GaussianCoulombU・GaussianCoulombFitted を翻訳し gs と 1e-9 以内で一致。`tspac.f` の `tspac` は K64 のどこからも呼ばれない死んだコード。追跡の空間電荷 (SPAC・PSPAC・WSPAC) は v2 モードで `spch.py` に実装 (上の行) | test_gausscoul.py、docs/32 |
 | tlinit.f (tlfield、tlcalc、tlspect) | RadiationField・RadiationSpectrum | radfield.py | 翻訳済み。RadiationField は gs が SIGSEGV (B49) なので等速運動の電荷の速度場と相対 6e-3 の確認のみ。RadiationSpectrum は gs と一致 (NPARA の fork 並列は逐次) | test_radfield.py、docs/45_radlight_guide.md |
-| gamma.f、hg.f、tfunc*.f (特殊関数)、tffindroot.f、D.n | 特殊関数・Fit・FindRoot・NIntegrate | specfn.py、fitroot.py、miscfn.py | 458 式が gs と一致 (K64 が誤値を返す B43〜B47、B53、B54 は真値)。Fit・FindRoot は数値微分で 5e-10〜1e-9。NIntegrate は複素数の被積分関数を扱い (gs と虚部 1e-15)、`LogGamma1` もある。複素 FindRoot は v2 モードで実装 (gs が壊れた値: B61。k64 モードは TypeError)、複素引数の Bessel・超幾何・Airy (実数のパラメータ) と PolyLog の非整数次の大きい \|z\| (相対 1e-11、\|z\| ≤ 1e12) は両モードで実装。k64 と値が違う関数は InverseErf (B47) だけで、v2 は真値。複素引数の PolyLog・HypergeometricU・Zeta は未対応 | docs/33 |
+| gamma.f、hg.f、tfunc*.f (特殊関数)、tffindroot.f、D.n | 特殊関数・Fit・FindRoot・NIntegrate | specfn.py、fitroot.py、miscfn.py | 458 式が gs と一致 (K64 が誤値を返す B43〜B47、B53、B54 は真値)。Fit・FindRoot は数値微分で 5e-10〜1e-9。NIntegrate は複素数の被積分関数を扱い (gs と虚部 1e-15)、`LogGamma1` もある。複素 FindRoot は v2 モードで実装 (gs が壊れた値: B61。k64 モードは TypeError)、複素引数の Bessel・超幾何・Airy (実数のパラメータ) と PolyLog の非整数次の大きい \|z\| (相対 1e-11、\|z\| ≤ 1e12) は両モードで実装。k64 と値が違う関数は InverseErf (B47) だけで、v2 は真値。複素引数の PolyLog・HypergeometricU・Zeta・HurwitzZeta は v2.1.0 で両モードで実装 (`specfn_cx.py`。gs が誤る点でも真値: B118〜B120) | docs/33 |
 | ActLie, ActGRA, tdlat, tmap, polpar 他 | 空スタブ・描画・デッド | — | 対象外 | — |
 
-## 9. 未翻訳・一部未対応・未照合の一覧 (2026-11-17)
+## 9. 未翻訳・一部未対応・未照合の一覧 (2026-11-18、v2.1.0 の後)
 
 最新の一覧は [46_unimplemented_and_unverified.md](46_unimplemented_and_unverified.md) にあり、この節はその要約 (項目を直したら 2 つを一緒に更新する)。
 各行の「モード」は **k64** (K64 (gs) と同じ動作)、**v2** (v2.0.0 から既定の、K64 のバグを直し機能を足した動作)、**両** (モードによらない)。v2 の機能の根拠は解析式・数値積分で、gs と比較できないものが多い (gs が動かない・K64 が誤っている)。
-2026-11-17 までに対応・照合した APERT 要素の追跡 (SOL 領域内を除く)、FFS 内の `MOMENTUM=`・`[NO]EXPAND`・RENUMBER・DISP の各モード・REFERENCE・DUMP・OrbitGeo、MakeBump・Couple の ElementValues (VISIT/BYE を除く)・Rational・NIntegrate の複素数・LogGamma1・ParametricPlot・ListContourPlot・OptimizeOptics・Entry/ListBox/Scale のメソッド、LOSSMAP・RADTAPER・MULT のスキュー成分・ResponseMatrix の TRPT・NOKEEPEXP・RENUMBER の INDEX・`BeginPackage`/`Begin` の文脈・`Shared` は、ここでは未対応に入れない (実装済み。46 §6)。
+実装・解消済みのもの (APERT 要素の追跡 (SOL 領域内を除く)、FFS 内の `MOMENTUM=`・`[NO]EXPAND`・RENUMBER・DISP の各モード・REFERENCE・DUMP・OrbitGeo、MakeBump・Couple の ElementValues・Rational・NIntegrate の複素数・LogGamma1・ParametricPlot・ListContourPlot・OptimizeOptics・Entry/ListBox/Scale のメソッド、LOSSMAP・RADTAPER・MULT のスキュー成分・ResponseMatrix の TRPT・NOKEEPEXP・RENUMBER の INDEX・`BeginPackage`/`Begin` の文脈・`Shared`。**v2.1.0 で**: Emittance[]・EMIT・CALC6D の BEND の F1・FRINGE と ANGLE=0 の BEND・MULT の F1、光学・Emittance への空間電荷 (WSPAC)、光子 (tphrec) の BEND・QUAD・MULT・SEXT・OCT・ドリフト・BEAMBEAM + BEND、tdgeo の領域内の四極の DX・DY の解析微分、CALC6D・RADCOD つきの CALC・INTRA と SOL、傾いたソレノイドの POL の量、POL + TRPT + 加速 (領域の外)、`MASS`・`CHARGE`、`NPARA=n;`、複素の PolyLog・HypergeometricU・Zeta、`Parallelize` (POSIX)、成分ごとの FREE、`$Context` の代入・`WithContext`、VISIT/BYE、BEND の F1 + RAD の追跡・CAVI の DX・DY・EMIT のあとの USE の差) は、ここでは未対応に入れない (46 §6)。
 
 ### 9.1 未翻訳 (理由つき)
 
 | ファイル・機能 | モード | 理由 |
 |---|---|---|
-| wjfit、wfres、wfbin、wiord、wjdraw | 両 | MAIN の TRACK の Fourier 解析で、FFS から使えない |
-| 光学 (CALC)・Emittance への空間電荷 (twspace・qwspac) | 両 | v2 の WSPAC は追跡だけ (ビーム行列は空間電荷なしの平衡値) |
-| tdgeo.f の四極などの DX・DY の解析微分 (`qdtrans`・`tftmatu` が要る) | 両 | 数値微分で代用。優先度は低い |
-| 光子 (PHOTONS) の tphrec | 両 | 他の要素の光子。BEAMBEAM の分だけ対応 |
-| CALC (4 次元) の RADTAPER | 両 | K64 の qtwiss にテーパーの式が無い |
+| wjfit、wfres、wfbin、wiord、wjdraw | 両 | MAIN の TRACK の Fourier 解析で、FFS から使えない (gs も SIGSEGV)。チューンの抽出は `pysad/naff.py` (v2.1.0) |
+| 光子 (tphrec) の SOL 領域内の要素・COORD・TCAVI・MAP のあるラティス | 両 | BEND・QUAD・MULT・SEXT・OCT・磁場つきドリフト・BEAMBEAM + BEND は対応。SOL 領域内は記録しない |
+| TrackParticles の F1 (`tsteer`・`tmulti`) | 両 | ANGLE=0 の BEND・MULT。Emittance[]・EMIT・CALC は実装済み |
+| CALC (4 次元) の RADTAPER | 両 | K64 の qtwiss にテーパーの式が無い (実装しない) |
 | MON/MCOD/TCOD の機能、tdrwdt.f の粒子追跡 | 両 | K64 にコマンドが無い / 死んだコード (B105)。v2 は警告して読み飛ばす |
 | tspac.f の `tspac` | 両 | K64 のどこからも呼ばれない死んだコード (追跡の空間電荷は v2 で `spch.py`) |
-| 複素引数の PolyLog・HypergeometricU・Zeta、Parallelize の本当の並列、`Out[n]:=` の gs の表示 | 両 | scipy に実装が無い・確認できない / 逐次のまま / K64 の癖として写さない |
+| `Out[n]:=` の gs の表示 | 両 | K64 の癖として写さない |
+| 複素の特殊関数で gs が誤る点の k64 での再現 (B118〜B120) | k64 | K64 の gamma.f の複素の不完全ガンマなどの直訳が要る。k64 も真値を返す (要判断) |
+| `DAPWIDTH` の窓 (既定 7)、K64 の `qwspac` (4D の CALC の空間電荷) の直訳 | 両 / v2 | trackd.f の追跡順の直訳 / gs が NaN を返すので検証できない |
 
-### 9.1a モードで状態が違うもの (k64 モードでは未対応・v2 モードで実装)
+### 9.1a モードで状態が違うもの (k64 モードでは未対応・v2 モードで実装、または結果が違う)
 
 | ファイル・機能 | k64 モード | v2 モード |
 |---|---|---|
 | trackb.f、tracke.f、trcoda.f、ttinit.f、ttstat.f (MEASURE / TRCOD ほか) | 未対応 (gs で TRCOD が SIGSEGV、MEASURE は出力なし: B42) | 実装 (`measure.py`。K64 のソースの読み。**gs との比較は無い**) |
-| tsole1 の領域内の MULT・BEND・CAVI (tmulte1)・APERT、SOL の DX DY DZ CHI・F1 (Twiss・Emittance[]・追跡)、領域の tsgeo・tdgeo | 未対応 (領域内の BEND は K64 の tsol.f どおりに実装したが gs が偏向をほぼ無視して合わず取り下げた: B69) | 実装 (ローレンツ力の積分との一致。gs との比較は無い) |
+| tsole1 の領域内の MULT・BEND・CAVI (tmulte1)・APERT、SOL の DX DY DZ CHI・F1 (Twiss・Emittance[]・追跡)、領域の tsgeo・tdgeo | 未対応 (領域内の BEND は K64 の tsol.f どおりに実装したが gs が偏向をほぼ無視して合わず取り下げた: B69) | 実装 (ローレンツ力の積分との一致。gs との比較は無い)。領域内の四極の DX・DY は両モードで gs と全桁 |
 | 領域内の空洞の TRPT の加速・wake・AUTOPHI | 未対応 | 実装 (AUTOPHI は TRPT で gs と全桁一致、ほかは運動方程式の積分) |
-| 空間電荷 (SPAC・PSPAC・WSPAC・SELFCOD の追跡。spkick.f・tspch_.c・tintrb.f twspac) | 追跡に入らない (K64 の SPAC は 1/γ 倍に弱い: B89 ほか) | 実装 (`spch.py`) |
+| 空間電荷 (SPAC・PSPAC・SELFCOD の追跡。spkick.f・tspch_.c) | 追跡に入らない (K64 の SPAC は 1/γ 倍に弱い: B89 ほか) | 実装 (`spch.py`)。WSPAC の Emittance[]・EMIT は k64 も gs と全桁、CALC・CALC6D は v2 だけ |
 | PHSROT | K64 で動作しない (B38)。追跡は NotImplementedError | 実装 (`phsrot.py`) |
 | UND の磁場 | K64 が設定できない (B37) | `FBX`・`FBY` を実装 |
-| Polarization (平衡偏極度) | K64 が NaN (B55) | 有限値 (線形のスピン軌道結合から) |
+| Polarization (平衡偏極度) | K64 が NaN (B55)・率が約 1000 倍 (B125)・逆向きの BEND で相殺 (B116) | 有限値 (側帯の項つき。追跡の 0.43 倍の過小評価が残る) |
+| Emittance[] の POL の量 (傾いたソレノイド) | K64 の式 (B130) | v2.1.0 で修正 (追跡と 1e-13〜5e-7) |
+| RADINT の K0 の極・四極のずれ・BMAG (B115・B126・B107)、ANGLE=0 の BEND の端の角 (B108)、tradke の符号 (B111)、WSPAC のレンズ (B127)、K1≠0 の BEND の追跡の端 (B117)、ずれた BEND の CALC (B114) | K64 のまま | 修正 (47 の v2.1.0 の (a)) |
 | System、Fork | `System` は実行せず、`Fork` は pid を返すだけ | `System` は許可があれば実行、`Fork` は POSIX で本当に分ける |
 | 旧 WAKE コマンド (tfwake.f) | 移植しない (K64 は WAKECOMMAND.n を呼ぶ。B66) | `WAKE … ENDWAKE` の表を読む |
 | 複素 FindRoot | TypeError (gs は壊れた値: B61) | 複素の Newton 法 |
@@ -203,51 +206,54 @@ calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ff
 
 | 機能 | モード | 未対応の部分 |
 |---|---|---|
-| MULT ANGLE≠0 (multa / multae) | 両 | Twiss の BZ・RF・F1・SK0・FB1/FB2 (追跡は FB1/FB2 まで対応) |
-| MAP | 両 | GEO・CompiledMap。TRACK は TrackParticles だけ (MAIN の TRACK・DA・Touschek は ExternalMap を呼ばない) |
-| POL (SOL 領域内) | k64 / v2 | k64: 領域内の MULT・BEND・CAVI のスピン、スピン追跡は損失の処理なし。v2: Emittance[] の POL の量は領域内だけ K64 の式 (ずれて傾いたソレノイドで SpinTune が 2.3e-4 違う)、領域内の APERT のスピン追跡は NotImplementedError |
-| Polarization | v2 | SLIM 相当の線形の見積もり (追跡との一致は 3 例で 0.5〜1.6 倍)。高次の側帯共鳴・運動論的偏極なし |
+| MULT ANGLE≠0 (multa / multae) | 両 | Twiss の BZ・RF・F1・SK0・FB1/FB2 (追跡は FB1/FB2 まで対応)。MULT の端の FB1/FB2 の tblfre と AE1・AE2 (Emittance[]) |
+| MAP | 両 | GEO・CompiledMap。TRACK は TrackParticles だけ (MAIN の TRACK・DA・Touschek は ExternalMap を呼ばない)。MAP のスピン |
+| POL (SOL 領域内) | k64 / v2 | k64: 領域内の MULT・BEND・CAVI のスピン、スピン追跡は損失の処理なし。v2: 領域内の APERT のスピン追跡 (NotImplementedError)、領域内の四極のずれの POL の追跡 (track6)、bz ≥ 3 1/m の QUAD・MULT のスピンは 1e-4 台、加速する CAVI の POL (Emittance[]) |
+| POL + TRPT + 加速 (track6) | v2 | SOL 領域の外の CAVI だけ。領域内・RF つき MULT・TCAVI・リングの何周もの TRPT は SADError |
+| Polarization | v2 | 4.2 GeV・12 MV で FLUC つきの追跡の 0.43 倍に過小評価 (軌道の非線形)。運動論的偏極なし。不安定なリングは線形の式。n が傾く・非平面のリングの緩和率は未確認 |
 | TCAVI | 両 | Emittance[] は L=0 のみ gs と一致 (L≠0 は gs が壊れる: B36)。RANKICK・RANPHASE 未対応 |
 | UND | k64 / v2 | k64: 磁場なしのドリフトのみ。v2: 端の磁極の整形なし。挿入光源のあるリングでは未確認 |
 | PHSROT | v2 | スピンを動かさない |
-| APERT | k64 / 両 | k64: SOL 領域内は NotImplementedError。両: JDPX・JDPY の再入射は粒子 12 個以上で gs と乱数列が違う。RAD・FLUC つき、TRPT、MAIN の TRACK の損失報告、DAPERT での APERT は gs と未照合 |
+| APERT | k64 / 両 | k64: SOL 領域内は NotImplementedError。両: JDPX・JDPY の再入射は粒子 12 個以上で gs と乱数列が違う (`NPARA=n;` で分け方を再現できる)。RAD・FLUC つき、TRPT、MAIN の TRACK の損失報告、DAPERT での APERT は gs と未照合 |
 | LOSSMAP | 両 | MAP 要素・空間電荷が落とした粒子の要素番号は 0 |
-| RF のある MULT (tmultiacc) | 両 | F1・FRINGE。領域内の V1 V20 V11 V02・ANGLE≠0 の MULT。AUTOPHI は k64 で NotImplementedError・v2 で実装 |
-| tsteer | 両 | F1/FB1/FB2 付きは NotImplementedError |
-| 空間電荷 | v2 | ANGLE≠0・VOLT≠0 の MULT と SOL 領域内の MULT の SPAC、QUAD・BEND の中の SPAC、複数バンチ、MAIN の TRACK・DA・スピン追跡。`MASS`・`CHARGE` が追跡に渡らず電子以外は使えない。ウェーク・放射との組み合わせは未確認 |
-| MEASURE・TRCOD | v2 | gs との比較なし。強い結合のリング (Twiss["DETR"] が CALC の後で常に 0 の不具合) の MEASURE は未確認。FIFO での待ち合わせ未確認 |
+| RF のある MULT (tmultiacc)・CAVI の V1 V20 V11 V02 | 両 | F1・FRINGE。WakeFunction のある CAVI・領域内の CAVI・Emittance[] の CAVI の V1 V20 V11 V02、ANGLE≠0 の MULT。AUTOPHI は k64 で NotImplementedError・v2 で実装 |
+| 空間電荷 | v2 | ANGLE≠0・VOLT≠0 の MULT と SOL 領域内の MULT の SPAC、QUAD・BEND の中の SPAC、複数バンチ、MAIN の TRACK・DA・スピン追跡。追跡の WSPAC のビーム行列は空間電荷なしのまま。PSPAC の粗いメッシュは警告 (gs と違う)。ウェーク・放射との組み合わせは未確認 |
+| MEASURE・TRCOD | v2 | gs との比較なし。DETR ≥ 1 (モードが入れ替わる) の MEASURE は未確認。FIFO での待ち合わせ未確認 |
 | RADLIGHT | v2 | SOL 領域を含む区間、COORD による幾何の変化、曲げのある MULT の中の点 |
-| RADTAPER | 両 | SOL 領域内の要素、RFSW OFF。追跡の閉軌道が Emittance[] と 4e-7 m ずれる |
-| SOL | 両 | BOUND=0 で BZ≠0 の SOL の Twiss、CALC6D・RADCOD つきの CALC・Touschek との組み合わせ。v2 は SEXT・COORD・BEAMBEAM が領域内に置けない (`SolRegionError`)、領域内の BEND の K1・DX・DY |
-| DELCOR | v2 | corlength≠0 の規格化 (B99) は推定 |
-| RADINT・Emittance[] | v2 | MULT・SOL・BEND の K0 が RADINT に入らない。ANGLE=0 の BEND・K0 つき MULT の端の角は K64 のまま (B108) |
-| Fit・FindRoot・特殊関数 | 両 | 複素引数の PolyLog・HypergeometricU・Zeta。複素 FindRoot の変数の範囲 (無視) |
-| `ElementValues` (Couple.n) | 両 | VISIT/BYE の退避・復元、フィット変数との連動 (`CouplingMatrix`・`CoupledKeys`) |
-| 文脈 (`BeginPackage`) | 両 | `$Context` への代入、`WithContext`、入れ子の文脈 |
-| 描画・GUI | 両 | CanvasSymbol、Canvas3D*、`UseBG->True` の文字背景。OpticsPlot の text 項目数 (gs 69、pysad 74。Tk のフォントによる)、BeamPlot (gs は SIGXX=0 で楕円なし)、最初の `Window[]` の親 (gs は Toplevel)、`Packages/CSR.n` 全体は読み込まない (docs/37) |
+| RADTAPER | 両 | SOL 領域内の要素、RFSW OFF。RADTAPER の重みは「閉じる」を根拠にした選択 (B111) |
+| SOL | 両 | BOUND=0 で BZ≠0 の SOL の Twiss。v2 は SEXT・COORD・BEAMBEAM が領域内に置けない (`SolRegionError`)、領域内の BEND の K1・DX・DY。CALC6D・RADCOD つきの CALC・INTRA と SOL は対応 (TouschekLifetime は未確認) |
+| DELCOR | v2 | corlength≠0 の規格化 (B99) の意図は推定 (根拠は確定) |
+| RADINT・Emittance[]・EMIT | v2 | RADINT は MULT・SOL・ANGLE≠0 の BEND の K0 が入らない。K0 の極の εx は 3.5%・Jx は 0.7% Emittance[] とずれる。SEXT・BEND のずれ。K1≠0・K0≠0 の ANGLE=0 BEND と MULT の端の角 (AE)。v2 の Emittance[] と RADINT が矩形磁石で 1.4e-3 違う (未調査) |
+| SynchroBetaEmittance | 両 | 大きなリング A で 40 倍違い収束しない (B128。v2 は警告) |
+| Fit・FindRoot・特殊関数 | 両 | 複素の次数の PolyLog、Re a ≤ 0 の複素の a・b の HypergeometricU。複素 FindRoot の変数の範囲 (無視) |
+| `ElementValues` (Couple.n)・FREE の成分 | 両 | フィット変数との連動 (`CouplingMatrix`・`CoupledKeys`)。先頭でない成分の既定のキーの変数は作らない |
+| 文脈 (`BeginPackage`) | 両 | 文脈つきの `Names`、init.n が大域に作る名前の全部 (51 個しか調べていない) |
+| 描画・GUI | 両 | CanvasSymbol、Canvas3D*、`UseBG->True` の文字背景。OpticsPlot の text 項目数 (gs 69、pysad 74。Tk のフォントによる)、BeamPlot (gs は SIGXX=0 で楕円なし)、最初の `Window[]` の親 (gs は Toplevel)、`Packages/CSR.n` 全体は読み込まない (docs/37)。Tk 9.0 の `cget` の単位つきの値 |
 
 ### 9.3 未照合 (コードはあるが gs と数値比較していない、または gs が参照を出さない)
 
 | 機能 | モード | 理由 |
 |---|---|---|
-| v2 モードの機能全般 (MEASURE・TRCOD、SOL 領域内の要素、UND・PHSROT、空間電荷の SPAC、Polarization の有限値、RADLIGHT の 3 次元の軌道) | v2 | 値の根拠は解析式・独立な数値計算。gs との比較は無い (gs が動かない・K64 が誤っている) |
-| FITP>1 の最終解、tffamsetup (fam 点) | 両 | gs (WSL) が GO で再起動する (D1、B05)。自己検証のみ |
-| CSROYMatrix | 両 | gs が wrongtype を返す (B60) |
+| v2 モードの機能全般 (MEASURE・TRCOD、SOL 領域内の要素、UND・PHSROT、空間電荷の SPAC、Polarization の有限値、RADLIGHT の 3 次元の軌道、v2.1.0 の修正の値) | v2 | 値の根拠は解析式・独立な数値計算。gs との比較は無い (gs が動かない・K64 が誤っている)。k64 モードの再現は gs と比べた |
+| 大きなリング B (8 GeV、周長 1436 m) | 両 | 数値だけ確認 (CALC・RADINT・Emittance[]・COD は k64 が gs と 1e-10)。U0/E が大きいリングの RADTAPER・tradke の符号、陽子の大きなリング、POL (不安定で NaN) は未確認 |
+| FITP>1 の最終解、tffamsetup (fam 点) | 両 | FITP>1: pysad は独立な最小化と 5e-8 で一致、gs は最小値の手前で止まる。fam 点: 初期条件の不変量と八極のキックのチューンは確認、有限振幅の周期解の条件そのものは未確認 |
+| CSROYMatrix・OYStability・OYScan | 両 | 行列は手作りの入力で gs と 4e-20。gs は `CSRSetupOY` の出力で wrongtype (原因は zj の head の上書き: B60)。OYStability・OYScan は gs が完走しない |
 | tbrote の srot 更新、tbendebody の bsi2 (B56・B58) | k64 | ソースの読みだけで、gs の個別確認なし (v2 は直した) |
-| RadiationField | 両 | gs が SIGSEGV (B49)。速度場との比較のみ |
+| RadiationField | 両 | gs が SIGSEGV (B49)。Liénard-Wiechert の厳密な数値と合う (振幅・位相・スペクトル・全エネルギー) |
 | measure.py (tlum・tluma) | 両 | gs で MEASURE が動かない。解析値のみ |
-| SynchroBetaEmittance | 両 | 12 セルのリングで emitx 4e-7〜1e-5。24 セルの平面リング + CAVI VOLT=2e6 (AzimuthalModes->7) の 4 点で emitx が gs と相対 1.4e-7〜1.4e-6 (emity は雑音)。結合のあるラティスは gs が SIGSEGV で落ちて比較できず (pysad は NaN の ValueError で失敗)。不安定なチューンは未確認 |
 | tfloor.f の cfunc (xsincos 等) | 両 | 個別実装 |
-| `Optics.n` の PeriodicR、CorrectOrbit の Micado・CorrectLocal、`dapert.n`・`element.n`・`emit.n`・`beamline.n`・`functions.n`・`Misc.n` のファイル単位の比較 | 両 | 記録なし |
-| 未解決の差: BEND の F1=0.1 FRINGE=3 + RAD の追跡 (相対 0.7)、L≠0 の CAVI + DX・DY (1e-3)、SOL 内の四極 + RAD (現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い。B68)、K3 の強い MULT リングの qcod (Emittance が NaN)、EMIT のあとに USE すると gs は EMIT の効果が追跡に残り pysad は捨てる (v2 でも未解決)、PSPAC の直線の例の x と y が gs と 16% 違う (v2) | 両 | 原因の調査が未了 (docs/11 §E、`history/work_unimpl.md`、docs/46 §4)。旧「RADINT と EMIT の Jx の 2.4% の差」「`BUCKET HIGHT` の 0.010045 と 0.010035」は v2 で原因が分かり直した (B75・B77。k64 モードは K64 のまま) |
+| MASS・CHARGE を与えた粒子の Touschek・Intrabeam・RADINT、放射の β の因子 | 両 | 電子の古典半径のまま (B112)。陽子での確認なし |
+| `Twiss["DETR"]` ≥ 1 | 両 | モードが入れ替わる INS・MEASURE は未確認 |
+| 未解決の差: SOL 内の四極 + RAD (現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い。B68)、K3 の強い MULT リングの qcod (Emittance が NaN)、PSPAC の x と y の 16% の非対称 (再現しない)、v2 の Emittance[] (RADCOD) と gs の 1e-4〜1e-3 (意図した差: B111) | 両 | 原因の調査が未了または意図した差 (docs/11 §E、`history/work_unimpl.md`、docs/46 §4) |
 
 ### 9.4 優先度
 
 | 優先 | 項目 | 理由 |
 |---|---|---|
 | 中 | 誤差入り 6D emit と DA の反復 (性能) | Monitor/Steer/CalculateOptics は動く。誤差入り 6D emit と DA の反復が 600 s を超える |
-| 中 | 光学・Emittance への空間電荷、Emittance[] の POL の量の SOL 領域内、9.3 の未解決の差、v2 の要判断 (docs/47 (e)) | 要素の完全対応と原因の切り分け |
-| 低 | tdgeo の四極の微分、wfres 系、tphrec | 必要になったら |
+| 中 | Polarization の追跡との差 (非線形の軌道)、v2 の Emittance[] と RADINT の矩形磁石の差、SynchroBeta の大きなリング、9.3 の未解決の差、v2 の要判断 (docs/47 v2.1.0 の (d)) | 原因の切り分け |
+| 中 | TrackParticles の F1、MULT の AE1・AE2・FB1/FB2、SOL 領域内の光子 | K64 のソースの直訳 |
+| 低 | wfres 系 | 必要になったら (NAFF で代用) |
 | 不要 | MON/MCOD/TCOD の機能、Obsolete・非リンクのファイル | K64 で無効 |
 
 ## 10. `<SAD>\src` の *.f のうち pysad の中に名前が出てこないもの

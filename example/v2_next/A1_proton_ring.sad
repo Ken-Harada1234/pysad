@@ -1,0 +1,26 @@
+! v2next A1 項目 2: TrackParticles・Emittance[]・CALC6D の MASS・CHARGE (陽子)。旧 pysad は MASS を追跡に渡さず、電子として追った。
+! 条件: 30 GeV/c の陽子 (γ = 32)、12 セルの FODO (周長 45.6 m)、RF 2 MV・h = 24。
+! 確認 (試験): 1 周の z-δ 写像から Qs = sqrt(h η V/(2π β² E)) (η は RF なしの 1 周の z の変化から)。ドリフトの z = L(β1/β0 − 1)。
+! 注意: gs (K64) は放射の古典半径に電子の値を使う (質量によらない)。陽子の U0 は v2 が 6.89e-4 eV (古典式)、gs・k64 は 1.265 eV (mp/me 倍)。
+MASS = 938.272088e6;
+MOMENTUM = 30.0e9;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=2e6 HARM=24 PHI=0);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+USE RING; CELL; CALC; RFSW; NORAD;
+e = Emittance[];
+$FORM = "12.6";
+Print["Qs (Emittance[]) = ", Tunes/.e, "  U0 [eV] = ", EnergyLossU0/.e, "  eq. position = ", EquilibriumPosition/.e];
+x0 = {{1e-3,0,0,0,0.3,0},{0,0,1e-3,0,0,0},{0,0,0,0,0,1e-4},{1e-4,0,1e-4,0,-0.5,-1e-4}};
+bm = Append[Transpose[x0],{1,1,1,1}];
+r = TrackParticles[{1,bm},1,1,100];
+Print["after 100 turns (x, px, y, py, z, dp) = ", Take[r[[2]],6]];
+RAD; NOFLUC;
+r = TrackParticles[{1,bm},1,1,100];
+Print["RAD, after 100 turns = ", Take[r[[2]],6]];
+Exit;

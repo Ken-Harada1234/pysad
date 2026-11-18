@@ -1,0 +1,41 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 02:44:36 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next B3 項目 4: SOL 領域 (BOUND=1 の SOL の間) の中の四極の DX・DY を変数にした幾何の fit。
+! gs は 2 回の Newton で収束 (QF DX = 2.78848432670e-3、QD DY = 2.66798056318e-3)。v2 は四極のずれの解析微分 (tdgeo の qdtrans・tftmatu 相当) で同じ値に収束する。
+! 領域内の四極のずれは pysad の追跡・CALC・Emittance[]・tsgeo に今まで無かった (NotImplementedError) ので、追加した。k64 モードは SOL 自体のずれ (trots) が未対応で使えない。
+MOMENTUM = 3 GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5) DV=(L=0.5);
+QUAD QF = (L=0.3 K1=0.3) QD = (L=0.3 K1=-0.25);
+SOL SA = (L=0 BZ=3 BOUND=1 GEO=1 DX=0.002 DY=-0.001 DPX=0.003 DPY=0.002) SB = (L=0 BZ=0 BOUND=1);
+MARK ST = (BX=5 BY=5) M2=();
+LINE BL = (ST DR SA DR2 QF DV QD DR2 SB DR M2);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE BL;
+Out[1]:= USE
+ INS; NORAD; NOFLUC; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.306093 $$$       f BX    #######  #   3.737430 $$$       f NX    #######  #    .155193
+$$$       f AY    #######  #   -.262226 $$$       f BY    #######  #   9.823668 $$$       f NY    #######  #    .096442
+$$$       f LENG  #######  #   4.100019
+ $FORM="18.14";
+ PageWidth=1999;
+ FIT M2 GY 0.0008; FIT M2 GZ -0.0035;
+ FREE QF DX; FREE QD DY;
+ GO;
+       2        0   4.8649E-08  (NEWTON)    1.000          2
+ Matched. ( 5.9796E-19) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+M2        f GY   8E-4      1  8.0000E-4 M2        f GZ   -.0035    1   -.003500 $$$         AX    #######  #   -.306073 $$$         BX    #######  #   3.737343 $$$         NX    #######  #    .155194 $$$         AY    #######  #   -.262169
+$$$         BY    #######  #   9.823444 $$$         NY    #######  #    .096443 $$$         LENG  #######  #   4.100014
+ Print["G1 =",LINE[{"GY","GZ"},"M2"]," ",LINE["DX","QF"]," ",LINE["DY","QD"]];
+G1 ={ 8.000000000356E-4,  -.00349999999996}    .00278848432670    .00266798056318
+ Exit;
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

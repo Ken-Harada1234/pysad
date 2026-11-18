@@ -1,10 +1,10 @@
 # 11. SAD の癖・仕様・ビルド依存の挙動 (pysad での扱い)
 
-最終更新: 2026-11-17
+最終更新: 2026-11-18 (v2.1.0 の注記を足した)
 
 > 対象: K64 版 SAD (github KatsOide/SAD、WSL Ubuntu で `bin/gs` 実行)。ソースは `<SAD>\src` と `Packages/`。
 > 行番号は 2026-10〜11 の照合時点。K64 自体の誤り (バグ) は `21_sad_bug_report.md` (B01〜B71) に集約し、ここは「結果の値に効く仕様・癖」を番号 (A/B/C/D) で並べる。対応する B 番号は各行の根拠欄に付ける。「ベンチ」は `<repo>\bench_level*.sad/.result` と `*_pysad.py/.result`。
-> pysad は「再導出せず直訳」が方針なので、下記の癖は (バグに見えるものも) そのまま再現している (**k64 モード**。v2.0.0 から既定の v2 モードは、K64 のバグと分かったものの一部を直した。直したものには各行に「**v2 で修正**」と B 番号を付けた。モードによらない pysad 自身の不具合の修正は docs/47 §(d)。一覧は docs/47)。
+> pysad は「再導出せず直訳」が方針なので、下記の癖は (バグに見えるものも) そのまま再現している (**k64 モード**。v2.0.0 から既定の v2 モードは、K64 のバグと分かったものの一部を直した。直したものには各行に「**v2 で修正**」と B 番号を付けた。モードによらない pysad 自身の不具合の修正は docs/47 の v2.0.0 の (d) と v2.1.0 の (c)。一覧は docs/47。v2.1.0 で直したものも同じ書き方で注記した)。
 
 ## A. 数値計算の癖 (結果の値に効くもの)
 
@@ -41,7 +41,7 @@
 | A29 | **DTHETA は DROT のある型 (BEND, MULT) では DROT、なければ ROT に入る** (設計値 + 誤差)。LINE["ROTATE",BEND] は ROT (設計ロール) で DROT とは別 | terror.f:268-285 | `ffscmd._apply_error`, `_AttrMap` |
 | A30 | **EMIT 報告 (temitprint) の Extended Twiss は EPX の欄に EY の値を出す** (format 9001 への引数の並びの誤り: `vout9(mfitey)` が 2 回)。`ZX/ZPX/ZY/ZPY/AZ/BZ/PSIZ` はそのまま。`Emittance[]` の ExtendedTwissParameters は正しい (EPX は EPX) | temit.f:1015-1017 (引数), 1021 (format), bench_level26a | `ffscmd._print_emit_exttwiss` が同じ誤りを再現 (報告の行を SAD と一致させるため) |
 | A31 | **RFSW OFF の報告でも RF の量 (Vc, h, fs, バケット高さ) は 0 にならない** (空洞の積算量から作る)。`Imag.tune` は log\|λ\|/2π (0 同然の雑音で `-0.0000000` と `0.0000000` が混じる)。z 方向 (RFSW OFF の Jordan ブロック) の `Real tune` の 0 の符号 (`-0.0000000`) は teigenc の丸めで決まり、pysad は再現できない (値は 0) | bench_level26a | 差は符号だけ |
-| A32 | **RFSW OFF でも RADCOD ON なら tcod の rfsw=.false. の枝 (im=5) が放射込みの閉軌道を求める**: x,px,y,py を閉じ、z のずれは trf0 (Equilibrium dz) に移る。出口の δ は −U0/P0 (RF がないので閉じない)。U0 (実ラティスで 2.96054e5 vs 2.96075e5 eV)、α_c、チューンが RADCOD OFF と 1e-5 違う | tcod.f, bench_level26a R3 | `emit6d.closed_orbit6d` の新しい枝 (`_tcod_radcod(rfsw=False)`)、`emittance6d` の最後の一周も radcod=True |
+| A32 | **RFSW OFF でも RADCOD ON なら tcod の rfsw=.false. の枝 (im=5) が放射込みの閉軌道を求める**: x,px,y,py を閉じ、z のずれは trf0 (Equilibrium dz) に移る。出口の δ は −U0/P0 (RF がないので閉じない)。U0 (実ラティスで 2.96054e5 vs 2.96075e5 eV)、α_c、チューンが RADCOD OFF と 1e-5 違う | tcod.f, bench_level26a R3 | `emit6d.closed_orbit6d` の新しい枝 (`_tcod_radcod(rfsw=False)`)、`emittance6d` の最後の一周も radcod=True。**v2.1.0 (D1)**: 空洞があって RFSW OFF のとき、pysad は z の戻りを δ で閉じていた (K64 の tcod は x・px・y・py だけを閉じ、δ も z も動かさない。z は trf0 に移る) 不具合を直した (両モード)。軌道のずれ (四極の DX は経路長を変える) があると εx が gs と 1.8〜4% 違っていた。空洞のないリングは従来どおり δ で閉じる (回帰 3c・3d・26b)。tradke と tradkn の反作用の角度の符号が逆なのは K64 の誤り (B111) |
 | A33 | **FSHIFT (Orbit dilation)**: RFSW ON のとき `dvfs=FSHIFT` が全要素の `dv` に足される (tsetdvfs)。報告の `Orbit dilation dl = -dleng·1e3 mm`、`dleng = FSHIFT·周長` (tfgeo.f:134)。FSHIFT=1e-6 (周長 603.12 m で dl=−0.60312 mm) で閉軌道の δ が −4.3e-3、U0 が 0.2943 MV に変わる | bench_level26c | `_Phys.dvfs` (emittance6d/emit_extra/calc6d の `fshift=`)。追跡 (track6/track6n) は未対応 |
 | A34 | **RADINT (INTGRL.f) の癖**: ①tbendebody の bendib の rhob/rho0 を INTGRL は設定しないので、直前に tbend 系が設定した値 = **最後に処理した曲がりのある BEND の L/ANGLE が全 BEND に使われる** (ある実ラティスでは 20.757 m の BEND。ほかの値だと I9 が 1e-3 ずれるので一致で裏づけ)。②六極のブロックは DL を設定せず直前の BEND/QUAD の最後のスライス長を使う (I9, I10=γ·DL が六極でも足される)。DKL2 は代入されず六極の CKL0X/CKL1X は 0。L=0 の六極は TCAL の後で DL=0.2 (単精度)。③`1e27`、`1.E-6`、`0.2`、`2.3026` は単精度 (ELOSS が相対 1.15e-8 小さい)。④CAVI は VOLT/HARM/FREQ を最後のもので上書き。⑤CKL1X=DKL1·DX/DR は軌道の向きだけ。⑥MASS の既定は elmass=0.51099895e6 (0.51099906e6 ではない) | bench_level29a, 29a2 | `pysad/radint.py` (stale_rho は最後の BEND の L/ANGLE)。history/work_small_items.md A。**v2 で修正** (B06・B07・B12・B13・B72〜B74): その BEND 自身の L/ANGLE、六極は自分の L と K2 (L=0 は寄与なし)、倍精度、CAVI の VOLT は総和、量子寿命は τ/3600、LINEAR CHROMATICITY は dν/dδ、MULT・SOL が入らないときは表示。k64 モードは上の ①〜⑥ のとおり再現 (docs/07) |
 | A35 | **FFS 内の `ON`/`OFF` の語は無効**: `Out[1]:= USE` を出すだけで、後ろの語は普通に次の文として読まれる。`ON INTRA;` ≡ `INTRA;` (立てる)、`OFF INTRA;` も INTRA を**立てる**、`ON NORAD NOFLUC;` は RAD, FLUC を切る (`ON;` も `Out[1]:= USE`)。MAIN 部の ON/OFF は有効 | bench_level29d | `ffscmd._exec_word`。history/work_small_items.md D |
@@ -56,7 +56,7 @@
 | A44 | **RADLIGHT: TrackParticles は RAD・TRPT を ON にし、戻りを `{結果, 軌道{t,x,y,z}}` にする。** 軌道に記録されるのは各区間 (tturn) の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけで、**BEND と曲げのある MULT の中は記録しない**。tlinit は geo0 の軸 1・2 を設定せず (初期値 0)、横方向の座標 (x, y) は軌道に入らない (進行方向に沿った点だけ)。位置は straight (dphi=0) の積み上げで BEND で向きが変わらない。このため RadiationField が意味のある場を出すには、B を ANGLE=0 の STEER にする流れが要る | tlinit.f (tlinit / tlstore / tlresult)。gs と差 0 (`test_radlight.py`) | `ffscmd._RadLight` が同じ記録の仕方 (k64 モード)。**v2 で修正** (B65): 軌道に横の座標が入り、BEND は円弧で進めて中も記録する (docs/45 §3a) |
 | A45 | **tmulke (CALC / Emittance[] の MULT) と tbende / tbendebody の `bsir0` (POL の縦オフセットによるスピンの bsi の更新)**: tmulke は m=0 の枝 (L=0 の薄いキック) で bsir0 を更新しない。tbendebody・tbendebody0 では `bsi2` の項が enarad が偽の最後のスライスにしか付かず結果として捨てられる (B58)。POL の MULT (K1・K2・K3 とずれ) のリングは gs と 1e-11 で一致するが、この更新は試験の例では効かない (未確認の領域) | tmulke、tbende.f:215・313、535-537 (B58)。work_unimpl.md (POL の MULT) | `lattice.py` の `kick_cx`、`emit6d._tmulte` が bsir0 を更新。B58 の `bsi2` は捨てる (K64 のまま)。**v2 で修正** (B58・B64): 入口の縦磁場の積分を足し出口で引く (BEND は y/ρ + k x y、MULT は ψ = Im Σ k_n z^(n+1)/(n+1)!)。スピン軌道結合にも入れる (docs/43 §8a) |
 | A46 | **POL のスピン追跡は RAD ON のときだけスピンが動く** (スピンの歳差が `photons.f` の tradk の中の `sprot` で計算されるため。RAD OFF では POL でもスピンは変わらない)。TrackParticles の入力は 9〜11 列 {x,px,y,py,z,dp, 角度, sy/\|s\|, flag}、戻りの 7・8 列は atan(sz, sx) と sy/\|s\| (tftrack.f)。損失 (flag) の処理は高速追跡にしかなく、POL のスピン追跡では粒子が落ちない (pysad の制限) | photons.f sprot、tftrack.f の ktfresetparticles。gs と 4e-12 以下 (`test_spin_track.py`) | `track6.py` の `sprot`・`bsi`、`fn_track` が POL かつ RAD ON で純 Python の追跡に切り替える (k64 モードは損失の処理なし)。**v2 で変更**: 損失の処理を足した (LOSSAMPL・LOSSMAP は両モードで gs と一致)。歳差の角を厳密な θ に (B83)、SOL 領域内・UND の縦磁場 (B81・B82) を直した (docs/43 §8a) |
-| A47 | **`Polarization` / `Polarizations` (平衡偏極度) は K64 では NaN** (spdepol の `exp(cb²)·cerfc(cb)` が \|cb\|>18 で 0·∞ になる)。PolarizationTime・SpinTune・PolarizationVector は有限で gs と一致する | photons.f:spintrm。docs/21 B55 | K64 の式のまま (NaN も写す)。**v2 で修正** (B55): 有限値 (平面リングで 92.376%。線形のスピン軌道結合の脱偏極率から。docs/43 §8a) |
+| A47 | **`Polarization` / `Polarizations` (平衡偏極度) は K64 では NaN** (spdepol の `exp(cb²)·cerfc(cb)` が \|cb\|>18 で 0·∞ になる)。PolarizationTime・SpinTune・PolarizationVector は有限で gs と一致する | photons.f:spintrm。docs/21 B55 | K64 の式のまま (NaN も写す)。**v2 で修正** (B55): 有限値 (平面リングで 92.376%。スピン軌道結合の脱偏極率から。v2.1.0 でシンクロトロン側帯の項を足した。docs/43 §8a)。**v2.1.0 で誤りの位置を特定** (B125): 桁あふれを直しても K64 の率は emittance/減衰率に比例し、独立な率の約 1000 倍 (4.2 GeV・12 MV の 12 セル FODO)。2 次の零位相の項の二重数え + `spintrm` のガウスの項の 2π が余分。逆向きの BEND (挿入光源の極) では緩和率が符号つきで相殺する (B116。v2 は Σ r (b·n)²) |
 | A48 | **旧 WAKE コマンドは tfwake.f を呼ばない**: tffsa.f:972 が `WAKECOMMAND[]` (init.n の AutoLoad。`Packages/WAKECOMMAND.n` は配布に無い) を評価し、gs は fileopen のエラーを出して行の残りを捨てる。tfwake.f の移植は不要 | tffsa.f:972、work_unimpl.md | 同じ経路 (エラー文の表示だけ未再現)。WAKE は `WakeFunction[...]` + LWAKE/TWAKE (docs/23)。**v2 で実装** (B66): `WAKE L|T 要素 … ENDWAKE` を WakeFunction の表として登録する (k64 モードは上のとおり)。wake の重み (B84) も v2 で直した |
 | A49 | **クラスのメンバーでない名前の `obj@name[...]` は式のまま残る** (メッセージなし)。MessageName の関数形 `MessageName[f,"usage"]` は gs が f を無視して `Undefined MessageName General::"usage"` を出す (`f::usage` の形は一致)。pysad は関数形でも `f::usage` と同じ表を引くので差があり、見送り | gs の出力、work_unimpl.md | `sadclass.py` (メンバーでなければ None で式のまま)。**v2 で修正** (B70): `MessageName[f,"usage"]` の関数形は f の本文を返す (k64 モードの pysad も以前から f を見る) |
 | A50 | **`Skip`・`Read` の型 (Character・Real・Word の読み方)**: 数でない語を Real で読むと式の値になる。gs に合わせた | gs の出力。`test_evalfixes.py` | `sadscript.py` |
@@ -77,7 +77,7 @@
 | B2 | **SeedRandom[n] の種は `\|n/2\|·2+1` (奇数化、負なら負)**。FFS 開始時の種は 17。seed 17 の GaussRandom 列 0.617158…, 1.657394…, −0.476296… は誤差コマンド DELX/DELY/DTHETA の値そのもの | random_plugin_sad.c:54-68。Level 7/10 | `SadRandom.restore` |
 | B3 | **SeedRandom[] の戻りは `{"SAD", seed (符号なし = seed mod 2³²), filled, next, 0}` の 5 要素** | Level 16 | `dump()`、ffscmd の SeedRandom[] (符号なし表示) |
 | B4 | **FLUC の乱数を引く順**: 要素外側・粒子内側。放射ありの BEND (tbendr)・四極 (tsolqur)・MULT はスライスごとに全粒子の本体→全粒子の tradk。tbendi とソレノイド内ドリフトは粒子外側・スライス内側。粒子ごとに tdusrn で p=tran() 1 回、光子ごとに drndsr 1 回 + r 1 回 (光子 0 個でも p は引く) | photons.f tradkfn、drndsr.f。Level 10/12 | `*_ens` ルーチンで同順。乱数の最終状態まで一致 |
-| B5 | **NPARA の既定は Packages/init.n で 4** (initb1.f の 1 ではない)。TrackParticles は粒子 9 個以上 (npparamin=9) で fork し乱数列が分かれる。NPARA>1 だと子プロセスが出力を重複して書く | Packages/init.n:219、tftrack.f。Level 16 | 参照値は `NPARA=1;` を入れて取る。pysad は `NPARA` 1 固定 |
+| B5 | **NPARA の既定は Packages/init.n で 4** (initb1.f の 1 ではない)。TrackParticles は粒子 9 個以上 (npparamin=9) で fork し乱数列が分かれる。NPARA>1 だと子プロセスが出力を重複して書く | Packages/init.n:219、tftrack.f。Level 16 | 参照値は `NPARA=1;` を入れて取る。pysad の既定は `NPARA` 1。**v2.1.0 で `NPARA=n;` を FFS で設定すると gs の分け方を再現する** (子の乱数の種 = 親の種 + 2k、np ≥ 13 で分かれる。有効な並列数 = min(NPARA, np/9 + 1, ne·np/3000 + 1)。RAD + FLUC の追跡だけ)。「δ の rms が gs 4.21e-4、pysad 4.52e-4」の差の原因はこれ (NPARA=4 と 1 の比較)。NPARA=1 と 4 とも gs と全桁一致 (FODO・PF リング) |
 | B6 | **損失粒子の NaN/inf と乱数**: 粒子が落ちる周は発散中の値が NaN/inf/巨大値のまま tradkfn が光子の乱数を引く。θ=π/2 (有限の巨大値) なら anp≈94 で約 100 個、ppa が NaN (inf の 2 成分の norm2) なら θ=−π/2 → anp<0 で 1 個、anp=NaN (g=NaN など) なら tdusrn が 10000 回ループして 20001 個。gfortran -Ofast の max/min の NaN の返り値はサイトごとに違う (tradkfn の `max(gmin, g+dg)` は NaN で gmin、asinz の `max(-1,x)` は −1、sqrt1 の `max(1e-200,·)` は後者)。tsolrot は chi3=0 なら回さない (0·inf=NaN を作らない)。発散中の分岐は丸めの 1 ulp で逆になるので、自由走行の最終 seed は SAD と一致しない (SAD 自身も 1e-16 の摂動で変わる) | drndsr.f, photons.f (tradkfn), tsol.f (tsolrot), tbend.f (tbendcore の asinz)。bench_level16f/16l/20 small | track6n: `sqrt1`/`pxy2dpz`/`asinz`/`norm2_3`/`gfloor`/`rot1`、`Prog.la_count`。SAD デバッグ版との再同期テストで 30 周 seed 一致 (history/work_loss_rng.md, history/work_loss_rng2.md) |
 | B7 | **DynamicApertureSurvey の粒子スロット順** は trackd と同じ (i=1..n1p, j=51→1)、損失時は末尾の生きている粒子と入れ替える (tapert)。損失判定は最初の要素、以後 15 要素ごと、周末。n1 の上限は 200 (help の 256 ではない)、ntloss は 51 点 (help の 50 ではない)、DAPWIDTH はグローバル変数 | trackd.f、tapert.f、tfdapert.f:56。Level 16 | dapert.py + track6n.k_apert。NORAD の DA は地図 153 文字一致 |
 
@@ -118,7 +118,7 @@
 
 | # | 現象 | 根拠 | pysad での扱い |
 |---|---|---|---|
-| D1 | **WSL ビルドは FITP>1 の GO で再起動する** ("*** Run time Environment" からスクリプト再実行、NPARA=1 でも)。参照値が取れない | bench_level15a | match6/ffscmd の FITP>1 (idp ループ、重み、INTRES 判定、fam 点) は直訳のまま SAD と未照合 (自己検証のみ) |
+| D1 | **WSL ビルドは FITP>1 の GO で再起動する** ("*** Run time Environment" からスクリプト再実行、NPARA=1 でも)。参照値が取れない | bench_level15a | match6/ffscmd の FITP>1 (idp ループ、重み、INTRES 判定、fam 点) は直訳のまま SAD と未照合 (自己検証のみ)。v2.1.0 の確認: 今の gs は再起動せず完走し最小値の手前で止まる。pysad の最終解は独立な最小化と 5e-8 で一致 (docs/03 §9) |
 | D2 | **gfortran の min/max は NaN を無視する** (C7, B6 の根拠)。Python の max/min は前の引数を返す | tffsmatch.f fuzz、tapert/photons | match6: `_log10`→NaN で fuzz=1。track6n: NAN_MODE |
 | D4 | **Bash ツールの heredoc はバックスラッシュが 1 段外れる** → Python パッチは Edit ツールで | 作業メモ | — |
 | D5 | 非コンパイルのファイル (pqcell.f, qquad.f, qthin.f, tdfun.f, tquads.f 等 122 本) を参照しない。qquad/qthin の実体は qtwiss.f 内、tdfun は qdcell.f 内 | mk/sad.obj.mk OBJOBS、obj/AMD64-Linux5 | 直訳元はコンパイル対象のみ |
@@ -129,13 +129,13 @@
 - C3: ドリフトなしで続く要素の連動 (未実装、ベンチ側で回避)。
 - D1: FITP>1 の照合 (SAD 側が落ちるため別ビルドか別環境が必要)。
 - 2026-11-16 時点で見つけた pysad と gs の差 (いずれも `history/work_unimpl.md`。癖か pysad の不備か未判定):
-  1. BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡すると gs と相対 0.7 合わない (DX・DY・ROTATE だけなら 1e-13)。
-  2. L≠0 の CAVI に DX・DY を付けた追跡が gs と 1e-3 ずれる。
+  1. (解決: BEND の `F1 FRINGE` + RAD の追跡の差は B113。tfgeo の inext・iprev の再現。v2.1.0)
+  2. (解決: L≠0 の CAVI の DX・DY の差は CAVI の TENT・TEXIT が pysad に無かったため。v2.1.0)
   3. SOL (BZ≠0) 内の四極 + RAD の追跡で、現在の gs (2026-10-19 ビルド) が保存済みの参照 (bench_level9、10-14 の gs の出力) と別の値を返す (x が -0.0027867898 から -0.0014539780)。pysad は保存済みの参照 (と tsolqur の癖 A1) に合わせている。2026-11-16 の単一粒子 1 周追跡 (BZ を 0→0.01 T) で、領域内がドリフトだけなら gs=pysad、`SB D1 QD SE` の gs は `SB D1 SE` (四極なし) と 8 桁一致するので、**現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い** (B68。10-19 と 11-14 -O0 の 2 ビルドは同値で最適化の差ではない。ソースの箇所は未特定。NORAD は両方で一致)。
   4. SOL 領域内の BEND・MULT・CAVI は k64 モードでは未対応 (v2 モードは実装した: docs/44 §7a)。BEND は K64 の tsol.f どおり (`tdrift(al,bzs,phiy,phix,…)`) に実装したが、gs が偏向をほぼ無視して (ANGLE=0.1 でも 1e-5) 合わず k64 モードの実装は取り下げた。原因は未確認。
   5. K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4) で pysad の CALC (qcod) の閉軌道が gs と違う解 (y=-0.033) になり Emittance が NaN。gs は小さい軌道で通る。
-  6. `emit6d._tquade` (Python 版) の解析ヤコビアンが軌道のある QUAD で δ の微分を落とし、`emit_extra`・`calc6d`・`touschek` で 1e-5 (εy 1e-4) ずれる (`emit6d.tturne` は 1e-12)。
-  7. EMIT のあとに `USE` して TrackParticles を呼ぶと、gs は EMIT の効果が残って EMIT 前と違う値になる。pysad は USE で EMIT を捨てる。原因未調査。
+  6. (解決しなかった・再現しない: `emit6d._tquade` の解析ヤコビアンの δ の微分の欠落は再現せず、Python 版・numba 版・数値微分が 1e-12 で一致した。v2.1.0。z の行の関数単体の欠落を補った)
+  7. (解決: EMIT のあとの `USE` で RF の位相の基準 `trf0` が持ち越されるのは K64 の仕様。pysad が USE で 0 に戻していた。v2.1.0)
   8. `Check[Return[1],2]`・`Thread[a==b]` (a が値、b が未定義)・`Out[n]` の繰り返し表示など SADScript の細部 (docs/04 §6)。
-- 未翻訳のまま (理由つき): MAIN の TRACK の Fourier 解析 (wjfit・wfres・wfbin・wiord・wjdraw)、光学・Emittance への空間電荷 (WSPAC のビーム行列は空間電荷なしの平衡値)。MEASURE/TRCOD (gs が動かない: B42)・`tspac.f` の追跡側 (空間電荷)・PHSROT (K64 で動作しない: B38) は v2 モードで実装した (k64 モードは未対応)。一覧は `46_unimplemented_and_unverified.md` と `16_fortran_status.md` 末尾。
+- 未翻訳のまま (理由つき): MAIN の TRACK の Fourier 解析 (wjfit・wfres・wfbin・wiord・wjdraw)、(光学・Emittance への空間電荷 (WSPAC) は v2.1.0 で実装済み。追跡の WSPAC のビーム行列は空間電荷なしの平衡値のまま)。MEASURE/TRCOD (gs が動かない: B42)・`tspac.f` の追跡側 (空間電荷)・PHSROT (K64 で動作しない: B38) は v2 モードで実装した (k64 モードは未対応)。一覧は `46_unimplemented_and_unverified.md` と `16_fortran_status.md` 末尾。
 - v2 の作業で新しく見つけた K64 の誤り・疑い (B72〜B110) は `21_sad_bug_report.md`。pysad 側で直した癖でも、K64 の動作を gs 比較のために残してあるもの (k64 モード) は上の表のとおり。

@@ -1,0 +1,4 @@
+ASTRID2 0.58 GeV: tau_p = 28814.99 s (sdamp = 5.2908e-12 /turn)
+P0 = 1.00: dP/turn = -6.3638e-13, ST = -4.0337e-13, ratio = 1.578
+P0 = 0.50: dP/turn = 2.0938e-12, ST = 2.2420e-12, ratio = 0.934
+P0 = 0.25: dP/turn = 3.4903e-12, ST = 3.5647e-12, ratio = 0.979

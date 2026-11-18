@@ -1,6 +1,6 @@
 # 03. FFS のコマンド解釈 (src/tffsa.f) と pysad の ffscmd.py
 
-最終更新: 2026-11-17 (現状のスナップショット)
+最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット)
 
 対象: SAD K64 (<SAD>\src) と pysad (<repo>\pysad)。
 すべて Fortran ソースと pysad のコードで確認した内容。行番号は 2026-10 時点のもの。
@@ -103,7 +103,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 
 ### 3.3 FREE / FIX (tffsfreefix.f)
 
-`FREE pat [KEY] pat …`: `tfgetlineps(mode 0)` で要素位置を集め、`.` を含まない名前は **ファミリー先頭 (klp==k) だけ** を変数にする。`KEY` (次の語) が要素型のキーワード (`tfkwrd`) なら ivvar にそれを、無ければ既定キーワード `nelvx%ival` (tfinit.f: DRIFT は L (ival=1, 下限 vlim(1)=0.1)、BEND/QUAD/SEXT/OCT/DECA/DODECA/SOL/CAVI/TCAV は 2 番目のキーワード (ANGLE/K1/K2/K3/…/BZ/VOLT)、MULT は K1、MARK/MONI は 0 → `Can't use as variable`)。`BXI` 等の `nlistI` は先頭 MARK の初期値を変数にする (it=41)。`QF.2` のように成分を指定すると `ivcomp` 付き (`Info-Component … is coupled to`)。`valvar = 値/errk` で保持。`FIX pat [KEY]` は一致する変数を削除。ワイルドカード (`%*<{|`) があれば複数語を続けて読む。
+`FREE pat [KEY] pat …`: `tfgetlineps(mode 0)` で要素位置を集め、`.` を含まない名前は **ファミリー先頭 (klp==k) だけ** を変数にする。`KEY` (次の語) が要素型のキーワード (`tfkwrd`) なら ivvar にそれを、無ければ既定キーワード `nelvx%ival` (tfinit.f: DRIFT は L (ival=1, 下限 vlim(1)=0.1)、BEND/QUAD/SEXT/OCT/DECA/DODECA/SOL/CAVI/TCAV は 2 番目のキーワード (ANGLE/K1/K2/K3/…/BZ/VOLT)、MULT は K1、MARK/MONI は 0 → `Can't use as variable`)。`BXI` 等の `nlistI` は先頭 MARK の初期値を変数にする (it=41)。`QF.2` のように成分を指定すると `ivcomp` 付き (`Info-Component … is coupled to`)。`valvar = 値/errk` で保持。**成分ごとの FREE** (v2.1.0。`tffsfreefix.f`・`tfsetv.f`・`tffsa.f` の `tfvcomp` と gs の実測。pysad は以前 `FREE QF.3 K1` をファミリー全体の変数にしていた不具合を直した。両モード): 語に `.` があれば成分の変数。(a) 既定のキー (QUAD の K1 など) の変数は要素全体の値で、成分は先頭の成分に結合する。先頭の成分 (`QF.1`) は要素全体と同じ (結合先を `???-FFS-Info-Component QF.2 is coupled to QF.1 .` で知らせる)。**先頭でない成分 (`QF.3`) の既定のキーの変数は値を持たず効かない** (K1 は動かない。gs は変数の数に数え、pysad は作らない: 反復の行の最後の数が 1 つ違い、その変数だけで GO すると pysad は `?No variable.`)。(b) 既定でないキー (BEND の K1、ROTATE) の変数は、その成分だけの値 (`tfsetv` の `ievar2`)。(c) 同じ要素の変数は、後から FREE したものが先 (`LOOP_I_2`)。(d) 要素全体の変数がある所へ成分、成分がある所へ要素全体を FREE するとエラー (`A component has been already used as variable: B.6`)。(e) `tfvcomp` は (b) の変数があれば真で、NOKEEPEXP の CALC・GO は展開しない (NOCALEXP)。(f) FIX: `FIX B.3` は成分、`FIX B` は成分に触れない、`FIX B*`・`FIX *` は成分も消す。`VAR` の Couple の欄は既定のキーだけ `<--`、制限値は既定のキー ±1e10、ほかは ±1e99。小さな FODO (3 GeV、周長 18.4 m) で B.3 だけの K1 で NX を 1.30 にすると反復 3 回 (残差 2.1729E-03・4.8421E-08・3.2593E-17)、NX 8.168140905042474 が gs と全桁。大きなリング A (3 GeV、周長 603 m、3563 要素。`FREE BPI6.2 K1; FREE BPI7.5 K1` と `FREE QDA2.1 K1; FREE QDA3.4 K1; FREE QDA4`) でも反復の行・チューン (47.6000342385、17.6000441754)・K1 が gs と一致 (2.8 秒)。未確認: COUPLE で結合した要素の成分、`USE NOEXPAND` の展開済みの成分の値の保存。例 `example/v2_next/B2_free_component.sad`。`FIX pat [KEY]` は一致する変数を削除。ワイルドカード (`%*<{|`) があれば複数語を続けて読む。
 
 ### 3.4 GO の解法・微分・フック (tffsmatch.f)
 
@@ -141,6 +141,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
   7 桁目は `autofg('10.7')(1:10)` で切り捨てに見える (dz, f0)。f0=c·β/C。
   EMIT の後に DTSYNCH / PHICAV / EFFVCRATIO / EFFVC / EFFRFFREQ も書き出す。OMEGA0 は USE と EMIT で更新。EMITXE/EMITYE/EMITZE はエミッタンスの下限。EMIT は GAUSS を ON にする (§2)。
 - **CHRO_MATICITY** (tffsa.f:609 → tfchro.f): 四極・六極・MULT の寄与を `1x,a12,1x,2f17.3` で 1 要素ずつ + `TOTAL`。BEND は数えない。六極単独の ξy は代入なので K2=0 で `-0.000`。pysad は `FFS.chro_cmd`。960 要素のラティスと MULT 入りの小リングで全行一致 (bench_level24b/24b2)。
+- **EMIT のあとの `USE`** (v2.1.0。両モード。K64 の仕様): `EMIT` (または `Emittance[]`・`CALC6D`) のあとに `USE RING;` しても、追跡の RF の位相の基準 `trf0` は EMIT の値のまま (`trf0` は `tmacro` の大域変数。`temit.f` が 0 にしてから `tturne` で計算し、`tffsa.f` の MEASURE (`trf0 = 0`) だけが他に触る。`USE` は触らない)。`CELL; CALC;` のあとも変わらない。以前の pysad は `USE` で `trf0 = 0.0` にしていた。gs と全桁一致 (小リングで EMIT 前 δ = (−3.0771610e-4、6.82902209e-4、−1.023444e-2)、EMIT 後・USE 後 (−4.1421124e-5、9.50018237e-4、−9.97733e-3))。大きなリング A (CELL CALC・RAD・EMIT の 5 周追跡 → USE RING → 5 周追跡で 1.3e-11)・PF リングでも一致。`emit`・Touschek の結果 (Twiss など) は USE で作り直される (捨てる。K64 での残り方は未確認)。例 `example/v2_next/A1_use_after_emit.sad`。
 - **T_YPE [pat …]** (tftype.f): 型 (ltyp の順: DRIFT, BEND, QUAD, SEXT, OCT, DECA, DODECA, MULT, SOL, CAVI, TCAVI, MAP, BEAM, SPCH, INS, COORD, APRT, MONI, MARK) ごとに ` ;` 行→型名→`NAME    =(KW =v KW =v )` を `twbuf` (タブ 7/5、行幅 lpw-2) で折り返す。値は `autos1` の最短表現、0 の項目は既定キーワード以外省略、`ROTATE` は DEG。MARK は twiss(l,0,:) (l=1 は保存値) と EMITX/EMITY/EMITZ/SIGZ/SIGE/DP。
 - **DISP_LAY [opts] [loc [loc1]] [pat]** (tfdisp.f): オプション `ALL, A_CCELERATION, G_EOMETRY, GA_MMA, OG_EOMETRY, O_RBIT, R_MATRIX, B_EAM, P_HYSICAL, D_UMPOPTICS, Z, E_XTREMUM, RE_FERENCE, DRE_FERENCE`。既定ヘッダ `   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #`、各行は 8.5 幅の tdispv (NX/NY は /2π)、Length 10.6、Value は既定キーワードの値、s(m) は 11.6 (値 0 は `tdtrimz` で `.0`)、Value は 10.7、`(a,a,a,1x,i5)` で位置番号。ヘッダは 66 行ごとに繰り返す (`nlc=66`)。パターンに一致した行だけを出す (`$$$` は一致したときだけ)。名前が 10 桁を超えると後ろの欄の連続空白を詰めて桁を保つ (`tfsqueezespace`)。
   s(m) は tfgeo の pos (F1/FB1/FB2 付き BEND/MULT のフリンジの長さ補正、OFFSET MARK の位置、§6)。Value 欄は既定キーのある要素なら値が 0 でも ` .0`、MARK や既定キーの無い要素は ` 0`。
@@ -222,7 +223,7 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 - INS での fit (Matcher は `cell=False` で安定判定を省くだけで、SAD の INS 条件照合は未了。INS のリングの Emittance[]・追跡は gs と一致を確認: `history/work_unimpl.md` の記録)。
 - FITP>1 のオフモメンタム条件と MatchingAmplitude (match6 に実装済みだが SAD との照合はない: §9)。
 - FIT の `@` (`SADError` で停止する)。
-- `NOKEEPEXP` の tfvcomp: 常に偽として実装している (成分ごとの FREE が無いため真になる場合が無い。成分ごとの FREE を実装するときに `FFS._tfvcomp` を直す)。NOKEEPEXP と RENUMBER の INDEX 属性による番号の初期値は実装した (両モード。gs の実測と一致。下記)。
+- `NOKEEPEXP` の tfvcomp: 既定でないキーの成分の変数があれば真 (成分ごとの FREE を実装した v2.1.0 から。K64 の定義と同じ)。NOKEEPEXP と RENUMBER の INDEX 属性による番号の初期値は実装した (両モード。gs の実測と一致。下記)。
 - `Twiss["R…"/"D…"/"RALL"/"DALL"]` は整数位置だけ (参照光学は要素の入口の値のみ)。
 
 **gs に合わせた FFS の動作 (2026-11-17、gs で確認)**
@@ -264,15 +265,15 @@ FFS は `getwrd` で語 (word) を 1 つ取り、次の順で「誰かが受け�
 | `ORG B3 1.5 -2.5 0.5 10 20 30` (B26) | `1.5-2.5` と読まれ値が 1 つ足りなくなる | 空白で区切った `-2.5` は別の値。`3/2`、`2 *5` などの式も書ける。k64 モードは K64 と同じ読み方のまま | K64 で曖昧さのない書き方 (`1.5 0-2.5 …`) と同じ ORG の値 (gx=1.5, gy=-2.5) |
 | MOMENTUM の警告 (B67) | 警告なし | MOMENTUM を MAIN でも FFS でも設定しないまま、運動量を使う計算 (追跡・EMIT・Emittance・RADINT・CALC6D・DA ほか) に入ると 1 度だけ警告 (値は変えず 30 GeV)。CALC (4D) と幾何では出さない | 明示の `MOMENTUM=30e9` では出ない |
 | `MON`・`MCOD`・`TCOD` (B22) | 後ろの語が式として読まれ `Missing value for PM*` で文が止まる | 「K64 に無いコマンド」と警告して文全体を読み飛ばす (定義はしない。k64 モードは K64 と同じ) | K64 の tffsa.f に無い |
-| `FFS;` の書き方 | (gs の動作) | gs に合わせた (モードによらない)。`FFS USE RING;`・`FFS USE=RING;`・行の途中の `FFS;`・`FFS NPARA=3;` (gs と同じエラー) | 台本 15 本を gs と照合。同じ行の `FFS;NPARA=3;` の `NPARA=3;` は FFS 部では実行されない (gs と同じ) |
-| MAIN の一般の代入 `NAME = 式;` | 無視されていた | gs と同じ式の文法 (単位つき数、`^`、`SIN COS TAN ATAN SQRT EXP LOG LN COSH`、`PI`、`MOMENTUM`、前の変数) で FFS に届く。gs で構文エラーになる形は代入しない | 32 個の式を gs の値と 2e-14 (モードによらない) |
+| `FFS;` の書き方 | (gs の動作) | gs に合わせた (モードによらない)。`FFS USE RING;`・`FFS USE=RING;`・行の途中の `FFS;`・`FFS NPARA=3;` (gs と同じエラー)。**`FFS` と `ffs` だけが FFS の語**で、`Ffs;`・`FFs;` は MAIN の構文エラー (`LALR(1) parser: syntax error`) で FFS 部に入れず何も実行されない (v2.1.0。以前の pysad は読んでいた)。**LINE 名は書かれたとおり** (LINE ring と USE RING は別。`USE ring` は ring が無いので `???General::wrongtype:  Argument must be BeamLine[ ... ]:` と `???-FFS-Error-Missing beamline in USE.`) | 台本 15 本 + 6 本を gs と照合。同じ行の `FFS;NPARA=3;` の `NPARA=3;` は FFS 部では実行されない (gs と同じ) |
+| MAIN の一般の代入 `NAME = 式;` と要素定義の式 (`ANGLE=PI/8`) | 無視されていた (要素定義の式は `PI`・関数を文字列として扱い警告して要素を捨てた) | gs と同じ式の文法 (v2.1.0 で約 100 通りを gs で実測): 単位つき数 (`DEG MM CM …` は**数の直後だけ**。`10 DEG/2` は (10 DEG)/2)、`+ - * / ^` (`^` は右結合)、関数 `SIN COS TAN ATAN SQRT EXP LOG (常用) LN SINH COSH TANH ATAN2(y,x)` (関数名は大文字小文字を問わない、丸括弧)、`PI` (大文字だけ)、`MOMENTUM`、前の変数。0 での割り算は ±Infinity・NaN、定義域の外は NaN。gs で構文エラーになる形 (`pi/8`・`Pi/8`・`(1+2) MM`・`SQRT 2`・`ABS`・`2**3`・`2^-1` ・引数の数が違う関数など) は警告 `syntax error in MAIN expression (gs: …)` を出して捨てる | 代入 32 個の式を gs の値と 2e-14、要素定義の式 37 通りの値と 19 通りの構文エラーを gs と全桁 (モードによらない)。大きなリング A・B、PF、ASTRID2 の全要素の値は v2.0.0 の読み取りとビット一致。例 `example/v2_next/D2_main_expr.sad` |
 
-`FFS;` と MAIN の代入の残した違い: `Ffs;` (大文字小文字まじり) は gs では読めないが pysad は読む、`FFS` (`;` なし) の次の行が USE 以外の文のとき gs はエラーにして行の残りを捨てるが pysad は FFS 部として実行する、`A = 3 B = 4;` は gs では A = 3 (エラーつき) だが pysad は代入しない、要素定義の中に直接書いた MAIN の関数 (`L=2*SIN(A)`) は従来の読み取りのまま (未確認)、`LINE[{"EMITY",…},1]` は gs が MAIN の値、pysad が MARK に書いた値 (0)。k64 モードでも MAIN で PBUNCH・EMITX・MASS などを代入している TRACK なしの台本は、これまで無視されていた値が効くようになる (gs と同じ向き)。
+`FFS;` と MAIN の代入の残した違い: `FFS` (`;` なし) の次の行が USE 以外の文のとき gs はエラーにして行の残りを捨てるが pysad は FFS 部として実行する、`A = 3 B = 4;` は gs では A = 3 (エラーつき) だが pysad は代入しない、gs が構文エラーにするが pysad が受ける形 (`45DEG`・`SIN[0.1]`・未定義の名前 `L=A`)、gs が受けるが pysad が構文エラーにする形 (末尾の `1+`)、MAIN の変数を `E`・`Pi`・`Degree` で代入しても要素定義の式の `E` は SADScript の定数 (gs は利用者の値)、`LINE[{"EMITY",…},1]` は gs が MAIN の値、pysad が MARK に書いた値 (0)。k64 モードでも MAIN で PBUNCH・EMITX・MASS などを代入している TRACK なしの台本は、これまで無視されていた値が効くようになる (gs と同じ向き)。
 
 ## 9. この SAD ビルド (WSL, K64) で分かった注意
 
-- **NPARA の既定は 4** (Packages/init.n:219 `NPARA=4;`。initb1.f の `RsetGL('NPARA',1)` を init.n が上書き)。TrackParticles は粒子 9 個以上で fork するため乱数列が分岐し、pysad と比較するには `NPARA=1;` をスクリプトに入れる。
-- **FITP>1 の GO で SAD が再起動する** (`*** Run time Environment` バナーが再び出る)。NPARA=1 でも起きるので、オフモメンタム条件の参照値は得られていない。
+- **NPARA の既定は 4** (Packages/init.n:219 `NPARA=4;`。initb1.f の `RsetGL('NPARA',1)` を init.n が上書き)。TrackParticles は粒子 9 個以上 (有効な並列数 = min(NPARA, np/9 + 1, ne·np/3000 + 1)。np ≥ 13 で実際に分かれる) で fork するため乱数列が分岐する。pysad の既定は NPARA=1。gs と比較するには `NPARA=1;` をスクリプトに入れるか、**`NPARA=n;` を FFS で設定して同じ分け方を再現する** (v2.1.0。子の乱数の種 = 親の種 + 2k。RAD + FLUC の追跡だけ。gs の NPARA=1 と 4 の rms dp・最終の種と全桁一致: 08 の 1.2 節)。
+- **FITP>1 の GO で SAD が再起動することがある** (`*** Run time Environment` バナーが再び出る)。NPARA=1 でも起きるので、オフモメンタム条件の参照値は得られていない。v2.1.0 の確認 (C): `example/03_matching/FFS_FITPOINTS.sad` (24 セル FODO、δ = −1%・0・+1% の 3 点で NX = 6.7・NY = 4.9) は今の gs は再起動せず完走し、**最小値の手前で止まった** (K1 (QF, QD) = (0.700211, −0.599628)、K2 (SF, SD) = (1.695226, −2.439058)、残差 6.3321e-6 が独立な最小値 6.33178e-6 より相対 5e-5 大きい。`Overflow & closed orbit not found` の試行点での打ち切り)。pysad の GO の最終解は独立な最小化 (残差の定義 Σ w (f − goal)² scale² の scipy の最小二乗) と 5e-8 以内で一致。
 - **NPARA>1 では出力が子プロセスで重複する** (tffsmatch の fork)。参照出力は NPARA=1 で取る。
 - **FFS["…"] の unit 省略は非表示** (`outfl=0`)。画面に出すには `FFS["…", 6]` か `-1`。
 - **MAXITERATION はこのビルドでは GO の反復数に効かない** (`MAXITERATION 1` でも 7 反復)。pysad はコマンドを受理する。

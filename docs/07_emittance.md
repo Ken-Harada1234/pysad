@@ -1,6 +1,6 @@
 # 07. Emittance[] / emit — SAD の temit と pysad の emit6d.py
 
-> 最終更新: 2026-11-17 (現状のスナップショット)。行番号は 2026-10 時点。
+> 最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット)。行番号は 2026-10 時点。
 
 照合先: `Packages/emit.n`, `src/tfemit.f`, `temit.f`, `tcod.f`, `tturne.f`, `tquade.f`, `tbende.f`, `tthine.f`, `tcave.f`, `tmulte.f`, `photons.f (tradke)`, `tffs.f (module temw)`, `tnorm.f`, `tdrife.f` と `pysad/emit6d.py`, `pysad/ffscmd.py (print_emit)`。
 
@@ -120,7 +120,7 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 ### 解析ヤコビアンの対象と理由
 
 - 対象: ドリフト、薄い多極 (SEXT〜DODECA、ずれ・ロールは tchge の行列)、四極 (ずれ・ロール付き tsolrote、ハードエッジ tqfrie、線形フリンジ FRINGE=1,2,3 の tqlfre、K1<0 の −π/2 回転、tsolque 本体: `_jac_quad_full`/`_jac_tqlfre`)、BEND (K1=0 の `lattice._tbendebody0_mat` と K1≠0 の `_tbendecorr/_tbendebody`、エッジ)。lattice の CALC 経路と同じ関数を使う (docs/05 §2)。
-- まだ数値微分: `MULT`、ANGLE=0 の BEND、F1 付き BEND、DROTATE≠0 の BEND、空洞 (history/work_emit_report.md §5)。
+- まだ数値微分: `MULT`、ANGLE=0 の BEND、DROTATE≠0 の BEND、空洞 (history/work_emit_report.md §5)。F1 付き BEND の本体は v2.1.0 で `emit6d._tbende_core` (tblfre・tbendal・断片のループ) として実装した (微分の方式は未確認。F1 の無い BEND は従来と同じ演算)。
 - 理由 1 (桁落ち): K1=0 の BEND 本体の数値ヤコビアンは rhob≈20 倍の桁落ちで相対 1e-8〜1e-7 の雑音が出る (刻みを小さくすると悪化、1e-5 で 2e-10)。この雑音は量子励起の分割数 `int()` を跨ぐ形で効く。解析式にすると雑音が消え、RADCOD ON も SAD と 2e-11 以内になる。
 - 理由 2 (分岐境界): 数値微分の刻み 1e-6 は K1=0 BEND の式の分岐境界に当たり (1,6) に 5.6e-7 の誤差が出るため、残る数値微分の刻みは 1e-7。
 - 理由 3 (フリンジ四極): tqlfre を含む四極を数値微分にすると ε・チューンに 1e-5〜2.7e-7 の差が出る (`bench_level26b`)。解析式で 1.3e-9。
@@ -149,8 +149,9 @@ K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の
 運動量のずれ (2·ndims+1 点) ごとに `_tcod_radcod` で閉軌道、`tturne` で T・D・B を求め、(アクション J, 方位角モード m) の連立方程式を反復で解く。
 - gs との一致 (12 セルのリング + CAVI VOLT=2e6 HARM=64): nus=0.01・AzimuthalModes=9 で emitx 相対 6e-6 (conv は 2e-4)。nus=0.005〜0.02・AzimuthalModes=5 の 4 点で emitx 4e-7〜1e-5。emity は 1e-18 の雑音で符号も違う。試験は `test_synchrobeta.py` (許容 3e-5)。
 - 差の原因は閉軌道の収束の履歴と、条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) とみているが、確認していない。
-- 2026-11-16 の確認: 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で emitx は gs と相対 1.4e-7〜1.4e-6 (3.7e-7、4.0e-7、1.4e-6、1.4e-7) で一致、emity は雑音 (gs −2.5e-19 など、pysad 1.3e-20 など)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。
-- 未確認: 不安定なチューン、`emiout`、結合のあるラティスでの gs との一致 (上のとおり gs が落ちる)、RFSW の組み合わせ。検証は最終の 6 つの値 (nus, emitx, emity, emitxp, emityp, conv) だけで、中間配列は比べていない。
+- 2026-11-16 の確認: 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で emitx は gs と相対 1.4e-7〜1.4e-6 (3.7e-7、4.0e-7、1.4e-6、1.4e-7) で一致、emity は雑音 (gs −2.5e-19 など、pysad 1.3e-20 など)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。**v2.1.0 の確認 (C)**: 24 セルの平面 FODO + skew 四極 1 台 (3 GeV、RF 4 MV、六極なし) の結合のあるリングでは gs は落ちず、k64 の pysad は gs と 7 桁以上一致した (εx 1.3603366e-6 対 1.3603365e-6、εy 4.7516654e-8 対 4.7516654e-8)。Emittance[] と、独立な 6x6 の平衡エミッタンス (自前の 1 周写像 + 放射の減衰 + 量子励起の拡散 + Lyapunov 方程式) とも一致 (ASTRID2 + skew 四極 ks = 0.05 で ε₁ 6e-5、ε₂ 1.3e-4)。SB と Emittance[] の差 (ASTRID2 +0.8%、PF +1.1%・+2.9%) は結合の有無に依らず、シンクロ・ベータ結合と色収差の分。SOL・強い結合で gs が落ちるかは未確認。
+- **大きなリング A (3 GeV、周長 603 m、νs = 0.0041、RF 1.4 MV) では使えない** (B128): gs も pysad k64 も 6.18e-9 (AzimuthalModes ≥ 3 で変わらず) を返すが、Emittance[] の 1.55e-10、独立な 6x6 の平衡 1.5173e-10、RAD + FLUC の 6 次元追跡 (60 粒子、4000 周) の 1.6e-10 と 40 倍違う。AzimuthalModes 12・20・30・32 以上で 3.19e-9・1.46e-9・8.50e-10・7.87e-10 と動き続け、νs の入力・エネルギー・六極の強さにも依らない。原因は未特定 (K64 の式の限界か、gs・pysad が共通に持つ誤りか)。PF・ASTRID2・大きなリング B (8 GeV) は Emittance[] と 0.5〜1%。**v2 は AzimuthalModes m と 1.5 倍の m の emitx が 20% 以上違うと警告を出す** (値は変えない。大きなリング A の m = 9 で 5.1e-9 対 2.5e-9)。使うときは AzimuthalModes を変えて収束を確認し、Emittance[] と比べる。`AzimuthalModes->1` は pysad が IndexError (gs は 8.6e-7 を返すが意味がない)、2 以上を使う。
+- 未確認: 不安定なチューン、`emiout`、SOL・強い結合のラティスでの gs との一致、RFSW の組み合わせ。検証は最終の 6 つの値 (nus, emitx, emity, emitxp, emityp, conv) だけで、中間配列は比べていない。
 
 ### SOL・COORD・TCAVI・UND・MAP・MULT (ANGLE≠0) と Emittance[]
 
@@ -168,7 +169,7 @@ K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の
 - SOL を含む Emittance[] は `emit_extra.emittance_rules` (Orbit/Matrix の規則、BeamMatrices) を使わず `run_emit` に落ちる。EMT・TUN・ALP・COD は合うが、**Stable は 0、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない** (docs/29)。
 - SOL の限界: CALC6D・RADCOD つきの CALC・Touschek (INTRA) との組み合わせは未対応、RADCOD の閉軌道探索中に K64 が内部分割の間で固定するパラメータを pysad は毎スライスの δ で計算し直す (影響は 2 次とみているが未確認)、
   領域内の MULT・BEND・CAVI は k64 モードでは未対応 (v2 モードでは solemit が扱う。docs/44)、行列は数値微分なので解析行列の gs と 1e-10 程度の差。
-- v2 モードの SOL 領域: 領域内の BEND・MULT・CAVI (RF つき MULT を含む)・F1 つきの端の放射・ずれて傾いたソレノイド・TRPT の加速・AUTOPHI が Emittance[]・EMIT に入る (docs/29・44)。**POL の量 (SpinTune・Polarization など) は領域の中だけ K64 の式 (bsi の誤り) のまま**: 軸上のソレノイドでは追跡と 2e-5 で合うが、ずれて傾いたソレノイドではスピンチューンで 2.3e-4、n0 の向きで 4e-3 rad 違う (`spin.tradke_spin` の `xpzb` の式と 6 次元の微分 dxpzb を直す必要があり未着手)。
+- v2 モードの SOL 領域: 領域内の BEND・MULT・CAVI (RF つき MULT を含む)・F1 つきの端の放射・ずれて傾いたソレノイド・TRPT の加速・AUTOPHI が Emittance[]・EMIT に入る (docs/29・44)。**POL の量 (SpinTune・Polarization など)**: k64 は領域の中が K64 の式 (縦磁場を z 軸の向きに足す: B130) のままで、ずれて傾いたソレノイドではスピンチューンが追跡と 1.5e-4〜1.1e-3、n0 の向きが 2.5e-3〜1.5e-2 rad 違う。**v2 は v2.1.0 で修正** (B⊥ と B∥ を運動量の向きに分けて足す。`spin.tradke_spin`・`solemit._trk`): 追跡との差は SpinTune で 1e-13〜5e-7、n0 で 0〜1e-5 rad (小さな FODO・大きなリング A・PF・ASTRID2・MPW 入りで確認)。回転した縦磁場の歳差の閉じた式とも 5e-7。条件 1〜3 T・0.3〜3 GeV。bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (docs/44)。
 - MULT (ANGLE≠0) の限界: FB1/FB2・CHI2 は Twiss・Emittance[] で未対応、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/28)。
 
 ### v2 モードで変わった放射・エミッタンス (RADINT・Jx・MomentumCompaction・EMITDIV ほか)
@@ -210,6 +211,17 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 | B64 | tmulke の bsir0 が imag(cx)/aln (次元 1/m)。四極・MULT の分割は放射の大きさだけで決まる | ψ = Im Σ k_n z^(n+1)/(n+1)! を入口で足し出口で引く。POL のときは四極・MULT を k·(L/n)² ≤ 2e-3 に分割 | MULT (K2=30) 3.1e-7 (K64 9.4e-5)。四極の分割が 1 個だと歳差の微分が追跡と 50% 違い、細かくすると 2% |
 | B55 | `Polarization` が NaN | 有限値 (docs/43) | 平面リング 92.376% (Sokolov–Ternov) |
 | B56 | tbrote の srot の更新が行の逐次更新 | (I+rr)·srot (直交性 1e-14) | 入口と出口が互いに逆 |
+| B111 | tradke (Emittance[]・閉軌道) の放射の反作用の角度の項の符号が tradkn (追跡) と逆。RADCOD の閉軌道が追跡で閉じない (小リングで x 4e-7 m) | 符号を反転 (`ddpx`・`ddpy` と行列 D・B の微分)。RADTAPER の追跡の BEND の重みも tturne と同じ (3δ_l + δ_l+1)/4 | 閉軌道の 1 周の追跡の動きが 4e-7 → 1e-9 m (小リング)、大きなリング A −2.0e-8 → −4.5e-11 m。**v2 の Emittance[] (RADCOD) は gs と 1e-4〜1e-3 ずれる** (ε_x +1.9e-4、U0 +1e-7。大きなリング A)。符号は導出と閉軌道の閉じ方による (K64 の作者の意図の裏づけは無い) |
+| B112 | 放射の古典半径が質量によらない (`re0 = elradi`)。陽子 (30 GeV/c) の U0 が 1.2651 eV | `re0 = elradi·elmass/amass` | 古典式 U0 = (2/3) r_p mc² β³γ⁴ Σθ²/L = 6.88e-4 eV と追跡の 1 周の δ が 1e-6。電子は両モードで同じ |
+| B114 | ずれた BEND の CALC (tbrote の出口) の dx1・dz1 の符号 | 出口も入口と同じ回し方 | 厳密な幾何と CALC が 2e-8。矩形磁石 1 台の DX = 2 mm でチューンが動かない (K64 は 2.7e-5) |
+| B115 | RADINT が ANGLE=0・K0≠0 の BEND (挿入光源の極) を無視 | K0 を曲げ角として積分に入れる (端の角なし) | ASTRID2 + MPW で U0 6.17 keV → 7.81 keV (Emittance[] 7.80 keV)。εx は 3.5%、Jx は 0.7% Emittance[] とずれる |
+| B117 | K1≠0 の BEND の追跡 (tbendi) の端が薄い写像 | `DISFRIN=0` かつ端の角 ≠ 0 のとき CALC と同じ厳密な tbedge | 厳密な写像と 1e-10。CALC との行列の差 1.1e-5 → 4e-8 |
+| B107・B126 | RADINT の BMAG の CKL1Y = −cos θ·DKL1。QUADRU が四極自身の DX・DY を引かず K1<0 で勾配ベクトルの符号が逆 | CKL1Y = +sin θ·DKL1。(dx, dy) = 閉軌道 − 要素のずれ | I4U + I4V が物理的な I4 と 1e-7 (K64 は 1.6〜2.7%)。ΔJx = +0.0078 (追跡 +0.00781、K64 +0.0028) |
+| B106・B109 | tradke の b = bzh·0.5。tbgrote の trans(5,6) | b = bzh。コメントアウトされた式 | B106 は数値の効果が 1e-13 以下 (式の一貫性)、B109 は有限差分と 4e-12 (K64 は px² + py² 分) |
+| B108 | ANGLE=0 の BEND の端の角 AE1・AE2 の放射の項が約 2 倍 (B75 と同じ) | 行路を x tan(e) だけ短くする (`tin`・`tout`) | 厳密な幾何 + ロビンソンの定理で ΔJx が厳密 : v2 : k64 = 1 : 1.03 : 2.08 (傾き 5 mrad の極。24 セル FODO の極 3 個の組) |
+| B127 | WSPAC の最後のスライスで `gammab(nlat+1) = 0` を読み、レンズが 8 倍強い (Emittance[] のチューンシフトが 3〜4% 強い) | p1 = (1+δ) p0 | 一次のラスレットの積分と 0.2〜1.8% (大きなリング A・PF・ASTRID2。K64 は 0.9〜7%) |
+| B130 | Emittance[] の tradke が縦磁場の積分を z 軸の向きに足す (傾いたソレノイド) | 運動量の向きに分けて足す | 上の POL の節 |
+| B132 | PhotonList のエネルギー列に γ でなく βγ を掛ける | γ を掛ける | gs と E 列だけ相対 1/(2γ²) (3 GeV で 1.45e-8) |
 | B63・B36・B21 | (バグではない / pysad は有限 / z を閉じる δ) | 変更なし | B63: SOL に L のキーワードは無い (L を書いても軌道・光学に入らない)。pysad は S 座標 (LENG) にだけ入れていたのを直した。B36: L≠0 の TCAVI のリングの Emittance[] は gs が NaN、pysad は有限 (K0=0 で同じ長さのドリフトと 12 桁一致)。B21: RFSW OFF・RADCOD OFF の閉軌道は z が閉じる δ (1e-15) |
 
 - 追跡の FLUC の乱数列は K64 と同じだが、v2 では端の角のある BEND の放射の大きさが変わるので値は K64 と違う。
@@ -219,13 +231,26 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 
 | 機能 | 使える範囲 | 使えない・注意 |
 |---|---|---|
-| RADINT | BEND (K1 つきも)・QUAD・SEXT のリングと輸送路 (INS)。先頭が SEXT でもよい。空洞が複数あってもよい (同じ周波数)。GX・GY は一次の色収差 dν/dδ | MULT・SOL は積分に入らない (表示が出る)。BEND の K0 は入らない。結合のあるリングの V 面 (I4V) は未確認。空洞は VOLT を単純に足す (PHI を見ない。位相の違う空洞のベクトル和にするかは仕様の判断) |
-| Emittance[]・EMIT | 端の角のある偏向磁石 (E1・E2)、勾配つき偏向磁石。Jx は解析値と 1e-3 (既定)、`EMITDIV=20` で 1e-4 | **ANGLE=0 の BEND (補正磁石) と K0 つき MULT の端の角は K64 のまま** (B75 と同じ「端の蹴りを偏向角に入れるが行路は変えない」作りと見られるが、独立な値が無く直していない。B108) |
+| RADINT | BEND (K1 つきも)・QUAD・SEXT のリングと輸送路 (INS)。先頭が SEXT でもよい。空洞が複数あってもよい (同じ周波数)。GX・GY は一次の色収差 dν/dδ | MULT・SOL は積分に入らない (表示が出る)。ANGLE≠0 の BEND の K0 は入らない (ANGLE=0 の K0 の極は v2 で入る: B115。εx は Emittance[] と 3.5%)。結合のあるリングの V 面 (I4V) は v2.1.0 で確認 (I4U + I4V が独立な I4 と 1e-7、DU・DV・Je が 1 次の摂動論と 3e-3。K1≠0 の BEND は B107 の修正後)。軌道のずれのある四極は入る (B126)。SEXT・BEND のずれは入らない。空洞は VOLT を単純に足す (PHI を見ない。位相の違う空洞のベクトル和にするかは仕様の判断)。I1〜I5 は独立な積分 (大きなリング A・B・PF・ASTRID2) と 1e-6 以下 |
+| Emittance[]・EMIT | 端の角のある偏向磁石 (E1・E2)、勾配つき偏向磁石。Jx は解析値と 1e-3 (既定)、`EMITDIV=20` で 1e-4 | ANGLE=0 の BEND (補正磁石・挿入光源の極) の AE1・AE2 の端の角は K64 が端の項を約 2 倍にする (B108。v2 は直した)。K1≠0・K0≠0 の ANGLE=0 BEND と MULT の端の角 (AE) は pysad が読まず未確認。既定の分割 (EMITDIV=1) では低エミッタンスのリング (大きなリング A) で εx が 2.1% 大きい (`EMITDIV=5` で 8e-5)。v2 の Emittance[] と RADINT が矩形磁石で 1.4e-3 違う (大きなリング B。未調査) |
 | MomentumCompaction・BucketHeight・BunchLength (RFSW OFF) | I1/C と 2e-4 | — |
-| CALC のチューン・結合 (ロール + ずれのある BEND・六極・薄い四極・空洞) | 追跡の一周写像と一致 (六極 1e-9、BEND 4e-6) | ずれた BEND の CALC と追跡の 2 次の差 (矩形磁石を DX=2 mm ずらすと CALC のチューンが 2.9e-5 変わる。追跡が正しい。tbende の 2 次の幾何の項で、場所は未特定) |
+| CALC のチューン・結合 (ロール + ずれのある BEND・六極・薄い四極・空洞) | 追跡の一周写像と一致 (六極 1e-9、BEND 4e-6) | ずれた BEND の CALC は v2 で追跡と一致 (B114。矩形磁石 1 台の DX = 2 mm でチューンが動かない。k64 は 2.7e-5 動く)。K1≠0 の BEND は B117 の修正で追跡と 4e-8。CALC の解析行列は y ≠ 0 の軌道で自身の写像の数値微分と y = 2 mm で 1.5e-6 違う |
 | Polarization (POL) | docs/43 | docs/43 |
 
-**要判断・直していない (記録 A の §4)**: tradke の dbeam の b = bzh·0.5 (B106。photons.f。力学的運動量は px + bzh·y なので b = bzh のはずだが、bzh の定義の別の約束の可能性を排除できない。SOL 内の放射のビーム行列の広がりの項だけに効き、ε は全桁変わらない)、tbgrote の trans(5,6) (B109。作者が意図して置き換えた式と見られる。2 次の小さい量)、RADINT の CKL1Y = −cos(θ)·DKL1 (B107。sin の誤記に見える。結合のあるリングの I4V に効くが独立な計算を持っていない)、RADINT の BEND の K0 (無視される。仕様かもしれない)、K1=0 の BEND の追跡のスピン (tbend + tradk) が Emittance[]・tbendi (v2) と 2.2e-5 rad 違う (放射の分割が粗く、スライスの前のエネルギーで歳差を計算する。K64 の精度の範囲)、B21 の K64 のソース (tcod.f の rfsw=.false. の枝は δ を動かさない。temit の呼び出し側を追っていない。pysad の動作は gs の実測と合い物理としても妥当)、tthine (長さのある六極など) の bsir0 (B110。K64 は次元が合わない式。pysad は実装していない。放射なしで呼ばれ入口と出口で打ち消すので影響なし)。
+**要判断・直していない**: K1=0 の BEND の追跡のスピン (tbend + tradk) が Emittance[]・tbendi (v2) と 2.2e-5 rad 違う (放射の分割が粗く、スライスの前のエネルギーで歳差を計算する。K64 の精度の範囲)、tthine (長さのある六極など) の bsir0 (B110。次元が合わない式だが放射なしで呼ばれ入口と出口で打ち消すので影響なし)、RADCOD の 1 周の解析 T と写像の数値微分の 2e-3 の差 (K64 の tradke の微分が近似)、RADINT の SEXT・BEND のずれ、K0 の極の εx (3.5%)、tradke の符号 (B111) と RADTAPER の重みの選択 (「閉じる」を根拠にした判断で、gs の Emittance[] (RADCOD) と 1e-4〜1e-3 違う)。詳細は docs/47 の v2.1.0 の (d) と docs/46。
+
+### v2.1.0 の追加 (F1・FRINGE・K0 の極・WSPAC・SynchroBeta の警告)
+
+試験 `test_v2_B1_optics.py`・`test_v2_E_steer.py`・`test_v2_D1_emit.py`・`test_v2_A2_radint.py`・`test_v2_C3_radint.py` ほか。記録 `history/v2next_{A1,A2,B1,C,D1,E}.md`。
+
+| 機能 | モード | 使い方・使える範囲と条件 | 使えない・未確認 |
+|---|---|---|---|
+| **BEND の F1・FRINGE・FB1・FB2** の Emittance[]・EMIT・CALC6D | 両 (K64 の動作の追加) | `F1=0.1 FRINGE=3` など (FRINGE = 1・2・3・−1 (入口側だけ)・−2 (出口側だけ)、F1 + FB1 + FB2、K1≠0 (tbendebody の分割)、K0、RADCOD、DX・DY・ROTATE・DROTATE、POL ON の減衰率)。K64 の `tbende` の長さ補正 `alcorr`・入口の `tblfre`・断片 (K1=0 は n = 0 と ndiv+1 に `tbendef1`、K1≠0 は n = −1, 0 と ndiv+1, ndiv+2 の `tbendal`) の直訳。**周長に F1 の長さ補正が入る** (ω0・運動量圧縮・周回周波数)。k64 は gs と全桁一致: 12 セル FODO (3 GeV、F1 = 0.1 FRINGE = 3) で U0 739673.742271 eV (F1 なし 781633)、Tunes {−.2933271700、−.1395704757、−.0179539450}。大きなリング A (全 BEND に `F1=0.03 FRINGE=3`) の U0 285476.566791 eV (F1 なし 296074.86)・運動量圧縮・減衰率・εx が 1e-7、PF・ASTRID2・MPW 入りも 1e-9。放射・RF なしの Emittance[] のチューン = CALC のチューン (1e-9)。F1 の無い BEND は従来とビット単位で同じ | CALC の解析行列と `tbende` は DISFRIN=1 でも Maxwell のフリンジを入れる (追跡の tbendi は DISFRIN に従う。B134)。逆向きの要素 (`direlc<0`) の F1 の入れ替えは未対応。隣り合う BEND の `bradprev` は tbende では使われない。**TrackParticles の F1 は ANGLE=0 の BEND・MULT で未対応** |
+| **ANGLE=0 の BEND (補正磁石・挿入光源の極) と MULT の F1** の Emittance[]・EMIT・CALC | 両 | ステアリング (`tsteee`: fb1 = F1 + FB1、fb2 = F1 + FB2、入口の `tblfre`・断片) と MULT (`tmulte`: F1・F2 は L≠0 かつ K1≠0 のときだけ、`tqfrie`・`tbfrme`・`tqlfre`・`tradke(f1in)` の順、`tbfrmle` の線形フリンジ)。k64 は gs と全桁一致 (12 セル FODO の 14 通りの F1・FB1・FB2・AE1・AE2・FRINGE・DISFRIN・K0・K1・K2・DX・DY・ROTATE の組み合わせ。大きなリング A・PF・ASTRID2・MPW 入りにステアリングまたは MULT を 2 台挿入)。F1 の効果は U0 で −4.4 eV (ステアリング)、運動量圧縮で 2e-3 (MULT) | MULT の AE1・AE2 (読まない)、`FB1/FB2` の `tblfre` (`multae.py`)、ステアリングに ROTATE と DX/DY を同時に付けると gs と CALC のチューンが 1e-4 違う (既存・未調査) |
+| **ANGLE=0 の BEND の端の角 AE1・AE2 (B108)** | v2 | 行路を x tan(e) だけ短くする。k64 は K64 のまま (端の項が約 2 倍) | 傾き 5 mrad の極で独立な値と 3〜4%、30 mrad で 2〜3% |
+| **RADINT の K0 の極 (B115)・四極のずれ (B126)・BMAG (B107)** | v2 | 上の表と使える範囲の表 | |
+| **WSPAC の Emittance[]・EMIT・CALC6D・CALC (RFSW ON)** | Emittance[]・EMIT は両、CALC・CALC6D は v2 | `WSPAC` を ON にして `Emittance[]` を呼ぶと、反復して空間電荷つきの一周の写像からチューン・エミッタンス・Twiss を作る (`PBUNCH`・`MINCOUP`。INTRA とも併用可)。K64 の `twspace`・`tintrb`・`tintraconv` の直訳。0.2 GeV の 12 セル FODO (PBUNCH 1e5〜1e8)。**k64 は gs と全桁一致** (K64 の最後のスライスの 8 倍のレンズ: B127 を再現。小リング、大きなリング A・PF・ASTRID2 で PBUNCH 1e9〜1e10)。v2 は一次のラスレットの積分 (Δν = −(1/4π) ∮ β_u 2 N r0 /(β²γ³ √(2π) σz σ_u (σx+σy)) ds) と 0.2〜1.8%、PBUNCH に比例 (1e5 → 1e7 で比 100 ± 0.3%)。CALC・CALC6D は v2 だけ (k64・gs は入口以外の Twiss が NaN: B133)。CELL の CALC6D の Twiss は反復の最終パスの T から。CALC のチューンは Emittance[] のチューンと 2e-6 | **追跡の WSPAC (`LINE["SIG…"]`) のビーム行列は空間電荷なし・MINCOUP なしのまま**。強い空間電荷 (0.2 GeV で PBUNCH ≳ 1e9) は反復が収束しない。RF なしの CALC。TouschekLifetime との併用。要素ごとのレンズの位置は K64 の近似。4D の CALC は K64 の `qwspac` の直訳ではない |
+| **SynchroBetaEmittance の収束の警告** | v2 | 本節の SynchroBeta の項。大きなリング A では使えない (B128) | |
 
 ## 5. 注意点 (仕様と落とし穴)
 

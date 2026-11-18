@@ -1,0 +1,85 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 01:36:36 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next B2 項目 8: Packages/functions.n・Misc.n・element.n・beamline.n の主な関数を gs と比べた小さな台本 (gs との差は記録に表で書いた)。
+! 条件: 3 GeV、FODO 半セル 2 つ (周長 4.2 m)。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+MARK ST = ();
+LINE CELL1 = (QF D2 QD D1);
+LINE RING = (ST 2*CELL1);
+LINE R2 = (ST QD D2 QF);
+FFS;
+ *** SADScript Initialization: <SAD>/Packages/init.n ***
+ *** Run time Environment:     <SAD>/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ Print["a1 ",Log2$[10,100]," ",Log2$[2,8]];
+a1 1.9999999999999998 2.9999999999999996
+ Print["a3 ",RotateRight[{1,2,3,4}]," ",RotateLeft[{1,2,3,4},1]," ",RotateRight[{{1,2,3},{4,5,6}},{1,1}]];
+a3 {4,1,2,3} {2,3,4,1} {{6,4,5},{3,1,2}}
+ Print["a5 ",Union[{3,1,2,1,3}]," ",Union[{1,1.0000001,2},SameTest->(Abs[#-#2]<1e-3&)]," ",Union[{5,1,3,1,5},SameTest:>(#==#2&)]];
+a5 {1,2,3} {1} {5}
+ Print["a6 ",ListQ[{1}]," ",MatrixQ[{{1,2},{3,4}}]," ",Count[{1,2,1,3,1},1]," ",MemberQ[{1,2,3},2]," ",FreeQ[{1,2,x},x]];
+a6 1 1 3 1 0
+ Print["a8 ",Nest[(#^2)&,2,3]," ",NestList[(#^2)&,2,3]," ",Fold[Plus,0,{1,2,3}]," ",FoldList[Plus,0,{1,2,3}]];
+a8 256 {2,4,16,256} 6 {0,1,3,6}
+ Print["b1 ",Positive[{-1,2}]," ",NonNegative[{0,-1}]," ",IntegerQ[{1,1.5}]," ",Xor[True,False]," ",FractionalPart[-3.75]];
+b1 {0,1} {1,0} {1,0} 1 .25
+ Print["b7 ",StringDrop["abcdef",{2,3}]," ",StringInsert["abcdef","-",{2,4}]," ",Characters["abc"]];
+b7 adef a-bc-def {"a","b","c"}
+ Print["c1 ",NearlySameQ[1,1+1e-13]," ",NearlySameQ[1,1.001,Threshold->1e-2]];
+c1 1 1
+ Print["c2 ",FixedPoint[(#+2/#)/2&,1.]];
+c2 1.414213562373095
+ sq[x_Real]:=x^2; sq[x_String]:=x//x;
+ Print["c7 ",FunctionDefinition[Subtract[1,2]]," ",FunctionDefinition[sq[3.]]," ",FunctionDefinition[sq["a"]]];
+c7 Null {Hold[sq[x_Real]],Hold[x^2],Hold[3^2]} {Hold[sq[x_String]],Hold[x//x],Hold["aa"]}
+ zq1=1; f1[x_]:=x;
+ Print["n1 ",Names["Sin"]," ",Names["Para*"]," ",Names["zq*"]," ",Names["f1"]];
+n1 {} {} {"zq1"} {"f1"}
+ Print["r ",First[a->1]," ",Last[a->1]," ",Length[a->1]," ",Map[First,{a->1,b->2}]];
+r a 1 2 {a,b}
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.030478 $$$       f BX    #######  #   3.639144 $$$       f NX    #######  #    .243188
+$$$       f AY    #######  #   1.158726 $$$       f BY    #######  #   4.407174 $$$       f NY    #######  #    .119452
+$$$       f LENG  #######  #   4.200000
+ Element["K1","QF"]=0.9; Element["K1","QF"]+=0.1; Print["e1 ",Element["K1","QF"]];
+e1 1
+ Element["VALUE","QF"]=0.5; Print["e2 ",Element["K1","QF"]];
+e2 .5
+ Element["K1","QD"]*=2; Print["e3 ",Element["K1","QD"]];
+e3 -1.2
+ Print["e4 ",SetElement["QF"][[3,2]]," ",SetElement["QF","QUAD",{"L"->0.35}][[3,{1,2}]]," ",Element["L","QF"]];
+e4 "K1"->.7 {"L"->.35,"K1"->.7} .35
+ b=ExtractBeamLine[];
+ Print["f1 ",b," ",-BeamLine[QF,D1]," ",2*BeamLine[QF,D1]];
+f1 BeamLine[ST,QF,D2,QD,D1,QF,D2,QD,D1] BeamLine[(-D1),(-QF)] BeamLine[QF,D1,QF,D1]
+ PrintBeamLine[b];
+WriteBeamLine {{Name->None},"FFS",None}
+BeamLine[
+        ST,       QF,      D2,      QD,      D1,      QF,      
+        D2,       QD,      D1       ];
+ PrintBeamLine[BeamLine[QF,D1],Format->"MAIN"];
+WriteBeamLine {{Name->None,Format->"MAIN"},"MAIN",None}
+       (QF         D1      )
+ WriteBeamLine[$Output,{BeamLine[QF],BeamLine[QD]},Name->{"A","B"}];
+WriteBeamLine {{Name->"A",Name->{"A","B"}},"FFS","A"}
+
+A = BeamLine[
+        QF        ];
+WriteBeamLine {{Name->"B",Name->{"A","B"}},"FFS","B"}
+
+B = BeamLine[
+        QD        ];
+ Print["g1 ",Fill$String["abc",9],"|",Remove$Paren["(abc)"]];
+g1 abc      |abc
+ Exit;
+ FFS                  end:  CPU time =     0.003 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

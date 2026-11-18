@@ -1,0 +1,26 @@
+! v2next C3 項目 2: RadiationField を Liénard-Wiechert の式と比べる (電子 10.2 MeV (γ = 20)、偏向磁石 L=0.4 m・ANGLE=0.4 rad、ρ=1 m)。
+! 軌道は RADLIGHT で記録 (v2 は BEND の中も円弧で記録。RADLIGHTDIV=64 点/(1/γ))。観測点は弧の中央の接線方向 50 m。
+! ピークの電場 E = e β² / (4π ε0 ρ R (1−β)²) (R = 観測点までの距離。近似式) と RadiationField の |E| の最大値が 0.5% 以内で一致する
+! (厳密な Liénard-Wiechert の式 (遅延時間を解く) とは 2e-4: 試験 test_field_of_a_bend_equals_lienard_wiechert_amplitude_and_phase)。
+! gs (K64) は RadiationField で SIGSEGV する (docs/21 B49) ので、gs の出力は無い (.gs.txt はその記録)。
+! 独立な全比較 (振幅・位相・スペクトル・全エネルギー・複数セグメント) は試験 pysad/tests/test_v2_C3_radfield.py。
+MOMENTUM = 10.2e6;
+BEND B = (L=0.4 ANGLE=0.4);
+MARK ST = ();
+LINE RING = (ST B);
+FFS;
+USE RING; INS; CALC;
+RADLIGHT; RADLIGHTDIV = 64;
+np = 1;
+x = Table[0,{7},{np}];
+Do[x[[7,i]] = 1, {i,np}];
+res = TrackParticles[{1, x}, 3];
+traj = res[[2,1]];
+Print["trajectory points = ", Length[traj[[1]]]];
+phi = 0.2; dist = 50;
+f = RadiationField[traj, {dist*Cos[phi], dist*Sin[phi], 0}];
+g = Sqrt[1 + (10.2e6/0.51099895e6)^2]; b = Sqrt[1 - 1/g^2];
+epeak = 1.602176634e-19/(4*Pi*8.8541878128e-12)*b^2/(1*dist*(1-b)^2);
+emax = Max[Sqrt[f[[2]]^2 + f[[3]]^2 + f[[4]]^2]];
+Print["max |E| (RadiationField) = ", emax, "  analytic peak = ", epeak, "  ratio = ", emax/epeak];
+Exit;

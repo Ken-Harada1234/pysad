@@ -63,7 +63,7 @@
 | 関数 | `RadiationSpectrum` | Fortran tfinitn.f | 実装 (pysad/radfield.py。docs/36) | 直接翻訳 |
 | 関数 | `SurvivedParticles` | Fortran tfinitn.f | 実装 | 直接翻訳 |
 | 関数 | `SymplecticJ` | .n emit.n | 実装 | Python で書き直し (.n) |
-| 関数 | `SynchroBetaEmittance` | .n emit.n | 実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。結合のあるラティスは gs が SIGSEGV で比較不能。組み込みの登録ではなく emit.n の呼び出しを置き換える) | Python で書き直し (.n) |
+| 関数 | `SynchroBetaEmittance` | .n emit.n | 実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。24 セル FODO + skew 四極の結合のあるリングは gs と 7 桁一致。大きなリング A では使えない (B128)。組み込みの登録ではなく emit.n の呼び出しを置き換える) | Python で書き直し (.n) |
 | 関数 | `TouschekLifetime` | .n emit.n | 実装 | Python で書き直し (.n) |
 | 関数 | `TrackParticles` | Fortran tfinitn.f | 実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で `{結果, 軌道{t,x,y,z}}` を返す。docs/36) | 直接翻訳 |
 | 関数 | `TransferMatrix` | .n Optics.n | 実装 (Optics.n の TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo が gs と表示桁で一致。gs は 1e-16 の雑音の要素を出し pysad は 0。11-16) | Python で書き直し (.n) |
@@ -344,7 +344,7 @@
 
 | 種別 | 名前 | SAD 側 | pysad | 方針 |
 |---|---|---|---|---|
-| 変数 | `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は未対応 (docs/14 §3) | 直接翻訳 |
+| 変数 | `ElementValues` | Fortran tffsa.f | Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は v2.1.0 で実装 (docs/04) | 直接翻訳 |
 | 変数 | `FitFunction` | Fortran qdcell.f,tdfun.f,tffsa.f | 参照あり (ffscmd.py) | 直接翻訳 |
 | 変数 | `InitialOrbits` | Fortran tffsa.f | 実装 (INS。参照 ffscmd.py) | 直接翻訳 |
 | 変数 | `MatchingAmplitude` | Fortran tffamsetup.f | 参照あり (ffscmd.py) | 直接翻訳 |

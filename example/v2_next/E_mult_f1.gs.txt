@@ -1,0 +1,51 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 07:29:58 Wednesday 11/18/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next E 項目 2: MULT の F1・F2・F1K1F・F1K1B・FRINGE (四極の線形フリンジ tqlfre)・K0 つきの FB1・FB2 (tbfrme の線形フリンジ) の Emittance[] と CALC。
+! 旧 pysad は F1・FRINGE があると NotImplementedError (FB1・FB2 は黙って無視) だった。tmulte の入口 (tqfrie, tbfrme(fb1), tqlfre(f1in, f2in)、そのあと tradke(f1in) か tsetr0)、
+! 出口 (tqlfre(-f1out, f2out), tbfrme(fb2), tqfrie, tradke(f1out)) を入れた。F1 は K1≠0 のときだけ効く (tsetfringepe)。
+! 条件: 3 GeV、周長 45.6 m の 12 セル FODO、QF・QD を MULT (K1 = 0.7・-0.6、K0 = +-4e-4、F1 = 0.05 など) に替えたもの、RF 3 MV・h=64。
+! k64 モード (PYSAD_COMPAT=k64) は gs と全桁一致 (表示 10 桁)。K0・FB1・FB2 つきは tbfrme の線形フリンジ (tbfrmle) の行列も K64 のとおり。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+MULT QF = (L=0.3 K1=0.7 F1=0.05 FRINGE=3 K0=0.0004 FB1=0.03 FB2=0.02);
+MULT QD = (L=0.3 K1=-0.6 F1=0.05 FRINGE=3 K0=-0.0004 FB1=0.03 FB2=0.02);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=3e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="14.10";
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.155607 $$$       f BX    #######  #   5.010783 $$$       f NX    #######  #   2.704559
+$$$       f AY    #######  #   1.398827 $$$       f BY    #######  #   2.657920 $$$       f NY    #######  #   1.864344
+$$$       f LENG  #######  #  45.600000
+ Print["CALC tunes ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+CALC tunes   2.7045594712   1.8643437672
+ NORFSW; NORAD;
+ e = Emittance[];
+ Print["noRF Tunes ", Tunes/.e];
+noRF Tunes {  -.2954405288,  -.1356562328,   .0000000000}
+ RFSW; RAD; NOFLUC;
+ e = Emittance[];
+ Print["Tunes ", Tunes/.e];
+Tunes {  -.2978777314,  -.1379284300,  -.0179621001}
+ Print["U0 ", EnergyLossU0/.e, " alpha ", MomentumCompaction/.e, " EqPos ", EquilibriumPosition/.e];
+U0  783085.551323 alpha    .0328123869 EqPos    .0299469681
+ Print["Emittances ", Emittances/.e];
+Emittances { 2.83730292E-7, 6.8484810E-38, 1.82733619E-5}
+ Print["Damp ", DampingRate/.e];
+Damp { -1.1848344E-4, -1.3039093E-4, -2.7309632E-4}
+ Exit;
+ FFS                  end:  CPU time =     0.008 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

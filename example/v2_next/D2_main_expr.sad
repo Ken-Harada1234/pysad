@@ -1,0 +1,26 @@
+MOMENTUM=3 GEV;
+! v2next D2 項目 1: MAIN の要素定義の式 (PI・関数・単位・変数) を gs と同じ文法・同じ値で読む
+A=PI/8; S=SINH(.1); C=1/0; D=ATAN2(1,2); F=A*2; G=10 DEG;
+MARK M0=();
+BEND B1=(L=1 ANGLE=A);
+BEND B2=(L=1 ANGLE=45 DEG);
+BEND B3=(L=1 ANGLE=SIN(0.1));
+BEND B4=(L=1 ANGLE=2*PI/16 E1=0.5 DEG);
+BEND B5=(L=(1+2) ANGLE=PI/8);
+BEND B6=(L=1 ANGLE=SQRT(2)/10 K1=2*PI/10);
+BEND B7=(L=1 ANGLE=1E-1 E1=-PI/100 E2=-PI/100 ROTATE=PI/2);
+BEND B8=(L=1 ANGLE=S);
+BEND B9=(L=1 ANGLE=C);
+BEND B10=(L=1 ANGLE=D);
+BEND B11=(L=1 ANGLE=F+A);
+BEND B12=(L=1 ANGLE=G);
+BEND B13=(L=1 ANGLE=-2^2*PI/(3 DEG));
+LINE R=(M0 B1 B2 B3 B4 B5 B6 B7 B8 B9 B10 B11 B12 B13);
+FFS;
+PageWidth=1999;
+USE R;
+Print["ANGLE ",Element["ANGLE","B*"]];
+Print["K1 ",Element["K1","B6"]];
+Print["E1 ",Element["E1","B4"]," ",Element["E1","B7"]];
+Print["ROTATE ",Element["ROTATE","B7"]];
+Exit;

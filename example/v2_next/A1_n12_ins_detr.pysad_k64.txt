@@ -1,0 +1,11 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.834419 $$$       f BX    #######  #  17.465386 $$$       f NX    #######  #   2.533580
+$$$       f AY    #######  #    .815013 $$$       f BY    #######  #   4.561789 $$$       f NY    #######  #   2.137830
+$$$       f LENG  #######  #  45.800000 ST/$$$      BMAGX #######  #   1.091743 ST/$$$      BMAGY #######  #   3.764934
+ Horizontal/Vertical Unstable.
+CELL  CALC: DETR(M2) =      .31609868  R1 =     -.30385906
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -11.49461 $$$       f BX    #######  #  23.081263 $$$       f NX    #######  #   2.808733
+$$$       f AY    #######  #   2.679713 $$$       f BY    #######  #   2.936862 $$$       f NY    #######  #   1.743344
+$$$       f LENG  #######  #  45.800000
+INS   CALC: DETR(M2) =      .00213320  R1 =     -.08006269   (R1*R4-R2*R3 =      .00213320)
