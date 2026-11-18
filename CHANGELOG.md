@@ -8,7 +8,7 @@
 
 ## v2.1.0 (2026-11-18)
 
-v2.0.0 の「未対応・未確認」の項目を追求して直した版です。PyPI は未公開 (公開後にここへ追記します。README のインストールの節の版の記述は 2.1.0 を PyPI に出すまで 2.0.0 のままです)。互換モード (`pysad/compat.py`、既定 `v2`、`PYSAD_COMPAT=k64` で K64 (gs) の動作) は v2.0.0 と同じで、k64 モードの結果は pysad 自身の不具合の修正を除いて変えていません。
+v2.0.0 の「未対応・未確認」の項目を追求して直した版です。PyPI: [`pysad-k64` 2.1.0](https://pypi.org/project/pysad-k64/2.1.0/) (2026-11-18 公開。`pip install pysad-k64`)。互換モード (`pysad/compat.py`、既定 `v2`、`PYSAD_COMPAT=k64` で K64 (gs) の動作) は v2.0.0 と同じで、k64 モードの結果は pysad 自身の不具合の修正を除いて変えていません。
 変更の一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.1.0 の節、K64 側のバグの記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (v2.1.0 で新しく見つけたものは B111〜B134)、作業の記録は `docs/history/v2next_*.md` (A1・A2・B1・B2・B3・C・D1・D2・E)、例は [`example/v2_next/`](example/v2_next/) です。
 
 **概要**: 放射・スピン・光学・空間電荷・パッケージの未対応を gs と全桁一致 (k64 モード) または独立な式との一致 (v2 モード) で埋め、K64 の誤りを 24 件新しく見つけて v2 で直した。電子以外の粒子 (`MASS`・`CHARGE`)、光子、NAFF、複素の特殊関数、成分ごとの `FREE`、`Parallelize` などが使えるようになった。
