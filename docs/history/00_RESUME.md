@@ -1,6 +1,6 @@
 # 引き継ぎメモ (pull した人と AI アシスタント向け)
 
-最終更新: 2026-11-16
+最終更新: 2026-11-20 (§5a を追加。§1〜§8 の本文は 2026-11-16 のまま残し、現状は §5a と docs/46・47 を見る)
 
 このリポジトリを clone / pull して作業を始めるときに最初に読む文書。時系列の詳細ログは置かない (作業者のローカル用メモは git に入れていない)。
 経緯と照合の記録は項目ごとに `docs/history/work_*.md` (一覧は §10)、現状の説明は `docs/01_overview.md` 〜 `docs/45_radlight_guide.md` (地図は §3)、SAD の癖は `docs/11_sad_quirks.md`、SAD 自身の誤りは `docs/21_sad_bug_report.md`。
@@ -56,7 +56,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 - Python 3.12 に numpy、scipy、numba、pytest。Windows では `py -3.12`。出力に日本語や記号が入るので `PYTHONIOENCODING=utf-8`。
 - テスト: `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`
-  (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**575 通過・3 skip** (578 件収集、2026-11-17)。
+  (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**575 通過・3 skip** (578 件収集、2026-11-17)。**2026-11-20 (v2.2.0) は 1647 通過・9 skip・失敗 0 (1656 件収集、約 27 分)**。
   - GUI 系 (`test_plot.py`、`test_tclbridge.py`) は環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` (K64 の `Packages` の場所) が無いと skip。評価器 (`sadscript.py` など) を変えたら、これを設定して全試験と回帰を回す。
   - 全体実行では GUI 系が数回に 1 回、窓の更新待ちで失敗することがある (単独なら通る)。
   - 試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/`、対応表は `pysad/tests/OUTPUTS.md` (`py -3.12 pysad/tests/make_outputs_md.py` で作る。取り出し方は `docs/history/work_test_outputs.md`)。
@@ -83,6 +83,16 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
   KBMainFrame と demo-LabelFrame のウィジェット木は SAD (WSL の gs) と一致。入れ子の部品 (KBFFrameToggled / KBFFrameTabed)、見た目と操作の一致は未確認。`PYSAD_SAD_PACKAGES` が無ければ無効。
 - WAKE: 追跡 (TRPT、LWAKE / TWAKE) と光学 (WAKEOPT、InitialOrbits) を実装 (`pysad/wake.py`、`wakeopt.py`、`docs/23_wake.md`)。gs と 10 桁一致。旧式の WAKE コマンドは K64 では `WAKECOMMAND.n` (配布に無い) を呼ぶので、pysad も同じ経路 (tfwake.f は移植しない)。
 - BEAMBEAM: 追跡・BSTRL・LuminosityMonitor・PHOTONS (BEAMBEAM の光子だけ) が gs と一致 (`pysad/beambeam.py`、`docs/24_beambeam.md`)。
+
+## 5a. 現状 (2026-11-20、v2.2.0)
+
+- **版**: v2.2.0 (`pysad.__version__`・`pyproject.toml`)。PyPI は v2.1.0 まで公開 (v2.2.0 は未公開。push・タグ・PyPI はしていない)。v2.0.0 → v2.1.0 → v2.2.0 の変更の一覧は `docs/47_v2_changes.md`、K64 側のバグは `docs/21_sad_bug_report.md` (B01〜B159。B135〜B159 が v2.2.0)、未対応・未確認は `docs/46_unimplemented_and_unverified.md`。経緯と根拠は `docs/history/v2next_*.md` (v2.2.0 は P1〜P5)、例は `example/v2_next/`。
+- **試験**: `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を `--ignore`、`PYSAD_SAD_PACKAGES` つき、k64 が既定) は **1647 通過・9 skip・失敗 0** (1656 件収集)。回帰 (`QUICK=1 PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py`) は **50 ベンチ FAIL 0** (138 s)。v2.1.0 は 1345 通過・8 skip。numba のカーネル (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py`) を編集したら試験の前に `py -3.12 -m pysad.nbcache`。
+- **互換モード**: 既定 `v2`、`PYSAD_COMPAT=k64` で K64 (gs) の動作。k64 モードは K64 の動作の追加 (MEASURE・TRCOD の先頭の位置、PSPAC の K64 の形状関数、TrackParticles の F1・MULT の AE、DAPWIDTH の窓、要素ごとの FREE の何もしない変数) と pysad 自身の不具合の修正だけ変えた。新しいオプション (v2): `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC`、`compat.set_bend_k1_edge('face')`、FFS の `WSPACSC`。
+- **spin 系の試験の許容 (v2.2.0 の確認)**: `test_v2_A_spin.py::test_polarization_with_orbit_errors_v2` は P1・P2 の変更の後で通る。P1 が許容を 3e-3 → 1.5e-2 に緩めていたが、P は 0.8798 → 0.8695 で、運動論的偏極 −7.1e-3・厳密な緩和率 −3.0e-3・刻みごとの脱偏極率 −2.5e-4 の内訳で説明できる (3 つを切ると 0.8798)。許容を 0.8695 ± 3e-3 に戻し、内訳の試験を足した (docs/47 の v2.2.0 の (e))。
+- **残課題 (詳細は docs/47 の v2.2.0 の (d))**: 判断が要るもの (既定は担当の選択のまま): EMITDIV の既定 (1)・DAPWIDTH の既定 (7)・`WSPACSC` の既定 (0)・K1≠0 の BEND の端の模型の既定 (`radial`)・放射の β の因子 (B112)・SOL 領域内の ψ の DISFRIN・偏向磁石の本体の B∥ (B136)・複素の特殊関数の k64 の値・`CSROYMatrix` の wrongtype。未解決: 脱偏極率の追跡との比は 4.2 GeV・12 MV の 1 点、B108 の残る 2.7% の系統差、RF が分散のある場所にある矩形リングの εx の +1.7e-3、SOL 領域内の加速 (POL + TRPT)、SB のシンクロ・ベータ共鳴の追跡との比較、MARK の生の DETR ≥ 1 の INS (B159)、逆向きの要素の F1・AE の入れ替え。
+- **文書・例に出してよいラティス**: `pysad/tests/kek-ls_v03_12.lat` (大きなリング A: 3 GeV、周長 603 m)、`example/pf/lattice/*` (PF)、`example/astrid/lattice/*` (ASTRID2)。ほかの大きなリングは「大きなリング B (8 GeV、1436 m)」のようにエネルギーと周長で書き、名前・パスを書かない。
+- §6 以降は 2026-11-16 の時点のまま (多くは解決済み。現状の未解決は上と docs/46・47)。
 
 ## 6. 残課題 (優先順。最新の詳細は `docs/history/work_unimpl.md`)
 
@@ -157,6 +167,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 ## 10. 履歴文書 (`docs/history/`) の索引
 
+- v2 系: `v2_changes_*.md` (v2.0.0)、`v2next_A1`・`A2`・`B1`・`B2`・`B3`・`C`・`D1`・`D2`・`E` (v2.1.0)、`v2next_P1`〜`P5` (v2.2.0)。
 - 最新: `work_example_fixes_20261117.md` (example 10〜13・PF T5 の gs との差の修正、11/17)、`work_unimpl.md` (未実装要素の実装と未解決の差、11/14〜)、`work_session_20261116.md` (11/16 の作業を話題別に)。
 - 要素別 (11/14〜): `work_wake.md`、`work_beambeam.md`、`work_gui_tclbridge.md`。
 - 10 月〜11/06 の作業 (ほぼ確定。各ファイル末尾に 2026-11-16 の確認がある): 解析微分 (`work_analytic_deriv`)、CALC6D (`work_calc6d`)、BEND K0 (`work_bend_k0`)、DESCEND (`work_descend`)、emit (`work_emit_extra`・`work_emit_report`・`work_emit_unstable`)、

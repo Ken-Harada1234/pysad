@@ -19,7 +19,7 @@ K64 のソースは `tlinit.f` (`tlinit`、`tlstore`、`tlresult`、`tlcalc`、`
 | `RadiationField` | 対応 (gs がこのビルドで落ちるので gs 照合なし) | `radfield.radiation_field` |
 | `RadiationSpectrum` | 対応 (gs と全桁一致。NPARA の fork 並列なし、逐次) | `radfield.radiation_spectrum` |
 | PHOTONS と `PhotonList` | BEAMBEAM の光子に加え、v2.1.0 で **BEND・QUAD・MULT・SEXT・OCT・磁場つきドリフト・BEAMBEAM + BEND の光子** に対応 (§6) | `beambeam.py`、`track6.py`、`ffscmd` |
-| SOL 領域内の要素・COORD・TCAVI・MAP のあるラティスの光子 | 未対応 (SOL 領域内は記録しない。乱数だけ引く) | |
+| SOL 領域内の要素・COORD・TCAVI・MAP のあるラティスの光子 | 未対応 (SOL 領域内は、v2.2.0 から v2 が DRIFT・QUAD・MULT だけ記録する。BEND・SEXT・OCT と k64 は記録せず乱数だけ引く) | |
 
 ## 2. RADLIGHT フラグと TrackParticles の戻り
 
@@ -163,6 +163,7 @@ K64 の §3 の癖 1〜3 (BEND の中を記録しない、横方向の座標が�
 - 損失した粒子の記録、ずれのある要素、RF 加速 (TRPT) 中の軌道の記録は未確認。試験は損失なしの条件だけ。
 - `RadiationSpectrum` の NPARA の fork 並列は未実装 (逐次)。
 - 試験の条件はエネルギー 1 GeV (RADLIGHT)、観測点は 1 点のみ。他のエネルギー、近接場・遠方場の使い分けは未確認。
+- **SOL 領域内の光子 (v2.2.0)**: v2 は領域内の DRIFT・QUAD・MULT (ANGLE=0) の光子を軌道上の位置に記録する (docs/44 の v2.2.0 の追加。3 GeV、bz = 0.1 1/m、傾き・ずれのない領域で確認)。領域内の BEND・SEXT・OCT・傾いた領域は記録しない。k64 は K64 のまま (領域内の QUAD は記録しない: B150)。
 - PHOTONS の記録しない範囲は §6。`RadiationField` は Liénard-Wiechert の厳密な数値と合う (§5)。gs の `RadiationField` は SIGSEGV で、ほかの引数の渡し方でも落ちる (B49。`C3_radfield_bend.gs.txt`)。
 
 ## 8. 関連文書

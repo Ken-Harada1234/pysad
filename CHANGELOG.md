@@ -6,6 +6,33 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## v2.2.0 (2026-11-20)
+
+v2.1.0 の「要判断・未解決」を追求した版です (PyPI は v2.1.0 まで公開。v2.2.0 は未公開)。互換モード (`pysad/compat.py`、既定 `v2`、`PYSAD_COMPAT=k64` で K64 (gs) の動作) は v2.1.0 と同じで、k64 モードの結果を変えたのは、K64 の動作の追加 (これまで未対応・無視だったものを gs と同じに実装) と pysad 自身の不具合の修正だけです。
+変更の一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の節、K64 側のバグの記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (v2.2.0 で新しく見つけたものは B135〜B159)、作業の記録は `docs/history/v2next_P1.md`〜`P5.md`、例は [`example/v2_next/`](example/v2_next/) (`P1_*`〜`P5_*`) です。
+
+**概要**: 偏極 (n が傾く・非平面のリング、脱偏極率の追跡との差の原因)、放射 (SynchroBeta の 40 倍の原因、tradke の符号の確定と微分の 4 点の誤り)、TrackParticles の F1 と MULT の AE、空間電荷 (k64 の PSPAC)、DAPWIDTH の窓、MEASURE の k64、複素の特殊関数を追求し、K64 の誤りを 25 件新しく見つけた (B135〜B159)。
+
+**主な修正 (v2 で結果が変わるもの。K64 の動作は k64 モードで再現)**
+- 偏極: 緩和率を厳密式 Σ r (1 − 2/9 (n·v)²) に (n が傾く・垂直の偏向・水平磁場の挿入光源。B116)、運動論的偏極と放射の刻みごとの脱偏極率。脱偏極率の追跡との差 (v2.1.0 は 0.43 倍) の原因はベータトロンのチューンの δ 依存で、クロマティックな変調を側帯の式に入れて 4.2 GeV・12 MV で式 / 追跡 = 1.05 ± 0.16。不安定なリングの P は NaN。追跡のスピンが BEND の ROTATE で回らない (B135)。
+- 放射・エミッタンス: SynchroBetaEmittance の始点の分散による数倍〜40 倍の過大を修正 (B128 の原因の特定)。tradke の符号は放射反作用つきのローレンツ力の積分で確定 (B111)、RADTAPER の BEND の係数を Emittance[]・追跡とも (δ_l + δ_l+1)/2 に統一、tradke の微分の 4 点の誤りを修正 (B138)。
+- 端の角: 追跡 `tsteer` の出口の AE2 (B140)、MULT の出口の蹴りの位置 (B141)、K1≠0・K0≠0 の ANGLE=0 BEND の追跡の AE (B142)、MULT・追跡の端の角の放射の行路 (B143。B108 の拡張)。
+- SOL: 領域内の QUAD・MULT のスピンを Thomas-BMT の積分と 9e-7 以下に (B146)、領域内の DRIFT・QUAD・MULT の光子 (B150)。
+- 光学: 入れ替わる (DETR ≥ 1) INS の一周の位相の整数部 (B153)、補正磁石の ROTATE + DX・DY の CALC (B144)。
+
+**新しく使える機能・オプション** (使える範囲・条件は docs/47 の v2.2.0 の (b))
+- `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC` (v2、Polarization)。`compat.set_bend_k1_edge('face')` (K1≠0 の BEND の端の模型。環境変数 `PYSAD_BEND_K1_EDGE=face`。既定は `radial`)。`WSPACSC = 1;` (追跡の WSPAC に空間電荷つきのビーム行列。既定は 0)。
+- TrackParticles の F1・FB1・FB2・FRINGE (ANGLE=0 の BEND・MULT)、MULT の AE1・AE2 (k64 は gs と全桁一致)。k64 の PSPAC (K64 の形状関数。`pysad/spch_k64.py`。NPARA = 1 で gs と rms が 12 桁以上)。k64 の MEASURE・TRCOD (先頭の位置。gs と統計が 4 桁一致)。DAPWIDTH の窓 (`trackd.f` の直訳。**既定を 51 から 7 に変更**)。要素ごとの FREE の何もしない変数 (gs と全桁)。
+- 複素の特殊関数 15 関数 (`pysad/specfn_cx2.py`。732 式の走査で gs と 1e-9 が 436 → 641 式)。MAIN の文法 (`SIN[0.1]` を構文エラーに、`E`・`Pi`・`Degree` の代入)。gs との照合: `OYStability` の後半・Micado の変種・FITP>1・陽子の U0・Python 3.14 + Tk 9.0 の GUI。
+
+**pysad 自身の不具合の修正**: DAPWIDTH を無視して全点を追っていた、MULT の AE を黙って無視、複素引数で虚部を黙って捨てる特殊関数、不安定なリングで P を返す、`SIN[0.1]` が値 0 など ([`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (c))。
+
+**試験の状態** (2026-11-20): 全試験 1647 通過・9 skip・失敗 0 (1656 件収集。`PYSAD_SAD_PACKAGES` つき)、回帰 (`QUICK=1`) は 50 ベンチ FAIL 0 (138 s)。v2.1.0 は 1345 通過・8 skip。v2.2.0 の追加は担当 P1〜P5 の `test_v2_P*.py` 19 ファイル。詳細は docs/47 の v2.2.0 の (e)
+
+**条件と限界**: v2 の値の根拠は解析式・独立な数値計算・保存則で、gs ではない。確かめたのは 0.2〜4.2 GeV の FODO リング、大きなリング A (3 GeV、周長 603 m)・PF リング・ASTRID2 (MPW 入りを含む) などで、大きなリング B (8 GeV) は数値だけ。脱偏極率の式の追跡との比は 4.2 GeV・12 MV の 1 点。実機の強い結合・挿入光源のずれのあるリングでは未確認。
+
+**未解決**: [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (d)。**判断が要るもの** (既定は担当の選択のまま): EMITDIV の既定 (1)、DAPWIDTH の既定 (7)、`WSPACSC` の既定 (0)、K1≠0 の BEND の端の模型の既定 (`radial`)、放射の β の因子 (B112)、領域内の ψ の DISFRIN、偏向磁石の本体の B∥ (B136)、複素の特殊関数の k64 の値。ほかに B108 の残る 2.7%、RF が分散のある場所にある矩形リングの εx の +1.7e-3、SOL 領域内の加速 (POL + TRPT)、SB のシンクロ・ベータ共鳴の追跡との比較。
+
 ## v2.1.0 (2026-11-18)
 
 v2.0.0 の「未対応・未確認」の項目を追求して直した版です。PyPI: [`pysad-k64` 2.1.0](https://pypi.org/project/pysad-k64/2.1.0/) (2026-11-18 公開。`pip install pysad-k64`)。互換モード (`pysad/compat.py`、既定 `v2`、`PYSAD_COMPAT=k64` で K64 (gs) の動作) は v2.0.0 と同じで、k64 モードの結果は pysad 自身の不具合の修正を除いて変えていません。

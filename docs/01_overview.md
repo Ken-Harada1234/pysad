@@ -91,6 +91,8 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | specfn.py | 特殊関数・数学関数 (Bessel・超幾何・ガンマ族・ゼータ・多重対数・D.n の特殊関数など。K64 の InverseErf の誤差も再現。docs/33) | gamma.f, hg.f, Packages/D.n |
 | naff.py | NAFF 風のチューン抽出 (`naff`・`naff_real`・`tune_xp`・`tunes_from_coords`。v2.1.0。放射を切った追跡の座標列からチューンを取る。MAIN の TRACK の FOURIER の代用。docs/12 §16.7、47) | K64 の直訳ではない (wtunem・wjfit に代わる独立な実装) |
 | specfn_cx.py | 複素の Zeta・HurwitzZeta・PolyLog・HypergeometricU (v2.1.0。両モード。gs が誤る点でも真値。docs/33) | gamma.f の複素の部分に代わる独立な実装 |
+| specfn_cx2.py | 複素の ExpIntegralE・ExpIntegralEi・PolyGamma・WhittakerM/W・ProductLog・CosIntegral・FresnelS/C・HarmonicNumber・GammaRegularized・Beta・Factorial・`Gamma[a,z]`・LegendreP・複素の次数の BesselJ (v2.2.0。両モード。複素の引数が 1 つでもあれば `specfn.install` が切り替える。docs/33) | scipy の複素対応と級数・漸化式 |
+| spch_k64.py | PSPAC の K64 の形状関数 (v2.2.0。k64 モードだけ。CIC・「ほぼ最近接」・5 点差分 + 双 3 次補間・3 次スプライン。NPARA = 1 で gs と rms が 12 桁以上) | spch.c・psn.c・tspch_.c |
 | nbcache.py | numba のキャッシュの無効化 (v2.1.0。`py -3.12 -m pysad.nbcache`。kernel を編集したら試験の前に 1 回走らせる。docs/12 §16.7) | — |
 | fitroot.py / miscfn.py / fileops.py | Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/33) | tffindroot.f, Fit.n, D.n, optimize.n, Matrix.n, FileSystem.n, shared.n |
 | corr.py / pkgload.py | ResponseMatrix・LinearSolveConditioned・Master と、Packages/*.n (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational など) の自動読み込み (docs/34) | pgrmat.f, pgsolvcond.f, pmicad.f, pgmast.f, correction.n ほか |

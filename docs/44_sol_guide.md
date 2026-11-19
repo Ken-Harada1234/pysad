@@ -221,6 +221,12 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 - **領域内の CAVI のスピン (B131)**: v2 は CAVI も放射・スピンの刻みに通す (K64 の `tsol` は CAVI を `krad = .false.` で呼ぶのでスピンが歳差しない。Thomas-BMT と 1e-9 台)。k64 は K64 のまま。
 - **領域内の四極 (K1<0 の −90°、ROTATE) のスピンの座標系** (E。pysad の不具合。両モード): 回していなかったのを直した (track6 の `_tquad_sol`・`solemit._tquade`。K64 の `tsolrote` は `srot = rr·srot`)。k64 の Emittance[] の srot が gs と全桁一致 (BZ = 1 T、K1<0・ROTATE つきの四極)。
 - **POL + TRPT の加速** (track6): SOL 領域の外の CAVI は v2 で実装。領域内は SADError (docs/43)。
+### v2.2.0 の追加 (記録 P4。試験 `test_v2_P4_sol_spin.py`・`test_v2_P4_sol_photons.py`)
+
+- **領域内の QUAD・MULT のスピン (B146。v2)**: POL のとき領域内の QUAD を bz·al/ndiv ≤ 0.02 に刻む (Emittance[] の `solemit._tquade` と同じ。以前は刻み bz·al/ndiv ≈ 0.2 の弦の誤差で bz = 4.5・9 で 2e-5・9e-5)。端の縦磁場の積分 ψ (QUAD の k x y、MULT の k0 y + k1 x y + …) は端のフリンジを入れるとき (DISFRIN=0) だけ入れる (以前は DISFRIN に関係なく足し、MULT の K0 つきで 1.6e-4 ずれた)。Thomas-BMT の積分 (0.4 m、DISFRIN=1、軸上と軸を外れた粒子・3 つのスピンの向き) と bz = 0.3・3・4.5・9 1/m で **9.3e-7 以下**。D は追跡 1e-8・Emittance[] 2e-6、ASTRID2 (RF の前に BZ = 0.5 T・0.9 m の領域に QUAD・MULT) の Emittance[] の SpinTune が追跡の 1 周のスピン行列と 1.2e-7。領域内の CAVI (VOLT = 0・0.2 MV) の SpinTune は追跡と 1.6e-7 だが、位相 0 なので SpinTune がエネルギー変化にほぼ鈍い弱い試験。k64 は変えない。**未確認**: DISFRIN=0 の ψ を硬い端の B_s と軌道のフリンジ写像を合わせた厳密な基準で確かめていない、ずれ・ROTATE を持つ MULT の ψ、CAVI の加速・位相が 0 でないとき、大きなリング A・PF・8 GeV (0.1〜1 GeV・ASTRID2 までのリングで確認)。
+- **領域内の光子 (B150。v2)**: RAD + FLUC + PHOTONS の TrackParticles で、領域内の DRIFT・QUAD・MULT (ANGLE=0) の光子を軌道上の位置に記録する (`track6._tsol_region_v2`)。3 GeV・BZ = 1 T の領域で、MULT (K0 = 0.01、L = 0.4 m) の放射点が放物線 x = (K0/2L) s² と 5e-7 以内、エネルギーの合計が 309 eV/粒子 (1500 粒子、古典値 285 eV、統計 8%)、RAD NOFLUC の損失が領域内と領域外 (bz = 1e-9) で 1e-17。gs は領域内の MULT・DRIFT を記録するが QUAD は記録せず (B150)、MULT の偏向をほぼ無視する (B69) ので位置・数は比べられない。k64 は K64 のまま。使える範囲: 3 GeV、bz = 0.1 1/m、傾き・ずれのない領域。**未対応・未確認**: 領域内の BEND・SEXT・OCT、傾いた・ずれた領域の光子の位置 (`geo_frac` が領域の軸の傾きで別の系になりうる)、偏光 ξ の値、大きなリング。
+- **領域内の加速 (POL + TRPT)** は実装しない (v2.2.0 の判断): 刻みごとの基準運動量 p0(s)・bz p0/p(s)・歳差の aγ(s) の作り直しが要り、RF の電場を含む運動方程式の積分の独立な基準が無い。実装するなら `sol_mult_full` の刻みで `_RadHook` が基準運動量を更新し `_tradk_sol` に p(s) を渡す。現状は明示のエラー (`test_pol_with_trpt_acceleration_is_an_explicit_error`)。
+
 ## 8. 関連文書
 
 - `docs/29_sol_optics.md`: Twiss・Emittance[]・幾何の検証の詳細。

@@ -1,6 +1,6 @@
-# example/v2_next: v2.1.0 の作業で作った例
+# example/v2_next: v2.1.0・v2.2.0 の作業で作った例
 
-v2.0.0 の後の作業 (v2.1.0) で、未対応・未確認の項目を追求したときの例です。各例は台本 (`.sad` または `.py`) と、出力 (`.gs.txt`: gs、`.pysad.txt`: pysad の v2 モード、`.k64.txt`: pysad の k64 モード、`.out.txt`: Python の出力) からなります。担当ごとに先頭の記号 (A1 など) が付いています。記録は `docs/history/v2next_<担当>.md`、試験は `pysad/tests/test_v2_<担当>_*.py` です。
+v2.0.0 の後の作業 (v2.1.0 と v2.2.0 の P1〜P5) で、未対応・未確認の項目を追求したときの例です。各例は台本 (`.sad` または `.py`) と、出力 (`.gs.txt`: gs、`.pysad.txt`: pysad の v2 モード、`.k64.txt`: pysad の k64 モード、`.out.txt`: Python の出力) からなります。担当ごとに先頭の記号 (A1 など) が付いています。記録は `docs/history/v2next_<担当>.md`、試験は `pysad/tests/test_v2_<担当>_*.py` です。
 
 gs と同じ結果が要るときは、環境変数 `PYSAD_COMPAT=k64` で走らせます (既定は v2)。
 
@@ -15,5 +15,10 @@ gs と同じ結果が要るときは、環境変数 `PYSAD_COMPAT=k64` で走ら
 | D1 | 物理の残り (NORFSW、WSPAC、SynchroBeta、POL+TRPT+加速、光子) | (記録を参照) | [`norfsw_orbit`](D1_norfsw_orbit.sad)、[`photons_bb_bend`](D1_photons_bb_bend.sad)、[`photons_mult`](D1_photons_mult.sad)、[`spin_accel`](D1_spin_accel.py) |
 | D2 | パーサ・GUI・Packages (MAIN の式、Tk 9.0、Micado、CSROYMatrix) | [D2_README.md](D2_README.md) | [`correctlocal`](D2_correctlocal.sad)、[`csroymatrix`](D2_csroymatrix.sad)、[`main_expr`](D2_main_expr.sad)、[`micado`](D2_micado.sad)、[`periodicr`](D2_periodicr.sad) |
 | E | 傾いたソレノイドの偏極、ANGLE=0 の BEND と MULT の F1、脱偏極率の限界 | (記録を参照) | [`b108_poles`](E_b108_poles.py)、[`mult_f1`](E_mult_f1.sad)、[`pol_kick_response`](E_pol_kick_response.py)、[`sol_tilt_spin`](E_sol_tilt_spin.py)、[`steer_f1`](E_steer_f1.sad) |
+| P1 | 偏極の残り (垂直の偏向・回した MPW・反転した BEND の緩和率、クロマティックな側帯、独立な DK の式、BEND の鉛直の傾きのスピン) | (記録 `v2next_P1.md`) | [`pol_vertical_bend`](P1_pol_vertical_bend.sad)、[`pol_mpw_rotated`](P1_pol_mpw_rotated.sad)、[`pol_reversed_bend`](P1_pol_reversed_bend.sad)、[`pol_chromatic`](P1_pol_chromatic.py)、[`st_dk_check`](P1_st_dk_check.py)、[`bend_vertical_angle_spin`](P1_bend_vertical_angle_spin.py)。決定論的な測定のデータ [`P1_response_samples_f1_M1M2chr.json`](P1_response_samples_f1_M1M2chr.json)・[`f2_models`](P1_response_samples_f2_models.json) |
+| P2 | 放射・エミッタンスの残り (SynchroBeta の始点の分散、EMITDIV、tradke の符号、RADCOD の微分、K1≠0 の BEND の端 `face`) | [P2_README.md](P2_README.md) | [`sb_dispersion_start`](P2_sb_dispersion_start.sad)、[`sb_rings`](P2_sb_rings.py)、[`emitdiv_rect`](P2_emitdiv_rect.py)、[`tradke_exact`](P2_tradke_exact.py)、[`radcod_derivative`](P2_radcod_derivative.py)、[`bend_k1_face`](P2_bend_k1_face.py) |
+| P3 | TrackParticles の F1 (ANGLE=0 の BEND・MULT)、MULT の AE1・AE2、B108 の残り | [P3_README.md](P3_README.md) | [`steer_f1_track`](P3_steer_f1_track.sad)、[`mult_f1_ae_track`](P3_mult_f1_ae_track.sad)、[`mult_ae_emit`](P3_mult_ae_emit.sad)、[`steer_ae2_tune`](P3_steer_ae2_tune.sad)、[`ring_a`](P3_ring_a.py)、[`b108_exact`](P3_b108_exact.py)、[`maxwell_ramp`](P3_maxwell_ramp.py) |
+| P4 | SOL・空間電荷・DAPWIDTH・FREE の残り (領域内のスピンと光子、k64 の PSPAC、WSPACSC、DAPWIDTH の窓、何もしない変数) | [P4_README.md](P4_README.md) | [`free_noop_variable`](P4_free_noop_variable.sad)、[`dapwidth_window`](P4_dapwidth_window.sad)、[`pspac_k64_shape`](P4_pspac_k64_shape.sad)、[`pspac_astrid2`](P4_pspac_astrid2.sad)、[`wspac_tracking_beam`](P4_wspac_tracking_beam.sad)、[`sol_photons`](P4_sol_photons.sad)、[`sol_spin_quad_mult`](P4_sol_spin_quad_mult.py) |
+| P5 | gs との検証の拡充 (MEASURE・TRCOD、DETR ≥ 1、複素の特殊関数、OYStability、Micado、FITP>1、Tk 9.0、陽子の β、文法) | [P5_README.md](P5_README.md) | [`measure_fodo`](P5_measure_fodo.sad)、[`detr_astrid2`](P5_detr_astrid2.sad)、[`specfn_cx_scan`](P5_specfn_cx_scan.sad)、[`oy_pipeline`](P5_oy_pipeline.sad)、[`micado_variants`](P5_micado_variants.sad)、[`fitp_five`](P5_fitp_five.sad)、[`proton_beta_p3`](P5_proton_beta_p3.sad)、Tk 9.0 の画面 [`P5_tk90_*.png`](P5_tk90_kbmainframe.png) |
 
-記録: [`docs/history/`](../../docs/history/) の `v2next_A1.md`・`v2next_A2.md`・`v2next_B1.md`・`v2next_B2.md`・`v2next_B3.md`・`v2next_C.md` (C3 の例)・`v2next_D1.md`・`v2next_D2.md`・`v2next_E.md`。
+記録: [`docs/history/`](../../docs/history/) の `v2next_A1.md`・`v2next_A2.md`・`v2next_B1.md`・`v2next_B2.md`・`v2next_B3.md`・`v2next_C.md` (C3 の例)・`v2next_D1.md`・`v2next_D2.md`・`v2next_E.md`・`v2next_P1.md`〜`v2next_P5.md`。

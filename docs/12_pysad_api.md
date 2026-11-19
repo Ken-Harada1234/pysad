@@ -518,6 +518,8 @@ print(score)                                               # 144
 |---|---|---|
 | `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/47 v2.1.0 (b)、`example/v2_next/B3_naff_tunes.py` |
 | `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/33 | docs/33 |
+| `specfn_cx2.py` | 複素の特殊関数の追加 (v2.2.0)。scipy の複素対応 (`exp1`・`expi`・`digamma`・`sici`・`fresnel`・`lambertw`・`hyp1f1`・`hyp2f1`)、整数次の ExpIntegralE の漸化式・級数、`polygamma` (Hurwitz ゼータ経由)、複素の次数の BesselJ の級数 (\|x\| ≤ 25)、Whittaker W (`specfn_cx.hyperu_c`)。`specfn.install` が複素の引数で切り替える (実数は従来のまま)。両モード |
+| `spch_k64.py` | `K64Pspac` (v2.2.0。k64 モードの PSPAC。`SpaceCharge._kick2d` から呼ぶ)。K64 の形状関数: 横は CIC、縦は「ほぼ最近接」、電位は 5 点差分 (境界 φ = 0) の厳密解と双 3 次補間、線密度は 3 次スプライン。`PSPACNZ < 3` はエラー |
 | `nbcache.py` | numba のキャッシュの無効化。`py -3.12 -m pysad.nbcache [--force]` (`purge(dry_run=False, force=False)`、`stale_modules()`、`cached_modules()`)。numba の `cache=True` の索引 (`.nbi`) は関数を定義したファイル 1 つの内容のハッシュでしか無効にならないので、呼ばれる側 (別のファイルの njit 関数や、`emit6d.ELMASS` などの大域の定数) を編集しても呼ぶ側のキャッシュが古いまま残る。`__pycache__/nbdeps.json` にモジュールごとの依存先の内容のハッシュ (改行の違いは無視) を覚え、変わっていたら呼ぶ側の `.nbi`・`.nbc` を捨てる。最初の 1 回は記録だけ (最初から古いものがあるかもしれないときは `--force`)。**kernel (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py` など) を編集したら、試験の前に 1 回走らせる** (自動では呼ばない) | docs/47 v2.1.0 (b)、`test_nbcache_purges_caller_when_callee_file_changes` |
 
 **v2.1.0 で追加・変更した主な API**
@@ -529,4 +531,12 @@ print(score)                                               # 144
 - `ffscmd._mass_charge()` (電子と同じ値のときは何も渡さない。`TrackParticles`・Emittance[]・CALC6D に `MASS`・`CHARGE` を渡す)、`ffscmd.FFS._npara_chunks`・`_fn_track_npara` (`NPARA=n;` の fork の分け方)。
 - `radfield._drop_repeated_points` (複数区間の `RadiationField`)。`fileops` の `Parallelize` (POSIX の fork。`PYSAD_PARALLELIZE=serial` で逐次)。
 - 環境変数: `PYSAD_PARALLELIZE` (`serial` で `Parallelize` を逐次にする)。
+
+**v2.2.0 で追加・変更した主な API**
+
+- `compat.set_bend_k1_edge('face'|'radial'|None)`・`compat.bend_k1_edge()`・環境変数 `PYSAD_BEND_K1_EDGE`: K1≠0 の BEND の端の模型 (v2 だけ。k64 は常に `radial`)。実装は `lattice._face_kt`・`_face_kick_cod`・`_face_kick_jac`・`_bend_k1_cod_matrix`、`emit6d._tbende_core`、`track6n.k_bendi`・`track6._tbendi`。
+- `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC` (v2 の Polarization。False で v2.1.0 の式)、`CHROM_KMAX`・`CHROM_NEL`。`spin.sideband_depolarization(..., C6=...)`、`spin._chromatic_matrix`。`spin_results` の `sdamp_rel` (厳密な緩和率)・`sdamp_rel_b2` (A2 の Σ r (b·n)²)・`kinetic`、不安定なリングの P = NaN (`depol_error`)。`track6._spin_rot_cs` (BEND の ROTATE のスピン)。
+- `synchrobeta.tesumb_v2`・`tefsetup(jump=)` (v2 の SynchroBeta)。`perfkern.tradke_db` の `exactd` (v2 の tradke の微分)。`radtaper` (v2 の BEND の係数 (δ_l + δ_l+1)/2)。
+- `track6._tsteer_ens`・`_tblfri`・`_tmulk`・`_tmulti_ens` (F1・FB・FRINGE・AE の追跡)、`lattice._mult_params`・`_bend_as_mult` (MULT の AE)。F1 つきの MULT を含むリングは `track6n_ext.compile_mult` が NotImplementedError にして track6 に落とす。
+- `dapert.dynamic_aperture` (trackd.f のスロット管理。DAPWIDTH の既定 7)。FFS の大域変数 `WSPACSC` (追跡の WSPAC のビーム行列)。`measure._k64_measure`・`_k64_trcod` (k64 の MEASURE・TRCOD)。`lattice._exch_phase` (入れ替わる INS の位相の整数部。v2)。`parser.Token.pos/end`。
 - FFS: `NPARA=n;` (FLUC の追跡の子プロセスの分け方)。
