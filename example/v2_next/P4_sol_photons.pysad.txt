@@ -1,0 +1,13 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .984975 $$$       f BX    #######  #   3.134237 $$$       f NX    #######  #    .171291
+$$$       f AY    #######  #  -5.768104 $$$       f BY    #######  #   5.545139 $$$       f NY    #######  #    .168033
+$$$       f LENG  #######  #   1.800000
+NPH    1645.000000
+ELEM       1.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       2.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       3.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       4.000000 count     967.000000 Esum/n [eV]     308.862367 gx range        .500659        .898293
+ELEM       5.000000 count      55.000000 Esum/n [eV]        .642664 gx range        .915975       1.380213
+ELEM       6.000000 count     623.000000 Esum/n [eV]     131.194693 gx range       1.400849       1.799841
+ELEM       7.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+classical MULT energy loss per particle [eV]:     285.096637

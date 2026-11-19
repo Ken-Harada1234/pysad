@@ -76,8 +76,8 @@ def test_mixed_variables_fit_and_table_order_like_gs():
              'Print["N ",Twiss["NX","$$$"]," ",Twiss["NY","$$$"]," ",LINE["K1","QF.1"]," ",LINE["K1","QF.3"]," ",LINE["K1","B.3"]," ",LINE["K1","B.6"]," ",LINE["K1","B.4"]];')
     # gs: 要素全体の B K1 は、成分 B.6 が使われているのでエラー (最後に FREE した成分の名前)
     assert ' ???-FFS-Error-A component has been already used as variable: B.6' in r
-    rows = [l.split()[0] for l in r if l.startswith(' ') and re.match(r' (QF|B)\S*\s+K1\s', l)][:3]
-    assert rows == ['QF', 'B.6', 'B.3'] or rows == ['QF.1', 'B.6', 'B.3']          # 同じ要素の変数は、後から FREE したものが先 (gs: QF.3、QF.1、B.6、B.3 の順)
+    rows = [l.split()[0] for l in r if l.startswith(' ') and re.match(r' (QF|B)\S*\s+K1\s', l)][:4]
+    assert rows == ['QF.3', 'QF.1', 'B.6', 'B.3']          # 同じ要素の変数は、後から FREE したものが先 (gs: QF.3、QF.1、B.6、B.3 の順。P4 で何もしない変数 QF.3 を足した)
     v = _nums(_line(r, 'N '))
     # gs: 8.168140923841754 5.9690399039285 .768018850721068 .768018850721068 -.08865336845062985 -.18088701204518765 0 (反復は 5・6・7 回目)
     assert abs(v[0] - 8.168140923841754) < 1e-8 and abs(v[1] - 5.9690399039285) < 1e-8

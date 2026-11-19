@@ -1,0 +1,34 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.167206 $$$       f BX    #######  #   5.026207 $$$       f NX    #######  #   3.348176 $$$       f AY    #######  #   1.207769 $$$       f BY    #######  #   2.557146 $$$       f NY    #######  #   2.453036
+$$$       f LENG  #######  #  52.800000
+rms before X .0006853434720146527 Y 5.034716036999203e-5
+H Micado n=0 rmsX after 7.259305667746128e-5 max kick .00012519492094889315 K0sum 4.779994676234698e-5
+H Micado n=1 rmsX after .0004306166546051332 max kick .00044521284754712125 K0sum .00044521284754712125
+H Micado n=2 rmsX after .0003191001384515361 max kick .00045566097631761815 K0sum .0006881548447216813
+H Micado n=3 rmsX after .0002307580300656081 max kick .0003353759055285309 K0sum .0007698244439275938
+H Micado n=6 rmsX after .00011854067448765534 max kick .0002404326692624438 K0sum .0003387703768399202
+H Micado n=12 rmsX after 7.25930566769137e-5 max kick .00012519492094889147 K0sum 4.779994676290045e-5
+XY(sh only) n=0 rmsX 7.259339940965977e-5 rmsY 5.0352093572922436e-5 max kick .0001251932785857045
+XY(sh only) n=1 rmsX .0004306166948096634 rmsY 5.0351169372510327e-5 max kick .00044521242780261967
+XY(sh only) n=2 rmsX .00031910021917859645 rmsY 5.0352457030139254e-5 max kick .00045566054597882664
+XY(sh only) n=3 rmsX .0002307581407668912 rmsY 5.035234711899347e-5 max kick .00033537546072076515
+XY(sh only) n=6 rmsX .00011854085115060071 rmsY 5.035078620135988e-5 max kick .0002404315980893423
+XY(sh only) n=12 rmsX 7.259339940982329e-5 rmsY 5.0352093572922416e-5 max kick .0001251932785856977
+ycut=0
+  -CorrectOrbit:Matrices on memory for {"Y"}=1
+SVD1 Y n=0 rmsY 2.0444308759612976e-5 max kick 2.187415867696872e-5
+ycut=0
+  -CorrectOrbit:Matrices on memory for {"Y"}=1
+SVD1 Y n=1 rmsY 2.0444308668681238e-5 max kick 2.187415924039067e-5
+ycut=0
+  -CorrectOrbit:Matrices on memory for {"Y"}=1
+SVD1 Y n=2 rmsY 2.0444308668681238e-5 max kick 2.1874159240390918e-5
+ycut=0
+  -CorrectOrbit:Matrices on memory for {"Y"}=1
+SVD1 Y n=3 rmsY 2.0444308668681245e-5 max kick 2.187415924039092e-5
+ycut=0
+  -CorrectOrbit:Matrices on memory for {"Y"}=1
+SVD1 Y n=6 rmsY 2.0444308668681238e-5 max kick 2.1874159240390877e-5
+ycut=0
+  -CorrectOrbit:Matrices on memory for {"Y"}=1
+SVD1 Y n=12 rmsY 2.0444308668681238e-5 max kick 2.1874159240390928e-5

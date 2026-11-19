@@ -1,0 +1,22 @@
+! ---- v2next P1 項目 3: 反転した BEND (曲率の符号が違うシケイン) のあるリングの Polarization と PolarizationTime ----
+! 3 GeV の 12 セル FODO の 1 セルの D1 をシケイン (ANGLE = +0.05、−0.10、+0.05 rad。曲げ角の和は 0) に替えたリング。
+! 独立な式 (偏向磁石の ANGLE から): P = (8/5√3) ∮ρ⁻³/∮|ρ|⁻³ = 0.66825 (シケインの逆向きの曲げで下がる)、1/τ = (5√3/8) r_e ƛ_C c γ⁵ <|ρ|⁻³>。
+! K64: Polarization は NaN、PolarizationTime は符号つきの率 (逆向きの曲げが相殺して長い)。v2: P・τ が独立な式と 1e-3。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) DCHI = (L=0.1) DRCHI = (L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+BEND CB1 = (L=0.2 ANGLE=0.05) CB2 = (L=0.2 ANGLE=-0.10) CB3 = (L=0.2 ANGLE=0.05);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CHI = (CB1 DCHI CB2 DCHI CB3 DRCHI);
+LINE CELLC = (QF D2 B D2 QD CHI);
+LINE RING = (ST 5*CELL1 CELLC 6*CELL1 RFC);
+FFS;
+$FORM = "16.10";
+USE RING; CELL; CALC;
+RFSW; RAD; NOFLUC; POL;
+em = Emittance[];
+Print["Polarization, PolarizationTime [s] = ", {Polarization, PolarizationTime}/.em];
+Exit;

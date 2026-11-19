@@ -1,0 +1,9 @@
+mode v2
+quad  p = 1.0 GeV  bz = 0.30 1/m  spin error vs Thomas-BMT 4.45e-07
+quad  p = 0.3 GeV  bz = 3.00 1/m  spin error vs Thomas-BMT 5.02e-07
+quad  p = 0.1 GeV  bz = 4.50 1/m  spin error vs Thomas-BMT 7.93e-07
+quad  p = 0.1 GeV  bz = 8.99 1/m  spin error vs Thomas-BMT 9.06e-07
+mult  p = 1.0 GeV  bz = 0.30 1/m  spin error vs Thomas-BMT 8.28e-07
+mult  p = 0.3 GeV  bz = 3.00 1/m  spin error vs Thomas-BMT 2.09e-07
+mult  p = 0.1 GeV  bz = 4.50 1/m  spin error vs Thomas-BMT 6.09e-07
+mult  p = 0.1 GeV  bz = 8.99 1/m  spin error vs Thomas-BMT 9.28e-07

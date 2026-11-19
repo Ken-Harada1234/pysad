@@ -1,0 +1,27 @@
+! v2next P3 項目 1: TrackParticles の F1 (ANGLE=0 の BEND = ステアリング、K64 の tsteer)。旧 pysad は NotImplementedError。
+! tsteer.f の F1・FB1・FB2・FRINGE (tpara: FRINGE <= 0 は -1 (入口だけ)・-2 (出口だけ) 以外 F1 が効かない)・AE1・AE2 を直訳 (K64 の動作の追加。gate なし)。
+! 入口は tblfre (dxfr1 = -fb1^2/rho/24、dyfr1 = fb1/rho^2/6)、放射ありは長さ fb1/2 の 2 つの断片 (n = -1, 0)、出口は断片 2 つと dxfr2。
+! 条件: 3 GeV、周長 45.6 m の 12 セル FODO、ステアリング (L = 0.2 m、K0 = +-0.003 rad を 1 セルおきに、F1 = 0.04 FB1 = 0.03 FB2 = 0.02 FRINGE = 3 AE1 = 0.02 AE2 = -0.01)。
+! 3 粒子 3 周 (NORAD と RAD)。k64 モード (PYSAD_COMPAT=k64) は gs と 10 桁表示の全桁で一致 (.gs.txt と .pysad_k64.txt)。v2 は RAD で端の角 (AE) の放射の行路の補正 (B108) が入る。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) DS = (L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+BEND SA = (L=0.2 ANGLE=0 K0=0.003 F1=0.04 FB1=0.03 FB2=0.02 FRINGE=3 AE1=0.02 AE2=-0.01);
+BEND SB = (L=0.2 ANGLE=0 K0=-0.003 F1=0.04 FB1=0.03 FB2=0.02 FRINGE=3 AE1=0.02 AE2=-0.01);
+CAVI RFC = (L=0 VOLT=3e6 HARM=64);
+MARK ST = ();
+LINE CELLA = (QF D2 B D2 QD DS SA D1);
+LINE CELLB = (QF D2 B D2 QD DS SB D1);
+LINE CC = (CELLA CELLB);
+LINE RING = (ST 6*CC RFC);
+FFS;
+$FORM="14.10";
+bm={{1e-3,0,1e-3},{1e-4,0,0},{1e-3,0,-1e-3},{0,0,0},{0,0,0},{0,1e-3,-1e-2},{1,1,1}};
+USE RING; CELL; CALC; NORFSW; NORAD;
+r=TrackParticles[{1,bm},1,1,3];
+Print["N3 ", r[[2]]];
+RFSW; RAD; NOFLUC;
+r=TrackParticles[{1,bm},1,1,3];
+Print["R3 ", r[[2]]];
+Exit;

@@ -1,0 +1,18 @@
+! v2next P5 項目 1: MEASURE / TRCOD の gs との比較 (ASTRID2 (0.58 GeV、周長 45.7 m))。このファイルは台本の後半だけ: 先頭に example/astrid/lattice/ASTRID2_v01_01.sad を連結して走らせる。
+! 先頭に MARK ORG0 を足したリングで、ORG0 の位置の MEASURE (gs が出力する唯一の位置)・LOGMEASURE・TRCOD を gs と比べる。k64 は gs と全桁一致。
+MARK ORG0 = ();
+LINE RINGM = (ORG0 RING);
+FFS;
+EMITX=1e-9; EMITY=1e-10; SIGZ=3e-3; DP=1e-3;
+USE RINGM; CELL; CALC;
+NP=400;
+MEASURE ORG0;
+LOGMEASURE;
+GAUSS; MEASURE ORG0;
+NOGAUSS;
+Print["R1 ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+MEASURE $$$;
+Print["R2 ", FFS["MEASURE $$$"][[1]]];
+TRCOD ORG0;
+Print["DX ", Twiss["DPY",1]];
+Exit;

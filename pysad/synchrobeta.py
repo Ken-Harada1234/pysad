@@ -12,6 +12,8 @@ import math
 
 import numpy as np
 
+from . import compat as _compat
+
 PI2 = 2.0 * math.pi
 C_LIGHT = 299792458.0
 
@@ -71,8 +73,13 @@ def tmov65(a):
     return b
 
 
-def tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws, dj, dpndim, sigea, tw0, ri, helpers):
-    """tefsetup: ha(4,4,mphi,ndp), hb(4,mphi2,ndp), ba(10,10,mphi,ndp), bb(10,mphi2,ndp), bd(10,4,mphi,ndp) (0 始まりで [.., m-1, j-1])"""
+def tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws, dj, dpndim, sigea, tw0, ri, helpers, jump=None):
+    """tefsetup: ha(4,4,mphi,ndp), hb(4,mphi2,ndp), ba(10,10,mphi,ndp), bb(10,mphi2,ndp), bd(10,4,mphi,ndp) (0 始まりで [.., m-1, j-1])
+    jump (v2: dict {'dd': δ の 1 周あたりの跳びの分散}): K64 は 1 周の写像を X' = T X + h1 (h1 = 閉軌道 c(δ)) と書き、平均 <X> を 1 次のモーメントの方程式で解いて
+    2 次のモーメントの源泉 (T <X> h1 + h1 <X> T + h1 h1) に入れるが、固定点が c にならず (X = c は X' = T X + c を満たさない)、平均の数値誤差が
+    減衰時間の逆数倍に増幅される。v2 は平均を解かず (h1 = 0)、軌道の δ 依存 c(δ) の効果を 2 つの解析的な項に分ける:
+      (a) 光子の放出で δ が跳ぶと軌道が c'(δ) du だけ跳ぶ → 2 次のモーメントの源泉 c' c'^T dd (bb の全モード)
+      (b) 静的な広がり <c c^T>・<c δ> (jump['cc'] (10, ndp)・jump['cp'] (4, ndp): φ の平均)"""
     nj = 2
     ba = np.zeros((10, 10, mphi, ndp))
     bb = np.zeros((10, mphi2, ndp))
@@ -80,6 +87,9 @@ def tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws, dj, dpndim, sigea, 
     ha = np.zeros((4, 4, mphi, ndp))
     hb = np.zeros((4, mphi2, ndp))
     btr = np.zeros((10, 10))
+    if jump is not None:
+        jump['cc'] = np.zeros((10, ndp))
+        jump['cp'] = np.zeros((4, ndp))
     for j in range(1, ndp + 1):
         for j1 in range(-nj, nj + 1):
             aj = (j - 0.5) * dj + dj / (2 * nj + 1) * j1
@@ -95,6 +105,20 @@ def tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws, dj, dpndim, sigea, 
                 f1 = (1.0 - f)
                 trd = f1 * trads[ip + ndims] + f * trads[ip + 1 + ndims]
                 tr1 = tr1 + trd
+                if jump is not None:
+                    c1 = h1
+                    h1 = np.zeros(4)
+                    cpr = (tws[ip + 1 + ndims][15:19] - tws[ip + ndims][15:19]) / dpndim
+                    w0 = 1.0 / (nz - 1) / (2 * nj + 1) * (0.5 if (i == 1 or i == nz) else 1.0)
+                    jump['cp'][:, j - 1] += c1 * p * w0
+                    for k in range(1, 5):
+                        for l in range(1, k + 1):
+                            kk = iaidx(k, l) - 1
+                            jump['cc'][kk, j - 1] += c1[k - 1] * c1[l - 1] * w0
+                            jq = cpr[k - 1] * cpr[l - 1] * jump['dd']
+                            for m in range(1, mphi2 + 1):
+                                csm_ = math.cos(phi * (m - 1)) * w0
+                                bb[kk, m - 1, j - 1] += jq * csm_
                 # teintb
                 beama = f1 * beams[ip + ndims] + f * beams[ip + 1 + ndims]
                 for k in range(1, 5):
@@ -459,6 +483,34 @@ def tesumb(bc, hc, mphi2, ndp, w, dj, sige, dispp, fj):
     return beam
 
 
+def tesumb_v2(bc, hc, mphi2, ndp, w, dj, sige, dispp, fj, jump=None):
+    """tesumb の v2 版。bc・hc は分散を除いたベータトロン座標 x_b = x - η δ の 2 次・1 次のモーメント。物理座標のビーム行列 (x = x_b + η δ) に組み立てる。
+    K64 の tesumb は x_b の 2 次のモーメントに η η σδ² だけを足し (x_b と δ の相関 η σδ² を入れない)、ri の変換で分散が引き切れない"""
+    e = sige ** 2
+    beam = np.zeros(21)
+    for j in range(1, ndp + 1):
+        f = fj[j - 1] * dj / e / w
+        beam[0:10] += bc[:, 0, j - 1] * f
+    for j in range(1, ndp + 1):
+        aj = (j - 0.5) * dj
+        f = fj[j - 1] * dj / e / w * math.sqrt(2.0 * aj)
+        beam[15:19] += hc[:, 1, j - 1] * f
+    beam[20] = e
+    if jump is not None:
+        for j in range(1, ndp + 1):
+            f = fj[j - 1] * dj / e / w
+            beam[0:10] += jump['cc'][:, j - 1] * f
+            beam[15:19] += jump['cp'][:, j - 1] * f
+    rx6 = np.eye(6)
+    rx6[0:4, 5] = np.asarray(dispp, dtype=float)[0:4]
+    P = rx6 @ beam6(beam) @ rx6.T
+    out = np.zeros(21)
+    for m in range(1, 7):
+        for n in range(1, m + 1):
+            out[iaidx(m, n) - 1] = P[m - 1, n - 1]
+    return out
+
+
 def beam6(beam21):
     """packed (iaidx) 21 要素 → 6×6 対称行列"""
     M = np.zeros((6, 6))
@@ -598,10 +650,21 @@ def synchro_beta_emittance(lat, momentum, amus0, amus1, amusstep, mphi2, verbose
     for j in range(1, ndp + 1):
         fj[j - 1] = math.exp(-(j - 0.5) * dj / sige ** 2)
         w += fj[j - 1] * dj / sige ** 2
-    ha, hb, ba, bb, bd = tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws, dj, dpndim, sigea, tw0, ri, helpers)
+    v2 = _compat.v2()
+    tws_h = tws
+    if v2:
+        # v2: 源泉の閉軌道 c(δ) から 1 次の分散 η δ を引く (座標は x_b = x - η δ。K64 は c をそのまま使い、リングの始点の分散 η ≠ 0 のとき
+        # 平衡の x エミッタンスを 40 倍 (大きなリング A) 過大にする。始点に依って値が変わる)
+        tws_h = tws.copy()
+        for ii in range(2 * ndims + 1):
+            tws_h[ii][15:19] = tws[ii][15:19] - dispp[0:4] * tws[ii][20]
+    jump = {'dd': 4.0 * abs(damp) * sige ** 2} if v2 else None
+    ha, hb, ba, bb, bd = tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws_h, dj, dpndim, sigea, tw0, ri, helpers, jump=jump)
+    _tesumb = (lambda *a: tesumb_v2(*a, jump=jump)) if v2 else tesumb
     phi0s = heff * omega0 * (trf0 + dz) / C_LIGHT
     fz = math.cos(phi0s) / (1.0 + math.cos(phi0s)) * 0.25 * (heff * alphap * PI2) ** 2
     dispp0 = physdisp(tws[ndims])
+    dsum = dispp if v2 else dispp0
     results = []
     for kk in range(1, ns + 1):
         amus = amus0 + amusstep * (kk - 1)
@@ -615,7 +678,7 @@ def synchro_beta_emittance(lat, momentum, amus0, amus1, amusstep, mphi2, verbose
         for _ in range(nd1):
             tevdif(hb, hc, hs, ha, amuj, bd, hc, hs, ndp, mphi2, mphi, 4, dj, damp, sige)
         tesolvd(bb, bc, bs, ba, amuj, bd, hc, hs, ndp, mphi2, mphi, 10, dj, damp, sige, _tsolva)
-        beam = tesumb(bc, hc, mphi2, ndp, w, dj, sige, dispp0, fj)
+        beam = _tesumb(bc, hc, mphi2, ndp, w, dj, sige, dsum, fj)
         beamr = ri @ beam6(beam) @ ri.T
         vx = beamr[0, 0] * beamr[1, 1] - beamr[0, 1] ** 2
         vy = beamr[2, 2] * beamr[3, 3] - beamr[2, 3] ** 2
@@ -627,7 +690,7 @@ def synchro_beta_emittance(lat, momentum, amus0, amus1, amusstep, mphi2, verbose
         while res > conv:
             tevdif(hb, hc, hs, ha, amuj, bd, hc, hs, ndp, mphi2, mphi, 4, dj, damp, sige)
             tevdif(bb, bc, bs, ba, amuj, bd, hc, hs, ndp, mphi2, mphi, 10, dj, damp, sige)
-            beam = tesumb(bc, hc, mphi2, ndp, w, dj, sige, dispp0, fj)
+            beam = _tesumb(bc, hc, mphi2, ndp, w, dj, sige, dsum, fj)
             beamr = ri @ beam6(beam) @ ri.T
             vx = beamr[0, 0] * beamr[1, 1] - beamr[0, 1] ** 2
             vy = beamr[2, 2] * beamr[3, 3] - beamr[2, 3] ** 2

@@ -110,11 +110,11 @@ def test_polarization_with_insertion_device_k64(k64_mode):
 
 
 def test_large_ring_a_orbit_error_depolarization_scales_with_square_v2(v2_mode):
-    """大きなリング A に鉛直方向の四極のずれ (rms 0.1 / 0.2 mm、60 台) を入れた脱偏極率: ずれの 2 乗に比例し (4 倍 ±10%)、P は 92.376% より下がる。
-    ずれが 0.4 mm で P = 0.9176 (脱偏極率 1.3e-12 /周、偏極時間 1.6e6 s)"""
+    """大きなリング A に鉛直方向の四極のずれ (rms 0.05 / 0.1 mm、60 台) を入れた脱偏極率: ずれの 2 乗に比例し (4 倍 ±10%)、P は 92.376% より下がる。
+    (P1: rms 0.2 mm 以上は光学が不安定 (x の固有値 1.2) で、v2 は P = NaN を返す。A2・B3 の記録の 0.2・0.4 mm の値は意味がない)"""
     src = _read(os.path.join(HERE, 'kek-ls_v03_12.lat'))
     out = {}
-    for amp in (1e-4, 2e-4):
+    for amp in (0.5e-4, 1e-4):
         ffs, sp0 = _run(src, 'RING')
         rng = np.random.default_rng(3)
         quads = [q for q in ffs.lat.elements if type(q).__name__ == 'Quadrupole' and q.L > 0]
@@ -123,7 +123,7 @@ def test_large_ring_a_orbit_error_depolarization_scales_with_square_v2(v2_mode):
         ffs.calc(quiet=True)
         e = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)
         out[amp] = e['spin']
-    r = out[2e-4]['depol_rate'] / out[1e-4]['depol_rate']
+    r = out[1e-4]['depol_rate'] / out[0.5e-4]['depol_rate']
     assert 3.6 < r < 4.4, r
-    assert out[1e-4]['equpol'][0] < PST and out[2e-4]['equpol'][0] < out[1e-4]['equpol'][0]
-    assert out[2e-4]['equpol'][0] > 0.90
+    assert out[0.5e-4]['equpol'][0] < PST and out[1e-4]['equpol'][0] < out[0.5e-4]['equpol'][0]
+    assert out[1e-4]['equpol'][0] > 0.90

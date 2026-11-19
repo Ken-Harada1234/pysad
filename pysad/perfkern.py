@@ -17,7 +17,7 @@ TW_KEYS = ('ax', 'bx', 'ay', 'by', 'nx', 'ny', 'ex', 'epx', 'ey', 'epy', 'r1', '
 
 
 @njit(**NJ)
-def _step(st, M, clamp, out):
+def _step(st, M, clamp, out, v2):
     ax0 = st[0]
     bx0 = st[1]
     ay0 = st[2]
@@ -122,6 +122,11 @@ def _step(st, M, clamp, out):
             ay1 = -(u43 * bb + u44 * dd)
             by1 = u33 * bb + u34 * dd
             dpsiy = math.atan2(u34, bb)
+            if v2 and not normal:                      # v2: 入れ替わりから出る跳びは −pi (lattice._exch_phase)
+                if aa < 0.0 and abs(u12) < 1e-9 * abs(aa):
+                    dpsix = -math.pi
+                if bb < 0.0 and abs(u34) < 1e-9 * abs(bb):
+                    dpsiy = -math.pi
         else:
             detm = (u31 * u42 - u32 * u41 + u13 * u24 - u14 * u23) * 0.5
             sd = math.sqrt(abs(detm))
@@ -147,6 +152,11 @@ def _step(st, M, clamp, out):
             ay1 = -(u23 * bb + u24 * dd)
             by1 = u13 * bb + u14 * dd
             dpsiy = math.atan2(u14, bb)
+            if v2 and normal:                          # v2: 入れ替わりに入る跳びは +pi
+                if aa < 0.0 and abs(u32) < 1e-9 * abs(aa):
+                    dpsix = math.pi
+                if bb < 0.0 and abs(u14) < 1e-9 * abs(bb):
+                    dpsiy = math.pi
     else:
         if normal:
             t1 = r1 * a22 - r2 * a21
@@ -220,7 +230,7 @@ def _step(st, M, clamp, out):
 
 
 @njit(**NJ)
-def twiss_chain(tw0, mats, clamp, check):
+def twiss_chain(tw0, mats, clamp, check, v2=False):
     """tw0 (15,) を mats (n,6,6) で順に伝搬。戻り (out (n,15), nbad)。
     check=True (SAD 流の続行): 各要素の入口で βx>0 かつ βy>0 でなければ、または出力が非有限なら、その要素 i で打ち切って nbad=i
     (out[:i] が有効)。check=False: 出力に非有限が出たらその要素 i を nbad として最後まで続ける (呼び出し側が pure Python に戻す)。
@@ -232,7 +242,7 @@ def twiss_chain(tw0, mats, clamp, check):
     for i in range(n):
         if check and not (st[1] > 0.0 and st[3] > 0.0):
             return out, i
-        _step(st, mats[i], clamp, out[i])
+        _step(st, mats[i], clamp, out[i], v2)
         ok = True
         for j in range(15):
             if not math.isfinite(out[i, j]):
@@ -265,8 +275,10 @@ def _mm(a, b):
 
 @njit(**NJ)
 def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp, xpx, xpy, xpz, xpa, anp, uc, uct,
-              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False, rsgn=1.0):
+              al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False, rsgn=1.0, exactd=False,
+              tiny=0.0, touty=0.0):
     """戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
+    exactd = exactd and bzh == 0.0 and bzhr0 == 0.0      # v2 の厳密な微分は SOL の外だけ (SOL 領域内の tradke は未確認)
     # transi = T @ tinv6(transr)、tinv6(r) = -J r^T J
     tinv = np.empty((6, 6))
     for i in range(6):
@@ -308,17 +320,22 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
         dxpx = tr2[3, j] * pz0 + py * dpz0[j] - ddpz[j] * pyi - pz * dpyi[j]
         dxpy = ddpz[j] * pxr0 + pz * dpxr0[j] - tr2[1, j] * pz0 - px * dpz0[j]
         dxpz = tr2[1, j] * pyi + px * dpyi[j] - tr2[3, j] * pxr0 - py * dpxr0[j]
-        dxpa[j] = (xpx * dxpx + xpy * dxpy + xpz * dxpz) / xpa / pr ** 2
+        if exactd:
+            dxpa[j] = (xpx * dxpx + xpy * dxpy + xpz * dxpz) / xpa / pr ** 4      # v2: xpa = |xp|/pr² の微分は (xp·dxp)/(xpa pr⁴) (K64 は pr²)
+        else:
+            dxpa[j] = (xpx * dxpx + xpy * dxpy + xpz * dxpz) / xpa / pr ** 2
     dxpa[5] -= 2.0 * xpa / pr
     dal = np.empty(6)
     for j in range(6):
         dal[j] = -tr2[4, j]
     dal[4] += 1.0
-    if tin != 0.0 or tout != 0.0:
-        # v2: 偏向磁石の端の角による場の中の行路の変化 (al1 = al - dz - tin*x0 - tout*x) の微分
+    if tin != 0.0 or tout != 0.0 or tiny != 0.0 or touty != 0.0:
+        # v2: 偏向磁石の端の角による場の中の行路の変化 (al1 = al - dz - tin*x0 - tiny*y0 - tout*x - touty*y) の微分。
+        # tiny・touty は回した座標系の MULT (v2next P3: x' = cos x − sin y)
         dal[0] -= tin
+        dal[2] -= tiny
         for j in range(6):
-            dal[j] -= tout * tr2[0, j]
+            dal[j] -= tout * tr2[0, j] + touty * tr2[2, j]
     das = 1.0 / math.sqrt(1.0 - xpa ** 2)
     dtheta = dxpa * das
     danp = anrad * h1 * dtheta
@@ -329,19 +346,46 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     dddpx = np.empty(6)
     dddpy = np.empty(6)
     for j in range(6):
-        dddpx[j] = 0.5 * (rsgn * (tr2[1, j] - dpxr0[j]) * dg + ddpx * ddg[j])        # rsgn: v2 は ddpx の符号を反転 (ddpx は符号つきで渡る)
-        dddpy[j] = 0.5 * (rsgn * (tr2[3, j] - dpyi[j]) * dg + ddpy * ddg[j])
+        if exactd:
+            # v2: ddpx = rsgn·0.5·dpx·dg の微分は 0.5·rsgn·(d(dpx)·dg + dpx·d(dg))。K64 は 2 項目の dpx を ddpx (= 0.5·dpx·dg) に取り違えていて、dg 倍だけ小さい
+            dddpx[j] = 0.5 * rsgn * ((tr2[1, j] - dpxr0[j]) * dg + (px - pxr0) * ddg[j])
+            dddpy[j] = 0.5 * rsgn * ((tr2[3, j] - dpyi[j]) * dg + (py - pyi) * ddg[j])
+        else:
+            dddpx[j] = 0.5 * (rsgn * (tr2[1, j] - dpxr0[j]) * dg + ddpx * ddg[j])        # rsgn: v2 は ddpx の符号を反転 (ddpx は符号つきで渡る)
+            dddpy[j] = 0.5 * (rsgn * (tr2[3, j] - dpyi[j]) * dg + ddpy * ddg[j])
     tr1 = np.zeros((6, 6))
     for j in range(6):
         tr1[0, j] = c1 * dddpx[j]
         tr1[2, j] = c1 * dddpy[j]
+        if exactd:
+            # v2: x' = x + ddpx·c1 の c1 = al1/(3 pr) の微分 ddpx·dc1 (dc1 = dal/(3 pr) - c1 dpr/pr)。K64 はこの項を落としている
+            tr1[0, j] += ddpx * dal[j] / (3.0 * pr)
+            tr1[2, j] += ddpy * dal[j] / (3.0 * pr)
         tr1[1, j] = (tr2[1, j] * dg + px * ddg[j]) / pr + dddpx[j]
         tr1[3, j] = (tr2[3, j] * dg + py * ddg[j]) / pr + dddpy[j]
         tr1[5, j] = ddg[j]
-    tr1[0, 5] -= ddpx / pr
-    tr1[2, 5] -= ddpy / pr
-    tr1[1, 5] -= px * dg / pr
-    tr1[3, 5] -= py * dg / pr
+    if exactd:
+        tr1[0, 5] -= ddpx * c1 / pr         # v2: ∂c1/∂δ = -c1/pr (K64 は c1 を掛けずに -ddpx/pr で、長さでなく角度の次元になっている)
+        tr1[2, 5] -= ddpy * c1 / pr
+        tr1[1, 5] -= px * dg / pr ** 2
+        tr1[3, 5] -= py * dg / pr ** 2
+    else:
+        tr1[0, 5] -= ddpx / pr
+        tr1[2, 5] -= ddpy / pr
+        tr1[1, 5] -= px * dg / pr
+        tr1[3, 5] -= py * dg / pr
+    if exactd:
+        # v2: 上の tr1 は区間の始点の座標 j に関する微分 (tr2 = 区間の写像の微分を使って求めた)。D・B の更新 (Dn = D + tr1 (T + D)、
+        # Bn = (I + tr1) B (I + tr1)^T) は区間の終点の座標に関する微分を要る (T + D は終点までの行列)。K64 は始点に関する tr1 をそのまま使う
+        # (スピンの更新 srot は始点の行列 transr を掛けていて正しい)。tr1 ← tr1 tr2^-1 (tr2 はシンプレクティックなので逆行列は -J tr2^T J)
+        tr2i = np.empty((6, 6))
+        for i in range(6):
+            si = 1.0 if i % 2 == 0 else -1.0
+            for j in range(6):
+                l = j ^ 1
+                sl = 1.0 if l % 2 == 0 else -1.0
+                tr2i[i, j] = -(si * sl * tr2[l, i ^ 1])
+        tr1 = _mm(tr1, tr2i)
     if bzh != 0.0:
         for j in range(6):
             t2 = tr1[1, j] - bzh * tr1[2, j]

@@ -1,0 +1,9 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.000000 $$$       f BX    #######  #   2.000000 $$$       f NX    #######  #    .125000
+$$$       f AY    #######  #  -1.000000 $$$       f BY    #######  #   2.000000 $$$       f NY    #######  #    .125000
+$$$       f LENG  #######  #   1.000000
+  ???-PSPAC-Warning-the longitudinal mesh is too coarse: rms length 0.00577 m is only 1.2 cells of PSPACDZ = 0.005 m (the line density is under-estimated). Use PSPACDZ <= rms/3 or PSPACNZ < 4 (automatic mesh).
+
+  ???-PSPAC-Warning-15.2% of the particles are outside the mesh (PSPACNX x PSPACDX, PSPACNY x PSPACDY); they get no kick.
+
+RMS    .00373747598022    .00373842773943    .00718097397125    .00718395808959  9.083287902917E-7    .00234496485261

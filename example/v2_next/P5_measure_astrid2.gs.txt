@@ -1,0 +1,168 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:12:09 Thursday 11/19/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG )
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180
+          BH
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE)
+
+	RING = (3*NCELL CAVI 3*NCELL)
+        RINGMPW = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+
+! v2next P5 項目 1: MEASURE / TRCOD の gs との比較 (ASTRID2 (0.58 GeV、周長 45.7 m))。このファイルは台本の後半だけ: 先頭に example/astrid/lattice/ASTRID2_v01_01.sad を連結して走らせる。
+! 先頭に MARK ORG0 を足したリングで、ORG0 の位置の MEASURE (gs が出力する唯一の位置)・LOGMEASURE・TRCOD を gs と比べる。k64 は gs と全桁一致。
+MARK ORG0 = ();
+LINE RINGM = (ORG0 RING);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ EMITX=1e-9; EMITY=1e-10; SIGZ=3e-3; DP=1e-3;
+ USE RINGM; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.050E-13 $$$       f BX    #######  #   3.891569 $$$       f NX    #######  #   5.179990
+$$$       f AY    #######  #  4.047E-14 $$$       f BY    #######  #   1.622525 $$$       f NY    #######  #   2.140178
+$$$       f LENG  #######  #  45.704400
+ NP=400;
+ MEASURE ORG0;
+ Statistics at ORG0:   particles =  400
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001000, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -2.686E-06 5.084E-07-7.086E-07 4.231E-04 2.761E-04 4.162E-06
+        x :  3.855E-09
+    px/p0 :  6.275E-11 2.319E-10
+        y :  4.615E-11-1.225E-11 1.664E-10
+    py/p0 :  2.426E-11-5.811E-12 4.964E-12 5.841E-11
+        z : -6.461E-09 3.340E-09-6.505E-10-1.075E-09 8.762E-06
+    dp/p0 :  1.841E-09 1.111E-09-2.838E-11-2.337E-10 9.105E-08 3.365E-07
+ x-y projected(coupled) parameters:
+ emitx: 9.3508E-10 bx:  4.111     ax:-6.0604E-02 ex: 5.4713E-03 epx: 3.3001E-03
+ emity: 9.8330E-11 by:  1.692     ay:-5.0283E-02 ey:-8.4351E-05 epy:-6.9450E-04
+ x-y decoupled parameters:
+ emitu: 9.3523E-10 bu:  4.111     au:-6.0536E-02 eu: 5.4296E-03 epu: 3.2920E-03
+ emitv: 9.7712E-11 bv:  1.690     av:-4.4252E-02 ev: 5.2951E-05 epv:-6.6779E-04
+    r1:-1.2116E-02 r2: 6.1688E-02 r3:-7.8585E-03 r4: 2.1100E-02detr: 2.2914E-04
+   sigx: 6.2085E-05  sigy: 1.2900E-05   tilt:-1.2510E-02
+  sigpx: 1.5229E-05 sigpy: 7.6429E-06
+ sigp/p: 5.8010E-04  sigz: 2.9600E-03 dp/p/z: 3.0759E-05/sigz
+ LOGMEASURE;
+ -2.6860482E-06 -7.0863641E-07  3.8545895E-09  4.6149152E-11  1.6640664E-10
+ GAUSS; MEASURE ORG0;
+ Statistics at ORG0:   particles =  400
+ RAD: F, RFSW: T, GAUSS: T, DP =   .001000, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -4.534E-06 1.096E-06-6.364E-07 2.360E-03-6.037E-05 3.637E-05
+        x :  3.649E-09
+    px/p0 :  4.345E-12 2.294E-10
+        y :  2.925E-11-1.725E-11 1.750E-10
+    py/p0 :  1.757E-11 1.610E-11 3.538E-12 5.904E-11
+        z :  4.523E-10 4.114E-09 2.717E-10-1.563E-09 9.300E-06
+    dp/p0 : -2.075E-09-4.274E-10 1.024E-09 4.838E-11-1.758E-07 8.917E-07
+ x-y projected(coupled) parameters:
+ emitx: 9.1391E-10 bx:  3.987     ax:-3.6663E-03 ex:-2.3265E-03 epx:-4.7929E-04
+ emity: 1.0123E-10 by:  1.717     ay:-3.4406E-02 ey: 1.1486E-03 epy: 5.4256E-05
+ x-y decoupled parameters:
+ emitu: 9.1497E-10 bu:  3.987     au:-3.6888E-03 eu:-2.2367E-03 epu:-4.8530E-04
+ emitv: 9.9585E-11 bv:  1.728     av:-4.5361E-02 ev: 1.1392E-03 epv: 1.0349E-04
+    r1:-1.2297E-02 r2: 7.7598E-02 r3:-6.1030E-03 r4:-7.3185E-02detr: 1.3736E-03
+   sigx: 6.0406E-05  sigy: 1.3227E-05   tilt:-8.4180E-03
+  sigpx: 1.5146E-05 sigpy: 7.6837E-06
+ sigp/p: 9.4431E-04  sigz: 3.0497E-03 dp/p/z:-5.7656E-05/sigz
+ NOGAUSS;
+ Print["R1 ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+R1 5.179989880729462 2.1401775719491107
+ MEASURE $$$;
+ Print["R2 ", FFS["MEASURE $$$"][[1]]];
+R2 1
+ TRCOD ORG0;
+ Statistics at ORG0:   particles =  400
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001000, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  3.456E-21-1.355E-22 0.000E+00 5.501E-04-6.072E-20 1.409E-20
+        x :  4.153E-09
+    px/p0 : -8.171E-13 2.593E-10
+        y :  1.074E-11 8.229E-12 1.559E-10
+    py/p0 : -5.887E-11 2.630E-12 4.644E-12 6.015E-11
+        z :  4.787E-09 3.070E-09 4.261E-09 1.426E-10 8.910E-06
+    dp/p0 :  1.115E-09 2.248E-10-1.020E-10-4.816E-10 1.029E-08 3.266E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.0370E-09 bx:  4.002     ax: 1.5281E-03 ex: 3.4145E-03 epx: 6.8830E-04
+ emity: 9.6161E-11 by:  1.621     ay:-4.6734E-02 ey:-3.1239E-04 epy:-1.4746E-03
+ x-y decoupled parameters:
+ emitu: 1.0375E-09 bu:  4.002     au: 1.5451E-03 eu: 3.4697E-03 epu: 6.7903E-04
+ emitv: 9.5346E-11 bv:  1.631     av:-4.7732E-02 ev:-3.5090E-04 epv:-1.4336E-03
+    r1:-3.1036E-03 r2:-4.0698E-02 r3: 1.4342E-02 r4:-1.2288E-02detr: 6.2185E-04
+   sigx: 6.4446E-05  sigy: 1.2488E-05   tilt:-2.6875E-03
+  sigpx: 1.6103E-05 sigpy: 7.7556E-06
+ sigp/p: 5.7147E-04  sigz: 2.9849E-03 dp/p/z: 3.4479E-06/sigz
+ Print["DX ", Twiss["DPY",1]];
+DX .0005500778211793193
+ Exit;
+ FFS                  end:  CPU time =     0.007 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

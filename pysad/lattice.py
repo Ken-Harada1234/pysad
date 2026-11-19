@@ -211,7 +211,17 @@ def _chain(tw_cur: dict, el_mats, clamp: bool, check: bool):
     if not el_mats:
         return np.empty((0, 15)), -1
     mats = np.array([m[0] for m in el_mats])
-    return _twiss_chain_nb(vec, mats, clamp, check)
+    return _twiss_chain_nb(vec, mats, clamp, check, _compat.v2())
+
+
+def _exch_phase(y: float, x: float, jump: float) -> float:
+    """モードの入れ替わり (DETR < 1 <-> >= 1) をまたぐ要素の位相の進み atan2(y, x)。v2 だけ。
+    純粋な 90 度の座標回転 (COORD CHI3) などでは x < 0 で y が丸め誤差 (0 か ±1e-31) になり、K64 の atan2 は y の符号 (丸め誤差) で +pi か −pi を返す。
+    リングの両端に +90 度・−90 度の回転があると、2 つの跳びが打ち消すか (0)、足されるか (±2 pi) が丸め誤差で決まり、一周の NX・NY の整数部が
+    gs と ±1 違う (P5 項目 2)。v2 は入れ替わりに入るとき +pi、出るとき −pi にして、対で打ち消す (回転の前後で位相の進みの合計は 0)。"""
+    if x < 0.0 and abs(y) < 1e-9 * abs(x):
+        return jump
+    return math.atan2(y, x)
 
 
 def _transport_twiss(twiss0: dict, M: np.ndarray, clamp: bool = True, gr: float = 1.0) -> dict:
@@ -304,6 +314,9 @@ def _transport_twiss(twiss0: dict, M: np.ndarray, clamp: bool = True, gr: float 
             ay1 = -(u43 * bb + u44 * dd)
             by1 = u33 * bb + u34 * dd
             dpsiy = math.atan2(u34, bb)
+            if _compat.v2() and not normal:                # 入れ替わりから出る: 跳びは −pi
+                dpsix = _exch_phase(u12, aa, -math.pi)
+                dpsiy = _exch_phase(u34, bb, -math.pi)
         else:
             detm = (u31 * u42 - u32 * u41 + u13 * u24 - u14 * u23) * 0.5
             sd = math.sqrt(abs(detm))
@@ -329,6 +342,9 @@ def _transport_twiss(twiss0: dict, M: np.ndarray, clamp: bool = True, gr: float 
             ay1 = -(u23 * bb + u24 * dd)
             by1 = u13 * bb + u14 * dd
             dpsiy = math.atan2(u14, bb)
+            if _compat.v2() and normal:                    # 入れ替わりに入る: 跳びは +pi
+                dpsix = _exch_phase(u32, aa, math.pi)
+                dpsiy = _exch_phase(u14, bb, math.pi)
     else:
         (a11, a12, a13, a14, a15), (a21, a22, a23, a24, a25), \
             (a31, a32, a33, a34, a35), (a41, a42, a43, a44, a45) = t
@@ -979,8 +995,11 @@ def _bend_as_mult(el):
     設計ロール ROTATE・据え付けロール ROTATION・DX/DY は呼び出し側 (_bend_element_cod_matrix / emit6d._tbende) が tchge で外から付けるので 0 にする。"""
     from types import SimpleNamespace
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
+    # tbende.f:403: tmulte に fb1・fb2 (= F1+FB1・F1+FB2。tmulte が FRINGE = 1・3 / 2・3 のときだけ使う)・mfring・端の角 apsi1・apsi2 (= AE1・AE2) を渡す
+    # (f1in 等 = 0)。以前は FB・AE を渡していなかった (v2next P3。k64 も K64 のとおりに直した)
     return SimpleNamespace(L=el.L, KnL={0: g('K0'), 1: g('K1') * el.L}, ROTATION=0.0, DROTATE=g('DROTATE'),
-                           EPS=g('EPS'), DX=g('DX'), DY=g('DY'), DISFRIN=g('DISFRIN'), FRINGE=g('FRINGE'), K0FR=0.0)
+                           EPS=g('EPS'), DX=g('DX'), DY=g('DY'), DISFRIN=g('DISFRIN'), FRINGE=g('FRINGE'), K0FR=0.0,
+                           FB1=g('F1') + g('FB1'), FB2=g('F1') + g('FB2'), AE1=g('AE1'), AE2=g('AE2'))
 
 
 def _tsteee_body_mat(cod, alx, rhob):
@@ -1108,7 +1127,8 @@ def _mult_params(el) -> dict:
         f1in = f2in = f1out = f2out = 0.0
     return dict(al=al, knl=knl, nmmax=nmmax, cr1=cr1, theta2=theta2, akr=akr, ndiv=ndiv, eps=eps,
                 dx=g('DX'), dy=g('DY'), fringe=g('DISFRIN') == 0.0, mfring=int(round(g('FRINGE'))),
-                bfrm=g('K0FR') == 0.0, f1in=f1in, f2in=f2in, f1out=f1out, f2out=f2out, fb1=g('FB1'), fb2=g('FB2'))
+                bfrm=g('K0FR') == 0.0, f1in=f1in, f2in=f2in, f1out=f1out, f2out=f2out, fb1=g('FB1'), fb2=g('FB2'),
+                ae1=g('AE1'), ae2=g('AE2'))
 
 
 def _mult_rot_in(c, dx, dy, ct, st):
@@ -1317,9 +1337,24 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
     fringe, mfring, bfrm = pm['fringe'], pm['mfring'], pm['bfrm']
     f1in, f2in, f1out, f2out, fb1, fb2 = pm['f1in'], pm['f2in'], pm['f1out'], pm['f2out'], pm['fb1'], pm['fb2']
     ak1h, al1h, ak0h = akn1 * 0.5, aln * 0.5, akn0 * 0.5
+    apsi1, apsi2 = pm['ae1'], pm['ae2']
 
     def wrap(f):
         return lambda c, f=f: r_out(f(r_in(c)))
+
+    def edge_kick(apsi):
+        """tmulke (m = 0): 端の角 apsi (AE1・AE2) による多極場の端の蹴り (fe = −tan(apsi)/aln、(Σ K_n z^n/n!) z に比例。±0.9999 で切る)"""
+        def f(c):
+            c = c.copy()
+            cx0 = complex(c[0], c[2])
+            cx = 0j
+            for kord in range(nmmax, 0, -1):
+                cx = (cx + akn[kord]) * cx0 / kord
+            cx = -math.tan(apsi) / aln * (cx + akn[0]) * cx0
+            c[1] -= max(-0.9999, min(0.9999, cx.real))
+            c[3] += max(-0.9999, min(0.9999, cx.imag))
+            return c
+        return f
     if nz:
         # tmulte.f の入口 (fringe .and. mfring /= 2 の tqfrie、bfrm の tbfrme (mfring = 1, 3 は fb1 つき、2 以外は fb なし)、
         # mfring = 1, 3 の tqlfre)。そのあと tradke(f1in) か tsetr0 (= 'radstart': 放射の基準点)
@@ -1333,6 +1368,10 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
         if mfring == 1 or mfring == 3:
             seq.append(('map', wrap(lambda c: _tqlfre_cod(c, al1h, ak1h, f1in, f2in))))
         seq.append(('radstart', f1in))
+        if apsi1 != 0.0:
+            kf1 = wrap(edge_kick(apsi1))
+            kf1.edge = 'in'
+            seq.append(('map', kf1))
 
     def tsolque_pieces(al1, ak1, ak0):
         """tsolque(al1, ak1, 0, Re ak0, Im ak0): 部分スライスごとの写像と放射点"""
@@ -1404,7 +1443,17 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
             kf.m = m + 1
         seq.append(('map', kf))
     if nz:
-        seq += tsolque_pieces(al1 * 0.5, ak1 * 0.5, ak0 * 0.5)
+        pieces = tsolque_pieces(al1 * 0.5, ak1 * 0.5, ak0 * 0.5)
+        if apsi2 != 0.0:
+            kf2 = wrap(edge_kick(apsi2))
+            kf2.edge = 'out'
+            if _compat.v2():
+                # v2 (P3): 出口の端の蹴りは最後の半スライスの後 (放射の刻みの前)。K64 の tmulte は半スライスの前に置く (追跡の tmulti は後。
+                # 同じ MULT の CALC と追跡でチューンが 3e-5 違う)。k64 は K64 のまま
+                pieces.insert(max(i for i, (k, _f) in enumerate(pieces) if k == 'rad'), ('map', kf2))
+            else:
+                seq.append(('map', kf2))                     # tmulte.f: 出口の端の蹴りは最後の半スライス (tsolque) の前
+        seq += pieces
         if mfring == 2 or mfring == 3:
             seq.append(('map', wrap(lambda c: _tqlfre_cod(c, al1, ak1, -f1out, f2out))))
         if bfrm and ak0 != 0.0:
@@ -2102,6 +2151,40 @@ def _quad_offset_map(L: float, K1: float, dx: float = 0.0, dy: float = 0.0,
         return c
     return f
 
+def _face_kt(el):
+    """v2 (v2next P2 項目 5): K1≠0 の BEND の四極の磁場も端面から始まる模型 (compat.bend_k1_edge() == 'face') のときの
+    楔形の領域の四極の蹴りの係数 (kt1, kt2) = (K1 tan e1, K1 tan e2)。使わないとき (既定・k64・K1=0・ANGLE=0・端の角 0) は None。
+    K64 の tbende は四極を半径方向の面から始めるので、端面 (半径方向の面から x tan e だけ下流・上流) との間の楔形の領域 (厚さ x tan e) で
+    双極磁場がなく四極の磁場だけが働く。端面から始める模型はこの領域の四極の蹴り Δpx = −K1 x (x tan e)、Δpy = +K1 y (x tan e) を取り除く:
+    半径方向の面 (入口の端の後・出口の端の前) で Δpx = +kt x²、Δpy = −kt x y (px は p0 で割った量)"""
+    if not (_compat.v2() and _compat.bend_k1_edge() == 'face'):
+        return None
+    g = lambda k: float(getattr(el, k, 0.0) or 0.0)
+    if g('K1') == 0.0 or g('ANGLE') == 0.0:
+        return None
+    e1, e2 = g('E1'), g('E2')
+    if e1 == 0.0 and e2 == 0.0:
+        return None
+    return g('K1') * math.tan(e1), g('K1') * math.tan(e2)
+
+
+def _face_kick_cod(c, kt):
+    c = np.array(c, dtype=float)
+    x, y = c[0], c[2]
+    c[1] += kt * x * x
+    c[3] -= kt * x * y
+    return c
+
+
+def _face_kick_jac(c, kt):
+    J = np.eye(6)
+    x, y = c[0], c[2]
+    J[1, 0] = 2.0 * kt * x
+    J[3, 0] = -kt * y
+    J[3, 2] = -kt * x
+    return J
+
+
 def _bend_k1_cod_matrix(el, cod: np.ndarray):
     """K1≠0 BEND の COD 更新と COD 位置での転送行列 (emit6d の tbende 直訳を使用)。
     運動量 (h0) は z 列にしか効かないので仮に 1 GeV/c を使う。
@@ -2126,6 +2209,10 @@ def _bend_k1_cod_matrix(el, cod: np.ndarray):
     c, M = _bend_edge_chain(st.cod.copy(), np.eye(6), rhob, g('E1'), True)
     st.cod = c
     st.apply(M)
+    kt = _face_kt(el)
+    if kt is not None:
+        st.apply(_face_kick_jac(st.cod, kt[0]))
+        st.cod = _face_kick_cod(st.cod, kt[0])
     alx0 = 0.0
     akx0 = 0.0
     for n in range(1, ndiv + 1):
@@ -2136,6 +2223,9 @@ def _bend_k1_cod_matrix(el, cod: np.ndarray):
         alx0 = aln
         _tbendebody(st, aln, phi1, akx, aln, rhob, rho0, False)
     _tbendecorr(st, akx0 * 0.5, alx0 * 0.5, rho0)
+    if kt is not None:
+        st.apply(_face_kick_jac(st.cod, kt[1]))
+        st.cod = _face_kick_cod(st.cod, kt[1])
     c, M = _bend_edge_chain(st.cod.copy(), np.eye(6), rhob, g('E2'), False)
     st.cod = c
     st.apply(M)
@@ -2241,6 +2331,8 @@ def _bend_step_fast(el, cod):
         return None
     if float(el.ANGLE) == 0.0 and g('FRINGE') in (-1.0, -2.0):
         return None
+    if _face_kt(el) is not None:
+        return None             # 端面から四極が始まる模型 (v2 のオプション) は Python の経路 (emit6d._tbende)
     ang = float(el.ANGLE)
     k0 = g('K0')
     k1 = g('K1')

@@ -1,0 +1,52 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:31:24 Thursday 11/19/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next P3 項目 2・3: K64 の tsteer (追跡) は出口の端の角 AE2 を FB2 != 0 のときだけ入れる (CALC・Emittance[] の tsteee は常に入れる)。
+! AE2 だけのステアリング (K0 = +-0.003、AE2 = 0.3) の CALC のチューンと、追跡の一周写像 (閉軌道ではなく原点のまわりの数値微分) から求めた x のチューンの小数部。
+! gs の出力では、追跡のチューンは AE なしと同じ 0.134095 (AE2 が追跡に入っていない)、CALC は 3.1334714 (AE2 が入っている)。FB2=1e-6 FRINGE=3 を付けると追跡は 0.133883 (AE2 が入る)。
+! v2 は FB2 = 0 でも追跡に AE2 を入れる (.pysad.txt: 追跡のチューンが 0.133883 になる)。k64 は gs と同じ (.pysad_k64.txt)。
+! 一周写像は原点のまわりの差分 (h = 1e-4) なので、閉軌道のまわりの厳密なチューン (試験 test_v2_P3_ae.py) との差 4e-4 は閉軌道からのずれ。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) DS = (L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+BEND SA = (L=0.2 ANGLE=0 K0=0.003 AE2=0.3);
+BEND SB = (L=0.2 ANGLE=0 K0=-0.003 AE2=0.3);
+MARK ST = ();
+LINE CELLA = (QF D2 B D2 QD DS SA D1);
+LINE CELLB = (QF D2 B D2 QD DS SB D1);
+LINE CC = (CELLA CELLB);
+LINE RING = (ST 6*CC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="14.10";
+ h=1e-4;
+ bm={{h,-h,0,0,0},{0,0,h,-h,0},{0,0,0,0,h},{0,0,0,0,-h},{0,0,0,0,0},{0,0,0,0,0},{1,1,1,1,1}};
+ USE RING; CELL; CALC; NORFSW; NORAD;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.268519 $$$       f BX    #######  #   5.572048 $$$       f NX    #######  #   3.133471
+$$$       f AY    #######  #   1.008992 $$$       f BY    #######  #   2.081642 $$$       f NY    #######  #   2.267152
+$$$       f LENG  #######  #  50.400000
+ Print["CALC tunes ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+CALC tunes   3.1334714325   2.2671516129
+ r=TrackParticles[{1,bm},1,1,1][[2]];
+ Print["TRK ", r];
+TRK {{  -.0063760521,  -.0061518635,  -.0058187191,  -.0067093585,  -.0062639288},
+ {  -.0026712173,  -.0025028597,  -.0023418587,  -.0028322735,  -.0025870285},
+ { -7.556309E-19, -6.846532E-19, -6.613886E-19, -7.788464E-19, -1.1618981E-4},
+ { 6.7253940E-19, 6.0847489E-19, 5.7860411E-19, 7.0239194E-19, 1.62235829E-5},
+ {   .0000000000,   .0000000000,   .0000000000,   .0000000000,   .0000000000},
+ {   .0000000000,   .0000000000,   .0000000000,   .0000000000,   .0000000000},
+ {  1.0000000000,  1.0000000000,  1.0000000000,  1.0000000000,  1.0000000000}}
+ Print["tracking x tune (fraction) ", ArcCos[((r[[1,1]]-r[[1,2]])/(2h)+(r[[2,3]]-r[[2,4]])/(2h))/2]/(2Pi)];
+tracking x tune (fraction)    .1340952001
+ Exit;
+ FFS                  end:  CPU time =     0.002 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

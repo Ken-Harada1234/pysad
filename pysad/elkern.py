@@ -35,6 +35,7 @@ XTHASX = (2.0**-52 * 13312.0 / 231.0 / 6.0)**0.1     # tfloor.f xthasx
 # PH の並び
 P0, H0, ANRAD, CUC, CRAD, BRHOZ, EMIDIV, EMIDIB, EMIDIQ, DVFS, PGEV = range(11)
 RSGN = 11            # tradke の ddpx の符号 (K64 = +1、v2 = −1。v2next A1 項目 7: K64 の追跡 tradkn と逆)
+EXACTD = 12          # tradke の D・B の更新に終点の座標に関する微分を使う (v2 = 1。v2next P2 項目 4)
 # S の並び
 U0, H1EMIT, DVEMIT = range(3)
 
@@ -43,7 +44,7 @@ def phys_array(ph):
     """emit6d._Phys → PH 配列"""
     from . import compat as _cmp
     return np.array([ph.p0, ph.h0, ph.anrad, ph.cuc, ph.crad, ph.brhoz, ph.emidiv, ph.emidib, ph.emidiq,
-                     ph.dvfs, ph.pgev, -1.0 if _cmp.v2() else 1.0], dtype=float)
+                     ph.dvfs, ph.pgev, -1.0 if _cmp.v2() else 1.0, 1.0 if _cmp.v2() else 0.0], dtype=float)
 
 
 # ---------------------------------------------------------------------------
@@ -201,7 +202,7 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
         return
     ok, Dn, Bn = _tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
                             xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, PH[P0], PH[ANRAD], CAVE, CUU,
-                            0.0, 0.0, tin, tout, False, PH[RSGN])
+                            0.0, 0.0, tin, tout, False, PH[RSGN], PH[EXACTD] != 0.0)
     if ok:
         for i in range(6):
             for j in range(6):

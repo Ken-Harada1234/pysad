@@ -183,7 +183,7 @@ def make_rs(seed):
     """乱数の状態の配列 [seed, v2 の印]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
     njit の中からは compat を読めないので、状態の配列に印を載せて渡す (k64 では 0 で、今までと同じ動作)"""
     from . import compat
-    return np.array([seed, 1 if compat.v2() else 0], dtype=np.int64)
+    return np.array([seed, 1 if compat.v2() else 0, 1 if compat.bend_k1_edge() == 'face' else 0], dtype=np.int64)
 
 
 @njit(**NJ)
@@ -1189,6 +1189,11 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
             # v2 (v2next B1): 入口の端は CALC (tbende) と同じ厳密な tbedge (K64 の薄い端は x の 2 次で数値微分と 1e-5 の差)
             edge_exact1(i, S, rhob, math.atan2(sinp1, cosp1), True)
             m_xi = S[i, 0]; m_pxi = S[i, 1]; m_yi = S[i, 2]; m_pyi = S[i, 3]; m_zi = S[i, 4]
+            if rs.shape[0] > 2 and rs[2] == 1:
+                # v2 (P2 項目 5): 四極の磁場も端面から始まる模型。半径方向の入口の面の楔形の領域の四極の蹴り (px・py は p で割った量)
+                kt = ak / al * tanp1 / (1.0 + S[i, 5])
+                m_pxi += kt * m_xi * m_xi
+                m_pyi -= kt * m_xi * m_yi
         else:
             f = yi / rhoe
             fpx = af * S[i, 1]
@@ -1309,6 +1314,10 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
         m_pxi = m_pxi - ak1c * m_xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m_p
         m_zi = m_zi - S[i, 6] * al
         if v2edge and sinp2 != 0.0:
+            if rs.shape[0] > 2 and rs[2] == 1:
+                kt = ak / al * tanp2 / (1.0 + m_dp)
+                m_pxi += kt * m_xi * m_xi
+                m_pyi -= kt * m_xi * m_yi
             S[i, 0] = m_xi; S[i, 1] = m_pxi; S[i, 2] = m_yi; S[i, 3] = m_pyi; S[i, 4] = m_zi; S[i, 5] = m_dp
             edge_exact1(i, S, rhob, math.atan2(sinp2, cosp2), False)       # v2 (B1): 出口も厳密な tbedge
         else:
@@ -1735,25 +1744,71 @@ def asinx(x):
 
 
 @njit(**NJ)
-def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, rs, p0, h0, anrad, cuc):
-    """tsteer.f (track6._tsteer_ens と同じ。F1/FB1/FB2 なし)。スライス外側・粒子内側、各スライスの後に全粒子 tradk。
-    入口エッジは tanp1 (最初のスライスだけ)。出口の tanp2 は fb2≠0 のときだけなので 0 のまま"""
+def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, rs, p0, h0, anrad, cuc,
+            fb1, fb2, fringe, tanp2e, v2):
+    """tsteer.f (track6._tsteer_ens と同じ)。スライス外側・粒子内側、各スライスの後に全粒子 tradk。
+    入口エッジは tanp1 (最初のスライスだけ)。出口の tanp2 (= tanp2e) は fb2≠0 のときだけ入る (fb2=0 なら 0 のまま)。
+    fb1・fb2 = F1+FB1・F1+FB2 (FRINGE による 0 化済み)。入口 dxfr1 = -fb1^2/rhob/24、dyfr1 = fb1/rhob^2/6、放射ありは断片 n=-1, 0 (長さ fb1/2)、
+    出口は断片 ndiv+1, ndiv+2 と dxfr2 = -fb2^2/rhob/24 (v2next P3: F1 の追跡)"""
     rhob = al / phib
     for i in range(n):
         tent1(i, S, dx, dy, theta, cost, sint)
+    f1r = 0.0
+    f2r = 0.0
+    dxfr1 = 0.0
+    dyfr1 = 0.0
+    dyfra1 = 0.0
+    dxfr2 = 0.0
+    dyfr2 = 0.0
+    dyfra2 = 0.0
+    tanp2 = 0.0
+    n1 = 1
+    n2 = 0
+    if fb1 != 0.0:
+        dxfr1 = -fb1**2 / rhob / 24.0
+        dyfr1 = fb1 / rhob**2 / 6.0
+        if fringe:
+            dyfra1 = 4.0 * dyfr1 / fb1**2
+        if krad:
+            f1r = 0.5 * fb1
+            n1 = -1
+    if fb2 != 0.0 and krad:
+        f2r = 0.5 * fb2
+        n2 = 2
+    phic = phib * (1.0 - (f1r + f2r) / al)
     ndiv = 1
     if krad:
         for i in range(n):
             setr0_1(i, S)
-        ndiv = min(1000, max(1, ndivrad(phib, 0.0, 0.0, eps0, h0)))
-    aln = al / ndiv
-    for m in range(1, ndiv + 1):
+        ndiv = min(1000, max(1, ndivrad(phic, 0.0, 0.0, eps0, h0)))
+    alc = al * phic / phib
+    aln = alc / ndiv
+    if v2 and krad and tanp1 != 0.0:
+        for i in range(n):
+            S[i, 9] -= tanp1 * S[i, 0]    # v2 (P3、B108): 入口の端の角で場の中の行路が x·tan(AE1) 短い (tradk の al1 = al − z + zr0)
+    for m in range(n1, ndiv + n2 + 1):
+        alx, alr = tbendal(m, ndiv, f1r, f2r, aln)
+        if m == n1 + 1:
+            dxfr1 = 0.0
+            dyfr1 = 0.0
+            dyfra1 = 0.0
+            tanp1 = 0.0
+        if m == ndiv + n2:
+            if fb2 != 0.0:
+                dxfr2 = -fb2**2 / rhob / 24.0
+                dyfr2 = fb2 / rhob**2 / 6.0
+                if fringe:
+                    dyfra2 = 4.0 * dyfr2 / fb2**2
+            if fb2 != 0.0 or v2:
+                tanp2 = tanp2e          # v2 (P3): 出口の端の角を常に入れる (K64 は fb2≠0 のときだけ)
         for i in range(n):
             dp = S[i, 5]
             pr = 1.0 + dp
             rhoe = rhob * pr
             pxi = S[i, 1] - tanp1 * S[i, 0] / rhoe
-            S[i, 3] += (tanp1 / rhoe) * S[i, 2]
+            S[i, 0] += dxfr1 * dp / pr
+            S[i, 3] += ((dyfr1 - dyfra1 * S[i, 2]**2) / pr**2 + tanp1 / rhoe) * S[i, 2]
+            S[i, 4] += (dxfr1 * pxi + (0.5 * dyfr1 - 0.25 * dyfra1 * S[i, 2]**2) * S[i, 2]**2 / pr) / pr
             dpv1 = sqrt1(-pxi**2)
             pv1 = 1.0 + dpv1
             fa = S[i, 2] / rhoe / pv1
@@ -1764,7 +1819,7 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
             S[i, 4] += ff * pxi
             dpz1 = pxy2dpz(pxi, pyi)
             pz1 = 1.0 + dpz1
-            dpx = aln / rhoe
+            dpx = alx / rhoe
             pxf = pxi + dpx
             dpz2 = pxy2dpz(pxf, pyi)
             pz2 = 1.0 + dpz2
@@ -1777,8 +1832,8 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
                 u = dpx * (pxf + pxi) / d
                 w = -dpx * (pxf * dpz1 + pxi * dpz2) / d
             dl = rhoe * (asinx(u) + w)
-            S[i, 0] = xi + aln * (pxf + pxi) / (pz2 + pz1)
-            S[i, 2] += pyi * (aln + dl)
+            S[i, 0] = xi + alx * (pxf + pxi) / (pz2 + pz1)
+            S[i, 2] += pyi * (alx + dl)
             dpv2 = sqrt1(-pxf**2)
             pv2 = 1.0 + dpv2
             fa = S[i, 2] / rhoe / pv2
@@ -1786,11 +1841,16 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
             ff = (0.5 - (S[i, 2] / rhob)**2 / 24.0) * S[i, 2] * fa / pv2**2
             S[i, 3] = pyi - pxf * f
             S[i, 0] += ff
-            S[i, 1] = pxf
-            S[i, 4] -= (dl + S[i, 6] * aln + ff * pxf)
-        tanp1 = 0.0
+            S[i, 1] = pxf - S[i, 0] * tanp2 / rhoe
+            S[i, 4] -= (dl + S[i, 6] * alx + ff * pxf)
+            S[i, 0] -= dxfr2 * dp / pr
+            S[i, 3] += ((dyfr2 - dyfra2 * S[i, 2]**2) / pr**2 + tanp2 / rhoe) * S[i, 2]
+            S[i, 4] -= (dxfr2 * pxf - (0.5 * dyfr2 - 0.25 * dyfra2 * S[i, 2]**2) * S[i, 2]**2 / pr) / pr
         if krad:
-            tradk_all(S, n, aln, 0.0, fluc, rs, p0, anrad, cuc)
+            if v2 and m == ndiv + n2 and tanp2 != 0.0:
+                for i in range(n):
+                    S[i, 9] -= tanp2 * S[i, 0]    # v2 (P3、B108): 出口の端の角の分
+            tradk_all(S, n, alr, 0.0, fluc, rs, p0, anrad, cuc)
     for i in range(n):
         texit1(i, S, dx, dy, theta, cost, sint)
 
@@ -2117,11 +2177,16 @@ class Prog:
                 cost, sint = (math.cos(theta), math.sin(theta)) if theta != 0.0 else (1.0, 0.0)
                 if al0 == 0.0:
                     return K_STEER0, (ak0, dx, dy, theta, cost, sint)
-                if g(el, 'F1') != 0.0 or g(el, 'FB1') != 0.0 or g(el, 'FB2') != 0.0:
-                    raise NotImplementedError('track6n: ANGLE=0 の BEND (tsteer) の F1/FB1/FB2 フリンジは未対応')
                 psi1 = g(el, 'E1')
+                psi2 = g(el, 'E2')
+                fb1, fb2, mfr, frg = _lat._bend_fringe_params(el)       # tpara: FRINGE <= 0 は -1 (入口だけ)・-2 (出口だけ) 以外 fb を 0 に
+                if mfr <= 0:
+                    if mfr != -1:
+                        fb1 = 0.0
+                    if mfr != -2:
+                        fb2 = 0.0
                 return K_STEER, (al0, -ak0, dx, dy, theta, cost, sint, math.sin(psi1) / math.cos(psi1),
-                                 g(el, 'EPS'), g(el, 'RAD') == 0.0)
+                                 g(el, 'EPS'), g(el, 'RAD') == 0.0, fb1, fb2, bool(frg), math.sin(psi2) / math.cos(psi2), _t6._compat.v2())
             if al0 == 0.0:
                 raise NotImplementedError('track6n: L=0 で ANGLE≠0 の BEND')
             psi1 = g(el, 'E1')
@@ -2374,8 +2439,9 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         elif kind == K_STEER0:
             k_steer0(S, n, pr[0], pr[1], pr[2], pr[3], pr[4], pr[5])
         elif kind == K_STEER:
-            (al, phib, dx, dy, theta, cost, sint, tanp1, eps0, radok) = pr
-            k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, p0, h0 * tm, anrad, cuc)
+            (al, phib, dx, dy, theta, cost, sint, tanp1, eps0, radok, sfb1, sfb2, sfrg, tanp2e, sv2) = pr
+            k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, p0, h0 * tm, anrad, cuc,
+                    sfb1, sfb2, sfrg, tanp2e, sv2)
         elif kind > K_NONE:
             # MULT / ソレノイド領域 (K_MULT, K_SOL_FRIN, K_SOL_DRIFT, K_SOL_QUAD)
             ph_ = _ext().step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm,

@@ -1,0 +1,58 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:00:52 Thursday 11/19/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next P4 項目 2: SOL 領域内の光子 (PhotonList)。3 GeV、BZ = 1 T の領域 (SOL ... SOL) の中の DRIFT・MULT (K0 = 0.01、L = 0.4)・QUAD (K1 = 0.8、L = 0.4) を、1500 個の粒子 (x = y = 0) が通る。
+! v2: 領域内の光子を領域の外と同じ位置の情報で記録する (要素ごとの光子数とエネルギーの合計を表示。MULT の合計は古典値 285 eV/粒子)。k64 (pysad) は領域内の MULT・BEND を扱えない (NotImplement
+! gs (K64): 領域内の MULT・DRIFT の光子は記録する (gx は要素の範囲。MULT のエネルギー合計は 313 eV/粒子で古典値 285 eV の統計の範囲)が、領域内の QUAD の光子は記録しない (B68 の疑い)。領域内の
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=0.5);
+MULT M = (L=0.4 K0=0.01);
+QUAD Q = (L=0.4 K1=0.8);
+SOL SA = (L=0 BZ=1 BOUND=1 GEO=1) SB = (L=0 BZ=0 BOUND=1);
+MARK ST=();
+LINE TS = (ST SA D1 M D1 Q SB);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ NPARA=1;
+ USE TS; INS; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .984969 $$$       f BX    #######  #   3.134199 $$$       f NX    #######  #    .171291
+$$$       f AY    #######  #  -5.768105 $$$       f BY    #######  #   5.545138 $$$       f NY    #######  #    .168033
+$$$       f LENG  #######  #   1.800042
+ RAD; FLUC; PHOTONS;
+ SeedRandom[5];
+ n=1500;
+ x0=Table[0,{i,n}]; px0=Table[0,{i,n}]; y0=Table[0,{i,n}];
+ py0=Table[0,{i,n}]; z0=Table[0.0,{i,n}]; dp0=Table[0.0,{i,n}]; fl0=Table[1,{i,n}];
+ r=TrackParticles[{1,{x0,px0,y0,py0,z0,dp0,fl0}},1,1];
+ $FORM="14.6";
+ es = Table[0,{7}]; cnt = Table[0,{7}]; gmin = Table[1e9,{7}]; gmax = Table[-1e9,{7}];
+ Do[
+   l = PhotonList[[k,12]];
+   es[[l]] = es[[l]] + PhotonList[[k,1]];
+   cnt[[l]] = cnt[[l]] + 1;
+   gmin[[l]] = Min[gmin[[l]], PhotonList[[k,2]]];
+   gmax[[l]] = Max[gmax[[l]], PhotonList[[k,2]]],
+   {k,Length[PhotonList]}];
+ Print["NPH ", Length[PhotonList]];
+NPH    1009.000000
+ Do[Print["ELEM ", l, " count ", cnt[[l]], " Esum/n [eV] ", es[[l]]/n, " gx range ", gmin[[l]], " ", gmax[[l]]], {l,1,7}];
+ELEM       1.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       2.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       3.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       4.000000 count     955.000000 Esum/n [eV]     312.533281 gx range        .500584        .899975
+ELEM       5.000000 count      54.000000 Esum/n [eV]        .876114 gx range        .909976       1.386590
+ELEM       6.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ELEM       7.000000 count        .000000 Esum/n [eV]        .000000 gx range  1000000000.00  -1000000000.0
+ Print["classical MULT energy loss per particle [eV]: ", 88.46e3*3^4*0.01/(2 Pi*40)];
+classical MULT energy loss per particle [eV]:     285.096637
+ Exit;
+ FFS                  end:  CPU time =     0.011 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

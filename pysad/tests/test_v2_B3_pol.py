@@ -74,7 +74,8 @@ def ring():
 
 def test_sideband_without_modulation_equals_linear_slim(ring):
     sb = spin.sideband_depolarization(ring['secs'], ring['sl']['n0'], ring['e']['beam_matrix'], modulate=False)
-    assert abs(sb['rate'] / ring['sl']['rate'] - 1) < 1e-5
+    assert abs(sb['rate'] / ring['sl']['rate_el'] - 1) < 1e-5            # 要素の出口の N での線形の率 (P1: 'rate' は放射の刻みごとの N の積分で 0.2% 違う)
+    assert abs(sb['rate'] / ring['sl']['rate'] - 1) < 5e-3
     assert abs(sb['spread'] / ring['e']['spin']['spin_spread'] - 1) < 5e-3       # ½<|α*|²> = 入口の n の広がり
 
 
@@ -106,9 +107,17 @@ def test_polarization_includes_sideband_v2(v2_mode):
     sp = e['spin']
     assert sp['depol_sideband'] is True
     assert abs(sp['depol_rate_linear'] / 2.318e-8 - 1) < 0.01
-    assert abs(sp['depol_rate'] / 4.46e-8 - 1) < 0.05
+    assert abs(sp['depol_rate'] / 1.09e-7 - 1) < 0.05                    # P1: ベータトロンのクロマティックな変調を入れた値 (B3 は 4.46e-8)
+    assert sp['depol_chromatic'] is True
     sdamp, srel = sp['sdamp'], sp['sdamp_rel']
-    assert abs(sp['equpol'][0] - PST * sdamp / (srel + sp['depol_rate'])) < 1e-12
+    assert abs(sp['equpol'][0] - PST * (sdamp - sp['kinetic']) / (srel + sp['depol_rate'])) < 1e-12     # P1: 運動論的偏極の項
+    old_c = spin.CHROMATIC
+    spin.CHROMATIC = False
+    try:
+        e1 = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)
+    finally:
+        spin.CHROMATIC = old_c
+    assert abs(e1['spin']['depol_rate'] / 4.46e-8 - 1) < 0.05            # B3 の値 (軌道は線形)
     old = spin.SIDEBAND
     spin.SIDEBAND = False
     try:

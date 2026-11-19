@@ -89,7 +89,7 @@ from .ffs import (
     SADList,
 )
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 __author__ = "SAD Python translation (KEK-Acc6th)"
 __all__ = [
     # constants

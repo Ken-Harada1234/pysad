@@ -144,8 +144,9 @@ def test_wspac_last_slice_uses_gammab_zero_in_k64_and_physical_p1_in_v2():
     finally:
         compat.set_mode(old)
     assert abs(res['k64'][0] + 4.3554576e-3) < 2e-9 and abs(res['k64'][1] + 8.8478243e-3) < 2e-9, res
-    assert abs(res['v2'][0] + 4.1386187e-3) < 2e-9 and abs(res['v2'][1] + 8.4668911e-3) < 2e-9, res
-    assert 1.05 < res['k64'][0] / res['v2'][0] < 1.06 and 1.04 < res['k64'][1] / res['v2'][1] < 1.05
+    # v2next P2: tradke の微分を厳密にした (放射による D 行列が変わり、放射による tune shift の 1e-5 の量が変わる) ので v2 の値が 2e-3 (相対) 動いた (旧: −4.1386187e-3・−8.4668911e-3)
+    assert abs(res['v2'][0] + 4.1294834e-3) < 2e-9 and abs(res['v2'][1] + 8.4361235e-3) < 2e-9, res
+    assert 1.05 < res['k64'][0] / res['v2'][0] < 1.06 and 1.04 < res['k64'][1] / res['v2'][1] < 1.06
 
 
 @pytest.mark.parametrize('path,ring,pb,want', [
@@ -294,8 +295,8 @@ def test_photons_from_mult_sext_oct_match_synchrotron_radiation_formulas_v2(v2_m
 
 # ================================================================== 項目 3: SynchroBetaEmittance の収束の警告
 def test_synchrobeta_warns_when_azimuthal_modes_not_converged_v2(v2_mode):
-    """v2: 大きなリング A (3 GeV、603 m、νs = 0.004) で AzimuthalModes->9 の emitx (5.1e-9) は 14 の値 (2.5e-9) と 51% 違い、Emittance[] (1.55e-10)・
-    独立な 6x6 の平衡 (1.517e-10)・追跡と合わない。警告を出す (値はそのまま返す)。PYSAD_SLOW=1 のときだけ (約 20 秒)"""
+    """(P2 で変更) v2: 大きなリング A (3 GeV、603 m、νs = 0.004) の AzimuthalModes->9 の emitx は、K64 の式の誤り (始点の分散 η ≠ 0。P2 項目 1) を直したので
+    Emittance[] の 1.5% 以内 (1.0069 倍) で、14 の値と 1% 以内に収束し、警告を出さない (K64 では 5.1e-9 対 14 の 2.5e-9 で警告が出ていた)。PYSAD_SLOW=1 のときだけ (約 20 秒)"""
     if os.environ.get('PYSAD_SLOW') != '1':
         pytest.skip('PYSAD_SLOW=1 のときだけ (約 20 秒)')
     tail = '''
@@ -304,10 +305,12 @@ USE RING; CELL; RFSW; RAD; CALC;
 em=Emittance[]; nus=Abs[(Tunes/.em)[[3]]];
 r=SynchroBetaEmittance[{nus,nus,0.001},AzimuthalModes->9];
 Print["SB ",r[[1,2]]];
+Print["EM ",(Emittances/.em)[[1]]];
 Exit;
 '''
     _f, out = _run(open(_LAT_A, encoding='utf-8', errors='replace').read() + tail)
-    assert 'SynchroBetaEmittance: AzimuthalModes->9' in out
+    assert 'SynchroBetaEmittance: AzimuthalModes' not in out
+    assert abs(_tag(out, 'SB ')[0] / _tag(out, 'EM ')[0] - 1) < 0.015
 
 
 def test_synchrobeta_does_not_warn_on_converged_ring_v2(v2_mode):

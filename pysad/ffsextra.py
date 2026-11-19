@@ -41,6 +41,20 @@ def _match_name(pat, name):
     return re.fullmatch(rx, name, re.I) is not None
 
 
+def _saved_value(ffs, el0, key, default):
+    """VAR の Saved 欄: 設計値 (SAVE で更新される。gs で確認: FREE・GO では変わらず、SAVE か定義の値)。"""
+    sv = getattr(el0, '_saved', None)
+    if sv and key in sv:
+        return float(sv[key])
+    raw = getattr(ffs.env, '_elements', {}).get(el0.name)
+    if raw and key in raw:
+        try:
+            return float(raw[key])
+        except (TypeError, ValueError):
+            pass
+    return default
+
+
 def cmd_variables(ffs, words, i):
     m = ffs.matcher_()
     pat = None
@@ -54,13 +68,14 @@ def cmd_variables(ffs, words, i):
         if pat is not None and not _match_name(pat, v.get('label', v['family'])):
             continue
         el0 = v['els'][0]
-        saved = float(ffs.get_value(el0, v['key']))
-        now = float(v.get('val', saved))
+        now_el = float(ffs.get_value(el0, v['key']))
+        saved = _saved_value(ffs, el0, v['key'], now_el)
+        now = now_el if v.get('noop') else float(v.get('val', now_el))      # 何もしない変数の Now は結合先 (先頭の成分) の値
         prev = float(v.get('val2', now))
         lo, hi = v['vlim'][0], v['vlim'][1]
         # Couple の欄: 既定のキーの変数は、その成分が結合している先 (自分が先頭なら <--)。ほかのキー (ROTATE や BEND の K1) は空 (gs)
         rows.append((v.get('label', v['family']), v['key'], now, prev, saved, lo, hi,
-                     '<--' if v['key'] == (ffs.default_key(el0) or '').upper() else '', 1.0))
+                     v.get('couple') or ('<--' if v['key'] == (ffs.default_key(el0) or '').upper() else ''), 1.0))
     if not rows and m.variables and pat is not None and not any(c in pat for c in '*%{'):
         pass
     for name, key, now, prev, saved, lo, hi, nc, co in rows:

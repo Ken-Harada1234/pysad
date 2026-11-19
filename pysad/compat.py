@@ -37,3 +37,30 @@ def v2():
 
 def k64():
     return mode() == 'k64'
+
+
+# ---------------------------------------------------------------------------------------------
+# K1≠0 の BEND の端の模型 (v2next P2 項目 5)。既定は 'radial' (K64 の仕様: 双極磁場は端面から、四極 (K1) の磁場は半径方向の入口・出口の面から始まる)。
+# 'face' は四極の磁場も端面から始まる硬い端の模型 (端の角 e ≠ 0 のとき、x tan(e) の幅の楔形の領域の四極の蹴りが違う)。v2 だけで効く (k64 は K64 のまま)。
+# 効く範囲: CALC (4D・6D)・Emittance[]・EMIT・TrackParticles の K1≠0 かつ ANGLE≠0 の BEND (DISFRIN=0。ずれ・ロールつきも)。
+# 切り替え: 環境変数 PYSAD_BEND_K1_EDGE=face、または pysad.compat.set_bend_k1_edge('face')。
+# ---------------------------------------------------------------------------------------------
+_bend_k1_edge = None
+
+
+def bend_k1_edge():
+    """K1≠0 の BEND の端の模型 ('radial' | 'face')。k64 モードでは常に 'radial'"""
+    if mode() != 'v2':
+        return 'radial'
+    if _bend_k1_edge is not None:
+        return _bend_k1_edge
+    m = os.environ.get('PYSAD_BEND_K1_EDGE', 'radial').strip().lower()
+    return 'face' if m == 'face' else 'radial'
+
+
+def set_bend_k1_edge(m):
+    """K1≠0 の BEND の端の模型を設定する ('radial' | 'face')。None で環境変数に戻す"""
+    global _bend_k1_edge
+    if m is not None and m not in ('radial', 'face'):
+        raise ValueError("bend_k1_edge must be 'radial' or 'face'")
+    _bend_k1_edge = m

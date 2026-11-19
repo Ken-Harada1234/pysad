@@ -1,0 +1,235 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:12:18 Thursday 11/19/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next P5 項目 1: MEASURE / TRCOD (gs の実動作との比較)。条件: 3 GeV、周長 48 m の 12 セル FODO + スキュー四極 1 台 (結合あり)。
+! gs (10-19 ビルド、2026-11-19) は MEASURE を先頭の要素 (入口の MARK) の位置でだけ出力する (B42 の更新)。ほかの位置 (既定の終端を含む) は無出力で、
+! FFS["MEASURE"] は {1, 0, 0}。TRCOD も先頭の位置だけ動く (それ以外は SIGSEGV なので、この台本には入れない)。
+! k64 モードは gs と全桁一致 (.gs.txt と .pysad_k64.txt)。v2 は ttinit の B41 (DPY の揺らぎの読み違い) と MEASURE ごとの乱数の種の復元が違う。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6) SK = (L=0.2 K1=0.05 ROTATE=0.7853981633974483);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+LINE CELL = (DS QF D2 B D2 QD DS D1);
+LINE RING = (ORIGIN SK 12*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ EMITX=1.2e-8; EMITY=1.5e-9; SIGZ=2e-3; DP=1.5e-3;      ! 初期分布の大きさは大域変数 (tfsetparam が先頭の MARK に写す)
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ ***qmdiag---> Sum resonance: (TrA-TrB)^2 =  -4.3097553727463531E-003
+ Matched. (  0.000    ) DP = 0.00150  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.080547 $$$       f BX    #######  #   7.595181 $$$       f NX    #######  #   2.870872
+$$$       f AY    #######  #    .338440 $$$       f BY    #######  #   4.234010 $$$       f NY    #######  #   2.122999
+$$$       f LENG  #######  #  48.200000 ORIGIN/$$$  BMAGX #######  #   3.940285 ORIGIN/$$$  BMAGY #######  #   2.248623
+ Horizontal/Vertical Unstable.
+ NP=500;
+ MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles =  500
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -3.150E-06 3.492E-08-3.306E-06 6.351E-04 1.157E-04 8.064E-06
+        x :  1.156E-08
+    px/p0 :  3.896E-10 1.107E-08
+        y :  7.908E-11-1.882E-10 1.502E-09
+    py/p0 :  2.307E-10-1.086E-10 5.734E-11 1.372E-09
+        z : -1.165E-08 8.451E-09 1.471E-09-4.295E-09 3.947E-06
+    dp/p0 :  3.872E-09 1.327E-08-5.172E-10-9.424E-10 6.666E-08 7.488E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.1177E-08 bx:  1.032     ax:-2.8721E-02 ex: 5.1705E-03 epx: 1.7720E-02
+ emity: 1.4338E-09 by:  1.047     ay:-3.9541E-02 ey:-6.9074E-04 epy:-1.2585E-03
+ x-y decoupled parameters:
+ emitu: 1.1181E-08 bu:  1.032     au:-2.8684E-02 eu: 5.1503E-03 epu: 1.7724E-02
+ emitv: 1.4287E-09 bv:  1.048     av:-3.7310E-02 ev:-3.7309E-04 epv:-1.2274E-03
+    r1:-6.6319E-03 r2: 1.9853E-02 r3:-2.2948E-02 r4: 8.4374E-03detr: 3.9963E-04
+   sigx: 1.0752E-04  sigy: 3.8758E-05   tilt:-7.8618E-03
+  sigpx: 1.0521E-04 sigpy: 3.7042E-05
+ sigp/p: 8.6533E-04  sigz: 1.9868E-03 dp/p/z: 3.3553E-05/sigz
+ LOGMEASURE;
+ -3.1498106E-06 -3.3057747E-06  1.1560563E-08  7.9083376E-11  1.5021661E-09
+ MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles =  500
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  4.095E-06-2.880E-06-6.022E-07-2.290E-03 1.089E-05 1.024E-05
+        x :  1.031E-08
+    px/p0 :  3.257E-10 1.094E-08
+        y : -3.286E-12 1.524E-10 1.741E-09
+    py/p0 : -6.920E-11-1.481E-10-2.344E-11 1.474E-09
+        z : -1.166E-08-1.098E-08-5.002E-09 9.469E-09 4.803E-06
+    dp/p0 : -1.004E-09-1.056E-09 5.422E-10-1.496E-10-2.373E-08 7.101E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.0614E-08 bx: 0.9716     ax:-3.0546E-02 ex:-1.4136E-03 epx:-1.4865E-03
+ emity: 1.6017E-09 by:  1.087     ay: 1.4562E-02 ey: 7.6356E-04 epy:-2.1067E-04
+ x-y decoupled parameters:
+ emitu: 1.0615E-08 bu: 0.9716     au:-3.0559E-02 eu:-1.4207E-03 epu:-1.4793E-03
+ emitv: 1.5992E-09 bv:  1.087     av: 1.3282E-02 ev: 7.8220E-04 epv:-2.4305E-04
+    r1: 3.0125E-03 r2:-1.5449E-02 r3: 8.4751E-03 r4: 1.3732E-02detr: 1.7230E-04
+   sigx: 1.0156E-04  sigy: 4.1722E-05   tilt: 3.8334E-04
+  sigpx: 1.0457E-04 sigpy: 3.8398E-05
+ sigp/p: 8.4269E-04  sigz: 2.1916E-03 dp/p/z:-1.0826E-05/sigz
+ GAUSS; MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles =  500
+ RAD: F, RFSW: T, GAUSS: T, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  6.067E-06 8.010E-07-1.680E-06-3.748E-03 1.161E-04-9.180E-05
+        x :  1.088E-08
+    px/p0 : -1.241E-10 1.133E-08
+        y : -1.058E-10-4.183E-11 1.626E-09
+    py/p0 :  3.331E-11 2.291E-10-1.427E-11 1.598E-09
+        z :  5.109E-09-1.208E-08-5.775E-09 6.859E-09 4.467E-06
+    dp/p0 :  8.678E-09 1.043E-08-5.321E-09-1.390E-09-4.453E-08 1.850E-06
+ x-y projected(coupled) parameters:
+ emitx: 1.1053E-08 bx: 0.9806     ax: 1.5653E-02 ex: 4.6907E-03 epx: 5.6363E-03
+ emity: 1.6036E-09 by:  1.005     ay: 1.1390E-02 ey:-2.8761E-03 epy:-7.5152E-04
+ x-y decoupled parameters:
+ emitu: 1.1051E-08 bu: 0.9805     au: 1.5640E-02 eu: 4.6307E-03 epu: 5.6521E-03
+ emitv: 1.6009E-09 bv:  1.006     av: 1.1045E-02 ev:-2.8457E-03 epv:-8.8668E-04
+    r1: 4.4468E-03 r2: 1.7146E-03 r3:-4.2208E-03 r4:-2.0462E-02detr:-8.3752E-05
+   sigx: 1.0430E-04  sigy: 4.0327E-05   tilt: 1.1431E-02
+  sigpx: 1.0646E-04 sigpy: 3.9969E-05
+ sigp/p: 1.3602E-03  sigz: 2.1136E-03 dp/p/z:-2.1066E-05/sigz
+ NOGAUSS; DP0=0.0005; MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles =  500
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 = 5.0000E-4, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  4.675E-06 9.353E-07 4.990E-07 2.437E-04 5.741E-05 4.646E-04
+        x :  1.320E-08
+    px/p0 : -2.041E-10 1.397E-08
+        y : -1.874E-10-8.258E-11 1.496E-09
+    py/p0 :  1.519E-11 5.492E-11-3.843E-11 1.499E-09
+        z : -6.925E-10 1.523E-09 4.041E-10 3.008E-09 4.386E-06
+    dp/p0 : -5.464E-09 8.639E-09 5.688E-10 9.449E-10-1.089E-07 7.719E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.3514E-08 bx: 0.9739     ax: 1.0579E-02 ex:-7.0781E-03 epx: 1.1192E-02
+ emity: 1.4961E-09 by: 0.9993     ay: 2.6152E-02 ey: 7.3690E-04 epy: 1.2241E-03
+ x-y decoupled parameters:
+ emitu: 1.3513E-08 bu: 0.9739     au: 1.0568E-02 eu:-7.0686E-03 epu: 1.1173E-02
+ emitv: 1.4945E-09 bv: 0.9983     av: 2.5777E-02 ev: 7.1484E-04 epv: 1.2220E-03
+    r1: 1.3831E-02 r2: 6.7769E-03 r3:-2.4476E-03 r4:-1.7347E-03detr:-7.4052E-06
+   sigx: 1.1489E-04  sigy: 3.8673E-05   tilt: 1.6007E-02
+  sigpx: 1.1821E-04 sigpy: 3.8721E-05
+ sigp/p: 8.7859E-04  sigz: 2.0944E-03 dp/p/z:-5.1998E-05/sigz
+ DP0=0; NOTRGAUSS; MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles =  500
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  7.947E-07-2.111E-06-1.032E-06-4.885E-04 3.969E-05-8.505E-06
+        x :  3.247E-09
+    px/p0 : -2.028E-10 3.006E-09
+        y :  4.838E-11-3.137E-11 3.709E-10
+    py/p0 :  3.702E-11 3.271E-12 1.074E-12 3.485E-10
+        z :  4.560E-09 7.556E-11-9.398E-10 4.989E-09 4.151E-06
+    dp/p0 : -1.582E-09-2.848E-09-9.688E-10 2.984E-10-1.006E-07 7.148E-07
+ x-y projected(coupled) parameters:
+ emitx: 3.1097E-09 bx:  1.043     ax: 6.7251E-02 ex:-2.2126E-03 epx:-3.9842E-03
+ emity: 3.5886E-10 by:  1.030     ay:-4.1199E-03 ey:-1.3552E-03 epy: 4.1737E-04
+ x-y decoupled parameters:
+ emitu: 3.1103E-09 bu:  1.043     au: 6.7266E-02 eu:-2.2126E-03 epu:-3.9600E-03
+ emitv: 3.5807E-10 bv:  1.029     av:-2.8190E-03 ev:-1.3737E-03 epv: 4.6258E-04
+    r1:-1.3915E-02 r2: 1.2409E-02 r3:-1.3209E-02 r4:-4.0228E-03detr: 2.1989E-04
+   sigx: 5.6980E-05  sigy: 1.9260E-05   tilt:-1.6816E-02
+  sigpx: 5.4831E-05 sigpy: 1.8669E-05
+ sigp/p: 8.4548E-04  sigz: 2.0374E-03 dp/p/z:-4.9395E-05/sigz
+ TRGAUSS; NP=200; MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles =  200
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -1.001E-05 2.559E-06 1.590E-06-7.483E-04 2.966E-04 1.342E-05
+        x :  1.307E-08
+    px/p0 : -1.381E-09 1.121E-08
+        y :  2.633E-10-1.971E-10 1.352E-09
+    py/p0 : -9.488E-11-5.948E-11 1.232E-10 1.572E-09
+        z : -1.834E-09 1.405E-08 2.080E-09-1.040E-08 3.839E-06
+    dp/p0 : -8.618E-10-8.961E-09-1.210E-09 3.123E-09 6.063E-08 7.216E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.1965E-08 bx:  1.093     ax: 0.1163     ex:-1.1943E-03 epx:-1.2419E-02
+ emity: 1.4446E-09 by: 0.9342     ay:-8.8880E-02 ey:-1.6766E-03 epy: 4.3282E-03
+ x-y decoupled parameters:
+ emitu: 1.1963E-08 bu:  1.093     au: 0.1163     eu:-1.1255E-03 epu:-1.2348E-02
+ emitv: 1.4399E-09 bv: 0.9316     av:-9.0117E-02 ev:-1.8528E-03 epv: 4.3243E-03
+    r1:-1.8507E-02 r2: 1.5963E-02 r3: 5.0514E-03 r4:-1.5974E-04detr:-7.7678E-05
+   sigx: 1.1434E-04  sigy: 3.6764E-05   tilt:-2.2446E-02
+  sigpx: 1.0587E-04 sigpy: 3.9650E-05
+ sigp/p: 8.4946E-04  sigz: 1.9593E-03 dp/p/z: 3.0946E-05/sigz
+ Print["R1 ", FFS["MEASURE ORIGIN"]];
+R1 {200,
+ {-9.467665080166976e-6,4.0355926127299365e-7,-1.476230494001552e-7,.0021432652669854005,2.6918131070950794e-5,
+  3.877828815020622e-5},
+ {{1.2575874157671321e-8,5.636245858011269e-10,4.260055452870445e-11,-3.319047015972232e-10,-1.5960188906769783e-8,
+   -1.7528681582826362e-9},
+  {5.636245858011269e-10,1.3568179540643305e-8,3.830300846317235e-10,-3.1849141887901385e-10,-4.699138547839254e-9,
+   -3.972241959784503e-9},
+  {4.260055452870445e-11,3.830300846317235e-10,1.3175757633102096e-9,-2.4032709741852796e-11,1.1238705103752054e-9,
+   -2.0004934247663825e-9},
+  {-3.319047015972232e-10,-3.1849141887901385e-10,-2.4032709741852796e-11,1.4689112934116765e-9,6.548577438558729e-9,
+   2.531983510414858e-9},
+  {-1.5960188906769783e-8,-4.699138547839254e-9,1.1238705103752054e-9,6.548577438558729e-9,3.897018344068705e-6,
+   -1.7364288364168465e-7},
+  {-1.7528681582826362e-9,-3.972241959784503e-9,-2.0004934247663825e-9,2.531983510414858e-9,-1.7364288364168465e-7,
+   7.19460983579773e-7}}}
+ MEASURE $$$;
+ Print["R2 ", FFS["MEASURE $$$"]];
+R2 {1,{0,0,0,0,0,0},{{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,0,0,0,0},{0,0,0,0,0,0}}}
+ LOGMEASURE;
+  1.0000000E+20  1.0000000E+20  1.0000000E+20  1.0000000E+20  1.0000000E+20
+ TRCOD ORIGIN;
+ Statistics at ORIGIN:   particles =  200
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -4.066E-22-4.066E-21-2.982E-21-1.237E-03-9.107E-20 2.602E-20
+        x :  1.133E-08
+    px/p0 : -2.140E-10 1.271E-08
+        y : -2.663E-10-2.555E-10 1.339E-09
+    py/p0 :  1.933E-10-2.609E-10-1.562E-11 1.526E-09
+        z :  1.978E-08-2.333E-08-1.082E-09-2.874E-09 3.539E-06
+    dp/p0 :  6.287E-10-4.970E-09-1.885E-09-2.749E-10-1.988E-07 7.544E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.1979E-08 bx: 0.9455     ax: 1.7518E-02 ex: 8.3339E-04 epx:-6.5873E-03
+ emity: 1.4269E-09 by: 0.9350     ay: 1.1426E-02 ey:-2.4991E-03 epy:-3.6436E-04
+ x-y decoupled parameters:
+ emitu: 1.1990E-08 bu: 0.9455     au: 1.7492E-02 eu: 8.8318E-04 epu:-6.5244E-03
+ emitv: 1.4150E-09 bv: 0.9334     av: 1.2267E-02 ev:-2.6311E-03 epv:-5.3581E-04
+    r1: 2.6586E-02 r2: 2.3598E-02 r3:-1.9839E-02 r4: 2.3547E-02detr: 1.0942E-03
+   sigx: 1.0642E-04  sigy: 3.6591E-05   tilt: 2.6644E-02
+  sigpx: 1.1272E-04 sigpy: 3.9069E-05
+ sigp/p: 8.6858E-04  sigz: 1.8813E-03 dp/p/z:-1.0565E-04/sigz
+ NP=300; CALC;
+ ***qmdiag---> Sum resonance: (TrA-TrB)^2 =  -4.3097553727463531E-003
+ Matched. (  0.000    ) DP = 0.00150  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.080547 $$$       f BX    #######  #   7.595181 $$$       f NX    #######  #   2.870872
+$$$       f AY    #######  #    .338440 $$$       f BY    #######  #   4.234010 $$$       f NY    #######  #   2.122999
+$$$       f LENG  #######  #  48.200000 ORIGIN/$$$  BMAGX #######  #   3.940285 ORIGIN/$$$  BMAGY #######  #   2.248623
+ Horizontal/Vertical Unstable.
+ TRCOD ORIGIN;
+ Statistics at ORIGIN:   particles =  300
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  9.035E-22-2.665E-21-1.807E-22-2.167E-03-1.735E-20 3.469E-20
+        x :  1.259E-08
+    px/p0 :  7.320E-10 1.272E-08
+        y :  7.511E-12 4.752E-10 1.318E-09
+    py/p0 :  1.133E-10 8.075E-11-6.513E-11 1.265E-09
+        z :  4.532E-09 1.768E-08 2.615E-09-5.557E-09 4.230E-06
+    dp/p0 : -5.426E-10-2.618E-09-1.786E-09-5.552E-10 1.725E-07 7.015E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.2629E-08 bx: 0.9968     ax:-5.7801E-02 ex:-7.7341E-04 epx:-3.7325E-03
+ emity: 1.2867E-09 by:  1.021     ay: 5.1714E-02 ey:-2.5455E-03 epy:-7.9142E-04
+ x-y decoupled parameters:
+ emitu: 1.2626E-08 bu: 0.9968     au:-5.7806E-02 eu:-7.5955E-04 epu:-3.7196E-03
+ emitv: 1.2776E-09 bv:  1.014     av: 5.4250E-02 ev:-2.4104E-03 epv:-7.6583E-04
+    r1: 8.2156E-04 r2:-3.6414E-02 r3:-4.9396E-03 r4:-5.8519E-03detr:-1.8468E-04
+   sigx: 1.1220E-04  sigy: 3.6299E-05   tilt:-6.6634E-04
+  sigpx: 1.1279E-04 sigpy: 3.5562E-05
+ sigp/p: 8.3758E-04  sigz: 2.0566E-03 dp/p/z: 8.3892E-05/sigz
+ Print["DX ", Twiss["DX",1], " ", Twiss["DPY",1], " ", Twiss["EX",1]];
+DX 9.03501810404587e-22 -.0021670918672706025 -.00077340630042241
+ Exit;
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

@@ -227,7 +227,7 @@ def test_spin_path_follows_the_same_orbit_as_fast_tracking(v2_mode, rfsw):
     n = len(ffs.els) + 1
     a, _ = _track(ffs, _P4, 1, n)
     b, s = _track(ffs, _P4, 1, n, spin=[[0, 0, 1]] * len(_P4))
-    assert np.max(np.abs(a - b)) < 1e-10
+    assert np.max(np.abs(a - b)) < 5e-9        # P4: 領域内の QUAD は POL のとき bz·al/ndiv ≤ 0.02 に刻む (座標も 2e-9 だけ精密になる。以前は 1e-10)
     assert np.max(np.abs(np.linalg.norm(s, axis=1) - 1.0)) < 1e-9
     assert abs(s[0, 2] - 1.0) > 1e-4                         # スピンは動いている
 

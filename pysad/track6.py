@@ -1057,9 +1057,20 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
         _tradk(p, alr, phi0)
 
 
+def _spin_rot_cs(p, cost, sint):
+    """v2 (P1): 座標の ROTATE (回転 θ: x' = cos θ x − sin θ y、y' = sin θ x + cos θ y) と同じ回転をスピンに掛ける (θ = cost, sint。出口は −θ)。
+    K64 の tbshift・tent は座標だけ回してスピンを回さない (ROTATE ≠ 0 の BEND のスピンが回転後の系でなく元の系の鉛直軸のまわりに歳差する。
+    厳密な Thomas-BMT の積分と Emittance[] (tchge の srot の回転) は回した系の軸のまわり。docs/history/v2next_P1.md)"""
+    if _POL and (sint != 0.0 or cost != 1.0) and _compat.v2():
+        sx, sy = p.s[0], p.s[1]
+        p.s[0] = cost * sx - sint * sy
+        p.s[1] = sint * sx + cost * sy
+
+
 def _tbshift(p: _Particle, dx, dy, phi0, cost, sint, ent):
     """tbend.f tbshift"""
     c = p.c
+    _spin_rot_cs(p, cost, sint)
     if dx != 0.0 or dy != 0.0:
         phih = phi0 * 0.5
         sph = math.sin(phih)
@@ -1298,6 +1309,10 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         pe = 1.0 + c[5]            # 追跡の px・py は運動量で割ったもの。tbedge は正準運動量
         ce = _lat._tbedge_cod(np.array([c[0], c[1] * pe, c[2], c[3] * pe, c[4], c[5]], dtype=float), m.rhob, math.atan2(sinp1, cosp1), True)
         m.xi, m.pxi, m.yi, m.pyi, m.zi = ce[0], ce[1] / pe, ce[2], ce[3] / pe, ce[4]
+        if _compat.bend_k1_edge() == 'face':
+            kt = ak / al * tanp1 / pe              # v2 (P2 項目 5): 四極の磁場も端面から始まる模型 (半径方向の入口の面の楔形の領域の蹴り)
+            m.pxi += kt * m.xi * m.xi
+            m.pyi -= kt * m.xi * m.yi
     else:
         f = yi / m.rhoe
         fpx = af * c[1]
@@ -1338,6 +1353,10 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     m.zi = m.zi - p.dv * al
     if v2edge and sinp2 != 0.0:
         pe = 1.0 + m.dp
+        if _compat.bend_k1_edge() == 'face':
+            kt = ak / al * tanp2 / pe
+            m.pxi += kt * m.xi * m.xi
+            m.pyi -= kt * m.xi * m.yi
         ce = _lat._tbedge_cod(np.array([m.xi, m.pxi * pe, m.yi, m.pyi * pe, m.zi, m.dp]), m.rhob, math.atan2(sinp2, cosp2), False)
         c[0], c[1], c[2], c[3], c[4], c[5] = ce[0], ce[1] / pe, ce[2], ce[3] / pe, ce[4], ce[5]
     else:
@@ -1407,29 +1426,73 @@ def _tsteer_ens(parts, el, krad):
         for p in parts:
             _tdrift_free(p, al)
         return
-    if _g(el, 'F1') != 0.0 or _g(el, 'FB1') != 0.0 or _g(el, 'FB2') != 0.0:
-        raise NotImplementedError('track6: ANGLE=0 の BEND (tsteer) の F1/FB1/FB2 フリンジは未対応')
     phib = -ak0
     rhob = al / phib
     psi1 = _g(el, 'E1')
+    psi2 = _g(el, 'E2')
     tanp1 = math.sin(psi1) / math.cos(psi1)
+    tanp2 = 0.0
+    # F1・FB1・FB2 (tffs.f tpara: fb1 = F1+FB1、fb2 = F1+FB2。FRINGE ≤ 0 は −1 (入口だけ)・−2 (出口だけ) 以外 0。tsteer.f の fringe = DISFRIN==0)。
+    # 入口 dxfr1 = −fb1²/ρb/24、dyfr1 = fb1/ρb²/6、断片 n = −1, 0 (長さ f1r = fb1/2 の放射)、出口 n = ndiv+1, ndiv+2、dxfr2 = −fb2²/ρb/24 (tsteer の符号)
+    fb1, fb2, mfr, fringe_fl = _lat._bend_fringe_params(el)
+    if mfr <= 0:
+        if mfr != -1:
+            fb1 = 0.0
+        if mfr != -2:
+            fb2 = 0.0
+    f1r = f2r = 0.0
+    dxfr1 = dyfr1 = dyfra1 = dxfr2 = dyfr2 = dyfra2 = 0.0
+    n1, n2 = 1, 0
+    if fb1 != 0.0:
+        dxfr1 = -fb1**2 / rhob / 24.0
+        dyfr1 = fb1 / rhob**2 / 6.0
+        if fringe_fl:
+            dyfra1 = 4.0 * dyfr1 / fb1**2
+        if krad:
+            f1r = 0.5 * fb1
+            n1 = -1
+    if fb2 != 0.0 and krad:
+        f2r = 0.5 * fb2
+        n2 = 2
+    phic = phib * (1.0 - (f1r + f2r) / al)
     ctsn = []
     for p in parts:
         ctsn.append(_tent(p.c, dx, dy, theta))
+        _spin_rot_cs(p, math.cos(theta), math.sin(theta))            # v2 (P1): ROTATE のスピンの座標系
     ndiv = 1
     if krad:
         for p in parts:
             p.setr0()
-        ndiv = min(1000, max(1, _ndivrad(phib, 0.0, 0.0, _g(el, 'EPS'), parts[0].ph.h0)))
-    aln = al / ndiv
-    for n in range(1, ndiv + 1):
+        ndiv = min(1000, max(1, _ndivrad(phic, 0.0, 0.0, _g(el, 'EPS'), parts[0].ph.h0)))
+    alc = al * phic / phib
+    aln = alc / ndiv
+    v2 = _compat.v2()
+    if v2 and krad and tanp1 != 0.0:
+        for p in parts:
+            p.zr0 -= tanp1 * p.c[0]          # v2 (P3、B108): 入口の端の角で場の中の行路が x·tan(AE1) 短い (tradk の al1 = al − z + zr0)
+    for n in range(n1, ndiv + n2 + 1):
+        alx, alr = _tbendal(n, ndiv, f1r, f2r, aln)
+        if n == n1 + 1:
+            dxfr1 = dyfr1 = dyfra1 = 0.0
+            tanp1 = 0.0
+        if n == ndiv + n2:
+            if fb2 != 0.0:
+                dxfr2 = -fb2**2 / rhob / 24.0
+                dyfr2 = fb2 / rhob**2 / 6.0
+                if fringe_fl:
+                    dyfra2 = 4.0 * dyfr2 / fb2**2
+            if fb2 != 0.0 or v2:
+                # K64 の tsteer は出口の端の角 (AE2) を fb2≠0 のときだけ入れる (Emittance[]・CALC の tsteee は常に入れる: 不整合)。v2 は常に入れる (P3)
+                tanp2 = math.sin(psi2) / math.cos(psi2)
         for p in parts:
             c = p.c
             dp = c[5]
             pr = 1.0 + dp
             rhoe = rhob * pr
             pxi = c[1] - tanp1 * c[0] / rhoe
-            c[3] += (tanp1 / rhoe) * c[2]
+            c[0] += dxfr1 * dp / pr
+            c[3] += ((dyfr1 - dyfra1 * c[2]**2) / pr**2 + tanp1 / rhoe) * c[2]
+            c[4] += (dxfr1 * pxi + (0.5 * dyfr1 - 0.25 * dyfra1 * c[2]**2) * c[2]**2 / pr) / pr
             dpv1 = _sqrt1(-pxi**2)
             pv1 = 1.0 + dpv1
             fa = c[2] / rhoe / pv1
@@ -1440,7 +1503,7 @@ def _tsteer_ens(parts, el, krad):
             c[4] += ff * pxi
             dpz1 = _pxy2dpz(pxi, pyi)
             pz1 = 1.0 + dpz1
-            dpx = aln / rhoe
+            dpx = alx / rhoe
             pxf = pxi + dpx
             dpz2 = _pxy2dpz(pxf, pyi)
             pz2 = 1.0 + dpz2
@@ -1453,8 +1516,8 @@ def _tsteer_ens(parts, el, krad):
                 u = dpx * (pxf + pxi) / d
                 w = -dpx * (pxf * dpz1 + pxi * dpz2) / d
             dl = rhoe * (_lat._asinx(u) + w)
-            c[0] = xi + aln * (pxf + pxi) / (pz2 + pz1)
-            c[2] += pyi * (aln + dl)
+            c[0] = xi + alx * (pxf + pxi) / (pz2 + pz1)
+            c[2] += pyi * (alx + dl)
             dpv2 = _sqrt1(-pxf**2)
             pv2 = 1.0 + dpv2
             fa = c[2] / rhoe / pv2
@@ -1462,14 +1525,19 @@ def _tsteer_ens(parts, el, krad):
             ff = (0.5 - (c[2] / rhob)**2 / 24.0) * c[2] * fa / pv2**2
             c[3] = pyi - pxf * f
             c[0] += ff
-            c[1] = pxf
-            c[4] -= (dl + p.dv * aln + ff * pxf)
-        tanp1 = 0.0
+            c[1] = pxf - c[0] * tanp2 / rhoe
+            c[4] -= (dl + p.dv * alx + ff * pxf)
+            c[0] -= dxfr2 * dp / pr
+            c[3] += ((dyfr2 - dyfra2 * c[2]**2) / pr**2 + tanp2 / rhoe) * c[2]
+            c[4] -= (dxfr2 * pxf - (0.5 * dyfr2 - 0.25 * dyfra2 * c[2]**2) * c[2]**2 / pr) / pr
         if krad:
             for p in parts:
-                _tradk(p, aln, 0.0)
+                if v2 and n == ndiv + n2 and tanp2 != 0.0:
+                    p.zr0 -= tanp2 * p.c[0]  # v2 (P3、B108): 出口の端の角の分
+                _tradk(p, alr, 0.0)
     for p, (cost, sint) in zip(parts, ctsn):
         _texit(p.c, dx, dy, theta, cost, sint)
+        _spin_rot_cs(p, math.cos(theta), -math.sin(theta))           # v2 (P1): 出口は逆回転
 
 
 def _tbend_ens(parts, el, krad, first=True, last=True):
@@ -1564,6 +1632,13 @@ def _bend_k1_proxy(el):
     m.ROTATION = th
     m.DROTATE = 0.0
     m.RAD = _g(el, 'RAD')
+    # tbend.f:584-591: tmulti に mfring・fb10 (= F1+FB1)・fb20 (= F1+FB2) を渡す (f1in 等 = 0、端の角 psi = 0。v2next P3)
+    m.FB1 = _g(el, 'F1') + _g(el, 'FB1')
+    m.FB2 = _g(el, 'F1') + _g(el, 'FB2')
+    # 端の角: K64 の追跡 (tbend → tmulti) は psi1 = psi2 = 0 を渡す (AE1・AE2 を無視) が、Emittance[]・CALC (tbende → tmulte) は AE を使うので、
+    # 同じ BEND の追跡と CALC が合わない。v2 は追跡も AE を使う (P3。gs はこの BEND (ANGLE=0、K0≠0、K1≠0) の USE で SIGSEGV するので K64 の確認は不可)
+    m.AE1 = _g(el, 'AE1') if _compat.v2() else 0.0
+    m.AE2 = _g(el, 'AE2') if _compat.v2() else 0.0
     return 'mult', m
 
 
@@ -1850,15 +1925,63 @@ def _ttfrins(p: _Particle, nord, akc: complex, al):
         _ttfrin_n(p, nord, aka, al)
 
 
+def _tblfri(p: _Particle, al, ck0: complex, fb1):
+    """tmulti.f tblfri: K0 (ck0.real = x 方向の曲げ、ck0.imag = y 方向) の端の非線形フリンジ (FB1/FB2)。呼ぶ側が入口 (+ck0, fb1)・出口 (−ck0, fb2) を決める"""
+    dxfrx = dyfrx = dyfrax = dxfry = dyfry = dxfray = 0.0
+    if ck0.real != 0.0:
+        rhob = al / ck0.real
+        dxfrx = fb1**2 / rhob / 24.0
+        dyfrx = fb1 / rhob**2 / 6.0
+        dyfrax = 4.0 * dyfrx / fb1**2
+    if ck0.imag != 0.0:
+        rhob = al / ck0.imag
+        dyfry = fb1**2 / rhob / 24.0
+        dxfry = fb1 / rhob**2 / 6.0
+        dxfray = 4.0 * dxfry / fb1**2
+    c = p.c
+    pr = 1.0 + c[5]
+    c[0] += dxfrx * c[5] / pr
+    c[2] -= dyfry * c[5] / pr
+    c[1] += (dxfry - dxfray * c[0]**2) / pr**2 * c[0]
+    c[3] += (dyfrx - dyfrax * c[2]**2) / pr**2 * c[2]
+    c[4] += (dxfrx * c[1] - dyfry * c[3] + ((0.5 * dyfrx - 0.25 * dyfrax * c[2]**2) * c[2]**2
+                                           + (0.5 * dxfry - 0.25 * dxfray * c[0]**2) * c[0]**2) / pr) / pr
+
+
+def _tmulk(p: _Particle, al, akr, apsi, nmmax):
+    """tmulti.f tmulk: 端の角 apsi (AE1・AE2) による多極場の端の蹴り (fe = −tan(apsi)/al、(Σ K_n z^n/n!) z に比例)"""
+    fe = -math.tan(apsi) / al
+    c = p.c
+    cx0 = complex(c[0], c[2])
+    cx = 0j
+    for kord in range(nmmax, 0, -1):
+        cx = (cx + akr[kord]) * cx0 / kord
+    cx = fe * (cx + akr[0]) * cx0
+    pr = 1.0 + c[5]
+    c[1] -= cx.real / pr
+    c[3] += cx.imag / pr
+
+
+def _mult_fb_ae(el, pm):
+    """tmulti の mfring・fb1・fb2・psi1・psi2: tpara (tffs.f) は FB1 を FRINGE = 1・3、FB2 を FRINGE = 2・3 のときだけ残す。
+    端の角は psi = E1·ANGLE + AE1 (ANGLE=0 では AE1・AE2)"""
+    mfr = pm['mfring']
+    fb1 = pm['fb1'] if mfr in (1, 3) else 0.0
+    fb2 = pm['fb2'] if mfr in (2, 3) else 0.0
+    return mfr, fb1, fb2, _g(el, 'AE1'), _g(el, 'AE2')
+
+
 def _tmulti_ens(parts, el, krad):
-    """tmulti.f tmulti (ANGLE=0, BZ=0, SK なし, RF なし, F1 なし)。K0/K1/K2… とずれ・回転 (tsolrot) に対応。
+    """tmulti.f tmulti (ANGLE=0, BZ=0, SK なし, RF なし)。K0/K1/K2… とずれ・回転 (tsolrot) に対応。
+    F1・F2 (四極の線形フリンジ、f1in 等)・FB1・FB2 (K0 の端の tblfri)・FRINGE = 1, 2, 3・AE1・AE2 (tmulk) に対応 (v2next P3)。
     tpara (tffs.f) の akr[n] = K_n·cr1^(n+1), theta2 = ROT+DROT+akang, ndiv0, dofr。
     各分割: tsolqu(al1, ak1, ak0) (+tradk 全粒子) → 多極キック (n≥2、(1+δ) で割る)。
     フリンジ: ttfrins で n=0 (双極), 1 (四極), 2 (六極) 等 (dofr)。"""
     pm = _lat._mult_params(el)
     al, nmmax, akr, ndiv = pm['al'], pm['nmmax'], pm['akr'], pm['ndiv']
-    if _g(el, 'ANGLE') or _g(el, 'F1') or _g(el, 'FRINGE') or _g(el, 'VOLT'):
-        raise NotImplementedError('track6: MULT の曲げ・F1・RF は未対応')
+    if _g(el, 'ANGLE') or _g(el, 'VOLT'):
+        raise NotImplementedError('track6: MULT の曲げ・RF は未対応')
+    mfring, fb1, fb2, psi1, psi2 = _mult_fb_ae(el, pm)
     if nmmax < 0:
         for p in parts:
             _tdrift_free(p, al)
@@ -1876,6 +1999,8 @@ def _tmulti_ens(parts, el, krad):
             for n in range(nmmax + 1)]
     fringe = pm['fringe']
     nz = al != 0.0
+    # tpara: 追跡の四極の線形フリンジ (tsetfringep: f1 = −|K1/L·F1²|/24、f2 = |K1/L|·F2。tsetfringepe (Emittance[] 用の F1・F2 そのもの) とは別)
+    f1in, f2in, f1out, f2out = _tsetfringep(el, akr1 / al) if nz else (0.0, 0.0, 0.0, 0.0)
     if nz:
         if krad:
             for p in parts:
@@ -1884,11 +2009,26 @@ def _tmulti_ens(parts, el, krad):
             if _PH is not None:
                 _ph_set(dx, dy, pm['theta2'], 0.0, 0.0, 0.0, al)      # tmulti.f: tsetpcvt (D1: MULT の光子)
         ndiv = min(1000, ndiv)
-        if fringe:
+        if fringe and mfring != 2:
             for p in parts:
                 for n in range(nmmax + 1):
                     if dofr[n]:
                         _ttfrins(p, n * 2 + 2, akr[n], al)
+        if mfring == 1 or mfring == 3:
+            for p in parts:
+                if akr0 != 0 and fb1 != 0.0:
+                    _tblfri(p, al, akr0, fb1)
+                if f1in != 0.0 or f2in != 0.0:
+                    _tqlfr(p, f1in, f2in)
+    akr_k = list(akr)                    # tmulti: akr(1) = dble(akr(1)) (tmulk に渡す係数)
+    if nmmax >= 1:
+        akr_k[1] = akr1
+    v2 = _compat.v2()
+    if nz and psi1 != 0.0:
+        for p in parts:
+            if v2 and krad:
+                p.zr0 -= math.tan(psi1) * p.c[0]       # v2 (P3、B108): 入口の端の角で場の中の行路が x·tan(psi1) 短い (tradk の al1 = al − z + zr0)
+            _tmulk(p, al, akr_k, psi1, nmmax)
     wi = 1.0 / ndiv
     ak1 = akr1 * wi * 0.5
     al1 = al * wi * 0.5
@@ -1938,7 +2078,18 @@ def _tmulti_ens(parts, el, krad):
     if nz:
         for p in parts:
             _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=(not krad) and not _compat.v2(), ibsi=2)
-        if fringe:
+        if psi2 != 0.0:
+            for p in parts:
+                if v2 and krad:
+                    p.zr0 -= math.tan(psi2) * p.c[0]   # v2 (P3、B108): 出口の端の角の分
+                _tmulk(p, al, akr_k, psi2, nmmax)
+        if mfring == 2 or mfring == 3:
+            for p in parts:
+                if f1out != 0.0 or f2out != 0.0:
+                    _tqlfr(p, -f1out, f2out)
+                if fb2 != 0.0 and akr0 != 0:
+                    _tblfri(p, al, -akr0, fb2)
+        if fringe and mfring != 1:
             for p in parts:
                 for n in range(nmmax, -1, -1):
                     if dofr[n]:
@@ -2142,7 +2293,7 @@ class _TZ:
         return zwu * (zwu * f3 / 2.0 + f2 * pxt + self.bzp * f1 * pyt) - (zw1 * pyt**2) / 2.0
 
 
-def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
+def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0, fringe=True):
     """tsolqu.f tsolqu / tsolqur の bz≠0 分岐 (ak0x=ak0y=0)。ak = |K1|L > 0。全粒子をまとめて。
     放射あり (tsolqur) はスライス外側・粒子内側で、各スライスの後に全粒子 tradk。
     最後の半ステップ: tsolqur では最後に tzsetparams を呼んだ粒子 (最後のスライスの最後の粒子) の
@@ -2152,6 +2303,10 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
     ndiv = 1 + int(abs(al) * aka / eps)
     if krad:
         ndiv = min(1000, max(ndiv, _ndivrad(0.0, ak, bz, eps0, parts[0].ph.h0)))
+        if _POL and _compat.v2():
+            # v2 (P4): スピンの歳差は 1 刻みの前後の向きの変化 (弦) から出すので、らせんの回転角が大きいと不正確 (bz = 9 1/m で 9e-5)。
+            # bz·al/ndiv ≤ 0.02 に刻む (領域内の DRIFT・BEND・Emittance[] の solemit._tquade と同じ)
+            ndiv = min(1000, max(ndiv, 1 + int(abs(bz * al) / 0.02)))
     aln0 = al / ndiv
     akk = ak / al
     for p in parts:
@@ -2172,7 +2327,8 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
                 if _compat.v2():
                     # v2 (C2): 縦の磁場の積分は 1 スライスに bz·aln0/(1+δ)、入口の端で + k x y/(1+δ) (出口で −)。
                     # K64 は最初のスライスを半分、最後のスライスを半分 (上書き) にするので、全体で 1 スライス分足りない
-                    p.bpar = bzp * aln0 + (akk * c[0] * c[2] / (1.0 + c[5]) if n == 0 else 0.0)
+                    # v2 (P4): 端の ψ (硬い端の縦磁場) は端のフリンジを入れるとき (DISFRIN=0) だけ。DISFRIN=1 は縦磁場のない模型
+                    p.bpar = bzp * aln0 + (akk * c[0] * c[2] / (1.0 + c[5]) if (n == 0 and fringe) else 0.0)
             ap = c[1]**2 + c[3]**2
             dpz = _sqrt1(-ap)
             r = -dpz / (1.0 + dpz) * aln0
@@ -2207,12 +2363,14 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0):
                     + dz1 + dz2 - aln0 * p.dv)
             if krad and _POL and n == ndiv - 1:
                 p.bsi = -akk * c[0] * c[2] + bzp * aln0 * 0.5
-                if _compat.v2():
+                if _compat.v2() and fringe:
                     p.bpar -= akk * c[0] * c[2] / (1.0 + c[5])
         if krad:
             for p in parts:
                 _tradk(p, aln0, 0.0)
                 p.bpar = None
+            if _PH is not None and _PH.get('ctx') is not None and _compat.v2():
+                _PH['ctx']['fr0'] += aln0 / _PH['ctx']['al']      # tsolqu.f: pcvt%fr0 += alr/al (v2 (P4): 領域内の四極の光子)
     if krad and _compat.v2():
         for p in parts:
             _tsolqu_bz_final(p, aln0, bz / (1.0 + p.c[5]))      # v2 (B08): 粒子ごとの bzp
@@ -2254,6 +2412,8 @@ def _tquad_sol(parts, el, bzs, krad):
     th2 = _g(el, 'ROTATION') + (0.5 * math.pi if K1L < 0 else 0.0)
     fringe = _g(el, 'DISFRIN') == 0.0
     ct, st = math.cos(th2), math.sin(th2)
+    if krad and _PH is not None and _compat.v2():
+        _ph_set(0.0, 0.0, th2, 0.0, 0.0, 0.0, L, 0.0)        # tquad.f: tsetpcvt (v2 (P4): 領域内の四極の光子)
     for p in parts:
         _rot(p.c, ct, st)            # tsolrot (dx=dy=0): bzs=bz、回転のみ
         _spin_rot_z(p, th2, True)    # E: スピンも座標と一緒に回す (tsolrot の calpol。領域の外の _tquad_ens と同じ。K1<0 (th2 = ±π/2)・ROTATE≠0 で抜けていた)
@@ -2275,7 +2435,7 @@ def _tquad_sol(parts, el, bzs, krad):
             for p in parts:
                 _tsolqu(p, L, ak)
     else:
-        _tsolqu_bz_ens(parts, L, ak, bzs, krad)
+        _tsolqu_bz_ens(parts, L, ak, bzs, krad, fringe=fringe)
     for p in parts:
         if fringe:
             _ttfrin4_bz(p, -ak, L, bzs)
@@ -2396,6 +2556,8 @@ class _RadHook:
         self.first = True
         self.last = False
         self.akr = None
+        self.fringe = bool(prm[9]) if prm is not None else True       # v2 (P4): 端の ψ は端のフリンジ (DISFRIN=0) があるときだけ
+        self.al_tot = float(prm[0]) if prm is not None else 0.0
         if prm is not None and prm[0] != 0.0:
             self.akr = [a / prm[0] for a in prm[2][:prm[1] + 1]]       # K_n/L (回した系)
 
@@ -2431,7 +2593,7 @@ class _RadHook:
             c[1] += bzp * c[2] * 0.5
             c[3] -= bzp * c[0] * 0.5
             bx, by, psi = self._field(c[0], c[2]) if _POL else (0.0, 0.0, 0.0)
-            _tradk_sol(p, al, bz, bx, by, (psi if self.first else 0.0) - (psi if self.last else 0.0))
+            _tradk_sol(p, al, bz, bx, by, ((psi if self.first else 0.0) - (psi if self.last else 0.0)) if self.fringe else 0.0)
             p.setr0()
             S[k, 7], S[k, 8], S[k, 9] = p.pxr0, p.pyr0, p.zr0
             bzp = bz / (1.0 + c[5])
@@ -2440,6 +2602,8 @@ class _RadHook:
             S[k, 6] = p.dv
             p.c = keep
         self.first = False
+        if self.al_tot:
+            _ph_adv(al / self.al_tot)             # tmulti.f: pcvt%fr0 += al1/al (全粒子の tradk の後に 1 回)
 
 
 def _trots(p: _Particle, fr, ent):
@@ -2509,8 +2673,12 @@ def _tsol_region_v2(parts, elements, i, rad, trf0, rfsw):
             self.items.append((k, p))
     col = _Col()
     ke = _x.compile_sol_region(col, elements, i, ph)
+    base_l = _PH['l'] if _PH is not None else 0
     for j, (kind, pr) in enumerate(col.items):
         el = elements[i + j]
+        if _PH is not None:
+            _PH['l'] = base_l + j                        # l_track (v2 (P4): 領域内の要素の光子)
+            _PH['ctx'] = None
         if kind == _n.K_NONE:
             continue
         if kind == _x.K_SOL_FRIN:
@@ -2524,9 +2692,12 @@ def _tsol_region_v2(parts, elements, i, rad, trf0, rfsw):
             # v2 (B1): 放射とスピンの歳差は 1 刻みの前後の向きの変化 (弦) から出すので、らせんの回転角 bz·al が大きいと不正確になる
             # (領域内の BEND と同じ。bz·al/ndiv ≤ 0.02)。K64 は 1 刻み (k64 モードは今まで通り)
             nd = (1 + int(abs(bz * al) / 0.02)) if (rad and radok and bz != 0.0 and _compat.v2()) else 1
+            if _PH is not None and rad and radok and al != 0.0:
+                _ph_set(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, al)        # tdrift.f: tsetpcvt (v2 (P4): 領域内の DRIFT の光子)
             for _ in range(nd):
                 for p in parts:
                     _sol_drift_v2(p, al / nd, bz, rad and radok)
+                _ph_adv(1.0 / nd)
         elif kind == _x.K_SOL_QUAD:
             _tquad_sol(parts, el, pr[5], rad and pr[6])
         elif kind == _x.K_SOL_BEND:
@@ -2535,12 +2706,15 @@ def _tsol_region_v2(parts, elements, i, rad, trf0, rfsw):
             for _ in range(nd):
                 for p in parts:
                     _sol_bend_v2(p, al / nd, bz, kx / nd, ky / nd, rad and radok)
+                _ph_adv(1.0 / nd)
         elif kind == _x.K_SOL_MULT:
             prm, bz = pr
             S = _state_of(parts)
             th = math.atan2(prm[8], prm[7])
             for p in parts:
                 _spin_rot_z(p, th, True)
+            if _PH is not None and rad and prm[11] and prm[0] != 0.0:
+                _ph_set(prm[5], prm[6], th, 0.0, 0.0, 0.0, prm[0])   # tmulti.f: tsetpcvt (v2 (P4): 領域内の MULT の光子)
             _x.sol_mult_full(S, len(parts), ph, prm, bz, trf0, False, rfsw, rad, _FLUC, _kernel_rs(), hook=_RadHook(parts, prm))
             _state_back(parts, S)
             for p in parts:

@@ -1291,6 +1291,8 @@ def _finish_gamma(dtwiss: np.ndarray, u: np.ndarray, l: int) -> np.ndarray:
 # qdcell.f tffsqu (qu の組み立て)
 # ---------------------------------------------------------------------------
 def _variable_iv(v: dict) -> Optional[int]:
+    if v.get('noop'):
+        return None                                # 何もしない変数 (先頭でない成分の既定のキー): 数値微分の列 (ゼロ)
     return _IV_TABLE.get((v['type'], v['key']))
 
 

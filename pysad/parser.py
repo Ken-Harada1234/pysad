@@ -38,12 +38,14 @@ from .constants import SpeedOfLight, ElectronMass
 
 class Token:
     """A lexical token from a SADScript file."""
-    __slots__ = ('type', 'value', 'line')
+    __slots__ = ('type', 'value', 'line', 'pos', 'end')
 
-    def __init__(self, type_: str, value: str, line: int = 0):
+    def __init__(self, type_: str, value: str, line: int = 0, pos: int = -1, end: int = -1):
         self.type = type_
         self.value = value
         self.line = line
+        self.pos = pos            # 原文の中の位置 (数と単位の間の空白の有無の判定に使う。-1 は不明)
+        self.end = end
 
     def __repr__(self):
         return f"Token({self.type!r}, {self.value!r}, line={self.line})"
@@ -116,7 +118,7 @@ def tokenize(source: str) -> List[Token]:
         if kind in ('COMMENT_PAREN', 'COMMENT_BANG', 'WS'):
             line += val.count('\n')
             continue
-        tok = Token(kind, val, line)
+        tok = Token(kind, val, line, m.start(), m.end())
         line += val.count('\n')
         tokens.append(tok)
     return tokens
@@ -687,6 +689,19 @@ class _Parser:
                 self._skip_to_semicolon()
                 return None
 
+        # MAIN の変数 E・Pi・Degree への代入 (P5 D3): gs は要素定義の式でその値を使う。pysad の env は E・Pi・Degree を SADScript の定数として持つので、
+        # 代入は別の辞書 (env._main_user_vars) に入れ、MAIN の式の読み取り (_parse_main_value) だけが見る (FFS の SADScript の E・Pi は変わらない)
+        if tok.type == 'IDENT' and tok.value in ('E', 'Pi', 'Degree'):
+            nxt = self.peek(1)
+            if nxt is not None and nxt.type in ('OP', 'ASSIGN') and nxt.value == '=':
+                name = self.consume().value
+                self.consume()
+                rhs = self.parse_expr()
+                if isinstance(rhs, (int, float)) and not isinstance(rhs, bool):
+                    self.env.__dict__.setdefault('_main_user_vars', {})[name] = float(rhs)
+                self.match('OP', ';')
+                return rhs
+
         # Try to detect special forms before general expression
         result = self._try_special_form()
         if result is not None:
@@ -890,14 +905,20 @@ class _Parser:
         戻り値 (True, 値) なら読んだ字句を消費済み。式でない値 (文字列・リスト・`->` など) は (False, None) で位置を変えない (従来の読み取りへ)。
         式の形で gs が構文エラーにする (`2*-1`、`1.5 PI`、`pi`、未定義の名前) ものは SyntaxError (gs は構文エラーで止まる)。
         数だけの値 (`L=1`) は従来の読み取りに任せる (整数のまま)"""
+        from . import compat as _compat
         toks = []
         depth = 0
         i = self.pos
+        prev = None
         while i < len(self.tokens):
             t = self.tokens[i]
             if t.type == 'NUMBER':
                 toks.append(('num', t.value))
             elif t.type == 'IDENT':
+                if (prev is not None and prev.type == 'NUMBER' and t.value.upper() in _SAD_UNITS and prev.end >= 0 and prev.end == t.pos
+                        and _compat.k64()):
+                    # `45DEG` (数と単位の間に空白が無い): gs は構文エラー (Undefined keyword: DEG…)。v2 は受ける (従来の読み取り)
+                    raise SyntaxError('syntax error in MAIN expression (gs: Undefined keyword: %s): ' % (prev.value + t.value))
                 toks.append(('id', t.value))
             elif t.type == 'OP' and t.value in '+-*/^,=' and len(t.value) == 1:
                 toks.append(('op', t.value))
@@ -910,12 +931,20 @@ class _Parser:
                 depth -= 1
                 toks.append(('op', ')'))
             else:
+                if (t.type == 'LBRACE' and toks and toks[-1][0] == 'id'
+                        and (toks[-1][1].upper() in _MAIN_FUNCS1 or toks[-1][1].upper() == 'ATAN2')):
+                    # `SIN[0.1]` (関数は丸括弧): gs は構文エラー。pysad は `SIN` を値として 0 を入れていた (両モードで直した)
+                    raise SyntaxError('syntax error in MAIN expression (gs: LALR(1) parser: syntax error): ' + toks[-1][1] + '[')
                 break
+            prev = t
             i += 1
         if not toks or toks[0][0] == 'op' and toks[0][1] not in ('-', '+', '('):
             return False, None
 
         def getvar(name):
+            uv = getattr(self.env, '_main_user_vars', None)
+            if uv and name in uv:
+                return uv[name]                     # MAIN で代入した E・Pi・Degree (P5 D3)
             v = self.env.get(name)
             if isinstance(v, bool) or not isinstance(v, (int, float)):
                 raise ValueError(name)
@@ -925,6 +954,14 @@ class _Parser:
         try:
             x, n = _main_expr_parse(toks, {}, getvar, stream=True)
         except (ValueError, RecursionError):
+            if _compat.k64() and len(toks) >= 2 and toks[-1][0] == 'op' and toks[-1][1] in '+-*/^':
+                # 末尾の演算子 (`1+`・`2*3+`): gs は構文エラーにせず、値を 1 にする (K64 の誤りの候補 P5-6)。v2 は構文エラー (入力ミス)
+                try:
+                    _main_expr_parse(toks[:-1], {}, getvar)
+                    self.pos += len(toks)
+                    return True, 1.0
+                except (ValueError, RecursionError):
+                    pass
             # 識別子だけの値 (`L=name` の参照) など、式にならないものは従来の読み取りへ。数・演算子・関数で始まる式の誤りは構文エラー
             if toks[0][0] == 'id' and (len(toks) == 1 or toks[1][0] == 'id' or toks[1] == ('op', '=')):
                 return False, None

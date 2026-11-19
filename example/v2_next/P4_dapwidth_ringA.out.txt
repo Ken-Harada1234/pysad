@@ -1,0 +1,21 @@
+# v2next P4 項目 5 (大きなリングでの確認): 大きなリング A (pysad/tests/kek-ls_v03_12.lat、3 GeV、周長 603 m、3563 要素、RFSW + NORAD) の DynamicApertureSurvey {{1,400},{1,1},{-0.5,0,0.5}}、60 周。
+# 台本 = ラティスの末尾に FFS; NPARA = 1; USE RING; CELL; CALC; RFSW; RAD; NOFLUC; EMIT; NORAD; DynamicApertureSurvey (DAPWIDTH 既定 7 と 51) (試験 test_v2_P4_dapwidth.py::test_dapwidth_window_on_large_ring_a_matches_gs)。
+# gs (K64) の地図と pysad (k64) の地図。DAPWIDTH = 7 で j = 1〜14 が窓の外 (*)。損失の境界の 1 点 (z = 0.5 の j = 34) だけ 1〜2 周違う (E と c、D と c)。Score は両方 63。gs は 11.7 s、pysad は 4.9 s。
+== gs
+    -0.50 21 **************ZZZZZZZ1112225ZZZZ212121  .         .
+     0.00 21 **************ZZZZZZZ1117135VZZZ222111  .         .
+     0.50 21 **************ZZZZZZZ23 24234ZZZ32E31   .2        .
+SCORE    63.000000
+    -0.50 21 ZZZZZZZZZZZZZZZZZZZZZ1112225ZZZZ212121  .         .
+     0.00 21 ZZZZZZZZZZZZZZZZZZZZZ1117135VZZZ222111  .         .
+     0.50 21 ZZZZZZZZZZZZZZZZZZZZZ23 24234ZZZ32D31   .2        .
+SCORE51    63.000000
+== pysad (k64)
+    -0.50 21 **************ZZZZZZZ1112225ZZZZ212121  .         .
+     0.00 21 **************ZZZZZZZ1117135VZZZ222111  .         .
+     0.50 21 **************ZZZZZZZ23 24234ZZZ32c31   .2        .
+SCORE    63.000000
+    -0.50 21 ZZZZZZZZZZZZZZZZZZZZZ1112225ZZZZ212121  .         .
+     0.00 21 ZZZZZZZZZZZZZZZZZZZZZ1117135VZZZ222111  .         .
+     0.50 21 ZZZZZZZZZZZZZZZZZZZZZ23 24234ZZZ32c31   .2        .
+SCORE51    63.000000

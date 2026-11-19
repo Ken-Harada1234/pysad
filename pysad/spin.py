@@ -26,6 +26,14 @@ CFPD = 5.0 * math.sqrt(3.0) / 8.0
 CEZLIM = 18.0
 SOL_BPAR = True            # v2 (E): SOL 領域の中の Emittance[] の POL は、運動量の向きの磁場の積分 B∥ を向きの変化から作る B⊥ と分けて足す。False で K64 のまま (bsi を z 軸の向きに足す)
 SPIN_ANGLE_EXACT = True    # v2 (E): tradke_spin の向きの変化の大きさを sin θ でなく θ にする (追跡と同じ。False で A の v2 のまま)
+STEP_RATE = True           # v2 (P1): 線形の脱偏極率を、放射の刻みごとのスピン軸の場 N_s (要素の出口の N ではなく) で積分する。False で B3 までの要素の出口の N
+KINETIC = True             # v2 (P1): 平衡偏極度の分子に運動論的偏極 b·∂n/∂δ (DK の式の −b·γ∂n/∂γ の項) を入れる。False で n·b だけ (B3 まで)
+STEP_ACC = False           # slim_depolarization の中だけ True: tradke_spin が刻みごとの積算量 (kin_A・kin_Y・rt_M・rt_F・rt_G) を作る
+ST_EXACT = True            # v2 (P1): 緩和率に Sokolov-Ternov の厳密式 Σ r (1 − 2/9 (n·v)²) を使う。False で A2 の Σ r (b·n)² (傾いた n・垂直の偏向で合わない)
+CHROMATIC = True           # v2 (P1): 側帯の式にベータトロンの位相のクロマティックな変調 (チューンの δ 依存 ξ) を入れる。False で B3 の式 (軌道は線形)
+CHROM_KMAX = 60000         # 減衰の和の項数 K がこれを超えるとき (放射減衰が弱い大きなリング) は入れない (計算が K×試料数×6 で重い)
+CHROM_NEL = 1200           # 要素数がこれを超えるとき (大きなリング A: 3563) は dM/dδ の 2 周も計算しない (未確認の範囲)
+CHROM_MIN = 0.03           # 変調指数 (dν/dδ)·σδ/νs がこの値より小さいときは入れない (効果が 1% 未満)
 SIDEBAND = True       # v2 (B3): Polarization の脱偏極率にシンクロトロン側帯 (スピンの位相変調) を入れる。False で線形の式 (A の B55) だけ
 M_2PI = 2.0 * math.pi
 M_SQRTPI = math.sqrt(math.pi)
@@ -204,6 +212,12 @@ def tradke_spin(st, c):
         st.gintd = st.gintd + sw[0:3] * sflc() * anp * (bt * h1 * p / al1) ** 2
         _w = sflc() * anp * (bt * h1 * p / al1) ** 2
         st.gintd2 = st.gintd2 + np.outer(sw[0:3], sw[0:3]) * _w       # v2 (A2): 磁場の向きの符号に依らない緩和率 Σ r (b·n)² 用 (k64 の結果には使わない)
+        # v2 (P1): Sokolov-Ternov の厳密な緩和率 Σ r (1 − 2/9 (n·v)²) 用 (gsum = Σ r、gintd2v = Σ r (v̂ v̂ᵀ)。v̂ は刻みの運動量の向き。k64 の結果には使わない)
+        _pv = np.array([pxh, pyh, pzh])
+        _pv = _pv / np.linalg.norm(_pv)
+        _sv = (sx * _pv[0] + sy * _pv[1] + sz * _pv[2])[0:3]
+        st.gsum = getattr(st, 'gsum', 0.0) + _w
+        st.gintd2v = getattr(st, 'gintd2v', np.zeros((3, 3))) + np.outer(_sv, _sv) * _w
         sw = -sw * dcosu / g
         sux = sy * gz - sz * gy
         suy = sz * gx - sx * gz
@@ -211,8 +225,50 @@ def tradke_spin(st, c):
         srot[0] = cosu * sx + sinu * sux + sw * gx
         srot[1] = cosu * sy + sinu * suy + sw * gy
         srot[2] = cosu * sz + sinu * suz + sw * gz
+        if STEP_ACC and bt > 0.0:
+            _acc_step(st, c, btx / bt, bty / bt, btz / bt, _w)
     srot[0] = cp * srot[0] + sp * srot[2]
     srot[2] = (-sp * srot[0] + srot[2]) / cp       # 更新後の 1 行目を使う (K64 のまま)
+
+
+def _acc_step(st, c, bhx, bhy, bhz, w):
+    """v2 (P1): 1 刻みの積算 (要素の入口の座標・スピンの系で書く)。放射の跳び ξ (刻みの出口の座標、共分散 b_s) が動かすスピン軸は N_s ξ、
+    N_s T_e = R_e N_in + [n_e]× D_e (T_e = 入口から刻みの出口までの写像、R_e・D_e = そこまでのスピンの回転とスピン軌道結合、N_in・n_in = 要素の入口の値)。
+    R_eᵀ N_s = (N_in + [n_in]× E_s) T_e⁻¹ (E_s = R_eᵀ D_e) なので、脱偏極率 ½ Σ_s tr(N_s⊥ b_s N_s⊥ᵀ) は
+        rt_M = Σ M_s,  rt_F = Σ M_s E_sᵀ,  rt_G = Σ E_s M_s E_sᵀ   (M_s = T_e⁻¹ b_s T_e⁻ᵀ)
+    から、要素の入口の N_in・n_in を使って後から作れる (slim_depolarization)。運動論的偏極 Σ w b̂·m_s (m_s = N_s の δ 列 = ∂n/∂δ。位置・角度を固定した δ の偏微分) は
+        kin_A = Σ w (R_eᵀ b̂) (T_e⁻¹ e_δ)ᵀ,  kin_Y = Σ w R_eᵀ ((D_e T_e⁻¹ e_δ) × b̂)   →   K = Σ A ∘ N_in + n_in·Y
+    b̂ は刻みの磁場 (B⊥) の向き、w は gintd と同じ重み。"""
+    from .emit6d import CUU
+    srot = st.srot
+    Re = srot[:, 0:3].copy()
+    De = srot[:, 3:9].copy()
+    try:
+        Tei = np.linalg.inv(st.T + st.D)
+    except np.linalg.LinAlgError:
+        return
+    bh = np.array([bhx, bhy, bhz])
+    t = Tei[:, 5]
+    rb = Re.T @ bh
+    st.kin_A = getattr(st, 'kin_A', 0.0) + w * np.outer(rb, t)
+    st.kin_Y = getattr(st, 'kin_Y', 0.0) + w * (Re.T @ np.cross(De @ t, bh))
+    px, py, pxi, pyi, bz = c['px'], c['py'], c['pxi'], c['pyi'], c['bzh']
+    dee = c['anp'] * c['uc'] ** 2 * CUU
+    pxm = pxi + px
+    pym = pyi + py
+    B = st.B
+    bm = np.zeros((6, 6))
+    bm[1, 1] = (B[1, 1] + bz * (2.0 * B[1, 2] + bz * B[2, 2]) + (pxm ** 2 + pxi ** 2 + px ** 2) / 6.0) * dee
+    bm[3, 1] = bm[1, 3] = (B[3, 1] - bz * (B[0, 1] - B[2, 3] + bz * B[0, 2]) + (pxm * pym + pxi * pyi + px * py) / 6.0) * dee
+    bm[3, 3] = (B[3, 3] + bz * (-2.0 * B[0, 3] + bz * B[0, 0]) + (pym ** 2 + pyi ** 2 + py ** 2) / 6.0) * dee
+    bm[5, 1] = bm[1, 5] = pxm * dee * 0.5
+    bm[5, 3] = bm[3, 5] = pym * dee * 0.5
+    bm[5, 5] = dee
+    M = Tei @ bm @ Tei.T
+    E = Re.T @ De
+    st.rt_M = getattr(st, 'rt_M', 0.0) + M
+    st.rt_F = getattr(st, 'rt_F', 0.0) + M @ E.T
+    st.rt_G = getattr(st, 'rt_G', 0.0) + E @ M @ E.T
 
 
 # ---------------------------------------------------------------------------
@@ -526,11 +582,16 @@ def srequpol(srot, sps, params, demit, sdamp, r):
     return equpol, rm1
 
 
+def _compat_v2():
+    from . import compat
+    return compat.v2()
+
+
 def _cross_mat(v):
     return np.array([[0.0, -v[2], v[1]], [v[2], 0.0, -v[0]], [-v[1], v[0], 0.0]])
 
 
-def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, modulate=True, seed=20261118):
+def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, modulate=True, seed=20261118, C6=None, us=None):
     """シンクロトロン側帯 (スピンの位相変調) を入れた 1 周あたりの脱偏極率 (v2 の Polarization、B3)。独立な導出 (docs/history/v2next_B3.md §2)。
 
     線形の式 (slim_depolarization) は、スピン軸の場 n(u) = n0 + N u を軌道 u の 1 次で置き、放射の跳び ξ (共分散 B_i) あたり ½|N ξ|² だけ偏極が減ると
@@ -551,7 +612,11 @@ def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, mod
     secs = [(T_i, B_i, R_i, D_i)]、n0 は入口のスピン軸、s0 は入口のビーム行列。
     戻り dict(rate, spread (½⟨|α*_0|²⟩ = 入口での n の広がり), kturns (使った K))
     限界: 結合 b の u の 2 次の項 (変調 × 結合) は入れない (相対 ~aγδ·θ)。|eig M| が 1 に近い (放射減衰が弱い) ときは K が大きく遅い。
-    縦の減衰が無い (RF OFF) 場合は呼ばない (和が収束しない)。"""
+    縦の減衰が無い (RF OFF) 場合は呼ばない (和が収束しない)。
+    v2 (P1): C6 (1 周の写像の δ 微分 dM/dδ、分散軌道に沿った 6x6) が渡されたとき、ベータトロンの固有モード j の位相がシンクロトロン振動の δ_t で変調される
+    (クロマティシティ) ことを入れる: u_{k,j} = c_j λ_j^k exp(i ξ_j Δ_k)、Δ_k = Σ_{t<k} δ_t (δ_t = 線形のシンクロトロン解)、ξ_j = Im[(V⁻¹ C6 V)_jj / λ_j] (rad/δ)。
+    スピンの歳差の位相 S_k と n 軸の勾配 ∂α*/∂u も同じ軌道で組み直す (∂Δ_k/∂u を通る項が増える)。スピンチューンがベータトロンの側帯 νx + kνs に近い共鳴
+    (4.2 GeV・12 MV の 12 セル FODO: νspin ≈ νx + 2νs) では、スピンと軌道の位相の相対的な変調 (aγ − ξ) が側帯の重みを変える (記録 v2next_P1.md §4)。"""
     N = len(secs)
     m0, l0, ms, ls, ns, mu = _spin_frames(secs, n0)
     p = [-(ns[i] @ secs[i][3]) for i in range(N)]
@@ -578,20 +643,55 @@ def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, mod
     geo = (1.0 - w[None, :] ** (k[:, None] + 1)) / (1.0 - w[None, :])
     GMk = (lamk * GV[None, :]) @ Vi
     Qk = (geo * PV[None, :]) @ Vi
+    xi = np.zeros(6)
+    if C6 is not None and modulate:
+        dlog = np.einsum('ij,jk,ki->i', Vi, np.asarray(C6, dtype=complex), V) / w
+        xi = np.imag(dlog)
+        ws = np.abs(V[4, :]) ** 2 + np.abs(V[5, :]) ** 2
+        for j in np.argsort(-ws)[:2]:
+            xi[j] = 0.0                                  # シンクロトロンのモード (RF の非線形・α₂ は入れない)
+    ws2 = np.abs(V[4, :]) ** 2 + np.abs(V[5, :]) ** 2
+    isy = np.argsort(-ws2)[:2]
+    nus = float(np.abs(np.angle(w[isy[0]])) / (2.0 * math.pi))
+    mod_spin = float(math.sqrt(max(0.0, float(np.real(Pt) @ s0 @ np.real(Pt)))) / (2.0 * math.pi * nus)) if nus > 0.0 else float('nan')   # スピンの位相の変調指数
+    mod_chrom = float(np.abs(xi).max() * math.sqrt(max(0.0, float(s0[5, 5]))) / (2.0 * math.pi * nus)) if nus > 0.0 else float('nan')    # ベータトロンの位相の変調指数
+    if C6 is not None and mod_chrom < CHROM_MIN:
+        xi = np.zeros(6)                                 # 効果が 1% 未満: 入れない (計算も速い)
+    if K > CHROM_KMAX:
+        xi = np.zeros(6)
+    chrom = bool(np.abs(xi).max() > 0.0)
     from scipy.stats import norm, qmc
     m2 = max(1, int(round(math.log2(nsamp))))
     z = norm.ppf(np.clip(qmc.Sobol(d=6, scramble=True, seed=seed).random_base2(m2), 1e-12, 1 - 1e-12))
     ev, evec = np.linalg.eigh(0.5 * (s0 + s0.T))
     L = evec * np.sqrt(np.clip(ev, 0.0, None))
-    us = z @ L.T
+    us = z @ L.T if us is None else np.asarray(us, dtype=float)       # us: 試料の点を直接渡す (導出の検算用。戻りの G0・a0)
     ns_ = us.shape[0]
     phs = np.exp(-1j * mu * k)
     G0 = np.zeros((ns_, 6), dtype=complex)
     a0 = np.zeros(ns_, dtype=complex)
     batch = max(1, int(4.0e6 // K))                # (batch × K) の複素配列を数個: 4e6 × 16 B × 4 ≈ 250 MB 以下
+    if chrom:
+        geo0 = (1.0 - w[None, :] ** k[:, None]) / (1.0 - w[None, :])               # Σ_{t<k} λ^t
+        dDelta = np.real((geo0 * V[5, :][None, :]) @ Vi)                           # ∂Δ_k/∂u (K, 6)
+        batch = max(1, int(4.0e5 // K))                # (batch × K × 6) の複素配列を 6 個前後
     for b in range(0, ns_, batch):
         u = us[b:b + batch]
         c = u @ Vi.T
+        if chrom:
+            Delta = np.real((c * V[5, :][None, :]) @ geo0.T)                       # Δ_k = Σ_{t<k} δ_t (s, K)
+            Eh = lamk[None, :, :] * np.exp(1j * xi[None, None, :] * Delta[:, :, None])
+            Ek = Eh * c[:, None, :]                                                # c_j λ_j^k e^{iξ_j Δ_k} (s, K, 6)
+            gk = Ek @ GV
+            Sk = np.cumsum(np.real(Ek @ PV), axis=1)
+            ph = phs[None, :] * np.exp(-1j * Sk)
+            a0[b:b + batch] = -(ph * gk).sum(1)
+            bg = 1j * (Ek * (GV * xi)[None, None, :]).sum(-1)
+            bp = 1j * (Ek * (PV * xi)[None, None, :]).sum(-1)
+            dg = (Eh * GV[None, None, :]) @ Vi + bg[:, :, None] * dDelta[None, :, :]
+            dS = np.cumsum(np.real((Eh * PV[None, None, :]) @ Vi + bp[:, :, None] * dDelta[None, :, :]), axis=1)
+            G0[b:b + batch] = -(ph[:, :, None] * dg).sum(1) + 1j * ((ph * gk)[:, :, None] * dS).sum(1)
+            continue
         gk = (c * GV[None, :]) @ lamk.T
         if modulate:
             ph = phs[None, :] * np.exp(-1j * ((c * PV[None, :]) @ geo.T))
@@ -602,8 +702,8 @@ def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, mod
             a0[b:b + batch] = -(ph * gk).sum(1)
             G0[b:b + batch] = -(ph @ GMk)
     u = us.copy()
-    G = G0
-    a = a0
+    G = G0.copy()
+    a = a0.copy()
     rate = 0.0
     for i in range(N):
         T, B, _R, _D = secs[i]
@@ -613,7 +713,7 @@ def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, mod
         u = u @ T.T
         G = Gn
         rate += 0.5 * float(np.mean(np.einsum('si,ij,sj->s', G, B, G.conj()).real))
-    return dict(rate=rate, spread=0.5 * float(np.mean(np.abs(a0) ** 2)), kturns=K)
+    return dict(rate=rate, spread=0.5 * float(np.mean(np.abs(a0) ** 2)), kturns=K, xi=xi, chromatic=chrom, G0=G0, a0=a0, mod_spin=mod_spin, mod_chrom=mod_chrom, nus=nus)
 
 
 def _spin_frames(secs, n0):
@@ -635,6 +735,32 @@ def _spin_frames(secs, n0):
     return m0, l0, ms, ls, ns_, mu
 
 
+def _chromatic_matrix(els, ph, cod, trf0, rfsw, radcod, secs, eps=1e-4):
+    """v2 (P1): 1 周の写像 (T + D) の δ 微分 dM/dδ (6x6)。閉軌道を分散軌道の向き (η_x, η_px, η_y, η_py, 0, 1) に ±eps だけずらした軌道に沿って
+    要素ごとのヤコビアンを掛けた 1 周の写像の中心差分。ベータトロンのチューンの δ 依存 (クロマティシティ。自然クロマティシティ + 六極) を含む"""
+    from . import emit6d as _e6
+    Phi = np.eye(6)
+    for T, _B, _R, _D in secs:
+        Phi = T @ Phi
+    eta = np.linalg.solve(np.eye(4) - Phi[:4, :4], Phi[:4, 5])
+    eta6 = np.array([eta[0], eta[1], eta[2], eta[3], 0.0, 1.0])
+    old = _e6.POL_MODE
+    _e6.POL_MODE = False
+    Ms = []
+    try:
+        for sgn in (1.0, -1.0):
+            c = np.array(cod, dtype=float) + sgn * eps * eta6
+            M = np.eye(6)
+            for el in els:
+                st = _e6.tturne([el], c, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
+                M = (st.T + st.D) @ M
+                c = st.cod.copy()
+            Ms.append(M)
+    finally:
+        _e6.POL_MODE = old
+    return (Ms[0] - Ms[1]) / (2.0 * eps)
+
+
 def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_matrix=None, sideband=False):
     """線形のスピン軌道結合 (SLIM / Derbenev-Kondratenko の脱偏極項) による 1 周あたりの脱偏極率 (v2 の Polarization が使う)。
 
@@ -648,20 +774,34 @@ def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_m
     戻り dict(rate, n0, N0 (入口の ∂n/∂u)、rev (平衡分布での n の広がり (1/2) tr(N⊥ Σ N⊥ᵀ) を呼び出し側が作るための N0))。
     限界: 軌道の振幅について 1 次 (シンクロトロン側帯などの高次の共鳴は入らない)、運動論的偏極 (b·γ∂n/∂γ) の項は入らない"""
     from . import emit6d as _e6
+    global STEP_ACC
     old = _e6.POL_MODE
+    old_acc = STEP_ACC
     _e6.POL_MODE = True
+    STEP_ACC = bool(STEP_RATE or KINETIC) and _compat_v2()
     secs = []
+    acc = []
     c = np.array(cod, dtype=float)
     try:
         for el in els:
             st = _e6.tturne([el], c, ph, trf0=trf0, rfsw=rfsw, radcod=radcod)
             secs.append((st.T + st.D, st.B.copy(), st.srot[:, 0:3].copy(), st.srot[:, 3:9].copy()))
+            acc.append(None if getattr(st, 'rt_M', None) is None else dict(M=st.rt_M, F=st.rt_F, G=st.rt_G, A=st.kin_A, Y=st.kin_Y))
             c = st.cod.copy()
     finally:
         _e6.POL_MODE = old
+        STEP_ACC = old_acc
     rtot = np.eye(3)
+    ttot = np.eye(6)
     for _T, _B, R, _D in secs:
         rtot = R @ rtot
+        ttot = _T @ ttot
+    if _compat_v2() and radcod:
+        # v2 (P1): 光学が不安定なリング (1 周の写像 T + D の固有値の大きさが 1 を超える。放射減衰があれば安定なリングは全て < 1) の脱偏極率は意味がない
+        # (線形の式の周期解が不安定な軌道の上の値になる: B3 の大きなリング A の縦ずれ 0.2・0.4 mm が x の固有値 1.2 で P = 0.92 を返していた)。NaN にする
+        wmax = float(np.abs(np.linalg.eigvals(ttot)).max())
+        if wmax > 1.0 + 1e-6:
+            raise ValueError('unstable optics: max |eig(one-turn map)| = %.6f > 1' % wmax)
     w, v = np.linalg.eig(rtot)
     k = int(np.argmin(np.abs(w - 1.0)))
     n0 = np.real(v[:, k])
@@ -693,12 +833,33 @@ def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_m
     for (_T, B, _R, _D), (N, n) in zip(secs, out):
         npp = (np.eye(3) - np.outer(n, n)) @ N
         rate += 0.5 * float(np.trace(npp @ B @ npp.T))
-    out_ = dict(rate=rate, n0=n0, N0=nn0, rate_linear=rate)
+    out_ = dict(rate=rate, n0=n0, N0=nn0, rate_linear=rate, rate_el=rate, kin=0.0)
+    if any(a is not None for a in acc):
+        # v2 (P1): 放射の刻みごとのスピン軸の場で積分した脱偏極率と、運動論的偏極 K = Σ w b̂·∂n/∂δ (要素の入口の N_in・n_in と刻みごとの積算から)
+        rs = 0.0
+        kin = 0.0
+        N_in, n_in = nn0, n0
+        for a, (N_out, n_out) in zip(acc, out):
+            if a is not None:
+                Nt = (np.eye(3) - np.outer(n_in, n_in)) @ N_in
+                cn = _cross_mat(n_in)
+                rs += 0.5 * (float(np.trace(Nt @ a['M'] @ Nt.T)) + 2.0 * float(np.trace(Nt @ a['F'] @ cn.T)) + float(np.trace(cn @ a['G'] @ cn.T)))
+                kin += float(np.sum(a['A'] * N_in)) + float(n_in @ a['Y'])
+            N_in, n_in = N_out, n_out
+        out_['rate_step'] = rs
+        out_['kin'] = kin
+        if STEP_RATE:
+            out_.update(rate=rs, rate_linear=rs)
     if sideband and beam_matrix is not None:
         # v2 (B3): シンクロトロン側帯 (スピンの位相変調) を入れた脱偏極率。縦の減衰が無い場合は線形のまま
         try:
-            sb = sideband_depolarization([(T, B, R, D) for (T, B, R, D) in secs], n0, np.asarray(beam_matrix, dtype=float))
-            out_.update(rate=sb['rate'], spread_sb=sb['spread'], sideband_kturns=sb['kturns'])
+            C6 = None
+            if CHROMATIC and _compat_v2() and len(els) <= CHROM_NEL:
+                C6 = _chromatic_matrix(els, ph, cod, trf0, rfsw, radcod, secs)
+            sb = sideband_depolarization([(T, B, R, D) for (T, B, R, D) in secs], n0, np.asarray(beam_matrix, dtype=float), C6=C6)
+            # 要素の出口の N での値 sb['rate'] に、刻みごとの積分との差 (rate_step − rate_el: n が傾いたリングだけ 0 でない) を足す
+            out_.update(rate=sb['rate'] + (out_['rate'] - out_['rate_el']), spread_sb=sb['spread'], sideband_kturns=sb['kturns'],
+                        chromatic_xi=sb['xi'], chromatic=sb['chromatic'], mod_spin=sb['mod_spin'], mod_chrom=sb['mod_chrom'])
         except Exception as exc:
             out_['sideband_error'] = str(exc)
     return out_
@@ -735,13 +896,26 @@ def spin_results(st, em, ph, els=None, cod=None, trf0=0.0, rfsw=False, radcod=Fa
             # 逆向きの磁場 (挿入光源の交互の極) があると緩和率に使えない (P = PST (一定)、τ が実際より長く出る)。
             # 緩和率は Σ r_i (b_i·n)² (向きの符号に依らない)。一方向の曲げだけのリングでは sdamp と同じ (正の曲げだけ: 完全に一致)
             srel = sdamp_rel if sdamp_rel > 0.0 else sdamp
+            gsum = float(getattr(st, 'gsum', 0.0))
+            if ST_EXACT and gsum > 0.0:
+                # v2 (P1): Sokolov-Ternov の厳密な緩和率。スピンの向き n・磁場の向き b の符号つき・2 乗ではなく、放射 (スピン反転) の率 ∝ ρ⁻³ (1 − 2/9 (n·v)²)
+                # (v は速度の向き)。n が b と垂直 (垂直の偏向のある平面リング、水平磁場の挿入光源) でも反転は起きる。n が b と平行 (平面リング) では Σ r (b·n)² と同じ
+                res['sdamp_rel_b2'] = sdamp_rel
+                srel = gsum - (2.0 / 9.0) * float(n_ax @ getattr(st, 'gintd2v', np.zeros((3, 3))) @ n_ax)
+                res['sdamp_rel'] = srel
+            kin = 0.0
+            if KINETIC and sl.get('kin'):
+                # v2 (P1): 運動論的偏極 (DK の式の分子 b·(n − ∂n/∂δ) の第 2 項)。slim の n0 と K64 の n (sps) の向きをそろえる
+                kin = float(np.sign(float(sl['n0'] @ n_ax)) * sl['kin'])
+            res['kinetic'] = kin
             with np.errstate(all='ignore'):
-                pol = PST * sdamp / (srel + rate) if (srel + rate) != 0.0 else float('nan')
+                pol = PST * (sdamp - kin) / (srel + rate) if (srel + rate) != 0.0 else float('nan')
             if srel > 0.0:
                 with np.errstate(all='ignore'):
                     res['taup'] = 1.0 / srel / frev
             npp = (np.eye(3) - np.outer(sl['n0'], sl['n0'])) @ sl['N0']
-            res.update(depol_rate_linear=sl.get('rate_linear', rate), depol_sideband=('spread_sb' in sl), spin_spread_sb=sl.get('spread_sb'))
+            res.update(depol_rate_linear=sl.get('rate_linear', rate), depol_sideband=('spread_sb' in sl), spin_spread_sb=sl.get('spread_sb'),
+                       depol_chromatic=bool(sl.get('chromatic', False)), mod_spin=sl.get('mod_spin'), mod_chrom=sl.get('mod_chrom'))
             if 'sideband_error' in sl:
                 res['sideband_error'] = sl['sideband_error']
             res.update(equpol=np.array([pol, 0.0, 0.0]), depol_rate=rate, spin_orbit=sl['N0'],

@@ -1,0 +1,32 @@
+! v2next P4 項目 2: SOL 領域内の光子 (PhotonList)。3 GeV、BZ = 1 T の領域 (SOL ... SOL) の中の DRIFT・MULT (K0 = 0.01、L = 0.4)・QUAD (K1 = 0.8、L = 0.4) を、1500 個の粒子 (x = y = 0) が通る。
+! v2: 領域内の光子を領域の外と同じ位置の情報で記録する (要素ごとの光子数とエネルギーの合計を表示。MULT の合計は古典値 285 eV/粒子)。k64 (pysad) は領域内の MULT・BEND を扱えない (NotImplementedError)。
+! gs (K64): 領域内の MULT・DRIFT の光子は記録する (gx は要素の範囲。MULT のエネルギー合計は 313 eV/粒子で古典値 285 eV の統計の範囲)が、領域内の QUAD の光子は記録しない (B68 の疑い)。領域内の MULT は偏向を無視する (B69)。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=0.5);
+MULT M = (L=0.4 K0=0.01);
+QUAD Q = (L=0.4 K1=0.8);
+SOL SA = (L=0 BZ=1 BOUND=1 GEO=1) SB = (L=0 BZ=0 BOUND=1);
+MARK ST=();
+LINE TS = (ST SA D1 M D1 Q SB);
+FFS;
+NPARA=1;
+USE TS; INS; CALC;
+RAD; FLUC; PHOTONS;
+SeedRandom[5];
+n=1500;
+x0=Table[0,{i,n}]; px0=Table[0,{i,n}]; y0=Table[0,{i,n}];
+py0=Table[0,{i,n}]; z0=Table[0.0,{i,n}]; dp0=Table[0.0,{i,n}]; fl0=Table[1,{i,n}];
+r=TrackParticles[{1,{x0,px0,y0,py0,z0,dp0,fl0}},1,1];
+$FORM="14.6";
+es = Table[0,{7}]; cnt = Table[0,{7}]; gmin = Table[1e9,{7}]; gmax = Table[-1e9,{7}];
+Do[
+  l = PhotonList[[k,12]];
+  es[[l]] = es[[l]] + PhotonList[[k,1]];
+  cnt[[l]] = cnt[[l]] + 1;
+  gmin[[l]] = Min[gmin[[l]], PhotonList[[k,2]]];
+  gmax[[l]] = Max[gmax[[l]], PhotonList[[k,2]]],
+  {k,Length[PhotonList]}];
+Print["NPH ", Length[PhotonList]];
+Do[Print["ELEM ", l, " count ", cnt[[l]], " Esum/n [eV] ", es[[l]]/n, " gx range ", gmin[[l]], " ", gmax[[l]]], {l,1,7}];
+Print["classical MULT energy loss per particle [eV]: ", 88.46e3*3^4*0.01/(2 Pi*40)];
+Exit;

@@ -918,8 +918,9 @@ def compile_mult(el, ph=None, dz=0.0):
     if g(el, 'ANGLE'):
         from . import multa as _ma
         return _ma.compile_multa(el, ph)
-    if g(el, 'ANGLE') or g(el, 'F1') or g(el, 'FRINGE'):
-        raise NotImplementedError('track6n_ext: MULT の曲げ・F1・FRINGE は未対応')
+    if g(el, 'ANGLE') or g(el, 'F1') or g(el, 'FRINGE') or any(g(el, k) for k in ('F2', 'F1K1F', 'F1K1B', 'F2K1F', 'F2K1B', 'FB1', 'FB2', 'AE1', 'AE2')):
+        # F1・FRINGE・FB1・FB2・AE1・AE2 つきの MULT は track6 (Python の _tmulti_ens) が扱う (呼び出し側が track6 に落とす。v2next P3)
+        raise NotImplementedError('track6n_ext: MULT の曲げ・F1・FRINGE・AE は未対応')
     vc = g(el, 'VOLT') + g(el, 'DVOLT')
     rf = None
     if vc != 0.0:
@@ -1386,8 +1387,9 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, 
     elif kind == _n.K_STEER0:
         _n.k_steer0(S, n, pr[0], pr[1], pr[2], pr[3], pr[4], pr[5])
     elif kind == _n.K_STEER:
-        (al, phib, dx, dy, theta, cost, sint, tanp1, eps0, radok) = pr
-        _n.k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, ph.p0, ph.h0 * tm, ph.anrad, ph.cuc)
+        (al, phib, dx, dy, theta, cost, sint, tanp1, eps0, radok, sfb1, sfb2, sfrg, tanp2e, sv2) = pr
+        _n.k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, rad and radok, eps0, fluc, rs, ph.p0, ph.h0 * tm, ph.anrad, ph.cuc,
+                   sfb1, sfb2, sfrg, tanp2e, sv2)
 
 
 turn_ext = _n.turn

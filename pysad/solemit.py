@@ -211,8 +211,8 @@ def _tquade(st, pr):
     aln = L / nq
     akn = ak / nq
     kq = ak / L                                # 四極の勾配 (|K1|、回した座標系で By = kq x、Bx = kq y)
-    if krad and st.calpol and _compat.v2() and _spin.SOL_BPAR:
-        # v2 (E): 端の縦磁場の積分 ψ = kq x y を入口で +、出口で − (追跡 track6._tsolqu_bz_ens と同じ)
+    if krad and st.calpol and _compat.v2() and _spin.SOL_BPAR and fringe:
+        # v2 (E): 端の縦磁場の積分 ψ = kq x y を入口で +、出口で − (追跡 track6._tsolqu_bz_ens と同じ。P4: DISFRIN=1 では入れない)
         st.add_bsi(kq * st.cod[0] * st.cod[2], kq * st.cod[2], kq * st.cod[0], True)
 
         def _psi_out():
@@ -360,7 +360,7 @@ def emit(st, el):
             F = _mult_fld(prm)
             if fringe:
                 _cav_fringe(st, el, al, 1.0)
-            if radok and al != 0.0:
+            if radok and al != 0.0 and fringe:
                 _mult_psi(st, F, 1.0, True)
             for k in range(nd):
                 for half in (0, 1):
@@ -372,7 +372,7 @@ def emit(st, el):
                         _x.sol_mult_full(T, 1, ph, sub, bz, 0.0, False, False, False, False, rs, fr_in=fi, fr_out=fo)
                     _piece(st, f)
                     if radok and al != 0.0:
-                        if fo:
+                        if fo and fringe:
                             _mult_psi(st, F, -1.0, False)
                         _mult_trk(st, F, hl, bzh)
                     if half == 0:
@@ -411,8 +411,8 @@ def emit(st, el):
             k1 = abs(akr[1]) if nmmax >= 1 else 0.0
             nd = max(1 + int(abs(bz * al) / 0.02), 1 + int((abs(akr[0]) + k1 * 1e-2) / 0.005))
         F = _mult_fld(prm)
-        if radok and al != 0.0:
-            _mult_psi(st, F, 1.0, True)                # 入口の端の縦磁場の積分 +ψ (st.setr0 の後)
+        if radok and al != 0.0 and fringe:
+            _mult_psi(st, F, 1.0, True)                # 入口の端の縦磁場の積分 +ψ (st.setr0 の後。P4: DISFRIN=1 では入れない)
         for k in range(nd):
             sub = (al / nd, nmmax, akr / nd, dofr, ndiv0, dx, dy, ct, stt, fringe, eps0, False, None)
             fi, fo = k == 0, k == nd - 1
@@ -422,7 +422,7 @@ def emit(st, el):
                 _x.sol_mult_full(T, 1, ph, sub, bz, 0.0, False, False, False, False, rs, fr_in=fi, fr_out=fo)
             _piece(st, f)
             if radok and al != 0.0:
-                if k == nd - 1:
+                if k == nd - 1 and fringe:
                     _mult_psi(st, F, -1.0, False)
                 _mult_trk(st, F, al / nd, bzh)
         return

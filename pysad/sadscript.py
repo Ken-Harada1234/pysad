@@ -3842,7 +3842,8 @@ class Interp:
                 return math.gamma(x + 1.0)
             except OverflowError:
                 return INF
-        B['Factorial'] = mathf(_factorial)
+        from scipy import special as _sps0
+        B['Factorial'] = mathf(_factorial, lambda z: (lambda v: v.real if v.imag == 0 else v)(complex(_sps0.gamma(z + 1.0))))     # 複素の z (P5 項目 3)
         B['Gamma'] = mathf(math.gamma)
         def _cerf(f, cf):
             return mathf(f, lambda z: (lambda v: v.real if v.imag == 0 else v)(complex(cf(z))))

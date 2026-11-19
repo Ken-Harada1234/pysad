@@ -11,7 +11,8 @@ K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (
                  b41 / center_fix の既定は互換モードで決まる (v2: 修正、k64: K64 のソースどおり)。
 - ttstat       : ttstat.f (重心と 6×6 の分散行列)。ttstat_lines は表示 (書式 9001〜9006)。
 - cmd_measure / cmd_trcod / cmd_logmeasure : FFS のコマンド (tffsa.f)。**v2 モードだけ** ffscmd から呼ばれる
-  (k64 モードは従来どおり「未対応 (無視)」: gs が何も出さない・落ちるので、k64 の動作は変えていない)。
+  (k64 モードは v2next P5 で MEASURE・TRCOD・LOGMEASURE だけ gs の実動作を再現する `_k64_measure`・`_k64_trcod`: gs は先頭の要素の位置だけ統計を出し、
+   ほかの位置は無出力 (TRCOD は SIGSEGV)。ORBITJITTER・PUTMEASURE・GETMEASURE・TRCOD FIXCOD などは k64 で従来どおり無視。記録 docs/history/v2next_P5.md)。
 - trcod_fix / trcod_move / trcod_restore : TRCOD FIXCOD / MVCOD / STNCOD (trcoda.f の entry trcodf / trcodm / trcods)。基準軌道の保存。
 - cmd_align    : TRCOD ALIGN (nalign.f)。区間の磁石の DX・DY を先頭の磁石の値に揃える。
 - cmd_putmeasure / cmd_getmeasure : PUTMEASURE / GETMEASURE (nfgetm.c、tfgetm.f)。測定値を環境変数 SADPOUT / SADPIN のファイルで受け渡す。
@@ -407,6 +408,8 @@ def mark_values(ffs, main=False):
 
 
 def _np0(ffs):
+    if compat.k64() and 'NP' not in ffs.I.globals:
+        return 1000                                          # gs: NP の既定は 1000 (tffsa.f の np0=1000。v2 は NP の指定を要求する)
     try:
         return int(float(ffs.I.globals.get('NP', 0.0) or 0.0))
     except (TypeError, ValueError):
@@ -488,7 +491,8 @@ class Tracker:
 
     def reset(self):
         """RESET と、FIXSEED のときの乱数の種の復元 (NISTACK$FIXSEED@Pop[])"""
-        if self.ffs.flags.get('FIXSEED', True):
+        # k64: gs は FIXSEED でも種を戻さない (MEASURE を続けて呼ぶと分布が変わる。NISTACK$FIXSEED@Push/Pop が効かない: K64 の誤りの候補 P5-2)
+        if compat.v2() and self.ffs.flags.get('FIXSEED', True):
             rng = self.ffs.rng
             rng.seed, rng.filled, rng.next = self._seed
 
@@ -524,6 +528,63 @@ def _precheck(ffs, cmd):
     return True
 
 
+def _k64_measure(ffs, measp, name):
+    """k64 の MEASURE (gs の実動作。2026-11-19 の 10-19 ビルドで確認、docs/history/v2next_P5.md): 初期分布 (ttinit: B41 の読み方) と統計は
+    先頭の要素 (measp = 1、先頭の MARK) の位置でだけ出る。それ以外の位置 (既定の終端も) は、gs は何も出力せず FFS["MEASURE"] は
+    {1, 0 の重心, 0 の分散行列} を返す (粒子の追跡 tturn で全粒子が落ちて np <= 1 になる。原因は未特定: K64 の誤りの候補 P5-1)。
+    k64 は gs と同じにする。TRPT は K64 のとおり ON にしたままにする。"""
+    ffs.flags['TRPT'] = True
+    ffs._k64_np0 = _np0(ffs)                                # tfsetparam
+    sv = [1.0e20] * 5
+    ffs._measure_ret = [1.0, [0.0] * 6, [[0.0] * 6 for _ in range(6)]]
+    tk = Tracker(ffs)                                       # ttinit は位置によらず乱数を使う (種は戻さない)
+    if measp == 1:
+        try:
+            tk.track(measp, cont=True)
+            np_, sv = tk.stat(name, ffs.write)
+        finally:
+            tk.reset()
+        if np_ > 1:
+            ffs._measure_ret = [float(np_), [float(v) for v in tk.sa], [[float(v) for v in row] for row in tk.ss]]
+    ffs._measure_sv = sv
+    return True
+
+
+def _k64_trcod(ffs, measp, name):
+    """k64 の TRCOD (gs): 位置が先頭の要素のときだけ動き (統計を出す。粒子数は最後の tfsetparam の NP: CALC・EMIT・MEASURE などの時点の値。
+    なければ 1000)、それ以外の位置は gs が SIGSEGV (B42) なので何もせず警告を出す。Twiss への書き込みは先頭の要素だけ (v2 と同じ式)。"""
+    if measp != 1:
+        ffs.write(f' ?TRCOD {name}: K64 (gs) aborts with SIGSEGV at a position other than the first element (B42); ignored.' + chr(10))
+        return
+    npk = int(getattr(ffs, '_k64_np0', 1000) or 1000)
+    g = ffs.I.globals
+    old = g.get('NP', None)
+    g['NP'] = float(npk)
+    try:
+        rows = ffs.ensure_rows()
+        tk = Tracker(ffs, jitter=False)
+        try:
+            tk.track(1, cont=False)
+            xs = tk.alive_x()
+            if xs.shape[0] > 1:
+                sa, ss = ttstat(xs)
+                r = rows[0]
+                r.x_cod, r.px_cod, r.y_cod, r.py_cod = (float(v) for v in sa[:4])
+                if ss[5, 5] != 0.0:
+                    r.etx, r.etpx, r.ety, r.etpy = (float(ss[j, 5] / ss[5, 5]) for j in range(4))
+                np_, sv = tk.stat(name, ffs.write)
+            else:
+                sv = [1.0e20] * 5
+        finally:
+            tk.reset()
+    finally:
+        if old is None:
+            g.pop('NP', None)
+        else:
+            g['NP'] = old
+    ffs._measure_sv = sv
+
+
 def cmd_measure(ffs, words, i):
     """MEA_SURE [位置] (tffsa.f → trackb.f): 先頭 MARK の入口条件 (Twiss、EMITX、EMITY、DP、SIGZ、AZ) の分布の NP 個の粒子を
     位置 (既定は終端。前回の MEASURE/TRCOD の位置を覚える) の入口まで追い、重心・分散行列・射影/非結合の emittance と Twiss を表示する。
@@ -533,6 +594,9 @@ def cmd_measure(ffs, words, i):
     if not _precheck(ffs, 'MEASURE'):
         return n
     name = ffs.elname(measp)
+    if compat.k64():
+        _k64_measure(ffs, measp, name)
+        return n
     old_trpt = ffs.flags['TRPT']
     ffs.flags['TRPT'] = True
     tk = None
@@ -562,6 +626,8 @@ def cmd_trcod(ffs, words, i):
     if i + 1 < len(words):
         sub = words[i + 1].upper()
         from .ffscmd import _abbrev
+        if compat.k64() and (sub in ('FIXCOD', 'MVCOD', 'ALIGN') or _abbrev(sub, 'STN_COD')):
+            return None                                     # k64: 従来どおり (FIXCOD は gs が SIGSEGV、ほかは効果が見えない)
         if sub == 'FIXCOD':
             measp, n = _measp_word(ffs, words, i + 1)
             if _lat_ok(ffs, 'TRCOD FIXCOD'):
@@ -582,6 +648,9 @@ def cmd_trcod(ffs, words, i):
     if not _precheck(ffs, 'TRCOD'):
         return n
     name = ffs.elname(measp)
+    if compat.k64():
+        _k64_trcod(ffs, measp, name)
+        return n
     rows = ffs.ensure_rows()
     tk = Tracker(ffs, jitter=False)
     try:
@@ -628,6 +697,8 @@ def cmd_logmeasure(ffs, words, i):
 def ffs_command(ffs, W, words, i):
     """ffscmd の FFS のコマンド分岐から (v2 モードだけ) 呼ばれる。対象でなければ None"""
     from .ffscmd import _abbrev
+    if compat.k64() and not (_abbrev(W, 'MEA_SURE') or _abbrev(W, 'TRC_OD') or _abbrev(W, 'LOGM_EASURE')):
+        return None                                         # k64: ORBITJITTER・PUTMEASURE・GETMEASURE は従来どおり (無視)
     if _abbrev(W, 'MEA_SURE'):
         return cmd_measure(ffs, words, i)
     if _abbrev(W, 'TRC_OD'):

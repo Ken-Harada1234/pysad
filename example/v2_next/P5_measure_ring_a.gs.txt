@@ -1,0 +1,309 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:11:56 Thursday 11/19/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! 3.0 GEV RING, 20 CELLS
+ MOMENTUM = 3GEV;
+ DRIFT  DRID    =(L =2.9 )   DR20    =(L =.2 )    DR08    =(L =.12 )
+        DRSS    =(L =.4325 ) DRDD    =(L =.55 )    DRSO    =(L =.2525 )
+        DR28    =(L =.19 )   DRCT    =(L = 0 )
+ ;
+ DRIFT  DRID1    =(L =2.85 )
+        DRID2    =(L =0.05 )
+        DRSS1    =(L = 0.05)
+        DRSS2    =(L = 0.3825)
+        DRDD1    =(L = 0.45)
+        DRDD2    =(L = 0.05)
+        DR281    =(L = 0.05 )
+        DR282    =(L = 0.14 )
+        DR08H    =(L = 0.06)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3    =(L =.413 ANGLE =.00827209392 )
+        BID3H    =(L =.413/2 ANGLE =.00827209392/2 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3    =(L =.413 ANGLE =.00758109248 )
+        BPI3H    =(L =.413/2 ANGLE =.00758109248/2 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.900241394141 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7428636614916 )
+ ;
+ QUAD   QFA1    =(L =.25  K1 =1.0302859090451 )
+          QFA1H   =(L =.125  K1 =1.0302859090451/2 )
+        QDA2    =(L =.2   K1 =-.7358342943058 )
+        QDA3    =(L =.2   K1 =-.4409470413988 )
+        QFA4    =(L =.2   K1 =.4313378432341 )
+        QDA5    =(L =.2   K1 =-.4602777086531 )
+        QFA6    =(L =.335 K1 =1.7377379386433 )
+          QFA6H    =(L =.335/2 K1 =1.7377379386433/2 )
+        QFA8    =(L =.5   K1 =2.1955902812884 )
+          QFA8H    =(L =.25   K1 =2.1955902812884/2 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.8417491573899 )
+        SFA     =(L =.045 K2 =4.4168227049674 )
+
+        SDC     =(L =.045 K2 =-3.8417491573899 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ OCT    OCFA    =(L =.0125     K3 =-6000*0.0125 )
+        OCF2    =(L =.03  K3 =-0 )
+ ;
+ CAVI   RFC     =(VOLT =1.4e+06    HARM =992 )
+ ;
+ MARK   MKS     =(AX =-1.1334938917928409e-11 BX =3.892652430016132    AY =-1.5622147715617673e-11   BY =2.613264010640574
+           EX =.005215052091902209  EPX =-1.0535665167994642e-16  DP =.01   SIGZ =.0012504235342250764
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKE     =(AX =-7.74500093989406e-11   BX =3.89265242969666     PSIX =14.960907314634563 AY =2.1766446880965991e-10
+           BY =2.613264011187758    PSIY =5.479949219457121  EX =.005215052091894469  EPX =-1.078998002057574e-15   DP =.01
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKSFA1 = ()
+        MKSFA2 = ()
+        MKSDA1 = ()
+        MKSDA2 = ()
+        MKSDC1 = ()
+        MKSDC2 = ()
+        MKC = ()
+        MKBE  = ()
+ ;
+
+!-----------------------------------------
+! ARC CELLS
+!-----------------------------------------
+
+  MONI
+         BPM = ()
+  ;
+
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(MKS
+             DRID1 BPM DRID2 QFA1H VD QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR08H BPM DR08H, QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08H BPM DR08H, SHA, DR08,
+             BPI7 HD DRCT MKC
+             MKE)
+  ARCAH2    =(MKS
+             DRID1 BPM DRID2 QFA1H QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5
+             DR08H BPM DR08H QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08, SHA, DR08,
+             BPI7 DRCT MKC
+             MKE)
+ ARCA      = (ARCAH -ARCAH2)
+ RING      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9131278249857536 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7045722303066142 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4630117112293077 )
+        QDA2    =(L =.2   K1 =-.6604776361997438 )
+        QDA3    =(L =.2   K1 =-.42451439357520854 )
+        QFA4    =(L =.2   K1 =.414636958834372 )
+        QDA5    =(L =.2   K1 =-.458157393322574 )
+        QFA6H   =(L =.1675     K1 =.8517302592904823 )
+        QFA8H   =(L =.25  K1 =1.1273255587393383 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.0348531183690555 )
+        SFA     =(L =.045 K2 =3.29744673430139 )
+        SDC     =(L =.045 K2 =-3.0348531183690555 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+
+ DRIFT  DRCT    =(L =.5)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292271132168 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001834063768251 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4117427225413435 )
+        QDA2    =(L =.2   K1 =-.661274491217251 )
+        QDA3    =(L =.2   K1 =-.38822139139626954 )
+        QFA4    =(L =.2   K1 =.4109218113797463 )
+        QDA5    =(L =.2   K1 =-.4733016273637364 )
+        QFA6H   =(L =.1675     K1 =.9215539290295219 )
+        QFA8H   =(L =.25  K1 =1.098917369966305 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.192657116323371 )
+        SFA     =(L =.045 K2 =5.099276103295176 )
+        SDC     =(L =.045 K2 =-4.192657116323371 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292489795 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001833009675 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4359417592282 )
+        QDA2    =(L =.2   K1 =-.6422919019387 )
+        QDA3    =(L =.2   K1 =-.4086041625487 )
+        QFA4    =(L =.2   K1 =.4009936242199 )
+        QDA5    =(L =.2   K1 =-.4346576537471 )
+        QFA6H   =(L =.1675     K1 =.9049532139395 )
+        QFA8H   =(L =.25  K1 =1.0604857646104 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.206799858141086 )
+        SFA     =(L =.045 K2 =4.601104566854821 )
+        SDC     =(L =.045 K2 =-4.206799858141086 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+
+! v2next P5 項目 1: MEASURE / TRCOD の gs との比較 (大きなリング A (kek-ls_v03_12.lat、3 GeV、603 m))。このファイルは台本の後半だけ: 先頭に pysad/tests/kek-ls_v03_12.lat を連結して走らせる。
+! 先頭に MARK ORG0 を足したリングで、ORG0 の位置の MEASURE (gs が出力する唯一の位置)・LOGMEASURE・TRCOD を gs と比べる。k64 は gs と全桁一致。
+MARK ORG0 = ();
+LINE RINGM = (ORG0 RING);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ EMITX=2e-9; EMITY=2e-11; SIGZ=3e-3; DP=1e-3;
+ USE RINGM; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -6.94E-13 $$$       f BX    #######  #   4.643203 $$$       f NX    #######  #  47.580034
+$$$       f AY    #######  #  1.176E-13 $$$       f BY    #######  #   6.231611 $$$       f NY    #######  #  17.620044
+$$$       f LENG  #######  #  603.12000
+ NP=400;
+ MEASURE ORG0;
+ Statistics at ORG0:   particles =  400
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001000, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -3.959E-06 6.582E-07-6.211E-07 4.229E-04 2.761E-04 4.162E-06
+        x :  1.016E-08
+    px/p0 :  1.913E-10 3.888E-10
+        y :  6.134E-11-1.389E-11 1.278E-10
+    py/p0 :  6.109E-12-1.717E-12 9.928E-13 3.042E-12
+        z : -5.813E-09 4.324E-09-5.701E-10-2.453E-10 8.762E-06
+    dp/p0 :  1.825E-08 1.438E-09-2.488E-11-5.333E-11 9.105E-08 3.365E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.8702E-09 bx:  4.906     ax:-6.0604E-02 ex: 5.4233E-02 epx: 4.2727E-03
+ emity: 1.9666E-11 by:  6.500     ay:-5.0283E-02 ey:-7.3928E-05 epy:-1.5848E-04
+ x-y decoupled parameters:
+ emitu: 1.8702E-09 bu:  4.906     au:-6.0604E-02 eu: 5.4227E-02 epu: 4.2716E-03
+ emitv: 1.9545E-11 bv:  6.489     av:-4.4318E-02 ev:-3.0286E-04 epv:-1.9743E-04
+    r1:-7.2555E-03 r2: 3.8514E-02 r3:-1.0447E-03 r4: 4.1459E-03detr: 1.0155E-05
+   sigx: 1.0082E-04  sigy: 1.1306E-05   tilt:-6.1118E-03
+  sigpx: 1.9718E-05 sigpy: 1.7441E-06
+ sigp/p: 5.8010E-04  sigz: 2.9600E-03 dp/p/z: 3.0759E-05/sigz
+ LOGMEASURE;
+ -3.9587759E-06 -6.2107341E-07  1.0163882E-08  6.1341595E-11  1.2782317E-10
+ GAUSS; MEASURE ORG0;
+ Statistics at ORG0:   particles =  400
+ RAD: F, RFSW: T, GAUSS: T, DP =   .001000, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -5.339E-06 1.419E-06-5.578E-07 2.361E-03-6.037E-05 3.637E-05
+        x :  1.028E-08
+    px/p0 : -1.664E-11 3.846E-10
+        y :  8.069E-11-1.958E-11 1.344E-10
+    py/p0 :  6.700E-12 4.757E-12 7.077E-13 3.074E-12
+        z : -7.351E-09 5.327E-09 2.381E-10-3.567E-10 9.300E-06
+    dp/p0 :  3.762E-08-5.533E-10 8.977E-10 1.104E-11-1.758E-07 8.917E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.8278E-09 bx:  4.757     ax:-3.6663E-03 ex: 4.2187E-02 epx:-6.2054E-04
+ emity: 2.0246E-11 by:  6.593     ay:-3.4406E-02 ey: 1.0067E-03 epy: 1.2381E-05
+ x-y decoupled parameters:
+ emitu: 1.8280E-09 bu:  4.757     au:-3.6666E-03 eu: 4.2198E-02 epu:-6.2117E-04
+ emitv: 1.9938E-11 bv:  6.636     av:-4.5230E-02 ev: 7.5815E-04 epv:-1.0532E-05
+    r1:-5.1569E-03 r2: 4.9830E-02 r3:-7.2585E-04 r4:-1.2424E-02detr: 1.0024E-04
+   sigx: 1.0140E-04  sigy: 1.1593E-05   tilt:-7.9506E-03
+  sigpx: 1.9610E-05 sigpy: 1.7534E-06
+ sigp/p: 9.4431E-04  sigz: 3.0497E-03 dp/p/z:-5.7656E-05/sigz
+ NOGAUSS;
+ Print["R1 ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+R1 47.58003423851159 17.62004418026195
+ MEASURE $$$;
+ Print["R2 ", FFS["MEASURE $$$"][[1]]];
+R2 1
+ TRCOD ORG0;
+ Statistics at ORG0:   particles =  400
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001000, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M : -4.066E-22 6.776E-23 4.066E-22 5.501E-04-6.072E-20 1.409E-20
+        x :  1.075E-08
+    px/p0 :  1.169E-11 4.347E-10
+        y :  1.045E-11 9.338E-12 1.198E-10
+    py/p0 : -2.578E-11 7.769E-13 9.289E-13 3.132E-12
+        z :  7.866E-09 3.974E-09 3.734E-09 3.255E-11 8.910E-06
+    dp/p0 :  1.667E-08 2.910E-10-8.941E-11-1.099E-10 1.029E-08 3.266E-07
+ x-y projected(coupled) parameters:
+ emitx: 2.0740E-09 bx:  4.774     ax: 1.5281E-03 ex: 5.1056E-02 epx: 8.9114E-04
+ emity: 1.9232E-11 by:  6.227     ay:-4.6734E-02 ey:-2.7379E-04 epy:-3.3649E-04
+ x-y decoupled parameters:
+ emitu: 2.0741E-09 bu:  4.774     au: 1.5283E-03 eu: 5.1062E-02 epu: 8.9004E-04
+ emitv: 1.9079E-11 bv:  6.265     av:-4.7723E-02 ev:-3.7254E-04 epv:-2.3396E-04
+    r1:-1.5459E-03 r2:-2.2256E-02 r3: 2.0431E-03 r4:-2.0141E-03detr: 4.8586E-05
+   sigx: 1.0370E-04  sigy: 1.0945E-05   tilt:-9.8289E-04
+  sigpx: 2.0848E-05 sigpy: 1.7698E-06
+ sigp/p: 5.7147E-04  sigz: 2.9849E-03 dp/p/z: 3.4479E-06/sigz
+ Print["DX ", Twiss["DPY",1]];
+DX .0005500778211793194
+ Exit;
+ FFS                  end:  CPU time =     0.009 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

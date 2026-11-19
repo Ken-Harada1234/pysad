@@ -1,0 +1,31 @@
+! v2next P5 項目 1: MEASURE / TRCOD (gs の実動作との比較)。条件: 3 GeV、周長 48 m の 12 セル FODO + スキュー四極 1 台 (結合あり)。
+! gs (10-19 ビルド、2026-11-19) は MEASURE を先頭の要素 (入口の MARK) の位置でだけ出力する (B42 の更新)。ほかの位置 (既定の終端を含む) は無出力で、
+! FFS["MEASURE"] は {1, 0, 0}。TRCOD も先頭の位置だけ動く (それ以外は SIGSEGV なので、この台本には入れない)。
+! k64 モードは gs と全桁一致 (.gs.txt と .pysad_k64.txt)。v2 は ttinit の B41 (DPY の揺らぎの読み違い) と MEASURE ごとの乱数の種の復元が違う。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6) SK = (L=0.2 K1=0.05 ROTATE=0.7853981633974483);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+LINE CELL = (DS QF D2 B D2 QD DS D1);
+LINE RING = (ORIGIN SK 12*CELL);
+FFS;
+EMITX=1.2e-8; EMITY=1.5e-9; SIGZ=2e-3; DP=1.5e-3;      ! 初期分布の大きさは大域変数 (tfsetparam が先頭の MARK に写す)
+USE RING; CELL; CALC;
+NP=500;
+MEASURE ORIGIN;
+LOGMEASURE;
+MEASURE ORIGIN;
+GAUSS; MEASURE ORIGIN;
+NOGAUSS; DP0=0.0005; MEASURE ORIGIN;
+DP0=0; NOTRGAUSS; MEASURE ORIGIN;
+TRGAUSS; NP=200; MEASURE ORIGIN;
+Print["R1 ", FFS["MEASURE ORIGIN"]];
+MEASURE $$$;
+Print["R2 ", FFS["MEASURE $$$"]];
+LOGMEASURE;
+TRCOD ORIGIN;
+NP=300; CALC;
+TRCOD ORIGIN;
+Print["DX ", Twiss["DX",1], " ", Twiss["DPY",1], " ", Twiss["EX",1]];
+Exit;

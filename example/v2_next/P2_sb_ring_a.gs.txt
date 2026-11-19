@@ -1,0 +1,4 @@
+! gs の出力 (結果の行だけ。lattice は pysad/tests/kek-ls_v03_12.lat、tail は P2_sb_rings.py と同じ: USE RING; CELL; RFSW; RAD; CALC; Emittance[]; SynchroBetaEmittance[{nus,nus,0.001},AzimuthalModes->m])
+EM ex = 1.549371371943131e-10  nus = .004075267149804275
+SB modes 3 ex = 6.178294026364186e-9  SB/EM = 39.87613388400052
+SB modes 12 ex = 3.1859498818086995e-9  SB/EM = 20.562854971387956

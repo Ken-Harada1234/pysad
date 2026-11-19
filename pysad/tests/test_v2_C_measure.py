@@ -366,12 +366,14 @@ e0=Twiss["EX","*"]; TRCOD; e1=Twiss["EX","*"];
 
 
 # ---------------------------------------------------------------------------- k64 モード
-def test_k64_mode_measure_and_trcod_are_ignored_as_before(k64_mode):
+def test_k64_mode_measure_and_trcod_at_the_end_do_nothing_like_gs(k64_mode):
+    """v2next P5 で k64 の MEASURE・TRCOD は gs の実動作 (先頭の要素の位置だけ動く) になった。終端の位置は gs と同じく統計なし・Twiss 不変・
+    FFS["MEASURE"] は np = 1 (test_v2_P5_measure.py)。以前は「未対応 (無視)」"""
     ffs, I, out = _tl('EMITX=1E-8 EMITY=2E-9', 'NP=100; d0=Twiss["DX","*"]; MEASURE; TRCOD; d1=Twiss["DX","*"]; r=FFS["MEASURE"];')
     assert 'Statistics at' not in out
-    assert out.count('未対応 (無視)') == 2
+    assert 'SIGSEGV' in out
     assert I.globals['d1'] == I.globals['d0']
-    assert not isinstance(I.globals.get('r'), list)
+    assert isinstance(I.globals.get('r'), list) and I.globals['r'][0] == 1.0
 
 
 # ---------------------------------------------------------------------------- MAIN の TRACK TURNS=-1

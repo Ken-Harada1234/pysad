@@ -1,0 +1,52 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.566190 $$$       f BX    #######  #   7.210256 $$$       f NX    #######  #   1.194249
+$$$       f AY    #######  #    .688734 $$$       f BY    #######  #   1.740664 $$$       f NY    #######  #    .863868
+$$$       f LENG  #######  #  18.400000
+ ???-FFS-Error-Element already used as variable: QF 
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF           K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Error-A component has been already used as variable: QF.3 
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ ???-FFS-Info-Component QF.2 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.4 is coupled to QF.1 .
+ ???-FFS-Error-A component has been already used as variable: QF.1 
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.1         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ ???-FFS-Info-Component QF.2 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.4 is coupled to QF.1 .
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.1         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+       2        0   0.5323      (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ Residual = 0.5323      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.605946 $$$       f BX    #######  #   7.320249 $$$       f NX   1.3       1   1.184899
+$$$       f AY    #######  #    .636746 $$$       f BY    #######  #   1.558355 $$$       f NY   .95       1    .934672
+$$$       f LENG  #######  #  18.400000
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ QD           K1       -.627689312592 ! -.600000000 -.600000000  -1.00000E10   1.000000E10 <--           1.00000000
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ QD           K1       -.627689312592 ! -.600000000 -.600000000  -1.00000E10   1.000000E10 <--           1.00000000
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QD           K1       -.627689312592 ! -.600000000 -.600000000  -1.00000E10   1.000000E10 <--           1.00000000
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.2 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.4 is coupled to QF.1 .
+       2        0   5.3746E-02  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ Residual = 5.3438E-02  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.947432 $$$       f BX    #######  #   7.778210 $$$       f NX   1.3       1   1.293251
+$$$       f AY    #######  #    .674568 $$$       f BY    #######  #   1.574432 $$$       f NY   .95       1    .913833
+$$$       f LENG  #######  #  18.400000
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.1         K1        .743599255507 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ QF.3         K1        .743599255507 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000

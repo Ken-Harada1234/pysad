@@ -228,7 +228,7 @@ def test_radtaper_matches_gs(mode):
     if mode == 'k64':             # エミッタンスは v2 で放射の式が直っている (担当 A) ので、gs との比較は k64 だけ
         assert abs(b[3] / 1.7372e-7 - 1) < 1e-4 and abs(b[4] / 1.9077e-5 - 1) < 1e-4
     for u, v in zip(b[5:8], [-.303633, -.094058, -.027619]):
-        assert abs(u - v) < (2e-6 if mode == 'k64' else 2e-5)       # v2: tradke の ddpx の符号 (A1 項目 7)
+        assert abs(u - v) < (2e-6 if mode == 'k64' else 5e-5)       # v2: tradke の ddpx の符号 (A1 項目 7)・tradke の微分と RADTAPER の係数 (P2 項目 3・4)
     assert d[0] == 0.0 and abs(d[1] / 3.9113e-4 - 1) < 1e-4 and abs(d[2] / 2.6068e-4 - 1) < 1e-4 and abs(d[3]) < 1e-8
     if mode == 'k64':             # v2 は追跡の閉軌道が閉じる (A1 項目 7) ので、閉じない gs の追跡の値 (1 周 1e-5 m 動く) とは比べない (閉じ方は test_v2_A1_next.py)
         for u, v in zip(t, [4.8092e-5, 1.4477e-5, -3.693e-5, 8.0067e-5]):

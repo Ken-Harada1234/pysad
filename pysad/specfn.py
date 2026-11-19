@@ -629,6 +629,48 @@ def install(I):
     B['LegendreP'] = lambda a: _thread(lambda *x: _legendre_p(x[0], 0.0, x[1]) if len(x) == 2 else _legendre_p(x[0], x[1], x[-1]), a) if len(a) in (2, 3, 4) else (_ for _ in ()).throw(SADError('General::narg: LegendreP'))
     reg('BesselJZero', _besseljzero, 2)
 
+    # ---- 複素引数の追加 (P5 項目 3、specfn_cx2.py。実数の引数は従来の実装のまま。複素数が 1 つでもあれば複素の実装)
+    def _cx2(name, f):
+        old = B[name]
+
+        def w(a, old=old, f=f):
+            if any(isinstance(x, complex) for x in a) and all(_numeric(x) for x in a):
+                return _thread(lambda *x: _real(f(*x)), a)
+            return old(a)
+        B[name] = w
+
+    from . import specfn_cx2 as _x2
+    _cx2('ExpIntegralE', lambda n, z: _x2.expn_c(n, z))
+    _cx2('ExpIntegralEi', lambda z: _x2.ei_c(z))
+    _cx2('PolyGamma', lambda *a: _x2.digamma_c(a[0]) if len(a) == 1 else _x2.polygamma_c(a[0].real if isinstance(a[0], complex) else a[0], a[1]))
+    _cx2('HarmonicNumber', lambda z, *r: _x2.harmonic_c(z) if not r else (_ for _ in ()).throw(SADError('General::wrongval: complex HarmonicNumber of order > 1 is not supported')))
+    _cx2('ProductLog', lambda z: _x2.lambertw_c(z))
+    _cx2('SinIntegral', lambda z: _x2.sici_c(z)[0])
+    _cx2('CosIntegral', lambda z: _x2.sici_c(z)[1])
+    _cx2('FresnelS', lambda z: _x2.fresnel_c(z)[0])
+    _cx2('FresnelC', lambda z: _x2.fresnel_c(z)[1])
+    _cx2('Beta', lambda a, b: _x2.beta_c(a, b))
+    old_g = B['Gamma']
+
+    def _gamma_any(a, old_g=old_g):
+        if len(a) == 2 and any(isinstance(x, complex) for x in a) and all(_numeric(x) for x in a):
+            return _thread(lambda p, z: _real(_x2.gamma_upper_c(_real(p), z)), a)      # 不完全ガンマ Γ(a, z)、複素の z
+        return old_g(a)
+    B['Gamma'] = _gamma_any
+    _cx2('GammaRegularized', lambda a, z: _x2.gamma_reg_c(_real(a), z))
+    _cx2('GammaRegularizedQ', lambda a, z: _x2.gamma_reg_c(_real(a), z))
+    _cx2('GammaRegularizedP', lambda a, z: _x2.gamma_p_c(_real(a), z))
+    _cx2('WhittakerM', lambda k, m, z: _x2.whittaker_m_c(_real(k), _real(m), z))
+    _cx2('WhittakerW', lambda k, m, z: _x2.whittaker_w_c(_real(k), _real(m), z))
+    _cx2('BesselJ', lambda n, x: _x2.besselj_cord(n, x) if isinstance(n, complex) else _cx(sp.jv(n, x)))
+    old_leg = B['LegendreP']
+
+    def _legendre_any(a, old_leg=old_leg):
+        if len(a) == 2 and any(isinstance(x, complex) for x in a) and all(_numeric(x) for x in a):
+            return _thread(lambda nu, z: _real(_x2.legendre_c(_real(nu), z)), a)
+        return old_leg(a)
+    B['LegendreP'] = _legendre_any
+
     def binom(n, k):
         if k == int(k) and k >= 0:
             r = 1.0

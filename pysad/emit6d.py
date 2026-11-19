@@ -288,8 +288,9 @@ class _State:
         self.bsi_d1 = np.zeros(6)
 
     # photons.f tradke (bzh=0, radcod=F, calpol=F, irad=12)
-    def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0):
-        # tin, tout (v2 のみ非 0): 偏向磁石の端の角 e の tan。場の中の行路は al1 - tin*x(基準点) - tout*x(現在)
+    def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0, tiny=0.0, touty=0.0):
+        # tin, tout (v2 のみ非 0): 偏向磁石の端の角 e の tan。場の中の行路は al1 - tin*x(基準点) - tout*x(現在)。
+        # tiny, touty: y の係数 (回した座標系の MULT の端の角。v2next P3)
         if not self.want_jac and not self.radcod:
             self.bzhr0 = bzh
             return          # cod も変えず、u0・D・B も使わない一周 (z_slip 等)
@@ -321,8 +322,8 @@ class _State:
         p = ph.p0 * pr
         h1 = _p2h(p)
         al1 = al - cod[4] + codr0[4]
-        if tin != 0.0 or tout != 0.0:
-            al1 = al1 - tin * codr0[0] - tout * cod[0]
+        if tin != 0.0 or tout != 0.0 or tiny != 0.0 or touty != 0.0:
+            al1 = al1 - tin * codr0[0] - tout * cod[0] - tiny * codr0[2] - touty * cod[2]
         anp = ph.anrad * h1 * theta
         uct = ph.cuc * h1**3 / ph.p0 / al1
         uc = uct * theta
@@ -358,7 +359,7 @@ class _State:
         # D・B の更新は numba カーネル (perfkern.tradke_db: 下の numpy 版と同じ式。numpy の小行列演算の連続が 0.5 ms/回かかるため)
         ok, Dn, Bn = _tradke_db(self.T, self.transr, self.D, self.B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
                                 xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU, bzh, bzhr0,
-                                tin, tout, _compat.v2(), rsgn)
+                                tin, tout, _compat.v2(), rsgn, _compat.v2(), tiny, touty)
         if ok:
             self.D = Dn
             self.B = Bn
@@ -366,7 +367,7 @@ class _State:
             from . import spin as _spin
             _spin.tradke_spin(self, dict(pr=pr, px=px, py=py, pz=pz, pxi=pxi, pyi=pyi, pz00=pz00, pz0=pz0, pxr0=pxr0,
                                          cp=cp, sp=sp, xpx=xpx, xpy=xpy, xpz=xpz, xpa=xpa, bzh=bzh, bzhr0=bzhr0,
-                                         al=al, h1=h1, p=p, p0=ph.p0, al1=al1, anp=anp))
+                                         al=al, h1=h1, p=p, p0=ph.p0, al1=al1, anp=anp, uc=uc))
         self.codr0 = self.cod.copy()
         self.transr = self.T.copy()
         self.bzhr0 = bzh
@@ -1399,6 +1400,10 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
         akx = 0.0
         alr = aln
         phi1 = phin
+        face_kt = _lat._face_kt(el)
+        if face_kt is not None:
+            # v2 (P2 項目 5): 四極の磁場も端面から始まる模型。半径方向の入口の面で楔形の領域の四極の蹴り (lattice._face_kt)
+            st.piece(lambda c: _lat._face_kick_cod(c, face_kt[0]), jac=lambda c: _lat._face_kick_jac(c, face_kt[0]))
         for n in range(n1, n2 + 1):
             alx, alr = _tbendal(n, ndiv, f1r, f2r, aln)
             akx = ak * alx / al0
@@ -1418,6 +1423,8 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
             kb = ak / al0                                                          # v2 (B58): 出口の端
             st.add_bsi(-(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2]), -kb * st.cod[2], -(1.0 / rhob + kb * st.cod[0]), False)
         _tbendecorr(st, akx0 * 0.5, alx0 * 0.5, rho0)
+        if face_kt is not None:
+            st.piece(lambda c: _lat._face_kick_cod(c, face_kt[1]), jac=lambda c: _lat._face_kick_jac(c, face_kt[1]))
     # 出口エッジ
     st.piece(lambda c: _lat._tbedge_cod(c, rhob, pe2, False),
              jac=lambda c: _lat._bend_edge_chain(c, _EYE6, rhob, pe2, False)[1])
@@ -1629,8 +1636,21 @@ def _tmulte(st: _State, el, enarad: bool = True):
     psi_in = psi(st.cod) if psi is not None else 0.0
     gpsi_in = _grad_xy(psi, st.cod) if psi is not None else (0.0, 0.0)
     last_rad = max((i for i, (k, _f) in enumerate(seq) if k not in ('map', 'radstart')), default=-1)
+    # v2 (P3、B108): 端の角 (AE1・AE2) のある面では場の中の行路が x·tan(e) だけ短い。端の蹴りの後の最初の tradke に入口 (tin)・出口 (tout) を渡す
+    # (ANGLE=0 の BEND の _tsteee・ANGLE≠0 の tbende と同じ)。K64 の tmulte は蹴りを偏向角に入れるが行路は変えない
+    # 回した座標系 (K1<0・ROTATE・DX・DY: x' = cos(θ2)(x − dx) − sin(θ2)(y − dy)) の端の面は要素の主軸 x' に沿って傾く (K64 の tmulke は回した座標系の蹴り)
+    cth, sth = math.cos(pm['theta2']), math.sin(pm['theta2'])
+    off = cth * pm['dx'] - sth * pm['dy']
+    ta1 = math.tan(pm['ae1']) if (_compat.v2() and pm['ae1'] != 0.0) else 0.0
+    ta2 = math.tan(pm['ae2']) if (_compat.v2() and pm['ae2'] != 0.0) else 0.0
+    pend_in = pend_out = False
     for i, (kind, f) in enumerate(seq):
         if kind == 'map':
+            _edge = getattr(f, 'edge', None)
+            if _edge == 'in':
+                pend_in = True
+            elif _edge == 'out':
+                pend_out = True
             if st.calpol and hasattr(f, 'cxfun') and psi is None:
                 im = f.cxfun(st.cod) / f.aln              # tmulke: bsir0 = merge(bsir0 + imag(cx)/aln, 0, m == 1); m == ndiv で − imag(cx)/aln
                 st.bsir0 = st.bsir0 + im if f.m == 1 else 0.0
@@ -1650,7 +1670,13 @@ def _tmulte(st: _State, el, enarad: bool = True):
             if psi is not None and i == last_rad:
                 gp = _grad_xy(psi, st.cod)
                 st.add_bsi(-psi(st.cod), -gp[0], -gp[1], False)
-            st.tradke(f, 0.0)
+            ti = to = tiy = toy = 0.0
+            f_eff = f
+            if pend_in:
+                ti, tiy, f_eff, pend_in = ta1 * cth, -ta1 * sth, f_eff + ta1 * off, False
+            if pend_out:
+                to, toy, f_eff, pend_out = ta2 * cth, -ta2 * sth, f_eff + ta2 * off, False
+            st.tradke(f_eff, 0.0, tin=ti, tout=to, tiny=tiy, touty=toy)
 
 def _rf_effective(st: _State):
     """tturneg: wrfeff, vceff (実効角周波数 [1/m] と実効電圧)。"""
@@ -1746,6 +1772,8 @@ def _bende_fast(st, el, enarad):
         return 1        # F1 (FRINGE≠0) は Python の経路 (_tbende_core の tblfre・tbendef1、ANGLE=0 は _tsteee)
     if ang == 0.0 and _g0(el, 'FRINGE') in (-1.0, -2.0):
         return 1        # ANGLE=0 の FRINGE=−1・−2: tsteee は入口・出口のエッジの片方を省く (k_bend は常に両方)
+    if _lat._face_kt(el) is not None:
+        return 1        # 端面から四極が始まる模型 (v2 のオプション、compat.bend_k1_edge) は Python の経路
     chg = _lat._bend_chg_args(el)
     if chg is None:
         has_chg = False

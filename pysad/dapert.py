@@ -60,7 +60,7 @@ def _muls(nturn: int) -> int:
 def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: int, ivar2: int,
                      momentum_eV: float, emit: dict, emx: float, emz: float, trf0: float, rfsw: bool, rad: bool,
                      fluc: bool = True, alost: float = 1.0, zlost: float = 100.0, out=None, progress: int = 0,
-                     fshift: float = 0.0):
+                     fshift: float = 0.0, dapwidth: float = 51.0, np0=None):
     """trackd 相当。range3: [[a2min,a2max],[a3min,a3max]] (ivar2, ivar3 の順)、r1: ivar1 の値。
     戻り: (score, result) result = ResultOfDAPERT"""
     ivar3 = 6 - ivar1 - ivar2
@@ -89,46 +89,121 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
     ph.dvfs = fshift if rfsw else 0.0          # tsetdvfs (trackd.f:86)
     if not progress:
         progress = int(os.environ.get('PYSAD_PROGRESS', '0') or 0)
-    # 粒子の初期座標 (SAD の trackd の順: i = 1..n1p, j = 51..1)
-    coords = []
-    ids = []
-    for i in range(n1p):
-        for j in range(N2P - 1, -1, -1):
-            amp = np.zeros(6)
+    # trackd のスロット管理の直訳 (npara = 1): 粒子スロット k (ID) は配列位置 kptbl(k,1) = pos[k] にいて、kid[位置] = ID。
+    # 点 (i, j) は、行 i の窓 (損失が見つかった最小の j = nxm(i) から下へ ncons 点) の中だけ追跡する (DAPWIDTH)。
+    # 同時に追跡するスロットは npmax = max(1, min(n1p·ncons, np0))。損失・完了でスロットが空くと配置ループへ戻り、
+    # 空きがあれば nw = 16 周ごとに戻る (trackd.f)。窓の外 (未起動) の点の ntloss は 2^29 のまま (表示は '*')
+    ncons = max(1, int(math.floor(float(dapwidth) + 0.5)))
+    if np0 is None:
+        np0 = max(2000, n1p, n1p * min(51, ncons))
+    npmax = max(1, min(n1p * ncons, int(np0)))
 
-            def setvar(iv, a, is1=False):
-                if iv == 1:
-                    amp[0], amp[1] = (a, 0.0) if is1 else (a * cx, -a * sx)
-                elif iv == 2:
-                    amp[2], amp[3] = (a, 0.0) if is1 else (a * cy, -a * sy)
-                else:
-                    amp[4], amp[5] = (0.0, a) if is1 else (a * cz, -a * sz)
-            setvar(ivar1, a1i[i], True)
-            setvar(ivar2, a2step * j + a2min)
-            setvar(ivar3, a3step * j + a3min)
-            xa = amp * np.array([emx, emx, emx, emx, emz, emz])
-            coords.append(rmat @ xa + codin)
-            ids.append(i * N2P + j)
-    coords = np.array(coords)
+    def _coord(i, j):           # j = 1..51 (Fortran)。ivar1 の値 a1i[i]、ivar2・ivar3 は同じ j で動く
+        amp = np.zeros(6)
+
+        def setvar(iv, a, is1=False):
+            if iv == 1:
+                amp[0], amp[1] = (a, 0.0) if is1 else (a * cx, -a * sx)
+            elif iv == 2:
+                amp[2], amp[3] = (a, 0.0) if is1 else (a * cy, -a * sy)
+            else:
+                amp[4], amp[5] = (0.0, a) if is1 else (a * cz, -a * sz)
+        setvar(ivar1, a1i[i], True)
+        setvar(ivar2, a2step * (j - 1) + a2min)
+        setvar(ivar3, a3step * (j - 1) + a3min)
+        xa = amp * np.array([emx, emx, emx, emx, emz, emz])
+        return rmat @ xa + codin
+
     prog = _tn.Prog(elements, ph)
-    S = _tn.make_state(coords, ph)
-    kid = np.array(ids, dtype=np.int64)
-    lost_turn = np.full(n1p * N2P, MAXTURN, dtype=np.int64)
+    S = _tn.make_state(np.tile(codin, (npmax, 1)), ph)
+    kid = np.arange(npmax, dtype=np.int64)          # 配列位置 → ID (kptbl(:,2))
+    pos = np.arange(npmax, dtype=np.int64)          # ID → 配列位置 (kptbl(:,1))
+    lost_scratch = np.full(npmax, MAXTURN, dtype=np.int64)
+    kzx_i = np.full(npmax, -1, dtype=np.int64)       # スロットの (i, j)。i < 0 は空き
+    kzx_j = np.zeros(npmax, dtype=np.int64)
+    mturn = np.zeros(npmax, dtype=np.int64)
+    ntloss = np.full((n1p, N2P + 1), MAXTURN, dtype=np.int64)       # 列 1..51 を使う
+    nxm = [N2P + 1] * n1p
+    clean = [False] * n1p                            # 走査して起動できる点が無かった行 (ntloss が変わるまで再走査しない。結果は同じ)
     rs = _tn.make_rs(_t6.RNG.seed)          # [seed, v2 の印] (カーネルが rs[1] を読む)
     fl = bool(rad and fluc)
-    n = S.shape[0]
     t0 = time.time()
+    nw = 16
+    nturns_done = 0
     with np.errstate(all='ignore'):
-        for it in range(nturn):
-            n = _tn.turn(prog, S, n, ph, trf0, rfsw, rad, fl, rs, apert=(kid, lost_turn, it, alost, zlost))
-            if n <= 0:
-                break
-            if not rfsw:
-                S[:n, 4] = 0.0
-            if progress and ((it + 1) % progress == 0 or it + 1 == nturn):
-                print(f'    [dapert] turn {it + 1}/{nturn} alive {n}/{n1p * N2P} ({time.time() - t0:.1f} s)', flush=True)
+        while True:                                  # loop_1
+            np1 = npmax
+            iw = nw
+            remain = True
+            for k in np.nonzero(kzx_i < 0)[0]:       # LOOP_K (空きスロットを ID 順に)
+                ip = int(pos[k])
+                if ip >= np1:
+                    continue
+                if remain:
+                    launched = False
+                    for i in range(n1p):
+                        if clean[i]:
+                            continue
+                        for j in range(nxm[i] - 1, 0, -1):
+                            if j < nxm[i] - ncons:
+                                break
+                            if ntloss[i, j] < nturn:
+                                nxm[i] = j
+                            elif ntloss[i, j] == MAXTURN:
+                                ntloss[i, j] = nturn
+                                kzx_i[k] = i
+                                kzx_j[k] = j
+                                mturn[k] = 0
+                                S[ip] = _tn.make_state(_coord(i, j)[None, :], ph)[0]
+                                launched = True
+                                break
+                        if launched:
+                            break
+                        clean[i] = True
+                    if launched:
+                        continue
+                remain = False
+                jid = int(kid[np1 - 1])              # 位置 ip と np1 の粒子を入れ替え、np1 の座標を ip へ
+                pos[jid] = ip
+                pos[k] = np1 - 1
+                kid[ip] = jid
+                kid[np1 - 1] = k
+                S[ip] = S[np1 - 1]
+                np1 -= 1
+                if np1 <= 0:
+                    break
+            n = np1
+            while n > 0:
+                n = _tn.turn(prog, S, n, ph, trf0, rfsw, rad, fl, rs, apert=(kid, lost_scratch, nturns_done, alost, zlost))
+                nturns_done += 1
+                pos[kid] = np.arange(npmax)
+                if not rfsw and n > 0:
+                    S[:n, 4] = 0.0
+                act = np.nonzero(kzx_i >= 0)[0]
+                alive = pos[act] < n
+                mturn[act[alive]] += 1
+                done = act[alive][mturn[act[alive]] >= nturn]
+                lost = act[~alive]
+                for k in done:
+                    ntloss[kzx_i[k], kzx_j[k]] = nturn
+                    clean[kzx_i[k]] = False
+                    kzx_i[k] = -1
+                for k in lost:
+                    ntloss[kzx_i[k], kzx_j[k]] = mturn[k]
+                    clean[kzx_i[k]] = False
+                    kzx_i[k] = -1
+                if progress and nturns_done % progress == 0:
+                    print(f'    [dapert] pass {nturns_done} alive {n}/{npmax} ({time.time() - t0:.1f} s)', flush=True)
+                if len(done) or len(lost):
+                    break                            # cycle loop_1
+                if np1 < npmax:
+                    iw -= 1
+                    if iw <= 0:
+                        break
+            else:
+                break                                # np = 0: exit loop_1
     _t6.RNG.seed = int(rs[0])
-    ntloss = np.where(lost_turn == MAXTURN, nturn, lost_turn).reshape(n1p, N2P)
+    ntloss = ntloss[:, 1:]                   # 列 j = 1..51
     rows = []
     nscore = 0
     for i in range(n1p):

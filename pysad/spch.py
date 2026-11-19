@@ -740,8 +740,9 @@ class SpaceCharge:
     """track6n.turn が呼ぶ。els: 追跡する要素の列 (全体)、types: 要素ごとの SAD の型名 ('DRIFT', 'SPCH', …)"""
 
     def __init__(self, els, types, pbunch, np0, charge=1.0, amass=ELMASS, spac=False, pspac=False, conf=None, warn=None,
-                 wspace=None):
+                 wspace=None, k64=False):
         conf = conf or {}
+        self.k64 = None                          # k64 モードの PSPAC (K64 の形状関数。spch_k64.K64Pspac)
         self.spac, self.pspac = bool(spac), bool(pspac)
         self.wspace = wspace                     # WSPAC (WSpace)。None なら入れない
         self.wspac = wspace is not None
@@ -775,7 +776,12 @@ class SpaceCharge:
             return int(v) if v else None
         self.s3 = Solver3D(iv('SPACNX'), iv('SPACNY'), iv('SPACNZ'), warn=warn)
         self.s2 = None
-        if self.pspac:
+        if self.pspac and k64:
+            from .spch_k64 import K64Pspac
+            self.k64 = K64Pspac(conf.get('PSPACNX', 128), conf.get('PSPACNY', 128), conf.get('PSPACNZ', 1),
+                                conf.get('PSPACDX', 1e-3), conf.get('PSPACDY', 1e-3), conf.get('PSPACDZ', 1e-3), pbunch, amass,
+                                nturnend=conf.get('PSPACNTURN', 1) or 1, nturncalc=conf.get('PSPACNTURNCALC', 0) or 0, warn=warn)
+        elif self.pspac:
             self.s2 = Solver2D(conf.get('PSPACNX', 128), conf.get('PSPACNY', 128), conf.get('PSPACNZ', 1),
                                conf.get('PSPACDX', 1e-3), conf.get('PSPACDY', 1e-3), conf.get('PSPACDZ', 1e-3), warn=warn)
         self.nturncalc = int(conf.get('PSPACNTURNCALC', 0) or 0)
@@ -928,10 +934,14 @@ class SpaceCharge:
             if s != self.s_last and self.is_spch[self.l0:l_end].any():
                 n = self._kick2d(S, n, s - self.s_last, -1, ph, apert)
             self.s_last = s
+        if self.k64 is not None:
+            self.k64.end_of_turn()               # tpspac_: nlat == nlatend で isp = 0、nturn++
         return n
 
     # ---- 中身
     def _kick2d(self, S, n, al, l, ph, apert):
+        if self.k64 is not None:                 # k64: K64 の形状関数 (spch_k64)。al = 0 でも電位を計算する (isp が進む)
+            return self.k64.kick(S, n, al, ph)
         if al == 0.0 or n <= 1 or self.rcw == 0.0:
             return n
         b0, g0, _ = bunch_frame(S, n, ph.p0)
@@ -1064,6 +1074,13 @@ def make(ffs, tr, npart):
     wspac = bool(ffs.flags.get('WSPAC'))
     if not (spac or pspac or wspac):
         return None
+    from . import compat as _cmp
+    if _cmp.k64():
+        # k64: K64 が追跡で実際に入れるのは PSPAC (SPCH 要素) だけ (SPAC は力が 1/γ 倍に弱い B89、WSPAC の追跡は未対応で今までどおり入れない)。
+        # 形状関数は K64 のまま (spch_k64)
+        if not pspac or tr is None:
+            return None
+        return _make_k64(ffs, tr, npart)
     els = ffs.els
     env = getattr(ffs, 'env', None)
     defs = getattr(env, '_elements', {}) if env is not None else {}
@@ -1121,3 +1138,26 @@ def make(ffs, tr, npart):
                 sc.radius[i] = 0.0
                 sc.is_mult[i] = False
     return sc
+
+
+def _make_k64(ffs, tr, npart):
+    """k64 モードの PSPAC (SPCH 要素)。SPAC・WSPAC は入れない"""
+    els = ffs.els
+    env = getattr(ffs, 'env', None)
+    defs = getattr(env, '_elements', {}) if env is not None else {}
+    types = []
+    for el in els:
+        tp = str((defs.get(el.name) or {}).get('TYPE', '')).upper()
+        if not tp:
+            tp = 'DRIFT' if type(el).__name__ == 'Drift' and not getattr(el, '_apert', False) else type(el).__name__.upper()
+        types.append(tp)
+    if not any(tp == 'SPCH' for tp in types):
+        return None
+    g = ffs.I.globals
+    conf = {}
+    for key in ('PSPACNX', 'PSPACNY', 'PSPACNZ', 'PSPACDX', 'PSPACDY', 'PSPACDZ', 'PSPACNTURN', 'PSPACNTURNCALC'):
+        v = g.get(key)
+        if isinstance(v, (int, float)) and not isinstance(v, bool):
+            conf[key] = float(v)
+    return SpaceCharge(els, types, float(g.get('PBUNCH', 0.0) or 0.0), npart, charge=tr.ph.charge, amass=tr.ph.amass,
+                       spac=False, pspac=True, conf=conf, warn=lambda m: ffs.write(' ' + m + chr(10)), k64=True)

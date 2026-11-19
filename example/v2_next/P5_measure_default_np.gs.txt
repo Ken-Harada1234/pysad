@@ -1,0 +1,51 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:58:13 Thursday 11/19/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! v2next P5 項目 1: NP を指定しない MEASURE。gs は粒子数 1000 (NP の既定、tffsa.f の np0=1000)。k64 も同じ (v2 は NP の指定を要求する)。
+! 条件: 3 GeV、周長 48 m の 12 セル FODO。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+LINE CELL = (DS QF D2 B D2 QD DS D1);
+LINE RING = (ORIGIN 12*CELL);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ EMITX=1.2e-8; EMITY=1.5e-9; SIGZ=2e-3; DP=1.5e-3;
+ USE RING; CELL; CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.00150  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.132248 $$$       f BX    #######  #   4.974159 $$$       f NX    #######  #   2.920663
+$$$       f AY    #######  #   1.309996 $$$       f BY    #######  #   2.604976 $$$       f NY    #######  #   2.072223
+$$$       f LENG  #######  #  48.000000
+ MEASURE ORIGIN;
+ Statistics at ORIGIN:   particles = 1000
+ RAD: F, RFSW: T, GAUSS: F, DP =   .001500, DP0 =   .000000, GCUT = 1.000E300
+                    x     px/p0         y     py/p0         z     dp/p0 
+   C of M :  5.568E-06 9.304E-07-4.302E-06 6.365E-04 8.670E-05 1.897E-07
+        x :  3.887E-07
+    px/p0 :  1.410E-07 5.380E-08
+        y :  3.680E-10-2.151E-12 3.883E-09
+    py/p0 :  7.054E-11 6.382E-11-1.898E-09 1.481E-09
+        z :  1.144E-08 6.559E-09-2.649E-09 1.187E-09 3.714E-06
+    dp/p0 :  5.059E-07 1.767E-07-4.770E-10 3.543E-10 3.717E-08 7.729E-07
+ x-y projected(coupled) parameters:
+ emitx: 1.1346E-08 bx:  5.077     ax: -2.234     ex: 0.6545     epx: 0.2287    
+ emity: 1.4656E-09 by:  2.650     ay:  1.295     ey:-6.1720E-04 epy: 4.5837E-04
+ x-y decoupled parameters:
+ emitu: 1.1347E-08 bu:  5.077     au: -2.233     eu: 0.6545     epu: 0.2287    
+ emitv: 1.4591E-09 bv:  2.644     av:  1.296     ev:-1.3164E-02 epv: 3.1558E-03
+    r1:-5.1568E-02 r2: 9.2738E-02 r3: 1.4604E-02 r4:-3.0005E-02detr: 1.9295E-04
+   sigx: 6.2349E-04  sigy: 6.2317E-05   tilt:-9.5612E-04
+  sigpx: 2.3195E-04 sigpy: 3.8487E-05
+ sigp/p: 8.7914E-04  sigz: 1.9272E-03 dp/p/z: 1.9287E-05/sigz
+ Exit;
+ FFS                  end:  CPU time =     0.005 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     F     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

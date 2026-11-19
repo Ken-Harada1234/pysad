@@ -1,0 +1,44 @@
+! v2next P4 項目 5: DynamicApertureSurvey の DAPWIDTH の窓 (trackd.f の粒子スロットの直訳)。gs (K64) と: NORAD の地図 (DAPWIDTH = 7 (既定)・3・12・51) と Score が一致
+!   (損失の境界の 1 点は 1 周ほど違うことがある)、RAD + FLUC (NPARA=1) の最終の seed が一致 (DAPWIDTH = 2、20 周などの 4 例。境界の粒子の違いで一致しない例もある)。
+! 条件: 3 GeV、24 セルの FODO (周長 36 m、六極 SF・SD つき、RF 4 MV)。NPARA = 1 (gs の既定は子プロセスに分ける)。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=4) SD = (L=0.2 K2=-7);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+USE RING; CELL; CALC;
+RFSW; RAD; NOFLUC;
+EMIT;
+
+$FORM = "12.6";
+NPARA = 1;
+NORAD;
+Print["--- DAPWIDTH 既定 (7)"];
+res = DynamicApertureSurvey[{{1,300},{1,1},{-0.5,0,0.5}}, 100, Output->6];
+Print["SCORE ", res[[1]]];
+DAPWIDTH = 3;
+Print["--- DAPWIDTH = 3"];
+res = DynamicApertureSurvey[{{1,300},{1,1},{-0.5,0,0.5}}, 100, Output->6];
+Print["SCORE ", res[[1]]];
+DAPWIDTH = 12;
+Print["--- DAPWIDTH = 12"];
+res = DynamicApertureSurvey[{{1,300},{1,1},{-0.5,0,0.5}}, 100, Output->6];
+Print["SCORE ", res[[1]]];
+DAPWIDTH = 51;
+Print["--- DAPWIDTH = 51"];
+res = DynamicApertureSurvey[{{1,300},{1,1},{-0.5,0,0.5}}, 100, Output->6];
+Print["SCORE ", res[[1]]];
+! RAD + FLUC: 窓の動き (スロットの空き・詰め替え) が gs と同じなら乱数の列が同じで、最終の seed まで一致する
+RAD; FLUC;
+DAPWIDTH = 2;
+Do[
+ SeedRandom[200+nt];
+ res = DynamicApertureSurvey[{{1,150},{1,1},{-0.5,0,0.5,1.0}}, nt, Output->0];
+ Print["NT ",nt," SCORE ", res[[1]]," SEED ", SeedRandom[]],
+ {nt,5,25,5}];
+Exit;

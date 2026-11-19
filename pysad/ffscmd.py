@@ -443,7 +443,7 @@ class FFS:
         g.setdefault('DP', 0.01)
         g.setdefault('DP0', 0.0)
         g.setdefault('NPARA', 1.0)
-        g.setdefault('DAPWIDTH', 51.0)
+        g.setdefault('DAPWIDTH', 7.0)           # initb1.f (RsetGL)。窓の幅 (trackd の ncons)
         g.setdefault('TURNS', -1.0)          # gs: FFS に入った直後の TURNS は -1
         g.setdefault('NP', 1000.0)
         g.setdefault('GCUT', 1e300)
@@ -590,8 +590,8 @@ class FFS:
         w = word.upper()
         if w in _COMMANDS or w in _ERRCMDS or w in self.flags or (w.startswith('NO') and w[2:] in self.flags) or w in _FLAG_ALT:
             return True
-        if _compat.v2() and (_abbrev(w, 'MEA_SURE') or _abbrev(w, 'TRC_OD') or _abbrev(w, 'LOGM_EASURE')
-                             or _abbrev(w, 'ORBITJ_ITTER') or _abbrev(w, 'PUTM_EASURE') or _abbrev(w, 'GET_MEASURE')):
+        if (_abbrev(w, 'MEA_SURE') or _abbrev(w, 'TRC_OD') or _abbrev(w, 'LOGM_EASURE')
+                or (_compat.v2() and (_abbrev(w, 'ORBITJ_ITTER') or _abbrev(w, 'PUTM_EASURE') or _abbrev(w, 'GET_MEASURE')))):
             return True                                 # v2: MEASURE / TRCOD / LOGMEASURE / ORBITJITTER / PUTMEASURE / GETMEASURE の省略形 (measure.py)
         if w == 'WAKE' and _compat.v2():
             return True                                 # v2: 旧式の WAKE コマンド (_wake_cmd_v2)
@@ -2205,14 +2205,24 @@ class FFS:
 
     def beam_matrix_at(self, k):
         """LINE["SIG..", k] 用: 要素 k の入口の平衡ビーム行列 Σ (6x6)。emit_extra の BeamMatrices (temit.f:214-222) を遅延計算してキャッシュ"""
-        key = (self.flags['RFSW'], self.flags['RADCOD'], id(self.lat))
+        # v2 (P4): WSPAC ON かつ大域変数 WSPACSC≠0 なら、空間電荷つきの自己無撞着なビーム行列 (MINCOUP の下限つき。temit の反復の最終パス) を返す。
+        # 既定 (WSPACSC = 0) は従来どおりゼロ電流の平衡値 (gs の追跡 (CODPLOT; WSPAC; EMIT; のあと) と 1% で合う。gs の追跡のビーム行列には MINCOUP の下限が
+        # 入らない: 平らなリングは NaN)。k64 は従来どおり
+        sc = None
+        if _compat.v2() and self.flags['WSPAC']:
+            _wsc = self.I.globals.get('WSPACSC', 0.0)
+            if isinstance(_wsc, (int, float)) and not isinstance(_wsc, bool) and float(_wsc) != 0.0:
+                sc = self._sc_opts()
+        key = (self.flags['RFSW'], self.flags['RADCOD'], id(self.lat),
+               None if sc is None else (sc['pbunch'], sc['mincoup'], sc['intra']))
         cache = getattr(self, '_beam_cache', None)
         if cache is None or cache[0] != key:
             from .emit_extra import emittance_rules
             _lat.RFSW = self.flags['RFSW']
             self._sync_emitdiv()
             x = emittance_rules(self._radtaper_lattice(), self.momentum(), rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'],
-                                one_turn=False, orbit=False, matrix=False, beam_matrices=True, fshift=self._fshift(), **self._mass_charge())
+                                one_turn=False, orbit=False, matrix=False, beam_matrices=True, fshift=self._fshift(), sc=sc,
+                                **self._mass_charge())
             cache = (key, x['BeamMatrices'])
             self._beam_cache = cache
         return cache[1][k - 1]
@@ -2679,7 +2689,7 @@ class FFS:
         if self.flags.get('SPAC') or self.flags.get('PSPAC') or self.flags.get('WSPAC'):
             # v2: 空間電荷 (spch.py: SPAC + DRIFT・MULT の RADIUS、PSPAC + SPCH 要素、WSPAC)。k64 モードでは今までどおり入れない
             from . import compat as _cmp_spch, spch as _spch     # (この関数の _compat は上の try の中の局所変数)
-            _sc = _spch.make(self, tr, npart) if _cmp_spch.v2() else None
+            _sc = _spch.make(self, tr, npart)            # k64: PSPAC だけ (K64 の形状関数。spch_k64)
             if _sc is not None:
                 tr.spch = _sc
 
@@ -3109,7 +3119,8 @@ class FFS:
         score, result = dynamic_aperture(self.els, range3, r1[:n1], nt, phi, iv1, iv2, self.momentum(), self.emit,
                                          emx, emz, self.trf0, self.flags['RFSW'], self.flags['RAD'], fluc=self.flags['FLUC'],
                                          alost=float(g.get('LOSSAMPL', 1.0)), zlost=float(g.get('LOSSDZ', 100.0)),
-                                         out=out, progress=int(float(g.get('PYSAD$PROGRESS', 0.0))), fshift=self._fshift())
+                                         out=out, progress=int(float(g.get('PYSAD$PROGRESS', 0.0))), fshift=self._fshift(),
+                                         dapwidth=dapw, np0=max(2000, n1, int(n1 * min(51, int(math.floor(dapw + 0.5))))))
         g['ResultOfDAPERT'] = result
         g['NP'] = np0
         g['TURNS'] = turns0
@@ -3234,6 +3245,11 @@ class FFS:
         w = words[i]
         W = w.upper()
         rest = words[i + 1:]
+        if W in ('CALC', 'CAL', 'CALCULATE', 'EMIT', 'EMITTANCE', 'CALC6D', 'DISP', 'DISPLAY', 'TYPE', 'STAT', 'STATUS'):
+            try:
+                self._k64_np0 = int(float(self.I.globals.get('NP', 0.0) or 0.0))    # tfsetparam が np0 を NP から取る時点 (TRCOD の粒子数。measure.py)
+            except (TypeError, ValueError):
+                pass
         # ---- ON/OFF: SAD K64 の FFS では無効 (bench_level29d)。語そのものは何もせず `Out[1]:= USE` を出すだけで、後ろの語は
         # 普通に次の文として読まれる。つまり `ON INTRA;` は `INTRA;` (フラグを立てる) と同じで、`OFF INTRA;` も INTRA を **立てる**
         # (切るには `NOINTRA;`)。`ON NORAD NOFLUC;` は RAD と FLUC を切る。MAIN 部の ON/OFF は有効 (main_exec)
@@ -3458,11 +3474,10 @@ class FFS:
                 or (_compat.v2() and (_abbrev(W, 'ORBITJ_ITTER') or _abbrev(W, 'PUTM_EASURE') or _abbrev(W, 'GET_MEASURE')))):
             # v2: MEASURE / TRCOD / LOGMEASURE と ORBITJITTER / PUTMEASURE / GETMEASURE (measure.py)。k64 は従来どおり (gs は MEASURE が無出力、TRCOD は SIGSEGV: B42)
             # (_compat はモジュールの先頭で import 済み。この関数の中で import し直すと、前の方の _compat の参照が UnboundLocalError になる)
-            if _compat.v2():
-                from . import measure as _ms
-                r_ = _ms.ffs_command(self, W, words, i)
-                if r_ is not None:
-                    return r_
+            from . import measure as _ms
+            r_ = _ms.ffs_command(self, W, words, i)               # k64 は MEASURE・TRCOD・LOGMEASURE だけ (gs の実動作: measure.py の _k64_measure)
+            if r_ is not None:
+                return r_
         from . import ffsextra as _fx
         if W in _fx.COMMANDS:
             r_ = _fx.run(self, W, words, i)
@@ -3901,7 +3916,7 @@ class FFS:
                     if fam in self.couples:
                         continue
                     k_ = (key or self.default_key(self.instances(fam)[0]) or '').upper()
-                    comp_ = [v for v in m.variables if v.get('comp') and v['family'] == fam and v['key'] == k_]
+                    comp_ = [v for v in m.variables if v.get('comp') and v['family'] == fam and v['key'] == k_]       # 成分の変数 (QF.1 の要素全体の変数も)
                     if comp_:
                         self.write(' ???-FFS-Error-A component has been already used as variable: ' + comp_[0]['label'] + ' ' + chr(10))
                         return n
@@ -3945,14 +3960,28 @@ class FFS:
             found = True
             insts = self.instances(fam)
             if kk == dk:
+                # 既定のキーの成分の変数 (gs で確認: 先頭の成分 QF.1 は要素全体と同じ値で、ラベルが QF.1。
+                # 先頭でない成分 QF.3 の変数は「結合先 QF.1」の何もしない変数 (GO の変数の数に数える。値は先頭に追従する))
+                if any(v['family'] == fam and v['key'] == kk and not v.get('comp') for v in m.variables):
+                    self.write(' ???-FFS-Error-Element already used as variable: ' + fam + ' ' + chr(10))
+                    return
                 if el is insts[0]:
-                    if any(v['family'] == fam and v['key'] == kk and not v.get('comp') for v in m.variables):
+                    if any(v.get('compdef') and v['family'] == fam and v['key'] == kk and v.get('comp') == k for v in m.variables):
                         continue
-                    self._free_family(fam, kk)
                     for e2 in insts[1:]:
                         self.write(' ???-FFS-Info-Component %s is coupled to %s .\n' % (self.elname_of(e2), self.elname_of(el)))
+                    self._free_family(fam, kk)
+                    for v in m.variables:
+                        if v['family'] == fam and v['key'] == kk and not v.get('comp'):
+                            v.update(comp=k, compdef=True, label=self.elname(k))
                 else:
+                    if any(v.get('compdef') and v['family'] == fam and v['key'] == kk and v.get('comp') == k for v in m.variables):
+                        continue
                     self.write(' ???-FFS-Info-Component %s is coupled to %s .\n' % (self.elname_of(el), self.elname_of(insts[0])))
+                    v0 = self.get_value(insts[0], kk)
+                    m.variables.append(dict(family=fam, key=kk, els=[insts[0]], type=tn, val=v0, val2=v0, comp=k, compdef=True, noop=True,
+                                            label=self.elname(k), couple=self.elname_of(insts[0]),
+                                            vlim=list(getattr(insts[0], '_vlim', {}).get(kk, [0.1, 1e10] if tn == 'Drift' and kk == 'L' else [-1e10, 1e10]))))
                 continue
             if any(v['family'] == fam and v['key'] == kk and not v.get('comp') for v in m.variables):
                 self.write(' ???-FFS-Error-Element already used as variable: ' + fam + ' ' + chr(10))
@@ -3987,7 +4016,9 @@ class FFS:
 
     def set_var(self, v, val):
         """変数 v の値を要素に入れる。成分の変数はその成分だけ、ほかは同じ名前の要素すべて (と COUPLE の相手)"""
-        if v.get('comp'):
+        if v.get('noop'):
+            return                                     # 先頭でない成分の既定のキーの変数: gs は値を持たず効かない
+        if v.get('comp') and not v.get('compdef'):
             self.set_value(v['els'][0], v['key'], val)
         else:
             self.set_family(v['family'], v['key'], val)
@@ -3995,7 +4026,7 @@ class FFS:
     def _tfvcomp(self) -> bool:
         """tffsa.f tfvcomp: 成分ごとのフィット変数 (ivcomp≠0) で、既定以外のキーワードのものがあれば真。
         成分ごとの変数 (`comp` つき。既定のキー以外の成分の変数だけが作られる) があれば真"""
-        return any(v.get('comp') for v in (self.matcher.variables if self.matcher else ()))
+        return any(v.get('comp') and not v.get('compdef') for v in (self.matcher.variables if self.matcher else ()))
 
     def _kw_of_pattern(self, pat: str, kw: str) -> bool:
         """pat に合うファミリーのどれかの型 (SAD の型) のキーワード一覧に kw があるか (tffsfreefix の tfkwrd 照合)"""
@@ -4014,7 +4045,7 @@ class FFS:
         k = (key or self.default_key(el0) or '').upper()
         if not k or tn in ('Marker', 'Monitor'):
             return
-        if any(v['family'] == fam and v['key'] == k for v in m.variables):
+        if any(v['family'] == fam and v['key'] == k and not v.get('comp') for v in m.variables):
             return
         m.variables.append(dict(family=fam, key=k, els=els, type=tn, val=self.get_value(el0, k), val2=self.get_value(el0, k),
                                 vlim=list(getattr(el0, '_vlim', {}).get(k, [0.1, 1e10] if tn == 'Drift' and k == 'L' else
@@ -5478,6 +5509,9 @@ class FFS:
                     except Exception:
                         pass
             el._errk = 1.0
+        if self.matcher:
+            for v in self.matcher.variables:             # VAR の Now 欄も戻す (gs: RESET のあとの VAR は設計値)
+                v['val'] = self.get_value(v['els'][0], v['key'])
         self.invalidate()
 
 

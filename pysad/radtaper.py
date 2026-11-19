@@ -6,7 +6,7 @@ TrackParticles に効く。
 
 K64 の定義 (収束した状態):
   - 閉軌道の入口の運動量のずれは δ(1) = DP0 に固定し、その代わりに一様な係数 dptaper を未知数にして 6 次元で閉じる (tcod.f)。
-  - 要素 l の係数 (tturne.f): BEND は 1 + (3 δ_l + δ_{l+1})/4 + dptaper、QUAD・薄い多極・MULT は 1 + (δ_l + δ_{l+1})/2 + dptaper
+  - 要素 l の係数 (tturne.f。v2 は BEND も (δ_l + δ_{l+1})/2): BEND は 1 + (3 δ_l + δ_{l+1})/4 + dptaper、QUAD・薄い多極・MULT は 1 + (δ_l + δ_{l+1})/2 + dptaper
     (δ_l は要素 l の入口の閉軌道の δ。±0.3 で頭打ち)。BEND は (K0 + ANGLE) と K1 に掛ける (幾何の ANGLE は変えない)。
   - 追跡 (tturn.f) は Twiss の DDP (= δ_l) と dptaper から、BEND も含めて 1 + (δ_l + δ_{l+1})/2 + dptaper。
   - Twiss["DDP", l] に δ_l が入る。
@@ -74,7 +74,10 @@ def factors(els, ddp, u, tracking=False):
     out = []
     for l, el in enumerate(els):
         a, b = ddp[l], ddp[l + 1]
-        if type(el).__name__ == 'Bend' and (not tracking or _compat.v2()):     # v2: 追跡も BEND に tturne と同じ重み (K64 の追跡は (δ_l + δ_l+1)/2)
+        if type(el).__name__ == 'Bend' and not tracking and not _compat.v2():
+            # K64 の tturne の BEND は (3 δ_l + δ_l+1)/4 (放射を刻みの終わりに入れる粗い刻みに合わせた重み)、追跡は (δ_l + δ_l+1)/2。
+            # v2 は Emittance[]・EMIT・追跡とも (δ_l + δ_l+1)/2 (連続な放射の極限で、要素の中の損失が線形のとき曲げ角を設計値にする係数は
+            # 調和平均 ≈ 算術平均。v2next P2 項目 3)。同じ係数なので Emittance[] の閉軌道は追跡で閉じる
             t = 1.0 + (3.0 * a + b) * 0.25 + u
         else:
             t = 1.0 + (a + b) * 0.5 + u
