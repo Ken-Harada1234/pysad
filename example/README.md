@@ -31,6 +31,7 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 | [`13_packages`](13_packages) | Packages/*.n | CorrectOrbit、MakeBump、optimize、D.n、TableForm など |
 | [`pf`](pf) | PF (2.5 GeV) の例集 | 実機ラティスでの光学・マッチング・チューンシフト・放射積分・トラッキング・入射軌道。索引は [`pf/README.md`](pf/README.md) |
 | [`astrid`](astrid) | ASTRID2 (0.58 GeV) の例集 | チューンサーベイ、MPW、位相空間、ラティスの作り方。索引は [`astrid/README.md`](astrid/README.md) |
+| [`v2_B`](v2_B)・[`v2_C`](v2_C)・[`v2_next`](v2_next) | v2 の例 | v2.0.0・v2.1.0 の作業で作った例 (v2 で結果が変わるもの、新しく使える機能)。`v2_next` の索引は [`v2_next/README.md`](v2_next/README.md) |
 | `tools` | 道具 | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか。`pf_astrid/` は pf・astrid の作成用で、パスは整理前のまま) |
 
 各フォルダの `README.md` に、そのフォルダの例の一覧と、gs と pysad の一致状況 (○ 一致、△ 差あり、× 未対応・失敗) があります。
