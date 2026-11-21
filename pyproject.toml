@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysad-k64"
-version = "2.2.0"
+version = "2.3.0"
 description = "Python translation of SAD (Strategic Accelerator Design, K64 version): optics, tracking, emittance and the SADScript interpreter. v2 fixes K64 bugs and adds features; PYSAD_COMPAT=k64 reproduces K64"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -23,7 +23,7 @@ dependencies = ["numpy", "numba", "scipy"]
 [project.urls]
 Homepage = "https://github.com/Ken-Harada1234/pysad"
 Source = "https://github.com/Ken-Harada1234/pysad"
-Changelog = "https://github.com/Ken-Harada1234/pysad/blob/v2.1.0/CHANGELOG.md"
+Changelog = "https://github.com/Ken-Harada1234/pysad/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 include = ["pysad"]

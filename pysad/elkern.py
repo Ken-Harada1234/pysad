@@ -1634,7 +1634,7 @@ def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, sy
 
 @njit(**NJ)
 def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enarad, use_dv, symp_fix,
-               want_jac, want_db, radcod, edgefix=False):
+               want_jac, want_db, radcod, edgefix=False, klin=0):
     """emit6d._tbende_core (F1=0, mfring=0, ずれ・ロールなし)。戻り 0: 成功、1: Python に戻す、2: tmulte (未対応)"""
     phib = phi0 + k0
     ak = k1 * al0
@@ -1691,7 +1691,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
             alr = aln
             akx = ak * alx / al0
             phi1 = phi0 * alx / al0
-            t, cn = _bendecorr(c, (akx + akx0) * 0.5, (alx + alx0) * 0.5, rho0, PSQMAX)
+            t, cn = _bendecorr(c, (akx + akx0) * 0.5, (alx + alx0) * 0.5, rho0, PSQMAX, klin)
             _apply_tdb(t, T, D, B, want_db)
             c[:] = cn
             akx0 = akx
@@ -1704,7 +1704,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
             if enarad and n != ndiv:
                 _tradke(c, T, D, B, codr0, transr, S, PH, alr, phi1, want_jac, want_db, radcod, tin, 0.0)
                 tin = 0.0
-        t, cn = _bendecorr(c, akx0 * 0.5, alx0 * 0.5, rho0, PSQMAX)
+        t, cn = _bendecorr(c, akx0 * 0.5, alx0 * 0.5, rho0, PSQMAX, klin)
         _apply_tdb(t, T, D, B, want_db)
         c[:] = cn
     M = _edge_chain(c, rhob, e2, False)
@@ -1717,9 +1717,10 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
 @njit(**NJ)
 def k_bend(cod, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2,
            has_chg, dx, dy, dz, th, dth, alg, phig,
-           enarad, use_dv, symp_fix, want_jac, want_db, radcod, edgefix=False):
+           enarad, use_dv, symp_fix, want_jac, want_db, radcod, edgefix=False, klin=0):
     """emit6d._tbende: (has_chg なら tchge 入口) → _bend_core → (tchge 出口)。状態の複製で計算し成功時だけ書き戻す。
     edgefix = compat.v2(): 端の角の放射の行路 (JX1) と tchge の入口の回転行列 (B09) を直した動作にする。
+    klin = compat.bend_ecorr_flags(): bit0 = K1≠0 の本体の K1 の定義を B' 一様にする (v2 のオプション、B160)、bit1 = B161 の dk の修正 (v2)。
     戻り 0: 成功、それ以外: Python に戻す"""
     c = cod.copy()
     Tl = T.copy()
@@ -1731,7 +1732,7 @@ def k_bend(cod, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2,
     if has_chg:
         _tchge(c, Tl, Dl, Bl, dx, dy, dz, th, dth, alg, phig, True, want_jac, want_db, symp_fix, edgefix)
     st = _bend_core(c, Tl, Dl, Bl, r0, trl, Sl, PH, al0, phi0, k0, k1, e1, e2, enarad, use_dv, symp_fix,
-                    want_jac, want_db, radcod, edgefix)
+                    want_jac, want_db, radcod, edgefix, klin)
     if st != 0:
         return st
     if has_chg:

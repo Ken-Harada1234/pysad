@@ -251,12 +251,15 @@ class _IntraContext:
         self.touckm = np.zeros((NTOUCKZ, NTOUCKX, 2))
         self.toucke = np.zeros((NTOUCKL, nlat))
         self.id = 0
+        self.rest = None            # v2.3.0 T2: list なら、各スライスの静止系のビーム (xx, pl, ...) を記録する (touschek_piwinski が使う)
 
     def reset_tables(self):
         """tturne.f 先頭: calint のとき touckl, touckm, toucke を 0 にする"""
         self.touckl[:] = 0.0
         self.touckm[:] = 0.0
         self.toucke = np.zeros((NTOUCKL, self.nlat))
+        if self.rest is not None:
+            self.rest.clear()
 
 
 # ---------------------------------------------------------------------------
@@ -371,6 +374,8 @@ def _tintrb(st: _IntraState, al: float, al1: float, l: int, ctx: _IntraContext):
     trans2[:, 3] = trans2[:, 3] - pyi / pzi * trans2[:, 5]
     trans2[:, 4] = (pxi * trans2[:, 0] + pyi * trans2[:, 2] + pzi * trans2[:, 4]) / pr
     trans2[:, 5] = pr / pzi * trans2[:, 5]
+    if ctx.rest is not None and ctx.caltouck:
+        _sl = trans1 @ bmi @ trans1.T            # スライス中心の実験室系のビーム行列 (6×6。T2 の独立な検証用)
     trans1 = trans2 @ trans1
     bmi = trans1 @ bmi @ trans1.T
     ix = [0, 2, 4]
@@ -389,6 +394,10 @@ def _tintrb(st: _IntraState, al: float, al1: float, l: int, ctx: _IntraContext):
     eig, r3 = _eigs33(pl)
     ptrans = math.sqrt(eig[0] + eig[1] + eig[2])
     pvol = math.sqrt(max(1e-80, eig[0] * eig[1] * eig[2]))
+    if ctx.rest is not None and ctx.caltouck:
+        # T2: 静止系の位置の共分散 xx、位置を固定したときの運動量の共分散 pl (p0 で規格化)、静止系の運動量の全共分散、スライスの長さ・要素番号
+        ctx.rest.append(dict(l=l, al=float(al), xx=xx.copy(), pl=pl.copy(), pp=bmi[np.ix_(ip, ip)].copy(), lab=_sl, vol=vol,
+                             p0=p0, h0=h0, pxi=pxi, pyi=pyi, al1=float(al1)))
     # ---- Touschek 損失率の積算 ----
     if vol != 0.0 and ctx.caltouck:
         if ptrans != 0.0:
@@ -560,7 +569,7 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
                    nbunch: float = 1.0, mincoup: float = 1e-2,
                    rfsw: bool = True, radcod: bool = False,
                    charge: float = 1.0, amass: float = _e.ELMASS,
-                   verbose: bool = True, intra: bool = True, wspac: bool = False) -> dict:
+                   verbose: bool = True, intra: bool = True, wspac: bool = False, record_rest: bool = False) -> dict:
     """SAD の `emit` (INTRA ON) 相当: IBS 反復を収束させ、TouschekTable を作る。
 
     Parameters
@@ -590,6 +599,8 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
     ctx = _IntraContext(nlat, float(pbunch), rclassic, float(mincoup))
     ctx.intra = bool(intra)
     ctx.wspac = bool(wspac)
+    if record_rest:
+        ctx.rest = []
     cod0 = np.array(em['closed_orbit'], dtype=float)
     trf0 = float(em.get('trf0', 0.0))
     p0 = ph.p0
@@ -785,6 +796,9 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
     out['_state'] = st        # 最終パスの _State (T、D、B。Emittance[] の規則が使う)
     out['B2'] = B2            # 最終パスで使った beam(22:42) の初期値 (診断用)
     out['_ctx'] = ctx         # 最終パスの文脈 (診断用)
+    if record_rest:
+        out['rest'] = list(ctx.rest)      # T2: 最終パスの各スライスの静止系のビーム (touschek_piwinski の入力)
+        out['rest_info'] = dict(circ=float(circ), pbunch=float(pbunch), rclassic=float(rclassic), p0=float(p0), h0=float(h0), nlat=int(nlat))
     if wspac:
         # temit.f 末尾 (plot .and. postcal): beam(1:21) = emitp から一周し、各要素の入口のビーム行列を記録する (空間電荷つき。
         # CALC の WSPAC (qtwiss の qwspac) と追跡の WSPAC (twspac) が使う beamsize)。ctx.calint のまま (tintrb の wspac のレンズが入る)
@@ -931,3 +945,88 @@ def touschek_lifetime(table, nx, ny, nz, sige) -> float:
     片方だけ INF なら横振幅 nx (または ny) と縦振幅 nz に対する寿命。
     sige: SAD の SIGE (相対運動量広がり)。"""
     return TouschekLifetimeCalculator(table).lifetime(nx, ny, nz, sige)
+
+
+# ---------------------------------------------------------------------------
+# v2.3.0 T2: Touschek 損失率の式 (Piwinski 型。K64 の touschek_f とは別の、独立に導出した式)
+# ---------------------------------------------------------------------------
+# 導出 (docs/history/v23_T2.md §2): 静止系 (ビームの重心系。z* = γz、運動量 p* [mc 単位]) で、同じ位置にある 2 粒子の相対運動量 q = p1 − p2 は、
+# 位置を固定したときの運動量の共分散 P (3×3) から N(0, 2P)。相互作用は非相対論的な Møller 断面積 (スピン平均)
+#   dσ/dΩ = (4 r0² / k⁴) K(θ),  K = 4/sin⁴θ − 3/sin²θ,  k = |q|  (質量中心系の相対運動量、mc 単位)
+# 受容 δ± を超える損失 (kick 基準: 散乱で δ が a+ より増える、または −a− より減る) の率は、
+#   1/τ_inst = (r0² c N / (γ V*)) ⟨ k⁻³ ∫dΩ' K [I(kick > a+) + I(kick < −a−)] ⟩   (V* = (4π)^{3/2} √det(xx*))
+# 運動量の s 成分 (σδ/γ) が横方向 (√λ) より十分小さい極限で、q_s = 0 とすると k の 1 次元積分になる (Bessel I0 は x-y 面の方位角の積分):
+#   1/τ_inst = r0² c N / (γ V* √(λ1 λ2)) Σ± J(2β a±),   J(c) = ∫_c^∞ dk k⁻² W(k/c) e^{−k²α1} I0e(k²(α2−α1)/2),
+#   W(κ) = 2π [κ² − 1 − ln κ],  αi = 1/(4 λi)  (λ1 ≥ λ2: P の x-y ブロックの固有値、mc² 単位)、 I0e = e^{−z} I0(z)
+# リング全体: 1/τ = Σ_slice (al/C) · 1/τ_inst。
+_R0_M = 2.8179403262e-15
+_CLIGHT_MS = 299792458.0
+_GLX, _GLW = np.polynomial.legendre.leggauss(16)
+
+
+def _ive0(z):
+    """e^{−z} I0(z) (z ≥ 0)。scipy の ive は z ≳ 1e10 で nan を返すので、z > 1e4 は漸近展開 (1 + 1/(8z) + 9/(128z²)) / √(2πz)。"""
+    from scipy.special import ive
+    z = np.asarray(z, dtype=float)
+    big = z > 1e4
+    zz = np.where(big, 1.0, z)
+    return np.where(big, (1.0 + 1.0 / (8.0 * np.where(big, z, 1.0)) + 9.0 / (128.0 * np.where(big, z, 1.0)**2)) / np.sqrt(2.0 * math.pi * np.where(big, z, 1.0)), ive(0, zz))
+
+
+def _piw_J(c, alpha1, alpha2, npan=40):
+    """J(c) = ∫_c^∞ dk k^-2 W(k/c) exp(−k² α1) I0e(k²(α2−α1)/2)。k の対数を npan 区間・各 16 点の Gauss-Legendre で積分。"""
+    kmax = math.sqrt(45.0 / alpha1)
+    if not (kmax > c * 1.0000001):
+        return 0.0
+    edges = np.linspace(math.log(c), math.log(kmax), npan + 1)
+    a_, b_ = edges[:-1, None], edges[1:, None]
+    u = 0.5 * (b_ - a_) * _GLX[None, :] + 0.5 * (a_ + b_)
+    k = np.exp(u).ravel()
+    w = (0.5 * (b_ - a_) * _GLW[None, :] * np.exp(u)).ravel()
+    kap = k / c
+    W = 2.0 * math.pi * (kap**2 - 1.0 - np.log(kap))
+    z = k**2 * (alpha2 - alpha1) / 2.0
+    return float(np.sum(W / k**2 * np.exp(-k**2 * alpha1) * _ive0(z) * w))
+
+
+def piwinski_slice_rate(sl, ap, am, circ, pbunch, npan=40):
+    """1 つのスライス (touschek_table(record_rest=True) の 'rest' の要素) の 1/τ への寄与 [1/s]。ap・am: 正・負の運動量受容 (正の値)。"""
+    p0, h0 = sl['p0'], sl['h0']
+    beta = p0 / h0
+    vol = (4.0 * math.pi)**1.5 * math.sqrt(abs(np.linalg.det(sl['xx'])))
+    P = np.asarray(sl['pl'])[:2, :2] * p0**2
+    ev = np.sort(np.linalg.eigvalsh(0.5 * (P + P.T)))
+    l1 = max(ev[1], 1e-300)
+    l2 = max(ev[0], 1e-12 * l1)
+    a1, a2 = 1.0 / (4.0 * l1), 1.0 / (4.0 * l2)
+    J = 0.0
+    if ap > 0.0:
+        J += _piw_J(2.0 * beta * ap, a1, a2, npan)
+    if am > 0.0:
+        J += _piw_J(2.0 * beta * am, a1, a2, npan)
+    rinst = _R0_M**2 * _CLIGHT_MS * pbunch / (h0 * vol * math.sqrt(l1 * l2)) * J      # 1/τ_inst [1/s]
+    return sl['al'] / circ * rinst
+
+
+def touschek_piwinski(result, a=None, ap=None, am=None, npan=40):
+    """Piwinski 型の Touschek 寿命 (v2.3.0 T2)。K64 の `touschek_f` の当てはめの代わりに、2 粒子の Møller 散乱の積分を 1 次元積分で評価する。
+    result: touschek_table(..., record_rest=True) の戻り (FFS では ffs.touschek)。'rest' (各スライスの静止系のビーム) を使う。
+    受容: a (一様、正負対称)、または ap・am (正・負の受容の大きさ。スカラーか、要素 l (1 始まり) ごとの配列 [長さ nlat]、位置ごとの LMA 用)。
+    戻り dict: rate [1/s]、lifetime [s]、rate_per_slice、l (スライスの要素番号)。
+    条件: 受容 ≫ σδ (σδ/a の 2 乗程度の誤差、docs/history/v23_T2.md)。バンチ内の δ の分布 (a − δ_old) は入れない (K64・elegant も同じ)。"""
+    if 'rest' not in result:
+        raise ValueError('touschek_piwinski: touschek_table(record_rest=True) の結果が必要 (FFS の INTRA ON の Emittance[] は既に記録する)')
+    info = result['rest_info']
+    if a is not None:
+        ap = am = a
+    nlat = info['nlat']
+
+    def _arr(v):
+        v = np.asarray(v, dtype=float)
+        return np.full(nlat, float(v)) if v.ndim == 0 else v
+    apa, ama = _arr(ap), _arr(am)
+    rates = np.array([piwinski_slice_rate(sl, float(apa[sl['l'] - 1]), float(abs(ama[sl['l'] - 1])), info['circ'], info['pbunch'], npan)
+                      for sl in result['rest']])
+    rate = float(rates.sum())
+    return dict(rate=rate, lifetime=(1.0 / rate if rate > 0 else math.inf), rate_per_slice=rates,
+                l=np.array([sl['l'] for sl in result['rest']]))

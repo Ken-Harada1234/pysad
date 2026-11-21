@@ -543,6 +543,8 @@ class FFS:
         B['CalculateOptics'] = self.fn_calculate_optics
         B['DynamicApertureSurvey'] = self.fn_dasurvey
         B['TouschekLifetime'] = self.fn_touschek
+        from . import q1cmd as _q1cmd                # v2.3.0 Q1: FrequencyMap・MomentumAcceptance・TouschekLifetimeLMA
+        _q1cmd.install(self, B)
         B['FFSCalc'] = lambda a: (self.calc(), Null)[1]
         I.set_hooks = getattr(I, 'set_hooks', {})
         I.set_call_hooks = {'LINE': self.set_line, 'Element': self.set_element}
@@ -560,6 +562,8 @@ class FFS:
         # Element/SetElement/FLAG/ExtractBeamLine/BeamLine/PrintBeamLine/WriteBeamLine/GetMAIN (sadelem.py)
         from . import sadelem
         sadelem.install(self)
+        from . import resdrive                 # v2.3.0 Q2: ResonanceDrivingTerms, AmplitudeTuneShift, ChromaticityTerms
+        resdrive.install(self)
 
     # ------------------------------------------------------------------ ユーティリティ
     def write(self, s: str):
@@ -2327,7 +2331,7 @@ class FFS:
                 tt = touschek_table(self.lat, self.momentum(), e, float(g.get('PBUNCH', 0.0) or 0.0),
                                     nbunch=float(g.get('NBUNCH', 1.0) or 1.0), mincoup=float(g.get('MINCOUP', 1e-2)),
                                     rfsw=self.flags['RFSW'], radcod=self.flags['RADCOD'], verbose=False,
-                                    intra=bool(self.flags['INTRA']), wspac=bool(self.flags['WSPAC']), **self._mass_charge())
+                                    intra=bool(self.flags['INTRA']), wspac=bool(self.flags['WSPAC']), record_rest=True, **self._mass_charge())
             except Exception as ex:
                 self.write(f' ???-Emittance[]-{"INTRA" if self.flags["INTRA"] else "WSPAC"} failed: {ex}' + chr(10))
                 tt = None
@@ -3127,9 +3131,20 @@ class FFS:
         return [score, [rng, result[1]]]
 
     def fn_touschek(self, args):
-        """TouschekLifetime[nx, ny, nz] (Packages/emit.n): TouschekTable (INTRA ON の emit/Emittance[] が作る) をスプライン補間して寿命 [s]。
-        nx, ny は INF (= sadscript.INF) か実数、sige は SIGE グローバル。"""
-        from .touschek import touschek_lifetime
+        """TouschekLifetime[nx, ny, nz, Formula->"K64"|"Piwinski"] (Packages/emit.n): TouschekTable (INTRA ON の emit/Emittance[] が作る) をスプライン補間して寿命 [s]。
+        nx, ny は INF (= sadscript.INF) か実数、sige は SIGE グローバル。
+        v2.3.0 T2: nx = ny = INF (運動量受容 nz·SIGE だけ) の寿命は、v2 の既定では Piwinski 型の式 (touschek.touschek_piwinski、独立に導出した式。
+        K64 の当てはめの式は結合・丸いビームで ±20% 違う、docs/history/v23_T2.md)。k64 モードと Formula->"K64" は K64 の表のまま。
+        横の振幅の受容 (nx か ny が有限) は K64 の表だけ (Formula->"Piwinski" を明示するとエラー)。"""
+        from .touschek import touschek_lifetime, touschek_piwinski
+        from . import compat as _compat
+        from .q1cmd import _opts
+        opts, args = _opts(args)
+        fm = opts.get('FORMULA')
+        explicit = isinstance(fm, str)
+        fm = fm.lower() if explicit else ('k64' if _compat.k64() else 'piwinski')
+        if fm not in ('k64', 'piwinski'):
+            raise SADError('TouschekLifetime: Formula must be "K64" or "Piwinski"')
         tt = getattr(self, 'touschek', None)
         if tt is None or tt.get('table') is None:
             raise SADError('Touschek::undef:  TouschekTable Undefined; Do Emittance[] with INTRA;')
@@ -3137,6 +3152,11 @@ class FFS:
             raise SADError('TouschekLifetime[nx, ny, nz]')
         nx, ny, nz = [(float(a) if is_num(a) else math.inf) for a in args]
         sige = float(self.I.get('SIGE', 0.0))
+        if fm == 'piwinski':
+            if math.isinf(nx) and math.isinf(ny) and 'rest' in tt:
+                return float(touschek_piwinski(tt, a=nz * sige)['lifetime'])
+            if explicit:
+                raise SADError('TouschekLifetime: Formula->"Piwinski" is for the momentum acceptance only (nx = ny = INF)')
         return float(touschek_lifetime(tt['table'], nx, ny, nz, sige))
 
     # ------------------------------------------------------------------ MAIN レベルの命令 (FFS; の前)
@@ -3443,7 +3463,7 @@ class FFS:
         if W in ('MCOD', 'TCOD', 'MON'):
             # この K64 ビルドの SAD では MON/MCOD/TCOD は FFS コマンドではなく式として評価されて何もしない (SAD で確認)。
             # 後ろの語は普通に次の文として読まれるので、`MON 0 0 0 0 PM*` は `PM*` の値が無く ?Missing value for PM* になる
-            # (<work-userscripts>/esrf correct_cod, print_emittance: SAD は FFS::error で Do を抜ける)
+            # (<work-userscripts>/kekls correct_cod, print_emittance: SAD は FFS::error で Do を抜ける)
             if _compat.v2():
                 # v2 (B22): K64 にこのコマンドは無い。文の残りを式として読んで別のエラー (Missing value for PM*) で止まるのを避け、
                 # 無いことを知らせて文全体を読み飛ばす (軌道補正は CorrectOrbit パッケージ: docs/34)

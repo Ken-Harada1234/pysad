@@ -26,8 +26,8 @@ match6.py の数値微分 qu = (ddf1−ddf2)/2/dvkc/wvar = −∂(df·wiq)/∂v/
   from pysad.match6d import analytic_qu, AnalyticMatcher
   qu, numeric_cols = analytic_qu(matcher, ids, rows, wvar)   # match6.Matcher の go() 内の数値微分の代わり
   AnalyticMatcher は Matcher の go() を解析微分 (FitFunction 行は SAD と同じ片側差分) に置き換えたサブクラス。
-検証 (docs/history/work_analytic_deriv.md): match6 の数値微分と Level 13B で最大相対差 2e-8、ESRF ARCA (BEND K1 含む) で 4e-7。
-AnalyticMatcher で Level 13B と esrf/matching (matching1) の SAD の反復列・残差・K1 (12 桁) を再現。
+検証 (docs/history/work_analytic_deriv.md): match6 の数値微分と Level 13B で最大相対差 2e-8、KEK-LS (大きなリング A) ARCA (BEND K1 含む) で 4e-7。
+AnalyticMatcher で Level 13B と kekls/matching (matching1) の SAD の反復列・残差・K1 (12 桁) を再現。
 注意: SAD の mathfun sinc(x) は x·cos x − sin x (sin x / x ではない)。qdbend はこれを使う。
 制限: CELL のみ検証済み。変数は QUAD K1/ROTATE, BEND ANGLE/K1 (他は数値微分列にフォールバック)。
      条件は AX..EPY, R1..R4, DETR, DX..DPY, PEX..PEPY, GMX/GMY, TRX/TRY, LENG。

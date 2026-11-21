@@ -656,7 +656,7 @@ def _jac_tsolque_body(c, aln1, kappa, dvz):
            + y * (q_r * dch + q * sh * dphi))
     J[4, 5] = -0.25 * Z_r + dvz * aln1
     if _compat.v2():
-        # v2: z' = z - Z/4 の x, px, y, py についての微分 (K64 の trans(5,1..4))。K64 モードでは入れない (軌道が x, y でずれると z 行が 0 で、
+        # v2: z' = z - Z/4 の x, px, y, py についての微分 (K64 の trans(5,1..4))。k64 モードでは入れない (軌道が x, y でずれると z 行が 0 で、
         # 1 周の写像のシンプレクティック性が 1e-5 崩れる pysad の不具合をそのまま再現する)
         Zx = 2.0 * w * x * xs + dc * pxf - w * sn * u1 + p * dc
         Zp = 2.0 * p * aln1 + sn / w * pxf + u1 * cs + x * dc
@@ -1125,7 +1125,7 @@ class _BendIBody:
 
 def _tbendecorr(st: _State, ak1, al, rho0):
     """tbende.f tbendecorr (解析行列ごと直訳。本体は perfkern_bend.bendecorr)"""
-    t, cod = _k_bendecorr(st.cod, ak1, al, rho0, PSQMAX)
+    t, cod = _k_bendecorr(st.cod, ak1, al, rho0, PSQMAX, _compat.bend_ecorr_flags())
     st.apply(t)
     st.cod = cod
 
@@ -1742,7 +1742,7 @@ def _tthine_gen(st: _State, L, ak, kord, dx, dy, th):
 
     def f_core(c):
         # tthine の中のドリフトは tdrife0(dvon=.true.) なので dv 項 (z -= L·dv(δ)) が付く。
-        # 薄いキックは δ を変えないので全長まとめて引ける (Level 16: ESRF の R56 が 5.6e-6 ずれていた原因)
+        # 薄いキックは δ を変えないので全長まとめて引ける (Level 16: KEK-LS (大きなリング A) の R56 が 5.6e-6 ずれていた原因)
         c2 = f0(c)
         c2[4] -= ph.dv(c2[5]) * L
         return c2
@@ -1783,7 +1783,7 @@ def _bende_fast(st, el, enarad):
         dx, dy, dz, th, dth, alg, phig = chg
     return _ek.k_bend(st.cod, st.T, st.D, st.B, st.codr0, st.transr, st._S, st.PH, float(el.L), ang, k0, k1,
                       _g0(el, 'E1'), _g0(el, 'E2'), has_chg, dx, dy, dz, th, dth, alg, phig,
-                      enarad, True, True, st.want_jac, st.want_db, st.radcod, _compat.v2())
+                      enarad, True, True, st.want_jac, st.want_db, st.radcod, _compat.v2(), _compat.bend_ecorr_flags())
 
 
 def _quade_fast(st, el, krad):
@@ -2662,7 +2662,7 @@ def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
     pol0 = POL_MODE
     if pol and rfsw and radcod:
         # D1: 不安定なリング (閉軌道が見つからず NaN) の POL は、スピンの刻み (v2 は四極・MULT を細かく分割する) で 1 周が 20〜60 秒かかり、
-        # 大きなリング B (8 GeV、1998 要素) では 4〜20 分以上になった。スピンなしの速い経路で先に確かめ、NaN ならスピンの計算をしない
+        # SP8 (大きなリング B、8 GeV、1998 要素) では 4〜20 分以上になった。スピンなしの速い経路で先に確かめ、NaN ならスピンの計算をしない
         POL_MODE = False
         try:
             out0 = _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fshift, emit_floor, False)

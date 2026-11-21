@@ -69,7 +69,7 @@ def _drift_at_cod(L, delta, pxi, pyi, M, cod, move):
 
 
 @njit(**NJ)
-def turn4(i0, kind, has_off, P, Mlin, Klin, T0, hasT0, cod, Mtot, mats, cods, delta, PH, S3, v2=False):
+def turn4(i0, kind, has_off, P, Mlin, Klin, T0, hasT0, cod, Mtot, mats, cods, delta, PH, S3, v2=False, klin=0):
     """要素 i0 から最後まで回す。戻り (i, why): i == n なら完了。why=1: 要素 i の T0 (設計軌道の線形行列) が要る、
     why=2: 要素 i は Python で処理してから i+1 で再開。cod・Mtot は in-place、mats[i]・cods[i] (入口 cod) を埋める"""
     n = kind.shape[0]
@@ -121,7 +121,7 @@ def turn4(i0, kind, has_off, P, Mlin, Klin, T0, hasT0, cod, Mtot, mats, cods, de
             T = np.eye(6)
             rc = k_bend(c, T, Z66, Z66, Z6, Z66, S3, PH, P[i, 0], P[i, 1], P[i, 2], P[i, 3], P[i, 4], P[i, 5],
                         P[i, 6] != 0.0, P[i, 7], P[i, 8], P[i, 9], P[i, 10], P[i, 11], P[i, 12], P[i, 13],
-                        False, False, False, True, False, False, v2)
+                        False, False, False, True, False, False, v2, klin)
             if rc != 0:
                 return i, 2
             cod[:] = c

@@ -2349,7 +2349,7 @@ def _bend_step_fast(el, cod):
     T = np.eye(6)
     r = _ek.k_bend(c, T, _EK_Z66, _EK_Z66, _EK_Z6, _EK_Z66, _EK_S3, _ek_ph4(), float(el.L), ang, k0, k1,
                    g('E1'), g('E2'), has_chg, dx, dy, dz, th, dth, alg, phig,
-                   False, False, False, True, False, False, _compat.v2())
+                   False, False, False, True, False, False, _compat.v2(), _compat.bend_ecorr_flags())
     if r != 0:
         return None
     return c, T
@@ -2727,7 +2727,7 @@ def _one_turn_cod_matrix(elements, delta: float,
     i = 0
     while i < n:
         i, why = turn4(i, pack.kind, pack.has_off, pack.P, pack.Mlin, pack.Klin, pack.T0, pack.hasT0,
-                       cod, M_total, mats, cods, delta, _ek_ph4(), _EK_S3, _compat.v2())
+                       cod, M_total, mats, cods, delta, _ek_ph4(), _EK_S3, _compat.v2(), _compat.bend_ecorr_flags())
         if i >= n:
             break
         el = elements[i]

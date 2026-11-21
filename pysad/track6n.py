@@ -183,7 +183,8 @@ def make_rs(seed):
     """乱数の状態の配列 [seed, v2 の印]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
     njit の中からは compat を読めないので、状態の配列に印を載せて渡す (k64 では 0 で、今までと同じ動作)"""
     from . import compat
-    return np.array([seed, 1 if compat.v2() else 0, 1 if compat.bend_k1_edge() == 'face' else 0], dtype=np.int64)
+    return np.array([seed, 1 if compat.v2() else 0, 1 if compat.bend_k1_edge() == 'face' else 0,
+                     1 if compat.bend_k1_lin() else 0], dtype=np.int64)
 
 
 @njit(**NJ)
@@ -1158,6 +1159,7 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
     ndiv = fmin(1000, ndiv)
     n2 = ndiv + n2
     af = 1.0 if fringe else 0.0
+    klin = rs.shape[0] > 3 and rs[3] == 1                        # v2 (B160 のオプション): K1 の定義 'lin' (B' 一様)
     v2edge = fringe and (rs.shape[0] > 1 and rs[1] == 1)       # v2 (B1): DISFRIN=0 のとき端は厳密な tbedge (sinp≠0 の端だけ)
     aln = alc / ndiv
     alr_e = 0.0; phi_e = 0.0
@@ -1271,7 +1273,12 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
             m_pxi = m_pxi + phic * dpzi
             m_yi = m_yi + (-alc1 * dpzi + m_xi * phic) * m_pyi / pzi
             xr = m_xi / rho0
-            m_pxi = m_pxi - ak1c * m_xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m_p
+            if klin:
+                hk = ak1c / rho0 / m_p
+                m_pyi = m_pyi + hk * m_xi * m_yi
+                m_pxi = m_pxi - hk * (m_xi * m_xi - 0.5 * m_yi * m_yi)
+            else:
+                m_pxi = m_pxi - ak1c * m_xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m_p
             akx0 = akxn; alx0 = alx; phix0 = phixn
             # --- tbendibody(m, alx0)
             xiksq = drhop + akxsq * m_xi
@@ -1311,7 +1318,12 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
         m_pxi = m_pxi + phic * dpzi
         m_yi = m_yi + (-alc1 * dpzi + m_xi * phic) * m_pyi / pzi
         xr = m_xi / rho0
-        m_pxi = m_pxi - ak1c * m_xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m_p
+        if klin:
+            hk = ak1c / rho0 / m_p
+            m_pyi = m_pyi + hk * m_xi * m_yi
+            m_pxi = m_pxi - hk * (m_xi * m_xi - 0.5 * m_yi * m_yi)
+        else:
+            m_pxi = m_pxi - ak1c * m_xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m_p
         m_zi = m_zi - S[i, 6] * al
         if v2edge and sinp2 != 0.0:
             if rs.shape[0] > 2 and rs[2] == 1:

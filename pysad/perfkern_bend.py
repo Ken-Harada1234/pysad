@@ -62,8 +62,11 @@ def _sqrt1(x):
 
 
 @njit(**NJ)
-def bendecorr(cod, ak1, al, rho0, psqmax):
-    """tbende.f tbendecorr: (t, 出口 cod)"""
+def bendecorr(cod, ak1, al, rho0, psqmax, flags=0):
+    """tbende.f tbendecorr: (t, 出口 cod)。flags の bit0 (lin) は v2 のオプション (compat.bend_k1_def() == 'lin'、B160): K1 の定義を B' 一様にする
+    (kick のポテンシャル ak1 h (x³/3 − x y²/2): Δpx = −ak1 h (x² − y²/2)、Δpy = +ak1 h x y (正準運動量)。行列は y・x–y の要素まで)。
+    bit1 は B161 (v2 の修正): dk を kick の導関数 −ak1 xr (1 − xr/2 + xr²/3) にする (K64 は −ak1 xr (1 − xr (1 − 2 xr)))。flags=0 は K64 のまま (ビット単位で同じ)。"""
+    lin = (flags & 1) != 0
     phi0 = al / rho0
     p = 1.0 + cod[5]
     xi = cod[0]
@@ -79,8 +82,18 @@ def bendecorr(cod, ak1, al, rho0, psqmax):
     yf = yi + (-al * dpzi + xf * phi0) * pyi / pzi
     zf = cod[4] + (0.5 * s + (1.0 + xi / rho0) * dpzi / pzi) * al
     xr = xf / rho0
-    pxf = pxf - ak1 * xf * xr * (0.5 - xr * (2.0 - xr) / 12.0) / p
-    dk = -ak1 * xr * (1.0 - xr * (1.0 - 2.0 * xr))
+    pyf = cod[3]
+    if lin:
+        hk = ak1 / rho0
+        pxf = pxf - hk * (xf * xf - 0.5 * yf * yf) / p
+        pyf = pyf + hk * xf * yf
+        dk = 0.0                    # kick は幾何の行列のあとにかける (下)
+    else:
+        pxf = pxf - ak1 * xf * xr * (0.5 - xr * (2.0 - xr) / 12.0) / p
+        if (flags & 2) != 0:
+            dk = -ak1 * xr * (1.0 - xr * (0.5 - xr / 3.0))
+        else:
+            dk = -ak1 * xr * (1.0 - xr * (1.0 - 2.0 * xr))
     t = np.eye(6)
     t[0, 0] = pzi * a
     t[0, 1] = ((al + phi0 * xi) * (pzi**2 + pxi**2)
@@ -104,9 +117,18 @@ def bendecorr(cod, ak1, al, rho0, psqmax):
     t[4, 1] = -t[0, 1] * t[1, 5] + t[1, 1] * t[0, 5]
     t[4, 3] = t[2, 5]
     t[4, 5] = (-s / p + (1.0 + xi / rho0) * s / pzi**3) * al
+    if lin:
+        # kick の行列 (正準運動量: p は消える): Δpx = −hk (x² − y²/2)、Δpy = +hk x y。z の行は kick に依らない (幾何だけ)
+        hk = ak1 / rho0
+        dkx = -2.0 * hk * xf
+        dky = hk * yf
+        for j in range(6):
+            t[1, j] += dkx * t[0, j] + dky * t[2, j]
+            t[3, j] += hk * yf * t[0, j] + hk * xf * t[2, j]
     c = cod.copy()
     c[0] = xf
     c[1] = min(p, max(-p, pxf * p))
+    c[3] = pyf
     c[2] = yf
     c[4] = zf
     return t, c

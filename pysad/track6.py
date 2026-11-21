@@ -1224,7 +1224,14 @@ def _tbendicorr(m, ak1, al, phi):
     m.pxi = m.pxi + phi * dpzi
     m.yi = m.yi + (-al * dpzi + m.xi * phi) * m.pyi / pzi
     xr = m.xi / m.rho0
-    m.pxi = m.pxi - ak1 * m.xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m.p
+    if getattr(m, 'lin', False):
+        # v2 (B160 のオプション compat.bend_k1_def() == 'lin'): B' 一様 = 'log' + 6 極 K2 = +hK1。kick のポテンシャル ak1 h (x³/3 − x y²/2) / p
+        # (x の kick は ak1 h x² (級数なし)、y の項 +ak1 h y²/2 と py の kick +ak1 h x y が増える)
+        hk = ak1 / m.rho0 / m.p
+        m.pyi = m.pyi + hk * m.xi * m.yi
+        m.pxi = m.pxi - hk * (m.xi * m.xi - 0.5 * m.yi * m.yi)
+    else:
+        m.pxi = m.pxi - ak1 * m.xi * xr * (0.5 - xr * (2.0 - xr) / 12.0) / m.p
 
 
 def _tbendibody(m, al):
@@ -1258,6 +1265,7 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     m = _BendI()
     m.rhob = al / phib
     m.rho0 = al / phi0
+    m.lin = _compat.bend_k1_lin()                        # v2 のオプション: K1 の定義 'lin' (B' 一様)。k64 は常に False
     eps = 1e-3 if eps0 == 0.0 else 1e-3 * eps0          # epsbend
     ndiv = 1 + int(abs(phi0 / eps))
     krad = enarad and al != 0.0

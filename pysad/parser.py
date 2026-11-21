@@ -327,7 +327,10 @@ class SADEnvironment:
                 if isinstance(inner, (list, tuple)):
                     self._expand_refs([inner], out, depth + 1, is_reversed=flip)
                 elif inner in self._beamlines:
-                    bl_refs = list(reversed(self._beamlines[inner]))
+                    # 逆向きの文脈 (is_reversed) の中の -LINE は正順に戻す (二重の反転)。flip のときだけ並びを逆にする
+                    bl_refs = list(self._beamlines[inner])
+                    if flip:
+                        bl_refs.reverse()
                     self._expand_refs(bl_refs, out, depth + 1,
                                       is_reversed=flip)
                 elif inner in self._elements:
@@ -916,8 +919,8 @@ class _Parser:
                 toks.append(('num', t.value))
             elif t.type == 'IDENT':
                 if (prev is not None and prev.type == 'NUMBER' and t.value.upper() in _SAD_UNITS and prev.end >= 0 and prev.end == t.pos
-                        and _compat.k64()):
-                    # `45DEG` (数と単位の間に空白が無い): gs は構文エラー (Undefined keyword: DEG…)。v2 は受ける (従来の読み取り)
+                        and t.value[:1] in 'dD' and _compat.k64()):
+                    # `45DEG` (数と単位の間に空白が無く、単位が D で始まる): gs は構文エラー (Fortran 流の D 指数 `45D` と読み、`EG` が Undefined keyword)。`1.7MV`・`3GEV`・`10MM` など D で始まらない単位は gs も読む。v2 は `45DEG` も受ける (従来の読み取り)
                     raise SyntaxError('syntax error in MAIN expression (gs: Undefined keyword: %s): ' % (prev.value + t.value))
                 toks.append(('id', t.value))
             elif t.type == 'OP' and t.value in '+-*/^,=' and len(t.value) == 1:
