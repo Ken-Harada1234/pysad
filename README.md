@@ -44,7 +44,7 @@ pysad v2 系は直訳に加えて、**オリジナルの SAD (K64) にない解�
 
 **注意**
 - これらは **pysad のみ**で、gs (SAD 本体) では走りません。v2.3.0 の新機能 (上の表) は互換モード (`PYSAD_COMPAT=k64`) によらず同じ動作です。v2.0.0〜v2.2.0 で K64 の動作を変えたもの (互換モードで切り替わる) は docs/47 の (a) に区別して書いてあります。
-- **v2.3.0 の新機能は GitHub のみです。PyPI は v2.2.0 まで**で (v2.2.0 までの機能は PyPI にある)、v2.3.0 の新機能は `pip install pysad-k64` では入りません。このリポジトリを clone して、リポジトリ直下から `py -3.12 run_sad.py lattice.sad script.sad` で使います (`pip install git+…` は動作を確かめていないので書きません)。
+- **PyPI は v2.3.0 まで公開**しています。v2.3.0 の新機能も `pip install pysad-k64` で入ります。SAD の台本を `py -3.12 run_sad.py lattice.sad script.sad` で動かすには、リポジトリを clone してください (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入りません)。
 - 検証の範囲と未確認は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)・[`docs/47_v2_changes.md`](docs/47_v2_changes.md)・docs/48〜50・`example/v2_3/` の各まとめを参照してください。
 
 ## オリジナルの SAD (gs) との一致度
@@ -96,7 +96,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - SAD の仕様と癖の一覧は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、SADHelp との対応は [`docs/14_pysad_vs_sadhelp.md`](docs/14_pysad_vs_sadhelp.md)。
 - 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
   大きな項目の解説文書は [`docs/38_wake_guide.md`](docs/38_wake_guide.md) (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
-- 現状 (2026-11-21、v2.3.0。PyPI は v2.2.0 まで公開): 試験・回帰の件数は上の「オリジナルの SAD (gs) との一致度」の節。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`Polarization` の追跡との比 (4.2 GeV・12 MV の 1 点)、偏向磁石の本体の B∥ (B136)、B108 の残る 2.7%、ユーザー定義の関数名 `At` が `@` と衝突して呼べない、`FitFunction` を `fit` と併用すると gs と別の解に落ちる)。v2.2.0 の要判断 (EMITDIV・DAPWIDTH・WSPACSC の既定など) は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (d)、v2.3.0 の要判断・未解決 (共鳴線の予想の判別力、精密版の δ 微分、Touschek のバンチ内の δ 分布など) は同じく v2.3.0 の (d)。v2.3.0 の新機能 (周波数マップ・局所運動量アクセプタンス・Touschek の Piwinski 型の式・共鳴駆動項・ADTS・数値の正規形。K64 にない追加) の解説は [`docs/48_frequency_map_lma.md`](docs/48_frequency_map_lma.md)・[`docs/49_resonance_terms_adts.md`](docs/49_resonance_terms_adts.md) (入門は [`docs/50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md))。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
+- 現状 (2026-11-21、v2.3.0。PyPI は v2.3.0 まで公開): 試験・回帰の件数は上の「オリジナルの SAD (gs) との一致度」の節。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`Polarization` の追跡との比 (4.2 GeV・12 MV の 1 点)、偏向磁石の本体の B∥ (B136)、B108 の残る 2.7%、ユーザー定義の関数名 `At` が `@` と衝突して呼べない、`FitFunction` を `fit` と併用すると gs と別の解に落ちる)。v2.2.0 の要判断 (EMITDIV・DAPWIDTH・WSPACSC の既定など) は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (d)、v2.3.0 の要判断・未解決 (共鳴線の予想の判別力、精密版の δ 微分、Touschek のバンチ内の δ 分布など) は同じく v2.3.0 の (d)。v2.3.0 の新機能 (周波数マップ・局所運動量アクセプタンス・Touschek の Piwinski 型の式・共鳴駆動項・ADTS・数値の正規形。K64 にない追加) の解説は [`docs/48_frequency_map_lma.md`](docs/48_frequency_map_lma.md)・[`docs/49_resonance_terms_adts.md`](docs/49_resonance_terms_adts.md) (入門は [`docs/50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md))。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
 - **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B162)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
 
@@ -106,7 +106,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 pip install pysad-k64
 ```
 
-PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.2.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作。v2 は直訳ではありません。GitHub のリリース v2.2.0 と同じ) が最新です (このリポジトリの **v2.3.0** は未公開。GitHub から入れる)。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
+PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.3.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作。v2 は直訳ではありません。GitHub のリリース v2.3.0 と同じ) が最新です。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
 
 ## 必要なもの
 
