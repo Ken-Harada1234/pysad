@@ -9,6 +9,40 @@
 
 > **v1 と v2 の違い (注釈)**: 以下の「直訳」は **v1 系 (v1.0.0) の方針**です。**v2 系 (v2.0.0 以降) は直訳ではありません。** v2 は K64 を出発点に、K64 のバグの修正、物理の誤りの修正、機能の追加を行った版で、**gs (K64) と結果が変わる箇所があります** ([`docs/47_v2_changes.md`](docs/47_v2_changes.md))。gs と同じ結果が要るときは、環境変数 `PYSAD_COMPAT=k64` (互換モード。v1 と同じ K64 の動作) を指定してください。なお、v2 でも、K64 の式・分割数・反復順序を写したコードの大部分は、そのままです。
 
+## インストール (PyPI)
+
+```
+pip install pysad-k64
+```
+
+PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.3.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作。v2 は直訳ではありません。GitHub のリリース v2.3.0 と同じ) が最新です。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
+
+## 必要なもの
+
+Python 3.12 と numpy, scipy, numba, pytest (`py -3.12 -m pip install numpy scipy numba pytest`)。
+
+確認した Python の版 (v2.0.0、全試験): **3.12** と **3.10** は全通過 (937 通過・4 skip)。**3.14** は 935 通過・2 失敗 (3.14 に同梱の Tcl/Tk が 9.0 で、試験が 8.6 を期待していること、数値的に脆い 1 試験の閉軌道の収束の違い)。v2.1.0 では 2 件とも直し、3.14 で GUI 系と D2 の試験 (計 115 件) が通ることを確かめた (全試験は 3.14 では走らせていない。詳細は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md) §3)。3.13 は未確認。
+
+## 使い方
+
+SAD の `gs` に渡すのと同じ順にファイルを並べる (複数ファイルは連結される。`Get[]` は最後のファイルのフォルダ基準)。
+
+```
+py -3.12 run_sad.py lattice.sad script.sad > script.pysad.out
+py -3.12 run_sad.py lattice_and_script.sad              # ラティスとコマンドを 1 ファイルにしてあれば 1 つ
+```
+
+Python から:
+
+```python
+from pysad.ffscmd import run_sad_string
+ffs, I = run_sad_string(open('script.sad', encoding='utf-8').read(), cwd='.')
+print(I.get('EMITX'), ffs.rows[-1].betx)
+ffs.run_text('fit NX 47.3; free QF* K1; go;')
+```
+
+下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は [`docs/12_pysad_api.md`](docs/12_pysad_api.md)。
+
 ## オリジナルの SAD にない機能 (pysad で追加)
 
 pysad v2 系は直訳に加えて、**オリジナルの SAD (K64) にない解析機能**を持ちます。入門は [`docs/50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md)、台本ごとの数値のまとめは [`ADTS_summary.md`](example/v2_3/ADTS_summary.md)・[`FMAP_summary.md`](example/v2_3/FMAP_summary.md)、例の索引は [`example/v2_3/README.md`](example/v2_3/README.md) です。
@@ -99,40 +133,6 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - 現状 (2026-11-21、v2.3.0。PyPI は v2.3.0 まで公開): 試験・回帰の件数は上の「オリジナルの SAD (gs) との一致度」の節。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`Polarization` の追跡との比 (4.2 GeV・12 MV の 1 点)、偏向磁石の本体の B∥ (B136)、B108 の残る 2.7%、ユーザー定義の関数名 `At` が `@` と衝突して呼べない、`FitFunction` を `fit` と併用すると gs と別の解に落ちる)。v2.2.0 の要判断 (EMITDIV・DAPWIDTH・WSPACSC の既定など) は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (d)、v2.3.0 の要判断・未解決 (共鳴線の予想の判別力、精密版の δ 微分、Touschek のバンチ内の δ 分布など) は同じく v2.3.0 の (d)。v2.3.0 の新機能 (周波数マップ・局所運動量アクセプタンス・Touschek の Piwinski 型の式・共鳴駆動項・ADTS・数値の正規形。K64 にない追加) の解説は [`docs/48_frequency_map_lma.md`](docs/48_frequency_map_lma.md)・[`docs/49_resonance_terms_adts.md`](docs/49_resonance_terms_adts.md) (入門は [`docs/50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md))。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
 - **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B162)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
 - SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
-
-## インストール (PyPI)
-
-```
-pip install pysad-k64
-```
-
-PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。**v2.3.0** (K64 のバグの修正と機能の追加。互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作。v2 は直訳ではありません。GitHub のリリース v2.3.0 と同じ) が最新です。ソースに忠実な翻訳の **v1.0.0** は `pip install pysad-k64==1.0.0` で入ります。
-
-## 必要なもの
-
-Python 3.12 と numpy, scipy, numba, pytest (`py -3.12 -m pip install numpy scipy numba pytest`)。
-
-確認した Python の版 (v2.0.0、全試験): **3.12** と **3.10** は全通過 (937 通過・4 skip)。**3.14** は 935 通過・2 失敗 (3.14 に同梱の Tcl/Tk が 9.0 で、試験が 8.6 を期待していること、数値的に脆い 1 試験の閉軌道の収束の違い)。v2.1.0 では 2 件とも直し、3.14 で GUI 系と D2 の試験 (計 115 件) が通ることを確かめた (全試験は 3.14 では走らせていない。詳細は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md) §3)。3.13 は未確認。
-
-## 使い方
-
-SAD の `gs` に渡すのと同じ順にファイルを並べる (複数ファイルは連結される。`Get[]` は最後のファイルのフォルダ基準)。
-
-```
-py -3.12 run_sad.py lattice.sad script.sad > script.pysad.out
-py -3.12 run_sad.py lattice_and_script.sad              # ラティスとコマンドを 1 ファイルにしてあれば 1 つ
-```
-
-Python から:
-
-```python
-from pysad.ffscmd import run_sad_string
-ffs, I = run_sad_string(open('script.sad', encoding='utf-8').read(), cwd='.')
-print(I.get('EMITX'), ffs.rows[-1].betx)
-ffs.run_text('fit NX 47.3; free QF* K1; go;')
-```
-
-下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は [`docs/12_pysad_api.md`](docs/12_pysad_api.md)。
 
 ## 検証
 
