@@ -4,7 +4,7 @@
 試験は `pysad/tests/test_v2_D1_emit.py` (22 件、うち `PYSAD_SLOW=1` が 1 件)。既存の試験の変更は 3 件 (§10)。
 走る例 (`example/v2_next/`、gs の出力 `.gs.txt`、pysad の v2・k64 の出力つき): `D1_norfsw_orbit.sad` (項目 1)、`D1_photons_mult.sad`・`D1_photons_bb_bend.sad` (項目 9)、`D1_spin_accel.py` (項目 5、`.out.txt`)。numba のカーネルは編集していない (キャッシュの掃除は不要)。
 gs の確認は WSL の gs (10-19 ビルド)。**gs の光学の中身を見るために、ソースの複製 (`~/sadd1`、元のフォルダは書き換えていない) の `tintrb.f` に出力文を足して再ビルドしたもの**を使った (項目 2。ここの数値は元の gs と同じ)。
-使ったリング: 12 セル FODO (3 GeV・0.2 GeV、周長 45.6 m)、大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、周長 603 m、3563 要素)、大きなリング B (8 GeV、周長 1436 m、1998 要素)、PF リング (`example/pf/lattice/v9_16_asym.sad`)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`)。
+使ったリング: 12 セル FODO (3 GeV・0.2 GeV、周長 45.6 m)、大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、周長 603 m、3563 要素)、SP8 (大きなリング B、8 GeV、周長 1436 m、1998 要素)、PF リング (`example/pf/lattice/v9_16_asym.sad`)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`)。
 
 ## 1. 一覧
 
@@ -17,7 +17,7 @@ gs の確認は WSL の gs (10-19 ビルド)。**gs の光学の中身を見る�
 | (5) POL + TRPT + 加速 | **実装した** (CAVI、SOL 領域の外)。断熱加速の解析式と 5e-7 | v2 だけ | `test_spin_tracking_with_trpt_*` 4 件 |
 | (6) ANGLE=0 の BEND・MULT の F1 | **未着手** (K64 の tsteee を読んだ内容だけ §7 に) | — | — |
 | (7) 側帯の項と追跡の 2.3 倍 | **未着手** (追跡の分解は CPU を使うので実行していない) | — | — |
-| (8) 大きなリング B の POL | **原因を特定して直した**: 光学が不安定 (閉軌道が発散して NaN) なのに、NaN の 1 周 (POL では 21〜65 秒) を 30 回以上繰り返していた | 両モード (不具合) | `test_pol_emittance_of_unstable_*` |
+| (8) SP8 (大きなリング B) の POL | **原因を特定して直した**: 光学が不安定 (閉軌道が発散して NaN) なのに、NaN の 1 周 (POL では 21〜65 秒) を 30 回以上繰り返していた | 両モード (不具合) | `test_pol_emittance_of_unstable_*` |
 | (9) 光子 (MULT・SEXT・OCT・ドリフト) と BEAMBEAM + BEND | **実装した**。gs と全列一致 (MULT・QUAD・BEND の 325 個、BEAMBEAM + BEND + TRPT の 71 個)、SEXT・OCT は解析式。SOL 領域内は未対応 | 両モード (追加) | `test_photons_*` 5 件 |
 | (10) `spdepol` の誤りの位置 | **位置を特定**: K64 の脱偏極率は emittance/減衰率に比例 (1/(1−e^{−2λ}) の二重数え)。正しい率は拡散で決まり減衰率に依らない | v2 は独立な式 (B3) | `test_k64_spdepol_*` |
 | (11) `test_b107_bend_k1_with_vertical_dispersion_v2` の失敗 | **再現しなかった** (§9) | — | — |
@@ -30,9 +30,9 @@ gs の確認は WSL の gs (10-19 ビルド)。**gs の光学の中身を見る�
 | 調べたこと | 要素ごとの比較はせず、gs の `OrbitAtExit` を見た: gs は x = 2.156e-4、px = 5.8e-5、**δ = 0、z = −5.98e-4** (z は閉じない)。pysad (k64) は x = −6.6e-5、**δ = −4.0e-4** (z を 0 に閉じる δ を探していた)。`tcod.f` (K64): RFSW OFF は `im = 5`、`dcod1(5) = 0`、`trs(:,5:6) = 0` で **x・px・y・py だけを閉じ、δ も z も動かさない** (`codw` も 0.01 倍)。RFSW ON でも空洞がない (`vceff = 0`) と `cod(5)` は決まらず z は閉じない |
 | 原因 | `emit6d.closed_orbit6d` の最後の分岐 (RFSW OFF か、空洞のない RFSW ON) が、「SAD の Emittance[] は z も閉じる」というコメントのもと、一周で z が戻る δ を割線法で探していた。**空洞があって RFSW OFF のとき**、K64 の tcod は z の戻りを δ でなく tturne の update (RF の位相の基準 trf0) に吸収し、δ は 0 のまま。軌道のずれ (四極の DX は経路長を変える) がなければ z の戻りが 0 で δ = 0 のままなので、これまで見えなかった。**空洞のないリング** (回帰 bench_level3c・3d・26b: 強さ・ロールの誤差つき、保存した gs の値と 1e-13 で一致) では、gs は従来の δ による閉じ方に合う (今の gs で 3d を再確認: EMITX 1.398193521e-7、SIGE 9.759769841e-4、U0 678485.9277717 が k64 と一致) |
 | 直し | 「空洞があって RFSW OFF」のときだけ z を δ で閉じない (`not (has_cav and not rfsw)`)。空洞のないリングと RFSW ON の探索は従来どおり。両モード (pysad 自身の不具合: K64 と違っていた)。**最初の直し (空洞があれば RFSW ON のときだけ閉じる) は、空洞のないリングの回帰 3 本 (3c・3d・26b) を壊したので改めた** |
-| 根拠 (gs) | FODO: εx 2.70000645e-7 (gs 2.70000647e-7)、RADCOD つき 2.68403700e-7 (一致)、チューン 9 桁。大きなリング A (QF に DX = 1e-4、QD に DY = −8e-5): εx 1.5803933e-10・εy 3.1222687e-11 (gs と同じ)。PF リング: 3.62598585e-8・6.7367214e-12 (一致)。**大きなリング B (8 GeV、D2 の例の QF5 に DX = 5e-5): gs 7.1529048e-9、k64 7.1529045e-9** (以前 6.8685e-9)。v2 は 7.1627e-9 (+0.14%。A1・A2・C の矩形の BEND の修正) |
+| 根拠 (gs) | FODO: εx 2.70000645e-7 (gs 2.70000647e-7)、RADCOD つき 2.68403700e-7 (一致)、チューン 9 桁。大きなリング A (QF に DX = 1e-4、QD に DY = −8e-5): εx 1.5803933e-10・εy 3.1222687e-11 (gs と同じ)。PF リング: 3.62598585e-8・6.7367214e-12 (一致)。**SP8 (大きなリング B、8 GeV、D2 の例の QF5 に DX = 5e-5): gs 7.1529048e-9、k64 7.1529045e-9** (以前 6.8685e-9)。v2 は 7.1627e-9 (+0.14%。A1・A2・C の矩形の BEND の修正) |
 | 根拠 (v2、独立な値) | NORFSW (δ = 0 の軌道。RF の周波数と無関係) の Jx = 1 − I4/I2 の、QF の DX = 1e-4 による変化: Emittance[] の ΔJx = −0.0054、平面リングの放射積分 (`_c3_indep.planar_quad_offset_jx`: 3x3 行列) −0.0052 (4%)。RFSW ON では経路長の変化で δ が動くので比べられない (C の試験は経路長が変わらない組) |
-| 使える範囲 | 空洞のあるリングの RFSW OFF・RADCOD OFF/ON の Emittance[] (FODO・大きなリング A・PF・大きなリング B)。空洞のないリングは従来どおり (回帰 3c・3d・26b で gs と一致)。RFSW ON で空洞のないリングの z の閉じ方は gs と比べていない。**未確認**: v2 の Emittance[] と RADINT の差 (矩形磁石で 1.4e-3、D2 が指摘した件) には触れていない |
+| 使える範囲 | 空洞のあるリングの RFSW OFF・RADCOD OFF/ON の Emittance[] (FODO・大きなリング A・PF・SP8 (大きなリング B))。空洞のないリングは従来どおり (回帰 3c・3d・26b で gs と一致)。RFSW ON で空洞のないリングの z の閉じ方は gs と比べていない。**未確認**: v2 の Emittance[] と RADINT の差 (矩形磁石で 1.4e-3、D2 が指摘した件) には触れていない |
 
 ## 3. 項目 2: 空間電荷 (WSPAC) の Emittance[] のチューンシフト
 
@@ -61,23 +61,23 @@ gs の確認は WSL の gs (10-19 ビルド)。**gs の光学の中身を見る�
 | SB の νs の入力 (0.002〜0.010) | 6.1792e-9〜6.1806e-9 (**νs に依らない**: シンクロ・ベータの共鳴の効果なら強く依存するはず) |
 | SB のエネルギー依存 (E/2、E、2E、4E) | 1.20e-8、6.18e-9、4.04e-9、5.72e-9 (**εx ∝ γ² に比例せず一定**: 物理的な励起ではない) |
 | SB の六極の強さ依存 (×0.5〜1.5) | 6.17e-9〜6.37e-9 (ほぼ一定)。×0.25: 6.2e-8、×0: 1.35e-7 (自然クロマティシティ) |
-| ほかのリング | 大きなリング B (8 GeV): SB 7.00e-9 対 Emittance[] 6.965e-9 (+0.5%)。ASTRID2・PF: 1% (C)。24 セル FODO と一致 |
+| ほかのリング | SP8 (大きなリング B、8 GeV): SB 7.00e-9 対 Emittance[] 6.965e-9 (+0.5%)。ASTRID2・PF: 1% (C)。24 セル FODO と一致 |
 
 - 結論: **K64 の SB は大きなリング A で独立な値 (6x6 の平衡と追跡) と 40 倍違い、モード数に収束しない** ので使えない。pysad と gs の一致 (6.18e-9) は両方が同じ K64 の式を計算している証拠にしかならない (K64 の誤りか、適用範囲の限界かは未特定)。
 - 確かめたが原因ではないもの: 閉軌道の探索の失敗 (δ の 11 点で全部収束)、二次の分散 η2 = 0.05 m・クロマティシティ ξ = −0.062 (ξσδ/νs = 0.01)、RF の位置の分散 (η = 0.0445 m、H σδ² = 2.1e-10)。
-- v2 の動作: **値は変えず、収束していないときに警告する**。AzimuthalModes m の SB と 1.5 倍の m の SB の emitx が 20% 以上違えば `(pysad) SynchroBetaEmittance: AzimuthalModes->9 の emitx … は AzimuthalModes->14 の値 … と 51% 違う (モード数について収束していない。Emittance[] と追跡で確かめること)` を出す (m = 9 の大きなリング A: 5.1e-9 対 2.5e-9)。大きなリング B・ASTRID2 は警告しない。時間は v2 のとき 2 倍 (A は 19 秒)。
+- v2 の動作: **値は変えず、収束していないときに警告する**。AzimuthalModes m の SB と 1.5 倍の m の SB の emitx が 20% 以上違えば `(pysad) SynchroBetaEmittance: AzimuthalModes->9 の emitx … は AzimuthalModes->14 の値 … と 51% 違う (モード数について収束していない。Emittance[] と追跡で確かめること)` を出す (m = 9 の大きなリング A: 5.1e-9 対 2.5e-9)。SP8 (大きなリング B)・ASTRID2 は警告しない。時間は v2 のとき 2 倍 (A は 19 秒)。
 - 使える範囲: 警告が出ないリング。使えない: 警告が出るリング (大きなリング A)。
 
-## 5. 項目 8: 大きなリング B (8 GeV) の POL の Emittance[]
+## 5. 項目 8: SP8 (大きなリング B、8 GeV) の POL の Emittance[]
 
 | 欄 | 内容 |
 |---|---|
-| 再現 | 大きなリング B (1998 要素) の四極 60 台に DY (または DX) の rms 0.1 mm を付けた POL の Emittance[]: 20 分以上。誤差なし・DX = 5e-5 の QF 1 台・DY の少数台は 12〜13 秒で終わる (P = 0.9238・0.9177) |
+| 再現 | SP8 (大きなリング B、1998 要素) の四極 60 台に DY (または DX) の rms 0.1 mm を付けた POL の Emittance[]: 20 分以上。誤差なし・DX = 5e-5 の QF 1 台・DY の少数台は 12〜13 秒で終わる (P = 0.9238・0.9177) |
 | 原因 | **光学が不安定** (四極の誤差と強い六極のフィードダウン。CALC も `Horizontal/Vertical Unstable.` と NaN) で、閉軌道が発散して δ = −0.999999・座標 NaN。`closed_orbit6d` の RFSW + RADCOD の分岐が (a) NaN の 1 周 (POL では v2 が四極・MULT を細かく分割するので 21〜65 秒) を、NaN でも 30 回の Newton 法で繰り返し (`np.max(abs(res)) < 1e-15` が NaN で偽のまま)、(b) 最後に 2000 要素ごとの tturne (スピンの線形の脱偏極率) を NaN で回していた。**性能の問題と不安定なスピン行列の問題が重なったもの**で、安定なリングの POL (12 秒) は遅くない |
 | 直し (両モード) | (1) 閉軌道の反復で NaN になったら打ち切る。(2) POL ON・RFSW・RADCOD の `emittance6d` は先にスピンなしで軌道を確かめ、NaN なら POL の計算をせず NaN の結果を返す (`depol_error` つき)。(3) v2 の `spin_results` は軌道が NaN なら要素ごとの計算をしない |
-| 結果 | 同じ 60 台 DY の例 (B3 の条件): **20 分以上 → 2 秒** (NaN と `depol_error = closed orbit not found (unstable optics)`)。DX 0.1 mm × 60 台 (CALC も NaN): 同様。安定なリングの結果は変わらない (大きなリング B の P = 0.9238・0.9177、12〜13 秒) |
-| 試験 | `test_pol_emittance_of_unstable_ring_returns_nan_without_exception_v2` (小さな不安定なリング。大きなリング B の時間は試験にしていない) |
-| 使えない | 不安定なリングで POL の値は出ない (NaN)。誤差の大きさ (大きなリング B で四極 60 台に 0.1 mm) が不安定の原因なので、補正してから使う |
+| 結果 | 同じ 60 台 DY の例 (B3 の条件): **20 分以上 → 2 秒** (NaN と `depol_error = closed orbit not found (unstable optics)`)。DX 0.1 mm × 60 台 (CALC も NaN): 同様。安定なリングの結果は変わらない (SP8 (大きなリング B) の P = 0.9238・0.9177、12〜13 秒) |
+| 試験 | `test_pol_emittance_of_unstable_ring_returns_nan_without_exception_v2` (小さな不安定なリング。SP8 (大きなリング B) の時間は試験にしていない) |
+| 使えない | 不安定なリングで POL の値は出ない (NaN)。誤差の大きさ (SP8 (大きなリング B) で四極 60 台に 0.1 mm) が不安定の原因なので、補正してから使う |
 
 ## 6. 項目 10: K64 の `spdepol` (P = 1.27e-4 対 v2 の 0.119) の誤りの位置
 

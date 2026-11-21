@@ -1,6 +1,6 @@
 # 01. pysad 全体像 — SAD (K64 版) の Python 直訳
 
-最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット)
+最終更新: 2026-11-20 (v2.3.0 の現状のスナップショット)
 
 > 場所: コード・文書は `<repo>\` (pysad 本体は `pysad\`、文書は `docs\`、旧文書は `<work-olddocs>\`)。
 > 対象の SAD は KEK 本流ではなく **K64 版** (https://github.com/KatsOide/SAD)。コマンド・要素キーワードの意味は CERN の SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html、1.4.0.0k64 2025-07-14) か、ローカルの `<SAD>\Documents\SADHelp.html` (1.4.4.2k64 2026-10-19、使っている WSL ビルドと同じ版) を先に見る。**KEK 公式サイト (acc-physics.kek.jp) は別系統の SAD なので参照しない** (ユーザー指示)。数値の最終根拠はローカルのソース `<SAD>\src` と `Packages\`。
@@ -64,7 +64,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 |---|---|---|
 | parser.py / sadkw.py / sadelem.py | MAIN 部 (要素定義、LINE、`-LINE`, `N*`, 再定義、LINE 名は書かれたとおり) の読み込み → `Lattice`。K1/K2/K3 は per-length に変換 (元の値は `_raw`)。Element/SetElement/BeamLine/WriteBeamLine | toplvl/doelem/doline/expln、tfelement |
 | elements.py | 要素クラス (Drift, Bend, Quadrupole, Sextupole, Octupole, Multipole, Cavity, Solenoid, Marker…) と線形行列 | — |
-| lattice.py / elkern.py / perfkern*.py / turnkern.py | CALC: 4D 閉軌道 `_qcod_periodic` (1 周を numba 1 回に)、要素ごとの COD 写像 (tquade/tbende/tthine/tqlfre/tblfre/tchge/tbrote/MULT/tsteee)、`twiss()`/`twiss_table()` (qcell1 結合版、不安定時の 1/cosμ 続行)、`ins_twiss()` (INS の初期軌道オフセット、TRPT の加速)、MARK OFFSET、`set_element`/`set_error`、要素カーネルの numba 化 | qtwiss.f, qcell.f, tquade.f, tbende.f, tthine.f, tchge.f |
+| lattice.py / elkern.py / perfkern*.py (perfkern_bend.py を含む) / turnkern.py | CALC: 4D 閉軌道 `_qcod_periodic` (1 周を numba 1 回に)、要素ごとの COD 写像 (tquade/tbende/tthine/tqlfre/tblfre/tchge/tbrote/MULT/tsteee)、`twiss()`/`twiss_table()` (qcell1 結合版、不安定時の 1/cosμ 続行)、`ins_twiss()` (INS の初期軌道オフセット、TRPT の加速)、MARK OFFSET、`set_element`/`set_error`、要素カーネルの numba 化 | qtwiss.f, qcell.f, tquade.f, tbende.f, tthine.f, tchge.f |
 | calc6d.py | CALC6D (qcell6d、CELL と INS)、NormalCoordinate6 (etwiss2ri) | qcell6d, temit |
 | geo.py | 幾何 (GX/GY/GZ/CHI、GEO、ORG、DISP G/OG、fit の GX..) | tfgeo.f, geolib |
 | radint.py | RADINT (放射積分 I1〜I5、結合・色収差) | INTGRL.f |
@@ -74,7 +74,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | solmap.py | SOL 領域の COD 写像と行列 (CALC/INS の Twiss。追跡のカーネルを数値微分。docs/29) | tsole.f tsole1 |
 | solemit.py | SOL 領域の放射込みの 1 周 (Emittance[]・EMIT: bz 付き tradke、tsolque の刻み。docs/29) | tsole.f, tsolque.f, tqente.f, photons.f tradke |
 | multa.py / multae.py | MULT ANGLE≠0 (追跡 / COD 写像・行列。docs/28) | tmulta.f (tmulta, tmultae) |
-| touschek.py | INTRA (IBS 付き emit)、TouschekTable / TouschekLifetime | temit.f tintrb, emit.n |
+| touschek.py | INTRA (IBS 付き emit)、TouschekTable / TouschekLifetime。v2.3.0 T2: `touschek_piwinski` (独立な Piwinski 型の式。v2 の `TouschekLifetime[INF, INF, nz]`・`TouschekLifetimeLMA[]` の既定。`Formula->"K64"`・k64 モードは K64 の表。docs/48 §4.6、B162) | temit.f tintrb, emit.n |
 | match6.py / match6d.py / tsvd.py | FIT/FREE/FIX/GO: tffsmatch (Newton/DESCEND、fuzz、fmincube、tweigh、tfsolv SVD)、tdfun、twfit、FITP>1 と fam 点 (MatchingAmplitude/NFAMP)、FitValue/FitWeight/FitFunction/VariableRange/VariableWeight、OpticsProlog/Epilog。既定は解析微分 (match6d、qdcell/tffsqu の直訳)、`FFS$NumericalDerivative` で数値微分 | tffsmatch.f, tffscalc.f, qdcell.f, tgetfv.f, tsolvg.f |
 | track6.py / track6n.py / track6n_ext.py | TrackParticles: 純 Python 版 (要素外側・粒子内側、tdrift/tquad/tthin/tbend/tbendi/tsteer/tcav/tmulti/tsol、tradk/tradkfn) と numba 版 (粒子配列 S(n,10)、同じ演算順序、乱数も int64)。粒子損失 (tapert、alive フラグ)、MULT/SOL 領域のカーネル。POL かつ RAD ON のときのスピン追跡 (`sprot`・`bsi`。純 Python 版のみで損失の処理なし、docs/36・43) | tftrack.f, tturn.f, tquad.f, tsolqu.f, tbend.f, tcav.f, tmulti.f, photons.f |
 | dapert.py | DynamicApertureSurvey (スロット順・tapert・Score・62 進地図) | dapert.n, tfdapert.f, trackd.f |
@@ -93,6 +93,18 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | specfn_cx.py | 複素の Zeta・HurwitzZeta・PolyLog・HypergeometricU (v2.1.0。両モード。gs が誤る点でも真値。docs/33) | gamma.f の複素の部分に代わる独立な実装 |
 | specfn_cx2.py | 複素の ExpIntegralE・ExpIntegralEi・PolyGamma・WhittakerM/W・ProductLog・CosIntegral・FresnelS/C・HarmonicNumber・GammaRegularized・Beta・Factorial・`Gamma[a,z]`・LegendreP・複素の次数の BesselJ (v2.2.0。両モード。複素の引数が 1 つでもあれば `specfn.install` が切り替える。docs/33) | scipy の複素対応と級数・漸化式 |
 | spch_k64.py | PSPAC の K64 の形状関数 (v2.2.0。k64 モードだけ。CIC・「ほぼ最近接」・5 点差分 + 双 3 次補間・3 次スプライン。NPARA = 1 で gs と rms が 12 桁以上) | spch.c・psn.c・tspch_.c |
+| trksetup.py | 追跡の設定の共通部分 (v2.3.0。`TrackSetup` = 閉軌道の求め直し・`track`・RF バケット、`find_periodicity`、`select_locations`、優先度を下げた並列。docs/48 §2) | K64 にない追加 (`track6n.py` を使う) |
+| freqmap.py | 周波数マップ (v2.3.0。1 つの位置の格子から NAFF でチューンの拡散 D、表・図、共鳴線の表。台本 `FrequencyMap[]`。docs/48 §3) | K64 にない追加 (naff.py・track6n.py を使う) |
+| lma.py | 局所運動量アクセプタンス (v2.3.0。位置ごとの δ±、Touschek への受け渡し `touschek_lifetime_local`。台本 `MomentumAcceptance[]`・`TouschekLifetimeLMA[]`。docs/48 §4) | K64 にない追加 (touschek.py の表を使う) |
+| lmabucket.py | RF バケットの限界とアパーチャの限界の区別 (v2.3.0 L2。解析式の δ_rf、縦方向の 1 次元の写像、`limit_types`。docs/48 §4.5) | K64 にない追加 |
+| fmapcheck.py | 周波数マップの信頼性の確認 (v2.3.0 S2。誤差の統計、警告 12 種、D の周回数の換算、6 極のフィードダウンの見積もり。docs/48 §3.6・§10) | K64 にない追加 |
+| q1cmd.py | 周波数マップ・LMA・共鳴駆動項などの SAD の台本の関数の登録 (v2.3.0。`ffscmd.py` の入口から `install`) | K64 にない追加 |
+| resdrive.py | 6 極の共鳴駆動項・ADTS・クロマティシティ (v2.3.0。厚いレンズの解析式と数値積分。台本 `ResonanceDrivingTerms[]`・`AmplitudeTuneShift[]`・`ChromaticityTerms[]`。docs/49) | K64 にない追加 (R2: 運動学・端部のフリンジの ADTS。追跡 + NAFF + フィットの `adtsdirect.py`。R3: 偏向磁石の 3 次の項を追跡の写像から取り出す `bendnl.py`。R4: 共鳴駆動項にも偏向磁石の 3 次の項 (δ の項は分散による軌道のずれ) を入れ、追跡の 1 周の写像から RDT を取り出す `rdttrack.py` で検証) |
+| fmapres.py | 周波数マップの D の大きい領域を、RDT・ADTS から予想した共鳴の領域と比べる (v2.3.0 S1。誤差の与え方・統計。docs/48 §3.5) | K64 にない追加 |
+| fmappred.py | 周波数マップの共鳴線の予想の作り直し (v2.3.0 S3。3 次・4 次の h と非共鳴の正規形の補正、線形の ADTS、振り子の島の幅、連続のスコア、信頼度。docs/49 §12) | K64 にない追加 |
+| rdt2nd.py・nform.py・rdttrack.py・bendnl.py・adtsdirect.py | 4 次の共鳴駆動項 (6 極の 2 次)・数値の正規形・追跡の 1 周の写像からの RDT の取り出し・偏向磁石の生成関数 (追跡の写像の 2 次のテイラー係数から)・追跡 + NAFF の ADTS (v2.3.0 R2〜R6。docs/49) | K64 にない追加 |
+| sxtopt.py | [試作] 6 極ファミリーの K2L の多項式モデルと SLSQP の最適化 (v2.3.0 R7。RDT・ADTS の解析式を k の線形・二次形式で組む。検証用。台本の関数なし。`example/ddba/v07_14/sextupole/`) | K64 にない追加 |
+| constants.py | 物理定数 (光速、電子の古典半径、電子・陽子の質量、Cγ、Cq など) | pysad の定数 |
 | nbcache.py | numba のキャッシュの無効化 (v2.1.0。`py -3.12 -m pysad.nbcache`。kernel を編集したら試験の前に 1 回走らせる。docs/12 §16.7) | — |
 | fitroot.py / miscfn.py / fileops.py | Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/33) | tffindroot.f, Fit.n, D.n, optimize.n, Matrix.n, FileSystem.n, shared.n |
 | corr.py / pkgload.py | ResponseMatrix・LinearSolveConditioned・Master と、Packages/*.n (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational など) の自動読み込み (docs/34) | pgrmat.f, pgsolvcond.f, pmicad.f, pgmast.f, correction.n ほか |
@@ -113,7 +125,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | run_sad.py (<repo> 直下) | `py -3.12 run_sad.py lattice script …` = `gs` に複数ファイルを連結して渡すのと同じ | — |
 | **非推奨** ffs.py / matching.py / tracking.py / optics.py | 独自実装 (SAD 未照合。tracking.py は放射係数に疑い)。新規コードは使わない。`__init__.py` の export は旧 API のまま残っている | — |
 
-テスト: `pysad/tests/` (pytest 1353 件を収集 (2026-11-18)。11/18 の実行で **1345 通過・8 skip・失敗 0** (v2.0.0 の 11/17 は 937 通過・4 skip)。既存の試験と回帰は gs との比較なので k64 モードで走る (`conftest.py`)。v2 の試験は `test_v2_*.py` 54 本 (775 件。v2.1.0 の追加は 412 件) で v2 を明示する。回帰 `run_regression.py` (`QUICK=1`) は 50 ベンチ FAIL 0。`--ignore` する 3 本 `test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py` は sys.exit で終わる旧式のスクリプト。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがあり (単独なら通る)、環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/` (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は `pysad/tests/OUTPUTS.md`。
+テスト: `pysad/tests/` (pytest 1907 件を収集 (2026-11-21、v2.3.0 の最終)。**1899 通過・8 skip・失敗 0** (docs/47 v2.3.0)。v2.1.0 の 11/18 は 1345 通過・8 skip (v2.0.0 の 11/17 は 937 通過・4 skip)。既存の試験と回帰は gs との比較なので k64 モードで走る (`conftest.py`)。v2 の試験は `test_v2_*.py` 73 本 (1081 件。v2.1.0 の追加は 412 件) で v2 を明示する。回帰 `run_regression.py` (`QUICK=1`) は 50 ベンチ FAIL 0。`--ignore` する 3 本 `test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py` は sys.exit で終わる旧式のスクリプト。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがあり (単独なら通る)、環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/` (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は `pysad/tests/OUTPUTS.md`。
 ベンチ: `bench_level1〜31*.sad/.result` と `*_pysad.py/.result`、`run_regression.py` (50 ベンチ。QUICK=1 は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行、`QUICK=1` で短縮。11/16 に FAIL 0)。
 
 ## 4. docs/ の案内

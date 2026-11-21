@@ -7,7 +7,7 @@
 ## 依頼
 「リスト処理、KBFrame 関数、Tcl/Tk の GUI 関数の実装へ進んで」。SAD の GUI 台本をそのまま動かすため、コードの翻訳ではなく、
 SAD 自身の `Tkinter.n` / `KBFrame.n` / `KBMainFrame.n` / `TabFrame.n` / `Canvas.n` を pysad のインタプリタで解釈し、Python の tkinter で表示する方針にした。
-サンプルは `D:\work\SAD\GUI` (EPICS 関連は実行しない指示)。マニュアルは `SAD-master\doc` と `SADTkinter.pdf` (後から提供。実装は .n のソースと gs の実測を基準にしたので PDF は未参照)。
+サンプルは SAD 付属の GUI のフォルダ (EPICS 関連は実行しない指示)。マニュアルは K64 の `doc` と `SADTkinter.pdf` (後から提供。実装は .n のソースと gs の実測を基準にしたので PDF は未参照)。
 
 ## 進め方
 1. `tclbridge.py` に C 側の接点 (`TclCreateInterp`、`Tcl`、`TclArg`、`TkEventLoop` ほか) を実装。

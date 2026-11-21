@@ -39,7 +39,7 @@ a12=ale+px^2 alz  a14=px py alz  a15=-pr px alz  a34=ale+py^2 alz  a35=-pr py al
 x+=px ale; y+=py ale; z += dpz ale - dvemit L
 ```
 追跡 tdrift_free (tdrift.f:10): `al1=L/(1+dpz)`, `z += dpz al1 - dv L`。DISKIN≠0 で近軸 (tturn.f:296)。
-**薄い多極 tthine の中のドリフトにも dv 項** (`tdrife0(dvon=.true.)`、`z -= L dv(d)`、A6): これが抜けると TransferMatrices の (5,6) が六極 1 台ごとに 1.3e-9 ずれる。
+**薄い多極 tthine の中のドリフトにも dv 項** (`tdrife0(dvon=.true.)`、`z -= L dv(d)`、A6): これが抜けると TransferMatrices の (5,6) が6 極 1 台ごとに 1.3e-9 ずれる。
 
 ## 4. 四極
 
@@ -75,7 +75,7 @@ x+=px ale; y+=py ale; z += dpz ale - dvemit L
 - tqlfre (線形): `af1=-ak/al f1|f1|/24; af2=ak/al f2; x -> e^a x + (b/p) px, px -> px e^-a, y -> y e^-a - (b/p) py, py -> py e^a` (a=af1/p, b=af2/p)。mfring=1,3 で入口、2,3 で出口。係数は tsetfringepe (tffs.f:982): K1≠0, L≠0 のときだけ f1in=F1+F1K1F 等。
 - 追跡: ttfrin (nord=4/6/一般)、追跡の線形フリンジは `f1=-|akk F1^2|/24, f2=|akk| F2` (K1 の符号によらず f1<0)。hard-edge の条件は mfring>-4 (tquad.f:49,103) で tquade と違う。
 
-## 7. 六極・薄レンズ・MULT
+## 7. 6 極・薄レンズ・MULT
 
 - tthine (CALC/6D, tthine.f:1-93) [確認]: `kord=nord/2-1; aki=ak/kord!`。L≠0: `drift(L/6) -> kick(aki/2) -> drift(2L/3) -> kick(aki/2) -> drift(L/6)`。kick: `cx=(x-iy)^kord; px -= aki Re cx; py -= aki Im cx`。行列は閉軌道上の微分 (feed-down)。enarad=.false.。
 - 追跡 tthin (tquad.f:118-322): 4 次積分 `alpha=1/sqrt12, beta=1/6-alpha/2, gamma=1/40-1/(24 sqrt3), alpha1=1/2-alpha`: drift(alpha1 L) -> 半キック -> drift(alpha L) -> 補正キック(beta,gamma) -> drift(alpha L) -> 半キック -> drift。入口出口で ttfrin、放射は最後に tradk(L) 1 回。キックは `aki=K/kord!/(1+d)`。
@@ -261,7 +261,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - **追跡のスピン (sprot)**: RAD ON のときだけスピンが動く (tradk の中で計算するため)。RADPOL が ON で放射エネルギー ucde>0 のステップは `dst = (PST − s·b̂t) CFPD (pp p0/γ²)² ucde/|bt|` (CFPD = 5√3/8) を bt の向きに足してから回す。
 - **bsir0 / bsi の更新**: 偏向磁石の入口・出口 (`bsi1 yi/rhob`。`bsi2` の項は K64 では捨てられる: B58)、tmulke (MULT の Im(cx)/al。L=0 の薄いキックでは更新しない)、tsolqur の四極スライスの両端、tdrift_solenoid (bz al)。
 - 偏向磁石の分割は POL のとき `1+int(|φ| h0 a/0.01)` 以上。tbrote の srot 更新は行を逐次更新する (rr·srot の行列積ではない: B56)。
-- 照合 (gs): 平面リングの PolarizationTime は全桁、縦ずれ・傾き・六極のあるリングは 13 桁、追跡のスピンは 4e-12 以下 (ずれ・回転した四極・偏向・六極、MULT、K1 のある BEND、SEXT、SOL 内のドリフト)。
+- 照合 (gs): 平面リングの PolarizationTime は全桁、縦ずれ・傾き・6 極のあるリングは 13 桁、追跡のスピンは 4e-12 以下 (ずれ・回転した四極・偏向・6 極、MULT、K1 のある BEND、SEXT、SOL 内のドリフト)。
 - **未確認・限界**: `Polarization` の有限値が物理的に妥当か (K64 の式か単位の誤りの疑い。erfcx 版は 4e-5〜8e-5 % で 92% 級の理論値から遠い)、SOL 領域内の MULT・BEND・CAVI のスピン、SOL 内の四極 + RAD のスピン追跡 (現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い。B68)、スピン追跡の粒子損失。エネルギー・周長の条件は試験のリングごと (docs/43 §7)。
 - 解説: `docs/43_pol_guide.md`、要素ごとの照合: `docs/36_spin_csr.md`。
 

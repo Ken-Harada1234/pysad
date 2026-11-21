@@ -2,7 +2,7 @@
 
 試験: `pysad/tests/test_v2_B1_optics.py` (42 件)・`pysad/tests/test_v2_B1_sol.py` (45 件)。A1 の試験 `test_emittance_warns_about_ignored_bend_f1` は動作が変わったので `test_emittance_no_longer_warns_about_bend_f1` に置き換えた。
 例: `example/v2_next/B1_*` (説明は `B1_README.md`。台本と pysad の v2・k64 の出力、gs の出力 `.gs.txt`)。gs の確認は `local/wake/gsrun.sh` (10-19 ビルド、2026-11-18)。互換モードの規則は `local/wake/v2_brief.md`。
-確認に使ったリング: (小) 3 GeV・周長 45.6 m の 12 セル FODO、0.2 GeV の同形のリング (空間電荷)。(大) 大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、603 m、3563 要素)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、`ASTRID2_v01_02_id.sad` の `RINGMPW`、0.58 GeV)。大きなリング B (8 GeV) は使っていない (項目 1 の gs 比較は A・PF・ASTRID2 で足りた)。
+確認に使ったリング: (小) 3 GeV・周長 45.6 m の 12 セル FODO、0.2 GeV の同形のリング (空間電荷)。(大) 大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、603 m、3563 要素)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、`ASTRID2_v01_02_id.sad` の `RINGMPW`、0.58 GeV)。SP8 (大きなリング B、8 GeV) は使っていない (項目 1 の gs 比較は A・PF・ASTRID2 で足りた)。
 **numba のキャッシュ**: `track6n.py`・`track6n_ext.py` を編集したので `pysad/__pycache__` の `track6n*`・`multa*` の `.nbi`・`.nbc` を消した (消さないと古い結果が出る)。
 
 ## 一覧

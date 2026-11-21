@@ -28,7 +28,7 @@
 - ElementValues の VISIT での退避・BYE での復元、フィット変数との連動 (`tffssetupcouple` の `CouplingMatrix`・`CoupledKeys`) は未対応。
 
 ## 確認の仕方
-`PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` を付けて全試験 (旧式 3 本を除く) と回帰 (`QUICK=1`) を回した。全試験は 575 通過・3 skip (578 件収集、3 分 21 秒)。回帰の結果は下。
+`PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` を付けて全試験 (旧式 3 本を除く) と回帰 (`QUICK=1`) を回した。全試験は 575 通過・3 skip (578 件収集、3 分 21 秒)。回帰の結果は下。
 直した例の `.pysad.txt` は `example/tools/run_example.py` で再実行し、`.md` の「gs と pysad の比較」を更新した (10_math_data 2 本、11_graphics 5 本、12_gui_tkinter 6 本の出力と一部の説明、13_packages 4 本、PF の calc_traj_03)。図 (`*_plot.png`) は作り直していない (11/16 のまま)。
 
 ## 結果 (2026-11-17)

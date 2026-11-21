@@ -3,7 +3,7 @@
 試験: `pysad/tests/test_v2_A1_next.py` (40 件)。例: `example/v2_next/A1_*.sad` (pysad の v2 の出力 `.pysad.txt`、k64 の出力 `.pysad_k64.txt`、gs の出力 `.gs.txt`)。
 gs の確認は `local/wake/gsrun.sh`。互換モードの規則は `local/wake/v2_brief.md`。ここに書いた gs の値は 2026-11-17 の gs (10-19 ビルド) の出力。
 
-確認に使ったリング (小): 3 GeV の FODO リング (周長 41.8〜105.6 m、RF つき)。(大): 「大きなリング A」(`pysad/tests/kek-ls_v03_12.lat`、3 GeV、周長 603 m、3563 要素、RF つき)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_02_id.sad` の `RINGMPW`、0.58 GeV、MPW 入り)。大きなリング B (8 GeV) は使っていない (下の「残した項目」)。
+確認に使ったリング (小): 3 GeV の FODO リング (周長 41.8〜105.6 m、RF つき)。(大): 「大きなリング A」(`pysad/tests/kek-ls_v03_12.lat`、KEK-LS。ESRF 型の HMBA で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した。3 GeV、周長 603 m、3563 要素、RF つき)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_02_id.sad` の `RINGMPW`、0.58 GeV、MPW 入り)。SP8 (大きなリング B、8 GeV) は使っていない (下の「残した項目」)。
 
 ## 一覧
 
@@ -106,7 +106,7 @@ gs の確認は `local/wake/gsrun.sh`。互換モードの規則は `local/wake/
 | 他の試験の変更 | v2 の Emittance[] (RADCOD) が gs と 1e-6〜3e-3 ずれるので、v2 で gs の値と比べていた 5 件の許容誤差を v2 だけ緩めた (k64 は同じ): `test_v2_C_track.py::test_radtaper_matches_gs` (U0 1e-7 → 5e-6、チューン 2e-6 → 2e-5、2 周の追跡の gs との比較は k64 だけ)、`test_v2_C2_optics.py::test_radtaper_in_calc6d` (軌道 1e-4 → 5e-3、DDP 1e-6 → 1e-5)、`test_v2_C2_spch.py::test_wspac_emittance_beam_matrix_ring`・`test_example_wspac_script` (チューンシフト 2e-3 → 6e-3、NOSELFCOD 1e-3 → 3e-3)、`test_v2_A_spin.py::test_tradke_px_py_diffusion_uses_b_y_py_v2` (v2 と k64 の B の他の成分の一致を `==` から相対 1e-10 へ) |
 | 試験 | `test_radcod_closed_orbit_closes_in_tracking_v2[RADTAPER なし・あり]`、`test_radcod_closed_orbit_does_not_close_k64`、`test_tradke_python_and_numba_agree_v2` |
 | 使える範囲 | RFSW・RAD・RADCOD (・RADTAPER) の閉軌道から追跡を始めると 1 周で閉じる (x・px 1e-9 m、z 1e-8 m。3 GeV、周長 100〜600 m の電子リング、U0/E ~ 1e-4〜5e-4)。RADCOD 付きの Emittance[] を gs と比べるときは k64 を使う |
-| 使えない・未確認 | (1) tradke の符号反転の根拠は解析的な導出と閉軌道の閉じ方で、gs の Emittance[] は K64 のまま (v2 の値は gs と合わない)。(2) 1 周の解析 T (RADCOD) と数値微分の差 2e-3 は残る (項目 3)。(3) RADTAPER の重みの変更は「閉じる」ことを根拠にした選択で、どちらの重みが物理的に正しいかは判断していない (**要判断**)。(4) SOL 領域内の `tradke` (bzh ≠ 0) も同じ式なので符号が変わるが、追跡 (`tsolqur` など) との整合は確かめていない。(5) U0/E が大きいリング (8 GeV、周長 1.4 km: 大きなリング B 相当) は確かめていない |
+| 使えない・未確認 | (1) tradke の符号反転の根拠は解析的な導出と閉軌道の閉じ方で、gs の Emittance[] は K64 のまま (v2 の値は gs と合わない)。(2) 1 周の解析 T (RADCOD) と数値微分の差 2e-3 は残る (項目 3)。(3) RADTAPER の重みの変更は「閉じる」ことを根拠にした選択で、どちらの重みが物理的に正しいかは判断していない (**要判断**)。(4) SOL 領域内の `tradke` (bzh ≠ 0) も同じ式なので符号が変わるが、追跡 (`tsolqur` など) との整合は確かめていない。(5) U0/E が大きいリング (8 GeV、周長 1.4 km: SP8 (大きなリング B) 相当) は確かめていない |
 
 ## 項目 8: PSPAC の x と y が gs と 16% 違う
 
@@ -127,7 +127,7 @@ gs の確認は `local/wake/gsrun.sh`。互換モードの規則は `local/wake/
 
 1. **`Emittance[]`・EMIT・CALC6D が BEND の F1・FRINGE を無視する** (項目 4 の発見)。gs と U0 で 5%、チューンで 0.006 ずれる。`tbende` の F1 の部分 (tblfre、tbendef1、f1r・f2r、bradprev) の直訳が必要。K64 のバグではなく pysad の未対応。理由: 項目 4 は追跡の範囲で、`tbende` は別の大きな直訳 (隣り合う BEND の bradprev も含む) なので、この項目では扱わなかった。
 2. **tradke の ddpx の符号 (項目 7) は K64 の誤りと判断して v2 で反転した。RADTAPER の追跡の BEND の重みも変えた。** どちらも「閉軌道が追跡で閉じる」を根拠にした選択。K64 の作者の意図の裏づけは無い。gs の Emittance[] (RADCOD) と v2 の値は 1e-4 程度ずれる。
-3. 大きなリング B (8 GeV、周長 1.4 km 級) では確認していない (項目 7: U0/E が大きいとき。項目 2: 陽子の大きなリング)。
+3. SP8 (大きなリング B、8 GeV、周長 1.4 km 級) では確認していない (項目 7: U0/E が大きいとき。項目 2: 陽子の大きなリング)。
 4. 放射の β の因子 (項目 2)、Touschek・RADINT の古典半径 (項目 2)。
 5. DETR ≥ 1 の INS と MEASURE (項目 1)。
 6. PSPAC の gs 互換の形状関数 (項目 8)。

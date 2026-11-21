@@ -14,7 +14,7 @@
 | 小さなリング | 24 セルの平面 FODO (3 GeV、周長 105.6 m、RF 1.8〜4 MV)、ASTRID2 (0.58 GeV、周長 45.7 m。`example/astrid/lattice/ASTRID2_v01_01.sad`) |
 | 大きなリング A | 3 GeV、周長 603 m、3563 要素、RF 1.4 MV (`pysad/tests/kek-ls_v03_12.lat`) |
 | PF リング | 2.5 GeV、周長 187 m、760 要素、六極つき (`example/pf/lattice/v9_16_asym.sad`) |
-| 大きなリング B (8 GeV) | 今回の項目では使っていない (SB・RADINT の確認は A・PF・ASTRID2 で足りた) |
+| SP8 (大きなリング B、8 GeV) | 今回の項目では使っていない (SB・RADINT の確認は A・PF・ASTRID2 で足りた) |
 
 ## 1. 項目ごとの状態 (まとめ)
 

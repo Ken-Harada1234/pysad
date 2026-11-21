@@ -34,7 +34,7 @@ SAD (Strategic Accelerator Design) は KEK 発の加速器光学・追跡コー�
 │   ├ calc.y/calc.c  SAD1 MAIN の数値式 (SADScript とは無関係)
 │   ├ inc/  gdtoa/(51)  sim/(OS 抽象化 C 層)
 ├ Packages/ init.n Optics.n emit.n dapert.n Fit.n correction.n optimize.n ... Plots 系 / Tkinter 系 / CaSad 系 / sad.py
-├ extensions/ RandomMT/  sad+/ (大見氏の DA, C++ 33 本)  Standard/ (Tkinter, Xlib)
+├ extensions/ RandomMT/  sad+/ (DA (微分代数), C++ 33 本)  Standard/ (Tkinter, Xlib)
 ├ contrib/ gdtoa BBBrem_dir libtai-0.60 tcl8.6.11 tk8.5.18 tk8.6.11 btkshim patches tools
 ├ mk/ (sad.obj.mk ほか)  config/ (GCC.spec)  sad.conf  Makefile
 ```
@@ -183,7 +183,7 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 - C: calc.c は SAD1 の数式用 (byacc 生成)、PySad.c は Python 2 API で非ビルド、tspch_.c/spch.c は空間電荷、tgauss_.c/random_driver.c/random_plugin_sad.c は乱数、sim/ は OS 抽象化 (unix_memory 系、sad_api、dynl 系ほか)。
 - inc/: 実コードを含むのは TENT/TEXIT/common/MACexpn/TFMACRO/TMACRO/TFSF/coroper 程度。要素コードの実定義は tfstk.f の module maccode (icDRFT=1, icBEND=2, icQUAD=4, icSEXT=6, icOCTU=8, icDECA=10, icDODECA=12, icUND=18, icWIG=19, icSOL=20, icST=21, icMULT=22, icCAVI=31, icTCAV=32, icMAP=33, icINS=34, icCOORD=35, icBEAM=36, icPROT=37, icSPCH=38, icMARK=41, icMONI=42, icAPRT=43, icLINE=100)。pysad の `ffscmd._TYPECODE` が SOL=20, MULT=22 を使う。
 - Packages: init.n (NPARA=4 など既定値)、Optics.n (CALC6D, NormalCoordinates)、emit.n (Emittance[] の規則名、TouschekLifetime)、dapert.n、Fit.n、correction.n、optimize.n、extmap.n。11/06 は init.n / emit.n / Fit.n / dapert.n / Optics.n の挙動だけを参照していたが、11/16 は `pkgload.py` が correction.n・bump.n・corutility.n・optimize.n・D.n・Plots.n・ListPlot.n・CSR.n などを SADScript のまま読む (`PYSAD_SAD_PACKAGES` が要る。docs/34)。
-- extensions: RandomMT (MT19937/SFMT、既定の乱数は "SAD" 合同法)、sad+ (大見氏の微分代数 C++)、Standard (Tkinter/Xlib)。pysad は使わない。
+- extensions: RandomMT (MT19937/SFMT、既定の乱数は "SAD" 合同法)、sad+ (微分代数の C++)、Standard (Tkinter/Xlib)。pysad は使わない。
 - contrib: gdtoa、BBBrem_dir (BBBrem.C)、libtai、tcl/tk ほか。不要。
 
 ---
@@ -276,7 +276,7 @@ tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval)
 | 1 | icDRFT | tdrife0:475 | ✓ `emit6d._tdrife0` |
 | 2 | icBEND | tbende:533 | ✓ `_tbende` (`_tbendecorr`, `_tbendebody`) |
 | 4 | icQUAD | tquade:569 | ✓ `_tquade` |
-| 6,8,10,12 | tthine:592 | tthine | ✓ (六極内のドリフトの dv 項を含む) |
+| 6,8,10,12 | tthine:592 | tthine | ✓ (6 極内のドリフトの dv 項を含む) |
 | 20 | icSOL | tsole:597 | △ `solemit.py` / `emit_extra._tturne1` の SOL 領域 (領域内は DRIFT・QUAD。POL のスピンも通る) |
 | 21 | icST | forcesf:602 | — |
 | 22 | icMULT | tmulte:621 | ✓ `_tmulte` (ANGLE=0)、`multae.py` (ANGLE≠0。BZ・RF・F1・SK0 は未) |

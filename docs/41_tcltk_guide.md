@@ -30,7 +30,7 @@ Python の tkinter (Tk 8.6) が窓を表示
 SAD の `Packages` の場所を環境変数で渡す。**`PYSAD_SAD_PACKAGES` が無いと、GUI は何も有効にならず、GUI の自動試験は skip になる。**
 
 ```
-set PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages
+set PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>
 py -3.12 -c "from pysad.sadscript import Interp; I=Interp(); I.run(open('demo.sad').read(),'script')"
 ```
 

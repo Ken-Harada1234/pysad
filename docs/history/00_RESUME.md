@@ -1,6 +1,6 @@
 # 引き継ぎメモ (pull した人と AI アシスタント向け)
 
-最終更新: 2026-11-20 (§5a を追加。§1〜§8 の本文は 2026-11-16 のまま残し、現状は §5a と docs/46・47 を見る)
+最終更新: 2026-11-21 (§5a を v2.3.0 の最終の現状に更新。§1〜§8 の本文は 2026-11-16 のまま残し、現状は §5a と docs/46・47 を見る)
 
 このリポジトリを clone / pull して作業を始めるときに最初に読む文書。時系列の詳細ログは置かない (作業者のローカル用メモは git に入れていない)。
 経緯と照合の記録は項目ごとに `docs/history/work_*.md` (一覧は §10)、現状の説明は `docs/01_overview.md` 〜 `docs/45_radlight_guide.md` (地図は §3)、SAD の癖は `docs/11_sad_quirks.md`、SAD 自身の誤りは `docs/21_sad_bug_report.md`。
@@ -15,7 +15,7 @@ AI アシスタント (Claude Code など) は、リポジトリ直下の `CLAUD
 
 pysad は加速器設計コード SAD (K64 版、https://github.com/KatsOide/SAD) の Python への**直訳**。目的は、SAD のスクリプト (MAIN のラティス + FFS + SADScript) を
 そのまま実行して、SAD と同じ数値を出すこと。一致の基準は SAD の印字精度 (1e-10〜1e-11)。物理を再導出せず、Fortran / C の式・分割数・反復順序・乱数の引き方を写す。
-SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md`)。SAD 自身のバグは再現せず `docs/21_sad_bug_report.md` (B1〜B62) に集める。
+SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md`)。SAD 自身のバグは再現せず `docs/21_sad_bug_report.md` (B01〜B162。2026-11-16 の時点では B1〜B62) に集める。
 
 ## 2. 方針 (作業者の指示。守ること)
 
@@ -34,7 +34,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 | 場所 | 内容 |
 |---|---|
 | `pysad/` | 本体。モジュールの地図は `docs/01_overview.md` §3、行数と準拠状況は `docs/17_implementation_summary.md` |
-| `pysad/tests/` | pytest 578 件収集 (64 ファイル)。SAD (gs) から取った参照値を埋め込み、または `data_*.npz` に持つ。ラティスファイルを読むテストあり (誤差入りラティスの 2 件は環境変数 `PYSAD_ERR_LATTICE` を指定したときだけ走る) |
+| `pysad/tests/` | pytest 1907 件収集 (158 ファイル、旧式の 3 本を含む。2026-11-21)。SAD (gs) から取った参照値を埋め込み、または `data_*.npz` に持つ。ラティスファイルを読むテストあり (誤差入りラティスの 2 件は環境変数 `PYSAD_ERR_LATTICE` を指定したときだけ走る) |
 | `run_sad.py` | `py -3.12 run_sad.py lattice.sad script.sad` (SAD の `gs` と同じ引数、複数ファイルは連結) |
 | `docs/` | 解説 (現状)。`01_overview.md` から。API は `12_pysad_api.md` |
 | `docs/history/` | この文書と `work_*.md` (項目ごとの経緯・照合の記録)、`review_notes.md`、`sad_patch/` (元の SAD の SIGSEGV を直す差分) |
@@ -45,7 +45,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 |---|---|
 | 01〜12 | 全体像、ラティスと MAIN、FFS、SADScript、CALC、マッチング、エミッタンス、追跡、DA、ベンチ、SAD の癖 (11) |
 | 13〜15 | API (12_pysad_api)、SADHelp の索引 (13_sad_help_index)、Fortran の状況 (16_fortran_status)、SADHelp との対応 (14_pysad_vs_sadhelp)、実装の要約 (17_implementation_summary)、SADHelp の目的と方針 (15_sadhelp_purpose_policy) |
-| 16〜19 | 物理ガイド、ソース解析、翻訳候補、SAD のバグ報告 (B1〜B62) |
+| 16〜19 | 物理ガイド、ソース解析、翻訳候補、SAD のバグ報告 (B01〜B162) |
 | 20〜35 | 要素・機能別: GUI/Tcl (20)、WAKE (21)、BEAMBEAM (22)、COORD (23)、TCAVI (24)、UND (25)、MULT ANGLE≠0 (26)、SOL の光学 (27)、MAP (28)、DELCOR (29)、GaussianCoulomb・BBBrem (30)、特殊関数・Fit (31)、SAD パッケージ (32)、FFS の小コマンド (33)、POL/スピンと CSR (34)、描画 (35) |
 | 36〜43 | 大項目の解説文書 (何ができるか、使い方の例、物理と K64 の式、実装の構成、K64 の癖、gs との一致、限界): `38_wake_guide.md`、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md` |
 | `sadhelp_summary.html`、`html/` | SADHelp の要約と、文書の html 版 (`make_html.py` で作る生成物。手で編集しない) |
@@ -56,8 +56,8 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 - Python 3.12 に numpy、scipy、numba、pytest。Windows では `py -3.12`。出力に日本語や記号が入るので `PYTHONIOENCODING=utf-8`。
 - テスト: `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`
-  (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**575 通過・3 skip** (578 件収集、2026-11-17)。**2026-11-20 (v2.2.0) は 1647 通過・9 skip・失敗 0 (1656 件収集、約 27 分)**。
-  - GUI 系 (`test_plot.py`、`test_tclbridge.py`) は環境変数 `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` (K64 の `Packages` の場所) が無いと skip。評価器 (`sadscript.py` など) を変えたら、これを設定して全試験と回帰を回す。
+  (無視する 3 本は sys.exit で終わる旧式のスクリプト)。**575 通過・3 skip** (578 件収集、2026-11-17)。2026-11-20 (v2.2.0) は 1647 通過・9 skip・失敗 0 (1656 件収集、約 27 分)。**2026-11-20 (v2.3.0) は 1683 通過・8 skip・失敗 0 (1691 件収集、約 29 分。時間依存の `test_plot.py::test_opticsplot_draws_the_same_geometry_as_gs` が全試験中に 1 回失敗し、単独で通る)**。
+  - GUI 系 (`test_plot.py`、`test_tclbridge.py`) は環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` (K64 の `Packages` の場所) が無いと skip。評価器 (`sadscript.py` など) を変えたら、これを設定して全試験と回帰を回す。
   - 全体実行では GUI 系が数回に 1 回、窓の更新待ちで失敗することがある (単独なら通る)。
   - 試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/`、対応表は `pysad/tests/OUTPUTS.md` (`py -3.12 pysad/tests/make_outputs_md.py` で作る。取り出し方は `docs/history/work_test_outputs.md`)。
   - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。
@@ -84,14 +84,25 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 - WAKE: 追跡 (TRPT、LWAKE / TWAKE) と光学 (WAKEOPT、InitialOrbits) を実装 (`pysad/wake.py`、`wakeopt.py`、`docs/23_wake.md`)。gs と 10 桁一致。旧式の WAKE コマンドは K64 では `WAKECOMMAND.n` (配布に無い) を呼ぶので、pysad も同じ経路 (tfwake.f は移植しない)。
 - BEAMBEAM: 追跡・BSTRL・LuminosityMonitor・PHOTONS (BEAMBEAM の光子だけ) が gs と一致 (`pysad/beambeam.py`、`docs/24_beambeam.md`)。
 
-## 5a. 現状 (2026-11-20、v2.2.0)
+## 5a. 現状 (2026-11-21、v2.3.0 の最終整理)
 
-- **版**: v2.2.0 (`pysad.__version__`・`pyproject.toml`)。PyPI は v2.1.0 まで公開 (v2.2.0 は未公開。push・タグ・PyPI はしていない)。v2.0.0 → v2.1.0 → v2.2.0 の変更の一覧は `docs/47_v2_changes.md`、K64 側のバグは `docs/21_sad_bug_report.md` (B01〜B159。B135〜B159 が v2.2.0)、未対応・未確認は `docs/46_unimplemented_and_unverified.md`。経緯と根拠は `docs/history/v2next_*.md` (v2.2.0 は P1〜P5)、例は `example/v2_next/`。
+- **v2.3.0 (最新)**: 版は `pysad.__version__`・`pyproject.toml` とも 2.3.0 (ローカルのコミットのみ。push・タグ・PyPI はしていない。PyPI・GitHub のリリース (Latest) は v2.2.0 まで)。v2.2.0 の後に K64 にない解析機能 (周波数マップ `freqmap.py`、局所運動量アクセプタンス `lma.py` + `lmabucket.py` + `trksetup.py`、共鳴駆動項・ADTS・クロマティシティ `resdrive.py`、4 次の RDT `rdt2nd.py`、数値の正規形 `nform.py`、Touschek の Piwinski 型 `touschek.touschek_piwinski`) を足し、それぞれの信頼性を調べた。K64 の動作・互換モードは、`docs/47` の v2.3.0 の (a) の項目を除いて変えていない。K64 のバグの記録は B01〜B162 (B160 = K1 の暗黙の定義、B161 = CALC の dk (v2 で直した)、B162 = Touschek の式の適用範囲)。変更の一覧は `docs/47_v2_changes.md` の v2.3.0、解説は `docs/48`・`docs/49`・入門 `docs/50`、記録は `docs/history/v23_*.md`、例は `example/v2_3/`。
+- **方針 (ユーザー)**: 解析式 (RDT・ADTS・共鳴線の予想) は、摂動論の定義された次数と、入れた効果の範囲で原理的に作る。追跡に合わせるための補正項・当てはめ・0.1〜0.3% の端数合わせは足さない。差は「入れていない効果と次数」の説明として書く (docs/49 §11.9)。物理として有意な効果は足してよい。追跡から係数を取り出すのは偏向磁石の生成関数だけ (原理: 写像の 2 次のテイラー係数が生成関数を一意に決める、docs/49 §8.1)。例には個人名・フォルダ名・wiki 名を残さない。
+- **各担当**: Q1 = 周波数マップ・LMA・追跡の設定、Q2 = 6 極の RDT・ADTS。R1 = ADTS の gs との不一致の解決 (gs の RFSW)、R2 = ADTS の直接の検証 (追跡 + NAFF + フィット、運動学・フリンジ)、R3 = 偏向磁石の 3 次の項 (`bendnl.py`)、R4 = RDT の追跡による検証、R5 = 4 次の RDT・数値の正規形、R6 = K0≠0 (MPW)・δ≠0 (kick の強さの誤りの修正)・端の閉形式・非対角の正規形の補正・精密版 `fourth='r6'`・`optics='tracked'`、R7 = 六極の最適化の検討 (`example/ddba/v07_14/sextupole/`・`pysad/sxtopt.py`・`pysad/tests/test_ddba_sextupole.py`・docs/21 の一部。**完了 (31c1166)**。結論: 六極の組 32 通りで、解析式の目的関数と追跡の x–y DA 面積の順位相関 ρ = −0.89。検証 (小〜中振幅の DA の健全性チェック) には条件つきで使える。LMA の予測には使えない。**最適化の試作は、最終設定より DA の広い解を出せなかった** (DA 面積は最終設定の 0.60〜0.71 倍、劣る)。不足は J² の ADTS・δ 依存・5 次以上の駆動項。README `example/ddba/v07_14/sextupole/README.md`。V3 で CHANGELOG・README・CLAUDE.md・docs/46・47・49・example の索引に反映済み)。S1 = 周波数マップの検証、S2 = 周波数マップの信頼性、S3 = 共鳴線の予想の作り直し (ASTRID2・KEK-LS では振幅だけのスコアに及ばない)。T1 = elegant との LMA・Touschek の比較、T2 = Touschek の式 (Piwinski 型が正確。B162。v2 の既定)。U1 = B160 の切り分け (誤りではなく K1 の定義)、U2 = `compat.set_bend_k1_def('lin')` と B161 の修正。L2 = LMA の信頼性 (`check_every` の既定 1)。V1・V2 = 最終整理 (V2 = `adts()` の既定を物理的な項だけに戻す、README・解説の書き方の見直し、共有文書の更新、窓の後始末、最終の通し)。W1 = KEK-LS・SP8 の名前の整理。X1〜X4 = 例の追加 (PF の履歴ラティス・KEK-LS の例集・DDBA の例集・DDBA v07_14) とパーサの修正 (逆向きの文脈の `-LINE` の二重反転、k64 の `1.7MV` などの単位)。
+- **`adts()` の既定 (V2 の最終)**: 物理的な項だけ (`fourth='r3'`・`optics='calc'`)。R6 の `fourth='r6'` (四極の積分器の台形則と偏向磁石の 4 次の項。数値積分器の 0.1〜0.3% の端数) と `optics='tracked'` は精密版のオプション。追跡との差 (6 極 ×1): FODO −3.6e-4・+4.1e-4・−3.4e-4、ASTRID2 −2.4e-3・−8.2e-4・−1.9e-3、MPW −2.4e-3・−8.4e-4・−2.2e-3、KEK-LS −1.4e-4・+1.7e-4・+2.6e-3 (R3 の値と一致。主因は入れていない 4 次の積分器の分)。r3 は原点のまわりの偏向磁石の分解を使う (K0≠0 だけ閉軌道のまわり。`bendnl.ORBIT_TOL`)。**教訓**: orbit 版と R3 版の偏向磁石の分解は K1≠0 で内部の対の項の分け方が違い (合計 1〜2%)、CALC の履歴の 1e-10 の雑音で経路が切り替わると ADTS が変わる。試験 `test_default_adts_is_r3_calc_and_independent_of_calc_history`。
+- **既定の変更 (結果が変わるもの)**: LMA の `check_every` = 1、`FrequencyMap[]` の RFSW・RAD・FLUC OFF と RAD OFF の同期位相 0、v2 の `TouschekLifetime` の Piwinski 型、v2 の B161 の dk の修正。
+- **pysad 自身の不具合の修正**: パーサ (逆向きの文脈の `-LINE` の二重反転、k64 の `1.7MV` などの数に隣接する単位)。
+- **試験**: 全試験 **1899 通過・8 skip・失敗 0 (1907 件収集。R7 の試験 `test_ddba_sextupole.py` 8 件を含む)** (2026-11-21、V3 の最終の通し、33 分)、回帰 (`QUICK=1`) **50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)**。skip の内訳: PYSAD_SLOW=1 が要る 4 件 (`test_csr.py`・`test_v2_C3_measure.py`・`test_v2_D1_emit.py`・`test_v2_E_pol_kick.py`)、`PYSAD_ERR_LATTICE` が要る 2 件 (`test_elkern.py`)、POSIX だけ・fork が要る 2 件 (`test_v2_B_script.py`・`test_v2_B2_script.py`)。
+- **v2.3.0 の残課題 (docs/47 の v2.3.0 の (d)、docs/46)**: 精密版の δ 微分の ASTRID2 の yy が 28% 外れる (原因は未特定)、K1≠0 の偏向磁石の本体の閉形式の 1e-4〜3e-4 (K64 の `tbendi` の積分器と推定、未照合)、共鳴線の予想の判別力、k64 モードの LMA・PF リング・SP8 (大きなリング B)、Touschek のバンチ内の δ 分布の効果、**ユーザー定義の関数名 `At` が `@` と衝突して呼べない (gs は呼べる)**、**`FitFunction` を `fit` と併用すると pysad が gs と別の解に落ちる**、DDBA_15 の εx (gs と +0.33%)、DDBA v07_14 の 5 GeV の誤差計算の DA (gs 0〜1σ、pysad 27〜38σ)、K0≠0 磁石の E・ROTATE。
+- **R7 の反映 (V3 で完了)**: R7 の結果を README・CHANGELOG・CLAUDE.md・docs/46 (未確認: 解析式の目的関数は DA の代替にならない、次の課題 6 件)・docs/47 (新機能 `sxtopt.py` (試作))・docs/49 §11.9 (ADTS の r3 と数値の正規形の定数の差)・`example/README.md`・`example/v2_3/README.md`・`example/ddba/README.md` に反映した。`example/` の集計 (`count_match.py`) は R7 で変わらない (224 例中 ○ 189・△ 34・× 1。R7 は gs との比較の例ではない)。
+- 以下の v2.2.0 の記述は v2.2.0 時点のまま (試験件数は上が最新)。
+
+- **版**: v2.2.0 (`pysad.__version__`・`pyproject.toml`)。v2.2.0 は GitHub のリリース (Latest、タグ `v2.2.0`) と PyPI (`pysad-k64` 2.2.0、2026-11-20 13:36 UTC) の両方で公開済み。PyPI 用のビルドは `release/pypi-v2.2.0` ブランチ (ビルド用の作業ツリー `D:\work\SAD-master\pysad-v2.2.0-build`。README の 2 行だけ変えた 2 コミットが main とは別に載っている。main には取り込まない)。v2.3.0 は未公開 (GitHub の main にも push していない)。v2.0.0 → v2.1.0 → v2.2.0 の変更の一覧は `docs/47_v2_changes.md`、K64 側のバグは `docs/21_sad_bug_report.md` (B01〜B159。B135〜B159 が v2.2.0)、未対応・未確認は `docs/46_unimplemented_and_unverified.md`。経緯と根拠は `docs/history/v2next_*.md` (v2.2.0 は P1〜P5)、例は `example/v2_next/`。
 - **試験**: `py -3.12 -m pytest pysad/tests -q` (旧式の 3 本を `--ignore`、`PYSAD_SAD_PACKAGES` つき、k64 が既定) は **1647 通過・9 skip・失敗 0** (1656 件収集)。回帰 (`QUICK=1 PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py`) は **50 ベンチ FAIL 0** (138 s)。v2.1.0 は 1345 通過・8 skip。numba のカーネル (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py`) を編集したら試験の前に `py -3.12 -m pysad.nbcache`。
 - **互換モード**: 既定 `v2`、`PYSAD_COMPAT=k64` で K64 (gs) の動作。k64 モードは K64 の動作の追加 (MEASURE・TRCOD の先頭の位置、PSPAC の K64 の形状関数、TrackParticles の F1・MULT の AE、DAPWIDTH の窓、要素ごとの FREE の何もしない変数) と pysad 自身の不具合の修正だけ変えた。新しいオプション (v2): `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC`、`compat.set_bend_k1_edge('face')`、FFS の `WSPACSC`。
 - **spin 系の試験の許容 (v2.2.0 の確認)**: `test_v2_A_spin.py::test_polarization_with_orbit_errors_v2` は P1・P2 の変更の後で通る。P1 が許容を 3e-3 → 1.5e-2 に緩めていたが、P は 0.8798 → 0.8695 で、運動論的偏極 −7.1e-3・厳密な緩和率 −3.0e-3・刻みごとの脱偏極率 −2.5e-4 の内訳で説明できる (3 つを切ると 0.8798)。許容を 0.8695 ± 3e-3 に戻し、内訳の試験を足した (docs/47 の v2.2.0 の (e))。
 - **残課題 (詳細は docs/47 の v2.2.0 の (d))**: 判断が要るもの (既定は担当の選択のまま): EMITDIV の既定 (1)・DAPWIDTH の既定 (7)・`WSPACSC` の既定 (0)・K1≠0 の BEND の端の模型の既定 (`radial`)・放射の β の因子 (B112)・SOL 領域内の ψ の DISFRIN・偏向磁石の本体の B∥ (B136)・複素の特殊関数の k64 の値・`CSROYMatrix` の wrongtype。未解決: 脱偏極率の追跡との比は 4.2 GeV・12 MV の 1 点、B108 の残る 2.7% の系統差、RF が分散のある場所にある矩形リングの εx の +1.7e-3、SOL 領域内の加速 (POL + TRPT)、SB のシンクロ・ベータ共鳴の追跡との比較、MARK の生の DETR ≥ 1 の INS (B159)、逆向きの要素の F1・AE の入れ替え。
-- **文書・例に出してよいラティス**: `pysad/tests/kek-ls_v03_12.lat` (大きなリング A: 3 GeV、周長 603 m)、`example/pf/lattice/*` (PF)、`example/astrid/lattice/*` (ASTRID2)。ほかの大きなリングは「大きなリング B (8 GeV、1436 m)」のようにエネルギーと周長で書き、名前・パスを書かない。
+- **文書・例に出してよいラティス**: `pysad/tests/kek-ls_v03_12.lat` (KEK-LS、大きなリング A: 3 GeV、周長 603 m。ESRF 型の HMBA で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した)、`example/kek_ls/lattice/*` (KEK-LS v03_68。3 GeV、周長 570.72 m。KEK-LS の例集 `example/kek_ls/`)、`example/pf/lattice/*` (PF。履歴ラティス `pf_1981_460nmrad`・`pf_1986_128nmrad`・`pf_1997_036nmrad`・`pf_2005_036nmrad` を含む。`example/pf/lattice/PF_history.md`)、`example/astrid/lattice/*` (ASTRID2)、`example/ddba/lattice/*` (DDBA の版のラティス。5 GeV・2.5 GeV、周長 731〜757 m。複雑なセルのラティスの設計手順の例集 `example/ddba/`。設計者の元のファイルの場所・人名・内部のサイトの名前は書かない)、名前だけ「SP8 (大きなリング B)」(SPring-8 型。デザインレポートより再現。8 GeV、周長 1436 m、矩形の偏向磁石 88 台。ファイルは追跡外なのでパス・元の場所は書かない)。ほかの大きなリングはエネルギーと周長で書き、名前・パスを書かない。「ESRF」とは書かない (V1 で「ESRF」を大きなリング B に直したのは誤りで、KEK-LS (大きなリング A) のことだった。W1 で直した)。
 - §6 以降は 2026-11-16 の時点のまま (多くは解決済み。現状の未解決は上と docs/46・47)。
 
 ## 6. 残課題 (優先順。最新の詳細は `docs/history/work_unimpl.md`)
@@ -167,7 +178,7 @@ SAD の癖 (バグに見えるものも) は再現する (`docs/11_sad_quirks.md
 
 ## 10. 履歴文書 (`docs/history/`) の索引
 
-- v2 系: `v2_changes_*.md` (v2.0.0)、`v2next_A1`・`A2`・`B1`・`B2`・`B3`・`C`・`D1`・`D2`・`E` (v2.1.0)、`v2next_P1`〜`P5` (v2.2.0)。
+- v2 系: `v2_changes_*.md` (v2.0.0)、`v2next_A1`・`A2`・`B1`・`B2`・`B3`・`C`・`D1`・`D2`・`E` (v2.1.0)、`v2next_P1`〜`P5` (v2.2.0)、`v23_Q1`・`v23_Q2`・`v23_R1`〜`v23_R6`・`v23_S1`〜`v23_S3`・`v23_T1`・`v23_T2`・`v23_U1`・`v23_U2`・`v23_L2` (v2.3.0。R7 は未完)。
 - 最新: `work_example_fixes_20261117.md` (example 10〜13・PF T5 の gs との差の修正、11/17)、`work_unimpl.md` (未実装要素の実装と未解決の差、11/14〜)、`work_session_20261116.md` (11/16 の作業を話題別に)。
 - 要素別 (11/14〜): `work_wake.md`、`work_beambeam.md`、`work_gui_tclbridge.md`。
 - 10 月〜11/06 の作業 (ほぼ確定。各ファイル末尾に 2026-11-16 の確認がある): 解析微分 (`work_analytic_deriv`)、CALC6D (`work_calc6d`)、BEND K0 (`work_bend_k0`)、DESCEND (`work_descend`)、emit (`work_emit_extra`・`work_emit_report`・`work_emit_unstable`)、

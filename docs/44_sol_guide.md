@@ -176,7 +176,7 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 - **CAVI**: `L`、`VOLT`、`PHI`、`DX DY ROTATE`、端のフリンジ。Emittance[] では [ソレノイドのドリフト半分 → 薄い空洞 → 半分] に分ける。
 - **APERT**: 領域の外と同じ判定で粒子が落ちる (LOSSMAP の要素は APERT)。
 - 使える計算: 追跡 (高速追跡)、CALC (INS/CELL) の Twiss と閉軌道 (`solmap`: 追跡の写像の数値微分)、Emittance[]・EMIT (`solemit`)。
-- 根拠の数値: ローレンツ力の積分と力学的運動量で、BEND・K0 だけの MULT 1e-14、K1 つき 1e-10、六極・八極・スキューは bz = 0 の MULT と同じ分割誤差 (1e-8、EPS で減る)。放射損失 (2/3) r_e γ³ (K0/L)² L が bz = 0・0.4・2 で 2e-4。bz → 0 の領域内の要素 = 領域の外の要素 (リングの Twiss・Emittance[] が 2e-7)。CALC の軌道 = 追跡 (1e-12)。bz = 3 T のリングで減衰率の和 = 2U0/E (2e-3)。
+- 根拠の数値: ローレンツ力の積分と力学的運動量で、BEND・K0 だけの MULT 1e-14、K1 つき 1e-10、6 極・8 極・スキューは bz = 0 の MULT と同じ分割誤差 (1e-8、EPS で減る)。放射損失 (2/3) r_e γ³ (K0/L)² L が bz = 0・0.4・2 で 2e-4。bz → 0 の領域内の要素 = 領域の外の要素 (リングの Twiss・Emittance[] が 2e-7)。CALC の軌道 = 追跡 (1e-12)。bz = 3 T のリングで減衰率の和 = 2U0/E (2e-3)。
 - 放射の注意 (K64 の癖。docs/21 B80): ソレノイド + 双極の中の放射 (tradk) は 1 刻みの前後の向きの変化 (弦) から損失を出すので、らせんの回転角 bz·L が大きいと小さく出る (相対 (bz·L)²/12。bz·L = 1 で 8%)。v2 の領域内の BEND・MULT は bz·L/ndiv ≤ 0.02 に刻む。
 - **使えない (明確なエラー)**: `V1 V20 V11 V02` (CAVI の高次の項)、ANGLE≠0 の MULT、RF つき MULT の Emittance[] のうち bz = 0 の領域と領域の外 (従来どおり未対応)、SEXT・COORD・BEAMBEAM など (`SolRegionError`)、track6 の経路 (POL + RAD) での領域内の TRPT の加速 (v2.1.0 で領域の外の CAVI は実装したが領域内は SADError)。(CALC6D・RADCOD つきの CALC は v2.1.0 で対応。)
 - **未確認**: 領域内の MULT・CAVI の POL (Emittance[])、RF つき MULT の RAD、領域内の空洞の wake の横の蹴りを gs と比べること、加速 + RAD の組み合わせ。

@@ -1,6 +1,6 @@
 # 12. pysad 公開 API リファレンス
 
-最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット。新しい API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6、v2.1.0 の `naff`・`specfn_cx`・`nbcache` は §16.7)
+最終更新: 2026-11-20 (v2.3.0 の現状のスナップショット。新しい API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6、v2.1.0 の `naff`・`specfn_cx`・`nbcache` は §16.7、v2.3.0 の周波数マップ・LMA・共鳴駆動項は §16.8)
 
 > 場所: `pysad/`。全体像は `01_overview.md`、各計算の直訳メモは 05〜09、SAD の癖は `11_sad_quirks.md`。
 > 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `<試験用ラティス>.lat` と本文中の小さな FODO リング)。
@@ -535,8 +535,27 @@ print(score)                                               # 144
 **v2.2.0 で追加・変更した主な API**
 
 - `compat.set_bend_k1_edge('face'|'radial'|None)`・`compat.bend_k1_edge()`・環境変数 `PYSAD_BEND_K1_EDGE`: K1≠0 の BEND の端の模型 (v2 だけ。k64 は常に `radial`)。実装は `lattice._face_kt`・`_face_kick_cod`・`_face_kick_jac`・`_bend_k1_cod_matrix`、`emit6d._tbende_core`、`track6n.k_bendi`・`track6._tbendi`。
+- `compat.set_bend_k1_def('log'|'lin'|None)`・`compat.bend_k1_def()`・`compat.bend_k1_lin()`・環境変数 `PYSAD_BEND_K1_DEF` (B160、v2.3.0 U2): K1≠0 の BEND の K1 の定義。'log' (既定) は K64 (中央面の磁場が B0 + (K1/h) ln(r/ρ0)、(1 + hx)∂b/∂x が一様)、'lin' は B' 一様 (elegant・MAD と同じ)。v2 だけ。k64 は常に 'log' (docs/11 A59、docs/47)。
+- `compat.bend_dk_fix()`・`compat.set_bend_dk_fix(True|False|None)` (B161、v2.3.0 U2): CALC・`Emittance[]` の K1≠0 の BEND の解析行列の dk を kick の導関数に直す修正。v2 は既定で True、k64 は常に False。`set_bend_dk_fix` は測定・試験用の強制 (None で既定に戻す)。
 - `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC` (v2 の Polarization。False で v2.1.0 の式)、`CHROM_KMAX`・`CHROM_NEL`。`spin.sideband_depolarization(..., C6=...)`、`spin._chromatic_matrix`。`spin_results` の `sdamp_rel` (厳密な緩和率)・`sdamp_rel_b2` (A2 の Σ r (b·n)²)・`kinetic`、不安定なリングの P = NaN (`depol_error`)。`track6._spin_rot_cs` (BEND の ROTATE のスピン)。
 - `synchrobeta.tesumb_v2`・`tefsetup(jump=)` (v2 の SynchroBeta)。`perfkern.tradke_db` の `exactd` (v2 の tradke の微分)。`radtaper` (v2 の BEND の係数 (δ_l + δ_l+1)/2)。
 - `track6._tsteer_ens`・`_tblfri`・`_tmulk`・`_tmulti_ens` (F1・FB・FRINGE・AE の追跡)、`lattice._mult_params`・`_bend_as_mult` (MULT の AE)。F1 つきの MULT を含むリングは `track6n_ext.compile_mult` が NotImplementedError にして track6 に落とす。
 - `dapert.dynamic_aperture` (trackd.f のスロット管理。DAPWIDTH の既定 7)。FFS の大域変数 `WSPACSC` (追跡の WSPAC のビーム行列)。`measure._k64_measure`・`_k64_trcod` (k64 の MEASURE・TRCOD)。`lattice._exch_phase` (入れ替わる INS の位相の整数部。v2)。`parser.Token.pos/end`。
 - FFS: `NPARA=n;` (FLUC の追跡の子プロセスの分け方)。
+
+### 16.8 v2.3.0 で追加したモジュール (周波数マップ・LMA・共鳴駆動項・ADTS)
+
+K64 にない追加。互換モードによらず同じ関数 (docs/47 の v2.3.0)。解説は docs/48・docs/49。SAD の台本の関数は pysad だけ (gs には無い)。
+
+| モジュール | 内容 | 文書 |
+|---|---|---|
+| `trksetup.py` | `TrackSetup.from_source(src, 'RING', rad=True, rfsw=True, fluc=False, alost=None)` (追跡の設定。`.track`、`.tunes_full()`、閉軌道の求め直し、RF バケット `bucket_zlimit`)、`find_periodicity(els, rows)` (セルの数・各セルの最初の要素・セルの長さ)、`select_locations(st, i0, i1, ...)`、`lower_priority` | docs/48 §2 |
+| `freqmap.py` | `frequency_map(st, loc, x=, y=, dp=, nturn=1024, workers=1, norm='data')` → `FMapResult` (`D`・`nux1`・`nuy1`・`nux2`・`nuy2`・`lost_turn`・`x`・`y`・`dp`、`save`・`load_table`・`plot`)、`resonance_lines`・`resonance_check` (整数・半整数を含む)・`line_distance` | docs/48 §3 |
+| `lma.py` | `momentum_acceptance(st, locs, nturn=None, nsynch=2, check_every=None, workers=2, ...) (`check_every` の既定 None は 1 = 要素ごとの損失の判定、0 は SAD の tapert のまま。`TrackSetup` が 0 でない値を持つときはその値)` → `LMAResult` (`s`・`dp_plus`・`dp_minus`・`touschek_input()`・`save`・`plot`)、`touschek_lifetime_local(touschek_table, result, setup=, period=, s0=)`、`acceptance_at`、`linear_momentum_limit` | docs/48 §4 |
+| `q1cmd.py` | 台本の関数 `FrequencyMap[位置, nturn, X->, Y->, DP->, Output->, Plot->]` (既定は RFSW・RAD・FLUC OFF、S2)、`MomentumAcceptance[位置, Cell->, Distance->, CheckEvery->, Verify->, TurnCheck->, Workers->, Output->, Plot->]` (`CheckEvery` の既定は 1、L2)、`TouschekLifetimeLMA[Formula->]` (既定は Piwinski 型、T2) | docs/48 §3.3・§4.3・§4.5 |
+| `lmabucket.py`・`fmapcheck.py`・`fmapres.py`・`fmappred.py` | LMA の RF バケットとアパーチャの区別 (`limit_types`、`bucket_1d`)、周波数マップの信頼性 (`check_setup`・`check_result`・`D_norm`・`feeddown_estimate`)、RDT・ADTS から予想した共鳴領域との比較 (`ResonancePredictor`、`apply_alignment_errors`、`coverage_stats`)、予想の作り直し (`ResonancePredictorS3`、`evaluate_prediction`・`auc_score`) | docs/48 §3.5・§3.6・§4.5・§10、docs/49 §12 |
+| `rdt2nd.py`・`nform.py` | 4 次の h_jklm (`rdt4`、`resonance_terms` に 4 次の名前を渡すと回る)、正規形の補正 (`nf_correction_h4`・`rdt4_normal_form`)、`adts_from_rdt4`、`fourth_order_adts`、数値の正規形 (`nform.adts_from_map`・`adts_at_delta`・`adts_delta_derivative(method='analytic'\|'nform')`) | docs/49 §10・§11 |
+| `resdrive.py` | `resonance_terms(lat, terms=, method='analytic', nslice=8, delta=0, ref=None, rows=None, bend_cubic=True, bend_nslice=16, momentum_eV=3e9, order2=None, rdt4_options=None)` (引数の `None` は既定の動作。h_jklm、要素ごとの寄与。v2.3.0 R4: `bend_cubic=True` が既定で偏向磁石の 3 次の項の分 `.total_bend` を足す、`.total_sext` は 6 極のみ。δ≠0 では入れない)、`adts(lat, method=, include_octupole=True, delta=0, fourth=None, optics=None)` (6 極 2 次 + 8 極 1 次、`by_harmonic`・`per_element`。v2.3.0 V2: 既定は物理的な項だけ = `fourth='r3'`・`optics='calc'`。`fourth='r6'` は四極の積分器の台形則と偏向磁石の 4 次の項 (`.bend4`) を足す精密版、`optics='tracked'` は δ≠0 の光学を追跡の閉軌道から作る。docs/49 §11)、`chromaticity_numeric(lat, order=3, dmax=2e-3)`・`chromaticity_sextupole(lat)`・(R4) `chromaticity_natural(lat)` (自然クロマティシティの式 −(1/4π)∮(K1+h²)β + 端)・`chromaticity_bend(lat)` (偏向磁石の 3 次の項の分散による分)、`slice_thin`・`adts_tracking` (検証用)、v2.3.0 R2: `kinematic_adts`・`quad_fringe_adts` (`adts().kin`・`.fringe`・`.total`)。v2.3.0 R3: `adts(lat, bend_cubic=True, bend_nslice=16)` (偏向磁石の 3 次の項: `.bend`・`.cross`・`.total`、`bend_cubic=False` で R2 の値)、`bend_cubic_adts`。`bendnl.py`: `bend_decomposition(el, nslice)`・`bend_atoms`・`extract_map`・`Taylor2` (追跡の写像から偏向磁石の 3 次のリー生成関数を取り出す)。`rdttrack.py` (v2.3.0 R4、追跡から RDT を取り出す): `ring_map(elements, momentum, row0, amp=1e-5)`・`rdt_from_map(rm)` (1 周の写像の 2 次のテイラー展開から p=0 の h_jklm)・`delta_quadratic_total`・`delta2_orbit_h10002` (δ の項)・`tracked_rdt_table`・`periodic_points`・`predict_periodic_J` (3νx 共鳴線の近くの周期点)。`bendnl.py` (R4): `harmonic_amplitudes_shift`・`bend_atoms_rdt` (h への偏向磁石の寄与、δ の項は分散による軌道のずれの展開)。`adtsdirect.py`: `direct_adts(lat, momentum_eV, jmax, delta=0, order=2, nturn=1024)` (追跡 + NAFF + 多項式フィットの ADTS)・`tune_vs_delta`・`fit_tune_surface`・`fit_delta_curve`・`paraxial_tracker`。台本 `ResonanceDrivingTerms[]` (R4 で入力 `BendCubic->`・`BendSlices->` を追加)・`AmplitudeTuneShift[]` (R2 で `Kinematic->`・`QuadFringe->`・`Total->` を追加。R3 で入力 `BendCubic->`・`BendSlices->` と出力 `BendCubic->`・`SextBendCross->` を追加)・`ChromaticityTerms[]` (R4 で出力 `NaturalPart->`・`BendPart->` を追加) | docs/49 |
+| `sxtopt.py` | [試作] 6 極ファミリーの K2L の多項式モデル (`SxtModel`: RDT・ADTS の解析式を k の線形・二次形式で厳密に組み、`check(k)` で解析式の直接の値と比べる) と SLSQP の最適化。台本の関数なし。検証用で、LMA の予測には使えない (`example/ddba/v07_14/sextupole/`) | `example/ddba/v07_14/sextupole/README.md` |
+
+限界・未確認 (詳細は docs/48 §7・docs/49 §5・§11.8・docs/46): 周波数マップ・LMA の誤差つき・結合・FLUC は S2・L2 で調べた条件だけ (docs/46)。k64 モードの LMA、PF リング、SP8 (大きなリング B) は未確認。共鳴駆動項・ADTS は結合・垂直分散・端部・運動学的な項・6 極×8 極・10 極以上を入れない。

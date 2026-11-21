@@ -6,7 +6,7 @@ numba のカーネルは編集していない (`py -3.12 -m pysad.nbcache` は�
 既存の試験の変更 (結果が意図どおり変わるもの): `test_v2_B3_pol.py` 3 か所 (§7)、`test_v2_A2_pol.py` 1 か所 (大きなリング A のずれの振幅を 0.5・1.0e-4 m に。0.2 mm 以上は光学が不安定で v2 が NaN を返すようになった)。
 例 (`example/v2_next/`): `P1_pol_vertical_bend.sad`・`P1_pol_mpw_rotated.sad`・`P1_pol_reversed_bend.sad` (gs・pysad v2・k64 の出力つき)、`P1_pol_chromatic.py`・`P1_st_dk_check.py`・`P1_bend_vertical_angle_spin.py` (各 `.out.txt`)、`P1_response_samples_f1_M1M2chr.json`・`P1_response_samples_f2_models.json` (§4 の決定論的な測定のデータ)。
 使ったリング: 12 セル FODO (0.5・3・4.2 GeV、周長 45.6 m。四極の縦ずれ ±3 mm の版は B3 と同じ)、大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、603 m)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、
-ASTRID2 (`ASTRID2_v01_01.sad`)・ASTRID2 + MPW (`ASTRID2_v01_02_id.sad`、0.58 GeV、45.7 m)。大きなリング B は使っていない。
+ASTRID2 (`ASTRID2_v01_01.sad`)・ASTRID2 + MPW (`ASTRID2_v01_02_id.sad`、0.58 GeV、45.7 m)。SP8 (大きなリング B) は使っていない。
 
 ## 1. 一覧
 

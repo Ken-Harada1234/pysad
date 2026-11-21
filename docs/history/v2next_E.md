@@ -5,7 +5,7 @@
 試験: `test_v2_E_spinsol.py` (20 件)、`test_v2_E_steer.py` (19 件)、`test_v2_E_pol_kick.py` (2 件 + `PYSAD_SLOW=1` の 1 件)。既存の試験の変更は 1 件 (§6)。
 例 (`example/v2_next/`): `E_steer_f1.sad`・`E_mult_f1.sad` (gs の出力 `.gs.txt`、pysad の v2 `.pysad.txt`・k64 `.pysad_k64.txt`)、`E_b108_poles.py`、`E_sol_tilt_spin.py`、`E_pol_kick_response.py` (各 `.out.txt`)。
 使ったリング: 12 セル FODO (3 GeV・0.5 GeV・4.2 GeV)、大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、603 m、3563 要素)、PF リング (`example/pf/lattice/v9_16_asym.sad`、2.5 GeV、187 m)、
-ASTRID2 (`ASTRID2_v01_01.sad`)・ASTRID2 + MPW (`ASTRID2_v01_02_id.sad`、0.58 GeV)。大きなリング B (8 GeV) は使っていない。
+ASTRID2 (`ASTRID2_v01_01.sad`)・ASTRID2 + MPW (`ASTRID2_v01_02_id.sad`、0.58 GeV)。SP8 (大きなリング B、8 GeV) は使っていない。
 
 ## 1. 一覧
 
@@ -29,7 +29,7 @@ ASTRID2 (`ASTRID2_v01_01.sad`)・ASTRID2 + MPW (`ASTRID2_v01_02_id.sad`、0.58 G
 | 試験 | `test_tilted_solenoid_spin_matrix_equals_closed_form_in_tracking_and_emittance_v2[5]`、`test_ring_spin_tune_and_n0_with_tilted_solenoid_v2[3]`、`test_ring_with_tilted_solenoid_k64_formula_is_off_in_spin_tune_and_n0` (`spin.SOL_BPAR = False` で旧式を再現)、`test_solenoid_region_spin_orbit_coupling_emittance_equals_thomas_bmt_v2[9]`、`test_solenoid_region_quad_spin_frame_rotation_k1neg_and_roll_v2`、`test_one_turn_depolarization_vectors_match_gs_k64[2]` |
 | k64 モードの扱い | `spin.tradke_spin` の新しい枝・`solemit._trk` 等は `compat.v2()` と `spin.SOL_BPAR` で分けた。k64 は K64 のまま |
 | 使える範囲 | v2 の Emittance[]・EMIT の POL (SpinTune・n0・Polarization・脱偏極ベクトル) の、SOL 領域 (ずれ・傾き・F1 つき。領域内は DRIFT・QUAD・BEND・MULT・CAVI・RF つき MULT・SOL) があるリング。1〜3 T・0.3〜3 GeV |
-| 使えない・未確認 | bz ≥ 3 1/m の QUAD・MULT の D は B1 のまま (放射の刻み EPS 由来で 1e-4 台)。領域内の QUAD の端の ψ は追跡と同じ模型 (hard edge の Bs なし。軌道が数 mm の範囲で確認、cm のずれは未確認)。領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y'、K64 も追跡も入れていない: 12 セル FODO で SLIM の δ 応答が追跡と 13% 違う原因の候補 — §4.5) は未対応。大きなリング B・8 GeV は使っていない |
+| 使えない・未確認 | bz ≥ 3 1/m の QUAD・MULT の D は B1 のまま (放射の刻み EPS 由来で 1e-4 台)。領域内の QUAD の端の ψ は追跡と同じ模型 (hard edge の Bs なし。軌道が数 mm の範囲で確認、cm のずれは未確認)。領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y'、K64 も追跡も入れていない: 12 セル FODO で SLIM の δ 応答が追跡と 13% 違う原因の候補 — §4.5) は未対応。SP8 (大きなリング B)・8 GeV は使っていない |
 
 ### 2.1 見つけて直した pysad 自身の不具合 (gate なし)
 

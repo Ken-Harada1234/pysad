@@ -81,7 +81,7 @@ SADHelp の「Class」の節に沿った実装。`Class[親の列, クラス変�
 サンプル一括実行 (2026-11-13): GUI のサンプル台本 161 本を、EPICS と `System[]` を無効にした複製で実行した。Tk を開く約 50 本は全て最後まで走り、Tcl・pysad ともエラー無し。
 残り 81 本は Tk を使わない計算の台本。SAD との木の比較は上の表の 3 本だけで、他は「エラー無しで木ができた」までの確認。
 
-試験: `test_tclbridge.py` 7、`test_sadclass.py` 16、`test_gui_lang.py` 10 の計 33 本 (2026-11-17 に収集数を確認)。GUI 系は `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages` を付けたときだけ実行する。全試験は 575 通過・3 skip (578 件収集、2026-11-17)。全体を回すと `test_tclbridge`・`test_plot` が数回に 1 回落ちることがある (単独では通る。Tk の窓の更新の待ち)。
+試験: `test_tclbridge.py` 7、`test_sadclass.py` 16、`test_gui_lang.py` 10 の計 33 本 (2026-11-17 に収集数を確認)。GUI 系は `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` を付けたときだけ実行する。全試験は 575 通過・3 skip (578 件収集、2026-11-17)。全体を回すと `test_tclbridge`・`test_plot` が数回に 1 回落ちることがある (単独では通る。Tk の窓の更新の待ち)。
 
 **Widget 値**: `w=Window[]`・`e=Entry[w]` の値は gs と同じ `Widget[…]` (`Head[w]=Widget`)。`e[Insert]={"end","XY"}`・`lb[Insert]`・`e[Get]` も効く。
 - 仕組み: `DefineWidget` の `(a$_=w[opt$___])^:=(a$=w[Widget[Root$Window,Null],opt$])` が次の規則 `(a$$_=w[Widget[master$_,_],opt$___])^:=With[{a$=a$$,…},…]` を呼ぶ入れ子である。`With` が呼び出し元の規則の引数 `a$` (= ユーザーの `w`) を見つけ、`a$` でなく `w` を束縛しがちである (`sadscript._with` はこの探索を別の規則の呼び出しの境界 (`boundary` の frame) で止める)。

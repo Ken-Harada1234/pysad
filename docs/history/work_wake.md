@@ -46,7 +46,7 @@ GUI の次に wake と beam-beam を実装する (実例の台本なし)。こ�
 - 試験: `test_wake.py` 22 本、`test_wake_optics.py` 9 本 (計 31 本)。
 
 ## 続き: 元の SAD の SIGSEGV の原因と修正 (2026-11-14)
-- 元の SAD (`D:\work\SAD-master\SAD-master`) は書き換えず、WSL に複製 (`~/sad_dbg`) して `-O0 -g` で作り直した。手順の落とし穴:
+- 元の SAD (`<SAD>`) は書き換えず、WSL に複製 (`~/sad_dbg`) して `-O0 -g` で作り直した。手順の落とし穴:
   - `HostArch` が今は `AMD64-Linux6` を返すが、ビルド済みは `AMD64-Linux5`。`obj/AMD64-Linux5` で直接 `make exe`、`obj/.../config.mk` の SADDIR と `sad.conf` の `SAD_ROOT` を複製に向ける、`.*_done` の印を touch する (tcl/tk を作り直さない)。
   - `libsad.a` は Fortran の `.o` を中に持つ。`FOPT` を変えたら `*.o` のうち `src/*.f` があるものと `libsad.a`、`sad1.exe` を消す。`sad.conf` の `FOPT=` は 3 行ある (ubuntu 以外も)。
   - `bin/gs` の `SAD_ARCH` を `AMD64-Linux5` に固定した `gs_dbg` を作る。`setarch -R` + `addr2line -f -e sad1.exe (アドレス − 0x555555554000)` で行番号が出る (gdb は無い)。

@@ -78,7 +78,7 @@ pysad: `FFSState._twmov_to_mark(rows)` が CELL CALC (4D/CALC6D) の後に MARK 
 **ROTATE (ROT/TILT) の扱い (docs/history/work_rotate.md)**: BEND は `tchge` (入口: theta で回す→回した座標系でずらす→tbrote、出口は逆) を外側に付けて中身 (tsteee / tbendebody0 / K1≠0 の tbendebody / tquade / tmulte) を誤差なしで計算する
 (`lattice._bend_element_cod_matrix`、`_bend_chg_args` が tbende.f の分岐ごとの theta (ANGLE=0 の tsteee は DROTATE を渡さない、K0=0 はドリフトで tchge を呼ばない) を決める)。
 薄い多極 (SEXT/OCT/DECA/DODECA と L=0 の四極) は tthine の先頭・末尾の tchge (`_thin_cod_matrix`)。四極と MULT の ROT は tsolrote (ずらす→回す)。
-**SAD の癖 (k64 モード)**: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。`_tchge_jac` が再現 (docs/11 A25)。**v2 モードでは直した** (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。`_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致し、ロール + ずれのある六極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (六極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。`test_v2_A_tchge.py`)。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。
+**SAD の癖 (k64 モード)**: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。`_tchge_jac` が再現 (docs/11 A25)。**v2 モードでは直した** (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。`_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致し、ロール + ずれのある6 極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (6 極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。`test_v2_A_tchge.py`)。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。
 
 ### BEND の K0 と ANGLE=0 のステアリング (docs/history/work_bend_k0.md)
 
@@ -176,8 +176,8 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 |---|---|---|
 | 1 | 20 セル FODO: 閉軌道 (全 QD に DX=1e-4)、放射積分 I1–I5 | 閉軌道 入口 x −110.8245 µm 一致、I1–I5 表示桁一致 |
 | 2 | オフモメンタム Twiss (dp=0, ±0.01, ±0.02)、複合機能 BEND | βx, αx, ηx ≤3e-8 / βy, Qx, Qy ≤6e-11 |
-| 3A | 六極と色収差 (DP0 スキャン 21 点 + 3 次当てはめ) | チューン ≤2.6e-9、ξ 相対 ≤3e-7 |
-| 3B | 六極を通る COD (DELX QD.1, DELY SF.1) | 閉軌道 9–10 桁、β/α/η/Q ≤2.4e-8、EY 8e-10、R1–R4 5–6 桁 |
+| 3A | 6 極と色収差 (DP0 スキャン 21 点 + 3 次当てはめ) | チューン ≤2.6e-9、ξ 相対 ≤3e-7 |
+| 3B | 6 極を通る COD (DELX QD.1, DELY SF.1) | 閉軌道 9–10 桁、β/α/η/Q ≤2.4e-8、EY 8e-10、R1–R4 5–6 桁 |
 | 3C | x–y 結合 (DTHETA QF.3, B.5) | 閉軌道 8–9 桁、光学 ≤1.6e-8 (EX/EPX は 3e-11)、R1–R4 7 桁 |
 | 3D | 強さの誤差 (DK, DDK) | 閉軌道 9–10 桁、光学 ≤9e-8 |
 | 5 | INS 輸送ライン、F1/FRINGE/DISFRIN のフリンジ | Twiss ≤2e-8、軌道 ≤1.3e-11、位相 ≤5e-11 |
