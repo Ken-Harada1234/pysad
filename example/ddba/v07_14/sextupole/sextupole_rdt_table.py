@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""六極の組ごとの解析量の表 (R7): 1 次の RDT、δ の項、4 次の RDT (正規形)、ADTS、クロマティシティ (解析式と CALC)、目的関数の内訳。
+"""6 極の組ごとの解析量の表 (R7): 1 次の RDT、δ の項、4 次の RDT (正規形)、ADTS、クロマティシティ (解析式と CALC)、目的関数の内訳。
 使い方 (どこからでも): py -3.12 sextupole_rdt_table.py [--cand results/candidates.json] [--no-nform] [--ring RING]
 出力: results/rdt_table.json、results/rdt_table.md、results/rdt_table.out.txt、fig_rdt_walk.png (要素ごとの寄与の累積)、fig_rdt_sets.png (組ごとの比較)
 条件: 運動量 5 GeV (SAD の K は規格化済みで、2.5 GeV の版も光学は同じ)、リング先頭 (長直線部の中心) が位相の基準、偏向磁石の 3 次の項・八極 (K3 = 0)・運動学・フリンジを入れた
@@ -49,7 +49,7 @@ obj = S.SxtObjective(m)
 kf = np.array(CAND['candidates']['final']['k'])
 f_final = obj.value(kf)
 rows_all = {}
-P('リング %s (%d 素子)、チューン (%.4f, %.4f)、六極 %d ファミリー' % (args.ring, len(lat.elements), m.qx, m.qy, m.F))
+P('リング %s (%d 素子)、チューン (%.4f, %.4f)、6 極 %d ファミリー' % (args.ring, len(lat.elements), m.qx, m.qy, m.F))
 t0 = time.time()
 for name, c in CAND['candidates'].items():
     k = np.array(c['k'])

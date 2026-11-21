@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""六極の組ごとの追跡の判定 (簡略化した設定): x-y の DA、x-δ の DA、周波数マップ、LMA。リング全周 (周期性なし)。
+"""6 極の組ごとの追跡の判定 (簡略化した設定): x-y の DA、x-δ の DA、周波数マップ、LMA。リング全周 (周期性なし)。
 使い方 (どこからでも。1 つの組ごとに 1 プロセス。結果は results/track_<名前>.json):
   py -3.12 sextupole_tracking_check.py NAME [NAME ...] [--cand results/candidates.json] [--parts da,xdp,fmap,lma] [--quick]
-候補 (K2L の組) は results/candidates.json (sextupole_optimize.py が作る)。ラティスは sxt_common の LATTICE の RING (= RINGSP)。六極の K2L は
+候補 (K2L の組) は results/candidates.json (sextupole_optimize.py が作る)。ラティスは sxt_common の LATTICE の RING (= RINGSP)。6 極の K2L は
 ソース文字列の SEXT の定義を置き換えて追跡に渡す (pysad.sxtopt.replace_k2_in_source)。
 
 簡略化した設定 (完全な再現ではない。README の表に元の設定と並べた):
@@ -37,9 +37,9 @@ ap.add_argument('--parts', default='da,xdp,fmap,lma')
 ap.add_argument('--quick', action='store_true', help='点の数を減らす (試験・確認用)')
 ap.add_argument('--nturn', type=int, default=512)
 ap.add_argument('--out', default=C.OUT)
-ap.add_argument('--errors', type=int, default=0, help='位置ずれの乱数の種 (0 = 誤差なし)。四極・六極に DX・DY を rms --err-um で与える (閉軌道の補正なし。閉軌道からの DA)')
+ap.add_argument('--errors', type=int, default=0, help='位置ずれの乱数の種 (0 = 誤差なし)。四極・6 極に DX・DY を rms --err-um で与える (閉軌道の補正なし。閉軌道からの DA)')
 ap.add_argument('--err-um', type=float, default=50.0)
-ap.add_argument('--err-magnets', default='sext', help='sext (既定。六極だけ。軌道がほとんど動かず補正なしで意味がある) または quad+sext (補正なしだと軌道が 1 mm 以上ずれて全部の DA が 0 近くになる)')
+ap.add_argument('--err-magnets', default='sext', help='sext (既定。6 極だけ。軌道がほとんど動かず補正なしで意味がある) または quad+sext (補正なしだと軌道が 1 mm 以上ずれて全部の DA が 0 近くになる)')
 args = ap.parse_args()
 C.lower_priority()
 CAND = json.load(open(args.cand, encoding='utf-8'))

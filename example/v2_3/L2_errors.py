@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """v2.3.0 L2 項目 7: 誤差つきのリングと MPW つきのリングの LMA。
-  errors: ASTRID2 に位置のずれ・ロール (S1 の fmapres.apply_alignment_errors: 四極 50 µm・0.2 mrad、六極 50 µm、偏向 50 µm・0.1 mrad の rms ×level) を、
+  errors: ASTRID2 に位置のずれ・ロール (S1 の fmapres.apply_alignment_errors: 四極 50 µm・0.2 mrad、6 極 50 µm、偏向 50 µm・0.1 mrad の rms ×level) を、
           複数の種で与える。periodicity_report が周期性の崩れを検出して警告することを確かめ、全周の等間隔 25 位置で LMA を求め、誤差なしの全周と比べる。
           1 セルの結果を使った場合の誤差 (同じ位置の別のセルとの差) も見る。
   mpw:    ASTRID2_v01_02_id.sad の RINGMPW (MPW 入り)。周期性、全周 (等間隔 ~40 位置) の LMA、バケット・アパーチャの限界の種類。

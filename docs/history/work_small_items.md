@@ -34,7 +34,7 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
    試験のリング (3564 要素) では最後の曲がりの BEND の L/ANGLE = 20.757 m。この値で I1X…I9 が SAD と 7 桁一致し、別の BEND の値 (37.6 や 77.5) だと I9 が 8e-4〜1e-3 ずれる (感度が高いので、この仮定は一致で裏づけられた)。
    EMIT の後 (tbende が rhob を設定) でも最後の曲がりは同じなので結果は変わらない。pysad は `radint.default_stale_rho(els)` で同じ規則 (最後の BEND の L/ANGLE)、`compute(..., stale_rho=)` で上書き可。
    (docs/18 §11 の「RADINT と Emittance[] の 13% 差」の候補の 1 つ。因果は未検証。)
-2. 六極のブロックは DL を設定しない: TCAL は**直前の BEND/QUAD の最後のスライス長 DL** を使う (I9, I10 = γ·DL が六極でも足される)。DKL2 は代入されないので六極の CKL0X/CKL1X は常に 0。RLE=0 の六極は TCAL の**後で** `DL=0.2` (単精度の 0.2) にして ` L(SEXTUPOLE) EQ 0. SET L=0.2` を出す。DL, TETA, R0/R0I, FUNI などモジュール変数はプロセス中ずっと残る (2 回目の RADINT の DL の初期値は前回の最後の値)。pysad も `radint._STATE` に残す。
+2. 6 極のブロックは DL を設定しない: TCAL は**直前の BEND/QUAD の最後のスライス長 DL** を使う (I9, I10 = γ·DL が6 極でも足される)。DKL2 は代入されないので6 極の CKL0X/CKL1X は常に 0。RLE=0 の6 極は TCAL の**後で** `DL=0.2` (単精度の 0.2) にして ` L(SEXTUPOLE) EQ 0. SET L=0.2` を出す。DL, TETA, R0/R0I, FUNI などモジュール変数はプロセス中ずっと残る (2 回目の RADINT の DL の初期値は前回の最後の値)。pysad も `radint._STATE` に残す。
 3. **単精度定数**: `COEFF=(…)*1e27` の `1e27` は単精度 (9.99999988e26) なので ELOSS が相対 1.15e-8 小さい。`FREQ*1.E-6`、`DL=0.2`、`EXP(2.3026*TAUQ)` も単精度。SAD の ELOSS (678.50075327596767) が 17 桁で一致して確認した。
 4. エネルギーは `amass/1e9*H0` で amass は大域 `MASS` (既定 `elmass`=0.51099895e6、tfstk.f:232)。**pysad の MASS の既定値は 0.51099906e6 で SAD と違っていた** → 0.51099895e6 に修正 (ffscmd.py。影響は gamma を使う 1 箇所だけ)。
 5. CAVI は VOLT/HARM/FREQ を**最後のもので上書き**する (合計しない)。HARM=0 なら FREQ·RLT/c、FREQ=0 なら HARM·c/RLT。pysad の parser は HARM から FREQ を補うので、SAD の定義値 (raw の FREQ が 0 なら 0) に戻して判定する。
@@ -49,7 +49,7 @@ docs/history/00_RESUME.md の未解決リストの 5 項目を、SAD (K64, WSL) 
 ### A.4 照合 (SAD の `.result` との行単位比較 `cmp_radint.py`、0 同然の V 面の量 <1e-10 は雑音として一致扱い)
 
 - `bench_level29a.sad` (3564 要素のリング): R1 CELL CALC 後、R2 EMIT 後、R3 NORFSW、R4 結合 (四極の `DY`、四極と BEND の `ROTATE`)、R5 `DP0=0.003`、R6 四極の `DX` (閉軌道≠0 の四極キック)。6 ブロック 246 行が最大相対差 1.8e-7 (SAD の表示が 7 桁) で一致。
-  (R4 は最初 `DY 1e-4` を全四極の 1 ファミリーに入れて R≈0.3 の強結合にしたら I4U が 5e-6 ずれた。ずれは BEND の I4/I9 の 1e-6 で、Twiss 入力 1e-9 の差が打ち消し合う項で拡大されたもの。要素ごとの DI を SAD の write 入りデバッグ版と比べて、四極・六極は ≤1e-8、BEND の大半も ≤1e-8 と確認し、ベンチは中程度の結合に変えた。)
+  (R4 は最初 `DY 1e-4` を全四極の 1 ファミリーに入れて R≈0.3 の強結合にしたら I4U が 5e-6 ずれた。ずれは BEND の I4/I9 の 1e-6 で、Twiss 入力 1e-9 の差が打ち消し合う項で拡大されたもの。要素ごとの DI を SAD の write 入りデバッグ版と比べて、四極・6 極は ≤1e-8、BEND の大半も ≤1e-8 と確認し、ベンチは中程度の結合に変えた。)
 - `bench_level29a2.sad` (13a の小リング: E1=E2=0.5·ANGLE の BEND、RF なし → `NOT ENOUGH RF VOLTS` の行が 17 桁・空白まで一致、RF あり、ロール付き四極 + DY): 3 ブロック 120 行が ≤3.2e-5 (V 面の EY ~1e-9 の絶対精度が I5V/I4V で拡大される量だけ)。
 - 道具: `cmp_radint.py` (RADINT ブロックの比較)、SAD のデバッグ版 (WSL のホームの作業フォルダ) の INTGRL.f に `DBGI` の write を入れて要素ごとの DI を比べた。
 

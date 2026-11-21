@@ -1,6 +1,6 @@
 ! KEK-LS v03_68: 誤差の種類ごとの影響 (COD・分散のずれ・チューンシフト・エミッタンス)  (元: print_all_error.sad・print_dk_effect.sad・print_dt_error.sad・print_cod_magnitude.sad)
 ! 誤差の与え方 (../modules/modules_errors.n の SetErrors[]。乱数の種は SeedRandom[seed]、打ち切り GCUT = 1 [σ]):
-!   LINE["DX"/"DY", 成分名] = ae GaussRandom[]  : 四極・六極の水平・垂直のずれ (rms ae [m])。元の台本の `DELX`・`DELY` は、この K64 のビルドでは
+!   LINE["DX"/"DY", 成分名] = ae GaussRandom[]  : 四極・6 極の水平・垂直のずれ (rms ae [m])。元の台本の `DELX`・`DELY` は、この K64 のビルドでは
 !                                               `cell calc` の COD に効かないので (DUMP には値が出る)、成分ごとの DX・DY に直接入れる
 !   DK fe B*,Q*,S*       : 強さの誤差 (相対 rms fe)
 !   DTHETA te B*,Q*,S*   : 回転の誤差 (rms te [rad])

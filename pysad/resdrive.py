@@ -141,7 +141,7 @@ def collect_nonlinear(elements, rows, delta=0.0, ref_phase=(0.0, 0.0), warnings=
             k = float(el.K2)
             strengths[2] = complex(k * L if L > 0 else k)
             if L > 0 and k != 0.0:
-                # v2.3.0 R6: 軌道がずれた (δ≠0 の分散軌道・閉軌道) 六極は、内部で 4 極 K1 = K2·x0 (フィードダウン) として働く。内部の光学に入れる (x0 = 素子内の軌道の平均)
+                # v2.3.0 R6: 軌道がずれた (δ≠0 の分散軌道・閉軌道) 6 極は、内部で 4 極 K1 = K2·x0 (フィードダウン) として働く。内部の光学に入れる (x0 = 素子内の軌道の平均)
                 x0 = 0.5 * (float(getattr(rows[i], 'x_cod', 0.0) or 0.0) + float(getattr(rows[i + 1], 'x_cod', 0.0) or 0.0))
                 k1 = k * x0
         elif tn == 'Octupole':
@@ -186,7 +186,7 @@ def collect_nonlinear(elements, rows, delta=0.0, ref_phase=(0.0, 0.0), warnings=
         e.idx, e.name, e.L = i, el.name, L
         e.strengths = {n: c * scs for n, c in strengths.items()}
         e.k1 = k1 * sc
-        e.fl = sc                    # v2.3.0 R6: 素子内のドリフトの有効長 L/(1+δ) (追跡は x += px·s/(1+δ)。K64 の六極の厚い本体)
+        e.fl = sc                    # v2.3.0 R6: 素子内のドリフトの有効長 L/(1+δ) (追跡は x += px·s/(1+δ)。K64 の6 極の厚い本体)
         r0, r1 = rows[i], rows[i + 1]
         e.opt0 = (float(r0.betx), float(r0.alfx), float(r0.mux) - ref_phase[0], float(r0.bety), float(r0.alfy), float(r0.muy) - ref_phase[1],
                   float(r0.etx), float(r0.etpx))

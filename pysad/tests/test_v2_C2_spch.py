@@ -62,8 +62,8 @@ def test_mult_k0_equals_drift(v2_mode):
 
 def test_mult_zero_charge_equals_plain_mult(v2_mode):
     """PBUNCH = 0 の MULT (RADIUS≠0) は、RADIUS の無い同じ MULT と同じ。SPACSTEP を大きくして分割を MULT の分割と同じにすると
-    1e-15 で一致 (同じ演算の列)、既定の 5 cm では分割が増えた分の差 (MULT の積分の差。四極だけなら 1e-8、六極つきで 1e-6 以下)。
-    六極・スキュー四極・DX・ROTATE があっても、放射 (RAD、NOFLUC) があっても同じ"""
+    1e-15 で一致 (同じ演算の列)、既定の 5 cm では分割が増えた分の差 (MULT の積分の差。四極だけなら 1e-8、6 極つきで 1e-6 以下)。
+    6 極・スキュー四極・DX・ROTATE があっても、放射 (RAD、NOFLUC) があっても同じ"""
     beam = uniform_beam(512, 1e-3, 0.1, eps=2e-6)
     beam[:, 5] = 1e-3 * np.linspace(-1, 1, 512)
     for la, lb_, pre, tol in (('TQ', 'T0', "SPAC;", 1e-8), ('TS', 'TS0', "SPAC;", 1e-6), ('TS', 'TS0', "SPAC; RAD; NOFLUC;", 1e-6)):

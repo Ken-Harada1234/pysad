@@ -107,7 +107,7 @@ pysad: `Matcher._fam_define` (tffamsetup)、`_fam_points` (tffscalc の fam ル�
 FitValue の id。ファミリーの定義は GO/CALC ごとに 1 回 (`_fam_def_done`)。
 
 自己検証 (`pysad/tests/test_fam_points.py`、6 件): 本数と添字・kfam・jfam・dfam の式、NFAMP≤0 と nfr=0 と形の誤りの扱い、fam 点の入口の軌道 =
-親の閉軌道 + dfam、六極ありで振幅依存のチューン、残差に fam 点が入る、fam 点の計算が閉軌道の初期値を変えない、周期解のチューンが
+親の閉軌道 + dfam、6 極ありで振幅依存のチューン、残差に fam 点が入る、fam 点の計算が閉軌道の初期値を変えない、周期解のチューンが
 その軌道の一周行列の正規モードの跡と一致 (y のずれは BEND で x-y 結合を生む)、INS は軌道だけずれる、FitValue の id に kfam。
 SAD(WSL) は FITP>1 の GO で再起動するので SAD との照合はない。
 

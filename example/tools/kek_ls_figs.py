@@ -70,7 +70,7 @@ def cell_figure():
         elif typ[i] == 'MONI':
             a1.plot([s0], [-0.65], marker='v', ms=3, color='gray')
     a1.set_ylim(-0.9, 1.0); a1.set_yticks([])
-    a1.set_title('KEK-LS v03_68 標準セル (ARCA, %.3f m): 配置 (橙: 収束四極、青: 発散四極、緑: 六極、紫太線: 偏向磁石、細線: 長直線部)' % C, fontsize=9)
+    a1.set_title('KEK-LS v03_68 標準セル (ARCA, %.3f m): 配置 (橙: 収束四極、青: 発散四極、緑: 6 極、紫太線: 偏向磁石、細線: 長直線部)' % C, fontsize=9)
     a2.plot(S, BX, color=CB, lw=1.3, label='βx'); a2.plot(S, BY, color=CY, lw=1.3, label='βy'); a2.plot(S, EXX * 20, color=CE, lw=1.3, label='ηx × 20')
     a2.set_xlabel('s [m]'); a2.set_ylabel('βx, βy [m],  ηx×20 [m]'); a2.legend(ncol=3, loc='upper center'); a2.set_xlim(0, C)
     a2.set_title('標準セルのオプティクス (gs の出力)', fontsize=9)
@@ -100,7 +100,7 @@ def chrom_figure():
     r1 = np.array([[fnum(x) for x in r] for r in rows('display/KEKLS_chromaticity', 'T1')])
     r0 = np.array([[fnum(x) for x in r] for r in rows('display/KEKLS_chromaticity', 'T0')])
     fig, axs = plt.subplots(1, 2, figsize=(10, 3.8))
-    for ax, a, t in ((axs[0], r1, '設計の六極あり'), (axs[1], r0, '六極なし (K2 = 0)')):
+    for ax, a, t in ((axs[0], r1, '設計の6 極あり'), (axs[1], r0, '6 極なし (K2 = 0)')):
         ax.plot(a[:, 0] * 100, a[:, 1] - a[0, 1] * 0 - 48.58, 'o-', color=CB, label='νx − 48.58')
         ax.plot(a[:, 0] * 100, a[:, 2] - 17.62, 's-', color=CY, label='νy − 17.62')
         ax.set_xlabel('δ [%]'); ax.set_ylabel('Δν'); ax.set_title('RINGC のチューン対運動量: ' + t, fontsize=9); ax.grid(alpha=.3); ax.legend()
@@ -119,7 +119,7 @@ def adts_figure():
     save(fig, 'display/KEKLS_amp_dep_ts.png')
 
 
-# ---- 5. 六極のスキャン (dtux・dtuy の地図)
+# ---- 5. 6 極のスキャン (dtux・dtuy の地図)
 def sext_figure():
     a = np.array([[fnum(x) for x in r] for r in rows('display/KEKLS_sextupole_tune_scan', 'S')])
     ds = np.unique(a[:, 0]); n = len(ds)

@@ -85,7 +85,7 @@ TRACK USE=RING NPART=1 TURNS=-1;    →  同じ SIGSEGV (trpt でも)
 
 ## 4. 照合 (bench_level27a / bench_level27b)
 
-- `bench_level27a.sad`: ラティスは Level 6 と同じ (CELL0 に空洞、六極あり)。FFS で `emit` → `Emittance[Matrix->True]` から `NormalCoordinates` (ri) と `OrbitAtEntrance` (codin)、グローバル EMITX/EMITY/EMITZ/SIGE。
+- `bench_level27a.sad`: ラティスは Level 6 と同じ (CELL0 に空洞、6 極あり)。FFS で `emit` → `Emittance[Matrix->True]` から `NormalCoordinates` (ri) と `OrbitAtEntrance` (codin)、グローバル EMITX/EMITY/EMITZ/SIGE。
   ActTra/tracka の手順を SADScript で書く: 振幅 = (NX,0,NY,0,0,NZ)×(emx,emx,emx,emx,emz,emz)、初期座標 = Inverse[ri]·振幅 + codin、周ごとに `TrackParticles[b,1,1,1]` (1 周)、
   周の頭に ri·(x−codin) から zbuf と 2J の和、nsmear の倍数で smear、最後に `Fourier[]` (= tcftr/√N) から wtunem の直訳 (SADScript) でピーク 8 本。
   6 粒子 `NX=(1,3,5) NY=(1,2) NZ=(1,2,0)`、250 周 (nts=256、nsmear=100 → n=100, 200, 251 に表)。(1) RFSW ON/RAD OFF (N1) (2) RAD ON/FLUC OFF (R1) (3) RAD ON/FLUC ON, SeedRandom[17] (F1)。

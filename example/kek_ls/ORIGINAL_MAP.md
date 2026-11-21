@@ -7,7 +7,7 @@
 | ユーザーの指定 | 実際のファイル | 判断 |
 |---|---|---|
 | `matching_02_geo` (入射セルを含めてリングを閉じる) | `matching2_02_geo` (ほかに `matching16_geo`・`matching20_geo`。20_geo は `RINGI` を使う同じ内容) | ファイル名の誤り (`matching2_`)。→ `design/KEKLS_match_ring_geo` |
-| `matching23_v03_35_mini` (ノーマルセルのチューンサーベイ) | `matching23_v03_35_mini` は全体を一様に縮小する台本。チューンサーベイではない | ノーマルセルのチューンサーベイは、ファイルの中身を読んで判断した: `modules_tune_sv_v03_68.n` (`InitMag`・`MatchingARCA`・`ChromCor` を持つ v03_68 用のモジュール) と、それを (v03_35 版 `modules_tune_sv_v03_35.n` の名前で) 使う `matching05` 系 (`matching05`・`_2`・`_3`・`_46`・`_46.5`・`_47`・`_47.5`・`_48`・`_48.5`・`_5`・`_6`・`_7`。セルのチューンを tunex, tuney の格子で振り、`MatchingARCA` → `ChromCor` → `DAsv` を行う)。→ `design/KEKLS_tune_survey_cell`。`modules_tune_sv_v03_68.n` を読み込む台本は元のフォルダに無い。`tune_survey*` (`tune_survey`・`_amp_dep_coef`(1〜3)・`_disp`・`_linear`・`_linear_from_zero`・`_momentum`・`_ncell`・`_write_QS`) は、別のリング (六極 S1L・S2L…、チューン 15.x/5.x、`hsx_value.csv`) 用の `modules_tune_sv.n` を使い、v03_68 には適用できない |
+| `matching23_v03_35_mini` (ノーマルセルのチューンサーベイ) | `matching23_v03_35_mini` は全体を一様に縮小する台本。チューンサーベイではない | ノーマルセルのチューンサーベイは、ファイルの中身を読んで判断した: `modules_tune_sv_v03_68.n` (`InitMag`・`MatchingARCA`・`ChromCor` を持つ v03_68 用のモジュール) と、それを (v03_35 版 `modules_tune_sv_v03_35.n` の名前で) 使う `matching05` 系 (`matching05`・`_2`・`_3`・`_46`・`_46.5`・`_47`・`_47.5`・`_48`・`_48.5`・`_5`・`_6`・`_7`。セルのチューンを tunex, tuney の格子で振り、`MatchingARCA` → `ChromCor` → `DAsv` を行う)。→ `design/KEKLS_tune_survey_cell`。`modules_tune_sv_v03_68.n` を読み込む台本は元のフォルダに無い。`tune_survey*` (`tune_survey`・`_amp_dep_coef`(1〜3)・`_disp`・`_linear`・`_linear_from_zero`・`_momentum`・`_ncell`・`_write_QS`) は、別のリング (6 極 S1L・S2L…、チューン 15.x/5.x、`hsx_value.csv`) 用の `modules_tune_sv.n` を使い、v03_68 には適用できない |
 
 ## ラティス・モジュール
 
@@ -16,7 +16,7 @@
 | `lattice/kek_ls_v03_68.sad` | `v03_68` (7127 B) | 先頭の 1 行 (`! 3.0 GEV RING, 20 CELLS`) をヘッダ (KEK-LS の説明、エネルギー・周長・セル数・ライン・チューン・εx) に替えた。改行を LF に。要素・ラインの定義は変えていない (先頭の 1 行以外が一致することを確認) |
 | `modules/modules_general.n` | `modules_general.n` | `WriteGraphs[]` (`draw` コマンド) と使われない `GetA[]` を除いた。`DAsv[]` の中身は元のまま、追跡の周回数を変数 `DAturns` (既定 5000) にした |
 | `modules/modules_amp_dep_ts.n` | `modules_amp_dep_ts.n` | コメントアウトされた旧い行を除いた。式・順序は元のまま。`ResetInit[]` を追加 (失敗した点の初期座標が次の点に残るのを防ぐ) |
-| `modules/modules_cell_match.n` | `modules_tune_sv_v03_68.n` の `InitMag`・`MatchingARCA`・`MatchingARCA2`・`ChromCor` | v03_68 に合わせて直した (目標値、`MKSFA2` → `MKSFA1.2`、六極 `SDA`・`SFA` → `SDH`・`SFH`、`BPI6/7` → `BPI6H/7H`)。`Chrom[]`・`GetKQ[]`・`PutKQ[]` を追加。元の `DAsv[]` は modules_general の `DAsv[]` とほぼ同じなので取り込まない |
+| `modules/modules_cell_match.n` | `modules_tune_sv_v03_68.n` の `InitMag`・`MatchingARCA`・`MatchingARCA2`・`ChromCor` | v03_68 に合わせて直した (目標値、`MKSFA2` → `MKSFA1.2`、6 極 `SDA`・`SFA` → `SDH`・`SFH`、`BPI6/7` → `BPI6H/7H`)。`Chrom[]`・`GetKQ[]`・`PutKQ[]` を追加。元の `DAsv[]` は modules_general の `DAsv[]` とほぼ同じなので取り込まない |
 | `modules/modules_errors.n` | (correct_cod.sad・print_*.sad の誤差を与える部分) | `SetErrors[]`・`ClearErrors[]`・`GetMagnetNames[]` にまとめた。位置ずれは `DELX`・`DELY` コマンドではなく成分ごとの `LINE["DX"/"DY"]` |
 | (取り込まない) | `modules_matching_noID.n`・`modules_write_correctdata.n`・`modules_correctoptics.n`・`modules_correctoptics_pf.n`・`modules_tune_sv.n`・`modules_tune_sv_v03_35.n`・`drawmagvw3d.n` (元のフォルダに無い) | ID 入りラティス・別のリング・PF・v03_35 用、または描画。`correct_cod.sad` は `modules_correctoptics.n`・`modules_write_correctdata.n` を読み込まない |
 
@@ -42,7 +42,7 @@
 | `KEKLS_calc_H` | `calc_H.sad` (`calc_H_2.sad`・`calc_emit.sad` 後半) | 64 | γ を MOMENTUM から、Cq を m に、`DP` の上書きを `DJ` に |
 | `KEKLS_chromaticity` | `chromaticity_plot.sad` (`amp_dep_ts_dp.sad`) | 64 | δ の刻み 0.5%、毎回の `DP0 = 0; cell calc` を省く、RINGC |
 | `KEKLS_amp_dep_ts` | `amp_dep_ts.sad`・`amp_dep_ts_x.sad`・`amp_dep_ts_y.sad` | 64 | x・y の 2 本の表に、振幅の範囲を有効な範囲に、`ResetInit[]`、RINGC。後半の DAsv・旧い試行は除く |
-| `KEKLS_sextupole_tune_scan` | `dp_sv_sx.sad` (`dp_sv_sx_dp_n0.03`・`_res`・`_v02_42` 系) | 8 | 六極を SDH・SFH の 2 本に、基準を設計値に、5×5 |
+| `KEKLS_sextupole_tune_scan` | `dp_sv_sx.sad` (`dp_sv_sx_dp_n0.03`・`_res`・`_v02_42` 系) | 8 | 6 極を SDH・SFH の 2 本に、基準を設計値に、5×5 |
 | `KEKLS_scan_target` | `dp_sv.sad`・`dx_sv.sad`・`dx_sv_{ay,by,ex}.sad`・`dy_sv.sad`・`dy_sv_{ay,by,ex}.sad` | 8 | v02 の K1 の直接代入 → `InitMag[]`・`MatchingARCA[]`、AY・BY・EX を 3 点ずつ、RINGC |
 
 ## 誤差・補正 (`errors/`)

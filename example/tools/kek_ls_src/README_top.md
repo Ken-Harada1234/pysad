@@ -5,7 +5,7 @@ KEK-LS の設計・修正・パラメータ表示のための SAD スクリプ�
 | フォルダ | 内容 |
 |---|---|
 | [`lattice/`](lattice/README.md) | ラティス `kek_ls_v03_68.sad`、構成図、パラメータ表、旧版 (v03_12) との違い、入射セル |
-| [`design/`](design/README.md) | 設計・マッチング (セルのチューン、六極、入射セル、リングを閉じる、縮小、セル数、チューンサーベイ) |
+| [`design/`](design/README.md) | 設計・マッチング (セルのチューン、6 極、入射セル、リングを閉じる、縮小、セル数、チューンサーベイ) |
 | [`display/`](display/README.md) | パラメータ表示 (εx・σδ・ξ・αc・U0、オプティクス、チューンシフト) |
 | [`errors/`](errors/README.md) | 誤差入りの計算と COD の補正 |
 | `modules/` | 共通の関数 (`modules_general.n`・`modules_amp_dep_ts.n`・`modules_cell_match.n`・`modules_errors.n`) |
@@ -19,7 +19,7 @@ KEK-LS の設計・修正・パラメータ表示のための SAD スクリプ�
    ▼
 チューンのマッチング (標準セル 1 個の位相進み)       design/KEKLS_match_cell_tune
    ▼
-六極のクロマティシティ調整                          design/KEKLS_match_chrom
+6 極のクロマティシティ調整                          design/KEKLS_match_chrom
    ▼
 入射セルのマッチング                               design/KEKLS_match_injcell
    ▼

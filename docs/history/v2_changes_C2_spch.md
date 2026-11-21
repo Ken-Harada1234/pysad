@@ -30,7 +30,7 @@
 | 試験 | 比べる相手 | 条件 | 一致 |
 |---|---|---|---|
 | `test_mult_k0_equals_drift` | 同じ長さ・同じ RADIUS の DRIFT (C が検証済み) | 5 MeV、1e11 個、1 m | ビット単位 |
-| `test_mult_zero_charge_equals_plain_mult` | PBUNCH = 0 で、RADIUS の無い同じ MULT。六極・スキュー四極・DX・ROTATE・放射 (RAD NOFLUC) つきも | SPACSTEP を大きくして分割を同じにする / 既定 | 1e-15 / 四極だけ 1e-8、六極つき 1e-6 (分割の違い) |
+| `test_mult_zero_charge_equals_plain_mult` | PBUNCH = 0 で、RADIUS の無い同じ MULT。6 極・スキュー四極・DX・ROTATE・放射 (RAD NOFLUC) つきも | SPACSTEP を大きくして分割を同じにする / 既定 | 1e-15 / 四極だけ 1e-8、6 極つき 1e-6 (分割の違い) |
 | `test_mult_quad_kv_envelope` | 四極の収束力つきの KV の包絡方程式 X'' = −kX + 2K/(X+Y) + ε²/X³、Y'' = +kY + … の数値積分 (X = 2.1214 mm、Y = 6.8133 mm。K = 0 では 1.1510、4.2997 mm) | k = 3 /m²、L = 1 m、K = 5.98e-6、ε = 2e-6 m、4096 粒子 | 2·rms 0.07%・0.2% (0.5% で判定)、傾き 1% |
 | `test_mult_kick_step_convergence` | SPACSTEP = 0.25、0.125、0.0625、0.03125 m の結果の差 | 同上 | 差が 1/4 ずつ (2 次)。最後の差 < 0.2% |
 | `test_mult_negative_radius_and_unsupported` | RADIUS<0 は絞りだけ。ANGLE≠0 はメッセージ | | 厳密 |

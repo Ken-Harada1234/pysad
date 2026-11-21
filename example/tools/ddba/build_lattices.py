@@ -7,7 +7,7 @@ import sys, os, json, re, textwrap
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ddba_lib as L, ddba_info as D
 PAPER = 'K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac", J. Synchrotron Rad. 29, 118-124 (2022), DOI 10.1107/S1600577521012753'
-SX_OTHER = (11, 14, 24, 25, 26, 27, 28)   # 六極の設定に、別の研究者による最適化の結果を含む版 (設計メモの記述による)
+SX_OTHER = (11, 14, 24, 25, 26, 27, 28)   # 6 極の設定に、別の研究者による最適化の結果を含む版 (設計メモの記述による)
 def wrap(prefix, text, w=48):
     lines = textwrap.wrap(text, width=w, break_long_words=True, break_on_hyphens=False) or ['']
     return [prefix + lines[0]] + ['!     ' + l for l in lines[1:]]
@@ -26,12 +26,12 @@ def header(nn, srcname, outname, res, res2):
         h += ['! pysad の cell calc emit (ON RAD FLUC COD RFSW RADCOD、リングのライン RING、k64 モード = gs と同じ):',
               '!     エネルギー %.1f GeV、周長 %.4f m、チューン (%.4f, %.4f)' % (res['P'] / 1e9, res['C'], res['nx'], res['ny']),
               '!     εx = %.4g m rad (k64)、%.4g m rad (v2 モード)、σE = %.4g、αc = %.4g、U0 = %.4g MV' % (res['ex'], res2['ex'], res['sige'], res['alpha'], res['U0']),
-              '!     RF: 総電圧 %.3g MV、h = %d、周波数 %.6g MHz。偏向磁石 %d 台 (L > 0, |ANGLE| > 0.02)、逆曲げなどの小角 BEND %d 台、四極 %d 台、六極 %d 台、八極 %d 台' % (
+              '!     RF: 総電圧 %.3g MV、h = %d、周波数 %.6g MHz。偏向磁石 %d 台 (L > 0, |ANGLE| > 0.02)、逆曲げなどの小角 BEND %d 台、四極 %d 台、6 極 %d 台、八極 %d 台' % (
                   res['V'] / 1e6, res['h'], res['f'] / 1e6, res['nb'], res['nr'], res['nq'], res['ns'], res['no'])]
     else:
         h += wrap('! pysad の cell calc emit: ', '走らなかった')
     if nn in SX_OTHER:
-        h += wrap('! 六極の設定: ', 'pysad の作者とは別の研究者 (公開論文 ' + PAPER + ' の著者の一人) の手による最適化の結果を含む。この論文には六極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) はこの版とは別の版。論文の設定と一致する、同じ最適化の結果である、という意味ではない')
+        h += wrap('! 6 極の設定: ', 'pysad の作者とは別の研究者 (公開論文 ' + PAPER + ' の著者の一人) の手による最適化の結果を含む。この論文には6 極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) はこの版とは別の版。論文の設定と一致する、同じ最適化の結果である、という意味ではない')
     h += ['! 元のヘッダ: 元の台本の先頭にコメントのヘッダはない (先頭は MOMENTUM の行)。',
           '! 変更: 改行を LF にした。ラティスの定義の中身は変えていない。', '! ' + '=' * 70, '']
     return h

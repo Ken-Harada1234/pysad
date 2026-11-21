@@ -1,4 +1,4 @@
-12 セル FODO (3 GeV、45.6 m、六極つき)
+12 セル FODO (3 GeV、45.6 m、6 極つき)
    CALC   nu_x = -0.4824886541   nu_y = 0.4769848437   (端数)
    NAFF   差 3.16e-09   2.43e-10
    wtunem 差 6.61e-05   -1.58e-04   (FFT の放物線補間: MAIN の TRACK、TunesByTracking)

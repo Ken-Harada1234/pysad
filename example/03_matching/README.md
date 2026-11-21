@@ -11,7 +11,7 @@ FIT・FREE・FIX・VARY・GO・SHOW・VARIABLES・REJECT・RECOVER/SAVE/RESET、
 | [FFS_FREE_FIX_VARY](FFS_FREE_FIX_VARY.md) | FREE・FIX・VARY・VARIABLES | ○ (変数の並び順の表示のみ) |
 | [FFS_REJECT](FFS_REJECT.md) | REJECT。条件 1 つ・変数 2 つの最小ノルム解の解析値 | ○ |
 | [FFS_RECOVER_SAVE_RESET](FFS_RECOVER_SAVE_RESET.md) | RECOVER・SAVE・RESET | ○ (pysad は RESET で警告を出す) |
-| [FFS_FITPOINTS](FFS_FITPOINTS.md) | FITPOINTS (オフモメンタムのマッチング、DP)。六極 K2 の 1 次の解析値 | △ (完走、値は 5e-5 以内。pysad は点ごとの表を出さない) |
+| [FFS_FITPOINTS](FFS_FITPOINTS.md) | FITPOINTS (オフモメンタムのマッチング、DP)。6 極 K2 の 1 次の解析値 | △ (完走、値は 5e-5 以内。pysad は点ごとの表を出さない) |
 | [flag_UNIPOL_BIPOL](flag_UNIPOL_BIPOL.md) | UNIPOL と BIPOL | △ (収束しない B の BIPOL で gs と pysad が別の点で止まる) |
 | [flag_ABSW_RELW](flag_ABSW_RELW.md) | ABSW と RELW | △ (収束しない問題。pysad は RELW が効かない) |
 | [fn_FitValue_FitWeight_VariableRange_VariableWeight](fn_FitValue_FitWeight_VariableRange_VariableWeight.md) | FitValue・FitWeight・VariableRange・VariableWeight | ○ (FitValue 時の残差の表示のみ) |

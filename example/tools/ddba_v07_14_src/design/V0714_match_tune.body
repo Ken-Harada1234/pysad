@@ -9,10 +9,10 @@
 !      四極 (Q*) と偏向磁石 (B1*, B2*) の K1 で合わせ直す (nitA 回繰り返し、毎回 fit 条件を立て直す)。
 !      MKMCA 等はセルの中心のマーク。
 !   2. 同じことを通常のセル TCELL (= MCELL LCELL) で nitN 回。
-!   3. それぞれ六極 S3*, S4* (S5 は S3 と等しい) で、セルの色収差を DP = 0.001 (中直線部) / 0.01 (長直線部) で合わせる
-!      (FIT のチューン条件は六極を入れる前のセルのチューンのまま)。MCELLA・LCELLA・MCELL・LCELL の 4 つ。
+!   3. それぞれ6 極 S3*, S4* (S5 は S3 と等しい) で、セルの色収差を DP = 0.001 (中直線部) / 0.01 (長直線部) で合わせる
+!      (FIT のチューン条件は6 極を入れる前のセルのチューンのまま)。MCELLA・LCELLA・MCELL・LCELL の 4 つ。
 !   4. リング (RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA) の δ に対するチューンの 3 次の多項式フィット
-!      (六極 0)。元の挙動のまま PolynomialFit の係数 [1,2] を出す。この係数は ξ そのものではない (README 参照)。
+!      (6 極 0)。元の挙動のまま PolynomialFit の係数 [1,2] を出す。この係数は ξ そのものではない (README 参照)。
 !   5. RINGA の始点から各要素まで、δ = ±0.1% の粒子を追跡して R56 (多項式フィット) を出す (最後の 10 要素)。
 ! マッチングは設計値から始めるので、ほとんど動かない (dtl・dtm の崩しだけが戻る)。
 !=====================================================================
@@ -141,7 +141,7 @@ FitValue["MKS4LA","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4la - dbetaa,bys4la - dbeta
   FFS["disp $$$",6];
   FFS["SAVE ALL;"];
 
-! セルごとの色収差補正 (六極 S3*, S4*、S5 は S3 と等しい)
+! セルごとの色収差補正 (6 極 S3*, S4*、S5 は S3 と等しい)
 FFS["USE MCELLA;"];
     FFS["cell calc emit;",6];
     nxcell = Twiss["NX","$$$"]/2/Pi;
@@ -268,7 +268,7 @@ FFS["USE MCELL;"];
     FFS["type S*;",6];
     FFS["SAVE"];
 
-! ---- リング全体の δ に対するチューン (六極 0)。元の挙動のまま、fit の係数 [1,2] ----
+! ---- リング全体の δ に対するチューン (6 極 0)。元の挙動のまま、fit の係数 [1,2] ----
 ! ChromFitRing[リング名, δ の範囲, 刻み] → chrx, chry (PolynomialFit の結果)、emitx (最後の δ での EMITX)
 ChromFitRing[ring_, dpm_, dst_]:=(
   FFS["USE "//ring,6];

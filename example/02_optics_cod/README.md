@@ -8,7 +8,7 @@ CALC・チューン・クロマティシティ・転送行列・ビームサイ�
 | ファイル | 内容 | gs と pysad |
 |---|---|---|
 | [FFS_CALCULATE](FFS_CALCULATE.md) | CALC。チューン・Twiss と 2x2 行列の解析値 | ○ |
-| [FFS_CHROMATICITY](FFS_CHROMATICITY.md) | CHRO と DP0 の有限差分 (ξ)、六極の寄与 | ○ |
+| [FFS_CHROMATICITY](FFS_CHROMATICITY.md) | CHRO と DP0 の有限差分 (ξ)、6 極の寄与 | ○ |
 | [FFS_DISPLAY](FFS_DISPLAY.md) | DISP の各モード (標準 R O E G GA Z) | ○ |
 | [FFS_DUMP](FFS_DUMP.md) | 誤差コマンド (DELX DELY DTHETA DL DK DDK) と DUMP | ○ (gs の DUMP は語を 20 文字で切る) |
 | [FFS_MATRIX](FFS_MATRIX.md) | MATRIX。1 セルの行列、cos μ | ○ |

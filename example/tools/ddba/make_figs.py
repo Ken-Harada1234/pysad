@@ -20,7 +20,7 @@ a.scatter(ns, [R[str(n)]['nx'] for n in ns], c=col, s=36, marker='o', label=r'$\
 a.set_ylabel('チューン'); a.legend(); a.set_title('チューン (丸 νx、四角 νy)')
 a = ax[1, 1]; nc = [n for n in ns if C.get(str(n))]
 a.scatter(nc, [C[str(n)]['nx'] for n in nc], c=[cols[I.I[n]['STAGE']] for n in nc], s=36, marker='o'); a.scatter(nc, [C[str(n)]['ny'] for n in nc], c=[cols[I.I[n]['STAGE']] for n in nc], s=36, marker='s')
-a.set_ylabel('自然クロマティシティ (六極 K2 = 0)'); a.set_title('自然クロマティシティ (丸 x、四角 y)')
+a.set_ylabel('自然クロマティシティ (6 極 K2 = 0)'); a.set_title('自然クロマティシティ (丸 x、四角 y)')
 for x in ax.flat: x.set_xlabel('DDBA_NN'); x.grid(alpha=.3)
 h = [plt.Line2D([], [], marker='o', ls='', color=cols[k], label='%d. %s' % (k, v.split(' (')[0])) for k, v in I.STAGES.items()]
 fig.legend(handles=h, loc='lower center', ncol=3, fontsize=8, frameon=False)

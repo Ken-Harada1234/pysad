@@ -12,7 +12,7 @@ SAD の参照は WSL の `gs` (K64 fork) で、ラティスを連結した 1 フ
 | EMIT 報告 (RFSW × RADCOD の 4 通り、各 37 行) | Extended Twiss / dl / h / fs / Imag.tune / Damping time / Tune shift / 分配数 / spin の行が無い。`Real tune` の空白が 1 桁違う。RFSW OFF + RADCOD ON は SAD と値が違う (U0 7e-5、tune 1e-5) | **4 通り 148 行がすべて SAD と一致** (0 同然の雑音の桁 |値|<1e-11 の差 38 行だけ別。下記) |
 | 22e CELL (DP0=0.004、四極ずれ、閉軌道≠0) | 最大 5.3e-10 | **1.4e-11** (目標 1e-10) |
 | 3C の EX/EPX (結合時の分散) | 既知の不一致として 3.2e-7 / 7e-8 としていたが、再測定すると 3.2e-11 / 6e-12 で、**この作業の前から解消済み** (10/15 の qmat2twiss と z 行の組み直しの効果。`bench_level3c_pysad.result` が古かった) | 3.2e-11 / 6e-12 (run_regression の既知リストから外した) |
-| 四極 FRINGE=1〜3 + ずれ・ロール + 六極のずれ・ロール (新 bench 26b) の CALC/Emittance[] | `Emittance[]` (C) の最大相対差 1.1e-5 (チューン。ε は 2.7e-7、数値微分と tqlfre の piece が数値微分) | CALC は 1e-12 級、Emittance[] は ≤1.3e-9 (SAD の tcod 収束の差) |
+| 四極 FRINGE=1〜3 + ずれ・ロール + 6 極のずれ・ロール (新 bench 26b) の CALC/Emittance[] | `Emittance[]` (C) の最大相対差 1.1e-5 (チューン。ε は 2.7e-7、数値微分と tqlfre の piece が数値微分) | CALC は 1e-12 級、Emittance[] は ≤1.3e-9 (SAD の tcod 収束の差) |
 | 16b 全桁 | ≤1.3e-11 | 変化なし (出力が作業前と同一) |
 
 ## 1. 課題 A: EMIT 報告 (temitprint) の書式と式
@@ -84,7 +84,7 @@ emit6d の薄い多極 (`_tthine_gen`) は既に `_jac_thin` + `_tchge_jac` だ�
 
 - **ヤコビアンの単体**: K1=±、L=0.25/0.6、(ずれ、ロール、両方、なし) × FRINGE=0,1,2,3 × DISFRIN の有無 を、COD 写像の数値微分 (刻み 1e-6、z の行は SAD が組み直すので除く) と比べると最大 2e-12。z 列 (5,6) は SAD の式と数値微分で 1e-7〜3e-6 (これは元からで、SAD の `trans1(5,6)` を使うので正しい)。`pysad/tests/test_emit_report.py`。
 - **bench_level22e** (SAD との行比較, `cmp_lines.py`): 最大 **5.3e-10 → 1.4e-11** (`CELL_dp` 7.5e-12、`INS1_at_100` 1.4e-11)。
-- **bench_level26b** (新規。小リング、QF=FRINGE 3、QD=FRINGE 1、1 周に別名の QFX (FRINGE 2、DX/DY/ROTATE)、QDX (FRINGE 3、DX/DY)、SFX (六極に DX/DY/ROTATE)、DP0=0 と 0.003、`Emittance[]`):
+- **bench_level26b** (新規。小リング、QF=FRINGE 3、QD=FRINGE 1、1 周に別名の QFX (FRINGE 2、DX/DY/ROTATE)、QDX (FRINGE 3、DX/DY)、SFX (6 極に DX/DY/ROTATE)、DP0=0 と 0.003、`Emittance[]`):
   CALC の Twiss・R1〜R4・チューン・閉軌道 (A/B/B2 の 16 行) は **≤5e-13** (SAD と 10 桁一致)。`Emittance[]` (C): ε・σE・U0 の行 1.3e-10、チューン 1.3e-9、TuneShiftByRadiation 3e-11、減衰率 1e-12、OrbitAtExit 9e-10 (絶対)。後者 2 つ (チューン・閉軌道) は SAD の tcod の収束 (RFSW OFF は codw が 100 分の 1) の違い。
   数値微分に戻して (`probes_emit/run_old.py`) 比べると、CALC の B/B2 が 2.4e-10、**C のチューンが 1.1e-5、ε・σE・U0 の行が 2.7e-7、TuneShiftByRadiation が 3.9e-8、減衰率が 1.4e-7**。tqlfre の解析ヤコビアンが無かった emit 経路の差で、この bench がそれを検出する。
 - **回帰 (作業前 base_w0 と作業後 base_w3 (どちらも `base_w0/run.sh` で作る。13a 13b 14a 16a 16b 18a 22a 22e 23a 25a〜e 3c) の diff)**: 13a/13b/14a/16a/16b は出力が同一 (14a/16a は報告の新しい行が増えただけ)、18a は時間行だけ。22a 1.2e-11、23a 2.8e-10 (SAD との差は 2.7e-10 → 1.7e-11 に縮んだ)、25a 1.5e-10、25b 8e-14、25c 9e-11、25d 9.6e-10 (SAD との差 9.7e-10 → 4.5e-11)、25e 3.7e-9 (SAD との差は 4.5e-8 のまま、SAD の δ の収束差)。3C 1.8e-10。

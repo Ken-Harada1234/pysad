@@ -1,8 +1,8 @@
-! modules_cell_match.n: 標準セル (ARCA) のマッチングと、六極によるクロマティシティ補正の関数
+! modules_cell_match.n: 標準セル (ARCA) のマッチングと、6 極によるクロマティシティ補正の関数
 ! (FFS; の後で Get["../modules/modules_cell_match.n"]; する。使う台本: design/KEKLS_tune_survey_cell、display/KEKLS_scan_target)。
 ! 元: modules_tune_sv_v03_68.n (InitMag・MatchingARCA・MatchingARCA2・ChromCor)。v03_68 に合わせて直した (README の「直したもの」):
 !   - 目標値は変数 tay・tby・tex (MKSFA1 の AY・BY・EX)・tbyc (MKC の BY) で、既定は v03_68 の設計値
-!   - FitFunction の MKSFA2 → MKSFA1.2、MKSFA1 → MKSFA1.1、六極は SDH・SFH、自由にする偏向磁石は BPI6H・BPI7H
+!   - FitFunction の MKSFA2 → MKSFA1.2、MKSFA1 → MKSFA1.1、6 極は SDH・SFH、自由にする偏向磁石は BPI6H・BPI7H
 !   - MatchingARCA[fw_] の fw は FitFunction の重み (元の MatchingARCA は 1、MatchingARCA2 は 1/1000)
 !   - Chrom[dd_] を足した (ξ = Δν/Δδ を DP0 = ±dd の差分で求める。元の台本には無い)
 
@@ -48,7 +48,7 @@ MatchingARCA[fw_]:=(
   FFS["cell calc"];
 );
 
-! 六極 (SDH・SFH) で、チューンを保ちつつ運動量 DP = 0.0001 でも同じチューンにする (ξ = 0 の条件)
+! 6 極 (SDH・SFH) で、チューンを保ちつつ運動量 DP = 0.0001 でも同じチューンにする (ξ = 0 の条件)
 ChromCor[]:=(
   FFS["FIT;"];
   FFS["NX nxcell 2;"];

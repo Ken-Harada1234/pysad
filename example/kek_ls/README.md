@@ -5,7 +5,7 @@ KEK-LS の設計・修正・パラメータ表示のための SAD スクリプ�
 | フォルダ | 内容 |
 |---|---|
 | [`lattice/`](lattice/README.md) | ラティス `kek_ls_v03_68.sad`、構成図、パラメータ表、旧版 (v03_12) との違い、入射セル |
-| [`design/`](design/README.md) | 設計・マッチング (セルのチューン、六極、入射セル、リングを閉じる、縮小、セル数、チューンサーベイ) |
+| [`design/`](design/README.md) | 設計・マッチング (セルのチューン、6 極、入射セル、リングを閉じる、縮小、セル数、チューンサーベイ) |
 | [`display/`](display/README.md) | パラメータ表示 (εx・σδ・ξ・αc・U0、オプティクス、チューンシフト) |
 | [`errors/`](errors/README.md) | 誤差入りの計算と COD の補正 |
 | `modules/` | 共通の関数 (`modules_general.n`・`modules_amp_dep_ts.n`・`modules_cell_match.n`・`modules_errors.n`) |
@@ -19,7 +19,7 @@ KEK-LS の設計・修正・パラメータ表示のための SAD スクリプ�
    ▼
 チューンのマッチング (標準セル 1 個の位相進み)       design/KEKLS_match_cell_tune
    ▼
-六極のクロマティシティ調整                          design/KEKLS_match_chrom
+6 極のクロマティシティ調整                          design/KEKLS_match_chrom
    ▼
 入射セルのマッチング                               design/KEKLS_match_injcell
    ▼
@@ -41,19 +41,19 @@ gs と pysad の一致 (k64 モード): ○ 一致 (数値の相対差 1e-5 以�
 | [`lattice/KEKLS_cell_calc_emit`](lattice/KEKLS_cell_calc_emit.md) | - | RINGC・RING の周期解とエミッタンス | lattice/kek_ls_v03_68.sad | 周長・チューン・εx・σδ | 1 s / 3 s | ○ |
 | [`lattice/KEKLS_cell_optics`](lattice/KEKLS_cell_optics.md) | disp_optics | 標準セルの配置・オプティクスの数表と図 | 同上 | 数表 160 行、PNG (`../tools/kek_ls_figs.py`) | 1 s / 2 s | ○ |
 | [`design/KEKLS_match_cell_tune`](design/KEKLS_match_cell_tune.md) | matching2_01 前半 | セルのチューンのマッチング | 同上 | セルの位相進み・四極の K1 | 1 s / 2 s | △ |
-| [`design/KEKLS_match_chrom`](design/KEKLS_match_chrom.md) | matching2_01 後半 | 六極のクロマティシティ調整 | 同上 | ξ・六極の K2 | 1 s / 9 s | △ |
+| [`design/KEKLS_match_chrom`](design/KEKLS_match_chrom.md) | matching2_01 後半 | 6 極のクロマティシティ調整 | 同上 | ξ・6 極の K2 | 1 s / 9 s | △ |
 | [`design/KEKLS_match_injcell`](design/KEKLS_match_injcell.md) | matching2_03_INJ | 入射セルのマッチング | 同上 | 入射点の Twiss・QS0〜QS5 の K1 | 1 s / 2 s | ○ |
 | [`design/KEKLS_match_ring_geo`](design/KEKLS_match_ring_geo.md) | matching2_02_geo | 入射セルを含めてリングを閉じる (ジオメトリ) | 同上 | DRID1INJ・GX・GY | 1 s / 2 s | ○ |
 | [`design/KEKLS_match_repeat`](design/KEKLS_match_repeat.md) | (新規) | マッチングの再現性の診断 | 同上 | K1・K2 (3 回の繰り返し) | 1 s / 20 s | △ |
 | [`design/KEKLS_scale_mini`](design/KEKLS_scale_mini.md) | matching23_v03_35_mini | セルの一様な縮小 | 同上 | セル長・位相進み・K1 | 1 s / 4 s | ○ |
 | [`design/KEKLS_scale_ncell`](design/KEKLS_scale_ncell.md) | matching21_v03_35 | セル数を変える | 同上 | j セルのリングの εx・チューン・周長 | 1 s / 3 s | ○ |
-| [`design/KEKLS_tune_survey_cell`](design/KEKLS_tune_survey_cell.md) | matching05 + modules_tune_sv_v03_68.n | セルのチューンサーベイ | 同上 | ξ・εx・六極の強さの 25 点の地図 | 10 s / 160 s | △ |
+| [`design/KEKLS_tune_survey_cell`](design/KEKLS_tune_survey_cell.md) | matching05 + modules_tune_sv_v03_68.n | セルのチューンサーベイ | 同上 | ξ・εx・6 極の強さの 25 点の地図 | 10 s / 160 s | △ |
 | [`display/KEKLS_ring_params`](display/KEKLS_ring_params.md) | calc_emit.sad 前半、disp、chromaticity_plot | リングのパラメータ (εx・σδ・減衰・αc・U0・ξ) | 同上 | emit の表・ξ | 1 s / 4 s | ○ |
 | [`display/KEKLS_optics_table`](display/KEKLS_optics_table.md) | disp_optics、disp、draw_cad の入力 | リングのオプティクス・配置の数表と図 | 同上 | 要素ごとの表 3226 行、PNG | 1 s / 3 s | ○ |
 | [`display/KEKLS_calc_H`](display/KEKLS_calc_H.md) | calc_H.sad、calc_emit.sad 後半 | H 関数の積分によるエミッタンス | 同上 | εx (SAD と 2.3% 差) | 1 s / 3 s | ○ |
 | [`display/KEKLS_chromaticity`](display/KEKLS_chromaticity.md) | chromaticity_plot.sad | チューンの運動量依存 | 同上 | ν(δ)・PNG | 1 s / 5 s | ○ |
 | [`display/KEKLS_amp_dep_ts`](display/KEKLS_amp_dep_ts.md) | amp_dep_ts*.sad | 振幅依存チューンシフト | 同上 + modules/modules_amp_dep_ts.n | ν(振幅)・PNG | 1 s / 36 s | ○ |
-| [`display/KEKLS_sextupole_tune_scan`](display/KEKLS_sextupole_tune_scan.md) | dp_sv_sx.sad | 六極を変えたチューンシフト | 同上 | Σ|Δν| の 5×5 の地図・PNG | 2 s / 18 s | △ |
+| [`display/KEKLS_sextupole_tune_scan`](display/KEKLS_sextupole_tune_scan.md) | dp_sv_sx.sad | 6 極を変えたチューンシフト | 同上 | Σ|Δν| の 5×5 の地図・PNG | 2 s / 18 s | △ |
 | [`display/KEKLS_scan_target`](display/KEKLS_scan_target.md) | dp_sv.sad、dx_sv*.sad、dy_sv*.sad | マッチングの目標値の振り (δ 依存・ADTS) | 同上 + modules/modules_cell_match.n | ξ・ν(δ)・ADTS | 5 s / 119 s | △ |
 | [`errors/KEKLS_errors_cod`](errors/KEKLS_errors_cod.md) | print_all_error.sad ほか print_* | 誤差の種類ごとの COD・分散・チューン | 同上 + modules/modules_errors.n | COD・分散・チューンのずれ | 1 s / 6 s | △ |
 | [`errors/KEKLS_correct_cod`](errors/KEKLS_correct_cod.md) | correct_cod.sad | COD・分散の補正 | 同上 + modules/modules_general.n・modules_errors.n | 補正前後の COD・分散 | 1 s / 37 s | △ |

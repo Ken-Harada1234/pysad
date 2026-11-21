@@ -1,4 +1,4 @@
-! SEXT OCT DECA DODECA: 輸送路では線形光学に効かない。リングでは六極が chromaticity に効く
+! SEXT OCT DECA DODECA: 輸送路では線形光学に効かない。リングでは6 極が chromaticity に効く
 MOMENTUM = 3GEV;
 DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
 QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);

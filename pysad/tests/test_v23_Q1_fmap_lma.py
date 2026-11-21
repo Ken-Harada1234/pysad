@@ -22,7 +22,7 @@ ROOT = os.path.dirname(os.path.dirname(HERE))
 ASTRID = os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_01.sad')
 KEKLS = os.path.join(HERE, 'kek-ls_v03_12.lat')
 
-# 3 GeV、24 セルの FODO (周長 36 m、六極つき、RF 4 MV、500 MHz)
+# 3 GeV、24 セルの FODO (周長 36 m、6 極つき、RF 4 MV、500 MHz)
 FODO = '''MOMENTUM = 3GEV;
 DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
 QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
@@ -194,7 +194,7 @@ def test_frequency_map_tunes_match_calc_and_flag_lost():
     lost = r.x > 0.1
     assert np.all(r.lost_turn[lost] > 0) and np.all(np.isnan(r.D[lost]))
     assert np.all(r.lost_turn[~lost] == 0) and np.all(np.isfinite(r.D[~lost]))
-    # 振幅が大きいと拡散が大きい (六極)
+    # 振幅が大きいと拡散が大きい (6 極)
     assert r.D[2] > r.D[0] or r.D[3] > r.D[0]
 
 

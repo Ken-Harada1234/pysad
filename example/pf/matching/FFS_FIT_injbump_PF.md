@@ -1,5 +1,5 @@
 # FFS FIT (PF): 入射バンプ (サンプル集「ローカルバンプ」)
-種別: FFS コマンド `INS`・`FIT`・`FREE`・`GO` (サンプル集「ローカルバンプの例」)。加速器: PF 2.5 GeV (`lattice/v9_16_inj_noSF.sad`、入射点付近の六極の一部を外した版)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
+種別: FFS コマンド `INS`・`FIT`・`FREE`・`GO` (サンプル集「ローカルバンプの例」)。加速器: PF 2.5 GeV (`lattice/v9_16_inj_noSF.sad`、入射点付近の6 極の一部を外した版)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
 
 ## 何を見る例か
 入射点 (`INJ`) で、蓄積ビームの軌道を水平 +15 mm、角度 +1 mrad に置き、ライン終点で DX・DPX を 0 に戻す (バンプを閉じる)。キッカー `KK1`〜`KK4` の K0 (蹴り角) を自由変数にして `FIT` で解く。
@@ -43,4 +43,4 @@ free KK1 K0;  free KK2 K0;  free KK3 K0;  free KK4 K0;  go;
 
 ## 未確認・限界
 - 目標値 (15 mm, 1 mrad) とキッカー 4 台はサンプル集のとおり。実際の PF のキッカー値とは対応づけていない。
-- バンプの内側の六極 (noSF) の影響は見ていない (ここは線形光学の例)。
+- バンプの内側の6 極 (noSF) の影響は見ていない (ここは線形光学の例)。

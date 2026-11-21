@@ -90,7 +90,7 @@ def test_fam_orbit_and_amplitude_dependent_tune():
         exp = np.array([rows0[0].x_cod, rows0[0].px_cod, rows0[0].y_cod, rows0[0].py_cod]) + f['dfam']
         np.testing.assert_allclose([rk[0].x_cod, rk[0].px_cod, rk[0].y_cod, rk[0].py_cod], exp, atol=1e-18)
         assert rk[0].delta_cod == 0.0
-        # 六極があるので振幅依存のチューン: 軸上と違う (x の振幅なら主に νx)
+        # 6 極があるので振幅依存のチューン: 軸上と違う (x の振幅なら主に νx)
         if f['kfam'] > 0:
             assert abs(rk[-1].mux - rows0[-1].mux) > 1e-5
         # fam 点は常に安定扱い (optstat(ix)%stabx = fam .or. …)
@@ -106,7 +106,7 @@ def test_fam_orbit_and_amplitude_dependent_tune():
 
 
 def test_fam_linear_lattice_same_tune_and_go_matches():
-    # 六極なし: ずれた軌道のまわりの一周行列は軸上と同じ → fam 点のチューンは軸上と一致し、GO は Matched.
+    # 6 極なし: ずれた軌道のまわりの一周行列は軸上と同じ → fam 点のチューンは軸上と一致し、GO は Matched.
     ffs, I, text = _run(_src(k2f=0.0, k2d=0.0, amp='{{0, 1, 1}, {0.001, 0.5, 0}}') + 'go;\n')
     m = ffs.matcher
     assert 'Matched.' in text
@@ -114,7 +114,7 @@ def test_fam_linear_lattice_same_tune_and_go_matches():
     # 2 番目の項 (dp=0.001) は idp=1 の点のまわり (dpm(1) = 0.0005 ≤ 0.001 < dpm(2) = 0.001?) → dpm の範囲 [0.0005, 0.001) に入らない
     # (dpm(nfr+1) = dp(nfr) = 0.001 なので 0.001 は外) → x のみ 4 本が付かず、{0,1,1} の 8 本だけ
     assert sorted(fam) == [-5, -4, -3, -2, 2, 3, 4, 5]
-    # 六極なしでも BEND/ドリフトの非線形で軌道がずれるとチューンは少し変わる (5e-4)。fam 点の周期解はその軌道のまわりの
+    # 6 極なしでも BEND/ドリフトの非線形で軌道がずれるとチューンは少し変わる (5e-4)。fam 点の周期解はその軌道のまわりの
     # 一周行列 (閉軌道の探索なし) から作る: 独立に一周行列を作って cos μ を比べる
     from pysad import lattice as L
     L.RFSW = False

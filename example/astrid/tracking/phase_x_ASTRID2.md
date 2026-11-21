@@ -1,8 +1,8 @@
 # phase_x_ASTRID2 (位相空間の軌跡: 水平 x-x')
-KEK の SAD チュートリアルの「位相空間プロット phase_x.sad / phase_y / phase_dp」(水平方向の初期振幅に対するもの) をもとにした例。加速器: ASTRID2 (0.58 GeV、周長 45.7044 m、チューン 5.17999 / 2.14018)。ラティス: `lattice/ASTRID2_v01_01.sad` の `RING` (六極は色収差補正値)。フラグ: `RFSW RADCOD COD` (`RAD FLUC` は OFF)。
+KEK の SAD チュートリアルの「位相空間プロット phase_x.sad / phase_y / phase_dp」(水平方向の初期振幅に対するもの) をもとにした例。加速器: ASTRID2 (0.58 GeV、周長 45.7044 m、チューン 5.17999 / 2.14018)。ラティス: `lattice/ASTRID2_v01_01.sad` の `RING` (6 極は色収差補正値)。フラグ: `RFSW RADCOD COD` (`RAD FLUC` は OFF)。
 
 ## 何を見る例か
-リング先頭 `MKS` から、水平の初期振幅が 20, 40, …, 120 σ ($\sigma_x=\sqrt{\epsilon/\gamma_x}=0.222$ mm、振幅 $=k\times20\sigma$) の 6 粒子を同時に、`TrackParticles[res,1]` を 1 周ずつ 300 回呼んで追跡し、毎周の $(x, x')$ を書き出す。小さい振幅では楕円、振幅が大きいと六極の非線形で歪み、乱れて、最後は粒子が失われる様子が見える。元のスクリプトは粒子を 1 つずつ 1000 周追って Tk の `ListPlot` に描く。ここは 6 粒子を同時に 300 周に縮め、窓を使わず数値を出力して、図は gs の出力から matplotlib で描いた。
+リング先頭 `MKS` から、水平の初期振幅が 20, 40, …, 120 σ ($\sigma_x=\sqrt{\epsilon/\gamma_x}=0.222$ mm、振幅 $=k\times20\sigma$) の 6 粒子を同時に、`TrackParticles[res,1]` を 1 周ずつ 300 回呼んで追跡し、毎周の $(x, x')$ を書き出す。小さい振幅では楕円、振幅が大きいと6 極の非線形で歪み、乱れて、最後は粒子が失われる様子が見える。元のスクリプトは粒子を 1 つずつ 1000 周追って Tk の `ListPlot` に描く。ここは 6 粒子を同時に 300 周に縮め、窓を使わず数値を出力して、図は gs の出力から matplotlib で描いた。
 
 ## スクリプト
 ```

@@ -2,7 +2,7 @@
 KEK の SAD チュートリアルの「tune_survey_ncell_smallerror.sad 小さい誤差ありでのチューンサーベイ」をもとにした例。加速器: ASTRID2 (0.58 GeV、周長 45.7044 m、6 セル。設計チューンはリング 5.17999 / 2.14018、セル 0.86333 / 0.35670)。ラティス: `lattice/ASTRID2_v01_01.sad` の `NCELL` と `RING`。フラグ: `RFSW RADCOD RAD COD DAPERT BIPOL` (`FLUC` は OFF)。
 
 ## 何を見る例か
-`tune_survey_ncell_ideal_ASTRID2` と同じ手順 (セルのチューンを FIT、六極で色収差補正) で磁石を決めたあと、DA を測る直前にリングへ小さい誤差を入れ、誤差なしの DA と比べる。誤差は、チュートリアルの考え方で「通常の誤差を入れて補正したあとに残る程度」の大きさ: 四極・六極の位置ずれ (DELX・DELY) 5 μm、磁場の相対誤差 (DK) 5e-5、回転 (DTHETA) 1e-5 rad (ベンド・四極・六極)。
+`tune_survey_ncell_ideal_ASTRID2` と同じ手順 (セルのチューンを FIT、6 極で色収差補正) で磁石を決めたあと、DA を測る直前にリングへ小さい誤差を入れ、誤差なしの DA と比べる。誤差は、チュートリアルの考え方で「通常の誤差を入れて補正したあとに残る程度」の大きさ: 四極・6 極の位置ずれ (DELX・DELY) 5 μm、磁場の相対誤差 (DK) 5e-5、回転 (DTHETA) 1e-5 rad (ベンド・四極・6 極)。
 
 ## スクリプト (元からの変更点)
 全文は `.sad`。`ideal` と共通の変更 (点は 4 点、周回数 200、リングで DA、`OFF FLUC`、`SAVE ALL`、`Print["RESULT ..."]`) に加えて、誤差の部分:

@@ -247,7 +247,7 @@ Print["E ", tune[0], " ", Chro`tune[0] - n0];'''
 
 def test_chromaticity_scan_in_user_package():
     """利用者のパッケージ (文脈 Chro`) から FFS の CALC・Twiss と PolynomialFit を使い、DP0 を対称に振ってクロマティシティを求める。
-    v2 は差分で求めた値と一致する。K64 (k64 モード) は x の平均が 0 なので係数が壊れる (B18)。条件: 3 GeV の FODO 24 セル (六極 0)"""
+    v2 は差分で求めた値と一致する。K64 (k64 モード) は x の平均が 0 なので係数が壊れる (B18)。条件: 3 GeV の FODO 24 セル (6 極 0)"""
     main = 'MOMENTUM = 3 GEV;\n' + _FODO
     r, _ = _run(main, _CHRO, 'v2')
     c = _nums(_line(r, 'C '))

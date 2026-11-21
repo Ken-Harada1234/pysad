@@ -4,14 +4,14 @@ track6.py — SAD TrackParticles (tftrack.f → tturn.f tturn / tturn1) の直�
 SAD の追跡は Emittance[]/CALC (tturne: tquade, tbende, tthine, tcave, tradke) とは別のルーチンを使う:
   ドリフト  tdrift.f  tdrift_free
   四極      tquad.f   tquad → tsolrot (回転), ttfrin (nord=4), tsolqu / tsolqur (放射あり)
-  六極      tquad.f   tthin (α/β/γ の 4 次積分) + ttfrin (nord=6 フリンジ)
+  6 極      tquad.f   tthin (α/β/γ の 4 次積分) + ttfrin (nord=6 フリンジ)
   BEND      tbend.f   tbend → tbendcore (入口エッジ・本体・出口エッジを 1 つの閉じた式で)。
                       放射ありは tbendr で ndivrad 分割 (各分割で tbendcore + tradk)
   空洞      tcav.f    tcav (RAD の有無で offset を切り替え)
   放射      photons.f kradlib tradk → tradkn (FLUC OFF)。tradkfn (FLUC ON, 乱数) は未移植
 内部座標は (x, px/(1+δ), y, py/(1+δ), z, δ) と粒子ごとの dv (tconvm)。入出力は px/p0。
 
-未対応 (NotImplementedError): K1≠0 の BEND、BEND/四極/六極のずれ・回転 (四極 ROTATE は可)、
+未対応 (NotImplementedError): K1≠0 の BEND、BEND/四極/6 極のずれ・回転 (四極 ROTATE は可)、
   長さのある空洞、四極の F1/FRINGE、ソレノイド、MULT など。FLUC (揺らぎ) は未対応。
 """
 from __future__ import annotations
@@ -720,7 +720,7 @@ def _tquad(p: _Particle, el, krad):
 
 
 # ---------------------------------------------------------------------------
-# 六極 (tquad.f tthin, ttfrin nord=6)
+# 6 極 (tquad.f tthin, ttfrin nord=6)
 # ---------------------------------------------------------------------------
 
 def _tthin_gen(p: _Particle, el, krad, ak, kord):
@@ -1984,7 +1984,7 @@ def _tmulti_ens(parts, el, krad):
     F1・F2 (四極の線形フリンジ、f1in 等)・FB1・FB2 (K0 の端の tblfri)・FRINGE = 1, 2, 3・AE1・AE2 (tmulk) に対応 (v2next P3)。
     tpara (tffs.f) の akr[n] = K_n·cr1^(n+1), theta2 = ROT+DROT+akang, ndiv0, dofr。
     各分割: tsolqu(al1, ak1, ak0) (+tradk 全粒子) → 多極キック (n≥2、(1+δ) で割る)。
-    フリンジ: ttfrins で n=0 (双極), 1 (四極), 2 (六極) 等 (dofr)。"""
+    フリンジ: ttfrins で n=0 (双極), 1 (四極), 2 (6 極) 等 (dofr)。"""
     pm = _lat._mult_params(el)
     al, nmmax, akr, ndiv = pm['al'], pm['nmmax'], pm['akr'], pm['ndiv']
     if _g(el, 'ANGLE') or _g(el, 'VOLT'):

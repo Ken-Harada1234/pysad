@@ -137,7 +137,7 @@ def _run_calc_only(bench):
     ('25a', ('T0', 'T1', 'T2', 'GX', 'GY'), 5e-9),     # 垂直ステアリング (ANGLE=0, ROTATE=-90 DEG, K0)
     ('25b', ('T0', 'T1', 'T2'), 5e-9),                 # skew 四極
     ('25c', ('T0', 'GEO'), 5e-9),                      # ROTATE 付き BEND (5 DEG, 90 DEG, K1 付き)
-    ('25d', ('T0',), 5e-8),                            # 六極・八極・十極・MULT の ROTATE
+    ('25d', ('T0',), 5e-8),                            # 6 極・八極・十極・MULT の ROTATE
 ])
 def test_calc_matches_sad_bench(bench, tags, tol):
     ref = os.path.join(ROOT, 'bench_level%s.result' % bench)

@@ -30,7 +30,7 @@ def is_mag(e):
 
 
 def strip(ax, els, rows, y0, h, smin=None, smax=None):
-    """磁石の並び: 偏向磁石は黒、収束四極 (K1>0) は上、発散四極は下、六極は緑の細い箱、空洞は赤い三角"""
+    """磁石の並び: 偏向磁石は黒、収束四極 (K1>0) は上、発散四極は下、6 極は緑の細い箱、空洞は赤い三角"""
     for i, e in enumerate(els):
         s0 = rows[i].s; s1 = s0 + e.L
         if smin is not None and (s1 < smin or s0 > smax):
@@ -78,7 +78,7 @@ def main():
         if lat == pf_lib.LATS[0][0]:
             ax.legend(ncol=3, loc='upper right', fontsize=9)
     axs[-1].set_xlabel('s [m]')
-    fig.suptitle('PF 2.5 GeV の履歴ラティス: リング 1 周の β 関数と分散 (pysad、設計値・誤差なし)\n下の帯: 黒 = 偏向磁石、青 = 収束四極、赤 = 発散四極、緑 = 六極', fontsize=10)
+    fig.suptitle('PF 2.5 GeV の履歴ラティス: リング 1 周の β 関数と分散 (pysad、設計値・誤差なし)\n下の帯: 黒 = 偏向磁石、青 = 収束四極、赤 = 発散四極、緑 = 6 極', fontsize=10)
     fig.tight_layout(rect=(0, 0, 1, 0.96)); fig.savefig(os.path.join(OUT, 'PF_history_optics.png'), dpi=100); plt.close(fig)
     # ---- 標準セル
     fig, axs = plt.subplots(2, 2, figsize=(11, 6.5))

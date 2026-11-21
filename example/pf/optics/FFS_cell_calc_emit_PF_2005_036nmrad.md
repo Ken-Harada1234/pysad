@@ -8,10 +8,10 @@
 ```
 USE RING;  cell calc emit;
 Print["circumference [m] = ", LINE["S","$$$"]];  ...            ! 周長・要素数・チューン・EMITX・SIGE・SIGZ
-CountEl[];                                                      ! 偏向磁石・四極・六極・八極・空洞の数
+CountEl[];                                                      ! 偏向磁石・四極・6 極・八極・空洞の数
 ShowAt["NAME"];                                                 ! その場所の BX BY EX AX と NX NY/2pi (直線部の MARK、標準セルの偏向磁石)
-ChromFD[0.001];                                                 ! 色収差 = 運動量 ±0.1% のチューンの差分 (設計の六極あり)
-SF* 0; SD* 0; FFS["cell calc"]; ChromFD[0.001];                 ! 六極を 0 にした自然値
+ChromFD[0.001];                                                 ! 色収差 = 運動量 ±0.1% のチューンの差分 (設計の6 極あり)
+SF* 0; SD* 0; FFS["cell calc"]; ChromFD[0.001];                 ! 6 極を 0 にした自然値
 ```
 - 台本の関数名は `ShowAt[]` (`At[]` と名づけると pysad は何も出さない。詳しくは `lattice/PF_history.md` §g)。
 

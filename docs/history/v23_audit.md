@@ -59,7 +59,7 @@
 
 | 項目 | 状況 | 扱い |
 |---|---|---|
-| 六極 / 6 極、八極 / 8 極 | README・CHANGELOG・CLAUDE.md・docs では「6 極」が多数 (六極は約 110、6 極は約 330)。pysad の docstring でも「6 極」が多数 (42 対 86)。example の md は「六極」352・「6 極」242 | README・CHANGELOG・CLAUDE.md・docs (history と docs/13 を除く) の「六極」「八極」を「6 極」「8 極」に統一 (24 ファイル)。リリースノート (ローカル) も同様。`pysad/*.py` の docstring と example の md は、example の md の多くが作成用のスクリプト (`example/tools/*`) の文字列から生成されること、出力と比べる試験があることから、変えていない (下の 3) |
+| 6 極 / 6 極、八極 / 8 極 | README・CHANGELOG・CLAUDE.md・docs では「6 極」が多数 (6 極は約 110、6 極は約 330)。pysad の docstring でも「6 極」が多数 (42 対 86)。example の md は「6 極」352・「6 極」242 | README・CHANGELOG・CLAUDE.md・docs (history と docs/13 を除く) の「6 極」「八極」を「6 極」「8 極」に統一 (24 ファイル)。リリースノート (ローカル) も同様。`pysad/*.py` の docstring と example の md は、example の md の多くが作成用のスクリプト (`example/tools/*`) の文字列から生成されること、出力と比べる試験があることから、変えていない (下の 3) |
 | K64 モード / k64 モード | 628 対 1 | `pysad/emit6d.py` のコメント 1 か所を「k64 モード」に |
 | 1/(m rad) / 1/(m·rad)、m rad / m·rad | 「m rad」が多数 (nm rad 89 対 nm·rad 0) | docs/49・50 と example/v2_3 の md 5 本の「m·rad」を「m rad」に (コード・出力・docs/history は変更なし) |
 | タウシェック / Touschek | 2 件 (DDBA_26 の設計メモの要約) | 「Touschek」に (md 3、台本のヘッダ 1、`ddba_info.py` 1。DDBA の試験は通る) |
@@ -73,8 +73,8 @@
 
 ## 3. 直さなかったもの (理由)
 
-- example の md の「六極」「6 極」の混在 (約 600 か所): 多くは `example/tools/*` が文字列から生成し、md だけ直すと次の生成で戻る。作成用のスクリプトの文字列も直すと、生成物の差分が大きくなる。判断はユーザー (4)。
-- `pysad/*.py` の docstring の「六極」42 か所: コードの文字列 (出力・警告) との区別が要り、出力を比べる試験がある。コメントだけに限っても多い。
+- example の md の「6 極」「6 極」の混在 (約 600 か所): 多くは `example/tools/*` が文字列から生成し、md だけ直すと次の生成で戻る。作成用のスクリプトの文字列も直すと、生成物の差分が大きくなる。判断はユーザー (4)。
+- `pysad/*.py` の docstring の「6 極」42 か所: コードの文字列 (出力・警告) との区別が要り、出力を比べる試験がある。コメントだけに限っても多い。
 - docs/12 に載っていない旧いモジュール (`diag_fit`・`diag_trace` は旧い診断、`beambeam`・`coord`・`und`・`geo`・`multa`・`multae`・`radint`・`teigen`・`trptacc`・`tsvd`・`wakeopt`・`emit_extra`・`ffsextra`・`sadkw`): docs/01 の地図に載り、要素別の文書 (docs/22〜37) に API がある。重複を避けた。
 - `.gs.txt` の `/mnt/d/work/SAD-master/SAD-master/Packages/...` (約 1450 行): 許可の範囲。
 - `~/elegant`・`~/sad_dbg` ほか WSL のホームの慣例の場所: 個人名を含まない。
@@ -87,7 +87,7 @@
 
 1. SAD のソースの著者の表記 (`K. Oide`・`K. Ohmi`・`E. Forest`、KEK Report 92-14) をコメント・docstring に残すか。残した理由は、K64 のソースの出所の表記と公開の報告書の引用だから。消す場合は、`pysad/__init__.py`・`teigen.py`・`und.py`・`phsrot.py`・`sadscript.py` のコメントと `docs/27_und.md`。
 2. 「大見氏」の敬称を外した 2 か所 (docs/19) で、人名のまま「大見氏の DA」と書かずに「sad+ (…)」にしたのでよいか。
-3. example の md と `pysad/*.py` の「六極」「6 極」を統一するか (統一する場合は、作成用のスクリプトの文字列と同時に)。
+3. example の md と `pysad/*.py` の「6 極」「6 極」を統一するか (統一する場合は、作成用のスクリプトの文字列と同時に)。
 4. `.gs.txt` の WSL のパス (`/mnt/d/work/...`) を一般化するか。
 5. `README.md` 冒頭 4 行は触っていない。
 6. PyPI のビルドの作り直し (下の 5)。
@@ -95,5 +95,5 @@
 ## 5. リリース用のファイル
 
 - **PyPI のビルド** (`D:\work\SAD-master\pysad-v2.3.0-build`、`release/pypi-v2.3.0`、先頭 `e70e13f`): main の README・CLAUDE.md・`pyproject.toml` (Changelog の URL)・`pysad/emit6d.py` (コメント 1 行)・docs を変えたので、**作り直しが要る** (README の PyPI 用の注記 1 コミットを、新しい main の上に載せ直し、同じ手順でビルドして `twine check`)。この点検では作り直していない (アップロードもしていない)。
-- **リリースノート** (`local/wake/release_notes_v2.3.0.md`): 試験の件数・B 番号・例の数は変わっていない。「六極」を「6 極」に直しただけ。
+- **リリースノート** (`local/wake/release_notes_v2.3.0.md`): 試験の件数・B 番号・例の数は変わっていない。「6 極」を「6 極」に直しただけ。
 - push・タグ・GitHub のリリース・PyPI のアップロードはしていない。

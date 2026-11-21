@@ -46,7 +46,7 @@ def test_planar_ring_spin_tracking_matches_gs():
 
 
 def test_coupled_ring_spin_tracking_matches_gs():
-    """縦ずれ・回転した四極と偏向・六極のあるリング"""
+    """縦ずれ・回転した四極と偏向・6 極のあるリング"""
     _check('pt4')
 
 

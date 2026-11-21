@@ -1607,7 +1607,7 @@ def _tmulte(st: _State, el, enarad: bool = True):
     写像の列は lattice._mult_sequence (tsolrote → tqfrie/tbfrme → [tsolque → tmulke]×ndiv → tsolque →
     tbfrme/tqfrie → 戻し)。放射あり: tsolrote の後に tsetr0、tsolque の部分スライスごとに tradke。
     ndiv (放射あり) = min(300, max(ndiv_kick, itgetqraddiv(cod, K1, L)))。
-    追跡側 (tmulti) と違い、六極などのフリンジ ttfrin は入らず、キックは (1+δ) で割らない。
+    追跡側 (tmulti) と違い、6 極などのフリンジ ttfrin は入らず、キックは (1+δ) で割らない。
     """
     if float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0:
         from . import multae as _ma

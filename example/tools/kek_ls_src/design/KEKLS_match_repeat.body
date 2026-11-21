@@ -1,6 +1,6 @@
 ! KEK-LS v03_68: 同じセルのマッチング (modules_cell_match.n) を 3 回繰り返して、再現性を見る診断の例 (元の台本には無い)
 ! 毎回 USE ARCA・InitMag[] (設計の K1・K2 に戻す) から、MatchingARCA[1] → MatchingARCA[1] → MatchingARCA[0.001] → ChromCor[] を行い、
-! A: 1 回目のマッチング後の K1(QFA1H)・K1(QDA2)・リングのチューン、B・C: 続くマッチング後の K1、D: 六極補正後の K2(SDH・SFH)・K1(QFA1H) を表示する。
+! A: 1 回目のマッチング後の K1(QFA1H)・K1(QDA2)・リングのチューン、B・C: 続くマッチング後の K1、D: 6 極補正後の K2(SDH・SFH)・K1(QFA1H) を表示する。
 ! gs は 3 回とも同じ値になる。pysad は、1 回目と 2 回目以降で値が違う (README の「要確認」)。
 NPARA = 8;
 ON LOG;

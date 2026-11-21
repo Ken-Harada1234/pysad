@@ -66,7 +66,7 @@ def _orbit_x(ffs):
 @pytest.mark.parametrize('name,tol_an,tol_trcod', [('AST', 1e-3, 1e-5), ('PF', 2e-3, 1e-5),
                                                    pytest.param('A', 3e-3, 5e-5, marks=pytest.mark.skipif(not os.environ.get('PYSAD_SLOW'), reason='PYSAD_SLOW=1 (35 s)'))])
 def test_trcod_measures_the_closed_orbit_of_a_kick_v2(v2_mode, name, tol_an, tol_trcod):
-    """TRCOD (NP=2、ε=0、DP=0: 重心の追跡) で測った閉軌道 = CALC の閉軌道 (tol_trcod 以内、最大値で規格化) = 解析式 (tol_an 以内。六極のフィードダウンで 1e-3 のずれ)。
+    """TRCOD (NP=2、ε=0、DP=0: 重心の追跡) で測った閉軌道 = CALC の閉軌道 (tol_trcod 以内、最大値で規格化) = 解析式 (tol_an 以内。6 極のフィードダウンで 1e-3 のずれ)。
     実測: ASTRID2 4.3e-4・1.8e-6、PF 6.4e-4・6e-7、大きなリング A 1.9e-3・1.3e-5"""
     th = 1e-5
     ffs, _ = ffscmd.run_sad_string(_kick_ring(name, th), out=io.StringIO())

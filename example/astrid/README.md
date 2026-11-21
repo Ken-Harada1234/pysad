@@ -14,7 +14,7 @@ ASTRID2 のラティスを使った、SAD の基本的な使い方と計算の�
 | [`tune_radiation/`](tune_radiation/README.md) | [`mom_dep_ts_ASTRID2`](tune_radiation/mom_dep_ts_ASTRID2.md) | 運動量依存チューンシフト (チューンと運動量ずれの関係) | ○ |
 | [`tracking/`](tracking/README.md) | [`phase_x_ASTRID2`](tracking/phase_x_ASTRID2.md) | 位相空間の軌跡 (水平 x-x') | ○ (失われた粒子の座標の符号だけ違う) |
 | [`insertion_device/`](insertion_device/README.md) | [`MPW_v01_02_id_ASTRID2`](insertion_device/MPW_v01_02_id_ASTRID2.md) | 挿入光源 MPW の線形シミュレーション | ○ |
-| [`lattice_building/`](lattice_building/README.md) | [`SetElement_BeamLine_Join_ASTRID2`](lattice_building/SetElement_BeamLine_Join_ASTRID2.md) | 周期性のあるラティスの作り方 (六極だけ全セル独立にする) | ○ |
+| [`lattice_building/`](lattice_building/README.md) | [`SetElement_BeamLine_Join_ASTRID2`](lattice_building/SetElement_BeamLine_Join_ASTRID2.md) | 周期性のあるラティスの作り方 (6 極だけ全セル独立にする) | ○ |
 
 ## 参考文献
 - ASTRID2 のデザインレポート: *ASTRID2 Preliminary Design Report* (Aarhus University、ISA、2009 年 8 月)。<https://www.isa.au.dk/facilities/astrid2/docs/astrid2-preliminarydesign-report-august2009.pdf>

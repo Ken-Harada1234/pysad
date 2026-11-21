@@ -2,13 +2,13 @@
 種別: FFS の `cell calc emit` の表、`Twiss[]`。フォルダ: `display`。元のスクリプト: calc_emit.sad (前半)、disp、disp_emit、chromaticity_plot.sad。ラティス: `../lattice/kek_ls_v03_68.sad` (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
 
 ## 何を見る例か
-リング RINGC・RING のパラメータ (εx、σδ、σz、減衰、αc、U0、ξ) の表示。`cell calc emit` の表 (U0、αc、減衰時間・分配、バケット高さ) と、変数と差分で出した ξ (六極あり・自然)。
+リング RINGC・RING のパラメータ (εx、σδ、σz、減衰、αc、U0、ξ) の表示。`cell calc emit` の表 (U0、αc、減衰時間・分配、バケット高さ) と、変数と差分で出した ξ (6 極あり・自然)。
 
 ## スクリプト
 `KEKLS_ring_params.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。
 
 ## 結果の読み方
-各リングの `===== NAME` の後に emit の表 (gs・pysad とも出る)、その後の `circumference`・`tune`・`EMITX`・`SIGE`・`SIGZ`・`xi` の行。ξ の自然値 (K2 = 0) は (−57.56, −89.26)、六極ありは (+0.119, −0.684)。
+各リングの `===== NAME` の後に emit の表 (gs・pysad とも出る)、その後の `circumference`・`tune`・`EMITX`・`SIGE`・`SIGZ`・`xi` の行。ξ の自然値 (K2 = 0) は (−57.56, −89.26)、6 極ありは (+0.119, −0.684)。
 
 gs の出力の抜粋 (指定の行だけ。全体は `KEKLS_ring_params.gs.txt`):
 ```

@@ -13,17 +13,17 @@
 | ID | K64 の動作 | v2 の動作 | 根拠 (式・数値) | 試験 | k64 モード |
 |---|---|---|---|---|---|
 | B06 | RADINT が全 BEND に最後の BEND の L/ANGLE を使う | その BEND 自身の L/ANGLE | 曲率の違う 2 種の BEND のリングで、自前の 3x3 行列の積分と I1〜I5 が 2e-5 で一致 (K64 は I1・I4・I5 が 1e-3 以上ずれる) | `test_v2_A_radint.py::test_per_bend_radius_v2` | 同じ (`stale_rho`) |
-| B07 | RADINT の六極が直前の DL を使う。L=0 は 0.2 m。先頭が SEXT だと DL=0 で NaN。DKL2 を代入しない | 六極は自分の L と K2 を使う。L=0 は寄与なし。モジュール変数を毎回初期化 | 軌道 0 なら六極は I1〜I5 を変えない (K2=3 と 0 で 12 桁同じ)。NaN にならない | `…::test_sextupole_first_and_thin` | 同じ |
+| B07 | RADINT の6 極が直前の DL を使う。L=0 は 0.2 m。先頭が SEXT だと DL=0 で NaN。DKL2 を代入しない | 6 極は自分の L と K2 を使う。L=0 は寄与なし。モジュール変数を毎回初期化 | 軌道 0 なら6 極は I1〜I5 を変えない (K2=3 と 0 で 12 桁同じ)。NaN にならない | `…::test_sextupole_first_and_thin` | 同じ |
 | B12 | RADINT の定数が単精度 (1e27、1.E-6、0.2、2.3026) | 倍精度 | ELOSS = Cγ E⁴ I2/(2π) と 1e-13 で一致 (K64 は相対 1.15e-8 小さい) | `…::test_double_precision_constants` | 同じ |
 | B13 | RADINT の CAVI は最後の空洞の値 | VOLT は総和。FREQ・HARM は電圧のある最初の空洞 (違う周波数が混ざると注意を出す) | 2.5 MV + 1.5 MV → 4000 kV。νs = √(hαV cosφ/2πE) と 2e-3 | `…::test_cavity_voltage_is_summed` | 同じ |
 | R1 (新) | RADINT の `QUANTUM LIFETIME(hours)` が exp(2.3026·τ[秒]) | τ[秒]/3600 | τq = τE/2·exp(ξ)/ξ、ξ = (δmax/σδ)²/2 | `…::test_quantum_lifetime_hours` | 同じ |
-| R2 (新) | RADINT の `LINEAR CHROMATICITY` が −I9/4π (磁石の中だけの ∮γ ds: 色収差にならない。例: −2.36、実際は −7.30) | 運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (六極・偏向の寄与を含む) | 同じスクリプトの `DP0` をずらした CALC の差分と 2e-5 で一致 | `…::test_chromaticity_is_tune_derivative` | 同じ |
+| R2 (新) | RADINT の `LINEAR CHROMATICITY` が −I9/4π (磁石の中だけの ∮γ ds: 色収差にならない。例: −2.36、実際は −7.30) | 運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (6 極・偏向の寄与を含む) | 同じスクリプトの `DP0` をずらした CALC の差分と 2e-5 で一致 | `…::test_chromaticity_is_tune_derivative` | 同じ |
 | R3 (新) | RADINT は MULT・SOL を黙って無視する | 場のある MULT・SOL があれば「入っていない」と表示する (積分には入れない) | — | `…::test_mult_warning` | 表示なし |
 | JX1 (新、docs/46 の「RADINT と EMIT の Jx の差」) | Emittance[] (tradke) と追跡 (tradk) は、偏向磁石の端の角 e の蹴りを偏向角 θ に入れるが、長さ al1 を変えない。放射 ∝ θ²/al1 なので I4 の端の項 −η tan(e)/ρ² が 2 倍になる。矩形磁石のリングで Jx = 1.097 (正しくは 1.006) | 端の角のある面では、場の中の行路 al1 を x·tan(e) だけ短くする (その微分も D 行列に入れる) | (a) 解析式 Jx = 1 − I4/I2 (自前の積分) と (b) 硬い端の厳密な幾何で運動量のずれた閉軌道を求め、場の中の行路 l(δ) から Je = 2 + dln l/dδ (Robinson) が 2e-6 で一致: E1=E2=0 で 0.92082、0.1309 で 0.94147、0.5 で 1.00575。**RADINT (0.941466) が正しく、K64 の EMIT (0.9651) が誤り**。v2 の Emittance[] は 1.00586 (EMITDIV=20 で 1.00580)、追跡の一周写像の固有値は 1.0033 | `test_v2_A_damping.py` (7 件) | 同じ |
 | JX2 (新) | 追跡の tbendi (K1≠0 の BEND) は、放射で運動量が変わっても曲率半径 rhoe を入口の値のままにする。減衰の和 Jx+Jy+Je が 4 にならない (K1=0.1 で 4.05、Jx=0.7385) | スライスごとの放射のあとに rhoe = rhob·(1+δ) を更新 | 和が 4.000、Jx = 0.6875 (解析 0.68762、RADINT 0.68762、Emittance[] 0.6883) | `…::test_track_edge_and_sum_rule_v2` | 同じ |
 | ALPHA (新) | Emittance[] の MomentumCompaction: RFSW OFF は −R56/C だけ (入口の分散の項 Σ R5j η_j が抜け、始点で値が変わる。FODO の例で 0.022898、正しくは 0.022137: 3.4% 大きい)。RFSW ON はシンクロトロンチューンから μ² で求める (μ²/12 だけ大きい: 0.25%) | RFSW OFF は −(R56 + Σ R5j η_j)/C。RFSW ON は 4 sin²(μ/2) | 自前の I1/C と 2e-4 (FODO の例は 6 桁: 0.0221368)。RFSW OFF のバケット高さ・バンチ長・νs (√α に比例) も直る: BucketHeight 0.009877 → 0.010045 (RADINT 0.010045、RFSW ON 0.010047)。docs/46 の「BUCKET HIGHT の差」はこの α の差 | `test_v2_A_radint.py::test_momentum_compaction_is_i1_over_c_v2` | 同じ |
 | EMITDIV (pysad の未対応) | 大域変数 EMITDIV・EMITDIVB・EMITDIVQ (放射の分割の倍率) が Emittance[] に効く | 同じ (ゲートなし)。pysad は無視していた。MAIN 部の `EMITDIV = 20;` も効く | gs: `EMITDIV=20` で DampingRate が −.000286831320204 (pysad k64 と 12 桁一致) | `…::test_emitdiv_is_used`、`…::test_emitdiv_in_main_section` | 効く |
-| B09 | tchge の入口で、ロール θ≠0 かつ ずれ≠0 (または DZ・DROTATE≠0) のとき、tbrote が回転行列を上書きし、一周行列に回転が入らない | 入口の回転を行列に掛ける (行列 = 軌道の写像の微分) | `_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致。ロール + ずれのある六極・BEND を含むリングの CALC のチューンが、追跡の一周写像の固有値と一致 (六極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる) | `test_v2_A_tchge.py` (5 件) | 同じ |
+| B09 | tchge の入口で、ロール θ≠0 かつ ずれ≠0 (または DZ・DROTATE≠0) のとき、tbrote が回転行列を上書きし、一周行列に回転が入らない | 入口の回転を行列に掛ける (行列 = 軌道の写像の微分) | `_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致。ロール + ずれのある6 極・BEND を含むリングの CALC のチューンが、追跡の一周写像の固有値と一致 (6 極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる) | `test_v2_A_tchge.py` (5 件) | 同じ |
 | B56 | tbrote の srot (スピン) の更新が行の逐次更新で、行列積にならない | (I+rr)·srot | I+rr は回転行列 (直交、det=1)。直交性が 1e-14 で保たれ、入口と出口が互いに逆 (K64 は 1e-5 以上崩れる) | `test_v2_A_tchge.py` (3 件) | 同じ |
 | B11 | 4D の CALC が縦方向の Twiss 列 (AZ BZ NZ ZX ZPX ZY ZPY) を作り直さず、6D の値が残る | 既定値 (AZ=0、BZ=1、他 0) | 4D では縦方向を計算しない | `test_v2_A_ffs.py::test_calc4d_resets_longitudinal_columns_v2` | 同じ |
 | B15 | `UnstableLevel` が常に 0 | 不安定な点の数 nstab | MatchingResidual = 10·nstab + NetResidual (例: 2 と 20) | `…::test_unstable_level_v2` | 0 |
@@ -100,7 +100,7 @@
 | B21 の K64 のソース | tcod.f の rfsw=.false. の枝は δ を動かさない (trs の 5・6 列を 0 にして 5 元で解く)。z を閉じる δ は tcod に渡す前の cod(6) で決まっているはず | temit の呼び出し側を追っていない。pysad の動作 (z を閉じる) は gs の実測と合い、物理としても妥当 |
 | ANGLE=0 の BEND (tsteee・tsteer、K0 だけの補正磁石) と K0 つき MULT の端の角 | JX1 と同じ「端の蹴りを偏向角に入れるが行路は変えない」作りのはず | 端の角つきの補正磁石の例と独立な値を持っていない。直していない (ANGLE≠0 の BEND だけ直した) |
 | RADINT の空洞の位相 | v2 は VOLT を単純に足す (PHI を見ない) | 位相の違う空洞のベクトル和にするかは仕様の判断 |
-| tthine (長さのある六極など) の bsir0 | K64 は ∓aki·imag(cx)/al (これも次元が合わない)。pysad は実装していない (tthine は放射なしで呼ばれ、入口と出口で打ち消す) | 影響なし |
+| tthine (長さのある6 極など) の bsir0 | K64 は ∓aki·imag(cx)/al (これも次元が合わない)。pysad は実装していない (tthine は放射なしで呼ばれ、入口と出口で打ち消す) | 影響なし |
 
 ## 5. 他の担当への連絡
 
@@ -142,7 +142,7 @@ Python からは `emit6d.emittance6d(lat, p, rfsw=True, radcod=True, pol=True)['
 | Emittance[]・EMIT の減衰・エミッタンス | 端の角のある偏向磁石 (E1・E2)、勾配つき偏向磁石。Jx は解析値と 1e-3 (既定)、`EMITDIV=20` で 1e-4 | ANGLE=0 の BEND (補正磁石) と K0 つき MULT の端の角は K64 のまま。SOL 領域内の MULT・BEND は未対応 (元から) |
 | 追跡 (RAD) の減衰 | 同上。K1 つき BEND で減衰の和が 4 | 同上。FLUC の乱数列は K64 と同じだが、端の角のある BEND では放射の大きさが変わるので値は K64 と違う |
 | MomentumCompaction・BucketHeight・BunchLength (RFSW OFF) | I1/C と 2e-4 | — |
-| CALC のチューン・結合 (ロール + ずれのある BEND・六極・薄い四極・空洞) | 追跡の一周写像と一致 (六極 1e-9、BEND 4e-6) | ずれた BEND の CALC と追跡の 2 次の差 (2 mm で 3e-5) は残る |
+| CALC のチューン・結合 (ロール + ずれのある BEND・6 極・薄い四極・空洞) | 追跡の一周写像と一致 (6 極 1e-9、BEND 4e-6) | ずれた BEND の CALC と追跡の 2 次の差 (2 mm で 3e-5) は残る |
 | Polarization (POL) | 平面リング 92.4%。誤差のあるリング: 脱偏極率が FLUC つきの追跡と 0.5〜1.6 倍 (3 例、§3)。`depol_rate`・`taudep`・`spin_spread`・`spin_orbit` も使える | 線形 (SLIM 相当) の見積もり。高次の側帯共鳴、運動論的偏極の項なし。SOL 領域内の MULT・BEND のスピンは未対応 (元から)。POL のときは四極を細かく分割するので Emittance[] が遅くなる |
 | スピン追跡・スピン回転 (POL) の端の縦磁場 | BEND (K1 つきも)・QUAD・MULT の端。Emittance[] と追跡が 1e-5 以下で一致 | K1=0 の BEND の追跡は放射の分割の粗さで 2e-5 rad の差が残る |
 | 4D の CALC の縦の Twiss 列、UnstableLevel、CalculateOptics の stabz・tracez | 上の表のとおり | — |

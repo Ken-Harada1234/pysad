@@ -1,14 +1,14 @@
 !@LAT 5GeV
 !=====================================================================
-! V0714_chromaticity: δ に対するチューンの変化 (色収差)。六極 0 (自然クロマティシティ) と、六極 ON (最終設定)
+! V0714_chromaticity: δ に対するチューンの変化 (色収差)。6 極 0 (自然クロマティシティ) と、6 極 ON (最終設定)
 !
-! 元: calc_chromaticity.sad (7 つのリング RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA で、六極を 0 にして、
+! 元: calc_chromaticity.sad (7 つのリング RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA で、6 極を 0 にして、
 !     δ = ±0.5% (RING) / ±1% (他) の 3 次の PolynomialFit の係数 [1,2] を出す)。amp_dep_ts_dp.sad (δ を 0〜±5% で振る) の δ スキャンも含める。
 ! 注意 (K64 のバグ B18): δ を ±対称に振ったデータを PolynomialFit に渡すと係数の次数補正が壊れる (docs/11 C6、docs/21 B18)。
 !       元の台本が出していた「係数 [1,2]」は ξ そのものではない (δ の 1 次の係数 + 高次の混ざり。
 !       出力の fit 係数と中心差分の ξ を並べて見比べる)。この台本は元の出し方 (係数 [1,2]) を残しつつ、正しい ξ を中心差分 ξ = [ν(+dδ) - ν(-dδ)]/(2 dδ)
 !       (dδ = 1e-4) でも出す。
-! 流れ: 各リングで六極 0 → δ スキャン → PolynomialFit → 係数 [1,2]。続いて最終設定の六極のままで同じ。
+! 流れ: 各リングで6 極 0 → δ スキャン → PolynomialFit → 係数 [1,2]。続いて最終設定の6 極のままで同じ。
 !=====================================================================
 !@PARAM dpmax = 0.01
 !@PARAM dpstep = 0.001
@@ -71,14 +71,14 @@ ReportRings[tag_]:=(
 
 USE RING;
   cell calc emit;
-! 最終設定の六極のまま
+! 最終設定の6 極のまま
 ReportRings["sext ON :"];
-! 六極 0 (自然クロマティシティ。元の calc_chromaticity.sad と同じ条件。USE のたびに六極が定義に戻るので、ChromRing の中で 0 にする)
+! 6 極 0 (自然クロマティシティ。元の calc_chromaticity.sad と同じ条件。USE のたびに6 極が定義に戻るので、ChromRing の中で 0 にする)
 soff = 1;
 ReportRings["sext OFF:"];
 soff = 0;
 
-! δ スキャン (amp_dep_ts_dp.sad: δ = 0 〜 +5% と 0 〜 -5%、刻み 0.5%。六極は最終設定のまま)
+! δ スキャン (amp_dep_ts_dp.sad: δ = 0 〜 +5% と 0 〜 -5%、刻み 0.5%。6 極は最終設定のまま)
 USE RING;
 If[dpscan == 1,
   Print["delta scan (sextupoles ON)"];

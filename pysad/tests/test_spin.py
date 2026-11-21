@@ -67,7 +67,7 @@ def test_planar_ring_matches_gs():
 
 
 def test_coupled_ring_matches_gs():
-    """縦ずれ・傾いた四極と偏向・六極のあるリング: 偏極時間・スピンチューン・偏極ベクトルが gs と一致する"""
+    """縦ずれ・傾いた四極と偏向・6 極のあるリング: 偏極時間・スピンチューン・偏極ベクトルが gs と一致する"""
     tau, nu, nnu, pol, vec = _out(COUPLED)
     assert abs(tau - 130.3526952378181) < 1e-8
     assert abs(nu - 0.40403473710144) < 1e-11

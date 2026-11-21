@@ -100,7 +100,7 @@ gs は WSL の 10-19 ビルド (2026-11-19、`timeout` 120〜900 s、各回の�
 - 最終の残差は FITP>1 で gs と 2e-4 以内 (beta は 9.0772e-4 で全桁一致)。K2 は sextupole の谷が浅く、反復の経路の違いで 1e-4 ずれる (残差には 1e-4 しか効かない)。経路が違う原因は、gs が試行点の「Overflow & closed orbit not found」で 1〜2 反復早く止まる (pysad の `qcod` の失敗の扱いと K64 の違い)。v2.1.0 の C は FODO 24 セルで同じ傾向 (gs は最小値の手前で止まる) を記録している。5 点・beta の独立な最小値は未計算 (24 セルでは C が独立な最小化と 5e-8 一致を確認)。
 - k64 と v2 は FITP で同じ結果 (最終の残差・K・反復)。
 - 試験: `test_fitp_final_solution_matches_gs_k64` (3)・`test_fitp_first_iteration_residual_matches_gs_for_fitp_1`。
-- 未確認: 結合・六極のあるリングの fam 点 (`MatchingAmplitude`・`NFAMP`)、大きなリング・PF・ASTRID2 の FITP>1 (オフモメンタムの closed orbit が不安定で gs が長くかかる/落ちる可能性があり、今回は時間の都合で走らせていない)。
+- 未確認: 結合・6 極のあるリングの fam 点 (`MatchingAmplitude`・`NFAMP`)、大きなリング・PF・ASTRID2 の FITP>1 (オフモメンタムの closed orbit が不安定で gs が長くかかる/落ちる可能性があり、今回は時間の都合で走らせていない)。
 
 ## 8. 項目 7: Tk 9.0 の見た目
 

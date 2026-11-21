@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-"""六極の設定をいくつか選んで、RDT・ADTS・クロマティシティの数字を並べた表 (R7、最優先の依頼)。
+"""6 極の設定をいくつか選んで、RDT・ADTS・クロマティシティの数字を並べた表 (R7、最優先の依頼)。
 使い方: py -3.12 sextupole_settings_table.py [--da] [--src-dir 元のラティス定義のフォルダ]    (--da: 追跡の DA も求める。1 設定に 1〜2 分)
 出力: results/settings_table.json、results/settings_table.md、results/settings_table.out.txt、fig_settings.png
-選ぶ設定 (六極の種類):
-  (A) 別の研究者による最適化の結果 (全セルの種類が独立に自由な六極): v07_14 の 20231205 再調整版 (final)、v07_16 の再調整 (rev9)、第 1 次の再調整 (retune1)、
+選ぶ設定 (6 極の種類):
+  (A) 別の研究者による最適化の結果 (全セルの種類が独立に自由な6 極): v07_14 の 20231205 再調整版 (final)、v07_16 の再調整 (rev9)、第 1 次の再調整 (retune1)、
       DDBA_11 (v05_14 に入れた MH・LH の 10 ファミリーの結果。光学は v05_14)
   (B) 全セルを自由にしていない (ファミリーでまとめた、設計者自身の探索の) 台本の値: v07_11、v07_12 (v07_14 の光学に載せ替え)、v07_12 そのまま (DDBA_22)、
       v07_13 (元のフォルダがあるとき。チューンが違う)、DDBA_05 (v05_12。S1 = −S2 など)、DDBA_10 (v05_14)
-  (C) 参考: 六極を全部 0 にしたもの (v07_14 の光学。DDBA_05・DDBA_10 の光学)
-同じ光学 (v07_14) に六極だけ載せ替えたものと、元の光学のままのもの (表の「光学」の列) を分ける。
-計算: resdrive.resonance_terms (1 次、δ の項。偏向磁石の 3 次の項込み)、rdt2nd.rdt4 (4 次、六極の 2 次込み)、resdrive.adts(fourth='r3'、optics='calc')、
-resdrive.chromaticity_natural + 六極 + 偏向磁石の δ の項、chromaticity_numeric (CALC、order 3)。単位は docs/49 と同じ (h は (2J)^{n/2} で規格化、ADTS は 1/(m rad))。
+  (C) 参考: 6 極を全部 0 にしたもの (v07_14 の光学。DDBA_05・DDBA_10 の光学)
+同じ光学 (v07_14) に6 極だけ載せ替えたものと、元の光学のままのもの (表の「光学」の列) を分ける。
+計算: resdrive.resonance_terms (1 次、δ の項。偏向磁石の 3 次の項込み)、rdt2nd.rdt4 (4 次、6 極の 2 次込み)、resdrive.adts(fourth='r3'、optics='calc')、
+resdrive.chromaticity_natural + 6 極 + 偏向磁石の δ の項、chromaticity_numeric (CALC、order 3)。単位は docs/49 と同じ (h は (2J)^{n/2} で規格化、ADTS は 1/(m rad))。
 """
 import argparse
 import glob
@@ -132,7 +132,7 @@ def analyze(lat, p0, with_calc=True):
                 out['calc_err'] = str(ex)
     out['k2l_max'] = float(np.max(np.abs(k))) if len(k) else 0.0
     out['nfam'], out['nsext'] = len(names), sum(len(v) for v in fam.values())
-    out['pattern'] = pattern(names, k) if len(k) else ('(六極なし)', '')
+    out['pattern'] = pattern(names, k) if len(k) else ('(6 極なし)', '')
     return out
 
 
@@ -141,14 +141,14 @@ src_v = C.load_source()
 sets = C.load_sets()
 nm_fam = sets['family_names']
 LAB = {'final': ('A', 'v07_14 の 20231205 再調整版 (最終)'), 'rev9': ('A', 'v07_16 の再調整 (rev9)'), 'retune1': ('A', '第 1 次の再調整 (2023-10)'),
-       'v07_11': ('B', 'v07_11 の六極 (S1=S2=0、S3=S5 の 3 個)'), 'v07_12': ('B', 'v07_12 の六極 (同上、M-A だけ少し違う)')}
+       'v07_11': ('B', 'v07_11 の6 極 (S1=S2=0、S3=S5 の 3 個)'), 'v07_12': ('B', 'v07_12 の6 極 (同上、M-A だけ少し違う)')}
 for key in ('final', 'rev9', 'retune1', 'v07_12', 'v07_11'):
     k = np.array(sets['sets'][key]['k'])
     SETTINGS.append((key, LAB[key][0], LAB[key][1], 'v07_14 (載せ替え)', S.replace_k2_in_source(src_v, nm_fam, k), 'RING', 5e9))
-SETTINGS.append(('zero_v07_14', 'C', '六極を全部 0 (v07_14 の光学)', 'v07_14', S.replace_k2_in_source(src_v, nm_fam, np.zeros(len(nm_fam))), 'RING', 5e9))
+SETTINGS.append(('zero_v07_14', 'C', '6 極を全部 0 (v07_14 の光学)', 'v07_14', S.replace_k2_in_source(src_v, nm_fam, np.zeros(len(nm_fam))), 'RING', 5e9))
 native = [('DDBA_11', 'A', 'DDBA_11 (v05_14 に入れた MH・LH 10 ファミリーの結果。2023-08)', 'DDBA_11_v05_14_sx.sad'),
           ('DDBA_22', 'B', 'DDBA_22 = v07_12 そのまま (元の並び)', 'DDBA_22_v07_12.sad'),
-          ('DDBA_05', 'B', 'DDBA_05 (v05_12、六極の総当たり探索の版)', 'DDBA_05_v05_12.sad'),
+          ('DDBA_05', 'B', 'DDBA_05 (v05_12、6 極の総当たり探索の版)', 'DDBA_05_v05_12.sad'),
           ('DDBA_10', 'B', 'DDBA_10 (v05_14)', 'DDBA_10_v05_14.sad')]
 for key, kind, lab, fn in native:
     path = os.path.join(LATDIR, fn)
@@ -157,16 +157,16 @@ for key, kind, lab, fn in native:
 if args.src_dir and os.path.isdir(args.src_dir):
     p13 = os.path.join(args.src_dir, 'v07_13')
     if os.path.exists(p13):
-        SETTINGS.append(('v07_13', 'B', 'v07_13 の六極 (元の光学。チューン 45.865/21.665 で違う)', '元の光学 (v07_13)', open(p13, encoding='utf-8', errors='replace').read(), 'RING', None))
+        SETTINGS.append(('v07_13', 'B', 'v07_13 の6 極 (元の光学。チューン 45.865/21.665 で違う)', '元の光学 (v07_13)', open(p13, encoding='utf-8', errors='replace').read(), 'RING', None))
 for base in ('DDBA_05', 'DDBA_10'):
     for s_ in list(SETTINGS):
         if s_[0] == base:
             lat0 = load_sad_string(s_[4]).build_lattice(s_[5])
             names0, _, _ = S.sextupole_families(lat0)
             try:
-                SETTINGS.append(('zero_' + base, 'C', '六極を全部 0 (%s の光学)' % base, s_[3], S.replace_k2_in_source(s_[4], names0, np.zeros(len(names0))), s_[5], None))
+                SETTINGS.append(('zero_' + base, 'C', '6 極を全部 0 (%s の光学)' % base, s_[3], S.replace_k2_in_source(s_[4], names0, np.zeros(len(names0))), s_[5], None))
             except ValueError as ex:
-                P('注意: %s の六極を 0 にできなかった (%s)' % (base, ex))
+                P('注意: %s の6 極を 0 にできなかった (%s)' % (base, ex))
 
 rows = {}
 for name, kind, label, optics, src, ring, p0 in SETTINGS:
@@ -205,13 +205,13 @@ json.dump(rows, open(os.path.join(C.OUT, 'settings_table.json'), 'w', encoding='
 
 # 表 (markdown)
 ML = []
-ML.append('### 表 1: 設定と六極の種類')
+ML.append('### 表 1: 設定と6 極の種類')
 ML.append('| 名前 | 種類 | 設定 | 光学 | 運動量 GeV | ファミリー数 / 台数 | 全ファミリー独立か | K2L の並び (セルの種類ごと) | max|K2L| 1/m² |')
 ML.append('|---|---|---|---|---|---|---|---|---|')
 for n, o in rows.items():
     ML.append('| %s | %s | %s | %s | %g | %d / %d | %s | %s | %.1f |' % (n, o['kind'], o['label'], o['optics'], o['p0_GeV'], o['nfam'], o['nsext'], o['pattern'][0], o['pattern'][1], o['k2l_max']))
 ML.append('')
-ML.append('### 表 2: 1 次の RDT |h| (六極の 3 次、偏向磁石込み) と δ の項、要素ごとの寄与の相殺 (六極だけの Σ/Σ|寄与|、最大の 1 台の寄与)')
+ML.append('### 表 2: 1 次の RDT |h| (6 極の 3 次、偏向磁石込み) と δ の項、要素ごとの寄与の相殺 (6 極だけの Σ/Σ|寄与|、最大の 1 台の寄与)')
 ML.append('| 名前 | h21000 | h30000 | h10110 | h10020 | h10200 | h11001 | h00111 | h20001 | h00201 | h10002 | 相殺 h21000 | h30000 | h10020 | 最大寄与 h21000 | h30000 | h10020 |')
 ML.append('|' + '---|' * 17)
 for n, o in rows.items():
@@ -219,14 +219,14 @@ for n, o in rows.items():
         n, *['%.3g' % o['h3'][t] for t in CUB], *[o['hdel'][t] for t in DEL], o['canc']['h21000'], o['canc']['h30000'], o['canc']['h10020'],
         o['elmax']['h21000'], o['elmax']['h30000'], o['elmax']['h10020']))
 ML.append('')
-ML.append('### 表 3: 4 次の RDT |h| (写像の係数。六極の 2 次 + 八極 + 運動学 + フリンジ + 偏向磁石) と ADTS (fourth=\'r3\'、optics=\'calc\')')
+ML.append('### 表 3: 4 次の RDT |h| (写像の係数。6 極の 2 次 + 八極 + 運動学 + フリンジ + 偏向磁石) と ADTS (fourth=\'r3\'、optics=\'calc\')')
 ML.append('| 名前 | ' + ' | '.join(H4) + ' | ADTS ∂νx/∂Jx | ∂νx/∂Jy | ∂νy/∂Jy |')
 ML.append('|' + '---|' * (len(H4) + 5))
 for n, o in rows.items():
     ML.append('| %s | ' % n + ' | '.join('%.3g' % o['h4'][t] for t in H4) + ' | %.4g | %.4g | %.4g |' % tuple(o['adts']))
 ML.append('')
-ML.append('### 表 4: クロマティシティ (六極込みの ξ、自然・偏向磁石の δ の項・六極の内訳、CALC)')
-ML.append('| 名前 | ξx 自然 | ξy 自然 | ξx 偏向磁石 | ξy 偏向磁石 | ξx 六極 | ξy 六極 | ξx 解析 | ξy 解析 | ξx CALC | ξy CALC | ∂²νx/∂δ² (CALC) | ∂²νy/∂δ² | チューン (CALC) |')
+ML.append('### 表 4: クロマティシティ (6 極込みの ξ、自然・偏向磁石の δ の項・6 極の内訳、CALC)')
+ML.append('| 名前 | ξx 自然 | ξy 自然 | ξx 偏向磁石 | ξy 偏向磁石 | ξx 6 極 | ξy 6 極 | ξx 解析 | ξy 解析 | ξx CALC | ξy CALC | ∂²νx/∂δ² (CALC) | ∂²νy/∂δ² | チューン (CALC) |')
 ML.append('|' + '---|' * 14)
 for n, o in rows.items():
     c = o.get('xi_calc') or [float('nan')] * 2
@@ -268,7 +268,7 @@ try:
         ax.set_xticklabels(lab, rotation=60, fontsize=7)
         ax.set_title(ttl, fontsize=9)
     axs[0].legend(fontsize=7)
-    fig.suptitle('v07_14 の光学での六極の組の比較 (zero_v07_14 = 六極なし)', fontsize=10)
+    fig.suptitle('v07_14 の光学での6 極の組の比較 (zero_v07_14 = 6 極なし)', fontsize=10)
     fig.tight_layout()
     fig.savefig(os.path.join(C.HERE, 'fig_settings.png'), dpi=120)
 except Exception as ex:

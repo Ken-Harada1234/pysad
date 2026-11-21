@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""v07_14 の六極の検討 (R7) の共通部分: ラティスの読み込み、六極の組 (K2L) の読み込み、リングの鏡面対称の軸、追跡の設定。
+"""v07_14 の6 極の検討 (R7) の共通部分: ラティスの読み込み、6 極の組 (K2L) の読み込み、リングの鏡面対称の軸、追跡の設定。
 リポジトリのどこから実行してもよい。ラティスは既定で example/ddba/v07_14/lattice/v07_14_5GeV.sad (環境変数 V07_14_LATTICE で変えられる)。
-六極の組は sextupole_sets.json (sxt_extract_sets.py が元のラティス定義から作った K2L の表。元のラティスがなくても使える)。
+6 極の組は sextupole_sets.json (sxt_extract_sets.py が元のラティス定義から作った K2L の表。元のラティスがなくても使える)。
 """
 import json
 import os
@@ -42,7 +42,7 @@ def load_sets():
 
 
 def mirror_axes(lat):
-    """素子の名前の列 (ドリフト・偏向磁石・四極・六極だけ) が回文になる軸の素子の添字 (リングの鏡面対称の軸)。無ければ []"""
+    """素子の名前の列 (ドリフト・偏向磁石・四極・6 極だけ) が回文になる軸の素子の添字 (リングの鏡面対称の軸)。無ければ []"""
     idx = [i for i, e in enumerate(lat.elements) if type(e).__name__ in ('Sextupole', 'Bend', 'Quadrupole', 'Drift')]
     seq = [lat.elements[i].name for i in idx]
     n = len(seq)

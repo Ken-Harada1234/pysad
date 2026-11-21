@@ -130,7 +130,7 @@ def track_thin_quad(x, px, y, py, z, g, K1L: float) -> tuple:
 
 def track_thin_sext(x, px, y, py, z, g, K2L: float) -> tuple:
     """
-    薄レンズ六極キック。
+    薄レンズ6 極キック。
     Δpx = -K2L/(2(1+δ)) · (x² - y²)
     Δpy = +K2L/(1+δ) · x·y
     """

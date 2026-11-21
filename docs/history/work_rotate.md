@@ -12,7 +12,7 @@ SAD の `ROTATE` (= `ROT` = `TILT`) を BEND・QUAD・SEXT/OCT/DECA・MULT の�
 | (1) ANGLE=0 の BEND に ROTATE=−90 DEG (垂直ステアリング) と K0 | parser が Drift にしていたのをやめ、`Bend` (ANGLE=0) として保持。CALC・emit・追跡とも一致 (L>0 と L=0 の両方) |
 | (2) skew 四極 (QUAD の ROTATE + K1) | 元から一致 (tsolrote の経路)。**L=0 の QUAD (`L=0 K1 ROTATE=45 deg`) は K1 が無視されていた** → tquade の al=0 → tthine(nord=4) の薄い四極として CALC・emit・追跡に追加 |
 | (3) ROTATE 付きの BEND (ANGLE≠0, 5 DEG / 90 DEG / K1 付き / K0) | 一致。回転とずれ・DROTATE の組み合わせ順を tchge の直訳に直した (ずらす→回す、行列の作り方まで) |
-| (4) 六極・八極・十極・MULT の ROTATE | 一致。ずれ DX/DY との組み合わせで SAD の癖 (後述 §3) があり、それも再現 |
+| (4) 6 極・八極・十極・MULT の ROTATE | 一致。ずれ DX/DY との組み合わせで SAD の癖 (後述 §3) があり、それも再現 |
 
 付随して直したもの: FFS の `LINE["ROTATE",BEND]` の読み書き (Bend.ROTATE)、`DTHETA` の格納先 (BEND/MULT は DROT)、FFS で ROTATE/ANGLE を変えたときの GEO、
 `emit_extra`/`touschek` に複製されていた要素ループ、numba の ANGLE=0 BEND (tsteer) カーネル、L=0 の QUAD の追跡 (`NotImplementedError('長さ 0 の四極')` の解消)。
@@ -39,15 +39,15 @@ SAD の `ROTATE` (= `ROT` = `TILT`) を BEND・QUAD・SEXT/OCT/DECA・MULT の�
 
 tchge.f の入口で `th≠0` のとき回転行列 `trans1` を作って `transa=>trans1` とし、続けて `dx_rot≠0 (または dz≠0, dtheta≠0)` なら **同じ `transa` を tbrote に渡す**。
 tbrote → tbgrote (および tdrife1) は `trans` を「掛ける」のではなく「上書き」する (tinitr してから代入) ので、**入口では COD は回るが行列には回転が入らない**。
-出口 (`th≠0`) は `tmultr5(transa,trans1)` で掛けるので回転が入る。結果、一周行列は R^T·M (非対称) になり、**th≠0 かつずれ≠0 の要素 (BEND, 六極などの薄い多極) は結合 (R1..R4)・チューンが物理とずれる**。
-R1 が 1e-4 → 0.26 になるほどで、3564 要素のリングに rotate 30° + DX=1e-3 の六極 1 台を入れるとチューンが 0.01 動く。
+出口 (`th≠0`) は `tmultr5(transa,trans1)` で掛けるので回転が入る。結果、一周行列は R^T·M (非対称) になり、**th≠0 かつずれ≠0 の要素 (BEND, 6 極などの薄い多極) は結合 (R1..R4)・チューンが物理とずれる**。
+R1 が 1e-4 → 0.26 になるほどで、3564 要素のリングに rotate 30° + DX=1e-3 の6 極 1 台を入れるとチューンが 0.01 動く。
 
 - 再現: `lattice._tchge_jac` (入口で th≠0 かつ tbrote を呼ぶとき、tbrote だけの行列 = 単位行列 ((5,6) だけ dpzi(pr+1)/pzi) か、phig≠0 なら tdrife1 (長さ dz1=dxr·sin φ の BEND 中点ドリフト) を含む合成の数値微分)。
-  th=0 のときは普通に (回転なしで) tbrote の行列。1 要素の写像テスト (bench_level25g) で BEND (K1=0/K1≠0)・六極とも 1e-11 で一致 (この癖を入れる前は 1e-7)。
+  th=0 のときは普通に (回転なしで) tbrote の行列。1 要素の写像テスト (bench_level25g) で BEND (K1=0/K1≠0)・6 極とも 1e-11 で一致 (この癖を入れる前は 1e-7)。
 - 適用先: BEND (`_bend_element_cod_matrix`、emit6d/calc6d の `_tbende`)、薄い多極 (`lattice._thin_cod_matrix`、emit6d `_tthine`/`_tthine_gen`)。四極・MULT の tsolrote には癖はない。
 - 追跡 (TENT/TEXIT, tbshift) は座標だけなので影響なし。
 - **帰結**: この癖のある要素 (th≠0 かつずれ≠0) が入ったリングでは SAD の閉軌道 (qcod は itmax=10、tcod は緩い収束) が収束しないことがあり、**Emittance[] の δ・チューンは SAD と一致しない** (CALC の Twiss と追跡は一致する)。
-  例: 六極 1 台 (ROTATE=30 DEG DX=1e-3 DY=−5e-4) だけで SAD の δ=−1.2e-9, z=−1.8e-7 (z が閉じない) に対し pysad は z を閉じる δ=−1.3e-6 (通常のリングでは SAD も z を閉じて一致する)。
+  例: 6 極 1 台 (ROTATE=30 DEG DX=1e-3 DY=−5e-4) だけで SAD の δ=−1.2e-9, z=−1.8e-7 (z が閉じない) に対し pysad は z を閉じる δ=−1.3e-6 (通常のリングでは SAD も z を閉じて一致する)。
   K0 のキックで軌道が 1e-4 に達するリングでは CALC の COD も itmax=10 の打ち切りで 2e-5 ずれることがある。この組み合わせの Emittance[] は参考値 (bench_level25f)。
 
 ## 4. SAD が落ちる入力
@@ -86,7 +86,7 @@ R1 が 1e-4 → 0.26 になるほどで、3564 要素のリングに rotate 30°
 | 25c | ROTATE 付き BEND: 5 DEG の対 (BR1 は E1/E2=.5、BR2 は ANGLE 逆符号)、90 DEG (垂直偏向、E1/E2) の対、K1 付き (3 DEG / −70 DEG)。T0、GEO (GX,GY,GZ,GCHI1..3)、emit、FFS で ROTATE と K0 を変更 (T1) | CALC 6e-10、GEO 8.5e-14、emit 相対 8e-10、TUN 4e-9、追跡 1e-15 / RAD 4e-13 |
 | 25d | SEXT (L>0 ROTATE=10/30 DEG、L=0 −20 DEG)、OCT (L>0, L=0)、DECA、MULT (K1/K2/K3 + ROTATE、L=0 の K0 + DX/DY + ROTATE)。FFS で ROTATE と DX/DY を変更 | CALC 7e-9 (BX≈10)、emit 相対 3e-12、TUN 1.5e-11、追跡 3e-16 |
 | 25e | 組み合わせ (癖が出ない組): ROTATE+K0 の BEND、DX/DY+K0 の BEND、K1 付き BEND の ROTATE=−40 DEG +K0、DX/DY+DROTATE、DROTATE+E1/E2、垂直ステアリング (L>0, L=0) + K0、水平ステアリング + DX/DY、QUAD ROTATE+DX/DY、MULT K0+ROTATE+DX/DY。FFS で変更した T1 も | CALC 3.6e-9、GEO 5e-13、追跡 1e-16、emit 相対 1.6e-6 / TUN 4.5e-8 (δ の収束の差: 25c/23g と同じ程度) |
-| 25f | 癖が出る組 (th≠0 かつずれ≠0): BEND (ROTATE=20 DEG, DX/DY, K0) の対、垂直ステアリング (L>0, L=0) に DX/DY + K0、六極 (ROTATE=30 DEG, DX=1e-3, DY=−5e-4)。CALC の R1..R4 ほか全列 | CALC 9.6e-10、追跡 1e-16。Emittance[] は §3 のとおり一致しない (参考値) |
+| 25f | 癖が出る組 (th≠0 かつずれ≠0): BEND (ROTATE=20 DEG, DX/DY, K0) の対、垂直ステアリング (L>0, L=0) に DX/DY + K0、6 極 (ROTATE=30 DEG, DX=1e-3, DY=−5e-4)。CALC の R1..R4 ほか全列 | CALC 9.6e-10、追跡 1e-16。Emittance[] は §3 のとおり一致しない (参考値) |
 | 25g | 1 要素の INS (`tmp25/maptest.py`): 入口に大きな COD (DX=1e-3, DPX=5e-4, DY=−5e-4, DPY=2e-4) を与え、出口の COD・Twiss・R1..R4 を比較。13 種 (BEND/K1 付き BEND の ROTATE/K0/DX/DY/DROTATE、垂直ステアリング、QUAD、SEXT、MULT) | すべて ≤ 5e-11 (出力 10 桁の表示桁以内を含む)。癖を入れる前は BEND (ずれ+ROTATE) が 1e-7 |
 
 

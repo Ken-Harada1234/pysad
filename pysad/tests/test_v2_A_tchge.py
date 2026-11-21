@@ -3,7 +3,7 @@
 
 根拠:
 - B09: 転送行列は軌道の写像の微分でなければならない。v2 の `_tchge_jac` は `_tchge_cod` の数値微分と一致する。
-  さらに、ロールとずれのある BEND・六極を含むリングで、CALC のチューンが、別のコードである追跡 (TrackParticles 相当) の
+  さらに、ロールとずれのある BEND・6 極を含むリングで、CALC のチューンが、別のコードである追跡 (TrackParticles 相当) の
   一周写像の固有値から求めたチューンと一致する (K64 は 0.02〜0.18 ずれる)。
 - B56: tbrote の rr は回転行列から単位行列を引いたもの。スピンの 3x3 行列への作用は行列積 (I+rr)·srot で、直交行列は直交行列に移る。
   K64 は行を逐次更新するので、直交性が崩れる。
@@ -116,7 +116,7 @@ def _tunes(kind):
 
 
 def test_calc_tunes_match_tracking_v2(v2_mode):
-    """ロール + ずれのある六極・BEND を含むリング: CALC のチューン = 追跡の一周写像のチューン"""
+    """ロール + ずれのある6 極・BEND を含むリング: CALC のチューン = 追跡の一周写像のチューン"""
     # BEND は 2e-5: CALC (tbende) と追跡 (tbend) は、ずれた BEND の 2 次の幾何の項が違う (ロールなしの DX=2 mm でも 2.9e-5 の差が K64 にある)
     for kind, tol in (('sext', 1e-7), ('bend', 2e-5)):
         calc, trk = _tunes(kind)

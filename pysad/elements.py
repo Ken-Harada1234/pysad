@@ -8,7 +8,7 @@ SAD 要素タイプ:
   DRIFT  - ドリフト空間
   QUAD   - 四極電磁石
   BEND   - 偏向電磁石 (二極子)
-  SEXT   - 六極電磁石
+  SEXT   - 6 極電磁石
   MONI   - ビーム位置モニタ
   MARK   - マーカー
   MULT   - 多極子
@@ -388,7 +388,7 @@ def _edge_matrix(h: float, e: float,
 
 
 # ---------------------------------------------------------------------------
-# 六極電磁石 (薄レンズ近似)
+# 6 極電磁石 (薄レンズ近似)
 # ---------------------------------------------------------------------------
 
 @dataclass
@@ -396,12 +396,12 @@ class Sextupole(Element):
     """
     SEXT 要素。薄レンズ近似では転送行列は非線形項のみ。
     通常の線形転送行列はドリフトと同じ。
-    SAD コマンド: SEXT L=<長さ> K2=<六極強度>;
+    SAD コマンド: SEXT L=<長さ> K2=<6 極強度>;
     """
-    K2: float = 0.0        # 六極強度 [1/m³]
+    K2: float = 0.0        # 6 極強度 [1/m³]
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """六極の 1 次転送行列はドリフト (qthin() 相当)。色収差補正あり。"""
+        """6 極の 1 次転送行列はドリフト (qthin() 相当)。色収差補正あり。"""
         M = np.eye(6)
         Leff = self.L / (1.0 + delta)
         M[0, 1] = Leff
@@ -410,7 +410,7 @@ class Sextupole(Element):
 
     def thin_kick(self, x: float, y: float, delta: float = 0.0) -> tuple:
         """
-        薄レンズ近似での六極キック (非線形)。
+        薄レンズ近似での6 極キック (非線形)。
         Δx' = -K2*L/2 * (x² - y²)
         Δy' = +K2*L * x*y
         """

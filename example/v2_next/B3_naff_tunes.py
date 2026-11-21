@@ -25,7 +25,7 @@ BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.130899693899
 LINE CELL1 = (QF D2 SF D2 B D2 SD D2 QD D1);
 LINE RING = (ST 12*CELL1);
 '''
-RINGS = [('12 セル FODO (3 GeV、45.6 m、六極つき)', FODO, 'RING'),
+RINGS = [('12 セル FODO (3 GeV、45.6 m、6 極つき)', FODO, 'RING'),
          ('大きなリング A (kek-ls_v03_12.lat、3 GeV、603 m、3563 要素)', open(os.path.join(ROOT, 'pysad', 'tests', 'kek-ls_v03_12.lat'), encoding='utf-8').read(), 'RING'),
          ('PF リング (2.5 GeV、187 m)', open(os.path.join(ROOT, 'example', 'pf', 'lattice', 'v9_16_asym.sad'), encoding='utf-8').read(), 'RING'),
          ('ASTRID2 (0.58 GeV、45.7 m)', open(os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_01.sad'), encoding='utf-8').read(), 'RING')]

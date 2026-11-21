@@ -11,7 +11,7 @@
 | [`KEKLS_calc_H`](KEKLS_calc_H.md) | H 関数の積分によるエミッタンス | calc_H.sad、calc_emit.sad 後半 | εx (SAD と 2.3% 差) | gs 1 s / pysad 3 s | ○ |
 | [`KEKLS_chromaticity`](KEKLS_chromaticity.md) | チューンの運動量依存 | chromaticity_plot.sad | ν(δ)・PNG | gs 1 s / pysad 5 s | ○ |
 | [`KEKLS_amp_dep_ts`](KEKLS_amp_dep_ts.md) | 振幅依存チューンシフト | amp_dep_ts*.sad | ν(振幅)・PNG | gs 1 s / pysad 36 s | ○ |
-| [`KEKLS_sextupole_tune_scan`](KEKLS_sextupole_tune_scan.md) | 六極を変えたチューンシフト | dp_sv_sx.sad | Σ|Δν| の 5×5 の地図・PNG | gs 2 s / pysad 18 s | △ |
+| [`KEKLS_sextupole_tune_scan`](KEKLS_sextupole_tune_scan.md) | 6 極を変えたチューンシフト | dp_sv_sx.sad | Σ|Δν| の 5×5 の地図・PNG | gs 2 s / pysad 18 s | △ |
 | [`KEKLS_scan_target`](KEKLS_scan_target.md) | マッチングの目標値の振り (δ 依存・ADTS) | dp_sv.sad、dx_sv*.sad、dy_sv*.sad | ξ・ν(δ)・ADTS | gs 5 s / pysad 119 s | △ |
 
 図: [`KEKLS_ring_layout_optics.png`](KEKLS_ring_layout_optics.png) (リングの配置とオプティクス)、[`KEKLS_chromaticity.png`](KEKLS_chromaticity.png)、[`KEKLS_amp_dep_ts.png`](KEKLS_amp_dep_ts.png)、[`KEKLS_sextupole_tune_scan.png`](KEKLS_sextupole_tune_scan.png)。
@@ -29,7 +29,7 @@
 
 ## 元のスクリプトのうち取り込んでいないもの
 
-- `tune_survey_amp_dep_coef*`・`tune_survey_momentum`・`tune_survey_disp`・`tune_survey_linear*`: 別のリング用の `modules_tune_sv.n`・`modules_amp_dep_ts.n` の `MatchingWholeRing[]`・`ChromCorrect[]`・`LinearAmpDepTSCorrect[]` (v03_68 には無い) と、六極 S1L・S2L… を使うため v03_68 には適用できない。ADTS・運動量依存の表示は、この例集の `KEKLS_amp_dep_ts`・`KEKLS_scan_target` で扱う。
+- `tune_survey_amp_dep_coef*`・`tune_survey_momentum`・`tune_survey_disp`・`tune_survey_linear*`: 別のリング用の `modules_tune_sv.n`・`modules_amp_dep_ts.n` の `MatchingWholeRing[]`・`ChromCorrect[]`・`LinearAmpDepTSCorrect[]` (v03_68 には無い) と、6 極 S1L・S2L… を使うため v03_68 には適用できない。ADTS・運動量依存の表示は、この例集の `KEKLS_amp_dep_ts`・`KEKLS_scan_target` で扱う。
 - `draw_cad.sad`: 元の描画モジュール `drawmagvw3d.n` (元のフォルダに無い) が必要。
 - `disp2`・`disp_arc_optics`・`disp_emit`・`disp_matching_tune`・`disp_matrix`: ID 入りラティス用の `modules_matching_noID.n`・`modules_write_correctdata.n` を使う (v03_68 に ID は無い)。
 - `disp_b`・`disp_bunchlength`・`disp_eta`・`disp_NPARA_*`・`calc_H_2`・`dp_sv_R`・`dp_sv_2`・`dp_sv_v2_11`・`dx_sv_R`・`dx_sv_v2_11`・`dy_sv_R`・`dy_sv_v2_11`・`amp_dep_ts_{x,y,dp}`: 上の台本の版違い・断片 (別のラティスの名前や `stop;` で止まるもの)。

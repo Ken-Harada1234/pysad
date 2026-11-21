@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""R7 (試作 pysad/sxtopt.py): 六極ファミリーの K2L に対する RDT・ADTS の多項式モデルと、解析式を目的関数にした最適化。
-小さな条件 (FODO リング、六極 2 ファミリー SF・SD、3 GeV) で、(1) 多項式モデルが解析式 (resonance_terms・rdt4・adts) と一致すること、
-(2) 1 次の RDT の六極の分 (強さの変化分) が追跡の 1 周の写像の 2 次のテイラー展開から取り出した値と合うこと、(3) 二次形式のフィットが厳密なこと、
+"""R7 (試作 pysad/sxtopt.py): 6 極ファミリーの K2L に対する RDT・ADTS の多項式モデルと、解析式を目的関数にした最適化。
+小さな条件 (FODO リング、6 極 2 ファミリー SF・SD、3 GeV) で、(1) 多項式モデルが解析式 (resonance_terms・rdt4・adts) と一致すること、
+(2) 1 次の RDT の6 極の分 (強さの変化分) が追跡の 1 周の写像の 2 次のテイラー展開から取り出した値と合うこと、(3) 二次形式のフィットが厳密なこと、
 (4) 勾配が有限差分と合うこと、(5) 最適化が走って制約を満たし目的関数を下げること、(6) ソース文字列の K2 の置き換え。
 v07_14 のリング (example/ddba/v07_14/lattice/v07_14_5GeV.sad) があれば、20 ファミリーのモデルも解析式と照合する。
 条件: pysad k64 の追跡 (conftest の既定)、RF・放射なし、リング先頭が位相の基準。"""
@@ -55,7 +55,7 @@ def test_model_equals_direct_analytic_formulas(fodo_model):
 
 
 def test_first_order_rdt_change_matches_tracked_one_turn_map(fodo_model):
-    """六極の強さの変化に対する 1 次の RDT の変化 (モデル) = 追跡の 1 周の写像の 2 次のテイラー展開から取り出した h の変化。2 次の部分は kick の和なので 1 次の摂動で厳密 (1e-6)"""
+    """6 極の強さの変化に対する 1 次の RDT の変化 (モデル) = 追跡の 1 周の写像の 2 次のテイラー展開から取り出した h の変化。2 次の部分は kick の和なので 1 次の摂動で厳密 (1e-6)"""
     lat, m = fodo_model
     k1 = np.array([4.0, -6.0])
     k0 = np.zeros(2)
@@ -136,7 +136,7 @@ def test_replace_k2_in_source():
 
 @pytest.mark.skipif(not os.path.exists(V0714), reason='v07_14 のラティスがない')
 def test_v07_14_twenty_families_model_matches_analytic():
-    """v07_14 (5 GeV、749.5 m、六極 20 ファミリー) の多項式モデルが解析式と 1e-9 で一致し、ξ の行列と K2L の鏡面対称 (ファミリー数 20) を確かめる"""
+    """v07_14 (5 GeV、749.5 m、6 極 20 ファミリー) の多項式モデルが解析式と 1e-9 で一致し、ξ の行列と K2L の鏡面対称 (ファミリー数 20) を確かめる"""
     lat = load_sad_file(V0714).build_lattice('RING')
     m = S.SxtModel(lat, 5e9)
     assert m.F == 20

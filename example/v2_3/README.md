@@ -25,7 +25,7 @@ Q1 の使ったラティス: [`pysad/tests/kek-ls_v03_12.lat`](../../pysad/tests
 
 **入門** (ADTS・RDT・周波数マップ・LMA を何をどうやって求めたか。図と数値を作ったスクリプトは `primer_*.py`・`primer_*.png`): [`docs/50_adts_rdt_primer.md`](../../docs/50_adts_rdt_primer.md)。
 
-**六極の検討 (R7、試作)**: v07_14 の六極を RDT・ADTS の解析式で検証し、最適化の試作 ([`pysad/sxtopt.py`](../../pysad/sxtopt.py)) で代替できるかを調べた。六極の組 32 通りで、解析式の目的関数と追跡の x–y DA 面積の順位相関は ρ = −0.89。検証 (小〜中振幅の DA の健全性チェック) には条件つきで使える。LMA の予測には使えない。**最適化の試作は、最終設定より DA の広い解を出せなかった** (DA 面積は最終設定の 0.60〜0.71 倍、劣る)。不足は、J² の ADTS・δ 依存・5 次以上の駆動項。 例・結果・再現は [`example/ddba/v07_14/sextupole/README.md`](../ddba/v07_14/sextupole/README.md)。
+**6 極の検討 (R7、試作)**: v07_14 の6 極を RDT・ADTS の解析式で検証し、最適化の試作 ([`pysad/sxtopt.py`](../../pysad/sxtopt.py)) で代替できるかを調べた。6 極の組 32 通りで、解析式の目的関数と追跡の x–y DA 面積の順位相関は ρ = −0.89。検証 (小〜中振幅の DA の健全性チェック) には条件つきで使える。LMA の予測には使えない。**最適化の試作は、最終設定より DA の広い解を出せなかった** (DA 面積は最終設定の 0.60〜0.71 倍、劣る)。不足は、J² の ADTS・δ 依存・5 次以上の駆動項。 例・結果・再現は [`example/ddba/v07_14/sextupole/README.md`](../ddba/v07_14/sextupole/README.md)。
 
 **周波数マップの台本ごとのまとめ** (Q1・S1。コマンド、式、結果、追跡 + NAFF の数値、gs との比較、未確認): [FMAP_summary.md](FMAP_summary.md)。
 

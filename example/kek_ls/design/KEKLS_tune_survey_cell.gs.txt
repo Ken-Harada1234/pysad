@@ -16,7 +16,7 @@
 !
 ! ライン
 !   ARCAH   標準セルの半分 (MKS = 長直線部の中心から MKC まで)。ARCAH1 = 直線部 (DRID1 2.94 m)・四極 QFA1H・QDA2・
-!           偏向磁石 BID5〜BID1 (中央に補正磁石 HD) と四極 QDA3。ARCAH2 = 六極 SDH・SFH、四極 QFA4・QDA5、
+!           偏向磁石 BID5〜BID1 (中央に補正磁石 HD) と四極 QDA3。ARCAH2 = 6 極 SDH・SFH、四極 QFA4・QDA5、
 !           偏向磁石 BPI1〜BPI5、四極 QFA6H・QFA8H、勾配つき偏向磁石 BPI6H・BPI7H、DRCT (0.55 m)
 !   ARCA    標準セル 1 個 = ARCAH と -ARCAH
 !   RINGC   標準セル 20 個の周回ライン (RF 空洞 RFC が中央)
@@ -206,7 +206,7 @@ LINE
  ;
 ! KEK-LS v03_68: 標準セルのチューンサーベイ  (元: matching05 と modules_tune_sv_v03_68.n。モジュールはこの台本に取り込んだ)
 ! リングのチューン (tunex, tuney) の格子の各点で、標準セル (ARCA) の位相進みを (tunex/20, tuney/20) に再マッチし、
-! 六極 SDH・SFH でクロマティシティを補正して、リング (RINGC) のチューン・ξ・εx・六極の強さを表示する。
+! 6 極 SDH・SFH でクロマティシティを補正して、リング (RINGC) のチューン・ξ・εx・6 極の強さを表示する。
 ! 元の格子: tunex 46.05〜46.55 (0.1 刻み 6 点) × tuney 16.05〜19 (0.1 刻み 30 点) = 180 点、各点で DAsv[] (5000 周)。
 !          (元の matching05 は modules_tune_sv_v03_35.n を読む。v03_68 用の modules_tune_sv_v03_68.n は読み込む台本が元のフォルダに無い。)
 ! 例の格子: tx0 から dtx 刻み ntx 点 × ty0 から dty 刻み nty 点 (既定 48.30〜48.90 の 5 点 × 17.30〜17.90 の 5 点 = 25 点)。追跡 (DAsv) は含めない。
@@ -214,7 +214,7 @@ LINE
 ! v03_68 に合わせた直し (元のモジュールは v03_35 の名残が残り、v03_68 では動かない):
 !   (1) 目標の値: MKSFA1 の AY 1.18・BY 5.3・EX 0.1504、MKC の BY 5 (v03_35 の値) → v03_68 の設計値 (AY 1.19・BY 6.4・EX 0.14、MKC BY 1.3317)。
 !   (2) FitFunction の `MKSFA2` (v03_68 に無い) → `MKSFA1.2`、`MKSFA1` → `MKSFA1.1` (1 セルに 2 回現れる)。
-!   (3) ChromCor の `coup SDC SDA 1`・`SDA MAX 0`・`SFA MIN 0` → `SDH MAX 0`・`SFH MIN 0` (v03_68 の六極は SDH・SFH の 2 本だけ)。
+!   (3) ChromCor の `coup SDC SDA 1`・`SDA MAX 0`・`SFA MIN 0` → `SDH MAX 0`・`SFH MIN 0` (v03_68 の6 極は SDH・SFH の 2 本だけ)。
 !   (4) `free BPI6 K1`・`free BPI7 K1` は名前が合わず効かない → BPI6H・BPI7H にした。
 !   (5) モジュール modules_tune_sv_v03_68.n は ../modules/modules_cell_match.n (関数 InitMag・MatchingARCA・ChromCor。Chrom・GetKQ・PutKQ を追加) に移した。`SAVE ALL` (画面にラティスを出す) は省いた。
 !   (6) リングは元の RING (入射セル込み) ではなく RINGC (標準セル 20 個)。入射セルの四極 QS0〜QS5 は標準セルの変更には追従しないため。

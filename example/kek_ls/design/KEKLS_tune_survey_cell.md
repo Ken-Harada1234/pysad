@@ -1,14 +1,14 @@
 # KEKLS_tune_survey_cell
-種別: チューンサーベイ (FFS の `fit`、六極補正)。フォルダ: `design`。元のスクリプト: matching05 (+ modules_tune_sv_v03_68.n)。ユーザーの指定 (matching23_v03_35_mini) は縮小の台本で、チューンサーベイに当たるのはこれ (README の「元のスクリプトとの対応」)。ラティス: `../lattice/kek_ls_v03_68.sad` (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
+種別: チューンサーベイ (FFS の `fit`、6 極補正)。フォルダ: `design`。元のスクリプト: matching05 (+ modules_tune_sv_v03_68.n)。ユーザーの指定 (matching23_v03_35_mini) は縮小の台本で、チューンサーベイに当たるのはこれ (README の「元のスクリプトとの対応」)。ラティス: `../lattice/kek_ls_v03_68.sad` (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
 
 ## 何を見る例か
-リングのチューン (tunex, tuney) の格子の各点で、標準セルの位相進みを (tunex/20, tuney/20) に再マッチし、六極 SDH・SFH でクロマティシティを補正して、リング RINGC のチューン・ξ・εx・六極の強さを表示する。格子は 48.30〜48.90 (0.15 刻み、5 点) × 17.30〜17.90 (5 点) の 25 点で、整数 (49、18) と半整数 (48.5、17.5) の共鳴線のまわりを含む。
+リングのチューン (tunex, tuney) の格子の各点で、標準セルの位相進みを (tunex/20, tuney/20) に再マッチし、6 極 SDH・SFH でクロマティシティを補正して、リング RINGC のチューン・ξ・εx・6 極の強さを表示する。格子は 48.30〜48.90 (0.15 刻み、5 点) × 17.30〜17.90 (5 点) の 25 点で、整数 (49、18) と半整数 (48.5、17.5) の共鳴線のまわりを含む。
 
 ## スクリプト
 `KEKLS_tune_survey_cell.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。共通モジュールは `Get["../modules/..."]` で読む (台本のあるフォルダをカレントにして走らせる)。
 
 ## 結果の読み方
-`POINT` の行に、目標 (νx, νy)、実際のリングのチューン、ξx・ξy、εx [pm rad]、K2(SDH)、K2(SFH)。gs では、εx は νx = 48.45〜48.6 付近で最小 (145〜170 pm rad)、νx = 48.30 では 365〜411 pm rad と大きい。(48.75, 17.60)・(48.75, 17.75) は六極補正が収束せず εx が 1.4e4 pm rad に飛ぶ (図は 450 で頭打ち)。ξ が 0 から大きく外れた点は、六極補正が収束しなかった点。
+`POINT` の行に、目標 (νx, νy)、実際のリングのチューン、ξx・ξy、εx [pm rad]、K2(SDH)、K2(SFH)。gs では、εx は νx = 48.45〜48.6 付近で最小 (145〜170 pm rad)、νx = 48.30 では 365〜411 pm rad と大きい。(48.75, 17.60)・(48.75, 17.75) は6 極補正が収束せず εx が 1.4e4 pm rad に飛ぶ (図は 450 で頭打ち)。ξ が 0 から大きく外れた点は、6 極補正が収束しなかった点。
 
 gs の出力の抜粋 (指定の行だけ。全体は `KEKLS_tune_survey_cell.gs.txt`):
 ```
@@ -34,5 +34,5 @@ POINT   48.45   17.6   48.4500660362   17.6000210460     .1370704371    -.001884
 
 ## 未確認・限界
 - 元の格子は 46.05〜46.55 (0.1 刻み 6 点) × 16.05〜19 (0.1 刻み 30 点) = 180 点で、各点に DA (5000 周) を追加する。例は 25 点・DA なし。所要時間 (gs 10 秒、pysad 約 160 秒) から、元の 180 点は gs で約 1.2 分、pysad で約 19 分 (DA を除く)。DA を足すと 1 点あたり gs で数分、pysad で十数分以上と見込む (DAsv の 5000 周 × 19 運動量 × 2 方向。測定はしていない)。
-- 元の matching05 は modules_tune_sv_v03_35.n を読み込む。modules_tune_sv_v03_68.n を読み込む台本は元のフォルダに無い。v03_68 用の目標値・六極の名前に直した (modules/modules_cell_match.n の説明)。
-- 元の `tune_survey*` (tune_survey・_linear・_momentum・_disp・_amp_dep_coef・_ncell・_write_QS) は、別のリング (六極 S1L・S2L・S1H… と `hsx_value.csv`、チューン 15.x/5.x) の `modules_tune_sv.n` を使い、v03_68 には適用できない。
+- 元の matching05 は modules_tune_sv_v03_35.n を読み込む。modules_tune_sv_v03_68.n を読み込む台本は元のフォルダに無い。v03_68 用の目標値・6 極の名前に直した (modules/modules_cell_match.n の説明)。
+- 元の `tune_survey*` (tune_survey・_linear・_momentum・_disp・_amp_dep_coef・_ncell・_write_QS) は、別のリング (6 極 S1L・S2L・S1H… と `hsx_value.csv`、チューン 15.x/5.x) の `modules_tune_sv.n` を使い、v03_68 には適用できない。

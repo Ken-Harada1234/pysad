@@ -5,7 +5,7 @@ v03_68 のセル・リング・入射セルのマッチングと、セルの縮�
 ## 流れ
 
 1. **セルのチューン** `KEKLS_match_cell_tune`: 標準セル `ARCA` の位相進みを (48.58, 17.62)/20 に合わせる (四極の K1)。
-2. **六極** `KEKLS_match_chrom`: リング `RINGC` の六極 `SDH`・`SFH` でクロマティシティを 0 にする。
+2. **6 極** `KEKLS_match_chrom`: リング `RINGC` の6 極 `SDH`・`SFH` でクロマティシティを 0 にする。
 3. **入射セル** `KEKLS_match_injcell`: `ARCINJH` の四極 `QS0`〜`QS5` で、入射点の位相・ツイスを合わせる。
 4. **リングを閉じる** `KEKLS_match_ring_geo`: 入射セルの長直線部 `DRID1INJ` で、ジオメトリを閉じる (GX = GY = 0)。
 5. 設計の変形: `KEKLS_scale_mini` (全体の一様な縮小)、`KEKLS_scale_ncell` (セル数の変更)。
@@ -16,13 +16,13 @@ v03_68 のセル・リング・入射セルのマッチングと、セルの縮�
 | 例 | 内容 | 元のスクリプト | 出力 | 所要時間 | gs と pysad |
 |---|---|---|---|---|---|
 | [`KEKLS_match_cell_tune`](KEKLS_match_cell_tune.md) | セルのチューンのマッチング | matching2_01 前半 | セルの位相進み・四極の K1 | gs 1 s / pysad 2 s | △ |
-| [`KEKLS_match_chrom`](KEKLS_match_chrom.md) | 六極のクロマティシティ調整 | matching2_01 後半 | ξ・六極の K2 | gs 1 s / pysad 9 s | △ |
+| [`KEKLS_match_chrom`](KEKLS_match_chrom.md) | 6 極のクロマティシティ調整 | matching2_01 後半 | ξ・6 極の K2 | gs 1 s / pysad 9 s | △ |
 | [`KEKLS_match_injcell`](KEKLS_match_injcell.md) | 入射セルのマッチング | matching2_03_INJ | 入射点の Twiss・QS0〜QS5 の K1 | gs 1 s / pysad 2 s | ○ |
 | [`KEKLS_match_ring_geo`](KEKLS_match_ring_geo.md) | 入射セルを含めてリングを閉じる (ジオメトリ) | matching2_02_geo | DRID1INJ・GX・GY | gs 1 s / pysad 2 s | ○ |
 | [`KEKLS_match_repeat`](KEKLS_match_repeat.md) | マッチングの再現性の診断 | (新規) | K1・K2 (3 回の繰り返し) | gs 1 s / pysad 20 s | △ |
 | [`KEKLS_scale_mini`](KEKLS_scale_mini.md) | セルの一様な縮小 | matching23_v03_35_mini | セル長・位相進み・K1 | gs 1 s / pysad 4 s | ○ |
 | [`KEKLS_scale_ncell`](KEKLS_scale_ncell.md) | セル数を変える | matching21_v03_35 | j セルのリングの εx・チューン・周長 | gs 1 s / pysad 3 s | ○ |
-| [`KEKLS_tune_survey_cell`](KEKLS_tune_survey_cell.md) | セルのチューンサーベイ | matching05 + modules_tune_sv_v03_68.n | ξ・εx・六極の強さの 25 点の地図 | gs 10 s / pysad 160 s | △ |
+| [`KEKLS_tune_survey_cell`](KEKLS_tune_survey_cell.md) | セルのチューンサーベイ | matching05 + modules_tune_sv_v03_68.n | ξ・εx・6 極の強さの 25 点の地図 | gs 10 s / pysad 160 s | △ |
 
 マッチング後のラティスの保存: 各例は、結果を画面 (`type`・`Print`) に出す。元の台本の `SAVE ALL` はラティス全体を画面に書き出す (gs・pysad とも) ので、例では K1・K2 の値を `Print` する形にした。`SAVE ALL` の出力をファイルに取るには、台本の `SAVE ALL;` を FFS の最後に書いて標準出力を保存する (`FFS["SAVE ALL", ファイル]` の形はファイルが空になるので使えない)。
 

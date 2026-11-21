@@ -1,7 +1,7 @@
  *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
  *** Today: 22:12:15 Monday 11/16/2026 ***
  OFF LOG;ON ECHO;READ 77 ;           1
-! SEXT OCT DECA DODECA: 輸送路では線形光学に効かない。リングでは六極が chromaticity に効く
+! SEXT OCT DECA DODECA: 輸送路では線形光学に効かない。リングでは6 極が chromaticity に効く
 MOMENTUM = 3GEV;
 DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
 QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);

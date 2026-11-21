@@ -5,7 +5,7 @@
 ! `cell calc noexpand` (docs/11 A56)。GaussRandom[] は GCUT (打ち切り、σ 単位) を使う。
 ! 使い方: ae・fe・te (位置ずれ [m]、強さの相対誤差、回転 [rad] の rms) と GCUT を決めて SeedRandom[seed]; SetErrors[]; ClearErrors[];
 
-! 四極 (Q*)・六極 (S*) の成分名のリスト (USE の後に呼ぶ)
+! 四極 (Q*)・6 極 (S*) の成分名のリスト (USE の後に呼ぶ)
 GetMagnetNames[]:=(
   qnames = LINE["NAME","Q*.*"];
   snames = LINE["NAME","S*.*"];

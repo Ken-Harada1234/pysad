@@ -146,8 +146,8 @@ def test_per_bend_radius_k64(k64_mode):
 
 
 def test_sextupole_first_and_thin(v2_mode):
-    """B07: 先頭が SEXT でも NaN にならず (K64 は DL=0 で NaN)、L=0 の六極は 0.2 m として足されない。
-    軌道が 0 なら六極 (K2≠0) は I1..I5 を変えない"""
+    """B07: 先頭が SEXT でも NaN にならず (K64 は DL=0 で NaN)、L=0 の6 極は 0.2 m として足されない。
+    軌道が 0 なら6 極 (K2≠0) は I1..I5 を変えない"""
     I, _xi = _integrals()
     _f, out0 = _run()
     _f, out = _run(k2='3', first='SF')
@@ -207,7 +207,7 @@ def test_quantum_lifetime_hours(v2_mode):
 
 
 def test_chromaticity_is_tune_derivative(v2_mode):
-    """R2: GX・GY は運動量をずらした CALC のチューンの微分 dν/dδ (六極 K2≠0 の寄与も入る)。
+    """R2: GX・GY は運動量をずらした CALC のチューンの微分 dν/dδ (6 極 K2≠0 の寄与も入る)。
     K64 の -I9/4π は磁石の中だけの ∮γ ds で、この値にならない"""
     for k2, kt in (('0', '0'), ('3', '1.5')):
         src = LAT % dict(k2=k2, th2=TH2, first='', rf2='', kt=kt, extra='''
@@ -221,7 +221,7 @@ Print[(a-b)/2e-4]; DP0=0; CALC;''')
         assert abs(_g(out, 'LINEAR CHROMATICITY GX') - float(fd[0])) < 2e-5
         assert abs(_g(out, 'LINEAR CHROMATICITY GY') - float(fd[1])) < 2e-5
     _I, xi = _integrals()
-    assert abs(float(fd[0]) - xi) > 5.0          # 六極を入れた色収差は、線形の ∮γ ds (-4.3) と別物
+    assert abs(float(fd[0]) - xi) > 5.0          # 6 極を入れた色収差は、線形の ∮γ ds (-4.3) と別物
 
 
 def test_chromaticity_k64_is_magnet_only_integral(k64_mode):

@@ -8,7 +8,7 @@
 `KEKLS_scale_mini.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。
 
 ## 結果の読み方
-`design` が縮小前、`factor ...` の行が各縮小率でのセル長と位相進み、`BX*sin-0.3`・`sin_y` が FitFunction の 2 つの項 (六極の対の位相条件)、`K1:` の行が再調整後の K1。factor 0.5 でセルは 14.268 m、四極の K1 は 2 倍前後。
+`design` が縮小前、`factor ...` の行が各縮小率でのセル長と位相進み、`BX*sin-0.3`・`sin_y` が FitFunction の 2 つの項 (6 極の対の位相条件)、`K1:` の行が再調整後の K1。factor 0.5 でセルは 14.268 m、四極の K1 は 2 倍前後。
 
 gs の出力の抜粋 (指定の行だけ。全体は `KEKLS_scale_mini.gs.txt`):
 ```

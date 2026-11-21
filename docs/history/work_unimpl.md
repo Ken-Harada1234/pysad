@@ -132,7 +132,7 @@ nus=0.005〜0.02、AzimuthalModes=5 の 4 点は emitx が相対 4e-7〜1e-5 (�
 - 幾何の目標が実際に動く例は gs で作れていない: 小さなリングで `fit gx 1.0; fit gy 2.0; free (ドリフト X) L; free (ドリフト Y) L; go;` は gs でも pysad でも変数が動かない (残差 1e9〜1e12、同じ値)。
   不安定なリングでは gs が不安定の罰則を残差に入れず fit が動くが、pysad は入れるので結果が違う (不安定なリングの fit は比べない)。
   動く例が得られれば、`tdgeo` の微分の差が出るかを比べる (得られた例は gs と pysad で収束位置が 1e-6 の程度の差。差は fit の収束判定と微分の違い)。
-- tdgeo.f (147 行) の中身: 幾何の量 (GX GY GZ CHI1..3) の変数 (DRIFT・BEND の L、BEND の ANGLE、四極・六極などの DX・DY) に対する解析微分。ドリフトの L は `geo(j,3,k)` (向きの単位ベクトル)、
+- tdgeo.f (147 行) の中身: 幾何の量 (GX GY GZ CHI1..3) の変数 (DRIFT・BEND の L、BEND の ANGLE、四極・6 極などの DX・DY) に対する解析微分。ドリフトの L は `geo(j,3,k)` (向きの単位ベクトル)、
   BEND の ANGLE は sinc の式、四極などは `qdtrans`・`tftmatu` の写像を使う。pysad は数値微分で、その差は fit の収束位置の差に出るだけで、
   どちらも許容内で止まる。直訳は精度を上げる作業で、ドリフトと BEND の部分だけなら小さいが、四極などの部分は `qdtrans` の移植が要る。優先度は低い (必要になったら)。
 - (10:41 に実装) `match6d.tdgeo_term` に tdgeo.f の直訳 (DRIFT の L、BEND の ANGLE (ROTATE 付きも)・L) を入れ、`tffsqu` の幾何の条件 (GX GY GZ CHI1..3) の行で使う。
@@ -153,7 +153,7 @@ nus=0.005〜0.02、AzimuthalModes=5 の 4 点は emitx が相対 4e-7〜1e-5 (�
   POL かつ RAD が ON のときだけスピンが動く (K64 の tradk の中で計算するため、RAD OFF ではスピンは変わらない)。`fn_track` は POL ON・RAD ON で Python の追跡に切り替え、
   入力 9〜11 列 {x,px,y,py,z,dp, 角度, sy/|s|, flag}、戻りの 7・8 列は atan(sz, sx) と sy/|s| (tftrack.f の ktfresetparticles と tfsetparticles)。損失 (flag) の処理は高速追跡 (TrackRun) にしかないので、POL のスピン追跡では粒子が落ちない。
 - bsi の入る場所: tsolqur (四極のスライスの両端)、tbendcore (入口・出口の y/rhob)、tbendi (K1 のある BEND の各スライス)、tmulti (tsolqu の ibsi と cx の項)、tdrift の ak0 付き、tdrift_solenoid (bz·al)、bz≠0 の tsolqur。tsolrot の chi3 のスピン回転 (四極の ROTATE)。
-- gs と一致 (4e-12 以下、NOFLUC・FLUC とも): 平面リング、ずれ・回転した四極と偏向・六極のリング、MULT (K1 K2 K3 とずれ)、K1 のある BEND、SEXT・薄い MULT (L=0)、SOL 領域内のドリフト (BZ=0.05)。`test_spin_track.py`。
+- gs と一致 (4e-12 以下、NOFLUC・FLUC とも): 平面リング、ずれ・回転した四極と偏向・6 極のリング、MULT (K1 K2 K3 とずれ)、K1 のある BEND、SEXT・薄い MULT (L=0)、SOL 領域内のドリフト (BZ=0.05)。`test_spin_track.py`。
 - 追跡の途中で見つけた POL と無関係の差 (RAD ON、スピンなしでも出る。未調査):
   1. BEND に F1=0.1 FRINGE=3 を付けた追跡 (相対 0.7)。DX・DY・ROTATE だけなら 1e-13 で一致。
   2. L≠0 の CAVI に DX・DY (相対 1e-3)。

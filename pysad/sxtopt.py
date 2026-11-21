@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""[試作] 六極ファミリーの K2 に対する RDT・ADTS の解析式の「多項式モデル」と、それを目的関数にした六極の最適化 (R7)。
+"""[試作] 6 極ファミリーの K2 に対する RDT・ADTS の解析式の「多項式モデル」と、それを目的関数にした6 極の最適化 (R7)。
 
-考え方: 六極の強さ k = (K2L_1, ..., K2L_F) (ファミリーごとの積分強さ) に対して、
+考え方: 6 極の強さ k = (K2L_1, ..., K2L_F) (ファミリーごとの積分強さ) に対して、
   - 3 次の共鳴駆動項 h_jklm (1 次) とクロマティシティ・δ の項 (p ≥ 1) は k に **線形**:  h(k) = h_B + Σ_f k_f H_f
-  - 4 次の項 h_jklm (写像の 4 次の生成関数、`rdt2nd.rdt4`) の六極の 2 次の部分 (Magnus の第 2 項) は k の **二次形式**、
-    六極 × 偏向磁石の交差項は k に線形、八極・運動学・フリンジ・偏向磁石の 4 次は k に依らない定数
+  - 4 次の項 h_jklm (写像の 4 次の生成関数、`rdt2nd.rdt4`) の6 極の 2 次の部分 (Magnus の第 2 項) は k の **二次形式**、
+    6 極 × 偏向磁石の交差項は k に線形、八極・運動学・フリンジ・偏向磁石の 4 次は k に依らない定数
   - 3 次の項の非共鳴の摂動 (`rdt2nd.nf_correction_h4`、正規形の F4') は h3 の二次形式 = k の二次形式
   - ADTS (∂ν/∂J の 3 成分) は F4' の対角部分の実部 (4/π、2/π、4/π 倍) = k の二次形式 + 定数 (adts_offset: `adts(fourth='r3', optics='calc')` の物理的な項との差)
 なので、リング全体の 1 回の組み立て (数秒) のあとは、任意の k に対する値と勾配が numpy の小さな行列計算 (ms) で厳密に (解析式 `resdrive.adts`・`rdt2nd.rdt4` と同じ値) 得られる。
@@ -38,7 +38,7 @@ DELTA_XI = ('h11001', 'h00111')
 # ファミリーと K2 の読み書き
 # ---------------------------------------------------------------------------------------------
 def sextupole_families(lat, names=None):
-    """K2≠0 の六極のファミリー (素子名) の一覧 (最初に現れる順)、{名前: [素子の添字]}、K2L の配列 [1/m²] を返す。"""
+    """K2≠0 の6 極のファミリー (素子名) の一覧 (最初に現れる順)、{名前: [素子の添字]}、K2L の配列 [1/m²] を返す。"""
     fam = {}
     for i, e in enumerate(lat.elements):
         if type(e).__name__ == 'Sextupole' and float(e.K2) != 0.0:
@@ -49,7 +49,7 @@ def sextupole_families(lat, names=None):
 
 
 def with_k2l(lat, names, k):
-    """ファミリー names の K2L を k [1/m²] にした Lattice の複製 (六極の K2 = K2L/L)。"""
+    """ファミリー names の K2L を k [1/m²] にした Lattice の複製 (6 極の K2 = K2L/L)。"""
     out = copy.deepcopy(lat)
     for n, kk in zip(names, k):
         for e in out.elements:
@@ -110,14 +110,14 @@ def quad_jac(cbS, k):
 # モデル
 # ---------------------------------------------------------------------------------------------
 class SxtModel:
-    """六極ファミリーの K2L に対する RDT・ADTS の多項式モデル。
+    """6 極ファミリーの K2L に対する RDT・ADTS の多項式モデル。
 
     属性: names (ファミリー名)、k_ref (組み立てたときの K2L)、qx・qy、
       .h1(k) → 1 次の項 (CUBIC5 + CHROM3 + DELTA_XI、複素 dict。偏向磁石の 3 次の項を含む)
       .h3(k) → 3 次の 1 周の和 (MONOS3 の順 20 成分。rdt4 の `h3`)
       .h4(k) → 4 次の項 (MONOS4 の順 35 成分。rdt4 の total_arr)、.h4nf(k) → 正規形 F4' (h4 + nf_correction_h4)
       .adts(k) → {'xx','xy','yy'} (F4' の対角から。`resdrive.adts().total` と同じ)
-      .xi(k) → (ξx, ξy) 六極込みの全クロマティシティ (自然クロマティシティ + 偏向磁石 + 六極)
+      .xi(k) → (ξx, ξy) 6 極込みの全クロマティシティ (自然クロマティシティ + 偏向磁石 + 6 極)
     """
 
     def __init__(self, lat, momentum_eV=5e9, names=None, nslice=8, bend_nslice=None, quad_forms=True, fourth='r3'):
@@ -143,7 +143,7 @@ class SxtModel:
         self.H1 = H
         self.h1_const = np.array([r1.total[t] for t in r1.names]) - self.k_ref @ H
         self.r1 = r1
-        # 自然クロマティシティ (六極なし) = 全体 − 六極込みの h/π: 全クロマティシティは resonance_terms の h11001/π・h00111/π と自然の和
+        # 自然クロマティシティ (6 極なし) = 全体 − 6 極込みの h/π: 全クロマティシティは resonance_terms の h11001/π・h00111/π と自然の和
         self.xi_nat = R.chromaticity_natural(lat)
         # ---- 4 次の項 (二次形式)
         nl = R.collect_nonlinear(elements, rows, 0.0, (0.0, 0.0), self.warnings)
@@ -161,7 +161,7 @@ class SxtModel:
         for i in range(len(elements)):
             if i in sext_at:
                 ie = sext_at[i]
-                f = fam_of.get(i, F + 1)          # 名前に含めない六極は定数 (tag F+1) として扱う
+                f = fam_of.get(i, F + 1)          # 名前に含めない6 極は定数 (tag F+1) として扱う
                 kf = self.k_ref[f] if f < F else 1.0
                 if f < F:
                     cA.append(Asx[:, ie:ie + 1] / kf)
@@ -180,7 +180,7 @@ class SxtModel:
         IG = np.concatenate(cIG, axis=2)
         tag = np.concatenate(tag)
         self.A_tag, self.tag = A, tag
-        # k_tag = (k_1, …, k_F, 1): 偏向磁石 (と名前のない六極) は強さ 1
+        # k_tag = (k_1, …, k_F, 1): 偏向磁石 (と名前のない6 極) は強さ 1
         Af = [A[:, tag == t] for t in range(F + 1)]
         # 3 次の和 (線形): h3(k) = Σ_t k_t Σ_u A_u
         self.H3 = np.array([a.sum(axis=1) for a in Af])            # (F+1, 20)
@@ -208,7 +208,7 @@ class SxtModel:
         self.warnings += [w for w in r4.warnings if w not in self.warnings]
         self._forms = None
         # ADTS の定数部分: `resdrive.adts` の既定 (fourth='r3'・optics='calc'、物理的な項だけ) と、rdt4 の対角 (四極の台形則・偏向磁石の 4 次の項を追跡の写像から取り出した分を含む)
-        # の差は、六極に依らない定数 (運動学・フリンジ・偏向磁石の 4 次の項の扱いの違い)。組み立てたときの K2L で 1 回だけ求めて、二次形式の対角に足す。
+        # の差は、6 極に依らない定数 (運動学・フリンジ・偏向磁石の 4 次の項の扱いの違い)。組み立てたときの K2L で 1 回だけ求めて、二次形式の対角に足す。
         raw = self._adts_of(self.h4nf(self.k_ref))
         ref = R.adts(lat, momentum_eV=momentum_eV, fourth=fourth, optics='calc').total
         self.adts_offset = np.array([float(ref['xx']), float(ref['xy']), float(ref['yy'])]) - raw

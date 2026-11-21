@@ -16,7 +16,7 @@
 ! セル (偏向磁石のあいだの中心 MKLC・MKMC から次の中心まで。直線部の中心 MKLS・MKMS がセルの中央)
 !   LCELL / LCELLA    長直線部のセル。LCELLA は「A 版」(偏向磁石 B1LA・B2LA の角度が 0.06136 rad で、
 !                     通常の 0.05236 rad より大きく、Q3LA・Q4LA は逆向きの偏向 -0.009 rad を持つ)。
-!                     LCELLH・LCELLHA はその半分 (六極 S1LH〜S5LH、S1LHA〜S5LHA)
+!                     LCELLH・LCELLHA はその半分 (6 極 S1LH〜S5LH、S1LHA〜S5LHA)
 !   MCELL / MCELLA    中直線部のセル。同様
 !   TCELL = MCELL LCELL、TCELLA = MCELLA LCELLA (2 セルの単位。チューンのマッチングの単位)
 !   RINGSP  = MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED
@@ -24,14 +24,14 @@
 !   RINGINJ = 元の台本で、2.5 GeV の版の有効な RING (通常の入射用の並び)
 !   RINGSYM = HRING RFC -HRING (鏡面対称の並び。RFC の左右が互いの鏡像)
 !   RING    = このファイルでは RINGSP と同じ
-!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (六極のマッチング用)
+!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (6 極のマッチング用)
 !
-! 六極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
+! 6 極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
 ! (元の台本は古い組を先に定義し、
 ! あとの定義が有効になる書き方だったので、古い組は除いた)。
 !   関連する公開論文: K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac",
 !   J. Synchrotron Rad. 29, 118-124 (2022), DOI 10.1107/S1600577521012753。
-!   注意: この論文に六極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
+!   注意: この論文に6 極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
 !   v07_14 とは別の版。K2 が論文の設定と一致する、同じ最適化の結果である、という意味ではない。
 ! MARK のツイスの保存値 (MRST、MKS1LA など) は設計時のもので、cell calc では使わない。
 !
@@ -78,7 +78,7 @@
         Q2L     =(L =.2   K1 =-.6338953059952335 )
         Q1L     =(L =.3   K1 =.7308448245076412 )
  ;
- ! 六極 (20231205 の再調整版。元の台本は、これより前に古い六極の組を定義し、あとの定義が有効だったので、古い組は除いた)
+ ! 6 極 (20231205 の再調整版。元の台本は、これより前に古い6 極の組を定義し、あとの定義が有効だったので、古い組は除いた)
  SEXT   S1MH    =(L =0.1   K2 =+4.1831437)
         S2MH    =(L =0.1   K2 =-5.3856367)
         S3MH    =(L =0.1   K2 =-20.2905230)
@@ -322,15 +322,15 @@
 ;
 !@LAT 5GeV
 !=====================================================================
-! V0714_chromaticity: δ に対するチューンの変化 (色収差)。六極 0 (自然クロマティシティ) と、六極 ON (最終設定)
+! V0714_chromaticity: δ に対するチューンの変化 (色収差)。6 極 0 (自然クロマティシティ) と、6 極 ON (最終設定)
 !
-! 元: calc_chromaticity.sad (7 つのリング RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA で、六極を 0 にして、
+! 元: calc_chromaticity.sad (7 つのリング RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA で、6 極を 0 にして、
 !     δ = ±0.5% (RING) / ±1% (他) の 3 次の PolynomialFit の係数 [1,2] を出す)。amp_dep_ts_dp.sad (δ を 0〜±5% で振る) の δ スキャンも含める。
 ! 注意 (K64 のバグ B18): δ を ±対称に振ったデータを PolynomialFit に渡すと係数の次数補正が壊れる (docs/11 C6、docs/21 B18)。
 !       元の台本が出していた「係数 [1,2]」は ξ そのものではない (δ の 1 次の係数 + 高次の混ざり。
 !       出力の fit 係数と中心差分の ξ を並べて見比べる)。この台本は元の出し方 (係数 [1,2]) を残しつつ、正しい ξ を中心差分 ξ = [ν(+dδ) - ν(-dδ)]/(2 dδ)
 !       (dδ = 1e-4) でも出す。
-! 流れ: 各リングで六極 0 → δ スキャン → PolynomialFit → 係数 [1,2]。続いて最終設定の六極のままで同じ。
+! 流れ: 各リングで6 極 0 → δ スキャン → PolynomialFit → 係数 [1,2]。続いて最終設定の6 極のままで同じ。
 !=====================================================================
 dpmax = 0.01;
 dpstep = 0.001;
@@ -440,7 +440,7 @@ Bunch Length           = 1.98036225 mm  Beam tilt              = -3.593E-13 rad
 Beam size xi           =  .06680705 mm  Beam size eta          =  .00000000 mm
 Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
 
- ! 最終設定の六極のまま
+ ! 最終設定の6 極のまま
  ReportRings["sext ON :"];
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
 $$$       f AX    #######  #  -1.758E-7 $$$       f BX    #######  #   5.365887 $$$       f NX    #######  #  47.865060 $$$       f AY    #######  #  -9.463E-7 $$$       f BY    #######  #   5.062210 $$$       f NY    #######  #  16.655090
@@ -743,7 +743,7 @@ sext ON : ringlx= -5251.97981380  ringly= -846.292257339   xi(central diff) x   
 sext ON : ringmx= -4882.50336551  ringmy= 1009.004428077   xi(central diff) x  -28.2616869177 y    1.1197096523
 sext ON : ringlax= -3923.86177421  ringlay= 779.7581990808   xi(central diff) x    -.1787433230 y    3.4405403046
 sext ON : ringmax= 291471.8809916  ringmay= -1084.80660402   xi(central diff) x   12.2847600753 y   -1.2328178138
- ! 六極 0 (自然クロマティシティ。元の calc_chromaticity.sad と同じ条件。USE のたびに六極が定義に戻るので、ChromRing の中で 0 にする)
+ ! 6 極 0 (自然クロマティシティ。元の calc_chromaticity.sad と同じ条件。USE のたびに6 極が定義に戻るので、ChromRing の中で 0 にする)
  soff = 1;
  ReportRings["sext OFF:"];
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
@@ -1049,7 +1049,7 @@ sext OFF: ringlax= -2067.61450525  ringlay= -22637.9711226   xi(central diff) x 
 sext OFF: ringmax= 586171.9391040  ringmay= -25090.1402441   xi(central diff) x  -51.8764294869 y  -61.8228327634
  soff = 0;
  
- ! δ スキャン (amp_dep_ts_dp.sad: δ = 0 〜 +5% と 0 〜 -5%、刻み 0.5%。六極は最終設定のまま)
+ ! δ スキャン (amp_dep_ts_dp.sad: δ = 0 〜 +5% と 0 〜 -5%、刻み 0.5%。6 極は最終設定のまま)
  USE RING;
  If[dpscan == 1,
    Print["delta scan (sextupoles ON)"];

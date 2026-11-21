@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-"""[試作] 解析式 (RDT・ADTS・クロマティシティ) を目的関数にした六極 K2L (20 ファミリー) の最適化 (R7)。使い方 (どこからでも):
+"""[試作] 解析式 (RDT・ADTS・クロマティシティ) を目的関数にした6 極 K2L (20 ファミリー) の最適化 (R7)。使い方 (どこからでも):
   py -3.12 sextupole_optimize.py [--nstart 40] [--ring RING]
-変数: 20 ファミリーの K2L [1/m²] (鏡面対称は配置が保つ。ファミリー = セルの種類 × S1〜S5 なので鏡像の六極は同じファミリー)。
+変数: 20 ファミリーの K2L [1/m²] (鏡面対称は配置が保つ。ファミリー = セルの種類 × S1〜S5 なので鏡像の6 極は同じファミリー)。
 制約: 解析式のクロマティシティ (ξx, ξy) = 最終の組の値 (等式)、|K2L| ≤ kmax (既定は最終の組の最大 |K2L| = 32.65、別に 1.25 倍も)。
 目的: pysad/sxtopt.py の SxtObjective (物理的な重みだけ。J_ref = 1e-6 m·rad、δ_ref = 1%、各項の重み 1。追跡に合わせた調整はしない)。
 実装: モデルは解析式と 1e-12 で一致する多項式 (SxtModel)、勾配は解析、SLSQP。複数の初期値 (最終の組の周りの摂動・一様乱数) から走らせ、離れた局所解を分ける。
@@ -50,7 +50,7 @@ xi_an_final = xi0 + M @ kf
 calc_final = R.chromaticity_numeric(S.with_k2l(lat, m.names, kf), order=3, dmax=2e-3)
 xi_calc_final = np.array(calc_final['d1'])
 kmax = float(np.max(np.abs(kf)))
-P('リング %s、運動量 %.1f GeV、六極 %d ファミリー、鏡面対称の軸 (素子の添字) %s' % (args.ring, C.P0 / 1e9, m.F, C.mirror_axes(lat)[:2]))
+P('リング %s、運動量 %.1f GeV、6 極 %d ファミリー、鏡面対称の軸 (素子の添字) %s' % (args.ring, C.P0 / 1e9, m.F, C.mirror_axes(lat)[:2]))
 P('最終の組: 解析式 ξ = (%.4f, %.4f)、CALC ξ = (%.4f, %.4f)、max|K2L| = %.3f' % (*xi_an_final, *xi_calc_final, kmax))
 obj = S.SxtObjective(m)
 f_final = obj.value(kf)
@@ -122,7 +122,7 @@ def history(obj, k0, kmax):
 
 
 cand = {}
-labels = {'v07_11': 'v07_11 (初期の 3 個 (S1=S2=0、S3=S5))', 'v07_12': 'v07_12 (初期の 3 個 (S1=S2=0、S3=S5))', 'retune1': '六極の再調整 第 1 版', 'final': '最終 (20231205 再調整版)',
+labels = {'v07_11': 'v07_11 (初期の 3 個 (S1=S2=0、S3=S5))', 'v07_12': 'v07_12 (初期の 3 個 (S1=S2=0、S3=S5))', 'retune1': '6 極の再調整 第 1 版', 'final': '最終 (20231205 再調整版)',
           'rev9': 'v07_16 sx_rev9 (ξ が違う)'}
 for key, s in sets['sets'].items():
     cand[key] = dict(k=s['k'], desc=labels.get(key, s['label']), group='historic', trim=None)

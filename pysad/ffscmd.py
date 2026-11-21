@@ -5416,7 +5416,7 @@ class FFS:
         rows = self.ensure_rows()
         chrom = None
         if _compat.v2():
-            # v2 (R2): LINEAR CHROMATICITY は運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (六極・偏向磁石の寄与を含む)。
+            # v2 (R2): LINEAR CHROMATICITY は運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (6 極・偏向磁石の寄与を含む)。
             # K64 の式 -I9/4π は磁石の中だけの ∮γ ds で、色収差にならない
             chrom = self._chrom_fd()
             if chrom is None:
@@ -5457,10 +5457,10 @@ class FFS:
             self.lat._qstat = q0
 
     def chro_cmd(self):
-        """CHROMATICITY: tfchro.f の直訳。四極・六極・多極 (MULT) の寄与を 1 要素ずつ表示し、最後に合計。
+        """CHROMATICITY: tfchro.f の直訳。四極・6 極・多極 (MULT) の寄与を 1 要素ずつ表示し、最後に合計。
         現在の Twiss (直前の CALC、dp0 の行) の要素入口/出口の α β と分散 EX から閉形式で求める。BEND は寄与に数えない (SAD も同じ)。
         四極 / MULT の K1:  -(v β + (1+α²)/β L + α(i+1) - α(i)) / 2   (水平)、  -(-v β + (1+α²)/β L + Δα) / 2 (垂直)
-        六極 / MULT の K2:   ±(β(i) η(i) + β(i+1) η(i+1)) v / 2        (水平 +、垂直 -)"""
+        6 極 / MULT の K2:   ±(β(i) η(i) + β(i+1) η(i+1)) v / 2        (水平 +、垂直 -)"""
         rows = self.ensure_rows()
         self.write(' Element           X Chromaticity   Y Chromaticity' + chr(10))
         gx = gy = 0.0

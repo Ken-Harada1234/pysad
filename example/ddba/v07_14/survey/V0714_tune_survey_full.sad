@@ -13,7 +13,7 @@
 ! セル (偏向磁石のあいだの中心 MKLC・MKMC から次の中心まで。直線部の中心 MKLS・MKMS がセルの中央)
 !   LCELL / LCELLA    長直線部のセル。LCELLA は「A 版」(偏向磁石 B1LA・B2LA の角度が 0.06136 rad で、
 !                     通常の 0.05236 rad より大きく、Q3LA・Q4LA は逆向きの偏向 -0.009 rad を持つ)。
-!                     LCELLH・LCELLHA はその半分 (六極 S1LH〜S5LH、S1LHA〜S5LHA)
+!                     LCELLH・LCELLHA はその半分 (6 極 S1LH〜S5LH、S1LHA〜S5LHA)
 !   MCELL / MCELLA    中直線部のセル。同様
 !   TCELL = MCELL LCELL、TCELLA = MCELLA LCELLA (2 セルの単位。チューンのマッチングの単位)
 !   RINGSP  = MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED
@@ -21,14 +21,14 @@
 !   RINGINJ = 元の台本で、2.5 GeV の版の有効な RING (通常の入射用の並び)
 !   RINGSYM = HRING RFC -HRING (鏡面対称の並び。RFC の左右が互いの鏡像)
 !   RING    = このファイルでは RINGSP と同じ
-!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (六極のマッチング用)
+!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (6 極のマッチング用)
 !
-! 六極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
+! 6 極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
 ! (元の台本は古い組を先に定義し、
 ! あとの定義が有効になる書き方だったので、古い組は除いた)。
 !   関連する公開論文: K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac",
 !   J. Synchrotron Rad. 29, 118-124 (2022), DOI 10.1107/S1600577521012753。
-!   注意: この論文に六極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
+!   注意: この論文に6 極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
 !   v07_14 とは別の版。K2 が論文の設定と一致する、同じ最適化の結果である、という意味ではない。
 ! MARK のツイスの保存値 (MRST、MKS1LA など) は設計時のもので、cell calc では使わない。
 !
@@ -75,7 +75,7 @@
         Q2L     =(L =.2   K1 =-.6338953059952335 )
         Q1L     =(L =.3   K1 =.7308448245076412 )
  ;
- ! 六極 (20231205 の再調整版。元の台本は、これより前に古い六極の組を定義し、あとの定義が有効だったので、古い組は除いた)
+ ! 6 極 (20231205 の再調整版。元の台本は、これより前に古い6 極の組を定義し、あとの定義が有効だったので、古い組は除いた)
  SEXT   S1MH    =(L =0.1   K2 =+4.1831437)
         S2MH    =(L =0.1   K2 =-5.3856367)
         S3MH    =(L =0.1   K2 =-20.2905230)
@@ -322,15 +322,15 @@
 ! V0714_tune_survey: v07_14 のチューンサーベイ (リング全体のチューン (nx0, ny0) を格子で振り、マッチングし直して光学・ξ・ADTS を出す)
 !
 ! 元のフォルダには、v07_14 用のチューンサーベイの台本は無い (v07_14 のラティスを読み込むものがない)。この台本は、
-!   ・サーベイの枠組み: tune_sv_v06_10_parm (28 セルの旧い版 v06_10 用。nx0・ny0 の二重ループで、設計値から再マッチング → 六極 →
+!   ・サーベイの枠組み: tune_sv_v06_10_parm (28 セルの旧い版 v06_10 用。nx0・ny0 の二重ループで、設計値から再マッチング → 6 極 →
 !     ADTS (x・y 5σ) と ξ をファイルに書く)
 !   ・v07_14 のマッチング: matching_v07_11 (2 セル単位 TCELLA・TCELL のセルチューン nx0/15、ny0/15 に合わせる。V0714_match_tune と同じ fit 条件)
 ! を組み合わせて作った (新規。元の台本に v07_14 版は無いので、元との比較はできない。部品ごとの一致は V0714_match_tune で確認)。
 ! 流れ (格子点ごと):
-!   1. 設計の K1 (四極・偏向磁石) と K2 (六極) に戻す (設計値から始める。元の tune_sv も毎回設計値から)。マッチングの結果は
+!   1. 設計の K1 (四極・偏向磁石) と K2 (6 極) に戻す (設計値から始める。元の tune_sv も毎回設計値から)。マッチングの結果は
 !      SAVE ALL でリングの定義に書き戻す (書き戻さないと USE RING が元の値に戻る)
 !   2. TCELLA を nitA 回、TCELL を nitN 回、セルチューン nx0/15、ny0/15 にマッチング (四極 Q* と偏向磁石 B1*・B2* の K1 を動かす)
-!   3. セルごとの六極 S3*・S4* の色収差補正 (MCELLA・LCELLA・MCELL・LCELL)
+!   3. セルごとの6 極 S3*・S4* の色収差補正 (MCELLA・LCELLA・MCELL・LCELL)
 !   4. RING の cell calc emit: チューン (マッチング後の達成度)・εx・αc
 !   5. ξ (δ = ±1e-4 の中心差分)、ADTS (x・y に 5σ、位相 thetan 分割の平均) → 1 行表示、ファイルに追記
 ! 表示の列: nx0 ny0 / リングのチューン (νx, νy) / εx [nm] / αc / ξx ξy / νx(5σx)-νx0 ... (dtx, dty の成分) / 達成度 flag
@@ -526,7 +526,7 @@ Do[
 );
 
 CellSext[]:=(
-! セルごとの色収差補正 (六極 S3*, S4*、S5 は S3 と等しい)
+! セルごとの色収差補正 (6 極 S3*, S4*、S5 は S3 と等しい)
 FFS["USE MCELLA;"];
     FFS["cell calc emit;",6];
     nxcell = Twiss["NX","$$$"]/2/Pi;

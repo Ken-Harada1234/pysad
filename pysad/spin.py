@@ -737,7 +737,7 @@ def _spin_frames(secs, n0):
 
 def _chromatic_matrix(els, ph, cod, trf0, rfsw, radcod, secs, eps=1e-4):
     """v2 (P1): 1 周の写像 (T + D) の δ 微分 dM/dδ (6x6)。閉軌道を分散軌道の向き (η_x, η_px, η_y, η_py, 0, 1) に ±eps だけずらした軌道に沿って
-    要素ごとのヤコビアンを掛けた 1 周の写像の中心差分。ベータトロンのチューンの δ 依存 (クロマティシティ。自然クロマティシティ + 六極) を含む"""
+    要素ごとのヤコビアンを掛けた 1 周の写像の中心差分。ベータトロンのチューンの δ 依存 (クロマティシティ。自然クロマティシティ + 6 極) を含む"""
     from . import emit6d as _e6
     Phi = np.eye(6)
     for T, _B, _R, _D in secs:

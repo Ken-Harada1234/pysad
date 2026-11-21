@@ -10,7 +10,7 @@
 | [elem_DRIFT_MARK](elem_DRIFT_MARK.md) | DRIFT と MARK (初期 Twiss)。ドリフトの β(s) | ○ |
 | [elem_QUAD](elem_QUAD.md) | QUAD。転送行列と β の変換、薄レンズ | ○ |
 | [elem_BEND](elem_BEND.md) | BEND の ANGLE・E1・E2・FRINGE。セクター型と長方形、分散 | ○ |
-| [elem_SEXT_OCT_DECA_DODECA](elem_SEXT_OCT_DECA_DODECA.md) | SEXT OCT DECA DODECA。線形には効かない。六極の chromaticity 寄与 | ○ |
+| [elem_SEXT_OCT_DECA_DODECA](elem_SEXT_OCT_DECA_DODECA.md) | SEXT OCT DECA DODECA。線形には効かない。6 極の chromaticity 寄与 | ○ |
 | [elem_MULT](elem_MULT.md) | MULT。QUAD+BEND と同じチューン | ○ |
 | [elem_CAVI](elem_CAVI.md) | CAVI。Emittance[] のシンクロトロンチューンと νs の式 | ○ (`TYPE RF` の HARM/FREQ 表示のみ違う) |
 | [elem_APERT](elem_APERT.md) | APERT。追跡での開口 (flag) | ○ (v2 で対応。`TYPE` の種別表示だけ違う) |

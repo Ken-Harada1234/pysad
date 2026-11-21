@@ -16,7 +16,7 @@
 ! セル (偏向磁石のあいだの中心 MKLC・MKMC から次の中心まで。直線部の中心 MKLS・MKMS がセルの中央)
 !   LCELL / LCELLA    長直線部のセル。LCELLA は「A 版」(偏向磁石 B1LA・B2LA の角度が 0.06136 rad で、
 !                     通常の 0.05236 rad より大きく、Q3LA・Q4LA は逆向きの偏向 -0.009 rad を持つ)。
-!                     LCELLH・LCELLHA はその半分 (六極 S1LH〜S5LH、S1LHA〜S5LHA)
+!                     LCELLH・LCELLHA はその半分 (6 極 S1LH〜S5LH、S1LHA〜S5LHA)
 !   MCELL / MCELLA    中直線部のセル。同様
 !   TCELL = MCELL LCELL、TCELLA = MCELLA LCELLA (2 セルの単位。チューンのマッチングの単位)
 !   RINGSP  = MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED
@@ -24,14 +24,14 @@
 !   RINGINJ = 元の台本で、2.5 GeV の版の有効な RING (通常の入射用の並び)
 !   RINGSYM = HRING RFC -HRING (鏡面対称の並び。RFC の左右が互いの鏡像)
 !   RING    = このファイルでは RINGSP と同じ
-!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (六極のマッチング用)
+!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (6 極のマッチング用)
 !
-! 六極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
+! 6 極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
 ! (元の台本は古い組を先に定義し、
 ! あとの定義が有効になる書き方だったので、古い組は除いた)。
 !   関連する公開論文: K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac",
 !   J. Synchrotron Rad. 29, 118-124 (2022), DOI 10.1107/S1600577521012753。
-!   注意: この論文に六極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
+!   注意: この論文に6 極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
 !   v07_14 とは別の版。K2 が論文の設定と一致する、同じ最適化の結果である、という意味ではない。
 ! MARK のツイスの保存値 (MRST、MKS1LA など) は設計時のもので、cell calc では使わない。
 !
@@ -78,7 +78,7 @@
         Q2L     =(L =.2   K1 =-.6338953059952335 )
         Q1L     =(L =.3   K1 =.7308448245076412 )
  ;
- ! 六極 (20231205 の再調整版。元の台本は、これより前に古い六極の組を定義し、あとの定義が有効だったので、古い組は除いた)
+ ! 6 極 (20231205 の再調整版。元の台本は、これより前に古い6 極の組を定義し、あとの定義が有効だったので、古い組は除いた)
  SEXT   S1MH    =(L =0.1   K2 =+4.1831437)
         S2MH    =(L =0.1   K2 =-5.3856367)
         S3MH    =(L =0.1   K2 =-20.2905230)
@@ -331,10 +331,10 @@
 !      四極 (Q*) と偏向磁石 (B1*, B2*) の K1 で合わせ直す (nitA 回繰り返し、毎回 fit 条件を立て直す)。
 !      MKMCA 等はセルの中心のマーク。
 !   2. 同じことを通常のセル TCELL (= MCELL LCELL) で nitN 回。
-!   3. それぞれ六極 S3*, S4* (S5 は S3 と等しい) で、セルの色収差を DP = 0.001 (中直線部) / 0.01 (長直線部) で合わせる
-!      (FIT のチューン条件は六極を入れる前のセルのチューンのまま)。MCELLA・LCELLA・MCELL・LCELL の 4 つ。
+!   3. それぞれ6 極 S3*, S4* (S5 は S3 と等しい) で、セルの色収差を DP = 0.001 (中直線部) / 0.01 (長直線部) で合わせる
+!      (FIT のチューン条件は6 極を入れる前のセルのチューンのまま)。MCELLA・LCELLA・MCELL・LCELL の 4 つ。
 !   4. リング (RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA) の δ に対するチューンの 3 次の多項式フィット
-!      (六極 0)。元の挙動のまま PolynomialFit の係数 [1,2] を出す。この係数は ξ そのものではない (README 参照)。
+!      (6 極 0)。元の挙動のまま PolynomialFit の係数 [1,2] を出す。この係数は ξ そのものではない (README 参照)。
 !   5. RINGA の始点から各要素まで、δ = ±0.1% の粒子を追跡して R56 (多項式フィット) を出す (最後の 10 要素)。
 ! マッチングは設計値から始めるので、ほとんど動かない (dtl・dtm の崩しだけが戻る)。
 !=====================================================================
@@ -625,7 +625,7 @@ emitx =     .8387171927
  -9.E-11 2.70000 3.19100  .03000 2.3E-13  $$$       .0     0          49.965324 4.6E-10 4.70000 1.11033 8.3E-17 4.7E-18 5.E-30  237
    FFS["SAVE ALL;"];
  
- ! セルごとの色収差補正 (六極 S3*, S4*、S5 は S3 と等しい)
+ ! セルごとの色収差補正 (6 極 S3*, S4*、S5 は S3 と等しい)
  FFS["USE MCELLA;"];
      FFS["cell calc emit;",6];
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
@@ -1257,7 +1257,7 @@ $$$       f BY    #######  #   4.870520  4.699848  4.477454 $$$       f NY   .56
  ;
      FFS["SAVE"];
  
- ! ---- リング全体の δ に対するチューン (六極 0)。元の挙動のまま、fit の係数 [1,2] ----
+ ! ---- リング全体の δ に対するチューン (6 極 0)。元の挙動のまま、fit の係数 [1,2] ----
  ! ChromFitRing[リング名, δ の範囲, 刻み] → chrx, chry (PolynomialFit の結果)、emitx (最後の δ での EMITX)
  ChromFitRing[ring_, dpm_, dst_]:=(
    FFS["USE "//ring,6];

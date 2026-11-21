@@ -176,13 +176,13 @@ try:
 except Exception as ex:
     P('図の作成に失敗:', ex)
 
-# DA の比較表と図: 最終 (final)・rev9・最適化の結果。512 周 (誤差なし) / 1024 周 / 六極の位置ずれ 50 μm (3 種の乱数)
+# DA の比較表と図: 最終 (final)・rev9・最適化の結果。512 周 (誤差なし) / 1024 周 / 6 極の位置ずれ 50 μm (3 種の乱数)
 def load_json(f):
     return json.load(open(f, encoding='utf-8'))
 
 
 cmp_names = [n for n in ('v07_12', 'retune1', 'final', 'rev9', 'opt_full_1', 'opt_full_2', 'opt_full_k125', 'opt_J3e-07', 'opt_J3e-06', 'opt_J1e-05', 'opt_dadts', 'opt_adts') if n in tr]
-P('\nDA の比較 (x-y の DA 面積 mm²、リング先頭、δ=0。誤差なし 512 周 / 1024 周 / 六極の位置ずれ rms 50 μm の 3 種 (補正なし) の平均と範囲) と x-δ の幅 (δ = −3〜+3% の平均、mm)、LMA (4 点の min(δ+,|δ−|) の平均 %)')
+P('\nDA の比較 (x-y の DA 面積 mm²、リング先頭、δ=0。誤差なし 512 周 / 1024 周 / 6 極の位置ずれ rms 50 μm の 3 種 (補正なし) の平均と範囲) と x-δ の幅 (δ = −3〜+3% の平均、mm)、LMA (4 点の min(δ+,|δ−|) の平均 %)')
 P('| 名前 | DA 512 周 | DA 1024 周 | 位置ずれ DA (3 種) 平均 [最小, 最大] | x-δ 幅 512 周 | x-δ 幅 位置ずれ 平均 | LMA % | 最終に対する DA の比 (512 周) |')
 P('|---|---|---|---|---|---|---|---|')
 da_rows = {}
@@ -205,7 +205,7 @@ try:
     for i, n in enumerate(cmp_names):
         e = da_rows[n]['err']
         if e:
-            ax[0].plot([i + 0.2] * len(e), e, 'o', color='C1', ms=4, label='六極の位置ずれ 50 μm (3 種)' if n == 'retune1' else None)
+            ax[0].plot([i + 0.2] * len(e), e, 'o', color='C1', ms=4, label='6 極の位置ずれ 50 μm (3 種)' if n == 'retune1' else None)
         if da_rows[n]['da1024']:
             ax[0].plot(i - 0.2, da_rows[n]['da1024'], '_', color='k', ms=14, mew=2, label='誤差なし 1024 周' if n == 'retune1' else None)
     ax[0].set_xticks(xs_)

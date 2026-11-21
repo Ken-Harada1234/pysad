@@ -36,7 +36,7 @@ SPECS = [
 !  チューン  nux = 9.5972, nuy = 4.2902
 !  エミッタンス  名前は 36 nm rad、計算値は 3.473e-8 m rad (34.7 nm rad)。近い (差 3.5%)""",
   tidy="""!  整理: なし (台本の中身は元のまま。改行を LF にしただけ)。Get・USE・計算コマンドは無い。
-!        周回のライン RING = (RMARK HALFE HALFW EMARK)。四極 QUAD と六極 SEXT の定義が何度も出てくるのは機械研究ごとの
+!        周回のライン RING = (RMARK HALFE HALFW EMARK)。四極 QUAD と6 極 SEXT の定義が何度も出てくるのは機械研究ごとの
 !        値の履歴 (2000-05-29、2002-11-25、`105 deg Present Optics`) で、あとの定義が有効 (最後が `105 deg Present Optics`)。"""),
  dict(src='pf_036nmrad_2005', dst='pf_2005_036nmrad.sad', name='pf_2005_036nmrad', era='2005 年',
   what='直線部増強のオプティクス (標準セルの位相進み 115 度。PM と STR 付きの最初の版 = First edition)',

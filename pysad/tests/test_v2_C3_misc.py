@@ -117,7 +117,7 @@ _GS_SB = [0.0142, 1.360336495570143e-6, 4.751665441653782e-8, 1.3599991774350626
 
 @needs_pk
 def test_synchrobeta_coupled_ring_matches_gs_k64(k64_mode):
-    """結合のある 24 セル FODO (skew 四極 1 台、六極なし、3 GeV、RF 4 MV): k64 の SynchroBetaEmittance が gs と εx・εy で 1e-6、εx'・εy' で 1e-6 一致する
+    """結合のある 24 セル FODO (skew 四極 1 台、6 極なし、3 GeV、RF 4 MV): k64 の SynchroBetaEmittance が gs と εx・εy で 1e-6、εx'・εy' で 1e-6 一致する
     (gs はこの結合のあるリングで落ちない。「結合のあるラティスで gs が落ちる」(docs/46) は再現しなかった)。v2 は追跡の放射の式の修正で 1.3% 違う"""
     buf = io.StringIO()
     ffscmd.run_sad_string(_SB_COUPLED, out=buf)
@@ -257,7 +257,7 @@ _GS_PF = {1: [(1, 1.603389376910E-4, 3353699231), (10, .00139199603361, 35539360
 
 @pytest.mark.parametrize('npara', [1, 4])
 def test_fluc_random_stream_matches_gs_on_pf_ring_k64(k64_mode, npara):
-    """PF リング (760 要素、六極つき) でも dp の rms が gs と 1e-9、40 周後までの乱数の種が gs と同じ (NPARA=1 と 4)"""
+    """PF リング (760 要素、6 極つき) でも dp の rms が gs と 1e-9、40 周後までの乱数の種が gs と同じ (NPARA=1 と 4)"""
     src = _read(PF) + f'''
 FFS;
 $FORM="20.14"; PageWidth=1999;

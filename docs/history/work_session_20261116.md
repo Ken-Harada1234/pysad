@@ -10,7 +10,7 @@ gs は WSL の K64 ビルド (`bin/gs`、2026-10-19 ビルド)。`local/wake/` �
 - 内容: `track6.py` (Python の追跡) に粒子ごとのスピン (`_Particle.s`、`bsi`) と `photons.f` の `sprot` (tradk の中の歳差と放射偏極) を直訳した。POL かつ RAD ON のときだけスピンが動く (K64 の tradk の中で計算するため。RAD OFF ではスピンは変わらない)。
   `ffscmd.fn_track` は POL ON・RAD ON で Python の追跡に切り替える。入力は 9〜11 列 {x,px,y,py,z,dp, 角度, sy/|s|, flag}、戻りの 7・8 列は atan(sz, sx) と sy/|s|。
 - bsi を入れた場所: tsolqur (四極のスライスの両端)、tbendcore (入口・出口の y/rhob)、tbendi (K1 のある BEND の各スライス)、tmulti (tsolqu の ibsi と cx の項)、tdrift の ak0 付き、tdrift_solenoid (bz·al)、bz≠0 の tsolqur。tsolrot の chi3 のスピン回転 (四極の ROTATE)。
-- 一致の度合い: gs と 4e-12 以下 (NOFLUC・FLUC とも)。平面リング、ずれ・回転した四極と偏向・六極のリング、MULT (K1 K2 K3 とずれ)、K1 のある BEND、SEXT・薄い MULT (L=0)、SOL 領域内のドリフト (BZ=0.05)。根拠: `pysad/tests/test_spin_track.py`。
+- 一致の度合い: gs と 4e-12 以下 (NOFLUC・FLUC とも)。平面リング、ずれ・回転した四極と偏向・6 極のリング、MULT (K1 K2 K3 とずれ)、K1 のある BEND、SEXT・薄い MULT (L=0)、SOL 領域内のドリフト (BZ=0.05)。根拠: `pysad/tests/test_spin_track.py`。
 - 限界・未確認: 損失 (flag) の処理は高速追跡 (TrackRun) にしかないので、POL のスピン追跡では粒子が落ちない。SOL 領域内の MULT・BEND・CAVI のスピンは未確認 (領域内の要素そのものが未対応)。
 - Emittance・EMIT のスピン: MULT (K1・K2・K3 とずれのあるリングで gs と 1e-11。tmulke の bsir0 の更新も入れた: `lattice.py` の `kick_cx`、`emit6d.py` の `_tmulte`)、空洞、SOL (`emit_extra._tturne1` に SOL 領域の分岐) まで。偏極時間・スピンチューン・偏極ベクトルが gs と一致 (`test_spin.py`、SOL は `test_solenoid_ring_matches_gs`)。
 - 根拠のファイル: `pysad/spin.py`、`pysad/track6.py`、`pysad/emit_extra.py`、`pysad/tests/test_spin.py`、`test_spin_track.py`、`work_unimpl.md` (「POL の MULT」「POL の SOL」「POL の TrackParticles」)、`docs/36_spin_csr.md`。

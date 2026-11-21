@@ -124,7 +124,7 @@ LINE RING = (ST 12*CELL1);
 '''
     nx, ny, fx, fy, amps, rec = _ring_tunes(src, 'RING', amp=1e-7)
     assert abs(_frac(fx - nx)) < 2e-9 and abs(_frac(fy - ny)) < 2e-9
-    # 振幅が大きいと六極でチューンが振幅の 2 乗で動く (1e-5 → 1e-4 で 100 倍)
+    # 振幅が大きいと6 極でチューンが振幅の 2 乗で動く (1e-5 → 1e-4 で 100 倍)
     d1 = _frac(_ring_tunes(src, 'RING', amp=1e-5)[2] - nx)
     d2 = _frac(_ring_tunes(src, 'RING', amp=1e-4)[2] - nx)
     assert 80 < d2 / d1 < 120

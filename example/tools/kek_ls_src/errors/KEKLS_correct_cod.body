@@ -2,7 +2,7 @@
 ! 流れ:
 !   1. RING で設計の COD 応答行列 (補正用ステアリング HD*.* / VD*.* の K0 → モニター PM*.* の COD) を、解析式
 !      Responsex[j,i] = 0.5 sqrt(βm βc) cos(πν − |Δμ|) / sin(πν) から作る (CalculateCODResponse[])。
-!   2. 乱数の種 seed ごとに、四極・六極のずれ (DX・DY = ae GaussRandom[])、強さの誤差 (DK = fe)、回転誤差 (DTHETA = te) を与える (SeedRandom[seed]、modules_errors.n)。
+!   2. 乱数の種 seed ごとに、四極・6 極のずれ (DX・DY = ae GaussRandom[])、強さの誤差 (DK = fe)、回転誤差 (DTHETA = te) を与える (SeedRandom[seed]、modules_errors.n)。
 !   3. 応答行列の特異値分解 (CodCorr[] = 固有値の大きい ie 個だけ使う疑似逆行列) で、COD を補正する K0 を求め、0.5 倍ずつ niter 回かける。
 !   4. 補正前後の COD・分散の rms と最大値、チューンの変化を表示する。補正後にチューンが窓の外 (nx 48.5〜49、ny 17.5〜18) なら DA は計算しない。
 ! 元との違い:

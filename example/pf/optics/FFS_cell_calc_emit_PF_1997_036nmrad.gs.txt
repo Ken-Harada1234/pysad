@@ -13,7 +13,7 @@
 !  元は設計値のラティス (誤差なし)。数値は ON RAD FLUC COD RFSW RADCOD; のあとの `cell calc emit` の値
 !  (gs と pysad の k64 モードで全桁一致。example/pf/lattice/PF_history.md の表)。
 !  整理: なし (台本の中身は元のまま。改行を LF にしただけ)。Get・USE・計算コマンドは無い。
-!        周回のライン RING = (RMARK HALFE HALFW EMARK)。四極 QUAD と六極 SEXT の定義が何度も出てくるのは機械研究ごとの
+!        周回のライン RING = (RMARK HALFE HALFW EMARK)。四極 QUAD と6 極 SEXT の定義が何度も出てくるのは機械研究ごとの
 !        値の履歴 (2000-05-29、2002-11-25、`105 deg Present Optics`) で、あとの定義が有効 (最後が `105 deg Present Optics`)。
 !============================================================================
 !  ---- 元のヘッダ (pf_036nmrad の先頭) ----

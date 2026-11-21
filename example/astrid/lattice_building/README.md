@@ -4,4 +4,4 @@
 
 | 例 | 内容 | gs と pysad |
 |---|---|---|
-| [`SetElement_BeamLine_Join_ASTRID2`](SetElement_BeamLine_Join_ASTRID2.md) | 周期性のあるラティスの作り方 (六極だけ全セル独立にする) | ○ |
+| [`SetElement_BeamLine_Join_ASTRID2`](SetElement_BeamLine_Join_ASTRID2.md) | 周期性のあるラティスの作り方 (6 極だけ全セル独立にする) | ○ |

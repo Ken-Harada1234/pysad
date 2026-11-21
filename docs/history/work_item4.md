@@ -63,10 +63,10 @@ pytest 57 pass。13a は PASS* (TWB 4.7e-8、既知)、16a は PASS* (DA の損�
 ## B. CHROMATICITY コマンド (bench_level24b.sad, bench_level24b2.sad)
 
 - SAD: src/tfchro.f (51 行)。tffsa.f:609 から `tfchro(latt, twiss(AX,BX,PSI,EX..))` (itwisso の i=0 = 直前の CALC の行)。
-  四極・六極・MULT の寄与を 1 要素ずつ `1x,a12,1x,2f17.3` で表示し、最後に `TOTAL`。BEND は数えない。
+  四極・6 極・MULT の寄与を 1 要素ずつ `1x,a12,1x,2f17.3` で表示し、最後に `TOTAL`。BEND は数えない。
   - 四極/MULT の K1: `ξx = -(K1·βx + (1+αx²)/βx·L + αx(i+1) - αx(i))/2`、`ξy = -(-K1·βy + (1+αy²)/βy·L + Δαy)/2`
-  - 六極 (MULT の K2 も): `ξx = (βx(i)ηx(i)+βx(i+1)ηx(i+1))·K2/2`、`ξy = -(βy(i)ηx(i)+βy(i+1)ηx(i+1))·K2/2` (垂直の分散は使わない)
-  - 六極単独の ξy は Fortran の代入 (`xiy=-(..)*v*.5`) なので K2=0 のとき `-0.000` と出る (MULT は足し込みなので出ない)。
+  - 6 極 (MULT の K2 も): `ξx = (βx(i)ηx(i)+βx(i+1)ηx(i+1))·K2/2`、`ξy = -(βy(i)ηx(i)+βy(i+1)ηx(i+1))·K2/2` (垂直の分散は使わない)
+  - 6 極単独の ξy は Fortran の代入 (`xiy=-(..)*v*.5`) なので K2=0 のとき `-0.000` と出る (MULT は足し込みなので出ない)。
 - pysad: `ffscmd.py` に `chro_cmd` を追加 (`CHRO`/`CHROMATICITY` の略記を `_abbrev` で受理。従来は「未対応」と警告して無視)。
 - 照合: `bench_level24b.sad` (<試験用ラティス>.lat 連結、`CELL; CALC; CHROMATICITY;`): 要素 960 行 + ヘッダ + TOTAL の 962 行が**文字列で全行一致** (TOTAL -85.752 / 751.974)。
   `bench_level24b2.sad` (小リング: QUAD/SEXT/MULT(K1,K2)/BEND、DP0=0.002 での 2 回目も): 244 行すべて一致 (MULT 経路の検証)。

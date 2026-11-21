@@ -8,7 +8,7 @@ P3 が編集中の `track6*.py` は、領域内の QUAD・MULT・光子の数行
 `test_v2_C2_spin.py::test_spin_path_follows_the_same_orbit_as_fast_tracking` の許容 1e-10 → 5e-9 (領域内の QUAD は POL のとき細かく刻むので座標が 2e-9 だけ精密になる)。
 例 (`example/v2_next/`): `P4_free_noop_variable.sad`・`P4_dapwidth_window.sad`・`P4_pspac_k64_shape.sad`・`P4_pspac_astrid2.sad`・`P4_wspac_tracking_beam.sad`・`P4_sol_photons.sad`
 (各 `.gs.txt`・`.pysad.txt` (v2)・`.pysad_k64.txt`)、`P4_sol_spin_quad_mult.py` (`.out.txt`・`.out_k64.txt`)、説明 `P4_README.md`。
-使ったリング: 12 セル FODO (0.2・0.5・3 GeV)、24 セル FODO (3 GeV、六極つき)、大きなリング A (3 GeV、603 m。DAPWIDTH のみ)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、0.58 GeV、45.7 m)、5 MeV の輸送路。
+使ったリング: 12 セル FODO (0.2・0.5・3 GeV)、24 セル FODO (3 GeV、6 極つき)、大きなリング A (3 GeV、603 m。DAPWIDTH のみ)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、0.58 GeV、45.7 m)、5 MeV の輸送路。
 大きなリング A (`kek-ls_v03_12.lat`、603 m) は DAPWIDTH だけに使い、PF リングは使っていない (下の「未確認」)。gs の追跡は NPARA = 1 で取った (gs の既定の NPARA は 1 より大きく、`TrackParticles`・`DynamicApertureSurvey` は
 粒子を子プロセスに分け、PSPAC は各プロセスが自分の粒子だけで電位を作る。この記録の gs の値はすべて NPARA = 1)。
 
@@ -45,7 +45,7 @@ P3 が編集中の `track6*.py` は、領域内の QUAD・MULT・光子の数行
 | 状況 | pysad の `DynamicApertureSurvey` は常に全 51 点を追い (DAPWIDTH の既定 51)、`Maximum number of particles` も違った (gs の既定は 7: 3 行で 42、pysad 306)。窓の動きで追跡する点が変わると RAD + FLUC の乱数の列が変わる |
 | K64 の動作 (trackd.f) | 行 i ごとに損失が見つかった最小の j (nxm、初期 52) から下へ ncons = max(1, nint(DAPWIDTH)) 点の窓の中だけを追跡 (`j < nxm − ncons` で打ち切り、損失点が見つかると nxm = j)。同時に追うスロットは npmax = n1p·ncons (NPARA = 1)。損失・完了でスロットが空くと配置ループに戻り、空きがあるとき (np1 < npmax) は 16 周ごとに戻る。空きスロットは (i, j) の順で点を探し、なければ末尾の粒子と入れ替えて np1 を減らす。窓の外の点は ntloss = 2^29 のまま (地図は `*`) |
 | v2 の動作 | `dapert.dynamic_aperture` に直訳 (配列位置 ↔ スロットの ID の入れ替え、配置ループ、nw = 16、`track6n.turn` の `kid`)。`NP = min(4000, n1·min(DAPWIDTH, 51)·2)` の表示。DAPWIDTH の既定を 7 に。**どちらのモードも同じ** (K64 の動作の再現) |
-| 根拠 (gs) | 24 セルの FODO (3 GeV、SF = 4・SD = −7 の六極、RF 4 MV)、`{{1,300},{1,1},{-0.5,0,0.5}}`、100 周、NORAD: DAPWIDTH = 既定 (7)・3・12・51 の 4 通りで Score 24 と地図 (窓の外 `*` を含む) が一致 (損失の境界の 1 点 j = 14 の 'H' と 'h'、46 周と 50 周は 1 周ほどの差: カオス的な境界の粒子)。RAD + FLUC (NPARA = 1) の最終 seed: DAPWIDTH = 2、z = {−0.5, 0, 0.5, 1}、x = {1, 150}、5・10・20・25 周の 4 例が一致 (15 周だけ境界の粒子で違う)、DAPWIDTH = 1 (スロット 1 つ) の xm = 20〜130 が一致 (xm = 140 だけ境界の粒子で違う)、DAPWIDTH = 5・6 の 1〜4 周が一致 |
+| 根拠 (gs) | 24 セルの FODO (3 GeV、SF = 4・SD = −7 の6 極、RF 4 MV)、`{{1,300},{1,1},{-0.5,0,0.5}}`、100 周、NORAD: DAPWIDTH = 既定 (7)・3・12・51 の 4 通りで Score 24 と地図 (窓の外 `*` を含む) が一致 (損失の境界の 1 点 j = 14 の 'H' と 'h'、46 周と 50 周は 1 周ほどの差: カオス的な境界の粒子)。RAD + FLUC (NPARA = 1) の最終 seed: DAPWIDTH = 2、z = {−0.5, 0, 0.5, 1}、x = {1, 150}、5・10・20・25 周の 4 例が一致 (15 周だけ境界の粒子で違う)、DAPWIDTH = 1 (スロット 1 つ) の xm = 20〜130 が一致 (xm = 140 だけ境界の粒子で違う)、DAPWIDTH = 5・6 の 1〜4 周が一致 |
 | 試験 | `test_v2_P4_dapwidth.py` (11 件: 地図 4・窓の動きの seed 4・スロット 1 つの seed・ResultOfDAPERT の 2^29・大きなリング A の地図) |
 | k64 モードの扱い | 同じ。k64 は gs と RAD + FLUC の seed まで一致する (上)。**v2 は放射の式 (B111・B112 など) が K64 と違うので RAD + FLUC の seed は gs と合わない** (NORAD の地図は合う) |
 | 大きなリング A | `kek-ls_v03_12.lat` (3 GeV、周長 603 m、3563 要素、RFSW + NORAD)、`{{1,400},{1,1},{-0.5,0,0.5}}`、60 周: DAPWIDTH = 7 (j = 1〜14 が窓の外) と 51 の地図・Score 63 が gs と一致 (境界の 1 点 (z = 0.5 の j = 34) だけ 1〜2 周違う)。gs 11.7 s、pysad 4.9 s。`P4_dapwidth_ringA.out.txt` |

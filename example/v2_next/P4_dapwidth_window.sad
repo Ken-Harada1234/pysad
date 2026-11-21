@@ -1,6 +1,6 @@
 ! v2next P4 項目 5: DynamicApertureSurvey の DAPWIDTH の窓 (trackd.f の粒子スロットの直訳)。gs (K64) と: NORAD の地図 (DAPWIDTH = 7 (既定)・3・12・51) と Score が一致
 !   (損失の境界の 1 点は 1 周ほど違うことがある)、RAD + FLUC (NPARA=1) の最終の seed が一致 (DAPWIDTH = 2、20 周などの 4 例。境界の粒子の違いで一致しない例もある)。
-! 条件: 3 GeV、24 セルの FODO (周長 36 m、六極 SF・SD つき、RF 4 MV)。NPARA = 1 (gs の既定は子プロセスに分ける)。
+! 条件: 3 GeV、24 セルの FODO (周長 36 m、6 極 SF・SD つき、RF 4 MV)。NPARA = 1 (gs の既定は子プロセスに分ける)。
 MOMENTUM = 3GEV;
 DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
 QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);

@@ -10,7 +10,7 @@ numba/BLAS のスレッド 1 で走らせる。
 
 ## 1. プロファイル (作業前)
 
-マイクロベンチ `mb_emiterr_full.sad` (3563 要素のリング): `cell calc emit` (誤差なし) → 誤差 (四極・六極・偏向の DELX/DELY・DK・DTHETA、seed 125188771) → `cell calc` → `cell calc emit`。
+マイクロベンチ `mb_emiterr_full.sad` (3563 要素のリング): `cell calc emit` (誤差なし) → 誤差 (四極・6 極・偏向の DELX/DELY・DK・DTHETA、seed 125188771) → `cell calc` → `cell calc emit`。
 
 | 区間 | 作業前 | 主なホットスポット (cProfile) |
 |---|---|---|

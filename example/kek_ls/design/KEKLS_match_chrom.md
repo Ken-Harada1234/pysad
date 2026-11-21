@@ -1,8 +1,8 @@
 # KEKLS_match_chrom
-種別: FFS の `fit`、`FITP`、六極のクロマティシティ補正。フォルダ: `design`。元のスクリプト: matching2_01 (後半)。ラティス: `../lattice/kek_ls_v03_68.sad` (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
+種別: FFS の `fit`、`FITP`、6 極のクロマティシティ補正。フォルダ: `design`。元のスクリプト: matching2_01 (後半)。ラティス: `../lattice/kek_ls_v03_68.sad` (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
 
 ## 何を見る例か
-リング `RINGC` の六極 `SDH`・`SFH` の K2 で、チューンを保ちつつ運動量 DP = 0.001 でも同じチューンにする (クロマティシティを 0 にする) マッチング。ξ を `DP0 = ±0.0005` の差分で前後に表示する。
+リング `RINGC` の6 極 `SDH`・`SFH` の K2 で、チューンを保ちつつ運動量 DP = 0.001 でも同じチューンにする (クロマティシティを 0 にする) マッチング。ξ を `DP0 = ±0.0005` の差分で前後に表示する。
 
 ## スクリプト
 `KEKLS_match_chrom.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。

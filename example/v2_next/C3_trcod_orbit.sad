@@ -1,7 +1,7 @@
 ! v2next C3 項目 1: TRCOD の閉軌道の測定。24 セルの平面 FODO (3 GeV)、リングの先頭に薄いキック (L=0 の BEND、K0=1e-5)。
 ! TRCOD (NP=2、ε=0、DP=0: 重心の追跡) が測った軌道を、CALC の閉軌道と、解析式 x(s) = θ √(β_s β_k)/(2 sin πν) cos(πν − |φ_s − φ_k|) と比べる。
-! 結果 (v2): TRCOD と CALC の最大の差 / 最大の軌道 = 2e-9 程度、解析式との差は 1e-6 程度 (六極なし)。gs は TRCOD で SIGSEGV (B42) なので gs の出力は無い。
-! 大きなリング (PF 187 m・大きなリング A 603 m・ASTRID2) では試験 test_v2_C3_measure.py (差 6e-7〜1.3e-5、解析式との差 4e-4〜1.9e-3 (六極のフィードダウン))。
+! 結果 (v2): TRCOD と CALC の最大の差 / 最大の軌道 = 2e-9 程度、解析式との差は 1e-6 程度 (6 極なし)。gs は TRCOD で SIGSEGV (B42) なので gs の出力は無い。
+! 大きなリング (PF 187 m・大きなリング A 603 m・ASTRID2) では試験 test_v2_C3_measure.py (差 6e-7〜1.3e-5、解析式との差 4e-4〜1.9e-3 (6 極のフィードダウン))。
 MOMENTUM = 3GEV;
 DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
 QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);

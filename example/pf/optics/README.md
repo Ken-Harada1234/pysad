@@ -12,7 +12,7 @@
 | [`FFS_disp_type_PF`](FFS_disp_type_PF.md) | `disp`・`type` | ○ |
 | [`FFS_draw_OpticsPlot_PF`](FFS_draw_OpticsPlot_PF.md) | `draw`、`OpticsPlot` (図の数値と PNG) | ○ (draw は gs 無出力・pysad 未対応) |
 | [`FFS_draw_topdrawer_PF`](FFS_draw_topdrawer_PF.md) | topdrawer ファイルの手書き。`draw` は gs で動かず (出力なし/止まる)、pysad は未対応 | ○ (手書き部分) / `draw` は × |
-| [`calc_chromaticity_PF`](calc_chromaticity_PF.md) | `PolynomialFit` の 6 次、自然色収差、四極・六極の和の式 | ○ |
+| [`calc_chromaticity_PF`](calc_chromaticity_PF.md) | `PolynomialFit` の 6 次、自然色収差、四極・6 極の和の式 | ○ |
 | [`calc_dispersion_PF`](calc_dispersion_PF.md) | 分散の差分と $\alpha_c$ の確認 | ○ |
 | [`calc_respx_PF`](calc_respx_PF.md) | 軌道応答 (K0 → モニター) と解析式、符号と RFSW の確認 | ○ (応答は解析式と 0.08% で一致) |
 | [`fn_PolynomialFit_PF`](fn_PolynomialFit_PF.md) | チューン対運動量、`DP0`、`PolynomialFit` (SAD の係数の癖あり) | ○ (k64 モード。v2 の既定は x の平均が 0 のデータで真の係数を返し gs の壊れた係数と違う: B18) |

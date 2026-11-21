@@ -70,7 +70,7 @@ LINE
         SF      =(L =.075 K2 =8.681418961367605 )
  ;
 !+
-!  周期ラティスの作り方: ASTRID2 の 6 セルリングを、六極だけ全セル独立な要素にして組み直す。
+!  周期ラティスの作り方: ASTRID2 の 6 セルリングを、6 極だけ全セル独立な要素にして組み直す。
 !  SetElement で新しい要素を作り、BeamLine でくくった区間を Join でつなぐ。
 !-
 ON LOG RFSW RADCOD RAD COD;
@@ -135,7 +135,7 @@ RING   NX NY =   5.17998988   2.14017757  #elem =  200.0000000
    Print["RING   emitx = ", emit0];
 RING   emitx =  1.268037E-8
  
-   ! 六極の L, K2 を元の要素から読む 
+   ! 6 極の L, K2 を元の要素から読む 
    lsf = LINE["L","SF"]; ksf = LINE["K2","SF"];
    lsd = LINE["L","SD"]; ksd = LINE["K2","SD"];
    Print["SF L K2 = ", lsf, " ", ksf, "    SD L K2 = ", lsd, " ", ksd];
@@ -143,7 +143,7 @@ SF L K2 =    .07500000   8.68141896    SD L K2 =    .15000000  -11.7294860
  
    ncell = 6;
    aa = {"01","02","03","04","05","06"};   ! セル番号の文字列 (名前の連結用) 
-   ! 六極 4 台/セル: SDA SFA SFB SDB を 1 セルごとに別の名前で作る 
+   ! 6 極 4 台/セル: SDA SFA SFB SDB を 1 セルごとに別の名前で作る 
    Do[
        id = aa[j];
        SetElement["SDA"//id, "SEXT", {"L"->lsd}, {"K2"->ksd}];
@@ -152,7 +152,7 @@ SF L K2 =    .07500000   8.68141896    SD L K2 =    .15000000  -11.7294860
        SetElement["SDB"//id, "SEXT", {"L"->lsd}, {"K2"->ksd}];
    ,{j,1,ncell}];
  
-   ! 六極以外の部分を BeamLine でくくる 
+   ! 6 極以外の部分を BeamLine でくくる 
    bl1 = BeamLine[MKS, D14837, PM, D0100, QF3, D0180, PH, PV, D0180, BH, D0190];  ! + SDA 
    bl2 = BeamLine[D0120, QF2, D0120];                                          ! + SFA 
    bl3 = BeamLine[PM];                                                         ! + SFB 
@@ -225,7 +225,7 @@ NEWRING NX NY =   5.17998988   2.14017757  #elem =  201.0000000
    Print["NEWRING emitx = ", (Emittances/.Emittance[])[1], "   ratio to RING = ", (Emittances/.Emittance[])[1]/emit0];
 NEWRING emitx =  1.268037E-8   ratio to RING =   1.00000000
  
-   ! 1 つのセルだけ六極を変える: ξ を有限差分で測る 
+   ! 1 つのセルだけ6 極を変える: ξ を有限差分で測る 
    xi[] := Module[{nxp, nyp, nxm, nym, d = 1e-4},
        DP0 = d;  FFS["cell calc"]; nxp = Twiss["NX","$$$"]/2/Pi; nyp = Twiss["NY","$$$"]/2/Pi;
        DP0 = -d; FFS["cell calc"]; nxm = Twiss["NX","$$$"]/2/Pi; nym = Twiss["NY","$$$"]/2/Pi;

@@ -81,66 +81,6 @@ pysad v2 系は直訳に加えて、**オリジナルの SAD (K64) にない解�
 - **PyPI は v2.3.0 まで公開**しています。v2.3.0 の新機能も `pip install pysad-k64` で入ります。SAD の台本を `py -3.12 run_sad.py lattice.sad script.sad` で動かすには、リポジトリを clone してください (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入りません)。
 - 検証の範囲と未確認は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)・[`docs/47_v2_changes.md`](docs/47_v2_changes.md)・docs/48〜50・[`example/v2_3/`](example/v2_3/) の各まとめを参照してください。
 
-## オリジナルの SAD (gs) との一致度
-
-**基準**: `PYSAD_COMPAT=k64` (互換モード) で gs (SAD 本体) と同じ台本を走らせ、物理計算の出力 (光学・エミッタンス・追跡・DA・偏極など) が SAD の印字精度 (1e-10〜1e-11) で一致すること。既定の `v2` モードは K64 のバグを直すので、一部の結果が gs と違います (下の「v2 で意図的に違うもの」)。
-
-| 集計 | 結果 |
-|---|---|
-| 回帰ベンチ (gs の出力との比較、`run_regression.py`、`QUICK=1`、k64。ベンチと `run_regression.py` は作業者のローカルにあり、このリポジトリには入っていない) | **50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)** |
-| 全試験 (`pytest pysad/tests`、gs の出力との比較を含む、k64 が既定) | **1899 通過・8 skip・失敗 0 (1907 件収集。R7 の試験 [`test_ddba_sextupole.py`](pysad/tests/test_ddba_sextupole.py) 8 件を含む)** (2026-11-21、v2.3.0 V3 の最終の通し。`PYSAD_SAD_PACKAGES` つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/test_v2_B2_script.py))) |
-| `example/` の例 (下の表。gs と pysad の画面表示の比較。判定は各フォルダの README の ○△×) | 224 例中 ○ 189・△ 34・× 1 |
-
-`example/` の例のフォルダごとの内訳 (○ 一致、△ 差あり (理由は各例の `.md`)、× gs 失敗または pysad 未対応)。判定は、v2 で違うものも含めて `PYSAD_COMPAT=k64` で gs と一致するものを ○ としています。数えたスクリプトは [`example/tools/count_match.py`](example/tools/count_match.py)。
-
-| フォルダ | ○ | △ | × | 計 |
-|---|---|---|---|---|
-| 01_lattice_elements | 18 | 1 | 0 | 19 |
-| 02_optics_cod | 14 | 1 | 0 | 15 |
-| 03_matching | 7 | 3 | 0 | 10 |
-| 04_emittance_radiation | 6 | 1 | 0 | 7 |
-| 05_tracking | 9 | 3 | 0 | 12 |
-| 06_collective | 8 | 0 | 0 | 8 |
-| 07_spin_solenoid_special | 5 | 1 | 0 | 6 |
-| 08_scripting | 28 | 2 | 0 | 30 |
-| 09_io_system | 7 | 3 | 0 | 10 |
-| 10_math_data | 11 | 4 | 1 | 16 |
-| 11_graphics | 12 | 2 | 0 | 14 |
-| 12_gui_tkinter | 5 | 1 | 0 | 6 |
-| 13_packages | 9 | 0 | 0 | 9 |
-| astrid | 6 | 2 | 0 | 8 |
-| ddba | 5 | 1 | 0 | 6 |
-| kek_ls | 12 | 8 | 0 | 20 |
-| pf | 27 | 1 | 0 | 28 |
-| **合計** | 189 | 34 | 1 | 224 |
-
-- **gs が落ちる・誤る** (`docs/46` §5 の 6 項目、B 番号は `docs/21`): `For` の本体を実行しない (B71)、Bessel・HermiteH・Ei などの誤値 (B43〜B47、B53、B54)、複素の PolyLog・HypergeometricU・HurwitzZeta の誤値 (B118〜B120)、`RadiationField`・`TRCOD`・`ON FOURIER` の TRACK の SIGSEGV (B49、B42)、SPAC の力・領域内の BEND・SOL 内の四極 + RAD・WSPAC のチューンシフトの誤り (B89、B69、B68、B127)、`draw` コマンド。pysad は、特殊関数は真値を返し、`For` は k64 で gs と同じ・v2 で本体を実行し、落ちるものは値を返すか (RadiationField)、先頭の MARK の位置だけ動かします (MEASURE・TRCOD)。
-- **一致しないもの** (未対応・差が残る主なもの。`docs/46` の既知の差、[`docs/history/work_unimpl.md`](docs/history/work_unimpl.md)): SOL 領域内の四極 + RAD (gs の欠陥の疑い、B68) と領域内の BEND・MULT・CAVI (k64 は未対応)、K3 が強くずれの大きい MULT リング (`pm1.sad`) の CALC の閉軌道 (gs と別の解、原因未調査)、`LOSSAMPL`・RAD・FLUC つきの TRPT・MAIN の TRACK の損失報告・DAPERT の APERT (gs と未比較)、Tkinter の Widget の値 (gs は `Widget[…]`、pysad は裸のシンボル)・最初の `Window[]` の親、`MEASURE`・`TRCOD` (先頭の MARK の位置だけ)、偏向磁石の本体の B∥ (B136)・B108 の残る 2.7%、ASTRID2 + MPW (K0≠0 の極) の RADINT と Emittance[] の差 (B115)。
-- **v2 で意図的に gs と違うもの**: v2 は K64 のバグ・物理の誤りを直すので結果が変わります ([`docs/47_v2_changes.md`](docs/47_v2_changes.md)。K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) の **B01〜B162 の 162 件**: v2.0.0 は B72〜B110、v2.1.0 は B111〜B134、v2.2.0 は B135〜B159、v2.3.0 は B160〜B162。B160 は誤りではなく K1 の暗黙の定義、B161 は CALC の行列の dk の不整合 (v2 で直した)、B162 は Touschek の損失率の式の適用範囲 (v2 は Piwinski 型が既定))。v2.3.0 の新機能 (上の節) は互換モードによらず同じ動作です。v2.3.0 で既存の v2 の結果を変えたのは `TouschekLifetime[INF, INF, nz]` の既定 (Piwinski 型。`Formula->"K64"` で K64 の表) と CALC の BEND の行列の dk (B161) だけです (`docs/47` の v2.3.0 の (a))。gs と同じ結果が要るときは `PYSAD_COMPAT=k64`。
-- **検証の限界**: 動作確認は基本的に自分で書いた SAD 台本に対してです。gs は KatsOide/SAD の `master` (2026-02-18) と同じ内容のソースを WSL でビルドしたもの (現在の `bin/gs` は 2026-10-19 ビルド) で、保存済みの参照値 (2026-10-14 など) と現在の gs の値が違うことがあります (SOL 内の四極 + RAD など。[`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §8)。
-
-詳細は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)・[`docs/47_v2_changes.md`](docs/47_v2_changes.md)・[`example/README.md`](example/README.md)・[`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
-
-加速器設計コード SAD (Strategic Accelerator Design) の K64 版 ([KatsOide/SAD](https://github.com/KatsOide/SAD)) の
-光学計算・エミッタンス・マッチング・粒子追跡・ダイナミックアパーチャを Python に直訳したもの。
-SAD の Fortran の式・分割数・反復順序・乱数の引き方を写し、SAD の数値 (印字精度 1e-10〜1e-11) を再現することを基準にしている。
-SADScript のインタプリタと FFS のコマンド層を持ち、SAD のスクリプトをそのまま実行できる。
-
-- 文書は [`docs/`](docs/) ([`docs/01_overview.md`](docs/01_overview.md) から。作業メモは [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) と `docs/history/work_*.md`)。
-- SAD の仕様と癖の一覧は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、SADHelp との対応は [`docs/14_pysad_vs_sadhelp.md`](docs/14_pysad_vs_sadhelp.md)。
-- 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
-  大きな項目の解説文書は [`docs/38_wake_guide.md`](docs/38_wake_guide.md) (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
-- 現状 (2026-11-21、v2.3.0。PyPI は v2.3.0 まで公開): 試験・回帰の件数は上の「オリジナルの SAD (gs) との一致度」の節。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`Polarization` の追跡との比 (4.2 GeV・12 MV の 1 点)、偏向磁石の本体の B∥ (B136)、B108 の残る 2.7%、ユーザー定義の関数名 `At` が `@` と衝突して呼べない、`FitFunction` を `fit` と併用すると gs と別の解に落ちる)。v2.2.0 の要判断 (EMITDIV・DAPWIDTH・WSPACSC の既定など) は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (d)、v2.3.0 の要判断・未解決 (共鳴線の予想の判別力、精密版の δ 微分、Touschek のバンチ内の δ 分布など) は同じく v2.3.0 の (d)。v2.3.0 の新機能 (周波数マップ・局所運動量アクセプタンス・Touschek の Piwinski 型の式・共鳴駆動項・ADTS・数値の正規形。K64 にない追加) の解説は [`docs/48_frequency_map_lma.md`](docs/48_frequency_map_lma.md)・[`docs/49_resonance_terms_adts.md`](docs/49_resonance_terms_adts.md) (入門は [`docs/50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md))。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
-- **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B162)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
-- SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
-
-## 検証
-
-- `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` (`--ignore` する旧式の 3 本。手順は [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §4)。
-  GUI 系 ([`test_plot.py`](pysad/tests/test_plot.py)、[`test_tclbridge.py`](pysad/tests/test_tclbridge.py)) は環境変数 `PYSAD_SAD_PACKAGES` (K64 の `Packages` の場所) が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL、約 7 分) も走る。
-  このリポジトリには pysad 本体と文書だけを入れている。SAD の参照値付きベンチ、回帰スクリプトは含めていない。
-  誤差入りラティスを使う [`test_elkern.py`](pysad/tests/test_elkern.py) の 2 件は環境変数 `PYSAD_ERR_LATTICE` (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。
-
 ## 構成
 
 Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`、`README.md`、`LICENSE`、`CLAUDE.md`、`.gitignore` ([`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §9)。
@@ -345,7 +285,67 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | [`sadhelp_summary.html`](docs/sadhelp_summary.html) | SADHelp 対応文書 (13・14・15) の要約 (リポジトリ外の `perf_work/sadhelp_html.py` で md から生成) |
 | [`html/`](docs/html/) | 上の md を html にしたもの (`make_html.py` で生成。追跡しない)。手書きの `sad_wake_sigsegv_fixes_v001.html` (2026-11-14) と `_v002.html` (2026-11-16、B33 の差の原因と解消を追記) は K64 の wake まわりの SIGSEGV 3 件 (B31〜B33) の原因と修正の報告。差分は [`docs/history/sad_patch/wake_sigsegv_fixes.patch`](docs/history/sad_patch/wake_sigsegv_fixes.patch) |
 
-### [`pysad/tests/`](pysad/tests/) (試験)
+## オリジナルの SAD (gs) との一致度
+
+**基準**: `PYSAD_COMPAT=k64` (互換モード) で gs (SAD 本体) と同じ台本を走らせ、物理計算の出力 (光学・エミッタンス・追跡・DA・偏極など) が SAD の印字精度 (1e-10〜1e-11) で一致すること。既定の `v2` モードは K64 のバグを直すので、一部の結果が gs と違います (下の「v2 で意図的に違うもの」)。
+
+| 集計 | 結果 |
+|---|---|
+| 回帰ベンチ (gs の出力との比較、`run_regression.py`、`QUICK=1`、k64。ベンチと `run_regression.py` は作業者のローカルにあり、このリポジトリには入っていない) | **50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)** |
+| 全試験 (`pytest pysad/tests`、gs の出力との比較を含む、k64 が既定) | **1899 通過・8 skip・失敗 0 (1907 件収集。R7 の試験 [`test_ddba_sextupole.py`](pysad/tests/test_ddba_sextupole.py) 8 件を含む)** (2026-11-21、v2.3.0 V3 の最終の通し。`PYSAD_SAD_PACKAGES` つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/test_v2_B2_script.py))) |
+| `example/` の例 (下の表。gs と pysad の画面表示の比較。判定は各フォルダの README の ○△×) | 224 例中 ○ 189・△ 34・× 1 |
+
+`example/` の例のフォルダごとの内訳 (○ 一致、△ 差あり (理由は各例の `.md`)、× gs 失敗または pysad 未対応)。判定は、v2 で違うものも含めて `PYSAD_COMPAT=k64` で gs と一致するものを ○ としています。数えたスクリプトは [`example/tools/count_match.py`](example/tools/count_match.py)。
+
+| フォルダ | ○ | △ | × | 計 |
+|---|---|---|---|---|
+| 01_lattice_elements | 18 | 1 | 0 | 19 |
+| 02_optics_cod | 14 | 1 | 0 | 15 |
+| 03_matching | 7 | 3 | 0 | 10 |
+| 04_emittance_radiation | 6 | 1 | 0 | 7 |
+| 05_tracking | 9 | 3 | 0 | 12 |
+| 06_collective | 8 | 0 | 0 | 8 |
+| 07_spin_solenoid_special | 5 | 1 | 0 | 6 |
+| 08_scripting | 28 | 2 | 0 | 30 |
+| 09_io_system | 7 | 3 | 0 | 10 |
+| 10_math_data | 11 | 4 | 1 | 16 |
+| 11_graphics | 12 | 2 | 0 | 14 |
+| 12_gui_tkinter | 5 | 1 | 0 | 6 |
+| 13_packages | 9 | 0 | 0 | 9 |
+| astrid | 6 | 2 | 0 | 8 |
+| ddba | 5 | 1 | 0 | 6 |
+| kek_ls | 12 | 8 | 0 | 20 |
+| pf | 27 | 1 | 0 | 28 |
+| **合計** | 189 | 34 | 1 | 224 |
+
+- **gs が落ちる・誤る** (`docs/46` §5 の 6 項目、B 番号は `docs/21`): `For` の本体を実行しない (B71)、Bessel・HermiteH・Ei などの誤値 (B43〜B47、B53、B54)、複素の PolyLog・HypergeometricU・HurwitzZeta の誤値 (B118〜B120)、`RadiationField`・`TRCOD`・`ON FOURIER` の TRACK の SIGSEGV (B49、B42)、SPAC の力・領域内の BEND・SOL 内の四極 + RAD・WSPAC のチューンシフトの誤り (B89、B69、B68、B127)、`draw` コマンド。pysad は、特殊関数は真値を返し、`For` は k64 で gs と同じ・v2 で本体を実行し、落ちるものは値を返すか (RadiationField)、先頭の MARK の位置だけ動かします (MEASURE・TRCOD)。
+- **一致しないもの** (未対応・差が残る主なもの。`docs/46` の既知の差、[`docs/history/work_unimpl.md`](docs/history/work_unimpl.md)): SOL 領域内の四極 + RAD (gs の欠陥の疑い、B68) と領域内の BEND・MULT・CAVI (k64 は未対応)、K3 が強くずれの大きい MULT リング (`pm1.sad`) の CALC の閉軌道 (gs と別の解、原因未調査)、`LOSSAMPL`・RAD・FLUC つきの TRPT・MAIN の TRACK の損失報告・DAPERT の APERT (gs と未比較)、Tkinter の Widget の値 (gs は `Widget[…]`、pysad は裸のシンボル)・最初の `Window[]` の親、`MEASURE`・`TRCOD` (先頭の MARK の位置だけ)、偏向磁石の本体の B∥ (B136)・B108 の残る 2.7%、ASTRID2 + MPW (K0≠0 の極) の RADINT と Emittance[] の差 (B115)。
+- **v2 で意図的に gs と違うもの**: v2 は K64 のバグ・物理の誤りを直すので結果が変わります ([`docs/47_v2_changes.md`](docs/47_v2_changes.md)。K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) の **B01〜B162 の 162 件**: v2.0.0 は B72〜B110、v2.1.0 は B111〜B134、v2.2.0 は B135〜B159、v2.3.0 は B160〜B162。B160 は誤りではなく K1 の暗黙の定義、B161 は CALC の行列の dk の不整合 (v2 で直した)、B162 は Touschek の損失率の式の適用範囲 (v2 は Piwinski 型が既定))。v2.3.0 の新機能 (上の節) は互換モードによらず同じ動作です。v2.3.0 で既存の v2 の結果を変えたのは `TouschekLifetime[INF, INF, nz]` の既定 (Piwinski 型。`Formula->"K64"` で K64 の表) と CALC の BEND の行列の dk (B161) だけです (`docs/47` の v2.3.0 の (a))。gs と同じ結果が要るときは `PYSAD_COMPAT=k64`。
+- **検証の限界**: 動作確認は基本的に自分で書いた SAD 台本に対してです。gs は KatsOide/SAD の `master` (2026-02-18) と同じ内容のソースを WSL でビルドしたもの (現在の `bin/gs` は 2026-10-19 ビルド) で、保存済みの参照値 (2026-10-14 など) と現在の gs の値が違うことがあります (SOL 内の四極 + RAD など。[`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §8)。
+
+詳細は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)・[`docs/47_v2_changes.md`](docs/47_v2_changes.md)・[`example/README.md`](example/README.md)・[`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
+
+加速器設計コード SAD (Strategic Accelerator Design) の K64 版 ([KatsOide/SAD](https://github.com/KatsOide/SAD)) の
+光学計算・エミッタンス・マッチング・粒子追跡・ダイナミックアパーチャを Python に直訳したもの。
+SAD の Fortran の式・分割数・反復順序・乱数の引き方を写し、SAD の数値 (印字精度 1e-10〜1e-11) を再現することを基準にしている。
+SADScript のインタプリタと FFS のコマンド層を持ち、SAD のスクリプトをそのまま実行できる。
+
+- 文書は [`docs/`](docs/) ([`docs/01_overview.md`](docs/01_overview.md) から。作業メモは [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) と `docs/history/work_*.md`)。
+- SAD の仕様と癖の一覧は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、SADHelp との対応は [`docs/14_pysad_vs_sadhelp.md`](docs/14_pysad_vs_sadhelp.md)。
+- 要素・機能別の文書は `docs/22_*.md`〜`docs/37_*.md` (GUI/Tcl、WAKE、BEAMBEAM、COORD、TCAVI、UND、MULT、SOL、MAP、DELCOR、GaussianCoulomb・BBBrem、特殊関数・Fit、SAD パッケージ、FFS の小コマンド、POL・CSR、描画)。
+  大きな項目の解説文書は [`docs/38_wake_guide.md`](docs/38_wake_guide.md) (WAKE)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
+- 現状 (2026-11-21、v2.3.0。PyPI は v2.3.0 まで公開): 試験・回帰の件数は上の「オリジナルの SAD (gs) との一致度」の節。gs と合わない箇所・未対応は [`docs/history/work_unimpl.md`](docs/history/work_unimpl.md) と [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §6 (例: SOL 領域内の四極 + RAD (gs の疑い)、最初の `Window[]` の親 (gs は Toplevel)、`Polarization` の追跡との比 (4.2 GeV・12 MV の 1 点)、偏向磁石の本体の B∥ (B136)、B108 の残る 2.7%、ユーザー定義の関数名 `At` が `@` と衝突して呼べない、`FitFunction` を `fit` と併用すると gs と別の解に落ちる)。v2.2.0 の要判断 (EMITDIV・DAPWIDTH・WSPACSC の既定など) は [`docs/47_v2_changes.md`](docs/47_v2_changes.md) の v2.2.0 の (d)、v2.3.0 の要判断・未解決 (共鳴線の予想の判別力、精密版の δ 微分、Touschek のバンチ内の δ 分布など) は同じく v2.3.0 の (d)。v2.3.0 の新機能 (周波数マップ・局所運動量アクセプタンス・Touschek の Piwinski 型の式・共鳴駆動項・ADTS・数値の正規形。K64 にない追加) の解説は [`docs/48_frequency_map_lma.md`](docs/48_frequency_map_lma.md)・[`docs/49_resonance_terms_adts.md`](docs/49_resonance_terms_adts.md) (入門は [`docs/50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md))。未対応・未確認の最新の一覧は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
+- **互換モード (v2.0.0 から)**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは環境変数 `PYSAD_COMPAT=k64` (または `pysad.compat.set_mode('k64')`)。既存の試験と回帰は gs との比較なので k64 モードで走る。v1 との違いの一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、K64 側のバグは [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md) (B01〜B162)、変更履歴は [`CHANGELOG.md`](CHANGELOG.md)。
+- SAD 本体はこのリポジトリに含まない。参照先は K64 版のソース (`src/*.f`, `Packages/*.n`) と CERN の SADHelp。
+
+## 検証
+
+- `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` (`--ignore` する旧式の 3 本。手順は [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §4)。
+  GUI 系 ([`test_plot.py`](pysad/tests/test_plot.py)、[`test_tclbridge.py`](pysad/tests/test_tclbridge.py)) は環境変数 `PYSAD_SAD_PACKAGES` (K64 の `Packages` の場所) が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL、約 7 分) も走る。
+  このリポジトリには pysad 本体と文書だけを入れている。SAD の参照値付きベンチ、回帰スクリプトは含めていない。
+  誤差入りラティスを使う [`test_elkern.py`](pysad/tests/test_elkern.py) の 2 件は環境変数 `PYSAD_ERR_LATTICE` (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。
+
+## [`pysad/tests/`](pysad/tests/) (試験)
 
 1899 通過・8 skip・失敗 0 (1907 件収集。R7 の試験 [`test_ddba_sextupole.py`](pysad/tests/test_ddba_sextupole.py) 8 件を含む) (2026-11-21、v2.3.0 V3 の最終の通し。回帰 `QUICK=1` 50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/test_v2_B2_script.py)))。以前: V1 (2026-11-20) は 1759 通過・8 skip、R5 の後は 1752 通過、R4 の後は 1718 通過、v2.2.0 は 1647 通過・9 skip、v2.1.0 は 1345 通過・8 skip、v2.0.0 は 937 通過・4 skip。参照は多くが SAD K64 (`gs`) の出力で、既存の試験は互換モード k64 で走る ([`conftest.py`](pysad/tests/conftest.py))。試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/scripts/`](pysad/tests/scripts/)、対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
 
@@ -378,7 +378,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | [`test_delcor.py`](pysad/tests/test_delcor.py)、[`test_corr.py`](pysad/tests/test_corr.py)、[`test_optics_fn.py`](pysad/tests/test_optics_fn.py) | DELCOR、軌道補正、光学の補助関数 |
 | [`test_sadclass.py`](pysad/tests/test_sadclass.py)、[`test_gui_lang.py`](pysad/tests/test_gui_lang.py)、[`test_tclbridge.py`](pysad/tests/test_tclbridge.py)、[`test_plot.py`](pysad/tests/test_plot.py) | Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は `PYSAD_SAD_PACKAGES` が必要) |
 
-### [`docs/history/`](docs/history/) (作業履歴)
+## [`docs/history/`](docs/history/) (作業履歴)
 
 | 文書 | 内容 |
 |---|---|

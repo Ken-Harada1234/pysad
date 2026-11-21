@@ -8,8 +8,8 @@ Twiss (R 行列による結合の基準化込み) を伝搬しながら Simpson 
 
 直訳にあたって再現した SAD の癖 (INTGRL.f は 1991 年のコードで、モジュール変数を使い回す):
   1. DL / CKL* / TM / TO / TETA / FUNI などはモジュール変数。SEXT のブロックは DL を設定せず、直前の BEND/QUAD の
-     最後のスライス長 DL をそのまま TCAL に使う (FUNI(9)=GU*DL, FUNI(10)=GV*DL が六極でも足される = 色収差の積分に効く)。
-     DKL2 は代入されないので六極の CKL0X/CKL1X は常に 0。RLE=0 の六極は TCAL の後で DL=0.2 にしてメッセージを出す。
+     最後のスライス長 DL をそのまま TCAL に使う (FUNI(9)=GU*DL, FUNI(10)=GV*DL が6 極でも足される = 色収差の積分に効く)。
+     DKL2 は代入されないので6 極の CKL0X/CKL1X は常に 0。RLE=0 の6 極は TCAL の後で DL=0.2 にしてメッセージを出す。
   2. tbendebody (BEND の 1 スライスの行列と分散ベクトル) は bendib モジュールの rhob/rho0 を使うが INTGRL は設定しない。
      つまり「直前に tbend/tbende/tbendi/tsteee が設定した値」(= 最後に処理した曲率のある BEND の L/ANGLE) が全 BEND に使われる。
      pysad では RadInt.stale_rho (rhob, rho0) として持つ (既定は最後の曲率のある BEND)。
@@ -519,7 +519,7 @@ def compute(ffs, rows, stale_rho=None):
                 g.tcal(irp + 1, 1)
                 did = True
         elif cls == 'Sextupole' and v2:
-            # v2 (B07): 六極は自分の長さを DL に、K2 を DKL2 に使う (軌道のずれによる双極・四極成分)。L=0 の薄い六極は放射積分に寄与しない
+            # v2 (B07): 6 極は自分の長さを DL に、K2 を DKL2 に使う (軌道のずれによる双極・四極成分)。L=0 の薄い6 極は放射積分に寄与しない
             g.TETA = float(getattr(el, 'ROTATION', 0.0) or 0.0)
             if rle != 0.0:
                 g.DL = rle

@@ -33,7 +33,7 @@ def test_lattice_headers_have_no_personal_names():
         low = t.lower()
         for bad in ('shimo' + 'saki', 'sli' + 'tj', 'sad_' + 'archive', 'wi' + 'ki'):
             assert bad not in low
-        assert '10.1107/S1600577521012753' in t  # 六極の関連する公開論文
+        assert '10.1107/S1600577521012753' in t  # 6 極の関連する公開論文
 
 
 @pytest.mark.parametrize('name,energy,emit,volt', [('v07_14_5GeV.sad', 5.0, 8.32e-10, 6.5e6), ('v07_14_2.5GeV.sad', 2.5, 2.08e-10, 1.6e6)])

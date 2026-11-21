@@ -1,4 +1,4 @@
-# elem_SEXT_OCT_DECA_DODECA (六極・八極・十極・十二極)
+# elem_SEXT_OCT_DECA_DODECA (6 極・八極・十極・十二極)
 種別: elem。フォルダ: 01_lattice_elements。ラティス: 前半は 4 要素の輸送路 (INS)、後半は `FODO_ring.sad` と同じ光学のリング (定義はファイル内、RF なし)。エネルギー 3 GeV。
 
 ## 何を見る例か
@@ -22,10 +22,10 @@ ps = LINE["POSITION","SF.1"] + {0,.25,.5,.75,1};   Print["SF.1 along s: BX = ", 
 - `CHRO;` の表 (1 要素 1 行、最後に `TOTAL`): x と y の列。SF.1 と SD.1 の行を下表で解析式と比べる。
 
 ## 物理・解析式
-SAD の `CHRO` は四極と六極の寄与を
+SAD の `CHRO` は四極と6 極の寄与を
 $$\xi_{x}^{\rm (CHRO)}=-\frac{K_1}{L}\!\int\!\beta_x ds\ (\text{QUAD}),\quad +\frac{K_2}{L}\!\int\!\eta_x\beta_x ds\ (\text{SEXT}),\qquad
 \xi_y^{\rm (CHRO)}=+\frac{K_1}{L}\!\int\!\beta_y ds,\ -\frac{K_2}{L}\!\int\!\eta_x\beta_y ds$$
-で出す (これが $4\pi\xi$ の寄与: 実際の chromaticity は $\xi=\frac1{4\pi}\sum$)。六極の符号は、SADHelp の式 ($-\frac{K_2}{L}\eta\beta$) とは逆で、コード・gs・pysad の値は上の符号 (物理的にも $\xi_x=-\frac1{4\pi}\oint(K_1-K_2\eta)\beta ds$ と合う)。
+で出す (これが $4\pi\xi$ の寄与: 実際の chromaticity は $\xi=\frac1{4\pi}\sum$)。6 極の符号は、SADHelp の式 ($-\frac{K_2}{L}\eta\beta$) とは逆で、コード・gs・pysad の値は上の符号 (物理的にも $\xi_x=-\frac1{4\pi}\oint(K_1-K_2\eta)\beta ds$ と合う)。
 積分は FODO リングの周期解に沿って 2x2 行列で 200 分割して数値積分した (`tools/ana_fodo_ring.py`)。
 
 | 行 | 式の値 (x, y) | gs (x, y) | pysad (x, y) |
@@ -41,4 +41,4 @@ $$\xi_{x}^{\rm (CHRO)}=-\frac{K_1}{L}\!\int\!\beta_x ds\ (\text{QUAD}),\quad +\f
 
 ## 未確認・限界
 - OCT・DECA・DODECA の非線形の効果 (振幅依存のチューンシフトなど) は 05_tracking の例で扱い、ここでは確認していない。
-- COD≠0 (ずれのある六極) のときの線形光学への効き (フィードダウン) は扱っていない。
+- COD≠0 (ずれのある6 極) のときの線形光学への効き (フィードダウン) は扱っていない。
