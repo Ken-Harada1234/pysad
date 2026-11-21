@@ -1,6 +1,6 @@
 # KEK-LS の例集 (3 GeV、20 セル、ESRF 型 HMBA)
 
-KEK-LS の設計・修正・パラメータ表示のための SAD スクリプト一式です。KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計しました。ベースのラティスは設計版 `v03_68` (3 GeV、周長 570.72 m、標準セル 20 個、RF 2 MV・ハーモニック数 952、チューン (48.58, 17.62)、εx 約 134 pm rad)。元の設計用スクリプトの集まりから、ラティス・マッチング・パラメータ表示・誤差を入れた補正を取り出し、`v03_68` で動くように整え、説明を付けました。各例は `.sad`・`.gs.txt`・`.pysad.txt`・`.md` の 4 点で、gs (SAD K64) と pysad の出力を並べて確認しています (`example/README.md` と同じ作法)。
+KEK-LS の設計・修正・パラメータ表示のための SAD スクリプト一式です。KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計しました。ベースのラティスは設計版 `v03_68` (3 GeV、周長 570.72 m、標準セル 20 個、RF 2 MV・ハーモニック数 952、チューン (48.58, 17.62)、εx 約 134 pm rad)。元の設計用スクリプトの集まりから、ラティス・マッチング・パラメータ表示・誤差を入れた補正を取り出し、`v03_68` で動くように整え、説明を付けました。各例は `.sad`・`.gs.txt`・`.pysad.txt`・`.md` の 4 点で、gs (SAD K64) と pysad の出力を並べて確認しています ([`example/README.md`](../README.md) と同じ作法)。
 
 | フォルダ | 内容 |
 |---|---|

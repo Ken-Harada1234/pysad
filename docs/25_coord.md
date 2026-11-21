@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `tcoord.f` (追跡)、`tcoorde.f` / `qcoord.f` (6 次元の写像と行列)。`pysad/coord.py`。幾何 (`LINE["GX"]` など) は既存の `geo.py` (`tfgeo1` の icCOORD)。
+K64 の `tcoord.f` (追跡)、`tcoorde.f` / `qcoord.f` (6 次元の写像と行列)。[`pysad/coord.py`](../pysad/coord.py)。幾何 (`LINE["GX"]` など) は既存の `geo.py` (`tfgeo1` の icCOORD)。
 
 ```
 COORD CO = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03 DIR=0);

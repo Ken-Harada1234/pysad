@@ -24,7 +24,7 @@
 1. 対象の整理 (§2): ファミリー、自由度、制約、鏡面対称。
 2. 設定ごとの解析量の表 (§3): 六極の 1 次の RDT (3 次と δ の項)、要素ごとの寄与、4 次の RDT、ADTS、クロマティシティ。最終設定・rev9・歴史的な設定・六極なし。
 3. 追跡の判定 (§4): x-y の DA、x-δ の DA、周波数マップ、LMA。簡略化した設定。解析量との順位相関 (Spearman)。
-4. 最適化の試作 (§5): `pysad/sxtopt.py` (試作)。K2L の多項式モデル (解析式と 1e-12 で一致) + 解析的な勾配 + SLSQP。
+4. 最適化の試作 (§5): [`pysad/sxtopt.py`](../../../../pysad/sxtopt.py) (試作)。K2L の多項式モデル (解析式と 1e-12 で一致) + 解析的な勾配 + SLSQP。
 5. 限界と結論 (§6)、次の課題 (§7)、再現 (§8)。
 
 解析式の範囲 (`docs/49`): 6 極の 1 次の RDT (3 次、δ の項)、6 極の 2 次を含む 4 次の RDT (`rdt2nd`、写像の係数)、ADTS (6 極の 2 次 + 偏向磁石の 3 次の項 + 八極 + 運動学 + フリンジ)、クロマティシティ (自然 + 偏向磁石の δ の項 + 六極の 1 次)。
@@ -358,9 +358,9 @@ J_ref を 3e-7〜1e-5、δ_ref を 0.5〜2% で最適化し直すと、最終設
 | 誤差 | 六極 50 μm × 3 種、補正なし | 四極・六極・偏向磁石の位置ずれと傾き、軌道・結合・分散の補正、20 種以上: 数日 |
 | 最適化 | 40 初期値で 4 秒 (解析式) | 同じ。追跡を目的関数に入れる設計は不可 (1 評価に 1〜10 分) |
 
-試験: `pysad/tests/test_ddba_sextupole.py` (8 件、13 秒): 多項式モデルと解析式の一致、追跡の写像との一致 (1e-6)、二次形式の厳密性、勾配、最適化が走って制約を満たし目的関数を下げること、ソースの K2 の置き換え、v07_14 の 20 ファミリーのモデル。
+試験: [`pysad/tests/test_ddba_sextupole.py`](../../../../pysad/tests/test_ddba_sextupole.py) (8 件、13 秒): 多項式モデルと解析式の一致、追跡の写像との一致 (1e-6)、二次形式の厳密性、勾配、最適化が走って制約を満たし目的関数を下げること、ソースの K2 の置き換え、v07_14 の 20 ファミリーのモデル。
 
 ## 9. 参考
 
 - K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac", J. Synchrotron Rad. 29, 118–124 (2022), DOI 10.1107/S1600577521012753 (3 GeV、周長 350 m、16 セルの暫定設計。六極の最適化で入射の水平アパーチャを、通常の 16 回対称 DDBA リングの約 80% まで回復した、という記述。K2 の値・最適化の手法の記述はない。v07_14 とは別の版)。
-- pysad の解析式: `docs/49_resonance_terms_adts.md`、`docs/50_adts_rdt_primer.md`、`docs/history/v23_R5.md`・`v23_R6.md`。
+- pysad の解析式: [`docs/49_resonance_terms_adts.md`](../../../../docs/49_resonance_terms_adts.md)、[`docs/50_adts_rdt_primer.md`](../../../../docs/50_adts_rdt_primer.md)、[`docs/history/v23_R5.md`](../../../../docs/history/v23_R5.md)・`v23_R6.md`。

@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `tsole.f` (`tsole1`、`qsol`)。`pysad/solmap.py`。追跡 (`TrackParticles`) は対応済み (docs/08。スピン追跡は docs/36)。Twiss の写像・行列は `solmap.py`、放射込みの 1 周 (Emittance[]・EMIT) は `pysad/solemit.py`。
+K64 の `tsole.f` (`tsole1`、`qsol`)。[`pysad/solmap.py`](../pysad/solmap.py)。追跡 (`TrackParticles`) は対応済み (docs/08。スピン追跡は docs/36)。Twiss の写像・行列は `solmap.py`、放射込みの 1 周 (Emittance[]・EMIT) は [`pysad/solemit.py`](../pysad/solemit.py)。
 
 ```
 SOL SA = (L=0 BZ=0.3 BOUND=1) SB = (L=0 BZ=0 BOUND=1);
@@ -54,7 +54,7 @@ BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域の中�
 - **SOL には GEO=1 が要る** (K64 `tsgeo` が "Missing GEO of Solenoid" を出し、なければ S 座標がそこで途切れて周長 (MomentumCompaction など) が狂う)。pysad の `tsgeo` は翻訳済み (`sgeo.py`、末尾の「幾何」)。
   ただし Emittance[] の周長は GEO の有無で変わらない (pysad は S 座標を途切れさせない。gs は GEO なしだと Emittance[] の αp が 100 倍以上になる)。参照の gs は GEO=1 で作った。`tdgeo` (fit の GX.. の領域内の幾何微分) は領域の部分を翻訳していない。
 - **K64 は SOL (BOUND≠0) の長さを周長に入れない**。omega0・MomentumCompaction・偏極時間・追跡の周回周波数 (空洞の位相) に効く。gs で確かめた: PLANAR のリングに GEO のある SOL (L=0.3、0.6、BZ=0) を足しても、
-  周長 45.6 のときと偏極時間が 15 桁一致する。pysad は `emit6d._emit_circ` で同じにした (Emittance 系と、`fn_track` の `circ`)。確認は偏極時間 (`test_spin.py` の `test_solenoid_ring_matches_gs`) による。Twiss (CALC) だけの量 (チューンなど) への影響は未確認。
+  周長 45.6 のときと偏極時間が 15 桁一致する。pysad は `emit6d._emit_circ` で同じにした (Emittance 系と、`fn_track` の `circ`)。確認は偏極時間 ([`test_spin.py`](../pysad/tests/test_spin.py) の `test_solenoid_ring_matches_gs`) による。Twiss (CALC) だけの量 (チューンなど) への影響は未確認。
 - **CALC6D・RADCOD つきの CALC、Touschek (INTRA) と SOL の組み合わせは v2.1.0 で対応した (両モード。k64 は gs と 1e-9。docs/44 の CALC6D の節)**。TouschekLifetime の値は SOL のあるリングで未確認 (gs が NaN)。BOUND=0 の SOL (BZ≠0) の CALC・RADTAPER + SOL・WSPAC + SOL の値は未確認。
 - Emittance[] は `emit_extra.emittance_rules` (Orbit/Matrix の規則、BeamMatrices) を SOL では使わず、`run_emit` (emittance6d) の値に落ちる
   (`ffscmd.emittance` の except)。EMT・TUN・ALP・COD は上のとおり合うが、**Stable は 0 (不安定扱い)、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない**。
@@ -83,7 +83,7 @@ SOL にずれ・傾き (DX DY DPX DPY) があるとき、K64 の幾何 (LINE["S"
 GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (位置) と DPX DPY (向き) で軌道を作り、領域内のドリフト・四極・領域内の SOL を通して `geo`・`pos` を作る
 (フリンジは `tsfrin1`、四極は `k_sol_quad` を 1 粒子に使う)。軌道が軸上 (DX DY DPX DPY が 0) のときは直進と同じなので従来の経路。
 
-- 検証 (`pysad/tests/test_sol_geo.py`): GEO が始端 (前向き、回転四極 K1>0、領域内の SOL) と終端 (後ろ向き、K1<0) の 2 通りで、S・GX・GZ・GCHI2・GCHI3 の 18 要素が gs と 1e-9 (絶対 1e-13) で一致。
+- 検証 ([`pysad/tests/test_sol_geo.py`](../pysad/tests/test_sol_geo.py)): GEO が始端 (前向き、回転四極 K1>0、領域内の SOL) と終端 (後ろ向き、K1<0) の 2 通りで、S・GX・GZ・GCHI2・GCHI3 の 18 要素が gs と 1e-9 (絶対 1e-13) で一致。
 - `Solenoid` の DPX DPY DX DY DISFRIN DBZ を parser が読む (BZ BOUND GEO とあわせる)。
 - 未対応 (k64 モード): 領域内の BEND・MULT・CAVI (NotImplementedError → 警告を出して直進扱い。BEND は上の「限界」のとおり gs と合わず取り下げた)、領域内の L=0 / K1=0 の四極。v2 モードは、領域内の BEND・MULT・CAVI・K1=0 の四極の軌道も追う (追跡と同じカーネル)。
 - **ずれ・傾きのある SOL の追跡・Twiss・Emittance[] は k64 モードでは未対応のまま** (tsconv の CHI1..3 を使う `tsrote`)。幾何だけが gs と合う。v2 モードは対応 (下の節)。

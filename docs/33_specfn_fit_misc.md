@@ -45,7 +45,7 @@ StringToStream (文字列を開く)、TemporaryName、ListRandom (`{"SAD"}`)、M
 
 ## 6. v2 モードで変わった値と、モードによらない修正 (`test_v2_B_specfn.py` 13 件、`test_v2_B_script.py`)
 
-根拠は gs ではなく独立な計算 (閉じた式、級数、AGM、積分表示の数値積分、Wronskian などの恒等式、numpy の最小二乗)。mpmath はこの環境に無いので使っていない (scipy.special と、scipy に依らない独立な計算を突き合わせた)。gs は K64 の動作の確認にだけ使った。条件: 実数の倍精度。複素引数は実数のパラメータだけ確かめた。例: `example/v2_B/B1_special_functions.sad`。
+根拠は gs ではなく独立な計算 (閉じた式、級数、AGM、積分表示の数値積分、Wronskian などの恒等式、numpy の最小二乗)。mpmath はこの環境に無いので使っていない (scipy.special と、scipy に依らない独立な計算を突き合わせた)。gs は K64 の動作の確認にだけ使った。条件: 実数の倍精度。複素引数は実数のパラメータだけ確かめた。例: [`example/v2_B/B1_special_functions.sad`](../example/v2_B/B1_special_functions.sad)。
 
 **(a) v2 モードだけ値が変わるもの (k64 モードは K64 の値)**
 
@@ -74,7 +74,7 @@ StringToStream (文字列を開く)、TemporaryName、ListRandom (`{"SAD"}`)、M
 
 **複素の FindRoot** (v2): 初期値に複素数があると、式を変数について正則と仮定して、前進差分のヤコビアンと最小二乗 (numpy lstsq) の Newton 法 (歩幅を半分にする減速つき) で解く。z² = -1 → i、e^z = 2 → ln 2、z³ = 1、連立 zw = i・z + w = 2 が残差 1e-12 以下。使い方・使えない範囲は docs/04。
 
-**複素の特殊関数** (v2.1.0。`pysad/specfn_cx.py`。両モード。mpmath はこの環境に無いので、級数・Euler–Maclaurin・解析接続・積分表示を自前で実装した。試験 `test_v2_B2_specfn_cx.py`、例 `example/v2_next/B2_special_functions_complex.sad`):
+**複素の特殊関数** (v2.1.0。[`pysad/specfn_cx.py`](../pysad/specfn_cx.py)。両モード。mpmath はこの環境に無いので、級数・Euler–Maclaurin・解析接続・積分表示を自前で実装した。試験 [`test_v2_B2_specfn_cx.py`](../pysad/tests/test_v2_B2_specfn_cx.py)、例 [`example/v2_next/B2_special_functions_complex.sad`](../example/v2_next/B2_special_functions_complex.sad)):
 
 | 関数 | 実装 (複素の z・s。主値) | 使える範囲 | 参照との一致 |
 |---|---|---|---|

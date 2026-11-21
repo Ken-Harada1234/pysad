@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-18 (v2.1.0 の後の現状のスナップショット。経緯は `history/` にある)
 
-pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に使われたときに読む (`pysad/pkgload.py`)。Packages ディレクトリは
+pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に使われたときに読む ([`pysad/pkgload.py`](../pysad/pkgload.py))。Packages ディレクトリは
 環境変数 `PYSAD_SAD_PACKAGES`、なければ pysad の隣の `SAD-master/Packages`。見つからなければ何も登録しない (組み込みだけで動く)。
 
 | パッケージ | 提供する関数 | 状況 |
@@ -40,7 +40,7 @@ gs との比較 (`tests/test_corr.py`: 12 セル、24 BPM、24 ステアラ、DX
 ## LDSolve・Optics.n (2026-11-16 夜に gs と比較)
 - Optics.n の `TransferMatrix`・`BeamMatrix`・`NormalCoordinates`・`OrbitGeo`: gs と表示桁で一致 (gs は 1e-16 の雑音の要素を出し、pysad は 0)。
 - LDSolve.n: pysad は `DiagonalMatrix` が複素数の列を受けず失敗していた (`float() argument must be … not 'complex'`) ので直した。あわせて行列の演算 (Dot・Inverse) の結果は、gs が要素ごとに虚部が 0 の複素数を実数に戻すので、pysad も要素ごとに戻すようにした (以前は全要素が実のときだけ)。
-  直したあと、LDSolve の終点 (cos 1, −sin 1) と 3 通りの呼び出しが gs と一致 (試験は `test_evalfixes.py` の 2 件)。
+  直したあと、LDSolve の終点 (cos 1, −sin 1) と 3 通りの呼び出しが gs と一致 (試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py) の 2 件)。
 - `PeriodicR` は v2.1.0 で比較した (下の「v2.1.0 の確認」。`PeriodicOptics` を先に呼ぶ必要がある)。
 
 ## パーサ・評価器の修正 (パッケージを動かすために gs に合わせたもの)
@@ -54,7 +54,7 @@ gs との比較 (`tests/test_corr.py`: 12 セル、24 BPM、24 ステアラ、DX
 
 ## v2.1.0 の確認 (小さな台本を gs と行ごとに突き合わせた。k64 モード)
 
-数値は 1e-12 を超える差だけを「差」とした。確認の台本 `example/v2_next/B2_packages_compare.sad`・`D2_periodicr.sad`・`D2_correctlocal.sad`・`D2_micado.sad`。試験 `test_v2_B2_script.py`・`test_v2_D2_packages.py`。
+数値は 1e-12 を超える差だけを「差」とした。確認の台本 [`example/v2_next/B2_packages_compare.sad`](../example/v2_next/B2_packages_compare.sad)・`D2_periodicr.sad`・`D2_correctlocal.sad`・`D2_micado.sad`。試験 [`test_v2_B2_script.py`](../pysad/tests/test_v2_B2_script.py)・[`test_v2_D2_packages.py`](../pysad/tests/test_v2_D2_packages.py)。
 
 | ファイル | 比べた関数 | 一致の状態 | 直したもの・残った差 |
 |---|---|---|---|
@@ -80,7 +80,7 @@ gs との比較 (`tests/test_corr.py`: 12 セル、24 BPM、24 ステアラ、DX
 | `WriteBeamLine[…, Name->"L2"]` | エラー (K64 の誤り) | k64 は同じ、v2 は受ける |
 
 ## SAD 自身の Packages を読むときの注意
-- Python 3.14 (Tcl/Tk 9.0) でも `test_tclbridge.py`・`test_plot.py`・`test_gui_lang.py`・`test_corr.py` が通る (v2.1.0。Windows の Tk 9.0 は `$DefaultFixedFont` を `Courier New` にする: docs/22)。numba のキャッシュは `py -3.12 -m pysad.nbcache` (docs/12)。
+- Python 3.14 (Tcl/Tk 9.0) でも [`test_tclbridge.py`](../pysad/tests/test_tclbridge.py)・[`test_plot.py`](../pysad/tests/test_plot.py)・[`test_gui_lang.py`](../pysad/tests/test_gui_lang.py)・[`test_corr.py`](../pysad/tests/test_corr.py) が通る (v2.1.0。Windows の Tk 9.0 は `$DefaultFixedFont` を `Courier New` にする: docs/22)。numba のキャッシュは `py -3.12 -m pysad.nbcache` (docs/12)。
 
 ## 未対応・限界
 - 記号式の標準形は gs と同じではない (`0*x` は gs が `(0 x)` のまま、`x^0` も `x^0` のまま、pysad は 0 と 1 にする)。D の出力は 59 式で一致するが、別の式では形が違いうる。パターンの Orderless 照合は、数を先頭にした標準順→順列 (6 引数まで)、素の Blank と列パターンが両方あるときは標準順だけ (K64 の挙動に合わせて経験的に決めた)。

@@ -45,9 +45,9 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 py -3.12 example/tools/run_example.py example/02_optics_cod/FFS_CALCULATE.sad
 ```
 
-gs は WSL で、pysad は `PYSAD_SAD_PACKAGES` (K64 版 SAD の `Packages` のフォルダ) つきで走ります。gs の場所は `PYSAD_SAD_PACKAGES` の隣の `bin/gs` で、別の場所のときは `PYSAD_GS` (WSL から見た絶対パス) で指定します (`example/tools/sadenv.py`。gs を使う `example/` のスクリプトに共通)。`NAME.gs.txt` と `NAME.pysad.txt` が作り直されます。
+gs は WSL で、pysad は `PYSAD_SAD_PACKAGES` (K64 版 SAD の `Packages` のフォルダ) つきで走ります。gs の場所は `PYSAD_SAD_PACKAGES` の隣の `bin/gs` で、別の場所のときは `PYSAD_GS` (WSL から見た絶対パス) で指定します ([`example/tools/sadenv.py`](tools/sadenv.py)。gs を使う `example/` のスクリプトに共通)。`NAME.gs.txt` と `NAME.pysad.txt` が作り直されます。
 
-**v2 の注記**: 例は既定の v2 モードで走らせた (`NAME.pysad.txt` は v2 モードの出力)。gs と同じ結果が要るときは `PYSAD_COMPAT=k64` を付けて走らせる (K64 のバグも再現する)。v2 で K64 のバグを直したために gs と違う値になる例は、各 `.md` の「gs と pysad の比較」に「v2 の注記」として書いてある (v2 の変更の一覧は `docs/47_v2_changes.md`)。主な理由は、`Emittance[]`・EMIT・追跡の Jx の端の項 (B75)、`MomentumCompaction` (B77)、`PolynomialFit` の x の平均が 0 のときの係数 (B18)、`InverseErf` (B47)、`For` の本体 (B71)、`RADLIGHT` の BEND の中の記録 (B65)、SPAC の空間電荷 (SPC1〜) です。各フォルダの `README.md` の ○△× は、v2 で違うものも含めて、`PYSAD_COMPAT=k64` では gs と一致するものを ○ としています (違いが残るものは行に書きました)。例外として `pf`・`astrid` のうち ASTRID2 の 5 例 (`MPW_v01_02_id`、`SetElement_BeamLine_Join`、`phase_x`、`amp_dep_ts`、`calc_RadInt`) は、v2 の既定との違いが表示の 7 桁目 (バケット高さ、αc) だけなので `.pysad.txt` を作り直していません。
+**v2 の注記**: 例は既定の v2 モードで走らせた (`NAME.pysad.txt` は v2 モードの出力)。gs と同じ結果が要るときは `PYSAD_COMPAT=k64` を付けて走らせる (K64 のバグも再現する)。v2 で K64 のバグを直したために gs と違う値になる例は、各 `.md` の「gs と pysad の比較」に「v2 の注記」として書いてある (v2 の変更の一覧は [`docs/47_v2_changes.md`](../docs/47_v2_changes.md))。主な理由は、`Emittance[]`・EMIT・追跡の Jx の端の項 (B75)、`MomentumCompaction` (B77)、`PolynomialFit` の x の平均が 0 のときの係数 (B18)、`InverseErf` (B47)、`For` の本体 (B71)、`RADLIGHT` の BEND の中の記録 (B65)、SPAC の空間電荷 (SPC1〜) です。各フォルダの `README.md` の ○△× は、v2 で違うものも含めて、`PYSAD_COMPAT=k64` では gs と一致するものを ○ としています (違いが残るものは行に書きました)。例外として `pf`・`astrid` のうち ASTRID2 の 5 例 (`MPW_v01_02_id`、`SetElement_BeamLine_Join`、`phase_x`、`amp_dep_ts`、`calc_RadInt`) は、v2 の既定との違いが表示の 7 桁目 (バケット高さ、αc) だけなので `.pysad.txt` を作り直していません。
 
 ## 読むときの注意
 

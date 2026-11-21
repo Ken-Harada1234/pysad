@@ -1,6 +1,6 @@
 # 05. CELL/INS の光学計算 (CALC) — SAD の qcell/qcod/qtwiss と pysad の lattice.py
 
-> 最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット)。SAD ソース (`<SAD>/src`) と `pysad/lattice.py`, `pysad/ffscmd.py`, `pysad/match6.py` を照合して記述。行番号は 2026-10 時点。
+> 最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット)。SAD ソース (`<SAD>/src`) と [`pysad/lattice.py`](../pysad/lattice.py), [`pysad/ffscmd.py`](../pysad/ffscmd.py), [`pysad/match6.py`](../pysad/match6.py) を照合して記述。行番号は 2026-10 時点。
 > 旧版ノート (`<work-olddocs>/sad_cell_calc_sources.md`, `sad_cod_notes.md`, `sad_twiss_storage_notes.md`) の内容は本書に含む。
 
 ## 1. 全体の流れ
@@ -71,14 +71,14 @@ pysad: `FFSState._twmov_to_mark(rows)` が CELL CALC (4D/CALC6D) の後に MARK 
 | UND | `case default` | 恒等 (長さは幾何にだけ入る)。K64 の UND は磁場を設定できない。**v2 モードは磁場なしでも長さ L のドリフトとして光学に入り、`FBX`・`FBY` の磁場つきの UND は追跡の写像の数値微分が入る** (docs/27_und.md) | k64: 恒等。v2: 追跡のカーネルの数値微分 |
 | MAP | `qemap` | `ExternalMap["OPTICS", l, cod]` が `{cod1, trans}` を返す。定義がなければ恒等で長さ 0 | `lattice._map_step` (docs/30_map.md) |
 | CAVI | `qcav` → `tcave` | `qcav` は `rfsw = rfsw .and. trpt` にして呼ぶので、**リングの 4 次元 CALC では RFSW に依らずドリフト** (bench_level14a_dbg で確認) | `lattice.RFSW=False` で `_drift_matrix_at_cod(L)` |
-| SOL | `tfbndsol` で区間判定 → `qsol` → `tsole1`。SOL 要素単体は "implementation error" | BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域内は BZ のあるソレノイド内の正準運動量で動き、横方向が結合する | `solmap.py` (追跡の numba カーネルを 1 粒子に使い COD での中心差分 1e-7 を行列にする。`tsolque` の解析行列は写していない)。CALC・INS・CELL・RAD ON・DP≠0 でチューン 1e-15、領域内の Twiss 1e-11 (gs と一致、`test_sol_optics.py`)。限界は 6 節と docs/29_sol_optics.md |
+| SOL | `tfbndsol` で区間判定 → `qsol` → `tsole1`。SOL 要素単体は "implementation error" | BOUND≠0 の SOL から次の BOUND≠0 の SOL までが領域。領域内は BZ のあるソレノイド内の正準運動量で動き、横方向が結合する | `solmap.py` (追跡の numba カーネルを 1 粒子に使い COD での中心差分 1e-7 を行列にする。`tsolque` の解析行列は写していない)。CALC・INS・CELL・RAD ON・DP≠0 でチューン 1e-15、領域内の Twiss 1e-11 (gs と一致、[`test_sol_optics.py`](../pysad/tests/test_sol_optics.py))。限界は 6 節と docs/29_sol_optics.md |
 | STEER | abort ("Use BEND with ANGLE=0") | — | — |
 | MARK, MONI 等 | 前の値をコピー | — | 単位行列 |
 
 **ROTATE (ROT/TILT) の扱い (docs/history/work_rotate.md)**: BEND は `tchge` (入口: theta で回す→回した座標系でずらす→tbrote、出口は逆) を外側に付けて中身 (tsteee / tbendebody0 / K1≠0 の tbendebody / tquade / tmulte) を誤差なしで計算する
 (`lattice._bend_element_cod_matrix`、`_bend_chg_args` が tbende.f の分岐ごとの theta (ANGLE=0 の tsteee は DROTATE を渡さない、K0=0 はドリフトで tchge を呼ばない) を決める)。
 薄い多極 (SEXT/OCT/DECA/DODECA と L=0 の四極) は tthine の先頭・末尾の tchge (`_thin_cod_matrix`)。四極と MULT の ROT は tsolrote (ずらす→回す)。
-**SAD の癖 (k64 モード)**: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。`_tchge_jac` が再現 (docs/11 A25)。**v2 モードでは直した** (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。`_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致し、ロール + ずれのある6 極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (6 極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。`test_v2_A_tchge.py`)。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。
+**SAD の癖 (k64 モード)**: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。`_tchge_jac` が再現 (docs/11 A25)。**v2 モードでは直した** (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。`_tchge_jac` が `_tchge_cod` の数値微分と 1e-8 で一致し、ロール + ずれのある6 極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (6 極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。[`test_v2_A_tchge.py`](../pysad/tests/test_v2_A_tchge.py))。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。
 
 ### BEND の K0 と ANGLE=0 のステアリング (docs/history/work_bend_k0.md)
 
@@ -158,9 +158,9 @@ pysad `ffscmd.row_frac`: `L·fr`, `ANGLE·fr`, `E1` はそのまま, `E2=0` の�
 | 4D の CALC の縦方向の Twiss 列 (B11) | AZ BZ NZ ZX ZPX ZY ZPY を作り直さず、前の 6D の値が残る | 既定値 (AZ=0、BZ=1、他 0)。4D では縦方向を計算しない | `test_v2_A_ffs.py::test_calc4d_resets_longitudinal_columns_v2` |
 | `UnstableLevel` (B15) | 常に 0 | 不安定な点の数 nstab。MatchingResidual = 10·nstab + NetResidual (例: 2 と 20) | `test_unstable_level_v2` |
 | `CalculateOptics` の stabz・tracez (B16) | 未初期化 (pysad は 1 と 0 を返す) | idim=3 は tracez = 2cos(μz) と stabz、idim=2 は stabz=1・tracez=0 | Emittance[] のシンクロトロンチューンと 2e-3 (`test_calculate_optics_idim3_returns_z_trace_v2`) |
-| ずれた BEND の CALC (B114) | tbrote の出口の (dx1, dz1) の符号が逆で、出口のドリフトが逆向き。矩形磁石 1 台の DX = 2 mm でチューンが 2.7e-5 動く (追跡は動かない) | 出口も入口と同じ回し方 | 厳密な幾何 (弦に垂直なずれの帯の中の円弧) と CALC が 2e-8。大きなリング A に DX を入れた CALC のチューンが追跡と 6e-8 (K64 は 3e-7)。`test_v2_A2_dx.py` |
-| K1≠0 の BEND の追跡の端 (B117) | 追跡 (tbendi) の端が薄い写像で CALC と x-px の行列が 1.1e-5 違う | 追跡の端を CALC と同じ厳密な tbedge に | 厳密な写像と 1e-10。`test_v2_B1_optics.py` |
-| tbgrote の (5,6) (B109) | px² + py² 分の誤り | コメントアウトされた式 | 写像の有限差分と 4e-12。`test_v2_C3_misc.py` ほか |
+| ずれた BEND の CALC (B114) | tbrote の出口の (dx1, dz1) の符号が逆で、出口のドリフトが逆向き。矩形磁石 1 台の DX = 2 mm でチューンが 2.7e-5 動く (追跡は動かない) | 出口も入口と同じ回し方 | 厳密な幾何 (弦に垂直なずれの帯の中の円弧) と CALC が 2e-8。大きなリング A に DX を入れた CALC のチューンが追跡と 6e-8 (K64 は 3e-7)。[`test_v2_A2_dx.py`](../pysad/tests/test_v2_A2_dx.py) |
+| K1≠0 の BEND の追跡の端 (B117) | 追跡 (tbendi) の端が薄い写像で CALC と x-px の行列が 1.1e-5 違う | 追跡の端を CALC と同じ厳密な tbedge に | 厳密な写像と 1e-10。[`test_v2_B1_optics.py`](../pysad/tests/test_v2_B1_optics.py) |
+| tbgrote の (5,6) (B109) | px² + py² 分の誤り | コメントアウトされた式 | 写像の有限差分と 4e-12。[`test_v2_C3_misc.py`](../pysad/tests/test_v2_C3_misc.py) ほか |
 | 周期解を使う 4D の CALC の tchge | 回転が行列に入らない (上記) | 入る | 上記 |
 
 モードによらない修正 (pysad の不具合): **`CalculateOptics` が TRPT の加速を入れなかった** (CALC は入れる) のを直した。TRPT かつ RFSW の加速を区間に入れる (区間の途中からでも)。gs と終端の BX AX BY AY EX EPX NX NY が全桁、CalculateOptics − CALC = 0 (`test_calculate_optics_includes_trpt_acceleration`)。また、加速区間の分散の qmat2twiss の gr (= gammab(出口)/gammab(入口) を入口の分散に掛ける) の向きが逆だった (入口に分散のある加速区間の EX EPX が gs と合わなかった: 0.1109 / 0.0734) のを直した。gs と全桁 (薄い空洞・厚い空洞。`test_dispersion_through_accelerating_cavity_matches_gs`)。

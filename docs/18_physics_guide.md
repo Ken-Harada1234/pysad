@@ -111,7 +111,7 @@ r <= conv: 収束。Newton: (T-I) cod0_new = T cod0 - cod_end を tsolvg (SVD, 1
 ## 11. 放射積分 RADINT (INTGRL.f)
 
 RADINT コマンドだけが使う (Emittance[] は INTGRL を使わない; 結合 BEND では 13% 差 [原因未特定。INTGRL は 4D の積分で、bendib の rhob/rho0 を設定せず直前の値 (最後の BEND の L/ANGLE) を全 BEND に使う癖があり (docs/11 A34)、候補の 1 つ])。
-**pysad は `pysad/radint.py` が INTGRL.f の直訳で、FFS の RADINT コマンドに接続済み** (6 通りの大型リングと小リング 3 通りが SAD と 7 桁一致。history/work_small_items.md A)。
+**pysad は [`pysad/radint.py`](../pysad/radint.py) が INTGRL.f の直訳で、FFS の RADINT コマンドに接続済み** (6 通りの大型リングと小リング 3 通りが SAD と 7 桁一致。history/work_small_items.md A)。
 `COEFF=(elradi/elmass^3/3)1e27`, 対象は BEND/QUAD/SEXT/CAVI。BEND: `IR=min(14,max(1,int(|ANG|/.002))), IRP=2IR`、SYMPS (複合 Simpson)。K0, AE1, F1 は読まない。
 被積分: `I2=CURV^2 DL, I3=|CURV|^3 DL, I4 = (CKL0X + 2CKL1X/CURV) CURV^2 (R11 EU + R12 EPU), I5 = |CURV|^3 (GU EU^2 + 2AU EPU EU + BU EPU^2) DL`。エッジ項 TEDGE (CURV tan e)。出力: `DAMPU=1-I4/I2`, `EMITU = CO5 E^2 I5/(I2-I4)`, `SIG = CO4 E sqrt(I3/(2I2+I4u+I4v))`。SEXT の DKL2 は未代入 (寄与実質 0、バグの疑い)。lattice の `_radiation_integrals_bend` は BEND のみ・非結合の別実装。
 
@@ -263,7 +263,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - 偏向磁石の分割は POL のとき `1+int(|φ| h0 a/0.01)` 以上。tbrote の srot 更新は行を逐次更新する (rr·srot の行列積ではない: B56)。
 - 照合 (gs): 平面リングの PolarizationTime は全桁、縦ずれ・傾き・6 極のあるリングは 13 桁、追跡のスピンは 4e-12 以下 (ずれ・回転した四極・偏向・6 極、MULT、K1 のある BEND、SEXT、SOL 内のドリフト)。
 - **未確認・限界**: `Polarization` の有限値が物理的に妥当か (K64 の式か単位の誤りの疑い。erfcx 版は 4e-5〜8e-5 % で 92% 級の理論値から遠い)、SOL 領域内の MULT・BEND・CAVI のスピン、SOL 内の四極 + RAD のスピン追跡 (現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い。B68)、スピン追跡の粒子損失。エネルギー・周長の条件は試験のリングごと (docs/43 §7)。
-- 解説: `docs/43_pol_guide.md`、要素ごとの照合: `docs/36_spin_csr.md`。
+- 解説: [`docs/43_pol_guide.md`](43_pol_guide.md)、要素ごとの照合: [`docs/36_spin_csr.md`](36_spin_csr.md)。
 
 ## 25. ソレノイド (SOL) [確認、pysad solmap.py・solemit.py・sgeo.py・track6n_ext.py、docs/29・44]
 
@@ -273,7 +273,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - **SOL の長さは周長に入れない** (docs/11 A42)。GEO のない SOL では S 座標が途切れ、周長がさらに狂う (pysad は再現しない)。
 - 照合 (gs): Twiss は領域内の β・α・分散・結合 1e-11、Emittance[] は εx 2e-12〜4e-9、εy 4e-10〜2e-8、チューン 1e-11。**条件: GEO=1 の SOL、エネルギー 1.7〜3 GeV (追跡は 2.5 GeV)、BZ 0.3〜5 T の範囲だけ**。
 - **未確認・限界**: 領域内の BEND (K64 の tsol.f どおりに実装したが gs が偏向をほぼ無視して合わず取り下げた)・MULT・CAVI は未対応。SOL (BZ≠0) 内の四極 + RAD の追跡は現在の gs が保存参照と別の値を返す。現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い (B68、単一粒子の 1 周追跡、2.5 GeV、BZ 0.01 T。ソースの箇所は未特定)。SOL の DX DY DZ CHI・F1 は未対応。CALC6D・Touschek は未翻訳。
-- 解説: `docs/44_sol_guide.md`、`docs/29_sol_optics.md`。
+- 解説: [`docs/44_sol_guide.md`](44_sol_guide.md)、[`docs/29_sol_optics.md`](29_sol_optics.md)。
 
 ## 26. WAKE (ウェイク場) [確認、pysad wake.py・wakeopt.py、docs/23・38]
 
@@ -282,7 +282,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - 旧 WAKE コマンドは K64 では WAKECOMMAND.n (配布に無い) を呼ぶので移植不要。
 - 照合 (gs): 追跡 10 桁、光学も一致 (普通の要素、CAVI、SOL の領域の内側)。K64 の SIGSEGV 3 件 (B31〜B33) は直した SAD と同じ動作にした (B33 の最初の tapert の癖は `TrackRun.l_track0` で再現)。
 - **未確認・限界**: RF のある MULT は F1・FRINGE・AUTOPHI なし。実機のウェイク関数・エネルギーでの妥当性は未確認 (試験の人工的な表のみ)。
-- 解説: `docs/38_wake_guide.md`、`docs/23_wake.md`。
+- 解説: [`docs/38_wake_guide.md`](38_wake_guide.md)、[`docs/23_wake.md`](23_wake.md)。
 
 ## 27. BEAM-BEAM (BEAMBEAM、BSTRL、PHOTONS、LuminosityMonitor、BBBrem) [確認、pysad beambeam.py・bbbrem.py、docs/24・39・32]
 
@@ -290,7 +290,7 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - BSTRL (ビームストラールング) は乱数 (tran) の引き方まで直訳。PHOTONS は BEAMBEAM の分の光子だけ。LuminosityMonitor は tlum (`measure.py`)、BBBrem1 は Kleiss-Burkhardt の 1 事象の生成 (`bbbrem.py`)。
 - **光学 (Twiss・Emittance) には効かず恒等**。K64 の癖: 傾き tilt の `sint`・`cost` の取り違え (B34、強ビームに x-y 結合があると座標が潰れる)、cerrf の 3.2 は単精度、丸いビームで x=y=0 の粒子は NaN。
 - 照合 (gs): 追跡は一致 (検証は 1.7 GeV の小さな人工リングだけ)。**未確認・限界**: 強-強はない。光学 (Twiss・Emittance・EMIT) では BEAMBEAM は Marker 扱いで、ビーム・ビームのチューンシフト・ダイナミック β は計算に入らない (Emittance の gs 比較は未確認)。340 粒子以上の BSTRL は個々の粒子が gs と一致しない (原因未調査)。TRPT の加速で MOMENTUM が変わる場合は Prog 作成時の運動量を使う (K64 は更新時)。実際の衝突型リングの規模での比較は未確認。
-- 解説: `docs/39_beambeam_guide.md`、`docs/24_beambeam.md`、`docs/32_gaussiancoulomb_bbbrem.md`。
+- 解説: [`docs/39_beambeam_guide.md`](39_beambeam_guide.md)、[`docs/24_beambeam.md`](24_beambeam.md)、[`docs/32_gaussiancoulomb_bbbrem.md`](32_gaussiancoulomb_bbbrem.md)。
 
 ## 28. CSR (コヒーレント放射) [確認、pysad csr.py、docs/36・40]
 
@@ -299,14 +299,14 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 - Haissinski (CSRHaissin): ρ = exp(u)、`u = u0 − aw (W*ρ)`、`aw = inten/(r65 σz²)` を規格化条件つきの Newton 法 (しきい 1e-5、最大 100 回) で解く。Oide-Yokoya (CSRSetupOY・CSROYMatrix): 定常分布のまわりの線形摂動を作用 J・方位角 φ の格子で展開した 1 周写像に直し、固有値の平方根の虚部が成長率。
 - 照合 (gs): CSRTrack・CSRHaissin 11 桁、CSRSetupOY 1e-9、CSRMatrix・CSRConvert・CSRInit 1e-10〜1e-13、MakeZL 1e-10 (3 周波数・1 区間)。K64 の癖: `CSRSetupOY` が dpjn を zjn と同じ記憶域に割り当てる (B59)。CSROYMatrix は gs が wrongtype (B60) で未照合。
 - **未確認・限界**: 試験は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、ダクト、周長) での物理的な妥当性の検証ではない。CSR のウェイク・Haissinski・OY の式の独立な導出や実験との比較はしていない。`CSR.n` 全体は描画が要るので読み込まない。ScanTrack・OYStability などの長い流れは未照合。
-- 解説: `docs/40_csr_guide.md`、`docs/36_spin_csr.md`。
+- 解説: [`docs/40_csr_guide.md`](40_csr_guide.md)、[`docs/36_spin_csr.md`](36_spin_csr.md)。
 
 ## 29. RADLIGHT・RadiationField・RadiationSpectrum [確認、pysad `ffscmd._RadLight`・radfield.py、docs/45]
 
 - `RADLIGHT` のとき TrackParticles は RAD・TRPT を ON にし、戻りを `{{ls または ld, 座標}, 軌道}` にする (軌道は粒子ごとに {t, x, y, z})。**K64 は BEND の中を記録せず、横方向の座標も入れない** (docs/11 A44)。
 - RadiationField[traj, obs]: Feynman-Heaviside の時間領域の場 `E = (μ0 e CHARGE/4π)(c² n/R² + R/c d(c² n/R²)/dt + d²n/dt²)`、微分は自然スプライン (K64 の spline)。戻りは τ、E、H (= n×E/Z0)、S (= E×H) の 10 本の表。RadiationSpectrum[{τ, f}, {λ1, λ2, dλ}] は場の cos・sin 積分 (区分線形近似の解析解)。
 - 照合: RADLIGHT の軌道は gs と差 0 (2 粒子・複数周・始点 ls≠1)。RadiationSpectrum は gs と一致。**RadiationField は gs が SIGSEGV (B49) で、等速運動の電荷の速度場と相対 6e-3 で比べただけ**。BEND の中を記録しない仕様のため、意味のある場には `example.oide.sad` の流れ (B を ANGLE=0 の STEER にする) が要る。NPARA の fork 並列は逐次。
-- 解説: `docs/45_radlight_guide.md`。
+- 解説: [`docs/45_radlight_guide.md`](45_radlight_guide.md)。
 
 ## 30. その他の新しい要素・機能への案内
 
@@ -319,8 +319,8 @@ K64 の photons.f の tradke (module tspin)、tchge.f の srot で、`POL` フ�
 | DELCOR | 相関付き補正。MARK は DETR・DPX に入る (B40)、CAVI は HARM・PHI に入る (K64 の添字のずれ。gs と一致) | docs/31 |
 | GaussianCoulomb(U・Fitted)・BBBrem1 | 空間電荷関数と制動放射 | docs/32 |
 | 特殊関数・Fit・FindRoot | 458 式が gs と一致。K64 が誤値を返す式 (B43〜B47、B53、B54) は真値 | docs/33 |
-| SynchroBetaEmittance | シンクロトロン運動と色収差下の平衡エミッタンス。δ ごとの閉軌道・1 周写像・拡散行列から (J, 方位角モード m) の連立方程式を解く。12 セルのリング + CAVI で emitx が 4e-7〜1e-5、24 セルの平面リング + CAVI VOLT=2e6 (AzimuthalModes->7) で 1.4e-7〜1.4e-6 (結合のあるラティスは gs が SIGSEGV で比較不能、不安定なチューンは未確認) | `pysad/synchrobeta.py` |
+| SynchroBetaEmittance | シンクロトロン運動と色収差下の平衡エミッタンス。δ ごとの閉軌道・1 周写像・拡散行列から (J, 方位角モード m) の連立方程式を解く。12 セルのリング + CAVI で emitx が 4e-7〜1e-5、24 セルの平面リング + CAVI VOLT=2e6 (AzimuthalModes->7) で 1.4e-7〜1.4e-6 (結合のあるラティスは gs が SIGSEGV で比較不能、不安定なチューンは未確認) | [`pysad/synchrobeta.py`](../pysad/synchrobeta.py) |
 | SAD パッケージ・FFS の小コマンド | CorrectOrbit・MakeBump など `.n` をそのまま実行 | docs/34、35 |
 | GUI (Tcl/Tk)・描画 | SAD の `.n` を pysad のインタプリタで tkinter に表示 | docs/22、37、`41_tcltk_guide.md`、`42_graphics_guide.md` |
 
-大項目の解説文書: `docs/38_wake_guide.md`、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。
+大項目の解説文書: [`docs/38_wake_guide.md`](38_wake_guide.md)、`39_beambeam_guide.md`、`40_csr_guide.md`、`41_tcltk_guide.md`、`42_graphics_guide.md`、`43_pol_guide.md`、`44_sol_guide.md`、`45_radlight_guide.md`。

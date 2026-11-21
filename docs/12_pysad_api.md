@@ -4,7 +4,7 @@
 
 > 場所: `pysad/`。全体像は `01_overview.md`、各計算の直訳メモは 05〜09、SAD の癖は `11_sad_quirks.md`。
 > 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `<試験用ラティス>.lat` と本文中の小さな FODO リング)。
-> `pysad/__init__.py` の `from pysad import ...` は旧 API (§15) を export しているので、**各モジュールを直接 import する** (`from pysad.parser import load_sad_file` など)。
+> [`pysad/__init__.py`](../pysad/__init__.py) の `from pysad import ...` は旧 API (§15) を export しているので、**各モジュールを直接 import する** (`from pysad.parser import load_sad_file` など)。
 > **互換モード**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ値が要るときは `PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` (§16.6)。本書の「K64 の動作」の記述は k64 モードのもの。モードで変わる箇所は docs/47。
 
 ## 0. 共通の約束 (単位・座標・位置)
@@ -402,7 +402,7 @@ print(score)                                               # 144
 
 ## 15. 旧 API (非推奨)
 
-`ffs.py`, `matching.py`, `tracking.py`, `optics.py` (`FFSState`, `Match`, `track_particles`(旧), `dynamic_aperture`(旧), `periodic_optics` 等) と `parser.SADScript.ffs` / `run_ffs` は独自実装で SAD と未照合 (tracking.py は放射係数に疑い)。`pysad/__init__.py` がこれらを export しているが、新規コードでは使わず、本書のモジュールを直接 import すること。`lattice.py` の `chromaticity()` / `summary()` / `emittance()` も同じ系統。
+`ffs.py`, `matching.py`, `tracking.py`, `optics.py` (`FFSState`, `Match`, `track_particles`(旧), `dynamic_aperture`(旧), `periodic_optics` 等) と `parser.SADScript.ffs` / `run_ffs` は独自実装で SAD と未照合 (tracking.py は放射係数に疑い)。[`pysad/__init__.py`](../pysad/__init__.py) がこれらを export しているが、新規コードでは使わず、本書のモジュールを直接 import すること。`lattice.py` の `chromaticity()` / `summary()` / `emittance()` も同じ系統。
 
 ## 16. 追加した API (§1〜15 に無いもの)
 
@@ -475,7 +475,7 @@ print(score)                                               # 144
 
 ### 16.6 互換モード `pysad.compat` と v2 で追加した API
 
-**互換モード** (`pysad/compat.py`)
+**互換モード** ([`pysad/compat.py`](../pysad/compat.py))
 
 | 関数・変数 | 内容 |
 |---|---|
@@ -485,7 +485,7 @@ print(score)                                               # 144
 | SADScript の `Compat$V2[]` | 互換モードが v2 なら 1 (prelude の `PolynomialFit` が使う) |
 
 - 既定は v2。`py -3.12 run_sad.py lattice.sad script.sad` も v2 で走るので、gs と数値を比べるときは `PYSAD_COMPAT=k64` を付ける。
-- 既存の試験と回帰は k64 で走る (`pysad/tests/conftest.py`、`run_regression.py`)。v2 の試験 (`test_v2_*.py`) はフィクスチャ `v2_mode` で明示する。
+- 既存の試験と回帰は k64 で走る ([`pysad/tests/conftest.py`](../pysad/tests/conftest.py)、`run_regression.py`)。v2 の試験 (`test_v2_*.py`) はフィクスチャ `v2_mode` で明示する。
 - 追跡のカーネルは `rs[1]` (v2 の印) を読むので、乱数状態 `rs` は必ず `track6n.make_rs()` で作る (`dapert.py`・`solmap.py`・`maintrack.py` も同じ)。
 - 互換モードで切り替えない変更 (pysad 自身の不具合の修正、K64 に無い機能・gs と同じ結果が出る機能) の一覧は docs/47。
 
@@ -516,7 +516,7 @@ print(score)                                               # 144
 
 | モジュール | 内容 | 文書 |
 |---|---|---|
-| `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/47 v2.1.0 (b)、`example/v2_next/B3_naff_tunes.py` |
+| `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/47 v2.1.0 (b)、[`example/v2_next/B3_naff_tunes.py`](../example/v2_next/B3_naff_tunes.py) |
 | `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/33 | docs/33 |
 | `specfn_cx2.py` | 複素の特殊関数の追加 (v2.2.0)。scipy の複素対応 (`exp1`・`expi`・`digamma`・`sici`・`fresnel`・`lambertw`・`hyp1f1`・`hyp2f1`)、整数次の ExpIntegralE の漸化式・級数、`polygamma` (Hurwitz ゼータ経由)、複素の次数の BesselJ の級数 (\|x\| ≤ 25)、Whittaker W (`specfn_cx.hyperu_c`)。`specfn.install` が複素の引数で切り替える (実数は従来のまま)。両モード |
 | `spch_k64.py` | `K64Pspac` (v2.2.0。k64 モードの PSPAC。`SpaceCharge._kick2d` から呼ぶ)。K64 の形状関数: 横は CIC、縦は「ほぼ最近接」、電位は 5 点差分 (境界 φ = 0) の厳密解と双 3 次補間、線密度は 3 次スプライン。`PSPACNZ < 3` はエラー |
@@ -556,6 +556,6 @@ K64 にない追加。互換モードによらず同じ関数 (docs/47 の v2.3.
 | `lmabucket.py`・`fmapcheck.py`・`fmapres.py`・`fmappred.py` | LMA の RF バケットとアパーチャの区別 (`limit_types`、`bucket_1d`)、周波数マップの信頼性 (`check_setup`・`check_result`・`D_norm`・`feeddown_estimate`)、RDT・ADTS から予想した共鳴領域との比較 (`ResonancePredictor`、`apply_alignment_errors`、`coverage_stats`)、予想の作り直し (`ResonancePredictorS3`、`evaluate_prediction`・`auc_score`) | docs/48 §3.5・§3.6・§4.5・§10、docs/49 §12 |
 | `rdt2nd.py`・`nform.py` | 4 次の h_jklm (`rdt4`、`resonance_terms` に 4 次の名前を渡すと回る)、正規形の補正 (`nf_correction_h4`・`rdt4_normal_form`)、`adts_from_rdt4`、`fourth_order_adts`、数値の正規形 (`nform.adts_from_map`・`adts_at_delta`・`adts_delta_derivative(method='analytic'\|'nform')`) | docs/49 §10・§11 |
 | `resdrive.py` | `resonance_terms(lat, terms=, method='analytic', nslice=8, delta=0, ref=None, rows=None, bend_cubic=True, bend_nslice=16, momentum_eV=3e9, order2=None, rdt4_options=None)` (引数の `None` は既定の動作。h_jklm、要素ごとの寄与。v2.3.0 R4: `bend_cubic=True` が既定で偏向磁石の 3 次の項の分 `.total_bend` を足す、`.total_sext` は 6 極のみ。δ≠0 では入れない)、`adts(lat, method=, include_octupole=True, delta=0, fourth=None, optics=None)` (6 極 2 次 + 8 極 1 次、`by_harmonic`・`per_element`。v2.3.0 V2: 既定は物理的な項だけ = `fourth='r3'`・`optics='calc'`。`fourth='r6'` は四極の積分器の台形則と偏向磁石の 4 次の項 (`.bend4`) を足す精密版、`optics='tracked'` は δ≠0 の光学を追跡の閉軌道から作る。docs/49 §11)、`chromaticity_numeric(lat, order=3, dmax=2e-3)`・`chromaticity_sextupole(lat)`・(R4) `chromaticity_natural(lat)` (自然クロマティシティの式 −(1/4π)∮(K1+h²)β + 端)・`chromaticity_bend(lat)` (偏向磁石の 3 次の項の分散による分)、`slice_thin`・`adts_tracking` (検証用)、v2.3.0 R2: `kinematic_adts`・`quad_fringe_adts` (`adts().kin`・`.fringe`・`.total`)。v2.3.0 R3: `adts(lat, bend_cubic=True, bend_nslice=16)` (偏向磁石の 3 次の項: `.bend`・`.cross`・`.total`、`bend_cubic=False` で R2 の値)、`bend_cubic_adts`。`bendnl.py`: `bend_decomposition(el, nslice)`・`bend_atoms`・`extract_map`・`Taylor2` (追跡の写像から偏向磁石の 3 次のリー生成関数を取り出す)。`rdttrack.py` (v2.3.0 R4、追跡から RDT を取り出す): `ring_map(elements, momentum, row0, amp=1e-5)`・`rdt_from_map(rm)` (1 周の写像の 2 次のテイラー展開から p=0 の h_jklm)・`delta_quadratic_total`・`delta2_orbit_h10002` (δ の項)・`tracked_rdt_table`・`periodic_points`・`predict_periodic_J` (3νx 共鳴線の近くの周期点)。`bendnl.py` (R4): `harmonic_amplitudes_shift`・`bend_atoms_rdt` (h への偏向磁石の寄与、δ の項は分散による軌道のずれの展開)。`adtsdirect.py`: `direct_adts(lat, momentum_eV, jmax, delta=0, order=2, nturn=1024)` (追跡 + NAFF + 多項式フィットの ADTS)・`tune_vs_delta`・`fit_tune_surface`・`fit_delta_curve`・`paraxial_tracker`。台本 `ResonanceDrivingTerms[]` (R4 で入力 `BendCubic->`・`BendSlices->` を追加)・`AmplitudeTuneShift[]` (R2 で `Kinematic->`・`QuadFringe->`・`Total->` を追加。R3 で入力 `BendCubic->`・`BendSlices->` と出力 `BendCubic->`・`SextBendCross->` を追加)・`ChromaticityTerms[]` (R4 で出力 `NaturalPart->`・`BendPart->` を追加) | docs/49 |
-| `sxtopt.py` | [試作] 6 極ファミリーの K2L の多項式モデル (`SxtModel`: RDT・ADTS の解析式を k の線形・二次形式で厳密に組み、`check(k)` で解析式の直接の値と比べる) と SLSQP の最適化。台本の関数なし。検証用で、LMA の予測には使えない (`example/ddba/v07_14/sextupole/`) | `example/ddba/v07_14/sextupole/README.md` |
+| `sxtopt.py` | [試作] 6 極ファミリーの K2L の多項式モデル (`SxtModel`: RDT・ADTS の解析式を k の線形・二次形式で厳密に組み、`check(k)` で解析式の直接の値と比べる) と SLSQP の最適化。台本の関数なし。検証用で、LMA の予測には使えない ([`example/ddba/v07_14/sextupole/`](../example/ddba/v07_14/sextupole/)) | [`example/ddba/v07_14/sextupole/README.md`](../example/ddba/v07_14/sextupole/README.md) |
 
 限界・未確認 (詳細は docs/48 §7・docs/49 §5・§11.8・docs/46): 周波数マップ・LMA の誤差つき・結合・FLUC は S2・L2 で調べた条件だけ (docs/46)。k64 モードの LMA、PF リング、SP8 (大きなリング B) は未確認。共鳴駆動項・ADTS は結合・垂直分散・端部・運動学的な項・6 極×8 極・10 極以上を入れない。

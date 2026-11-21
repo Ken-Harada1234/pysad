@@ -47,7 +47,7 @@
 | コマンド | `CALCULATE(CAL)` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | コマンド | `CHROMATICITY(CHRO)` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | コマンド | `EMITTANCE(EMIT)` | Fortran tffsa.f | 実装 | 直接翻訳 |
-| コマンド | `MEASURE(MEA)` | Fortran tffsa.f | v2 モードで実装 (`pysad/measure.py`。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示) | 直接翻訳 |
+| コマンド | `MEASURE(MEA)` | Fortran tffsa.f | v2 モードで実装 ([`pysad/measure.py`](../pysad/measure.py)。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示) | 直接翻訳 |
 | コマンド | `ORG` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | コマンド | `RADINT` | Fortran tffsa.f | 実装 | 直接翻訳 |
 | 関数 | `AccelerateParticles` | .n dapert.n | 実装 | Python で書き直し (.n) |

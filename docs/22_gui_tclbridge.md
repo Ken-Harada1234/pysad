@@ -2,8 +2,8 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-対象: `pysad/tclbridge.py` (Tcl/Tk との接点)、`pysad/sadclass.py` (SAD の Class)、`pysad/sadscript.py` / `sadlist.py` の言語機能の追加分、
-試験 `pysad/tests/test_tclbridge.py` / `test_sadclass.py` / `test_gui_lang.py`。
+対象: [`pysad/tclbridge.py`](../pysad/tclbridge.py) (Tcl/Tk との接点)、[`pysad/sadclass.py`](../pysad/sadclass.py) (SAD の Class)、[`pysad/sadscript.py`](../pysad/sadscript.py) / `sadlist.py` の言語機能の追加分、
+試験 [`pysad/tests/test_tclbridge.py`](../pysad/tests/test_tclbridge.py) / [`test_sadclass.py`](../pysad/tests/test_sadclass.py) / [`test_gui_lang.py`](../pysad/tests/test_gui_lang.py)。
 
 ## 1. 方針
 
@@ -40,7 +40,7 @@ SAD のパッケージの場所を環境変数で渡す。渡さなければ従�
 
 ## 4. Tkinter.n / KBFrame.n を動かすために足した SADScript の言語機能
 
-SAD (K64) の実測と SADHelp に合わせた。`test_gui_lang.py` と `test_sadclass.py` に試験がある。
+SAD (K64) の実測と SADHelp に合わせた。[`test_gui_lang.py`](../pysad/tests/test_gui_lang.py) と [`test_sadclass.py`](../pysad/tests/test_sadclass.py) に試験がある。
 
 - 式: `Sym::tag`、`f@@[x, {1}]`、`Null[]` と `Null[a, b]` と `Null@@list` (引数列として展開。SAD では Sequence = Null)、`0x33`、n 項の `<=>` と `===`、
   空の右辺の規則 `x->`、`a@b` (クラスのメンバー参照。右は記号だけ、`x@m[args]` は `(x@m)[args]`。インスタンスでなければ `f@g[x]` = `f[g[x]]` のまま)。
@@ -73,7 +73,7 @@ SADHelp の「Class」の節に沿った実装。`Class[親の列, クラス変�
 
 | 台本 | 結果 |
 | --- | --- |
-| Tkinter の `Window` / `Button` / `CheckButton` / `TextLabel` | オプションまで一致 (`test_tclbridge.py`) |
+| Tkinter の `Window` / `Button` / `CheckButton` / `TextLabel` | オプションまで一致 ([`test_tclbridge.py`](../pysad/tests/test_tclbridge.py)) |
 | `KBMainFrame` | メニューバー (Menubutton 6 個: KEK、File、Edit、Window、Task、Help と、その Menu、仕切りの Frame、時計の Label)、状態行、進捗表示まで一致 |
 | KBFrame の demo-LabelFrame (`KBFComponentFrame`、`KBFGroup[WidgetOption->{LabelWidget->cb[0]}]`、`KBFCheckButton`) | 木の形が一致 (36 行)。違いは時刻の文字列と、状態行の進捗表示 2 番目の Label が 1 個多いこと (SAD では作られていない。原因は未確認) |
 | KBFrame の demo-KBFrame1 (`KBFFrameToggled` / `KBFFrameTabed` を含む入れ子の部品) | 途中まで動く (SAD の 57 行に対して 43 行)。入れ子の部品の配置 (`KBF$ArrangeComponents` の `w[iwsym]` を使う親の背景の参照) で、まだ失敗する |
@@ -81,7 +81,7 @@ SADHelp の「Class」の節に沿った実装。`Class[親の列, クラス変�
 サンプル一括実行 (2026-11-13): GUI のサンプル台本 161 本を、EPICS と `System[]` を無効にした複製で実行した。Tk を開く約 50 本は全て最後まで走り、Tcl・pysad ともエラー無し。
 残り 81 本は Tk を使わない計算の台本。SAD との木の比較は上の表の 3 本だけで、他は「エラー無しで木ができた」までの確認。
 
-試験: `test_tclbridge.py` 7、`test_sadclass.py` 16、`test_gui_lang.py` 10 の計 33 本 (2026-11-17 に収集数を確認)。GUI 系は `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` を付けたときだけ実行する。全試験は 575 通過・3 skip (578 件収集、2026-11-17)。全体を回すと `test_tclbridge`・`test_plot` が数回に 1 回落ちることがある (単独では通る。Tk の窓の更新の待ち)。
+試験: [`test_tclbridge.py`](../pysad/tests/test_tclbridge.py) 7、[`test_sadclass.py`](../pysad/tests/test_sadclass.py) 16、[`test_gui_lang.py`](../pysad/tests/test_gui_lang.py) 10 の計 33 本 (2026-11-17 に収集数を確認)。GUI 系は `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` を付けたときだけ実行する。全試験は 575 通過・3 skip (578 件収集、2026-11-17)。全体を回すと `test_tclbridge`・`test_plot` が数回に 1 回落ちることがある (単独では通る。Tk の窓の更新の待ち)。
 
 **Widget 値**: `w=Window[]`・`e=Entry[w]` の値は gs と同じ `Widget[…]` (`Head[w]=Widget`)。`e[Insert]={"end","XY"}`・`lb[Insert]`・`e[Get]` も効く。
 - 仕組み: `DefineWidget` の `(a$_=w[opt$___])^:=(a$=w[Widget[Root$Window,Null],opt$])` が次の規則 `(a$$_=w[Widget[master$_,_],opt$___])^:=With[{a$=a$$,…},…]` を呼ぶ入れ子である。`With` が呼び出し元の規則の引数 `a$` (= ユーザーの `w`) を見つけ、`a$` でなく `w` を束縛しがちである (`sadscript._with` はこの探索を別の規則の呼び出しの境界 (`boundary` の frame) で止める)。
@@ -92,7 +92,7 @@ SADHelp の「Class」の節に沿った実装。`Class[親の列, クラス変�
 
 未確認・限界:
 - ウィジェット木 (クラス、文字、状態) は比べたが、見た目 (色、大きさ、フォント) と、操作したときの動作 (ボタンを押す、メニューを開く) は SAD と比べていない。
-- `Canvas.n` の描画は `pysad/tkcanvas.py` で実装し、`ListPlot` の 43 項目を gs と比べて一致 (docs/37)。`TabFrame.n` の描画は未検証。
+- `Canvas.n` の描画は [`pysad/tkcanvas.py`](../pysad/tkcanvas.py) で実装し、`ListPlot` の 43 項目を gs と比べて一致 (docs/37)。`TabFrame.n` の描画は未検証。
 - EPICS 関係 (`CaGet` など) は動かさない。`System[]` も動かさない。
 - Windows の Tk は X11 の Tk と違う (フォント名、`-scriptfont`、`wm` の挙動、X のウィンドウ木)。表示の違いはここから出る。
 

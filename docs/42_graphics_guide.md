@@ -4,14 +4,14 @@
 
 SAD の描画関数 (`Plot`、`ListPlot`、`ListContourPlot`、`HistoPlot`、`FitPlot`、`OpticsPlot`、`LatticePlot`、`BeamPlot`、`GeometryPlot`、`FitGaussian` の `Plot->True`、
 `Canvas` 系) を、pysad がどう動かし、どこまで gs (SAD K64) と一致するかを、初めて読む人向けにまとめる。
-要点の一覧と SADScript の評価の直し方の細目は `docs/37_plot_canvas.md`、GUI (Tk) の土台は `docs/22_gui_tclbridge.md`。この文書は両者の案内と、使い方の例、限界をまとめたもの。
+要点の一覧と SADScript の評価の直し方の細目は [`docs/37_plot_canvas.md`](37_plot_canvas.md)、GUI (Tk) の土台は [`docs/22_gui_tclbridge.md`](22_gui_tclbridge.md)。この文書は両者の案内と、使い方の例、限界をまとめたもの。
 
 ## 1. 何ができるか
 
 - SAD 自身の `.n` (`Packages/ListPlot.n`、`Plots.n`、`Canvas.n`、`OpticsPlot.n`、`GeometryPlot.n`、`Fit.n`) を **書き直さず**、pysad のインタプリタで SADScript のまま実行する。
   描画の式 (`Graphics[…]`) は SAD と同じ構造で作られ、最後に `$DisplayFunction` が `CanvasDrawer` なら、`Canvas.n` が Tk の `create` を呼んで tkinter のキャンバスに描く。
 - 描画の物理や座標の計算 (目盛りの選び方、格子線、`PlotInterpolate` の点列、等高線、`RemoveOverlap`) は SAD の `.n` がするので、pysad はそれが動く評価器と、
-  K64 が C・Fortran で持つ Tk の組み込み関数 (`TkCanvas*`、`CanvasClipLine`、`CanvasSymbolDirect` など) だけを Python で書いた (`pysad/tkcanvas.py`)。
+  K64 が C・Fortran で持つ Tk の組み込み関数 (`TkCanvas*`、`CanvasClipLine`、`CanvasSymbolDirect` など) だけを Python で書いた ([`pysad/tkcanvas.py`](../pysad/tkcanvas.py))。
 - 対応する関数: `Plot`・`ParametricPlot`・`ListPlot`・`ListDensityPlot`・`ListContourPlot`・`HistoPlot`・`FitPlot`・`OpticsPlot`・`LatticePlot` (OpticsPlot の一部)・`GeometryPlot`・
   `BeamPlot` (動くが gs と比べられない: §6)・`FitGaussian[…, Plot->True]`・`Show`・`Graphics`。
 
@@ -95,8 +95,8 @@ USE RING; CELL; RFSW; RAD; CODPLOT; CALC; EMIT;
 g=BeamPlot["QF.5",{"X","Y"},DisplayFunction->Identity,SizeFunction->"SIG"];
 ```
 
-試験の元の台本は `pysad/tests/test_plot.py` (8 本)。
-キャンバスの項目を書き出す方法 (gs と比べるのに使った) は、`test_plot.py` の `_DUMP`: `TclEval` で全 Canvas の `find all`・`type`・`coords`・`gettags` を列挙してファイルに書く。
+試験の元の台本は [`pysad/tests/test_plot.py`](../pysad/tests/test_plot.py) (8 本)。
+キャンバスの項目を書き出す方法 (gs と比べるのに使った) は、[`test_plot.py`](../pysad/tests/test_plot.py) の `_DUMP`: `TclEval` で全 Canvas の `find all`・`type`・`coords`・`gettags` を列挙してファイルに書く。
 
 ## 4. オプションの対応
 
@@ -138,7 +138,7 @@ g=BeamPlot["QF.5",{"X","Y"},DisplayFunction->Identity,SizeFunction->"SIG"];
 | `OpticsPlot[{{"BX","BY"},{"EX"}}]` (12 セル、3 GeV の例) | 式は `Graphics` (長さ 2) で gs と同じ構造。項目は gs が 174 (rectangle 76、line 40、text 58)、pysad は 188 (rectangle 76、line 40、text 72)。枠・矩形・格子線の数と位置は同じ。text が 14 多いのは、文字の大きさが Tk のフォントで違い、`RemoveOverlap` と目盛りの間引きの結果が変わるため。`LatticeNames` の名前の表は全部同じ |
 | `GeometryPlot[]` (同じ 12 セル) | line 74、polygon 37 で gs と同じ数・座標 (線の既定色だけ Tk の違い) |
 
-- 試験: `pysad/tests/test_plot.py` (8 本)、`test_evalfixes.py`。Tk を使う試験は `PYSAD_SAD_PACKAGES` と tkinter が要る (なければ skip)。
+- 試験: [`pysad/tests/test_plot.py`](../pysad/tests/test_plot.py) (8 本)、[`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)。Tk を使う試験は `PYSAD_SAD_PACKAGES` と tkinter が要る (なければ skip)。
   全試験を回すと数回に 1 回、単独では通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら `py -3.12 -m pytest pysad/tests/test_plot.py -q` で単独に回して確かめる。
 - 回帰 (`run_regression.py`) は描画を含まない (描画は pytest だけ)。
 - 比べていないもの: 色・フォント・大きさ・見た目、クリック・拡大などの操作、実画面のスクリーンショットの比較。値の一致は「キャンバスの項目の座標とタグ」まで。
@@ -177,9 +177,9 @@ g=BeamPlot["QF.5",{"X","Y"},DisplayFunction->Identity,SizeFunction->"SIG"];
 
 ## 8. 関連文書
 
-- `docs/37_plot_canvas.md`: 描画の gs との一致、Tk の組み込み関数の表、評価器の直した点の全部
-- `docs/22_gui_tclbridge.md`: GUI (Tkinter.n・KBFrame.n) を tkinter で動かす仕組み (描画の土台)
-- `docs/33_specfn_fit_misc.md`: `Fit`・特殊関数 (`FitPlot`・`FitGaussian` が使う)
-- `docs/04_sadscript.md`: SADScript の評価器
-- `docs/11_sad_quirks.md`: SAD の癖
-- `docs/history/work_unimpl.md`: 未対応・未解決の最新の記録
+- [`docs/37_plot_canvas.md`](37_plot_canvas.md): 描画の gs との一致、Tk の組み込み関数の表、評価器の直した点の全部
+- [`docs/22_gui_tclbridge.md`](22_gui_tclbridge.md): GUI (Tkinter.n・KBFrame.n) を tkinter で動かす仕組み (描画の土台)
+- [`docs/33_specfn_fit_misc.md`](33_specfn_fit_misc.md): `Fit`・特殊関数 (`FitPlot`・`FitGaussian` が使う)
+- [`docs/04_sadscript.md`](04_sadscript.md): SADScript の評価器
+- [`docs/11_sad_quirks.md`](11_sad_quirks.md): SAD の癖
+- [`docs/history/work_unimpl.md`](history/work_unimpl.md): 未対応・未解決の最新の記録

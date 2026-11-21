@@ -2,13 +2,13 @@
 
 最終更新: 2026-11-17
 
-衝突型加速器のビーム・ビーム相互作用を pysad で扱うための解説。初めて読む人向けに、何ができるか、動く SAD スクリプト、物理と K64 の式、実装の構成、K64 の癖、gs (SAD K64 のビルド) との一致の度合い、限界・未確認の順に書く。要素の仕様表と検証の詳細は `docs/24_beambeam.md`、BBBrem は `docs/32_gaussiancoulomb_bbbrem.md` にある。ここはそれらを束ねた入口である。
+衝突型加速器のビーム・ビーム相互作用を pysad で扱うための解説。初めて読む人向けに、何ができるか、動く SAD スクリプト、物理と K64 の式、実装の構成、K64 の癖、gs (SAD K64 のビルド) との一致の度合い、限界・未確認の順に書く。要素の仕様表と検証の詳細は [`docs/24_beambeam.md`](24_beambeam.md)、BBBrem は [`docs/32_gaussiancoulomb_bbbrem.md`](32_gaussiancoulomb_bbbrem.md) にある。ここはそれらを束ねた入口である。
 
 ## 0. 先に知っておくこと
 
 - pysad が持つのは **弱-強 (weak-strong) モデルだけ**。BEAMBEAM は「強ビーム (固定した 6 次元ガウス分布、z スライスに分ける) が、追跡する粒子 (弱ビーム) に与えるキック」である。K64 の `bbstrhl.f` の直訳。**強-強 (両ビームが互いに変形し合う自己無撞着な計算) は pysad にも、今回根拠にした `bbstrhl.f` の BEAMBEAM にも無い**。コードで裏を取れたのは弱-強だけで、強-強の別経路が K64 の他の部分にあるかは調べていない (未確認)。
 - キックは **追跡 (TrackParticles、高速追跡 `track6n`) だけ**に効く。光学 (Twiss、CALC、Emittance、EMIT) では恒等 (§6)。
-- 使った制約: 検証台本の運動量は MOMENTUM=1.7GEV の電子 (γ は電子質量から決める)、リングは小さな四極と BEAMBEAM だけの人工の並び (`pysad/tests/test_beambeam.py`)。実機の衝突点 (SuperKEKB 級の β*、交差角、数百万粒子) との比較はしていない。
+- 使った制約: 検証台本の運動量は MOMENTUM=1.7GEV の電子 (γ は電子質量から決める)、リングは小さな四極と BEAMBEAM だけの人工の並び ([`pysad/tests/test_beambeam.py`](../pysad/tests/test_beambeam.py))。実機の衝突点 (SuperKEKB 級の β*、交差角、数百万粒子) との比較はしていない。
 - SADHelp に BEAMBEAM の記述はない。根拠は K64 のソース (`bbstrhl.f`、`bbtool.f`、`matrix.f`) と gs の出力だけ。
 
 ## 1. BEAMBEAM 要素のパラメータ
@@ -17,7 +17,7 @@
 BEAMBEAM BB = (BX=0.5 BY=0.01 EMIX=1e-8 EMIY=1e-10 SIGZ=0.005 DP=1e-3 SLICE=5 NP=1e10 XANGLE=0.01);
 ```
 
-キーワードは `pysad/beambeam.py` の `_KEYS` (K64 `initb1.f` の ky_*_BEAM の順) で、parser が数値だけを `BeamBeam.params` (`elements.py`、Marker の子) に入れる。
+キーワードは [`pysad/beambeam.py`](../pysad/beambeam.py) の `_KEYS` (K64 `initb1.f` の ky_*_BEAM の順) で、parser が数値だけを `BeamBeam.params` (`elements.py`、Marker の子) に入れる。
 
 | キーワード | 意味 |
 | --- | --- |
@@ -168,7 +168,7 @@ Print["BU ", Random[]];
 
 ## 8. BBBrem (ビーム-ビームの制動放射)
 
-`pysad/bbbrem.py` = K64 `tbbbrem.f` (`bcube1`、`tbcube1`) の直訳 (Kleiss-Burkhardt の 1 事象生成)。`SADScript` から `BBBrem1[sqrt(s) (eV), ds/s 下限]` で呼ぶ (`sadscript.py`)。
+[`pysad/bbbrem.py`](../pysad/bbbrem.py) = K64 `tbbbrem.f` (`bcube1`、`tbcube1`) の直訳 (Kleiss-Burkhardt の 1 事象生成)。`SADScript` から `BBBrem1[sqrt(s) (eV), ds/s 下限]` で呼ぶ (`sadscript.py`)。
 
 - 戻り値は `{(-1,-1,-1,1)·p2 (eV)、近似断面積 (mbarn×1e-31)}`。事象を棄却する場合 (`temp2 < 0`) は 4 元運動量が 0、重み 0。
 - 乱数は SAD の `tran()`。
@@ -176,7 +176,7 @@ Print["BU ", Random[]];
 - パッケージ `Packages/bbbrem.n` の `BBBrem` クラスは `Parallelize`・`LBoost`・`Rot3P` を使う。pysad で `Parallelize` が動くかは確かめていない (未対応とみなす)。
 - 事象を棄却する (t < tmin) 場合に K64 が出す診断の print は写していない。
 - BEAMBEAM 要素や TrackParticles とは接続していない。BBBrem1 は単独の事象生成器である (BEAMBEAM の中で制動放射を引く機能は pysad に無い。K64 側の接続は調べていない)。
-- 関連する `GaussianCoulomb` 系 (ガウス分布の力) は `docs/32_gaussiancoulomb_bbbrem.md`。
+- 関連する `GaussianCoulomb` 系 (ガウス分布の力) は [`docs/32_gaussiancoulomb_bbbrem.md`](32_gaussiancoulomb_bbbrem.md)。
 
 ## 9. tlum / tluma (`pysad/measure.py`)
 
@@ -184,7 +184,7 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 
 - `tluma(x, y, xm, ym, sigx, sigy0, nmesh)`: x[j, i], y[j, i] (j = 0, 1 が二つのビーム、i が粒子)。粒子を (σx, σy) で規格化した格子 (中心 xm, ym、±3σ、nmesh 分割) に線形配分し、Σ bin₁·bin₂ から実効面積 `np²/Σ · σxσy·(6/nmesh)²/(4π)` を返す。σy が大きすぎるときは範囲を狭めて繰り返す。bin は real*4 (単精度の足し込みを写した)。
 - `tlum(x, y, xm, ym, sigx, sigy)`: nmesh = max(int(√np), 6)。戻り値は (tlum, nmesh)。
-- 検証: 同じガウス分布 2 つ (40000 粒子、σx=1e-3、σy=2e-4) で nmesh=200、`tlum/(σxσy)` が 1 から 10% 以内 (解析値との比較。`test_measure.py`)。**gs との比較は無い**: FFS の MEASURE は gs で何も出力せず、TRCOD は SIGSEGV で落ちる (docs/21 B42) ため、参照が取れない。
+- 検証: 同じガウス分布 2 つ (40000 粒子、σx=1e-3、σy=2e-4) で nmesh=200、`tlum/(σxσy)` が 1 から 10% 以内 (解析値との比較。[`test_measure.py`](../pysad/tests/test_measure.py))。**gs との比較は無い**: FFS の MEASURE は gs で何も出力せず、TRCOD は SIGSEGV で落ちる (docs/21 B42) ため、参照が取れない。
 - FFS のコマンドとしての MEASURE・TRCOD (`tracke`、`ttinit`、`ttstat`、`trcoda`、`trackb`) は翻訳していない。tlum は pysad の Python から直接呼ぶ関数で、SAD スクリプトからは呼べない (SAD 側の入口は無い)。
 
 ## 10. gs との一致の度合い
@@ -204,12 +204,12 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 
 340 粒子以上の分布比較 (20000 粒子、5 周、NP=3e11、放射なし): 放射した粒子の割合 gs 0.0664 / pysad 0.0650、平均 δ のずれ gs −2.14e-8 / pysad −2.21e-8、δ のずれの分布の KS 検定 p=1.00。1 周ぶん・NP=2e12 でも割合 0.1458 / 0.1455、KS p=0.07〜0.54 で統計誤差の範囲。個々の粒子は一致しない。
 
-試験は `pysad/tests/test_beambeam.py` (parametrize を含め BEAMBEAM 関連)、`test_bbbrem.py`、`test_measure.py`。台本は b1..b12 の 12 本。
+試験は [`pysad/tests/test_beambeam.py`](../pysad/tests/test_beambeam.py) (parametrize を含め BEAMBEAM 関連)、[`test_bbbrem.py`](../pysad/tests/test_bbbrem.py)、[`test_measure.py`](../pysad/tests/test_measure.py)。台本は b1..b12 の 12 本。
 
 ## 11. K64 の癖と見つけた差
 
 - **傾き回転 (B34)**: `sint=xangle(5)` (傾き角そのもの)、`cost=xangle(6)` (sin)。bbinit は (6)=sin、(7)=cos を書くのでずれている。強ビームに x-y 結合があると回転が直交でなくなり、座標が潰れる。
-  **k64 モードは直訳で再現する (SAD のまま)。v2 モードは (cos t, sin t) の正しい回転にする** (`beambeam.apply`)。強ビームに x-y 結合 (R1..R4 か R13 など) があるときだけ結果が変わる。根拠は回転に対する共変性 (包絡を t 回した強ビームの蹴り = 粒子を −t 回し、回していない包絡で蹴り、+t 回す) で、t = 0.3 で蹴りに対する相対 1e-9 (`test_v2_C_beambeam.py` 2 件)。gs との比較は無い。確かめたのは t = 0.3 の 1 例だけで、実機の衝突点の規模では未確認。
+  **k64 モードは直訳で再現する (SAD のまま)。v2 モードは (cos t, sin t) の正しい回転にする** (`beambeam.apply`)。強ビームに x-y 結合 (R1..R4 か R13 など) があるときだけ結果が変わる。根拠は回転に対する共変性 (包絡を t 回した強ビームの蹴り = 粒子を −t 回し、回していない包絡で蹴り、+t 回す) で、t = 0.3 で蹴りに対する相対 1e-9 ([`test_v2_C_beambeam.py`](../pysad/tests/test_v2_C_beambeam.py) 2 件)。gs との比較は無い。確かめたのは t = 0.3 の 1 例だけで、実機の衝突点の規模では未確認。
 - `cerrf` の `3.2` は単精度の定数。
 - 丸いビームで x=y=0 の粒子は 0/0 → NaN → px=+1e4。
 - スライスの境界 (`dsz`) はビームストラールングだけが使う。
@@ -231,10 +231,10 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 
 ## 13. 関連文書
 
-- `docs/24_beambeam.md`: BEAMBEAM 要素の仕様と検証の詳細
-- `docs/32_gaussiancoulomb_bbbrem.md`: GaussianCoulomb・BBBrem1
-- `docs/23_wake.md`: wake と BEAMBEAM の併用 (一致を確認)
-- `docs/08_tracking.md`: TrackParticles
-- `docs/21_sad_bug_report.md`: B34 (傾き)、B35 (SOL 内の SIGSEGV)、B42 (MEASURE・TRCOD)
-- `docs/history/work_beambeam.md`: 実装の経緯
-- コード: `pysad/beambeam.py`、`pysad/bbbrem.py`、`pysad/measure.py`、`pysad/track6n.py` (`K_BB`)、`pysad/ffscmd.py` (PHOTONS・LuminosityMonitor)
+- [`docs/24_beambeam.md`](24_beambeam.md): BEAMBEAM 要素の仕様と検証の詳細
+- [`docs/32_gaussiancoulomb_bbbrem.md`](32_gaussiancoulomb_bbbrem.md): GaussianCoulomb・BBBrem1
+- [`docs/23_wake.md`](23_wake.md): wake と BEAMBEAM の併用 (一致を確認)
+- [`docs/08_tracking.md`](08_tracking.md): TrackParticles
+- [`docs/21_sad_bug_report.md`](21_sad_bug_report.md): B34 (傾き)、B35 (SOL 内の SIGSEGV)、B42 (MEASURE・TRCOD)
+- [`docs/history/work_beambeam.md`](history/work_beambeam.md): 実装の経緯
+- コード: [`pysad/beambeam.py`](../pysad/beambeam.py)、[`pysad/bbbrem.py`](../pysad/bbbrem.py)、[`pysad/measure.py`](../pysad/measure.py)、[`pysad/track6n.py`](../pysad/track6n.py) (`K_BB`)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) (PHOTONS・LuminosityMonitor)

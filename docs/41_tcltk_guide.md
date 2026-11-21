@@ -4,7 +4,7 @@
 
 SAD の GUI (窓、ボタン、入力欄、キャンバス、メニュー) を、SAD 自身の台本 (`Packages/Tkinter.n`、`KBFrame.n` など) を書き換えずに
 pysad のインタプリタで解釈し、Python の tkinter (Tk 8.6) に表示する仕組みの解説。初めて読む人向け。
-要素別の詳しい実装の記録は `docs/22_gui_tclbridge.md` (接点と言語機能)、`docs/37_plot_canvas.md` (描画)。経緯は `docs/history/work_gui_tclbridge.md`。
+要素別の詳しい実装の記録は [`docs/22_gui_tclbridge.md`](22_gui_tclbridge.md) (接点と言語機能)、[`docs/37_plot_canvas.md`](37_plot_canvas.md) (描画)。経緯は [`docs/history/work_gui_tclbridge.md`](history/work_gui_tclbridge.md)。
 
 ## 1. 何ができるか
 
@@ -64,7 +64,7 @@ FFS から使うときは `FFS;` の後に同じ台本を書く (`run_sad_string
 
 ### 3.1 動く SAD スクリプト例
 
-下は試験 (`pysad/tests/test_tclbridge.py`) にある台本。`Interp()` に `run(src, 'script')` で渡す。
+下は試験 ([`pysad/tests/test_tclbridge.py`](../pysad/tests/test_tclbridge.py)) にある台本。`Interp()` に `run(src, 'script')` で渡す。
 
 簡単な部品 (4 個。Window、Button、CheckButton、TextLabel):
 
@@ -102,7 +102,7 @@ TclEval["update"];
 ```
 Checkbutton 4 個、Labelframe 2 個、Menubutton 6 個ができる (SAD と一致)。
 
-描画 (`test_plot.py`。キャンバスに 43 項目、gs と全部一致):
+描画 ([`test_plot.py`](../pysad/tests/test_plot.py)。キャンバスに 43 項目、gs と全部一致):
 
 ```
 FFS;
@@ -132,11 +132,11 @@ TclEval["update"];
 
 ### 3.2 試験の台本の探し方
 
-- `pysad/tests/test_tclbridge.py` (7 本): Tk の版と `$FontSystem`、簡単な部品、`KBMainFrame` のメニューバー、`KBFComponentFrame`、`Entry`・`ListBox` の Widget 値とメソッド、`Canvas$Widget` の UpValue。
-- `pysad/tests/test_gui_lang.py` (10 本): GUI を使わない言語機能 (`Sym::tag`、`f@@[x,{1}]`、`Null[]`、`0x33`、UpValue、SubValue、Hold 属性、`Difference`、`SwitchCases`、`StringFill`、`BaseForm` など)。
+- [`pysad/tests/test_tclbridge.py`](../pysad/tests/test_tclbridge.py) (7 本): Tk の版と `$FontSystem`、簡単な部品、`KBMainFrame` のメニューバー、`KBFComponentFrame`、`Entry`・`ListBox` の Widget 値とメソッド、`Canvas$Widget` の UpValue。
+- [`pysad/tests/test_gui_lang.py`](../pysad/tests/test_gui_lang.py) (10 本): GUI を使わない言語機能 (`Sym::tag`、`f@@[x,{1}]`、`Null[]`、`0x33`、UpValue、SubValue、Hold 属性、`Difference`、`SwitchCases`、`StringFill`、`BaseForm` など)。
   `Tkinter.n` を動かすために足したもので、`PYSAD_SAD_PACKAGES` が無くても走る。
-- `pysad/tests/test_sadclass.py` (16 本): `Class` (docs/22 §5)。
-- `pysad/tests/test_plot.py` (8 本): `ListPlot`、`OpticsPlot`、`HistoPlot`、`ListContourPlot`、`FitPlot`、`Plot`、`GeometryPlot`、`FitGaussian` のキャンバス。
+- [`pysad/tests/test_sadclass.py`](../pysad/tests/test_sadclass.py) (16 本): `Class` (docs/22 §5)。
+- [`pysad/tests/test_plot.py`](../pysad/tests/test_plot.py) (8 本): `ListPlot`、`OpticsPlot`、`HistoPlot`、`ListContourPlot`、`FitPlot`、`Plot`、`GeometryPlot`、`FitGaussian` のキャンバス。
 
 ## 4. 実装の構成
 
@@ -172,7 +172,7 @@ TclEval["update"];
   この方式では Tk を使わない。
 - **ウィジェット木で比べる**: 台本を走らせたあと `winfo children` を再帰して、クラス・`-text`・`-state`・`-title` を書き出し、SAD (gs) の同じ台本の木と比べる。
   `PYSAD_SAD_PACKAGES` を設定して台本を走らせたあと、`TclEval` で木を辿る。
-- **キャンバスの項目で比べる**: `$c find all` と `$c type`・`$c coords`・`$c gettags` を書き出す (`test_plot.py` の台本)。
+- **キャンバスの項目で比べる**: `$c find all` と `$c type`・`$c coords`・`$c gettags` を書き出す ([`test_plot.py`](../pysad/tests/test_plot.py) の台本)。
 - **サンプル一括**: 台本の写し (EPICS と `System[]` を `$off` の名前に替えたもの) を 1 本ずつ 120 秒の制限で走らせる。
 - 全体試験では GUI 系 (`test_plot`、`test_tclbridge`) が数回に 1 回、単独なら通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら単独で回し直す。
 
@@ -197,7 +197,7 @@ pysad が合わせた K64 の挙動。
 
 | 部品・台本 | 確かめた内容 | 結果 |
 | --- | --- | --- |
-| `Window`・`Button`・`CheckButton`・`TextLabel` | 木 (クラス、`-text`) | gs と一致 (`test_tclbridge.py`) |
+| `Window`・`Button`・`CheckButton`・`TextLabel` | 木 (クラス、`-text`) | gs と一致 ([`test_tclbridge.py`](../pysad/tests/test_tclbridge.py)) |
 | `KBMainFrame` | メニューバー (Menubutton 6 個と Menu、Frame、時計の Label)、状態行、進捗表示 | 一致 |
 | demo-LabelFrame (`KBFComponentFrame`、`KBFGroup`、`KBFCheckButton`) | 木 36 行 | 一致。差は時刻の文字列と、状態行の進捗表示の Label が 1 個多いこと (原因未確認) |
 | demo-KBFrame1 (`KBFFrameToggled`・`KBFFrameTabed`) | 木 | **途中まで** (SAD 57 行に対し pysad 43 行)。入れ子の部品の配置 `KBF$ArrangeComponents` で失敗 |
@@ -208,7 +208,7 @@ pysad が合わせた K64 の挙動。
 | `Entry`・`ListBox`・`Scale`・`RadioButton`・`Canvas`・`TextEditor` (単体) | 作成し `Pack` して `update` (2026-11-16) | エラー無しで作成された (木のクラス名のみ確認) |
 | `Button` の `Command` | Tcl から `invoke` | SAD の式が評価された (`n = 5`) |
 
-試験: `test_tclbridge.py` 7、`test_sadclass.py` 16、`test_gui_lang.py` 10、`test_plot.py` 8。
+試験: [`test_tclbridge.py`](../pysad/tests/test_tclbridge.py) 7、[`test_sadclass.py`](../pysad/tests/test_sadclass.py) 16、[`test_gui_lang.py`](../pysad/tests/test_gui_lang.py) 10、[`test_plot.py`](../pysad/tests/test_plot.py) 8。
 
 ## 8. 限界・未確認
 
@@ -225,9 +225,9 @@ pysad が合わせた K64 の挙動。
 
 ## 9. 関連文書
 
-- `docs/22_gui_tclbridge.md` (接点・言語機能・Class・検証の詳細)
-- `docs/37_plot_canvas.md` (描画と `tkcanvas.py`、gs との一致)
-- `docs/history/work_gui_tclbridge.md` (実装の経緯、落とし穴、未解決)
-- `docs/04_sadscript.md`、`docs/11_sad_quirks.md` (SADScript と K64 の癖)
-- `docs/34_sad_packages.md` (SAD パッケージ)、`docs/36_spin_csr.md` (`CSR.n`)
-- `docs/history/00_RESUME.md` (引き継ぎ、環境、試験の手順)
+- [`docs/22_gui_tclbridge.md`](22_gui_tclbridge.md) (接点・言語機能・Class・検証の詳細)
+- [`docs/37_plot_canvas.md`](37_plot_canvas.md) (描画と `tkcanvas.py`、gs との一致)
+- [`docs/history/work_gui_tclbridge.md`](history/work_gui_tclbridge.md) (実装の経緯、落とし穴、未解決)
+- [`docs/04_sadscript.md`](04_sadscript.md)、[`docs/11_sad_quirks.md`](11_sad_quirks.md) (SADScript と K64 の癖)
+- [`docs/34_sad_packages.md`](34_sad_packages.md) (SAD パッケージ)、[`docs/36_spin_csr.md`](36_spin_csr.md) (`CSR.n`)
+- [`docs/history/00_RESUME.md`](history/00_RESUME.md) (引き継ぎ、環境、試験の手順)

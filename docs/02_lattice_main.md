@@ -1,6 +1,6 @@
 # 02. SAD の MAIN レベル (ラティス定義) と pysad parser.py
 
-最終更新: 2026-11-17 (現状のスナップショット)。照合対象: `<SAD>\src` (K64 版 SAD, Fortran) と `pysad/parser.py`。SAD ソースの行番号は 2026-10 時点。
+最終更新: 2026-11-17 (現状のスナップショット)。照合対象: `<SAD>\src` (K64 版 SAD, Fortran) と [`pysad/parser.py`](../pysad/parser.py)。SAD ソースの行番号は 2026-10 時点。
 表記: 無印 = コードで確認した事実 / 「解釈」= 推論 / 「未検証」= 未確認。parser.py は改訂が続くため行番号ではなく関数名で示す。
 
 ---

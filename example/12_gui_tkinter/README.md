@@ -1,6 +1,6 @@
 # 12_gui_tkinter: Tkinter・KBFrame の GUI
 
-SAD の `Tkinter.n`・`KBFrame.n`・`TkinterCore.n` の最小の例。画面表示が主役である。窓の画面 (`NAME_window.png`) は、pysad の窓を `example/tools/gui_shot.py` で切り取ったもの。gs の窓は撮れていない。標準出力に出るのは、部品の木 (`tree:`) とボタンを押した結果だけ。
+SAD の `Tkinter.n`・`KBFrame.n`・`TkinterCore.n` の最小の例。画面表示が主役である。窓の画面 (`NAME_window.png`) は、pysad の窓を [`example/tools/gui_shot.py`](../tools/gui_shot.py) で切り取ったもの。gs の窓は撮れていない。標準出力に出るのは、部品の木 (`tree:`) とボタンを押した結果だけ。
 
 一致の記号: ○ 一致 / △ 差あり (md に理由) / ×gs 失敗 / ×pysad 未対応・失敗
 

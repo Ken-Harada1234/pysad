@@ -1,6 +1,6 @@
 # example/v2_B: v2.0.0 (担当 B) の走る例
 
-pysad v2.0.0 で直した・足した機能のうち、特殊関数、SADScript、FFS の小項目の例です。説明と根拠は `docs/history/v2_changes_B.md`。
+pysad v2.0.0 で直した・足した機能のうち、特殊関数、SADScript、FFS の小項目の例です。説明と根拠は [`docs/history/v2_changes_B.md`](../../docs/history/v2_changes_B.md)。
 
 実行 (リポジトリのルートから。既定の互換モードは v2):
 
@@ -24,4 +24,4 @@ K64 (gs) と同じ動作で走らせるときは、環境変数 `PYSAD_COMPAT=k6
 ## 未確認・限界
 - 例の数値は上の小さなリングと単体の式のものです。実機のラティスでは確かめていません。
 - `B3` の `System` の結果は OS のシェル (Windows は cmd.exe) に依ります。
-- 文脈の K64 との差 (System` の範囲、表示) は `docs/history/v2_changes_B.md` §2.4。
+- 文脈の K64 との差 (System` の範囲、表示) は [`docs/history/v2_changes_B.md`](../../docs/history/v2_changes_B.md) §2.4。

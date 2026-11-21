@@ -40,7 +40,7 @@ SAD 自身の .n を pysad のインタプリタで動かす (環境変数 `PYSA
 | `IF` | Fortran tfif.f | 実装 |
 | `INPUT(IN)` | Fortran tffile.f | 実装 |
 | `MATRIX(MAT)` | Fortran tffsa.f | 実装 (pysad/ffsextra.py、docs/35。表の書式は gs と同じ) |
-| `MEASURE(MEA)` | Fortran tffsa.f | v2 モードで実装 (`pysad/measure.py`。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示) |
+| `MEASURE(MEA)` | Fortran tffsa.f | v2 モードで実装 ([`pysad/measure.py`](../pysad/measure.py)。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示) |
 | `ORG` | Fortran tffsa.f | 実装 |
 | `OUTPUT(OUT)` | Fortran phdrw.f,pstati.f,tffile.f | 実装 |
 | `PRINT(PRI)` | Fortran tffsa.f | 実装 |

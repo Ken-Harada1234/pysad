@@ -25,7 +25,7 @@ v2.0.0 で追加: compat (互換モード) / phsrot / radtaper / spch (空間電
 `ffs.py`, `matching.py`, `tracking.py`, `optics.py` は非推奨の旧 API (SAD 未照合の独自実装) で、表には数えない。
 calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ffscmd.py` から呼ばれる (CALC6D、解析微分、INTRA/TouschekLifetime、LINE["GX"..]/GEO/ORG、MULT/SOL の numba 追跡、Emittance[] のオプション)。
 
-試験の現状 (2026-11-17、`PYSAD_SAD_PACKAGES` つき): `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **937 通過・4 skip (941 件収集)**。互換モードは k64 が既定 (`pysad/tests/conftest.py`)。v2 の試験 (`test_v2_*.py`) は 29 本・363 件で `compat.set_mode('v2')` を明示する。回帰 (`QUICK=1 run_regression.py`) は **50 ベンチ FAIL 0** (k64 モード)。
+試験の現状 (2026-11-17、`PYSAD_SAD_PACKAGES` つき): `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **937 通過・4 skip (941 件収集)**。互換モードは k64 が既定 ([`pysad/tests/conftest.py`](../pysad/tests/conftest.py))。v2 の試験 (`test_v2_*.py`) は 29 本・363 件で `compat.set_mode('v2')` を明示する。回帰 (`QUICK=1 run_regression.py`) は **50 ベンチ FAIL 0** (k64 モード)。
 
 照合桁の目安 (10_benchmarks): CALC 光学 ≤1e-10 (誤差・オフモメンタム・結合経由は 1e-7〜3e-7)、Emittance[] ≤1.3e-11 (Level 3C の結合は 7.8e-7)、追跡 ≤5e-11 (Level 7/9/11 の z・trf0 は ≤1.7e-10)、マッチング K1 ≤1e-10、DA は地図・Score 一致。
 
@@ -175,7 +175,7 @@ calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ff
 
 | ファイル・機能 | モード | 理由 |
 |---|---|---|
-| wjfit、wfres、wfbin、wiord、wjdraw | 両 | MAIN の TRACK の Fourier 解析で、FFS から使えない (gs も SIGSEGV)。チューンの抽出は `pysad/naff.py` (v2.1.0) |
+| wjfit、wfres、wfbin、wiord、wjdraw | 両 | MAIN の TRACK の Fourier 解析で、FFS から使えない (gs も SIGSEGV)。チューンの抽出は [`pysad/naff.py`](../pysad/naff.py) (v2.1.0) |
 | 光子 (tphrec) の SOL 領域内の要素・COORD・TCAVI・MAP のあるラティス | 両 | BEND・QUAD・MULT・SEXT・OCT・磁場つきドリフト・BEAMBEAM + BEND は対応。SOL 領域内は記録しない |
 | TrackParticles の F1 (`tsteer`・`tmulti`) | 両 | ANGLE=0 の BEND・MULT。Emittance[]・EMIT・CALC は実装済み |
 | CALC (4 次元) の RADTAPER | 両 | K64 の qtwiss にテーパーの式が無い (実装しない) |

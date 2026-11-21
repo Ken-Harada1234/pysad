@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `bbstrhl.f` (beambeam, bbinit)、`bbtool.f` (cerrf, gauinv)、`matrix.f` (包絡行列) の直訳。`pysad/beambeam.py`。SADHelp に BEAMBEAM の記述はなく、根拠はソースだけである。
+K64 の `bbstrhl.f` (beambeam, bbinit)、`bbtool.f` (cerrf, gauinv)、`matrix.f` (包絡行列) の直訳。[`pysad/beambeam.py`](../pysad/beambeam.py)。SADHelp に BEAMBEAM の記述はなく、根拠はソースだけである。
 
 ## 1. 使い方
 
@@ -43,7 +43,7 @@ BEAMBEAM BB = (BX=0.5 BY=0.01 EMIX=1e-8 EMIY=1e-10 SIGZ=0.005 DP=1e-3 SLICE=5 NP
 
 台本は b1..b12 の 12 本。`TrackParticles[{1, ...}, 10, 1, 5]` で**全周を 5 周** (200 粒子) 追跡して gs と比べる。(`TrackParticles[..., 5, 1]` の 5 は終点の要素番号で、周回数ではない。最初に取った比較はこの誤りで BB を 1 回通るだけだった。全周・複数周で取り直し、同じ結果を得た。)
 
-`pysad/tests/test_beambeam.py` (24 本) の内訳:
+[`pysad/tests/test_beambeam.py`](../pysad/tests/test_beambeam.py) (24 本) の内訳:
 
 - 相互作用 (b1〜b12): 水平に広い / 垂直に広い / 丸い、SLICE=1,3,4,5、交差角、軌道オフセット、分散と AZ、振幅が大きい場合 (cerrf の漸近の枝)、x=y=0 の粒子 (丸いビーム) は相対 0〜1e-9 で一致。
 - 傾き (b6, b9: R3 R4 で x-y 結合) は k64 モードでは K64 の癖 (B34) まで再現: 座標がほぼ 0 (1e-14 程度) に潰れる場合も相対 1e-6 で一致 (v2 モードは回転を直す。§4)。
@@ -60,7 +60,7 @@ BEAMBEAM BB = (BX=0.5 BY=0.01 EMIX=1e-8 EMIY=1e-10 SIGZ=0.005 DP=1e-3 SLICE=5 NP
 
 ## 4. K64 の癖と、見つけた pysad の差
 
-- **傾き回転** (B34): `sint=xangle(5)` (傾き角そのもの)、`cost=xangle(6)` (sin)。bbinit は (6)=sin、(7)=cos を書くので、ずれている。強ビームに x-y 結合があると、回転が直交でなくなり粒子の座標が潰れる。**k64 モードはこれを再現し、v2 モードは (cos t, sin t) の正しい回転にする**。強ビームに x-y 結合 (R1..R4 か R13 など) があるときだけ結果が変わる。根拠: 回転に対する共変性 (包絡を t 回した強ビームの蹴り = 粒子を −t 回し、回していない包絡で蹴り、+t 回す) が t = 0.3 で 1e-9 (蹴りに対する相対)。試験 `test_v2_C_beambeam.py` (2 件)。gs との比較は無い (K64 は座標が潰れる)。確かめたのは t = 0.3 の 1 例で、実機の衝突点の規模では未確認。
+- **傾き回転** (B34): `sint=xangle(5)` (傾き角そのもの)、`cost=xangle(6)` (sin)。bbinit は (6)=sin、(7)=cos を書くので、ずれている。強ビームに x-y 結合があると、回転が直交でなくなり粒子の座標が潰れる。**k64 モードはこれを再現し、v2 モードは (cos t, sin t) の正しい回転にする**。強ビームに x-y 結合 (R1..R4 か R13 など) があるときだけ結果が変わる。根拠: 回転に対する共変性 (包絡を t 回した強ビームの蹴り = 粒子を −t 回し、回していない包絡で蹴り、+t 回す) が t = 0.3 で 1e-9 (蹴りに対する相対)。試験 [`test_v2_C_beambeam.py`](../pysad/tests/test_v2_C_beambeam.py) (2 件)。gs との比較は無い (K64 は座標が潰れる)。確かめたのは t = 0.3 の 1 例で、実機の衝突点の規模では未確認。
 - `cerrf` の `3.2` は単精度の定数。
 - 丸いビームで x=y=0 の粒子は 0/0 → NaN → px=+1e4。
 - スライスの境界 (`dsz`) はビームストラールングだけが使う。

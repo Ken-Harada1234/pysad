@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `temap.f` (追跡 `temap`、Emittance[] `temape`、Twiss `qemap`、幾何 `tgmap`)。`pysad/elements.py` の `Map`、`ffscmd._install_map_hooks`。
+K64 の `temap.f` (追跡 `temap`、Emittance[] `temape`、Twiss `qemap`、幾何 `tgmap`)。[`pysad/elements.py`](../pysad/elements.py) の `Map`、`ffscmd._install_map_hooks`。
 
 ```
 MAP P1 = (L=0.5);

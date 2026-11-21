@@ -21,7 +21,7 @@
 | UNTIL / REPEAT | `tffsa.f:255-290` (入力位置 `ipoint` を保存して巻き戻す) | 済み (最上位の FFS 文列) |
 | IF / ELSEIF / ELSE / ENDIF | `tfif.f` | 済み (同上) |
 | CHROMATICITY (CHRO) | `tfchro.f` (QUAD / SEXT / MULT ごとの薄肉近似) | 済み |
-| MAIN の TRACK (`TRACK USE= NPART= TURNS= NX= NY= NZ=`) | `track.f`、`tracka.f`、`ttinit.f` | 済み (`pysad/maintrack.py`。K64 の MAIN の TRACK は SIGSEGV で動かず、SADScript で同じ手順を書いた版と一致)。PHSPLOTS の描画は無視、FOURIE ON は未対応 (docs/history/work_main_track.md) |
+| MAIN の TRACK (`TRACK USE= NPART= TURNS= NX= NY= NZ=`) | `track.f`、`tracka.f`、`ttinit.f` | 済み ([`pysad/maintrack.py`](../pysad/maintrack.py)。K64 の MAIN の TRACK は SIGSEGV で動かず、SADScript で同じ手順を書いた版と一致)。PHSPLOTS の描画は無視、FOURIE ON は未対応 (docs/history/work_main_track.md) |
 | PRINT / REF / ORG / SHOW / STATUS / MATRIX / BEAMSIZE / VARY / RECOVER / REVERSE | `tffsa.f` の各分岐、`tfmat.f` (MATRIX) | 済み (docs/35) |
 | RENUMBER (要素番号の振り直し) | `tfinit.f` の tffsrenumber、tfinimult | 済み (`ffscmd._renumber_cmd`、`LINE["MULT"]` も。INDEX 属性が 2 以上なら番号をその値から振る。`LINE["INDEX",…]` も。gs と一致。両モード) |
 | GEO・DRAW | `tfgeo.f` | 警告して無視 (描画・表示系) |
@@ -77,7 +77,7 @@
 
 ### 2.1 SADScript 言語系の組み込み
 
-`pysad/sadlist.py` に MapThread, ScanThread, MapAt, Complement, DeleteCases, Cases, MatchQ, Extract, Intersection, Union, Position, Count, MemberQ, FreeQ, Select, Sort, Take/Drop, Insert/Delete/ReplacePart, Apply, Map, Fold, Nest, FixedPoint, Through ほかを実装済み (SAD 側は `tfinitn.f` の `itfunaloc` 登録と tfefun*.f / tfeeval.f のディスパッチ)。Total/Cross/Norm/Riffle/StringSplit は SAD にも無い (未評価のまま返る。gs で確認)。Sleep は no-op、Fourier / InverseFourier / BesselJ / BesselK は FFT / Bessel で実装。
+[`pysad/sadlist.py`](../pysad/sadlist.py) に MapThread, ScanThread, MapAt, Complement, DeleteCases, Cases, MatchQ, Extract, Intersection, Union, Position, Count, MemberQ, FreeQ, Select, Sort, Take/Drop, Insert/Delete/ReplacePart, Apply, Map, Fold, Nest, FixedPoint, Through ほかを実装済み (SAD 側は `tfinitn.f` の `itfunaloc` 登録と tfefun*.f / tfeeval.f のディスパッチ)。Total/Cross/Norm/Riffle/StringSplit は SAD にも無い (未評価のまま返る。gs で確認)。Sleep は no-op、Fourier / InverseFourier / BesselJ / BesselK は FFT / Bessel で実装。
 
 ### 2.2 パッケージ経由のものの注意
 
@@ -112,7 +112,7 @@ Tkinter.n・Plots.n・OpticsPlot.n などを SAD の .n のまま tkinter で動
 | 項目 | 理由 |
 |---|---|
 | MEASURE / TRCOD (`tracke`・`ttinit`・`ttstat`・`trcoda`・`trackb`) | **v2 モードで実装済み** (docs/03)。gs で TRCOD が SIGSEGV、MEASURE は何も出力せず参照が取れない (B42) ので、K64 のソースの読みと解析式で確認した。k64 モードは未対応。`TRCOD` の `DRAW` 内の粒子追跡 (`tdrwdt.f`) は K64 でも動かない死んだコード (B105) で実装しない |
-| `wjfit`・`wfres`・`wfbin`・`wiord`・`wjdraw` | MAIN の TRACK の Fourier 解析で、FFS から使えない。gs も SIGSEGV で参照が無い。チューンの抽出は NAFF (`pysad/naff.py`、v2.1.0) で代用 |
+| `wjfit`・`wfres`・`wfbin`・`wiord`・`wjdraw` | MAIN の TRACK の Fourier 解析で、FFS から使えない。gs も SIGSEGV で参照が無い。チューンの抽出は NAFF ([`pysad/naff.py`](../pysad/naff.py)、v2.1.0) で代用 |
 | SOL 領域内の MULT・BEND・CAVI と tsgeo / tdgeo の領域幾何 | **v2 モードで実装済み** (docs/44 §7a。ローレンツ力の数値積分との一致で、gs との比較ではない)。k64 モードは未対応: BEND は K64 の tsol.f どおりに実装したが gs が偏向をほぼ無視して合わず取り下げ (B69) |
 | `tspac.f` の追跡側 (空間電荷) | **v2 モードで実装済み** (SPAC・PSPAC・WSPAC。docs/08 §9.7)。k64 モードは入れない (K64 の SPAC は B89・B90・B92 の誤りを持つ)。光学・Emittance への空間電荷は v2.1.0 で実装 (追跡の WSPAC のビーム行列は空間電荷なしのまま) |
 | LOSSMAP | **実装済み** (両モード。gs の例と一致。docs/08 §9.7) |
@@ -133,5 +133,5 @@ Tkinter.n・Plots.n・OpticsPlot.n などを SAD の .n のまま tkinter で動
 ## 6. 未解決の差 (pysad と gs が合わない。原因は確定していない)
 
 (BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡 (相対 0.7) と L≠0 の CAVI の DX・DY (相対 1e-3) は v2.1.0 で解決: B113・CAVI の TENT・TEXIT)、SOL (BZ≠0) 内の四極 + RAD の追跡で現在の gs が保存済みの参照 (10-14) と別の値を返す (B68)、
-K3 が強くずれの大きい MULT リングで pysad の CALC (qcod) の閉軌道が gs と違う解になり Emittance が NaN (`local/wake/pm1.sad`)。詳細は `docs/history/work_unimpl.md`。
+K3 が強くずれの大きい MULT リングで pysad の CALC (qcod) の閉軌道が gs と違う解になり Emittance が NaN (`local/wake/pm1.sad`)。詳細は [`docs/history/work_unimpl.md`](history/work_unimpl.md)。
 なお、「RADINT と EMIT の Jx の 2.4% の差」と「`BUCKET HIGHT` と `BucketHeight` の差」は v2 の作業で原因が分かり解消した (K64 の Emittance[] の誤りと MomentumCompaction の誤り: B75・B77。v2 モードで直した。docs/07)。「EMIT のあとに `USE` すると gs は EMIT の効果が追跡に残る」差は v2.1.0 で解決した (K64 の仕様: `trf0` を USE で持ち越す)。

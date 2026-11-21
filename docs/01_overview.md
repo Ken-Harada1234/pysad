@@ -4,14 +4,14 @@
 
 > 場所: コード・文書は `<repo>\` (pysad 本体は `pysad\`、文書は `docs\`、旧文書は `<work-olddocs>\`)。
 > 対象の SAD は KEK 本流ではなく **K64 版** (https://github.com/KatsOide/SAD)。コマンド・要素キーワードの意味は CERN の SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html、1.4.0.0k64 2025-07-14) か、ローカルの `<SAD>\Documents\SADHelp.html` (1.4.4.2k64 2026-10-19、使っている WSL ビルドと同じ版) を先に見る。**KEK 公式サイト (acc-physics.kek.jp) は別系統の SAD なので参照しない** (ユーザー指示)。数値の最終根拠はローカルのソース `<SAD>\src` と `Packages\`。
-> 再開時はまず `docs/history/00_RESUME.md` (状態・残課題) を読む。
+> 再開時はまず [`docs/history/00_RESUME.md`](history/00_RESUME.md) (状態・残課題) を読む。
 
 ## 1. 目的と方針
 
 - 目的: SAD の光学計算・エミッタンス・マッチング・粒子追跡・DA を Python で再現し、SAD スクリプトを `run_sad.py` でそのまま動かす。
 - 方針: **再導出せず直訳**。SAD の Fortran の式・分割数・反復順序・乱数の引き方を写し、SAD の数値 (印字精度 1e-10〜1e-11) を再現することを一致の基準にする。SAD の癖 (バグに見えるものも) は再現する (→ `11_sad_quirks.md`)。
 - 進め方: SAD スクリプトを下書き → ユーザーが確認・改修 → WSL で実行して参照値 (`bench_level*.result`) → pysad で直訳して一致させる。長い計算は進捗表示 + 発散で停止。返答・コメントは日本語。
-- **v1 と v2**: v1 系は K64 に忠実な翻訳 (上の方針)。v2 系 (v2.0.0 から) は K64 のバグの修正・物理の誤りの修正・機能の追加を含み、互換モード `pysad/compat.py` で切り替える。既定は `v2` (修正した動作)。`PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` で v1 と同じ K64 (gs) の動作になる。**gs と数値を比べるときは k64 モード**にする (既存の試験と回帰は k64 で走る)。v2 の変更の一覧は [47_v2_changes.md](47_v2_changes.md)。この本文の「再導出せず直訳」「癖も再現」は k64 モードの方針で、v2 モードで変わった箇所は各文書の「v2 モード」の節に分けて書いた。
+- **v1 と v2**: v1 系は K64 に忠実な翻訳 (上の方針)。v2 系 (v2.0.0 から) は K64 のバグの修正・物理の誤りの修正・機能の追加を含み、互換モード [`pysad/compat.py`](../pysad/compat.py) で切り替える。既定は `v2` (修正した動作)。`PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` で v1 と同じ K64 (gs) の動作になる。**gs と数値を比べるときは k64 モード**にする (既存の試験と回帰は k64 で走る)。v2 の変更の一覧は [47_v2_changes.md](47_v2_changes.md)。この本文の「再導出せず直訳」「癖も再現」は k64 モードの方針で、v2 モードで変わった箇所は各文書の「v2 モード」の節に分けて書いた。
 - 対象外: EPICS、Python ブリッジ (SAD 側の PySad.c は非コンパイル)。`System[]` は既定で実行しない (環境変数 `PYSAD_ALLOW_SYSTEM=1` で許可。docs/04)。Tcl/Tk の GUI と描画 (`ListPlot`・`Plot`・`OpticsPlot` など) は、SAD 自身の `Packages/*.n` を pysad のインタプリタで解釈して tkinter に表示する方式で対応した ([22_gui_tclbridge.md](22_gui_tclbridge.md)、[37_plot_canvas.md](37_plot_canvas.md))。ただし見た目 (色・大きさ・フォント)・操作の動作は SAD と比べておらず、`Canvas3D*` は未対応。11/16 夜の確認: `ListPlot`・`Plot` のオプション 10 例で戻りの Graphics 式は gs と文字列で完全一致 (見た目ではなく式の比較。`Options[g]` は gs が全オプションを返し pysad は `{}`)。**差あり**: 最初の `Window[]` の親が、gs では Toplevel、pysad ではルート窓。`OpticsPlot` の text 項目数が gs と違う (FODO 24 セルで gs 69、pysad 74。Tk のフォントによる `RemoveOverlap` の差)。`w=Window[]`・`e=Entry[w]` は `Widget[…]` 値になり、`e[Insert]`・`e[Get]`・`e[Delete]` は gs と同じく働く (docs/22・41)。
 - 要素: DRIFT/BEND/QUAD/SEXT/OCT/DECA/DODECA/MULT (ANGLE≠0 を含む)/SOL/CAVI/TCAVI/UND/COORD/MAP/BEAMBEAM/MARK/MONI/APERT/INS を扱う。PHSROT は K64 で動作しない (行列が 0、B38) ため k64 モードでは追跡が NotImplementedError、v2 モードは意図された写像を実装した (docs/08 §9.7)。SPCH は K64 の tturn.f:521 の `case (icSPCH)` が PSPAC フラグのとき `tpspac` (粒子のメッシュによる空間電荷) を呼ぶ要素で、**v2 モードでは SPAC・PSPAC・WSPAC が `TrackParticles` に入る** (k64 モードは従来どおり入らない。docs/08 §9.7)。PROF は K64 のソースに現れず、parser が読むだけ。要素別の状況は §6 と各要素の文書 (23〜30)。
 
@@ -103,7 +103,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | fmapres.py | 周波数マップの D の大きい領域を、RDT・ADTS から予想した共鳴の領域と比べる (v2.3.0 S1。誤差の与え方・統計。docs/48 §3.5) | K64 にない追加 |
 | fmappred.py | 周波数マップの共鳴線の予想の作り直し (v2.3.0 S3。3 次・4 次の h と非共鳴の正規形の補正、線形の ADTS、振り子の島の幅、連続のスコア、信頼度。docs/49 §12) | K64 にない追加 |
 | rdt2nd.py・nform.py・rdttrack.py・bendnl.py・adtsdirect.py | 4 次の共鳴駆動項 (6 極の 2 次)・数値の正規形・追跡の 1 周の写像からの RDT の取り出し・偏向磁石の生成関数 (追跡の写像の 2 次のテイラー係数から)・追跡 + NAFF の ADTS (v2.3.0 R2〜R6。docs/49) | K64 にない追加 |
-| sxtopt.py | [試作] 6 極ファミリーの K2L の多項式モデルと SLSQP の最適化 (v2.3.0 R7。RDT・ADTS の解析式を k の線形・二次形式で組む。検証用。台本の関数なし。`example/ddba/v07_14/sextupole/`) | K64 にない追加 |
+| sxtopt.py | [試作] 6 極ファミリーの K2L の多項式モデルと SLSQP の最適化 (v2.3.0 R7。RDT・ADTS の解析式を k の線形・二次形式で組む。検証用。台本の関数なし。[`example/ddba/v07_14/sextupole/`](../example/ddba/v07_14/sextupole/)) | K64 にない追加 |
 | constants.py | 物理定数 (光速、電子の古典半径、電子・陽子の質量、Cγ、Cq など) | pysad の定数 |
 | nbcache.py | numba のキャッシュの無効化 (v2.1.0。`py -3.12 -m pysad.nbcache`。kernel を編集したら試験の前に 1 回走らせる。docs/12 §16.7) | — |
 | fitroot.py / miscfn.py / fileops.py | Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/33) | tffindroot.f, Fit.n, D.n, optimize.n, Matrix.n, FileSystem.n, shared.n |
@@ -125,7 +125,7 @@ MAIN 層 (toplvl.f)   要素定義 / LINE / 数値代入 / FFS, TRACK, EMIT の�
 | run_sad.py (<repo> 直下) | `py -3.12 run_sad.py lattice script …` = `gs` に複数ファイルを連結して渡すのと同じ | — |
 | **非推奨** ffs.py / matching.py / tracking.py / optics.py | 独自実装 (SAD 未照合。tracking.py は放射係数に疑い)。新規コードは使わない。`__init__.py` の export は旧 API のまま残っている | — |
 
-テスト: `pysad/tests/` (pytest 1907 件を収集 (2026-11-21、v2.3.0 の最終)。**1899 通過・8 skip・失敗 0** (docs/47 v2.3.0)。v2.1.0 の 11/18 は 1345 通過・8 skip (v2.0.0 の 11/17 は 937 通過・4 skip)。既存の試験と回帰は gs との比較なので k64 モードで走る (`conftest.py`)。v2 の試験は `test_v2_*.py` 73 本 (1081 件。v2.1.0 の追加は 412 件) で v2 を明示する。回帰 `run_regression.py` (`QUICK=1`) は 50 ベンチ FAIL 0。`--ignore` する 3 本 `test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py` は sys.exit で終わる旧式のスクリプト。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがあり (単独なら通る)、環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は `pysad/tests/scripts/` (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は `pysad/tests/OUTPUTS.md`。
+テスト: [`pysad/tests/`](../pysad/tests/) (pytest 1907 件を収集 (2026-11-21、v2.3.0 の最終)。**1899 通過・8 skip・失敗 0** (docs/47 v2.3.0)。v2.1.0 の 11/18 は 1345 通過・8 skip (v2.0.0 の 11/17 は 937 通過・4 skip)。既存の試験と回帰は gs との比較なので k64 モードで走る (`conftest.py`)。v2 の試験は `test_v2_*.py` 73 本 (1081 件。v2.1.0 の追加は 412 件) で v2 を明示する。回帰 `run_regression.py` (`QUICK=1`) は 50 ベンチ FAIL 0。`--ignore` する 3 本 [`test_bend_feeddown.py`](../pysad/tests/test_bend_feeddown.py)・[`test_coord.py`](../pysad/tests/test_coord.py)・[`test_sext_radiation.py`](../pysad/tests/test_sext_radiation.py) は sys.exit で終わる旧式のスクリプト。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがあり (単独なら通る)、環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/scripts/`](../pysad/tests/scripts/) (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は [`pysad/tests/OUTPUTS.md`](../pysad/tests/OUTPUTS.md)。
 ベンチ: `bench_level1〜31*.sad/.result` と `*_pysad.py/.result`、`run_regression.py` (50 ベンチ。QUICK=1 は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行、`QUICK=1` で短縮。11/16 に FAIL 0)。
 
 ## 4. docs/ の案内

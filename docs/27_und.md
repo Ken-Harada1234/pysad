@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `undulator.f` (K.Ohmi と E.Forest、KEK Report 92-14)。`pysad/und.py`。
+K64 の `undulator.f` (K.Ohmi と E.Forest、KEK Report 92-14)。[`pysad/und.py`](../pysad/und.py)。
 
 ```
 UND U1 = (L=1 KX=0.1 QY=0.2 POLE=10 SLICE=4 PHI=30);              ! 磁場なし (k64 と v2 の両方で書ける)
@@ -44,10 +44,10 @@ UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つ�
 
 ## 検証
 
-- k64 モード (gs との比較、`pysad/tests/test_und.py` 4 本): 追跡 (20 粒子、3 周) 相対 0、INS の Twiss と幾何 2e-10 以下、Emittance[] 1e-12 台。
-- v2 モード (`pysad/tests/test_v2_C_und.py` 9 本。gs は磁場を設定できないので比べていない。平面アンジュレータの解析式で確かめた): 軸上の軌道 (出口で x = x' = 0)、行路長 −(F0/kz)² L/4 (1e-6)、垂直の収束 k = F0²/2 (行列要素 5e-4)、KX≠0 の kx・ky (5e-3)、シンプレクティック性 1e-7、放射損失 (2/3) r_e γ³ (F0²/2) L (1e-4)。リング: Δνy = ∫βk ds/4π (1%)、ΔU0 (2e-3)、減衰率の和 = 2U0/E (1e-3)、量子励起は同じ ⟨1/ρ²⟩ の BEND の列との比が ⟨|1/ρ|³⟩ の比 (2%)。
-- v2 のスピン追跡 (`test_v2_C2_spin.py`): B = rot A の中の Thomas-BMT の積分と 2e-6 (1 T、1 GeV、POLE = 0.25、5、5.25、中点面の外 2〜3 mm)。
-- 例: `example/v2_C/C1_undulator.sad`。
+- k64 モード (gs との比較、[`pysad/tests/test_und.py`](../pysad/tests/test_und.py) 4 本): 追跡 (20 粒子、3 周) 相対 0、INS の Twiss と幾何 2e-10 以下、Emittance[] 1e-12 台。
+- v2 モード ([`pysad/tests/test_v2_C_und.py`](../pysad/tests/test_v2_C_und.py) 9 本。gs は磁場を設定できないので比べていない。平面アンジュレータの解析式で確かめた): 軸上の軌道 (出口で x = x' = 0)、行路長 −(F0/kz)² L/4 (1e-6)、垂直の収束 k = F0²/2 (行列要素 5e-4)、KX≠0 の kx・ky (5e-3)、シンプレクティック性 1e-7、放射損失 (2/3) r_e γ³ (F0²/2) L (1e-4)。リング: Δνy = ∫βk ds/4π (1%)、ΔU0 (2e-3)、減衰率の和 = 2U0/E (1e-3)、量子励起は同じ ⟨1/ρ²⟩ の BEND の列との比が ⟨|1/ρ|³⟩ の比 (2%)。
+- v2 のスピン追跡 ([`test_v2_C2_spin.py`](../pysad/tests/test_v2_C2_spin.py)): B = rot A の中の Thomas-BMT の積分と 2e-6 (1 T、1 GeV、POLE = 0.25、5、5.25、中点面の外 2〜3 mm)。
+- 例: [`example/v2_C/C1_undulator.sad`](../example/v2_C/C1_undulator.sad)。
 
 ## 使える範囲と条件 (v2)
 

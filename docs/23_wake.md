@@ -2,11 +2,11 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/work_wake.md`)
 
-対象: `pysad/wake.py` (K64 の `txwake.f` の直訳、`spsort` を含む)、`pysad/ffscmd.py` の `_wake_table` (`tffswake.f` の `tffssetupwake`)、
-`pysad/track6n.py` の `turn` / `TrackRun.set_wake` と CAVI の分割 (`k_cav_in` / `k_cav_mid` / `k_cav_out` / `cav_full`)、
-`pysad/track6n_ext.py` の `mult_full` (RF のある MULT、`tmultiacc`)、
-光学の wake: `pysad/wakeopt.py` (`tffswake.f` の直訳)、`pysad/ffscmd.py` の `initial_orbits` / `ini_optics`、`pysad/match6.py` の `_optics_ini`、
-試験 `pysad/tests/test_wake.py` (23 件)、`pysad/tests/test_wake_optics.py` (9 件) (2026-11-16 の収集数)。解説: docs/38_wake_guide.md。
+対象: [`pysad/wake.py`](../pysad/wake.py) (K64 の `txwake.f` の直訳、`spsort` を含む)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) の `_wake_table` (`tffswake.f` の `tffssetupwake`)、
+[`pysad/track6n.py`](../pysad/track6n.py) の `turn` / `TrackRun.set_wake` と CAVI の分割 (`k_cav_in` / `k_cav_mid` / `k_cav_out` / `cav_full`)、
+[`pysad/track6n_ext.py`](../pysad/track6n_ext.py) の `mult_full` (RF のある MULT、`tmultiacc`)、
+光学の wake: [`pysad/wakeopt.py`](../pysad/wakeopt.py) (`tffswake.f` の直訳)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) の `initial_orbits` / `ini_optics`、[`pysad/match6.py`](../pysad/match6.py) の `_optics_ini`、
+試験 [`pysad/tests/test_wake.py`](../pysad/tests/test_wake.py) (23 件)、[`pysad/tests/test_wake_optics.py`](../pysad/tests/test_wake_optics.py) (9 件) (2026-11-16 の収集数)。解説: docs/38_wake_guide.md。
 
 ## 1. 使い方 (SAD の台本そのまま)
 
@@ -63,7 +63,7 @@ pysad は `track6n_ext.mult_full` (ANGLE=0、F1・FRINGE なしの MULT。AUTOPH
 - **wake の重み (B84。K64 の誤り)**: `tcav.f`・`tmulti.f` の `fw=fw0*(wsn+ws(n-1)*.5d0)` は、空洞が 2 つ以上に分割されると wake の蹴りの合計が (1.5n − 0.5)/n 倍になる。**k64 モードはこれを再現し (1.25〜1.5 倍)、v2 モードは台形の重み fw0·(ws(n) + ws(n−1))/2 (合計 1) にする**。領域の外の空洞・RF つき MULT も。位置によらない表では、エネルギーの変化が空洞の電圧 (= 分割数) によらない: 20 MV (1 分割) と 200 MV (4 分割以上) で 5e-3 (`test_wake_weight_sum_is_one_in_v2_and_one_and_half_in_k64`)。分割が 1 のとき (薄い空洞) は両モードで同じ。
 - **領域内の CAVI・RF つき MULT の wake** (v2 モード): SOL 領域内の CAVI と VOLT≠0 の MULT で、tsol.f の ewak どおり tmultiacc の中で分割ごとに txwake を呼ぶ。縦の wake によるエネルギーの変化の合計が、領域の外の同じ空洞と同じ (bz → 0 で 1e-6、BZ = 1 T でも同じ)。横の蹴りの合計は 2% 以内 (分割して入るので位置の変化は少し違う)。wake が働くのは TRPT のとき (従来どおり)。横の蹴りを gs と比べてはいない。k64 モードは領域内の CAVI・MULT が未対応。
 - **AUTOPHI** (v2 モード): CAVI・RF つき MULT の `AUTOPHI=1` は、空洞の位相 PHI + DPHI を設計軌道がその空洞に着く時刻 (Twiss の DZ) を基準に測る (docs/44)。k64 モードは NotImplementedError。
-- **旧式の `WAKE` コマンド** (B66): v2 モードは tfwake.f の構文 `WAKE LONGITUDINAL|TRANSVERSE 要素 s1 w1 s2 w2 … ENDWAKE` を WakeFunction の表として登録する (CAVI だけ)。表は行をまたいで書ける (`ENDWAKE` か `;` が来るまで続く。1 行に何組でも、注釈 `!` 可、`ENDWAKE` の後の同じ行の続き (`ENDWAKE; CALC;`) も実行する。要素名はワイルドカード可)。同じ表を `WakeFunction[…] = …` で与えた追跡と同じ結果 (6 点・5 点の表で gs の参照値と 2e-9、400 点の表・2 台の CAVI で WakeFunction と 1e-12)。点数の上限は無い (400 点で確認。K64 の tfwake.f は約 8000 組まで)。値は数か式 (`1e9*2`)。使えない: 表の途中の `;` (エラー)、CAVI 以外の要素、k64 モード (WAKE は `WAKECOMMAND[]` のままで、文は行ごと)。`ENDWAKE` を書き忘れると次の `;` までを表として読んでエラーにする。エラーの文は `?Missing ENDWAKE.`・`?Missing value of wake.`・`?WAKE: QF は CAVI ではない`・`?Undefined element`・`?No wake data.` (エラーの後も台本は続く)。例 `example/v2_C/C2w_wake_table.sad`。試験 `test_v2_C_wakecmd.py`・`test_v2_C2_wakecmd.py`。
+- **旧式の `WAKE` コマンド** (B66): v2 モードは tfwake.f の構文 `WAKE LONGITUDINAL|TRANSVERSE 要素 s1 w1 s2 w2 … ENDWAKE` を WakeFunction の表として登録する (CAVI だけ)。表は行をまたいで書ける (`ENDWAKE` か `;` が来るまで続く。1 行に何組でも、注釈 `!` 可、`ENDWAKE` の後の同じ行の続き (`ENDWAKE; CALC;`) も実行する。要素名はワイルドカード可)。同じ表を `WakeFunction[…] = …` で与えた追跡と同じ結果 (6 点・5 点の表で gs の参照値と 2e-9、400 点の表・2 台の CAVI で WakeFunction と 1e-12)。点数の上限は無い (400 点で確認。K64 の tfwake.f は約 8000 組まで)。値は数か式 (`1e9*2`)。使えない: 表の途中の `;` (エラー)、CAVI 以外の要素、k64 モード (WAKE は `WAKECOMMAND[]` のままで、文は行ごと)。`ENDWAKE` を書き忘れると次の `;` までを表として読んでエラーにする。エラーの文は `?Missing ENDWAKE.`・`?Missing value of wake.`・`?WAKE: QF は CAVI ではない`・`?Undefined element`・`?No wake data.` (エラーの後も台本は続く)。例 [`example/v2_C/C2w_wake_table.sad`](../example/v2_C/C2w_wake_table.sad)。試験 [`test_v2_C_wakecmd.py`](../pysad/tests/test_v2_C_wakecmd.py)・[`test_v2_C2_wakecmd.py`](../pysad/tests/test_v2_C2_wakecmd.py)。
 
 ## 3. K64 の癖 (そのまま写した。gs で確認したもの)
 
@@ -104,7 +104,7 @@ SAD K64 (WSL の gs) と同じ台本を走らせて比べた。粒子 200〜400 
   2. 光学の wake で、縦と横の表の片方しかない要素。
   3. TRPT で、追跡の最初の `tapert` の時点で LOSSAMPL の外にいる粒子がある (wake・SOL と無関係。§8)。この場合の出力座標の差は **解消済み** (2026-11-16 夜): K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書き、`l_track` はセッション最初の TrackParticles では 0 (CALC をしても変わらない) なので、
      最初の `tapert` では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされたまま追跡が続き、後の `tapert` で落ちる。2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。
-     pysad は `TrackRun.l_track0`・`k_apert` の lcur==0 で再現する。gs (1 回目・2 回目の呼び出し) と直した SAD (LOSSAMPL=1e-4、3 粒子、2 周、NORAD、TRPT、15 値) と全桁一致 (`test_small_items.py` に 1 件)。
+     pysad は `TrackRun.l_track0`・`k_apert` の lcur==0 で再現する。gs (1 回目・2 回目の呼び出し) と直した SAD (LOSSAMPL=1e-4、3 粒子、2 周、NORAD、TRPT、15 値) と全桁一致 ([`test_small_items.py`](../pysad/tests/test_small_items.py) に 1 件)。
      元の gs は SIGSEGV で落ちるので、比べた基準は直した SAD。
 - **WAKE コマンドの旧式の入力 (`tfwake.f`)**: k64 モードでは移植しない。K64 の `tffsa.f:972` は `tfwake.f` を呼ばず `WAKECOMMAND[]` (`init.n` の AutoLoad。`Packages/WAKECOMMAND.n` は配布にない) を評価する。
   gs は fileopen のエラーを出して行の残りを捨てる。k64 モードの pysad も同じ経路で、エラー文の表示だけ未再現 (2026-11-16 に確認。SADHelp にない旧機能)。v2 モードは §2c のとおり表を読む。
@@ -155,7 +155,7 @@ WAKEOPT が OFF、または LWAKE・TWAKE が OFF、またはウェイクのあ�
 
 ### 検証 (光学)
 
-gs と同じ台本の CALC の出力を比べた (`test_wake_optics.py`): 表は文字列で完全一致、中心の軌道 (`Twiss["DX"..]`) は相対 2e-8 以内 (z は絶対 3e-14 以内)。
+gs と同じ台本の CALC の出力を比べた ([`test_wake_optics.py`](../pysad/tests/test_wake_optics.py)): 表は文字列で完全一致、中心の軌道 (`Twiss["DX"..]`) は相対 2e-8 以内 (z は絶対 3e-14 以内)。
 
 | ケース | 内容 |
 | --- | --- |

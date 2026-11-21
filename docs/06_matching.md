@@ -4,8 +4,8 @@
 
 対象ソース: `src/tffsmatch.f` (tffsmatch, tweigh, tfsolv, tgrad, tffsvlimit, tffsddf)、`src/tffscalc.f` (tffscalc, twfit)、
 `src/qdcell.f` (tdfun, tdfun1, tdlfun, trdfun, tfgetfitval, tffsfitfun, tffsqu)、`src/tffsa.f` (nfr, dp(i))、
-`src/tffsfreefix.f`、`src/tfsetv.f`、`src/tffs.f` (ffs_res, resle, res2r)、`src/tsolvg.f` (tsvd)。移植先は `pysad/match6.py` (Matcher)、
-`pysad/match6d.py` (解析微分)、`pysad/tsvd.py` と `pysad/ffscmd.py` (FFS コマンドからの接続)。
+`src/tffsfreefix.f`、`src/tfsetv.f`、`src/tffs.f` (ffs_res, resle, res2r)、`src/tsolvg.f` (tsvd)。移植先は [`pysad/match6.py`](../pysad/match6.py) (Matcher)、
+[`pysad/match6d.py`](../pysad/match6d.py) (解析微分)、[`pysad/tsvd.py`](../pysad/tsvd.py) と [`pysad/ffscmd.py`](../pysad/ffscmd.py) (FFS コマンドからの接続)。
 
 ## 1. 残差の定義 (tffscalc + tdfun + twfit)
 
@@ -94,11 +94,11 @@ INS (cell=False) でも解析微分 (`match6d.analytic_qu`) を使う。SAD の 
 - **目標値は任意** (`fit gx <値>`)。0 は**リングを閉じるための目標**で (`fit gx 0; fit gy 0; free <DRIFT の名前> L; go;` の形)、BT (輸送路) やセルでは任意の値を指定する。CHI1–3 の目標は度で書き、内部でラジアンにする (NX/NY/NZ は 2π 倍)。
   GX..CHI の条件は idp≠0 では評価しない (LENG・TR* も同じ)。重みは GX GY GZ が 1e-3·sqrt(max(νx,νy)/em/max(1,L))、CHI が 1e3 (1 節の表)。
 - **解析微分 `match6d.tdgeo_term`** (tdgeo.f の直訳): 変数が DRIFT の L、BEND の ANGLE (ROTATE 付きも)・L のときだけ。**幾何の条件だけの行**に使う。BEND の L は K64 が出射の向き `geo(:,3,k+1)` で近似する式のまま
-  (有限差分とは O(ANGLE²) 違う)。DRIFT の L と BEND の ANGLE は幾何の有限差分と 1e-5 以内で一致 (`test_tdgeo.py`)。
+  (有限差分とは O(ANGLE²) 違う)。DRIFT の L と BEND の ANGLE は幾何の有限差分と 1e-5 以内で一致 ([`test_tdgeo.py`](../pysad/tests/test_tdgeo.py))。
   **四極などの変数 (DX・DY。K64 は `qdtrans`・`tftmatu` を使う、未移植) と、Twiss の条件が同じ行にある列は中心差分のまま**。
 - 未確認: 不安定なリングの幾何の fit は gs が不安定の罰則を残差に入れず、pysad は入れるので結果が違う (比べていない)。COORD を含む区間の解析微分、SOL の幾何の fit も未確認。
 - **COORD を含むリングの FIT** (確認済み): COORD の対 (C1・C2、DX DY DZ CHI3 付き) を含むリングで NX・NY=0.2、QF K1・QD K1 を FREE にした fit (解析微分の経路) は、K1・チューンとも gs と全桁一致。**COORD のパラメータそのものを FIT 変数にする場合は未確認**のまま。
-- **フラグ UNIPOL・RELW の効果**: gs は UNIPOL で変数の符号を変えず (tffsmatch.f:669)、RELW で重みが変わり、FIT の結果が変わる。pysad は `ffscmd.matcher_` でフラグを `match6` の `bipol`・`absweit` につなぐ。QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit した 3 通りが gs と全桁一致: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499 (`test_item4.py` 3 件)。この 2 変数の小さな例だけの確認で、多数の変数・条件の組での比較はしていない。
+- **フラグ UNIPOL・RELW の効果**: gs は UNIPOL で変数の符号を変えず (tffsmatch.f:669)、RELW で重みが変わり、FIT の結果が変わる。pysad は `ffscmd.matcher_` でフラグを `match6` の `bipol`・`absweit` につなぐ。QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit した 3 通りが gs と全桁一致: 既定 K=−.0068645845/−.0057261776、UNIPOL K=.3289522375/−.3239879365、RELW K=−.0024047842/−.0107636499 ([`test_item4.py`](../pysad/tests/test_item4.py) 3 件)。この 2 変数の小さな例だけの確認で、多数の変数・条件の組での比較はしていない。
 - **DELCOR で OCT を対象に含める**: チューンと QF の DX が gs と 12 桁で一致 (OC 自体の DX は gs も pysad も 0 を返すので、OCT の効果そのものを見る強い比較ではない)。
 
 `FFS$NumericalDerivative=True` (または SOL を含むとき) は数値微分になり、pysad はこの経路を直訳している:
@@ -161,7 +161,7 @@ do9000:
 
 SAD の `tfsolv → tsolva → tsvd` は numpy の SVD (特異値 ≤ eps·最大を落とす) とは別物。2 重対角化の後、対角要素の最小値が `anorm*eps`
 (eps = TSTOL/fact = 1e-6) を超えれば **特異値を一つも落とさない** quick path、そうでなければ暗黙 QR で特異値を求めて滑らかに減衰 (`w=(s·v/anorm²)²`)。
-`pysad/tsvd.py` に直訳し `Matcher._tsolva` が使う (`PYSAD_TSVD_NUMPY=1` で numpy 版)。良条件の J (13a/13b/実ラティス) では numpy と一致し、
+[`pysad/tsvd.py`](../pysad/tsvd.py) に直訳し `Matcher._tsolva` が使う (`PYSAD_TSVD_NUMPY=1` で numpy 版)。良条件の J (13a/13b/実ラティス) では numpy と一致し、
 条件数 1e6 以上 (INS のフィット: 9 条件 × 11 変数、特異値 1.6e7〜1.5) で SAD と同じ 1 歩目になる。
 
 ### DESCEND (最急降下) とモード切替 (詳細は history/work_descend.md)
@@ -215,7 +215,7 @@ crate=0 (残差が全く動かない。不安定ラインで qu が 0 になる�
 | `values()` | | {"QF K1": 値} (SAD 単位: K1 は積分値) |
 
 内部: `_tffscalc(wcal)` (tffscalc+tdfun+twfit、戻りは {(id,idp): df·wiq}, `_Res`, rows)、`_optics_all(nfr)` (idp ループ)、
-`_tweigh`, `_vlimit`, `_tfsolv` → `_tsolva` (`pysad/tsvd.py`)、`_tgrad`, `_fmincube`、`_derivative` (match6d の解析微分、フォールバックは数値微分)、
+`_tweigh`, `_vlimit`, `_tfsolv` → `_tsolva` ([`pysad/tsvd.py`](../pysad/tsvd.py))、`_tgrad`, `_fmincube`、`_derivative` (match6d の解析微分、フォールバックは数値微分)、
 `go` (4 節の do9000/do200/do1082 を while で再現)。
 フックは属性 `fit_value(loc, fun, dp, goal, vnow[, loc1, vb])`、`fit_weight(loc, fun, dp, w)`、`fit_function()`。
 

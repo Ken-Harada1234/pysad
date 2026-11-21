@@ -83,7 +83,7 @@
 | B33 | TRPT で、最初の `tapert` の時点で LOSSAMPL の外にいる粒子があると SIGSEGV | tapert.f:184 (`idtypec(l_track)`、l_track=0) | 落ちる | 高 | 確定 | v2 で修正 (最初の tapert で落とす。k64 モードは再現: `TrackRun.l_track0`) |
 | B63 | SOL (BOUND≠0) の長さが周長に入らない (omega0・MomentumCompaction・空洞の位相・偏極時間に効く)。SOL に GEO=1 がないと S 座標が途切れて周長がさらに狂う | 周長の計算 (場所は未調査) | 周回周波数・運動量圧縮・偏極時間が SOL の長さの分だけずれる。GEO なしでは偏極時間が約半分、MomentumCompaction が約 100 倍 | 中 | 確定 (gs で確認: PLANAR + SOL で、SOL を除いた周長 45.6 のときと偏極時間が 15 桁一致)。意図か誤りかは未判定 | バグではないと判断 (SOL に L のキーワードは無い: SADHelp)。pysad は SOL の L を軌道・光学・S 座標・周長に入れない (gs と同じ。モードによらない: `test_sol_has_no_length`。以前の pysad は S 座標だけに入れていた)。GEO なしの S 座標の途切れは再現しない |
 | B64 | `tmulke` (CALC・Emittance[] の MULT) は m=0 の枝 (L=0 の薄いキックと端) で `bsir0` を更新せず、m≠0 の枝 (スライス) では `bsir0=merge(bsir0+imag(cx)/aln,0.d0,m == 1)` と書く。`merge` は m==1 のときだけ加算し、m≥2 では 0 に戻すので、意図 (全スライスの積算) と合わないように見える | tmulte.f:6-43 (tmulke) | 縦オフセットのある MULT の POL で bsi の更新が抜ける可能性 | 低 | 疑い (ソースの読みのみ。gs の試験リングでは効かず、差が出る例が無い) | v2 で修正 (ψ = Im Σ k_n z^(n+1)/(n+1)! を入口で足し出口で引く。四極は k x y。POL のときは分割を細かくする)。k64 モードは K64 のとおり |
-| B65 | RADLIGHT: `TrackParticles` の軌道 {t,x,y,z} に横方向の座標が入らない。tlinit が geo0 の軸 1・2 を設定せず (初期値 0)、位置は straight (dphi=0) の積み上げで BEND で向きが変わらず、BEND と曲げのある MULT の中は記録しない | tlinit.f (tlinit / tlstore / tlresult) | RadiationField の入力が進行方向の点だけになる。BEND を含む実リングでは意味のある場にならない (`example.oide.sad` は B を ANGLE=0 の STEER にして避けている) | 中 | 確定 (gs と差 0 で再現、`test_radlight.py`)。意図か誤りかは未判定。なお RadiationField 自体は gs が SIGSEGV (B49) | v2 で修正 (軌道に横の座標が入り、BEND は円弧、BEND の中も `RADLIGHTDIV` 点記録)。k64 モードは再現 |
+| B65 | RADLIGHT: `TrackParticles` の軌道 {t,x,y,z} に横方向の座標が入らない。tlinit が geo0 の軸 1・2 を設定せず (初期値 0)、位置は straight (dphi=0) の積み上げで BEND で向きが変わらず、BEND と曲げのある MULT の中は記録しない | tlinit.f (tlinit / tlstore / tlresult) | RadiationField の入力が進行方向の点だけになる。BEND を含む実リングでは意味のある場にならない (`example.oide.sad` は B を ANGLE=0 の STEER にして避けている) | 中 | 確定 (gs と差 0 で再現、[`test_radlight.py`](../pysad/tests/test_radlight.py))。意図か誤りかは未判定。なお RadiationField 自体は gs が SIGSEGV (B49) | v2 で修正 (軌道に横の座標が入り、BEND は円弧、BEND の中も `RADLIGHTDIV` 点記録)。k64 モードは再現 |
 | B66 | 旧式の `WAKE` コマンドは `tfwake.f` を呼ばず `WAKECOMMAND[]` (init.n の AutoLoad) を評価する。`Packages/WAKECOMMAND.n` は配布に無く、fileopen のエラーを出して行の残りを捨てる | tffsa.f:976 (docs の旧記述は 972)、init.n:696 | WAKE コマンドが使えない (tfwake.f は死んだコード) | 低 | 確定 (gs で再現) | v2 は旧式の `WAKE L|T 要素 s1 w1 … ENDWAKE` を WakeFunction の表として登録 (CAVI だけ。行をまたいで書ける)。k64 モードは従来どおり |
 | B67 | `MOMENTUM` の初期値が 30 GeV (`RsetGL('MOMENTUM',30.d9)`)。MOMENTUM を設定しないスクリプトの追跡・Emittance[] が 30 GeV で計算される | initb1.f:1698 | MOMENTUM の書き忘れに気づきにくい | 低 | 確定 (ソースと gs)。仕様の可能性が高く「癖」 (docs/11 A43) | 再現 (既定 30e9)。v2 は MOMENTUM を設定しないまま運動量を使う計算に入ると 1 度だけ警告 (値は変えない。k64 モードは警告なし) |
 | B68 | SOL (BZ≠0) 領域内の四極 + RAD の追跡で、現在の gs (2026-10-19 ビルド) が、保存した参照 (`bench_level9`、10-14 の gs) と別の値を返す (S R T1 P1 の x が -.0027867898 から -.0014539780)。NORAD は一致 | tsol 系 (ソースのどこかは未特定) | 同じ入力で gs のビルドにより RAD の追跡結果が変わる。現在の gs が RAD ON・BZ≠0 の領域内の四極の力を入れていない疑いが強い (local/wake/verify_log.md の bench_level9 の項: `SB D1 QD SE` が `SB D1 SE` と 8 桁一致。10-19 と 11-14 -O0 の 2 ビルドは同値で、最適化の差ではない) | 中 | 疑いが強い (gs 側。ソースの箇所は未特定) | pysad は 10-14 の参照・物理と一致。現在の gs とは合わない |
@@ -154,7 +154,7 @@
 | B133 | WSPAC ON の CALC・CALC6D は入口以外の Twiss が NaN になる (0.2 GeV のリングで PBUNCH = 1e4 でも `Horizontal/Vertical Unstable` と NaN) | qtwiss.f (qwspac)・qtwissfrac | WSPAC の光学の CALC が使えない (Emittance[]・EMIT は使える: B127) | 中 | 確定 (gs で再現。原因は未調査) | v2 は CALC6D と RFSW ON の CALC (4D) に空間電荷を入れる (6D の経路。Emittance[] のチューンと 2e-6、一次のラスレットと 0.15%)。K64 の `qwspac` の直訳ではないので gs との比較はできない。k64 モードは従来どおり空間電荷を入れない (gs が NaN) |
 | B134 | CALC の解析行列と `tbende` は、DISFRIN=1 でも Maxwell のフリンジを入れる (追跡の `tbendi` は DISFRIN に従う) | tbfrie.f・tbende.f | DISFRIN=1 の BEND の CALC と追跡が合わない | 低 | ソースの読み (gs での確認は記録に無い) | 直していない (要判断。k64・v2 とも CALC は DISFRIN に依らず、追跡は DISFRIN=1 で薄い写像のまま) |
 | B135 | 追跡 (track6: `tbshift`・`tent`) は、BEND (K1=0・K1≠0 の `tbshift`) と ANGLE=0 の BEND (挿入光源の極の `tsteer`) の座標の回転 (ROTATE) をスピンの系に掛けない (四極の `tsolrot` は回す)。スピンが回さない系の鉛直軸のまわりに歳差する | tbshift・tent (追跡のスピン) | ROTATE≠0 の BEND の POL の追跡。ROTATE = 90°・K0 = 0.064・L = 0.0875 m の BEND 1 台で、追跡のスピン回転行列は y のまわりの回転 (R[0,2] = −0.1479)、厳密な Thomas-BMT の積分と Emittance[] の srot は x のまわり (R[1,2] = +0.1479)。水平磁場の挿入光源 (ROTATE = 90°) のリングの追跡のスピン | 中 | 確定 (pysad の k64 = K64 の翻訳が厳密な Thomas-BMT の積分と 0.1 以上違い、Emittance[] は一致。gs の追跡のスピンで同じかは未確認で、K64 の翻訳からの推定) | v2 で修正 (`track6._spin_rot_cs` が座標と同じ回転をスピンに掛ける。厳密な積分と 1e-9)。k64 モードは K64 のまま |
-| B136 | 偏向磁石の本体で、鉛直方向の傾き py ≠ 0 の粒子のスピン回転が厳密な値と (2+a) θ py だけ違う。運動量の向きの磁場の歳差 (1+a) B∥ ds (B∥ = B·v̂) を入れない分 (1+a) θ py と、さらに θ py (フレームの回転と運動量の向きの外積の系の混在と推定。未確定)。K64・追跡・Emittance[] の 3 つとも同じ | tradke・tradk・tbend の本体 | 扇形 (E1=E2=0)・K1=0・L = 1.2 m・15°・0.5 GeV・py = 5e-3 で R[0,1] が厳密 −1.462e-3、追跡・Emittance[] −4.05e-3・−4.07e-3 (差 −2.58e-3 ≈ −(2+a) θ py)。D[z,py] の差は −(2+a)θ。n0 の傾き・SpinTune・脱偏極の D に効く。軸上・x・δ は 1e-12〜1e-7 で厳密に一致。Emittance[] の D と追跡の D が鉛直の軌道・分散が大きいリング (0.5 GeV・y 軌道 6 mm) で食い違う (追跡の δ キックへの応答 0.0963 に対し、Emittance[] の N の δ 列 0.0025) 原因の一部と推定 | 中 | 確定 (厳密な Thomas-BMT の積分 `example/v2_next/P1_bend_vertical_angle_spin.py`。原因の分解のうち θ py の項は推定) | **直していない** (要判断。直すには tradke・tradk・tbend の全ての要素の本体に B∥ を足し、フレームの系の扱いを揃える必要があり、B58・B64・B130 のスピンの結果が全部動く)。k64・v2 とも K64 のまま |
+| B136 | 偏向磁石の本体で、鉛直方向の傾き py ≠ 0 の粒子のスピン回転が厳密な値と (2+a) θ py だけ違う。運動量の向きの磁場の歳差 (1+a) B∥ ds (B∥ = B·v̂) を入れない分 (1+a) θ py と、さらに θ py (フレームの回転と運動量の向きの外積の系の混在と推定。未確定)。K64・追跡・Emittance[] の 3 つとも同じ | tradke・tradk・tbend の本体 | 扇形 (E1=E2=0)・K1=0・L = 1.2 m・15°・0.5 GeV・py = 5e-3 で R[0,1] が厳密 −1.462e-3、追跡・Emittance[] −4.05e-3・−4.07e-3 (差 −2.58e-3 ≈ −(2+a) θ py)。D[z,py] の差は −(2+a)θ。n0 の傾き・SpinTune・脱偏極の D に効く。軸上・x・δ は 1e-12〜1e-7 で厳密に一致。Emittance[] の D と追跡の D が鉛直の軌道・分散が大きいリング (0.5 GeV・y 軌道 6 mm) で食い違う (追跡の δ キックへの応答 0.0963 に対し、Emittance[] の N の δ 列 0.0025) 原因の一部と推定 | 中 | 確定 (厳密な Thomas-BMT の積分 [`example/v2_next/P1_bend_vertical_angle_spin.py`](../example/v2_next/P1_bend_vertical_angle_spin.py)。原因の分解のうち θ py の項は推定) | **直していない** (要判断。直すには tradke・tradk・tbend の全ての要素の本体に B∥ を足し、フレームの系の扱いを揃える必要があり、B58・B64・B130 のスピンの結果が全部動く)。k64・v2 とも K64 のまま |
 | B137 | 追跡の K1=0 の BEND のスピン軌道結合 D が、放射・スピンの刻みに強く依存する (A2 の「K1=0 の BEND の追跡は分割が粗い」の延長) | tbend + tradk | 同じ BEND の D の行 0 の y・py 列が、刻みなし −0.075・0.054、0.05 m の刻み −0.032・0.099 (0.005 m まで収束)、Emittance[] −0.094・0.068。収束値は厳密な積分に近い (B135 を除く) | 低 | 確定 (刻みの収束と厳密な積分) | 直していない (K64 の分割の粗さ。B136 と合わせて要判断)。P の脱偏極率の部分の 2〜3% の残差の原因の一つ |
 | B138 | `tradke` の微分 (`irad > 6` の節) に 4 点の誤り・近似がある: (1) 区間の始点の座標に関する微分 `tr1` を、終点の座標に関する微分を要する D・B の更新 `D += tr1·(T + D)`・`B = (I+tr1) B (I+tr1)ᵀ` にそのまま使う (正しくは tr1 ← tr1·tr2⁻¹)、(2) `dddpx` の 2 項目が ddpx·ddg (正しくは dpx·ddg)、(3) `tr1(1,:)` の x' = x + ddpx·c1 の c1 = al1/(3 pr) の微分が無い、(4) `dxpa = (xp·dxp)/xpa/pr²` (正しくは /xpa/pr⁴) で δ≠0 の軌道に 2δ の相対誤差 | photons.f (tradke) | 放射の減衰行列 D・拡散行列 B (Emittance[]・EMIT の減衰率・エミッタンス・チューンシフト) が区間が粗いとき 1e-3 程度ずれる。RADCOD の 1 周の解析 T + D と写像の数値微分 (4 次の中心差分) の差: BEND 1 台 5.1e-7、QF 1 台 1.1e-8、1 セル 1.9e-6、24 セルのリング 4.3e-6 (3 GeV の FODO)。WSPAC の Emittance[] のチューンシフトで 2e-3 (相対) | 低 | 確定 (写像の 4 次の中心差分と v2 が 1e-10 以内) | v2 で修正 (`perfkern.tradke_db` の `exactd`)。BEND 1 台 1.7e-10、QF 1 台 6.7e-16、1 セル 6.4e-9、24 セル 1.9e-7。k64 モードは K64 のまま。残る 6.4e-9・1.9e-7 は (z, δ) 成分だけで B139 による |
 | B139 | BEND の T[z, δ] (`tbendebody0` の (5,6)) の近似: px² に比例する項 | tbendebody0 | 1 周で 1e-7 (大きなリング A で 2e-5 とされた RADCOD の T の誤差の主因。RADCOD OFF の T だけでも 1.2e-7)。px = −5.9e-5 で 6.5e-9、px = 1e-5 で 1.5e-10 | 低 | 確定 (写像の数値微分との差) | 直していない (K64 の仕様の近似。v2 で直す案は要判断)。k64・v2 とも同じ |
@@ -187,17 +187,17 @@
 ### B01 MAIN の TRACK が SIGSEGV で落ちる
 
 - 現象: MAIN 部で `EMIT USE=RING;` に続けて `TRACK USE=RING NPART=5 TURNS=10;` を実行すると、フラグ一覧 (RFSW RADCOD RAD ... SMEAR) を表示した後に `Program received signal SIGSEGV`。`NPART=1 TURNS=-1` でも同じ。`NX=(1,2)` のリストは `*** $TRACK *** list is not allowed` で拒否される (`NX=1` と書けば通るが、その後同じ場所で落ちる)。MAIN の `EMIT` は `Use EMIT_TANCE or Emittance[] within FFS.` と言うだけで何も計算しない。
-- 再現: `docs/history/work_main_track.md` §3 の最小スクリプト。
+- 再現: [`docs/history/work_main_track.md`](history/work_main_track.md) §3 の最小スクリプト。
 - 期待される動作: 古典 SAD と同様に `EMIT` が正規モード行列 r・閉軌道・EMITX/Y/Z・SIGE を作り、`TRACK` が追跡する。少なくとも未設定のとき SIGSEGV ではなくエラーメッセージを出す。`NX=(1,2)` の形式も古典 SAD では許される。
 - 原因: バックトレースを `nm` (obj/AMD64-Linux5/sad1.exe) で引くと `toplvl_ → doact_ → acttra_ → track_ → tracka_ → __trackdlib_MOD_tinip` (+0x1db)。`tinip` の `tmap(xa,-1)` が `use temw, only: rn=>r` の行列を使うが、MAIN の EMIT が r を作らないので未設定。FFS 内で `EMIT` すれば r はできるが、FFS から MAIN に戻って `TRACK` を実行する経路がない (`END;` の後は SADScript の対話、`GetMAIN["file"]` はファイルを SADScript として読む)。
 - 影響: MAIN の `TRACK` の参照出力が K64 では取れない。
 - 重要度: 高 (落ちる)。
-- pysad での扱い: ActTra.f → track.f → tracka.f を直訳して `pysad/maintrack.py` に実装 (EMIT は古典の意味)。参照は「同じ手順を SADScript で書き追跡だけ TrackParticles に任せた版」(`bench_level27a.sad`, `27b`) との照合で代用 (座標 ≤5e-11)。
+- pysad での扱い: ActTra.f → track.f → tracka.f を直訳して [`pysad/maintrack.py`](../pysad/maintrack.py) に実装 (EMIT は古典の意味)。参照は「同じ手順を SADScript で書き追跡だけ TrackParticles に任せた版」(`bench_level27a.sad`, `27b`) との照合で代用 (座標 ≤5e-11)。
 
 ### B02 ANGLE=0 かつ K1≠0 かつ K0≠0 の BEND で FFS 初期化が SIGSEGV
 
 - 現象: `BEND` に `ANGLE=0` かつ `K1≠0` かつ `K0≠0` を同時に与えると、FFS の初期化 (`USE RING` 後の最初の CALC の前) で SIGSEGV (exit 139)。L の値、ROTATE の有無に依らない。K1 のみ (K0=0)、K0 のみ (K1=0) は動く。
-- 再現: `bench_level25e` の初版 (tmp25/bis3.py)。`docs/history/work_rotate.md` §4、`docs/history/work_bend_k0.md` §7。`BEND` に `ANGLE=0 K0=… K1=…` を同時に与えた LINE を `USE` する (最小スクリプトは未保存)。
+- 再現: `bench_level25e` の初版 (tmp25/bis3.py)。[`docs/history/work_rotate.md`](history/work_rotate.md) §4、[`docs/history/work_bend_k0.md`](history/work_bend_k0.md) §7。`BEND` に `ANGLE=0 K0=… K1=…` を同時に与えた LINE を `USE` する (最小スクリプトは未保存)。
 - 期待される動作: tbend.f:565-611 の分岐 (ANGLE=0 で K1=0 なら tsteer、K0=0 なら tquad、他は tmulti) に従って計算される。
 - 原因: 未調査 (初期化時に落ちるので、tmulti 系へ分岐する要素の設定に不備があると推測)。
 - 影響: この組み合わせの要素を含むラティスは読み込めない。参照値が取れない。
@@ -207,7 +207,7 @@
 ### B03 SetElement を含むスクリプトの出力をリダイレクトすると SIGSEGV
 
 - 現象: `SetElement[QF,QUAD,K1->0.3]` などを含むスクリプトを、標準出力をファイルにリダイレクトして実行すると SIGSEGV。pty 経由 (`script -qec`) で実行すると同じスクリプトが動く。
-- 再現: `bench_level24f.sad` (164 タグ)。`docs/history/work_item4.md` §F。
+- 再現: `bench_level24f.sad` (164 タグ)。[`docs/history/work_item4.md`](history/work_item4.md) §F。
 - 期待される動作: 出力先が端末かファイルかで挙動が変わらない。
 - 原因: 未調査 (出力先の種別に依存するので、端末判定を使う箇所の未初期化と推測)。
 - 影響: バッチ実行 (出力をファイルに取る使い方) で落ちる。
@@ -244,7 +244,7 @@
 - 原因: INTGRL.f が呼ぶ tbendebody は bendib モジュールの rhob/rho0 を使うが、INTGRL は設定しない (tbendiinit/tbendeinit を呼ばない)。
 - 影響: I1X, I2, I3, I4, I5, I9, I10 など。RADINT の値が BEND ごとの正しい値からずれる (docs/18 §11 の RADINT と Emittance[] の 13% 差の候補の 1 つ。因果は未検証)。
 - 重要度: 高。
-- pysad での扱い: **v2 (既定)**: その BEND 自身の L/ANGLE を使う (`test_v2_A_radint.py`)。**k64 モード (= v1)**: 再現 (`radint.default_stale_rho(els)`、`compute(stale_rho=)` で上書き可)。
+- pysad での扱い: **v2 (既定)**: その BEND 自身の L/ANGLE を使う ([`test_v2_A_radint.py`](../pysad/tests/test_v2_A_radint.py))。**k64 モード (= v1)**: 再現 (`radint.default_stale_rho(els)`、`compute(stale_rho=)` で上書き可)。
 
 ### B07 RADINT の6 極ブロックが直前の DL を使う
 
@@ -280,7 +280,7 @@
 ### B10 tdusrn が NaN の anp で 10000 回ループして乱数を消費する
 
 - 現象: 粒子が落ちる周は発散中の値が NaN/inf のまま tradkfn が光子の乱数を引く。anp=NaN (g=NaN など) だと tdusrn が npmax=10000 回ループして 20001 個の乱数を引く (anp<0 なら 1 個)。ftest で tdusrn(NaN) と tdusrn(+Inf) は 10000 回、tdusrn(−Inf) は 0 回を確認。
-- 再現: `bench_level16f`、`16l`、`20` (small)。`docs/history/work_loss_rng.md`、`history/work_loss_rng2.md`。
+- 再現: `bench_level16f`、`16l`、`20` (small)。[`docs/history/work_loss_rng.md`](history/work_loss_rng.md)、`history/work_loss_rng2.md`。
 - 期待される動作: 非有限の anp では光子を引かない (あるいは損失粒子には放射を呼ばない)。
 - 原因: drndsr.f :71-111 の tdusrn。`p .le. pn` と `pn .gt. cutoff` が NaN で偽になるので exit せず、npmax (drndsr.f:3、10000) まで回る。呼び出し側 (photons.f tradkfn) が損失判定前の粒子にも呼ぶ。
 - 影響: 損失粒子が出た周以降の乱数列 (seed) が大きくずれ、他の粒子の放射も変わる。DA 計算 (DynamicApertureSurvey) の再現性にも関わる。
@@ -492,7 +492,7 @@
 
 ### B63-B71 後から見つかった癖・疑い
 
-B63〜B70 は `docs/history/work_unimpl.md` と docs/11_sad_quirks.md (A42〜A48) に経緯がある。B71 は gs の実測 (下)。「確定」は gs の実測、「疑い」は原因・意図が未確認のもの。
+B63〜B70 は [`docs/history/work_unimpl.md`](history/work_unimpl.md) と docs/11_sad_quirks.md (A42〜A48) に経緯がある。B71 は gs の実測 (下)。「確定」は gs の実測、「疑い」は原因・意図が未確認のもの。
 
 - B63: 確かめた条件は、PLANAR のリングに SOL (BOUND≠0、L=0.3・0.6、BZ=0) を足した周長の比較 (偏極時間が 15 桁一致。docs/29・docs/44)。ほかの磁場・エネルギーでの確認はしていない。GEO のない SOL の S 座標の途切れは、pysad が GEO を見ないので再現しない (docs/29)。
 - B64: 疑いのまま。pysad は K64 と同じに写したが、gs と差の出る例が無く (試験のリングでは効かない)、この `merge` が意図かどうかと、結果に効くかは未確認。
@@ -517,7 +517,7 @@ B72〜B162 は表 (§0) に症状・場所・影響・重要度・確度・pysad
 
 - B111〜B134 (v2.1.0): `history/v2next_*.md` の各担当の「K64 の誤り・新しく見つけたもの」。B111・B112・B113 は A1 (項目 7・2・4)、B114・B115・B116 は A2、B117 は B1 (項目 2)、B118〜B122 は B2、B123・B124 は B3、B125 は B3 と D1、B126 は C (B107 の 2 つ目)、B127・B128・B132 は D1、B129 は D2、B130・B131 は E、B133・B134 は B1。B40・B60・B81・B83・B99・B106〜B109 の更新は C・D2・E・A2。
 - B135〜B159 (v2.2.0): `history/v2next_P1.md`〜`P5.md` の各担当の「K64 の誤りの候補」。B135・B136・B137 は P1、B138・B139 は P2、B140〜B145 は P3、B146〜B150 は P4、B151〜B159 は P5。B42・B108・B111・B112・B116・B128・B129 の更新は P5・P3・P2・P1。B128 は P2 が原因を特定した (SB の式の誤り) ので新しい番号は付けていない。P4 の「DAPWIDTH の窓を pysad が追っていなかった」は pysad 自身の不具合で、B 番号を付けていない (docs/47 (c))。
-- B160 (v2.3.0): `history/v23_T1.md` §3.2・§6 (K1≠0 の BEND のオフモメンタムの光学。gs・解析式・elegant との比較、`example/v2_3/T1_gs_bend_k1.py`)。U1 で K1 の暗黙の定義 (誤りではない) に再分類: `history/v23_U1.md`。
+- B160 (v2.3.0): `history/v23_T1.md` §3.2・§6 (K1≠0 の BEND のオフモメンタムの光学。gs・解析式・elegant との比較、[`example/v2_3/T1_gs_bend_k1.py`](../example/v2_3/T1_gs_bend_k1.py))。U1 で K1 の暗黙の定義 (誤りではない) に再分類: `history/v23_U1.md`。
 - B161 (v2.3.0): `history/v23_U1.md` §8 (CALC の `tbendecorr` の dk と kick の導関数の xr² の項の不整合。疑い)。
 - B162 (v2.3.0): `history/v23_T2.md` (Touschek の損失率の式 `touckf` の適用範囲。独立な式 `touschek_piwinski` との比較、elegant との比較、`example/v2_3/T2_*`)。
 

@@ -2,7 +2,7 @@
 
 > 最終更新: 2026-11-18 (v2.1.0 の後) (現状のスナップショット)。行番号は 2026-10 時点。
 
-照合先: `Packages/emit.n`, `src/tfemit.f`, `temit.f`, `tcod.f`, `tturne.f`, `tquade.f`, `tbende.f`, `tthine.f`, `tcave.f`, `tmulte.f`, `photons.f (tradke)`, `tffs.f (module temw)`, `tnorm.f`, `tdrife.f` と `pysad/emit6d.py`, `pysad/ffscmd.py (print_emit)`。
+照合先: `Packages/emit.n`, `src/tfemit.f`, `temit.f`, `tcod.f`, `tturne.f`, `tquade.f`, `tbende.f`, `tthine.f`, `tcave.f`, `tmulte.f`, `photons.f (tradke)`, `tffs.f (module temw)`, `tnorm.f`, `tdrife.f` と [`pysad/emit6d.py`](../pysad/emit6d.py), `pysad/ffscmd.py (print_emit)`。
 
 ## 1. Emittance[opt] の定義 (Packages/emit.n)
 
@@ -66,7 +66,7 @@ dee = anp·uc²·cuu (cuu=11/27)      ← beam の (px,px),(py,py),(δ,·) に�
 ### 2-3. tecalc
 
 - RFSW OFF なら `rx(6,1:5)=0, rx(6,6)=1`。
-- `teigenc` (= teigen.f: tbal の vx, thess の高速 Givens, tqr の二重シフト QR; pysad は `pysad/teigen.py` に直訳) → **tnorm**: 各モードのシンプレクティック積 s を 1 に正規化 (s<0 なら固有値を共役に)、z 成分最大のモードを 5,6 列、x 成分の大きい方を 1,2 列に並べ替え、`r(i,i+1)=0, r(i,i)>0` に回転。`r=tsymp(r)`, `ri=tinv6(r)`。
+- `teigenc` (= teigen.f: tbal の vx, thess の高速 Givens, tqr の二重シフト QR; pysad は [`pysad/teigen.py`](../pysad/teigen.py) に直訳) → **tnorm**: 各モードのシンプレクティック積 s を 1 に正規化 (s<0 なら固有値を共役に)、z 成分最大のモードを 5,6 列、x 成分の大きい方を 1,2 列に並べ替え、`r(i,i+1)=0, r(i,i)>0` に回転。`r=tsymp(r)`, `ri=tinv6(r)`。
 - `synchm = rfsw ∧ Im(log λz)≠0`。真: `alphap = −Im(cd6)|Im(cd6)|/(c·2π/ω0)/(dvcacc/pgev)`, `ωz = |Im cd6|ω0/2π`。偽: `alphap = −rx(5,6)/2π/c/p0·h0·ω0`, `ωz = sqrt|αp·2π·heff·Vc/pgev·cos φrf|·ω0/2π`。
 - `φrf = asin(U0/Vc)`, `bh = sqrt|Vc/(π|αp| heff pgev)·(2cos φrf − (π−2φrf)U0/Vc)|`。
 - `rd = ri·D·r`, 2×2 ブロックから `cd = ((rd_ii+rd_jj)/2 + i(rd_ij−rd_ji)/2)/λ`: Re = 減衰率、Im = チューンシフト、J = 4·Re cd/ΣRe cd。
@@ -110,7 +110,7 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 | `_tdrife0, _tquade, _tbende, 薄い多極, _tcave, _tmulte, _tsteee` | 同名 | 分割数の式は SAD と同一。`_tbendecorr/_tbendebody` は解析行列ごと直訳 |
 | `tturne(els, cod0, ph, trf0, rfsw, radcod)` | tturne1 | `_rf_effective` = tturneg、`_trf0_update` = tturne の update (mod は `math.fmod`) |
 | `_normal_form` | teigenc+tnorm | numpy eig → 共役対 → z 成分最大を 3 番目、x 成分で 1,2 → tnorm と同じ正規化・回転。RF なし (λz=1) は `r(:,5)=e5, r(:,6)=(η,0,1)` を直接作る |
-| `tecalc` | tecalc | btr の組み立て・`tsolva` (= `pysad/tsvd.py` の tsvd、特異値 1e-8) まで直訳 |
+| `tecalc` | tecalc | btr の組み立て・`tsolva` (= [`pysad/tsvd.py`](../pysad/tsvd.py) の tsvd、特異値 1e-8) まで直訳 |
 | `_tcod_radcod(els, ph, cod, rfsw)` | tcod.f (RADCOD ON) | **tcod の直訳**: RFSW ON は先に RFSW OFF で自分を呼び (`cod(5)=asin((U0 pgev−vcacc)/vceff)/wrfeff−trf0`)、本体は Newton (T−1 を `tsvd` 1e-8)、一周ごとに z の平均 dz を `codi(5)` から引いて `trf0 += dz/v0` (`sign(1,trf0)·mod(…)` で折り返し)、`r=Σ(dcod1/codw)²<1e-4` で収束、`fact` による減速 (fmin 1e-4)、`dpthre`。z と trf0 の最終値は反復の履歴で決まり、SAD と同じ分け方になる |
 | `closed_orbit6d(els, ph, rfsw, radcod, close_z)` | tcod | RFSW+RADCOD、RFSW OFF+RADCOD ON (`_tcod_radcod(rfsw=False)`)、および **RFSW ON + RADCOD OFF (空洞あり) も `_tcod_radcod`** (後者は `radcod=False`: 各反復の tturne が trf0 を更新し、収束判定に (dtrf0/trw)² が入り、z を trf0 に移さない。FSHIFT≠0 でも SAD と ≤1.2e-11、bench_level30b)。初期値は CALC の 4D 閉軌道、z=0, dp=0。それ以外 (RFSW OFF + RADCOD OFF) は 4D 閉軌道 (δ 固定) で一周し、z の戻りが 0 になる δ を**割線法**で決める (tcod の直訳ではない。cod だけ追う一周 + `_qcod_accepts_start`)。RFSW: 1 周目 (trf0=0) で U0・Vc・T(5,6) の符号 → trf0。`calc6d._closed_orbit` (Emittance[]/CALC6D) も共用 |
 | `emittance6d(lat, p_eV, rfsw, radcod, close_z)` | temit | `closed_orbit6d` → tturne (irad=12; tcod の最後の反復が完全な一周ならそれを使う) → `tecalc`。RFSW OFF でも tecalc は空洞の積算量から Vc・h・bh・ωz・σz・trf0 を出す (SAD と同じ) |
@@ -130,7 +130,7 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 
 ### POL のスピン (docs/36_spin_csr.md)
 
-`POL;` を付けた `Emittance[]`/`EMIT` は、偏極時間 (`PolarizationTime`)・スピンチューン・偏極ベクトル・スピン歳差行列・1 周の脱偏極ベクトル (表) を出す (`pysad/spin.py` の `tradke_spin`、`spnorm`、`srequpol`)。
+`POL;` を付けた `Emittance[]`/`EMIT` は、偏極時間 (`PolarizationTime`)・スピンチューン・偏極ベクトル・スピン歳差行列・1 周の脱偏極ベクトル (表) を出す ([`pysad/spin.py`](../pysad/spin.py) の `tradke_spin`、`spnorm`、`srequpol`)。
 放射の 1 ステップ (`tradke`) ごとに `srot` を回して積算し、`tchge` の回転 (ROTATE 付き偏向) でも回す。POL のとき BEND の分割数は `1+int(|φ|·h0·a/0.01)` 以上になる (K64 も同じ)。
 - 一致 (gs): 平面リングで偏極時間は全桁、スピンチューン 13 桁、偏極ベクトル 12 桁。縦ずれ・傾き・6 極のあるリングで 13/12/10 桁以上。POL 付きの Emittances・DampingRate は 11〜12 桁。エネルギー 3.0〜3.08 GeV の格子 (aγ=6.8〜6.99) で確認した範囲。
 - **MULT**: K1・K2・K3 とずれのある MULT のリングが gs と 1e-11 (`test_mult_ring_matches_gs`、L=0 の薄い MULT は `test_thin_mult_ring_spin_tune_matches_gs`)。`tmulke` の bsir0 の更新も入れた (この例では効かない)。
@@ -147,7 +147,7 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 
 K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の直訳。`Packages/emit.n` の `SynchroBetaEmittance` が `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` (`ffscmd.fn_synchrobeta`) を呼ぶ。
 運動量のずれ (2·ndims+1 点) ごとに `_tcod_radcod` で閉軌道、`tturne` で T・D・B を求め、(アクション J, 方位角モード m) の連立方程式を反復で解く。
-- gs との一致 (12 セルのリング + CAVI VOLT=2e6 HARM=64): nus=0.01・AzimuthalModes=9 で emitx 相対 6e-6 (conv は 2e-4)。nus=0.005〜0.02・AzimuthalModes=5 の 4 点で emitx 4e-7〜1e-5。emity は 1e-18 の雑音で符号も違う。試験は `test_synchrobeta.py` (許容 3e-5)。
+- gs との一致 (12 セルのリング + CAVI VOLT=2e6 HARM=64): nus=0.01・AzimuthalModes=9 で emitx 相対 6e-6 (conv は 2e-4)。nus=0.005〜0.02・AzimuthalModes=5 の 4 点で emitx 4e-7〜1e-5。emity は 1e-18 の雑音で符号も違う。試験は [`test_synchrobeta.py`](../pysad/tests/test_synchrobeta.py) (許容 3e-5)。
 - 差の原因は閉軌道の収束の履歴と、条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) とみているが、確認していない。
 - 2026-11-16 の確認: 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で emitx は gs と相対 1.4e-7〜1.4e-6 (3.7e-7、4.0e-7、1.4e-6、1.4e-7) で一致、emity は雑音 (gs −2.5e-19 など、pysad 1.3e-20 など)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。**v2.1.0 の確認 (C)**: 24 セルの平面 FODO + skew 四極 1 台 (3 GeV、RF 4 MV、6 極なし) の結合のあるリングでは gs は落ちず、k64 の pysad は gs と 7 桁以上一致した (εx 1.3603366e-6 対 1.3603365e-6、εy 4.7516654e-8 対 4.7516654e-8)。Emittance[] と、独立な 6x6 の平衡エミッタンス (自前の 1 周写像 + 放射の減衰 + 量子励起の拡散 + Lyapunov 方程式) とも一致 (ASTRID2 + skew 四極 ks = 0.05 で ε₁ 6e-5、ε₂ 1.3e-4)。SB と Emittance[] の差 (ASTRID2 +0.8%、PF +1.1%・+2.9%) は結合の有無に依らず、シンクロ・ベータ結合と色収差の分。SOL・強い結合で gs が落ちるかは未確認。
 - **大きなリング A (3 GeV、周長 603 m、νs = 0.0041、RF 1.4 MV) では使えない** (B128): gs も pysad k64 も 6.18e-9 (AzimuthalModes ≥ 3 で変わらず) を返すが、Emittance[] の 1.55e-10、独立な 6x6 の平衡 1.5173e-10、RAD + FLUC の 6 次元追跡 (60 粒子、4000 周) の 1.6e-10 と 40 倍違う。AzimuthalModes 12・20・30・32 以上で 3.19e-9・1.46e-9・8.50e-10・7.87e-10 と動き続け、νs の入力・エネルギー・6 極の強さにも依らない。原因は未特定 (K64 の式の限界か、gs・pysad が共通に持つ誤りか)。PF・ASTRID2・SP8 (大きなリング B、8 GeV) は Emittance[] と 0.5〜1%。**v2 は AzimuthalModes m と 1.5 倍の m の emitx が 20% 以上違うと警告を出す** (値は変えない。大きなリング A の m = 9 で 5.1e-9 対 2.5e-9)。使うときは AzimuthalModes を変えて収束を確認し、Emittance[] と比べる。`AzimuthalModes->1` は pysad が IndexError (gs は 8.6e-7 を返すが意味がない)、2 以上を使う。
@@ -174,7 +174,7 @@ K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の
 
 ### v2 モードで変わった放射・エミッタンス (RADINT・Jx・MomentumCompaction・EMITDIV ほか)
 
-k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2」の動作。試験 `test_v2_A_radint.py`・`test_v2_A_damping.py`・`test_v2_A_spin.py`・`test_v2_A_tchge.py`・`test_v2_A_track.py`・`test_v2_A_ffs.py` (計 67 件。詳細は `docs/history/v2_changes_A.md`)。根拠は解析式・独立な数値計算・保存則で、gs は根拠にしていない。条件は 3 GeV の FODO リング (24 セル 105.6 m / 91.2 m、12 セル 45.6 m / 62.4 m)、偏向磁石 L=1.2 m・15 度 (ρ=4.58 m)、RF 500 MHz。**大きなリング・挿入光源・強い結合では確かめていない。**
+k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2」の動作。試験 [`test_v2_A_radint.py`](../pysad/tests/test_v2_A_radint.py)・[`test_v2_A_damping.py`](../pysad/tests/test_v2_A_damping.py)・[`test_v2_A_spin.py`](../pysad/tests/test_v2_A_spin.py)・[`test_v2_A_tchge.py`](../pysad/tests/test_v2_A_tchge.py)・[`test_v2_A_track.py`](../pysad/tests/test_v2_A_track.py)・[`test_v2_A_ffs.py`](../pysad/tests/test_v2_A_ffs.py) (計 67 件。詳細は [`docs/history/v2_changes_A.md`](history/v2_changes_A.md))。根拠は解析式・独立な数値計算・保存則で、gs は根拠にしていない。条件は 3 GeV の FODO リング (24 セル 105.6 m / 91.2 m、12 セル 45.6 m / 62.4 m)、偏向磁石 L=1.2 m・15 度 (ρ=4.58 m)、RF 500 MHz。**大きなリング・挿入光源・強い結合では確かめていない。**
 
 **(a) RADINT (INTGRL.f)**
 
@@ -241,7 +241,7 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 
 ### v2.1.0 の追加 (F1・FRINGE・K0 の極・WSPAC・SynchroBeta の警告)
 
-試験 `test_v2_B1_optics.py`・`test_v2_E_steer.py`・`test_v2_D1_emit.py`・`test_v2_A2_radint.py`・`test_v2_C3_radint.py` ほか。記録 `history/v2next_{A1,A2,B1,C,D1,E}.md`。
+試験 [`test_v2_B1_optics.py`](../pysad/tests/test_v2_B1_optics.py)・[`test_v2_E_steer.py`](../pysad/tests/test_v2_E_steer.py)・[`test_v2_D1_emit.py`](../pysad/tests/test_v2_D1_emit.py)・[`test_v2_A2_radint.py`](../pysad/tests/test_v2_A2_radint.py)・[`test_v2_C3_radint.py`](../pysad/tests/test_v2_C3_radint.py) ほか。記録 `history/v2next_{A1,A2,B1,C,D1,E}.md`。
 
 | 機能 | モード | 使い方・使える範囲と条件 | 使えない・未確認 |
 |---|---|---|---|
@@ -265,7 +265,7 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 8. **解析ヤコビアンの落とし穴**:
    (a) `lattice._tbendebody0_mat` の z 行 (5,6) (`xsn=sn−phi0`) は 4D の CALC では使われないので、z 行の検証は emit 側の照合 (`tests/test_emit_jac.py`) に依る。
    (b) Newton 法のヤコビアンを使い回す (chord) と軌道が 1.7e-14 変わるだけで εx が 2e-8 変わる — 量子励起の分割数 (`nq`, `ndiv` の `int()`) の境界。
-   (c) `tecalc` の `tsolva` (= tsvd、特異値 1e-8 の打ち切り) を numpy の SVD で代用すると y 方向に εy~1e-21 の雑音が出る (SAD は ~1e-38) → `pysad/tsvd.py` (SAD の直訳) を使う。
+   (c) `tecalc` の `tsolva` (= tsvd、特異値 1e-8 の打ち切り) を numpy の SVD で代用すると y 方向に εy~1e-21 の雑音が出る (SAD は ~1e-38) → [`pysad/tsvd.py`](../pysad/tsvd.py) (SAD の直訳) を使う。
    emit の結果は軌道の連続関数ではない (1e-8 のレベル) ので、SAD との照合では軌道の差 1e-9 の影響を見分けられない場合がある (解析式で SAD と同じ分割になっている)。
 
 ## 6. 照合の要約
@@ -285,11 +285,11 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 | 12 | 試験用のラティス (3563 要素) | 表示桁 (相対 ≤2e-5) |
 | 16b/16e | 同、全桁 | εx, εz, σE, σz, νx, νy, νs, α_c, bh, trf0, U0 **≤1.3e-11** |
 | item6 (`bench_item6_emit.sad`) | 試験用のラティス, RFSW+**RADCOD**, `Emittance[Matrix->True]` の全桁 | εx 1.1e-12, εz 9e-12, σE 2e-14, σz 9e-12, α_c 2e-11, ν ≤9e-12, 減衰率 ≤8e-13, ビーム行列 ≤4e-11, U0・trf0 (dz) は全桁 |
-| item6 (`bench_item6_tiny.sad`) | 実ラティス 1 セルのリング (ν_s=2e-4): RFSW OFF / ON / RADCOD | 横方向・U0・trf0 ≤1.3e-11、縦方向 (RFSW ON) は 1e-9 (νs が小さく 1e4 倍に拡大)。テスト `test_emit_jac.py` |
+| item6 (`bench_item6_tiny.sad`) | 実ラティス 1 セルのリング (ν_s=2e-4): RFSW OFF / ON / RADCOD | 横方向・U0・trf0 ≤1.3e-11、縦方向 (RFSW ON) は 1e-9 (νs が小さく 1e4 倍に拡大)。テスト [`test_emit_jac.py`](../pysad/tests/test_emit_jac.py) |
 | 26a/26c/26d | EMIT 報告の全行 (実ラティスの RFSW × RADCOD 4 通り、FSHIFT=1e-6)、RFSW OFF + RADCOD ON の Emittance[] と CALC6D | 報告 148 行 + 37 行すべて一致 (雑音の桁を除く)、26d ≤2.2e-11 |
 | 26b | FRINGE=1,2,3 付き四極、ずれ・ロール付き四極・6 極 (小リング): CALC と Emittance[] | CALC ≤5e-13、Emittance[] ≤1.3e-9 (数値微分では 1.1e-5) |
 
 対応済み (別モジュール): INTRA (touschek.py: tintrb、TouschekTable/TouschekLifetime)、OneTurnInformation/Matrix 系 (emit_extra.py)、EMITXE/EMITYE/EMITZE の下限、CAVI の DX/DY/ROTATE。
 INTRA ON の EMIT 報告 (docs/11 A40): 零電流の報告 → Touschek の表 (運動量アクセプタンス 0.4〜24.2 % の寿命、Nx/Nz・Ny/Nz ごとの寿命/100s) → `Parameters with intrabeam scattering:` (PBUNCH/1e10、MINCOUP %、IBS 込みの EMITXC/EMITYC/EMITZC・SIGE・SIGZ)。PBUNCH の既定は 1e10 (A41)。`ffscmd._print_touschek`、`_print_emit_intra`。
-対応済み (4b 節): POL (calpol, spnorm, srequpol)、SOL (tsole)、SpinPrecessionMatrix の表、SynchroBetaEmittance (`pysad/synchrobeta.py`、gs と相対 1e-5)。
+対応済み (4b 節): POL (calpol, spnorm, srequpol)、SOL (tsole)、SpinPrecessionMatrix の表、SynchroBetaEmittance ([`pysad/synchrobeta.py`](../pysad/synchrobeta.py)、gs と相対 1e-5)。
 未対応: Region (部分区間)、InitialBeamMatrix、TRPT 分岐、`Polarization` (K64 が NaN)、SOL 領域内の MULT・BEND・CAVI。

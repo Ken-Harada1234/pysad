@@ -32,7 +32,7 @@ cell calc emit;
 
 - ラインは `RING` (定義が複数あるときは最後の定義が有効。ファイルによってはセル単独のリング `RINGN`・`RINGA`・`RINGL`・`RINGM` なども定義してあり、`USE RINGN;` で選べる)。
 - 例 (`FFS_cell_calc_emit_DDBA_28.sad`・`.gs.txt`・`.pysad.txt`・`.md`): 最終の版のラティスで `cell calc emit`。[`FFS_cell_calc_emit_DDBA_28.md`](FFS_cell_calc_emit_DDBA_28.md)。
-- 走らせ方: `py -3.12 example/tools/run_example.py example/ddba/FFS_cell_calc_emit_DDBA_28.sad` (gs は WSL)。全 28 本の pysad の実行は `example/tools/ddba/run_all.py` (元の台本のフォルダは環境変数 `DDBA_SRC`。ヘッダ付きの台本から走らせるには `lattice` を指定)。gs との比較は `example/tools/ddba/gs_cmp.py`。
+- 走らせ方: `py -3.12 example/tools/run_example.py example/ddba/FFS_cell_calc_emit_DDBA_28.sad` (gs は WSL)。全 28 本の pysad の実行は [`example/tools/ddba/run_all.py`](../tools/ddba/run_all.py) (元の台本のフォルダは環境変数 `DDBA_SRC`。ヘッダ付きの台本から走らせるには `lattice` を指定)。gs との比較は [`example/tools/ddba/gs_cmp.py`](../tools/ddba/gs_cmp.py)。
 - 台本の記号: セルは `NCELL`・`MCELL` (5 m 直線部のセル)・`LCELL` (10 m 直線部のセル)・`TCELL` (= MCELL + LCELL)。名前の末尾の `A` は等時性セル (isochronous cell。`MCELLA`・`LCELLA`・`TCELLA`)、`H` は半セル、`QM`・`QAL` などは四極。偏向磁石 `B1`・`B2` (機能結合型で K1 を持つ)、逆曲げ `Q3`・`Q4` (等時セルでは BEND、`ANGLE` が負)。六極 `S1`〜`S5` (`H` つきは半セル)、MARK `MKMC` (2 m 短直線部の中央)・`MKMS` (5 m 直線部の中央)・`MKLS` (10 m 直線部の中央)。
 
 ## 設計の段階と、段階ごとの例
@@ -272,7 +272,7 @@ pysad (k64 モード = gs と同じ) の `cell calc emit` (`RING`、設計値、
 | 27 | 0.001484 | 2.165 | 3.237e-05 | 3.557 | 3.243 | 2.17 | -67.7, -74.8 | 120 / 88 / 242 / 600 / 60 | 6.5 MV (6.5 MV)、h = 1250、500 MHz |
 | 28 | 0.001484 | 2.165 | 3.237e-05 | 3.557 | 3.243 | 2.17 | -67.7, -74.8 | 120 / 88 / 242 / 600 / 60 | 6.5 MV (6.5 MV)、h = 1250、500 MHz |
 
-「小角 BEND」は L > 0 で 0 < |ANGLE| ≤ 0.02 rad の BEND (等時セルの逆曲げ Q3・Q4 など)。「六極」は L > 0 で K2 ≠ 0 のもの。自然クロマティシティは、全六極の K2 を 0 にして ±0.1% の運動量差のチューンの差から求めた値 (`example/tools/ddba/ddba_lib.py` の `CHROM`)。値は `results_k64.json`・`results_v2.json`・`chrom_k64.json`。
+「小角 BEND」は L > 0 で 0 < |ANGLE| ≤ 0.02 rad の BEND (等時セルの逆曲げ Q3・Q4 など)。「六極」は L > 0 で K2 ≠ 0 のもの。自然クロマティシティは、全六極の K2 を 0 にして ±0.1% の運動量差のチューンの差から求めた値 ([`example/tools/ddba/ddba_lib.py`](../tools/ddba/ddba_lib.py) の `CHROM`)。値は `results_k64.json`・`results_v2.json`・`chrom_k64.json`。
 
 ## 設計メモの数値との比較 (要確認)
 
@@ -301,7 +301,7 @@ pysad (k64 モード = gs と同じ) の `cell calc emit` (`RING`、設計値、
 
 ## gs と pysad の一致状況
 
-`example/tools/ddba/gs_cmp.py` で、代表の 6 本 (最初 `DDBA_01`、`DDBA_06`、中間 `DDBA_15`・`DDBA_22`、最後 `DDBA_25`・`DDBA_28`) を gs と pysad (k64) で走らせて、`example/ddba/check/` に画面表示 (`DDBA_NN.gs.txt`・`.pysad.txt`) と比較表 (`gs_vs_pysad.json`) を置いた。gs は 1 本ずつ。
+[`example/tools/ddba/gs_cmp.py`](../tools/ddba/gs_cmp.py) で、代表の 6 本 (最初 `DDBA_01`、`DDBA_06`、中間 `DDBA_15`・`DDBA_22`、最後 `DDBA_25`・`DDBA_28`) を gs と pysad (k64) で走らせて、[`example/ddba/check/`](check/) に画面表示 (`DDBA_NN.gs.txt`・`.pysad.txt`) と比較表 (`gs_vs_pysad.json`) を置いた。gs は 1 本ずつ。
 
 | | 周長・チューン | εx | σE・αc・U0・ダンピング | 判定 |
 |---|---|---|---|---|

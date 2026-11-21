@@ -7,7 +7,7 @@
 K64 にない pysad の追加機能。1 つの位置の初期条件の格子から **周波数マップ** (チューンの拡散の地図) を作る機能と、位置 s ごとの **局所運動量アクセプタンス**
 (δ+(s)・δ−(s)) を求める機能。どちらも SAD の追跡 (`TrackParticles` と同じ損失判定の高速追跡、numba) の上に作り、SAD の台本から使える関数
 (`FrequencyMap[]`、`MomentumAcceptance[]`、`TouschekLifetimeLMA[]`) と Python の API の両方で使える。K64 の MAIN の TRACK には Fourier 解析 (FOURIER フラグ) があるが、
-FFS からは使えない (docs/history/work_main_track.md)。チューンの取り出しは `pysad/naff.py` (NAFF、v2.1.0) を使う。
+FFS からは使えない (docs/history/work_main_track.md)。チューンの取り出しは [`pysad/naff.py`](../pysad/naff.py) (NAFF、v2.1.0) を使う。
 
 ## 1. 何ができるか
 
@@ -81,7 +81,7 @@ resonance_check(*st.tunes_full(), order=4)                      # 作動点に�
   カラーバーは既定で D = −8 〜 −2。
 - v2.3.0 S2 の追加 (§3.6、§10): `frequency_map(..., scaling=True, warn=True)`。`r.D_half` (最初の nturn/2 周の D)・`r.slope` (周回数への依存の傾き)、`r.D_norm` (1024 周に換算した D = D + log2(nturn/1024))、
   `r.chaotic(thr=−5)` (周回数に依らないカオス的な点の判定 = D_norm > thr)、`r.warnings` ([(コード, 文)])。信頼できない条件では `FMapWarning` が出る。表の末尾に列 `D_half` と、警告の行 `# warning = ` が入る (古い表も読める)。
-  閉軌道が求まらない (誤差つきで線形に不安定) ときは `RuntimeError`。誤差つきの TrackSetup は `fmapres.apply_alignment_errors(st, seed, quad_dxy=…, streams='type')`、統計・フィードダウンの見積もりは `pysad/fmapcheck.py`。
+  閉軌道が求まらない (誤差つきで線形に不安定) ときは `RuntimeError`。誤差つきの TrackSetup は `fmapres.apply_alignment_errors(st, seed, quad_dxy=…, streams='type')`、統計・フィードダウンの見積もりは [`pysad/fmapcheck.py`](../pysad/fmapcheck.py)。
 
 ### 3.3 SAD の台本から
 
@@ -96,7 +96,7 @@ Print[Diffusion /. f];
 
 `FrequencyMap[位置, nturn, X->…, Y->…, DP->…, Window->1, Workers->1, Output->"file", Plot->"file.png", Order->4]`。X・Y・DP は数 (固定)、`{min, max, n}`、または値のリスト。
 戻りは `{X->…, Y->…, DP->…, NuX->…, NuY->…, NuX2->…, NuY2->…, Diffusion->…, LostTurn->…}` (点ごとのリスト。失われた点の Diffusion は −99)。追跡の条件: **既定は RFSW OFF・RAD OFF・FLUC OFF** (v2.3.0 S2。現在のフラグは使わない。FFS に入ると RFSW は ON なので、`NORFSW;` を書き忘れると D > −5 の割合が 0.03 から 0.57 になるため。現在のフラグを使うときは `UseFlags->True`)、LOSSAMPL・LOSSDZ は現在の値。警告は ` FrequencyMap: WARNING [コード] …` で出力される (§3.6)。
-例: `example/v2_3/Q1_script_commands.sad`。
+例: [`example/v2_3/Q1_script_commands.sad`](../example/v2_3/Q1_script_commands.sad)。
 
 ### 3.4 共鳴線との一致
 
@@ -120,7 +120,7 @@ Print[Diffusion /. f];
   の上に D の高い点が並ぶ。次数 4 以下の共鳴線から 0.003 以内の点 (507 点) とそれより遠い点 (304 点) で、D > −5 の割合は 0.195 / 0.082 (2.4 倍)。
 
 この統計 (近い/遠いの比 2 倍) は図の印象より弱い。格子のチューンの広がり (νx で 0.2〜0.3) のなかに次数 4 以下の線が密に通っていて、点の約 6 割が「近い」側に入るため。結論は「D の大きい領域が、
-ラティスの対称性が許す共鳴線 (差の共鳴、3 次、5 次) の上に載る」であり、個々の線が D を決める強さ (駆動項) の定量的な確認は `docs/49_resonance_terms_adts.md` (共鳴駆動項) の仕事。
+ラティスの対称性が許す共鳴線 (差の共鳴、3 次、5 次) の上に載る」であり、個々の線が D を決める強さ (駆動項) の定量的な確認は [`docs/49_resonance_terms_adts.md`](49_resonance_terms_adts.md) (共鳴駆動項) の仕事。
 
 ### 3.5 RDT・ADTS から予想する共鳴の領域 (`pysad/fmapres.py`、v2.3.0 S1)
 
@@ -138,11 +138,11 @@ st2, cnt = apply_alignment_errors(st, seed=1, quad_dxy=5e-5, quad_rot=2e-4, sext
 normal 6 極では調和は 3νx、νx、νx ± 2νy の 4 つだけ。**νx − νy などの 2 次の共鳴 (6 極の 2 次の項)、4 次以上の共鳴の強さの解析式はない**ので、予想できない (S1、§9.1)。
 共鳴線の判定 (`lines_distance`・`other_mn`)、図 (`plot_with_prediction`) も同じファイル。
 
-**S3 の作り直し (v2.3.0、`pysad/fmappred.py`、`ResonancePredictor.from_lattice(..., model='s3')`、導出・限界は docs/49 §12)**: 駆動項に 4 次の h (6 極の 2 次ほか、`rdt2nd.rdt4`) と非共鳴の 3 次の補正 (`rdt4_normal_form` の F4')、
+**S3 の作り直し (v2.3.0、[`pysad/fmappred.py`](../pysad/fmappred.py)、`ResonancePredictor.from_lattice(..., model='s3')`、導出・限界は docs/49 §12)**: 駆動項に 4 次の h (6 極の 2 次ほか、`rdt2nd.rdt4`) と非共鳴の 3 次の補正 (`rdt4_normal_form` の F4')、
 ν(J) は解析の線形の ADTS (R6)、幅は上の振り子の式 (J ごとの G0)。点ごとに連続のスコア log10(W/|Δ0|)、包絡に入る調和の数、信頼度 (0/1/2) と全体の警告を返す。**追跡に合わせた当てはめの項は足していない。**
 結果 (D > −5 を正例、保存済みの 41×31): FODO の 3νx は AUC 0.94 (振幅だけ 0.42)、ASTRID2 MPW は 0.79 (0.73)、**ASTRID2 は 0.68・KEK-LS は 0.59 (振幅だけ 0.78 より低い) で判別力がない**。
 予想した 2νx−2νy の島の中は測ったチューンが線に固着している (ASTRID2 0.93、外側の輪 0.21) が、島の中は規則的で D は小さく、D の大きい点は島の縁・重なり・次数 5 以上の共鳴にある。
-予想できる条件は小振幅・孤立した低次 (3・4 次) の共鳴。できない条件は 5 次以上、共鳴の重なり (島の幅が線の間隔と同程度)、大振幅 (J² の項が未実装)、δ ≠ 0。詳細は `example/v2_3/FMAP_summary.md` §13。
+予想できる条件は小振幅・孤立した低次 (3・4 次) の共鳴。できない条件は 5 次以上、共鳴の重なり (島の幅が線の間隔と同程度)、大振幅 (J² の項が未実装)、δ ≠ 0。詳細は [`example/v2_3/FMAP_summary.md`](../example/v2_3/FMAP_summary.md) §13。
 
 ### 3.6 信頼して使うための条件と警告 (`pysad/fmapcheck.py`、v2.3.0 S2)
 
@@ -242,13 +242,13 @@ dσ/dΩ = (4 r0²/k⁴) (4/sin⁴θ − 3/sin²θ) で、散乱で δ が a+ を
 で、リングの寿命は 1/τ = Σ_slice (al/C) /τ_inst (スライスは K64 の tintrb の分割)。平坦ビームの極限 (λ2 → 0) は Bruck・Piwinski の関数 D(ε) (記憶に基づく式) に一致する。
 `Emittance[]` (INTRA ON) は各スライスの静止系のビームを `ffs.touschek['rest']` に記録する。Python: `touschek_piwinski(ffs.touschek, a=0.006)`、`touschek_piwinski(ffs.touschek, ap=δ+ の配列, am=|δ−| の配列)`。
 台本: `TouschekLifetime[INF, INF, nz, Formula->"K64"|"Piwinski"]`、`TouschekLifetimeLMA[Formula->...]` (`PYSAD_COMPAT=k64` と `Formula->"K64"` は K64 の表。nx か ny が有限の `TouschekLifetime` と EMIT の報告は K64 の表だけ)。
-検証 (`example/v2_3/T2_*`、`docs/history/v23_T2.md`): 3 次元の一般の積分と実験室系の対のモンテカルロ (厳密な相対論の運動学) に 0.3% 以内、elegant (全要素を 8 分割した標本化) と −1.3〜+0.1%、K64 の表は −14〜+21%。
+検証 (`example/v2_3/T2_*`、[`docs/history/v23_T2.md`](history/v23_T2.md)): 3 次元の一般の積分と実験室系の対のモンテカルロ (厳密な相対論の運動学) に 0.3% 以内、elegant (全要素を 8 分割した標本化) と −1.3〜+0.1%、K64 の表は −14〜+21%。
 elegant の `touschekLifetime` は要素の出口だけを標本化するので、粗いリングでは寿命が +1〜+5% 長く出る。
 
 ### 4.5 信頼して使うための条件と警告 (`pysad/lma.py`・`pysad/lmabucket.py`、v2.3.0 L2)
 
 LMA の信頼性の基準: (1) 解析・追跡・elegant の比較が条件つきで揃っている、(2) 既知の不一致に原因がある、(3) 既定で安全な値を返す、(4) 使えない条件で警告を出す。条件は ASTRID2 (0.58 GeV、45.7 m、δ_rf = 1.618%、νs = 0.00152) と
-大きなリング A (`kek-ls_v03_12.lat`、3 GeV、603 m、δ_rf = 2.994%、νs = 0.00408) の ±10 mm (例の値)、RF・放射つき。詳細・数値は `docs/history/v23_L2.md`、例は `example/v2_3/L2_*`。
+大きなリング A (`kek-ls_v03_12.lat`、3 GeV、603 m、δ_rf = 2.994%、νs = 0.00408) の ±10 mm (例の値)、RF・放射つき。詳細・数値は [`docs/history/v23_L2.md`](history/v23_L2.md)、例は `example/v2_3/L2_*`。
 
 **(a) check_every の既定は 1 (要素ごとの判定)**。SAD の tapert (15 要素ごと = 0) は、アパーチャが限界の位置で δ を大きく見積もる (ASTRID2 の 25 位置で δ+ を最大 1.46 倍、δ− を 1.52 倍。位置 17: 1.048% 対 0.829%)。
 要素ごとの判定は elegant (要素ごとの MAXAMP) と δ+ 3.5e-5、δ− 7.0e-5 以内。5 要素ごとは 1 との差 2.6e-5 以下。**0 を明示するとアパーチャで決まる位置があれば警告する** (gs の `TrackParticles` と同じ判定で比べるときに使う)。
@@ -289,7 +289,7 @@ elegant の ISR あり (6 種) は ISR なしと 9e-5 以内。13120 周 (20 周
 
 ## 5. 検証
 
-`example/v2_3/` の例と `pysad/tests/test_v23_Q1_fmap_lma.py` (21 件)。使った gs は K64 の 2026-10-19 ビルド (WSL、timeout 1800 s、終了後に `ps` で sad1.exe の残りがないことを確かめた)。
+[`example/v2_3/`](../example/v2_3/) の例と [`pysad/tests/test_v23_Q1_fmap_lma.py`](../pysad/tests/test_v23_Q1_fmap_lma.py) (21 件)。使った gs は K64 の 2026-10-19 ビルド (WSL、timeout 1800 s、終了後に `ps` で sad1.exe の残りがないことを確かめた)。
 
 | 項目 | 内容 | 結果 |
 | --- | --- | --- |
@@ -298,18 +298,18 @@ elegant の ISR あり (6 種) は ISR なしと 9e-5 以内。13120 周 (20 周
 | 周波数マップの追跡 (gs) | ASTRID2、位置 2、NORFSW・NORAD、6 点 (1 mm から 18 mm)、gs で 1 周ずつ `TrackParticles` を回し、512 周の (x, px, y, py) を印刷。その座標列に NAFF をかけて D を出し、`frequency_map` と比べる | 座標の最大の差 2.8e-7 m (D = −2.9 の最も混沌とした点)、D は 4 桁一致 (最大の差 5.2e-7)、νx は 1e-13 の桁 |
 | 周期性 | ASTRID2 (6 セル、セルの長さ 7.6174 m) と大きなリング A (20 セル、30.156 m) で、1 セルの位置のなかの 3 点を、別の 3 つのセル (ASTRID2: 2・3・5 番目、大きなリング A: 3・9・15 番目) の同じ位置でも計算 | 最大の差 |Δδ| = 2.6e-5 (ASTRID2)、4.9e-5 (大きなリング A)。二分の幅 tol = 1e-4 以下 |
 | RF バケット | ASTRID2 (δ_rf = 1.6176%、νs = 0.00152)、大きなリング A (δ_rf = 2.994%、νs = 0.00408) | ASTRID2 (±10 mm): δ+ の最大 1.598% (δ_rf の 0.988 倍)、δ− の最小 −1.609% (0.995 倍)。大きなリング A (±10 mm): δ+ の最大 3.026% (1.011 倍)、δ− の最小 −3.021% (1.009 倍)。**δ+ ≲ δ_rf** (1.1% の超過は二分の幅・バケットの判定の余裕の範囲)。SAD の既定の判定 (check_every = 0)・アパーチャ 20 mm の別の計算では ASTRID2 の δ+ が δ_rf の 1.024 倍まで出た (バケット判定の余裕が (π + 2φs)/π で、バケットの端の粒子の滑りが 2 周期より遅いため) |
-| L2 (§4.5) | check_every・バケットとアパーチャの区別・窓・周回数・1 セルから全周・FLUC・誤差・MPW | `example/v2_3/L2_README.md`、`docs/history/v23_L2.md`。「RF バケット」の行の δ+ の超過の原因と、位置 2 の分類は §4.5 (b) |
+| L2 (§4.5) | check_every・バケットとアパーチャの区別・窓・周回数・1 セルから全周・FLUC・誤差・MPW | [`example/v2_3/L2_README.md`](../example/v2_3/L2_README.md)、[`docs/history/v23_L2.md`](history/v23_L2.md)。「RF バケット」の行の δ+ の超過の原因と、位置 2 の分類は §4.5 (b) |
 | 線形の限界 | ASTRID2 ±10 mm の分散の大きい位置 (10 位置): δ+ = 0.829%、δ− = −0.856%。水平の線形の見積もり (§4 の `linear_momentum_limit`) 0.865% | δ+ / δ_lin = 0.96 (check_every = 1)、1.21 (check_every = 0、SAD の既定の判定)。δ+ ≤ min(δ_rf, δ_lin) × 1.00 (ε の最大 −0.012) |
 | Touschek | INTRA ON、PBUNCH = 1e9 粒子/バンチ。ASTRID2: 局所の δ±(s) (1 セル、周期的に延ばす)、一様な δ = δ_rf、一様な δ = LMA の最小値 | 寿命 9502 s、19850 s、2918 s。大きなリング A: 26876 s、26045 s、26473 s (SIGE = 7.53e-4)。一様な受容の値は `TouschekLifetime[INF, INF, nz]` と同じ表。一様な a を渡すと表の損失率と 1e-10 で一致 (試験) |
-| 台本の関数 | `FrequencyMap[]`・`MomentumAcceptance[]`・`TouschekLifetimeLMA[]` (`example/v2_3/Q1_script_commands.sad`) | Python の API と同じ値 (試験 `test_script_commands`)。ASTRID2 の最初のセルの 6 位置: δ+ = 1.598%・0.829%、寿命 9926 s |
-| elegant との比較 (T1) | ASTRID2 (全周 199 位置の elegant `momentum_aperture`、pysad は 1 セル 25 位置、check_every = 1、±10 mm、1312 周)、kek-ls_v03_12.lat (elegant 14 位置・1500 周、pysad 52 位置・491 周)。RF・放射つき (ISR なし)、同じアパーチャ・同じ周回数 (ASTRID2)。Touschek は elegant の `touschekLifetime` (Piwinski の式) に pysad の IBS 込みのビームを渡す | **LMA: δ± の相対差 0.5% 以内** (ASTRID2: アパーチャが限界の δ = 0.83% も RF バケットで決まる 1.60% も、最大の差 7e-5。kek-ls: 全位置が RF バケット、0.35% 以内)。**Touschek (一様な δ、表の点): elegant / pysad = −4.3〜+2.4% (ASTRID2)、−3.4〜+1.2% (kek-ls)**。局所の LMA の寿命: ASTRID2 pysad 9502 s・elegant 9069 s (−4.6%)、kek-ls 26876 s・27117 s (+0.9%)。差は LMA でなく寿命の式 (pysad は SAD の `touschek_f` の当てはめと等方な運動量分散の近似) による。elegant の `momentum_aperture` はバケットから出ただけでは損失にしないので、周回数が足りないと δ+ が見つからない (kek-ls は 1500 周)。`example/v2_3/T1_README.md`、`docs/history/v23_T1.md`。**T2: 独立な式 (Piwinski 型、3 次元積分・厳密な運動学のモンテカルロで確認) では elegant (標本化を細かくしたとき) と −1.3〜+0.1%、K64 の式が不正確 (B162)。局所の LMA の寿命 (Piwinski 型): ASTRID2 9327 s、大きなリング A 26862 s** |
+| 台本の関数 | `FrequencyMap[]`・`MomentumAcceptance[]`・`TouschekLifetimeLMA[]` ([`example/v2_3/Q1_script_commands.sad`](../example/v2_3/Q1_script_commands.sad)) | Python の API と同じ値 (試験 `test_script_commands`)。ASTRID2 の最初のセルの 6 位置: δ+ = 1.598%・0.829%、寿命 9926 s |
+| elegant との比較 (T1) | ASTRID2 (全周 199 位置の elegant `momentum_aperture`、pysad は 1 セル 25 位置、check_every = 1、±10 mm、1312 周)、kek-ls_v03_12.lat (elegant 14 位置・1500 周、pysad 52 位置・491 周)。RF・放射つき (ISR なし)、同じアパーチャ・同じ周回数 (ASTRID2)。Touschek は elegant の `touschekLifetime` (Piwinski の式) に pysad の IBS 込みのビームを渡す | **LMA: δ± の相対差 0.5% 以内** (ASTRID2: アパーチャが限界の δ = 0.83% も RF バケットで決まる 1.60% も、最大の差 7e-5。kek-ls: 全位置が RF バケット、0.35% 以内)。**Touschek (一様な δ、表の点): elegant / pysad = −4.3〜+2.4% (ASTRID2)、−3.4〜+1.2% (kek-ls)**。局所の LMA の寿命: ASTRID2 pysad 9502 s・elegant 9069 s (−4.6%)、kek-ls 26876 s・27117 s (+0.9%)。差は LMA でなく寿命の式 (pysad は SAD の `touschek_f` の当てはめと等方な運動量分散の近似) による。elegant の `momentum_aperture` はバケットから出ただけでは損失にしないので、周回数が足りないと δ+ が見つからない (kek-ls は 1500 周)。[`example/v2_3/T1_README.md`](../example/v2_3/T1_README.md)、[`docs/history/v23_T1.md`](history/v23_T1.md)。**T2: 独立な式 (Piwinski 型、3 次元積分・厳密な運動学のモンテカルロで確認) では elegant (標本化を細かくしたとき) と −1.3〜+0.1%、K64 の式が不正確 (B162)。局所の LMA の寿命 (Piwinski 型): ASTRID2 9327 s、大きなリング A 26862 s** |
 
 計算時間 (2 並列 + 周波数マップ 1 本を同時に走らせた状態。CPU を使い切らない): ASTRID2 の LMA 25 位置 364 s (追跡した粒子 1075、1312 周)、大きなリング A の LMA 43 位置 580 s (1849 粒子、491 周、
 check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プロセス)。追跡の速さは 1 粒子・1 周あたり ASTRID2 (200 要素) で 0.25 ms (放射なし)〜0.5 ms (放射あり)、大きなリング A (3563 要素) で 0.6 ms (放射あり)。
 
 ## 6. 使った条件 (例)
 
-| 項目 | ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`) | 大きなリング A (`pysad/tests/kek-ls_v03_12.lat`) |
+| 項目 | ASTRID2 ([`example/astrid/lattice/ASTRID2_v01_01.sad`](../example/astrid/lattice/ASTRID2_v01_01.sad)) | 大きなリング A ([`pysad/tests/kek-ls_v03_12.lat`](../pysad/tests/kek-ls_v03_12.lat)) |
 | --- | --- | --- |
 | エネルギー、周長、要素数、セル | 0.58 GeV、45.704 m、199 要素 (+1)、6 セル (セルの長さ 7.617 m) | 3 GeV、603.12 m、3563 要素 (+1)、20 セル (30.156 m) |
 | RF | 50 kV、104.95 MHz、U0 = 6.17 keV、νs = 0.00152、δ_rf = 1.618%、同期位相 φs = 0.124 rad | 1.4 MV、HARM 992、U0 = 296 keV、νs = 0.00408、δ_rf = 2.994%、φs = 0.213 rad |
@@ -329,7 +329,7 @@ check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プ
   2 面のチューンが同じ値になり、D は小さい (規則的な運動) ことがある (ASTRID2 の例の νx − νy = 3 の線)。
 - LMA の損失の判定は、既定 (`check_every = 1`) では要素ごと。SAD の tapert のまま (`check_every = 0`) だと、アパーチャが限界のとき δ の限界を最大 1.5 倍大きく見積もる (§2、§4.5 (a)。警告が出る)。
   `check_every ≥ 1` は SAD の `TrackParticles` と判定が違う (gs と判定を比べるときは 0 にする)。`check_every = 1` と 5 の差は小さい (ASTRID2 で 2.6e-5 以下)。
-- **Touschek 寿命の式 (T1・T2)**: K64 の表の式 (`touckf`) は、同じビーム・同じ一様な δ で独立な式 (Piwinski 型) と −14〜+21% 違う (結合 1% で +0〜+6%、丸いビームで ±20%。原因は x-y 面の運動量の分布を平坦ビームの 1 次元の関数と tr(P) で近似していること。B162)。elegant の式は独立な式と −1.3〜+0.1% (elegant は要素の出口だけの標本化で、粗いリングで +1〜+5% 長く出る)。v2 の既定は Piwinski 型。限界: 受容 a が σδ の 10 倍以下では、バンチ内の δ の分布 (a − δ_old) を入れていない (4 つの式とも共通) ことが 5〜20% 効きうる (概算。`docs/history/v23_T2.md` §7)。K1≠0 の BEND の K1 は B' 一様ではなく (1 + hx)∂b/∂x 一様の定義 (B160・docs/11 A59。誤りではない) で、elegant の CSBEND には K2 = −hK1 を足して合わせた。ASTRID2 の LMA には影響が無かった。
+- **Touschek 寿命の式 (T1・T2)**: K64 の表の式 (`touckf`) は、同じビーム・同じ一様な δ で独立な式 (Piwinski 型) と −14〜+21% 違う (結合 1% で +0〜+6%、丸いビームで ±20%。原因は x-y 面の運動量の分布を平坦ビームの 1 次元の関数と tr(P) で近似していること。B162)。elegant の式は独立な式と −1.3〜+0.1% (elegant は要素の出口だけの標本化で、粗いリングで +1〜+5% 長く出る)。v2 の既定は Piwinski 型。限界: 受容 a が σδ の 10 倍以下では、バンチ内の δ の分布 (a − δ_old) を入れていない (4 つの式とも共通) ことが 5〜20% 効きうる (概算。[`docs/history/v23_T2.md`](history/v23_T2.md) §7)。K1≠0 の BEND の K1 は B' 一様ではなく (1 + hx)∂b/∂x 一様の定義 (B160・docs/11 A59。誤りではない) で、elegant の CSBEND には K2 = −hK1 を足して合わせた。ASTRID2 の LMA には影響が無かった。
 - バケット高さの付近の限界は、周回数に依存する。シンクロトロン振動 1.5 周期以上で 1% 以内、2 周期 (既定) で二分の幅以内、1 周期以下は 40〜60% 大きく出る (§4.5 (c)。`turncheck` と警告)。RF バケットの高さ δ_rf は `Emittance[]` の値 (解析式と 1e-6 で一致)。
   限界は δ_rf より 1〜2% 大きい (放射の減衰・α2・ベータトロン振幅。1 次元の写像と 6 次元の追跡が 1e-4 以内で一致、§4.5 (b))。RF の高調波・バケットの外の運動量の分布は見ていない。
 - 1 セルの結果を全周に延ばす (`touschek_lifetime_local` の period) のは、RF の位置の違い (空洞が 1 か所) と閉軌道の δ の違いを無視する。別のセルの同じ位置との差は、ASTRID2 (U0/E0 = 1e-5) で 5e-6〜2.6e-5、大きなリング A (U0/E0 = 1e-4) で 4.9e-5 以下 (§4.5 (e))。U0/E0 が tol (1e-4) より大きいリングは未確認。周期でない (誤差・挿入光源) ときは警告する。
@@ -344,19 +344,19 @@ check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プ
 
 | ファイル | 内容 |
 | --- | --- |
-| `pysad/trksetup.py` | `TrackSetup` (追跡の設定、閉軌道、`track`、バケット)、`find_periodicity`、`select_locations`、`lower_priority` |
-| `pysad/freqmap.py` | `frequency_map`、`FMapResult` (表・図・読み込み)、`resonance_lines`・`resonance_check`・`line_distance` |
-| `pysad/fmapcheck.py` | (S2) 誤差の統計・フィードダウンの見積もり (`errors_summary`・`feeddown_estimate`・`center_sextupoles`)、`map_stats`、周回数の換算 (`threshold_for_nturn`)、警告 (`check_setup`・`check_result`) |
-| `pysad/fmapres.py` | (S1) `ResonancePredictor` (RDT・ADTS から共鳴の領域を予想)、`coverage_stats`、`lines_distance`・`other_mn`、`apply_alignment_errors`、`plot_with_prediction` |
-| `pysad/lmabucket.py` | L2: `rf_bucket_analytic`・`longitudinal_params`・`bucket_limits_1d`・`bucket_limits_6d`・`aperture_limits_4d`・`limit_types` (RF バケットの限界とアパーチャの限界の区別、§4.5) |
-| `pysad/lma.py` | `momentum_acceptance`、`LMAResult`、`touschek_lifetime_local`、`acceptance_at`、`linear_momentum_limit` |
-| `pysad/q1cmd.py` | SAD の台本の関数 `FrequencyMap[]`・`MomentumAcceptance[]`・`TouschekLifetimeLMA[]` (`ffscmd.py` の入口 2 行) |
-| `pysad/tests/test_v23_Q1_fmap_lma.py`・`test_v23_S1_fmapres.py` | 試験 |
-| `example/v2_3/Q1_*`・`S1_*`・`FMAP_summary.md` | 例と出力 (索引は `example/v2_3/Q1_README.md`・`S1_README.md`)。台本ごとのまとめは `example/v2_3/FMAP_summary.md`。記録は `docs/history/v23_Q1.md`・`v23_S1.md` |
+| [`pysad/trksetup.py`](../pysad/trksetup.py) | `TrackSetup` (追跡の設定、閉軌道、`track`、バケット)、`find_periodicity`、`select_locations`、`lower_priority` |
+| [`pysad/freqmap.py`](../pysad/freqmap.py) | `frequency_map`、`FMapResult` (表・図・読み込み)、`resonance_lines`・`resonance_check`・`line_distance` |
+| [`pysad/fmapcheck.py`](../pysad/fmapcheck.py) | (S2) 誤差の統計・フィードダウンの見積もり (`errors_summary`・`feeddown_estimate`・`center_sextupoles`)、`map_stats`、周回数の換算 (`threshold_for_nturn`)、警告 (`check_setup`・`check_result`) |
+| [`pysad/fmapres.py`](../pysad/fmapres.py) | (S1) `ResonancePredictor` (RDT・ADTS から共鳴の領域を予想)、`coverage_stats`、`lines_distance`・`other_mn`、`apply_alignment_errors`、`plot_with_prediction` |
+| [`pysad/lmabucket.py`](../pysad/lmabucket.py) | L2: `rf_bucket_analytic`・`longitudinal_params`・`bucket_limits_1d`・`bucket_limits_6d`・`aperture_limits_4d`・`limit_types` (RF バケットの限界とアパーチャの限界の区別、§4.5) |
+| [`pysad/lma.py`](../pysad/lma.py) | `momentum_acceptance`、`LMAResult`、`touschek_lifetime_local`、`acceptance_at`、`linear_momentum_limit` |
+| [`pysad/q1cmd.py`](../pysad/q1cmd.py) | SAD の台本の関数 `FrequencyMap[]`・`MomentumAcceptance[]`・`TouschekLifetimeLMA[]` (`ffscmd.py` の入口 2 行) |
+| [`pysad/tests/test_v23_Q1_fmap_lma.py`](../pysad/tests/test_v23_Q1_fmap_lma.py)・[`test_v23_S1_fmapres.py`](../pysad/tests/test_v23_S1_fmapres.py) | 試験 |
+| `example/v2_3/Q1_*`・`S1_*`・`FMAP_summary.md` | 例と出力 (索引は [`example/v2_3/Q1_README.md`](../example/v2_3/Q1_README.md)・`S1_README.md`)。台本ごとのまとめは [`example/v2_3/FMAP_summary.md`](../example/v2_3/FMAP_summary.md)。記録は [`docs/history/v23_Q1.md`](history/v23_Q1.md)・`v23_S1.md` |
 
 ## 9. S1 の検証 (v2.3.0、2026-11-20)
 
-`example/v2_3/S1_*`、試験 `pysad/tests/test_v23_S1_fmapres.py`、台本ごとのまとめと全数値は `example/v2_3/FMAP_summary.md`、記録は `docs/history/v23_S1.md`。
+`example/v2_3/S1_*`、試験 [`pysad/tests/test_v23_S1_fmapres.py`](../pysad/tests/test_v23_S1_fmapres.py)、台本ごとのまとめと全数値は [`example/v2_3/FMAP_summary.md`](../example/v2_3/FMAP_summary.md)、記録は [`docs/history/v23_S1.md`](history/v23_S1.md)。
 条件は §6 と同じ (v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、41 × 31、1024 周、Hann 窓)。FODO は 24 セル、3 GeV、105.6 m、QF の K1 = 0.697 (νx = 6.6578)、SF・SD の K2 = 4, −6 (玩具の強さ)。
 
 ### 9.1 共鳴線と RDT・ADTS の定量的な接続 (a)
@@ -406,7 +406,7 @@ pysad の初期値を 1e-13 m ずらしただけの食い違い (座標 1e-2 m�
 
 ## 10. S2 の検証: 周波数マップを信頼して使う (v2.3.0、2026-11-21)
 
-`example/v2_3/S2_*` (索引 `S2_README.md`)、記録 `docs/history/v23_S2.md`、試験 `pysad/tests/test_v23_S2_fmapcheck.py`。条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、Hann 窓、小さな格子 21 × 16 = 336 点、1024 周
+`example/v2_3/S2_*` (索引 `S2_README.md`)、記録 [`docs/history/v23_S2.md`](history/v23_S2.md)、試験 [`pysad/tests/test_v23_S2_fmapcheck.py`](../pysad/tests/test_v23_S2_fmapcheck.py)。条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、Hann 窓、小さな格子 21 × 16 = 336 点、1024 周
 (ASTRID2: 位置 2、x = 0.5〜18 mm、y = 0.5〜14 mm。KEK-LS: 位置 3、x = 0.2〜6 mm、y = 0.2〜8 mm)。誤差の標準 (k = 1): 四極・6 極・偏向磁石 (KEK-LS は 8 極も) の DX・DY 50 μm、四極のロール 0.2 mrad、偏向磁石のロール 0.1 mrad (補正なし。実機の許容値ではなく例)。
 誤差なしの D > −5 の割合は ASTRID2 で 0.030 (41 × 31 で 0.038)、KEK-LS で 0.142 (失われた点 125 / 336)。
 

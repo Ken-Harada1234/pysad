@@ -42,14 +42,14 @@ corlength = 0 の枝 (ランダムウォーク、1 m あたり分散 1) は両�
 - B40: 相関長 ≫ 周長なら全要素のずれが同じ値・同じ符号になる (QF・RFC・ST が 5% 以内。相関長 5 km では全桁同じ)。
 - 使える範囲: v2 モード、corlength > 0。rms は多数回の平均としての値で、GCUT を掛ければその分小さい。相関長が格子間隔 (周長/nc、nc ≥ 128、INS は周長の 2 倍) より短いと線形補間で rms が下がる (間隔 = 相関長/4 で約 1%)。corlength = 0 の枝は別の量 (分散 = delx²·s(1−s/周長) [m]) で、delx の意味は「1 m あたりの rms」。
 - 未確認・判断: 規格化 (delx を DX の rms と読む) は作者の文書による裏づけが無い推定 (SADHelp に DELCOR の項は無い)。K64 の値が必要なら k64 モード、または delx に 1/√2 を掛ける。CAVI の符号 (+delx) は決定済みだが、K64 が SOL と同じ形の式 ((設計の DX) − delx) を写した意図があるなら逆。
-- 例: `example/v2_C/C2w_delcor_rms.sad`。
+- 例: [`example/v2_C/C2w_delcor_rms.sad`](../example/v2_C/C2w_delcor_rms.sad)。
 
 ## 見つけたこと・限界 (k64 モード。gs との比較)
 
 - **MARK には DX・DY ではなく DETR と DPX が入る (k64 モード。v2 は DX・DY)。** K64 は `latt(j)+15` と `+17` に書くが、値の添字では `ky_DETR_Mark=15`、`ky_DPX_Mark=17` (`ky_DX_Mark=16`、`ky_DY_Mark=18`)。
   一つずれた書き方に見える (docs/21 B40)。gs と合わせるためそのまま写した。INS の始点 (MARK の DETR・DPX) が変わる。
 - SOL は master が 0 なので K64 でも対象にならない (何も起きない)。**CAVI** は (k64 モードでは) K64 の添字のずれで DX・DY ではなく **HARM と PHI** に書く (tcorr.f の `le=latt+3`、`le1=le+1`)。add でなければ設計の DX・DY (`idvalc+13`, `+14`) から delx・dely を引いた値、add なら -delx・-dely を足す。gs で確かめた (`CAVI RFC=(VOLT=1.5e6 HARM=64 DX=1e-5 DY=2e-5)`、`DELCOR 3 1e-4 1e-4 RFC` で HARM=-.00015145432812411818、PHI=.00011480572629164664。pysad は同じ値)。HARM は実数のまま持つ。
-- CAVI の書き込みは `test_delcor_cavity_writes_harm_and_phi_like_gs` が gs の値と比べる。`docs/history/work_unimpl.md` の一覧に「CAVI は未対応」の古い記述が残るが、現在は実装済みで、この文書が現状。
+- CAVI の書き込みは `test_delcor_cavity_writes_harm_and_phi_like_gs` が gs の値と比べる。[`docs/history/work_unimpl.md`](history/work_unimpl.md) の一覧に「CAVI は未対応」の古い記述が残るが、現在は実装済みで、この文書が現状。
 - 各要素の DX・DY の添字 (QUAD は 5、BEND は 9 など) は gs の結果で合うことを確認 (QUAD・SEXT・BEND)。OCT は対象に含めた DELCOR で、チューンと QF の DX が gs と 12 桁で一致した (2026-11-16 夜)。ただし OC 自体の DX は gs も pysad も 0 を返すので、OCT への効果そのものを見る強い比較ではない。
 - 'DELCOR' 以外の Rule 系の誤差コマンド (ERROR の DELX など) は従来どおり (docs/11)。
 - **2 回目以降の `DELCOR` で corlength≠0 の場合、gs と値が一致しない (乱数の列は同じ)。k64 モードのこと。v2 は cv(n) を対称に置くので、この不一致は起きない (gs とは違う値になる)。** K64 の `tvcorr` の corlength≠0 の枝は `cv(n)` (最後の要素) を設定しない

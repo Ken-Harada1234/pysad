@@ -4,7 +4,7 @@
 
 `ListPlot`、`Plot`、`ParametricPlot`、`OpticsPlot`、`Show`、`Graphics` など、SAD の描画関数を、SAD 自身の `Packages/ListPlot.n`・`Plots.n`・`Canvas.n` のまま
 pysad のインタプリタで動かし、tkinter のキャンバスに描く。GUI の仕組み (docs/22) の上に載っている。
-コードは `pysad/tkcanvas.py`、`pysad/vecfn.py`、`pkgload.py`、`tclbridge.py`、`sadclass.py`、`sadscript.py`。試験は `test_plot.py`・`test_evalfixes.py`。
+コードは [`pysad/tkcanvas.py`](../pysad/tkcanvas.py)、[`pysad/vecfn.py`](../pysad/vecfn.py)、`pkgload.py`、`tclbridge.py`、`sadclass.py`、`sadscript.py`。試験は [`test_plot.py`](../pysad/tests/test_plot.py)・[`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)。
 
 ## 1. 使い方
 
@@ -32,7 +32,7 @@ h=Plot[Sin[x],{x,0,6}];
 `OpticsPlot[{{"BX","BY"},{"EX"}}]` (12 セルのリング、`USE RING; CELL; CALC;` のあと) は、`Graphics` (長さ 2) を返し、gs と同じ構造 (3 枠: 光学関数 2 枚と
 ラティス) の式を作る。キャンバスの項目は gs が 174 個 (rectangle 76、line 40、text 58)、pysad は 188 個 (rectangle 76、line 40、text 72) で、枠 (BG)・矩形・
 格子線の数と位置は同じ。text が 14 個多いのは、文字の外接矩形が Tk のフォントで違い、`RemoveOverlap` (重なる名前を消す) と目盛の間引きの結果が変わるため
-(`LatticeNames` が作る名前の表は gs と全部同じ)。試験は `test_plot.py` の `test_opticsplot_draws_the_same_geometry_as_gs`。
+(`LatticeNames` が作る名前の表は gs と全部同じ)。試験は [`test_plot.py`](../pysad/tests/test_plot.py) の `test_opticsplot_draws_the_same_geometry_as_gs`。
 
 ## 3. Tk のキャンバスの組み込み関数 (tkcanvas.py)
 
@@ -52,7 +52,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
 
 ## 4. 描画を動かすために gs に合わせた SADScript の評価
 
-どれも gs で同じ式を実行して比べて直した (試験は `test_evalfixes.py`)。
+どれも gs で同じ式を実行して比べて直した (試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py))。
 
 - 連鎖した比較 `a<x<b`、`a==b==c` (連鎖全体を評価する。左から 2 つずつ評価すると範囲外でも真になる)。
 - `Map`・`Table`・`MapThread`・`/.` の結果の `Null[]` (空の Sequence) は取り除き、`Null[a,b]` は a, b を並べる。
@@ -66,7 +66,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
 - リテラルだけの選択肢 (`""|" "`) を引数にもつ定義は、一般の定義より先に試す。
 - 定義の本体へ引数の値を埋め込むとき、定義自身のパターン変数 (`f[x_] := …` の x) は外側の同名の値に置き換えない。別の関数の呼び出しの引数は見ない。
 - 評価が `FromDate[]`・`MapAt[f, a->b, {2}]` に対応 (GUI の試験は環境変数がないと skip になるので、壊れても気づきにくい)。
-- OpticsPlot.n を動かすために直したもの (どれも gs と比べた。試験は `test_evalfixes.py`):
+- OpticsPlot.n を動かすために直したもの (どれも gs と比べた。試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)):
   - `` `X``・`` System`X``・`` Global`X`` は、`Begin[…]` で文脈を作らない限り大域の `X` (OpticsPlot.n は `` `OpticsPlot=System`OpticsPlot=OPlot$@OpticsPlot``)。
   - Module の局所変数への `h := Sqrt[Abs[#]]&` と `h[4]` (遅延した純関数の適用)、大域の `fun := …&` の `fun[4]`。
   - `SetAttributes[f, HoldNone]` は `HoldAll` などを外す。
@@ -79,7 +79,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
   - `ListPlot.n` の読み込みの途中で `Tkinter.n` が読まれても、外側の「組み込みと同名の定義を捨てる」処理が `Options[Window]` などを消さない。
   - 既定の `$HaveLaTeX` は `""` (gs も LaTeX がなければ `""`)。`PkgConfig.n` は最初に使うときに読む。
   - K64 の Tk (改造版) の text 項目だけが持つ `-usebg` は、標準の Tk にないので落とす (文字の背景は塗らない)。
-- ListContourPlot・HistoPlot・FitPlot (Plots.n) を動かすために直したもの (gs と比べた。試験は `test_evalfixes.py`・`test_plot.py`):
+- ListContourPlot・HistoPlot・FitPlot (Plots.n) を動かすために直したもの (gs と比べた。試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)・[`test_plot.py`](../pysad/tests/test_plot.py)):
   - `Block[{mesh}, mesh[x_] := …]` は、入るとき局所にした記号の関数定義を退避して空にし、出るとき戻す (色目盛りの ListDensityPlot が同じ Block を入れ子で使う)。
   - `?名前` (Definition) は `Hold[{名前:=名前, 定義 …}]` を返す。`Extract[…, {…,0,…}]`・`Part[…,0]` は式の頭部。`contl[k][x] =.` は添字つきの定義だけを消す。
     K64 は定義をハッシュ表の順に返す (再現できない) ので、pysad は書いた順の逆 (具体的な定義、続いてパターンの定義 `contl[_][_]`)。

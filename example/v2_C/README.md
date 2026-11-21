@@ -1,6 +1,6 @@
 # example/v2_C: v2.0.0 (担当 C) の走る例
 
-pysad v2.0.0 で直した・足した機能のうち、追跡・集団効果・要素の例です。説明と根拠は `docs/history/v2_changes_C.md`
+pysad v2.0.0 で直した・足した機能のうち、追跡・集団効果・要素の例です。説明と根拠は [`docs/history/v2_changes_C.md`](../../docs/history/v2_changes_C.md)
 (MEASURE・TRCOD は `v2_changes_C_measure.md`、空間電荷は `v2_changes_C_spch.md` に例がある)。
 
 実行 (既定の互換モードは v2):
@@ -32,7 +32,7 @@ K64 (gs) と同じ動作で走らせるときは、環境変数 `PYSAD_COMPAT=k6
 
 ## 担当 C2 の追加 (2026-11-17)
 
-説明と根拠は `docs/history/v2_changes_C2.md` (空間電荷は `v2_changes_C2_spch.md`、MEASURE 系は `v2_changes_C2_measure.md`、
+説明と根拠は [`docs/history/v2_changes_C2.md`](../../docs/history/v2_changes_C2.md) (空間電荷は `v2_changes_C2_spch.md`、MEASURE 系は `v2_changes_C2_measure.md`、
 WAKE の表・DELCOR・台本の読み方は `v2_changes_C2_misc.md`)。`*.pysad.txt` はどれも v2 モードの pysad の出力。
 
 | ファイル | 内容 | 見どころ |

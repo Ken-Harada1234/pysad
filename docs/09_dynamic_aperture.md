@@ -2,13 +2,13 @@
 
 最終更新: 2026-11-17 (現状のスナップショット)。
 
-確認状況 (2026-11-17 時点): `pysad/dapert.py` の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14。`Damping->True` は SADError、`DampEnough`・`ReferenceOrbit` は読まない (`dapert.py` の冒頭と `ffscmd.fn_dasurvey` で確認)。
-DA の 16a (QUICK=1 では SKIP される 4 件の 1 つ) は、`pysad/track6n.py` の最新の更新 (2026-11-17。APERT 要素の追跡) のあとも単独で実行して PASS (最大差 1.4e-31)。16a の結果 (RAD+FLUC の乱数列を含む) は変わっていない。
+確認状況 (2026-11-17 時点): [`pysad/dapert.py`](../pysad/dapert.py) の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14。`Damping->True` は SADError、`DampEnough`・`ReferenceOrbit` は読まない (`dapert.py` の冒頭と `ffscmd.fn_dasurvey` で確認)。
+DA の 16a (QUICK=1 では SKIP される 4 件の 1 つ) は、[`pysad/track6n.py`](../pysad/track6n.py) の最新の更新 (2026-11-17。APERT 要素の追跡) のあとも単独で実行して PASS (最大差 1.4e-31)。16a の結果 (RAD+FLUC の乱数列を含む) は変わっていない。
 未確認: 20 small (実ラティス、RAD+FLUC、100 周) と実寸の DynamicApertureSurvey (5000 周) は再実行していない (長い計算のため)。`l_track=0` の修正 (セッション最初の TrackParticles で、最初から LOSSAMPL の外にいる粒子は最初の tapert で落ちない) は TrackParticles (`TrackRun`) 側の変更である。DA の `tapert` (`dapert.py`) への影響は、16a が通る範囲でしか見ていない。
 
 > 出典 (すべてソースで確認): `Packages/dapert.n`, `src/tfdapert.f`, `src/trackd.f` (trackd, tinip1, tpdamp, rad62a),
 > `src/tday.f` (rad62), `src/tapert.f`, `src/tturn.f`, `src/tconv.f`, `src/initb1.f`;
-> pysad 側は `pysad/dapert.py`, `pysad/ffscmd.py` (fn_dasurvey), `pysad/track6n.py` (turn, k_apert)。
+> pysad 側は [`pysad/dapert.py`](../pysad/dapert.py), [`pysad/ffscmd.py`](../pysad/ffscmd.py) (fn_dasurvey), [`pysad/track6n.py`](../pysad/track6n.py) (turn, k_apert)。
 
 ## 1. 呼び出し経路
 

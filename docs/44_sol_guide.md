@@ -3,7 +3,7 @@
 最終更新: 2026-11-18 (v2.1.0 の後)
 
 SOL 領域の仕組み、置ける要素、Twiss・Emittance・追跡・幾何それぞれの対応、K64 の癖、動く SAD スクリプト、gs との一致の度合い、限界を、初めて読む人向けにまとめる。
-詳細な検証表は `docs/29_sol_optics.md` (Twiss・Emittance[]・幾何)、追跡の式は `docs/08_tracking.md` §3.7。
+詳細な検証表は [`docs/29_sol_optics.md`](29_sol_optics.md) (Twiss・Emittance[]・幾何)、追跡の式は [`docs/08_tracking.md`](08_tracking.md) §3.7。
 
 ## 1. 何ができるか
 
@@ -13,7 +13,7 @@ SOL 領域の仕組み、置ける要素、Twiss・Emittance・追跡・幾何�
 | CALC / INS の Twiss (CELL も) | 対応 | `solmap.py` |
 | Emittance[] / EMIT (放射込み) | 対応 | `solemit.py` |
 | 幾何 (S・GX・GZ・GCHI2・GCHI3) | 対応 (領域内に DRIFT・QUAD・SOL) | `sgeo.py` (tsgeo) |
-| POL のスピン (Emittance[]・EMIT・追跡) | 対応 (k64 モード: 領域内は DRIFT・QUAD。v2 モード: 追跡のスピンは領域内の BEND・MULT・CAVI・ずれ・F1 も。Emittance[] の POL の量は k64 では領域内が K64 の式、v2 は v2.1.0 で修正: B130) | `docs/36_spin_csr.md`、docs/43 §8a |
+| POL のスピン (Emittance[]・EMIT・追跡) | 対応 (k64 モード: 領域内は DRIFT・QUAD。v2 モード: 追跡のスピンは領域内の BEND・MULT・CAVI・ずれ・F1 も。Emittance[] の POL の量は k64 では領域内が K64 の式、v2 は v2.1.0 で修正: B130) | [`docs/36_spin_csr.md`](36_spin_csr.md)、docs/43 §8a |
 | CALC6D、RADCOD つきの CALC | **v2.1.0 で対応 (両モード)**。k64 は gs と 1e-9 | `ffscmd._check_sol_optics`、`calc6d._turn` |
 | Touschek (INTRA) との組み合わせ | **v2.1.0 で対応 (両モード)**。INTRA + SOL の Emittances は gs と εx・εy 2e-8、εz 9e-8 (相対)。TouschekLifetime は gs・pysad とも NaN (この条件で確認できず) | `touschek._tturne_intra` |
 | 領域内の BEND・MULT・CAVI | k64 モード: 未対応。v2 モード: 対応 (§7a) | §5、§7a |
@@ -33,7 +33,7 @@ SAD の SOL は「ソレノイドの境界」を表す長さ 0 の要素であ�
 
 ### 動く SAD スクリプト (最小例)
 
-`docs/29_sol_optics.md` と `pysad/tests/test_sol_optics.py` の s1 と同じ (gs で参照を取り、チューン 1e-15 で一致)。
+[`docs/29_sol_optics.md`](29_sol_optics.md) と [`pysad/tests/test_sol_optics.py`](../pysad/tests/test_sol_optics.py) の s1 と同じ (gs で参照を取り、チューン 1e-15 で一致)。
 
 ```
 MOMENTUM = 1.7GEV;
@@ -66,8 +66,8 @@ NORAD;  b100 = TrackParticles[beam0, 1, 1, 100];
 RAD; NOFLUC; b100 = TrackParticles[beam0, 1, 1, 100];
 ```
 
-領域内の追跡は `pysad/tests/test_track6n_ext.py` (`test_track6n_vs_track6`: SOL を含む格子で numba 版と Python 版が NORAD・RAD・FLUC とも座標 1e-13 以内、乱数の最終状態まで一致、`test_thin_mult_and_sol_not_ignored`、`test_apert_with_solenoid`)。
-Emittance[] は `pysad/tests/test_sol_emit.py` (e1: 12 セルのリング、BZ=2、回転四極 QS、領域内の SOL SM、QFE の DX DY で軌道が領域を斜めに通る。RFSW)。幾何は `test_sol_geo.py`。
+領域内の追跡は [`pysad/tests/test_track6n_ext.py`](../pysad/tests/test_track6n_ext.py) (`test_track6n_vs_track6`: SOL を含む格子で numba 版と Python 版が NORAD・RAD・FLUC とも座標 1e-13 以内、乱数の最終状態まで一致、`test_thin_mult_and_sol_not_ignored`、`test_apert_with_solenoid`)。
+Emittance[] は [`pysad/tests/test_sol_emit.py`](../pysad/tests/test_sol_emit.py) (e1: 12 セルのリング、BZ=2、回転四極 QS、領域内の SOL SM、QFE の DX DY で軌道が領域を斜めに通る。RFSW)。幾何は [`test_sol_geo.py`](../pysad/tests/test_sol_geo.py)。
 
 ## 3. 領域内に置ける要素
 
@@ -101,12 +101,12 @@ numba 版で作れない要素 (領域内の BEAMBEAM など) は `NotImplemente
 
 ### Emittance[] / EMIT (`solemit.py`)
 
-K64 の `tsole1` の放射の経路。写像は追跡カーネルの数値微分、放射は bz 付きの `emit6d._State.tradke(al, 0, bzh)`。要素ごとの対応は `docs/29_sol_optics.md` の表。
+K64 の `tsole1` の放射の経路。写像は追跡カーネルの数値微分、放射は bz 付きの `emit6d._State.tradke(al, 0, bzh)`。要素ごとの対応は [`docs/29_sol_optics.md`](29_sol_optics.md) の表。
 `tradke` の bz 付き (正準運動量 → 力学的運動量、`bzhr0`、`dbeam` の `b=bzh/2` の項) は `perfkern.tradke_db` の `bzh`・`bzhr0` 引数。
 
 ### CALC6D
 
-**v2.1.0 で対応した (両モード。pysad の不足を gs に合わせた: gate なし)**。SOL (BZ≠0 または BOUND≠0) を含む CALC6D と RADCOD つきの CALC は、`_check_sol_optics` が領域を annotate して通し、`calc6d._turn`・`touschek._tturne_intra` が領域内の要素 (`_solmap`) を `solemit.emit` で通す (`emit_extra` と同じ)。K64 は `qtwiss` の 4D が領域を `qsol` (`tsole1(.. enarad=.false.)`)、CALC6D が `qtwissfrac` の `tsole1(…, .true., .true.)`、INTRA の `tturne` が領域内の要素を `tsole1` で通す。確認 (gs、SOL 領域のあるリング、3 GeV、BZ = 2 T、回転四極、QFE の DX・DY): CALC 4D 2.73475252978800・1.87531224259842 (pysad k64 2.73475252978794)、CALC6D 2.73495437251036・1.87554377922481・NZ −.01173531080122 (2.73495437251039 など。1e-9、NZ は絶対 1e-9)、RADCOD つき CALC6D 2.73497629185364 (1e-10)、RADCOD の CALC6D のあとの 4D の CALC 2.73465818826401 (pysad 2.73465818826743。CELL CALC6D のあと `DP0` を先頭の `DDP` にする)、β (1・30・70 番) も 1e-9。INTRA + SOL の Emittances は {2.706114556595e-7、2.245979910482e-8、2.778701736555e-5}。未確認: TouschekLifetime の値 (gs が NaN)、BOUND=0 の SOL (BZ≠0) の CALC (NotImplementedError)、RADTAPER + SOL、WSPAC・INTRA + SOL の併用の値。例 `example/v2_next/B1_sol_calc6d_intra.sad`。
+**v2.1.0 で対応した (両モード。pysad の不足を gs に合わせた: gate なし)**。SOL (BZ≠0 または BOUND≠0) を含む CALC6D と RADCOD つきの CALC は、`_check_sol_optics` が領域を annotate して通し、`calc6d._turn`・`touschek._tturne_intra` が領域内の要素 (`_solmap`) を `solemit.emit` で通す (`emit_extra` と同じ)。K64 は `qtwiss` の 4D が領域を `qsol` (`tsole1(.. enarad=.false.)`)、CALC6D が `qtwissfrac` の `tsole1(…, .true., .true.)`、INTRA の `tturne` が領域内の要素を `tsole1` で通す。確認 (gs、SOL 領域のあるリング、3 GeV、BZ = 2 T、回転四極、QFE の DX・DY): CALC 4D 2.73475252978800・1.87531224259842 (pysad k64 2.73475252978794)、CALC6D 2.73495437251036・1.87554377922481・NZ −.01173531080122 (2.73495437251039 など。1e-9、NZ は絶対 1e-9)、RADCOD つき CALC6D 2.73497629185364 (1e-10)、RADCOD の CALC6D のあとの 4D の CALC 2.73465818826401 (pysad 2.73465818826743。CELL CALC6D のあと `DP0` を先頭の `DDP` にする)、β (1・30・70 番) も 1e-9。INTRA + SOL の Emittances は {2.706114556595e-7、2.245979910482e-8、2.778701736555e-5}。未確認: TouschekLifetime の値 (gs が NaN)、BOUND=0 の SOL (BZ≠0) の CALC (NotImplementedError)、RADTAPER + SOL、WSPAC・INTRA + SOL の併用の値。例 [`example/v2_next/B1_sol_calc6d_intra.sad`](../example/v2_next/B1_sol_calc6d_intra.sad)。
 
 ### 幾何 (`sgeo.py`、K64 の `tsgeo.f`)
 
@@ -117,30 +117,30 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 ## 5. K64 の癖
 
 1. **SOL (BOUND≠0) の長さを周長に入れない**。周回周波数 (omega0)・空洞の位相・MomentumCompaction・偏極時間に効く。
-   pysad は `emit6d._emit_circ` で同じにしている (追跡の `circ` もこれを使う)。PLANAR + SOL で周長 45.6 のときと偏極時間が 15 桁一致した (`docs/history/work_unimpl.md`)。
+   pysad は `emit6d._emit_circ` で同じにしている (追跡の `circ` もこれを使う)。PLANAR + SOL で周長 45.6 のときと偏極時間が 15 桁一致した ([`docs/history/work_unimpl.md`](history/work_unimpl.md))。
 2. **GEO が無いと S 座標が途切れる**。K64 の `tsgeo` は ` Missing GEO of Solenoid` を出し、領域の S 座標がつながらない。MomentumCompaction が約 100 倍、偏極時間が約半分など、周長を使う量が狂う。
    pysad は同じ警告を出して直進扱い (つなぐ) にするので、**この狂いは再現しない**。参照の gs はすべて GEO=1 付きで作った。
 3. **`tsolqur` の最後の半ステップ**: RAD ON の bz≠0 の四極では、スライスごとの `bzp = bz/(1+δ_i)` を粒子ごとに設定するが、最後の半ステップは再計算せず、**最後に `tzsetparams` を呼んだ粒子 (最後のスライスの最後の粒子) の bzp を全粒子に使う** (K64 `tsolqu.f:519-531`)。
    結果が粒子の並びに依存し、差は δ_i − δ_last に比例する。pysad の `tsolqu_bz_all` が再現している (`track6n_ext.py`)。RAD OFF の `tsolqu` は粒子ごとの値。bench_level9 の追跡で確認。
-4. `dbeam(8)` が `beam(2)−beam(10)+b·beam(4)` と書かれている (力学的運動量の共分散なら `beam(9)` のはず): gs に合わせてそのまま写した (`docs/21_sad_bug_report.md` B39。bzh=0 では効かない。試験の ε は直しても全桁同じで、どちらが正しいかは決まらない)。
+4. `dbeam(8)` が `beam(2)−beam(10)+b·beam(4)` と書かれている (力学的運動量の共分散なら `beam(9)` のはず): gs に合わせてそのまま写した ([`docs/21_sad_bug_report.md`](21_sad_bug_report.md) B39。bzh=0 では効かない。試験の ε は直しても全桁同じで、どちらが正しいかは決まらない)。
 5. 領域内の軌道が 0 でも K64 は `itgetqraddiv` の下限 (pmin) で刻み数が増える。pysad も写している。
 6. `tsolqum` (MULT 用) の z の dv 項は `tsolqu` と式が違う (SAD の不整合を再現。MULT の追跡の話で領域内ではない)。
 
 ## 6. gs との一致の度合い
 
-数値は `docs/29_sol_optics.md` と各試験から (いずれも gs = K64 2026-10-19 ビルドの出力を参照に取ったもの。特記なければ NORAD または RAD ON、領域内の要素は DRIFT・QUAD・SOL)。
+数値は [`docs/29_sol_optics.md`](29_sol_optics.md) と各試験から (いずれも gs = K64 2026-10-19 ビルドの出力を参照に取ったもの。特記なければ NORAD または RAD ON、領域内の要素は DRIFT・QUAD・SOL)。
 
 | 項目 | 試験 | 条件 | 一致 |
 | --- | --- | --- | --- |
-| Twiss (チューン、β、分散) | `test_sol_optics.py` 4 本 | BZ=0.3 (1.7 GeV)、BZ=1.2 (3 GeV、回転四極・領域内 SOL)、INS・RAD ON・DP≠0 | チューン 1e-15、β 3e-14、領域内の β α 分散 結合 1e-11 |
-| Emittance[] e1 | `test_sol_emit.py` | BZ=2、3 GeV、12 セルのリング、RFSW | ε_x 2e-12、ε_y 4e-10、ε_z 1e-7、チューン 1e-13、軌道 1e-11 (相対) |
+| Twiss (チューン、β、分散) | [`test_sol_optics.py`](../pysad/tests/test_sol_optics.py) 4 本 | BZ=0.3 (1.7 GeV)、BZ=1.2 (3 GeV、回転四極・領域内 SOL)、INS・RAD ON・DP≠0 | チューン 1e-15、β 3e-14、領域内の β α 分散 結合 1e-11 |
+| Emittance[] e1 | [`test_sol_emit.py`](../pysad/tests/test_sol_emit.py) | BZ=2、3 GeV、12 セルのリング、RFSW | ε_x 2e-12、ε_y 4e-10、ε_z 1e-7、チューン 1e-13、軌道 1e-11 (相対) |
 | Emittance[] e2 | 同上 | BZ=5、K1=0.3 L=0.5、軌道 2.7 mm | ε_x 4e-9、ε_y 2e-8、ε_z 3e-6、チューン 1e-11 |
-| 幾何 | `test_sol_geo.py` (sg2 sg3) | GEO が始端 (前向き) と終端 (後ろ向き)、DX DY DPX DPY あり、3 GeV | 18 要素の S GX GZ GCHI2 GCHI3 が相対 1e-9 (絶対 1e-13) |
+| 幾何 | [`test_sol_geo.py`](../pysad/tests/test_sol_geo.py) (sg2 sg3) | GEO が始端 (前向き) と終端 (後ろ向き)、DX DY DPX DPY あり、3 GeV | 18 要素の S GX GZ GCHI2 GCHI3 が相対 1e-9 (絶対 1e-13) |
 | 追跡 NORAD | `bench_level9` (Level 9) | BZ=2、2.5 GeV、領域に D1 + QD | 5e-11 以下 |
 | 追跡 RAD (NOFLUC) | 同上 | 同上 | 1.5e-10 以下 (**ただし保存済みの参照に対して。下の限界 1 を参照**) |
-| スピン追跡 | `test_spin_track.py` | SOL 領域内の DRIFT (BZ=0.05) | 4e-12 以下 (四極は照合できていない) |
+| スピン追跡 | [`test_spin_track.py`](../pysad/tests/test_spin_track.py) | SOL 領域内の DRIFT (BZ=0.05) | 4e-12 以下 (四極は照合できていない) |
 
-(追跡の NORAD・RAD の 5e-11・1.5e-10 は `docs/08_tracking.md` の Level 9 の記録)
+(追跡の NORAD・RAD の 5e-11・1.5e-10 は [`docs/08_tracking.md`](08_tracking.md) の Level 9 の記録)
 
 ## 7. 限界・未確認
 
@@ -166,7 +166,7 @@ GEO≠0 の SOL (始端なら前向き、終端なら後ろ向き) の DX DY (�
 
 ## 7a. v2 モードの SOL 領域 (k64 モードは上のとおり)
 
-記録: `docs/history/v2_changes_C.md`・`v2_changes_C2.md`、試験 `test_v2_C_sol.py` (32)・`test_v2_C2_sol.py` (11)・`test_v2_C2_solrf.py` (9)・`test_v2_C2_spin.py` (17)。例 `example/v2_C/C3_sol_region.sad`・`C2a_sol_tilt.sad`・`C2b_sol_rf.sad`・`C2c_spin.sad`。
+記録: [`docs/history/v2_changes_C.md`](history/v2_changes_C.md)・`v2_changes_C2.md`、試験 [`test_v2_C_sol.py`](../pysad/tests/test_v2_C_sol.py) (32)・[`test_v2_C2_sol.py`](../pysad/tests/test_v2_C2_sol.py) (11)・[`test_v2_C2_solrf.py`](../pysad/tests/test_v2_C2_solrf.py) (9)・[`test_v2_C2_spin.py`](../pysad/tests/test_v2_C2_spin.py) (17)。例 [`example/v2_C/C3_sol_region.sad`](../example/v2_C/C3_sol_region.sad)・`C2a_sol_tilt.sad`・`C2b_sol_rf.sad`・`C2c_spin.sad`。
 **根拠はローレンツ力 dp/ds = (p × B)/pz の数値積分 (scipy の solve_ivp、rtol 1e-13)・Thomas-BMT 方程式・実験室系の座標変換の合成・極限の一致で、gs との数値比較ではない** (gs は領域内の BEND の偏向をほぼ無視し、SOL + 四極 + RAD でも食い違う: §7 の 1・2)。条件: 電子、0.5・1・3 GeV、周長 91 m の FODO リングと 4〜6 m の輸送路、ソレノイド 1〜3 T (bz = 0.3〜3 1/m)、空洞 20〜200 MV (1.3 GHz)・4 MV (500 MHz)。**実機の大きなリングでは確かめていない。bz ≥ 3 1/m を超える場は未確認。**
 
 ### 領域内の BEND・MULT・CAVI・APERT (B69、B35)
@@ -212,9 +212,9 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 
 ### v2.1.0 の追加 (領域内の四極のずれ・bz ≥ 3・領域内の CAVI のスピン)
 
-試験 `test_v2_B1_sol.py` (45 件)・`test_v2_B3_geofit.py`・`test_v2_E_spinsol.py`。記録 `history/v2next_B1.md`・`B3.md`・`E.md`。
+試験 [`test_v2_B1_sol.py`](../pysad/tests/test_v2_B1_sol.py) (45 件)・[`test_v2_B3_geofit.py`](../pysad/tests/test_v2_B3_geofit.py)・[`test_v2_E_spinsol.py`](../pysad/tests/test_v2_E_spinsol.py)。記録 `history/v2next_B1.md`・`B3.md`・`E.md`。
 
-- **領域内の四極の `DX`・`DY`** (B3。両モード。gs と同じ): K64 の `tquad` は `tsolrot` で座標を (dx, dy) ずらす。ソレノイドの一様磁場のベクトルポテンシャルのゲージが変わるので正準運動量もずれる: x → x − dx、y → y − dy で px → px + (bz/2)dy、py → py − (bz/2)dx (出口は逆)。追跡のカーネル (`k_sol_quad`)・`solemit`・`sgeo` に入れた。gs と `LINE["GX"…]` が全桁一致 (領域内の DX・DY・ROTATE つきの 2 台)。**幾何の fit** (QF の DX、QD の DY で M2 の GY = 0.0008、GZ = −0.0035): gs と v2 (解析微分 `match6d.sol_dcod`: 要素の写像 c_out = F(c − t) + t、t = (DX, −(bz/2)DY, DY, (bz/2)DX) より d c_out/d DX = (I − J) ∂t/∂DX) は 2 回の Newton で収束し、QF DX = 2.78848432670e-3 (gs) / 2.78848432669e-3 (v2)、QD DY = 2.66798056318e-3 (両方)。解析微分は幾何の有限差分と 2e-3。K64 の CHI3 の微分の式は領域の終端で GCHI3 が 0 に戻される (tsgeo の `tfderotgeo`) ので幾何の変化と合わない (9e-4 を返すが幾何は動かない): CHI3 を使う fit は K64 でも収束しない (B124)。使える範囲: 領域内の四極 (K1≠0・F1=FRINGE=0)。SEXT・OCT・MULT は `_QDX_TYPES` に入れたが領域内のずれは未確認。四極の F1・FRINGE と領域内の BEND・MULT のずれは未対応。k64 モードは SOL 自体のずれ (trots) が未対応でずれた SOL の fit は使えない。例 `example/v2_next/B3_geofit_quad_dx.sad`。
+- **領域内の四極の `DX`・`DY`** (B3。両モード。gs と同じ): K64 の `tquad` は `tsolrot` で座標を (dx, dy) ずらす。ソレノイドの一様磁場のベクトルポテンシャルのゲージが変わるので正準運動量もずれる: x → x − dx、y → y − dy で px → px + (bz/2)dy、py → py − (bz/2)dx (出口は逆)。追跡のカーネル (`k_sol_quad`)・`solemit`・`sgeo` に入れた。gs と `LINE["GX"…]` が全桁一致 (領域内の DX・DY・ROTATE つきの 2 台)。**幾何の fit** (QF の DX、QD の DY で M2 の GY = 0.0008、GZ = −0.0035): gs と v2 (解析微分 `match6d.sol_dcod`: 要素の写像 c_out = F(c − t) + t、t = (DX, −(bz/2)DY, DY, (bz/2)DX) より d c_out/d DX = (I − J) ∂t/∂DX) は 2 回の Newton で収束し、QF DX = 2.78848432670e-3 (gs) / 2.78848432669e-3 (v2)、QD DY = 2.66798056318e-3 (両方)。解析微分は幾何の有限差分と 2e-3。K64 の CHI3 の微分の式は領域の終端で GCHI3 が 0 に戻される (tsgeo の `tfderotgeo`) ので幾何の変化と合わない (9e-4 を返すが幾何は動かない): CHI3 を使う fit は K64 でも収束しない (B124)。使える範囲: 領域内の四極 (K1≠0・F1=FRINGE=0)。SEXT・OCT・MULT は `_QDX_TYPES` に入れたが領域内のずれは未確認。四極の F1・FRINGE と領域内の BEND・MULT のずれは未対応。k64 モードは SOL 自体のずれ (trots) が未対応でずれた SOL の fit は使えない。例 [`example/v2_next/B3_geofit_quad_dx.sad`](../example/v2_next/B3_geofit_quad_dx.sad)。
 - **bz ≥ 3 1/m** (B1): 領域内の DRIFT・BEND・MULT (K0・K1・K2) の写像 (力学的運動量) がローレンツ力の積分と bz = 6・10・20 1/m で 1.2e-8 以内 (多極の分割 EPS の分)。放射損失 −(2/3) r_e γ³ (K0/L)² L が bz = 6・20 で 4e-5。**DRIFT の刻みを足した** (v2): 領域内の BEND・MULT は bz·al/ndiv ≤ 0.02 に刻んでいたが DRIFT は 1 刻みだったため、軸を外れた粒子 (δ = 1e-3・−5e-3、0.4 m) のスピンが Thomas-BMT の積分と bz = 4.5 (0.1 GeV) で 1.5e-3、9 で 8.7e-3 (0.3 GeV の bz = 3 で 1.3e-4) ずれ、放射も bz = 9 で 1.7 倍外れていた (`track6n_ext.k_sol_drift`・`track6._sol_drift_v2`。ndiv = 1 + int(\|bz·al\|/0.02)。結果 2.3e-7・8.9e-7・4.5e-8、放射 1e-4)。k64 は 1 刻み (K64 のまま)。QUAD (K1 = 0.3、0.4 m) のスピンは bz = 4.5・9 で 2.0e-5・9.0e-5、MULT (K0 + K1) は 1.3e-4〜1.6e-4、BEND は 6e-7・9e-7 (放射の分割が EPS 由来で bz·al/ndiv ≤ 0.2 のため。v2 の既存の試験値を変えないため足していない)。
 - **POL の Emittance[] (MULT・CAVI)**: 平面リング (24 台の偏向磁石、0.5 GeV: aγ = 1.135、0.1 GeV: aγ = 0.227) の SOL 領域 (DRIFT・MULT (K1 = 0・0.05)・VOLT=0 の CAVI) の SpinTune が cos(μ/2) = cos(π ν0) cos(φ/2)、φ = (1+a) bz L と 1e-9 以内で一致 (bz = 0.6・4.5・9 1/m)。加速する CAVI の POL (Emittance[]) は未確認 (一周でエネルギーが元に戻る解析式は縦の運動を含む)。
 - **加速 + RAD**: 領域内の RF つき MULT (TRPT、VOLT = 0〜100 MV、基準運動量 +0〜3.1%) の放射損失が −(2/3) r_e mc² (bz γ0² θ0)² L/E2 (θ0 = 1e-2、3 GeV、L = 0.5 m、bz = 3・9 1/m) と 1e-3 以内で一致 (加速しても損失は変わらない: 横運動量はソレノイドの縦磁場で変わらず曲率 κ ∝ p⊥/p² なので γ⁴κ² は一定)。
@@ -229,8 +229,8 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 
 ## 8. 関連文書
 
-- `docs/29_sol_optics.md`: Twiss・Emittance[]・幾何の検証の詳細。
-- `docs/08_tracking.md` §3.7: `tsol` の追跡の式と実装の対応。
-- `docs/36_spin_csr.md`: POL のスピンと SOL。
-- `docs/21_sad_bug_report.md`: B39 (`dbeam(8)`)。
-- `docs/history/work_unimpl.md`: 未解決の差の記録。
+- [`docs/29_sol_optics.md`](29_sol_optics.md): Twiss・Emittance[]・幾何の検証の詳細。
+- [`docs/08_tracking.md`](08_tracking.md) §3.7: `tsol` の追跡の式と実装の対応。
+- [`docs/36_spin_csr.md`](36_spin_csr.md): POL のスピンと SOL。
+- [`docs/21_sad_bug_report.md`](21_sad_bug_report.md): B39 (`dbeam(8)`)。
+- [`docs/history/work_unimpl.md`](history/work_unimpl.md): 未解決の差の記録。

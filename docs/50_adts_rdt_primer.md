@@ -6,7 +6,7 @@
 - **解析式の位置づけ**: 解析式は、摂動論の定義された次数と、入れた効果の範囲で原理的に作ります。追跡 (全非線形) とは入れている効果が違うので、厳密な一致は目的ではなく、追跡に合わせるための補正項・当てはめは足していません。この文書と docs/49 は、各式について「入れている効果と次数」「入れていない効果」「差の原因」を書き、追跡との一致の数値は検証の結果として載せます。追跡から係数を取り出す唯一の部分 (偏向磁石の生成関数) は、写像の 2 次のテイラー係数が生成関数を一意に決める、という原理に基づきます ([docs/49 §8.1](49_resonance_terms_adts.md))。差の主因は docs/49 §11.9。
 - 数値は、出力ファイルから転記したものか、この文書のために実際に走らせて得た値です (走らせた条件は各節と §8)。推測の数値は書いていません。
 - 追跡の条件の共通部分: 互換モード k64 (gs と同じ追跡。ただし §6(c)(d)・§8(4) の周波数マップと LMA は v2)、RF 空洞は止める (`rfsw=False`)、放射なし、結合・誤差なし、δ = 0、リング先頭から出発。
-- 例に使うラティス: FODO (`example/00_lattice/FODO_ring.sad`、24 セル、3 GeV、周長 105.600 m、νx = 6.696329、νy = 4.906056。6 極 SF・SD の K2L = 4, −6 [1/m²] を文字列で入れる。元のファイルは K2 = 0)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、0.58 GeV、45.704 m、νx = 5.179990、νy = 2.140178)、大きなリング A (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、603.12 m、νx = 47.580034、νy = 17.620044。KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した。)。FODO の 6 極の強さは玩具の値で、実機の設計値ではありません。
+- 例に使うラティス: FODO ([`example/00_lattice/FODO_ring.sad`](../example/00_lattice/FODO_ring.sad)、24 セル、3 GeV、周長 105.600 m、νx = 6.696329、νy = 4.906056。6 極 SF・SD の K2L = 4, −6 [1/m²] を文字列で入れる。元のファイルは K2 = 0)、ASTRID2 ([`example/astrid/lattice/ASTRID2_v01_01.sad`](../example/astrid/lattice/ASTRID2_v01_01.sad)、0.58 GeV、45.704 m、νx = 5.179990、νy = 2.140178)、大きなリング A ([`pysad/tests/kek-ls_v03_12.lat`](../pysad/tests/kek-ls_v03_12.lat)、3 GeV、603.12 m、νx = 47.580034、νy = 17.620044。KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した。)。FODO の 6 極の強さは玩具の値で、実機の設計値ではありません。
 - 図と数値を作ったスクリプトは `example/v2_3/primer_*.py` (図は同じ名前の `.png`)。リポジトリ直下から `py -3.12 example/v2_3/primer_xxx.py` で走ります。**標準出力をファイルにリダイレクトするときは環境変数 `PYTHONUTF8=1` が要ります** (無いと日本語が文字化けします。数値は同じ。PowerShell なら `$env:PYTHONUTF8 = "1"`)。
 - 記号: J は作用 (単位 m rad)、$\partial\nu/\partial J$ の単位は 1/(m rad)、`xx` = $\partial\nu_x/\partial J_x$、`xy` = $\partial\nu_x/\partial J_y$ (= $\partial\nu_y/\partial J_x$)、`yy` = $\partial\nu_y/\partial J_y$。
 
@@ -32,7 +32,7 @@
 |---|---|---|---|
 | **周波数マップ** | 初期条件 (x, y、または δ) の格子ごとに、前半と後半の周回でチューンがどれだけ変わるか。$D = \log_{10}\sqrt{\Delta\nu_x^2+\Delta\nu_y^2}$ | ダイナミックアパーチャの内部構造 (どの共鳴線が効いているか) を、長い追跡なしに見る。入射効率・ビームの生き残りの見当 | `pysad.freqmap.frequency_map`、台本 `FrequencyMap[]`、[docs/48](48_frequency_map_lma.md) §3、例 `example/v2_3/Q1_fmap_*` |
 | **局所運動量アクセプタンス (LMA)** | リングの位置 s ごとに、失われずに周回できる運動量のずれの範囲 $\delta_+(s)$・$\delta_-(s)$ | Touschek 寿命 (散乱された粒子が受容の外に出るか) を位置ごとに正しく見積もる。一様な受容の仮定より現実的 | `pysad.lma.momentum_acceptance`、台本 `MomentumAcceptance[]`・`TouschekLifetimeLMA[]`、[docs/48](48_frequency_map_lma.md) §4、例 `example/v2_3/Q1_lma_*` |
-| **共鳴駆動項 (RDT)** | 非線形磁場が各共鳴をどれだけ強く駆動するか。ハミルトニアンの係数 $h_{jklmp}$ | どの 6 極が、どの共鳴 (3νx、νx−2νy など) を励起するかの定量。6 極の配置の最適化、ダイナミックアパーチャの制限の原因探し | `pysad.resdrive.resonance_terms`、台本 `ResonanceDrivingTerms[]`、[docs/49](49_resonance_terms_adts.md) §2、例 `example/v2_3/Q2_resdrive_fodo.sad` |
+| **共鳴駆動項 (RDT)** | 非線形磁場が各共鳴をどれだけ強く駆動するか。ハミルトニアンの係数 $h_{jklmp}$ | どの 6 極が、どの共鳴 (3νx、νx−2νy など) を励起するかの定量。6 極の配置の最適化、ダイナミックアパーチャの制限の原因探し | `pysad.resdrive.resonance_terms`、台本 `ResonanceDrivingTerms[]`、[docs/49](49_resonance_terms_adts.md) §2、例 [`example/v2_3/Q2_resdrive_fodo.sad`](../example/v2_3/Q2_resdrive_fodo.sad) |
 | **振幅依存チューンシフト (ADTS)** | 振幅 (作用 J) が大きい粒子のチューンのずれ $\partial\nu/\partial J$ | 振幅が大きくなるとチューンが動いて共鳴線にぶつかる。ダイナミックアパーチャと入射効率の目安。周波数マップの色の理由 | `pysad.resdrive.adts`、台本 `AmplitudeTuneShift[]`、[docs/49](49_resonance_terms_adts.md) §2・§7・§8、例 `example/v2_3/R2_*`・`R3_*` |
 | **クロマティシティ** | チューンの運動量依存 $\xi = \partial\nu/\partial\delta$ (と高次) | 運動量のずれた粒子が共鳴線に当たらないように。ビームの不安定性の抑制 (頭尾不安定性)、Touschek 寿命、運動量アクセプタンス | `pysad.resdrive.chromaticity_numeric`・`chromaticity_sextupole`、台本 `ChromaticityTerms[]`、[docs/49](49_resonance_terms_adts.md) §4 |
 
@@ -174,7 +174,7 @@ $$h_{11001}=\frac14\sum_n K_2L_n\,\eta_{x,n}\beta_{x,n},\qquad h_{00111}=-\frac1
 
 が出て、$\nu=\dfrac1{2\pi}\dfrac{\partial H}{\partial J}$ からクロマティシティ $\xi=h/\pi$ (6 極の 1 次の寄与。FODO で $\xi_x$ = 17.4741、$\xi_y$ = 16.6062、[docs/49](49_resonance_terms_adts.md) §6 と §8 の記述、例 `Q2_resdrive_fodo.sad` の `SextupolePart`) になります。
 
-**符号の注意**: 文献 (Bengtsson 型) の式は符号を反転して定義されることが多く、pysad の h は文献の h の −1 倍です (FODO で比 −1.00000000、虚部 1e-14 以下。`example/v2_3/ADTS_summary_rdt_check.py`、[ADTS_summary.md](../example/v2_3/ADTS_summary.md) §6.5(b))。規格化 ($1/(j!k!l!m!)$ の因子) と位相の定義は一致しました。ただし文献の原文は未読で、h30000 以外の式の形は記憶に基づきます。
+**符号の注意**: 文献 (Bengtsson 型) の式は符号を反転して定義されることが多く、pysad の h は文献の h の −1 倍です (FODO で比 −1.00000000、虚部 1e-14 以下。[`example/v2_3/ADTS_summary_rdt_check.py`](../example/v2_3/ADTS_summary_rdt_check.py)、[ADTS_summary.md](../example/v2_3/ADTS_summary.md) §6.5(b))。規格化 ($1/(j!k!l!m!)$ の因子) と位相の定義は一致しました。ただし文献の原文は未読で、h30000 以外の式の形は記憶に基づきます。
 
 ### 4.2 6 極の寄与の和: 打ち消し
 
@@ -189,7 +189,7 @@ h は 6 極 1 本ずつの寄与 (複素数、位相 $e^{i\mu}$ を持つ) の�
 
 実際の 6 極は長さ L を持ちます (FODO は 0.2 m)。pysad (`method='analytic'`) は、素子の中の $w(s)$ と $\eta(s)$ を線形な転送行列で求め、$\int_0^L w^j\bar w^k\cdots ds$ を**厳密に**積分します。素子の中は 6 極の場合ドリフトなので $w$ は s の 1 次式で、積分は閉じた形になります。
 
-- **薄レンズ極限**: K2L を一定にして L → 0 にすると厚い式は薄レンズの式に一致します (L = 2e-5 で差 1e-4 の程度、L に比例して 0 に近づく。`example/v2_3/Q2_thick_thin.py`)。
+- **薄レンズ極限**: K2L を一定にして L → 0 にすると厚い式は薄レンズの式に一致します (L = 2e-5 で差 1e-4 の程度、L に比例して 0 に近づく。[`example/v2_3/Q2_thick_thin.py`](../example/v2_3/Q2_thick_thin.py))。
 - **n 分割での収束**: 厚い 6 極を n 個の薄レンズ (各区間の中央に K2L/n) に分けた列の h は、n を 2 倍にするごとに厚い式との差が 1/4 になります。FODO の h21000・h30000 で、n = 1、2、4、…、64 の相対差は h21000: 2.308e-3、5.770e-4、1.443e-4、3.606e-5、9.016e-6、2.254e-6、5.635e-7 (比はどれも 4.00)、h30000: 2.131e-3 … 5.202e-7 (比 4.00)。図の右。これは薄レンズ列の「中点則」の誤差が $1/n^2$ だからです。
 - つまり**薄レンズ (トラッキングの MULT) と厚い 6 極 (SEXT) のどちらも同じ入口で扱え、違いは 1/n² の高次の項**です。n = 1 (6 極の中央に薄レンズ 1 個) でも h21000 で 0.23% の差です。
 
@@ -230,7 +230,7 @@ ADTS は、J のべきで $\nu=\nu_0+\dfrac{\partial\nu}{\partial J}J+\cdots$ �
 | 奇数部 (f(+1)−f(−1))/2 | 10.935 | −6.888 | −49.757 |
 | 解析の交差項 (6 極 × 偏向磁石) | 10.935 | −6.888 | −49.757 |
 
-偶数部が 6 極 2 次 (差 1e-4、1.5e-5、1.2e-4)、奇数部が 6 極 × 偏向磁石の交差項 (差 0.001 未満) に一致します (`example/v2_3/primer_sext_even_odd.py`、約 7 s)。**偶数部だけを取り出す比較 (Q2) が 6 極の 2 次だけを検証する、という方法の仕組み** がこれです。
+偶数部が 6 極 2 次 (差 1e-4、1.5e-5、1.2e-4)、奇数部が 6 極 × 偏向磁石の交差項 (差 0.001 未満) に一致します ([`example/v2_3/primer_sext_even_odd.py`](../example/v2_3/primer_sext_even_odd.py)、約 7 s)。**偶数部だけを取り出す比較 (Q2) が 6 極の 2 次だけを検証する、という方法の仕組み** がこれです。
 
 ### 5.2 2 次の摂動の式 (6 極 × 6 極)
 
@@ -250,7 +250,7 @@ $$\frac{\partial\nu_x}{\partial J_x}=\sum\frac{K_3L\,\beta_x^2}{16\pi},\qquad
 \frac{\partial\nu_x}{\partial J_y}=-\sum\frac{K_3L\,\beta_x\beta_y}{8\pi},\qquad
 \frac{\partial\nu_y}{\partial J_y}=\sum\frac{K_3L\,\beta_y^2}{16\pi}$$
 
-となります。数値例: FODO のリング先頭に薄い 8 極 (K3L = 1e4 [1/m³]、6 極なし) を 1 個置く。式 (βx = 5.0252 m、βy = 2.5577 m) = 5023.822、−5113.935、1301.416。pysad の解析 `adts().octu` は同じ値 (差 5e-16)。追跡 + NAFF + フィット (8 極あり − なし、Jmax = 1e-7、1024 周) は 5023.450、−5113.991、1301.455 で、式との差 −7.4e-5、−1.1e-5、3.0e-5 (`example/v2_3/primer_octupole.py`、約 6 s)。
+となります。数値例: FODO のリング先頭に薄い 8 極 (K3L = 1e4 [1/m³]、6 極なし) を 1 個置く。式 (βx = 5.0252 m、βy = 2.5577 m) = 5023.822、−5113.935、1301.416。pysad の解析 `adts().octu` は同じ値 (差 5e-16)。追跡 + NAFF + フィット (8 極あり − なし、Jmax = 1e-7、1024 周) は 5023.450、−5113.991、1301.455 で、式との差 −7.4e-5、−1.1e-5、3.0e-5 ([`example/v2_3/primer_octupole.py`](../example/v2_3/primer_octupole.py)、約 6 s)。
 
 ### 5.4 運動学的な項と四極の端部のフリンジ (1 次)
 
@@ -266,7 +266,7 @@ $$\frac{\partial\nu_x}{\partial J_x}=\sum\frac{K_3L\,\beta_x^2}{16\pi},\qquad
 - **偏向磁石の 3 次どうしの対** (`.bend`): 6 極の強さに依らない。
 - **6 極 × 偏向磁石の交差項** (`.cross`): 6 極の強さに**比例** (§5.1 の奇数部)。6 極の 3 次と偏向磁石の 3 次の積は 4 次になるので、1 つの強さの 1 乗の ADTS が出ます。
 
-係数は、K64 の追跡の 1 要素の写像から数値的に取り出します (`pysad/bendnl.py`、docs/49 §8)。偏向磁石を 入口の端・本体の n 分割・出口の端に分け、写像の 2 次の部分から Lie 生成関数 (3 次の同次式) を求め、6 極と同じ形の単項式の振幅にして 2 次の式に渡します。
+係数は、K64 の追跡の 1 要素の写像から数値的に取り出します ([`pysad/bendnl.py`](../pysad/bendnl.py)、docs/49 §8)。偏向磁石を 入口の端・本体の n 分割・出口の端に分け、写像の 2 次の部分から Lie 生成関数 (3 次の同次式) を求め、6 極と同じ形の単項式の振幅にして 2 次の式に渡します。
 
 #### 5.5.1 偏向磁石の項は何をどう求めたか (原理。R5)
 
@@ -280,7 +280,7 @@ $$\frac{\partial\nu_x}{\partial J_x}=\sum\frac{K_3L\,\beta_x^2}{16\pi},\qquad
 
 ### 5.6 各項の大きさの目安
 
-大きなリング A (`kek-ls_v03_12.lat`、3 GeV、603.12 m、νx = 47.580034、νy = 17.620044、6 極の強さ ×1)。出力 `example/v2_3/R3_scan_kekls.pysad.txt` の転記、単位 1/(m rad)、(xx, xy, yy):
+大きなリング A (`kek-ls_v03_12.lat`、3 GeV、603.12 m、νx = 47.580034、νy = 17.620044、6 極の強さ ×1)。出力 [`example/v2_3/R3_scan_kekls.pysad.txt`](../example/v2_3/R3_scan_kekls.pysad.txt) の転記、単位 1/(m rad)、(xx, xy, yy):
 
 | 項 | xx | xy | yy |
 |---|---|---|---|
@@ -306,14 +306,14 @@ $$\frac{\partial\nu_x}{\partial J_x}=\sum\frac{K_3L\,\beta_x^2}{16\pi},\qquad
 
 ### 6(a) ADTS: 追跡 + NAFF + 多項式フィット
 
-手順 (`pysad/adtsdirect.py`、docs/49 §7):
+手順 ([`pysad/adtsdirect.py`](../pysad/adtsdirect.py)、docs/49 §7):
 
 1. **J の格子**を作る: Jx, Jy ∈ {0, 1/5, …, 1}·Jmax (Jx = Jy = 0 を除く 35 点)。各点に初期位相 φ と φ + π の 2 粒子 (**±位相の対**) で 70 粒子。初期条件は §2 の式で (x, px, y, py) にします。
 2. **強さを変えずに** 1024 周追跡する (RF 止め、放射なし、δ = 0、リング先頭から)。1 周ごとの (x, px, y, py) を記録。
 3. 各粒子の信号 $z=\hat x-i\hat p$ (x と y それぞれ) の**チューンを NAFF で求める** (下)。±対のチューンを平均する (座標の符号を反転した 2 粒子の平均は、振幅の奇数次 $J^{3/2}$ の項を消す)。
 4. $\nu_x$ (Jx > 0 の点)、$\nu_y$ (Jy > 0 の点) を J の全次数 ≤ order の多項式 (既定 order = 2: $\nu_0+c_{10}J_x+c_{01}J_y+c_{20}J_x^2+c_{11}J_xJ_y+c_{02}J_y^2$) で最小二乗フィットし、$\partial\nu_x/\partial J_x=c_{10}$ などを取る。
 
-**NAFF** (Numerical Analysis of Fundamental Frequencies、Laskar): 信号に窓をかけて、**窓つきの内積** $\langle z,e^{2\pi i\nu n}\rangle=\frac1N\sum_n w_n z_n e^{-2\pi i\nu n}$ の絶対値が最大になる ν を、FFT で粗く探したあと Brent 法で連続的に求めます (`pysad/naff.py`)。
+**NAFF** (Numerical Analysis of Fundamental Frequencies、Laskar): 信号に窓をかけて、**窓つきの内積** $\langle z,e^{2\pi i\nu n}\rangle=\frac1N\sum_n w_n z_n e^{-2\pi i\nu n}$ の絶対値が最大になる ν を、FFT で粗く探したあと Brent 法で連続的に求めます ([`pysad/naff.py`](../pysad/naff.py))。
 
 - **Hann 窓** $w\propto(1+\cos\pi t)^p$ ($t\in[-1,1]$、既定 p = 1): 窓なし (矩形) の FFT は有限長の信号の両端の不連続でスペクトルが裾を引き、ピークの位置が隣の周波数成分 (6 極の強制振動の線など) に引かれてずれます。Hann 窓は両端を滑らかに 0 にして、裾を小さくします。
 - **補間**: FFT のピークのビンは周波数の分解能 1/N の格子の上にしか値を取れません (誤差 ~ 1/(2N))。NAFF は内積の最大を連続的に探すので、格子の間も求まります。
@@ -330,9 +330,9 @@ $$\frac{\partial\nu_x}{\partial J_x}=\sum\frac{K_3L\,\beta_x^2}{16\pi},\qquad
 | NAFF (Hann p=1) | 2.08e-9 | 1.03e-10 | 4.67e-11 | 3.11e-11 | 3.11e-11 | 3.24e-11 | 2.92e-11 | 3.08e-11 |
 | NAFF (Hann p=2) | 1.38e-9 | 3.09e-11 | 3.03e-11 | 3.04e-11 | 3.05e-11 | 3.07e-11 | 3.01e-11 | 7.05e-10 |
 
-読み方: NAFF は FFT のビンより 5〜8 桁正確。**3e-11 の床は NAFF の限界ではなく、基準 (CALC のチューン) と追跡の差** で、この図ではこれ以下は分解できません。Hann p = 2 の N = 4096 の 7.05e-10 は原因を調べていません。(FFT の「Hann」の行は窓なしの行と同じ値になりました。ピークのビンは窓で変わらなかったため。表では省略。`example/v2_3/primer_naff.py`、約 4 s)
+読み方: NAFF は FFT のビンより 5〜8 桁正確。**3e-11 の床は NAFF の限界ではなく、基準 (CALC のチューン) と追跡の差** で、この図ではこれ以下は分解できません。Hann p = 2 の N = 4096 の 7.05e-10 は原因を調べていません。(FFT の「Hann」の行は窓なしの行と同じ値になりました。ピークのビンは窓で変わらなかったため。表では省略。[`example/v2_3/primer_naff.py`](../example/v2_3/primer_naff.py)、約 4 s)
 
-**周数と精度・フィットの次数・J の範囲** (FODO、`example/v2_3/primer_adts_fit.py`、約 12 s。解析の合計 `adts().total` = 408.843、−412.905、519.767 に対する (フィット − 解析)/|解析|):
+**周数と精度・フィットの次数・J の範囲** (FODO、[`example/v2_3/primer_adts_fit.py`](../example/v2_3/primer_adts_fit.py)、約 12 s。解析の合計 `adts().total` = 408.843、−412.905、519.767 に対する (フィット − 解析)/|解析|):
 
 | Jmax | order | xx | xy | yy |
 |---|---|---|---|---|
@@ -373,7 +373,7 @@ $$\frac{\partial\nu_x}{\partial J_x}=\sum\frac{K_3L\,\beta_x^2}{16\pi},\qquad
 
 ### 6(c) 周波数マップ
 
-(docs/48 §3、`pysad/freqmap.py`)
+(docs/48 §3、[`pysad/freqmap.py`](../pysad/freqmap.py))
 
 1. **格子の初期条件**: 1 つの位置 loc (例: 長直線部の入口) の閉軌道に、x・y (px = py = 0、z = 0) と δ の格子点を足す。x–y 格子、x–δ、y–δ。
 2. **追跡** nturn 周 (放射・RF なし)。位置 loc の (x, px, y, py) を周ごとに記録。
@@ -393,7 +393,7 @@ ASTRID2 の例 (位置 2、41 × 31 = 1271 点、x = 0.5〜18 mm、y = 0.5〜14 
 
 ### 6(d) LMA: 二分法と RF バケット
 
-(docs/48 §4、`pysad/lma.py`)
+(docs/48 §4、[`pysad/lma.py`](../pysad/lma.py))
 
 位置 loc の閉軌道に δ = ±Δ を足した粒子を、放射・RF つきで追跡し、失われない Δ の限界を求めます。
 
@@ -450,7 +450,7 @@ ASTRID2 の例 (位置 2、41 × 31 = 1271 点、x = 0.5〜18 mm、y = 0.5〜14 
 - **運動学的な項と四極端部のフリンジ**: 6 極に依らず、yy のように 6 極と 8 極が打ち消し合う成分では相対的に大きい (大きなリング A の yy: −34% → +3.6%)。
 - **偏向磁石の 3 次の項と交差項**: 曲率 $\tfrac h2x(p_x^2+p_y^2)$ と硬い端 $\pm\tfrac h2p_xy^2$ が 6 極と交差して ADTS を作る (奇数部)。FODO では R2 の差 −2.7%、+1.6%、+9.5% が R3 で −0.04%、−0.04%、−0.03% になった。偏向角に比例して効き、ASTRID2 (30° の複合機能偏向磁石) は R2 で +10.9%、+15.3%、−6.5%、R3 で −0.24%、−0.08%、−0.19%。
 - **残る差**: 6 極に依らない定数 (追跡 − 解析 R3: FODO 0.1〜0.2、ASTRID2 1.1・1.1・2.6、大きなリング A 7.0・6.9・17 [1/(m rad)])。四極本体と K1 つき偏向磁石の本体の 4 次の項と推定しているが、**未解決**。§5.1 の FODO の f(0) の差 (0.111、0.175、0.117) がこれです。
-- **gs の RFSW の落とし穴**: gs の台本は FFS に入ると RFSW が ON で、RF つきのラティスでは空洞が 1 周内の z に応じて δ を与え、「自然クロマティシティ × δ(J)」の偽の ADTS が入ります。ASTRID2 の 6 極なしの ADTS は gs の RFSW ON で 94.9、`NORFSW;` で 83.2020 (pysad 83.2020)。大きなリング A の 6 極なしは RFSW ON で 35320 になり、`NORFSW;` で 877.9 (pysad 877)。**gs の TrackParticles で ADTS を求めるときは台本に `NORFSW;` を入れる** (docs/49 §5、`example/v2_3/R1_README.md`)。
+- **gs の RFSW の落とし穴**: gs の台本は FFS に入ると RFSW が ON で、RF つきのラティスでは空洞が 1 周内の z に応じて δ を与え、「自然クロマティシティ × δ(J)」の偽の ADTS が入ります。ASTRID2 の 6 極なしの ADTS は gs の RFSW ON で 94.9、`NORFSW;` で 83.2020 (pysad 83.2020)。大きなリング A の 6 極なしは RFSW ON で 35320 になり、`NORFSW;` で 877.9 (pysad 877)。**gs の TrackParticles で ADTS を求めるときは台本に `NORFSW;` を入れる** (docs/49 §5、[`example/v2_3/R1_README.md`](../example/v2_3/R1_README.md))。
 
 ### 7.4 ここまでで確認できたこと
 
@@ -553,7 +553,7 @@ a.by_harmonic                                         # 調和 k = (kx, ky) ご�
 py -3.12 example/v2_3/R2_adts_direct.py pysad fodo
 ```
 
-所要 13 s (追跡 1 s)。**このスクリプトは出力ファイルを `example/v2_3/` に上書きします** (保存済みの出力を残すなら、複製したフォルダで走らせるか、走らせたあとで `git checkout` で戻す)。出力の抜粋 (R2 の版: 偏向磁石の 3 次の項を入れる前):
+所要 13 s (追跡 1 s)。**このスクリプトは出力ファイルを [`example/v2_3/`](../example/v2_3/) に上書きします** (保存済みの出力を残すなら、複製したフォルダで走らせるか、走らせたあとで `git checkout` で戻す)。出力の抜粋 (R2 の版: 偏向磁石の 3 次の項を入れる前):
 
 ```
 リング fodo: p=3 GeV/c、周長 105.600 m、νx=6.696329 νy=4.906056、k64 の追跡 (rfsw=False、放射なし、δ=0)、J の格子 Jmax=1.0e-07 (6×6、±位相の対 = 70 粒子)、1024 周、NAFF Hann p=1、order=2
@@ -601,7 +601,7 @@ ASTRID2 作動点 νx = 5.179990、νy = 2.140178
 失われた点 0、D の範囲 -10.72 〜 -2.98、D > −4 の点 4、D < −6 の点 315 (規則的)
 ```
 
-出力は `example/v2_3/primer_lma_astrid2.{png,table.txt}`、`primer_fmap_astrid2.{png,table.txt}`、`primer_lma_scan.png`。読み方: LMA は分散の大きい位置 (s = 3〜4 m) で ±0.83〜0.86%、それ以外で ±1.6% (RF バケットの高さ 1.6176% に近い)。作動点の整数 (0.18)・半整数 (0.18) の共鳴は遠く、最も近い低次の線は νx − νy = 3 (0.028) です。**この小さな格子は入門用で、点が少ないので D > −4 は 4 点しかありません。docs/48 の結果 (41 × 31 = 1271 点、305〜315 s、LMA 25 位置 364 s) は `Q1_fmap_ring.py astrid2`・`Q1_lma_ring.py astrid2` が作ります。** SAD の台本からは `example/v2_3/Q1_script_commands.sad` (`FrequencyMap[]`・`MomentumAcceptance[]`。この文書では走らせていません)。
+出力は `example/v2_3/primer_lma_astrid2.{png,table.txt}`、`primer_fmap_astrid2.{png,table.txt}`、`primer_lma_scan.png`。読み方: LMA は分散の大きい位置 (s = 3〜4 m) で ±0.83〜0.86%、それ以外で ±1.6% (RF バケットの高さ 1.6176% に近い)。作動点の整数 (0.18)・半整数 (0.18) の共鳴は遠く、最も近い低次の線は νx − νy = 3 (0.028) です。**この小さな格子は入門用で、点が少ないので D > −4 は 4 点しかありません。docs/48 の結果 (41 × 31 = 1271 点、305〜315 s、LMA 25 位置 364 s) は `Q1_fmap_ring.py astrid2`・`Q1_lma_ring.py astrid2` が作ります。** SAD の台本からは [`example/v2_3/Q1_script_commands.sad`](../example/v2_3/Q1_script_commands.sad) (`FrequencyMap[]`・`MomentumAcceptance[]`。この文書では走らせていません)。
 gs は使っていません。gs で比べるときは台本に `NORFSW;`、timeout を長めに (1800 s)、1 本ずつ走らせ、終了後に WSL で `ps` により sad1.exe が残っていないか確認します。
 
 ---

@@ -4,7 +4,7 @@
 
 ## 1. 概要・所在
 
-- 目的: SAD (**K64 fork**, Ver.1.4.4.2k64) を Python に直訳し、SAD の数値を再現する (v1 系)。v2 系 (v2.0.0 から) は K64 のバグの修正・物理の誤りの修正・機能の追加を含み、互換モード (`pysad/compat.py`、既定 v2、`PYSAD_COMPAT=k64` で v1 と同じ動作) で切り替える。以下の「再現する」「直訳」は k64 モードの方針で、v2 の変更の一覧は `47_v2_changes.md`。SAD を物理モデルとして作り直さない (v1)。
+- 目的: SAD (**K64 fork**, Ver.1.4.4.2k64) を Python に直訳し、SAD の数値を再現する (v1 系)。v2 系 (v2.0.0 から) は K64 のバグの修正・物理の誤りの修正・機能の追加を含み、互換モード ([`pysad/compat.py`](../pysad/compat.py)、既定 v2、`PYSAD_COMPAT=k64` で v1 と同じ動作) で切り替える。以下の「再現する」「直訳」は k64 モードの方針で、v2 の変更の一覧は `47_v2_changes.md`。SAD を物理モデルとして作り直さない (v1)。
   数値がずれたら SAD で実際に通るルーチンを特定し、行単位で訳す。SAD の癖 (バグに見えるもの) も再現する (→ `11_sad_quirks.md`)。
   SAD 自身のバグは再現せず `21_sad_bug_report.md` に集約する。
 - 方針 (ユーザー指示): 1e-10 以下の差、表示の桁、丸めカオス後の乱数 seed は追わない。基準は「計算が完走し、物理量が SAD と有意に一致する」こと。
@@ -14,7 +14,7 @@
 - 到達点 (k64 モード = v1 と v2 に共通の土台): SAD の台本 (SADScript + FFS) を `py -3.12 run_sad.py lattice script` でそのまま動かす (SADScript インタプリタ + FFS コマンド層)。FFS の要素・コマンドと追跡・Emittance[]・マッチングは gs と照合済み、SAD 自身の `Packages/*.n` (CorrectOrbit・MakeBump・Couple・Rational・OptimizeOptics ほか) と GUI (`Tkinter.n`・`Canvas.n`) は pysad のインタプリタで解釈して動かす。未対応・未確認は `46_unimplemented_and_unverified.md`。
 - 実行環境: Python 3.12 (`py -3.12`) に numba / scipy / pytest。`PYTHONIOENCODING=utf-8`。長い計算は `<work-perf>/lowprio.py` (IDLE 優先度) で 1 本ずつ。
 - 検証 (2026-11-18 に `PYSAD_SAD_PACKAGES` つきで全試験と回帰を実行 (担当 E の報告)。回帰は k64 モード): `QUICK=1 py -3.12 -u run_regression.py` で **50 ベンチ FAIL 0** (QUICK なしの全 50 ベンチ・205 s の記録は 2026-11-16 夜の `local/wake/verify_log.md`)。
-  `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **1899 通過・8 skip・失敗 0** (2026-11-21、v2.3.0 の最終。1907 件収集)。以前: v2.1.0 は 1345 通過・8 skip (1353 件)、v2.0.0 は 937 通過・4 skip (941 件)。互換モードは k64 が既定 (`pysad/tests/conftest.py`)。v2 の試験 (`test_v2_*.py` 73 本・1081 件。うち v2.1.0 の追加が 412 件) は `compat.set_mode('v2')` を明示する。`--ignore` する 3 本は sys.exit で終わる旧式のスクリプト。
+  `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` で **1899 通過・8 skip・失敗 0** (2026-11-21、v2.3.0 の最終。1907 件収集)。以前: v2.1.0 は 1345 通過・8 skip (1353 件)、v2.0.0 は 937 通過・4 skip (941 件)。互換モードは k64 が既定 ([`pysad/tests/conftest.py`](../pysad/tests/conftest.py))。v2 の試験 (`test_v2_*.py` 73 本・1081 件。うち v2.1.0 の追加が 412 件) は `compat.set_mode('v2')` を明示する。`--ignore` する 3 本は sys.exit で終わる旧式のスクリプト。
   GUI 系 (test_plot、test_tclbridge) は全体実行で数回に 1 回失敗することがある (単独なら通る)。`PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` が無いと GUI 系は skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL 約 7 分)。
 
 ## 2. モジュール構成と行数 (`ls pysad/*.py | wc -l` で 74 本、`cat pysad/*.py | wc -l` で計 59797 行。2026-11-18 に実測した。v2.0.0 で `compat.py`・`phsrot.py`・`radtaper.py`・`spch.py` を追加し、v2.1.0 で `naff.py`・`specfn_cx.py`・`nbcache.py` を追加した)
@@ -87,7 +87,7 @@
 | `__init__.py` / sadkw.py / constants.py | 121 / 34 / 10 | |
 | **非推奨**: ffs.py / tracking.py / matching.py / optics.py | 1599 / 1239 / 602 / 471 | 独自実装 (SAD 未照合。tracking.py は放射係数に疑い)。新規コードは使わない。`__init__.py` の export は旧 API のまま |
 
-テストは `pysad/tests/` (`test_*.py` 158 ファイル (2026-11-21 に数えた)。`--ignore` の 3 本を除き、パラメータ化で 1907 件に展開される (収集件数)。うち v2 の試験 `test_v2_*.py` は 73 ファイル・1081 件 (v2.1.0 の追加は 412 件)。補助 `_a2_indep.py`・`_c3_indep.py`・`_e_spinkick.py` は独立な計算)。
+テストは [`pysad/tests/`](../pysad/tests/) (`test_*.py` 158 ファイル (2026-11-21 に数えた)。`--ignore` の 3 本を除き、パラメータ化で 1907 件に展開される (収集件数)。うち v2 の試験 `test_v2_*.py` は 73 ファイル・1081 件 (v2.1.0 の追加は 412 件)。補助 `_a2_indep.py`・`_c3_indep.py`・`_e_spinkick.py` は独立な計算)。
 
 ## 3. SAD 準拠状況
 

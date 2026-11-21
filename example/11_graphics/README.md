@@ -1,6 +1,6 @@
 # 11_graphics: 描画関数
 
-Plot 系の関数の例。グラフは Tk の窓に出るので標準出力には出ない (`.gs.txt`・`.pysad.txt` には起動表示・台本・`Print`・エラーだけが残る)。図 (`NAME_plot.png`) は、Canvas の項目を Tcl で書き出し、matplotlib で再描画したもの (左 gs、右 pysad)。作り方と、gs の窓が撮れない理由は、各 `.md` の「図」と `example/tools/canvas_render.py` を見る。
+Plot 系の関数の例。グラフは Tk の窓に出るので標準出力には出ない (`.gs.txt`・`.pysad.txt` には起動表示・台本・`Print`・エラーだけが残る)。図 (`NAME_plot.png`) は、Canvas の項目を Tcl で書き出し、matplotlib で再描画したもの (左 gs、右 pysad)。作り方と、gs の窓が撮れない理由は、各 `.md` の「図」と [`example/tools/canvas_render.py`](../tools/canvas_render.py) を見る。
 
 一致の記号: ○ 一致 / △ 差あり (md に理由) / ×gs 失敗 / ×pysad 未対応・失敗
 

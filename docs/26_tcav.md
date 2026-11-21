@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `ttcav.f` (追跡)、`ttcave.f` (6 次元の写像と行列)。`pysad/tcav.py`。
+K64 の `ttcav.f` (追跡)、`ttcave.f` (6 次元の写像と行列)。[`pysad/tcav.py`](../pysad/tcav.py)。
 
 ```
 TCAVI TC = (L=0.4 K0=1e-4 FREQ=4.5e8 PHI=0.1 DX=2e-4 DY=-1e-4 ROTATE=0.05);

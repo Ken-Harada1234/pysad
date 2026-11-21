@@ -3,9 +3,9 @@
 最終更新: 2026-11-18 (v2.1.0 の後)
 
 対象: `POL` / `RADPOL` フラグ、`Emittance[]` / `EMIT` の偏極の量 (偏極時間・スピンチューン・偏極ベクトル・スピン歳差行列・平衡偏極度)、`TrackParticles` のスピン追跡。
-コードは `pysad/spin.py` (tradke のスピン部、spnorm、srequpol、spdepol、tchge の回転)、`pysad/emit6d.py`、`pysad/emit_extra.py`、`pysad/track6.py` (`_sprot`、`bsi`)、`pysad/ffscmd.py` (`fn_track`)。
-試験は `pysad/tests/test_spin.py`、`test_spin_track.py`。参照はすべて SAD K64 の gs の出力。
-短い要約は `docs/36_spin_csr.md` の §1 とスピン追跡の節にもある。K64 の癖は `docs/21_sad_bug_report.md` の B55〜B58。
+コードは [`pysad/spin.py`](../pysad/spin.py) (tradke のスピン部、spnorm、srequpol、spdepol、tchge の回転)、[`pysad/emit6d.py`](../pysad/emit6d.py)、[`pysad/emit_extra.py`](../pysad/emit_extra.py)、[`pysad/track6.py`](../pysad/track6.py) (`_sprot`、`bsi`)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) (`fn_track`)。
+試験は [`pysad/tests/test_spin.py`](../pysad/tests/test_spin.py)、[`test_spin_track.py`](../pysad/tests/test_spin_track.py)。参照はすべて SAD K64 の gs の出力。
+短い要約は [`docs/36_spin_csr.md`](36_spin_csr.md) の §1 とスピン追跡の節にもある。K64 の癖は [`docs/21_sad_bug_report.md`](21_sad_bug_report.md) の B55〜B58。
 
 ## 1. 何ができるか
 
@@ -16,7 +16,7 @@
 | 粒子ごとのスピン (歳差と Sokolov-Ternov の放射偏極) の追跡 | `POL; RAD;` を付けて `TrackParticles` (入力を 9〜11 列にする) | k64 モード: gs と 4e-12 以下で一致 (§4、§7)。v2 モード: 一部の歳差の式を直す・領域内や損失も扱う (§8a) |
 | 放射偏極だけ切る | `NORADPOL;` (`RADPOL` の既定は ON) | 追跡の Sokolov-Ternov 項だけに効く (§4) |
 
-フラグの既定は `POL` が OFF、`RADPOL` が ON (`pysad/ffscmd.py` の `_FLAGS_DEFAULT`、K64 の `initb1.f` の `defflg`)。SADHelp の説明は「POL が ON のとき、RADPOL は追跡で Sokolov-Ternov 効果を入れる」。
+フラグの既定は `POL` が OFF、`RADPOL` が ON ([`pysad/ffscmd.py`](../pysad/ffscmd.py) の `_FLAGS_DEFAULT`、K64 の `initb1.f` の `defflg`)。SADHelp の説明は「POL が ON のとき、RADPOL は追跡で Sokolov-Ternov 効果を入れる」。
 POL が OFF のとき、偏極の量は K64 も 0 のまま (`PolarizationTime`・`SpinTune`・`Polarization` は 0、`PolarizationVector` は {0,0,0}、`SpinPrecessionMatrix` は単位行列)。`NominalSpinTune` は POL に関係なく `h0·g` (g = 0.001159652181280002 は電子の異常磁気能率、tfstk.f の gspin)。
 `RADPOL` が `Emittance[]` の結果に効くかは、K64 の `temit.f` が `radpol0=radpol` を保存するだけで偏極の計算に使う箇所を見つけていない。pysad は `Emittance[]` では `RADPOL` を参照しない (追跡だけ)。
 
@@ -24,7 +24,7 @@ POL が OFF のとき、偏極の量は K64 も 0 のまま (`PolarizationTime`�
 
 ### 2.1 Emittance[] の偏極の量
 
-`pysad/tests/test_spin.py` の平面リング (`PLANAR`、MOMENTUM 3 GeV、12 セル、`aγ` = 6.808) をそのまま使う。
+[`pysad/tests/test_spin.py`](../pysad/tests/test_spin.py) の平面リング (`PLANAR`、MOMENTUM 3 GeV、12 セル、`aγ` = 6.808) をそのまま使う。
 
 ```
 MOMENTUM = 3GEV;
@@ -57,7 +57,7 @@ gs の結果 (`test_planar_ring_matches_gs`): `PolarizationTime` = 123.815401059
 
 ### 2.2 TrackParticles のスピン追跡
 
-`pysad/tests/test_spin_track.py` の `pt1` (RAD ON・NOFLUC。平面リング + 空洞)。ビームは 9 列 `{x, px, y, py, z, dp, 角度, sy/|s|, flag}` で、10・11 列目は損失位置・損失周の予約 (§4)。
+[`pysad/tests/test_spin_track.py`](../pysad/tests/test_spin_track.py) の `pt1` (RAD ON・NOFLUC。平面リング + 空洞)。ビームは 9 列 `{x, px, y, py, z, dp, 角度, sy/|s|, flag}` で、10・11 列目は損失位置・損失周の予約 (§4)。
 
 ```
 (平面リングは §2.1 と同じ。RING の定義まで)
@@ -78,8 +78,8 @@ Print["S ",r[[2]]];
 戻りは `{位置, {x, px, y, py, z, dp, 角度, sy/|s|, flag}}`。2 粒子 (x と y を 1e-4 ずらした 1 番目と、dp=1e-3 の 2 番目)、スピンの初期値は (角度 0, sy/|s| = 0.1) と (0, 0.2)。3 周追跡した後の 7 列目 (`atan(sz, sx)`) と 8 列目 (`sy/|s|`) が gs と 4e-12 以下で一致する (`test_planar_ring_spin_tracking_matches_gs`)。
 `RAD FLUC` (乱数あり) でも一致する (`pt3`、`pt13`)。`RAD NOFLUC` を `RAD FLUC` に替え、`SeedRandom` を gs と合わせれば同じ乱数の順になる (K64 の乱数の引き順まで写した)。
 
-そのほかの動く例: `test_spin.py` の `COUPLED` (縦ずれ・回転した四極・6 極・ROTATE 付き偏向のあるリング。偏極ベクトルが {-1.35e-4, 0.99954, 0.0305})、`test_mult_ring_matches_gs` (MULT)、`test_solenoid_ring_matches_gs` (SOL 領域)。
-CSR などと一緒の記録は `docs/36_spin_csr.md`、作業の経緯は `docs/history/work_unimpl.md` (POL の節)。
+そのほかの動く例: [`test_spin.py`](../pysad/tests/test_spin.py) の `COUPLED` (縦ずれ・回転した四極・6 極・ROTATE 付き偏向のあるリング。偏極ベクトルが {-1.35e-4, 0.99954, 0.0305})、`test_mult_ring_matches_gs` (MULT)、`test_solenoid_ring_matches_gs` (SOL 領域)。
+CSR などと一緒の記録は [`docs/36_spin_csr.md`](36_spin_csr.md)、作業の経緯は [`docs/history/work_unimpl.md`](history/work_unimpl.md) (POL の節)。
 
 ## 3. 物理と K64 の式
 
@@ -128,7 +128,7 @@ RADPOL が ON で、そのステップに放射エネルギー `ucde > 0` があ
 ## 4. TrackParticles のスピン追跡
 
 - 入力と戻り: POL が ON のとき、ビームは 9〜11 列でなければならない (それ以外は `General::wrongtype`)。7 列目は歳差の角度、8 列目は `sy/|s|`、9 列目は flag、10・11 列目は損失位置・損失周。
-  粒子のスピンは (sx, sy, sz) = (st·cos 角度, sy, st·sin 角度)、st = √(1−sy²)。戻りの 7 列目は `atan(sz, sx)`、8 列目は `sy/|s|` (tftrack.f の `tfsetparticles` / `ktfresetparticles`)。POL が OFF なら 7〜9 列のまま (`docs/08_tracking.md`)。
+  粒子のスピンは (sx, sy, sz) = (st·cos 角度, sy, st·sin 角度)、st = √(1−sy²)。戻りの 7 列目は `atan(sz, sx)`、8 列目は `sy/|s|` (tftrack.f の `tfsetparticles` / `ktfresetparticles`)。POL が OFF なら 7〜9 列のまま ([`docs/08_tracking.md`](08_tracking.md))。
 - 動く条件: **POL かつ RAD が ON のときだけ**。K64 は歳差を `tradk` の中で計算するので、RAD が OFF では高速追跡 (`TrackRun`) が走り、スピンは変わらないまま戻る (7・8 列は入力の値を正規化して返すだけ)。RAD が ON で POL なら `fn_track` は numba の高速追跡を使わず、`track6.py` の Python の追跡に切り替える (`ffscmd.py` が `NotImplementedError` で切り替え)。
   `RADPOL` が OFF なら Sokolov-Ternov の項だけが消え、歳差は動く。
 - **損失の処理 (k64 モード)**: 高速追跡 (`TrackRun`) にしか損失の判定 (`LOSSAMPL`、`LOSSDZ`、flag) がないので、k64 モードのスピン追跡では粒子は落ちない。flag 列は入力のまま返る。10・11 列目 (損失位置・周) は更新しない。**v2 モードは track6 の経路でも落とす** (§8a)。
@@ -194,8 +194,8 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 ## 8. 限界・未確認
 
-- **SOL 領域内の MULT・BEND・CAVI は k64 モードでは未対応** (v2 モードは §8a)。BEND は K64 の `tsol.f` (`tdrift` を呼ぶ) どおりに直訳したが、gs が偏向をほぼ無視して (BZ=0.5 T の領域で ANGLE=0.1 でも位置・角度が 1e-5 しか変わらない) 合わず取り下げた。原因は未確認 (`docs/history/work_unimpl.md`)。
-- **SOL (BZ≠0) 領域内の四極のスピン追跡は gs の参照が食い違い、未照合**。SOL + 四極 + RAD の追跡そのものが、保存済みの参照 (`bench_level9.sad`、2026-10-14) と現在の gs (2026-10-19 ビルド) で別の値になる (x が −0.0027867898 と −0.0014539780)。NORAD は両方で一致する。どちらが正しいかは断定できないが、2026-11-16 の切り分けでは現在の gs 側が SOL 領域内の四極 + RAD を誤って扱う疑いが強い (`docs/44_sol_guide.md` §7 の限界 1)。
+- **SOL 領域内の MULT・BEND・CAVI は k64 モードでは未対応** (v2 モードは §8a)。BEND は K64 の `tsol.f` (`tdrift` を呼ぶ) どおりに直訳したが、gs が偏向をほぼ無視して (BZ=0.5 T の領域で ANGLE=0.1 でも位置・角度が 1e-5 しか変わらない) 合わず取り下げた。原因は未確認 ([`docs/history/work_unimpl.md`](history/work_unimpl.md))。
+- **SOL (BZ≠0) 領域内の四極のスピン追跡は gs の参照が食い違い、未照合**。SOL + 四極 + RAD の追跡そのものが、保存済みの参照 (`bench_level9.sad`、2026-10-14) と現在の gs (2026-10-19 ビルド) で別の値になる (x が −0.0027867898 と −0.0014539780)。NORAD は両方で一致する。どちらが正しいかは断定できないが、2026-11-16 の切り分けでは現在の gs 側が SOL 領域内の四極 + RAD を誤って扱う疑いが強い ([`docs/44_sol_guide.md`](44_sol_guide.md) §7 の限界 1)。
 - BEND の `F1=0.1 FRINGE=3` を RAD ON で追跡すると gs と合わない (相対 0.7)。L≠0 の CAVI に DX・DY を付けると 1e-3 ずれる。どちらもスピンなしでも出る差で、未調査。スピン追跡の一致の範囲はこの 2 つを含まない。
 - K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4) は、pysad の `CALC` の閉軌道が gs と別の解 (y = −0.033) になり、`Emittance[]` が NaN になる。gs は小さい軌道で通る。`qcod` の初期値・後退の違いの可能性があるが未解決。
 - `Polarization` は k64 モードでは NaN (§6)。v2 モードの有限値の限界は §8a。`Polarization2/4/6` は実装していない。
@@ -207,11 +207,11 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 ## 8a. v2 モードで変わった点 (k64 モードは上の §1〜§8 のとおり)
 
-試験 `test_v2_A_spin.py`・`test_v2_A_tchge.py` (放射・エミッタンスの記録 A)、`test_v2_C2_spin.py` (スピン追跡の記録 C2)。記録は `docs/history/v2_changes_A.md`・`v2_changes_C2.md`。根拠は解析式・独立な数値計算 (Thomas-BMT 方程式の積分、モンテカルロ、FLUC つきのスピン追跡) で、gs ではない。
+試験 [`test_v2_A_spin.py`](../pysad/tests/test_v2_A_spin.py)・[`test_v2_A_tchge.py`](../pysad/tests/test_v2_A_tchge.py) (放射・エミッタンスの記録 A)、[`test_v2_C2_spin.py`](../pysad/tests/test_v2_C2_spin.py) (スピン追跡の記録 C2)。記録は [`docs/history/v2_changes_A.md`](history/v2_changes_A.md)・`v2_changes_C2.md`。根拠は解析式・独立な数値計算 (Thomas-BMT 方程式の積分、モンテカルロ、FLUC つきのスピン追跡) で、gs ではない。
 
 ### Polarization (平衡偏極度) の有限値 (B55)
 
-- **K64 の動作**: `spdepol` の `exp(cb²−cφ)·cerfc(cb)` が 0·∞ で NaN。桁あふれだけ直して有限にしても、誤差のあるリングで追跡と 3〜5 桁合わない。**v2.1.0 で誤りの位置を特定した** (B125): K64 の脱偏極率は emittance/減衰率に比例する (光子の跳びの大きさ e を 0.1 倍・10 倍にすると率が 0.1 倍・10 倍、減衰率を 0.1・0.5・2・10 倍にすると率 × 倍率がほぼ一定、`ssprd` を 1e-3〜1e3 倍にしても 4.294e-5〜4.300e-5 で動かない)。2 次の零位相の項 (`spintrm` の `cm0 = −mat/(e^{cφ} − 1)`、位相が打ち消し合う 2 次の積で cφ = −2λ のとき分母 ≈ 2λ) が、平衡のエミッタンス (すでに 1/(2λ) を含む) にさらに 1/(1 − e^{−2λ}) を掛けるため、減衰時間の逆数の分 (1/(2λ) ≈ 1000〜1700) だけ大きい。正しい率は光子の跳びの拡散 D だけで決まり減衰率に依らない。`spintrm` のガウスの項の 2π も余分 (幅 0 の極限で 2π·cm0。正しくは √π/a。2π を外しても P は 1.265e-4 → 1.359e-4 にしか変わらず、1000 倍の差の主因は二重数え)。4.2 GeV・12 MV の 12 セル FODO (`example/v2_next/B3_pol_sideband.sad`) で K64 は P = 1.265e-4 (gs・pysad k64 が一致)、率 4.3e-5 /周で、独立な率 2.3e-8〜4.5e-8 の約 1000 倍。K64 の式の導出 (Mathematica 由来の 6 次までの展開) には戻っていないので、v2 はこの式を使わず独立な式で置き換えた (`spin_results` の `equpol_k64` に桁あふれだけ直した値を参考として残した)。
+- **K64 の動作**: `spdepol` の `exp(cb²−cφ)·cerfc(cb)` が 0·∞ で NaN。桁あふれだけ直して有限にしても、誤差のあるリングで追跡と 3〜5 桁合わない。**v2.1.0 で誤りの位置を特定した** (B125): K64 の脱偏極率は emittance/減衰率に比例する (光子の跳びの大きさ e を 0.1 倍・10 倍にすると率が 0.1 倍・10 倍、減衰率を 0.1・0.5・2・10 倍にすると率 × 倍率がほぼ一定、`ssprd` を 1e-3〜1e3 倍にしても 4.294e-5〜4.300e-5 で動かない)。2 次の零位相の項 (`spintrm` の `cm0 = −mat/(e^{cφ} − 1)`、位相が打ち消し合う 2 次の積で cφ = −2λ のとき分母 ≈ 2λ) が、平衡のエミッタンス (すでに 1/(2λ) を含む) にさらに 1/(1 − e^{−2λ}) を掛けるため、減衰時間の逆数の分 (1/(2λ) ≈ 1000〜1700) だけ大きい。正しい率は光子の跳びの拡散 D だけで決まり減衰率に依らない。`spintrm` のガウスの項の 2π も余分 (幅 0 の極限で 2π·cm0。正しくは √π/a。2π を外しても P は 1.265e-4 → 1.359e-4 にしか変わらず、1000 倍の差の主因は二重数え)。4.2 GeV・12 MV の 12 セル FODO ([`example/v2_next/B3_pol_sideband.sad`](../example/v2_next/B3_pol_sideband.sad)) で K64 は P = 1.265e-4 (gs・pysad k64 が一致)、率 4.3e-5 /周で、独立な率 2.3e-8〜4.5e-8 の約 1000 倍。K64 の式の導出 (Mathematica 由来の 6 次までの展開) には戻っていないので、v2 はこの式を使わず独立な式で置き換えた (`spin_results` の `equpol_k64` に桁あふれだけ直した値を参考として残した)。
 - **v2 の動作**: (1) `exp(cb²)·erfc(cb)` は Faddeeva 関数 w(i·cb) で計算する。(2) 平衡偏極度は、スピン軌道結合から脱偏極率 `rate` を求め、P = (8/5√3)·sdamp/(sdamp_rel + rate) とする (v2.1.0: 分母の緩和率 `sdamp_rel` は逆向きの BEND でも相殺しない Σ r_i (b_i·n)²。下の「逆向きの BEND」)。`rate` は、要素ごとの軌道の行列 T_i、放射の拡散行列 B_i、スピンの回転 R_i、スピン軌道結合 D_i (Emittance[] の srot) から、スピンの周期解 n(u) = n0 + N u を N_{i+1} = (R_i N_i + [n0]× D_i) T_i⁻¹ で解き、rate = ½ Σ_i tr(N⊥ B_i N⊥ᵀ) (1 周あたり) とする。Derbenev–Kondratenko の式の (11/18)|γ∂n/∂γ|² の項と同じ (`pysad/spin.py::slim_depolarization`)。
 - **結果**: 平面リングで **92.376% (Sokolov–Ternov)**。誤差のあるリング (12 セルのリングに四極の縦ずれ ±3 mm、閉軌道 y 6 mm) は、FLUC つきのスピン追跡 (RAD FLUC POL、16 粒子) で測った脱偏極率と下表のとおり合う:
 
@@ -227,7 +227,7 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 ### v2.1.0 の変更 (記録 A2・B3・D1・E)
 
-試験 `test_v2_A2_pol.py`・`test_v2_A2_spin.py`・`test_v2_B3_pol.py`・`test_v2_B3_radpol.py`・`test_v2_E_spinsol.py`・`test_v2_E_pol_kick.py`・`test_v2_D1_emit.py`。例 `example/v2_next/`。
+試験 [`test_v2_A2_pol.py`](../pysad/tests/test_v2_A2_pol.py)・[`test_v2_A2_spin.py`](../pysad/tests/test_v2_A2_spin.py)・[`test_v2_B3_pol.py`](../pysad/tests/test_v2_B3_pol.py)・[`test_v2_B3_radpol.py`](../pysad/tests/test_v2_B3_radpol.py)・[`test_v2_E_spinsol.py`](../pysad/tests/test_v2_E_spinsol.py)・[`test_v2_E_pol_kick.py`](../pysad/tests/test_v2_E_pol_kick.py)・[`test_v2_D1_emit.py`](../pysad/tests/test_v2_D1_emit.py)。例 [`example/v2_next/`](../example/v2_next/)。
 
 **側帯の項 (B3、B125)**: 脱偏極率 `depol_rate` に、スピンの歳差の位相の変調 (シンクロトロン振動の側帯: スピンチューンが aγ(1+δ)) を厳密に取った項を入れた (`spin.sideband_depolarization`)。要素 i の出口の軌道 u に対し、閉軌道のスピン軸 n_i に垂直な基底 (m_i, l_i) を閉軌道の歳差 R_i で運び、α = s·(m + i l) とすると α' = e^{i p_i·u} α + g_i·u (p_i = −n_i·D_i が位相の変調、g_i = i (m_i + i l_i)·D_i が結合)。放射の跳びがないとき保存される量 α − α*(u) の不変な場 α*(u) = −Σ_{k≥0} e^{−iμk} e^{−iS_k} G·M^k u を作り、放射の跳び ξ (共分散 B_i) で偏極が ½|α*(u+ξ) − α*(u)|² だけ減るとして、脱偏極率 = ½ Σ_i ⟨G_i B_i G_i^†⟩ (u はビーム行列のガウス分布で平均。M の固有分解と Sobol 列 1024 点の準モンテカルロ)。変調を切ると線形の SLIM の式に戻る。`Emittance[]` の v2・RFSW ON で自動的に使う。戻り: `depol_rate` (側帯込み)、`depol_rate_linear` (線形)、`spin_spread_sb` (側帯込みの n の広がり。`spin_spread` は線形のまま)。`spin.SIDEBAND = False` で線形の式だけに戻る。縦の減衰が無い (RF OFF)・不安定なリングでは側帯の項を入れず線形の式を使い、`sideband_error` に理由を残す。計算時間は Sobol 1024 点で 12 セル FODO が +3 秒、大きなリング A が +15 秒 (3563 要素の鎖)。
 
@@ -250,14 +250,14 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 **逆向きの BEND (挿入光源の極。B116)**: K64 の `Polarization` は符号つきの率 sdamp = Σ r_i (b_i·n) を緩和率に使うので、逆向きの極が相殺して ASTRID2 + MPW (11 周期、K=32.7、B0=2 T) で P = 92.376% (一定)、τ = 28842 s になる。v2 は緩和率に符号に依らない Σ r_i (b_i·n)² (`sdamp_rel`) を使う: P = (8/5√3)·sdamp/(sdamp_rel + 脱偏極率)、τ = 1/sdamp_rel/f_rev。一方向の曲げだけのリングでは sdamp と同じ (結果は変わらない)。独立な式 P = (8/5√3)⟨ρ⁻³⟩/⟨|ρ|⁻³⟩ = 0.70163、1/τ = (5√3/8) r_e ƛ_C c γ⁵⟨|ρ|⁻³⟩ → 21886 s に対し v2 P = 0.70190、τ = 21915 s (3.9e-4、1.3e-3 の差は閉軌道の曲がりと勾配)。K64 の追跡 (RADPOL) の MPW 対 MPW なしの緩和率の比 1.311 が v2 1.315・式 1.317 と 0.4% で合う。平面リング (誤差なし) の τ は大きなリング A 17983.208 s (式 17983.200)、SP8 (大きなリング B) 1061.2422 s (1061.2421)、PF 2253.985 s、ASTRID2 28814.99 s (28814.95) と 1e-6 程度で一致、P = 0.9237604。k64 は P = NaN (B55)、τ は符号つきの率のまま。未確認: n が y から傾く・非平面のリングで Σ r (b·n)² が最適か (ST の厳密式の (1 − 2/9 (n·v)²) の項を入れていない)、ずれのある MPW のリングの P・τ。
 
-**RADPOL の緩和 (B3)**: A2 が見つけた「追跡の P=1 からの緩和が (1 − PST)/τ の 1.58 倍速い」は **K64 の誤りではない**。K64 の `sprot` の式 `dst = (PST − st)·cfpd·(p p0/h²)²·ucde/bt` は Sokolov–Ternov の率に厳密に等しい (3 GeV の 24 セル FODO で P=1 から 1 周の dP −1.87320e-10、式 −1.87318e-10 (9e-6)、P=0 から +2.26965e-9)。ASTRID2 (τ = 28815 s、1 刻みの増分 6.4e-17) の 1.58 倍は、1 刻みの緩和量が倍精度の ulp (1.1e-16) 以下で、P≈1 のとき丸めで 1.73 倍になるため (P0 = 1・0.5・0.25 からの 1 周の dP と式の比 1.578・0.934・0.979 = 丸めの量子化の予想どおり)。**低エネルギーのリングで P≈1 から RADPOL の緩和を測るときは、倍精度の丸めで ST の値が実際とずれる** (P0 ≲ 0.5 から始めるか、P=0 からの立ち上がりで測る。gs も同じ丸めを受ける)。MPW あり・なしの緩和率の比は保たれる。例 `example/v2_next/B3_radpol_roundoff.py`。
+**RADPOL の緩和 (B3)**: A2 が見つけた「追跡の P=1 からの緩和が (1 − PST)/τ の 1.58 倍速い」は **K64 の誤りではない**。K64 の `sprot` の式 `dst = (PST − st)·cfpd·(p p0/h²)²·ucde/bt` は Sokolov–Ternov の率に厳密に等しい (3 GeV の 24 セル FODO で P=1 から 1 周の dP −1.87320e-10、式 −1.87318e-10 (9e-6)、P=0 から +2.26965e-9)。ASTRID2 (τ = 28815 s、1 刻みの増分 6.4e-17) の 1.58 倍は、1 刻みの緩和量が倍精度の ulp (1.1e-16) 以下で、P≈1 のとき丸めで 1.73 倍になるため (P0 = 1・0.5・0.25 からの 1 周の dP と式の比 1.578・0.934・0.979 = 丸めの量子化の予想どおり)。**低エネルギーのリングで P≈1 から RADPOL の緩和を測るときは、倍精度の丸めで ST の値が実際とずれる** (P0 ≲ 0.5 から始めるか、P=0 からの立ち上がりで測る。gs も同じ丸めを受ける)。MPW あり・なしの緩和率の比は保たれる。例 [`example/v2_next/B3_radpol_roundoff.py`](../example/v2_next/B3_radpol_roundoff.py)。
 
-**傾いてずれたソレノイドの POL の量 (E、B130)**: v2 の Emittance[]・EMIT の POL の量 (SpinTune・n0・Polarization・脱偏極ベクトル) は、SOL 領域 (ずれ・傾き・F1 つき。領域内は DRIFT・QUAD・BEND・MULT・CAVI・RF つき MULT・SOL) で追跡と一致する。K64 の `tradke` は運動量の向きの磁場の積分 (縦磁場 bz·al、端の ψ) を z 軸の向きの磁場として足すので、運動量が z 軸から傾くと (傾いた軌道・軸を外れた粒子) (1) B⊥ に垂直成分が二重に入り、(2) δ≠0 で (1+a)B∥ の歳差が 1/(1+δ) 倍にならない。v2 は B⊥ = 向きの変化 (`asin`)、B∥ = [bz·al + (bx px + by py)·al/pz + ψ]/(1+δ) を運動量の向きに分けて足す (勾配も)。`solemit._trk` が各刻みの bz・横磁場・その勾配・端の ψ を渡す。あわせて v2 だけ: 領域内の DRIFT・QUAD の放射・スピンの刻みを bz·L/n ≤ 0.02 に、向きの変化の大きさを sin θ でなく θ に (領域の外にも効く: N8、平面リングで SpinTune が 2.6e-5 変わる)。根拠: 閉じた式 (領域は一様な縦磁場 bz ẑ_s なので運動量は B のまわりを回り、スピンの歳差は Ω = (1+aγ)B − (aγ−a)(B·p̂)p̂) と、傾き 1〜50 mrad・1〜3 T・0.3〜1 GeV の 5 通りで追跡と 5e-7、Emittance[] の srot は追跡と 1e-8。Thomas-BMT の数値積分 (DRIFT・BEND・QUAD (K1<0・ROTATE つき)・MULT (K0+K1、ROTATE つき)・CAVI・RF つき MULT、BZ = 2 T・0.5 GeV) と軸上のスピン回転が 3e-5、軌道座標についての微分 D が追跡 1e-6 + 1%、Emittance[] 3e-6 + 1%。リング (先頭に BZ = 2 T・0.8 m の領域、傾き 3 mrad・ずれ 2 mm / 傾き 10 mrad・ずれ 4 mm) の SpinTune = Emittance[] − 追跡の差: 小さな FODO (0.5 GeV) 新 −8e-16 / −4e-16 (K64 式 −3.8e-4 / −7.3e-4、n0 4.9e-3 / 1.4e-2 rad)、ASTRID2・MPW 入り 1e-14 以下 (K64 式 +4.1e-4 / +9.1e-4)、PF 5e-13 (K64 式 −3.9e-4 / −1.1e-3)、大きなリング A 4e-13 (K64 式 −3.8e-4 / −1.07e-3、n0 3.6e-3 / 1.2e-2 rad)。k64 は K64 の式 (`spin.SOL_BPAR = False` でも旧式)。条件: 1〜3 T・0.3〜3 GeV。使えない・未確認: bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (放射の分割が EPS 由来)、領域内の QUAD の端の ψ は追跡と同じ模型で hard edge の Bs なし (軌道が数 mm の範囲で確認、cm のずれは未確認)、領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y')。例 `example/v2_next/E_sol_tilt_spin.py`。pysad 自身の不具合も 3 件直した (両モード): 軌道がゼロの四極の Emittance[] (POL) のスピン軌道結合 D が 0、領域内の四極 (K1<0・ROTATE) でスピンの座標系を回さない (Emittance[]・track6。gs と全桁一致)、領域内の CAVI のスピン (v2 のみ。B131)。
+**傾いてずれたソレノイドの POL の量 (E、B130)**: v2 の Emittance[]・EMIT の POL の量 (SpinTune・n0・Polarization・脱偏極ベクトル) は、SOL 領域 (ずれ・傾き・F1 つき。領域内は DRIFT・QUAD・BEND・MULT・CAVI・RF つき MULT・SOL) で追跡と一致する。K64 の `tradke` は運動量の向きの磁場の積分 (縦磁場 bz·al、端の ψ) を z 軸の向きの磁場として足すので、運動量が z 軸から傾くと (傾いた軌道・軸を外れた粒子) (1) B⊥ に垂直成分が二重に入り、(2) δ≠0 で (1+a)B∥ の歳差が 1/(1+δ) 倍にならない。v2 は B⊥ = 向きの変化 (`asin`)、B∥ = [bz·al + (bx px + by py)·al/pz + ψ]/(1+δ) を運動量の向きに分けて足す (勾配も)。`solemit._trk` が各刻みの bz・横磁場・その勾配・端の ψ を渡す。あわせて v2 だけ: 領域内の DRIFT・QUAD の放射・スピンの刻みを bz·L/n ≤ 0.02 に、向きの変化の大きさを sin θ でなく θ に (領域の外にも効く: N8、平面リングで SpinTune が 2.6e-5 変わる)。根拠: 閉じた式 (領域は一様な縦磁場 bz ẑ_s なので運動量は B のまわりを回り、スピンの歳差は Ω = (1+aγ)B − (aγ−a)(B·p̂)p̂) と、傾き 1〜50 mrad・1〜3 T・0.3〜1 GeV の 5 通りで追跡と 5e-7、Emittance[] の srot は追跡と 1e-8。Thomas-BMT の数値積分 (DRIFT・BEND・QUAD (K1<0・ROTATE つき)・MULT (K0+K1、ROTATE つき)・CAVI・RF つき MULT、BZ = 2 T・0.5 GeV) と軸上のスピン回転が 3e-5、軌道座標についての微分 D が追跡 1e-6 + 1%、Emittance[] 3e-6 + 1%。リング (先頭に BZ = 2 T・0.8 m の領域、傾き 3 mrad・ずれ 2 mm / 傾き 10 mrad・ずれ 4 mm) の SpinTune = Emittance[] − 追跡の差: 小さな FODO (0.5 GeV) 新 −8e-16 / −4e-16 (K64 式 −3.8e-4 / −7.3e-4、n0 4.9e-3 / 1.4e-2 rad)、ASTRID2・MPW 入り 1e-14 以下 (K64 式 +4.1e-4 / +9.1e-4)、PF 5e-13 (K64 式 −3.9e-4 / −1.1e-3)、大きなリング A 4e-13 (K64 式 −3.8e-4 / −1.07e-3、n0 3.6e-3 / 1.2e-2 rad)。k64 は K64 の式 (`spin.SOL_BPAR = False` でも旧式)。条件: 1〜3 T・0.3〜3 GeV。使えない・未確認: bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (放射の分割が EPS 由来)、領域内の QUAD の端の ψ は追跡と同じ模型で hard edge の Bs なし (軌道が数 mm の範囲で確認、cm のずれは未確認)、領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y')。例 [`example/v2_next/E_sol_tilt_spin.py`](../example/v2_next/E_sol_tilt_spin.py)。pysad 自身の不具合も 3 件直した (両モード): 軌道がゼロの四極の Emittance[] (POL) のスピン軌道結合 D が 0、領域内の四極 (K1<0・ROTATE) でスピンの座標系を回さない (Emittance[]・track6。gs と全桁一致)、領域内の CAVI のスピン (v2 のみ。B131)。
 
-**POL + TRPT + 加速 (D1)**: track6 の経路 (POL + RAD) で、TRPT の SOL 領域の外の VOLT≠0 の CAVI (DX・DY・ROTATE も) を通す (`track6._tcav_acc_ens`: 高速追跡と同じ `cav_full` で全粒子の `ph` を空洞の後の基準運動量にし、以降の放射・スピンの歳差 (aγ) は新しい p0・h0 を使う)。1 GeV、扇形の偏向磁石 (θ1 = 0.3、θ2 = 0.2) の間に空洞 (VOLT = 0・0.2・0.5 GV、PHI = −π/2) を置いた輸送路で、縦向きのスピンの (sx, sz) が断熱加速の解析式 Φ = aγ1θ1 + aγ2θ2 (γ2 = γ1 + VOLT/mc²) の (sin Φ, cos Φ) と 5e-7 以内 (VOLT = 0.5 GV: Φ = 1.36163 rad、加速なしなら 1.13469 rad)。以前は track6 が基準運動量の変化を扱わず黙って δ = 0.27 の値を返していた (領域内の CAVI 2 台の輸送路)。使えない: SOL 領域内の加速、RF つき MULT・TCAVI の加速、リングの何周もの TRPT (K64 の TRPT は輸送路用)、スピン追跡の損失の処理 (SADError)。k64 モードは明示のエラー。track6 の `_ndivrad` が TRPT の 10 倍を見ていなかったのを直した (POL・RADPOL・光子の追跡の TRPT の結果が gs に近づく)。例 `example/v2_next/D1_spin_accel.py`。
+**POL + TRPT + 加速 (D1)**: track6 の経路 (POL + RAD) で、TRPT の SOL 領域の外の VOLT≠0 の CAVI (DX・DY・ROTATE も) を通す (`track6._tcav_acc_ens`: 高速追跡と同じ `cav_full` で全粒子の `ph` を空洞の後の基準運動量にし、以降の放射・スピンの歳差 (aγ) は新しい p0・h0 を使う)。1 GeV、扇形の偏向磁石 (θ1 = 0.3、θ2 = 0.2) の間に空洞 (VOLT = 0・0.2・0.5 GV、PHI = −π/2) を置いた輸送路で、縦向きのスピンの (sx, sz) が断熱加速の解析式 Φ = aγ1θ1 + aγ2θ2 (γ2 = γ1 + VOLT/mc²) の (sin Φ, cos Φ) と 5e-7 以内 (VOLT = 0.5 GV: Φ = 1.36163 rad、加速なしなら 1.13469 rad)。以前は track6 が基準運動量の変化を扱わず黙って δ = 0.27 の値を返していた (領域内の CAVI 2 台の輸送路)。使えない: SOL 領域内の加速、RF つき MULT・TCAVI の加速、リングの何周もの TRPT (K64 の TRPT は輸送路用)、スピン追跡の損失の処理 (SADError)。k64 モードは明示のエラー。track6 の `_ndivrad` が TRPT の 10 倍を見ていなかったのを直した (POL・RADPOL・光子の追跡の TRPT の結果が gs に近づく)。例 [`example/v2_next/D1_spin_accel.py`](../example/v2_next/D1_spin_accel.py)。
 ### v2.2.0 の変更 (記録 P1。試験 `test_v2_P1_st.py`・`test_v2_P1_pol_chrom.py`・`test_v2_P1_rev.py`)
 
-根拠は独立な Derbenev-Kondratenko (DK) の数値積分 (`pysad/tests/_p1_dk.py`: BEND を 0.05 m の刻みに分けた追跡から、N の周期解と刻みごとの ∂n/∂δ・ρ⁻¹・b̂・v̂ を作る)・厳密な Thomas-BMT の積分・FLUC つきの追跡・モンテカルロで、gs ではない。モジュール変数 (`pysad/spin.py`) で v2.1.0 の式に戻せる。
+根拠は独立な Derbenev-Kondratenko (DK) の数値積分 ([`pysad/tests/_p1_dk.py`](../pysad/tests/_p1_dk.py): BEND を 0.05 m の刻みに分けた追跡から、N の周期解と刻みごとの ∂n/∂δ・ρ⁻¹・b̂・v̂ を作る)・厳密な Thomas-BMT の積分・FLUC つきの追跡・モンテカルロで、gs ではない。モジュール変数 ([`pysad/spin.py`](../pysad/spin.py)) で v2.1.0 の式に戻せる。
 
 **緩和率と運動論的偏極 (B116 の続き。`spin.ST_EXACT`・`KINETIC`・`STEP_RATE`)**: 緩和率は Baier-Katkov の式の c1 の項だけで、1/τ = (5√3/8) r_e ƛ_C c γ⁵ ⟨|ρ|⁻³ (1 − 2/9 (n·v)²)⟩ (n·b の項は平衡偏極度だけを決める)。v2.1.0 (A2) の Σ r (b·n)² は n ∥ b (平面リング) では同じだが、n が b に垂直 (垂直の偏向の中、水平磁場の挿入光源) では 0 になり、傾いた n では 1 − (b·n)² の分だけ過小になる。v2 は放射の刻みごとに Σ w と Σ w v̂v̂ᵀ を積算して厳密な緩和率 (`sdamp_rel`) を作る (A2 の式は `sdamp_rel_b2`)。分子に運動論的偏極 −b·∂n/∂δ (`res['kinetic']`)、脱偏極率は要素の出口の N ではなく放射の刻みごとのスピン軸の場で積分する (水平磁場の MPW のように要素の中で D の n に垂直な成分が大きいとき違う。平面リングでは従来と同じ)。∂n/∂δ は位置と角度を固定した δ の偏微分 (SLIM の N の δ 列)。閉軌道で δ を変えたときの全微分ではない。
 
@@ -317,9 +317,9 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 ## 9. 関連文書
 
-- `docs/36_spin_csr.md`: POL と CSR の要約 (§1 とスピン追跡の節)
-- `docs/29_sol_optics.md`: SOL の Twiss・Emittance・追跡
-- `docs/07_emittance.md`、`docs/08_tracking.md`: Emittance と TrackParticles の一般説明 (POL の記述は更新が必要な箇所がある)
-- `docs/21_sad_bug_report.md`: K64 の癖 B55〜B58
-- `docs/history/work_unimpl.md`: POL・SOL・追跡の作業記録と未解決の差
-- `docs/45_radlight_guide.md`: RADLIGHT (`TrackParticles` が軌道を返す)
+- [`docs/36_spin_csr.md`](36_spin_csr.md): POL と CSR の要約 (§1 とスピン追跡の節)
+- [`docs/29_sol_optics.md`](29_sol_optics.md): SOL の Twiss・Emittance・追跡
+- [`docs/07_emittance.md`](07_emittance.md)、[`docs/08_tracking.md`](08_tracking.md): Emittance と TrackParticles の一般説明 (POL の記述は更新が必要な箇所がある)
+- [`docs/21_sad_bug_report.md`](21_sad_bug_report.md): K64 の癖 B55〜B58
+- [`docs/history/work_unimpl.md`](history/work_unimpl.md): POL・SOL・追跡の作業記録と未解決の差
+- [`docs/45_radlight_guide.md`](45_radlight_guide.md): RADLIGHT (`TrackParticles` が軌道を返す)

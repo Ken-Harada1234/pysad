@@ -7,7 +7,7 @@
 - 乱数の種: `SeedRandom[seed]`。例は seeds = {17, 111, 3} (補正の例は {17, 111})。元の台本は `SeedRandom[187]` と `Random[1000]` から作った 115 個の種。`GCUT = 1` (σ 単位の打ち切り。元の台本と同じ)。
 - 位置ずれ ae = 40 μm: 四極・六極の成分ごとの `LINE["DX"/"DY", 成分名] = ae GaussRandom[]` (`modules/modules_errors.n`)。元の `DELX`・`DELY` コマンドは、この K64 ビルドでは `cell calc` の閉軌道に効かない (DUMP には値が出るだけ。gs・pysad とも) ので使わない。
 - 強さの誤差 fe = 4e-4 (`DK`)、回転の誤差 te = 100 μrad (`DTHETA`): FFS のコマンド (偏向磁石・四極・六極に)。
-- 成分ごとの値 (DX・DY・K0) は、`USE RING NOEXPAND` と `cell calc noexpand` でないと同名の要素の値に揃えられてしまう (`docs/11_sad_quirks.md` A56)。HD・VD (補正磁石) は同じ名前の繰り返しなので K0 は NOEXPAND が必要。
+- 成分ごとの値 (DX・DY・K0) は、`USE RING NOEXPAND` と `cell calc noexpand` でないと同名の要素の値に揃えられてしまう ([`docs/11_sad_quirks.md`](../../../docs/11_sad_quirks.md) A56)。HD・VD (補正磁石) は同じ名前の繰り返しなので K0 は NOEXPAND が必要。
 - 補正の流れ: (1) COD 応答行列を解析式で作る (`KEKLS_cod_response` で SAD の COD と照合)、(2) 誤差を与える、(3) 応答行列の特異値分解の疑似逆行列で K0 を求め、0.5 倍ずつ繰り返しかける、(4) COD・分散の rms と最大値、チューンの変化を表示する。
 
 ## 一覧 (gs と pysad の一致: ○ 一致、△ 差あり、× 不一致または未対応)

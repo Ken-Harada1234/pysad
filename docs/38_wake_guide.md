@@ -2,9 +2,9 @@
 
 最終更新: 2026-11-17
 
-初めて読む人向けの解説。詳細な検証表と SIGSEGV の修正は `docs/23_wake.md`、経緯は `docs/history/work_wake.md`。
-対象コード: `pysad/wake.py` (txwake.f)、`pysad/wakeopt.py` (tffswake.f)、`pysad/ffscmd.py` (`_wake_table`、`_wake_opt_tables`、`fn_track` の wake 部、`_wake_cmd`)、
-`pysad/track6n.py` (`turn`、`TrackRun.set_wake`、CAVI の分割)、`pysad/track6n_ext.py` (`mult_full`)。
+初めて読む人向けの解説。詳細な検証表と SIGSEGV の修正は [`docs/23_wake.md`](23_wake.md)、経緯は [`docs/history/work_wake.md`](history/work_wake.md)。
+対象コード: [`pysad/wake.py`](../pysad/wake.py) (txwake.f)、[`pysad/wakeopt.py`](../pysad/wakeopt.py) (tffswake.f)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) (`_wake_table`、`_wake_opt_tables`、`fn_track` の wake 部、`_wake_cmd`)、
+[`pysad/track6n.py`](../pysad/track6n.py) (`turn`、`TrackRun.set_wake`、CAVI の分割)、[`pysad/track6n_ext.py`](../pysad/track6n_ext.py) (`mult_full`)。
 
 ## 1. 何ができるか
 
@@ -100,7 +100,7 @@ WAKEOPT・LWAKE・TWAKE のどれかが OFF か、ウェイクのある要素が
 | MULT で VOLT=0 | 普通の要素 | 普通の要素と同じ (gs と一致を確認) |
 | SOL の領域内 (BOUND≠0 の SOL から次の BOUND≠0 の SOL まで) と終端の SOL | tsol.f が要素ごとに前後へ wake (dx=DX、dy=DY、theta=ROTATE)。領域内の CAVI・VOLT≠0 の MULT は tmultiacc の中で分割ごとに wake (ewak) | `_wake_table` が `in_sol` で判別して同じ形にする。**領域内の CAVI・RF つき MULT の wake は v2 モードだけ** (k64 モードは領域内の CAVI・MULT が未対応) |
 | SOL 領域の始点の SOL | 元の K64 は SIGSEGV (後述 6 節) | 直した SAD と同じ動作 (普通の要素と同じ前後のキック) |
-| BEAMBEAM | 要素にウェイクを付けられる | 縦・横・5 周で gs と一致 (`docs/24_beambeam.md`) |
+| BEAMBEAM | 要素にウェイクを付けられる | 縦・横・5 周で gs と一致 ([`docs/24_beambeam.md`](24_beambeam.md)) |
 
 TRPT で VOLT≠0 の CAVI は、基準運動量が空洞で上がる (`vnominal`)。`cav_full` が `tcav.f` のとおり `ndiv` 分割と `p0`、`h0` の付け替えを行い、区間 (tturn) の終わりで元に戻す。wake の有無によらず効く。
 光学の wake は、TRPT で加速要素があるときは未対応 (`SADError`)。
@@ -123,7 +123,7 @@ ENDWAKE;
 - 表は行をまたいで書ける (`ENDWAKE` か `;` が来るまで続く)。1 行に何組でも、注釈 `!` 可、`ENDWAKE` の後の `;` は任意、同じ行の続き (`ENDWAKE; CALC;`) も実行する。大文字小文字・省略形 (`wake t RF`) 可。要素名はワイルドカード可 (合う CAVI すべてに登録)。値は数か式。点数の上限は無い (400 点で確認)。
 - 追跡は `WakeFunction[…] = …` で同じ表を与えた場合と同じ結果 (gs の参照値と 2e-9、400 点・2 台の CAVI で 1e-12)。TRPT と LWAKE / TWAKE が ON の `TrackParticles` で効く。
 - 使えない: 表の途中の `;` (エラー)、CAVI 以外の要素、k64 モード。`ENDWAKE` を書き忘れると次の `;` までを表として読んでエラーにする。
-- 例 `example/v2_C/C2w_wake_table.sad`、試験 `test_v2_C_wakecmd.py`・`test_v2_C2_wakecmd.py`。
+- 例 [`example/v2_C/C2w_wake_table.sad`](../example/v2_C/C2w_wake_table.sad)、試験 [`test_v2_C_wakecmd.py`](../pysad/tests/test_v2_C_wakecmd.py)・[`test_v2_C2_wakecmd.py`](../pysad/tests/test_v2_C2_wakecmd.py)。
 
 ## 5a. wake の重み (v2 モードで直した K64 の誤り)
 
@@ -137,7 +137,7 @@ K64 の `tcav.f`・`tmulti.f` は `fw=fw0*(wsn+ws(n-1)*.5d0)` で、空洞が 2 
 - 粒子の整列 `spsort` は不安定なクイックソート。同じ z の粒子の順序が結果に出るので `wake._spsort` に直訳した (argsort では 2.4e-7 ずれた)。
 - `dv` の更新で `h1` をキック前の `1+g` から作る。
 - 光学の縦のキックは `ut1(mfitddp,:) = ... − cp0 wbuf` と配列全体への代入で、軌道の数が奇数だと要素の対応が 1 つずれる (軌道 s は s+1 のキックを受ける)。pysad も同じ (`_Kicker.shift`)。
-- 元の K64 が SIGSEGV で落ちる 3 つの場合 (`docs/21_sad_bug_report.md` の B31-B33、修正の差分は `docs/history/sad_patch/wake_sigsegv_fixes.patch`):
+- 元の K64 が SIGSEGV で落ちる 3 つの場合 ([`docs/21_sad_bug_report.md`](21_sad_bug_report.md) の B31-B33、修正の差分は [`docs/history/sad_patch/wake_sigsegv_fixes.patch`](history/sad_patch/wake_sigsegv_fixes.patch)):
   光学で縦と横の表の片方しかない要素 (`tffswake.f:102`)、SOL 領域の始点の SOL にウェイク (`tturn.f:567`)、TRPT で追跡の最初から LOSSAMPL の外にいる粒子 (`tapert.f:184`。wake と無関係)。
   pysad は前 2 つを直した SAD と同じ動作にしている。元の gs とは比べられない。
 
@@ -150,7 +150,7 @@ K64 の `tcav.f`・`tmulti.f` は `fw=fw0*(wsn+ws(n-1)*.5d0)` で、空洞が 2 
 
 ## 8. gs との一致の度合い
 
-数値は `docs/23_wake.md` §4・§7 と試験から。使った条件: 追跡はエネルギー 1.7 GeV 前後の小さなライン (INS、NORAD NOFLUC)、粒子 200〜400 個、PBUNCH=1E10〜1E12。実際のリングでの検証はしていない。
+数値は [`docs/23_wake.md`](23_wake.md) §4・§7 と試験から。使った条件: 追跡はエネルギー 1.7 GeV 前後の小さなライン (INS、NORAD NOFLUC)、粒子 200〜400 個、PBUNCH=1E10〜1E12。実際のリングでの検証はしていない。
 
 - 追跡: 成分ごとの総和と 3 粒子の値が 10 桁一致。ケースは縦だけ・横だけ・両方、2 か所のウェイク、NBUNCH=3、粒子損失 (LOSSAMPL=0.0025 で 107 個)、flag=0 の粒子、同じ z の粒子、ROTATE≠0、CAVI (VOLT=0 と加速あり、フリンジあり・なし)、RF のある MULT (K0〜K3、DX・DY・ROTATE、DVOLT、DPHI、FREQ)、MULT (VOLT=0)、SOL 領域。
 - 光学: 条件の表は文字列で完全一致、中心の軌道 (`Twiss["DX"..]`) は相対 2e-8 以内 (z は絶対 3e-14 以内)。2〜5 軌道、NBUNCH=3 と表の使い回し、28 個形式、WAKEOPT なしを含む。
@@ -163,16 +163,16 @@ K64 の `tcav.f`・`tmulti.f` は `fw=fw0*(wsn+ws(n-1)*.5d0)` で、空洞が 2 
 - CELL (周期系) と InitialOrbits の併用、TRPT で加速要素があるときの InitialOrbits は未対応 (`SADError`)。光学の `gammab` は基準運動量で一定。
 - 光学の表は軌道が多いと列を選ぶ (`nn`)。極端な軌道数は未確認。
 - MULT の AUTOPHI と CAVI の AUTOPHI は、k64 モードでは `NotImplementedError`、v2 モードでは実装した (docs/44)。ANGLE≠0 の MULT (tmulta)、MULT の F1・FRINGE は両モードで未対応。
-- TRPT で最初から LOSSAMPL の外にいる粒子があると、元の gs は落ちる (B33)。直した SAD (`~/sad_dbg`) との出力座標の差は **解消** (2026-11-16 確認)。原因は K64 の `tapert` が落とす印に `kptbl(i,4)=l_track` を書くこと: `l_track` はセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。最初の tapert では印が 0 =「生きている」になり落ちず (座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる)、2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。pysad は以前は常に最初の要素で落としていたので `TrackRun.l_track0`・`k_apert` の lcur==0 で再現し、gs の 1 回目・2 回目の呼び出しと直した SAD (LOSSAMPL=1e-4、3 粒子、NORAD、TRPT、2 周、15 値) と全桁一致 (`test_small_items.py`)。元の K64 はここで落ちるので、元の K64 に対する基準は無い。
+- TRPT で最初から LOSSAMPL の外にいる粒子があると、元の gs は落ちる (B33)。直した SAD (`~/sad_dbg`) との出力座標の差は **解消** (2026-11-16 確認)。原因は K64 の `tapert` が落とす印に `kptbl(i,4)=l_track` を書くこと: `l_track` はセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。最初の tapert では印が 0 =「生きている」になり落ちず (座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる)、2 回目の TrackParticles からは `l_track≠0` で最初の要素で落ちる。pysad は以前は常に最初の要素で落としていたので `TrackRun.l_track0`・`k_apert` の lcur==0 で再現し、gs の 1 回目・2 回目の呼び出しと直した SAD (LOSSAMPL=1e-4、3 粒子、NORAD、TRPT、2 周、15 値) と全桁一致 ([`test_small_items.py`](../pysad/tests/test_small_items.py))。元の K64 はここで落ちるので、元の K64 に対する基準は無い。
 - `txwdefslice` で、バンチの間隔が NBUNCH を超えて空くときは Fortran が配列の外へ書く。pysad は読める値として扱うので結果が不定で、比較できない。
 - 並列追跡 (NPARA) は wake があると 1 本になる (tftrack.f:133)。pysad は元から 1 本。
 - 旧 WAKE コマンド (`tfwake.f`) は k64 モードでは移植していない (v2 モードは 5 節)。
-- SOL 領域内の CAVI・RF つき MULT の wake は v2 モードで実装した (縦の wake によるエネルギー変化の合計が領域の外の同じ空洞と bz → 0 で 1e-6 で一致、横の蹴りの合計は 2% 以内)。**横の蹴りを gs と比べてはいない**。k64 モードでは領域内の CAVI・MULT そのものが未対応。TCAVI と wake の併用は未確認 (`docs/26_tcav.md`)。
+- SOL 領域内の CAVI・RF つき MULT の wake は v2 モードで実装した (縦の wake によるエネルギー変化の合計が領域の外の同じ空洞と bz → 0 で 1e-6 で一致、横の蹴りの合計は 2% 以内)。**横の蹴りを gs と比べてはいない**。k64 モードでは領域内の CAVI・MULT そのものが未対応。TCAVI と wake の併用は未確認 ([`docs/26_tcav.md`](26_tcav.md))。
 - `track6n.py` の `segment` には SOL 領域を含む区間で `NotImplementedError('wake: SOL 領域を含む区間')` を出す分岐が残るが、**当たらない防御**と確認した (2026-11-16)。Prog は SOL 領域でも 1 要素 1 kind (`compile_sol_region` が要素ごとに足す) なので、kinds の数と b-a は常に等しい。
 
 ## 10. 関連文書
 
-- `docs/23_wake.md`: 検証表、SIGSEGV の調査と修正の詳細、WAKEOPT の仕様。
-- `docs/history/work_wake.md`: 実装記録。`docs/21_sad_bug_report.md` (B31-B33)。
-- `docs/08_tracking.md` (TrackParticles)、`docs/24_beambeam.md` (BEAMBEAM と wake)、`docs/26_tcav.md`、`docs/29_sol_optics.md`、`docs/11_sad_quirks.md`。
+- [`docs/23_wake.md`](23_wake.md): 検証表、SIGSEGV の調査と修正の詳細、WAKEOPT の仕様。
+- [`docs/history/work_wake.md`](history/work_wake.md): 実装記録。[`docs/21_sad_bug_report.md`](21_sad_bug_report.md) (B31-B33)。
+- [`docs/08_tracking.md`](08_tracking.md) (TrackParticles)、[`docs/24_beambeam.md`](24_beambeam.md) (BEAMBEAM と wake)、[`docs/26_tcav.md`](26_tcav.md)、[`docs/29_sol_optics.md`](29_sol_optics.md)、[`docs/11_sad_quirks.md`](11_sad_quirks.md)。
 - 参照: SADHelp (CERN) の WakeFunction。

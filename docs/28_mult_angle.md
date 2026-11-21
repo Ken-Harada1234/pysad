@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット。経緯は `history/` にある)
 
-K64 の `tmulta.f` (追跡 `tmulta`、Twiss・Emittance[] の `tmultae`)。`pysad/multa.py` (追跡)、`pysad/multae.py` (COD 写像と行列)。
+K64 の `tmulta.f` (追跡 `tmulta`、Twiss・Emittance[] の `tmultae`)。[`pysad/multa.py`](../pysad/multa.py) (追跡)、[`pysad/multae.py`](../pysad/multae.py) (COD 写像と行列)。
 
 ```
 MULT M1 = (L=1 ANGLE=0.05 K1=0.1 K2=0.5 E1=0.5 E2=0.5);
