@@ -1,0 +1,329 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 14:04:45 Saturday 11/21/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!=====================================================================
+! KEK-LS  v03_68  (3 GeV, 20 セル, ESRF 型 HMBA)
+!
+! KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の
+! Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した。
+!
+! エネルギー      3 GeV
+! 周長            570.72 m (RINGC)。RING は入射セル ARCINJ の分だけ 0.9 mm 長い 570.7209 m
+! 周回部          標準セル 20 個 (ARCA = ARCAH と -ARCAH。長直線部 (DRID1×2 = 5.88 m) の中心 MKS から次の MKS まで)
+! RF              2 MV、ハーモニック数 952
+! チューン        (48.58, 17.62)  (RINGC・RING とも)
+! エミッタンス    εx 約 134 pm rad (RINGC。RING は約 136 pm rad)。エネルギー拡がり約 6.4e-4、U0 約 0.296 MeV、αc 約 2.2e-4
+!
+! ライン
+!   ARCAH   標準セルの半分 (MKS = 長直線部の中心から MKC まで)。ARCAH1 = 直線部 (DRID1 2.94 m)・四極 QFA1H・QDA2・
+!           偏向磁石 BID5〜BID1 (中央に補正磁石 HD) と四極 QDA3。ARCAH2 = 六極 SDH・SFH、四極 QFA4・QDA5、
+!           偏向磁石 BPI1〜BPI5、四極 QFA6H・QFA8H、勾配つき偏向磁石 BPI6H・BPI7H、DRCT (0.55 m)
+!   ARCA    標準セル 1 個 = ARCAH と -ARCAH
+!   RINGC   標準セル 20 個の周回ライン (RF 空洞 RFC が中央)
+!   ARCINJ  入射セル = ARCAH1 ARCAH2 + ARCINJH + -ARCINJH2 + -ARCAH2 -ARCAH1
+!           (ARCINJH・ARCINJH2 は入射用の長直線部を作る四極 QS0〜QS5・キッカー K1〜K4 つき)
+!   RING    標準セル 19 個 + ARCINJ の周回ライン (入射セル含む)
+!
+! このファイルは FFS; の前に置く (要素・ライン定義だけ。台本は後ろに続ける)。
+! 要素の定義の中身は元の設計ファイルのまま (改行と先頭のコメントだけ変えた)。
+!=====================================================================
+ MOMENTUM = 3GEV;
+ DRIFT  DRID1   =(L =2.94 )  DR05    =(L =.05 )   DR20    =(L =.2 )    DR12    =(L =.12 )   DRSS2   =(L =.3825 )
+        DRSO    =(L =.2025 ) DR06    =(L =.06 )   DR28    =(L =.19 )   DR14    =(L =.14 )   DRCT    =(L =.55 )
+        DRID1INJ=(L =2.7654600539435394 )
+ ;
+ BEND   VD      =(ANGLE =0     ROTATE =-90 DEG )
+        BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        HD      =(ANGLE =0 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6H   =(L =.403 ANGLE =.02726687232 K1 =-1.0100957067176413 )
+        BPI7H   =(L =.176 ANGLE =.00468  K1 =-.006398424930727633 )
+
+        BID5I    =(L =.25 ANGLE =.01989677344 )
+        BID4I    =(L =.25 ANGLE =.01093590672 )
+        BID3IH   =(L =.125     ANGLE =.00413604696 )
+        BID2I    =(L =.25 ANGLE =.00653919168 )
+        BID1I    =(L =.25 ANGLE =.00532646 )
+        K1 = (L = .3)
+        K2 = (L = .3)
+        K3 = (L = .3)
+        K4 = (L = .3)
+ ;
+ QUAD   QFA8H   =(L =.25  K1 =.9417515241499581 )
+        QFA6H   =(L =.1675     K1 =.8782619605554324 )
+        QDA5    =(L =.2   K1 =-.4052202821210436 )
+        QFA4    =(L =.2   K1 =.5166819921440575 )
+        QS5     =(L =.2   K1 =.5280568479331271 )
+        QS4     =(L =.2   K1 =-.8242016169366202 )
+        QS3     =(L =.2   K1 =.5546128367232006 )
+        QS2     =(L =.2   K1 =-.1734492217190123 )
+        QS1     =(L =.1   K1 =-.11309930079031016 )
+        QS0     =(L =.1   K1 =.22894938883952784 )
+        QFA1H   =(L =.125 K1 =.46236106609239286 )
+        QDA2    =(L =.2   K1 =-.725123012102831 )
+        QDA3    =(L =.2   K1 =-.49958031983962237 )
+        QFA4    =(L =.2   K1 =.5166819921440575 )
+        QDA5    =(L =.2   K1 =-.4052202821210436 )
+
+ ;
+ SEXT   SDH     =(L =.09  K2 =-12.38248640793169 )
+        SFH     =(L =.09  K2 =15.13439810682049 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ CAVI   RFC     =(VOLT =2000000     HARM =952 )
+ ;
+ OCT    OCFA    =(L =.1   K3 =0 )
+ ;
+ MONI   BPM                             =()
+ ;
+ MARK   MKS     =(AX =1.8269725395795895e-14  BX =4.793340121212032    AY =5.061657878833287e-15     BY =2.3773852899436254
+           EX =.024999999999712127  EPX =-6.269917972172717e-18   DP =.01   EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKBE    =(AX =1.0915299904430553 BX =2.491305955156373    PSIX =.750812602138054   AY =-1.108768449431935
+           BY =14.899228084658809   PSIY =.9775906221236254  EX =.01317746375590028   EPX =-.010709118972041609     DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSDA1  =(AX =-2.70998200884407  BX =3.54290286006273     PSIX =2.438795403562738  AY =7.583458360247109
+           BY =15.674832734538994   PSIY =1.12519968960124   EX =.08917916867198322   EPX =.07392275472299359  DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSFA1  =(AX =-.1389893849851418 BX =8.335022603847122    PSIX =2.6010651192329326 AY =1.1900000003019817
+           BY =6.400000001617214    PSIY =1.2342357814658897 EX =.14000000000027565   EPX =.0033565669999445075     DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSDC1  =(AX =2.701045920207907  BX =3.9178996452699595   PSIX =2.7538171975351866 AY =-2.4682164774922373
+           BY =8.605708880847574    PSIY =1.3800502607967173 EX =.09575556512146 EPX =-.06826941595892633 DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKC     =(AX =2.3285271135756143e-14  BX =.6646241808238317    PSIX =7.630928555572884  AY =-2.6333805821142455e-15
+           BY =1.3317427649375617   PSIY =2.7677431278546    EX =.01999999999994648   EPX =-7.45931094670027e-17    DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKE     =(AX =2.3285271135756143e-14  BX =.6646241808238317    PSIX =7.630928555572884  AY =-2.6333805821142455e-15
+           BY =1.3317427649375617   PSIY =2.7677431278546    EX =.01999999999994648   EPX =-7.45931094670027e-17    DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSE = ()
+        MKS2  =()
+        MKSI = ()
+ ;
+!-----------------------------------------
+! ARC CELLS
+!-----------------------------------------
+
+  MONI
+         PM = ()
+  ;
+
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(ARCAH1 ARCAH2)
+
+  ARCAH1   =(MKS
+             DRID1 PM DR05 QFA1H VD QFA1H DR20, QDA2, DR12 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR12, QDA3, DR12
+             )
+  ARCAH2   =(MKS2
+             SDH MKSDA1 SDH
+             DR05 PM
+             DRSS2  DR05
+             QFA4, DR12,
+             SFH MKSFA1 VD SFH
+             DR12, QFA4, DR12, OCFA,
+             DRSO PM DR05
+             SDH MKSDC1 SDH
+             DR12, QDA5, DR12,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR06 PM DR06, QFA6H QFA6H DR28,
+             BPI6H HD BPI6H DR05 DR14 QFA8H VD QFA8H DR12, SHA, DR12,
+             BPI7H HD BPI7H DR05 PM DRCT MKC
+             MKE)
+  ARCAHI2   =(MKS2
+             SDH MKSDA1 SDH
+             DR05 PM
+             DRSS2  DR05
+             QS5, DR12,
+             SFH MKSFA1 VD SFH
+             DR12, QFA4, DR12, OCFA,
+             DRSO PM DR05
+             SDH MKSDC1 SDH
+             DR12, QDA5, DR12,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR06 PM DR06, QFA6H QFA6H DR28,
+             BPI6H HD BPI6H DR05 DR14 QFA8H VD QFA8H DR12, SHA, DR12,
+             BPI7H HD BPI7H DR05 PM DRCT MKC
+             MKE)
+   ARCINJH  =(
+             -ARCAHI2
+             MKSE
+             DR12  QS4  DR12 K1  DR12
+             QS3 DR12
+             BID1I  BID2I BID3IH HD BID3IH BID4I BID5I
+             MKBE
+             DR12 QS2 DR05 VD DR05 QS1
+             DR05 PM
+             K2
+             DRID1INJ HD DR05 PM DR05 QS0
+             MKSI
+            )
+   ARCINJH2  =(
+             -ARCAHI2
+             MKSE
+             DR12  QS4  DR12 K1  DR12
+             QS3 DR12
+             BID1I  BID2I BID3IH HD BID3IH BID4I BID5I
+             MKBE
+             DR12 QS2 DR05 VD DR05 QS1
+             DR05 PM
+             K2
+             DRID1INJ VD DR05 DR05 QS0
+             MKSI
+            )
+
+ ARCA      = (ARCAH -ARCAH)
+ RINGC      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ RING     =(MKS
+             ARCA ARCINJ, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ARCINJ    =(ARCAH1 ARCAH2 ARCINJH -ARCINJH2 -ARCAH2 -ARCAH1)
+ ARCINJ2   =(ARCINJH -ARCINJH2)
+ ;
+! KEK-LS v03_68: 標準セルのチューンサーベイ  (元: matching05 と modules_tune_sv_v03_68.n。モジュールはこの台本に取り込んだ)
+! リングのチューン (tunex, tuney) の格子の各点で、標準セル (ARCA) の位相進みを (tunex/20, tuney/20) に再マッチし、
+! 六極 SDH・SFH でクロマティシティを補正して、リング (RINGC) のチューン・ξ・εx・六極の強さを表示する。
+! 元の格子: tunex 46.05〜46.55 (0.1 刻み 6 点) × tuney 16.05〜19 (0.1 刻み 30 点) = 180 点、各点で DAsv[] (5000 周)。
+!          (元の matching05 は modules_tune_sv_v03_35.n を読む。v03_68 用の modules_tune_sv_v03_68.n は読み込む台本が元のフォルダに無い。)
+! 例の格子: tx0 から dtx 刻み ntx 点 × ty0 から dty 刻み nty 点 (既定 48.30〜48.90 の 5 点 × 17.30〜17.90 の 5 点 = 25 点)。追跡 (DAsv) は含めない。
+!          完全な設定: tx0 = 46.05; dtx = 0.1; ntx = 6; ty0 = 16.05; dty = 0.1; nty = 30; にして、各点に modules_general.n の DAsv[] を足す。
+! v03_68 に合わせた直し (元のモジュールは v03_35 の名残が残り、v03_68 では動かない):
+!   (1) 目標の値: MKSFA1 の AY 1.18・BY 5.3・EX 0.1504、MKC の BY 5 (v03_35 の値) → v03_68 の設計値 (AY 1.19・BY 6.4・EX 0.14、MKC BY 1.3317)。
+!   (2) FitFunction の `MKSFA2` (v03_68 に無い) → `MKSFA1.2`、`MKSFA1` → `MKSFA1.1` (1 セルに 2 回現れる)。
+!   (3) ChromCor の `coup SDC SDA 1`・`SDA MAX 0`・`SFA MIN 0` → `SDH MAX 0`・`SFH MIN 0` (v03_68 の六極は SDH・SFH の 2 本だけ)。
+!   (4) `free BPI6 K1`・`free BPI7 K1` は名前が合わず効かない → BPI6H・BPI7H にした。
+!   (5) モジュール modules_tune_sv_v03_68.n は ../modules/modules_cell_match.n (関数 InitMag・MatchingARCA・ChromCor。Chrom・GetKQ・PutKQ を追加) に移した。`SAVE ALL` (画面にラティスを出す) は省いた。
+!   (6) リングは元の RING (入射セル込み) ではなく RINGC (標準セル 20 個)。入射セルの四極 QS0〜QS5 は標準セルの変更には追従しないため。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ $FORM = "15.10";
+ PageWidth = 1999;
+ 
+ tx0 = 48.30;  dtx = 0.15;  ntx = 5;
+ ty0 = 17.30;  dty = 0.15;  nty = 5;
+ Get["../modules/modules_cell_match.n"];   ! InitMag・MatchingARCA・ChromCor・Chrom・GetKQ・PutKQ
+ 
+ Print["columns: tunex_target tuney_target tunex_ring tuney_ring xi_x xi_y emitx[pm] K2_SDH K2_SFH"];
+columns: tunex_target tuney_target tunex_ring tuney_ring xi_x xi_y emitx[pm] K2_SDH K2_SFH
+ Do[
+   Do[
+     FFS["USE ARCA;"];
+     InitMag[];
+     nxcell = tunex/20;
+     nycell = tuney/20;
+     MatchingARCA[1];
+     MatchingARCA[1];
+     MatchingARCA[0.001];
+     ChromCor[];
+     FFS["cell calc"];
+     GetKQ[];
+     FFS["USE RINGC;"];
+     PutKQ[];   ! USE し直しても K1 が保たれるかに頼らず、リング側に値を入れ直す
+     FFS["cell calc emit"];
+     xi = Chrom[0.0005];
+     Print["POINT ", tunex, " ", tuney, " ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " ", xi[1], " ", xi[2], " ", EMITX*1E12, " ", kq[10], " ", kq[11]];
+   ,{tuney,ty0,ty0+(nty-1)*dty+dty/2,dty}];
+ ,{tunex,tx0,tx0+(ntx-1)*dtx+dtx/2,dtx}];
+ TSVD convergence failed:          9 -2.5525681E-15  1.5067599E-14  8.7013669E-15
+ TSVD convergence failed:          8 -8.8739261E-13 -4.8850648E-12  1.5067599E-14
+ TSVD convergence failed:          7  -3.150073       10.00047     -4.8850648E-12
+ TSVD convergence failed:          6   7.797592       10.11911       10.00047    
+ TSVD convergence failed:          5  -12.41752       32.00341       10.11911    
+  -- further message will be suppressed.
+ TSVD convergence failed:         11 -9.3982713E-15 -4.7959684E-14  2.6734304E-14
+ TSVD convergence failed:         10 -1.9871970E-13 -4.6273369E-08 -4.7959684E-14
+ TSVD convergence failed:          9  -1.837114     -4.4908323E-02 -4.6273369E-08
+ TSVD convergence failed:          8 -0.6700323     -1.0260588E-03 -4.4908323E-02
+ TSVD convergence failed:          7  -2.611431       4.189884     -1.0260588E-03
+  -- further message will be suppressed.
+POINT   48.3000000000   17.3000000000   48.3000155242   17.3000040418    -.0941477869     .0012654584  410.9005371339  -10.1811037273   11.7933857175
+ TSVD convergence failed:          9  1.9161399E-14 -1.4689988E-14  1.9563684E-14
+ TSVD convergence failed:          8 -1.4919870E-12 -7.6601550E-10 -1.4689988E-14
+ TSVD convergence failed:          7  -11.52936     -0.1375025     -7.6601550E-10
+ TSVD convergence failed:          6  -1.914508       2.477005     -0.1375025    
+ TSVD convergence failed:          5  -67.67690      -37.99470       2.477005    
+  -- further message will be suppressed.
+ TSVD convergence failed:          9  1.9161399E-14 -1.4689988E-14  1.9563684E-14
+ TSVD convergence failed:          8 -1.4919870E-12 -7.6601550E-10 -1.4689988E-14
+ TSVD convergence failed:          7  -11.52936     -0.1375025     -7.6601550E-10
+ TSVD convergence failed:          6  -1.914508       2.477005     -0.1375025    
+ TSVD convergence failed:          5  -67.67690      -37.99470       2.477005    
+  -- further message will be suppressed.
+ TSVD convergence failed:         11  2.5234813E-15 -9.6679657E-14 -2.4591021E-15
+ TSVD convergence failed:         10 -6.7273490E-12  5.9727939E-12 -9.6679657E-14
+ TSVD convergence failed:          9  -6.366336      -1.459833      5.9727939E-12
+ TSVD convergence failed:          8            NaN -0.4141678      -1.459833    
+ TSVD convergence failed:          7            NaN   1.157901     -0.4141678    
+  -- further message will be suppressed.
+POINT   48.3000000000   17.4500000000   48.3000224764   17.4500061402    -.1160339273     .0012516470  396.6667253180  -10.2081026695   11.8140549964
+ TSVD convergence failed:          9  4.3829121E-14 -6.5485608E-13  1.3450387E-14
+ TSVD convergence failed:          8 -6.2790377E-12  4.9861732E-13 -6.5485608E-13
+ TSVD convergence failed:          7   1.265368      -3.676993      4.9861732E-13
+ TSVD convergence failed:          6   7.015262       4.171266      -3.676993    
+ TSVD convergence failed:          5   8.677104      -41.43555       4.171266    
+  -- further message will be suppressed.
+POINT   48.3000000000   17.6000000000   48.3000313132   17.6000088537    -.1390493868     .0011505121  384.3188277101  -10.2382580589   11.8404180888
+POINT   48.3000000000   17.7500000000   48.3000434352   17.7500122977     .1593734635    -.0029917700  370.9429148552  -10.2869345758   11.9099338108
+POINT   48.3000000000   17.9000000000   48.3000563647   17.9000163824     .1813289107    -.0031828033  364.5537592029  -10.3277931458   11.9566170835
+POINT   48.4500000000   17.3000000000   48.4500714956   17.3000200570    -.1694558732    -.0037890897  150.8445651224  -10.0845273093   11.5626856409
+POINT   48.4500000000   17.4500000000   48.4500740638   17.4500219154    -.1742840346    -.0045772965  147.1728323196  -10.1157859428   11.5994788618
+ TSVD convergence failed:          9  4.1911186E-14  1.2655044E-13  1.1777936E-14
+ TSVD convergence failed:          8 -9.9788082E-12 -1.5295348E-11  1.2655044E-13
+ TSVD convergence failed:          7   2.240212       1.794223     -1.5295348E-11
+ TSVD convergence failed:          6  -11.88114       13.88639       1.794223    
+ TSVD convergence failed:          5  -27.52000       30.14625       13.88639    
+  -- further message will be suppressed.
+POINT   48.4500000000   17.6000000000   48.4500660362   17.6000210460     .1370704371    -.0018844512  145.3612453258  -10.1697223422   11.6825443781
+POINT   48.4500000000   17.7500000000   48.4500818372   17.7500282170    -.1508952738  5.006405424E-4  145.5728812627  -10.1983946423   11.7074615556
+POINT   48.4500000000   17.9000000000   48.4500443880   17.9000172046    -.0541784629     .0027282016  150.3197073370  -10.2647591880   11.8139103432
+POINT   48.6000000000   17.3000000000   48.6000891061   17.3000311886    -.1690419465  -8.74247974E-4  153.8657849348  -10.1333214524   11.6287541418
+POINT   48.6000000000   17.4500000000   48.6000584143   17.4500214477    -.0784218097    -.0027999435  157.6582449651  -10.1616461568   11.6770639736
+POINT   48.6000000000   17.6000000000   48.6000476489   17.6000226278    -.0550783528  1.423862912E-4  169.7485977431  -10.2472596158   11.8358296749
+POINT   48.6000000000   17.7500000000   48.6000475915   17.7500252764     .0750115078    -.0013966067  165.7737956437  -10.2429890890   11.7878774855
+POINT   48.6000000000   17.9000000000   48.6000707116   17.8999624624     .0760397368    -.0013582067  166.8710475140  -10.2814765825   11.8090490731
+POINT   48.7500000000   17.3000000000   48.7500205305   17.3000376671     .0146056150    -.0014983552  194.3971997185  -10.3847495206   12.1805326985
+POINT   48.7500000000   17.4500000000   48.7500316970   17.4500386374    -.0376364034  3.160222590E-4  185.5653974046  -10.2911519806   11.9204546140
+POINT   48.7500000000   17.6000000000   48.7496317019   17.5999649760     .2955260387    4.9714094829  14168.21187337  -11.7995534475   14.8670845265
+POINT   48.7500000000   17.7500000000   48.7495405013   17.7499449681    -.0810059762    5.3159380210  14028.49275346  -11.8790075439   14.9434935074
+POINT   48.7500000000   17.9000000000   48.7500404401   17.9000082594     .0277002872  -7.20119139E-4  186.0954493552  -10.2703644838   11.7839267999
+POINT   48.9000000000   17.3000000000   48.8999667276   17.2999374179   -1.6244039092    1.0025869176  261.1160027448  -12.9513364838   18.1838468814
+POINT   48.9000000000   17.4500000000   48.9000453032   17.4500166132     .0131085883  -7.58443147E-4  203.9386314650  -10.2037636798   11.8040415051
+POINT   48.9000000000   17.6000000000   48.9000551113   17.6000239556    -.0329292931  -9.07175703E-5  185.5730280916  -10.2357009453   11.6740089976
+POINT   48.9000000000   17.7500000000   48.9000568033   17.7499710412    -.0039852980     .0036113943  211.0053066589  -10.2085758714   11.7646911269
+POINT   48.9000000000   17.9000000000   48.9000633341   17.9000215575     .0450088504    -.0017088454  211.9249506316  -10.2588115344   11.7974292364
+ Exit;
+ FFS                  end:  CPU time =     6.730 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

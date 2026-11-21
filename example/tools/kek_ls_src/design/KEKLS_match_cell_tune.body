@@ -1,0 +1,46 @@
+! KEK-LS v03_68: 標準セル 1 個 (ARCA) のチューンのマッチング  (元: matching2_01 の前半)
+! リング全体 (20 セル) のチューンを (48.58, 17.62) にするため、セル 1 個の位相進みを (48.58/20, 17.62/20) に合わせる。
+! 変数: 四極 Q* の K1、勾配つき偏向磁石 BPI6H・BPI7H の K1。条件: セルの NX・NY、セル端 MKC の分散 EX (exmkc に振る)、
+!       セル中央 MKS の分散 EX = 0。
+! 元との違い: 描画・使われないコメント行・EMITX を使う FitFunction (閉じていない ARCA では EMITX は NaN なので効かない) を除いた。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE ARCA;
+cell calc;
+freebend = 0;
+nxcell = 48.58/20;
+nycell = 17.62/20;
+Print["design cell phase advance nx ny = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Print["target                          = ", nxcell, " ", nycell];
+disp MKSFA1.1;
+disp MKSFA1.2;
+Print["SF-SF phase advance (x, y) [2pi] = ", (Twiss["NX","MKSFA1.2"]-Twiss["NX","MKSFA1.1"])/2/Pi, " ", (Twiss["NY","MKSFA1.2"]-Twiss["NY","MKSFA1.1"])/2/Pi];
+
+Do[
+  FFS["VISIT ARCA"];
+  FFS["cell calc"];
+  FFS["fit NX nxcell"];
+  FFS["fit NY nycell"];
+  FFS["fit MKC EX "//exmkc];
+  FFS["fit MKS EX 0.00"];
+  FFS["free Q*"];
+  ! 元の台本の `free BPI6 K1`・`free BPI7 K1` は、v03_68 の偏向磁石の名前 BPI6H・BPI7H に一致せず、実際には効いていない
+  ! (K1 が動かない)。元の挙動のまま既定は freebend = 0。1 にすると BPI6H・BPI7H の K1 も変数にする (修正版)。
+  If[freebend == 1,
+    FFS["free BPI6H K1"];
+    FFS["free BPI7H K1"];
+  ];
+  FFS["go"];
+  FFS["cell calc"];
+  Print["exmkc target ", exmkc, "  result: ring tune ", Twiss["NX","$$$"]/2/Pi*20, " ", Twiss["NY","$$$"]/2/Pi*20,
+        "  EX(MKC) ", Twiss["EX","MKC"], "  EX(MKS) ", Twiss["EX","MKS"]];
+  Print["K1: QFA1H ", LINE["K1","QFA1H"], " QDA2 ", LINE["K1","QDA2"], " QDA3 ", LINE["K1","QDA3"], " QFA4 ", LINE["K1","QFA4"], " QDA5 ", LINE["K1","QDA5"],
+        " QFA6H ", LINE["K1","QFA6H"], " QFA8H ", LINE["K1","QFA8H"], " BPI6H ", LINE["K1","BPI6H"], " BPI7H ", LINE["K1","BPI7H"]];
+,{exmkc,0.004,0.0,-0.002}];
+type {QB}*;
+Exit;

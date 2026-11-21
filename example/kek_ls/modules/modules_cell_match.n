@@ -1,0 +1,81 @@
+! modules_cell_match.n: 標準セル (ARCA) のマッチングと、六極によるクロマティシティ補正の関数
+! (FFS; の後で Get["../modules/modules_cell_match.n"]; する。使う台本: design/KEKLS_tune_survey_cell、display/KEKLS_scan_target)。
+! 元: modules_tune_sv_v03_68.n (InitMag・MatchingARCA・MatchingARCA2・ChromCor)。v03_68 に合わせて直した (README の「直したもの」):
+!   - 目標値は変数 tay・tby・tex (MKSFA1 の AY・BY・EX)・tbyc (MKC の BY) で、既定は v03_68 の設計値
+!   - FitFunction の MKSFA2 → MKSFA1.2、MKSFA1 → MKSFA1.1、六極は SDH・SFH、自由にする偏向磁石は BPI6H・BPI7H
+!   - MatchingARCA[fw_] の fw は FitFunction の重み (元の MatchingARCA は 1、MatchingARCA2 は 1/1000)
+!   - Chrom[dd_] を足した (ξ = Δν/Δδ を DP0 = ±dd の差分で求める。元の台本には無い)
+
+tay = 1.19;  tby = 6.4;  tex = 0.14;  tbyc = 1.3317;  betay = 3.6;
+
+! 設計値の K1・K2 (v03_68) に戻す
+InitMag[]:=(
+  LINE["K1","BPI7H"]  = -.006398424930727633;
+  LINE["K1","BPI6H"]  = -1.0100957067176413;
+  LINE["K1","QFA8H"]  =  .9417515241499581;
+  LINE["K1","QFA6H"]  =  .8782619605554324;
+  LINE["K1","QDA5"]   = -.4052202821210436;
+  LINE["K1","QFA4"]   =  .5166819921440575;
+  LINE["K1","QDA3"]   = -.49958031983962237;
+  LINE["K1","QDA2"]   = -.725123012102831;
+  LINE["K1","QFA1H"]  =  .46236106609239286;
+  LINE["K2","SFH"]    = 15.13439810682049;
+  LINE["K2","SDH"]    = -12.38248640793169;
+  FFS["cell calc"];
+);
+
+! セルのマッチング (nxcell・nycell を目標に)
+MatchingARCA[fw_]:=(
+  FFS["cell calc"];
+  FFS["fit MKS BY betay"];
+  FitValue["MKS","BY",dp_,vgoal_,vnow_]:=If[vnow<0,0,If[vnow>3.6,3.6,Null]];
+  FFS["fit NX nxcell"];
+  FFS["fit NY nycell"];
+  FFS["fit MKC AX  0"];
+  FFS["fit MKC AY  0"];
+  FFS["fit MKC EPX 0"];
+  FFS["fit MKC BY  "//tbyc];
+  FFS["fit MKSFA1 AY "//tay];
+  FFS["fit MKSFA1 BY "//tby];
+  FFS["fit MKSFA1 EX "//tex];
+  FFS["fit MKSFA1 BX 3."];
+  FitValue["MKSFA1","BX",dp_,vgoal_,vnow_]:=If[vnow<5,5,If[vnow>15,15,Null]];
+  FitFunction:={(Abs[Twiss["BX","MKSFA1.1"]*Sin[Twiss["NX","MKSFA1.2"]-Twiss["NX","MKSFA1.1"]] - 0.3] + Abs[Sin[Twiss["NY","MKSFA1.2"]-Twiss["NY","MKSFA1.1"]]])*fw};
+  FFS["free Q*"];
+  FFS["free BPI6H K1"];
+  FFS["free BPI7H K1"];
+  FFS["go"];
+  FFS["cell calc"];
+);
+
+! 六極 (SDH・SFH) で、チューンを保ちつつ運動量 DP = 0.0001 でも同じチューンにする (ξ = 0 の条件)
+ChromCor[]:=(
+  FFS["FIT;"];
+  FFS["NX nxcell 2;"];
+  FFS["NY nycell 2;"];
+  FFS["SDH MAX 0"];
+  FFS["SFH MIN 0"];
+  DP = 0.0001;
+  FFS["FREE SF*,SD*"];
+  FFS["go;"];
+  FFS["FITP 1;"];
+  DP = 0;
+);
+
+! ξ = Δν/Δδ (DP0 = ±dd の差分)。戻り値 {ξx, ξy}
+Chrom[dd_]:=(
+  DP0 = dd;   FFS["cell calc"];  nxp = Twiss["NX","$$$"]/2/Pi;  nyp = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -dd;  FFS["cell calc"];  nxm = Twiss["NX","$$$"]/2/Pi;  nym = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0;    FFS["cell calc"];
+  {(nxp-nxm)/2/dd, (nyp-nym)/2/dd}
+);
+
+! セルのマッチング後の K1・K2 を 11 個のリストで取る・別のライン (USE し直した後) に戻す
+GetKQ[]:=(
+  kq = {LINE["K1","QFA1H"], LINE["K1","QDA2"], LINE["K1","QDA3"], LINE["K1","QFA4"], LINE["K1","QDA5"], LINE["K1","QFA6H"], LINE["K1","QFA8H"], LINE["K1","BPI6H"], LINE["K1","BPI7H"], LINE["K2","SDH"], LINE["K2","SFH"]};
+);
+PutKQ[]:=(
+  LINE["K1","QFA1H"] = kq[1]; LINE["K1","QDA2"] = kq[2]; LINE["K1","QDA3"] = kq[3]; LINE["K1","QFA4"] = kq[4]; LINE["K1","QDA5"] = kq[5];
+  LINE["K1","QFA6H"] = kq[6]; LINE["K1","QFA8H"] = kq[7]; LINE["K1","BPI6H"] = kq[8]; LINE["K1","BPI7H"] = kq[9];
+  LINE["K2","SDH"] = kq[10]; LINE["K2","SFH"] = kq[11];
+);

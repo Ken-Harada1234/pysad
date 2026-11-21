@@ -11,7 +11,8 @@ gs の窓 (X11) は撮れないので、台本の最後に「Canvas の全項目
 元の .sad は Exit; の直前に書き出しの文を足した一時ファイルで走らせる (元は書き換えない)。
 """
 import os, sys, re, subprocess, shutil, tempfile
-GS = '/mnt/d/work/SAD-master/SAD-master/bin/gs'
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import sadenv
+GS = sadenv.gs_wsl()
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 TMP = tempfile.gettempdir()
 
@@ -54,7 +55,7 @@ def run_dump(path, tag, to=120, env_extra=None):
     if os.path.exists(fn_py): os.remove(fn_py)
     sad2 = os.path.join(TMP, '_cvp_%s.sad' % name)
     open(sad2, 'w', encoding='utf-8', newline='\n').write(_tmp_sad(path, fn_py.replace('\\', '/')))
-    env = dict(os.environ, PYTHONPATH=ROOT, PYTHONIOENCODING='utf-8', PYSAD_SAD_PACKAGES='D:/work/SAD-master/SAD-master/Packages')
+    env = dict(os.environ, PYTHONPATH=ROOT, PYTHONIOENCODING='utf-8', PYSAD_SAD_PACKAGES=sadenv.packages())
     env.update(env_extra or {})
     r = subprocess.run(['py', '-3.12', '-c',
                         "from pysad.ffscmd import run_sad_string;import sys;run_sad_string(open(sys.argv[1],encoding='utf-8').read())", sad2],

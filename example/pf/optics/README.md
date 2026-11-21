@@ -5,6 +5,10 @@
 | 例 | 内容 | gs と pysad |
 |---|---|---|
 | [`FFS_cell_calc_emit_PF`](FFS_cell_calc_emit_PF.md) | 実行、`cell calc emit`、`SAVE`、周長・チューン・エミッタンス | ○ |
+| [`FFS_cell_calc_emit_PF_1981_460nmrad`](FFS_cell_calc_emit_PF_1981_460nmrad.md) | 履歴ラティス (1981 年・建設時) の `cell calc emit` ほか | ○ (k64) |
+| [`FFS_cell_calc_emit_PF_1986_128nmrad`](FFS_cell_calc_emit_PF_1986_128nmrad.md) | 履歴ラティス (1986 年・最初の高輝度化) の `cell calc emit` ほか | ○ (k64) |
+| [`FFS_cell_calc_emit_PF_1997_036nmrad`](FFS_cell_calc_emit_PF_1997_036nmrad.md) | 履歴ラティス (1997 年・弧部改造) の `cell calc emit` ほか | ○ (k64) |
+| [`FFS_cell_calc_emit_PF_2005_036nmrad`](FFS_cell_calc_emit_PF_2005_036nmrad.md) | 履歴ラティス (2005 年・直線部増強) の `cell calc emit` ほか | ○ (k64) |
 | [`FFS_disp_type_PF`](FFS_disp_type_PF.md) | `disp`・`type` | ○ |
 | [`FFS_draw_OpticsPlot_PF`](FFS_draw_OpticsPlot_PF.md) | `draw`、`OpticsPlot` (図の数値と PNG) | ○ (draw は gs 無出力・pysad 未対応) |
 | [`FFS_draw_topdrawer_PF`](FFS_draw_topdrawer_PF.md) | topdrawer ファイルの手書き。`draw` は gs で動かず (出力なし/止まる)、pysad は未対応 | ○ (手書き部分) / `draw` は × |

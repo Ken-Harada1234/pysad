@@ -1,0 +1,94 @@
+!@LAT 5GeV
+!=====================================================================
+! V0714_chromaticity: δ に対するチューンの変化 (色収差)。六極 0 (自然クロマティシティ) と、六極 ON (最終設定)
+!
+! 元: calc_chromaticity.sad (7 つのリング RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA で、六極を 0 にして、
+!     δ = ±0.5% (RING) / ±1% (他) の 3 次の PolynomialFit の係数 [1,2] を出す)。amp_dep_ts_dp.sad (δ を 0〜±5% で振る) の δ スキャンも含める。
+! 注意 (K64 のバグ B18): δ を ±対称に振ったデータを PolynomialFit に渡すと係数の次数補正が壊れる (docs/11 C6、docs/21 B18)。
+!       元の台本が出していた「係数 [1,2]」は ξ そのものではない (δ の 1 次の係数 + 高次の混ざり。
+!       出力の fit 係数と中心差分の ξ を並べて見比べる)。この台本は元の出し方 (係数 [1,2]) を残しつつ、正しい ξ を中心差分 ξ = [ν(+dδ) - ν(-dδ)]/(2 dδ)
+!       (dδ = 1e-4) でも出す。
+! 流れ: 各リングで六極 0 → δ スキャン → PolynomialFit → 係数 [1,2]。続いて最終設定の六極のままで同じ。
+!=====================================================================
+!@PARAM dpmax = 0.01
+!@PARAM dpstep = 0.001
+!@PARAM dpscan = 1
+NPARA = 8;
+ON LOG;
+OFF RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "15.10";
+  PageWidth = 1999;
+
+soff = 0;
+ChromRing[ring_, dpm_, dst_]:=(
+  FFS["USE "//ring];
+  If[soff == 1, FFS["S* 0;"]];
+  FFS["cell calc;"];
+  FFS["calc;",6];
+  FFS["emit;",6];
+  tunex=Table[{i,0},{i,-dpm,dpm,dst}];
+  tuney=Table[{i,0},{i,-dpm,dpm,dst}];
+  j=0;
+  Do[
+    j = j + 1;
+    DP0=i;
+    FFS["cell calc;"];
+    tunex[j,2] = Twiss["NX","$$$"]/2/Pi;
+    tuney[j,2] = Twiss["NY","$$$"]/2/Pi;
+  ,{i,-dpm,dpm,dst}];
+  DP0 = 0;
+  chrx = PolynomialFit[tunex,3];
+  chry = PolynomialFit[tuney,3];
+  ! 中心差分の ξ (dδ = 1e-4)
+  DP0 = 1e-4;
+  FFS["cell calc;"];
+  nxp = Twiss["NX","$$$"]/2/Pi; nyp = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -1e-4;
+  FFS["cell calc;"];
+  nxm = Twiss["NX","$$$"]/2/Pi; nym = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0;
+  FFS["cell calc;"];
+  xix = (nxp - nxm)/2e-4; xiy = (nyp - nym)/2e-4;
+);
+
+ReportRings[tag_]:=(
+  ChromRing["RING", 0.005, 0.0005];     c1x = chrx; c1y = chry; x1x = xix; x1y = xiy;
+  ChromRing["RINGN", dpmax, dpstep];    c2x = chrx; c2y = chry; x2x = xix; x2y = xiy;
+  ChromRing["RINGA", dpmax, dpstep];    c3x = chrx; c3y = chry; x3x = xix; x3y = xiy;
+  ChromRing["RINGL", dpmax, dpstep];    c4x = chrx; c4y = chry; x4x = xix; x4y = xiy;
+  ChromRing["RINGM", dpmax, dpstep];    c5x = chrx; c5y = chry; x5x = xix; x5y = xiy;
+  ChromRing["RINGLA", dpmax, dpstep];   c6x = chrx; c6y = chry; x6x = xix; x6y = xiy;
+  ChromRing["RINGMA", dpmax, dpstep];   c7x = chrx; c7y = chry; x7x = xix; x7y = xiy;
+  Print[tag," ringx=",  c1x[1,2], "  ringy=", c1y[1,2], "   xi(central diff) x ", x1x, " y ", x1y];
+  Print[tag," ringnx=", c2x[1,2], "  ringny=", c2y[1,2], "   xi(central diff) x ", x2x, " y ", x2y];
+  Print[tag," ringax=", c3x[1,2], "  ringay=", c3y[1,2], "   xi(central diff) x ", x3x, " y ", x3y];
+  Print[tag," ringlx=", c4x[1,2], "  ringly=", c4y[1,2], "   xi(central diff) x ", x4x, " y ", x4y];
+  Print[tag," ringmx=", c5x[1,2], "  ringmy=", c5y[1,2], "   xi(central diff) x ", x5x, " y ", x5y];
+  Print[tag," ringlax=",c6x[1,2], "  ringlay=",c6y[1,2], "   xi(central diff) x ", x6x, " y ", x6y];
+  Print[tag," ringmax=",c7x[1,2], "  ringmay=",c7y[1,2], "   xi(central diff) x ", x7x, " y ", x7y];
+);
+
+USE RING;
+  cell calc emit;
+! 最終設定の六極のまま
+ReportRings["sext ON :"];
+! 六極 0 (自然クロマティシティ。元の calc_chromaticity.sad と同じ条件。USE のたびに六極が定義に戻るので、ChromRing の中で 0 にする)
+soff = 1;
+ReportRings["sext OFF:"];
+soff = 0;
+
+! δ スキャン (amp_dep_ts_dp.sad: δ = 0 〜 +5% と 0 〜 -5%、刻み 0.5%。六極は最終設定のまま)
+USE RING;
+If[dpscan == 1,
+  Print["delta scan (sextupoles ON)"];
+  Do[
+      DP0 = i;
+      FFS["cell calc"];
+      Print[i, Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi];
+  ,{i,0,0.05,0.01}];
+  DP0 = 0;
+  FFS["cell calc"];
+];
+stop;
+stop;

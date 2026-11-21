@@ -6,8 +6,12 @@ PF のラティスを使った、SAD の基本的な使い方と計算の例で�
 
 | フォルダ | 例 | 内容 | gs と pysad |
 |---|---|---|---|
-| [`lattice/`](lattice/README.md) | ラティス | PF のラティス | |
+| [`lattice/`](lattice/README.md) | ラティス | PF のラティス (v9_16 の 2 本と、履歴ラティス 4 本。説明は [`PF_history.md`](lattice/PF_history.md)) | |
 | [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF`](optics/FFS_cell_calc_emit_PF.md) | 実行、`cell calc emit`、`SAVE`、周長・チューン・エミッタンス | ○ |
+| [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF_1981_460nmrad`](optics/FFS_cell_calc_emit_PF_1981_460nmrad.md) | 履歴ラティス (1981 年・建設時) の `cell calc emit`、直線部・標準セルの Twiss、クロマティシティ | ○ (k64) |
+| [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF_1986_128nmrad`](optics/FFS_cell_calc_emit_PF_1986_128nmrad.md) | 履歴ラティス (1986 年・最初の高輝度化) の `cell calc emit`、直線部・標準セルの Twiss、クロマティシティ | ○ (k64) |
+| [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF_1997_036nmrad`](optics/FFS_cell_calc_emit_PF_1997_036nmrad.md) | 履歴ラティス (1997 年・弧部改造) の `cell calc emit`、直線部・標準セルの Twiss、クロマティシティ | ○ (k64) |
+| [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF_2005_036nmrad`](optics/FFS_cell_calc_emit_PF_2005_036nmrad.md) | 履歴ラティス (2005 年・直線部増強) の `cell calc emit`、直線部・標準セルの Twiss、クロマティシティ | ○ (k64) |
 | [`optics/`](optics/README.md) | [`FFS_disp_type_PF`](optics/FFS_disp_type_PF.md) | `disp`・`type` | ○ |
 | [`optics/`](optics/README.md) | [`FFS_draw_OpticsPlot_PF`](optics/FFS_draw_OpticsPlot_PF.md) | `draw`、`OpticsPlot` (図の数値と PNG) | ○ (draw は gs 無出力・pysad 未対応) |
 | [`optics/`](optics/README.md) | [`FFS_draw_topdrawer_PF`](optics/FFS_draw_topdrawer_PF.md) | topdrawer ファイルの手書き。`draw` は gs で動かず (出力なし/止まる)、pysad は未対応 | ○ (手書き部分) / `draw` は × |

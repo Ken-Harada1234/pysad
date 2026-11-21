@@ -1,0 +1,27 @@
+! KEK-LS v03_68: 入射セルを含めてリング (RING) を幾何学的に閉じる  (元: matching2_02_geo。元の USE RINGI は v03_68 に無く RING)
+! 入射セルの長直線部の長さ DRID1INJ を変数にして、周回後の位置 GX・GY を 0 にする。
+! v03_68 の DRID1INJ (2.7654600539...) はこのマッチングの結果の値。この例は、標準の長さ DRID1 (2.94 m) から始めて、元の値に戻ることを見る。
+! 元との違い: RINGI → RING。始めの DRID1INJ を 2.94 にした手順 (元の台本は設計値から始めるので動かない) を足した。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE RING;
+cell calc;
+Print["design : DRID1INJ ", LINE["L","DRID1INJ"], "  closing GX GY ", LINE["GX","$$$"], " ", LINE["GY","$$$"]];
+LINE["L","DRID1INJ"] = 2.94;
+FFS["cell calc"];
+Print["start  : DRID1INJ ", LINE["L","DRID1INJ"], "  closing GX GY ", LINE["GX","$$$"], " ", LINE["GY","$$$"]];
+
+FFS["fit GX 0"];
+FFS["fit GY 0"];
+FFS["free DRID1INJ L"];
+FFS["go"];
+FFS["cell calc"];
+Print["result : DRID1INJ ", LINE["L","DRID1INJ"], "  closing GX GY ", LINE["GX","$$$"], " ", LINE["GY","$$$"], "  circumference ", LINE["S","$$$"]];
+FFS["type D*",6];
+FFS["disp geo $$$",6];
+Exit;

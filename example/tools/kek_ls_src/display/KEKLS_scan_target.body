@@ -1,0 +1,67 @@
+! KEK-LS v03_68: セルのマッチングの目標値を変えたときの、運動量依存・振幅依存のチューンシフト  (元: dp_sv.sad・dx_sv_*.sad・dy_sv_*.sad)
+! 元の dp_sv / dx_sv / dy_sv 系は、「ずれ」への依存ではなく、六極のある位置 MKSFA1 でのツイスの目標値 (AY・BY・EX) を 1 つずつ振って、
+! セルを再マッチ → 六極でクロマティシティ補正 → チューンの δ 依存 (dp_sv) または ADTS (dx_sv: 水平、dy_sv: 垂直) を見る台本。
+!   dp_sv: AY を 1.08〜1.29 (0.01 刻み)、dx_sv_ay/_by/_ex・dy_sv_ay/_by/_ex: AY・BY (3〜7)・EX を振る (元の v02 の値)。
+! この例: 3 つの目標 (AY・BY・EX) を設計値 (1.19、6.4、0.14) の −、0、+ に振る (9 回のマッチング)。各点で、リング RINGC の
+!   ξ、δ = ±1%・±2% のチューン、ADTS (水平 61σ・垂直 1σ / 水平 1σ・垂直 31σ のときの Δν) を表示する。目標値の刻み・範囲は fac (設計値の倍率) のリスト。
+! 元との違い: 元の MatchingDef[] は v02 の K1 値 (QFA1・BPI6 など v02 の名前) を直接代入していた。ここは v03_68 の InitMag[]・MatchingARCA[]
+!   (../modules/modules_cell_match.n) を使う。modules_amp_dep_ts.n の SetInitialParameters[] が変数 betay を上書きするので、
+!   マッチングの前に betay = 3.6 に戻す。完全な設定: 元の刻みで fac を細かくする (点数 × 数秒)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+Get["../modules/modules_amp_dep_ts.n"];
+Get["../modules/modules_cell_match.n"];
+
+nxcell = 48.58/20;
+nycell = 17.62/20;
+tay0 = 1.19;  tby0 = 6.4;  tex0 = 0.14;
+facs = {0.9, 1.0, 1.1};
+names = {"AY", "BY", "EX"};
+
+Print["columns: target value | xi_x xi_y | nux nuy at delta=-2%,-1%,+1%,+2% | ADTS x: dnux dnuy (61 sigma) | ADTS y: dnux dnuy (31 sigma)"];
+Do[
+  Do[
+    betay = 3.6;
+    tay = tay0;  tby = tby0;  tex = tex0;
+    If[it == 1, tay = tay0*facs[ik]];
+    If[it == 2, tby = tby0*facs[ik]];
+    If[it == 3, tex = tex0*facs[ik]];
+    FFS["USE ARCA;"];
+    InitMag[];
+    MatchingARCA[1];
+    MatchingARCA[1];
+    MatchingARCA[0.001];
+    ChromCor[];
+    FFS["cell calc"];
+    GetKQ[];
+    FFS["USE RINGC;"];
+    PutKQ[];
+    FFS["cell calc emit"];
+    nu0x = Twiss["NX","$$$"]/2/Pi;  nu0y = Twiss["NY","$$$"]/2/Pi;
+    xi = Chrom[0.0005];
+    dpv = {-0.02, -0.01, 0.01, 0.02};
+    tx = {0,0,0,0};  ty = {0,0,0,0};
+    Do[
+      DP0 = dpv[m];
+      FFS["cell calc"];
+      tx[m] = Twiss["NX","$$$"]/2/Pi;
+      ty[m] = Twiss["NY","$$$"]/2/Pi;
+    ,{m,1,4}];
+    DP0 = 0;
+    FFS["cell calc emit"];
+    ResetInit[];
+    SetInitialParameters[];
+    r1 = AmplitudeDependentTuneShift[61, 1, 10];
+    ResetInit[];
+    SetInitialParameters[];
+    r2 = AmplitudeDependentTuneShift[1, 31, 10];
+    Print["R ", names[it], " ", If[it==1,tay,If[it==2,tby,tex]], " | ", xi[1], " ", xi[2], " | ", tx[1], " ", ty[1], " ", tx[2], " ", ty[2], " ", tx[3], " ", ty[3], " ", tx[4], " ", ty[4],
+          " | ", r1[1]-nu0x, " ", r1[2]-nu0y, " | ", r2[1]-nu0x, " ", r2[2]-nu0y];
+    DX 0;  DY 0;  DPX 0;  DPY 0;
+  ,{ik,1,3}];
+,{it,1,3}];
+Exit;

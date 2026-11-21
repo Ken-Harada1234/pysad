@@ -1,0 +1,39 @@
+! KEK-LS v03_68: リングのパラメータの表示 (エミッタンス、エネルギー拡がり、減衰、αc、U0、クロマティシティ)
+! 元: calc_emit.sad・disp (`cell calc emit`・`disp $$$`)・disp_emit・chromaticity_plot.sad の運動量スキャン。
+! RINGC (標準セル 20 個) と RING (入射セル込み) を、`cell calc emit` の表 (FFS の画面表示) と変数で出す。ξ は DP0 = ±0.0005 のチューン差から。
+! 元との違い: 元の calc_emit.sad は途中の `stop;` で終わり、後半 (H の積分) は動かない → display/KEKLS_calc_H.sad に直した。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+Chrom[dd_]:=(
+  DP0 = dd;   FFS["cell calc"];  nxp = Twiss["NX","$$$"]/2/Pi;  nyp = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -dd;  FFS["cell calc"];  nxm = Twiss["NX","$$$"]/2/Pi;  nym = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0;    FFS["cell calc"];
+  {(nxp-nxm)/2/dd, (nyp-nym)/2/dd}
+);
+
+names = {"RINGC", "RING"};
+Do[
+  FFS["USE " // names[k]];
+  Print["===== ", names[k]];
+  FFS["cell calc emit",6];
+  Print["circumference [m]  = ", LINE["S","$$$"]];
+  Print["tune               = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  Print["EMITX [pm rad]     = ", EMITX*1E12];
+  Print["SIGE               = ", SIGE];
+  Print["SIGZ [mm]          = ", SIGZ*1000];
+  xi = Chrom[0.0005];
+  Print["xi (with sextupoles)    = ", xi[1], " ", xi[2]];
+  sdh0 = LINE["K2","SDH"];  sfh0 = LINE["K2","SFH"];
+  LINE["K2","SDH"] = 0;  LINE["K2","SFH"] = 0;
+  FFS["cell calc"];
+  xi = Chrom[0.0005];
+  Print["xi (natural, K2 = 0)    = ", xi[1], " ", xi[2]];
+  LINE["K2","SDH"] = sdh0;  LINE["K2","SFH"] = sfh0;
+  FFS["cell calc"];
+,{k,1,2}];
+Exit;

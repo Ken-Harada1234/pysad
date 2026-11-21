@@ -1,0 +1,635 @@
+!=====================================================================
+! DDBA ハイブリッドリング v07_14 (5 GeV、周長 749.48 m、30 セル)
+!
+! 蓄積リングの設計版 v07_14。長直線部 (LS、約 10.02 m) を持つセルと中直線部 (MS、約 5.02 m) を持つセルが
+! 交互に並ぶ DDBA 型。対称性は鏡面対称の 1 回対称だけ (周期性なし)。RING はセル 30 個 (LS 型 15 + MS 型 15)。
+!
+! エネルギー      5 GeV
+! RF              6.5 MV、ハーモニック数 1250
+! チューン        (47.865, 16.655)  (RINGSP・RINGINJ・RINGSYM とも)
+! エミッタンス    εx 832  pm rad (RING、RAD ON の cell calc emit)
+! 周長            749.4809 m (RING)
+!
+! セル (偏向磁石のあいだの中心 MKLC・MKMC から次の中心まで。直線部の中心 MKLS・MKMS がセルの中央)
+!   LCELL / LCELLA    長直線部のセル。LCELLA は「A 版」(偏向磁石 B1LA・B2LA の角度が 0.06136 rad で、
+!                     通常の 0.05236 rad より大きく、Q3LA・Q4LA は逆向きの偏向 -0.009 rad を持つ)。
+!                     LCELLH・LCELLHA はその半分 (六極 S1LH〜S5LH、S1LHA〜S5LHA)
+!   MCELL / MCELLA    中直線部のセル。同様
+!   TCELL = MCELL LCELL、TCELLA = MCELLA LCELLA (2 セルの単位。チューンのマッチングの単位)
+!   RINGSP  = MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED
+!             (元の台本で、5 GeV の版の有効な RING。SP 輸送の計算用)
+!   RINGINJ = 元の台本で、2.5 GeV の版の有効な RING (通常の入射用の並び)
+!   RINGSYM = HRING RFC -HRING (鏡面対称の並び。RFC の左右が互いの鏡像)
+!   RING    = このファイルでは RINGSP と同じ
+!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (六極のマッチング用)
+!
+! 六極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
+! (元の台本は古い組を先に定義し、
+! あとの定義が有効になる書き方だったので、古い組は除いた)。
+!   関連する公開論文: K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac",
+!   J. Synchrotron Rad. 29, 118-124 (2022), DOI 10.1107/S1600577521012753。
+!   注意: この論文に六極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
+!   v07_14 とは別の版。K2 が論文の設定と一致する、同じ最適化の結果である、という意味ではない。
+! MARK のツイスの保存値 (MRST、MKS1LA など) は設計時のもので、cell calc では使わない。
+!
+! このファイルは FFS; の前に置く (要素・ライン定義だけ。台本は後ろに続ける)。
+!=====================================================================
+ MOMENTUM = 5GEV;
+
+ DRIFT  DLL1    =(L =5.0107385 )    DLL2    =(L =.05 )   D1      =(L =.15 )   D1H     =(L =.075 )  D2      =(L =.27 )
+        D5      =(L =.3 )    D31     =(L =.05 )   D32     =(L =.28 )   D32O    =(L =.18 )   D6      =(L =.36 )   DLS1    =(L =.05 )
+        DLS2    =(L =.05 )   DLS3    =(L =.96559253 )    DLM2    =(L =.05 )   DLM1    =(L =2.5107385 )
+        DLMN    =(L =2.5107861845443584 )  DLLN    =(L =5.010819133360125 )
+ ;
+ BEND   HD      =(ANGLE =0 )
+        VD      =(ANGLE =0     ROTATE =-90 DEG )
+        B1LA    =(L =1.2  ANGLE =.06135987733333333     E1 =.5    E2 =.5    K1 =-.09271790151735919 )
+        Q3LA    =(L =.3   ANGLE =-.009   K1 =.6112205080557542 )
+        Q4LA    =(L =.3   ANGLE =-.009   K1 =.47461150300592775 )
+        B2LA    =(L =1.2  ANGLE =.06135987733333333     E1 =.5    E2 =.5    K1 =-.8590504097588227 )
+        B2MA    =(L =1.2  ANGLE =.06533737733333334     E1 =.5    E2 =.5    K1 =-.8205183320962872 )
+        Q4MA    =(L =.3   ANGLE =-.0129775    K1 =.39344476802505485 )
+        Q3MA    =(L =.3   ANGLE =-.0129775    K1 =.6382577905638572 )
+        B1MA    =(L =1.2  ANGLE =.06533737733333334     E1 =.5    E2 =.5    K1 =-.4685182105338529 )
+        B2M     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.8593522050989405 )
+        B1M     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.6333642925795774 )
+        B2L     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.8878435894964858 )
+        B1L     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.25476665794856473 )
+ ;
+ QUAD   Q1LA    =(L =.3   K1 =.8662613515624021 )
+        Q2LA    =(L =.2   K1 =-.7792933566920979 )
+        Q5LA    =(L =.3   K1 =.7617251199000916 )
+        QALA    =(L =.2   K1 =-.004629829856315495 )
+        Q5MA    =(L =.3   K1 =.7321859763416333 )
+        Q2MA    =(L =.2   K1 =-.44737310720988616 )
+        Q1MA    =(L =.3   K1 =.7625331308684621 )
+        Q5M     =(L =.3   K1 =.7659524148481732 )
+        Q4M     =(L =.3   K1 =.3751849155591443 )
+        Q3M     =(L =.3   K1 =.8777169537514825 )
+        Q2M     =(L =.2   K1 =-.25724655586604894 )
+        Q1M     =(L =.3   K1 =.6327680018894143 )
+        QAL     =(L =.2   K1 =-.05061756390068869 )
+        Q5L     =(L =.3   K1 =.8365664846626356 )
+        Q4L     =(L =.3   K1 =.4391706990273402 )
+        Q3L     =(L =.3   K1 =.8207930351316595 )
+        Q2L     =(L =.2   K1 =-.6338953059952335 )
+        Q1L     =(L =.3   K1 =.7308448245076412 )
+ ;
+ ! 六極 (20231205 の再調整版。元の台本は、これより前に古い六極の組を定義し、あとの定義が有効だったので、古い組は除いた)
+ SEXT   S1MH    =(L =0.1   K2 =+4.1831437)
+        S2MH    =(L =0.1   K2 =-5.3856367)
+        S3MH    =(L =0.1   K2 =-20.2905230)
+        S4MH    =(L =0.1   K2 =+21.0524050)
+        S5MH    =(L =0.1   K2 =-9.0526099)
+        S1LH    =(L =0.1   K2 =+2.2786354)
+        S2LH    =(L =0.1   K2 =-1.8547000)
+        S3LH    =(L =0.1   K2 =-27.9527650)
+        S4LH    =(L =0.1   K2 =+32.6473770)
+        S5LH    =(L =0.1   K2 =-12.7925740)
+        S1MHA    =(L =0.1   K2 =+8.7214956)
+        S2MHA    =(L =0.1   K2 =-8.7984769)
+        S3MHA    =(L =0.1   K2 =-15.1553200)
+        S4MHA    =(L =0.1   K2 =+19.7296880)
+        S5MHA    =(L =0.1   K2 =-11.6632610)
+        S1LHA    =(L =0.1   K2 =+2.0882064)
+        S2LHA    =(L =0.1   K2 =-3.5062268)
+        S3LHA    =(L =0.1   K2 =-26.2695260)
+        S4LHA    =(L =0.1   K2 =+25.5587320)
+        S5LHA    =(L =0.1   K2 =-10.8576220)
+;
+
+ OCT    OC1     =(L =.1   K3 =0 )
+ ;
+ CAVI   RFC     =(VOLT =6.5e+06  HARM =1250 )
+
+ ;
+ MONI   PM                              =()
+ ;
+ MARK   MRST    =(AX =-2.9453565230162487e-14 BX =5.365953464882752    AY =-2.443028620030068e-14    BY =5.062056422217577
+           EX =-1.0997329979603072e-09   EPX =1.7108262097438037e-15   DP =.01   SIGZ =.0020558399131841115
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLSA   =(AX =-2.9453565230162487e-14 BX =5.365953464882752    AY =-2.443028620030068e-14    BY =5.062056422217577
+           EX =-1.0997329979603072e-09   EPX =1.7108262097438037e-15   DP =.01   EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1LA  =(AX =-.9617561042551686 BX =10.329325219722564   PSIX =.7659059074667396  AY =-1.0194944642160502
+           BY =10.323400754234346   PSIY =.7950510042825814  EX =-1.0997241688336197e-09   EPX =1.7108262097438037e-15   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2LA  =(AX =5.727029490638906  BX =5.519456927249825    PSIX =.8549925781876452  AY =-15.681748315672587
+           BY =21.828405284453208   PSIY =.8574485692872139  EX =-7.31913897510734e-10     EPX =9.119204039393779e-10    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3LA  =(AX =-1.8603407383222075     BX =2.433499791573429    PSIX =3.037716277720262  AY =4.933752674328933
+           BY =10.658893483971996   PSIY =.9694571656778113  EX =.06215626572755852   EPX =.06252348330496399
+           DX =-3.176963248484634e-18    DPX =1.045415477759802e-34    DZ =1.3055624967800123e-19    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4LA  =(AX =.08929282449331113 BX =5.118091285528043    PSIX =3.2797169228347194 AY =-.13320380261105058
+           BY =5.829905479788252    PSIY =1.1120558957097277 EX =.09669510380139486   EPX =-.004649973982433143
+           DX =-2.4190314397241867e-18   DPX =1.8838267665895018e-18   DZ =1.0282983253270134e-19    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5LA  =(AX =1.6095224029890658 BX =2.7658338562341815   PSIX =3.5144882989028408 AY =-4.13005589979077
+           BY =10.144900451261773   PSIY =1.2540574964876179 EX =.061426604997081274  EPX =-.057407552500734746
+           DX =-1.1768079380249373e-19   DPX =2.6545169383556134e-18   DZ =8.822363813277575e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLCA   =(AX =1.1314927645446035e-07  BX =2.7000000698711006   PSIX =5.33970494688831   AY =-1.0844177161288333e-06
+           BY =4.6999428919527295   PSIY =1.760053948012677  EX =.029999998808126767  EPX =-8.096026206798005e-11
+           DX =4.955115718065765e-18     DPX =1.0049646585327275e-18   DZ =5.1260793177001547e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMC    =(AX =1.1314927645446035e-07  BX =2.7000000698711006   PSIX =5.33970494688831   AY =-1.0844177161288333e-06
+           BY =4.6999428919527295   PSIY =1.760053948012677  EX =.029999998808126767  EPX =-8.096026206798005e-11
+           DX =4.955115718065765e-18     DPX =1.0049646585327275e-18   DZ =5.1260793177001547e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMCA   =(AX =-1.1314927645446035e-07 BX =2.7000000698711006   PSIX =5.33970494688831   AY =1.0844177161288333e-06
+           BY =4.6999428919527295   PSIY =1.760053948012677  EX =.029999998808126767  EPX =8.096026206798005e-11
+           DX =4.955115718065765e-18     DPX =-1.0049646585327275e-18  DZ =5.1260793177001547e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5MA  =(AX =1.7426728297537384 BX =2.9285670014401224   PSIX =7.104233342631668  AY =-3.6554923332372096
+           BY =9.848203940943975    PSIY =2.2082889319773535 EX =.06714615421470184   EPX =-.0625758665942823
+           DX =1.1022515796901433e-17    DPX =-6.938893903907228e-18   DZ =-2.4876096378470133e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4MA  =(AX =.5390707752591559  BX =5.818501349702274    PSIX =7.322239593965019  AY =-.28777951486720343
+           BY =5.847842539192279    PSIY =2.3497027510205886 EX =.1074918985604821    EPX =-.00985854041609577
+           DX =1.5508073463561475e-17    DPX =-1.1223590247057025e-18  DZ =-5.71799924798327e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3MA  =(AX =-2.183678166573929 BX =3.116712277105602    PSIX =7.520767601993539  AY =4.867188324647887
+           BY =10.4856384120928     PSIY =2.494079871757889  EX =.069722637998028     EPX =.07165813659015462
+           DX =1.0863101907318878e-17    DPX =8.750486181406296e-18    DZ =1.4338513403885623e-19    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2MA  =(AX =3.51212861133769   BX =3.9819981096582473   PSIX =9.458071370368655  AY =-8.213540226031173
+           BY =11.725859450763286   PSIY =2.6333993356459007 EX =8.902877795781876e-10     EPX =-5.451460597690691e-10
+           DX =-5.9195378854500795e-18   DPX =8.309065931524738e-18    DZ =-8.444292367883398e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1MA  =(AX =-.4657323999071339 BX =6.952210083910969    PSIX =9.588962400104235  AY =-.9102103506595088
+           BY =5.345058341077873    PSIY =2.7497892527679078 EX =1.0014257694099077e-09    EPX =2.693190889039922e-10
+           DX =-9.875364305690839e-18    DPX =1.5086719953635164e-18   DZ =-8.444292367883398e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMSA   =(AX =1.3467314440101557e-07  BX =5.713018315110683    PSIX =10.02482223011515  AY =-2.361996377508096e-06
+           BY =2.9232203333249194   PSIY =3.488214516423277  EX =2.8483810479231465e-10    EPX =2.6931908890399214e-10
+           DX =-1.3889545967626368e-17   DPX =1.5086719953635164e-18   DZ =-8.444292367883398e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKME    =(AX =1.5579646387615104e-07  BX =2.7000001095175246   PSIX =14.709939244195983 AY =-3.4075296830641934e-06
+           BY =4.6999497650219455   PSIY =5.216379692803112  EX =.03000000092283434   EPX =1.0232570036318548e-10
+           DX =1.0570131963494414e-17    DPX =-3.710044284266611e-18   DZ =-3.2510763098546463e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLC    =(AX =1.5579646387615104e-07  BX =2.7000001095175246   PSIX =14.709939244195983 AY =-3.4075296830641934e-06
+           BY =4.6999497650219455   PSIY =5.216379692803112  EX =.03000000092283434   EPX =1.0232570036318548e-10
+           DX =1.0570131963494414e-17    DPX =-3.710044284266611e-18   DZ =-3.2510763098546463e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLE    =(AX =-9.511821421805488e-08  BX =2.69999960871546     PSIX =25.389349376579258 AY =-3.3452233881682376e-06
+           BY =4.6999623867913405   PSIY =8.736486473253892  EX =.02999999809580099   EPX =6.567991141163386e-10
+           DX =1.0839165135840107e-17    DPX =6.653968611409153e-18    DZ =6.197590718165035e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5M   =(AX =1.8473214986443094 BX =2.9297147715131406   PSIX =107.43126525195973 AY =-3.965966767143246
+           BY =9.750930069691194    PSIY =37.086906450104394 EX =.05052941453966965   EPX =-.046270178504001065
+           DX =7.647043256679654e-18     DPX =-3.929472590007052e-34   DZ =-3.3726190625300617e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4M   =(AX =.76968298279361    BX =6.163327029108676    PSIX =107.64393638865617 AY =-.6688539643656143
+           BY =5.158006170096901    PSIY =37.23770201082652  EX =.08456155062544603   EPX =-.01776079730277947
+           DX =6.516822436793996e-18     DPX =2.815536049130082e-18    DZ =-3.3726190625300617e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3M   =(AX =-2.7556860577004034     BX =2.384545292674248    PSIX =107.85127013306749 AY =5.56169114326094
+           BY =10.02787509739117    PSIY =37.40299920187526  EX =.05715385304608668   EPX =.05926159293731943
+           DX =1.1025509402422783e-18    DPX =7.334045898702224e-18    DZ =-3.3726190625300617e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2M   =(AX =10.117119702052824 BX =12.63864970945043    PSIX =110.3327410434299  AY =-6.59641363682463
+           BY =10.716741740051463   PSIY =37.54642490746607  EX =8.172623990960997e-10     EPX =-5.475181058863889e-10
+           DX =-2.1804945372519713e-17   DPX =1.4729820724324955e-17   DZ =-1.0656293329689715e-20   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1M   =(AX =-.1227715364459852 BX =21.999322107160694   PSIX =110.37506826092832 AY =-.8210298756227414
+           BY =5.42539023094634     PSIY =37.66454750806072  EX =1.0019951940689285e-09    EPX =8.846205073429627e-11
+           DX =-2.6819628470813827e-17   DPX =-2.2684669936461413e-18  DZ =-1.0656293329689753e-20   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMS    =(AX =5.6372150778849725e-08  BX =21.672653449124184   PSIX =110.49722853390395 AY =-2.169809109607535e-06
+           BY =3.2407995073930733   PSIY =38.35197848412808  EX =7.666165855827456e-10     EPX =8.84620507342961e-11
+           DX =-2.0783722834025306e-17   DPX =-2.268466993646139e-18   DZ =-1.0656293329689759e-20   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5L   =(AX =1.6184943583177005 BX =2.6311263970278995   PSIX =117.31163670233123 AY =-4.243940167992168
+           BY =9.897802071533606    PSIY =40.57159692879457  EX =.049452454181218644  EPX =-.045568252332308344
+           DX =1.0365143390855497e-18    DPX =-1.0408340855860843e-17  DZ =5.180933765559757e-19     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4L   =(AX =.3665293265546696  BX =5.238933205009107    PSIX =117.55176023815488 AY =-.5086717587749701
+           BY =5.187352171326783    PSIY =40.72292189675258  EX =.08115463166373764   EPX =-.012937380435035587
+           DX =1.0047902628791066e-17    DPX =-7.362234033492567e-18   DZ =5.180933765559757e-19     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3L   =(AX =-2.208607756309311 BX =1.9884982157508686   PSIX =117.80260272102095 AY =5.4762405140301915
+           BY =10.121979235910214   PSIY =40.8850721891445   EX =.0542495707818043    EPX =.05508106918974822
+           DX =1.1331786395283012e-17    DPX =2.8881529548824452e-18   DZ =5.180933765559757e-19     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2L   =(AX =11.160984702690905 BX =11.646279275705254   PSIX =120.23700924822467 AY =-12.746037719188099
+           BY =19.969403335424186   PSIY =41.00065576032899  EX =-4.3724593795749753e-10   EPX =2.800107382284587e-10
+           DX =8.488545625667692e-18     DPX =-4.482619300007394e-18   DZ =8.214149129798649e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1L   =(AX =-.24685399790175439     BX =22.18032687549677    PSIX =120.28003513550706 AY =-.9810276145847564
+           BY =10.32356381468683    PSIY =41.06437513842816  EX =-5.067537819116739e-10    EPX =-1.0744997073752844e-10
+           DX =9.178841337510825e-18     DPX =2.7688852486206816e-18   DZ =8.214149129798649e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLS    =(AX =4.822407861851367e-08   BX =20.9063582888547     PSIX =120.52205071895924 AY =-3.0388355920543143e-06
+           BY =5.26064204810231     PSIY =41.840193513398006 EX =4.7776097239264504e-11    EPX =-1.0744997073752845e-10
+           DX =-5.110874631649398e-18    DPX =2.7688852486206816e-18   DZ =8.214149129798646e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MRED    =(AX =5.120125241567706e-13   BX =5.713018001308608    PSIX =150.37233254708144 AY =2.9855544041867573e-13
+           BY =2.9232004480651566   PSIY =52.32323452675158  EX =-1.3930395248561666e-09   EPX =1.2694325712662347e-15
+           DX =1.1532498981188467e-17    DPX =-2.9046644838758734e-18  DZ =-8.144821492636243e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+ ;
+
+ LINE HV = (HD VD)
+ ;
+ LINE
+  NCELLH = (MKS
+                DLN1 PM DLN2 S1H HV MKS1 S1H D1 Q1 D1 S2H MKS2 S2H D1H PM D1H Q2 D2
+                B1
+                D5 S3H HV MKS3 S3H D31 PM D32 Q3 D1 S4H MKS4 S4H D1 Q4 D32O OC1 PM D31 S5H HV MKS5 S5H D5
+                B2
+                D6 Q5 
+                DLS1 PM DLS2 HV DLS3
+           MKNC)
+  NCELL = (MKNC -NCELLH NCELLH MKNE)
+  MCELLH = (MKMS
+                DLMN PM DLM2 S1MH HV MKS1M S1MH D1 Q1M D1 S2MH MKS2M S2MH D1H PM D1H Q2M D2
+                B1M
+                D5 S3MH HV MKS3M S3MH D31 PM D32 Q3M D1 S4MH MKS4M S4MH D1 Q4M D32O OC1 PM D31 S5MH HV MKS5M S5MH D5
+                B2M
+                D6 Q5M
+                DLS1 PM DLS2 HV DLS3
+           MKMC)
+  MCELL = (MKMC -MCELLH MCELLH MKME)
+  LCELLH = (MKLS
+                DLLN PM DLL2 S1LH HV MKS1L S1LH D1 Q1L D1 S2LH MKS2L S2LH D1H PM D1H Q2L D2
+                B1L
+                D5 S3LH HV MKS3L S3LH D31 PM D32 Q3L D1 S4LH MKS4L S4LH D1 Q4L D32O OC1 PM D31 S5LH HV MKS5L S5LH D5
+                B2L
+                D6 Q5L D1 QAL 
+                DLS1 PM DLS2 HV DLS3
+           MKLC)
+  LCELL = (MKLC -LCELLH LCELLH MKLE)
+
+  MCELLHA = (MKMSA
+                DLM1 PM DLM2 S1MHA HV MKS1MA S1MHA D1 Q1MA D1 S2MHA MKS2MA S2MHA D1H PM D1H Q2MA D2
+                B1MA
+                D5 S3MHA HV MKS3MA S3MHA D31 PM D32 Q3MA D1 S4MHA MKS4MA S4MHA D1 Q4MA D32O OC1 PM D31 S5MHA HV MKS5MA S5MHA D5
+                B2MA
+                D6 Q5MA
+                DLS1 PM DLS2 HV DLS3
+           MKMCA)
+  MCELLA = (MKMC -MCELLHA MCELLHA MKME)
+  LCELLHA = (MKLSA
+                DLL1 PM DLL2 S1LHA HV MKS1LA S1LHA D1 Q1LA D1 S2LHA MKS2LA S2LHA D1H PM D1H Q2LA D2
+                B1LA
+                D5 S3LHA HV MKS3LA S3LHA D31 PM D32 Q3LA D1 S4LHA MKS4LA S4LHA D1 Q4LA D32O OC1 PM D31 S5LHA HV MKS5LA S5LHA D5
+                B2LA
+                D6 Q5LA D1 QALA
+                DLS1 PM DLS2 HV DLS3
+           MKLCA)
+  LCELLA = (MKLC -LCELLHA LCELLHA MKLE)
+
+  RINGL = (MRST
+              15*LCELL RFC 15*LCELL
+          MRED)
+  RINGM = (MRST
+              15*MCELL RFC 15*MCELL
+          MRED)
+
+  RINGLA = (MRST
+              15*LCELLA RFC 15*LCELLA
+          MRED)
+  RINGMA = (MRST
+              15*MCELLA RFC 15*MCELLA
+          MRED)
+
+  TCELL = (MCELL LCELL)
+  TCELLA = (MCELLA LCELLA)
+  ACELL = (TCELL TCELLA)
+
+  RINGN = (MRST
+              8*TCELL RFC 7*TCELL
+          MRED)
+  RINGA = (MRST
+              8*TCELLA RFC 7*TCELLA
+          MRED)
+
+  ARING = (MRST
+              20*LCELLA RFC 10*LCELL
+           MRED)
+  HRING = (MRST
+              LCELLHA 5*TCELLA 2*TCELL -MCELLHA
+           MRED)
+
+  RINGSP = (MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED)
+  RINGINJ = (MRST LCELLH MCELL LCELLA MCELLA LCELLA MCELLA LCELLA MCELLA LCELLA MCELLA LCELLA MCELLA -LCELLHA HRING RFC MCELLHA LCELL MCELL -LCELLH MRED)
+  RINGSYM = (HRING RFC -HRING)
+  RING = (RINGSP)
+;
+!@LAT 5GeV
+!=====================================================================
+! V0714_tune_survey: v07_14 のチューンサーベイ (リング全体のチューン (nx0, ny0) を格子で振り、マッチングし直して光学・ξ・ADTS を出す)
+!
+! 元のフォルダには、v07_14 用のチューンサーベイの台本は無い (v07_14 のラティスを読み込むものがない)。この台本は、
+!   ・サーベイの枠組み: tune_sv_v06_10_parm (28 セルの旧い版 v06_10 用。nx0・ny0 の二重ループで、設計値から再マッチング → 六極 →
+!     ADTS (x・y 5σ) と ξ をファイルに書く)
+!   ・v07_14 のマッチング: matching_v07_11 (2 セル単位 TCELLA・TCELL のセルチューン nx0/15、ny0/15 に合わせる。V0714_match_tune と同じ fit 条件)
+! を組み合わせて作った (新規。元の台本に v07_14 版は無いので、元との比較はできない。部品ごとの一致は V0714_match_tune で確認)。
+! 流れ (格子点ごと):
+!   1. 設計の K1 (四極・偏向磁石) と K2 (六極) に戻す (設計値から始める。元の tune_sv も毎回設計値から)。マッチングの結果は
+!      SAVE ALL でリングの定義に書き戻す (書き戻さないと USE RING が元の値に戻る)
+!   2. TCELLA を nitA 回、TCELL を nitN 回、セルチューン nx0/15、ny0/15 にマッチング (四極 Q* と偏向磁石 B1*・B2* の K1 を動かす)
+!   3. セルごとの六極 S3*・S4* の色収差補正 (MCELLA・LCELLA・MCELL・LCELL)
+!   4. RING の cell calc emit: チューン (マッチング後の達成度)・εx・αc
+!   5. ξ (δ = ±1e-4 の中心差分)、ADTS (x・y に 5σ、位相 thetan 分割の平均) → 1 行表示、ファイルに追記
+! 表示の列: nx0 ny0 / リングのチューン (νx, νy) / εx [nm] / αc / ξx ξy / νx(5σx)-νx0 ... (dtx, dty の成分) / 達成度 flag
+! 注意: 設計値から毎回始めるので、設計から遠い格子点は収束しないことがある (flag = 0。表示の「リングのチューン」と nx0・ny0 の差で分かる)。
+!       ADTS の行は、振幅 5σ が大きすぎる点でも cell calc の失敗 (closed orbit not found) を出さずに値を返すとは限らない。
+!=====================================================================
+dtmax = 2;    ! 完全な設定
+dtstep = 0.1;
+nitA = 5;    ! 完全な設定
+nitN = 20;    ! 完全な設定
+thetan = 36;    ! 完全な設定
+ampn = 5;
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "15.10";
+  PageWidth = 1999;
+  Get["../modules/modules_amp_dep_ts.n"];
+
+  dtl = .009;
+  dtm = .0129775;
+
+  dbetaa  = 11.5;
+  dbetala = 10.5;
+  bymaxa  = 15;
+
+  dbeta  = 10.5;
+  dbetal = 11.5;
+  bymax = 15;
+
+  ex0 = 0.03;
+  bx0 = 2.7;
+  by0 = 4.7;
+
+! 設計 v05_27 の値を、βの目標の出発点にしていた (次の組が有効)
+bxmkmsa =  2.83638;  bymkmsa =  3.73509;
+bxmklsa =  3.61131;  bymklsa =  15.5488;
+bxmkms =  15.5919;  bymkms =  6.09844;
+bxmkls =  11.7081;  bymkls =  11.2495;
+bxs4ma =  6.05091;  bys4ma =  6.68527;
+bxs4la =  4.73772;  bys4la =  10.0760;
+bxs4m  =  6.87320;  bys4m  =  6.96931;
+bxs4l  =  5.44917;  bys4l  =  9.22563;
+
+! FitValue: βの値が [目標 - 幅, 目標 + 幅] を出たときだけ、その端を目標にする (範囲内なら条件なし)。
+! 各 fit 条件の直後に定義する (元の台本の順序のまま。fit 条件より前に定義すると、収束しなかった)。
+! (元の台本の typo: MKMSA BY の上限は bymklsa、MKMS BY の上限は bymkls を使う。挙動は元のまま)
+
+
+! 設計の K1・K2 (家族ごと。ラティスの定義の値)
+k1names = {"B1LA","B2LA","Q1LA","Q2LA","Q3LA","Q4LA","Q5LA","QALA","B1MA","B2MA","Q1MA","Q2MA","Q3MA","Q4MA","Q5MA",
+           "B1L","B2L","Q1L","Q2L","Q3L","Q4L","Q5L","QAL","B1M","B2M","Q1M","Q2M","Q3M","Q4M","Q5M"};
+k2names = {"S1MH","S2MH","S3MH","S4MH","S5MH","S1LH","S2LH","S3LH","S4LH","S5LH",
+           "S1MHA","S2MHA","S3MHA","S4MHA","S5MHA","S1LHA","S2LHA","S3LHA","S4LHA","S5LHA"};
+USE RING;
+  cell calc emit;
+nxd = Twiss["NX","$$$"]/2/Pi;
+nyd = Twiss["NY","$$$"]/2/Pi;
+k1des = Table[LINE["K1",k1names[i]],{i,Length[k1names]}];
+k2des = Table[LINE["K2",k2names[i]],{i,Length[k2names]}];
+Print["design tune ",nxd," ",nyd];
+
+RestoreDesign[]:=(
+  Do[ LINE["K1",k1names[i]] = k1des[i]; ,{i,Length[k1names]}];
+  Do[ LINE["K2",k2names[i]] = k2des[i]; ,{i,Length[k2names]}];
+  FFS["cell calc;"];
+  FFS["SAVE ALL;"];
+);
+
+! TCELLA のマッチング (V0714_match_tune と同じ。A 版の偏向角はそのまま)
+MatchA[]:=(
+  FFS["USE TCELLA;"];
+  FFS["cell calc;"];
+Do[
+       FFS["fit MKMCA BX bx0;"];
+       FFS["fit MKMCA BY by0;"];
+       FFS["fit MKMCA EX ex0;"];
+       FFS["fit MKMCA EPX 0;"];
+       FFS["fit MKLCA EX ex0;"];
+       FFS["fit MKLCA EPX 0;"];
+  
+       FFS["fit MKMSA AX 0;"];
+       FFS["fit MKLSA AX 0;"];
+       FFS["fit MKMSA AY 0;"];
+       FFS["fit MKLSA AY 0;"];
+  
+       FFS["fit MKMCA AX 0;"];
+       FFS["fit MKLCA AX 0;"];
+       FFS["fit MKMCA AY 0;"];
+       FFS["fit MKLCA AY 0;"];
+  
+       FFS["fit MKMSA EX 0;"];
+       FFS["fit MKMSA EPX 0;"];
+       FFS["fit MKLSA EX 0;"];
+       FFS["fit MKLSA EPX 0;"];
+  
+       FFS["fit B1LA BYM bymaxa;"];
+       FFS["fit B2LA BYM bymaxa;"];
+       FFS["fit B1MA BYM bymaxa;"];
+       FFS["fit B2MA BYM bymaxa;"];
+  
+       FFS["fit MKMSA BX bxmkmsa;"];
+  FitValue["MKMSA", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmkmsa - dbetala,bxmkmsa-dbetala,If[vnow> bxmkmsa + dbetala,bxmkmsa + dbetala, Null]];
+       FFS["fit MKMSA BY bymkmsa;"];
+  FitValue["MKMSA", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymkmsa - dbetala,bymkmsa-dbetala,If[vnow> bymkmsa + dbetala,bymklsa + dbetala, Null]];
+       FFS["fit MKLSA BX bxmklsa;"];
+  FitValue["MKLSA", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmklsa - dbetala,bxmklsa-dbetala,If[vnow> bxmklsa + dbetala,bxmklsa + dbetala, Null]];
+       FFS["fit MKLSA BY bymklsa;"];
+  FitValue["MKLSA", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymklsa  -dbetala,bymklsa-dbetala,If[vnow> bymklsa + dbetala,bymklsa + dbetala, Null]];
+  
+       FFS["fit MKS4MA BX bxs4ma"];
+  FitValue["MKS4MA","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4ma - dbetaa,bxs4ma - dbetaa,If[vnow>bxs4ma + dbetaa,bxs4ma + dbetaa,Null]];
+       FFS["fit MKS4MA BY bys4ma"];
+  FitValue["MKS4MA","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4ma - dbetaa,bys4ma - dbetaa,If[vnow>bys4ma + dbetaa,bys4ma + dbetaa,Null]];
+       FFS["fit MKS4LA BX bxs4la"];
+  FitValue["MKS4LA","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4la - dbetaa,bxs4la - dbetaa,If[vnow>bxs4la + dbetaa,bxs4la + dbetaa,Null]];
+       FFS["fit MKS4LA BY bys4la"];
+  FitValue["MKS4LA","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4la - dbetaa,bys4la - dbetaa,If[vnow>bys4la + dbetaa,bys4la + dbetaa,Null]];
+  
+       FFS["fit NX nx0/15;"];
+       FFS["fit NY ny0/15;"];
+       FFS["free Q* K1"];
+       FFS["free B1* K1;"];
+       FFS["free B2* K1;"];
+       FFS["go;",6];
+  
+  ,{i,1,nitA}];
+  FFS["cell calc emit;"];
+  tcax = Twiss["NX","$$$"]/2/Pi*15;  tcay = Twiss["NY","$$$"]/2/Pi*15;
+  FFS["SAVE ALL;"];
+);
+
+MatchN[]:=(
+  FFS["USE TCELL;"];
+  FFS["cell calc;"];
+Do[
+       FFS["fit MKMC BX bx0;"];
+       FFS["fit MKMC BY by0;"];
+       FFS["fit MKMC EX ex0;"];
+       FFS["fit MKMC EPX 0;"];
+       FFS["fit MKLC EX ex0;"];
+       FFS["fit MKLC EPX 0;"];
+  
+       FFS["fit MKMS AX 0;"];
+       FFS["fit MKLS AX 0;"];
+       FFS["fit MKMS AY 0;"];
+       FFS["fit MKLS AY 0;"];
+  
+       FFS["fit MKMC AX 0;"];
+       FFS["fit MKLC AX 0;"];
+       FFS["fit MKMC AY 0;"];
+       FFS["fit MKLC AY 0;"];
+  
+       FFS["fit MKMS EX 0;"];
+       FFS["fit MKMS EPX 0;"];
+       FFS["fit MKLS EX 0;"];
+       FFS["fit MKLS EPX 0;"];
+       FFS["fit B1L BYM bymax;"];
+       FFS["fit B2L BYM bymax;"];
+       FFS["fit B1M BYM bymax;"];
+       FFS["fit B2M BYM bymax;"];
+  
+       FFS["fit MKMS BX bxmkms;"];
+  FitValue["MKMS", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmkms-dbetal,bxmkms-dbetal,If[vnow> bxmkms+dbetal,bxmkms+dbetal, Null]];
+       FFS["fit MKMS BY bymkms;"];
+  FitValue["MKMS", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymkms-dbetal,bymkms-dbetal,If[vnow> bymkms+dbetal,bymkls+dbetal, Null]];
+       FFS["fit MKLS BX bxmkls;"];
+  FitValue["MKLS", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmkls-dbetal,bxmkls-dbetal,If[vnow> bxmkls+dbetal,bxmkls+dbetal, Null]];
+       FFS["fit MKLS BY bymkls;"];
+  FitValue["MKLS", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymkls-dbetal,bymkls-dbetal,If[vnow> bymkls+dbetal,bymkls+dbetal, Null]];
+  
+       FFS["fit MKS4M BX bxs4m"];
+  FitValue["MKS4M","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4m - dbeta,bxs4m - dbeta,If[vnow>bxs4m + dbeta,bxs4m + dbeta,Null]];
+       FFS["fit MKS4M BY bys4m"];
+  FitValue["MKS4M","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4m - dbeta,bys4m - dbeta,If[vnow>bys4m + dbeta,bys4m + dbeta,Null]];
+       FFS["fit MKS4L BX bxs4l"];
+  FitValue["MKS4L","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4l - dbeta,bxs4l - dbeta,If[vnow>bxs4l + dbeta,bxs4l + dbeta,Null]];
+       FFS["fit MKS4L BY bys4l"];
+  FitValue["MKS4L","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4l - dbeta,bys4l - dbeta,If[vnow>bys4l + dbeta,bys4l + dbeta,Null]];
+  
+       FFS["fit NX nx0/15;"];
+       FFS["fit NY ny0/15;"];
+       FFS["free Q* K1"];
+       FFS["free B1* K1;"];
+       FFS["free B2* K1;"];
+       FFS["go;",6];
+  
+  ,{i,1,nitN}];
+  FFS["cell calc emit;"];
+  tcnx = Twiss["NX","$$$"]/2/Pi*15;  tcny = Twiss["NY","$$$"]/2/Pi*15;
+  FFS["SAVE ALL;"];
+);
+
+CellSext[]:=(
+! セルごとの色収差補正 (六極 S3*, S4*、S5 は S3 と等しい)
+FFS["USE MCELLA;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.001;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5MHA S3MHA 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+ FFS["USE LCELLA;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.01;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5LHA S3LHA 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+
+FFS["USE MCELL;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.001;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5MH S3MH 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+ FFS["USE LCELL;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.01;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5LH S3LH 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+
+);
+
+! ξ (中心差分) と ADTS。RING で
+EvalPoint[]:=(
+  FFS["USE RING;"];
+  FFS["cell calc emit;"];
+  tunex0 = Twiss["NX","$$$"]/2/Pi;
+  tuney0 = Twiss["NY","$$$"]/2/Pi;
+  emitnm = EMITX*10^9;
+  alphac = MomentumCompaction/.Emittance[];
+  DP0 = 1e-4; FFS["cell calc;"]; nxp = Twiss["NX","$$$"]/2/Pi; nyp = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -1e-4; FFS["cell calc;"]; nxm = Twiss["NX","$$$"]/2/Pi; nym = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0; FFS["cell calc emit;"];
+  xix = (nxp-nxm)/2e-4; xiy = (nyp-nym)/2e-4;
+  tune0 = {tunex0,tuney0};
+  SetInitialParameters[];
+  resx = AmplitudeDependentTuneShift[ampn,0,thetan];
+  resy = AmplitudeDependentTuneShift[0,ampn,thetan];
+  ResetInit[];
+  dtx = resx - tune0;
+  dty = resy - tune0;
+);
+
+Close[OpenWrite["V0714_tune_survey.dat"]];
+Print["nx0 ny0 | ring nux nuy | emitx[nm] alphac | xix xiy | dnu(x ampl) dnu(y ampl) | converged"];
+Do[
+ Do[
+  RestoreDesign[];
+  FFS["USE RING;"];
+  FFS["cell calc;"];
+  MatchA[];
+  MatchN[];
+  CellSext[];
+  EvalPoint[];
+  flag = 1;
+  If[Abs[tunex0-nx0]>0.01 || Abs[tuney0-ny0]>0.01, flag = 0];
+  Print[nx0," ",ny0," | ",tunex0," ",tuney0," | ",emitnm," ",alphac," | ",xix," ",xiy," | ",dtx[1]," ",dtx[2]," ",dty[1]," ",dty[2]," | ",flag];
+  datafile = OpenAppend["V0714_tune_survey.dat"];
+  Write[datafile,nx0,ny0,tunex0,tuney0,emitnm,alphac,xix,xiy,dtx[1],dtx[2],dty[1],dty[2],flag];
+  Close[datafile];
+ ,{ny0,nyd-dtmax,nyd+dtmax+dtstep/10,dtstep}];
+,{nx0,nxd-dtmax,nxd+dtmax+dtstep/10,dtstep}];
+stop;
+stop;

@@ -1,0 +1,40 @@
+! KEK-LS v03_68: 振幅依存チューンシフト (ADTS) の表示  (元: amp_dep_ts.sad・amp_dep_ts_x.sad・amp_dep_ts_y.sad・calc の `modules_amp_dep_ts.n`)
+! 始点 (ライン先頭 MKS) のツイスから、振幅 n σ (σ = √(EMITX·β)) の位相 θ を 10 点で回し、各点を `ins calc` (1 周の転送) して得た
+! チューンの平均を求める。水平だけ振る (x = n σ、y = 1 σ) 場合と、垂直だけ振る (x = 1 σ、y = n σ) 場合。
+! 元との違い: 元の amp_dep_ts.sad は y の振幅 1〜401 (20 刻み、21 点) だけ (x は _x、y は _y で別台本、_dp は δ スキャン)。
+!   例は x: n = 1, 21, ..., 101 (6 点)、y: n = 1, 11, ..., 51 (6 点)。元の y の範囲 (1〜401 σ) は、この ring では 100σ 前後 (約 2 mm) から先でチューンが飛ぶ・転送が失敗する (DA の端)
+!   ので、例は有効な範囲 (x は約 2.5 mm、y は約 0.9 mm まで) にした。元の範囲全部: nn を 1 から 401 まで 20 刻みにする (NaN の点が出る)。
+!   各点の前に ResetInit[] (モジュールに追加) で始点の初期座標を 0 に戻す。
+!   USE RING → RINGC。modules_amp_dep_ts.n は ../modules に置いた (calc_H・amp_dep_ts_dp などでも使う共通モジュール)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+Get["../modules/modules_amp_dep_ts.n"];
+
+USE RINGC;
+cell calc emit;
+DP = 0;
+Print["design tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Print["--- horizontal amplitude n sigma (y = 1 sigma)   columns: n nux nuy"];
+Do[
+  ResetInit[];
+  SetInitialParameters[];
+  res = AmplitudeDependentTuneShift[nn, 1, 10];
+  Print["AX ", nn, " ", res[1], " ", res[2], "   amplitude x [mm] ", nn*Sqrt[w*betax]*1000];
+,{nn,1,101,20}];
+Print["--- vertical amplitude n sigma (x = 1 sigma)   columns: n nux nuy"];
+Do[
+  ResetInit[];
+  SetInitialParameters[];
+  res = AmplitudeDependentTuneShift[1, nn, 10];
+  Print["AY ", nn, " ", res[1], " ", res[2], "   amplitude y [mm] ", nn*Sqrt[w*betay]*1000];
+,{nn,1,51,10}];
+DX 0;
+DY 0;
+DPX 0;
+DPY 0;
+cell calc emit;
+Exit;

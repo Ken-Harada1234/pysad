@@ -1,0 +1,50 @@
+! KEK-LS v03_68: 入射セル (ARCINJH = 入射セルの半分) のマッチング  (元: matching2_03_INJ)
+! 標準セル半分 (ARCAH) の MKBE・MKE を始点に、入射セルの四極 QS0〜QS5 (K1) を変数として、入射点 MKSI で
+! 位相進みを標準セルの半分、AX = AY = EPX = 0、BX = 30 m にする。
+! 元との違い: 描画 (WriteGraphs)・コメント行を除いた。元は同じマッチングを 50 回繰り返す (2 回目以降は同じ値で動かない)。
+!             この例は iterations 回 (既定 2) で、各回の収束量を表示する。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+iterations = 2;
+USE ARCA;
+cell calc;
+bxini = Twiss["BX","$$$"];
+byini = Twiss["BY","$$$"];
+exini = Twiss["EX","$$$"];
+nxcell = Twiss["NX","$$$"]/2/Pi;
+nycell = Twiss["NY","$$$"]/2/Pi;
+Print["ARCA end BX BY EX ", bxini, " ", byini, " ", exini, "  cell phase ", nxcell, " ", nycell];
+
+USE ARCINJH;
+ins calc;
+Print["design : phase ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  AX AY EPX ", Twiss["AX","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["EPX","$$$"], "  BX(MKSI) ", Twiss["BX","MKSI"]];
+! v03_68 の QS0〜QS5 はすでにこのマッチングの解。解から戻ることを見るため、K1 を pert 倍して始める (元の台本は設計値から始める)
+pert = 1.2;
+LINE["K1","QS0"] = LINE["K1","QS0"]*pert;
+LINE["K1","QS1"] = LINE["K1","QS1"]*pert;
+LINE["K1","QS2"] = LINE["K1","QS2"]*pert;
+LINE["K1","QS3"] = LINE["K1","QS3"]*pert;
+LINE["K1","QS4"] = LINE["K1","QS4"]*pert;
+LINE["K1","QS5"] = LINE["K1","QS5"]*pert;
+FFS["ins calc;"];
+Print["before: phase ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  AX AY EPX ", Twiss["AX","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["EPX","$$$"], "  BX(MKSI) ", Twiss["BX","MKSI"]];
+Do[
+  FFS["ins calc;"];
+  FFS["fit NX nxcell/2;"];
+  FFS["fit NY nycell/2;"];
+  FFS["fit AX 0;"];
+  FFS["fit AY 0;"];
+  FFS["fit EPX 0;"];
+  FFS["fit MKSI BX 30;"];
+  FFS["free QS* ;"];
+  FFS["go;",6];
+  Print["iteration ", it, ": phase ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  AX AY EPX ", Twiss["AX","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["EPX","$$$"], "  BX(MKSI) ", Twiss["BX","MKSI"]];
+,{it,1,iterations}];
+FFS["disp MKSI;",6];
+FFS["type Q*",6];
+Exit;

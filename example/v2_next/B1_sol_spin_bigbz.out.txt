@@ -1,6 +1,6 @@
-D:\work\SAD-master\Claude outputs\example\v2_next\..\..\pysad\tsvd.py:317: RuntimeWarning: overflow encountered in scalar power
+<repo>\example\v2_next\..\..\pysad\tsvd.py:317: RuntimeWarning: overflow encountered in scalar power
   f = ((w - z) * (w + z) - h ** 2 + g ** 2 / y) / w
-D:\work\SAD-master\Claude outputs\example\v2_next\..\..\pysad\tsvd.py:328: RuntimeWarning: invalid value encountered in scalar divide
+<repo>\example\v2_next\..\..\pysad\tsvd.py:328: RuntimeWarning: invalid value encountered in scalar divide
   c = f / z
 (a) 領域内の DRIFT のスピン (0.4 m、δ = 1e-3・−5e-3 の粒子 3 つ × 3 つのスピン): Thomas-BMT との最大の差
   v2  p = 0.1 GeV  bz = 4.50 1/m  最大の差 2.3e-07

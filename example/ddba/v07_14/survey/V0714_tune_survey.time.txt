@@ -1,0 +1,2 @@
+2026-11-21 14:49 V0714_tune_survey.sad  gs 5 s, pysad 75 s
+2026-11-21 15:18 V0714_tune_survey.sad  gs 5 s, pysad 66 s

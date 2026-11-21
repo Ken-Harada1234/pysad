@@ -1,0 +1,23 @@
+! KEK-LS v03_68: 標準セル 1 個 (ARCA) の配置とオプティクスの数表 (図の元データ。lattice/README.md の図は kek_ls_figs.py が作る)
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE ARCA;
+cell calc;
+Print["ARCA length [m]      = ", LINE["S","$$$"]];
+Print["ARCA tune nx ny      = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Print["ARCA phase 20 cells  = ", Twiss["NX","$$$"]/2/Pi*20, " ", Twiss["NY","$$$"]/2/Pi*20];
+Print["MKS  (straight centre)  BX BY EX = ", Twiss["BX","MKS"], " ", Twiss["BY","MKS"], " ", Twiss["EX","MKS"]];
+Print["MKC  (cell end)         BX BY EX = ", Twiss["BX","MKC"], " ", Twiss["BY","MKC"], " ", Twiss["EX","MKC"]];
+Print["MKSFA1 (SF centre)      BX BY EX = ", Twiss["BX","MKSFA1"], " ", Twiss["BY","MKSFA1"], " ", Twiss["EX","MKSFA1"]];
+ne = LINE["LENGTH"];
+Print["PLOTDATA ", ne];
+! 列: 名前 種類 S[m] L[m] ANGLE K1 K2 BX BY EX (各要素の入口の値)
+Do[
+  Print["E ", LINE["NAME",i], " ", LINE["TYPENAME",i], " ", Twiss["S",i], " ", LINE["L",i], " ", LINE["ANGLE",i], " ",
+        LINE["K1",i], " ", LINE["K2",i], " ", Twiss["BX",i], " ", Twiss["BY",i], " ", Twiss["EX",i]],
+{i,1,ne}];
+Exit;

@@ -1,0 +1,122 @@
+! KEK-LS v03_68: 標準セル (ARCA) の H 関数の積分からエミッタンスを求める式  (元: calc_H.sad と calc_emit.sad の後半)
+! 偏向磁石 (勾配つきを含む) の中点の Twiss から、各磁石の H の積分 (GetIntegralCH)、分散の積分 (GetIntegralEX) を解析式で求め、
+!   εx = Cq γ² (ΣH 積分) / (Σ θ²/L) / Jx
+! を、`cell calc emit` のリング RINGC の EMITX と比べる。
+! 元との違い: 元は calc_emit.sad (勾配なしの式、γ = 2500/0.511 で 3 GeV に合わず、途中の `stop;` で後半は動かない) と
+!   calc_H.sad (勾配つきの式、γ = 3000/0.511) の 2 本。ここは calc_H.sad の式を、MOMENTUM から γ を求めて、式の中身は変えずに整えた。
+!   SAD の変数 DP を上書きしていたのを DJ に変えた。Cq を m の単位に (元は 3.832/10000 で εx が nm rad の値で出ていた)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE RINGC;
+cell calc emit;
+emitring = EMITX;
+USE ARCA;
+cell calc;
+bposi = LINE["POSITION","B*"];
+
+! 1 個の偏向磁石 num の、中点から前向き・後ろ向きの H の積分
+GetIntegralCH[num_]:=(
+  IH = 0;
+  bex = Twiss["BX",num+0.5];
+  alx = Twiss["AX",num+0.5];
+  gax = (1+alx*alx)/bex;
+  etx = Twiss["EX",num+0.5];
+  epx = Twiss["EPX",num+0.5];
+  L   = LINE["L",num]/2;
+  tha = LINE["ANGLE",num]/2;
+  rho = L/tha;
+  k1  = -1*LINE["K1",num];
+  k   = k1/L/2;
+  kef2= k - 1/rho/rho;
+  If[kef2>0,
+    kef = Sqrt[kef2];
+    aaa = (8*kef*(1+kef^2*rho*etx)*Cosh[kef*L]-2*kef*Cosh[2*kef*L])/4/kef^5/rho^2;
+    aaa = aaa + (-8*kef^2*rho*epx*Sinh[kef*L]+8*kef^3*(kef^2*etx*rho+1)*rho*epx*L-8*kef^3*rho*etx-6*kef)/4/kef^5/rho^2;
+    bbb = (kef^2*Sinh[2*kef*L]+8*kef^3*rho*epx*Cosh[kef*L]+4*kef^5*rho^2*epx^2*L-2*kef^3*L-8*kef^3*rho*epx)/4/kef^5/rho^2;
+    ccc = (-8*(1+kef^2*rho*etx)*Sinh[kef*L]+6*kef*L+4*kef^5*rho^2*etx^2*L+Sinh[2*kef*L]+8*kef^3*rho*etx*L)/4/kef^5/rho^2;
+    IH = IH + aaa * alx + bbb * bex + ccc * gax;
+    alx = -1*Twiss["AX",num+0.5];
+    gax = (1+alx*alx)/bex;
+    epx = -1*Twiss["EPX",num+0.5];
+    aaa = (8*kef*(1+kef^2*rho*etx)*Cosh[kef*L]-2*kef*Cosh[2*kef*L])/4/kef^5/rho^2;
+    aaa = aaa + (-8*kef^2*rho*epx*Sinh[kef*L]+8*kef^3*(kef^2*etx*rho+1)*rho*epx*L-8*kef^3*rho*etx-6*kef)/4/kef^5/rho^2;
+    bbb = (kef^2*Sinh[2*kef*L]+8*kef^3*rho*epx*Cosh[kef*L]+4*kef^5*rho^2*epx^2*L-2*kef^3*L-8*kef^3*rho*epx)/4/kef^5/rho^2;
+    ccc = (-8*(1+kef^2*rho*etx)*Sinh[kef*L]+6*kef*L+4*kef^5*rho^2*etx^2*L+Sinh[2*kef*L]+8*kef^3*rho*etx*L)/4/kef^5/rho^2;
+    IH = IH + aaa * alx + bbb * bex + ccc * gax;
+  ,
+    kef = Sqrt[-kef2];
+    aaa = (8*kef*(1-kef^2*rho*etx)*Cos[kef*L]-2*kef*Cos[2*kef*L])/4/kef^5/rho^2;
+    aaa = aaa + (8*kef^2*rho*epx*Sin[kef*L]+8*kef^3*(kef^2*etx*rho-1)*rho*epx*L+8*kef^3*rho*etx-6*kef)/4/kef^5/rho^2;
+    bbb = (-kef^2*Sin[2*kef*L]-8*kef^3*rho*epx*Cos[kef*L]+4*kef^5*rho^2*epx^2*L+2*kef^3*L+8*kef^3*rho*epx)/4/kef^5/rho^2;
+    ccc = (-8*(1-kef^2*rho*etx)*Sin[kef*L]+6*kef*L+4*kef^5*rho^2*etx^2*L+Sin[2*kef*L]-8*kef^3*rho*etx*L)/4/kef^5/rho^2;
+    IH = IH + aaa * alx + bbb * bex + ccc * gax;
+    alx = -1*Twiss["AX",num+0.5];
+    gax = (1+alx*alx)/bex;
+    epx = -1*Twiss["EPX",num+0.5];
+    aaa = (8*kef*(1-kef^2*rho*etx)*Cos[kef*L]-2*kef*Cos[2*kef*L])/4/kef^5/rho^2;
+    aaa = aaa + (8*kef^2*rho*epx*Sin[kef*L]+8*kef^3*(kef^2*etx*rho-1)*rho*epx*L+8*kef^3*rho*etx-6*kef)/4/kef^5/rho^2;
+    bbb = (-kef^2*Sin[2*kef*L]-8*kef^3*rho*epx*Cos[kef*L]+4*kef^5*rho^2*epx^2*L+2*kef^3*L+8*kef^3*rho*epx)/4/kef^5/rho^2;
+    ccc = (-8*(1-kef^2*rho*etx)*Sin[kef*L]+6*kef*L+4*kef^5*rho^2*etx^2*L+Sin[2*kef*L]-8*kef^3*rho*etx*L)/4/kef^5/rho^2;
+    IH = IH + aaa * alx + bbb * bex + ccc * gax;
+  ];
+  IH = IH /rho/rho/rho;
+  IH
+);
+
+! 分散の積分 (I4 の勾配の項に使う)
+GetIntegralEX[num_]:=(
+  IE = 0;
+  etx = Twiss["EX",num+0.5];
+  epx = Twiss["EPX",num+0.5];
+  L   = LINE["L",num]/2;
+  tha = LINE["ANGLE",num]/2;
+  rho = L/tha;
+  k1  = -1*LINE["K1",num];
+  k   = k1/L/2;
+  kef2= k - 1/rho/rho;
+  If[kef2>0,
+    kef = Sqrt[kef2];
+    IE = ((etx*kef^2*rho+1)*Sinh[kef*L]+epx*kef*rho*Cosh[kef*L]-kef*L-kef*rho*epx)/kef^3/rho;
+    epx = -1*Twiss["EPX",num+0.5];
+    IE = IE + ((etx*kef^2*rho+1)*Sinh[kef*L]+epx*kef*rho*Cosh[kef*L]-kef*L-kef*rho*epx)/kef^3/rho;
+  ,
+    kef = Sqrt[-kef2];
+    IE = ((etx*kef^2*rho-1)*Sin[kef*L]-epx*kef*rho*Cos[kef*L]+kef*L+kef*rho*epx)/kef^3/rho;
+    epx = -1*Twiss["EPX",num+0.5];
+    IE = IE + ((etx*kef^2*rho-1)*Sin[kef*L]-epx*kef*rho*Cos[kef*L]+kef*L+kef*rho*epx)/kef^3/rho;
+  ];
+  IE
+);
+
+IntH = 0;
+SumL = 0;
+DJ   = 0;
+Do[
+  IH = GetIntegralCH[bposi[i]];
+  IntH = IntH + IH;
+  Print[bposi[i], "   ", LINE["NAME",bposi[i]], "   ", IH];
+  SumL = SumL + LINE["ANGLE",bposi[i]]*LINE["ANGLE",bposi[i]]/LINE["L",bposi[i]];
+,{i,Length[bposi]}];
+Do[
+  IE  = GetIntegralEX[bposi[i]];
+  L   = LINE["L",bposi[i]];
+  tha = LINE["ANGLE",bposi[i]];
+  rho = L/tha;
+  k1  = -LINE["K1",bposi[i]]/L;
+  DJ  = DJ + IE*(1/rho^3-2*k1/rho);
+,{i,Length[bposi]}];
+DJ = DJ / SumL;
+Jx = 1-DJ;
+Print["Jx = ", Jx];
+cq = 3.832E-13;   ! Cq [m] (元は 3.832/10000 で、結果が nm rad の単位になっていた)
+gamma = MOMENTUM/1E6/0.51099906;
+emittance = cq * gamma * gamma * IntH / SumL /  Jx;
+Print["emittance from H integral [pm rad] = ", emittance*1E12];
+Print["EMITX of RINGC (cell calc emit) [pm rad] = ", emitring*1E12];
+Print["ratio = ", emittance/emitring];
+Exit;

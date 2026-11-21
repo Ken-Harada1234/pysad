@@ -1,0 +1,63 @@
+! 振幅依存チューンシフト (ADTS) の関数。元: modules_amp_dep_ts.n (コメントアウトされた旧い行を除いた。式・順序は元のまま)。
+! 使い方: SetInitialParameters[]; res = AmplitudeDependentTuneShift[nx, ny, 分割数];  → {νx, νy}
+!   nx, ny は始点 (MRST) での振幅 (σ の倍数。σ = sqrt(エミッタンス × β))、位相 θ を 2π/分割数 ごとに回して平均する。
+!   ins calc で始点に初期座標を与えて求めるので、使い終わったら ResetInit[] で始点の初期座標を 0 に戻す。
+
+AmplitudeDependentTuneShift[nx_, ny_,thetadiv_]:=(
+   FFS["cell calc emit"];
+   dth = 2 * Pi / thetadiv;
+   deptunetemp = Table[{1,2},{thetadiv}];
+   ith = 0;
+  Do[
+     ith = ith + 1;
+     inidx  =nx * Sqrt[w] * Sqrt[betax]*Cos[theta];
+     inidpx =nx * Sqrt[w] * 1/Sqrt[betax]*(Sin[theta]-alphax*Cos[theta]);
+     inidy  =ny * Sqrt[w] * Sqrt[betay]*Cos[theta];
+     inidpy =ny * Sqrt[w] * 1/Sqrt[betay]*(Sin[theta]-alphay*Cos[theta]);
+     deptunetemp[ith] = CalcAmpDepTS[inidx,inidpx,inidy,inidpy];
+  ,{theta, 0, 2 * Pi - dth/2 ,dth}];
+  deptune = {0,0};
+  Do[
+     deptune = deptune + deptunetemp[ith];
+  ,{ith,thetadiv}];
+  deptune = deptune / thetadiv;
+  deptune
+);
+
+CalcAmpDepTS[inidx_,inidpx_,inidy_,inidpy_]:=(
+   ininame = LINE["NAME",1];
+     LINE["DX" ,ininame] = inidx;
+     LINE["DPX",ininame] = inidpx;
+     LINE["DY" ,ininame] = inidy;
+     LINE["DPY",ininame] = inidpy;
+   FFS["ins calc"];
+     nux = Twiss["NX","$$$"]/2/Pi;
+     nuy = Twiss["NY","$$$"]/2/Pi;
+     {nux,nuy}
+);
+
+SetInitialParameters[]:=(
+       FFS["cell calc emit fix"];
+       alphax = Twiss["AX",1];
+       betax  = Twiss["BX",1];
+       alphay = Twiss["AY",1];
+       betay  = Twiss["BY",1];
+       etax   = Twiss["EX",1];
+       etapx  = Twiss["EPX",1];
+       gammax = (1 + alphax * alphax)/betax;
+       gammay = (1 + alphay * alphay)/betay;
+       w     = EMITX;
+       wy    = EMITY;
+       sigmax= Sqrt[w /gammax];
+       sigmay= Sqrt[w /gammay];
+);
+
+! (追加) 始点の初期座標を 0 に戻す (元は amp_dep_ts_y の末尾で DX 0; DY 0; DPX 0; DPY 0 としていた)
+ResetInit[]:=(
+   ininame = LINE["NAME",1];
+   LINE["DX" ,ininame] = 0;
+   LINE["DPX",ininame] = 0;
+   LINE["DY" ,ininame] = 0;
+   LINE["DPY",ininame] = 0;
+   FFS["cell calc"];
+);

@@ -1,0 +1,81 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  6.523E-14 $$$       f BX    #######  #   4.793337 $$$       f NX    #######  #  48.580023 $$$       f AY    #######  #  5.975E-14 $$$       f BY    #######  #   2.377363 $$$       f NY    #######  #  17.620079
+$$$       f LENG  #######  #  570.72000
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  1.242E-6  1.660E-7  -1.7E-22  -3.9E-23  -1.16E-6  9.806E-6
+      Exit :  1.241E-6  1.660E-7  1.91E-22  -2.2E-23  -1.16E-6  9.804E-6
+
+    Extended Twiss Parameters
+AX: -6.70E-4 BX: 4.781565                            ZX: 6.942E-5  EX:  .024985
+           PSIX: 5.08E-17                           ZPX: 1.169E-5 EPX: -2.8E-17
+R1: -3.8E-21 R2: -8.7E-22 AY:  .001441 BY: 2.377459  ZY: -5.4E-19  EY: -2.8E-17
+R3: -8.6E-22 R4: -1.1E-20            PSIY: -7.9E-41 ZPY: 8.59E-20 EPY: 3.57E-18
+                                                     AZ: -.002951  BZ: 4.268960
+                                                                 PSIZ: 1.70E-19
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 525288.15 Hz 
+Energy loss per turn U0 =  .2960749 MV  Effective voltage    Vc = 2.0000000 MV 
+Equilibrium position dz = 14.176191 mm  Momentum compact. alpha = 2.2071E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 952.00000
+Bucket height     dV/P0 =  .0396528     Synchrotron frequency   = 2466.5492 Hz 
+
+  Imag.tune: 0.0000000          -0.0000000           0.0000000
+  Real tune:-0.4199709          -0.3799115          -0.0046956
+
+    Damping per one revolution:
+          X : -6.471740E-05   Y : -4.933174E-05   Z : -8.331860E-05
+    Damping time (sec):
+          X :  2.941584E-02   Y :  3.859011E-02   Z :  2.284865E-02
+    Tune shift due to radiation:
+          X :  7.824733E-07   Y : -5.380537E-06   Z :  2.298408E-10
+    Damping partition number:
+          X :    1.3116       Y :    0.9998       Z :    1.6886
+
+Emittance X            = 1.3432E-10 m   Emittance Y            = 3.3724E-34 m
+Emittance Z            = 1.75137E-6 m   Energy spread          = 6.40516E-4
+Bunch Length           = 2.73432423 mm  Beam tilt              = 5.3921E-10 rad
+Beam size xi           =  .02997321 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -7.74E-15 $$$       f BX    #######  #   4.793337 $$$       f NX    #######  #   2.429001 $$$       f AY    #######  #  -6.57E-15 $$$       f BY    #######  #   2.377363 $$$       f NY    #######  #    .881004
+$$$       f LENG  #######  #  28.536000
+  12.0000000000   BID5.1    7.993540393E-9
+  13.0000000000   BID4.1    5.947537289E-9
+  14.0000000000   BID3H.1    2.073289579E-9
+  16.0000000000   BID3H.2    2.522303546E-9
+  17.0000000000   BID2.1    3.046899155E-9
+  18.0000000000   BID1.1    1.958087582E-9
+  49.0000000000   BPI1.1    1.898849667E-9
+  50.0000000000   BPI2.1    2.959739000E-9
+  51.0000000000   BPI3H.1    2.241567259E-9
+  53.0000000000   BPI3H.2    1.979675565E-9
+  54.0000000000   BPI4.1    6.021615145E-9
+  55.0000000000   BPI5.1    8.434918533E-9
+  62.0000000000   BPI6H.1    1.938170341E-8
+  64.0000000000   BPI6H.2    1.512459321E-8
+  73.0000000000   BPI7H.1    1.213559566E-9
+  75.0000000000   BPI7H.2    1.716783295E-9
+  86.0000000000   BPI7H.3    1.716783295E-9
+  88.0000000000   BPI7H.4    1.213559566E-9
+  97.0000000000   BPI6H.3    1.512459321E-8
+  99.0000000000   BPI6H.4    1.938170341E-8
+ 106.0000000000   BPI5.2    8.434918535E-9
+ 107.0000000000   BPI4.2    6.021615141E-9
+ 108.0000000000   BPI3H.3    1.979675565E-9
+ 110.0000000000   BPI3H.4    2.241567259E-9
+ 111.0000000000   BPI2.2    2.959738998E-9
+ 112.0000000000   BPI1.2    1.898849661E-9
+ 143.0000000000   BID1.2    1.958087580E-9
+ 144.0000000000   BID2.2    3.046899156E-9
+ 145.0000000000   BID3H.3    2.522303546E-9
+ 147.0000000000   BID3H.4    2.073289582E-9
+ 148.0000000000   BID4.2    5.947537290E-9
+ 149.0000000000   BID5.2    7.993540407E-9
+Jx =    1.3110389414
+emittance from H integral [pm rad] =  131.1802005133
+EMITX of RINGC (cell calc emit) [pm rad] =  134.3162285431
+ratio =     .9766519053

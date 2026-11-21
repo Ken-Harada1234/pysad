@@ -1,0 +1,68 @@
+! KEK-LS v03_68: COD 応答行列と解析式の照合  (元: write_cod_response.sad)
+! ステアリング (水平 HD*.*、垂直 VD*.*) の K0 → モニター PM.* の COD の応答 Response[j,i] = 0.5 sqrt(βm βc) cos(πν − |Δμ|) / sin(πν) を
+! リング RING の Twiss から作り、(1) 行列の大きさ・代表値を表示、(2) 水平ステアリング 3 個 (1・2・3 番目) に K0 = 1e-6 を順に与えて `cell calc` した SAD の COD と比べる。
+! SAD の K0 の符号は、COD = −K0 × Response (PF の例 pf/optics/calc_respx_PF と同じ)。補正の台本 (KEKLS_correct_cod) は K0 を −0.5 × kick ずつ足す形でこの符号に合わせてある。
+! 補正磁石 HD・VD は同じ要素名の繰り返しなので、既定の `cell calc` (EXPAND) は K0 を全部同じ値に揃えてしまい、1 個だけに K0 を与えられない
+! (HD.1 に与えると全 161 個が同じ値になり COD が 5 倍以上大きくなる。gs・pysad とも同じ)。`USE RING NOEXPAND` と `cell calc noexpand` で成分ごとの K0 が効く (docs/11 A56)。
+! 元との違い: 元の WriteCODResponce[] は、モニターを BPM.* (v03_68 は PM) で探し (見つからず行列が空になる)、結果を fort.92 に書いていた。
+!   モニター名を PM.* に直し、書き出しは省いて、代表値の表示と SAD の COD との照合に変えた。
+!   元は応答行列の計算の中で `cell calc` をステアリング 1 個ごとに繰り返していた。同じ結果なので 1 回だけにした。
+!   (v03_68 には 1 個の COD 補正に使えるステアリング・モニターの数が多く、表示は代表値だけにした。)
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE RING;
+cell calc emit;
+tunex = Twiss["NX","***"]/2/Pi;
+tuney = Twiss["NY","***"]/2/Pi;
+dtnx = LINE["NAME","HD*.*"];
+dtny = LINE["NAME","VD*.*"];
+dtbmx = Twiss["BX","PM.*"];
+dtbmy = Twiss["BY","PM.*"];
+dtbcx = Twiss["BX","HD*.*"];
+dtbcy = Twiss["BY","VD*.*"];
+dttmx = Twiss["NX","PM.*"];
+dttmy = Twiss["NY","PM.*"];
+dttcx = Twiss["NX","HD*.*"];
+dttcy = Twiss["NY","VD*.*"];
+ICX = Length[dtnx];
+ICY = Length[dtny];
+IM  = Length[dtbmx];
+Print["horizontal steerings ", ICX, "  vertical steerings ", ICY, "  monitors ", IM];
+
+FFS["USE RING NOEXPAND;"];
+Responsex = Table[Table[0,{i,1,IM}],{j,1,ICX}];
+Responsey = Table[Table[0,{i,1,IM}],{j,1,ICY}];
+Do[
+  Do[
+    Responsex[j,i] = 0.5*Sqrt[dtbmx[i]*dtbcx[j]]*Cos[tunex*Pi-Abs[dttmx[i]-dttcx[j]]]/Sin[tunex*Pi];
+  ,{i,IM}];
+,{j,ICX}];
+Do[
+  Do[
+    Responsey[j,i] = 0.5*Sqrt[dtbmy[i]*dtbcy[j]]*Cos[tuney*Pi-Abs[dttmy[i]-dttcy[j]]]/Sin[tuney*Pi];
+  ,{i,IM}];
+,{j,ICY}];
+Print["Responsex[1,1], [1,2], [2,1] = ", Responsex[1,1], " ", Responsex[1,2], " ", Responsex[2,1]];
+Print["Responsey[1,1], [1,2], [2,1] = ", Responsey[1,1], " ", Responsey[1,2], " ", Responsey[2,1]];
+
+! 水平ステアリング j0 に K0 = kk を与え、モニターの COD を SAD の値と解析式で比べる
+kk = 1E-6;
+Do[
+  LINE["K0",dtnx[j0]] = kk;
+  FFS["cell calc noexpand"];
+  cod = Twiss["DX","PM.*"];
+  err = 0;  amp = 0;
+  Do[
+    err = Max[err, Abs[cod[i] + kk*Responsex[j0,i]]];
+    amp = Max[amp, Abs[cod[i]]];
+  ,{i,IM}];
+  Print["steering ", dtnx[j0], " at s = ", Twiss["S",LINE["POSITION",dtnx[j0]]], ": max |COD| [um] ", amp*1E6, "   max |SAD + K0*Response| [um] ", err*1E6];
+  LINE["K0",dtnx[j0]] = 0;
+,{j0,1,3}];
+FFS["cell calc noexpand"];
+Exit;

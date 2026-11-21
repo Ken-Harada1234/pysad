@@ -1,0 +1,93 @@
+! KEK-LS v03_68: 標準セルの数を変える (セル 1 個の偏向角を 20/j 倍して j セルで 2π にする)  (元: matching21_v03_35)
+! 偏向磁石 BID1〜BID5・BPI1〜BPI7 の ANGLE を 20/j 倍し、セルの位相進みを設計値に保つよう四極 Q* の K1 を調整する。
+! (USE し直すと ANGLE が元に戻るので、リングでは ANGLE と K1 を設定し直す。元の台本は ARCA だけを使い、εx は表示しない。)
+! j セルのリング RINGJ は、このファイルの中で定義した (RF 空洞 RFC 1 台つき)。
+! v03_68 に合わせた直しと、元の問題:
+!   (1) 元は v03_35 用 (要素名 BPI6/BPI7 → BPI6H/BPI7H、ライン ARCA1 → ARCA)。
+!   (2) 元の FitFunction は `(EMITX − 1*1^-9)*1E9` で、`1^-9` は 1 (10^-9 の書き間違い)。さらに ARCA (閉じていない) では EMITX が NaN で
+!       条件にならない (pysad は NaN の FitFunction でマッチングが動かない)。この例は、元の他の版でコメントにされていた
+!       `fit NX nxcell`・`fit NY nycell` (セルの位相進みを設計値に) を条件にして、FitFunction を使わない。
+!   (3) 元の `free BPI6 K1`・`free BPI7 K1` は名前が合わず効かない → BPI6H・BPI7H にした (freebend = 1)。
+!   (4) 元は j = 20 → 2 (19 点、εx は表示せず datas.txt へ書き出し)。例は j = 20, 18, 16, 12, 10 の 5 点 (j = 14 は、セルの位相進みを保つとリングのチューンが整数 34.006 に近く、`emit` が破綻するので外した)で、j セルのリングの
+!       εx・チューン・周長を `cell calc emit` で表示する。
+NPARA = 8;
+LINE RINGJ20 = (MKS 10*ARCA RFC 10*ARCA MKE);
+LINE RINGJ18 = (MKS 9*ARCA RFC 9*ARCA MKE);
+LINE RINGJ16 = (MKS 8*ARCA RFC 8*ARCA MKE);
+LINE RINGJ12 = (MKS 6*ARCA RFC 6*ARCA MKE);
+LINE RINGJ10 = (MKS 5*ARCA RFC 5*ARCA MKE);
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+freebend = 1;
+USE ARCA;
+cell calc;
+nxcell = Twiss["NX","$$$"]/2/Pi;
+nycell = Twiss["NY","$$$"]/2/Pi;
+abid1 = LINE["ANGLE","BID1"];
+abid2 = LINE["ANGLE","BID2"];
+abid3 = LINE["ANGLE","BID3H"];
+abid4 = LINE["ANGLE","BID4"];
+abid5 = LINE["ANGLE","BID5"];
+abpi1 = LINE["ANGLE","BPI1"];
+abpi2 = LINE["ANGLE","BPI2"];
+abpi3 = LINE["ANGLE","BPI3H"];
+abpi4 = LINE["ANGLE","BPI4"];
+abpi5 = LINE["ANGLE","BPI5"];
+abpi6 = LINE["ANGLE","BPI6H"];
+abpi7 = LINE["ANGLE","BPI7H"];
+names = {"RINGJ20","RINGJ18","RINGJ16","RINGJ12","RINGJ10"};
+ncs   = {20,18,16,12,10};
+
+! 偏向磁石の ANGLE を i 倍にする (USE したラインの要素に効く。USE し直すと戻るので、リングを USE した後にもう一度かける)
+SetAngles[i_]:=(
+  LINE["ANGLE","BID1"]  = abid1 * i;
+  LINE["ANGLE","BID2"]  = abid2 * i;
+  LINE["ANGLE","BID3H"] = abid3 * i;
+  LINE["ANGLE","BID4"]  = abid4 * i;
+  LINE["ANGLE","BID5"]  = abid5 * i;
+  LINE["ANGLE","BPI1"]  = abpi1 * i;
+  LINE["ANGLE","BPI2"]  = abpi2 * i;
+  LINE["ANGLE","BPI3H"] = abpi3 * i;
+  LINE["ANGLE","BPI4"]  = abpi4 * i;
+  LINE["ANGLE","BPI5"]  = abpi5 * i;
+  LINE["ANGLE","BPI6H"] = abpi6 * i;
+  LINE["ANGLE","BPI7H"] = abpi7 * i;
+);
+! マッチングした K1 を取り込む・戻す
+GetK[]:=(
+  kk = {LINE["K1","QFA1H"], LINE["K1","QDA2"], LINE["K1","QDA3"], LINE["K1","QFA4"], LINE["K1","QDA5"], LINE["K1","QFA6H"], LINE["K1","QFA8H"], LINE["K1","BPI6H"], LINE["K1","BPI7H"]};
+);
+PutK[]:=(
+  LINE["K1","QFA1H"] = kk[1]; LINE["K1","QDA2"] = kk[2]; LINE["K1","QDA3"] = kk[3]; LINE["K1","QFA4"] = kk[4]; LINE["K1","QDA5"] = kk[5];
+  LINE["K1","QFA6H"] = kk[6]; LINE["K1","QFA8H"] = kk[7]; LINE["K1","BPI6H"] = kk[8]; LINE["K1","BPI7H"] = kk[9];
+);
+
+Do[
+  j = ncs[k];
+  i = 20/j;
+  FFS["USE ARCA;"];
+  SetAngles[i];
+  FFS["cell calc"];
+  FFS["fit NX nxcell"];
+  FFS["fit NY nycell"];
+  FFS["free Q*"];
+  If[freebend == 1,
+    FFS["free BPI6H K1"];
+    FFS["free BPI7H K1"];
+  ];
+  FFS["go"];
+  FFS["cell calc"];
+  GetK[];
+  Print["cells ", j, ": cell phase ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  BX(MKSFA1.1) ", Twiss["BX","MKSFA1.1"], "  EX(MKC) ", Twiss["EX","MKC"]];
+  Print["   K1: QFA1H ", kk[1], " QDA2 ", kk[2], " QDA3 ", kk[3], " QFA4 ", kk[4], " QDA5 ", kk[5], " QFA6H ", kk[6], " QFA8H ", kk[7], " BPI6H ", kk[8], " BPI7H ", kk[9]];
+  FFS["USE " // names[k]];
+  SetAngles[i];
+  PutK[];
+  FFS["cell calc emit"];
+  Print["   ring ", names[k], ": length ", LINE["S","$$$"], "  tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  EMITX [pm rad] ", EMITX*1E12, "  SIGE ", SIGE];
+,{k,1,5}];
+Exit;

@@ -1,0 +1,285 @@
+!============================================================================
+!  pf_1981_460nmrad.sad : PF リング (2.5 GeV) の 1981 年 のオプティクス
+!  PF リング建設時のオプティクス (中エネルギー・低 beta・高 nuy のオプティクス)
+!----------------------------------------------------------------------------
+!  元のファイル: pf_460nmrad
+!  周長      187.0741 m (RING の 2*HALF = リング全体。HALF は半周)
+!  チューン  nux = 5.2987, nuy = 4.1638 (cell calc の周期解。cell calc emit は水平安定)
+!  エミッタンス  名前は 460 nm rad、計算値は 4.034e-7 m rad (403 nm rad)。名前と合わない (要確認)
+!            元のヘッダの NUX=8.454 NUY=3.300 も合わない (実測 5.2987 / 4.1638。この文面は 1986 年のラティス
+!            pf_128nmrad のヘッダと同じで、そちらでは一致する。要確認)
+!  エネルギー 2.5 GeV (MOMENTUM=2.5 GEV)、偏向磁石 28 台 (矩形、E1=E2=0.5)、空洞 CAVI 2 台 (各 VOLT 850 kV)。
+!  元は設計値のラティス (誤差なし)。数値は ON RAD FLUC COD RFSW RADCOD; のあとの `cell calc emit` の値
+!  (gs と pysad の k64 モードで全桁一致。example/pf/lattice/PF_history.md の表)。
+!  整理: なし (台本の中身は元のまま。改行を LF にしただけ)。
+!        RING = (IMARK III 2*HALF RMARK)、HALF = (HMARK -RQUAD LQUAD) で周回のラインになっている (Get・USE・計算コマンドは無い)。
+!        -RQUAD の中の -RQUADM (二重の反転) を pysad が正しく展開しなかったので、pysad/parser.py を直した (gs は元から正しい)。
+!============================================================================
+!  ---- 元のヘッダ (pf_460nmrad の先頭) ----
+!***********************************************************************
+!*       PF-RING MEDIUM-E LOW-B HIGH NUY OPTICS VERSION
+!*       THIS IS HALF LATTICE OF PF-RING
+!*       NUX=8.454 NUY=3.300
+!*
+!*       SEXTUPOLE(SF,SD) 2 FAMILY CORRECTION
+!*       OCTUPOLE (OCT1,OCT2,OCT3,OCT4)
+!*         B'''L/BRHO =-180.9144 (OCT1,2,4 = -1.6(A))
+!*                    =-252.2826 (OCT3     = -1.6(A))
+!*
+!*       HORIZONTAL STEERING (=BENDING CORRECTION COIL)
+!*       VERTICAL STEERING (=VERTICAL DIPOLE (VD))
+!*       POSITION MONITOR (PM)
+!***********************************************************************
+MOMENTUM=2.5 GEV;
+OFF CTIME;OFF   ECHO;ON COD;
+ ;
+ MARK RMARK=()
+      HMARK=()
+      MQMARK=()
+      MMARK   =(ALPHAX =-8.8817842E-16 BETAX = 23.1259849194
+                ALPHAY =-8.8817842E-16 BETAY = 7.4165730053
+                EX = 1.2674828181      EPX = 3.8857806E-16 )
+      DMARK=()
+      IMARK=()
+      MKA  =()
+ ;
+ MONI PM=()
+ ;
+ CAVI CAVI=(VOLT= 850000 FREQ=500000000)
+ ;
+ OCT  OCT3=(K3=-157.2826)
+      OCT2=(K3=-112.9144)
+      OCT1=(K3=-112.9144)
+      OCT4=(K3=-112.9144)
+! OCT -1.6A
+ ;
+ BEND   B02     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B03     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B04     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B05     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B06     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B07     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B08     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B09     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B10     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B11     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B12     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B13     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B14     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B15     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+
+        VD      =(L = 0   ROTATE = -90 DEG )
+ ;
+  DRIFT  III    =(L = 0 )
+        L309    =(L = 3.09 )
+        L303    =(L = 3.03 )
+        L224    =(L = 2.24 )
+        L213    =(L = 2.13 )
+        L1065   =(L = 1.065 )
+        L1055   =(L = 1.055 )
+        L091    =(L = 0.91 )
+        L066    =(L = 0.66 )
+        L060    =(L = 0.60 )
+        L056    =(L = 0.56 )
+        L054    =(L = 0.54 )
+        L053    =(L = 0.53 )
+        L050    =(L = 0.50 )
+        L045    =(L = 0.45 )
+        L0425   =(L = 0.425 )
+        L042    =(L = 0.42 )
+        L0415   =(L = 0.415 )
+        L041    =(L = 0.41 )
+        L040    =(L = 0.40 )
+        L0395   =(L = 0.395 )
+        L036    =(L = 0.36 )
+        L035    =(L = 0.35 )
+        L033    =(L = 0.33 )
+        L032    =(L = 0.32 )
+        L030    =(L = 0.30 )
+        L0275   =(L = 0.275 )
+        L0265   =(L = 0.265 )
+        L026    =(L = 0.26 )
+        L025    =(L = 0.25 )
+        L0225   =(L = 0.225 )
+        L022    =(L = 0.22 )
+        L021    =(L = 0.21 )
+        L0205   =(L = 0.205 )
+        L020    =(L = 0.20 )
+        L019    =(L = 0.19 )
+        L018    =(L = 0.18 )
+        L0165   =(L = 0.165 )
+        L015    =(L = 0.15 )
+        L0145   =(L = 0.145 )
+        L0125   =(L = 0.125 )
+        L012    =(L = 0.12 )
+        L0113   =(L = 0.113 )
+        L0112   =(L = 0.112 )
+        L010    =(L = 0.10 )
+        L0075   =(L = 0.075 )
+        L005    =(L = 0.05 )
+        LESP    =(L = 1E-8 )
+ ;
+ QUAD
+        Q1H     =(L =.375 K1 =-.17555 )
+        Q2H     =(L =.375 K1 =.2342 )
+        Q3H     =(L =.25  K1 =-.1554 )
+        Q4H     =(L =.5   K1 =.3023 )
+        Q5H     =(L =.3   K1 =.11085 )
+        Q6H     =(L =.3   K1 =-.15825 )
+        Q7H     =(L =.25  K1 =-.05815 )
+        Q8H     =(L =.25  K1 =.1997 )
+        Q9H     =(L =.25  K1 =-.14875 )
+        Q10H    =(L =.25  K1 =.1741 )
+!        QDH     =(L =.25  K1 =-.156 )
+!        QFH     =(L =.25  K1 =.1779 )
+        QDH     =(L =.25  K1 =-.1580682732174 )
+        QFH     =(L =.25  K1 =.1695100510968 )
+
+
+        SQ1     =(L = .0   ROTATE = -45 DEG)
+        SQ2     =(L = .0   ROTATE = -45 DEG)
+ ;
+!matched optics, 90deg, 90deg cell;
+ QUAD   Q1H     =(L =.375 K1 =-.1748215366992 )
+        Q2H     =(L =.375 K1 =.2368175708061 )
+        Q3H     =(L =.25  K1 =-.1536598281617 )
+        Q4H     =(L =.5   K1 =.3031376491259 )
+        Q5H     =(L =.3   K1 =.1123941197092 )
+        Q6H     =(L =.3   K1 =-.1563074837867 )
+        Q7H     =(L =.25  K1 =-.0576934655711 )
+        Q8H     =(L =.25  K1 =.1999038400527 )
+        Q9H     =(L =.25  K1 =-.1471912037266 )
+        Q10H    =(L =.25  K1 =.1723939429442 )
+        QDH     =(L =.25  K1 =-.1580682732174 )
+        QFH     =(L =.25  K1 =.1695100510968 )
+ ;
+
+ SEXT   SF      =(L = .0   K2 = .0)
+        SD      =(L = .0   K2 = .0)
+
+ ;
+
+
+ LINE   RING    =(IMARK III 2*HALF  RMARK)
+
+        HALF    =(HMARK -RQUAD  LQUAD)
+
+        NCELL   =(QFR   QDRC  QFRC  MMARK QFLC  QDLC  QFL)
+        NCL     =(QFRC QDRC)
+
+        LQUAD   =(MMARK   LQUADM  MQMARK)
+        LQUADM  =(QFLC  QDLC  QFL   QDL   Q10L  Q9L   Q8L   Q7L
+                  Q6L   Q5L   Q4L   Q3L   Q2L   Q1L   )
+        LQUAD1  =(MMARK   LQUADM1  )
+        LQUADM1 =(QFLC  QDLC  QFL   QDL   Q10L  Q9L   Q8L   Q7L   Q6L   Q5L)
+
+        RQUAD   =(MMARK  -RQUADM MQMARK)
+        RQUAD1  =(MMARK  -RQUADM1 )
+
+        RQUADM  =(Q1R   Q2R   Q3R   Q4R   Q5R   Q6R   Q7R   Q8R
+                  Q9R   Q10R  QDR   QFR   QDRC  QFRC  )
+        RQUADM1 =(Q5R   Q6R   Q7R   Q8R   Q9R   Q10R  QDR   QFR   QDRC  QFRC  )
+
+        Q1R     =(L224  PM    L026  Q1H   )
+        Q2R     =(Q1H   L018  Q2H  )
+        Q3R     =(Q2H   L0265 PM    L0415 VD    L1055 B02
+                  L050  VD    L010  PM    L0125 Q3H )
+        Q4R     =(Q3H   L018  Q4H   Q4H   L018  Q3H   )
+        Q5R     =(Q3H   L0112 PM    L0113 VD    L050  B03
+                  L056  VD    L0165 Q5H   )
+        Q6R     =(Q5H   L018  Q6H   )
+        Q7R     =(Q6H   L026  PM    L054  OCT1  L036  OCT2  L1065 CAVI
+                  L1065 PM    L026  Q7H)
+        Q8R     =(Q7H   L018  Q8H   )
+        Q9R     =(Q8H   L0165 VD    L056  DMARK B04   L091  VD    L0165 
+                  L050  L021  SD    L019  Q9H   )
+        Q10R    =(Q9H   L0265 PM    L309  VD    L0395 Q10H  )
+        QDR     =(Q10H  L0225 SF    L040  PM    L030  B05   L053  VD    L0205    SD    L019  QDH  )
+        QFR     =(MKA QDH   L0265 PM    L033  OCT3  L033  B06   L053  VD    L0205    SF    L019  QFH  )
+        QDRC    =(MKA QFH   L0225 SF    L040  PM    L030  B07   L053  VD    L0205    SD    L019  QDH  )
+        QFRC    =(MKA QDH   L0265 PM    L033  SQ1   L033  B08   L053  VD    L0205    SF    L019  QFH  )
+
+        TEST    =(MKA B06   L053  VD    L0205    SF    L019  QFH  
+                  QFH   L0225 SF    L040  PM    L030  B07   L053  VD    L0205    SD    L019  QDH  
+                  QDH   L0265 PM    L033  SQ1   L033 )
+
+!
+! Mirror Symmetry Point
+!
+        QFLC    =(QFH   L0265 PM    L033  OCT4  L033  B09   L053  VD    L0205    SD    L019  QDH  )
+        QDLC    =(QDH   L0265 PM    L066  B10   L053  VD    L0205 SF    L019     QFH  )
+        QFL     =(QFH   L0265 PM    L066  B11   L053  VD    L0205 SD    L019
+                  QDH  )
+        QDL     =(QDH   L0265 PM    L033  SQ2   L033  B12   L030  PM    L040     SF    L0225 Q10H  )
+        Q10L    =(Q10H  L0395 VD    L309  PM    L0265 Q9H   )
+        Q9L     =(Q9H   L021  SD    L019  L050  L0165 VD    L091  B13   DMARK L056  VD    L0165 Q8H  )
+        Q8L     =(Q8H   L018  Q7H)
+        Q7L     =(Q7H  L026  PM    L303  PM    L026  Q6H   )
+        Q6L     =(Q6H   L018  Q5H   )
+        Q5L     =(Q5H   L0165 VD    L056  B14   L050  VD    L0113 PM    L0112
+                  Q3H   )
+        Q4L     =(Q3H   L018  Q4H   Q4H   L018  Q3H   )
+        Q3L     =(Q3H   L0125 PM    L010  VD    L050  B15   L1055 VD    L0415
+                  PM    L0265 Q2H   )
+        Q2L     =(Q2H   L018  Q1H   )
+        Q1L     =(Q1H   L026  PM    L224  )
+;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+(* 要素の数を型ごとに数える (偏向磁石は ANGLE <> 0、四極は L > 0 かつ K1 <> 0。ステアリング・スキュー四極は含めない) *)
+CountEl[]:=(
+  nb = 0; nq = 0; ns = 0; no = 0; nc = 0; sa = 0;
+  Do[
+    t = LINE["TYPENAME", i];
+    If[t == "BEND" && LINE["ANGLE", i] <> 0, nb = nb + 1; sa = sa + LINE["ANGLE", i]];
+    If[t == "QUAD" && LINE["L", i] > 0 && LINE["K1", i] <> 0, nq = nq + 1];
+    If[t == "SEXT" && LINE["L", i] > 0, ns = ns + 1];
+    If[t == "OCT", no = no + 1];
+    If[t == "CAVI", nc = nc + 1],
+  {i, 1, LINE["LENGTH"]}];
+  Print["bends = ", nb, "  sum of ANGLE [rad] = ", sa, "  quads = ", nq, "  sexts = ", ns, "  octs = ", no, "  cavities = ", nc]
+);
+(* 色収差 = 運動量を ±d ずらしたチューンの差 *)
+ChromFD[d_]:=(
+  DP0 = d;  FFS["cell calc"];  x1 = Twiss["NX","$$$"]/2/Pi;  y1 = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -d; FFS["cell calc"];  x2 = Twiss["NX","$$$"]/2/Pi;  y2 = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0;  FFS["cell calc"];
+  {(x1 - x2)/(2 d), (y1 - y2)/(2 d)}
+);
+(* 場所での BX BY EX NX NY (NX NY は 2 pi で割ったチューンの位相) *)
+ShowAt[nm_]:=Print[nm, "  #", LINE["POSITION", nm], "  S = ", LINE["S", nm], "  BX BY EX AX = ",
+  Twiss[{"BX","BY","EX","AX"}, nm], "  NX NY/2pi = ", Twiss["NX", nm]/2/Pi, " ", Twiss["NY", nm]/2/Pi];
+
+USE RING;
+cell calc emit;
+Print["circumference [m] = ", LINE["S","$$$"]];
+Print["number of elements = ", LINE["LENGTH"]];
+Print["tune nx ny = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Print["EMITX [m rad] = ", EMITX, "  SIGE = ", SIGE, "  SIGZ [m] = ", SIGZ];
+Print["MOMENTUM [eV] = ", MOMENTUM];
+CountEl[];
+Print["CAVI VOLT [V] FREQ [Hz] = ", LINE["VOLT","CAVI"], " ", LINE["FREQ","CAVI"]];
+Print["--- Twiss at the marks (straight sections)"];
+ShowAt["IMARK"];
+ShowAt["CAVI"];
+ShowAt["MMARK"];
+ShowAt["DMARK"];
+Print["--- Twiss at the bends of the normal cells"];
+ShowAt["B05"];
+ShowAt["B06"];
+ShowAt["B07"];
+ShowAt["B08"];
+ShowAt["B09"];
+ShowAt["B10"];
+ShowAt["B11"];
+ShowAt["B12"];
+Print["--- chromaticity d(nu)/d(dp/p), dp/p = +-0.001"];
+Print["with the design sextupoles: ", ChromFD[0.001]];
+SF* 0; SD* 0;
+FFS["cell calc"];
+Print["natural (SF* SD* = 0):      ", ChromFD[0.001]];
+Exit;

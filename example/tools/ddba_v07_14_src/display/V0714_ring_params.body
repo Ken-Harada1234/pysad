@@ -1,0 +1,51 @@
+!@LAT 5GeV
+!=====================================================================
+! V0714_ring_params: v07_14 のラティスの光学・ジオメトリの表示 (リングと、セルの単位)
+!
+! 元: disp (RING の `disp geo $$$` と `disp $$$`。`draw`・`TkWait` の窓は除く)、dispA (LCELLA の同じ表示)。
+!     disp の後半 (USE RINGV・TESTV。v07_14 に無いラインで、元のまま動かない) は取り込まない。
+! 流れ: RING の `cell calc emit` と、`disp geo $$$` (周長・ジオメトリの閉じ方) と `disp $$$` (終点の光学)、
+!       MCELL・LCELL・MCELLA・LCELLA の各セルの `cell calc emit` と中心・直線部のマーク (MK*) の光学。
+!       RING・TCELL 系の チューン・εx・周長を 1 行にまとめる。
+!=====================================================================
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "15.10";
+  PageWidth = 1999;
+
+USE RING
+  cell calc emit;
+  disp geo $$$;
+  disp $$$;
+  Print["CHK RING tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX, " length ", Twiss["S","$$$"]];
+
+! 各セル (長直線部の中心 MKLS・MKLSA 等のマークの光学)
+ShowCell[cell_]:=(
+  FFS["USE "//cell//";"];
+  FFS["cell calc emit;",6];
+  FFS["disp MK*;",6];
+  FFS["disp $$$;",6];
+  FFS["disp geo $$$;",6];
+  Print["CHK ",cell," tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX, " length ", Twiss["S","$$$"]];
+);
+ShowCell["MCELL"];
+ShowCell["LCELL"];
+ShowCell["MCELLA"];
+ShowCell["LCELLA"];
+
+! セルの 2 個組 (TCELL・TCELLA) とリングの比較
+ShowCell["TCELL"];
+ShowCell["TCELLA"];
+FFS["USE RINGSP;"];
+FFS["cell calc emit;",6];
+Print["CHK RINGSP tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX];
+FFS["USE RINGINJ;"];
+FFS["cell calc emit;",6];
+Print["CHK RINGINJ tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX];
+FFS["USE RINGSYM;"];
+FFS["cell calc emit;",6];
+Print["CHK RINGSYM tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX];
+stop;
+stop;

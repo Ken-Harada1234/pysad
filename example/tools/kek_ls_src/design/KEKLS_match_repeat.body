@@ -1,0 +1,27 @@
+! KEK-LS v03_68: 同じセルのマッチング (modules_cell_match.n) を 3 回繰り返して、再現性を見る診断の例 (元の台本には無い)
+! 毎回 USE ARCA・InitMag[] (設計の K1・K2 に戻す) から、MatchingARCA[1] → MatchingARCA[1] → MatchingARCA[0.001] → ChromCor[] を行い、
+! A: 1 回目のマッチング後の K1(QFA1H)・K1(QDA2)・リングのチューン、B・C: 続くマッチング後の K1、D: 六極補正後の K2(SDH・SFH)・K1(QFA1H) を表示する。
+! gs は 3 回とも同じ値になる。pysad は、1 回目と 2 回目以降で値が違う (README の「要確認」)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+Get["../modules/modules_cell_match.n"];
+Do[
+  FFS["USE ARCA;"];
+  InitMag[];
+  nxcell = 48.58/20;
+  nycell = 17.62/20;
+  MatchingARCA[1];
+  Print["A ", rep, " ", LINE["K1","QFA1H"], " ", LINE["K1","QDA2"], " ", Twiss["NX","$$$"]/2/Pi*20, " ", Twiss["NY","$$$"]/2/Pi*20];
+  MatchingARCA[1];
+  Print["B ", rep, " ", LINE["K1","QFA1H"], " ", LINE["K1","QDA2"]];
+  MatchingARCA[0.001];
+  Print["C ", rep, " ", LINE["K1","QFA1H"], " ", LINE["K1","QDA2"]];
+  ChromCor[];
+  FFS["cell calc"];
+  Print["D ", rep, " ", LINE["K2","SDH"], " ", LINE["K2","SFH"], " ", LINE["K1","QFA1H"]];
+,{rep,1,3}];
+Exit;

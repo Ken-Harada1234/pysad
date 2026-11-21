@@ -1,0 +1,65 @@
+!@LAT 5GeV
+!=====================================================================
+! V0714_amp_dep_ts: 振幅依存チューンシフト (ADTS) と運動量依存チューンシフト
+!
+! 元: amp_dep_ts_x.sad (x 振幅 1〜101σ、y 振幅 1σ、位相 36 分割)、amp_dep_ts_y.sad (y 振幅 1〜101σ、x 振幅 1σ、位相 10 分割)、
+!     amp_dep_ts_dp.sad (δ = 0〜±5% のチューン。この例では V0714_chromaticity に δ スキャンがあるので、ここでは 0〜±5% を 1% 刻み)。
+!     (amp_dep_ts_xA・_x_octa・_y_octa・_x_poly・_y_poly・_dp_poly は、八極 (K3=0 の OC1) や多項式フィット用の別版で取り込まない)
+! 流れ: SetInitialParameters[] (始点 MRST の Twiss と εx から σ を決める) → AmplitudeDependentTuneShift[nx, ny, 位相の分割数]
+!       (始点に初期座標を与え、ins calc で周回チューンを出し、位相 θ で平均) → 振幅ごとに {νx, νy} を表示。
+!       modules/modules_amp_dep_ts.n の関数を使う。始点の初期座標は終わりに ResetInit[] で 0 に戻す。
+! 例の設定は、元 (振幅 1〜101 を 10 刻みで 11 点、位相 36・10 分割) から 3 点、位相 8 分割に減らした。
+!=====================================================================
+!@PARAM ampstep = 50
+!@FULL ampstep = 10
+!@PARAM thetax = 8
+!@FULL thetax = 36
+!@PARAM thetay = 8
+!@FULL thetay = 10
+!@PARAM dpstep = 0.01
+!@FULL dpstep = 0.005
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "15.10";
+  PageWidth = 1999;
+  Get["../modules/modules_amp_dep_ts.n"];
+
+USE RING;
+  cell calc emit;
+  disp $$$;
+
+DP = 0;
+
+Print["x amplitude (sigma), y amplitude = 1 sigma: nux, nuy"];
+Do[
+  SetInitialParameters[];
+  res = AmplitudeDependentTuneShift[i, 1,thetax];
+  Print[i,res[1],res[2]];
+,{i,1,101,ampstep}];
+
+Print["y amplitude (sigma), x amplitude = 1 sigma: nux, nuy"];
+Do[
+  SetInitialParameters[];
+  res = AmplitudeDependentTuneShift[1, i,thetay];
+  Print[i,res[1],res[2]];
+,{i,1,101,ampstep}];
+ResetInit[];
+  cell calc emit;
+
+Print["delta dependence: nux, nuy"];
+Do[
+    DP0 = i;
+    FFS["cell calc"];
+    Print[i, Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi];
+,{i,0,0.05,dpstep}];
+DP0 = 0;
+Do[
+    DP0 = i;
+    FFS["cell calc"];
+    Print[i, Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi];
+,{i,0,-0.05,-dpstep}];
+DP0 = 0;
+stop;
+stop;

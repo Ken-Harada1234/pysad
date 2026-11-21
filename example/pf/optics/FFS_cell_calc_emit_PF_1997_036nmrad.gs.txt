@@ -1,0 +1,111 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 12:41:39 Saturday 11/21/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!============================================================================
+!  pf_1997_036nmrad.sad : PF リング (2.5 GeV) の 1997 年 のオプティクス
+!  弧部改造・高輝度化 (超低エミッタンス) のオプティクス (標準セルの位相進み 105 度、Version 3.6.1、2000-02-22)
+!----------------------------------------------------------------------------
+!  元のファイル: pf_036nmrad
+!  周長      187.0741 m
+!  チューン  nux = 9.5972, nuy = 4.2902
+!  エミッタンス  名前は 36 nm rad、計算値は 3.473e-8 m rad (34.7 nm rad)。近い (差 3.5%)
+!  エネルギー 2.5 GeV (MOMENTUM=2.5 GEV)、偏向磁石 28 台 (矩形、E1=E2=0.5)、空洞 CAVI 2 台 (各 VOLT 850 kV)。
+!  元は設計値のラティス (誤差なし)。数値は ON RAD FLUC COD RFSW RADCOD; のあとの `cell calc emit` の値
+!  (gs と pysad の k64 モードで全桁一致。example/pf/lattice/PF_history.md の表)。
+!  整理: なし (台本の中身は元のまま。改行を LF にしただけ)。Get・USE・計算コマンドは無い。
+!        周回のライン RING = (RMARK HALFE HALFW EMARK)。四極 QUAD と六極 SEXT の定義が何度も出てくるのは機械研究ごとの
+!        値の履歴 (2000-05-29、2002-11-25、`105 deg Present Optics`) で、あとの定義が有効 (最後が `105 deg Present Optics`)。
+!============================================================================
+!  ---- 元のヘッダ (pf_036nmrad の先頭) ----
+!********************************************************************
+!*       PF-RING Super-Low Emittance Lattice Configuration          *
+!*       Normal Cell Phase Addvance 105 deg Version                 *
+!*       2000-02-22                                                 *
+!*       Version 3.6.1                                              *
+!*       (Main magnet + Steering + BPM + Octupole                   *
+!*       SEXTUPOLE(SF,SD) 2 FAMILY CORRECTION                       *
+!*                                                                  *
+!********************************************************************
+ ON LOG;
+ OFF CTIME;OFF ECHO;ON COD;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .068365 $$$       f BX    #######  #   4.369681 $$$       f NX    #######  #   9.597173 $$$       f AY    #######  #    .140608 $$$       f BY    #######  #   4.910338 $$$       f NY    #######  #   4.290249
+$$$       f LENG  #######  #  187.07412
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -7.34E-7  -2.60E-6  3.38E-20  1.39E-21  -1.61E-6  -3.57E-5
+      Exit :  -7.34E-7  -2.60E-6  3.38E-20  1.39E-21  -1.61E-6  -3.57E-5
+
+    Extended Twiss Parameters
+AX:  .068246 BX: 4.369956                            ZX: -7.08E-5  EX:  .011571
+           PSIX: -3.1E-21                           ZPX: -2.14E-5 EPX: -2.6E-16
+R1: -3.3E-15 R2: -2.9E-16 AY:  .140333 BY: 4.913965  ZY: -1.5E-18  EY: -2.6E-16
+R3: 4.55E-17 R4: 2.38E-15            PSIY: -5.0E-17 ZPY: 5.27E-19 EPY: 1.16E-16
+                                                     AZ:  .020570  BZ: 13.46213
+                                                                 PSIZ: -3.0E-19
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 1602532.9 Hz 
+Energy loss per turn U0 =  .3988534 MV  Effective voltage    Vc = 1.7000000 MV 
+Equilibrium position dz = 22.600252 mm  Momentum compact. alpha =  .0067096
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 311.99999
+Bucket height     dV/P0 =  .0116748     Synchrotron frequency   = 23782.055 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune:-0.4025344           0.2903211          -0.0148403
+
+    Damping per one revolution:
+          X : -8.226937E-05   Y : -7.974572E-05   Z : -1.570122E-04
+    Damping time (sec):
+          X :  7.584987E-03   Y :  7.825024E-03   Z :  3.974291E-03
+    Tune shift due to radiation:
+          X : -3.718334E-06   Y :  1.303553E-05   Z : -1.074888E-07
+    Damping partition number:
+          X :    1.0315       Y :    0.9999       Z :    1.9686
+
+Emittance X            = 3.47289E-8 m   Emittance Y            = 1.2993E-37 m
+Emittance Z            = 7.23832E-6 m   Energy spread          = 7.33424E-4
+Bunch Length           = 9.87129981 mm  Beam tilt              = -2.348E-15 rad
+Beam size xi           =  .38966117 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+circumference [m] =  187.0741283800
+number of elements =  690.0000000000
+tune nx ny =    9.5971734582    4.2902487527
+EMITX [m rad] =  3.472886332E-8  SIGE =  7.334238421E-4  SIGZ [m] =     .0098712998
+MOMENTUM [eV] =  2500000000.000
+bends =   28.0000000000  sum of ANGLE [rad] =    6.2831154400  quads =   74.0000000000  sexts =   32.0000000000  octs =    4.0000000000  cavities =    2.0000000000
+CAVI VOLT [V] FREQ [Hz] =  850000.0000000  499990264.8000
+--- Twiss at the marks (straight sections)
+U2  # 351.0000000000  S =   93.5370641900  BX BY EX AX = {   4.3696814550,   4.9103384981,    .0120160947,    .0683649162}  NX NY/2pi =    4.7985867291    2.1451243763
+M16  #   2.0000000000  S =     .0000000000  BX BY EX AX = {   4.3696814550,   4.9103384981,    .0120160947,    .0683649162}  NX NY/2pi =     .0000000000     .0000000000
+U5  # 415.0000000000  S =  120.8542921900  BX BY EX AX = {  10.8321295569,   8.1057070042,    .8004161774,   1.0049620025}  NX NY/2pi =    6.1137446538    2.7790278796
+M13  # 622.0000000000  S =  159.7569003600  BX BY EX AX = {   9.3810177283,   1.0793522863,    .8355179696,  -1.1550850263}  NX NY/2pi =    8.3288308357    3.5638927742
+V14  # 649.0000000000  S =  169.5809763700  BX BY EX AX = {   8.4300274135,   3.3987873275,    .0477943877,   -.8811051066}  NX NY/2pi =    8.7241860876    3.8952251028
+M26  # 277.0000000000  S =   66.2198361700  BX BY EX AX = {   9.3810177283,   1.0793522863,    .8355179696,  -1.1550850263}  NX NY/2pi =    3.5302441066    1.4187683979
+M28  # 311.0000000000  S =   76.0439121800  BX BY EX AX = {   8.4300274135,   3.3987873275,    .0477943877,   -.8811051066}  NX NY/2pi =    3.9255993585    1.7501007265
+U19  #  66.0000000000  S =   27.3172280000  BX BY EX AX = {  10.8321295569,   8.1057070042,    .8004161774,   1.0049620025}  NX NY/2pi =    1.3151579247     .6339035032
+CAVI  #  42.0000000000  S =   17.4931520000  BX BY EX AX = {   9.7553101947,   3.8264541817,    .0541041822,   1.0426253050}  NX NY/2pi =     .8829691482     .4162314375
+--- Twiss at the bends of the normal cells
+B19  #  83.0000000000  S =   30.7672280200  BX BY EX AX = {   3.7620218022,   9.4608210664,    .4182551409,   1.1167732228}  NX NY/2pi =    1.3928629986     .7077099247
+B20  # 109.0000000000  S =   35.0613040400  BX BY EX AX = {   4.1004615629,   8.4905662414,    .3906198334,   1.3340475244}  NX NY/2pi =    1.6525125676     .7721410797
+B21  # 133.0000000000  S =   39.3553800600  BX BY EX AX = {   3.9841389778,   9.1318769361,    .3619653922,   1.2832396272}  NX NY/2pi =    1.9281803804     .8330363886
+B22  # 157.0000000000  S =   43.6494560800  BX BY EX AX = {   4.1001859098,   9.2382536635,    .3675128225,   1.3238701764}  NX NY/2pi =    2.2010559010     .8911906888
+B23  # 183.0000000000  S =   47.9435321000  BX BY EX AX = {   3.9720480893,   8.6623638373,    .4007630608,   1.2889501919}  NX NY/2pi =    2.4751554546     .9510827692
+B24  # 207.0000000000  S =   52.2376081200  BX BY EX AX = {   4.1236926259,   7.8543237610,    .3787066685,   1.3231241159}  NX NY/2pi =    2.7494579149    1.0162104802
+B25  # 231.0000000000  S =   56.5316841400  BX BY EX AX = {   3.9408325591,   7.2613646012,    .3588303282,   1.2850825264}  NX NY/2pi =    3.0223957437    1.0878913158
+B26  # 257.0000000000  S =   60.8257601600  BX BY EX AX = {   4.5447036896,   6.7944901061,    .3988006665,   1.1205251157}  NX NY/2pi =    3.2965203919    1.1628404205
+--- chromaticity d(nu)/d(dp/p), dp/p = +-0.001
+with the design sextupoles: {    .1998953057,   1.3929375772}
+natural (SF* SD* = 0):      { -12.5157182677, -12.8316447771}
+ FFS                  end:  CPU time =     0.008 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

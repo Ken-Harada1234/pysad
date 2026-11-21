@@ -29,9 +29,12 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 | [`11_graphics`](11_graphics) | 描画 | Plot 系、OpticsPlot、BeamPlot、LaTeX |
 | [`12_gui_tkinter`](12_gui_tkinter) | Tkinter・GUI | Tkinter.n、KBFrame.n |
 | [`13_packages`](13_packages) | Packages/*.n | CorrectOrbit、MakeBump、optimize、D.n、TableForm など |
-| [`pf`](pf) | PF (2.5 GeV) の例集 | 実機ラティスでの光学・マッチング・チューンシフト・放射積分・トラッキング・入射軌道。索引は [`pf/README.md`](pf/README.md) |
+| [`pf`](pf) | PF (2.5 GeV) の例集 | 実機ラティスでの光学・マッチング・チューンシフト・放射積分・トラッキング・入射軌道。PF の履歴ラティス (1981・1986・1997・2005 年、[`pf/lattice/PF_history.md`](pf/lattice/PF_history.md)) の例を含む。索引は [`pf/README.md`](pf/README.md) |
+| [`kek_ls`](kek_ls) | KEK-LS (3 GeV、20 セル、ESRF 型 HMBA) の例集 | 設計 (セルのチューン・六極・入射セル・リングを閉じる・縮小・セル数・チューンサーベイ)、パラメータ表示 (εx・ξ・オプティクス・チューンシフト)、誤差入りの COD の補正。元の設計用スクリプトを整えた一式。索引は [`kek_ls/README.md`](kek_ls/README.md)、元との対応は [`kek_ls/ORIGINAL_MAP.md`](kek_ls/ORIGINAL_MAP.md) |
+| [`ddba`](ddba) | 複雑なセルのラティスの設計手順の例 (DDBA、5 GeV・2.5 GeV、周長 731〜757 m) | 設計メモの版 `DDBA_01`〜`DDBA_28` を、基本セルの構想・セルのマッチング・チューン点・六極・等時性セル・リングへの展開・誤差と補正・最終の版、の段階に並べ直したもの。28 本のラティス (`cell calc emit` の周長・チューン・εx の表、gs との比較)、最終の版の例。最終の版 v07_14 のチューンのマッチング・チューンサーベイ・誤差の計算 (補正しながら誤差を大きくする手法)・パラメータ表示の一式は [`ddba/v07_14/`](ddba/v07_14/README.md)、六極の検討 (RDT・ADTS の解析式による検証と最適化の試作。最適化は最終設定より DA の広い解を出せなかった) は [`ddba/v07_14/sextupole/`](ddba/v07_14/sextupole/README.md) (台本 `V0714_*.sad`、gs と pysad の比較、元のスクリプトとの対応 `ORIGINAL_MAP.md`)。索引は [`ddba/README.md`](ddba/README.md)、元との対応は [`ddba/ORIGINAL_MAP.md`](ddba/ORIGINAL_MAP.md) |
 | [`astrid`](astrid) | ASTRID2 (0.58 GeV) の例集 | チューンサーベイ、MPW、位相空間、ラティスの作り方。索引は [`astrid/README.md`](astrid/README.md) |
 | [`v2_B`](v2_B)・[`v2_C`](v2_C)・[`v2_next`](v2_next) | v2 の例 | v2.0.0・v2.1.0 の作業で作った例 (v2 で結果が変わるもの、新しく使える機能)。`v2_next` の索引は [`v2_next/README.md`](v2_next/README.md) |
+| [`v2_3`](v2_3) | v2.3.0 の新機能の例 | 周波数マップ・局所運動量アクセプタンス (LMA)・Touschek への受け渡し (Q1)、6 極の共鳴駆動項・ADTS・クロマティシティ (Q2)、ADTS の gs との不一致の解決 (R1)、ADTS の直接の検証 (R2)、偏向磁石の 3 次の項 (R3)、共鳴駆動項の追跡による検証 (R4)、4 次の共鳴駆動項 (6 極の 2 次)・数値の正規形 (R5)、K0≠0 の磁石・δ≠0 の ADTS・`adts()` の精密版 (R6)、周波数マップの検証と信頼性 (S1・S2)、共鳴線の予想の作り直し (S3)、LMA の信頼性 (L2)、elegant との LMA・Touschek 寿命の比較 (T1) と Touschek の式 (T2)、B160 の切り分け (U1。例のファイルはなく記録と試験) とオプション・B161 の修正 (U2)、入門の図 (`primer_*`、[`docs/50_adts_rdt_primer.md`](../docs/50_adts_rdt_primer.md))。台本・pysad の出力・gs との比較・図。索引は [`v2_3/README.md`](v2_3/README.md) (Q1 は `Q1_README.md`、Q2 は `Q2_README.md`)。 ADTS・RDT の台本別のまとめは [`v2_3/ADTS_summary.md`](v2_3/ADTS_summary.md)、周波数マップの台本別のまとめは [`v2_3/FMAP_summary.md`](v2_3/FMAP_summary.md) (S1 の検証を含む)。解説は docs/48・49 |
 | `tools` | 道具 | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか。`pf_astrid/` は pf・astrid の作成用で、パスは整理前のまま) |
 
 各フォルダの `README.md` に、そのフォルダの例の一覧と、gs と pysad の一致状況 (○ 一致、△ 差あり、× 未対応・失敗) があります。
@@ -42,7 +45,7 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 py -3.12 example/tools/run_example.py example/02_optics_cod/FFS_CALCULATE.sad
 ```
 
-gs は WSL で、pysad は `PYSAD_SAD_PACKAGES` つきで走ります。`NAME.gs.txt` と `NAME.pysad.txt` が作り直されます。
+gs は WSL で、pysad は `PYSAD_SAD_PACKAGES` (K64 版 SAD の `Packages` のフォルダ) つきで走ります。gs の場所は `PYSAD_SAD_PACKAGES` の隣の `bin/gs` で、別の場所のときは `PYSAD_GS` (WSL から見た絶対パス) で指定します (`example/tools/sadenv.py`。gs を使う `example/` のスクリプトに共通)。`NAME.gs.txt` と `NAME.pysad.txt` が作り直されます。
 
 **v2 の注記**: 例は既定の v2 モードで走らせた (`NAME.pysad.txt` は v2 モードの出力)。gs と同じ結果が要るときは `PYSAD_COMPAT=k64` を付けて走らせる (K64 のバグも再現する)。v2 で K64 のバグを直したために gs と違う値になる例は、各 `.md` の「gs と pysad の比較」に「v2 の注記」として書いてある (v2 の変更の一覧は `docs/47_v2_changes.md`)。主な理由は、`Emittance[]`・EMIT・追跡の Jx の端の項 (B75)、`MomentumCompaction` (B77)、`PolynomialFit` の x の平均が 0 のときの係数 (B18)、`InverseErf` (B47)、`For` の本体 (B71)、`RADLIGHT` の BEND の中の記録 (B65)、SPAC の空間電荷 (SPC1〜) です。各フォルダの `README.md` の ○△× は、v2 で違うものも含めて、`PYSAD_COMPAT=k64` では gs と一致するものを ○ としています (違いが残るものは行に書きました)。例外として `pf`・`astrid` のうち ASTRID2 の 5 例 (`MPW_v01_02_id`、`SetElement_BeamLine_Join`、`phase_x`、`amp_dep_ts`、`calc_RadInt`) は、v2 の既定との違いが表示の 7 桁目 (バケット高さ、αc) だけなので `.pysad.txt` を作り直していません。
 

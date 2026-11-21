@@ -1,0 +1,349 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 14:11:46 Saturday 11/21/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!=====================================================================
+! KEK-LS  v03_68  (3 GeV, 20 セル, ESRF 型 HMBA)
+!
+! KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の
+! Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した。
+!
+! エネルギー      3 GeV
+! 周長            570.72 m (RINGC)。RING は入射セル ARCINJ の分だけ 0.9 mm 長い 570.7209 m
+! 周回部          標準セル 20 個 (ARCA = ARCAH と -ARCAH。長直線部 (DRID1×2 = 5.88 m) の中心 MKS から次の MKS まで)
+! RF              2 MV、ハーモニック数 952
+! チューン        (48.58, 17.62)  (RINGC・RING とも)
+! エミッタンス    εx 約 134 pm rad (RINGC。RING は約 136 pm rad)。エネルギー拡がり約 6.4e-4、U0 約 0.296 MeV、αc 約 2.2e-4
+!
+! ライン
+!   ARCAH   標準セルの半分 (MKS = 長直線部の中心から MKC まで)。ARCAH1 = 直線部 (DRID1 2.94 m)・四極 QFA1H・QDA2・
+!           偏向磁石 BID5〜BID1 (中央に補正磁石 HD) と四極 QDA3。ARCAH2 = 六極 SDH・SFH、四極 QFA4・QDA5、
+!           偏向磁石 BPI1〜BPI5、四極 QFA6H・QFA8H、勾配つき偏向磁石 BPI6H・BPI7H、DRCT (0.55 m)
+!   ARCA    標準セル 1 個 = ARCAH と -ARCAH
+!   RINGC   標準セル 20 個の周回ライン (RF 空洞 RFC が中央)
+!   ARCINJ  入射セル = ARCAH1 ARCAH2 + ARCINJH + -ARCINJH2 + -ARCAH2 -ARCAH1
+!           (ARCINJH・ARCINJH2 は入射用の長直線部を作る四極 QS0〜QS5・キッカー K1〜K4 つき)
+!   RING    標準セル 19 個 + ARCINJ の周回ライン (入射セル含む)
+!
+! このファイルは FFS; の前に置く (要素・ライン定義だけ。台本は後ろに続ける)。
+! 要素の定義の中身は元の設計ファイルのまま (改行と先頭のコメントだけ変えた)。
+!=====================================================================
+ MOMENTUM = 3GEV;
+ DRIFT  DRID1   =(L =2.94 )  DR05    =(L =.05 )   DR20    =(L =.2 )    DR12    =(L =.12 )   DRSS2   =(L =.3825 )
+        DRSO    =(L =.2025 ) DR06    =(L =.06 )   DR28    =(L =.19 )   DR14    =(L =.14 )   DRCT    =(L =.55 )
+        DRID1INJ=(L =2.7654600539435394 )
+ ;
+ BEND   VD      =(ANGLE =0     ROTATE =-90 DEG )
+        BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        HD      =(ANGLE =0 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6H   =(L =.403 ANGLE =.02726687232 K1 =-1.0100957067176413 )
+        BPI7H   =(L =.176 ANGLE =.00468  K1 =-.006398424930727633 )
+
+        BID5I    =(L =.25 ANGLE =.01989677344 )
+        BID4I    =(L =.25 ANGLE =.01093590672 )
+        BID3IH   =(L =.125     ANGLE =.00413604696 )
+        BID2I    =(L =.25 ANGLE =.00653919168 )
+        BID1I    =(L =.25 ANGLE =.00532646 )
+        K1 = (L = .3)
+        K2 = (L = .3)
+        K3 = (L = .3)
+        K4 = (L = .3)
+ ;
+ QUAD   QFA8H   =(L =.25  K1 =.9417515241499581 )
+        QFA6H   =(L =.1675     K1 =.8782619605554324 )
+        QDA5    =(L =.2   K1 =-.4052202821210436 )
+        QFA4    =(L =.2   K1 =.5166819921440575 )
+        QS5     =(L =.2   K1 =.5280568479331271 )
+        QS4     =(L =.2   K1 =-.8242016169366202 )
+        QS3     =(L =.2   K1 =.5546128367232006 )
+        QS2     =(L =.2   K1 =-.1734492217190123 )
+        QS1     =(L =.1   K1 =-.11309930079031016 )
+        QS0     =(L =.1   K1 =.22894938883952784 )
+        QFA1H   =(L =.125 K1 =.46236106609239286 )
+        QDA2    =(L =.2   K1 =-.725123012102831 )
+        QDA3    =(L =.2   K1 =-.49958031983962237 )
+        QFA4    =(L =.2   K1 =.5166819921440575 )
+        QDA5    =(L =.2   K1 =-.4052202821210436 )
+
+ ;
+ SEXT   SDH     =(L =.09  K2 =-12.38248640793169 )
+        SFH     =(L =.09  K2 =15.13439810682049 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ CAVI   RFC     =(VOLT =2000000     HARM =952 )
+ ;
+ OCT    OCFA    =(L =.1   K3 =0 )
+ ;
+ MONI   BPM                             =()
+ ;
+ MARK   MKS     =(AX =1.8269725395795895e-14  BX =4.793340121212032    AY =5.061657878833287e-15     BY =2.3773852899436254
+           EX =.024999999999712127  EPX =-6.269917972172717e-18   DP =.01   EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKBE    =(AX =1.0915299904430553 BX =2.491305955156373    PSIX =.750812602138054   AY =-1.108768449431935
+           BY =14.899228084658809   PSIY =.9775906221236254  EX =.01317746375590028   EPX =-.010709118972041609     DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSDA1  =(AX =-2.70998200884407  BX =3.54290286006273     PSIX =2.438795403562738  AY =7.583458360247109
+           BY =15.674832734538994   PSIY =1.12519968960124   EX =.08917916867198322   EPX =.07392275472299359  DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSFA1  =(AX =-.1389893849851418 BX =8.335022603847122    PSIX =2.6010651192329326 AY =1.1900000003019817
+           BY =6.400000001617214    PSIY =1.2342357814658897 EX =.14000000000027565   EPX =.0033565669999445075     DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSDC1  =(AX =2.701045920207907  BX =3.9178996452699595   PSIX =2.7538171975351866 AY =-2.4682164774922373
+           BY =8.605708880847574    PSIY =1.3800502607967173 EX =.09575556512146 EPX =-.06826941595892633 DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKC     =(AX =2.3285271135756143e-14  BX =.6646241808238317    PSIX =7.630928555572884  AY =-2.6333805821142455e-15
+           BY =1.3317427649375617   PSIY =2.7677431278546    EX =.01999999999994648   EPX =-7.45931094670027e-17    DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKE     =(AX =2.3285271135756143e-14  BX =.6646241808238317    PSIX =7.630928555572884  AY =-2.6333805821142455e-15
+           BY =1.3317427649375617   PSIY =2.7677431278546    EX =.01999999999994648   EPX =-7.45931094670027e-17    DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSE = ()
+        MKS2  =()
+        MKSI = ()
+ ;
+!-----------------------------------------
+! ARC CELLS
+!-----------------------------------------
+
+  MONI
+         PM = ()
+  ;
+
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(ARCAH1 ARCAH2)
+
+  ARCAH1   =(MKS
+             DRID1 PM DR05 QFA1H VD QFA1H DR20, QDA2, DR12 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR12, QDA3, DR12
+             )
+  ARCAH2   =(MKS2
+             SDH MKSDA1 SDH
+             DR05 PM
+             DRSS2  DR05
+             QFA4, DR12,
+             SFH MKSFA1 VD SFH
+             DR12, QFA4, DR12, OCFA,
+             DRSO PM DR05
+             SDH MKSDC1 SDH
+             DR12, QDA5, DR12,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR06 PM DR06, QFA6H QFA6H DR28,
+             BPI6H HD BPI6H DR05 DR14 QFA8H VD QFA8H DR12, SHA, DR12,
+             BPI7H HD BPI7H DR05 PM DRCT MKC
+             MKE)
+  ARCAHI2   =(MKS2
+             SDH MKSDA1 SDH
+             DR05 PM
+             DRSS2  DR05
+             QS5, DR12,
+             SFH MKSFA1 VD SFH
+             DR12, QFA4, DR12, OCFA,
+             DRSO PM DR05
+             SDH MKSDC1 SDH
+             DR12, QDA5, DR12,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR06 PM DR06, QFA6H QFA6H DR28,
+             BPI6H HD BPI6H DR05 DR14 QFA8H VD QFA8H DR12, SHA, DR12,
+             BPI7H HD BPI7H DR05 PM DRCT MKC
+             MKE)
+   ARCINJH  =(
+             -ARCAHI2
+             MKSE
+             DR12  QS4  DR12 K1  DR12
+             QS3 DR12
+             BID1I  BID2I BID3IH HD BID3IH BID4I BID5I
+             MKBE
+             DR12 QS2 DR05 VD DR05 QS1
+             DR05 PM
+             K2
+             DRID1INJ HD DR05 PM DR05 QS0
+             MKSI
+            )
+   ARCINJH2  =(
+             -ARCAHI2
+             MKSE
+             DR12  QS4  DR12 K1  DR12
+             QS3 DR12
+             BID1I  BID2I BID3IH HD BID3IH BID4I BID5I
+             MKBE
+             DR12 QS2 DR05 VD DR05 QS1
+             DR05 PM
+             K2
+             DRID1INJ VD DR05 DR05 QS0
+             MKSI
+            )
+
+ ARCA      = (ARCAH -ARCAH)
+ RINGC      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ RING     =(MKS
+             ARCA ARCINJ, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ARCINJ    =(ARCAH1 ARCAH2 ARCINJH -ARCINJH2 -ARCAH2 -ARCAH1)
+ ARCINJ2   =(ARCINJH -ARCINJH2)
+ ;
+! KEK-LS v03_68: 誤差の種類ごとの影響 (COD・分散のずれ・チューンシフト・エミッタンス)  (元: print_all_error.sad・print_dk_effect.sad・print_dt_error.sad・print_cod_magnitude.sad)
+! 誤差の与え方 (../modules/modules_errors.n の SetErrors[]。乱数の種は SeedRandom[seed]、打ち切り GCUT = 1 [σ]):
+!   LINE["DX"/"DY", 成分名] = ae GaussRandom[]  : 四極・六極の水平・垂直のずれ (rms ae [m])。元の台本の `DELX`・`DELY` は、この K64 のビルドでは
+!                                               `cell calc` の COD に効かないので (DUMP には値が出る)、成分ごとの DX・DY に直接入れる
+!   DK fe B*,Q*,S*       : 強さの誤差 (相対 rms fe)
+!   DTHETA te B*,Q*,S*   : 回転の誤差 (rms te [rad])
+! 成分ごとの値が効くように、`USE RING NOEXPAND` と `cell calc noexpand` を使う (既定の `cell calc` は同名の要素の値を揃える。docs/11 A56)。
+! 元の台本にあった FFS["MON 0 0 0 0 PM*;"] (モニターの誤差) は、K64 では何もしない (エラーになる) ので除いた。
+! 種 seeds ごとに、(全部)・(ずれだけ)・(強さだけ)・(回転だけ) の 4 通りで、モニター PM.* の COD と分散のずれ、チューンを表示する。
+! 元の print_*.sad (11 本) は同じ台本に、表示 (print_IEX_after・print_IEY_after・print_rep_after = 補正の固有値の数 IEX・IEY による差、
+!   print_residual_cod・print_cod_kick_ratio = 補正後の COD・キック、print_emittance・print_solution_ok・print_all_error_after・print_cod_form = 表示の形式) を
+!   変えたもので、補正の部分は KEKLS_correct_cod.sad に統合した。この台本は、補正のない print_all_error.sad・print_dk_effect.sad・print_dt_error.sad の流れ。
+! 元との違い: 元は 115 の種 (SeedRandom[187] から作る)、結果を datas_e.txt に書く。例は seeds = {17, 111, 3} の 3 本。完全な設定: seeds を 115 個に、nseed = 115。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ $FORM = "15.10";
+ PageWidth = 1999;
+ 
+ Get["../modules/modules_errors.n"];
+ seeds = {17, 111, 3};
+ nseed = 3;
+ aeset = {4E-5, 4E-5, 0, 0};
+ feset = {4E-4, 0, 4E-4, 0};
+ teset = {1E-4, 0, 0, 1E-4};
+ tname = {"all", "align", "dk", "dtheta"};
+ GCUT = 1;
+ 
+ USE RING;
+Out[1]:= USE
+ cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.161E-6 $$$       f BX    #######  #   4.793355 $$$       f NX    #######  #  48.580024 $$$       f AY    #######  #  -6.470E-6 $$$       f BY    #######  #   2.377341 $$$       f NY    #######  #  17.620083
+$$$       f LENG  #######  #  570.72092
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  1.263E-6  1.641E-7  3.04E-22  1.38E-22  -1.19E-6  1.020E-5
+      Exit :  1.262E-6  1.641E-7  3.03E-22  1.38E-22  -1.19E-6  1.020E-5
+
+    Extended Twiss Parameters
+AX: -6.85E-4 BX: 4.781492                            ZX: 6.941E-5  EX:  .024984
+           PSIX: 1.27E-17                           ZPX: 1.169E-5 EPX: -1.3E-17
+R1: -7.2E-16 R2: -2.7E-15 AY:  .001451 BY: 2.377410  ZY: -7.7E-20  EY: -1.3E-17
+R3: 2.54E-16 R4: -1.7E-15            PSIY: -7.4E-38 ZPY: -2.5E-21 EPY: 5.83E-18
+                                                     AZ: -.002843  BZ: 4.252099
+                                                                 PSIZ: 5.43E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 525287.30 Hz 
+Energy loss per turn U0 =  .2984335 MV  Effective voltage    Vc = 2.0000000 MV 
+Equilibrium position dz = 14.289999 mm  Momentum compact. alpha = 2.1893E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 952.00000
+Bucket height     dV/P0 =  .0397708     Synchrotron frequency   = 2456.3574 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune:-0.4199701          -0.3799068          -0.0046762
+
+    Damping per one revolution:
+          X : -6.511042E-05   Y : -4.972482E-05   Z : -8.410472E-05
+    Damping time (sec):
+          X :  2.923833E-02   Y :  3.828511E-02   Z :  2.263512E-02
+    Tune shift due to radiation:
+          X :  7.834508E-07   Y : -5.381202E-06   Z :  2.304801E-10
+    Damping partition number:
+          X :    1.3091       Y :    0.9998       Z :    1.6911
+
+Emittance X            = 1.3568E-10 m   Emittance Y            = 6.2971E-30 m
+Emittance Z            = 1.75434E-6 m   Energy spread          = 6.42328E-4
+Bunch Length           = 2.73123267 mm  Beam tilt              = 2.8949E-13 rad
+Beam size xi           =  .03010563 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+ tunex = Twiss["NX","***"]/2/Pi;
+ tuney = Twiss["NY","***"]/2/Pi;
+ etaidealx = Twiss["EX","PM.*"];
+ etaidealy = Twiss["EY","PM.*"];
+ nm = Length[etaidealx];
+ emit0 = EMITX;
+ FFS["USE RING NOEXPAND;"];
+ FFS["cell calc noexpand"];
+ ???-FFS-Info-Element values are not expanded. 
+ GetMagnetNames[];
+ Print["design: tune ", tunex, " ", tuney, "  EMITX [pm rad] ", emit0*1E12, "  monitors ", nm, "  quads ", nq, "  sextupoles ", ns];
+design: tune   48.5800240787   17.6200831582  EMITX [pm rad]  135.6808820236  monitors  201.0000000000  quads  442.0000000000  sextupoles  280.0000000000
+ Print["columns: seed type | dnux dnuy | COD rms x y [um] | COD max x y [um] | eta-beat rms x y [mm]"];
+columns: seed type | dnux dnuy | COD rms x y [um] | COD max x y [um] | eta-beat rms x y [mm]
+ 
+ Do[
+   Do[
+     SeedRandom[seeds[k]];
+     ae = aeset[t];  fe = feset[t];  te = teset[t];
+     SetErrors[];
+     FFS["cell calc noexpand"];
+     cx = Twiss["DX","PM.*"];  cy = Twiss["DY","PM.*"];
+     ex = Twiss["EX","PM.*"];  ey = Twiss["EY","PM.*"];
+     sx = 0; sy = 0; mx = 0; my = 0; ux = 0; uy = 0;
+     Do[
+       sx = sx + cx[i]^2;  sy = sy + cy[i]^2;
+       If[Abs[cx[i]] > mx, mx = Abs[cx[i]]];
+       If[Abs[cy[i]] > my, my = Abs[cy[i]]];
+       ux = ux + (ex[i]-etaidealx[i])^2;  uy = uy + (ey[i]-etaidealy[i])^2;
+     ,{i,1,nm}];
+     Print["R ", seeds[k], " ", tname[t], " | ", Twiss["NX","$$$"]/2/Pi-tunex, " ", Twiss["NY","$$$"]/2/Pi-tuney,
+           " | ", Sqrt[sx/nm]*1E6, " ", Sqrt[sy/nm]*1E6, " | ", mx*1E6, " ", my*1E6, " | ", Sqrt[ux/nm]*1E3, " ", Sqrt[uy/nm]*1E3];
+     ClearErrors[];
+   ,{t,1,4}];
+ ,{k,1,nseed}];
+ ???-FFS-Info-Element values are not expanded. 
+R   17.0000000000 all |    -.0267249475     .1043642869 |  184.1027749156  989.6911480228 |  708.7917268822  3327.615623628 |    8.6753718245   12.8461839064
+ ???-FFS-Info-Element values are not expanded. 
+R   17.0000000000 align |    -.0251802284     .0730098519 |  189.2210599296  1006.167772136 |  729.4465749359  3300.771784076 |    8.3311497744   12.3415883680
+ ???-FFS-Info-Element values are not expanded. 
+R   17.0000000000 dk |  -3.86782879E-4     .0024854696 |  1.92867039E-11  2.25911973E-26 |  6.17620341E-11  6.48039082E-26 |     .2441448712  7.93911868E-15
+ ???-FFS-Info-Element values are not expanded. 
+R   17.0000000000 dtheta |  -7.26947166E-4  8.794369576E-4 |     .6358802594   49.3738155093 |    3.1652055539  163.7798656132 |     .5718336403    9.3972805470
+ ???-FFS-Info-Element values are not expanded. 
+R  111.0000000000 all |    -.0038144907     .0291671136 |  429.6817678504  636.9248217021 |  1308.534512724  2186.313954175 |    5.2500236820   16.3045055656
+ ???-FFS-Info-Element values are not expanded. 
+R  111.0000000000 align |    -.0028699483     .0247902097 |  424.5790612714  599.2349302837 |  1303.592999753  2081.952088827 |    5.2631002342   16.4625976530
+ ???-FFS-Info-Element values are not expanded. 
+R  111.0000000000 dk |    -.0012509857  2.735223709E-4 |  8.031440556E-4  8.685516830E-5 |     .0021330905  1.728383121E-4 |     .2040525930  2.468694020E-6
+ ???-FFS-Info-Element values are not expanded. 
+R  111.0000000000 dtheta |  -1.21521177E-4  6.110172503E-4 |     .7694756137   85.6049994818 |    2.4629862005  223.2928856689 |     .0683784335    3.0987523372
+ ???-FFS-Info-Element values are not expanded. 
+R    3.0000000000 all |  4.605260596E-4     .0318940793 |  292.3251887710  657.7679895236 |  777.9375985332  1917.437480959 |    3.8210727763   15.8370870145
+ ???-FFS-Info-Element values are not expanded. 
+R    3.0000000000 align |    -.0018446047     .0310382328 |  290.2246630076  617.6932495212 |  758.9507712633  1830.288380327 |    3.8313112077   17.6231260006
+ ???-FFS-Info-Element values are not expanded. 
+R    3.0000000000 dk |     .0016006114    -.0022535315 |  3.632174432E-7  6.498893694E-8 |  6.840593986E-7  1.268523813E-7 |     .3331238075  1.122060718E-9
+ ???-FFS-Info-Element values are not expanded. 
+R    3.0000000000 dtheta |  -3.08171855E-4  5.569498809E-4 |     .6103098390   61.9462916799 |    1.3686190388  189.4758609856 |     .2357506796    5.9703783246
+ Exit;
+ FFS                  end:  CPU time =     0.349 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

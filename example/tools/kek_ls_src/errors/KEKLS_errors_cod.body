@@ -1,0 +1,64 @@
+! KEK-LS v03_68: 誤差の種類ごとの影響 (COD・分散のずれ・チューンシフト・エミッタンス)  (元: print_all_error.sad・print_dk_effect.sad・print_dt_error.sad・print_cod_magnitude.sad)
+! 誤差の与え方 (../modules/modules_errors.n の SetErrors[]。乱数の種は SeedRandom[seed]、打ち切り GCUT = 1 [σ]):
+!   LINE["DX"/"DY", 成分名] = ae GaussRandom[]  : 四極・六極の水平・垂直のずれ (rms ae [m])。元の台本の `DELX`・`DELY` は、この K64 のビルドでは
+!                                               `cell calc` の COD に効かないので (DUMP には値が出る)、成分ごとの DX・DY に直接入れる
+!   DK fe B*,Q*,S*       : 強さの誤差 (相対 rms fe)
+!   DTHETA te B*,Q*,S*   : 回転の誤差 (rms te [rad])
+! 成分ごとの値が効くように、`USE RING NOEXPAND` と `cell calc noexpand` を使う (既定の `cell calc` は同名の要素の値を揃える。docs/11 A56)。
+! 元の台本にあった FFS["MON 0 0 0 0 PM*;"] (モニターの誤差) は、K64 では何もしない (エラーになる) ので除いた。
+! 種 seeds ごとに、(全部)・(ずれだけ)・(強さだけ)・(回転だけ) の 4 通りで、モニター PM.* の COD と分散のずれ、チューンを表示する。
+! 元の print_*.sad (11 本) は同じ台本に、表示 (print_IEX_after・print_IEY_after・print_rep_after = 補正の固有値の数 IEX・IEY による差、
+!   print_residual_cod・print_cod_kick_ratio = 補正後の COD・キック、print_emittance・print_solution_ok・print_all_error_after・print_cod_form = 表示の形式) を
+!   変えたもので、補正の部分は KEKLS_correct_cod.sad に統合した。この台本は、補正のない print_all_error.sad・print_dk_effect.sad・print_dt_error.sad の流れ。
+! 元との違い: 元は 115 の種 (SeedRandom[187] から作る)、結果を datas_e.txt に書く。例は seeds = {17, 111, 3} の 3 本。完全な設定: seeds を 115 個に、nseed = 115。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+Get["../modules/modules_errors.n"];
+seeds = {17, 111, 3};
+nseed = 3;
+aeset = {4E-5, 4E-5, 0, 0};
+feset = {4E-4, 0, 4E-4, 0};
+teset = {1E-4, 0, 0, 1E-4};
+tname = {"all", "align", "dk", "dtheta"};
+GCUT = 1;
+
+USE RING;
+cell calc emit;
+tunex = Twiss["NX","***"]/2/Pi;
+tuney = Twiss["NY","***"]/2/Pi;
+etaidealx = Twiss["EX","PM.*"];
+etaidealy = Twiss["EY","PM.*"];
+nm = Length[etaidealx];
+emit0 = EMITX;
+FFS["USE RING NOEXPAND;"];
+FFS["cell calc noexpand"];
+GetMagnetNames[];
+Print["design: tune ", tunex, " ", tuney, "  EMITX [pm rad] ", emit0*1E12, "  monitors ", nm, "  quads ", nq, "  sextupoles ", ns];
+Print["columns: seed type | dnux dnuy | COD rms x y [um] | COD max x y [um] | eta-beat rms x y [mm]"];
+
+Do[
+  Do[
+    SeedRandom[seeds[k]];
+    ae = aeset[t];  fe = feset[t];  te = teset[t];
+    SetErrors[];
+    FFS["cell calc noexpand"];
+    cx = Twiss["DX","PM.*"];  cy = Twiss["DY","PM.*"];
+    ex = Twiss["EX","PM.*"];  ey = Twiss["EY","PM.*"];
+    sx = 0; sy = 0; mx = 0; my = 0; ux = 0; uy = 0;
+    Do[
+      sx = sx + cx[i]^2;  sy = sy + cy[i]^2;
+      If[Abs[cx[i]] > mx, mx = Abs[cx[i]]];
+      If[Abs[cy[i]] > my, my = Abs[cy[i]]];
+      ux = ux + (ex[i]-etaidealx[i])^2;  uy = uy + (ey[i]-etaidealy[i])^2;
+    ,{i,1,nm}];
+    Print["R ", seeds[k], " ", tname[t], " | ", Twiss["NX","$$$"]/2/Pi-tunex, " ", Twiss["NY","$$$"]/2/Pi-tuney,
+          " | ", Sqrt[sx/nm]*1E6, " ", Sqrt[sy/nm]*1E6, " | ", mx*1E6, " ", my*1E6, " | ", Sqrt[ux/nm]*1E3, " ", Sqrt[uy/nm]*1E3];
+    ClearErrors[];
+  ,{t,1,4}];
+,{k,1,nseed}];
+Exit;

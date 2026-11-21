@@ -1,0 +1,34 @@
+ASTRID2 (0.58 GeV、周長 45.7 m、6 セル)、位置 2 (長直線部の入口、βx=3.9 m、βy=1.6 m)
+作動点 (CALC): nu_x = 5.179990, nu_y = 2.140178
+作動点に近い共鳴線 (次数 4 以下。距離はチューン平面の距離。整数・半整数は必ず入れた):
+    1 nu_x -1 nu_y =    3   距離 0.0282   difference order 2
+    2 nu_x -2 nu_y =    6   距離 0.0282   difference order 4
+    1 nu_x -2 nu_y =    1   距離 0.0449   difference order 3
+    4 nu_x +0 nu_y =   21   距離 0.0700   normal order 4
+    1 nu_x -3 nu_y =   -1   距離 0.0761   difference order 4
+    2 nu_x -1 nu_y =    8   距離 0.0983   difference order 3
+    3 nu_x +1 nu_y =   18   距離 0.1011   sum order 4
+    0 nu_x +4 nu_y =    9   距離 0.1098   normal order 4
+    1 nu_x +3 nu_y =   12   距離 0.1263   sum order 4
+    3 nu_x -1 nu_y =   13   距離 0.1264   difference order 4
+    2 nu_x +2 nu_y =   15   距離 0.1272   sum order 4
+    0 nu_x +3 nu_y =    6   距離 0.1402   normal order 3
+    0 nu_x +1 nu_y =    2   距離 0.1402   integer order 1
+    0 nu_x +2 nu_y =    4   距離 0.1402   half-integer order 2
+    1 nu_x +0 nu_y =    5   距離 0.1800   integer order 1
+    2 nu_x +0 nu_y =   10   距離 0.1800   half-integer order 2
+    [FMAP] 1/4 (100 s)
+    [FMAP] 2/4 (198 s)
+    [FMAP] 3/4 (297 s)
+    [FMAP] 4/4 (315 s)
+追跡と NAFF: 315 s
+条件: {'compat_mode': 'v2', 'momentum_GeV': 0.5800000000000001, 'circumference_m': 45.70439999999998, 'nlat': 200, 'rfsw': False, 'rad': False, 'fluc': False, 'check_every': 0, 'LOSSAMPL_m': 0.1, 'LOSSDZ_m': 100.0, 'orbit_residual': 0.0, 'loc': 2, 's_m': 0.0, 'name': 'D14837', 'nturn': 1024, 'window': 1, 'grid_nx_ny_ndp': (41, 31, 1), 'x_range': (0.0005, 0.018), 'y_range': (0.0005, 0.014), 'dp_range': (0.0, 0.0), 'npoints': 1271, 'nlost': 0, 'workers': 1, 'seconds': 314.8, 'betx': 3.891569283835106, 'bety': 1.6225248636859413, 'orbit': 'auto', 'norm': 'data', 'tunes_full': (5.17999, 2.140178)}
+点 1271、失われた点 0、D の範囲 -11.45 〜 -1.70
+次数 3 以下の共鳴線から 0.003 以内 (近い) 377 点、それより遠い 894 点: D の中央値 -7.70 / -7.92、D > -5 の割合 0.061 / 0.028、D > -4 の点の 0.48 が近い
+次数 4 以下の共鳴線から 0.003 以内 (近い) 379 点、それより遠い 892 点: D の中央値 -7.70 / -7.92、D > -5 の割合 0.061 / 0.028、D > -4 の点の 0.48 が近い
+次数 5 以下の共鳴線から 0.003 以内 (近い) 807 点、それより遠い 464 点: D の中央値 -7.66 / -8.40、D > -5 の割合 0.047 / 0.022、D > -4 の点の 0.71 が近い
+D > -4 の点 (21 点) の最も近い共鳴線 (次数 5 以下) の上位:
+   1 nu_x -1 nu_y = 0 (整数部を除いた端数の平面で)  10 点
+   0 nu_x +5 nu_y = 1 (整数部を除いた端数の平面で)  8 点
+   4 nu_x +0 nu_y = 1 (整数部を除いた端数の平面で)  2 点
+   1 nu_x +4 nu_y = 1 (整数部を除いた端数の平面で)  1 点

@@ -1,0 +1,2 @@
+2026-11-21 14:48 V0714_chromaticity.sad  gs 3 s, pysad 45 s
+2026-11-21 15:00 V0714_chromaticity.sad  gs 2 s, pysad 41 s

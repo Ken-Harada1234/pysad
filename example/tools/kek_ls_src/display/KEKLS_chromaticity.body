@@ -1,0 +1,36 @@
+! KEK-LS v03_68: 運動量ずれ δ に対するチューン (クロマティシティ) の表示  (元: chromaticity_plot.sad、amp_dep_ts_dp.sad)
+! RINGC のチューンを δ = DP0 = -3% 〜 +3% (0.5% 刻み) で求める。(1) 設計の六極 (SDH・SFH) あり、(2) 六極なし (K2 = 0) の 2 本。
+! 元との違い: 元の chromaticity_plot.sad は δ を 0.1% 刻み (61 点) + 六極なしの δ = 0〜±2% (0.1% 刻み) で、各点で `DP0 = 0; cell calc` を挟む。
+!   この例は 0.5% 刻みで挟まない (DP0 を次に変えるたびに周期解を求め直すので結果は同じ)。刻みを細かくするなら dd を小さくする。
+!   `OCT* 0` (八極、元から K3 = 0) は省いた。`USE RING` → RINGC (標準セル 20 個)。図は example/tools/kek_ls_figs.py。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE RINGC;
+cell calc emit;
+dd = 0.005;
+nd = 12;
+Print["--- with the design sextupoles (SDH, SFH)   columns: delta nux nuy"];
+Do[
+  DP0 = (i - nd/2) * dd;
+  FFS["cell calc"];
+  Print["T1 ", DP0, " ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+,{i,0,nd}];
+DP0 = 0;
+FFS["cell calc"];
+sdh0 = LINE["K2","SDH"];  sfh0 = LINE["K2","SFH"];
+LINE["K2","SDH"] = 0;  LINE["K2","SFH"] = 0;
+Print["--- without sextupoles (K2 = 0)   columns: delta nux nuy"];
+Do[
+  DP0 = (i - nd/2) * dd;
+  FFS["cell calc"];
+  Print["T0 ", DP0, " ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+,{i,0,nd}];
+DP0 = 0;
+LINE["K2","SDH"] = sdh0;  LINE["K2","SFH"] = sfh0;
+FFS["cell calc"];
+Exit;

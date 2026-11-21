@@ -1,0 +1,63 @@
+# LMA: local momentum acceptance (dp_plus >= 0, dp_minus <= 0). bracket width <= tol, value = largest surviving dp
+# compat_mode = v2
+# momentum_GeV = 0.5800000000000001
+# circumference_m = 45.70439999999998
+# nlat = 200
+# rfsw = True
+# rad = True
+# fluc = False
+# check_every = 0
+# LOSSAMPL_m = 0.01
+# LOSSDZ_m = 100.0
+# orbit_residual = 3.16733971240113e-18
+# bucket_height = 0.01617565869331182
+# nu_s = -0.0015245738838442406
+# phi_s_rad = 0.1236478909263799
+# U0_eV = 6166.703905021531
+# Vrf_eV = 49999.99999999999
+# momentum_compaction = 0.010669400951466918
+# nturn = 1312
+# nsynch_default = 2.0
+# dpmax = 0.020219573366639775
+# ncoarse = 12
+# nsub = 3
+# tol = 0.0001
+# bucket = True
+# bucket_zlimit_m = 1.540691417974548
+# x0 = 0.0
+# y0 = 0.0
+# npositions = 25
+# workers = 2
+# seconds = 514.6
+# tracked_particles = 1075
+# alost_used = 0.01
+# verify = 0
+# turncheck = 0.0
+# warnings = ['check_every = 0 (SAD tapert, every 15 elements): at aperture-limited positions the limit is overestimated by up to ~25 %% (ASTRID2); use check_every = 1']
+# WARNING: check_every = 0 (SAD tapert, every 15 elements): at aperture-limited positions the limit is overestimated by up to ~25 %% (ASTRID2); use check_every = 1
+# loc  s[m]  name  dp_plus  dp_minus  hi_plus  hi_minus  reason_plus  reason_minus  flags
+    2     0.000000 D14837     1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+    3     1.483700 PM         1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+    5     1.583700 QF3        1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+    6     1.763700 D0180      1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+    7     1.943700 PH         1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+   10     2.123700 BH         1.621778e-02 -1.616513e-02 1.624411e-02 -1.619146e-02 aper  rf    -
+   11     2.973700 D0190      8.424822e-03 -9.161994e-03 8.451150e-03 -9.188322e-03 aper  aper  -
+   12     3.163700 SD         8.424822e-03 -9.161994e-03 8.451150e-03 -9.188322e-03 aper  aper  -
+   13     3.313700 D0120      8.424822e-03 -9.109339e-03 8.451150e-03 -9.135667e-03 aper  aper  -
+   14     3.433700 QF2        8.424822e-03 -9.109339e-03 8.451150e-03 -9.135667e-03 aper  aper  -
+   15     3.613700 D0120      9.056684e-03 -9.820183e-03 9.083011e-03 -9.846511e-03 aper  aper  -
+   16     3.733700 SF         9.056684e-03 -9.820183e-03 9.083011e-03 -9.846511e-03 aper  aper  -
+   17     3.808700 PM         1.047837e-02 -1.137351e-02 1.050470e-02 -1.139984e-02 aper  aper  -
+   19     3.883700 D0120      1.208435e-02 -1.250560e-02 1.211068e-02 -1.253192e-02 aper  aper  -
+   20     4.003700 QF2        1.208435e-02 -1.250560e-02 1.211068e-02 -1.253192e-02 aper  aper  -
+   21     4.183700 D0120      1.208435e-02 -1.303215e-02 1.211068e-02 -1.305847e-02 aper  aper  -
+   22     4.303700 SD         1.208435e-02 -1.303215e-02 1.211068e-02 -1.305847e-02 aper  aper  -
+   23     4.453700 D0190      1.208435e-02 -1.303215e-02 1.211068e-02 -1.305847e-02 aper  aper  -
+   24     4.643700 BH         1.208435e-02 -1.303215e-02 1.211068e-02 -1.305847e-02 aper  aper  -
+   25     5.493700 D0180      1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+   26     5.673700 PH         1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+   29     5.853700 QF3        1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+   30     6.033700 D0100      1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+   31     6.133700 PM         1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -
+   33     7.617400 MKE        1.634942e-02 -1.616513e-02 1.637575e-02 -1.619146e-02 rf    rf    -

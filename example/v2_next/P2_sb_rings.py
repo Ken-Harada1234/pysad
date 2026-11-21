@@ -6,7 +6,7 @@ v2 の SB は線形の Emittance[] との差が 1% 以内 (A・ASTRID2) か 0.6%
 import io, math, os, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, ROOT)
-os.environ.setdefault('PYSAD_SAD_PACKAGES', 'D:/work/SAD-master/SAD-master/Packages')
+# 環境変数 PYSAD_SAD_PACKAGES (K64 版 SAD の Packages のフォルダ) を指定して実行する
 from pysad import ffscmd, compat
 
 RINGS = [('large ring A (kek-ls_v03_12.lat, 3 GeV, 603 m)', os.path.join(ROOT, 'pysad', 'tests', 'kek-ls_v03_12.lat'), 'USE RING;'),

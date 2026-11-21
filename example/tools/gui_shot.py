@@ -8,7 +8,7 @@ gs の窓 (WSLg の X11) は撮らない (撮る道具が WSL に無い)。
 """
 import os, sys, time
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-os.environ.setdefault('PYSAD_SAD_PACKAGES', 'D:/work/SAD-master/SAD-master/Packages')
+# 環境変数 PYSAD_SAD_PACKAGES (K64 版 SAD の Packages のフォルダ) を指定して実行する
 sys.path.insert(0, ROOT)
 
 

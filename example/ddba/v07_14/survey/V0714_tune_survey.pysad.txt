@@ -1,0 +1,2541 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.758E-7 $$$       f BX    #######  #   5.365887 $$$       f NX    #######  #  47.865060 $$$       f AY    #######  #  -9.463E-7 $$$       f BY    #######  #   5.062210 $$$       f NY    #######  #  16.655090
+$$$       f LENG  #######  #  749.48088
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -5.77E-7  -4.98E-7  -7.3E-23  -1.5E-23  1.374E-5  2.646E-4
+      Exit :  -5.77E-7  -4.98E-7  1.05E-22  -3.4E-24  1.374E-5  2.646E-4
+
+    Extended Twiss Parameters
+AX: -4.76E-4 BX: 5.353147                            ZX: 1.874E-5  EX: 4.783E-4
+           PSIX: -2.4E-17                           ZPX: -9.96E-7 EPX: -1.0E-18
+R1: -6.4E-21 R2: -4.5E-20 AY: -.004509 BY: 5.038831  ZY: -3.9E-17  EY: -1.0E-18
+R3: -6.7E-22 R4: -5.8E-21            PSIY: -9.9E-17 ZPY: -1.2E-18 EPY: -8.2E-20
+                                                     AZ: 6.866E-5  BZ: 1.458611
+                                                                 PSIZ: 4.61E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 400000.13 Hz 
+Energy loss per turn U0 = 3.5573887 MV  Effective voltage    Vc = 6.5000000 MV 
+Equilibrium position dz = 55.246463 mm  Momentum compact. alpha = 3.2369E-5
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1250.0000
+Bucket height     dV/P0 =  .0775750     Synchrotron frequency   = 1058.7856 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune:-0.1349376          -0.3449023          -0.0026470
+
+    Damping per one revolution:
+          X : -7.708943E-04   Y : -3.556539E-04   Z : -2.959521E-04
+    Damping time (sec):
+          X :  3.242986E-03   Y :  7.029304E-03   Z :  8.447309E-03
+    Tune shift due to radiation:
+          X : -1.463584E-06   Y : -1.208299E-05   Z : -1.894304E-09
+    Damping partition number:
+          X :    2.1677       Y :    1.0001       Z :    0.8322
+
+Emittance X            = 8.3211E-10 m   Emittance Y            = 2.7335E-38 m
+Emittance Z            = 3.21238E-6 m   Energy spread          =  .00148399
+Bunch Length           = 2.16468315 mm  Beam tilt              = 1.1502E-12 rad
+Beam size xi           =  .06674539 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+design tune   47.8650597373   16.6550903903
+nx0 ny0 | ring nux nuy | emitx[nm] alphac | xix xiy | dnu(x ampl) dnu(y ampl) | converged
+       2        0   2.3732E-06  (NEWTON)    1.000         15
+ Matched. ( 5.8408E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.161E-7 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  2.8851E-6 MKMCA.1     BY   4.7       1   4.699939 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.7192E-8
+B2MA.1      BY   15        1  10.032039 MKS4MA.1    BX   6.05091   1   5.816164 MKS4MA.1    BY   6.68527   1   5.829034 B1MA.1      BY   15        1  14.692043 MKMSA.1     AX   0         1  -7.16E-16 MKMSA.1     BX   2.83638   1   5.723171
+MKMSA.1     AY   0         1  4.182E-15 MKMSA.1     BY   3.73509   1   2.985748 MKMSA.1     EX   0         1  -6.759E-8 MKMSA.1     EPX  0         1  3.861E-17 MKLCA.1     AX   0         1  3.1606E-7 MKLCA.1     AY   0         1  -2.885E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.719E-8 B2LA.1      BY   15        1  10.703945 MKS4LA.1    BX   4.73772   1   5.119843 MKS4LA.1    BY   10.076    1   5.798618 B1LA.1      BY   15        1  14.857336
+MKLSA.1     AX   0         1  6.169E-16 MKLSA.1     BX   3.61131   1   5.571099 MKLSA.1     AY   0         1  1.505E-15 MKLSA.1     BY   15.5488   1   5.214242 MKLSA.1     EX   0         1  6.5921E-8 MKLSA.1     EPX  0         1  -3.54E-19
+$$$       f AX    #######  #  -3.161E-7 $$$       f BX    #######  #   2.700000 $$$       f NX   3.184337  1   3.184337 $$$       f AY    #######  #  2.8851E-6 $$$       f BY    #######  #   4.699939 $$$       f NY   1.103673  1   1.103673
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 5.8032E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.161E-7 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  2.8851E-6 MKMCA.1     BY   4.7       1   4.699939 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.7192E-8
+B2MA.1      BY   15        1  10.032039 MKS4MA.1    BX   6.05091   1   5.816164 MKS4MA.1    BY   6.68527   1   5.829034 B1MA.1      BY   15        1  14.692043 MKMSA.1     AX   0         1  -7.16E-16 MKMSA.1     BX   2.83638   1   5.723171
+MKMSA.1     AY   0         1  4.182E-15 MKMSA.1     BY   3.73509   1   2.985748 MKMSA.1     EX   0         1  -6.759E-8 MKMSA.1     EPX  0         1  3.861E-17 MKLCA.1     AX   0         1  3.1606E-7 MKLCA.1     AY   0         1  -2.885E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.719E-8 B2LA.1      BY   15        1  10.703945 MKS4LA.1    BX   4.73772   1   5.119843 MKS4LA.1    BY   10.076    1   5.798618 B1LA.1      BY   15        1  14.857336
+MKLSA.1     AX   0         1  6.169E-16 MKLSA.1     BX   3.61131   1   5.571099 MKLSA.1     AY   0         1  1.505E-15 MKLSA.1     BY   15.5488   1   5.214242 MKLSA.1     EX   0         1  6.5921E-8 MKLSA.1     EPX  0         1  -3.54E-19
+$$$       f AX    #######  #  -3.161E-7 $$$       f BX    #######  #   2.700000 $$$       f NX   3.184337  1   3.184337 $$$       f AY    #######  #  2.8851E-6 $$$       f BY    #######  #   4.699939 $$$       f NY   1.103673  1   1.103673
+$$$       f LENG  #######  #  49.965324
+       2        0   0.3849      (NEWTON)    1.000         15
+       3        0   0.1187      (NEWTON)    1.000         15
+       4        0   6.2594E-02  (NEWTON)    1.000         15
+       5        0   3.2285E-02  (NEWTON)    1.000         15
+       6        0   1.6376E-02  (NEWTON)    1.000         15
+       7        0   8.1899E-03  (NEWTON)    1.000         15
+       8        0   4.0487E-03  (NEWTON)    1.000         15
+       9        0   1.9834E-03  (NEWTON)    1.000         15
+      10        0   9.6534E-04  (NEWTON)    1.000         15
+      11        0   4.6802E-04  (NEWTON)    1.000         15
+      12        0   2.2670E-04  (NEWTON)    1.000         15
+      13        0   1.1009E-04  (NEWTON)    1.000         15
+      14        0   5.3809E-05  (NEWTON)    1.000         15
+      15        0   2.6601E-05  (NEWTON)    1.000         15
+      16        0   1.3374E-05  (NEWTON)    1.000         15
+      17        0   6.8779E-06  (NEWTON)    1.000         15
+      18        0   3.6389E-06  (NEWTON)    1.000         15
+      19        0   1.9896E-06  (NEWTON)    1.000         15
+      20        0   1.1269E-06  (NEWTON)    1.000         15
+      21        0   6.6101E-07  (NEWTON)    1.000         15
+      22        0   4.0049E-07  (NEWTON)    1.000         15
+      23        0   2.4951E-07  (NEWTON)    1.000         15
+      24        0   1.5902E-07  (NEWTON)    1.000         15
+      25        0   1.0315E-07  (NEWTON)    1.000         15
+      26        0   6.7791E-08  (NEWTON)    1.000         15
+      27        0   4.4983E-08  (NEWTON)    1.000         15
+ Matched. ( 3.0052E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -8.818E-6 MKMC.1      BX   2.7       1   2.699655 MKMC.1      AY   0         1  4.6809E-7 MKMC.1      BY   4.7       1   4.700037 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.652E-12
+B2M.1       BY   15        1  10.277542 MKS4M.1     BX   6.8732    1   6.134136 MKS4M.1     BY   6.96931   1   5.137222 B1M.1       BY   15        1  14.974457 MKMS.1      AX   0         1  -1.98E-15 MKMS.1      BX   15.5919   1  21.689079
+MKMS.1      AY   0         1  -5.47E-15 MKMS.1      BY   6.09844   1   3.265263 MKMS.1      EX   0         1  -2.20E-11 MKMS.1      EPX  0         1  1.357E-18 MKLC.1      AX   0         1  8.8179E-6 MKLC.1      AY   0         1  -4.681E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.65E-12 B2L.1       BY   15        1  10.565082 MKS4L.1     BX   5.44917   1   5.208314 MKS4L.1     BY   9.22563   1   5.154607 B1L.1       BY   15        1  14.928452
+MKLS.1      AX   0         1  -6.43E-16 MKLS.1      BX   11.7081   1  20.911651 MKLS.1      AY   0         1  -6.35E-15 MKLS.1      BY   11.2495   1   5.499713 MKLS.1      EX   0         1  -5.11E-13 MKLS.1      EPX  0         1  2.205E-17
+$$$       f AX    #######  #  -8.818E-6 $$$       f BX    #######  #   2.699655 $$$       f NX   3.184337  1   3.184355 $$$       f AY    #######  #  4.6809E-7 $$$       f BY    #######  #   4.700037 $$$       f NY   1.103673  1   1.103674
+$$$       f LENG  #######  #  49.965581
+ Matched. ( 3.0052E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -8.818E-6 MKMC.1      BX   2.7       1   2.699655 MKMC.1      AY   0         1  4.6809E-7 MKMC.1      BY   4.7       1   4.700037 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.652E-12
+B2M.1       BY   15        1  10.277542 MKS4M.1     BX   6.8732    1   6.134136 MKS4M.1     BY   6.96931   1   5.137222 B1M.1       BY   15        1  14.974457 MKMS.1      AX   0         1  -1.98E-15 MKMS.1      BX   15.5919   1  21.689079
+MKMS.1      AY   0         1  -5.47E-15 MKMS.1      BY   6.09844   1   3.265263 MKMS.1      EX   0         1  -2.20E-11 MKMS.1      EPX  0         1  1.357E-18 MKLC.1      AX   0         1  8.8179E-6 MKLC.1      AY   0         1  -4.681E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.65E-12 B2L.1       BY   15        1  10.565082 MKS4L.1     BX   5.44917   1   5.208314 MKS4L.1     BY   9.22563   1   5.154607 B1L.1       BY   15        1  14.928452
+MKLS.1      AX   0         1  -6.43E-16 MKLS.1      BX   11.7081   1  20.911651 MKLS.1      AY   0         1  -6.35E-15 MKLS.1      BY   11.2495   1   5.499713 MKLS.1      EX   0         1  -5.11E-13 MKLS.1      EPX  0         1  2.205E-17
+$$$       f AX    #######  #  -8.818E-6 $$$       f BX    #######  #   2.699655 $$$       f NX   3.184337  1   3.184355 $$$       f AY    #######  #  4.6809E-7 $$$       f BY    #######  #   4.700037 $$$       f NY   1.103673  1   1.103674
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -6.45E-15 $$$       f BX    #######  #   2.700015 $$$       f NX    #######  #   1.490777 $$$       f AY    #######  #  -6.14E-15 $$$       f BY    #######  #   4.699984 $$$       f NY    #######  #    .547276
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 1.5977E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -6.45E-15 $$$       f BX    #######  #   2.700015 $$$       f NX   1.490777  2   1.490777 $$$       f AY    #######  #  -6.14E-15 $$$       f BY    #######  #   4.699984 $$$       f NY   .547276   2    .547276
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.270100670829894 )
+        S4MHA   =(L =.1   K2 =16.85112721349747 )
+        S3MHA   =(L =.1   K2 =-12.270100670829894 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.10E-15 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.693561 $$$       f AY    #######  #  -1.31E-14 $$$       f BY    #######  #   4.699903 $$$       f NY    #######  #    .556397
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   6.1625E-04  (NEWTON)    1.000          2
+       3        0   4.9657E-06  (NEWTON)    1.000          2
+       4        0   4.8134E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+Unstable =     4 Residual =  1.454      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.10E-15 $$$       f BX    #######  #   2.700000 $$$       f NX   1.693561  2   1.693561 $$$       f AY    #######  #  -1.31E-14 $$$       f BY    #######  #   4.699903 $$$       f NY   .556397   2    .556397
+$$$       f LENG  #######  #  27.832662 MKLC/$$$    BMAGX #######  #   1.000000 MKLC/$$$    BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.616927591562433 )
+        S4LHA   =(L =.1   K2 =25.85508845278956 )
+        S3LHA   =(L =.1   K2 =-18.616927591562433 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.313E-15 $$$       f BX    #######  #   2.699594 $$$       f NX    #######  #   1.559744 $$$       f AY    #######  #  6.777E-15 $$$       f BY    #######  #   4.700045 $$$       f NY    #######  #    .543613
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 6.9929E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.313E-15 $$$       f BX    #######  #   2.699594 $$$       f NX   1.559744  2   1.559744 $$$       f AY    #######  #  6.777E-15 $$$       f BY    #######  #   4.700045 $$$       f NY   .543613   2    .543613
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.103974348427187 )
+        S4MH    =(L =.1   K2 =28.730220177014274 )
+        S3MH    =(L =.1   K2 =-18.103974348427187 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.82E-16 $$$       f BX    #######  #   2.699679 $$$       f NX    #######  #   1.624611 $$$       f AY    #######  #  5.349E-15 $$$       f BY    #######  #   4.700031 $$$       f NY    #######  #    .560060
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.3817E-05  (NEWTON)    1.000          2
+       3        0   6.6791E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 6.6790E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.82E-16 $$$       f BX    #######  #   2.699679 $$$       f NX   1.624611  2   1.624611 $$$       f AY    #######  #  5.349E-15 $$$       f BY    #######  #   4.700031 $$$       f NY   .56006    2    .560060
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.611326755110206 )
+        S4LH    =(L =.1   K2 =35.667568328617975 )
+        S3LH    =(L =.1   K2 =-22.611326755110206 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.7650597373   16.5550903903 |   47.7651307649   16.5550991951 |     .8330115249  3.249749794E-5 |    -.0273018817     .0695083256 |  -5.46294980E-5  4.733461839E-4  3.775068628E-4  -9.66049531E-4 |    1.0000000000
+       2        0   6.3808E-07  (NEWTON)    1.000         15
+ Matched. ( 4.4372E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.065E-7 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -3.639E-7 MKMCA.1     BY   4.7       1   4.699948 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.5613E-8
+B2MA.1      BY   15        1  10.031343 MKS4MA.1    BX   6.05091   1   5.814405 MKS4MA.1    BY   6.68527   1   5.840952 B1MA.1      BY   15        1  14.742593 MKMSA.1     AX   0         1  2.665E-15 MKMSA.1     BX   2.83638   1   5.732243
+MKMSA.1     AY   0         1  -1.05E-15 MKMSA.1     BY   3.73509   1   2.931097 MKMSA.1     EX   0         1  -6.142E-8 MKMSA.1     EPX  0         1  3.783E-17 MKLCA.1     AX   0         1  3.0647E-7 MKLCA.1     AY   0         1  3.6393E-7
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.561E-8 B2LA.1      BY   15        1  10.704218 MKS4LA.1    BX   4.73772   1   5.118803 MKS4LA.1    BY   10.076    1   5.815028 B1LA.1      BY   15        1  14.924475
+MKLSA.1     AX   0         1  2.821E-15 MKLSA.1     BX   3.61131   1   5.564815 MKLSA.1     AY   0         1  -7.53E-15 MKLSA.1     BY   15.5488   1   5.067018 MKLSA.1     EX   0         1  5.9182E-8 MKLSA.1     EPX  0         1  6.698E-18
+$$$       f AX    #######  #  -3.065E-7 $$$       f BX    #######  #   2.700000 $$$       f NX   3.184337  1   3.184337 $$$       f AY    #######  #  -3.639E-7 $$$       f BY    #######  #   4.699948 $$$       f NY   1.110339  1   1.110340
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 4.4065E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.065E-7 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -3.639E-7 MKMCA.1     BY   4.7       1   4.699948 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.5613E-8
+B2MA.1      BY   15        1  10.031343 MKS4MA.1    BX   6.05091   1   5.814405 MKS4MA.1    BY   6.68527   1   5.840952 B1MA.1      BY   15        1  14.742593 MKMSA.1     AX   0         1  2.665E-15 MKMSA.1     BX   2.83638   1   5.732243
+MKMSA.1     AY   0         1  -1.05E-15 MKMSA.1     BY   3.73509   1   2.931097 MKMSA.1     EX   0         1  -6.142E-8 MKMSA.1     EPX  0         1  3.783E-17 MKLCA.1     AX   0         1  3.0647E-7 MKLCA.1     AY   0         1  3.6393E-7
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.561E-8 B2LA.1      BY   15        1  10.704218 MKS4LA.1    BX   4.73772   1   5.118803 MKS4LA.1    BY   10.076    1   5.815028 B1LA.1      BY   15        1  14.924475
+MKLSA.1     AX   0         1  2.821E-15 MKLSA.1     BX   3.61131   1   5.564815 MKLSA.1     AY   0         1  -7.53E-15 MKLSA.1     BY   15.5488   1   5.067018 MKLSA.1     EX   0         1  5.9182E-8 MKLSA.1     EPX  0         1  6.698E-18
+$$$       f AX    #######  #  -3.065E-7 $$$       f BX    #######  #   2.700000 $$$       f NX   3.184337  1   3.184337 $$$       f AY    #######  #  -3.639E-7 $$$       f BY    #######  #   4.699948 $$$       f NY   1.110339  1   1.110340
+$$$       f LENG  #######  #  49.965324
+       2        0   0.3475      (NEWTON)    1.000         15
+       3        0   9.4085E-02  (NEWTON)    1.000         15
+       4        0   4.9793E-02  (NEWTON)    1.000         15
+       5        0   2.5580E-02  (NEWTON)    1.000         15
+       6        0   1.2937E-02  (NEWTON)    1.000         15
+       7        0   6.4577E-03  (NEWTON)    1.000         15
+       8        0   3.1895E-03  (NEWTON)    1.000         15
+       9        0   1.5625E-03  (NEWTON)    1.000         15
+      10        0   7.6121E-04  (NEWTON)    1.000         15
+      11        0   3.6228E-04  (NEWTON)    1.000         15
+      12        0   1.7598E-04  (NEWTON)    1.000         15
+      13        0   8.6025E-05  (NEWTON)    1.000         15
+      14        0   4.2528E-05  (NEWTON)    1.000         15
+      15        0   2.1374E-05  (NEWTON)    1.000         15
+      16        0   1.0986E-05  (NEWTON)    1.000         15
+      17        0   5.8092E-06  (NEWTON)    1.000         15
+      18        0   3.1779E-06  (NEWTON)    1.000         15
+      19        0   1.8053E-06  (NEWTON)    1.000         15
+      20        0   1.0664E-06  (NEWTON)    1.000         15
+      21        0   6.5407E-07  (NEWTON)    1.000         15
+      22        0   4.1503E-07  (NEWTON)    1.000         15
+      23        0   2.7107E-07  (NEWTON)    1.000         15
+      24        0   1.8124E-07  (NEWTON)    1.000         15
+      25        0   1.2344E-07  (NEWTON)    1.000         15
+      26        0   8.5276E-08  (NEWTON)    1.000         15
+      27        0   5.9555E-08  (NEWTON)    1.000         15
+      28        0   4.1941E-08  (NEWTON)    1.000         15
+ Matched. ( 2.9728E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -7.239E-6 MKMC.1      BX   2.7       1   2.699692 MKMC.1      AY   0         1  1.3976E-5 MKMC.1      BY   4.7       1   4.699941 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.287E-12
+B2M.1       BY   15        1  10.277594 MKS4M.1     BX   6.8732    1   6.134353 MKS4M.1     BY   6.96931   1   5.143257 B1M.1       BY   15        1  15.001158 MKMS.1      AX   0         1  4.302E-15 MKMS.1      BX   15.5919   1  21.698545
+MKMS.1      AY   0         1  3.086E-15 MKMS.1      BY   6.09844   1   3.225682 MKMS.1      EX   0         1  -1.74E-11 MKMS.1      EPX  0         1  -2.73E-19 MKLC.1      AX   0         1  7.2386E-6 MKLC.1      AY   0         1  -1.398E-5
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.29E-12 B2L.1       BY   15        1  10.564497 MKS4L.1     BX   5.44917   1   5.207131 MKS4L.1     BY   9.22563   1   5.167745 B1L.1       BY   15        1  14.991490
+MKLS.1      AX   0         1  3.251E-15 MKLS.1      BX   11.7081   1  20.928794 MKLS.1      AY   0         1  6.901E-15 MKLS.1      BY   11.2495   1   5.317890 MKLS.1      EX   0         1  9.936E-13 MKLS.1      EPX  0         1  -2.08E-17
+$$$       f AX    #######  #  -7.239E-6 $$$       f BX    #######  #   2.699692 $$$       f NX   3.184337  1   3.184353 $$$       f AY    #######  #  1.3976E-5 $$$       f BY    #######  #   4.699941 $$$       f NY   1.110339  1   1.110340
+$$$       f LENG  #######  #  49.965581
+ Matched. ( 2.9728E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -7.239E-6 MKMC.1      BX   2.7       1   2.699692 MKMC.1      AY   0         1  1.3976E-5 MKMC.1      BY   4.7       1   4.699941 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.287E-12
+B2M.1       BY   15        1  10.277594 MKS4M.1     BX   6.8732    1   6.134353 MKS4M.1     BY   6.96931   1   5.143257 B1M.1       BY   15        1  15.001158 MKMS.1      AX   0         1  4.302E-15 MKMS.1      BX   15.5919   1  21.698545
+MKMS.1      AY   0         1  3.086E-15 MKMS.1      BY   6.09844   1   3.225682 MKMS.1      EX   0         1  -1.74E-11 MKMS.1      EPX  0         1  -2.73E-19 MKLC.1      AX   0         1  7.2386E-6 MKLC.1      AY   0         1  -1.398E-5
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.29E-12 B2L.1       BY   15        1  10.564497 MKS4L.1     BX   5.44917   1   5.207131 MKS4L.1     BY   9.22563   1   5.167745 B1L.1       BY   15        1  14.991490
+MKLS.1      AX   0         1  3.251E-15 MKLS.1      BX   11.7081   1  20.928794 MKLS.1      AY   0         1  6.901E-15 MKLS.1      BY   11.2495   1   5.317890 MKLS.1      EX   0         1  9.936E-13 MKLS.1      EPX  0         1  -2.08E-17
+$$$       f AX    #######  #  -7.239E-6 $$$       f BX    #######  #   2.699692 $$$       f NX   3.184337  1   3.184353 $$$       f AY    #######  #  1.3976E-5 $$$       f BY    #######  #   4.699941 $$$       f NY   1.110339  1   1.110340
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  5.651E-15 $$$       f BX    #######  #   2.700014 $$$       f NX    #######  #   1.490462 $$$       f AY    #######  #  3.400E-15 $$$       f BY    #######  #   4.699943 $$$       f NY    #######  #    .549856
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 1.4946E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  5.651E-15 $$$       f BX    #######  #   2.700014 $$$       f NX   1.490462  2   1.490462 $$$       f AY    #######  #  3.400E-15 $$$       f BY    #######  #   4.699943 $$$       f NY   .549856   2    .549856
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.28812096494919 )
+        S4MHA   =(L =.1   K2 =16.86653323035344 )
+        S3MHA   =(L =.1   K2 =-12.28812096494919 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.536E-15 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.693876 $$$       f AY    #######  #  -9.25E-15 $$$       f BY    #######  #   4.699953 $$$       f NY    #######  #    .560483
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   3.3496E-04  (NEWTON)    1.000          2
+       3        0   5.1053E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 5.0721E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.536E-15 $$$       f BX    #######  #   2.700000 $$$       f NX   1.693876  2   1.693876 $$$       f AY    #######  #  -9.25E-15 $$$       f BY    #######  #   4.699953 $$$       f NY   .560483   2    .560483
+$$$       f LENG  #######  #  27.832662
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.65867875744146 )
+        S4LHA   =(L =.1   K2 =25.888746870404965 )
+        S3LHA   =(L =.1   K2 =-18.65867875744146 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -6.20E-16 $$$       f BX    #######  #   2.699642 $$$       f NX    #######  #   1.559790 $$$       f AY    #######  #  3.785E-15 $$$       f BY    #######  #   4.700165 $$$       f NY    #######  #    .545357
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 6.9643E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -6.20E-16 $$$       f BX    #######  #   2.699642 $$$       f NX   1.55979   2   1.559790 $$$       f AY    #######  #  3.785E-15 $$$       f BY    #######  #   4.700165 $$$       f NY   .545357   2    .545357
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.11935772886116 )
+        S4MH    =(L =.1   K2 =28.74508846147242 )
+        S3MH    =(L =.1   K2 =-18.11935772886116 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.43E-15 $$$       f BX    #######  #   2.699712 $$$       f NX    #######  #   1.624562 $$$       f AY    #######  #  6.573E-15 $$$       f BY    #######  #   4.699789 $$$       f NY    #######  #    .564983
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.2333E-05  (NEWTON)    1.000          2
+       3        0   6.8081E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 6.8081E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.43E-15 $$$       f BX    #######  #   2.699712 $$$       f NX   1.624562  2   1.624562 $$$       f AY    #######  #  6.573E-15 $$$       f BY    #######  #   4.699789 $$$       f NY   .564983   2    .564983
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.657057618049688 )
+        S4LH    =(L =.1   K2 =35.71017670236216 )
+        S3LH    =(L =.1   K2 =-22.657057618049688 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.7650597373   16.6550903903 |   47.7651213333   16.6550956484 |     .8330568096  3.249645428E-5 |    -.0293333701     .0684365003 |  -6.73571676E-5  4.968304622E-4  3.914562079E-4  -9.61195400E-4 |    1.0000000000
+       2        0   5.0428E-04  (NEWTON)    1.000         15
+       3        0   6.5052E-07  (NEWTON)    1.000         15
+       4        0   2.2818E-07  (NEWTON)    1.000         15
+ Matched. ( 1.2534E-13) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -2.718E-9 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -1.495E-8 MKMCA.1     BY   4.7       1   4.699998 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  5.148E-12
+B2MA.1      BY   15        1  10.028050 MKS4MA.1    BX   6.05091   1   5.808162 MKS4MA.1    BY   6.68527   1   5.872999 B1MA.1      BY   15        1  14.883175 MKMSA.1     AX   0         1  9.717E-16 MKMSA.1     BX   2.83638   1   5.760783
+MKMSA.1     AY   0         1  3.341E-15 MKMSA.1     BY   3.73509   1   2.801187 MKMSA.1     EX   0         1  -1.76E-11 MKMSA.1     EPX  0         1  -5.62E-18 MKLCA.1     AX   0         1  2.7179E-9 MKLCA.1     AY   0         1  1.4947E-8
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -5.15E-12 B2LA.1      BY   15        1  10.704158 MKS4LA.1    BX   4.73772   1   5.118440 MKS4LA.1    BY   10.076    1   5.819532 B1LA.1      BY   15        1  14.942882
+MKLSA.1     AX   0         1  2.381E-15 MKLSA.1     BX   3.61131   1   5.529912 MKLSA.1     AY   0         1  8.065E-15 MKLSA.1     BY   15.5488   1   5.048802 MKLSA.1     EX   0         1  1.575E-11 MKLSA.1     EPX  0         1  1.769E-17
+$$$       f AX    #######  #  -2.718E-9 $$$       f BX    #######  #   2.700000 $$$       f NX   3.184337  1   3.184337 $$$       f AY    #######  #  -1.495E-8 $$$       f BY    #######  #   4.699998 $$$       f NY   1.117006  1   1.117006
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 1.2534E-13) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -2.718E-9 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -1.495E-8 MKMCA.1     BY   4.7       1   4.699998 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  5.148E-12
+B2MA.1      BY   15        1  10.028050 MKS4MA.1    BX   6.05091   1   5.808162 MKS4MA.1    BY   6.68527   1   5.872999 B1MA.1      BY   15        1  14.883175 MKMSA.1     AX   0         1  9.717E-16 MKMSA.1     BX   2.83638   1   5.760783
+MKMSA.1     AY   0         1  3.341E-15 MKMSA.1     BY   3.73509   1   2.801187 MKMSA.1     EX   0         1  -1.76E-11 MKMSA.1     EPX  0         1  -5.62E-18 MKLCA.1     AX   0         1  2.7179E-9 MKLCA.1     AY   0         1  1.4947E-8
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -5.15E-12 B2LA.1      BY   15        1  10.704158 MKS4LA.1    BX   4.73772   1   5.118440 MKS4LA.1    BY   10.076    1   5.819532 B1LA.1      BY   15        1  14.942882
+MKLSA.1     AX   0         1  2.381E-15 MKLSA.1     BX   3.61131   1   5.529912 MKLSA.1     AY   0         1  8.065E-15 MKLSA.1     BY   15.5488   1   5.048802 MKLSA.1     EX   0         1  1.575E-11 MKLSA.1     EPX  0         1  1.769E-17
+$$$       f AX    #######  #  -2.718E-9 $$$       f BX    #######  #   2.700000 $$$       f NX   3.184337  1   3.184337 $$$       f AY    #######  #  -1.495E-8 $$$       f BY    #######  #   4.699998 $$$       f NY   1.117006  1   1.117006
+$$$       f LENG  #######  #  49.965324
+       2        0   0.3433      (NEWTON)    1.000         15
+       3        0   6.7100E-02  (NEWTON)    1.000         15
+       4        0   3.6186E-02  (NEWTON)    1.000         15
+       5        0   1.8721E-02  (NEWTON)    1.000         15
+       6        0   9.5092E-03  (NEWTON)    1.000         15
+       7        0   4.7708E-03  (NEWTON)    1.000         15
+       8        0   2.3761E-03  (NEWTON)    1.000         15
+       9        0   1.1809E-03  (NEWTON)    1.000         15
+      10        0   5.8995E-04  (NEWTON)    1.000         15
+      11        0   2.9954E-04  (NEWTON)    1.000         15
+      12        0   1.5736E-04  (NEWTON)    1.000         15
+      13        0   8.7788E-05  (NEWTON)    1.000         15
+      14        0   5.3657E-05  (NEWTON)    1.000         15
+      15        0   3.6798E-05  (NEWTON)    1.000         15
+      16        0   2.8369E-05  (NEWTON)    1.000         15
+      17        0   2.4074E-05  (NEWTON)    1.000         15
+      18        0   2.1822E-05  (NEWTON)    1.000         15
+      19        0   2.0595E-05  (NEWTON)    1.000         15
+      20        0   1.9890E-05  (NEWTON)    1.000         15
+      21        0   1.9456E-05  (NEWTON)    1.000         15
+      23        0   1.8961E-05  (NEWTON)    1.000         15
+      26        0   1.8548E-05  (NEWTON)    1.000         15
+      30        0   1.8154E-05  (NEWTON)    1.000         15
+      35        0   1.7716E-05  (NEWTON)    1.000         15
+ Residual = 1.7547E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -2.726E-5 MKMC.1      BX   2.7       1   2.699086 MKMC.1      AY   0         1  -6.199E-5 MKMC.1      BY   4.7       1   4.692842 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.133E-13
+B2M.1       BY   15        1  10.265638 MKS4M.1     BX   6.8732    1   6.134729 MKS4M.1     BY   6.96931   1   5.148947 B1M.1       BY   15        1  15.040466 MKMS.1      AX   0         1  1.372E-15 MKMS.1      BX   15.5919   1  21.720151
+MKMS.1      AY   0         1  -2.41E-15 MKMS.1      BY   6.09844   1   3.169424 MKMS.1      EX   0         1  -2.83E-12 MKMS.1      EPX  0         1  -1.13E-17 MKLC.1      AX   0         1  2.7260E-5 MKLC.1      AY   0         1  6.1986E-5
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.13E-13 B2L.1       BY   15        1  10.552782 MKS4L.1     BX   5.44917   1   5.207341 MKS4L.1     BY   9.22563   1   5.175744 B1L.1       BY   15        1  15.041346
+MKLS.1      AX   0         1  5.254E-15 MKLS.1      BX   11.7081   1  20.946803 MKLS.1      AY   0         1  -5.23E-15 MKLS.1      BY   11.2495   1   5.187754 MKLS.1      EX   0         1  -1.55E-12 MKLS.1      EPX  0         1  8.592E-18
+$$$       f AX    #######  #  -2.726E-5 $$$       f BX    #######  #   2.699086 $$$       f NX   3.184337  1   3.184351 $$$       f AY    #######  #  -6.199E-5 $$$       f BY    #######  #   4.692842 $$$       f NY   1.117006  1   1.116926
+$$$       f LENG  #######  #  49.965581
+       6        0   1.7132E-05  (NEWTON)    1.000         15
+      11        0   1.6727E-05  (NEWTON)    1.000         15
+      16        0   1.6331E-05  (NEWTON)    1.000         15
+      21        0   1.5946E-05  (NEWTON)    1.000         15
+      26        0   1.5569E-05  (NEWTON)    1.000         15
+      31        0   1.5201E-05  (NEWTON)    1.000         15
+      36        0   1.4842E-05  (NEWTON)    1.000         15
+ Residual = 1.4771E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -2.393E-5 MKMC.1      BX   2.7       1   2.699212 MKMC.1      AY   0         1  -5.700E-5 MKMC.1      BY   4.7       1   4.693423 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  5.017E-15
+B2M.1       BY   15        1  10.266574 MKS4M.1     BX   6.8732    1   6.134431 MKS4M.1     BY   6.96931   1   5.148365 B1M.1       BY   15        1  15.037163 MKMS.1      AX   0         1  -8.27E-16 MKMS.1      BX   15.5919   1  21.721125
+MKMS.1      AY   0         1  8.609E-17 MKMS.1      BY   6.09844   1   3.169986 MKMS.1      EX   0         1  -7.27E-13 MKMS.1      EPX  0         1  -9.44E-18 MKLC.1      AX   0         1  2.3925E-5 MKLC.1      AY   0         1  5.6997E-5
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -4.99E-15 B2L.1       BY   15        1  10.553557 MKS4L.1     BX   5.44917   1   5.207016 MKS4L.1     BY   9.22563   1   5.175130 B1L.1       BY   15        1  15.037913
+MKLS.1      AX   0         1  -1.20E-16 MKLS.1      BX   11.7081   1  20.945801 MKLS.1      AY   0         1    .000000 MKLS.1      BY   11.2495   1   5.186773 MKLS.1      EX   0         1  -7.28E-13 MKLS.1      EPX  0         1  1.007E-17
+$$$       f AX    #######  #  -2.393E-5 $$$       f BX    #######  #   2.699212 $$$       f NX   3.184337  1   3.184347 $$$       f AY    #######  #  -5.700E-5 $$$       f BY    #######  #   4.693423 $$$       f NY   1.117006  1   1.116932
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.169E-14 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.489421 $$$       f AY    #######  #  -1.08E-14 $$$       f BY    #######  #   4.699998 $$$       f NY    #######  #    .556075
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 1.2211E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.169E-14 $$$       f BX    #######  #   2.700000 $$$       f NX   1.489421  2   1.489421 $$$       f AY    #######  #  -1.08E-14 $$$       f BY    #######  #   4.699998 $$$       f NY   .556075   2    .556075
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.332208431363105 )
+        S4MHA   =(L =.1   K2 =16.90554377088822 )
+        S3MHA   =(L =.1   K2 =-12.332208431363105 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.203E-15 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.694916 $$$       f AY    #######  #  -7.82E-15 $$$       f BY    #######  #   4.699999 $$$       f NY    #######  #    .560931
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   3.1708E-04  (NEWTON)    1.000          2
+       3        0   5.1716E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 5.1424E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.203E-15 $$$       f BX    #######  #   2.700000 $$$       f NX   1.694916  2   1.694916 $$$       f AY    #######  #  -7.82E-15 $$$       f BY    #######  #   4.699999 $$$       f NY   .560931   2    .560931
+$$$       f LENG  #######  #  27.832662
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.672172097274906 )
+        S4LHA   =(L =.1   K2 =25.905167660698442 )
+        S3LHA   =(L =.1   K2 =-18.672172097274906 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.02E-14 $$$       f BX    #######  #   2.699048 $$$       f NX    #######  #   1.559753 $$$       f AY    #######  #  1.405E-14 $$$       f BY    #######  #   4.692565 $$$       f NY    #######  #    .548091
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 6.9038E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.02E-14 $$$       f BX    #######  #   2.699048 $$$       f NX   1.559753  2   1.559753 $$$       f AY    #######  #  1.405E-14 $$$       f BY    #######  #   4.692565 $$$       f NY   .548091   2    .548091
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.143657242473147 )
+        S4MH    =(L =.1   K2 =28.770187147279092 )
+        S3MH    =(L =.1   K2 =-18.143657242473147 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.52E-15 $$$       f BX    #######  #   2.699277 $$$       f NX    #######  #   1.624594 $$$       f AY    #######  #  -7.06E-15 $$$       f BY    #######  #   4.694002 $$$       f NY    #######  #    .568841
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.1505E-05  (NEWTON)    1.000          2
+       3        0   6.9180E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 6.9180E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.52E-15 $$$       f BX    #######  #   2.699277 $$$       f NX   1.624594  2   1.624594 $$$       f AY    #######  #  -7.06E-15 $$$       f BY    #######  #   4.694002 $$$       f NY   .568841   2    .568841
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.700943053524856 )
+        S4LH    =(L =.1   K2 =35.75054629316732 )
+        S3LH    =(L =.1   K2 =-22.700943053524856 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.7650597373   16.7550903903 |   47.7650980853   16.7547957445 |     .8334618049  3.250724149E-5 |    -.0294775510     .0670275388 |  -1.18642225E-4  5.574651155E-4  4.087847470E-4    -.0011019721 |    1.0000000000
+       2        0   9.6196E-07  (NEWTON)    1.000         15
+ Matched. ( 4.9570E-14) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.20E-10 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -6.393E-8 MKMCA.1     BY   4.7       1   4.700000 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  8.810E-12
+B2MA.1      BY   15        1  10.036979 MKS4MA.1    BX   6.05091   1   5.820254 MKS4MA.1    BY   6.68527   1   5.836031 B1MA.1      BY   15        1  14.705846 MKMSA.1     AX   0         1  1.174E-15 MKMSA.1     BX   2.83638   1   5.704074
+MKMSA.1     AY   0         1  3.574E-15 MKMSA.1     BY   3.73509   1   2.976777 MKMSA.1     EX   0         1  -3.54E-11 MKMSA.1     EPX  0         1  -1.26E-17 MKLCA.1     AX   0         1  3.196E-10 MKLCA.1     AY   0         1  6.3930E-8
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -8.81E-12 B2LA.1      BY   15        1  10.704507 MKS4LA.1    BX   4.73772   1   5.119245 MKS4LA.1    BY   10.076    1   5.813338 B1LA.1      BY   15        1  14.917958
+MKLSA.1     AX   0         1  3.360E-15 MKLSA.1     BX   3.61131   1   5.372264 MKLSA.1     AY   0         1  8.148E-15 MKLSA.1     BY   15.5488   1   5.210511 MKLSA.1     EX   0         1  4.660E-11 MKLSA.1     EPX  0         1  3.818E-18
+$$$       f AX    #######  #  -3.20E-10 $$$       f BX    #######  #   2.700000 $$$       f NX   3.191004  1   3.191004 $$$       f AY    #######  #  -6.393E-8 $$$       f BY    #######  #   4.700000 $$$       f NY   1.103673  1   1.103673
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 4.9570E-14) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.20E-10 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -6.393E-8 MKMCA.1     BY   4.7       1   4.700000 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  8.810E-12
+B2MA.1      BY   15        1  10.036979 MKS4MA.1    BX   6.05091   1   5.820254 MKS4MA.1    BY   6.68527   1   5.836031 B1MA.1      BY   15        1  14.705846 MKMSA.1     AX   0         1  1.174E-15 MKMSA.1     BX   2.83638   1   5.704074
+MKMSA.1     AY   0         1  3.574E-15 MKMSA.1     BY   3.73509   1   2.976777 MKMSA.1     EX   0         1  -3.54E-11 MKMSA.1     EPX  0         1  -1.26E-17 MKLCA.1     AX   0         1  3.196E-10 MKLCA.1     AY   0         1  6.3930E-8
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -8.81E-12 B2LA.1      BY   15        1  10.704507 MKS4LA.1    BX   4.73772   1   5.119245 MKS4LA.1    BY   10.076    1   5.813338 B1LA.1      BY   15        1  14.917958
+MKLSA.1     AX   0         1  3.360E-15 MKLSA.1     BX   3.61131   1   5.372264 MKLSA.1     AY   0         1  8.148E-15 MKLSA.1     BY   15.5488   1   5.210511 MKLSA.1     EX   0         1  4.660E-11 MKLSA.1     EPX  0         1  3.818E-18
+$$$       f AX    #######  #  -3.20E-10 $$$       f BX    #######  #   2.700000 $$$       f NX   3.191004  1   3.191004 $$$       f AY    #######  #  -6.393E-8 $$$       f BY    #######  #   4.700000 $$$       f NY   1.103673  1   1.103673
+$$$       f LENG  #######  #  49.965324
+       2        0   1.4293E-04  (NEWTON)    1.000         15
+       3        0   4.0370E-06  (NEWTON)    1.000         15
+       4        0   1.7478E-06  (NEWTON)    1.000         15
+       5        0   9.4101E-07  (NEWTON)    1.000         15
+       6        0   5.2751E-07  (NEWTON)    1.000         15
+       7        0   3.0710E-07  (NEWTON)    1.000         15
+       8        0   1.8474E-07  (NEWTON)    1.000         15
+       9        0   1.1412E-07  (NEWTON)    1.000         15
+      10        0   7.1941E-08  (NEWTON)    1.000         15
+      11        0   4.6032E-08  (NEWTON)    1.000         15
+ Matched. ( 2.9767E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -9.113E-6 MKMC.1      BX   2.7       1   2.699654 MKMC.1      AY   0         1  6.4959E-7 MKMC.1      BY   4.7       1   4.700036 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.854E-12
+B2M.1       BY   15        1  10.297200 MKS4M.1     BX   6.8732    1   6.163889 MKS4M.1     BY   6.96931   1   5.150940 B1M.1       BY   15        1  14.954412 MKMS.1      AX   0         1  -4.35E-15 MKMS.1      BX   15.5919   1  21.663327
+MKMS.1      AY   0         1  -2.99E-15 MKMS.1      BY   6.09844   1   3.289927 MKMS.1      EX   0         1  -2.54E-11 MKMS.1      EPX  0         1  2.266E-17 MKLC.1      AX   0         1  9.1133E-6 MKLC.1      AY   0         1  -6.496E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.85E-12 B2L.1       BY   15        1  10.596393 MKS4L.1     BX   5.44917   1   5.240496 MKS4L.1     BY   9.22563   1   5.174287 B1L.1       BY   15        1  14.929880
+MKLS.1      AX   0         1  5.346E-15 MKLS.1      BX   11.7081   1  20.893795 MKLS.1      AY   0         1  -4.68E-15 MKLS.1      BY   11.2495   1   5.425963 MKLS.1      EX   0         1  -1.55E-12 MKLS.1      EPX  0         1  -7.13E-18
+$$$       f AX    #######  #  -9.113E-6 $$$       f BX    #######  #   2.699654 $$$       f NX   3.191004  1   3.191021 $$$       f AY    #######  #  6.4959E-7 $$$       f BY    #######  #   4.700036 $$$       f NY   1.103673  1   1.103674
+$$$       f LENG  #######  #  49.965581
+ Matched. ( 2.9767E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -9.113E-6 MKMC.1      BX   2.7       1   2.699654 MKMC.1      AY   0         1  6.4959E-7 MKMC.1      BY   4.7       1   4.700036 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.854E-12
+B2M.1       BY   15        1  10.297200 MKS4M.1     BX   6.8732    1   6.163889 MKS4M.1     BY   6.96931   1   5.150940 B1M.1       BY   15        1  14.954412 MKMS.1      AX   0         1  -4.35E-15 MKMS.1      BX   15.5919   1  21.663327
+MKMS.1      AY   0         1  -2.99E-15 MKMS.1      BY   6.09844   1   3.289927 MKMS.1      EX   0         1  -2.54E-11 MKMS.1      EPX  0         1  2.266E-17 MKLC.1      AX   0         1  9.1133E-6 MKLC.1      AY   0         1  -6.496E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.85E-12 B2L.1       BY   15        1  10.596393 MKS4L.1     BX   5.44917   1   5.240496 MKS4L.1     BY   9.22563   1   5.174287 B1L.1       BY   15        1  14.929880
+MKLS.1      AX   0         1  5.346E-15 MKLS.1      BX   11.7081   1  20.893795 MKLS.1      AY   0         1  -4.68E-15 MKLS.1      BY   11.2495   1   5.425963 MKLS.1      EX   0         1  -1.55E-12 MKLS.1      EPX  0         1  -7.13E-18
+$$$       f AX    #######  #  -9.113E-6 $$$       f BX    #######  #   2.699654 $$$       f NX   3.191004  1   3.191021 $$$       f AY    #######  #  6.4959E-7 $$$       f BY    #######  #   4.700036 $$$       f NY   1.103673  1   1.103674
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.27E-14 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.491631 $$$       f AY    #######  #  -7.48E-15 $$$       f BY    #######  #   4.699999 $$$       f NY    #######  #    .547558
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 1.9172E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.27E-14 $$$       f BX    #######  #   2.700000 $$$       f NX   1.491631  2   1.491631 $$$       f AY    #######  #  -7.48E-15 $$$       f BY    #######  #   4.699999 $$$       f NY   .547558   2    .547558
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.277305456683298 )
+        S4MHA   =(L =.1   K2 =16.85479658772664 )
+        S3MHA   =(L =.1   K2 =-12.277305456683298 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.010E-16 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.699373 $$$       f AY    #######  #  6.754E-15 $$$       f BY    #######  #   4.700001 $$$       f NY    #######  #    .556115
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   6.5746E-04  (NEWTON)    1.000          2
+       3        0   5.2071E-06  (NEWTON)    1.000          2
+       4        0   5.0251E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+Unstable =     4 Residual =  1.446      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.010E-16 $$$       f BX    #######  #   2.700000 $$$       f NX   1.699373  2   1.699373 $$$       f AY    #######  #  6.754E-15 $$$       f BY    #######  #   4.700001 $$$       f NY   .556115   2    .556115
+$$$       f LENG  #######  #  27.832662 MKLC/$$$    BMAGX #######  #   1.000000 MKLC/$$$    BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.66132668415296 )
+        S4LHA   =(L =.1   K2 =25.923532801527195 )
+        S3LHA   =(L =.1   K2 =-18.66132668415296 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -8.28E-15 $$$       f BX    #######  #   2.699595 $$$       f NX    #######  #   1.562667 $$$       f AY    #######  #  8.749E-15 $$$       f BY    #######  #   4.700047 $$$       f NY    #######  #    .542070
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 7.3648E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -8.28E-15 $$$       f BX    #######  #   2.699595 $$$       f NX   1.562667  2   1.562667 $$$       f AY    #######  #  8.749E-15 $$$       f BY    #######  #   4.700047 $$$       f NY   .54207    2    .542070
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.128034898412718 )
+        S4MH    =(L =.1   K2 =28.738462325374417 )
+        S3MH    =(L =.1   K2 =-18.128034898412718 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.646E-16 $$$       f BX    #######  #   2.699678 $$$       f NX    #######  #   1.628354 $$$       f AY    #######  #  -8.11E-15 $$$       f BY    #######  #   4.700028 $$$       f NY    #######  #    .561603
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.3494E-05  (NEWTON)    1.000          2
+       3        0   7.0862E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 7.0861E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.646E-16 $$$       f BX    #######  #   2.699678 $$$       f NX   1.628354  2   1.628354 $$$       f AY    #######  #  -8.11E-15 $$$       f BY    #######  #   4.700028 $$$       f NY   .561603   2    .561603
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.67092012892721 )
+        S4LH    =(L =.1   K2 =35.676679666395046 )
+        S3LH    =(L =.1   K2 =-22.67092012892721 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.8650597373   16.5550903903 |   47.8651284775   16.5550941702 |     .8317032697  3.237019152E-5 |    -.0336466529     .0692182160 |  9.130904453E-5  4.838478940E-4  4.206120469E-4  -8.96198196E-4 |    1.0000000000
+ Matched. ( 1.0374E-17) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -6.77E-11 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  9.737E-10 MKMCA.1     BY   4.7       1   4.700000 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  -1.56E-12
+B2MA.1      BY   15        1  10.036257 MKS4MA.1    BX   6.05091   1   5.818500 MKS4MA.1    BY   6.68527   1   5.847898 B1MA.1      BY   15        1  14.756208 MKMSA.1     AX   0         1  1.108E-15 MKMSA.1     BX   2.83638   1   5.712996
+MKMSA.1     AY   0         1  -3.41E-15 MKMSA.1     BY   3.73509   1   2.923147 MKMSA.1     EX   0         1  2.795E-12 MKMSA.1     EPX  0         1  8.662E-18 MKLCA.1     AX   0         1  6.774E-11 MKLCA.1     AY   0         1  -9.74E-10
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  1.564E-12 B2LA.1      BY   15        1  10.704643 MKS4LA.1    BX   4.73772   1   5.118082 MKS4LA.1    BY   10.076    1   5.829985 B1LA.1      BY   15        1  14.986504
+MKLSA.1     AX   0         1  8.842E-17 MKLSA.1     BX   3.61131   1   5.365814 MKLSA.1     AY   0         1  9.749E-16 MKLSA.1     BY   15.5488   1   5.061811 MKLSA.1     EX   0         1  -1.35E-11 MKLSA.1     EPX  0         1  -2.15E-17
+$$$       f AX    #######  #  -6.77E-11 $$$       f BX    #######  #   2.700000 $$$       f NX   3.191004  1   3.191004 $$$       f AY    #######  #  9.737E-10 $$$       f BY    #######  #   4.700000 $$$       f NY   1.110339  1   1.110339
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 1.0374E-17) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -6.77E-11 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  9.737E-10 MKMCA.1     BY   4.7       1   4.700000 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  -1.56E-12
+B2MA.1      BY   15        1  10.036257 MKS4MA.1    BX   6.05091   1   5.818500 MKS4MA.1    BY   6.68527   1   5.847898 B1MA.1      BY   15        1  14.756208 MKMSA.1     AX   0         1  1.108E-15 MKMSA.1     BX   2.83638   1   5.712996
+MKMSA.1     AY   0         1  -3.41E-15 MKMSA.1     BY   3.73509   1   2.923147 MKMSA.1     EX   0         1  2.795E-12 MKMSA.1     EPX  0         1  8.662E-18 MKLCA.1     AX   0         1  6.774E-11 MKLCA.1     AY   0         1  -9.74E-10
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  1.564E-12 B2LA.1      BY   15        1  10.704643 MKS4LA.1    BX   4.73772   1   5.118082 MKS4LA.1    BY   10.076    1   5.829985 B1LA.1      BY   15        1  14.986504
+MKLSA.1     AX   0         1  8.842E-17 MKLSA.1     BX   3.61131   1   5.365814 MKLSA.1     AY   0         1  9.749E-16 MKLSA.1     BY   15.5488   1   5.061811 MKLSA.1     EX   0         1  -1.35E-11 MKLSA.1     EPX  0         1  -2.15E-17
+$$$       f AX    #######  #  -6.77E-11 $$$       f BX    #######  #   2.700000 $$$       f NX   3.191004  1   3.191004 $$$       f AY    #######  #  9.737E-10 $$$       f BY    #######  #   4.700000 $$$       f NY   1.110339  1   1.110339
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 2.4469E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  8.2437E-7 MKMC.1      BX   2.7       1   2.700031 MKMC.1      AY   0         1  -6.604E-8 MKMC.1      BY   4.7       1   4.699996 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  -1.45E-13
+B2M.1       BY   15        1  10.297152 MKS4M.1     BX   6.8732    1   6.163293 MKS4M.1     BY   6.96931   1   5.158031 B1M.1       BY   15        1  14.986769 MKMS.1      AX   0         1  1.476E-15 MKMS.1      BX   15.5919   1  21.672422
+MKMS.1      AY   0         1  -2.14E-15 MKMS.1      BY   6.09844   1   3.240716 MKMS.1      EX   0         1  -7.28E-13 MKMS.1      EPX  0         1  -6.53E-19 MKLC.1      AX   0         1  -8.244E-7 MKLC.1      AY   0         1  6.6036E-8
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  1.450E-13 B2L.1       BY   15        1  10.595711 MKS4L.1     BX   5.44917   1   5.238904 MKS4L.1     BY   9.22563   1   5.187377 B1L.1       BY   15        1  14.992885
+MKLS.1      AX   0         1  -4.02E-17 MKLS.1      BX   11.7081   1  20.906112 MKLS.1      AY   0         1  5.311E-16 MKLS.1      BY   11.2495   1   5.260456 MKLS.1      EX   0         1  -3.41E-12 MKLS.1      EPX  0         1  3.066E-17
+$$$       f AX    #######  #  8.2437E-7 $$$       f BX    #######  #   2.700031 $$$       f NX   3.191004  1   3.191002 $$$       f AY    #######  #  -6.604E-8 $$$       f BY    #######  #   4.699996 $$$       f NY   1.110339  1   1.110339
+$$$       f LENG  #######  #  49.965581
+ Matched. ( 2.4469E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  8.2437E-7 MKMC.1      BX   2.7       1   2.700031 MKMC.1      AY   0         1  -6.604E-8 MKMC.1      BY   4.7       1   4.699996 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  -1.45E-13
+B2M.1       BY   15        1  10.297152 MKS4M.1     BX   6.8732    1   6.163293 MKS4M.1     BY   6.96931   1   5.158031 B1M.1       BY   15        1  14.986769 MKMS.1      AX   0         1  1.476E-15 MKMS.1      BX   15.5919   1  21.672422
+MKMS.1      AY   0         1  -2.14E-15 MKMS.1      BY   6.09844   1   3.240716 MKMS.1      EX   0         1  -7.28E-13 MKMS.1      EPX  0         1  -6.53E-19 MKLC.1      AX   0         1  -8.244E-7 MKLC.1      AY   0         1  6.6036E-8
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  1.450E-13 B2L.1       BY   15        1  10.595711 MKS4L.1     BX   5.44917   1   5.238904 MKS4L.1     BY   9.22563   1   5.187377 B1L.1       BY   15        1  14.992885
+MKLS.1      AX   0         1  -4.02E-17 MKLS.1      BX   11.7081   1  20.906112 MKLS.1      AY   0         1  5.311E-16 MKLS.1      BY   11.2495   1   5.260456 MKLS.1      EX   0         1  -3.41E-12 MKLS.1      EPX  0         1  3.066E-17
+$$$       f AX    #######  #  8.2437E-7 $$$       f BX    #######  #   2.700031 $$$       f NX   3.191004  1   3.191002 $$$       f AY    #######  #  -6.604E-8 $$$       f BY    #######  #   4.699996 $$$       f NY   1.110339  1   1.110339
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.268E-14 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.491320 $$$       f AY    #######  #  -5.01E-15 $$$       f BY    #######  #   4.700000 $$$       f NY    #######  #    .550092
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 1.7828E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.268E-14 $$$       f BX    #######  #   2.700000 $$$       f NX   1.49132   2   1.491320 $$$       f AY    #######  #  -5.01E-15 $$$       f BY    #######  #   4.700000 $$$       f NY   .550092   2    .550092
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.295101037091138 )
+        S4MHA   =(L =.1   K2 =16.870064475623785 )
+        S3MHA   =(L =.1   K2 =-12.295101037091138 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.297E-15 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.699684 $$$       f AY    #######  #  -3.26E-15 $$$       f BY    #######  #   4.700000 $$$       f NY    #######  #    .560247
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   3.5012E-04  (NEWTON)    1.000          2
+       3        0   5.3333E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 5.2960E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.297E-15 $$$       f BX    #######  #   2.700000 $$$       f NX   1.699684  2   1.699684 $$$       f AY    #######  #  -3.26E-15 $$$       f BY    #######  #   4.700000 $$$       f NY   .560247   2    .560247
+$$$       f LENG  #######  #  27.832662
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.70356316648191 )
+        S4LHA   =(L =.1   K2 =25.95784715503916 )
+        S3LHA   =(L =.1   K2 =-18.70356316648191 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.02E-14 $$$       f BX    #######  #   2.700037 $$$       f NX    #######  #   1.562680 $$$       f AY    #######  #  1.949E-15 $$$       f BY    #######  #   4.699995 $$$       f NY    #######  #    .544238
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 7.3162E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.02E-14 $$$       f BX    #######  #   2.700037 $$$       f NX   1.56268   2   1.562680 $$$       f AY    #######  #  1.949E-15 $$$       f BY    #######  #   4.699995 $$$       f NY   .544238   2    .544238
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.14608757678534 )
+        S4MH    =(L =.1   K2 =28.755861118419148 )
+        S3MH    =(L =.1   K2 =-18.14608757678534 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.625E-15 $$$       f BX    #######  #   2.700029 $$$       f NX    #######  #   1.628322 $$$       f AY    #######  #  7.774E-15 $$$       f BY    #######  #   4.699997 $$$       f NY    #######  #    .566101
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.2357E-05  (NEWTON)    1.000          2
+       3        0   7.2102E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 7.2101E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.625E-15 $$$       f BX    #######  #   2.700029 $$$       f NX   1.628322  2   1.628322 $$$       f AY    #######  #  7.774E-15 $$$       f BY    #######  #   4.699997 $$$       f NY   .566101   2    .566101
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.71339182153762 )
+        S4LH    =(L =.1   K2 =35.71605153888343 )
+        S3LH    =(L =.1   K2 =-22.71339182153762 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.8650597373   16.6550903903 |   47.8650534841   16.6550899959 |     .8317664892  3.237050566E-5 |    -.0358335963     .0680363784 |  7.840904600E-5  5.068557048E-4  4.358635570E-4  -8.96730249E-4 |    1.0000000000
+       2        0   6.9050E-04  (NEWTON)    1.000         15
+       3        0   1.1604E-06  (NEWTON)    1.000         15
+       4        0   4.8527E-07  (NEWTON)    1.000         15
+ Matched. ( 6.7954E-13) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -7.159E-9 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  4.6921E-8 MKMCA.1     BY   4.7       1   4.699997 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  -1.82E-11
+B2MA.1      BY   15        1  10.033175 MKS4MA.1    BX   6.05091   1   5.812379 MKS4MA.1    BY   6.68527   1   5.881502 B1MA.1      BY   15        1  14.902353 MKMSA.1     AX   0         1  -6.49E-17 MKMSA.1     BX   2.83638   1   5.740592
+MKMSA.1     AY   0         1  -1.76E-16 MKMSA.1     BY   3.73509   1   2.790599 MKMSA.1     EX   0         1  -2.17E-10 MKMSA.1     EPX  0         1  6.838E-19 MKLCA.1     AX   0         1  7.1589E-9 MKLCA.1     AY   0         1  -4.692E-8
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  1.821E-11 B2LA.1      BY   15        1  10.704165 MKS4LA.1    BX   4.73772   1   5.117422 MKS4LA.1    BY   10.076    1   5.832980 B1LA.1      BY   15        1  15.000001
+MKLSA.1     AX   0         1  1.504E-15 MKLSA.1     BX   3.61131   1   5.331548 MKLSA.1     AY   0         1  -8.86E-16 MKLSA.1     BY   15.5488   1   5.048801 MKLSA.1     EX   0         1  -3.77E-10 MKLSA.1     EPX  0         1  4.807E-17
+$$$       f AX    #######  #  -7.159E-9 $$$       f BX    #######  #   2.700000 $$$       f NX   3.191004  1   3.191004 $$$       f AY    #######  #  4.6921E-8 $$$       f BY    #######  #   4.699997 $$$       f NY   1.117006  1   1.117006
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 6.7956E-13) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -7.159E-9 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  4.6921E-8 MKMCA.1     BY   4.7       1   4.699997 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  -1.82E-11
+B2MA.1      BY   15        1  10.033175 MKS4MA.1    BX   6.05091   1   5.812379 MKS4MA.1    BY   6.68527   1   5.881502 B1MA.1      BY   15        1  14.902353 MKMSA.1     AX   0         1  -6.49E-17 MKMSA.1     BX   2.83638   1   5.740592
+MKMSA.1     AY   0         1  -1.76E-16 MKMSA.1     BY   3.73509   1   2.790599 MKMSA.1     EX   0         1  -2.17E-10 MKMSA.1     EPX  0         1  6.838E-19 MKLCA.1     AX   0         1  7.1589E-9 MKLCA.1     AY   0         1  -4.692E-8
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  1.821E-11 B2LA.1      BY   15        1  10.704165 MKS4LA.1    BX   4.73772   1   5.117422 MKS4LA.1    BY   10.076    1   5.832980 B1LA.1      BY   15        1  15.000001
+MKLSA.1     AX   0         1  1.504E-15 MKLSA.1     BX   3.61131   1   5.331548 MKLSA.1     AY   0         1  -8.86E-16 MKLSA.1     BY   15.5488   1   5.048801 MKLSA.1     EX   0         1  -3.77E-10 MKLSA.1     EPX  0         1  4.807E-17
+$$$       f AX    #######  #  -7.159E-9 $$$       f BX    #######  #   2.700000 $$$       f NX   3.191004  1   3.191004 $$$       f AY    #######  #  4.6921E-8 $$$       f BY    #######  #   4.699997 $$$       f NY   1.117006  1   1.117006
+$$$       f LENG  #######  #  49.965324
+       2        0   1.7527E-04  (NEWTON)    1.000         15
+       3        0   3.8773E-05  (NEWTON)    1.000         15
+       4        0   1.8916E-05  (NEWTON)    1.000         15
+       5        0   1.6976E-05  (NEWTON)    1.000         15
+       6        0   1.6056E-05  (NEWTON)    1.000         15
+       7        0   1.5559E-05  (NEWTON)    1.000         15
+       9        0   1.5057E-05  (NEWTON)    1.000         15
+      12        0   1.4679E-05  (NEWTON)    1.000         15
+      16        0   1.4324E-05  (NEWTON)    1.000         15
+      20        0   1.4008E-05  (NEWTON)    1.000         15
+      24        0   1.3705E-05  (NEWTON)    1.000         15
+      28        0   1.3409E-05  (NEWTON)    1.000         15
+      32        0   1.3119E-05  (NEWTON)    1.000         15
+      36        0   1.2836E-05  (NEWTON)    1.000         15
+ Residual = 1.2766E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -2.633E-5 MKMC.1      BX   2.7       1   2.699258 MKMC.1      AY   0         1  -4.811E-5 MKMC.1      BY   4.7       1   4.693812 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  -1.05E-14
+B2M.1       BY   15        1  10.286360 MKS4M.1     BX   6.8732    1   6.163386 MKS4M.1     BY   6.96931   1   5.165824 B1M.1       BY   15        1  15.035188 MKMS.1      AX   0         1  -1.76E-15 MKMS.1      BX   15.5919   1  21.699379
+MKMS.1      AY   0         1  2.496E-15 MKMS.1      BY   6.09844   1   3.170495 MKMS.1      EX   0         1  -6.76E-13 MKMS.1      EPX  0         1  1.153E-17 MKLC.1      AX   0         1  2.6328E-5 MKLC.1      AY   0         1  4.8106E-5
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  1.053E-14 B2L.1       BY   15        1  10.586003 MKS4L.1     BX   5.44917   1   5.239750 MKS4L.1     BY   9.22563   1   5.194244 B1L.1       BY   15        1  15.034445
+MKLS.1      AX   0         1  -2.09E-15 MKLS.1      BX   11.7081   1  20.923181 MKLS.1      AY   0         1  2.835E-15 MKLS.1      BY   11.2495   1   5.151056 MKLS.1      EX   0         1  -8.89E-13 MKLS.1      EPX  0         1  4.312E-18
+$$$       f AX    #######  #  -2.633E-5 $$$       f BX    #######  #   2.699258 $$$       f NX   3.191004  1   3.191012 $$$       f AY    #######  #  -4.811E-5 $$$       f BY    #######  #   4.693812 $$$       f NY   1.117006  1   1.116936
+$$$       f LENG  #######  #  49.965581
+       5        0   1.2491E-05  (NEWTON)    1.000         15
+       9        0   1.2221E-05  (NEWTON)    1.000         15
+      13        0   1.1957E-05  (NEWTON)    1.000         15
+      17        0   1.1699E-05  (NEWTON)    1.000         15
+      21        0   1.1446E-05  (NEWTON)    1.000         15
+      25        0   1.1199E-05  (NEWTON)    1.000         15
+      29        0   1.0957E-05  (NEWTON)    1.000         15
+      33        0   1.0720E-05  (NEWTON)    1.000         15
+ Residual = 1.0489E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  -2.406E-5 MKMC.1      BX   2.7       1   2.699325 MKMC.1      AY   0         1  -4.334E-5 MKMC.1      BY   4.7       1   4.694390 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  -7.11E-15
+B2M.1       BY   15        1  10.287318 MKS4M.1     BX   6.8732    1   6.163192 MKS4M.1     BY   6.96931   1   5.165268 B1M.1       BY   15        1  15.031924 MKMS.1      AX   0         1  6.462E-16 MKMS.1      BX   15.5919   1  21.700800
+MKMS.1      AY   0         1  1.463E-15 MKMS.1      BY   6.09844   1   3.171020 MKMS.1      EX   0         1  -6.07E-13 MKMS.1      EPX  0         1  2.010E-17 MKLC.1      AX   0         1  2.4057E-5 MKLC.1      AY   0         1  4.3345E-5
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  7.088E-15 B2L.1       BY   15        1  10.586811 MKS4L.1     BX   5.44917   1   5.239516 MKS4L.1     BY   9.22563   1   5.193684 B1L.1       BY   15        1  15.031183
+MKLS.1      AX   0         1  3.613E-15 MKLS.1      BX   11.7081   1  20.922656 MKLS.1      AY   0         1  1.772E-15 MKLS.1      BY   11.2495   1   5.150066 MKLS.1      EX   0         1  -7.68E-13 MKLS.1      EPX  0         1  -1.92E-17
+$$$       f AX    #######  #  -2.406E-5 $$$       f BX    #######  #   2.699325 $$$       f NX   3.191004  1   3.191012 $$$       f AY    #######  #  -4.334E-5 $$$       f BY    #######  #   4.694390 $$$       f NY   1.117006  1   1.116943
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -9.33E-15 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.490322 $$$       f AY    #######  #  -2.15E-15 $$$       f BY    #######  #   4.699998 $$$       f NY    #######  #    .556435
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 1.4396E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -9.33E-15 $$$       f BX    #######  #   2.700000 $$$       f NX   1.490322  2   1.490322 $$$       f AY    #######  #  -2.15E-15 $$$       f BY    #######  #   4.699998 $$$       f NY   .556435   2    .556435
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.340754794134845 )
+        S4MHA   =(L =.1   K2 =16.91039813074605 )
+        S3MHA   =(L =.1   K2 =-12.340754794134845 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.82E-16 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.700682 $$$       f AY    #######  #  3.944E-15 $$$       f BY    #######  #   4.699996 $$$       f NY    #######  #    .560571
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   3.3573E-04  (NEWTON)    1.000          2
+       3        0   5.3902E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 5.3563E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.82E-16 $$$       f BX    #######  #   2.700000 $$$       f NX   1.700682  2   1.700682 $$$       f AY    #######  #  3.944E-15 $$$       f BY    #######  #   4.699996 $$$       f NY   .560571   2    .560571
+$$$       f LENG  #######  #  27.832662
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.717343656091863 )
+        S4LHA   =(L =.1   K2 =25.975837684478932 )
+        S3LHA   =(L =.1   K2 =-18.717343656091863 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  6.819E-15 $$$       f BX    #######  #   2.699169 $$$       f NX    #######  #   1.562605 $$$       f AY    #######  #  -9.71E-15 $$$       f BY    #######  #   4.693730 $$$       f NY    #######  #    .547567
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 7.2417E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  6.819E-15 $$$       f BX    #######  #   2.699169 $$$       f NX   1.562605  2   1.562605 $$$       f AY    #######  #  -9.71E-15 $$$       f BY    #######  #   4.693730 $$$       f NY   .547567   2    .547567
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.17533625568062 )
+        S4MH    =(L =.1   K2 =28.78628316056308 )
+        S3MH    =(L =.1   K2 =-18.17533625568062 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.10E-14 $$$       f BX    #######  #   2.699387 $$$       f NX    #######  #   1.628407 $$$       f AY    #######  #  3.607E-15 $$$       f BY    #######  #   4.694827 $$$       f NY    #######  #    .569376
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.1725E-05  (NEWTON)    1.000          2
+       3        0   7.3149E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 7.3148E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.10E-14 $$$       f BX    #######  #   2.699387 $$$       f NX   1.628407  2   1.628407 $$$       f AY    #######  #  3.607E-15 $$$       f BY    #######  #   4.694827 $$$       f NY   .569376   2    .569376
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.753985699739694 )
+        S4LH    =(L =.1   K2 =35.75300959400697 )
+        S3LH    =(L =.1   K2 =-22.753985699739694 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.8650597373   16.7550903903 |   47.8650908375   16.7548385923 |     .8321947459  3.238250858E-5 |    -.0353258052     .0668126082 |  2.914443338E-5  5.562301815E-4  4.553220517E-4    -.0010348620 |    1.0000000000
+       2        0   1.1500E-06  (NEWTON)    1.000         15
+ Matched. ( 1.1770E-09) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -9.363E-7 MKMCA.1     BX   2.7       1   2.700001 MKMCA.1     AY   0         1  2.6848E-6 MKMCA.1     BY   4.7       1   4.699854 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.1476E-8
+B2MA.1      BY   15        1  10.042279 MKS4MA.1    BX   6.05091   1   5.825477 MKS4MA.1    BY   6.68527   1   5.838748 B1MA.1      BY   15        1  14.700395 MKMSA.1     AX   0         1  3.925E-16 MKMSA.1     BX   2.83638   1   5.679404
+MKMSA.1     AY   0         1  9.581E-16 MKMSA.1     BY   3.73509   1   2.990249 MKMSA.1     EX   0         1  -4.484E-8 MKMSA.1     EPX  0         1  9.838E-18 MKLCA.1     AX   0         1  9.3631E-7 MKLCA.1     AY   0         1  -2.685E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.148E-8 B2LA.1      BY   15        1  10.700846 MKS4LA.1    BX   4.73772   1   5.115484 MKS4LA.1    BY   10.076    1   5.830307 B1LA.1      BY   15        1  14.998535
+MKLSA.1     AX   0         1  -1.42E-15 MKLSA.1     BX   3.61131   1   5.171803 MKLSA.1     AY   0         1  1.860E-15 MKLSA.1     BY   15.5488   1   5.170226 MKLSA.1     EX   0         1  4.2924E-8 MKLSA.1     EPX  0         1  1.038E-17
+$$$       f AX    #######  #  -9.363E-7 $$$       f BX    #######  #   2.700001 $$$       f NX   3.197671  1   3.197671 $$$       f AY    #######  #  2.6848E-6 $$$       f BY    #######  #   4.699854 $$$       f NY   1.103673  1   1.103673
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 1.1788E-09) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -9.363E-7 MKMCA.1     BX   2.7       1   2.700001 MKMCA.1     AY   0         1  2.6848E-6 MKMCA.1     BY   4.7       1   4.699854 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.1476E-8
+B2MA.1      BY   15        1  10.042279 MKS4MA.1    BX   6.05091   1   5.825477 MKS4MA.1    BY   6.68527   1   5.838748 B1MA.1      BY   15        1  14.700395 MKMSA.1     AX   0         1  3.925E-16 MKMSA.1     BX   2.83638   1   5.679404
+MKMSA.1     AY   0         1  9.581E-16 MKMSA.1     BY   3.73509   1   2.990249 MKMSA.1     EX   0         1  -4.484E-8 MKMSA.1     EPX  0         1  9.838E-18 MKLCA.1     AX   0         1  9.3631E-7 MKLCA.1     AY   0         1  -2.685E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.148E-8 B2LA.1      BY   15        1  10.700846 MKS4LA.1    BX   4.73772   1   5.115484 MKS4LA.1    BY   10.076    1   5.830307 B1LA.1      BY   15        1  14.998535
+MKLSA.1     AX   0         1  -1.42E-15 MKLSA.1     BX   3.61131   1   5.171803 MKLSA.1     AY   0         1  1.860E-15 MKLSA.1     BY   15.5488   1   5.170226 MKLSA.1     EX   0         1  4.2924E-8 MKLSA.1     EPX  0         1  1.038E-17
+$$$       f AX    #######  #  -9.363E-7 $$$       f BX    #######  #   2.700001 $$$       f NX   3.197671  1   3.197671 $$$       f AY    #######  #  2.6848E-6 $$$       f BY    #######  #   4.699854 $$$       f NY   1.103673  1   1.103673
+$$$       f LENG  #######  #  49.965324
+       2        0   0.3230      (NEWTON)    1.000         15
+       3        0   0.2212      (NEWTON)    1.000         15
+       4        0   8.0903E-02  (NEWTON)    1.000         15
+       5        0   2.9837E-02  (NEWTON)    1.000         15
+       6        0   1.1313E-02  (NEWTON)    1.000         15
+       7        0   4.3839E-03  (NEWTON)    1.000         15
+       8        0   1.7296E-03  (NEWTON)    1.000         15
+       9        0   6.9301E-04  (NEWTON)    1.000         15
+      10        0   2.8176E-04  (NEWTON)    1.000         15
+      11        0   1.1629E-04  (NEWTON)    1.000         15
+      12        0   4.8830E-05  (NEWTON)    1.000         15
+      13        0   2.0938E-05  (NEWTON)    1.000         15
+      14        0   9.2201E-06  (NEWTON)    1.000         15
+      15        0   4.1990E-06  (NEWTON)    1.000         15
+      16        0   1.9923E-06  (NEWTON)    1.000         15
+      17        0   9.9075E-07  (NEWTON)    1.000         15
+      18        0   5.1776E-07  (NEWTON)    1.000         15
+      19        0   2.8388E-07  (NEWTON)    1.000         15
+      20        0   1.6238E-07  (NEWTON)    1.000         15
+      21        0   9.6152E-08  (NEWTON)    1.000         15
+      22        0   5.8459E-08  (NEWTON)    1.000         15
+      23        0   3.6228E-08  (NEWTON)    1.000         15
+ Matched. ( 2.2754E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  8.2960E-6 MKMC.1      BX   2.7       1   2.700305 MKMC.1      AY   0         1  -7.078E-7 MKMC.1      BY   4.7       1   4.699969 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.609E-12
+B2M.1       BY   15        1  10.316463 MKS4M.1     BX   6.8732    1   6.193240 MKS4M.1     BY   6.96931   1   5.165389 B1M.1       BY   15        1  14.937656 MKMS.1      AX   0         1  -1.42E-15 MKMS.1      BX   15.5919   1  21.636976
+MKMS.1      AY   0         1  -4.68E-15 MKMS.1      BY   6.09844   1   3.310958 MKMS.1      EX   0         1  -2.28E-11 MKMS.1      EPX  0         1  1.338E-17 MKLC.1      AX   0         1  -8.296E-6 MKLC.1      AY   0         1  7.0779E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.61E-12 B2L.1       BY   15        1  10.626973 MKS4L.1     BX   5.44917   1   5.272593 MKS4L.1     BY   9.22563   1   5.194118 B1L.1       BY   15        1  14.931814
+MKLS.1      AX   0         1  -5.19E-15 MKLS.1      BX   11.7081   1  20.875547 MKLS.1      AY   0         1  -4.42E-16 MKLS.1      BY   11.2495   1   5.359063 MKLS.1      EX   0         1  -2.23E-12 MKLS.1      EPX  0         1  -9.51E-18
+$$$       f AX    #######  #  8.2960E-6 $$$       f BX    #######  #   2.700305 $$$       f NX   3.197671  1   3.197656 $$$       f AY    #######  #  -7.078E-7 $$$       f BY    #######  #   4.699969 $$$       f NY   1.103673  1   1.103672
+$$$       f LENG  #######  #  49.965581
+ Matched. ( 2.2754E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  8.2960E-6 MKMC.1      BX   2.7       1   2.700305 MKMC.1      AY   0         1  -7.078E-7 MKMC.1      BY   4.7       1   4.699969 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.609E-12
+B2M.1       BY   15        1  10.316463 MKS4M.1     BX   6.8732    1   6.193240 MKS4M.1     BY   6.96931   1   5.165389 B1M.1       BY   15        1  14.937656 MKMS.1      AX   0         1  -1.42E-15 MKMS.1      BX   15.5919   1  21.636976
+MKMS.1      AY   0         1  -4.68E-15 MKMS.1      BY   6.09844   1   3.310958 MKMS.1      EX   0         1  -2.28E-11 MKMS.1      EPX  0         1  1.338E-17 MKLC.1      AX   0         1  -8.296E-6 MKLC.1      AY   0         1  7.0779E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.61E-12 B2L.1       BY   15        1  10.626973 MKS4L.1     BX   5.44917   1   5.272593 MKS4L.1     BY   9.22563   1   5.194118 B1L.1       BY   15        1  14.931814
+MKLS.1      AX   0         1  -5.19E-15 MKLS.1      BX   11.7081   1  20.875547 MKLS.1      AY   0         1  -4.42E-16 MKLS.1      BY   11.2495   1   5.359063 MKLS.1      EX   0         1  -2.23E-12 MKLS.1      EPX  0         1  -9.51E-18
+$$$       f AX    #######  #  8.2960E-6 $$$       f BX    #######  #   2.700305 $$$       f NX   3.197671  1   3.197656 $$$       f AY    #######  #  -7.078E-7 $$$       f BY    #######  #   4.699969 $$$       f NY   1.103673  1   1.103672
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.974E-15 $$$       f BX    #######  #   2.700056 $$$       f NX    #######  #   1.492701 $$$       f AY    #######  #  6.188E-15 $$$       f BY    #######  #   4.699896 $$$       f NY    #######  #    .546776
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 2.4870E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.974E-15 $$$       f BX    #######  #   2.700056 $$$       f NX   1.492701  2   1.492701 $$$       f AY    #######  #  6.188E-15 $$$       f BY    #######  #   4.699896 $$$       f NY   .546776   2    .546776
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.277585980272843 )
+        S4MHA   =(L =.1   K2 =16.85220170940027 )
+        S3MHA   =(L =.1   K2 =-12.277585980272843 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.458E-15 $$$       f BX    #######  #   2.700002 $$$       f NX    #######  #   1.704970 $$$       f AY    #######  #  4.148E-15 $$$       f BY    #######  #   4.699820 $$$       f NY    #######  #    .556898
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   5.8493E-04  (NEWTON)    1.000          2
+       3        0   5.4148E-06  (NEWTON)    1.000          2
+       4        0   5.2801E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+Unstable =     4 Residual =  1.436      DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.458E-15 $$$       f BX    #######  #   2.700002 $$$       f NX   1.70497   2   1.704970 $$$       f AY    #######  #  4.148E-15 $$$       f BY    #######  #   4.699820 $$$       f NY   .556898   2    .556898
+$$$       f LENG  #######  #  27.832662 MKLC/$$$    BMAGX #######  #   1.000000 MKLC/$$$    BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.71514378137314 )
+        S4LHA   =(L =.1   K2 =26.008246357648275 )
+        S3LHA   =(L =.1   K2 =-18.71514378137314 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  6.051E-15 $$$       f BX    #######  #   2.700357 $$$       f NX    #######  #   1.565577 $$$       f AY    #######  #  1.040E-14 $$$       f BY    #######  #   4.699956 $$$       f NY    #######  #    .540694
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 7.7749E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  6.051E-15 $$$       f BX    #######  #   2.700357 $$$       f NX   1.565577  2   1.565577 $$$       f AY    #######  #  1.040E-14 $$$       f BY    #######  #   4.699956 $$$       f NY   .540694   2    .540694
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.154040432743038 )
+        S4MH    =(L =.1   K2 =28.749308670009185 )
+        S3MH    =(L =.1   K2 =-18.154040432743038 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -8.38E-16 $$$       f BX    #######  #   2.700285 $$$       f NX    #######  #   1.632079 $$$       f AY    #######  #  -1.41E-14 $$$       f BY    #######  #   4.699977 $$$       f NY    #######  #    .562978
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.3348E-05  (NEWTON)    1.000          2
+       3        0   7.5079E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 7.5079E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -8.38E-16 $$$       f BX    #######  #   2.700285 $$$       f NX   1.632079  2   1.632079 $$$       f AY    #######  #  -1.41E-14 $$$       f BY    #######  #   4.699977 $$$       f NY   .562978   2    .562978
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.730367594484886 )
+        S4LH    =(L =.1   K2 =35.68702969287134 )
+        S3LH    =(L =.1   K2 =-22.730367594484886 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.9650597373   16.5550903903 |   47.9650007768   16.5550938730 |     .8308344323  3.225793872E-5 |    -.0413577185     .0687544351 |  2.482686901E-4  5.008469079E-4  4.411233112E-4  -8.14328373E-4 |    1.0000000000
+       2        0   1.6648E-05  (NEWTON)    1.000         15
+ Matched. ( 1.6132E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -1.111E-5 MKMCA.1     BX   2.7       1   2.699931 MKMCA.1     AY   0         1  9.0359E-6 MKMCA.1     BY   4.7       1   4.699834 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  -8.609E-9
+B2MA.1      BY   15        1  10.045419 MKS4MA.1    BX   6.05091   1   5.827075 MKS4MA.1    BY   6.68527   1   5.857563 B1MA.1      BY   15        1  14.767132 MKMSA.1     AX   0         1  4.582E-16 MKMSA.1     BX   2.83638   1   5.673599
+MKMSA.1     AY   0         1  4.459E-15 MKMSA.1     BY   3.73509   1   2.923501 MKMSA.1     EX   0         1  -5.291E-8 MKMSA.1     EPX  0         1  -1.24E-17 MKLCA.1     AX   0         1  1.1111E-5 MKLCA.1     AY   0         1  -9.036E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  8.6088E-9 B2LA.1      BY   15        1  10.706020 MKS4LA.1    BX   4.73772   1   5.117039 MKS4LA.1    BY   10.076    1   5.832963 B1LA.1      BY   15        1  15.000107
+MKLSA.1     AX   0         1  3.897E-15 MKLSA.1     BX   3.61131   1   5.204296 MKLSA.1     AY   0         1  7.710E-15 MKLSA.1     BY   15.5488   1   5.048557 MKLSA.1     EX   0         1  -1.392E-7 MKLSA.1     EPX  0         1  -2.66E-17
+$$$       f AX    #######  #  -1.111E-5 $$$       f BX    #######  #   2.699931 $$$       f NX   3.197671  1   3.197672 $$$       f AY    #######  #  9.0359E-6 $$$       f BY    #######  #   4.699834 $$$       f NY   1.110339  1   1.110354
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 1.6146E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -1.111E-5 MKMCA.1     BX   2.7       1   2.699931 MKMCA.1     AY   0         1  9.0359E-6 MKMCA.1     BY   4.7       1   4.699834 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  -8.609E-9
+B2MA.1      BY   15        1  10.045419 MKS4MA.1    BX   6.05091   1   5.827075 MKS4MA.1    BY   6.68527   1   5.857563 B1MA.1      BY   15        1  14.767132 MKMSA.1     AX   0         1  4.582E-16 MKMSA.1     BX   2.83638   1   5.673599
+MKMSA.1     AY   0         1  4.459E-15 MKMSA.1     BY   3.73509   1   2.923501 MKMSA.1     EX   0         1  -5.291E-8 MKMSA.1     EPX  0         1  -1.24E-17 MKLCA.1     AX   0         1  1.1111E-5 MKLCA.1     AY   0         1  -9.036E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  8.6088E-9 B2LA.1      BY   15        1  10.706020 MKS4LA.1    BX   4.73772   1   5.117039 MKS4LA.1    BY   10.076    1   5.832963 B1LA.1      BY   15        1  15.000107
+MKLSA.1     AX   0         1  3.897E-15 MKLSA.1     BX   3.61131   1   5.204296 MKLSA.1     AY   0         1  7.710E-15 MKLSA.1     BY   15.5488   1   5.048557 MKLSA.1     EX   0         1  -1.392E-7 MKLSA.1     EPX  0         1  -2.66E-17
+$$$       f AX    #######  #  -1.111E-5 $$$       f BX    #######  #   2.699931 $$$       f NX   3.197671  1   3.197672 $$$       f AY    #######  #  9.0359E-6 $$$       f BY    #######  #   4.699834 $$$       f NY   1.110339  1   1.110354
+$$$       f LENG  #######  #  49.965324
+       2        0   0.3365      (NEWTON)    1.000         15
+       3        0   0.2917      (NEWTON)    1.000         15
+       4        0   0.1048      (NEWTON)    1.000         15
+       5        0   3.8436E-02  (NEWTON)    1.000         15
+       6        0   1.4520E-02  (NEWTON)    1.000         15
+       7        0   5.6124E-03  (NEWTON)    1.000         15
+       8        0   2.2102E-03  (NEWTON)    1.000         15
+       9        0   8.8430E-04  (NEWTON)    1.000         15
+      10        0   3.5902E-04  (NEWTON)    1.000         15
+      11        0   1.4792E-04  (NEWTON)    1.000         15
+      12        0   6.1947E-05  (NEWTON)    1.000         15
+      13        0   2.6459E-05  (NEWTON)    1.000         15
+      14        0   1.1585E-05  (NEWTON)    1.000         15
+      15        0   5.2345E-06  (NEWTON)    1.000         15
+      16        0   2.4588E-06  (NEWTON)    1.000         15
+      17        0   1.2085E-06  (NEWTON)    1.000         15
+      18        0   6.2387E-07  (NEWTON)    1.000         15
+      19        0   3.3810E-07  (NEWTON)    1.000         15
+      20        0   1.9149E-07  (NEWTON)    1.000         15
+      21        0   1.1251E-07  (NEWTON)    1.000         15
+      22        0   6.8023E-08  (NEWTON)    1.000         15
+      23        0   4.2000E-08  (NEWTON)    1.000         15
+ Matched. ( 2.6320E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  8.8559E-6 MKMC.1      BX   2.7       1   2.700327 MKMC.1      AY   0         1  -8.227E-7 MKMC.1      BY   4.7       1   4.699964 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.846E-12
+B2M.1       BY   15        1  10.316552 MKS4M.1     BX   6.8732    1   6.193213 MKS4M.1     BY   6.96931   1   5.172786 B1M.1       BY   15        1  14.970837 MKMS.1      AX   0         1  -2.63E-16 MKMS.1      BX   15.5919   1  21.649854
+MKMS.1      AY   0         1  -1.45E-15 MKMS.1      BY   6.09844   1   3.258021 MKMS.1      EX   0         1  -2.61E-11 MKMS.1      EPX  0         1  -1.74E-17 MKLC.1      AX   0         1  -8.856E-6 MKLC.1      AY   0         1  8.2272E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.85E-12 B2L.1       BY   15        1  10.626534 MKS4L.1     BX   5.44917   1   5.271489 MKS4L.1     BY   9.22563   1   5.207929 B1L.1       BY   15        1  14.997500
+MKLS.1      AX   0         1  2.533E-15 MKLS.1      BX   11.7081   1  20.889880 MKLS.1      AY   0         1  -3.54E-15 MKLS.1      BY   11.2495   1   5.199849 MKLS.1      EX   0         1  -2.53E-12 MKLS.1      EPX  0         1  2.752E-17
+$$$       f AX    #######  #  8.8559E-6 $$$       f BX    #######  #   2.700327 $$$       f NX   3.197671  1   3.197655 $$$       f AY    #######  #  -8.227E-7 $$$       f BY    #######  #   4.699964 $$$       f NY   1.110339  1   1.110338
+$$$       f LENG  #######  #  49.965581
+ Matched. ( 2.6320E-08) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  8.8559E-6 MKMC.1      BX   2.7       1   2.700327 MKMC.1      AY   0         1  -8.227E-7 MKMC.1      BY   4.7       1   4.699964 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  1.846E-12
+B2M.1       BY   15        1  10.316552 MKS4M.1     BX   6.8732    1   6.193213 MKS4M.1     BY   6.96931   1   5.172786 B1M.1       BY   15        1  14.970837 MKMS.1      AX   0         1  -2.63E-16 MKMS.1      BX   15.5919   1  21.649854
+MKMS.1      AY   0         1  -1.45E-15 MKMS.1      BY   6.09844   1   3.258021 MKMS.1      EX   0         1  -2.61E-11 MKMS.1      EPX  0         1  -1.74E-17 MKLC.1      AX   0         1  -8.856E-6 MKLC.1      AY   0         1  8.2272E-7
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  -1.85E-12 B2L.1       BY   15        1  10.626534 MKS4L.1     BX   5.44917   1   5.271489 MKS4L.1     BY   9.22563   1   5.207929 B1L.1       BY   15        1  14.997500
+MKLS.1      AX   0         1  2.533E-15 MKLS.1      BX   11.7081   1  20.889880 MKLS.1      AY   0         1  -3.54E-15 MKLS.1      BY   11.2495   1   5.199849 MKLS.1      EX   0         1  -2.53E-12 MKLS.1      EPX  0         1  2.752E-17
+$$$       f AX    #######  #  8.8559E-6 $$$       f BX    #######  #   2.700327 $$$       f NX   3.197671  1   3.197655 $$$       f AY    #######  #  -8.227E-7 $$$       f BY    #######  #   4.699964 $$$       f NY   1.110339  1   1.110338
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.644E-14 $$$       f BX    #######  #   2.700619 $$$       f NX    #######  #   1.493069 $$$       f AY    #######  #  3.422E-15 $$$       f BY    #######  #   4.699966 $$$       f NY    #######  #    .549814
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 2.7312E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.644E-14 $$$       f BX    #######  #   2.700619 $$$       f NX   1.493069  2   1.493069 $$$       f AY    #######  #  3.422E-15 $$$       f BY    #######  #   4.699966 $$$       f NY   .549814   2    .549814
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.303457916266375 )
+        S4MHA   =(L =.1   K2 =16.872628825824272 )
+        S3MHA   =(L =.1   K2 =-12.303457916266375 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.59E-15 $$$       f BX    #######  #   2.699940 $$$       f NX    #######  #   1.704603 $$$       f AY    #######  #  -3.90E-15 $$$       f BY    #######  #   4.699728 $$$       f NY    #######  #    .560540
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   3.2957E-04  (NEWTON)    1.000          2
+       3        0   5.5524E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 5.5193E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.59E-15 $$$       f BX    #######  #   2.699940 $$$       f NX   1.704603  2   1.704603 $$$       f AY    #######  #  -3.90E-15 $$$       f BY    #######  #   4.699728 $$$       f NY   .56054    2    .560540
+$$$       f LENG  #######  #  27.832662
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.77344424689008 )
+        S4LHA   =(L =.1   K2 =26.047738495046616 )
+        S3LHA   =(L =.1   K2 =-18.77344424689008 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.60E-15 $$$       f BX    #######  #   2.700382 $$$       f NX    #######  #   1.565591 $$$       f AY    #######  #  1.426E-14 $$$       f BY    #######  #   4.699950 $$$       f NY    #######  #    .543021
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 7.7145E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.60E-15 $$$       f BX    #######  #   2.700382 $$$       f NX   1.565591  2   1.565591 $$$       f AY    #######  #  1.426E-14 $$$       f BY    #######  #   4.699950 $$$       f NY   .543021   2    .543021
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.173467317136712 )
+        S4MH    =(L =.1   K2 =28.76802314207585 )
+        S3MH    =(L =.1   K2 =-18.173467317136712 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.87E-15 $$$       f BX    #######  #   2.700305 $$$       f NX    #######  #   1.632064 $$$       f AY    #######  #  1.453E-14 $$$       f BY    #######  #   4.699973 $$$       f NY    #######  #    .567318
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.2423E-05  (NEWTON)    1.000          2
+       3        0   7.6360E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 7.6359E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.87E-15 $$$       f BX    #######  #   2.700305 $$$       f NX   1.632064  2   1.632064 $$$       f AY    #######  #  1.453E-14 $$$       f BY    #######  #   4.699973 $$$       f NY   .567318   2    .567318
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.772752063236844 )
+        S4LH    =(L =.1   K2 =35.72625792603468 )
+        S3LH    =(L =.1   K2 =-22.772752063236844 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.9650597373   16.6550903903 |   47.9650069262   16.6552420575 |     .8303831329  3.223815009E-5 |    -.0432066180     .0676861212 |  2.590342016E-4  5.392062263E-4  4.672848865E-4  -8.07126361E-4 |    1.0000000000
+       2        0   9.5588E-04  (NEWTON)    1.000         15
+       3        0   2.0436E-06  (NEWTON)    1.000         15
+ Matched. ( 9.4972E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.132E-8 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -3.554E-6 MKMCA.1     BY   4.7       1   4.699965 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.474E-10
+B2MA.1      BY   15        1  10.042919 MKS4MA.1    BX   6.05091   1   5.820757 MKS4MA.1    BY   6.68527   1   5.895613 B1MA.1      BY   15        1  14.930194 MKMSA.1     AX   0         1  -6.52E-17 MKMSA.1     BX   2.83638   1   5.701227
+MKMSA.1     AY   0         1  -2.73E-15 MKMSA.1     BY   3.73509   1   2.777817 MKMSA.1     EX   0         1  -6.81E-10 MKMSA.1     EPX  0         1  -6.21E-17 MKLCA.1     AX   0         1  3.1316E-8 MKLCA.1     AY   0         1  3.5540E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.47E-10 B2LA.1      BY   15        1  10.705533 MKS4LA.1    BX   4.73772   1   5.116213 MKS4LA.1    BY   10.076    1   5.832445 B1LA.1      BY   15        1  14.999969
+MKLSA.1     AX   0         1  2.923E-15 MKLSA.1     BX   3.61131   1   5.168831 MKLSA.1     AY   0         1  -6.38E-15 MKLSA.1     BY   15.5488   1   5.058400 MKLSA.1     EX   0         1  1.696E-10 MKLSA.1     EPX  0         1  8.525E-17
+$$$       f AX    #######  #  -3.132E-8 $$$       f BX    #######  #   2.700000 $$$       f NX   3.197671  1   3.197671 $$$       f AY    #######  #  -3.554E-6 $$$       f BY    #######  #   4.699965 $$$       f NY   1.117006  1   1.117006
+$$$       f LENG  #######  #  49.965324
+ Matched. ( 9.4972E-11) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMCA.1     AX   0         1  -3.132E-8 MKMCA.1     BX   2.7       1   2.700000 MKMCA.1     AY   0         1  -3.554E-6 MKMCA.1     BY   4.7       1   4.699965 MKMCA.1     EX   .03       1    .030000 MKMCA.1     EPX  0         1  1.474E-10
+B2MA.1      BY   15        1  10.042919 MKS4MA.1    BX   6.05091   1   5.820757 MKS4MA.1    BY   6.68527   1   5.895613 B1MA.1      BY   15        1  14.930194 MKMSA.1     AX   0         1  -6.52E-17 MKMSA.1     BX   2.83638   1   5.701227
+MKMSA.1     AY   0         1  -2.73E-15 MKMSA.1     BY   3.73509   1   2.777817 MKMSA.1     EX   0         1  -6.81E-10 MKMSA.1     EPX  0         1  -6.21E-17 MKLCA.1     AX   0         1  3.1316E-8 MKLCA.1     AY   0         1  3.5540E-6
+MKLCA.1     EX   .03       1    .030000 MKLCA.1     EPX  0         1  -1.47E-10 B2LA.1      BY   15        1  10.705533 MKS4LA.1    BX   4.73772   1   5.116213 MKS4LA.1    BY   10.076    1   5.832445 B1LA.1      BY   15        1  14.999969
+MKLSA.1     AX   0         1  2.923E-15 MKLSA.1     BX   3.61131   1   5.168831 MKLSA.1     AY   0         1  -6.38E-15 MKLSA.1     BY   15.5488   1   5.058400 MKLSA.1     EX   0         1  1.696E-10 MKLSA.1     EPX  0         1  8.525E-17
+$$$       f AX    #######  #  -3.132E-8 $$$       f BX    #######  #   2.700000 $$$       f NX   3.197671  1   3.197671 $$$       f AY    #######  #  -3.554E-6 $$$       f BY    #######  #   4.699965 $$$       f NY   1.117006  1   1.117006
+$$$       f LENG  #######  #  49.965324
+       2        0   0.3798      (NEWTON)    1.000         15
+       4        0   0.2151      (NEWTON)   0.4838         15
+       6        0   0.1261      (NEWTON)   0.4644         15
+       8        0   7.5922E-02  (NEWTON)   0.4447         15
+      10        0   4.6849E-02  (NEWTON)   0.4247         15
+      12        0   2.9592E-02  (NEWTON)   0.4045         15
+      14        0   1.9118E-02  (NEWTON)   0.3841         15
+      16        0   1.2624E-02  (NEWTON)   0.3638         15
+      18        0   8.5147E-03  (NEWTON)   0.3438         15
+      20        0   5.8625E-03  (NEWTON)   0.3241         15
+      22        0   4.1178E-03  (NEWTON)   0.3051         15
+      24        0   2.9488E-03  (NEWTON)   0.2867         15
+      26        0   2.1517E-03  (NEWTON)   0.2690         15
+      28        0   1.5987E-03  (NEWTON)   0.2522         15
+      30        0   1.2089E-03  (NEWTON)   0.2363         15
+      32        0   7.7719E-04  (NEWTON)   0.4164         15
+      34        0   6.1730E-04  (NEWTON)   0.1928         15
+      35        0   1.3946E-04  (NEWTON)   0.7711         15
+      37        0   1.3121E-04  (NEWTON)   6.2500E-02     15
+      38        0   9.7498E-05  (NEWTON)   0.2500         15
+      40        0   9.3307E-05  (NEWTON)   6.2500E-02     15
+      41        0   7.5690E-05  (NEWTON)   0.2500         15
+      43        0   7.3403E-05  (NEWTON)   6.2500E-02     15
+      44        0   6.4021E-05  (NEWTON)   0.2500         15
+      46        0   6.2610E-05  (NEWTON)   6.2500E-02     15
+      47        0   5.7488E-05  (NEWTON)   0.2500         15
+      50        0   5.3584E-05  (NEWTON)   0.2500         15
+      53        0   5.1045E-05  (NEWTON)   0.2500         15
+      66        0   4.8759E-05  (NEWTON)   6.2500E-02     15
+      69        0   4.7188E-05  (NEWTON)   6.2500E-02     15
+      83        0   4.5515E-05  (NEWTON)   0.2500         15
+ Residual = 4.5392E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  2.9688E-4 MKMC.1      BX   2.7       1   2.711452 MKMC.1      AY   0         1  -1.278E-4 MKMC.1      BY   4.7       1   4.692363 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  -2.91E-11
+B2M.1       BY   15        1  10.299283 MKS4M.1     BX   6.8732    1   6.172891 MKS4M.1     BY   6.96931   1   5.179008 B1M.1       BY   15        1  15.033215 MKMS.1      AX   0         1  -4.47E-16 MKMS.1      BX   15.5919   1  21.585243
+MKMS.1      AY   0         1  -6.02E-15 MKMS.1      BY   6.09844   1   3.174035 MKMS.1      EX   0         1  8.243E-11 MKMS.1      EPX  0         1  -2.20E-17 MKLC.1      AX   0         1  -2.969E-4 MKLC.1      AY   0         1  1.2783E-4
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  2.908E-11 B2L.1       BY   15        1  10.607416 MKS4L.1     BX   5.44917   1   5.254743 MKS4L.1     BY   9.22563   1   5.209223 B1L.1       BY   15        1  15.035574
+MKLS.1      AX   0         1  2.461E-15 MKLS.1      BX   11.7081   1  20.805721 MKLS.1      AY   0         1  -6.29E-15 MKLS.1      BY   11.2495   1   5.123035 MKLS.1      EX   0         1  -3.06E-10 MKLS.1      EPX  0         1  2.434E-17
+$$$       f AX    #######  #  2.9688E-4 $$$       f BX    #######  #   2.711452 $$$       f NX   3.197671  1   3.197090 $$$       f AY    #######  #  -1.278E-4 $$$       f BY    #######  #   4.692363 $$$       f NY   1.117006  1   1.116896
+$$$       f LENG  #######  #  49.965581
+       4        0   4.4446E-05  (NEWTON)   0.2500         15
+       7        0   4.3565E-05  (NEWTON)   0.2500         15
+      12        0   4.1994E-05  (NEWTON)   6.2500E-02     15
+      16        0   4.1120E-05  (NEWTON)   0.2500         15
+      21        0   3.9679E-05  (NEWTON)   6.2500E-02     15
+      25        0   3.8869E-05  (NEWTON)   0.2500         15
+      30        0   3.7531E-05  (NEWTON)   6.2500E-02     15
+      34        0   3.6781E-05  (NEWTON)   0.2500         15
+      52        0   3.5504E-05  (NEWTON)   6.2500E-02     15
+      86        0   3.4237E-05  (NEWTON)   6.2500E-02     15
+ Residual = 3.3000E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+MKMC.1      AX   0         1  2.3438E-4 MKMC.1      BX   2.7       1   2.709090 MKMC.1      AY   0         1  -1.103E-4 MKMC.1      BY   4.7       1   4.692755 MKMC.1      EX   .03       1    .030000 MKMC.1      EPX  0         1  -2.13E-12
+B2M.1       BY   15        1  10.300676 MKS4M.1     BX   6.8732    1   6.176817 MKS4M.1     BY   6.96931   1   5.179870 B1M.1       BY   15        1  15.033025 MKMS.1      AX   0         1  3.002E-15 MKMS.1      BX   15.5919   1  21.603955
+MKMS.1      AY   0         1  1.119E-15 MKMS.1      BY   6.09844   1   3.173444 MKMS.1      EX   0         1  6.263E-11 MKMS.1      EPX  0         1  -3.38E-18 MKLC.1      AX   0         1  -2.344E-4 MKLC.1      AY   0         1  1.1030E-4
+MKLC.1      EX   .03       1    .030000 MKLC.1      EPX  0         1  2.126E-12 B2L.1       BY   15        1  10.609549 MKS4L.1     BX   5.44917   1   5.258342 MKS4L.1     BY   9.22563   1   5.210055 B1L.1       BY   15        1  15.034528
+MKLS.1      AX   0         1  3.225E-16 MKLS.1      BX   11.7081   1  20.825241 MKLS.1      AY   0         1  1.861E-15 MKLS.1      BY   11.2495   1   5.121563 MKLS.1      EX   0         1  4.523E-11 MKLS.1      EPX  0         1  7.621E-18
+$$$       f AX    #######  #  2.3438E-4 $$$       f BX    #######  #   2.709090 $$$       f NX   3.197671  1   3.197204 $$$       f AY    #######  #  -1.103E-4 $$$       f BY    #######  #   4.692755 $$$       f NY   1.117006  1   1.116905
+$$$       f LENG  #######  #  49.965581
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.959E-14 $$$       f BX    #######  #   2.700002 $$$       f NX    #######  #   1.492074 $$$       f AY    #######  #  -1.79E-15 $$$       f BY    #######  #   4.699920 $$$       f NY    #######  #    .556770
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 2.0917E-09) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.959E-14 $$$       f BX    #######  #   2.700002 $$$       f NX   1.492074  2   1.492074 $$$       f AY    #######  #  -1.79E-15 $$$       f BY    #######  #   4.699920 $$$       f NY   .55677    2    .556770
+$$$       f LENG  #######  #  22.132662
+ ;
+ SEXT   S5MHA   =(L =.1   K2 =-12.354144712578114 )
+        S4MHA   =(L =.1   K2 =16.916907980767554 )
+        S3MHA   =(L =.1   K2 =-12.354144712578114 )
+        S2MHA   =(L =.1   K2 =-8.7984769 )
+        S1MHA   =(L =.1   K2 =8.7214956 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.86E-15 $$$       f BX    #######  #   2.700000 $$$       f NX    #######  #   1.705596 $$$       f AY    #######  #  1.768E-15 $$$       f BY    #######  #   4.700007 $$$       f NY    #######  #    .560236
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   3.4211E-04  (NEWTON)    1.000          2
+       3        0   5.5742E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 5.5379E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.86E-15 $$$       f BX    #######  #   2.700000 $$$       f NX   1.705596  2   1.705596 $$$       f AY    #######  #  1.768E-15 $$$       f BY    #######  #   4.700007 $$$       f NY   .560236   2    .560236
+$$$       f LENG  #######  #  27.832662
+ ;
+ SEXT   S5LHA   =(L =.1   K2 =-18.782932923854442 )
+        S4LHA   =(L =.1   K2 =26.06392882898606 )
+        S3LHA   =(L =.1   K2 =-18.782932923854442 )
+        S2LHA   =(L =.1   K2 =-3.5062268 )
+        S1LHA   =(L =.1   K2 =2.0882064 )
+ ;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.76E-15 $$$       f BX    #######  #   2.710551 $$$       f NX    #######  #   1.565251 $$$       f AY    #######  #  4.019E-15 $$$       f BY    #######  #   4.691058 $$$       f NY    #######  #    .547107
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Matched. ( 7.5642E-11) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.76E-15 $$$       f BX    #######  #   2.710551 $$$       f NX   1.565251  2   1.565251 $$$       f AY    #######  #  4.019E-15 $$$       f BY    #######  #   4.691058 $$$       f NY   .547107   2    .547107
+$$$       f LENG  #######  #  22.132757
+ ;
+ SEXT   S5MH    =(L =.1   K2 =-18.19812001218356 )
+        S4MH    =(L =.1   K2 =28.79180528806747 )
+        S3MH    =(L =.1   K2 =-18.19812001218356 )
+        S2MH    =(L =.1   K2 =-5.3856367 )
+        S1MH    =(L =.1   K2 =4.1831437 )
+ ;
+ Matched. (  0.000    ) DP = 0.00100  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -7.27E-16 $$$       f BX    #######  #   2.708508 $$$       f NX    #######  #   1.631953 $$$       f AY    #######  #  4.017E-15 $$$       f BY    #######  #   4.693859 $$$       f NY    #######  #    .569798
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit :       NaN       NaN       NaN       NaN       NaN       NaN
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :       NaN       Y :       NaN       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+       2        0   1.1950E-05  (NEWTON)    1.000          2
+       3        0   7.6729E-06  (NEWTON)    1.000          2
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ *****qcod---> Overflow & closed orbit not found            3
+ *****qcod---> Overflow & closed orbit not found            4
+ Residual = 7.6729E-06  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -7.27E-16 $$$       f BX    #######  #   2.708508 $$$       f NX   1.631953  2   1.631953 $$$       f AY    #######  #  4.017E-15 $$$       f BY    #######  #   4.693859 $$$       f NY   .569798   2    .569798
+$$$       f LENG  #######  #  27.832823
+ ;
+ SEXT   S5LH    =(L =.1   K2 =-22.78970072218029 )
+        S4LH    =(L =.1   K2 =35.740140368933474 )
+        S3LH    =(L =.1   K2 =-22.78970072218029 )
+        S2LH    =(L =.1   K2 =-1.8547 )
+        S1LH    =(L =.1   K2 =2.2786354 )
+ ;
+  47.9650597373   16.7550903903 |   47.9631974690   16.7546880844 |     .8315278902  3.227150973E-5 |    -.0593375711     .0661223483 |  2.109331233E-4  5.889654523E-4  5.034178798E-4  -9.48725068E-4 |    1.0000000000

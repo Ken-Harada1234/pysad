@@ -1,0 +1,65 @@
+! modules_amp_dep_ts.n: 振幅依存チューンシフト (ADTS) の関数 (FFS; の後で Get["../modules/modules_amp_dep_ts.n"]; する)。
+!   SetInitialParameters[]  : 始点 (ライン 1 番目の要素) の Twiss・エミッタンスを変数に取り込む (alphax betax alphay betay w ...)
+!   AmplitudeDependentTuneShift[nx, ny, thetadiv]
+!                           : 水平・垂直の振幅 nx, ny [σ 単位、√(w) 倍] で、位相 θ を thetadiv 点で回して
+!                             ins calc (リング全周の転送) で得たチューンの平均を返す {νx, νy}
+!   CalcAmpDepTS[...]      : 上の中で使う (初期座標を LINE[DX,..] に入れて ins calc)
+!   ResetInit[]              : 始点の初期座標を 0 に戻す (追加。下の説明)
+! 元のモジュールから、コメントアウトされた旧い試行の行を除いただけ (式・順序は元のまま)。
+
+AmplitudeDependentTuneShift[nx_, ny_,thetadiv_]:=(
+   FFS["cell calc emit"];
+   dth = 2 * Pi / thetadiv;
+       deptunetemp = Table[{1,2},{thetadiv}];
+       ith = 0;
+  Do[
+     ith = ith + 1;
+     inidx  =nx * Sqrt[w] * Sqrt[betax]*Cos[theta];
+     inidpx =nx * Sqrt[w] * 1/Sqrt[betax]*(Sin[theta]-alphax*Cos[theta]);
+     inidy  =ny * Sqrt[w] * Sqrt[betay]*Cos[theta];
+     inidpy =ny * Sqrt[w] * 1/Sqrt[betay]*(Sin[theta]-alphay*Cos[theta]);
+     deptunetemp[ith] = CalcAmpDepTS[inidx,inidpx,inidy,inidpy];
+  ,{theta, 0, 2 * Pi - dth/2 ,dth}];
+  deptune = {0,0};
+  Do[
+     deptune = deptune + deptunetemp[ith];
+  ,{ith,thetadiv}];
+  deptune = deptune / thetadiv;
+  deptune
+);
+CalcAmpDepTS[inidx_,inidpx_,inidy_,inidpy_]:=(
+   ininame = LINE["NAME",1];
+     LINE["DX" ,ininame] = inidx;
+     LINE["DPX",ininame] = inidpx;
+     LINE["DY" ,ininame] = inidy;
+     LINE["DPY",ininame] = inidpy;
+   FFS["ins calc"];
+     nux = Twiss["NX","$$$"]/2/Pi;
+     nuy = Twiss["NY","$$$"]/2/Pi;
+     {nux,nuy}
+);
+SetInitialParameters[]:=(
+       FFS["cell calc emit fix"];
+       alphax = Twiss["AX",1];
+       betax  = Twiss["BX",1];
+       alphay = Twiss["AY",1];
+       betay  = Twiss["BY",1];
+       etax   = Twiss["EX",1];
+       etapx  = Twiss["EPX",1];
+       gammax = (1 + alphax * alphax)/betax;
+       gammay = (1 + alphay * alphay)/betay;
+       w     = EMITX;
+       wy    = EMITY;
+       sigmax= Sqrt[w /gammax];
+       sigmay= Sqrt[w /gammay];
+);
+
+! ResetInit[]: 始点の初期座標 (DX・DPX・DY・DPY) を 0 に戻す (追加。元の台本は、振幅が大きすぎて ins calc が失敗した後に
+!   初期座標が残り、次の点の SetInitialParameters[] が影響を受けることがある。振幅のスキャンの各点の前に呼ぶ)
+ResetInit[]:=(
+  ininame = LINE["NAME",1];
+  LINE["DX" ,ininame] = 0;
+  LINE["DPX",ininame] = 0;
+  LINE["DY" ,ininame] = 0;
+  LINE["DPY",ininame] = 0;
+);

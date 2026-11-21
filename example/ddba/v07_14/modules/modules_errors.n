@@ -1,0 +1,261 @@
+! 誤差・COD 補正の関数。元: correct_cod_v07_14_grad_res(_2) の中の関数定義と、modules_write_correctdata.n の
+! ResultWrite・WriteKick・RMSWrite (使われない BetaWrite・PrintResultBeta・MeasureBeta・ReadKick は取り込まない)。
+! 式・順序は元のまま。コメントアウトされた試行・デバッグの Print を除いた。変更点は ORIGINAL_MAP.md。
+!
+! 重要: 補正磁石 HD・VD は、リングの中で同じ要素名の繰り返しなので、既定の (EXPAND の) `cell calc` は K0 を全部同じ値に
+! 揃えてしまい、成分ごとの LINE["K0","HD.7"] = … が効かない (HD.1 だけが全部に効く。gs・pysad とも)。そこで台本は
+! `USE RING NOEXPAND` にして、`cc = "cell calc noexpand"`・`ccemit = "cell calc emit noexpand"` を使う
+! (docs/11 A56)。この modules も FFS[cc]・FFS[ccemit] を使う。元の台本は既定の `cell calc` のままで、
+! 補正が効かなかった (README の「元の台本の問題」)。
+!
+! 使う前に台本が用意するもの (大域変数):
+!   cc, ccemit        "cell calc noexpand"・"cell calc emit noexpand"
+!   tunex, tuney      設計のチューン (整数部つき)。応答行列の式と、RMSWrite の列の「チューンの設計値からのずれ」に使う
+!   etaidealx/y       設計の PM での分散 (RMSDisp で差を取る)
+!   etax0, etay0      設計の全要素での分散 (ResultWrite の列)
+!   Responsex/y       COD 応答行列 (CalculateCODResponse[1] で作る)
+!   seeds, k          乱数の種の表と、いまの種の番号
+!   IEX, IEY          補正に使う固有値の数
+!   DAturns, DAzstep  DAsv の追跡の周回数と、δ の刻み (DAzstep × σδ の何倍か)、daout (DA の結果のファイル名)
+
+! COD 補正 (逆行列法の式)。 res = CodCorr[応答行列, COD(m), 使う固有値の数]
+!   → {kick (rad)、補正後の COD (応答行列の線形モデルでの予想)}
+!   応答行列 resmat は [モニター, 補正磁石] の並びで、固有値分解は (resmat.Transpose[resmat]) (モニター数の正方行列)
+!   のうち大きい方から ie 個だけを使って逆行列を作る (打ち切り)。
+CodCorr[resmat_,cod_,ie_]:=(
+              tres        = resmat;
+              res         = Transpose[tres];
+              dim         = Length[res[1]];
+              sqres       = tres.res;
+              sqcod       = tres.cod;
+              {lam, ivec} = Eigensystem[sqres];
+
+              laminv      = Table[0.0, {i,1,dim}];
+              lam = Re[lam];
+              stdlam      = Sort[lam, Greater];
+              lam = Abs[lam];
+
+              Do[
+                 Do[
+                    If[stdlam[i]===lam[j],
+                         laminv[j]=1.0/stdlam[i];
+                    ];
+                 ,{j,dim}];
+              ,{i, ie}];
+
+              laminvmat   = DiagonalMatrix[laminv];
+              ivect       = Transpose[ivec];
+
+              invsqres    = ivect.laminvmat.ivec;
+              kick        = -invsqres.sqcod;
+              rescod      = cod + res.kick;
+              out         = {kick, rescod};
+              out
+           );
+
+! COD 応答行列 (設計のラティスの解析式。ずる: 実機のように補正磁石を振って測ったものではない)
+!   Responsex[補正磁石 j, モニター i] = 0.5 sqrt(βm βc) cos(πν - |φm - φc|) / sin(πν)
+CalculateCODResponse[CALOP_]:=(
+    FFS[cc];
+       dtnx = LINE["NAME","HD*.*"];
+       dtny = LINE["NAME","VD*.*"];
+       dtbmx = Twiss["BX","PM.*"];
+       dtbmy = Twiss["BY","PM.*"];
+       dtbcx = Twiss["BX","HD*.*"];
+       dtbcy = Twiss["BY","VD*.*"];
+       dttmx = Twiss["NX","PM.*"];
+       dttmy = Twiss["NY","PM.*"];
+       dttcx = Twiss["NX","HD*.*"];
+       dttcy = Twiss["NY","VD*.*"];
+      ICX = Length[dtnx];
+      ICY = Length[dtny];
+      IM = Length[dtbmx];
+      Print["ICX = ",ICX,"   ICY = ",ICY,"   IM = ",IM];
+      If[CALOP == 1,
+        Print["calculate horizontal response data "];
+        Do[
+             Do[
+                   Responsex[j,i] = 0.5*Sqrt[dtbmx[i]*dtbcx[j]]*Cos[tunex*Pi-Abs[dttmx[i]-dttcx[j]]]/Sin[tunex*Pi];
+            ,{i,IM}];
+        ,{j,ICX}];
+        Print["calculate vertical response data "];
+        Do[
+             Do[
+                 Responsey[j,i] = 0.5*Sqrt[dtbmy[i]*dtbcy[j]]*Cos[tuney*Pi-Abs[dttmy[i]-dttcy[j]]]/Sin[tuney*Pi];
+               ,{i,IM}];
+        ,{j,ICY}];
+       ,Print["No calculation"];
+     ];
+);
+
+! 動的口径サーベイ (補正後の状態で。x 方向と y 方向、δ = zrange)。結果をファイル daout に追記する
+DAsv[]:=(DAPWIDTH = 51;
+           FFS[ccemit,6];
+           dp = 0.01 / SIGE;
+           Print[dp];
+           zrange   = Range[-5 * dp, 5.1 * dp, dp * DAzstep ];
+           range    = {{1,100},{1,1},zrange};
+           FFS[cc];
+           FFS["disp MK*.*",6];
+           res = DynamicApertureSurvey[range,DAturns,Output->6];
+           res;
+           dax = Table[res[2,2,i,2],{i,Length[zrange]}];
+           datafile = OpenAppend[daout];
+           Print[dax];
+           Write[datafile,k,"  x  ",dax];
+           range    = {{1,1},{1,-100},zrange};
+           FFS[cc];
+           res = DynamicApertureSurvey[range,DAturns,Output->6];
+           day = Table[res[2,2,i,2],{i,Length[zrange]}];
+           Print[day];
+           Write[datafile,k,"  y  ",day];
+           res;
+         Close[datafile];
+          );
+
+! PM での COD と分散のずれ (理想との差) の最大・RMS を出す
+RMSDisp[] := (
+          FFS[cc];
+          CODrmsnoX = 0;  CODrmsnoY = 0;
+          ETArmsnoX = 0;  ETArmsnoY = 0;
+
+          CODmaxnoX = 0;  CODmaxnoY = 0;
+          ETAmaxnoX = 0;  ETAmaxnoY = 0;
+          icodmaxnox = 0;   icodmaxnoy = 0;
+          ietamaxnox = 0;   ietamaxnoy = 0;
+
+       datan = LINE["NAME","PM.*"];
+       codnox = Twiss["DX","PM.*"];
+       etanox = Twiss["EX","PM.*"];
+       codnoy = Twiss["DY","PM.*"];
+       etanoy = Twiss["EY","PM.*"];
+      Do[
+              etanox[i] = Abs[etanox[i]-etaidealx[i]];
+              etanoy[i] = Abs[etanoy[i]-etaidealy[i]];
+              If[Abs[codnox[i]] > CODmaxnoX,
+                      CODmaxnoX = Abs[codnox[i]];
+                      icodmaxnox = i;
+                ];
+              CODrmsnoX = CODrmsnoX + codnox[i] * codnox[i];
+
+              If[Abs[codnoy[i]] > CODmaxnoY,
+                      CODmaxnoY = Abs[codnoy[i]];
+                      icodmaxnoy = i;
+                ];
+              CODrmsnoY = CODrmsnoY + codnoy[i] * codnoy[i];
+
+              If[etanox[i] > ETAmaxnoX,
+                      ETAmaxnoX = etanox[i];
+                      ietamaxnox = i;
+                ];
+              ETArmsnoX = ETArmsnoX + etanox[i] * etanox[i];
+
+              If[etanoy[i] > ETAmaxnoY,
+                      ETAmaxnoY = etanoy[i];
+                      ietamaxnoy = i;
+                ];
+              ETArmsnoY = ETArmsnoY + etanoy[i] * etanoy[i];
+        ,{i,Length[datan]}];
+         CODrmsnoX = Sqrt[CODrmsnoX/Length[datan]];
+         ETArmsnoX = Sqrt[ETArmsnoX/Length[datan]];
+         CODrmsnoY = Sqrt[CODrmsnoY/Length[datan]];
+         ETArmsnoY = Sqrt[ETArmsnoY/Length[datan]];
+    Print["   X COD Max at  / Y COD Max at /  X ETA Max at / Y Eta Max at"];
+    Print[icodmaxnox,",",icodmaxnoy,",",ietamaxnox,",",ietamaxnoy];
+    Print["   X COD Max    / Y COD Max     /  X ETA Max    /  Y Eta Max"];
+    Print[CODmaxnoX,",",CODmaxnoY,",",ETAmaxnoX,",",ETAmaxnoY];
+    Print["   X COD RMS    / Y COD RMS     /  X ETA RMS    /  Y Eta RMS"];
+    Print[CODrmsnoX,",",CODrmsnoY,",",ETArmsnoX,",",ETArmsnoY];
+);
+
+! 全要素の COD・分散の設計からのずれをファイルに追記 (種 k ごと、s が進む要素だけ)
+ResultWrite[OUTFILE_]:= (
+          FFS[cc];
+          esu  = Twiss["S","*"];
+          codx = Twiss["DX","*"];
+          cody = Twiss["DY","*"];
+          etax = Twiss["EX","*"];
+          etay = Twiss["EY","*"];
+          datafile = OpenAppend[OUTFILE];
+          Do[
+              If[esu[i+1]-esu[i]<>0,
+                   Write[datafile,k,esu[i],codx[i],cody[i],etax[i]-etax0[i],etay[i]-etay0[i]];
+                ];
+          ,{i,LINE["LENGTH"]-1}];
+          i=LINE["LENGTH"];
+                   Write[datafile,k,esu[i],codx[i],cody[i],etax[i]-etax0[i],etay[i]-etay0[i]];
+          Close[datafile];
+);
+
+! RMSDisp と同じ統計を 1 行 (種 k、種の値、IEX、チューンの設計からのずれ、…、EMITX、EMITY) でファイルに追記
+! (変更: 元は NX・NY から 48.6・12.7 (旧い設計のチューン) を引いていた。設計のチューン tunex・tuney に直した)
+RMSWrite[OUTFILE_] := (
+          FFS[cc];
+          CODrmsnoX = 0;  CODrmsnoY = 0;
+          ETArmsnoX = 0;  ETArmsnoY = 0;
+
+          CODmaxnoX = 0;  CODmaxnoY = 0;
+          ETAmaxnoX = 0;  ETAmaxnoY = 0;
+          icodmaxnox = 0;   icodmaxnoy = 0;
+          ietamaxnox = 0;   ietamaxnoy = 0;
+
+       datan = LINE["NAME","PM.*"];
+       codnox = Twiss["DX","PM.*"];
+       etanox = Twiss["EX","PM.*"];
+       codnoy = Twiss["DY","PM.*"];
+       etanoy = Twiss["EY","PM.*"];
+
+      Do[
+              etanox[i] = Abs[etanox[i]-etaidealx[i]];
+              etanoy[i] = Abs[etanoy[i]-etaidealy[i]];
+              If[Abs[codnox[i]] > CODmaxnoX,
+                      CODmaxnoX = Abs[codnox[i]];
+                      icodmaxnox = i;
+                ];
+              CODrmsnoX = CODrmsnoX + codnox[i] * codnox[i];
+
+              If[Abs[codnoy[i]] > CODmaxnoY,
+                      CODmaxnoY = Abs[codnoy[i]];
+                      icodmaxnoy = i;
+                ];
+              CODrmsnoY = CODrmsnoY + codnoy[i] * codnoy[i];
+
+              If[etanox[i] > ETAmaxnoX,
+                      ETAmaxnoX = etanox[i];
+                      ietamaxnox = i;
+                ];
+              ETArmsnoX = ETArmsnoX + etanox[i] * etanox[i];
+
+              If[etanoy[i] > ETAmaxnoY,
+                      ETAmaxnoY = etanoy[i];
+                      ietamaxnoy = i;
+                ];
+              ETArmsnoY = ETArmsnoY + etanoy[i] * etanoy[i];
+        ,{i,Length[datan]}];
+         CODrmsnoX = Sqrt[CODrmsnoX/Length[datan]];
+         ETArmsnoX = Sqrt[ETArmsnoX/Length[datan]];
+         CODrmsnoY = Sqrt[CODrmsnoY/Length[datan]];
+         ETArmsnoY = Sqrt[ETArmsnoY/Length[datan]];
+
+    datafile = OpenAppend[OUTFILE];
+    Write[datafile,k,seeds[k],IEX,Twiss["NX","$$$"]/2/Pi-tunex,icodmaxnox,ietamaxnox,CODmaxnoX,ETAmaxnoX,CODrmsnoX,ETArmsnoX,IEY,Twiss["NY","$$$"]/2/Pi-tuney,icodmaxnoy,ietamaxnoy,CODmaxnoY,ETAmaxnoY,CODrmsnoY,ETArmsnoY,EMITX,EMITY];
+    Close[datafile];
+    Print["   X COD Max at  / Y COD Max at /  X ETA Max at / Y Eta Max at"];
+    Print[icodmaxnox,",",icodmaxnoy,",",ietamaxnox,",",ietamaxnoy];
+    Print["   X COD Max    / Y COD Max     /  X ETA Max    /  Y Eta Max"];
+    Print[CODmaxnoX,",",CODmaxnoY,",",ETAmaxnoX,",",ETAmaxnoY];
+    Print["   X COD RMS    / Y COD RMS     /  X ETA RMS    /  Y Eta RMS"];
+    Print[CODrmsnoX,",",CODrmsnoY,",",ETArmsnoX,",",ETArmsnoY];
+);
+
+! 補正磁石の K0 (kick) を種 k ごとに追記: k, 番号, 水平, 垂直
+WriteKick[OUTFILE_]:=(
+       Print["Write kick angle!"];
+       hstrposi = LINE["NAME","HD*"];
+       vstrposi = LINE["NAME","VD*"];
+       com =OpenAppend[OUTFILE];
+       Do[
+           Write[com,k,i,LINE["K0",hstrposi[i]],LINE["K0",vstrposi[i]]];
+         ,{i,Length[hstrposi]}];
+       Close[com];
+);

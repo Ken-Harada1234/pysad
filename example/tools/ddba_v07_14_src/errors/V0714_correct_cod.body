@@ -1,0 +1,247 @@
+!@LAT 5GeV
+!=====================================================================
+! V0714_correct_cod: v07_14 の誤差の計算 (誤差を段階的に大きくしながら COD を補正していく手法)  5 GeV 版 (RF 6.5 MV)
+!
+! 元: correct_cod_v07_14_grad_res (5 GeV。出力ファイル名は v07_16 のコピーの名前のまま。_2 は 2.5 GeV 用で ae を半分にした版)
+! 流れ (種ごと):
+!   1. 乱数の種 (SeedRandom[187] から 1000 個作った表の k 番目) で、全磁石 (B*・Q*・S*・補正磁石 H*・V*) の位置ずれ
+!      (DX・DY、ガウス分布、標準偏差 ae、1σ で打ち切り GCUT = 1) と、B*・Q*・S* の磁場誤差 (DK、相対 fe) と
+!      回転 (DTHETA、te) を与える。位置ずれの全部の大きさ (aexall0・aeyall0) は覚えておく。
+!   2. 位置ずれを、全体の 1/nstage, 2/nstage, …, 1 倍の順に段階的に大きくする。磁場誤差・回転は初めから全部入れたまま。
+!      各段階で、COD の補正を何回か (nitr 回、最後の段階は nitrlast 回) 繰り返す。補正は
+!        a. 全モニター (PM*) の COD を測る (SAD の COD。実機のモニターの誤差・ノイズなし)
+!        b. 設計光学から解析式で作った応答行列 (CalculateCODResponse) の、大きい方から ICX/2 個の固有値だけで
+!           逆行列を作り (CodCorr)、補正磁石の kick を求める
+!        c. 補正磁石 (HD*・VD*) の K0 を kick のゲイン倍 (0.5。元の台本は 4 段階目だけ 0.6) だけ変える
+!      前の段階で補正した K0 を引き継いだまま、誤差だけを大きくして次の段階に進む。
+!   3. 最後の段階の補正のあとのチューンが窓 (nxlo〜nxhi, nylo〜nyhi) に入っているときだけ、動的口径サーベイ
+!      (x・y 方向、δ = zrange、DAturns 周) を行う。窓の外なら DA を 0 として記録する (チューンの補正は無い)。
+!   4. COD・分散・補正磁石の K0・統計をファイルに書き、誤差と K0 を 0 に戻して次の種へ。
+! 元の台本からの修正: `USE RING NOEXPAND` と `cell calc noexpand` を使う (元は既定の EXPAND。同名の補正磁石 HD・VD の K0 が
+!   全部同じ値に揃えられ、成分ごとの補正が効かなかった。README 参照)。
+!   垂直補正磁石 VD の位置ずれは 0 に戻す (ずれと K0 が重なると cell calc が失敗する。K64 の gs・pysad とも)。
+! 「ずる」(実機にない手順) は README の「誤差の計算の手法」を参照。
+!
+! 例の設定は、元 (種 100 個、補正 5+5+5+5+50 回、DA 5000 周、δ 11 点) から、種 2 個、補正 3+3+3+3+10 回、
+! DA 200 周、δ 3 点に減らした。NAME_full.sad (V0714_FULL=1 で作る) が元の設定。
+!=====================================================================
+!@PARAM nseed = 2
+!@FULL nseed = 100
+!@PARAM nstage = 5
+!@PARAM nitr = 3
+!@FULL nitr = 5
+!@PARAM nitrlast = 10
+!@FULL nitrlast = 50
+!@PARAM aeamp = 5E-5
+!@PARAM fe0 = 5E-4
+!@PARAM te0 = 1E-4
+!@PARAM daOn = 1
+!@PARAM DAturns = 200
+!@FULL DAturns = 5000
+!@PARAM DAzstep = 5
+!@FULL DAzstep = 1
+!@PARAM nxlo = 47.5
+!@PARAM nxhi = 48
+!@PARAM nylo = 16.5
+!@PARAM nyhi = 17
+outtag = "V0714_correct_cod_5GeV";
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+  NPARA = 8;    ! 元は 20
+  $FORM = "15.10";
+  PageWidth = 9999;
+
+  cc = "cell calc noexpand";
+  ccemit = "cell calc emit noexpand";
+  Get["../modules/modules_errors.n"];
+  $FORM = "15.10";
+  PageWidth = 1999;
+
+  daout   = outtag//"_da.txt";
+  codout  = outtag//"_cod_eta.txt";
+  kickout = outtag//"_kick.txt";
+  rmsout  = outtag//"_rms.txt";
+  Close[OpenWrite[daout]];  Close[OpenWrite[codout]];  Close[OpenWrite[kickout]];  Close[OpenWrite[rmsout]];
+
+! 位置ずれを jj/nstage 倍にする (最後の段階は全部。始点 MRST の初期座標は 0。誤差の大きさは aexall0・aeyall0)
+SetPosErr[jj_]:=(
+  Do[
+    If[jj == nstage,
+      LINE["DX",nele[i]] = aexall0[i];
+      LINE["DY",nele[i]] = aeyall0[i];
+      ,
+      LINE["DX",nele[i]] = aexall0[i]/nstage*jj;
+      LINE["DY",nele[i]] = aeyall0[i]/nstage*jj;
+    ];
+  ,{i,1,Length[nele]}];
+  LINE["DX","MRST"] = 0;
+  LINE["DY","MRST"] = 0;
+  LINE["DPX","MRST"] = 0;
+  LINE["DPY","MRST"] = 0;
+);
+
+USE RING NOEXPAND;
+
+  FFS[ccemit];
+
+  tunex = Twiss["NX","***"]/2/Pi;
+  tuney = Twiss["NY","***"]/2/Pi;
+  etaidealx = Twiss["EX","PM.*"];
+  etaidealy = Twiss["EY","PM.*"];
+  etax0     = Twiss["EX","*"];
+  etay0     = Twiss["EY","*"];
+
+  dtnx = LINE["NAME","HD*.*"];
+  dtny = LINE["NAME","VD*.*"];
+  dtbm = LINE["NAME","PM*.*"];
+  ICX = Length[dtnx];
+  ICY = Length[dtny];
+  IM  = Length[dtbm];
+
+  FFS["cell calc emit fix noexpand"];
+
+  Responsex = Table[Table[0,{i,1,IM}],{j,1,ICX}];
+  Responsey = Table[Table[0,{i,1,IM}],{j,1,ICY}];
+
+  CalculateCODResponse[1];
+
+  a = SeedRandom[187];
+  seeds = Floor[Abs[Random[1000]*100000000]]*2-1;
+
+Do[
+   FFS[cc];
+   daflag = 1;
+   GCUT =1;
+   SeedRandom[seeds[k]];
+   Print["GCUT=",GCUT];
+   ae = aeamp;
+   fe = fe0;
+   te = te0;
+    FFS["DELX   ae {BQSHV}*;"];    FFS["DELY   ae {BQSHV}*;"];
+    FFS["DK     fe B*;"];    FFS["DK     fe Q*;"];
+    FFS["DK     fe S*;"];
+    FFS["DTHETA te B*;"];    FFS["DTHETA te Q*;"];
+    FFS["DTHETA te S*;"];
+
+  ! 垂直補正磁石 VD (ROTATE = -90 度の BEND、L = 0) の位置ずれは 0 に戻す。ずれがあると、K0 が 0 でない VD で
+  ! `cell calc` が closed orbit not found になる (K64 の gs・pysad とも。元の台本の問題。README 参照)。
+  ! L = 0 のステアリングの位置ずれは物理的に効かないので、結果の意味は変わらない。乱数の列は元のまま (DELX は VD にも与える)。
+  Do[
+    LINE["DX",dtny[i]] = 0;
+    LINE["DY",dtny[i]] = 0;
+  ,{i,1,ICY}];
+    FFS[cc];
+  RMSDisp[];
+
+  nele    = LINE["NAME","{BQSH}*"];
+  aexall0 = LINE["DX","{BQSH}*"];
+  aeyall0 = LINE["DY","{BQSH}*"];
+  FFS["type MRST;",6];
+
+  ! 誤差の大きさを下げた状態 (1/nstage 倍) から始める。始点 MRST の初期座標は 0
+  SetPosErr[1];
+    FFS[cc,6];
+  FFS["type MRST;",6];
+  FFS["disp $$$",6];
+
+  matx = Responsex;  maty = Responsey;
+  befx = Twiss["DX","PM*.*"];  befy = Twiss["DY","PM*.*"];
+  aftx = Table[0,{i,1,IM}];  afty = Table[0,{i,1,IM}];
+  kickx = Table[0,{i,1,ICX}];  kicky = Table[0,{i,1,ICY}];
+  IEX = Floor[ICX/2];  IEY = Floor[ICY/2];
+  Print[IEX,IEY];
+
+  ! 段階 j = 1, …, nstage。j = 1 の位置ずれはすでに入れてある
+  Do[
+    If[j > 1,
+      Print["stage ",j,"/",nstage,"  position errors x ",j/nstage," (ae = ",aeamp*j/nstage*10^6," um)"];
+      SetPosErr[j];
+      FFS[cc];
+      ,
+      Print["stage ",j,"/",nstage,"  position errors x ",j/nstage," (ae = ",aeamp*j/nstage*10^6," um)"];
+    ];
+    gain = 0.5;
+    If[nstage == 5 && j == 4, gain = 0.6];
+    nit = nitr;
+    If[j == nstage, nit = nitrlast];
+    Do[
+      FFS[cc];
+      befx = Twiss["DX","PM*.*"];  befy = Twiss["DY","PM*.*"];
+      resultx = CodCorr[matx,befx,IEX];  resulty = CodCorr[maty,befy,IEY];
+      Do[
+           LINE["K0",dtnx[i]] = LINE["K0",dtnx[i]] - gain*resultx[1,i];
+      ,{i,1,Length[resultx[1]]}];
+      Do[
+           LINE["K0",dtny[i]] = LINE["K0",dtny[i]] - gain*resulty[1,i];
+      ,{i,1,Length[resulty[1]]}];
+        FFS[cc];
+      aftx = Twiss["DX","PM*.*"];
+      afty = Twiss["DY","PM*.*"];
+      a1 = 0;  a2 = 0;
+      a3 = 0;  a4 = 0;
+      Do[
+         a1 = a1 + resultx[2,i]*resultx[2,i];
+         a2 = a2 + resulty[2,i]*resulty[2,i];
+         a3 = a3 + aftx[i]*aftx[i];
+         a4 = a4 + afty[i]*afty[i];
+      ,{i,1,IM}];
+      a1 = Sqrt[a1] / IM;  a2 = Sqrt[a2] / IM;
+      a3 = Sqrt[a3] / IM;  a4 = Sqrt[a4] / IM;
+      Print["mat x rms = ",a1,"   mat y rms = ",a2,"   sad x rms = ",a3,"   sadt y rms = ",a4,"   ",Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi];
+    ,{l,1,nit}];
+  ,{j,1,nstage}];
+
+  If[Twiss["NX","$$$"]/2/Pi>nxhi, daflag = 0];
+  If[Twiss["NX","$$$"]/2/Pi<nxlo, daflag = 0];
+  If[Twiss["NY","$$$"]/2/Pi>nyhi, daflag = 0];
+  If[Twiss["NY","$$$"]/2/Pi<nylo, daflag = 0];
+
+    FFS[ccemit];
+    FFS[cc];
+
+   ResultWrite[codout];
+   WriteKick[kickout];
+   RMSWrite[rmsout];
+   Print["CHK seed ",k," tune ",Twiss["NX","$$$"]/2/Pi," ",Twiss["NY","$$$"]/2/Pi," codrms ",CODrmsnoX," ",CODrmsnoY," daflag ",daflag];
+
+    ! DA は書き出しのあとに走らせる (元の台本は先に走らせていた。DynamicApertureSurvey のあとは `cell calc` の光学・COD が
+    ! 補正した状態でなくなる (チューンが 47.98 などに変わる) ので、先に走らせると書き出す COD・K0・統計が補正後の値と違ってしまう。README 参照)
+    If[daOn == 1 && daflag == 1,
+       DAsv[];
+    ,
+         datafile = OpenAppend[daout];
+           Write[datafile,k,"  x  ",0];
+           Write[datafile,k,"  y  ",0];
+         Close[datafile];
+    ];
+
+
+   ae = 0;
+   fe = 0;
+   te = 0;
+    FFS["DELX   ae Q*;"];
+    FFS["DELY   ae Q*;"];
+    FFS["DELX   ae S*;"];
+    FFS["DELY   ae S*;"];
+    FFS["DELX   ae B*;"];
+    FFS["DK     fe B*;"];
+    FFS["DK     fe Q*;"];
+    FFS["DK     fe S*;"];
+    FFS["DTHETA te B*;"];
+    FFS["DTHETA te Q*;"];
+    FFS["DTHETA te S*;"];
+
+  Do[
+       LINE["K0",dtnx[i]] = 0;
+  ,{i,1,ICX}];
+  Do[
+       LINE["K0",dtny[i]] = 0;
+  ,{i,1,ICY}];
+
+  FFS["USE RING NOEXPAND;"];
+  FFS[ccemit,6];
+  FFS["disp $$$",6];
+,{k,1,nseed}];
+stop;
+stop;

@@ -1,0 +1,22 @@
+! KEK-LS v03_68: 周回ラインの周期解とエミッタンス (RINGC = 標準セル 20 個、RING = 入射セルを含む)
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+names = {"RINGC", "RING"};
+Do[
+  nm = names[k];
+  FFS["USE " // nm // ";"];
+  FFS["cell calc emit;"];
+  Print["LINE ", nm];
+  Print["circumference [m]   = ", LINE["S","$$$"]];
+  Print["number of elements  = ", LINE["LENGTH"]];
+  Print["tune nx ny          = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  Print["EMITX [m rad]       = ", EMITX];
+  Print["SIGE                = ", SIGE];
+  Print["SIGZ [m]            = ", SIGZ];
+  Print["MOMENTUM [eV]       = ", MOMENTUM];
+,{k,1,2}];
+Exit;

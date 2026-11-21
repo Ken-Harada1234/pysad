@@ -1,0 +1,15 @@
+MINCOUP=0.01 PBUNCH=1e+06: EMITXC=1.2681e-08 EMITYC=1.2681e-10 (ratio 0.0100) SIGE=4.3261e-04 SIGZ=22.0225 mm
+   a=0.00400  pysad 438559.6515 s  elegant 419778.0000 s  ratio elegant/pysad 0.9572   (1e9 粒子/バンチ換算: 438.56 / 419.78 s)
+   a=0.00600  pysad 1228611.9384 s  elegant 1185560.2800 s  ratio elegant/pysad 0.9650   (1e9 粒子/バンチ換算: 1228.61 / 1185.56 s)
+   a=0.01000  pysad 4815382.5212 s  elegant 4776670.8000 s  ratio elegant/pysad 0.9920   (1e9 粒子/バンチ換算: 4815.38 / 4776.67 s)
+   a=0.01618  pysad 19264462.9840 s  elegant 19745042.4000 s  ratio elegant/pysad 1.0249   (1e9 粒子/バンチ換算: 19264.46 / 19745.04 s)
+MINCOUP=0.1 PBUNCH=1e+06: EMITXC=1.2680e-08 EMITYC=1.2680e-09 (ratio 0.1000) SIGE=4.3261e-04 SIGZ=22.0223 mm
+   a=0.00400  pysad 1422648.6842 s  elegant 1428616.4400 s  ratio elegant/pysad 1.0042   (1e9 粒子/バンチ換算: 1422.65 / 1428.62 s)
+   a=0.00600  pysad 3960185.8798 s  elegant 3748932.0000 s  ratio elegant/pysad 0.9467   (1e9 粒子/バンチ換算: 3960.19 / 3748.93 s)
+   a=0.01000  pysad 15349844.4137 s  elegant 13931218.8000 s  ratio elegant/pysad 0.9076   (1e9 粒子/バンチ換算: 15349.84 / 13931.22 s)
+   a=0.01618  pysad 60463546.7987 s  elegant 55319328.0000 s  ratio elegant/pysad 0.9149   (1e9 粒子/バンチ換算: 60463.55 / 55319.33 s)
+MINCOUP=1 PBUNCH=1e+06: EMITXC=1.2680e-08 EMITYC=1.2680e-08 (ratio 1.0000) SIGE=4.3261e-04 SIGZ=22.0223 mm
+   a=0.00400  pysad 5283926.1694 s  elegant 6215652.0000 s  ratio elegant/pysad 1.1763   (1e9 粒子/バンチ換算: 5283.93 / 6215.65 s)
+   a=0.00600  pysad 14276475.0977 s  elegant 15258394.8000 s  ratio elegant/pysad 1.0688   (1e9 粒子/バンチ換算: 14276.48 / 15258.39 s)
+   a=0.01000  pysad 52544891.0834 s  elegant 50285088.0000 s  ratio elegant/pysad 0.9570   (1e9 粒子/バンチ換算: 52544.89 / 50285.09 s)
+   a=0.01618  pysad 192700510.9495 s  elegant 170510616.0000 s  ratio elegant/pysad 0.8848   (1e9 粒子/バンチ換算: 192700.51 / 170510.62 s)

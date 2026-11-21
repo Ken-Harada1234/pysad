@@ -1,0 +1,66 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.305E-15 $$$       f BX    #######  #   1.904681 $$$       f NX    #######  #   5.298682 $$$       f AY    #######  #    .000000 $$$       f BY    #######  #  14.584265 $$$       f NY    #######  #   4.163756
+$$$       f LENG  #######  #  187.07412
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -5.69E-5  2.989E-6  7.54E-23  -7.8E-25  -1.32E-6  -3.42E-5
+      Exit :  -5.69E-5  2.989E-6  2.91E-23  -4.8E-24  -1.32E-6  -3.42E-5
+
+    Extended Twiss Parameters
+AX: 8.580E-5 BX: 1.904690                            ZX: -2.93E-7  EX: 1.662949
+           PSIX: 1.46E-15                           ZPX: -2.50E-7 EPX: 1.94E-18
+R1: 4.97E-24 R2: -2.6E-20 AY: 6.381E-5 BY: 14.58346  ZY: -3.1E-20  EY: 1.94E-18
+R3: 2.27E-25 R4: -2.8E-22            PSIY: 6.25E-42 ZPY: -3.3E-22 EPY: 1.51E-19
+                                                     AZ:  .048755  BZ: 32.80716
+                                                                 PSIZ: 1.74E-16
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 1602532.9 Hz 
+Energy loss per turn U0 =  .3988547 MV  Effective voltage    Vc = 1.7000000 MV 
+Equilibrium position dz = 22.596207 mm  Momentum compact. alpha =    .03966
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 312.00606
+Bucket height     dV/P0 =  .0048016     Synchrotron frequency   = 57948.566 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune: 0.2987418           0.1637913          -0.0361606
+
+    Damping per one revolution:
+          X : -8.013725E-05   Y : -7.976586E-05   Z : -1.591393E-04
+    Damping time (sec):
+          X :  7.786793E-03   Y :  7.823048E-03   Z :  3.921170E-03
+    Tune shift due to radiation:
+          X :  3.927646E-07   Y :  3.429237E-07   Z : -1.982526E-07
+    Damping partition number:
+          X :    1.0047       Y :    1.0001       Z :    1.9952
+
+Emittance X            = 4.60178E-7 m   Emittance Y            = 6.5830E-43 m
+Emittance Z            = 1.73920E-5 m   Energy spread          = 7.28966E-4
+Bunch Length           = 23.9007827 mm  Beam tilt              = -1.548E-14 rad
+Beam size xi           = 1.53166799 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+circumference [m] =  187.0741280000
+number of elements =  516.0000000000
+tune nx ny =    5.2986816075    4.1637557671
+EMITX [m rad] =  4.601781860E-7  SIGE =  7.289664298E-4  SIGZ [m] =     .0239007827
+MOMENTUM [eV] =  2500000000.000
+bends =   28.0000000000  sum of ANGLE [rad] =    6.2831154400  quads =  116.0000000000  sexts =     .0000000000  octs =    8.0000000000  cavities =    2.0000000000
+CAVI VOLT [V] FREQ [Hz] =  850000.0000000  500000000.0000
+--- Twiss at the marks (straight sections)
+IMARK  #   1.0000000000  S =     .0000000000  BX BY EX AX = {   1.9046814194,  14.5842645410,   1.6630397990,    .0000000000}  NX NY/2pi =     .0000000000     .0000000000
+CAVI  #  53.0000000000  S =   17.9431520000  BX BY EX AX = {   7.3014465411,   8.5732021763, 4.16111948E-11,  -1.3951901780}  NX NY/2pi =     .5171364011     .2322668103
+MMARK  # 137.0000000000  S =   46.7685320000  BX BY EX AX = {  13.8903852925,   2.6122879045,   2.5414617946, 3.55271368E-15}  NX NY/2pi =    1.3246704019    1.0409389418
+DMARK  #  65.0000000000  S =   21.1731520000  BX BY EX AX = {  13.0893301878,   4.5312523130, 2.63915111E-11,   2.2654854992}  NX NY/2pi =     .5606398339     .3360578304
+--- Twiss at the bends of the normal cells
+B05  #  88.0000000000  S =   30.7672280000  BX BY EX AX = {   9.5086275700,   4.1802098478,   2.0921167785,   1.8432951270}  NX NY/2pi =     .8406745116     .5999021876
+B06  # 102.0000000000  S =   35.0613040000  BX BY EX AX = {   4.1204552900,   9.5337311645,   1.4846754218,   -.9516875158}  NX NY/2pi =    1.0088387869     .6821539033
+B07  # 116.0000000000  S =   39.3553800000  BX BY EX AX = {   9.5086275522,   4.1802100587,   2.0921167786,   1.8432951232}  NX NY/2pi =    1.0906745195     .8499021909
+B08  # 130.0000000000  S =   43.6494560000  BX BY EX AX = {   4.1204552953,   9.5337310325,   1.4846754218,   -.9516875185}  NX NY/2pi =    1.2588387949     .9321539049
+B09  # 145.0000000000  S =   47.9435320000  BX BY EX AX = {   9.5086275700,   4.1802098478,   2.0921167787,   1.8432951270}  NX NY/2pi =    1.3406745273    1.0999022014
+B10  # 156.0000000000  S =   52.2376080000  BX BY EX AX = {   4.1204552900,   9.5337311645,   1.4846754218,   -.9516875158}  NX NY/2pi =    1.5088388026    1.1821539171
+B11  # 167.0000000000  S =   56.5316840000  BX BY EX AX = {   9.5086275522,   4.1802100587,   2.0921167786,   1.8432951232}  NX NY/2pi =    1.5906745352    1.3499022047
+B12  # 180.0000000000  S =   60.8257600000  BX BY EX AX = {   4.1204552953,   9.5337310325,   1.4846754217,   -.9516875185}  NX NY/2pi =    1.7588388106    1.4321539187
+--- chromaticity d(nu)/d(dp/p), dp/p = +-0.001
+with the design sextupoles: {  -6.0801370719,  -5.1902515625}
+natural (SF* SD* = 0):      {  -6.0801370719,  -5.1902515625}

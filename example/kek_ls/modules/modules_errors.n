@@ -1,0 +1,48 @@
+! modules_errors.n: 誤差を与える・戻す関数 (FFS; の後で Get["../modules/modules_errors.n"]; する。使う台本: errors/ の 2 本)。
+! 元の correct_cod.sad・print_*.sad は、`DELX ae Q*;` などの FFS の誤差コマンドを直接並べていた。この K64 のビルドでは、
+! DELX・DELY (位置ずれ) は `cell calc` の COD に効かない (DUMP には値が出るが閉軌道は変わらない。gs・pysad とも)。DK (強さ)・DTHETA (回転) は効く。
+! そこで位置ずれは、成分ごとの DX・DY (LINE["DX","QFA1H.7"]) に GaussRandom[] で直接入れる。成分ごとの値が効くのは `USE ... NOEXPAND` と
+! `cell calc noexpand` (docs/11 A56)。GaussRandom[] は GCUT (打ち切り、σ 単位) を使う。
+! 使い方: ae・fe・te (位置ずれ [m]、強さの相対誤差、回転 [rad] の rms) と GCUT を決めて SeedRandom[seed]; SetErrors[]; ClearErrors[];
+
+! 四極 (Q*)・六極 (S*) の成分名のリスト (USE の後に呼ぶ)
+GetMagnetNames[]:=(
+  qnames = LINE["NAME","Q*.*"];
+  snames = LINE["NAME","S*.*"];
+  nq = Length[qnames];
+  ns = Length[snames];
+);
+
+SetErrors[]:=(
+  FFS["DK     fe B*;"];
+  FFS["DK     fe Q*;"];
+  FFS["DK     fe S*;"];
+  FFS["DTHETA te B*;"];
+  FFS["DTHETA te Q*;"];
+  FFS["DTHETA te S*;"];
+  Do[
+    LINE["DX",qnames[i]] = ae*GaussRandom[];
+    LINE["DY",qnames[i]] = ae*GaussRandom[];
+  ,{i,1,nq}];
+  Do[
+    LINE["DX",snames[i]] = ae*GaussRandom[];
+    LINE["DY",snames[i]] = ae*GaussRandom[];
+  ,{i,1,ns}];
+);
+
+ClearErrors[]:=(
+  FFS["DK     0 B*;"];
+  FFS["DK     0 Q*;"];
+  FFS["DK     0 S*;"];
+  FFS["DTHETA 0 B*;"];
+  FFS["DTHETA 0 Q*;"];
+  FFS["DTHETA 0 S*;"];
+  Do[
+    LINE["DX",qnames[i]] = 0;
+    LINE["DY",qnames[i]] = 0;
+  ,{i,1,nq}];
+  Do[
+    LINE["DX",snames[i]] = 0;
+    LINE["DY",snames[i]] = 0;
+  ,{i,1,ns}];
+);

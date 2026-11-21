@@ -1,0 +1,364 @@
+!@LAT 5GeV
+!=====================================================================
+! V0714_match_tune: v07_14 のチューンのマッチング (リング全体のチューン 47.865 / 16.655)
+!
+! 元: matching_v07_11 (matching_v07_13 は nx0 = 45.865、ny0 = 21.665 のチューンの打ち間違いの版)。
+! 流れ:
+!   1. 2 セルの単位 TCELLA (= MCELLA LCELLA) の「A 版」の偏向角を dtl・dtm だけ変えて崩し、
+!      セルのチューン nx0/15, ny0/15 に、セル境界のツイスと分散・βの上下限を条件にして
+!      四極 (Q*) と偏向磁石 (B1*, B2*) の K1 で合わせ直す (nitA 回繰り返し、毎回 fit 条件を立て直す)。
+!      MKMCA 等はセルの中心のマーク。
+!   2. 同じことを通常のセル TCELL (= MCELL LCELL) で nitN 回。
+!   3. それぞれ六極 S3*, S4* (S5 は S3 と等しい) で、セルの色収差を DP = 0.001 (中直線部) / 0.01 (長直線部) で合わせる
+!      (FIT のチューン条件は六極を入れる前のセルのチューンのまま)。MCELLA・LCELLA・MCELL・LCELL の 4 つ。
+!   4. リング (RING・RINGN・RINGA・RINGL・RINGM・RINGLA・RINGMA) の δ に対するチューンの 3 次の多項式フィット
+!      (六極 0)。元の挙動のまま PolynomialFit の係数 [1,2] を出す。この係数は ξ そのものではない (README 参照)。
+!   5. RINGA の始点から各要素まで、δ = ±0.1% の粒子を追跡して R56 (多項式フィット) を出す (最後の 10 要素)。
+! マッチングは設計値から始めるので、ほとんど動かない (dtl・dtm の崩しだけが戻る)。
+!=====================================================================
+!@PARAM nitA = 5
+!@PARAM nitN = 20
+!@PARAM doR56 = 1
+NPARA = 8;
+ON LOG BIPOL;
+OFF RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "15.10";
+  PageWidth = 1999;
+
+  dtl = .009;
+  dtm = .0129775;
+
+  dbetaa  = 11.5;
+  dbetala = 10.5;
+  bymaxa  = 15;
+
+  dbeta  = 10.5;
+  dbetal = 11.5;
+  bymax = 15;
+
+! tune
+! x : 0.135 / 0.865
+! y : 0.345 / 0.655
+
+  nx0 = 47.865;
+  ny0 = 16.655;
+  ex0 = 0.03;
+  bx0 = 2.7;
+  by0 = 4.7;
+
+! 設計 v05_27 の値を、βの目標の出発点にしていた (次の組が有効)
+bxmkmsa =  2.83638;  bymkmsa =  3.73509;
+bxmklsa =  3.61131;  bymklsa =  15.5488;
+bxmkms =  15.5919;  bymkms =  6.09844;
+bxmkls =  11.7081;  bymkls =  11.2495;
+bxs4ma =  6.05091;  bys4ma =  6.68527;
+bxs4la =  4.73772;  bys4la =  10.0760;
+bxs4m  =  6.87320;  bys4m  =  6.96931;
+bxs4l  =  5.44917;  bys4l  =  9.22563;
+
+! FitValue: βの値が [目標 - 幅, 目標 + 幅] を出たときだけ、その端を目標にする (範囲内なら条件なし)。
+! 各 fit 条件の直後に定義する (元の台本の順序のまま。fit 条件より前に定義すると、収束しなかった)。
+! (元の台本の typo: MKMSA BY の上限は bymklsa、MKMS BY の上限は bymkls を使う。挙動は元のまま)
+
+! ---- 2 セルの単位のマッチング (A 版) ----
+USE TCELLA;
+  cell calc emit;
+  disp $$$;
+
+ang0 = .05235987733333333;
+
+  Print[dtl,dtm];
+  LINE["ANGLE","Q4LA"] = -1*dtl;
+  LINE["ANGLE","Q3LA"] = -1*dtl;
+  LINE["ANGLE","B1LA"] = ang0 + dtl;
+  LINE["ANGLE","B2LA"] = ang0 + dtl;
+  LINE["ANGLE","Q3MA"] = -1*dtm;
+  LINE["ANGLE","Q4MA"] = -1*dtm;
+  LINE["ANGLE","B1MA"] = ang0 + dtm;
+  LINE["ANGLE","B2MA"] = ang0 + dtm;
+
+  cell calc;
+
+Do[
+     FFS["fit MKMCA BX bx0;"];
+     FFS["fit MKMCA BY by0;"];
+     FFS["fit MKMCA EX ex0;"];
+     FFS["fit MKMCA EPX 0;"];
+     FFS["fit MKLCA EX ex0;"];
+     FFS["fit MKLCA EPX 0;"];
+
+     FFS["fit MKMSA AX 0;"];
+     FFS["fit MKLSA AX 0;"];
+     FFS["fit MKMSA AY 0;"];
+     FFS["fit MKLSA AY 0;"];
+
+     FFS["fit MKMCA AX 0;"];
+     FFS["fit MKLCA AX 0;"];
+     FFS["fit MKMCA AY 0;"];
+     FFS["fit MKLCA AY 0;"];
+
+     FFS["fit MKMSA EX 0;"];
+     FFS["fit MKMSA EPX 0;"];
+     FFS["fit MKLSA EX 0;"];
+     FFS["fit MKLSA EPX 0;"];
+
+     FFS["fit B1LA BYM bymaxa;"];
+     FFS["fit B2LA BYM bymaxa;"];
+     FFS["fit B1MA BYM bymaxa;"];
+     FFS["fit B2MA BYM bymaxa;"];
+
+     FFS["fit MKMSA BX bxmkmsa;"];
+FitValue["MKMSA", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmkmsa - dbetala,bxmkmsa-dbetala,If[vnow> bxmkmsa + dbetala,bxmkmsa + dbetala, Null]];
+     FFS["fit MKMSA BY bymkmsa;"];
+FitValue["MKMSA", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymkmsa - dbetala,bymkmsa-dbetala,If[vnow> bymkmsa + dbetala,bymklsa + dbetala, Null]];
+     FFS["fit MKLSA BX bxmklsa;"];
+FitValue["MKLSA", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmklsa - dbetala,bxmklsa-dbetala,If[vnow> bxmklsa + dbetala,bxmklsa + dbetala, Null]];
+     FFS["fit MKLSA BY bymklsa;"];
+FitValue["MKLSA", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymklsa  -dbetala,bymklsa-dbetala,If[vnow> bymklsa + dbetala,bymklsa + dbetala, Null]];
+
+     FFS["fit MKS4MA BX bxs4ma"];
+FitValue["MKS4MA","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4ma - dbetaa,bxs4ma - dbetaa,If[vnow>bxs4ma + dbetaa,bxs4ma + dbetaa,Null]];
+     FFS["fit MKS4MA BY bys4ma"];
+FitValue["MKS4MA","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4ma - dbetaa,bys4ma - dbetaa,If[vnow>bys4ma + dbetaa,bys4ma + dbetaa,Null]];
+     FFS["fit MKS4LA BX bxs4la"];
+FitValue["MKS4LA","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4la - dbetaa,bxs4la - dbetaa,If[vnow>bxs4la + dbetaa,bxs4la + dbetaa,Null]];
+     FFS["fit MKS4LA BY bys4la"];
+FitValue["MKS4LA","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4la - dbetaa,bys4la - dbetaa,If[vnow>bys4la + dbetaa,bys4la + dbetaa,Null]];
+
+     FFS["fit NX nx0/15;"];
+     FFS["fit NY ny0/15;"];
+     FFS["free Q* K1"];
+     FFS["free B1* K1;"];
+     FFS["free B2* K1;"];
+     FFS["go;",6];
+
+,{i,1,nitA}];
+  FFS["type {BQ}*;",6];
+  cell calc emit;
+  Print["emitx = ", EMITX*10^9];
+  Print[Twiss["NX","$$$"]/2/Pi*15, Twiss["NY","$$$"]/2/Pi*15];
+  FFS["disp $$$",6];
+  FFS["SAVE ALL;"];
+
+! セルごとの色収差補正 (六極 S3*, S4*、S5 は S3 と等しい)
+FFS["USE MCELLA;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.001;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5MHA S3MHA 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+ FFS["USE LCELLA;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.01;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5LHA S3LHA 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+! ---- 2 セルの単位のマッチング (通常版) ----
+USE TCELL;
+
+  cell calc emit;
+  disp $$$;
+
+Do[
+     FFS["fit MKMC BX bx0;"];
+     FFS["fit MKMC BY by0;"];
+     FFS["fit MKMC EX ex0;"];
+     FFS["fit MKMC EPX 0;"];
+     FFS["fit MKLC EX ex0;"];
+     FFS["fit MKLC EPX 0;"];
+
+     FFS["fit MKMS AX 0;"];
+     FFS["fit MKLS AX 0;"];
+     FFS["fit MKMS AY 0;"];
+     FFS["fit MKLS AY 0;"];
+
+     FFS["fit MKMC AX 0;"];
+     FFS["fit MKLC AX 0;"];
+     FFS["fit MKMC AY 0;"];
+     FFS["fit MKLC AY 0;"];
+
+     FFS["fit MKMS EX 0;"];
+     FFS["fit MKMS EPX 0;"];
+     FFS["fit MKLS EX 0;"];
+     FFS["fit MKLS EPX 0;"];
+     FFS["fit B1L BYM bymax;"];
+     FFS["fit B2L BYM bymax;"];
+     FFS["fit B1M BYM bymax;"];
+     FFS["fit B2M BYM bymax;"];
+
+     FFS["fit MKMS BX bxmkms;"];
+FitValue["MKMS", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmkms-dbetal,bxmkms-dbetal,If[vnow> bxmkms+dbetal,bxmkms+dbetal, Null]];
+     FFS["fit MKMS BY bymkms;"];
+FitValue["MKMS", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymkms-dbetal,bymkms-dbetal,If[vnow> bymkms+dbetal,bymkls+dbetal, Null]];
+     FFS["fit MKLS BX bxmkls;"];
+FitValue["MKLS", "BX",dp_,vgoal_,vnow_]:=If[vnow<bxmkls-dbetal,bxmkls-dbetal,If[vnow> bxmkls+dbetal,bxmkls+dbetal, Null]];
+     FFS["fit MKLS BY bymkls;"];
+FitValue["MKLS", "BY",dp_,vgoal_,vnow_]:=If[vnow<bymkls-dbetal,bymkls-dbetal,If[vnow> bymkls+dbetal,bymkls+dbetal, Null]];
+
+     FFS["fit MKS4M BX bxs4m"];
+FitValue["MKS4M","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4m - dbeta,bxs4m - dbeta,If[vnow>bxs4m + dbeta,bxs4m + dbeta,Null]];
+     FFS["fit MKS4M BY bys4m"];
+FitValue["MKS4M","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4m - dbeta,bys4m - dbeta,If[vnow>bys4m + dbeta,bys4m + dbeta,Null]];
+     FFS["fit MKS4L BX bxs4l"];
+FitValue["MKS4L","BX",dp_,vgoal_,vnow_]:=If[vnow<bxs4l - dbeta,bxs4l - dbeta,If[vnow>bxs4l + dbeta,bxs4l + dbeta,Null]];
+     FFS["fit MKS4L BY bys4l"];
+FitValue["MKS4L","BY",dp_,vgoal_,vnow_]:=If[vnow<bys4l - dbeta,bys4l - dbeta,If[vnow>bys4l + dbeta,bys4l + dbeta,Null]];
+
+     FFS["fit NX nx0/15;"];
+     FFS["fit NY ny0/15;"];
+     FFS["free Q* K1"];
+     FFS["free B1* K1;"];
+     FFS["free B2* K1;"];
+     FFS["go;",6];
+
+,{i,1,nitN}];
+  type {BQ}*;
+  cell calc emit;
+  Print["emitx = ", EMITX*10^9];
+  Print[Twiss["NX","$$$"]/2/Pi*15, Twiss["NY","$$$"]/2/Pi*15];
+  FFS["disp $$$",6];
+SAVE ALL;
+
+FFS["USE MCELL;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.001;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5MH S3MH 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+ FFS["USE LCELL;"];
+    FFS["cell calc emit;",6];
+    nxcell = Twiss["NX","$$$"]/2/Pi;
+    nycell = Twiss["NY","$$$"]/2/Pi;
+    FFS["FIT;"];
+    FFS["NX nxcell 2;"];
+    FFS["NY nycell 2;"];
+    FFS["DP=0.01;"];
+    FFS["FREE S3*,S4*"];
+    FFS["COUP S5LH S3LH 1"];
+    FFS["GO;",6];
+    FFS["FITP 1;"];
+    FFS["type S*;",6];
+    FFS["SAVE"];
+
+! ---- リング全体の δ に対するチューン (六極 0)。元の挙動のまま、fit の係数 [1,2] ----
+! ChromFitRing[リング名, δ の範囲, 刻み] → chrx, chry (PolynomialFit の結果)、emitx (最後の δ での EMITX)
+ChromFitRing[ring_, dpm_, dst_]:=(
+  FFS["USE "//ring,6];
+  FFS["cell calc;",6];
+  FFS["calc;",6];
+  FFS["emit;",6];
+  tunex=Table[{i,0},{i,-dpm,dpm,dst}];
+  tuney=Table[{i,0},{i,-dpm,dpm,dst}];
+  FFS["S* 0;"];
+  j=0;
+  Do[
+    j = j + 1;
+    DP0=i;
+    FFS["cell calc emit;"];
+    tunex[j,2] = Twiss["NX","$$$"]/2/Pi;
+    tuney[j,2] = Twiss["NY","$$$"]/2/Pi;
+  ,{i,-dpm,dpm,dst}];
+  chrx = PolynomialFit[tunex,3];
+  chry = PolynomialFit[tuney,3];
+  emitx = EMITX;
+);
+
+ChromFitRing["RING", 0.005, 0.0005];
+chrringx = chrx; chrringy = chry; emitring = emitx;
+ChromFitRing["RINGN", 0.01, 0.001];
+chrringnx = chrx; chrringny = chry; emitringn = emitx;
+ChromFitRing["RINGA", 0.01, 0.001];
+chrringax = chrx; chrringay = chry; emitringa = emitx;
+ChromFitRing["RINGL", 0.01, 0.001];
+chrringlx = chrx; chrringly = chry; emitringl = emitx;
+ChromFitRing["RINGM", 0.01, 0.001];
+chrringmx = chrx; chrringmy = chry; emitringm = emitx;
+ChromFitRing["RINGLA", 0.01, 0.001];
+chrringlax = chrx; chrringlay = chry; emitringla = emitx;
+ChromFitRing["RINGMA", 0.01, 0.001];
+chrringmax = chrx; chrringmay = chry; emitringma = emitx;
+
+! ---- R56 (RINGA。元の挙動のまま) ----
+USE RINGA;
+     FFS["cell calc emit;"];
+     FFS["disp $$$;",6];
+     FFS["type {QBD}*;",6];
+     Print["emitx = ", EMITX*10^9];
+  deepee= 0.001;
+  prevs = 0;
+If[doR56 == 1,
+Do[
+  before = {1,{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{-deepee,-deepee/2,0,deepee/2,deepee},{1,1,1,1,1}}};
+  after  = TrackParticles[before,i]*1000;
+  If[Twiss["S",i] == prevs,
+      ,
+      R561 = after[2,5,1];
+      R562 = after[2,5,2];
+      R563 = after[2,5,3];
+      R564 = after[2,5,4];
+      R565 = after[2,5,5];
+      fit = PolynomialFit[Thread[{{-deepee,-deepee/2,0,deepee/2,deepee},after[2,5]}],4];
+      If[i>LINE["LENGTH"]-10,
+       Print[LINE["NAME",i],"   ",Twiss["S",i], fit[1,2],fit[1,3]];
+      ];
+  ];
+  prevs = Twiss["S",i];
+,{i,1,LINE["LENGTH"],1}];
+];
+
+Print["ringx   =", chrringx[1,2],  "     ringy   =", chrringy[1,2]  ,emitring];
+Print["ringnx  =", chrringnx[1,2], "     ringny  =", chrringny[1,2] ,emitringn];
+Print["ringmx  =", chrringmx[1,2], "     ringmy  =", chrringmy[1,2] ,emitringm];
+Print["ringlx  =", chrringlx[1,2], "     ringly  =", chrringly[1,2] ,emitringl];
+Print["ringax  =", chrringax[1,2], "     ringay  =", chrringay[1,2] ,emitringa];
+Print["ringmax =", chrringmax[1,2],"     ringmay =", chrringmay[1,2],emitringma];
+Print["ringlax =", chrringlax[1,2],"     ringlay =", chrringlay[1,2],emitringla];
+
+FFS["USE RING;"];
+  FFS["cell calc emit"];
+  type {BQS}*;
+  disp $$$;
+  Print[nx0," ",ny0," ",EMITX," ",MomentumCompaction/.Emittance[]," ",Twiss["NX","$$$"]/2/Pi," ",Twiss["NY","$$$"]/2/Pi];
+  Print[" ringx   =", chrringx[1,2],  "     ringy   =", chrringy[1,2]  ,"   emit = ", emitring];
+  Print[" ringnx  =", chrringnx[1,2], "     ringny  =", chrringny[1,2] ,"   emit = ", emitringn];
+  Print[" ringmx  =", chrringmx[1,2], "     ringmy  =", chrringmy[1,2] ,"   emit = ", emitringm];
+  Print[" ringlx  =", chrringlx[1,2], "     ringly  =", chrringly[1,2] ,"   emit = ", emitringl];
+  Print[" ringax  =", chrringax[1,2], "     ringay  =", chrringay[1,2] ,"   emit = ", emitringa];
+  Print[" ringmax =", chrringmax[1,2],"     ringmay =", chrringmay[1,2],"   emit = ", emitringma];
+  Print[" ringlax =", chrringlax[1,2],"     ringlay =", chrringlay[1,2],"   emit = ", emitringla];
+disp MKMS;
+disp MKLS;
+disp MKMSA;
+disp MKLSA;
+disp $$$;
+  Print["CHK tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+stop;
+stop;

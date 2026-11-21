@@ -1,0 +1,24 @@
+! modules_general.n: KEK-LS の台本が共通で使う関数 (FFS; の後で Get["../modules/modules_general.n"]; する)。
+! 元の modules_general.n から、描画 (WriteGraphs: draw コマンド、gs・pysad とも窓や topdrawer の出力が
+! 無いので図は PNG に別に作る) と使われていない GetA[] を除いた。DAsv[] の中身は元のまま (追跡の周回数
+! DAturns を変数にした。既定 5000 は元と同じ。重い。台本側で DAturns = 500; などと小さくできる)。
+
+DAturns = 5000;
+
+! DAsv[]: 水平 (x = 負側 400 σ まで) と垂直方向 (y) のダイナミックアパーチャを、運動量ずれ ±4.5σδ... を
+!   dp/2 刻み (σE の 0.01/SIGE 倍) の 19 点で求める。res[2,2,k,2] が運動量 k 番目の到達振幅 (σ 単位)。
+!   戻り値は垂直方向の res。表示は Output->6 (画面)。
+DAsv[]:=(DAPWIDTH = 51;
+           FFS["cell calc emit",6];
+           dp = 0.01 / SIGE;
+           zrange   = Range[-4.5 * dp, 4.6 * dp, dp /2];
+           range    = {{0,-400},{1,1},zrange};
+           FFS["cell calc"];
+           res = DynamicApertureSurvey[range,DAturns,Output->6];
+           Print[res[2,2,1,2],res[2,2,2,2],res[2,2,3,2],res[2,2,4,2],res[2,2,5,2],res[2,2,6,2],res[2,2,7,2],res[2,2,8,2],res[2,2,9,2],res[2,2,10,2],res[2,2,11,2],res[2,2,12,2],res[2,2,13,2],res[2,2,14,2],res[2,2,15,2],res[2,2,16,2],res[2,2,17,2],res[2,2,18,2],res[2,2,19,2]];
+           range    = {{1,1},{0,-400},zrange};
+           FFS["cell calc"];
+           res = DynamicApertureSurvey[range,DAturns,Output->6];
+           Print[res[2,2,1,2],res[2,2,2,2],res[2,2,3,2],res[2,2,4,2],res[2,2,5,2],res[2,2,6,2],res[2,2,7,2],res[2,2,8,2],res[2,2,9,2],res[2,2,10,2],res[2,2,11,2],res[2,2,12,2],res[2,2,13,2],res[2,2,14,2],res[2,2,15,2],res[2,2,16,2],res[2,2,17,2],res[2,2,18,2],res[2,2,19,2]];
+           res;
+          );

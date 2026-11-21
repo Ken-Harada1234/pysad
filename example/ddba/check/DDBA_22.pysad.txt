@@ -1,0 +1,49 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.3973E-6 $$$       f BX    #######  #   2.700006 $$$       f NX    #######  #  47.865052 $$$       f AY    #######  #  -1.417E-5 $$$       f BY    #######  #   4.699718 $$$       f NY    #######  #  16.665097
+$$$       f LENG  #######  #  749.48114
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  2.274E-6  8.660E-6  1.27E-23  -2.2E-24  6.468E-8  3.402E-4
+      Exit :  2.274E-6  8.660E-6  2.39E-24  3.46E-24  6.468E-8  3.402E-4
+
+    Extended Twiss Parameters
+AX:  .006881 BX: 2.704148                            ZX: -1.60E-4  EX:  .029824
+           PSIX: 1.26E-17                           ZPX: 1.634E-4 EPX: 1.13E-17
+R1: -2.6E-21 R2: 5.12E-20 AY: -.001070 BY: 4.665587  ZY: 4.12E-18  EY: 1.13E-17
+R3: 2.65E-22 R4: -1.5E-20            PSIY: 8.72E-41 ZPY: -9.4E-19 EPY: -2.5E-18
+                                                     AZ: -.001917  BZ: 1.543654
+                                                                 PSIZ: -8.9E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 399999.99 Hz 
+Energy loss per turn U0 = 3.4534395 MV  Effective voltage    Vc = 7.0000000 MV 
+Equilibrium position dz = 49.229991 mm  Momentum compact. alpha = 4.0577E-5
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1250.0000
+Bucket height     dV/P0 =  .0783580     Synchrotron frequency   = 1254.1368 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune:-0.1349471          -0.3349596          -0.0031353
+
+    Damping per one revolution:
+          X : -7.315974E-04   Y : -3.452383E-04   Z : -3.041107E-04
+    Damping time (sec):
+          X :  3.417180E-03   Y :  7.241374E-03   Z :  8.220690E-03
+    Tune shift due to radiation:
+          X : -1.040179E-06   Y : -1.229124E-05   Z :  5.957738E-08
+    Damping partition number:
+          X :    2.1191       Y :    1.0000       Z :    0.8809
+
+Emittance X            = 8.3032E-10 m   Emittance Y            = -1.820E-36 m
+Emittance Z            = 3.18628E-6 m   Energy spread          =  .00143664
+Bunch Length           = 2.21787514 mm  Beam tilt              = 5.0314E-12 rad
+Beam size xi           =  .06388265 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+circumference [m] =  749.4811449790
+number of elements =  3544.000000000
+tune nx ny =   47.8650520085   16.6650968281
+EMITX [m rad] =  8.30322827E-10  SIGE =     .0014366442  SIGZ [m] =     .0022178751
+MOMENTUM [eV] =  5000000000.000
+bends =  120.0000000000  sum of ANGLE [rad] =    7.1622852800  small-angle bends =   80.0000000000  quads =  250.0000000000  sexts =  360.0000000000  octs =   60.0000000000  cavities =    1.0000000000
+CAVI total VOLT [V] FREQ [Hz] HARM =  7000000.000000  500000000.0139  1250.000000000

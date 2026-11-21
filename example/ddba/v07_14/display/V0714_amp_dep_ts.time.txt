@@ -1,0 +1,2 @@
+2026-11-21 14:48 V0714_amp_dep_ts.sad  gs 1 s, pysad 18 s
+2026-11-21 15:16 V0714_amp_dep_ts.sad  gs 4 s, pysad 15 s

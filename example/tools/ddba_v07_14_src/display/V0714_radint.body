@@ -1,0 +1,110 @@
+!@LAT 5GeV
+!=====================================================================
+! V0714_radint: 放射積分 (I1〜I5) を、偏向磁石の中の Twiss の解析式で数え直して SAD の Emittance[] と比べる
+!
+! 元: calc_RadInt.sad。RING の B*・Q3*A*・Q4*A* (逆向き偏向 -0.009 rad を持つ A 版の Q3・Q4) を偏向磁石として、
+!     各磁石の中央の Twiss (BX・AX・EX・EPX) から、磁石を半分ずつ (L/2 ずつ、勾配 K1 つき) の解析式で I5 (H の積分)・I1・I2・I3・I4 を足し、
+!     Jx = 1 - I4/I2、Jz = 2 + I4/I2、εx = Cq γ² I5 / (I2 Jx) を出す。最後に SAD の Emittance[] の εx を出す。
+! 流れ: cell calc emit → Print[I1,I2,I3,I4,I5] → Print[I4/I2, Jx, Jy, Jz] → Print[自前の εx] → Print[SAD の εx]。
+! 注意: Jy = 1 は垂直方向に偏向磁石がない場合だけ正しい。DX 等の誤差は入れない設計の状態。
+!       磁石の中央の Twiss は `num+0.5` の位置 (磁石の中点) で読む (SAD の位置の番号の流儀)。
+!=====================================================================
+ON LOG RAD FLUC COD RFSW RADCOD;
+FFS;
+  $FORM = "15.10";
+  PageWidth = 1999;
+USE RING;
+  cell calc emit;
+bposi = Flatten[{LINE["POSITION","B*"],LINE["POSITION","Q3*A*"],LINE["POSITION","Q4*A*"]}];
+GetIntegralCH[num_]:=(
+    IH = 0;
+   bex = Twiss["BX",num+0.5];
+   alx = Twiss["AX",num+0.5];
+   gax = (1+alx*alx)/bex;
+   etx = Twiss["EX",num+0.5];
+   epx = Twiss["EPX",num+0.5];
+   L   = LINE["L",num]/2;
+   tha = LINE["ANGLE",num]/2;
+   rho = L/tha;
+   k1  = -1*LINE["K1",num];
+   k   = k1/L/2;
+   kef2= k - 1/rho/rho;
+   If[kef2>0,
+   kef = Sqrt[kef2];
+   aaa = 2*(-8*kef^2*rho*epx*Sinh[kef*L]+8*kef^3*(kef^2*etx*rho+1)*rho*epx*L)/4/kef^5/rho^2;
+   bbb = 2*(kef^2*Sinh[2*kef*L]+4*kef^5*rho^2*epx^2*L-2*kef^3*L)/4/kef^5/rho^2;
+   ccc = 2*(-8*(1+kef^2*rho*etx)*Sinh[kef*L]+6*kef*L+4*kef^5*rho^2*etx^2*L+Sinh[2*kef*L]+8*kef^3*rho*etx*L)/4/kef^5/rho^2;
+   IH = IH + aaa * alx + bbb * bex + ccc * gax;
+    ,
+   kef = Sqrt[-kef2];
+   aaa = 2*(8*kef^2*rho*epx*Sin[kef*L]+8*kef^3*(kef^2*etx*rho-1)*rho*epx*L)/4/kef^5/rho^2;
+   bbb = 2*(-kef^2*Sin[2*kef*L]+4*kef^5*rho^2*epx^2*L+2*kef^3*L)/4/kef^5/rho^2;
+   ccc = 2*(-8*(1-kef^2*rho*etx)*Sin[kef*L]+6*kef*L+4*kef^5*rho^2*etx^2*L+Sin[2*kef*L]-8*kef^3*rho*etx*L)/4/kef^5/rho^2;
+   IH = IH + aaa * alx + bbb * bex + ccc * gax;
+   ];
+   IH = IH /rho/rho/Abs[rho];
+   IH
+);
+GetIntegralEX[num_]:=(
+   IE = 0;
+   etx = Twiss["EX",num+0.5];
+   epx = Twiss["EPX",num+0.5];
+   L   = LINE["L",num]/2;
+   tha = LINE["ANGLE",num]/2;
+   rho = L/tha;
+   k1  = -1*LINE["K1",num];
+   k   = k1/L/2;
+   kef2= k - 1/rho/rho;
+   If[kef2>0,
+   kef = Sqrt[kef2];
+   IE = ((etx*kef^2*rho+1)*Sinh[kef*L]+epx*kef*rho*Cosh[kef*L]-kef*L-kef*rho*epx)/kef^3/rho;
+   etx = Twiss["EX",num+0.5];
+   epx = -1*Twiss["EPX",num+0.5];
+   IE = IE + ((etx*kef^2*rho+1)*Sinh[kef*L]+epx*kef*rho*Cosh[kef*L]-kef*L-kef*rho*epx)/kef^3/rho;
+   ,
+   kef = Sqrt[-kef2];
+   IE = ((etx*kef^2*rho-1)*Sin[kef*L]-epx*kef*rho*Cos[kef*L]+kef*L+kef*rho*epx)/kef^3/rho;
+   etx = Twiss["EX",num+0.5];
+   epx = -1*Twiss["EPX",num+0.5];
+   IE = IE + ((etx*kef^2*rho-1)*Sin[kef*L]-epx*kef*rho*Cos[kef*L]+kef*L+kef*rho*epx)/kef^3/rho;
+   ];
+   IE
+);
+Jx = 0;
+Jy = 0;
+Jz = 0;
+DFac   = 0;
+RadIntI1 = 0;
+RadIntI2 = 0;
+RadIntI3 = 0;
+RadIntI4 = 0;
+RadIntI5 = 0;
+   Do[
+      IH = GetIntegralCH[bposi[i]];
+      RadIntI5 = RadIntI5 + IH;
+   ,{i,Length[bposi]}];
+   Do[
+      IE = GetIntegralEX[bposi[i]];
+      L   = LINE["L",bposi[i]];
+      tha = LINE["ANGLE",bposi[i]];
+      rho = L/tha;
+      k1  = -LINE["K1",bposi[i]]/L;
+      RadIntI1  = RadIntI1 + IE / rho;
+      RadIntI2  = RadIntI2 + tha*tha/L;
+      RadIntI3  = RadIntI3 + L / rho / rho / Abs[rho];
+      RadIntI4  = RadIntI4 + IE*(1/rho^3-2*k1/rho);
+   ,{i,Length[bposi]}];
+   Print[RadIntI1,RadIntI2,RadIntI3,RadIntI4,RadIntI5];
+   DFac = RadIntI4 / RadIntI2;
+   sademit = Emittance[];
+   Jx = 1 - DFac;
+   Jy = 1;            !!!!!!!  only varid for the case without vertical bendings.
+   Jz = 2 + DFac;
+   Print[DFac, Jx,Jy,Jz];
+   cq = 3.832/10000;
+   gamma = MOMENTUM / 1000000/0.51099906;
+   resemit = cq * gamma * gamma * RadIntI5 / RadIntI2 /  Jx;
+   Print[resemit];
+   Print[(Emittances/.sademit)[1]];
+stop;
+stop;

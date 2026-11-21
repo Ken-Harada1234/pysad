@@ -1,0 +1,40 @@
+# LMA: local momentum acceptance (dp_plus >= 0, dp_minus <= 0). bracket width <= tol, value = largest surviving dp
+# compat_mode = v2
+# momentum_GeV = 0.5800000000000001
+# circumference_m = 45.70439999999998
+# nlat = 200
+# rfsw = True
+# rad = True
+# fluc = False
+# check_every = 1
+# LOSSAMPL_m = 0.01
+# LOSSDZ_m = 100.0
+# orbit_residual = 1.772892898162454e-18
+# bucket_height = 0.01617565869294797
+# nu_s = -0.0015245738838785344
+# phi_s_rad = 0.1236478909263799
+# U0_eV = 6166.703905021532
+# Vrf_eV = 49999.99999999999
+# momentum_compaction = 0.010669400951946904
+# nturn = 1312
+# nsynch_default = 2.0
+# dpmax = 0.020219573366184962
+# ncoarse = 12
+# nsub = 3
+# tol = 0.0001
+# bucket = True
+# bucket_zlimit_m = 1.540691417974548
+# x0 = 0.0
+# y0 = 0.0
+# npositions = 6
+# workers = 2
+# seconds = 94.0
+# tracked_particles = 258
+# alost_used = 0.01
+# loc  s[m]  name  dp_plus  dp_minus  hi_plus  hi_minus  reason_plus  reason_minus
+    2     0.000000 D14837     1.598083e-02 -1.608614e-02 1.600716e-02 -1.611247e-02 aper  aper 
+    3     1.483700 PM         1.598083e-02 -1.608614e-02 1.600716e-02 -1.611247e-02 aper  aper 
+   11     2.973700 D0190      8.293184e-03 -8.556460e-03 8.319512e-03 -8.582788e-03 aper  aper 
+   20     4.003700 QF2        8.293184e-03 -8.556460e-03 8.319512e-03 -8.582788e-03 aper  aper 
+   25     5.493700 D0180      1.598083e-02 -1.608614e-02 1.600716e-02 -1.611247e-02 aper  aper 
+   33     7.617400 MKE        1.598083e-02 -1.608614e-02 1.600716e-02 -1.611247e-02 aper  aper 

@@ -1,0 +1,2 @@
+2026-11-21 14:58 V0714_correct_cod_2.5GeV.sad  gs 166 s, pysad 131 s
+2026-11-21 15:12 V0714_correct_cod_2.5GeV.sad  gs 316 s, pysad 120 s

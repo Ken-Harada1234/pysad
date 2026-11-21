@@ -1,0 +1,2 @@
+astrid2: 局所の LMA (25 位置、1 セルを周期的に) の寿命: K64 の表 9501.7 s、Piwinski 型 9327.1 s (Piwinski/K64 − 1 = -1.8%)
+kekls: 局所の LMA (43 位置、1 セルを周期的に) の寿命: K64 の表 26875.7 s、Piwinski 型 26862.5 s (Piwinski/K64 − 1 = -0.0%)

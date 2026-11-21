@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2next P2 項目 2: v2 の Emittance[] と RADINT の差 (矩形磁石、大きなリング B で 1.4e-3) の原因 = EMITDIV の既定 (1) の離散化の誤差 (k64・v2・扇形・矩形とも同じ)。
-大きなリング B (8 GeV、1436 m。ユーザーのラティスなので名前・パスは書かない) の数値 (2026-11-19): εx (RFSW、RADCOD) を EMITDIV = 1・2・3・4・8・16 で
+"""v2next P2 項目 2: v2 の Emittance[] と RADINT の差 (矩形磁石、SP8 (大きなリング B) で 1.4e-3) の原因 = EMITDIV の既定 (1) の離散化の誤差 (k64・v2・扇形・矩形とも同じ)。
+SP8 (大きなリング B、8 GeV、1436 m。SPring-8 型、デザインレポートより再現。ファイルは追跡外なのでパスは書かない) の数値 (2026-11-19): εx (RFSW、RADCOD) を EMITDIV = 1・2・3・4・8・16 で
   k64 の矩形 (E1 = E2 = 0.5): 6.955790e-9 6.947071e-9 6.946637e-9 6.946573e-9 6.946554e-9 6.946556e-9   (RADINT の 6.955384e-9 に既定で 1e-4: 離散化 +1.3e-3 と端の項が 2 倍の誤り −1.3e-3 が相殺)
   v2 の矩形:              6.965116e-9 6.955988e-9 6.955497e-9 6.955414e-9 6.955378e-9 6.955375e-9   (収束値は RADINT と 1.3e-6。既定は +1.4e-3)
   k64 の扇形 (E = 0):     6.877552e-9 6.868536e-9 6.868086e-9 6.868019e-9 6.867998e-9 6.868000e-9   (既定の誤差 +1.4e-3 は矩形と同じ)
@@ -9,7 +9,7 @@ import io, os, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests'))
-os.environ.setdefault('PYSAD_SAD_PACKAGES', 'D:/work/SAD-master/SAD-master/Packages')
+# 環境変数 PYSAD_SAD_PACKAGES (K64 版 SAD の Packages のフォルダ) を指定して実行する
 from pysad import ffscmd, compat, emit6d
 import _a2_indep as A
 

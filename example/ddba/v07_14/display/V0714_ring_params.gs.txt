@@ -1,0 +1,978 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 15:16:11 Saturday 11/21/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+!=====================================================================
+! DDBA ハイブリッドリング v07_14 (5 GeV、周長 749.48 m、30 セル)
+!
+! 蓄積リングの設計版 v07_14。長直線部 (LS、約 10.02 m) を持つセルと中直線部 (MS、約 5.02 m) を持つセルが
+! 交互に並ぶ DDBA 型。対称性は鏡面対称の 1 回対称だけ (周期性なし)。RING はセル 30 個 (LS 型 15 + MS 型 15)。
+!
+! エネルギー      5 GeV
+! RF              6.5 MV、ハーモニック数 1250
+! チューン        (47.865, 16.655)  (RINGSP・RINGINJ・RINGSYM とも)
+! エミッタンス    εx 832  pm rad (RING、RAD ON の cell calc emit)
+! 周長            749.4809 m (RING)
+!
+! セル (偏向磁石のあいだの中心 MKLC・MKMC から次の中心まで。直線部の中心 MKLS・MKMS がセルの中央)
+!   LCELL / LCELLA    長直線部のセル。LCELLA は「A 版」(偏向磁石 B1LA・B2LA の角度が 0.06136 rad で、
+!                     通常の 0.05236 rad より大きく、Q3LA・Q4LA は逆向きの偏向 -0.009 rad を持つ)。
+!                     LCELLH・LCELLHA はその半分 (六極 S1LH〜S5LH、S1LHA〜S5LHA)
+!   MCELL / MCELLA    中直線部のセル。同様
+!   TCELL = MCELL LCELL、TCELLA = MCELLA LCELLA (2 セルの単位。チューンのマッチングの単位)
+!   RINGSP  = MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED
+!             (元の台本で、5 GeV の版の有効な RING。SP 輸送の計算用)
+!   RINGINJ = 元の台本で、2.5 GeV の版の有効な RING (通常の入射用の並び)
+!   RINGSYM = HRING RFC -HRING (鏡面対称の並び。RFC の左右が互いの鏡像)
+!   RING    = このファイルでは RINGSP と同じ
+!   RINGL・RINGM・RINGLA・RINGMA・RINGN・RINGA  1 種類のセルだけ、または TCELL・TCELLA だけを並べたリング (六極のマッチング用)
+!
+! 六極 (K2) は 20231205 の再調整版で、pysad の作者とは別の研究者 (下記の公開論文の著者の一人) の手による最適化の結果
+! (元の台本は古い組を先に定義し、
+! あとの定義が有効になる書き方だったので、古い組は除いた)。
+!   関連する公開論文: K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac",
+!   J. Synchrotron Rad. 29, 118-124 (2022), DOI 10.1107/S1600577521012753。
+!   注意: この論文に六極の K2 の値や最適化の手法の記述はなく、論文の暫定設計 (3 GeV、周長 350 m、16 セル) は
+!   v07_14 とは別の版。K2 が論文の設定と一致する、同じ最適化の結果である、という意味ではない。
+! MARK のツイスの保存値 (MRST、MKS1LA など) は設計時のもので、cell calc では使わない。
+!
+! このファイルは FFS; の前に置く (要素・ライン定義だけ。台本は後ろに続ける)。
+!=====================================================================
+ MOMENTUM = 5GEV;
+
+ DRIFT  DLL1    =(L =5.0107385 )    DLL2    =(L =.05 )   D1      =(L =.15 )   D1H     =(L =.075 )  D2      =(L =.27 )
+        D5      =(L =.3 )    D31     =(L =.05 )   D32     =(L =.28 )   D32O    =(L =.18 )   D6      =(L =.36 )   DLS1    =(L =.05 )
+        DLS2    =(L =.05 )   DLS3    =(L =.96559253 )    DLM2    =(L =.05 )   DLM1    =(L =2.5107385 )
+        DLMN    =(L =2.5107861845443584 )  DLLN    =(L =5.010819133360125 )
+ ;
+ BEND   HD      =(ANGLE =0 )
+        VD      =(ANGLE =0     ROTATE =-90 DEG )
+        B1LA    =(L =1.2  ANGLE =.06135987733333333     E1 =.5    E2 =.5    K1 =-.09271790151735919 )
+        Q3LA    =(L =.3   ANGLE =-.009   K1 =.6112205080557542 )
+        Q4LA    =(L =.3   ANGLE =-.009   K1 =.47461150300592775 )
+        B2LA    =(L =1.2  ANGLE =.06135987733333333     E1 =.5    E2 =.5    K1 =-.8590504097588227 )
+        B2MA    =(L =1.2  ANGLE =.06533737733333334     E1 =.5    E2 =.5    K1 =-.8205183320962872 )
+        Q4MA    =(L =.3   ANGLE =-.0129775    K1 =.39344476802505485 )
+        Q3MA    =(L =.3   ANGLE =-.0129775    K1 =.6382577905638572 )
+        B1MA    =(L =1.2  ANGLE =.06533737733333334     E1 =.5    E2 =.5    K1 =-.4685182105338529 )
+        B2M     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.8593522050989405 )
+        B1M     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.6333642925795774 )
+        B2L     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.8878435894964858 )
+        B1L     =(L =1.2  ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.25476665794856473 )
+ ;
+ QUAD   Q1LA    =(L =.3   K1 =.8662613515624021 )
+        Q2LA    =(L =.2   K1 =-.7792933566920979 )
+        Q5LA    =(L =.3   K1 =.7617251199000916 )
+        QALA    =(L =.2   K1 =-.004629829856315495 )
+        Q5MA    =(L =.3   K1 =.7321859763416333 )
+        Q2MA    =(L =.2   K1 =-.44737310720988616 )
+        Q1MA    =(L =.3   K1 =.7625331308684621 )
+        Q5M     =(L =.3   K1 =.7659524148481732 )
+        Q4M     =(L =.3   K1 =.3751849155591443 )
+        Q3M     =(L =.3   K1 =.8777169537514825 )
+        Q2M     =(L =.2   K1 =-.25724655586604894 )
+        Q1M     =(L =.3   K1 =.6327680018894143 )
+        QAL     =(L =.2   K1 =-.05061756390068869 )
+        Q5L     =(L =.3   K1 =.8365664846626356 )
+        Q4L     =(L =.3   K1 =.4391706990273402 )
+        Q3L     =(L =.3   K1 =.8207930351316595 )
+        Q2L     =(L =.2   K1 =-.6338953059952335 )
+        Q1L     =(L =.3   K1 =.7308448245076412 )
+ ;
+ ! 六極 (20231205 の再調整版。元の台本は、これより前に古い六極の組を定義し、あとの定義が有効だったので、古い組は除いた)
+ SEXT   S1MH    =(L =0.1   K2 =+4.1831437)
+        S2MH    =(L =0.1   K2 =-5.3856367)
+        S3MH    =(L =0.1   K2 =-20.2905230)
+        S4MH    =(L =0.1   K2 =+21.0524050)
+        S5MH    =(L =0.1   K2 =-9.0526099)
+        S1LH    =(L =0.1   K2 =+2.2786354)
+        S2LH    =(L =0.1   K2 =-1.8547000)
+        S3LH    =(L =0.1   K2 =-27.9527650)
+        S4LH    =(L =0.1   K2 =+32.6473770)
+        S5LH    =(L =0.1   K2 =-12.7925740)
+        S1MHA    =(L =0.1   K2 =+8.7214956)
+        S2MHA    =(L =0.1   K2 =-8.7984769)
+        S3MHA    =(L =0.1   K2 =-15.1553200)
+        S4MHA    =(L =0.1   K2 =+19.7296880)
+        S5MHA    =(L =0.1   K2 =-11.6632610)
+        S1LHA    =(L =0.1   K2 =+2.0882064)
+        S2LHA    =(L =0.1   K2 =-3.5062268)
+        S3LHA    =(L =0.1   K2 =-26.2695260)
+        S4LHA    =(L =0.1   K2 =+25.5587320)
+        S5LHA    =(L =0.1   K2 =-10.8576220)
+;
+
+ OCT    OC1     =(L =.1   K3 =0 )
+ ;
+ CAVI   RFC     =(VOLT =6.5e+06  HARM =1250 )
+
+ ;
+ MONI   PM                              =()
+ ;
+ MARK   MRST    =(AX =-2.9453565230162487e-14 BX =5.365953464882752    AY =-2.443028620030068e-14    BY =5.062056422217577
+           EX =-1.0997329979603072e-09   EPX =1.7108262097438037e-15   DP =.01   SIGZ =.0020558399131841115
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLSA   =(AX =-2.9453565230162487e-14 BX =5.365953464882752    AY =-2.443028620030068e-14    BY =5.062056422217577
+           EX =-1.0997329979603072e-09   EPX =1.7108262097438037e-15   DP =.01   EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1LA  =(AX =-.9617561042551686 BX =10.329325219722564   PSIX =.7659059074667396  AY =-1.0194944642160502
+           BY =10.323400754234346   PSIY =.7950510042825814  EX =-1.0997241688336197e-09   EPX =1.7108262097438037e-15   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2LA  =(AX =5.727029490638906  BX =5.519456927249825    PSIX =.8549925781876452  AY =-15.681748315672587
+           BY =21.828405284453208   PSIY =.8574485692872139  EX =-7.31913897510734e-10     EPX =9.119204039393779e-10    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3LA  =(AX =-1.8603407383222075     BX =2.433499791573429    PSIX =3.037716277720262  AY =4.933752674328933
+           BY =10.658893483971996   PSIY =.9694571656778113  EX =.06215626572755852   EPX =.06252348330496399
+           DX =-3.176963248484634e-18    DPX =1.045415477759802e-34    DZ =1.3055624967800123e-19    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4LA  =(AX =.08929282449331113 BX =5.118091285528043    PSIX =3.2797169228347194 AY =-.13320380261105058
+           BY =5.829905479788252    PSIY =1.1120558957097277 EX =.09669510380139486   EPX =-.004649973982433143
+           DX =-2.4190314397241867e-18   DPX =1.8838267665895018e-18   DZ =1.0282983253270134e-19    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5LA  =(AX =1.6095224029890658 BX =2.7658338562341815   PSIX =3.5144882989028408 AY =-4.13005589979077
+           BY =10.144900451261773   PSIY =1.2540574964876179 EX =.061426604997081274  EPX =-.057407552500734746
+           DX =-1.1768079380249373e-19   DPX =2.6545169383556134e-18   DZ =8.822363813277575e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLCA   =(AX =1.1314927645446035e-07  BX =2.7000000698711006   PSIX =5.33970494688831   AY =-1.0844177161288333e-06
+           BY =4.6999428919527295   PSIY =1.760053948012677  EX =.029999998808126767  EPX =-8.096026206798005e-11
+           DX =4.955115718065765e-18     DPX =1.0049646585327275e-18   DZ =5.1260793177001547e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMC    =(AX =1.1314927645446035e-07  BX =2.7000000698711006   PSIX =5.33970494688831   AY =-1.0844177161288333e-06
+           BY =4.6999428919527295   PSIY =1.760053948012677  EX =.029999998808126767  EPX =-8.096026206798005e-11
+           DX =4.955115718065765e-18     DPX =1.0049646585327275e-18   DZ =5.1260793177001547e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMCA   =(AX =-1.1314927645446035e-07 BX =2.7000000698711006   PSIX =5.33970494688831   AY =1.0844177161288333e-06
+           BY =4.6999428919527295   PSIY =1.760053948012677  EX =.029999998808126767  EPX =8.096026206798005e-11
+           DX =4.955115718065765e-18     DPX =-1.0049646585327275e-18  DZ =5.1260793177001547e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5MA  =(AX =1.7426728297537384 BX =2.9285670014401224   PSIX =7.104233342631668  AY =-3.6554923332372096
+           BY =9.848203940943975    PSIY =2.2082889319773535 EX =.06714615421470184   EPX =-.0625758665942823
+           DX =1.1022515796901433e-17    DPX =-6.938893903907228e-18   DZ =-2.4876096378470133e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4MA  =(AX =.5390707752591559  BX =5.818501349702274    PSIX =7.322239593965019  AY =-.28777951486720343
+           BY =5.847842539192279    PSIY =2.3497027510205886 EX =.1074918985604821    EPX =-.00985854041609577
+           DX =1.5508073463561475e-17    DPX =-1.1223590247057025e-18  DZ =-5.71799924798327e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3MA  =(AX =-2.183678166573929 BX =3.116712277105602    PSIX =7.520767601993539  AY =4.867188324647887
+           BY =10.4856384120928     PSIY =2.494079871757889  EX =.069722637998028     EPX =.07165813659015462
+           DX =1.0863101907318878e-17    DPX =8.750486181406296e-18    DZ =1.4338513403885623e-19    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2MA  =(AX =3.51212861133769   BX =3.9819981096582473   PSIX =9.458071370368655  AY =-8.213540226031173
+           BY =11.725859450763286   PSIY =2.6333993356459007 EX =8.902877795781876e-10     EPX =-5.451460597690691e-10
+           DX =-5.9195378854500795e-18   DPX =8.309065931524738e-18    DZ =-8.444292367883398e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1MA  =(AX =-.4657323999071339 BX =6.952210083910969    PSIX =9.588962400104235  AY =-.9102103506595088
+           BY =5.345058341077873    PSIY =2.7497892527679078 EX =1.0014257694099077e-09    EPX =2.693190889039922e-10
+           DX =-9.875364305690839e-18    DPX =1.5086719953635164e-18   DZ =-8.444292367883398e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMSA   =(AX =1.3467314440101557e-07  BX =5.713018315110683    PSIX =10.02482223011515  AY =-2.361996377508096e-06
+           BY =2.9232203333249194   PSIY =3.488214516423277  EX =2.8483810479231465e-10    EPX =2.6931908890399214e-10
+           DX =-1.3889545967626368e-17   DPX =1.5086719953635164e-18   DZ =-8.444292367883398e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKME    =(AX =1.5579646387615104e-07  BX =2.7000001095175246   PSIX =14.709939244195983 AY =-3.4075296830641934e-06
+           BY =4.6999497650219455   PSIY =5.216379692803112  EX =.03000000092283434   EPX =1.0232570036318548e-10
+           DX =1.0570131963494414e-17    DPX =-3.710044284266611e-18   DZ =-3.2510763098546463e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLC    =(AX =1.5579646387615104e-07  BX =2.7000001095175246   PSIX =14.709939244195983 AY =-3.4075296830641934e-06
+           BY =4.6999497650219455   PSIY =5.216379692803112  EX =.03000000092283434   EPX =1.0232570036318548e-10
+           DX =1.0570131963494414e-17    DPX =-3.710044284266611e-18   DZ =-3.2510763098546463e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLE    =(AX =-9.511821421805488e-08  BX =2.69999960871546     PSIX =25.389349376579258 AY =-3.3452233881682376e-06
+           BY =4.6999623867913405   PSIY =8.736486473253892  EX =.02999999809580099   EPX =6.567991141163386e-10
+           DX =1.0839165135840107e-17    DPX =6.653968611409153e-18    DZ =6.197590718165035e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5M   =(AX =1.8473214986443094 BX =2.9297147715131406   PSIX =107.43126525195973 AY =-3.965966767143246
+           BY =9.750930069691194    PSIY =37.086906450104394 EX =.05052941453966965   EPX =-.046270178504001065
+           DX =7.647043256679654e-18     DPX =-3.929472590007052e-34   DZ =-3.3726190625300617e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4M   =(AX =.76968298279361    BX =6.163327029108676    PSIX =107.64393638865617 AY =-.6688539643656143
+           BY =5.158006170096901    PSIY =37.23770201082652  EX =.08456155062544603   EPX =-.01776079730277947
+           DX =6.516822436793996e-18     DPX =2.815536049130082e-18    DZ =-3.3726190625300617e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3M   =(AX =-2.7556860577004034     BX =2.384545292674248    PSIX =107.85127013306749 AY =5.56169114326094
+           BY =10.02787509739117    PSIY =37.40299920187526  EX =.05715385304608668   EPX =.05926159293731943
+           DX =1.1025509402422783e-18    DPX =7.334045898702224e-18    DZ =-3.3726190625300617e-19   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2M   =(AX =10.117119702052824 BX =12.63864970945043    PSIX =110.3327410434299  AY =-6.59641363682463
+           BY =10.716741740051463   PSIY =37.54642490746607  EX =8.172623990960997e-10     EPX =-5.475181058863889e-10
+           DX =-2.1804945372519713e-17   DPX =1.4729820724324955e-17   DZ =-1.0656293329689715e-20   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1M   =(AX =-.1227715364459852 BX =21.999322107160694   PSIX =110.37506826092832 AY =-.8210298756227414
+           BY =5.42539023094634     PSIY =37.66454750806072  EX =1.0019951940689285e-09    EPX =8.846205073429627e-11
+           DX =-2.6819628470813827e-17   DPX =-2.2684669936461413e-18  DZ =-1.0656293329689753e-20   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKMS    =(AX =5.6372150778849725e-08  BX =21.672653449124184   PSIX =110.49722853390395 AY =-2.169809109607535e-06
+           BY =3.2407995073930733   PSIY =38.35197848412808  EX =7.666165855827456e-10     EPX =8.84620507342961e-11
+           DX =-2.0783722834025306e-17   DPX =-2.268466993646139e-18   DZ =-1.0656293329689759e-20   DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS5L   =(AX =1.6184943583177005 BX =2.6311263970278995   PSIX =117.31163670233123 AY =-4.243940167992168
+           BY =9.897802071533606    PSIY =40.57159692879457  EX =.049452454181218644  EPX =-.045568252332308344
+           DX =1.0365143390855497e-18    DPX =-1.0408340855860843e-17  DZ =5.180933765559757e-19     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS4L   =(AX =.3665293265546696  BX =5.238933205009107    PSIX =117.55176023815488 AY =-.5086717587749701
+           BY =5.187352171326783    PSIY =40.72292189675258  EX =.08115463166373764   EPX =-.012937380435035587
+           DX =1.0047902628791066e-17    DPX =-7.362234033492567e-18   DZ =5.180933765559757e-19     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS3L   =(AX =-2.208607756309311 BX =1.9884982157508686   PSIX =117.80260272102095 AY =5.4762405140301915
+           BY =10.121979235910214   PSIY =40.8850721891445   EX =.0542495707818043    EPX =.05508106918974822
+           DX =1.1331786395283012e-17    DPX =2.8881529548824452e-18   DZ =5.180933765559757e-19     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS2L   =(AX =11.160984702690905 BX =11.646279275705254   PSIX =120.23700924822467 AY =-12.746037719188099
+           BY =19.969403335424186   PSIY =41.00065576032899  EX =-4.3724593795749753e-10   EPX =2.800107382284587e-10
+           DX =8.488545625667692e-18     DPX =-4.482619300007394e-18   DZ =8.214149129798649e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKS1L   =(AX =-.24685399790175439     BX =22.18032687549677    PSIX =120.28003513550706 AY =-.9810276145847564
+           BY =10.32356381468683    PSIY =41.06437513842816  EX =-5.067537819116739e-10    EPX =-1.0744997073752844e-10
+           DX =9.178841337510825e-18     DPX =2.7688852486206816e-18   DZ =8.214149129798649e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MKLS    =(AX =4.822407861851367e-08   BX =20.9063582888547     PSIX =120.52205071895924 AY =-3.0388355920543143e-06
+           BY =5.26064204810231     PSIY =41.840193513398006 EX =4.7776097239264504e-11    EPX =-1.0744997073752845e-10
+           DX =-5.110874631649398e-18    DPX =2.7688852486206816e-18   DZ =8.214149129798646e-20     DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+        MRED    =(AX =5.120125241567706e-13   BX =5.713018001308608    PSIX =150.37233254708144 AY =2.9855544041867573e-13
+           BY =2.9232004480651566   PSIY =52.32323452675158  EX =-1.3930395248561666e-09   EPX =1.2694325712662347e-15
+           DX =1.1532498981188467e-17    DPX =-2.9046644838758734e-18  DZ =-8.144821492636243e-20    DP =.01
+           EMITX =8.318884024564985e-10  EMITY =1e-12 )
+ ;
+
+ LINE HV = (HD VD)
+ ;
+ LINE
+  NCELLH = (MKS
+                DLN1 PM DLN2 S1H HV MKS1 S1H D1 Q1 D1 S2H MKS2 S2H D1H PM D1H Q2 D2
+                B1
+                D5 S3H HV MKS3 S3H D31 PM D32 Q3 D1 S4H MKS4 S4H D1 Q4 D32O OC1 PM D31 S5H HV MKS5 S5H D5
+                B2
+                D6 Q5
+                DLS1 PM DLS2 HV DLS3
+           MKNC)
+  NCELL = (MKNC -NCELLH NCELLH MKNE)
+  MCELLH = (MKMS
+                DLMN PM DLM2 S1MH HV MKS1M S1MH D1 Q1M D1 S2MH MKS2M S2MH D1H PM D1H Q2M D2
+                B1M
+                D5 S3MH HV MKS3M S3MH D31 PM D32 Q3M D1 S4MH MKS4M S4MH D1 Q4M D32O OC1 PM D31 S5MH HV MKS5M S5MH D5
+                B2M
+                D6 Q5M
+                DLS1 PM DLS2 HV DLS3
+           MKMC)
+  MCELL = (MKMC -MCELLH MCELLH MKME)
+  LCELLH = (MKLS
+                DLLN PM DLL2 S1LH HV MKS1L S1LH D1 Q1L D1 S2LH MKS2L S2LH D1H PM D1H Q2L D2
+                B1L
+                D5 S3LH HV MKS3L S3LH D31 PM D32 Q3L D1 S4LH MKS4L S4LH D1 Q4L D32O OC1 PM D31 S5LH HV MKS5L S5LH D5
+                B2L
+                D6 Q5L D1 QAL
+                DLS1 PM DLS2 HV DLS3
+           MKLC)
+  LCELL = (MKLC -LCELLH LCELLH MKLE)
+
+  MCELLHA = (MKMSA
+                DLM1 PM DLM2 S1MHA HV MKS1MA S1MHA D1 Q1MA D1 S2MHA MKS2MA S2MHA D1H PM D1H Q2MA D2
+                B1MA
+                D5 S3MHA HV MKS3MA S3MHA D31 PM D32 Q3MA D1 S4MHA MKS4MA S4MHA D1 Q4MA D32O OC1 PM D31 S5MHA HV MKS5MA S5MHA D5
+                B2MA
+                D6 Q5MA
+                DLS1 PM DLS2 HV DLS3
+           MKMCA)
+  MCELLA = (MKMC -MCELLHA MCELLHA MKME)
+  LCELLHA = (MKLSA
+                DLL1 PM DLL2 S1LHA HV MKS1LA S1LHA D1 Q1LA D1 S2LHA MKS2LA S2LHA D1H PM D1H Q2LA D2
+                B1LA
+                D5 S3LHA HV MKS3LA S3LHA D31 PM D32 Q3LA D1 S4LHA MKS4LA S4LHA D1 Q4LA D32O OC1 PM D31 S5LHA HV MKS5LA S5LHA D5
+                B2LA
+                D6 Q5LA D1 QALA
+                DLS1 PM DLS2 HV DLS3
+           MKLCA)
+  LCELLA = (MKLC -LCELLHA LCELLHA MKLE)
+
+  RINGL = (MRST
+              15*LCELL RFC 15*LCELL
+          MRED)
+  RINGM = (MRST
+              15*MCELL RFC 15*MCELL
+          MRED)
+
+  RINGLA = (MRST
+              15*LCELLA RFC 15*LCELLA
+          MRED)
+  RINGMA = (MRST
+              15*MCELLA RFC 15*MCELLA
+          MRED)
+
+  TCELL = (MCELL LCELL)
+  TCELLA = (MCELLA LCELLA)
+  ACELL = (TCELL TCELLA)
+
+  RINGN = (MRST
+              8*TCELL RFC 7*TCELL
+          MRED)
+  RINGA = (MRST
+              8*TCELLA RFC 7*TCELLA
+          MRED)
+
+  ARING = (MRST
+              20*LCELLA RFC 10*LCELL
+           MRED)
+  HRING = (MRST
+              LCELLHA 5*TCELLA 2*TCELL -MCELLHA
+           MRED)
+
+  RINGSP = (MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED)
+  RINGINJ = (MRST LCELLH MCELL LCELLA MCELLA LCELLA MCELLA LCELLA MCELLA LCELLA MCELLA LCELLA MCELLA -LCELLHA HRING RFC MCELLHA LCELL MCELL -LCELLH MRED)
+  RINGSYM = (HRING RFC -HRING)
+  RING = (RINGSP)
+;
+!@LAT 5GeV
+!=====================================================================
+! V0714_ring_params: v07_14 のラティスの光学・ジオメトリの表示 (リングと、セルの単位)
+!
+! 元: disp (RING の `disp geo $$$` と `disp $$$`。`draw`・`TkWait` の窓は除く)、dispA (LCELLA の同じ表示)。
+!     disp の後半 (USE RINGV・TESTV。v07_14 に無いラインで、元のまま動かない) は取り込まない。
+! 流れ: RING の `cell calc emit` と、`disp geo $$$` (周長・ジオメトリの閉じ方) と `disp $$$` (終点の光学)、
+!       MCELL・LCELL・MCELLA・LCELLA の各セルの `cell calc emit` と中心・直線部のマーク (MK*) の光学。
+!       RING・TCELL 系の チューン・εx・周長を 1 行にまとめる。
+!=====================================================================
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+   $FORM = "15.10";
+   PageWidth = 1999;
+ 
+ USE RING
+Out[1]:= USE
+   cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.758E-7 $$$       f BX    #######  #   5.365887 $$$       f NX    #######  #  47.865060 $$$       f AY    #######  #  -9.463E-7 $$$       f BY    #######  #   5.062210 $$$       f NY    #######  #  16.655090
+$$$       f LENG  #######  #  749.48088
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -5.77E-7  -4.98E-7  -7.4E-22  -1.3E-21  1.374E-5  2.646E-4
+      Exit :  -5.77E-7  -4.98E-7  -8.6E-22  -1.4E-21  1.374E-5  2.646E-4
+
+    Extended Twiss Parameters
+AX: -4.76E-4 BX: 5.353147                            ZX: 1.874E-5  EX: 4.783E-4
+           PSIX: -4.8E-17                           ZPX: -9.96E-7 EPX: 5.93E-20
+R1: -1.7E-15 R2: 4.11E-16 AY: -.004509 BY: 5.038831  ZY: -9.2E-21  EY: 5.93E-20
+R3: -1.4E-17 R4: -3.1E-15            PSIY: -8.5E-40 ZPY: -6.7E-22 EPY: -2.2E-19
+                                                     AZ: 6.866E-5  BZ: 1.458611
+                                                                 PSIZ: -3.7E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 400000.13 Hz 
+Energy loss per turn U0 = 3.5573887 MV  Effective voltage    Vc = 6.5000000 MV 
+Equilibrium position dz = 55.246463 mm  Momentum compact. alpha = 3.2369E-5
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1250.0000
+Bucket height     dV/P0 =  .0775750     Synchrotron frequency   = 1058.7856 Hz 
+
+  Imag.tune:-0.0000000          -0.0000000           0.0000000
+  Real tune:-0.1349376          -0.3449023          -0.0026470
+
+    Damping per one revolution:
+          X : -7.708943E-04   Y : -3.556539E-04   Z : -2.959521E-04
+    Damping time (sec):
+          X :  3.242986E-03   Y :  7.029304E-03   Z :  8.447309E-03
+    Tune shift due to radiation:
+          X : -1.463584E-06   Y : -1.208299E-05   Z : -1.894304E-09
+    Damping partition number:
+          X :    2.1677       Y :    1.0001       Z :    0.8322
+
+Emittance X            = 8.3211E-10 m   Emittance Y            = 1.8521E-33 m
+Emittance Z            = 3.21238E-6 m   Energy spread          =  .00148399
+Bunch Length           = 2.16468315 mm  Beam tilt              = -7.484E-11 rad
+Beam size xi           =  .06674539 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   disp geo $$$;
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                -3.32903E-6 1.635759E-7     .0       749.480888   .0      0          -1.55728E-6     .0          .0       3540
+   disp $$$;
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -1.8E-7 5.36589 47.8650 -3.4E-6 1.65E-7  $$$       .0     0         749.480888 -9.5E-7 5.06221 16.6550 -2.E-19 -6.E-21 5.E-30 3540
+   Print["CHK RING tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX, " length ", Twiss["S","$$$"]];
+CHK RING tune   47.8650597373   16.6550903903 emitx  8.32107727E-10 length  749.4808883432
+ 
+ ! 各セル (長直線部の中心 MKLS・MKLSA 等のマークの光学)
+ ShowCell[cell_]:=(
+   FFS["USE "//cell//";"];
+   FFS["cell calc emit;",6];
+   FFS["disp MK*;",6];
+   FFS["disp $$$;",6];
+   FFS["disp geo $$$;",6];
+   Print["CHK ",cell," tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX, " length ", Twiss["S","$$$"]];
+ );
+ ShowCell["MCELL"];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -7.62E-15 $$$       f BX    #######  #   2.700061 $$$       f NX    #######  #   1.562681 $$$       f AY    #######  #  3.273E-14 $$$       f BY    #######  #   4.699746 $$$       f NY    #######  #    .544240
+$$$       f LENG  #######  #  22.132757
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -2.39E-7  -9.17E-8  -1.2E-27  6.08E-24  1.00E100   .000000
+      Exit :  100000.0  1.000E-5  100000.0  1.000E-5  -1.0E100  -.999990
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545192. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :    0.0000       Y :    0.0000       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -4.E-15 2.70006  .0      .03000 1.1E-17  MKMC.1    .0     0            .0      -1.E-14 4.69975  .0     9.9E-17  .0     5.E-30    1
+ -4.E-15 2.70006  .0      .03000 1.1E-17 -MKMC.2    .0     0            .0      -1.E-14 4.69975  .0     9.9E-17  .0     5.E-30    2
+ -1.8473 2.92966  .29338  .05053  .04627 -MKS5M.1   .0     0           3.325593 3.96582 9.75062  .07078 -2.E-16 9.0E-17 5.E-30   14
+ -.76969 6.16326  .32723  .08456  .01776 -MKS4M.1   .0     0           4.305593  .66881 5.15789  .09478 -9.E-17 4.7E-17 5.E-30   25
+ 2.75566 2.38454  .36022  .05715 -.05926 -MKS3M.1   .0     0           5.285593 -5.5616 10.0277  .12109 -9.E-17 -2.E-17 5.E-30   33
+ -10.116 12.6384  .75516 -1.9E-7 -1.6E-7 -MKS2M.1   .0     0           7.605593 6.59636 10.7167  .14391 2.5E-22 -1.E-22 4.E-30   45
+  .12277 21.9989  .76190 -2.6E-7 -3.E-18 -MKS1M.1   .0     0           8.405593  .82100 5.42541  .16271 2.0E-22 -1.E-31 4.E-30   51
+ 3.4E-15 21.6722  .78134 -2.6E-7 -3.E-18 -MKMS.1    .0     0          11.066379 -1.E-14 3.24089  .27212 2.0E-22 -1.E-31 4.E-30   58
+ 3.4E-15 21.6722  .78134 -2.6E-7 -3.E-18  MKMS.2    .0     0          11.066379 -1.E-14 3.24089  .27212 2.0E-22 -1.E-31 4.E-30   59
+ -.12277 21.9989  .80078 -2.6E-7 -3.E-18  MKS1M.2   .0     0          13.727165 -.82100 5.42541  .38153 2.0E-22 -1.E-31 4.E-30   66
+ 10.1169 12.6384  .80752 -1.9E-7 1.57E-7  MKS2M.2   .0     0          14.527165 -6.5963 10.7167  .40033 2.5E-22 1.3E-22 4.E-30   72
+ -2.7556 2.38454 1.20246  .05715  .05926  MKS3M.2   .0     0          16.847165 5.56166 10.0277  .42315 -9.E-17 2.1E-17 5.E-30   84
+  .76969 6.16326 1.23546  .08456 -.01776  MKS4M.2   .0     0          17.827165 -.66881 5.15789  .44946 -9.E-17 -5.E-17 5.E-30   92
+ 1.84730 2.92966 1.26930  .05053 -.04627  MKS5M.2   .0     0          18.807165 -3.9658 9.75062  .47346 -2.E-16 -9.E-17 5.E-30  103
+ -8.E-15 2.70006 1.56268  .03000 2.4E-17  MKMC.3    .0     0          22.132757 3.3E-14 4.69975  .54424 9.9E-17 -5.E-31 5.E-30  115
+ -8.E-15 2.70006 1.56268  .03000 2.4E-17  MKME      .0     0          22.132757 3.3E-14 4.69975  .54424 9.9E-17 -5.E-31 5.E-30  116
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ -8.E-15 2.70006 1.56268  .03000 2.4E-17  $$$       .0     0          22.132757 3.3E-14 4.69975  .54424 9.9E-17 -5.E-31 5.E-30  117
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                  21.976466    2.309820     .0        22.132757   .0      0            12.000000     .0          .0        117
+CHK MCELL tune    1.5626814375     .5442395523 emitx NaN length   22.1327574291
+ ShowCell["LCELL"];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  2.833E-14 $$$       f BX    #######  #   2.700025 $$$       f NX    #######  #   1.628322 $$$       f AY    #######  #  -7.21E-15 $$$       f BY    #######  #   4.699848 $$$       f NY    #######  #    .566099
+$$$       f LENG  #######  #  27.832823
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -2.39E-7  -1.26E-7  2.59E-25  3.19E-23  1.00E100   .000000
+      Exit :  100000.0  1.000E-5  100000.0  1.000E-5  -1.0E100  -.999990
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771183. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :    0.0000       Y :    0.0000       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 6.2E-16 2.70002  .0      .03000 -5.E-17  MKLC.1    .0     0            .0      5.2E-15 4.69985  .0     9.6E-17  .0     4.E-30    1
+ 6.2E-16 2.70002  .0      .03000 -5.E-17 -MKLC.2    .0     0            .0      5.2E-15 4.69985  .0     9.6E-17  .0     4.E-30    2
+ -1.6184 2.63111  .30321  .04945  .04557 -MKS5L.1   .0     0           3.675593 4.24387 9.89765  .08115 -2.E-16 9.4E-17 4.E-30   16
+ -.36654 5.23892  .34142  .08115  .01294 -MKS4L.1   .0     0           4.655593  .50865 5.18729  .10523 -1.E-16 4.3E-17 4.E-30   27
+ 2.20860 1.98850  .38135  .05425 -.05508 -MKS3L.1   .0     0           5.635593 -5.4762 10.1219  .13104 -9.E-17 -2.E-17 4.E-30   35
+ -11.160 11.6462  .76880 -2.0E-7 -2.0E-7 -MKS2L.1   .0     0           7.955593 12.7459 19.9693  .14943 -1.E-18 7.2E-19 3.E-30   47
+  .24686 22.1802  .77564 -2.8E-7 3.3E-17 -MKS1L.1   .0     0           8.755593  .98101 10.3235  .15958 -9.E-19 -5.E-32 3.E-30   53
+ -2.E-14 20.9062  .81416 -2.8E-7 3.3E-17 -MKLS.1    .0     0          13.916412 -6.E-15 5.26072  .28305 -9.E-19 -5.E-32 3.E-30   60
+ -2.E-14 20.9062  .81416 -2.8E-7 3.3E-17  MKLS.2    .0     0          13.916412 -6.E-15 5.26072  .28305 -9.E-19 -5.E-32 3.E-30   61
+ -.24686 22.1802  .85268 -2.8E-7 3.3E-17  MKS1L.2   .0     0          19.077231 -.98101 10.3235  .40652 -9.E-19 -5.E-32 3.E-30   68
+ 11.1609 11.6462  .85953 -2.0E-7 1.97E-7  MKS2L.2   .0     0          19.877231 -12.746 19.9693  .41667 -1.E-18 -7.E-19 3.E-30   74
+ -2.2086 1.98850 1.24697  .05425  .05508  MKS3L.2   .0     0          22.197231 5.47622 10.1219  .43506 -9.E-17 2.3E-17 4.E-30   86
+  .36654 5.23892 1.28690  .08115 -.01294  MKS4L.2   .0     0          23.177231 -.50865 5.18729  .46087 -1.E-16 -4.E-17 4.E-30   94
+ 1.61849 2.63111 1.32511  .04945 -.04557  MKS5L.2   .0     0          24.157231 -4.2438 9.89765  .48495 -2.E-16 -9.E-17 4.E-30  105
+ 2.8E-14 2.70002 1.62832  .03000 1.9E-17  MKLC.3    .0     0          27.832823 -7.E-15 4.69985  .56610 9.6E-17 3.9E-31 4.E-30  119
+ 2.8E-14 2.70002 1.62832  .03000 1.9E-17  MKLE      .0     0          27.832823 -7.E-15 4.69985  .56610 9.6E-17 3.9E-31 4.E-30  120
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 2.8E-14 2.70002 1.62832  .03000 1.9E-17  $$$       .0     0          27.832823 -7.E-15 4.69985  .56610 9.6E-17 3.9E-31 4.E-30  121
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                  27.641492    2.905238     .0        27.832823   .0      0            12.000000     .0          .0        121
+CHK LCELL tune    1.6283224793     .5660989576 emitx NaN length   27.8328233267
+ ShowCell["MCELLA"];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  8.131E-15 $$$       f BX    #######  #   2.699714 $$$       f NX    #######  #   1.491321 $$$       f AY    #######  #  5.152E-14 $$$       f BY    #######  #   4.699733 $$$       f NY    #######  #    .550095
+$$$       f LENG  #######  #  22.132662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -4.30E-7  -2.30E-7  -1.7E-25  2.87E-23  1.00E100   .000000
+      Exit :  100000.0  1.000E-5  100000.0  1.000E-5  -1.0E100  -.999990
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 13545250. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :    0.0000       Y :    0.0000       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 1.8E-14 2.69971  .0      .03000 -4.E-18  MKMC      .0     0            .0      1.0E-14 4.69973  .0     -3.E-17  .0     8.E-31    1
+ 1.8E-14 2.69971  .0      .03000 -4.E-18 -MKMCA.1   .0     0            .0      1.0E-14 4.69973  .0     -3.E-17  .0     8.E-31    2
+ -1.7428 2.92886  .28083  .06715  .06258 -MKS5MA.1  .0     0           3.325593 3.65536 9.84790  .07134 7.6E-17 -4.E-17 8.E-31   14
+ -.53903 5.81892  .31552  .10749  .00986 -MKS4MA.1  .0     0           4.305593  .28774 5.84771  .09385 -2.E-17 -1.E-17 8.E-31   25
+ 2.18386 3.11682  .34712  .06972 -.07166 -MKS3MA.1  .0     0           5.285593 -4.8671 10.4855  .11683 -1.E-16 -7.E-17 8.E-31   33
+ -3.5124 3.98219  .65547 -3.0E-7 -3.2E-7 -MKS2MA.1  .0     0           7.605593 8.21346 11.7257  .13900 -4.E-22 2.2E-22 8.E-31   45
+  .46568 6.95271  .67630 -4.3E-7 1.6E-17 -MKS1MA.1  .0     0           8.405593  .91018 5.34506  .15753 -3.E-22 5.2E-32 8.E-31   51
+ -1.E-14 5.71366  .74566 -4.3E-7 1.6E-17 -MKMSA.1   .0     0          11.066331 -3.E-14 2.92330  .27505 -3.E-22 5.2E-32 8.E-31   58
+ -1.E-14 5.71366  .74566 -4.3E-7 1.6E-17  MKMSA.2   .0     0          11.066331 -3.E-14 2.92330  .27505 -3.E-22 5.2E-32 8.E-31   59
+ -.46568 6.95271  .81502 -4.3E-7 1.6E-17  MKS1MA.2  .0     0          13.727070 -.91018 5.34506  .39257 -3.E-22 5.2E-32 8.E-31   66
+ 3.51240 3.98219  .83585 -3.0E-7 3.18E-7  MKS2MA.2  .0     0          14.527070 -8.2134 11.7257  .41109 -4.E-22 -2.E-22 8.E-31   72
+ -2.1838 3.11682 1.14420  .06972  .07166  MKS3MA.2  .0     0          16.847070 4.86715 10.4855  .43327 -1.E-16 6.8E-17 8.E-31   84
+  .53903 5.81892 1.17580  .10749 -.00986  MKS4MA.2  .0     0          17.827070 -.28774 5.84771  .45625 -2.E-17 1.5E-17 8.E-31   92
+ 1.74281 2.92886 1.21049  .06715 -.06258  MKS5MA.2  .0     0          18.807070 -3.6553 9.84790  .47875 7.6E-17 4.1E-17 8.E-31  103
+ 8.1E-15 2.69971 1.49132  .03000 -2.E-18  MKMCA.2   .0     0          22.132662 5.2E-14 4.69973  .55009 -3.E-17 5.1E-31 8.E-31  115
+ 8.1E-15 2.69971 1.49132  .03000 -2.E-18  MKME      .0     0          22.132662 5.2E-14 4.69973  .55009 -3.E-17 5.1E-31 8.E-31  116
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 8.1E-15 2.69971 1.49132  .03000 -2.E-18  $$$       .0     0          22.132662 5.2E-14 4.69973  .55009 -3.E-17 5.1E-31 8.E-31  117
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                  21.976466    2.309820     .0        22.132662   .0      0            12.000000     .0          .0        117
+CHK MCELLA tune    1.4913211327     .5500948388 emitx NaN length   22.1326620600
+ ShowCell["LCELLA"];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  7.911E-15 $$$       f BX    #######  #   2.700022 $$$       f NX    #######  #   1.699683 $$$       f AY    #######  #  8.046E-15 $$$       f BY    #######  #   4.699777 $$$       f NY    #######  #    .560245
+$$$       f LENG  #######  #  27.832662
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -3.54E-7  -3.20E-7  -6.4E-25  1.14E-22  1.00E100   .000000
+      Exit :  100000.0  1.000E-5  100000.0  1.000E-5  -1.0E100  -.999990
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 10771246. Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :    0.0000       Y :    0.0000       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 1.2E-15 2.70002  .0      .03000 -2.E-16  MKLC      .0     0            .0      6.6E-15 4.69978  .0     3.3E-17  .0     9.E-31    1
+ 1.2E-15 2.70002  .0      .03000 -2.E-16 -MKLCA.1   .0     0            .0      6.6E-15 4.69978  .0     3.3E-17  .0     9.E-31    2
+ -1.6095 2.76582  .29049  .06143  .05741 -MKS5LA.1  .0     0           3.675593 4.12995 10.1447  .08053 -6.E-17 3.7E-17 9.E-31   16
+ -.08930 5.11807  .32786  .09670  .00465 -MKS4LA.1  .0     0           4.655593  .13318 5.82982  .10313 1.5E-17 1.8E-17 9.E-31   27
+ 1.86033 2.43350  .36637  .06216 -.06252 -MKS3LA.1  .0     0           5.635593 -4.9337 10.6588  .12583 1.0E-16 5.9E-17 9.E-31   35
+ -5.7270 5.51946  .71376 -3.4E-7 -4.2E-7 -MKS2LA.1  .0     0           7.955593 15.6816 21.8283  .14366 -1.E-19 7.6E-20 8.E-31   47
+  .96176 10.3293  .72794 -5.1E-7 3.4E-17 -MKS1LA.1  .0     0           8.755593 1.01947 10.3234  .15359 -8.E-20 1.8E-32 8.E-31   53
+ -1.E-14 5.36592  .84984 -5.1E-7 3.4E-17 -MKLSA.1   .0     0          13.916331 -2.E-14 5.06218  .28012 -8.E-20 1.8E-32 8.E-31   60
+ -1.E-14 5.36592  .84984 -5.1E-7 3.4E-17  MKLSA.2   .0     0          13.916331 -2.E-14 5.06218  .28012 -8.E-20 1.8E-32 8.E-31   61
+ -.96176 10.3293  .97174 -5.1E-7 3.4E-17  MKS1LA.2  .0     0          19.077070 -1.0194 10.3234  .40666 -8.E-20 1.8E-32 8.E-31   68
+ 5.72703 5.51946  .98592 -3.4E-7 4.19E-7  MKS2LA.2  .0     0          19.877070 -15.681 21.8283  .41659 -1.E-19 -8.E-20 8.E-31   74
+ -1.8603 2.43350 1.33331  .06216  .06252  MKS3LA.2  .0     0          22.197070 4.93374 10.6588  .43441 1.0E-16 -6.E-17 9.E-31   86
+  .08930 5.11807 1.37182  .09670 -.00465  MKS4LA.2  .0     0          23.177070 -.13318 5.82982  .45711 1.5E-17 -2.E-17 9.E-31   94
+ 1.60952 2.76582 1.40919  .06143 -.05741  MKS5LA.2  .0     0          24.157070 -4.1299 10.1447  .47971 -6.E-17 -4.E-17 9.E-31  105
+ 7.9E-15 2.70002 1.69968  .03000 -1.E-17  MKLCA.2   .0     0          27.832662 8.0E-15 4.69978  .56024 3.3E-17 -2.E-31 9.E-31  119
+ 7.9E-15 2.70002 1.69968  .03000 -1.E-17  MKLE      .0     0          27.832662 8.0E-15 4.69978  .56024 3.3E-17 -2.E-31 9.E-31  120
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 7.9E-15 2.70002 1.69968  .03000 -1.E-17  $$$       .0     0          27.832662 8.0E-15 4.69978  .56024 3.3E-17 -2.E-31 9.E-31  121
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                  27.641492    2.905238     .0        27.832662   .0      0            12.000000     .0          .0        121
+CHK LCELLA tune    1.6996828737     .5602448294 emitx NaN length   27.8326620600
+ 
+ ! セルの 2 個組 (TCELL・TCELLA) とリングの比較
+ ShowCell["TCELL"];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.9579E-6 $$$       f BX    #######  #   2.700035 $$$       f NX    #######  #   3.191004 $$$       f AY    #######  #  -3.761E-6 $$$       f BY    #######  #   4.699808 $$$       f NY    #######  #   1.110339
+$$$       f LENG  #######  #  49.965581
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -5.42E-7  1.829E-7  4.97E-23  5.59E-22  1.00E100   .000000
+      Exit :  100000.0  1.000E-5  100000.0  1.000E-5  -1.0E100  -.999990
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 5999979.4 Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :    0.0000       Y :    0.0000       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 3.96E-6 2.70003  .0      .03000 -7.1E-9  MKMC.1    .0     0            .0      -3.8E-6 4.69981  .0     9.6E-17 2.6E-19 4.E-30    1
+ 3.96E-6 2.70003  .0      .03000 -7.1E-9 -MKMC.2    .0     0            .0      -3.8E-6 4.69981  .0     9.6E-17 2.6E-19 4.E-30    2
+ -1.8473 2.92969  .29338  .05053  .04627 -MKS5M.1   .0     0           3.325593 3.96587 9.75073  .07078 -2.E-16 8.9E-17 4.E-30   14
+ -.76969 6.16331  .32723  .08456  .01776 -MKS4M.1   .0     0           4.305593  .66882 5.15793  .09478 -1.E-16 4.5E-17 4.E-30   25
+ 2.75568 2.38455  .36022  .05715 -.05926 -MKS3M.1   .0     0           5.285593 -5.5616 10.0278  .12109 -9.E-17 -3.E-17 4.E-30   33
+ -10.117 12.6385  .75516 -1.5E-7 -1.2E-7 -MKS2M.1   .0     0           7.605593 6.59638 10.7167  .14391 9.8E-20 -5.E-20 4.E-30   45
+  .12277 21.9991  .76190 -2.0E-7 6.3E-17 -MKS1M.1   .0     0           8.405593  .82102 5.42539  .16271 7.8E-20 -6.E-31 4.E-30   51
+ -2.E-14 21.6724  .78134 -2.0E-7 6.3E-17 -MKMS.1    .0     0          11.066379 4.0E-15 3.24085  .27212 7.8E-20 -6.E-31 4.E-30   58
+ -2.E-14 21.6724  .78134 -2.0E-7 6.3E-17  MKMS.2    .0     0          11.066379 4.0E-15 3.24085  .27212 7.8E-20 -6.E-31 4.E-30   59
+ -.12277 21.9991  .80078 -2.0E-7 6.3E-17  MKS1M.2   .0     0          13.727165 -.82102 5.42539  .38153 7.8E-20 -6.E-31 4.E-30   66
+ 10.1170 12.6385  .80752 -1.5E-7 1.23E-7  MKS2M.2   .0     0          14.527165 -6.5963 10.7167  .40033 9.8E-20 5.1E-20 4.E-30   72
+ -2.7556 2.38455 1.20246  .05715  .05926  MKS3M.2   .0     0          16.847165 5.56167 10.0278  .42315 -9.E-17 2.5E-17 4.E-30   84
+  .76969 6.16331 1.23546  .08456 -.01776  MKS4M.2   .0     0          17.827165 -.66882 5.15793  .44946 -1.E-16 -5.E-17 4.E-30   92
+ 1.84732 2.92969 1.26930  .05053 -.04627  MKS5M.2   .0     0          18.807165 -3.9658 9.75073  .47346 -2.E-16 -9.E-17 4.E-30  103
+ -4.0E-6 2.70003 1.56268  .03000 7.13E-9  MKMC.3    .0     0          22.132757 3.76E-6 4.69981  .54424 9.6E-17 -3.E-19 4.E-30  115
+ -4.0E-6 2.70003 1.56268  .03000 7.13E-9  MKME      .0     0          22.132757 3.76E-6 4.69981  .54424 9.6E-17 -3.E-19 4.E-30  116
+ -4.0E-6 2.70003 1.56268  .03000 7.13E-9  MKLC.1    .0     0          22.132757 3.76E-6 4.69981  .54424 9.6E-17 -3.E-19 4.E-30  117
+ -4.0E-6 2.70003 1.56268  .03000 7.13E-9 -MKLC.2    .0     0          22.132757 3.76E-6 4.69981  .54424 9.6E-17 -3.E-19 4.E-30  118
+ -1.6184 2.63110 1.86589  .04945  .04557 -MKS5L.1   .0     0          25.808350 4.24383 9.89758  .62539 -2.E-16 9.3E-17 4.E-30  132
+ -.36654 5.23889 1.90411  .08115  .01294 -MKS4L.1   .0     0          26.788350  .50864 5.18726  .64947 -9.E-17 4.4E-17 4.E-30  143
+ 2.20859 1.98850 1.94403  .05425 -.05508 -MKS3L.1   .0     0          27.768350 -5.4762 10.1218  .67528 -9.E-17 -2.E-17 4.E-30  151
+ -11.160 11.6461 2.33148 -2.4E-7 -2.4E-7 -MKS2L.1   .0     0          30.088350 12.7459 19.9692  .69367 -1.E-18 7.9E-19 3.E-30  163
+  .24686 22.1801 2.33832 -3.4E-7 -5.E-17 -MKS1L.1   .0     0          30.888350  .98100 10.3235  .70382 -1.E-18 4.2E-31 3.E-30  169
+ -1.E-14 20.9061 2.37684 -3.4E-7 -5.E-17 -MKLS.1    .0     0          36.049169 -1.E-14 5.26077  .82729 -1.E-18 4.2E-31 3.E-30  176
+ -1.E-14 20.9061 2.37684 -3.4E-7 -5.E-17  MKLS.2    .0     0          36.049169 -1.E-14 5.26077  .82729 -1.E-18 4.2E-31 3.E-30  177
+ -.24686 22.1801 2.41536 -3.4E-7 -5.E-17  MKS1L.2   .0     0          41.209988 -.98100 10.3235  .95076 -1.E-18 4.2E-31 3.E-30  184
+ 11.1608 11.6461 2.42221 -2.4E-7 2.38E-7  MKS2L.2   .0     0          42.009988 -12.745 19.9692  .96090 -1.E-18 -8.E-19 3.E-30  190
+ -2.2085 1.98850 2.80966  .05425  .05508  MKS3L.2   .0     0          44.329988 5.47621 10.1218  .97930 -9.E-17 2.0E-17 4.E-30  202
+  .36654 5.23889 2.84958  .08115 -.01294  MKS4L.2   .0     0          45.309988 -.50864 5.18726 1.00511 -9.E-17 -4.E-17 4.E-30  210
+ 1.61848 2.63110 2.88780  .04945 -.04557  MKS5L.2   .0     0          46.289988 -4.2438 9.89758 1.02919 -2.E-16 -9.E-17 4.E-30  221
+ 3.96E-6 2.70003 3.19100  .03000 -7.1E-9  MKLC.3    .0     0          49.965581 -3.8E-6 4.69981 1.11034 9.6E-17 2.6E-19 4.E-30  235
+ 3.96E-6 2.70003 3.19100  .03000 -7.1E-9  MKLE      .0     0          49.965581 -3.8E-6 4.69981 1.11034 9.6E-17 2.6E-19 4.E-30  236
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 3.96E-6 2.70003 3.19100  .03000 -7.1E-9  $$$       .0     0          49.965581 -3.8E-6 4.69981 1.11034 9.6E-17 2.6E-19 4.E-30  237
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                  48.409892   10.898561     .0        49.965581   .0      0            24.000000     .0          .0        237
+CHK TCELL tune    3.1910039168    1.1103385099 emitx NaN length   49.9655807558
+ ShowCell["TCELLA"];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  6.3375E-6 $$$       f BX    #######  #   2.700028 $$$       f NX    #######  #   3.191004 $$$       f AY    #######  #  -1.663E-6 $$$       f BY    #######  #   4.699757 $$$       f NY    #######  #   1.110340
+$$$       f LENG  #######  #  49.965324
+ ???-Emittance[]-closed orbit not found.
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -7.48E-7  1.955E-7  -7.2E-23  5.54E-22  1.00E100   .000000
+      Exit :  100000.0  1.000E-5  100000.0  1.000E-5  -1.0E100  -.999990
+
+    Extended Twiss Parameters
+AX:  .000000 BX: 1.000000                            ZX:  .000000  EX:  .000000
+           PSIX:  .000000                           ZPX:  .000000 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .000000 BY: 1.000000  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ:  .000000  BZ: 1.000000
+                                                                 PSIZ:  .000000
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 6000010.2 Hz 
+Energy loss per turn U0 =       NaN MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =       NaN mm  Momentum compact. alpha =       NaN
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =       NaN Hz 
+
+  Imag.tune:       NaN                 NaN                 NaN
+  Real tune:       NaN                 NaN                 NaN
+
+    Damping per one revolution:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping time (sec):
+          X :           NaN   Y :           NaN   Z :           NaN
+    Tune shift due to radiation:
+          X :           NaN   Y :           NaN   Z :           NaN
+    Damping partition number:
+          X :    0.0000       Y :    0.0000       Z :       NaN
+
+Emittance X            =        NaN m   Emittance Y            =        NaN m
+Emittance Z            =        NaN m   Energy spread          =        NaN
+Bunch Length           =        NaN mm  Beam tilt              =  .00000000 rad
+Beam size xi           =        NaN mm  Beam size eta          =        NaN mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 6.34E-6 2.70003  .0      .03000 3.93E-8  MKMC      .0     0            .0      -1.7E-6 4.69976  .0     8.3E-17 4.7E-18 5.E-30    1
+ 6.34E-6 2.70003  .0      .03000 3.93E-8 -MKMCA.1   .0     0            .0      -1.7E-6 4.69976  .0     8.3E-17 4.7E-18 5.E-30    2
+ -1.7426 2.92855  .28083  .06715  .06258 -MKS5MA.1  .0     0           3.325593 3.65537 9.84795  .07134 -3.E-16 1.2E-16 5.E-30   14
+ -.53908 5.81849  .31553  .10749  .00986 -MKS4MA.1  .0     0           4.305593  .28775 5.84773  .09385 -7.E-18 4.4E-17 5.E-30   25
+ 2.18368 3.11672  .34713  .06972 -.07166 -MKS3MA.1  .0     0           5.285593 -4.8671 10.4855  .11683 2.7E-16 1.6E-16 5.E-30   33
+ -3.5121 3.98199  .65546 -4.1E-7 -4.3E-7 -MKS2MA.1  .0     0           7.605593 8.21347 11.7258  .13900 1.5E-20 -9.E-21 5.E-30   45
+  .46573 6.95219  .67629 -5.9E-7 2.3E-17 -MKS1MA.1  .0     0           8.405593  .91019 5.34506  .15752 1.1E-20 -2.E-31 5.E-30   51
+ 8.0E-15 5.71299  .74566 -5.9E-7 2.3E-17 -MKMSA.1   .0     0          11.066331 -7.E-15 2.92328  .27505 1.1E-20 -2.E-31 5.E-30   58
+ 8.0E-15 5.71299  .74566 -5.9E-7 2.3E-17  MKMSA.2   .0     0          11.066331 -7.E-15 2.92328  .27505 1.1E-20 -2.E-31 5.E-30   59
+ -.46573 6.95219  .81503 -5.9E-7 2.3E-17  MKS1MA.2  .0     0          13.727070 -.91019 5.34506  .39257 1.1E-20 -2.E-31 5.E-30   66
+ 3.51212 3.98199  .83586 -4.1E-7 4.31E-7  MKS2MA.2  .0     0          14.527070 -8.2134 11.7258  .41109 1.5E-20 8.9E-21 5.E-30   72
+ -2.1836 3.11672 1.14419  .06972  .07166  MKS3MA.2  .0     0          16.847070 4.86716 10.4855  .43327 2.7E-16 -2.E-16 5.E-30   84
+  .53908 5.81849 1.17579  .10749 -.00986  MKS4MA.2  .0     0          17.827070 -.28775 5.84773  .45625 -7.E-18 -4.E-17 5.E-30   92
+ 1.74267 2.92855 1.21049  .06715 -.06258  MKS5MA.2  .0     0          18.807070 -3.6553 9.84795  .47875 -3.E-16 -1.E-16 5.E-30  103
+ -6.3E-6 2.70003 1.49132  .03000 -3.9E-8  MKMCA.2   .0     0          22.132662 1.66E-6 4.69976  .55009 8.3E-17 -5.E-18 5.E-30  115
+ -6.3E-6 2.70003 1.49132  .03000 -3.9E-8  MKME      .0     0          22.132662 1.66E-6 4.69976  .55009 8.3E-17 -5.E-18 5.E-30  116
+ -6.3E-6 2.70003 1.49132  .03000 -3.9E-8  MKLC      .0     0          22.132662 1.66E-6 4.69976  .55009 8.3E-17 -5.E-18 5.E-30  117
+ -6.3E-6 2.70003 1.49132  .03000 -3.9E-8 -MKLCA.1   .0     0          22.132662 1.66E-6 4.69976  .55009 8.3E-17 -5.E-18 5.E-30  118
+ -1.6095 2.76580 1.78181  .06143  .05741 -MKS5LA.1  .0     0          25.808255 4.12994 10.1446  .63063 -8.E-17 6.7E-17 5.E-30  132
+ -.08929 5.11804 1.81918  .09670  .00465 -MKS4LA.1  .0     0          26.788255  .13318 5.82981  .65323 7.4E-17 3.8E-17 5.E-30  143
+ 1.86032 2.43348 1.85770  .06216 -.06252 -MKS3LA.1  .0     0          27.768255 -4.9337 10.6588  .67593 2.8E-16 1.5E-16 5.E-30  151
+ -5.7270 5.51947 2.20509 -2.1E-7 -2.7E-7 -MKS2LA.1  .0     0          30.088255 15.6816 21.8283  .69375 -1.E-19 8.8E-20 5.E-30  163
+  .96177 10.3293 2.21926 -3.2E-7 2.3E-17 -MKS1LA.1  .0     0          30.888255 1.01946 10.3233  .70368 -1.E-19 1.1E-31 5.E-30  169
+ -8.E-15 5.36589 2.34116 -3.2E-7 2.3E-17 -MKLSA.1   .0     0          36.048993 -3.E-14 5.06220  .83022 -1.E-19 1.1E-31 5.E-30  176
+ -8.E-15 5.36589 2.34116 -3.2E-7 2.3E-17  MKLSA.2   .0     0          36.048993 -3.E-14 5.06220  .83022 -1.E-19 1.1E-31 5.E-30  177
+ -.96177 10.3293 2.46306 -3.2E-7 2.3E-17  MKS1LA.2  .0     0          41.209732 -1.0194 10.3233  .95675 -1.E-19 1.1E-31 5.E-30  184
+ 5.72703 5.51947 2.47724 -2.1E-7 2.66E-7  MKS2LA.2  .0     0          42.009732 -15.681 21.8283  .96668 -1.E-19 -9.E-20 5.E-30  190
+ -1.8603 2.43348 2.82463  .06216  .06252  MKS3LA.2  .0     0          44.329732 4.93373 10.6588  .98451 2.8E-16 -1.E-16 5.E-30  202
+  .08929 5.11804 2.86315  .09670 -.00465  MKS4LA.2  .0     0          45.309732 -.13318 5.82981 1.00720 7.4E-17 -4.E-17 5.E-30  210
+ 1.60951 2.76580 2.90051  .06143 -.05741  MKS5LA.2  .0     0          46.289732 -4.1299 10.1446 1.02981 -8.E-17 -7.E-17 5.E-30  221
+ 6.34E-6 2.70003 3.19100  .03000 3.93E-8  MKLCA.2   .0     0          49.965324 -1.7E-6 4.69976 1.11034 8.3E-17 4.7E-18 5.E-30  235
+ 6.34E-6 2.70003 3.19100  .03000 3.93E-8  MKLE      .0     0          49.965324 -1.7E-6 4.69976 1.11034 8.3E-17 4.7E-18 5.E-30  236
+   AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #
+ 6.34E-6 2.70003 3.19100  .03000 3.93E-8  $$$       .0     0          49.965324 -1.7E-6 4.69976 1.11034 8.3E-17 4.7E-18 5.E-30  237
+ Element              Gx         Gy           Gz            s        Length     Value        Chi1        Chi2        Chi3      #
+ $$$                  48.409893   10.898561     .0        49.965324   .0      0            24.000000     .0          .0        237
+CHK TCELLA tune    3.1910040064    1.1103396682 emitx NaN length   49.9653241200
+ FFS["USE RINGSP;"];
+ FFS["cell calc emit;",6];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.758E-7 $$$       f BX    #######  #   5.365887 $$$       f NX    #######  #  47.865060 $$$       f AY    #######  #  -9.463E-7 $$$       f BY    #######  #   5.062210 $$$       f NY    #######  #  16.655090
+$$$       f LENG  #######  #  749.48088
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -5.77E-7  -4.98E-7  -7.4E-22  -1.3E-21  1.374E-5  2.646E-4
+      Exit :  -5.77E-7  -4.98E-7  -8.6E-22  -1.4E-21  1.374E-5  2.646E-4
+
+    Extended Twiss Parameters
+AX: -4.76E-4 BX: 5.353147                            ZX: 1.874E-5  EX: 4.783E-4
+           PSIX: -4.8E-17                           ZPX: -9.96E-7 EPX: 5.93E-20
+R1: -1.7E-15 R2: 4.11E-16 AY: -.004509 BY: 5.038831  ZY: -9.2E-21  EY: 5.93E-20
+R3: -1.4E-17 R4: -3.1E-15            PSIY: -8.5E-40 ZPY: -6.7E-22 EPY: -2.2E-19
+                                                     AZ: 6.866E-5  BZ: 1.458611
+                                                                 PSIZ: -3.7E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 400000.13 Hz 
+Energy loss per turn U0 = 3.5573887 MV  Effective voltage    Vc = 6.5000000 MV 
+Equilibrium position dz = 55.246463 mm  Momentum compact. alpha = 3.2369E-5
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1250.0000
+Bucket height     dV/P0 =  .0775750     Synchrotron frequency   = 1058.7856 Hz 
+
+  Imag.tune:-0.0000000          -0.0000000           0.0000000
+  Real tune:-0.1349376          -0.3449023          -0.0026470
+
+    Damping per one revolution:
+          X : -7.708943E-04   Y : -3.556539E-04   Z : -2.959521E-04
+    Damping time (sec):
+          X :  3.242986E-03   Y :  7.029304E-03   Z :  8.447309E-03
+    Tune shift due to radiation:
+          X : -1.463584E-06   Y : -1.208299E-05   Z : -1.894304E-09
+    Damping partition number:
+          X :    2.1677       Y :    1.0001       Z :    0.8322
+
+Emittance X            = 8.3211E-10 m   Emittance Y            = 1.8521E-33 m
+Emittance Z            = 3.21238E-6 m   Energy spread          =  .00148399
+Bunch Length           = 2.16468315 mm  Beam tilt              = -7.484E-11 rad
+Beam size xi           =  .06674539 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Print["CHK RINGSP tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX];
+CHK RINGSP tune   47.8650597373   16.6550903903 emitx  8.32107727E-10
+ FFS["USE RINGINJ;"];
+ FFS["cell calc emit;",6];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.497E-6 $$$       f BX    #######  #  20.906178 $$$       f NX    #######  #  47.865060 $$$       f AY    #######  #  -9.257E-6 $$$       f BY    #######  #   5.260810 $$$       f NY    #######  #  16.655090
+$$$       f LENG  #######  #  749.48088
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  5.092E-6  -7.75E-8  2.10E-21  -4.3E-22  1.561E-5  3.007E-4
+      Exit :  5.092E-6  -7.75E-8  2.10E-21  -4.3E-22  1.561E-5  3.007E-4
+
+    Extended Twiss Parameters
+AX:  .002926 BX: 20.99101                            ZX: 1.589E-5  EX: -.002395
+           PSIX: 1.85E-21                           ZPX: 1.673E-6 EPX: -1.7E-19
+R1: -7.6E-16 R2: -7.9E-15 AY: 6.335E-4 BY: 5.226326  ZY: -5.2E-21  EY: -1.7E-19
+R3: 4.16E-17 R4: -4.5E-15            PSIY: 1.16E-39 ZPY: -1.6E-21 EPY: -2.1E-20
+                                                     AZ: -.003330  BZ: 1.458627
+                                                                 PSIZ: 5.59E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 400000.13 Hz 
+Energy loss per turn U0 = 3.5573887 MV  Effective voltage    Vc = 6.5000000 MV 
+Equilibrium position dz = 55.246030 mm  Momentum compact. alpha = 3.2369E-5
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1250.0000
+Bucket height     dV/P0 =  .0775750     Synchrotron frequency   = 1058.7855 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune:-0.1349376          -0.3449023          -0.0026470
+
+    Damping per one revolution:
+          X : -7.708944E-04   Y : -3.556540E-04   Z : -2.959521E-04
+    Damping time (sec):
+          X :  3.242985E-03   Y :  7.029302E-03   Z :  8.447310E-03
+    Tune shift due to radiation:
+          X : -1.463573E-06   Y : -1.208300E-05   Z : -1.915969E-09
+    Damping partition number:
+          X :    2.1677       Y :    1.0001       Z :    0.8322
+
+Emittance X            = 8.3211E-10 m   Emittance Y            = -2.204E-35 m
+Emittance Z            = 3.21244E-6 m   Energy spread          =  .00148402
+Bunch Length           = 2.16469526 mm  Beam tilt              = 2.5248E-13 rad
+Beam size xi           =  .13221034 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Print["CHK RINGINJ tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX];
+CHK RINGINJ tune   47.8650597373   16.6550903903 emitx  8.32112230E-10
+ FFS["USE RINGSYM;"];
+ FFS["cell calc emit;",6];
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.21E-13 $$$       f BX    #######  #   5.365886 $$$       f NX    #######  #  47.865060 $$$       f AY    #######  #  9.483E-14 $$$       f BY    #######  #   5.062212 $$$       f NY    #######  #  16.655090
+$$$       f LENG  #######  #  749.48088
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  3.630E-8  -5.11E-7  2.96E-22  -6.7E-22  -1.43E-8  -3.74E-7
+      Exit :  3.625E-8  -5.11E-7  2.96E-22  -6.7E-22  -1.43E-8  -3.74E-7
+
+    Extended Twiss Parameters
+AX: -5.23E-4 BX: 5.366011                            ZX: 1.951E-5  EX: -1.86E-6
+           PSIX: -2.7E-21                           ZPX: 1.347E-8 EPX: 2.50E-21
+R1: -2.0E-15 R2: 9.22E-17 AY: -.005650 BY: 5.062313  ZY: 9.80E-21  EY: 2.50E-21
+R3: 2.48E-19 R4: -2.2E-15            PSIY: -4.9E-17 ZPY: 5.59E-23 EPY: 2.80E-19
+                                                     AZ: 8.944E-6  BZ: 1.458611
+                                                                 PSIZ: -1.4E-19
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 400000.13 Hz 
+Energy loss per turn U0 = 3.5573887 MV  Effective voltage    Vc = 6.5000000 MV 
+Equilibrium position dz = 55.260219 mm  Momentum compact. alpha = 3.2369E-5
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1250.0000
+Bucket height     dV/P0 =  .0775750     Synchrotron frequency   = 1058.7856 Hz 
+
+  Imag.tune:-0.0000000           0.0000000           0.0000000
+  Real tune:-0.1349376          -0.3449023          -0.0026470
+
+    Damping per one revolution:
+          X : -7.708944E-04   Y : -3.556539E-04   Z : -2.959521E-04
+    Damping time (sec):
+          X :  3.242985E-03   Y :  7.029303E-03   Z :  8.447310E-03
+    Tune shift due to radiation:
+          X : -1.463575E-06   Y : -1.208299E-05   Z : -1.852764E-09
+    Damping partition number:
+          X :    2.1677       Y :    1.0001       Z :    0.8322
+
+Emittance X            = 8.3211E-10 m   Emittance Y            = 1.5332E-32 m
+Emittance Z            = 3.21254E-6 m   Energy spread          =  .00148407
+Bunch Length           = 2.16468312 mm  Beam tilt              = -7.951E-14 rad
+Beam size xi           =  .06682161 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Print["CHK RINGSYM tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, " emitx ", EMITX];
+CHK RINGSYM tune   47.8650597373   16.6550903903 emitx  8.32112689E-10
+ stop;
+ FFS                  end:  CPU time =     0.142 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

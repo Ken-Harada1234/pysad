@@ -1,0 +1,16 @@
+LINE RINGC
+circumference [m]   =  570.7200000000
+number of elements  =  3204.000000000
+tune nx ny          =   48.5800233525   17.6200785537
+EMITX [m rad]       =  1.34316229E-10
+SIGE                =  6.405157569E-4
+SIGZ [m]            =     .0027343242
+MOMENTUM [eV]       =  3000000000.000
+LINE RING
+circumference [m]   =  570.7209201079
+number of elements  =  3225.000000000
+tune nx ny          =   48.5800240787   17.6200831582
+EMITX [m rad]       =  1.35680882E-10
+SIGE                =  6.423281594E-4
+SIGZ [m]            =     .0027312327
+MOMENTUM [eV]       =  3000000000.000

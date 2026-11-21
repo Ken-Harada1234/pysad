@@ -1,0 +1,25 @@
+! KEK-LS v03_68: オプティクスと配置の数表 (リング RING。図は example/tools/kek_ls_figs.py が PNG にする)
+! 元: disp_optics・disp (`disp $$$`・`disp geo $$$`・要素ごとの Twiss の表)・draw_cad.sad の入力。
+!     draw_cad.sad の ring.vss は元の描画モジュール drawmagvw3d.n 用で、元のフォルダにも無く、この例では扱わない。
+! 出力: `disp $$$` (終点の Twiss)、`disp MKSI` (入射点)、要素ごとの S・BX・BY・EX・位相・配置 (GX・GY) の表。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+USE RING;
+cell calc emit;
+Print["tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  length ", LINE["S","$$$"]];
+FFS["disp $$$",6];
+FFS["disp MKSI",6];
+FFS["disp geo $$$",6];
+ne = LINE["LENGTH"];
+Print["PLOTDATA ", ne];
+! 列: 名前 S[m] BX BY EX PSIX PSIY GX GY (各要素の入口の値)
+Do[
+  Print["E ", LINE["NAME",i], " ", Twiss["S",i], " ", Twiss["BX",i], " ", Twiss["BY",i], " ", Twiss["EX",i], " ",
+        Twiss["NX",i], " ", Twiss["NY",i], " ", LINE["GX",i], " ", LINE["GY",i]],
+{i,1,ne}];
+Exit;

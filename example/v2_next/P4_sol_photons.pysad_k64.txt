@@ -1,55 +1,55 @@
  *****qcod---> Overflow & closed orbit not found            1
 ???track6n_ext: ソレノイド内の要素 Multipole は未対応 (DRIFT/QUAD のみ)
 Traceback (most recent call last):
-  File "D:\work\SAD-master\Claude outputs\run_sad.py", line 13, in <module>
+  File "<repo>\run_sad.py", line 13, in <module>
     run_sad(sys.argv[1:])
-  File "D:\work\SAD-master\Claude outputs\pysad\ffscmd.py", line 5609, in run_sad
+  File "<repo>\pysad\ffscmd.py", line 5609, in run_sad
     return run_sad_string(src, out=out, cwd=cwd or os.path.dirname(os.path.abspath(paths[-1])))
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\ffscmd.py", line 5679, in run_sad_string
+  File "<repo>\pysad\ffscmd.py", line 5679, in run_sad_string
     I.run(ffs_src, 'ffs')
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 1460, in run
+  File "<repo>\pysad\sadscript.py", line 1460, in run
     result = self.eval(node)
              ^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 4857, in _eval2
+  File "<repo>\pysad\sadscript.py", line 4857, in _eval2
     return _orig_eval(self, node)
            ^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 1842, in eval
+  File "<repo>\pysad\sadscript.py", line 1842, in eval
     return self.eval_expr(node)
            ^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 1962, in eval_expr
+  File "<repo>\pysad\sadscript.py", line 1962, in eval_expr
     return f(node.args)
            ^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\ffscmd.py", line 558, in _set
+  File "<repo>\pysad\ffscmd.py", line 558, in _set
     return orig_set(args)
            ^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 3045, in <lambda>
+  File "<repo>\pysad\sadscript.py", line 3045, in <lambda>
     B['Set'] = lambda a: _set(a, False)
                          ^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 2931, in _set
+  File "<repo>\pysad\sadscript.py", line 2931, in _set
     rhs = _Lit(I.eval(rhs))
                ^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 4857, in _eval2
+  File "<repo>\pysad\sadscript.py", line 4857, in _eval2
     return _orig_eval(self, node)
            ^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 1842, in eval
+  File "<repo>\pysad\sadscript.py", line 1842, in eval
     return self.eval_expr(node)
            ^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\sadscript.py", line 2036, in eval_expr
+  File "<repo>\pysad\sadscript.py", line 2036, in eval_expr
     return f(args)
            ^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\ffscmd.py", line 2792, in fn_track
+  File "<repo>\pysad\ffscmd.py", line 2792, in fn_track
     x = seg(x, ls, ld)
         ^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\ffscmd.py", line 2757, in seg
+  File "<repo>\pysad\ffscmd.py", line 2757, in seg
     _res6 = _tp6(els[a - 1:b - 1], x, 1, self.momentum(), spins=spin_in, radpol=bool(self.flags['RADPOL']),
             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\track6.py", line 3220, in track_particles
+  File "<repo>\pysad\track6.py", line 3220, in track_particles
     nal = _tturn1(parts, elements, trf0, rfsw, rad, nal, zlost, alost=alost, l0=l0, kturn=kturn0 + it,
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\track6.py", line 3143, in _tturn1
+  File "<repo>\pysad\track6.py", line 3143, in _tturn1
     skip_to = _tsol_region(parts, elements, i, rad, trf0, rfsw)
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "D:\work\SAD-master\Claude outputs\pysad\track6.py", line 2879, in _tsol_region
+  File "<repo>\pysad\track6.py", line 2879, in _tsol_region
     raise NotImplementedError(f'track6: ソレノイド内の要素 {name} は未対応 (DRIFT/QUAD のみ)')
 NotImplementedError: track6: ソレノイド内の要素 Multipole は未対応 (DRIFT/QUAD のみ)

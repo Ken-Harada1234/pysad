@@ -1,0 +1,49 @@
+# LMA: local momentum acceptance (dp_plus >= 0, dp_minus <= 0). bracket width <= tol, value = largest surviving dp
+# compat_mode = v2
+# momentum_GeV = 0.5800000000000001
+# circumference_m = 45.70439999999998
+# nlat = 200
+# rfsw = True
+# rad = True
+# fluc = False
+# check_every = 1
+# LOSSAMPL_m = 0.01
+# LOSSDZ_m = 100.0
+# orbit_residual = 3.16733971240113e-18
+# bucket_height = 0.01617565869331182
+# nu_s = -0.0015245738838442406
+# phi_s_rad = 0.1236478909263799
+# U0_eV = 6166.703905021531
+# Vrf_eV = 49999.99999999999
+# momentum_compaction = 0.010669400951466918
+# nturn = 1312
+# nsynch_default = 2.0
+# dpmax = 0.020219573366639775
+# ncoarse = 12
+# nsub = 3
+# tol = 5e-06
+# bucket = True
+# bucket_zlimit_m = 1.540691417974548
+# x0 = 0.0
+# y0 = 0.0
+# npositions = 12
+# workers = 2
+# seconds = 228.9
+# tracked_particles = 660
+# alost_used = 0.01
+# verify = 0
+# turncheck = 0.0
+# warnings = []
+# loc  s[m]  name  dp_plus  dp_minus  hi_plus  hi_minus  reason_plus  reason_minus  flags
+    2     0.000000 D14837     1.598083e-02 -1.610260e-02 1.598248e-02 -1.610425e-02 aper  aper  -
+   17     3.808700 PM         8.307994e-03 -8.561397e-03 8.309639e-03 -8.563042e-03 aper  aper  -
+   35     7.617400 D14837     1.598083e-02 -1.610425e-02 1.598248e-02 -1.610589e-02 aper  aper  -
+   50    11.426100 PM         8.309639e-03 -8.563042e-03 8.311285e-03 -8.564687e-03 aper  aper  -
+   68    15.234800 D14837     1.598248e-02 -1.609931e-02 1.598413e-02 -1.610095e-02 aper  aper  -
+   83    19.043500 PM         8.309639e-03 -8.564687e-03 8.311285e-03 -8.566333e-03 aper  aper  -
+  102    22.852200 D14837     1.597919e-02 -1.610425e-02 1.598083e-02 -1.610589e-02 aper  aper  -
+  117    26.660900 PM         8.309639e-03 -8.564687e-03 8.311285e-03 -8.566333e-03 aper  aper  -
+  135    30.469600 D14837     1.598083e-02 -1.610260e-02 1.598248e-02 -1.610425e-02 aper  aper  -
+  150    34.278300 PM         8.307994e-03 -8.563042e-03 8.309639e-03 -8.564687e-03 aper  aper  -
+  168    38.087000 D14837     1.598083e-02 -1.610754e-02 1.598248e-02 -1.610918e-02 aper  aper  -
+  183    41.895700 PM         8.307994e-03 -8.563042e-03 8.309639e-03 -8.564687e-03 aper  aper  -

@@ -11,6 +11,10 @@ ASTRID2 (オーフス大学の放射光源リング) の台本 2 本。元の台
 手元のラティスのアーカイブ (ASTRID2 のフォルダ) の `v01_01` と `v01_02_id`。KEK の SAD チュートリアルの `ASTRID2_lattice_12nmrad.sad` (チューンサーベイ用) と `v01_02_id.sad` (MPW 用) に当たる。`ASTRID2_lattice_12nmrad` という名前のファイルはアーカイブに無く、`v01_01` の εx が 12.68 nm なので、これを `ASTRID2_lattice_12nmrad` の代わりに使った (中身が同じかは確かめていない)。
 アーカイブの ASTRID2 フォルダの `v9_16_asym` の中身は ASTRID2 でなく **PF のラティス** (見出しが "PF-RING Super-Low Emittance Lattice")。`v01_03id`・`v01_04_inj`・`v02_01` (見出しに別施設の名前があるものを含む) は使っていない。
 
+## 参考文献
+- ASTRID2 のデザインレポート: *ASTRID2 Preliminary Design Report* (Aarhus University、ISA、2009 年 8 月)。<https://www.isa.au.dk/facilities/astrid2/docs/astrid2-preliminarydesign-report-august2009.pdf>
+  ASTRID2 のリングの設計 (エネルギー 0.58 GeV、周長、セル構造、光学) の公開資料。このリポジトリの例のラティスは、設計値 (誤差なし) のラティスで、デザインレポートの値との照合は、一部の主要なパラメータ (エネルギー、周長、セル数) に限り、全部は確かめていない。
+
 ## 確認した値 (gs と pysad で全桁一致、`astrid/insertion_device/MPW_v01_02_id_ASTRID2`・`calc_RadInt_ASTRID2`)
 - エネルギー 0.58 GeV (`MOMENTUM= 0.58 GEV`)、周長 45.7044 m、偏向磁石 12 台 (BH: L=0.85 m、ANGLE=0.523599 rad、K1 の積分値 -1.6782×0.85 = -1.4265 (密度 -1.6782 /m²)、E1=E2=0 の扇形)、セル 6 個、直線部 6 か所 (各 2.9674 m、セルの両端の `D14837` = 1.4837 m の和)。
 - チューン リング (5.17999, 2.14018)、セル (0.86333, 0.35670)。MKS での β = (3.8916, 1.6225) m、分散はゼロ (-8.3e-4 m)。

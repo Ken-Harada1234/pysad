@@ -1,0 +1,45 @@
+! KEK-LS v03_68: リング (RINGC、標準セル 20 個) の六極によるクロマティシティの調整  (元: matching2_01 の後半)
+! チューン (NX, NY) の目標をいまの値に置き、運動量 DP = 0.001 での値も同じにする (= ξ を 0 にする条件。FITP 1)。
+! 変数: 六極 SD*・SF* の K2 (SD* は MAX 0、SF* は MIN 0 の符号制限)。
+! 元との違い: (1) 元の台本は前半のセル調整の後に続けて走る (この例は設計値のまま RINGC から始める)。
+!             (2) 元の最後の `Print[...resx[2,2,1,2]...]` は、DAsv[] が resx を作らないので記号のまま出ていた。ここでは
+!                 クロマティシティを、DP0 = ±0.0005 のチューン差から直接表示する。追跡 (DAsv) は含めない (modules_general.n の DAsv[] を参照)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+! ξ = Δν/Δδ を DP0 = ±dd の差分で求める (DP0 は基準運動量のずれ)
+Chrom[dd_]:=(
+  DP0 = dd;   FFS["cell calc"];  nxp = Twiss["NX","$$$"]/2/Pi;  nyp = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -dd;  FFS["cell calc"];  nxm = Twiss["NX","$$$"]/2/Pi;  nym = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0;    FFS["cell calc"];
+  {(nxp-nxm)/2/dd, (nyp-nym)/2/dd}
+);
+
+USE RINGC;
+cell calc emit;
+nx0 = Twiss["NX","$$$"]/2/Pi;
+ny0 = Twiss["NY","$$$"]/2/Pi;
+xi = Chrom[0.0005];
+Print["before: tune ", nx0, " ", ny0, "  xi ", xi[1], " ", xi[2]];
+Print["before: K2 SDH ", LINE["K2","SDH"], "  SFH ", LINE["K2","SFH"]];
+
+FFS["FIT;"];
+FFS["NX nx0 4;"];
+FFS["NY ny0 4;"];
+FFS["SD* MAX 0"];
+FFS["SF* MIN 0"];
+DP = 0.001;
+FFS["FREE SD*,SF*"];
+FFS["GO;",6];
+FFS["FITP 1;"];
+DP = 0;
+FFS["cell calc"];
+xi = Chrom[0.0005];
+Print["after : tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  xi ", xi[1], " ", xi[2]];
+Print["after : K2 SDH ", LINE["K2","SDH"], "  SFH ", LINE["K2","SFH"]];
+FFS["type S*",6];
+Exit;

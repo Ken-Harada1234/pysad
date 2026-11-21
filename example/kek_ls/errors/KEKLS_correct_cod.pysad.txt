@@ -1,0 +1,69 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.161E-6 $$$       f BX    #######  #   4.793355 $$$       f NX    #######  #  48.580024 $$$       f AY    #######  #  -6.470E-6 $$$       f BY    #######  #   2.377341 $$$       f NY    #######  #  17.620083
+$$$       f LENG  #######  #  570.72092
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  1.263E-6  1.641E-7  1.32E-22  -9.5E-24  -1.19E-6  1.020E-5
+      Exit :  1.262E-6  1.641E-7  -8.1E-23  4.48E-23  -1.19E-6  1.020E-5
+
+    Extended Twiss Parameters
+AX: -6.85E-4 BX: 4.781492                            ZX: 6.941E-5  EX:  .024984
+           PSIX: -1.4E-20                           ZPX: 1.169E-5 EPX: -5.4E-17
+R1: -1.2E-20 R2: 2.37E-20 AY:  .001451 BY: 2.377410  ZY: -9.2E-19  EY: -5.4E-17
+R3: 3.45E-22 R4: -3.8E-20            PSIY: -6.4E-40 ZPY: 5.14E-19 EPY: 2.57E-17
+                                                     AZ: -.002843  BZ: 4.252099
+                                                                 PSIZ: 1.27E-18
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 525287.30 Hz 
+Energy loss per turn U0 =  .2984335 MV  Effective voltage    Vc = 2.0000000 MV 
+Equilibrium position dz = 14.289999 mm  Momentum compact. alpha = 2.1893E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 952.00000
+Bucket height     dV/P0 =  .0397708     Synchrotron frequency   = 2456.3574 Hz 
+
+  Imag.tune: 0.0000000           0.0000000          -0.0000000
+  Real tune:-0.4199701          -0.3799068          -0.0046762
+
+    Damping per one revolution:
+          X : -6.511042E-05   Y : -4.972482E-05   Z : -8.410472E-05
+    Damping time (sec):
+          X :  2.923833E-02   Y :  3.828511E-02   Z :  2.263512E-02
+    Tune shift due to radiation:
+          X :  7.834508E-07   Y : -5.381202E-06   Z :  2.304800E-10
+    Damping partition number:
+          X :    1.3091       Y :    0.9998       Z :    1.6911
+
+Emittance X            = 1.3568E-10 m   Emittance Y            = -3.180E-36 m
+Emittance Z            = 1.75434E-6 m   Energy spread          = 6.42328E-4
+Bunch Length           = 2.73123267 mm  Beam tilt              = -1.572E-11 rad
+Beam size xi           =  .03010563 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+ICX =  161.0000000000   ICY =  121.0000000000   IM =  201.0000000000
+===== seed   17.0000000000
+before correction: tune   48.5454973689   17.8916187294
+   COD max [m] x y:  9.957514489E-4     .0041012929   COD rms [m] x y:  3.010941413E-4     .0019283151
+   eta-beat max [m] x y:     .0209933891     .0737896993   eta-beat rms [m] x y:     .0065169612     .0243009431
+iteration    1.0000000000: mat x rms =  9.963542948E-6  mat y rms =  3.350775828E-5  sad x rms =  7.439137724E-6  sad y rms =  6.107365150E-5  tune   48.5656071057   17.6866014452
+iteration    2.0000000000: mat x rms =  3.158683180E-6  mat y rms =  1.348761944E-5  sad x rms =  4.692750070E-6  sad y rms =  3.215423077E-5  tune   48.5717887264   17.6445451130
+iteration    3.0000000000: mat x rms =  2.587541163E-6  mat y rms =  7.029058158E-6  sad x rms =  3.453687062E-6  sad y rms =  1.866954065E-5  tune   48.5740814044   17.6342087283
+iteration    4.0000000000: mat x rms =  2.554055045E-6  mat y rms =  4.398689228E-6  sad x rms =  2.869795839E-6  sad y rms =  1.113652875E-5  tune   48.5749141204   17.6309858622
+iteration    5.0000000000: mat x rms =  2.554778897E-6  mat y rms =  3.055111060E-6  sad x rms =  2.654158076E-6  sad y rms =  6.816011348E-6  tune   48.5752475667   17.6299494993
+iteration    6.0000000000: mat x rms =  2.556216282E-6  mat y rms =  2.399312403E-6  sad x rms =  2.586163734E-6  sad y rms =  4.366557509E-6  tune   48.5753933560   17.6296184692
+after correction: tune   48.5753933560   17.6296184692  EMITX [pm rad]  137.5260603236
+   COD max [m] x y:  1.452406979E-4  1.689033643E-4   COD rms [m] x y:  3.666519895E-5  6.190663713E-5
+   eta-beat max [m] x y:     .0057690494     .0106579353   eta-beat rms [m] x y:     .0022487337     .0030156191
+===== seed  111.0000000000
+before correction: tune   48.5762095890   17.6492502682
+   COD max [m] x y:     .0013085346     .0021863140   COD rms [m] x y:  4.296817684E-4  6.369248160E-4
+   eta-beat max [m] x y:     .0182684629     .0508103048   eta-beat rms [m] x y:     .0052500229     .0163045018
+iteration    1.0000000000: mat x rms =  3.160067436E-6  mat y rms =  1.160714783E-5  sad x rms =  1.509531084E-5  sad y rms =  1.794175099E-5  tune   48.5749399166   17.6233015816
+iteration    2.0000000000: mat x rms =  2.876909596E-6  mat y rms =  4.448350437E-6  sad x rms =  8.016068075E-6  sad y rms =  7.914077902E-6  tune   48.5742288810   17.6198781698
+iteration    3.0000000000: mat x rms =  2.888121841E-6  mat y rms =  2.253509285E-6  sad x rms =  4.756843633E-6  sad y rms =  3.921126177E-6  tune   48.5739449095   17.6193507802
+iteration    4.0000000000: mat x rms =  2.891582512E-6  mat y rms =  1.710515810E-6  sad x rms =  3.465450367E-6  sad y rms =  2.366181791E-6  tune   48.5738454553   17.6192589453
+iteration    5.0000000000: mat x rms =  2.892215416E-6  mat y rms =  1.605626787E-6  sad x rms =  3.049382662E-6  sad y rms =  1.821521131E-6  tune   48.5738115007   17.6192386760
+iteration    6.0000000000: mat x rms =  2.892324916E-6  mat y rms =  1.584508543E-6  sad x rms =  2.933675257E-6  sad y rms =  1.651675345E-6  tune   48.5737994587   17.6192310193
+after correction: tune   48.5737994587   17.6192310193  EMITX [pm rad]  136.6275158981
+   COD max [m] x y:  1.237547935E-4  7.944585641E-5   COD rms [m] x y:  4.159202511E-5  2.341653946E-5
+   eta-beat max [m] x y:     .0049098754     .0140945118   eta-beat rms [m] x y:     .0019290179     .0034434432

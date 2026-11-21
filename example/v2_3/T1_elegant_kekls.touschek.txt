@@ -1,0 +1,9 @@
+# elegant touschekLifetime, particles=1e+09 emit=(2.13979e-10, 2.13989e-12) sigmaDelta=7.53112e-04 sigma_z=4.0906 mm
+uniform 0.0040: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    1.496432e-02  deltaLimit =          0.000000e+00
+uniform 0.0050: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    2.696191e-02  deltaLimit =          0.000000e+00
+uniform 0.0060: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    4.411344e-02  deltaLimit =          0.000000e+00
+uniform 0.0100: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    1.872311e-01  deltaLimit =          0.000000e+00
+uniform 0.0200: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    1.682431e+00  deltaLimit =          0.000000e+00
+uniform 0.0299: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    7.319159e+00  deltaLimit =          0.000000e+00
+elegant LMA: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    7.532368e+00  deltaLimit =          0.000000e+00
+pysad LMA: sigmaz (m) =          4.090635e-03  tLifetime (hour) =    7.550753e+00  deltaLimit =          0.000000e+00

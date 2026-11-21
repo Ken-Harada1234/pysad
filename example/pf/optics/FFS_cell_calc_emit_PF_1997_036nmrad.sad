@@ -1,0 +1,582 @@
+!============================================================================
+!  pf_1997_036nmrad.sad : PF リング (2.5 GeV) の 1997 年 のオプティクス
+!  弧部改造・高輝度化 (超低エミッタンス) のオプティクス (標準セルの位相進み 105 度、Version 3.6.1、2000-02-22)
+!----------------------------------------------------------------------------
+!  元のファイル: pf_036nmrad
+!  周長      187.0741 m
+!  チューン  nux = 9.5972, nuy = 4.2902
+!  エミッタンス  名前は 36 nm rad、計算値は 3.473e-8 m rad (34.7 nm rad)。近い (差 3.5%)
+!  エネルギー 2.5 GeV (MOMENTUM=2.5 GEV)、偏向磁石 28 台 (矩形、E1=E2=0.5)、空洞 CAVI 2 台 (各 VOLT 850 kV)。
+!  元は設計値のラティス (誤差なし)。数値は ON RAD FLUC COD RFSW RADCOD; のあとの `cell calc emit` の値
+!  (gs と pysad の k64 モードで全桁一致。example/pf/lattice/PF_history.md の表)。
+!  整理: なし (台本の中身は元のまま。改行を LF にしただけ)。Get・USE・計算コマンドは無い。
+!        周回のライン RING = (RMARK HALFE HALFW EMARK)。四極 QUAD と六極 SEXT の定義が何度も出てくるのは機械研究ごとの
+!        値の履歴 (2000-05-29、2002-11-25、`105 deg Present Optics`) で、あとの定義が有効 (最後が `105 deg Present Optics`)。
+!============================================================================
+!  ---- 元のヘッダ (pf_036nmrad の先頭) ----
+!********************************************************************
+!*       PF-RING Super-Low Emittance Lattice Configuration          *
+!*       Normal Cell Phase Addvance 105 deg Version                 *
+!*       2000-02-22                                                 *
+!*       Version 3.6.1                                              *
+!*       (Main magnet + Steering + BPM + Octupole                   *
+!*       SEXTUPOLE(SF,SD) 2 FAMILY CORRECTION                       *
+!*                                                                  *
+!********************************************************************
+ ON LOG;
+ OFF CTIME;OFF ECHO;ON COD;
+ MOMENTUM=2.5 GEV;
+ MARK   DMARK=()
+        SMARK =()
+        NMARK =()
+        RMARK =()
+        HMARK =()
+        EMARK =()
+        U2    =()
+        U5    =()
+        M13   =()
+        V14   =()
+        M16   =()
+        U19   =()
+        M26   =()
+        M28   =()
+        LPM   =()
+        SEPT  =()
+ ;
+ MONI   PM    =()
+ ;
+ CAVI   CAVI=(VOLT= 850000 FREQ=499990264.8)
+ ;
+ BEND   B02     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B03     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B04     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B05     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B06     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B07     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B08     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B09     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B10     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B11     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B12     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B13     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B14     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B15     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B16     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B17     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B18     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B19     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B20     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B21     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B22     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B23     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B24     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B25     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B26     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B27     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B28     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+        B01     =(L = 1.944076 ANGLE = 0.22439698  E1 = 0.5 E2=0.5)
+ ;
+BEND    VD01    =(L = 0        ROTATE =-90 DEG )
+        VD02    =(L = 0        ROTATE =-90 DEG )
+        VD03    =(L = 0        ROTATE =-90 DEG )
+        VD04    =(L = 0        ROTATE =-90 DEG )
+        VD05    =(L = 0        ROTATE =-90 DEG )
+        VD06    =(L = 0        ROTATE =-90 DEG )
+        VD07    =(L = 0        ROTATE =-90 DEG )
+        VD08    =(L = 0        ROTATE =-90 DEG )
+        VD09    =(L = 0        ROTATE =-90 DEG )
+        VD10    =(L = 0        ROTATE =-90 DEG )
+        VD11    =(L = 0        ROTATE =-90 DEG )
+        VD12    =(L = 0        ROTATE =-90 DEG )
+        VD13    =(L = 0        ROTATE =-90 DEG )
+        VD14    =(L = 0        ROTATE =-90 DEG )
+        VD15    =(L = 0        ROTATE =-90 DEG )
+        VD16    =(L = 0        ROTATE =-90 DEG )
+        VD17    =(L = 0        ROTATE =-90 DEG )
+        VD18    =(L = 0        ROTATE =-90 DEG )
+        VD19    =(L = 0        ROTATE =-90 DEG )
+        VD20    =(L = 0        ROTATE =-90 DEG )
+        VD21    =(L = 0        ROTATE =-90 DEG )
+        VD22    =(L = 0        ROTATE =-90 DEG )
+        VD23    =(L = 0        ROTATE =-90 DEG )
+        VD24    =(L = 0        ROTATE =-90 DEG )
+        VD25    =(L = 0        ROTATE =-90 DEG )
+        VD26    =(L = 0        ROTATE =-90 DEG )
+        VD27    =(L = 0        ROTATE =-90 DEG )
+        VD28    =(L = 0        ROTATE =-90 DEG )
+        VD29    =(L = 0        ROTATE =-90 DEG )
+        VD30    =(L = 0        ROTATE =-90 DEG )
+        VD31    =(L = 0        ROTATE =-90 DEG )
+        VD32    =(L = 0        ROTATE =-90 DEG )
+        VD33    =(L = 0        ROTATE =-90 DEG )
+        VD34    =(L = 0        ROTATE =-90 DEG )
+        VD35    =(L = 0        ROTATE =-90 DEG )
+        VD36    =(L = 0        ROTATE =-90 DEG )
+        VD37    =(L = 0        ROTATE =-90 DEG )
+        VD38    =(L = 0        ROTATE =-90 DEG )
+        VD39    =(L = 0        ROTATE =-90 DEG )
+        VD40    =(L = 0        ROTATE =-90 DEG )
+        VD41    =(L = 0        ROTATE =-90 DEG )
+        VD42    =(L = 0        ROTATE =-90 DEG )
+
+!        VSD     =(L = 0        ROTATE =-90 DEG)
+
+        K1      =(L = 0.0      ROTATE =180 DEG )
+        K2      =(L = 0.0      ROTATE =180 DEG )
+        K3      =(L = 0.0      ROTATE =180 DEG )
+        K4      =(L = 0.0      ROTATE =180 DEG )
+
+        PV      =(L = 0        ROTATE =-90 DEG )
+
+ ;
+ QUAD   Q1      =(L = .75  K1 = -.5861170 )
+        Q2      =(L = .75  K1 = .7517654 )
+        Q3      =(L = .5   K1 = -.6130024 )
+        Q4      =(L = 1.   K1 = 1.3747132 )
+        Q5A     =(L = .6   K1 = -.4347131 )
+        Q6A     =(L = .6   K1 = .6165280 )
+        Q8A     =(L = .5   K1 = .2481273 )
+        Q5B     =(L = .6   K1 = -.4263799 )
+        Q6B     =(L = .6   K1 = .5985792 )
+        Q8B     =(L = .5   K1 = .2446007  )
+        QAA     =(L = .5   K1 = -.5908765 )
+        Q9A     =(L = .4   K1 = .5572910 )
+        Q10A    =(L = .5   K1 = .3123342 )
+        QBA     =(L = .25  K1 = -.5484221 )
+        QAB     =(L = .5   K1 = -.6246059 )
+        Q9B     =(L = .4   K1 = .6462019 )
+        Q10B    =(L = .5   K1 = .2025399 )
+        QFA     =(L = .4   K1 = .6999325 )
+        QDB     =(L = .25  K1 = -.4286055 )
+        QFB     =(L = .4   K1 = .7093497 )
+        QD      =(L = .25  K1 = -.4993400 )
+        QFF     =(L = .4   K1 = .8002874 )
+        QFD     =(L = .4   K1 = .8002874 )
+;
+
+ QUAD   SQ01      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ02      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ03      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ04      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ05      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ06      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ07      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ08      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ09      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ10      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ11      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ12      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ13      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ14      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ15      =(L = .0   K1 = .0 ROTATE=45  deg)
+        SQ16      =(L = .0   K1 = .0 ROTATE=45  deg)
+ ;
+!
+! 2000-05-29 Machine Study
+! Calcurated from Responce Matrix interated 9
+!
+! nx=10.4504 ny=4.3472 (meas)
+! nx=10.4490 ny=4.3515 (calc)
+!
+!
+ QUAD   Q1      =(L =.75  K1 =-.5937082 )
+        Q2      =(L =.75  K1 =.7673062 )
+        Q3      =(L =.5   K1 =-.6043977 )
+        Q4      =(L =1    K1 =1.3600903 )
+        Q5B     =(L =.6   K1 =-.4769058 )
+        Q6B     =(L =.6   K1 =.6391762 )
+        Q8B     =(L =.5   K1 =.2448089 )
+        QAB     =(L =.5   K1 =-.6476209 )
+        Q9B     =(L =.4   K1 =.6860093 )
+        Q10B    =(L =.5   K1 =.1848119 )
+        QDB     =(L =.25  K1 =-.4727559 )
+        QFB     =(L =.4   K1 =.8400674 )
+        QD      =(L =.25  K1 =-.5320917 )
+        QFF     =(L =.4   K1 =.8997886 )
+        QFD     =(L =.4   K1 =.8966095 )
+        QFA     =(L =.4   K1 =.7931901 )
+        QBA     =(L =.25  K1 =-.5653628 )
+        Q10A    =(L =.5   K1 =.3042826 )
+        Q9A     =(L =.4   K1 =.580434 )
+        QAA     =(L =.5   K1 =-.5979372 )
+        Q8A     =(L =.5   K1 =.2208053 )
+        Q6A     =(L =.6   K1 =.6423164 )
+        Q5A     =(L =.6   K1 =-.4651836 )
+ ;
+ SEXT   SFF     =(L =.2   K2 =9.0531572346384 )
+        SD      =(L =.2   K2 =-8.9022357589793 )
+        SFD     =(L =.2   K2 =9.0531572346384 )
+ ;
+ QUAD   Q1      =(L =.75  K1 =-.5813335327139 )
+        Q2      =(L =.75  K1 =.7627357632016 )
+        Q3      =(L =.5   K1 =-.6031679955335 )
+        Q4      =(L =1    K1 =1.3586058358039 )
+        Q5B     =(L =.6   K1 =-.4652114691374 )
+        Q6B     =(L =.6   K1 =.6436206023213 )
+        Q8B     =(L =.5   K1 =.2583764292844 )
+        QAB     =(L =.5   K1 =-.6321288857418 )
+        Q9B     =(L =.4   K1 =.6614886040911 )
+        Q10B    =(L =.5   K1 =.1739261847517 )
+        QDB     =(L =.25  K1 =-.4349669348182 )
+        QFB     =(L =.4   K1 =.7293279540439 )
+        QD      =(L =.25  K1 =-.4849388075578 )
+        QFF     =(L =.4   K1 =.7585499929884 )
+        QFD     =(L =.4   K1 =.7552125692943 )
+        QFA     =(L =.4   K1 =.6978698260131 )
+        QBA     =(L =.25  K1 =-.5702130559922 )
+        Q10A    =(L =.5   K1 =.3264317040287 )
+        Q9A     =(L =.4   K1 =.5492640592049 )
+        QAA     =(L =.5   K1 =-.5913051580548 )
+        Q8A     =(L =.5   K1 =.2329637065645 )
+        Q6A     =(L =.6   K1 =.6360480154252 )
+        Q5A     =(L =.6   K1 =-.4508513220414 )
+ ;
+!
+! sextupole thick lens
+!
+ SEXT   SFF     =(L = .2  K2 = 7.5414049730017 )
+        SD      =(L = .2  K2 = -7.5566472685308 )
+        SFD     =(L = .2  K2 = 7.5414049730017 )
+ ;
+!
+! 2002-11-25 Machine Study
+! Calcurated from Responce Matrix interated
+!
+! nx=10.420  ny=4.360  (meas)
+! nx=10.42   ny=4.36   (calc)
+!
+!
+ QUAD   Q1      =(L =.75  K1 =-.5961376489308 )
+        Q2      =(L =.75  K1 =.7638333228161 )
+        Q3      =(L =.5   K1 =-.6040730559486 )
+        Q4      =(L =1    K1 =1.3605437000995 )
+        Q5B     =(L =.6   K1 =-.4750831735617 )
+        Q6B     =(L =.6   K1 =.6412590546277 )
+        Q8B     =(L =.5   K1 =.2449223076839 )
+        QAB     =(L =.5   K1 =-.6505891160354 )
+        Q9B     =(L =.4   K1 =.6856011901038 )
+        Q10B    =(L =.5   K1 =.1849278447642 )
+        QDB     =(L =.25  K1 =-.4727914109535 )
+        QFB     =(L =.4   K1 =.8405086274153 )
+        QD      =(L =.25  K1 =-.5317558086753 )
+        QFF     =(L =.4   K1 =.8982506000502 )
+        QFD     =(L =.4   K1 =.8947051343709 )
+        QFA     =(L =.4   K1 =.7949820510433 )
+        QBA     =(L =.25  K1 =-.5633003815219 )
+        Q10A    =(L =.5   K1 =.3046284490814 )
+        Q9A     =(L =.4   K1 =.5788947978207 )
+        QAA     =(L =.5   K1 =-.5984996001589 )
+        Q8A     =(L =.5   K1 =.2209368056051 )
+        Q6A     =(L =.6   K1 =.6410425556883 )
+        Q5A     =(L =.6   K1 =-.4667828401856 )
+ ;
+ SEXT   SFF     =(L =.2   K2 =9.4955359202554 )
+        SD      =(L =.2   K2 =-9.2739424324318 )
+        SFD     =(L =.2   K2 =9.4955359202554 )
+ ;
+! 105 deg Present Optics
+! resmat_cal6
+! resmat_qm6
+!
+ QUAD   Q1      =(L =.75  K1 =-.5813335327139 )
+        Q2      =(L =.75  K1 =.7627357632016 )
+        Q3      =(L =.5   K1 =-.6031679955335 )
+        Q4      =(L =1    K1 =1.3586058358039 )
+        Q5B     =(L =.6   K1 =-.4652114691374 )
+        Q6B     =(L =.6   K1 =.6436206023213 )
+        Q8B     =(L =.5   K1 =.2583764292844 )
+        QAB     =(L =.5   K1 =-.6321288857418 )
+        Q9B     =(L =.4   K1 =.6614886040911 )
+        Q10B    =(L =.5   K1 =.1739261847517 )
+        QDB     =(L =.25  K1 =-.4349669348182 )
+        QFB     =(L =.4   K1 =.7293279540439 )
+        QD      =(L =.25  K1 =-.4849388075578 )
+        QFF     =(L =.4   K1 =.7585499929884 )
+        QFD     =(L =.4   K1 =.7552125692943 )
+        QFA     =(L =.4   K1 =.6978698260131 )
+        QBA     =(L =.25  K1 =-.5702130559922 )
+        Q10A    =(L =.5   K1 =.3264317040287 )
+        Q9A     =(L =.4   K1 =.5492640592049 )
+        QAA     =(L =.5   K1 =-.5913051580548 )
+        Q8A     =(L =.5   K1 =.2329637065645 )
+        Q6A     =(L =.6   K1 =.6360480154252 )
+        Q5A     =(L =.6   K1 =-.4508513220414 )
+ ;
+!
+! sextupole thick lens
+!
+ SEXT   SFF     =(L = .2  K2 = 7.5414049730017 )
+        SD      =(L = .2  K2 = -7.5566472685308 )
+        SFD     =(L = .2  K2 = 7.5414049730017 )
+ ;
+!
+!
+! sextupole thick lens
+!
+! SEXT   SFF     =(L = .2  K2 = 7.5414049730017 )
+!        SD      =(L = .2  K2 = -7.5566472685308 )
+!        SFD     =(L = .2  K2 = 7.5414049730017 )
+! ;
+!
+! sextupole thin lens
+!
+! SEXT   SFF     =(L = .0   K2 = .0 )
+!        SFD     =(L = .0   K2 = .0 )
+!        SD      =(L = .0   K2 = .0 )
+ ;
+  OCT   OCT1    =(L = .2   K3 = .0 )
+        OCT2    =(L = .2   K3 = .0 )
+        OCT3    =(L = .2   K3 = .0 )
+        OCT4    =(L = .2   K3 = .0 )
+ ;
+ DRIFT  L180   =(L = .18 )
+        LQ7    =(L = .5 )
+        L210   =(L = .21 )
+        L190   =(L = .19 )
+        L525   =(L = .525 )
+        L725   =(L = .725 )
+        L500   =(L = .5 )
+        L200   =(L = .2 )
+        L300   =(L = .3 )
+        L275   =(L = .275 )
+        L250   =(L = .25 )
+        L225   =(L = .225 )
+        L150   =(L = .15 )
+        L575   =(L = .575 )
+        L425   =(L = .425 )
+        L400   =(L = .4 )
+        L625   =(L = .625 )
+        L600   =(L = .6 )
+        L100   =(L = .1 )
+        L325   =(L = .325 )
+        LLS3   =(L = 1.775 )
+        LLS2   =(L = 1.75  )
+        LLS1   =(L = 2.5 )
+        LLS4   =(L = 1.735 )
+        L450   =(L = .45 )
+        LESP   =(L = 1e-8)
+
+        L260   =(L = .260 )
+        L265   =(L = .265 )
+        L415   =(L = .415 )
+        L125   =(L = .125 )
+        L112   =(L = .112 )
+        L113   =(L = .113 )
+        L560   =(L = .560 )
+        L165   =(L = .165 )
+        L050   =(L = .050 )
+        L055   =(L = .055 )
+        L090   =(L = .090 )
+        L460   =(L = .460 )
+        L230   =(L = .230 )
+        L215   =(L = .215 )
+        L270   =(L = .270 )
+        L080   =(L = .080 )
+        L475   =(L = .475 )
+        L110   =(L = .110 )
+        L675   =(L = .675 )
+        L800   =(L = .800 )
+        L075   =(L = .075 )
+        L160   =(L = .160 )
+        L435   =(L = .435 )
+        L130   =(L = .130 )
+
+        L1775   =(L = 1.775 )
+        L1725   =(L = 1.725 )
+        L1275   =(L = 1.275 )
+        L3330   =(L = 3.330 )
+        L2240   =(L = 2.240 )
+        L2235   =(L = 2.235 )
+        L3030   =(L = 3.030 )
+        L1055   =(L = 1.055 )
+        L1515   =(L = 1.515 )
+        L1665   =(L = 1.665 )
+
+!
+! sextupole thin lens
+!
+!        LSXH   =(L = .1 )
+!
+! sextupole thick lens
+!
+        LSXH   =(L = .0 )
+!
+! octupole thin lens
+!
+!        LOCT   =(L = .1 )
+!
+! octupole thick lens
+!
+         LOCT   =(L = .0 )
+;
+  LINE  STRNW  =(U2
+                 L2240                                                                   PM    L260  Q1
+                 L180                                                                                Q2
+                 L265  PM    L415  VD02  PV    L1055 B02   L500        VD03        L100  PM    L125  Q3
+                 L180                                                                                Q4
+                 L180                                                                                Q3
+                 L112  PM    L113  VD04        L500  B03   L560        VD05  PV    L165              Q5B
+                 L180                                                                                Q6B
+                 L260  PM    L1515                   CAVI  L1515 L500              L180  PM    L260  Q8B
+                 L165              VD06        L560  B04   L575  L275  VD07  PV    L125  PM    L100  QAB
+                 L400  PM    L050                                                                    Q9B
+                 L1775                               U5    LESP  L1775             L250              Q10B )
+
+        NCELW  =(NMARK
+                 L150  PM    L050  LSXH  SFF   LESP  VD08   LSXH  L090  PV    L435  B05         L300  QDB
+                 L050  PM    L050  LSXH  SD    LESP  VD09   LSXH  L090  PV L130 OCT1 L130 PM    L050  QFB
+                 L100              LSXH  SFD   LESP  SQ01   LSXH  L200              B06         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD10   LSXH  L090  PV    L460        PM    L050  QFF
+                 L100              LSXH  SFF   LESP  SQ02   LSXH  L200              B07         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD11   LSXH  L090  PV    L460        PM    L050  QFD
+                 L100              LSXH  SFD   LESP  SQ03   LSXH  L200              B08         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD12   LSXH  L090  PV L130 OCT2 L130 PM    L050  QFF
+                 L100              LSXH  SFF   LESP  SQ04   LSXH  L200              B09         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD13   LSXH  L090  PV    L460        PM    L050  QFD
+                 L100              LSXH  SFD   LESP  SQ05   LSXH  L200              B10         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD14   LSXH  L090  PV    L460        PM    L050  QFF
+                 L100              LSXH  SFF   LESP  SQ06   LSXH  L200              B11         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD15   LSXH  L090  PV    L460        PM    L050  QFA
+                 L100              LSXH  SFD   LESP  SQ07   LSXH  L200              B12         L300  QBA
+                 L050  PM    L050  LSXH  SD    LESP  VD16   LSXH  L090  PV    L160        PM    L075  Q10A )
+
+
+        STRSW  =(L1775                               M13   LESP  L1725                   PM    L050  Q9A
+                 L270              VD17                          L100        PV    L080        L500  QAA
+                 L100  PM    L475                    B13         L560  VD18  PV    L165              Q8A
+                 L110  PM    L180  L500        L1665 V14   LESP  L1665                   PM    L110  Q6A
+                 L180                                                                                Q5A
+                 L165              VD19        L560  B14         L500  VD20        L100  PM    L125  Q3
+                 L180                                                                                Q4
+                 L180                                                                                Q3
+                 L112  PM    L113  VD21        L500  B15         L675  VD22  PV    L800  PM    L260  Q2
+                 L180                                                                                Q1
+                 L265  PM    L2235 )
+
+        STRSE  =(M16
+                 L2240                                                                   PM    L260  Q1
+                 L180                                                                                Q2
+                 L265  PM    L415  VD23  PV    L1055 B16   L500        VD24        L100  PM    L125  Q3
+                 L180                                                                                Q4
+                 L180                                                                                Q3
+                 L112  PM    L113  VD25        L500  B17   L560        VD26  PV    L165              Q5B
+                 L180                                                                                Q6B
+                 L260  PM    L1515                   CAVI  L1515 L500              L180  PM    L260  Q8B
+                 L165              VD27        L560  B18   L575  L275  VD28  PV    L125  PM    L100  QAB
+                 L400  PM    L050                                                                    Q9B
+                 L1775                               U19   LESP  L1775             L250              Q10B )
+
+        NCELE  =(NMARK
+                 L150  PM    L050  LSXH  SFF   LESP  VD29    LSXH  L090  PV    L435  B19         L300  QDB
+                 L050  PM    L050  LSXH  SD    LESP  VD30    LSXH  L090  PV L130 OCT3 L130 PM    L050  QFB
+                 L100              LSXH  SFD   LESP  SQ08    LSXH  L200              B20         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD31    LSXH  L090  PV    L460        PM    L050  QFF
+                 L100              LSXH  SFF   LESP  SQ09    LSXH  L200              B21         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD32    LSXH  L090  PV    L460        PM    L050  QFD
+                 L100              LSXH  SFD   LESP  SQ10    LSXH  L200              B22         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD33    LSXH  L090  PV L130 OCT4 L130 PM    L050  QFF
+                 L100              LSXH  SFF   LESP  SQ11    LSXH  L200              B23         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD34    LSXH  L090  PV    L460        PM    L050  QFD
+                 L100              LSXH  SFD   LESP  SQ12    LSXH  L200              B24         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD35    LSXH  L090  PV    L460        PM    L050  QFF
+                 L100              LSXH  SFF   LESP  SQ13    LSXH  L200              B25         L300  QD
+                 L050  PM    L050  LSXH  SD    LESP  VD36    LSXH  L090  PV L230 K1 L230   LPM   L050  QFA
+                 L100              LSXH  SFD   LESP  SQ14    LSXH  L200              B26         L300  QBA
+                 L050  PM    L050  LSXH  SD    LESP  VD37    LSXH  L090  PV    L160        PM    L075  Q10A )
+
+
+        STRNE  =(L500 K2 L1275                             M26   LESP  L1275       SEPT  L450  PM    L050  Q9A
+                 L270              VD38                          L100        PV    L080 L200 K3 L300 QAA
+                 L100  PM    L275  VD39        L200  B27         L560        PV    L165              Q8A
+                 L110  PM    L180 L200 K4 L300 L1665 M28  LESP  L1665                   PM    L110  Q6A
+                 L180                                                                                Q5A
+                 L165              VD40        L560  B28         L500  VD41        L100  PM    L125  Q3
+                 L180                                                                                Q4
+                 L180                                                                                Q3
+                 L112  PM    L113  VD42        L500  B01         L675  VD01  PV    L800  PM    L260  Q2
+                 L180                                                                                Q1
+                 L265  PM    L2235 )
+
+        INJEA = (SEPT  L450  PM    L050  Q9A
+                 L270              VD38                          L100        PV    L080 L200 K3 L300 QAA
+                 L100  PM    L275  VD39        L200  B27         L560        PV    L165              Q8A
+                 L110  PM    L180 L200 K4 L300 L1665 M28  LESP  L1665                   PM    L110  Q6A
+                 L180                                                                                Q5A
+                 L165              VD40        L560  B28         L500  VD41        L100  PM    L125  Q3
+                 L180                                                                                Q4
+                 L180                                                                                Q3
+                 L112  PM    L113  VD42        L500  B01         L675  VD01  PV    L800  PM    L260  Q2
+                 L180                                                                                Q1
+                 L265  PM    L2235 )
+
+
+!
+    HALFW  =(STRNW NCELW STRSW)
+    HALFE  =(STRSE NCELE STRNE)
+    RING   =(RMARK HALFE HALFW EMARK)
+    INJE   =(INJEA HALFW EMARK)
+;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+(* 要素の数を型ごとに数える (偏向磁石は ANGLE <> 0、四極は L > 0 かつ K1 <> 0。ステアリング・スキュー四極は含めない) *)
+CountEl[]:=(
+  nb = 0; nq = 0; ns = 0; no = 0; nc = 0; sa = 0;
+  Do[
+    t = LINE["TYPENAME", i];
+    If[t == "BEND" && LINE["ANGLE", i] <> 0, nb = nb + 1; sa = sa + LINE["ANGLE", i]];
+    If[t == "QUAD" && LINE["L", i] > 0 && LINE["K1", i] <> 0, nq = nq + 1];
+    If[t == "SEXT" && LINE["L", i] > 0, ns = ns + 1];
+    If[t == "OCT", no = no + 1];
+    If[t == "CAVI", nc = nc + 1],
+  {i, 1, LINE["LENGTH"]}];
+  Print["bends = ", nb, "  sum of ANGLE [rad] = ", sa, "  quads = ", nq, "  sexts = ", ns, "  octs = ", no, "  cavities = ", nc]
+);
+(* 色収差 = 運動量を ±d ずらしたチューンの差 *)
+ChromFD[d_]:=(
+  DP0 = d;  FFS["cell calc"];  x1 = Twiss["NX","$$$"]/2/Pi;  y1 = Twiss["NY","$$$"]/2/Pi;
+  DP0 = -d; FFS["cell calc"];  x2 = Twiss["NX","$$$"]/2/Pi;  y2 = Twiss["NY","$$$"]/2/Pi;
+  DP0 = 0;  FFS["cell calc"];
+  {(x1 - x2)/(2 d), (y1 - y2)/(2 d)}
+);
+(* 場所での BX BY EX NX NY (NX NY は 2 pi で割ったチューンの位相) *)
+ShowAt[nm_]:=Print[nm, "  #", LINE["POSITION", nm], "  S = ", LINE["S", nm], "  BX BY EX AX = ",
+  Twiss[{"BX","BY","EX","AX"}, nm], "  NX NY/2pi = ", Twiss["NX", nm]/2/Pi, " ", Twiss["NY", nm]/2/Pi];
+
+USE RING;
+cell calc emit;
+Print["circumference [m] = ", LINE["S","$$$"]];
+Print["number of elements = ", LINE["LENGTH"]];
+Print["tune nx ny = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+Print["EMITX [m rad] = ", EMITX, "  SIGE = ", SIGE, "  SIGZ [m] = ", SIGZ];
+Print["MOMENTUM [eV] = ", MOMENTUM];
+CountEl[];
+Print["CAVI VOLT [V] FREQ [Hz] = ", LINE["VOLT","CAVI"], " ", LINE["FREQ","CAVI"]];
+Print["--- Twiss at the marks (straight sections)"];
+ShowAt["U2"];
+ShowAt["M16"];
+ShowAt["U5"];
+ShowAt["M13"];
+ShowAt["V14"];
+ShowAt["M26"];
+ShowAt["M28"];
+ShowAt["U19"];
+ShowAt["CAVI"];
+Print["--- Twiss at the bends of the normal cells"];
+ShowAt["B19"];
+ShowAt["B20"];
+ShowAt["B21"];
+ShowAt["B22"];
+ShowAt["B23"];
+ShowAt["B24"];
+ShowAt["B25"];
+ShowAt["B26"];
+Print["--- chromaticity d(nu)/d(dp/p), dp/p = +-0.001"];
+Print["with the design sextupoles: ", ChromFD[0.001]];
+SF* 0; SD* 0;
+FFS["cell calc"];
+Print["natural (SF* SD* = 0):      ", ChromFD[0.001]];
+Exit;

@@ -1,0 +1,175 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 14:49:01 Saturday 11/21/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ======================================================================
+! DDBA_01  v03_12_30cells_DDBA
+! 設計手順の段階: 1. 基本セルの構想 (セル数・直線部・偏向磁石の構成)
+! 元の台本: v03_12_30cells_DDBA (設計メモの添付 2.1 KB、元の台本 2120
+!     byte。同名・同サイズ)
+! 設計メモのページの最終更新: 2023/07/13
+! 何の版か (設計メモの記述の要約): セル数の決定。もとの NanoTerasu のラティスから始め、短直線部を 2 m、長直線部を
+!     7.6 m にし、Q1・Q5 を 30 cm、Q3 を 40 cm にしてマッチング (16
+!     セルでセル長 24.72 m)。750 m を割って 30 セル。短直線部中央の分散 3 cm
+!     でマッチングした結果がこの台本
+!     (v03_12_30cells_DDBA)。同じ設計メモには、短直線部も色消しにした版
+!     (v03_11_30cell_D_DBA)、直線部を 5 m/10 m にした DDBA
+!     (v03_14_DDBA)、real DBA x 2 (v03_13_D_DBA)
+!     も添付されている
+! 設計メモが書いている数値: セル長 24.72 m (16 セル版)。設計メモの感想:
+!     「これを回るリングにするのは相当難しいだろう」
+! pysad の cell calc emit (ON RAD FLUC COD RFSW RADCOD、リングのライン RING、k64 モード = gs と同じ):
+!     エネルギー 5.0 GeV、周長 750.6000 m、チューン (52.8739, 17.5348)
+!     εx = 5.21e-10 m rad (k64)、5.215e-10 m rad (v2 モード)、σE = 0.001019、αc = 0.0001091、U0 = 2.562 MV
+!     RF: 総電圧 3.6 MV、h = 592、周波数 236.447 MHz。偏向磁石 120 台 (L > 0, |ANGLE| > 0.02)、逆曲げなどの小角 BEND 0 台、四極 300 台、六極 300 台、八極 0 台
+! 元のヘッダ: 元の台本の先頭にコメントのヘッダはない (先頭は MOMENTUM の行)。
+! 変更: 改行を LF にした。ラティスの定義の中身は変えていない。
+! ======================================================================
+MOMENTUM = 5.0GEV;
+
+ DRIFT  DLL     =(L =3.6 )  D1      =(L =.15 )   D2      =(L =.27 )   D3      =(L =.53 )   D4      =(L =.62 )   D5      =(L =.3 )
+        D6      =(L =.36 )   DLS     =(L = 1 )
+ ;
+ BEND   B1      =(L =1.13 ANGLE =.09817477    E1 =.5    E2 =.5    K1 =-.7887523152761018 )
+ ;
+ QUAD   Q1      =(L =.3   K1 =.6554106686794453 )
+        Q2      =(L =.2   K1 =-.053158321980570584 )
+        Q3      =(L =.4   K1 =.9718078985515348 )
+        Q4      =(L =.2   K1 =.12019091931009 )
+        Q5      =(L =.3   K1 =.8871433943287228 )
+ ;
+ SEXT   S1      =(L =.2   K2 =18.990000000000002 )
+        S2      =(L =.2   K2 =-22.4974 )
+        S3      =(L =.2   K2 =-9.446800000000001 )
+        S4      =(L =.2   K2 =21.2346 )
+        S5      =(L =.2   K2 =-30.813600000000005 )
+ ;
+ CAVI   RFC     =(VOLT =3600000     HARM =592 )
+ ;
+MARK
+  MRST = ()
+  MNCS = ()
+  MC   = ()
+  MNCE = ()
+  MRED = ()
+
+  MKNS = ()
+  MKNSA = ()
+
+;
+LINE
+  NCELLH = (MNCS
+                DLL S1 D1 Q1 D1 S2 D1 Q2 D2
+                B1
+                D2 S3 D3 Q3 D1 S4 D1 Q4 D4 S5 D5
+                B1
+                D6 Q5 DLS
+           MC)
+  NCELL = (MKNS NCELLH -NCELLH MNCE)
+  RING = (MRST
+              15*NCELL RFC 15*NCELL
+          MRED)
+;
+ BEND   B1      =(L =1.13 ANGLE =.09817477    E1 =.5    E2 =.5    K1 =-.7430018073315926 )
+ ;
+ QUAD   Q1      =(L =.3   K1 =.6382004923654429 )
+        Q2      =(L =.2   K1 =-.07519459195647325 )
+        Q3      =(L =.4   K1 =.9604673905471247 )
+        Q4      =(L =.2   K1 =.10469041061448142 )
+        Q5      =(L =.3   K1 =.8514643972134764 )
+ ;
+ DRIFT  DLL     =(L =3.75 )   D1      =(L =.15 )   D2      =(L =.27 )   D3      =(L =.53 )   D4      =(L =.62 )   D5      =(L =.3 )
+        D6      =(L =.36 )   DLS     =(L =1 )
+ ;
+ BEND   B1      =(L =1.13 ANGLE =.05235987733333333     E1 =.5    E2 =.5    K1 =-.7263925132909782 )
+ ;
+ QUAD   Q1      =(L =.3   K1 =.6550860672226918 )
+        Q2      =(L =.2   K1 =-.11235728574040715 )
+        Q3      =(L =.4   K1 =.9937313298017902 )
+        Q4      =(L =.2   K1 =.04069478308633373 )
+        Q5      =(L =.3   K1 =.83972985991269 )
+ ;
+
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ $FORM = "15.10"; PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ cell calc emit;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -9.07E-13 $$$       f BX    #######  #  12.989139 $$$       f NX    #######  #  52.873931 $$$       f AY    #######  #  1.848E-12 $$$       f BY    #######  #   3.270118 $$$       f NY    #######  #  17.534785
+$$$       f LENG  #######  #  750.60000
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -8.36E-9  -3.54E-8  3.99E-22  3.52E-22  -2.45E-8  -2.23E-7
+      Exit :  -8.38E-9  -3.54E-8  -6.4E-22  -3.2E-22  -2.45E-8  -2.23E-7
+
+    Extended Twiss Parameters
+AX: 2.834E-4 BX: 12.98926                            ZX: 1.649E-6  EX: -8.33E-6
+           PSIX: -6.2E-17                           ZPX: 1.103E-9 EPX: 1.34E-19
+R1: 8.41E-18 R2: 5.72E-19 AY:  .005755 BY: 3.270743  ZY: -1.2E-23  EY: 1.34E-19
+R3: -8.7E-21 R4: -2.6E-16            PSIY: 6.14E-17 ZPY: -3.6E-24 EPY: -1.7E-20
+                                                     AZ: 1.041E-5  BZ: 5.715172
+                                                                 PSIZ: 1.55E-20
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 399403.75 Hz 
+Energy loss per turn U0 = 2.5618901 MV  Effective voltage    Vc = 3.6000000 MV 
+Equilibrium position dz = 159.77971 mm  Momentum compact. alpha = 1.0909E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 592.00000
+Bucket height     dV/P0 =  .0324328     Synchrotron frequency   = 910.70579 Hz 
+
+  Imag.tune:-0.0000000          -0.0000000           0.0000000
+  Real tune:-0.1260541          -0.4651982          -0.0022802
+
+    Damping per one revolution:
+          X : -3.491944E-04   Y : -2.561000E-04   Z : -4.191796E-04
+    Damping time (sec):
+          X :  7.170024E-03   Y :  9.776383E-03   Z :  5.972934E-03
+    Tune shift due to radiation:
+          X :  2.058276E-06   Y : -2.529319E-05   Z :  1.255568E-10
+    Damping partition number:
+          X :    1.3634       Y :    0.9999       Z :    1.6367
+
+Emittance X            = 5.2096E-10 m   Emittance Y            = -1.042E-38 m
+Emittance Z            = 5.93545E-6 m   Energy spread          =  .00101909
+Bunch Length           = 5.82426815 mm  Beam tilt              = 2.4357E-12 rad
+Beam size xi           =  .08226123 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
+
+ Print["circumference [m] = ", LINE["S","$$$"]];
+circumference [m] =  750.6000000000
+ Print["number of elements = ", LINE["LENGTH"]];
+number of elements =  1684.000000000
+ Print["tune nx ny = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+tune nx ny =   52.8739311456   17.5347853098
+ Print["EMITX [m rad] = ", EMITX, "  SIGE = ", SIGE, "  SIGZ [m] = ", SIGZ];
+EMITX [m rad] =  5.20961561E-10  SIGE =     .0010190889  SIGZ [m] =     .0058242681
+ Print["MOMENTUM [eV] = ", MOMENTUM];
+MOMENTUM [eV] =  5000000000.000
+ nb = 0; nr = 0; nq = 0; ns = 0; no = 0; nc = 0; sa = 0; vol = 0; frq = 0; hm = 0;
+ Do[
+   t = LINE["TYPENAME", i];
+   If[t == "BEND" && LINE["L", i] > 0 && Abs[LINE["ANGLE", i]] > 0.02, nb = nb + 1; sa = sa + LINE["ANGLE", i]];
+   If[t == "BEND" && LINE["L", i] > 0 && Abs[LINE["ANGLE", i]] <= 0.02 && LINE["ANGLE", i] <> 0, nr = nr + 1];
+   If[t == "QUAD" && LINE["L", i] > 0 && LINE["K1", i] <> 0, nq = nq + 1];
+   If[t == "SEXT" && LINE["L", i] > 0 && LINE["K2", i] <> 0, ns = ns + 1];
+   If[t == "OCT", no = no + 1];
+   If[t == "CAVI", nc = nc + 1; vol = vol + LINE["VOLT", i]; frq = LINE["FREQ", i]; hm = LINE["HARM", i]],
+ {i, 1, LINE["LENGTH"]}];
+ Print["bends = ", nb, "  sum of ANGLE [rad] = ", sa, "  small-angle bends = ", nr, "  quads = ", nq, "  sexts = ", ns, "  octs = ", no, "  cavities = ", nc];
+bends =  120.0000000000  sum of ANGLE [rad] =    6.2831852800  small-angle bends =     .0000000000  quads =  300.0000000000  sexts =  300.0000000000  octs =     .0000000000  cavities =    1.0000000000
+ Print["CAVI total VOLT [V] FREQ [Hz] HARM = ", vol, " ", frq, " ", hm];
+CAVI total VOLT [V] FREQ [Hz] HARM =  3600000.000000     .0000000000  592.0000000000
+ Exit;
+ FFS                  end:  CPU time =     0.027 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

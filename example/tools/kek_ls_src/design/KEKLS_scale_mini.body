@@ -1,0 +1,66 @@
+! KEK-LS v03_68: 標準セル (ARCA) の長さを一様に縮小して、チューンを保つように四極を再調整する  (元: matching23_v03_35_mini)
+! 縮小率 factor で、ドリフト・偏向磁石・四極・六極・八極の長さ L を factor 倍、偏向磁石・四極の K1 を 1/factor 倍にした上で、
+! 四極 Q* の K1 を変数に、セルの NX・NY を設計値 (縮小前の値) に合わせ、さらに
+!   |BX(MKSFA1.1)·sin(Δμx(SFA1.1→SFA1.2)) − 0.3| + |sin(Δμy)|·1000
+! を小さくする (六極の対 SF の間の位相条件。FitFunction)。
+! v03_68 に合わせた直し (元は v03_35): セルのライン ARCA1 → ARCA。要素名 BPI6/BPI7/QFA4A/QFA4B → BPI6H/BPI7H/QFA4。
+!   六極のマーク MKSFA1・MKSFA2 → MKSFA1.1・MKSFA1.2 (1 セルに 2 回現れる)。
+!   `free BPI6 K1`・`free BPI7 K1` は名前が合わず効かないので、`free BPI6H K1`・`free BPI7H K1` にした (freebend = 1 が既定。0 で四極だけ)。
+!   元は factor を 1 から 0.5 まで 0.01 刻み (51 点)。例は factor = 1, 0.9, ..., 0.5 の 6 点。
+!   描画・datas.txt への書き出し・使われない行を除いた。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+
+freebend = 1;
+USE ARCA;
+cell calc;
+nxcell = Twiss["NX","$$$"]/2/Pi;
+nycell = Twiss["NY","$$$"]/2/Pi;
+Print["design: cell phase advance ", nxcell, " ", nycell, "  length ", LINE["S","$$$"]];
+Print["design: BX*sin(dmu_x)-0.3 = ", Twiss["BX","MKSFA1.1"]*Sin[Twiss["NX","MKSFA1.2"]-Twiss["NX","MKSFA1.1"]] - 0.3, "   sin(dmu_y) = ", Sin[Twiss["NY","MKSFA1.2"]-Twiss["NY","MKSFA1.1"]]];
+
+! 元の長さと K1 を取っておく
+orinam = LINE["NAME","*"];
+orityp = LINE["TYPENAME","*"];
+nel = Length[orinam];
+orilen = Table[0,{nel}];
+orik   = Table[0,{nel}];
+Do[
+  If[orityp[i] == "DRIFT" || orityp[i] == "BEND" || orityp[i] == "QUAD" || orityp[i] == "SEXT" || orityp[i] == "OCT",
+    orilen[i] = LINE["L",orinam[i]];
+  ];
+  If[orityp[i] == "BEND" || orityp[i] == "QUAD",
+    orik[i] = LINE["K1",orinam[i]];
+  ];
+,{i,1,nel}];
+
+Do[
+  Do[
+    If[orityp[i] == "DRIFT" || orityp[i] == "BEND" || orityp[i] == "QUAD" || orityp[i] == "SEXT" || orityp[i] == "OCT",
+      LINE["L",orinam[i]] = orilen[i]*factor;
+    ];
+    If[orityp[i] == "BEND" || orityp[i] == "QUAD",
+      LINE["K1",orinam[i]] = orik[i]/factor;
+    ];
+  ,{i,1,nel}];
+  FFS["cell calc"];
+  FFS["fit NX nxcell"];
+  FFS["fit NY nycell"];
+  FitFunction:={Abs[Twiss["BX","MKSFA1.1"]*Sin[Twiss["NX","MKSFA1.2"]-Twiss["NX","MKSFA1.1"]] - 0.3] + Abs[Sin[Twiss["NY","MKSFA1.2"]-Twiss["NY","MKSFA1.1"]]]*1000};
+  FFS["free Q*"];
+  If[freebend == 1,
+    FFS["free BPI6H K1"];
+    FFS["free BPI7H K1"];
+  ];
+  FFS["go"];
+  FFS["cell calc"];
+  Print["factor ", factor, "  length ", LINE["S","$$$"], "  phase ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi,
+        "  BX*sin-0.3 ", Twiss["BX","MKSFA1.1"]*Sin[Twiss["NX","MKSFA1.2"]-Twiss["NX","MKSFA1.1"]] - 0.3, "  sin_y ", Sin[Twiss["NY","MKSFA1.2"]-Twiss["NY","MKSFA1.1"]]];
+  Print["   K1: QFA1H ", LINE["K1","QFA1H"], " QDA2 ", LINE["K1","QDA2"], " QDA3 ", LINE["K1","QDA3"], " QFA4 ", LINE["K1","QFA4"], " QDA5 ", LINE["K1","QDA5"],
+        " QFA6H ", LINE["K1","QFA6H"], " QFA8H ", LINE["K1","QFA8H"], " BPI6H ", LINE["K1","BPI6H"], " BPI7H ", LINE["K1","BPI7H"]];
+,{factor,1,0.5,-0.1}];
+Exit;

@@ -1,0 +1,203 @@
+! KEK-LS v03_68: 誤差入りのリングの COD (閉軌道) と分散の補正  (元: correct_cod.sad。correct_cod_best/worst/noSX/GCUT1/v03_70 は同じ台本の設定違い)
+! 流れ:
+!   1. RING で設計の COD 応答行列 (補正用ステアリング HD*.* / VD*.* の K0 → モニター PM*.* の COD) を、解析式
+!      Responsex[j,i] = 0.5 sqrt(βm βc) cos(πν − |Δμ|) / sin(πν) から作る (CalculateCODResponse[])。
+!   2. 乱数の種 seed ごとに、四極・六極のずれ (DX・DY = ae GaussRandom[])、強さの誤差 (DK = fe)、回転誤差 (DTHETA = te) を与える (SeedRandom[seed]、modules_errors.n)。
+!   3. 応答行列の特異値分解 (CodCorr[] = 固有値の大きい ie 個だけ使う疑似逆行列) で、COD を補正する K0 を求め、0.5 倍ずつ niter 回かける。
+!   4. 補正前後の COD・分散の rms と最大値、チューンの変化を表示する。補正後にチューンが窓の外 (nx 48.5〜49、ny 17.5〜18) なら DA は計算しない。
+! 元との違い:
+!   - 乱数の種: 元は SeedRandom[187] と Random[1000] で作った 115 個の種 (k = 1〜115)。この例は種 {17, 111} の 2 本 (元の print_cod_magnitude 系の台本が使う種)。
+!   - 補正の繰り返しは元は 40 回。この例は niter = 6 回 (rms は数回で収束する)。
+!   - DA (DAsv[]) は元は毎回計算して datas.txt に書く。この例は doDA = 0 (しない)。doDA = 1 で、周回数 DAturns (既定 5000 を 200 に短縮) の DA を表示。
+!   - 位置ずれは DELX・DELY ではなく成分ごとの DX・DY に入れる (K64 の DELX・DELY は COD に効かない。modules_errors.n の説明)。
+!   - 元の FFS["MON 0 0 0 0 PM*;"] (モニターの誤差) は K64 では何もしない (エラーになる) ので除いた。
+!   - COD 応答行列の計算の中の `FFS["cell calc"]` は、ステアリング 1 個ごとに繰り返していたが、同じ結果なので最初の 1 回だけにした。
+!   - 補正磁石の K0 が効くように NOEXPAND を使う (元の台本は既定の `cell calc` で、v03_68 では HD・VD が同名の繰り返しなので K0 が揃えられて個別に効かない。
+!     元の台本が前提にしていたラティスでは補正磁石に個別の名前があったと思われる)。
+!   - 元は途中に `s!top;` (打ち間違い。`s` と、`!` 以降のコメント) があり、`stop;` のつもりだったもの。削除した。
+!   - 元の Get["modules_general.n"] で使うのは DAsv[] だけ。modules_correctoptics.n・modules_write_correctdata.n は、この台本では使われない (読み込みもされない)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+Get["../modules/modules_general.n"];
+Get["../modules/modules_errors.n"];
+
+cc = "cell calc";
+ccemit = "cell calc emit";
+seeds = {17, 111};
+niter = 6;
+doDA = 0;
+ae = 4E-5;
+fe = 4E-4;
+te = 1E-4;
+GCUT = 1;
+
+! 固有値の大きい ie 個を使った疑似逆行列で COD を補正する。戻り値 {kick, 補正後の COD}
+CodCorr[resmat_,cod_,ie_]:=(
+  tres        = resmat;
+  res         = Transpose[tres];
+  dim         = Length[res[1]];
+  sqres       = tres.res;
+  sqcod       = tres.cod;
+  {lam, ivec} = Eigensystem[sqres];
+  laminv      = Table[0.0, {i,1,dim}];
+  lam = Re[lam];
+  stdlam      = Sort[lam, Greater];
+  lam = Abs[lam];
+  Do[
+    Do[
+      If[stdlam[i]===lam[j],
+        laminv[j]=1.0/stdlam[i];
+      ];
+    ,{j,dim}];
+  ,{i, ie}];
+  laminvmat   = DiagonalMatrix[laminv];
+  ivect       = Transpose[ivec];
+  invsqres    = ivect.laminvmat.ivec;
+  kick        = -invsqres.sqcod;
+  rescod      = cod + res.kick;
+  out         = {kick, rescod};
+  out
+);
+
+! COD 応答行列 Responsex[j,i] (水平)、Responsey[j,i] (垂直): ステアリング j の単位キックに対するモニター i の COD
+CalculateCODResponse[]:=(
+  FFS[cc];
+  dtnx = LINE["NAME","HD*.*"];
+  dtny = LINE["NAME","VD*.*"];
+  dtbmx = Twiss["BX","PM.*"];
+  dtbmy = Twiss["BY","PM.*"];
+  dtbcx = Twiss["BX","HD*.*"];
+  dtbcy = Twiss["BY","VD*.*"];
+  dttmx = Twiss["NX","PM.*"];
+  dttmy = Twiss["NY","PM.*"];
+  dttcx = Twiss["NX","HD*.*"];
+  dttcy = Twiss["NY","VD*.*"];
+  ICX = Length[dtnx];
+  ICY = Length[dtny];
+  IM = Length[dtbmx];
+  Print["ICX = ",ICX,"   ICY = ",ICY,"   IM = ",IM];
+  Do[
+    Do[
+      Responsex[j,i] = 0.5*Sqrt[dtbmx[i]*dtbcx[j]]*Cos[tunex*Pi-Abs[dttmx[i]-dttcx[j]]]/Sin[tunex*Pi];
+    ,{i,IM}];
+  ,{j,ICX}];
+  Do[
+    Do[
+      Responsey[j,i] = 0.5*Sqrt[dtbmy[i]*dtbcy[j]]*Cos[tuney*Pi-Abs[dttmy[i]-dttcy[j]]]/Sin[tuney*Pi];
+    ,{i,IM}];
+  ,{j,ICY}];
+);
+
+! COD・分散の rms と最大値 (モニター PM.* で)。戻り値は表示用のリスト
+RMSWrite[] := (
+  FFS[cc];
+  CODrmsnoX = 0;  CODrmsnoY = 0;
+  ETArmsnoX = 0;  ETArmsnoY = 0;
+  CODmaxnoX = 0;  CODmaxnoY = 0;
+  ETAmaxnoX = 0;  ETAmaxnoY = 0;
+  datan  = LINE["NAME","PM.*"];
+  codnox = Twiss["DX","PM.*"];
+  etanox = Twiss["EX","PM.*"];
+  codnoy = Twiss["DY","PM.*"];
+  etanoy = Twiss["EY","PM.*"];
+  Do[
+    etanox[i] = Abs[etanox[i]-etaidealx[i]];
+    etanoy[i] = Abs[etanoy[i]-etaidealy[i]];
+    If[Abs[codnox[i]] > CODmaxnoX, CODmaxnoX = Abs[codnox[i]]];
+    CODrmsnoX = CODrmsnoX + codnox[i] * codnox[i];
+    If[Abs[codnoy[i]] > CODmaxnoY, CODmaxnoY = Abs[codnoy[i]]];
+    CODrmsnoY = CODrmsnoY + codnoy[i] * codnoy[i];
+    If[etanox[i] > ETAmaxnoX, ETAmaxnoX = etanox[i]];
+    ETArmsnoX = ETArmsnoX + etanox[i] * etanox[i];
+    If[etanoy[i] > ETAmaxnoY, ETAmaxnoY = etanoy[i]];
+    ETArmsnoY = ETArmsnoY + etanoy[i] * etanoy[i];
+  ,{i,Length[datan]}];
+  CODrmsnoX = Sqrt[CODrmsnoX/Length[datan]];
+  ETArmsnoX = Sqrt[ETArmsnoX/Length[datan]];
+  CODrmsnoY = Sqrt[CODrmsnoY/Length[datan]];
+  ETArmsnoY = Sqrt[ETArmsnoY/Length[datan]];
+  Print["   COD max [m] x y: ", CODmaxnoX, " ", CODmaxnoY, "   COD rms [m] x y: ", CODrmsnoX, " ", CODrmsnoY];
+  Print["   eta-beat max [m] x y: ", ETAmaxnoX, " ", ETAmaxnoY, "   eta-beat rms [m] x y: ", ETArmsnoX, " ", ETArmsnoY];
+);
+
+USE RING;
+cell calc emit;
+tunex = Twiss["NX","***"]/2/Pi;
+tuney = Twiss["NY","***"]/2/Pi;
+etaidealx = Twiss["EX","PM.*"];
+etaidealy = Twiss["EY","PM.*"];
+dtnx = LINE["NAME","HD*.*"];
+dtny = LINE["NAME","VD*.*"];
+dtbm = LINE["NAME","PM*.*"];
+ICX = Length[dtnx];
+ICY = Length[dtny];
+IM  = Length[dtbm];
+FFS["cell calc emit fix"];
+Responsex = Table[Table[0,{i,1,IM}],{j,1,ICX}];
+Responsey = Table[Table[0,{i,1,IM}],{j,1,ICY}];
+CalculateCODResponse[];
+! 補正磁石 HD・VD は、リングの中で同じ要素名の繰り返しなので、既定の (EXPAND の) `cell calc` は K0 を全部同じ値に揃える。
+! 成分ごとの K0 が効くように、ここから `USE RING NOEXPAND` と `cell calc noexpand` を使う。
+FFS["USE RING NOEXPAND;"];
+cc = "cell calc noexpand";
+ccemit = "cell calc emit noexpand";
+FFS[cc];
+GetMagnetNames[];
+
+Do[
+  Print["===== seed ", seeds[k]];
+  SeedRandom[seeds[k]];
+  daflag = 1;
+  SetErrors[];
+  FFS[cc];
+  Print["before correction: tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  RMSWrite[];
+  matx = Responsex;
+  maty = Responsey;
+  IEX = Floor[ICX/2];
+  IEY = Floor[ICY/2];
+  Do[
+    FFS[cc];
+    befx = Twiss["DX","PM*.*"];
+    befy = Twiss["DY","PM*.*"];
+    resultx = CodCorr[matx,befx,IEX];
+    resulty = CodCorr[maty,befy,IEY];
+    Do[
+      LINE["K0",dtnx[i]] = LINE["K0",dtnx[i]] -0.5*resultx[1,i];
+    ,{i,1,Length[resultx[1]]}];
+    Do[
+      LINE["K0",dtny[i]] = LINE["K0",dtny[i]] -0.5*resulty[1,i];
+    ,{i,1,Length[resulty[1]]}];
+    FFS[cc];
+    aftx = Twiss["DX","PM*.*"];
+    afty = Twiss["DY","PM*.*"];
+    a1 = 0;  a2 = 0;  a3 = 0;  a4 = 0;
+    Do[
+      a1 = a1 + resultx[2,i]*resultx[2,i];
+      a2 = a2 + resulty[2,i]*resulty[2,i];
+      a3 = a3 + aftx[i]*aftx[i];
+      a4 = a4 + afty[i]*afty[i];
+    ,{i,1,IM}];
+    a1 = Sqrt[a1] / IM;  a2 = Sqrt[a2] / IM;  a3 = Sqrt[a3] / IM;  a4 = Sqrt[a4] / IM;
+    Print["iteration ", l, ": mat x rms = ", a1, "  mat y rms = ", a2, "  sad x rms = ", a3, "  sad y rms = ", a4, "  tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  ,{l,1,niter}];
+  FFS[ccemit];
+  Print["after correction: tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  EMITX [pm rad] ", EMITX*1E12];
+  RMSWrite[];
+  If[Twiss["NX","$$$"]/2/Pi>49 || Twiss["NX","$$$"]/2/Pi<48.5 || Twiss["NY","$$$"]/2/Pi>18 || Twiss["NY","$$$"]/2/Pi<17.5, daflag = 0];
+  If[doDA == 1 && daflag == 1,
+    DAturns = 200;
+    DAsv[];
+  ];
+  ! 誤差とステアリングを戻す
+  ClearErrors[];
+  Do[ LINE["K0",dtnx[i]] = 0; ,{i,1,ICX}];
+  Do[ LINE["K0",dtny[i]] = 0; ,{i,1,ICY}];
+  FFS["USE RING NOEXPAND;"];
+  FFS[cc];
+,{k,1,2}];
+Exit;
