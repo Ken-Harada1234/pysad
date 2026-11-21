@@ -1246,7 +1246,11 @@ def install(I):
 
     # ======================================================================== 行列
     def _mat(m):
-        return np.array(m, dtype=complex if _has_complex(m) else float)
+        # v2.4.0 A14: 先に float で作る (numpy は複素数を float にしようとすると TypeError)。要素ごとの再帰の _has_complex (25M 回の呼び出し、誤差の例で 14 s) を省く。結果は同じ
+        try:
+            return np.array(m, dtype=float)
+        except TypeError:
+            return np.array(m, dtype=complex)
 
     def _has_complex(m):
         if isinstance(m, list):

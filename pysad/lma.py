@@ -543,11 +543,12 @@ def touschek_lifetime_local(table, lma, setup=None, period=None, s0=0.0, s_el=No
                 extrapolated=nextra, s_el=s_el)
 
 
-def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s_el=None, dp_floor=None, npan=40):
+def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s_el=None, dp_floor=None, npan=40, bunch_delta=False, bunch_floor=0.25, bunch_qs=False):
     """touschek_lifetime_local と同じ受け渡し (位置ごとの δ+(s)・δ−(s)) で、損失率に K64 の表ではなく Piwinski 型の式 (touschek.touschek_piwinski、v2.3.0 T2) を使う。
     tt: touschek_table(..., record_rest=True) の戻り (FFS の INTRA ON の Emittance[] の結果 ffs.touschek)。
     要素ごとの受容は touschek_lifetime_local と同じ (要素の中央の s での線形補間、period があれば周期的)。戻り dict: rate・lifetime・dp_plus・dp_minus・s_el。
-    対称な一様 a (δ+ = |δ−| = a) では touschek_piwinski(tt, a=a) と一致する。"""
+    対称な一様 a (δ+ = |δ−| = a) では touschek_piwinski(tt, a=a) と一致する。
+    bunch_delta=True (v2.4.0 A3): バンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れた損失率 (touschek_bunch.touschek_piwinski_bunch。損失率は増え、寿命は短くなる)。"""
     from .touschek import touschek_piwinski
     nl = int(tt['rest_info']['nlat'])
     if s_el is None:
@@ -559,7 +560,12 @@ def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s
     ap, am = acceptance_at(s_el, lma.s, lma.dp_plus, lma.dp_minus, period=period, s0=s0)
     if dp_floor:
         ap, am = np.maximum(ap, dp_floor), np.maximum(am, dp_floor)
-    r = touschek_piwinski(tt, ap=ap, am=am, npan=npan)
+    if bunch_delta:
+        # v2.4.0 A3: バンチ内の δ の分布 (元の δ ~ N(0, σδ²)) を入れる。既定は入れない (touschek_bunch.py の docstring)
+        from .touschek_bunch import touschek_piwinski_bunch
+        r = touschek_piwinski_bunch(tt, ap=ap, am=am, npan=npan, floor=bunch_floor, qs=bunch_qs)
+    else:
+        r = touschek_piwinski(tt, ap=ap, am=am, npan=npan)
     r.update(dp_plus=ap, dp_minus=am, s_el=s_el)
     return r
 

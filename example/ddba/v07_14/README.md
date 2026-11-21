@@ -141,7 +141,8 @@ gs の画面表示から (`errors/V0714_correct_cod.gs.txt`)。補正前 = 誤�
 | 補正後の COD の rms (x / y) | 24.6 μm / 8.1 μm | 21.7 μm / 8.5 μm |
 | 補正前 → 後の分散のずれの rms (x / y) | 16 → 5.1 mm / 25 → 4.9 mm | 152 → 6.1 mm / 113 → 7.3 mm |
 | 補正後のチューン (窓 47.5〜48、16.5〜17) | (47.8649, 16.6597) 窓内 | (47.8651, 16.6495) 窓内 |
-| DA (200 周、δ = −5%・0・+5%、x の DA / y の DA) | gs・pysad とも 0・0・0 / 0・0・0 (on-momentum 0) | gs: 0・1・0 / 0・0・0、pysad: 0・38・0 / 0・27・0 |
+| DA (200 周、δ = −5%・0・+5%、x の DA / y の DA)。`ExpandElementValues->False` (v2.4.0 の `DAsv`) | gs: 0・36・0 / 0・34・0、pysad: 0・35・0 / 0・34・0 | gs: 0・29・0 / 0・29・0、pysad: 0・30・0 / 0・29・0 |
+| (参考) 旧 `DAsv` (既定の `ExpandElementValues->True`。補正した K0 が消える) | gs・pysad とも 0・0・0 / 0・0・0 | gs: 0・1・0 / 0・0・0、pysad: 0・38・0 / 0・27・0 |
 
 | 2.5 GeV (ae = 25 μm) | 種 1 | 種 2 |
 |---|---|---|
@@ -151,7 +152,7 @@ gs の画面表示から (`errors/V0714_correct_cod.gs.txt`)。補正前 = 誤�
 | DA (on-momentum の x / y) | gs・pysad とも 44σ / 28σ | gs・pysad とも 51σ / 51σ (DAPWIDTH = 51 の上限) |
 
 補正は水平・垂直の COD を、段階の最後で 1 桁以上下げる (補正前 mm → 補正後 数十 μm)。補正の途中経過 (`mat x rms` の列) は、段階ごとに 3 回の補正で rms が 1/2〜1/4 に下がり、最後の段階の 10 回で収束する (`sad x rms` は √(Σ COD²)/モニター数で、rms の 1/√300 に当たる値。元の台本の定義)。gs と pysad で補正後のチューンは 2e-5 以内、COD の rms は x が 4 桁、y が 2 桁一致する (補正前の COD は 10 桁一致)。
-**5 GeV の DA は gs と pysad で違う** (gs 0〜1σ、pysad 27〜38σ)。2.5 GeV では 1 点 (種 1 の δ = +5% の y 方向: gs 0、pysad 1σ) を除いて一致する。5 GeV の gs の DA が 0 になる原因は追っていない (要確認。放射・RF の設定の違いの疑い)。
+**5 GeV の DA の gs と pysad の食い違いは解決した (v2.4.0)**: 原因は `DynamicApertureSurvey` の既定 `ExpandElementValues->True` が補正磁石 HD・VD の成分ごとの K0 を代表の値に揃え、補正した状態を消すこと (gs も pysad もサーベイのあとはチューン 47.960・COD −1.8 mm・全 HD の K0 が同じ値)。その状態の DA は補正がなく、gs 0〜1σ・pysad 0〜38σ の偶然の値になっていた。`DAsv` を `ExpandElementValues->False` にすると、gs と pysad が DA 29〜36σ で一致する (DDBA の記録 最悪 30σ・平均 40σ の水準)。pysad が `ExpandElementValues` を読まなかったのも原因で、v2.4.0 で直した。出力: `errors/V0714_correct_cod.expandfalse.gs.txt`・`.pysad.txt` (旧 DA の出力は `V0714_correct_cod.gs.txt`・`.pysad.txt` のまま残す)。経緯・切り分けは `docs/history/v24_A.md` A5。
 
 ### 4.4 完全な設定での走らせ方と見込み時間
 
@@ -204,7 +205,7 @@ py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/errors/V0714_corre
 ## 7. 未確認・限界
 
 - 元の台本の本来の環境 (台本が走っていた SAD のバージョン) は分からない。この環境の SAD K64 (gs) と pysad (k64) で、6 節の 3・4 の問題が出る。元のバージョンで動いていたか、動いていたとして結果がどう違うかは確かめていない。
-- **gs の DA は補正後の状態を追跡していない疑いがある**: 例の DA (200 周) は、pysad では on-momentum で 38σ・27σ (種 2、x・y) など、DDBA の記録 (最悪 30σ・平均 40σ) に近い値になるが、gs は 0〜1σ になる 。gs の DA の値は信用しない (要確認)。pysad の DA も、周回数 200 周・1 種・δ 3 点だけなので、100 種の統計ではない。
+- **DA の gs・pysad の食い違い (旧 `DAsv`)**: 上の 4.3 のとおり原因を確定し解決した (`ExpandElementValues->False`)。pysad の DA は周回数 200 周・1〜2 種・δ 3 点だけなので 100 種の統計ではない。2.5 GeV の DA は `False` で再計算し、gs・pysad とも 2 種・x・y・on-momentum で 51σ (DAPWIDTH の上限) で一致 (`errors/V0714_correct_cod_2.5GeV.expandfalse.*.txt`)。
 - gs と pysad の △ (3 節の注記): セルの6 極の色収差補正 (`DP = 0.01` の長直線部のセルの FIT) で gs と pysad の K2 が違う。ξ・6 極つきの値が 0.01〜0.1 違う。誤差の計算 (COD の補正) のあとのチューンは gs と pysad で 1e-4 程度、COD の rms は 3 桁目から違う。
 - チューンサーベイは設計値から毎回再マッチングする。設計から遠い点の収束と、DA など非線形の量は確かめていない (サーベイは ADTS・ξ まで)。完全な設定の `*_full.sad` は走らせていない (見込み時間は外挿)。
 - 6 極の最終設定 (20231205 の再調整版) は、このスクリプト群の出力ではなく、別のソフトで別の研究者が最適化した結果を入れたもの (冒頭の公開論文の注意を参照)。`V0714_match_tune`・`V0714_chrom_cell` の6 極の補正 (S3・S4 の色収差補正) は、その最終設定を再現するものではない (`chrom_v07_12rev` は S1・S2 を 0 にして S3・S4 だけで補正する旧い版の道具)。

@@ -481,6 +481,38 @@ ASTRID2 の例 (位置 2、41 × 31 = 1271 点、x = 0.5〜18 mm、y = 0.5〜14 
 - **非対角の調和の正規形の補正**: 3 次の項の非共鳴の摂動 (W = h/(1 − e^{iφ})、F4' = F4 + ½{R⁻¹W, W}) を 35 調和に広げた (`rdt2nd.nf_correction_h4`)。独立な数値のリー変換と 1.2e-8 で一致。周波数マップの共鳴線の予想 (S3) に使う。
 - **`adts()` の 4 次の項**: 既定は物理的な項だけ (`fourth='r3'`: 運動学的な項・四極端部のフリンジ・偏向磁石の 3 次の項の対)。精密版のオプション `fourth='r6'` は、K64 の四極の積分器の台形則と、偏向磁石の 4 次の項 (要素の写像から取り出す) を足す。この分は数値積分器の端数 (0.1〜0.3%) で、物理の項ではないので既定に入れない。追跡との差は r3 で 2.4e-3 以下 (KEK-LS は 2.6e-3)、r6 で 1e-4 台 (KEK-LS は 1e-5 以下)。差の原因は、入れていない積分器・偏向磁石の 4 次の項の違い。
 
+### 7.7 J²・δ 依存: 1 周の写像のべき級数と正規形 (v2.4.0。式・表は [docs/49 §13](49_resonance_terms_adts.md))
+
+ADTS は ν を J のべきに展開した 1 次の係数でした。振幅が大きくなると J² の項 $
+u = 
+u_0 + c_{10} J + c_{20} J^2 + \dots$ が効き、エネルギーがずれると ξ (δ の 1 次) とその高次、さらに**振幅と δ の交差項** (ADTS が δ で変わる: $\partial(\partial
+u/\partial J)/\partial\delta$) が出ます。v2.4.0 の `pysad.ampnf` は、これらを**全部まとめて、J と δ のべき級数の係数**として求めます。
+
+**考え方 (式の導出ではなく、何をしているか)**
+1. 1 周の写像を、座標 $(x, p_x, y, p_y)$ と δ の多項式 (べき級数。TPSA) として**厳密に**作ります。各素子 (ドリフト・四極・偏向磁石・薄い 6 極の kick) の写像を、多項式の合成で次々にかけていくだけです。近似は「次数 D で打ち切る」ことだけです (D = 5 で J²・ξ4 まで、D = 7 で J²δ まで)。δ は動かない 5 番目の座標として扱います。
+2. 1 周の写像の線形の部分は、複素の座標 $\zeta = \sqrt{2J}\,e^{i\phi}$ で $\zeta 	o e^{i\mu}\zeta$ と対角になります。非線形の項を**次数の低い方から順に、座標変換で消します** (Birkhoff の正規形)。消せない項 (共鳴の項) は、$\zeta(\zetaar\zeta)^a(\ldots)\delta^p$ の形 (位相をずらさない項) だけ残ります。残った係数が、そのまま ν の J・δ の依存です: $
+u = 
+u_0 + rac{1}{2\pi}\,\mathrm{Im}\,\log(1 + c(2J_x, 2J_y, \delta))$。
+3. δ の 1 次の単項式 (分散による閉軌道のずれ) も、同じ変換で消えます。だから「閉軌道が δ でずれる」「ベータ関数が変わる」を別に扱う必要はありません。
+
+**ADTS (J¹) との関係**: J¹ の係数は 6 極の 2 次 (K2²) と 8 極の 1 次だけで決まるので、§5 の解析式と**同じ値**になります (厚い 6 極の分割数 n で 1/n² で収束する。FODO で 5.4e-3 → 2.1e-5)。J² は 6 極の 4 次 (K2⁴)・K2² K3・K3² で、解析式は無く、この方法で初めて出ます。
+
+**入れる効果は段階的** (`bend_cubic`・`kin`・`fringe`): まず線形 + 6 極・8 極だけ。偏向磁石の曲率の項 (δ ≠ 0 の ξ に効く。入れないと 6 極なしの FODO の ξ が h11001/π ずれる)、運動学的な項、四極のフリンジ (強さは K1/(1+δ)) を足すと、実際の追跡に近づきます。
+
+**使い方**
+```python
+from pysad import ampnf as A
+r = A.amplitude_tune(lat, D=5, nslice=8, bend_cubic=True, kin=True, fringe=True)
+r.adts, r.adts2, r.chrom(0, 2), r.adts_delta(0, 1, 0, 1)    # J¹、J²、ξ2、∂(∂νx/∂Jx)/∂δ
+```
+SAD の台本からは `NormalFormTune[Order->5]` (pysad のみ)。
+
+**追跡と比べるときの注意**: 追跡の初期条件の J (Twiss から作る) は、正規形の J と $O(\sqrt{J})$ 違います (6 極の駆動項による)。そのまま追跡して J² の係数をフィットすると、$c_{10}$ に J の補正が混ざって J² が偏ります。比べるときは、追跡の初期座標を正規形の J に直してから級数を評価します (`ampnf.nf_action`)。
+
+**確かめたこと**: 同じ模型の追跡 + NAFF と 1e-9、実際の追跡 (pysad k64) と FODO で |Δν| が 1.2e-6 以下 (J 〜 3e-6、δ = 0・±1e-3)、ASTRID2 で δ=0 が 2.7e-8。J² の寄与は FODO で J = 3e-6 のとき 3e-6〜7e-6 あり、J¹ だけの予想より 1 桁よく合います。
+
+**限界**: 級数は小振幅の展開です (収束半径は最寄りの共鳴までの距離で決まる)。共鳴の島にロックされた点 (ASTRID2 の νx − νy = 3 など) は表せません。周波数マップの共鳴線の予想の判別力は、J² を入れても上がりませんでした (原因は ν(J) でなく、次数 5 以上の共鳴・島の重なり。docs/49 §13.3・§12.7)。K0≠0・ROTATE の偏向磁石・結合・誤差は入っていません。
+
 ---
 
 ## 8. 手を動かす
@@ -644,4 +676,4 @@ gs は使っていません。gs で比べるときは台本に `NORFSW;`、time
 - A. W. Chao, "Physics of Collective Beam Instabilities in High Energy Accelerators" (Wiley, 1993)。クロマティシティの一般論 (この文書は直接は使っていません)。
 - Touschek 寿命の局所運動量アクセプタンスへの依存は、SAD の Touschek の実装と docs/48 §4.4 を参照。
 
-pysad 内の関連文書: [docs/46](46_unimplemented_and_unverified.md) (未対応・未確認の一覧)、[docs/47](47_v2_changes.md) (v2.3.0 の変更)、[docs/48](48_frequency_map_lma.md)、[docs/49](49_resonance_terms_adts.md)、[ADTS_summary.md](../example/v2_3/ADTS_summary.md)、[R3_README.md](../example/v2_3/R3_README.md)、[Q1_README.md](../example/v2_3/Q1_README.md)。
+pysad 内の関連文書: [docs/46](46_unimplemented_and_unverified.md) (未対応・未確認の一覧)、[docs/47](47_v2_changes.md) (v2.3.0・v2.4.0 の変更)、[docs/48](48_frequency_map_lma.md)、[docs/49](49_resonance_terms_adts.md)、[ADTS_summary.md](../example/v2_3/ADTS_summary.md)、[R3_README.md](../example/v2_3/R3_README.md)、[Q1_README.md](../example/v2_3/Q1_README.md)、[example/v2_4/README.md](../example/v2_4/README.md) (J²・δ 依存の例)、[v24_A.md](history/v24_A.md) (v2.4.0 の記録)。

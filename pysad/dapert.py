@@ -14,7 +14,7 @@ trackd の流れ (NPARA=1):
   - 行ごとに nsc = 最初に損失した j − 1、Score = Σ nsc。表示は f8.2, i3, 1x, 51 文字 (rad62(ntloss/muls)、0 は ' ' か '.')。
   - ResultOfDAPERT = {{{a2min,a2max},{a3min,a3max},{a1min,a1max}}, {{a1i, nsc, {ntloss×51}}, ...}}
     DynamicApertureSurvey は {score, ReplacePart[ResultOfDAPERT, range, 1]} を返す。
-未対応: Damping->True (tpdamp)、DAPWIDTH の窓 (npmax < n1p·51 のときの追跡順)。
+Damping->True・DampEnough (tpdamp。v2.4.0) は 1 周ごとに正規座標へ移して damp 倍する (damp = exp(DampingRate))。未対応: DAPWIDTH の窓 (npmax < n1p·51 のときの追跡順)。
 """
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def _muls(nturn: int) -> int:
 def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: int, ivar2: int,
                      momentum_eV: float, emit: dict, emx: float, emz: float, trf0: float, rfsw: bool, rad: bool,
                      fluc: bool = True, alost: float = 1.0, zlost: float = 100.0, out=None, progress: int = 0,
-                     fshift: float = 0.0, dapwidth: float = 51.0, np0=None):
+                     fshift: float = 0.0, dapwidth: float = 51.0, np0=None, ref_orbit=None, damping: bool = False, dampenough: float = 0.0):
     """trackd 相当。range3: [[a2min,a2max],[a3min,a3max]] (ivar2, ivar3 の順)、r1: ivar1 の値。
     戻り: (score, result) result = ResultOfDAPERT"""
     ivar3 = 6 - ivar1 - ivar2
@@ -84,6 +84,8 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
     cz, sz = math.cos(phi[2]), math.sin(phi[2])
     rmat = np.array(emit['normal_r'], dtype=float)
     codin = np.array(emit['closed_orbit'], dtype=float)
+    if ref_orbit is not None:                  # v2.4.0 A5: ReferenceOrbit->{x0, px0, y0, py0, z0, dp0} (長さ 6)。この軌道のまわりで追跡する
+        codin = np.array(ref_orbit, dtype=float)
     circ = sum(el.L for el in elements)
     ph = _Phys(momentum_eV, circ)
     ph.dvfs = fshift if rfsw else 0.0          # tsetdvfs (trackd.f:86)
@@ -97,6 +99,8 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
     if np0 is None:
         np0 = max(2000, n1p, n1p * min(51, ncons))
     npmax = max(1, min(n1p * ncons, int(np0)))
+
+    _last_amp = np.zeros(6)
 
     def _coord(i, j):           # j = 1..51 (Fortran)。ivar1 の値 a1i[i]、ivar2・ivar3 は同じ j で動く
         amp = np.zeros(6)
@@ -112,8 +116,17 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
         setvar(ivar2, a2step * (j - 1) + a2min)
         setvar(ivar3, a3step * (j - 1) + a3min)
         xa = amp * np.array([emx, emx, emx, emx, emz, emz])
+        _last_amp[:] = amp
         return rmat @ xa + codin
 
+    use_damp = bool(damping) or float(dampenough) != 0.0
+    if damping:
+        dmp = np.exp(np.repeat(np.array(emit['damping_rate'], dtype=float), 2))       # dampx, dampy, dampz (tpdamp: 各 2 成分)
+    else:
+        dmp = np.ones(6)
+    from .emit6d import _tinv6
+    rinv = np.array(_tinv6(rmat), dtype=float)       # temit: ri = tinv6(r) (シンプレクティックな逆行列)
+    aeno = np.full((npmax, 3), 1e300)                # trackd.f: aenox/y/z (big = 1e300)
     prog = _tn.Prog(elements, ph)
     S = _tn.make_state(np.tile(codin, (npmax, 1)), ph)
     kid = np.arange(npmax, dtype=np.int64)          # 配列位置 → ID (kptbl(:,2))
@@ -155,6 +168,11 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
                                 kzx_j[k] = j
                                 mturn[k] = 0
                                 S[ip] = _tn.make_state(_coord(i, j)[None, :], ph)[0]
+                                if use_damp:
+                                    am = _last_amp
+                                    aeno[k] = [(am[0]**2 + am[1]**2) * emx**2 * dampenough, (am[2]**2 + am[3]**2) * emx**2 * dampenough,
+                                               (am[4]**2 + am[5]**2) * emz**2 * dampenough]
+                                    aeno[k, {1: 0, 2: 1, 3: 2}[ivar3]] = 1e300
                                 launched = True
                                 break
                         if launched:
@@ -177,6 +195,22 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
                 n = _tn.turn(prog, S, n, ph, trf0, rfsw, rad, fl, rs, apert=(kid, lost_scratch, nturns_done, alost, zlost))
                 nturns_done += 1
                 pos[kid] = np.arange(npmax)
+                if use_damp and n > 0:
+                    # tpdamp: tconvm (px *= 1+g) → 正規座標 (ri (x − codin)) → 振幅が aeno より小さければ mturn = nturn − 1 → Damping なら damp 倍 → 物理座標へ
+                    for ip in range(n):
+                        kk = int(kid[ip])
+                        pr = 1.0 + S[ip, 5]
+                        ph6 = np.array([S[ip, 0], S[ip, 1] * pr, S[ip, 2], S[ip, 3] * pr, S[ip, 4], S[ip, 5]])
+                        xa = rinv @ (ph6 - codin)
+                        if (xa[0]**2 + xa[1]**2 < aeno[kk, 0] and xa[2]**2 + xa[3]**2 < aeno[kk, 1] and xa[4]**2 + xa[5]**2 < aeno[kk, 2]):
+                            mturn[kk] = nturn - 1
+                        if damping:
+                            xa = rmat @ (xa * dmp) + codin
+                            gg = xa[5]
+                            S[ip, 0], S[ip, 2], S[ip, 4], S[ip, 5] = xa[0], xa[2], xa[4], gg
+                            S[ip, 1] = xa[1] / (1.0 + gg)
+                            S[ip, 3] = xa[3] / (1.0 + gg)
+                            S[ip, 6] = ph.dv(gg)
                 if not rfsw and n > 0:
                     S[:n, 4] = 0.0
                 act = np.nonzero(kzx_i >= 0)[0]

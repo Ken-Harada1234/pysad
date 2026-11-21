@@ -191,7 +191,7 @@ def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bo
     rfsw0 = _lat.RFSW
     _lat.RFSW = rfsw
     try:
-        codin, trf0, found = _closed_orbit(els, ph, rfsw, radcod, True)
+        codin, trf0, found = _closed_orbit(els, ph, rfsw, radcod, True, k64_continue=not getattr(lattice, '_z_into_trf0', False))
         codin = np.array(codin, dtype=float)
         if getattr(lattice, '_z_into_trf0', False) and found and rfsw and radcod:
             from .emit6d import _z_into_trf0

@@ -89,6 +89,8 @@ CalculateCODResponse[CALOP_]:=(
 );
 
 ! 動的口径サーベイ (補正後の状態で。x 方向と y 方向、δ = zrange)。結果をファイル daout に追記する
+! **ExpandElementValues->False が要る**: 既定 (True) のサーベイは成分ごとの値 (補正磁石 HD・VD の K0 など) を代表の値に揃えるので、補正した状態が消え、
+! 補正していないリングの DA になる (gs・pysad とも。README・docs/history/v24_A.md の A5)。False なら補正後の状態のまま。
 DAsv[]:=(DAPWIDTH = 51;
            FFS[ccemit,6];
            dp = 0.01 / SIGE;
@@ -97,7 +99,7 @@ DAsv[]:=(DAPWIDTH = 51;
            range    = {{1,100},{1,1},zrange};
            FFS[cc];
            FFS["disp MK*.*",6];
-           res = DynamicApertureSurvey[range,DAturns,Output->6];
+           res = DynamicApertureSurvey[range,DAturns,Output->6,ExpandElementValues->False];
            res;
            dax = Table[res[2,2,i,2],{i,Length[zrange]}];
            datafile = OpenAppend[daout];
@@ -105,7 +107,7 @@ DAsv[]:=(DAPWIDTH = 51;
            Write[datafile,k,"  x  ",dax];
            range    = {{1,1},{1,-100},zrange};
            FFS[cc];
-           res = DynamicApertureSurvey[range,DAturns,Output->6];
+           res = DynamicApertureSurvey[range,DAturns,Output->6,ExpandElementValues->False];
            day = Table[res[2,2,i,2],{i,Length[zrange]}];
            Print[day];
            Write[datafile,k,"  y  ",day];

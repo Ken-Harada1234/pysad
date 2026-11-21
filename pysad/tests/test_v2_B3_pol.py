@@ -17,6 +17,21 @@ import pytest
 
 from pysad import compat, emit6d, ffscmd, spin
 
+
+@pytest.fixture(autouse=True, scope='module')
+def _emitdiv_default_1():
+    """参照値は EMITDIV = 1 で作った。v2.4.0 から v2 の EMITDIV の既定は 4 だが、v2 の Polarization の式 (線形の脱偏極率) は EMITDIV に強く動く
+    (4.2 GeV・12 MV の FODO: 1 → 2.318e-8、4 → −3%、16 → −16%。B137 の刻み依存の疑い) ので、スピンの試験は 1 に固定する"""
+    old = os.environ.get('PYSAD_EMITDIV_DEFAULT')
+    os.environ['PYSAD_EMITDIV_DEFAULT'] = '1'
+    try:
+        yield
+    finally:
+        if old is None:
+            os.environ.pop('PYSAD_EMITDIV_DEFAULT', None)
+        else:
+            os.environ['PYSAD_EMITDIV_DEFAULT'] = old
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 PST = 8.0 / (5.0 * math.sqrt(3.0))

@@ -856,6 +856,9 @@ class FFS:
             return
         if key in ('K1', 'K2', 'K3', 'K4', 'K5'):
             _sad_set(el, key, v * (getattr(el, '_errk', 1.0) if key == self.default_key(el) else 1.0))
+            raw_ = getattr(el, '_raw', None)
+            if raw_ is not None and key in raw_ and is_num(v):
+                raw_[key] = float(v)        # 読み戻しは代入した値のまま (L で割って掛け戻す丸めの 1 ulp を消す。gs は 0.93 を 0.93 で返す)
         elif key == 'ANGLE' and tn == 'Bend':
             # E1/E2 は ANGLE に対する比なので、ANGLE を変えても比を保つ (SAD の psi1 = E1·ANGLE + AE1)
             r = {k: self._e_ratio(el, k) for k in ('E1', 'E2')}
@@ -1630,6 +1633,8 @@ class FFS:
             return vals[0] if len(vals) == 1 and not isinstance(args[1], list) else vals
         if len(args) == 1:
             return [self.twiss_value(key, k) for k in range(1, self.nlat + 1)]
+        if isinstance(args[1], list):
+            return [self.fn_twiss([key, x_]) for x_ in args[1]]
         locs = self._resolve_loc(args[1])
         vals = [self.twiss_value(key, k, fr) for k, fr in locs]
         # tftwiss.f: tflinestk の一致数が 1 ならスカラー (`***`、`RFC*` など 1 個だけ一致するパターンも)。0 個は {}
@@ -1647,6 +1652,11 @@ class FFS:
             return self.elname(k)
         if key == 'ELEMENT':
             return '$$$' if k >= self.nlat else self.els[k - 1].name
+        if key in ('EMITX', 'EMITY', 'EMITZ', 'SIGMAZ', 'SIGE') and k == 1 and self.els and type(self.els[0]).__name__ == 'Marker':
+            v_ = self.get_value(self.els[0], key if key != 'SIGMAZ' else 'SIGZ')
+            if not (v_ > 0.0):
+                v_ = float(getattr(self, '_use_snap', {}).get(key, v_) or 0.0)
+            return v_
         if key == 'POSITION':
             return float(k)
         if key.startswith('SIG') and key[3:4] != 'E' and not key.startswith('SIGMA'):
@@ -1741,6 +1751,10 @@ class FFS:
             return Null
         if len(args) == 1:
             return [self.line_value(key, k) for k in range(1, self.nlat + 1)]
+        if isinstance(args[1], list):
+            # gs: 位置のリストは要素ごとに解決する。一致が 1 個ならスカラー、0 個・複数ならリスト (入れ子のリストは入れ子のまま返る:
+            # LINE["POSITION",{{1,2},{3,4}}] = {{1,2},{3,4}}、{"QF","B*"} = {2,{4,8}}、{"Z*"} = {{}})
+            return [self.fn_line([key, x_]) for x_ in args[1]]
         locs = self._resolve_loc(args[1])
         vals = [self.line_value(key, k, fr) for k, fr in locs]
         # tftwiss.f tfline: m == 1 ならスカラー、それ以外 (0 個を含む) はリスト
@@ -1862,6 +1876,8 @@ class FFS:
             if i is None:
                 raw = self.env._elements.get(fam.upper(), {})
                 return float(raw.get(key.upper(), 0.0) or 0.0)
+            if i == 0 and isinstance(key, str) and key.upper() in ('EMITX', 'EMITY', 'EMITZ', 'SIGMAZ', 'SIGE'):
+                return self.line_value(key.upper(), 1)
             return self.get_value(self.els[i], key)
         return Null
 
@@ -2234,12 +2250,14 @@ class FFS:
     def _sync_emitdiv(self):
         """大域変数 EMITDIV・EMITDIVB・EMITDIVQ (放射の分割数の倍率。既定 1) を emit6d に渡す (K64 の tfsetparam)"""
         from . import emit6d as _e6
+        from . import compat as _cp
         for i, k in enumerate(('EMITDIV', 'EMITDIVB', 'EMITDIVQ')):
+            d0 = _cp.emitdiv_default(bool(self.flags['POL'])) if i == 0 else 1.0     # v2 の EMITDIV の既定は 4 (compat.emitdiv_default)。台本が与えればその値
             try:
-                v = float(self.I.get(k, 1.0))          # MAIN の `EMITDIV = 20;` も FFS の `EMITDIV=20;` も同じ変数
+                v = float(self.I.get(k, d0))          # MAIN の `EMITDIV = 20;` も FFS の `EMITDIV=20;` も同じ変数
             except (TypeError, ValueError):
-                v = 1.0
-            _e6.EMITDIV[i] = v if (v == v and v > 0.0) else 1.0
+                v = d0
+            _e6.EMITDIV[i] = v if (v == v and v > 0.0) else d0
 
     def _fshift(self):
         """グローバル FSHIFT (Orbit dilation)。emit の閉軌道・報告で RFSW ON のとき dv に足される"""
@@ -2306,6 +2324,9 @@ class FFS:
             if not quiet:
                 self.print_emit(e)
             return e
+        if not e.get('cod_found', True):
+            # temit.f:150: tcod が収束しなくても報告を出して、収束していない cod から続行する (k64 の動作。v2 は固定点を解くので出ない)
+            self.write(' ???-Emittance[]-closed orbit not found.' + chr(10))
         self.emit = e
         self.trf0 = e['trf0']
         g = self.I.globals
@@ -2843,7 +2864,11 @@ class FFS:
         except (TypeError, ValueError):
             return None
         fl = self.flags
-        if npara <= 1 or not (fl['RAD'] and fl['FLUC']) or fl['RADLIGHT'] or fl['POL'] or fl['PHOTONS'] or fl['LWAKE'] or fl['TWAKE']:
+        # 乱数を使うのは RAD + FLUC の放射と、JDPX/JDPY ≠ 0 の APERT の再入射 (tapert の tran_array)。後者も子ごとに種が違う
+        # (gs の既定の NPARA は計算機の設定で 4 などなので、粒子 12 個以上の再入射は NPARA=1 の乱数列と違って見えた)
+        jdp = bool(fl.get('PSPAC')) or any(float(getattr(e_, 'JDPX', 0.0) or 0.0) != 0.0 or float(getattr(e_, 'JDPY', 0.0) or 0.0) != 0.0
+                  for e_ in (self.els or []) if getattr(e_, '_apert', False))
+        if npara <= 1 or not ((fl['RAD'] and fl['FLUC']) or jdp) or fl['RADLIGHT'] or fl['POL'] or fl['PHOTONS'] or fl['LWAKE'] or fl['TWAKE']:
             return None
         ne = ld - ls
         if ne <= 0:
@@ -3080,7 +3105,6 @@ class FFS:
         """DynamicApertureSurvey[range, nt, opt...] (Packages/dapert.n): 既定 Output->0, ExpandElementValues->True,
         ReferenceOrbit->Default, PhaseX->0, PhaseY->0, PhaseZ->-Pi/2, Axes->"ZX", Damping->False, DampEnough->0"""
         from .dapert import dynamic_aperture
-        self.spread_pending()
         if len(args) < 2:
             raise SADError('DynamicApertureSurvey[range, nturn, options]')
         rng = args[0]
@@ -3090,6 +3114,11 @@ class FFS:
             for r in (a if isinstance(a, list) else [a]):
                 if isinstance(r, Rule) and isinstance(r.lhs, Sym):
                     opts[r.lhs.name] = r.rhs
+        # v2.4.0 A5: ExpandElementValues->False は成分ごとの値 (補正磁石の K0・位置ずれ) を揃えない (既定 True は揃える)。ReferenceOrbit->{x0,px0,y0,py0,z0,dp0} はその軌道のまわりで追跡する (Default = emit の閉軌道)
+        if opts.get('ExpandElementValues') is None or truthy(opts['ExpandElementValues']) is not False:
+            self.spread_pending()
+        ro = opts.get('ReferenceOrbit')
+        ref_orbit = [float(v) for v in ro] if isinstance(ro, list) and len(ro) == 6 and all(is_num(v) for v in ro) else None
         lfno = opts.get('Output', 0.0)
         lfno = int(lfno) if is_num(lfno) else 0
         phi = [float(opts.get('PhaseX', 0.0)), float(opts.get('PhaseY', 0.0)), float(opts.get('PhaseZ', -math.pi / 2))]
@@ -3101,8 +3130,9 @@ class FFS:
         iv1, iv2 = modes[axes]
         iv3 = 6 - iv1 - iv2
         damping = opts.get('Damping', 0.0)
-        if truthy(damping):
-            raise SADError('DynamicApertureSurvey: Damping->True は未対応')
+        damping = truthy(damping)
+        dampenough = opts.get('DampEnough', 0.0)
+        dampenough = float(dampenough) if is_num(dampenough) else 0.0
         if not (isinstance(rng, list) and len(rng) == 3):
             raise SADError('DynamicApertureSurvey: range must be a list of 3')
         r1 = [float(x) for x in rng[iv1 - 1]]
@@ -3124,7 +3154,8 @@ class FFS:
                                          emx, emz, self.trf0, self.flags['RFSW'], self.flags['RAD'], fluc=self.flags['FLUC'],
                                          alost=float(g.get('LOSSAMPL', 1.0)), zlost=float(g.get('LOSSDZ', 100.0)),
                                          out=out, progress=int(float(g.get('PYSAD$PROGRESS', 0.0))), fshift=self._fshift(),
-                                         dapwidth=dapw, np0=max(2000, n1, int(n1 * min(51, int(math.floor(dapw + 0.5))))))
+                                         dapwidth=dapw, np0=max(2000, n1, int(n1 * min(51, int(math.floor(dapw + 0.5))))), ref_orbit=ref_orbit,
+                                         damping=damping, dampenough=dampenough)
         g['ResultOfDAPERT'] = result
         g['NP'] = np0
         g['TURNS'] = turns0
@@ -3519,6 +3550,8 @@ class FFS:
             return self._element_value(words, i)
         if re.fullmatch(r'[-+]?(?:\d+\.?\d*|\.\d+)(?:[EeDd][-+]?\d+)?', w):
             return 1                                    # tfprint: 数値の語は式として評価されるだけ (SAD は Out[n]:= 値 を出す)
+        if _abbrev(w.upper(), 'NOEXP_AND') or _abbrev(w.upper(), 'EXP_AND'):
+            return 1                                    # gs: 単独の NOEXPAND・EXPAND は何も出さず何もしない
         self.write(f'?Undefined command or element: {w}\n')
         return len(words) - i
 
@@ -3602,9 +3635,32 @@ class FFS:
                 # MARK に書かれていない (0 の) ものは、MAIN で代入した値を残す (gs で確かめた: MAIN の `EMITY=2E-11;` は MARK に EMITY が
                 # 無ければ FFS でも 2E-11、MARK の EMITX=5E-9 は MAIN の EMITX=1E-9 より優先)。MAIN で代入していなければ従来どおり 0
                 g[gk] = float(raw.get(k, 0.0) or g.get(gk, 0.0) or 0.0)
-            g['DP0'] = float(raw.get('DDP', 0.0) or 0.0)
+            pass                                       # DP0 は下で USE のたびに 0 (gs: 定義の DDP は無視され、DP0 = LINE["DDP",1] = 0)
             if raw.get('DP'):
                 g['DP'] = float(raw['DP'])
+        else:
+            # USE のたび (tffs.f の tffsinitparam): 先頭 MARK の EMITX/EMITY/EMITZ/SIGE/SIGZ/DP が正ならグローバルへ (負・0 なら
+            # グローバルの値を残す)。DP は MARK も大域も 0 以下なら 0.01 (gs で確かめた: `DP = 0` のあと USE すると MARK の DP に戻る。
+            # ChromCor の `DP = 0.0001; ...; DP = 0;` の後の次の USE で DP が戻る)
+            m0 = self.els[0]
+            raw = self.env._elements.get(m0.name, {}) if type(m0).__name__ == 'Marker' else {}
+            for k in ('EMITX', 'EMITY', 'EMITZ', 'SIGZ', 'SIGE'):
+                v_ = raw.get(k, 0.0)
+                if isinstance(v_, (int, float)) and v_ > 0.0:
+                    g[k] = float(v_)
+            dpm_ = raw.get('DP', 0.0)
+            dpm_ = float(dpm_) if isinstance(dpm_, (int, float)) and dpm_ > 0.0 else 0.0
+            if dpm_ <= 1e-30:
+                dg_ = g.get('DP', 0.0)
+                dpm_ = float(dg_) if isinstance(dg_, (int, float)) else 0.0
+            if dpm_ <= 1e-30:
+                dpm_ = 0.01
+            g['DP'] = dpm_
+        g['DP0'] = 0.0                                  # gs: USE のたびに MARK が作り直され DP0 (= LINE["DDP",1]) は 0 に戻る (定義の DDP は無視。FFS["USE .."] も同じ。CELL・CALC では戻らない)
+        # LINE["EMITX"|"EMITY"|"EMITZ"|"SIGMAZ"|"SIGE", 1] は MARK に値が無い (0 以下) とき、USE の時点のグローバルの値を返す
+        # (gs: tffsinitparam の emx などのモジュール変数。USE のあとで EMITY = ... と代入しても、次の USE まで LINE の値は変わらない)
+        self._use_snap = {'EMITX': g.get('EMITX', 0.0), 'EMITY': g.get('EMITY', 0.0), 'EMITZ': g.get('EMITZ', 0.0),
+                          'SIGMAZ': g.get('SIGZ', 0.0), 'SIGE': g.get('SIGE', 0.0)}
         # MAIN 側の MOMENTUM は、値が変わったときだけ FFS のグローバルへ写す (gs: FFS 内の MOMENTUM=… は USE で戻らない)
         m = _env_get(self.env, 'MOMENTUM')
         if isinstance(m, (int, float)) and m > 0 and m != getattr(self, '_env_mom_seen', None):
@@ -3692,7 +3748,7 @@ class FFS:
             i = int(kid[s])
             if float(r[6][i]) == 0.0:
                 drop[s] = True
-                lost_turn[i] = nt
+                lost_turn[i] = nt if getattr(tr, 'lmap', None) is None else nt + (int(l) << 40)      # LOSSMAP: temap.f は kptbl(j,4) = l (MAP の要素番号)
                 continue
             self._map_set(tr, S_, s, r, i)
         n = drop_particles(S_, n, kid, drop)
@@ -3740,6 +3796,8 @@ class FFS:
             self.matcher.ini_fn = self.initial_orbits
             self.matcher.ini_optics = self.ini_optics
             # tffscalc.f:64/398: シンボル OpticsProlog/OpticsEpilog を評価する (:= の定義があればそれが走る。未定義なら何もしない)
+            self.matcher.ev_hook = self._apply_element_values
+            self.matcher.ev_active = lambda: isinstance(self.I.globals.get('ElementValues'), list) and bool(self.I.globals.get('ElementValues'))
             self.matcher.optics_prolog = lambda: self.I.run('OpticsProlog', 'script')
             self.matcher.optics_epilog = lambda: self.I.run('OpticsEpilog', 'script')
         return self.matcher
@@ -5672,7 +5730,7 @@ def run_sad_string(src: str, out=None, cwd: Optional[str] = None):
     if loc is not None and loc['dropped']:
         out.write(' (pysad) FFS の文と同じ行の残り "%s" は実行しない (gs と同じ。FFS 部は次の行から)\n' % loc['dropped'][:60])
     from . import emit6d as _e6
-    _e6.EMITDIV[:] = [1.0, 1.0, 1.0]  # 前の台本の EMITDIV を持ち越さない (Emittance[]・EMIT のたびに _sync_emitdiv が入れ直す)
+    _e6.EMITDIV[:] = [None, None, None]  # 前の台本の EMITDIV を持ち越さない (Emittance[]・EMIT のたびに _sync_emitdiv が入れ直す)
     I.continue_on_error = True        # SAD と同じく、エラーの文は表示して次の文へ進む
     I.echo_out = True                 # SAD と同じく、; のない最上位の式の値を Out[n]:= で表示する
     # MAIN に TRACK 文があるときは、MAIN の命令 (ON/OFF, EMIT, `PHSPLOTS=..;`, TRACK, STOP) を書かれた順に実行する

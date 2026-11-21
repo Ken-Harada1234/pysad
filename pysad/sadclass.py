@@ -399,14 +399,14 @@ def install(I):
         if isinstance(obj, (SadInstance, SadClass)) and isinstance(args[1], Sym):
             ms = member_sym(obj, args[1].name)
             if ms is None:
-                return Expr(S('At'), [obj, args[1]])
+                return Expr(S('SAD$Member'), [obj, args[1]])
             return I.eval(ms)
         return I.eval(Expr(args[0], [args[1]]))
-    B['At'] = _at
+    B['SAD$Member'] = _at
 
     def resolve_head(head):
         """Expr(At, [x, m]) → x が SadInstance なら m の記号。そうでなければ None"""
-        if isinstance(head, Expr) and head.head == S('At') and len(head.args) == 2 and isinstance(head.args[1], Sym):
+        if isinstance(head, Expr) and head.head == S('SAD$Member') and len(head.args) == 2 and isinstance(head.args[1], Sym):
             obj = I.eval(head.args[0])
             if isinstance(obj, (SadInstance, SadClass)):
                 return member_sym(obj, head.args[1].name)          # メンバーでなければ None (式のまま)

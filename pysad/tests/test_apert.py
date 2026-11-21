@@ -154,3 +154,25 @@ def test_apert_jdp_reinjection_matches_gs():
         assert np.allclose(y, GS_JDP['y'], atol=2e-9, rtol=0)
         assert np.allclose(px, GS_JDP['px'], atol=2e-9, rtol=0)
         assert np.allclose(d, GS_JDP['d'], atol=1e-12, rtol=0)
+
+
+GS_JDP24 = [-0.00042395292, 0.001571384, 0.001186834, 0.000465547202, 7.57332594e-05, 0.001656681, 0.000269594458, -0.001058487, 0.001511,
+            0.001692141, -0.001974118, -0.001998743, -0.00069791797, 0.001495669, 0.001749059, 0.001793683, 0.001857716, 0.000236831728,
+            -0.001721206, 0.001475453, 0.001999507, 0.000151195341, 0.001877411, -0.001146446]
+
+
+def test_apert_jdp_reinjection_24_particles_npara4_matches_gs():
+    """v2.4.0: 粒子 12 個以上の再入射の乱数列。原因は gs の既定の NPARA (計算機の設定で 4): npara = min(4, 24/9+1) = 3 で粒子を 8 個ずつ
+    子プロセス (種 + 2k) と親に分け、親 (最後の 8 個) が元の種の最初の乱数を使う。FFS に入ると NPARA は既定に戻るので、gs と揃えるには
+    FFS の中で NPARA=4; とする。24 個の x が gs と全桁一致 (参照は gs の既定、x = ±2e-3 の交互、y = 2e-3 を 3 個に 1 個)"""
+    n = 24
+    xs = [2e-3 if i % 2 == 0 else -2e-3 for i in range(n)]
+    ys = [0 if i % 3 else 2e-3 for i in range(n)]
+    z = _fmt([0] * n)
+    src = LAT + f'beam = {{{_fmt(xs)}, {z}, {_fmt(ys)}, {z}, {z}, {z}, {_fmt([1] * n)}}};\n'
+    src += 'USE RJ; CELL; CALC; NPARA=4;\nr = TrackParticles[{1, beam}, 1, 1, 1];\nPrint["X ", r[[2,1]]];\nExit;\n'
+    out = io.StringIO()
+    run_sad_string(src, out=out)
+    m = re.search(r'^X \{([^}]*)\}', out.getvalue(), re.M | re.S)
+    x = [float(v) for v in m.group(1).replace('\n', ' ').split(',')]
+    assert np.allclose(x, GS_JDP24, atol=2e-9, rtol=0)

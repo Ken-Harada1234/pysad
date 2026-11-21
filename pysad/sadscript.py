@@ -537,7 +537,7 @@ class Parser:
                         # x@member (クラスのメンバー参照): 右は記号だけ。x@m[args] は (x@m)[args]、x@a@b は (x@a)@b
                         self.next()
                         nm_ = self.next()
-                        left = Expr(S('At'), [left, Sym(nm_.val)])
+                        left = Expr(S('SAD$Member'), [left, Sym(nm_.val)])
                         continue
                 if v in _BIN:
                     prio, rassoc, head = _BIN[v]
@@ -1185,8 +1185,8 @@ _HOLD = {'Fit', 'FindRoot', 'NIntegrate', 'AccelerateParticles', 'Set', 'SetDela
          'Increment', 'Decrement', 'PreIncrement', 'PreDecrement', 'AddTo', 'SubtractFrom', 'TimesBy', 'DivideBy',
          'CompoundExpression', 'SetAttributes', 'Protect', 'Unprotect', 'Clear', 'Hold', 'HoldForm', 'RuleDelayed',
          'Catch', 'Pattern', 'Blank', 'BlankSequence', 'BlankNullSequence', 'Optional', 'PatternTest', 'Condition',
-         'Literal', 'TagSet', 'Return', 'Break', 'Continue', 'Message', 'Definition', 'Slot', 'SlotSequence',
-         'FFS$NumericalDerivative', 'Unevaluated', 'SetOptions', 'DefineOptions', 'Class', 'AutoLoad', 'AutoLoadSet', 'WithPriority', 'Priority', 'And', 'Or', 'At', 'StandardForm', 'Context', 'WithContext', 'FunctionDefinition'}
+         'Literal', 'TagSet', 'Return', 'Break', 'Continue', 'Message', 'Off', 'On', 'Definition', 'Slot', 'SlotSequence',
+         'FFS$NumericalDerivative', 'Unevaluated', 'SetOptions', 'DefineOptions', 'Class', 'AutoLoad', 'AutoLoadSet', 'WithPriority', 'Priority', 'And', 'Or', 'SAD$Member', 'StandardForm', 'Context', 'WithContext', 'FunctionDefinition'}
 
 
 def is_num(v):
@@ -1217,7 +1217,15 @@ class Frame(dict):
 
 import operator as _op
 _FOLD_HEADS = {'Plus', 'Times', 'Power', 'Divide', 'Subtract', 'Minus', 'Sin', 'Cos', 'Tan', 'Exp', 'Log', 'Sqrt', 'ArcTan', 'ArcSin', 'ArcCos', 'Abs', 'Sinh', 'Cosh', 'Tanh'}
-_FAST2 = {'Plus': _op.add, 'Times': _op.mul, 'Subtract': _op.sub, 'Divide': _op.truediv}
+def _fdiv(a, b):
+    """実数の a/b。K64 は a*(1/b) で計算する (gs: Log[100]/Log[10] = 1.9999999999999998、7/3 = 2.333333333333333、0.3/0.1 = 3。最後の桁が
+    a/b と 1 ulp 違うことがある)。v2 は a/b (IEEE の除算)"""
+    if _compat.k64():
+        return a * (1.0 / b)
+    return a / b
+
+
+_FAST2 = {'Plus': _op.add, 'Times': _op.mul, 'Subtract': _op.sub, 'Divide': _fdiv}
 
 
 class Interp:
@@ -1685,6 +1693,8 @@ class Interp:
             return False
         if s[-1] == '*' and len(s) > 1 and (s[-2].isalnum() or s[-2] in '$_.}'):
             return False          # "free Q*" のようなワイルドカード (演算子ではない)
+        if s[-1] == '.' and re.search(r'(?<![\w$.])\d+\.$', s):
+            return False          # 末尾の数 "3." (FFS の `FIT MKS BX 3.` を FFS["fit ..."] の語に分けたとき)。演算子の . ではない
         return s[-1] in '+-*/^=,<>&|:@.~' and not s.endswith('=.')
 
     @staticmethod
@@ -2049,7 +2059,7 @@ class Interp:
                 hv = self.eval(hv.args[0])            # Module[{h}, h := Sqrt[#]&; h[4]]: 局所変数の遅延した値
             return self.apply_value(hv, args, head)
         # head が式 (f[a][b], (f@g)[x], Function[...][x])
-        if isinstance(head, Expr) and head.head == S('At') and len(head.args) == 2 and isinstance(head.args[1], Sym):
+        if isinstance(head, Expr) and head.head == S('SAD$Member') and len(head.args) == 2 and isinstance(head.args[1], Sym):
             ms_ = self.resolve_member_head(head)
             if ms_ is not None:
                 return self.eval_expr(Expr(ms_, node.args))            # x@method[args]: インスタンス x のメソッド
@@ -2102,7 +2112,14 @@ class Interp:
                     finally:
                         self.frames.pop()
         if isinstance(hv, list):
-            return self.part(hv, args)
+            try:
+                return self.part(hv, args)
+            except SADError as e_:
+                if len(args) > 1 and str(e_).startswith('Part: not a list') and not any(isinstance(a_, (list, Expr)) or a_ is Null for a_ in args):
+                    # gs: {f,g}[1,2] は General::toomany (添字が深さより多い)。式は呼び出しの形のまま示す
+                    raise SADError('General::toomany:  Too many indices in ' + self.to_str(hv, None, True) + '['
+                                   + ','.join(self.to_str(a_, None, True) for a_ in args) + ']')
+                raise
         if isinstance(hv, str):
             # 文字列の添字 (SAD は文字列の Part を許す)
             if len(args) == 2 and all(is_num(x) for x in args):
@@ -2852,11 +2869,11 @@ class Interp:
                 lhs = lhs.args[0]                 # Unevaluated$[tf1] = … は tf1 = … (With[{wsym = Extract[wv, {1,2}, Unevaluated$]}, wsym = …])
             elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == S('Unevaluated$') and len(lhs.head.args) == 1:
                 lhs = Expr(lhs.head.args[0], lhs.args)    # Unevaluated$[w][Create$Line] = … は w[Create$Line] = … (CanvasW[Create$Line] = {…})
-            if isinstance(lhs, Expr) and lhs.head == S('At') and len(lhs.args) == 2 and isinstance(lhs.args[1], Sym):
+            if isinstance(lhs, Expr) and lhs.head == S('SAD$Member') and len(lhs.args) == 2 and isinstance(lhs.args[1], Sym):
                 ms_ = I.resolve_member_head(lhs)
                 if ms_ is not None:
                     lhs = ms_                         # x@v = 3 はインスタンス x のメンバー v への代入
-            elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == S('At'):
+            elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == S('SAD$Member'):
                 ms_ = I.resolve_member_head(lhs.head)
                 if ms_ is not None:
                     lhs = Expr(ms_, lhs.args)         # x@c[Background] = v
@@ -3569,6 +3586,23 @@ class Interp:
         for nm in ('Protect', 'Unprotect', 'Hold', 'HoldForm', 'Definition',
                    'Literal', 'Unevaluated', 'SetOptions', 'DefineOptions', 'FFS$NumericalDerivative', 'Off', 'On'):
             B[nm] = lambda a, nm=nm: (I.eval(a[0]) if nm in ('HoldForm', 'Unevaluated') and a else Null)
+        def _offon(on):
+            def f(a):
+                # gs: Off[f::tag] のあとの Message[f::tag] は本文を `$Off["本文"]` にして出す (抑止はしない)。On[f::tag] で元に戻る。
+                # 他の引数 (General::wrongtype の形でないもの) は何もしない
+                off = I.__dict__.setdefault('_msg_off', set())
+                for x_ in a:
+                    if isinstance(x_, Expr) and x_.head == S('MessageName') and len(x_.args) == 2:
+                        sy_, tg_ = x_.args
+                        key_ = ((sy_.name if isinstance(sy_, Sym) else str(sy_)), (tg_ if isinstance(tg_, str) else getattr(tg_, 'name', str(tg_))))
+                        if on:
+                            off.discard(key_)
+                        else:
+                            off.add(key_)
+                return Null
+            return f
+        B['Off'] = _offon(False)
+        B['On'] = _offon(True)
         B['Literal'] = lambda a: a[0] if len(a) == 1 else Null     # Literal[x] は x そのもの (評価も改名もしない記号。Canvas.n の Literal[TickFontScale]->1)
         def _with_subst(x, skip=()):
             """With[{y=…}, Hold[y]] は Hold[…の値] (With は保持された式の中にも値を埋め込む)"""
@@ -3676,6 +3710,8 @@ class Interp:
         def _div(x, y):
             if y == 0:
                 return INF if x > 0 else (-INF if x < 0 else NAN)
+            if type(x) is float and type(y) is float:
+                return _fdiv(x, y)
             return x / y
         B['Divide'] = lambda a: lmap2(_div, a[0], a[1], 'Divide')
         B['Minus'] = lambda a: _symneg(a[0]) if isinstance(a[0], (Sym, Expr, str)) else lmap1(lambda x: -x, a[0])
@@ -4852,9 +4888,12 @@ _orig_eval = Interp.eval
 def _eval2(self, node):
     if type(node) is float:
         return node
-    if isinstance(node, _Lit):
+    isx = type(node) is Expr                 # 最も多いノード: eval の型判定 (7 型のタプル・Sym・list) を飛ばして直接 eval_expr (結果は同じ)
+    if not isx and isinstance(node, _Lit):
         return node.v
     try:
+        if isx:
+            return self.eval_expr(node)
         return _orig_eval(self, node)
     except (TypeError, AttributeError) as e:          # 組み込み関数に想定外の型が来た: SAD と同じく式のエラーとして扱う (パッケージを動かす途中で止めない)
         if os.environ.get('PYSAD_TB'):
@@ -4913,7 +4952,12 @@ def _same_pats(p1, p2):
 
 def _copy(v):
     if isinstance(v, list):
-        return [_copy(x) for x in v]
+        # 入れ子のリストを含まない (数値・文字列だけの) リストは、1 回のスライスで写せる (型の集合は C の速さで求まる)。
+        # 要素が list (の派生) なら、従来どおり再帰して普通のリストに作り直す
+        for t in set(map(type, v)):
+            if issubclass(t, list):
+                return [_copy(x) for x in v]
+        return v[:]
     return v
 
 
@@ -4937,7 +4981,10 @@ def _dims(v):
 
 def _has_complex(a):
     if isinstance(a, list):
-        return any(_has_complex(x) for x in a)
+        for t in set(map(type, a)):          # 型の集合 (C の速さ)。list の要素だけ再帰する
+            if issubclass(t, complex):
+                return True
+        return any(_has_complex(x) for x in a if isinstance(x, list))
     return isinstance(a, complex)
 
 

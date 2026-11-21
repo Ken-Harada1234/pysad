@@ -23,6 +23,8 @@
   TouschekLifetimeLMA[]    直前の MomentumAcceptance の結果を、INTRA ON の Emittance[] が作った TouschekTable に渡した Touschek 寿命 [s]
       (位置ごとの δ+(s)・δ−(s) から補間。Cell->True の結果は周期的に延ばす)。v2.3.0 T2: v2 の既定は Piwinski 型の式 (touschek.touschek_piwinski)、
       Formula->"K64" と k64 モードは K64 の表 (TouschekLifetime[INF, INF, nz] と同じ表)。
+      NormalFormTune[Order->5, BendCubic->True, Kinematic->True, Fringe->True]  (v2.4.0 A8、pysad のみ。gs には無い) 振幅・δ に依るチューン ν(Jx, Jy, δ) のべき級数 (J²・δ 依存・交差項。pysad/ampnf.py、docs/49 §13)。
+      v2.4.0 A3: BunchQs->True を足すと相対運動量の縦成分 q_s の効果も入れる (3 次元の積分。12 スライスで求めて補間、数十秒)。BunchDelta->True でバンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れる (Piwinski 型のみ。既定 False。損失率が増え寿命が短くなる: a/σδ ≈ 9 で ASTRID2 で約 3%。pysad/touschek_bunch.py)。
 """
 import math
 import os
@@ -188,12 +190,45 @@ def install(ffs, B):
             raise SADError('TouschekLifetimeLMA: run MomentumAcceptance[] first')
         per = state['period']
         kw = dict(period=per[0] if per else None, s0=per[1] if per else 0.0)
+        bd = truthy(opts.get('BUNCHDELTA')) is True if opts.get('BUNCHDELTA') is not None else False
+        if bd and not (fm == 'piwinski' and 'rest' in tt):
+            raise SADError('TouschekLifetimeLMA: BunchDelta->True is only for Formula->"Piwinski" (v2)')
         if fm == 'piwinski' and 'rest' in tt:
-            r = touschek_lifetime_local_piwinski(tt, state['lma'], **kw)
+            r = touschek_lifetime_local_piwinski(tt, state['lma'], bunch_delta=bd, bunch_qs=(truthy(opts.get('BUNCHQS')) is True), **kw)
         else:
             r = touschek_lifetime_local(tt['table'], state['lma'], **kw)
         return float(r['lifetime'])
 
+    def fn_normal_form_tune(args):
+        """NormalFormTune[opts] (v2.4.0 A8、pysad のみ。gs には無い): 振幅・δ に依るチューン ν(Jx, Jy, δ) のべき級数 (pysad/ampnf.py、docs/49 §13)。
+        opts: Order->D (写像の次数、既定 5)、BendCubic->True|False (既定 True)、Kinematic->True|False (既定 True)、Fringe->True|False (既定 True)、
+        Slices->n (6 極・8 極の分割、既定 8)、BendSlices->n (既定 4)、QuadSlices->n (既定 2)。
+        戻り: {Tunes->{νx, νy} (端数)、ADTS->{∂νx/∂Jx, ∂νx/∂Jy, ∂νy/∂Jy}、J2->{x20, x11, x02, y20, y11, y02}、
+               Chromaticity->{{ξ1x, ξ1y}, {ξ2x, ξ2y}, ...} (δ の p 次の微分 ∂ᵖν/∂δᵖ、p = 1 … D−1)、DeltaADTS->{{∂(xx)/∂δ, ∂(xy)/∂δ, ∂(yy)/∂δ}, ...} (p = 1 … )、MinDenominator->最小の共鳴の分母}"""
+        from . import ampnf
+        opts, _rest = _opts(args)
+        if ffs.lat is None:
+            raise SADError('No beam line (USE first)')
+        ffs.spread_pending() if hasattr(ffs, 'spread_pending') else None
+
+        def flag(k, d=True):
+            v = opts.get(k)
+            return d if v is None else (truthy(v) is True)
+        D = int(_num(opts, 'ORDER', 5))
+        r = ampnf.amplitude_tune(ffs.lat, D=D, nslice=int(_num(opts, 'SLICES', 8)), nslice_bend=int(_num(opts, 'BENDSLICES', 4)), nslice_quad=int(_num(opts, 'QUADSLICES', 2)),
+                                 bend_cubic=flag('BENDCUBIC'), kin=flag('KINEMATIC'), fringe=flag('FRINGE'))
+        a = r.adts
+        j2 = r.adts2
+        P = max(1, (D - 1))
+        out = [Rule(Sym('Tunes'), [float(r.nu0[0]), float(r.nu0[1])]),
+               Rule(Sym('ADTS'), [float(a['xx']), float(a['xy']), float(a['yy'])]),
+               Rule(Sym('J2'), [float(j2[k]) for k in ('x20', 'x11', 'x02', 'y20', 'y11', 'y02')]),
+               Rule(Sym('Chromaticity'), [[float(r.chrom(0, p)), float(r.chrom(1, p))] for p in range(1, P + 1)]),
+               Rule(Sym('DeltaADTS'), [[float(r.adts_delta(0, 1, 0, p)), float(r.adts_delta(0, 0, 1, p)), float(r.adts_delta(1, 0, 1, p))] for p in range(1, max(1, (D - 3) // 1) + 1)]),
+               Rule(Sym('MinDenominator'), float(r.min_den))]
+        return out
+
+    B['NormalFormTune'] = fn_normal_form_tune
     B['FrequencyMap'] = fn_frequency_map
     B['MomentumAcceptance'] = fn_lma
     B['TouschekLifetimeLMA'] = fn_touschek_lma

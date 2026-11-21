@@ -6,6 +6,35 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## v2.4.0 (2026-11-22、開発中。dev/v2.4.0。PyPI は v2.3.0 まで)
+
+v2.3.0 の後に、(A) パーサ・評価器・FIT の残りの修正、(B) 放射・エミッタンスの修正、(C) 解析機能の拡張 (ADTS の J²・δ 依存、K0≠0 の偏向磁石、Touschek のバンチ内の δ、LMA の対応範囲、DA の `ExpandElementValues`) を行いました。
+記録は [`docs/history/v24_A.md`](docs/history/v24_A.md) (C) と [`docs/history/v24_RAD.md`](docs/history/v24_RAD.md) (B)、変更の一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、未対応・未確認は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
+**朝に判断する項目 (既定はどれも変えていない。推奨はすべて据え置き)** は docs/47 の末尾の「v2.4.0 要判断項目の一覧」の表にまとめました。
+
+**解析機能の拡張** (pysad のみ。gs には無い。互換モードによらず同じ動作。解説は [docs/49 §13](docs/49_resonance_terms_adts.md)・[docs/48](docs/48_frequency_map_lma.md)、例は [`example/v2_4/`](example/v2_4/README.md))
+- **振幅・δ に依る ν のべき級数** ([`pysad/ampnf.py`](pysad/ampnf.py)、台本 `NormalFormTune[]`): ν(Jx, Jy, δ) を J・δ のべき級数の全次数の係数で求めます (J¹ = ADTS、**J² の項**、ξ の高次、**振幅と δ の交差項**)。1 周の写像を 5 変数のべき級数 (TPSA) で厳密に作り、Birkhoff の正規形で求めます (摂動論の次数: 係数 c_abp のうち 2a+2b+p ≤ D−1 が正しい)。追跡から係数を取り出さず、合わせるための項も足していません。線形 + 6 極・8 極に、オプションで偏向磁石の曲率の項と端の項 (`bend_cubic`)・運動学的な項 (`kin`)・四極と K1≠0 の偏向磁石のフリンジ (`fringe`) を足せます。J¹ は解析式の 6 極の 2 次に 1/n² で収束し、同じ模型の追跡と 1e-9、実際の追跡 (pysad k64) と FODO で 1.2e-6 以下・ASTRID2 で δ=0 が 2.7e-8・δ=±1e-3 が 4.5e-6 以下、大きなリング A で J¹ が `adts().total` と 3e-3 以下 (D=5 で 104 秒)。検証の中で、**端部のフリンジの強さは K1/(1+δ)** (δ に依らないとすると ξ3 が 22% ずれる) を確かめました。入れていない効果と差の原因は docs/49 §13.3。
+- **Touschek のバンチ内の δ の分布** ([`pysad/touschek_bunch.py`](pysad/touschek_bunch.py)、台本 `TouschekLifetimeLMA[BunchDelta->True, BunchQs->True]`、既定は入れない): 散乱される粒子の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2) と相対運動量の縦成分 q_s) を入れた損失率。実験室系の 2 粒子の対のモンテカルロ (厳密な相対論の運動学) と、δ_c の効果が 2% 以内、δ_c + q_s の全体が 0.3% 以内で一致 (ASTRID2 a/σδ = 9・14 で +4.8・+2.2%、KEK-LS 8・13 で +4.5・+1.7%)。elegant の `touschekLifetime` には δ 分布を入れる機能が無く、T1・T2 の elegant との一致は既定のまま変わりません。
+- **K0≠0 の偏向磁石の共鳴駆動項・ADTS・ξ** (ANGLE≠0・E1・E2・K1 を持つ場合): 追跡の 1 周の写像のテイラー展開と h が 5e-7 以下 (K1=0) で一致することを確認しました (`example/v2_4/A2_*`)。**修正**: `chromaticity_natural` が K0≠0 の偏向磁石の自然なクロマティシティを 2 重に数えていた誤りを直しました。ROTATE の偏向磁石は入れません (理由は docs/history/v24_A.md A2)。
+- **LMA の対応範囲**: k64 は v2 と 6e-8 以内、強い結合・誤差 (ASTRID2 level 5) でも走る、KEK-LS の誤差は補正なしだと閉軌道が求まらない (docs/48・[`v24_A.md`](docs/history/v24_A.md) A4)。`fmapcheck.errors_summary` が RAD・RFSW ON を不安定と誤判定していたのを直しました (結合の警告が出るようになった)。
+- **周波数マップの予想・6 極検討の位置づけ**: 予想が ASTRID2・KEK-LS で改善しない原因は ν(J) ではなく 5 次以上の共鳴・島の重なり・差の共鳴の島にロックされた点 (J² を入れても AUC は上がらない)。6 極検討 (sxtopt) は検証・スクリーニング用で、最終設定を超える最適化には使えません (J² の項は DA との順位相関を ρ = −0.93 に上げるが、最終設定と最適化の結果の差は説明しない)。
+
+**DynamicApertureSurvey の `ExpandElementValues`・`ReferenceOrbit`** (`ffscmd.fn_dasurvey`・[`dapert.py`](pysad/dapert.py)): gs と同じ `ExpandElementValues->False` (成分ごとの値を揃えない) と `ReferenceOrbit->{x0,px0,y0,py0,z0,dp0}` を読むようにしました。以前は常に揃えていたので、補正した K0・位置ずれを持つリングの DA が gs と違いました。DDBA v07_14 の誤差の例 (5 GeV) の「gs 0〜1σ・pysad 27〜38σ」の原因で、`ExpandElementValues->False` にすると gs と pysad が 29〜36σ で一致します (既定の True は gs と同じなので変えていない)。
+
+**パーサ・評価器・FIT (A)**: ユーザー定義の関数名 `At` が `@` と衝突して呼べなかった問題 (メンバー参照の内部の頭を `SAD$Member` に変更)、`FitFunction` を併用する `fit` が gs と別の解に落ちる問題 (NaN の行は条件にしない・末尾の数 `3.` のパース・FitFunction の行は k64 で不等式型・USE のたびに DP を MARK に戻す)、`pm1.sad` の NaN (qcod が見つからないとき tcod は 0 から始める)、`ElementValues` (`Couple.n`) とフィット変数の連動、`LINE["POSITION",{{1,2},{3,4}}]` などの SADScript の細部 (gs と照合)、`Off[f::tag]`、単独の `NOEXPAND;`・`EXPAND;`、`COUPLE QD QF -0.8; FREE QF; FIT; GO;` (gs と 1e-8 以内)。実装しないと決めたもの (`Hold` の部分評価・`RENUMBER` の内部表の不整合・`FindRoot` の複素・特殊関数の gs が誤る領域・GUI の一部など) は理由つきで docs/46 に記録しました。
+
+**放射・エミッタンス (B)**: (1) tcod が収束しないときの Emittance[] (B163): k64 は gs と同じに、収束していない軌道から続行して `???-Emittance[]-closed orbit not found.` (DDBA_15 の εx が gs と全桁一致。これまで +0.33% 違った)。(2) RADINT の ANGLE=0・K0≠0 の極の εx・Jx (B115 の残り): 極の中を直線の基準軌道の場として積分 (I1〜I5 が独立な積分と 5e-5)。(3) **v2 の EMITDIV の既定を 1 から 4 に変更** (k64 は 1。大きなリング A の εx の +2.2% などを 2e-4 以下に。POL ON のスピンの計算は 16 (原因は偏向磁石の刻み端の値でスピンの結合を積算する離散化誤差。後の第 2 弾で変更))。(4) 独立な計算で確認: BEAMBEAM の傾き (v2 は傾き 0〜0.7 rad で 2e-4 以内、SLICE=1 のみ)、AE のある極の放射 (v2 は硬い端の厳密積分より Jx が AE=0.3 で +2.0% 大きい。K64 の端の模型の違いで直さない)、PF の SynchroBetaEmittance (6D 追跡の εx と 0.4% の統計誤差の範囲で一致。SB と Emittance[] の 0.55% の差は区別できない)、tbrote (gs と全桁一致)。**未完**: Polarization の FLUC 追跡との比較 (6 MV・24 MV は実行中、ASTRID2・PF・大きなリング A は未実施)。詳細は [`docs/history/v24_RAD.md`](docs/history/v24_RAD.md)。
+
+**性能**: 誤差入り 6D emit と DA の反復 (docs/46 §7) をプロファイルして閉じました。DDBA v07_14 の誤差の例は pysad で 107 s (gs 320 s)。行列の `Dot` の複素判定の再帰 (全体の 8%) を除きました (結果は同じ)。
+
+**既定の変更 (結果が変わるもの)**: v2 の EMITDIV の既定 (1 → 4。大きなリング A の εx は EMITDIV=1 で +2.2% ずれていた。`PYSAD_EMITDIV_DEFAULT` で戻せる)、v2 の POL ON の既定は 16 (線形の脱偏極率が EMITDIV=1 で収束値より約 24% 大きい。k64 は 1)、`USE` のたびに MARK の DP0 を 0 に戻す (gs と同じ。台本から USE を繰り返す場合に結果が変わる)。k64 の動作の変更は、tcod が収束しないときの Emittance[] (B163) など docs/47 の v2.4.0 の節のとおり。それ以外の既定は変えていません。
+
+**文書**: docs/49 に §13 (ampnf)、docs/50 に J²・正規形の説明、docs/48 に Touschek のバンチ内の δ と LMA の対応範囲、docs/09 に `ExpandElementValues`・`ReferenceOrbit`、docs/47 に v2.4.0 の節と要判断の表を追加しました。
+
+**試験**: [`test_v24_A1_ampnf.py`](pysad/tests/test_v24_A1_ampnf.py)・[`test_v24_A2_k0_bend.py`](pysad/tests/test_v24_A2_k0_bend.py)・[`test_v24_A3_touschek_bunch.py`](pysad/tests/test_v24_A3_touschek_bunch.py)・[`test_v24_A5_dapert_options.py`](pysad/tests/test_v24_A5_dapert_options.py)・[`test_v24_A7_misc.py`](pysad/tests/test_v24_A7_misc.py) (C)、[`test_k64_tcod_notfound.py`](pysad/tests/test_k64_tcod_notfound.py)・[`test_v24_rad_pole.py`](pysad/tests/test_v24_rad_pole.py) (B)、[`test_v24_A_parser_fit.py`](pysad/tests/test_v24_A_parser_fit.py) (A) ほか。全体の通しの最終の結果はリリース前に追記します。
+
+**v2.4.0 の未解決・未確認** (docs/46・[`v24_A.md`](docs/history/v24_A.md) の「未解決」): ROTATE の偏向磁石の解析式、共鳴の島の正規形 (大振幅・ロックした点)、`Bend.transfer_matrix` の K0≠0・ANGLE≠0 でのずれ (CALC・追跡の経路では使われない)、複素特殊関数の k64 の値などの要判断 (docs/47 の表)。
+
 ## v2.3.0 (2026-11-21)
 
 v2.2.0 の後に、K64 にない解析機能 (周波数マップ・局所運動量アクセプタンス (LMA)・共鳴駆動項 (RDT)・振幅依存チューンシフト (ADTS)・Touschek の独立な式・数値の正規形) を足し、それぞれの信頼性を調べた版です (GitHub のリリース v2.3.0 と PyPI: [`pysad-k64` 2.3.0](https://pypi.org/project/pysad-k64/2.3.0/) (2026-11-21 公開。`pip install pysad-k64`))。K64 の動作・互換モード ([`pysad/compat.py`](pysad/compat.py)、既定 `v2`、`PYSAD_COMPAT=k64`) は、下の「既定の変更」のほかは変えていません。**新機能は K64 に無い追加なので、互換モードに関係なく同じ動作で使えます**。numba のカーネルは変えていません。K64 について B 番号を 3 つ足しました (B160: K1≠0 の BEND の K1 の暗黙の定義。誤りではない。B161: CALC の `tbendecorr` の行列の dk の不整合。v2 で直した。B162: Touschek の損失率の式の適用範囲。v2 は Piwinski 型の式を既定にした)。K64 のバグの記録は B01〜B162。

@@ -121,10 +121,7 @@ def k_tcav(S, n, al, ak, w, phic, p0, h0, krad, fluc, rs, anrad, cuc):
 
 
 def compile_tcav(el):
-    pr = params(el)
-    if pr['rank'] != 0.0 or pr['ranp'] != 0.0:
-        raise NotImplementedError('track6n: TCAVI の RANKICK / RANPHASE (tgauss) は未対応')
-    return pr
+    return params(el)         # RANKICK・RANPHASE は apply_tcav が周回ごとに tgauss で引く (tturn.f icTCAV)
 
 
 def apply_tcav(S, n, pr, ph, rad, fluc, rs, kturn):
@@ -132,10 +129,22 @@ def apply_tcav(S, n, pr, ph, rad, fluc, rs, kturn):
     harm = pr['harm']
     w = 2.0 * math.pi * pr['freq'] / CVELOC if harm == 0.0 else ph.omega0 * harm / CVELOC
     harmf = harm - int(harm)
-    phase = pr['phi'] + harmf * (kturn - 1) * 2.0 * math.pi
+    ak = pr['ak']
+    phi0 = pr['phi']
+    if pr['rank'] != 0.0 or pr['ranp'] != 0.0:
+        # tturn.f icTCAV: 1 周ごとに ak = K0 + RANKICK·tgauss()、ph = PHI + RANPHASE·tgauss() (この順。全粒子に同じ値)
+        from . import track6 as _t6
+        rng = _t6.RNG
+        rng.seed = int(rs[0])
+        if pr['rank'] != 0.0:
+            ak = pr['ak'] + pr['rank'] * rng.tgauss()
+        if pr['ranp'] != 0.0:
+            phi0 = pr['phi'] + pr['ranp'] * rng.tgauss()
+        rs[0] = rng.seed
+    phase = phi0 + harmf * (kturn - 1) * 2.0 * math.pi
     phic = phase * (1.0 if ph.charge >= 0 else -1.0)
     _tent(S, n, pr['dx'], pr['dy'], pr['theta'])
-    k_tcav(S, n, pr['al'], pr['ak'], w, phic, ph.p0, ph.h0, bool(rad and pr['rad']), fluc, rs, ph.anrad, ph.cuc)
+    k_tcav(S, n, pr['al'], ak, w, phic, ph.p0, ph.h0, bool(rad and pr['rad']), fluc, rs, ph.anrad, ph.cuc)
     _texit(S, n, pr['dx'], pr['dy'], pr['theta'])
 
 

@@ -281,7 +281,7 @@ def test_tquade_T_matches_numeric_with_orbit(mode):
     from pysad.elements import Quadrupole
     compat.set_mode(mode)
     try:
-        ph = e._Phys(3e9, 100.0)
+        ph = e._Phys(3e9, 100.0, emidiv=1.0)      # 数値の写像 (_quad_map) は EMITDIV = 1 の刻み
         rng = np.random.default_rng(1)
         for _ in range(24):
             K = rng.choice([0.7, -0.6, 2.5, -3.0])

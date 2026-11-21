@@ -12,6 +12,21 @@ import _e_spinkick as K
 from pysad import naff
 
 
+@pytest.fixture(autouse=True, scope='module')
+def _emitdiv_default_1():
+    """参照値は EMITDIV = 1 で作った。v2.4.0 から v2 の EMITDIV の既定は 4 だが、v2 の Polarization の式 (線形の脱偏極率) は EMITDIV に強く動く
+    (4.2 GeV・12 MV の FODO: 1 → 2.318e-8、4 → −3%、16 → −16%。B137 の刻み依存の疑い) ので、スピンの試験は 1 に固定する"""
+    old = os.environ.get('PYSAD_EMITDIV_DEFAULT')
+    os.environ['PYSAD_EMITDIV_DEFAULT'] = '1'
+    try:
+        yield
+    finally:
+        if old is None:
+            os.environ.pop('PYSAD_EMITDIV_DEFAULT', None)
+        else:
+            os.environ['PYSAD_EMITDIV_DEFAULT'] = old
+
+
 def test_spin_line_amplitude_is_recovered_from_a_synthetic_cone():
     """ζ = 軌道の線 2 本 + スピンチューンの線 (複素振幅 a)。NAFF で a を 1e-6 以内で取り出し、近い軌道の線 (間隔 0.0053) に影響されない"""
     n = np.arange(1500)

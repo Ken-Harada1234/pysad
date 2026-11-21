@@ -29,3 +29,6 @@ exmkc target     .0  result: ring tune   48.5799997789   17.6200050225  EX(MKC) 
 - 元の台本の `free BPI6 K1`・`free BPI7 K1` は、v03_68 の偏向磁石の名前 BPI6H・BPI7H に一致せず、K1 が動かない (gs・pysad とも)。元の挙動を残し、既定は `freebend = 0`。`freebend = 1` で BPI6H・BPI7H も変数にする。
 - 元の台本の EMITX の FitFunction を除いた (閉じていない ARCA では EMITX は NaN で何も効かない)。ただし NaN の FitFunction があると pysad は fit が動かない (元の台本のまま走らせた比較で確認。gs は動く)。pysad の FitFunction の扱いの違いの疑い (README の要確認)。
 - 整理前後の比較: 元の matching2_01 (ラティスを貼り、DAsv を除き、FitFunction を除いたもの) の gs と、この例の gs で、1 点目の値は一致、2・3 点目のチューンは 5e-6 以内で一致。
+
+## 更新 (v2.4.0)
+FitFunction・パーサ・USE の DP の修正のあとで `.pysad.txt` を再生成した。この例の結果は修正の前後で変わらず、上の比較と判定のままである (EX・K1 の行を gs と比べ直した)。

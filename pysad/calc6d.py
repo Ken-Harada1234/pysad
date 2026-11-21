@@ -380,7 +380,7 @@ def _turn(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
 # 閉軌道 (emit6d.emittance6d と同じ手順)
 # ---------------------------------------------------------------------------
 
-def _closed_orbit(els, ph, rfsw, radcod, radiation):
+def _closed_orbit(els, ph, rfsw, radcod, radiation, k64_continue=True):
     """temit の tcod 部分。emit6d.emittance6d の閉軌道の決め方をそのまま使う (tcod の直訳ではない):
       RFSW OFF            : 4D 閉軌道 (δ 固定) で一周して z が閉じる δ を割線法で求める
       RFSW ON, RADCOD OFF : 同上で z=0、trf0 は 1 周目の U0 と実効電圧から決める (tturne update)
@@ -391,7 +391,7 @@ def _closed_orbit(els, ph, rfsw, radcod, radiation):
     EMIT コマンドと同じ cod / trf0 になる (RADCOD ON の Equilibrium dz が SAD と一致)。"""
     if radiation:
         from .emit6d import closed_orbit6d
-        cod, trf0, found, _ = closed_orbit6d(els, ph, rfsw, radcod, True, norf_trf0=True)
+        cod, trf0, found, _ = closed_orbit6d(els, ph, rfsw, radcod, True, norf_trf0=True, k64_continue=k64_continue)
         return cod, trf0, found
     def z_slip(dp):
         c, _, _ = _lat._qcod_periodic(els, dp)

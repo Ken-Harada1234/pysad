@@ -158,3 +158,17 @@ def test_map_default_is_identity_with_zero_length():
     base = SRC['mp3'].split('ExternalMap')[0]
     a = _run(base + 'CELL; CALC; Print["S ", Twiss["S", "$$$"]]; Exit;')
     assert abs(float(re.search(r'S\s+(' + _NUM + ')', a).group(1)) - 4.1) < 1e-12
+
+
+def test_lossmap_records_map_element_number():
+    """v2.4.0: MAP (ExternalMap["TRACK"]) が落とした粒子の LOSSMAP の要素番号 (temap.f: kptbl(j,4) = l、kptbl(j,5) = nt)。
+    gs: 粒子 1・18 が 4 周目に MAP (要素 8) で落ちる。以前は要素番号が 0 だった"""
+    from pysad.ffscmd import run_sad_string
+    s = SRC['mp3'].replace('TRPT; INS; NORAD; NOFLUC;', 'TRPT; INS; NORAD; NOFLUC; LOSSMAP;').replace('x0  = Table[1e-3*Sin', 'x0  = Table[3e-3*Sin')
+    s = s[:s.index('$FORM = "16.10";')] + 'Print["F ", r[[2,7]]]; Print["L ", r[[2,8]]]; Print["T ", r[[2,9]]];\nExit;\n'
+    b = io.StringIO()
+    run_sad_string(s, out=b)
+    got = {l[0]: l for l in b.getvalue().splitlines() if l[:2] in ('F ', 'L ', 'T ')}
+    assert got['F'].replace(' ', '') == 'F{0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1,1}'
+    assert got['L'].replace(' ', '') == 'L{8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,8,0,0}'
+    assert got['T'].replace(' ', '') == 'T{4,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,4,5,5}'

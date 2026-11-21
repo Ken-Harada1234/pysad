@@ -33,6 +33,7 @@ from .lattice import TwissRow
 from .sadscript import fmt_g
 
 import os as _os
+from . import compat as _compat
 _DEBUG = bool(_os.environ.get('PYSAD_MATCH_DEBUG'))
 PI2 = 2.0 * math.pi
 # tffsmatch.f module match のパラメータ
@@ -263,6 +264,8 @@ class Matcher:
         self.var_weight: Optional[Callable] = None      # SAD の VariableWeight[element, keyword, v_]: (family, key, gw) → None / 実数
         # FITP の fam 点 (tffamsetup: MatchingAmplitude {{dp, xamp, yamp},…} と NFAMP の有限振幅ファミリー)
         self.fam_setup: Optional[Callable] = None       # () → None / dict(amp=[[dp,x,y],…], nfp, em, tw=dict(ax bx ay by r1..r4 detr))
+        self.ev_hook: Optional[Callable] = None          # ElementValues の更新 (ffscmd が与える)
+        self.ev_active: Optional[Callable] = None        # ElementValues が使われているか
         self.optics_prolog: Optional[Callable] = None   # tffscalc.f:64 OpticsProlog (光学計算の前)、398 OpticsEpilog (後) の評価
         self.optics_epilog: Optional[Callable] = None
         self._res1: Dict[int, float] = {}               # 直近の tffscalc の idp ごとの残差 (FFS$SHOW 用)
@@ -712,6 +715,9 @@ class Matcher:
         """tffscalc + tdfun + twfit。戻り: (dfs: dict (id, idp)→df·wiq, r: _Res, rows (idp=0))
         wcal: 重み wfit を計算し直す"""
         self._apply_vars()
+        if self.ev_hook is not None:
+            self.ev_hook()                # ElementValues (Couple.n): 変数を入れたあとで結合した要素の値を更新する (gs の tfsetv → SetCoupledElements)
+            self.lat._twiss_cache = None
         if self.ini_fn is not None:
             self.ini = self.ini_fn()
         if self.optics_prolog is not None:
@@ -860,7 +866,12 @@ class Matcher:
             if ffv is not None:
                 vals = ffv if isinstance(ffv, (list, tuple)) else [ffv]
                 for k, x in enumerate(vals):
-                    dfs[(-(k + 1), 0)] = (float(x), 1.0)
+                    x = float(x)
+                    if x != x:
+                        # gs (tffscalc/tfsolv): NaN の FitFunction の行は条件として効かない (NaN の行を足さない場合と
+                        # 反復の履歴まで同じ)。残差 0・微分 0 の行にする (行の個数 wsum は gs と同じく数える)
+                        x = 0.0
+                    dfs[(-(k + 1), 0)] = (x, 1.0)
         # 重みと残差 (tffscalc)
         rw = 0.0
         wsum = 0.0
@@ -1032,6 +1043,13 @@ class Matcher:
         """tfsolv: 最大フィット条件は最初は外し、解が条件を越えるなら入れて解き直す。戻り (dval, dg)"""
         nq, nv = qu.shape
         fitsel = np.array([self._cond(i)['mfitp'] > 0 for i in ids])
+        if not _compat.v2():
+            # gs (tfsolv): FitFunction の行 (iqcol < 0) は fit(i) = mfitp(kfitp(iqcol(i))) > 0 を iqcol の範囲外の添字で読み、
+            # 結果として「最大フィット (不等式) 型の行」と同じ扱いになる: 最初は解から外し、解がその行を悪くするときだけ入れて解き直す
+            # (gs と pysad の KEKLS_match_repeat の反復の履歴が、この扱いで 7 桁まで一致する。v2 は等式の条件として扱う)
+            for k_, i in enumerate(ids):
+                if (i[0] if isinstance(i, tuple) else i) < 0:
+                    fitsel[k_] = False
         if not fitsel.any():
             fitsel[:] = True
         eps = TSTOL / fact
@@ -1371,6 +1389,8 @@ class Matcher:
             return 'INS (CELL でない) は PYSAD_INS_NUMERIC=1 で数値微分に切替'
         if self.couples_active:
             return 'COUPLE 使用中 (coup≠1 は未対応)'
+        if self.ev_active is not None and self.ev_active():
+            return 'ElementValues 使用中 (結合した要素は数値微分。gs は CouplingMatrix で結合を微分に入れる)'
         for (cid, idp) in ids:
             if idp != 0:
                 return 'オフモメンタム条件 (FITP>1) は未検証'

@@ -21,6 +21,21 @@ from pysad import compat, emit6d, ffscmd, spin
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from test_v2_B3_pol import _lat, _setup, PST        # noqa: E402
 
+
+@pytest.fixture(autouse=True, scope='module')
+def _emitdiv_default_1():
+    """参照 (FLUC の追跡 ±16%) との比較は EMITDIV = 1 の刻みで作った。v2.4.0 から POL ON の既定は 16 (線形の脱偏極率の刻みの誤差の収束値) で、
+    24 MV では式が追跡より 14% 小さい (追跡の統計誤差 ±16% の内。docs/history/v24_RAD.md §5)。この試験は変調の模型の検証なので 1 に固定する"""
+    old = os.environ.get('PYSAD_EMITDIV_DEFAULT')
+    os.environ['PYSAD_EMITDIV_DEFAULT'] = '1'
+    try:
+        yield
+    finally:
+        if old is None:
+            os.environ.pop('PYSAD_EMITDIV_DEFAULT', None)
+        else:
+            os.environ['PYSAD_EMITDIV_DEFAULT'] = old
+
 RE = 2.8179403262e-15
 LC = 3.8615926796e-13
 C = 299792458.0

@@ -129,7 +129,7 @@ def _unpack(v):
 # tphyzp: エネルギーから決まる定数
 # ---------------------------------------------------------------------------
 
-EMITDIV = [1.0, 1.0, 1.0]      # 大域変数 EMITDIV, EMITDIVB, EMITDIVQ (tfsetparam.f)。ffscmd が Emittance[]・EMIT の前に入れる
+EMITDIV = [None, None, None]   # 大域変数 EMITDIV, EMITDIVB, EMITDIVQ (tfsetparam.f)。ffscmd が Emittance[]・EMIT の前に入れる。None は既定 (EMITDIV: compat.emitdiv_default()、B・Q: 1)
 
 
 def _rclass0(amass):
@@ -144,9 +144,13 @@ class _Phys:
     def __init__(self, pgev: float, circ: float, amass: float = ELMASS,
                  charge: float = 1.0, emidiv: Optional[float] = None,
                  emidib: Optional[float] = None, emidiq: Optional[float] = None):
-        emidiv = EMITDIV[0] if emidiv is None else emidiv
-        emidib = EMITDIV[1] if emidib is None else emidib
-        emidiq = EMITDIV[2] if emidiq is None else emidiq
+        if emidiv is None:
+            # POL ON のスピンの計算は既定 16 (compat.emitdiv_default(True)。線形の脱偏極率が刻みで収束する: docs/history/v24_RAD.md §4)
+            emidiv = EMITDIV[0] if EMITDIV[0] is not None else _compat.emitdiv_default(bool(POL_MODE))
+        if emidib is None:
+            emidib = EMITDIV[1] if EMITDIV[1] is not None else 1.0
+        if emidiq is None:
+            emidiq = EMITDIV[2] if EMITDIV[2] is not None else 1.0
         hp = PLANKR
         e = ELEMCH
         c = CVELOC
@@ -2528,7 +2532,18 @@ def beam_tilt_sizes(emitp):
     return btilt, sigx, sigy
 
 
-def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = True, norf_trf0: bool = False):
+def _qcod_start(els):
+    """tcod の初期の cod: 4D の閉軌道 (qcod)。qcod が見つからない (Overflow・itmax 超過) ときは、gs の qcod は初期値 (0) を返す
+    (`cod=cod0; codfnd=.false.`) ので 0 から始める。pysad の _qcod_periodic は最後に試した軌道 (大振幅で NaN になる) を返すので使わない
+    (K3 が強くずれの大きい MULT リング local/wake/pm1.sad: gs は 0 から小さい閉軌道 (1e-4) に収束して PolarizationTime などが有限、
+    pysad は最後に試した軌道 (-0.033) から始めて NaN だった)"""
+    c, _, _ = _lat._qcod_periodic(els, 0.0)
+    if not _lat._LAST_QCOD_FOUND:
+        return np.zeros(6)
+    return c
+
+
+def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = True, norf_trf0: bool = False, k64_continue: bool = True):
     """temit の tcod 部分 (放射あり)。戻り値 (cod, trf0, found, st_full)。
     st_full は RFSW+RADCOD の tcod の最後の反復が D・B 付きの完全な一周のときその状態 (temit の最後の tturne と同じ)、なければ None。
 
@@ -2540,7 +2555,7 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
       RFSW OFF            : 同じ z 閉じ。trf0 は norf_trf0=True のときだけここで求める (SAD は RFSW OFF でも tturne の update で更新する)
     """
     if rfsw and radcod:
-        c, _, _ = _lat._qcod_periodic(els, 0.0)
+        c = _qcod_start(els)
         cod0 = np.array(c, dtype=float)
         cod0[4] = 0.0
         cod0[5] = 0.0
@@ -2548,6 +2563,10 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
             cod_t, fnd, trf0_t, _, st_full = _tcod_radcod(els, ph, cod0, True, final_full=True)
             if fnd:
                 return cod_t, trf0_t, True, st_full
+            if _compat.k64() and k64_continue:
+                # K64 の temit は tcod が収束しなくても (fndcod = .false.、"???-Emittance[]-closed orbit not found.") その cod から続行する。
+                # v2 は下の 6D 固定点の Newton 法で本当の閉軌道を求める
+                return cod_t, trf0_t, False, None
         st1 = tturne(els, cod0, ph, trf0=0.0, rfsw=True)
         if not np.all(np.isfinite(st1.cod)):
             return cod0, 0.0, False, None          # D1: 不安定 (軌道が発散して NaN): 30 回の Newton 法をやらない
@@ -2574,23 +2593,27 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
         # RFSW ON, RADCOD OFF: tcod の直訳 (_tcod_radcod(radcod=False))。RFSW OFF の 4D 閉軌道 (trf0 は各反復の tturne の update で更新) →
         # cod(5)=asin((u0 pgev - vcacc)/vceff)/wrfeff - trf0 → 6D の Newton 法 (FSHIFT≠0 では δ が動き z を閉じる)。
         # 収束判定は r=Σ(dcod1/codw)²+(dtrf0/trw)² < 1e-4 で緩く、最終値は反復の履歴に依存する (以前は z を閉じる δ の割線法で 5e-5 ずれた)
-        c, _, _ = _lat._qcod_periodic(els, 0.0)
+        c = _qcod_start(els)
         cod0 = np.array(c, dtype=float)
         cod0[4] = 0.0
         cod0[5] = 0.0
         cod_t, fnd, trf0_t, _, _ = _tcod_radcod(els, ph, cod0, True, radcod=False)
         if fnd:
             return cod_t, trf0_t, True, None
+        if _compat.k64() and k64_continue:
+            return cod_t, trf0_t, False, None
     if radcod and not rfsw:
         # RFSW OFF, RADCOD ON: SAD の tcod は rfsw=.false. の枝 (im=5) をそのまま実行する。一周の放射損失 (δ が U0/P0 だけ下がる) を
         # 含めた閉軌道 (x,px,y,py を閉じ、z のずれは trf0 に移す)。_tcod_radcod の第 1 段 (RFSW ON のときの前半) と同じ
-        c, _, _ = _lat._qcod_periodic(els, 0.0)
+        c = _qcod_start(els)
         cod0 = np.array(c, dtype=float)
         cod0[4] = 0.0
         cod0[5] = 0.0
         cod_t, fnd, trf0_t, _, _ = _tcod_radcod(els, ph, cod0, False)
         if fnd:
             return cod_t, trf0_t, True, None
+        if _compat.k64() and k64_continue:
+            return cod_t, trf0_t, False, None
     # SAD の Emittance[] は z も閉じる 6D 閉軌道を使う (RF なしでは δ が決まる)。tcod の直訳ではなく、
     # 「4D 閉軌道 (δ 固定) を求めて一周し、z の戻りが 0 になる δ」を割線法で求める近似。
     # z 写像は放射なしの COD 写像 (RADCOD=F なので cod は放射で変わらない)。
@@ -2630,7 +2653,7 @@ def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = Tru
     cod0 = np.array(cod0, dtype=float)
     cod0[4] = 0.0
     if rfsw and not close_z:
-        c, _, _ = _lat._qcod_periodic(els, 0.0)
+        c = _qcod_start(els)
         cod0 = np.array(c, dtype=float)
         cod0[4] = 0.0
         cod0[5] = 0.0
@@ -2714,7 +2737,9 @@ def _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fsh
     circ = _emit_circ(els)
     ph = _Phys(momentum_eV, circ, amass=amass, charge=charge)
     ph.dvfs = fshift if rfsw else 0.0          # tsetdvfs
-    cod, trf0, _found, st_full = closed_orbit6d(els, ph, rfsw, radcod, close_z)
+    # RADTAPER ON (lattice._z_into_trf0) の tcod は radtaper の項 (dptaper・trs(:,6)=0) が入り、_tcod_radcod の直訳 (RADTAPER OFF) では収束しない: 固定点を解く
+    cod, trf0, _found, st_full = closed_orbit6d(els, ph, rfsw, radcod, close_z, k64_continue=not getattr(lattice, '_z_into_trf0', False))
+    _cod_found = bool(_found)
     if getattr(lattice, '_z_into_trf0', False) and _found and rfsw and radcod:
         cod, trf0, st_full = _z_into_trf0(cod, trf0, ph), None, None
         cod, trf0 = cod
@@ -2736,6 +2761,7 @@ def _emittance6d(lattice, momentum_eV, charge, amass, close_z, rfsw, radcod, fsh
         from .spin import spin_results
         out['spin'] = spin_results(st, out, ph, els=els, cod=cod, trf0=trf0, rfsw=rfsw, radcod=radcod)
     # temitprint の Closed orbit の Entrance (tcod の cod) と Exit (最後の一周の出口)
+    out['cod_found'] = _cod_found
     out['orbit_entrance'] = np.array(cod, dtype=float)
     out['orbit_exit'] = np.array(st.cod, dtype=float)
     if radcod:

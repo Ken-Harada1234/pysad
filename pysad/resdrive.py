@@ -1119,7 +1119,7 @@ def chromaticity_natural(lat, rows=None, nsub=8):
     """自然クロマティシティの解析式 (v2.3.0 R4): 四極・K1 つきの偏向磁石・MULT の K1 と偏向磁石の弱収束 h² と端の収束 (角度 E1・E2 [rad]、h tan E)
       ξx = −(1/4π) [∮ (K1 + h²) βx ds − Σ_端 h tan E βx]、  ξy = +(1/4π) [∮ K1 βy ds − Σ_端 h tan E βy]。
     (δ に対する 1/(1+δ) の依存は K1 と端の収束、h² は δ に依らない。**偏向磁石の 3 次の項を分散の軌道のずれで展開した分** (`chromaticity_bend`、h11001/π など)
-    を足すと、CALC の δ 依存の 1 次 (6 極なし) と一致する)。入っていない: K0 のある偏向磁石 (挿入光源)・ROTATE した素子・F1/F2・FRINGE の指定・ソレノイド。戻り (ξx, ξy)"""
+    を足すと、CALC の δ 依存の 1 次 (6 極なし) と一致する)。K0≠0 の偏向磁石は飛ばす (v2.4.0 A2: `chromaticity_bend` の全体の値が自然な項を含むので二重に数えない)。入っていない: ROTATE した素子・F1/F2・FRINGE の指定・ソレノイド。戻り (ξx, ξy)"""
     elements, rows = _tables(lat, rows=rows)
     sx = sy = hx = ex = ey = 0.0
     for i, el in enumerate(elements):
@@ -1127,6 +1127,8 @@ def chromaticity_natural(lat, rows=None, nsub=8):
         L = float(getattr(el, 'L', 0.0) or 0.0)
         if L <= 0 or tn not in ('Quadrupole', 'Bend', 'Multipole'):
             continue
+        if tn == 'Bend' and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0:
+            continue      # v2.4.0 A2: K0≠0 の偏向磁石の自然な項 (K1・h²・端) は chromaticity_bend (element_delta_terms) が全体で持つ (二重に数えない)
         if tn == 'Multipole':
             knl = getattr(el, 'KnL', {}) or {}
             k1 = float(knl.get(1, 0.0) or 0.0) / L

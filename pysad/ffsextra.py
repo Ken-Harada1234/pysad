@@ -445,7 +445,8 @@ def cmd_status(ffs, words, i):
     tb.word('NP=' + fmt_real(num('NP', 1000.0), 'S8.1'))
     tb.word('GCUT=' + fmt_real(ffs.gcut() if hasattr(ffs, 'gcut') else num('GCUT', 1e300), ''))
     tb.word('CODCONV=' + fmt_real(num('CODCONV', 1.0), 'S8.3'))
-    tb.word('EMITDIV=' + fmt_real(num('EMITDIV', 1.0), ''))
+    from . import compat as _cp
+    tb.word('EMITDIV=' + fmt_real(num('EMITDIV', _cp.emitdiv_default()), ''))
     tb.word('EMITDIVB=' + fmt_real(num('EMITDIVB', 1.0), ''))
     tb.word('EMITDIVQ=' + fmt_real(num('EMITDIVQ', 1.0), ''))
     tb.word('EMITDIVS=' + fmt_real(num('EMITDIVS', 1.0), ''))

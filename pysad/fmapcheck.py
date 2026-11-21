@@ -68,7 +68,11 @@ def linear_tunes(setup, dp=0.0, loc=1, design=None):
             cand += [a, 1.0 - a]
         out.append(min(cand, key=lambda v: abs(v - d)))
     # x 的と y 的が同じ固有値を選ばないように (結合が強いとき)
-    stable = bool(np.max(np.abs(np.abs(w) - 1.0)) < 1e-6)
+    # v2.4.0: RAD ON (放射減衰) や RFSW ON (z との結合) の追跡の 1 周の行列は固有値の絶対値が 1 から少し下がる (1 周の減衰 ~1e-3)。それは不安定ではない。
+    # 不安定 = 絶対値が 1 を超える (成長)、または減衰が 1 周で 5% を超える (RAD ON でも起こらない) / RAD・RFSW OFF では 1e-6 を超えるずれ
+    aw = np.abs(w)
+    low = 0.05 if (getattr(setup, 'rad', False) or getattr(setup, 'rfsw', False)) else 1e-6
+    stable = bool(np.max(aw) - 1.0 < 1e-6 and np.min(aw) > 1.0 - low)
     return dict(nu=tuple(out), stable=stable, orbit=c)
 
 

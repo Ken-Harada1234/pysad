@@ -2347,7 +2347,8 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         if spch is not None and spch.wspac:      # v2: WSPAC (twspac。要素の入口で、前の要素の中点からこの要素の中点までの分)
             spch.wkick(S, n, prog.l0 + l_el, ph)
         if spch is not None and spch.handles(kind, prog.l0 + l_el):
-            n = spch.element(S, n, kind, pr, prog.l0 + l_el, ph, apert, k_drift,
+            ap_sp = apert if (apert is None or lmap is None) else (apert[0], apert[1], _kt(prog.l0 + l_el + 1)) + tuple(apert[3:])    # LOSSMAP: 空間電荷の絞りの l_track = この要素の番号 (spkick.f の tapert)
+            n = spch.element(S, n, kind, pr, prog.l0 + l_el, ph, ap_sp, k_drift,
                              lambda S_, n_, a_, bz_: _ext().k_sol_drift(S_, n_, a_, bz_, False, fluc, rs, p0, anrad, cuc))
             if n <= 0:
                 return 0

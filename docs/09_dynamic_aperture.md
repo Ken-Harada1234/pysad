@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17 (現状のスナップショット)。
 
-確認状況 (2026-11-17 時点): [`pysad/dapert.py`](../pysad/dapert.py) の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14。`Damping->True` は SADError、`DampEnough`・`ReferenceOrbit` は読まない (`dapert.py` の冒頭と `ffscmd.fn_dasurvey` で確認)。
+確認状況 (2026-11-17 時点): [`pysad/dapert.py`](../pysad/dapert.py) の最終更新は 2026-10-16、`bench_level16a.sad` は 2026-10-14。`Damping->True` は SADError、`DampEnough` は読まない (`dapert.py` の冒頭と `ffscmd.fn_dasurvey` で確認)。`ExpandElementValues`・`ReferenceOrbit` は v2.4.0 で読む (下記)。
 DA の 16a (QUICK=1 では SKIP される 4 件の 1 つ) は、[`pysad/track6n.py`](../pysad/track6n.py) の最新の更新 (2026-11-17。APERT 要素の追跡) のあとも単独で実行して PASS (最大差 1.4e-31)。16a の結果 (RAD+FLUC の乱数列を含む) は変わっていない。
 未確認: 20 small (実ラティス、RAD+FLUC、100 周) と実寸の DynamicApertureSurvey (5000 周) は再実行していない (長い計算のため)。`l_track=0` の修正 (セッション最初の TrackParticles で、最初から LOSSAMPL の外にいる粒子は最初の tapert で落ちない) は TrackParticles (`TrackRun`) 側の変更である。DA の `tapert` (`dapert.py`) への影響は、16a が通る範囲でしか見ていない。
 
@@ -158,7 +158,8 @@ DampEnough 用の閾値 `aenox/y/z = (振幅²)·em²·dampenough` もここで�
 | 進捗 | `progress` 引数 / 環境変数 `PYSAD_PROGRESS` / グローバル `PYSAD$PROGRESS` | N 周ごとに生存数と経過秒を表示 |
 | 落ちる粒子の乱数 | `track6n` の `sqrt1`/`pxy2dpz` (max(1e-200,·))、`asinz(NaN)=-π/2`、`norm2_3`、`gfloor` (NaN で gmin)、`rot1` (th2=0 は回さない)、`Prog.la_count` (DRIFT/MARK/MONI は la を減らさない) | 発散した粒子が tapert で除かれるまでの乱数の引き方 (θ=π/2 なら約 100 個、NaN なら 1 個) を SAD と揃える。SAD デバッグ版との再同期テスト で 30 周分の seed が一致 (`history/work_loss_rng.md`, `history/work_loss_rng2.md`、docs/08 §7) |
 
-**未対応**: `Damping->True` (SADError)、`DampEnough` (無視)、`ReferenceOrbit` (読まない)、`ExpandElementValues`、
+**v2.4.0 で対応**: `ExpandElementValues->False` (成分ごとの値を揃えない。既定 True は揃える。gs の help: 'Machine errors may be reset') と `ReferenceOrbit->{x0,px0,y0,py0,z0,dp0}` (その軌道のまわりで追跡。`Default` は emit の閉軌道)。以前は常に揃えて ReferenceOrbit は読まなかったので、補正した COD・K0 を持つリングで gs と DA が違った (DDBA v07_14 の誤差の例: gs 34σ・29σ、以前の pysad は補正が消えた状態の 0〜38σ。`docs/history/v24_A.md` §A5、試験 `test_v24_A5_dapert_options.py`)。
+**未対応**: `Damping->True` (SADError)、`DampEnough` (無視)、
 DAPWIDTH<51 の窓 (常に行全体を起動するので、損失が多いときの起動順と NP 上限が SAD と異なる)、NPARA>1 の fork、
 nw=16 周ごとの詰め替え (全粒子を同時に起動するので不要)、Output が 6 以外のユニット、tftrad の n1=0 経路。
 

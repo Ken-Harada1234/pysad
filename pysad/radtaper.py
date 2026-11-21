@@ -115,7 +115,7 @@ def solve(els, momentum_eV, dp0=0.0, fshift=0.0, charge=1.0, amass=None, tol=1e-
     it = 0
     for it in range(1, maxit + 1):
         elt = tapered(els, s, u)
-        cod, trf0, fnd, _ = _e.closed_orbit6d(elt, ph, True, True)
+        cod, trf0, fnd, _ = _e.closed_orbit6d(elt, ph, True, True, k64_continue=False)      # RADTAPER は収束した軌道が要る (B163 の k64 の「収束しない軌道から続行」は使わない)
         if not fnd or not np.all(np.isfinite(cod)):
             break
         prof = _profile(elt, cod, ph, trf0)

@@ -20,6 +20,21 @@ import numpy as np
 import pytest
 
 from pysad import ffscmd, emit6d, spin, track6, compat
+import os
+
+
+@pytest.fixture(autouse=True, scope='module')
+def _emitdiv_default_1():
+    """参照値は EMITDIV = 1 で作った。v2.4.0 から POL ON の v2 の既定は 16 (docs/history/v24_RAD.md §5) で、スピンの広がりが 6% 動くので 1 に固定する"""
+    old = os.environ.get('PYSAD_EMITDIV_DEFAULT')
+    os.environ['PYSAD_EMITDIV_DEFAULT'] = '1'
+    try:
+        yield
+    finally:
+        if old is None:
+            os.environ.pop('PYSAD_EMITDIV_DEFAULT', None)
+        else:
+            os.environ['PYSAD_EMITDIV_DEFAULT'] = old
 
 
 # ------------------------------------------------------------------ B39

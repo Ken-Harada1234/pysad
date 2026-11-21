@@ -1,0 +1,17 @@
+kek-ls_v03_12.lat (3 GeV、603 m、20 セル): 4 位置、誤差 level 1.00
+誤差なし: 151 s、警告 []
+誤差を与えた要素 {'quad': 440, 'sext': 520, 'bend': 600}、閉軌道 cod1 (x, y) = (3.000e+30, 3.000e+30) m、残差 2.3e-20
+fmapcheck: ["('rfsw', 'RFSW ON: 空洞が働き z が 1 周ごとに 0 に戻らず、δ が (自然クロマティシティ) × z の変調を受ける。D はシンクロトロン振動 (νs 周期、周回数が 1/ν", "('rad', 'RAD ON: 放射減衰・励起で振幅が周ごとに変わり、前半・後半のチューンの差は減衰によるチューンの動きで、D は振幅に依る拡散ではなく減衰の指標になる(ASTRID2: D の中央", "('errors', '誤差つき (ずれ・ロールあり): 周期性がなく、結果は位置  の初期条件に固有 (他のセル・位置では違う)。閉軌道はずれ、D > −5 の割合は誤差なしより大きい (ASTRI", "('unstable', '誤差つきの線形の運動が不安定、または閉軌道が求まらない (閉軌道まわりの 1 周の行列の固有値が円の上にない)。周波数マップは意味を持たない')"]
+Traceback (most recent call last):
+  File "D:\work\SAD-master\Claude outputs\example\v2_4\A4_lma_support.py", line 89, in <module>
+    main(a[0] if a else 'k64', int(a[1]) if len(a) > 1 else 2, float(a[2]) if len(a) > 2 else 5.0, int(a[3]) if len(a) > 3 else 8)
+  File "D:\work\SAD-master\Claude outputs\example\v2_4\A4_lma_support.py", line 79, in main
+    r = momentum_acceptance(st, locs, workers=workers, quiet=True, turncheck=0)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\work\SAD-master\Claude outputs\pysad\lma.py", line 346, in momentum_acceptance
+    cods = setup.closed_orbit(locs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\work\SAD-master\Claude outputs\pysad\trksetup.py", line 289, in closed_orbit
+    self._orbits[l] = state_out(tr.S, tr.n)[0].copy() if l > 1 else c.copy()
+                      ~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: index 0 is out of bounds for axis 0 with size 0

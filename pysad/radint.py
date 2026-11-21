@@ -77,6 +77,8 @@ class RadInt:
         self.DKL2 = 0.0
         self.CKL0X = self.CKL0Y = self.CKL1X = self.CKL1Y = 0.0
         self.TETA = 0.0
+        self.ACC = None                     # v2: 要素の 4x4 行列と分散ベクトルの蓄積 [T, V] (極の分散の補正用)
+        self.POLE = False                   # v2: ANGLE=0・K0≠0 の極 (直線の基準軌道の中の磁場だけ) のスライス
         self.TM = np.zeros((4, 4))
         self.VM = np.zeros(4)
         self.TO = np.zeros((4, 4))
@@ -215,6 +217,9 @@ class RadInt:
         dx1 = self.TO @ tw[DXC:DPYC + 1]
         for i in range(4):
             tw[DXC + i] = dx1[i] + self.VO[i] * self.dp0
+        if self.ACC is not None:
+            self.ACC[1] = self.TO @ self.ACC[1] + self.VO
+            self.ACC[0] = self.TO @ self.ACC[0]
 
     @staticmethod
     def trot(tm, vm, teta):
@@ -257,16 +262,18 @@ class RadInt:
             F[1, i] = CKL0X * (R0I[0, 0] * eu + R0I[0, 1] * epu + R0I[0, 2] * ev + R0I[0, 3] * epv)
             F[2, i] = CURV2 * DL
             F[3, i] = CURV3 * DL
+            # 極 (v2): 基準軌道が直線なので I4 の被積分の h^3 (曲線座標の行路の項 x/ρ) は無い。2 K1 h η だけ
+            c0x, c0y = (0.0, 0.0) if self.POLE else (CKL0X, CKL0Y)
             if CURV > 0:
-                F[4, i] = ((CKL0X + 2.0 * CKL1X / CURV) * CURV2 * (R0I[0, 0] * eu + R0I[0, 1] * epu)
-                           + (CKL0Y - 2.0 * CKL1Y / CURV) * CURV2 * (R0I[2, 0] * eu + R0I[2, 1] * epu))
+                F[4, i] = ((c0x + 2.0 * CKL1X / CURV) * CURV2 * (R0I[0, 0] * eu + R0I[0, 1] * epu)
+                           + (c0y - 2.0 * CKL1Y / CURV) * CURV2 * (R0I[2, 0] * eu + R0I[2, 1] * epu))
             else:
                 F[4, i] = 0.0
             F[5, i] = CURV3 * (gu * eu * eu + 2.0 * au * epu * eu + bu * epu * epu) * DL
             F[6, i] = CKL0Y * (R0I[2, 0] * eu + R0I[2, 1] * epu + R0I[2, 2] * ev + R0I[2, 3] * epv)
             if CURV > 0:
-                F[7, i] = ((CKL0X + 2.0 * CKL1X / CURV) * CURV2 * (R0I[0, 2] * ev + R0I[0, 3] * epv)
-                           + (CKL0Y - 2.0 * CKL1Y / CURV) * CURV2 * (R0I[2, 2] * ev + R0I[2, 3] * epv))
+                F[7, i] = ((c0x + 2.0 * CKL1X / CURV) * CURV2 * (R0I[0, 2] * ev + R0I[0, 3] * epv)
+                           + (c0y - 2.0 * CKL1Y / CURV) * CURV2 * (R0I[2, 2] * ev + R0I[2, 3] * epv))
             else:
                 F[7, i] = 0.0
             F[8, i] = CURV3 * (gv * ev * ev + 2.0 * av * epv * ev + bv * epv * epv) * DL
@@ -307,6 +314,41 @@ class RadInt:
             self.CKL1Y = math.sin(teta1) * self.DKL1
         else:
             self.CKL1Y = -math.cos(teta1) * self.DKL1
+        self.TO, self.VO = self.trot(self.TM, self.VM, teta1)
+
+    def bmag_pole(self, teta1):
+        """v2: ANGLE=0・K0≠0 の BEND (挿入光源の極) のスライス。基準軌道は直線で、場 (DKL0/DL = h、K1) だけがある。
+        水平: x'' = -k x + h (δ 依存は η'' + k η = h)。扇形磁石の幾何学的な収束 h² も、曲線座標の行路の項 (I4 の h³) も無い。
+        垂直: y'' = +k y。"""
+        DL = self.DL
+        rk = self.DKL1 / DL
+        hp = self.DKL0 / DL
+        tm = np.eye(4)
+        vm = np.zeros(4)
+        if abs(rk) < 1e-14:
+            tm[0, 1] = DL
+            tm[2, 3] = DL
+            vm[0] = hp * DL * DL / 2.0
+            vm[1] = hp * DL
+        else:
+            w = math.sqrt(abs(rk))
+            p = w * DL
+            if rk > 0.0:
+                cx, sx_, ax = math.cos(p), math.sin(p) / w, -w * math.sin(p)
+                cy, sy_, ay = math.cosh(p), math.sinh(p) / w, w * math.sinh(p)
+            else:
+                cx, sx_, ax = math.cosh(p), math.sinh(p) / w, w * math.sinh(p)
+                cy, sy_, ay = math.cos(p), math.sin(p) / w, -w * math.sin(p)
+            tm[0, 0], tm[0, 1], tm[1, 0], tm[1, 1] = cx, sx_, ax, cx
+            tm[2, 2], tm[2, 3], tm[3, 2], tm[3, 3] = cy, sy_, ay, cy
+            vm[0] = hp * (1.0 - cx) / rk
+            vm[1] = hp * sx_
+        self.TM = tm
+        self.VM = vm
+        self.CKL0X = math.cos(teta1) * self.DKL0
+        self.CKL0Y = -math.sin(teta1) * self.DKL0
+        self.CKL1X = math.cos(teta1) * self.DKL1
+        self.CKL1Y = math.sin(teta1) * self.DKL1
         self.TO, self.VO = self.trot(self.TM, self.VM, teta1)
 
     def quadru(self, teta1, dx, dy):
@@ -409,8 +451,37 @@ def default_stale_rho(els):
     return (rho, rho) if rho is not None else (1.0, 1.0)
 
 
+def _has_poles(els):
+    return any(type(e).__name__ == 'Bend' and float(getattr(e, 'ANGLE', 0.0) or 0.0) == 0.0 and float(getattr(e, 'K0', 0.0) or 0.0) != 0.0
+               and float(e.L) != 0.0 for e in els)
+
+
 def compute(ffs, rows, stale_rho=None):
-    """INTGRL の本体。戻り: 結果の辞書 (RI, 補助量) と出力する行のリスト"""
+    """INTGRL の本体。戻り: 結果の辞書 (RI, 補助量) と出力する行のリスト。
+    v2 (B115): ANGLE=0・K0≠0 の極 (挿入光源) があるとき、CALC の分散 (rows) は極の分散の発生 (η' += K0 δ。K64 の CALC は入れない) を含まない。
+    そこで、要素ごとの 4x4 行列 T と極の分散ベクトル V を集める 1 周目で、周期解の補正 Δ (Δ = T Δ + V_pole) を求め、
+    2 周目で各要素の分散の初期値に Δ を足す。I1・I4・I5 が極の中も含めた正しい分散で積分される"""
+    if _compat.v2() and _has_poles(ffs.els):
+        coll = []
+        _compute_pass(ffs, rows, stale_rho, None, coll)
+        M = np.eye(4)
+        P = np.zeros(4)
+        for T, V, pole in coll:
+            M = T @ M
+            P = T @ P + (V if pole else 0.0)
+        try:
+            d = np.linalg.solve(np.eye(4) - M, P)
+        except np.linalg.LinAlgError:
+            return _compute_pass(ffs, rows, stale_rho, None, None)
+        seeds = []
+        for T, V, pole in coll:
+            seeds.append(d.copy())
+            d = T @ d + (V if pole else 0.0)
+        return _compute_pass(ffs, rows, stale_rho, seeds, None)
+    return _compute_pass(ffs, rows, stale_rho, None, None)
+
+
+def _compute_pass(ffs, rows, stale_rho, seeds, coll):
     g = _STATE
     els = ffs.els
     nlat = ffs.nlat
@@ -445,7 +516,11 @@ def compute(ffs, rows, stale_rho=None):
         vec[EX], vec[EPX], vec[EY], vec[EPY] = twpin.etx, twpin.etpx, twpin.ety, twpin.etpy
         vec[R1], vec[R2], vec[R3], vec[R4], vec[DETR] = twpin.r1, twpin.r2, twpin.r3, twpin.r4, twpin.detr
         vec[DXC], vec[DPXC], vec[DYC], vec[DPYC] = twpin.x_cod, twpin.px_cod, twpin.y_cod, twpin.py_cod
+        if seeds is not None:
+            vec[EX], vec[EPX], vec[EY], vec[EPY] = (vec[EX] + seeds[j - 1][0], vec[EPX] + seeds[j - 1][1],
+                                                    vec[EY] + seeds[j - 1][2], vec[EPY] + seeds[j - 1][3])
         g.TWPMG = vec
+        g.ACC = [np.eye(4), np.zeros(4)] if coll is not None else None
         di = np.zeros(NRI + 1)
         dieg = np.zeros(NRI + 1)
         g.CKL0X = g.CKL0Y = g.CKL1X = g.CKL1Y = 0.0
@@ -483,17 +558,21 @@ def compute(ffs, rows, stale_rho=None):
             elif v2 and rle != 0.0 and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0:
                 # v2 (A2、docs/history/v2next_A2.md §3): ANGLE=0 で K0≠0 の BEND (挿入光源の極: 基準軌道は曲がらず、場だけがある) は、K64 では
                 # 放射積分に入らない (Emittance[] と追跡には入る)。K0 を曲げ角として扱う (端の角はなし。tbende の ANGLE=0 の枝と同じ)。
-                # 基準軌道の回転は無いので TOTAL BENDING ANGLE には足さない。極の中の分散の伝搬は扇形磁石の行列の近似 (θ² の相対誤差)
+                # 基準軌道の回転は無いので TOTAL BENDING ANGLE には足さない。極の中は直線の基準軌道の中の場だけ (bmag_pole: 扇形の収束 h² も I4 の h³ も無い。独立な積分と 1e-6 で一致、docs/21 B115)
                 k0 = float(el.K0)
                 ir = min(14, max(1, int(abs(k0) / 0.002)))
                 irp = 2 * ir
                 g.DL = rle / irp
                 g.DKL0 = k0 / irp
                 g.DKL1 = rkl1 / irp
-                for i in range(1, irp + 1):
-                    g.bmag(g.TETA, rle / k0, rle / k0)
-                    g.tcal(i, 0)
-                g.tcal(irp + 1, 1)
+                g.POLE = True
+                try:
+                    for i in range(1, irp + 1):
+                        g.bmag_pole(g.TETA)
+                        g.tcal(i, 0)
+                    g.tcal(irp + 1, 1)
+                finally:
+                    g.POLE = False
                 did = True
         elif cls == 'Quadrupole':
             rkl1 = ffs.get_value(el, 'K1')
@@ -556,6 +635,10 @@ def compute(ffs, rows, stale_rho=None):
                 rfv, rharm, freq = v1, rharm1, freq1
         elif v2 and cls in ('Multipole', 'Solenoid') and _has_field(ffs, el):
             skipped.append(el.name)
+        if coll is not None:
+            is_pole = bool(v2 and cls == 'Bend' and float(el.ANGLE) == 0.0 and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0 and rle != 0.0)
+            coll.append((g.ACC[0].copy(), g.ACC[1].copy(), is_pole))
+            g.ACC = None
         if did:
             for i in range(1, NRI + 1):
                 di[i] = _symps(g.FUNI[i, 1:], ir) + dieg[i]

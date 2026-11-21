@@ -123,3 +123,22 @@ def set_bend_dk_fix(m):
 def bend_ecorr_flags():
     """CALC の BEND (K1≠0) の補正カーネル (perfkern_bend.bendecorr) に渡す整数の旗: 1 = K1 の定義 'lin' (B160)、2 = B161 の dk の修正"""
     return (1 if bend_k1_lin() else 0) | (2 if bend_dk_fix() else 0)
+
+
+# ---------------------------------------------------------------------------------------------
+# EMITDIV の既定 (v2.4.0)。Emittance[]・EMIT の放射の刻みの倍率。K64 の既定は 1 (k64 は常に 1)。
+# 1 では 1 刻みの放射の入れ方が粗く、εx が +1e-3〜+2e-2 大きい (大きなリング A +2.2%、PF +2.2e-3、矩形磁石の小リング +1.4e-3。
+# EMITDIV = 4 で 2e-4 以下、実行時間の増加は 0.1 s 以下。docs/47 v2.4.0)。v2 の既定は 4 (大域変数 EMITDIV を台本で与えれば、その値)。
+# 環境変数 PYSAD_EMITDIV_DEFAULT で変えられる (1 で K64 と同じ)。EMITDIVB・EMITDIVQ の既定は 1 のまま。
+# ---------------------------------------------------------------------------------------------
+def emitdiv_default(pol=False):
+    """EMITDIV の既定 (台本が EMITDIV を与えないとき)。k64 は 1、v2 は 4 (POL ON のスピンの計算は 16: 線形の脱偏極率の刻みの誤差が EMITDIV = 1 で +24%、
+    4 で +20%、16 で +4% (64 で収束 1.87e-8。4.2 GeV・12 MV の FODO。docs/history/v24_RAD.md §4))"""
+    if mode() != 'v2':
+        return 1.0
+    d0 = 16.0 if pol else 4.0
+    try:
+        v = float(os.environ.get('PYSAD_EMITDIV_DEFAULT', str(d0)))
+    except ValueError:
+        v = d0
+    return v if v > 0.0 else d0

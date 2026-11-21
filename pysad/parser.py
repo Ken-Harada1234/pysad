@@ -2253,6 +2253,14 @@ def parse_main_assignments(src: str) -> List[dict]:
                     val = _eval_main_expr(stmt[m.end():], vars_)
                 except (ValueError, RecursionError):
                     val = None
+                    # gs: `A = 3 B = 4;` は A = 3 を代入し、そのあとの `B = 4` を構文エラーにする (`B` は記号のまま、"=" と "4" がエラー)。
+                    # 数のあとに記号が続く形だけ、先頭の数を代入する (エラーの表示 ` *** main *** syntax error: ...` は出さない)
+                    m2 = re.match(r'\s*([-+]?(?:\d+\.?\d*|\.\d+)(?:[Ee][-+]?\d+)?)\s+[A-Za-z_$][\w$]*\s*=', stmt[m.end():])
+                    if m2:
+                        try:
+                            val = float(m2.group(1))
+                        except ValueError:
+                            val = None
                 if val is not None:
                     vars_[name] = val
                     if kind != 'VAR':

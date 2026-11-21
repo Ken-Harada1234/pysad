@@ -58,7 +58,7 @@ def test_b18_polynomialfit_k64_and_nonzero_mean(k64_mode):
     assert np.allclose(c, np.polyfit([1, 2, 3, 4, 5], [1, 0, 1, 4.1, 4], 2)[::-1], atol=1e-12)
     from pysad import compat
     compat.set_mode('v2')
-    assert _nums(_line(_run(body), 'P ')) == c
+    assert np.allclose(_nums(_line(_run(body), 'P ')), c, rtol=1e-14, atol=0)      # k64 の a/b は a*(1/b) (v2.4.0) なので最後の桁 (1 ulp) は違ってよい
 
 
 # ---------------------------------------------------------------- B71 For

@@ -262,3 +262,11 @@ SeedRandom[1, 2];
     assert 'No such random plugin in SeedRandom["x"]' in r[2]
     assert r[3] == '{"SAD",5,0,0,0}' and r[4] == '{"SAD",4294967291,0,0,0}' and r[5] == '{"SAD",1,0,0,0}'
     assert r[6] == '{"SAD",2306130011,1,787469756,1071741574}'
+
+
+def test_user_function_named_At_does_not_clash_with_member_ref():
+    """ユーザー定義の関数名 At は、メンバー参照 obj@name の内部の頭と別 (gs: 101)。"""
+    r = _lines('At[x_] := x + 100; Print["A ", At[1]];')
+    assert 'A 101' in r
+    r = _lines('Cc = Class[{}, {}, {x = 3}]; o = Cc[]; At[x_] := x + 100; Print["B ", o@x, " ", At[2]];')
+    assert 'B 3 102' in r

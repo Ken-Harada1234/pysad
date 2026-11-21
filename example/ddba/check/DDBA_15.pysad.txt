@@ -1,49 +1,50 @@
  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
 $$$       f AX    #######  #  1.1153E-5 $$$       f BX    #######  #   2.700037 $$$       f NX    #######  #  48.600034 $$$       f AY    #######  #  -5.148E-6 $$$       f BY    #######  #   3.699917 $$$       f NY    #######  #  12.700143
 $$$       f LENG  #######  #  731.40000
+ ???-Emittance[]-closed orbit not found.
 
     Closed orbit:
                   x     px/p0         y     py/p0         z     dp/p0 
-  Entrance :  1.978E-5  1.578E-6   .000000   .000000  -2.71E-6  3.428E-4
-      Exit :  1.978E-5  1.578E-6   .000000   .000000  -2.71E-6  3.428E-4
+  Entrance :  -1.12E-5  -1.45E-6   .000000   .000000  -5.37E-6  2.093E-8
+      Exit :  3.105E-5  -4.44E-7   .000000   .000000  5.371E-6  9.324E-8
 
     Extended Twiss Parameters
-AX: -.003586 BX: 2.707983                            ZX: 1.807E-4  EX:  .029884
-           PSIX: 3.00E-17                           ZPX: 3.137E-5 EPX:  .000000
-R1:  .000000 R2:  .000000 AY: -6.89E-4 BY: 3.700786  ZY:  .000000  EY:  .000000
-R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
-                                                     AZ: -.002006  BZ: 1.572117
-                                                                 PSIZ: 6.66E-18
+AX: -.003288 BX: 2.694982                            ZX: 1.809E-4  EX:  .029956
+           PSIX: 5.01E-18                           ZPX: 3.183E-5 EPX:  .000000
+R1:  .000000 R2:  .000000 AY:  .006434 BY: 3.699807  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY: -9.0E-19 ZPY:  .000000 EPY:  .000000
+                                                     AZ: -.002004  BZ: 1.571076
+                                                                 PSIZ: 1.38E-17
     Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
 
 Design momentum      P0 = 5.0000000 GeV Revolution freq.     f0 = 409888.51 Hz 
-Energy loss per turn U0 = 3.5278421 MV  Effective voltage    Vc = 7.0000000 MV 
-Equilibrium position dz = 50.478693 mm  Momentum compact. alpha = 4.2760E-5
+Energy loss per turn U0 = 3.5268091 MV  Effective voltage    Vc = 7.0000000 MV 
+Equilibrium position dz = 50.464125 mm  Momentum compact. alpha = 4.2706E-5
 Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 1218.0000
-Bucket height     dV/P0 =  .0760839     Synchrotron frequency   = 1297.6831 Hz 
+Bucket height     dV/P0 =  .0761492     Synchrotron frequency   = 1296.9076 Hz 
 
-  Imag.tune:-0.0000000           0.0000000          -0.0000000
-  Real tune:-0.3998949          -0.3001446          -0.0031659
+  Imag.tune:-0.0000000          -0.0000000          -0.0000000
+  Real tune:-0.3998201          -0.2999236          -0.0031640
 
     Damping per one revolution:
-          X : -7.458857E-04   Y : -3.526847E-04   Z : -3.121252E-04
+          X : -7.463374E-04   Y : -3.527024E-04   Z : -3.112429E-04
     Damping time (sec):
-          X :  3.270860E-03   Y :  6.917476E-03   Z :  7.816375E-03
+          X :  3.268880E-03   Y :  6.917129E-03   Z :  7.838533E-03
     Tune shift due to radiation:
-          X : -1.257730E-06   Y : -1.636199E-05   Z :  4.870827E-08
+          X : -1.267906E-06   Y : -1.639439E-05   Z :  4.783512E-08
     Damping partition number:
-          X :    2.1149       Y :    1.0000       Z :    0.8850
+          X :    2.1168       Y :    1.0004       Z :    0.8828
 
-Emittance X            = 9.6319E-10 m   Emittance Y            =  .00000000 m
-Emittance Z            = 3.24814E-6 m   Energy spread          =  .00143734
-Bunch Length           = 2.25983773 mm  Beam tilt              =  .00000000 rad
-Beam size xi           =  .06673592 mm  Beam size eta          =  .00000000 mm
+Emittance X            = 9.6006E-10 m   Emittance Y            =  .00000000 m
+Emittance Z            = 3.25236E-6 m   Energy spread          =  .00143875
+Bunch Length           = 2.26055484 mm  Beam tilt              =  .00000000 rad
+Beam size xi           =  .06667339 mm  Beam size eta          =  .00000000 mm
 Nominal spin tune      = 11.3469136     Polarization time      =   .0000000 min
 
 circumference [m] =  731.4000000000
 number of elements =  3124.000000000
 tune nx ny =   48.6000344423   12.7001425363
-EMITX [m rad] =  9.63186091E-10  SIGE =     .0014373384  SIGZ [m] =     .0022598377
+EMITX [m rad] =  9.60063327E-10  SIGE =     .0014387481  SIGZ [m] =     .0022605548
 MOMENTUM [eV] =  5000000000.000
 bends =  120.0000000000  sum of ANGLE [rad] =    7.2156292800  small-angle bends =   80.0000000000  quads =  220.0000000000  sexts =  600.0000000000  octs =     .0000000000  cavities =    1.0000000000
 CAVI total VOLT [V] FREQ [Hz] HARM =  7000000.000000  499244208.1542  1218.000000000

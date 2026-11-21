@@ -352,6 +352,8 @@ def install_small(I):
             I._in_message = False
         for k, v in enumerate(vals, 1):
             text = text.replace('`%d`' % k, I.to_str(v))
+        if (nm, tag) in getattr(I, '_msg_off', ()):
+            text = '$Off["%s"]' % text        # gs: Off[f::tag] のあとも Message[f::tag] は出る (本文が $Off["本文"] になる)
         I.write_unit(6, '???%s::%s:  %s' % (nm, tag, text) + chr(10))
         return Null
     B['Message'] = message

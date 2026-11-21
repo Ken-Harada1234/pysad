@@ -66,11 +66,11 @@ def _sb_fodo(ring, modes=3):
 @pytest.mark.parametrize('ring', ['RINGQ', 'RINGB'])
 def test_synchrobeta_fodo_start_point_v2(v2_mode, ring):
     """v2: 24 セルの FODO (3 GeV、RF 4 MV) を始点 QF (η = 0.70 m)・始点 BEND (η = 0.57 m) で走らせた SB が Emittance[] と 1e-3 で一致する
-    (K64 は 6.54 倍で、始点に依った: 下の k64 の試験)。Emittance[] は始点に依らない (2.7614e-7)"""
+    (K64 は 6.54 倍で、始点に依った: 下の k64 の試験)。Emittance[] は始点に依らない (2.7599e-7。v2.4.0 から EMITDIV の既定が 4。EMITDIV = 1 では 2.7614e-7)"""
     eta, em, sb = _sb_fodo(ring)
     assert eta > 0.5
     assert abs(sb / em - 1) < 1.5e-3, (sb, em)
-    assert abs(em / 2.761415674e-7 - 1) < 1e-6
+    assert abs(em / 2.759948349e-7 - 1) < 1e-6
 
 
 @pytest.mark.parametrize('ring,sb_gs', [('RINGQ', 1.7510378728578392e-6), ('RINGB', 1.7507988871340014e-6)])

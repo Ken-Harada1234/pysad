@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-20 (v2.3.0、S1 の検証を §9 に追加)
 
-関連: [docs/49 (共鳴駆動項・ADTS・クロマティシティ)](49_resonance_terms_adts.md)。**入門 (何をどう求めて何と比べたか) は [docs/50](50_adts_rdt_primer.md)**。
+関連: [docs/49 (共鳴駆動項・ADTS・クロマティシティ。v2.4.0 の J²・δ 依存は §13)](49_resonance_terms_adts.md)。**入門 (何をどう求めて何と比べたか) は [docs/50](50_adts_rdt_primer.md)**。
 
 K64 にない pysad の追加機能。1 つの位置の初期条件の格子から **周波数マップ** (チューンの拡散の地図) を作る機能と、位置 s ごとの **局所運動量アクセプタンス**
 (δ+(s)・δ−(s)) を求める機能。どちらも SAD の追跡 (`TrackParticles` と同じ損失判定の高速追跡、numba) の上に作り、SAD の台本から使える関数
@@ -20,7 +20,7 @@ FFS からは使えない (docs/history/work_main_track.md)。チューンの取
 | Touschek 寿命への受け渡し (s, δ+, δ−)、位置ごとの受容での寿命 | 対応 (既存の TouschekTable を使う) | `LMAResult.touschek_input`・`lma.touschek_lifetime_local` |
 | SAD の台本の関数 | 対応 (pysad のみ。gs では走らない) | `q1cmd.py` |
 | FLUC (量子励起) つきの LMA | 対応 (`TrackSetup.fluc = True`・`seed`。複数の種の平均・分散で使う。2 周期では効果は二分の幅以下、§4.5 (f))。周波数マップは S2 §10.3 | `lma.momentum_acceptance` |
-| 誤差つきのリング (位置のずれ・ロール、全周の追跡) | 周波数マップは走る (S1、ASTRID2、§9.4)。LMA・結合の強いリング・補正つきは未確認 | `fmapres.apply_alignment_errors` |
+| 誤差つきのリング (位置のずれ・ロール、全周の追跡) | 周波数マップは走る (S1、ASTRID2、§9.4)。LMA も走る (L2、ASTRID2 level 1・3 種。v2.4.0 A4: level 5 = 結合の見積もり |c−| 0.107 が差の共鳴までの距離 0.04 を超える強い結合・閉軌道 4.8 mm でも走る。大きなリング A は `docs/history/v24_A.md` §A4)。補正つき (COD 補正後) は閉軌道を Newton 法で求めるので補正の状態をそのまま使えるが、台本から取り込む経路は未検証 | `fmapres.apply_alignment_errors` |
 | δ を含む周波数マップ (x–δ、y–δ) | 対応 (既存の `frequency_map` の dp の格子。S1 で ASTRID2・KEK-LS を確認、§9.3) | `freqmap.frequency_map` |
 | 共鳴駆動項 (RDT)・ADTS からの共鳴の領域の予想 | 対応 (1 次の RDT が駆動する共鳴だけ。S1、§3.5・§9.1) | `fmapres.ResonancePredictor` |
 
@@ -245,6 +245,8 @@ dσ/dΩ = (4 r0²/k⁴) (4/sin⁴θ − 3/sin²θ) で、散乱で δ が a+ を
 検証 (`example/v2_3/T2_*`、[`docs/history/v23_T2.md`](history/v23_T2.md)): 3 次元の一般の積分と実験室系の対のモンテカルロ (厳密な相対論の運動学) に 0.3% 以内、elegant (全要素を 8 分割した標本化) と −1.3〜+0.1%、K64 の表は −14〜+21%。
 elegant の `touschekLifetime` は要素の出口だけを標本化するので、粗いリングでは寿命が +1〜+5% 長く出る。
 
+**バンチ内の δ の分布 (v2.4.0 A3、オプション)**: 台本 `TouschekLifetimeLMA[BunchDelta->True]`・`lma.touschek_lifetime_local_piwinski(bunch_delta=True)`・`touschek_bunch.touschek_piwinski_bunch`。散乱後の粒子の δ は δ_c + Δ (δ_c = 対の重心の δ ~ N(0, σδ²/2)、Δ は相対運動量の散乱だけで決まる) なので、受容を a ∓ δ_c にして平均する。受容が σδ の 8〜14 倍のとき損失率は ASTRID2 で +1.3〜+2.7%、KEK-LS で +1.8〜+4.3% 増える (寿命が短くなる)。実験室系の 2 粒子の対のモンテカルロ (厳密な相対論の運動学) で δ_c の効果が 2% 以内で再現される。**既定は入れない**: 相対運動量の縦成分 q_s の効果 (MC で通常の kick の判定より損失率が ASTRID2 で 2%・KEK-LS で 0.5% 小さい、つまり絶対値の判定との差がその分大きい) は `BunchDelta->True` だけでは入らない。**v2.4.0 A10: `BunchQs->True` を足すと q_s の効果も入る** (3 次元の積分 `touschek_bunch.qs_ratio`。絶対値 / kick の損失率の比が MC と ASTRID2 +4.81・+2.22% (MC +4.84・+2.22%)、KEK-LS +4.5・+1.7% (MC +4.5・+1.8%) で 0.3% 以内。12 スライスで求めて補間するので全周で 70 秒。ASTRID2 全周で a/σδ = 9・14・23 の寿命が δ_c = 0 に対し δ_c だけ −2.5・−1.2・−0.5%、q_s も入れて −4.1〜−4.3・−1.9・−0.7% (補間の不確かさ ±0.3%))。elegant・K64・Piwinski の式は kick の基準を δ_old = 0 とし、elegant の `touschekLifetime` には δ の分布を入れる機能が無い。a ≲ 3σδ では使えない (警告)。詳細・限界は `pysad/touschek_bunch.py` の冒頭と `docs/history/v24_A.md` §A3、検証は `example/v2_4/A3_mc_bunch.py`。
+
 ### 4.5 信頼して使うための条件と警告 (`pysad/lma.py`・`pysad/lmabucket.py`、v2.3.0 L2)
 
 LMA の信頼性の基準: (1) 解析・追跡・elegant の比較が条件つきで揃っている、(2) 既知の不一致に原因がある、(3) 既定で安全な値を返す、(4) 使えない条件で警告を出す。条件は ASTRID2 (0.58 GeV、45.7 m、δ_rf = 1.618%、νs = 0.00152) と
@@ -335,7 +337,7 @@ check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プ
 - 1 セルの結果を全周に延ばす (`touschek_lifetime_local` の period) のは、RF の位置の違い (空洞が 1 か所) と閉軌道の δ の違いを無視する。別のセルの同じ位置との差は、ASTRID2 (U0/E0 = 1e-5) で 5e-6〜2.6e-5、大きなリング A (U0/E0 = 1e-4) で 4.9e-5 以下 (§4.5 (e))。U0/E0 が tol (1e-4) より大きいリングは未確認。周期でない (誤差・挿入光源) ときは警告する。
 - 線形の見積もり `lma.linear_momentum_limit` は水平の分散・ベータ関数だけを使う (垂直の分散・結合・非線形を入れない)。
 - 損失の判定の位置は要素の境界。要素の中の損失は見ない。
-- 互換モードは v2 で確かめた。**k64 の周波数マップは S1 で確かめた** (ASTRID2・KEK-LS で v2 と同じ、チューンの差 5e-11、§9.6)。LMA の k64 は未確認 (k64 の最初の tapert の扱い (B33) の違いは見ていない)。
+- 互換モードは v2 で確かめた。**k64 の周波数マップは S1 で確かめた** (ASTRID2・KEK-LS で v2 と同じ、チューンの差 5e-11、§9.6)。**LMA の k64 は v2.4.0 A4 で確かめた** (ASTRID2 の 8 位置で v2 と δ± が 6e-8 以内。check_every = 1。k64 の最初の tapert の扱い (B33) の違いは check_every = 0 のときだけで、見ていない)。
 - 周波数マップの D の絶対値の閾値 (D > −5 など) は周回数・窓で動く (周回数 2 倍で約 −1、§9.2)。S2 で 1024 周への換算 `D_norm` を足した (§3.6、§10.5。512〜4096 周)。RDT・ADTS の予想は 1 次の共鳴だけで、ASTRID2 の D の大きい領域 (νx − νy = 3 など 2 次の共鳴) は予想できない (§9.1)。
 - 並列 (`workers` ≥ 2) は子プロセス (Windows の spawn) を使うので、Python のスクリプトは `if __name__ == '__main__':` の中から呼ぶ。台本の関数 `MomentumAcceptance[]` の `Workers` も同じ。
 - numba のカーネル (`track6n.py` など) は編集していない。最初の呼び出しはコンパイルのキャッシュで数秒かかる。

@@ -129,10 +129,12 @@ Exit;
 '''
 
 
-def test_wspac_last_slice_uses_gammab_zero_in_k64_and_physical_p1_in_v2():
+def test_wspac_last_slice_uses_gammab_zero_in_k64_and_physical_p1_in_v2(monkeypatch):
     """K64 の tintrb の最後のスライス (l = nlat) は twspace で gammab(nlat+1) = 0 を読み p1 が半分になり、そのレンズが 8 倍強い (gs で確認:
     GAMB 391.39 0.000 195.70)。k64 はこれを再現し (チューンシフト −4.35546e-3・−8.84782e-3 が gs と全桁一致)、v2 は物理的な p1 を使う
     (シフト −4.13862e-3・−8.46689e-3: ラスレットの式と 0.15%。v2 は A・C の修正でゼロ電流の光学も少し違う)"""
+    # 参照値は EMITDIV = 1 で作った (v2.4.0 から v2 の既定は 4 で、この低エミッタンスの FODO ではシフトが 5% 動く: 1 → −4.129e-3、4 → −4.305e-3、32 → −4.339e-3)
+    monkeypatch.setenv('PYSAD_EMITDIV_DEFAULT', '1')
     old = compat._mode
     try:
         res = {}

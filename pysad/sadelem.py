@@ -85,6 +85,8 @@ def install(ffs):
             return value_of(fam, dk) if dk else 0.0
         if K not in sadkw.KEYWORDS.get(tn, []):
             return 0.0
+        if K in ('EMITX', 'EMITY', 'EMITZ', 'SIGE') and ffs.els and el is ffs.els[0]:
+            return float(ffs.line_value(K, 1))          # 先頭 MARK の値が 0 以下なら USE の時点のグローバル (LINE[..., 1] と同じ)
         try:
             return float(ffs.get_value(el, K))
         except (TypeError, ValueError):

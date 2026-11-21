@@ -214,7 +214,7 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 | B111 | tradke (Emittance[]・閉軌道) の放射の反作用の角度の項の符号が tradkn (追跡) と逆。RADCOD の閉軌道が追跡で閉じない (小リングで x 4e-7 m) | 符号を反転 (`ddpx`・`ddpy` と行列 D・B の微分)。RADTAPER の追跡の BEND の重みも tturne と同じ (3δ_l + δ_l+1)/4 | 閉軌道の 1 周の追跡の動きが 4e-7 → 1e-9 m (小リング)、大きなリング A −2.0e-8 → −4.5e-11 m。**v2 の Emittance[] (RADCOD) は gs と 1e-4〜1e-3 ずれる** (ε_x +1.9e-4、U0 +1e-7。大きなリング A)。符号は導出と閉軌道の閉じ方による (K64 の作者の意図の裏づけは無い) |
 | B112 | 放射の古典半径が質量によらない (`re0 = elradi`)。陽子 (30 GeV/c) の U0 が 1.2651 eV | `re0 = elradi·elmass/amass` | 古典式 U0 = (2/3) r_p mc² β³γ⁴ Σθ²/L = 6.88e-4 eV と追跡の 1 周の δ が 1e-6。電子は両モードで同じ |
 | B114 | ずれた BEND の CALC (tbrote の出口) の dx1・dz1 の符号 | 出口も入口と同じ回し方 | 厳密な幾何と CALC が 2e-8。矩形磁石 1 台の DX = 2 mm でチューンが動かない (K64 は 2.7e-5) |
-| B115 | RADINT が ANGLE=0・K0≠0 の BEND (挿入光源の極) を無視 | K0 を曲げ角として積分に入れる (端の角なし) | ASTRID2 + MPW で U0 6.17 keV → 7.81 keV (Emittance[] 7.80 keV)。εx は 3.5%、Jx は 0.7% Emittance[] とずれる |
+| B115 | RADINT が ANGLE=0・K0≠0 の BEND (挿入光源の極) を無視 | K0 を曲げ角として積分に入れる (端の角なし) | ASTRID2 + MPW で U0 6.17 keV → 7.81 keV (Emittance[] 7.80 keV)。v2.4.0: 極を直線の基準軌道の場として積分 + CALC の分散の補正で、εx・Jx は RF なしの Emittance[] と 1e-4・2e-4 (docs/history/v24_RAD.md) |
 | B117 | K1≠0 の BEND の追跡 (tbendi) の端が薄い写像 | `DISFRIN=0` かつ端の角 ≠ 0 のとき CALC と同じ厳密な tbedge | 厳密な写像と 1e-10。CALC との行列の差 1.1e-5 → 4e-8 |
 | B107・B126 | RADINT の BMAG の CKL1Y = −cos θ·DKL1。QUADRU が四極自身の DX・DY を引かず K1<0 で勾配ベクトルの符号が逆 | CKL1Y = +sin θ·DKL1。(dx, dy) = 閉軌道 − 要素のずれ | I4U + I4V が物理的な I4 と 1e-7 (K64 は 1.6〜2.7%)。ΔJx = +0.0078 (追跡 +0.00781、K64 +0.0028) |
 | B106・B109 | tradke の b = bzh·0.5。tbgrote の trans(5,6) | b = bzh。コメントアウトされた式 | B106 は数値の効果が 1e-13 以下 (式の一貫性)、B109 は有限差分と 4e-12 (K64 は px² + py² 分) |
@@ -231,13 +231,13 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 
 | 機能 | 使える範囲 | 使えない・注意 |
 |---|---|---|
-| RADINT | BEND (K1 つきも)・QUAD・SEXT のリングと輸送路 (INS)。先頭が SEXT でもよい。空洞が複数あってもよい (同じ周波数)。GX・GY は一次の色収差 dν/dδ | MULT・SOL は積分に入らない (表示が出る)。ANGLE≠0 の BEND の K0 は入らない (ANGLE=0 の K0 の極は v2 で入る: B115。εx は Emittance[] と 3.5%)。結合のあるリングの V 面 (I4V) は v2.1.0 で確認 (I4U + I4V が独立な I4 と 1e-7、DU・DV・Je が 1 次の摂動論と 3e-3。K1≠0 の BEND は B107 の修正後)。軌道のずれのある四極は入る (B126)。SEXT・BEND のずれは入らない。空洞は VOLT を単純に足す (PHI を見ない。位相の違う空洞のベクトル和にするかは仕様の判断)。I1〜I5 は独立な積分 (大きなリング A・B・PF・ASTRID2) と 1e-6 以下 |
+| RADINT | BEND (K1 つきも)・QUAD・SEXT のリングと輸送路 (INS)。先頭が SEXT でもよい。空洞が複数あってもよい (同じ周波数)。GX・GY は一次の色収差 dν/dδ | MULT・SOL は積分に入らない (表示が出る)。ANGLE≠0 の BEND の K0 は入らない (ANGLE=0 の K0 の極は v2 で入る: B115。v2.4.0 で εx も RF なしの Emittance[] と 1e-4)。結合のあるリングの V 面 (I4V) は v2.1.0 で確認 (I4U + I4V が独立な I4 と 1e-7、DU・DV・Je が 1 次の摂動論と 3e-3。K1≠0 の BEND は B107 の修正後)。軌道のずれのある四極は入る (B126)。SEXT・BEND のずれは入らない。空洞は VOLT を単純に足す (PHI を見ない。位相の違う空洞のベクトル和にするかは仕様の判断)。I1〜I5 は独立な積分 (大きなリング A・B・PF・ASTRID2) と 1e-6 以下 |
 | Emittance[]・EMIT | 端の角のある偏向磁石 (E1・E2)、勾配つき偏向磁石。Jx は解析値と 1e-3 (既定)、`EMITDIV=20` で 1e-4 | ANGLE=0 の BEND (補正磁石・挿入光源の極) の AE1・AE2 の端の角は K64 が端の項を約 2 倍にする (B108。v2 は直した)。K1≠0・K0≠0 の ANGLE=0 BEND と MULT の端の角 (AE) は pysad が読まず未確認。既定の分割 (EMITDIV=1) では低エミッタンスのリング (大きなリング A) で εx が 2.1% 大きい (`EMITDIV=5` で 8e-5)。v2 の Emittance[] と RADINT が矩形磁石で 1.4e-3 違う (SP8 (大きなリング B)。未調査) |
 | MomentumCompaction・BucketHeight・BunchLength (RFSW OFF) | I1/C と 2e-4 | — |
 | CALC のチューン・結合 (ロール + ずれのある BEND・6 極・薄い四極・空洞) | 追跡の一周写像と一致 (6 極 1e-9、BEND 4e-6) | ずれた BEND の CALC は v2 で追跡と一致 (B114。矩形磁石 1 台の DX = 2 mm でチューンが動かない。k64 は 2.7e-5 動く)。K1≠0 の BEND は B117 の修正で追跡と 4e-8。CALC の解析行列は y ≠ 0 の軌道で自身の写像の数値微分と y = 2 mm で 1.5e-6 違う |
 | Polarization (POL) | docs/43 | docs/43 |
 
-**要判断・直していない**: K1=0 の BEND の追跡のスピン (tbend + tradk) が Emittance[]・tbendi (v2) と 2.2e-5 rad 違う (放射の分割が粗く、スライスの前のエネルギーで歳差を計算する。K64 の精度の範囲)、tthine (長さのある6 極など) の bsir0 (B110。次元が合わない式だが放射なしで呼ばれ入口と出口で打ち消すので影響なし)、RADCOD の 1 周の解析 T と写像の数値微分の 2e-3 の差 (K64 の tradke の微分が近似)、RADINT の SEXT・BEND のずれ、K0 の極の εx (3.5%)、tradke の符号 (B111) と RADTAPER の重みの選択 (「閉じる」を根拠にした判断で、gs の Emittance[] (RADCOD) と 1e-4〜1e-3 違う)。詳細は docs/47 の v2.1.0 の (d) と docs/46。
+**要判断・直していない**: K1=0 の BEND の追跡のスピン (tbend + tradk) が Emittance[]・tbendi (v2) と 2.2e-5 rad 違う (放射の分割が粗く、スライスの前のエネルギーで歳差を計算する。K64 の精度の範囲)、tthine (長さのある6 極など) の bsir0 (B110。次元が合わない式だが放射なしで呼ばれ入口と出口で打ち消すので影響なし)、RADCOD の 1 周の解析 T と写像の数値微分の 2e-3 の差 (K64 の tradke の微分が近似)、RADINT の SEXT・BEND のずれ、tradke の符号 (B111) と RADTAPER の重みの選択 (「閉じる」を根拠にした判断で、gs の Emittance[] (RADCOD) と 1e-4〜1e-3 違う)。詳細は docs/47 の v2.1.0 の (d) と docs/46。
 
 ### v2.1.0 の追加 (F1・FRINGE・K0 の極・WSPAC・SynchroBeta の警告)
 
