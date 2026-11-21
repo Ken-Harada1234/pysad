@@ -98,7 +98,7 @@ def test_dump_format_matches_gs():
 
 
 def test_matrix_accepts_bare_element_names_like_gs():
-    """MATRIX [PHYSICAL] 名前 名前: 名前だけ (QF) は NAME.1。ラティスに無い名前は gs は読み飛ばし to=$$$ (esrf の disp_matrix で見つかった差)"""
+    """MATRIX [PHYSICAL] 名前 名前: 名前だけ (QF) は NAME.1。ラティスに無い名前は gs は読み飛ばし to=$$$ (kekls の disp_matrix で見つかった差)"""
     import io
     from pysad.ffscmd import run_sad_string
     src = """MOMENTUM = 3GEV;

@@ -2,7 +2,7 @@
 """不安定な光学の EMIT / INS + CALC6D / RFSW ON + RADCOD OFF の tcod (docs/history/work_emit_unstable.md) の回帰テスト。
 
 A. teigen.py (teigen.f の直訳) が固有値分解として正しい (A v = λ v)、tnorm が実固有値の対も扱える
-   + 不安定な ESRF (bench_level28c) の EMIT 報告が SAD と行単位で一致 (丸め雑音の桁を除く)
+   + 不安定な KEK-LS (大きなリング A) (bench_level28c) の EMIT 報告が SAD と行単位で一致 (丸め雑音の桁を除く)
 B. INS + CALC6D (bench_level30a: 先頭 MARK の 28 成分から 6D 伝搬) が SAD と 1e-9
 C. RFSW ON + RADCOD OFF + FSHIFT≠0 の Emittance[] (bench_level30b: tcod の 6D Newton の直訳) が SAD と 1e-10
 """

@@ -7,9 +7,9 @@ FFS;
  RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
    F     F     F     T     F     F     T     F     F     T     F     T
  PageWidth=1999;
- f = OpenWrite["C:/Users/coding/AppData/Local/Temp/tmpl8udzr04/a.txt"]; g = OpenWrite["C:/Users/coding/AppData/Local/Temp/tmpl8udzr04/b.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpl8udzr04/a.txt:
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpl8udzr04/b.txt:
+ f = OpenWrite["<temp>/tmpl8udzr04/a.txt"]; g = OpenWrite["<temp>/tmpl8udzr04/b.txt"];
+???General::fileopen:  Open error for file <temp>/tmpl8udzr04/a.txt:
+???General::fileopen:  Open error for file <temp>/tmpl8udzr04/b.txt:
  Write[f, "x"]; Write[g, "y"];
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Write[$Failed,"x"]
  Print["A ", Close[{f, g}]];

@@ -362,7 +362,7 @@ def test_k64_spdepol_rate_scales_as_emittance_over_damping_v2(v2_mode):
 # ================================================================== 項目 8: 不安定なリングの POL の Emittance[]
 def test_pol_emittance_of_unstable_ring_returns_nan_without_exception_v2(v2_mode):
     """v2: 光学が不安定で閉軌道が見つからないリング (四極が強すぎる) の POL ON の Emittance[] は、30 回の Newton 法・NaN の 1 周・要素ごとの
-    スピンの計算をやらずに NaN を返す (大きなリング B (8 GeV、1998 要素) の四極 60 台に DX・DY 0.1 mm rms: 以前は 20 分以上、今は 数分以内)。
+    スピンの計算をやらずに NaN を返す (SP8 (大きなリング B、8 GeV、1998 要素) の四極 60 台に DX・DY 0.1 mm rms: 以前は 20 分以上、今は 数分以内)。
     ここでは小さなリングで例外にならないことを確かめる"""
     src = _FODO % ('1', '3.0', 0.0, 'RFSW; RAD; NOFLUC; POL;')
     _f, out = _run(src.replace('Print["NR ", Emittances/.e, Tunes/.e, DampingRate/.e];', 'Print["NR ", Polarization/.e];'))

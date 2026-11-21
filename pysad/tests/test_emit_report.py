@@ -4,7 +4,7 @@
 (1) 四極 (ずれ・ロール・線形フリンジ FRINGE=1,2,3・K1<0) の解析ヤコビアン `emit6d._jac_quad_full` を、COD 写像の数値微分と比べる
     (z の行 (列 x,px,y,py) は SAD がシンプレクティック条件で作り直すので比べない。(5,6) は SAD の式で数値微分とは 1e-7 違う)
 (2) 薄い多極 (SEXT) のずれ・ロール付きの `lattice._thin_cod_matrix` が写像の数値微分と一致する
-(3) SAD K64 の EMIT 報告 (bench_level26a.result: ESRF の RFSW × RADCOD の 4 通り) と pysad の報告を行単位で突き合わせる
+(3) SAD K64 の EMIT 報告 (bench_level26a.result: KEK-LS (大きなリング A) の RFSW × RADCOD の 4 通り) と pysad の報告を行単位で突き合わせる
     (0 同然の雑音の桁 (|値|<1e-12) の差だけは許す)
 (4) SAD の FSHIFT (Orbit dilation) を Emittance の閉軌道に入れる (bench_level26a と同じ型の 1 ケース)
 """

@@ -207,7 +207,7 @@ LINE
         SDC     =(L =.045 K2 =-4.206799858141086 )
         SHA     =(L =.03  K2 =0 )
  ;
-! bench_level29d.sad -- FFS 内の ON/OFF flag: ESRF (pysad/tests/kek-ls_v03_12.lat 連結)
+! bench_level29d.sad -- FFS 内の ON/OFF flag: KEK-LS (大きなリング A) (pysad/tests/kek-ls_v03_12.lat 連結)
 ON RAD COD;
 FFS;
 NPARA = 1;

@@ -32,3 +32,28 @@ def k64_mode():
         yield
     finally:
         compat.set_mode(old)
+
+
+@pytest.fixture(autouse=True, scope='module')
+def _close_leftover_tk_windows():
+    """各試験ファイル (モジュール) のあと、残った Tk のルート窓 (tkinter.Tk()) を閉じる。GUI の試験の内容・結果は変えない。"""
+    yield
+    import gc
+    import sys
+    tk = sys.modules.get('tkinter')
+    if tk is None:
+        return
+    roots = []
+    try:
+        roots = [o for o in gc.get_objects() if isinstance(o, tk.Tk)]
+    except Exception:
+        pass
+    for r in roots:
+        try:
+            r.destroy()
+        except Exception:
+            pass
+    try:
+        tk._default_root = None
+    except Exception:
+        pass

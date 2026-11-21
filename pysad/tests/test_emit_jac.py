@@ -2,8 +2,8 @@
 """emit6d の解析ヤコビアン (st.piece(jac=...)) と tcod の直訳 (_tcod_radcod) の回帰テスト (docs/history/work_item6.md)。
 
 (1) 各要素写像の解析ヤコビアンを数値微分 (刻み 1e-6) と比べる
-(2) 要素ごとの piece の解析ヤコビアンを ESRF 1 セルのリング上で数値微分と比べる
-(3) ESRF 1 セルのリング (bench_item6_tiny.sad) の Emittance 相当を SAD の結果 (bench_item6_tiny.result) と比べる
+(2) 要素ごとの piece の解析ヤコビアンを KEK-LS (大きなリング A) 1 セルのリング上で数値微分と比べる
+(3) KEK-LS (大きなリング A) 1 セルのリング (bench_item6_tiny.sad) の Emittance 相当を SAD の結果 (bench_item6_tiny.result) と比べる
     RFSW OFF / RFSW / RFSW+RADCOD (RADCOD は tcod の z と trf0 の分け方まで SAD と一致する)
 """
 import os
@@ -115,7 +115,7 @@ def test_dv_derivative_is_h0_over_h1_cubed():
 
 
 # ---------------------------------------------------------------------------
-# ESRF 1 セルのリング: 解析ヤコビアンと数値微分の一致、SAD との照合
+# KEK-LS (大きなリング A) 1 セルのリング: 解析ヤコビアンと数値微分の一致、SAD との照合
 # ---------------------------------------------------------------------------
 
 TINY = """

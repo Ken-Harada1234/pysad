@@ -2,7 +2,7 @@
 
 最終更新: 2026-11-17
 
-pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD スクリプト (試験の中の文字列の台本) を、そのまま `scripts/NAME.sad` に取り出し、同じ台本を pysad と gs で走らせた画面表示を `NAME.pysad.txt`・`NAME.gs.txt` として並べたものです。ファイル名は `<試験ファイル名 (test_ を除く)>__<試験関数 (クラス名を含む)>` で、同じ試験に台本が複数あるときは `_2`、`_3`…が付きます。表は `py -3.12 pysad/tests/make_outputs_md.py` で作ります。`scripts/` の `.pysad.txt` は、試験が走るときの互換モード (`k64`、gs と同じ K64 の動作。`pysad/tests/conftest.py`) での出力で、既定の `v2` モードの出力ではありません。
+pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD スクリプト (試験の中の文字列の台本) を、そのまま `scripts/NAME.sad` に取り出し、同じ台本を pysad と gs で走らせた画面表示を `NAME.pysad.txt`・`NAME.gs.txt` として並べたものです。ファイル名は `<試験ファイル名 (test_ を除く)>__<試験関数 (クラス名を含む)>` で、同じ試験に台本が複数あるときは `_2`、`_3`…が付きます。表は `py -3.12 pysad/tests/make_outputs_md.py` で作ります。
 
 ## 読むときの注意
 
@@ -381,13 +381,96 @@ pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD ス
 | [`test_tclbridge.py`](test_tclbridge.py) | Tcl/Tk の接点 (pysad/tclbridge.py) と、SAD の Tkinter.n / KBMainFrame.n を pysad のインタプリタで動かした結果の試験。 |
 | [`test_track6n_ext.py`](test_track6n_ext.py) | track6n (numba) の MULT / ソレノイド領域 (track6n_ext のカーネルを track6n.Prog/turn に統合したもの) の照合。 |
 | [`test_unstable.py`](test_unstable.py) | 不安定ラインでの CELL CALC の続行と nstab の判定 (docs/history/work_unstable.md) のテスト。 |
+| [`test_v23_Q1_fmap_lma.py`](test_v23_Q1_fmap_lma.py) | v2.3.0 Q1: 周波数マップ (pysad/freqmap.py)、局所運動量アクセプタンス (pysad/lma.py)、共通の追跡設定 (pysad/trksetup.py)、SAD の台本の関数 |
+| [`test_v23_Q2_resdrive.py`](test_v23_Q2_resdrive.py) | v2.3.0 Q2: 6 極の共鳴駆動項・ADTS・クロマティシティ (pysad/resdrive.py)。 |
+| [`test_v23_R1_rfsw_adts.py`](test_v23_R1_rfsw_adts.py) | v2.3.0 R1: gs (SAD K64) の TrackParticles で、RF つきのラティスの 6 極 ×0 の ADTS が pysad (k64、rfsw=False) と食い違った原因。 |
+| [`test_v23_R2_adts_direct.py`](test_v23_R2_adts_direct.py) | v2.3.0 R2: ADTS の直接の検証 (実際の強さの追跡 + NAFF + J の多項式フィット、pysad/adtsdirect.py) と、 |
+| [`test_v23_R3_bend_cubic.py`](test_v23_R3_bend_cubic.py) | v2.3.0 R3: 偏向磁石の 3 次の項 (曲率 (h/2) x (px²+py²)・硬い端 ±(h/2) px y²・複合機能の本体・E1/E2≠0 の端) を入れた解析の ADTS |
+| [`test_v23_R4_rdt.py`](test_v23_R4_rdt.py) | v2.3.0 R4: 共鳴駆動項 (RDT) h_jklmp の解析式 (resdrive.resonance_terms) を、追跡から取り出した値 (pysad/rdttrack.py: 1 周の写像の 2 次のテイラー展開、 |
+| [`test_v23_R5_rdt4.py`](test_v23_R5_rdt4.py) | v2.3.0 R5: 4 次の共鳴駆動項 h_jklm (6 極の 2 次を含む、pysad/rdt2nd.py) の検証。 |
+| [`test_v23_S1_fmapres.py`](test_v23_S1_fmapres.py) | v2.3.0 S1: 周波数マップと RDT・ADTS の接続 (pysad/fmapres.py)、誤差つき・δ つき・k64・MPW つきの周波数マップ、gs との比較 (KEK-LS)。 |
+| [`test_v23_T1_elegant.py`](test_v23_T1_elegant.py) | v2.3.0 T1: elegant との比較 (局所運動量アクセプタンス・Touschek 寿命)。 |
+| [`test_v23_U1_bend_k1_field.py`](test_v23_U1_bend_k1_field.py) | v2.3.0 U1: K1≠0 の BEND (複合機能) の K1 の定義 (B160 の切り分け)。 |
+| [`test_v2_A1_next.py`](test_v2_A1_next.py) | 担当 A1 (v2next): N12 (INS の Twiss["DETR"])、TrackParticles の MASS・CHARGE (陽子)、ほか。 |
+| [`test_v2_A2_dx.py`](test_v2_A2_dx.py) | 担当 A2 (4): ずれた BEND (DX) の CALC (tbende の tchge) と追跡 (tbend の tbshift) の差。 |
+| [`test_v2_A2_pol.py`](test_v2_A2_pol.py) | 担当 A2 (2): v2 の Polarization (線形のスピン軌道結合 + Sokolov-Ternov) の独立な検証。 |
+| [`test_v2_A2_radint.py`](test_v2_A2_radint.py) | 担当 A2 (3): RADINT・Emittance[]・追跡の整合を、大きなリングで自前の積分と比べる。 |
+| [`test_v2_A2_spin.py`](test_v2_A2_spin.py) | 担当 A2 (1): example/07 の flag_POL_RADPOL で、500 周後のスピン角が gs・k64 (0.8794 rad) と v2 (1.1516 rad) で違う原因の切り分け。 |
+| [`test_v2_A_damping.py`](test_v2_A_damping.py) | v2 の修正 (担当 A): 放射減衰の分配 (Jx, Jy, Je) — 偏向磁石の端の角と、勾配つき偏向磁石。 |
+| [`test_v2_A_ffs.py`](test_v2_A_ffs.py) | v2 の修正 (担当 A): FFS まわり — B11 (4D の CALC の縦方向の Twiss 列)、B15 (UnstableLevel)、B16 (CalculateOptics の stabz・tracez)、 |
+| [`test_v2_A_radint.py`](test_v2_A_radint.py) | v2 の修正 (担当 A): RADINT (INTGRL.f) — B06・B07・B12・B13 と、量子寿命の単位 (R1)、色収差の積分 (R2)、MULT/SOL の警告 (R3)。 |
+| [`test_v2_A_spin.py`](test_v2_A_spin.py) | v2 の修正 (担当 A): スピン (POL) と SOL 内の放射 — B39 (tradke の dbeam(8))、B58・B64 (端の縦磁場の積分 bsir0)、B55 (平衡偏極度)。 |
+| [`test_v2_A_tchge.py`](test_v2_A_tchge.py) | v2 の修正 (担当 A): tchge (据え付け誤差の座標変換) — B09 (入口の回転が一周行列に入らない) と B56 (tbrote の srot の逐次更新)。 |
+| [`test_v2_A_track.py`](test_v2_A_track.py) | v2 の修正 (担当 A): 追跡の B14 (tsolqum の dv の項) と B08 (tsolqur が最後の粒子の bzp を全粒子に使う)。 |
+| [`test_v2_B1_optics.py`](test_v2_B1_optics.py) | 担当 B1 (v2next): 光学・Emittance の未対応の追加。 |
+| [`test_v2_B1_sol.py`](test_v2_B1_sol.py) | 担当 B1 (v2next 項目 6): SOL 領域内の POL (スピン)・加速 + RAD・bz ≥ 3 1/m の確認と、足りなかった DRIFT の刻み。 |
+| [`test_v2_B2_free.py`](test_v2_B2_free.py) | 成分ごとの FREE (K64 の tffsfreefix の comp 分岐、`FREE QF.1 K1;`・`FREE B.3 K1;`)。参照は gs (SAD K64、2026-10-19 ビルド、2026-11-18) の出力。 |
+| [`test_v2_B2_script.py`](test_v2_B2_script.py) | v2 の続き (担当 B2): SADScript・FFS の小項目。参照は gs (SAD K64、2026-10-19 ビルド) の出力 (2026-11-18)。 |
+| [`test_v2_B2_specfn_cx.py`](test_v2_B2_specfn_cx.py) | 複素引数の Zeta・HurwitzZeta・PolyLog・HypergeometricU (pysad/specfn_cx.py。v2 の追加で、k64 モードでも同じ値)。 |
+| [`test_v2_B3_geofit.py`](test_v2_B3_geofit.py) | 担当 B3 (4): tdgeo.f の四極などの DX・DY の解析微分 (幾何の FIT で DX・DY を変数にする) と、SOL 領域内の四極のずれ。 |
+| [`test_v2_B3_naff.py`](test_v2_B3_naff.py) | 担当 B3 (5): pysad/naff.py (NAFF 風のチューン抽出)。 |
+| [`test_v2_B3_photons.py`](test_v2_B3_photons.py) | 担当 B3 (3): PHOTONS (TrackParticles の光子の記録 PhotonList)。BEAMBEAM 以外の要素 (BEND・QUAD) の光子 (photons.f の tphrec・tphotonlist)。 |
+| [`test_v2_B3_pol.py`](test_v2_B3_pol.py) | 担当 B3 (1・6): v2 の Polarization のシンクロトロン側帯 (スピンの位相変調) の項 (spin.sideband_depolarization)。 |
+| [`test_v2_B3_radpol.py`](test_v2_B3_radpol.py) | 担当 B3 (2): K64 の RADPOL 追跡 (photons.f の sprot の放射偏極、dst = (PST − st)·cfpd·(p p0/h²)²·ucde/bt) の緩和が Sokolov-Ternov の値と合うか。 |
+| [`test_v2_B_ffs.py`](test_v2_B_ffs.py) | v2 の FFS まわり (担当 B): B22 MON/MCOD/TCOD、B24 LINE["LENGTH",loc]、B26 ORG の負数、B27 SeedRandom、B30 MAIN の OFF RFSW、B50 FileByteCount、 |
+| [`test_v2_B_script.py`](test_v2_B_script.py) | v2 の SADScript まわり (担当 B): B18 PolynomialFit、B71 For、B70 MessageName、B61 複素 FindRoot、B48 FixedPointList、B52 ベクトル独立変数の Fit、 |
+| [`test_v2_B_specfn.py`](test_v2_B_specfn.py) | v2 の特殊関数 (担当 B: B43〜B47、B53、B54)。 |
+| [`test_v2_C2_delcor.py`](test_v2_C2_delcor.py) | v2 (C2): DELCOR の corlength≠0 の規格化。 |
+| [`test_v2_C2_measure.py`](test_v2_C2_measure.py) | v2 (担当 C2): TRCOD FIXCOD / MVCOD / STNCOD / ALIGN、ORBITJITTER、PUTMEASURE / GETMEASURE と、MEASURE の残りの確認 |
+| [`test_v2_C2_optics.py`](test_v2_C2_optics.py) | 担当 C2 の光学まわり: N3 (CalculateOptics の TRPT の加速)、加速区間の分散 (qmat2twiss の gr の向き)。 |
+| [`test_v2_C2_script.py`](test_v2_C2_script.py) | C2: 台本の読み方の不具合 2 件 (pysad 自身の不具合。互換モードによらない)。参照値は gs (K64、2026-10-19 ビルド) の出力。 |
+| [`test_v2_C2_sol.py`](test_v2_C2_sol.py) | 担当 C2: SOL のずれ・回転 (DX DY DZ CHI1..3 = tsol.f の trots)、端の放射 F1 (tradks)、領域の幾何。 |
+| [`test_v2_C2_solrf.py`](test_v2_C2_solrf.py) | 担当 C2: SOL 領域 (bz≠0) の中の CAVI・RF つき MULT の TRPT の加速、wake、AUTOPHI、RF つき MULT の Emittance[]。 |
+| [`test_v2_C2_spch.py`](test_v2_C2_spch.py) | v2 (担当 C2): 空間電荷の続き — MULT の RADIUS (SPAC) と WSPAC (ガウス分布の強-弱のモデル)。 |
+| [`test_v2_C2_spin.py`](test_v2_C2_spin.py) | 担当 C2: POL + RAD のスピン追跡 (track6 の経路) での SOL 領域 (端のずれ・回転・F1、領域内の DRIFT・QUAD・BEND・MULT・CAVI)、 |
+| [`test_v2_C2_wakecmd.py`](test_v2_C2_wakecmd.py) | v2 (C2): 旧式の WAKE コマンド (tfwake.f の構文) の表を行をまたいで書ける。 |
+| [`test_v2_C3_measure.py`](test_v2_C3_measure.py) | 担当 C3 (v2next): MEASURE・TRCOD・ALIGN・FIXCOD の独立な検証 (大きなリング)。gs は MEASURE が無出力・TRCOD が SIGSEGV (B42) で比較できない。 |
+| [`test_v2_C3_misc.py`](test_v2_C3_misc.py) | 担当 C3 (v2next): SynchroBetaEmittance (結合のあるリング)、FITP>1 の最終解、FLUC の乱数列 (NPARA)、DELCOR の規格化。 |
+| [`test_v2_C3_radfield.py`](test_v2_C3_radfield.py) | 担当 C3 (v2next): RadiationField を、Liénard-Wiechert の式の独立な数値計算 (遅延時間を解く) と比べる。 |
+| [`test_v2_C3_radint.py`](test_v2_C3_radint.py) | 担当 C3 (v2next): A が「要判断」にした K64 の疑い B106・B107・B109 の独立な確認。 |
+| [`test_v2_C_beambeam.py`](test_v2_C_beambeam.py) | v2 の修正 B34: BEAMBEAM の傾き回転 (K64 は cost=sin(傾き角)、sint=傾き角)。 |
+| [`test_v2_C_csr.py`](test_v2_C_csr.py) | v2 の修正 B59: CSRSetupOY の zj (位置) と dpj (運動量)。K64 は dpjn を zjn と同じ記憶域に割り当て、zj に dp の値が入り dpj は 0。 |
+| [`test_v2_C_delcor.py`](test_v2_C_delcor.py) | v2 の修正 B40・B62: DELCOR (相関のあるずれ)。 |
+| [`test_v2_C_measure.py`](test_v2_C_measure.py) | v2: FFS の MEASURE / TRCOD / LOGMEASURE と MAIN の TRACK TURNS=-1 (pysad/measure.py)、B41。 |
+| [`test_v2_C_phsrot.py`](test_v2_C_phsrot.py) | v2 の修正 B38: PHSROT (6 次元 Twiss による位相空間の回転)。K64 は行列がすべて 0 になり動作しない。 |
+| [`test_v2_C_radlight.py`](test_v2_C_radlight.py) | v2 の修正 B65: RADLIGHT の軌道 (TrackParticles の {t, x, y, z})。K64 は横方向の座標が入らず、BEND で向きが変わらず、BEND の中を記録しない。 |
+| [`test_v2_C_sol.py`](test_v2_C_sol.py) | 担当 C: ソレノイド領域 (BOUND≠0 の SOL の間) の中の BEND・MULT・CAVI・APERT (docs/21 B69、docs/46)、MULT のスキュー成分。 |
+| [`test_v2_C_spch.py`](test_v2_C_spch.py) | v2 (担当 C): 空間電荷の追跡 — SPAC フラグ + DRIFT の RADIUS、PSPAC フラグ + SPCH 要素 (pysad/spch.py)。 |
+| [`test_v2_C_track.py`](test_v2_C_track.py) | 担当 C の追跡まわり: B10 (tdusrn の NaN)、B33 (最初の tapert の l_track=0)、B35 (SOL 領域の未対応要素)、LOSSMAP (戻りの 2 行)。 |
+| [`test_v2_C_und.py`](test_v2_C_und.py) | v2 の修正 B37: UND の磁場 (FBX・FBY [T])。K64 はキーワードが登録されず磁場なしのドリフトになる。 |
+| [`test_v2_C_wakecmd.py`](test_v2_C_wakecmd.py) | v2 の修正 B66: 旧式の WAKE コマンド (tfwake.f の構文)。K64 は tfwake.f を呼ばず WAKECOMMAND[] (配布に無い) を評価して失敗する。 |
+| [`test_v2_D1_emit.py`](test_v2_D1_emit.py) | 担当 D1 (v2next): Emittance[] の NORFSW + 閉軌道のずれ、WSPAC の最後のスライス、光子 (MULT・SEXT・OCT・BEAMBEAM + BEND・TRPT)、 |
+| [`test_v2_D2_packages.py`](test_v2_D2_packages.py) | D2 (4): CorrectOrbit の Micado (`Solver->{"Micado",n}`) の K64 の誤り。 |
+| [`test_v2_D2_parser.py`](test_v2_D2_parser.py) | D2 (1): MAIN 部の要素定義の式 (`ANGLE=PI/8`、`K1=SIN(0.1)`、`L=10 CM + 1 MM`) を gs と同じ文法・同じ値で読む。 |
+| [`test_v2_E_pol_kick.py`](test_v2_E_pol_kick.py) | v2next E 項目 3: 高エネルギー・高 RF 電圧の Polarization の脱偏極率が FLUC つきのスピン追跡の約 2.3 倍小さい件の切り分けの道具 (δ の蹴りへの応答 G = ∂n/∂δ) の検証。 |
+| [`test_v2_E_spinsol.py`](test_v2_E_spinsol.py) | v2next 担当 E 項目 1: SOL 領域 (ずれて傾いたソレノイドを含む) の Emittance[] の POL の量 (スピン回転・n0・SpinTune・スピン軌道結合 D)。 |
+| [`test_v2_E_steer.py`](test_v2_E_steer.py) | v2next 担当 E 項目 2: ANGLE=0 の BEND (補正磁石、tsteee) と MULT の F1 (四極の線形フリンジ tqlfre・FRINGE・FB1・FB2) の Emittance[]・CALC。 |
+| [`test_v2_P1_pol_chrom.py`](test_v2_P1_pol_chrom.py) | v2next 担当 P1 項目 1・3: v2 の Polarization の脱偏極率が FLUC つきのスピン追跡の約 2.3 倍小さい件 (4.2 GeV・12 MV の 12 セル FODO) の原因と、式への取り込み。 |
+| [`test_v2_P1_rev.py`](test_v2_P1_rev.py) | v2next 担当 P1 項目 3 (A2 の P1 の続き): 反転した BEND (曲率の符号が違う) のあるリングの P・τ が独立な式と合うこと、不安定なリングの扱い。 |
+| [`test_v2_P1_st.py`](test_v2_P1_st.py) | v2next 担当 P1 項目 2 (B116 の続き): n が傾く・非平面のリングの Polarization の緩和率。 |
+| [`test_v2_P2_rad.py`](test_v2_P2_rad.py) | 担当 P2 (v2next、2026-11-19): 放射・エミッタンスの残り。記録: docs/history/v2next_P2.md。 |
+| [`test_v2_P3_ae.py`](test_v2_P3_ae.py) | v2next 担当 P3 項目 2・3: MULT の端の角 AE1・AE2 と B108 の残り (K0 つき MULT・K1≠0 の ANGLE=0 BEND の端の角、追跡 (tsteer・tmulti) の端の放射)。 |
+| [`test_v2_P3_f1.py`](test_v2_P3_f1.py) | v2next 担当 P3 項目 1: TrackParticles の F1 (ANGLE=0 の BEND の `tsteer`、MULT の `tmulti` の F1・F2・FB1・FB2・FRINGE) と、MULT の端の角 AE1・AE2 の追跡。 |
+| [`test_v2_P4_dapwidth.py`](test_v2_P4_dapwidth.py) | v2next 担当 P4 項目 5: DynamicApertureSurvey の DAPWIDTH の窓 (trackd.f の粒子スロットの管理の直訳)。参照は gs (K64、2026-10-19 ビルド、2026-11-19)。 |
+| [`test_v2_P4_free.py`](test_v2_P4_free.py) | v2next 担当 P4 項目 6: 要素ごとの FREE (`FREE QF.3 K1`) の「何もしない変数」。gs (K64、2026-10-19 ビルド、2026-11-19) の実測と全桁一致。 |
+| [`test_v2_P4_pspac_k64.py`](test_v2_P4_pspac_k64.py) | v2next 担当 P4 項目 3: k64 モードの PSPAC (K64 の spch.c の形状関数まで直訳: pysad/spch_k64.py)。参照は gs (K64、2026-10-19 ビルド、2026-11-19)。 |
+| [`test_v2_P4_sol_photons.py`](test_v2_P4_sol_photons.py) | v2next 担当 P4 項目 2: SOL 領域内の光子 (PhotonList、PHOTONS ON + RAD + FLUC の追跡)。 |
+| [`test_v2_P4_sol_spin.py`](test_v2_P4_sol_spin.py) | v2next 担当 P4 項目 1: SOL 領域内の QUAD・MULT・CAVI のスピン (POL + RAD)。 |
+| [`test_v2_P4_wspac_beam.py`](test_v2_P4_wspac_beam.py) | v2next 担当 P4 項目 4: 追跡の WSPAC のビーム行列に、空間電荷つきの自己無撞着な平衡値 (MINCOUP の下限つき) を使うオプション `WSPACSC = 1;` (v2)。 |
+| [`test_v2_P5_detr.py`](test_v2_P5_detr.py) | 担当 P5 (v2next) 項目 2: DETR >= 1 (x-y のモードが入れ替わる) の CALC・INS・Emittance[] を gs と比べる。 |
+| [`test_v2_P5_measure.py`](test_v2_P5_measure.py) | 担当 P5 (v2next) 項目 1: MEASURE・TRCOD を gs と比べる。 |
+| [`test_v2_P5_micado_fitp_oy.py`](test_v2_P5_micado_fitp_oy.py) | 担当 P5 (v2next) 項目 4・5・6: OYStability の後半、Micado の変種、FITP>1 を gs と比べる。 |
+| [`test_v2_P5_proton_beta.py`](test_v2_P5_proton_beta.py) | 担当 P5 (v2next) 項目 8: 陽子 (電子以外) の放射の β の因子 (B112) の確認。 |
+| [`test_v2_P5_specfn_cx.py`](test_v2_P5_specfn_cx.py) | 担当 P5 (v2next) 項目 3: 複素引数の特殊関数の k64 の挙動を gs と比べ、足りなかった関数を足した (pysad/specfn_cx2.py)。 |
+| [`test_v2_P5_syntax.py`](test_v2_P5_syntax.py) | 担当 P5 (v2next) 項目 9: MAIN の要素定義の式の文法の細部 (docs/47 §(d) の D2 の 3 件) を gs と比べる。 |
+| [`test_v2_P5_tk90.py`](test_v2_P5_tk90.py) | 担当 P5 (v2next) 項目 7: Tk 9.0 (Python 3.14 の venv (環境変数 PYSAD_PY314 か ~/venvs/py314)) で pysad の GUI が動き、窓の見た目が撮れる。 |
 
 ## `pysad/tests/` に置いてある台本・ラティスの入力
 
 | ファイル | 使う試験 |
 |---|---|
 | `co5_corr.sad` | `test_corr.py` |
-| `kek-ls_v03_12.lat` | `test_emit_jac.py`, `test_unstable.py` |
+| `kek-ls_v03_12.lat` | `test_emit_jac.py`, `test_unstable.py`, `test_v23_Q1_fmap_lma.py`, `test_v23_Q2_resdrive.py`, `test_v23_R3_bend_cubic.py`, `test_v23_T1_elegant.py`, `test_v2_A2_dx.py`, `test_v2_A2_pol.py`, `test_v2_A2_radint.py`, `test_v2_B1_optics.py`, `test_v2_B3_naff.py`, `test_v2_C3_measure.py`, `test_v2_D1_emit.py`, `test_v2_P1_rev.py`, `test_v2_P2_rad.py`, `test_v2_P3_f1.py`, `test_v2_P4_dapwidth.py`, `test_v2_P5_detr.py`, `test_v2_P5_measure.py` |
 | `mkbump_ring.sad` | `test_example_fixes.py` |
 | `oo1_optimize.sad` | `test_corr.py`, `test_example_fixes.py` |
 

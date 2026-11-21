@@ -6,7 +6,7 @@
 (3) |cosμ|>1 の周期系: cosμ → 1/cosμ に置き換えた値で続行し、INTRES で stabx/staby が偽、NOINTRES で安定扱い (tracex=4/trace)
 (4) 一周行列の成分が 1e10 を超えると ±1e10 に抑える (qcod の limitnan)
 (5) fmincube の上限はオイラー定数 γ、log10(0) は -Infinity (matching02_r / tune_sv の反復を決めた 2 つの定数・関数)
-(6) SAD の bench_level28a.result (ESRF の QD ×1.19: 垂直だけ不安定) の Twiss と `Vertical Unstable.` が run_sad で再現できる
+(6) SAD の bench_level28a.result (KEK-LS (大きなリング A) の QD ×1.19: 垂直だけ不安定) の Twiss と `Vertical Unstable.` が run_sad で再現できる
 """
 import math
 import os
@@ -117,7 +117,7 @@ def test_fmincube_cap_is_euler_gamma_and_log10_zero():
     assert M._fuzz(M._log10(0.0), -3.5, -2.5) == 0.0     # badcnv = 1 - 0 = 1 → モード切替
 
 
-def test_esrf_vertical_unstable_vs_sad(tmp_path):
+def test_kekls_vertical_unstable_vs_sad(tmp_path):
     lat = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'kek-ls_v03_12.lat'), encoding='utf-8').read()
     script = '''FFS;
 $FORM="15.10"; PageWidth=1999;
@@ -131,7 +131,7 @@ Print["TWU_V: ", Twiss[{"NX","NY","BX","BY","AX","AY","EX","DX"},"$$$"]];
 stop;
 stop;
 '''
-    f = tmp_path / 'esrf_unstable.sad'
+    f = tmp_path / 'kekls_unstable.sad'
     f.write_text(lat + '\n' + script, encoding='utf-8')
     env = dict(os.environ, PYTHONIOENCODING='utf-8', PYTHONUTF8='1')
     out = subprocess.run([sys.executable, '-u', os.path.join(ROOT, 'run_sad.py'), str(f)], cwd=ROOT, env=env,

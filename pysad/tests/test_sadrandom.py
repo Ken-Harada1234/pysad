@@ -37,7 +37,7 @@ def test_random_binding_is_uniform0():
 
 
 def test_seed_list_matches_sad():
-    # print_all_error.sad: SeedRandom[187]; Floor[Abs[Random[1000]*1e8]]*2-1 の先頭 (SAD の出力 esrf.print_all_error.sad.out)
+    # print_all_error.sad: SeedRandom[187]; Floor[Abs[Random[1000]*1e8]]*2-1 の先頭 (SAD の出力 kekls.print_all_error.sad.out)
     r = SadRandom(187)
     seeds = [int(abs(r.uniform0() * 1e8)) * 2 - 1 for _ in range(1000)]
     assert seeds[:3] == [125188771, 60490425, 145796967]

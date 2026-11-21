@@ -4,7 +4,7 @@
 (1) 要素 1 個 (ドリフト・SEXT (ずれ・ロール)・QUAD (ずれ・ロール, K1<0)・BEND (K1=0/K1≠0, DX/DY/DROTATE/K0)・ステアリング) を
     乱数の cod から 6D (放射・D/B 付き, radcod 有/無) で通し、cod/T/D/B/u0 を比べる
 (2) 4D の _el_cod_step (CALC) を同じ要素で比べる
-(3) ESRF (誤差入り) の 1 周 tturne と Emittance を Python 経路と比べる
+(3) KEK-LS (大きなリング A) (誤差入り) の 1 周 tturne と Emittance を Python 経路と比べる
 ステアリング (tsteee) は Python 版が数値微分なので行列の許容を緩める。"""
 import os
 
@@ -95,7 +95,7 @@ def test_element_4d_matches_python(name, el):
 
 
 @pytest.fixture(scope='module')
-def esrf_err():
+def kekls_err():
     from pysad.ffscmd import FFS
     from pysad import parser
     pytest.importorskip('numba')
@@ -120,8 +120,8 @@ SeedRandom[125188771];
     return ffs
 
 
-def test_esrf_turn_and_emittance_match_python(esrf_err):
-    ffs = esrf_err
+def test_kekls_turn_and_emittance_match_python(kekls_err):
+    ffs = kekls_err
     els = ffs.lat.elements
     cod0 = np.array([1e-4, 0.0, -5e-5, 0.0, 0.0, 1e-3])
     E._USE_ELKERN = False
@@ -192,8 +192,8 @@ def test_turn_kernel_matches_python_line(delta):
     np.testing.assert_array_equal(cb, ca)
 
 
-def test_turn_kernel_matches_python_esrf(esrf_err):
-    els = esrf_err.lat.elements
+def test_turn_kernel_matches_python_kekls(kekls_err):
+    els = kekls_err.lat.elements
     for cod0, delta in [(np.zeros(6), 0.0), (np.array([1e-4, 0.0, -5e-5, 0.0, 0.0, 0.0]), 0.0),
                         (np.array([1e-4, 2e-5, -5e-5, 1e-5, 0.0, 1e-3]), 1e-3)]:
         Ma, ca, ma, cda = _turn(els, cod0, delta, False)

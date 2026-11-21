@@ -7,8 +7,8 @@ FFS;
  RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
    F     F     F     T     F     F     T     F     F     T     F     T
  PageWidth=1999;
- f=OpenWrite["C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt:
+ f=OpenWrite["<temp>/test_read_types_and_skip_like_0/rd.txt"];
+???General::fileopen:  Open error for file <temp>/test_read_types_and_skip_like_0/rd.txt:
  Write[f,"alpha beta 1.5 2.5 3.5"];
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Write[$Failed,"alpha beta 1.5 2.5 3.5"]
  Write[f,"line2 x y z"];
@@ -16,8 +16,8 @@ FFS;
  Close[f];
 ???General::wrongtype:  Argument must be Real number in Close$[$Failed]
 ... in Close[$Failed]
- g=OpenRead["C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt in OpenRead["C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt"]
+ g=OpenRead["<temp>/test_read_types_and_skip_like_0/rd.txt"];
+???General::fileopen:  Open error for file <temp>/test_read_types_and_skip_like_0/rd.txt in OpenRead["<temp>/test_read_types_and_skip_like_0/rd.txt"]
  Print["A ",Read[g,Character]," ",Read[g,Character]," ",Read[g,Word]," ",Read[g,Real]," ",Read[g,Real]];
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Read[g,Character]
 ... in Print["A ",Read[g,Character]," ",Read[g,Character]," ",Read[g,Word]," ",
@@ -36,8 +36,8 @@ FFS;
  Close[g];
 ???General::wrongtype:  Argument must be Real number in Close$[g]
 ... in Close[g]
- g=OpenRead["C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt in OpenRead["C:/Users/coding/AppData/Local/Temp/pytest-of-coding/pytest-149/test_read_types_and_skip_like_0/rd.txt"]
+ g=OpenRead["<temp>/test_read_types_and_skip_like_0/rd.txt"];
+???General::fileopen:  Open error for file <temp>/test_read_types_and_skip_like_0/rd.txt in OpenRead["<temp>/test_read_types_and_skip_like_0/rd.txt"]
  Print["E ",Skip[g,Word,2]];
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Skip[g,Word,2]
 ... in Print["E ",Skip[g,Word,2]]

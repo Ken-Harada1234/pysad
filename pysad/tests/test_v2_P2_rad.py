@@ -196,7 +196,7 @@ def _fodo_lat(e):
 
 def test_emittance_default_emitdiv_error_is_discretisation_v2(v2_mode):
     """v2: 矩形の偏向磁石 (E1 = E2 = 0.5·ANGLE) の FODO の Emittance[] (RFSW) の εx は、EMITDIV = 1 (既定) で 16 の値より 4.6e-4 大きく、4 でほぼ収束する
-    (K64 の既定の刻みの離散化誤差。大きなリング B (8 GeV、周長 1.4 km) では +1.4e-3 で、v2 と RADINT (6.9554e-9) の差の原因。k64・v2 とも、扇形でも同じ誤差)。
+    (K64 の既定の刻みの離散化誤差。SP8 (大きなリング B、8 GeV、周長 1.4 km) では +1.4e-3 で、v2 と RADINT (6.9554e-9) の差の原因。k64・v2 とも、扇形でも同じ誤差)。
     RFSW OFF の Jx は解析 (平面リングの放射積分 I4、端の項 −η h² tan e が 1 倍) と 1e-4 で一致 (v2)、k64 は端の項が 2 倍で 0.12 大きい"""
     import _a2_indep as A
     ffs = _fodo_lat(0.5)
@@ -290,7 +290,7 @@ def test_tradke_sign_agrees_with_exact_radiation_reaction_in_v2_not_k64():
 def test_radtaper_coefficients_v2_use_arithmetic_mean_for_bends():
     """RADTAPER の係数: K64 の tturne は BEND に (3δ_l + δ_l+1)/4 (放射を刻みの終わりに入れる粗い刻みに合わせた値)、追跡は (δ_l + δ_l+1)/2。
     連続な放射で要素の中の損失が線形のとき、曲げ角を設計値にする係数は調和平均 ≈ 算術平均 (1/2)。v2 は Emittance[]・追跡とも (δ_l + δ_l+1)/2 にする。
-    (係数が違っても Emittance[] の閉軌道は 3e-10 しか変わらない: 大きなリング B (8 GeV) の確認。追跡で閉じるのは同じ係数を両方に使うため)"""
+    (係数が違っても Emittance[] の閉軌道は 3e-10 しか変わらない: SP8 (大きなリング B、8 GeV) の確認。追跡で閉じるのは同じ係数を両方に使うため)"""
     from pysad import radtaper
     from pysad.elements import Bend, Quadrupole
     els = [Bend(name='B', L=1.0, ANGLE=0.1), Quadrupole(name='Q', L=0.3, K1=0.5)]

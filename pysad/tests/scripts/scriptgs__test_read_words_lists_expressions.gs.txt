@@ -7,8 +7,8 @@ FFS;
  RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
    F     F     F     T     F     F     T     F     F     T     F     T
  PageWidth=1999;
- a = OpenWrite["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt:
+ a = OpenWrite["<temp>/tmpgjnztpii/r.txt"];
+???General::fileopen:  Open error for file <temp>/tmpgjnztpii/r.txt:
  Write[a, "alpha beta, gamma  12.5 7"];
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Write[$Failed,"alpha beta, gamma  12.5 7"]
  Write[a, "x+y  3*4"];
@@ -22,8 +22,8 @@ FFS;
  Close[a];
 ???General::wrongtype:  Argument must be Real number in Close$[$Failed]
 ... in Close[$Failed]
- c = OpenRead["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt in OpenRead["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"]
+ c = OpenRead["<temp>/tmpgjnztpii/r.txt"];
+???General::fileopen:  Open error for file <temp>/tmpgjnztpii/r.txt in OpenRead["<temp>/tmpgjnztpii/r.txt"]
  Print["A ", Read[c, Word]];
 ???General::wrongtype:  Argument must be Real number or List of two Reals in Read[c,Word]
 ... in Print["A ",Read[c,Word]]
@@ -52,17 +52,17 @@ I ReadString[c]
 J ReadString[c]
  Close[c];
 ... in Close[c]
- a = OpenWrite["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"]; Write[a, "a:b:c"]; Write[a, "d:e"]; Close[a];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt:
- c = OpenRead["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt in OpenRead["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"]
+ a = OpenWrite["<temp>/tmpgjnztpii/r.txt"]; Write[a, "a:b:c"]; Write[a, "d:e"]; Close[a];
+???General::fileopen:  Open error for file <temp>/tmpgjnztpii/r.txt:
+ c = OpenRead["<temp>/tmpgjnztpii/r.txt"];
+???General::fileopen:  Open error for file <temp>/tmpgjnztpii/r.txt in OpenRead["<temp>/tmpgjnztpii/r.txt"]
  Print["K ", Read[c, Word, WordSeparators -> ":"], Read[c, Word, WordSeparators -> ":"]];
 ... in Print["K ",Read[c,Word,WordSeparators->":"],
  Read[c,Word,WordSeparators->":"]]
  Close[c];
 ... in Close[c]
- c = OpenRead["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"];
-???General::fileopen:  Open error for file C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt in OpenRead["C:/Users/coding/AppData/Local/Temp/tmpgjnztpii/r.txt"]
+ c = OpenRead["<temp>/tmpgjnztpii/r.txt"];
+???General::fileopen:  Open error for file <temp>/tmpgjnztpii/r.txt in OpenRead["<temp>/tmpgjnztpii/r.txt"]
  Print["L ", Read[c, Word, ReadNewRecord -> False, WordSeparators -> ":"], " ", Read[c, Word, ReadNewRecord -> False, WordSeparators -> ":"]];
 ... in Print["L ",Read[c,Word,ReadNewRecord->0,WordSeparators->":"]," ",
  Read[c,Word,ReadNewRecord->0,WordSeparators->":"]]
