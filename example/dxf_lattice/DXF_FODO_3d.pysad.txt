@@ -1,0 +1,4 @@
+USE RING:  242.000000000 elements, L =  105.600000000 m
+  wrote DXF_FODO_cell_3d.dxf
+  wrote DXF_FODO_cell_3d_split.dxf
+  wrote DXF_FODO_ring_3d.dxf

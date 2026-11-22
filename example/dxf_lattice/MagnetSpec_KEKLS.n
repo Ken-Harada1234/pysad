@@ -1,0 +1,17 @@
+! MagnetSpec_KEKLS.n : DrawMagnetsDXF[] の MagnetSpec[] の例 (KEK-LS v03_68 の標準セル ARCA の磁石の寸法)。
+!   drawmagvw3d.n・draw_cad.sad と同じ形式: MagnetType[要素名] が磁石の種類 (キー) を返し、MagnetSpec[キー] が規則のリスト
+!   {Width->, Height->, PoleWidth->, Type->(Htype|Ctype1|Ctype2), PhysicalLength->} を返す。無い量は DrawMagnetsDXF[] の既定値。
+!   **寸法は説明用の仮の値で、実機の寸法ではない** (Height は平面図では描かない)。USE の後、DrawMagnetsDXF[] の前に Get する。
+
+MagnetType[n_] := Switch[n,
+  "BID5" | "BID4" | "BID3H" | "BID2" | "BID1" | "BPI1" | "BPI2" | "BPI3H" | "BPI4" | "BPI5", "BLOW",
+  "BPI6H" | "BPI7H", "BGRAD",
+  "QFA1H" | "QDA2" | "QDA3" | "QFA4" | "QDA5" | "QFA6H" | "QFA8H", "QCELL",
+  "SDH" | "SFH" | "SHA", "SEXT6",
+  _, n];
+
+MagnetSpec["BLOW"] = {Width -> .50, Height -> .30, PoleWidth -> .12, Type -> Htype};
+MagnetSpec["BGRAD"] = {Width -> .56, Height -> .30, PoleWidth -> .12, Type -> Ctype1};
+MagnetSpec["QCELL"] = {Width -> .32, Height -> .32};
+MagnetSpec["SEXT6"] = {Width -> .24, Height -> .24};
+MagnetSpec["OCFA"] = {Width -> .20, Height -> .20};

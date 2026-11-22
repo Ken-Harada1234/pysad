@@ -1,7 +1,7 @@
 # dxf_lattice: ラティスの平面図を DXF に書き出す (v2.4.1)
 
 ラティスを上から見た図 (平面図) を、CAD で開けるテキストの DXF (ASCII、AutoCAD R12 相当) に書き出す `DrawMagnetsDXF[file, options]` (SADScript。gs でも pysad でも走る) と、同じ出力を作る pysad の Python 関数 `pysad.dxf_lattice.write_dxf` の例です。
-SAD の `drawmagvw3d.n` (VectorScript を書き出す `DrawMagnets3D`) の幾何の考え方を参考にした自前版で、立体は作りません (平面図だけ)。解説・限界は [`docs/51_lattice_dxf.md`](../../docs/51_lattice_dxf.md)。
+SAD の `drawmagvw3d.n` (VectorScript を書き出す `DrawMagnets3D`) の幾何の考え方を参考にした自前版です。既定は平面図で、`Mode->"3D"` (Python は `mode='3d'`) を選ぶと磁石の立体の外形 (3DFACE) も書けます (v2.4.1 の追加。下の「3D」)。解説・限界は [`docs/51_lattice_dxf.md`](../../docs/51_lattice_dxf.md)。
 
 ## ファイル
 
@@ -17,6 +17,16 @@ SAD の `drawmagvw3d.n` (VectorScript を書き出す `DrawMagnets3D`) の幾何
 | `*.gs.txt`・`*.pysad.txt` | 台本の画面表示 (始点と終点の幾何の値、周長) |
 | `run_dxf_examples.py` | 台本を作り (`mk`)、gs と pysad で走らせて 3 通り (gs・pysad の台本・Python 関数) の DXF を比べ (`run`)、図を作る (`png`) |
 | `plot_dxf.py` | DXF を matplotlib で描く (`pysad.dxf_lattice.read_dxf` で読み戻す。ezdxf は使わない) |
+| `MagnetSpec_KEKLS.n` | (v2) `MagnetType[]`・`MagnetSpec[]` の定義の例 (KEK-LS の標準セルの磁石。**寸法は説明用の仮の値**)。`DrawMagnetsDXF[]` が読む |
+| `DXF_KEKLS_v2.sad` | (v2) KEK-LS の標準セル `ARCA` を、`MagnetSpec`・`Overlap`・`UseMagnetSpec` を組み合わせて 5 本書く台本 |
+| `DXF_KEKLS_cell_v2_*.dxf`・`KEKLS_cell_v2_*.png`・`DXF_KEKLS_v2.gs.txt`・`.pysad.txt` | (v2) 出力と図と画面表示 (既存のファイルは上書きせず、名前に `_v2` を付けて追加) |
+| `run_dxf_examples_v2.py` | (v2) 台本を作り (`mk`)、gs と pysad で走らせて gs・pysad の台本・Python 関数 (台本から `MagnetSpec` を読む場合と dict で与える場合) を比べ (`run`)、図を作る (`png`)。既存の出力があれば止まる |
+| `DXF_FODO_3d.sad`・`DXF_KEKLS_3d.sad` | (3D) FODO (1 セル `SF.1`〜`SD.1` の `body`・`split`、全周 `body`) と KEK-LS の標準セル `ARCA` (`body`・`split`) の磁石の立体を書く台本 (`Mode->"3D"`、`Parts->"split"`) |
+| `DXF_FODO_cell_3d.dxf`・`DXF_FODO_cell_3d_split.dxf`・`DXF_FODO_ring_3d.dxf`・`DXF_KEKLS_cell_3d.dxf`・`DXF_KEKLS_cell_3d_split.dxf` | (3D) 出力 (pysad の台本の出力。gs の出力と全行一致)。9 KB〜0.37 MB |
+| `FODO_cell_3d.png`・`FODO_cell_3d_split.png`・`FODO_ring_3d.png`・`KEKLS_cell_3d.png`・`KEKLS_cell_3d_split.png` | (3D) DXF を読み戻して matplotlib の mplot3d で描いた図 (目視の確認) |
+| `DXF_FODO_3d.gs.txt`・`.pysad.txt`、`DXF_KEKLS_3d.gs.txt`・`.pysad.txt` | (3D) 台本の画面表示 |
+| `run_dxf_examples_3d.py` | (3D) 台本を作り (`mk`)、gs と pysad で走らせて gs・pysad の台本・Python 関数を比べ (`run`)、3DFACE の立体の検査 (`verify`)、図を作る (`png`)。既存の出力があれば止まる |
+| `plot_dxf3d.py` | (3D) 3D の DXF を mplot3d で描く (`pysad.dxf_lattice.read_dxf` で読み戻す) |
 
 走らせ方 (`PYSAD_SAD_PACKAGES` が必要。gs は WSL):
 
@@ -43,8 +53,64 @@ py -3.12 example/dxf_lattice/run_dxf_examples.py          # mk run png
 
 ![FODO リング (Ctype1 の偏向磁石、QF を短く)](FODO_cell_spec.png)
 
+## v2: `MagnetSpec[]` の読み込みと要素名の重なり消し (2026-11-22)
+
+`DrawMagnetsDXF[]` は、台本が定義した `MagnetSpec[MagnetType[要素名]]` (`drawmagvw3d.n`・`draw_cad.sad` が磁石の寸法を得る形。規則のリスト `{Width->, Height->, PoleWidth->, Type->, PhysicalLength->}`) を読み、`Overlap->"remove"` で重なる要素名を間引ける (`pysad.dxf_lattice.write_dxf` の `magnet_spec`・`overlap` も同じ)。どちらも既定では従来の出力のまま (定義がなければ既定の寸法、`Overlap->"keep"`)。優先順は量ごとに `Spec` の要素名 > `Spec` の型名 > `MagnetSpec` > 既定値。書式・判定の詳細は [`docs/51_lattice_dxf.md`](../../docs/51_lattice_dxf.md) §2b・§2c。
+
+```
+FFS;
+USE ARCA;
+Get["DrawMagnetsDXF.n"];
+Get["MagnetSpec_KEKLS.n"];                                       ! MagnetType・MagnetSpec の定義
+DrawMagnetsDXF["DXF_KEKLS_cell_v2_spec_remove.dxf", TextHeight->.12, Overlap->"remove"];
+```
+
+KEK-LS の標準セル `ARCA` (28.5 m、名前 52 個):
+
+| DXF | 寸法 | 文字高 | 要素名 |
+|---|---|---|---|
+| `DXF_KEKLS_cell.dxf` (既存) | 既定 | 0.12 m | 52 |
+| `DXF_KEKLS_cell_v2_remove.dxf` | 既定 (`UseMagnetSpec->False`) | 0.12 m | 48 (`Overlap->"remove"`。消えたのは SFH・OCFA 2 組) |
+| `DXF_KEKLS_cell_v2_spec.dxf` | `MagnetSpec` | 0.12 m | 52 |
+| `DXF_KEKLS_cell_v2_spec_remove.dxf` | `MagnetSpec` | 0.12 m | 48 |
+| `DXF_KEKLS_cell_v2_spec_h30.dxf`・`_spec_remove_h30.dxf` | `MagnetSpec` | 0.3 m | 52 → 24 |
+
+- **gs との一致**: 5 本とも gs (SAD 1.4.4.2k64)・pysad の台本・Python 関数 (台本から読む場合と dict で与える場合) が全行一致 (`run_dxf_examples_v2.py run`)。全周 (`RING`、文字高 0.3 m、名前 1048 → 481 個) の `Overlap->"remove"` も gs・pysad の台本・Python 関数が一致 (出力は 0.5 MB なので追跡しない)。
+- 既定 (`Overlap->"keep"`・`MagnetSpec` なし) の出力は、既存の DXF と全行一致 (試験 `test_example_v2_files`)。
+- 図: [`KEKLS_cell_v2_default_keep.png`](KEKLS_cell_v2_default_keep.png) (既存の DXF)・[`KEKLS_cell_v2_remove.png`](KEKLS_cell_v2_remove.png)・[`KEKLS_cell_v2_spec.png`](KEKLS_cell_v2_spec.png)・[`KEKLS_cell_v2_spec_remove.png`](KEKLS_cell_v2_spec_remove.png)・[`KEKLS_cell_v2_spec_h30.png`](KEKLS_cell_v2_spec_h30.png)・[`KEKLS_cell_v2_spec_remove_h30.png`](KEKLS_cell_v2_spec_remove_h30.png)。matplotlib は固定の文字の大きさで描くので、DXF の文字高とは見え方が違う。
+
+![KEK-LS の標準セル (MagnetSpec の寸法、文字高 0.3 m、重なり消し)](KEKLS_cell_v2_spec_remove_h30.png)
+
+## 3D: 磁石の立体の外形 (v2.4.1)
+
+`Mode->"3D"` で、磁石を基準軌道に沿った直方体 (偏向磁石は入口・出口の面が E1・E2 に傾いた楔形) にして `3DFACE` で書きます (AutoCAD R12 にある図形。外部ライブラリなし)。高さは `Spec`・`MagnetSpec` の `Height` (なければ BEND 0.406 m、他は幅)。レイヤー・色は平面図と同じ。`Parts->"split"` は偏向磁石と四極を、ヨークとポール (レイヤー `POLE`、色 9) に分けます (模式図。`Gap`・`PoleHeight`・`LegWidth`・`Aperture` で寸法を与え、なければ仮の割合)。書式・既定・限界は [`docs/51_lattice_dxf.md`](../../docs/51_lattice_dxf.md) §2d。
+
+```
+FFS;
+USE ARCA;
+Get["DrawMagnetsDXF.n"];
+Get["MagnetSpec_KEKLS.n"];
+DrawMagnetsDXF["DXF_KEKLS_cell_3d.dxf", TextHeight->.12, Mode->"3D"];
+DrawMagnetsDXF["DXF_KEKLS_cell_3d_split.dxf", TextHeight->.12, Mode->"3D", Parts->"split"];
+```
+
+| DXF | 内容 | 立体 (3DFACE) |
+|---|---|---|
+| `DXF_FODO_cell_3d.dxf` | FODO の 1 セル (`SF.1`〜`SD.1`)、`Spec` で寸法と Height (BEND 0.5 × 0.3 m、四極 0.36 m 角、6 極 0.24 m 角。説明用の仮の値) | 5 個 (30 面) |
+| `DXF_FODO_cell_3d_split.dxf` | 同上、`Parts->"split"` | 23 個 (138 面) |
+| `DXF_FODO_ring_3d.dxf` | FODO の全周、既定の寸法 (BEND 0.63 × 0.406 m、四極 0.45 m 角、6 極 0.30 m 角) | 120 個 (720 面) |
+| `DXF_KEKLS_cell_3d.dxf` | KEK-LS の標準セル `ARCA` (28.5 m)、`MagnetSpec_KEKLS.n` の寸法と Height (仮の値) | 52 個 (312 面) |
+| `DXF_KEKLS_cell_3d_split.dxf` | 同上、`Parts->"split"` (偏向磁石は 5〜6 部品、四極は 8 部品) | 280 個 (1680 面) |
+
+- **gs との一致**: 同じ台本を gs (SAD 1.4.4.2k64、WSL。`local/wake/gsrun.sh` でも確認) と pysad で走らせ、5 本とも全行一致 (行末は gs が LF、pysad が CRLF)。pysad の Python 関数 `write_dxf(..., mode='3d', parts=...)` の出力とも全行一致 (`run_dxf_examples_3d.py run`)。
+- **立体の検査** (`run_dxf_examples_3d.py verify`、試験 `test_example_3d_files`): 全立体が閉じている (各有向辺が 1 回、逆向きも 1 回 = 各辺が 2 面で共有され向きがそろう)・体積が正。`body` は体積 = 2D の外形の面積 × Height (相対 1e-12 のオーダー)、上面・下面の (X, Y) が平面図の外形の頂点と完全に一致。`split` は 1 台ごとの部品の体積の和が `body` 以下、部品の bbox が `body` の中。
+- 既定 (`Mode` なし) の平面図は変わらない: 既存の DXF 8 本と v2 の 5 本が、`Mode` を足した後の `DrawMagnetsDXF.n` で gs・pysad とも全行一致。
+- 図 (mplot3d。軸の縮尺は x・y・z 同じなので 28.5 m の標準セルは細長く見える。右は最初の偏向磁石のまわりの拡大): [`FODO_cell_3d.png`](FODO_cell_3d.png)・[`FODO_cell_3d_split.png`](FODO_cell_3d_split.png)・[`FODO_ring_3d.png`](FODO_ring_3d.png)・[`KEKLS_cell_3d.png`](KEKLS_cell_3d.png)・[`KEKLS_cell_3d_split.png`](KEKLS_cell_3d_split.png)。
+
+![FODO の 1 セル (ヨークとポールに分けた立体)](FODO_cell_3d_split.png)
+
 ## 未確認・限界
 
-- 磁石の寸法は、`Spec` を与えない限り仮の既定値 (BEND 幅 0.63 m、QUAD 0.45 m、SEXT・OCT 0.30 m ほか)。KEK-LS・ASTRID2・FODO の図の磁石の幅は実機の寸法ではない (配置・長さ・偏向角・端面の角は台本のラティスのとおり)。
-- 平面図だけ (立体・コイル・端板は未対応)。CAD ソフトで実際に開いた確認はしていない (自前のパーサと matplotlib の描き直しだけ)。詳細は [`docs/51_lattice_dxf.md`](../../docs/51_lattice_dxf.md) §5。
-- 要素名は磁石の脇に出すだけで、重なりは消さない (1 セルの図では重なる)。
+- 磁石の寸法は、`MagnetSpec` か `Spec` を与えない限り仮の既定値 (BEND 幅 0.63 m、QUAD 0.45 m、SEXT・OCT 0.30 m ほか)。KEK-LS・ASTRID2・FODO の図の磁石の幅は実機の寸法ではない (配置・長さ・偏向角・端面の角は台本のラティスのとおり)。`MagnetSpec_KEKLS.n` の値も説明用の仮の値。`MagnetSpec` の書式は `drawmagvw3d.n`・`draw_cad.sad` の使い方から読んだもので、実際の定義ファイルでは確かめていない (`Height` は平面図では読むだけ。3D では高さ)。
+- 既定は平面図。立体 (`Mode->"3D"`) は磁石の外形 (直方体・楔形) と模式的なヨーク・ポールの分割だけで、**コイル・端板・ベローズ・曲がった磁極は未対応**。CAD ソフトで実際に開いた確認はしていない (自前のパーサと matplotlib の描き直しだけ)。3D は 3DFACE を 6 枚ずつ並べただけで、CAD 側で 1 つの立体 (3D ソリッド) になるかは未確認。`Gap` などの 3D の既定の割合は仮の値。詳細は [`docs/51_lattice_dxf.md`](../../docs/51_lattice_dxf.md) §5。
+- 要素名は既定では磁石の脇に全部出す (`Overlap->"keep"`。1 セルの図では重なる)。`Overlap->"remove"` の判定は文字数 × 文字高 × 0.6 の見積もりの外接矩形で、CAD の実際の字体とは違うことがある。名前どうしだけを調べ、磁石や軌道との重なりは調べない。

@@ -1,6 +1,6 @@
 # 42. グラフィック描画の解説 (Plot・ListPlot・OpticsPlot ほかと Tk のキャンバス)
 
-最終更新: 2026-11-17
+最終更新: 2026-11-22
 
 SAD の描画関数 (`Plot`、`ListPlot`、`ListContourPlot`、`HistoPlot`、`FitPlot`、`OpticsPlot`、`LatticePlot`、`BeamPlot`、`GeometryPlot`、`FitGaussian` の `Plot->True`、
 `Canvas` 系) を、pysad がどう動かし、どこまで gs (SAD K64) と一致するかを、初めて読む人向けにまとめる。
@@ -33,6 +33,7 @@ tkinter の Tcl に  `.c create line …` を送る → キャンバス (tclbrid
 - 読む場所: `PYSAD_SAD_PACKAGES` (SAD の `Packages` のフォルダ) が要る。`pkgload.py` が `init.n` と同じ自動読み込みの表を持ち、`Plot`・`ListPlot` を最初に使うときにそのファイルを読む。
 - `$DisplayFunction`: Windows、または Linux で `DISPLAY` があれば `CanvasDrawer` (tkinter に描く)。画面がない環境と `PYSAD_NO_DISPLAY=1` では `Identity`
   (`Graphics[…]` の式を返すだけ)。引数の `DisplayFunction->Identity` でも同じ (`pkgload.py`)。
+  環境変数 `PYSAD_DISPLAY=mpl` (v2.4.1) で `MatplotlibDrawer` (Graphics を matplotlib に描く。§7c)、`tk`・`none` で `CanvasDrawer`・`Identity` に固定。
 - `PYSAD_TK_NOLOOP=1`: `TkEventLoop[]` が 1 回 `update` して戻る。自動試験用 (`tclbridge.py`)。普段は窓を閉じるまでイベントを回す。
 - `tkcanvas.py` の組み込み関数 (K64 の `tfTkInter_.c`・`tfcanvasclip.f` に対応。表は `docs/37` §3): `TkCanvasGetTypes`・`TkCanvasPointer`・`TkCanvasCreateItem(Direct)`・
   `TkCanvasLastItem`・`TkCanvasFindEnclosed`・`CanvasClipLine` (枠で折れ線を切る・破線に分ける)・`CanvasSymbolDirect` (点の記号)・`TkDefineBitmap`・`XListFonts`・`XGetFontPath`。
@@ -205,7 +206,48 @@ fig = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(1, 40), save="optics.png")   
 - gs (WSL) の Graphics との一致: FODO (3 GeV、6 セル、領域 3〜20、名前 `B*`) と ASTRID2 全周 (0.58 GeV、周長 45.7 m、名前 `*`、箱 139・名前 199) で、点列の最大の相対差 1.7e-13 (x は 1.4e-14 m)、箱・名前の個数と位置が一致。参照は `pysad/tests/scripts/v25_draw_gs_*.gs.txt` (台本は同名の `.sad`)。
 - 例: [`example/11_graphics/fn_DRAW.md`](../example/11_graphics/fn_DRAW.md)。
 
-**未確認・限界**: 色・線の太さ・文字の大きさの見た目は Tk の窓と比べていない (比べたのはデータ)。文字の重なり消し (`RemoveOverlap`) は Tk のフォントの代わりに s 軸上の間隔で決めるので、gs の窓で残る名前とは違う。`PEX` などは pysad の `Twiss["PEX"]` (現状は EX と同じ値) をそのまま描く。SIG・SIZE の関数は EMIT 後の値。`$DisplayFunction` 相当で SADScript の `OpticsPlot[…]` の Graphics 自体を matplotlib に流すことは未実装 (DRAW だけ)。対話表示の窓・クリックの InfoLabel は Agg では動かせず、手では確認していない (イベント処理の関数 `element_info` の文字だけ試験)。ラティス図の Element$Height は K64 の型の番号に従い、SOL (20) は 0.08 の細い箱になる。
+**未確認・限界**: 色・線の太さ・文字の大きさの見た目は Tk の窓と比べていない (比べたのはデータ)。文字の重なり消し (`RemoveOverlap`) は Tk のフォントの代わりに s 軸上の間隔で決めるので、gs の窓で残る名前とは違う。`PEX` などは pysad の `Twiss["PEX"]` (現状は EX と同じ値) をそのまま描く。SIG・SIZE の関数は EMIT 後の値。SADScript の `OpticsPlot[…]` の Graphics 自体を matplotlib に流すのは §7c の `MatplotlibDrawer` (DRAW は `draw_mpl` が自前でデータを組む)。対話表示の窓・クリックの InfoLabel は Agg では動かせず、手では確認していない (イベント処理の関数 `element_info` の文字だけ試験)。ラティス図の Element$Height は K64 の型の番号に従い、SOL (20) は 0.08 の細い箱になる。
+
+## 7c. MatplotlibDrawer: Graphics を matplotlib に描く `$DisplayFunction` — v2.4.1
+
+`Plot`・`ListPlot`・`HistoPlot`・`ListContourPlot`・`OpticsPlot`・`GeometryPlot` などが作る `Graphics[…]` を、Tk のキャンバスでなく matplotlib に描く出口 ([`pysad/mpl_display.py`](../pysad/mpl_display.py)。matplotlib は遅延 import で、無ければ警告するだけで評価は続く)。§7b の `DRAW` は OpticsPlot 相当のデータを自前で組むが、こちらは SAD 自身の `.n` (ListPlot.n・Plots.n・OpticsPlot.n・GeometryPlot.n) が作った `Graphics[…]` をそのまま描く。評価器・`.n` は変えていない。
+
+**仕組み** `ListPlot.n` の `Show1$` が `$DisplayFunction` を `df[opt, list, init, w, rect, last, ini]` の形で呼ぶ (K64 では `CanvasDrawer`)。pysad は同じ引数を受ける組み込み関数 `MatplotlibDrawer` を足した。`opt` の `PlotRange`・`DataRange`・`Scale`・`GridLines`・`FrameTicks` などは `Show1$` が決めた値。`Rectangle[min, max, Graphics[…]]` (OpticsPlot の枠) は、`Canvas.n` と同じく `Show1$[False, {min,max}, …]` を呼んで入れ子の枠を作る (`Position->Right[]`・`Left[]`・`Above[]`・`Below[]` も `RectPosition` どおり)。枠の位置は `Canvas.n` の `MakeWindow` の移植 (キャンバス 13 × 10 インチ、窓の原点 {2, 1.8}、幅 9.6、縦横比 `GoldenRatio`、`AspectRatio`・`PlotRegion`・`rect` に従う)、軸の範囲は `FrameRange` の移植 (`PlotRange->Automatic` は `DataRange` の外に 7% の余白、Log は log10 で 7%)。
+
+**切替**
+
+| 方法 | 内容 |
+|----|----|
+| 環境変数 `PYSAD_DISPLAY=mpl` (または `matplotlib`) | `$DisplayFunction` を `MatplotlibDrawer` にする (`tk` = `CanvasDrawer`、`none` = `Identity`。未設定は §2 の従来どおり) |
+| SADScript で `$DisplayFunction=MatplotlibDrawer;` | 環境変数なしでも切り替わる |
+| `Plot[…, DisplayFunction->MatplotlibDrawer]`、`Show[g, DisplayFunction->MatplotlibDrawer]` | その 1 回だけ。`DisplayFunction->Identity` で作った `g` をあとから描くのにも使う |
+| Python `mpl_display.render(I, g, save="x.png")` | Graphics の式 `g` を描いて Figure を返す (`mpl_display.last_figure()` は最後に描いた Figure) |
+
+**出力** 環境変数 `PYSAD_DISPLAY_FILE` (拡張子 png・pdf・svg。同じ名前の 2 回目以降は `名前_2.png` のように番号を付け、`{n}` があれば番号に置き換える。DRAW の `PYSAD_DRAW_FILE` と同じ流儀で、番号の数え方も `draw_mpl` と共通)、または SAD 側の大域変数 `MatplotlibDrawer$Option={File->"x.png", Show->True, DPI->120}` (最優先。保存先のフォルダは作る。dpi の既定は環境変数 `PYSAD_DISPLAY_DPI` か 100)。保存先がなければ、対話の backend のときだけ `plt.show` (Agg など非対話では何も出さない)。保存は `bbox_inches="tight"` で、キャンバスの余白は切る。**`ListPlot.n` 自身が `Show` を 2 回呼ぶ** (ファイルの中でブロックが重複している) ので、直前と全く同じ内容の `Show` が続いたときは出力を 1 つにまとめる (同じ式を 2 回続けて描いても 1 枚。`mpl_display.render` は常に描く)。
+
+**対応する要素とオプション**
+
+| 要素・オプション | 扱い |
+|----|----|
+| `Line` | 折れ線 (`PlotColor`・`Thickness` (1 px = 0.8 pt)・`Dashing` (`{1}` = 実線、実数 d = {d, d/3}、リストはインチ)・`Clip`・`Plot->True` の点・`PlotJoined->True/False/Step` と `StepRatio`・`Legend`)。4 列 {x,y,dx,dy} は誤差棒 (`ErrorBarColor`・`ErrorBarTickSize`・`ErrorBarThickness`) |
+| `Point` | 記号つきの点 (`PointSymbol` の `CI`・`LT`・`RT`・`DT`・`UT`・`SQ`・`DI`・`PL`・`TI` と `1O` 系、`PointSize`・`PointColor`・`PointBorderColor`) |
+| `Rectangle` | 箱 (`FillColor` が文字列なら塗る、`PlotColor` が枠線、`""` は枠線なし)。中に `Graphics` を持つものは入れ子の枠 |
+| `Polygon`・`Circle` | 多角形 (`FillColor`・`PlotColor`・`Thickness`・`Dashing`・`PlotJoined`)、楕円 (データ座標の半径) |
+| `Text` | 位置は `Scaled` (データ座標)・`WindowScaled`・`RectScaled`・`CanvasScaled`・数 (キャンバスのインチ)。`Anchor`・`TextAlign` (Tk の anchor: n・s・e・w・c・ne・nw・se・sw)・`TextRotate`・`Rotation`・`TextSize`・`PlotColor`・`Justify`・`Clip`・`Tags`。SAD の文字の書式 (`` `f ``=ギリシャ、`` `d ``=下付き、`` `u ``=上付き、`` `n ``) は mathtext に |
+| 色 | Tk の名前 (`dodger blue`・`tomato3` (X11 の 1〜4 = 明るさ 100・93.2・80.4・54.5%)・`gray40`・`#rrggbb`・`SystemButtonText`)。評価されていない `PlotColorDefault[…]` (OpticsPlot) は `Plot$DefaultColor` の表から枠の中の順に選ぶ |
+| `PlotRange`・`DataRange`・`Scale`・`AspectRatio`・`PlotRegion` | `Canvas.n` の `OverrideOptions`・`FrameRange`・`MakeWindow` どおり (`PlotRange` は `Automatic`・`{y1,y2}`・`{{x1,x2},{y1,y2}}`・`{x範囲, Automatic}` など。`Scale` は Linear・Log) |
+| `Frame`・`FrameTicks`・`TickSize`・`FrameColor`・`TickColor`・`Background` | `Frame->False` は枠・目盛り・格子なし。`FrameTicks` は `{下,左,上,右}` で `True` = 線と文字、`Ticks` = 線だけ、`False` = なし (下の辺の線は Canvas.n どおり常に引く)。目盛りは内向き。枠をまたいで重なる目盛りの文字は後の方を消す |
+| `GridLines` | `Automatic`・`Major` = 主目盛りの点線 + 原点の線、`Minor`・`All`・`Both`・`Axis`・`Axis[x…]`・`None`。**拡張**: 位置のリスト `{{1,2},{5,10}}` はその位置に線を引く (`Canvas.n` の `DrawGrid` は何も描かない) |
+| `FrameLabel`・`FrameUnitLabel`・`PlotLabel`・`Legend`・`LegendBG` | `FrameLabel` は `{下,左,上,右}` (文字の書式つき)。`FrameUnitLabel` は下 (x) の単位だけ。`PlotLabel` は一番上の枠の上。凡例は枠ごと (同じ名前が続けば 1 つ)、位置は matplotlib の `best` |
+| `FontScale`・`TickFontScale`・`FrameFontScale`・`LegendFontScale`・`TitleFontScale` | 文字の大きさに掛ける |
+| `RemoveOverlap` | `Canvas.n` の `Remove$Overlap` と同じ手順 (その `Tags` の文字を書いた順に、残した文字の外接矩形の和に重なるものを消す)。外接矩形は matplotlib のフォントなので、Tk の窓で残る名前とは違う (OpticsPlot の名前) |
+| `Axes` (拡張) | `Canvas.n` にない。`Frame->False` のときだけ、原点を通る軸の線を引く |
+
+**未対応 (警告して飛ばす。同じ種類の警告は 1 回)** `Hook[…]` (対話の束縛。InfoLabel など。黙って飛ばす)、`Arrow`・`ArrowShape` (線だけ描く)、`UseBG->True` の文字の背景、`TextFont` (フォントの名前・書体)、`MeshStyle` の stipple の模様 (塗りつぶしだけ)、`FrameTicks` の `{Ticks, 関数}` (目盛りの文字を関数で与える形。線だけ)、`FrameUnitLabel` の左 (y) 側、`Scale->Date`・`Date` の目盛り (Linear で描く)、`Text` の位置 `LeftTags`・`RightTags`・`AboveTags`・`BelowTags` (Tk の外接矩形が要る)、`Rectangle` の `Position->` の `Right`・`Left`・`Above`・`Below` 以外、3 列の誤差棒、`PointSymbol->Bar` の基線 `Offset` (0 からの垂線で近似)、`Initialize->False`・`Frame` (前の図に重ねる・再描画。新しい Figure を作る)、`Canvas3D`・`ListPlot3D` 系、`CanvasSymbol`、未知の要素 `Foo[…]` と文字列・数が要素の位置に来たもの、解釈できない色名 (黒にする)。マウス操作 (拡大・凡例の移動・InfoLabel のクリック) は無い。
+
+**照合** Tk の窓と画像で比べたものはない。試験 [`test_v241_mpl_display.py`](../pysad/tests/test_v241_mpl_display.py) (32 件、Agg、Tk 不要) は、`Graphics[…]` の `Line`・`Rectangle`・`Text` の個数と座標が matplotlib 側のデータ (`Line2D`・`Patch`・`Text`) と一致することを数値で確かめる: `Plot[Sin[x],{x,0,6}]` (505 点が 1e-12 以内、軸の範囲が `DataRange` の 7% の余白と `PlotRange`)、`ListPlot` (折れ線・点・誤差棒・Step・Log・`PlotRange`・`GridLines`・`Frame`・`FrameTicks`・`FrameLabel`・凡例)、`HistoPlot` (箱の数)、`OpticsPlot` (3 本の線が全点 1e-12 以内、箱 192 個の座標、名前は Graphics の `Text` の順序つきの部分列で、残った名前は互いに重ならない、枠の積み方・x 範囲)、`GeometryPlot` (線 1 本 + 多角形 73 個)、手で組んだ `Graphics` (各要素の色・太さ・破線・文字の揃え・回転・クリップ)。ほかに切替、保存 (png・pdf・svg の先頭のバイト、2 回目以降の番号)、matplotlib が無いとき、未対応の警告。例は [`example/11_graphics/fn_OpticsPlot_mpl.md`](../example/11_graphics/fn_OpticsPlot_mpl.md)。
+
+**未確認・限界** 色・線の太さ・文字の大きさの見た目は Tk の窓と比べていない (線の太さ 1 px = 0.8 pt、破線の長さ、文字の大きさ 8.5 pt × `TextSize` は目で決めた近似。キャンバス 13 × 10 インチを 0.65 倍して図にする)。`OpticsPlot` の実ラティス (大きなリング) と `BeamPlot`・`FitPlot`・`ListDensityPlot` は描いて見ていない (要素は上の表の範囲)。対話の backend の窓 (`plt.show`) は手で確認していない (Agg で保存と図のデータだけ)。PDF・SVG は保存できることだけ確認 (見た目は PNG のみ目で見た)。目盛りの位置と文字は matplotlib の自動で、`Canvas.n` の `AutoTick` とは違う (指数の表記も matplotlib 流)。凡例の位置は `Canvas.n` の `AdjustLegend` とは違う。`PYSAD_DISPLAY=mpl` のとき `DRAW` は §7b のまま (保存先は `PYSAD_DRAW_FILE`)。gs は表示環境がないので `Graphics[…]` の式の一致 (§5) までが gs との比較で、描いた図は比べられない。
 
 ## 8. 関連文書
 

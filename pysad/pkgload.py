@@ -90,9 +90,19 @@ def register(I):
         I.globals['$HaveLaTeX'] = ''
     # init.n: $DisplayFunction=If[Environment["DISPLAY"]<=>"", CanvasDrawer, Identity]。pysad は Windows などの画面があるときも CanvasDrawer
     # (tkinter に描く。tclbridge が Canvas.n を読む)。画面なし (PYSAD_NO_DISPLAY=1、Linux で DISPLAY なし) は Identity (Graphics を返すだけ)
+    # v2.4.1: 組み込み関数 MatplotlibDrawer (mpl_display.py。Graphics を matplotlib に描く) を足す。環境変数 PYSAD_DISPLAY=mpl で
+    # $DisplayFunction をそれにする (tk = CanvasDrawer、none = Identity)。未設定は従来どおり
+    from . import mpl_display
+    mpl_display.install(I)
     if '$DisplayFunction' not in I.globals:
-        gui = not os.environ.get('PYSAD_NO_DISPLAY') and (os.name == 'nt' or os.environ.get('DISPLAY'))
-        I.globals['$DisplayFunction'] = Sym('CanvasDrawer' if gui else 'Identity')
+        mode = mpl_display.display_mode_from_env()
+        if mode == 'mpl':
+            I.globals['$DisplayFunction'] = Sym('MatplotlibDrawer')
+        elif mode in ('tk', 'none'):
+            I.globals['$DisplayFunction'] = Sym('CanvasDrawer' if mode == 'tk' else 'Identity')
+        else:
+            gui = not os.environ.get('PYSAD_NO_DISPLAY') and (os.name == 'nt' or os.environ.get('DISPLAY'))
+            I.globals['$DisplayFunction'] = Sym('CanvasDrawer' if gui else 'Identity')
     _protect_builtins(I)
     return n > 0
 
