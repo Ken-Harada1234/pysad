@@ -1,6 +1,6 @@
 # 47. pysad v2 の変更の一覧 (v2.0.0・v2.1.0・v2.2.0・v2.3.0。v1 = K64 に忠実な翻訳との違い)
 
-最終更新: 2026-11-21 (v2.3.0)。節は新しい版が先: v2.3.0 (下の (a)〜(e))、v2.2.0 ((a)〜(f))、v2.1.0、v2.0.0。
+最終更新: 2026-11-22 (v2.4.1 開発中の DRAW を追記)。節は新しい版が先: v2.4.1 (開発中)、v2.3.0 (下の (a)〜(e))、v2.2.0 ((a)〜(f))、v2.1.0、v2.0.0。
 
 - v1 系は SAD (K64 版) のソースに忠実な翻訳で、K64 のバグや癖も gs の実動作に合わせて再現した。v2 系は、K64 のバグの修正、物理の誤りの修正、機能の追加を行う ([`../CHANGELOG.md`](../CHANGELOG.md))。
 - この文書は一覧。根拠の数値・条件・使い方の詳細は作業の記録 (v2.0.0 は `history/v2_changes_*.md`、v2.1.0・v2.2.0 は `history/v2next_*.md`、v2.3.0 は `history/v23_*.md`) にある。記録と例の対応は文書の末尾の「記録と例」。
@@ -9,6 +9,19 @@
   RADLIGHT は 10.2 MeV、空間電荷は 5〜50 MeV。個別の条件は各表と記録に書いた。**実機の大きなリング・挿入光源・強い結合では確かめていない。**
 - v2 の値の根拠は、解析式、独立な数値計算 (scipy の solve_ivp によるローレンツ力・Thomas-BMT の積分など)、保存則、別のコードとの一致で、gs ではない。
   gs (SAD 1.4.4.2k64、2026-10-19 ビルド) は「K64 の動作の確認」と「K64 が正しく動く機能の参照」に使った。
+
+## v2.4.1 (開発中)
+
+- **FFS の `DRAW` を matplotlib で実装** (新機能。K64 では `$DisplayFunction` が CanvasDrawer (Tk) のときだけ動き、gs は表示環境がないと何も出さない。v1 の pysad は未対応として無視していた)。互換モード (v2・k64) によらず同じ動作。結果が変わる既存の機能はない (DRAW が「無視」から「描く」に変わる。`$DisplayFunction` が Identity で保存先がなければ従来どおり何も出さない。メッセージ `[pysad] FFS command DRAW は未対応 (無視)` は出なくなった)。
+- 内容: `pysad/draw_mpl.py` (構文解析は CANVASDRAW.n、点列・単位・ラティス図・InfoLabel は OpticsPlot.n の移植)。保存先は `PYSAD_DRAW_FILE`・`Draw$Option` の `File`・Python API の `save`。`pip install pysad-k64[plot]`。詳細・限界は [docs/42 §7b](42_graphics_guide.md)。
+- 試験: `test_v25_draw_mpl.py` (33 件。構文解析、OpticsPlot の Graphics と全点一致、gs の Graphics との一致、保存、`matplotlib` が無いときの警告)。例: `example/11_graphics/fn_DRAW.*`。
+- 未解決: SADScript の `OpticsPlot[…]` の Graphics を matplotlib に流す選択肢 (`PYSAD_DISPLAY=mpl` で OpticsPlot を差し替える形) は未実装 (環境変数 `PYSAD_DISPLAY=mpl` は今のところ DRAW を matplotlib にするだけ)。窓での見た目・クリックは未確認。
+
+### DXF (ラティスの平面図の CAD 図)
+
+- **`pysad/dxf_lattice.py` と SADScript `DrawMagnetsDXF[]` (新機能。K64 にない。互換モードによらず同じ動作)**: ラティスの平面図を ASCII の DXF (R12 相当) に書き出す。基準軌道・偏向磁石・四極などの外形・MARK・要素名をレイヤー別に出す。幾何は `LINE["GEO"]` と同じ値。参考にした SAD の `drawmagvw3d.n` (VectorScript) との違いと、磁石の寸法の既定・限界は [docs/51](51_lattice_dxf.md)。結果が変わる既存の機能はない。
+- 確認: gs と pysad の台本の出力が 8 本とも全行一致、Python 関数とも一致、閉じたリングで始点と終点が合う、偏向磁石の外形の独立な幾何の確認。試験 `test_dxf_lattice.py`。例 `example/dxf_lattice/`。
+- 未解決: 立体・コイル・端板・`MagnetSpec[]` は未対応。`Spec` なしの磁石の寸法は仮の既定値。CAD ソフトで開く確認は未実施 (自前のパーサと matplotlib の描き直しのみ)。
 
 ## v2.3.0 (2026-11-21)
 

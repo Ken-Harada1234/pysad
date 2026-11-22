@@ -59,6 +59,8 @@ pysad v2 系は直訳に加えて、**オリジナルの SAD (K64) にない解�
 | 振幅・δ に依る ν のべき級数 (J²・δ 依存・交差項) | ν(Jx, Jy, δ) を J・δ のべき級数 Σ c_abp Jx^a Jy^b δ^p として (J¹ = ADTS、J²、ξ の高次、振幅と δ の交差項)。模型の 1 周の写像を TPSA で作り Birkhoff の正規形で求める。線形 + 6 極・8 極に、オプションで偏向磁石の曲率の項・運動学的な項・端部のフリンジ (FODO・ASTRID2・大きなリング A で追跡と 1e-6 前後。入れていない効果は docs/49 §13.3) | `NormalFormTune[]` / `pysad.ampnf` | [docs/49 §13](docs/49_resonance_terms_adts.md)、[example/v2_4/](example/v2_4/README.md) | v2.4.0 |
 | Touschek のバンチ内の δ の分布 (オプション) | 散乱される粒子の δ の分布 (対の重心の δ_c と相対運動量の縦成分 q_s) を入れた損失率。既定は入れない (K64・elegant・Piwinski と同じ δ=0 の基準)。ASTRID2 で受容が σδ の 9 倍のとき損失率が +4%。対のモンテカルロと 0.3% 以内 | `TouschekLifetimeLMA[BunchDelta->True, BunchQs->True]` / `pysad.touschek_bunch` | [docs/48 §4.4](docs/48_frequency_map_lma.md)、[example/v2_4/](example/v2_4/README.md) | v2.4.0 |
 | `DynamicApertureSurvey` の `ExpandElementValues`・`ReferenceOrbit` | `ExpandElementValues->False` で成分ごとの値 (補正磁石の K0・位置ずれ) を揃えない。既定 (True) は gs と同じく揃えるので、補正した状態の DA は `False` を書く (DDBA v07_14 の誤差の例で gs と pysad が 29〜36σ で一致)。`ReferenceOrbit->{x0,px0,y0,py0,z0,dp0}` はその軌道のまわりで追跡 | `DynamicApertureSurvey[…, ExpandElementValues->False]` / `pysad.dapert` | [docs/09](docs/09_dynamic_aperture.md)、[`docs/history/v24_A.md`](docs/history/v24_A.md) | v2.4.0 |
+| FFS の `DRAW` (matplotlib) | `DRAW [r1 [r2]] BX BY & EX LAT;` を Tk でなく matplotlib に描く (領域・`&` で枠を分ける・ラティス図と名前・クリックの InfoLabel)。保存は `PYSAD_DRAW_FILE` か `Draw$Option`。`OpticsPlot` の Graphics と点列が一致 (gs の Graphics と 1e-13 台)。matplotlib は任意 (`pip install pysad-k64[plot]`) | `DRAW …;` / `pysad.draw_mpl.draw` | [docs/42 §7b](docs/42_graphics_guide.md)、[example/11_graphics/fn_DRAW](example/11_graphics/fn_DRAW.md) | v2.4.1 (開発中) |
+| ラティスの CAD 図 (DXF) | ラティスの平面図 (基準軌道・偏向磁石・四極・6 極などの外形・MARK・要素名) を、テキストの DXF (R12 相当、外部ライブラリなし) に書き出す。レイヤーと色・`Region`・単位 (m・mm)・`Spec` (磁石の寸法)。gs でも pysad でも走る台本の関数と Python 関数の出力が一致 (gs と 8 本全行一致)。立体は未対応 | `DrawMagnetsDXF[]` / `pysad.dxf_lattice.write_dxf` | [docs/51](docs/51_lattice_dxf.md)、[example/dxf_lattice](example/dxf_lattice/README.md) | v2.4.1 (開発中) |
 | 6 極の検討 (試作) | 6 極の K2L の最適化の試作と、解析式による検証の可否 (結論: 検証には条件つきで使える。最適化は最終設定より DA の広い解を出せなかった) | `pysad.sxtopt` | [example/ddba/v07_14/sextupole](example/ddba/v07_14/sextupole/README.md) | v2.3.0 (試作) |
 
 <p>
@@ -230,6 +232,8 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 | [`example/v2_C/`](example/v2_C/README.md) | v2.0.0 の例 (UND の磁場、PHSROT、SOL 領域内、ずれたソレノイド、スピン追跡、RADTAPER、LOSSMAP、RADLIGHT、MEASURE・TRCOD、空間電荷 ほか)。既定の v2 モードで走る (pysad の出力のみ) |
 | [`example/v2_next/`](example/v2_next/) | v2.1.0・v2.2.0 の例 (P1〜P5: 偏極の緩和率と側帯、SynchroBeta・tradke・`face`、F1・AE の追跡、k64 の PSPAC・DAPWIDTH・WSPACSC・領域内のスピン・光子、MEASURE・DETR ≥ 1・複素の特殊関数・Tk 9.0。放射・F1・CAVI・陽子の追跡・PSPAC、スピン・MPW・RADINT、Emittance の F1・WSPAC・SOL、FREE・複素の特殊関数・Parallelize・文脈・Packages、偏極の側帯・光子・NAFF・幾何の fit、MEASURE・RadiationField・NPARA、NORFSW・光子・POL + 加速、MAIN の式・Micado・CSROYMatrix、ステアリングの F1・B108)。台本・gs の出力 (`.gs.txt`)・pysad の v2 (`.pysad.txt`)・k64 (`.pysad_k64.txt`)。A1・B1・B3・C3・D2 は README (`A1_README.md` ほか) |
 | [`example/v2_3/`](example/v2_3/README.md) | v2.3.0 の例 (Q1: 周波数マップ・局所運動量アクセプタンス・gs との比較・台本の関数。Q2: 共鳴駆動項・ADTS・クロマティシティ・厚い ⇔ 薄い・追跡と gs の比較。R1〜R5: ADTS の追跡との検証・4 次の共鳴駆動項。S1: 周波数マップの検証。T1: elegant との比較。入門の図 `primer_*`。台本ごとのまとめ `ADTS_summary.md`・`FMAP_summary.md`。台本・出力・図) |
+| [`example/11_graphics/fn_DRAW`](example/11_graphics/fn_DRAW.md) | v2.4.1 の `DRAW` (matplotlib): FODO と ASTRID2 の `DRAW BX BY & EX LAT;` の図 |
+| [`example/dxf_lattice/`](example/dxf_lattice/README.md) | v2.4.1 の `DrawMagnetsDXF[]` (ラティスの平面図の DXF): FODO・ASTRID2・KEK-LS の 1 セルと全周。台本・DXF・図・gs との一致 |
 | [`example/v2_4/`](example/v2_4/README.md) | v2.4.0 の例 (A1: ampnf の ν(J, δ) と追跡の比較、A2: K0≠0 の偏向磁石の共鳴駆動項・ADTS・ξ、A3: Touschek のバンチ内の δ と対のモンテカルロ、A4: LMA の k64・結合・誤差、A5: 周波数マップと ν(J)、A7: 大きなリングの ampnf) |
 | [`example/tools/`](example/tools/) | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか) |
 
@@ -289,6 +293,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | [`48_frequency_map_lma.md`](docs/48_frequency_map_lma.md) | 解説: 周波数マップと局所運動量アクセプタンス (LMA)。台本の関数 `FrequencyMap[]`・`MomentumAcceptance[]`・`TouschekLifetimeLMA[]` (v2.3.0) |
 | [`49_resonance_terms_adts.md`](docs/49_resonance_terms_adts.md) | 解説: 6 極の共鳴駆動項・ADTS・クロマティシティ。台本の関数 `ResonanceDrivingTerms[]`・`AmplitudeTuneShift[]`・`ChromaticityTerms[]` (v2.3.0) |
 | [`50_adts_rdt_primer.md`](docs/50_adts_rdt_primer.md) | **入門**: ADTS・RDT・周波数マップ・LMA を何をどうやって求めたか (v2.3.0。48・49 の前に読む。図と数値は `example/v2_3/primer_*`) |
+| [`51_lattice_dxf.md`](docs/51_lattice_dxf.md) | 解説: ラティスの CAD 図 (DXF)。平面図の書き出し `DrawMagnetsDXF[]` / `pysad.dxf_lattice` (v2.4.1。使い方・描くもの・限界) |
 | [`sadhelp_summary.html`](docs/sadhelp_summary.html) | SADHelp 対応文書 (13・14・15) の要約 (リポジトリ外の `perf_work/sadhelp_html.py` で md から生成) |
 | [`html/`](docs/html/) | 上の md を html にしたもの (`make_html.py` で生成。追跡しない)。手書きの `sad_wake_sigsegv_fixes_v001.html` (2026-11-14) と `_v002.html` (2026-11-16、B33 の差の原因と解消を追記) は K64 の wake まわりの SIGSEGV 3 件 (B31〜B33) の原因と修正の報告。差分は [`docs/history/sad_patch/wake_sigsegv_fixes.patch`](docs/history/sad_patch/wake_sigsegv_fixes.patch) |
 

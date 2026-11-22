@@ -1,0 +1,247 @@
+! DrawMagnetsDXF.n : ラティスの平面図 (上から見た図) をテキストの DXF (ASCII、AutoCAD R12 相当) で書き出す。
+!   gs でも pysad でも走る。pysad の Python 関数 pysad/dxf_lattice.py write_dxf と同じ出力になる。
+!   K. Oide の drawmagvw3d.n (DrawMagnets3D: VectorScript を書く) の幾何の考え方を参考にした自前版 (コードは写していない)。
+!
+! 使い方 (USE 済みのラインに対して。CALC は不要):
+!     Get["DrawMagnetsDXF.n"];
+!     DrawMagnetsDXF["ring.dxf", Region->{"QF.1", "QF.9"}, Scale->1, Spec->{"B"->{Width->.5}}];
+!   オプション (既定):
+!     Region->{}        {始点, 終点} の要素 (番号または NAME.n)。終点の要素も含む。{} なら全周
+!     Scale->1          m からの倍率 (1: m で INSUNITS=6、1000: mm、100: cm)
+!     TextHeight->.15   要素名の文字の高さ (m)。Names->False で要素名を出さない
+!     MarkSize->.1      MARK の線の長さ (m)。MarkText->True で MARK の名前も出す
+!     ArcStep->.05      BEND の軌道の折れ線の最大の角度 (rad)
+!     TextSide->-1      要素名を置く側 (-1: 進行方向の右、1: 左、0: 磁石の上)
+!     Spec->{}          磁石の寸法。{名前または型名 -> {Width->, PoleWidth->, Type->(Htype|Ctype1|Ctype2), PhysicalLength->}}
+!                       型名は "BEND" "QUAD" "SEXT" "OCT" "SOL" "CAVI" "MULT" "DECA" "DODECA" "TCAV"。名前が型名より優先
+!   レイヤーと色: BEND 1, QUAD 5, SEXT 3, OCT 6, MULT 30, SOL 4, CAVI 2, MARK 8, TRAJECTORY 7, TEXT 7
+!   SOL は長さ 0 の境界なので、BZ≠0 の SOL から次の SOL までをソレノイド領域の矩形 (レイヤー SOL) にする。
+!   局所座標 (u, v) = (入口の進行方向, 左) を入口の GEO (gx, gy, chi1) で実験室の (X, Y) に写す。
+
+DXFpair[lo_, c_, v_] := (Write[lo, c]; Write[lo, v]);
+
+DXFnum[x_, sc_] := Module[{v = x*sc},
+  If[Abs[v] < 5e-7, v = 0.];
+  StringReplace[ToString[v], " " -> ""]];
+
+DXFnum4[x_] := Module[{v = x},
+  If[Abs[v] < 5e-5, v = 0.];
+  $FORM = "F14.4";
+  v = StringReplace[ToString[v], " " -> ""];
+  $FORM = "F14.6";
+  v];
+
+DXFlook[spec_, ename_, tname_, key_, default_] := Module[{r1, r2, v},
+  r1 = ename /. spec;
+  r2 = tname /. spec;
+  v = default;
+  If[Head[r2] === List, v = key /. Join[r2, {key -> v}]];
+  If[Head[r1] === List, v = key /. Join[r1, {key -> v}]];
+  v];
+
+DXFhead[lo_, sc_] := Module[{ins = "0", lay, k},
+  If[sc == 1, ins = "6"];
+  If[sc == 1000, ins = "4"];
+  If[sc == 100, ins = "5"];
+  DXFpair[lo, "999", "plan view of the lattice (DrawMagnetsDXF); units: see $INSUNITS"];
+  DXFpair[lo, "  0", "SECTION"]; DXFpair[lo, "  2", "HEADER"];
+  DXFpair[lo, "  9", "$ACADVER"]; DXFpair[lo, "  1", "AC1009"];
+  DXFpair[lo, "  9", "$INSUNITS"]; DXFpair[lo, " 70", ins];
+  DXFpair[lo, "  0", "ENDSEC"];
+  DXFpair[lo, "  0", "SECTION"]; DXFpair[lo, "  2", "TABLES"];
+  DXFpair[lo, "  0", "TABLE"]; DXFpair[lo, "  2", "LTYPE"]; DXFpair[lo, " 70", "1"];
+  DXFpair[lo, "  0", "LTYPE"]; DXFpair[lo, "  2", "CONTINUOUS"]; DXFpair[lo, " 70", "0"];
+  DXFpair[lo, "  3", "Solid line"]; DXFpair[lo, " 72", "65"]; DXFpair[lo, " 73", "0"]; DXFpair[lo, " 40", "0.0"];
+  DXFpair[lo, "  0", "ENDTAB"];
+  DXFpair[lo, "  0", "TABLE"]; DXFpair[lo, "  2", "LAYER"]; DXFpair[lo, " 70", "11"];
+  lay = {{"0", "7"}, {"BEND", "1"}, {"QUAD", "5"}, {"SEXT", "3"}, {"OCT", "6"}, {"MULT", "30"}, {"SOL", "4"},
+         {"CAVI", "2"}, {"MARK", "8"}, {"TRAJECTORY", "7"}, {"TEXT", "7"}};
+  Do[
+    DXFpair[lo, "  0", "LAYER"]; DXFpair[lo, "  2", lay[[k, 1]]]; DXFpair[lo, " 70", "0"];
+    DXFpair[lo, " 62", lay[[k, 2]]]; DXFpair[lo, "  6", "CONTINUOUS"],
+    {k, 1, 11}];
+  DXFpair[lo, "  0", "ENDTAB"];
+  DXFpair[lo, "  0", "TABLE"]; DXFpair[lo, "  2", "STYLE"]; DXFpair[lo, " 70", "1"];
+  DXFpair[lo, "  0", "STYLE"]; DXFpair[lo, "  2", "STANDARD"]; DXFpair[lo, " 70", "0"];
+  DXFpair[lo, " 40", "0.0"]; DXFpair[lo, " 41", "1.0"]; DXFpair[lo, " 50", "0.0"]; DXFpair[lo, " 71", "0"];
+  DXFpair[lo, " 42", "0.2"]; DXFpair[lo, "  3", "txt"]; DXFpair[lo, "  4", ""];
+  DXFpair[lo, "  0", "ENDTAB"];
+  DXFpair[lo, "  0", "ENDSEC"];
+  DXFpair[lo, "  0", "SECTION"]; DXFpair[lo, "  2", "ENTITIES"]];
+
+DXFvertex[lo_, layer_, x_, y_, sc_] := (
+  DXFpair[lo, "  0", "VERTEX"]; DXFpair[lo, "  8", layer];
+  DXFpair[lo, " 10", DXFnum[x, sc]]; DXFpair[lo, " 20", DXFnum[y, sc]]; DXFpair[lo, " 30", "0.000000"]);
+
+DXFpolyhead[lo_, layer_, closed_] := (
+  DXFpair[lo, "  0", "POLYLINE"]; DXFpair[lo, "  8", layer]; DXFpair[lo, " 66", "1"];
+  DXFpair[lo, " 10", "0.000000"]; DXFpair[lo, " 20", "0.000000"]; DXFpair[lo, " 30", "0.000000"];
+  DXFpair[lo, " 70", If[closed, "1", "0"]]);
+
+DXFseqend[lo_, layer_] := (DXFpair[lo, "  0", "SEQEND"]; DXFpair[lo, "  8", layer]);
+
+DXFtext[lo_, x_, y_, h_, rot_, s_, sc_] := Module[{xs = DXFnum[x, sc], ys = DXFnum[y, sc]},
+  DXFpair[lo, "  0", "TEXT"]; DXFpair[lo, "  8", "TEXT"];
+  DXFpair[lo, " 10", xs]; DXFpair[lo, " 20", ys]; DXFpair[lo, " 30", "0.000000"];
+  DXFpair[lo, " 40", DXFnum[h, sc]]; DXFpair[lo, "  1", s];
+  DXFpair[lo, " 50", DXFnum4[rot]]; DXFpair[lo, " 72", "1"];
+  DXFpair[lo, " 11", xs]; DXFpair[lo, " 21", ys]; DXFpair[lo, " 31", "0.000000"]; DXFpair[lo, " 73", "2"]];
+
+! 局所 (u, v) → 実験室 (X, Y)。g = 入口の {gx, gy, chi1}
+DXFx[g_, u_, v_] := g[[1]] + u*Cos[g[[3]]] - v*Sin[g[[3]]];
+DXFy[g_, u_, v_] := g[[2]] + u*Sin[g[[3]]] + v*Cos[g[[3]]];
+
+DXFgeo[k_, f_] := Module[{g = LINE["GEO", k + f]}, {g[[1, 1]], g[[1, 2]], g[[2, 1]]}];
+
+DXFwrap[a_] := Module[{x = a},
+  While[x > Pi, x = x - 2*Pi];
+  While[x <= -Pi, x = x + 2*Pi];
+  x];
+
+! 1 台の磁石 (要素 ia1 … ia2、型 it) を書く
+DXFgroup[lo_, ia1_, ia2_, it_, sc_, th_, nm_, ts_, spec_] := Module[
+  {layer, wdef, ename, tname, g0, g1, lc0, width, angle, bendlike, polew, typ, e1, e2, phys, la, lc, hs, wl, wr, ah,
+   r1, r2, r3, r4, pe, ds, c, s, poly, k, cu, cv, vt, rot},
+  layer = "MULT"; wdef = .3; tname = "MULT";
+  Switch[it,
+    2, layer = "BEND"; wdef = .63; tname = "BEND",
+    4, layer = "QUAD"; wdef = .45; tname = "QUAD",
+    6, layer = "SEXT"; wdef = .3; tname = "SEXT",
+    8, layer = "OCT"; wdef = .3; tname = "OCT",
+    10, tname = "DECA",
+    12, tname = "DODECA",
+    22, tname = "MULT",
+    20, layer = "SOL"; wdef = .4; tname = "SOL",
+    31, layer = "CAVI"; wdef = .4; tname = "CAVI",
+    32, layer = "CAVI"; wdef = .4; tname = "TCAV"];
+  ename = LINE["ELEMENT", ia1];
+  g0 = DXFgeo[ia1, 0];
+  g1 = DXFgeo[ia2 + 1, 0];
+  lc0 = Sqrt[(g1[[1]] - g0[[1]])^2 + (g1[[2]] - g0[[2]])^2];
+  If[lc0 >= 1e-12,
+    width = DXFlook[spec, ename, tname, Width, wdef];
+    angle = 0.;
+    bendlike = (it == 2 || (it == 22 && LINE["ANGLE", ia1] <> 0));
+    phys = DXFlook[spec, ename, tname, PhysicalLength, None];
+    If[bendlike,
+      angle = DXFwrap[g1[[3]] - g0[[3]]];
+      polew = DXFlook[spec, ename, tname, PoleWidth, .13];
+      typ = DXFlook[spec, ename, tname, Type, Htype];
+      e1 = 0.; e2 = 0.;
+      If[it == 2,
+        e1 = If[LINE["DIR", ia1] == 1, LINE["E1", ia1], LINE["E2", ia1]]*LINE["ANGLE", ia1];
+        e2 = If[LINE["DIR", ia2] == 1, LINE["E2", ia2], LINE["E1", ia2]]*LINE["ANGLE", ia2]];
+      If[phys === None,
+        la = If[angle == 0, lc0, angle/2/Sin[angle/2]*lc0],
+        la = phys];
+      lc = If[angle == 0, la, 2*Sin[angle/2]/angle*la];
+      hs = If[Abs[angle] < 1e-10, 0., la/angle*Sin[angle/4]^2];
+      wr = width/2; wl = width/2;
+      Switch[typ,
+        Ctype1, If[angle >= 0, wr = polew/2; wl = width - wr, wl = polew/2; wr = width - wl],
+        Ctype2, If[angle < 0, wr = polew/2; wl = width - wr, wl = polew/2; wr = width - wl]];
+      ah = angle/2;
+      r1 = (wl - hs)/Cos[e1 - ah];
+      r2 = (wr + hs)/Cos[e1 - ah];
+      r3 = (wr + hs)/Cos[e2 - ah];
+      r4 = (wl - hs)/Cos[e2 - ah];
+      pe = {Cos[ah]*lc, Sin[ah]*lc};
+      ds = (lc0 - lc)/2;
+      c = Cos[ah]; s = Sin[ah];
+      poly = {{-r1*Sin[e1], r1*Cos[e1]},
+              {r2*Sin[e1], -r2*Cos[e1]},
+              {pe[[1]] + r3*Sin[angle - e2], pe[[2]] - r3*Cos[angle - e2]},
+              {pe[[1]] - r4*Sin[angle - e2], pe[[2]] + r4*Cos[angle - e2]}};
+      poly = {#[[1]] + ds*c, #[[2]] + ds*s}& /@ poly,
+      lc = If[phys === None, lc0, phys];
+      ds = (lc0 - lc)/2;
+      poly = {{ds, width/2}, {ds, -width/2}, {ds + lc, -width/2}, {ds + lc, width/2}}];
+    DXFpolyhead[lo, layer, True];
+    Do[DXFvertex[lo, layer, DXFx[g0, poly[[k, 1]], poly[[k, 2]]], DXFy[g0, poly[[k, 1]], poly[[k, 2]]], sc], {k, 1, 4}];
+    DXFseqend[lo, layer];
+    If[nm,
+      cu = (poly[[1, 1]] + poly[[2, 1]] + poly[[3, 1]] + poly[[4, 1]])/4;
+      cv = (poly[[1, 2]] + poly[[2, 2]] + poly[[3, 2]] + poly[[4, 2]])/4;
+      vt = cv;
+      If[ts <> 0, vt = cv + ts*(width/2 + th)];
+      rot = (g0[[3]] + angle/2)*180/Pi;
+      rot = rot + 180; rot = rot - 360*Floor[rot/360]; rot = rot - 180;
+      If[rot > 90, rot = rot - 180, If[rot <= -90, rot = rot + 180]];
+      DXFtext[lo, DXFx[g0, cu, vt], DXFy[g0, cu, vt], th, rot, ename, sc]];
+    1,
+    0];
+  ];
+
+DrawMagnetsDXF[file_, opt___] := Module[
+  {op, def, lo, sc, th, nm, msz, mtx, astep, ts, spec, rg, nlat, li, lf, p, i, j, n, angi, angp, typi, typp,
+   g, lx, ly, nv, it, gname, start, is1, last, t, name, same, nxt, samenext, stop, h, oldform, sol0},
+  def = {Region -> {}, Scale -> 1, TextHeight -> .15, Names -> True, MarkSize -> .1, MarkText -> False,
+         ArcStep -> .05, TextSide -> -1, Spec -> {}};
+  op = Join[{opt}, def];
+  sc = Scale /. op; th = TextHeight /. op; nm = Names /. op; msz = MarkSize /. op; mtx = MarkText /. op;
+  astep = ArcStep /. op; ts = TextSide /. op; spec = Spec /. op; rg = Region /. op;
+  nlat = LINE["LENGTH"];
+  li = 1; lf = nlat - 1;
+  If[rg <> {},
+    p = rg[[1]];
+    If[Head[p] === String, p = LINE["POSITION", p]; If[Head[p] === List, p = p[[1]]]];
+    li = p;
+    p = rg[[2]];
+    If[Head[p] === String, p = LINE["POSITION", p]; If[Head[p] === List, p = p[[Length[p]]]]];
+    lf = Min[p, nlat - 1]];
+  oldform = $FORM; $FORM = "F14.6";
+  lo = OpenWrite[file];
+  DXFhead[lo, sc];
+  ! ---- 基準軌道
+  DXFpolyhead[lo, "TRAJECTORY", False];
+  nv = 0; lx = 0.; ly = 0.;
+  Do[
+    angi = LINE["ANGLE", i];
+    angp = 0.; typp = 0;
+    If[i > li, angp = LINE["ANGLE", i - 1]; typp = LINE["TYPE", i - 1]];
+    typi = LINE["TYPE", i];
+    If[i == li || angi <> 0 || angp <> 0 || typi == 35 || typp == 35,
+      g = DXFgeo[i, 0];
+      If[nv == 0 || lx <> g[[1]] || ly <> g[[2]], DXFvertex[lo, "TRAJECTORY", g[[1]], g[[2]], sc]; nv = nv + 1; lx = g[[1]]; ly = g[[2]]]];
+    If[angi <> 0,
+      n = Max[1, -Floor[-(Abs[angi]/astep - 1e-9)]];
+      Do[
+        g = DXFgeo[i, j/n];
+        If[lx <> g[[1]] || ly <> g[[2]], DXFvertex[lo, "TRAJECTORY", g[[1]], g[[2]], sc]; nv = nv + 1; lx = g[[1]]; ly = g[[2]]],
+        {j, 1, n - 1}]],
+    {i, li, lf}];
+  g = DXFgeo[lf + 1, 0];
+  If[lx <> g[[1]] || ly <> g[[2]], DXFvertex[lo, "TRAJECTORY", g[[1]], g[[2]], sc]; nv = nv + 1];
+  DXFseqend[lo, "TRAJECTORY"];
+  ! ---- 磁石と MARK
+  it = 0; gname = ""; start = False; is1 = 0; sol0 = 0;
+  Do[
+    last = (i > lf);
+    t = 0; name = "";
+    If[Not[last], t = LINE["TYPE", i]; name = LINE["ELEMENT", i]];
+    If[start,
+      same = (Not[last] && t == it && name === gname);
+      nxt = Min[i + 1, nlat];
+      samenext = (Not[last] && i + 1 <= lf && LINE["TYPE", nxt] == it && LINE["ELEMENT", nxt] === gname);
+      stop = (Not[same] && (last || LINE["L", i] <> 0 || Not[samenext]));
+      If[stop,
+        DXFgroup[lo, is1, i - 1, it, sc, th, nm, ts, spec];
+        start = False; it = 0]];
+    If[Not[last] && t == 20,
+      If[sol0 > 0, DXFgroup[lo, sol0, i - 1, 20, sc, th, nm, ts, spec]; sol0 = 0];
+      If[LINE["BZ", i] <> 0, sol0 = i]];
+    If[last && sol0 > 0, DXFgroup[lo, sol0, lf, 20, sc, th, nm, ts, spec]];
+    If[Not[start] && Not[last] && (t == 2 || t == 4 || t == 6 || t == 8 || t == 10 || t == 12 || t == 22 || t == 31 || t == 32),
+      it = t; gname = name; is1 = i; start = True];
+    If[Not[last] && t == 41,
+      g = DXFgeo[i, 0];
+      h = msz/2;
+      DXFpair[lo, "  0", "LINE"]; DXFpair[lo, "  8", "MARK"];
+      DXFpair[lo, " 10", DXFnum[DXFx[g, 0, h], sc]]; DXFpair[lo, " 20", DXFnum[DXFy[g, 0, h], sc]]; DXFpair[lo, " 30", "0.000000"];
+      DXFpair[lo, " 11", DXFnum[DXFx[g, 0, -h], sc]]; DXFpair[lo, " 21", DXFnum[DXFy[g, 0, -h], sc]]; DXFpair[lo, " 31", "0.000000"];
+      If[mtx, DXFtext[lo, DXFx[g, 0, h + th], DXFy[g, 0, h + th], th, 0., name, sc]]],
+    {i, li, lf + 1}];
+  DXFpair[lo, "  0", "ENDSEC"]; DXFpair[lo, "  0", "EOF"];
+  Close[lo];
+  $FORM = oldform;
+  file];

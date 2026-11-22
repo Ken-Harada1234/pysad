@@ -18,7 +18,7 @@
 **v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。保存してあった旧い出力は `PYSAD_COMPAT=k64` の出力と同じ (確認済み)。v2 は K64 のバグを直したので (`docs/47_v2_changes.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ 数値と戻りの式の形は一致。
-- `draw` コマンド: gs は表示のない環境では何も出さずに通る。`$DisplayFunction = TopDrawer;` を付けると、この環境では gs が戻らなかった (25 秒待っても止まったまま) ので付けていない。`FFS["draw bx",12]` は K64 版 gs では内部エラー (`FFSCanvasDraw` の中) で落ちた。pysad は `draw` を未対応として無視し、メッセージを出す。
+- `draw` コマンド: gs は表示のない環境では何も出さずに通る。`$DisplayFunction = TopDrawer;` を付けると、この環境では gs が戻らなかった (25 秒待っても止まったまま) ので付けていない。`FFS["draw bx",12]` は K64 版 gs では内部エラー (`FFSCanvasDraw` の中) で落ちた。pysad は v2.4.1 から `draw` を matplotlib で描く (保存先 `PYSAD_DRAW_FILE` か対話表示。docs/42 §7b。ここの `.pysad.txt` は v2.4.0 までの実行で、未対応のメッセージが残っている)。
 - topdrawer 形式のファイルを手書きで作る例は `pf/optics/FFS_draw_topdrawer_PF`。
 
 ## 未確認・限界

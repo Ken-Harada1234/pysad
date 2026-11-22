@@ -3543,7 +3543,11 @@ class FFS:
             r_ = _fx.run(self, W, words, i)
             if r_ is not None:
                 return r_
-        if W in ('DRAW', 'GEO', 'SHOW', 'STAT', 'STATUS', 'VARS', 'VARIABLES', 'VARY',
+        if W == 'DRAW':
+            # v2.4.1: matplotlib で描く (pysad/draw_mpl.py。CANVASDRAW.n の構文解析の移植)。$DisplayFunction が Identity で保存先も無ければ K64 と同じく何もしない
+            from . import draw_mpl as _dm
+            return _dm.run_draw(self, words, i)
+        if W in ('GEO', 'SHOW', 'STAT', 'STATUS', 'VARS', 'VARIABLES', 'VARY',
                  'BEAM', 'MATRIX', 'MAT', 'ALIGN', 'ATT', 'ATTRIBUTE',
                  'INC', 'INCLUDE', 'REC', 'RECOVER', 'REJ', 'REJECT', 'SCALE', 'RENUM', 'REV', 'REVERSE', 'ZAP', 'DIMAD',
                  'SYNCHROB', 'REF', 'REFERENCE', 'MEASURE', 'TRC', 'TRCOD', 'PRINT'):

@@ -152,7 +152,7 @@ v2 モードの実装は、特記がなければ**gs と比べていない** (gs
 | 複素の `PolyLog`・`HypergeometricU`・`HurwitzZeta` | gs が誤る点がある (B118〜B120: 非整数次の PolyLog の Re z < 0・Im z ≤ 0・\|z\| > 1、HypergeometricU の b が整数、HurwitzZeta の複素の s で a の畳み方によって誤る)。pysad は両モードで真値 |
 | gs が落ちる | `RadiationField` の SIGSEGV (B49。ほかの引数の渡し方でも落ちる)、`TRCOD` の SIGSEGV と MEASURE の無出力・MAIN の TRACK (B42。先頭の MARK の位置だけ動く: B151)・`ON FOURIER` の TRACK の SIGSEGV (`tinip`)、`TCAVI` の L≠0 (B36)、PSPAC の既定 (`PSPACNZ=1`、B93)、`SPAC` で粒子数が少ない (2〜33 個などで SIGSEGV・NaN。**原因は粒子数が少ないことで RADIUS の大きさではない**: spkick.f の spmesh の添字。B98)、BEAMBEAM が SOL 領域内にある配置 (B35)、`RenumberElement` (B51)、`BYE ALL` (SIGSEGV)。**`SynchroBeta` の結合ラティスで gs が落ちるという以前の記述は再現しなかった** (24 セル FODO + skew 四極で gs は落ちず k64 と 7 桁一致。SOL・強い結合で落ちるかは未確認) |
 | gs が誤った値を返す | SPAC の力が 1/γ 倍に弱い (B89。解析式の K/γ に近い)、領域内の BEND の偏向をほぼ無視する (B69)、SOL (BZ≠0) 領域内の四極 + RAD (B68)、WSPAC のチューンシフトが 3〜4% 強い (B127)、WSPAC ON の CALC・CALC6D が NaN (B133)、`Polarization` (B55・B125)、光子の偏光 ξ1 が ±1 を超える (B123)、`Union` の `SameTest` (B121)、`CSRSetupOY` の出力で `CSROYMatrix` が wrongtype (B60)、複素引数の特殊関数 (B158)、`MARK` の `DETR` (B159)、`CorrectOrbit` の `Bump->` (B155)、MAIN の末尾の演算子 (B156) |
-| `draw` コマンド | gs は表示環境がないと出力せず、`FFS["draw ...",12]` は内部エラー。pysad は無視する |
+| `draw` コマンド | gs は表示環境がないと出力せず、`FFS["draw ...",12]` は内部エラー。pysad は v2.4.1 から matplotlib で描く (`pysad/draw_mpl.py`、[docs/42 §7b](42_graphics_guide.md))。比べられるのは描く前のデータ (OpticsPlot の Graphics の点列・箱・名前) で、gs と 1e-12 台で一致。画像・窓の見た目は gs と比べていない |
 
 ## 6. 実装・解消して一覧から外したもの (現状)
 
@@ -277,3 +277,17 @@ v2 モードの実装は、特記がなければ**gs と比べていない** (gs
 - **四極の本体の積分器 (K64 の tsolqu・tsolque、B226)**: 軌道が 3 mm・2 mrad ずれた四極 1 台のヤコビアンが厳密な写像と 1e-7 違い、追跡と CALC のチューンの AE に依らない K0² の差 (K0 = 0.006 で 2.3e-6) の原因。v2 でも未修正 (刻み 14 倍か 4 次の合成が要り、積分器が 11 か所に重複)。次の手: 共通の四極の本体の関数に 4 次の合成を入れ、軌道がほぼ 0 のときは従来の刻みのままにして性能を保つ。
 - MULT の端の縦収束は薄い蹴りの縦成分 (厳密な Maxwell と 2e-5)。追跡の Jx が Emittance[] の収束値より 0.27% 小さい (B227: 追跡の放射の刻み `ndivrad` の既定が粗い。EPS=0.1・0.01 で 0.9272 → 0.9292・0.9294 → Emittance[] の 0.9296。K1 < 0 の MULT に限らない。v2 でも未修正: 刻みを細かくすると放射つき追跡が遅くなる)。
 - B143 の「残る 2.7%」・「CALC の分散に K0 の発生が無い」は誤りではないと確認した (B222)。docs/46 の上の記述 (行 84・136・241) と docs/history/v24_RAD.md には取り消し線で訂正を入れた。
+
+## v2.4.1 DXF (ラティスの平面図の CAD 図、`pysad/dxf_lattice.py`・`DrawMagnetsDXF[]`) の未対応・未確認
+
+K64 にない新機能 ([docs/51](51_lattice_dxf.md))。gs との照合は、同じ台本の出力 (DXF のテキスト) の全行一致。
+
+| 項目 | 状態 |
+|---|---|
+| 立体 (3D) の図 | 未対応 (平面図だけ。`drawmagvw3d.n` の Poly3D・Xtrd・Set3Drot に当たるものは作らない) |
+| 偏向磁石のコイル・端板・曲がった磁極・高さ (CoilExtension・CoilWidth・CoilHeight・DrawCoils・EndPlate・CurvedPole・Height) | 未対応 (4 角形の外形だけ) |
+| `MagnetSpec[]` (modules_general.n のユーザー関数) の読み込み | 未対応。`Spec`/`spec` で与える。与えないときの既定の幅 (BEND 0.63 m・QUAD 0.45 m は原版と同じ、SEXT・OCT・MULT 0.30 m、SOL・CAVI 0.40 m は仮の値) は実機の寸法ではない |
+| 垂直面の幾何 (chi2・ROTATE のある偏向磁石、垂直ステアリング) | 平面の chi1 だけを使う。ROTATE のある BEND は偏向角 0 の矩形に見える |
+| 長さ 0 の磁石 (薄い MULT など)、ANGLE≠0 の MULT の端面 | 描かない / E1=E2=0 のセクター形 |
+| CAD ソフトで開く確認 | **未確認** (ezdxf・AutoCAD・LibreCAD・Vectorworks では開いていない。自前のパーサと matplotlib の描き直しだけ)。TEXT の中央寄せ・`$INSUNITS` の扱いは CAD で違うかもしれない |
+| `drawmagvw3d.n` と違う点 | 同名の要素だけをまとめる、直後の別の磁石を落とさない、出口の面の半幅を入口と同じにする、物理長を弦の中央に置く (docs/51 §2)。原版の出力 (VectorScript) と図を比べてはいない |

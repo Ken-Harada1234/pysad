@@ -18,6 +18,7 @@ Plot 系の関数の例。グラフは Tk の窓に出るので標準出力に�
 | [fn_PointSymbol](fn_PointSymbol.md) | PointSymbol の一覧 (未確認だった) | ○ (2026-11-17 に修正。名前の文字も項目 30 も一致) |
 | [fn_LaTeX](fn_LaTeX.md) | LaTeX 文字列 (未確認だった) | ○ (両方 LaTeX 無効の状態で一致。LaTeX 有効時は未確認) |
 | [fn_OpticsPlot](fn_OpticsPlot.md) | OpticsPlot (BX BY EX と配置) | △ (項目数 308 対 313、文字の重なり消し) |
+| [fn_DRAW](fn_DRAW.md) | FFS の DRAW (v2.4.1、matplotlib。FODO・ASTRID2) | gs は表示環境がなく描けない。描く前のデータは gs の Graphics と一致 (docs/42 §7b) |
 | [fn_GeometryPlot](fn_GeometryPlot.md) | GeometryPlot | ○ |
 | [fn_BeamPlot](fn_BeamPlot.md) | BeamPlot (未確認だった) | △ (gs は楕円なし、pysad は描く) |
 

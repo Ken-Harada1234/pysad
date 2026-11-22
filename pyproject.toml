@@ -20,6 +20,9 @@ classifiers = [
 ]
 dependencies = ["numpy", "numba", "scipy"]
 
+[project.optional-dependencies]
+plot = ["matplotlib"]       # FFS の DRAW (pysad/draw_mpl.py、v2.4.1)。無くても DRAW 以外は動く
+
 [project.urls]
 Homepage = "https://github.com/Ken-Harada1234/pysad"
 Source = "https://github.com/Ken-Harada1234/pysad"

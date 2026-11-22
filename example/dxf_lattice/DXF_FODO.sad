@@ -1,0 +1,26 @@
+MOMENTUM = 3GEV;
+! FODO ring: 24 cells, 15 deg bend per cell (2*pi total), 3 GeV
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.5E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+
+FFS;
+$FORM = "14.9";
+Get["DrawMagnetsDXF.n"];
+USE RING;
+Print["USE RING: ", LINE["LENGTH"] - 1, " elements, L = ", LINE["S", LINE["LENGTH"]], " m"];
+DrawMagnetsDXF["DXF_FODO_ring.dxf"];
+Print["  wrote DXF_FODO_ring.dxf"];
+g1 = LINE["GEO", 1]; g2 = LINE["GEO", LINE["LENGTH"]];
+Print["  start (gx, gy, chi1) = ", g1[[1, 1]], " ", g1[[1, 2]], " ", g1[[2, 1]]];
+Print["  end   (gx, gy, chi1) = ", g2[[1, 1]], " ", g2[[1, 2]], " ", g2[[2, 1]]];
+DrawMagnetsDXF["DXF_FODO_ring_spec.dxf", Spec->{"B"->{Width->.5, PoleWidth->.15, Type->Ctype1}, "QF"->{Width->.3, PhysicalLength->.26}, "QUAD"->{Width->.36}}];
+Print["  wrote DXF_FODO_ring_spec.dxf"];
+DrawMagnetsDXF["DXF_FODO_region_mm.dxf", Region->{"QF.1", "QF.4"}, Scale->1000, TextHeight->.1];
+Print["  wrote DXF_FODO_region_mm.dxf"];
+Exit;

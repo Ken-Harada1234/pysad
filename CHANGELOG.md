@@ -6,6 +6,21 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## v2.4.1 (開発中)
+
+**FFS の `DRAW` を matplotlib で実装 (新機能。互換モードによらず同じ動作)**: K64 の `DRAW` は `Packages/CANVASDRAW.n` が `OpticsPlot` を呼び、`$DisplayFunction` が `CanvasDrawer` (Tk) のときだけ動く (gs は表示環境がないと何も出さない)。pysad は Tk に依らず matplotlib に描く ([`pysad/draw_mpl.py`](pysad/draw_mpl.py)、`pip install pysad-k64[plot]`。matplotlib は遅延 import で必須ではなく、無ければ DRAW は警告して何もしない)。
+- 構文は CANVASDRAW.n の移植: `DRAW [r1 [r2]] 関数… [& 関数…]… [LAT|LATTICE|要素名];` (`SeparateAmpsnd`・r1 r2 の整数/要素名と失敗時の既定・`&` で枠を分ける・`LAT`・要素名・読まなかった語は次のコマンドへ)。OpticsPlot.n の点列 (`OpticsList`)・単位 (`Optics$Unit`)・ラティス図 (`LatticePlot`)・InfoLabel (クリックで要素と光学関数) を移植。
+- 出力: 環境変数 `PYSAD_DRAW_FILE` (png・pdf・svg)、`Draw$Option={File->"x.png",…}`、Python API `draw_mpl.draw(ffs, "BX BY & EX LAT", region=(r1,r2), save="x.png")` (Figure を返す)。保存先がなければ対話の backend のときだけ `plt.show` (Agg では何も出さない)。`$DisplayFunction` が Identity で保存先もなければ K64 と同じく何もしない。
+- gs との照合: gs は画像を出せないので、`OpticsPlot[…, DisplayFunction->Identity]` が返す Graphics の `Line`・`Rectangle`・`Text` と、matplotlib に渡すデータを比較。pysad の Graphics と全点 1e-12 以内、gs の Graphics (FODO と ASTRID2 全周) と相対差 1.7e-13 以内で一致。試験 `test_v25_draw_mpl.py` (33 件)。
+- 例: [`example/11_graphics/fn_DRAW.md`](example/11_graphics/fn_DRAW.md)。解説は [docs/42 §7b](docs/42_graphics_guide.md)、一覧は [docs/47](docs/47_v2_changes.md) の v2.4.1。
+- 未確認・未実装: 窓の見た目・クリックの対話 (Agg の試験のみ)、SADScript の `OpticsPlot[…]` の Graphics 自体を matplotlib に流す選択肢 (`$DisplayFunction` 相当。未実装)、文字の重なり消しは gs の窓と違う。CALC していなければ pysad は先に光学を計算する (gs の OpticsPlot は 0 を描く)。
+
+**DXF: ラティスの平面図の CAD 図 (新機能。互換モードによらず同じ動作)**: ラティスを上から見た図を、テキストの DXF (ASCII、AutoCAD R12 相当。外部ライブラリなし) に書き出す ([`pysad/dxf_lattice.py`](pysad/dxf_lattice.py) の `write_dxf`・`load_ffs`・`read_dxf`、SADScript の `DrawMagnetsDXF[file, options]` = [`example/dxf_lattice/DrawMagnetsDXF.n`](example/dxf_lattice/DrawMagnetsDXF.n)。gs でも pysad でも走る)。SAD の `drawmagvw3d.n` (VectorScript を書き出す `DrawMagnets3D`) の幾何の考え方を参考にした自前版 (コードは写していない)。
+- 内容: 基準軌道 (`LINE["GEO"]` の折れ線、円弧は `GEO` の分数位置)、偏向磁石の 4 角形 (ANGLE・E1・E2・長さ・Width・PoleWidth・Htype/Ctype)、四極・6 極・8 極・RF などの矩形、MARK の線、要素名 (TEXT)。レイヤー BEND・QUAD・SEXT・OCT・MULT・SOL・CAVI・MARK・TRAJECTORY・TEXT と色番号、単位 m (`INSUNITS`=6、`Scale` で mm・cm)、`Region`、`Spec` (磁石の寸法)。
+- 確認: gs と pysad で同じ台本が 8 本の DXF を全行一致、Python 関数とも一致。閉じたリングの始点と終点 (FODO 1.7e-14 m、KEK-LS 8e-8 m)。偏向磁石の外形の独立な幾何の確認。試験 `test_dxf_lattice.py` (10 件。ezdxf があれば 1 件追加)。
+- 例: [`example/dxf_lattice/`](example/dxf_lattice/README.md) (FODO・ASTRID2・KEK-LS の 1 セルと全周)。解説は [docs/51](docs/51_lattice_dxf.md)、一覧は [docs/47](docs/47_v2_changes.md) の v2.4.1。
+- 未対応・未確認: 立体 (3D)・コイル・端板・曲がった磁極・`MagnetSpec[]` は未対応、`Spec` なしの寸法は仮の既定値 (実機の寸法ではない)、CAD ソフトでは開いていない。
+
 ## v2.4.0 (2026-11-22)
 
 **v2.4.0 D (放射・スピン・偏向磁石、v2 のみ。k64 不変)**: B164 (BEND の T[z, δ] の微分の誤りを厳密に)、B165 (BEND の本体の運動量の向きの磁場 B∥: Maxwell 場つきの Thomas-BMT の積分が基準)、B167 (放射の β の因子: `pysad/radbeta.py`、陽子の U0・εx・減衰率、RADINT の陽子)。試験 `test_v24_D_radbeta.py`・`test_v24_D_spin_bpar.py`。未着手と未確認は docs/46 の「v2.4.0 D」。

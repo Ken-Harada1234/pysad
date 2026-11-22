@@ -175,6 +175,38 @@ g=BeamPlot["QF.5",{"X","Y"},DisplayFunction->Identity,SizeFunction->"SIG"];
 - 描画の窓は tkinter。Windows のほかは試していない (gs の比較は WSLg の X11)。
 - GUI の試験は全体実行で不安定なことがある (§5)。環境変数がないと skip になるので、評価器を変えたら `PYSAD_SAD_PACKAGES` を付けて試験を回すこと。
 
+## 7b. DRAW (matplotlib) — v2.4.1
+
+FFS の `DRAW` コマンドを、Tk のキャンバスを使わず matplotlib で描く ([`pysad/draw_mpl.py`](../pysad/draw_mpl.py)。`pip install matplotlib`。無くても DRAW 以外は動き、DRAW は警告して何もしない)。
+
+**K64 の DRAW**: `src/tffsa.f` が `System`CANVASDRAW[]` を評価し、実体は `Packages/CANVASDRAW.n` が `OpticsPlot[list, Region->{r1,r2}, Lattice->…, Names->…, GridLines->{None,Automatic}, InfoLabel->True, PlotLabel->TITLE]` を呼ぶ。`$DisplayFunction` が `CanvasDrawer` でなければ何もしない。gs は表示環境がないと何も出さず、`FFS["draw ...",12]` は内部エラー (docs/46 §5)。
+
+**構文** `DRAW [r1 [r2]] 関数 [関数 …] [& 関数 …] … [LAT|LATTICE|要素名];`
+- r1・r2: 整数か要素名 (`LINE["POSITION"]`)。読めなければ r1=1 でその語は関数として読み、r2 の失敗は `LINE["LENGTH"]`。複数の要素に合う名前は最初の位置。
+- 関数: `Twiss$Label` が空でない名前 (BX・BY・EX・EY・NX・NY・EPX・PEX・PEPX・AX・BZ・ZX・DETR・R1〜R4、R・D を付けた参照光学 (RBX・DBX …)、BMAGX、BZS・BZT・GX …、SIGX・SIZEXX など)。BX・BY・BZ は √β を描く。`&` か `&` を語に付けて (`BX&BY`) 図 (枠) を分け、縦に積んで s の軸を共有する。1 つの枠に単位の違う関数があるときは、先頭と同じ単位だけを描く (OpticsPlot::units)。
+- `LAT`・`LATTICE`: ラティス図を一番下に付ける (枠の高さの 0.23 倍)。要素名 (パターン可、`b*`) を書くと、ラティス図 + その名前だけを表示 (`Names->w`)。LAT のときの名前は全要素 (`Names->"*"`) で、重なる文字は消す。それ以外の語は DRAW が読まずに次のコマンドへ返す (`DRAW BX CALC;` は CALC を実行する)。
+- 単位は `Optics$Unit` と同じに振幅で選ぶ (EX は mm、位相 NX は 2π を単位に、正の関数 (BX など) は 0 から)。`TITLE` を図の題にする。
+- ラティス図は OpticsPlot.n の `LatticePlot` の箱 (四極 0.8 limegreen、偏向 0.4 gold (ANGLE=0 は tomato)、6 極以上 0.6 skyblue、ドリフト 0.08 で塗りなし、MULT は TRPT で 0.5/0.8、RF 0.3 …)。これは **ラティス配置図 (長直線部を細線 0.55 pt、その他の基準軌道 1.8 pt、偏向磁石 3 pt で描く図) とは別物**で、OpticsPlot の枠の下の簡略図。
+- InfoLabel: 図をクリックすると、その s の要素の入口の名前・位置・K・β・α・ν・η・η'・R を注釈に出す (OP$InfoLabel。右クリックで消す)。OpticsPlot.n の R3,4 の行は R4 を出すべきところに R2 を出している (誤記と見て R4)。Python API の `tunes=True` でチューンと周長を図に添える (SAD にない追加)。
+
+**出力** 保存先があれば保存して表示しない: 環境変数 `PYSAD_DRAW_FILE` (拡張子 png・pdf・svg。同じ DRAW が 2 回目以降は `名前_2.png` のように番号を付け、`{n}` があれば番号に置き換える)、または SAD 側の `Draw$Option={File->"x.png"}`。保存先がなければ、対話の backend のときだけ `plt.show` (Agg など非対話では何も出さない)。`$DisplayFunction` が Identity (headless の既定) で保存先もなければ K64 と同じく何もしない。`Draw$Option` は CANVASDRAW.n と同じく最優先 (`Region`・`Lattice`・`Names`・`GridLines`・`InfoLabel`・`PlotLabel` と、pysad の拡張 `File`・`Show`・`Tunes`)。`$DisplayFunction` が CanvasDrawer か `MatplotlibDrawer` なら matplotlib で描く。対話表示した窓は、スクリプトの終了時に閉じるまで残す (`PYSAD_DRAW_BLOCK=0` で残さない)。
+
+```python
+from pysad.ffscmd import run_sad_string
+from pysad import draw_mpl
+ffs, I = run_sad_string(script)                     # USE・CALC まで
+fig = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(1, 40), save="optics.png")   # Figure を返す
+```
+
+**CALC していないとき**: pysad は Twiss[] と同じく先に光学を計算する。gs の `OpticsPlot` は計算していない光学の値 (0) をそのまま描く (`Twiss["BX",5]` が 0) ので、ここは gs と違う (計算してから描く方が意図に合うと判断)。USE していなければ ` ???-DRAW-Missing beamline in USE.`。
+
+**gs との照合** (gs は画像を出せないので、描く前のデータを比べる): `OpticsPlot[…, DisplayFunction->Identity]` が返す Graphics (pysad は Canvas.n の経路、gs は同じ式) の `Line`・`Rectangle`・`Text` を取り出し、matplotlib に渡す点列・箱・名前と比べた。
+- pysad の Graphics との一致: 点列は y を単位で割ったあとまで 1e-12 以内で全点一致、ラティスの箱・名前も一致 (FODO の 6 つの組合せ: 領域・要素名の領域・周回をまたぐ領域・名前のパターン、ASTRID2 全周)。試験 `test_v25_draw_mpl.py`。
+- gs (WSL) の Graphics との一致: FODO (3 GeV、6 セル、領域 3〜20、名前 `B*`) と ASTRID2 全周 (0.58 GeV、周長 45.7 m、名前 `*`、箱 139・名前 199) で、点列の最大の相対差 1.7e-13 (x は 1.4e-14 m)、箱・名前の個数と位置が一致。参照は `pysad/tests/scripts/v25_draw_gs_*.gs.txt` (台本は同名の `.sad`)。
+- 例: [`example/11_graphics/fn_DRAW.md`](../example/11_graphics/fn_DRAW.md)。
+
+**未確認・限界**: 色・線の太さ・文字の大きさの見た目は Tk の窓と比べていない (比べたのはデータ)。文字の重なり消し (`RemoveOverlap`) は Tk のフォントの代わりに s 軸上の間隔で決めるので、gs の窓で残る名前とは違う。`PEX` などは pysad の `Twiss["PEX"]` (現状は EX と同じ値) をそのまま描く。SIG・SIZE の関数は EMIT 後の値。`$DisplayFunction` 相当で SADScript の `OpticsPlot[…]` の Graphics 自体を matplotlib に流すことは未実装 (DRAW だけ)。対話表示の窓・クリックの InfoLabel は Agg では動かせず、手では確認していない (イベント処理の関数 `element_info` の文字だけ試験)。ラティス図の Element$Height は K64 の型の番号に従い、SOL (20) は 0.08 の細い箱になる。
+
 ## 8. 関連文書
 
 - [`docs/37_plot_canvas.md`](37_plot_canvas.md): 描画の gs との一致、Tk の組み込み関数の表、評価器の直した点の全部
