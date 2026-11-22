@@ -66,7 +66,7 @@ def test_radpol_relaxation_equals_sokolov_ternov(ring, mode):
         s = _track(ring, np.array([1.0, 0.0, 0.0]), 200)
         assert abs(s @ n0 / 200 / (PST * sd) - 1) < 1e-4
         s = _track(ring, n0, 200, radpol=False)
-        assert abs(1 - s @ n0) < 1e-14                    # RADPOL なしでは偏極は変わらない
+        assert abs(1 - s @ n0) < 2e-13                    # RADPOL なしでは偏極は変わらない (丸めの積算。v2.4.0 D3: POL ON の追跡の BEND の刻みが 5e-3 rad 以下 (B235) で 1e-14 → 7.5e-14)
     finally:
         compat.set_mode('k64')
 

@@ -16,6 +16,7 @@ SAD の追跡は Emittance[]/CALC (tturne: tquade, tbende, tthine, tcave, tradke
 """
 from __future__ import annotations
 
+import copy
 import math
 import sys
 import time
@@ -28,6 +29,7 @@ from . import compat as _compat
 from . import lattice as _lat
 from .elements import Drift, Bend, Quadrupole
 from .sadrandom import SadRandom, tdusrn, tdusrnpl
+from .perfkern import edge_len as _edge_len
 
 CVELOC = 299792458.0
 _GMIN = -0.999999        # photons.f module tspin の gmin (tradkn の max(gmin, ...))
@@ -90,6 +92,7 @@ class _Particle:
         self.dv = ph.dv(c[5])          # tconvm (dv = ... + dvfs: ph.dv が dvfs を含む)
         self.s = np.array([0.0, 0.0, 1.0])     # スピン (sx, sy, sz)。POL のときだけ使う
         self.bsi = 0.0                          # kradlib bsi (磁場の縦成分の積分: tradk のスピン歳差に使う)
+        self.bpadd = 0.0                        # v2 (B165): 本体の運動量の向きの磁場の積分 ∫B∥dl/(Bρ) (粒子の運動量で規格化)。次の tradk の sprot が運動量の向きに足す
         self.bpar = None                        # v2 (C2): 運動量の向きの磁場の積分 ∫B∥dl/(Bρ)。None でなければ sprot は bsi の代わりにこれを使う
         self.setr0()
 
@@ -104,6 +107,27 @@ class _Particle:
         c[1] *= pr
         c[3] *= pr
         return c
+
+
+_BPSIGN = 1.0
+
+
+def _steer_edge_exact(p, rhoc, psi, entrance):
+    """v2 (B221): ANGLE=0 の BEND (tsteer) の端の面の厳密な写像 (CALC の tsteee と同じ lattice._tbedge_cod)。追跡の座標 (px/(1+δ)) と正準運動量の変換つき"""
+    c = p.c
+    pr = 1.0 + c[5]
+    cc = np.array([c[0], c[1] * pr, c[2], c[3] * pr, c[4], c[5]])
+    cc = _lat._tbedge_cod(cc, rhoc, psi, entrance)
+    pr = 1.0 + cc[5]
+    c[0], c[1], c[2], c[3], c[4] = cc[0], cc[1] / pr, cc[2], cc[3] / pr, cc[4]
+
+
+def _zr0_edge(p, tan, sgn):
+    """v2 (B220): 端の面 (軸に対し角 e の平面、tan = tan e) の手前 (sgn = -1: 入口) か先 (+1: 出口) の自由な飛行の行程 ℓ。
+    K64 の線形の式 tan·x の px の 1 次・p/pz の因子を入れた厳密な式 (perfkern.edge_free)。tradk の al1 = al − z + zr0 から引く"""
+    c = p.c
+    pr = 1.0 + c[5]
+    return _edge_len(tan, 0.0, c[0], c[2], c[1] * pr, c[3] * pr, c[5], sgn)
 
 
 def _sprot(p, pxm, pym, bx0, by0, bz0, bsi, h, pp, ucde, cphi0, sphi0):
@@ -122,6 +146,10 @@ def _sprot(p, pxm, pym, bx0, by0, bz0, bsi, h, pp, ucde, cphi0, sphi0):
             bx0, by0, bz0 = bx0 * f_, by0 * f_, bz0 * f_
     bx = bx0 / pzm
     by = by0 / pzm
+    if p.bpar is None and p.bsi != 0.0 and _compat.v2() and _compat.spin_bpar():
+        # v2 (B242): 端の縦磁場の積分 bsi (p0 で規格化した ψ) は、粒子の運動量で規格化し直す (回転角 (1+a)ψ/(1+δ))。K64 は割らないので、本体の Δψ/(1+δ) (B165)
+        # と合わせた和が δΔψ だけ 0 にならない (δ = 0.02 の QUAD で R01 に 1.2e-7)
+        bsi = bsi / (1.0 + p.c[5])
     if p.bpar is not None:
         # v2 (C2、SOL 領域・UND): 向きの変化から出した (bx, by, bz) は運動量に垂直な磁場の積分 B⊥。運動量の向きの成分は
         # p.bpar = ∫B∥dl/(Bρ) (粒子の運動量で規格化) を運動量の向きに置く。
@@ -144,6 +172,10 @@ def _sprot(p, pxm, pym, bx0, by0, bz0, bsi, h, pp, ucde, cphi0, sphi0):
         btx = bx - blx
         bty = by - bly
         btz = bz - blz
+    if p.bpadd != 0.0:
+        blx += p.bpadd * pxm
+        bly += p.bpadd * pym
+        blz += p.bpadd * pzm
     ct = 1.0 + h * _GSPIN
     gx = ct * btx + _CL * blx
     gy = ct * bty + _CL * bly
@@ -250,6 +282,14 @@ def _ph_rec(p, xi, pxi, yi, pyi, dp, ppx, ppy, p1, h1, rho, ds):
     cod = _lat._tchge_cod([xi, pxir, yi, pyir, 0.0, 0.0], ctx['dx'], ctx['dy'], 0.0, ctx['theta'], ctx['dtheta'], 0.0, ctx['phig'], False)
     from . import geo as _geo
     gv1 = _geo.tforbitgeo(gv, cod)
+    if _compat.v2():
+        # v2: 低い γ・軟らかい光子の放射角 (σ/γ が 1 rad を超える) で px² + py² ≥ 1 になり pz が定義できない。単位球の上に載せる
+        # (K64 の radangle1 は γ ≫ 1 の近似。数 GeV の電子では起きない)
+        _pt2 = cod[1] ** 2 + cod[3] ** 2
+        if _pt2 > 0.999999:
+            _f = math.sqrt(0.999999 / _pt2)
+            cod[1] *= _f
+            cod[3] *= _f
     pzi = 1.0 + _pxy2dpz(cod[1], cod[3])
     dpa = dp * (gv1[:, 0:3] @ np.array([cod[1], cod[3], pzi]))
     if _compat.v2():
@@ -263,6 +303,8 @@ def _ph_rec(p, xi, pxi, yi, pyi, dp, ppx, ppy, p1, h1, rho, ds):
     dn = float(np.linalg.norm(dpa))
     # K64 の tphotonlist は dp·amass·gammab(l) (K64 の gammab は p/(mc) = βγ で γ ではない: 相対 1/(2γ²)、3 GeV で 1.45e-8。D1)。v2 は γ
     _g_e = ph.h0 if _compat.v2() else ph.p0
+    if _compat.v2() and ph.anrad < 0.0:
+        _g_e = ph.p0 * ph.p0 / ph.h0          # v2 (B233): β < 1 の粒子: 光子のエネルギー = 粒子が失うエネルギー = β·Δp c (dE = v dp)。dp は運動量の損失 (δ 単位)
     _PH['sink'].append([dn * ph.amass * _g_e, float(gv1[0, 3]), float(gv1[1, 3]), float(gv1[2, 3]),
                         float(dpa[0] / dn), float(dpa[1] / dn), float(dpa[2] / dn),
                         float(c2 * xi30), float(xi2), float(s2 * xi30), float(p.idx + 1), float(l)])
@@ -272,6 +314,7 @@ def _tradk(p: _Particle, al, phi0):
     """photons.f kradlib tradk → tradkn (rfluct=F, calpol=F)。最後に基準点を更新。"""
     _tradk_core(p, al, phi0)
     p.setr0()
+    p.bpadd = 0.0
     if _POL:
         p.bsi = 0.0                    # tradk: calpol なら bsi=0
 
@@ -301,7 +344,13 @@ def _tradk_core(p: _Particle, al, phi0):
         pp = ph.p0 * pr
         h1 = _e._p2h(pp)
         al1 = al - c[4] + p.zr0
-        anp = ph.anrad * h1 * theta
+        anp = abs(ph.anrad) * h1 * theta
+        fb = 1.0
+        if ph.anrad < 0.0:
+            # v2 (B167): 厳密な放射のスペクトル (β < 1)。光子数に a、光子エネルギーに b (radbeta.ab)
+            from .radbeta import ab as _rb_ab
+            fa, fb, _dla, _dlb = _rb_ab(h1)
+            anp *= fa
         if _FLUC:
             if _PH is not None:
                 dph, r1, r2, an, dpr_, rph_ = tdusrnpl(RNG, anp)
@@ -313,7 +362,7 @@ def _tradk_core(p: _Particle, al, phi0):
                     _sprot(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, p.bsi, h1, pp, 0.0, cphi0, sphi0)
                 return
             rho = al1 / theta
-            uc = ph.cuc * h1**3 / ph.p0 / rho
+            uc = ph.cuc * h1**3 / ph.p0 / rho * fb
             if dpr_ is not None:
                 # tradkf1: 光子ごとに tphrec (放射点 xr = x − r (px − dpx r/2) al、ds = al − r al)
                 for i_ in range(int(an)):
@@ -330,7 +379,7 @@ def _tradk_core(p: _Particle, al, phi0):
             c[2] += r2 * ddpy * al1
             ucde = uc * de
         else:
-            uc = ph.cuc * h1**3 / ph.p0 * theta / al1
+            uc = ph.cuc * h1**3 / ph.p0 * theta / al1 * fb
             de = _e.CAVE * anp * uc
             dg = -de / (1.0 + 2.0 * de)
             c[5] = max(_GMIN, c[5] + dg)
@@ -535,7 +584,12 @@ def _ndivrad(phi, ak, bz, eps, h0, trpt=None):
     aka = (abs(phi) + math.hypot(ak, bz) * 0.02) / eps1
     if trpt is None:
         trpt = _TRPT
-    return int(1.0 + h0 / 100.0 * aka * 10.0) if trpt else int(1.0 + h0 / 100.0 * aka)
+    n = int(1.0 + h0 / 100.0 * aka * 10.0) if trpt else int(1.0 + h0 / 100.0 * aka)
+    if _POL and _compat.spin_bpar():
+        # v2 (B165): スピン追跡は 1 刻みの偏向角が大きいと、座標系の回転とスピン歳差の分け方の 1 次の誤差 (刻みの角に比例) が残る
+        # (0.5 GeV の 15° 扇形を 3 刻みで dR/dpy の R12・R21 が 1e-2。刻み 0.087 → 0.017 → 0.0035 rad で 1.2e-2 → 2.7e-3 → 5.4e-4)。偏向角 5e-3 rad 以下にする
+        n = max(n, 1 + int(abs(phi) / 5.0e-3))
+    return n
 
 
 def _tsolqur_ens(parts, al, ak, eps0=0.0):
@@ -546,6 +600,7 @@ def _tsolqur_ens(parts, al, ak, eps0=0.0):
     ndiv = min(1000, max(ndiv, _ndivrad(0.0, ak, 0.0, eps0, parts[0].ph.h0)))
     aln = al / ndiv
     akk = ak / al
+    bpar_on = _POL and _compat.spin_bpar()          # v2 (B165): 本体の B∥ の積分 ∫B·dr = Δψ (ψ = k x y) を刻みごとに足す
     for n in range(ndiv):
         alr = aln * 0.5 if n == 0 else aln
         for p in parts:
@@ -553,6 +608,8 @@ def _tsolqur_ens(parts, al, ak, eps0=0.0):
             w1, s1, xs1, dc1, sh2, xsh2, dch2 = _tzsetparam0(c[5], aln, akk)
             if _POL:
                 p.bsi = akk * c[0] * c[2] if n == 0 else 0.0
+            if bpar_on:
+                psi0_ = akk * c[0] * c[2]
             ap = c[1]**2 + c[3]**2
             dpz = _sqrt1(-ap)
             r = -dpz / (1.0 + dpz) * alr
@@ -573,7 +630,10 @@ def _tsolqur_ens(parts, al, ak, eps0=0.0):
                                    + u1 * (u2 + b) + xi * b * dc1 + v1 * (v2 + d) + yi * d * dch2)
                     - p.dv * aln)
             if _POL and n == ndiv - 1:
-                p.bsi = -akk * c[0] * c[2]
+                # v2: ndiv = 1 (弱い四極) では入口の +ψ を出口の −ψ が上書きして落ちる (K64 は =)。v2 は足す
+                p.bsi = (p.bsi if (ndiv == 1 and _compat.v2()) else 0.0) - akk * c[0] * c[2]
+            if bpar_on:
+                p.bpadd = (akk * c[0] * c[2] - psi0_) / (1.0 + c[5])
         for p in parts:
             _tradk(p, aln, 0.0)
         if _PH is not None and _PH.get('ctx') is not None:
@@ -976,6 +1036,7 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     c = p.c
     if _POL:
         p.bsi += bsi1 * c[2] / rhob
+    y_in = c[2]
     dp = c[5]
     pp = 1.0 + dp
     pinv = 1.0 / pp
@@ -1049,11 +1110,13 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     c[2] = y3 + py4 * dz4
     c[3] = py4
     c[4] = z4 - dz4
+    if _POL and _compat.spin_bpar():
+        p.bpadd = _BPSIGN * (c[2] - y_in) / rhob / (1.0 + c[5])      # v2 (B165): 本体の B∥ ∫B·dr = (y_出 − y_入)/ρ
     if _POL:
         p.bsi -= bsi2 * c[2] / rhob
     if krad:
         if sinp2 != 0.0 and _compat.v2():
-            p.zr0 -= sinp2 / cosp2 * c[0]      # v2: 出口の端の角で場の中の行路が x*tan(psi2) 短い (tradk の al1 = al - z + zr0 に入れる)
+            p.zr0 -= _zr0_edge(p, sinp2 / cosp2, 1.0)      # v2: 出口の端の角で場の中の行路が短い (B220: 面までの直進の行程を厳密に。tradk の al1 = al - z + zr0 に入れる)
         _tradk(p, alr, phi0)
 
 
@@ -1189,7 +1252,7 @@ def _tbendiinit(m, ak1, al):
         xspx = phix - spx
         m.dcxkx = m.dcx / m.akxsq
         m.sxkx = spx / akx
-        m.xsxkx = -xspx / akx / m.akxsq
+        m.xsxkx = (xspx / akx / m.akxsq) if _compat.v2() else (-xspx / akx / m.akxsq)       # B250 (v2 は連続な式)
     else:
         m.dcx = 0.0
         m.dcxkx = 0.5 * al**2
@@ -1265,6 +1328,7 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     m = _BendI()
     m.rhob = al / phib
     m.rho0 = al / phi0
+    _bpar_on = _compat.spin_bpar()
     m.lin = _compat.bend_k1_lin()                        # v2 のオプション: K1 の定義 'lin' (B' 一様)。k64 は常に False
     eps = 1e-3 if eps0 == 0.0 else 1e-3 * eps0          # epsbend
     ndiv = 1 + int(abs(phi0 / eps))
@@ -1276,7 +1340,7 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     if krad:
         p.setr0()
         if v2:
-            p.zr0 -= tanp1 * p.c[0]            # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い
+            p.zr0 -= _zr0_edge(p, tanp1, -1.0)            # v2: 入口の端の角で場の中の行路が短い (B220)
         if _POL:
             p.bsi = 0.0
         if first and fb1 != 0.0:
@@ -1340,7 +1404,12 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         if krad and _POL and v2 and n == n1:
             # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ + k·x·y (K1=0 の tbend と同じ。K64 の tbendi は y/ρ がなく、k·x·y を全スライスで足す)
             p.bsi += m.yi / m.rhob + ak / al * m.xi * m.yi
+        if _POL and _bpar_on:
+            psi_a = m.yi / m.rhob + ak / al * m.xi * m.yi
         _tbendibody(m, alx0)
+        if _POL and _bpar_on:
+            # v2 (B165): 本体の B∥ の積分 ∫B·dr = ψ_終 − ψ_始 (ψ = y/ρ + k x y)
+            p.bpadd = _BPSIGN * (m.yi / m.rhob + ak / al * m.xi * m.yi - psi_a) / (1.0 + m.dp)
         if krad and _POL and not v2:
             p.bsi += akxn[n] / alx[n] * m.xi * m.yi          # tbendi: bsi(i) += akxn(n)/alx(n)·xi·yi
         if krad and _POL and v2 and n == n2:
@@ -1349,6 +1418,7 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
             # tradk1 (cphi0 = cos(phixn(n)))。dp, dv(i) が更新される
             c[0], c[1], c[2], c[3], c[4], c[5] = m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp
             _tradk_core(p, alr[n], phixn[n])
+            p.bpadd = 0.0
             m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp = c[0], c[1], c[2], c[3], c[4], c[5]
             p.setr0()
             if _PH is not None and _PH.get('ctx') is not None:
@@ -1390,7 +1460,7 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
     if fringe and mfring > -4 and mfring != 1:
         _ttfrin4(p, -ak, al)
     if krad and v2:
-        p.zr0 -= tanp2 * c[0]                  # v2: 出口の端の角の分
+        p.zr0 -= _zr0_edge(p, tanp2, 1.0)                  # v2: 出口の端の角の分 (B220)
     # 最後の tradk (全粒子分をまとめて: tbendi.f は粒子ループの後に call tradk(np,…,alr(n2),phixn(n2)))
     # と tbrot/tbshift の戻しは呼び出し側 (_tbend_ens) で行う
     return (alr[n2], phixn[n2], dtheta, dchi2, alg, phig, dx, dy, cost, sint)
@@ -1475,23 +1545,44 @@ def _tsteer_ens(parts, el, krad):
     alc = al * phic / phib
     aln = alc / ndiv
     v2 = _compat.v2()
-    if v2 and krad and tanp1 != 0.0:
+    # v2 (B221): 端の面 (軸に対して AE 傾いた平面) を、CALC (tsteee) と同じ厳密な硬い端の鎖 (tbedgedrift → Maxwell → tbedgebody) で通す。
+    # K64 の tsteer は x tan(e)/ρ の薄い蹴りだけで、K0³ tan²e の次数で厳密な写像と違い、ヤコビアンが K0² tan²e 違う (CALC との差の原因)。
+    # F1・FB1・FB2 (tblfre の断片) があるときは K64 の薄い蹴りのまま (厳密な端の鎖と F1 の組み合わせは未確認)
+    # v2 (B225): FRINGE = −2 (出口だけ) は入口の端、FRINGE = −1 (入口だけ) は出口の端を飛ばす (CALC の tsteee と同じ。K64 の追跡は両方の端を入れる)。
+    # 磁石が隣と続く接合部の端 (場が続く) で縦収束・面の効果を入れないのが意図で、CALC の側が物理的に正しい
+    sk1 = v2 and mfr == -2
+    sk2 = v2 and mfr == -1
+    ex1 = v2 and psi1 != 0.0 and not sk1
+    ex2 = v2 and psi2 != 0.0 and not sk2
+    if sk1:
+        tanp1 = 0.0
+    rhoc = -rhob          # 端の鎖に渡す曲率半径 (CALC の rhoe = L/K0)
+    if ex1:
+        if krad:
+            for p in parts:
+                p.zr0 -= _zr0_edge(p, tanp1, -1.0)      # 入口の面までの直進の行程 (B220)
+        tanp1 = 0.0          # 薄い蹴りは使わない。鎖は最初の断片の tblfre の後に通す (CALC の tsteee と同じ順序)
+    elif v2 and krad and tanp1 != 0.0:
         for p in parts:
-            p.zr0 -= tanp1 * p.c[0]          # v2 (P3、B108): 入口の端の角で場の中の行路が x·tan(AE1) 短い (tradk の al1 = al − z + zr0)
+            p.zr0 -= _zr0_edge(p, tanp1, -1.0)          # v2 (P3、B108、B220): 入口の端の角で場の中の行路が短い (tradk の al1 = al − z + zr0)
     for n in range(n1, ndiv + n2 + 1):
         alx, alr = _tbendal(n, ndiv, f1r, f2r, aln)
         if n == n1 + 1:
             dxfr1 = dyfr1 = dyfra1 = 0.0
             tanp1 = 0.0
+        last_ex = ex2 and n == ndiv + n2
+        last_skip = sk2 and n == ndiv + n2
         if n == ndiv + n2:
             if fb2 != 0.0:
                 dxfr2 = -fb2**2 / rhob / 24.0
                 dyfr2 = fb2 / rhob**2 / 6.0
                 if fringe_fl:
                     dyfra2 = 4.0 * dyfr2 / fb2**2
-            if fb2 != 0.0 or v2:
+            if (fb2 != 0.0 or v2) and not last_ex and not last_skip:
                 # K64 の tsteer は出口の端の角 (AE2) を fb2≠0 のときだけ入れる (Emittance[]・CALC の tsteee は常に入れる: 不整合)。v2 は常に入れる (P3)
                 tanp2 = math.sin(psi2) / math.cos(psi2)
+        first_ex = ex1 and n == n1
+        first_skip = sk1 and n == n1
         for p in parts:
             c = p.c
             dp = c[5]
@@ -1501,14 +1592,22 @@ def _tsteer_ens(parts, el, krad):
             c[0] += dxfr1 * dp / pr
             c[3] += ((dyfr1 - dyfra1 * c[2]**2) / pr**2 + tanp1 / rhoe) * c[2]
             c[4] += (dxfr1 * pxi + (0.5 * dyfr1 - 0.25 * dyfra1 * c[2]**2) * c[2]**2 / pr) / pr
-            dpv1 = _sqrt1(-pxi**2)
-            pv1 = 1.0 + dpv1
-            fa = c[2] / rhoe / pv1
-            f = (1.0 - (c[2] / rhob)**2 / 6.0) * fa
-            ff = (0.5 - (c[2] / rhob)**2 / 24.0) * c[2] * fa / pv1**2
-            pyi = c[3] + pxi * f
-            xi = c[0] - ff
-            c[4] += ff * pxi
+            if first_ex or first_skip:
+                # 厳密な端の鎖 (Maxwell の項を含む) は tblfre の後 (CALC の tsteee と同じ順序)。飛ばす端 (FRINGE = −2) は何もしない
+                if first_ex:
+                    _steer_edge_exact(p, rhoc, psi1, True)
+                pxi = c[1]
+                pyi = c[3]
+                xi = c[0]
+            else:
+                dpv1 = _sqrt1(-pxi**2)
+                pv1 = 1.0 + dpv1
+                fa = c[2] / rhoe / pv1
+                f = (1.0 - (c[2] / rhob)**2 / 6.0) * fa
+                ff = (0.5 - (c[2] / rhob)**2 / 24.0) * c[2] * fa / pv1**2
+                pyi = c[3] + pxi * f
+                xi = c[0] - ff
+                c[4] += ff * pxi
             dpz1 = _pxy2dpz(pxi, pyi)
             pz1 = 1.0 + dpz1
             dpx = alx / rhoe
@@ -1526,22 +1625,32 @@ def _tsteer_ens(parts, el, krad):
             dl = rhoe * (_lat._asinx(u) + w)
             c[0] = xi + alx * (pxf + pxi) / (pz2 + pz1)
             c[2] += pyi * (alx + dl)
-            dpv2 = _sqrt1(-pxf**2)
-            pv2 = 1.0 + dpv2
-            fa = c[2] / rhoe / pv2
-            f = (1.0 - (c[2] / rhob)**2 / 6.0) * fa
-            ff = (0.5 - (c[2] / rhob)**2 / 24.0) * c[2] * fa / pv2**2
-            c[3] = pyi - pxf * f
-            c[0] += ff
-            c[1] = pxf - c[0] * tanp2 / rhoe
-            c[4] -= (dl + p.dv * alx + ff * pxf)
+            if last_ex or last_skip:
+                # 出口の Maxwell の項と面は厳密な端の鎖 (下) の中にある。飛ばす端 (FRINGE = −1) は何もしない
+                c[3] = pyi
+                c[1] = pxf
+                c[4] -= (dl + p.dv * alx)
+                if last_ex:
+                    _steer_edge_exact(p, rhoc, psi2, False)
+            else:
+                dpv2 = _sqrt1(-pxf**2)
+                pv2 = 1.0 + dpv2
+                fa = c[2] / rhoe / pv2
+                f = (1.0 - (c[2] / rhob)**2 / 6.0) * fa
+                ff = (0.5 - (c[2] / rhob)**2 / 24.0) * c[2] * fa / pv2**2
+                c[3] = pyi - pxf * f
+                c[0] += ff
+                c[1] = pxf - c[0] * tanp2 / rhoe
+                c[4] -= (dl + p.dv * alx + ff * pxf)
             c[0] -= dxfr2 * dp / pr
             c[3] += ((dyfr2 - dyfra2 * c[2]**2) / pr**2 + tanp2 / rhoe) * c[2]
             c[4] -= (dxfr2 * pxf - (0.5 * dyfr2 - 0.25 * dyfra2 * c[2]**2) * c[2]**2 / pr) / pr
         if krad:
             for p in parts:
-                if v2 and n == ndiv + n2 and tanp2 != 0.0:
-                    p.zr0 -= tanp2 * p.c[0]  # v2 (P3、B108): 出口の端の角の分
+                if last_ex:
+                    p.zr0 -= _zr0_edge(p, math.tan(psi2), 1.0)  # 出口の面から z = L の面までの直進の行程 (B220)
+                elif v2 and n == ndiv + n2 and tanp2 != 0.0:
+                    p.zr0 -= _zr0_edge(p, tanp2, 1.0)  # v2 (P3、B108、B220): 出口の端の角の分
                 _tradk(p, alr, 0.0)
     for p, (cost, sint) in zip(parts, ctsn):
         _texit(p.c, dx, dy, theta, cost, sint)
@@ -1678,7 +1787,7 @@ def _tbend0_ens(parts, el, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2,
         for p in parts:
             p.setr0()
             if v2 and sinp1 != 0.0:
-                p.zr0 -= sinp1 / cosp1 * p.c[0]    # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い
+                p.zr0 -= _zr0_edge(p, sinp1 / cosp1, -1.0)    # v2: 入口の端の角で場の中の行路が短い (B220)
         if first and fb1 != 0.0:
             n1 = -1
             f1r = fb1 * 0.5
@@ -1720,7 +1829,7 @@ def _tbend0_ens(parts, el, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2,
                        1.0 if n == n1 else 0.0, 1.0 if (n == n2 and n != n1) else 0.0)
         for p in parts:
             if n == n2 and v2 and sinp2 != 0.0:
-                p.zr0 -= sinp2 / cosp2 * p.c[0]    # v2: 出口の端の角の分
+                p.zr0 -= _zr0_edge(p, sinp2 / cosp2, 1.0)    # v2: 出口の端の角の分 (B220)
             _tradk(p, alr, phi0n)
         if _PH is not None and _PH.get('ctx') is not None:
             _PH['ctx']['fr0'] += alx / _PH['ctx']['al']        # tbend.f:367 pcvt%fr0 += alx/al
@@ -1970,6 +2079,66 @@ def _tmulk(p: _Particle, al, akr, apsi, nmmax):
     c[3] += cx.imag / pr
 
 
+def _mult_flow(p, a, al, akr, nmmax):
+    """v2 (B223): MULT の本体の場 (長さあたりの強さは全長 al のものと同じ) を長さ a だけ通す Φ(a) (a < 0 は逆向き)。
+    tsolqu の半分 + 薄い多極の蹴り (n ≥ 2) + tsolqu の半分 (tmulti の 1 刻みと同じ形)。a は端の面までの距離 (mm〜cm) なので 1 刻み"""
+    if a == 0.0:
+        return
+    sc = a / al
+    ak1 = (akr[1].real if nmmax >= 1 else 0.0) * sc * 0.5
+    ak0 = akr[0] * sc * 0.5
+    _tsolqu(p, a * 0.5, ak1, 0.0, ak0.real, ak0.imag, qum=False, ibsi=-1)
+    if nmmax >= 2:
+        c = p.c
+        cx1 = complex(c[0], c[2])
+        cx = akr[nmmax] * sc * cx1 / nmmax
+        for n in range(nmmax - 1, 1, -1):
+            cx = (cx + akr[n] * sc) * cx1 / n
+        cx = cx * cx1 / (1.0 + c[5])
+        c[1] -= cx.real
+        c[3] += cx.imag
+    _tsolqu(p, a * 0.5, ak1, 0.0, ak0.real, ak0.imag, qum=False, ibsi=-1)
+
+
+def _mult_edge_ykick(p, apsi, al, akr, nmmax):
+    """v2 (B224): 端の面の縦方向の収束 (K64 の tmulk の縦成分 Δpy = fe·Im(cx)/(1+δ)、fe = −tan e/L)。lattice._mult_sequence の edge_ykick と同じ"""
+    c = p.c
+    cx0 = complex(c[0], c[2])
+    cx = 0j
+    for kord in range(nmmax, 0, -1):
+        cx = (cx + akr[kord] / al) * cx0 / kord
+    cx = -math.tan(apsi) * (cx + akr[0] / al) * cx0
+    c[3] += cx.imag / (1.0 + c[5])
+
+
+def _mult_edge_exact(p, entrance, apsi, al, akr, nmmax):
+    """v2 (B223): MULT の端の面 (軸に対して AE 傾いた平面) の厳密な写像。入口は Φ(−z_f)∘Drift(z_f) (z_f = x tan e/(1 − (px/pz) tan e))、
+    出口は Drift(ℓ)∘Φ(−ℓ) (ℓ = X_e tan e は Φ(−ℓ) で戻した軌道の x の不動点)。lattice._mult_sequence の exact_edge_in・exact_edge_out と同じ。
+    K64 の tmulk は面を z = 0 の平面にして薄い蹴りだけを入れる"""
+    t = math.tan(apsi)
+    c = p.c
+    if entrance:
+        pzr = math.sqrt(max(1e-30, 1.0 - c[1] ** 2 - c[3] ** 2))
+        zf = c[0] * t / (1.0 - c[1] / pzr * t)
+        _tdrift_free(p, zf)
+        _mult_flow(p, -zf, al, akr, nmmax)
+        _mult_edge_ykick(p, apsi, al, akr, nmmax)
+        return
+    ell = t * c[0]
+    for _ in range(40):
+        q = copy.copy(p)
+        q.c = p.c.copy()
+        _mult_flow(q, -ell, al, akr, nmmax)
+        new = t * q.c[0]
+        done = abs(new - ell) < 1e-17 + 1e-15 * abs(ell)
+        ell = new
+        if done:
+            break
+    _mult_flow(p, -ell, al, akr, nmmax)
+    _tdrift_free(p, ell)
+    _mult_edge_ykick(p, apsi, al, akr, nmmax)
+
+
 def _mult_fb_ae(el, pm):
     """tmulti の mfring・fb1・fb2・psi1・psi2: tpara (tffs.f) は FB1 を FRINGE = 1・3、FB2 を FRINGE = 2・3 のときだけ残す。
     端の角は psi = E1·ANGLE + AE1 (ANGLE=0 では AE1・AE2)"""
@@ -2000,6 +2169,8 @@ def _tmulti_ens(parts, el, krad):
         p.c[0] -= dx
         p.c[2] -= dy
         _rot(p.c, ct, st)
+        if _compat.v2():
+            _spin_rot_z(p, pm['theta2'], True)       # v2 (B241): tsolrot の calpol はスピンも回す (QUAD の追跡・Emittance[] の tmulte は回す。MULT の追跡だけ欠けていた)
     akr1 = akr[1].real if nmmax >= 1 else 0.0
     akr0 = akr[0]
     eps = pm['eps']
@@ -2035,21 +2206,41 @@ def _tmulti_ens(parts, el, krad):
     if nz and psi1 != 0.0:
         for p in parts:
             if v2 and krad:
-                p.zr0 -= math.tan(psi1) * p.c[0]       # v2 (P3、B108): 入口の端の角で場の中の行路が x·tan(psi1) 短い (tradk の al1 = al − z + zr0)
-            _tmulk(p, al, akr_k, psi1, nmmax)
+                p.zr0 -= _zr0_edge(p, math.tan(psi1), -1.0)       # v2 (P3、B108、B220): 入口の端の角で場の中の行路が短い (tradk の al1 = al − z + zr0)
+            if v2:
+                _mult_edge_exact(p, True, psi1, al, akr, nmmax)     # v2 (B223): 厳密な硬い端
+            else:
+                _tmulk(p, al, akr_k, psi1, nmmax)
     wi = 1.0 / ndiv
     ak1 = akr1 * wi * 0.5
     al1 = al * wi * 0.5
     ak01 = akr0 * wi * 0.5
     akrm = [a * wi for a in akr]
     ibsi = 1
+    bpar_on = bool(krad and nz and _POL and v2 and _compat.spin_bpar() and nmmax >= 0)    # v2 (B165): 本体の B∥ = Δψ (ψ は横磁場のポテンシャル)
+
+    def _psi(c):
+        z = complex(c[0], c[2])
+        g = 0j
+        for n_ in range(nmmax, -1, -1):
+            g = (g + akr[n_]) * z / (n_ + 1)
+        return g.imag / al
+    if bpar_on:
+        psi_prev = [_psi(p.c) for p in parts]            # 入口の ψ (K64 の bsi の入口の点: 入口のフリンジと端の蹴りの後)
     for m in range(1, ndiv + 1):
         if nz:
             for p in parts:
                 _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=(not krad) and not _compat.v2(), ibsi=ibsi)   # 放射なしは tsolqum (v2 (B14) は tsolqu の z の式)
             ibsi = 0
             if krad:
-                if m == 1 and _POL:
+                if bpar_on:
+                    # K64 の bsi (四極・二極の項は刻みの始め、n≥2 の項は最初の刻みの半分のあと) を、同じ点の ψ の全次数に置き換える
+                    for ip_, p in enumerate(parts):
+                        p.bsi = psi_prev[ip_] if m == 1 else 0.0
+                        psi_c = _psi(p.c)
+                        p.bpadd = (psi_c - psi_prev[ip_]) / (1.0 + p.c[5])
+                        psi_prev[ip_] = psi_c
+                elif m == 1 and _POL:
                     for p in parts:               # tmulti: bsi(i) += Im(.5·cx·cx1²)/al (cx は akr(n)·cx1·aninv(n+1) の和)
                         cx1 = complex(p.c[0], p.c[2])
                         cx = 0j
@@ -2088,9 +2279,12 @@ def _tmulti_ens(parts, el, krad):
             _tsolqu(p, al1, ak1, 0.0, ak01.real, ak01.imag, qum=(not krad) and not _compat.v2(), ibsi=2)
         if psi2 != 0.0:
             for p in parts:
-                if v2 and krad:
-                    p.zr0 -= math.tan(psi2) * p.c[0]   # v2 (P3、B108): 出口の端の角の分
-                _tmulk(p, al, akr_k, psi2, nmmax)
+                if v2:
+                    _mult_edge_exact(p, False, psi2, al, akr, nmmax)    # v2 (B223): 厳密な硬い端 (出口の面は Drift(ℓ)∘Φ(−ℓ) の後の状態)
+                    if krad:
+                        p.zr0 -= _zr0_edge(p, math.tan(psi2), 1.0)   # v2 (P3、B108、B220): 出口の端の角の分
+                else:
+                    _tmulk(p, al, akr_k, psi2, nmmax)
         if mfring == 2 or mfring == 3:
             for p in parts:
                 if f1out != 0.0 or f2out != 0.0:
@@ -2103,7 +2297,12 @@ def _tmulti_ens(parts, el, krad):
                     if dofr[n]:
                         _ttfrins(p, n * 2 + 2, -akr[n], al)
         if krad:
-            if _POL and nmmax >= 2:
+            if bpar_on:
+                for ip_, p in enumerate(parts):
+                    psi_c = _psi(p.c)
+                    p.bsi = -psi_c
+                    p.bpadd = (psi_c - psi_prev[ip_]) / (1.0 + p.c[5])
+            elif _POL and nmmax >= 2:
                 for p in parts:                   # tmulti: bsi(i) −= Im(.5·cx·cx1²)/al
                     cx1 = complex(p.c[0], p.c[2])
                     cx = akr[nmmax] * cx1 / (nmmax + 1)
@@ -2115,6 +2314,8 @@ def _tmulti_ens(parts, el, krad):
             _ph_adv(al1 / al)
     for p in parts:                      # tsolrot (exit)
         _rot(p.c, ct, -st)
+        if _compat.v2():
+            _spin_rot_z(p, pm['theta2'], False)
         p.c[0] += dx
         p.c[2] += dy
 
@@ -2323,6 +2524,7 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0, fringe=True):
         c[1] += bzp * c[2] * 0.5
         c[3] -= bzp * c[0] * 0.5
     tzs = [None] * len(parts)
+    psi0_ = [0.0] * len(parts)
     for n in range(ndiv):
         for ip, p in enumerate(parts):
             c = p.c
@@ -2337,6 +2539,7 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0, fringe=True):
                     # K64 は最初のスライスを半分、最後のスライスを半分 (上書き) にするので、全体で 1 スライス分足りない
                     # v2 (P4): 端の ψ (硬い端の縦磁場) は端のフリンジを入れるとき (DISFRIN=0) だけ。DISFRIN=1 は縦磁場のない模型
                     p.bpar = bzp * aln0 + (akk * c[0] * c[2] / (1.0 + c[5]) if (n == 0 and fringe) else 0.0)
+                    psi0_[ip] = akk * c[0] * c[2]
             ap = c[1]**2 + c[3]**2
             dpz = _sqrt1(-ap)
             r = -dpz / (1.0 + dpz) * aln0
@@ -2369,6 +2572,10 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0, fringe=True):
             dz2 = tz.tztafs(-dwu, -pyi, pxi, tz.aw2, -tz.w12, ws, -wss, tz.g2)
             c[4] = (c[4] + bzp * (-((awu * dwu * tz.dxs**2) / tz.akkp) + tz.ca1 * pxi * pyi * wss)
                     + dz1 + dz2 - aln0 * p.dv)
+            if krad and _POL and _compat.v2() and _compat.spin_bpar():
+                # v2 (B232): 四極の本体の運動量の向きの磁場 ∫B·dr = Δψ (ψ = k x y) を足す (K64 の bz·aln0 は螺旋の縦磁場だけで、本体の横磁場の B∥ が無い。
+                # 端の ψ (DISFRIN=0) と本体の Δψ の和が 0 (Maxwell 場) になる。DISFRIN=1 は端なしの模型で本体の Δψ だけ残る)
+                p.bpar += (akk * c[0] * c[2] - psi0_[ip]) / (1.0 + c[5])
             if krad and _POL and n == ndiv - 1:
                 p.bsi = -akk * c[0] * c[2] + bzp * aln0 * 0.5
                 if _compat.v2() and fringe:
@@ -2684,6 +2891,25 @@ def _tsol_region_v2(parts, elements, i, rad, trf0, rfsw):
     base_l = _PH['l'] if _PH is not None else 0
     for j, (kind, pr) in enumerate(col.items):
         el = elements[i + j]
+        ph = parts[0].ph
+        pref = getattr(ph, 'p0_ref', None)
+        if _compat.v2() and pref is not None and pref != ph.p0 and kind in (
+                _x.K_SOL_FRIN, _x.K_SOL_EDGE, _x.K_SOL_DRIFT, _x.K_SOL_BEND, _x.K_SOL_MULT, _x.K_SOL_QUAD):
+            # v2 (B238): 領域の上流の CAVI が TRPT で基準運動量を変えた。bz はコンパイルのときの基準運動量 p0_ref で規格化してあるので p0_ref/p0 を掛ける
+            # (track6n_ext.step_kind と同じ。K64 の tfbzs(l) は要素 l の入口の運動量で規格化)
+            sc = pref / ph.p0
+            if kind == _x.K_SOL_FRIN:
+                pr = (pr[0] * sc,)
+            elif kind == _x.K_SOL_EDGE:
+                pr = pr[:5] + (pr[5] * sc, pr[6] * sc, pr[7] * sc) + pr[8:]
+            elif kind == _x.K_SOL_DRIFT:
+                pr = (pr[0], pr[1] * sc, pr[2])
+            elif kind == _x.K_SOL_BEND:
+                pr = (pr[0], pr[1] * sc) + pr[2:]
+            elif kind == _x.K_SOL_MULT:
+                pr = (pr[0], pr[1] * sc)
+            else:
+                pr = pr[:5] + (pr[5] * sc,) + pr[6:]
         if _PH is not None:
             _PH['l'] = base_l + j                        # l_track (v2 (P4): 領域内の要素の光子)
             _PH['ctx'] = None
@@ -2723,8 +2949,11 @@ def _tsol_region_v2(parts, elements, i, rad, trf0, rfsw):
                 _spin_rot_z(p, th, True)
             if _PH is not None and rad and prm[11] and prm[0] != 0.0:
                 _ph_set(prm[5], prm[6], th, 0.0, 0.0, 0.0, prm[0])   # tmulti.f: tsetpcvt (v2 (P4): 領域内の MULT の光子)
-            _x.sol_mult_full(S, len(parts), ph, prm, bz, trf0, False, rfsw, rad, _FLUC, _kernel_rs(), hook=_RadHook(parts, prm))
+            ph2_ = _x.sol_mult_full(S, len(parts), ph, prm, bz, trf0, bool(_TRPT and _compat.v2()), rfsw, rad, _FLUC, _kernel_rs(), hook=_RadHook(parts, prm))
             _state_back(parts, S)
+            if ph2_ is not None:
+                for p in parts:
+                    p.ph = ph2_              # v2 (B238): TRPT の加速。以降の放射・スピンの歳差 (aγ)・bz の規格化は空洞の後の基準運動量
             for p in parts:
                 _spin_rot_z(p, th, False)
         elif kind == _x.K_MULT:

@@ -236,6 +236,18 @@ class Bend(Element):
         if abs(L) < 1e-15:
             return np.eye(6)
 
+        k0 = float(getattr(self, 'K0', 0.0) or 0.0)
+        if k0 != 0.0 and abs(angle) > 1e-15:
+            # v2 (B237): 場の角 ANGLE + K0 (曲率 (ANGLE + K0)/L) と、座標系の角 ANGLE (設計軌道) が違う BEND。K0 なしの式 (h = ANGLE/L) は
+            # 分散 (x の δ 列) が K0/ANGLE の分だけ小さく、端・K1 の行列もずれる (K0 = 0.004・ANGLE = 0.1 で 4%)。追跡の写像の COD = 0 での微分
+            # (CALC の tbende と同じ _bend_element_cod_matrix) を返す。k64 は K64 の CALC がこの行列なので k64 でも同じ
+            from . import compat as _compat
+            from . import lattice as _lat
+            if _compat.v2():
+                cod0 = np.zeros(6)
+                cod0[5] = delta
+                return np.array(_lat._bend_element_cod_matrix(self, cod0, delta)[1], dtype=float)
+
         rho = L / angle if abs(angle) > 1e-15 else 1e15
         h   = 1.0 / rho        # 曲率
 

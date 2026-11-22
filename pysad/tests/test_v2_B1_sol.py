@@ -307,10 +307,9 @@ def test_rf_mult_acceleration_does_not_change_radiation_loss_in_sol_region(v2_mo
     assert abs((on[5] - off[5]) / exp - 1.0) < 1e-3, (on[5] - off[5], exp)
 
 
-def test_pol_with_trpt_acceleration_is_an_explicit_error(v2_mode):
-    """POL (スピン追跡、track6 の経路) + TRPT + RFSW + VOLT≠0 の加速は基準運動量が変わらず δ が壊れていた (δ = 0.27)。明示のエラー
-    (POL なしの TrackParticles は領域内の加速も対応)"""
-    from pysad.ffscmd import SADError
+def test_pol_with_trpt_acceleration_in_sol_matches_fast_tracking(v2_mode):
+    """POL (スピン追跡、track6 の経路) + TRPT + RFSW + SOL 領域内の CAVI (VOLT≠0) の加速。以前は基準運動量が変わらず δ が壊れ (δ = 0.27)、明示のエラーにしていた。
+    v2.4.0 D3 (B238): track6 の経路も空洞の後の基準運動量・bz の規格化を更新する。POL なしの高速追跡 (領域内の加速も対応) と座標が 1e-9 以内で一致"""
     src = '''MOMENTUM = 1 GEV;
 DRIFT D1 = (L=1.0) DS=(L=0.3);
 CAVI CA = (L=0.5 VOLT=2E8 FREQ=1.3E9 PHI=-1.2);
@@ -324,5 +323,9 @@ Exit;
 '''
     ffs, _ = _run(src)
     n = len(ffs.els) + 1
-    with pytest.raises(SADError):
-        _track(ffs, np.zeros((1, 6)), 1, n, [[0, 0, 1]])
+    c = np.array([[1e-3, 2e-4, -1e-3, 1e-4, 0, 1e-3]])
+    b, _s = _track(ffs, c, 1, n, [[0, 0, 1]])
+    ffs.flags['POL'] = False
+    out = ffs.fn_track([[1.0, [[float(c[0, j])] for j in range(6)] + [[1.0]]], float(n)])
+    fast = np.array([o[0] for o in out[1][:6]])
+    assert abs(b[0, 5]) < 0.01 and np.abs(b[0] - fast).max() < 1e-9

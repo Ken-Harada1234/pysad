@@ -186,16 +186,22 @@ def install_misc(I):
     B['HomeDirectory'] = lambda a: os.environ.get('HOME', os.path.expanduser('~'))
 
     def stringinsert(a):
+        from . import compat
         x, y, n = a
+
+        def pos1(v):
+            # 負の位置: K64 (gs) は len+v+1 ("abc" の -1 は "abXc")。v2 (B197) は Mathematica の末尾から数える len+v+2 ("abcX")
+            v = int(v)
+            return v if v >= 0 else len(x) + v + (2 if compat.v2() else 1)
         if isinstance(n, list):
-            pos = sorted(int(v) for v in n)
+            pos = sorted(pos1(v) for v in n)
             out = ''
             prev = 0
             for p_ in pos:
                 out += x[prev:p_ - 1] + y
                 prev = p_ - 1
             return out + x[prev:]
-        k = int(n)
+        k = pos1(n)
         return x[:k - 1] + y + x[k - 1:]
     B['StringInsert'] = stringinsert
     B['Diagonal'] = lambda a: [a[0][i][i] for i in range(min(len(a[0]), len(a[0][0])))]

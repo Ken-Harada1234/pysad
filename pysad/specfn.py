@@ -33,6 +33,11 @@ except ImportError:  # pragma: no cover
 EULER = 0.5772156649015328606
 
 
+def _v2():
+    from . import compat
+    return compat.v2()
+
+
 def _thread(f, args):
     """リストの引数があれば要素ごとに適用 (長さが違えば SADError)"""
     ls = [a for a in args if isinstance(a, list)]
@@ -183,7 +188,8 @@ def _polylog(s, z):
         z = _real(z)
         if isinstance(z, complex):
             if isinstance(s, complex) and s.imag != 0.0:
-                raise SADError('PolyLog: complex order is not supported')
+                from . import specfn_cx2
+                return _real(specfn_cx2.polylog_cs(s, z))      # v2.4.0 E: 複素の次数 (|Log z| ≤ 5)
             from . import specfn_cx
             return _real(specfn_cx.polylog_c(float(s.real if isinstance(s, complex) else s), z))      # 複素の z (主値。specfn_cx)
     if z == 0.0:
@@ -196,7 +202,7 @@ def _polylog(s, z):
         return z / (1.0 - z)
     if s == 1.0:
         return -math.log(1.0 - z) if z < 1.0 else NAN
-    if s == 2.0 and z <= 1.0:
+    if s == 2.0 and z <= 1.0 and not (abs(z) <= 0.5 and _v2()):       # v2 (B196): |z| ≤ 0.5 は下の級数 (spence(1-z) は z = 1e-10 で相対 8e-8)
         return float(sp.spence(1.0 - z))
     if abs(z) <= 0.8:
         tot = 0.0
@@ -706,16 +712,43 @@ def install(I):
     B['FlattenAt'] = lambda a: _flattenat(a[0], int(a[1]))
 
     def inner(a):
-        f, x, y, g = a
-        r = I.apply_value(f, [x, y], f)
-        if isinstance(r, list):
-            return I.apply_value(g, list(r), g)
-        return r
+        # Inner[f, A, B, g]: v2 は Mathematica の定義 (A の最後の添字と B の最初の添字を縮約: g[f[A_i1, B_1j], f[A_i2, B_2j], ...])。
+        # 従来の pysad は f を 2 つのリスト全体に適用していて、Inner[f,{1,2},{3,4},g] が f[{1,2},{3,4}] を返した (gs は g[f[1,3],f[2,4]]。B199)
+        if len(a) == 3:
+            from . import compat
+            if compat.k64():
+                raise SADError('General::wrongnum: Number must be 4 in Inner')       # gs は 3 引数を受けない (Mathematica は g = Plus)
+            f, x, y = a
+            g = S('Plus')
+        else:
+            f, x, y, g = a
+
+        def isl(v):
+            return isinstance(v, list)
+
+        def con(p, q):
+            if isl(p) and p and isl(p[0]):
+                return [con(row, q) for row in p]
+            if isl(q) and q and isl(q[0]):
+                return [con(p, [q[i][j] for i in range(len(q))]) for j in range(len(q[0]))]
+            if not (isl(p) and isl(q)) or len(p) != len(q):
+                raise SADError('General::wrongleng: Inner: lists of the same length are expected')
+            return I.apply_value(g, [I.apply_value(f, [u, v], f) for u, v in zip(p, q)], g)
+        from . import compat
+        if compat.k64():
+            # gs: g[f[A_1, B_1], f[A_2, B_2], ...] (最上位の添字だけ対にする。A が行列だと行ごとの f を g でまとめる: Inner[Times,{{1,2},{3,4}},{5,6},Plus] = {23,34}。
+            # Mathematica の Inner は {17,39}。v2 は Mathematica の定義)
+            if not (isl(x) and isl(y)) or len(x) != len(y):
+                raise SADError('General::wrongleng: Inner: lists of the same length are expected')
+            return I.apply_value(g, [I.apply_value(f, [u, v], f) for u, v in zip(x, y)], g)
+        return con(x, y)
     B['Inner'] = inner
     reg('InversePower', lambda a, b: float(b) ** a, 2)
     B['Union1'] = lambda a: sorted(set(a[0]))
     B['RotateRight1'] = lambda a: a[0][-1:] + a[0][:-1]
     B['Range$'] = lambda a: I.builtins['Range'](a)
+
+    _install_v2_fixes(I)
 
 
 def _flat(x):
@@ -738,3 +771,362 @@ def _flattenat(lst, n):
         else:
             out.append(t)
     return out
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# v2.4.0 (担当 E): 組込の数学関数・特殊関数の監査 (mpmath との比較、pysad/tests/test_v24_E_specfn_audit.py) で見つけた誤りの v2 での修正。
+# k64 は変えない (従来の値のまま。gs の NaN・誤った符号・複素数の取りこぼしを再現する)。記録は docs/21 の B180〜 と docs/47 の v2.4.0 の節。
+# ---------------------------------------------------------------------------------------------------------------------
+def _lerch_integral(z, s, a):
+    """Φ(z,s,a) = 1/Γ(s) ∫_0^∞ t^{s-1} e^{-a t} / (1 - z e^{-t}) dt (s > 0、a > 0、z が [1, ∞) の外の実数)"""
+    from scipy import integrate
+    import warnings
+
+    def f(t):
+        return t ** (s - 1.0) * math.exp(-a * t) / (1.0 - z * math.exp(-t))
+    tmax = 745.0 / a
+    pts = sorted(set(min(p, tmax) for p in (0.0, 1.0, 10.0, 40.0, tmax)))
+    tot = 0.0
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')
+        for lo, hi in zip(pts[:-1], pts[1:]):
+            tot += integrate.quad(f, lo, hi, epsabs=0, epsrel=1e-13, limit=400)[0]
+    return tot / float(sp.gamma(s))
+
+
+def _gamma_upper_nonpos(a, z, up, e1):
+    """Γ(a, z) (a ≤ 0)。Γ(a+1, z) = a Γ(a, z) + z^a e^{-z} を a の小さい側へ下げる (a が整数なら Γ(0, z) = E1(z) から)"""
+    cx = isinstance(z, complex)
+    ex = cmath.exp(-z) if cx else math.exp(-z)
+    if a == int(a):
+        g = e1(z)
+        k = 0
+        while k > a:
+            k -= 1
+            g = (g - z ** k * ex) / k
+        return g
+    m = int(math.ceil(-a)) + 1
+    a0 = a + m
+    g = up(a0, z)
+    for j in range(m):
+        b = a0 - j - 1.0
+        zp = cmath.exp(b * cmath.log(z)) if cx else z ** b
+        g = (g - zp * ex) / b
+    return g
+
+
+def _gamma_upper_gen(a, z):
+    """Γ(a, z) (実数の a、実数または複素数の z、z < 0 も)"""
+    from . import specfn_cx2 as x2
+    a = float(a)
+    if isinstance(z, complex) or z < 0.0:
+        zc = complex(z)
+        if a != int(a):
+            r = x2._gamma_upper_ca(a, zc)             # 非整数の a は級数・連分数・漸近展開 (a ≤ 0 の漸化式は z < -50 で桁を失う)
+        elif a > 0.0:
+            r = x2.gamma_upper_c(a, zc)
+        else:
+            r = _gamma_upper_nonpos(a, zc, x2.gamma_upper_c, lambda w: complex(sp.exp1(w)))
+        if a == int(a) and not isinstance(z, complex) and abs(r.imag) <= 1e-12 * max(abs(r.real), 1e-300):
+            return r.real
+        return _real(r)
+    if z == 0.0:
+        return float(sp.gamma(a)) if a > 0.0 else INF
+    if a > 0.0:
+        return float(sp.gammaincc(a, z) * sp.gamma(a))
+    return _gamma_upper_nonpos(a, z, lambda b, w: float(sp.gammaincc(b, w) * sp.gamma(b)), lambda w: float(sp.exp1(w)))
+
+
+def _bessel_negx(kind, nu, x):
+    """x < 0 の Bessel (主値は x = |x| e^{iπ})。J・I は e^{iπν} 倍、Y・K は接続の公式"""
+    ax = -x
+    if kind == 'J':
+        r = cmath.exp(1j * math.pi * nu) * float(sp.jv(nu, ax))
+    elif kind == 'I':
+        r = cmath.exp(1j * math.pi * nu) * float(sp.iv(nu, ax))
+    elif kind == 'Y':
+        r = cmath.exp(-1j * math.pi * nu) * float(sp.yv(nu, ax)) + 2j * math.cos(math.pi * nu) * float(sp.jv(nu, ax))
+    else:
+        r = cmath.exp(-1j * math.pi * nu) * float(sp.kv(nu, ax)) - 1j * math.pi * float(sp.iv(nu, ax))
+    if nu == int(nu) and kind in ('J', 'I'):
+        return float(r.real)
+    return r
+
+
+def _install_v2_fixes(I):
+    from . import compat
+    B = I.builtins
+
+    # gs (10-19 ビルド) が真値を返す関数は k64 も同じ修正を使う (2026-11-22 に gs と照合して確認。docs/21 の B185〜B196 の注記)。
+    # gs が誤る・NaN を返すもの (ArcCosh・ArcTanh・BesselY (x<0)・HermiteH (複素)・LegendreP[ν,m,x]・HarmonicNumber の小さい x・U の大きい z) は v2 だけ
+    both = {'BesselJ', 'BesselI', 'BesselK', 'CoshIntegral', 'LogIntegral', 'ExpIntegralE', 'Hypergeometric2F1', 'Hypergeometric2F1Regularized',
+            'ProductLog', 'GammaRegularized', 'GammaRegularizedQ', 'LerchPhi', 'HurwitzLerchPhi', 'Hypergeometric1F1', 'Hypergeometric1F1Regularized',
+            'SinhIntegral', 'PolyLog'}
+
+    def v2(name, f):
+        """v2 のとき (both の関数は k64 も) f(fall, *x) を使う (数値のスカラー・リストの引数。fall() は従来の値)"""
+        old = B[name]
+
+        def w(a, old=old, f=f, name=name):
+            if (name in both or compat.v2()) and all(_numeric(x) for x in a):
+                return _thread(lambda *x: f(lambda: old(list(x)), *x), a)
+            return old(a)
+        B[name] = w
+
+    def isc(*x):
+        return any(isinstance(t, complex) for t in x)
+
+    # B180 ArcCosh[x] (-1 <= x < 1): 主値は +i arccos(x) (Mathematica・mpmath。K64 は符号が逆: ArcCosh[.5] = -1.047 I)
+    def arccosh(fall, x):
+        if not isc(x) and -1.0 <= x < 1.0:
+            return complex(0.0, math.acos(x))
+        return fall()
+    v2('ArcCosh', arccosh)
+
+    # B181 ArcTanh[x] (|x| > 1): 複素数 (主値 (Log[1+x] - Log[1-x])/2。K64 は NaN)
+    def arctanh(fall, x):
+        if not isc(x) and abs(x) > 1.0 and abs(x) != INF:
+            return complex(0.5 * math.log(abs((1.0 + x) / (1.0 - x))), -math.pi / 2.0 if x > 0 else math.pi / 2.0)
+        return fall()
+    v2('ArcTanh', arctanh)
+
+    # B196 Binomial[n, k] の k が負の整数: 0 (K64 は NaN)
+    def binomial(fall, n, k):
+        if not isc(k) and k == int(k) and k < 0 and (compat.v2() or n == int(n)):         # gs: Binomial[-5,-2] = 0 (整数 n)。非整数 n の k < 0 は gs が .222 (誤り)
+            return 0.0
+        return fall()
+    v2('Binomial', binomial)
+    both.add('Binomial')
+
+    # B195 LerchPhi[z, s, a] の 0.9 <= |z|、z < 1 (実数): 積分表示 (K64・従来は NaN、または 20000 項の級数)
+    def lerch(fall, z, s, a):
+        if not isc(z, s, a) and z < 1.0 and s > 0.0 and a > 0.0 and abs(z) >= 0.9:
+            return _lerch_integral(z, s, a)
+        return fall()
+    v2('LerchPhi', lerch)
+    v2('HurwitzLerchPhi', lerch)
+
+    # B185 BesselJ・I・Y・K の x < 0 (非整数の次数は複素数。K64・従来は NaN)
+    for nm, kd in (('BesselJ', 'J'), ('BesselI', 'I'), ('BesselY', 'Y'), ('BesselK', 'K')):
+        def bes(fall, nu, x, kd=kd):
+            if not isc(nu, x) and x < 0.0 and (kd != 'Y' or compat.v2()):         # gs は BesselY[0,-1.5] が NaN
+                return _bessel_negx(kd, nu, x)
+            return fall()
+        v2(nm, bes)
+
+    # B186 CoshIntegral[x] (x < 0) は Chi(|x|) + iπ (K64・従来は実部だけ)
+    def chi(fall, x):
+        if not isc(x) and x < 0.0:
+            return complex(float(sp.shichi(-x)[1]), math.pi)
+        return fall()
+    v2('CoshIntegral', chi)
+
+    # B187 LogIntegral[z] (z < 0 の実数と複素数): li(z) = Ei(Log z) (K64 は NaN、従来の pysad は複素数でエラー)
+    def logint(fall, z):
+        from . import specfn_cx2 as x2
+        if isc(z) or z < 0.0:
+            return _real(x2.ei_c(cmath.log(complex(z))))
+        return fall()
+    v2('LogIntegral', logint)
+
+    # B188 ExpIntegralE[n, z] (z < 0): 複素数 (E_1(-2.5) = -7.0738 - π i。K64・従来は NaN)
+    def expe(fall, n, z):
+        from . import specfn_cx2 as x2
+        if not isc(n, z) and z < 0.0:
+            zc = complex(z, 0.0)
+            if n == int(n) and n >= 0:
+                return _real(x2.expn_c(n, zc))
+            return _real(cmath.exp((n - 1.0) * cmath.log(zc)) * complex(_gamma_upper_gen(1.0 - n, zc)))
+        return fall()
+    v2('ExpIntegralE', expe)
+
+    # B189 Hypergeometric2F1 (実数の z > 1): 切断線の下側の値 (複素数。K64・従来は INF)
+    def hyp2f1(fall, a, b, c, z):
+        if not isc(a, b, c, z) and z > 1.0:
+            return _cx(sp.hyp2f1(a, b, c, complex(z, -1e-300)))
+        return fall()
+    v2('Hypergeometric2F1', hyp2f1)
+
+    def hyp2f1r(fall, a, b, c, z):
+        if not isc(a, b, c, z) and z > 1.0:
+            return _cx(sp.hyp2f1(a, b, c, complex(z, -1e-300))) / _gamma(c)
+        return fall()
+    v2('Hypergeometric2F1Regularized', hyp2f1r)
+
+    # B192 HermiteH[n, z] (複素の z、整数の n): 漸化式 (従来はエラー)
+    def hermite(fall, n, z):
+        if isinstance(z, complex) and not isc(n) and n == int(n) and n >= 0:
+            if n == 0:
+                return 1.0
+            h0, h1 = 1.0, 2.0 * z
+            for k in range(1, int(n)):
+                h0, h1 = h1, 2.0 * z * h1 - 2.0 * k * h0
+            return _real(h1)
+        return fall()
+    v2('HermiteH', hermite)
+
+    # B192 LegendreP[ν, m, x] (-1 < x < 1、非整数の ν、正の整数の m): 正則化した 2F1 の公式 (K64・従来は NaN)
+    def legendre(fall, n, m, z):
+        if not isc(n, m, z) and m == int(m) and m > 0 and abs(z) < 1.0 and n != int(n):
+            m = int(m)
+            u = (1.0 - z) / 2.0
+            poch = 1.0
+            for j in range(m):
+                poch *= (-n + j) * (n + 1.0 + j)
+            return ((1.0 + z) / (1.0 - z)) ** (m / 2.0) * poch * u ** m / math.factorial(m) * float(sp.hyp2f1(-n + m, n + 1.0 + m, m + 1.0, u))
+        return fall()
+    old_leg = B['LegendreP']
+
+    def leg_w(a, old=old_leg):
+        if compat.v2() and len(a) == 3 and all(_numeric(x) for x in a):
+            return _thread(lambda n, m, z: legendre(lambda: old([n, m, z]), n, m, z), a)
+        return old(a)
+    B['LegendreP'] = leg_w
+
+    # B193 ProductLog[z] (z < -1/e): 複素数の主枝 (K64・従来は NaN)。分岐点 z = -1/e の近く (|e z + 1| < 1e-6) は scipy が NaN を返すので
+    # p = sqrt(2(e z + 1)) のべき級数 W = -1 + p - p²/3 + 11 p³/72 - 43 p⁴/540 + 769 p⁵/17280 - 221 p⁶/8505 (ProductLog[-1/E] = -1)
+    def plog(fall, z):
+        if not isc(z):
+            q = math.e * z + 1.0
+            if abs(q) < 1e-3:
+                from decimal import Decimal, localcontext
+                with localcontext() as ctx:               # e z + 1 の桁落ち (z が -1/e に近い) を避ける
+                    ctx.prec = 40
+                    q = float(Decimal(1) + Decimal('2.718281828459045235360287471352662497757') * Decimal(z))
+            if abs(q) < 1e-6:
+                p = cmath.sqrt(2.0 * q)
+                w = -1.0 + p * (1.0 + p * (-1.0 / 3.0 + p * (11.0 / 72.0 + p * (-43.0 / 540.0 + p * (769.0 / 17280.0 - p * 221.0 / 8505.0)))))
+                return _real(w)
+            if z < -1.0 / math.e:
+                return _real(complex(sp.lambertw(complex(z, 0.0))))
+        return fall()
+    v2('ProductLog', plog)
+
+    # B196 PolyLog[-n, z] (整数 n >= 0、実数の z ≠ 1): 有理式 Li_{-n}(z) = N_n(z)/(1-z)^{n+1} (N_0 = z、N_{n+1} = z[(1-z)N_n' + (n+1)N_n])。
+    # 従来は 0.8 < |z| < 1 で相対 2e-11 の誤差、|z| > 1 は NaN (PolyLog[-2, 2.] = -6)
+    def polylog_neg(fall, s, z):
+        if not isc(s, z) and s == int(s) and s <= 0 and z != 1.0 and abs(z) != INF and z == z and s >= -200:
+            n = int(-s)
+            c = [0.0, 1.0]
+            for k in range(n):
+                d = [j * c[j] for j in range(1, len(c))] or [0.0]            # N'
+                nxt = [0.0] * (len(c) + 1)
+                for j, v in enumerate(d):                                     # (1-z) N' に z を掛ける
+                    nxt[j + 1] += v
+                    nxt[j + 2] -= v
+                for j, v in enumerate(c):
+                    nxt[j + 1] += (k + 1) * v
+                c = nxt
+            num = 0.0
+            for v in reversed(c):
+                num = num * z + v
+            return num / (1.0 - z) ** (n + 1)
+        return fall()
+    v2('PolyLog', polylog_neg)
+
+    # B196 HarmonicNumber[x] (|x| < 0.25): ζ(k) の級数 H_x = Σ (-1)^k ζ(k) x^{k-1} (Euler 定数 + ψ(x+1) は桁落ちで x = 1e-10 が相対 7e-8)
+    def harm(fall, z, *r):
+        if not r and not isc(z) and abs(z) < 0.25 and z != 0.0:
+            tot = 0.0
+            t = z
+            for k in range(2, 60):
+                tot += (-1.0) ** k * _zeta_real(float(k)) * t
+                t *= z
+                if abs(t) < 1e-18 * abs(tot):
+                    break
+            return tot
+        return fall()
+    v2('HarmonicNumber', harm)
+
+    # B194 Gamma[a, z]・GammaRegularized[a, z] の a <= 0 と z < 0 (K64・従来は NaN)
+    old_gam = B['Gamma']
+
+    def gam_w(a, old=old_gam):
+        if len(a) == 2 and all(_numeric(x) for x in a):
+            def one(p, z):
+                if not isc(p, z) and (p <= 0.0 or z < 0.0):
+                    return _gamma_upper_gen(p, z)
+                return old([p, z])
+            return _thread(one, a)
+        return old(a)
+    B['Gamma'] = gam_w
+
+    def gamreg(fall, p, z):
+        if not isc(p, z) and (p <= 0.0 or z < 0.0):
+            if p <= 0.0 and p == int(p):
+                return 0.0
+            return _real(_gamma_upper_gen(p, z) / _gamma(p))
+        return fall()
+    v2('GammaRegularized', gamreg)
+    v2('GammaRegularizedQ', gamreg)
+
+    # v2.4.0 E (docs/47): 複素の次数の PolyLog (実数の z も)・ExpIntegralE (z は実数・複素数)。従来は SADError・未評価
+    old_pl = B['PolyLog']
+
+    def pl_w(a, old=old_pl):
+        if len(a) == 2 and all(_numeric(x) for x in a):
+            def one(s_, z_):
+                if isinstance(s_, complex) and s_.imag != 0.0:
+                    from . import specfn_cx2 as x2
+                    return _real(x2.polylog_cs(s_, z_))
+                return old([s_, z_])
+            return _thread(one, a)
+        return old(a)
+    B['PolyLog'] = pl_w
+
+    old_ee = B['ExpIntegralE']
+
+    def ee_w(a, old=old_ee):
+        if len(a) == 2 and all(_numeric(x) for x in a):
+            def one(n_, z_):
+                if (isinstance(n_, complex) and n_.imag != 0.0) or (isinstance(z_, complex) and n_ != int(n_.real)):
+                    from . import specfn_cx2 as x2
+                    return _real(x2.expn_cn(n_, z_))
+                return old([n_, z_])
+            return _thread(one, a)
+        return old(a)
+    B['ExpIntegralE'] = ee_w
+
+    # B190 Hypergeometric1F1 (複素の z): scipy は |z| ≥ 25 で相対 1e-4〜1 の誤り (K64・従来の v2 とも)。|z| ≥ 6 は多倍長のべき級数
+    def hyp1f1c(fall, a, b, z):
+        if isinstance(z, complex) and not isc(a, b):
+            from . import specfn_cx2 as x2
+            return _real(x2.hyp1f1_c(a, b, z))
+        return fall()
+    v2('Hypergeometric1F1', hyp1f1c)
+
+    def hyp1f1rc(fall, a, b, z):
+        if isinstance(z, complex) and not isc(a, b):
+            from . import specfn_cx2 as x2
+            return _real(x2.hyp1f1_c(a, b, z) / _gamma(b))
+        return fall()
+    v2('Hypergeometric1F1Regularized', hyp1f1rc)
+
+    # B186 SinhIntegral・CoshIntegral (複素数): 従来は虚部を捨てた実数 (Shi(z) = -i Si(iz)、Chi(z) = Ci(iz) - iπ/2 (Re z < 0 かつ Im z > 0 は + 3πi/2))
+    def shi_c(fall, z):
+        if isinstance(z, complex):
+            from . import specfn_cx2 as x2
+            return _real(-1j * x2.sici_c(1j * z)[0])
+        return fall()
+    v2('SinhIntegral', shi_c)
+
+    def chi_c(fall, z):
+        if isinstance(z, complex):
+            from . import specfn_cx2 as x2
+            r = x2.sici_c(1j * z)[1]
+            return _real(r + (1.5j * math.pi if (z.real < 0.0 and z.imag > 0.0) else -0.5j * math.pi))
+        return fall()
+    old_chi = B['CoshIntegral']          # 実数の負の値 (B186) は上の定義
+    def chi_all(a, old=old_chi):
+        if all(_numeric(x) for x in a):
+            return _thread(lambda z: chi_c(lambda: old([z]), z), a)
+        return old(a)
+    B['CoshIntegral'] = chi_all
+
+    # B191 HypergeometricU[a, b, z] (実数、a > 0、z > 0): 積分表示 (scipy の hyperu は z = 10 で相対 7e-11 の誤差)
+    def hyperu(fall, a, b, z):
+        if not isc(a, b, z) and z > 0.0 and a > 0.0:
+            from . import specfn_cx
+            return _real(specfn_cx.hyperu_c(a, b, z))
+        return fall()
+    v2('HypergeometricU', hyperu)

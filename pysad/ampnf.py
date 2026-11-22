@@ -15,7 +15,11 @@
   kin=True: 運動学的な項 H_kin = (1+δ) Σ_{k≥2} c_k u^k (−√(1−u) の展開。ドリフト・四極・偏向磁石・6 極のドリフト部。偏向磁石は (1+hx) 倍)。
   fringe=True: 四極と K1≠0 の偏向磁石の端の Lee–Whiting のフリンジ H_f = σ (K1/12)[(x³+3xy²)px − (y³+3x²y)py]/(1+δ)^FRINGE_POWER (FRINGE_POWER = 1)。
   非線形の項はハミルトン流を Lie 級数 exp(ds {·, H}) で次数 D まで厳密に求め、Strang 分割で線形の部分と組み合わせる (nslice・nslice_bend・nslice_quad、誤差 O(1/n²))。
-【入れていない効果】 K0≠0・ROTATE の偏向磁石 (NotImplementedError)、結合、誤差、K1 の偏向磁石の 4 次以上、K64 の四極の積分器の台形則、10 極以上、放射・RF。
+【v2.4.0 F1】 ROTATE・ROTATION した BEND・QUAD・SEXT・OCT は R⁻¹ ∘ (回していない素子) ∘ R で入る (全次数の θ)。結合した線形光学は 4×4 の固有モード (linear_modes) の正規形で扱う。
+  rdt_series は 1 周の写像の 2 次の部分から共鳴駆動項 h を出す (結合した光学でも動く)。docs/49 §14。
+【v2.4.0 G】 K0≠0 の偏向磁石 (K1 = 0。挿入光源・逆曲げ・MPW・傾けた MPW) は、K64 の追跡の閉じた式を磁石内の軌道のまわりで TPSA 評価した写像 (ampnf_k0.py、op 'tmap') で入る。
+  閉軌道が原点にない 1 周の写像は 2 段 (不動点 c を求め、c を定数項に入れて通す。res['orbit'])。docs/49 §14.4。
+【入れていない効果】 K1≠0 かつ K0≠0 の偏向磁石 (NotImplementedError)、F1・DX・DY・DROTATE、誤差、K1 の偏向磁石の 4 次以上、K64 の四極の積分器の台形則、10 極以上、放射・RF。
   差の原因は docs/49 §13.3。使い方・検証は docs/49 §13、記録は docs/history/v24_A.md。
 """
 import math
@@ -208,6 +212,62 @@ def _lin4(Mx, dx, My, dy):
     return M, d
 
 
+def rot_matrix(theta):
+    """ROTATE (ロール角 θ) の座標変換 R (4×4): 素子座標 = R · 実験室座標 (x' = cosθ x − sinθ y、y' = sinθ x + cosθ y、px・py も同じ。K64 の tchge と同じ向き。
+    ROTATE した素子の写像は R⁻¹ ∘ (回していない素子の写像) ∘ R (pysad の追跡のヤコビ行列と 2e-15 で一致、v2.4.0 F1)"""
+    c, s = math.cos(theta), math.sin(theta)
+    return np.array([[c, 0.0, -s, 0.0], [0.0, c, 0.0, -s], [s, 0.0, c, 0.0], [0.0, s, 0.0, c]])
+
+
+def roll_angle(el):
+    """素子のロール角 ROTATE + ROTATION [rad] (BEND・QUAD・SEXT・OCT)。DROTATE≠0 は未対応"""
+    if float(getattr(el, 'DROTATE', 0.0) or 0.0):
+        raise NotImplementedError('ampnf: DROTATE≠0: %s' % el.name)
+    return float(getattr(el, 'ROTATE', 0.0) or 0.0) + float(getattr(el, 'ROTATION', 0.0) or 0.0)
+
+
+def _expand_rolls(elements):
+    """ロール角のある BEND・QUAD・SEXT・OCT を ('rot', θ)、ロール角 0 の素子、('rot', −θ) に展開する (v2.4.0 F1: 結合した光学・垂直分散を通す)。
+    v2.4.0 G: K0≠0 の BEND は、ANGLE≠0 ならそのまま (ampnf_k0 の写像が DX・DY・ROTATE・DROTATE・CHI2 を tbshift・tbrot の式で内部で扱う)、
+    ANGLE=0 (ステアリング・MPW 型。K64 は tent・texit) は ('shift', −DX, −DY)・('rot', θ + DROTATE)・素子・('rot', −θ)・('shift', DX, DY) に展開する"""
+    import dataclasses
+    import copy
+    out = []
+    for el in elements:
+        tn = type(el).__name__
+        if tn == 'Bend' and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0:
+            if float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0 and float(getattr(el, 'L', 0.0) or 0.0) > 0.0:
+                out.append(el)
+                continue
+            g = lambda k: float(getattr(el, k, 0.0) or 0.0)
+            th = g('ROTATE') + g('ROTATION') + g('DROTATE')
+            dx, dy = g('DX'), g('DY')
+            if th == 0.0 and dx == 0.0 and dy == 0.0:
+                out.append(el)
+                continue
+            clean = copy.copy(el)
+            for k in ('ROTATE', 'ROTATION', 'DROTATE', 'DX', 'DY'):
+                if hasattr(clean, k):
+                    setattr(clean, k, 0.0)
+            if dx or dy:
+                out.append(('shift', -dx, -dy))
+            if abs(th) > 1e-15:
+                out.append(('rot', th))
+            out.append(clean)
+            if abs(th) > 1e-15:
+                out.append(('rot', -th))
+            if dx or dy:
+                out.append(('shift', dx, dy))
+            continue
+        if tn in ('Bend', 'Quadrupole', 'Sextupole', 'Octupole'):
+            th = roll_angle(el)
+            if abs(th) > 1e-15:
+                out += [('rot', th), dataclasses.replace(el, ROTATE=0.0, ROTATION=0.0), ('rot', -th)]
+                continue
+        out.append(el)
+    return out
+
+
 def element_linear(el, dl):
     """素子の線形の写像 (M (n,4,4), d (n,4)) を複素 δ の配列 dl で返す。None = 非線形の kick だけの素子 (薄い 6 極・8 極)。
     戻り (M, d, kind)。kind: 'drift'|'quad'|'bend'|'other'"""
@@ -227,7 +287,9 @@ def element_linear(el, dl):
         return (*_lin4(Mx, dx, My, dy), 'quad')
     if tn == 'Bend' and L <= 0:
         A = np.asarray(el.transfer_matrix(0.0), dtype=float)[:4, :4]
-        return np.tile(A.astype(complex), (n, 1, 1)), np.zeros((n, 4), dtype=complex), 'other'
+        d = np.zeros((n, 4), dtype=complex)
+        d[:, 1] = -float(getattr(el, 'K0', 0.0) or 0.0)       # v2.4.0 G: 薄い K0 の kick (K64 の tsteer0: px −= K0/(1+δ) は内部の px/(1+δ)。正準運動量では δ に依らない −K0)
+        return np.tile(A.astype(complex), (n, 1, 1)), d, 'other'
     if tn == 'Bend':
         if float(getattr(el, 'K0', 0.0) or 0.0) or float(getattr(el, 'ROTATE', 0.0) or 0.0):
             raise NotImplementedError('ampnf: K0≠0・ROTATE の BEND: %s' % el.name)
@@ -415,10 +477,36 @@ def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8,
     new0 = (lambda: NSeg()) if delta is not None else (lambda: Seg(D, sd))
     cur = new0()
     warn = []
-    for el in lat.elements:
+    for el in _expand_rolls(lat.elements):
+        if isinstance(el, tuple):
+            if el[0] == 'shift':          # v2.4.0 G: x += dx、y += dy (ANGLE=0 の K0≠0 の磁石の据え付けのずれ)
+                Rm = np.eye(4)
+                dd = np.array([el[1], 0.0, el[2], 0.0])
+            else:
+                Rm = rot_matrix(el[1])
+                dd = np.zeros(4)
+            if delta is not None:
+                cur = cur.then(NSeg(Rm, dd))
+            else:
+                Ms = np.zeros((D + 1, 4, 4), dtype=complex)
+                Ms[0] = Rm
+                ds_ = np.zeros((D + 1, 4), dtype=complex)
+                ds_[0] = dd
+                cur = cur.then(Seg.from_series(Ms, ds_, sd))
+            continue
         tn = type(el).__name__
         L = float(getattr(el, 'L', 0.0) or 0.0)
         k2l = k3l = 0.0
+        if tn == 'Bend' and L > 0 and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0:
+            # v2.4.0 G: K0≠0 の偏向磁石は K64 の追跡の閉じた式を軌道のまわりで TPSA 評価した写像 (ampnf_k0)。kin・bend_cubic・fringe のオプションは効かない (全部入り)
+            from . import ampnf_k0 as _k0
+            ops.append(('lin', cur))
+            if float(getattr(el, 'ANGLE', 0.0) or 0.0) == 0.0 and float(getattr(el, 'CHI2', 0.0) or 0.0) != 0.0:
+                warn.append('ANGLE=0 の K0≠0 の BEND %s の CHI2 は K64 の追跡 (tsteer・tmulti) が使わないので入れていない (追跡に合わせる)' % el.name)
+            lin = not (bend_cubic or kin or fringe)
+            ops.append(('tmap', _k0.bend_k0_map(el, linear=lin), el, lin))
+            cur = new0()
+            continue
         tabn = get_tab(5, max(Dnl, 3)) if (kin or fringe or bend_cubic) else None
         if kin and tn == 'Drift' and L > 0:
             # ドリフトの運動学的な項: 線形のドリフトと可換なので厳密に 1 回の流れ
@@ -545,46 +633,51 @@ def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8,
     return ops, warn
 
 
+def linear_modes(A):
+    """1 周の線形写像 A (4×4、実、シンプレクティック) の正規化: 物理座標 = Am · zn、zn = (x̂, p̂, ŷ, q̂)、モード ζ = x̂ − i p̂ (固有値 e^{iμ})。
+    横方向の結合がなければ (A の非対角ブロック < 1e-12) 各面の Twiss (α, β)、結合があれば 4×4 の固有ベクトル (v2.4.0 F1): Am = [Re e1, Im e1, Re e2, Im e2]、
+    e は ē^T S e = 2i (S = (0 1; −1 0) の直和。正のクレイン符号) に規格化し、e1 は x 成分、e2 は y 成分が実で正になる位相。
+    戻り (Am, Ai, (μ1, μ2) ∈ [0, 2π)、tw = (αx, βx, αy, βy) (結合があれば None)、結合の大きさ)"""
+    cpl = float(max(np.abs(A[:2, 2:]).max(), np.abs(A[2:, :2]).max()))
+    if cpl < 1e-12:
+        tw, mus = [], []
+        for b in (0, 2):
+            m = A[b:b + 2, b:b + 2]
+            cm = 0.5 * (m[0, 0] + m[1, 1])
+            sm = math.copysign(math.sqrt(max(1 - cm * cm, 0.0)), m[0, 1])
+            mus.append(math.atan2(sm, cm) % (2 * math.pi))
+            tw += [(m[0, 0] - m[1, 1]) / (2 * sm), m[0, 1] / sm]
+        (ax, bx, ay, by) = tw
+        Am = np.array([[math.sqrt(bx), 0, 0, 0], [-ax / math.sqrt(bx), 1 / math.sqrt(bx), 0, 0],
+                       [0, 0, math.sqrt(by), 0], [0, 0, -ay / math.sqrt(by), 1 / math.sqrt(by)]])
+        return Am, np.linalg.inv(Am), tuple(mus), tuple(tw), cpl
+    S4 = np.zeros((4, 4))
+    S4[0, 1], S4[1, 0], S4[2, 3], S4[3, 2] = 1.0, -1.0, 1.0, -1.0
+    w, V = np.linalg.eig(A)
+    if np.abs(np.abs(w) - 1.0).max() > 1e-6:
+        raise ValueError('ampnf: 結合した線形の光学が不安定 (固有値の絶対値 %s)' % np.abs(w))
+    modes = []
+    for k in range(4):
+        e = V[:, k]
+        kr = (np.conj(e) @ S4 @ e) / 1j          # 実数。正なら正のクレイン符号
+        if kr.real > 0:
+            modes.append((np.angle(w[k]) % (2 * math.pi), e * math.sqrt(2.0 / kr.real)))
+    if len(modes) != 2:
+        raise ValueError('ampnf: 結合した光学の正のクレイン符号のモードが 2 つでない (共鳴の上か不安定)')
+    (m1, e1), (m2, e2) = modes
+    if abs(e1[0]) * abs(e2[2]) < abs(e2[0]) * abs(e1[2]):       # 横 (x) 成分が大きい方を x のモードに
+        (m1, e1), (m2, e2) = (m2, e2), (m1, e1)
+    e1 = e1 * np.exp(-1j * np.angle(e1[0]))
+    e2 = e2 * np.exp(-1j * np.angle(e2[2]))
+    Am = np.array([e1.real, e1.imag, e2.real, e2.imag]).T
+    return Am, np.linalg.inv(Am), (m1, m2), None, cpl
+
+
 # ---------------------------------------------------------------------------------------------
 # 1 周のべき級数の写像
 # ---------------------------------------------------------------------------------------------
-def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4):
-    """1 周の写像を 5 変数 (ζx, ζ̄x, ζy, ζ̄y, δ̃) のべき級数で返す (ζ = s ζ̃、δ = sd δ̃ の規格化)。戻り dict(G (4 成分の TPSA)、tab、mux、muy、
-    twiss0 = (αx, βx, αy, βy)、coupling (線形の結合の最大値)、warnings)"""
-    tab = get_tab(5, D)
-    if ops is None:
-        ops, warn = build_ops(lat, D, sd, nslice, bend_cubic=bend_cubic, nslice_bend=nslice_bend, Dnl=D, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
-    else:
-        warn = []
-    # 線形の 1 周から Twiss (模型自身の)
-    Mtot = Seg(D, sd)
-    for o in ops:
-        if o[0] == 'lin':
-            Mtot = Mtot.then(o[1])
-    # δ=0 の 1 周の行列には kick は寄与しない
-    A = Mtot.M[0].real
-    cpl = max(np.abs(A[:2, 2:]).max(), np.abs(A[2:, :2]).max())
-    tw = []
-    mus = []
-    for b in (0, 2):
-        m = A[b:b + 2, b:b + 2]
-        cm = 0.5 * (m[0, 0] + m[1, 1])
-        sm = math.copysign(math.sqrt(max(1 - cm * cm, 0.0)), m[0, 1])
-        mu = math.atan2(sm, cm)
-        beta = m[0, 1] / sm
-        alpha = (m[0, 0] - m[1, 1]) / (2 * sm)
-        tw += [alpha, beta]
-        mus.append(mu % (2 * math.pi))
-    (ax, bx, ay, by) = tw
-    # 初期の状態: 物理座標を ζ の線形式で
-    z = [tab.var(j) for j in range(5)]
-    def xhat(zp, zm):
-        return 0.5 * s * (zp + zm)
-    def phat(zp, zm):
-        return 0.5j * s * (zp - zm)
-    xh, ph = xhat(z[0], z[1]), phat(z[0], z[1])
-    yh, qh = xhat(z[2], z[3]), phat(z[2], z[3])
-    S = [math.sqrt(bx) * xh, (ph - ax * xh) / math.sqrt(bx), math.sqrt(by) * yh, (qh - ay * yh) / math.sqrt(by)]
+def _run_ops(tab, ops, S, D, sd):
+    """素子列 ops を TPSA の状態 S (4 成分。定数項を持ってよい) に順に作用させる"""
     for o in ops:
         if o[0] == 'lin':
             sg = o[1]
@@ -600,6 +693,8 @@ def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, 
                     acc = acc + tab.mul_dser(dser, tab.const(1.0))
                 new.append(acc)
             S = new
+        elif o[0] == 'tmap':
+            S = [np.asarray(a) for a in o[1](S, tab, sd)]
         elif o[0] == 'nlphi':
             Q5 = S + [sd * tab.var(4)]
             S = _compose(tab, o[1], Q5, D)
@@ -621,13 +716,98 @@ def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, 
                 x2y = tab.mul(x2, y)
                 S[1] = S[1] - k3l / 6.0 * (x3 - 3 * xy2)
                 S[3] = S[3] - k3l / 6.0 * (y3 - 3 * x2y)
+    return S
+
+
+def _eval_poly(tab, P, u):
+    mono = np.prod(u[None, :] ** tab.mons, axis=1)
+    return np.dot(P, mono)
+
+
+def _fixed_point(tab, Fp, s, maxit=40, tol=1e-15):
+    """物理座標の 1 周の写像 Fp (u = x/s の級数。δ̃ = 0) の不動点 c (m, rad) とそのまわりのヤコビ行列 A (4×4 実)。不動点の反復 (Newton 法、解析的な微分)"""
+    mons = tab.mons
+    c = np.zeros(4)
+
+    def jac(u):
+        A = np.zeros((4, 4), dtype=complex)
+        for k in range(4):
+            e = mons.copy()
+            ek = e[:, k].copy()
+            e[:, k] = np.maximum(ek - 1, 0)
+            mono = np.prod(u[None, :] ** e, axis=1) * ek
+            for j in range(4):
+                A[j, k] = np.dot(Fp[j], mono) / s
+        return A.real
+    for _ in range(maxit):
+        u = np.concatenate([c / s, [0.0]])
+        f = np.array([_eval_poly(tab, Fp[j], u).real for j in range(4)])
+        r = f - c
+        if np.abs(r).max() < tol:
+            break
+        c = c - np.linalg.solve(jac(u) - np.eye(4), r)
+    u = np.concatenate([c / s, [0.0]])
+    return c, jac(u)
+
+
+def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4):
+    """1 周の写像を 5 変数 (ζx, ζ̄x, ζy, ζ̄y, δ̃) のべき級数で返す (ζ = s ζ̃、δ = sd δ̃ の規格化)。戻り dict(G (4 成分の TPSA)、tab、mux、muy、
+    twiss0 = (αx, βx, αy, βy)、coupling (線形の結合の最大値)、warnings)"""
+    tab = get_tab(5, D)
+    if ops is None:
+        ops, warn = build_ops(lat, D, sd, nslice, bend_cubic=bend_cubic, nslice_bend=nslice_bend, Dnl=D, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
+    else:
+        warn = []
+    try:
+        from . import ampnf_coupled as _ac
+        if _ac.has_errors(lat):
+            warn.append('DX・DY・DROTATE のある素子 (%s ...) の据え付けのずれは `one_turn_series` では入れていない (閉軌道 ≠ 0 の展開が要る。`amplitude_tune` は ampnf_coupled に回す。H1)' % _ac.has_errors(lat)[0])
+    except Exception:
+        pass
+    has_t = any(o[0] == 'tmap' for o in ops)
+    if has_t and D < 4:
+        warn.append('K0≠0 の磁石があり D < 4: 軌道の傾きによる運動学 (4 次のハミルトニアン) のフィードダウンが 2 次の写像に入らない (D ≥ 4 を勧める。docs/49 §14.4)')
+    if has_t:
+        # v2.4.0 G: K0≠0 の偏向磁石がある (閉軌道が原点にない・写像に定数項)。第 1 段: 物理座標 (原点が入口) の 1 周の写像 F(u) を作り、不動点 c (閉軌道) と
+        # そのまわりのヤコビ行列 A を求める。第 2 段: ζ = (モード) の正規化座標で、c を定数項に入れた状態から出発して全素子を通す (磁石の内部の軌道は閉じた式の展開で厳密)
+        u = [tab.var(j) for j in range(5)]
+        Fp = _run_ops(tab, ops, [s * u[j] for j in range(4)], D, sd)
+        orbit, A = _fixed_point(tab, Fp, s)
+        Am, Ai, mus, tw, cpl = linear_modes(A)
+        (ax, bx, ay, by) = tw if tw is not None else (None,) * 4
+        zz = [tab.var(j) for j in range(5)]
+        zn = [0.5 * s * (zz[0] + zz[1]), 0.5j * s * (zz[0] - zz[1]), 0.5 * s * (zz[2] + zz[3]), 0.5j * s * (zz[2] - zz[3])]
+        Sin = [tab.const(orbit[i]) + sum(Am[i, j] * zn[j] for j in range(4) if Am[i, j] != 0.0) for i in range(4)]
+        if float(np.abs(orbit).max()) > 1e-12:
+            # 閉軌道が原点にない: 閉軌道を定数項に入れた状態で全素子をもう一度通す (原点のまわりの展開を組み替えない = 次数 D の打ち切りの誤差が出ない)
+            S = _run_ops(tab, ops, Sin, D, sd)
+        else:
+            S = _compose(tab, Fp, [Sin[i] / s for i in range(4)] + [tab.var(4)], D)
+        S = [S[i] - tab.const(orbit[i]) for i in range(4)]
+    else:
+        orbit = np.zeros(4)
+        # 線形の 1 周から Twiss (模型自身の)
+        Mtot = Seg(D, sd)
+        for o in ops:
+            if o[0] == 'lin':
+                Mtot = Mtot.then(o[1])
+        # δ=0 の 1 周の行列には kick は寄与しない
+        A = Mtot.M[0].real
+        Am, Ai, mus, tw, cpl = linear_modes(A)
+        (ax, bx, ay, by) = tw if tw is not None else (None,) * 4
+        # 初期の状態: 物理座標を ζ の線形式で (正規化座標 zn = (x̂, p̂, ŷ, q̂)、x̂ = s Re ζx、p̂ = −s Im ζx。物理座標 = Am zn)
+        z = [tab.var(j) for j in range(5)]
+        def xhat(zp, zm):
+            return 0.5 * s * (zp + zm)
+        def phat(zp, zm):
+            return 0.5j * s * (zp - zm)
+        zn = [xhat(z[0], z[1]), phat(z[0], z[1]), xhat(z[2], z[3]), phat(z[2], z[3])]
+        S = [sum(Am[i, j] * zn[j] for j in range(4) if Am[i, j] != 0.0) for i in range(4)]
+        S = _run_ops(tab, ops, S, D, sd)
     # 出力を正規化座標に
-    xo = S[0] * (1 / math.sqrt(bx))
-    po = S[1] * math.sqrt(bx) + ax * xo
-    yo = S[2] * (1 / math.sqrt(by))
-    qo = S[3] * math.sqrt(by) + ay * yo
+    xo, po, yo, qo = [sum(Ai[i, j] * S[j] for j in range(4) if Ai[i, j] != 0.0) for i in range(4)]
     G = [(xo - 1j * po) / s, (xo + 1j * po) / s, (yo - 1j * qo) / s, (yo + 1j * qo) / s]
-    return dict(G=G, tab=tab, mux=mus[0], muy=mus[1], twiss0=(ax, bx, ay, by), coupling=float(cpl), warnings=warn, s=s, sd=sd, D=D)
+    return dict(G=G, tab=tab, mux=mus[0], muy=mus[1], twiss0=(ax, bx, ay, by), Amat=Am, Ainv=Ai, coupling=float(cpl), warnings=warn, s=s, sd=sd, D=D, orbit=orbit)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -782,12 +962,92 @@ class AmpTuneResult:
 
 def amplitude_tune(lat, D=5, nslice=8, sd=1e-2, s=3e-4, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4, skip_den=0.0):
     """lat の ν_x, ν_y(Jx, Jy, δ) の級数 (D 次の 1 周の写像の Birkhoff 正規形)。戻り AmpTuneResult"""
+    if ops is None:
+        # v2.4.0 G: DX・DY (・DZ・DROTATE) のある素子 (BEND・QUAD・SEXT・OCT) は、以前は黙って無視されていた (pysad 自身の不具合)。H1 の `ampnf_coupled` (tchge の TPSA 版、
+        # 閉軌道 ≠ 0 の展開) に渡す。D は 4 以上、skip_den は未対応
+        from . import ampnf_coupled as _ac
+        if _ac.has_errors(lat):
+            return _ac.amplitude_tune_ext(lat, D=D, nslice=nslice, bend_cubic=bend_cubic, nslice_bend=nslice_bend, kin=kin, fringe=fringe, nslice_quad=nslice_quad, sd=sd, s=s)
     res = one_turn_series(lat, D=D, nslice=nslice, sd=sd, s=s, ops=ops, bend_cubic=bend_cubic, nslice_bend=nslice_bend, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
     nf = normal_form(res, skip_den=skip_den)
     nux = tune_series(res, nf, 0)
     nuy = tune_series(res, nf, 1)
     nu0 = (res['mux'] / (2 * math.pi), res['muy'] / (2 * math.pi))
     return AmpTuneResult(nux, nuy, nu0, nf, res)
+
+
+# ---------------------------------------------------------------------------------------------
+# 共鳴駆動項 h_jklmp を 1 周の写像のべき級数 (2 次の部分) から (v2.4.0 F1: 結合した光学・ROTATE した偏向磁石)
+# ---------------------------------------------------------------------------------------------
+_PZ = np.array([[1, -1j, 0, 0], [1, 1j, 0, 0], [0, 0, 1, -1j], [0, 0, 1, 1j]], dtype=complex)       # ζ = P zn (zn = (x̂, p̂, ŷ, q̂)、ζ = x̂ − i p̂)
+
+
+def _quad_mats(res):
+    """1 周の写像の 2 次の部分 G_i^(2) (p=0) の対称行列 Q_i (ζ̃ の 4×4)、δ の 1 次の定数 g1、ζ̃δ の係数 d (4×4: d[i,j])、δ² の定数 g2 (δ は物理の値)"""
+    tab, sd = res['tab'], res['sd']
+    Q = np.zeros((4, 4, 4), dtype=complex)
+    g1 = np.zeros(4, dtype=complex)
+    g2 = np.zeros(4, dtype=complex)
+    d = np.zeros((4, 4), dtype=complex)
+    for i in range(4):
+        G = res['G'][i]
+        for m in np.nonzero(G)[0]:
+            e = tab.mons[m]
+            deg = int(e.sum())
+            ed = int(e[4])
+            ez = [int(v) for v in e[:4]]
+            if ed == 0 and deg == 2:
+                idx = [a for a in range(4) for _ in range(ez[a])]
+                a, b = idx
+                if a == b:
+                    Q[i, a, a] += G[m]
+                else:
+                    Q[i, a, b] += 0.5 * G[m]
+                    Q[i, b, a] += 0.5 * G[m]
+            elif ed == 1 and deg == 1:
+                g1[i] += G[m] / sd
+            elif ed == 2 and deg == 2:
+                g2[i] += G[m] / sd ** 2
+            elif ed == 1 and deg == 2:
+                d[i, ez.index(1)] += G[m] / sd
+    return Q, g1, g2, d
+
+
+def rdt_series(res, with_delta=True):
+    """1 周の写像の 2 次の部分 (D ≥ 2 の one_turn_series の結果) から、共鳴駆動項 h_jklmp (3 次: p=0 の 20 項、δ: p=1 の 8 項と h10002)。
+    結合した線形光学 (4×4 の固有モード、linear_modes) でも同じ式 (モード変数 ζ1・ζ2 が基準)。方法は `rdttrack` と同じ (写像の 2 次の部分 → kick の生成関数
+    → 角度・作用の調和)。**模型の写像の 2 次の部分は、6 極と偏向磁石の 3 次の項 (bend_cubic=True の曲率・端) の kick の和そのもの**で、追跡との違いは入れた効果だけ。
+    δ の項は閉軌道のまわりのヤコビ行列の δ 微分と 2 次の閉軌道 (rdttrack.delta_quadratic_total・delta2_orbit_h10002 と同じ定義)。戻り {名前: 複素数}"""
+    from . import rdttrack as T
+    from . import bendnl as B
+    s = res['s']
+    P = _PZ
+    Pi = np.linalg.inv(P)
+    lam = np.array([np.exp(1j * res['mux']), np.exp(-1j * res['mux']), np.exp(1j * res['muy']), np.exp(-1j * res['muy'])])
+    Q, g1, g2, d = _quad_mats(res)
+    # 実の正規化座標での 2 次の部分: zn' = R zn + T(zn, zn)、T[j] = Σ_i Pi[j,i] P^T Q_i P / s
+    Tn = np.einsum('ji,iab->jab', Pi, np.einsum('ca,icd,db->iab', P, Q, P)) / s
+    Rr = (Pi @ np.diag(lam) @ P)
+    rm = T.RingMap()
+    rm.R, rm.T = Rr.real, Tn.real
+    out = {}
+    h3 = T.rdt_from_map(rm)
+    out.update(h3)
+    out['_imag'] = float(max(np.abs(Rr.imag).max(), np.abs(Tn.imag).max()))
+    if with_delta:
+        I4 = np.eye(4)
+        L = np.diag(lam)
+        z1 = np.linalg.solve(I4 - L, g1)                                  # ζ̃ の 1 次の閉軌道 (δ あたり)
+        J1 = d + 2.0 * np.einsum('ijk,k->ij', Q, z1)                       # δ の 1 次のヤコビ行列 (ζ̃ 空間)
+        Xr = (Pi @ J1 @ P).real
+        Qm = -T.S4 @ np.linalg.solve(rm.R, Xr)
+        out.update(T.quad_to_h(Qm, T.DELTA1_MONOS))
+        z2 = np.linalg.solve(I4 - L, g2 + np.einsum('ijk,j,k->i', Q, z1, z1) + d @ z1)
+        c2 = (Pi @ z2).real * s                                            # 実の正規化座標の δ² の係数
+        gradg = -T.S4 @ np.linalg.solve(rm.R, (I4 - rm.R) @ c2)
+        amp = B.harmonic_amplitudes({(1, 0, 0, 0): gradg[0], (0, 1, 0, 0): gradg[1], (0, 0, 1, 0): gradg[2], (0, 0, 0, 1): gradg[3]}, T.W_NORM, [(1, 0, 0, 0)])[0, 0]
+        out['h10002'] = complex(amp)
+    return out
 
 
 # ---------------------------------------------------------------------------------------------
@@ -804,6 +1064,11 @@ def model_tracker(lat, delta=0.0, nslice=8, ops=None, bend_cubic=False, nslice_b
         for o in ops:
             if o[0] == 'lin':
                 v = v @ o[1].M.T + o[1].d
+            elif o[0] == 'tmap':
+                from . import ampnf_k0 as _k0
+                if len(o) > 3 and o[3]:
+                    raise NotImplementedError('model_tracker: K0≠0 の磁石の線形だけの写像 (bend_cubic・kin・fringe を全部切った模型) の数値の追跡は未対応')
+                v = _k0.numeric_map(o[2], delta)(v)
             elif o[0] == 'nlphi':
                 full = np.column_stack([v, np.full(len(v), delta)])
                 mono = np.prod(full[:, None, :] ** tabn.mons[None, :, :], axis=2)
@@ -850,33 +1115,28 @@ def model_tune(lat, jx, jy, delta=0.0, nturn=1024, nslice=8, window=1, phase=(0.
         if o[0] == 'lin':
             Mt = Mt.then(o[1])
     A = Mt.M
-    tw = []
-    for b in (0, 2):
-        m = A[b:b + 2, b:b + 2]
-        cm = 0.5 * (m[0, 0] + m[1, 1])
-        sm = math.copysign(math.sqrt(1 - cm * cm), m[0, 1])
-        tw.append(((m[0, 0] - m[1, 1]) / (2 * sm), m[0, 1] / sm))
-    (ax, bx), (ay, by) = tw
     orb = model_closed_orbit(tr)
+    if any(o[0] == 'tmap' for o in ops0):
+        from .bendnl import jac_at
+        A = jac_at(lambda Z: tr(Z), orb)         # v2.4.0 G: K0≠0 の磁石があるときは模型の追跡の閉軌道まわりのヤコビ行列
+    Am, Ai, mus, tw, cpl = linear_modes(A)
     ph, pv = phase
     if nfres is None:
-        v = np.array([[math.sqrt(2 * jx * bx) * math.cos(ph), -math.sqrt(2 * jx / bx) * (math.sin(ph) + ax * math.cos(ph)),
-                       math.sqrt(2 * jy * by) * math.cos(pv), -math.sqrt(2 * jy / by) * (math.sin(pv) + ay * math.cos(pv))]]) + orb
+        # アクション・位相 → 物理座標 (正規化座標 x̂ = √(2J) cos φ、p̂ = −√(2J) sin φ)
+        zn = np.array([math.sqrt(2 * jx) * math.cos(ph), -math.sqrt(2 * jx) * math.sin(ph), math.sqrt(2 * jy) * math.cos(pv), -math.sqrt(2 * jy) * math.sin(pv)])
+        v = np.array([Am @ zn]) + orb
     else:
         v = np.array([initial_from_nf(nfres, jx, jy, ph, pv, delta)])
     rec = np.zeros((nturn, 4))
     for t in range(nturn):
         rec[t] = v[0]
         v = tr(v)
+    zrec = (Ai @ (rec - orb).T).T
     out = []
-    for p, (al, be) in enumerate(((ax, bx), (ay, by))):
-        x = rec[:, 2 * p] - orb[2 * p]
-        px = rec[:, 2 * p + 1] - orb[2 * p + 1]
-        xh, ph_ = naff.twiss_normalize(x, px, al, be)
+    for p in range(2):
+        xh, ph_ = zrec[:, 2 * p], zrec[:, 2 * p + 1]
         zz = (xh - xh.mean()) - 1j * (ph_ - ph_.mean())
-        cm = 0.5 * (A[2 * p, 2 * p] + A[2 * p + 1, 2 * p + 1])
-        sm = math.copysign(math.sqrt(max(1 - cm * cm, 0.0)), A[2 * p, 2 * p + 1])
-        f0 = (math.atan2(sm, cm) / (2 * math.pi) + 0.5) % 1.0 - 0.5
+        f0 = (mus[p] / (2 * math.pi) + 0.5) % 1.0 - 0.5
         f, _a = naff.naff(zz, 1, window=window, fmin=f0 - 0.05, fmax=f0 + 0.05)
         out.append(f[0] % 1.0)
     return tuple(out)
@@ -887,16 +1147,13 @@ def initial_from_nf(r, jx, jy, phx, phy, delta):
     r = AmpTuneResult。J・φ から解析式の ν(J, δ) に対応する粒子を作る (追跡の初期条件の J が正規形の J と O(√J) 違う影響を除く)"""
     res, nf = r.res, r.nf
     tab, s, sd = res['tab'], res['s'], res['sd']
-    ax, bx, ay, by = res['twiss0']
+    Am = res['Amat']
     w = np.array([math.sqrt(2 * jx) / s * np.exp(1j * phx), math.sqrt(2 * jx) / s * np.exp(-1j * phx),
                   math.sqrt(2 * jy) / s * np.exp(1j * phy), math.sqrt(2 * jy) / s * np.exp(-1j * phy), delta / sd])
     mono = np.prod(w[None, :] ** tab.mons, axis=1)
     z = [s * np.dot(nf['phi'][i], mono) for i in range(4)]
-    xh = 0.5 * (z[0] + z[1]).real
-    ph = (0.5j * (z[0] - z[1])).real
-    yh = 0.5 * (z[2] + z[3]).real
-    qh = (0.5j * (z[2] - z[3])).real
-    return [math.sqrt(bx) * xh, (ph - ax * xh) / math.sqrt(bx), math.sqrt(by) * yh, (qh - ay * yh) / math.sqrt(by)]
+    zn = np.array([0.5 * (z[0] + z[1]).real, (0.5j * (z[0] - z[1])).real, 0.5 * (z[2] + z[3]).real, (0.5j * (z[2] - z[3])).real])
+    return list(Am @ zn + res.get('orbit', 0.0))
 
 
 def nf_action(r, coords, delta=0.0, niter=60):
@@ -904,12 +1161,8 @@ def nf_action(r, coords, delta=0.0, niter=60):
     初期条件の J と正規形の J が O(√J) 違うことを補正して、追跡のチューンと ν(J, δ) の級数を比べるために使う"""
     res, nf = r.res, r.nf
     tab, s, sd = res['tab'], res['s'], res['sd']
-    ax, bx, ay, by = res['twiss0']
-    x, px, y, py = coords
-    xh = x / math.sqrt(bx)
-    ph = math.sqrt(bx) * px + ax * xh
-    yh = y / math.sqrt(by)
-    qh = math.sqrt(by) * py + ay * yh
+    zn = res['Ainv'] @ (np.asarray(coords, dtype=float) - res.get('orbit', 0.0))
+    xh, ph, yh, qh = zn
     z = np.array([(xh - 1j * ph) / s, (xh + 1j * ph) / s, (yh - 1j * qh) / s, (yh + 1j * qh) / s])
     w = z.copy()
     for _ in range(niter):
@@ -920,3 +1173,44 @@ def nf_action(r, coords, delta=0.0, niter=60):
     jx = abs(w[0]) ** 2 * s * s / 2
     jy = abs(w[2]) ** 2 * s * s / 2
     return jx, jy, np.angle(w[0]), np.angle(w[2]), float(np.abs(zz - z).max())
+
+
+# ---------------------------------------------------------------------------------------------
+# 検証用: 実際の追跡 (pysad の追跡、全非線形・全素子) + NAFF の ADTS (結合した光学でも使える。v2.4.0 F1)
+# ---------------------------------------------------------------------------------------------
+def tracked_tunes(lat, r, jx, jy, phase=(0.3, 0.9), delta=0.0, nturn=1024, momentum_eV=3e9):
+    """AmpTuneResult r の正規形の座標 (Jx, Jy, φ) から出発した、pysad の追跡 (k64・v2 の track6n。RF・放射なし) + NAFF の (νx, νy)。
+    ν は r.nu0 に近い側の端数。結合した光学では、モード ζ1・ζ2 の正規化座標 (r.res['Ainv']) の NAFF"""
+    from . import adtsdirect as D, naff
+    c0 = initial_from_nf(r, jx, jy, phase[0], phase[1], delta)
+    c = np.zeros((1, 6))
+    c[0, :4] = c0
+    c[0, 5] = delta
+    rec = D.track_record(lat.elements, momentum_eV, c, nturn)
+    from . import rdttrack as T
+    orb = r.res.get('orbit', np.zeros(4)) if delta == 0.0 else T.closed_orbit(lat.elements, momentum_eV, delta)[0]
+    zr = (r.res['Ainv'] @ (rec[:, 0, :4] - orb).T).T
+    out = []
+    for p in range(2):
+        xh, ph = zr[:, 2 * p], zr[:, 2 * p + 1]
+        zz = (xh - xh.mean()) - 1j * (ph - ph.mean())
+        f0 = (r.nu0[p] + 0.5) % 1.0 - 0.5
+        f, _ = naff.naff(zz, 1, window=1, fmin=f0 - 0.05, fmax=f0 + 0.05)
+        out.append(f[0] % 1.0)
+    return tuple(out)
+
+
+def tracked_adts(lat, r, j=3e-7, nturn=1024, momentum_eV=3e9):
+    """追跡 + NAFF の J¹ の ADTS {'xx','xy','yx','yy'}: 正規形の J の格子 (j, 2j, 3j の組 8 点。両方の面に振幅) の ν を、ν0 + c10 Jx + c01 Jy + c20 Jx² + c11 JxJy + c02 Jy² で最小二乗フィット
+    (初期条件を正規形の J・φ から作るので、O(√J) の J のずれの影響を受けない)"""
+    pts = [(j, j), (2 * j, j), (j, 2 * j), (2 * j, 2 * j), (3 * j, j), (j, 3 * j), (3 * j, 2 * j), (2 * j, 3 * j)]       # 両方の面に振幅 (振幅 0 の面の NAFF は雑音を拾う)
+    nus = np.array([tracked_tunes(lat, r, a, b, nturn=nturn, momentum_eV=momentum_eV) for a, b in pts])
+    Amat = np.array([[a, b, a * a, a * b, b * b] for a, b in pts])
+    out = {}
+    for pl, nm in ((0, 'x'), (1, 'y')):
+        y = nus[:, pl] - r.nu0[pl] % 1.0
+        y = (y + 0.5) % 1.0 - 0.5
+        co, *_ = np.linalg.lstsq(Amat, y, rcond=None)
+        out[nm + 'x'] = co[0]
+        out[nm + 'y'] = co[1]
+    return out

@@ -1,0 +1,77 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.161E-6 $$$       f BX    #######  #   4.793355 $$$       f NX    #######  #  48.580024 $$$       f AY    #######  #  -6.470E-6 $$$       f BY    #######  #   2.377341 $$$       f NY    #######  #  17.620083
+$$$       f LENG  #######  #  570.72092
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  1.262E-6  1.644E-7  3.49E-22  -5.2E-23  -1.19E-6  1.026E-5
+      Exit :  1.262E-6  1.644E-7  -1.7E-22  1.39E-22  -1.19E-6  1.026E-5
+
+    Extended Twiss Parameters
+AX: -6.84E-4 BX: 4.781475                            ZX: 6.941E-5  EX:  .024984
+           PSIX: -5.4E-22                           ZPX: 1.169E-5 EPX: -4.3E-21
+R1: -8.5E-20 R2: -9.4E-21 AY:  .001451 BY: 2.377419  ZY: -6.1E-24  EY: -4.3E-21
+R3: 2.42E-21 R4: -2.5E-19            PSIY: 2.64E-45 ZPY: -3.3E-24 EPY: 5.65E-22
+                                                     AZ: -.002843  BZ: 4.252100
+                                                                 PSIZ: 5.30E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 525287.30 Hz 
+Energy loss per turn U0 =  .2984335 MV  Effective voltage    Vc = 2.0000000 MV 
+Equilibrium position dz = 14.290002 mm  Momentum compact. alpha = 2.1892E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 952.00000
+Bucket height     dV/P0 =  .0397722     Synchrotron frequency   = 2456.3580 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune:-0.4199761          -0.3799167          -0.0046762
+
+    Damping per one revolution:
+          X : -6.508401E-05   Y : -4.973646E-05   Z : -8.412230E-05
+    Damping time (sec):
+          X :  2.925020E-02   Y :  3.827615E-02   Z :  2.263039E-02
+    Tune shift due to radiation:
+          X :  2.315152E-07   Y :  2.372208E-07   Z :  1.148328E-10
+    Damping partition number:
+          X :    1.3086       Y :    1.0000       Z :    1.6914
+
+Emittance X            = 1.3293E-10 m   Emittance Y            = -2.855E-38 m
+Emittance Z            = 1.75397E-6 m   Energy spread          = 6.42261E-4
+Bunch Length           = 2.73094804 mm  Beam tilt              = 1.5621E-13 rad
+Beam size xi           =  .02988565 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+ICX =  161.0000000000   ICY =  121.0000000000   IM =  201.0000000000
+===== seed  111.0000000000
+before correction: tune   48.6094621988   17.8092911185
+   COD max [m] x y:     .0035169868     .0081442991   COD rms [m] x y:     .0010880489     .0024353979
+   eta-beat max [m] x y:     .0474662089     .2563681174   eta-beat rms [m] x y:     .0174769751     .0534990100
+iteration    1.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    2.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    3.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    4.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    5.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    6.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    7.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    8.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration    9.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+iteration   10.0000000000: mat x rms =  2.237255546E-5  mat y rms =  3.567378392E-5  sad x rms =  7.674505166E-5  sad y rms =  1.717797214E-4  tune   48.6094621988   17.8092911185
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:1654: RuntimeWarning: divide by zero encountered in scalar divide
+  c[0] += c[1] / pzi * L
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:1655: RuntimeWarning: divide by zero encountered in scalar divide
+  c[2] += c[3] / pzi * L
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:1656: RuntimeWarning: divide by zero encountered in scalar divide
+  c[4] -= a / (pr + pzi) / pzi * L
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:2310: RuntimeWarning: invalid value encountered in subtract
+  M[:, j] = (f(cp) - f(cm)) / (2.0 * eps)
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:1757: RuntimeWarning: invalid value encountered in scalar multiply
+  xf = dr[0][0] * xi + dr[0][1] * yi + dr[0][2] * zi + cod[0]
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:1758: RuntimeWarning: invalid value encountered in scalar multiply
+  yf = dr[1][0] * xi + dr[1][1] * yi + dr[1][2] * zi + yi
+D:\work\SAD-master\Claude outputs\pysad\lattice.py:1759: RuntimeWarning: invalid value encountered in scalar multiply
+  zf = dr[2][0] * xi + dr[2][1] * yi + dr[2][2] * zi
+after correction: tune   48.6094621988   17.8092911185  EMITX [pm rad] NaN
+   COD max [m] x y:     .0035169868     .0081442991   COD rms [m] x y:     .0010880489     .0024353979
+   eta-beat max [m] x y:     .0474662089     .2563681174   eta-beat rms [m] x y:     .0174769751     .0534990100
+COD-corrected state: HD K0 (components 5, 50, 100) =  -4.84944831E-4  -8.60400481E-4  -1.18540865E-5
+???General::wrongtype: ValueError: cannot convert float NaN to integer
+WALL 22.711596965789795

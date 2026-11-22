@@ -274,10 +274,54 @@ def _mm(a, b):
 
 
 @njit(**NJ)
+def edge_len(tx, ty, x, y, px, py, dl, sgn):
+    """edge_free の行程 ℓ だけ (微分なし。追跡の zr0 用)"""
+    pr = 1.0 + dl
+    u = tx * x + ty * y
+    pz2 = pr * pr - px * px - py * py
+    if pz2 <= 1e-12:
+        return u
+    pz = math.sqrt(pz2)
+    return u * (pr / pz) / (1.0 + sgn * (tx * px + ty * py) / pz)
+
+
+@njit(**NJ)
+def edge_free(tx, ty, x, y, px, py, dl, sgn):
+    """v2 (B220): 硬い端の面 (面は軸に対して角 e 傾いた平面、tx + ty の方向の tan e) の手前・先の自由な飛行の行程 ℓ とその座標微分 g (x, px, y, py, z, δ)。
+    入口 (sgn = -1): 面までの直進 z_f = X tan e = (x + px/pz z_f) tan e → ℓ = z_f p/pz = u/(1 - v/pz)·p/pz。
+    出口 (sgn = +1): 面から z = L の面までの直進。x(L) = X (1 + px/pz tan e) → ℓ = u/(1 + v/pz)·p/pz。u = tx x + ty y、v = tx px + ty py。
+    tan e → 0 の極限が従来の線形の式 (ℓ = tan e·x)。戻り (ℓ, g)。"""
+    g = np.zeros(6)
+    pr = 1.0 + dl
+    u = tx * x + ty * y
+    pz2 = pr * pr - px * px - py * py
+    if pz2 <= 1e-12:
+        g[0] = tx
+        g[2] = ty
+        return u, g
+    pz = math.sqrt(pz2)
+    v = tx * px + ty * py
+    f = 1.0 + sgn * v / pz
+    a = pr / pz
+    ell = u * a / f
+    ipz3 = 1.0 / (pz2 * pz)
+    dU = (tx, 0.0, ty, 0.0, 0.0, 0.0)
+    dV = (0.0, tx, 0.0, ty, 0.0, 0.0)
+    dip = (0.0, px * ipz3, 0.0, py * ipz3, 0.0, -pr * ipz3)
+    da = (0.0, pr * px * ipz3, 0.0, pr * py * ipz3, 0.0, -(px * px + py * py) * ipz3)
+    for k in range(6):
+        df = sgn * (dV[k] / pz + v * dip[k])
+        g[k] = (dU[k] * a + u * da[k]) / f - u * a * df / (f * f)
+    return ell, g
+
+
+@njit(**NJ)
 def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp, xpx, xpy, xpz, xpa, anp, uc, uct,
               al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False, rsgn=1.0, exactd=False,
-              tiny=0.0, touty=0.0):
-    """戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
+              tiny=0.0, touty=0.0, dla=0.0, dlb=0.0, gin=None, gout=None):
+    """gin, gout: v2 (B220) 端の面の手前・先の自由な行程 ℓ (perfkern.edge_free) の座標微分 (始点の座標・終点の座標)。与えると tin・tout の線形の式に代わる。
+    dla, dlb: v2 (B167) の β < 1 の係数 a (光子数)・b (光子エネルギー) の d ln/dγ (anp・uct は a・b を含み、anrad は abs(anrad)·a)。
+    戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
     exactd = exactd and bzh == 0.0 and bzhr0 == 0.0      # v2 の厳密な微分は SOL の外だけ (SOL 領域内の tradke は未確認)
     # transi = T @ tinv6(transr)、tinv6(r) = -J r^T J
     tinv = np.empty((6, 6))
@@ -287,6 +331,10 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
             l = j ^ 1
             sl = 1.0 if l % 2 == 0 else -1.0
             tinv[i, j] = -(si * sl * transr[l, i ^ 1])
+    if exactd:
+        # v2 (B224): 区間の始点の行列の逆行列は、写像がシンプレクティックでなくても厳密な逆行列を使う (硬い端の MULT の端の写像は K1 ≠ 0 で
+        # シンプレクティックから 5e-4〜3e-2 ずれ、シンプレクティックの逆行列の式だと微分が数値微分と 2〜3 倍違った)
+        tinv = np.linalg.inv(transr)
     tr2 = _mm(T, tinv)
     if xpa == 0.0:
         return False, D, B
@@ -329,7 +377,12 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     for j in range(6):
         dal[j] = -tr2[4, j]
     dal[4] += 1.0
-    if tin != 0.0 or tout != 0.0 or tiny != 0.0 or touty != 0.0:
+    if gin is not None:
+        for j in range(6):
+            dal[j] -= gin[j]
+            for i in range(6):
+                dal[j] -= gout[i] * tr2[i, j]
+    elif tin != 0.0 or tout != 0.0 or tiny != 0.0 or touty != 0.0:
         # v2: 偏向磁石の端の角による場の中の行路の変化 (al1 = al - dz - tin*x0 - tiny*y0 - tout*x - touty*y) の微分。
         # tiny・touty は回した座標系の MULT (v2next P3: x' = cos x − sin y)
         dal[0] -= tin
@@ -339,9 +392,9 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
     das = 1.0 / math.sqrt(1.0 - xpa ** 2)
     dtheta = dxpa * das
     danp = anrad * h1 * dtheta
-    danp[5] += anp * dh1r
+    danp[5] += anp * (dh1r + dla * p * p0 / h1)
     duc = uct * dtheta - uc * dal / al1
-    duc[5] += 3.0 * uc * dh1r
+    duc[5] += uc * (3.0 * dh1r + dlb * p * p0 / h1)
     ddg = -cave * (danp * uc + anp * duc)
     dddpx = np.empty(6)
     dddpy = np.empty(6)
@@ -385,6 +438,7 @@ def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp
                 l = j ^ 1
                 sl = 1.0 if l % 2 == 0 else -1.0
                 tr2i[i, j] = -(si * sl * tr2[l, i ^ 1])
+        tr2i = np.linalg.inv(tr2)       # v2 (B224): 厳密な逆行列 (上の式は tr2 がシンプレクティックのときだけ正しい)
         tr1 = _mm(tr1, tr2i)
     if bzh != 0.0:
         for j in range(6):

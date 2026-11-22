@@ -71,8 +71,8 @@ _STEER_TUNE = ('K0=0.003 %s', 'K0=-0.003 %s')
 @pytest.mark.parametrize('ae', ['AE2=0.3', 'AE1=0.3 AE2=-0.2'])
 def test_steer_exit_edge_angle_tracking_equals_calc_v2(ae):
     """v2: FB2 = 0 でも追跡の出口の端の角 (AE2) が入り、追跡の一周写像の固有値 (閉軌道のまわり) が CALC (tsteee) のチューンと 6e-6 で一致
-    (AE の 1 次の効果は 1.2e-4。残る差は K0 の 2 次の項: K64 の tsteer と tsteee の端の蹴りの 2 次の違いで K0 に比例して 2 乗で増える
-    (K0 = 0.0015・0.003・0.006 で 4e-6・1.6e-5・6e-5)。K64 の仕様で直さない)"""
+    (AE の 1 次の効果は 1.2e-4。v2.4.0 D2 (B221) で追跡の端を厳密な硬い端の鎖にしたので、AE に依る K0² の差は 2e-7 以下になった (以前は K0 = 0.0015・0.003・0.006 で
+    4e-6・1.6e-5・6e-5)。残りは AE に依らない K0² の差。`test_v2_D2_edge.py`)"""
     src = X.ring_script('steer', 'K0=0.0015 ' + ae, 'K0=-0.0015 ' + ae, _CALC_PRINT)
     nu, calc = _calc_tracking_tunes('v2', src)
     assert np.allclose(nu, calc, atol=6e-6), (nu, calc)
@@ -232,9 +232,12 @@ def test_edge_angle_term_v2_matches_exact_geometry_for_combined_function_poles(a
 
 
 def test_edge_angle_rotated_mult_emit_equals_tracking_v2(v2_mode):
-    """K1 < 0 の MULT (K64 は多極全体を主軸へ回すので端の面の傾きの軸も回る (実験室系の y)): Emittance[] の行路の補正 (回した座標系の tiny・touty) と追跡の補正が
-    同じ ΔJx を与える (差 3e-4 以下)。実験室系の x に傾く厳密な幾何 (K1 > 0) とは別の幾何なので、厳密な幾何との比較は K1 > 0 の試験"""
+    """K1 < 0 の MULT (K64 は多極全体を主軸へ回すので端の面の傾きの軸も回る (実験室系の y)): 面が y に傾き軌道は y = 0 なので AE の ΔJx は 1 次では 0。
+    v2.4.0 D2 (B223・B224): 追跡 (厳密な硬い端) も Emittance[] も ΔJx が 1e-5 以下で一致する (Emittance[] の ΔJx は B224 の修正前は −0.011: 厳密な端の写像が
+    K1 ≠ 0 でシンプレクティックでなく、tradke の D・B の更新のシンプレクティックの逆行列の式が効かなかった。以前の薄い蹴り (シンプレクティック) の追跡は −0.011 で
+    Emittance[] と 3e-4 以内)。AE = 0 でも Emittance[] と追跡の Jx は 0.27% 違う (B227: 追跡の放射の刻みが粗い。EPS を細かくすると Emittance[] の収束値に近づく。K1 < 0 の MULT に限らない)"""
     K0, K1, ae = 0.005, -0.01, (0.3, 0.3)
     e1, t1 = _emit_jx_and_tracking_j(_pole_ring_mult(K0, ae, 'MULT', K1))
     e0, t0 = _emit_jx_and_tracking_j(_pole_ring_mult(K0, (0.0, 0.0), 'MULT', K1))
-    assert abs((e1 - e0) - (t1 - t0)) < 3e-4, (e1 - e0, t1 - t0)
+    assert abs(t1 - t0) < 1e-5, (t1, t0)
+    assert abs(e1 - e0) < 1e-4, (e1, e0)

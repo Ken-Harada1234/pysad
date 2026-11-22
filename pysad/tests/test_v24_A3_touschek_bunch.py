@@ -94,8 +94,8 @@ def test_local_lma_and_script_option(ring):
     tt = ffs.touschek
     s = np.array([0.0, 10.0, 20.0])
     uni = lma.LMAResult([1, 2, 3], s, ['a', 'b', 'c'], [0.006] * 3, [0.006] * 3, [0.0] * 3, [0.0] * 3, [''] * 3, [''] * 3, {}, setup=st)
-    r0 = lma.touschek_lifetime_local_piwinski(tt, uni, setup=st)
-    rb = lma.touschek_lifetime_local_piwinski(tt, uni, setup=st, bunch_delta=True)
-    assert abs(r0['rate'] / touschek_piwinski(tt, a=0.006)['rate'] - 1) < 1e-12        # 既定は変わらない
+    r0 = lma.touschek_lifetime_local_piwinski(tt, uni, setup=st, bunch_delta=False)       # v2.4.0 F2: v2 の既定は BunchDelta・BunchQs つき (B200)。この試験は δ_c の効果 (q_s なし) を見る
+    rb = lma.touschek_lifetime_local_piwinski(tt, uni, setup=st, bunch_delta=True, bunch_qs=False)
+    assert abs(r0['rate'] / touschek_piwinski(tt, a=0.006)['rate'] - 1) < 1e-12        # ->False は δ_c = 0 の基準 (k64 の既定)
     assert 0.005 < rb['rate'] / r0['rate'] - 1 < 0.05 and rb['lifetime'] < r0['lifetime']
     assert abs(rb['rate'] / touschek_piwinski_bunch(tt, a=0.006)['rate'] - 1) < 1e-12

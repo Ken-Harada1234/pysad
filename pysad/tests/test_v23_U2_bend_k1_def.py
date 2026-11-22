@@ -56,7 +56,7 @@ def test_default_and_option_api(monkeypatch):
     assert compat.bend_k1_def() == 'lin'
     with pytest.raises(ValueError):
         compat.set_bend_k1_def('pow')
-    assert compat.bend_ecorr_flags() == 3
+    assert compat.bend_ecorr_flags() == 7   # bit0,1 (v2.3.0) + bit2 (B250, v2.4.0)
 
 
 def test_calc_dnu_ddelta_lin_and_log():

@@ -276,7 +276,7 @@ def install(I):
         if len(path) == 1 and insert:
             kk = _int(k)
             if kk < 0:
-                kk = n + kk + 1
+                kk = n + kk + (2 if _compat.v2() else 1)       # v2 (B197): Insert[{a,b,c},x,-1] は末尾 (Mathematica)。K64 は末尾の 1 つ手前
             if not 1 <= kk <= n + 1:
                 if os.environ.get('PYSAD_TB'):
                     import traceback
@@ -767,6 +767,8 @@ def install(I):
             raise SADError('General::narg: Number of arguments is expected to be 2 in Take')
         if not _isseq(a[0]):
             raise SADError('General::wrongtype: Argument must be List or composition in Take')
+        if _compat.v2() and isinstance(a[1], Sym) and a[1].name == 'All':
+            return a[0]                                    # v2 (B198): Take[l, All] (Mathematica)
         return _rebuild(a[0], _take_range(a[0], a[1]))
     B['Take'] = _take
 
@@ -777,6 +779,8 @@ def install(I):
             if os.environ.get('PYSAD_TB'):
                 print('DROP', repr(a)[:300], flush=True)
             raise SADError('General::wrongtype: Argument must be List or composition in Drop')
+        if _compat.v2() and isinstance(a[1], Sym) and a[1].name == 'All':
+            return _rebuild(a[0], [])
         return _rebuild(a[0], _take_range(a[0], a[1], drop=True))
     B['Drop'] = _drop
 
@@ -906,7 +910,19 @@ def install(I):
         f, x = a[0], a[1]
         if not _isseq(x):
             return x
-        return _rebuild(x, [apply(f, [c, [float(k + 1)]]) for k, c in enumerate(_elems(x))])
+        lo, hi = _lspec(a[2] if len(a) > 2 else None, (1, 1))       # レベル指定 (gs と同じ: 内側から f[部分式, {添字}] を作る。従来は第 3 引数を無視した)
+
+        def rec(x, path, d):
+            out = []
+            for k, c in enumerate(_elems(x)):
+                p = path + [float(k + 1)]
+                if _isseq(c) and (hi < 0 or d + 1 < hi):
+                    c = rec(c, p, d + 1)
+                if _in_level(lo, hi, d + 1, c):
+                    c = apply(f, [c, list(p)])
+                out.append(c)
+            return _rebuild(x, out)
+        return rec(x, [], 0)
     B['MapIndexed'] = _mapindexed
 
     def _scan(a):
@@ -1201,7 +1217,12 @@ def install(I):
                     return Expr(S(name), a)
                 return _mapnum(x, lambda y: fn(y, a[1:]))
             if _isint_num(x):
+                if x != x or x in (INF, -INF):
+                    return x                              # gs: Floor[Infinity] = INF (従来の pysad は OverflowError。B183)
                 return fn(x, a[1:])
+            if name in ('Round', 'Floor', 'Ceiling') and isinstance(x, complex) and len(a) == 1:
+                r = complex(fn(x.real, []), fn(x.imag, []))         # gs: 複素数は成分ごと (Round[1.5+2.5I] = 2+3I、Floor は 1+2I)
+                return r.real if r.imag == 0.0 else r
             return Expr(S(name), a)
         return g
 
@@ -1212,6 +1233,8 @@ def install(I):
         if rest:
             d = rest[0]
             return _round(x / d, []) * d
+        if _compat.v2():
+            return float(round(x))          # v2 (B184): 半整数は偶数へ (Mathematica: Round[2.5] = 2、Round[0.5] = 0、Round[-1.5] = -2)。K64 は 0 から遠い方 (Round[2.5] = 3)
         return float(math.floor(x + 0.5)) if x >= 0 else -float(math.floor(-x + 0.5))
     B['Round'] = _unary_real('Round', _round, (1, 2))
     B['Floor'] = _unary_real('Floor', lambda x, r: float(math.floor(x)))
@@ -1241,6 +1264,12 @@ def install(I):
     def _modn(x, y):
         if y == 0:
             raise SADError('General::wrongval: #2 must be nonzero in Mod')
+        if x != x or y != y or x in (INF, -INF):
+            return NAN                      # gs: Mod[Infinity,2] = NaN (従来の pysad は OverflowError。B183)
+        if _compat.v2() and y not in (INF, -INF):
+            return x % y                    # v2 (B184): x - y Floor[x/y] は x/y が大きいと桁を失う (正確な剰余。符号は y と同じ)
+        if y in (INF, -INF):
+            return NAN
         return x - y * math.floor(x / y)
     B['Mod'] = _mod
 

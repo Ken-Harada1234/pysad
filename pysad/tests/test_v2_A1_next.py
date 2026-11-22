@@ -210,10 +210,10 @@ def test_proton_radiation_loss_v2(v2_mode):
         p = 30.0e9
         b = p / math.hypot(p, mass)
         dd = _turn_delta(mass)
-        assert abs(dd * p * b ** 3 / (-u0) - 1.0) < 1e-6, (mass, dd, u0)
+        assert abs(dd * p * b / (-u0) - 1.0) < 1e-5, (mass, dd, u0)      # v2.4.0 D (B167): Δp c = ΔE/β、ΔE = U0 (古典式の β³ を含む)
     src = _ring(2e6) + "e=Emittance[];" + chr(10) + 'Print["U0 ", EnergyLossU0/.e];' + chr(10)
     b = 30.0e9 / math.hypot(30.0e9, P_MASS)
-    assert abs(_tag(_out(src), 'U0')[0] * b ** 3 / _u0_analytic(P_MASS) - 1.0) < 1e-6      # Emittance[] も同じ式 (β^3 の因子なし)
+    assert abs(_tag(_out(src), 'U0')[0] / _u0_analytic(P_MASS) - 1.0) < 1e-6      # Emittance[] の U0 (エネルギー) も古典式 (v2.4.0 D、B167)
 
 
 def test_proton_radiation_loss_k64(k64_mode):

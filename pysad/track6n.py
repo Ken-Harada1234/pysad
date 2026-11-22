@@ -18,6 +18,9 @@ import numpy as np
 from numba import njit
 
 from . import emit6d as _e
+from .radbeta import ab as _rb_ab
+from .perfkern import edge_len
+from .elkern import _tbedgedrift, _tbedgemaxwell, _tbedgebody
 from . import lattice as _lat
 from . import track6 as _t6
 from .elements import Drift, Bend, Quadrupole
@@ -34,6 +37,13 @@ RBL = 1.0 / 6.0 / RBH
 FACT = np.array([1.0, 1.0, 2.0, 6.0, 24.0, 120.0, 720.0, 5040.0, 40320.0, 362880.0, 3628800.0])
 
 NJ = dict(cache=True, error_model='numpy', nogil=True)
+
+
+@njit(**NJ)
+def zr0_edge(S, i, tan, sgn):
+    """v2 (B220): 端の面の手前 (sgn = -1) か先 (+1) の自由な飛行の行程 (track6._zr0_edge と同じ。perfkern.edge_len)"""
+    pr = 1.0 + S[i, 5]
+    return edge_len(tan, 0.0, S[i, 0], S[i, 2], S[i, 1] * pr, S[i, 3] * pr, S[i, 5], sgn)
 
 # 要素の種類
 K_DRIFT, K_QUAD, K_THIN, K_BEND, K_CAV, K_STEER0, K_NONE = 0, 1, 2, 3, 4, 5, 6
@@ -248,13 +258,18 @@ def tradk_core1(i, S, al, phi0, fluc, rs, p0, anrad, cuc):
     pp = p0 * pr
     h1 = p2h(pp)
     al1 = al - z + zr0
-    anp = anrad * h1 * theta
+    anp = abs(anrad) * h1 * theta
+    fb = 1.0
+    if anrad < 0.0:
+        # v2 (B167): 厳密な放射のスペクトル (β < 1)。光子数に a、光子エネルギーに b (radbeta.ab。a b = β²、a b² = r2/β²)
+        fa, fb, _dla, _dlb = _rb_ab(h1)
+        anp *= fa
     if fluc:
         dph, r1, r2, an = tdusrn(rs, anp)
         if an == 0.0:
             return
         rho = al1 / theta
-        uc = cuc * h1 * h1 * h1 / p0 / rho
+        uc = cuc * h1 * h1 * h1 / p0 / rho * fb
         de = dph * uc
         dg = -de / (1.0 + 2.0 * de)
         g = gfloor(g + dg)
@@ -263,7 +278,7 @@ def tradk_core1(i, S, al, phi0, fluc, rs, p0, anrad, cuc):
         x += r2 * ddpx * al1
         y += r2 * ddpy * al1
     else:
-        uc = cuc * h1 * h1 * h1 / p0 * theta / al1
+        uc = cuc * h1 * h1 * h1 / p0 * theta / al1 * fb
         de = CAVE * anp * uc
         dg = -de / (1.0 + 2.0 * de)
         g = gfloor(g + dg)
@@ -992,7 +1007,7 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
                 setr0_1(i, S)
         if (rs.shape[0] > 1 and rs[1] == 1) and sinp1 != 0.0:
             for i in range(n):
-                S[i, 9] -= sinp1 / cosp1 * S[i, 0]     # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い (tradk の al1 に入れる)
+                S[i, 9] -= zr0_edge(S, i, sinp1 / cosp1, -1.0)     # v2: 入口の端の角で場の中の行路が短い (B220。tradk の al1 に入れる)
         if first and fb1 != 0.0:
             n1 = -1
             f1r = fb1 * 0.5
@@ -1009,7 +1024,7 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
         if krad:
             if (rs.shape[0] > 1 and rs[1] == 1) and sinp2 != 0.0:
                 for i in range(n):
-                    S[i, 9] -= sinp2 / cosp2 * S[i, 0]     # v2: 出口の端の角の分
+                    S[i, 9] -= zr0_edge(S, i, sinp2 / cosp2, 1.0)     # v2: 出口の端の角の分 (B220)
             tradk_all(S, n, al, phi0, fluc, rs, p0, anrad, cuc)
     else:
         aln = (al - f1r - f2r) / ndiv
@@ -1037,7 +1052,7 @@ def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
                            coswn, sinwn, -sqwhn, sinwpn, rhob, rho0, drhob, fb1, fb2)
             if m == n2 and (rs.shape[0] > 1 and rs[1] == 1) and sinp2 != 0.0:
                 for i in range(n):
-                    S[i, 9] -= sinp2 / cosp2 * S[i, 0]     # v2: 出口の端の角の分
+                    S[i, 9] -= zr0_edge(S, i, sinp2 / cosp2, 1.0)     # v2: 出口の端の角の分 (B220)
             tradk_all(S, n, alr, phi0n, fluc, rs, p0, anrad, cuc)
     for i in range(n):
         if dtheta != 0.0 or dchi2 != 0.0:
@@ -1160,6 +1175,7 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
     n2 = ndiv + n2
     af = 1.0 if fringe else 0.0
     klin = rs.shape[0] > 3 and rs[3] == 1                        # v2 (B160 のオプション): K1 の定義 'lin' (B' 一様)
+    v2z = rs.shape[0] > 1 and rs[1] == 1                         # v2 (B250): xsxkx の符号
     v2edge = fringe and (rs.shape[0] > 1 and rs[1] == 1)       # v2 (B1): DISFRIN=0 のとき端は厳密な tbedge (sinp≠0 の端だけ)
     aln = alc / ndiv
     alr_e = 0.0; phi_e = 0.0
@@ -1170,7 +1186,7 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
         if krad:
             setr0_1(i, S)
             if (rs.shape[0] > 1 and rs[1] == 1):
-                S[i, 9] -= tanp1 * S[i, 0]     # v2: 入口の端の角で場の中の行路が x*tan(psi1) 短い (tradk の al1 = al - z + zr0 に入れる)
+                S[i, 9] -= zr0_edge(S, i, tanp1, -1.0)     # v2: 入口の端の角で場の中の行路が短い (B220。tradk の al1 = al - z + zr0 に入れる)
         if fringe and mfring > -4 and mfring != 2:
             ttfrin4_1(i, S, ak, al)
         if fb1 != 0.0:
@@ -1237,7 +1253,7 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
                 xspx = phix - spx
                 dcxkx = dcx / akxsq
                 sxkx = spx / akx
-                xsxkx = -xspx / akx / akxsq
+                xsxkx = xspx / akx / akxsq if v2z else -xspx / akx / akxsq      # B250: K64 は akxsq < 0 の枝の符号が逆 (akxsq → 0 の極限・akxsq > 0 の枝と不連続)。v2 は (L − sxkx)/akxsq の連続な式
             else:
                 dcx = 0.0
                 dcxkx = 0.5 * alx * alx
@@ -1356,7 +1372,7 @@ def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta,
         if fringe and mfring > -4 and mfring != 1:
             ttfrin4_1(i, S, -ak, al)
         if krad and (rs.shape[0] > 1 and rs[1] == 1):
-            S[i, 9] -= tanp2 * S[i, 0]         # v2: 出口の端の角の分
+            S[i, 9] -= zr0_edge(S, i, tanp2, 1.0)         # v2: 出口の端の角の分 (B220)
     if krad:
         tradk_all(S, n, alr_e, phi_e, fluc, rs, p0, anrad, cuc)
     for i in range(n):
@@ -1756,12 +1772,50 @@ def asinx(x):
 
 
 @njit(**NJ)
+def steer_edge_exact1(S, i, rhoc, psi, entrance):
+    """v2 (B221): ANGLE=0 の BEND (tsteer) の端の面の厳密な写像 (track6._steer_edge_exact と同じ。elkern の硬い端の鎖。追跡の座標 px/(1+δ) と
+    正準運動量の変換つき)。rhoc = CALC の rhoe = L/K0"""
+    c = np.empty(6)
+    pr = 1.0 + S[i, 5]
+    c[0] = S[i, 0]
+    c[1] = S[i, 1] * pr
+    c[2] = S[i, 2]
+    c[3] = S[i, 3] * pr
+    c[4] = S[i, 4]
+    c[5] = S[i, 5]
+    if psi == 0.0:
+        _tbedgemaxwell(c, rhoc if entrance else -rhoc)
+    elif entrance:
+        _tbedgedrift(c, psi)
+        _tbedgemaxwell(c, rhoc)
+        _tbedgebody(c, rhoc, psi)
+    else:
+        _tbedgebody(c, rhoc, psi)
+        _tbedgemaxwell(c, -rhoc)
+        _tbedgedrift(c, psi)
+    S[i, 0] = c[0]
+    S[i, 1] = c[1] / pr
+    S[i, 2] = c[2]
+    S[i, 3] = c[3] / pr
+    S[i, 4] = c[4]
+
+
+@njit(**NJ)
+def steer_edge_exact(S, n, rhoc, psi, entrance):
+    for i in range(n):
+        steer_edge_exact1(S, i, rhoc, psi, entrance)
+
+
+@njit(**NJ)
 def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, rs, p0, h0, anrad, cuc,
-            fb1, fb2, fringe, tanp2e, v2):
+            fb1, fb2, fringe, tanp2e, v2c):
     """tsteer.f (track6._tsteer_ens と同じ)。スライス外側・粒子内側、各スライスの後に全粒子 tradk。
     入口エッジは tanp1 (最初のスライスだけ)。出口の tanp2 (= tanp2e) は fb2≠0 のときだけ入る (fb2=0 なら 0 のまま)。
     fb1・fb2 = F1+FB1・F1+FB2 (FRINGE による 0 化済み)。入口 dxfr1 = -fb1^2/rhob/24、dyfr1 = fb1/rhob^2/6、放射ありは断片 n=-1, 0 (長さ fb1/2)、
     出口は断片 ndiv+1, ndiv+2 と dxfr2 = -fb2^2/rhob/24 (v2next P3: F1 の追跡)"""
+    v2 = (v2c & 1) != 0
+    sk1 = (v2c & 2) != 0       # v2 (B225): FRINGE = −2 は入口の端を、−1 は出口の端を飛ばす (CALC の tsteee と同じ)
+    sk2 = (v2c & 4) != 0
     rhob = al / phib
     for i in range(n):
         tent1(i, S, dx, dy, theta, cost, sint)
@@ -1795,9 +1849,21 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
         ndiv = min(1000, max(1, ndivrad(phic, 0.0, 0.0, eps0, h0)))
     alc = al * phic / phib
     aln = alc / ndiv
-    if v2 and krad and tanp1 != 0.0:
+    # v2 (B221): 端の面を CALC (tsteee) と同じ厳密な硬い端の鎖で通す (track6._tsteer_ens と同じ。F1・FB1・FB2 があるときは K64 の薄い蹴り)
+    psi1 = math.atan(tanp1)
+    psi2 = math.atan(tanp2e)
+    ex1 = v2 and psi1 != 0.0 and not sk1
+    ex2 = v2 and psi2 != 0.0 and not sk2
+    if sk1:
+        tanp1 = 0.0
+    if ex1:
+        if krad:
+            for i in range(n):
+                S[i, 9] -= zr0_edge(S, i, tanp1, -1.0)
+        tanp1 = 0.0          # 鎖は最初の断片の tblfre の後に通す (CALC の tsteee と同じ順序)
+    elif v2 and krad and tanp1 != 0.0:
         for i in range(n):
-            S[i, 9] -= tanp1 * S[i, 0]    # v2 (P3、B108): 入口の端の角で場の中の行路が x·tan(AE1) 短い (tradk の al1 = al − z + zr0)
+            S[i, 9] -= zr0_edge(S, i, tanp1, -1.0)    # v2 (P3、B108、B220): 入口の端の角で場の中の行路が短い (tradk の al1 = al − z + zr0)
     for m in range(n1, ndiv + n2 + 1):
         alx, alr = tbendal(m, ndiv, f1r, f2r, aln)
         if m == n1 + 1:
@@ -1805,14 +1871,18 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
             dyfr1 = 0.0
             dyfra1 = 0.0
             tanp1 = 0.0
+        last_ex = ex2 and m == ndiv + n2
+        last_skip = sk2 and m == ndiv + n2
         if m == ndiv + n2:
             if fb2 != 0.0:
                 dxfr2 = -fb2**2 / rhob / 24.0
                 dyfr2 = fb2 / rhob**2 / 6.0
                 if fringe:
                     dyfra2 = 4.0 * dyfr2 / fb2**2
-            if fb2 != 0.0 or v2:
+            if (fb2 != 0.0 or v2) and not last_ex and not last_skip:
                 tanp2 = tanp2e          # v2 (P3): 出口の端の角を常に入れる (K64 は fb2≠0 のときだけ)
+        first_ex = ex1 and m == n1
+        first_skip = sk1 and m == n1
         for i in range(n):
             dp = S[i, 5]
             pr = 1.0 + dp
@@ -1821,14 +1891,21 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
             S[i, 0] += dxfr1 * dp / pr
             S[i, 3] += ((dyfr1 - dyfra1 * S[i, 2]**2) / pr**2 + tanp1 / rhoe) * S[i, 2]
             S[i, 4] += (dxfr1 * pxi + (0.5 * dyfr1 - 0.25 * dyfra1 * S[i, 2]**2) * S[i, 2]**2 / pr) / pr
-            dpv1 = sqrt1(-pxi**2)
-            pv1 = 1.0 + dpv1
-            fa = S[i, 2] / rhoe / pv1
-            f = (1.0 - (S[i, 2] / rhob)**2 / 6.0) * fa
-            ff = (0.5 - (S[i, 2] / rhob)**2 / 24.0) * S[i, 2] * fa / pv1**2
-            pyi = S[i, 3] + pxi * f
-            xi = S[i, 0] - ff
-            S[i, 4] += ff * pxi
+            if first_ex or first_skip:
+                if first_ex:
+                    steer_edge_exact1(S, i, -rhob, psi1, True)
+                pxi = S[i, 1]
+                pyi = S[i, 3]
+                xi = S[i, 0]
+            else:
+                dpv1 = sqrt1(-pxi**2)
+                pv1 = 1.0 + dpv1
+                fa = S[i, 2] / rhoe / pv1
+                f = (1.0 - (S[i, 2] / rhob)**2 / 6.0) * fa
+                ff = (0.5 - (S[i, 2] / rhob)**2 / 24.0) * S[i, 2] * fa / pv1**2
+                pyi = S[i, 3] + pxi * f
+                xi = S[i, 0] - ff
+                S[i, 4] += ff * pxi
             dpz1 = pxy2dpz(pxi, pyi)
             pz1 = 1.0 + dpz1
             dpx = alx / rhoe
@@ -1846,22 +1923,32 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
             dl = rhoe * (asinx(u) + w)
             S[i, 0] = xi + alx * (pxf + pxi) / (pz2 + pz1)
             S[i, 2] += pyi * (alx + dl)
-            dpv2 = sqrt1(-pxf**2)
-            pv2 = 1.0 + dpv2
-            fa = S[i, 2] / rhoe / pv2
-            f = (1.0 - (S[i, 2] / rhob)**2 / 6.0) * fa
-            ff = (0.5 - (S[i, 2] / rhob)**2 / 24.0) * S[i, 2] * fa / pv2**2
-            S[i, 3] = pyi - pxf * f
-            S[i, 0] += ff
-            S[i, 1] = pxf - S[i, 0] * tanp2 / rhoe
-            S[i, 4] -= (dl + S[i, 6] * alx + ff * pxf)
+            if last_ex or last_skip:
+                S[i, 3] = pyi
+                S[i, 1] = pxf
+                S[i, 4] -= (dl + S[i, 6] * alx)
+                if last_ex:
+                    steer_edge_exact1(S, i, -rhob, psi2, False)       # 出口の鎖は tblfre (下の dxfr2) の前 (CALC の tsteee と同じ順序)
+            else:
+                dpv2 = sqrt1(-pxf**2)
+                pv2 = 1.0 + dpv2
+                fa = S[i, 2] / rhoe / pv2
+                f = (1.0 - (S[i, 2] / rhob)**2 / 6.0) * fa
+                ff = (0.5 - (S[i, 2] / rhob)**2 / 24.0) * S[i, 2] * fa / pv2**2
+                S[i, 3] = pyi - pxf * f
+                S[i, 0] += ff
+                S[i, 1] = pxf - S[i, 0] * tanp2 / rhoe
+                S[i, 4] -= (dl + S[i, 6] * alx + ff * pxf)
             S[i, 0] -= dxfr2 * dp / pr
             S[i, 3] += ((dyfr2 - dyfra2 * S[i, 2]**2) / pr**2 + tanp2 / rhoe) * S[i, 2]
             S[i, 4] -= (dxfr2 * pxf - (0.5 * dyfr2 - 0.25 * dyfra2 * S[i, 2]**2) * S[i, 2]**2 / pr) / pr
         if krad:
-            if v2 and m == ndiv + n2 and tanp2 != 0.0:
+            if last_ex:
                 for i in range(n):
-                    S[i, 9] -= tanp2 * S[i, 0]    # v2 (P3、B108): 出口の端の角の分
+                    S[i, 9] -= zr0_edge(S, i, math.tan(psi2), 1.0)    # 出口の面から z = L の面までの直進の行程 (B220)
+            elif v2 and m == ndiv + n2 and tanp2 != 0.0:
+                for i in range(n):
+                    S[i, 9] -= zr0_edge(S, i, tanp2, 1.0)    # v2 (P3、B108、B220): 出口の端の角の分
             tradk_all(S, n, alr, 0.0, fluc, rs, p0, anrad, cuc)
     for i in range(n):
         texit1(i, S, dx, dy, theta, cost, sint)
@@ -2198,7 +2285,8 @@ class Prog:
                     if mfr != -2:
                         fb2 = 0.0
                 return K_STEER, (al0, -ak0, dx, dy, theta, cost, sint, math.sin(psi1) / math.cos(psi1),
-                                 g(el, 'EPS'), g(el, 'RAD') == 0.0, fb1, fb2, bool(frg), math.sin(psi2) / math.cos(psi2), _t6._compat.v2())
+                                 g(el, 'EPS'), g(el, 'RAD') == 0.0, fb1, fb2, bool(frg), math.sin(psi2) / math.cos(psi2),
+                                 int(_t6._compat.v2()) + (2 if (_t6._compat.v2() and mfr == -2) else 0) + (4 if (_t6._compat.v2() and mfr == -1) else 0))
             if al0 == 0.0:
                 raise NotImplementedError('track6n: L=0 で ANGLE≠0 の BEND')
             psi1 = g(el, 'E1')

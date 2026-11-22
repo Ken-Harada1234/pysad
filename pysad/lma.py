@@ -543,13 +543,19 @@ def touschek_lifetime_local(table, lma, setup=None, period=None, s0=0.0, s_el=No
                 extrapolated=nextra, s_el=s_el)
 
 
-def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s_el=None, dp_floor=None, npan=40, bunch_delta=False, bunch_floor=0.25, bunch_qs=False):
+def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s_el=None, dp_floor=None, npan=40, bunch_delta=None, bunch_floor=0.25, bunch_qs=None):
     """touschek_lifetime_local と同じ受け渡し (位置ごとの δ+(s)・δ−(s)) で、損失率に K64 の表ではなく Piwinski 型の式 (touschek.touschek_piwinski、v2.3.0 T2) を使う。
     tt: touschek_table(..., record_rest=True) の戻り (FFS の INTRA ON の Emittance[] の結果 ffs.touschek)。
     要素ごとの受容は touschek_lifetime_local と同じ (要素の中央の s での線形補間、period があれば周期的)。戻り dict: rate・lifetime・dp_plus・dp_minus・s_el。
     対称な一様 a (δ+ = |δ−| = a) では touschek_piwinski(tt, a=a) と一致する。
-    bunch_delta=True (v2.4.0 A3): バンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れた損失率 (touschek_bunch.touschek_piwinski_bunch。損失率は増え、寿命は短くなる)。"""
+    bunch_delta=True (v2.4.0 A3): バンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れた損失率 (touschek_bunch.touschek_piwinski_bunch。損失率は増え、寿命は短くなる)。
+    **v2.4.0 F2 (B200): 既定 (None) は v2 = True (δ_old = 0 の基準は近似で、バンチ内の δ の分布を入れる方が正しい)、k64 = False。bunch_qs も同じ (相対運動量の縦成分 q_s の効果。数十秒)。False で切る**"""
     from .touschek import touschek_piwinski
+    from . import compat as _compat
+    if bunch_delta is None:
+        bunch_delta = _compat.v2()
+    if bunch_qs is None:
+        bunch_qs = _compat.v2()
     nl = int(tt['rest_info']['nlat'])
     if s_el is None:
         rows = setup.rows if setup is not None else lma.setup.rows
@@ -561,7 +567,7 @@ def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s
     if dp_floor:
         ap, am = np.maximum(ap, dp_floor), np.maximum(am, dp_floor)
     if bunch_delta:
-        # v2.4.0 A3: バンチ内の δ の分布 (元の δ ~ N(0, σδ²)) を入れる。既定は入れない (touschek_bunch.py の docstring)
+        # v2.4.0 A3: バンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れる。v2.4.0 F2: v2 の既定は入れる (touschek_bunch.py の docstring)
         from .touschek_bunch import touschek_piwinski_bunch
         r = touschek_piwinski_bunch(tt, ap=ap, am=am, npan=npan, floor=bunch_floor, qs=bunch_qs)
     else:

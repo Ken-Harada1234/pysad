@@ -1,0 +1,70 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.03E-15 $$$       f BX    #######  #   4.643203 $$$       f NX    #######  #  47.580034 $$$       f AY    #######  #  2.853E-14 $$$       f BY    #######  #   6.231611 $$$       f NY    #######  #  17.620044
+$$$       f LENG  #######  #  603.12000
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -2.7E-18  -2.7E-22   .000000   .000000  -6.9E-18   .000000
+      Exit :  -2.7E-18  2.54E-22   .000000   .000000  -4.5E-18  -1.3E-20
+
+    Extended Twiss Parameters
+AX: -8.27E-7 BX: 4.643193                            ZX: -1.08E-4  EX:  .044503
+           PSIX: 1.13E-19                           ZPX: -1.17E-6 EPX:  .000000
+R1:  .000000 R2:  .000000 AY: 4.68E-11 BY: 6.231611  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ: -.002561  BZ: 5.431660
+                                                                 PSIZ: 1.13E-17
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 497069.32 Hz 
+Energy loss per turn U0 =  .2960749 MV  Effective voltage    Vc = 1.4000000 MV 
+Equilibrium position dz = 20.619465 mm  Momentum compact. alpha = 2.3061E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 992.00000
+Bucket height     dV/P0 =  .0299398     Synchrotron frequency   = 2025.6903 Hz 
+
+  Imag.tune:-0.0000000           0.0000000          -0.0000000
+  Real tune:-0.4199659          -0.3799558          -0.0040753
+
+    Damping per one revolution:
+          X : -7.716979E-05   Y : -4.934311E-05   Z : -7.085814E-05
+    Damping time (sec):
+          X :  2.606968E-02   Y :  4.077149E-02   Z :  2.839182E-02
+    Tune shift due to radiation:
+          X :  2.629628E-07   Y :  1.237250E-07   Z :  4.084582E-11
+    Damping partition number:
+          X :    1.5640       Y :    1.0000       Z :    1.4360
+
+Emittance X            = 1.5213E-10 m   Emittance Y            =  .00000000 m
+Emittance Z            = 2.62023E-6 m   Energy spread          = 6.94552E-4
+Bunch Length           = 3.77255732 mm  Beam tilt              =  .00000000 rad
+Beam size xi           =  .04076587 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+ICX =  140.0000000000   ICY =   60.0000000000   IM =  180.0000000000
+===== seed    5.0000000000
+before correction: tune   47.5944912896   17.6454508779
+   COD max [m] x y:     .0015181221     .0023924554   COD rms [m] x y:  5.048580138E-4  6.803169607E-4
+   eta-beat max [m] x y:     .0270944795     .1113057545   eta-beat rms [m] x y:     .0105603512     .0419385473
+iteration    1.0000000000: mat x rms =  4.375691607E-6  mat y rms =  9.291637223E-6  sad x rms =  1.750742108E-5  sad y rms =  2.795717319E-5  tune   47.5931948292   17.6343032176
+iteration    2.0000000000: mat x rms =  4.038324600E-6  mat y rms =  9.350059147E-6  sad x rms =  9.178426224E-6  sad y rms =  1.630527382E-5  tune   47.5894639361   17.6303418965
+iteration    3.0000000000: mat x rms =  4.023487750E-6  mat y rms =  9.377807069E-6  sad x rms =  5.734324463E-6  sad y rms =  1.152040875E-5  tune   47.5870279655   17.6285869421
+iteration    4.0000000000: mat x rms =  4.019876185E-6  mat y rms =  9.382873542E-6  sad x rms =  4.507569361E-6  sad y rms =  9.962090885E-6  tune   47.5856835622   17.6277455219
+iteration    5.0000000000: mat x rms =  4.017951466E-6  mat y rms =  9.383612873E-6  sad x rms =  4.145132550E-6  sad y rms =  9.532094085E-6  tune   47.5849818487   17.6273308606
+iteration    6.0000000000: mat x rms =  4.017019004E-6  mat y rms =  9.383697455E-6  sad x rms =  4.049155021E-6  sad y rms =  9.421325017E-6  tune   47.5846242605   17.6271243590
+iteration    7.0000000000: mat x rms =  4.016475826E-6  mat y rms =  9.383718578E-6  sad x rms =  4.024475129E-6  sad y rms =  9.393258851E-6  tune   47.5844438941   17.6270211714
+iteration    8.0000000000: mat x rms =  4.016213991E-6  mat y rms =  9.383739706E-6  sad x rms =  4.018168644E-6  sad y rms =  9.386175318E-6  tune   47.5843534139   17.6269695516
+iteration    9.0000000000: mat x rms =  4.016084675E-6  mat y rms =  9.383760398E-6  sad x rms =  4.016545510E-6  sad y rms =  9.384391218E-6  tune   47.5843081447   17.6269437206
+iteration   10.0000000000: mat x rms =  4.016019868E-6  mat y rms =  9.383776809E-6  sad x rms =  4.016119785E-6  sad y rms =  9.383945006E-6  tune   47.5842855246   17.6269307944
+after correction: tune   47.5842855246   17.6269307944  EMITX [pm rad]  152.5991196930
+   COD max [m] x y:  1.959511115E-4  4.422505536E-4   COD rms [m] x y:  5.388190107E-5  1.258988336E-4
+   eta-beat max [m] x y:     .0027950292     .0378107702   eta-beat rms [m] x y:     .0010377920     .0100446412
+COD-corrected state: HD K0 (components 5, 50, 100) =  -7.43274627E-6  -4.78189410E-5  1.344171355E-5
+D:\work\SAD-master\Claude outputs\pysad\q1cmd.py:163: UserWarning: LMA: 2 limits are turn dependent (a particle tol below the limit is lost when nturn is multiplied by 2): the limit falls by more than tol with more turns (near the RF bucket edge, nturn below ~2 synchrotron periods)
+  res = momentum_acceptance(st, locs, nturn=int(nt) if is_num(nt) else None, nsynch=_num(opts, 'NSYNCH', 2.0),
+ MomentumAcceptance: 5 positions, nturn=1964, min dp+ = 0.02075, min dp- = -0.01885
+LMA WALL [s]  825.0000000000
+LMA S {    .0000000000, 150.7800000000, 301.5600000000, 452.3400000000, 603.1200000000}
+LMA DPPLUS {    .0249449283,    .0218268123,    .0207549599,    .0221678562,    .0249449283}
+LMA DPMINUS {   -.0189522990,   -.0192933430,   -.0188548579,   -.0188548579,   -.0189522990}
+state after LMA: HD K0 (components 5, 50, 100) =  -7.43274627E-6  -4.78189410E-5  1.344171355E-5
+WALL 836.6574420928955

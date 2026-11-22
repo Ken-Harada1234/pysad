@@ -24,7 +24,10 @@ def mono_name(q):
 
 
 def normalizing_matrix(row):
-    """z = A zn (zn = (x/√β, (αx + βpx)/√β, y/√β_y, (α_y y + β_y py)/√β_y))。row: Twiss の行 (betx, alfx, bety, alfy)"""
+    """z = A zn (zn = (x/√β, (αx + βpx)/√β, y/√β_y, (α_y y + β_y py)/√β_y))。row: Twiss の行 (betx, alfx, bety, alfy)。
+    v2.4.0 F1: row に 4×4 の行列を渡すと、それを A (z = A zn) として使う (結合した光学の固有モードの正規化: `ampnf.linear_modes` の Am)"""
+    if isinstance(row, np.ndarray):
+        return np.asarray(row, dtype=float), np.linalg.inv(row)
     bx, ax, by, ay = float(row.betx), float(row.alfx), float(row.bety), float(row.alfy)
     A = np.array([[math.sqrt(bx), 0, 0, 0], [-ax / math.sqrt(bx), 1 / math.sqrt(bx), 0, 0],
                   [0, 0, math.sqrt(by), 0], [0, 0, -ay / math.sqrt(by), 1 / math.sqrt(by)]])
@@ -123,7 +126,8 @@ def delta_quadratic_total(elements, momentum, row0, d=1e-4):
     (T は kick の和で、この 1 次の量は 6 極の強さに厳密に比例)。戻り (Q (4×4)、dict h (名前 → 複素数))"""
     A, Ai = normalizing_matrix(row0)
     f0 = one_turn(elements, momentum, 0.0)
-    R0 = Ai @ jacobian(f0, np.zeros(4)) @ A
+    z0, _ = closed_orbit(elements, momentum, 0.0)          # v2.4.0 G: 展開の中心は δ = 0 の閉軌道 (閉軌道 ≠ 0 のリング先頭でも成り立つ。以前は原点)
+    R0 = Ai @ jacobian(f0, z0) @ A
 
     def dj(dd):
         zp, fp = closed_orbit(elements, momentum, dd)
@@ -139,12 +143,13 @@ def delta2_orbit_h10002(elements, momentum, row0, d=1e-4):
     **全体 (自然な 2 次の分散 + 6 極 + 偏向磁石)**。6 極の分は 6 極の強さを ×1 と ×0 にした結果の差 (呼び出し側)。戻り (h10002, c2)"""
     A, Ai = normalizing_matrix(row0)
     f0 = one_turn(elements, momentum, 0.0)
-    R = Ai @ jacobian(f0, np.zeros(4)) @ A
+    z0, _ = closed_orbit(elements, momentum, 0.0)          # v2.4.0 G: δ = 0 の閉軌道 (閉軌道 ≠ 0 のリング先頭では原点でない。以前は原点を引いていて h10002 が壊れた)
+    R = Ai @ jacobian(f0, z0) @ A
     zs = []
     for dd in (d, 2 * d):
         zp, _ = closed_orbit(elements, momentum, dd)
         zm, _ = closed_orbit(elements, momentum, -dd)
-        zs.append(Ai @ (0.5 * (zp + zm)) / (dd * dd))
+        zs.append(Ai @ (0.5 * (zp + zm) - z0) / (dd * dd))
     c2 = (4 * zs[0] - zs[1]) / 3.0
     gradg = -S4 @ np.linalg.solve(R, (np.eye(4) - R) @ c2)       # S∇g = R⁻¹(1−R) c2
     amp = B.harmonic_amplitudes({(1, 0, 0, 0): gradg[0], (0, 1, 0, 0): gradg[1], (0, 0, 1, 0): gradg[2], (0, 0, 0, 1): gradg[3]},

@@ -122,7 +122,57 @@ def set_bend_dk_fix(m):
 
 def bend_ecorr_flags():
     """CALC の BEND (K1≠0) の補正カーネル (perfkern_bend.bendecorr) に渡す整数の旗: 1 = K1 の定義 'lin' (B160)、2 = B161 の dk の修正"""
-    return (1 if bend_k1_lin() else 0) | (2 if bend_dk_fix() else 0)
+    return (1 if bend_k1_lin() else 0) | (2 if bend_dk_fix() else 0) | (4 if v2() else 0)       # 4 = B250 (xsxkx の符号。bendebody だけが見る。v2 のとき)
+
+
+# ---------------------------------------------------------------------------------------------
+# B167 (v2.4.0): β < 1 の粒子の放射 (陽子・イオン、低い γ)。K64 の放射 (tradkn・tradke・RADINT) は β = 1 の式で、平均のエネルギー損失が古典式の 1/β³ 倍、
+# 運動量の損失が Δp = ΔE/c (正しくは ΔE/(βc))、量子励起の 2 次モーメントが厳密なスペクトルと違う。v2 は厳密な放射のスペクトル (Schott の式) から決めた
+# 係数 (pysad/radbeta.py) を掛ける。v2 だけ (k64 は K64 のまま)。γ ≥ 300 (電子の全部) には入れない (補正は 3e-5 以下)。
+# 切り替え: 環境変数 PYSAD_RAD_BETA=0 で補正なし、または pysad.compat.set_radiation_beta(False)。
+# ---------------------------------------------------------------------------------------------
+_radiation_beta = None
+
+
+def radiation_beta():
+    if mode() != 'v2':
+        return False
+    if _radiation_beta is not None:
+        return bool(_radiation_beta)
+    return os.environ.get('PYSAD_RAD_BETA', '1').strip().lower() not in ('0', 'false', 'off', 'no')
+
+
+def set_radiation_beta(m):
+    """B167 の β の因子を強制 (True/False)。None で既定 (v2 なら True) に戻す。Emittance[]・追跡に使う _Phys は作った時点の値を持つ"""
+    global _radiation_beta
+    _radiation_beta = m
+
+
+# ---------------------------------------------------------------------------------------------
+# B165 (v2.4.0): 磁石の本体の運動量の向きの磁場の積分 (1 + a) B∥ ds (B136・B137)。K64 の追跡 (tradk の sprot)・Emittance[] (tradke) は、運動量の向きの変化
+# (B⊥) と端の縦磁場 ψ (BEND・QUAD の入口 +ψ、出口 −ψ) だけでスピンを歳差させ、本体の中の B∥ = B·p̂ を入れない。静磁場の B∥ の経路積分は
+# ∫B·dr = ψ_出口 − ψ_入口 (ψ = y g(r)、スカラーポテンシャルの差。BEND は y/ρ + k x y、QUAD は k x y) なので、y・x の傾きがあると
+# 端の ψ だけが残って誤る (py = 5e-3 の 15° 扇形 BEND で R[0,1] が −4.05e-3、Maxwell 場つきの硬い端の Thomas-BMT の積分は −2.75e-3)。
+# v2 は本体の各刻み (放射・スピンの刻み) に (ψ_終 − ψ_始)/(1+δ) を運動量の向きの磁場として足す。v2 だけ (k64 は K64 のまま)。
+# 範囲: BEND (K1=0・K1≠0)・QUAD・MULT・SOL 領域内の四極の追跡と Emittance[] (v2.4.0 D3: B230・B231・B234)。SEXT・ステアリングは K64 が端の ψ も本体も入れず和が 0 で元から正しい。
+# POL ON の追跡は 1 刻みの偏向角を 5e-3 rad 以下に刻む (B235。追跡の `_ndivrad`)。
+# 切り替え: 環境変数 PYSAD_SPIN_BPAR=0 で無効、または pysad.compat.set_spin_bpar(False)。
+# ---------------------------------------------------------------------------------------------
+_spin_bpar = None
+
+
+def spin_bpar():
+    if mode() != 'v2':
+        return False
+    if _spin_bpar is not None:
+        return bool(_spin_bpar)
+    return os.environ.get('PYSAD_SPIN_BPAR', '1').strip().lower() not in ('0', 'false', 'off', 'no')
+
+
+def set_spin_bpar(m):
+    """B165 の本体の B∥ を強制 (True/False)。None で既定 (v2 なら True) に戻す"""
+    global _spin_bpar
+    _spin_bpar = m
 
 
 # ---------------------------------------------------------------------------------------------

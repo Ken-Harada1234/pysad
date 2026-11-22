@@ -59,10 +59,12 @@ def test_natural_chromaticity_does_not_double_count_k0_bends():
         assert abs(nat[i] + bend[i] + sx[i] - ref[i]) < 0.02
 
 
-def test_rotated_k0_bend_is_not_included_and_warns():
-    """ROTATE≠0 の偏向磁石は解析式に入れていない (警告)。この小さな磁石では h への影響は 1e-5 以下 (影響は ROTATE × 磁石の寄与に比例)"""
+def test_rotated_k0_bend_is_included_in_coupled_path():
+    """ROTATE≠0 の K0 の偏向磁石は、v2.4.0 G から結合した光学の模型 (ampnf) に入る (以前は解析式に入れず警告)。結合した経路 (`.coupled`) で、
+    h は追跡の 2 次のテイラー展開と 1e-4 以内 (この ROTATE = 0.02 rad の小さな磁石では結合 3e-5)。警告は「結合した光学」(未対応でない)"""
     lat = C.build('rot')
     rows = lat.twiss_table()
     e, r = _h_err(lat, rows)
-    assert any('ROTATE' in w for w in r.warnings)
+    assert getattr(r, 'coupled', False)
+    assert not any('未対応' in w or '入れていない' in w for w in r.warnings)
     assert e < 1e-4

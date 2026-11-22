@@ -108,10 +108,10 @@ def test_local_acceptance_uniform_equals_uniform(ring):
     tt = ffs.touschek
     s = np.array([0.0, 10.0, 20.0])
     uni = lma.LMAResult([1, 2, 3], s, ['a', 'b', 'c'], [0.006] * 3, [0.006] * 3, [0.0] * 3, [0.0] * 3, [''] * 3, [''] * 3, {}, setup=st)
-    res = lma.touschek_lifetime_local_piwinski(tt, uni, setup=st)
+    res = lma.touschek_lifetime_local_piwinski(tt, uni, setup=st, bunch_delta=False)      # v2.4.0 F2: v2 の既定はバンチ内の δ の分布つき (B200)。T2 は δ_c = 0 の式を見る
     assert abs(res['rate'] / touschek_piwinski(tt, a=0.006)['rate'] - 1) < 1e-12
     half = lma.LMAResult([1, 2, 3], s, ['a', 'b', 'c'], [0.006, 0.003, 0.006], [0.006, 0.003, 0.006], [0.0] * 3, [0.0] * 3, [''] * 3, [''] * 3, {}, setup=st)
-    assert lma.touschek_lifetime_local_piwinski(tt, half, setup=st)['rate'] > res['rate']
+    assert lma.touschek_lifetime_local_piwinski(tt, half, setup=st, bunch_delta=False)['rate'] > res['rate']
 
 
 def test_script_default_and_formula_option(ring):
@@ -126,9 +126,10 @@ def test_script_default_and_formula_option(ring):
     old = compat._mode
     try:
         compat.set_mode('v2')
-        assert abs(ffs.fn_touschek([None, None, nz]) / piw - 1) < 1e-12
+        nob = Rule(S('BunchDelta'), 0.0)        # v2.4.0 F2: v2 の既定はバンチ内の δ の分布つき (B200)。この試験は δ_c = 0 の Piwinski 型の式 (T2) を見るので切る
+        assert abs(ffs.fn_touschek([None, None, nz, nob]) / piw - 1) < 1e-12
         assert abs(ffs.fn_touschek([None, None, nz, Rule(S('Formula'), 'K64')]) / tab - 1) < 1e-12
-        assert abs(ffs.fn_touschek([None, None, nz, Rule(S('Formula'), 'Piwinski')]) / piw - 1) < 1e-12
+        assert abs(ffs.fn_touschek([None, None, nz, Rule(S('Formula'), 'Piwinski'), nob]) / piw - 1) < 1e-12
         assert abs(ffs.fn_touschek([30.0, None, nz]) / touschek_lifetime(tt['table'], 30.0, None, nz, sige) - 1) < 1e-12
         with pytest.raises(SADError):
             ffs.fn_touschek([30.0, None, nz, Rule(S('Formula'), 'Piwinski')])

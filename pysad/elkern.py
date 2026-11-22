@@ -18,7 +18,8 @@ import math
 import numpy as np
 from numba import njit
 
-from .perfkern import tradke_db as _tradke_db
+from .perfkern import tradke_db as _tradke_db, edge_free as _edge_free
+from .radbeta import ab as _rb_ab
 from .perfkern_bend import apply_tdb as _apply_tdb, bendecorr as _bendecorr, bendebody as _bendebody
 
 NJ = dict(cache=True, error_model='numpy', nogil=True)
@@ -174,10 +175,24 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
     p = PH[P0] * pr
     h1 = _p2h(p)
     al1 = al - cod[4] + codr0[4]
+    gin = np.zeros(6)
+    gout = np.zeros(6)
     if tin != 0.0 or tout != 0.0:
-        al1 = al1 - tin * codr0[0] - tout * cod[0]      # v2: 端の角による場の中の行路の変化
-    anp = PH[ANRAD] * h1 * theta
+        # v2 (B220): 端の面までの直進の行程を厳密に (perfkern.edge_free。tan e → 0 で線形の式 tin·x に一致)
+        l1, gin = _edge_free(tin, 0.0, codr0[0], codr0[2], codr0[1], codr0[3], codr0[5], -1.0)
+        l2, gout = _edge_free(tout, 0.0, cod[0], cod[2], cod[1], cod[3], cod[5], 1.0)
+        al1 = al1 - l1 - l2
+    anrad = abs(PH[ANRAD])
+    anp = anrad * h1 * theta
     uct = PH[CUC] * h1**3 / PH[P0] / al1
+    dla = 0.0
+    dlb = 0.0
+    if PH[ANRAD] < 0.0:
+        # v2 (B167): 厳密な放射のスペクトル (β < 1)。光子数に a、光子エネルギーに b (radbeta.ab)
+        fa, fb, dla, dlb = _rb_ab(h1)
+        anp *= fa
+        uct *= fb
+        anrad *= fa
     uc = uct * theta
     dg = -CAVE * anp * uc
     S[U0] -= dg
@@ -201,8 +216,8 @@ def _tradke(cod, T, D, B, codr0, transr, S, PH, al, phir0, want_jac, want_db, ra
         _setr0(cod, T, codr0, transr)
         return
     ok, Dn, Bn = _tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
-                            xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, PH[P0], PH[ANRAD], CAVE, CUU,
-                            0.0, 0.0, tin, tout, False, PH[RSGN], PH[EXACTD] != 0.0)
+                            xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, PH[P0], anrad, CAVE, CUU,
+                            0.0, 0.0, tin, tout, False, PH[RSGN], PH[EXACTD] != 0.0, 0.0, 0.0, dla, dlb, gin, gout)
     if ok:
         for i in range(6):
             for j in range(6):
@@ -844,7 +859,7 @@ def _edge_chain(c, rhob, psi, entrance):
 
 
 @njit(**NJ)
-def _tbendebody0(c, phi0, rhob, drhob, dvzL):
+def _tbendebody0(c, phi0, rhob, drhob, dvzL, exact_dw=False):
     """lattice._tbendebody0_mat (+ (5,6) に dvz·aln) と _tbendebody0_cod (in-place)"""
     xi = c[0]
     dp = c[5]
@@ -882,8 +897,15 @@ def _tbendebody0(c, phi0, rhob, drhob, dvzL):
     dodx = -t[1, 0] / pzf
     dodpx = ((dpzf - dpzi) / pzi - dm22) / pzf
     dodpy = -u * pyi - t[1, 3] / pzf
-    ddodp = u * p - sn * ddpzadp / pzf
-    dodp = ddodp - sn / pzf
+    if exact_dw:
+        # v2 (B164 = B139): dω/dp = ∂θ_i/∂p − ∂θ_f/∂p (lattice._tbendebody0_mat と同じ)
+        dpxfdp = sn * dpzadp
+        dpzfdp = (p - pxf * dpxfdp) / pzf
+        dodp = (-pxi * dpzadp - (pzf * dpxfdp - pxf * dpzfdp)) / phsq
+        ddodp = dodp + sn / pzf
+    else:
+        ddodp = u * p - sn * ddpzadp / pzf
+        dodp = ddodp - sn / pzf
     t[0, 0] = cn + sn * s1
     t[0, 1] = rhob * (sn - cn * dpzadpx - s1 * t[1, 1])
     t[0, 3] = rhob * (-cn * dpzadpy - s1 * t[1, 3] - pyi / pzf)
@@ -1672,7 +1694,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
     if ak == 0.0:
         for n in range(1, ndiv + 1):
             dvzL = _dvz(PH, c[5]) * aln if use_dv else 0.0
-            t = _tbendebody0(c, phin, rhob, rhob - rho0, dvzL)
+            t = _tbendebody0(c, phin, rhob, rhob - rho0, dvzL, edgefix)
             if use_dv:
                 c[4] -= _dv(PH, c[5]) * aln
             _piece(t, T, D, B, want_jac, want_db, symp_fix)
@@ -1698,7 +1720,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
             alx0 = alx
             h1emit = S[H1EMIT]
             dvemit = S[DVEMIT] if use_dv else 0.0
-            t, cn = _bendebody(c, alx, phi1, akx, rhob, rho0, PH[H0], h1emit, dvemit, PSQMAX)
+            t, cn = _bendebody(c, alx, phi1, akx, rhob, rho0, PH[H0], h1emit, dvemit, PSQMAX, klin)
             _apply_tdb(t, T, D, B, want_db)
             c[:] = cn
             if enarad and n != ndiv:

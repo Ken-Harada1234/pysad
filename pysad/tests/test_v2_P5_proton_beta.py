@@ -35,13 +35,13 @@ def test_k64_u0_matches_gs_and_is_mp_over_me_times_too_large(name, p):
     k = _u0(U.run(src, 'k64'))
     assert k == pytest.approx(gs, rel=1e-8)
     v = _u0(U.run(src, 'v2'))
-    assert k / v == pytest.approx(MP / ME, rel=1e-8)
+    b = _classical(p)[1]
+    assert k / v == pytest.approx(MP / ME / b ** 3, rel=2e-6)      # v2.4.0 D (B167): v2 は古典半径 (mp/me) と β³ の両方を直した
 
 
 @pytest.mark.parametrize('name,p', CASES)
 def test_v2_u0_equals_classical_times_one_over_beta_cubed(name, p):
-    """v2 の U0 は古典式の 1/β³ 倍 (β の因子は未修正の限界。低い γ では大きく外れる)"""
+    """v2.4.0 D (B167): v2 の U0 は古典式 (2/3) r_p m c² β³ γ⁴ Σθ²/L と 2e-6 で一致する (以前は 1/β³ 倍だった。関数名は履歴のまま)"""
     v = _u0(U.run(U.example_src('proton_beta_' + name), 'v2'))
     u, b = _classical(p)
-    assert v / u == pytest.approx(1.0 / b ** 3, rel=1e-7)
-    assert v / u > 1.001
+    assert v / u == pytest.approx(1.0, rel=2e-6)

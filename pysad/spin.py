@@ -162,14 +162,23 @@ def tradke_spin(st, c):
                 _fs = math.asin(min(1.0, _ppa)) / _ppa
                 xpx, xpy, xpz = xpx * _fs, xpy * _fs, xpz * _fs
                 dxpx, dxpy, dxpz = dxpx * _fs, dxpy * _fs, dxpz * _fs
-        xpzb = xpz + (bsir0 + bzh * 2.0 * al) * pr ** 2
-        dxpzb = dxpz.copy()
-        dxpzb[5] += 2.0 * (bsir0 + bzh * 2.0 * al) * pr
+        if _compat.v2() and _compat.spin_bpar():
+            # v2 (B242): 端の縦磁場の積分 bsir0 (p0 で規格化した ψ) を粒子の運動量 (1+δ) で規格化し直す。K64 は割らないので、本体の Δψ/(1+δ) (B165) との和が
+            # δΔψ だけ 0 にならない。螺旋の縦磁場 bzh·2·al は従来のまま
+            xpzb = xpz + bsir0 * pr + bzh * 2.0 * al * pr ** 2
+            dxpzb = dxpz.copy()
+            dxpzb[5] += bsir0 + 2.0 * bzh * 2.0 * al * pr
+            bnorm = pr
+        else:
+            xpzb = xpz + (bsir0 + bzh * 2.0 * al) * pr ** 2
+            dxpzb = dxpz.copy()
+            dxpzb[5] += 2.0 * (bsir0 + bzh * 2.0 * al) * pr
+            bnorm = pr ** 2
         bd0 = getattr(st, 'bsi_d0', None)
         if bd0 is not None and (bd0.any() or st.bsi_d1.any()):
             # v2 (B58): bsir0 (端の縦磁場の積分 ψ(x, y)) の軌道についての微分。K64 は bsir0 を定数として扱い、
             # スピン軌道結合 (脱偏極ベクトル) に端の縦磁場の y・x 依存が入らない (追跡のスピンの軌道依存と BEND で 6 倍違う)
-            dxpzb = dxpzb + (bd0 + st.bsi_d1 @ tr2) * pr ** 2
+            dxpzb = dxpzb + (bd0 + st.bsi_d1 @ tr2) * bnorm
         bp = (xpx * pxh + xpy * pyh + xpzb * pzh) / pr ** 2
         dbp = (dxpx * pxh + xpx * dpxh + dxpy * pyh + xpy * dpyh + dxpzb * pzh + xpzb * dpzh) / pr ** 2
         dbp[5] -= 2.0 * bp / pr
@@ -186,6 +195,26 @@ def tradke_spin(st, c):
         dbty[5] -= 2.0 * xpy / pr ** 3
         dbtz = dxpzb / pr - dblz                       # K64 のまま (pr**2 ではなく pr)
         dbtz[5] -= 2.0 * xpzb / pr ** 3
+    bpot = c.get('bpot')
+    if bpot is not None and not (hint is not None and _compat.v2()):
+        # v2 (B165): 本体の運動量の向きの磁場の積分 ∫B∥ ds = ψ(終) − ψ(始) (静磁場の ∫B·dr、ψ = ポテンシャル)。粒子の運動量 (1+δ) で規格化して運動量の向きに足す
+        from .emit6d import _grad_xy
+        cod1 = st.cod
+        cod0 = c['codr0']
+        bpa = (bpot(cod1) - bpot(cod0)) / pr
+        g1 = _grad_xy(bpot, cod1)
+        g0 = _grad_xy(bpot, cod0)
+        dpsi = g1[0] * tr2[0, :] + g1[1] * tr2[2, :]
+        dpsi[0] -= g0[0]
+        dpsi[2] -= g0[1]
+        dbpa = dpsi / pr
+        dbpa[5] -= bpa / pr
+        blx = blx + bpa * pxh
+        bly = bly + bpa * pyh
+        blz = blz + bpa * pzh
+        dblx = dblx + dbpa * pxh + bpa * dpxh
+        dbly = dbly + dbpa * pyh + bpa * dpyh
+        dblz = dblz + dbpa * pzh + bpa * dpzh
     ct = h1 * GSPIN
     dct = ct * dh1r
     ct += 1.0

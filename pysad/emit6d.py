@@ -29,7 +29,7 @@ import numpy as np
 
 from . import lattice as _lat
 from .elements import Element, Drift, Quadrupole, Bend
-from .perfkern import tradke_db as _tradke_db
+from .perfkern import tradke_db as _tradke_db, edge_free as _edge_free
 from .perfkern_bend import apply_tdb as _apply_tdb, bendecorr as _k_bendecorr, bendebody as _k_bendebody
 from . import elkern as _ek
 from . import compat as _compat
@@ -51,6 +51,7 @@ ELRADI = FINEST * PLANKR * CVELOC / (ELEMCH * ELMASS)
 # photons.f / tmacro / bendib
 CAVE = 8.0 / 15.0 / math.sqrt(3.0)
 CUU = 11.0 / 27.0
+RAD_BETA_GAMMA_MAX = 300.0      # v2 (B167): γ がこれ未満の粒子にだけ β < 1 の係数 (radbeta) を掛ける。電子 (γ ≳ 600) は補正が 1e-5 以下で、K64 の超相対論の式の他の 1/γ² の項と同程度なので入れない
 GMIN = -0.999999
 EPSRAD = 1e-6
 EPSBEND = 1e-3
@@ -168,6 +169,8 @@ class _Phys:
         rcratio = rclassic / (hp * c / amass / e)
         self.cuc = 1.5 * rclassic / rcratio
         self.anrad = 5.0 / 2.0 / math.sqrt(3.0) * rcratio
+        if _compat.radiation_beta() and self.h0 < RAD_BETA_GAMMA_MAX:
+            self.anrad = -self.anrad       # v2 (B167): 負 = β < 1 の放射の係数 (radbeta.ab) を掛ける印 (numba の核が符号を見る)。値は abs(anrad)
         self.omega0 = (2.0 * math.pi * c * self.p0 / self.h0 / circ
                        if circ != 0 else 0.0)
         self.emidiv = emidiv
@@ -228,6 +231,7 @@ class _State:
         self.gintd = np.zeros(3)
         self.gintd2 = np.zeros((3, 3))     # v2 (A2): Σ r (b̂ b̂ᵀ) (緩和率。spin.py)
         self.bsir0 = 0.0
+        self.bpot = None         # v2 (B165): 本体の運動量の向きの磁場の積分 ∫B·dr = ψ(終) − ψ(始) のスカラーポテンシャル ψ(cod) (呼び出し可能)。次の tradke が使う
         # v2: bsir0 (端の縦磁場の積分) の軌道についての微分。bsi_d0 は放射の基準点 (r0) の座標、bsi_d1 は tradke の時点の座標に掛かる係数。
         # K64 の tradke は bsir0 を定数として扱い、スピン軌道結合 (srot(:,4:9)) にこの微分が入らない (docs/history/v2_changes_A.md の B58)
         self.bsi_d0 = np.zeros(6)
@@ -295,6 +299,8 @@ class _State:
     def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0, tiny=0.0, touty=0.0):
         # tin, tout (v2 のみ非 0): 偏向磁石の端の角 e の tan。場の中の行路は al1 - tin*x(基準点) - tout*x(現在)。
         # tiny, touty: y の係数 (回した座標系の MULT の端の角。v2next P3)
+        bpot = self.bpot
+        self.bpot = None
         if not self.want_jac and not self.radcod:
             self.bzhr0 = bzh
             return          # cod も変えず、u0・D・B も使わない一周 (z_slip 等)
@@ -326,10 +332,26 @@ class _State:
         p = ph.p0 * pr
         h1 = _p2h(p)
         al1 = al - cod[4] + codr0[4]
+        gin = gout = None
         if tin != 0.0 or tout != 0.0 or tiny != 0.0 or touty != 0.0:
-            al1 = al1 - tin * codr0[0] - tout * cod[0] - tiny * codr0[2] - touty * cod[2]
-        anp = ph.anrad * h1 * theta
+            if bzh == 0.0 and bzhr0 == 0.0 and _compat.v2():
+                # v2 (B220): 面までの直進の行程を厳密に (px の 1 次・p/pz の因子。tan e → 0 で従来の線形の式)
+                l1, gin = _edge_free(tin, tiny, codr0[0], codr0[2], codr0[1], codr0[3], codr0[5], -1.0)
+                l2, gout = _edge_free(tout, touty, cod[0], cod[2], cod[1], cod[3], cod[5], 1.0)
+                al1 = al1 - l1 - l2
+            else:
+                al1 = al1 - tin * codr0[0] - tout * cod[0] - tiny * codr0[2] - touty * cod[2]
+        anrad = abs(ph.anrad)
+        anp = anrad * h1 * theta
         uct = ph.cuc * h1**3 / ph.p0 / al1
+        dla = dlb = 0.0
+        if ph.anrad < 0.0:
+            # v2 (B167): 厳密な放射のスペクトル (β < 1)。光子数に a、光子エネルギーに b (a b = β²、a b² = r2/β²)
+            from .radbeta import ab as _ab
+            fa, fb, dla, dlb = _ab(h1)
+            anp *= fa
+            uct *= fb
+            anrad *= fa
         uc = uct * theta
         dg = -CAVE * anp * uc
         self.u0 -= dg
@@ -362,8 +384,8 @@ class _State:
             return
         # D・B の更新は numba カーネル (perfkern.tradke_db: 下の numpy 版と同じ式。numpy の小行列演算の連続が 0.5 ms/回かかるため)
         ok, Dn, Bn = _tradke_db(self.T, self.transr, self.D, self.B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp,
-                                xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, ph.anrad, CAVE, CUU, bzh, bzhr0,
-                                tin, tout, _compat.v2(), rsgn, _compat.v2(), tiny, touty)
+                                xpx, xpy, xpz, xpa, anp, uc, uct, al1, dg, ddpx, ddpy, c1, h1, p, ph.p0, anrad, CAVE, CUU, bzh, bzhr0,
+                                tin, tout, _compat.v2(), rsgn, _compat.v2(), tiny, touty, dla, dlb, gin, gout)
         if ok:
             self.D = Dn
             self.B = Bn
@@ -371,7 +393,7 @@ class _State:
             from . import spin as _spin
             _spin.tradke_spin(self, dict(pr=pr, px=px, py=py, pz=pz, pxi=pxi, pyi=pyi, pz00=pz00, pz0=pz0, pxr0=pxr0,
                                          cp=cp, sp=sp, xpx=xpx, xpy=xpy, xpz=xpz, xpa=xpa, bzh=bzh, bzhr0=bzhr0,
-                                         al=al, h1=h1, p=p, p0=ph.p0, al1=al1, anp=anp, uc=uc))
+                                         al=al, h1=h1, p=p, p0=ph.p0, al1=al1, anp=anp, uc=uc, bpot=bpot, codr0=codr0))
         self.codr0 = self.cod.copy()
         self.transr = self.T.copy()
         self.bzhr0 = bzh
@@ -1000,6 +1022,8 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
                 return None if J2 is None else J2 @ J1
             st.piece(f_body, jac=jfun(core_body))
             if n != ndiv - 1:
+                if qpsi is not None and _compat.spin_bpar():
+                    st.bpot = qpsi          # v2 (B165): 本体の B∥ = Δψ (ψ = k x y)
                 st.tradke(aln1, 0.0)
             al1 = aln1
         st.piece(lambda cc: r_out(_lat._tqente_cod(r_in(cc), aln1 * 0.5)),
@@ -1007,6 +1031,8 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
         if qpsi is not None and iq == nq - 1:
             gq = _grad_xy(qpsi, st.cod)
             st.add_bsi(-qpsi(st.cod), -gq[0], -gq[1], False)
+        if qpsi is not None and _compat.spin_bpar():
+            st.bpot = qpsi
         st.tradke(aln1, 0.0)
     if mfring in (2, 3):
         st.piece(lambda c: r_out(_lat._tqlfre_cod(r_in(c), L, ak1, -f1out, f2out)),
@@ -1062,7 +1088,7 @@ class _BendIBody:
             aksx = -akx * spx
             dcxkx = dcx / akxsq
             sxkx = spx / akx
-            xsxkx = -xspx / akx / akxsq
+            xsxkx = (xspx / akx / akxsq) if _compat.v2() else (-xspx / akx / akxsq)       # B250 (v2 は連続な式)
         else:
             akx = 0.0; phix = 0.0; dcx = 0.0; spx = 0.0; aksx = 0.0
             dcxkx = 0.5 * al**2
@@ -1137,12 +1163,14 @@ def _tbendecorr(st: _State, ak1, al, rho0):
 def _tbendebody(st: _State, al, phin, ak1, alr, rhob, rho0, enarad, bsi1=0.0, tin=0.0):
     """tbende.f tbendebody (tbinit=.true. で毎回 tbendeinit。本体は perfkern_bend.bendebody)"""
     xi, yi = st.cod[0], st.cod[2]
-    t, cod = _k_bendebody(st.cod, al, phin, ak1, rhob, rho0, st.ph.h0, st.h1emit, st.dvemit, PSQMAX)
+    t, cod = _k_bendebody(st.cod, al, phin, ak1, rhob, rho0, st.ph.h0, st.h1emit, st.dvemit, PSQMAX, _compat.bend_ecorr_flags())
     st.apply(t)
     st.cod = cod
     if enarad:
         if st.calpol and not _compat.v2():
             st.bsir0 += bsi1 * (yi / rhob + ak1 * xi * yi)       # bsi2 の項は最後のスライス (enarad=F) にしか付かない
+        if st.calpol and _compat.spin_bpar():
+            st.bpot = lambda cc: cc[2] / rhob + ak1 * cc[0] * cc[2]      # v2 (B165): 本体の B∥ の積分 = Δ(y/ρ + k x y)
         st.tradke(alr, phin, tin=tin)
 
 
@@ -1207,8 +1235,9 @@ def _tsteee(st: _State, el: Bend, enarad: bool = True):
         st.piece(lambda c: _lat._tbedge_cod(c, rhoe, g('E1'), True))
     # v2 (B108): 端の角 (AE1・AE2) のある面では場の中の行路が x·tan(e) だけ短い。K64 の tsteee は端の蹴りを偏向角に入れるが、tradke の行路は
     # 変えないので、I4 の端の項 −η tan(e)/ρ² が 2 倍になる (ANGLE≠0 の BEND の B75 と同じ。_tbende_core の tin・tout)
-    tin = math.tan(g('E1')) if _compat.v2() else 0.0
-    tout = math.tan(g('E2')) if _compat.v2() else 0.0
+    # v2 (B225): FRINGE = −2 (出口だけ) は入口の端を、FRINGE = −1 (入口だけ) は出口の端を飛ばす (K64 の tsteee)。その端の面の行程の補正も入れない
+    tin = math.tan(g('E1')) if (_compat.v2() and mfring != -2) else 0.0
+    tout = math.tan(g('E2')) if (_compat.v2() and mfring != -1) else 0.0
     alr = aln
     for n in range(n1, ndiv + n2 + 1):
         alx, alr = _tbendal(n, ndiv, f1r, f2r, aln)
@@ -1369,6 +1398,8 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
         if krad_:
             if st.calpol and first and not v2:
                 st.bsir0 += yi0 / rhob                      # tbendebody0: bsi1·yi/rhob (最初の断片だけ)
+            if st.calpol and _compat.spin_bpar():
+                st.bpot = lambda cc: cc[2] / rhob          # v2 (B165): 本体の B∥ の積分 = Δ(y/ρ)
             st.tradke(alr_, phi, tin=tin)
             tin = 0.0
 
@@ -1660,7 +1691,7 @@ def _tmulte(st: _State, el, enarad: bool = True):
                 st.bsir0 = st.bsir0 + im if f.m == 1 else 0.0
                 if f.m == f.ndiv:
                     st.bsir0 -= im
-            st.piece(f)
+            st.piece(f, symp_z=not getattr(f, 'nosymp', False))
         elif kind == 'radstart':
             if krad:
                 # tmulte: 入口のフリンジ (tqfrie・tbfrme・tqlfre) の後、f1in≠0 なら tradke(f1in)、そうでなければ tsetr0 (放射の基準点)
@@ -1680,6 +1711,8 @@ def _tmulte(st: _State, el, enarad: bool = True):
                 ti, tiy, f_eff, pend_in = ta1 * cth, -ta1 * sth, f_eff + ta1 * off, False
             if pend_out:
                 to, toy, f_eff, pend_out = ta2 * cth, -ta2 * sth, f_eff + ta2 * off, False
+            if psi is not None and _compat.spin_bpar():
+                st.bpot = psi          # v2 (B165): 本体の B∥ = Δψ
             st.tradke(f_eff, 0.0, tin=ti, tout=to, tiny=tiy, touty=toy)
 
 def _rf_effective(st: _State):
@@ -1698,9 +1731,19 @@ def _rf_effective(st: _State):
     return wrfeff, vceff
 
 
+def _u0_energy(st, ph):
+    """1 周のエネルギー損失 [eV] (空洞の電圧 V sin φ と釣り合う量)。st.u0 は運動量 (δ) の損失なので、β < 1 では dE = v dp から β·Δp c
+    (v2 (B232): 空洞の kick は tcave.f と同じくエネルギーで書かれていて Δp = ΔE/(βc) になっている。K64 は Δp c を電圧と比べる =
+    β = 1 の前提で、陽子 (γ < 300 の β < 1) では同期位相 asin(U0/V) が 1/β 倍ずれる)。電子 (anrad > 0) は変わらない"""
+    f = (ph.p0 / ph.h0) if (ph.anrad < 0.0 and _compat.v2()) else 1.0
+    if _compat.v2() and ph.charge != 0.0:
+        f /= abs(ph.charge)            # 空洞は電荷 q の粒子に q·V のエネルギーを与える (tcave: v = VOLT/amass·|charge|)。vcacc は V (電荷 1 あたり) なので損失も電荷で割る
+    return st.u0 * ph.pgev * f
+
+
 def _trf0_update(st: _State, wrfeff, vceff):
     """tturne (update=.true., RADCOD OFF): 同期位置 trf0。"""
-    u0e = st.u0 * st.ph.pgev
+    u0e = _u0_energy(st, st.ph)          # v2 (B232): 空洞の電圧 (エネルギー) と比べる損失はエネルギー損失 β·Δp c
     alambdarf = 2.0 * math.pi / wrfeff
     if vceff > u0e:
         a = math.asin(max(-1.0, min(1.0, u0e / vceff)))
@@ -1728,18 +1771,21 @@ def _tturne_update_trf0(st: _State, trf0):
     return _trf0_update(st, wrf, vce)
 
 
-def _tthine(st: _State, el):
+def _tthine(st: _State, el, enarad=False):
     """SEXT/OCT/DECA/DODECA: tturne1 → tthine (enarad=.false., tturne.f:592)。放射なし。
     ずれ DX/DY・ロール ROTATE(ROTATION) は tthine の先頭と末尾の tchge (入口: 回す→ずらす、出口: 逆。dz=dtheta=0, alg=phig=0)。
     tchge の入口は SAD の癖 (th≠0 かつずれ≠0 のとき行列に回転が入らない) を _tchge_jac が再現する。"""
     kn, kord = _lat._THIN_KORD[type(el).__name__]
     K = float(getattr(el, kn, 0.0) or 0.0)
     ak = K * el.L if el.L != 0.0 else K
+    # v2 (B240): 追跡 (track6._tthin_sext) は L ≠ 0 の 6 極・8 極… を放射・スピンの歳差させる (1 刻み、基準点は入口)。K64 の tthine は放射せず、Emittance[] の
+    # スピン (srot) の歳差・減衰・量子励起の D・B が入らない。v2 は tturne の経路 (enarad=True) で追跡と同じ 1 刻みの tradke を入れる
+    krad = bool(enarad and _compat.v2() and el.L != 0.0 and ak != 0.0 and float(getattr(el, 'RAD', 0.0) or 0.0) == 0.0)
     _tthine_gen(st, el.L, ak, kord, float(getattr(el, 'DX', 0.0) or 0.0), float(getattr(el, 'DY', 0.0) or 0.0),
-                float(getattr(el, 'ROTATION', 0.0) or 0.0))
+                float(getattr(el, 'ROTATION', 0.0) or 0.0), krad)
 
 
-def _tthine_gen(st: _State, L, ak, kord, dx, dy, th):
+def _tthine_gen(st: _State, L, ak, kord, dx, dy, th, krad=False):
     """tthine の本体 (ak = 積分強度, kord = nord/2−1。薄い四極 (L=0 の QUAD, tquade → tthine(nord=4)) も kord=1 で使う)"""
     ph = st.ph
     f0 = _lat._thin_offset_map(L, ak, kord)
@@ -1754,11 +1800,19 @@ def _tthine_gen(st: _State, L, ak, kord, dx, dy, th):
     jcore = lambda c: _jac_thin(c, L, ak, kord, _dvz(ph, c[5]))
     if ak == 0.0 or (dx == 0.0 and dy == 0.0 and th == 0.0):
         # ak=0 は tdrife0 だけ (tchge を呼ばない)
+        if krad:
+            st.setr0()
         st.piece(f_core, jac=jcore)
+        if krad:
+            st.tradke(L, 0.0)
         return
     st.piece(lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, True),
              jac=lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, True))
+    if krad:
+        st.setr0()
     st.piece(f_core, jac=jcore)
+    if krad:
+        st.tradke(L, 0.0)
     st.piece(lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, False),
              jac=lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, False))
 
@@ -1811,6 +1865,8 @@ def _thine_fast(st, el):
     K = _g0(el, kn)
     L = float(el.L)
     ak = K * L if L != 0.0 else K
+    if _compat.v2() and L != 0.0 and ak != 0.0 and _g0(el, 'RAD') == 0.0:
+        return 1        # v2 (B240): L ≠ 0 の 6 極以上は Emittance[] でも放射する (Python の経路。numba の k_thin は放射なし)
     return _ek.k_thin(st.cod, st.T, st.D, st.B, st._S, st.PH, L, ak, int(kord), _g0(el, 'DX'), _g0(el, 'DY'),
                       _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2())
 
@@ -1929,7 +1985,7 @@ def tturne(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
             if not fast or _thine_fast(st, el) != 0:
                 if fast and _nonfinite_state(st):
                     break
-                _tthine(st, el)
+                _tthine(st, el, enarad=True)
         elif type(el).__name__ == 'Cavity':
             _tcave(st, el)
         elif type(el).__name__ == 'Multipole':
@@ -2168,7 +2224,7 @@ def tecalc(st: _State, circ: float, rfsw: bool = False, emit_floor=(0.0, 0.0, 0.
     # tturneg は RFSW の ON/OFF に関係なく空洞の積算量 (vc0, vcacc, dvcacc …) から実効電圧 vceff・角周波数 wrfeff を作る。
     # RFSW OFF でも Vc・h・バケット高さ・縦方向エミッタンス・バンチ長が SAD では 0 にならない (以前は 0 を返していた)
     wrfeff, vceff = _rf_effective(st)
-    u0e = st.u0 * ph.pgev
+    u0e = _u0_energy(st, ph)
     if vceff != 0.0:
         phirf = math.asin(max(-1.0, min(1.0, u0e / vceff)))
         heff = wrfeff * CVELOC / ph.omega0
@@ -2320,7 +2376,7 @@ def tecalc(st: _State, circ: float, rfsw: bool = False, emit_floor=(0.0, 0.0, 0.
         'momentum_compaction': alphap,
         'rf_voltage_eff': vceff, 'wrfeff': wrfeff, 'trf0': st.trf0, 'bucket_height': bh,
         'closed_orbit': st.cod.copy(),
-        'energy_loss_eV': st.u0 * ph.pgev,
+        'energy_loss_eV': st.u0 * ph.pgev * (ph.p0 / ph.h0 if ph.anrad < 0.0 else 1.0),      # v2 (B167): β < 1 の粒子の 1 周のエネルギー損失 = β·Δp c (dE = v dp)。δ の損失 st.u0 は運動量の損失
         'tunes': params['tunes'], 'damping_rate': params['damping'],
         'beam_matrix': emitp, 'beamn': beamn, 'one_turn_matrix': T + st.D,
         'rx': rx,                                 # temit の rx (RFSW OFF なら z 行を 0,1 に置き換えた T)。temitprint の symplectic 偏差用
@@ -2384,7 +2440,7 @@ def _tcod_radcod(els, ph: _Phys, cod_in, rfsw: bool, trace: bool = False, final_
         if fnd:
             wrf, vce = _rf_effective(st)
             if vce != 0.0:
-                cod[4] = _asinz((st.u0 * ph.pgev - st.vcacc) / vce) / wrf - trf0
+                cod[4] = _asinz((_u0_energy(st, ph) - st.vcacc) / vce) / wrf - trf0
         im = 6
     else:
         im = 5

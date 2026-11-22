@@ -1,0 +1,406 @@
+! v2.4.0 H2: KEK-LS v03_12 (kek-ls_v03_12.lat、3 GeV、603 m、3563 要素。docs/48 §4 の A4・L2 の「大きなリング A」) 版。H2_kekls_lma_corrected.template.sad のラティスを v03_12 に、
+! モニター名を PM → BPM に変えたもの (v03_12 のモニターは BPM、補正磁石は HD (140)・VD (60))。SEEDVAL・CTRLVAL・NITERVAL・AEVAL・FEVAL・TEVAL は H2_run.py (引数 lat=v03_12) が置き換える。
+! ---- ラティス (pysad/tests/kek-ls_v03_12.lat) ----
+! 3.0 GEV RING, 20 CELLS
+! KEK-LS is an ESRF-type HMBA designed with the help of Pantaleo Raimondi and Simone Liuzzo (ESRF).
+ MOMENTUM = 3GEV;
+ DRIFT  DRID    =(L =2.9 )   DR20    =(L =.2 )    DR08    =(L =.12 )
+        DRSS    =(L =.4325 ) DRDD    =(L =.55 )    DRSO    =(L =.2525 )
+        DR28    =(L =.19 )   DRCT    =(L = 0 )
+ ;
+ DRIFT  DRID1    =(L =2.85 )
+        DRID2    =(L =0.05 )
+        DRSS1    =(L = 0.05)
+        DRSS2    =(L = 0.3825)
+        DRDD1    =(L = 0.45)
+        DRDD2    =(L = 0.05)  
+        DR281    =(L = 0.05 )
+        DR282    =(L = 0.14 )
+        DR08H    =(L = 0.06)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3    =(L =.413 ANGLE =.00827209392 )
+        BID3H    =(L =.413/2 ANGLE =.00827209392/2 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3    =(L =.413 ANGLE =.00758109248 )
+        BPI3H    =(L =.413/2 ANGLE =.00758109248/2 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.900241394141 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7428636614916 )
+ ;
+ QUAD   QFA1    =(L =.25  K1 =1.0302859090451 )
+          QFA1H   =(L =.125  K1 =1.0302859090451/2 )
+        QDA2    =(L =.2   K1 =-.7358342943058 )
+        QDA3    =(L =.2   K1 =-.4409470413988 )
+        QFA4    =(L =.2   K1 =.4313378432341 )
+        QDA5    =(L =.2   K1 =-.4602777086531 )
+        QFA6    =(L =.335 K1 =1.7377379386433 )
+          QFA6H    =(L =.335/2 K1 =1.7377379386433/2 )
+        QFA8    =(L =.5   K1 =2.1955902812884 )
+          QFA8H    =(L =.25   K1 =2.1955902812884/2 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.8417491573899 )
+        SFA     =(L =.045 K2 =4.4168227049674 )
+
+        SDC     =(L =.045 K2 =-3.8417491573899 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ OCT    OCFA    =(L =.0125     K3 =-6000*0.0125 )
+        OCF2    =(L =.03  K3 =-0 )
+ ;
+ CAVI   RFC     =(VOLT =1.4e+06    HARM =992 )
+ ;
+ MARK   MKS     =(AX =-1.1334938917928409e-11 BX =3.892652430016132    AY =-1.5622147715617673e-11   BY =2.613264010640574
+           EX =.005215052091902209  EPX =-1.0535665167994642e-16  DP =.01   SIGZ =.0012504235342250764
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKE     =(AX =-7.74500093989406e-11   BX =3.89265242969666     PSIX =14.960907314634563 AY =2.1766446880965991e-10
+           BY =2.613264011187758    PSIY =5.479949219457121  EX =.005215052091894469  EPX =-1.078998002057574e-15   DP =.01
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKSFA1 = ()
+        MKSFA2 = ()
+        MKSDA1 = ()
+        MKSDA2 = ()
+        MKSDC1 = ()
+        MKSDC2 = ()
+        MKC = ()
+        MKBE  = ()
+ ;
+
+!-----------------------------------------
+! ARC CELLS              
+!-----------------------------------------
+
+  MONI
+         BPM = ()
+  ;
+ 
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(MKS
+             DRID1 BPM DRID2 QFA1H VD QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08, 
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5, 
+             DR08H BPM DR08H, QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08H BPM DR08H, SHA, DR08,
+             BPI7 HD DRCT MKC
+             MKE)
+  ARCAH2    =(MKS
+             DRID1 BPM DRID2 QFA1H QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5
+             DR08H BPM DR08H QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08, SHA, DR08,
+             BPI7 DRCT MKC
+             MKE)
+ ARCA      = (ARCAH -ARCAH2)
+ RING      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9131278249857536 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7045722303066142 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4630117112293077 )
+        QDA2    =(L =.2   K1 =-.6604776361997438 )
+        QDA3    =(L =.2   K1 =-.42451439357520854 )
+        QFA4    =(L =.2   K1 =.414636958834372 )
+        QDA5    =(L =.2   K1 =-.458157393322574 )
+        QFA6H   =(L =.1675     K1 =.8517302592904823 )
+        QFA8H   =(L =.25  K1 =1.1273255587393383 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.0348531183690555 )
+        SFA     =(L =.045 K2 =3.29744673430139 )
+        SDC     =(L =.045 K2 =-3.0348531183690555 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+
+ DRIFT  DRCT    =(L =.5)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292271132168 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001834063768251 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4117427225413435 )
+        QDA2    =(L =.2   K1 =-.661274491217251 )
+        QDA3    =(L =.2   K1 =-.38822139139626954 )
+        QFA4    =(L =.2   K1 =.4109218113797463 )
+        QDA5    =(L =.2   K1 =-.4733016273637364 )
+        QFA6H   =(L =.1675     K1 =.9215539290295219 )
+        QFA8H   =(L =.25  K1 =1.098917369966305 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.192657116323371 )
+        SFA     =(L =.045 K2 =5.099276103295176 )
+        SDC     =(L =.045 K2 =-4.192657116323371 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292489795 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001833009675 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4359417592282 )
+        QDA2    =(L =.2   K1 =-.6422919019387 )
+        QDA3    =(L =.2   K1 =-.4086041625487 )
+        QFA4    =(L =.2   K1 =.4009936242199 )
+        QDA5    =(L =.2   K1 =-.4346576537471 )
+        QFA6H   =(L =.1675     K1 =.9049532139395 )
+        QFA8H   =(L =.25  K1 =1.0604857646104 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.206799858141086 )
+        SFA     =(L =.045 K2 =4.601104566854821 )
+        SDC     =(L =.045 K2 =-4.206799858141086 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+Get["../modules/modules_general.n"];
+Get["../modules/modules_errors.n"];
+
+cc = "cell calc";
+ccemit = "cell calc emit";
+seeds = {SEEDVAL};
+ctrl = CTRLVAL;
+niter = NITERVAL;
+doDA = 0;
+Dist = 143;
+Wk = 6;
+ae = AEVAL;
+fe = FEVAL;
+te = TEVAL;
+GCUT = 1;
+
+! 固有値の大きい ie 個を使った疑似逆行列で COD を補正する。戻り値 {kick, 補正後の COD}
+CodCorr[resmat_,cod_,ie_]:=(
+  tres        = resmat;
+  res         = Transpose[tres];
+  dim         = Length[res[1]];
+  sqres       = tres.res;
+  sqcod       = tres.cod;
+  {lam, ivec} = Eigensystem[sqres];
+  laminv      = Table[0.0, {i,1,dim}];
+  lam = Re[lam];
+  stdlam      = Sort[lam, Greater];
+  lam = Abs[lam];
+  Do[
+    Do[
+      If[stdlam[i]===lam[j],
+        laminv[j]=1.0/stdlam[i];
+      ];
+    ,{j,dim}];
+  ,{i, ie}];
+  laminvmat   = DiagonalMatrix[laminv];
+  ivect       = Transpose[ivec];
+  invsqres    = ivect.laminvmat.ivec;
+  kick        = -invsqres.sqcod;
+  rescod      = cod + res.kick;
+  out         = {kick, rescod};
+  out
+);
+
+! COD 応答行列 Responsex[j,i] (水平)、Responsey[j,i] (垂直): ステアリング j の単位キックに対するモニター i の COD
+CalculateCODResponse[]:=(
+  FFS[cc];
+  dtnx = LINE["NAME","HD*.*"];
+  dtny = LINE["NAME","VD*.*"];
+  dtbmx = Twiss["BX","BPM.*"];
+  dtbmy = Twiss["BY","BPM.*"];
+  dtbcx = Twiss["BX","HD*.*"];
+  dtbcy = Twiss["BY","VD*.*"];
+  dttmx = Twiss["NX","BPM.*"];
+  dttmy = Twiss["NY","BPM.*"];
+  dttcx = Twiss["NX","HD*.*"];
+  dttcy = Twiss["NY","VD*.*"];
+  ICX = Length[dtnx];
+  ICY = Length[dtny];
+  IM = Length[dtbmx];
+  Print["ICX = ",ICX,"   ICY = ",ICY,"   IM = ",IM];
+  Do[
+    Do[
+      Responsex[j,i] = 0.5*Sqrt[dtbmx[i]*dtbcx[j]]*Cos[tunex*Pi-Abs[dttmx[i]-dttcx[j]]]/Sin[tunex*Pi];
+    ,{i,IM}];
+  ,{j,ICX}];
+  Do[
+    Do[
+      Responsey[j,i] = 0.5*Sqrt[dtbmy[i]*dtbcy[j]]*Cos[tuney*Pi-Abs[dttmy[i]-dttcy[j]]]/Sin[tuney*Pi];
+    ,{i,IM}];
+  ,{j,ICY}];
+);
+
+! COD・分散の rms と最大値 (モニター BPM.* で)。戻り値は表示用のリスト
+RMSWrite[] := (
+  FFS[cc];
+  CODrmsnoX = 0;  CODrmsnoY = 0;
+  ETArmsnoX = 0;  ETArmsnoY = 0;
+  CODmaxnoX = 0;  CODmaxnoY = 0;
+  ETAmaxnoX = 0;  ETAmaxnoY = 0;
+  datan  = LINE["NAME","BPM.*"];
+  codnox = Twiss["DX","BPM.*"];
+  etanox = Twiss["EX","BPM.*"];
+  codnoy = Twiss["DY","BPM.*"];
+  etanoy = Twiss["EY","BPM.*"];
+  Do[
+    etanox[i] = Abs[etanox[i]-etaidealx[i]];
+    etanoy[i] = Abs[etanoy[i]-etaidealy[i]];
+    If[Abs[codnox[i]] > CODmaxnoX, CODmaxnoX = Abs[codnox[i]]];
+    CODrmsnoX = CODrmsnoX + codnox[i] * codnox[i];
+    If[Abs[codnoy[i]] > CODmaxnoY, CODmaxnoY = Abs[codnoy[i]]];
+    CODrmsnoY = CODrmsnoY + codnoy[i] * codnoy[i];
+    If[etanox[i] > ETAmaxnoX, ETAmaxnoX = etanox[i]];
+    ETArmsnoX = ETArmsnoX + etanox[i] * etanox[i];
+    If[etanoy[i] > ETAmaxnoY, ETAmaxnoY = etanoy[i]];
+    ETArmsnoY = ETArmsnoY + etanoy[i] * etanoy[i];
+  ,{i,Length[datan]}];
+  CODrmsnoX = Sqrt[CODrmsnoX/Length[datan]];
+  ETArmsnoX = Sqrt[ETArmsnoX/Length[datan]];
+  CODrmsnoY = Sqrt[CODrmsnoY/Length[datan]];
+  ETArmsnoY = Sqrt[ETArmsnoY/Length[datan]];
+  Print["   COD max [m] x y: ", CODmaxnoX, " ", CODmaxnoY, "   COD rms [m] x y: ", CODrmsnoX, " ", CODrmsnoY];
+  Print["   eta-beat max [m] x y: ", ETAmaxnoX, " ", ETAmaxnoY, "   eta-beat rms [m] x y: ", ETArmsnoX, " ", ETArmsnoY];
+);
+
+USE RING;
+cell calc emit;
+tunex = Twiss["NX","***"]/2/Pi;
+tuney = Twiss["NY","***"]/2/Pi;
+etaidealx = Twiss["EX","BPM.*"];
+etaidealy = Twiss["EY","BPM.*"];
+dtnx = LINE["NAME","HD*.*"];
+dtny = LINE["NAME","VD*.*"];
+dtbm = LINE["NAME","BPM*.*"];
+ICX = Length[dtnx];
+ICY = Length[dtny];
+IM  = Length[dtbm];
+FFS["cell calc emit fix"];
+Responsex = Table[Table[0,{i,1,IM}],{j,1,ICX}];
+Responsey = Table[Table[0,{i,1,IM}],{j,1,ICY}];
+CalculateCODResponse[];
+! 補正磁石 HD・VD は、リングの中で同じ要素名の繰り返しなので、既定の (EXPAND の) `cell calc` は K0 を全部同じ値に揃える。
+! 成分ごとの K0 が効くように、ここから `USE RING NOEXPAND` と `cell calc noexpand` を使う。
+FFS["USE RING NOEXPAND;"];
+cc = "cell calc noexpand";
+ccemit = "cell calc emit noexpand";
+FFS[cc];
+GetMagnetNames[];
+
+Do[
+  Print["===== seed ", seeds[k]];
+  SeedRandom[seeds[k]];
+  daflag = 1;
+  SetErrors[];
+  FFS[cc];
+  Print["before correction: tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  RMSWrite[];
+  matx = Responsex;
+  maty = Responsey;
+  IEX = Floor[ICX/2];
+  IEY = Floor[ICY/2];
+  Do[
+    FFS[cc];
+    befx = Twiss["DX","BPM*.*"];
+    befy = Twiss["DY","BPM*.*"];
+    resultx = CodCorr[matx,befx,IEX];
+    resulty = CodCorr[maty,befy,IEY];
+    Do[
+      LINE["K0",dtnx[i]] = LINE["K0",dtnx[i]] -0.5*resultx[1,i];
+    ,{i,1,Length[resultx[1]]}];
+    Do[
+      LINE["K0",dtny[i]] = LINE["K0",dtny[i]] -0.5*resulty[1,i];
+    ,{i,1,Length[resulty[1]]}];
+    FFS[cc];
+    aftx = Twiss["DX","BPM*.*"];
+    afty = Twiss["DY","BPM*.*"];
+    a1 = 0;  a2 = 0;  a3 = 0;  a4 = 0;
+    Do[
+      a1 = a1 + resultx[2,i]*resultx[2,i];
+      a2 = a2 + resulty[2,i]*resulty[2,i];
+      a3 = a3 + aftx[i]*aftx[i];
+      a4 = a4 + afty[i]*afty[i];
+    ,{i,1,IM}];
+    a1 = Sqrt[a1] / IM;  a2 = Sqrt[a2] / IM;  a3 = Sqrt[a3] / IM;  a4 = Sqrt[a4] / IM;
+    Print["iteration ", l, ": mat x rms = ", a1, "  mat y rms = ", a2, "  sad x rms = ", a3, "  sad y rms = ", a4, "  tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  ,{l,1,niter}];
+  FFS[ccemit];
+  Print["after correction: tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  EMITX [pm rad] ", EMITX*1E12];
+  RMSWrite[];
+  If[Twiss["NX","$$$"]/2/Pi>49 || Twiss["NX","$$$"]/2/Pi<48.5 || Twiss["NY","$$$"]/2/Pi>18 || Twiss["NY","$$$"]/2/Pi<17.5, daflag = 0];
+  Print["COD-corrected state: HD K0 (components 5, 50, 100) = ", LINE["K0",dtnx[5]], " ", LINE["K0",dtnx[50]], " ", LINE["K0",dtnx[100]]];
+  If[ctrl == 1, FFS["cell calc expand"]];
+  RADLINE
+  tw0 = Date[];
+  lma = MomentumAcceptance[Distance->Dist, Workers->Wk, Aperture->0.01];
+  tw1 = Date[];
+  Print["LMA WALL [s] ", 3600*(tw1[4]-tw0[4]) + 60*(tw1[5]-tw0[5]) + (tw1[6]-tw0[6])];
+  Print["LMA S ", S /. lma];
+  Print["LMA DPPLUS ", DPPlus /. lma];
+  Print["LMA DPMINUS ", DPMinus /. lma];
+  Print["state after LMA: HD K0 (components 5, 50, 100) = ", LINE["K0",dtnx[5]], " ", LINE["K0",dtnx[50]], " ", LINE["K0",dtnx[100]]];
+  ! 誤差とステアリングを戻す
+  ClearErrors[];
+  Do[ LINE["K0",dtnx[i]] = 0; ,{i,1,ICX}];
+  Do[ LINE["K0",dtny[i]] = 0; ,{i,1,ICY}];
+  FFS["USE RING NOEXPAND;"];
+  FFS[cc];
+,{k,1,Length[seeds]}];
+Exit;

@@ -270,10 +270,10 @@ def test_polarization_with_orbit_errors_v2(v2_mode):
     ffs, pol, _tau = _pol('3e-3')
     # P1 (v2.2.0): 運動論的偏極 (−0.7%)・厳密な緩和率 (−0.3%)・刻みごとの脱偏極率 (−0.03%) で 0.8798 → 0.8695 (線形の式は 0.8840)。
     # 以前は 0.8798 ± 3e-3 だった許容を緩めて 1.5e-2 にしていたが、内訳が分かったので 0.8695 ± 3e-3 に戻す (下の試験が内訳を確かめる)
-    assert abs(pol - 0.8695) < 3e-3
+    assert abs(pol - 0.8663) < 3e-3          # v2.4.0 D3 (B230: 四極の本体の B∥): 0.8695 → 0.8663 (−0.4%。n の傾きの原因の四極の縦ずれの B∥)
     e = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)
     sp = e['spin']
-    assert abs(sp['depol_rate_linear'] / 5.52e-11 - 1) < 0.05        # 線形の式 (SLIM)。v2next B3 で側帯の項を足した depol_rate は +13% (test_v2_B3_pol.py)
+    assert abs(sp['depol_rate_linear'] / 5.8504e-11 - 1) < 0.05        # v2.4.0 D (B165): 本体の B∥ で 5.52e-11 → 5.850e-11 (+6%)        # 線形の式 (SLIM)。v2next B3 で側帯の項を足した depol_rate は +13% (test_v2_B3_pol.py)
     assert abs(sp['spin_spread'] / 6.36e-6 - 1) < 0.05
     _f1, pol1, _t = _pol('1e-3')
     e1 = emit6d.emittance6d(_f1.lat, _f1.momentum(), rfsw=True, radcod=True, pol=True)
@@ -288,7 +288,7 @@ def test_p1_terms_account_for_the_change_of_polarization_v2(v2_mode, monkeypatch
     monkeypatch.setattr(spin, 'STEP_RATE', False)
     monkeypatch.setattr(spin, 'ST_EXACT', False)
     _f, pol0, tau0 = _pol('3e-3')
-    assert abs(pol0 - 0.8798) < 3e-3
+    assert abs(pol0 - 0.8763) < 3e-3       # v2.4.0 D3 (B230・B242: 四極の本体の B∥): 0.8798 → 0.8763 (−0.35%)。内訳の差 pol − pol0 は下の範囲のまま
     assert abs(tau0 - 124.18) < 0.05 and abs(tau - 123.73) < 0.05
     assert -1.3e-2 < pol - pol0 < -0.7e-2
 

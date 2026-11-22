@@ -2778,7 +2778,7 @@ class FFS:
                 if spin_in is not None and self.flags['TRPT'] and self.flags['RFSW'] and (any(
                         float(getattr(e_, 'VOLT', 0.0) or 0.0) != 0.0 for e_ in els[a - 1:b - 1] if type(e_).__name__ in ('Multipole', 'TCavity'))
                         or (any(float(getattr(e_, 'VOLT', 0.0) or 0.0) != 0.0 for e_ in els[a - 1:b - 1] if type(e_).__name__ == 'Cavity')
-                            and (not _compat.v2() or any(type(e_).__name__ == 'Solenoid' for e_ in els[a - 1:b - 1])))):
+                            and not _compat.v2())):          # v2 (B238): SOL 領域内の CAVI の TRPT の加速も track6 の経路が扱う
                     # v2next B1: スピン追跡 (POL、track6 の経路) は TRPT の加速で変わる基準運動量を扱わない (RF の蹴りは入るが運動量の規格化が
                     # 入口のまま)。黙って δ の違う値を返さず、加速のある輸送路は POL なしの高速追跡 (SOL 領域内も対応) を使わせる
                     raise SADError('POL (スピン追跡) + TRPT + RFSW の加速 (VOLT≠0 の CAVI・MULT・TCAVI) は未対応 '
@@ -3102,7 +3102,7 @@ class FFS:
         return list(new), [True, True]
 
     def fn_dasurvey(self, args):
-        """DynamicApertureSurvey[range, nt, opt...] (Packages/dapert.n): 既定 Output->0, ExpandElementValues->True,
+        """DynamicApertureSurvey[range, nt, opt...] (Packages/dapert.n): 既定 Output->0, ExpandElementValues->True (k64。v2.4.0 F2: v2 の既定は False、B201),
         ReferenceOrbit->Default, PhaseX->0, PhaseY->0, PhaseZ->-Pi/2, Axes->"ZX", Damping->False, DampEnough->0"""
         from .dapert import dynamic_aperture
         if len(args) < 2:
@@ -3115,7 +3115,10 @@ class FFS:
                 if isinstance(r, Rule) and isinstance(r.lhs, Sym):
                     opts[r.lhs.name] = r.rhs
         # v2.4.0 A5: ExpandElementValues->False は成分ごとの値 (補正磁石の K0・位置ずれ) を揃えない (既定 True は揃える)。ReferenceOrbit->{x0,px0,y0,py0,z0,dp0} はその軌道のまわりで追跡する (Default = emit の閉軌道)
-        if opts.get('ExpandElementValues') is None or truthy(opts['ExpandElementValues']) is not False:
+        # v2.4.0 F2 (B201): 既定は k64 = True (gs と同じ)、**v2 = False** (補正磁石の成分を消さない)。明示すれば両モードともその値
+        _ex = opts.get('ExpandElementValues')
+        _expand = _compat.k64() if _ex is None else (truthy(_ex) is not False)
+        if _expand:
             self.spread_pending()
         ro = opts.get('ReferenceOrbit')
         ref_orbit = [float(v) for v in ro] if isinstance(ro, list) and len(ro) == 6 and all(is_num(v) for v in ro) else None
@@ -3185,6 +3188,12 @@ class FFS:
         sige = float(self.I.get('SIGE', 0.0))
         if fm == 'piwinski':
             if math.isinf(nx) and math.isinf(ny) and 'rest' in tt:
+                # v2.4.0 F2 (B200): BunchDelta・BunchQs の既定は v2 = True、k64 = False (->False で切る。BunchQs は 3 次元の積分で数十秒)
+                _bd = (truthy(opts.get('BUNCHDELTA')) is True) if opts.get('BUNCHDELTA') is not None else _compat.v2()
+                _bq = (truthy(opts.get('BUNCHQS')) is True) if opts.get('BUNCHQS') is not None else _compat.v2()
+                if _bd:
+                    from .touschek_bunch import touschek_piwinski_bunch
+                    return float(touschek_piwinski_bunch(tt, a=nz * sige, qs=_bq)['lifetime'])
                 return float(touschek_piwinski(tt, a=nz * sige)['lifetime'])
             if explicit:
                 raise SADError('TouschekLifetime: Formula->"Piwinski" is for the momentum acceptance only (nx = ny = INF)')

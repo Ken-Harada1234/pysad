@@ -805,8 +805,12 @@ def _tbedgebody_mat(cod: np.ndarray, rhob: float, psi: float) -> np.ndarray:
     return t
 
 
-def _tbendebody0_mat(cod: np.ndarray, phi0: float, rhob: float, drhob: float = 0.0) -> np.ndarray:
-    """tbende.f tbendebody0 の trans1 (cod は更新前)。z 行の h0/h1emit**3*aln 項 (dvemit 由来) は省く。"""
+def _tbendebody0_mat(cod: np.ndarray, phi0: float, rhob: float, drhob: float = 0.0, exact_dw=None) -> np.ndarray:
+    """tbende.f tbendebody0 の trans1 (cod は更新前)。z 行の h0/h1emit**3*aln 項 (dvemit 由来) は省く。
+    exact_dw (既定 compat.v2()): v2 (B164 = B139) は ω = φ0 + da (da = 運動量の xz 射影の角の差 θ_i − θ_f) の運動量 p による微分 dodp を厳密にする。
+    K64 の式は p によるオフセットの項で px²・py² に比例する誤差 (T[2,5]・T[4,5]・T[4,3] に L(px² + py²)・L py³ など)"""
+    if exact_dw is None:
+        exact_dw = _compat.v2()
     xi = cod[0]
     dp = cod[5]
     p = 1.0 + dp
@@ -842,8 +846,15 @@ def _tbendebody0_mat(cod: np.ndarray, phi0: float, rhob: float, drhob: float = 0
     dodx = -t[1, 0] / pzf
     dodpx = ((dpzf - dpzi) / pzi - dm22) / pzf
     dodpy = -u * pyi - t[1, 3] / pzf
-    ddodp = u * p - sn * ddpzadp / pzf
-    dodp = ddodp - sn / pzf
+    if exact_dw:
+        # v2 (B164): dω/dp = ∂θ_i/∂p − ∂θ_f/∂p (θ = atan2(px, pz)。運動量の xz 射影の長さ² = p² − py²)
+        dpxfdp = sn * dpzadp
+        dpzfdp = (p - pxf * dpxfdp) / pzf
+        dodp = (-pxi * dpzadp - (pzf * dpxfdp - pxf * dpzfdp)) / phsq
+        ddodp = dodp + sn / pzf
+    else:
+        ddodp = u * p - sn * ddpzadp / pzf
+        dodp = ddodp - sn / pzf
     t[0, 0] = cn + sn * s1
     t[0, 1] = rhob * (sn - cn * dpzadpx - s1 * t[1, 1])
     t[0, 3] = rhob * (-cn * dpzadpy - s1 * t[1, 3] - pyi / pzf)
@@ -1355,6 +1366,79 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
             c[3] += max(-0.9999, min(0.9999, cx.imag))
             return c
         return f
+    def flow_w(c, a):
+        """v2 (B223): 本体の場 (K0・K1・K2…、長さあたりの強さは要素の全長のものと同じ) を長さ a だけ通す写像 Φ(a) (a < 0 は逆向き)。
+        tsolque の半スライス + 薄い多極の蹴り + 半スライスの 1 つ。a は端の面までの距離 (mm〜cm) なので 1 刻みで足りる"""
+        if a == 0.0:
+            return c
+        sc = a / al
+        ak1a = (akr[1].real if nmmax >= 1 else 0.0) * sc
+        ak0a = akr[0] * sc
+        c = c.copy()
+        for kind, f in tsolque_pieces(a * 0.5, ak1a * 0.5, ak0a * 0.5):
+            if kind == 'map':
+                c = f(c)
+        if nmmax >= 2:
+            def kick_a(cc):
+                cc = cc.copy()
+                cx0 = complex(cc[0], cc[2])
+                cx = 0j
+                for kord in range(nmmax, 1, -1):
+                    cx = (cx + akr[kord] * sc) * cx0 / kord
+                cx = cx * cx0
+                cc[1] -= max(-0.9999, min(0.9999, cx.real))
+                cc[3] += max(-0.9999, min(0.9999, cx.imag))
+                return cc
+            c = wrap(kick_a)(c)
+        for kind, f in tsolque_pieces(a * 0.5, ak1a * 0.5, ak0a * 0.5):
+            if kind == 'map':
+                c = f(c)
+        return c
+
+    def free_w(c, a):
+        return wrap(lambda cc: _exact_drift_cod(cc, a) if dvf(0.0) == 0.0 else _dv_drift(cc, a, dvf))(c)
+
+    def edge_ykick(c, apsi):
+        """v2 (B224): 端の面の縦方向の収束 (Maxwell の項: 面が傾くと横磁場の x 依存が縦の力になる)。K64 の tmulke の薄い蹴りの縦成分 Δpy = fe·Im(cx)
+        (fe = −tan e/L、cx = (Σ K_n z^n/n!) z、局所座標) と同じ。横方向の運動は厳密な硬い端の写像 (flow_w) が担うので、縦成分だけを足す"""
+        l = r_in(c)
+        cx0 = complex(l[0], l[2])
+        cx = 0j
+        for kord in range(nmmax, 0, -1):
+            cx = (cx + akr[kord] / al) * cx0 / kord
+        cx = -math.tan(apsi) * (cx + akr[0] / al) * cx0
+        l[3] += max(-0.9999, min(0.9999, cx.imag))
+        return r_out(l)
+
+    def exact_edge_in(apsi):
+        """v2 (B223): 硬い端の入口の面 (z = X tan e の平面) の厳密な写像 Φ(−z_f)∘Drift(z_f)。z_f = x tan e/(1 − (px/pz) tan e) は面までの直進の距離
+        (局所座標の x・px)。K64 の tmulke は面を z = 0 の平面にして薄い蹴りだけを入れる (K0³ tan²e で外れる)"""
+        t = math.tan(apsi)
+
+        def f(c):
+            l = r_in(c)
+            pr = 1.0 + l[5]
+            pz = math.sqrt(max(1e-30, pr * pr - l[1] ** 2 - l[3] ** 2))
+            zf = l[0] * t / (1.0 - l[1] / pz * t)
+            return edge_ykick(flow_w(free_w(c, zf), -zf), apsi)
+        return f
+
+    def exact_edge_out(apsi):
+        """v2 (B223): 出口の面 (z = L − X tan e) の厳密な写像 Drift(ℓ)∘Φ(−ℓ) (入力は面のない場を z = L まで通した後の状態)。ℓ = L − z_e = X_e tan e は
+        面を横切る点 X_e の関数で、Φ(−ℓ) で戻した軌道の x から不動点反復で求める"""
+        t = math.tan(apsi)
+
+        def f(c):
+            ell = t * r_in(c)[0]
+            for _ in range(40):
+                new = t * r_in(flow_w(c, -ell))[0]
+                if abs(new - ell) < 1e-17 + 1e-15 * abs(ell):
+                    ell = new
+                    break
+                ell = new
+            return edge_ykick(free_w(flow_w(c, -ell), ell), apsi)
+        return f
+
     if nz:
         # tmulte.f の入口 (fringe .and. mfring /= 2 の tqfrie、bfrm の tbfrme (mfring = 1, 3 は fb1 つき、2 以外は fb なし)、
         # mfring = 1, 3 の tqlfre)。そのあと tradke(f1in) か tsetr0 (= 'radstart': 放射の基準点)
@@ -1369,8 +1453,9 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
             seq.append(('map', wrap(lambda c: _tqlfre_cod(c, al1h, ak1h, f1in, f2in))))
         seq.append(('radstart', f1in))
         if apsi1 != 0.0:
-            kf1 = wrap(edge_kick(apsi1))
+            kf1 = wrap(edge_kick(apsi1)) if not _compat.v2() else exact_edge_in(apsi1)
             kf1.edge = 'in'
+            kf1.nosymp = bool(_compat.v2())      # v2 の厳密な端の写像はシンプレクティックでない (K1 ≠ 0)。z の行をシンプレクティック条件で組み直さない
             seq.append(('map', kf1))
 
     def tsolque_pieces(al1, ak1, ak0):
@@ -1445,8 +1530,9 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
     if nz:
         pieces = tsolque_pieces(al1 * 0.5, ak1 * 0.5, ak0 * 0.5)
         if apsi2 != 0.0:
-            kf2 = wrap(edge_kick(apsi2))
+            kf2 = wrap(edge_kick(apsi2)) if not _compat.v2() else exact_edge_out(apsi2)
             kf2.edge = 'out'
+            kf2.nosymp = bool(_compat.v2())
             if _compat.v2():
                 # v2 (P3): 出口の端の蹴りは最後の半スライスの後 (放射の刻みの前)。K64 の tmulte は半スライスの前に置く (追跡の tmulti は後。
                 # 同じ MULT の CALC と追跡でチューンが 3e-5 違う)。k64 は K64 のまま
@@ -2883,12 +2969,133 @@ def _qcod_periodic(elements, delta: float,
     else:
         found = False                 # itmax を使い切った (SAD: cod=cod0; codfnd=.false.)
 
+    if (not found) and (not fixed) and _compat.v2() and _QCOD_ROBUST:
+        # v2.4.0 H (B260): K64 の qcod は収束の保証がない (大域化のない Newton 法・最大 10 回・途中で NaN なら即打ち切り)。収束しなかったとき v2 は堅牢な解法にフォールバックする
+        rb = _qcod_robust(elements, delta, cod0 if cod_init is None else np.array(cod_init, dtype=float), pack)
+        if rb is not None:
+            cod_in, M_cod, el_mats, cod = rb
+            found, over = True, False
+            _mmax = float(np.max(np.abs(M_cod[:4, :4]), initial=0.0))
+            if _mmax > _TRMAX or np.any(np.isnan(M_cod[:4, :4])):
+                M_cod = M_cod.copy()
+                for _blk in (M_cod[:4, :4], M_cod[:4, 5:6]):
+                    _blk[np.isnan(_blk)] = _TRMAX
+                    np.clip(_blk, -_TRMAX, _TRMAX, out=_blk)
+
     global _LAST_COD_EXIT, _LAST_QCOD_FOUND, _LAST_MMAX, _LAST_QCOD_OVER
     _LAST_QCOD_OVER = over
     _LAST_MMAX = _mmax if np.all(np.isfinite(M_cod)) else float('inf')
     _LAST_COD_EXIT = np.array(cod, dtype=float)     # 最後に評価した一周の出口 COD (SAD の twiss(nlat) の COD。入口と conv 分だけずれる)
     _LAST_QCOD_FOUND = found
     return cod_in, M_cod, el_mats
+
+
+_QCOD_ROBUST = True             # v2: K64 の qcod が収束しなかったとき堅牢な解法 (_qcod_robust) にフォールバックする (False で K64 と同じ失敗)
+QCOD_ROBUST_STATS = {'calls': 0, 'ok': 0}
+
+
+def _qcod_robust(elements, delta, cod_init, pack, itmax=60, tol=1e-10, step_max=2e-3, nextra=24):
+    """v2.4.0 H (B260): 周期閉軌道の堅牢な解法。K64 の qcod (反復 10 回の Newton 法、後退のダンピングだけ) が収束しないとき (誤差の大きい低エミッタンスのリングなど) に使う。
+    信頼領域つきの Newton 法 (1 周の写像 f(z)、残差 r = f(z) − z、J = M − I): 位置の更新を step_max (m) に制限し (試した軌道が NaN になる大振幅を避ける)、
+    ノルムが減るまで線探索 (1/2 ずつ後退)、減らないときは Levenberg–Marquardt の減衰。初期値は与えられた軌道 → 0 の順。収束 (|r|∞ ≤ tol) した不動点が
+    線形に不安定 (一周行列の固有値の絶対値 > 1) なら、決まった乱数 (種 12345) の初期値 nextra 個から別の不動点を探し、**安定な不動点があればそれを返す**
+    (大きな誤差のリングは不動点が複数あり、原点に近いものが不安定でビームが乗るのは別の安定なものであることがある)。安定なものがなければ最初の不動点。
+    戻り (入口 COD、そこでの 1 周の行列、要素行列、出口 COD)。1 つも収束しなければ None (呼び出し側は K64 の結果のまま)"""
+    QCOD_ROBUST_STATS['calls'] += 1
+
+    def ev(zz):
+        try:
+            with np.errstate(all='ignore'):
+                M, cod, em = _one_turn_cod_matrix(elements, delta, zz, pack)
+        except (ValueError, FloatingPointError, ZeroDivisionError, OverflowError, np.linalg.LinAlgError):
+            return False, None, None, None, None
+        f = cod[:4] - zz[:4]
+        ok = bool(np.all(np.isfinite(f)) and np.all(np.isfinite(M[:4, :4])))
+        return ok, M, cod, em, f
+
+    def newton(st):
+        z = np.array(st, dtype=float)
+        z[4], z[5] = 0.0, delta
+        ok, M, cod, em, f = ev(z)
+        if not ok:
+            return None
+        nrm = float(np.max(np.abs(f)))
+        for _it in range(itmax):
+            if nrm <= tol:
+                return z.copy(), M, em, cod
+            A = M[:4, :4] - np.eye(4)
+            try:
+                dz = _solve_cod(A, -f)
+            except np.linalg.LinAlgError:
+                return None
+            big = float(np.max(np.abs(dz[[0, 2]])))
+            if big > step_max:
+                dz = dz * (step_max / big)
+            acc = False
+            lam = 1.0
+            for _ls in range(14):
+                zt = z.copy()
+                zt[:4] = z[:4] + lam * dz
+                ok2, M2, cod2, em2, f2 = ev(zt)
+                n2 = float(np.max(np.abs(f2))) if ok2 else np.inf
+                if ok2 and n2 < (1.0 - 1e-4 * lam) * nrm:
+                    z, M, cod, em, f, nrm = zt, M2, cod2, em2, f2, n2
+                    acc = True
+                    break
+                lam *= 0.5
+            if not acc:
+                for mu in (1e-6, 1e-4, 1e-2, 1.0):      # Levenberg–Marquardt: (AᵀA + μ I) dz = −Aᵀ f
+                    try:
+                        dz = np.linalg.solve(A.T @ A + mu * np.linalg.norm(A) ** 2 * np.eye(4), -A.T @ f)
+                    except np.linalg.LinAlgError:
+                        continue
+                    big = float(np.max(np.abs(dz[[0, 2]])))
+                    if big > step_max:
+                        dz = dz * (step_max / big)
+                    zt = z.copy()
+                    zt[:4] = z[:4] + dz
+                    ok2, M2, cod2, em2, f2 = ev(zt)
+                    n2 = float(np.max(np.abs(f2))) if ok2 else np.inf
+                    if ok2 and n2 < nrm:
+                        z, M, cod, em, f, nrm = zt, M2, cod2, em2, f2, n2
+                        acc = True
+                        break
+            if not acc:
+                return None
+        return None
+
+    def stable(M):
+        return bool(np.max(np.abs(np.linalg.eigvals(M[:4, :4]))) <= 1.0 + 1e-6)
+    c0 = np.array(cod_init, dtype=float)
+    starts = [c0] + ([np.zeros(6)] if np.any(c0[:4] != 0.0) else [])
+    first = None
+    for st in starts:
+        r = newton(st)
+        if r is not None:
+            if stable(r[1]):
+                QCOD_ROBUST_STATS['ok'] += 1
+                return r[0], r[1], r[2], r[3]
+            if first is None:
+                first = r
+            break
+    if first is not None or True:
+        rng = np.random.default_rng(12345)
+        for _k in range(nextra):
+            st = np.zeros(6)
+            st[[0, 2]] = rng.normal(size=2) * 3e-3
+            st[[1, 3]] = rng.normal(size=2) * 3e-4
+            r = newton(st)
+            if r is None:
+                continue
+            if first is None:
+                first = r
+            if stable(r[1]):
+                QCOD_ROBUST_STATS['ok'] += 1
+                return r[0], r[1], r[2], r[3]
+    if first is not None:
+        QCOD_ROBUST_STATS['ok'] += 1
+        return first[0], first[1], first[2], first[3]
+    return None
 
 
 _LAST_COD_EXIT = None

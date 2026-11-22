@@ -78,7 +78,7 @@ def test_vertical_bends_flip_spins_although_b_is_perpendicular_to_n_v2(v2_mode):
     ffs = _fodo('LINE RING = (ST 6*CELLQ VDOG 6*CELLQ RFC);', vb=0.1, qd=-0.55)
     sp, r = _both(ffs)
     assert abs(sp['taup'] / r['tau_st'] - 1) < 1e-4, (sp['taup'], r['tau_st'])
-    assert abs(sp['equpol'][0] / r['P_dk'] - 1) < 2e-3
+    assert abs(sp['equpol'][0] / r['P_dk'] - 1) < 8e-3      # v2.4.0 D3 (B230・B235): 2e-3 → 8e-3。DK の積分 (追跡の n・∂n/∂δ) は追跡の刻みに弱く依る (刻みの偏向角 1e-2・5e-3・2.5e-3・1.25e-3 rad で P_dk = 0.8491・0.8474・0.8457・0.8444)。以前の 2e-3 は粗い刻みでの偶然の一致 (刻みを粗くすると 7e-5)
     assert sp['sdamp_rel'] / sp['sdamp_rel_b2'] > 1.05              # 垂直の偏向の分
     assert r['tau_b2'] / r['tau_st'] > 1.05                         # A2 の式なら τ が 8% 長い
 
@@ -113,7 +113,7 @@ def test_vertical_dispersion_ring_relaxation_time_v2(v2_mode):
     ffs = _fodo('LINE RING = (ST 2*CELLQ CELLE1 4*CELLQ CELLE2 4*CELLQ RFC);')
     sp, r = _both(ffs)
     assert abs(sp['taup'] / r['tau_st'] - 1) < 2e-3
-    assert abs(sp['equpol'][0] / r['P_dk'] - 1) < 0.03
+    assert abs(sp['equpol'][0] / r['P_dk'] - 1) < 0.08      # v2.4.0 D (B165): Emittance[] の D は本体の B∥ で厳密に近づき (4e-4)、追跡の D (R12・R21 に 1e-2 の残り) との差が 3% → 7%
 
 
 @pytest.mark.parametrize('chi,ptol', [(0.3, 8e-3), (math.pi / 2, 4e-3)])
@@ -131,7 +131,7 @@ def test_rotated_insertion_device_polarization_v2(v2_mode, chi, ptol):
     ffs.calc(quiet=True)
     sp, r = _both(ffs)
     assert abs(sp['taup'] / r['tau_st'] - 1) < 2e-3, (sp['taup'], r['tau_st'])
-    assert abs(sp['equpol'][0] / r['P_dk'] - 1) < ptol, (sp['equpol'][0], r['P_dk'])
+    assert abs(sp['equpol'][0] / r['P_dk'] - 1) < max(ptol, 0.015), (sp['equpol'][0], r['P_dk'])      # v2.4.0 D (B165): 追跡の D の残り (R12・R21 に 1e-2) で 1.1%
     if chi > 1.0:
         assert r['tau_b2'] / r['tau_st'] > 1.2
 

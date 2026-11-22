@@ -135,8 +135,8 @@ def bendecorr(cod, ak1, al, rho0, psqmax, flags=0):
 
 
 @njit(**NJ)
-def bendebody(cod, al, phin, ak1, rhob, rho0, h0, h1emit, dvemit, psqmax):
-    """tbende.f tbendebody (tbinit=.true. で毎回 tbendiinit/tbendeinit): (t, 出口 cod)"""
+def bendebody(cod, al, phin, ak1, rhob, rho0, h0, h1emit, dvemit, psqmax, flags=0):
+    """tbende.f tbendebody (tbinit=.true. で毎回 tbendiinit/tbendeinit): (t, 出口 cod)。flags の bit2 (値 4) は B250 (v2 の修正): akxsq < 0 の枝の xsxkx の符号を連続な式にする (K64 は逆)"""
     dp = cod[5]
     p = 1.0 + dp
     xi = cod[0]
@@ -170,7 +170,7 @@ def bendebody(cod, al, phin, ak1, rhob, rho0, h0, h1emit, dvemit, psqmax):
         aksx = -akx * spx
         dcxkx = dcx / akxsq
         sxkx = spx / akx
-        xsxkx = -xspx / akx / akxsq
+        xsxkx = xspx / akx / akxsq if (flags & 4) != 0 else -xspx / akx / akxsq      # B250
     else:
         akx = 0.0
         phix = 0.0

@@ -1,0 +1,420 @@
+! v2.4.0 H2: KEKLS_correct_cod.sad (誤差・COD の補正) の補正のあとに MomentumAcceptance[] を足したもの (pysad のみ。gs には MomentumAcceptance[] が無い)。
+! 補正後の状態 (成分ごとの K0・位置ずれ。NOEXPAND) が TrackSetup に渡るかを確かめる。SEEDVAL・CTRLVAL・NITERVAL・AEVAL・FEVAL・TEVAL は H2_run.py が置き換える (使い方はそちら)。
+! 変更点: seeds = {SEEDVAL}、niter = NITERVAL、ae・fe・te、ctrl = 1 のとき LMA の前に `cell calc expand` (既定の CALEXP の対照)、補正のあとの DA を LMA に置き換え (Distance = Dist m ごと、
+! Workers = Wk、Aperture ±10 mm)。
+!=====================================================================
+! KEK-LS  v03_68  (3 GeV, 20 セル, ESRF 型 HMBA)
+!
+! KEK-LS は ESRF 型の HMBA (Hybrid Multi-Bend Achromat) で、ESRF の
+! Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した。
+!
+! エネルギー      3 GeV
+! 周長            570.72 m (RINGC)。RING は入射セル ARCINJ の分だけ 0.9 mm 長い 570.7209 m
+! 周回部          標準セル 20 個 (ARCA = ARCAH と -ARCAH。長直線部 (DRID1×2 = 5.88 m) の中心 MKS から次の MKS まで)
+! RF              2 MV、ハーモニック数 952
+! チューン        (48.58, 17.62)  (RINGC・RING とも)
+! エミッタンス    εx 約 134 pm rad (RINGC。RING は約 136 pm rad)。エネルギー拡がり約 6.4e-4、U0 約 0.296 MeV、αc 約 2.2e-4
+!
+! ライン
+!   ARCAH   標準セルの半分 (MKS = 長直線部の中心から MKC まで)。ARCAH1 = 直線部 (DRID1 2.94 m)・四極 QFA1H・QDA2・
+!           偏向磁石 BID5〜BID1 (中央に補正磁石 HD) と四極 QDA3。ARCAH2 = 6 極 SDH・SFH、四極 QFA4・QDA5、
+!           偏向磁石 BPI1〜BPI5、四極 QFA6H・QFA8H、勾配つき偏向磁石 BPI6H・BPI7H、DRCT (0.55 m)
+!   ARCA    標準セル 1 個 = ARCAH と -ARCAH
+!   RINGC   標準セル 20 個の周回ライン (RF 空洞 RFC が中央)
+!   ARCINJ  入射セル = ARCAH1 ARCAH2 + ARCINJH + -ARCINJH2 + -ARCAH2 -ARCAH1
+!           (ARCINJH・ARCINJH2 は入射用の長直線部を作る四極 QS0〜QS5・キッカー K1〜K4 つき)
+!   RING    標準セル 19 個 + ARCINJ の周回ライン (入射セル含む)
+!
+! このファイルは FFS; の前に置く (要素・ライン定義だけ。台本は後ろに続ける)。
+! 要素の定義の中身は元の設計ファイルのまま (改行と先頭のコメントだけ変えた)。
+!=====================================================================
+ MOMENTUM = 3GEV;
+ DRIFT  DRID1   =(L =2.94 )  DR05    =(L =.05 )   DR20    =(L =.2 )    DR12    =(L =.12 )   DRSS2   =(L =.3825 )
+        DRSO    =(L =.2025 ) DR06    =(L =.06 )   DR28    =(L =.19 )   DR14    =(L =.14 )   DRCT    =(L =.55 )
+        DRID1INJ=(L =2.7654600539435394 )
+ ;
+ BEND   VD      =(ANGLE =0     ROTATE =-90 DEG )
+        BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        HD      =(ANGLE =0 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6H   =(L =.403 ANGLE =.02726687232 K1 =-1.0100957067176413 )
+        BPI7H   =(L =.176 ANGLE =.00468  K1 =-.006398424930727633 )
+
+        BID5I    =(L =.25 ANGLE =.01989677344 )
+        BID4I    =(L =.25 ANGLE =.01093590672 )
+        BID3IH   =(L =.125     ANGLE =.00413604696 )
+        BID2I    =(L =.25 ANGLE =.00653919168 )
+        BID1I    =(L =.25 ANGLE =.00532646 )
+        K1 = (L = .3)
+        K2 = (L = .3)
+        K3 = (L = .3)
+        K4 = (L = .3)
+ ;
+ QUAD   QFA8H   =(L =.25  K1 =.9417515241499581 )
+        QFA6H   =(L =.1675     K1 =.8782619605554324 )
+        QDA5    =(L =.2   K1 =-.4052202821210436 )
+        QFA4    =(L =.2   K1 =.5166819921440575 )
+        QS5     =(L =.2   K1 =.5280568479331271 )
+        QS4     =(L =.2   K1 =-.8242016169366202 )
+        QS3     =(L =.2   K1 =.5546128367232006 )
+        QS2     =(L =.2   K1 =-.1734492217190123 )
+        QS1     =(L =.1   K1 =-.11309930079031016 )
+        QS0     =(L =.1   K1 =.22894938883952784 )
+        QFA1H   =(L =.125 K1 =.46236106609239286 )
+        QDA2    =(L =.2   K1 =-.725123012102831 )
+        QDA3    =(L =.2   K1 =-.49958031983962237 )
+        QFA4    =(L =.2   K1 =.5166819921440575 )
+        QDA5    =(L =.2   K1 =-.4052202821210436 )
+
+ ;
+ SEXT   SDH     =(L =.09  K2 =-12.38248640793169 )
+        SFH     =(L =.09  K2 =15.13439810682049 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ CAVI   RFC     =(VOLT =2000000     HARM =952 )
+ ;
+ OCT    OCFA    =(L =.1   K3 =0 )
+ ;
+ MONI   BPM                             =()
+ ;
+ MARK   MKS     =(AX =1.8269725395795895e-14  BX =4.793340121212032    AY =5.061657878833287e-15     BY =2.3773852899436254
+           EX =.024999999999712127  EPX =-6.269917972172717e-18   DP =.01   EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKBE    =(AX =1.0915299904430553 BX =2.491305955156373    PSIX =.750812602138054   AY =-1.108768449431935
+           BY =14.899228084658809   PSIY =.9775906221236254  EX =.01317746375590028   EPX =-.010709118972041609     DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSDA1  =(AX =-2.70998200884407  BX =3.54290286006273     PSIX =2.438795403562738  AY =7.583458360247109
+           BY =15.674832734538994   PSIY =1.12519968960124   EX =.08917916867198322   EPX =.07392275472299359  DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSFA1  =(AX =-.1389893849851418 BX =8.335022603847122    PSIX =2.6010651192329326 AY =1.1900000003019817
+           BY =6.400000001617214    PSIY =1.2342357814658897 EX =.14000000000027565   EPX =.0033565669999445075     DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSDC1  =(AX =2.701045920207907  BX =3.9178996452699595   PSIX =2.7538171975351866 AY =-2.4682164774922373
+           BY =8.605708880847574    PSIY =1.3800502607967173 EX =.09575556512146 EPX =-.06826941595892633 DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKC     =(AX =2.3285271135756143e-14  BX =.6646241808238317    PSIX =7.630928555572884  AY =-2.6333805821142455e-15
+           BY =1.3317427649375617   PSIY =2.7677431278546    EX =.01999999999994648   EPX =-7.45931094670027e-17    DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKE     =(AX =2.3285271135756143e-14  BX =.6646241808238317    PSIX =7.630928555572884  AY =-2.6333805821142455e-15
+           BY =1.3317427649375617   PSIY =2.7677431278546    EX =.01999999999994648   EPX =-7.45931094670027e-17    DP =.01
+           EMITX =1.319631265310858e-10  EMITY =1e-12 )
+        MKSE = ()
+        MKS2  =()
+        MKSI = ()
+ ;
+!-----------------------------------------
+! ARC CELLS
+!-----------------------------------------
+
+  MONI
+         PM = ()
+  ;
+
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(ARCAH1 ARCAH2)
+
+  ARCAH1   =(MKS
+             DRID1 PM DR05 QFA1H VD QFA1H DR20, QDA2, DR12 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR12, QDA3, DR12
+             )
+  ARCAH2   =(MKS2
+             SDH MKSDA1 SDH
+             DR05 PM
+             DRSS2  DR05
+             QFA4, DR12,
+             SFH MKSFA1 VD SFH
+             DR12, QFA4, DR12, OCFA,
+             DRSO PM DR05
+             SDH MKSDC1 SDH
+             DR12, QDA5, DR12,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR06 PM DR06, QFA6H QFA6H DR28,
+             BPI6H HD BPI6H DR05 DR14 QFA8H VD QFA8H DR12, SHA, DR12,
+             BPI7H HD BPI7H DR05 PM DRCT MKC
+             MKE)
+  ARCAHI2   =(MKS2
+             SDH MKSDA1 SDH
+             DR05 PM
+             DRSS2  DR05
+             QS5, DR12,
+             SFH MKSFA1 VD SFH
+             DR12, QFA4, DR12, OCFA,
+             DRSO PM DR05
+             SDH MKSDC1 SDH
+             DR12, QDA5, DR12,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR06 PM DR06, QFA6H QFA6H DR28,
+             BPI6H HD BPI6H DR05 DR14 QFA8H VD QFA8H DR12, SHA, DR12,
+             BPI7H HD BPI7H DR05 PM DRCT MKC
+             MKE)
+   ARCINJH  =(
+             -ARCAHI2
+             MKSE
+             DR12  QS4  DR12 K1  DR12
+             QS3 DR12
+             BID1I  BID2I BID3IH HD BID3IH BID4I BID5I
+             MKBE
+             DR12 QS2 DR05 VD DR05 QS1
+             DR05 PM
+             K2
+             DRID1INJ HD DR05 PM DR05 QS0
+             MKSI
+            )
+   ARCINJH2  =(
+             -ARCAHI2
+             MKSE
+             DR12  QS4  DR12 K1  DR12
+             QS3 DR12
+             BID1I  BID2I BID3IH HD BID3IH BID4I BID5I
+             MKBE
+             DR12 QS2 DR05 VD DR05 QS1
+             DR05 PM
+             K2
+             DRID1INJ VD DR05 DR05 QS0
+             MKSI
+            )
+
+ ARCA      = (ARCAH -ARCAH)
+ RINGC      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ RING     =(MKS
+             ARCA ARCINJ, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ARCINJ    =(ARCAH1 ARCAH2 ARCINJH -ARCINJH2 -ARCAH2 -ARCAH1)
+ ARCINJ2   =(ARCINJH -ARCINJH2)
+ ;
+! KEK-LS v03_68: 誤差入りのリングの COD (閉軌道) と分散の補正  (元: correct_cod.sad。correct_cod_best/worst/noSX/GCUT1/v03_70 は同じ台本の設定違い)
+! 流れ:
+!   1. RING で設計の COD 応答行列 (補正用ステアリング HD*.* / VD*.* の K0 → モニター PM*.* の COD) を、解析式
+!      Responsex[j,i] = 0.5 sqrt(βm βc) cos(πν − |Δμ|) / sin(πν) から作る (CalculateCODResponse[])。
+!   2. 乱数の種 seed ごとに、四極・6 極のずれ (DX・DY = ae GaussRandom[])、強さの誤差 (DK = fe)、回転誤差 (DTHETA = te) を与える (SeedRandom[seed]、modules_errors.n)。
+!   3. 応答行列の特異値分解 (CodCorr[] = 固有値の大きい ie 個だけ使う疑似逆行列) で、COD を補正する K0 を求め、0.5 倍ずつ niter 回かける。
+!   4. 補正前後の COD・分散の rms と最大値、チューンの変化を表示する。補正後にチューンが窓の外 (nx 48.5〜49、ny 17.5〜18) なら DA は計算しない。
+! 元との違い:
+!   - 乱数の種: 元は SeedRandom[187] と Random[1000] で作った 115 個の種 (k = 1〜115)。この例は種 {17, 111} の 2 本 (元の print_cod_magnitude 系の台本が使う種)。
+!   - 補正の繰り返しは元は 40 回。この例は niter = 6 回 (rms は数回で収束する)。
+!   - DA (DAsv[]) は元は毎回計算して datas.txt に書く。この例は doDA = 0 (しない)。doDA = 1 で、周回数 DAturns (既定 5000 を 200 に短縮) の DA を表示。
+!   - 位置ずれは DELX・DELY ではなく成分ごとの DX・DY に入れる (K64 の DELX・DELY は COD に効かない。modules_errors.n の説明)。
+!   - 元の FFS["MON 0 0 0 0 PM*;"] (モニターの誤差) は K64 では何もしない (エラーになる) ので除いた。
+!   - COD 応答行列の計算の中の `FFS["cell calc"]` は、ステアリング 1 個ごとに繰り返していたが、同じ結果なので最初の 1 回だけにした。
+!   - 補正磁石の K0 が効くように NOEXPAND を使う (元の台本は既定の `cell calc` で、v03_68 では HD・VD が同名の繰り返しなので K0 が揃えられて個別に効かない。
+!     元の台本が前提にしていたラティスでは補正磁石に個別の名前があったと思われる)。
+!   - 元は途中に `s!top;` (打ち間違い。`s` と、`!` 以降のコメント) があり、`stop;` のつもりだったもの。削除した。
+!   - 元の Get["modules_general.n"] で使うのは DAsv[] だけ。modules_correctoptics.n・modules_write_correctdata.n は、この台本では使われない (読み込みもされない)。
+NPARA = 8;
+ON LOG;
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+$FORM = "15.10";
+PageWidth = 1999;
+Get["../modules/modules_general.n"];
+Get["../modules/modules_errors.n"];
+
+cc = "cell calc";
+ccemit = "cell calc emit";
+seeds = {SEEDVAL};
+ctrl = CTRLVAL;
+niter = NITERVAL;
+doDA = 0;
+Dist = 143;
+Wk = 6;
+ae = AEVAL;
+fe = FEVAL;
+te = TEVAL;
+GCUT = 1;
+
+! 固有値の大きい ie 個を使った疑似逆行列で COD を補正する。戻り値 {kick, 補正後の COD}
+CodCorr[resmat_,cod_,ie_]:=(
+  tres        = resmat;
+  res         = Transpose[tres];
+  dim         = Length[res[1]];
+  sqres       = tres.res;
+  sqcod       = tres.cod;
+  {lam, ivec} = Eigensystem[sqres];
+  laminv      = Table[0.0, {i,1,dim}];
+  lam = Re[lam];
+  stdlam      = Sort[lam, Greater];
+  lam = Abs[lam];
+  Do[
+    Do[
+      If[stdlam[i]===lam[j],
+        laminv[j]=1.0/stdlam[i];
+      ];
+    ,{j,dim}];
+  ,{i, ie}];
+  laminvmat   = DiagonalMatrix[laminv];
+  ivect       = Transpose[ivec];
+  invsqres    = ivect.laminvmat.ivec;
+  kick        = -invsqres.sqcod;
+  rescod      = cod + res.kick;
+  out         = {kick, rescod};
+  out
+);
+
+! COD 応答行列 Responsex[j,i] (水平)、Responsey[j,i] (垂直): ステアリング j の単位キックに対するモニター i の COD
+CalculateCODResponse[]:=(
+  FFS[cc];
+  dtnx = LINE["NAME","HD*.*"];
+  dtny = LINE["NAME","VD*.*"];
+  dtbmx = Twiss["BX","PM.*"];
+  dtbmy = Twiss["BY","PM.*"];
+  dtbcx = Twiss["BX","HD*.*"];
+  dtbcy = Twiss["BY","VD*.*"];
+  dttmx = Twiss["NX","PM.*"];
+  dttmy = Twiss["NY","PM.*"];
+  dttcx = Twiss["NX","HD*.*"];
+  dttcy = Twiss["NY","VD*.*"];
+  ICX = Length[dtnx];
+  ICY = Length[dtny];
+  IM = Length[dtbmx];
+  Print["ICX = ",ICX,"   ICY = ",ICY,"   IM = ",IM];
+  Do[
+    Do[
+      Responsex[j,i] = 0.5*Sqrt[dtbmx[i]*dtbcx[j]]*Cos[tunex*Pi-Abs[dttmx[i]-dttcx[j]]]/Sin[tunex*Pi];
+    ,{i,IM}];
+  ,{j,ICX}];
+  Do[
+    Do[
+      Responsey[j,i] = 0.5*Sqrt[dtbmy[i]*dtbcy[j]]*Cos[tuney*Pi-Abs[dttmy[i]-dttcy[j]]]/Sin[tuney*Pi];
+    ,{i,IM}];
+  ,{j,ICY}];
+);
+
+! COD・分散の rms と最大値 (モニター PM.* で)。戻り値は表示用のリスト
+RMSWrite[] := (
+  FFS[cc];
+  CODrmsnoX = 0;  CODrmsnoY = 0;
+  ETArmsnoX = 0;  ETArmsnoY = 0;
+  CODmaxnoX = 0;  CODmaxnoY = 0;
+  ETAmaxnoX = 0;  ETAmaxnoY = 0;
+  datan  = LINE["NAME","PM.*"];
+  codnox = Twiss["DX","PM.*"];
+  etanox = Twiss["EX","PM.*"];
+  codnoy = Twiss["DY","PM.*"];
+  etanoy = Twiss["EY","PM.*"];
+  Do[
+    etanox[i] = Abs[etanox[i]-etaidealx[i]];
+    etanoy[i] = Abs[etanoy[i]-etaidealy[i]];
+    If[Abs[codnox[i]] > CODmaxnoX, CODmaxnoX = Abs[codnox[i]]];
+    CODrmsnoX = CODrmsnoX + codnox[i] * codnox[i];
+    If[Abs[codnoy[i]] > CODmaxnoY, CODmaxnoY = Abs[codnoy[i]]];
+    CODrmsnoY = CODrmsnoY + codnoy[i] * codnoy[i];
+    If[etanox[i] > ETAmaxnoX, ETAmaxnoX = etanox[i]];
+    ETArmsnoX = ETArmsnoX + etanox[i] * etanox[i];
+    If[etanoy[i] > ETAmaxnoY, ETAmaxnoY = etanoy[i]];
+    ETArmsnoY = ETArmsnoY + etanoy[i] * etanoy[i];
+  ,{i,Length[datan]}];
+  CODrmsnoX = Sqrt[CODrmsnoX/Length[datan]];
+  ETArmsnoX = Sqrt[ETArmsnoX/Length[datan]];
+  CODrmsnoY = Sqrt[CODrmsnoY/Length[datan]];
+  ETArmsnoY = Sqrt[ETArmsnoY/Length[datan]];
+  Print["   COD max [m] x y: ", CODmaxnoX, " ", CODmaxnoY, "   COD rms [m] x y: ", CODrmsnoX, " ", CODrmsnoY];
+  Print["   eta-beat max [m] x y: ", ETAmaxnoX, " ", ETAmaxnoY, "   eta-beat rms [m] x y: ", ETArmsnoX, " ", ETArmsnoY];
+);
+
+USE RING;
+cell calc emit;
+tunex = Twiss["NX","***"]/2/Pi;
+tuney = Twiss["NY","***"]/2/Pi;
+etaidealx = Twiss["EX","PM.*"];
+etaidealy = Twiss["EY","PM.*"];
+dtnx = LINE["NAME","HD*.*"];
+dtny = LINE["NAME","VD*.*"];
+dtbm = LINE["NAME","PM*.*"];
+ICX = Length[dtnx];
+ICY = Length[dtny];
+IM  = Length[dtbm];
+FFS["cell calc emit fix"];
+Responsex = Table[Table[0,{i,1,IM}],{j,1,ICX}];
+Responsey = Table[Table[0,{i,1,IM}],{j,1,ICY}];
+CalculateCODResponse[];
+! 補正磁石 HD・VD は、リングの中で同じ要素名の繰り返しなので、既定の (EXPAND の) `cell calc` は K0 を全部同じ値に揃える。
+! 成分ごとの K0 が効くように、ここから `USE RING NOEXPAND` と `cell calc noexpand` を使う。
+FFS["USE RING NOEXPAND;"];
+cc = "cell calc noexpand";
+ccemit = "cell calc emit noexpand";
+FFS[cc];
+GetMagnetNames[];
+
+Do[
+  Print["===== seed ", seeds[k]];
+  SeedRandom[seeds[k]];
+  daflag = 1;
+  SetErrors[];
+  FFS[cc];
+  Print["before correction: tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  RMSWrite[];
+  matx = Responsex;
+  maty = Responsey;
+  IEX = Floor[ICX/2];
+  IEY = Floor[ICY/2];
+  Do[
+    FFS[cc];
+    befx = Twiss["DX","PM*.*"];
+    befy = Twiss["DY","PM*.*"];
+    resultx = CodCorr[matx,befx,IEX];
+    resulty = CodCorr[maty,befy,IEY];
+    Do[
+      LINE["K0",dtnx[i]] = LINE["K0",dtnx[i]] -0.5*resultx[1,i];
+    ,{i,1,Length[resultx[1]]}];
+    Do[
+      LINE["K0",dtny[i]] = LINE["K0",dtny[i]] -0.5*resulty[1,i];
+    ,{i,1,Length[resulty[1]]}];
+    FFS[cc];
+    aftx = Twiss["DX","PM*.*"];
+    afty = Twiss["DY","PM*.*"];
+    a1 = 0;  a2 = 0;  a3 = 0;  a4 = 0;
+    Do[
+      a1 = a1 + resultx[2,i]*resultx[2,i];
+      a2 = a2 + resulty[2,i]*resulty[2,i];
+      a3 = a3 + aftx[i]*aftx[i];
+      a4 = a4 + afty[i]*afty[i];
+    ,{i,1,IM}];
+    a1 = Sqrt[a1] / IM;  a2 = Sqrt[a2] / IM;  a3 = Sqrt[a3] / IM;  a4 = Sqrt[a4] / IM;
+    Print["iteration ", l, ": mat x rms = ", a1, "  mat y rms = ", a2, "  sad x rms = ", a3, "  sad y rms = ", a4, "  tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+  ,{l,1,niter}];
+  FFS[ccemit];
+  Print["after correction: tune ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi, "  EMITX [pm rad] ", EMITX*1E12];
+  RMSWrite[];
+  If[Twiss["NX","$$$"]/2/Pi>49 || Twiss["NX","$$$"]/2/Pi<48.5 || Twiss["NY","$$$"]/2/Pi>18 || Twiss["NY","$$$"]/2/Pi<17.5, daflag = 0];
+  Print["COD-corrected state: HD K0 (components 5, 50, 100) = ", LINE["K0",dtnx[5]], " ", LINE["K0",dtnx[50]], " ", LINE["K0",dtnx[100]]];
+  If[ctrl == 1, FFS["cell calc expand"]];
+  RADLINE
+  tw0 = Date[];
+  lma = MomentumAcceptance[Distance->Dist, Workers->Wk, Aperture->0.01];
+  tw1 = Date[];
+  Print["LMA WALL [s] ", 3600*(tw1[4]-tw0[4]) + 60*(tw1[5]-tw0[5]) + (tw1[6]-tw0[6])];
+  Print["LMA S ", S /. lma];
+  Print["LMA DPPLUS ", DPPlus /. lma];
+  Print["LMA DPMINUS ", DPMinus /. lma];
+  Print["state after LMA: HD K0 (components 5, 50, 100) = ", LINE["K0",dtnx[5]], " ", LINE["K0",dtnx[50]], " ", LINE["K0",dtnx[100]]];
+  ! 誤差とステアリングを戻す
+  ClearErrors[];
+  Do[ LINE["K0",dtnx[i]] = 0; ,{i,1,ICX}];
+  Do[ LINE["K0",dtny[i]] = 0; ,{i,1,ICY}];
+  FFS["USE RING NOEXPAND;"];
+  FFS[cc];
+,{k,1,Length[seeds]}];
+Exit;

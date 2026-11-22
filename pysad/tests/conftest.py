@@ -57,3 +57,21 @@ def _close_leftover_tk_windows():
         tk._default_root = None
     except Exception:
         pass
+
+
+@pytest.fixture(autouse=True, scope='module')
+def _restore_global_state_per_module():
+    """各試験ファイルのあと、グローバルの状態 (EMITDIV・互換モード・PYSAD_* の環境変数) を元に戻す。SAD 台本の `EMITDIV=20;` などが
+    emit6d.EMITDIV を書き換えたまま後続のファイルの試験 (例: test_v2_P3_ae.py → test_emit_jac.py) に残る順序依存を防ぐ。
+    ファイルの中の試験どうしの順序には触らない"""
+    import os
+    from pysad import compat, emit6d
+    old_div = list(emit6d.EMITDIV)
+    old_mode = compat._mode
+    old_env = {k: v for k, v in os.environ.items() if k.startswith('PYSAD_')}
+    yield
+    emit6d.EMITDIV[:] = old_div
+    compat.set_mode(old_mode)
+    for k in [k for k in os.environ if k.startswith('PYSAD_') and k not in old_env]:
+        del os.environ[k]
+    os.environ.update(old_env)

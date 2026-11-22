@@ -186,7 +186,8 @@ def paraxial_ops(lat, nslice=40, bend_cubic=False, bend_edge=False):
             if bend_edge:
                 ops.append((M, 8, (h, 0.0)))      # 入口の端 (E1=0 の硬い端): H = +(h/2) px y²。ここまでの行列 M を先に掛けてから
                 M = np.eye(4)
-            Mh = np.asarray(dataclasses.replace(el, L=ds / 2, ANGLE=float(el.ANGLE) * ds / 2 / L).transfer_matrix(0.0), dtype=float)[:4, :4]
+            kw0_ = {'K0': float(el.K0) * ds / 2 / L} if float(getattr(el, 'K0', 0.0) or 0.0) != 0.0 else {}      # v2 (B237): K0 も角度と同じ比で縮める
+            Mh = np.asarray(dataclasses.replace(el, L=ds / 2, ANGLE=float(el.ANGLE) * ds / 2 / L, **kw0_).transfer_matrix(0.0), dtype=float)[:4, :4]
             M = Mh @ M
             for i in range(nslice):
                 ops.append((M, 7, (h * ds, 0.0)))

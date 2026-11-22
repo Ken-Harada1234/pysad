@@ -24,7 +24,7 @@
       (位置ごとの δ+(s)・δ−(s) から補間。Cell->True の結果は周期的に延ばす)。v2.3.0 T2: v2 の既定は Piwinski 型の式 (touschek.touschek_piwinski)、
       Formula->"K64" と k64 モードは K64 の表 (TouschekLifetime[INF, INF, nz] と同じ表)。
       NormalFormTune[Order->5, BendCubic->True, Kinematic->True, Fringe->True]  (v2.4.0 A8、pysad のみ。gs には無い) 振幅・δ に依るチューン ν(Jx, Jy, δ) のべき級数 (J²・δ 依存・交差項。pysad/ampnf.py、docs/49 §13)。
-      v2.4.0 A3: BunchQs->True を足すと相対運動量の縦成分 q_s の効果も入れる (3 次元の積分。12 スライスで求めて補間、数十秒)。BunchDelta->True でバンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れる (Piwinski 型のみ。既定 False。損失率が増え寿命が短くなる: a/σδ ≈ 9 で ASTRID2 で約 3%。pysad/touschek_bunch.py)。
+      v2.4.0 A3: BunchQs->True を足すと相対運動量の縦成分 q_s の効果も入れる (3 次元の積分。12 スライスで求めて補間、数十秒)。BunchDelta->True でバンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)) を入れる (Piwinski 型のみ。**v2.4.0 F2: v2 の既定は True (BunchQs も True)、k64 は False。->False で切る**。損失率が増え寿命が短くなる: a/σδ ≈ 9 で ASTRID2 で約 3%。pysad/touschek_bunch.py)。
 """
 import math
 import os
@@ -74,9 +74,15 @@ def _str(opts, key):
 def install(ffs, B):
     state = {'lma': None, 'period': None}
 
+    def _spread():
+        """ファミリーの代表の値への揃え (SAD の CALEXP。CALC と同じ規則)。v2.4.0 F2 (pysad 自身の不具合、docs/47): NOCALEXP の台本は成分ごとの値 (補正した K0・位置ずれ) をそのまま TrackSetup に渡す
+        (以前は NOCALEXP でも無条件に揃えて補正後の状態を消した)。既定 (CALEXP) は従来どおり揃える"""
+        if hasattr(ffs, 'spread_pending') and ffs.flags.get('CALEXP', True):
+            ffs.spread_pending()
+
     def _setup():
         from .trksetup import TrackSetup
-        ffs.spread_pending() if hasattr(ffs, 'spread_pending') else None
+        _spread()
         if ffs.lat is None:
             raise SADError('No beam line (USE first)')
         return TrackSetup.from_ffs(ffs)
@@ -99,7 +105,7 @@ def install(ffs, B):
         else:
             # v2.3.0 S2: 既定は RFSW OFF・RAD OFF・FLUC OFF (FFS に入ると RFSW は ON なので、台本に NORFSW を書き忘れると D が 0.03 → 0.57 の割合になる。S2 の記録)。現在のフラグを使うには UseFlags->True
             from .trksetup import TrackSetup
-            ffs.spread_pending() if hasattr(ffs, 'spread_pending') else None
+            _spread()
             if ffs.lat is None:
                 raise SADError('No beam line (USE first)')
             st = TrackSetup.from_ffs(ffs, rad=False, rfsw=False)
@@ -190,11 +196,14 @@ def install(ffs, B):
             raise SADError('TouschekLifetimeLMA: run MomentumAcceptance[] first')
         per = state['period']
         kw = dict(period=per[0] if per else None, s0=per[1] if per else 0.0)
-        bd = truthy(opts.get('BUNCHDELTA')) is True if opts.get('BUNCHDELTA') is not None else False
+        # v2.4.0 F2 (B200): BunchDelta・BunchQs の既定は v2 = True (Piwinski 型で TouschekTable に rest があるとき)、k64 = False。->False で切る
+        bd_given = opts.get('BUNCHDELTA') is not None
+        bd = (truthy(opts.get('BUNCHDELTA')) is True) if bd_given else bool(_compat.v2() and fm == 'piwinski' and 'rest' in tt)
         if bd and not (fm == 'piwinski' and 'rest' in tt):
             raise SADError('TouschekLifetimeLMA: BunchDelta->True is only for Formula->"Piwinski" (v2)')
+        bq = (truthy(opts.get('BUNCHQS')) is True) if opts.get('BUNCHQS') is not None else bool(_compat.v2())
         if fm == 'piwinski' and 'rest' in tt:
-            r = touschek_lifetime_local_piwinski(tt, state['lma'], bunch_delta=bd, bunch_qs=(truthy(opts.get('BUNCHQS')) is True), **kw)
+            r = touschek_lifetime_local_piwinski(tt, state['lma'], bunch_delta=bd, bunch_qs=bq, **kw)
         else:
             r = touschek_lifetime_local(tt['table'], state['lma'], **kw)
         return float(r['lifetime'])
@@ -209,7 +218,7 @@ def install(ffs, B):
         opts, _rest = _opts(args)
         if ffs.lat is None:
             raise SADError('No beam line (USE first)')
-        ffs.spread_pending() if hasattr(ffs, 'spread_pending') else None
+        _spread()
 
         def flag(k, d=True):
             v = opts.get(k)

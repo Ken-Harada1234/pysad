@@ -2804,6 +2804,8 @@ class Interp:
                 return '_' + (self.to_str(v.args[0], form, True) if v.args else '')
             if hn in _CMPSYM and len(v.args) == 2:
                 return self.to_str(v.args[0], form, True) + _CMPSYM[hn] + self.to_str(v.args[1], form, True)
+            if hn in ('And', 'Or') and len(v.args) >= 2:
+                return ('&&' if hn == 'And' else '||').join(self.to_str(a, form, True) for a in v.args)      # gs: x>1&&y>1
             if hn == 'Dot' and len(v.args) == 2:
                 return self.to_str(v.args[0], form, True) + '.' + self.to_str(v.args[1], form, True)
             if hn == 'Minus' and len(v.args) == 1:
@@ -3178,6 +3180,8 @@ class Interp:
             if len(spec) == 2:
                 b = spec[1]
                 if isinstance(b, list):
+                    if _compat.v2():
+                        return name, list(b)          # v2 (B198): {i, {a,b,c}} は i を a, b, c に束縛する (Mathematica)。K64 は General::wrongtype
                     # SAD は Table/Do/Sum で {i, {a,b,c}} 形式を受け付けない (General::wrongtype)
                     raise SADError('General::wrongtype: Argument must be {symbol, n}, {symbol, start, stop}, {symbol, start, stop, step}')
                 if num(b) == INF:
@@ -3278,7 +3282,10 @@ class Interp:
                 return I.eval(args[1]) if len(args) > 1 else Null
             if t is False:
                 return I.eval(args[2]) if len(args) > 2 else Null
-            return I.eval(args[3]) if len(args) > 3 else Null
+            if len(args) <= 3:
+                # 条件が真偽に決まらない (x==y、x<y、If[x,1,2]) とき gs・Mathematica は式のまま返す (B199。従来の pysad は Null を返した)
+                return Expr(S('If'), [c] + list(args[1:]))
+            return I.eval(args[3])
         B['If'] = _if
 
         def _while(args):
@@ -3680,14 +3687,16 @@ class Interp:
             if isinstance(b, list):
                 return [lmap2(f, a, y, name) for y in b]
             if is_num(a) and is_num(b):
-                return f(a, b)
+                r = f(a, b)
+                return r.real if type(r) is complex and r.imag == 0.0 else r       # gs: 虚部が 0 の複素数は実数 ((1+I)(1-I) = 2、I^2 = -1。B199)
             return _symb(name, a, b)
 
         def lmap1(f, a):
             if isinstance(a, list):
                 return [lmap1(f, x) for x in a]
             if is_num(a):
-                return f(a)
+                r = f(a)
+                return r.real if type(r) is complex and r.imag == 0.0 else r
             raise SADError(f'number expected, got {I.to_str(a)}')
 
         def _plus(args):
@@ -3726,6 +3735,8 @@ class Interp:
                     return INF
                 return float(x)**y
             except OverflowError:
+                if x < 0 and y == int(y) and int(y) % 2 == 1:
+                    return -INF                     # B183: (-2.)^1501. は -INF (gs と同じ。従来の pysad は符号が逆の INF)
                 return INF
         B['Power'] = lambda a: lmap2(_pow, a[0], a[1], 'Power')
 
@@ -3751,14 +3762,16 @@ class Interp:
                 r = f(r, a)
             return r
 
-        def _cmp(f):
+        def _cmp(f, opname='$Cmp'):
             def g(args):
                 if len(args) > 2:
                     # a<x<b などの連鎖: 隣どうしの比較がすべて成り立つとき真 (K64 も同じ)
                     rs = [g([args[k], args[k + 1]]) for k in range(len(args) - 1)]
                     if all(isinstance(r, float) for r in rs):
                         return 1.0 if all(r == 1.0 for r in rs) else 0.0
-                    return Expr(S('$Cmp'), args)
+                    if any(isinstance(r, float) and r == 0.0 for r in rs):
+                        return 0.0
+                    return Expr(S('And'), [1.0] + [r for r in rs if not (isinstance(r, float) and r == 1.0)])      # gs: x<y<z は 1&&x<y&&y<z
                 a, b = args[0], args[1]
                 if isinstance(a, str) and isinstance(b, str):
                     return 1.0 if f(a, b) else 0.0
@@ -3768,11 +3781,19 @@ class Interp:
                     try:
                         return lmap2(lambda x, y: 1.0 if f(x, y) else 0.0, a, b)       # gs: 比較はリストの要素ごと ({1,2}>=2 は {0,1})
                     except Exception:
-                        return Expr(S('$Cmp'), args)
-                return Expr(S('$Cmp'), args)
+                        return Expr(S(opname), list(args))
+                return Expr(S(opname), list(args))
             return g
         def _equal2(a):
-            return (1.0 if I.same(a[0], a[1]) else 0.0) if not (is_num(a[0]) and is_num(a[1])) else (1.0 if a[0] == a[1] else 0.0)
+            if is_num(a[0]) and is_num(a[1]):
+                return 1.0 if a[0] == a[1] else 0.0
+            if isinstance(a[0], str) and isinstance(a[1], str):
+                return 1.0 if a[0] == a[1] else 0.0
+            # 記号・式・文字列と数の比較は決まらないので式のまま返す (gs: x==y、"a"==1 は式のまま。従来の pysad は 0)。
+            # x==x は Mathematica で True。K64 (gs) は x==x も式のまま、v2 は 1 (B199)
+            if _compat.v2() and I.same(a[0], a[1]):
+                return 1.0
+            return Expr(S('Equal'), [a[0], a[1]])
         def _eqthread(x, y, neg):
             # gs: リストどうしの == は要素ごと ({1,2}=={1,3} は {1,0})、入れ子も再帰。長さが違えば 0。リストとスカラーは未評価
             if isinstance(x, list) and isinstance(y, list):
@@ -3790,27 +3811,55 @@ class Interp:
         def _equal(a):
             if len(a) == 2 and (isinstance(a[0], list) or isinstance(a[1], list)):
                 return _eqthread(a[0], a[1], False)
-            return _equal2(a) if len(a) == 2 else (1.0 if all(_equal2([a[k], a[k + 1]]) == 1.0 for k in range(len(a) - 1)) else 0.0)
+            if len(a) == 2:
+                return _equal2(a)
+            rs = [_equal2([a[k], a[k + 1]]) for k in range(len(a) - 1)]
+            if any(isinstance(r, Expr) for r in rs):
+                return Expr(S('Equal'), list(a))
+            return 1.0 if all(r == 1.0 for r in rs) else 0.0
         B['Equal'] = _equal
-        B['Unequal'] = lambda a: _eqthread(a[0], a[1], True) if len(a) == 2 and (isinstance(a[0], list) or isinstance(a[1], list)) else 1.0 - _equal(a)
-        B['Greater'] = _cmp(lambda x, y: x > y)
-        B['GreaterEqual'] = _cmp(lambda x, y: x >= y)
-        B['Less'] = _cmp(lambda x, y: x < y)
-        B['LessEqual'] = _cmp(lambda x, y: x <= y)
+
+        def _unequal(a):
+            if len(a) == 2 and (isinstance(a[0], list) or isinstance(a[1], list)):
+                return _eqthread(a[0], a[1], True)
+            r = _equal(a)
+            return Expr(S('Unequal'), list(a)) if isinstance(r, Expr) else 1.0 - r
+        B['Unequal'] = _unequal
+        B['Greater'] = _cmp(lambda x, y: x > y, 'Greater')
+        B['GreaterEqual'] = _cmp(lambda x, y: x >= y, 'GreaterEqual')
+        B['Less'] = _cmp(lambda x, y: x < y, 'Less')
+        B['LessEqual'] = _cmp(lambda x, y: x <= y, 'LessEqual')
         B['SameQ'] = lambda a: 1.0 if all(I.same(a[k], a[k + 1]) for k in range(len(a) - 1)) else 0.0
         # a<=>b<=>c は a<=>b かつ b<=>c (隣どうしが違う)
         B['UnsameQ'] = lambda a: 1.0 if all(not I.same(a[k], a[k + 1]) for k in range(len(a) - 1)) else 0.0
         def _and(args):
-            for x in args:                              # 左から評価し、偽が出たらそこで止める (a<=>{}&&a[[1,2]])
-                if truthy(I.eval(x)) is not True:
+            # 左から評価し、偽が出たらそこで止める (a<=>{}&&a[[1,2]])。真偽に決まらない項 (x、x>1) は残す: And[1,x] = x、x>1&&y>1 は式のまま (gs・Mathematica。B199)
+            kept = []
+            for x in args:
+                v = I.eval(x)
+                t = truthy(v)
+                if t is True:
+                    continue
+                if t is False:
                     return 0.0
-            return 1.0
+                kept.append(v)
+            if not kept:
+                return 1.0
+            return kept[0] if len(kept) == 1 else Expr(S('And'), kept)
 
         def _or(args):
+            kept = []
             for x in args:
-                if truthy(I.eval(x)) is True:
+                v = I.eval(x)
+                t = truthy(v)
+                if t is True:
                     return 1.0
-            return 0.0
+                if t is False:
+                    continue
+                kept.append(v)
+            if not kept:
+                return 0.0
+            return kept[0] if len(kept) == 1 else Expr(S('Or'), kept)
         B['And'] = _and
         B['Or'] = _or
         B['Not'] = lambda a: (0.0 if truthy(a[0]) else 1.0) if truthy(a[0]) is not None else Expr(S('Not'), a)
@@ -3825,7 +3874,7 @@ class Interp:
 
         def _sqrt(x):
             if isinstance(x, complex):
-                return x**0.5
+                return cmath.sqrt(x) if _compat.v2() else x**0.5      # v2 (B183): x**0.5 は Sqrt[-4+0 I] の実部に 1e-16 の雑音を残す
             if x != x:
                 return x
             return math.sqrt(x) if x >= 0 else complex(0.0, math.sqrt(-x))
@@ -3835,7 +3884,14 @@ class Interp:
                 return math.exp(x)
             except OverflowError:
                 return INF
-        B['Exp'] = mathf(_exp, cmath.exp)
+
+        def _cexp(z):
+            try:
+                return cmath.exp(z)
+            except OverflowError:
+                c, sn = math.cos(z.imag), math.sin(z.imag)       # B183: Exp[1000.+I] は INF 成分の複素数 (gs と同じ。従来の pysad はエラー)
+                return complex(math.copysign(INF, c) if c != 0 else 0.0, math.copysign(INF, sn) if sn != 0 else 0.0)
+        B['Exp'] = mathf(_exp, _cexp)
         def _log1(x):
             if isinstance(x, complex):
                 return cmath.log(x) if x != 0 else -INF
@@ -3847,23 +3903,98 @@ class Interp:
                 return NAN
             return complex(math.log(-x), math.pi)       # K64: Log[-2.] = .693 + 3.14159 I
         B['Log'] = lambda a: lmap1(_log1, a[0]) if len(a) == 1 else lmap2(lambda b, x: _log1(x) / _log1(b), a[0], a[1])
-        B['Sin'] = mathf(math.sin, cmath.sin)
-        B['Cos'] = mathf(math.cos, cmath.cos)
+        def _csafe(f, kind):
+            # 複素数の三角・双曲線関数が桁あふれ (Sin[1000 I]) したとき、成分の INF の複素数を返す (従来の pysad は OverflowError。gs は INF)
+            def g(z):
+                try:
+                    return f(z)
+                except OverflowError:
+                    x, y = z.real, z.imag
+                    if kind == 'sin':
+                        a, b = math.sin(x), math.cos(x)
+                        return complex(math.copysign(INF, a * y) if a else 0.0, math.copysign(INF, b * y) if b else 0.0)
+                    if kind == 'cos':
+                        a, b = math.cos(x), -math.sin(x)
+                        return complex(math.copysign(INF, a) if a else 0.0, math.copysign(INF, b * y) if b else 0.0)
+                    if kind == 'sinh':
+                        a, b = math.cos(y), math.sin(y)
+                        return complex(math.copysign(INF, a * x) if a else 0.0, math.copysign(INF, b * x) if b else 0.0)
+                    a, b = math.cos(y), math.sin(y)
+                    return complex(math.copysign(INF, a) if a else 0.0, math.copysign(INF, b * x) if b else 0.0)
+            return g
+        B['Sin'] = mathf(math.sin, _csafe(cmath.sin, 'sin'))
+        B['Cos'] = mathf(math.cos, _csafe(cmath.cos, 'cos'))
         B['Tan'] = mathf(math.tan, cmath.tan)
-        B['ArcSin'] = mathf(lambda x: math.asin(x) if -1 <= x <= 1 else (NAN if x != x else cmath.asin(complex(x, 0.0))), cmath.asin)
-        B['ArcCos'] = mathf(lambda x: math.acos(x) if -1 <= x <= 1 else (NAN if x != x else cmath.acos(complex(x, 0.0))), cmath.acos)
+        def _asin(x):
+            if -1 <= x <= 1:
+                return math.asin(x)
+            if x != x:
+                return NAN
+            if _compat.v2() and abs(x) != INF:
+                # v2 (B182): |x| > 1 の主値は x > 1 で π/2 - i arccosh(x)、x < -1 で -π/2 + i arccosh(-x) (K64 は x > 1 で虚部の符号が逆)
+                return complex(math.copysign(math.pi / 2.0, x), -math.copysign(math.acosh(abs(x)), x))
+            return cmath.asin(complex(x, 0.0))
+
+        def _acos(x):
+            if -1 <= x <= 1:
+                return math.acos(x)
+            if x != x:
+                return NAN
+            if _compat.v2() and abs(x) != INF:
+                # v2 (B182): x > 1 は +i arccosh(x)、x < -1 は π - i arccosh(-x) (K64 は x > 1 で虚部の符号が逆)
+                return complex(0.0, math.acosh(x)) if x > 1 else complex(math.pi, -math.acosh(-x))
+            return cmath.acos(complex(x, 0.0))
+        B['ArcSin'] = mathf(_asin, cmath.asin)
+        B['ArcCos'] = mathf(_acos, cmath.acos)
         B['ArcTan'] = lambda a: lmap1(lambda x: cmath.atan(x) if isinstance(x, complex) else math.atan(x), a[0]) if len(a) == 1 else lmap2(lambda x, y: math.atan2(y, x), a[0], a[1])
-        B['Sinh'] = mathf(math.sinh, cmath.sinh)
-        B['Cosh'] = mathf(math.cosh, cmath.cosh)
+        B['Sinh'] = mathf(math.sinh, _csafe(cmath.sinh, 'sinh'))
+        B['Cosh'] = mathf(math.cosh, _csafe(cmath.cosh, 'cosh'))
         B['Tanh'] = mathf(math.tanh, cmath.tanh)
         B['Abs'] = mathf(abs)
-        B['Sign'] = mathf(lambda x: (x > 0) - (x < 0) + 0.0)
-        B['Floor'] = mathf(lambda x: float(math.floor(x)))
-        B['Ceiling'] = mathf(lambda x: float(math.ceil(x)))
-        B['Round'] = mathf(lambda x: float(math.floor(x + 0.5)) if x >= 0 else -float(math.floor(-x + 0.5)))
-        B['IntegerPart'] = mathf(lambda x: float(int(x)))
-        B['FractionalPart'] = mathf(lambda x: x - float(int(x)))
-        B['Mod'] = lambda a: lmap2(lambda x, y: x - y * math.floor(x / y), a[0], a[1])
+        def _sign(x):
+            if isinstance(x, complex):
+                return x / abs(x) if x != 0 else 0.0            # gs・Mathematica: x/|x| (従来の pysad は TypeError。B183)
+            return (x > 0) - (x < 0) + 0.0
+        B['Sign'] = mathf(_sign)
+
+        def _cpart(f):
+            # B183: Floor・Ceiling・Round・IntegerPart は複素数なら実部と虚部ごと、±INF・NaN はそのまま (gs と同じ。従来の pysad は未評価・OverflowError)
+            def g(x):
+                if isinstance(x, complex):
+                    r = complex(g(x.real), g(x.imag))          # gs も成分ごと (Round[1.5+2.5I] = 2+3I、Floor は 1+2I)
+                    return r.real if r.imag == 0.0 else r
+                if x != x or x in (INF, -INF):
+                    return x                                   # gs: Floor[Infinity] = INF
+                return f(x)
+            return g
+        B['Floor'] = mathf(_cpart(lambda x: float(math.floor(x))))
+        B['Ceiling'] = mathf(_cpart(lambda x: float(math.ceil(x))))
+
+        def _round(x):
+            if _compat.v2():
+                return float(round(x))        # v2 (B184): 半整数は偶数へ (Mathematica: Round[2.5] = 2, Round[0.5] = 0)。K64 は 0 から遠い方 (Round[2.5] = 3)
+            return float(math.floor(x + 0.5)) if x >= 0 else -float(math.floor(-x + 0.5))
+        B['Round'] = mathf(_cpart(_round))
+        B['IntegerPart'] = mathf(_cpart(lambda x: float(int(x))))
+
+        def _fracpart(x):
+            if _compat.v2():
+                if isinstance(x, complex):
+                    return complex(_fracpart(x.real), _fracpart(x.imag))
+                if x != x:
+                    return x
+                if x in (INF, -INF):
+                    return 0.0
+            return x - float(int(x))
+        B['FractionalPart'] = mathf(_fracpart)
+
+        def _mod(x, y):
+            if not isinstance(x, complex) and not isinstance(y, complex) and (x != x or y != y or abs(x) == INF):
+                return NAN                    # gs: Mod[Infinity,2] = NaN (従来の pysad は OverflowError)
+            if _compat.v2() and not isinstance(x, complex) and not isinstance(y, complex) and y != 0 and abs(y) != INF:
+                return x % y                  # v2 (B184): x - y Floor[x/y] は x/y が大きいと桁を失う (正確な剰余。符号は y と同じ)
+            return x - y * math.floor(x / y)
+        B['Mod'] = lambda a: lmap2(_mod, a[0], a[1])
         B['Re'] = mathf(lambda x: x.real if isinstance(x, complex) else x)
         B['Im'] = mathf(lambda x: x.imag if isinstance(x, complex) else 0.0)
         B['Conjugate'] = mathf(lambda x: x.conjugate() if isinstance(x, complex) else x)
@@ -4160,7 +4291,32 @@ class Interp:
         B['ToUpperCase'] = lambda a: a[0].upper() if isinstance(a[0], str) else a[0]
         B['ToLowerCase'] = lambda a: a[0].lower() if isinstance(a[0], str) else a[0]      # 文字列以外はそのまま返す
         B['Characters'] = lambda a: list(a[0])
-        B['StringTake'] = lambda a: _take([list(a[0]), a[1]]) and ''.join(_take([list(a[0]), a[1]]))
+        def _stringtake(a):
+            # gs: 範囲外と 0 は未評価 (StringTake["abc",5] は式のまま返る)。従来の pysad は範囲外で全体、0 で {} を返していた (空文字列でない)。
+            # v2 (B199): 0 は "" (Mathematica)、範囲外は gs と同じく未評価
+            if len(a) != 2 or not isinstance(a[0], str):
+                return _take([list(a[0]), a[1]]) and ''.join(_take([list(a[0]), a[1]]))
+            s, spec = a
+            n = len(s)
+            if isinstance(spec, list):
+                if len(spec) == 1:
+                    i = j = int(spec[0])
+                elif len(spec) == 2:
+                    i, j = int(spec[0]), int(spec[1])
+                else:
+                    raise SADError('General::wrongleng: Length of range-list must be less than 3')
+                i = n + i + 1 if i < 0 else i
+                j = n + j + 1 if j < 0 else j
+                if i < 1 or j > n or j < i - 1:
+                    return Expr(S('StringTake'), list(a))
+                return s[i - 1:j]
+            k = int(spec)
+            if k == 0 and not _compat.v2():
+                return Expr(S('StringTake'), list(a))
+            if abs(k) > n:
+                return Expr(S('StringTake'), list(a))
+            return s[:k] if k >= 0 else s[n + k:]
+        B['StringTake'] = _stringtake
         B['StringDrop'] = lambda a: ''.join(B['Drop']([list(a[0]), a[1]]))
         B['StringReplace'] = lambda a: _string_replace(a[0], a[1])
         def _stringposition(a):

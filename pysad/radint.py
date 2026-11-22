@@ -458,7 +458,7 @@ def _has_poles(els):
 
 def compute(ffs, rows, stale_rho=None):
     """INTGRL の本体。戻り: 結果の辞書 (RI, 補助量) と出力する行のリスト。
-    v2 (B115): ANGLE=0・K0≠0 の極 (挿入光源) があるとき、CALC の分散 (rows) は極の分散の発生 (η' += K0 δ。K64 の CALC は入れない) を含まない。
+    v2 (B115): ANGLE=0・K0≠0 の極 (挿入光源) があるとき、CALC の分散 (rows。正準運動量の分散 EPX = η' + px_cod で、K64 の CALC は誤っていない: docs/21 B222) は、放射積分の線形の理論が使う角度の分散 η' の極の中の発生 (η' += K0 δ) を含まない。
     そこで、要素ごとの 4x4 行列 T と極の分散ベクトル V を集める 1 周目で、周期解の補正 Δ (Δ = T Δ + V_pole) を求め、
     2 周目で各要素の分散の初期値に Δ を足す。I1・I4・I5 が極の中も含めた正しい分散で積分される"""
     if _compat.v2() and _has_poles(ffs.els):
@@ -696,6 +696,8 @@ def report(ffs, rows, stale_rho=None, chrom=None) -> List[str]:
     freq = res['freq']
     dp0 = ffs.dp0()
     pi = math.pi
+    amass = float(ffs.I.get('MASS', ELMASS))
+    ph = _E._Phys(ffs.momentum(), 1.0, amass=amass)
     L = []
     w = L.append
     stars = '*' * 64
@@ -738,18 +740,37 @@ def report(ffs, rows, stale_rho=None, chrom=None) -> List[str]:
     w('   I5U = ' + fmt_g(RI[5], 15, 7) + '    I5V = ' + fmt_g(RI[8], 15, 7))
     with np.errstate(all='ignore'):
         COEFF = _coeff()
-        eloss = 2.0e6 * COEFF * RI[2] * energy ** 4
+        rb_loss = rb_tau = rb_sig = rb_emit = 1.0
+        co4, co5 = CO4, CO5
+        if _compat.v2() and amass != ELMASS:
+            # v2 (B112・B167): 電子以外の粒子 (陽子・イオン)。K64 の COEFF・CO4 は電子の古典半径・質量 (elradi・elmass) 固定。粒子の質量・古典半径で作る
+            rc_ = _E._rclass0(amass)
+            COEFF = (rc_ / (amass ** 3) / 3.0) * _f32(1e27)
+            co4 = math.sqrt(55.0 / 32.0 / math.sqrt(3.0) * rc_ / FINEST) / amass * 1e9
+            co5 = co4 ** 2
+        if ph.anrad < 0.0:
+            # v2 (B167): β < 1 の厳密な放射 (radbeta)。1 周のエネルギー損失 β³、減衰率 β³ (δ の損失 β²、1 周の時間 1/β)、
+            # σδ² と εx は (N<u²> の r2/β²) / (δ の損失の β²) = r2/β⁴
+            from .radbeta import r2_of_gamma
+            g_ = ph.h0
+            b_ = ph.p0 / ph.h0
+            r2_ = r2_of_gamma(g_)
+            rb_loss = b_ ** 3
+            rb_tau = 1.0 / b_ ** 3
+            rb_sig = math.sqrt(r2_) / b_ ** 2
+            rb_emit = r2_ / b_ ** 4
+        eloss = 2.0e6 * COEFF * RI[2] * energy ** 4 * rb_loss
         alphax = RI[1] / rlt
         alphay = RI[6] / rlt
         dampu = 1.0 - RI[4] / RI[2]
         dampv = 1.0 - RI[7] / RI[2]
         co2 = CVELOC * energy ** 3 * COEFF / rlt
-        tauu = 1000.0 / (co2 * (RI[2] - RI[4]))
-        tauv = 1000.0 / (co2 * (RI[2] - RI[7]))
-        taue = 1000.0 / (co2 * (2 * RI[2] + RI[4] + RI[7]))
-        sig = CO4 * energy * math.sqrt(RI[3] / (2.0 * RI[2] + RI[4] + RI[7]))
-        emitu = CO5 * energy * energy * RI[5] / (RI[2] - RI[4])
-        emitv = CO5 * energy * energy * RI[8] / (RI[2] - RI[7])
+        tauu = 1000.0 / (co2 * (RI[2] - RI[4])) * rb_tau
+        tauv = 1000.0 / (co2 * (RI[2] - RI[7])) * rb_tau
+        taue = 1000.0 / (co2 * (2 * RI[2] + RI[4] + RI[7])) * rb_tau
+        sig = co4 * energy * math.sqrt(RI[3] / (2.0 * RI[2] + RI[4] + RI[7])) * rb_sig
+        emitu = co5 * energy * energy * RI[5] / (RI[2] - RI[4]) * rb_emit
+        emitv = co5 * energy * energy * RI[8] / (RI[2] - RI[7]) * rb_emit
         chrx = -RI[9] / 4.0 / pi
         chry = -RI[10] / 4.0 / pi
         if chrom is not None:

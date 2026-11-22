@@ -61,7 +61,7 @@ def test_chromatic_modulation_brings_the_formula_to_the_fluc_tracking_v2(v2_mode
     assert sp['depol_chromatic'] is True
     assert abs(sp['depol_rate'] / 1.09e-7 - 1) < 0.05, sp['depol_rate']
     assert 0.8 < sp['depol_rate'] / FLUC_4P2_12MV < 1.3
-    assert abs(sp['depol_rate_linear'] / 2.314e-8 - 1) < 0.01
+    assert abs(sp['depol_rate_linear'] / 2.40756e-8 - 1) < 0.01      # v2.4.0 D3 (B230: 四極の本体の B∥): 線形の式 2.4076e-8 (以前 2.314e-8 → B165 で 2.342e-8)。v2.4.0 D (B165): 線形の式 2.342e-8 は FLUC 追跡の値と 1.2% (以前 0.2%)。追跡の D の BEND の端の ψ の分解の近似 (R12・R21 に 1e-2) が残るため
     sp0 = _rate(4.2, 12, chrom=False)
     assert abs(sp0['depol_rate'] / 4.45e-8 - 1) < 0.05 and not sp0['depol_chromatic']
     assert 0.1 < sp['mod_chrom'] < 0.3 and 0.2 < sp['mod_spin'] < 1.0          # 変調指数 (ベータトロン、スピン)

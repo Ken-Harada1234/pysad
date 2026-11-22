@@ -150,7 +150,18 @@ def _itgetqraddiv(ph, c, ak, al, bzh):
                int(abs(ph.h0 * b / ph.brhoz * ph.anrad) / EPSRAD / 1e6 * ph.emidiv * ph.emidib))
 
 
-def _tsolque(st, aln, akn, bz, eps0, enarad, psi_out=None):
+def _quad_trk(st, kq, al, bzh):
+    """領域内の四極の 1 刻みの tradke。v2 (B232) の POL は、刻みの中点の横磁場 (bx, by) = (kq y, kq x) とその勾配を渡して、本体の運動量の向きの磁場
+    ∫B·dr = (bx px + by py) al/pz を足す (回した座標系の四極。K64 は螺旋の縦磁場 bz·al だけで本体の横磁場の B∥ が無い)"""
+    if kq is None or not (st.calpol and _compat.v2() and _spin.SOL_BPAR and _compat.spin_bpar()):
+        _trk(st, al, bzh)
+        return
+    xm = 0.5 * (st.codr0[0] + st.cod[0])
+    ym = 0.5 * (st.codr0[2] + st.cod[2])
+    _trk(st, al, bzh, bx=kq * ym, by=kq * xm, gb=((0.0, kq), (kq, 0.0)))
+
+
+def _tsolque(st, aln, akn, bz, eps0, enarad, psi_out=None, kq=None):
     """tsolque.f (bz≠0, ak0x=ak0y=0): 内部分割 ndiv、スライスごとに [tqente + 本体] → tradke (最後以外)、最後に tqente(半分) → tradke"""
     bzh = 0.5 * bz
     eps = 0.1 if eps0 == 0.0 else 0.1 * eps0
@@ -166,7 +177,7 @@ def _tsolque(st, aln, akn, bz, eps0, enarad, psi_out=None):
             _tocan(S, i, bz)
         _piece(st, body)
         if enarad and n != ndiv:
-            _trk(st, aln1, bzh)
+            _quad_trk(st, kq, aln1, bzh)
 
     def last(S, i):
         _tomech(S, i, bz)
@@ -175,7 +186,7 @@ def _tsolque(st, aln, akn, bz, eps0, enarad, psi_out=None):
     if enarad:
         if psi_out is not None:
             psi_out()                      # v2 (E): 四極の出口の端の縦磁場の積分 −k x y
-        _trk(st, aln1, bzh)
+        _quad_trk(st, kq, aln1, bzh)
 
 
 def _tquade(st, pr):
@@ -220,7 +231,7 @@ def _tquade(st, pr):
     else:
         _psi_out = None
     for iq in range(nq):
-        _tsolque(st, aln, akn, bz, 0.0, krad, psi_out=_psi_out if iq == nq - 1 else None)
+        _tsolque(st, aln, akn, bz, 0.0, krad, psi_out=_psi_out if iq == nq - 1 else None, kq=kq)
     if fringe:
         _piece(st, lambda S, i: _x.ttfrin4_bz1(i, S, -ak, L, bz))
 

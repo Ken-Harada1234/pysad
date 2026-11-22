@@ -615,17 +615,151 @@ def _resonance_terms_cubic(lat, terms=DEFAULT_TERMS, method='analytic', nslice=8
     return res
 
 
+# ---------------------------------------------------------------------------------------------
+# v2.4.0 F1: ROTATE した偏向磁石 (・四極) = 結合した光学・垂直分散。ampnf の 4×4 固有モードの正規形で通す
+# ---------------------------------------------------------------------------------------------
+def rolled_elements(lat):
+    """ロール角 (ROTATE + ROTATION) があり、傾きが効く BEND・QUAD (BEND は ANGLE・K1・K0 のどれか≠0、QUAD は K1≠0) の名前のリスト。
+    結合した光学を作る素子 (resdrive の解析式は結合なしの前提)。ANGLE = K1 = K0 = 0 の BEND (傾けたステアリングの空の磁石など) は数えない"""
+    out = []
+    for el in getattr(lat, 'elements', []):
+        tn = _tn(el)
+        if tn not in ('Bend', 'Quadrupole') or abs(float(getattr(el, 'ROTATE', 0.0) or 0.0) + float(getattr(el, 'ROTATION', 0.0) or 0.0)) <= 1e-15:
+            continue
+        if tn == 'Bend':
+            live = any(float(getattr(el, k, 0.0) or 0.0) for k in ('ANGLE', 'K1', 'K0'))
+        else:
+            live = bool(float(getattr(el, 'K1', 0.0) or 0.0))
+        if live and float(getattr(el, 'L', 0.0) or 0.0) > 0:
+            out.append(el.name)
+    return out
+
+
+def unrolled_lattice(lat):
+    """BEND・QUAD のロール角を 0 にした新しい Lattice (元は変えない)"""
+    import dataclasses
+    from .lattice import Lattice
+    out = []
+    for el in lat.elements:
+        if _tn(el) in ('Bend', 'Quadrupole') and (float(getattr(el, 'ROTATE', 0.0) or 0.0) or float(getattr(el, 'ROTATION', 0.0) or 0.0)):
+            el = dataclasses.replace(el, ROTATE=0.0, ROTATION=0.0)
+        out.append(el)
+    return Lattice(out, name=getattr(lat, 'name', 'LATTICE'))
+
+
+def _resonance_terms_coupled(lat, terms, nslice, bend_cubic, bend_nslice, delta=0.0, ref=None, D=None):
+    """ロールした BEND・QUAD または据え付けのずれ・ロール誤差 (DX・DY・DZ・DROTATE) のある lat の共鳴駆動項。模型 (ampnf) の 1 周の写像から (結合した光学の固有モードが基準。全次数の θ)。
+    h は結合したモード (ζ1 = 水平的なモード、ζ2 = 垂直的なモード) の角度・作用の単項式の係数。.total_sext = 偏向磁石の 3 次の項なし (6 極 + 結合した線形光学)。
+    v2.4.0 F1: 3 次 (p=0)・δ の項 (p=1・h10002。1 周の写像の 2 次の部分と閉軌道 0 の前提)。
+    **v2.4.0 H1 (`ampnf_coupled.py`)**: 4 次 (j+k+l+m = 4、p=0。写像 e^{−:h3+h4:} の h4 = 8 極 + 運動学 + フリンジ + 3 次の 2 次)、δ≠0 (δ の閉軌道のまわり。δ のべき級数 D 次の打ち切り)、
+    ref≠None (位相の基準 = resdrive の ref と同じ定義: モードの位相進みだけ回す)、DX・DY・DZ・DROTATE (閉軌道 ≠ 0 のまわりの展開) は、3 次・4 次の p=0 の項に対応する。
+    δ の項 (p ≥ 1) は δ=0・ref=None・ずれなしだけ。要素ごとの内訳 (.per_element) は無い"""
+    from . import ampnf, ampnf_coupled as AC
+    tl = [parse_term(t) for t in terms]
+    errs = AC.has_errors(lat)
+    four = [t for t in tl if sum(t[:4]) == 4 and t[4] == 0]
+    pdel = [t for t in tl if t[4] != 0]
+    new = bool(delta != 0.0 or ref is not None or errs or four)
+    if pdel and (delta != 0.0 or ref is not None or errs):
+        raise NotImplementedError('resonance_terms: δ の項 (p ≥ 1) は δ=0・ref=None・DX/DY/DROTATE なしだけ (ロールのある lat)')
+    ns = max(int(nslice), 16)
+    nb = int(bend_nslice or BEND_NSLICE_DEFAULT)
+    res = RDTResult()
+    res.names = [_term_names(t) for t in tl]
+    res.terms = tl
+    key = lambda t: 'h%d%d%d%d%d' % tuple(t)
+
+    def old(bc):
+        r_ = ampnf.one_turn_series(lat, D=3, nslice=ns, bend_cubic=bool(bc), nslice_bend=nb)
+        return r_, ampnf.rdt_series(r_)
+
+    def newmap(bc):
+        rm_ = AC.taylor_map(lat, delta=delta, D=D, nslice=ns, bend_cubic=bool(bc), nslice_bend=nb, kin=True, fringe=True)
+        h_ = dict(AC.rdt3(rm_))
+        h4_, _ = AC.rdt4(rm_)
+        h_.update(h4_)
+        if ref is not None:
+            h_ = AC.rotate_to_ref(h_, AC.ref_phases(lat, ref, rm_, nslice=ns, bend_cubic=bool(bc), nslice_bend=nb, kin=True, fringe=True))
+        return rm_, h_
+
+    def pick(h_new, h_old, t):
+        if t[4] == 0 and new:
+            return complex(h_new[key(t)])
+        return complex(h_old[key(t)])
+    if new:
+        rm1, hn1 = newmap(bend_cubic)
+        r1, ho1 = (old(bend_cubic) if pdel else (None, None))
+        res.total = {nm: pick(hn1, ho1, t) for nm, t in zip(res.names, tl)}
+        if bend_cubic:
+            _, hn0 = newmap(False)
+            ho0 = old(False)[1] if pdel else None
+            res.total_sext = {nm: pick(hn0, ho0, t) for nm, t in zip(res.names, tl)}
+        else:
+            res.total_sext = dict(res.total)
+        res.qx, res.qy = float(rm1.mu[0]) / TWO_PI, float(rm1.mu[1]) / TWO_PI
+        res.coupling = rm1.coupling
+        res.orbit = rm1.orbit
+        res.method = 'coupled (ampnf_coupled、D=%d、nslice=%d)' % (rm1.D, ns)
+        res.ref_name = 'リング先頭' if ref is None else '%s の入口' % lat.elements[AC.element_index(lat, ref)].name
+        res.delta = float(delta)
+    else:
+        r1, ho1 = old(bend_cubic)
+        res.total = {nm: complex(ho1[key(t)]) for nm, t in zip(res.names, tl)}
+        if bend_cubic:
+            res.total_sext = {nm: complex(old(False)[1][key(t)]) for nm, t in zip(res.names, tl)}
+        else:
+            res.total_sext = dict(res.total)
+        res.qx, res.qy = r1['mux'] / TWO_PI, r1['muy'] / TWO_PI
+        res.coupling = r1['coupling']
+        res.method = 'coupled (ampnf、nslice=%d)' % ns
+        res.ref_name, res.delta = 'リング先頭', 0.0
+    res.total_bend = {nm: res.total[nm] - res.total_sext[nm] for nm in res.names}
+    res.bend_included = bool(bend_cubic)
+    res.per_element = np.zeros((0, len(tl)), dtype=complex)
+    res.elem_names, res.elem_idx, res.elem_s = [], [], []
+    res.wp = working_point_check(res.qx, res.qy)
+    res.coupled = True
+    names = rolled_elements(lat) + errs
+    res.warnings.append('ロールした BEND・QUAD またはずれ・ロール誤差 (%s ...) があるので、結合した光学の固有モード (4×4) で求めた (全次数の θ。h の添字はモード ζ1(水平的)・ζ2(垂直的) の単項式)。要素ごとの内訳は無い' % (names[0] if names else '指定 coupled=True'))
+    if errs:
+        res.warnings.append('DX・DY・DZ・DROTATE のある素子 (%s ...): 閉軌道 (最大 %.3g m) のまわりの展開 (tchge をそのまま入れた。v2 モードの符号。k64 モードの BEND の DX は追跡と 4e-8 の差)' % (errs[0], float(np.abs(res.orbit).max())))
+    if new and delta != 0.0:
+        res.warnings.append('δ≠0: δ のべき級数の D 次の打ち切りを δ で評価 (T3 の δ^p の係数は p ≤ D−4 まで。誤差 O(δ^(D−3)))')
+    if four:
+        res.warnings.append('4 次の項は写像 e^{−:h3+h4:} の h4 (非共鳴の項を消す前。模型 = 8 極 + 運動学 + フリンジ + 3 次 (6 極・偏向磁石の曲率・端) の 2 次。偏向磁石の K1 の 4 次以上・K64 の四極の積分器の台形則は入っていない)')
+    res.momentum_note = '運動量は光学の計算に使うだけ (強さは SAD の K_nL = 運動量に対する規格化済み)'
+    return res
+
+
 # v2.3.0 R5: 4 次の項 (j+k+l+m = 4、p = 0) と 6 極の 2 次 (rdt2nd.py)。既定は order2=True
 ORDER2_DEFAULT = True
 
 
 def resonance_terms(lat, terms=DEFAULT_TERMS, method='analytic', nslice=8, delta=0.0, ref=None, rows=None,
-                    bend_cubic=None, bend_nslice=None, momentum_eV=3e9, order2=None, rdt4_options=None):
+                    bend_cubic=None, bend_nslice=None, momentum_eV=3e9, order2=None, rdt4_options=None, coupled=None):
     """共鳴駆動項 h_jklmp。3 次 (j+k+l+m = 3) と δ の項 (p ≥ 1) は 6 極の 1 次 (+ 偏向磁石の 3 次の項、R4)。
     **v2.3.0 R5: j+k+l+m = 4 (p=0) の名前 ('h22000'、'h31000'…) は 4 次の項 (写像の 4 次の生成関数の係数: 8 極 1 次 + 運動学 + 端のフリンジ + 偏向磁石の 4 次の項 + 3 次 (6 極・偏向磁石) の 2 次、
     `rdt2nd.rdt4`、docs/49 §10)**。order2=True (既定) で 3 次の 2 次 (Magnus の第 2 項) を入れる、False で 4 次のハミルトニアンの 1 次だけ。
     4 次の項は ref=None・δ=0 のリング先頭が位相の基準。rdt4_options: rdt4 への追加のオプション (dict)。戻り: RDTResult
-    (4 次の項は .total に入る。.per_element は 3 次・δ の項だけ。.rdt4 に RDT4Result (内訳 .parts))"""
+    (4 次の項は .total に入る。.per_element は 3 次・δ の項だけ。.rdt4 に RDT4Result (内訳 .parts))
+    **v2.4.0 F1: ロールした (ROTATE・ROTATION≠0) BEND・QUAD がある lat は、coupled=None (既定) で結合した光学 (4×4 の固有モード) の模型の写像から求める
+    (`_resonance_terms_coupled`。全次数の θ)。coupled=False で従来 (その素子を飛ばす)。
+    **v2.4.0 H1 (`ampnf_coupled.py`、docs/49 §14.5): ロール・DX・DY・DZ・DROTATE のある lat で、4 次の名前 (h4 = 写像 e^{−:h3 + h4:} の h4)・delta≠0 (そのエネルギーの閉軌道のまわり)・ref≠None (位相の基準。
+    resdrive の ref と同じ定義) も結合した経路で出る (3 次・4 次の p=0 の項)。δ の項 (p ≥ 1) は δ=0・ref=None・ずれなしだけ。rdt4_options={'D': n} は結合した経路の TPSA の次数 (既定 4、δ≠0 は 6)。**"""
+    coupled_explicit = coupled is not None
+    if coupled is None:
+        from . import ampnf_coupled as _AC
+        coupled = bool(rolled_elements(lat)) or bool(_AC.has_errors(lat))
+    if coupled:
+        try:
+            return _resonance_terms_coupled(lat, terms, nslice, BEND_RDT_DEFAULT if bend_cubic is None else bend_cubic, bend_nslice, delta=delta, ref=ref, D=(rdt4_options or {}).get('D'))
+        except NotImplementedError as e:
+            if coupled_explicit:
+                raise
+            # 模型 (ampnf) が扱えない素子 (K0≠0 の偏向磁石など) があるときは従来の式 (ロールした素子は飛ばす)
+            r_ = resonance_terms(lat, terms, method, nslice, delta, ref, rows, bend_cubic, bend_nslice, momentum_eV, order2, rdt4_options, coupled=False)
+            r_.warnings.append('結合した光学の模型 (ampnf) が未対応 (%s): ロールした素子は入れていない' % e)
+            return r_
     tl = [parse_term(t) for t in terms]
     four = [t for t in tl if sum(t[:4]) == 4 and t[4] == 0]
     if not four:
@@ -713,7 +847,8 @@ class ADTSResult:
         """6 極 2 次 + 8 極 1 次 + 運動学的な項 + 端部のフリンジ + (v2.3.0 R3、bend_cubic=True の既定) 偏向磁石の 3 次どうし + 6 極との交差項
         (追跡の ADTS に対応する全部入りの値): {'xx','xy','yy'}"""
         b4 = getattr(self, 'bend4', None) or {'xx': 0.0, 'xy': 0.0, 'yy': 0.0}
-        return {k: self.sext[k] + self.octu[k] + self.kin[k] + self.fringe[k] + b4[k] + self.bend[k] + self.cross[k] for k in ('xx', 'xy', 'yy')}
+        rt = getattr(self, 'rotate', None) or {'xx': 0.0, 'xy': 0.0, 'yy': 0.0}
+        return {k: self.sext[k] + self.octu[k] + self.kin[k] + self.fringe[k] + b4[k] + self.bend[k] + self.cross[k] + rt[k] for k in ('xx', 'xy', 'yy')}
 
     total_xx = property(lambda self: self.total['xx'])
     total_xy = property(lambda self: self.total['xy'])
@@ -867,8 +1002,39 @@ def bend_cubic_adts(elements, rows, nl3, a_sext, igt_sext, qx, qy, nslice=BEND_N
     return {'all': r_all, 'sext': r_s, 'bend': r_b, 'cross': cross, 'natoms': int((kind == 1).sum())}
 
 
+def _adts_rolled(lat, names, kw):
+    """ロールした BEND・QUAD の項: .total = (ロールを外した lat の解析式の合計) + .rotate。.rotate = 模型 (ampnf、D=3、結合した光学の正規形) の J¹ の差
+    (ロールあり − ロールなし。同じ模型で引くので、6 極の厚みの分割・積分器の分は消える)。θ の全次数 (ADTS は θ の偶関数なので主要項は θ²)"""
+    from . import ampnf, ampnf_coupled as AC
+    errs = AC.has_errors(lat)
+    lat0 = AC.unerrored_lattice(lat) if errs else unrolled_lattice(lat)
+    kw = dict(kw, rows=None)         # 渡された rows は結合した光学の行。ロールを外した lat は自分の CALC
+    r = adts(lat0, rolls=False, **kw)
+    zero = {'xx': 0.0, 'xy': 0.0, 'yy': 0.0}
+    r.rotate = dict(zero)
+    r.rolled = list(names)
+    try:
+        bc = kw.get('bend_cubic')
+        bc = BEND_CUBIC_DEFAULT if bc is None else bc
+        kin = bool(kw.get('include_kinematic', True))
+        dlt = float(kw.get('delta', 0.0) or 0.0)
+        # v2.4.0 H1: δ≠0 の傾きの項は、模型の ν の級数 (D=5) の J¹ の係数の δ 依存 (c_(a,b),p δ^p、p ≤ D−3 = 2) で評価する (δ=0 のときは D=3 の J¹)
+        Dm = 4 if dlt == 0.0 else 5          # D=4: 運動学・フリンジのハミルトニアン (4 次) が J¹ に入る最小の次数 (D=3 では TPSA の次数に入らず落ちる)
+        opt = dict(D=Dm, nslice=max(int(kw.get('nslice', 8)), 16), bend_cubic=bool(bc), nslice_bend=8, kin=kin, fringe=kin)
+
+        def j1(rr):
+            return {k: sum(rr.coef(pl, a_, b_, p_) * dlt ** p_ for p_ in range(0, Dm - 2)) for k, (pl, a_, b_) in (('xx', (0, 1, 0)), ('xy', (0, 0, 1)), ('yy', (1, 0, 1)))}
+        a1 = j1(AC.amplitude_tune_ext(lat, **{k_: v_ for k_, v_ in opt.items() if k_ != 'nslice_quad'}) if errs else ampnf.amplitude_tune(lat, **opt))
+        a0 = j1(ampnf.amplitude_tune(lat0, **opt))
+        r.rotate = {k: float(a1[k] - a0[k]) for k in ('xx', 'xy', 'yy')}
+        r.warnings.append('ロールした BEND・QUAD (%s ...): 結合した光学の模型 (ampnf、D=%d) の J¹ の差 .rotate を足した (全次数の θ。ロールもずれもない lat の解析式 + この差。ずれ・DROTATE は閉軌道 ≠ 0 のまわり%s)' % (names[0], Dm, '。δ≠0 は J¹ の δ 依存 (p ≤ 2) を δ で評価' if dlt else ''))
+    except NotImplementedError as e:
+        r.warnings.append('ロールした BEND・QUAD (%s ...) の項は入れていない (ampnf が未対応: %s)' % (names[0], e))
+    return r
+
+
 def adts(lat, method='analytic', nslice=8, delta=0.0, include_octupole=True, rows=None, detail=False, include_kinematic=True,
-         bend_cubic=None, bend_nslice=None, momentum_eV=3e9, fourth=None, optics=None):
+         bend_cubic=None, bend_nslice=None, momentum_eV=3e9, fourth=None, optics=None, rolls=None):
     """6 極の 2 次 + 8 極の 1 次の ADTS ∂νx/∂Jx、∂νx/∂Jy (= ∂νy/∂Jx)、∂νy/∂Jy。J はアクション (x = √(2Jβ) cos φ)。
     delta≠0 ならそのエネルギーでの Twiss・閉軌道の光学を使う (6 極の強さは 1/(1+δ) 倍、閉軌道のずれによる 8 極→6 極のフィードダウンは入れない)。
     戻り: ADTSResult (.sext・.octu の辞書 'xx','xy','yy'、.dnux_dJx など (6 極 + 8 極)、.per_element・.by_harmonic)。
@@ -878,7 +1044,16 @@ def adts(lat, method='analytic', nslice=8, delta=0.0, include_octupole=True, row
     の 2 次の対の項 .bend と、6 極との交差項 .cross (6 極の強さに比例) を足す。bend_nslice = 偏向磁石の本体の分割数 (既定 16、誤差 ~ 1/n²)。
     v2.3.0 V2: 4 次の項の既定は fourth='r3' (物理的な項だけ)。fourth='r6' は K64 の四極の積分器の台形則と偏向磁石の 4 次の項 (0.1〜0.3% の端数) を含む精密版。
     δ≠0 の光学の既定は CALC (optics=None・'calc')。optics='tracked' は追跡の閉軌道・ヤコビ行列から作る光学。
-    .total_xx などが 6 つの和 (include_kinematic=False で .kin・.fringe は 0、bend_cubic=False で .bend・.cross は 0 = R2 の値)。δ≠0 では 3 次の項は入れない (警告)"""
+    .total_xx などが 6 つの和 (include_kinematic=False で .kin・.fringe は 0、bend_cubic=False で .bend・.cross は 0 = R2 の値)。δ≠0 では 3 次の項は入れない (警告)
+    **v2.4.0 F1: ロールした (ROTATE・ROTATION≠0) BEND・QUAD がある lat は、rolls=None (既定) で `.rotate` (結合した光学の模型の J¹ の差、`_adts_rolled`) を .total に足す。
+    rolls=False で従来 (結合なしの式。ロールは飛ばす)**"""
+    if rolls is None and hasattr(lat, 'elements'):
+        from . import ampnf_coupled as _AC0
+        rolls = rolled_elements(lat) + _AC0.has_errors(lat)
+    if rolls:
+        kw = dict(method=method, nslice=nslice, delta=delta, include_octupole=include_octupole, rows=rows, detail=detail, include_kinematic=include_kinematic,
+                  bend_cubic=bend_cubic, bend_nslice=bend_nslice, momentum_eV=momentum_eV, fourth=fourth, optics=optics)
+        return _adts_rolled(lat, rolls, kw)
     elements, rows = _tables(lat, delta=delta, rows=rows) if (rows is not None or delta == 0.0 or optics in (None, 'calc')) else (lat.elements, None)
     if rows is None:
         # optics='tracked' (オプション): δ≠0 の光学を追跡の閉軌道 (2 次の分散を含む) とヤコビ行列から作る (rdttrack.tracked_rows)。既定 (None・'calc') は CALC の光学 (lat.twiss_table(delta))
@@ -886,6 +1061,10 @@ def adts(lat, method='analytic', nslice=8, delta=0.0, include_octupole=True, row
         rows = rdttrack.tracked_rows(elements, momentum_eV, delta, lat.twiss_table(delta=delta))
     res = ADTSResult()
     _check_uncoupled(rows, res.warnings)
+    from . import ampnf_coupled as _AC
+    _errs = _AC.has_errors(lat) if hasattr(lat, 'elements') else []
+    if _errs:
+        res.warnings.append('DX・DY・DROTATE のある素子 (%s ...) の据え付けのずれ・ロール誤差は ADTS に入れていない (閉軌道 ≠ 0 のまわりの展開は共鳴駆動項 resonance_terms の結合した経路だけ。ampnf の ν(J) の級数は閉軌道 0 の前提)' % _errs[0])
     if delta != 0.0:
         res.warnings.append('δ≠0 の解析式 (既定: fourth="r3"・CALC の光学): ADTS の値は追跡と 4e-3 以内 (ASTRID2・FODO、δ = ±0.002)、δ 微分は yy などで外れる。精度が要るときは nform.adts_at_delta / adts_delta_derivative(method="nform") (追跡の写像の数値の正規形)、または fourth="r6"・optics="tracked" (精密版)')
     qx, qy = float(rows[-1].mux) / TWO_PI, float(rows[-1].muy) / TWO_PI
@@ -986,7 +1165,8 @@ def _slice_for_optics(el, l):
     if tn == 'Quadrupole':
         return dataclasses.replace(el, L=l)
     if tn == 'Bend':
-        return dataclasses.replace(el, L=l, ANGLE=float(el.ANGLE) * f, E1=0.0, E2=0.0)
+        kw0 = {'K0': float(el.K0) * f} if float(getattr(el, 'K0', 0.0) or 0.0) != 0.0 else {}      # v2 (B237): transfer_matrix が K0 を使う。角度と同じ比で縮める
+        return dataclasses.replace(el, L=l, ANGLE=float(el.ANGLE) * f, E1=0.0, E2=0.0, **kw0)
     if tn == 'Multipole':
         return dataclasses.replace(el, L=l, KnL={n: v * f for n, v in (el.KnL or {}).items()})
     return None          # ドリフトと同じ扱い (SEXT・OCT・DRIFT・MARK・CAVI ...)
@@ -1342,6 +1522,7 @@ def install(ffs):
                 Rule(Sym('BendFourth'), [float(r.bend4['xx']), float(r.bend4['xy']), float(r.bend4['yy'])]),
                 Rule(Sym('BendCubic'), [float(r.bend['xx']), float(r.bend['xy']), float(r.bend['yy'])]),
                 Rule(Sym('SextBendCross'), [float(r.cross['xx']), float(r.cross['xy']), float(r.cross['yy'])]),
+                Rule(Sym('Rotate'), [float(r.rotate['xx']), float(r.rotate['xy']), float(r.rotate['yy'])]) if getattr(r, 'rotate', None) else Rule(Sym('Rotate'), [0.0, 0.0, 0.0]),
                 Rule(Sym('Total'), [float(r.total['xx']), float(r.total['xy']), float(r.total['yy'])])]
 
     def fn_chrom(args):

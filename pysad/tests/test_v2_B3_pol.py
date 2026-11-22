@@ -121,7 +121,7 @@ def test_polarization_includes_sideband_v2(v2_mode):
     e = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)
     sp = e['spin']
     assert sp['depol_sideband'] is True
-    assert abs(sp['depol_rate_linear'] / 2.318e-8 - 1) < 0.01
+    assert abs(sp['depol_rate_linear'] / 2.40756e-8 - 1) < 0.01      # v2.4.0 D (B165): 2.318e-8 → 2.342e-8 (+1.0%。D の y 列の本体の B∥)、D3 (B230: 四極の本体の B∥): → 2.4076e-8 (+2.8%)
     assert abs(sp['depol_rate'] / 1.09e-7 - 1) < 0.05                    # P1: ベータトロンのクロマティックな変調を入れた値 (B3 は 4.46e-8)
     assert sp['depol_chromatic'] is True
     sdamp, srel = sp['sdamp'], sp['sdamp_rel']
@@ -151,7 +151,7 @@ def test_sideband_is_small_at_low_energy_and_planar_ring_is_unchanged(v2_mode):
     assert abs(sp['equpol'][0] - PST) < 1e-7
     ffs, _ = ffscmd.run_sad_string(_lat(3.0, 1.5), out=io.StringIO())
     sp = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)['spin']
-    assert abs(sp['depol_rate_linear'] / 5.52e-11 - 1) < 0.02
+    assert abs(sp['depol_rate_linear'] / 5.8504e-11 - 1) < 0.02      # v2.4.0 D (B165): 5.52e-11 → 5.850e-11 (+6%。垂直の D への本体の B∥。以前はこの値が「平面リングで変わらない」基準だった。B∥ なしとの差は spin_bpar=False で戻る)
     assert 1.05 < sp['depol_rate'] / sp['depol_rate_linear'] < 1.25
 
 
