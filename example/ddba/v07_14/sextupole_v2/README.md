@@ -307,7 +307,7 @@ ADTS xy を下げる (1/3) のは誤差なしで 40.6 と最も悪く、ラウ�
 | `run_lma.py` | LMA の簡略確認 |
 | `plot_fmap.py` / `plot_summary.py` / `term_table.py` / `wp_check.py` | 周波数マップの足跡の図・DA の比較の図・解析式の表・整数・半整数共鳴の確認 |
 | `results/cands.json` | 全候補の K2L (20 ファミリー) と指定 |
-| `results/eval_*.json`、`results/gs_*.json` | 追跡の結果 (`_c` は最終の比較の一式) |
+| `results_raw.tar.gz` | 生の計算結果 (追跡の結果 `eval_*.json`・`gs_*.json` (`_c` は最終の比較の一式)、gs の台本 `*.sad` と出力 `*.txt`、周波数マップの数値 `*.npz` ほか約 600 ファイル)。細かいファイルが多いので 1 つに固めた。`results/` の中で `tar xzf ../results_raw.tar.gz` と展開すると、上の `eval_*.json` などの元の名前に戻り、`summarize.py` や `plot_*.py` が動く。展開したファイルは `.gitignore` で追跡しない |
 
 実行は `PYSAD_SAD_PACKAGES=D:/work/SAD-master/SAD-master/Packages py -3.12 …` (リポジトリのどこからでも)。長い計算は 2 本まで・低優先度で走らせた。
 
