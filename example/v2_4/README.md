@@ -31,3 +31,12 @@ DDBA v07_14 の 6 極検討への J²・δ 依存の追加: [`example/ddba/v07_1
 
 条件: H1 は v2 モード (DX・DROTATE のある BEND の tchge は v2 の符号)、RF・放射なし。H2 は v2、RFSW・RAD ON (FLUC なし)、LOSSAMPL ±10 mm の例の値、周回数は自動 (シンクロトロン振動 2 周期)、バケット判定あり。
 
+
+## I (ampnf の限界の拡張: ν(J) の J の次数・1 本の共鳴の島。docs/49 §15)
+
+| スクリプト | 内容 | 時間 | 出力 |
+|---|---|---|---|
+| [`I1_nu_of_J_orders.py`](I1_nu_of_J_orders.py) `fodo\|astrid\|kekls [--gs] [--D n]` | ν(J) の級数の J¹・J²・J³ までの誤差を追跡 (pysad k64) と比べる。`--gs` で 3 点を gs の TrackParticles でも追跡し、pysad の追跡と比べる (WSL の gs、NORFSW) | FODO 約 4 分 (D = 7)、ASTRID2 約 4 分 (D = 7)、KEK-LS 約 5 分 (D = 5) | `I1_fodo.out.txt`・`I1_astrid.out.txt`・`I1_kekls.out.txt` |
+| [`I2_island_vs_tracking.py`](I2_island_vs_tracking.py) `[n:δν ...]` | 24 セルのうち 12 セルに 6 極を置いた非周期の FODO (対称な配置では 24 の倍数でない共鳴は禁止) の 4〜6 次の島。理論 (`ampnf_ext.island_theory`) と追跡の周期 n の固定点・分離線の作用の範囲 | 1 ケース 1〜数分 | `I2_island_fodo.out.txt` |
+
+条件: pysad k64、RF・放射なし、結合なし、δ = 0、1024 周、NAFF の Hann 窓 (I1)。I2 は水平面 (y = py = 0)。

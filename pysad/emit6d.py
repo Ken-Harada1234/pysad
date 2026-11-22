@@ -32,6 +32,7 @@ from .elements import Element, Drift, Quadrupole, Bend
 from .perfkern import tradke_db as _tradke_db, edge_free as _edge_free
 from .perfkern_bend import apply_tdb as _apply_tdb, bendecorr as _k_bendecorr, bendebody as _k_bendebody
 from . import elkern as _ek
+from . import quadbody as _qb
 from . import compat as _compat
 
 POL_MODE = False      # POL フラグ (emittance6d / emittance_rules が一時的に True にする。_State.calpol の既定値)
@@ -778,26 +779,27 @@ def _jac_quad_full(c, L, K1, fringe, fr, ph, dx=0.0, dy=0.0, th=0.0):
         J = _jac_tqlfre(cc, L, ak1, f1in, f2in) @ J
         cc = _lat._tqlfre_cod(cc, L, ak1, f1in, f2in)
     kappa = abs(K1)
-    ndiv = min(1000, 1 + int(abs(L * ak1) / 0.1))
+    sch = _qb.scheme()
+    ndiv = min(1000, _qb.ndiv_calc(L * ak1, sch))
     aln1 = L / ndiv
-    al1 = aln1 * 0.5
-    for _n in range(ndiv):
-        J1 = _jac_tqente(cc, al1)
+    pr = 1.0 + dp
+    for g in range(_qb.QB_M[sch] * ndiv):
+        dl, bl, _jb, _rad, _fin = _qb.group(g, aln1, ndiv, sch)
+        J1 = _jac_tqente(cc, dl)
         if J1 is None:
             return None
-        c1 = _lat._tqente_cod(cc, al1)
-        pr = 1.0 + dp
-        J2 = _jac_tsolque_body(c1, aln1, kappa, 0.0)
+        c1 = _lat._tqente_cod(cc, dl)
+        J2 = _jac_tsolque_body(c1, bl, kappa, 0.0)
         if J2 is None:
             return None
         J = J2 @ (J1 @ J)
-        cc = _lat._tsolque_body_cod(c1, aln1, kappa / pr)
-        al1 = aln1
-    J1 = _jac_tqente(cc, aln1 * 0.5)
+        cc = _lat._tsolque_body_cod(c1, bl, kappa / pr)
+    dl = _qb.group(_qb.QB_M[sch] * ndiv, aln1, ndiv, sch)[0]
+    J1 = _jac_tqente(cc, dl)
     if J1 is None:
         return None
     J = J1 @ J
-    cc = _lat._tqente_cod(cc, aln1 * 0.5)
+    cc = _lat._tqente_cod(cc, dl)
     if mfring in (2, 3):
         J = _jac_tqlfre(cc, L, ak1, -f1out, f2out) @ J
         cc = _lat._tqlfre_cod(cc, L, ak1, -f1out, f2out)
@@ -998,36 +1000,38 @@ def _tquade(st: _State, el: Quadrupole, krad: bool = True):
         nq = min(1000, max(nq, _npolq(ak1, L)))      # v2 (POL): スピンの歳差の微分のための分割 (K64 は BEND だけ分割を増やす)
     aln = L / nq
     akn = ak1 / nq
+    sch = _qb.scheme()
     for iq in range(nq):
         # tsolque(aln, akn, krad): 内部分割 + スライス毎 tradke
-        ndiv = min(1000, 1 + int(abs(aln * akn) / 0.1))
+        ndiv = min(1000, _qb.ndiv_calc(aln * akn, sch))
         aln1 = aln / ndiv
-        al1 = aln1 * 0.5
-        for n in range(ndiv):
-            def f_body(cc, al1=al1):
+        for g in range(_qb.QB_M[sch] * ndiv):
+            dl, bl, _jb, rad, _fin = _qb.group(g, aln1, ndiv, sch)
+
+            def f_body(cc, dl=dl, bl=bl):
                 cc = r_in(cc)
                 pr = 1.0 + cc[5]
-                cc = _lat._tqente_cod(cc, al1)
-                cc = _lat._tsolque_body_cod(cc, aln1, akn / aln / pr)
-                cc[4] -= ph.dv(cc[5]) * aln1
+                cc = _lat._tqente_cod(cc, dl)
+                cc = _lat._tsolque_body_cod(cc, bl, akn / aln / pr)
+                cc[4] -= ph.dv(cc[5]) * bl
                 return r_out(cc)
 
-            def core_body(c, al1=al1):
-                # tqente(al1) → tsolque 本体 (+ dv 項)。ヤコビアンは各段の入口の cod で作って掛ける
-                J1 = _jac_tqente(c, al1)
+            def core_body(c, dl=dl, bl=bl):
+                # tqente(dl) → tsolque 本体 (+ dv 項)。ヤコビアンは各段の入口の cod で作って掛ける
+                J1 = _jac_tqente(c, dl)
                 if J1 is None:
                     return None
-                c1 = _lat._tqente_cod(c, al1)
-                J2 = _jac_tsolque_body(c1, aln1, akn / aln, _dvz(ph, c1[5]))
+                c1 = _lat._tqente_cod(c, dl)
+                J2 = _jac_tsolque_body(c1, bl, akn / aln, _dvz(ph, c1[5]))
                 return None if J2 is None else J2 @ J1
             st.piece(f_body, jac=jfun(core_body))
-            if n != ndiv - 1:
+            if rad:
                 if qpsi is not None and _compat.spin_bpar():
                     st.bpot = qpsi          # v2 (B165): 本体の B∥ = Δψ (ψ = k x y)
                 st.tradke(aln1, 0.0)
-            al1 = aln1
-        st.piece(lambda cc: r_out(_lat._tqente_cod(r_in(cc), aln1 * 0.5)),
-                 jac=jfun(lambda c: _jac_tqente(c, aln1 * 0.5)))
+        dl_f = _qb.group(_qb.QB_M[sch] * ndiv, aln1, ndiv, sch)[0]
+        st.piece(lambda cc: r_out(_lat._tqente_cod(r_in(cc), dl_f)),
+                 jac=jfun(lambda c: _jac_tqente(c, dl_f)))
         if qpsi is not None and iq == nq - 1:
             gq = _grad_xy(qpsi, st.cod)
             st.add_bsi(-qpsi(st.cod), -gq[0], -gq[1], False)
@@ -1781,11 +1785,13 @@ def _tthine(st: _State, el, enarad=False):
     # v2 (B240): 追跡 (track6._tthin_sext) は L ≠ 0 の 6 極・8 極… を放射・スピンの歳差させる (1 刻み、基準点は入口)。K64 の tthine は放射せず、Emittance[] の
     # スピン (srot) の歳差・減衰・量子励起の D・B が入らない。v2 は tturne の経路 (enarad=True) で追跡と同じ 1 刻みの tradke を入れる
     krad = bool(enarad and _compat.v2() and el.L != 0.0 and ak != 0.0 and float(getattr(el, 'RAD', 0.0) or 0.0) == 0.0)
+    # v2 (B291): CALC・Emittance[] の 6 極以上 (L ≠ 0) にも追跡 (tthin) と同じ非線形フリンジ ttfrin を入れる。K64 の tthine は入れず、軌道が 6 極の中心から
+    # ずれているとき (ずれた 6 極・磁石の steering・分散軌道) に追跡の一周写像とチューンが合わなかった
     _tthine_gen(st, el.L, ak, kord, float(getattr(el, 'DX', 0.0) or 0.0), float(getattr(el, 'DY', 0.0) or 0.0),
-                float(getattr(el, 'ROTATION', 0.0) or 0.0), krad)
+                float(getattr(el, 'ROTATION', 0.0) or 0.0), krad, _lat._thin_fringe_flag(el, el.L, ak))
 
 
-def _tthine_gen(st: _State, L, ak, kord, dx, dy, th, krad=False):
+def _tthine_gen(st: _State, L, ak, kord, dx, dy, th, krad=False, fringe=False):
     """tthine の本体 (ak = 積分強度, kord = nord/2−1。薄い四極 (L=0 の QUAD, tquade → tthine(nord=4)) も kord=1 で使う)"""
     ph = st.ph
     f0 = _lat._thin_offset_map(L, ak, kord)
@@ -1798,11 +1804,20 @@ def _tthine_gen(st: _State, L, ak, kord, dx, dy, th, krad=False):
         return c2
 
     jcore = lambda c: _jac_thin(c, L, ak, kord, _dvz(ph, c[5]))
+    fringe = fringe and ak != 0.0 and L != 0.0
+
+    def core_pieces():
+        # v2 (B291): 本体の前後に追跡と同じ非線形フリンジ (入口 +ak、出口 −ak)
+        if fringe:
+            st.piece(lambda c: _lat._thin_fringe_cod(c, ak, L, kord), jac=lambda c: _lat._thin_fringe_jac(c, ak, L, kord)[1])
+        st.piece(f_core, jac=jcore)
+        if fringe:
+            st.piece(lambda c: _lat._thin_fringe_cod(c, -ak, L, kord), jac=lambda c: _lat._thin_fringe_jac(c, -ak, L, kord)[1])
     if ak == 0.0 or (dx == 0.0 and dy == 0.0 and th == 0.0):
         # ak=0 は tdrife0 だけ (tchge を呼ばない)
         if krad:
             st.setr0()
-        st.piece(f_core, jac=jcore)
+        core_pieces()
         if krad:
             st.tradke(L, 0.0)
         return
@@ -1810,7 +1825,7 @@ def _tthine_gen(st: _State, L, ak, kord, dx, dy, th, krad=False):
              jac=lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, True))
     if krad:
         st.setr0()
-    st.piece(f_core, jac=jcore)
+    core_pieces()
     if krad:
         st.tradke(L, 0.0)
     st.piece(lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, 0.0, 0.0, 0.0, False),
@@ -1850,7 +1865,7 @@ def _quade_fast(st, el, krad):
     K1 = _g0(el, 'K1')
     if L == 0.0 and K1 != 0.0:
         return _ek.k_thin(st.cod, st.T, st.D, st.B, st._S, st.PH, 0.0, K1, 1, _g0(el, 'DX'), _g0(el, 'DY'),
-                          _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2())
+                          _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2(), False)
     if L == 0.0 or K1 == 0.0:
         return _ek.k_drift(st.cod, st.T, st.D, st.B, st._S, st.PH, L, True, True, st.want_jac, st.want_db)
     f1in, f2in, f1out, f2out, mfring = _lat._quad_fringe_params(el)
@@ -1868,7 +1883,7 @@ def _thine_fast(st, el):
     if _compat.v2() and L != 0.0 and ak != 0.0 and _g0(el, 'RAD') == 0.0:
         return 1        # v2 (B240): L ≠ 0 の 6 極以上は Emittance[] でも放射する (Python の経路。numba の k_thin は放射なし)
     return _ek.k_thin(st.cod, st.T, st.D, st.B, st._S, st.PH, L, ak, int(kord), _g0(el, 'DX'), _g0(el, 'DY'),
-                      _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2())
+                      _g0(el, 'ROTATION'), True, True, st.want_jac, st.want_db, _compat.v2(), _lat._thin_fringe_flag(el, L, ak))
 
 
 def _nonfinite_state(st) -> bool:

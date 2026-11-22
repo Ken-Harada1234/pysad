@@ -20,6 +20,7 @@ from numba import njit
 
 from .perfkern import tradke_db as _tradke_db, edge_free as _edge_free
 from .radbeta import ab as _rb_ab
+from . import quadbody as _qb
 from .perfkern_bend import apply_tdb as _apply_tdb, bendecorr as _bendecorr, bendebody as _bendebody
 
 NJ = dict(cache=True, error_model='numpy', nogil=True)
@@ -37,6 +38,7 @@ XTHASX = (2.0**-52 * 13312.0 / 231.0 / 6.0)**0.1     # tfloor.f xthasx
 P0, H0, ANRAD, CUC, CRAD, BRHOZ, EMIDIV, EMIDIB, EMIDIQ, DVFS, PGEV = range(11)
 RSGN = 11            # tradke の ddpx の符号 (K64 = +1、v2 = −1。v2next A1 項目 7: K64 の追跡 tradkn と逆)
 EXACTD = 12          # tradke の D・B の更新に終点の座標に関する微分を使う (v2 = 1。v2next P2 項目 4)
+QBSCH = 13           # 四極の本体の積分の方式 (quadbody.scheme(): 0 = K64 の Strang 分割、1 = 4 次の合成。B226)
 # S の並び
 U0, H1EMIT, DVEMIT = range(3)
 
@@ -45,7 +47,7 @@ def phys_array(ph):
     """emit6d._Phys → PH 配列"""
     from . import compat as _cmp
     return np.array([ph.p0, ph.h0, ph.anrad, ph.cuc, ph.crad, ph.brhoz, ph.emidiv, ph.emidib, ph.emidiq,
-                     ph.dvfs, ph.pgev, -1.0 if _cmp.v2() else 1.0, 1.0 if _cmp.v2() else 0.0], dtype=float)
+                     ph.dvfs, ph.pgev, -1.0 if _cmp.v2() else 1.0, 1.0 if _cmp.v2() else 0.0, float(_qb.scheme())], dtype=float)
 
 
 # ---------------------------------------------------------------------------
@@ -467,15 +469,106 @@ def k_drift(cod, T, D, B, S, PH, L, use_dv, symp_fix, want_jac, want_db):
 
 
 @njit(**NJ)
-def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_jac, want_db, v2=False):
-    """tthine (emit6d._tthine_gen): tchge(入口) → ドリフト/キック + dv → tchge(出口)。状態の複製で計算し成功時だけ書き戻す"""
+def _fringe_raw(x, y, p, q, aki, n):
+    """多極 (nord = 2n、n ≥ 3) の非線形フリンジ ttfrin (track6._ttfrin_gen・_ttfrin6 と同じ式) を実数の演算だけで書いたもの。
+    (x, y, p = px/(1+δ), q = py/(1+δ)) → (x1, y1, p1, q1, Δz)。+・−・×・÷ だけなので複素ステップ微分 (虚部の 1e-30) で厳密な導関数が取れる。
+    aki = ak/al/n!/4/(1+δ) (n = 3 で 6 極: ak/al/24)"""
+    u1 = x * 0.0 + 1.0
+    v1 = x * 0.0
+    for _i in range(n - 1):
+        u1, v1 = u1 * x - v1 * y, u1 * y + v1 * x          # (x + i y)^(n−1)
+    u = u1 * x - v1 * y                                     # cz = cz1·cx
+    v = u1 * y + v1 * x
+    a = 2.0 * aki * v
+    ar = u / (n + 1.0) - u                                  # cz/(n+1) − conj(cz)
+    ai = v / (n + 1.0) + v
+    car = -aki * (x * ar - y * ai)                          # ca = −aki·cx·(…)
+    cai = -aki * (x * ai + y * ar)
+    d = 1.0 + a * a - (aki * n)**2 * (u * u + v * v)
+    m = x * p + y * q                                       # cx·cp (cp = p − i q)
+    nn = y * p - x * q
+    cp1r = ((p + a * q) - aki * n * (u1 * m + v1 * nn)) / d
+    cp1i = ((a * p - q) - aki * n * (v1 * m - u1 * nn)) / d
+    return x + car, y + cai, cp1r, -cp1i, -(car * cp1r - cai * cp1i)
+
+
+@njit(**NJ)
+def _fringe_step(c, ak, al, n, want_jac):
+    """多極の非線形フリンジ ttfrin (入口は +ak、出口は −ak) の写像 (c を in-place で更新) と解析ヤコビアン (複素ステップ微分 + 連鎖)。
+    c は CALC・Emittance[] の正準運動量 (px は p0 で規格化)、追跡は px/(1+δ) なので p = px/(1+δ)・aki ∝ 1/(1+δ) に直して同じ式を使う。
+    戻り: J (want_jac のとき。そうでなければ単位行列)"""
+    J = np.eye(6)
+    if ak == 0.0 or al == 0.0:
+        return J
+    pr = 1.0 + c[5]
+    x = c[0]
+    y = c[2]
+    p = c[1] / pr
+    q = c[3] / pr
+    aki = ak / al / _factorial(n) / 4.0 / pr
+    r = _fringe_raw(x, y, p, q, aki, n)
+    if want_jac:
+        h = 1e-30
+        P = np.zeros((5, 5))
+        for k in range(5):
+            v = np.zeros(5, dtype=np.complex128)
+            v[0] = x
+            v[1] = y
+            v[2] = p
+            v[3] = q
+            v[4] = aki
+            v[k] += 1j * h
+            rc = _fringe_raw(v[0], v[1], v[2], v[3], v[4], n)
+            P[0, k] = rc[0].imag / h
+            P[1, k] = rc[1].imag / h
+            P[2, k] = rc[2].imag / h
+            P[3, k] = rc[3].imag / h
+            P[4, k] = rc[4].imag / h
+        dpd = -p / pr                    # ∂p/∂δ (px 一定)
+        dqd = -q / pr
+        dad = -aki / pr
+        for o in range(3):               # 出力 x1 (行 0)、y1 (行 2)、z (行 4): P の行 0、1、4
+            po = (0, 1, 4)[o]
+            ro = (0, 2, 4)[o]
+            J[ro, 0] = P[po, 0]
+            J[ro, 2] = P[po, 1]
+            J[ro, 1] = P[po, 2] / pr
+            J[ro, 3] = P[po, 3] / pr
+            J[ro, 5] = P[po, 2] * dpd + P[po, 3] * dqd + P[po, 4] * dad
+        J[4, 4] = 1.0
+        J[1, 0] = pr * P[2, 0]
+        J[1, 2] = pr * P[2, 1]
+        J[1, 1] = P[2, 2]
+        J[1, 3] = P[2, 3]
+        J[1, 5] = r[2] + pr * (P[2, 2] * dpd + P[2, 3] * dqd + P[2, 4] * dad)
+        J[3, 0] = pr * P[3, 0]
+        J[3, 2] = pr * P[3, 1]
+        J[3, 1] = P[3, 2]
+        J[3, 3] = P[3, 3]
+        J[3, 5] = r[3] + pr * (P[3, 2] * dpd + P[3, 3] * dqd + P[3, 4] * dad)
+    c[0] = r[0]
+    c[2] = r[1]
+    c[1] = r[2] * pr
+    c[3] = r[3] * pr
+    c[4] += r[4]
+    return J
+
+
+@njit(**NJ)
+def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_jac, want_db, v2=False, fringe=False):
+    """tthine (emit6d._tthine_gen): tchge(入口) → [フリンジ] → ドリフト/キック + dv → [フリンジ] → tchge(出口)。状態の複製で計算し成功時だけ書き戻す。
+    fringe=True (v2 の L≠0 の 6 極以上。追跡の ttfrin と同じ非線形フリンジをヤコビアンと COD の写像に入れる。K64 の tthine は入れない): n = kord + 1"""
     c = cod.copy()
     Tl = T.copy()
     Dl = D.copy()
     Bl = B.copy()
     shift = ak != 0.0 and (dx != 0.0 or dy != 0.0 or th != 0.0)
+    fr = fringe and ak != 0.0 and L != 0.0
     if shift:
         _tchge_simple(c, Tl, Dl, Bl, dx, dy, th, True, want_jac, want_db, symp_fix, v2)
+    if fr:
+        Jf = _fringe_step(c, ak, L, kord + 1, want_jac)
+        _piece(Jf, Tl, Dl, Bl, want_jac, want_db, symp_fix)
     if want_jac:
         dvzL = _dvz(PH, c[5]) * L if use_dv else 0.0
         ok, J = _jac_thin(c, L, ak, kord, dvzL)
@@ -485,6 +578,9 @@ def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_
     _tthine_map(c, L, ak, kord)
     if use_dv:
         c[4] -= _dv(PH, c[5]) * L
+    if fr:
+        Jf = _fringe_step(c, -ak, L, kord + 1, want_jac)
+        _piece(Jf, Tl, Dl, Bl, want_jac, want_db, symp_fix)
     if shift:
         _tchge_simple(c, Tl, Dl, Bl, dx, dy, th, False, want_jac, want_db, symp_fix, v2)
     cod[:] = c
@@ -1413,29 +1509,30 @@ def _quad_full(c, L, K1, fringe, f1in, f2in, f1out, f2out, mfring, dx, dy, th, u
             J = _mm(_jac_tqlfre(cc, L, ak1, f1in, f2in), J)
         _tqlfre(cc, L, ak1, f1in, f2in)
     kappa = abs(K1)
-    ndiv = min(1000, 1 + int(abs(L * ak1) / 0.1))
+    sch = int(PH[QBSCH])
+    ndiv = min(1000, _qb.ndiv_calc_nb(L * ak1, sch))
     aln1 = L / ndiv
-    al1 = aln1 * 0.5
     pr = 1.0 + dp
-    for _n in range(ndiv):
+    for g in range(_qb.QB_M[sch] * ndiv):
+        dl, bl, jb, rad, fin = _qb.group_nb(g, aln1, ndiv, sch)
         if want_jac:
-            ok, J1 = _jac_tqente(cc, al1)
+            ok, J1 = _jac_tqente(cc, dl)
             if not ok:
                 return False, J
-        _tqente(cc, al1)
+        _tqente(cc, dl)
         if want_jac:
-            ok, J2 = _jac_tsolque_body(cc, aln1, kappa, 0.0)
+            ok, J2 = _jac_tsolque_body(cc, bl, kappa, 0.0)
             if not ok:
                 return False, J
             J = _mm(J2, _mm(J1, J))
-        _tsolque_body(cc, aln1, kappa / pr)
-        al1 = aln1
+        _tsolque_body(cc, bl, kappa / pr)
+    dl, bl, jb, rad, fin = _qb.group_nb(_qb.QB_M[sch] * ndiv, aln1, ndiv, sch)
     if want_jac:
-        ok, J1 = _jac_tqente(cc, aln1 * 0.5)
+        ok, J1 = _jac_tqente(cc, dl)
         if not ok:
             return False, J
         J = _mm(J1, J)
-    _tqente(cc, aln1 * 0.5)
+    _tqente(cc, dl)
     if mfring == 2 or mfring == 3:
         if want_jac:
             J = _mm(_jac_tqlfre(cc, L, ak1, -f1out, f2out), J)
@@ -1538,41 +1635,42 @@ def k_quad(cod, T, D, B, codr0, transr, S, PH, L, K1, dx, dy, th, fringe, f1in, 
     nq = min(1000, max(1, nq))
     aln = L / nq
     akn = ak1 / nq
+    sch = int(PH[QBSCH])
     for _q in range(nq):
-        ndiv = min(1000, 1 + int(abs(aln * akn) / 0.1))
+        ndiv = min(1000, _qb.ndiv_calc_nb(aln * akn, sch))
         aln1 = aln / ndiv
-        al1 = aln1 * 0.5
-        for n in range(ndiv):
+        for g in range(_qb.QB_M[sch] * ndiv):
+            dl, bl, jb, rad, fin = _qb.group_nb(g, aln1, ndiv, sch)
             cr = c.copy()
             _quad_r_in(cr, dx, dy, th, rot)
             if want_jac:
-                ok, J1 = _jac_tqente(cr, al1)
+                ok, J1 = _jac_tqente(cr, dl)
                 if not ok:
                     return 1
                 c1 = cr.copy()
-                _tqente(c1, al1)
-                ok, J2 = _jac_tsolque_body(c1, aln1, akn / aln, _dvz(PH, c1[5]) if use_dv else 0.0)
+                _tqente(c1, dl)
+                ok, J2 = _jac_tsolque_body(c1, bl, akn / aln, _dvz(PH, c1[5]) if use_dv else 0.0)
                 if not ok:
                     return 1
                 _piece(_wrapj(_mm(J2, J1), Rin, Rout, plain), Tl, Dl, Bl, want_jac, want_db, symp_fix)
             pr = 1.0 + cr[5]
-            _tqente(cr, al1)
-            _tsolque_body(cr, aln1, akn / aln / pr)
+            _tqente(cr, dl)
+            _tsolque_body(cr, bl, akn / aln / pr)
             if use_dv:
-                cr[4] -= _dv(PH, cr[5]) * aln1
+                cr[4] -= _dv(PH, cr[5]) * bl
             _quad_r_out(cr, dx, dy, th, rot)
             c[:] = cr
-            if n != ndiv - 1:
+            if rad:
                 _tradke(c, Tl, Dl, Bl, r0, trl, Sl, PH, aln1, 0.0, want_jac, want_db, radcod)
-            al1 = aln1
+        dl, bl, jb, rad, fin = _qb.group_nb(_qb.QB_M[sch] * ndiv, aln1, ndiv, sch)
         cr = c.copy()
         _quad_r_in(cr, dx, dy, th, rot)
         if want_jac:
-            ok, J1 = _jac_tqente(cr, aln1 * 0.5)
+            ok, J1 = _jac_tqente(cr, dl)
             if not ok:
                 return 1
             _piece(_wrapj(J1, Rin, Rout, plain), Tl, Dl, Bl, want_jac, want_db, symp_fix)
-        _tqente(cr, aln1 * 0.5)
+        _tqente(cr, dl)
         _quad_r_out(cr, dx, dy, th, rot)
         c[:] = cr
         _tradke(c, Tl, Dl, Bl, r0, trl, Sl, PH, aln1, 0.0, want_jac, want_db, radcod)

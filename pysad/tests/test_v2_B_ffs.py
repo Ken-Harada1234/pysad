@@ -114,13 +114,29 @@ def test_b30_main_off_rfsw_reaches_ffs():
     assert _nums(_line(r_v2_off, 'F ')) == [0.0, 0.0, 0.0]                       # v2: 届く
     assert _nums(_line(r_k_off, 'F ')) == [1.0, 0.0, 0.0]                        # K64: 届かない (track.f:149)
     t_off = _nums(_line(r_v2_off, 'T '))
-    assert t_off == _nums(_line(r_k_no, 'T '))                                   # FFS の NORFSW と全桁同じ追跡
+    r_v2_no, _ = _run(lat + 'OFF RAD FLUC;\n', 'USE RING;\nNORFSW;\nCELL; CALC;\n' + _TRK, 'v2')
+    r_v2_rf, _ = _run(lat + 'OFF RFSW RAD FLUC;\n', 'USE RING;\nRFSW;\nCELL; CALC;\n' + _TRK, 'v2')
+    r_k_on, _ = _run(lat + 'OFF RAD FLUC;\nON RFSW;\n', 'USE RING;\nCELL; CALC;\n' + _TRK, 'k64')
+    # 比べる相手は同じ互換モードの結果。k64 との比較は v2 の四極の 4 次の合成 (B226) の分 (1e-9 台) だけずれるので、
+    # 比較は「同じ互換モード同士で全桁同じ」と「k64 との差が積分器の差の範囲」に分ける
+    assert t_off == _nums(_line(r_v2_no, 'T '))                                  # FFS の NORFSW と全桁同じ追跡
     assert t_off[2] == 1e-4                                                      # 空洞なし・放射なし: δ は保存
-    t_on = _nums(_line(r_k_off, 'T '))
-    assert t_on == _nums(_line(r_v2_on, 'T ')) and abs(t_on[2] - 1e-4) > 1e-6    # 空洞ありは δ が変わる。v2 の ON RFSW も同じ
-    # FFS の中の RFSW / NORFSW は MAIN の指定より後なので優先
-    r, _ = _run(lat + 'OFF RFSW RAD FLUC;\n', 'USE RING;\nRFSW;\nCELL; CALC;\n' + _TRK, 'v2')
-    assert _nums(_line(r, 'T ')) == t_on
+    t_on = _nums(_line(r_v2_on, 'T '))
+    assert t_on == _nums(_line(r_v2_rf, 'T ')) and abs(t_on[2] - 1e-4) > 1e-6    # 空洞ありは δ が変わる。FFS の RFSW (v2) も同じ
+    # k64: MAIN の OFF RFSW は届かず (空洞あり)、ON RFSW と同じ追跡。v2 との差は四極の積分器だけ (1e-7 以内)
+    assert _nums(_line(r_k_off, 'T ')) == _nums(_line(r_k_on, 'T '))
+    for k, v in ((_nums(_line(r_k_no, 'T ')), t_off), (_nums(_line(r_k_on, 'T ')), t_on)):
+        assert max(abs(a - b) for a, b in zip(k, v)) < 1e-7
+    # 四極を K64 の方式 (方式 0) にすれば、v2 の追跡は k64 と全桁同じ
+    from pysad import quadbody
+    old = quadbody.set_scheme(0)
+    try:
+        r_v2_s0, _ = _run(lat + 'OFF RFSW RAD FLUC;\n', 'USE RING;\nCELL; CALC;\n' + _TRK, 'v2')
+        r_v2_s0on, _ = _run(lat + 'OFF RAD FLUC;\nON RFSW;\n', 'USE RING;\nCELL; CALC;\n' + _TRK, 'v2')
+    finally:
+        quadbody.set_scheme(old)
+    assert _nums(_line(r_v2_s0, 'T ')) == _nums(_line(r_k_no, 'T '))
+    assert _nums(_line(r_v2_s0on, 'T ')) == _nums(_line(r_k_on, 'T '))
 
 
 # ---------------------------------------------------------------- B67 MOMENTUM

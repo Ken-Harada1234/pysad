@@ -87,14 +87,30 @@ def test_fitp_final_solution_matches_gs_k64(name):
         a = [l for l in t.splitlines() if l.startswith('after GO')][0]
         return res, U.floats(a.split('QD =')[1].replace('K2 SF SD =', ' '))
     rg, kg = final(gs)
-    for m in ('k64', 'v2'):
+    # k64 は gs と 2e-4 (残差)。v2 の既定は、四極の本体の 4 次の合成 (B226) と 6 極 (L ≠ 0) の非線形フリンジの CALC への追加 (B291) で
+    # オフモメンタム (δ = ±2%、COD が数 mm〜cm) の光学が 1e-7〜1e-6 動き、最終の残差 (1.8e-5。チューンの 1e-3 程度の合わせ残り) が gs と 6e-4 違う
+    # (K1 は 6 桁一致、K2 は 2e-4 以内)。v2 の許容は残差 2e-3。下の「方式 0・フリンジなし」で k64 と全桁同じになることを確かめる
+    for m, rtol in (('k64', 2e-4), ('v2', 2e-3)):
         rp, kp = final(out[m])
         if name != 'one':
-            assert rp == pytest.approx(rg, rel=2e-4), (m, rp, rg)
+            assert rp == pytest.approx(rg, rel=rtol), (m, rp, rg)
         assert kp[0] == pytest.approx(kg[0], abs=2e-6) and kp[1] == pytest.approx(kg[1], abs=2e-6)       # K1 QD
         if name != 'one':
             assert np.allclose(kp[2:], kg[2:], rtol=1e-3), (m, kp, kg)                                       # K2 SF SD
-    assert final(out['k64']) == final(out['v2'])                       # FITP は両モードで同じ
+    # v2 の既定は k64 と同じ最終解の近く (残差 2e-3、K1 2e-6、K2 1e-3 の範囲)
+    fk, fv = final(out['k64']), final(out['v2'])
+    assert fv[0] == pytest.approx(fk[0], rel=2e-3) and np.allclose(fv[1], fk[1], rtol=1e-3, atol=2e-6)
+    if name == 'five':
+        # 四極を K64 の方式 (方式 0) にし、CALC の 6 極のフリンジ (B291) を外した v2 は、k64 と同じ最終解 (差は B226・B291 だけ)
+        from pysad import lattice, quadbody
+        old_s, old_f = quadbody.set_scheme(0), lattice._thin_fringe_flag
+        lattice._thin_fringe_flag = lambda *a: False
+        try:
+            f0 = final(U.run(src, 'v2'))
+        finally:
+            quadbody.set_scheme(old_s)
+            lattice._thin_fringe_flag = old_f
+        assert f0 == fk
 
 
 def test_fitp_first_iteration_residual_matches_gs_for_fitp_1():

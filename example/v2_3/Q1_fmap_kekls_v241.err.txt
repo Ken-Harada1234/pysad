@@ -1,0 +1,2 @@
+D:\work\SAD-master\Claude outputs\example\v2_3\Q1_fmap_ring.py:80: FMapWarning: FrequencyMap: 失われた点が多い (465 / 1271 = 37%): D の統計 (D > －5 の割合など) は残った点だけの値で、実際はもっと悪い (失われた点を D 大とみなした割合は 0.45)。作動点が共鳴に近い・アパーチャ・振幅の範囲を確かめる
+  main(sys.argv[1] if len(sys.argv) > 1 else 'astrid2', int(sys.argv[2]) if len(sys.argv) > 2 else 1,

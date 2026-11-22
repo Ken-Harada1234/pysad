@@ -1,0 +1,11 @@
+seed 1 gs vs pysad v2: same 9 adj 3 diff 0 (of 12)
+seed 1 gs vs pysad k64: same 12 adj 0 diff 0 (of 12)
+seed 2 gs vs pysad v2: same 9 adj 2 diff 1 (of 12)
+seed 2 gs vs pysad k64: same 12 adj 0 diff 0 (of 12)
+seed 3 gs vs pysad v2: same 11 adj 0 diff 1 (of 12)
+seed 3 gs vs pysad k64: same 12 adj 0 diff 0 (of 12)
+seed 4 gs vs pysad v2: same 9 adj 1 diff 2 (of 12)
+seed 4 gs vs pysad k64: same 12 adj 0 diff 0 (of 12)
+合計 {'v2': [38, 6, 4], 'k64': [48, 0, 0]}
+δ+: gs 平均 0.01435 標準偏差 0.00304 | pysad(v2) 平均 0.01435 標準偏差 0.00303 (n=24)
+δ-: gs 平均 0.01446 標準偏差 0.00268 | pysad(v2) 平均 0.01450 標準偏差 0.00263 (n=24)

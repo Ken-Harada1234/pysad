@@ -372,7 +372,7 @@ def test_bend_f1_adjacent_bends_match_gs(mode):
             rows = [v[3 * k:3 * k + 3] for k in range(6)]
             for r, g in zip(rows, _GS_RING):
                 for a, b in zip(r, g):
-                    assert abs(a - b) <= (3e-6 if mode == 'k64' else 1e-4) * max(abs(b), 1e-5) + 2e-11, (tag, a, b)
+                    assert abs(a - b) <= (3e-6 if mode == 'k64' else 2e-4) * max(abs(b), 1e-5) + 2e-11, (tag, a, b)   # v2: 四極の本体が 4 次の合成 (B226) で K64 の 2 次と 1e-4 台違う
     finally:
         compat.set_mode(None)
 

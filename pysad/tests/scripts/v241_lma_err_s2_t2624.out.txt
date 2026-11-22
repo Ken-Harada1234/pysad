@@ -1,0 +1,18 @@
+seed 2、誤差 {'count': {'quad': 24, 'sext': 24, 'bend': 12, 'oct': 0}, 'kcount': {'quad': 24, 'sext': 24}, 'ndef': 60}、nturn 2624、LOSSDZ 1.5408 m
+pysad の台本の二分法: 257 s
+LMA API: 500 s
+Traceback (most recent call last):
+  File "D:\work\SAD-master\Claude outputs\pysad\tests\_v241_lma_errors_run.py", line 79, in <module>
+    main()
+  File "D:\work\SAD-master\Claude outputs\pysad\tests\_v241_lma_errors_run.py", line 67, in main
+    os.remove(gsname)
+FileNotFoundError: [WinError 2] 指定されたファイルが見つかりません。: 'D:\\work\\SAD-master\\Claude outputs\\pysad\\tests\\scripts\\_gs_lma_a2_v241_lma_err_s2_t2624.sad'
+ | 0.011094 0.011133 | 0.011055 0.011094 | 0.010684 0.010693
+  40 +1 | 0.016406 0.016445 | 0.016406 0.016445 | 0.016406 0.016416
+  40 -1 | 0.016211 0.016250 | 0.016211 0.016250 | 0.016230 0.016240
+  75 +1 | 0.016406 0.016445 | 0.016406 0.016445 | 0.016406 0.016416
+  75 -1 | 0.016211 0.016250 | 0.016211 0.016250 | 0.016230 0.016240
+ 110 +1 | 0.016406 0.016445 | 0.016406 0.016445 | 0.016406 0.016416
+ 110 -1 | 0.016211 0.016250 | 0.016211 0.016250 | 0.016230 0.016240
+ 150 +1 | 0.011523 0.011562 | 0.011211 0.011250 | 0.011553 0.011562
+ 150 -1 | 0.012812 0.012852 | 0.012773 0.012812 | 0.012842 0.012852

@@ -260,18 +260,34 @@ SK_TW = [2.98217220173114, 3.59817004483586, -.15058637850085, .11736876681750, 
 
 @pytest.mark.parametrize('mode', ['k64', 'v2'])
 def test_mult_skew_components_match_gs(mode):
-    """MULT の SK0 SK1 SK2 SK3 (ANGLE=0): 以前は黙って無視していた (lattice._mult_params)。参照は gs (2026-11-17)"""
+    """MULT の SK0 SK1 SK2 SK3 (ANGLE=0): 以前は黙って無視していた (lattice._mult_params)。参照は gs (2026-11-17)。
+    k64 は gs と 2e-13 で一致。v2 の本体の積分は 4 次の合成 (B226) で、K64 の Strang 分割 (2 次) の誤りの分だけ gs と違う:
+    この MULT (L = 0.5、K1 = 0.1、軌道の傾き 1〜3 mrad) では TR の差が 1.1e-11 以下 (EPS を 1 → 0.1 → 0.01 と小さくすると差が
+    1.1e-11 → 1.5e-12 → 1.6e-13 と刻みの 2 乗に比例して減る = K64 側の積分誤り)。v2 で quadbody.set_scheme(0) にすると gs と
+    2e-13 で一致する (差の原因が本体の積分の方式だけであることの確認)。TW (光学) も同じで、k64・v2 (K64 の方式) は 1e-9、v2 の既定は
+    BX・BY で 2.5e-9・1.2e-8 (相対 3.3e-9。EPS に比例して減る) の差"""
     from pysad.ffscmd import run_sad_string
+    from pysad import quadbody
     old = compat._mode
-    compat.set_mode(mode)
+    old_sch = quadbody.set_scheme(0 if mode == 'v2' else None)       # v2 で本体を K64 の方式に固定した場合
+    results = {}
     try:
-        buf = io.StringIO()
-        run_sad_string(SK, out=buf)
+        for tag, sch in (('fixed', 0 if mode == 'v2' else None), ('default', None)):
+            quadbody.set_scheme(sch)
+            compat.set_mode(mode)
+            buf = io.StringIO()
+            run_sad_string(SK, out=buf)
+            results[tag] = {l.split()[0]: [float(v) for v in l.split()[1:]] for l in buf.getvalue().splitlines()
+                            if l.split() and l.split()[0] in ('TW', 'TR')}
     finally:
         compat.set_mode(old)
-    o = {l.split()[0]: [float(v) for v in l.split()[1:]] for l in buf.getvalue().splitlines()
-         if l.split() and l.split()[0] in ('TW', 'TR')}
-    for a, b in zip(o['TR'], SK_TR):
-        assert abs(a - b) < 2e-13
-    for a, b in zip(o['TW'], SK_TW):
-        assert abs(a - b) < 1e-9 * max(abs(b), 1.0)
+        quadbody.set_scheme(old_sch)
+    for tag, o in results.items():
+        tol = 2e-13 if (mode == 'k64' or tag == 'fixed') else 2e-11      # v2 の既定: K64 の Strang の誤り (実測 1.1e-11)
+        for a, b in zip(o['TR'], SK_TR):
+            assert abs(a - b) < tol
+        tolw = 1e-9 if tol == 2e-13 else 1e-8                            # v2 の既定: CALC の本体 (B226) の差 (BY で相対 3.3e-9)
+        for a, b in zip(o['TW'], SK_TW):
+            assert abs(a - b) < tolw * max(abs(b), 1.0)
+    if mode == 'v2':                                                  # 4 次の合成が実際に効いている (K64 の方式と違う)
+        assert max(abs(a - b) for a, b in zip(results['default']['TR'], SK_TR)) > 1e-12

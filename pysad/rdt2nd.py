@@ -16,6 +16,7 @@ import math
 import numpy as np
 from . import resdrive as R
 from . import bendnl
+from . import quadbody as _qb
 
 TWO_PI = 2.0 * math.pi
 
@@ -173,7 +174,7 @@ def _quad_ndiv(el, eps=0.2):
 def kinematic_h4(elements, rows, warnings=None, ngl=8, quad_rule='k64', eps=0.2, skip=()):
     """運動学的な項 H4 = (px² + py²)²/8 (厳密なドリフトの展開の 4 次) の 1 次: h_jklm = ∫ H4 ds (px = Re[w' ζ] など。素子内の w' は線形の転送行列)。
     積分は Gauss-Legendre ngl 点 (厳密)。quad_rule='k64' (既定) では K64 の四極の積分器の台形則 (節点 `_quad_ndiv(el)+1` 個) で足す
-    (K64 の追跡と比べるとき。'exact' は厳密な積分で、四極の積分器の誤差 ~ ds² 分だけ追跡と違う)。
+    (K64 の追跡と比べるとき。'exact' は厳密な積分で、四極の積分器の誤差 ~ ds² 分だけ追跡と違う。v2 の追跡 (四極の本体が 4 次の合成。B226) では 'k64' も厳密な積分と同じ)。
     四極・偏向磁石 (端部なし)・MULT (K1) は内部の転送行列、それ以外はドリフトとして扱う。戻り (35 成分)"""
     nodes, wts = np.polynomial.legendre.leggauss(ngl)
     nodes = 0.5 * (nodes + 1.0)
@@ -185,7 +186,8 @@ def kinematic_h4(elements, rows, warnings=None, ngl=8, quad_rule='k64', eps=0.2,
         L = float(getattr(el, 'L', 0.0) or 0.0)
         if L <= 0 or i in skip:
             continue
-        if quad_rule == 'k64' and R._tn(el) == 'Quadrupole' and float(el.K1) != 0.0:
+        if quad_rule == 'k64' and R._tn(el) == 'Quadrupole' and float(el.K1) != 0.0 and _qb.scheme() == 0:
+            # (v2 の追跡は 4 次の合成 (quadbody、B226) で、台形則の誤差 ~ ds² は無い。厳密な積分と同じ)
             nd = _quad_ndiv(el, eps)
             tt = np.arange(nd + 1) / nd
             ww = np.full(nd + 1, 1.0 / nd)

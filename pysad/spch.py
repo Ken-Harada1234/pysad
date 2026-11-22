@@ -49,6 +49,7 @@ import numpy as np
 from scipy import fft as _fft
 from scipy import special as _sp
 
+from . import quadbody as _qb
 from .sadscript import SADError
 
 ELRADI = 2.8179403205e-15        # 電子の古典半径 [m]
@@ -900,7 +901,7 @@ class SpaceCharge:
         aln = al * wi
 
         def body(w):
-            _x.mult_qu_all(S, n, al * w, akr1 * w, 0.0, akr0.real * w, akr0.imag * w)
+            _x.mult_qu_all(S, n, al * w, akr1 * w, 0.0, akr0.real * w, akr0.imag * w, _qb.sch_of(rs))
             if krad:
                 _n.tradk_all(S, n, al * w, 0.0, fluc, rs, p0, anrad, cuc)
         body(0.5 * wi)
@@ -912,7 +913,7 @@ class SpaceCharge:
             n = self._sckick(S, n, R, aln, ph, apert)
             if n <= 0:
                 return 0
-        _x.mult_qu_all(S, n, 0.5 * aln, 0.5 * akr1 * wi, 0.0, 0.5 * akr0.real * wi, 0.5 * akr0.imag * wi)
+        _x.mult_qu_all(S, n, 0.5 * aln, 0.5 * akr1 * wi, 0.0, 0.5 * akr0.real * wi, 0.5 * akr0.imag * wi, _qb.sch_of(rs))
         if fringe:
             _x.mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
         if krad:                                 # k_mult と同じ順 (本体 → 出口のフリンジ → 放射)

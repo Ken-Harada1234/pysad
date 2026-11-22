@@ -197,14 +197,24 @@ def test_delta_map_runs_and_tune_follows_chromaticity():
 
 
 def test_k64_mode_runs_same_map():
-    st = _astrid_setup()
+    """k64 モードの周波数マップ。(1) v2 の四極の積分を K64 の方式 (quadbody.set_scheme(0)) にした v2 とは 1e-6 以内で一致 (k64 と v2 の他の違いは
+    この格子では効かない)。(2) v2 の既定 (4 次の合成、B226) との差は k64 の四極の積分 (2 次の Strang 分割) の誤りで、この格子の最大の点
+    (x = 10 mm、y = 6 mm) で約 5e-5 (刻みを 4 倍細かくすると 3.6e-6、16 倍で 2e-7 に減り、4 次の合成の結果に収束する)。1e-4 以内で、0 ではない"""
+    from pysad import quadbody
     xs, ys = [2e-3, 10e-3], [2e-3, 6e-3]
-    rv = frequency_map(st, 2, x=xs, y=ys, nturn=256)
+    rv = frequency_map(_astrid_setup(), 2, x=xs, y=ys, nturn=256)             # v2 の既定 (4 次の合成)
+    old = quadbody.set_scheme(0)
+    try:
+        rv0 = frequency_map(_astrid_setup(), 2, x=xs, y=ys, nturn=256)        # v2 + K64 の四極の積分
+    finally:
+        quadbody.set_scheme(old)
     compat.set_mode('k64')
     st64 = _astrid_setup()
     rk = frequency_map(st64, 2, x=xs, y=ys, nturn=256)
     assert np.isfinite(rk.D).all()
-    assert np.allclose(rk.nux1, rv.nux1, atol=1e-6) and np.allclose(rk.nuy1, rv.nuy1, atol=1e-6)
+    assert np.allclose(rk.nux1, rv0.nux1, atol=1e-6) and np.allclose(rk.nuy1, rv0.nuy1, atol=1e-6)
+    dnu = max(np.abs(rk.nux1 - rv.nux1).max(), np.abs(rk.nuy1 - rv.nuy1).max())
+    assert 1e-6 < dnu < 1e-4
 
 
 def test_mpw_ring_runs():

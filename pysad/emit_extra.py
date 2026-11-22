@@ -127,7 +127,7 @@ def _turn_record(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
         elif isinstance(el, Quadrupole):
             _tquade(st, el, krad=True)
         elif type(el).__name__ in _lat._THIN_KORD:
-            _tthine(st, el)          # tthine (放射なし)。emit6d.tturne と同じ
+            _tthine(st, el, enarad=True)          # emit6d.tturne と同じ (v2 の B240: L ≠ 0 の 6 極は追跡と同じ 1 刻みの tradke。K64 は enarad=False 相当 = 放射なし)
         elif type(el).__name__ == 'Cavity':
             _tcave(st, el)
         elif type(el).__name__ == 'Multipole':

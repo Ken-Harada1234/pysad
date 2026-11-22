@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """v2.3.0 Q1: 周波数マップの例 (pysad/freqmap.py)。1 つの位置 (長直線部) から (x, y) の格子を追跡し、NAFF で前半・後半のチューンを出して
 D = log10 sqrt(Δνx² + Δνy²) を図にする (チューン平面と初期条件平面)。拡散の大きい領域が、チューン図の共鳴線 (次数 4 以下) の上に載ることを確かめる。
-使い方 (リポジトリ直下から): py -3.12 example/v2_3/Q1_fmap_ring.py astrid2   または   kekls   [workers]
+使い方 (リポジトリ直下から): py -3.12 example/v2_3/Q1_fmap_ring.py astrid2   または   kekls   [workers] [出力名の付け足し]
+出力名の付け足し (例 _v241) を付けると Q1_fmap_<名前><付け足し>.* に書く (既存の表は上書きしない)。v2.3.0 の表 (付け足しなし) は旧い四極の積分器 (2 次)、
+_v241 の表は v2.4.1 の 4 次の合成 (B226・B243) で作った。
 条件 (どちらも v2 モード、RFSW OFF、RAD OFF、δ = 0、px = py = 0・z = 0 から出発): 追跡 NTURN = 1024 周 (前半・後半 512 周ずつ)、NAFF の窓 = Hann (次数 1)、
 アパーチャ LOSSAMPL = 0.1 m (実質なし。失われる点は力学的な不安定)、格子 41 × 31 (x が速く変わる)。
 出力: Q1_fmap_<名前>.table.txt (表)、.png (図)、標準出力 (.out.txt)。
@@ -25,7 +27,7 @@ CASES = {
 NX, NY, NTURN = 41, 31, 1024
 
 
-def main(name, workers=1):
+def main(name, workers=1, tag=''):
     from pysad import compat
     from pysad.trksetup import TrackSetup
     from pysad.freqmap import frequency_map, resonance_check, line_distance, resonance_lines
@@ -43,8 +45,8 @@ def main(name, workers=1):
     r = frequency_map(st, cs['loc'], x=np.linspace(*cs['x'], NX), y=np.linspace(*cs['y'], NY), nturn=NTURN, workers=workers, progress=1)
     print('追跡と NAFF: %.0f s' % (time.time() - t0))
     print('条件:', r.cond)
-    r.save(os.path.join(HERE, 'Q1_fmap_%s.table.txt' % name))
-    r.plot(os.path.join(HERE, 'Q1_fmap_%s.png' % name), order=4)
+    r.save(os.path.join(HERE, 'Q1_fmap_%s%s.table.txt' % (name, tag)))
+    r.plot(os.path.join(HERE, 'Q1_fmap_%s%s.png' % (name, tag)), order=4)
     ok = np.isfinite(r.D)
     print('点 %d、失われた点 %d、D の範囲 %.2f 〜 %.2f' % (len(r), (r.lost_turn > 0).sum(), np.nanmin(r.D), np.nanmax(r.D)))
     # 共鳴線との一致: 点 (nu_x1, nu_y1) から、次数 order 以下の共鳴線までの最短距離 (チューン平面の距離) で、近い (< EPS) 点と遠い点を比べる
@@ -75,4 +77,5 @@ def main(name, workers=1):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1] if len(sys.argv) > 1 else 'astrid2', int(sys.argv[2]) if len(sys.argv) > 2 else 1)
+    main(sys.argv[1] if len(sys.argv) > 1 else 'astrid2', int(sys.argv[2]) if len(sys.argv) > 2 else 1,
+         sys.argv[3] if len(sys.argv) > 3 else '')
