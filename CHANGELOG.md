@@ -6,7 +6,7 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
-## v2.4.0 (2026-11-22、開発中。dev/v2.4.0。PyPI は v2.3.0 まで)
+## v2.4.0 (2026-11-22)
 
 **v2.4.0 D (放射・スピン・偏向磁石、v2 のみ。k64 不変)**: B164 (BEND の T[z, δ] の微分の誤りを厳密に)、B165 (BEND の本体の運動量の向きの磁場 B∥: Maxwell 場つきの Thomas-BMT の積分が基準)、B167 (放射の β の因子: `pysad/radbeta.py`、陽子の U0・εx・減衰率、RADINT の陽子)。試験 `test_v24_D_radbeta.py`・`test_v24_D_spin_bpar.py`。未着手と未確認は docs/46 の「v2.4.0 D」。
 
@@ -16,7 +16,7 @@
 
 v2.3.0 の後に、(A) パーサ・評価器・FIT の残りの修正、(B) 放射・エミッタンスの修正、(C) 解析機能の拡張 (ADTS の J²・δ 依存、K0≠0 の偏向磁石、Touschek のバンチ内の δ、LMA の対応範囲、DA の `ExpandElementValues`) を行いました。
 記録は [`docs/history/v24_A.md`](docs/history/v24_A.md) (C) と [`docs/history/v24_RAD.md`](docs/history/v24_RAD.md) (B)、変更の一覧は [`docs/47_v2_changes.md`](docs/47_v2_changes.md)、未対応・未確認は [`docs/46_unimplemented_and_unverified.md`](docs/46_unimplemented_and_unverified.md)。
-**朝に判断する項目 (既定はどれも変えていない。推奨はすべて据え置き)** は docs/47 の末尾の「v2.4.0 要判断項目の一覧」の表にまとめました。
+**要判断項目** は docs/47 の末尾の「v2.4.0 要判断項目の一覧」の表にまとめました (その表は v2.4.0 の初期の状態で、その後 v2 の既定をいくつか変えました。変えたものは下の「既定の変更」と docs/47 の v2.4.0 D・D2・D3・E・F・G・H の節が最新です)。
 
 **組込の数学関数・特殊関数・リスト関数の監査 (E、B180〜B199)**: 約 4000 点を mpmath の主値と比べ、v2 の誤りを直しました (k64 は gs の値のまま)。`ArcCosh`・`ArcTanh`・`ArcSin`/`ArcCos` の切断線、x < 0 の Bessel・`CoshIntegral`・`LogIntegral`・`ExpIntegralE`・2F1 (z > 1) の複素数の値、複素の `Hypergeometric1F1`・不完全ガンマ・`WhittakerM` の |z| ≳ 12 の誤差 (scipy が相対 1e-4〜1)、`ProductLog`・`Gamma[a,z]` (a ≤ 0)・`LerchPhi`・`PolyLog` (負の整数次・小さい z)・`HarmonicNumber`・`HermiteH`・`LegendreP[ν,m,x]` ほか。**台本の結果が変わるもの (v2)**: `Round` の半整数は偶数へ、`Insert`・`StringInsert` の負の位置は末尾から、`x==y`・`If[x,..]` の決まらない条件は式のまま。pysad 自身の誤り (`Inner`・`MapIndexed` のレベル・`And`/`Or`・虚部 0 の複素数・`Floor[Infinity]`・奇数乗のオーバーフローの符号) は k64 も gs に合わせて直しました。gs が誤る点 (B180〜B199) は docs/21 に追加 (gs と 46 式を照合: gs が真値を返す B185〜B196 の多くは pysad の k64 の誤りとして k64 も直した)。複素の次数の `PolyLog`・`ExpIntegralE` を実装し、決まらない比較の表示を gs と同じ `x<y` にした。直さないもの (`Hold`・`LINE["POSITION",0.5]`・`Take` の範囲外など) は理由つきで docs/47 に記録。試験は [`test_v24_E_audit.py`](pysad/tests/test_v24_E_audit.py) (49 件)、記録は [`docs/history/v24_E.md`](docs/history/v24_E.md)。
 
