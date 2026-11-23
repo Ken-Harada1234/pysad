@@ -17,7 +17,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) | **ハミルトニアンの導出**。ラグランジアン、速度依存のポテンシャルと一般化力・一般化運動量、ルジャンドル変換、正準変換、Frenet–Serret 座標、$t \to s$ の入れ替え、2 次の展開と偏向・四極の運動方程式 | ✓ |
 | 00_overview.md | 全体像。ハミルトニアンから Fortran・Python までの流れ、3 系統の実装 (追跡・行列・解析微分) | 予定 |
 | [02_drift.md](02_drift.md) | **ドリフト**。$H$ から $x' = p_x/p_z$、$z$ の更新と $dv$ の項、厳密 = 近軸 × $D$、近軸 (DISKIN)、COD のまわりの 6×6 (`tdrife1`)、最短の例 ($R_{56} = L/\gamma_0^2$) | ✓ |
-| 03_symplectic_integrators.md | 分割の一般論 (Strang、Yoshida、力勾配型)、刻みの数の一覧 | 予定 |
+| [03_symplectic_integrators.md](03_symplectic_integrators.md) | **シンプレクティックな分割の一般論**。BCH と Strang (2 次)、Yoshida (4 次)、後方誤差解析、力勾配型の係数 $\alpha, \beta, \gamma$ の導出、K64 の刻みの数の式の一覧 | ✓ |
 | [04_quad.md](04_quad.md) | **四極**。$H_2$ の厳密解、運動学的な $\Delta H$、Strang と Yoshida、刻みの数、フリンジ、行列と追跡の関係 | ✓ |
 | [05_bend.md](05_bend.md) | **偏向磁石**。$H_2$ の厳密解、K1 = 0 の円弧と端面角の厳密解、Maxwell フリンジ・線形フリンジ (F1)、複合機能 (K1 ≠ 0)、行列と追跡の関係 | ✓ |
 | 06_edge_fringe.md | 端部の一般論 (Maxwell、F1・F2、非線形フリンジ) | 予定 (四極の端部は 04 章 §7) |
@@ -68,6 +68,7 @@ py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py
 py -3.12 physics_guide/scripts/quad_05_fringe.py
 py -3.12 physics_guide/scripts/quad_06_invariants.py
 py -3.12 physics_guide/scripts/drift_01_h_to_map.py             # 02 章 (ドリフト) の確認 (drift_01〜drift_03)
+py -3.12 physics_guide/scripts/integ_01_bch_force_gradient.py   # 03 章 (分割の一般論) の確認 (integ_01、integ_02)
 py -3.12 physics_guide/scripts/bend_01_h2_body.py               # 05 章 (偏向磁石) の確認 (bend_01〜bend_04)
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
@@ -85,6 +86,8 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `drift_01_h_to_map.py` | 02 | $H$ の偏微分・$z'$ の整理・$dv$ (sympy)、閉じた式と DOP853・pysad の追跡の比較、厳密 = 近軸 × $D$、DISKIN (pysad は未実装) |
 | `drift_02_linearization.py` | 02 | 6×6 の偏微分 (sympy) と `tdrife1` の式、pysad の行列と追跡の数値微分、シンプレクティック性と $z$ の行 |
 | `drift_03_r56_example.py` | 02 | 最短の例: ドリフトを 1〜4 回通った後の $z$ (3 GeV・10 MeV)、4 つのドリフトの $T_{56}$ |
+| `integ_01_bch_force_gradient.py` | 03 | 自由代数の BCH (sympy): Strang・Yoshida の 3 次の係数、力勾配型の $t$・$c_3$・$c_5$ ($\alpha, \beta, \gamma$)、K64 の `tthin` の補正キックと記号的に一致、`tthine` の分割 |
+| `integ_02_order_symplectic.py` | 03 | 1 自由度の系で、Strang・Yoshida・力勾配型・RK4 の誤差の次数、シンプレクティック性、長時間の $H$ の誤差 |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
