@@ -1,0 +1,75 @@
+== (a) 複素変数のポアソン括弧 ==
+  {ζ, ζbar} (x^, p^ で {x^, p^} = 1) = 2*I
+  {ζ^a ζbar^b, ζ^c ζbar^d} = 2i (ad - bc) ζ^(a+c-1) ζbar^(b+d-1): a, b, c, d = 0..3 の 256 通りで不一致 0 個
+  {ζ, ζbar}_(φ,J) = 2*I (括弧を {f, g} = f_φ g_J - f_J g_φ としたとき。(φ, J) を (q, p) とみなす)
+  {x^, p^}_(φ,J) = 1
+  {F, J}_(φ,J) = Derivative(F(phi, J), phi) = ∂F/∂φ、{F, φ}_(φ,J) = -Derivative(F(phi, J), J) = -∂F/∂J
+
+== (b) 要素のハミルトニアン ==
+  Re (x + iy)^3 - (x^3 - 3 x y^2) = 0
+  6 極: H3 = (K2/6)(x^3 - 3xy^2) → p_x' = -∂H/∂x = -K2*(x - y)*(x + y)/2、p_y' = -∂H/∂y = K2*x*y
+  Re (x + iy)^4 - (x^4 - 6 x^2 y^2 + y^4) = 0。8 極: p_x' = -K3*x*(x**2 - 3*y**2)/6
+  運動学: -sqrt(1 - p^2) の展開 = pp**6/16 + pp**4/8 + pp**2/2 - 1 (p^2 = p_x^2 + p_y^2)
+
+== (c) 正規化座標 ==
+  dw/ds - w' = 0 (β' = -2α、μ' = 1/β を使った)
+  (w ζ + wbar ζbar)/2 - √β x^_loc = 0
+  (w' ζ + wbar' ζbar)/2 - (p^_loc - α x^_loc)/√β = 0
+  |w'|^2 = (alpha**2 + 1)/beta (= γ = (1 + α^2)/β)
+
+== (d) 薄い 6 極の h_jklmp ==
+  h30000 = K2L*beta_x**(3/2)*exp(3*I*mux)/48
+  h21000 = K2L*beta_x**(3/2)*exp(I*mux)/16
+  h10110 = -K2L*sqrt(beta_x)*beta_y*exp(I*mux)/8
+  h10020 = -K2L*sqrt(beta_x)*beta_y*exp(I*(mux - 2*muy))/16
+  h10200 = -K2L*sqrt(beta_x)*beta_y*exp(I*(mux + 2*muy))/16
+  h11001 = K2L*beta_x*eta/4
+  h00111 = -K2L*beta_y*eta/4
+  h20001 = K2L*beta_x*eta*exp(2*I*mux)/8
+  h00201 = -K2L*beta_y*eta*exp(2*I*muy)/8
+  h10002 = K2L*sqrt(beta_x)*eta**2*exp(I*mux)/4
+  (参考: docs の式 h30000 = K2L β_x^{3/2} e^{3iμx}/48、h21000 = K2L β_x^{3/2} e^{iμx}/16、h10110 = -K2L √β_x β_y e^{iμx}/8、h10020 = -K2L √β_x β_y e^{i(μx-2μy)}/16、h11001 = K2L η β_x/4、h00111 = -K2L η β_y/4)
+  1 次の ΔJ: kick の p^ Δp^ = sqrt(2)*J**(3/2)*a_*sin(phi)*cos(phi)**2、-∂h/∂φ = sqrt(2)*J**(3/2)*a_*sin(phi)*cos(phi)**2、差 0
+
+== (e) 1 次の ADTS: ∂ν/∂J = 4h22000/π、2 h11110/π、4 h00220/π ==
+  8 極: h22000 = K3L*beta_x**2/64、h11110 = -K3L*beta_x*beta_y/16、h00220 = K3L*beta_y**2/64
+  ∂νx/∂Jx = 4h22000/π = K3L*beta_x**2/(16*pi)、∂νx/∂Jy = 2h11110/π = -K3L*beta_x*beta_y/(8*pi)、∂νy/∂Jy = 4h00220/π = K3L*beta_y**2/(16*pi)
+  運動学 (px^2 + py^2)^2/8: h22000 = 3*gamma_x**2/64、h11110 = gamma_x*gamma_y/16、h00220 = 3*gamma_y**2/64
+   → ∂νx/∂Jx = 3*gamma_x**2/(16*pi) ∮ds、∂νx/∂Jy = gamma_x*gamma_y/(8*pi) ∮ds、∂νy/∂Jy = 3*gamma_y**2/(16*pi) ∮ds (docs: 3γx²/(16π)、γxγy/(8π)、3γy²/(16π))
+  端のフリンジ H_f: ∂νx/∂Jx = -K1*ax*bxp*sigma/(8*pi)、∂νx/∂Jy = K1*sigma*(-ax*byp + ay*bxp)/(8*pi)、∂νy/∂Jy = K1*ay*byp*sigma/(8*pi)
+   (docs: -σK1 αx βx/(8π)、σK1 (αy βx - αx βy)/(8π)、σK1 αy βy/(8π)。ここで β は √β^2 = β の形)
+
+== (f) 写像の合成と Magnus 展開 ==
+  z∘Φ1 = exp(-:H1:) z: q → q、p → -3*c1*q**2 + pp_
+  合成の写像 (Φ2∘Φ1、3 次まで) と exp(:F:) z、F = -(H1 + H2) + (1/2){H1, H2} (H1 が早い) の差: q 0、p 0
+  対照: 括弧の符号を逆にした F の差: q -18*c1*c2*pp_*q**2、p 18*c1*c2*pp_**2*q (0 でない = 順序・符号の約束が上のとおりに決まる)
+  [:a:, :b:] g - :{a, b}: g = 0 (ヤコビ恒等式)
+  BCH (a, b, c は一般の 3 次式): 3 次までの差 q 0、p 0
+
+== (g) Dragt-Finn: {f,{f,z}} = (u.∇)u、2 次のテイラー係数から f_3 ==
+  {f,{f,q}} - (u.∇)u_q = 0、{f,{f,p}} - (u.∇)u_p = 0
+  u = ({f,q}, {f,p}) = (-∂f/∂p, ∂f/∂q): 差 0、0
+  f3 の復元 (オイラー): (1/3)(q ∂f/∂q + p ∂f/∂p) - f3 = 0
+  6 極の kick Δp = -(K2L/2) q^2 から: ∂f/∂q = -K2s*q**2/2 → f = -K2s*q**3/6 (= -H3)
+
+== (h) 正規形: F4' = F4 + (1/2){g, Rg} と 1 次元の対角の係数 ==
+  F3 + g - Rg = 0 (非共鳴の 3 次の項が消える)
+  代数: (1/2){g + Rg, F3} - (1/2){g, Rg} - (1/2){g, Rg} (F3 = Rg - g を使って) = 0
+  (1/2){g, Rg} の ζ²ζbar² の係数 = 9|F30|² cot(3μ/2) + 3|F21|² cot(μ/2): 数値代入での差 4.97e-16
+  → K = -F4' (対角) = -[9|F30|² cot(3πν) + 3|F21|² cot(πν)] (2J)²、∂ν/∂J = (1/2π)∂K/∂J = -(4/π)[9|h30000|² cot 3πν + 3|h21000|² cot πν]
+  1 個の薄い 6 極 (a = K2L β^{3/2}、h30000 = a/48、h21000 = a/16): 上の式と -a²/(64π)[cot 3πν + 3 cot πν] の差 = 0
+
+== (i) 薄い四極のチューンシフトとクロマティシティ ==
+  cos μ' = tr(R K)/2 = -kb*sin(mm)/2 + cos(mm)
+  μ' - μ の kβ の 1 次: kb*sin(mus)/(2*sqrt(sin(mus)**2)) - mus + acos(cos(mus)) → Δν = kβ/(4π)
+  6 極 (分散 η): 軌道が ηδ ずれて kick -(K2L/2)(x + ηδ)^2 の x の 1 次 = -K2L η δ x → k = K2L η δ、Δν = K2L η β δ/(4π) = (h11001/π) δ (h11001 = K2L ηβ/4)
+
+== (j) 1 本の共鳴: 固定点・島の幅、RF バケット ==
+  K = 2π δ J + 2|h| (2J)^{3/2} cos ψ (ψ = 3φ + 位相)。固定点 (cos ψ = -1、δ > 0 側) ∂K/∂J = 0: J = [pi**2*delta_**2/(18*h_abs**2)]
+  (単独の 3νx 共鳴では J_fp = π²δ²/(18|h|²)。δ = ν - N/3)
+  K = πG I² + V cos θ。不安定固定点 (I, θ) = (0, 0) の K = V。分離線 K = V は θ = π で I = [sqrt(2)*sqrt(V)/(sqrt(pi)*sqrt(G))]
+   → 島の半幅 (チューン平面) W = G I_max = sqrt(2)*sqrt(G)*sqrt(V)/sqrt(pi) (docs/26 §3.5 の W = sqrt(2 |G0| V/π) と同じ)
+  J² の項 c を含む固定点 (cos ψ = -1): √J = [sqrt(2)*(3*h_abs - sqrt(-2*pi*c_*delta_ + 9*h_abs**2))/(2*c_), sqrt(2)*(3*h_abs + sqrt(-2*pi*c_*delta_ + 9*h_abs**2))/(2*c_)]
+  RF バケット: V(ψ) = a[-cos(φs + ψ) - ψ sin φs]。dV/dψ = a_*(-sin(phi_s) + sin(phi_s + psi))
+  V(π - 2φs) - V(0) = a_*((2*phi_s - pi)*sin(phi_s) + 2*cos(phi_s))
+  (1/2) κ δ_rf² = V(ψu) - V(0) = a [2 cos φs - (π - 2φs) sin φs]: 差 0
