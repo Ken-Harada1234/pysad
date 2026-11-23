@@ -5,7 +5,7 @@
   FresnelS[z]・FresnelC[z]、Beta[a,b]、Factorial[z]、GammaRegularized[a,z]、Gamma[a,z] (z が複素数)、LegendreP[nu,z]、WhittakerM・WhittakerW[k,m,z]、BesselJ[nu,x] (複素の次数)。
 従来の pysad はこれらに複素数を渡すと虚部を捨てた実数を返したり (ExpIntegralEi・SinIntegral・FresnelS/C・HarmonicNumber・LegendreP)、何も返さなかったりした
 (ExpIntegralE・PolyGamma・WhittakerM/W・ProductLog・CosIntegral・GammaRegularized・Beta・Factorial・BesselJ の複素の次数)。
-独立な根拠は pysad/tests/test_v2_P5_specfn_cx.py (微分方程式の残差、漸化式、恒等式、複素の線積分)。使える範囲: |z| <~ 30 (WhittakerW・Legendre は |z| <~ 20)。
+独立な根拠は pysad/tests/script_tests/test_v2_P5_specfn_cx.py (微分方程式の残差、漸化式、恒等式、複素の線積分)。使える範囲: |z| <~ 30 (WhittakerW・Legendre は |z| <~ 20)。
 """
 from __future__ import annotations
 

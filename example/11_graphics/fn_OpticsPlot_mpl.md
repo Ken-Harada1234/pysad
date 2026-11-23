@@ -33,7 +33,7 @@ py -3.12 run_sad.py lattice.sad script.sad
 
 1 枚目は 3 枠 (上から √βx・√βy、ηx (mm)、ラティスの磁石の箱と名前) と題。名前は重なるものを消す (`RemoveOverlap`)。枠の位置は `Canvas.n` の `MakeWindow`、軸の範囲は `FrameRange` の移植。
 
-## 確かめたこと (試験 `pysad/tests/test_v241_mpl_display.py`、Agg)
+## 確かめたこと (試験 `pysad/tests/script_tests/test_v241_mpl_display.py`、Agg)
 - `Graphics[…]` の `Line` の点列が matplotlib の `Line2D` と全点一致 (`Plot[Sin[x],{x,0,6}]` の 505 点は 1e-12 以内、`OpticsPlot` の 3 本も)。
 - `OpticsPlot` のラティスの箱 192 個が `Rectangle` の座標と一致。名前は `Graphics` の `Text` の順序つきの部分列で、残った名前は互いに重ならない。
 - 枠は上から BX・BY、EX、ラティスの順で、x の範囲 (-0.001 から周長 + 0.001) と窓の左右が同じ。凡例・軸の文字 (`η$_{x}$ (mm)` など) も一致。

@@ -76,7 +76,7 @@ py -3.12 example/tools/kek_ls_cmp.py               # gs と pysad の判定
 - `Get["../modules/..."]` は台本のあるフォルダが基準。gs・pysad とも、そのフォルダをカレントにして走らせる。
 - 並列数は `NPARA = 8` 以下。長い計算は例の設定 (格子・種・周回数を小さくした設定) で数分以内にしてあり、元の設定 (完全な設定) は各フォルダの README の「元の設定と例の設定」の表に、変数を変えるだけで走る形で書いた。
 - pysad は `PYSAD_COMPAT=k64` (gs と同じ結果)。v2 (既定) モードは `Emittance[]` が数 % 違う (lattice/README.md の表)。
-- 試験: `py -3.12 -m pytest pysad/tests/test_kek_ls_example.py -q` (ラティスの `cell calc emit` の値と、速い台本の数本)。
+- 試験: `py -3.12 -m pytest pysad/tests/script_tests/test_kek_ls_example.py -q` (ラティスの `cell calc emit` の値と、速い台本の数本)。
 
 ## 整理の方針
 

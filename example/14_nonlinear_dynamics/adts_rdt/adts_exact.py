@@ -178,7 +178,7 @@ def cmd_adts():
 
 def cmd_nf():
     P('R6 (d) 非対角の調和の正規形の補正: test_v23_R6_bend_orbit.py::test_nonresonant_correction_to_all_fourth_order_harmonics_vs_numerical_lie_transform と同じ検証 (独立な数値のリー変換)')
-    sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests'))
+    sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests', 'script_tests'))
     import test_v23_R6_bend_orbit as TT
     t0 = time.time()
     TT.test_nonresonant_correction_to_all_fourth_order_harmonics_vs_numerical_lie_transform()

@@ -489,7 +489,7 @@ print(score)                                               # 144
 | SADScript の `Compat$V2[]` | 互換モードが v2 なら 1 (prelude の `PolynomialFit` が使う) |
 
 - 既定は v2。`py -3.12 run_sad.py lattice.sad script.sad` も v2 で走るので、gs と数値を比べるときは `PYSAD_COMPAT=k64` を付ける。
-- 既存の試験と回帰は k64 で走る ([`pysad/tests/conftest.py`](../pysad/tests/conftest.py)、`run_regression.py`)。v2 の試験 (`test_v2_*.py`) はフィクスチャ `v2_mode` で明示する。
+- 既存の試験と回帰は k64 で走る ([`pysad/tests/script_tests/conftest.py`](../pysad/tests/script_tests/conftest.py)、`pysad/tests/regression_tests/run_regression.py`)。v2 の試験 (`test_v2_*.py`) はフィクスチャ `v2_mode` で明示する。
 - 追跡のカーネルは `rs[1]` (v2 の印) を読むので、乱数状態 `rs` は必ず `track6n.make_rs()` で作る (`dapert.py`・`solmap.py`・`maintrack.py` も同じ)。
 - 互換モードで切り替えない変更 (pysad 自身の不具合の修正、K64 に無い機能・gs と同じ結果が出る機能) の一覧は docs/28。
 

@@ -56,5 +56,5 @@
 
 リングの BEND (`E1=E2=0.1309`) は SAD では ANGLE に対する**比**と読まれるので長方形ではない。`elem_BEND` は E1=E2=0.5 で長方形にした。
 
-文法の細部 (MAIN の `ANGLE=式` の評価など。`E=0.5;` のとき `ANGLE=E` は .5、`Pi=3;` のとき `Pi/10` は .3、`Degree=0.1;` は .1、`A=2;` のとき `A*0.1` は .2、`1+` は 1、`2*3+` は 1、`3 DEG`・`PI/10` は正しい値、`45DEG`・`SIN[0.1]`・`pi/10`・`ZZZ*2` は構文エラー) は、gs で 1 式ずつ別の台本にして実測した結果で、試験 `pysad/tests/test_v2_P5_syntax.py` の表にある。
-`elem_BEND_steer_*`・`elem_MULT_*` の gs の値は、試験 (`test_v2_P3_f1.py`・`test_v2_P3_ae.py`) が使う値 (`pysad/tests/_p3_gsdata.py`) と同じ台本から取った。
+文法の細部 (MAIN の `ANGLE=式` の評価など。`E=0.5;` のとき `ANGLE=E` は .5、`Pi=3;` のとき `Pi/10` は .3、`Degree=0.1;` は .1、`A=2;` のとき `A*0.1` は .2、`1+` は 1、`2*3+` は 1、`3 DEG`・`PI/10` は正しい値、`45DEG`・`SIN[0.1]`・`pi/10`・`ZZZ*2` は構文エラー) は、gs で 1 式ずつ別の台本にして実測した結果で、試験 `pysad/tests/script_tests/test_v2_P5_syntax.py` の表にある。
+`elem_BEND_steer_*`・`elem_MULT_*` の gs の値は、試験 (`test_v2_P3_f1.py`・`test_v2_P3_ae.py`) が使う値 (`pysad/tests/script_tests/_p3_gsdata.py`) と同じ台本から取った。

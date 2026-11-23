@@ -94,7 +94,7 @@ USE RING; LOSSAMPL = 0.005; ...                      ! (B)
 (B) の LOSSAMPL は、判定点 (15 要素ごと) での位置で決まるので、解析式では示さない。</p>
 <h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
 <p>(A)(B)(C) とも gs と一致 (○)。pysad の追跡 (numba 版 <code>track6n.py</code> の <code>k_apert_el</code>、Python 版 <code>track6.py</code> の <code>_apert_pass</code>) は、APERT 要素について <code>tapert.f</code> / <code>tapert1</code> の判定をそのまま行う。LOSSAMPL ((B)、(C)) は一致している。
-別に 16 粒子で、楕円・矩形・楕円+矩形・中心のずれ DX DY・ROTATE・全キーワード既定 0 (全粒子が落ちる)・APERT 2 個・3 周・JDPX/JDPY/DP の場合を gs と比べ、flag と落ちた時点の座標が一致した (<code>pysad/tests/test_apert.py</code>)。</p>
+別に 16 粒子で、楕円・矩形・楕円+矩形・中心のずれ DX DY・ROTATE・全キーワード既定 0 (全粒子が落ちる)・APERT 2 個・3 周・JDPX/JDPY/DP の場合を gs と比べ、flag と落ちた時点の座標が一致した (<code>pysad/tests/script_tests/test_apert.py</code>)。</p>
 <h2 id="未確認限界">未確認・限界</h2>
 <ul>
 <li>ここでの比較は 3 GeV の FODO リング (RFSW/RAD なし、TrackParticles、1 周と 3 周) だけ。RAD・FLUC ありの追跡での落ち方、MAIN の TRACK の損失の報告 (<code>P. n lost in ... at l(APERT名)</code>)、TRPT は gs と比べていない。</li>

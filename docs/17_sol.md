@@ -39,7 +39,7 @@ SAD の SOL は「ソレノイドの境界」を表す長さ 0 の要素であ�
 ### 動く SAD スクリプト (最小例)
 
 
-本文書 と [`pysad/tests/test_sol_optics.py`](../pysad/tests/test_sol_optics.py) の s1 と同じ。
+本文書 と [`pysad/tests/script_tests/test_sol_optics.py`](../pysad/tests/script_tests/test_sol_optics.py) の s1 と同じ。
 
 ```
 MOMENTUM = 1.7GEV;
@@ -80,8 +80,8 @@ NORAD;  b100 = TrackParticles[beam0, 1, 1, 100];
 RAD; NOFLUC; b100 = TrackParticles[beam0, 1, 1, 100];
 ```
 
-領域内の追跡は [`pysad/tests/test_track6n_ext.py`](../pysad/tests/test_track6n_ext.py) (`test_track6n_vs_track6`: SOL を含む格子で numba 版と Python 版が NORAD・RAD・FLUC とも座標 1e-13 以内、乱数の最終状態まで一致、`test_thin_mult_and_sol_not_ignored`、`test_apert_with_solenoid`)。
-Emittance[] は [`pysad/tests/test_sol_emit.py`](../pysad/tests/test_sol_emit.py) (e1: 12 セルのリング、BZ=2、回転四極 QS、領域内の SOL SM、QFE の DX DY で軌道が領域を斜めに通る。RFSW)。幾何は [`test_sol_geo.py`](../pysad/tests/test_sol_geo.py)。
+領域内の追跡は [`pysad/tests/script_tests/test_track6n_ext.py`](../pysad/tests/script_tests/test_track6n_ext.py) (`test_track6n_vs_track6`: SOL を含む格子で numba 版と Python 版が NORAD・RAD・FLUC とも座標 1e-13 以内、乱数の最終状態まで一致、`test_thin_mult_and_sol_not_ignored`、`test_apert_with_solenoid`)。
+Emittance[] は [`pysad/tests/script_tests/test_sol_emit.py`](../pysad/tests/script_tests/test_sol_emit.py) (e1: 12 セルのリング、BZ=2、回転四極 QS、領域内の SOL SM、QFE の DX DY で軌道が領域を斜めに通る。RFSW)。幾何は [`test_sol_geo.py`](../pysad/tests/script_tests/test_sol_geo.py)。
 
 ## 3. 領域内に置ける要素
 
@@ -172,7 +172,7 @@ v2 の領域内の BEND・MULT・CAVI の条件と確認の範囲: 電子、0.5�
 ### 5.3 v2 モードの SOL 領域
 
 
-記録: [`docs/history/v2_changes_C.md`](history/v2_changes_C.md)・`v2_changes_C2.md`、試験 [`test_v2_C_sol.py`](../pysad/tests/test_v2_C_sol.py) (32)・[`test_v2_C2_sol.py`](../pysad/tests/test_v2_C2_sol.py) (11)・[`test_v2_C2_solrf.py`](../pysad/tests/test_v2_C2_solrf.py) (9)・[`test_v2_C2_spin.py`](../pysad/tests/test_v2_C2_spin.py) (17)。例 [`example/07_spin_solenoid_special/elem_SOL_region_elements.sad`](../example/07_spin_solenoid_special/elem_SOL_region_elements.sad)・`elem_SOL_tilt_offset.sad`・`elem_SOL_RF_TRPT.sad`・`spin_tracking_sol_und.sad`。
+記録: [`docs/history/v2_changes_C.md`](history/v2_changes_C.md)・`v2_changes_C2.md`、試験 [`test_v2_C_sol.py`](../pysad/tests/script_tests/test_v2_C_sol.py) (32)・[`test_v2_C2_sol.py`](../pysad/tests/script_tests/test_v2_C2_sol.py) (11)・[`test_v2_C2_solrf.py`](../pysad/tests/script_tests/test_v2_C2_solrf.py) (9)・[`test_v2_C2_spin.py`](../pysad/tests/script_tests/test_v2_C2_spin.py) (17)。例 [`example/07_spin_solenoid_special/elem_SOL_region_elements.sad`](../example/07_spin_solenoid_special/elem_SOL_region_elements.sad)・`elem_SOL_tilt_offset.sad`・`elem_SOL_RF_TRPT.sad`・`spin_tracking_sol_und.sad`。
 **根拠はローレンツ力 dp/ds = (p × B)/pz の数値積分 (scipy の solve_ivp、rtol 1e-13)・Thomas-BMT 方程式・実験室系の座標変換の合成・極限の一致で、gs との数値比較ではない** (gs は領域内の BEND の偏向をほぼ無視し、SOL + 四極 + RAD でも食い違う: 7 の 1・2)。条件: 電子、0.5・1・3 GeV、周長 91 m の FODO リングと 4〜6 m の輸送路、ソレノイド 1〜3 T (bz = 0.3〜3 1/m)、空洞 20〜200 MV (1.3 GHz)・4 MV (500 MHz)。**実機の大きなリングでは確かめていない。bz ≥ 3 1/m を超える場は未確認。**
 
 #### 5.3.1 領域内の BEND・MULT・CAVI・APERT (B69、B35)
@@ -218,7 +218,7 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 
 #### 5.3.5 領域内の四極のずれ・bz ≥ 3・領域内の CAVI のスピン
 
-試験 [`test_v2_B1_sol.py`](../pysad/tests/test_v2_B1_sol.py) (45 件)・[`test_v2_B3_geofit.py`](../pysad/tests/test_v2_B3_geofit.py)・[`test_v2_E_spinsol.py`](../pysad/tests/test_v2_E_spinsol.py)。記録 `history/v2next_B1.md`・`B3.md`・`E.md`。
+試験 [`test_v2_B1_sol.py`](../pysad/tests/script_tests/test_v2_B1_sol.py) (45 件)・[`test_v2_B3_geofit.py`](../pysad/tests/script_tests/test_v2_B3_geofit.py)・[`test_v2_E_spinsol.py`](../pysad/tests/script_tests/test_v2_E_spinsol.py)。記録 `history/v2next_B1.md`・`B3.md`・`E.md`。
 
 - **領域内の四極の `DX`・`DY`** (両モード。gs と同じ): K64 の `tquad` は `tsolrot` で座標を (dx, dy) ずらす。ソレノイドの一様磁場のベクトルポテンシャルのゲージが変わるので正準運動量もずれる: x → x − dx、y → y − dy で px → px + (bz/2)dy、py → py − (bz/2)dx (出口は逆)。追跡のカーネル (`k_sol_quad`)・`solemit`・`sgeo` に入れた。gs と `LINE["GX"…]` が全桁一致 (領域内の DX・DY・ROTATE つきの 2 台)。**幾何の fit** (QF の DX、QD の DY で M2 の GY = 0.0008、GZ = −0.0035): gs と v2 (解析微分 `match6d.sol_dcod`: 要素の写像 c_out = F(c − t) + t、t = (DX, −(bz/2)DY, DY, (bz/2)DX) より d c_out/d DX = (I − J) ∂t/∂DX) は 2 回の Newton で収束し、QF DX = 2.78848432670e-3 (gs) / 2.78848432669e-3 (v2)、QD DY = 2.66798056318e-3 (両方)。解析微分は幾何の有限差分と 2e-3。K64 の CHI3 の微分の式は領域の終端で GCHI3 が 0 に戻される (tsgeo の `tfderotgeo`) ので幾何の変化と合わない (9e-4 を返すが幾何は動かない): CHI3 を使う fit は K64 でも収束しない (B124)。使える範囲: 領域内の四極 (K1≠0・F1=FRINGE=0)。SEXT・OCT・MULT は `_QDX_TYPES` に入れたが領域内のずれは未確認。四極の F1・FRINGE と領域内の BEND・MULT のずれは未対応。k64 モードは SOL 自体のずれ (trots) が未対応でずれた SOL の fit は使えない。例 [`example/03_matching/FFS_FIT_geometry_quad_dx.sad`](../example/03_matching/FFS_FIT_geometry_quad_dx.sad)。
 - **bz ≥ 3 1/m** : 領域内の DRIFT・BEND・MULT (K0・K1・K2) の写像 (力学的運動量) がローレンツ力の積分と bz = 6・10・20 1/m で 1.2e-8 以内 (多極の分割 EPS の分)。放射損失 −(2/3) r_e γ³ (K0/L)² L が bz = 6・20 で 4e-5。**DRIFT の刻み** (v2): 領域内の DRIFT も BEND・MULT と同じく bz·al/ndiv ≤ 0.02 に刻む。1 刻みだと、軸を外れた粒子 (δ = 1e-3・−5e-3、0.4 m) のスピンが Thomas-BMT の積分と bz = 4.5 (0.1 GeV) で 1.5e-3、9 で 8.7e-3 (0.3 GeV の bz = 3 で 1.3e-4) ずれ、放射も bz = 9 で 1.7 倍外れる (`track6n_ext.k_sol_drift`・`track6._sol_drift_v2`。ndiv = 1 + int(\|bz·al\|/0.02)。刻んだ結果 2.3e-7・8.9e-7・4.5e-8、放射 1e-4)。k64 は 1 刻み (K64 のまま)。QUAD (K1 = 0.3、0.4 m) のスピンは bz = 4.5・9 で 2.0e-5・9.0e-5、MULT (K0 + K1) は 1.3e-4〜1.6e-4、BEND は 6e-7・9e-7 (放射の分割が EPS 由来で bz·al/ndiv ≤ 0.2 のため。v2 の既存の試験値を変えないため刻んでいない)。
@@ -289,7 +289,7 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 - K64 の `dbeam(8)` は `beam(2)-beam(10)+b*beam(4)` と書かれている (`B12 - B44 + b B13`)。力学的運動量の共分散なら `B34` のはずで、誤記に見えるが、gs と合わせるためそのまま写した (bzh=0 では効かない。`beam(9)` に直しても試験の ε は全桁同じで、どちらが正しいかは試験では決まらない。docs/30 B39)。
 - 領域内の軌道が 0 でも K64 は `itgetqraddiv` の下限 (pmin) で刻み数が増える。写しているので同じ刻み数になる。
 
-- 試験: [`test_sol_optics.py`](../pysad/tests/test_sol_optics.py)、[`test_sol_emit.py`](../pysad/tests/test_sol_emit.py)、[`test_sol_geo.py`](../pysad/tests/test_sol_geo.py)、[`test_track6n_ext.py`](../pysad/tests/test_track6n_ext.py)。
+- 試験: [`test_sol_optics.py`](../pysad/tests/script_tests/test_sol_optics.py)、[`test_sol_emit.py`](../pysad/tests/script_tests/test_sol_emit.py)、[`test_sol_geo.py`](../pysad/tests/script_tests/test_sol_geo.py)、[`test_track6n_ext.py`](../pysad/tests/script_tests/test_track6n_ext.py)。
 
 ## 9. 関連文書
 

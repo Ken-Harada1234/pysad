@@ -70,7 +70,7 @@
 | `py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_checks.py delta fodo` | 12.0 s | 一致 |
 | `py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_bend.py scan fodo --lams 1` | 3.0 s | λ = 1 の内訳・追跡・相対差が一致 |
 | `py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_bend.py conv fodo` | 2.3 s | 一致 (経過時間以外) |
-| `py -3.12 -m pytest pysad/tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn` | 1.8 s | 1 件通過 |
+| `py -3.12 -m pytest pysad/tests/script_tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn` | 1.8 s | 1 件通過 |
 | `py -3.12 example/14_nonlinear_dynamics/adts_rdt/ADTS_summary_rdt_check.py` | 数 s | §6.5 の表 |
 
 走らせていない (出力ファイルの転記): `adts_tracking.py kekls` (約 70 s)、gs を使うもの (`adts_gs.py`、`adts_direct.py gs`、`adts_bend.py gs`。各 105〜115 s)、`adts_direct.py pysad` の `--study`、`adts_checks.py` の `octupole`・`coupling` と kek-ls_v03_12.lat・ASTRID2 の `ablate`・`delta`、`adts_bend.py scan` の kek-ls_v03_12.lat (1 λ あたり約 40 s)。
@@ -446,7 +446,7 @@ ADTS の δ 依存 (6 極 2 次、δ = ±1e-3 の光学の差分 ∂(ADTS)/∂δ
 
 ```
 py -3.12 run_sad.py example/14_nonlinear_dynamics/adts_rdt/fn_ResonanceDrivingTerms_fodo.sad
-py -3.12 -m pytest pysad/tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn
+py -3.12 -m pytest pysad/tests/script_tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn
 py -3.12 example/14_nonlinear_dynamics/adts_rdt/ADTS_summary_rdt_check.py
 py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_checks.py resonance
 py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_checks.py delta fodo

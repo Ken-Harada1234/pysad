@@ -34,7 +34,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <ul>
 <li><a href="#1-何ができるか">1. 何ができるか</a></li>
 <li><a href="#2-使い方-動く-sad-スクリプト">2. 使い方 (動く SAD スクリプト)</a><ul>
-<li><a href="#21-追跡-pysadteststest_wakepy-の-w3_src">2.1 追跡 (pysad/tests/test_wake.py の W3_SRC)</a></li>
+<li><a href="#21-追跡-pysadtestsscript_teststest_wakepy-の-w3_src">2.1 追跡 (pysad/tests/script_tests/test_wake.py の W3_SRC)</a></li>
 <li><a href="#22-光学-test_wake_opticspy-の-a1_src">2.2 光学 (test_wake_optics.py の A1_SRC)</a></li>
 <li><a href="#23-旧式の-wake-コマンド">2.3 旧式の WAKE コマンド</a></li>
 </ul>
@@ -99,7 +99,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <p>どちらも TRPT (粒子運動の座標系) が前提。<code>LWAKE</code>・<code>TWAKE</code>・<code>TRPT</code>・<code>WAKEOPT</code> はスイッチで、<code>NO…</code> で OFF。</p>
 <p>使った条件: 追跡の検証はエネルギー 1.7 GeV 前後の小さなライン (INS、NORAD NOFLUC)、粒子 200〜400 個、PBUNCH=1E10〜1E12。実際のリングのウェイク関数・エネルギーでの検証はしていない (表は人工的なもの)。</p>
 <h2 id="2-使い方-動く-sad-スクリプト">2. 使い方 (動く SAD スクリプト)</h2>
-<h3 id="21-追跡-pysadteststest_wakepy-の-w3_src">2.1 追跡 (<code>pysad/tests/test_wake.py</code> の W3_SRC)</h3>
+<h3 id="21-追跡-pysadtestsscript_teststest_wakepy-の-w3_src">2.1 追跡 (<code>pysad/tests/script_tests/test_wake.py</code> の W3_SRC)</h3>
 <pre><code>MOMENTUM = 1.7GEV;
 DRIFT DR = (L=1);
 QUAD QF = (L=0.3 K1=0.6 DX=2e-4) QD = (L=0.3 K1=-0.5 DY=-1e-4);
@@ -164,7 +164,7 @@ ENDWAKE;
 <li>表は行をまたいで書ける (<code>ENDWAKE</code> か <code>;</code> が来るまで続く)。1 行に何組でも、注釈 <code>!</code> 可、<code>ENDWAKE</code> の後の <code>;</code> は任意、同じ行の続き (<code>ENDWAKE; CALC;</code>) も実行する。大文字小文字・省略形 (<code>wake t RF</code>) 可。要素名はワイルドカード可 (合う CAVI すべてに登録)。値は数か式。点数の上限は無い (400 点で確認)。</li>
 <li>追跡は <code>WakeFunction[…] = …</code> で同じ表を与えた場合と同じ結果 (gs の参照値と 2e-9、400 点・2 台の CAVI で 1e-12)。TRPT と LWAKE / TWAKE が ON の <code>TrackParticles</code> で効く。</li>
 <li>使えない: 表の途中の <code>;</code> (エラー)、CAVI 以外の要素、k64 モード。<code>ENDWAKE</code> を書き忘れると次の <code>;</code> までを表として読んでエラーにする。</li>
-<li>例 <a href="../example/06_collective/flag_WAKE_command_table.sad"><code>example/06_collective/flag_WAKE_command_table.sad</code></a>、試験 <a href="../pysad/tests/test_v2_C_wakecmd.py"><code>test_v2_C_wakecmd.py</code></a>・<a href="../pysad/tests/test_v2_C2_wakecmd.py"><code>test_v2_C2_wakecmd.py</code></a>。</li>
+<li>例 <a href="../example/06_collective/flag_WAKE_command_table.sad"><code>example/06_collective/flag_WAKE_command_table.sad</code></a>、試験 <a href="../pysad/tests/script_tests/test_v2_C_wakecmd.py"><code>test_v2_C_wakecmd.py</code></a>・<a href="../pysad/tests/script_tests/test_v2_C2_wakecmd.py"><code>test_v2_C2_wakecmd.py</code></a>。</li>
 </ul>
 <h2 id="3-物理と式">3. 物理と式</h2>
 <h3 id="31-追跡のキック-txwakef">3.1 追跡のキック (txwake.f)</h3>
@@ -325,12 +325,12 @@ InitialOrbits があると、オフモメンタム整合と有限振幅整合は
 LOSSAMPL=0.002 (領域内・後で落ちる) は元の SAD でも落ちず、pysad と 10 桁一致する。</p>
 <p>直した SAD の結果は、pysad の追跡と一致した: SOL 領域の始点の wake (単独と、領域内の wake との併用) で 0 差、光学の縦だけの表の中心軌道で一致。
 pysad はこの 2 つを、直した SAD の動作として実装している (領域の始点の SOL は普通の要素と同じ前後のキック、光学は無い表の側をキックしない)。</p>
-<p>3 つ目 (TRPT で最初から LOSSAMPL の外にいる粒子) の追加の説明: K64 の <code>tapert</code> は落とす印に <code>kptbl(i,4)=l_track</code> を書く。<code>l_track</code> はセッション変数で、セッション最初の <code>TrackParticles</code> では 0 (CALC をしても変わらない)。最初の <code>tapert</code> では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡が続き、後の <code>tapert</code> で落ちる。2 回目の <code>TrackParticles</code> からは <code>l_track≠0</code> で最初の要素で落ちる。pysad は <code>TrackRun.l_track0</code>・<code>k_apert</code> の lcur==0 で再現し、gs の 1 回目・2 回目の呼び出しと直した SAD (LOSSAMPL=1e-4、3 粒子、NORAD、TRPT、2 周、15 値) と全桁一致する (<a href="../pysad/tests/test_small_items.py"><code>test_small_items.py</code></a>)。元の K64 はここで落ちるので、元の K64 に対する基準は無い。</p>
+<p>3 つ目 (TRPT で最初から LOSSAMPL の外にいる粒子) の追加の説明: K64 の <code>tapert</code> は落とす印に <code>kptbl(i,4)=l_track</code> を書く。<code>l_track</code> はセッション変数で、セッション最初の <code>TrackParticles</code> では 0 (CALC をしても変わらない)。最初の <code>tapert</code> では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡が続き、後の <code>tapert</code> で落ちる。2 回目の <code>TrackParticles</code> からは <code>l_track≠0</code> で最初の要素で落ちる。pysad は <code>TrackRun.l_track0</code>・<code>k_apert</code> の lcur==0 で再現し、gs の 1 回目・2 回目の呼び出しと直した SAD (LOSSAMPL=1e-4、3 粒子、NORAD、TRPT、2 周、15 値) と全桁一致する (<a href="../pysad/tests/script_tests/test_small_items.py"><code>test_small_items.py</code></a>)。元の K64 はここで落ちるので、元の K64 に対する基準は無い。</p>
 <h2 id="6-検証">6. 検証</h2>
 <ul>
 <li>追跡: 縦だけ・横だけ・両方、2 か所のウェイク、NBUNCH=3、粒子損失、ROTATE≠0、CAVI (加速あり・なし)、RF のある MULT、SOL 領域など 20 ケース以上で、K64 (gs) の出力と 10 桁一致する。</li>
 <li>光学: 条件の表は文字列で完全一致、中心の軌道は相対 2e-8 以内。</li>
-<li>試験 (<code>py -3.12 -m pytest pysad/tests/test_wake.py pysad/tests/test_wake_optics.py -q</code>) は 32 件で、SAD が無くても通る (参照値は試験に書き込み済み)。</li>
+<li>試験 (<code>py -3.12 -m pytest pysad/tests/script_tests/test_wake.py pysad/tests/script_tests/test_wake_optics.py -q</code>) は 32 件で、SAD が無くても通る (参照値は試験に書き込み済み)。</li>
 <li>ケースの一覧と一致の桁は <a href="history/13_wake_validation.md"><code>docs/history/13_wake_validation.md</code></a>。</li>
 </ul>
 <h2 id="7-限界未確認">7. 限界・未確認</h2>
@@ -358,7 +358,7 @@ pysad はこの 2 つを、直した SAD の動作として実装している (�
 <a href="../pysad/track6n.py"><code>pysad/track6n.py</code></a> の <code>turn</code> / <code>TrackRun.set_wake</code> と CAVI の分割 (<code>k_cav_in</code> / <code>k_cav_mid</code> / <code>k_cav_out</code> / <code>cav_full</code>)、
 <a href="../pysad/track6n_ext.py"><code>pysad/track6n_ext.py</code></a> の <code>mult_full</code> (RF のある MULT、<code>tmultiacc</code>)、
 光学の wake: <a href="../pysad/wakeopt.py"><code>pysad/wakeopt.py</code></a> (<code>tffswake.f</code> の直訳)、<a href="../pysad/ffscmd.py"><code>pysad/ffscmd.py</code></a> の <code>initial_orbits</code> / <code>ini_optics</code>、<a href="../pysad/match6.py"><code>pysad/match6.py</code></a> の <code>_optics_ini</code>、
-試験 <a href="../pysad/tests/test_wake.py"><code>pysad/tests/test_wake.py</code></a> (23 件)、<a href="../pysad/tests/test_wake_optics.py"><code>pysad/tests/test_wake_optics.py</code></a> (9 件)。</p>
+試験 <a href="../pysad/tests/script_tests/test_wake.py"><code>pysad/tests/script_tests/test_wake.py</code></a> (23 件)、<a href="../pysad/tests/script_tests/test_wake_optics.py"><code>pysad/tests/script_tests/test_wake_optics.py</code></a> (9 件)。</p>
 <p>実装の対応:</p>
 <ul>
 <li><code>ffscmd._wake_table</code>: 要素ごとに <code>WakeFunction[Longitudinal|Transverse, 要素名]</code> を評価し、<code>{位置: (縦, 横, dx, dy, theta)}</code> を作る (LWAKE・TWAKE が OFF の側は None)。CAVI と VOLT≠0 の MULT は dx=dy=theta=0、SOL 領域は DX・DY・ROTATE、普通の要素は dy=ROTATE。</li>

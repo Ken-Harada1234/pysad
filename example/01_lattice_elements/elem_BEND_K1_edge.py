@@ -11,7 +11,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 from pysad import compat
-from pysad.tests.test_v2_B1_optics import _exact_map, _k1_bend, _calc_and_track, _TH, _ORBITS
+from pysad.tests.script_tests.test_v2_B1_optics import _exact_map, _k1_bend, _calc_and_track, _TH, _ORBITS
 
 print('軌道 (x0, px0, δ)        |CALC − 厳密|   |追跡 v2 − 厳密|   |追跡 k64 − 厳密|   (x, px の最大の差)')
 for e in (0.5, 0.25):

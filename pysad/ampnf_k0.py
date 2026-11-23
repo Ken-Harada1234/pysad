@@ -11,7 +11,7 @@
   近似は次数 D の切り捨てだけ)。**この写像は曲率・運動学 (全次数)・端の楔・硬い端の項をすべて含み**、K0=0 の模型の bend_cubic・kin の項の選択 (オプション) は K0≠0 の磁石には効かない。
   運動量は、ampnf の正準運動量 (p0 で規格化) と追跡の内部の px/(1+δ) の変換を入口・出口で行う。δ は 5 番目の変数で、δ の全次数の依存が入る (ξ・J δ の項)。
   ROTATE した K0≠0 の磁石は ampnf の `_expand_rolls` が R⁻¹ ∘ (傾けない磁石) ∘ R に展開する (全次数の θ。垂直の軌道・結合が入る)。
-【検証】 `check_against_tracker` (追跡の写像と全点で比較)。試験は pysad/tests/test_v24_G_k0_ampnf.py、記録は docs/history/v24_G.md、docs/25 §14.5。
+【検証】 `check_against_tracker` (追跡の写像と全点で比較)。試験は pysad/tests/script_tests/test_v24_G_k0_ampnf.py、記録は docs/history/v24_G.md、docs/25 §14.5。
 【G の続き】 K1≠0 の BEND は tbendi の積分器そのものを TPSA で評価 (_tbendi)、F1・FB1・FB2 (tbendcore1・k_steer のフリンジの項)、DX・DY・DROTATE・CHI2 (tbshift・tbrot の TPSA 版。ANGLE=0 は ampnf が shift・rot に展開)、
   ANGLE + K0 = 0 は phib → 0 の極限。bend_cubic・kin・fringe が全部 False なら入口の軌道のまわりの 1 次 (linearize)。
 【入れていない効果】 ANGLE=0 で K1≠0 かつ K0≠0 (K64 の tmulti)、K1≠0 かつ K0≠0 の F1・FB1・FB2、ANGLE=0 の CHI2、放射。

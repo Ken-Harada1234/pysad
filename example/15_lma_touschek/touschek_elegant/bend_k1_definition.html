@@ -41,7 +41,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <main>
 <div class="meta">元: bend_k1_definition.md</div>
 <h1 id="k10-の-bend-の-k1-の定義のオプションと-calc-の-dk-の修正の例">K1≠0 の BEND の K1 の定義のオプションと CALC の dk の修正の例</h1>
-<p>試験は <code>pysad/tests/test_v23_U2_bend_k1_def.py</code>。すべて v2 モード。リポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_def_xxx.py</code> (標準出力をファイルにリダイレクトするには <code>PYTHONUTF8=1</code> が要る)。</p>
+<p>試験は <code>pysad/tests/script_tests/test_v23_U2_bend_k1_def.py</code>。すべて v2 モード。リポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_def_xxx.py</code> (標準出力をファイルにリダイレクトするには <code>PYTHONUTF8=1</code> が要る)。</p>
 <h2 id="使い方">使い方</h2>
 <pre><code class="language-python">from pysad import compat
 compat.set_bend_k1_def('lin')     # B' が x に一様 (elegant CSBEND K2 = 0・MAD SBEND と同じ)。既定は 'log' (K64: (1 + hx)∂b/∂x 一様)
@@ -70,7 +70,7 @@ compat.set_bend_k1_def('lin')     # B' が x に一様 (elegant CSBEND K2 = 0・
 <td>ASTRID2 の 1 セル (25 位置) の LMA を 'log'・'lin' で (RF・放射つき、アパーチャ ±10 mm、4 workers、約 9 分)</td>
 </tr>
 <tr>
-<td><code>pysad/tests/_u1_indep.py</code>・<code>_u2_indep.py</code></td>
+<td><code>pysad/tests/script_tests/_u1_indep.py</code>・<code>_u2_indep.py</code></td>
 <td>独立な数値積分 (実験室系のローレンツ力、DOP853。pysad・SAD のコードを使わない)。<code>_u2_indep</code> はドリフト・厚い四極・複合機能の扇形磁石・端の縦方向の標準の集束</td>
 </tr>
 </tbody>

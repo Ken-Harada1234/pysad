@@ -225,7 +225,7 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 </ul>
 <h2 id="構成">構成</h2>
 <p>Git で追跡するのは <a href="pysad/"><code>pysad/</code></a>、<a href="docs/"><code>docs/</code></a>、<code>run_sad.py</code>、<code>README.md</code>、<code>LICENSE</code>、<code>CLAUDE.md</code>、<code>.gitignore</code> (<a href="docs/history/00_RESUME.md"><code>docs/history/00_RESUME.md</code></a> §9)。
-ベンチ・回帰スクリプト・出力は入れない (<code>.gitignore</code>)。以下の一覧は現在の作業ツリー。</p>
+試験 (<code>pysad/tests/script_tests/</code>) と回帰ベンチ (<code>pysad/tests/regression_tests/</code>) も入れる。回帰の実行ごとの出力 (<code>regression_out/</code>)、ログは入れない (<code>.gitignore</code>)。以下の一覧は現在の作業ツリー。</p>
 <h3 id="トップ">トップ</h3>
 <table>
 <thead>
@@ -264,8 +264,8 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 <td>本体 (下の表)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/"><code>pysad/tests/</code></a></td>
-<td>試験 (下の表)</td>
+<td><a href="pysad/tests/README.html"><code>pysad/tests/</code></a></td>
+<td>試験。<a href="pysad/tests/script_tests/README.html"><code>script_tests/</code></a> (機能ごとの pytest) と <a href="pysad/tests/regression_tests/README.html"><code>regression_tests/</code></a> (SAD (K64) との照合ベンチ)</td>
 </tr>
 <tr>
 <td><a href="example/"><code>example/</code></a></td>
@@ -739,7 +739,7 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 </tr>
 </tbody>
 </table>
-<p>pysad の試験が走らせる台本と、その gs・pysad の画面表示は <a href="pysad/tests/scripts/"><code>pysad/tests/scripts/</code></a> にあります (対応表は <a href="pysad/tests/OUTPUTS.html"><code>pysad/tests/OUTPUTS.md</code></a>)。<code>example/</code> とは別のスクリプトなので、それぞれのフォルダに、それぞれの結果を置いています。</p>
+<p>pysad の試験が走らせる台本と、その gs・pysad の画面表示は <a href="pysad/tests/script_tests/scripts/"><code>pysad/tests/script_tests/scripts/</code></a> にあります (対応表は <a href="pysad/tests/script_tests/OUTPUTS.html"><code>pysad/tests/script_tests/OUTPUTS.md</code></a>)。<code>example/</code> とは別のスクリプトなので、それぞれのフォルダに、それぞれの結果を置いています。</p>
 <h3 id="docs-解説文書現状のスナップショットで履歴は書かない"><code>docs/</code> (解説文書。現状のスナップショットで、履歴は書かない)</h3>
 <table>
 <thead>
@@ -914,12 +914,12 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 </thead>
 <tbody>
 <tr>
-<td>回帰ベンチ (gs の出力との比較、<code>run_regression.py</code>、<code>QUICK=1</code>、k64。ベンチと <code>run_regression.py</code> は作業者のローカルにあり、このリポジトリには入っていない)</td>
+<td>回帰ベンチ (gs の出力との比較、<code>pysad/tests/regression_tests/run_regression.py</code>、<code>QUICK=1</code>、k64)</td>
 <td><strong>50 ベンチ FAIL 0 (<code>QUICK=1</code>、133 s、k64)</strong></td>
 </tr>
 <tr>
 <td>全試験 (<code>pytest pysad/tests</code>、gs の出力との比較を含む、k64 が既定)</td>
-<td><strong>2507 通過・13 skip・失敗 0 (2520 件収集)</strong> (2026-11-23 の通し (1 時間 40 分)。回帰 <code>QUICK=1</code> は 50 ベンチ FAIL 0。<code>PYSAD_SAD_PACKAGES</code> つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 (<a href="pysad/tests/test_csr.py"><code>test_csr.py</code></a>・<a href="pysad/tests/test_v2_C3_measure.py"><code>test_v2_C3_measure.py</code></a>・<a href="pysad/tests/test_v2_D1_emit.py"><code>test_v2_D1_emit.py</code></a>・<a href="pysad/tests/test_v2_E_pol_kick.py"><code>test_v2_E_pol_kick.py</code></a>)、<code>PYSAD_ERR_LATTICE</code> が要る 2 件 (<a href="pysad/tests/test_elkern.py"><code>test_elkern.py</code></a>)、POSIX だけ・fork が要る 2 件 (<a href="pysad/tests/test_v2_B_script.py"><code>test_v2_B_script.py</code></a>・<a href="pysad/tests/test_v2_B2_script.py"><code>test_v2_B2_script.py</code></a>))</td>
+<td><strong>2521 通過・13 skip・失敗 0 (2534 件収集)</strong> (2026-11-23 の通し (1 時間 36 分)。回帰 <code>QUICK=1</code> は 50 ベンチ FAIL 0。<code>PYSAD_SAD_PACKAGES</code> つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 (<a href="pysad/tests/script_tests/test_csr.py"><code>test_csr.py</code></a>・<a href="pysad/tests/script_tests/test_v2_C3_measure.py"><code>test_v2_C3_measure.py</code></a>・<a href="pysad/tests/script_tests/test_v2_D1_emit.py"><code>test_v2_D1_emit.py</code></a>・<a href="pysad/tests/script_tests/test_v2_E_pol_kick.py"><code>test_v2_E_pol_kick.py</code></a>)、<code>PYSAD_ERR_LATTICE</code> が要る 2 件 (<a href="pysad/tests/script_tests/test_elkern.py"><code>test_elkern.py</code></a>)、POSIX だけ・fork が要る 2 件 (<a href="pysad/tests/script_tests/test_v2_B_script.py"><code>test_v2_B_script.py</code></a>・<a href="pysad/tests/script_tests/test_v2_B2_script.py"><code>test_v2_B2_script.py</code></a>))</td>
 </tr>
 <tr>
 <td><code>example/</code> の例 (下の表。gs と pysad の画面表示の比較。判定は各フォルダの README の ○△×)</td>
@@ -1073,7 +1073,7 @@ ffs.run_text('fit NX 47.3; free QF* K1; go;')
 <li><strong>v2 で意図的に gs と違うもの</strong>: v2 は K64 のバグ・物理の誤りを直した動作なので結果が変わります (<a href="docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a>。K64 側のバグは <a href="docs/30_sad_bug_report.html"><code>docs/30_sad_bug_report.md</code></a> の B 番号つきの一覧。B160 は誤りではなく K1 の暗黙の定義、B161 は CALC の行列の dk の不整合 (v2 は直してある)、B162 は Touschek の損失率の式の適用範囲 (v2 は Piwinski 型が既定))。新機能 (上の節) は互換モードによらず同じ動作です。<code>TouschekLifetime[INF, INF, nz]</code> の既定 (Piwinski 型。<code>Formula-&gt;"K64"</code> で K64 の表) と CALC の BEND の行列の dk (B161) は、v2 と k64 で結果が違います。gs と同じ結果が要るときは <code>PYSAD_COMPAT=k64</code>。</li>
 <li><strong>検証の限界</strong>: 動作確認は基本的に自分で書いた SAD 台本に対してです。gs は KatsOide/SAD の <code>master</code> (2026-02-18) と同じ内容のソースを WSL でビルドしたもの (現在の <code>bin/gs</code> は 2026-10-19 ビルド) で、保存済みの参照値 (2026-10-14 など) と現在の gs の値が違うことがあります (SOL 内の四極 + RAD など。<a href="docs/history/00_RESUME.md"><code>docs/history/00_RESUME.md</code></a> §8)。</li>
 </ul>
-<p>詳細は <a href="docs/31_unimplemented_and_unverified.html"><code>docs/31_unimplemented_and_unverified.md</code></a>・<a href="docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a>・<a href="example/README.html"><code>example/README.md</code></a>・<a href="pysad/tests/OUTPUTS.html"><code>pysad/tests/OUTPUTS.md</code></a>。</p>
+<p>詳細は <a href="docs/31_unimplemented_and_unverified.html"><code>docs/31_unimplemented_and_unverified.md</code></a>・<a href="docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a>・<a href="example/README.html"><code>example/README.md</code></a>・<a href="pysad/tests/script_tests/OUTPUTS.html"><code>pysad/tests/script_tests/OUTPUTS.md</code></a>。</p>
 <p>加速器設計コード SAD (Strategic Accelerator Design) の K64 版 (<a href="https://github.com/KatsOide/SAD">KatsOide/SAD</a>) の
 光学計算・エミッタンス・マッチング・粒子追跡・ダイナミックアパーチャを Python に直訳したもの。
 SAD の Fortran の式・分割数・反復順序・乱数の引き方を写し、SAD の数値 (印字精度 1e-10〜1e-11) を再現することを基準にしている。
@@ -1089,13 +1089,16 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 </ul>
 <h2 id="検証">検証</h2>
 <ul>
-<li><code>py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py</code> (<code>--ignore</code> する旧式の 3 本。手順は <a href="docs/history/00_RESUME.md"><code>docs/history/00_RESUME.md</code></a> §4)。
-  GUI 系 (<a href="pysad/tests/test_plot.py"><code>test_plot.py</code></a>、<a href="pysad/tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>) は環境変数 <code>PYSAD_SAD_PACKAGES</code> (K64 の <code>Packages</code> の場所) が無いと skip。<code>PYSAD_SLOW=1</code> で遅い試験 (CSR MakeZL、約 7 分) も走る。
-  このリポジトリには pysad 本体と文書だけを入れている。SAD の参照値付きベンチ、回帰スクリプトは含めていない。
-  誤差入りラティスを使う <a href="pysad/tests/test_elkern.py"><code>test_elkern.py</code></a> の 2 件は環境変数 <code>PYSAD_ERR_LATTICE</code> (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。</li>
+<li>試験: <code>py -3.12 -m pytest pysad/tests -q -p no:cacheprovider --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py</code> (<code>--ignore</code> する旧式の 3 本)。
+  回帰ベンチ: リポジトリのルートから <code>QUICK=1 py -3.12 -u pysad/tests/regression_tests/run_regression.py</code> (遅い 4 本を省略。目安 約 7 分。省略しないと約 17 分。SAD の実行は不要)。
+  説明は <a href="pysad/tests/README.html"><code>pysad/tests/README.md</code></a>・<a href="pysad/tests/script_tests/README.html"><code>script_tests/README.md</code></a>・<a href="pysad/tests/regression_tests/README.html"><code>regression_tests/README.md</code></a>。
+  GUI 系 (<a href="pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>、<a href="pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>) は環境変数 <code>PYSAD_SAD_PACKAGES</code> (K64 の <code>Packages</code> の場所) が無いと skip。<code>PYSAD_SLOW=1</code> で遅い試験 (CSR MakeZL、約 7 分) も走る。
+  回帰ベンチの基準結果 (<code>bench/*.result</code>) は、あらかじめ SAD (K64) で取って保存したもの。
+  誤差入りラティスを使う <a href="pysad/tests/script_tests/test_elkern.py"><code>test_elkern.py</code></a> の 2 件は環境変数 <code>PYSAD_ERR_LATTICE</code> (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。</li>
 </ul>
-<h2 id="pysadtests-試験"><a href="pysad/tests/"><code>pysad/tests/</code></a> (試験)</h2>
-<p>全試験の件数と skip の内訳は「オリジナルの SAD (gs) との一致度」の節の表。参照は多くが SAD K64 (<code>gs</code>) の出力で、既存の試験は互換モード k64 で走る (<a href="pysad/tests/conftest.py"><code>conftest.py</code></a>)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は <a href="pysad/tests/scripts/"><code>pysad/tests/scripts/</code></a>、対応表は <a href="pysad/tests/OUTPUTS.html"><code>pysad/tests/OUTPUTS.md</code></a>。</p>
+<h2 id="pysadtests-試験"><a href="pysad/tests/README.html"><code>pysad/tests/</code></a> (試験)</h2>
+<p><code>pysad/tests/</code> は 2 つに分かれる。<a href="pysad/tests/script_tests/README.html"><code>script_tests/</code></a> は機能ごとの自動試験 (198 ファイル、収集 2534 件。ファイルごとの説明と件数は <code>script_tests/README.md</code>)。<a href="pysad/tests/regression_tests/README.html"><code>regression_tests/</code></a> は SAD (K64) の保存した基準結果との照合ベンチ 50 本。共有のラティスは <code>pysad/tests/kek-ls_v03_12.lat</code>。以下の表は <code>script_tests/</code> の概要。</p>
+<p>全試験の件数と skip の内訳は「オリジナルの SAD (gs) との一致度」の節の表。参照は多くが SAD K64 (<code>gs</code>) の出力で、既存の試験は互換モード k64 で走る (<a href="pysad/tests/script_tests/conftest.py"><code>conftest.py</code></a>)。試験が走らせる SAD スクリプトと gs・pysad の画面表示は <a href="pysad/tests/script_tests/scripts/"><code>pysad/tests/script_tests/scripts/</code></a>、対応表は <a href="pysad/tests/script_tests/OUTPUTS.html"><code>pysad/tests/script_tests/OUTPUTS.md</code></a>。</p>
 <table>
 <thead>
 <tr>
@@ -1105,7 +1108,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 </thead>
 <tbody>
 <tr>
-<td><a href="pysad/tests/conftest.py"><code>conftest.py</code></a></td>
+<td><a href="pysad/tests/script_tests/conftest.py"><code>conftest.py</code></a></td>
 <td>試験の共通設定 (互換モードの既定を <code>k64</code> にする。フィクスチャ <code>v2_mode</code>・<code>k64_mode</code>。各試験ファイルのあと、残った Tk のルート窓を閉じる autouse の module fixture)</td>
 </tr>
 <tr>
@@ -1117,103 +1120,103 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 <td>v2 の動作の試験 (19 ファイル: 偏極の厳密な緩和率・クロマティックな側帯・反転した BEND、SynchroBeta・tradke・RADCOD の微分・<code>face</code>、F1 と AE の追跡、k64 の PSPAC・DAPWIDTH の窓・FREE・領域内のスピンと光子・WSPACSC、k64 の MEASURE・DETR ≥ 1・複素の特殊関数・Micado・FITP・文法・Tk 9.0)。補助の独立な計算は <code>_p1_dk.py</code>・<code>_p1_models.py</code>・<code>_p2_indep.py</code>・<code>_p3_indep.py</code>・<code>_p3_gsdata.py</code>・<code>_p5_util.py</code>・<code>_p5_gscx.py</code></td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_v23_Q1_fmap_lma.py"><code>test_v23_Q1_fmap_lma.py</code></a>、<a href="pysad/tests/test_v23_Q2_resdrive.py"><code>test_v23_Q2_resdrive.py</code></a>、<a href="pysad/tests/test_v23_R1_rfsw_adts.py"><code>test_v23_R1_rfsw_adts.py</code></a>、<a href="pysad/tests/test_v23_R2_adts_direct.py"><code>test_v23_R2_adts_direct.py</code></a>、<a href="pysad/tests/test_v23_R3_bend_cubic.py"><code>test_v23_R3_bend_cubic.py</code></a>、<a href="pysad/tests/test_v23_R4_rdt.py"><code>test_v23_R4_rdt.py</code></a>、<a href="pysad/tests/test_v23_S1_fmapres.py"><code>test_v23_S1_fmapres.py</code></a>、<a href="pysad/tests/test_v23_R5_rdt4.py"><code>test_v23_R5_rdt4.py</code></a>、<a href="pysad/tests/test_v23_R6_bend_orbit.py"><code>test_v23_R6_bend_orbit.py</code></a>、<a href="pysad/tests/test_v23_S2_fmapcheck.py"><code>test_v23_S2_fmapcheck.py</code></a>、<a href="pysad/tests/test_v23_S3_fmappred.py"><code>test_v23_S3_fmappred.py</code></a>、<a href="pysad/tests/test_v23_L2_lma.py"><code>test_v23_L2_lma.py</code></a>、<a href="pysad/tests/test_v23_T1_elegant.py"><code>test_v23_T1_elegant.py</code></a>、<a href="pysad/tests/test_v23_T2_touschek.py"><code>test_v23_T2_touschek.py</code></a>、<a href="pysad/tests/test_v23_U1_bend_k1_field.py"><code>test_v23_U1_bend_k1_field.py</code></a>、<a href="pysad/tests/test_v23_U2_bend_k1_def.py"><code>test_v23_U2_bend_k1_def.py</code></a>、PF 履歴・KEK-LS・DDBA の例の試験 (<a href="pysad/tests/test_pf_history_lattices.py"><code>test_pf_history_lattices.py</code></a>・<a href="pysad/tests/test_kek_ls_example.py"><code>test_kek_ls_example.py</code></a>・<a href="pysad/tests/test_ddba_lattices.py"><code>test_ddba_lattices.py</code></a>・<a href="pysad/tests/test_ddba_v07_14.py"><code>test_ddba_v07_14.py</code></a>・<a href="pysad/tests/test_ddba_sextupole.py"><code>test_ddba_sextupole.py</code></a> (6 極の検討の試作、8 件))</td>
+<td><a href="pysad/tests/script_tests/test_v23_Q1_fmap_lma.py"><code>test_v23_Q1_fmap_lma.py</code></a>、<a href="pysad/tests/script_tests/test_v23_Q2_resdrive.py"><code>test_v23_Q2_resdrive.py</code></a>、<a href="pysad/tests/script_tests/test_v23_R1_rfsw_adts.py"><code>test_v23_R1_rfsw_adts.py</code></a>、<a href="pysad/tests/script_tests/test_v23_R2_adts_direct.py"><code>test_v23_R2_adts_direct.py</code></a>、<a href="pysad/tests/script_tests/test_v23_R3_bend_cubic.py"><code>test_v23_R3_bend_cubic.py</code></a>、<a href="pysad/tests/script_tests/test_v23_R4_rdt.py"><code>test_v23_R4_rdt.py</code></a>、<a href="pysad/tests/script_tests/test_v23_S1_fmapres.py"><code>test_v23_S1_fmapres.py</code></a>、<a href="pysad/tests/script_tests/test_v23_R5_rdt4.py"><code>test_v23_R5_rdt4.py</code></a>、<a href="pysad/tests/script_tests/test_v23_R6_bend_orbit.py"><code>test_v23_R6_bend_orbit.py</code></a>、<a href="pysad/tests/script_tests/test_v23_S2_fmapcheck.py"><code>test_v23_S2_fmapcheck.py</code></a>、<a href="pysad/tests/script_tests/test_v23_S3_fmappred.py"><code>test_v23_S3_fmappred.py</code></a>、<a href="pysad/tests/script_tests/test_v23_L2_lma.py"><code>test_v23_L2_lma.py</code></a>、<a href="pysad/tests/script_tests/test_v23_T1_elegant.py"><code>test_v23_T1_elegant.py</code></a>、<a href="pysad/tests/script_tests/test_v23_T2_touschek.py"><code>test_v23_T2_touschek.py</code></a>、<a href="pysad/tests/script_tests/test_v23_U1_bend_k1_field.py"><code>test_v23_U1_bend_k1_field.py</code></a>、<a href="pysad/tests/script_tests/test_v23_U2_bend_k1_def.py"><code>test_v23_U2_bend_k1_def.py</code></a>、PF 履歴・KEK-LS・DDBA の例の試験 (<a href="pysad/tests/script_tests/test_pf_history_lattices.py"><code>test_pf_history_lattices.py</code></a>・<a href="pysad/tests/script_tests/test_kek_ls_example.py"><code>test_kek_ls_example.py</code></a>・<a href="pysad/tests/script_tests/test_ddba_lattices.py"><code>test_ddba_lattices.py</code></a>・<a href="pysad/tests/script_tests/test_ddba_v07_14.py"><code>test_ddba_v07_14.py</code></a>・<a href="pysad/tests/script_tests/test_ddba_sextupole.py"><code>test_ddba_sextupole.py</code></a> (6 極の検討の試作、8 件))</td>
 <td>新機能 (周波数マップ・LMA・共鳴駆動項・ADTS・数値の正規形・Touschek の式・K1 の定義のオプションなど) と例の試験 (K0≠0・δ≠0・閉形式・非対角の正規形・<code>adts()</code> の既定と精密版、周波数マップの信頼性、共鳴線の予想、LMA の信頼性を含む。内訳: 4 次の共鳴駆動項・ADTS との整合・追跡の 3 次のテイラー展開・四極の積分器・数値の正規形・周波数マップ 14 件、周波数マップと RDT・ADTS の接続・誤差つき・δ・k64・MPW・gs 12 件、共鳴駆動項の追跡との照合・偏向磁石の項 13 件、偏向磁石の 3 次の項 12 件、周波数マップ・共鳴線・LMA・周期性・Touschek への受け渡し・台本の関数・gs の出力との比較 21 件、共鳴駆動項・ADTS・クロマティシティ・厚いレンズ ⇔ 薄レンズ・追跡との照合 14 件)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_v24_A1_ampnf.py"><code>test_v24_A1_ampnf.py</code></a>、<a href="pysad/tests/test_v24_A2_k0_bend.py"><code>test_v24_A2_k0_bend.py</code></a>、<a href="pysad/tests/test_v24_A3_touschek_bunch.py"><code>test_v24_A3_touschek_bunch.py</code></a>、<a href="pysad/tests/test_v24_A5_dapert_options.py"><code>test_v24_A5_dapert_options.py</code></a>、<a href="pysad/tests/test_v24_A7_misc.py"><code>test_v24_A7_misc.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_v24_A1_ampnf.py"><code>test_v24_A1_ampnf.py</code></a>、<a href="pysad/tests/script_tests/test_v24_A2_k0_bend.py"><code>test_v24_A2_k0_bend.py</code></a>、<a href="pysad/tests/script_tests/test_v24_A3_touschek_bunch.py"><code>test_v24_A3_touschek_bunch.py</code></a>、<a href="pysad/tests/script_tests/test_v24_A5_dapert_options.py"><code>test_v24_A5_dapert_options.py</code></a>、<a href="pysad/tests/script_tests/test_v24_A7_misc.py"><code>test_v24_A7_misc.py</code></a></td>
 <td><code>ampnf</code> (J¹ の収束・同じ模型の追跡との一致・ξ)、K0≠0 の偏向磁石の h・ADTS、Touschek のバンチ内の δ と q_s (対のモンテカルロとの一致)、<code>DynamicApertureSurvey</code> の <code>ExpandElementValues</code>・<code>ReferenceOrbit</code>、<code>errors_summary</code> の誤判定・<code>NormalFormTune[]</code></td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_v241_ampnf_ext.py"><code>test_v241_ampnf_ext.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_v241_ampnf_ext.py"><code>test_v241_ampnf_ext.py</code></a></td>
 <td><code>nu(jorder=)</code>・<code>d2nu</code>・J² の追跡との比較、6 次の島の理論と追跡の周期 6 の固定点・分離線、対称性で禁止された共鳴の駆動項、<code>k0_nonlinear</code> の独立性 (5 件)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_v2_A1_next.py"><code>test_v2_A1_next.py</code></a>、<code>test_v2_A2_*.py</code>、<code>test_v2_B1_*.py</code>、<code>test_v2_B2_*.py</code>、<code>test_v2_B3_*.py</code>、<code>test_v2_C3_*.py</code>、<a href="pysad/tests/test_v2_D1_emit.py"><code>test_v2_D1_emit.py</code></a>、<code>test_v2_D2_*.py</code>、<code>test_v2_E_*.py</code></td>
+<td><a href="pysad/tests/script_tests/test_v2_A1_next.py"><code>test_v2_A1_next.py</code></a>、<code>test_v2_A2_*.py</code>、<code>test_v2_B1_*.py</code>、<code>test_v2_B2_*.py</code>、<code>test_v2_B3_*.py</code>、<code>test_v2_C3_*.py</code>、<a href="pysad/tests/script_tests/test_v2_D1_emit.py"><code>test_v2_D1_emit.py</code></a>、<code>test_v2_D2_*.py</code>、<code>test_v2_E_*.py</code></td>
 <td>v2 の動作の試験 (25 ファイル 412 件: 放射・F1・CAVI・MASS/CHARGE、スピン角・Polarization・RADINT、Emittance の F1・WSPAC・SOL、FREE・複素の特殊関数・Parallelize、側帯・光子・NAFF、MEASURE・RadiationField・NPARA、NORFSW・光子・POL + 加速、MAIN の式・Micado・nbcache、傾いたソレノイドの POL・ステアリングの F1)。補助の独立な計算は <code>_a2_indep.py</code>・<code>_c3_indep.py</code>・<code>_e_spinkick.py</code>。遅い試験は <code>PYSAD_SLOW=1</code></td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_pysad.py"><code>test_pysad.py</code></a>、<a href="pysad/tests/test_new_features.py"><code>test_new_features.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_pysad.py"><code>test_pysad.py</code></a>、<a href="pysad/tests/script_tests/test_new_features.py"><code>test_new_features.py</code></a></td>
 <td>基本の数値検証、新機能</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_item4.py"><code>test_item4.py</code></a>、<a href="pysad/tests/test_small_items.py"><code>test_small_items.py</code></a>、<a href="pysad/tests/test_error_spreading.py"><code>test_error_spreading.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_item4.py"><code>test_item4.py</code></a>、<a href="pysad/tests/script_tests/test_small_items.py"><code>test_small_items.py</code></a>、<a href="pysad/tests/script_tests/test_error_spreading.py"><code>test_error_spreading.py</code></a></td>
 <td>SADScript のリスト関数・tsvd・小項目 A〜E・誤差の spreading</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>、<a href="pysad/tests/test_symbol_names.py"><code>test_symbol_names.py</code></a>、<a href="pysad/tests/test_symbolic.py"><code>test_symbolic.py</code></a>、<a href="pysad/tests/test_miscfn.py"><code>test_miscfn.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>、<a href="pysad/tests/script_tests/test_symbol_names.py"><code>test_symbol_names.py</code></a>、<a href="pysad/tests/script_tests/test_symbolic.py"><code>test_symbolic.py</code></a>、<a href="pysad/tests/script_tests/test_miscfn.py"><code>test_miscfn.py</code></a></td>
 <td>gs に合わせた評価器の修正、シンボル名、記号微分 D、DownhillSimplex など</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_specfn.py"><code>test_specfn.py</code></a>、<a href="pysad/tests/test_fitroot.py"><code>test_fitroot.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_specfn.py"><code>test_specfn.py</code></a>、<a href="pysad/tests/script_tests/test_fitroot.py"><code>test_fitroot.py</code></a></td>
 <td>特殊関数・数学関数、FindRoot・Fit・NIntegrate</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_fileops.py"><code>test_fileops.py</code></a>、<a href="pysad/tests/test_ffsextra.py"><code>test_ffsextra.py</code></a>、<a href="pysad/tests/test_sadrandom.py"><code>test_sadrandom.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_fileops.py"><code>test_fileops.py</code></a>、<a href="pysad/tests/script_tests/test_ffsextra.py"><code>test_ffsextra.py</code></a>、<a href="pysad/tests/script_tests/test_sadrandom.py"><code>test_sadrandom.py</code></a></td>
 <td>ファイル関数、FFS の小コマンド、乱数</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_perf_kernels.py"><code>test_perf_kernels.py</code></a>、<a href="pysad/tests/test_elkern.py"><code>test_elkern.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_perf_kernels.py"><code>test_perf_kernels.py</code></a>、<a href="pysad/tests/script_tests/test_elkern.py"><code>test_elkern.py</code></a></td>
 <td>性能用カーネルの回帰 (従来の経路と同じ結果)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_emit_jac.py"><code>test_emit_jac.py</code></a>、<a href="pysad/tests/test_emit_report.py"><code>test_emit_report.py</code></a>、<a href="pysad/tests/test_emit_unstable.py"><code>test_emit_unstable.py</code></a>、<a href="pysad/tests/test_emit_extra.py"><code>test_emit_extra.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_emit_jac.py"><code>test_emit_jac.py</code></a>、<a href="pysad/tests/script_tests/test_emit_report.py"><code>test_emit_report.py</code></a>、<a href="pysad/tests/script_tests/test_emit_unstable.py"><code>test_emit_unstable.py</code></a>、<a href="pysad/tests/script_tests/test_emit_extra.py"><code>test_emit_extra.py</code></a></td>
 <td>Emittance・EMIT 報告・不安定な光学</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_synchrobeta.py"><code>test_synchrobeta.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_synchrobeta.py"><code>test_synchrobeta.py</code></a></td>
 <td>SynchroBetaEmittance</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_geo_fit_sig.py"><code>test_geo_fit_sig.py</code></a>、<a href="pysad/tests/test_tdgeo.py"><code>test_tdgeo.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_geo_fit_sig.py"><code>test_geo_fit_sig.py</code></a>、<a href="pysad/tests/script_tests/test_tdgeo.py"><code>test_tdgeo.py</code></a></td>
 <td>幾何の fit・ビームサイズ、tdgeo の解析微分</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_unstable.py"><code>test_unstable.py</code></a>、<a href="pysad/tests/test_fam_points.py"><code>test_fam_points.py</code></a>、<a href="pysad/tests/test_trpt_acc.py"><code>test_trpt_acc.py</code></a>、<a href="pysad/tests/test_rotate.py"><code>test_rotate.py</code></a>、<a href="pysad/tests/test_cavrot.py"><code>test_cavrot.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_unstable.py"><code>test_unstable.py</code></a>、<a href="pysad/tests/script_tests/test_fam_points.py"><code>test_fam_points.py</code></a>、<a href="pysad/tests/script_tests/test_trpt_acc.py"><code>test_trpt_acc.py</code></a>、<a href="pysad/tests/script_tests/test_rotate.py"><code>test_rotate.py</code></a>、<a href="pysad/tests/script_tests/test_cavrot.py"><code>test_cavrot.py</code></a></td>
 <td>不安定ライン、FITP の fam 点、TRPT の加速、ROTATE、空洞の DX/DY/ROTATE</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_bendk1_track.py"><code>test_bendk1_track.py</code></a>、<a href="pysad/tests/test_bend_feeddown.py"><code>test_bend_feeddown.py</code></a>、<a href="pysad/tests/test_sext_radiation.py"><code>test_sext_radiation.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_bendk1_track.py"><code>test_bendk1_track.py</code></a>、<a href="pysad/tests/script_tests/test_bend_feeddown.py"><code>test_bend_feeddown.py</code></a>、<a href="pysad/tests/script_tests/test_sext_radiation.py"><code>test_sext_radiation.py</code></a></td>
 <td>K1≠0 の BEND の追跡、フィードダウン、6 極の放射 (後ろ 2 本は旧式で <code>--ignore</code>)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_track6n_ext.py"><code>test_track6n_ext.py</code></a>、<a href="pysad/tests/test_main_track.py"><code>test_main_track.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_track6n_ext.py"><code>test_track6n_ext.py</code></a>、<a href="pysad/tests/script_tests/test_main_track.py"><code>test_main_track.py</code></a></td>
 <td>MULT・SOL の numba 追跡、MAIN の TRACK</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_coord.py"><code>test_coord.py</code></a>、<a href="pysad/tests/test_coord_elem.py"><code>test_coord_elem.py</code></a>、<a href="pysad/tests/test_tcav.py"><code>test_tcav.py</code></a>、<a href="pysad/tests/test_und.py"><code>test_und.py</code></a>、<a href="pysad/tests/test_mult_angle.py"><code>test_mult_angle.py</code></a>、<a href="pysad/tests/test_map.py"><code>test_map.py</code></a></td>
-<td>COORD・TCAVI・UND・MULT ANGLE≠0・MAP (<a href="pysad/tests/test_coord.py"><code>test_coord.py</code></a> は旧式で <code>--ignore</code>)</td>
+<td><a href="pysad/tests/script_tests/test_coord.py"><code>test_coord.py</code></a>、<a href="pysad/tests/script_tests/test_coord_elem.py"><code>test_coord_elem.py</code></a>、<a href="pysad/tests/script_tests/test_tcav.py"><code>test_tcav.py</code></a>、<a href="pysad/tests/script_tests/test_und.py"><code>test_und.py</code></a>、<a href="pysad/tests/script_tests/test_mult_angle.py"><code>test_mult_angle.py</code></a>、<a href="pysad/tests/script_tests/test_map.py"><code>test_map.py</code></a></td>
+<td>COORD・TCAVI・UND・MULT ANGLE≠0・MAP (<a href="pysad/tests/script_tests/test_coord.py"><code>test_coord.py</code></a> は旧式で <code>--ignore</code>)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_sol_optics.py"><code>test_sol_optics.py</code></a>、<a href="pysad/tests/test_sol_emit.py"><code>test_sol_emit.py</code></a>、<a href="pysad/tests/test_sol_geo.py"><code>test_sol_geo.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_sol_optics.py"><code>test_sol_optics.py</code></a>、<a href="pysad/tests/script_tests/test_sol_emit.py"><code>test_sol_emit.py</code></a>、<a href="pysad/tests/script_tests/test_sol_geo.py"><code>test_sol_geo.py</code></a></td>
 <td>SOL の Twiss・Emittance・幾何</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_wake.py"><code>test_wake.py</code></a>、<a href="pysad/tests/test_wake_optics.py"><code>test_wake_optics.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_wake.py"><code>test_wake.py</code></a>、<a href="pysad/tests/script_tests/test_wake_optics.py"><code>test_wake_optics.py</code></a></td>
 <td>WAKE の追跡、WAKEOPT</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_beambeam.py"><code>test_beambeam.py</code></a>、<a href="pysad/tests/test_bbbrem.py"><code>test_bbbrem.py</code></a>、<a href="pysad/tests/test_gausscoul.py"><code>test_gausscoul.py</code></a>、<a href="pysad/tests/test_measure.py"><code>test_measure.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_beambeam.py"><code>test_beambeam.py</code></a>、<a href="pysad/tests/script_tests/test_bbbrem.py"><code>test_bbbrem.py</code></a>、<a href="pysad/tests/script_tests/test_gausscoul.py"><code>test_gausscoul.py</code></a>、<a href="pysad/tests/script_tests/test_measure.py"><code>test_measure.py</code></a></td>
 <td>BEAMBEAM、BBBrem1、GaussianCoulomb、tlum</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_csr.py"><code>test_csr.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_csr.py"><code>test_csr.py</code></a></td>
 <td>CSR</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_spin.py"><code>test_spin.py</code></a>、<a href="pysad/tests/test_spin_track.py"><code>test_spin_track.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_spin.py"><code>test_spin.py</code></a>、<a href="pysad/tests/script_tests/test_spin_track.py"><code>test_spin_track.py</code></a></td>
 <td>POL (Emittance のスピン、TrackParticles のスピン追跡)</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_radfield.py"><code>test_radfield.py</code></a>、<a href="pysad/tests/test_radlight.py"><code>test_radlight.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_radfield.py"><code>test_radfield.py</code></a>、<a href="pysad/tests/script_tests/test_radlight.py"><code>test_radlight.py</code></a></td>
 <td>RadiationField、RADLIGHT</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_delcor.py"><code>test_delcor.py</code></a>、<a href="pysad/tests/test_corr.py"><code>test_corr.py</code></a>、<a href="pysad/tests/test_optics_fn.py"><code>test_optics_fn.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_delcor.py"><code>test_delcor.py</code></a>、<a href="pysad/tests/script_tests/test_corr.py"><code>test_corr.py</code></a>、<a href="pysad/tests/script_tests/test_optics_fn.py"><code>test_optics_fn.py</code></a></td>
 <td>DELCOR、軌道補正、光学の補助関数</td>
 </tr>
 <tr>
-<td><a href="pysad/tests/test_sadclass.py"><code>test_sadclass.py</code></a>、<a href="pysad/tests/test_gui_lang.py"><code>test_gui_lang.py</code></a>、<a href="pysad/tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>、<a href="pysad/tests/test_plot.py"><code>test_plot.py</code></a></td>
+<td><a href="pysad/tests/script_tests/test_sadclass.py"><code>test_sadclass.py</code></a>、<a href="pysad/tests/script_tests/test_gui_lang.py"><code>test_gui_lang.py</code></a>、<a href="pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>、<a href="pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a></td>
 <td>Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は <code>PYSAD_SAD_PACKAGES</code> が必要)</td>
 </tr>
 </tbody>

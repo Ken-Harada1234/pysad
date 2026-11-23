@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2 の Polarization の緩和率 (Sokolov-Ternov の厳密式) を、独立な DK の数値積分 (pysad/tests/_p1_dk.py) と比べる。
+"""v2 の Polarization の緩和率 (Sokolov-Ternov の厳密式) を、独立な DK の数値積分 (pysad/tests/script_tests/_p1_dk.py) と比べる。
 リング: 0.5 GeV の 12 セル FODO + (a) 垂直の偏向の組 (±0.1 rad、ROTATE=90°)、(b) ソレノイド (BZ = 1 T、0.8 m)、(c) 四極の縦ずれ (垂直の分散・軌道)、
 0.58 GeV の ASTRID2 + MPW の MPW を ROTATE = 0.3 rad / 90° にしたもの。使い方: py -3.12 example/16_spin_polarization/pol_st_dk_check.py (約 6 分)。結果は pol_st_dk_check.out.txt。"""
 import io
@@ -8,7 +8,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'pysad', 'tests'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'pysad', 'tests', 'script_tests'))
 from pysad import compat, ffscmd
 import test_v2_P1_st as T
 import _p1_dk as DK

@@ -1,6 +1,6 @@
 # 周波数マップの信頼性の例
 
-解説は `docs/26_frequency_map_lma.md` (§3.2・3.3・3.6・§10)、台本ごとのまとめは [`FMAP_summary.md`](FMAP_summary.md) §14、試験は `pysad/tests/test_v23_S2_fmapcheck.py`、コードは `pysad/fmapcheck.py`・`freqmap.py`・`fmapres.py` (`apply_alignment_errors`)。
+解説は `docs/26_frequency_map_lma.md` (§3.2・3.3・3.6・§10)、台本ごとのまとめは [`FMAP_summary.md`](FMAP_summary.md) §14、試験は `pysad/tests/script_tests/test_v23_S2_fmapcheck.py`、コードは `pysad/fmapcheck.py`・`freqmap.py`・`fmapres.py` (`apply_alignment_errors`)。
 実行はリポジトリ直下から `py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_xxx.py ...` (標準出力をファイルへ落とすときは `PYTHONUTF8=1`)。結果の数値は `example/14_nonlinear_dynamics/frequency_map/fmap_check_data/*.jsonl` (1 行 = 1 つの周波数マップ。走った組は飛ばして追記する)。
 共通の条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、px = py = z = 0 から出発、NAFF の窓 Hann (p = 1)、規格化 = 標本の楕円、1024 周、**格子 21 × 16 = 336 点** (41 × 31 の格子の 1 つおき)。ASTRID2: 位置 2、x = 0.5〜18 mm、y = 0.5〜14 mm。KEK-LS: 位置 3、x = 0.2〜6 mm、y = 0.2〜8 mm。
 使ったラティス: `example/astrid/lattice/ASTRID2_v01_01.sad`・`ASTRID2_v01_02_id.sad` (MPW)、`pysad/tests/kek-ls_v03_12.lat` (KEK-LS、大きなリング A、ESRF 型の HMBA)。
@@ -22,4 +22,4 @@ CPU は 4 コアまで (ProcessPoolExecutor で 1 つの周波数マップ = 1 �
 
 台本からの警告: `FrequencyMap[]` は既定で RFSW・RAD OFF (現在のフラグは使わない。`UseFlags->True` で使う)、警告は ` FrequencyMap: WARNING [コード] …` で出る (`test_script_frequency_map_safe_default`)。
 
-再現の確認: `py -3.12 -m pytest pysad/tests/test_v23_S2_fmapcheck.py -q` (約 10 s。保存済みの出力を読む試験を含む)。gs の再走 (`fmap_check_gs_errors.py`・`fmap_check_gs_rfsw.py`、各 1 分以内) は保存済みの出力と一致する。
+再現の確認: `py -3.12 -m pytest pysad/tests/script_tests/test_v23_S2_fmapcheck.py -q` (約 10 s。保存済みの出力を読む試験を含む)。gs の再走 (`fmap_check_gs_errors.py`・`fmap_check_gs_rfsw.py`、各 1 分以内) は保存済みの出力と一致する。

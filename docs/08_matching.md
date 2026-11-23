@@ -148,7 +148,7 @@ INS (cell=False) でも解析微分 (`match6d.analytic_qu`) を使う。SAD の 
 - **目標値は任意** (`fit gx <値>`)。0 は**リングを閉じるための目標**で (`fit gx 0; fit gy 0; free <DRIFT の名前> L; go;` の形)、BT (輸送路) やセルでは任意の値を指定する。CHI1–3 の目標は度で書き、内部でラジアンにする (NX/NY/NZ は 2π 倍)。
   GX..CHI の条件は idp≠0 では評価しない (LENG・TR* も同じ)。重みは GX GY GZ が 1e-3·sqrt(max(νx,νy)/em/max(1,L))、CHI が 1e3 (1 節の表)。
 - **解析微分 `match6d.tdgeo_term`** (tdgeo.f の直訳): 変数が DRIFT の L、BEND の ANGLE (ROTATE 付きも)・L のときだけ。**幾何の条件だけの行**に使う。BEND の L は K64 が出射の向き `geo(:,3,k+1)` で近似する式のまま
-  (有限差分とは O(ANGLE²) 違う)。DRIFT の L と BEND の ANGLE は幾何の有限差分と 1e-5 以内で一致 ([`test_tdgeo.py`](../pysad/tests/test_tdgeo.py))。
+  (有限差分とは O(ANGLE²) 違う)。DRIFT の L と BEND の ANGLE は幾何の有限差分と 1e-5 以内で一致 ([`test_tdgeo.py`](../pysad/tests/script_tests/test_tdgeo.py))。
   **四極などの変数 (DX・DY。K64 は `qdtrans`・`tftmatu` を使う、未移植) と、Twiss の条件が同じ行にある列は中心差分のまま**。
 - 未確認: 不安定なリングの幾何の fit は gs が不安定の罰則を残差に入れず、pysad は入れるので結果が違う (比べていない)。COORD を含む区間の解析微分、SOL の幾何の fit も未確認。
 - **COORD を含むリングの FIT** (確認済み): COORD の対 (C1・C2、DX DY DZ CHI3 付き) を含むリングで NX・NY=0.2、QF K1・QD K1 を FREE にした fit (解析微分の経路) は、K1・チューンとも gs と全桁一致。**COORD のパラメータそのものを FIT 変数にする場合は未確認**のまま。

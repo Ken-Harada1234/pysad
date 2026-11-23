@@ -127,7 +127,7 @@ pysad は組み込み関数を <a href="../pysad/csr.py"><code>pysad/csr.py</cod
 </table>
 <p>全体の流れ: ダクト断面 → <code>CSRMatrix</code>・<code>CSRInit</code>・固有値分解で ZL(k) → (ファイルに保存) → <code>CSRStability</code> が ZL を格子 (FFT 形式) に直し、<code>CSRHaissin</code> で定常分布、<code>CSRTrack</code> で追跡、<code>CSRSetupOY</code>・<code>CSROYMatrix</code> で安定性。</p>
 <h2 id="2-使い方-動く-sad-スクリプト">2. 使い方 (動く SAD スクリプト)</h2>
-<p>以下は <a href="../pysad/tests/test_csr.py"><code>pysad/tests/test_csr.py</code></a> などから取った (2.1〜2.4 は K64 の出力と照合済み。2.5 の <code>MakeZL</code> も照合済み。2.6 は未照合の骨格)。</p>
+<p>以下は <a href="../pysad/tests/script_tests/test_csr.py"><code>pysad/tests/script_tests/test_csr.py</code></a> などから取った (2.1〜2.4 は K64 の出力と照合済み。2.5 の <code>MakeZL</code> も照合済み。2.6 は未照合の骨格)。</p>
 <h3 id="21-csrtrack-ウェイク付きの追跡">2.1 CSRTrack: ウェイク付きの追跡</h3>
 <pre><code>FFS;
 $FORM=&quot;18.14&quot;;
@@ -283,7 +283,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 <h2 id="5-k64-の癖">5. K64 の癖</h2>
 <p>(<a href="30_sad_bug_report.html"><code>docs/30_sad_bug_report.md</code></a> の B59・B60。pysad の <code>CSRSetupOY</code> は両モードで正しい形の出力を返し、gs の wrongtype は再現しない。B59 は k64 モードが K64 どおりに再現し、v2 モードは修正している。)</p>
 <ul>
-<li><strong>B59</strong> (k64 と v2 で違う): <code>CSRSetupOY</code> は <code>dpjn</code> を <code>zjn</code> と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く <code>CSROYMatrix</code> は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。<strong>k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる</strong> (点が無ければ失敗 <code>CSR::irreg</code>。<code>CSROYMatrix</code> は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 (<a href="../pysad/tests/test_v2_C_csr.py"><code>test_v2_C_csr.py</code></a> 2 件)。<strong><code>CSROYMatrix</code> の行列そのものは未照合のまま</strong> (gs が wrongtype を返す。B60)。</li>
+<li><strong>B59</strong> (k64 と v2 で違う): <code>CSRSetupOY</code> は <code>dpjn</code> を <code>zjn</code> と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く <code>CSROYMatrix</code> は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。<strong>k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる</strong> (点が無ければ失敗 <code>CSR::irreg</code>。<code>CSROYMatrix</code> は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 (<a href="../pysad/tests/script_tests/test_v2_C_csr.py"><code>test_v2_C_csr.py</code></a> 2 件)。<strong><code>CSROYMatrix</code> の行列そのものは未照合のまま</strong> (gs が wrongtype を返す。B60)。</li>
 <li><strong>B60</strong>: <code>CSROYMatrix</code> が、<code>CSRSetupOY</code> の出力を渡すと <code>General::wrongtype</code> を返す (この K64 ビルドで再現)。<strong>手で作った正しい形の実数リストなら gs でも動く</strong>。原因: <code>tfcsroysetup</code> (csroy.f) が 4 番目 (zj) の実数リストへ <code>c_f_pointer(c_loc(rlist(kazjn)), zjn, [mphi,nj])</code> で書くとき、先頭の語 <code>rlist(kazjn)</code> (リストの頭 = head) から書き始める (要素は <code>rlist(kazjn+1)</code> から書くべきで、ほかの 4 つの配列は <code>rlist(k+1:…)</code> で正しい)。head が zjn(1,1) で上書きされるので、<code>tfcsroymat</code> の <code>tfreallistq(las%dbody(4), lazj)</code> が偽になる (B59 の <code>dpjn</code> と <code>zjn</code> が同じ記憶域も同じ箇所)。gs で <code>CSRSetupOY</code> の出力の各要素の <code>Head</code> を調べ、4 番目が実数 (1.2952814481588496e-5) で List でないことを確認した。登録名は <code>CSRSetupOY</code>・<code>CSROYMatrix</code> だが、ソース内の関数名は <code>tfcsroysetup</code>・<code>tfcsroymat</code> で綴りが違う。<code>OYStability</code> と <code>OYScan</code> は gs で完走しない (K64 の誤り)。pysad は両モードで正しい形の出力を返して動く (k64 で wrongtype を再現するかは要判断)。手で作った入力 (nr=64、nj=3、nphi=2) の 6x6 の行列 (36 要素) は gs と相対 4e-20 で一致 (<a href="../example/13_packages/fn_CSROYMatrix.sad"><code>example/13_packages/fn_CSROYMatrix.sad</code></a>、<code>test_csroymatrix_hand_made_input_matches_gs</code>)。</li>
 <li><code>CSRInit</code> の実数 1 つの dx は常に <code>wrongtype</code> (dx を読まない)。</li>
 <li><code>CSRMatrix</code> mode 1000 は、K64 が <code>phix(0:nphimax)</code> を <code>csrphimesh</code> の <code>phix(*)</code> に渡すため、点の添字が 1 つずれる (pysad も同様)。また <code>{4,4,4,4}</code> などの断面は gs 自体が SIGABRT/SIGSEGV で落ちる (参照なし)。</li>
@@ -293,7 +293,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 <h2 id="6-検証">6. 検証</h2>
 <ul>
 <li><code>CSRTrack</code>・<code>CSRHaissin</code> は K64 (gs) と相対 1e-11、<code>CSRMatrix</code>・<code>CSRConvert</code>・<code>CSRInit</code> は 1e-10〜1e-13、<code>CSRSetupOY</code> は 1e-9〜1e-7、<code>MakeZL</code> (3 周波数・1 区間) は 1e-10 以内で一致する。</li>
-<li>試験は <code>py -3.12 -m pytest pysad/tests/test_csr.py</code> (<code>PYSAD_SAD_PACKAGES</code> 付きで 6 通過・1 skip。skip は <code>PYSAD_SLOW=1</code> が要る <code>MakeZL</code>)。</li>
+<li>試験は <code>py -3.12 -m pytest pysad/tests/script_tests/test_csr.py</code> (<code>PYSAD_SAD_PACKAGES</code> 付きで 6 通過・1 skip。skip は <code>PYSAD_SLOW=1</code> が要る <code>MakeZL</code>)。</li>
 <li>試験の量は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、実際のダクト、周長) での物理的な妥当性の検証ではない。<code>MakeZL</code> の照合は 3 周波数・1 区間だけ。</li>
 <li>一致の表は <a href="history/15_csr_validation.md"><code>docs/history/15_csr_validation.md</code></a>。</li>
 </ul>
@@ -320,7 +320,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 <li><code>CSR.n</code> を動かすための対応: <code>Do[…, {Infinity}]</code>・<code>{i, Infinity}</code> (Break するまで続ける)、<code>OpenRead["!コマンド"]</code> (コマンドの出力を読む。<code>top</code> のない環境 (Windows) では <code>FreeMem</code> 用に空き記憶領域を旧形式の top の行で作る)、開けないファイルは <code>$Failed</code>。</li>
 <li><code>CSRMatrix</code> mode 1000: <code>tsolvm(svd=.true.)</code> は最小ノルム解 (特異値 &lt; 最大×1e-4 を捨てる) として numpy の SVD で解いた。<code>CSRInit</code> の境界の電荷は <code>tsolva</code> = <code>tsvd(.false.)</code> の最小ノルム解 (pysad の <code>tsvd</code>)。</li>
 <li>gs の参照を取るには、WSL に <code>top</code> を入れるか、PATH に <code>top</code> の代用 (<code>Mem: …k total, …k used, …k free, …k buffers</code> を出すスクリプト) を置き、<code>OSTYPE=linux</code> を設定する (非対話の WSL では OSTYPE が空で、<code>FreeMem</code> の <code>Switch</code> が未評価になり OpenRead が失敗する)。</li>
-<li>試験: <a href="../pysad/tests/test_csr.py"><code>pysad/tests/test_csr.py</code></a>。K64 のソース: <code>Packages/CSR.n</code>、<code>src/csrtrack.f</code>、<code>src/csroy.f</code>、<code>src/csrtest.f</code>。</li>
+<li>試験: <a href="../pysad/tests/script_tests/test_csr.py"><code>pysad/tests/script_tests/test_csr.py</code></a>。K64 のソース: <code>Packages/CSR.n</code>、<code>src/csrtrack.f</code>、<code>src/csroy.f</code>、<code>src/csrtest.f</code>。</li>
 </ul>
 <h2 id="9-関連文書">9. 関連文書</h2>
 <ul>

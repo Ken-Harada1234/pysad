@@ -1,0 +1,154 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 15:28:37 Monday 10/12/2026 ***
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ In[1]:= Out[1]:= USE
+ In[2]:=  In[2]:=  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.733388 $$$       f BX    #######  #  17.324544 $$$       f NX    #######  #   7.381400
+$$$       f AY    #######  #    .422243 $$$       f BY    #######  #    .669153 $$$       f NY    #######  #   8.009509
+$$$       f LENG  #######  #  140.00000
+ In[2]:=  In[2]:= === Test A: Off-momentum Twiss ===
+ In[2]:= Null
+ In[2]:=  In[2]:= --- dp = 0.00 ---
+ In[2]:=   BetaX  = 17.324544344223614
+ In[2]:=   BetaY  = .6691528081044745
+ In[2]:=   AlphaX = -4.733388035108646
+ In[2]:=   AlphaY = .4222426661278888
+ In[2]:=   EtaX   = .9335983044298397
+ In[2]:=   EtaPX  = .2555305548470848
+ In[2]:=   Qx     = 7.381400207828139
+ In[2]:=   Qy     = 8.009508603993114
+ In[2]:= Null
+ In[2]:=  In[2]:=  In[2]:=  In[2]:=  Matched. (  0.000    ) DP = 0.01000  DP0 =-0.02000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.379515 $$$       f BX    #######  #  19.664287 $$$       f NX    #######  #   7.689156
+$$$       f AY    #######  #    .459605 $$$       f BY    #######  #    .552783 $$$       f NY    #######  #   8.412887
+$$$       f LENG  #######  #  140.00000
+ In[2]:= --- dp = -0.02 ---
+ In[2]:=   BetaX  = 19.664286588521165
+ In[2]:=   BetaY  = .5527825754042954
+ In[2]:=   AlphaX = -5.37951504541468
+ In[2]:=   AlphaY = .4596054672821408
+ In[2]:=   EtaX   = .9073503839886762
+ In[2]:=   EtaPX  = .2486444063002938
+ In[2]:=   Qx     = 7.689155993908342
+ In[2]:=   Qy     = 8.412887032821487
+ In[2]:= Null
+ In[2]:=  In[2]:=  In[2]:=  In[2]:=  Matched. (  0.000    ) DP = 0.01000  DP0 =-0.01000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.018766 $$$       f BX    #######  #  18.360313 $$$       f NX    #######  #   7.526516
+$$$       f AY    #######  #    .435856 $$$       f BY    #######  #    .614244 $$$       f NY    #######  #   8.197643
+$$$       f LENG  #######  #  140.00000
+ In[2]:= --- dp = -0.01 ---
+ In[2]:=   BetaX  = 18.360313222983436
+ In[2]:=   BetaY  = .6142440098512075
+ In[2]:=   AlphaX = -5.018766463118835
+ In[2]:=   AlphaY = .4358558825594492
+ In[2]:=   EtaX   = .9207955052470068
+ In[2]:=   EtaPX  = .2521366341704608
+ In[2]:=   Qx     = 7.526516054709003
+ In[2]:=   Qy     = 8.197642763002147
+ In[2]:= Null
+ In[2]:=  In[2]:=  In[2]:=  In[2]:=  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.01000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.501332 $$$       f BX    #######  #  16.477629 $$$       f NX    #######  #   7.251004
+$$$       f AY    #######  #    .414208 $$$       f BY    #######  #    .718942 $$$       f NY    #######  #   7.841457
+$$$       f LENG  #######  #  140.00000
+ In[2]:= --- dp = +0.01 ---
+ In[2]:=   BetaX  = 16.477629114902992
+ In[2]:=   BetaY  = .7189416090832342
+ In[2]:=   AlphaX = -4.501332203633844
+ In[2]:=   AlphaY = .41420807659732617
+ In[2]:=   EtaX   = .9457135176601006
+ In[2]:=   EtaPX  = .2588173031705471
+ In[2]:=   Qx     = 7.251004148184368
+ In[2]:=   Qy     = 7.841457104846195
+ In[2]:= Null
+ In[2]:=  In[2]:=  In[2]:=  In[2]:=  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.02000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.308625 $$$       f BX    #######  #  15.769314 $$$       f NX    #######  #   7.133279
+$$$       f AY    #######  #    .409527 $$$       f BY    #######  #    .764583 $$$       f NY    #######  #   7.689166
+$$$       f LENG  #######  #  140.00000
+ In[2]:= --- dp = +0.02 ---
+ In[2]:=   BetaX  = 15.76931376286388
+ In[2]:=   BetaY  = .7645829956494838
+ In[2]:=   AlphaX = -4.308625189888866
+ In[2]:=   AlphaY = .4095268438910418
+ In[2]:=   EtaX   = .957106021260614
+ In[2]:=   EtaPX  = .2619901226689391
+ In[2]:=   Qx     = 7.133279111773871
+ In[2]:=   Qy     = 7.68916607989246
+ In[2]:= Null
+ In[2]:=  In[2]:=  In[2]:=  In[2]:=  In[2]:=  In[2]:=  In[2]:= from here RINGK
+ In[2]:=  In[2]:=  In[2]:=  Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -15.40296 $$$       f BX    #######  #  56.285243 $$$       f NX    #######  #   9.397309
+$$$       f AY    #######  #    .443484 $$$       f BY    #######  #   1.154373 $$$       f NY    #######  #   6.554254
+$$$       f LENG  #######  #  140.00000
+ In[2]:=  ;
+ BEND   BK      =(L =.8   ANGLE =.15707963267949   E1 =.5    E2 =.5    K1 =.08 )
+ ;
+ In[2]:=  In[2]:=  In[2]:=  In[2]:=  In[2]:= === Test B: BEND with K1=0.08 m^-1 (integrated), K1/L=0.1 m^-2 ===
+ In[2]:= Null
+ In[2]:= --- Linear optics at ring entrance ---
+ In[2]:=   BetaX  = 56.28524336478427
+ In[2]:=   BetaY  = 1.1543730060693755
+ In[2]:=   AlphaX = -15.402960760030902
+ In[2]:=   AlphaY = .4434844641222217
+ In[2]:=   EtaX   = .7297294804920005
+ In[2]:=   EtaPX  = .1997306316363496
+ In[2]:=   Qx     = 9.39730886925195
+ In[2]:=   Qy     = 6.554254296466496
+ In[2]:= Null
+ In[2]:=  In[2]:= --- Radiation integrals (RADINT) ---
+ In[2]:= ****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     2.500
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   140.000
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.283185    
+ RF VOLTAGE (kV)            =    0.000000    
+ HARMONIC NUMBER            =     0.
+ RF FREQUENCY (MHz)         =     0.0000
+
+ RADIATION INTEGRALS  
+   I1X =    2.685413        I1Y =  -3.0457654E-48
+   I2  =    1.233701    
+   I3  =   0.2422365    
+   I4U =   0.5350912        I4V =  -1.8188724E-16
+   I5U =   4.0314241E-02    I5V =   1.0244449E-33
+
+ NU-X-  =  9.39731    NU-Y- =  6.55425
+ MOMENTUM COMPACTION FAC X  =   1.9182E-02
+ MOMENTUM COMPACTION FAC Y  =  -2.1755E-50
+ ENERGY LOSS PER TURN (kV)  =    678.5    
+ DU=1-I4U/I2                =   0.56627138
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    6.077    
+                TAUV (msec) =    3.441    
+                TAUE (msec) =    1.414    
+ ENERGY SPREAD (SIG) DE/E   =   8.6022E-04
+            EMITTANCE U     =   5.2928E-07
+            EMITTANCE V     =   7.6162E-39
+  NOT ENOUGH RF VOLTS;  ELOSS,RFV =    678.50075327596767        0.0000000000000000     
+
+ LINEAR CHROMATICITY GX     =   -14.233924
+ LINEAR CHROMATICITY GY     =    -4.142993
+ In[2]:= Null
+ In[2]:=  In[2]:= --- Emittance ---
+ In[2]:=   Emittance x        = 4.5982576449452446e-7
+ In[2]:=   MomentumSpread     = .0008757448046543587
+ In[2]:=   MomentumCompaction = .019140763674367647
+ In[2]:=   EnergyLossU0       = 678500.7610895152
+ In[2]:=  ???-getbuf-end of input stream

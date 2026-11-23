@@ -41,7 +41,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <main>
 <div class="meta">元: elegant_comparison.md</div>
 <h1 id="elegant-との比較の例-局所運動量アクセプタンスと-touschek-寿命">elegant との比較の例 (局所運動量アクセプタンスと Touschek 寿命)</h1>
-<p>試験は <code>pysad/tests/test_v23_T1_elegant.py</code>。この例は比較と、SAD → elegant の変換のスクリプトである。
+<p>試験は <code>pysad/tests/script_tests/test_v23_T1_elegant.py</code>。この例は比較と、SAD → elegant の変換のスクリプトである。
 実行はリポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/xxx.py ...</code> (標準出力をファイルにリダイレクトするには <code>PYTHONUTF8=1</code> が要る)。すべて v2 モード。
 elegant は WSL (Ubuntu、<code>~/elegant/env.sh</code>、elegant 2026.4.0)。使い方は elegant の公式文書。CPU は最大 4 コア (serial の elegant を <code>xargs -P 4</code>、または <code>mpirun -np 4 Pelegant</code>)。
 gs (K64、2026-10-19 ビルド、WSL、NPARA = 1) は <code>gs_bend_k1.py</code> だけ (timeout 600 s、終了後に <code>ps</code> で sad1.exe の残りがないことを確かめた)。
@@ -68,7 +68,7 @@ PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_summary.p
 PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/gs_bend_k1.py
 PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_elegant.py
 # 試験
-PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt; py -3.12 -m pytest pysad/tests/test_v23_T1_elegant.py -q      # elegant が無いと光学の 1 件は skip
+PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt; py -3.12 -m pytest pysad/tests/script_tests/test_v23_T1_elegant.py -q      # elegant が無いと光学の 1 件は skip
 </code></pre>
 <h2 id="ファイル">ファイル</h2>
 <table>

@@ -1,6 +1,6 @@
 # Touschek 寿命の式の例 (pysad (K64) と elegant のどちらが正確か。独立な式での確定)
 
-試験は `pysad/tests/test_v23_T2_touschek.py` (8 件)。独立な式は `pysad/touschek.py` の `touschek_piwinski` (v2 の `TouschekLifetime[INF, INF, nz]`・`TouschekLifetimeLMA[]` の既定)。
+試験は `pysad/tests/script_tests/test_v23_T2_touschek.py` (8 件)。独立な式は `pysad/touschek.py` の `touschek_piwinski` (v2 の `TouschekLifetime[INF, INF, nz]`・`TouschekLifetimeLMA[]` の既定)。
 実行はリポジトリ直下から `PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/touschek_formula_xxx.py ...`。v2 モード。elegant は WSL (Ubuntu、`~/elegant/env.sh`、elegant 2026.4.0。作業フォルダ `~/t2/<名前>`)。
 ラティス: `example/astrid/lattice/ASTRID2_v01_01.sad` (ASTRID2、0.58 GeV)、`pysad/tests/kek-ls_v03_12.lat` (KEK-LS、大きなリング A。ESRF 型の HMBA、3 GeV)。`sad2ele.py` の lte (`<名前>_all.lte`、`elegant_comparison.md`) を使う。
 CPU は pysad 1 本 + elegant 1 本 (上限 4 コア)。
@@ -31,7 +31,7 @@ PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/touschek_formula_
 PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/touschek_formula_lma_lifetime.py astrid2
 PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/touschek_formula_lma_lifetime.py kekls
 # 試験
-PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ> py -3.12 -m pytest pysad/tests/test_v23_T2_touschek.py -q
+PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ> py -3.12 -m pytest pysad/tests/script_tests/test_v23_T2_touschek.py -q
 ```
 
 SAD の台本では (INTRA ON の `Emittance[]` のあと):

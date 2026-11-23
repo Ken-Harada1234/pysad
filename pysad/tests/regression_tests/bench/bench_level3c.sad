@@ -1,0 +1,92 @@
+! ============================================================
+! bench_level3c.sad — Level 3C benchmark: x-y coupling
+!   ラティスは bench_level3b.sad を基に、QD の K1 を -1.8 → -1.7 (×0.3) に変更。
+!   (元の Qy=8.0095 は整数共鳴に近く、BEND のロールで垂直 COD が 7 mm になり RADINT の σE が NaN になったため。
+!    変更後 Qx≈7.421, Qy≈7.158)
+!   ロール誤差を 1 台ずつ入れる: QF.3 に DTHETA (四極ロール → x-y 結合)、
+!   B.5 に DTHETA (BEND ロール → 垂直分散)。σ=1e-3, GCUT=2, SeedRandom[17]。
+!   比べる量: 誤差の値, 閉軌道, 結合ありの光学 (R1-R4, EY/EPY, チューン),
+!            Emittance[] の x/y エミッタンス, RADINT の EMITTANCE U/V。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+CELL;
+CALC;
+emit;
+! ------------------------------------------------------------
+! (1) ロール誤差を 1 台ずつ入れる
+! ------------------------------------------------------------
+GCUT = 2;
+SeedRandom[17];
+DTHETA 1E-3 QF.3;
+DTHETA 1E-3 B.5;
+cell calc;
+dump;
+Print["=== Test 3C-1: errors ==="];
+! DTHETA が入るキーワード名は未確認 (ROTATE / DROTATE のどちらか)。両方出す。
+Print["E ROTATE  QF.3 ",LINE["ROTATE","QF.3"]];
+Print["E DROTATE QF.3 ",LINE["DROTATE","QF.3"]];
+Print["E ROTATE  B.5  ",LINE["ROTATE","B.5"]];
+Print["E DROTATE B.5  ",LINE["DROTATE","B.5"]];
+
+! ------------------------------------------------------------
+! (2) 閉軌道 (入口)
+! ------------------------------------------------------------
+Print["=== Test 3C-2: closed orbit ==="];
+Print["O ^^^    ",{Twiss["DX","^^^"],Twiss["DPX","^^^"],Twiss["DY","^^^"],Twiss["DPY","^^^"]}];
+Print["O ORG.11 ",{Twiss["DX","ORG.11"],Twiss["DPX","ORG.11"],Twiss["DY","ORG.11"],Twiss["DPY","ORG.11"]}];
+
+! ------------------------------------------------------------
+! (3) 結合ありの光学 (入口, ORG.11)
+! ------------------------------------------------------------
+Print["=== Test 3C-3: coupled optics ==="];
+Print["T BX  ",Twiss["BX","^^^"]];
+Print["T BY  ",Twiss["BY","^^^"]];
+Print["T AX  ",Twiss["AX","^^^"]];
+Print["T AY  ",Twiss["AY","^^^"]];
+Print["T EX  ",Twiss["EX","^^^"]];
+Print["T EPX ",Twiss["EPX","^^^"]];
+Print["T EY  ",Twiss["EY","^^^"]];
+Print["T EPY ",Twiss["EPY","^^^"]];
+Print["T R   ",{Twiss["R1","^^^"],Twiss["R2","^^^"],Twiss["R3","^^^"],Twiss["R4","^^^"]}];
+Print["T R11 ",{Twiss["R1","ORG.11"],Twiss["R2","ORG.11"],Twiss["R3","ORG.11"],Twiss["R4","ORG.11"]}];
+Print["T EY11 ",Twiss["EY","ORG.11"]];
+Print["T QX  ",Twiss["NX","$$$"]/2/Pi];
+Print["T QY  ",Twiss["NY","$$$"]/2/Pi];
+
+! ------------------------------------------------------------
+! (4) エミッタンス (6D: Emittance[], 放射積分: RADINT)
+! ------------------------------------------------------------
+Print["=== Test 3C-4: emittance ==="];
+emi=Emittance[];
+Print["M EMITX ",(Emittances/.emi)[1]];
+Print["M EMITY ",(Emittances/.emi)[2]];
+Print["M SIGE  ",MomentumSpread/.emi];
+Print["M U0    ",EnergyLossU0/.emi];
+RADINT;
+
+stop;
+stop;

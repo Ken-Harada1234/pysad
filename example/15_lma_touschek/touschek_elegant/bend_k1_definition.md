@@ -1,6 +1,6 @@
 # K1≠0 の BEND の K1 の定義のオプションと CALC の dk の修正の例
 
-試験は `pysad/tests/test_v23_U2_bend_k1_def.py`。すべて v2 モード。リポジトリ直下から `PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_def_xxx.py` (標準出力をファイルにリダイレクトするには `PYTHONUTF8=1` が要る)。
+試験は `pysad/tests/script_tests/test_v23_U2_bend_k1_def.py`。すべて v2 モード。リポジトリ直下から `PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_def_xxx.py` (標準出力をファイルにリダイレクトするには `PYTHONUTF8=1` が要る)。
 
 ## 使い方
 
@@ -19,7 +19,7 @@ v2 だけで有効 (k64 では無視)。追跡・CALC・`Emittance[]`・MULT (AN
 | `bend_k1_def_verify.py` / `bend_k1_def_verify.out.txt` | (1) n = 0.4 の扇形磁石 16 台 (3 GeV 相当) の dν/dδ (CALC・追跡・独立な積分・解析式・elegant の保存値)、5 つの δ の追跡と積分のチューンの差、写像の差。(2) ASTRID2 の自然な色収差を独立な積分と比較。(3) CALC の dk の修正の影響 (n = 0.4 のリング、ASTRID2、大きなリング A) |
 | `bend_k1_def_astrid2_chrom.py` / `bend_k1_def_astrid2_chrom.out.txt` | ASTRID2 の ξ・∂²ν/∂δ² を pysad ('log'・'lin'、フリンジあり・なし、6 極あり・なし) と elegant (K2 = −hK1・K2 = 0、EDGE_ORDER = 1・2) で。elegant は WSL (`~/elegant/env.sh`、serial、timeout 280 s、終了後 `ps` で残りなしを確認)。`sad2ele.py` の `astrid2_all.lte` の K2・EDGE_ORDER・6 極の K2 を書き換える |
 | `bend_k1_def_lma_astrid2.py` / `bend_k1_def_lma_astrid2.out.txt` | ASTRID2 の 1 セル (25 位置) の LMA を 'log'・'lin' で (RF・放射つき、アパーチャ ±10 mm、4 workers、約 9 分) |
-| `pysad/tests/_u1_indep.py`・`_u2_indep.py` | 独立な数値積分 (実験室系のローレンツ力、DOP853。pysad・SAD のコードを使わない)。`_u2_indep` はドリフト・厚い四極・複合機能の扇形磁石・端の縦方向の標準の集束 |
+| `pysad/tests/script_tests/_u1_indep.py`・`_u2_indep.py` | 独立な数値積分 (実験室系のローレンツ力、DOP853。pysad・SAD のコードを使わない)。`_u2_indep` はドリフト・厚い四極・複合機能の扇形磁石・端の縦方向の標準の集束 |
 
 elegant との比較は保存値 (`bend_k1_elegant.out.txt`: n = 0.4 のリング) と、`bend_k1_def_astrid2_chrom.py` が走らせた elegant (ASTRID2) を使った。
 

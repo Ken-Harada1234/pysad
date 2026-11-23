@@ -39,7 +39,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <main>
 <div class="meta">元: lma_reliability.md</div>
 <h1 id="局所運動量アクセプタンス-lma-の信頼性の例">局所運動量アクセプタンス (LMA) の信頼性の例</h1>
-<p>解説は <code>docs/26_frequency_map_lma.md</code> §4.5、試験は <code>pysad/tests/test_v23_L2_lma.py</code>、コードは <code>pysad/lma.py</code>・<code>pysad/lmabucket.py</code>・<code>pysad/q1cmd.py</code>。
+<p>解説は <code>docs/26_frequency_map_lma.md</code> §4.5、試験は <code>pysad/tests/script_tests/test_v23_L2_lma.py</code>、コードは <code>pysad/lma.py</code>・<code>pysad/lmabucket.py</code>・<code>pysad/q1cmd.py</code>。
 実行はリポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/lma/lma_xxx.py ...</code> (標準出力を <code>.out.txt</code> に保存した)。すべて v2 モード、RF・放射つき、LOSSAMPL = ±10 mm (例の値で実機の値ではない)。
 使ったラティス: <code>example/astrid/lattice/ASTRID2_v01_01.sad</code> (ASTRID2、0.58 GeV、45.7 m、6 セル)、<code>pysad/tests/kek-ls_v03_12.lat</code> (KEK-LS、大きなリング A、3 GeV、603 m、20 セル)、<code>ASTRID2_v01_02_id.sad</code> の <code>RINGMPW</code>。
 elegant は WSL (<code>~/elegant/env.sh</code>)、serial の elegant を位置ごと・種ごとに同時に走らせた (<code>elegant_isr.py</code>、timeout 1800 s、終了後に <code>ps</code> で残りなし)。gs は使っていない。

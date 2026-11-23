@@ -730,7 +730,7 @@ Do[r = TrackParticles[{2, b}, 2]; b = r[[2]]; Print[&quot;T &quot;, i, &quot; &q
 <p>周波数マップの D の大きい領域が、RDT (<code>resdrive.resonance_terms</code>) の大きさと ADTS (<code>resdrive.adts</code>) から<strong>予想される共鳴の位置と太さ</strong>に入るかを、数で調べる。</p>
 <h3 id="42-使うファイルとコマンド">4.2 使うファイルとコマンド</h3>
 <ul>
-<li>スクリプト: <a href="fmap_rdt.py"><code>fmap_rdt.py</code></a>。実装: <code>pysad/fmapres.py</code> (<code>ResonancePredictor</code>、<code>first_order_terms</code>、<code>coverage_stats</code>、<code>lines_distance</code>、<code>plot_with_prediction</code>)。試験 <code>pysad/tests/test_v23_S1_fmapres.py</code>。</li>
+<li>スクリプト: <a href="fmap_rdt.py"><code>fmap_rdt.py</code></a>。実装: <code>pysad/fmapres.py</code> (<code>ResonancePredictor</code>、<code>first_order_terms</code>、<code>coverage_stats</code>、<code>lines_distance</code>、<code>plot_with_prediction</code>)。試験 <code>pysad/tests/script_tests/test_v23_S1_fmapres.py</code>。</li>
 <li>出力: <a href="fmap_rdt_fodo.out.txt"><code>fmap_rdt_fodo.out.txt</code></a>・<a href="fmap_rdt_fodo.table.txt"><code>.table.txt</code></a>・<a href="fmap_rdt_fodo.png"><code>.png</code></a>、<a href="fmap_rdt_astrid2.out.txt"><code>fmap_rdt_astrid2.out.txt</code></a>・<a href="fmap_rdt_astrid2.png"><code>.png</code></a>、<a href="fmap_rdt_kekls.out.txt"><code>fmap_rdt_kekls.out.txt</code></a>・<a href="fmap_rdt_kekls.png"><code>.png</code></a>。</li>
 </ul>
 <pre><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_rdt.py fodo [--recompute] [--workers 2]
@@ -1801,7 +1801,7 @@ KEK-LS (D &gt; −5: 112 点): 追跡のチューンで、1 次の h だけの�
 <h3 id="132-使うファイルとコマンド">13.2 使うファイルとコマンド</h3>
 <ul>
 <li><code>PYTHONUTF8=1 py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_predict.py astrid2|kekls|fodo|mpw</code> (各 数秒〜10 秒。周波数マップは保存済みの表: astrid2・kekls は <code>fmap_*.table.txt</code>、fodo は <code>fmap_rdt_fodo.table.txt</code>、mpw は <code>fmap_mpw.table.txt</code>)。出力 <code>fmap_predict_&lt;ring&gt;.out.txt</code>・<code>.png</code>。<strong>スクリプトは出力を上書きする</strong>。</li>
-<li>実装 <code>pysad/fmappred.py</code>、試験 <code>pysad/tests/test_v23_S3_fmappred.py</code> (12 件)、式の導出は docs/25 §12。</li>
+<li>実装 <code>pysad/fmappred.py</code>、試験 <code>pysad/tests/script_tests/test_v23_S3_fmappred.py</code> (12 件)、式の導出は docs/25 §12。</li>
 <li>ラティス・位置: FODO (QF の K1 = 0.697、SF・SD の K2 = 4, −6、3 GeV、105.6 m、位置 1)、ASTRID2 (0.58 GeV、45.7 m、位置 2)、KEK-LS (<code>kek-ls_v03_12.lat</code>、大きなリング A、ESRF 型の HMBA、3 GeV、603 m、位置 3)、ASTRID2 MPW (<code>ASTRID2_v01_02_id.sad</code> の <code>RINGMPW</code>、位置 2)。条件: v2、RFSW・RAD OFF、1024 周、LOSSAMPL 0.1 m、41×31 の x–y。</li>
 <li>ν(J) は解析の線形の ADTS (<code>adts(fourth='r3', optics='calc')</code>)。表の「3 次の h のみ」「4 次の h」の行は <code>ResonancePredictor</code> (既定の <code>adts()</code>、差は 1e-4 程度) で、同じ点・同じ計算 (「4 次の h + 補正」は <code>fmappred.py</code>)。</li>
 </ul>

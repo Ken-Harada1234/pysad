@@ -1,0 +1,155 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 18:47:48 Tuesday 10/13/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+! bench_level4.sad — Level 4 benchmark: RF cavity and 6D (longitudinal)
+!   ラティスは bench_level3c.sad と同じ (QD K1=-1.7*0.3, 六極あり, 誤差なし)。
+!   最初のセルだけ ORG の直後に長さ 0 の空洞 CA を置く (RING = CELL0 + 19*CELL)。
+!   周長 140 m → 周回周波数 ≈ 2.141 MHz。HARM=234 (≈ 501 MHz), VOLT=1.5 MV (U0≈678.5 keV)。
+!   (1) RFSW ON, RADCOD OFF の Emittance[] (バンチ長, Qz, 同期位相, エミッタンス)
+!   (2) RADCOD ON にした Emittance[] (放射のエネルギー損失による閉軌道)
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ USE RING;
+Out[1]:= USE
+ RFSW;
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654735 $$$       f BX    #######  #  17.037700 $$$       f NX    #######  #   7.421023
+$$$       f AY    #######  #    .420675 $$$       f BY    #######  #    .960619 $$$       f NY    #######  #   7.157653
+$$$       f LENG  #######  #  140.00000
+ STATUS;
+ CTIME=9.96E-4 sec       DT=9.96E-4 sec
+ RING    CELL    RFSW    NORAD   FLUC    NORADCOD        NORADTAPER      CALC4D  KEEPEXP CALEXP  NOEMIOUT        NOCODPLOT
+ COD     NOINTRA NOPOL   RADPOL  NOLWAKE NOTWAKE NOWSPAC NOSPAC  NOSELFCOD       CONV    STABLE  GEOCAL  NORADLIGHT      NOPHOTONS
+ NOLOSSMAP       NOSORG  INTRES  HALFRES SUMRES  NODIFFRES       NOFFSPRMPT      CONVCASE        NOPRSVCASE      SUS     K64
+ UNIFORM FIXSEED BIPOL   NOPSPAC ORBITCAL        CALOPT  NODAPERT        REAL    NOFOURIER       NOTRACKSIZ      SIMULATE
+ ABSW    JITTER  TRGAUSS BARYCOD NOWAKEOPT
+ CHARGE=1        MASS=.5109989 MeV       MOMENTUM=2.5 GeV        PBUNCH=1E10     DP=.01  DP0=0   FSHIFT=0        MINCOUP=.01
+ EMITX=0 m       EMITY=0 m       EMITZ=0 m       SIGZ=0 m        SIGE=0  XIX=0   XIY=0   NBUNCH=1        NP=1000 GCUT=1e+300
+ CODCONV=1       EMITDIV=1       EMITDIVB=1      EMITDIVQ=1      EMITDIVS=1      CONVERGENCE=1e-9        MAXITERATION=40 NPARA=4
+ FIT $$$ $$$     DISP_LAY ORG.1 $$$      ORG ORG.1       MEA_SURE $$$
+ 
+ ! ------------------------------------------------------------
+ ! (1) RFSW ON, RADCOD OFF
+ ! ------------------------------------------------------------
+ Print["=== Test 4-1: RFSW ON, RADCOD OFF ==="];
+=== Test 4-1: RFSW ON, RADCOD OFF ===
+ NORADCOD;
+ cell calc;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654735 $$$       f BX    #######  #  17.037700 $$$       f NX    #######  #   7.421023
+$$$       f AY    #######  #    .420675 $$$       f BY    #######  #    .960619 $$$       f NY    #######  #   7.157653
+$$$       f LENG  #######  #  140.00000
+ status;
+ CTIME=.001 sec  DT=3.04E-4 sec
+ RING    CELL    RFSW    NORAD   FLUC    NORADCOD        NORADTAPER      CALC4D  KEEPEXP CALEXP  NOEMIOUT        NOCODPLOT
+ COD     NOINTRA NOPOL   RADPOL  NOLWAKE NOTWAKE NOWSPAC NOSPAC  NOSELFCOD       CONV    STABLE  GEOCAL  NORADLIGHT      NOPHOTONS
+ NOLOSSMAP       NOSORG  INTRES  HALFRES SUMRES  NODIFFRES       NOFFSPRMPT      CONVCASE        NOPRSVCASE      SUS     K64
+ UNIFORM FIXSEED BIPOL   NOPSPAC ORBITCAL        CALOPT  NODAPERT        REAL    NOFOURIER       NOTRACKSIZ      SIMULATE
+ ABSW    JITTER  TRGAUSS BARYCOD NOWAKEOPT
+ CHARGE=1        MASS=.5109989 MeV       MOMENTUM=2.5 GeV        PBUNCH=1E10     DP=.01  DP0=0   FSHIFT=0        MINCOUP=.01
+ EMITX=0 m       EMITY=0 m       EMITZ=0 m       SIGZ=0 m        SIGE=0  XIX=0   XIY=0   NBUNCH=1        NP=1000 GCUT=1e+300
+ CODCONV=1       EMITDIV=1       EMITDIVB=1      EMITDIVQ=1      EMITDIVS=1      CONVERGENCE=1e-9        MAXITERATION=40 NPARA=4
+ FIT $$$ $$$     DISP_LAY ORG.1 $$$      ORG ORG.1       MEA_SURE $$$
+ emi=Emittance[];
+ Print["M1 EMITS  ",Emittances/.emi];
+M1 EMITS  { 1.398093279E-7, -1.4387913E-36, 2.327041572E-5}
+ Print["M1 SIGE   ",MomentumSpread/.emi];
+M1 SIGE    9.767569729E-4
+ Print["M1 SIGZ   ",BunchLength/.emi];
+M1 SIGZ       .0238815539
+ Print["M1 TUNES  ",Tunes/.emi];
+M1 TUNES  {    .4210011534,    .1576530904,   -.0218849815}
+ Print["M1 DAMP   ",DampingRate/.emi];
+M1 DAMP   { -1.50525593E-4, -1.35653033E-4, -2.56494531E-4}
+ Print["M1 U0     ",EnergyLossU0/.emi];
+M1 U0      678500.7610894
+ Print["M1 VC     ",RfVoltageVc/.emi];
+M1 VC      1500000.000000
+ Print["M1 TRF0   ",EquilibriumPosition/.emi];
+M1 TRF0       .0446948341
+ Print["M1 ALPHA  ",MomentumCompaction/.emi];
+M1 ALPHA      .0240333299
+ Print["M1 BH     ",BucketHeight/.emi];
+M1 BH         .0051707193
+ Print["M1 ORB    ",OrbitAtExit/.emi];
+M1 ORB    { 3.22542613E-16, 9.71445147E-17, 7.24555090E-32, -2.4518487E-31, -1.0275178E-17, -1.6653346E-19}
+ 
+ ! ------------------------------------------------------------
+ ! (2) RADCOD ON (放射のエネルギー損失を閉軌道に入れる)
+ ! ------------------------------------------------------------
+ Print["=== Test 4-2: RFSW ON, RADCOD ON ==="];
+=== Test 4-2: RFSW ON, RADCOD ON ===
+ RADCOD;
+ cell calc;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654735 $$$       f BX    #######  #  17.037700 $$$       f NX    #######  #   7.421023
+$$$       f AY    #######  #    .420675 $$$       f BY    #######  #    .960619 $$$       f NY    #######  #   7.157653
+$$$       f LENG  #######  #  140.00000
+ status;
+ CTIME=.006 sec  DT=.005 sec
+ RING    CELL    RFSW    NORAD   FLUC    RADCOD  NORADTAPER      CALC4D  KEEPEXP CALEXP  NOEMIOUT        NOCODPLOT       COD
+ NOINTRA NOPOL   RADPOL  NOLWAKE NOTWAKE NOWSPAC NOSPAC  NOSELFCOD       CONV    STABLE  GEOCAL  NORADLIGHT      NOPHOTONS
+ NOLOSSMAP       NOSORG  INTRES  HALFRES SUMRES  NODIFFRES       NOFFSPRMPT      CONVCASE        NOPRSVCASE      SUS     K64
+ UNIFORM FIXSEED BIPOL   NOPSPAC ORBITCAL        CALOPT  NODAPERT        REAL    NOFOURIER       NOTRACKSIZ      SIMULATE
+ ABSW    JITTER  TRGAUSS BARYCOD NOWAKEOPT
+ CHARGE=1        MASS=.5109989 MeV       MOMENTUM=2.5 GeV        PBUNCH=1E10     DP=.01  DP0=0   FSHIFT=0        MINCOUP=.01
+ EMITX=0 m       EMITY=0 m       EMITZ=0 m       SIGZ=0 m        SIGE=0  XIX=0   XIY=0   NBUNCH=1        NP=1000 GCUT=1e+300
+ CODCONV=1       EMITDIV=1       EMITDIVB=1      EMITDIVQ=1      EMITDIVS=1      CONVERGENCE=1e-9        MAXITERATION=40 NPARA=4
+ FIT $$$ $$$     DISP_LAY ORG.1 $$$      ORG ORG.1       MEA_SURE $$$
+ emi=Emittance[];
+ Print["M2 EMITS  ",Emittances/.emi];
+M2 EMITS  { 1.398095534E-7, 1.40802342E-35, 2.327039572E-5}
+ Print["M2 SIGE   ",MomentumSpread/.emi];
+M2 SIGE    9.767566465E-4
+ Print["M2 SIGZ   ",BunchLength/.emi];
+M2 SIGZ       .0238815411
+ Print["M2 TUNES  ",Tunes/.emi];
+M2 TUNES  {    .4210074524,    .1576599417,   -.0218849783}
+ Print["M2 DAMP   ",DampingRate/.emi];
+M2 DAMP   { -1.50525448E-4, -1.35653014E-4, -2.56494411E-4}
+ Print["M2 U0     ",EnergyLossU0/.emi];
+M2 U0      678500.4044508
+ Print["M2 TRF0   ",EquilibriumPosition/.emi];
+M2 TRF0       .0447072422
+ Print["M2 ORB    ",OrbitAtExit/.emi];
+M2 ORB    { -2.19776774E-7, 1.324412527E-6, 1.15966450E-20, -7.8249386E-20, -1.24290037E-5, -1.36450229E-4}
+ NORADCOD;
+ 
+ stop;
+ FFS                  end:  CPU time =     0.009 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

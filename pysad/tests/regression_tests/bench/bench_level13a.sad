@@ -1,0 +1,57 @@
+! ============================================================
+! bench_level13a.sad — Level 13A: マッチング (FIT/FREE/GO) の小さなリング版
+!   Level 6 のリング (QF/QD, 六極, BEND, 空洞なし)。
+!   (1) NX/NY を QF, QD で合わせる  (2) ORG の BX/BY も加えて QF, QD, QF2 (別ファミリー) で合わせる
+!   GO の反復の表示 (Iterations/Residual/Method) と最終の K1、残差を出す。
+! ============================================================
+ON LOG;
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF  = (L=0.3 K1= 1.8*0.3)
+      QD  = (L=0.3 K1=-1.7*0.3)
+      QF2 = (L=0.3 K1= 1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL2 = (ORG QF2 DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELLP = (CELL CELL2);
+LINE RING  = (10*CELLP);
+;
+FFS;
+$FORM="15.10";
+USE RING;
+CELL;
+CALC;
+Print["TUNE0 ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","ORG"], Twiss["BY","ORG"]}];
+Print["=== 13A-1: fit NX NY, free QF QD ==="];
+FIT;
+fit NX 7.55;
+fit NY 7.18;
+free QF QD;
+go;
+Print["K1A ", {LINE["K1","QF"], LINE["K1","QD"], LINE["K1","QF2"]}];
+Print["TUNEA ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi}];
+Print["RESA ", {MatchingResidual, NetResidual, UnstableLevel}];
+Print["=== 13A-2: fit NX NY and BX/BY at ORG, free QF QD QF2 ==="];
+fix QF QD;
+FIT;
+fit NX 7.55;
+fit NY 7.18;
+fit ORG BX 17.5;
+fit ORG BY 1.0;
+free QF QD QF2;
+go;
+Print["K1B ", {LINE["K1","QF"], LINE["K1","QD"], LINE["K1","QF2"]}];
+Print["TWB ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","ORG"], Twiss["BY","ORG"]}];
+Print["RESB ", {MatchingResidual, NetResidual, UnstableLevel}];
+stop;
+stop;

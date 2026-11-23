@@ -42,7 +42,7 @@ COORD CO = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03 DIR=0);
 
 ### 検証
 
-K64 (gs) と一致する (追跡は相対 0、Twiss と幾何は 1e-11 以下、Emittance[] は 5e-10 以下)。[`pysad/tests/test_coord_elem.py`](../pysad/tests/test_coord_elem.py) 12 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
+K64 (gs) と一致する (追跡は相対 0、Twiss と幾何は 1e-11 以下、Emittance[] は 5e-10 以下)。[`pysad/tests/script_tests/test_coord_elem.py`](../pysad/tests/script_tests/test_coord_elem.py) 12 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
 
 ### 限界
 
@@ -81,7 +81,7 @@ RFSW OFF (CALC の既定) では長さ L のドリフト (tturn、ttcave とも)
 
 ### 検証
 
-追跡・Emittance[] とも K64 (gs) と一致する (追跡は相対 0。Emittance[] は L=0 でエミッタンス 1e-11)。追跡と 6 次元の写像が同じ写像であることも確認済み (1 粒子で 1e-19)。[`pysad/tests/test_tcav.py`](../pysad/tests/test_tcav.py) 8 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
+追跡・Emittance[] とも K64 (gs) と一致する (追跡は相対 0。Emittance[] は L=0 でエミッタンス 1e-11)。追跡と 6 次元の写像が同じ写像であることも確認済み (1 粒子で 1e-19)。[`pysad/tests/script_tests/test_tcav.py`](../pysad/tests/script_tests/test_tcav.py) 8 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
 
 ### K64 の癖・不具合
 
@@ -140,8 +140,8 @@ UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つ�
 
 ### 3.3 検証
 
-- k64 モードは gs と一致する (追跡は相対 0、INS の Twiss と幾何は 2e-10 以下)。[`pysad/tests/test_und.py`](../pysad/tests/test_und.py) 4 本。
-- v2 モード (gs は磁場を設定できないので比べていない) は、平面アンジュレータの解析式 (軌道、行路長、垂直の収束、放射損失、リングでのチューン変化・U0・減衰率・量子励起) と 1e-3〜1e-7 で一致する ([`test_v2_C_und.py`](../pysad/tests/test_v2_C_und.py) 9 本)。スピンは Thomas-BMT の積分と 2e-6 で一致 ([`test_v2_C2_spin.py`](../pysad/tests/test_v2_C2_spin.py))。個々の許容誤差は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
+- k64 モードは gs と一致する (追跡は相対 0、INS の Twiss と幾何は 2e-10 以下)。[`pysad/tests/script_tests/test_und.py`](../pysad/tests/script_tests/test_und.py) 4 本。
+- v2 モード (gs は磁場を設定できないので比べていない) は、平面アンジュレータの解析式 (軌道、行路長、垂直の収束、放射損失、リングでのチューン変化・U0・減衰率・量子励起) と 1e-3〜1e-7 で一致する ([`test_v2_C_und.py`](../pysad/tests/script_tests/test_v2_C_und.py) 9 本)。スピンは Thomas-BMT の積分と 2e-6 で一致 ([`test_v2_C2_spin.py`](../pysad/tests/script_tests/test_v2_C2_spin.py))。個々の許容誤差は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
 - 例: [`example/01_lattice_elements/elem_UND.sad`](../example/01_lattice_elements/elem_UND.sad)。
 
 ### 3.4 使える範囲と条件 (v2)
@@ -178,7 +178,7 @@ MULT M1 = (L=1 ANGLE=0.05 K1=0.1 K2=0.5 E1=0.5 E2=0.5);
 
 ### 検証
 
-追跡 (K1・K0・スキュー・E1 E2・フリンジ・ずれ・放射・大角度など 11 通り) は gs と相対 0、Twiss はチューン 1e-15・β α 1e-13、Emittance[] (12 セルのリング) は ε 1e-11・チューン 1e-13 で一致する。[`pysad/tests/test_mult_angle.py`](../pysad/tests/test_mult_angle.py) 21 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
+追跡 (K1・K0・スキュー・E1 E2・フリンジ・ずれ・放射・大角度など 11 通り) は gs と相対 0、Twiss はチューン 1e-15・β α 1e-13、Emittance[] (12 セルのリング) は ε 1e-11・チューン 1e-13 で一致する。[`pysad/tests/script_tests/test_mult_angle.py`](../pysad/tests/script_tests/test_mult_angle.py) 21 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
 
 ### 限界・未確認
 
@@ -218,7 +218,7 @@ MAP を長さ L のドリフトにすると周長が L だけ増えるので、p
 
 ### 検証
 
-CALC (OPTICS)、Emittance[] (EMIT、4 つ組も)、TrackParticles (TRPT、座標の書き換え・フラグ 0 での落下・復活を含む) とも gs と一致する (チューン 1e-14、エミッタンス 1e-11、追跡 10 桁)。既定 (ExternalMap なし) は恒等で、S は MAP の L を数えない (gs と同じ)。[`pysad/tests/test_map.py`](../pysad/tests/test_map.py) 5 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
+CALC (OPTICS)、Emittance[] (EMIT、4 つ組も)、TrackParticles (TRPT、座標の書き換え・フラグ 0 での落下・復活を含む) とも gs と一致する (チューン 1e-14、エミッタンス 1e-11、追跡 10 桁)。既定 (ExternalMap なし) は恒等で、S は MAP の L を数えない (gs と同じ)。[`pysad/tests/script_tests/test_map.py`](../pysad/tests/script_tests/test_map.py) 5 本。詳細は [history/19_other_elements_validation.md](history/19_other_elements_validation.md)。
 
 ### 限界・未確認
 

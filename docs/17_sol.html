@@ -141,7 +141,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <li>L は 0 にする (SOL 自体は長さを持たない)。領域の長さは中の DRIFT・QUAD の長さの和。</li>
 </ul>
 <h3 id="動く-sad-スクリプト-最小例">動く SAD スクリプト (最小例)</h3>
-<p>本文書 と <a href="../pysad/tests/test_sol_optics.py"><code>pysad/tests/test_sol_optics.py</code></a> の s1 と同じ。</p>
+<p>本文書 と <a href="../pysad/tests/script_tests/test_sol_optics.py"><code>pysad/tests/script_tests/test_sol_optics.py</code></a> の s1 と同じ。</p>
 <pre><code>MOMENTUM = 1.7GEV;
 DRIFT DR = (L=1) DR2 = (L=0.5);
 QUAD QF = (L=0.3 K1=0.3) QD = (L=0.3 K1=-0.25);
@@ -169,8 +169,8 @@ USE RINGS; RFSW; CELL; CALC; emit;
 NORAD;  b100 = TrackParticles[beam0, 1, 1, 100];
 RAD; NOFLUC; b100 = TrackParticles[beam0, 1, 1, 100];
 </code></pre>
-<p>領域内の追跡は <a href="../pysad/tests/test_track6n_ext.py"><code>pysad/tests/test_track6n_ext.py</code></a> (<code>test_track6n_vs_track6</code>: SOL を含む格子で numba 版と Python 版が NORAD・RAD・FLUC とも座標 1e-13 以内、乱数の最終状態まで一致、<code>test_thin_mult_and_sol_not_ignored</code>、<code>test_apert_with_solenoid</code>)。
-Emittance[] は <a href="../pysad/tests/test_sol_emit.py"><code>pysad/tests/test_sol_emit.py</code></a> (e1: 12 セルのリング、BZ=2、回転四極 QS、領域内の SOL SM、QFE の DX DY で軌道が領域を斜めに通る。RFSW)。幾何は <a href="../pysad/tests/test_sol_geo.py"><code>test_sol_geo.py</code></a>。</p>
+<p>領域内の追跡は <a href="../pysad/tests/script_tests/test_track6n_ext.py"><code>pysad/tests/script_tests/test_track6n_ext.py</code></a> (<code>test_track6n_vs_track6</code>: SOL を含む格子で numba 版と Python 版が NORAD・RAD・FLUC とも座標 1e-13 以内、乱数の最終状態まで一致、<code>test_thin_mult_and_sol_not_ignored</code>、<code>test_apert_with_solenoid</code>)。
+Emittance[] は <a href="../pysad/tests/script_tests/test_sol_emit.py"><code>pysad/tests/script_tests/test_sol_emit.py</code></a> (e1: 12 セルのリング、BZ=2、回転四極 QS、領域内の SOL SM、QFE の DX DY で軌道が領域を斜めに通る。RFSW)。幾何は <a href="../pysad/tests/script_tests/test_sol_geo.py"><code>test_sol_geo.py</code></a>。</p>
 <h2 id="3-領域内に置ける要素">3. 領域内に置ける要素</h2>
 <table>
 <thead>
@@ -317,7 +317,7 @@ fit の <code>GX..</code> の解析微分 (<code>tdgeo</code>) は、k64 モー�
 <li><code>tsolqum</code> (MULT 用) の z の dv 項は <code>tsolqu</code> と式が違う (SAD の不整合を再現。MULT の追跡の話で領域内ではない)。</li>
 </ol>
 <h3 id="53-v2-モードの-sol-領域">5.3 v2 モードの SOL 領域</h3>
-<p>記録: <a href="history/v2_changes_C.md"><code>docs/history/v2_changes_C.md</code></a>・<code>v2_changes_C2.md</code>、試験 <a href="../pysad/tests/test_v2_C_sol.py"><code>test_v2_C_sol.py</code></a> (32)・<a href="../pysad/tests/test_v2_C2_sol.py"><code>test_v2_C2_sol.py</code></a> (11)・<a href="../pysad/tests/test_v2_C2_solrf.py"><code>test_v2_C2_solrf.py</code></a> (9)・<a href="../pysad/tests/test_v2_C2_spin.py"><code>test_v2_C2_spin.py</code></a> (17)。例 <a href="../example/07_spin_solenoid_special/elem_SOL_region_elements.sad"><code>example/07_spin_solenoid_special/elem_SOL_region_elements.sad</code></a>・<code>elem_SOL_tilt_offset.sad</code>・<code>elem_SOL_RF_TRPT.sad</code>・<code>spin_tracking_sol_und.sad</code>。
+<p>記録: <a href="history/v2_changes_C.md"><code>docs/history/v2_changes_C.md</code></a>・<code>v2_changes_C2.md</code>、試験 <a href="../pysad/tests/script_tests/test_v2_C_sol.py"><code>test_v2_C_sol.py</code></a> (32)・<a href="../pysad/tests/script_tests/test_v2_C2_sol.py"><code>test_v2_C2_sol.py</code></a> (11)・<a href="../pysad/tests/script_tests/test_v2_C2_solrf.py"><code>test_v2_C2_solrf.py</code></a> (9)・<a href="../pysad/tests/script_tests/test_v2_C2_spin.py"><code>test_v2_C2_spin.py</code></a> (17)。例 <a href="../example/07_spin_solenoid_special/elem_SOL_region_elements.sad"><code>example/07_spin_solenoid_special/elem_SOL_region_elements.sad</code></a>・<code>elem_SOL_tilt_offset.sad</code>・<code>elem_SOL_RF_TRPT.sad</code>・<code>spin_tracking_sol_und.sad</code>。
 <strong>根拠はローレンツ力 dp/ds = (p × B)/pz の数値積分 (scipy の solve_ivp、rtol 1e-13)・Thomas-BMT 方程式・実験室系の座標変換の合成・極限の一致で、gs との数値比較ではない</strong> (gs は領域内の BEND の偏向をほぼ無視し、SOL + 四極 + RAD でも食い違う: 7 の 1・2)。条件: 電子、0.5・1・3 GeV、周長 91 m の FODO リングと 4〜6 m の輸送路、ソレノイド 1〜3 T (bz = 0.3〜3 1/m)、空洞 20〜200 MV (1.3 GHz)・4 MV (500 MHz)。<strong>実機の大きなリングでは確かめていない。bz ≥ 3 1/m を超える場は未確認。</strong></p>
 <h4 id="531-領域内の-bendmultcaviapert-b69b35">5.3.1 領域内の BEND・MULT・CAVI・APERT (B69、B35)</h4>
 <ul>
@@ -359,7 +359,7 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 <li><strong>Emittance[]・EMIT の POL の量 (B130)</strong>: k64 は領域の中が K64 の式のまま: 軸上のソレノイドでは追跡と 2e-5 で合うが、ずれて傾いたソレノイドではスピンチューンで 1.5e-4〜1.1e-3、n0 の向きで 2.5e-3〜1.5e-2 rad 違う (縦磁場の積分を z 軸の向きに足す)。<strong>v2 は B⊥ と B∥ を運動量の向きに分けて足す</strong>: SpinTune の追跡との差 1e-13〜5e-7、n0 の差 0〜1e-5 rad (傾き 3・10 mrad、ずれ 2・4 mm、BZ = 2 T・0.8 m の領域。小さな FODO・ASTRID2・MPW 入り・PF・大きなリング A)。回転した縦磁場の歳差の閉じた式と追跡が 5e-7 (傾き 1〜50 mrad・1〜3 T・0.3〜1 GeV)。領域内の DRIFT・QUAD の放射・スピンの刻みは bz·L/n ≤ 0.02 (DRIFT の刻みは追跡にも入れている: 追跡のスピンは Thomas-BMT の積分と bz = 4.5 で 2.3e-7、9 で 8.9e-7、らせんの放射損失が 1e-4)。使えない・未確認: bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (放射の分割が EPS 由来)、領域内の QUAD の端の ψ は追跡と同じ模型 (hard edge の Bs なし。軌道が数 mm の範囲で確認、cm のずれは未確認)、領域内の CAVI の POL (Emittance[]) は VOLT=0 だけ確認、領域の外の B∥ (垂直な軌道の傾きの中の偏向磁石の B_y y')。docs/16 の「傾いてずれたソレノイドの POL の量」。</li>
 </ul>
 <h4 id="535-領域内の四極のずれbz--3領域内の-cavi-のスピン">5.3.5 領域内の四極のずれ・bz ≥ 3・領域内の CAVI のスピン</h4>
-<p>試験 <a href="../pysad/tests/test_v2_B1_sol.py"><code>test_v2_B1_sol.py</code></a> (45 件)・<a href="../pysad/tests/test_v2_B3_geofit.py"><code>test_v2_B3_geofit.py</code></a>・<a href="../pysad/tests/test_v2_E_spinsol.py"><code>test_v2_E_spinsol.py</code></a>。記録 <code>history/v2next_B1.md</code>・<code>B3.md</code>・<code>E.md</code>。</p>
+<p>試験 <a href="../pysad/tests/script_tests/test_v2_B1_sol.py"><code>test_v2_B1_sol.py</code></a> (45 件)・<a href="../pysad/tests/script_tests/test_v2_B3_geofit.py"><code>test_v2_B3_geofit.py</code></a>・<a href="../pysad/tests/script_tests/test_v2_E_spinsol.py"><code>test_v2_E_spinsol.py</code></a>。記録 <code>history/v2next_B1.md</code>・<code>B3.md</code>・<code>E.md</code>。</p>
 <ul>
 <li><strong>領域内の四極の <code>DX</code>・<code>DY</code></strong> (両モード。gs と同じ): K64 の <code>tquad</code> は <code>tsolrot</code> で座標を (dx, dy) ずらす。ソレノイドの一様磁場のベクトルポテンシャルのゲージが変わるので正準運動量もずれる: x → x − dx、y → y − dy で px → px + (bz/2)dy、py → py − (bz/2)dx (出口は逆)。追跡のカーネル (<code>k_sol_quad</code>)・<code>solemit</code>・<code>sgeo</code> に入れた。gs と <code>LINE["GX"…]</code> が全桁一致 (領域内の DX・DY・ROTATE つきの 2 台)。<strong>幾何の fit</strong> (QF の DX、QD の DY で M2 の GY = 0.0008、GZ = −0.0035): gs と v2 (解析微分 <code>match6d.sol_dcod</code>: 要素の写像 c_out = F(c − t) + t、t = (DX, −(bz/2)DY, DY, (bz/2)DX) より d c_out/d DX = (I − J) ∂t/∂DX) は 2 回の Newton で収束し、QF DX = 2.78848432670e-3 (gs) / 2.78848432669e-3 (v2)、QD DY = 2.66798056318e-3 (両方)。解析微分は幾何の有限差分と 2e-3。K64 の CHI3 の微分の式は領域の終端で GCHI3 が 0 に戻される (tsgeo の <code>tfderotgeo</code>) ので幾何の変化と合わない (9e-4 を返すが幾何は動かない): CHI3 を使う fit は K64 でも収束しない (B124)。使える範囲: 領域内の四極 (K1≠0・F1=FRINGE=0)。SEXT・OCT・MULT は <code>_QDX_TYPES</code> に入れたが領域内のずれは未確認。四極の F1・FRINGE と領域内の BEND・MULT のずれは未対応。k64 モードは SOL 自体のずれ (trots) が未対応でずれた SOL の fit は使えない。例 <a href="../example/03_matching/FFS_FIT_geometry_quad_dx.sad"><code>example/03_matching/FFS_FIT_geometry_quad_dx.sad</code></a>。</li>
 <li><strong>bz ≥ 3 1/m</strong> : 領域内の DRIFT・BEND・MULT (K0・K1・K2) の写像 (力学的運動量) がローレンツ力の積分と bz = 6・10・20 1/m で 1.2e-8 以内 (多極の分割 EPS の分)。放射損失 −(2/3) r_e γ³ (K0/L)² L が bz = 6・20 で 4e-5。<strong>DRIFT の刻み</strong> (v2): 領域内の DRIFT も BEND・MULT と同じく bz·al/ndiv ≤ 0.02 に刻む。1 刻みだと、軸を外れた粒子 (δ = 1e-3・−5e-3、0.4 m) のスピンが Thomas-BMT の積分と bz = 4.5 (0.1 GeV) で 1.5e-3、9 で 8.7e-3 (0.3 GeV の bz = 3 で 1.3e-4) ずれ、放射も bz = 9 で 1.7 倍外れる (<code>track6n_ext.k_sol_drift</code>・<code>track6._sol_drift_v2</code>。ndiv = 1 + int(|bz·al|/0.02)。刻んだ結果 2.3e-7・8.9e-7・4.5e-8、放射 1e-4)。k64 は 1 刻み (K64 のまま)。QUAD (K1 = 0.3、0.4 m) のスピンは bz = 4.5・9 で 2.0e-5・9.0e-5、MULT (K0 + K1) は 1.3e-4〜1.6e-4、BEND は 6e-7・9e-7 (放射の分割が EPS 由来で bz·al/ndiv ≤ 0.2 のため。v2 の既存の試験値を変えないため刻んでいない)。</li>
@@ -453,7 +453,7 @@ LINE … (… SA DS QS1 DV QS2 DS SB …);
 <p>領域内の軌道が 0 でも K64 は <code>itgetqraddiv</code> の下限 (pmin) で刻み数が増える。写しているので同じ刻み数になる。</p>
 </li>
 <li>
-<p>試験: <a href="../pysad/tests/test_sol_optics.py"><code>test_sol_optics.py</code></a>、<a href="../pysad/tests/test_sol_emit.py"><code>test_sol_emit.py</code></a>、<a href="../pysad/tests/test_sol_geo.py"><code>test_sol_geo.py</code></a>、<a href="../pysad/tests/test_track6n_ext.py"><code>test_track6n_ext.py</code></a>。</p>
+<p>試験: <a href="../pysad/tests/script_tests/test_sol_optics.py"><code>test_sol_optics.py</code></a>、<a href="../pysad/tests/script_tests/test_sol_emit.py"><code>test_sol_emit.py</code></a>、<a href="../pysad/tests/script_tests/test_sol_geo.py"><code>test_sol_geo.py</code></a>、<a href="../pysad/tests/script_tests/test_track6n_ext.py"><code>test_track6n_ext.py</code></a>。</p>
 </li>
 </ul>
 <h2 id="9-関連文書">9. 関連文書</h2>

@@ -8,7 +8,7 @@ SP8 (大きなリング B、8 GeV、1436 m。SPring-8 型、デザインレポ�
 import io, os, sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests'))
+sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests', 'script_tests'))
 # 環境変数 PYSAD_SAD_PACKAGES (K64 版 SAD の Packages のフォルダ) を指定して実行する
 from pysad import ffscmd, compat, emit6d
 import _a2_indep as A

@@ -444,7 +444,7 @@ elegant の ISR あり (6 種) は ISR なしと 9e-5 以内。13120 周 (20 周
 <p><strong>(h) 警告</strong> (<code>LMAResult.warnings</code>・<code>cond['warnings']</code>・<code>warnings.warn</code>・表の <code># WARNING:</code>): LOSSAMPL ≥ 0.1 m (アパーチャ未設定)、check_every = 0 でアパーチャで決まる位置がある、FLUC ON、RFSW OFF、周回数がシンクロトロン振動 1 周期未満、
 走査の上限 (dpmax) まで残った限界、δ = 0 で失われた、周回数の依存 (turncheck)、verify で窓、閉軌道の残差 &gt; 1e-9。位置ごとの旗は <code>LMAResult.flags(i)</code> と表の最後の列 (<code>W±</code>・<code>T±</code>・<code>S±</code>・<code>0±</code>)。</p>
 <h2 id="5-検証">5. 検証</h2>
-<p><a href="../example/14_nonlinear_dynamics/frequency_map/"><code>example/14_nonlinear_dynamics/frequency_map/</code></a>・<a href="../example/15_lma_touschek/lma/"><code>example/15_lma_touschek/lma/</code></a> の例と <a href="../pysad/tests/test_v23_Q1_fmap_lma.py"><code>pysad/tests/test_v23_Q1_fmap_lma.py</code></a> (21 件)。使った gs は K64 の 2026-10-19 ビルド (WSL、timeout 1800 s、終了後に <code>ps</code> で sad1.exe の残りがないことを確かめた)。</p>
+<p><a href="../example/14_nonlinear_dynamics/frequency_map/"><code>example/14_nonlinear_dynamics/frequency_map/</code></a>・<a href="../example/15_lma_touschek/lma/"><code>example/15_lma_touschek/lma/</code></a> の例と <a href="../pysad/tests/script_tests/test_v23_Q1_fmap_lma.py"><code>pysad/tests/script_tests/test_v23_Q1_fmap_lma.py</code></a> (21 件)。使った gs は K64 の 2026-10-19 ビルド (WSL、timeout 1800 s、終了後に <code>ps</code> で sad1.exe の残りがないことを確かめた)。</p>
 <table>
 <thead>
 <tr>
@@ -608,7 +608,7 @@ check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プ
 <td>SAD の台本の関数 <code>FrequencyMap[]</code>・<code>MomentumAcceptance[]</code>・<code>TouschekLifetimeLMA[]</code> (<code>ffscmd.py</code> の入口 2 行)</td>
 </tr>
 <tr>
-<td><a href="../pysad/tests/test_v23_Q1_fmap_lma.py"><code>pysad/tests/test_v23_Q1_fmap_lma.py</code></a>・<a href="../pysad/tests/test_v23_S1_fmapres.py"><code>test_v23_S1_fmapres.py</code></a></td>
+<td><a href="../pysad/tests/script_tests/test_v23_Q1_fmap_lma.py"><code>pysad/tests/script_tests/test_v23_Q1_fmap_lma.py</code></a>・<a href="../pysad/tests/script_tests/test_v23_S1_fmapres.py"><code>test_v23_S1_fmapres.py</code></a></td>
 <td>試験</td>
 </tr>
 <tr>
@@ -618,7 +618,7 @@ check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プ
 </tbody>
 </table>
 <h2 id="9-周波数マップと共鳴の領域の予想の検証-2026-11-20">9. 周波数マップと共鳴の領域の予想の検証 (2026-11-20)</h2>
-<p><code>example/14_nonlinear_dynamics/frequency_map/fmap_*</code>、試験 <a href="../pysad/tests/test_v23_S1_fmapres.py"><code>pysad/tests/test_v23_S1_fmapres.py</code></a>、台本ごとのまとめと全数値は <a href="../example/14_nonlinear_dynamics/frequency_map/FMAP_summary.html"><code>example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md</code></a>、記録は <a href="history/v23_S1.md"><code>docs/history/v23_S1.md</code></a>。
+<p><code>example/14_nonlinear_dynamics/frequency_map/fmap_*</code>、試験 <a href="../pysad/tests/script_tests/test_v23_S1_fmapres.py"><code>pysad/tests/script_tests/test_v23_S1_fmapres.py</code></a>、台本ごとのまとめと全数値は <a href="../example/14_nonlinear_dynamics/frequency_map/FMAP_summary.html"><code>example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md</code></a>、記録は <a href="history/v23_S1.md"><code>docs/history/v23_S1.md</code></a>。
 条件は §6 と同じ (v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、41 × 31、1024 周、Hann 窓)。FODO は 24 セル、3 GeV、105.6 m、QF の K1 = 0.697 (νx = 6.6578)、SF・SD の K2 = 4, −6 (玩具の強さ)。</p>
 <p>この節の表のうち、ASTRID2 と大きなリング A の x–y の周波数マップ (§9.1 の 2 行) は現行の表 (四極の積分器が 4 次) の値。δ・誤差・MPW・6 極の λ 倍・周回数・窓・格子の結果 (§9.2〜§9.5) は、四極の積分器が 2 次 (k64 と同じ) の追跡で作った保存済みの表の値で、4 次では取り直していない。傾向は §3.4 と同じと見込まれるが、数値の差は未確認。</p>
 <h3 id="91-共鳴線と-rdtadts-の定量的な接続">9.1 共鳴線と RDT・ADTS の定量的な接続</h3>
@@ -678,7 +678,7 @@ Hann p = 1 (既定) と p = 2、3 の D の差は小さい (中央値 0.1〜0.3)
 <h3 id="98-未確認-9">9.8 未確認 (§9)</h3>
 <p>誤差つきは ASTRID2 の 1 つの種だけ (KEK-LS・補正つきは未確認)。RFSW ON・FLUC つきの周波数マップ、PF リング。2 次以上の共鳴の強さの予想。δ ≠ 0 の偏向磁石の 3 次の項。MPW の RDT。</p>
 <h2 id="10-周波数マップを信頼して使うための検証-2026-11-21">10. 周波数マップを信頼して使うための検証 (2026-11-21)</h2>
-<p><code>example/14_nonlinear_dynamics/frequency_map/fmap_check_*</code> (索引 <code>fmap_reliability.md</code>)、記録 <a href="history/v23_S2.md"><code>docs/history/v23_S2.md</code></a>、試験 <a href="../pysad/tests/test_v23_S2_fmapcheck.py"><code>pysad/tests/test_v23_S2_fmapcheck.py</code></a>。条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、Hann 窓、小さな格子 21 × 16 = 336 点、1024 周
+<p><code>example/14_nonlinear_dynamics/frequency_map/fmap_check_*</code> (索引 <code>fmap_reliability.md</code>)、記録 <a href="history/v23_S2.md"><code>docs/history/v23_S2.md</code></a>、試験 <a href="../pysad/tests/script_tests/test_v23_S2_fmapcheck.py"><code>pysad/tests/script_tests/test_v23_S2_fmapcheck.py</code></a>。条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、Hann 窓、小さな格子 21 × 16 = 336 点、1024 周
 (ASTRID2: 位置 2、x = 0.5〜18 mm、y = 0.5〜14 mm。KEK-LS: 位置 3、x = 0.2〜6 mm、y = 0.2〜8 mm)。誤差の標準 (k = 1): 四極・6 極・偏向磁石 (KEK-LS は 8 極も) の DX・DY 50 μm、四極のロール 0.2 mrad、偏向磁石のロール 0.1 mrad (補正なし。実機の許容値ではなく例)。
 誤差なしの D &gt; −5 の割合は、現行の表 (四極 4 次) で ASTRID2 が 0.030 (41 × 31 で 0.039)、KEK-LS が 0.147 (失われた点 125 / 336)。以降の §10 の統計は四極の積分器が 2 次の追跡の値で、4 次では取り直していない (その誤差なしの基準は ASTRID2 0.030・KEK-LS 0.142。数値の差は未確認)。</p>
 <h3 id="101-誤差つき">10.1 誤差つき</h3>

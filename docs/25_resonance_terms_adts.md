@@ -393,7 +393,7 @@ $$K\ni-\tfrac12\sum_k\sum_{q,q'}(k\cdot\nabla_J)[\ldots]\;\frac{\cot\pi x_k+i}{4
 
 ## 11. K0≠0 の偏向磁石・δ≠0 の ADTS・偏向磁石の閉形式・非対角の正規形の補正・4 次の項の精密版
 
-この節は次の 5 項目 (a) K0≠0 の偏向磁石 (挿入光源 = MPW) の項、(b) δ≠0 の ADTS (kick の強さの δ 依存と、δ の閉軌道のまわりの項)、(c) 偏向磁石の生成関数の閉形式、(d) 非対角の調和の正規形の補正、(e) 4 次の項の積分器の分 (`fourth='r6'` の精密版)、について、解析式に入れた効果と、原因の切り分けを書く。追跡との比較は、入れた効果の検証の結果であって、追跡に合わせて項を足したのではない (追跡から係数を取り出すのは偏向磁石の生成関数だけで、その原理は §8.1。写像の 2 次のテイラー係数が生成関数を一意に決める)。台本・コマンド・出力は [`example/14_nonlinear_dynamics/adts_rdt/adts_exact.py`](../example/14_nonlinear_dynamics/adts_rdt/adts_exact.py) (`mpw`・`delta <ring>`・`bend`・`nf`・`adts`) と `adts_exact_*.out.txt`、試験は [`pysad/tests/test_v23_R6_bend_orbit.py`](../pysad/tests/test_v23_R6_bend_orbit.py)。
+この節は次の 5 項目 (a) K0≠0 の偏向磁石 (挿入光源 = MPW) の項、(b) δ≠0 の ADTS (kick の強さの δ 依存と、δ の閉軌道のまわりの項)、(c) 偏向磁石の生成関数の閉形式、(d) 非対角の調和の正規形の補正、(e) 4 次の項の積分器の分 (`fourth='r6'` の精密版)、について、解析式に入れた効果と、原因の切り分けを書く。追跡との比較は、入れた効果の検証の結果であって、追跡に合わせて項を足したのではない (追跡から係数を取り出すのは偏向磁石の生成関数だけで、その原理は §8.1。写像の 2 次のテイラー係数が生成関数を一意に決める)。台本・コマンド・出力は [`example/14_nonlinear_dynamics/adts_rdt/adts_exact.py`](../example/14_nonlinear_dynamics/adts_rdt/adts_exact.py) (`mpw`・`delta <ring>`・`bend`・`nf`・`adts`) と `adts_exact_*.out.txt`、試験は [`pysad/tests/script_tests/test_v23_R6_bend_orbit.py`](../pysad/tests/script_tests/test_v23_R6_bend_orbit.py)。
 
 ### 11.1 API
 

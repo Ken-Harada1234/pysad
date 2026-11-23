@@ -27,7 +27,7 @@ DRAW QF.1 QF.5 BX BY & EX B*;
 ![DRAW BX BY & EX B* (ASTRID2)](fn_DRAW_astrid2_plot.png)
 
 ## gs との照合 (描く前のデータ)
-画像は gs から取れないので、`OpticsPlot[…, DisplayFunction->Identity]` が返す Graphics の `Line` (点列)・`Rectangle` (ラティスの箱)・`Text` (名前) を gs と pysad で書き出し、matplotlib に渡すデータと比べた (`pysad/tests/test_v25_draw_mpl.py`、参照は `pysad/tests/scripts/v25_draw_gs_*.gs.txt`)。
+画像は gs から取れないので、`OpticsPlot[…, DisplayFunction->Identity]` が返す Graphics の `Line` (点列)・`Rectangle` (ラティスの箱)・`Text` (名前) を gs と pysad で書き出し、matplotlib に渡すデータと比べた (`pysad/tests/script_tests/test_v25_draw_mpl.py`、参照は `pysad/tests/script_tests/scripts/v25_draw_gs_*.gs.txt`)。
 - FODO (6 セル、領域 3〜20、名前 `B*`): 3 本の折れ線 138 点ずつ、箱 17、名前 3 が一致 (点列の相対差は 1e-13 以下)。
 - ASTRID2 全周 (名前 `*`): 3 本の折れ線 296 点ずつ、箱 139、名前 199 が一致 (点列の最大の相対差 1.7e-13)。
 - このほか pysad 自身の Graphics と、領域 (番号・要素名・周回をまたぐ)・名前のパターンを変えた 5 通りで全点一致。

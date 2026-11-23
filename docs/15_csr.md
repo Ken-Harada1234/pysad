@@ -32,7 +32,7 @@ pysad は組み込み関数を [`pysad/csr.py`](../pysad/csr.py) に直訳し、
 ## 2. 使い方 (動く SAD スクリプト)
 
 
-以下は [`pysad/tests/test_csr.py`](../pysad/tests/test_csr.py) などから取った (2.1〜2.4 は K64 の出力と照合済み。2.5 の `MakeZL` も照合済み。2.6 は未照合の骨格)。
+以下は [`pysad/tests/script_tests/test_csr.py`](../pysad/tests/script_tests/test_csr.py) などから取った (2.1〜2.4 は K64 の出力と照合済み。2.5 の `MakeZL` も照合済み。2.6 は未照合の骨格)。
 
 ### 2.1 CSRTrack: ウェイク付きの追跡
 
@@ -183,7 +183,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 
 ([`docs/30_sad_bug_report.md`](30_sad_bug_report.md) の B59・B60。pysad の `CSRSetupOY` は両モードで正しい形の出力を返し、gs の wrongtype は再現しない。B59 は k64 モードが K64 どおりに再現し、v2 モードは修正している。)
 
-- **B59** (k64 と v2 で違う): `CSRSetupOY` は `dpjn` を `zjn` と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く `CSROYMatrix` は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。**k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる** (点が無ければ失敗 `CSR::irreg`。`CSROYMatrix` は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 ([`test_v2_C_csr.py`](../pysad/tests/test_v2_C_csr.py) 2 件)。**`CSROYMatrix` の行列そのものは未照合のまま** (gs が wrongtype を返す。B60)。
+- **B59** (k64 と v2 で違う): `CSRSetupOY` は `dpjn` を `zjn` と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く `CSROYMatrix` は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。**k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる** (点が無ければ失敗 `CSR::irreg`。`CSROYMatrix` は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 ([`test_v2_C_csr.py`](../pysad/tests/script_tests/test_v2_C_csr.py) 2 件)。**`CSROYMatrix` の行列そのものは未照合のまま** (gs が wrongtype を返す。B60)。
 - **B60**: `CSROYMatrix` が、`CSRSetupOY` の出力を渡すと `General::wrongtype` を返す (この K64 ビルドで再現)。**手で作った正しい形の実数リストなら gs でも動く**。原因: `tfcsroysetup` (csroy.f) が 4 番目 (zj) の実数リストへ `c_f_pointer(c_loc(rlist(kazjn)), zjn, [mphi,nj])` で書くとき、先頭の語 `rlist(kazjn)` (リストの頭 = head) から書き始める (要素は `rlist(kazjn+1)` から書くべきで、ほかの 4 つの配列は `rlist(k+1:…)` で正しい)。head が zjn(1,1) で上書きされるので、`tfcsroymat` の `tfreallistq(las%dbody(4), lazj)` が偽になる (B59 の `dpjn` と `zjn` が同じ記憶域も同じ箇所)。gs で `CSRSetupOY` の出力の各要素の `Head` を調べ、4 番目が実数 (1.2952814481588496e-5) で List でないことを確認した。登録名は `CSRSetupOY`・`CSROYMatrix` だが、ソース内の関数名は `tfcsroysetup`・`tfcsroymat` で綴りが違う。`OYStability` と `OYScan` は gs で完走しない (K64 の誤り)。pysad は両モードで正しい形の出力を返して動く (k64 で wrongtype を再現するかは要判断)。手で作った入力 (nr=64、nj=3、nphi=2) の 6x6 の行列 (36 要素) は gs と相対 4e-20 で一致 ([`example/13_packages/fn_CSROYMatrix.sad`](../example/13_packages/fn_CSROYMatrix.sad)、`test_csroymatrix_hand_made_input_matches_gs`)。
 - `CSRInit` の実数 1 つの dx は常に `wrongtype` (dx を読まない)。
 - `CSRMatrix` mode 1000 は、K64 が `phix(0:nphimax)` を `csrphimesh` の `phix(*)` に渡すため、点の添字が 1 つずれる (pysad も同様)。また `{4,4,4,4}` などの断面は gs 自体が SIGABRT/SIGSEGV で落ちる (参照なし)。
@@ -193,7 +193,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 ## 6. 検証
 
 - `CSRTrack`・`CSRHaissin` は K64 (gs) と相対 1e-11、`CSRMatrix`・`CSRConvert`・`CSRInit` は 1e-10〜1e-13、`CSRSetupOY` は 1e-9〜1e-7、`MakeZL` (3 周波数・1 区間) は 1e-10 以内で一致する。
-- 試験は `py -3.12 -m pytest pysad/tests/test_csr.py` (`PYSAD_SAD_PACKAGES` 付きで 6 通過・1 skip。skip は `PYSAD_SLOW=1` が要る `MakeZL`)。
+- 試験は `py -3.12 -m pytest pysad/tests/script_tests/test_csr.py` (`PYSAD_SAD_PACKAGES` 付きで 6 通過・1 skip。skip は `PYSAD_SLOW=1` が要る `MakeZL`)。
 - 試験の量は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、実際のダクト、周長) での物理的な妥当性の検証ではない。`MakeZL` の照合は 3 周波数・1 区間だけ。
 - 一致の表は [`docs/history/15_csr_validation.md`](history/15_csr_validation.md)。
 
@@ -225,7 +225,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 - `CSR.n` を動かすための対応: `Do[…, {Infinity}]`・`{i, Infinity}` (Break するまで続ける)、`OpenRead["!コマンド"]` (コマンドの出力を読む。`top` のない環境 (Windows) では `FreeMem` 用に空き記憶領域を旧形式の top の行で作る)、開けないファイルは `$Failed`。
 - `CSRMatrix` mode 1000: `tsolvm(svd=.true.)` は最小ノルム解 (特異値 < 最大×1e-4 を捨てる) として numpy の SVD で解いた。`CSRInit` の境界の電荷は `tsolva` = `tsvd(.false.)` の最小ノルム解 (pysad の `tsvd`)。
 - gs の参照を取るには、WSL に `top` を入れるか、PATH に `top` の代用 (`Mem: …k total, …k used, …k free, …k buffers` を出すスクリプト) を置き、`OSTYPE=linux` を設定する (非対話の WSL では OSTYPE が空で、`FreeMem` の `Switch` が未評価になり OpenRead が失敗する)。
-- 試験: [`pysad/tests/test_csr.py`](../pysad/tests/test_csr.py)。K64 のソース: `Packages/CSR.n`、`src/csrtrack.f`、`src/csroy.f`、`src/csrtest.f`。
+- 試験: [`pysad/tests/script_tests/test_csr.py`](../pysad/tests/script_tests/test_csr.py)。K64 のソース: `Packages/CSR.n`、`src/csrtrack.f`、`src/csroy.f`、`src/csrtest.f`。
 
 ## 9. 関連文書
 

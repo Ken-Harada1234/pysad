@@ -1,0 +1,73 @@
+! ============================================================
+! bench_level5.sad — Level 5 benchmark: transport line (INS) and fringe fields
+!   周期解を使わない輸送ライン。入口の Twiss と軌道は先頭 MARK (ORG) のパラメータで与える。
+!   入口に軌道のずれ (DX=1 mm, DY=0.5 mm) を入れ、フリンジの非線形項も効くようにする。
+!   ケース:
+!     (A) フリンジ全部 (QUAD/BEND とも F1=0.1, FRINGE=3)
+!     (B) F1=0 (ハードエッジのフリンジ tqfrie/tbedge のみ)
+!     (C) DISFRIN=1 (フリンジを切る)
+!   比べる量: ライン出口と途中の Twiss (BX,AX,BY,AY,EX,EPX) と軌道 (DX,DPX,DY,DPY)。
+!   ※ ORG での初期値の与え方、F1/FRINGE/DISFRIN の書き方は未確認。改修をお願いします。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK  ORG = (BX=10 AX=-1 BY=5 AY=0.5 EX=0.1 EPX=0.01 DX=1E-3 DPX=1E-4 DY=0.5E-3 DPY=-1E-4)
+      EE  = ()
+;
+DRIFT D1 = (L=1.0)
+      D2 = (L=0.5)
+;
+! (A) フリンジあり
+QUAD  QFA = (L=0.5 K1= 0.4 F1=0.1 FRINGE=3)
+      QDA = (L=0.5 K1=-0.4 F1=0.1 FRINGE=3)
+;
+BEND  BA  = (L=1.0 ANGLE=0.1 E1=0.5 E2=0.5 F1=0.1 FRINGE=3)
+;
+! (B) F1=0 (ハードエッジのみ)
+QUAD  QFB = (L=0.5 K1= 0.4)
+      QDB = (L=0.5 K1=-0.4)
+;
+BEND  BB  = (L=1.0 ANGLE=0.1 E1=0.5 E2=0.5)
+;
+! (C) フリンジを切る
+QUAD  QFC = (L=0.5 K1= 0.4 DISFRIN=1)
+      QDC = (L=0.5 K1=-0.4 DISFRIN=1)
+;
+BEND  BC  = (L=1.0 ANGLE=0.1 E1=0.5 E2=0.5 DISFRIN=1)
+;
+LINE LA = (ORG D1 QFA D2 BA D2 QDA D1 QFA D2 BA D2 QDA D1 EE);
+LINE LB = (ORG D1 QFB D2 BB D2 QDB D1 QFB D2 BB D2 QDB D1 EE);
+LINE LC = (ORG D1 QFC D2 BC D2 QDC D1 QFC D2 BC D2 QDC D1 EE);
+;
+
+FFS;
+$FORM="15.10";
+
+prt[tag_]:=(
+  Print[tag," T EE ",{Twiss["BX","EE"],Twiss["AX","EE"],Twiss["BY","EE"],Twiss["AY","EE"],Twiss["EX","EE"],Twiss["EPX","EE"]}];
+  Print[tag," O EE ",{Twiss["DX","EE"],Twiss["DPX","EE"],Twiss["DY","EE"],Twiss["DPY","EE"]}];
+  Print[tag," T 6  ",{Twiss["BX",6],Twiss["AX",6],Twiss["BY",6],Twiss["AY",6],Twiss["EX",6],Twiss["EPX",6]}];
+  Print[tag," O 6  ",{Twiss["DX",6],Twiss["DPX",6],Twiss["DY",6],Twiss["DPY",6]}];
+  Print[tag," NX NY ",{Twiss["NX","EE"],Twiss["NY","EE"]}]);
+
+USE LA;
+  FFS["INS;"];
+  FFS["CALC;"];
+  prt[LA]
+;
+USE LB;
+  FFS["INS;"];
+  FFS["CALC;"];
+  prt[LB]
+;
+USE LC;
+  FFS["INS;"];
+  FFS["CALC;"];
+  prt[LC]
+;
+
+
+stop;
+stop;

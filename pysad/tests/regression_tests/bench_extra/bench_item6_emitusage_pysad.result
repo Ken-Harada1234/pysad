@@ -1,0 +1,39 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$         AX    #######  #  -2.39E-14 $$$         BX    #######  #   4.643203 $$$         NX    #######  #  47.580034
+$$$         AY    #######  #  -1.13E-14 $$$         BY    #######  #   6.231611 $$$         NY    #######  #  17.620044
+$$$         LENG  #######  #  603.12000
+P1 {Stable->   1.0000000000,Region->{   1.0000000000, 3564.000000000},Tunes->{   -.4199589405,   -.3799494339,   -.0040752675},EnergyLossU0-> 296074.8485039,RfVoltageVc-> 1400000.000000,EquilibriumPosition->    .0206186696,MomentumCompaction-> 2.306264382E-4,OrbitDilation->    .0000000000,BucketHeight->    .0299389651,HarmonicNumber-> 992.0000000000,OrbitAtExit->{ -1.82318000E-6, -2.40726655E-8, 1.44174912E-21, -1.1549627E-21, -1.14197668E-6, 9.797640239E-6},DampingRate->{ -7.72098876E-5, -4.93283565E-5, -7.08289951E-5},Emittances->{ 1.54936859E-10, -5.3127296E-29, 2.621305063E-6},MomentumSpread-> 6.946948048E-4,BunchLength->    .0037733311,TuneShiftByRadiation->{ 6.984761348E-7, -2.23649127E-6, 2.01485950E-10},NominalSpinTune->   6.8081482248,PolarizationTime->    .0000000000,SpinTune->    .0000000000,Polarization->    .0000000000,Polarizations->{    .0000000000,    .0000000000,    .0000000000},PolarizationVector->{    .0000000000,    .0000000000,    .0000000000}}
+P2  1.54936859E-10 -5.3127296E-29    .0037733311 6.946948048E-4
+P3  992.0000000000
+P4    1.0000000000    .0299389651    .0037733311
+P5     .1549368588    .2960748485
+P6  1.805861211E-9 1.00000000E-12    .0000000000    .0000000000    .0012504235
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$         AX    #######  #  -2.39E-14 $$$         BX    #######  #   4.643203 $$$         NX    #######  #  47.580034
+$$$         AY    #######  #  -1.13E-14 $$$         BY    #######  #   6.231611 $$$         NY    #######  #  17.620044
+$$$         LENG  #######  #  603.12000
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -1.82E-6  -2.41E-8  -6.0E-21  6.85E-22  -1.14E-6  9.799E-6
+      Exit :  -1.82E-6  -2.41E-8  1.44E-21  -1.2E-21  -1.14E-6  9.798E-6
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 497069.32 Hz 
+Energy loss per turn U0 =  .2960748 MV  Effective voltage    Vc = 1.4000000 MV 
+Equilibrium position dz = 20.618669 mm  Momentum compact. alpha = 2.3063E-4
+Bucket height     dV/P0 =  .0299390
+
+  Real tune:-0.4199589         -0.3799494         -0.0040753
+
+    Damping per one revolution:
+          X : -7.720989E-05   Y : -4.932836E-05   Z : -7.082900E-05
+
+Emittance X            = 1.5494E-10 m   Emittance Y            = -1.831E-30 m
+Emittance Z            = 2.62131E-6 m   Energy spread          = 6.94695E-4
+Bunch Length           = 3.77333112 mm  Beam tilt              = 3.9238E-13 rad
+Beam size xi           =  .04093289 mm  Beam size eta          =  .00000000 mm
+
+P7  1.54936859E-10 -1.8308976E-30 2.621305063E-6 6.946948048E-4    .0037733311
+P8  1.54936859E-10 -5.3127296E-29 2.621305063E-6 6.946948048E-4    .0037733311
+P9   30.0000000000
+P10   22.0000000000

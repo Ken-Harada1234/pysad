@@ -18,5 +18,5 @@ Read[c, Word, WordSeparators -> ":"];   Read[c, Word, ReadNewRecord -> False, Wo
 ○ 一致する (gs の `tfreadstringf` を写してある。区切り (`,` を含む既定の WordSeparators)、リスト形式 `{Word,Real,Real}`、式 `3*4` の評価、`WordSeparators`、`ReadNewRecord`、`ReadString` の読み残しが gs と同じ)。
 
 ## 未確認・限界
-- この例では `NullWords`、`Read[$Input, ...]` は見ていない。`n*item` (`3*Real`) は `fn_StringToStream` と試験 (`pysad/tests/test_scriptgs.py`) で確認した。
+- この例では `NullWords`、`Read[$Input, ...]` は見ていない。`n*item` (`3*Real`) は `fn_StringToStream` と試験 (`pysad/tests/script_tests/test_scriptgs.py`) で確認した。
 - 式の切れ目 (`x+y  3*4` で切る) は gs の例 2 つに合わせた経験則で、未確認の形がありうる。

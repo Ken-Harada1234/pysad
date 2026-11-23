@@ -321,7 +321,7 @@ pysad は「再導出せず直訳」が方針なので、下記の癖は (バグ
 <tr>
 <td>A44</td>
 <td><strong>RADLIGHT: TrackParticles は RAD・TRPT を ON にし、戻りを <code>{結果, 軌道{t,x,y,z}}</code> にする。</strong> 軌道に記録されるのは各区間 (tturn) の始めと、L≠0 の BEND 以外 (型 &lt; CAVI) の要素の後だけで、<strong>BEND と曲げのある MULT の中は記録しない</strong>。tlinit は geo0 の軸 1・2 を設定せず (初期値 0)、横方向の座標 (x, y) は軌道に入らない (進行方向に沿った点だけ)。位置は straight (dphi=0) の積み上げで BEND で向きが変わらない。このため RadiationField が意味のある場を出すには、B を ANGLE=0 の STEER にする流れが要る</td>
-<td>tlinit.f (tlinit / tlstore / tlresult)。gs と差 0 (<a href="../pysad/tests/test_radlight.py"><code>test_radlight.py</code></a>)</td>
+<td>tlinit.f (tlinit / tlstore / tlresult)。gs と差 0 (<a href="../pysad/tests/script_tests/test_radlight.py"><code>test_radlight.py</code></a>)</td>
 <td><code>ffscmd._RadLight</code> が同じ記録の仕方 (k64 モード)。<strong>v2 で修正</strong> (B65): 軌道に横の座標が入り、BEND は円弧で進めて中も記録する (docs/18 §5.2)</td>
 </tr>
 <tr>
@@ -333,7 +333,7 @@ pysad は「再導出せず直訳」が方針なので、下記の癖は (バグ
 <tr>
 <td>A46</td>
 <td><strong>POL のスピン追跡は RAD ON のときだけスピンが動く</strong> (スピンの歳差が <code>photons.f</code> の tradk の中の <code>sprot</code> で計算されるため。RAD OFF では POL でもスピンは変わらない)。TrackParticles の入力は 9〜11 列 {x,px,y,py,z,dp, 角度, sy/|s|, flag}、戻りの 7・8 列は atan(sz, sx) と sy/|s| (tftrack.f)。損失 (flag) の処理は高速追跡にしかなく、POL のスピン追跡では粒子が落ちない (pysad の制限)</td>
-<td>photons.f sprot、tftrack.f の ktfresetparticles。gs と 4e-12 以下 (<a href="../pysad/tests/test_spin_track.py"><code>test_spin_track.py</code></a>)</td>
+<td>photons.f sprot、tftrack.f の ktfresetparticles。gs と 4e-12 以下 (<a href="../pysad/tests/script_tests/test_spin_track.py"><code>test_spin_track.py</code></a>)</td>
 <td><code>track6.py</code> の <code>sprot</code>・<code>bsi</code>、<code>fn_track</code> が POL かつ RAD ON で純 Python の追跡に切り替える (k64 モードは損失の処理なし)。<strong>v2 は変更</strong>: 損失の処理を持つ (LOSSAMPL・LOSSMAP は両モードで gs と一致)。歳差の角を厳密な θ に (B83)、SOL 領域内・UND の縦磁場 (B81・B82) を修正してある (docs/16 §5.3)</td>
 </tr>
 <tr>
@@ -357,62 +357,62 @@ pysad は「再導出せず直訳」が方針なので、下記の癖は (バグ
 <tr>
 <td>A50</td>
 <td><strong><code>Skip</code>・<code>Read</code> の型 (Character・Real・Word の読み方)</strong>: 数でない語を Real で読むと式の値になる。gs に合わせた</td>
-<td>gs の出力。<a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a></td>
+<td>gs の出力。<a href="../pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a></td>
 <td><code>sadscript.py</code></td>
 </tr>
 <tr>
 <td>A51</td>
 <td><strong>tdgeo (fit の GX..)</strong>: K64 は DRIFT の L と BEND の ANGLE・L だけを解析微分し、四極などの DX・DY 等は <code>qdtrans</code>・<code>tftmatu</code>。BEND の L は出射の向き <code>geo(:,3,k+1)</code> で近似する式のまま (有限差分とは O(ANGLE²) 違う)</td>
-<td>tdgeo.f (147 行)、<a href="../pysad/tests/test_tdgeo.py"><code>test_tdgeo.py</code></a></td>
+<td>tdgeo.f (147 行)、<a href="../pysad/tests/script_tests/test_tdgeo.py"><code>test_tdgeo.py</code></a></td>
 <td><code>match6d.tdgeo_term</code> が DRIFT の L・BEND の ANGLE・L だけ解析微分。他と、Twiss の条件が同じ行にある列は中心差分のまま (収束位置が gs と 5.5e-7 ずれる例あり)</td>
 </tr>
 <tr>
 <td>A52</td>
 <td><strong>セッション最初の TrackParticles では、最初の <code>tapert</code> が最初から LOSSAMPL の外の粒子を落とさない</strong>: K64 の tapert は落とす印に <code>kptbl(i,4)=l_track</code> を書く。<code>l_track</code> は tmacro のセッション変数で、セッション最初の TrackParticles では 0 (CALC をしても変わらない)。最初の tapert (tturn の最初の要素) では印が 0 = 「生きている」になり、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは l_track≠0 で最初の要素で落ちる (B33 の元の SIGSEGV はこの l_track=0 の <code>idtypec(l_track)</code> 参照)</td>
 <td>tapert.f:184、gs の 1・2 回目の呼び出しと直した SAD (15 値) で確認</td>
-<td><code>TrackRun.l_track0</code>・<code>k_apert</code> の lcur==0 で再現。全桁一致 (<a href="../pysad/tests/test_small_items.py"><code>test_small_items.py</code></a>)。<strong>v2 で修正</strong> (B33): 最初の tapert で落とす (k64 モードは再現)</td>
+<td><code>TrackRun.l_track0</code>・<code>k_apert</code> の lcur==0 で再現。全桁一致 (<a href="../pysad/tests/script_tests/test_small_items.py"><code>test_small_items.py</code></a>)。<strong>v2 で修正</strong> (B33): 最初の tapert で落とす (k64 モードは再現)</td>
 </tr>
 <tr>
 <td>A53</td>
 <td><strong>gs は開けない <code>OpenRead</code> で入力行を打ち切る</strong>: ファイルが開けないとメッセージを出して入力行を打ち切り、続く <code>Read[h,…]</code>・<code>Close[h]</code> は wrongtype になる (例外で止まらない)</td>
 <td>gs の実測</td>
-<td>pysad も同じ振る舞い。<a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a></td>
+<td>pysad も同じ振る舞い。<a href="../pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a></td>
 </tr>
 <tr>
 <td>A54</td>
 <td><strong>gs の FIT は UNIPOL・RELW で結果が変わる</strong>: UNIPOL (NOBIPOL) は変数の符号を変えない (tffsmatch.f:669)、RELW (NOABSW) は重みを変える。QF K1・QD K1 の 2 変数で NX・NY を 0.2 に fit した例で、既定・UNIPOL・RELW の 3 通りの K が全部違う。BIPOL の効果は FIT だけ (tffsmatch.f のみ)</td>
 <td>tffsmatch.f</td>
-<td>pysad は <code>ffscmd.matcher_</code> で match6 の bipol・absweit にフラグをつなぎ、3 通りとも gs と全桁一致 (<a href="../pysad/tests/test_item4.py"><code>test_item4.py</code></a> に 3 件)</td>
+<td>pysad は <code>ffscmd.matcher_</code> で match6 の bipol・absweit にフラグをつなぎ、3 通りとも gs と全桁一致 (<a href="../pysad/tests/script_tests/test_item4.py"><code>test_item4.py</code></a> に 3 件)</td>
 </tr>
 <tr>
 <td>A55</td>
 <td><strong>FFS 内の <code>MOMENTUM = …;</code> は <code>USE</code> で上書きされない</strong>: <code>USE</code> は MAIN 側の MOMENTUM が変わったときだけ取り込む。1 GeV の FFS 内設定は追跡・Emittance[] (SIGE) に効く</td>
 <td>tffsa.f、gs の実測 (x 2.237707E-4、SIGE 3.916263E-4)</td>
-<td><code>ffscmd</code> が MAIN 側の値の変化だけ取り込む。<a href="../pysad/tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
+<td><code>ffscmd</code> が MAIN 側の値の変化だけ取り込む。<a href="../pysad/tests/script_tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
 </tr>
 <tr>
 <td>A56</td>
 <td><strong>NOEXPAND と成分ごとの値</strong>: <code>USE NOEXPAND</code>・<code>CALC NOEXPAND</code> は成分ごとの値 (<code>LINE["K1","QF.2"]=…</code>) を残す。<code>TrackParticles</code> は成分ごとの値を揃えない (1 台だけ変えた K1・K0・DX が効く)。CALC・Emittance[]・SAVE・EXPAND は揃える</td>
 <td>gs の実測</td>
-<td>pysad も同じ。<a href="../pysad/tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
+<td>pysad も同じ。<a href="../pysad/tests/script_tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
 </tr>
 <tr>
 <td>A57</td>
 <td><strong><code>DUMP</code> の語は 20 文字で切れる</strong> (<code>word1</code> が <code>character*20</code>)。<code>DDK</code> は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ。合う要素がなければ全要素。<code>名前.番号 K1 0.9;</code> は式として評価され何も設定しない</td>
 <td>tferror 系、gs の実測</td>
-<td>pysad も同じ。<a href="../pysad/tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
+<td>pysad も同じ。<a href="../pysad/tests/script_tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
 </tr>
 <tr>
 <td>A58</td>
 <td><strong>SADScript の <code>Module</code> は字句スコープ、<code>Return</code> は純関数・<code>Do</code>・<code>Scan</code>・<code>Module</code> などを抜けて外側の <code>:=</code> の関数まで届く</strong>。<code>Check[Return[1],2]</code> は Return を失敗として捕まえて 2 を返す (pysad は未対応)</td>
 <td>gs の実測</td>
-<td><code>sadscript._module_lex</code> (局所名を <code>名前$N</code> に改名)。<a href="../pysad/tests/test_scriptgs.py"><code>test_scriptgs.py</code></a></td>
+<td><code>sadscript._module_lex</code> (局所名を <code>名前$N</code> に改名)。<a href="../pysad/tests/script_tests/test_scriptgs.py"><code>test_scriptgs.py</code></a></td>
 </tr>
 <tr>
 <td>A59</td>
 <td><strong>BEND (K1≠0) の K1 は、中央面の磁場 B_y = B0 + (K1/h) ln(r/ρ0) (r = ρ0 + x)、すなわち曲線座標の勾配 (1 + hx)∂b/∂x が一様な定義</strong> (B''(ρ0) = −h B'(ρ0)、x y² の項なし)。B' が x に一様な定義 (elegant の CSBEND の K2 = 0・MAD の SBEND) とは、同じ K1 でも 6 極 K2 = +hK1 の差がある。<strong>SAD → elegant・MAD の変換には本体に K2 = −hK1 を足す</strong>。δ = 0 の光学・エミッタンスには効かず、δ≠0 のチューン (ξ・∂²ν/∂δ²)・LMA・DA・クロマティック ADTS に効く (n = 0.4 の扇形磁石 16 台、3 GeV の dν/dδ は SAD (−0.17213、+0.21082)、B' 一様 (−0.60246、+0.73786))</td>
 <td><code>tbend.f</code> の tbendiinit (41-116 行)・tbendicorr (118-134 行。132 行の kick は (1 + u) ln(1 + u) − u の u³ までの級数)・tbendibody (136-160 行)、<code>tbendi.f</code> 89-158 行、CALC は <code>tbende.f</code> の tbendecorr (61-121 行)。SADHelp の BEND の K1 は B'L/Bρ とだけ書き B'' を決めていない</td>
-<td>pysad も同じ (k64・v2 とも。追跡 <code>track6.py</code> <code>_tbendicorr</code>・numba <code>track6n.py</code> <code>k_bendi</code>、CALC <code>perfkern_bend.py</code> <code>bendecorr</code>)。<strong>v2 のオプション : <code>compat.set_bend_k1_def('lin')</code> (環境変数 <code>PYSAD_BEND_K1_DEF=lin</code>) で B' 一様の定義 (= 'log' + 6 極 K2 = +hK1 を本体に足したもの、kick のポテンシャル K1 h (x³/3 − x y²/2)) にする。既定は 'log' (K64。k64・v2 とも)。k64 モードでは無視する。追跡 (<code>track6.py</code>・<code>track6n.py</code> <code>k_bendi</code>)・CALC・<code>Emittance[]</code> (<code>perfkern_bend.py</code> <code>bendecorr</code>)・MULT (ANGLE≠0) の K1 に効く。δ = 0 の設計軌道の光学・行列は変わらない。n = 0.4 の扇形磁石 16 台の dν/dδ は 'lin' で (−0.60246、+0.73786) (解析式・独立な積分・elegant K2 = 0 と一致)。条件・限界は <code>history/v23_U2.md</code></strong>。B160 (docs/30)、<code>history/v23_U1.md</code>、<code>history/v23_U2.md</code>、<a href="../pysad/tests/test_v23_U1_bend_k1_field.py"><code>test_v23_U1_bend_k1_field.py</code></a>・<a href="../pysad/tests/test_v23_U2_bend_k1_def.py"><code>test_v23_U2_bend_k1_def.py</code></a></td>
+<td>pysad も同じ (k64・v2 とも。追跡 <code>track6.py</code> <code>_tbendicorr</code>・numba <code>track6n.py</code> <code>k_bendi</code>、CALC <code>perfkern_bend.py</code> <code>bendecorr</code>)。<strong>v2 のオプション : <code>compat.set_bend_k1_def('lin')</code> (環境変数 <code>PYSAD_BEND_K1_DEF=lin</code>) で B' 一様の定義 (= 'log' + 6 極 K2 = +hK1 を本体に足したもの、kick のポテンシャル K1 h (x³/3 − x y²/2)) にする。既定は 'log' (K64。k64・v2 とも)。k64 モードでは無視する。追跡 (<code>track6.py</code>・<code>track6n.py</code> <code>k_bendi</code>)・CALC・<code>Emittance[]</code> (<code>perfkern_bend.py</code> <code>bendecorr</code>)・MULT (ANGLE≠0) の K1 に効く。δ = 0 の設計軌道の光学・行列は変わらない。n = 0.4 の扇形磁石 16 台の dν/dδ は 'lin' で (−0.60246、+0.73786) (解析式・独立な積分・elegant K2 = 0 と一致)。条件・限界は <code>history/v23_U2.md</code></strong>。B160 (docs/30)、<code>history/v23_U1.md</code>、<code>history/v23_U2.md</code>、<a href="../pysad/tests/script_tests/test_v23_U1_bend_k1_field.py"><code>test_v23_U1_bend_k1_field.py</code></a>・<a href="../pysad/tests/script_tests/test_v23_U2_bend_k1_def.py"><code>test_v23_U2_bend_k1_def.py</code></a></td>
 </tr>
 <tr>
 <td>A60</td>

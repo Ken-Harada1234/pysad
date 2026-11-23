@@ -157,7 +157,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tbody>
 </table>
 <h3 id="検証">検証</h3>
-<p>K64 (gs) と一致する (追跡は相対 0、Twiss と幾何は 1e-11 以下、Emittance[] は 5e-10 以下)。<a href="../pysad/tests/test_coord_elem.py"><code>pysad/tests/test_coord_elem.py</code></a> 12 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<p>K64 (gs) と一致する (追跡は相対 0、Twiss と幾何は 1e-11 以下、Emittance[] は 5e-10 以下)。<a href="../pysad/tests/script_tests/test_coord_elem.py"><code>pysad/tests/script_tests/test_coord_elem.py</code></a> 12 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
 <h3 id="限界">限界</h3>
 <ul>
 <li>track6 (低速追跡) は COORD を扱わない (NotImplementedError)。</li>
@@ -228,7 +228,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tbody>
 </table>
 <h3 id="検証-1">検証</h3>
-<p>追跡・Emittance[] とも K64 (gs) と一致する (追跡は相対 0。Emittance[] は L=0 でエミッタンス 1e-11)。追跡と 6 次元の写像が同じ写像であることも確認済み (1 粒子で 1e-19)。<a href="../pysad/tests/test_tcav.py"><code>pysad/tests/test_tcav.py</code></a> 8 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<p>追跡・Emittance[] とも K64 (gs) と一致する (追跡は相対 0。Emittance[] は L=0 でエミッタンス 1e-11)。追跡と 6 次元の写像が同じ写像であることも確認済み (1 粒子で 1e-19)。<a href="../pysad/tests/script_tests/test_tcav.py"><code>pysad/tests/script_tests/test_tcav.py</code></a> 8 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
 <h3 id="k64-の癖不具合">K64 の癖・不具合</h3>
 <ul>
 <li><strong>L≠0 の TCAVI を含むリングの Emittance[] は gs が壊れる</strong> (<a href="30_sad_bug_report.html">30_sad_bug_report.md</a> B36)。K0=0 でも EnergyLossU0 が NaN、縦のチューンが 0、エミッタンスが桁違い (K0=1e-6 で 1.3e-13 など) になる。ドリフトに置き換えると正常。<code>ttcave</code> の 2 番目のドリフトが <code>tdrife0</code> に放射の旗 <code>krad</code> を渡し、長さ 0 の放射 (alr=0) で <code>tradke</code> を呼ぶことが疑わしいが、RAD=1 でも NaN が出るので、原因は特定できていない。pysad は gs の NaN を再現せず、物理として自然な値を出す (ドリフトと同じ結果から K0 の効果が加わる)。L=0 は gs と一致する。</li>
@@ -353,8 +353,8 @@ UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つ�
 </table>
 <h3 id="33-検証">3.3 検証</h3>
 <ul>
-<li>k64 モードは gs と一致する (追跡は相対 0、INS の Twiss と幾何は 2e-10 以下)。<a href="../pysad/tests/test_und.py"><code>pysad/tests/test_und.py</code></a> 4 本。</li>
-<li>v2 モード (gs は磁場を設定できないので比べていない) は、平面アンジュレータの解析式 (軌道、行路長、垂直の収束、放射損失、リングでのチューン変化・U0・減衰率・量子励起) と 1e-3〜1e-7 で一致する (<a href="../pysad/tests/test_v2_C_und.py"><code>test_v2_C_und.py</code></a> 9 本)。スピンは Thomas-BMT の積分と 2e-6 で一致 (<a href="../pysad/tests/test_v2_C2_spin.py"><code>test_v2_C2_spin.py</code></a>)。個々の許容誤差は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</li>
+<li>k64 モードは gs と一致する (追跡は相対 0、INS の Twiss と幾何は 2e-10 以下)。<a href="../pysad/tests/script_tests/test_und.py"><code>pysad/tests/script_tests/test_und.py</code></a> 4 本。</li>
+<li>v2 モード (gs は磁場を設定できないので比べていない) は、平面アンジュレータの解析式 (軌道、行路長、垂直の収束、放射損失、リングでのチューン変化・U0・減衰率・量子励起) と 1e-3〜1e-7 で一致する (<a href="../pysad/tests/script_tests/test_v2_C_und.py"><code>test_v2_C_und.py</code></a> 9 本)。スピンは Thomas-BMT の積分と 2e-6 で一致 (<a href="../pysad/tests/script_tests/test_v2_C2_spin.py"><code>test_v2_C2_spin.py</code></a>)。個々の許容誤差は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</li>
 <li>例: <a href="../example/01_lattice_elements/elem_UND.sad"><code>example/01_lattice_elements/elem_UND.sad</code></a>。</li>
 </ul>
 <h3 id="34-使える範囲と条件-v2">3.4 使える範囲と条件 (v2)</h3>
@@ -403,7 +403,7 @@ UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つ�
 </tbody>
 </table>
 <h3 id="検証-2">検証</h3>
-<p>追跡 (K1・K0・スキュー・E1 E2・フリンジ・ずれ・放射・大角度など 11 通り) は gs と相対 0、Twiss はチューン 1e-15・β α 1e-13、Emittance[] (12 セルのリング) は ε 1e-11・チューン 1e-13 で一致する。<a href="../pysad/tests/test_mult_angle.py"><code>pysad/tests/test_mult_angle.py</code></a> 21 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<p>追跡 (K1・K0・スキュー・E1 E2・フリンジ・ずれ・放射・大角度など 11 通り) は gs と相対 0、Twiss はチューン 1e-15・β α 1e-13、Emittance[] (12 セルのリング) は ε 1e-11・チューン 1e-13 で一致する。<a href="../pysad/tests/script_tests/test_mult_angle.py"><code>pysad/tests/script_tests/test_mult_angle.py</code></a> 21 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
 <h3 id="限界未確認">限界・未確認</h3>
 <ul>
 <li>未対応 (NotImplementedError): BZ≠0 (K64 自体が abort)、VOLT (RF)、F1、TAPER、スキュー双極 SK0 (K64 の ndiv 計算が <code>fact(-1)</code> を読む。結果が定まらない)、L=0。</li>
@@ -456,7 +456,7 @@ MAP を長さ L のドリフトにすると周長が L だけ増えるので、p
 <li><strong>軌道 <code>cod1</code> はユーザーが返す。<code>trans</code> から作らない。</strong> <code>cod1</code> と <code>trans</code> が食い違うと (例: <code>cod+kick</code> に結合のある <code>trans</code>) K64 の閉軌道は物理的でない値で止まる。pysad は固定点を求めるので別の値になる。試験は <code>cod1 = trans.cod + kick</code> で作った。</li>
 </ul>
 <h3 id="検証-3">検証</h3>
-<p>CALC (OPTICS)、Emittance[] (EMIT、4 つ組も)、TrackParticles (TRPT、座標の書き換え・フラグ 0 での落下・復活を含む) とも gs と一致する (チューン 1e-14、エミッタンス 1e-11、追跡 10 桁)。既定 (ExternalMap なし) は恒等で、S は MAP の L を数えない (gs と同じ)。<a href="../pysad/tests/test_map.py"><code>pysad/tests/test_map.py</code></a> 5 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<p>CALC (OPTICS)、Emittance[] (EMIT、4 つ組も)、TrackParticles (TRPT、座標の書き換え・フラグ 0 での落下・復活を含む) とも gs と一致する (チューン 1e-14、エミッタンス 1e-11、追跡 10 桁)。既定 (ExternalMap なし) は恒等で、S は MAP の L を数えない (gs と同じ)。<a href="../pysad/tests/script_tests/test_map.py"><code>pysad/tests/script_tests/test_map.py</code></a> 5 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
 <h3 id="限界未確認-1">限界・未確認</h3>
 <ul>
 <li><code>ExternalMap["GEO", l, geo, pos]</code> (幾何) は未対応 (MAP は直進、長さ 0)。<code>CompiledMap</code> (Fortran の動的コンパイル) も未対応。</li>

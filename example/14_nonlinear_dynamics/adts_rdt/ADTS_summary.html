@@ -374,7 +374,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>一致 (経過時間以外)</td>
 </tr>
 <tr>
-<td><code>py -3.12 -m pytest pysad/tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn</code></td>
+<td><code>py -3.12 -m pytest pysad/tests/script_tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn</code></td>
 <td>1.8 s</td>
 <td>1 件通過</td>
 </tr>
@@ -908,7 +908,7 @@ py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_gs.py kekls --cases 1:0,-1:
 <p>6 極の 1 次の共鳴駆動項 h_jklmp (3 次のハミルトニアンの各単項式の係数) を解析式で求め、(a) 1 周の写像の ΔJ (追跡)、(b) 文献の薄い 6 極の式、(c) 共鳴線の近くの周期点の振幅 (追跡)、(d) δ の項 (クロマティシティ) と比べて、符号・規格化・位相が正しいことを確かめる。FODO だけを追跡で確かめた (§6.7)。</p>
 <h3 id="62-使うファイルとコマンド">6.2 使うファイルとコマンド</h3>
 <pre><code>py -3.12 run_sad.py example/14_nonlinear_dynamics/adts_rdt/fn_ResonanceDrivingTerms_fodo.sad
-py -3.12 -m pytest pysad/tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn
+py -3.12 -m pytest pysad/tests/script_tests/test_v23_Q2_resdrive.py -q -k rdt_vs_one_turn
 py -3.12 example/14_nonlinear_dynamics/adts_rdt/ADTS_summary_rdt_check.py
 py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_checks.py resonance
 py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_checks.py delta fodo

@@ -1,6 +1,6 @@
 # 周波数マップの検証の例
 
-台本ごとのまとめと全数値は [`FMAP_summary.md`](FMAP_summary.md)、解説は `docs/26_frequency_map_lma.md` (§3.5・§9)、試験は `pysad/tests/test_v23_S1_fmapres.py` (12 件)、コードは `pysad/fmapres.py`。
+台本ごとのまとめと全数値は [`FMAP_summary.md`](FMAP_summary.md)、解説は `docs/26_frequency_map_lma.md` (§3.5・§9)、試験は `pysad/tests/script_tests/test_v23_S1_fmapres.py` (12 件)、コードは `pysad/fmapres.py`。
 実行はリポジトリ直下から `py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_variants.py ...` など (標準出力をファイルへ落とすときは `PYTHONUTF8=1`)。スクリプトは出力を `example/14_nonlinear_dynamics/frequency_map/` へ書く (保存済みの出力を残したいときは複製したフォルダで走らせる)。
 使ったラティス: `example/astrid/lattice/ASTRID2_v01_01.sad`・`ASTRID2_v01_02_id.sad` (MPW)、`pysad/tests/kek-ls_v03_12.lat`、`example/00_lattice/FODO_ring.sad`。
 

@@ -40,7 +40,7 @@
 ### 2.2 軌道の記録
 
 
-[`pysad/tests/test_radlight.py`](../pysad/tests/test_radlight.py) の台本 (gs と差 0。1 GeV の電子、3 セルのリング、2 粒子、3 周)。
+[`pysad/tests/script_tests/test_radlight.py`](../pysad/tests/script_tests/test_radlight.py) の台本 (gs と差 0。1 GeV の電子、3 セルのリング、2 粒子、3 周)。
 
 ```
 MOMENTUM = 1e9;
@@ -145,7 +145,7 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 ### 5.2 v2 モードの軌道 (B65)
 
 
-K64 の 5.1 の癖 1〜3 (BEND の中を記録しない、横方向の座標が入らない、BEND で向きが変わらない) は、v2 モードでは起きない。試験 [`test_v2_C_radlight.py`](../pysad/tests/test_v2_C_radlight.py) (3 件)、例 [`example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad`](../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad)。
+K64 の 5.1 の癖 1〜3 (BEND の中を記録しない、横方向の座標が入らない、BEND で向きが変わらない) は、v2 モードでは起きない。試験 [`test_v2_C_radlight.py`](../pysad/tests/script_tests/test_v2_C_radlight.py) (3 件)、例 [`example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad`](../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad)。
 
 - **横の軸を幾何から取る**: 軌道の x・y・z は幾何 (`LINE["GX"/"GY"/"GZ"]` と同じ GEO 座標)。振幅 0 の粒子の点は幾何と一致する (ROTATE つき・負の角を含む。1e-11)。時刻 = 行路長/(βc) (1e-9)。
 - **BEND は円弧で進め、中も記録する**: tlstore の dphi≠0 の式で進め、1/γ の角度あたり `RADLIGHTDIV` 点 (既定 16) を記録する。`RADLIGHTDIV = n;` で変える。高いエネルギーでは点数が γ に比例して増える (3 GeV・0.26 rad の BEND で 2.5 万点)。曲げのある MULT は出口だけ、CAVI も記録する。
@@ -161,7 +161,7 @@ K64 の 5.1 の癖 1〜3 (BEND の中を記録しない、横方向の座標が�
 ### 6.1 物理の検証 (独立な計算との比較)
 
 
-注意: `RadiationField` は **gs と比べていない** (gs は SIGSEGV)。上の 6e-3 は物理の解析解との比較。**Liénard-Wiechert の厳密な数値計算と比べた** (独立な計算 [`pysad/tests/_c3_indep.py`](../pysad/tests/_c3_indep.py): 円弧・直線の軌道 (解析的な位置・速度・加速度) で、観測時刻 τ ごとに遅延時間 t' を `brentq` で解き、E = q/(4πε0)[(n−β)/(γ²(1−n·β)³R²) + n×((n−β)×β̇)/(c(1−n·β)³R)] を評価)。pysad の `RadiationField` は K64 の Feynman-Heaviside の式 (軌道の点列と自然スプラインの微分)。試験 [`test_v2_C3_radfield.py`](../pysad/tests/test_v2_C3_radfield.py) (8 件)、例 [`example/07_spin_solenoid_special/fn_RadiationField_bend.sad`](../example/07_spin_solenoid_special/fn_RadiationField_bend.sad):
+注意: `RadiationField` は **gs と比べていない** (gs は SIGSEGV)。上の 6e-3 は物理の解析解との比較。**Liénard-Wiechert の厳密な数値計算と比べた** (独立な計算 [`pysad/tests/script_tests/_c3_indep.py`](../pysad/tests/script_tests/_c3_indep.py): 円弧・直線の軌道 (解析的な位置・速度・加速度) で、観測時刻 τ ごとに遅延時間 t' を `brentq` で解き、E = q/(4πε0)[(n−β)/(γ²(1−n·β)³R²) + n×((n−β)×β̇)/(c(1−n·β)³R)] を評価)。pysad の `RadiationField` は K64 の Feynman-Heaviside の式 (軌道の点列と自然スプラインの微分)。試験 [`test_v2_C3_radfield.py`](../pysad/tests/script_tests/test_v2_C3_radfield.py) (8 件)、例 [`example/07_spin_solenoid_special/fn_RadiationField_bend.sad`](../example/07_spin_solenoid_special/fn_RadiationField_bend.sad):
 
 | 確かめたこと | 条件 | 結果 |
 |---|---|---|
@@ -195,8 +195,8 @@ K64 の 5.1 の癖 1〜3 (BEND の中を記録しない、横方向の座標が�
 - K64 のソース: `tlinit.f` (`tlinit`、`tlstore`、`tlresult`、`tlcalc`、`tlspect`)。RADLIGHT の軌道は `tlinit` / `tlstore` / `tlresult` の直訳 (`ffscmd._RadLight`)。`RadiationField`・`RadiationSpectrum` は [`pysad/radfield.py`](../pysad/radfield.py) (`radiation_field`・`radiation_spectrum`)。
 - `TrackParticles` は RADLIGHT のとき RAD・TRPT を ON にして追跡する (`rad = RAD or RADLIGHT`、`trpt = TRPT or RADLIGHT`)。`FFS.track_particles` 付近。高速追跡 (`TrackRun`) で扱えない並びは `SADError`。
 - PHOTONS: `beambeam.py`、`track6.py`、`ffscmd`。tdusrnpl・radangle1・tphrec の直訳 (4)。
-- v2 の軌道の独立な検証用の計算: [`pysad/tests/_c3_indep.py`](../pysad/tests/_c3_indep.py)。
-- 試験: [`pysad/tests/test_radlight.py`](../pysad/tests/test_radlight.py) (1)、`test_radfield.py`、[`test_v2_C_radlight.py`](../pysad/tests/test_v2_C_radlight.py) (3)、[`test_v2_C3_radfield.py`](../pysad/tests/test_v2_C3_radfield.py) (8)。例 [`example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad`](../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad)、[`example/07_spin_solenoid_special/fn_RadiationField_bend.sad`](../example/07_spin_solenoid_special/fn_RadiationField_bend.sad)。
+- v2 の軌道の独立な検証用の計算: [`pysad/tests/script_tests/_c3_indep.py`](../pysad/tests/script_tests/_c3_indep.py)。
+- 試験: [`pysad/tests/script_tests/test_radlight.py`](../pysad/tests/script_tests/test_radlight.py) (1)、`test_radfield.py`、[`test_v2_C_radlight.py`](../pysad/tests/script_tests/test_v2_C_radlight.py) (3)、[`test_v2_C3_radfield.py`](../pysad/tests/script_tests/test_v2_C3_radfield.py) (8)。例 [`example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad`](../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad)、[`example/07_spin_solenoid_special/fn_RadiationField_bend.sad`](../example/07_spin_solenoid_special/fn_RadiationField_bend.sad)。
 
 ## 9. 関連文書
 

@@ -1,0 +1,37 @@
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+
+! MAIN の TRACK で粒子が落ちるケース (NX の大きい粒子)。参照は bench_level27b.sad (SADScript で同じ手順)
+ON RFSW;
+OFF RAD;
+EMIT USE=RING;
+TRACK USE=RING NPART=6 TURNS=250 NX=(1,60,100,150,200,300) NY=(1) NZ=(1);
+
+ON RAD FLUC;
+EMIT USE=RING;
+TRACK USE=RING NPART=6 TURNS=250 NX=(1,60,100,150,200,300) NY=(1) NZ=(1);
+STOP;

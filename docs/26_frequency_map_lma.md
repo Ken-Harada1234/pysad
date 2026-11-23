@@ -302,7 +302,7 @@ elegant の ISR あり (6 種) は ISR なしと 9e-5 以内。13120 周 (20 周
 
 ## 5. 検証
 
-[`example/14_nonlinear_dynamics/frequency_map/`](../example/14_nonlinear_dynamics/frequency_map/)・[`example/15_lma_touschek/lma/`](../example/15_lma_touschek/lma/) の例と [`pysad/tests/test_v23_Q1_fmap_lma.py`](../pysad/tests/test_v23_Q1_fmap_lma.py) (21 件)。使った gs は K64 の 2026-10-19 ビルド (WSL、timeout 1800 s、終了後に `ps` で sad1.exe の残りがないことを確かめた)。
+[`example/14_nonlinear_dynamics/frequency_map/`](../example/14_nonlinear_dynamics/frequency_map/)・[`example/15_lma_touschek/lma/`](../example/15_lma_touschek/lma/) の例と [`pysad/tests/script_tests/test_v23_Q1_fmap_lma.py`](../pysad/tests/script_tests/test_v23_Q1_fmap_lma.py) (21 件)。使った gs は K64 の 2026-10-19 ビルド (WSL、timeout 1800 s、終了後に `ps` で sad1.exe の残りがないことを確かめた)。
 
 | 項目 | 内容 | 結果 |
 | --- | --- | --- |
@@ -362,12 +362,12 @@ check_every = 5)、周波数マップ 1271 点 × 1024 周は 305〜315 s (1 プ
 | [`pysad/lmabucket.py`](../pysad/lmabucket.py) | `rf_bucket_analytic`・`longitudinal_params`・`bucket_limits_1d`・`bucket_limits_6d`・`aperture_limits_4d`・`limit_types` (RF バケットの限界とアパーチャの限界の区別、§4.5) |
 | [`pysad/lma.py`](../pysad/lma.py) | `momentum_acceptance`、`LMAResult`、`touschek_lifetime_local`、`acceptance_at`、`linear_momentum_limit` |
 | [`pysad/q1cmd.py`](../pysad/q1cmd.py) | SAD の台本の関数 `FrequencyMap[]`・`MomentumAcceptance[]`・`TouschekLifetimeLMA[]` (`ffscmd.py` の入口 2 行) |
-| [`pysad/tests/test_v23_Q1_fmap_lma.py`](../pysad/tests/test_v23_Q1_fmap_lma.py)・[`test_v23_S1_fmapres.py`](../pysad/tests/test_v23_S1_fmapres.py) | 試験 |
+| [`pysad/tests/script_tests/test_v23_Q1_fmap_lma.py`](../pysad/tests/script_tests/test_v23_Q1_fmap_lma.py)・[`test_v23_S1_fmapres.py`](../pysad/tests/script_tests/test_v23_S1_fmapres.py) | 試験 |
 | `example/14_nonlinear_dynamics/frequency_map/fmap_*`・`FMAP_summary.md` | 例と出力 (索引は [`example/14_nonlinear_dynamics/frequency_map/fmap_basic.md`](../example/14_nonlinear_dynamics/frequency_map/fmap_basic.md)・`fmap_validation.md`)。台本ごとのまとめは [`example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md`](../example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md)。記録は [`docs/history/v23_Q1.md`](history/v23_Q1.md)・`v23_S1.md` |
 
 ## 9. 周波数マップと共鳴の領域の予想の検証 (2026-11-20)
 
-`example/14_nonlinear_dynamics/frequency_map/fmap_*`、試験 [`pysad/tests/test_v23_S1_fmapres.py`](../pysad/tests/test_v23_S1_fmapres.py)、台本ごとのまとめと全数値は [`example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md`](../example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md)、記録は [`docs/history/v23_S1.md`](history/v23_S1.md)。
+`example/14_nonlinear_dynamics/frequency_map/fmap_*`、試験 [`pysad/tests/script_tests/test_v23_S1_fmapres.py`](../pysad/tests/script_tests/test_v23_S1_fmapres.py)、台本ごとのまとめと全数値は [`example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md`](../example/14_nonlinear_dynamics/frequency_map/FMAP_summary.md)、記録は [`docs/history/v23_S1.md`](history/v23_S1.md)。
 条件は §6 と同じ (v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、41 × 31、1024 周、Hann 窓)。FODO は 24 セル、3 GeV、105.6 m、QF の K1 = 0.697 (νx = 6.6578)、SF・SD の K2 = 4, −6 (玩具の強さ)。
 
 この節の表のうち、ASTRID2 と大きなリング A の x–y の周波数マップ (§9.1 の 2 行) は現行の表 (四極の積分器が 4 次) の値。δ・誤差・MPW・6 極の λ 倍・周回数・窓・格子の結果 (§9.2〜§9.5) は、四極の積分器が 2 次 (k64 と同じ) の追跡で作った保存済みの表の値で、4 次では取り直していない。傾向は §3.4 と同じと見込まれるが、数値の差は未確認。
@@ -422,7 +422,7 @@ KEK-LS (3563 要素、NORFSW・NORAD、512 周、位置 3、8 点) の規則的�
 
 ## 10. 周波数マップを信頼して使うための検証 (2026-11-21)
 
-`example/14_nonlinear_dynamics/frequency_map/fmap_check_*` (索引 `fmap_reliability.md`)、記録 [`docs/history/v23_S2.md`](history/v23_S2.md)、試験 [`pysad/tests/test_v23_S2_fmapcheck.py`](../pysad/tests/test_v23_S2_fmapcheck.py)。条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、Hann 窓、小さな格子 21 × 16 = 336 点、1024 周
+`example/14_nonlinear_dynamics/frequency_map/fmap_check_*` (索引 `fmap_reliability.md`)、記録 [`docs/history/v23_S2.md`](history/v23_S2.md)、試験 [`pysad/tests/script_tests/test_v23_S2_fmapcheck.py`](../pysad/tests/script_tests/test_v23_S2_fmapcheck.py)。条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、Hann 窓、小さな格子 21 × 16 = 336 点、1024 周
 (ASTRID2: 位置 2、x = 0.5〜18 mm、y = 0.5〜14 mm。KEK-LS: 位置 3、x = 0.2〜6 mm、y = 0.2〜8 mm)。誤差の標準 (k = 1): 四極・6 極・偏向磁石 (KEK-LS は 8 極も) の DX・DY 50 μm、四極のロール 0.2 mrad、偏向磁石のロール 0.1 mrad (補正なし。実機の許容値ではなく例)。
 誤差なしの D > −5 の割合は、現行の表 (四極 4 次) で ASTRID2 が 0.030 (41 × 31 で 0.039)、KEK-LS が 0.147 (失われた点 125 / 336)。以降の §10 の統計は四極の積分器が 2 次の追跡の値で、4 次では取り直していない (その誤差なしの基準は ASTRID2 0.030・KEK-LS 0.142。数値の差は未確認)。
 

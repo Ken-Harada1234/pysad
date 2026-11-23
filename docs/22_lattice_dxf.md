@@ -15,7 +15,7 @@ Vectorworks が一般的でないので、出力を DXF にした。既定は平
 | Python | `pysad.dxf_lattice.write_dxf(ffs, path, region=None, scale=1.0, ..., mode='plan', parts='body')`、`load_ffs(台本, 'RING')`、`read_dxf(path)` (検証用の最小パーサ。3DFACE も読む)、`check_solids(entities)` (3DFACE の立体が閉じているかの検査) |
 | SADScript (gs でも pysad でも走る) | `DrawMagnetsDXF[file, options]` ([`example/dxf_lattice/DrawMagnetsDXF.n`](../example/dxf_lattice/DrawMagnetsDXF.n)。`Get["DrawMagnetsDXF.n"]` で読む) |
 | 例 | [`example/dxf_lattice/`](../example/dxf_lattice/README.md) (FODO・SOL・ASTRID2・KEK-LS の 1 セルと全周。3D は FODO・KEK-LS の 1 セルと FODO の全周、`*_3d*`) |
-| 試験 | `pysad/tests/test_dxf_lattice.py` (28 件のうち 3D は 11 件。ezdxf があれば動く 1 件を含む) |
+| 試験 | `pysad/tests/script_tests/test_dxf_lattice.py` (28 件のうち 3D は 11 件。ezdxf があれば動く 1 件を含む) |
 
 ## 1. 使い方
 

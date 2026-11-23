@@ -211,7 +211,7 @@ pysad `FFS.print_emit` はこの全行を同じ書式で出す (docs/history/wor
 
 K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の直訳。`Packages/emit.n` の `SynchroBetaEmittance` が `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` (`ffscmd.fn_synchrobeta`) を呼ぶ。
 運動量のずれ (2·ndims+1 点) ごとに `_tcod_radcod` で閉軌道、`tturne` で T・D・B を求め、(アクション J, 方位角モード m) の連立方程式を反復で解く。
-- 12 セルのリング + CAVI (VOLT=2e6, HARM=64) で、K64 と emitx が相対 1e-5 以内で一致する (§6)。試験は [`test_synchrobeta.py`](../pysad/tests/test_synchrobeta.py)。
+- 12 セルのリング + CAVI (VOLT=2e6, HARM=64) で、K64 と emitx が相対 1e-5 以内で一致する (§6)。試験は [`test_synchrobeta.py`](../pysad/tests/script_tests/test_synchrobeta.py)。
 - 差の原因は閉軌道の収束の履歴と、条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) とみているが、確認していない。
 - 24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes->7 の 4 点で、emitx は K64 と相対 1e-6 台で一致し、emity は雑音 (1e-19 台)。**結合のあるラティス** (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も `ValueError: cannot convert float NaN to integer` で失敗する (エラーの出し方が粗い)。**確認**: 24 セルの平面 FODO + skew 四極 1 台 (3 GeV、RF 4 MV、6 極なし) の結合のあるリングでは gs は落ちず、k64 の pysad は gs と 7 桁以上一致した (εx 1.3603366e-6 対 1.3603365e-6、εy 4.7516654e-8 対 4.7516654e-8)。Emittance[] と、独立な 6x6 の平衡エミッタンス (自前の 1 周写像 + 放射の減衰 + 量子励起の拡散 + Lyapunov 方程式) とも一致 (ASTRID2 + skew 四極 ks = 0.05 で ε₁ 6e-5、ε₂ 1.3e-4)。SB と Emittance[] の差 (ASTRID2 +0.8%、PF +1.1%・+2.9%) は結合の有無に依らず、シンクロ・ベータ結合と色収差の分。SOL・強い結合で gs が落ちるかは未確認。
 - **大きなリング A (3 GeV、周長 603 m、νs = 0.0041、RF 1.4 MV) では使えない** (B128): gs も pysad k64 も 6.18e-9 (AzimuthalModes ≥ 3 で変わらず) を返すが、Emittance[] の 1.55e-10、独立な 6x6 の平衡 1.5173e-10、RAD + FLUC の 6 次元追跡 (60 粒子、4000 周) の 1.6e-10 と 40 倍違う。AzimuthalModes 12・20・30・32 以上で 3.19e-9・1.46e-9・8.50e-10・7.87e-10 と動き続け、νs の入力・エネルギー・6 極の強さにも依らない。原因は未特定 (K64 の式の限界か、gs・pysad が共通に持つ誤りか)。PF・ASTRID2・SP8 (大きなリング B、8 GeV) は Emittance[] と 0.5〜1%。**v2 は AzimuthalModes m と 1.5 倍の m の emitx が 20% 以上違うと警告を出す** (値は変えない。大きなリング A の m = 9 で 5.1e-9 対 2.5e-9)。使うときは AzimuthalModes を変えて収束を確認し、Emittance[] と比べる。`AzimuthalModes->1` は pysad が IndexError (gs は 8.6e-7 を返すが意味がない)、2 以上を使う。
@@ -240,7 +240,7 @@ K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の
 
 ### v2 モードで変わった放射・エミッタンス (RADINT・Jx・MomentumCompaction・EMITDIV ほか)
 
-k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2」の動作。試験 [`test_v2_A_radint.py`](../pysad/tests/test_v2_A_radint.py)・[`test_v2_A_damping.py`](../pysad/tests/test_v2_A_damping.py)・[`test_v2_A_spin.py`](../pysad/tests/test_v2_A_spin.py)・[`test_v2_A_tchge.py`](../pysad/tests/test_v2_A_tchge.py)・[`test_v2_A_track.py`](../pysad/tests/test_v2_A_track.py)・[`test_v2_A_ffs.py`](../pysad/tests/test_v2_A_ffs.py) (計 67 件。詳細は [`docs/history/v2_changes_A.md`](history/v2_changes_A.md))。根拠は解析式・独立な数値計算・保存則で、gs は根拠にしていない。条件は 3 GeV の FODO リング (24 セル 105.6 m / 91.2 m、12 セル 45.6 m / 62.4 m)、偏向磁石 L=1.2 m・15 度 (ρ=4.58 m)、RF 500 MHz。**大きなリング・挿入光源・強い結合では確かめていない。**
+k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2」の動作。試験 [`test_v2_A_radint.py`](../pysad/tests/script_tests/test_v2_A_radint.py)・[`test_v2_A_damping.py`](../pysad/tests/script_tests/test_v2_A_damping.py)・[`test_v2_A_spin.py`](../pysad/tests/script_tests/test_v2_A_spin.py)・[`test_v2_A_tchge.py`](../pysad/tests/script_tests/test_v2_A_tchge.py)・[`test_v2_A_track.py`](../pysad/tests/script_tests/test_v2_A_track.py)・[`test_v2_A_ffs.py`](../pysad/tests/script_tests/test_v2_A_ffs.py) (計 67 件。詳細は [`docs/history/v2_changes_A.md`](history/v2_changes_A.md))。根拠は解析式・独立な数値計算・保存則で、gs は根拠にしていない。条件は 3 GeV の FODO リング (24 セル 105.6 m / 91.2 m、12 セル 45.6 m / 62.4 m)、偏向磁石 L=1.2 m・15 度 (ρ=4.58 m)、RF 500 MHz。**大きなリング・挿入光源・強い結合では確かめていない。**
 
 **(a) RADINT (INTGRL.f)**
 
@@ -307,7 +307,7 @@ k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2
 
 ### F1・FRINGE・K0 の極・WSPAC・SynchroBeta の警告
 
-試験 [`test_v2_B1_optics.py`](../pysad/tests/test_v2_B1_optics.py)・[`test_v2_E_steer.py`](../pysad/tests/test_v2_E_steer.py)・[`test_v2_D1_emit.py`](../pysad/tests/test_v2_D1_emit.py)・[`test_v2_A2_radint.py`](../pysad/tests/test_v2_A2_radint.py)・[`test_v2_C3_radint.py`](../pysad/tests/test_v2_C3_radint.py) ほか。記録 `history/v2next_{A1,A2,B1,C,D1,E}.md`。
+試験 [`test_v2_B1_optics.py`](../pysad/tests/script_tests/test_v2_B1_optics.py)・[`test_v2_E_steer.py`](../pysad/tests/script_tests/test_v2_E_steer.py)・[`test_v2_D1_emit.py`](../pysad/tests/script_tests/test_v2_D1_emit.py)・[`test_v2_A2_radint.py`](../pysad/tests/script_tests/test_v2_A2_radint.py)・[`test_v2_C3_radint.py`](../pysad/tests/script_tests/test_v2_C3_radint.py) ほか。記録 `history/v2next_{A1,A2,B1,C,D1,E}.md`。
 
 | 機能 | モード | 使い方・使える範囲と条件 | 使えない・未確認 |
 |---|---|---|---|

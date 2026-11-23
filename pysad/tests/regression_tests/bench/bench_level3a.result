@@ -1,0 +1,1292 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 14:55:07 Tuesday 10/13/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+! bench_level3a.sad — Level 3A benchmark: sextupoles and chromaticity
+!   Level 1 の 20 セル FODO に六極 SF/SD (L=0.2 m) を追加。
+!   SF, SD の隣のドリフトを 1.0 m にして周長 140 m を保つ。
+!   SEXT K2 は積分強度 (K2*L)。
+!
+!   色収差は SAD 組み込みの値 (CHRO, RADINT の LINEAR CHROMATICITY) は
+!   使わない (BEND 成分を含まないため)。実務と同じく、DP0 を振った
+!   チューンを 3 次多項式で当てはめて求める (自作の MyPolyFit。SAD の PolynomialFit はバグあり)。
+!   補正は FIT NX/NY (±DP の 2 点) + SF*/SD* の符号制約で行う。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+      DS = (L=1.0)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF SF DS B D1 QD SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.733388 $$$       f BX    #######  #  17.324544 $$$       f NX    #######  #   7.381400
+$$$       f AY    #######  #    .422243 $$$       f BY    #######  #    .669153 $$$       f NY    #######  #   8.009509
+$$$       f LENG  #######  #  140.00000
+ EMIT;
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :   .000000   .000000   .000000   .000000   .000000   .000000
+      Exit :  6.25E-17  2.78E-17  -6.2E-33  -9.3E-32  4.62E-17   .000000
+
+    Extended Twiss Parameters
+AX: -4.73338 BX: 17.32454                            ZX: 1.30E-16  EX:  .933598
+           PSIX: -7.0E-18                           ZPX: 9.13E-45 EPX: 9.61E-17
+R1: 2.76E-16 R2: -4.5E-16 AY:  .422243 BY:  .669153  ZY: 1.28E-28  EY: 9.61E-17
+R3: -9.2E-16 R4: 3.21E-15            PSIY: -6.5E-45 ZPY: -4.6E-28 EPY: -2.6E-17
+                                                     AZ: 1.31E-16  BZ: 1.000000
+                                                                 PSIZ: -1.3E-16
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 2141374.6 Hz 
+Energy loss per turn U0 =  .6785008 MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =  .0000000 mm  Momentum compact. alpha =  .0243132
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =  .0000000 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune: 0.3814002           0.0095086          -0.0000000
+
+    Damping per one revolution:
+          X : -1.508606E-04   Y : -1.356530E-04   Z : -2.561597E-04
+    Damping time (sec):
+          X :  3.095506E-03   Y :  3.442531E-03   Z :  1.823042E-03
+    Tune shift due to radiation:
+          X :  1.429467E-06   Y :  6.203664E-07   Z :  7.023874E-05
+    Damping partition number:
+          X :    1.1120       Y :    0.9999       Z :    1.8881
+
+Emittance X            = 1.43174E-7 m   Emittance Y            = 2.0865E-38 m
+Emittance Z            =  .00000000 m   Energy spread          = 9.76616E-4
+Bunch Length           =  .00000000 mm  Beam tilt              = 1.7726E-16 rad
+Beam size xi           = 1.81981940 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+ 
+ ! ------------------------------------------------------------
+ ! (1) 設計運動量の光学
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-1: optics at dp=0 ==="];
+=== Test 3A-1: optics at dp=0 ===
+ Print["A0 BX  ",Twiss["BX","^^^"]];
+A0 BX    17.3245443442
+ Print["A0 BY  ",Twiss["BY","^^^"]];
+A0 BY      .6691528081
+ Print["A0 AX  ",Twiss["AX","^^^"]];
+A0 AX    -4.7333880351
+ Print["A0 AY  ",Twiss["AY","^^^"]];
+A0 AY      .4222426661
+ Print["A0 EX  ",Twiss["EX","^^^"]];
+A0 EX      .9335983044
+ Print["A0 EPX ",Twiss["EPX","^^^"]];
+A0 EPX     .2555305548
+ Print["A0 QX  ",Twiss["NX","$$$"]/2/Pi];
+A0 QX     7.3814002078
+ Print["A0 QY  ",Twiss["NY","$$$"]/2/Pi];
+A0 QY     8.0095086040
+ 
+ ! ------------------------------------------------------------
+ ! (2) 色収差: DP0 = -0.01 .. 0.01 (0.001 刻み) のチューンを 3 次多項式で当てはめ (MyPolyFit)
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-2: chromaticity (tune scan + MyPolyFit) ==="];
+=== Test 3A-2: chromaticity (tune scan + MyPolyFit) ===
+ ! 最小二乗の多項式当てはめ (SAD の PolynomialFit はバグがあるので代替)
+ !   d   : {{x1,y1},{x2,y2},...},  nord: 次数
+ !   戻り値: {{c0,c1,...,cnord}, rms 残差}   y = c0 + c1 x + ... + cnord x^nord
+ !   x を max|x| で割って [-1,1] にそろえ、正規方程式 (A^T A) a = A^T y を解いて元に戻す
+ MyPolyFit[d_,nord_]:=Module[{x,y,h,u,col,a,m,v,c,k,res},
+   {x,y}=Thread[d];
+   h=Max[Abs[x]];
+   u=x/h;
+   col=Table[1,{Length[x]}];
+   a={};
+   Do[AppendTo[a,col]; col=col*u,{k,0,nord}];
+   a=Transpose[a];
+   m=Transpose[a].a;
+   v=Transpose[a].y;
+   c=LinearSolve[m,v];
+   res=Sqrt[(Plus@@((a.c-y)^2))/Length[x]];
+   {Table[c[[k+1]]/h^k,{k,0,nord}],res}];
+ 
+ chromscan[tag_]:=Module[{tunex,tuney,j},
+   tunex=Table[{i,0},{i,-0.01,0.01,0.001}];
+   tuney=Table[{i,0},{i,-0.01,0.01,0.001}];
+   j=0;
+   Do[
+     j = j + 1;
+     DP0=i;
+     FFS["cell calc;"];
+     Print[tag," Q ",{i,Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi}];
+     tunex[j,2] = Twiss["NX","$$$"]/2/Pi;
+     tuney[j,2] = Twiss["NY","$$$"]/2/Pi;
+   ,{i,-0.01,0.01,0.001}];
+   DP0=0;
+   FFS["cell calc;"];
+   Print[tunex, tuney];
+   Print[PolynomialFit[tunex,5]];
+   Print[tag," FITX ",MyPolyFit[tunex,3]];
+   Print[tag," FITY ",MyPolyFit[tuney,3]];
+   ];
+ chromscan["B"];
+B Q {   -.0100000000,   7.3861169701,   8.0569191274}
+B Q {   -.0090000000,   7.3854023941,   8.0519648537}
+B Q {   -.0080000000,   7.3847431549,   8.0470595620}
+B Q {   -.0070000000,   7.3841387287,   8.0422026353}
+B Q {   -.0060000000,   7.3835886038,   8.0373934660}
+B Q {   -.0050000000,   7.3830922738,   8.0326314570}
+B Q {   -.0040000000,   7.3826492380,   8.0279160211}
+B Q {   -.0030000000,   7.3822590009,   8.0232465810}
+B Q {   -.0020000000,   7.3819210725,   8.0186225688}
+B Q {   -.0010000000,   7.3816349680,   8.0140434263}
+B Q {    .0000000000,   7.3814002078,   8.0095086040}
+B Q {    .0010000000,   7.3812163174,   8.0050175616}
+B Q {    .0020000000,   7.3810828271,   8.0005697675}
+B Q {    .0030000000,   7.3809992725,   7.9961646983}
+B Q {    .0040000000,   7.3809651938,   7.9918018393}
+B Q {    .0050000000,   7.3809801361,   7.9874806835}
+B Q {    .0060000000,   7.3810436493,   7.9832007323}
+B Q {    .0070000000,   7.3811552880,   7.9789614944}
+B Q {    .0080000000,   7.3813146113,   7.9747624864}
+B Q {    .0090000000,   7.3815211828,   7.9706032321}
+B Q {    .0100000000,   7.3817745708,   7.9664832627}
+{{   -.0100000000,   7.3861169701},{   -.0090000000,   7.3854023941},{   -.0080000000,   7.3847431549},
+ {   -.0070000000,   7.3841387287},{   -.0060000000,   7.3835886038},{   -.0050000000,   7.3830922738},
+ {   -.0040000000,   7.3826492380},{   -.0030000000,   7.3822590009},{   -.0020000000,   7.3819210725},
+ {   -.0010000000,   7.3816349680},{    .0000000000,   7.3814002078},{    .0010000000,   7.3812163174},
+ {    .0020000000,   7.3810828271},{    .0030000000,   7.3809992725},{    .0040000000,   7.3809651938},
+ {    .0050000000,   7.3809801361},{    .0060000000,   7.3810436493},{    .0070000000,   7.3811552880},
+ {    .0080000000,   7.3813146113},{    .0090000000,   7.3815211828},{    .0100000000,   7.3817745708}
+ }{{   -.0100000000,   8.0569191274},{   -.0090000000,   8.0519648537},{   -.0080000000,   8.0470595620},
+ {   -.0070000000,   8.0422026353},{   -.0060000000,   8.0373934660},{   -.0050000000,   8.0326314570},
+ {   -.0040000000,   8.0279160211},{   -.0030000000,   8.0232465810},{   -.0020000000,   8.0186225688},
+ {   -.0010000000,   8.0140434263},{    .0000000000,   8.0095086040},{    .0010000000,   8.0050175616},
+ {    .0020000000,   8.0005697675},{    .0030000000,   7.9961646983},{    .0040000000,   7.9918018393},
+ {    .0050000000,   7.9874806835},{    .0060000000,   7.9832007323},{    .0070000000,   7.9789614944},
+ {    .0080000000,   7.9747624864},{    .0090000000,   7.9706032321},{    .0100000000,   7.9664832627}}
+{{ -548.464258648, -2907.51239949, -6075.20459466, -6363.59358964, -3352.60394577, -712.548210164},{Residual-> 6.03880154E-10}}
+B FITX {{   7.3813999942,   -.2092448214,  25.4542640970, -78.7458098366}, 1.880419063E-7}
+B FITY {{   8.0095082339,  -4.5128382195,  21.9235695024, -89.5376638733}, 3.254355737E-7}
+ 
+ ! ------------------------------------------------------------
+ ! (3) 色収差補正: ±DP の 2 点で設計チューンに合わせる (SF*>=0, SD*<=0)
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ ! ------------------------------------------------------------
+ Print["=== Test 3A-3: chromaticity correction ==="];
+=== Test 3A-3: chromaticity correction ===
+ FFS["cell calc emit;"];
+ nxcell = Twiss["NX","$$$"]/2/Pi;
+ nycell = Twiss["NY","$$$"]/2/Pi;
+ nx0 = nxcell;
+ ny0 = nycell;
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6 )
+        SD      =(L =.2   K2 =-1.2 )
+ ;
+ FFS["FIT;"];
+ FFS["NX nx0 2;"];
+ FFS["NY ny0 2;"];
+ FFS["SD* MAX 0"];
+ FFS["SF* MIN 0"];
+ DP=0.01;
+ FFS["FREE SD*,SF*"];
+ FFS["GO;",6];
+       2        0   6.0159E-05  (NEWTON)    1.000          2
+ Residual = 6.0158E-05  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+            DP                 -.010000   .000000   .010000
+            Res.              2.9222E-5   .000000 3.0937E-5
+$$$       f AX    #######  #  -4.735604 -4.733388 -4.739875 $$$       f BX    #######  #  17.510170 17.324545 17.168574
+$$$       f NX   7.3814    2   7.383928  7.381400  7.384029 $$$       f AY    #######  #    .417525   .422242   .426999
+$$$       f BY    #######  #    .673819   .669153   .663693 $$$       f NY   8.00951   2   8.011087  8.009509  8.011088
+$$$       f LENG  #######  #  140.00000
+ FFS["FITP 1;"];
+ type S*;
+ ;
+ SEXT   SF      =(L =.2   K2 =.6190126944300067 )
+        SD      =(L =.2   K2 =-1.592444742361986 )
+ ;
+ Print["C K2 SF ",Element["K2","SF"]];
+C K2 SF     .6190126944
+ Print["C K2 SD ",Element["K2","SD"]];
+C K2 SD   -1.5924447424
+ 
+ ! 補正後の色収差
+ chromscan["A"];
+A Q {   -.0100000000,   7.3839279516,   8.0110874765}
+A Q {   -.0090000000,   7.3834305495,   8.0107774481}
+A Q {   -.0080000000,   7.3829887480,   8.0105022086}
+A Q {   -.0070000000,   7.3826020700,   8.0102613853}
+A Q {   -.0060000000,   7.3822700490,   8.0100546074}
+A Q {   -.0050000000,   7.3819922235,   8.0098815078}
+A Q {   -.0040000000,   7.3817681367,   8.0097417233}
+A Q {   -.0030000000,   7.3815973367,   8.0096348946}
+A Q {   -.0020000000,   7.3814793762,   8.0095606659}
+A Q {   -.0010000000,   7.3814138126,   8.0095186852}
+A Q {    .0000000000,   7.3814002078,   8.0095086040}
+A Q {    .0010000000,   7.3814381283,   8.0095300775}
+A Q {    .0020000000,   7.3815271448,   8.0095827644}
+A Q {    .0030000000,   7.3816668326,   8.0096663268}
+A Q {    .0040000000,   7.3818567713,   8.0097804303}
+A Q {    .0050000000,   7.3820965445,   8.0099247441}
+A Q {    .0060000000,   7.3823857403,   8.0100989404}
+A Q {    .0070000000,   7.3827239508,   8.0103026949}
+A Q {    .0080000000,   7.3831107722,   8.0105356867}
+A Q {    .0090000000,   7.3835458047,   8.0107975980}
+A Q {    .0100000000,   7.3840286526,   8.0110881142}
+{{   -.0100000000,   7.3839279516},{   -.0090000000,   7.3834305495},{   -.0080000000,   7.3829887480},
+ {   -.0070000000,   7.3826020700},{   -.0060000000,   7.3822700490},{   -.0050000000,   7.3819922235},
+ {   -.0040000000,   7.3817681367},{   -.0030000000,   7.3815973367},{   -.0020000000,   7.3814793762},
+ {   -.0010000000,   7.3814138126},{    .0000000000,   7.3814002078},{    .0010000000,   7.3814381283},
+ {    .0020000000,   7.3815271448},{    .0030000000,   7.3816668326},{    .0040000000,   7.3818567713},
+ {    .0050000000,   7.3820965445},{    .0060000000,   7.3823857403},{    .0070000000,   7.3827239508},
+ {    .0080000000,   7.3831107722},{    .0090000000,   7.3835458047},{    .0100000000,   7.3840286526}
+ }{{   -.0100000000,   8.0110874765},{   -.0090000000,   8.0107774481},{   -.0080000000,   8.0105022086},
+ {   -.0070000000,   8.0102613853},{   -.0060000000,   8.0100546074},{   -.0050000000,   8.0098815078},
+ {   -.0040000000,   8.0097417233},{   -.0030000000,   8.0096348946},{   -.0020000000,   8.0095606659},
+ {   -.0010000000,   8.0095186852},{    .0000000000,   8.0095086040},{    .0010000000,   8.0095300775},
+ {    .0020000000,   8.0095827644},{    .0030000000,   8.0096663268},{    .0040000000,   8.0097804303},
+ {    .0050000000,   8.0099247441},{    .0060000000,   8.0100989404},{    .0070000000,   8.0103026949},
+ {    .0080000000,   8.0105356867},{    .0090000000,   8.0107975980},{    .0100000000,   8.0110881142}}
+{{ -466.263152618, -2487.31454606, -5207.33591333, -5460.37729050, -2879.77003155, -613.058661144},{Residual-> 5.57122162E-10}}
+A FITX {{   7.3814000192,    .0122313080,  25.7797399521, -71.9576833415}, 1.660149543E-7}
+A FITY {{   8.0095084541,    .0057543098,  15.7909704707, -57.2219488553}, 1.316308289E-7}
+ 
+ stop;
+ FFS                  end:  CPU time =     0.076 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

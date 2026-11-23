@@ -1,0 +1,289 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-15 11:48:12 +0900 ***
+ *** Today: 07:21:06 Friday 10/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! 3.0 GEV RING, 20 CELLS
+ MOMENTUM = 3GEV;
+ DRIFT  DRID    =(L =2.9 )   DR20    =(L =.2 )    DR08    =(L =.12 )
+        DRSS    =(L =.4325 ) DRDD    =(L =.55 )    DRSO    =(L =.2525 )
+        DR28    =(L =.19 )   DRCT    =(L = 0 )
+ ;
+ DRIFT  DRID1    =(L =2.85 )
+        DRID2    =(L =0.05 )
+        DRSS1    =(L = 0.05)
+        DRSS2    =(L = 0.3825)
+        DRDD1    =(L = 0.45)
+        DRDD2    =(L = 0.05)
+        DR281    =(L = 0.05 )
+        DR282    =(L = 0.14 )
+        DR08H    =(L = 0.06)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3    =(L =.413 ANGLE =.00827209392 )
+        BID3H    =(L =.413/2 ANGLE =.00827209392/2 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3    =(L =.413 ANGLE =.00758109248 )
+        BPI3H    =(L =.413/2 ANGLE =.00758109248/2 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.900241394141 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7428636614916 )
+ ;
+ QUAD   QFA1    =(L =.25  K1 =1.0302859090451 )
+          QFA1H   =(L =.125  K1 =1.0302859090451/2 )
+        QDA2    =(L =.2   K1 =-.7358342943058 )
+        QDA3    =(L =.2   K1 =-.4409470413988 )
+        QFA4    =(L =.2   K1 =.4313378432341 )
+        QDA5    =(L =.2   K1 =-.4602777086531 )
+        QFA6    =(L =.335 K1 =1.7377379386433 )
+          QFA6H    =(L =.335/2 K1 =1.7377379386433/2 )
+        QFA8    =(L =.5   K1 =2.1955902812884 )
+          QFA8H    =(L =.25   K1 =2.1955902812884/2 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.8417491573899 )
+        SFA     =(L =.045 K2 =4.4168227049674 )
+
+        SDC     =(L =.045 K2 =-3.8417491573899 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ OCT    OCFA    =(L =.0125     K3 =-6000*0.0125 )
+        OCF2    =(L =.03  K3 =-0 )
+ ;
+ CAVI   RFC     =(VOLT =1.4e+06    HARM =992 )
+ ;
+ MARK   MKS     =(AX =-1.1334938917928409e-11 BX =3.892652430016132    AY =-1.5622147715617673e-11   BY =2.613264010640574
+           EX =.005215052091902209  EPX =-1.0535665167994642e-16  DP =.01   SIGZ =.0012504235342250764
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKE     =(AX =-7.74500093989406e-11   BX =3.89265242969666     PSIX =14.960907314634563 AY =2.1766446880965991e-10
+           BY =2.613264011187758    PSIY =5.479949219457121  EX =.005215052091894469  EPX =-1.078998002057574e-15   DP =.01
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKSFA1 = ()
+        MKSFA2 = ()
+        MKSDA1 = ()
+        MKSDA2 = ()
+        MKSDC1 = ()
+        MKSDC2 = ()
+        MKC = ()
+        MKBE  = ()
+ ;
+
+!-----------------------------------------
+! ARC CELLS
+!-----------------------------------------
+
+  MONI
+         BPM = ()
+  ;
+
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(MKS
+             DRID1 BPM DRID2 QFA1H VD QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR08H BPM DR08H, QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08H BPM DR08H, SHA, DR08,
+             BPI7 HD DRCT MKC
+             MKE)
+  ARCAH2    =(MKS
+             DRID1 BPM DRID2 QFA1H QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5
+             DR08H BPM DR08H QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08, SHA, DR08,
+             BPI7 DRCT MKC
+             MKE)
+ ARCA      = (ARCAH -ARCAH2)
+ RING      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9131278249857536 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7045722303066142 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4630117112293077 )
+        QDA2    =(L =.2   K1 =-.6604776361997438 )
+        QDA3    =(L =.2   K1 =-.42451439357520854 )
+        QFA4    =(L =.2   K1 =.414636958834372 )
+        QDA5    =(L =.2   K1 =-.458157393322574 )
+        QFA6H   =(L =.1675     K1 =.8517302592904823 )
+        QFA8H   =(L =.25  K1 =1.1273255587393383 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.0348531183690555 )
+        SFA     =(L =.045 K2 =3.29744673430139 )
+        SDC     =(L =.045 K2 =-3.0348531183690555 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+
+ DRIFT  DRCT    =(L =.5)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292271132168 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001834063768251 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4117427225413435 )
+        QDA2    =(L =.2   K1 =-.661274491217251 )
+        QDA3    =(L =.2   K1 =-.38822139139626954 )
+        QFA4    =(L =.2   K1 =.4109218113797463 )
+        QDA5    =(L =.2   K1 =-.4733016273637364 )
+        QFA6H   =(L =.1675     K1 =.9215539290295219 )
+        QFA8H   =(L =.25  K1 =1.098917369966305 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.192657116323371 )
+        SFA     =(L =.045 K2 =5.099276103295176 )
+        SDC     =(L =.045 K2 =-4.192657116323371 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292489795 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001833009675 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4359417592282 )
+        QDA2    =(L =.2   K1 =-.6422919019387 )
+        QDA3    =(L =.2   K1 =-.4086041625487 )
+        QFA4    =(L =.2   K1 =.4009936242199 )
+        QDA5    =(L =.2   K1 =-.4346576537471 )
+        QFA6H   =(L =.1675     K1 =.9049532139395 )
+        QFA8H   =(L =.25  K1 =1.0604857646104 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.206799858141086 )
+        SFA     =(L =.045 K2 =4.601104566854821 )
+        SDC     =(L =.045 K2 =-4.206799858141086 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+! bench_level26c.sad — Orbit dilation (FSHIFT=1e-6, RFSW RADCOD): EMIT の報告 (dl 行・閉軌道・RF 量)、Emittance[]、CALC6D
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     T     T     T     F     F     T     F     F     T     F     T
+ NPARA = 1;
+ $FORM="15.10";
+ PageWidth = 1999;
+ USE RING;
+Out[1]:= USE
+ FSHIFT = 1e-6;
+ CELL; CALC; EMIT;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -6.94E-13 $$$       f BX    #######  #   4.643203 $$$       f NX    #######  #  47.580034 $$$       f AY    #######  #  1.176E-13 $$$       f BY    #######  #   6.231611 $$$       f NY    #######  #  17.620044
+$$$       f LENG  #######  #  603.12000
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  -1.95E-4  -2.64E-8  -4.2E-19  2.86E-21  -1.27E-4  -.004328
+      Exit :  -1.95E-4  -2.64E-8  -4.3E-19  -1.8E-21  -1.27E-4  -.004328
+
+    Extended Twiss Parameters
+AX: -.003228 BX: 4.171080                            ZX: -1.09E-4  EX:  .044736
+           PSIX: -2.5E-21                           ZPX: -1.40E-6 EPX: 9.62E-17
+R1: -2.1E-16 R2: 7.19E-18 AY:  .001782 BY: 6.664136  ZY: -2.4E-19  EY: 9.62E-17
+R3: -1.8E-19 R4: -3.6E-16            PSIY: -5.8E-39 ZPY: -2.8E-21 EPY: -5.7E-21
+                                                     AZ: -.002560  BZ: 5.429603
+                                                                 PSIZ: 6.72E-21
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 497069.32 Hz 
+Energy loss per turn U0 =  .2942751 MV  Effective voltage    Vc = 1.4000000 MV 
+Equilibrium position dz = 20.617235 mm  Momentum compact. alpha = 2.3052E-4
+Orbit dilation       dl = -.6031200 mm  Effective harmonic #  h = 992.00000
+Bucket height     dV/P0 =  .0299839     Synchrotron frequency   = 2025.4975 Hz 
+
+  Imag.tune: 0.0000000           0.0000000           0.0000000
+  Real tune:-0.4161515          -0.3783069          -0.0040749
+
+    Damping per one revolution:
+          X : -8.003200E-05   Y : -4.924237E-05   Z : -6.689506E-05
+    Damping time (sec):
+          X :  2.513734E-02   Y :  4.085490E-02   Z :  3.007385E-02
+    Tune shift due to radiation:
+          X :  6.604566E-07   Y : -2.248854E-06   Z :  2.087846E-10
+    Damping partition number:
+          X :    1.6319       Y :    1.0041       Z :    1.3640
+
+Emittance X            = 1.5237E-10 m   Emittance Y            = -3.579E-32 m
+Emittance Z            = 2.73787E-6 m   Energy spread          = 7.10107E-4
+Bunch Length           = 3.85558738 mm  Beam tilt              = -1.750E-12 rad
+Beam size xi           =  .04055673 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+ e=Emittance[];
+ Print["F1 ", Emittances/.e];
+F1 { 1.52374565E-10, -3.5791116E-32, 2.737871445E-6}
+ Print["F2 ", {EnergyLossU0/.e, EquilibriumPosition/.e, OrbitDilation/.e, MomentumCompaction/.e, BucketHeight/.e}];
+F2 { 294275.0839143,    .0206172358, 6.031200000E-4, 2.305172811E-4,    .0299839085}
+ Print["F3 ", Tunes/.e];
+F3 {   -.4161515375,   -.3783068535,   -.0040748794}
+ Print["F4 ", OrbitAtExit/.e];
+F4 { -1.95204218E-4, -2.63996874E-8, -4.3045675E-19, -1.8127219E-21, -1.26630095E-4,   -.0043277972}
+ Print["F5 ", {MomentumSpread/.e, BunchLength/.e}];
+F5 { 7.101071723E-4,    .0038555874}
+ CALC6D; CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.003228 $$$       f BX    #######  #   4.171080 $$$       f NX    #######  #  47.583848 $$$       f AY    #######  #    .001782 $$$       f BY    #######  #   6.664136 $$$       f NY    #######  #  17.621693
+$$$       f LENG  #######  #  603.12000
+ Print["F6 ", {Twiss["BX",1], Twiss["EX",1], Twiss["BZ",1], Twiss["DZ",1], Twiss["DDP",1]}];
+F6 {   4.1710802951,    .0447361998,   5.4296031239, -1.26630085E-4,   -.0043277974}
+ stop;
+ FFS                  end:  CPU time =     0.054 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

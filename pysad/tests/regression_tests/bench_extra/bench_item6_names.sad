@@ -1,0 +1,13 @@
+! bench_item6_names.sad — 反転配置の要素名: LINE["NAME"], LINE["ELEMENT"], Twiss["NAME"] に `-` が付くか (SAD の disp は付ける)
+FFS;
+NPARA = 1;
+USE RING;
+CELL;
+CALC;
+Print["N1 ", LINE["NAME",96], LINE["NAME",97], LINE["ELEMENT",96], LINE["ELEMENT",12]];
+Print["N2 ", Twiss["NAME",96]];
+Print["N3 ", LINE["POSITION","BPI7.2"], LINE["POSITION","-BPI7.2"]];
+Print["N4 ", LINE["DIR",96], LINE["DIR",12]];
+disp 94 98;
+stop;
+stop;

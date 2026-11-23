@@ -312,7 +312,7 @@ pysad (k64 モード = gs と同じ) の `cell calc emit` (`RING`、設計値、
 | DDBA_25 | 全桁一致 | 2.0794e-10 で一致 | 一致 | ○ |
 | DDBA_28 | 全桁一致 | 8.3219e-10 で一致 | 一致 | ○ |
 
-- `DDBA_15` の εx の gs と pysad の差 (固定点を解くと 0.33%) は、逆曲げ BEND の扱いによるものではない。この版は 6 極が強く、RFSW ON の 6D 閉軌道 (tcod) の最初の Newton 法で運動量の誤差が大きいため横方向の修正が 0 にされ続けて r が下がらず、gs は収束せずに "???-Emittance[]-closed orbit not found." (Stable = 0) を出して、収束していない軌道から Emittance[] を計算する。pysad は収束しないとき、固有の固定点 (本当の閉軌道) を解くと gs と 0.33% 違う。k64 は gs と同じに収束しない軌道から続行する (全桁一致)。v2 は固定点を解く (設計メモの 9.6310e-10 と 0.06% で合う)。同じ現象はノーマルセルだけのリング `RINGM` (6 極の強さを 0.5 倍にすると収束する) でも gs・k64 とも再現し、試験は `pysad/tests/test_k64_tcod_notfound.py`。
+- `DDBA_15` の εx の gs と pysad の差 (固定点を解くと 0.33%) は、逆曲げ BEND の扱いによるものではない。この版は 6 極が強く、RFSW ON の 6D 閉軌道 (tcod) の最初の Newton 法で運動量の誤差が大きいため横方向の修正が 0 にされ続けて r が下がらず、gs は収束せずに "???-Emittance[]-closed orbit not found." (Stable = 0) を出して、収束していない軌道から Emittance[] を計算する。pysad は収束しないとき、固有の固定点 (本当の閉軌道) を解くと gs と 0.33% 違う。k64 は gs と同じに収束しない軌道から続行する (全桁一致)。v2 は固定点を解く (設計メモの 9.6310e-10 と 0.06% で合う)。同じ現象はノーマルセルだけのリング `RINGM` (6 極の強さを 0.5 倍にすると収束する) でも gs・k64 とも再現し、試験は `pysad/tests/script_tests/test_k64_tcod_notfound.py`。
 - `FFS_cell_calc_emit_DDBA_28`: gs と pysad k64 は全桁一致、pysad v2 は εx が +0.03%。
 
 ## 未確認・限界

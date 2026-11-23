@@ -2,14 +2,14 @@
 """K1≠0 の BEND の端の模型。K64 の tbende・tbendi は、双極磁場を端面から、四極 (K1) の磁場を半径方向の入口・出口の面から始める
 ('radial': 既定、k64 は常にこれ)。v2 のオプション 'face' は四極の磁場も端面から始める (硬い端の磁石)。
 端の角 e ≠ 0 のとき、2 つの模型は半径方向の面と端面の間の楔形の領域 (厚さ x tan e) の四極の蹴りが違う: 半径方向の面で Δpx = +K1 tan(e) x²、Δpy = −K1 tan(e) x y。
-独立な基準: ローレンツ力の数値積分 (DOP853、rtol 1e-13) による硬い端の厳密な写像 (pysad/tests/_p2_indep.py の exact_map)。
+独立な基準: ローレンツ力の数値積分 (DOP853、rtol 1e-13) による硬い端の厳密な写像 (pysad/tests/script_tests/_p2_indep.py の exact_map)。
 BEND 1 台 (3 GeV、L = 1.2 m、ANGLE = 0.2618 rad、E1 = E2 = 0.5·ANGLE (矩形))、軌道 (x, px, δ) の (x, px) の出口。
 切り替え: 環境変数 PYSAD_BEND_K1_EDGE=face、または pysad.compat.set_bend_k1_edge('face') (v2 だけ)。出力は elem_BEND_K1_face.out.txt。"""
 import io, os, sys
 import numpy as np
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests'))
+sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests', 'script_tests'))
 # 環境変数 PYSAD_SAD_PACKAGES (K64 版 SAD の Packages のフォルダ) を指定して実行する
 from pysad import ffscmd, compat, lattice, track6n
 import _p2_indep as X

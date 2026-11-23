@@ -10,9 +10,9 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 from pysad import compat
-from pysad.tests import _p3_indep as X
-from pysad.tests import test_v2_E_steer as T
-from pysad.tests import test_v2_P3_ae as A
+from pysad.tests.script_tests import _p3_indep as X
+from pysad.tests.script_tests import test_v2_E_steer as T
+from pysad.tests.script_tests import test_v2_P3_ae as A
 
 K0 = 0.005
 print('極 = MULT。K0 = %g rad/極。比 = pysad の dJx / 厳密な dJx (v2 は 1.03〜1.04、k64 は約 2 倍)' % K0)

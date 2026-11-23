@@ -1,0 +1,16 @@
+! bench_item6_dispnames.sad — disp の名前欄: 反転配置の `-`、10 桁を超える長い名前での空白の詰め (tfdisp.f tfsqueezespace)
+ MOMENTUM = 3GEV;
+ DRIFT D1 = (L = 0.5) LONGDRIFTNAME = (L = 0.2) DRIFT9CHR = (L = 0.1) ;
+ BEND B1 = (L = 1 ANGLE = 0.0785398163397) LONGBENDNAME = (L = 1 ANGLE = 0.0785398163397) ;
+ QUAD QF = (L = 0.3 K1 = 0.3) QD = (L = 0.2 K1 = -0.3) ;
+ LINE CELL = (QF D1 B1 D1 QD LONGDRIFTNAME LONGBENDNAME DRIFT9CHR) ;
+ MARK MS = () ME = () ;
+ LINE RING = (MS CELL -CELL CELL -CELL ME) ;
+FFS;
+NPARA = 1;
+USE RING;
+CELL;
+CALC;
+disp;
+stop;
+stop;

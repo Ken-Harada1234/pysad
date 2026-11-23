@@ -97,8 +97,8 @@ USE RING; CELL; RFSW; RAD; CODPLOT; CALC; EMIT;
 g=BeamPlot["QF.5",{"X","Y"},DisplayFunction->Identity,SizeFunction->"SIG"];
 ```
 
-試験の元の台本は [`pysad/tests/test_plot.py`](../pysad/tests/test_plot.py) (8 本)。
-キャンバスの項目を書き出す方法 (gs と比べるのに使った) は、[`test_plot.py`](../pysad/tests/test_plot.py) の `_DUMP`: `TclEval` で全 Canvas の `find all`・`type`・`coords`・`gettags` を列挙してファイルに書く。
+試験の元の台本は [`pysad/tests/script_tests/test_plot.py`](../pysad/tests/script_tests/test_plot.py) (8 本)。
+キャンバスの項目を書き出す方法 (gs と比べるのに使った) は、[`test_plot.py`](../pysad/tests/script_tests/test_plot.py) の `_DUMP`: `TclEval` で全 Canvas の `find all`・`type`・`coords`・`gettags` を列挙してファイルに書く。
 
 ## 4. オプションの対応
 
@@ -196,7 +196,7 @@ fig = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(1, 40), save="optics.png")   
 
 **未対応 (警告して飛ばす。同じ種類の警告は 1 回)** `Hook[…]` (対話の束縛。InfoLabel など。黙って飛ばす)、`Arrow`・`ArrowShape` (線だけ描く)、`UseBG->True` の文字の背景、`TextFont` (フォントの名前・書体)、`MeshStyle` の stipple の模様 (塗りつぶしだけ)、`FrameTicks` の `{Ticks, 関数}` (目盛りの文字を関数で与える形。線だけ)、`FrameUnitLabel` の左 (y) 側、`Scale->Date`・`Date` の目盛り (Linear で描く)、`Text` の位置 `LeftTags`・`RightTags`・`AboveTags`・`BelowTags` (Tk の外接矩形が要る)、`Rectangle` の `Position->` の `Right`・`Left`・`Above`・`Below` 以外、3 列の誤差棒、`PointSymbol->Bar` の基線 `Offset` (0 からの垂線で近似)、`Initialize->False`・`Frame` (前の図に重ねる・再描画。新しい Figure を作る)、`Canvas3D`・`ListPlot3D` 系、`CanvasSymbol`、未知の要素 `Foo[…]` と文字列・数が要素の位置に来たもの、解釈できない色名 (黒にする)。マウス操作 (拡大・凡例の移動・InfoLabel のクリック) は無い。
 
-**照合** Tk の窓と画像で比べたものはない。試験 [`test_v241_mpl_display.py`](../pysad/tests/test_v241_mpl_display.py) (32 件、Agg、Tk 不要) は、`Graphics[…]` の `Line`・`Rectangle`・`Text` の個数と座標が matplotlib 側のデータ (`Line2D`・`Patch`・`Text`) と一致することを数値で確かめる: `Plot[Sin[x],{x,0,6}]` (505 点が 1e-12 以内、軸の範囲が `DataRange` の 7% の余白と `PlotRange`)、`ListPlot` (折れ線・点・誤差棒・Step・Log・`PlotRange`・`GridLines`・`Frame`・`FrameTicks`・`FrameLabel`・凡例)、`HistoPlot` (箱の数)、`OpticsPlot` (3 本の線が全点 1e-12 以内、箱 192 個の座標、名前は Graphics の `Text` の順序つきの部分列で、残った名前は互いに重ならない、枠の積み方・x 範囲)、`GeometryPlot` (線 1 本 + 多角形 73 個)、手で組んだ `Graphics` (各要素の色・太さ・破線・文字の揃え・回転・クリップ)。ほかに切替、保存 (png・pdf・svg の先頭のバイト、2 回目以降の番号)、matplotlib が無いとき、未対応の警告。例は [`example/11_graphics/fn_OpticsPlot_mpl.md`](../example/11_graphics/fn_OpticsPlot_mpl.md)。
+**照合** Tk の窓と画像で比べたものはない。試験 [`test_v241_mpl_display.py`](../pysad/tests/script_tests/test_v241_mpl_display.py) (32 件、Agg、Tk 不要) は、`Graphics[…]` の `Line`・`Rectangle`・`Text` の個数と座標が matplotlib 側のデータ (`Line2D`・`Patch`・`Text`) と一致することを数値で確かめる: `Plot[Sin[x],{x,0,6}]` (505 点が 1e-12 以内、軸の範囲が `DataRange` の 7% の余白と `PlotRange`)、`ListPlot` (折れ線・点・誤差棒・Step・Log・`PlotRange`・`GridLines`・`Frame`・`FrameTicks`・`FrameLabel`・凡例)、`HistoPlot` (箱の数)、`OpticsPlot` (3 本の線が全点 1e-12 以内、箱 192 個の座標、名前は Graphics の `Text` の順序つきの部分列で、残った名前は互いに重ならない、枠の積み方・x 範囲)、`GeometryPlot` (線 1 本 + 多角形 73 個)、手で組んだ `Graphics` (各要素の色・太さ・破線・文字の揃え・回転・クリップ)。ほかに切替、保存 (png・pdf・svg の先頭のバイト、2 回目以降の番号)、matplotlib が無いとき、未対応の警告。例は [`example/11_graphics/fn_OpticsPlot_mpl.md`](../example/11_graphics/fn_OpticsPlot_mpl.md)。
 
 **未確認・限界** 色・線の太さ・文字の大きさの見た目は Tk の窓と比べていない (線の太さ 1 px = 0.8 pt、破線の長さ、文字の大きさ 8.5 pt × `TextSize` は目で決めた近似。キャンバス 13 × 10 インチを 0.65 倍して図にする)。`OpticsPlot` の実ラティス (大きなリング) と `BeamPlot`・`FitPlot`・`ListDensityPlot` は描いて見ていない (要素は上の表の範囲)。対話の backend の窓 (`plt.show`) は手で確認していない (Agg で保存と図のデータだけ)。PDF・SVG は保存できることだけ確認 (見た目は PNG のみ目で見た)。目盛りの位置と文字は matplotlib の自動で、`Canvas.n` の `AutoTick` とは違う (指数の表記も matplotlib 流)。凡例の位置は `Canvas.n` の `AdjustLegend` とは違う。`PYSAD_DISPLAY=mpl` のとき `DRAW` は §5 のまま (保存先は `PYSAD_DRAW_FILE`)。gs は表示環境がないので `Graphics[…]` の式の一致 (§5) までが gs との比較で、描いた図は比べられない。
 
@@ -207,8 +207,8 @@ fig = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(1, 40), save="optics.png")   
 - `ListPlot`・`Plot`・`ListDensityPlot`・`HistoPlot`・`FitPlot` (当てはめ値は相対 1e-8)・`FitGaussian`・`GeometryPlot` は、キャンバスの項目が gs と一致 (`ListPlot[{1,4,9,16}, PlotJoined->True]` は 43 項目)。`ListContourPlot` は種類と数が一致し、等高線の始点・向きだけ違う (§8)。
 - `OpticsPlot` は枠・矩形・線が一致し、text 項目は pysad が 5〜14 個多い (文字の大きさによる名前の間引きの違い。§9)。
 - オプション付きの戻りの Graphics 式は gs と文字列として一致 (§4 の表)。
-- 試験: [`pysad/tests/test_plot.py`](../pysad/tests/test_plot.py) (8 本)、[`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)、[`test_v25_draw_mpl.py`](../pysad/tests/test_v25_draw_mpl.py)、[`test_v241_mpl_display.py`](../pysad/tests/test_v241_mpl_display.py)。Tk を使う試験は `PYSAD_SAD_PACKAGES` と tkinter が要る (なければ skip)。全試験を回すと数回に 1 回、単独では通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら `py -3.12 -m pytest pysad/tests/test_plot.py -q` で単独に回して確かめる。
-- 回帰 (`run_regression.py`) は描画を含まない (描画は pytest だけ)。
+- 試験: [`pysad/tests/script_tests/test_plot.py`](../pysad/tests/script_tests/test_plot.py) (8 本)、[`test_evalfixes.py`](../pysad/tests/script_tests/test_evalfixes.py)、[`test_v25_draw_mpl.py`](../pysad/tests/script_tests/test_v25_draw_mpl.py)、[`test_v241_mpl_display.py`](../pysad/tests/script_tests/test_v241_mpl_display.py)。Tk を使う試験は `PYSAD_SAD_PACKAGES` と tkinter が要る (なければ skip)。全試験を回すと数回に 1 回、単独では通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら `py -3.12 -m pytest pysad/tests/script_tests/test_plot.py -q` で単独に回して確かめる。
+- 回帰 (`pysad/tests/regression_tests/run_regression.py`) は描画を含まない (描画は pytest だけ)。
 - 比べていないもの: 色・フォント・大きさ・見た目、クリック・拡大などの操作、実画面のスクリーンショットの比較。値の一致は「キャンバスの項目の座標とタグ」まで。
 - 項目ごとの比較表は [history/21_graphics_validation.md](history/21_graphics_validation.md)。
 
@@ -267,7 +267,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
 ### 10.2 描画を動かすために gs に合わせた SADScript の評価
 
 
-どれも gs で同じ式を実行して比べた (試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py))。
+どれも gs で同じ式を実行して比べた (試験は [`test_evalfixes.py`](../pysad/tests/script_tests/test_evalfixes.py))。
 
 - 連鎖した比較 `a<x<b`、`a==b==c` (連鎖全体を評価する。左から 2 つずつ評価すると範囲外でも真になる)。
 - `Map`・`Table`・`MapThread`・`/.` の結果の `Null[]` (空の Sequence) は取り除き、`Null[a,b]` は a, b を並べる。
@@ -281,7 +281,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
 - リテラルだけの選択肢 (`""|" "`) を引数にもつ定義は、一般の定義より先に試す。
 - 定義の本体へ引数の値を埋め込むとき、定義自身のパターン変数 (`f[x_] := …` の x) は外側の同名の値に置き換えない。別の関数の呼び出しの引数は見ない。
 - 評価が `FromDate[]`・`MapAt[f, a->b, {2}]` に対応 (GUI の試験は環境変数がないと skip になるので、壊れても気づきにくい)。
-- OpticsPlot.n を動かすための対応 (どれも gs と比べた。試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)):
+- OpticsPlot.n を動かすための対応 (どれも gs と比べた。試験は [`test_evalfixes.py`](../pysad/tests/script_tests/test_evalfixes.py)):
   - `` `X``・`` System`X``・`` Global`X`` は、`Begin[…]` で文脈を作らない限り大域の `X` (OpticsPlot.n は `` `OpticsPlot=System`OpticsPlot=OPlot$@OpticsPlot``)。
   - Module の局所変数への `h := Sqrt[Abs[#]]&` と `h[4]` (遅延した純関数の適用)、大域の `fun := …&` の `fun[4]`。
   - `SetAttributes[f, HoldNone]` は `HoldAll` などを外す。
@@ -294,7 +294,7 @@ K64 は C (`tfTkInter_.c`) と Fortran (`tfcanvasclip.f`) で Tk の内部を直
   - `ListPlot.n` の読み込みの途中で `Tkinter.n` が読まれても、外側の「組み込みと同名の定義を捨てる」処理が `Options[Window]` などを消さない。
   - 既定の `$HaveLaTeX` は `""` (gs も LaTeX がなければ `""`)。`PkgConfig.n` は最初に使うときに読む。
   - K64 の Tk (改造版) の text 項目だけが持つ `-usebg` は、標準の Tk にないので落とす (文字の背景は塗らない)。
-- ListContourPlot・HistoPlot・FitPlot (Plots.n) を動かすための対応 (gs と比べた。試験は [`test_evalfixes.py`](../pysad/tests/test_evalfixes.py)・[`test_plot.py`](../pysad/tests/test_plot.py)):
+- ListContourPlot・HistoPlot・FitPlot (Plots.n) を動かすための対応 (gs と比べた。試験は [`test_evalfixes.py`](../pysad/tests/script_tests/test_evalfixes.py)・[`test_plot.py`](../pysad/tests/script_tests/test_plot.py)):
   - `Block[{mesh}, mesh[x_] := …]` は、入るとき局所にした記号の関数定義を退避して空にし、出るとき戻す (色目盛りの ListDensityPlot が同じ Block を入れ子で使う)。
   - `?名前` (Definition) は `Hold[{名前:=名前, 定義 …}]` を返す。`Extract[…, {…,0,…}]`・`Part[…,0]` は式の頭部。`contl[k][x] =.` は添字つきの定義だけを消す。
     K64 は定義をハッシュ表の順に返す (再現できない) ので、pysad は書いた順の逆 (具体的な定義、続いてパターンの定義 `contl[_][_]`)。

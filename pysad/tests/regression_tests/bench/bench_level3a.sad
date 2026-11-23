@@ -1,0 +1,123 @@
+! ============================================================
+! bench_level3a.sad — Level 3A benchmark: sextupoles and chromaticity
+!   Level 1 の 20 セル FODO に六極 SF/SD (L=0.2 m) を追加。
+!   SF, SD の隣のドリフトを 1.0 m にして周長 140 m を保つ。
+!   SEXT K2 は積分強度 (K2*L)。
+!
+!   色収差は SAD 組み込みの値 (CHRO, RADINT の LINEAR CHROMATICITY) は
+!   使わない (BEND 成分を含まないため)。実務と同じく、DP0 を振った
+!   チューンを 3 次多項式で当てはめて求める (自作の MyPolyFit。SAD の PolynomialFit はバグあり)。
+!   補正は FIT NX/NY (±DP の 2 点) + SF*/SD* の符号制約で行う。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+      DS = (L=1.0)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF SF DS B D1 QD SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+CELL;
+CALC;
+EMIT;
+
+! ------------------------------------------------------------
+! (1) 設計運動量の光学
+! ------------------------------------------------------------
+Print["=== Test 3A-1: optics at dp=0 ==="];
+Print["A0 BX  ",Twiss["BX","^^^"]];
+Print["A0 BY  ",Twiss["BY","^^^"]];
+Print["A0 AX  ",Twiss["AX","^^^"]];
+Print["A0 AY  ",Twiss["AY","^^^"]];
+Print["A0 EX  ",Twiss["EX","^^^"]];
+Print["A0 EPX ",Twiss["EPX","^^^"]];
+Print["A0 QX  ",Twiss["NX","$$$"]/2/Pi];
+Print["A0 QY  ",Twiss["NY","$$$"]/2/Pi];
+
+! ------------------------------------------------------------
+! (2) 色収差: DP0 = -0.01 .. 0.01 (0.001 刻み) のチューンを 3 次多項式で当てはめ (MyPolyFit)
+! ------------------------------------------------------------
+Print["=== Test 3A-2: chromaticity (tune scan + MyPolyFit) ==="];
+! 最小二乗の多項式当てはめ (SAD の PolynomialFit はバグがあるので代替)
+!   d   : {{x1,y1},{x2,y2},...},  nord: 次数
+!   戻り値: {{c0,c1,...,cnord}, rms 残差}   y = c0 + c1 x + ... + cnord x^nord
+!   x を max|x| で割って [-1,1] にそろえ、正規方程式 (A^T A) a = A^T y を解いて元に戻す
+MyPolyFit[d_,nord_]:=Module[{x,y,h,u,col,a,m,v,c,k,res},
+  {x,y}=Thread[d];
+  h=Max[Abs[x]];
+  u=x/h;
+  col=Table[1,{Length[x]}];
+  a={};
+  Do[AppendTo[a,col]; col=col*u,{k,0,nord}];
+  a=Transpose[a];
+  m=Transpose[a].a;
+  v=Transpose[a].y;
+  c=LinearSolve[m,v];
+  res=Sqrt[(Plus@@((a.c-y)^2))/Length[x]];
+  {Table[c[[k+1]]/h^k,{k,0,nord}],res}];
+
+chromscan[tag_]:=Module[{tunex,tuney,j},
+  tunex=Table[{i,0},{i,-0.01,0.01,0.001}];
+  tuney=Table[{i,0},{i,-0.01,0.01,0.001}];
+  j=0;
+  Do[
+    j = j + 1;
+    DP0=i;
+    FFS["cell calc;"];
+    Print[tag," Q ",{i,Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi}];
+    tunex[j,2] = Twiss["NX","$$$"]/2/Pi;
+    tuney[j,2] = Twiss["NY","$$$"]/2/Pi;
+  ,{i,-0.01,0.01,0.001}];
+  DP0=0;
+  FFS["cell calc;"];
+  Print[tunex, tuney];
+  Print[PolynomialFit[tunex,5]];
+  Print[tag," FITX ",MyPolyFit[tunex,3]];
+  Print[tag," FITY ",MyPolyFit[tuney,3]];
+  ];
+chromscan["B"];
+
+! ------------------------------------------------------------
+! (3) 色収差補正: ±DP の 2 点で設計チューンに合わせる (SF*>=0, SD*<=0)
+! ------------------------------------------------------------
+Print["=== Test 3A-3: chromaticity correction ==="];
+FFS["cell calc emit;"];
+nxcell = Twiss["NX","$$$"]/2/Pi;
+nycell = Twiss["NY","$$$"]/2/Pi;
+nx0 = nxcell;
+ny0 = nycell;
+type S*;
+FFS["FIT;"];
+FFS["NX nx0 2;"];
+FFS["NY ny0 2;"];
+FFS["SD* MAX 0"];
+FFS["SF* MIN 0"];
+DP=0.01;
+FFS["FREE SD*,SF*"];
+FFS["GO;",6];
+FFS["FITP 1;"];
+type S*;
+Print["C K2 SF ",Element["K2","SF"]];
+Print["C K2 SD ",Element["K2","SD"]];
+
+! 補正後の色収差
+chromscan["A"];
+
+stop;
+stop;

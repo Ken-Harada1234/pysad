@@ -1,0 +1,79 @@
+! Level 24D: CalculateOptics[lb, le, inicond, cell, idim] (tfoptics.f) — 戻り値 {各要素の 28 個の Twiss, {安定 x,y,z}, {trace x,y,z}}
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+      DS = (L=1.0)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DS B D1 QD DS B D1);
+LINE RING = (20*CELL);
+;
+FFS;
+$FORM="15.10";
+PageWidth=2999;
+USE RING;
+CELL;
+CALC;
+t1=Twiss["*",1];
+Print["D01 ",Length[t1]];
+Print["D02 ",t1];
+Print["D03 ",LINE["LENGTH"]];
+opt=CalculateOptics[1,LINE["LENGTH"],t1,1,2];
+Print["D04 ",Length[opt]," ",Length[opt[[1]]]," ",Length[opt[[1,1]]]];
+Print["D05 ",Take[opt[[2]],2]];
+Print["D06 ",opt[[3]]];
+Print["D07 ",opt[[1,1]]];
+Print["D08 ",opt[[1,5]]];
+Print["D09 ",opt[[1,Length[opt[[1]]]]]];
+! 初期条件を変えて (cell=0) 伝搬: BX を 1.5 倍、AX=0.3
+t2=t1; t2[[2]]=t1[[2]]*1.5; t2[[1]]=0.3;
+opt2=CalculateOptics[1,LINE["LENGTH"],t2,0,2];
+Print["D10 ",Take[opt2[[2]],2]," ",opt2[[3]]];
+Print["D11 ",opt2[[1,1]]];
+Print["D12 ",opt2[[1,6]]];
+Print["D13 ",opt2[[1,Length[opt2[[1]]]]]];
+! CalculateOptics の後の Twiss[]
+Print["D14 ",Twiss["BX",6]," ",Twiss["NX","$$$"]];
+! 途中から途中まで
+t3=Twiss["*",3];
+opt3=CalculateOptics[3,9,t3,0,2];
+Print["D15 ",Length[opt3[[1]]]];
+Print["D16 ",opt3[[1,1]]];
+Print["D17 ",opt3[[1,7]]];
+Print["D18 ",Take[opt3[[2]],2]," ",opt3[[3]]];
+! 要素名で範囲指定
+opt4=CalculateOptics["QD","$$$",Twiss["*","QD"],0,2];
+Print["D19 ",Length[opt4[[1]]]];
+Print["D20 ",opt4[[1,1,2]]," ",opt4[[1,1,5]]];
+! 結合した初期条件 (R1..R4 を入れる)
+t5=t1; t5[[11]]=0.1; t5[[12]]=0.02; t5[[13]]=-0.03; t5[[14]]=0.05; t5[[15]]=0.0;
+opt5=CalculateOptics[1,10,t5,0,2];
+Print["D21 ",opt5[[1,10]]];
+Print["D22 ",Take[opt5[[2]],2]," ",opt5[[3]]];
+! 初期軌道 (DX=0.1, DPX=0.01) つき: z (DZ) を除いて比較
+t9=t1; t9[[16]]=0.1; t9[[17]]=0.01;
+opt9=CalculateOptics[1,10,t9,0,2];
+Print["D29 ",Take[opt9[[1,10]],19]];
+Print["D30 ",Take[opt9[[1,10]],{20,21}]];
+! 分散のある初期条件
+t6=t1; t6[[7]]=0.5; t6[[8]]=0.1;
+opt6=CalculateOptics[1,10,t6,0,2];
+Print["D23 ",opt6[[1,10]]];
+Print["D24 ",opt6[[1,5,7]]," ",opt6[[1,5,8]]];
+! DP0 を変えて
+DP0=0.002;
+t7=Twiss["*",1];
+opt7=CalculateOptics[1,LINE["LENGTH"],t7,1,2];
+Print["D25 ",opt7[[1,1]]];
+Print["D26 ",opt7[[1,8]]];
+DP0=0;
+! 不安定: QF を強く
+QF K1 3.0;
+opt8=CalculateOptics[1,LINE["LENGTH"],t1,1,2];
+Print["D27 ",Take[opt8[[2]],2]," ",opt8[[3]]];
+stop;

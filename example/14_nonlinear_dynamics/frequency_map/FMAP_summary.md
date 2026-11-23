@@ -292,7 +292,7 @@ ASTRID2 の 6 点だけ。失われる点・大きなリングの比較は §10�
 
 ### 4.2 使うファイルとコマンド
 
-- スクリプト: [`fmap_rdt.py`](fmap_rdt.py)。実装: `pysad/fmapres.py` (`ResonancePredictor`、`first_order_terms`、`coverage_stats`、`lines_distance`、`plot_with_prediction`)。試験 `pysad/tests/test_v23_S1_fmapres.py`。
+- スクリプト: [`fmap_rdt.py`](fmap_rdt.py)。実装: `pysad/fmapres.py` (`ResonancePredictor`、`first_order_terms`、`coverage_stats`、`lines_distance`、`plot_with_prediction`)。試験 `pysad/tests/script_tests/test_v23_S1_fmapres.py`。
 - 出力: [`fmap_rdt_fodo.out.txt`](fmap_rdt_fodo.out.txt)・[`.table.txt`](fmap_rdt_fodo.table.txt)・[`.png`](fmap_rdt_fodo.png)、[`fmap_rdt_astrid2.out.txt`](fmap_rdt_astrid2.out.txt)・[`.png`](fmap_rdt_astrid2.png)、[`fmap_rdt_kekls.out.txt`](fmap_rdt_kekls.out.txt)・[`.png`](fmap_rdt_kekls.png)。
 
 ```
@@ -868,7 +868,7 @@ FODO の同じ図。白い輪郭とマゼンタの輪郭が重なっており、
 ### 13.2 使うファイルとコマンド
 
 - `PYTHONUTF8=1 py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_predict.py astrid2|kekls|fodo|mpw` (各 数秒〜10 秒。周波数マップは保存済みの表: astrid2・kekls は `fmap_*.table.txt`、fodo は `fmap_rdt_fodo.table.txt`、mpw は `fmap_mpw.table.txt`)。出力 `fmap_predict_<ring>.out.txt`・`.png`。**スクリプトは出力を上書きする**。
-- 実装 `pysad/fmappred.py`、試験 `pysad/tests/test_v23_S3_fmappred.py` (12 件)、式の導出は docs/25 §12。
+- 実装 `pysad/fmappred.py`、試験 `pysad/tests/script_tests/test_v23_S3_fmappred.py` (12 件)、式の導出は docs/25 §12。
 - ラティス・位置: FODO (QF の K1 = 0.697、SF・SD の K2 = 4, −6、3 GeV、105.6 m、位置 1)、ASTRID2 (0.58 GeV、45.7 m、位置 2)、KEK-LS (`kek-ls_v03_12.lat`、大きなリング A、ESRF 型の HMBA、3 GeV、603 m、位置 3)、ASTRID2 MPW (`ASTRID2_v01_02_id.sad` の `RINGMPW`、位置 2)。条件: v2、RFSW・RAD OFF、1024 周、LOSSAMPL 0.1 m、41×31 の x–y。
 - ν(J) は解析の線形の ADTS (`adts(fourth='r3', optics='calc')`)。表の「3 次の h のみ」「4 次の h」の行は `ResonancePredictor` (既定の `adts()`、差は 1e-4 程度) で、同じ点・同じ計算 (「4 次の h + 補正」は `fmappred.py`)。
 

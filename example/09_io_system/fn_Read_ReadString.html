@@ -57,7 +57,7 @@ Read[c, Word, WordSeparators -&gt; &quot;:&quot;];   Read[c, Word, ReadNewRecord
 <p>○ 一致する (gs の <code>tfreadstringf</code> を写してある。区切り (<code>,</code> を含む既定の WordSeparators)、リスト形式 <code>{Word,Real,Real}</code>、式 <code>3*4</code> の評価、<code>WordSeparators</code>、<code>ReadNewRecord</code>、<code>ReadString</code> の読み残しが gs と同じ)。</p>
 <h2 id="未確認限界">未確認・限界</h2>
 <ul>
-<li>この例では <code>NullWords</code>、<code>Read[$Input, ...]</code> は見ていない。<code>n*item</code> (<code>3*Real</code>) は <code>fn_StringToStream</code> と試験 (<code>pysad/tests/test_scriptgs.py</code>) で確認した。</li>
+<li>この例では <code>NullWords</code>、<code>Read[$Input, ...]</code> は見ていない。<code>n*item</code> (<code>3*Real</code>) は <code>fn_StringToStream</code> と試験 (<code>pysad/tests/script_tests/test_scriptgs.py</code>) で確認した。</li>
 <li>式の切れ目 (<code>x+y  3*4</code> で切る) は gs の例 2 つに合わせた経験則で、未確認の形がありうる。</li>
 </ul>
 </main><script>

@@ -284,7 +284,7 @@ BX=  5.025185  EX=   .565228
 <p><strong>ROTATE (ROT/TILT) の扱い (docs/history/work_rotate.md)</strong>: BEND は <code>tchge</code> (入口: theta で回す→回した座標系でずらす→tbrote、出口は逆) を外側に付けて中身 (tsteee / tbendebody0 / K1≠0 の tbendebody / tquade / tmulte) を誤差なしで計算する
 (<code>lattice._bend_element_cod_matrix</code>、<code>_bend_chg_args</code> が tbende.f の分岐ごとの theta (ANGLE=0 の tsteee は DROTATE を渡さない、K0=0 はドリフトで tchge を呼ばない) を決める)。
 薄い多極 (SEXT/OCT/DECA/DODECA と L=0 の四極) は tthine の先頭・末尾の tchge (<code>_thin_cod_matrix</code>)。四極と MULT の ROT は tsolrote (ずらす→回す)。
-<strong>SAD の癖 (k64 モード)</strong>: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。<code>_tchge_jac</code> が再現 (docs/29 A25)。<strong>v2 モードでは修正してある</strong> (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。<code>_tchge_jac</code> が <code>_tchge_cod</code> の数値微分と 1e-8 で一致し、ロール + ずれのある6 極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (6 極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。<a href="../pysad/tests/test_v2_A_tchge.py"><code>test_v2_A_tchge.py</code></a>)。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。</p>
+<strong>SAD の癖 (k64 モード)</strong>: tchge の入口で th≠0 かつ回した座標系のずれ≠0 (または dz≠0, dtheta≠0) のとき、tbrote が行列を上書きするので行列に回転が入らない (COD は回る)。一周行列が R^T·M になり結合が物理とずれる。<code>_tchge_jac</code> が再現 (docs/29 A25)。<strong>v2 モードでは修正してある</strong> (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。<code>_tchge_jac</code> が <code>_tchge_cod</code> の数値微分と 1e-8 で一致し、ロール + ずれのある6 極・BEND を含むリングの CALC のチューンが追跡の一周写像の固有値と一致する (6 極 1e-9、BEND 4e-6。K64 は 0.02〜0.18 ずれる。<a href="../pysad/tests/script_tests/test_v2_A_tchge.py"><code>test_v2_A_tchge.py</code></a>)。同じ tbrote のスピン (srot) の更新も v2 は (I+rr)·srot の行列積にした (B56。直交性 1e-14)。</p>
 <h3 id="bend-の-k0-と-angle0-のステアリング-docshistorywork_bend_k0md">BEND の K0 と ANGLE=0 のステアリング (docs/history/work_bend_k0.md)</h3>
 <ul>
 <li>ANGLE≠0 の BEND の K0 は phib = ANGLE+K0 として rhob に入り、<code>drhob = rhob−rho0</code> が <code>tbendebody0</code>/<code>tbendebody</code> の <code>dpza = dpzi+(drhob−xi)/rhob</code> でキックになる (px が約 −K0 変わる)。pysad: <code>_bend_cod_matrix</code>, <code>_bend_k1_cod_matrix</code>, emit6d <code>_tbende</code>。</li>
@@ -461,19 +461,19 @@ pysad <code>ffscmd.row_frac</code>: <code>L·fr</code>, <code>ANGLE·fr</code>, 
 <td>ずれた BEND の CALC (B114)</td>
 <td>tbrote の出口の (dx1, dz1) の符号が逆で、出口のドリフトが逆向き。矩形磁石 1 台の DX = 2 mm でチューンが 2.7e-5 動く (追跡は動かない)</td>
 <td>出口も入口と同じ回し方</td>
-<td>厳密な幾何 (弦に垂直なずれの帯の中の円弧) と CALC が 2e-8。大きなリング A に DX を入れた CALC のチューンが追跡と 6e-8 (K64 は 3e-7)。<a href="../pysad/tests/test_v2_A2_dx.py"><code>test_v2_A2_dx.py</code></a></td>
+<td>厳密な幾何 (弦に垂直なずれの帯の中の円弧) と CALC が 2e-8。大きなリング A に DX を入れた CALC のチューンが追跡と 6e-8 (K64 は 3e-7)。<a href="../pysad/tests/script_tests/test_v2_A2_dx.py"><code>test_v2_A2_dx.py</code></a></td>
 </tr>
 <tr>
 <td>K1≠0 の BEND の追跡の端 (B117)</td>
 <td>追跡 (tbendi) の端が薄い写像で CALC と x-px の行列が 1.1e-5 違う</td>
 <td>追跡の端を CALC と同じ厳密な tbedge に</td>
-<td>厳密な写像と 1e-10。<a href="../pysad/tests/test_v2_B1_optics.py"><code>test_v2_B1_optics.py</code></a></td>
+<td>厳密な写像と 1e-10。<a href="../pysad/tests/script_tests/test_v2_B1_optics.py"><code>test_v2_B1_optics.py</code></a></td>
 </tr>
 <tr>
 <td>tbgrote の (5,6) (B109)</td>
 <td>px² + py² 分の誤り</td>
 <td>コメントアウトされた式</td>
-<td>写像の有限差分と 4e-12。<a href="../pysad/tests/test_v2_C3_misc.py"><code>test_v2_C3_misc.py</code></a> ほか</td>
+<td>写像の有限差分と 4e-12。<a href="../pysad/tests/script_tests/test_v2_C3_misc.py"><code>test_v2_C3_misc.py</code></a> ほか</td>
 </tr>
 <tr>
 <td>周期解を使う 4D の CALC の tchge</td>

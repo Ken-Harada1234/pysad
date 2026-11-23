@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """補正磁石 (ANGLE=0 の BEND、K64 の tsteer) の F1 (端の磁場が直線で立ち上がる長さ) の追跡を、独立な基準 (x 方向に一様な Maxwell 場の端の厳密な運動) と比べる。
 磁場 By = B(s) - y^2 B''/2、Bs = y B'(s) (div B = 0、rot B = 0) のベクトルポテンシャル Ax = F(s) - y^2 B'/2 (F' = B) の正準方程式を solve_ivp (DOP853、rtol 1e-13) で積分する
-(pysad_tests/_p3_indep.maxwell_steer)。B(s) は入口 [-fb1/2, fb1/2]・出口 [al-fb2/2, al+fb2/2] で 0 -> B0 -> 0 に直線で変わる (fb = F1 + FB1 など。B0 = K0/al)。
+(pysad/tests/script_tests/_p3_indep.maxwell_steer)。B(s) は入口 [-fb1/2, fb1/2]・出口 [al-fb2/2, al+fb2/2] で 0 -> B0 -> 0 に直線で変わる (fb = F1 + FB1 など。B0 = K0/al)。
 比べるもの (3 GeV、L = 0.2 m、K0 = 0.003 rad の補正磁石、FRINGE = 3):
  (1) 鉛直の kick の差 dpy/y (F1 あり - なし) = (fb1 + fb2)/(6 rho^2) (rho = al/K0)。厳密な運動の py/y は -B0^2 al + B0^2 (fb1+fb2)/6 (解析式 y ∫F B' ds)。
  (2) 出口の x・px (fb1 = fb2 のとき、δ ≠ 0 の色収差も含めて 1e-10 で一致)。fb1 ≠ fb2 では x が (K0/al)(fb1^2 - fb2^2)/24 だけ違う (K64 の端の模型の仕様)。
@@ -15,7 +15,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 import numpy as np
 from pysad import compat
-from pysad.tests import _p3_indep as X
+from pysad.tests.script_tests import _p3_indep as X
 
 compat.set_mode('v2')
 al, K0, y0 = 0.2, 0.003, 1e-5

@@ -1085,7 +1085,7 @@ print(score)                                               # 144
 </table>
 <ul>
 <li>既定は v2。<code>py -3.12 run_sad.py lattice.sad script.sad</code> も v2 で走るので、gs と数値を比べるときは <code>PYSAD_COMPAT=k64</code> を付ける。</li>
-<li>既存の試験と回帰は k64 で走る (<a href="../pysad/tests/conftest.py"><code>pysad/tests/conftest.py</code></a>、<code>run_regression.py</code>)。v2 の試験 (<code>test_v2_*.py</code>) はフィクスチャ <code>v2_mode</code> で明示する。</li>
+<li>既存の試験と回帰は k64 で走る (<a href="../pysad/tests/script_tests/conftest.py"><code>pysad/tests/script_tests/conftest.py</code></a>、<code>pysad/tests/regression_tests/run_regression.py</code>)。v2 の試験 (<code>test_v2_*.py</code>) はフィクスチャ <code>v2_mode</code> で明示する。</li>
 <li>追跡のカーネルは <code>rs[1]</code> (v2 の印) を読むので、乱数状態 <code>rs</code> は必ず <code>track6n.make_rs()</code> で作る (<code>dapert.py</code>・<code>solmap.py</code>・<code>maintrack.py</code> も同じ)。</li>
 <li>互換モードで切り替えない変更 (pysad 自身の不具合の修正、K64 に無い機能・gs と同じ結果が出る機能) の一覧は docs/28。</li>
 </ul>

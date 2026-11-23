@@ -13,9 +13,9 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 import numpy as np
 from pysad import compat
-from pysad.tests import _p3_gsdata as G
-from pysad.tests import _p3_indep as X
-from pysad.tests import test_v2_E_steer as T
+from pysad.tests.script_tests import _p3_gsdata as G
+from pysad.tests.script_tests import _p3_indep as X
+from pysad.tests.script_tests import test_v2_E_steer as T
 
 CALC_PRINT = 'FFS;\nUSE RING; CELL; CALC;\nPrint["CALC tunes ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];\nExit;\n'
 print('(1) k64 モード: gs との差 (最大絶対差。追跡は 10 桁表示の全桁一致 = 0)')

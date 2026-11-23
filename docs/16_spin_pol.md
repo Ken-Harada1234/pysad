@@ -27,7 +27,7 @@ POL が OFF のとき、偏極の量は K64 も 0 のまま (`PolarizationTime`�
 
 ### 2.1 Emittance[] の偏極の量
 
-[`pysad/tests/test_spin.py`](../pysad/tests/test_spin.py) の平面リング (`PLANAR`、MOMENTUM 3 GeV、12 セル、`aγ` = 6.808) をそのまま使う。
+[`pysad/tests/script_tests/test_spin.py`](../pysad/tests/script_tests/test_spin.py) の平面リング (`PLANAR`、MOMENTUM 3 GeV、12 セル、`aγ` = 6.808) をそのまま使う。
 
 ```
 MOMENTUM = 3GEV;
@@ -60,7 +60,7 @@ Exit;
 
 ### 2.2 TrackParticles のスピン追跡
 
-[`pysad/tests/test_spin_track.py`](../pysad/tests/test_spin_track.py) の `pt1` (RAD ON・NOFLUC。平面リング + 空洞)。ビームは 9 列 `{x, px, y, py, z, dp, 角度, sy/|s|, flag}` で、10・11 列目は損失位置・損失周の予約 (4.1)。
+[`pysad/tests/script_tests/test_spin_track.py`](../pysad/tests/script_tests/test_spin_track.py) の `pt1` (RAD ON・NOFLUC。平面リング + 空洞)。ビームは 9 列 `{x, px, y, py, z, dp, 角度, sy/|s|, flag}` で、10・11 列目は損失位置・損失周の予約 (4.1)。
 
 ```
 (平面リングは 2.1 と同じ。RING の定義まで)
@@ -81,7 +81,7 @@ Print["S ",r[[2]]];
 戻りは `{位置, {x, px, y, py, z, dp, 角度, sy/|s|, flag}}`。2 粒子 (x と y を 1e-4 ずらした 1 番目と、dp=1e-3 の 2 番目)、スピンの初期値は (角度 0, sy/|s| = 0.1) と (0, 0.2)。3 周追跡した後の 7 列目 (`atan(sz, sx)`) と 8 列目 (`sy/|s|`) が gs と 4e-12 以下で一致する (`test_planar_ring_spin_tracking_matches_gs`)。
 `RAD FLUC` (乱数あり) でも一致する (`pt3`、`pt13`)。`RAD NOFLUC` を `RAD FLUC` に替え、`SeedRandom` を gs と合わせれば同じ乱数の順になる (K64 の乱数の引き順まで写した)。
 
-そのほかの動く例: [`test_spin.py`](../pysad/tests/test_spin.py) の `COUPLED` (縦ずれ・回転した四極・6 極・ROTATE 付き偏向のあるリング。偏極ベクトルが {-1.35e-4, 0.99954, 0.0305})、`test_mult_ring_matches_gs` (MULT)、`test_solenoid_ring_matches_gs` (SOL 領域)。
+そのほかの動く例: [`test_spin.py`](../pysad/tests/script_tests/test_spin.py) の `COUPLED` (縦ずれ・回転した四極・6 極・ROTATE 付き偏向のあるリング。偏極ベクトルが {-1.35e-4, 0.99954, 0.0305})、`test_mult_ring_matches_gs` (MULT)、`test_solenoid_ring_matches_gs` (SOL 領域)。
 作業の経緯は [`docs/history/work_unimpl.md`](history/work_unimpl.md) (POL の節)。
 
 結果の意味: `PolarizationTime` = 123.8 s は、このリング (3 GeV、aγ = 6.808) で偏極が 1−1/e まで立ち上がる時間。`SpinTune` = 0.404 は 1 周のスピン歳差の端数 (整数部を除く)。`PolarizationVector` = {0, 1, 0} は平面リングなのでスピンの周期解の軸が垂直 (y)。`Polarization` は k64 モードでは NaN (5.2)。v2 モードでは有限値 (92.376%、5.3)。
@@ -199,7 +199,7 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 ### 5.3 v2 モードの動作 (k64 モードは 5.1・5.2 と 4 のとおり)
 
 
-試験 [`test_v2_A_spin.py`](../pysad/tests/test_v2_A_spin.py)・[`test_v2_A_tchge.py`](../pysad/tests/test_v2_A_tchge.py) (放射・エミッタンス)、[`test_v2_C2_spin.py`](../pysad/tests/test_v2_C2_spin.py) (スピン追跡)。記録は [`docs/history/v2_changes_A.md`](history/v2_changes_A.md)・`v2_changes_C2.md`。根拠は解析式・独立な数値計算 (Thomas-BMT 方程式の積分、モンテカルロ、FLUC つきのスピン追跡) で、gs ではない。
+試験 [`test_v2_A_spin.py`](../pysad/tests/script_tests/test_v2_A_spin.py)・[`test_v2_A_tchge.py`](../pysad/tests/script_tests/test_v2_A_tchge.py) (放射・エミッタンス)、[`test_v2_C2_spin.py`](../pysad/tests/script_tests/test_v2_C2_spin.py) (スピン追跡)。記録は [`docs/history/v2_changes_A.md`](history/v2_changes_A.md)・`v2_changes_C2.md`。根拠は解析式・独立な数値計算 (Thomas-BMT 方程式の積分、モンテカルロ、FLUC つきのスピン追跡) で、gs ではない。
 
 #### 5.3.1 Polarization (平衡偏極度) の有限値 (B55)
 
@@ -219,7 +219,7 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 #### 5.3.2 側帯の項・逆向きの BEND・ソレノイド・加速
 
-試験 [`test_v2_A2_pol.py`](../pysad/tests/test_v2_A2_pol.py)・[`test_v2_A2_spin.py`](../pysad/tests/test_v2_A2_spin.py)・[`test_v2_B3_pol.py`](../pysad/tests/test_v2_B3_pol.py)・[`test_v2_B3_radpol.py`](../pysad/tests/test_v2_B3_radpol.py)・[`test_v2_E_spinsol.py`](../pysad/tests/test_v2_E_spinsol.py)・[`test_v2_E_pol_kick.py`](../pysad/tests/test_v2_E_pol_kick.py)・[`test_v2_D1_emit.py`](../pysad/tests/test_v2_D1_emit.py)。例 [`example/16_spin_polarization/`](../example/16_spin_polarization/README.md) と [`example/07_spin_solenoid_special/`](../example/07_spin_solenoid_special/README.md)。
+試験 [`test_v2_A2_pol.py`](../pysad/tests/script_tests/test_v2_A2_pol.py)・[`test_v2_A2_spin.py`](../pysad/tests/script_tests/test_v2_A2_spin.py)・[`test_v2_B3_pol.py`](../pysad/tests/script_tests/test_v2_B3_pol.py)・[`test_v2_B3_radpol.py`](../pysad/tests/script_tests/test_v2_B3_radpol.py)・[`test_v2_E_spinsol.py`](../pysad/tests/script_tests/test_v2_E_spinsol.py)・[`test_v2_E_pol_kick.py`](../pysad/tests/script_tests/test_v2_E_pol_kick.py)・[`test_v2_D1_emit.py`](../pysad/tests/script_tests/test_v2_D1_emit.py)。例 [`example/16_spin_polarization/`](../example/16_spin_polarization/README.md) と [`example/07_spin_solenoid_special/`](../example/07_spin_solenoid_special/README.md)。
 
 **側帯の項 (B3、B125)**: 脱偏極率 `depol_rate` に、スピンの歳差の位相の変調 (シンクロトロン振動の側帯: スピンチューンが aγ(1+δ)) を厳密に取った項を取り込む (`spin.sideband_depolarization`)。要素 i の出口の軌道 u に対し、閉軌道のスピン軸 n_i に垂直な基底 (m_i, l_i) を閉軌道の歳差 R_i で運び、α = s·(m + i l) とすると α' = e^{i p_i·u} α + g_i·u (p_i = −n_i·D_i が位相の変調、g_i = i (m_i + i l_i)·D_i が結合)。放射の跳びがないとき保存される量 α − α*(u) の不変な場 α*(u) = −Σ_{k≥0} e^{−iμk} e^{−iS_k} G·M^k u を作り、放射の跳び ξ (共分散 B_i) で偏極が ½|α*(u+ξ) − α*(u)|² だけ減るとして、脱偏極率 = ½ Σ_i ⟨G_i B_i G_i^†⟩ (u はビーム行列のガウス分布で平均。M の固有分解と Sobol 列 1024 点の準モンテカルロ)。変調を切ると線形の SLIM の式に戻る。`Emittance[]` の v2・RFSW ON で自動的に使う。戻り: `depol_rate` (側帯込み)、`depol_rate_linear` (線形)、`spin_spread_sb` (側帯込みの n の広がり。`spin_spread` は線形のまま)。`spin.SIDEBAND = False` で線形の式だけに戻る。縦の減衰が無い (RF OFF)・不安定なリングでは側帯の項を入れず線形の式を使い、`sideband_error` に理由を残す。計算時間は Sobol 1024 点で 12 セル FODO が +3 秒、大きなリング A が +15 秒 (3563 要素の鎖)。
 
@@ -251,7 +251,7 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 **POL + TRPT + 加速**: track6 の経路 (POL + RAD) で、TRPT の SOL 領域の外の VOLT≠0 の CAVI (DX・DY・ROTATE も) を通す (`track6._tcav_acc_ens`: 高速追跡と同じ `cav_full` で全粒子の `ph` を空洞の後の基準運動量にし、以降の放射・スピンの歳差 (aγ) は新しい p0・h0 を使う)。1 GeV、扇形の偏向磁石 (θ1 = 0.3、θ2 = 0.2) の間に空洞 (VOLT = 0・0.2・0.5 GV、PHI = −π/2) を置いた輸送路で、縦向きのスピンの (sx, sz) が断熱加速の解析式 Φ = aγ1θ1 + aγ2θ2 (γ2 = γ1 + VOLT/mc²) の (sin Φ, cos Φ) と 5e-7 以内 (VOLT = 0.5 GV: Φ = 1.36163 rad、加速なしなら 1.13469 rad)。使えない: SOL 領域内の加速、RF つき MULT・TCAVI の加速、リングの何周もの TRPT (K64 の TRPT は輸送路用)、スピン追跡の損失の処理 (SADError)。k64 モードは明示のエラー。track6 の `_ndivrad` が TRPT の 10 倍を見る (POL・RADPOL・光子の追跡の TRPT の結果が gs に近い)。例 [`example/16_spin_polarization/spin_accel.py`](../example/16_spin_polarization/spin_accel.py)。
 #### 5.3.3 厳密な緩和率・クロマティックな側帯・ROTATE・不安定なリング (試験 `test_v2_P1_st.py`・`test_v2_P1_pol_chrom.py`・`test_v2_P1_rev.py`)
 
-根拠は独立な Derbenev-Kondratenko (DK) の数値積分 ([`pysad/tests/_p1_dk.py`](../pysad/tests/_p1_dk.py): BEND を 0.05 m の刻みに分けた追跡から、N の周期解と刻みごとの ∂n/∂δ・ρ⁻¹・b̂・v̂ を作る)・厳密な Thomas-BMT の積分・FLUC つきの追跡・モンテカルロで、gs ではない。モジュール変数 ([`pysad/spin.py`](../pysad/spin.py)) で、この節の式を切って前節の式に戻せる。
+根拠は独立な Derbenev-Kondratenko (DK) の数値積分 ([`pysad/tests/script_tests/_p1_dk.py`](../pysad/tests/script_tests/_p1_dk.py): BEND を 0.05 m の刻みに分けた追跡から、N の周期解と刻みごとの ∂n/∂δ・ρ⁻¹・b̂・v̂ を作る)・厳密な Thomas-BMT の積分・FLUC つきの追跡・モンテカルロで、gs ではない。モジュール変数 ([`pysad/spin.py`](../pysad/spin.py)) で、この節の式を切って前節の式に戻せる。
 
 **緩和率と運動論的偏極 (B116。`spin.ST_EXACT`・`KINETIC`・`STEP_RATE`)**: 緩和率は Baier-Katkov の式の c1 の項だけで、1/τ = (5√3/8) r_e ƛ_C c γ⁵ ⟨|ρ|⁻³ (1 − 2/9 (n·v)²)⟩ (n·b の項は平衡偏極度だけを決める)。前節の Σ r (b·n)² は n ∥ b (平面リング) では同じだが、n が b に垂直 (垂直の偏向の中、水平磁場の挿入光源) では 0 になり、傾いた n では 1 − (b·n)² の分だけ過小になる。v2 は放射の刻みごとに Σ w と Σ w v̂v̂ᵀ を積算して厳密な緩和率 (`sdamp_rel`) を作る (前節の式は `sdamp_rel_b2`)。分子に運動論的偏極 −b·∂n/∂δ (`res['kinetic']`)、脱偏極率は要素の出口の N ではなく放射の刻みごとのスピン軸の場で積分する (水平磁場の MPW のように要素の中で D の n に垂直な成分が大きいとき違う。平面リングでは前節の式と同じ)。∂n/∂δ は位置と角度を固定した δ の偏微分 (SLIM の N の δ 列)。閉軌道で δ を変えたときの全微分ではない。
 
@@ -314,7 +314,7 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 - K64 (gs) との比較 (k64 モード): 平面リングの `PolarizationTime` は全桁、縦ずれ・傾き・6 極のあるリングは 13 桁、`SpinTune` は 12〜13 桁、`PolarizationVector` は 10 桁以上、追跡のスピン (7・8 列) は 4e-12 以下で一致する。MULT・SOL 領域・ANGLE≠0 の MULT・ずれのある BEND・空洞も 1 つのリングで確認した。
 - 試験したリング: MOMENTUM 3 GeV 前後 (aγ = 6.8〜6.99)、縦ずれ DY 0〜2 mm、ROTATE 0〜0.03 rad、周長は十数 m〜数十 m。実機の格子での照合はしていない。
-- 試験は `pytest pysad/tests/test_spin.py pysad/tests/test_spin_track.py` (13 件)。v2 モードの根拠は gs ではなく、解析式・独立な数値計算 (Thomas-BMT の積分、モンテカルロ、FLUC つきのスピン追跡) で、その比較は 5.3 に書いた。
+- 試験は `pytest pysad/tests/script_tests/test_spin.py pysad/tests/script_tests/test_spin_track.py` (13 件)。v2 モードの根拠は gs ではなく、解析式・独立な数値計算 (Thomas-BMT の積分、モンテカルロ、FLUC つきのスピン追跡) で、その比較は 5.3 に書いた。
 - 一致の表は [`docs/history/16_spin_pol_validation.md`](history/16_spin_pol_validation.md)。
 
 ## 7. 限界・未確認
@@ -337,12 +337,12 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 
 
 コードは [`pysad/spin.py`](../pysad/spin.py) (tradke のスピン部、spnorm、srequpol、spdepol、tchge の回転)、[`pysad/emit6d.py`](../pysad/emit6d.py)、[`pysad/emit_extra.py`](../pysad/emit_extra.py)、[`pysad/track6.py`](../pysad/track6.py) (`_sprot`、`bsi`)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) (`fn_track`)。
-試験は [`pysad/tests/test_spin.py`](../pysad/tests/test_spin.py)、[`test_spin_track.py`](../pysad/tests/test_spin_track.py)。参照はすべて SAD K64 の gs の出力。
+試験は [`pysad/tests/script_tests/test_spin.py`](../pysad/tests/script_tests/test_spin.py)、[`test_spin_track.py`](../pysad/tests/script_tests/test_spin_track.py)。参照はすべて SAD K64 の gs の出力。
 
 - `track6.py` の構成: `_Particle.s` (スピン)、`_Particle.bsi` (縦の磁場の積分)、`_sprot` (3.5)、`_tradk` の中で呼ぶ (FLUC で光子が 0 個の場合も歳差だけ呼ぶ: K64 の `tradkfn` の elseif)、`_spin_rot_z` (四極の ROTATE の chi3 回転: `tsolrot` の calpol)。
 - `Emittance[]` 側: `spin.tradke_spin` (放射 1 ステップ)、`spin.spin_results` (spnorm・srequpol・spdepol)、`emit_extra._tturne1` が SOL 領域を通す。
 - フラグの既定は `ffscmd._FLAGS_DEFAULT` (K64 `initb1.f` の `defflg`)。
-- 試験: [`test_spin.py`](../pysad/tests/test_spin.py) (8)、[`test_spin_track.py`](../pysad/tests/test_spin_track.py) (5)。v2: `test_v2_A_spin.py`・`test_v2_A_tchge.py`・`test_v2_C2_spin.py` ほか (5.3 の各節に列挙)。
+- 試験: [`test_spin.py`](../pysad/tests/script_tests/test_spin.py) (8)、[`test_spin_track.py`](../pysad/tests/script_tests/test_spin_track.py) (5)。v2: `test_v2_A_spin.py`・`test_v2_A_tchge.py`・`test_v2_C2_spin.py` ほか (5.3 の各節に列挙)。
 
 ## 9. 関連文書
 

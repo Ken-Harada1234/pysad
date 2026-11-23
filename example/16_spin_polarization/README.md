@@ -30,7 +30,7 @@
 | [pol_mpw_rotated](pol_mpw_rotated.sad) | MPW を `ROTATE = 90°` にした水平磁場の挿入光源 (ASTRID2 + MPW) の Polarization | 磁場が水平になると b·n = 0 で、軌道は鉛直に波打つ。v2: P = 0.7007 対 独立な DK の数値積分 0.7018 (4e-3)、τ 21914 s (2e-3) |
 | [pol_vertical_bend](pol_vertical_bend.sad) | 垂直の偏向 (`ROTATE=90°` の BEND の組、軌道を鉛直に ±0.1 rad) のある 0.5 GeV の 12 セル FODO の Polarization と PolarizationTime | v2 は Sokolov-Ternov の厳密式で、独立な DK の数値積分と τ が 1e-5、P が 1e-3 |
 | [pol_reversed_bend](pol_reversed_bend.sad) | 反転した BEND (曲げ角 +0.05・−0.10・+0.05 rad のシケイン) のある 3 GeV の 12 セル FODO の Polarization と PolarizationTime | v2: P = 0.66825 (独立な式と 1e-3)。反転した曲げでは偏極の向きが逆の寄与が入り、P が理想値より下がる |
-| [pol_st_dk_check](pol_st_dk_check.py) | v2 の緩和率 (Sokolov-Ternov の厳密式) を独立な DK の数値積分 (`pysad/tests/_p1_dk.py`) と比べる。0.58 GeV の ASTRID2 + MPW の MPW を `ROTATE` = 0.3 rad / 90° にしたもの (約 6 分)。結果は `pol_st_dk_check.out.txt` | 緩和率が数値積分と合う。gs は使わない |
+| [pol_st_dk_check](pol_st_dk_check.py) | v2 の緩和率 (Sokolov-Ternov の厳密式) を独立な DK の数値積分 (`pysad/tests/script_tests/_p1_dk.py`) と比べる。0.58 GeV の ASTRID2 + MPW の MPW を `ROTATE` = 0.3 rad / 90° にしたもの (約 6 分)。結果は `pol_st_dk_check.out.txt` | 緩和率が数値積分と合う。gs は使わない |
 | [spin_turn](spin_turn.sad) | `07_spin_solenoid_special` の `flag_POL_RADPOL` で、500 周後のスピン角が gs・k64 (0.8794 rad) と v2 (1.1516 rad) で違う原因。K64 の sprot の刻みの角 (1+aγ)·2 sin(θ/2) | 放射の分割 EPS を細かくすると k64 と v2 が一致する (1 周の差 5.6e-4 rad → 8e-8 rad)。差は放射の分割の粗さに由来する |
 | [radpol_roundoff](radpol_roundoff.py) | ASTRID2 (0.58 GeV) の RADPOL 追跡で、P = 1 からの緩和が Sokolov-Ternov の値の 1.58 倍速い原因 (倍精度の丸め)。出力 (`radpol_roundoff.pysad.txt`): P0 = 1、0.5、0.25 から始めた 1 周あたりの dP と式の比 (1.578、0.934、0.979) | P0 = 1 だけ増分が倍精度の ulp 未満で、見かけの緩和が速くなる。gs は使わない |
 | [spin_tracking_sol_und](spin_tracking_sol_und.sad) | スピン追跡 (POL + RAD) の SOL 領域・UND。平面リング + ソレノイドの 1 周のスピン回転角 (cos(μ/2) = cos(π aγ) cos(φ/2))、領域内の BEND のスピンと運動量の角 (aγ × 偏向角)、UND (5 周期、1 T) でスピンが元に戻る | v2 のみ (K64 に無い機能) |
@@ -43,7 +43,7 @@
 ## 検証
 - 緩和率は Sokolov-Ternov の厳密式 Σ r (1 − 2/9 (n·v)²) で、独立な DK の数値積分 (`pol_st_dk_check`)・独立な式 (`pol_reversed_bend`・`pol_mpw`) と比べた。`PYSAD_COMPAT=k64` では gs と同じ結果が出る (gs の Polarization は、垂直の偏向・反転した BEND・逆向きの極のあるリングで NaN になるか符号つきの率しか出さないので、これらの例の基準にしない)。gs との比較の詳細は `docs/history/example_16_spin_polarization_validation.md`。
 - 側帯の項 (`pol_sideband`) は、FLUC つきスピン追跡 (4.2 GeV・12 MV で (10.4 ± 1.6)e-8 /周、480 粒子) と、線形の軌道 + 厳密なスピン回転の MC (5.0e-8) を基準にした。式の値は、線形の式 2.3e-8、側帯の式 4.5e-8。
-- 試験は `pysad/tests/test_v2_B3_pol.py`・`test_v2_E_pol_kick.py`・`test_v2_P1_pol_chrom.py`・`test_v2_E_spinsol.py`・`test_v2_P4_sol_spin.py` ほか。
+- 試験は `pysad/tests/script_tests/test_v2_B3_pol.py`・`test_v2_E_pol_kick.py`・`test_v2_P1_pol_chrom.py`・`test_v2_E_spinsol.py`・`test_v2_P4_sol_spin.py` ほか。
 
 ## 未確認・限界
 - 側帯の項を入れた v2 の脱偏極率は追跡 (FLUC つき) より小さいまま残る (4.2 GeV・12 MV で追跡が式の約 2.3 倍。切り分けは `pol_chromatic`・`pol_kick_response`)。

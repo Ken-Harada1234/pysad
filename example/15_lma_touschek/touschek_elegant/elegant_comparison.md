@@ -1,6 +1,6 @@
 # elegant との比較の例 (局所運動量アクセプタンスと Touschek 寿命)
 
-試験は `pysad/tests/test_v23_T1_elegant.py`。この例は比較と、SAD → elegant の変換のスクリプトである。
+試験は `pysad/tests/script_tests/test_v23_T1_elegant.py`。この例は比較と、SAD → elegant の変換のスクリプトである。
 実行はリポジトリ直下から `PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/xxx.py ...` (標準出力をファイルにリダイレクトするには `PYTHONUTF8=1` が要る)。すべて v2 モード。
 elegant は WSL (Ubuntu、`~/elegant/env.sh`、elegant 2026.4.0)。使い方は elegant の公式文書。CPU は最大 4 コア (serial の elegant を `xargs -P 4`、または `mpirun -np 4 Pelegant`)。
 gs (K64、2026-10-19 ビルド、WSL、NPARA = 1) は `gs_bend_k1.py` だけ (timeout 600 s、終了後に `ps` で sad1.exe の残りがないことを確かめた)。
@@ -30,7 +30,7 @@ PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_summary.p
 PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/gs_bend_k1.py
 PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_elegant.py
 # 試験
-PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ> py -3.12 -m pytest pysad/tests/test_v23_T1_elegant.py -q      # elegant が無いと光学の 1 件は skip
+PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ> py -3.12 -m pytest pysad/tests/script_tests/test_v23_T1_elegant.py -q      # elegant が無いと光学の 1 件は skip
 ```
 
 ## ファイル

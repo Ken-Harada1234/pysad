@@ -11,7 +11,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 from pysad import compat
-from pysad.tests import test_v2_B1_sol as T
+from pysad.tests.script_tests import test_v2_B1_sol as T
 
 print('(a) 領域内の DRIFT のスピン (0.4 m、δ = 1e-3・−5e-3 の粒子 3 つ × 3 つのスピン): Thomas-BMT との最大の差')
 for mode in ('v2', 'k64'):

@@ -1,0 +1,49 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.39E-14 $$$       f BX    #######  #   4.643203 $$$       f NX    #######  #  47.580034 $$$       f AY    #######  #  -1.13E-14 $$$       f BY    #######  #   6.231611 $$$       f NY    #######  #  17.620044
+$$$       f LENG  #######  #  603.12000
+TW0: { 298.9541720425, 110.7100027053,   4.6432028371,   6.2316106470, -2.3897673E-14, -1.1315808E-14,    .0445009937,    .0000000000}
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -9619.554 $$$       f BX    #######  #  27043.757 $$$       f NX    #######  #  40.249983 $$$       f AY    #######  #  -2.56E-14 $$$       f BY    #######  #   1.635961 $$$       f NY    #######  #  23.079641
+$$$       f LENG  #######  #  603.12000 MKS.1/$$$   BMAGX #######  #  185071658 MKS.1/$$$   BMAGY #######  #   1.000000
+ Horizontal Unstable.
+TWU_H: { 252.8981046591, 145.0136594436, 27043.75765768,   1.6359614560, -9619.55447425, -2.5565164E-14, -897.281072686,    .0000000000}
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :   .000000   .000000   .000000   .000000   .000000  6.86E-17
+      Exit :  -1.3E-14  -4.6E-15   .000000   .000000  -6.5E-16  6.85E-17
+
+ *** Deviation from symplectic matrix =    2.0334177998835601E-006
+    Extended Twiss Parameters
+AX: -.355703 BX: 1.000000                            ZX: -5.41E-6  EX:  .137791
+           PSIX: -4.8E-16                           ZPX: 2.544E-6 EPX:  .000000
+R1:  .000000 R2:  .000000 AY: -8.1E-11 BY: 1.635961  ZY:  .000000  EY:  .000000
+R3:  .000000 R4:  .000000            PSIY:  .000000 ZPY:  .000000 EPY:  .000000
+                                                     AZ: -.003274  BZ: 6.942856
+                                                                 PSIZ: -4.7E-15
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 497069.32 Hz 
+Energy loss per turn U0 =  .2960749 MV  Effective voltage    Vc = 1.4000000 MV 
+Equilibrium position dz = 20.619465 mm  Momentum compact. alpha = 3.7687E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 992.00000
+Bucket height     dV/P0 =  .0234205     Synchrotron frequency   = 2589.4872 Hz 
+
+  Imag.tune: 1.5700133           0.0000000          -0.0000000
+  Real tune: 0.0000000           0.0796407          -0.0052095
+
+    Damping per one revolution:
+          X : -4.946274E-05   Y : -4.932828E-05   Z : -4.772558E-05
+    Damping time (sec):
+          X :  4.067287E-02   Y :  4.078374E-02   Z :  4.215332E-02
+    Tune shift due to radiation:
+          X : -1.110075E-05   Y : -1.132413E-06   Z :  2.444987E-10
+    Damping partition number:
+          X :    1.3504       Y :    1.3467       Z :    1.3029
+
+Emittance X            = -1.8914E-6 m   Emittance Y            =  .00000000 m
+Emittance Z            =  .02324806 m   Energy spread          =  .05789616
+Bunch Length           = 401.549723 mm  Beam tilt              =  .00000000 rad
+Beam size xi           = 8.63524499 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+

@@ -1,0 +1,25 @@
+! bench_item6_emitusage.sad — esrf スクリプトでの Emittance[] の使い方 (Print[Emittance[]] / a=Emittance[] / ...../.Emittance[]) の照合
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+NPARA = 1;
+$FORM="15.10";
+PageWidth = 1999;
+USE RING;
+CELL;
+CALC;
+Print["P1 ", Emittance[]];
+a = Emittance[];
+Print["P2 ", (Emittances/.a)[1], (Emittances/.a)[2], BunchLength/.a, MomentumSpread/.a];
+H = HarmonicNumber/.Emittance[];
+Print["P3 ", H];
+Print["P4 ", 1, BucketHeight/.Emittance[], BunchLength/.Emittance[]];
+Print["P5 ", (Emittances/.Emittance[])[1]*1000000000,(EnergyLossU0/.Emittance[])/1000000];
+Print["P6 ", EMITX, EMITY, EMITZ, SIGE, SIGZ];
+cell calc emit;
+Print["P7 ", EMITX, EMITY, EMITZ, SIGE, SIGZ];
+b = Emittance[SaveEMIT->True];
+Print["P8 ", EMITX, EMITY, EMITZ, SIGE, SIGZ];
+Print["P9 ", Length[Emittance[OneTurnInformation->True]]];
+Print["P10 ", Length[Emittance[OneTurnTransferMatrix -> True]]];
+stop;
+stop;

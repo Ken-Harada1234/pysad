@@ -1,6 +1,6 @@
 # 周波数マップの例
 
-解説は `docs/26_frequency_map_lma.md`、試験は `pysad/tests/test_v23_Q1_fmap_lma.py` (21 件)、コードは `pysad/trksetup.py`・`freqmap.py`・`lma.py`・`q1cmd.py`。
+解説は `docs/26_frequency_map_lma.md`、試験は `pysad/tests/script_tests/test_v23_Q1_fmap_lma.py` (21 件)、コードは `pysad/trksetup.py`・`freqmap.py`・`lma.py`・`q1cmd.py`。
 実行はリポジトリ直下から `py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_ring.py astrid2` など (Windows では `PYTHONIOENCODING=utf-8` を付けると日本語の出力がファイルに書ける)。台本 `.sad` は `example/14_nonlinear_dynamics/frequency_map` で
 `py -3.12 ../../../run_sad.py ../../astrid/lattice/ASTRID2_v01_01.sad fn_FrequencyMap_MomentumAcceptance.sad`。局所運動量アクセプタンス (LMA) の例は `example/15_lma_touschek/lma/` (その `README.md`)。すべて v2 モード。gs の出力は WSL の gs (K64、2026-10-19 ビルド、NPARA = 1) で取った
 (timeout 1800 s、終了後に `ps` で sad1.exe の残りがないことを確かめた)。使ったラティスは `kek-ls_v03_12.lat` (大きなリング A、3 GeV、603 m、誤差なし) と ASTRID2 (0.58 GeV、45.7 m、誤差なし)。PF は使っていない。

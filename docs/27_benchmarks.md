@@ -15,10 +15,10 @@
 - 「未照合の項目」の列は、その Level が検査していない機能を示す。「—」は、書くべき未照合の項目が無いという意味である。
 - gs が動かない機能 (K64 の誤りで落ちる、値が NaN になるなど) は、gs との比較ができない。そのときは、解析式や独立な計算との比較を各機能の文書に書いている (K64 の誤りの目録は docs/30、v2 と k64 の違いは docs/28)。
 
-ベンチは `<repo>/` の `bench_level*.sad` (SAD スクリプト) / `.result` (SAD の出力) / `*_pysad.py` (pysad の比較スクリプト) / `*_run.result` (pysad の出力)。
-回帰テストの実行スクリプトは `run_regression.py` (§4)。レベルの階層 (Mainlevel / FFS の構造) は `<work-olddocs>/sad_level_structure.md`。
+ベンチは `<repo>/pysad/tests/regression_tests/bench/` (自動判定の対象外は `bench_extra/`) の `bench_level*.sad` (SAD スクリプト) / `.result` (SAD の出力) / `*_pysad.py` (pysad の比較スクリプト) / `*_run.result` (pysad の出力)。
+回帰テストの実行スクリプトは `pysad/tests/regression_tests/run_regression.py` (§4。説明は `pysad/tests/regression_tests/README.md`)。レベルの階層 (Mainlevel / FFS の構造) は `<work-olddocs>/sad_level_structure.md`。
 
-場所: すべて `<repo>\` (以下「`<repo>`」)。pysad 本体は `<repo>\pysad\`。
+場所: `<repo>\` (以下「`<repo>`」)。ベンチ (`bench_*`)・`cmp_*.py`・`run_regression.py` は `<repo>/pysad/tests/regression_tests/` にあり、以下のコマンドは `bench/` の中で実行する (`bench_extra/` の台本も同様)。`run_sad.py` は `<repo>\` にある。pysad 本体は `<repo>\pysad\`。
 
 ---
 
@@ -68,9 +68,9 @@ Windows (Git Bash / PowerShell)、`<repo>` で:
 ```bash
 PYTHONIOENCODING=utf-8 python -u bench_levelN_pysad.py            # Level 1〜12 の比較スクリプト (SAD の値を内蔵/または .result を読む)
 PYTHONIOENCODING=utf-8 python -u bench_level12_track_fast.py      # 追跡の numba 版 (track6n)
-PYTHONIOENCODING=utf-8 python -u run_sad.py bench_level13a.sad    # SAD スクリプトをそのまま実行 (Level 13 以降)
-PYTHONIOENCODING=utf-8 python -u run_sad.py <試験用ラティス>.lat bench_level15a.sad   # ラティスとスクリプトを連結 (SAD の gs と同じ)
-PYTHONIOENCODING=utf-8 python -u run_regression.py                # 回帰テスト (全部)。QUICK=1 で遅いものを省略
+PYTHONIOENCODING=utf-8 python -u <repo>/run_sad.py bench_level13a.sad    # SAD スクリプトをそのまま実行 (Level 13 以降)
+PYTHONIOENCODING=utf-8 python -u <repo>/run_sad.py <試験用ラティス>.lat ../bench_extra/bench_level15a.sad   # ラティスとスクリプトを連結 (SAD の gs と同じ)
+PYTHONIOENCODING=utf-8 python -u <repo>/pysad/tests/regression_tests/run_regression.py   # 回帰テスト (全部)。QUICK=1 で遅いものを省略
 ```
 
 - `bench_levelN_pysad.py` は pysad の API (`Lattice`, `twiss_table`, `emit6d.emittance6d`, `track6`, `match6.Matcher` …) を直接呼び、
@@ -158,9 +158,9 @@ Level 24〜31 のベンチのラティスは `<試験用ラティス>.lat` を�
 
 ```bash
 cd "<repo>"
-PYTHONIOENCODING=utf-8 python -u run_regression.py            # 全部 (約 15〜20 分)
-QUICK=1 PYTHONIOENCODING=utf-8 python -u run_regression.py    # Level 7, 12t (純 Python 追跡), 13a, 16a を省略 (約 5 分)
-python -u run_regression.py 3b 12 13a                          # 指定したものだけ (key は表の Level 列。24a〜24f, 22e, 26a〜26d, 27a/27b, 28c/28d/28f, 29a〜29e, 30a/30b も key)
+PYTHONIOENCODING=utf-8 python -u pysad/tests/regression_tests/run_regression.py            # 全部 (目安 約 17 分)
+QUICK=1 PYTHONIOENCODING=utf-8 python -u pysad/tests/regression_tests/run_regression.py    # Level 7, 12t (純 Python 追跡), 13a, 16a を省略 (目安 約 7 分)
+python -u pysad/tests/regression_tests/run_regression.py 3b 12 13a                          # 指定したものだけ (key は表の Level 列。24a〜24f, 22e, 26a〜26d, 27a/27b, 28c/28d/28f, 29a〜29e, 30a/30b も key)
 ```
 
 - 各 pysad スクリプトを子プロセスで実行し、出力の「差」「最大差」「相対差」「Matched/Residual」「Score」などの行を読んで判定する。
@@ -172,7 +172,7 @@ python -u run_regression.py 3b 12 13a                          # 指定したも
   色収差の当てはめ係数 c1 は 1e-5 (チューンの 1e-8 のノイズを拡大するため)、c2/c3 は参考表示のみ。
 - 判定: PASS / FAIL / KNOWN (既知の不一致: 14A の EMIT dz、16A の損失周数 1 個、13A-2 の TWB) / INFO。
   ベンチの合否は FAIL があれば FAIL、KNOWN だけなら PASS*。終了コードは FAIL があれば 1。
-- 子プロセスの出力は `<work-regression>/<key>.txt` に保存する。出力形式を変えたときは `run_regression.py` の各 `check_*` を直す。
+- 子プロセスの出力は `pysad/tests/regression_tests/regression_out/<key>.txt` に保存する (追跡しない)。出力形式を変えたときは `run_regression.py` の各 `check_*` を直す。
 
 ---
 
@@ -182,17 +182,17 @@ python -u run_regression.py 3b 12 13a                          # 指定したも
 
 ### 5.1 最新の通し (回帰と全試験)
 
-- 回帰 (`QUICK=1 PYTHONIOENCODING=utf-8 py -3.12 -u run_regression.py`): **50 ベンチで FAIL 0**。`run_regression.py` の `BENCHES` は 50 キー (1, 2, 3a〜3d, 4〜11, 12/12t/12f, 13a, 13b, 14a, 16a, 22e, 24a〜24f, 26a〜26d, 27a/27b, 28a〜28d/28f, 29a〜29e/29a2, 30a/30b, 31a/31b)。
+- 回帰 (`QUICK=1 PYTHONIOENCODING=utf-8 py -3.12 -u pysad/tests/regression_tests/run_regression.py`): **50 ベンチで FAIL 0**。`run_regression.py` の `BENCHES` は 50 キー (1, 2, 3a〜3d, 4〜11, 12/12t/12f, 13a, 13b, 14a, 16a, 22e, 24a〜24f, 26a〜26d, 27a/27b, 28a〜28d/28f, 29a〜29e/29a2, 30a/30b, 31a/31b)。
   `QUICK=1` は遅いもの (7, 12t, 13a, 16a) を SKIP する。その 4 件も単独で実行すると PASS (最大差: 7 が 5.0e-11、12t が 3.5e-11、13a が 4.3e-21、16a が 1.4e-31。2026-11-17 の単独実行の値)。
   KNOWN (PASS*) は §4 の 3 件 (14A の EMIT dz、16A の損失周数 1 個、13A-2 の TWB)。
-- 全試験 (pytest。`py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py`): **2507 通過・13 skip・失敗 0**。gs との数値比較の試験は k64 モード (既定の v2 でなく `PYSAD_COMPAT=k64`) で走る (`pysad/tests/conftest.py` が既定を k64 にする。docs/28)。
-  - GUI 系 ([`test_plot.py`](../pysad/tests/test_plot.py), [`test_tclbridge.py`](../pysad/tests/test_tclbridge.py)) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` がないと GUI 系は skip する。
-  - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。通常の全試験 (2507 通過) にはこれは含まれない。
+- 全試験 (pytest。`py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py`): **2521 通過・13 skip・失敗 0** (2534 件収集)。gs との数値比較の試験は k64 モード (既定の v2 でなく `PYSAD_COMPAT=k64`) で走る (`pysad/tests/script_tests/conftest.py` が既定を k64 にする。docs/28)。
+  - GUI 系 ([`test_plot.py`](../pysad/tests/script_tests/test_plot.py), [`test_tclbridge.py`](../pysad/tests/script_tests/test_tclbridge.py)) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` がないと GUI 系は skip する。
+  - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。通常の全試験 (2521 通過) にはこれは含まれない。
   - SAD 本体 (gs) が無くても通る (gs の値は試験の中か [`pysad/tests/`](../pysad/tests/) のデータに埋め込み)。
 
 ## 6. 機能別の gs 照合 (2026-11-13〜11-16)
 
-SAD のレベル別ベンチ (§3) とは別に、要素・機能ごとに gs (WSL の K64 ビルド) と pysad を同じ入力で比べ、試験 (`pysad/tests/test_*.py`) に固定している。この表は、機能ごとの「gs との差」と、その試験・説明の文書の対応である。詳しい比較と限界は各文書:
+SAD のレベル別ベンチ (§3) とは別に、要素・機能ごとに gs (WSL の K64 ビルド) と pysad を同じ入力で比べ、試験 (`pysad/tests/script_tests/test_*.py`) に固定している。この表は、機能ごとの「gs との差」と、その試験・説明の文書の対応である。詳しい比較と限界は各文書:
 
 | 項目 | 一致の程度 (gs との差) | 試験 | 文書 |
 |---|---|---|---|

@@ -467,7 +467,7 @@ Exit;
 <li>例: <a href="../optics/FFS_cell_calc_emit_PF_1981_460nmrad.html"><code>optics/FFS_cell_calc_emit_PF_1981_460nmrad</code></a>、<code>..._1986_128nmrad</code>、<code>..._1997_036nmrad</code>、<code>..._2005_036nmrad</code> (すべて同じ台本で、ラティスだけ違う)。</li>
 <li>gs: <code>gs file.sad &lt; /dev/null</code>。pysad: <code>PYSAD_COMPAT=k64 py -3.12 -c "from pysad.ffscmd import run_sad_string; run_sad_string(open('file.sad',encoding='utf-8').read())"</code> (k64 が gs と同じ。省略すると v2)。</li>
 <li>作り方: <code>tools/pf_history/mk_lattices.py &lt;履歴フォルダ&gt;</code> (ラティス)、<code>build_examples.py</code> (例)、<code>ana_pf_history.py</code> (表)、<code>cmp_gs_pysad.py</code> (gs と pysad の比較)。</li>
-<li>試験: <code>pysad/tests/test_pf_history_lattices.py</code>。</li>
+<li>試験: <code>pysad/tests/script_tests/test_pf_history_lattices.py</code>。</li>
 </ul>
 <h3 id="元の履歴フォルダの-matchingdisp-台本の用途ここには置いていない">元の履歴フォルダの <code>matching</code>・<code>disp</code> (台本の用途。ここには置いていない)</h3>
 <ul>

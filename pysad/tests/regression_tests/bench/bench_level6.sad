@@ -1,0 +1,84 @@
+! ============================================================
+! bench_level6.sad — Level 6 benchmark: particle tracking (TrackParticles)
+!   ラティスは bench_level4.sad と同じ (QD K1=-1.7*0.3, 六極あり, CELL0 に空洞 CA)。
+!   粒子 5 個を 1, 10, 100 周追跡して座標を出す。
+!   (1) RFSW ON, RAD OFF   (2) RAD ON, FLUC OFF (揺らぎなしの放射)
+!   同期位相 (trf0) を決めるため、追跡の前に emit を実行する。
+!   ※ TrackParticles の行き先・周回番号の指定の仕方は未確認。改修をお願いします。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+RFSW;
+CELL;
+CALC;
+emit;
+
+! 粒子: {x, px, y, py, z, dp, 生存フラグ} を列ごとに並べる
+x0  = { 1E-3, 3E-3, 0,     1E-3,  0    };
+px0 = { 0,    0,    0,     1E-4,  0    };
+y0  = { 0,    0,    1E-3,  1E-3,  0    };
+py0 = { 0,    0,    0,     0,     0    };
+z0  = { 0,    0,    0,     0,     1E-3 };
+dp0 = { 0,    0,    0,     1E-3,  1E-3 };
+fl0 = { 1,    1,    1,     1,     1    };
+beam0 = {1, {x0, px0, y0, py0, z0, dp0, fl0}};
+
+prtb[tag_, b_] := Do[
+  Print[tag, " P", i, " ", {b[[2,1,i]], b[[2,2,i]], b[[2,3,i]], b[[2,4,i]], b[[2,5,i]], b[[2,6,i]], b[[2,7,i]]}],
+  {i, 1, 5}];
+
+! ------------------------------------------------------------
+! (1) RFSW ON, RAD OFF
+! ------------------------------------------------------------
+Print["=== Test 6-1: RFSW ON, RAD OFF ==="];
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["N1 T1", b1];
+b10  = TrackParticles[beam0, 1, 1, 10];
+prtb["N1 T10", b10];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["N1 T100", b100];
+
+! ------------------------------------------------------------
+! (2) RAD ON, FLUC OFF
+! ------------------------------------------------------------
+Print["=== Test 6-2: RAD ON, FLUC OFF ==="];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["R1 T1", b1];
+b10  = TrackParticles[beam0, 1, 1, 10];
+prtb["R1 T10", b10];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["R1 T100", b100];
+NORAD;
+FLUC;
+
+stop;
+stop;

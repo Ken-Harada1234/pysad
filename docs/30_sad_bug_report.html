@@ -696,7 +696,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>tlinit.f (tlinit / tlstore / tlresult)</td>
 <td>RadiationField の入力が進行方向の点だけになる。BEND を含む実リングでは意味のある場にならない (<code>example.oide.sad</code> は B を ANGLE=0 の STEER にして避けている)</td>
 <td>中</td>
-<td>確定 (gs と差 0 で再現、<a href="../pysad/tests/test_radlight.py"><code>test_radlight.py</code></a>)。意図か誤りかは未判定。なお RadiationField 自体は gs が SIGSEGV (B49)</td>
+<td>確定 (gs と差 0 で再現、<a href="../pysad/tests/script_tests/test_radlight.py"><code>test_radlight.py</code></a>)。意図か誤りかは未判定。なお RadiationField 自体は gs が SIGSEGV (B49)</td>
 <td>v2 で修正 (軌道に横の座標が入り、BEND は円弧、BEND の中も <code>RADLIGHTDIV</code> 点記録)。k64 モードは再現</td>
 </tr>
 <tr>
@@ -2156,7 +2156,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <li>原因: INTGRL.f が呼ぶ tbendebody は bendib モジュールの rhob/rho0 を使うが、INTGRL は設定しない (tbendiinit/tbendeinit を呼ばない)。</li>
 <li>影響: I1X, I2, I3, I4, I5, I9, I10 など。RADINT の値が BEND ごとの正しい値からずれる (docs/23 §11 の RADINT と Emittance[] の 13% 差の候補の 1 つ。因果は未検証)。</li>
 <li>重要度: 高。</li>
-<li>pysad での扱い: <strong>v2 (既定)</strong>: その BEND 自身の L/ANGLE を使う (<a href="../pysad/tests/test_v2_A_radint.py"><code>test_v2_A_radint.py</code></a>)。<strong>k64 モード (= v1)</strong>: 再現 (<code>radint.default_stale_rho(els)</code>、<code>compute(stale_rho=)</code> で上書き可)。</li>
+<li>pysad での扱い: <strong>v2 (既定)</strong>: その BEND 自身の L/ANGLE を使う (<a href="../pysad/tests/script_tests/test_v2_A_radint.py"><code>test_v2_A_radint.py</code></a>)。<strong>k64 モード (= v1)</strong>: 再現 (<code>radint.default_stale_rho(els)</code>、<code>compute(stale_rho=)</code> で上書き可)。</li>
 </ul>
 <h3 id="b07-radint-の6-極ブロックが直前の-dl-を使う">B07 RADINT の6 極ブロックが直前の DL を使う</h3>
 <ul>
@@ -2433,7 +2433,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <li>B162: <code>history/v23_T2.md</code> (Touschek の損失率の式 <code>touckf</code> の適用範囲。独立な式 <code>touschek_piwinski</code> との比較、elegant との比較、<code>example/15_lma_touschek/touschek_elegant/touschek_formula*</code>)。</li>
 <li>B163: <code>history/v24_RAD.md</code> (K64 の tcod が収束せず、gs が収束していない閉軌道から Emittance[] を計算する。DDBA_15 の εx の gs との 0.33% の差の原因)。</li>
 <li>B230〜B242 (担当 D3、B165・B167 の続きと B145・B146): <code>history/v24_D3.md</code>。B230・B231 は QUAD・MULT の本体の B∥ (SEXT・ステアリングは元から正しい)、B232 は RF の同期位相 (エネルギー損失・電荷)、B233 は PhotonList の β、B234 は SOL 内の四極の B∥、B235 は追跡の BEND のスピンの刻みの 1 次誤差、B236 は B145 の再分類 (誤りではない)、B237 は <code>Bend.transfer_matrix</code> (pysad 自身の誤り)、B238 は SOL 内の加速 + POL、B239 は短い磁石・硬い端の放射の限界 (直さない)、B240 は Emittance[] の 6 極の放射・スピン、B241 は追跡の MULT の ROTATE のスピン、B242 は端の ψ の (1+δ) 規格化。</li>
-<li>B180〜B199 (担当 E): 組込の数学関数・特殊関数・リスト関数の監査 (mpmath との 4000 点超の比較と、gs との 600 式の照合)。記録は <code>history/v24_E.md</code>、試験は <code>pysad/tests/test_v24_E_audit.py</code> (参照値 <code>specfn_audit_ref.json</code>)。<strong>複素の次数の <code>PolyLog</code>・<code>ExpIntegralE</code> (gs は対応していて <code>PolyLog[1.5+I,.3]</code> = .3270−.0262 I) は k64・v2 とも実装 (|Log z| ≤ 5、<code>specfn_cx2.polylog_cs</code>・<code>expn_cn</code>)。</strong> 「確度」は mpmath (collective312 の venv、<code>mp.dps = 40</code>) の主値と一致するかで判定。v2 の主値は Mathematica と同じ切断線の取り方 (ArcSin[x&gt;1] は下側など)。</li>
+<li>B180〜B199 (担当 E): 組込の数学関数・特殊関数・リスト関数の監査 (mpmath との 4000 点超の比較と、gs との 600 式の照合)。記録は <code>history/v24_E.md</code>、試験は <code>pysad/tests/script_tests/test_v24_E_audit.py</code> (参照値 <code>specfn_audit_ref.json</code>)。<strong>複素の次数の <code>PolyLog</code>・<code>ExpIntegralE</code> (gs は対応していて <code>PolyLog[1.5+I,.3]</code> = .3270−.0262 I) は k64・v2 とも実装 (|Log z| ≤ 5、<code>specfn_cx2.polylog_cs</code>・<code>expn_cn</code>)。</strong> 「確度」は mpmath (collective312 の venv、<code>mp.dps = 40</code>) の主値と一致するかで判定。v2 の主値は Mathematica と同じ切断線の取り方 (ArcSin[x&gt;1] は下側など)。</li>
 </ul>
 <p>確度が「疑い」のもの (B88、B99 の意図、B113 の意図、B131) と、ソースの読みだけのもの (gs で再現できていないもの) は、K64 の作者の意図を確かめていない。v2 で直したものも、直したのは pysad の v2 モードだけで、K64 のソースは変えていない。</p>
 <h2 id="5-開発者への依頼の要点">5. 開発者への依頼の要点</h2>

@@ -4,7 +4,7 @@
 **前提**: `rdt_tracking.md` (3 次までの RDT) と ADTS の用語 (`rdt_adts_basic.md`)。
 **読む順**: 結果の要約 → 限界・未確認。
 
-台本ごとの式・解析の内訳・追跡 + FFT (NAFF) の数値・比較・コマンドは `ADTS_summary.md` §12 (rdt4_tracking.py・bend_generators.py・rdt4_gs_map.py・normal_form_numeric.py) と `../frequency_map/FMAP_summary.md` (fmap_rdt4.py)。解説は `docs/25` (§8.1 原理、§10 4 次の項)・`docs/24` (§3.4・§5.5.1)、試験は `pysad/tests/test_v23_R5_rdt4.py` (14 件)、コードは `pysad/rdt2nd.py` (4 次の項)・`pysad/nform.py` (数値の正規形)・`pysad/rdttrack.py` (追跡の 3 次のテイラー展開)・`pysad/resdrive.py` (`resonance_terms` の 4 次の名前)・`pysad/fmapres.py` (`order2=True`)。
+台本ごとの式・解析の内訳・追跡 + FFT (NAFF) の数値・比較・コマンドは `ADTS_summary.md` §12 (rdt4_tracking.py・bend_generators.py・rdt4_gs_map.py・normal_form_numeric.py) と `../frequency_map/FMAP_summary.md` (fmap_rdt4.py)。解説は `docs/25` (§8.1 原理、§10 4 次の項)・`docs/24` (§3.4・§5.5.1)、試験は `pysad/tests/script_tests/test_v23_R5_rdt4.py` (14 件)、コードは `pysad/rdt2nd.py` (4 次の項)・`pysad/nform.py` (数値の正規形)・`pysad/rdttrack.py` (追跡の 3 次のテイラー展開)・`pysad/resdrive.py` (`resonance_terms` の 4 次の名前)・`pysad/fmapres.py` (`order2=True`)。
 ラティス: FODO (`example/00_lattice/FODO_ring.sad`、SF・SD の K2L = 4, −6、3 GeV、105.6 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、0.58 GeV、45.7 m)、ASTRID2 MPW (`ASTRID2_v01_02_id.sad` の `RINGMPW`)、KEK-LS (`pysad/tests/kek-ls_v03_12.lat`、3 GeV、603 m)。
 条件 (すべて): pysad k64 (gs と同じ式) の追跡 (RF 空洞止め、放射なし、結合なし、閉軌道のまわり、δ=0)、リング先頭が位相の基準、3 次のテイラー展開の振幅 amp3 = FODO・ASTRID2 1e-4 √m、KEK-LS 1e-5 √m (正規化座標)、2 次の係数の振幅 1e-5 √m、偏向磁石の分割 16。gs は `NORFSW;`、timeout 1800 s、1 本ずつ (終了後 `sad1.exe` の残りなし)。実行は標準出力のリダイレクトに `PYTHONUTF8=1`、CPU 1 コア。**スクリプトは出力を `example/14_nonlinear_dynamics/adts_rdt/` へ上書きする**。
 

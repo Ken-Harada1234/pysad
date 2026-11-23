@@ -1,6 +1,6 @@
 # 局所運動量アクセプタンス (LMA) の信頼性の例
 
-解説は `docs/26_frequency_map_lma.md` §4.5、試験は `pysad/tests/test_v23_L2_lma.py`、コードは `pysad/lma.py`・`pysad/lmabucket.py`・`pysad/q1cmd.py`。
+解説は `docs/26_frequency_map_lma.md` §4.5、試験は `pysad/tests/script_tests/test_v23_L2_lma.py`、コードは `pysad/lma.py`・`pysad/lmabucket.py`・`pysad/q1cmd.py`。
 実行はリポジトリ直下から `PYTHONUTF8=1 py -3.12 example/15_lma_touschek/lma/lma_xxx.py ...` (標準出力を `.out.txt` に保存した)。すべて v2 モード、RF・放射つき、LOSSAMPL = ±10 mm (例の値で実機の値ではない)。
 使ったラティス: `example/astrid/lattice/ASTRID2_v01_01.sad` (ASTRID2、0.58 GeV、45.7 m、6 セル)、`pysad/tests/kek-ls_v03_12.lat` (KEK-LS、大きなリング A、3 GeV、603 m、20 セル)、`ASTRID2_v01_02_id.sad` の `RINGMPW`。
 elegant は WSL (`~/elegant/env.sh`)、serial の elegant を位置ごと・種ごとに同時に走らせた (`elegant_isr.py`、timeout 1800 s、終了後に `ps` で残りなし)。gs は使っていない。

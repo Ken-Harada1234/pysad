@@ -32,7 +32,7 @@ USE RING; LOSSAMPL = 0.005; ...                      ! (B)
 
 ## gs と pysad の比較
 (A)(B)(C) とも gs と一致 (○)。pysad の追跡 (numba 版 `track6n.py` の `k_apert_el`、Python 版 `track6.py` の `_apert_pass`) は、APERT 要素について `tapert.f` / `tapert1` の判定をそのまま行う。LOSSAMPL ((B)、(C)) は一致している。
-別に 16 粒子で、楕円・矩形・楕円+矩形・中心のずれ DX DY・ROTATE・全キーワード既定 0 (全粒子が落ちる)・APERT 2 個・3 周・JDPX/JDPY/DP の場合を gs と比べ、flag と落ちた時点の座標が一致した (`pysad/tests/test_apert.py`)。
+別に 16 粒子で、楕円・矩形・楕円+矩形・中心のずれ DX DY・ROTATE・全キーワード既定 0 (全粒子が落ちる)・APERT 2 個・3 周・JDPX/JDPY/DP の場合を gs と比べ、flag と落ちた時点の座標が一致した (`pysad/tests/script_tests/test_apert.py`)。
 
 ## 未確認・限界
 - ここでの比較は 3 GeV の FODO リング (RFSW/RAD なし、TrackParticles、1 周と 3 周) だけ。RAD・FLUC ありの追跡での落ち方、MAIN の TRACK の損失の報告 (`P. n lost in ... at l(APERT名)`)、TRPT は gs と比べていない。

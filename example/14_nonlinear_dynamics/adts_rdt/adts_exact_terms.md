@@ -4,7 +4,7 @@
 **前提**: `adts_bend_cubic.md` と `rdt4_normal_form.md`。
 **読む順**: 表の前の説明 → 「既定の解析と精密版の表」。
 
-式・導出・検証の表は `docs/25` §11、入門は `docs/24` §7.6、試験は `pysad/tests/test_v23_R6_bend_orbit.py` (14 件)、コードは `pysad/bendnl.py` (閉軌道・δ のまわりの分解、K0≠0、閉形式)・`pysad/resdrive.py` (`adts` の `fourth`・`optics`)・`pysad/rdt2nd.py` (非対角の正規形の補正、4 次の ADTS)・`pysad/rdttrack.py` (`tracked_rows`、`element_h4` の軌道・δ)・`pysad/nform.py` (δ の ADTS と δ 微分)。
+式・導出・検証の表は `docs/25` §11、入門は `docs/24` §7.6、試験は `pysad/tests/script_tests/test_v23_R6_bend_orbit.py` (14 件)、コードは `pysad/bendnl.py` (閉軌道・δ のまわりの分解、K0≠0、閉形式)・`pysad/resdrive.py` (`adts` の `fourth`・`optics`)・`pysad/rdt2nd.py` (非対角の正規形の補正、4 次の ADTS)・`pysad/rdttrack.py` (`tracked_rows`、`element_h4` の軌道・δ)・`pysad/nform.py` (δ の ADTS と δ 微分)。
 ラティス: FODO (`example/00_lattice/FODO_ring.sad`、SF・SD の K2L = 4, −6、3 GeV、105.6 m)、ASTRID2 (`example/astrid/lattice/ASTRID2_v01_01.sad`、0.58 GeV、45.7 m)、ASTRID2 MPW (`ASTRID2_v01_02_id.sad` の `RINGMPW`)、KEK-LS (`pysad/tests/kek-ls_v03_12.lat`、大きなリング A。ESRF 型の HMBA、3 GeV、603 m)。
 条件 (すべて): pysad k64 (gs と同じ式) の追跡 (RF 空洞止め、放射なし、結合なし、閉軌道のまわり)、6 極 ×1 (指定以外)、直接の追跡は J の格子 6×6 (±位相の対 = 70 粒子)・1024 周・NAFF Hann p=1・order 2 のフィット (Jmax は FODO 1e-7、ASTRID2・MPW 2e-8、KEK-LS 2e-10)、3 次のテイラー展開の振幅 amp3 = 1e-4 √m (KEK-LS 1e-5)、偏向磁石の分割 16。実行は `PYTHONUTF8=1`。**スクリプトは出力を `example/14_nonlinear_dynamics/adts_rdt/` へ上書きする**。
 

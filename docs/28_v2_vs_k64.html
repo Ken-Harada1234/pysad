@@ -68,7 +68,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 <tr>
 <td>試験・回帰</td>
-<td>gs との数値比較の試験と回帰 (<code>run_regression.py</code>) は k64 で走る (<code>pysad/tests/conftest.py</code> が <code>PYSAD_COMPAT</code> の既定を <code>k64</code> にする)。v2 の動作の試験は <code>test_v2_*.py</code> で、フィクスチャ <code>v2_mode</code> で v2 を明示する</td>
+<td>gs との数値比較の試験と回帰 (<code>pysad/tests/regression_tests/run_regression.py</code>) は k64 で走る (<code>pysad/tests/script_tests/conftest.py</code> が <code>PYSAD_COMPAT</code> の既定を <code>k64</code> にする)。v2 の動作の試験は <code>test_v2_*.py</code> で、フィクスチャ <code>v2_mode</code> で v2 を明示する</td>
 </tr>
 <tr>
 <td>gs と比べるとき</td>
@@ -83,7 +83,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <ul>
 <li><strong>この表に入れないもの</strong>: モードによらず同じ動作の機能 (K64 にない新機能、K64 に無い機能・動かない機能のうち gs と同じ結果が出るもの、pysad 自身の不具合の修正、<code>DAPWIDTH</code> の既定 7 など両モードで同じ既定) は含めない。新機能の解説は各機能の文書 (docs/13〜22、24〜26) にある。</li>
 <li><strong>k64 モードも K64 と完全に同じではない点がある</strong>: gs に合わせて、(1) <code>For</code> の本体を実行しない (B71)、(2) 利用者のコードの <code>BeginPackage</code>・<code>Begin</code> が名前空間を作る。また、gs が真値を返すのに pysad の値が誤っていた点 (B183・B185〜B196・B199 の一部) は、k64 でも真値にしている (該当行に書いた)。</li>
-<li>表の「根拠」は、v2 の動作を確かめた基準 (解析式・独立な数値計算・厳密な幾何・gs など) と B 番号。数値の細部は <a href="30_sad_bug_report.html"><code>30_sad_bug_report.md</code></a> と試験 (<code>pysad/tests/test_v2_*.py</code>、<code>test_v24_*.py</code>、<code>test_v241_*.py</code>) にある。</li>
+<li>表の「根拠」は、v2 の動作を確かめた基準 (解析式・独立な数値計算・厳密な幾何・gs など) と B 番号。数値の細部は <a href="30_sad_bug_report.html"><code>30_sad_bug_report.md</code></a> と試験 (<code>pysad/tests/script_tests/test_v2_*.py</code>、<code>test_v24_*.py</code>、<code>test_v241_*.py</code>) にある。</li>
 <li>確認できなかった点は §6 にまとめた (「要確認」と書いた行)。</li>
 </ul>
 <h2 id="1-放射エミッタンス光学">1. 放射・エミッタンス・光学</h2>

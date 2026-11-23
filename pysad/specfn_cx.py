@@ -1,7 +1,7 @@
 """複素引数の Zeta・HurwitzZeta・PolyLog・HypergeometricU (v2 の追加。K64 の gamma.f の複素版は誤る範囲があるので、真値を返す)。
 
 mpmath が無い環境でも動くよう、級数・Euler–Maclaurin・解析接続の公式・積分表示だけで書いた。数値の根拠 (独立な参照) は
-`pysad/tests/test_v2_B2_specfn_cx.py` (別の方法: Borwein のアルゴリズム、関数等式、scipy.special.spence の複素版、積分表示、漸近展開) で確かめる。
+`pysad/tests/script_tests/test_v2_B2_specfn_cx.py` (別の方法: Borwein のアルゴリズム、関数等式、scipy.special.spence の複素版、積分表示、漸近展開) で確かめる。
 
 - Zeta・HurwitzZeta: 複素の s と a (a は非正の整数でない)。Euler–Maclaurin (N 項 + 補正 16 項、N は |s| に応じて増やす)。Re s < 0 の Zeta は関数等式。
   使える範囲: |s| ≲ 500 (それ以上は SADError)。

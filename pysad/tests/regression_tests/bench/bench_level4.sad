@@ -1,0 +1,81 @@
+! ============================================================
+! bench_level4.sad — Level 4 benchmark: RF cavity and 6D (longitudinal)
+!   ラティスは bench_level3c.sad と同じ (QD K1=-1.7*0.3, 六極あり, 誤差なし)。
+!   最初のセルだけ ORG の直後に長さ 0 の空洞 CA を置く (RING = CELL0 + 19*CELL)。
+!   周長 140 m → 周回周波数 ≈ 2.141 MHz。HARM=234 (≈ 501 MHz), VOLT=1.5 MV (U0≈678.5 keV)。
+!   (1) RFSW ON, RADCOD OFF の Emittance[] (バンチ長, Qz, 同期位相, エミッタンス)
+!   (2) RADCOD ON にした Emittance[] (放射のエネルギー損失による閉軌道)
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+RFSW;
+CELL;
+CALC;
+STATUS;
+
+! ------------------------------------------------------------
+! (1) RFSW ON, RADCOD OFF
+! ------------------------------------------------------------
+Print["=== Test 4-1: RFSW ON, RADCOD OFF ==="];
+NORADCOD;
+cell calc;
+status;
+emi=Emittance[];
+Print["M1 EMITS  ",Emittances/.emi];
+Print["M1 SIGE   ",MomentumSpread/.emi];
+Print["M1 SIGZ   ",BunchLength/.emi];
+Print["M1 TUNES  ",Tunes/.emi];
+Print["M1 DAMP   ",DampingRate/.emi];
+Print["M1 U0     ",EnergyLossU0/.emi];
+Print["M1 VC     ",RfVoltageVc/.emi];
+Print["M1 TRF0   ",EquilibriumPosition/.emi];
+Print["M1 ALPHA  ",MomentumCompaction/.emi];
+Print["M1 BH     ",BucketHeight/.emi];
+Print["M1 ORB    ",OrbitAtExit/.emi];
+
+! ------------------------------------------------------------
+! (2) RADCOD ON (放射のエネルギー損失を閉軌道に入れる)
+! ------------------------------------------------------------
+Print["=== Test 4-2: RFSW ON, RADCOD ON ==="];
+RADCOD;
+cell calc;
+status;
+emi=Emittance[];
+Print["M2 EMITS  ",Emittances/.emi];
+Print["M2 SIGE   ",MomentumSpread/.emi];
+Print["M2 SIGZ   ",BunchLength/.emi];
+Print["M2 TUNES  ",Tunes/.emi];
+Print["M2 DAMP   ",DampingRate/.emi];
+Print["M2 U0     ",EnergyLossU0/.emi];
+Print["M2 TRF0   ",EquilibriumPosition/.emi];
+Print["M2 ORB    ",OrbitAtExit/.emi];
+NORADCOD;
+
+stop;
+stop;

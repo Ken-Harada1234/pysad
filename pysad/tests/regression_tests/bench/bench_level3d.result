@@ -1,0 +1,217 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 18:41:50 Tuesday 10/13/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+! bench_level3d.sad — Level 3D benchmark: strength errors (DK, DDK)
+!   ラティスは bench_level3c.sad と同じ (QD K1=-1.7*0.3, QF-DQS-SF, QD-DQS-SD, DS=0.9)。
+!   DK  σ elem : 既定キーワード (QUAD は K1) への相対誤差 (errk, terror.f)
+!   DDK σ elem : K0 への絶対誤差 (BEND では追加の曲げ角)
+!   誤差: QF.2 に DK (1 台), QD* に DK (全台に別々の乱数), B.3 に DDK (1 台)。
+!   σ: DK 1e-3, DDK 1e-4。GCUT=2, SeedRandom[23]。
+!   比べる量: 誤差の値, 閉軌道, 光学 (β, η, チューン), Emittance[]。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654735 $$$       f BX    #######  #  17.037700 $$$       f NX    #######  #   7.421023
+$$$       f AY    #######  #    .420675 $$$       f BY    #######  #    .960619 $$$       f NY    #######  #   7.157653
+$$$       f LENG  #######  #  140.00000
+ emit;
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :   .000000   .000000   .000000   .000000   .000000   .000000
+      Exit :  -1.8E-16  -4.2E-17  6.80E-32  5.19E-32  3.35E-17   .000000
+
+    Extended Twiss Parameters
+AX: -4.65473 BX: 17.03770                            ZX: -5.3E-16  EX:  .911374
+           PSIX: 2.83E-17                           ZPX: -2.3E-16 EPX: -3.2E-16
+R1: -5.5E-16 R2: 9.00E-16 AY:  .420675 BY:  .960619  ZY: -8.6E-31  EY: -3.2E-16
+R3: 1.82E-15 R4: -6.4E-15            PSIY: 1.60E-45 ZPY: -2.8E-30 EPY: 8.59E-17
+                                                     AZ: 3.78E-16  BZ: 1.000000
+                                                                 PSIZ: -3.8E-16
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 2.5000000 GeV Revolution freq.     f0 = 2141374.6 Hz 
+Energy loss per turn U0 =  .6785008 MV  Effective voltage    Vc =  .0000000 MV 
+Equilibrium position dz =  .0000000 mm  Momentum compact. alpha =  .0238288
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h =  .0000000
+Bucket height     dV/P0 =  .0000000     Synchrotron frequency   =  .0000000 Hz 
+
+  Imag.tune:-0.0000000           0.0000000          -0.0000000
+  Real tune: 0.4210231           0.1576531           0.0000000
+
+    Damping per one revolution:
+          X : -1.505265E-04   Y : -1.356530E-04   Z : -2.564936E-04
+    Damping time (sec):
+          X :  3.102376E-03   Y :  3.442531E-03   Z :  1.820668E-03
+    Tune shift due to radiation:
+          X :  1.407645E-06   Y :  2.961292E-07   Z :  6.871820E-05
+    Damping partition number:
+          X :    1.1095       Y :    0.9999       Z :    1.8906
+
+Emittance X            = 1.39805E-7 m   Emittance Y            = -4.314E-31 m
+Emittance Z            =  .00000000 m   Energy spread          = 9.75980E-4
+Bunch Length           =  .00000000 mm  Beam tilt              = -1.919E-16 rad
+Beam size xi           = 1.78133009 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  5.6734569     Polarization time      =   .0000000 min
+
+ 
+ ! ------------------------------------------------------------
+ ! (1) 強さの誤差
+ ! ------------------------------------------------------------
+ GCUT = 2;
+ SeedRandom[23];
+ DK  1E-3 QF.2;
+ DK  1E-3 QD*;
+ DDK 1E-4 B.3;
+ cell calc;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654402 $$$       f BX    #######  #  17.033347 $$$       f NX    #######  #   7.420818
+$$$       f AY    #######  #    .440655 $$$       f BY    #######  #    .954300 $$$       f NY    #######  #   7.161205
+$$$       f LENG  #######  #  140.00000
+ dump;
+  element     DL(mm)    DK          DDK      DTHETA(mrad) DELX(mm) DELY(mm)
+ ORG.1        0.00000  0.0000      0.0000       0.00000   0.06481   0.00000
+ QD.1         0.00000 1.58435E-03  0.0000       0.00000   0.00000   0.00000
+ QF.2         0.00000-1.14477E-04  0.0000       0.00000   0.00000   0.00000
+ B.3          0.00000  0.0000    -3.47235E-05   0.00000   0.00000   0.00000
+ QD.2         0.00000 1.39851E-03  0.0000       0.00000   0.00000   0.00000
+ QD.3         0.00000 4.50077E-04  0.0000       0.00000   0.00000   0.00000
+ QD.4         0.00000 2.85403E-04  0.0000       0.00000   0.00000   0.00000
+ QD.5         0.00000 1.25833E-03  0.0000       0.00000   0.00000   0.00000
+ QD.6         0.00000-1.89380E-04  0.0000       0.00000   0.00000   0.00000
+ QD.7         0.00000-8.81363E-04  0.0000       0.00000   0.00000   0.00000
+ QD.8         0.00000 7.86489E-05  0.0000       0.00000   0.00000   0.00000
+ QD.9         0.00000-6.60050E-05  0.0000       0.00000   0.00000   0.00000
+ QD.10        0.00000 4.07031E-05  0.0000       0.00000   0.00000   0.00000
+ QD.11        0.00000 1.68071E-03  0.0000       0.00000   0.00000   0.00000
+ QD.12        0.00000-1.09562E-03  0.0000       0.00000   0.00000   0.00000
+ QD.13        0.00000-1.40280E-03  0.0000       0.00000   0.00000   0.00000
+ QD.14        0.00000 7.68593E-06  0.0000       0.00000   0.00000   0.00000
+ QD.15        0.00000 5.59615E-04  0.0000       0.00000   0.00000   0.00000
+ QD.16        0.00000 1.68956E-04  0.0000       0.00000   0.00000   0.00000
+ QD.17        0.00000-2.38295E-04  0.0000       0.00000   0.00000   0.00000
+ QD.18        0.00000-3.57664E-04  0.0000       0.00000   0.00000   0.00000
+ QD.19        0.00000 1.30644E-03  0.0000       0.00000   0.00000   0.00000
+ QD.20        0.00000 9.04358E-04  0.0000       0.00000   0.00000   0.00000
+ Print["=== Test 3D-1: errors (K1 / K0 after CALC) ==="];
+=== Test 3D-1: errors (K1 / K0 after CALC) ===
+ Print["E K1 QF.1 ",LINE["K1","QF.1"]];
+E K1 QF.1     .5400000000
+ Print["E K1 QF.2 ",LINE["K1","QF.2"]];
+E K1 QF.2     .5399381825
+ Print["E K1 QF.3 ",LINE["K1","QF.3"]];
+E K1 QF.3     .5400000000
+ Do[Print["E K1 QD.",i," ",LINE["K1","QD."//ToString[i]]],{i,1,20}];
+E K1 QD.   1.0000000000    -.5108080200
+E K1 QD.   2.0000000000    -.5107132393
+E K1 QD.   3.0000000000    -.5102295392
+E K1 QD.   4.0000000000    -.5101455557
+E K1 QD.   5.0000000000    -.5106417494
+E K1 QD.   6.0000000000    -.5099034161
+E K1 QD.   7.0000000000    -.5095505047
+E K1 QD.   8.0000000000    -.5100401109
+E K1 QD.   9.0000000000    -.5099663375
+E K1 QD.  10.0000000000    -.5100207586
+E K1 QD.  11.0000000000    -.5108571630
+E K1 QD.  12.0000000000    -.5094412335
+E K1 QD.  13.0000000000    -.5092845696
+E K1 QD.  14.0000000000    -.5100039198
+E K1 QD.  15.0000000000    -.5102854038
+E K1 QD.  16.0000000000    -.5100861678
+E K1 QD.  17.0000000000    -.5098784693
+E K1 QD.  18.0000000000    -.5098175911
+E K1 QD.  19.0000000000    -.5106662853
+E K1 QD.  20.0000000000    -.5104612224
+ Print["E K0 B.3  ",LINE["K0","B.3"]];
+E K0 B.3   -3.47235443E-5
+ Print["E K0 B.4  ",LINE["K0","B.4"]];
+E K0 B.4      .0000000000
+ 
+ ! ------------------------------------------------------------
+ ! (2) 閉軌道 (入口, ORG.11)
+ ! ------------------------------------------------------------
+ Print["=== Test 3D-2: closed orbit ==="];
+=== Test 3D-2: closed orbit ===
+ Print["O ^^^    ",{Twiss["DX","^^^"],Twiss["DPX","^^^"],Twiss["DY","^^^"],Twiss["DPY","^^^"]}];
+O ^^^    { 6.480601535E-5, 2.722690119E-5, 6.85577414E-20, -8.0598658E-20}
+ Print["O ORG.11 ",{Twiss["DX","ORG.11"],Twiss["DPX","ORG.11"],Twiss["DY","ORG.11"],Twiss["DPY","ORG.11"]}];
+O ORG.11 { 1.413476166E-4, 3.259682856E-5, -5.2804629E-20, 6.26146407E-20}
+ 
+ ! ------------------------------------------------------------
+ ! (3) 光学 (入口, ORG.11)
+ ! ------------------------------------------------------------
+ Print["=== Test 3D-3: optics ==="];
+=== Test 3D-3: optics ===
+ Print["T BX  ",Twiss["BX","^^^"]];
+T BX    17.0333473500
+ Print["T BY  ",Twiss["BY","^^^"]];
+T BY      .9542995114
+ Print["T AX  ",Twiss["AX","^^^"]];
+T AX    -4.6544023481
+ Print["T AY  ",Twiss["AY","^^^"]];
+T AY      .4406547746
+ Print["T EX  ",Twiss["EX","^^^"]];
+T EX      .9104274623
+ Print["T EPX ",Twiss["EPX","^^^"]];
+T EPX     .2492047380
+ Print["T BX11 ",Twiss["BX","ORG.11"]];
+T BX11   17.0461105480
+ Print["T BY11 ",Twiss["BY","ORG.11"]];
+T BY11     .9585123178
+ Print["T QX  ",Twiss["NX","$$$"]/2/Pi];
+T QX     7.4208175601
+ Print["T QY  ",Twiss["NY","$$$"]/2/Pi];
+T QY     7.1612053581
+ 
+ ! ------------------------------------------------------------
+ ! (4) エミッタンス
+ ! ------------------------------------------------------------
+ Print["=== Test 3D-4: emittance ==="];
+=== Test 3D-4: emittance ===
+ emi=Emittance[];
+ Print["M EMITX ",(Emittances/.emi)[1]];
+M EMITX  1.398193521E-7
+ Print["M EMITY ",(Emittances/.emi)[2]];
+M EMITY  2.27351351E-32
+ Print["M SIGE  ",MomentumSpread/.emi];
+M SIGE   9.759769841E-4
+ Print["M U0    ",EnergyLossU0/.emi];
+M U0     678485.9277717
+ 
+ stop;
+ FFS                  end:  CPU time =     0.011 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

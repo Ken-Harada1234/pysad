@@ -17,7 +17,7 @@ pysad では `Window[]` が別の窓を作らず、ウィジェットが `Widget
 
 ## Tk 9.0 の画面
 
-`Tk90_shot.py` は、Python 3.14 (Tk 9.0) で pysad の GUI の窓を PrintWindow で撮る (PIL なし、自前の PNG 書き出し)。使い方はスクリプトの冒頭に書いてある。窓の大きさは Python 3.12 (Tk 8.6) と同じで、画像は 3.14 + Tk 9.0 の PrintWindow。`PYSAD_SAD_PACKAGES` が要る。試験は `pysad/tests/test_v2_P5_tk90.py`。
+`Tk90_shot.py` は、Python 3.14 (Tk 9.0) で pysad の GUI の窓を PrintWindow で撮る (PIL なし、自前の PNG 書き出し)。使い方はスクリプトの冒頭に書いてある。窓の大きさは Python 3.12 (Tk 8.6) と同じで、画像は 3.14 + Tk 9.0 の PrintWindow。`PYSAD_SAD_PACKAGES` が要る。試験は `pysad/tests/script_tests/test_v2_P5_tk90.py`。
 
 | 画像 | 台本 |
 |---|---|

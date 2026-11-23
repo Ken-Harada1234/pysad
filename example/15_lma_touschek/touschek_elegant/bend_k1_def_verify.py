@@ -4,7 +4,7 @@
  1. n = 0.4 の扇形磁石 16 台のリング (3 GeV 相当): dν/dδ (CALC・追跡・独立な積分・解析式・elegant (bend_k1_elegant.out.txt の保存値))。追跡のチューンと積分の差 (5 つの δ)
  2. ASTRID2 の自然な色収差 (6 極なし) を、独立な積分 (ドリフト・四極・複合機能の扇形磁石 + 端の縦方向の標準の集束。pysad・SAD のコードを使わない) と比べる
  3. dk の修正: 同じリングの CALC のチューンの δ 依存 (dk 修正の有無) と ASTRID2・大きなリング A の ξ・∂²ν/∂δ²・Emittance[] への影響
-独立な積分は pysad/tests/_u1_indep.py・_u2_indep.py。"""
+独立な積分は pysad/tests/script_tests/_u1_indep.py・_u2_indep.py。"""
 import math
 import os
 import sys
@@ -14,7 +14,7 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests'))
+sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests', 'script_tests'))
 sys.path.insert(0, HERE)
 import _u1_indep as U1  # noqa: E402
 import _u2_indep as indep  # noqa: E402

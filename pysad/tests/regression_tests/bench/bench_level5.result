@@ -1,0 +1,99 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 19:09:31 Tuesday 10/13/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+! bench_level5.sad — Level 5 benchmark: transport line (INS) and fringe fields
+!   周期解を使わない輸送ライン。入口の Twiss と軌道は先頭 MARK (ORG) のパラメータで与える。
+!   入口に軌道のずれ (DX=1 mm, DY=0.5 mm) を入れ、フリンジの非線形項も効くようにする。
+!   ケース:
+!     (A) フリンジ全部 (QUAD/BEND とも F1=0.1, FRINGE=3)
+!     (B) F1=0 (ハードエッジのフリンジ tqfrie/tbedge のみ)
+!     (C) DISFRIN=1 (フリンジを切る)
+!   比べる量: ライン出口と途中の Twiss (BX,AX,BY,AY,EX,EPX) と軌道 (DX,DPX,DY,DPY)。
+!   ※ ORG での初期値の与え方、F1/FRINGE/DISFRIN の書き方は未確認。改修をお願いします。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK  ORG = (BX=10 AX=-1 BY=5 AY=0.5 EX=0.1 EPX=0.01 DX=1E-3 DPX=1E-4 DY=0.5E-3 DPY=-1E-4)
+      EE  = ()
+;
+DRIFT D1 = (L=1.0)
+      D2 = (L=0.5)
+;
+! (A) フリンジあり
+QUAD  QFA = (L=0.5 K1= 0.4 F1=0.1 FRINGE=3)
+      QDA = (L=0.5 K1=-0.4 F1=0.1 FRINGE=3)
+;
+BEND  BA  = (L=1.0 ANGLE=0.1 E1=0.5 E2=0.5 F1=0.1 FRINGE=3)
+;
+! (B) F1=0 (ハードエッジのみ)
+QUAD  QFB = (L=0.5 K1= 0.4)
+      QDB = (L=0.5 K1=-0.4)
+;
+BEND  BB  = (L=1.0 ANGLE=0.1 E1=0.5 E2=0.5)
+;
+! (C) フリンジを切る
+QUAD  QFC = (L=0.5 K1= 0.4 DISFRIN=1)
+      QDC = (L=0.5 K1=-0.4 DISFRIN=1)
+;
+BEND  BC  = (L=1.0 ANGLE=0.1 E1=0.5 E2=0.5 DISFRIN=1)
+;
+LINE LA = (ORG D1 QFA D2 BA D2 QDA D1 QFA D2 BA D2 QDA D1 EE);
+LINE LB = (ORG D1 QFB D2 BB D2 QDB D1 QFB D2 BB D2 QDB D1 EE);
+LINE LC = (ORG D1 QFC D2 BC D2 QDC D1 QFC D2 BC D2 QDC D1 EE);
+;
+
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ 
+ prt[tag_]:=(
+   Print[tag," T EE ",{Twiss["BX","EE"],Twiss["AX","EE"],Twiss["BY","EE"],Twiss["AY","EE"],Twiss["EX","EE"],Twiss["EPX","EE"]}];
+   Print[tag," O EE ",{Twiss["DX","EE"],Twiss["DPX","EE"],Twiss["DY","EE"],Twiss["DPY","EE"]}];
+   Print[tag," T 6  ",{Twiss["BX",6],Twiss["AX",6],Twiss["BY",6],Twiss["AY",6],Twiss["EX",6],Twiss["EPX",6]}];
+   Print[tag," O 6  ",{Twiss["DX",6],Twiss["DPX",6],Twiss["DY",6],Twiss["DPY",6]}];
+   Print[tag," NX NY ",{Twiss["NX","EE"],Twiss["NY","EE"]}]);
+ 
+ USE LA;
+Out[1]:= USE
+   FFS["INS;"];
+   FFS["CALC;"];
+   prt[LA]
+LA T EE {  14.8021641053,  -5.3452033854,   8.6759227630,   3.2447898720,    .8205963824,    .2866808589}
+LA O EE {   -.0010704367, -4.25609533E-4, 8.000227340E-5, -1.14293799E-4}
+LA T 6  {   3.3615698990,   1.6919418275,  11.8292522481,  -2.8163793900,    .1042991896,    .0666145909}
+LA O 6  { 5.381869228E-4, -3.35036125E-4, 4.700180733E-4, 5.103802744E-5}
+LA NX NY {   2.6464092096,    .9982905830}
+ ;
+ USE LB;
+   FFS["INS;"];
+   FFS["CALC;"];
+   prt[LB]
+LB T EE {  14.8393875813,  -5.3565144782,   8.5845201544,   3.2259426599,    .8196711950,    .2862595087}
+LB O EE {   -.0010728657, -4.26148084E-4, 7.787117374E-5, -1.14105424E-4}
+LB T 6  {   3.3563459564,   1.6920271360,  11.8207700237,  -2.8102114693,    .1042544122,    .0665865342}
+LB O 6  { 5.377298087E-4, -3.35319692E-4, 4.697491871E-4, 5.078175876E-5}
+LB NX NY {   2.6482847147,   1.0006365810}
+ ;
+ USE LC;
+   FFS["INS;"];
+   FFS["CALC;"];
+   prt[LC]
+LC T EE {  14.8393197985,  -5.3564925034,   8.5845520620,   3.2259506919,    .8196716745,    .2862597093}
+LC O EE {   -.0010728642, -4.26147710E-4, 7.787198488E-5, -1.14105570E-4}
+LC T 6  {   3.3563537534,   1.6920269268,  11.8207797868,  -2.8102154397,    .1042544801,    .0665865778}
+LC O 6  { 5.377300951E-4, -3.35319512E-4, 4.697494718E-4, 5.078191595E-5}
+LC NX NY {   2.6482829116,   1.0006354127}
+ ;
+ 
+ 
+ stop;
+ FFS                  end:  CPU time =     0.003 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

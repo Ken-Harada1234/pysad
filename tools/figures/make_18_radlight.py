@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """docs/18: 1 GeV の偏向磁石 (L=1.2 m、ANGLE=0.2618) の RADLIGHT 軌道から RadiationField と RadiationSpectrum で求めた
-軸上の d²I/dωdΩ と、Jackson の式 (K_{2/3}) の比較。計算の手順は pysad/tests/test_v2_C3_radfield.py と同じ。
+軸上の d²I/dωdΩ と、Jackson の式 (K_{2/3}) の比較。計算の手順は pysad/tests/script_tests/test_v2_C3_radfield.py と同じ。
 実行: py -3.12 tools/figures/make_18_radlight.py"""
 import math, io
 from _common import *

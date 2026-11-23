@@ -1,0 +1,143 @@
+! ============================================================
+! bench_level2.sad  — Level 2 benchmark
+! Test A: Off-momentum Twiss (delta = -0.02..+0.02)
+! Test B: Combined-function BEND with K1 ≠ 0
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+! Pure dipole (same as Level 1)
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+! Combined-function dipole: K1 = 0.08 m^-1 (integrated), K1_per_length = 0.1 m^-2
+BEND  BK = (L=0.8 ANGLE=0.157079632679490 K1=0.08 E1=0.5 E2=0.5)
+;
+LINE CELL  = (ORG QF D1 B  D1 QD D1 B  D1);
+LINE CELLK = (ORG QF D1 BK D1 QD D1 BK D1);
+;
+LINE RING  = (20*CELL);
+LINE RINGK = (20*CELLK);
+;
+
+! ============================================================
+! Test A: Off-momentum Twiss
+! ============================================================
+FFS;
+USE RING;
+CELL;
+CALC;
+
+Print["=== Test A: Off-momentum Twiss ==="];
+Print[];
+
+Print["--- dp = 0.00 ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+DP0 = -0.02;
+CELL;
+CALC;
+Print["--- dp = -0.02 ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+DP0 = -0.01;
+CELL;
+CALC;
+Print["--- dp = -0.01 ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+DP0 = 0.01;
+CELL;
+CALC;
+Print["--- dp = +0.01 ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+DP0 = 0.02;
+CELL;
+CALC;
+Print["--- dp = +0.02 ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+DP0 = 0;
+
+! ============================================================
+! Test B: Combined-function BEND (K1 = 0.08 m^-1 integrated)
+! ============================================================
+Print["from here RINGK"];
+USE RINGK;
+CELL;
+CALC;
+TYPE BK*;
+!stop;
+!stop;
+!stop;
+
+Print["=== Test B: BEND with K1=0.08 m^-1 (integrated), K1/L=0.1 m^-2 ==="];
+Print[];
+Print["--- Linear optics at ring entrance ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+Print["--- Radiation integrals (RADINT) ---"];
+RADINT;
+Print[];
+
+Print["--- Emittance ---"];
+Print["  Emittance x        = ", (Emittances/.Emittance[])[1]];
+Print["  MomentumSpread     = ", MomentumSpread/.Emittance[]];
+Print["  MomentumCompaction = ", MomentumCompaction/.Emittance[]];
+Print["  EnergyLossU0       = ", EnergyLossU0/.Emittance[]];

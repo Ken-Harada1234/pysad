@@ -253,18 +253,18 @@ MON / MCOD / TCOD はこの SAD ビルドでは何もしない (式として評�
 
 **試験とベンチ**:
 
-- テストは [`pysad/tests/`](../pysad/tests/) (`test_*.py`)。2026-11-21 の通しは、収集 1907 件、**1899 通過・8 skip・失敗 0** (その時点で `test_*.py` は 158 ファイルだった。以後ファイルが増えており、現在の件数は未再確認)。v2 の試験は `test_v2_*.py` (73 ファイル・1081 件) で `compat.set_mode('v2')` を明示する。その他は gs との比較なので k64 モードで走る ([`conftest.py`](../pysad/tests/conftest.py))。
+- テストは [`pysad/tests/`](../pysad/tests/) (`test_*.py`)。2026-11-21 の通しは、収集 1907 件、**1899 通過・8 skip・失敗 0** (その時点で `test_*.py` は 158 ファイルだった。以後ファイルが増えており、現在の件数は未再確認)。v2 の試験は `test_v2_*.py` (73 ファイル・1081 件) で `compat.set_mode('v2')` を明示する。その他は gs との比較なので k64 モードで走る ([`conftest.py`](../pysad/tests/script_tests/conftest.py))。
 - 実行:
 
   ```
-  py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py
-  QUICK=1 py -3.12 -u run_regression.py
+  py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py
+  QUICK=1 py -3.12 -u pysad/tests/regression_tests/run_regression.py
   ```
 
-  `--ignore` する 3 本 ([`test_bend_feeddown.py`](../pysad/tests/test_bend_feeddown.py)・[`test_coord.py`](../pysad/tests/test_coord.py)・[`test_sext_radiation.py`](../pysad/tests/test_sext_radiation.py)) は sys.exit で終わる旧式のスクリプト。環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` が無いと GUI 系は skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがある (単独なら通る)。
-- 回帰 `run_regression.py` (k64 モード) は 50 ベンチ。`QUICK=1` は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行する。2026-11-18 の `QUICK=1` の通しは **FAIL 0**。QUICK なしの全 50 ベンチ (205 s) の記録は 2026-11-16 夜 (`local/wake/verify_log.md`)。
-- ベンチ: `bench_level1〜31*.sad/.result` (gs の出力) と `*_pysad.py/.result`。結果の一覧と一致度は [27_benchmarks.md](27_benchmarks.md)。
-- 試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/scripts/`](../pysad/tests/scripts/) (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は [`pysad/tests/OUTPUTS.md`](../pysad/tests/OUTPUTS.md)。
+  `--ignore` する 3 本 ([`test_bend_feeddown.py`](../pysad/tests/script_tests/test_bend_feeddown.py)・[`test_coord.py`](../pysad/tests/script_tests/test_coord.py)・[`test_sext_radiation.py`](../pysad/tests/script_tests/test_sext_radiation.py)) は sys.exit で終わる旧式のスクリプト。環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` が無いと GUI 系は skip。`PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。GUI 系 (`test_plot`・`test_tclbridge`) は全体実行で数回に 1 回失敗することがある (単独なら通る)。
+- 回帰 [`pysad/tests/regression_tests/run_regression.py`](../pysad/tests/regression_tests/run_regression.py) (k64 モード。説明は [`pysad/tests/regression_tests/README.md`](../pysad/tests/regression_tests/README.md)) は 50 ベンチ。`QUICK=1` は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行する。2026-11-18 の `QUICK=1` の通しは **FAIL 0**。QUICK なしの全 50 ベンチ (205 s) の記録は 2026-11-16 夜 (`local/wake/verify_log.md`)。
+- ベンチ: `pysad/tests/regression_tests/bench/` (自動判定の対象外は `bench_extra/`) の `bench_level1〜31*.sad/.result` (gs の出力) と `*_pysad.py/.result`。結果の一覧と一致度は [27_benchmarks.md](27_benchmarks.md)。
+- 試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/script_tests/scripts/`](../pysad/tests/script_tests/scripts/) (`NAME.sad`・`NAME.gs.txt`・`NAME.pysad.txt`)、試験関数との対応は [`pysad/tests/script_tests/OUTPUTS.md`](../pysad/tests/script_tests/OUTPUTS.md)。
 
 ## 8. 文書の目次 (全 36 本)
 

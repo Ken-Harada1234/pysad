@@ -28,7 +28,7 @@ v2 のモジュール: compat (互換モード) / phsrot / radtaper / spch (空�
 `ffs.py`, `matching.py`, `tracking.py`, `optics.py` は非推奨の旧 API (SAD 未照合の独自実装) で、表には数えない。
 calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも `ffscmd.py` から呼ばれる (CALC6D、解析微分、INTRA/TouschekLifetime、LINE["GX"..]/GEO/ORG、MULT/SOL の numba 追跡、Emittance[] のオプション)。
 
-試験の現状 (`PYSAD_SAD_PACKAGES` つき): `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` を実行する (件数は docs/27 §5.1 の最新の通し)。互換モードは k64 が既定 ([`pysad/tests/conftest.py`](../pysad/tests/conftest.py))。v2 の試験 (`test_v2_*.py`) は `compat.set_mode('v2')` を明示する (本数・件数は未確認)。回帰 (`QUICK=1 run_regression.py`) の結果は docs/27 §5.1 (k64 モード)。
+試験の現状 (`PYSAD_SAD_PACKAGES` つき): `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py` を実行する (件数は docs/27 §5.1 の最新の通し)。互換モードは k64 が既定 ([`pysad/tests/script_tests/conftest.py`](../pysad/tests/script_tests/conftest.py))。v2 の試験 (`test_v2_*.py`) は `compat.set_mode('v2')` を明示する (本数・件数は未確認)。回帰 (`QUICK=1 pysad/tests/regression_tests/run_regression.py`) の結果は docs/27 §5.1 (k64 モード)。
 
 照合桁の目安 (CALC 光学・Emittance[]・追跡・マッチング・DA) は [history/33_fortran_status_validation.md](history/33_fortran_status_validation.md)。表の「照合」欄には個別の桁を書く。
 

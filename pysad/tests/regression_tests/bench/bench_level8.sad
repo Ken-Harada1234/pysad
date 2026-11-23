@@ -1,0 +1,139 @@
+! ============================================================
+! bench_level8.sad — Level 8 benchmark: 追跡で未照合の要素
+!   8-1 (F 行): 四極に F1=0.05, FRINGE=3 (線形フリンジ) を付けたリング
+!   8-2 (C 行): 長さのある空洞 (L=0.5) のリング (QF K1=1.76*0.3 に変更)
+!   8-3 (M 行): 六極 SF/SD を MULT (K2 のみ) に置き換えたリング
+!   どれも Level 6 のリングが基本。emit で trf0 を決めてから 5 粒子を 1, 100 周追跡。
+!   RAD OFF / RAD ON (NOFLUC)。
+!   ※ USE で 3 本のラインを切り替える (Level 7 と同じ書き方)。改修をお願いします。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF  = (L=0.3 K1= 1.8*0.3)
+      QD  = (L=0.3 K1=-1.7*0.3)
+      QFF = (L=0.3 K1= 1.8*0.3 F1=0.05 FRINGE=3)
+      QDF = (L=0.3 K1=-1.7*0.3 F1=0.05 FRINGE=3)
+      QFC = (L=0.3 K1= 1.76*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+MULT  MSF = (L=0.2 K2= 0.6)
+      MSD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA  = (L=0   VOLT=1.5E6 HARM=234)
+      CAL = (L=0.5 VOLT=1.5E6 HARM=234)
+;
+! 8-1: 四極フリンジ
+LINE CELLF0 = (ORG CA QFF DQS SF DS B D1 QDF DQS SD DS B D1);
+LINE CELLF  = (ORG QFF DQS SF DS B D1 QDF DQS SD DS B D1);
+LINE RINGF  = (CELLF0 19*CELLF);
+! 8-2: 長さのある空洞。1 セルだけ 0.5 m 長いと QF=1.8 では水平が半整数共鳴で不安定になるので
+!      QF を 1.76 (QFC) にしてチューンを変える (Qx=7.142, Qy=7.221。ユーザー指示: 光学の一貫性は不要)
+LINE CELLC0 = (ORG CAL QFC DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELLC  = (ORG QFC DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RINGC  = (CELLC0 19*CELLC);
+! 8-3: MULT
+LINE CELLM0 = (ORG CA QF DQS MSF DS B D1 QD DQS MSD DS B D1);
+LINE CELLM  = (ORG QF DQS MSF DS B D1 QD DQS MSD DS B D1);
+LINE RINGM  = (CELLM0 19*CELLM);
+;
+
+FFS;
+$FORM="15.10";
+
+! 粒子: {x, px, y, py, z, dp, 生存フラグ} を列ごとに並べる (Level 6 と同じ)
+x0  = { 1E-3, 3E-3, 0,     1E-3,  0    };
+px0 = { 0,    0,    0,     1E-4,  0    };
+y0  = { 0,    0,    1E-3,  1E-3,  0    };
+py0 = { 0,    0,    0,     0,     0    };
+z0  = { 0,    0,    0,     0,     1E-3 };
+dp0 = { 0,    0,    0,     1E-3,  1E-3 };
+fl0 = { 1,    1,    1,     1,     1    };
+beam0 = {1, {x0, px0, y0, py0, z0, dp0, fl0}};
+
+prtb[tag_, b_] := Do[
+  Print[tag, " P", i, " ", {b[[2,1,i]], b[[2,2,i]], b[[2,3,i]], b[[2,4,i]], b[[2,5,i]], b[[2,6,i]], b[[2,7,i]]}],
+  {i, 1, 5}];
+
+! ------------------------------------------------------------
+! 8-1: 四極 F1=0.05, FRINGE=3
+! ------------------------------------------------------------
+Print["=== Test 8-1: RINGF (QUAD F1=0.05 FRINGE=3) ==="];
+USE RINGF;
+RFSW;
+CELL;
+CALC;
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["F N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["F N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["F R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["F R T100", b100];
+NORAD;
+FLUC;
+
+! ------------------------------------------------------------
+! 8-2: 長さのある空洞 (L=0.5)
+! ------------------------------------------------------------
+Print["=== Test 8-2: RINGC (CAVI L=0.5) ==="];
+USE RINGC;
+RFSW;
+CELL;
+CALC;
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["C N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["C N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["C R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["C R T100", b100];
+NORAD;
+FLUC;
+
+! ------------------------------------------------------------
+! 8-3: MULT (K2 のみ)
+! ------------------------------------------------------------
+Print["=== Test 8-3: RINGM (MULT K2) ==="];
+USE RINGM;
+RFSW;
+CELL;
+CALC;
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["M N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["M N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["M R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["M R T100", b100];
+NORAD;
+FLUC;
+
+stop;
+stop;

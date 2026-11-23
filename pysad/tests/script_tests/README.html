@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>script_tests/ (スクリプトテスト)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#目次">目次</a></li>
+<li><a href="#実行方法">実行方法</a></li>
+<li><a href="#区分-1-光学calcffs-コマンド">区分 1: 光学・CALC・FFS コマンド</a></li>
+<li><a href="#区分-2-要素ごとの試験-bendmultsextcoordmapundtcavapertcavi">区分 2: 要素ごとの試験 (BEND・MULT・SEXT・COORD・MAP・UND・TCAV・APERT・CAVI)</a></li>
+<li><a href="#区分-3-エミッタンス放射">区分 3: エミッタンス・放射</a></li>
+<li><a href="#区分-4-追跡乱数誤差">区分 4: 追跡・乱数・誤差</a></li>
+<li><a href="#区分-5-da周波数マップlmatouschek非線形力学">区分 5: DA・周波数マップ・LMA・Touschek・非線形力学</a></li>
+<li><a href="#区分-6-スピン偏光">区分 6: スピン・偏光</a></li>
+<li><a href="#区分-7-solソレノイド">区分 7: SOL・ソレノイド</a></li>
+<li><a href="#区分-8-集団効果-wakecsrビームビーム空間電荷">区分 8: 集団効果 (wake・CSR・ビームビーム・空間電荷)</a></li>
+<li><a href="#区分-9-sadscript-の評価器パーサパッケージ">区分 9: SADScript の評価器・パーサ・パッケージ</a></li>
+<li><a href="#区分-10-特殊関数数学関数">区分 10: 特殊関数・数学関数</a></li>
+<li><a href="#区分-11-guiグラフィック-tkmatplotlibdxf">区分 11: GUI・グラフィック (Tk・matplotlib・DXF)</a></li>
+<li><a href="#区分-12-マッチングfit軌道補正">区分 12: マッチング・FIT・軌道補正</a></li>
+<li><a href="#区分-13-ラティス集例の確認">区分 13: ラティス集・例の確認</a></li>
+<li><a href="#区分-14-ツール測定">区分 14: ツール・測定</a></li>
+<li><a href="#部品データscripts">部品・データ・scripts/</a><ul>
+<li><a href="#部品-試験から-import-される">部品 (試験から import される)</a></li>
+<li><a href="#データ">データ</a></li>
+<li><a href="#scripts-1100-ファイル">scripts/ (1100 ファイル)</a></li>
+</ul>
+</li>
+<li><a href="#試験の足し方">試験の足し方</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="script_tests-スクリプトテスト">script_tests/ (スクリプトテスト)</h1>
+<p>pysad の機能ごとの自動試験 (pytest)。198 本の試験ファイル <code>test_*.py</code>、収集 2534 件 (<code>PYSAD_SAD_PACKAGES</code> を設定し、旧式の 3 本を <code>--ignore</code> した <code>--collect-only</code> の値)。
+各試験は、小さなラティスや SAD スクリプトを pysad で走らせ、(a) SAD (K64) で取って保存した出力、(b) 試験の中の解析式、(c) SAD・pysad のコードを使わない独立な数値計算 (<code>_*_indep.py</code> など) のどれかと比べる。SAD (K64) の実行は要らない。</p>
+<p>用語: 「SAD 照合」= 保存した SAD (K64) の出力との比較。「独立」= 独立な数値計算や解析式との比較。試験は <code>conftest.py</code> により既定で互換モード k64 (<code>PYSAD_COMPAT=k64</code>) で走る。v2 の動作の試験は、試験の中で <code>v2_mode</code> フィクスチャか <code>compat.set_mode('v2')</code> を明示する。</p>
+<p>SAD (K64) との照合ベンチは姉妹フォルダ <a href="../regression_tests/README.html"><code>../regression_tests/</code></a>。上位の説明は <a href="../README.html"><code>../README.md</code></a>。</p>
+<h2 id="目次">目次</h2>
+<ol>
+<li><a href="#実行方法">実行方法</a></li>
+<li><a href="#区分-1-光学calcffs-コマンド">区分 1: 光学・CALC・FFS コマンド</a></li>
+<li><a href="#区分-2-要素ごとの試験-bendmultsextcoordmapundtcavapertcavi">区分 2: 要素ごとの試験 (BEND・MULT・SEXT・COORD・MAP・UND・TCAV・APERT・CAVI)</a></li>
+<li><a href="#区分-3-エミッタンス放射">区分 3: エミッタンス・放射</a></li>
+<li><a href="#区分-4-追跡乱数誤差">区分 4: 追跡・乱数・誤差</a></li>
+<li><a href="#区分-5-da周波数マップlmatouschek非線形力学">区分 5: DA・周波数マップ・LMA・Touschek・非線形力学</a></li>
+<li><a href="#区分-6-スピン偏光">区分 6: スピン・偏光</a></li>
+<li><a href="#区分-7-solソレノイド">区分 7: SOL・ソレノイド</a></li>
+<li><a href="#区分-8-集団効果-wakecsrビームビーム空間電荷">区分 8: 集団効果 (wake・CSR・ビームビーム・空間電荷)</a></li>
+<li><a href="#区分-9-sadscript-の評価器パーサパッケージ">区分 9: SADScript の評価器・パーサ・パッケージ</a></li>
+<li><a href="#区分-10-特殊関数数学関数">区分 10: 特殊関数・数学関数</a></li>
+<li><a href="#区分-11-guiグラフィック-tkmatplotlibdxf">区分 11: GUI・グラフィック (Tk・matplotlib・DXF)</a></li>
+<li><a href="#区分-12-マッチングfit軌道補正">区分 12: マッチング・FIT・軌道補正</a></li>
+<li><a href="#区分-13-ラティス集例の確認">区分 13: ラティス集・例の確認</a></li>
+<li><a href="#区分-14-ツール測定">区分 14: ツール・測定</a></li>
+<li><a href="#部品データscripts">部品・データ・scripts/</a></li>
+<li><a href="#試験の足し方">試験の足し方</a></li>
+</ol>
+<h2 id="実行方法">実行方法</h2>
+<p>リポジトリのルートから実行する (Python 3.12)。</p>
+<pre><code>set PYSAD_SAD_PACKAGES=&lt;SAD の Packages フォルダ&gt;        (PowerShell: $env:PYSAD_SAD_PACKAGES=&quot;...&quot;)
+py -3.12 -m pysad.nbcache --force                          (numba のキャッシュを作り直す。初回・カーネルを直したあと)
+py -3.12 -m pytest pysad/tests/script_tests -q -p no:cacheprovider `
+    --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py
+py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだけ)
+</code></pre>
+<ul>
+<li><code>--ignore</code> する 3 本は旧式のスクリプト形式で、import 時に <code>sys.exit</code> を呼ぶため pytest の収集を止める。</li>
+<li><code>PYSAD_SAD_PACKAGES</code> が無いと GUI 系 (<code>test_plot.py</code>・<code>test_tclbridge.py</code> ほか) が skip する。</li>
+<li>環境変数: <code>PYSAD_SLOW=1</code> (遅い試験も走らせる)、<code>PYSAD_ERR_LATTICE</code> (<code>test_elkern.py</code> の誤差入りラティス 2 件)、<code>PYSAD_PY314</code> (<code>test_v2_P5_tk90.py</code> の Tk 9.0 用 Python)、<code>V241_POL_CACHE</code> (偏光の比較の部品)。</li>
+<li>全部で 1 時間 45 分ほど (FITP の five が約 10 分以上)。</li>
+</ul>
+<h2 id="区分-1-光学calcffs-コマンド">区分 1: 光学・CALC・FFS コマンド</h2>
+<p>合計 17 ファイル 151 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_pysad.py"><code>test_pysad.py</code></a></td>
+<td>49</td>
+<td>ドリフト・四極・偏向の行列、Twiss、チューンの基本の数値検証</td>
+</tr>
+<tr>
+<td><a href="test_optics_fn.py"><code>test_optics_fn.py</code></a></td>
+<td>8</td>
+<td>TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo などの光学関数</td>
+</tr>
+<tr>
+<td><a href="test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a></td>
+<td>10</td>
+<td>FFS 内の MOMENTUM、Twiss["LENGTH"]、EXPAND/NOEXPAND の動作 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_ffsextra.py"><code>test_ffsextra.py</code></a></td>
+<td>8</td>
+<td>FFS の VARIABLES・MATRIX・SHOW・RECOVER・REVERSE・出力切替</td>
+</tr>
+<tr>
+<td><a href="test_v2_A_ffs.py"><code>test_v2_A_ffs.py</code></a></td>
+<td>9</td>
+<td>4D の CALC が縦方向の列を戻すか、UnstableLevel、CalculateOptics の縦方向</td>
+</tr>
+<tr>
+<td><a href="test_v2_B_ffs.py"><code>test_v2_B_ffs.py</code></a></td>
+<td>14</td>
+<td>MON/MCOD/TCOD、LINE["LENGTH"]、ORG の負数、SeedRandom など FFS の小項目</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_optics.py"><code>test_v2_C2_optics.py</code></a></td>
+<td>7</td>
+<td>加速空洞内の分散、CalculateOptics の TRPT 加速、RADTAPER の閉軌道</td>
+</tr>
+<tr>
+<td><a href="test_trpt_acc.py"><code>test_trpt_acc.py</code></a></td>
+<td>7</td>
+<td>TRPT の加速 (gammab)・MARK OFFSET・USE の大文字小文字・K=0 の四極</td>
+</tr>
+<tr>
+<td><a href="test_unstable.py"><code>test_unstable.py</code></a></td>
+<td>7</td>
+<td>不安定なラインで CELL CALC が続行し nstab を判定する</td>
+</tr>
+<tr>
+<td><a href="test_geo_fit_sig.py"><code>test_geo_fit_sig.py</code></a></td>
+<td>4</td>
+<td>幾何の fit (GX/GY/GZ/CHI)・DISP G・ビームサイズ Twiss["SIG.."]</td>
+</tr>
+<tr>
+<td><a href="test_tdgeo.py"><code>test_tdgeo.py</code></a></td>
+<td>2</td>
+<td>幾何量の解析微分 (tdgeo) が有限差分と一致する</td>
+</tr>
+<tr>
+<td><a href="test_v2_B3_geofit.py"><code>test_v2_B3_geofit.py</code></a></td>
+<td>4</td>
+<td>四極の DX/DY の幾何微分と、SOL 領域内の四極のずれ</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_detr.py"><code>test_v2_P5_detr.py</code></a></td>
+<td>11</td>
+<td>DETR≥1 (x-y モード入れ替え) の CALC・INS・Emittance[] (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_A2_dx.py"><code>test_v2_A2_dx.py</code></a></td>
+<td>10</td>
+<td>ずれた BEND の CALC と追跡の整合 (出口の幾何)</td>
+</tr>
+<tr>
+<td><a href="test_v24_H3_qcod_robust.py"><code>test_v24_H3_qcod_robust.py</code></a></td>
+<td>1</td>
+<td>大きなリングで周期閉軌道の探索 (qcod) が収束する</td>
+</tr>
+<tr>
+<td><a href="test_error_spreading.py"><code>test_error_spreading.py</code></a></td>
+<td>0</td>
+<td>FFSState の誤差ばらまき関数の単体 (スクリプト形式)</td>
+</tr>
+<tr>
+<td><a href="test_new_features.py"><code>test_new_features.py</code></a></td>
+<td>0</td>
+<td>MARK 先頭の初期軌道オフセット、save()/restore_saved() など (スクリプト形式)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-2-要素ごとの試験-bendmultsextcoordmapundtcavapertcavi">区分 2: 要素ごとの試験 (BEND・MULT・SEXT・COORD・MAP・UND・TCAV・APERT・CAVI)</h2>
+<p>合計 27 ファイル 442 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_apert.py"><code>test_apert.py</code></a></td>
+<td>13</td>
+<td>APERT 要素 (楕円・矩形・ずれ・回転・再入射) の追跡 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_cavrot.py"><code>test_cavrot.py</code></a></td>
+<td>2</td>
+<td>CAVI と VOLT 付き MULT のずれ・回転 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_coord.py"><code>test_coord.py</code></a></td>
+<td>0</td>
+<td>COORD 要素の各分岐の単体 (スクリプト形式。<code>sys.exit</code> で収集を止める)</td>
+</tr>
+<tr>
+<td><a href="test_coord_elem.py"><code>test_coord_elem.py</code></a></td>
+<td>12</td>
+<td>COORD 要素の追跡・Twiss・エミッタンス (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_map.py"><code>test_map.py</code></a></td>
+<td>6</td>
+<td>MAP 要素 (ExternalMap) の OPTICS・EMIT・TRACK (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_und.py"><code>test_und.py</code></a></td>
+<td>4</td>
+<td>UND (アンジュレータ) の追跡・Twiss・エミッタンス (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_und.py"><code>test_v2_C_und.py</code></a></td>
+<td>9</td>
+<td>UND の磁場 FBX・FBY を解析式 (平面アンジュレータ) と比べる</td>
+</tr>
+<tr>
+<td><a href="test_tcav.py"><code>test_tcav.py</code></a></td>
+<td>8</td>
+<td>TCAVI (横偏向空洞) の追跡とエミッタンス (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_mult_angle.py"><code>test_mult_angle.py</code></a></td>
+<td>21</td>
+<td>ANGLE≠0 の MULT の追跡・エミッタンス・CALC (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v24_A2_mult_angle_twiss.py"><code>test_v24_A2_mult_angle_twiss.py</code></a></td>
+<td>1</td>
+<td>ANGLE≠0 の MULT の CALC (Twiss) が 10 桁で一致</td>
+</tr>
+<tr>
+<td><a href="test_bendk1_track.py"><code>test_bendk1_track.py</code></a></td>
+<td>2</td>
+<td>ANGLE=0 で K1≠0 の BEND の追跡と粒子損失</td>
+</tr>
+<tr>
+<td><a href="test_bend_feeddown.py"><code>test_bend_feeddown.py</code></a></td>
+<td>0</td>
+<td>Bend.constant_kick() の DX/DY フィードダウン (スクリプト形式)</td>
+</tr>
+<tr>
+<td><a href="test_sext_radiation.py"><code>test_sext_radiation.py</code></a></td>
+<td>0</td>
+<td>6 極の厚い放射キック: E0_GeV=0 で放射なし (スクリプト形式)</td>
+</tr>
+<tr>
+<td><a href="test_rotate.py"><code>test_rotate.py</code></a></td>
+<td>16</td>
+<td>ROTATE (ROT/TILT) 付きの BEND・四極の行列・CALC</td>
+</tr>
+<tr>
+<td><a href="test_v241_A_bend_k1_k0.py"><code>test_v241_A_bend_k1_k0.py</code></a></td>
+<td>36</td>
+<td>ANGLE=0 で K1≠0・K0≠0 の BEND が MULT と同じ結果</td>
+</tr>
+<tr>
+<td><a href="test_v241_B_sext_fringe.py"><code>test_v241_B_sext_fringe.py</code></a></td>
+<td>14</td>
+<td>6 極・8 極などの端の非線形フリンジを CALC・Emittance[] へ入れる</td>
+</tr>
+<tr>
+<td><a href="test_v241_C_mult_edge_ykick.py"><code>test_v241_C_mult_edge_ykick.py</code></a></td>
+<td>12</td>
+<td>MULT の端 (AE1・AE2) の縦方向の収束</td>
+</tr>
+<tr>
+<td><a href="test_v241_quad_integrator.py"><code>test_v241_quad_integrator.py</code></a></td>
+<td>31</td>
+<td>四極本体の積分器の構造と、追跡の写像の正確さ</td>
+</tr>
+<tr>
+<td><a href="test_v2_P3_ae.py"><code>test_v2_P3_ae.py</code></a></td>
+<td>24</td>
+<td>MULT の端の角 AE1・AE2 と K0 つき MULT のエミッタンス (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P3_f1.py"><code>test_v2_P3_f1.py</code></a></td>
+<td>100</td>
+<td>ANGLE=0 の BEND と MULT の F1・FB1・FB2 の追跡 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_D2_edge.py"><code>test_v2_D2_edge.py</code></a></td>
+<td>36</td>
+<td>硬い端の極 (ANGLE=0 の BEND) の端の幾何を独立な基準と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_B1_optics.py"><code>test_v2_B1_optics.py</code></a></td>
+<td>42</td>
+<td>BEND の F1・FRINGE の Emittance[]・CALC・追跡 (SAD 照合と独立な厳密写像)</td>
+</tr>
+<tr>
+<td><a href="test_v2_E_steer.py"><code>test_v2_E_steer.py</code></a></td>
+<td>19</td>
+<td>ANGLE=0 の BEND と MULT の F1 の Emittance[]・CALC (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_A_tchge.py"><code>test_v2_A_tchge.py</code></a></td>
+<td>8</td>
+<td>据え付け誤差の座標変換 tchge の転送行列が写像のヤコビアン</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_phsrot.py"><code>test_v2_C_phsrot.py</code></a></td>
+<td>5</td>
+<td>PHSROT (位相空間の回転) がシンプレクティックでチューンを保つ</td>
+</tr>
+<tr>
+<td><a href="test_v23_U1_bend_k1_field.py"><code>test_v23_U1_bend_k1_field.py</code></a></td>
+<td>7</td>
+<td>K1≠0 の BEND の K1 の定義を独立な数値積分と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v23_U2_bend_k1_def.py"><code>test_v23_U2_bend_k1_def.py</code></a></td>
+<td>14</td>
+<td>K1 の定義オプション ('log'/'lin') と CALC の dk</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-3-エミッタンス放射">区分 3: エミッタンス・放射</h2>
+<p>合計 24 ファイル 284 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_emit_jac.py"><code>test_emit_jac.py</code></a></td>
+<td>22</td>
+<td>emit6d の解析ヤコビアンが数値微分と一致し、tcod の直訳と合う</td>
+</tr>
+<tr>
+<td><a href="test_emit_report.py"><code>test_emit_report.py</code></a></td>
+<td>37</td>
+<td>EMIT 報告の全行と、四極・薄い多極の解析行列 (SAD 保存値と比較)</td>
+</tr>
+<tr>
+<td><a href="test_emit_unstable.py"><code>test_emit_unstable.py</code></a></td>
+<td>5</td>
+<td>不安定な光学の EMIT / INS+CALC6D / tcod の回帰</td>
+</tr>
+<tr>
+<td><a href="test_emit_extra.py"><code>test_emit_extra.py</code></a></td>
+<td>0</td>
+<td>空ファイル</td>
+</tr>
+<tr>
+<td><a href="test_synchrobeta.py"><code>test_synchrobeta.py</code></a></td>
+<td>2</td>
+<td>SynchroBetaEmittance (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_small_items.py"><code>test_small_items.py</code></a></td>
+<td>7</td>
+<td>小さなリングの RADINT・DISP の位置範囲・RADINT の単精度の定数</td>
+</tr>
+<tr>
+<td><a href="test_v2_A_radint.py"><code>test_v2_A_radint.py</code></a></td>
+<td>13</td>
+<td>RADINT (放射積分) の曲げごとの半径・色収差の積分を独立な積分と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_A2_radint.py"><code>test_v2_A2_radint.py</code></a></td>
+<td>12</td>
+<td>RADINT・Emittance[]・追跡の整合を、大きなリングで自前の積分と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_C3_radint.py"><code>test_v2_C3_radint.py</code></a></td>
+<td>21</td>
+<td>傾いた BEND・分散のある場所の I4 の独立な確認</td>
+</tr>
+<tr>
+<td><a href="test_v2_A_damping.py"><code>test_v2_A_damping.py</code></a></td>
+<td>8</td>
+<td>放射減衰の分配 (Jx, Jy, Je) の端の角と勾配つき BEND</td>
+</tr>
+<tr>
+<td><a href="test_v24_rad_pole.py"><code>test_v24_rad_pole.py</code></a></td>
+<td>4</td>
+<td>ANGLE=0・K0≠0 の極 (挿入光源) の RADINT と Emittance[]</td>
+</tr>
+<tr>
+<td><a href="test_v24_D_radbeta.py"><code>test_v24_D_radbeta.py</code></a></td>
+<td>12</td>
+<td>放射の β の因子と、BEND の T[z, δ] の厳密な行列</td>
+</tr>
+<tr>
+<td><a href="test_v24_D3_rad_rf_sol.py"><code>test_v24_D3_rad_rf_sol.py</code></a></td>
+<td>12</td>
+<td>RF 電圧・光子の β の因子と、SOL 内の四極の放射</td>
+</tr>
+<tr>
+<td><a href="test_v2_C3_misc.py"><code>test_v2_C3_misc.py</code></a></td>
+<td>16</td>
+<td>結合リングの平衡エミッタンス、FITP&gt;1 の最終解、FLUC の乱数列</td>
+</tr>
+<tr>
+<td><a href="test_v2_P2_rad.py"><code>test_v2_P2_rad.py</code></a></td>
+<td>22</td>
+<td>SynchroBetaEmittance の始点の分散 η≠0 など、放射・エミッタンスの残り</td>
+</tr>
+<tr>
+<td><a href="test_v2_D1_emit.py"><code>test_v2_D1_emit.py</code></a></td>
+<td>22</td>
+<td>NORFSW+閉軌道のずれの Emittance[]、光子、WSPAC の最後のスライス</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_proton_beta.py"><code>test_v2_P5_proton_beta.py</code></a></td>
+<td>6</td>
+<td>陽子の放射の β の因子 (U0 が古典値/β³)</td>
+</tr>
+<tr>
+<td><a href="test_k64_tcod_notfound.py"><code>test_k64_tcod_notfound.py</code></a></td>
+<td>3</td>
+<td>閉軌道が収束しないときの Emittance[] の動作</td>
+</tr>
+<tr>
+<td><a href="test_radfield.py"><code>test_radfield.py</code></a></td>
+<td>2</td>
+<td>RadiationField・RadiationSpectrum (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C3_radfield.py"><code>test_v2_C3_radfield.py</code></a></td>
+<td>8</td>
+<td>RadiationField を Liénard-Wiechert の式の数値計算と比べる</td>
+</tr>
+<tr>
+<td><a href="test_radlight.py"><code>test_radlight.py</code></a></td>
+<td>1</td>
+<td>RADLIGHT (軌道の記録) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_radlight.py"><code>test_v2_C_radlight.py</code></a></td>
+<td>3</td>
+<td>RADLIGHT の軌道が幾何と一致し、BEND 内を記録する</td>
+</tr>
+<tr>
+<td><a href="test_v2_B3_photons.py"><code>test_v2_B3_photons.py</code></a></td>
+<td>6</td>
+<td>PHOTONS (光子の記録 PhotonList) と Stokes パラメータの範囲</td>
+</tr>
+<tr>
+<td><a href="test_v2_A1_next.py"><code>test_v2_A1_next.py</code></a></td>
+<td>40</td>
+<td>INS の Twiss["DETR"]、陽子の質量・電荷での追跡、ほか (解析式)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-4-追跡乱数誤差">区分 4: 追跡・乱数・誤差</h2>
+<p>合計 14 ファイル 160 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_elkern.py"><code>test_elkern.py</code></a></td>
+<td>37</td>
+<td>要素ごとの numba カーネルが Python の経路と同じ結果を出す</td>
+</tr>
+<tr>
+<td><a href="test_perf_kernels.py"><code>test_perf_kernels.py</code></a></td>
+<td>50</td>
+<td>高速化カーネル (K1≠0 BEND・tchge・apply) が基準の Python 版と一致</td>
+</tr>
+<tr>
+<td><a href="test_track6n_ext.py"><code>test_track6n_ext.py</code></a></td>
+<td>8</td>
+<td>numba 追跡 (track6n) の MULT・SOL が純 Python と一致 (今回の収集では除外)</td>
+</tr>
+<tr>
+<td><a href="test_main_track.py"><code>test_main_track.py</code></a></td>
+<td>8</td>
+<td>MAIN レベルの TRACK コマンド (規格化振幅・smear・チューン)</td>
+</tr>
+<tr>
+<td><a href="test_fourier_fit.py"><code>test_fourier_fit.py</code></a></td>
+<td>4</td>
+<td>MAIN の TRACK の FOURIER 解析 (wjfit・wfres) (K64 の Fortran と照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_A_track.py"><code>test_v2_A_track.py</code></a></td>
+<td>8</td>
+<td>追跡の dv の項と、SOL 内の四極の放射が他粒子に依らない</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_track.py"><code>test_v2_C_track.py</code></a></td>
+<td>14</td>
+<td>tdusrn の NaN、最初の tapert、SOL 領域の未対応要素、LOSSMAP</td>
+</tr>
+<tr>
+<td><a href="test_v2_F2_photons_coord_tcavi.py"><code>test_v2_F2_photons_coord_tcavi.py</code></a></td>
+<td>2</td>
+<td>PHOTONS と COORD・TCAVI を同じラティスに置いたときの光子の記録</td>
+</tr>
+<tr>
+<td><a href="test_sadrandom.py"><code>test_sadrandom.py</code></a></td>
+<td>3</td>
+<td>SAD の既定乱数と Random[]/GaussRandom[] の束縛</td>
+</tr>
+<tr>
+<td><a href="test_delcor.py"><code>test_delcor.py</code></a></td>
+<td>3</td>
+<td>DELCOR (相関のあるランダムなずれ) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_delcor.py"><code>test_v2_C_delcor.py</code></a></td>
+<td>3</td>
+<td>DELCOR で MARK・CAVI へ書く先と、相関関数の形</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_delcor.py"><code>test_v2_C2_delcor.py</code></a></td>
+<td>7</td>
+<td>DELCOR の相関長≠0 の規格化 (各成分の rms が 1)</td>
+</tr>
+<tr>
+<td><a href="test_v2_B3_naff.py"><code>test_v2_B3_naff.py</code></a></td>
+<td>12</td>
+<td>NAFF 風のチューン抽出が単一・複数周波数を正しく出す</td>
+</tr>
+<tr>
+<td><a href="test_v2_F3_measure_fifo.py"><code>test_v2_F3_measure_fifo.py</code></a></td>
+<td>1</td>
+<td>PUTMEASURE/GETMEASURE を名前つきパイプ (FIFO) で受け渡す</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-5-da周波数マップlmatouschek非線形力学">区分 5: DA・周波数マップ・LMA・Touschek・非線形力学</h2>
+<p>合計 29 ファイル 424 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_v23_Q1_fmap_lma.py"><code>test_v23_Q1_fmap_lma.py</code></a></td>
+<td>21</td>
+<td>周波数マップ・局所運動量アクセプタンス (LMA)・共通の追跡設定</td>
+</tr>
+<tr>
+<td><a href="test_v23_L2_lma.py"><code>test_v23_L2_lma.py</code></a></td>
+<td>11</td>
+<td>LMA の check_every の既定、RF バケット、限界の種別</td>
+</tr>
+<tr>
+<td><a href="test_v23_Q2_resdrive.py"><code>test_v23_Q2_resdrive.py</code></a></td>
+<td>14</td>
+<td>6 極の共鳴駆動項・ADTS・クロマティシティを追跡と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v23_R1_rfsw_adts.py"><code>test_v23_R1_rfsw_adts.py</code></a></td>
+<td>2</td>
+<td>RF つきラティスの 6 極 ×0 の ADTS (RFSW の ON/OFF)</td>
+</tr>
+<tr>
+<td><a href="test_v23_R2_adts_direct.py"><code>test_v23_R2_adts_direct.py</code></a></td>
+<td>8</td>
+<td>ADTS の直接の検証 (追跡+NAFF+多項式フィット)</td>
+</tr>
+<tr>
+<td><a href="test_v23_R3_bend_cubic.py"><code>test_v23_R3_bend_cubic.py</code></a></td>
+<td>12</td>
+<td>偏向磁石の 3 次の項を入れた ADTS</td>
+</tr>
+<tr>
+<td><a href="test_v23_R4_rdt.py"><code>test_v23_R4_rdt.py</code></a></td>
+<td>13</td>
+<td>共鳴駆動項 h_jklmp の解析式を、追跡の 1 周写像から取り出した値と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v23_R5_rdt4.py"><code>test_v23_R5_rdt4.py</code></a></td>
+<td>14</td>
+<td>4 次の共鳴駆動項 (6 極の 2 次を含む)</td>
+</tr>
+<tr>
+<td><a href="test_v23_R6_bend_orbit.py"><code>test_v23_R6_bend_orbit.py</code></a></td>
+<td>15</td>
+<td>偏向磁石の閉軌道まわりの分解、K0≠0 の磁石、δ≠0 の ADTS</td>
+</tr>
+<tr>
+<td><a href="test_v23_S1_fmapres.py"><code>test_v23_S1_fmapres.py</code></a></td>
+<td>12</td>
+<td>周波数マップと RDT・ADTS の接続、誤差つき・δ つきの周波数マップ</td>
+</tr>
+<tr>
+<td><a href="test_v23_S2_fmapcheck.py"><code>test_v23_S2_fmapcheck.py</code></a></td>
+<td>19</td>
+<td>周波数マップの警告・周回数の換算・誤差の与え方</td>
+</tr>
+<tr>
+<td><a href="test_v23_S3_fmappred.py"><code>test_v23_S3_fmappred.py</code></a></td>
+<td>12</td>
+<td>共鳴線の予想 (保存した周波数マップの表を読むので速い)</td>
+</tr>
+<tr>
+<td><a href="test_v23_T1_elegant.py"><code>test_v23_T1_elegant.py</code></a></td>
+<td>8</td>
+<td>elegant との比較 (変換、保存した elegant の LMA・寿命)</td>
+</tr>
+<tr>
+<td><a href="test_v23_T2_touschek.py"><code>test_v23_T2_touschek.py</code></a></td>
+<td>8</td>
+<td>Touschek 寿命の式を独立な関数と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v24_A1_ampnf.py"><code>test_v24_A1_ampnf.py</code></a></td>
+<td>7</td>
+<td>1 周写像の Birkhoff 正規形による ν(Jx, Jy, δ)</td>
+</tr>
+<tr>
+<td><a href="test_v24_A2_k0_bend.py"><code>test_v24_A2_k0_bend.py</code></a></td>
+<td>8</td>
+<td>K0≠0 の BEND (挿入光源型) の解析式を追跡の写像と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v24_A3_das_damping.py"><code>test_v24_A3_das_damping.py</code></a></td>
+<td>3</td>
+<td>DynamicApertureSurvey の Damping・DampEnough (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v24_A3_touschek_bunch.py"><code>test_v24_A3_touschek_bunch.py</code></a></td>
+<td>4</td>
+<td>Touschek の損失率にバンチ内の δ 分布を入れるオプション</td>
+</tr>
+<tr>
+<td><a href="test_v24_A5_dapert_options.py"><code>test_v24_A5_dapert_options.py</code></a></td>
+<td>2</td>
+<td>DynamicApertureSurvey の ExpandElementValues・ReferenceOrbit</td>
+</tr>
+<tr>
+<td><a href="test_v24_A7_misc.py"><code>test_v24_A7_misc.py</code></a></td>
+<td>4</td>
+<td>Touschek の q_s の効果 (モンテカルロと一致)、誤差の集計</td>
+</tr>
+<tr>
+<td><a href="test_v24_F1_rotated_bend.py"><code>test_v24_F1_rotated_bend.py</code></a></td>
+<td>7</td>
+<td>ROTATE した磁石を RDT・ADTS・ν(J, δ) に入れる</td>
+</tr>
+<tr>
+<td><a href="test_v24_F2_defaults.py"><code>test_v24_F2_defaults.py</code></a></td>
+<td>5</td>
+<td>v2 の既定値 (DAS・周波数マップ・Touschek) と k64 の違い</td>
+</tr>
+<tr>
+<td><a href="test_v24_G_k0_ampnf.py"><code>test_v24_G_k0_ampnf.py</code></a></td>
+<td>154</td>
+<td>K0≠0 の磁石 (MPW・逆曲げ・傾き) を正規形 (TPSA) に入れる</td>
+</tr>
+<tr>
+<td><a href="test_v24_H1_coupled_h4.py"><code>test_v24_H1_coupled_h4.py</code></a></td>
+<td>11</td>
+<td>結合した光学 (ROTATE した磁石) の 4 次の h・δ≠0</td>
+</tr>
+<tr>
+<td><a href="test_v241_ampnf_ext.py"><code>test_v241_ampnf_ext.py</code></a></td>
+<td>5</td>
+<td>正規形の J² の項・島の理論と追跡の比較</td>
+</tr>
+<tr>
+<td><a href="test_v241_lma_long.py"><code>test_v241_lma_long.py</code></a></td>
+<td>16</td>
+<td>誤差つき LMA と 10^4 周級の放射追跡 (保存した gs の出力と比較)</td>
+</tr>
+<tr>
+<td><a href="test_v241_sxtopt_spec.py"><code>test_v241_sxtopt_spec.py</code></a></td>
+<td>10</td>
+<td>6 極の最適化 (sxtopt) の項の指定と作動点まわりの共鳴の警告</td>
+</tr>
+<tr>
+<td><a href="test_v2_P4_dapwidth.py"><code>test_v2_P4_dapwidth.py</code></a></td>
+<td>11</td>
+<td>DynamicApertureSurvey の DAPWIDTH の窓 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_ddba_sextupole.py"><code>test_ddba_sextupole.py</code></a></td>
+<td>8</td>
+<td>6 極ファミリーの K2L に対する RDT・ADTS の多項式モデルと最適化</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-6-スピン偏光">区分 6: スピン・偏光</h2>
+<p>合計 18 ファイル 186 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_spin.py"><code>test_spin.py</code></a></td>
+<td>8</td>
+<td>POL: PolarizationTime・SpinTune・SpinPrecessionMatrix (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_spin_track.py"><code>test_spin_track.py</code></a></td>
+<td>5</td>
+<td>POL つきの TrackParticles (粒子ごとのスピン追跡) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v241_pol_fluc.py"><code>test_v241_pol_fluc.py</code></a></td>
+<td>22</td>
+<td>FLUC つきスピン追跡を 4 つのリングで gs と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v24_pol_emitdiv.py"><code>test_v24_pol_emitdiv.py</code></a></td>
+<td>2</td>
+<td>POL の Emittance[] の EMITDIV への依存</td>
+</tr>
+<tr>
+<td><a href="test_v24_D_spin_bpar.py"><code>test_v24_D_spin_bpar.py</code></a></td>
+<td>4</td>
+<td>磁石本体の運動量方向の磁場 B∥ の効果 (Maxwell を満たす基準)</td>
+</tr>
+<tr>
+<td><a href="test_v24_D3_spin_bpar_magnets.py"><code>test_v24_D3_spin_bpar_magnets.py</code></a></td>
+<td>17</td>
+<td>四極・6 極・MULT・ステアリング本体の B∥ の効果</td>
+</tr>
+<tr>
+<td><a href="test_v2_A2_pol.py"><code>test_v2_A2_pol.py</code></a></td>
+<td>7</td>
+<td>Polarization (Sokolov-Ternov) を独立な式と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_A2_spin.py"><code>test_v2_A2_spin.py</code></a></td>
+<td>9</td>
+<td>500 周後のスピン角の違い (スライス角の誤差) の切り分け</td>
+</tr>
+<tr>
+<td><a href="test_v2_A_spin.py"><code>test_v2_A_spin.py</code></a></td>
+<td>22</td>
+<td>スピンと SOL 内の放射: 運動量の共分散、端の縦磁場</td>
+</tr>
+<tr>
+<td><a href="test_v2_B3_pol.py"><code>test_v2_B3_pol.py</code></a></td>
+<td>7</td>
+<td>Polarization のシンクロトロン側帯 (スピン位相変調) の項</td>
+</tr>
+<tr>
+<td><a href="test_v2_B3_radpol.py"><code>test_v2_B3_radpol.py</code></a></td>
+<td>3</td>
+<td>RADPOL 追跡の緩和が Sokolov-Ternov の値と合う</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_spin.py"><code>test_v2_C2_spin.py</code></a></td>
+<td>17</td>
+<td>SOL 領域・UND・PHSROT のスピン追跡 (Thomas-BMT 積分と比較)</td>
+</tr>
+<tr>
+<td><a href="test_v2_E_pol_kick.py"><code>test_v2_E_pol_kick.py</code></a></td>
+<td>3</td>
+<td>δ の蹴りへのスピン軸の応答 G の検証</td>
+</tr>
+<tr>
+<td><a href="test_v2_E_spinsol.py"><code>test_v2_E_spinsol.py</code></a></td>
+<td>21</td>
+<td>SOL 領域 (傾いたソレノイド) の Emittance[] のスピン量</td>
+</tr>
+<tr>
+<td><a href="test_v2_P1_pol_chrom.py"><code>test_v2_P1_pol_chrom.py</code></a></td>
+<td>6</td>
+<td>色収差による変調で、偏極の式が FLUC 追跡に近づく</td>
+</tr>
+<tr>
+<td><a href="test_v2_P1_rev.py"><code>test_v2_P1_rev.py</code></a></td>
+<td>6</td>
+<td>反転した BEND のあるリングの偏極度・時間が独立な式と合う</td>
+</tr>
+<tr>
+<td><a href="test_v2_P1_st.py"><code>test_v2_P1_st.py</code></a></td>
+<td>9</td>
+<td>n が傾く・非平面リングの偏極の緩和率</td>
+</tr>
+<tr>
+<td><a href="test_v2_P4_sol_spin.py"><code>test_v2_P4_sol_spin.py</code></a></td>
+<td>18</td>
+<td>SOL 領域内の四極・MULT・CAVI のスピン (Thomas-BMT と比較)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-7-solソレノイド">区分 7: SOL・ソレノイド</h2>
+<p>合計 9 ファイル 112 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_sol_optics.py"><code>test_sol_optics.py</code></a></td>
+<td>4</td>
+<td>SOL 領域の Twiss (CALC、INS、CELL) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_sol_emit.py"><code>test_sol_emit.py</code></a></td>
+<td>3</td>
+<td>SOL 領域の Emittance[] (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_sol_geo.py"><code>test_sol_geo.py</code></a></td>
+<td>2</td>
+<td>SOL 領域の幾何 (ずれ・傾きがあるときの LINE["GX"] など) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_B1_sol.py"><code>test_v2_B1_sol.py</code></a></td>
+<td>45</td>
+<td>SOL 領域内の要素を、ローレンツ力の積分と比べる (大きな Bz まで)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_sol.py"><code>test_v2_C_sol.py</code></a></td>
+<td>32</td>
+<td>SOL 領域内の BEND・MULT・CAVI・APERT の追跡と放射</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_sol.py"><code>test_v2_C2_sol.py</code></a></td>
+<td>11</td>
+<td>傾き・ずれた SOL (DX DY DZ CHI) と端の放射 F1、領域の幾何</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_solrf.py"><code>test_v2_C2_solrf.py</code></a></td>
+<td>9</td>
+<td>SOL 領域の CAVI・RF つき MULT の加速、wake、AUTOPHI</td>
+</tr>
+<tr>
+<td><a href="test_v2_F4_sol_bound0.py"><code>test_v2_F4_sol_bound0.py</code></a></td>
+<td>2</td>
+<td>BOUND=0 の SOL が領域の外にあるときの追跡 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P4_sol_photons.py"><code>test_v2_P4_sol_photons.py</code></a></td>
+<td>4</td>
+<td>SOL 領域内の光子の記録 (PhotonList)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-8-集団効果-wakecsrビームビーム空間電荷">区分 8: 集団効果 (wake・CSR・ビームビーム・空間電荷)</h2>
+<p>合計 15 ファイル 159 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_wake.py"><code>test_wake.py</code></a></td>
+<td>23</td>
+<td>WakeFunction の追跡 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_wake_optics.py"><code>test_wake_optics.py</code></a></td>
+<td>9</td>
+<td>WAKEOPT (光学の wake) と InitialOrbits (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_wakecmd.py"><code>test_v2_C_wakecmd.py</code></a></td>
+<td>3</td>
+<td>旧式の WAKE コマンドが WakeFunction と同じ結果</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_wakecmd.py"><code>test_v2_C2_wakecmd.py</code></a></td>
+<td>6</td>
+<td>WAKE コマンドの表を複数行にまたがって書ける</td>
+</tr>
+<tr>
+<td><a href="test_csr.py"><code>test_csr.py</code></a></td>
+<td>7</td>
+<td>CSR (CSRTrack・CSRHaissin・CSRSetupOY・CSRMatrix) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_csr.py"><code>test_v2_C_csr.py</code></a></td>
+<td>2</td>
+<td>CSRSetupOY の位置 zj と運動量 dpj が別の値</td>
+</tr>
+<tr>
+<td><a href="test_beambeam.py"><code>test_beambeam.py</code></a></td>
+<td>24</td>
+<td>BEAMBEAM (強弱ビーム) の追跡・ルミノシティ (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v24_bb_tilt_indep.py"><code>test_v24_bb_tilt_indep.py</code></a></td>
+<td>5</td>
+<td>傾いた強ビームの場を極座標の数値積分と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_beambeam.py"><code>test_v2_C_beambeam.py</code></a></td>
+<td>2</td>
+<td>BEAMBEAM の傾き回転が共変</td>
+</tr>
+<tr>
+<td><a href="test_bbbrem.py"><code>test_bbbrem.py</code></a></td>
+<td>1</td>
+<td>BBBrem1 (ビーム・ビーム制動放射の 1 事象) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_gausscoul.py"><code>test_gausscoul.py</code></a></td>
+<td>2</td>
+<td>GaussianCoulomb・GaussianCoulombU (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_spch.py"><code>test_v2_C_spch.py</code></a></td>
+<td>22</td>
+<td>空間電荷 (SPAC・PSPAC・SPCH 要素) を解析式と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_spch.py"><code>test_v2_C2_spch.py</code></a></td>
+<td>35</td>
+<td>MULT の RADIUS (SPAC) と WSPAC (ガウス分布) の空間電荷</td>
+</tr>
+<tr>
+<td><a href="test_v2_P4_pspac_k64.py"><code>test_v2_P4_pspac_k64.py</code></a></td>
+<td>14</td>
+<td>k64 モードの PSPAC (gs と全桁一致)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P4_wspac_beam.py"><code>test_v2_P4_wspac_beam.py</code></a></td>
+<td>4</td>
+<td>追跡の WSPAC に自己無撞着なビーム行列を使うオプション</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-9-sadscript-の評価器パーサパッケージ">区分 9: SADScript の評価器・パーサ・パッケージ</h2>
+<p>合計 18 ファイル 262 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_evalfixes.py"><code>test_evalfixes.py</code></a></td>
+<td>25</td>
+<td>SADScript の評価 (連鎖比較・位置指定・スレッド・空列) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_example_fixes.py"><code>test_example_fixes.py</code></a></td>
+<td>14</td>
+<td>Packages の遅延読み込み、記号式、有理数演算など (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_scriptgs.py"><code>test_scriptgs.py</code></a></td>
+<td>17</td>
+<td>Module の字句スコープ、Return、Switch/Which、Out[n] (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_item4.py"><code>test_item4.py</code></a></td>
+<td>9</td>
+<td>リスト関数、tsvd (SVD ソルバ)、制御構文、CalculateOptics の骨格</td>
+</tr>
+<tr>
+<td><a href="test_sadclass.py"><code>test_sadclass.py</code></a></td>
+<td>16</td>
+<td>SAD の Class (継承・メソッド・インスタンス変数)</td>
+</tr>
+<tr>
+<td><a href="test_symbol_names.py"><code>test_symbol_names.py</code></a></td>
+<td>2</td>
+<td>裸のシンボルを要素名に使う、要素の型名と同名の LINE</td>
+</tr>
+<tr>
+<td><a href="test_symbolic.py"><code>test_symbolic.py</code></a></td>
+<td>3</td>
+<td>記号微分 D とパターン照合 (Orderless・Flat) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_fileops.py"><code>test_fileops.py</code></a></td>
+<td>2</td>
+<td>ファイル・ディレクトリ関数、ARRAY・StringInsert など</td>
+</tr>
+<tr>
+<td><a href="test_environment_setenv.py"><code>test_environment_setenv.py</code></a></td>
+<td>2</td>
+<td>Environment[名前, 値] が環境変数を設定する</td>
+</tr>
+<tr>
+<td><a href="test_miscfn.py"><code>test_miscfn.py</code></a></td>
+<td>2</td>
+<td>DownhillSimplex・StringToStream など (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_gui_lang.py"><code>test_gui_lang.py</code></a></td>
+<td>10</td>
+<td>Tkinter.n・KBFrame.n を動かすための言語機能 (リスト・文字列・Apply)</td>
+</tr>
+<tr>
+<td><a href="test_v2_B2_script.py"><code>test_v2_B2_script.py</code></a></td>
+<td>16</td>
+<td>$Context、With、Visit、Bye など SADScript の小項目 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_B_script.py"><code>test_v2_B_script.py</code></a></td>
+<td>25</td>
+<td>PolynomialFit・For・MessageName・複素 FindRoot など</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_script.py"><code>test_v2_C2_script.py</code></a></td>
+<td>18</td>
+<td>FFS 文の読み方 (<code>FFS;NPARA=1;</code> など)</td>
+</tr>
+<tr>
+<td><a href="test_v2_D2_parser.py"><code>test_v2_D2_parser.py</code></a></td>
+<td>58</td>
+<td>MAIN 部の要素定義の式 (<code>ANGLE=PI/8</code> など) の文法と値 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_syntax.py"><code>test_v2_P5_syntax.py</code></a></td>
+<td>16</td>
+<td>MAIN の要素定義の式の文法の細部 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v24_A_parser_fit.py"><code>test_v24_A_parser_fit.py</code></a></td>
+<td>18</td>
+<td>パーサ・評価器・FIT まわり (関数名 At、NaN の FitFunction など)</td>
+</tr>
+<tr>
+<td><a href="test_v2_D2_packages.py"><code>test_v2_D2_packages.py</code></a></td>
+<td>9</td>
+<td>CorrectOrbit の Micado と Packages の読み込み</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-10-特殊関数数学関数">区分 10: 特殊関数・数学関数</h2>
+<p>合計 5 ファイル 88 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_specfn.py"><code>test_specfn.py</code></a></td>
+<td>2</td>
+<td>特殊関数・数学関数を gs の出力 (specfn_ref.json) と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v24_E_audit.py"><code>test_v24_E_audit.py</code></a></td>
+<td>42</td>
+<td>組込の数学・特殊・リスト関数を mpmath の参照値と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_B_specfn.py"><code>test_v2_B_specfn.py</code></a></td>
+<td>13</td>
+<td>Hypergeometric・Bessel・ExpIntegralEi などを独立な計算と比べる</td>
+</tr>
+<tr>
+<td><a href="test_v2_B2_specfn_cx.py"><code>test_v2_B2_specfn_cx.py</code></a></td>
+<td>8</td>
+<td>複素引数の Zeta・HurwitzZeta・PolyLog・HypergeometricU</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_specfn_cx.py"><code>test_v2_P5_specfn_cx.py</code></a></td>
+<td>23</td>
+<td>複素引数の特殊関数 (微分方程式の残差・漸化式・恒等式)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-11-guiグラフィック-tkmatplotlibdxf">区分 11: GUI・グラフィック (Tk・matplotlib・DXF)</h2>
+<p>合計 6 ファイル 111 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_plot.py"><code>test_plot.py</code></a></td>
+<td>8</td>
+<td>ListPlot・Plot と Tk キャンバスの描画 (SAD 照合。GUI 環境が要る)</td>
+</tr>
+<tr>
+<td><a href="test_tclbridge.py"><code>test_tclbridge.py</code></a></td>
+<td>7</td>
+<td>Tcl/Tk の接点と Tkinter.n・KBMainFrame.n の動作 (要 <code>PYSAD_SAD_PACKAGES</code>)</td>
+</tr>
+<tr>
+<td><a href="test_v241_mpl_display.py"><code>test_v241_mpl_display.py</code></a></td>
+<td>32</td>
+<td><code>$DisplayFunction</code> = MatplotlibDrawer で Graphics を matplotlib に描く</td>
+</tr>
+<tr>
+<td><a href="test_v25_draw_mpl.py"><code>test_v25_draw_mpl.py</code></a></td>
+<td>33</td>
+<td>FFS の DRAW (matplotlib) の構文解析と描画データ</td>
+</tr>
+<tr>
+<td><a href="test_dxf_lattice.py"><code>test_dxf_lattice.py</code></a></td>
+<td>28</td>
+<td>ラティス平面図の DXF の読み戻し・偏向磁石の外形の幾何</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_tk90.py"><code>test_v2_P5_tk90.py</code></a></td>
+<td>3</td>
+<td>Tk 9.0 (Python 3.14 の venv) で GUI が動き窓の大きさが一致</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-12-マッチングfit軌道補正">区分 12: マッチング・FIT・軌道補正</h2>
+<p>合計 6 ファイル 35 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_fitroot.py"><code>test_fitroot.py</code></a></td>
+<td>2</td>
+<td>FindRoot・Fit・FitGaussian・NIntegrate・SelectCases (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_fam_points.py"><code>test_fam_points.py</code></a></td>
+<td>6</td>
+<td>FITP の fam 点 (有限振幅ファミリー) の定義と自己検証</td>
+</tr>
+<tr>
+<td><a href="test_v2_B2_free.py"><code>test_v2_B2_free.py</code></a></td>
+<td>6</td>
+<td>成分ごとの FREE (<code>FREE QF.1 K1;</code>) (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P4_free.py"><code>test_v2_P4_free.py</code></a></td>
+<td>6</td>
+<td>要素ごとの FREE の「何もしない変数」の数え方 (gs と全桁一致)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_micado_fitp_oy.py"><code>test_v2_P5_micado_fitp_oy.py</code></a></td>
+<td>12</td>
+<td>OYStability・Micado の変種・FITP&gt;1 (SAD 照合)</td>
+</tr>
+<tr>
+<td><a href="test_corr.py"><code>test_corr.py</code></a></td>
+<td>3</td>
+<td>軌道補正 CorrectOrbit・Steer・最適化 (SAD 照合)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-13-ラティス集例の確認">区分 13: ラティス集・例の確認</h2>
+<p>合計 4 ファイル 50 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_ddba_lattices.py"><code>test_ddba_lattices.py</code></a></td>
+<td>24</td>
+<td>DDBA ラティス 28 本の <code>cell calc emit</code> の値が記録と一致</td>
+</tr>
+<tr>
+<td><a href="test_ddba_v07_14.py"><code>test_ddba_v07_14.py</code></a></td>
+<td>5</td>
+<td>DDBA の 1 式のラティス 2 本と誤差計算の縮小版が走る</td>
+</tr>
+<tr>
+<td><a href="test_kek_ls_example.py"><code>test_kek_ls_example.py</code></a></td>
+<td>8</td>
+<td>KEK-LS の例のラティスの周長・チューン・εx と速い台本</td>
+</tr>
+<tr>
+<td><a href="test_pf_history_lattices.py"><code>test_pf_history_lattices.py</code></a></td>
+<td>13</td>
+<td>PF の履歴ラティス 4 本の <code>cell calc emit</code> の値</td>
+</tr>
+</tbody>
+</table>
+<h2 id="区分-14-ツール測定">区分 14: ツール・測定</h2>
+<p>合計 6 ファイル 70 件。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>件数</th>
+<th>何を確かめるか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="test_tools_md_to_html.py"><code>test_tools_md_to_html.py</code></a></td>
+<td>12</td>
+<td>md→HTML 変換ツール (tools/md_to_html.py・build_html.py)</td>
+</tr>
+<tr>
+<td><a href="test_measure.py"><code>test_measure.py</code></a></td>
+<td>1</td>
+<td>tlum が二つのガウスビームの重なり面積の解析値に近い</td>
+</tr>
+<tr>
+<td><a href="test_v2_C_measure.py"><code>test_v2_C_measure.py</code></a></td>
+<td>19</td>
+<td>MEASURE・TRCOD・LOGMEASURE と MAIN の TRACK TURNS=-1</td>
+</tr>
+<tr>
+<td><a href="test_v2_C2_measure.py"><code>test_v2_C2_measure.py</code></a></td>
+<td>20</td>
+<td>FIXCOD・MVCOD・STNCOD・ALIGN・PUTMEASURE/GETMEASURE</td>
+</tr>
+<tr>
+<td><a href="test_v2_C3_measure.py"><code>test_v2_C3_measure.py</code></a></td>
+<td>8</td>
+<td>MEASURE・TRCOD・ALIGN・FIXCOD の独立な検証 (大きなリング)</td>
+</tr>
+<tr>
+<td><a href="test_v2_P5_measure.py"><code>test_v2_P5_measure.py</code></a></td>
+<td>10</td>
+<td>MEASURE・TRCOD の統計を gs と比べる</td>
+</tr>
+</tbody>
+</table>
+<p>件数 0 の 6 本: <code>test_bend_feeddown.py</code>・<code>test_coord.py</code>・<code>test_sext_radiation.py</code> (旧式。上記 <code>--ignore</code>)、<code>test_error_spreading.py</code>・<code>test_new_features.py</code> (スクリプト形式で、import 時に実行される)、<code>test_emit_extra.py</code> (空)。</p>
+<h2 id="部品データscripts">部品・データ・scripts/</h2>
+<h3 id="部品-試験から-import-される">部品 (試験から import される)</h3>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+<th>使う試験</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>conftest.py</code></td>
+<td>試験の共通設定: 互換モード k64 を既定にし、フィクスチャ v2_mode・k64_mode、Tk 窓・EMITDIV・環境変数の後始末</td>
+<td>全部</td>
+</tr>
+<tr>
+<td><code>__init__.py</code></td>
+<td>空 (pysad.tests をパッケージにする。相対 import に必要)</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>make_outputs_md.py</code></td>
+<td>scripts/ の台本と試験関数の対応表 OUTPUTS.md を作る</td>
+<td>-</td>
+</tr>
+<tr>
+<td><code>_a2_indep.py</code></td>
+<td>放射積分 I1〜I5・U0・Jx・減衰の独立な計算 (3×3 行列)</td>
+<td>test_v2_A2_radint ほか</td>
+</tr>
+<tr>
+<td><code>_c3_indep.py</code></td>
+<td>Liénard-Wiechert 場、四極ずれの Jx、結合リングの平衡の独立な計算</td>
+<td>test_v2_C3_* ほか</td>
+</tr>
+<tr>
+<td><code>_d2_indep.py</code></td>
+<td>硬い端の直線の極の厳密な写像</td>
+<td>test_v2_D2_edge</td>
+</tr>
+<tr>
+<td><code>rad_indep_d2.py</code></td>
+<td>放射つき 1 周写像 (RK4)+薄い空洞+硬い端の極の独立な基準</td>
+<td>test_v2_D2_edge</td>
+</tr>
+<tr>
+<td><code>_e_spinkick.py</code></td>
+<td>δ の蹴りに対するスピン不変軸の応答 G を、追跡と線形モデルで測る</td>
+<td>test_v2_E_pol_kick</td>
+</tr>
+<tr>
+<td><code>_p1_dk.py</code></td>
+<td>Derbenev-Kondratenko の式を閉軌道に沿った数値積分で直接評価</td>
+<td>test_v2_P1_st</td>
+</tr>
+<tr>
+<td><code>_p1_models.py</code></td>
+<td>偏極の脱偏極率の線形の式と追跡の差を分解する補助</td>
+<td>(補助)</td>
+</tr>
+<tr>
+<td><code>_p2_indep.py</code></td>
+<td>ローレンツ力の数値積分による硬い端の BEND の厳密な写像</td>
+<td>test_v2_P2_rad</td>
+</tr>
+<tr>
+<td><code>_p3_gsdata.py</code></td>
+<td>gs の出力値 (3 粒子の x px y py z dp) の保存</td>
+<td>test_v2_P3_*</td>
+</tr>
+<tr>
+<td><code>_p3_indep.py</code></td>
+<td>台本の組み立て (FODO リング・大きなリング A+補正磁石) と独立な基準</td>
+<td>test_v241_<em>, test_v2_P3_</em> ほか</td>
+</tr>
+<tr>
+<td><code>_p5_gscx.py</code></td>
+<td>複素引数の特殊関数の gs の値 (一致点と gs の誤り点)</td>
+<td>test_v2_P5_specfn_cx</td>
+</tr>
+<tr>
+<td><code>_p5_util.py</code></td>
+<td>example の台本と gs の出力を読み、pysad を互換モード指定で走らせる補助</td>
+<td>test_v2_P5_*</td>
+</tr>
+<tr>
+<td><code>_rad_beta_indep.py</code></td>
+<td>β&lt;1 の放射の独立な計算 (遅延場の時間領域積分)</td>
+<td>test_v24_D_radbeta</td>
+</tr>
+<tr>
+<td><code>_rad_indep.py</code></td>
+<td>ANGLE=0・K0≠0 の極の放射積分の独立な計算</td>
+<td>test_v24_rad_pole</td>
+</tr>
+<tr>
+<td><code>_spin_maxwell_indep.py</code></td>
+<td>Maxwell を満たす硬い端の扇形 BEND 内の Thomas-BMT 積分</td>
+<td>test_v24_D_spin_bpar</td>
+</tr>
+<tr>
+<td><code>_spin_maxwell_indep2.py</code></td>
+<td>直線の磁石 (四極・6 極・MULT) の Maxwell 場内の Thomas-BMT 積分</td>
+<td>test_v24_D3_*</td>
+</tr>
+<tr>
+<td><code>_u1_indep.py</code></td>
+<td>一様な磁場指数の扇形 BEND の独立な数値積分 (実験室系)</td>
+<td>test_v23_U1/U2</td>
+</tr>
+<tr>
+<td><code>_u2_indep.py</code></td>
+<td>ドリフト・四極・扇形 BEND のリングの独立な数値積分</td>
+<td>test_v23_U2</td>
+</tr>
+<tr>
+<td><code>_v241_lma_tools.py</code></td>
+<td>誤差つき LMA と長時間追跡の gs・pysad 比較の道具 (台本生成・gs 実行・解析)</td>
+<td>test_v241_lma_long</td>
+</tr>
+<tr>
+<td><code>_v241_lma_errors_run.py</code></td>
+<td>誤差つき LMA の gs・pysad の二分法を走らせて scripts/ に保存</td>
+<td>(生成用。直接実行)</td>
+</tr>
+<tr>
+<td><code>_v241_lma_errors_summary.py</code></td>
+<td>誤差つき LMA の区間のまとめ (same/adj/diff)</td>
+<td>test_v241_lma_long</td>
+</tr>
+<tr>
+<td><code>_v241_lma_k64_run.py</code></td>
+<td>保存済みの台本を k64 モードで走らせ <code>.pysadk64.txt</code> に書く</td>
+<td>(生成用)</td>
+</tr>
+<tr>
+<td><code>_v241_lma_long_run.py</code></td>
+<td>10^4 周級の長時間追跡 (FLUC あり/なし) の gs・pysad 比較を走らせる</td>
+<td>(生成用)</td>
+</tr>
+<tr>
+<td><code>_v241_lma_long_analyze.py</code></td>
+<td>長時間追跡の出力から σδ・σz・ε を n ごとに解析</td>
+<td>test_v241_lma_long</td>
+</tr>
+<tr>
+<td><code>_v241_lma_long_compare.py</code></td>
+<td>長時間追跡の gs・pysad (k64・v2) の比較表</td>
+<td>(生成用)</td>
+</tr>
+<tr>
+<td><code>_v241_pol_tools.py</code></td>
+<td>偏光 FLUC 追跡の比較の道具 (台本生成・出力解析)</td>
+<td>test_v241_pol_fluc</td>
+</tr>
+</tbody>
+</table>
+<p><code>__init__.py</code> は空 (<code>pysad.tests.script_tests</code> をパッケージにして相対 import を通す)。</p>
+<h3 id="データ">データ</h3>
+<p><code>kek-ls_v03_12.lat</code> (大きなリング A: 3 GeV、周長 603 m、3563 要素、20 セル) は、試験・ベンチ・example が共有するので、1 つ上の <code>pysad/tests/</code> に置いてある。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+<th>大きさ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mkbump_ring.sad</code></td>
+<td>24 セル・3 GeV の FODO に BPM・ステアラ・四極のずれを入れた誤差入りリング (軌道補正)</td>
+<td>7.6 KB</td>
+</tr>
+<tr>
+<td><code>co5_corr.sad</code></td>
+<td>軌道補正の試験用の小リング (3 GeV)</td>
+<td>4 KB</td>
+</tr>
+<tr>
+<td><code>oo1_optimize.sad</code></td>
+<td>最適化の試験用の小リング (3 GeV)</td>
+<td>0.6 KB</td>
+</tr>
+<tr>
+<td><code>data_bend_kernels.npz</code></td>
+<td>K1≠0 BEND の numba 化前の Python 版の出力 (基準)</td>
+<td>32 KB</td>
+</tr>
+<tr>
+<td><code>data_fourier_ref.json</code></td>
+<td>MAIN の TRACK の FOURIER 解析の K64 Fortran の参照値</td>
+<td>17 KB</td>
+</tr>
+<tr>
+<td><code>data_tsvd_sad.npz</code></td>
+<td>SAD の tsvd の出力 (SVD ソルバの基準)</td>
+<td>1.7 KB</td>
+</tr>
+<tr>
+<td><code>specfn_ref.json</code></td>
+<td>特殊関数の式と gs の値のリスト</td>
+<td>18 KB</td>
+</tr>
+<tr>
+<td><code>specfn_audit_ref.json</code></td>
+<td>特殊関数の mpmath による高精度の参照値 (式・実部・虚部)</td>
+<td>46 KB</td>
+</tr>
+<tr>
+<td><code>symbolic_ref.json</code></td>
+<td>記号微分の gs の出力</td>
+<td>3 KB</td>
+</tr>
+</tbody>
+</table>
+<h3 id="scripts-1100-ファイル">scripts/ (1100 ファイル)</h3>
+<p>試験が走らせた SAD 台本と、その画面出力の写し。対応表は <a href="OUTPUTS.html"><code>OUTPUTS.md</code></a> (<code>make_outputs_md.py</code> で作る)。</p>
+<ul>
+<li>名前: <code>&lt;試験ファイル名 (test_ を除く)&gt;__&lt;試験関数名&gt;[_2, _3, ...].{sad, gs.txt, pysad.txt}</code>。<code>.sad</code> = 台本、<code>.gs.txt</code> = 同じ台本を SAD (K64) で走らせた画面出力、<code>.pysad.txt</code> = pysad の画面出力。</li>
+<li>内訳: txt 737、sad 358、json 5。<code>__</code> を持つもの 984 ファイル (48 種の試験ファイル)。持たない 116 ファイルは <code>v241_*</code> (偏光 FLUC・誤差つき LMA・10^4 周級の追跡の台本と出力、解析の json) と <code>v25_draw_gs_*</code> (FFS の DRAW)。</li>
+<li>試験が <code>scripts/</code> を読むのは <code>test_v241_lma_long.py</code>・<code>test_v241_pol_fluc.py</code>・<code>test_v25_draw_mpl.py</code> の 3 本 (と部品)。ほかの試験の台本は試験の文字列のままで、<code>scripts/</code> は取り出した写し。</li>
+</ul>
+<h2 id="試験の足し方">試験の足し方</h2>
+<ol>
+<li>ファイルは <code>test_&lt;名前&gt;.py</code>。ファイルの先頭の docstring に目的・条件 (エネルギー、周長など)・基準の出所を書く。</li>
+<li>リポジトリのルートは 3 段上: <code>ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..'))</code>。共有ラティスは <code>os.path.join(HERE, '..', 'kek-ls_v03_12.lat')</code>。SAD との照合ベンチの基準 (<code>bench_*.result</code>) を読むときは <code>pysad/tests/regression_tests/bench/</code> (自動判定の対象外は <code>bench_extra/</code>) を指し、ファイルが無いときは <code>skipif</code> で飛ばす (飛ばした件数が増えていないか確認する)。</li>
+<li>他の試験・部品の import は <code>from . import _p3_indep as X</code>、<code>from pysad.tests.script_tests.test_xxx import ...</code> の形。</li>
+<li>グローバルの状態: <code>conftest.py</code> が互換モード (既定 k64)、<code>emit6d.EMITDIV</code>、<code>PYSAD_*</code> の環境変数を、各ファイルの終わりに元へ戻し、Tk の窓も閉じる。試験の中でこれらを変えたら、ファイルの中で元に戻す。</li>
+<li>v2 の動作は <code>v2_mode</code> フィクスチャ (k64 は <code>k64_mode</code>)。</li>
+<li>基準は、(a) 保存した SAD (K64) の出力、(b) 解析式、(c) SAD・pysad のコードを使わない独立な計算 (<code>_*_indep.py</code>) のどれか。結果を pysad の出力に合わせて基準を作らない。独立な計算は部品にまとめ、試験は <code>import</code> して使う。</li>
+<li><code>scripts/</code> に写しを置く場合は、上の命名規則で <code>.sad</code>・<code>.gs.txt</code>・<code>.pysad.txt</code> を並べ、<code>py -3.12 pysad/tests/script_tests/make_outputs_md.py</code> で対応表を作り直す。台本を <code>.sad</code> に取り出す専用のツールはこのリポジトリに無く、取り出し方は未確認。</li>
+<li>追加したら、この README の表 (区分・件数) を直す。</li>
+</ol>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

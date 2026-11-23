@@ -115,7 +115,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 <tr>
 <td><a href="pol_st_dk_check.py">pol_st_dk_check</a></td>
-<td>v2 の緩和率 (Sokolov-Ternov の厳密式) を独立な DK の数値積分 (<code>pysad/tests/_p1_dk.py</code>) と比べる。0.58 GeV の ASTRID2 + MPW の MPW を <code>ROTATE</code> = 0.3 rad / 90° にしたもの (約 6 分)。結果は <code>pol_st_dk_check.out.txt</code></td>
+<td>v2 の緩和率 (Sokolov-Ternov の厳密式) を独立な DK の数値積分 (<code>pysad/tests/script_tests/_p1_dk.py</code>) と比べる。0.58 GeV の ASTRID2 + MPW の MPW を <code>ROTATE</code> = 0.3 rad / 90° にしたもの (約 6 分)。結果は <code>pol_st_dk_check.out.txt</code></td>
 <td>緩和率が数値積分と合う。gs は使わない</td>
 </tr>
 <tr>
@@ -164,7 +164,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <ul>
 <li>緩和率は Sokolov-Ternov の厳密式 Σ r (1 − 2/9 (n·v)²) で、独立な DK の数値積分 (<code>pol_st_dk_check</code>)・独立な式 (<code>pol_reversed_bend</code>・<code>pol_mpw</code>) と比べた。<code>PYSAD_COMPAT=k64</code> では gs と同じ結果が出る (gs の Polarization は、垂直の偏向・反転した BEND・逆向きの極のあるリングで NaN になるか符号つきの率しか出さないので、これらの例の基準にしない)。gs との比較の詳細は <code>docs/history/example_16_spin_polarization_validation.md</code>。</li>
 <li>側帯の項 (<code>pol_sideband</code>) は、FLUC つきスピン追跡 (4.2 GeV・12 MV で (10.4 ± 1.6)e-8 /周、480 粒子) と、線形の軌道 + 厳密なスピン回転の MC (5.0e-8) を基準にした。式の値は、線形の式 2.3e-8、側帯の式 4.5e-8。</li>
-<li>試験は <code>pysad/tests/test_v2_B3_pol.py</code>・<code>test_v2_E_pol_kick.py</code>・<code>test_v2_P1_pol_chrom.py</code>・<code>test_v2_E_spinsol.py</code>・<code>test_v2_P4_sol_spin.py</code> ほか。</li>
+<li>試験は <code>pysad/tests/script_tests/test_v2_B3_pol.py</code>・<code>test_v2_E_pol_kick.py</code>・<code>test_v2_P1_pol_chrom.py</code>・<code>test_v2_E_spinsol.py</code>・<code>test_v2_P4_sol_spin.py</code> ほか。</li>
 </ul>
 <h2 id="未確認限界">未確認・限界</h2>
 <ul>

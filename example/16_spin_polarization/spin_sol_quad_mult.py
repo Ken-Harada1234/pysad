@@ -9,7 +9,7 @@ import numpy as np
 import os as _os, sys as _sys; _sys.path.insert(0, _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..'))
 from pysad import compat
 compat.set_mode(sys.argv[1] if len(sys.argv) > 1 else 'v2')
-from pysad.tests.test_v2_B1_sol import CL, ME, _BASE, _P, _S0, _run, _tbmt, _track
+from pysad.tests.script_tests.test_v2_B1_sol import CL, ME, _BASE, _P, _S0, _run, _tbmt, _track
 
 CASES = {
     'quad': ('QUAD E1 = (L=0.4 K1=0.3 DISFRIN=1);', lambda bz: (lambda x, y, s: np.array([0.75 * y, 0.75 * x, bz]))),

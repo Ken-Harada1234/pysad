@@ -23,7 +23,7 @@ SAD の「ウェイク場」は、要素ごとに与えた縦・横のウェイ�
 
 ## 2. 使い方 (動く SAD スクリプト)
 
-### 2.1 追跡 (`pysad/tests/test_wake.py` の W3_SRC)
+### 2.1 追跡 (`pysad/tests/script_tests/test_wake.py` の W3_SRC)
 
 ```
 MOMENTUM = 1.7GEV;
@@ -104,7 +104,7 @@ ENDWAKE;
 - 表は行をまたいで書ける (`ENDWAKE` か `;` が来るまで続く)。1 行に何組でも、注釈 `!` 可、`ENDWAKE` の後の `;` は任意、同じ行の続き (`ENDWAKE; CALC;`) も実行する。大文字小文字・省略形 (`wake t RF`) 可。要素名はワイルドカード可 (合う CAVI すべてに登録)。値は数か式。点数の上限は無い (400 点で確認)。
 - 追跡は `WakeFunction[…] = …` で同じ表を与えた場合と同じ結果 (gs の参照値と 2e-9、400 点・2 台の CAVI で 1e-12)。TRPT と LWAKE / TWAKE が ON の `TrackParticles` で効く。
 - 使えない: 表の途中の `;` (エラー)、CAVI 以外の要素、k64 モード。`ENDWAKE` を書き忘れると次の `;` までを表として読んでエラーにする。
-- 例 [`example/06_collective/flag_WAKE_command_table.sad`](../example/06_collective/flag_WAKE_command_table.sad)、試験 [`test_v2_C_wakecmd.py`](../pysad/tests/test_v2_C_wakecmd.py)・[`test_v2_C2_wakecmd.py`](../pysad/tests/test_v2_C2_wakecmd.py)。
+- 例 [`example/06_collective/flag_WAKE_command_table.sad`](../example/06_collective/flag_WAKE_command_table.sad)、試験 [`test_v2_C_wakecmd.py`](../pysad/tests/script_tests/test_v2_C_wakecmd.py)・[`test_v2_C2_wakecmd.py`](../pysad/tests/script_tests/test_v2_C2_wakecmd.py)。
 
 ## 3. 物理と式
 
@@ -235,13 +235,13 @@ LOSSAMPL=0.002 (領域内・後で落ちる) は元の SAD でも落ちず、pys
 pysad はこの 2 つを、直した SAD の動作として実装している (領域の始点の SOL は普通の要素と同じ前後のキック、光学は無い表の側をキックしない)。
 
 
-3 つ目 (TRPT で最初から LOSSAMPL の外にいる粒子) の追加の説明: K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書く。`l_track` はセッション変数で、セッション最初の `TrackParticles` では 0 (CALC をしても変わらない)。最初の `tapert` では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡が続き、後の `tapert` で落ちる。2 回目の `TrackParticles` からは `l_track≠0` で最初の要素で落ちる。pysad は `TrackRun.l_track0`・`k_apert` の lcur==0 で再現し、gs の 1 回目・2 回目の呼び出しと直した SAD (LOSSAMPL=1e-4、3 粒子、NORAD、TRPT、2 周、15 値) と全桁一致する ([`test_small_items.py`](../pysad/tests/test_small_items.py))。元の K64 はここで落ちるので、元の K64 に対する基準は無い。
+3 つ目 (TRPT で最初から LOSSAMPL の外にいる粒子) の追加の説明: K64 の `tapert` は落とす印に `kptbl(i,4)=l_track` を書く。`l_track` はセッション変数で、セッション最初の `TrackParticles` では 0 (CALC をしても変わらない)。最初の `tapert` では印が 0 (「生きている」) になって落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡が続き、後の `tapert` で落ちる。2 回目の `TrackParticles` からは `l_track≠0` で最初の要素で落ちる。pysad は `TrackRun.l_track0`・`k_apert` の lcur==0 で再現し、gs の 1 回目・2 回目の呼び出しと直した SAD (LOSSAMPL=1e-4、3 粒子、NORAD、TRPT、2 周、15 値) と全桁一致する ([`test_small_items.py`](../pysad/tests/script_tests/test_small_items.py))。元の K64 はここで落ちるので、元の K64 に対する基準は無い。
 
 ## 6. 検証
 
 - 追跡: 縦だけ・横だけ・両方、2 か所のウェイク、NBUNCH=3、粒子損失、ROTATE≠0、CAVI (加速あり・なし)、RF のある MULT、SOL 領域など 20 ケース以上で、K64 (gs) の出力と 10 桁一致する。
 - 光学: 条件の表は文字列で完全一致、中心の軌道は相対 2e-8 以内。
-- 試験 (`py -3.12 -m pytest pysad/tests/test_wake.py pysad/tests/test_wake_optics.py -q`) は 32 件で、SAD が無くても通る (参照値は試験に書き込み済み)。
+- 試験 (`py -3.12 -m pytest pysad/tests/script_tests/test_wake.py pysad/tests/script_tests/test_wake_optics.py -q`) は 32 件で、SAD が無くても通る (参照値は試験に書き込み済み)。
 - ケースの一覧と一致の桁は [`docs/history/13_wake_validation.md`](history/13_wake_validation.md)。
 
 ## 7. 限界・未確認
@@ -269,7 +269,7 @@ pysad はこの 2 つを、直した SAD の動作として実装している (�
 [`pysad/track6n.py`](../pysad/track6n.py) の `turn` / `TrackRun.set_wake` と CAVI の分割 (`k_cav_in` / `k_cav_mid` / `k_cav_out` / `cav_full`)、
 [`pysad/track6n_ext.py`](../pysad/track6n_ext.py) の `mult_full` (RF のある MULT、`tmultiacc`)、
 光学の wake: [`pysad/wakeopt.py`](../pysad/wakeopt.py) (`tffswake.f` の直訳)、[`pysad/ffscmd.py`](../pysad/ffscmd.py) の `initial_orbits` / `ini_optics`、[`pysad/match6.py`](../pysad/match6.py) の `_optics_ini`、
-試験 [`pysad/tests/test_wake.py`](../pysad/tests/test_wake.py) (23 件)、[`pysad/tests/test_wake_optics.py`](../pysad/tests/test_wake_optics.py) (9 件)。
+試験 [`pysad/tests/script_tests/test_wake.py`](../pysad/tests/script_tests/test_wake.py) (23 件)、[`pysad/tests/script_tests/test_wake_optics.py`](../pysad/tests/script_tests/test_wake_optics.py) (9 件)。
 
 実装の対応:
 

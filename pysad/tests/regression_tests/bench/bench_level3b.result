@@ -1,0 +1,175 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 15:50:56 Tuesday 10/13/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+! bench_level3b.sad — Level 3B benchmark: closed orbit through sextupoles
+!   ラティスは bench_level3a.sad を基に、QF-SF と QD-SD の間に 0.1 m のドリフト DQS を挟んだもの
+!   (ドリフトなしで続けると SF は QF と一緒に動き、SF 単独の誤差を入れられないため)。
+!   周長 140 m を保つため DS を 0.9 m にした。六極は補正前の K2。
+!   誤差を 1 台だけ入れる: QD.1 に DELX、SF.1 に DELY (σ=1e-4, GCUT=2, SeedRandom[13])。
+!   比べる量: 誤差の値, 閉軌道, COD ありの光学 (チューン, β, 結合 R1-R4), 色収差。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.733388 $$$       f BX    #######  #  17.324544 $$$       f NX    #######  #   7.381400
+$$$       f AY    #######  #    .422243 $$$       f BY    #######  #    .669153 $$$       f NY    #######  #   8.009509
+$$$       f LENG  #######  #  140.00000
+ 
+ ! 最小二乗の多項式当てはめ (bench_level3a.sad と同じ。SAD の PolynomialFit はバグあり)
+ MyPolyFit[d_,nord_]:=Module[{x,y,h,u,col,a,m,v,c,k,res},
+   {x,y}=Thread[d];
+   h=Max[Abs[x]];
+   u=x/h;
+   col=Table[1,{Length[x]}];
+   a={};
+   Do[AppendTo[a,col]; col=col*u,{k,0,nord}];
+   a=Transpose[a];
+   m=Transpose[a].a;
+   v=Transpose[a].y;
+   c=LinearSolve[m,v];
+   res=Sqrt[(Plus@@((a.c-y)^2))/Length[x]];
+   {Table[c[[k+1]]/h^k,{k,0,nord}],res}];
+ 
+ ! ------------------------------------------------------------
+ ! (1) 誤差を 1 台だけ入れる
+ ! ------------------------------------------------------------
+ GCUT = 2;
+ SeedRandom[13];
+ DELX 1E-4 QD.1;
+ DELY 1E-4 SF.1;
+ cell calc;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.729627 $$$       f BX    #######  #  17.312409 $$$       f NX    #######  #   7.381307
+$$$       f AY    #######  #    .420611 $$$       f BY    #######  #    .664123 $$$       f NY    #######  #   8.009465
+$$$       f LENG  #######  #  140.00000
+ COD;
+ dump;
+  element     DL(mm)    DK          DDK      DTHETA(mrad) DELX(mm) DELY(mm)
+ ORG.1        0.00000  0.0000      0.0000       0.00000  -0.12499   0.00011
+ SF.1         0.00000  0.0000      0.0000       0.00000   0.00000   0.15329
+ QD.1         0.00000  0.0000      0.0000       0.00000   0.11465   0.00000
+ Print["=== Test 3B-1: errors ==="];
+=== Test 3B-1: errors ===
+ Print["E DX QD.1 ",LINE["DX","QD.1"]];
+E DX QD.1  1.146537895E-4
+ Print["E DY SF.1 ",LINE["DY","SF.1"]];
+E DY SF.1  1.532912252E-4
+ 
+ ! ------------------------------------------------------------
+ ! (2) 閉軌道 (入口, QD.1 入口, SF.1 入口, ORG.11)
+ ! ------------------------------------------------------------
+ Print["=== Test 3B-2: closed orbit ==="];
+=== Test 3B-2: closed orbit ===
+ Print["O ^^^    ",{Twiss["DX","^^^"],Twiss["DPX","^^^"],Twiss["DY","^^^"],Twiss["DPY","^^^"]}];
+O ^^^    { -1.24985996E-4, -3.39312556E-5, 1.071631941E-7, 7.118845526E-8}
+ Print["O QD.1   ",{Twiss["DX","QD.1"],Twiss["DPX","QD.1"],Twiss["DY","QD.1"],Twiss["DPY","QD.1"]}];
+O QD.1   { -1.47216686E-5, 3.446787982E-5, 5.895939085E-7, 1.358989684E-7}
+ Print["O SF.1   ",{Twiss["DX","SF.1"],Twiss["DPX","SF.1"],Twiss["DY","SF.1"],Twiss["DPY","SF.1"]}];
+O SF.1   { -1.21458306E-4, 3.446511869E-5, 1.515467077E-7, 1.364762533E-7}
+ Print["O ORG.11 ",{Twiss["DX","ORG.11"],Twiss["DPX","ORG.11"],Twiss["DY","ORG.11"],Twiss["DPY","ORG.11"]}];
+O ORG.11 { 4.897171310E-5, 2.002096621E-5, 1.043594851E-7, 7.765886366E-8}
+ 
+ ! ------------------------------------------------------------
+ ! (3) COD ありの光学 (入口)
+ ! ------------------------------------------------------------
+ Print["=== Test 3B-3: optics with COD ==="];
+=== Test 3B-3: optics with COD ===
+ Print["T BX  ",Twiss["BX","^^^"]];
+T BX    17.3124085231
+ Print["T BY  ",Twiss["BY","^^^"]];
+T BY      .6641229427
+ Print["T AX  ",Twiss["AX","^^^"]];
+T AX    -4.7296273928
+ Print["T AY  ",Twiss["AY","^^^"]];
+T AY      .4206106347
+ Print["T EX  ",Twiss["EX","^^^"]];
+T EX      .9334687502
+ Print["T EY  ",Twiss["EY","^^^"]];
+T EY   -7.25884536E-4
+ Print["T R   ",{Twiss["R1","^^^"],Twiss["R2","^^^"],Twiss["R3","^^^"],Twiss["R4","^^^"]}];
+T R   { -2.45059957E-5, 1.680579429E-4, 5.089175165E-5, -3.75679432E-4}
+ Print["T QX  ",Twiss["NX","$$$"]/2/Pi];
+T QX     7.3813065670
+ Print["T QY  ",Twiss["NY","$$$"]/2/Pi];
+T QY     8.0094653806
+ 
+ ! ------------------------------------------------------------
+ ! (4) COD ありの色収差: DP0 = -0.01 .. 0.01 (0.001 刻み) のチューンを 3 次で当てはめ
+ ! ------------------------------------------------------------
+ Print["=== Test 3B-4: chromaticity with COD ==="];
+=== Test 3B-4: chromaticity with COD ===
+ tunex=Table[{i,0},{i,-0.01,0.01,0.001}];
+ tuney=Table[{i,0},{i,-0.01,0.01,0.001}];
+ j=0;
+ Do[
+   j = j + 1;
+   DP0=i;
+   FFS["cell calc;"];
+   Print["Q ",{i,Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi}];
+   tunex[j,2] = Twiss["NX","$$$"]/2/Pi;
+   tuney[j,2] = Twiss["NY","$$$"]/2/Pi;
+ ,{i,-0.01,0.01,0.001}];
+Q {   -.0100000000,   7.3991859020,   8.0624813696}
+Q {   -.0090000000,   7.3971160072,   8.0569322350}
+Q {   -.0080000000,   7.3951103608,   8.0514400085}
+Q {   -.0070000000,   7.3931683487,   8.0460039550}
+Q {   -.0060000000,   7.3912893718,   8.0406233538}
+Q {   -.0050000000,   7.3894728377,   8.0352974970}
+Q {   -.0040000000,   7.3877181612,   8.0300256892}
+Q {   -.0030000000,   7.3860247642,   8.0248072461}
+Q {   -.0020000000,   7.3843920750,   8.0196414938}
+Q {   -.0010000000,   7.3828195287,   8.0145277642}
+Q {    .0000000000,   7.3813065670,   8.0094653806}
+Q {    .0010000000,   7.3798526361,   8.0044535450}
+Q {    .0020000000,   7.3784565754,   7.9994980300}
+Q {    .0030000000,   7.3771196892,   7.9945813302}
+Q {    .0040000000,   7.3758396134,   7.9897181427}
+Q {    .0050000000,   7.3746164199,   7.9849034229}
+Q {    .0060000000,   7.3734495904,   7.9801364793}
+Q {    .0070000000,   7.3723386095,   7.9754167142}
+Q {    .0080000000,   7.3712829670,   7.9707435541}
+Q {    .0090000000,   7.3702821584,   7.9661164394}
+Q {    .0100000000,   7.3693356846,   7.9615348207}
+ DP0=0;
+ FFS["cell calc;"];
+ Print["FITX ",MyPolyFit[tunex,3]];
+FITX {{   7.3813062347,  -1.4833615839,  29.5414792930, -91.4578485779}, 2.479848583E-7}
+ Print["FITY ",MyPolyFit[tuney,3]];
+FITY {{   8.0094656621,  -5.0366798042,  25.4150224963, -106.722849054}, 1.206580213E-6}
+ 
+ stop;
+ FFS                  end:  CPU time =     0.014 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

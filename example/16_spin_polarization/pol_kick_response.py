@@ -2,7 +2,7 @@
 """Polarization の脱偏極率と FLUC 追跡の差 (4.2 GeV・12 MV で追跡が式の 2.3 倍) の切り分け。
 放射の光子 1 個 = δ の蹴り h。蹴りへのスピンの不変軸の応答 G = ∂n/∂δ を、追跡 (M2: 非線形な軌道 + 厳密なスピン) と線形の軌道モデル (M1: `pol_sideband_spin_mc.py` と同じ) で、
 同じ初期条件 (ベータトロン振幅だけ / シンクロトロン振幅だけ / 両方、振幅は平衡ビームの f 倍) の組で測り、<|G2|²>/<|G1|²> を出す。
-脱偏極率 = Σ_i ½ B_δδ,i |G_i|² なので、この比が追跡と式の比に当たる (補助: pysad/tests/_e_spinkick.py)。
+脱偏極率 = Σ_i ½ B_δδ,i |G_i|² なので、この比が追跡と式の比に当たる (補助: pysad/tests/script_tests/_e_spinkick.py)。
 使い方: py -3.12 example/16_spin_polarization/pol_kick_response.py E[GeV] V[MV] 試料数 K[周] 乱数の種 out.json [modes] [f の列]   (1 試料 約 1〜2 分)
 要約: py -3.12 example/16_spin_polarization/pol_kick_response.py --sum out1.json out2.json ..."""
 import json
@@ -13,7 +13,7 @@ import time
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'pysad', 'tests'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'pysad', 'tests', 'script_tests'))
 import _e_spinkick as K
 
 if sys.argv[1] == '--sum':

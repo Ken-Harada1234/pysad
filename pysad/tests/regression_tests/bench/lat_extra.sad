@@ -1,0 +1,3 @@
+DRIFT DX1 = (L=0.5);
+QUAD QX = (L=0.2 K1=0.3);
+LINE LX = (ORG DX1 QX DX1);

@@ -251,8 +251,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </table>
 <p>上の表のうち、拡張子つきのリンクの行 (<code>.sad</code>・<code>.py</code>) は説明の <code>.md</code> を持たない。内容と結果の要点は表と、台本・スクリプトの先頭のコメントに書いた。<code>.py</code> の例は、リポジトリ直下から <code>py -3.12 example/01_lattice_elements/NAME.py</code> で走らせる (出力は <code>NAME.out.txt</code>)。gs と同じ動作で走らせるときは <code>PYSAD_COMPAT=k64</code>。</p>
 <p>リングの BEND (<code>E1=E2=0.1309</code>) は SAD では ANGLE に対する<strong>比</strong>と読まれるので長方形ではない。<code>elem_BEND</code> は E1=E2=0.5 で長方形にした。</p>
-<p>文法の細部 (MAIN の <code>ANGLE=式</code> の評価など。<code>E=0.5;</code> のとき <code>ANGLE=E</code> は .5、<code>Pi=3;</code> のとき <code>Pi/10</code> は .3、<code>Degree=0.1;</code> は .1、<code>A=2;</code> のとき <code>A*0.1</code> は .2、<code>1+</code> は 1、<code>2*3+</code> は 1、<code>3 DEG</code>・<code>PI/10</code> は正しい値、<code>45DEG</code>・<code>SIN[0.1]</code>・<code>pi/10</code>・<code>ZZZ*2</code> は構文エラー) は、gs で 1 式ずつ別の台本にして実測した結果で、試験 <code>pysad/tests/test_v2_P5_syntax.py</code> の表にある。
-<code>elem_BEND_steer_*</code>・<code>elem_MULT_*</code> の gs の値は、試験 (<code>test_v2_P3_f1.py</code>・<code>test_v2_P3_ae.py</code>) が使う値 (<code>pysad/tests/_p3_gsdata.py</code>) と同じ台本から取った。</p>
+<p>文法の細部 (MAIN の <code>ANGLE=式</code> の評価など。<code>E=0.5;</code> のとき <code>ANGLE=E</code> は .5、<code>Pi=3;</code> のとき <code>Pi/10</code> は .3、<code>Degree=0.1;</code> は .1、<code>A=2;</code> のとき <code>A*0.1</code> は .2、<code>1+</code> は 1、<code>2*3+</code> は 1、<code>3 DEG</code>・<code>PI/10</code> は正しい値、<code>45DEG</code>・<code>SIN[0.1]</code>・<code>pi/10</code>・<code>ZZZ*2</code> は構文エラー) は、gs で 1 式ずつ別の台本にして実測した結果で、試験 <code>pysad/tests/script_tests/test_v2_P5_syntax.py</code> の表にある。
+<code>elem_BEND_steer_*</code>・<code>elem_MULT_*</code> の gs の値は、試験 (<code>test_v2_P3_f1.py</code>・<code>test_v2_P3_ae.py</code>) が使う値 (<code>pysad/tests/script_tests/_p3_gsdata.py</code>) と同じ台本から取った。</p>
 </main><script>
 document.querySelectorAll('table').forEach(function (t) {
   t.querySelectorAll('th').forEach(function (th, i) {

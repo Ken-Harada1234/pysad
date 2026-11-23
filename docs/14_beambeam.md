@@ -12,7 +12,7 @@
 
 - pysad が持つのは **弱-強 (weak-strong) モデルだけ**。BEAMBEAM は「強ビーム (固定した 6 次元ガウス分布、z スライスに分ける) が、追跡する粒子 (弱ビーム) に与えるキック」である。K64 の `bbstrhl.f` の直訳。**強-強 (両ビームが互いに変形し合う自己無撞着な計算) は pysad にも、根拠にした `bbstrhl.f` の BEAMBEAM にも無い**。コードで裏を取れたのは弱-強だけで、強-強の別経路が K64 の他の部分にあるかは調べていない (未確認)。
 - キックは **追跡 (TrackParticles、高速追跡 `track6n`) だけ**に効く。光学 (Twiss、CALC、Emittance、EMIT) では恒等 (4.3)。
-- 使った制約: 検証台本の運動量は MOMENTUM=1.7GEV の電子 (γ は電子質量から決める)、リングは小さな四極と BEAMBEAM だけの人工の並び ([`pysad/tests/test_beambeam.py`](../pysad/tests/test_beambeam.py))。実機の衝突点 (SuperKEKB 級の β*、交差角、数百万粒子) との比較はしていない。
+- 使った制約: 検証台本の運動量は MOMENTUM=1.7GEV の電子 (γ は電子質量から決める)、リングは小さな四極と BEAMBEAM だけの人工の並び ([`pysad/tests/script_tests/test_beambeam.py`](../pysad/tests/script_tests/test_beambeam.py))。実機の衝突点 (SuperKEKB 級の β*、交差角、数百万粒子) との比較はしていない。
 - SADHelp に BEAMBEAM の記述はない。根拠は K64 のソース (`bbstrhl.f`、`bbtool.f`、`matrix.f`) と gs の出力だけ。
 
 ## 2. 使い方 (動く SAD スクリプト)
@@ -215,7 +215,7 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 
 - `tluma(x, y, xm, ym, sigx, sigy0, nmesh)`: x[j, i], y[j, i] (j = 0, 1 が二つのビーム、i が粒子)。粒子を (σx, σy) で規格化した格子 (中心 xm, ym、±3σ、nmesh 分割) に線形配分し、Σ bin₁·bin₂ から実効面積 `np²/Σ · σxσy·(6/nmesh)²/(4π)` を返す。σy が大きすぎるときは範囲を狭めて繰り返す。bin は real*4 (単精度の足し込みを写した)。
 - `tlum(x, y, xm, ym, sigx, sigy)`: nmesh = max(int(√np), 6)。戻り値は (tlum, nmesh)。
-- 検証: 同じガウス分布 2 つ (40000 粒子、σx=1e-3、σy=2e-4) で nmesh=200、`tlum/(σxσy)` が 1 から 10% 以内 (解析値との比較。[`test_measure.py`](../pysad/tests/test_measure.py))。**gs との比較は無い**: FFS の MEASURE は gs で何も出力せず、TRCOD は SIGSEGV で落ちる (docs/30 B42) ため、参照が取れない。
+- 検証: 同じガウス分布 2 つ (40000 粒子、σx=1e-3、σy=2e-4) で nmesh=200、`tlum/(σxσy)` が 1 から 10% 以内 (解析値との比較。[`test_measure.py`](../pysad/tests/script_tests/test_measure.py))。**gs との比較は無い**: FFS の MEASURE は gs で何も出力せず、TRCOD は SIGSEGV で落ちる (docs/30 B42) ため、参照が取れない。
 - FFS のコマンドとしての MEASURE・TRCOD (`tracke`、`ttinit`、`ttstat`、`trcoda`、`trackb`) は翻訳していない。tlum は pysad の Python から直接呼ぶ関数で、SAD スクリプトからは呼べない (SAD 側の入口は無い)。
 
 ## 5. v2 と k64 の違い・K64 の癖
@@ -224,7 +224,7 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 
 
 - **傾き回転 (B34)**: `sint=xangle(5)` (傾き角そのもの)、`cost=xangle(6)` (sin)。bbinit は (6)=sin、(7)=cos を書くのでずれている。強ビームに x-y 結合があると回転が直交でなくなり、座標が潰れる。
-  **k64 モードは直訳で再現する (SAD のまま)。v2 モードは (cos t, sin t) の正しい回転にする** (`beambeam.apply`)。強ビームに x-y 結合 (R1..R4 か R13 など) があるときだけ結果が変わる。根拠は回転に対する共変性 (包絡を t 回した強ビームの蹴り = 粒子を −t 回し、回していない包絡で蹴り、+t 回す) で、t = 0.3 で蹴りに対する相対 1e-9 ([`test_v2_C_beambeam.py`](../pysad/tests/test_v2_C_beambeam.py) 2 件)。gs との比較は無い。確かめたのは t = 0.3 の 1 例だけで、実機の衝突点の規模では未確認。
+  **k64 モードは直訳で再現する (SAD のまま)。v2 モードは (cos t, sin t) の正しい回転にする** (`beambeam.apply`)。強ビームに x-y 結合 (R1..R4 か R13 など) があるときだけ結果が変わる。根拠は回転に対する共変性 (包絡を t 回した強ビームの蹴り = 粒子を −t 回し、回していない包絡で蹴り、+t 回す) で、t = 0.3 で蹴りに対する相対 1e-9 ([`test_v2_C_beambeam.py`](../pysad/tests/script_tests/test_v2_C_beambeam.py) 2 件)。gs との比較は無い。確かめたのは t = 0.3 の 1 例だけで、実機の衝突点の規模では未確認。
 - `cerrf` の `3.2` は単精度の定数。
 - 丸いビームで x=y=0 の粒子は 0/0 → NaN → px=+1e4。
 - スライスの境界 (`dsz`) はビームストラールングだけが使う。
@@ -262,7 +262,7 @@ K64 `tlum.f` の直訳。ルミノシティの推定 (二つのビームの粒�
 - 弱-強: [`pysad/beambeam.py`](../pysad/beambeam.py) (K64 の `bbstrhl.f` の beambeam・bbinit、`bbtool.f` の cerrf・gauinv、`matrix.f` の包絡行列の直訳)。キーワードは `_KEYS` (K64 `initb1.f` の ky_*_BEAM の順)、parser が数値だけを `BeamBeam.params` (`elements.py`、Marker の子) に入れる。
 - 高速追跡は [`pysad/track6n.py`](../pysad/track6n.py) の `K_BB`。PHOTONS・LuminosityMonitor は [`pysad/ffscmd.py`](../pysad/ffscmd.py)。`beambeam.apply` が毎回ルミノシティを計算する。`beambeam._photon_rows` が PhotonList の行を作る。
 - BBBrem: [`pysad/bbbrem.py`](../pysad/bbbrem.py)。tlum: [`pysad/measure.py`](../pysad/measure.py)。`track6` (低速) は BEAMBEAM を扱わない。
-- 試験: [`pysad/tests/test_beambeam.py`](../pysad/tests/test_beambeam.py)、[`test_bbbrem.py`](../pysad/tests/test_bbbrem.py)、[`test_measure.py`](../pysad/tests/test_measure.py)、[`test_v2_C_beambeam.py`](../pysad/tests/test_v2_C_beambeam.py) (v2 の傾き回転 2 件)。
+- 試験: [`pysad/tests/script_tests/test_beambeam.py`](../pysad/tests/script_tests/test_beambeam.py)、[`test_bbbrem.py`](../pysad/tests/script_tests/test_bbbrem.py)、[`test_measure.py`](../pysad/tests/script_tests/test_measure.py)、[`test_v2_C_beambeam.py`](../pysad/tests/script_tests/test_v2_C_beambeam.py) (v2 の傾き回転 2 件)。
 - 根拠のソース: K64 の `bbstrhl.f`、`bbtool.f`、`matrix.f`、`tbbbrem.f`、`tlum.f`、`photons.f`。SADHelp に BEAMBEAM の記述はない。
 
 ## 9. 関連文書

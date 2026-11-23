@@ -4,7 +4,7 @@ perfkern_bend.py — emit6d の性能用 numba カーネル (11/05)
 - apply_tdb: _State.apply (tmultr5 + tmulbs) の in-place 版 (T ← t·T, D ← t·D, B ← t·B·t^T)
 - bendecorr / bendebody: K1≠0 BEND の tbendecorr / tbendebody (tbende.f 直訳。emit6d.py の旧 Python 版と同じ演算順)
   戻りは (t, 出口 cod)。呼び出し側 (emit6d._tbendecorr/_tbendebody) が apply_tdb する。
-  参照値: pysad/tests/data_bend_kernels.npz (numba 化前の Python 版の出力。test_perf_kernels.py)
+  参照値: pysad/tests/script_tests/data_bend_kernels.npz (numba 化前の Python 版の出力。test_perf_kernels.py)
 """
 import math
 

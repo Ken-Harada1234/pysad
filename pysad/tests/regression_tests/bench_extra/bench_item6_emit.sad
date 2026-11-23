@@ -1,0 +1,23 @@
+! bench_item6_emit.sad — ESRF (pysad/tests/kek-ls_v03_12.lat 連結) の Emittance[] の全桁: RFSW RADCOD (disp スクリプトと同じ設定)
+ON RAD FLUC COD RFSW RADCOD;
+FFS;
+NPARA = 1;
+$FORM="18.14";
+PageWidth = 1999;
+USE RING;
+CELL;
+CALC;
+em = Emittance[Matrix->True];
+Print["EMT ", Emittances/.em];
+Print["SIG ", {MomentumSpread/.em, BunchLength/.em}];
+Print["TUN ", Tunes/.em];
+Print["ALP ", {MomentumCompaction/.em, EnergyLossU0/.em, RfVoltageVc/.em, EquilibriumPosition/.em, BucketHeight/.em}];
+Print["DMP ", DampingRate/.em];
+Print["COD ", OrbitAtExit/.em];
+bm = EquilibriumBeamMatrix/.em;
+Print["BM1 ", bm[1]];
+Print["BM3 ", bm[3]];
+Print["BM5 ", bm[5]];
+Print["BM6 ", bm[6]];
+stop;
+stop;

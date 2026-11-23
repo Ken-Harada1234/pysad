@@ -121,7 +121,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <li>高速追跡 (<code>TrackRun</code>) で扱えない要素の並びでは <code>SADError</code> (<code>RADLIGHT: この要素の並びは高速追跡 (TrackRun) で扱えない</code>)。</li>
 </ul>
 <h3 id="22-軌道の記録">2.2 軌道の記録</h3>
-<p><a href="../pysad/tests/test_radlight.py"><code>pysad/tests/test_radlight.py</code></a> の台本 (gs と差 0。1 GeV の電子、3 セルのリング、2 粒子、3 周)。</p>
+<p><a href="../pysad/tests/script_tests/test_radlight.py"><code>pysad/tests/script_tests/test_radlight.py</code></a> の台本 (gs と差 0。1 GeV の電子、3 セルのリング、2 粒子、3 周)。</p>
 <pre><code>MOMENTUM = 1e9;
 DRIFT D1 = (L=1) D2 = (L=0.5);
 QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
@@ -202,7 +202,7 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 <li><code>RadiationField</code> は <strong>gs (この K64 ビルド) で SIGSEGV する</strong> (どの引数でも。<code>tlcalc</code> の <code>loc_sad(ktfaddr(ka)-3,dl)</code> が不正な番地を指すとみられる。B49)。そのため <code>RadiationField</code> の gs 参照は取れていない。</li>
 </ol>
 <h3 id="52-v2-モードの軌道-b65">5.2 v2 モードの軌道 (B65)</h3>
-<p>K64 の 5.1 の癖 1〜3 (BEND の中を記録しない、横方向の座標が入らない、BEND で向きが変わらない) は、v2 モードでは起きない。試験 <a href="../pysad/tests/test_v2_C_radlight.py"><code>test_v2_C_radlight.py</code></a> (3 件)、例 <a href="../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad"><code>example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad</code></a>。</p>
+<p>K64 の 5.1 の癖 1〜3 (BEND の中を記録しない、横方向の座標が入らない、BEND で向きが変わらない) は、v2 モードでは起きない。試験 <a href="../pysad/tests/script_tests/test_v2_C_radlight.py"><code>test_v2_C_radlight.py</code></a> (3 件)、例 <a href="../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad"><code>example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad</code></a>。</p>
 <ul>
 <li><strong>横の軸を幾何から取る</strong>: 軌道の x・y・z は幾何 (<code>LINE["GX"/"GY"/"GZ"]</code> と同じ GEO 座標)。振幅 0 の粒子の点は幾何と一致する (ROTATE つき・負の角を含む。1e-11)。時刻 = 行路長/(βc) (1e-9)。</li>
 <li><strong>BEND は円弧で進め、中も記録する</strong>: tlstore の dphi≠0 の式で進め、1/γ の角度あたり <code>RADLIGHTDIV</code> 点 (既定 16) を記録する。<code>RADLIGHTDIV = n;</code> で変える。高いエネルギーでは点数が γ に比例して増える (3 GeV・0.26 rad の BEND で 2.5 万点)。曲げのある MULT は出口だけ、CAVI も記録する。</li>
@@ -216,7 +216,7 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 <li>そこで <code>RadiationField</code> は独立な物理の計算と比べた (6.1)。gs の表は <a href="history/18_radlight_validation.md"><code>docs/history/18_radlight_validation.md</code></a>。</li>
 </ul>
 <h3 id="61-物理の検証-独立な計算との比較">6.1 物理の検証 (独立な計算との比較)</h3>
-<p>注意: <code>RadiationField</code> は <strong>gs と比べていない</strong> (gs は SIGSEGV)。上の 6e-3 は物理の解析解との比較。<strong>Liénard-Wiechert の厳密な数値計算と比べた</strong> (独立な計算 <a href="../pysad/tests/_c3_indep.py"><code>pysad/tests/_c3_indep.py</code></a>: 円弧・直線の軌道 (解析的な位置・速度・加速度) で、観測時刻 τ ごとに遅延時間 t' を <code>brentq</code> で解き、E = q/(4πε0)[(n−β)/(γ²(1−n·β)³R²) + n×((n−β)×β̇)/(c(1−n·β)³R)] を評価)。pysad の <code>RadiationField</code> は K64 の Feynman-Heaviside の式 (軌道の点列と自然スプラインの微分)。試験 <a href="../pysad/tests/test_v2_C3_radfield.py"><code>test_v2_C3_radfield.py</code></a> (8 件)、例 <a href="../example/07_spin_solenoid_special/fn_RadiationField_bend.sad"><code>example/07_spin_solenoid_special/fn_RadiationField_bend.sad</code></a>:</p>
+<p>注意: <code>RadiationField</code> は <strong>gs と比べていない</strong> (gs は SIGSEGV)。上の 6e-3 は物理の解析解との比較。<strong>Liénard-Wiechert の厳密な数値計算と比べた</strong> (独立な計算 <a href="../pysad/tests/script_tests/_c3_indep.py"><code>pysad/tests/script_tests/_c3_indep.py</code></a>: 円弧・直線の軌道 (解析的な位置・速度・加速度) で、観測時刻 τ ごとに遅延時間 t' を <code>brentq</code> で解き、E = q/(4πε0)[(n−β)/(γ²(1−n·β)³R²) + n×((n−β)×β̇)/(c(1−n·β)³R)] を評価)。pysad の <code>RadiationField</code> は K64 の Feynman-Heaviside の式 (軌道の点列と自然スプラインの微分)。試験 <a href="../pysad/tests/script_tests/test_v2_C3_radfield.py"><code>test_v2_C3_radfield.py</code></a> (8 件)、例 <a href="../example/07_spin_solenoid_special/fn_RadiationField_bend.sad"><code>example/07_spin_solenoid_special/fn_RadiationField_bend.sad</code></a>:</p>
 <table>
 <thead>
 <tr>
@@ -277,8 +277,8 @@ s=RadiationSpectrum[{f[1],f[3]},{0.001,1,0.001}*3e-7];
 <li>K64 のソース: <code>tlinit.f</code> (<code>tlinit</code>、<code>tlstore</code>、<code>tlresult</code>、<code>tlcalc</code>、<code>tlspect</code>)。RADLIGHT の軌道は <code>tlinit</code> / <code>tlstore</code> / <code>tlresult</code> の直訳 (<code>ffscmd._RadLight</code>)。<code>RadiationField</code>・<code>RadiationSpectrum</code> は <a href="../pysad/radfield.py"><code>pysad/radfield.py</code></a> (<code>radiation_field</code>・<code>radiation_spectrum</code>)。</li>
 <li><code>TrackParticles</code> は RADLIGHT のとき RAD・TRPT を ON にして追跡する (<code>rad = RAD or RADLIGHT</code>、<code>trpt = TRPT or RADLIGHT</code>)。<code>FFS.track_particles</code> 付近。高速追跡 (<code>TrackRun</code>) で扱えない並びは <code>SADError</code>。</li>
 <li>PHOTONS: <code>beambeam.py</code>、<code>track6.py</code>、<code>ffscmd</code>。tdusrnpl・radangle1・tphrec の直訳 (4)。</li>
-<li>v2 の軌道の独立な検証用の計算: <a href="../pysad/tests/_c3_indep.py"><code>pysad/tests/_c3_indep.py</code></a>。</li>
-<li>試験: <a href="../pysad/tests/test_radlight.py"><code>pysad/tests/test_radlight.py</code></a> (1)、<code>test_radfield.py</code>、<a href="../pysad/tests/test_v2_C_radlight.py"><code>test_v2_C_radlight.py</code></a> (3)、<a href="../pysad/tests/test_v2_C3_radfield.py"><code>test_v2_C3_radfield.py</code></a> (8)。例 <a href="../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad"><code>example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad</code></a>、<a href="../example/07_spin_solenoid_special/fn_RadiationField_bend.sad"><code>example/07_spin_solenoid_special/fn_RadiationField_bend.sad</code></a>。</li>
+<li>v2 の軌道の独立な検証用の計算: <a href="../pysad/tests/script_tests/_c3_indep.py"><code>pysad/tests/script_tests/_c3_indep.py</code></a>。</li>
+<li>試験: <a href="../pysad/tests/script_tests/test_radlight.py"><code>pysad/tests/script_tests/test_radlight.py</code></a> (1)、<code>test_radfield.py</code>、<a href="../pysad/tests/script_tests/test_v2_C_radlight.py"><code>test_v2_C_radlight.py</code></a> (3)、<a href="../pysad/tests/script_tests/test_v2_C3_radfield.py"><code>test_v2_C3_radfield.py</code></a> (8)。例 <a href="../example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad"><code>example/07_spin_solenoid_special/flag_RADLIGHT_orbit_field.sad</code></a>、<a href="../example/07_spin_solenoid_special/fn_RadiationField_bend.sad"><code>example/07_spin_solenoid_special/fn_RadiationField_bend.sad</code></a>。</li>
 </ul>
 <h2 id="9-関連文書">9. 関連文書</h2>
 <ul>

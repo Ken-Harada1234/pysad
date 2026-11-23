@@ -150,7 +150,7 @@ Exit;
 - 例: [`optics/FFS_cell_calc_emit_PF_1981_460nmrad`](../optics/FFS_cell_calc_emit_PF_1981_460nmrad.md)、`..._1986_128nmrad`、`..._1997_036nmrad`、`..._2005_036nmrad` (すべて同じ台本で、ラティスだけ違う)。
 - gs: `gs file.sad < /dev/null`。pysad: `PYSAD_COMPAT=k64 py -3.12 -c "from pysad.ffscmd import run_sad_string; run_sad_string(open('file.sad',encoding='utf-8').read())"` (k64 が gs と同じ。省略すると v2)。
 - 作り方: `tools/pf_history/mk_lattices.py <履歴フォルダ>` (ラティス)、`build_examples.py` (例)、`ana_pf_history.py` (表)、`cmp_gs_pysad.py` (gs と pysad の比較)。
-- 試験: `pysad/tests/test_pf_history_lattices.py`。
+- 試験: `pysad/tests/script_tests/test_pf_history_lattices.py`。
 
 ### 元の履歴フォルダの `matching`・`disp` (台本の用途。ここには置いていない)
 - `matching`: `USE RING; cell calc; calc; emit;` のあと、`MKA.1`〜`MKA.3` で `AX`・`AY`・`EPX` を 0、`DMARK` で `EX`・`EPX` を 0 にするフィット (`free Q1*,...,Q9*;` `go;`)。`MKA` と `DMARK` の両方があるのは `pf_460nmrad` (1981) だけなので、1981 のオプティクス (標準セルを 90° / 90° にそろえる、`matched optics` のコメントの四極を出した計算) のためのものと読める。確認はしていない。補助の `modules_general.n`・`modules_matching.n` (`Get[]`) と、`datas.txt` への書き込みを使う。

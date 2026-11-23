@@ -93,7 +93,7 @@ pysad は直訳に加えて、**オリジナルの SAD (K64) にない解析機�
 ## 構成
 
 Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`、`README.md`、`LICENSE`、`CLAUDE.md`、`.gitignore` ([`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §9)。
-ベンチ・回帰スクリプト・出力は入れない (`.gitignore`)。以下の一覧は現在の作業ツリー。
+試験 (`pysad/tests/script_tests/`) と回帰ベンチ (`pysad/tests/regression_tests/`) も入れる。回帰の実行ごとの出力 (`regression_out/`)、ログは入れない (`.gitignore`)。以下の一覧は現在の作業ツリー。
 
 ### トップ
 
@@ -106,7 +106,7 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 | [`LICENSE`](LICENSE) | SAD の利用条件 (KEK Accelerator Laboratory) |
 | [`.gitignore`](.gitignore) | 追跡しないもの (出力、ログ、キャッシュ) |
 | [`pysad/`](pysad/) | 本体 (下の表) |
-| [`pysad/tests/`](pysad/tests/) | 試験 (下の表) |
+| [`pysad/tests/`](pysad/tests/README.md) | 試験。[`script_tests/`](pysad/tests/script_tests/README.md) (機能ごとの pytest) と [`regression_tests/`](pysad/tests/regression_tests/README.md) (SAD (K64) との照合ベンチ) |
 | [`example/`](example/) | 機能・関数ごとの短い例 (gs と pysad の画面表示つき。下の表) |
 | [`docs/`](docs/) | 解説文書 (下の表。現状のスナップショット) |
 | [`tools/`](tools/) | md から HTML への変換ツール (`py -3.12 tools/build_html.py --changed`) |
@@ -242,7 +242,7 @@ SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの�
 | [`example/dxf_lattice/`](example/dxf_lattice/README.md) | `DrawMagnetsDXF[]` (ラティスの平面図の DXF): FODO・ASTRID2・KEK-LS の 1 セルと全周。台本・DXF・図・gs との一致 |
 | [`example/tools/`](example/tools/) | `.sad` の作成と、gs・pysad での実行 (`mk.py`、`run_example.py` ほか) |
 
-pysad の試験が走らせる台本と、その gs・pysad の画面表示は [`pysad/tests/scripts/`](pysad/tests/scripts/) にあります (対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md))。`example/` とは別のスクリプトなので、それぞれのフォルダに、それぞれの結果を置いています。
+pysad の試験が走らせる台本と、その gs・pysad の画面表示は [`pysad/tests/script_tests/scripts/`](pysad/tests/script_tests/scripts/) にあります (対応表は [`pysad/tests/script_tests/OUTPUTS.md`](pysad/tests/script_tests/OUTPUTS.md))。`example/` とは別のスクリプトなので、それぞれのフォルダに、それぞれの結果を置いています。
 
 ### `docs/` (解説文書。現状のスナップショットで、履歴は書かない)
 
@@ -293,8 +293,8 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 
 | 集計 | 結果 |
 |---|---|
-| 回帰ベンチ (gs の出力との比較、`run_regression.py`、`QUICK=1`、k64。ベンチと `run_regression.py` は作業者のローカルにあり、このリポジトリには入っていない) | **50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)** |
-| 全試験 (`pytest pysad/tests`、gs の出力との比較を含む、k64 が既定) | **2507 通過・13 skip・失敗 0 (2520 件収集)** (2026-11-23 の通し (1 時間 40 分)。回帰 `QUICK=1` は 50 ベンチ FAIL 0。`PYSAD_SAD_PACKAGES` つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/test_v2_B2_script.py))) |
+| 回帰ベンチ (gs の出力との比較、`pysad/tests/regression_tests/run_regression.py`、`QUICK=1`、k64) | **50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)** |
+| 全試験 (`pytest pysad/tests`、gs の出力との比較を含む、k64 が既定) | **2521 通過・13 skip・失敗 0 (2534 件収集)** (2026-11-23 の通し (1 時間 36 分)。回帰 `QUICK=1` は 50 ベンチ FAIL 0。`PYSAD_SAD_PACKAGES` つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/script_tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/script_tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/script_tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/script_tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/script_tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/script_tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/script_tests/test_v2_B2_script.py))) |
 | `example/` の例 (下の表。gs と pysad の画面表示の比較。判定は各フォルダの README の ○△×) | 224 例中 ○ 189・△ 34・× 1 |
 
 `example/` の例のフォルダごとの内訳 (○ 一致、△ 差あり (理由は各例の `.md`)、× gs 失敗または pysad 未対応)。判定は、v2 で違うものも含めて `PYSAD_COMPAT=k64` で gs と一致するものを ○ としています。数えたスクリプトは [`example/tools/count_match.py`](example/tools/count_match.py)。
@@ -325,7 +325,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 - **v2 で意図的に gs と違うもの**: v2 は K64 のバグ・物理の誤りを直した動作なので結果が変わります ([`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md)。K64 側のバグは [`docs/30_sad_bug_report.md`](docs/30_sad_bug_report.md) の B 番号つきの一覧。B160 は誤りではなく K1 の暗黙の定義、B161 は CALC の行列の dk の不整合 (v2 は直してある)、B162 は Touschek の損失率の式の適用範囲 (v2 は Piwinski 型が既定))。新機能 (上の節) は互換モードによらず同じ動作です。`TouschekLifetime[INF, INF, nz]` の既定 (Piwinski 型。`Formula->"K64"` で K64 の表) と CALC の BEND の行列の dk (B161) は、v2 と k64 で結果が違います。gs と同じ結果が要るときは `PYSAD_COMPAT=k64`。
 - **検証の限界**: 動作確認は基本的に自分で書いた SAD 台本に対してです。gs は KatsOide/SAD の `master` (2026-02-18) と同じ内容のソースを WSL でビルドしたもの (現在の `bin/gs` は 2026-10-19 ビルド) で、保存済みの参照値 (2026-10-14 など) と現在の gs の値が違うことがあります (SOL 内の四極 + RAD など。[`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §8)。
 
-詳細は [`docs/31_unimplemented_and_unverified.md`](docs/31_unimplemented_and_unverified.md)・[`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md)・[`example/README.md`](example/README.md)・[`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
+詳細は [`docs/31_unimplemented_and_unverified.md`](docs/31_unimplemented_and_unverified.md)・[`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md)・[`example/README.md`](example/README.md)・[`pysad/tests/script_tests/OUTPUTS.md`](pysad/tests/script_tests/OUTPUTS.md)。
 
 加速器設計コード SAD (Strategic Accelerator Design) の K64 版 ([KatsOide/SAD](https://github.com/KatsOide/SAD)) の
 光学計算・エミッタンス・マッチング・粒子追跡・ダイナミックアパーチャを Python に直訳したもの。
@@ -342,45 +342,49 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 
 ## 検証
 
-- `py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py` (`--ignore` する旧式の 3 本。手順は [`docs/history/00_RESUME.md`](docs/history/00_RESUME.md) §4)。
-  GUI 系 ([`test_plot.py`](pysad/tests/test_plot.py)、[`test_tclbridge.py`](pysad/tests/test_tclbridge.py)) は環境変数 `PYSAD_SAD_PACKAGES` (K64 の `Packages` の場所) が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL、約 7 分) も走る。
-  このリポジトリには pysad 本体と文書だけを入れている。SAD の参照値付きベンチ、回帰スクリプトは含めていない。
-  誤差入りラティスを使う [`test_elkern.py`](pysad/tests/test_elkern.py) の 2 件は環境変数 `PYSAD_ERR_LATTICE` (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。
+- 試験: `py -3.12 -m pytest pysad/tests -q -p no:cacheprovider --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py` (`--ignore` する旧式の 3 本)。
+  回帰ベンチ: リポジトリのルートから `QUICK=1 py -3.12 -u pysad/tests/regression_tests/run_regression.py` (遅い 4 本を省略。目安 約 7 分。省略しないと約 17 分。SAD の実行は不要)。
+  説明は [`pysad/tests/README.md`](pysad/tests/README.md)・[`script_tests/README.md`](pysad/tests/script_tests/README.md)・[`regression_tests/README.md`](pysad/tests/regression_tests/README.md)。
+  GUI 系 ([`test_plot.py`](pysad/tests/script_tests/test_plot.py)、[`test_tclbridge.py`](pysad/tests/script_tests/test_tclbridge.py)) は環境変数 `PYSAD_SAD_PACKAGES` (K64 の `Packages` の場所) が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL、約 7 分) も走る。
+  回帰ベンチの基準結果 (`bench/*.result`) は、あらかじめ SAD (K64) で取って保存したもの。
+  誤差入りラティスを使う [`test_elkern.py`](pysad/tests/script_tests/test_elkern.py) の 2 件は環境変数 `PYSAD_ERR_LATTICE` (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。
 
-## [`pysad/tests/`](pysad/tests/) (試験)
+## [`pysad/tests/`](pysad/tests/README.md) (試験)
 
-全試験の件数と skip の内訳は「オリジナルの SAD (gs) との一致度」の節の表。参照は多くが SAD K64 (`gs`) の出力で、既存の試験は互換モード k64 で走る ([`conftest.py`](pysad/tests/conftest.py))。試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/scripts/`](pysad/tests/scripts/)、対応表は [`pysad/tests/OUTPUTS.md`](pysad/tests/OUTPUTS.md)。
+`pysad/tests/` は 2 つに分かれる。[`script_tests/`](pysad/tests/script_tests/README.md) は機能ごとの自動試験 (198 ファイル、収集 2534 件。ファイルごとの説明と件数は `script_tests/README.md`)。[`regression_tests/`](pysad/tests/regression_tests/README.md) は SAD (K64) の保存した基準結果との照合ベンチ 50 本。共有のラティスは `pysad/tests/kek-ls_v03_12.lat`。以下の表は `script_tests/` の概要。
+
+全試験の件数と skip の内訳は「オリジナルの SAD (gs) との一致度」の節の表。参照は多くが SAD K64 (`gs`) の出力で、既存の試験は互換モード k64 で走る ([`conftest.py`](pysad/tests/script_tests/conftest.py))。試験が走らせる SAD スクリプトと gs・pysad の画面表示は [`pysad/tests/script_tests/scripts/`](pysad/tests/script_tests/scripts/)、対応表は [`pysad/tests/script_tests/OUTPUTS.md`](pysad/tests/script_tests/OUTPUTS.md)。
 
 | ファイル | 試験の対象 |
 |---|---|
-| [`conftest.py`](pysad/tests/conftest.py) | 試験の共通設定 (互換モードの既定を `k64` にする。フィクスチャ `v2_mode`・`k64_mode`。各試験ファイルのあと、残った Tk のルート窓を閉じる autouse の module fixture) |
+| [`conftest.py`](pysad/tests/script_tests/conftest.py) | 試験の共通設定 (互換モードの既定を `k64` にする。フィクスチャ `v2_mode`・`k64_mode`。各試験ファイルのあと、残った Tk のルート窓を閉じる autouse の module fixture) |
 | `test_v2_A_*.py`、`test_v2_B_*.py`、`test_v2_C_*.py`、`test_v2_C2_*.py` | v2 の動作の試験 (29 ファイル 363 件: 放射・エミッタンス・スピン、特殊関数・スクリプト・FFS、追跡・集団効果・要素、残りの仕上げ)。v2 の動作は試験の中で `compat.set_mode('v2')` を明示する。違いの一覧は [`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md) |
 | `test_v2_P*_*.py` (P1・P2・P3・P4・P5) | v2 の動作の試験 (19 ファイル: 偏極の厳密な緩和率・クロマティックな側帯・反転した BEND、SynchroBeta・tradke・RADCOD の微分・`face`、F1 と AE の追跡、k64 の PSPAC・DAPWIDTH の窓・FREE・領域内のスピンと光子・WSPACSC、k64 の MEASURE・DETR ≥ 1・複素の特殊関数・Micado・FITP・文法・Tk 9.0)。補助の独立な計算は `_p1_dk.py`・`_p1_models.py`・`_p2_indep.py`・`_p3_indep.py`・`_p3_gsdata.py`・`_p5_util.py`・`_p5_gscx.py` |
-| [`test_v23_Q1_fmap_lma.py`](pysad/tests/test_v23_Q1_fmap_lma.py)、[`test_v23_Q2_resdrive.py`](pysad/tests/test_v23_Q2_resdrive.py)、[`test_v23_R1_rfsw_adts.py`](pysad/tests/test_v23_R1_rfsw_adts.py)、[`test_v23_R2_adts_direct.py`](pysad/tests/test_v23_R2_adts_direct.py)、[`test_v23_R3_bend_cubic.py`](pysad/tests/test_v23_R3_bend_cubic.py)、[`test_v23_R4_rdt.py`](pysad/tests/test_v23_R4_rdt.py)、[`test_v23_S1_fmapres.py`](pysad/tests/test_v23_S1_fmapres.py)、[`test_v23_R5_rdt4.py`](pysad/tests/test_v23_R5_rdt4.py)、[`test_v23_R6_bend_orbit.py`](pysad/tests/test_v23_R6_bend_orbit.py)、[`test_v23_S2_fmapcheck.py`](pysad/tests/test_v23_S2_fmapcheck.py)、[`test_v23_S3_fmappred.py`](pysad/tests/test_v23_S3_fmappred.py)、[`test_v23_L2_lma.py`](pysad/tests/test_v23_L2_lma.py)、[`test_v23_T1_elegant.py`](pysad/tests/test_v23_T1_elegant.py)、[`test_v23_T2_touschek.py`](pysad/tests/test_v23_T2_touschek.py)、[`test_v23_U1_bend_k1_field.py`](pysad/tests/test_v23_U1_bend_k1_field.py)、[`test_v23_U2_bend_k1_def.py`](pysad/tests/test_v23_U2_bend_k1_def.py)、PF 履歴・KEK-LS・DDBA の例の試験 ([`test_pf_history_lattices.py`](pysad/tests/test_pf_history_lattices.py)・[`test_kek_ls_example.py`](pysad/tests/test_kek_ls_example.py)・[`test_ddba_lattices.py`](pysad/tests/test_ddba_lattices.py)・[`test_ddba_v07_14.py`](pysad/tests/test_ddba_v07_14.py)・[`test_ddba_sextupole.py`](pysad/tests/test_ddba_sextupole.py) (6 極の検討の試作、8 件)) | 新機能 (周波数マップ・LMA・共鳴駆動項・ADTS・数値の正規形・Touschek の式・K1 の定義のオプションなど) と例の試験 (K0≠0・δ≠0・閉形式・非対角の正規形・`adts()` の既定と精密版、周波数マップの信頼性、共鳴線の予想、LMA の信頼性を含む。内訳: 4 次の共鳴駆動項・ADTS との整合・追跡の 3 次のテイラー展開・四極の積分器・数値の正規形・周波数マップ 14 件、周波数マップと RDT・ADTS の接続・誤差つき・δ・k64・MPW・gs 12 件、共鳴駆動項の追跡との照合・偏向磁石の項 13 件、偏向磁石の 3 次の項 12 件、周波数マップ・共鳴線・LMA・周期性・Touschek への受け渡し・台本の関数・gs の出力との比較 21 件、共鳴駆動項・ADTS・クロマティシティ・厚いレンズ ⇔ 薄レンズ・追跡との照合 14 件) |
-| [`test_v24_A1_ampnf.py`](pysad/tests/test_v24_A1_ampnf.py)、[`test_v24_A2_k0_bend.py`](pysad/tests/test_v24_A2_k0_bend.py)、[`test_v24_A3_touschek_bunch.py`](pysad/tests/test_v24_A3_touschek_bunch.py)、[`test_v24_A5_dapert_options.py`](pysad/tests/test_v24_A5_dapert_options.py)、[`test_v24_A7_misc.py`](pysad/tests/test_v24_A7_misc.py) | `ampnf` (J¹ の収束・同じ模型の追跡との一致・ξ)、K0≠0 の偏向磁石の h・ADTS、Touschek のバンチ内の δ と q_s (対のモンテカルロとの一致)、`DynamicApertureSurvey` の `ExpandElementValues`・`ReferenceOrbit`、`errors_summary` の誤判定・`NormalFormTune[]` |
-| [`test_v241_ampnf_ext.py`](pysad/tests/test_v241_ampnf_ext.py) | `nu(jorder=)`・`d2nu`・J² の追跡との比較、6 次の島の理論と追跡の周期 6 の固定点・分離線、対称性で禁止された共鳴の駆動項、`k0_nonlinear` の独立性 (5 件) |
-| [`test_v2_A1_next.py`](pysad/tests/test_v2_A1_next.py)、`test_v2_A2_*.py`、`test_v2_B1_*.py`、`test_v2_B2_*.py`、`test_v2_B3_*.py`、`test_v2_C3_*.py`、[`test_v2_D1_emit.py`](pysad/tests/test_v2_D1_emit.py)、`test_v2_D2_*.py`、`test_v2_E_*.py` | v2 の動作の試験 (25 ファイル 412 件: 放射・F1・CAVI・MASS/CHARGE、スピン角・Polarization・RADINT、Emittance の F1・WSPAC・SOL、FREE・複素の特殊関数・Parallelize、側帯・光子・NAFF、MEASURE・RadiationField・NPARA、NORFSW・光子・POL + 加速、MAIN の式・Micado・nbcache、傾いたソレノイドの POL・ステアリングの F1)。補助の独立な計算は `_a2_indep.py`・`_c3_indep.py`・`_e_spinkick.py`。遅い試験は `PYSAD_SLOW=1` |
-| [`test_pysad.py`](pysad/tests/test_pysad.py)、[`test_new_features.py`](pysad/tests/test_new_features.py) | 基本の数値検証、新機能 |
-| [`test_item4.py`](pysad/tests/test_item4.py)、[`test_small_items.py`](pysad/tests/test_small_items.py)、[`test_error_spreading.py`](pysad/tests/test_error_spreading.py) | SADScript のリスト関数・tsvd・小項目 A〜E・誤差の spreading |
-| [`test_evalfixes.py`](pysad/tests/test_evalfixes.py)、[`test_symbol_names.py`](pysad/tests/test_symbol_names.py)、[`test_symbolic.py`](pysad/tests/test_symbolic.py)、[`test_miscfn.py`](pysad/tests/test_miscfn.py) | gs に合わせた評価器の修正、シンボル名、記号微分 D、DownhillSimplex など |
-| [`test_specfn.py`](pysad/tests/test_specfn.py)、[`test_fitroot.py`](pysad/tests/test_fitroot.py) | 特殊関数・数学関数、FindRoot・Fit・NIntegrate |
-| [`test_fileops.py`](pysad/tests/test_fileops.py)、[`test_ffsextra.py`](pysad/tests/test_ffsextra.py)、[`test_sadrandom.py`](pysad/tests/test_sadrandom.py) | ファイル関数、FFS の小コマンド、乱数 |
-| [`test_perf_kernels.py`](pysad/tests/test_perf_kernels.py)、[`test_elkern.py`](pysad/tests/test_elkern.py) | 性能用カーネルの回帰 (従来の経路と同じ結果) |
-| [`test_emit_jac.py`](pysad/tests/test_emit_jac.py)、[`test_emit_report.py`](pysad/tests/test_emit_report.py)、[`test_emit_unstable.py`](pysad/tests/test_emit_unstable.py)、[`test_emit_extra.py`](pysad/tests/test_emit_extra.py) | Emittance・EMIT 報告・不安定な光学 |
-| [`test_synchrobeta.py`](pysad/tests/test_synchrobeta.py) | SynchroBetaEmittance |
-| [`test_geo_fit_sig.py`](pysad/tests/test_geo_fit_sig.py)、[`test_tdgeo.py`](pysad/tests/test_tdgeo.py) | 幾何の fit・ビームサイズ、tdgeo の解析微分 |
-| [`test_unstable.py`](pysad/tests/test_unstable.py)、[`test_fam_points.py`](pysad/tests/test_fam_points.py)、[`test_trpt_acc.py`](pysad/tests/test_trpt_acc.py)、[`test_rotate.py`](pysad/tests/test_rotate.py)、[`test_cavrot.py`](pysad/tests/test_cavrot.py) | 不安定ライン、FITP の fam 点、TRPT の加速、ROTATE、空洞の DX/DY/ROTATE |
-| [`test_bendk1_track.py`](pysad/tests/test_bendk1_track.py)、[`test_bend_feeddown.py`](pysad/tests/test_bend_feeddown.py)、[`test_sext_radiation.py`](pysad/tests/test_sext_radiation.py) | K1≠0 の BEND の追跡、フィードダウン、6 極の放射 (後ろ 2 本は旧式で `--ignore`) |
-| [`test_track6n_ext.py`](pysad/tests/test_track6n_ext.py)、[`test_main_track.py`](pysad/tests/test_main_track.py) | MULT・SOL の numba 追跡、MAIN の TRACK |
-| [`test_coord.py`](pysad/tests/test_coord.py)、[`test_coord_elem.py`](pysad/tests/test_coord_elem.py)、[`test_tcav.py`](pysad/tests/test_tcav.py)、[`test_und.py`](pysad/tests/test_und.py)、[`test_mult_angle.py`](pysad/tests/test_mult_angle.py)、[`test_map.py`](pysad/tests/test_map.py) | COORD・TCAVI・UND・MULT ANGLE≠0・MAP ([`test_coord.py`](pysad/tests/test_coord.py) は旧式で `--ignore`) |
-| [`test_sol_optics.py`](pysad/tests/test_sol_optics.py)、[`test_sol_emit.py`](pysad/tests/test_sol_emit.py)、[`test_sol_geo.py`](pysad/tests/test_sol_geo.py) | SOL の Twiss・Emittance・幾何 |
-| [`test_wake.py`](pysad/tests/test_wake.py)、[`test_wake_optics.py`](pysad/tests/test_wake_optics.py) | WAKE の追跡、WAKEOPT |
-| [`test_beambeam.py`](pysad/tests/test_beambeam.py)、[`test_bbbrem.py`](pysad/tests/test_bbbrem.py)、[`test_gausscoul.py`](pysad/tests/test_gausscoul.py)、[`test_measure.py`](pysad/tests/test_measure.py) | BEAMBEAM、BBBrem1、GaussianCoulomb、tlum |
-| [`test_csr.py`](pysad/tests/test_csr.py) | CSR |
-| [`test_spin.py`](pysad/tests/test_spin.py)、[`test_spin_track.py`](pysad/tests/test_spin_track.py) | POL (Emittance のスピン、TrackParticles のスピン追跡) |
-| [`test_radfield.py`](pysad/tests/test_radfield.py)、[`test_radlight.py`](pysad/tests/test_radlight.py) | RadiationField、RADLIGHT |
-| [`test_delcor.py`](pysad/tests/test_delcor.py)、[`test_corr.py`](pysad/tests/test_corr.py)、[`test_optics_fn.py`](pysad/tests/test_optics_fn.py) | DELCOR、軌道補正、光学の補助関数 |
-| [`test_sadclass.py`](pysad/tests/test_sadclass.py)、[`test_gui_lang.py`](pysad/tests/test_gui_lang.py)、[`test_tclbridge.py`](pysad/tests/test_tclbridge.py)、[`test_plot.py`](pysad/tests/test_plot.py) | Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は `PYSAD_SAD_PACKAGES` が必要) |
+| [`test_v23_Q1_fmap_lma.py`](pysad/tests/script_tests/test_v23_Q1_fmap_lma.py)、[`test_v23_Q2_resdrive.py`](pysad/tests/script_tests/test_v23_Q2_resdrive.py)、[`test_v23_R1_rfsw_adts.py`](pysad/tests/script_tests/test_v23_R1_rfsw_adts.py)、[`test_v23_R2_adts_direct.py`](pysad/tests/script_tests/test_v23_R2_adts_direct.py)、[`test_v23_R3_bend_cubic.py`](pysad/tests/script_tests/test_v23_R3_bend_cubic.py)、[`test_v23_R4_rdt.py`](pysad/tests/script_tests/test_v23_R4_rdt.py)、[`test_v23_S1_fmapres.py`](pysad/tests/script_tests/test_v23_S1_fmapres.py)、[`test_v23_R5_rdt4.py`](pysad/tests/script_tests/test_v23_R5_rdt4.py)、[`test_v23_R6_bend_orbit.py`](pysad/tests/script_tests/test_v23_R6_bend_orbit.py)、[`test_v23_S2_fmapcheck.py`](pysad/tests/script_tests/test_v23_S2_fmapcheck.py)、[`test_v23_S3_fmappred.py`](pysad/tests/script_tests/test_v23_S3_fmappred.py)、[`test_v23_L2_lma.py`](pysad/tests/script_tests/test_v23_L2_lma.py)、[`test_v23_T1_elegant.py`](pysad/tests/script_tests/test_v23_T1_elegant.py)、[`test_v23_T2_touschek.py`](pysad/tests/script_tests/test_v23_T2_touschek.py)、[`test_v23_U1_bend_k1_field.py`](pysad/tests/script_tests/test_v23_U1_bend_k1_field.py)、[`test_v23_U2_bend_k1_def.py`](pysad/tests/script_tests/test_v23_U2_bend_k1_def.py)、PF 履歴・KEK-LS・DDBA の例の試験 ([`test_pf_history_lattices.py`](pysad/tests/script_tests/test_pf_history_lattices.py)・[`test_kek_ls_example.py`](pysad/tests/script_tests/test_kek_ls_example.py)・[`test_ddba_lattices.py`](pysad/tests/script_tests/test_ddba_lattices.py)・[`test_ddba_v07_14.py`](pysad/tests/script_tests/test_ddba_v07_14.py)・[`test_ddba_sextupole.py`](pysad/tests/script_tests/test_ddba_sextupole.py) (6 極の検討の試作、8 件)) | 新機能 (周波数マップ・LMA・共鳴駆動項・ADTS・数値の正規形・Touschek の式・K1 の定義のオプションなど) と例の試験 (K0≠0・δ≠0・閉形式・非対角の正規形・`adts()` の既定と精密版、周波数マップの信頼性、共鳴線の予想、LMA の信頼性を含む。内訳: 4 次の共鳴駆動項・ADTS との整合・追跡の 3 次のテイラー展開・四極の積分器・数値の正規形・周波数マップ 14 件、周波数マップと RDT・ADTS の接続・誤差つき・δ・k64・MPW・gs 12 件、共鳴駆動項の追跡との照合・偏向磁石の項 13 件、偏向磁石の 3 次の項 12 件、周波数マップ・共鳴線・LMA・周期性・Touschek への受け渡し・台本の関数・gs の出力との比較 21 件、共鳴駆動項・ADTS・クロマティシティ・厚いレンズ ⇔ 薄レンズ・追跡との照合 14 件) |
+| [`test_v24_A1_ampnf.py`](pysad/tests/script_tests/test_v24_A1_ampnf.py)、[`test_v24_A2_k0_bend.py`](pysad/tests/script_tests/test_v24_A2_k0_bend.py)、[`test_v24_A3_touschek_bunch.py`](pysad/tests/script_tests/test_v24_A3_touschek_bunch.py)、[`test_v24_A5_dapert_options.py`](pysad/tests/script_tests/test_v24_A5_dapert_options.py)、[`test_v24_A7_misc.py`](pysad/tests/script_tests/test_v24_A7_misc.py) | `ampnf` (J¹ の収束・同じ模型の追跡との一致・ξ)、K0≠0 の偏向磁石の h・ADTS、Touschek のバンチ内の δ と q_s (対のモンテカルロとの一致)、`DynamicApertureSurvey` の `ExpandElementValues`・`ReferenceOrbit`、`errors_summary` の誤判定・`NormalFormTune[]` |
+| [`test_v241_ampnf_ext.py`](pysad/tests/script_tests/test_v241_ampnf_ext.py) | `nu(jorder=)`・`d2nu`・J² の追跡との比較、6 次の島の理論と追跡の周期 6 の固定点・分離線、対称性で禁止された共鳴の駆動項、`k0_nonlinear` の独立性 (5 件) |
+| [`test_v2_A1_next.py`](pysad/tests/script_tests/test_v2_A1_next.py)、`test_v2_A2_*.py`、`test_v2_B1_*.py`、`test_v2_B2_*.py`、`test_v2_B3_*.py`、`test_v2_C3_*.py`、[`test_v2_D1_emit.py`](pysad/tests/script_tests/test_v2_D1_emit.py)、`test_v2_D2_*.py`、`test_v2_E_*.py` | v2 の動作の試験 (25 ファイル 412 件: 放射・F1・CAVI・MASS/CHARGE、スピン角・Polarization・RADINT、Emittance の F1・WSPAC・SOL、FREE・複素の特殊関数・Parallelize、側帯・光子・NAFF、MEASURE・RadiationField・NPARA、NORFSW・光子・POL + 加速、MAIN の式・Micado・nbcache、傾いたソレノイドの POL・ステアリングの F1)。補助の独立な計算は `_a2_indep.py`・`_c3_indep.py`・`_e_spinkick.py`。遅い試験は `PYSAD_SLOW=1` |
+| [`test_pysad.py`](pysad/tests/script_tests/test_pysad.py)、[`test_new_features.py`](pysad/tests/script_tests/test_new_features.py) | 基本の数値検証、新機能 |
+| [`test_item4.py`](pysad/tests/script_tests/test_item4.py)、[`test_small_items.py`](pysad/tests/script_tests/test_small_items.py)、[`test_error_spreading.py`](pysad/tests/script_tests/test_error_spreading.py) | SADScript のリスト関数・tsvd・小項目 A〜E・誤差の spreading |
+| [`test_evalfixes.py`](pysad/tests/script_tests/test_evalfixes.py)、[`test_symbol_names.py`](pysad/tests/script_tests/test_symbol_names.py)、[`test_symbolic.py`](pysad/tests/script_tests/test_symbolic.py)、[`test_miscfn.py`](pysad/tests/script_tests/test_miscfn.py) | gs に合わせた評価器の修正、シンボル名、記号微分 D、DownhillSimplex など |
+| [`test_specfn.py`](pysad/tests/script_tests/test_specfn.py)、[`test_fitroot.py`](pysad/tests/script_tests/test_fitroot.py) | 特殊関数・数学関数、FindRoot・Fit・NIntegrate |
+| [`test_fileops.py`](pysad/tests/script_tests/test_fileops.py)、[`test_ffsextra.py`](pysad/tests/script_tests/test_ffsextra.py)、[`test_sadrandom.py`](pysad/tests/script_tests/test_sadrandom.py) | ファイル関数、FFS の小コマンド、乱数 |
+| [`test_perf_kernels.py`](pysad/tests/script_tests/test_perf_kernels.py)、[`test_elkern.py`](pysad/tests/script_tests/test_elkern.py) | 性能用カーネルの回帰 (従来の経路と同じ結果) |
+| [`test_emit_jac.py`](pysad/tests/script_tests/test_emit_jac.py)、[`test_emit_report.py`](pysad/tests/script_tests/test_emit_report.py)、[`test_emit_unstable.py`](pysad/tests/script_tests/test_emit_unstable.py)、[`test_emit_extra.py`](pysad/tests/script_tests/test_emit_extra.py) | Emittance・EMIT 報告・不安定な光学 |
+| [`test_synchrobeta.py`](pysad/tests/script_tests/test_synchrobeta.py) | SynchroBetaEmittance |
+| [`test_geo_fit_sig.py`](pysad/tests/script_tests/test_geo_fit_sig.py)、[`test_tdgeo.py`](pysad/tests/script_tests/test_tdgeo.py) | 幾何の fit・ビームサイズ、tdgeo の解析微分 |
+| [`test_unstable.py`](pysad/tests/script_tests/test_unstable.py)、[`test_fam_points.py`](pysad/tests/script_tests/test_fam_points.py)、[`test_trpt_acc.py`](pysad/tests/script_tests/test_trpt_acc.py)、[`test_rotate.py`](pysad/tests/script_tests/test_rotate.py)、[`test_cavrot.py`](pysad/tests/script_tests/test_cavrot.py) | 不安定ライン、FITP の fam 点、TRPT の加速、ROTATE、空洞の DX/DY/ROTATE |
+| [`test_bendk1_track.py`](pysad/tests/script_tests/test_bendk1_track.py)、[`test_bend_feeddown.py`](pysad/tests/script_tests/test_bend_feeddown.py)、[`test_sext_radiation.py`](pysad/tests/script_tests/test_sext_radiation.py) | K1≠0 の BEND の追跡、フィードダウン、6 極の放射 (後ろ 2 本は旧式で `--ignore`) |
+| [`test_track6n_ext.py`](pysad/tests/script_tests/test_track6n_ext.py)、[`test_main_track.py`](pysad/tests/script_tests/test_main_track.py) | MULT・SOL の numba 追跡、MAIN の TRACK |
+| [`test_coord.py`](pysad/tests/script_tests/test_coord.py)、[`test_coord_elem.py`](pysad/tests/script_tests/test_coord_elem.py)、[`test_tcav.py`](pysad/tests/script_tests/test_tcav.py)、[`test_und.py`](pysad/tests/script_tests/test_und.py)、[`test_mult_angle.py`](pysad/tests/script_tests/test_mult_angle.py)、[`test_map.py`](pysad/tests/script_tests/test_map.py) | COORD・TCAVI・UND・MULT ANGLE≠0・MAP ([`test_coord.py`](pysad/tests/script_tests/test_coord.py) は旧式で `--ignore`) |
+| [`test_sol_optics.py`](pysad/tests/script_tests/test_sol_optics.py)、[`test_sol_emit.py`](pysad/tests/script_tests/test_sol_emit.py)、[`test_sol_geo.py`](pysad/tests/script_tests/test_sol_geo.py) | SOL の Twiss・Emittance・幾何 |
+| [`test_wake.py`](pysad/tests/script_tests/test_wake.py)、[`test_wake_optics.py`](pysad/tests/script_tests/test_wake_optics.py) | WAKE の追跡、WAKEOPT |
+| [`test_beambeam.py`](pysad/tests/script_tests/test_beambeam.py)、[`test_bbbrem.py`](pysad/tests/script_tests/test_bbbrem.py)、[`test_gausscoul.py`](pysad/tests/script_tests/test_gausscoul.py)、[`test_measure.py`](pysad/tests/script_tests/test_measure.py) | BEAMBEAM、BBBrem1、GaussianCoulomb、tlum |
+| [`test_csr.py`](pysad/tests/script_tests/test_csr.py) | CSR |
+| [`test_spin.py`](pysad/tests/script_tests/test_spin.py)、[`test_spin_track.py`](pysad/tests/script_tests/test_spin_track.py) | POL (Emittance のスピン、TrackParticles のスピン追跡) |
+| [`test_radfield.py`](pysad/tests/script_tests/test_radfield.py)、[`test_radlight.py`](pysad/tests/script_tests/test_radlight.py) | RadiationField、RADLIGHT |
+| [`test_delcor.py`](pysad/tests/script_tests/test_delcor.py)、[`test_corr.py`](pysad/tests/script_tests/test_corr.py)、[`test_optics_fn.py`](pysad/tests/script_tests/test_optics_fn.py) | DELCOR、軌道補正、光学の補助関数 |
+| [`test_sadclass.py`](pysad/tests/script_tests/test_sadclass.py)、[`test_gui_lang.py`](pysad/tests/script_tests/test_gui_lang.py)、[`test_tclbridge.py`](pysad/tests/script_tests/test_tclbridge.py)、[`test_plot.py`](pysad/tests/script_tests/test_plot.py) | Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は `PYSAD_SAD_PACKAGES` が必要) |
 
 ## [`docs/history/`](docs/history/) (作業履歴)
 

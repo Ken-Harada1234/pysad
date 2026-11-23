@@ -1,0 +1,74 @@
+! ============================================================
+! bench_level9.sad — Level 9 benchmark: ソレノイド (SOL) 領域の粒子追跡
+!   Level 6 のリングの CELL0 で、B の後の D1 QD をソレノイド領域に入れる:
+!     ... B SB D1 QD SE DQS SD ...   SB=(BZ=2 BOUND=1 GEO=1), SE=(BZ=2 BOUND=1)
+!   (SADHelp: 両端の SOL に BOUND=1、片方に GEO=1。中に置けるのは DRIFT, 直線 BEND, QUAD, MULT)
+!   BZ はテスラ。2.5 GeV では Bρ=8.34 Tm なので bz=0.24 /m、領域 1.5 m で回転 0.36 rad。
+!   emit で trf0 を決めてから 5 粒子を 1, 100 周追跡。RAD OFF / RAD ON (NOFLUC)。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF  = (L=0.3 K1= 1.8*0.3)
+      QD  = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA  = (L=0   VOLT=1.5E6 HARM=234)
+;
+SOL   SB = (BZ=2 BOUND=1 GEO=1)
+      SE = (BZ=2 BOUND=1)
+;
+LINE CELLS0 = (ORG CA QF DQS SF DS B SB D1 QD SE DQS SD DS B D1);
+LINE CELL   = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RINGS  = (CELLS0 19*CELL);
+;
+
+FFS;
+$FORM="15.10";
+
+x0  = { 1E-3, 3E-3, 0,     1E-3,  0    };
+px0 = { 0,    0,    0,     1E-4,  0    };
+y0  = { 0,    0,    1E-3,  1E-3,  0    };
+py0 = { 0,    0,    0,     0,     0    };
+z0  = { 0,    0,    0,     0,     1E-3 };
+dp0 = { 0,    0,    0,     1E-3,  1E-3 };
+fl0 = { 1,    1,    1,     1,     1    };
+beam0 = {1, {x0, px0, y0, py0, z0, dp0, fl0}};
+
+prtb[tag_, b_] := Do[
+  Print[tag, " P", i, " ", {b[[2,1,i]], b[[2,2,i]], b[[2,3,i]], b[[2,4,i]], b[[2,5,i]], b[[2,6,i]], b[[2,7,i]]}],
+  {i, 1, 5}];
+
+Print["=== Test 9: RINGS (SOL BZ=2 T around D1 QD) ==="];
+USE RINGS;
+RFSW;
+CELL;
+CALC;
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["S N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["S N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["S R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["S R T100", b100];
+NORAD;
+FLUC;
+
+stop;
+stop;

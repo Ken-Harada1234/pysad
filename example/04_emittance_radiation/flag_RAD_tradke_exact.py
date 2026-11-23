@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """放射反作用の角度の項 ddpx の符号 (B111)。K64 の tradke (Emittance[]・閉軌道) は ddpx = +0.5 dpx dg、tradkn (追跡) は -0.5 dpx dg (dg < 0)。
-独立な基準: 放射反作用つきのローレンツ力の数値積分 (pysad/tests/_p2_indep.py の bend_with_radiation: 一様磁場の扇形の偏向磁石。連続な放射)。
+独立な基準: 放射反作用つきのローレンツ力の数値積分 (pysad/tests/script_tests/_p2_indep.py の bend_with_radiation: 一様磁場の扇形の偏向磁石。連続な放射)。
 扇形の偏向磁石 1 台 (3 GeV、L = 1.2 m、ANGLE = 0.2618 rad、入口の軌道 x = 2 mm・px = 1 mm・δ = -1e-4) の、放射 ON と OFF の出口の差 Δx・Δpx。
 放射の強さ k は、pysad の v2 の Δδ に合わせる。結果 (出力は flag_RAD_tradke_exact.out.txt): v2 の tradke は厳密な積分と 5 桁一致 (Δpx で 6e-6)、k64 の tradke は Δpx が 2.2e-4 ずれる
 (符号が逆の ddpx の分。偏向角が小さい 0.05 rad の磁石では 1.6e-3)。追跡 (TrackParticles、tradkn) は k64・v2 とも厳密な積分と 5 桁一致。"""
@@ -8,7 +8,7 @@ import io, math, os, sys
 import numpy as np
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests'))
+sys.path.insert(0, os.path.join(ROOT, 'pysad', 'tests', 'script_tests'))
 # 環境変数 PYSAD_SAD_PACKAGES (K64 版 SAD の Packages のフォルダ) を指定して実行する
 from pysad import ffscmd, compat, emit6d
 from pysad.elements import Bend

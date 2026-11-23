@@ -133,8 +133,8 @@ FFS;
 USE RING; CELL; RFSW; RAD; CODPLOT; CALC; EMIT;
 g=BeamPlot[&quot;QF.5&quot;,{&quot;X&quot;,&quot;Y&quot;},DisplayFunction-&gt;Identity,SizeFunction-&gt;&quot;SIG&quot;];
 </code></pre>
-<p>試験の元の台本は <a href="../pysad/tests/test_plot.py"><code>pysad/tests/test_plot.py</code></a> (8 本)。
-キャンバスの項目を書き出す方法 (gs と比べるのに使った) は、<a href="../pysad/tests/test_plot.py"><code>test_plot.py</code></a> の <code>_DUMP</code>: <code>TclEval</code> で全 Canvas の <code>find all</code>・<code>type</code>・<code>coords</code>・<code>gettags</code> を列挙してファイルに書く。</p>
+<p>試験の元の台本は <a href="../pysad/tests/script_tests/test_plot.py"><code>pysad/tests/script_tests/test_plot.py</code></a> (8 本)。
+キャンバスの項目を書き出す方法 (gs と比べるのに使った) は、<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a> の <code>_DUMP</code>: <code>TclEval</code> で全 Canvas の <code>find all</code>・<code>type</code>・<code>coords</code>・<code>gettags</code> を列挙してファイルに書く。</p>
 <h2 id="4-オプションの対応">4. オプションの対応</h2>
 <p>オプションは <code>ListPlot.n</code> の定義 (<code>LP$def</code>、<code>Graphics$Options</code>) のまま pysad が評価する。pysad 側で特別に処理するものはなく、<code>Override[opt, 既定]</code> の規則どおりに効く。
 次は <code>ListPlot.n</code> の既定値 (読み取った値) と、試験で動作を確認したか。</p>
@@ -330,7 +330,7 @@ fig = draw_mpl.draw(ffs, &quot;BX BY &amp; EX LAT&quot;, region=(1, 40), save=&q
 </tbody>
 </table>
 <p><strong>未対応 (警告して飛ばす。同じ種類の警告は 1 回)</strong> <code>Hook[…]</code> (対話の束縛。InfoLabel など。黙って飛ばす)、<code>Arrow</code>・<code>ArrowShape</code> (線だけ描く)、<code>UseBG-&gt;True</code> の文字の背景、<code>TextFont</code> (フォントの名前・書体)、<code>MeshStyle</code> の stipple の模様 (塗りつぶしだけ)、<code>FrameTicks</code> の <code>{Ticks, 関数}</code> (目盛りの文字を関数で与える形。線だけ)、<code>FrameUnitLabel</code> の左 (y) 側、<code>Scale-&gt;Date</code>・<code>Date</code> の目盛り (Linear で描く)、<code>Text</code> の位置 <code>LeftTags</code>・<code>RightTags</code>・<code>AboveTags</code>・<code>BelowTags</code> (Tk の外接矩形が要る)、<code>Rectangle</code> の <code>Position-&gt;</code> の <code>Right</code>・<code>Left</code>・<code>Above</code>・<code>Below</code> 以外、3 列の誤差棒、<code>PointSymbol-&gt;Bar</code> の基線 <code>Offset</code> (0 からの垂線で近似)、<code>Initialize-&gt;False</code>・<code>Frame</code> (前の図に重ねる・再描画。新しい Figure を作る)、<code>Canvas3D</code>・<code>ListPlot3D</code> 系、<code>CanvasSymbol</code>、未知の要素 <code>Foo[…]</code> と文字列・数が要素の位置に来たもの、解釈できない色名 (黒にする)。マウス操作 (拡大・凡例の移動・InfoLabel のクリック) は無い。</p>
-<p><strong>照合</strong> Tk の窓と画像で比べたものはない。試験 <a href="../pysad/tests/test_v241_mpl_display.py"><code>test_v241_mpl_display.py</code></a> (32 件、Agg、Tk 不要) は、<code>Graphics[…]</code> の <code>Line</code>・<code>Rectangle</code>・<code>Text</code> の個数と座標が matplotlib 側のデータ (<code>Line2D</code>・<code>Patch</code>・<code>Text</code>) と一致することを数値で確かめる: <code>Plot[Sin[x],{x,0,6}]</code> (505 点が 1e-12 以内、軸の範囲が <code>DataRange</code> の 7% の余白と <code>PlotRange</code>)、<code>ListPlot</code> (折れ線・点・誤差棒・Step・Log・<code>PlotRange</code>・<code>GridLines</code>・<code>Frame</code>・<code>FrameTicks</code>・<code>FrameLabel</code>・凡例)、<code>HistoPlot</code> (箱の数)、<code>OpticsPlot</code> (3 本の線が全点 1e-12 以内、箱 192 個の座標、名前は Graphics の <code>Text</code> の順序つきの部分列で、残った名前は互いに重ならない、枠の積み方・x 範囲)、<code>GeometryPlot</code> (線 1 本 + 多角形 73 個)、手で組んだ <code>Graphics</code> (各要素の色・太さ・破線・文字の揃え・回転・クリップ)。ほかに切替、保存 (png・pdf・svg の先頭のバイト、2 回目以降の番号)、matplotlib が無いとき、未対応の警告。例は <a href="../example/11_graphics/fn_OpticsPlot_mpl.html"><code>example/11_graphics/fn_OpticsPlot_mpl.md</code></a>。</p>
+<p><strong>照合</strong> Tk の窓と画像で比べたものはない。試験 <a href="../pysad/tests/script_tests/test_v241_mpl_display.py"><code>test_v241_mpl_display.py</code></a> (32 件、Agg、Tk 不要) は、<code>Graphics[…]</code> の <code>Line</code>・<code>Rectangle</code>・<code>Text</code> の個数と座標が matplotlib 側のデータ (<code>Line2D</code>・<code>Patch</code>・<code>Text</code>) と一致することを数値で確かめる: <code>Plot[Sin[x],{x,0,6}]</code> (505 点が 1e-12 以内、軸の範囲が <code>DataRange</code> の 7% の余白と <code>PlotRange</code>)、<code>ListPlot</code> (折れ線・点・誤差棒・Step・Log・<code>PlotRange</code>・<code>GridLines</code>・<code>Frame</code>・<code>FrameTicks</code>・<code>FrameLabel</code>・凡例)、<code>HistoPlot</code> (箱の数)、<code>OpticsPlot</code> (3 本の線が全点 1e-12 以内、箱 192 個の座標、名前は Graphics の <code>Text</code> の順序つきの部分列で、残った名前は互いに重ならない、枠の積み方・x 範囲)、<code>GeometryPlot</code> (線 1 本 + 多角形 73 個)、手で組んだ <code>Graphics</code> (各要素の色・太さ・破線・文字の揃え・回転・クリップ)。ほかに切替、保存 (png・pdf・svg の先頭のバイト、2 回目以降の番号)、matplotlib が無いとき、未対応の警告。例は <a href="../example/11_graphics/fn_OpticsPlot_mpl.html"><code>example/11_graphics/fn_OpticsPlot_mpl.md</code></a>。</p>
 <p><strong>未確認・限界</strong> 色・線の太さ・文字の大きさの見た目は Tk の窓と比べていない (線の太さ 1 px = 0.8 pt、破線の長さ、文字の大きさ 8.5 pt × <code>TextSize</code> は目で決めた近似。キャンバス 13 × 10 インチを 0.65 倍して図にする)。<code>OpticsPlot</code> の実ラティス (大きなリング) と <code>BeamPlot</code>・<code>FitPlot</code>・<code>ListDensityPlot</code> は描いて見ていない (要素は上の表の範囲)。対話の backend の窓 (<code>plt.show</code>) は手で確認していない (Agg で保存と図のデータだけ)。PDF・SVG は保存できることだけ確認 (見た目は PNG のみ目で見た)。目盛りの位置と文字は matplotlib の自動で、<code>Canvas.n</code> の <code>AutoTick</code> とは違う (指数の表記も matplotlib 流)。凡例の位置は <code>Canvas.n</code> の <code>AdjustLegend</code> とは違う。<code>PYSAD_DISPLAY=mpl</code> のとき <code>DRAW</code> は §5 のまま (保存先は <code>PYSAD_DRAW_FILE</code>)。gs は表示環境がないので <code>Graphics[…]</code> の式の一致 (§5) までが gs との比較で、描いた図は比べられない。</p>
 <h2 id="7-検証">7. 検証</h2>
 <p>方法: gs (WSLg の X11) と pysad で同じ台本を動かし、キャンバスの全項目の種類・座標・タグ、<code>Graphics[…]</code> の式を比べた。Tk のフォントが違うので文字の外接矩形だけは一致しない。結果の要約:</p>
@@ -338,8 +338,8 @@ fig = draw_mpl.draw(ffs, &quot;BX BY &amp; EX LAT&quot;, region=(1, 40), save=&q
 <li><code>ListPlot</code>・<code>Plot</code>・<code>ListDensityPlot</code>・<code>HistoPlot</code>・<code>FitPlot</code> (当てはめ値は相対 1e-8)・<code>FitGaussian</code>・<code>GeometryPlot</code> は、キャンバスの項目が gs と一致 (<code>ListPlot[{1,4,9,16}, PlotJoined-&gt;True]</code> は 43 項目)。<code>ListContourPlot</code> は種類と数が一致し、等高線の始点・向きだけ違う (§8)。</li>
 <li><code>OpticsPlot</code> は枠・矩形・線が一致し、text 項目は pysad が 5〜14 個多い (文字の大きさによる名前の間引きの違い。§9)。</li>
 <li>オプション付きの戻りの Graphics 式は gs と文字列として一致 (§4 の表)。</li>
-<li>試験: <a href="../pysad/tests/test_plot.py"><code>pysad/tests/test_plot.py</code></a> (8 本)、<a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>、<a href="../pysad/tests/test_v25_draw_mpl.py"><code>test_v25_draw_mpl.py</code></a>、<a href="../pysad/tests/test_v241_mpl_display.py"><code>test_v241_mpl_display.py</code></a>。Tk を使う試験は <code>PYSAD_SAD_PACKAGES</code> と tkinter が要る (なければ skip)。全試験を回すと数回に 1 回、単独では通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら <code>py -3.12 -m pytest pysad/tests/test_plot.py -q</code> で単独に回して確かめる。</li>
-<li>回帰 (<code>run_regression.py</code>) は描画を含まない (描画は pytest だけ)。</li>
+<li>試験: <a href="../pysad/tests/script_tests/test_plot.py"><code>pysad/tests/script_tests/test_plot.py</code></a> (8 本)、<a href="../pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>、<a href="../pysad/tests/script_tests/test_v25_draw_mpl.py"><code>test_v25_draw_mpl.py</code></a>、<a href="../pysad/tests/script_tests/test_v241_mpl_display.py"><code>test_v241_mpl_display.py</code></a>。Tk を使う試験は <code>PYSAD_SAD_PACKAGES</code> と tkinter が要る (なければ skip)。全試験を回すと数回に 1 回、単独では通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら <code>py -3.12 -m pytest pysad/tests/script_tests/test_plot.py -q</code> で単独に回して確かめる。</li>
+<li>回帰 (<code>pysad/tests/regression_tests/run_regression.py</code>) は描画を含まない (描画は pytest だけ)。</li>
 <li>比べていないもの: 色・フォント・大きさ・見た目、クリック・拡大などの操作、実画面のスクリーンショットの比較。値の一致は「キャンバスの項目の座標とタグ」まで。</li>
 <li>項目ごとの比較表は <a href="history/21_graphics_validation.md">history/21_graphics_validation.md</a>。</li>
 </ul>
@@ -419,7 +419,7 @@ fig = draw_mpl.draw(ffs, &quot;BX BY &amp; EX LAT&quot;, region=(1, 40), save=&q
 </table>
 <p>未対応: <code>CanvasSymbol</code> (Tcl 文字列を返す版)、<code>Canvas3DClipTriangle</code>・<code>Canvas3DLightTriangle</code>・<code>Canvas3DProjection</code> (Canvas3D.n)。</p>
 <h3 id="102-描画を動かすために-gs-に合わせた-sadscript-の評価">10.2 描画を動かすために gs に合わせた SADScript の評価</h3>
-<p>どれも gs で同じ式を実行して比べた (試験は <a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>)。</p>
+<p>どれも gs で同じ式を実行して比べた (試験は <a href="../pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>)。</p>
 <ul>
 <li>連鎖した比較 <code>a&lt;x&lt;b</code>、<code>a==b==c</code> (連鎖全体を評価する。左から 2 つずつ評価すると範囲外でも真になる)。</li>
 <li><code>Map</code>・<code>Table</code>・<code>MapThread</code>・<code>/.</code> の結果の <code>Null[]</code> (空の Sequence) は取り除き、<code>Null[a,b]</code> は a, b を並べる。</li>
@@ -433,7 +433,7 @@ fig = draw_mpl.draw(ffs, &quot;BX BY &amp; EX LAT&quot;, region=(1, 40), save=&q
 <li>リテラルだけの選択肢 (<code>""|" "</code>) を引数にもつ定義は、一般の定義より先に試す。</li>
 <li>定義の本体へ引数の値を埋め込むとき、定義自身のパターン変数 (<code>f[x_] := …</code> の x) は外側の同名の値に置き換えない。別の関数の呼び出しの引数は見ない。</li>
 <li>評価が <code>FromDate[]</code>・<code>MapAt[f, a-&gt;b, {2}]</code> に対応 (GUI の試験は環境変数がないと skip になるので、壊れても気づきにくい)。</li>
-<li>OpticsPlot.n を動かすための対応 (どれも gs と比べた。試験は <a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>):<ul>
+<li>OpticsPlot.n を動かすための対応 (どれも gs と比べた。試験は <a href="../pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>):<ul>
 <li><code>`X</code>・<code>System`X</code>・<code>Global`X</code> は、<code>Begin[…]</code> で文脈を作らない限り大域の <code>X</code> (OpticsPlot.n は <code>`OpticsPlot=System`OpticsPlot=OPlot$@OpticsPlot</code>)。</li>
 <li>Module の局所変数への <code>h := Sqrt[Abs[#]]&amp;</code> と <code>h[4]</code> (遅延した純関数の適用)、大域の <code>fun := …&amp;</code> の <code>fun[4]</code>。</li>
 <li><code>SetAttributes[f, HoldNone]</code> は <code>HoldAll</code> などを外す。</li>
@@ -448,7 +448,7 @@ fig = draw_mpl.draw(ffs, &quot;BX BY &amp; EX LAT&quot;, region=(1, 40), save=&q
 <li>K64 の Tk (改造版) の text 項目だけが持つ <code>-usebg</code> は、標準の Tk にないので落とす (文字の背景は塗らない)。</li>
 </ul>
 </li>
-<li>ListContourPlot・HistoPlot・FitPlot (Plots.n) を動かすための対応 (gs と比べた。試験は <a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>・<a href="../pysad/tests/test_plot.py"><code>test_plot.py</code></a>):<ul>
+<li>ListContourPlot・HistoPlot・FitPlot (Plots.n) を動かすための対応 (gs と比べた。試験は <a href="../pysad/tests/script_tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>・<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>):<ul>
 <li><code>Block[{mesh}, mesh[x_] := …]</code> は、入るとき局所にした記号の関数定義を退避して空にし、出るとき戻す (色目盛りの ListDensityPlot が同じ Block を入れ子で使う)。</li>
 <li><code>?名前</code> (Definition) は <code>Hold[{名前:=名前, 定義 …}]</code> を返す。<code>Extract[…, {…,0,…}]</code>・<code>Part[…,0]</code> は式の頭部。<code>contl[k][x] =.</code> は添字つきの定義だけを消す。
 K64 は定義をハッシュ表の順に返す (再現できない) ので、pysad は書いた順の逆 (具体的な定義、続いてパターンの定義 <code>contl[_][_]</code>)。

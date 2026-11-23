@@ -819,15 +819,15 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </ul>
 <p><strong>試験とベンチ</strong>:</p>
 <ul>
-<li>テストは <a href="../pysad/tests/"><code>pysad/tests/</code></a> (<code>test_*.py</code>)。2026-11-21 の通しは、収集 1907 件、<strong>1899 通過・8 skip・失敗 0</strong> (その時点で <code>test_*.py</code> は 158 ファイルだった。以後ファイルが増えており、現在の件数は未再確認)。v2 の試験は <code>test_v2_*.py</code> (73 ファイル・1081 件) で <code>compat.set_mode('v2')</code> を明示する。その他は gs との比較なので k64 モードで走る (<a href="../pysad/tests/conftest.py"><code>conftest.py</code></a>)。</li>
+<li>テストは <a href="../pysad/tests/"><code>pysad/tests/</code></a> (<code>test_*.py</code>)。2026-11-21 の通しは、収集 1907 件、<strong>1899 通過・8 skip・失敗 0</strong> (その時点で <code>test_*.py</code> は 158 ファイルだった。以後ファイルが増えており、現在の件数は未再確認)。v2 の試験は <code>test_v2_*.py</code> (73 ファイル・1081 件) で <code>compat.set_mode('v2')</code> を明示する。その他は gs との比較なので k64 モードで走る (<a href="../pysad/tests/script_tests/conftest.py"><code>conftest.py</code></a>)。</li>
 <li>実行:</li>
 </ul>
-<p><code>py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py
-  QUICK=1 py -3.12 -u run_regression.py</code></p>
-<p><code>--ignore</code> する 3 本 (<a href="../pysad/tests/test_bend_feeddown.py"><code>test_bend_feeddown.py</code></a>・<a href="../pysad/tests/test_coord.py"><code>test_coord.py</code></a>・<a href="../pysad/tests/test_sext_radiation.py"><code>test_sext_radiation.py</code></a>) は sys.exit で終わる旧式のスクリプト。環境変数 <code>PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;</code> が無いと GUI 系は skip。<code>PYSAD_SLOW=1</code> で遅い試験 (CSR の MakeZL、約 7 分) も走る。GUI 系 (<code>test_plot</code>・<code>test_tclbridge</code>) は全体実行で数回に 1 回失敗することがある (単独なら通る)。
-- 回帰 <code>run_regression.py</code> (k64 モード) は 50 ベンチ。<code>QUICK=1</code> は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行する。2026-11-18 の <code>QUICK=1</code> の通しは <strong>FAIL 0</strong>。QUICK なしの全 50 ベンチ (205 s) の記録は 2026-11-16 夜 (<code>local/wake/verify_log.md</code>)。
-- ベンチ: <code>bench_level1〜31*.sad/.result</code> (gs の出力) と <code>*_pysad.py/.result</code>。結果の一覧と一致度は <a href="27_benchmarks.html">27_benchmarks.md</a>。
-- 試験が走らせる SAD スクリプトと gs・pysad の画面表示は <a href="../pysad/tests/scripts/"><code>pysad/tests/scripts/</code></a> (<code>NAME.sad</code>・<code>NAME.gs.txt</code>・<code>NAME.pysad.txt</code>)、試験関数との対応は <a href="../pysad/tests/OUTPUTS.html"><code>pysad/tests/OUTPUTS.md</code></a>。</p>
+<p><code>py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py
+  QUICK=1 py -3.12 -u pysad/tests/regression_tests/run_regression.py</code></p>
+<p><code>--ignore</code> する 3 本 (<a href="../pysad/tests/script_tests/test_bend_feeddown.py"><code>test_bend_feeddown.py</code></a>・<a href="../pysad/tests/script_tests/test_coord.py"><code>test_coord.py</code></a>・<a href="../pysad/tests/script_tests/test_sext_radiation.py"><code>test_sext_radiation.py</code></a>) は sys.exit で終わる旧式のスクリプト。環境変数 <code>PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;</code> が無いと GUI 系は skip。<code>PYSAD_SLOW=1</code> で遅い試験 (CSR の MakeZL、約 7 分) も走る。GUI 系 (<code>test_plot</code>・<code>test_tclbridge</code>) は全体実行で数回に 1 回失敗することがある (単独なら通る)。
+- 回帰 <a href="../pysad/tests/regression_tests/run_regression.py"><code>pysad/tests/regression_tests/run_regression.py</code></a> (k64 モード。説明は <a href="../pysad/tests/regression_tests/README.html"><code>pysad/tests/regression_tests/README.md</code></a>) は 50 ベンチ。<code>QUICK=1</code> は遅い 4 件 (7・12t・13a・16a) を SKIP して 46 件を実行する。2026-11-18 の <code>QUICK=1</code> の通しは <strong>FAIL 0</strong>。QUICK なしの全 50 ベンチ (205 s) の記録は 2026-11-16 夜 (<code>local/wake/verify_log.md</code>)。
+- ベンチ: <code>pysad/tests/regression_tests/bench/</code> (自動判定の対象外は <code>bench_extra/</code>) の <code>bench_level1〜31*.sad/.result</code> (gs の出力) と <code>*_pysad.py/.result</code>。結果の一覧と一致度は <a href="27_benchmarks.html">27_benchmarks.md</a>。
+- 試験が走らせる SAD スクリプトと gs・pysad の画面表示は <a href="../pysad/tests/script_tests/scripts/"><code>pysad/tests/script_tests/scripts/</code></a> (<code>NAME.sad</code>・<code>NAME.gs.txt</code>・<code>NAME.pysad.txt</code>)、試験関数との対応は <a href="../pysad/tests/script_tests/OUTPUTS.html"><code>pysad/tests/script_tests/OUTPUTS.md</code></a>。</p>
 <h2 id="8-文書の目次-全-36-本">8. 文書の目次 (全 36 本)</h2>
 <p>次の表は docs/ の全文書の一覧である。図つきの HTML は、md と同じフォルダに同名の <code>.html</code> として置く (<code>tools/build_html.py</code> で作る)。</p>
 <table>

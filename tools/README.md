@@ -42,4 +42,4 @@ py -3.12 tools/md_to_html.py README.md        # 1 ファイルだけ (-o 出力�
 
 - 数式 (TeX) は描画しない。md の中の HTML タグはそのまま通す。
 - 図の名前の言及は、同じフォルダと `results/` の直下だけを探す。
-- 試験は `py -3.12 -m pytest pysad/tests/test_tools_md_to_html.py -q`。
+- 試験は `py -3.12 -m pytest pysad/tests/script_tests/test_tools_md_to_html.py -q`。

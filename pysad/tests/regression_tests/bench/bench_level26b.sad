@@ -1,0 +1,85 @@
+! ============================================================
+! bench_level26b.sad — Level 26B: 四極の線形フリンジ (FRINGE=1,2,3 = tqlfre)、ずれ・ロール付き四極と薄い多極 (解析行列)
+!   小さなリング (bench_level3c と同じ型)。QF は FRINGE=3 (F1,F2)、QD は FRINGE=1。
+!   1 周に 1 台だけ別名の要素 (QFX: FRINGE=2 でずれ・ロール付き、QDX: FRINGE=3 でずれ付き、SFX: 六極にずれ・ロール)
+!   を置き、LINE[..] の代入が 1 台だけに効くようにしている。
+!   (A) 誤差なし (閉軌道 0)、(B) 誤差あり (閉軌道 ≠ 0, DP0=0 と 0.003)、(C) 誤差あり Emittance[] (RAD COD)
+!   比べる量: Twiss (BX, AX, EX, EPX, BY, AY, EY, EPY, R1-R4, チューン)、閉軌道、Emittance[] のエミッタンス・U0。
+! ============================================================
+ON LOG;
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3 FRINGE=3 F1=0.05 F2=0.01)
+      QD = (L=0.3 K1=-1.7*0.3 FRINGE=1 F1=0.04 F2=0.005)
+      QFX = (L=0.3 K1= 1.8*0.3 FRINGE=2 F1=0.05 F2=0.01)
+      QDX = (L=0.3 K1=-1.7*0.3 FRINGE=3 F1=0.04 F2=0.005)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+      SFX = (L=0.2 K2= 0.6)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELLX = (ORG QFX DQS SFX DS B D1 QDX DQS SD DS B D1);
+LINE RING = (9*CELL CELLX 10*CELL);
+;
+
+FFS;
+$FORM="15.10";
+PageWidth = 1999;
+USE RING;
+RAD; COD;
+CELL;
+CALC;
+Print["=== A: 誤差なし ==="];
+Print["A TWI ", {Twiss["BX","^^^"], Twiss["AX","^^^"], Twiss["EX","^^^"], Twiss["EPX","^^^"], Twiss["BY","^^^"], Twiss["AY","^^^"]}];
+Print["A TUN ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi}];
+Print["A COD ", {Twiss["DX","^^^"], Twiss["DPX","^^^"], Twiss["DY","^^^"], Twiss["DPY","^^^"]}];
+emi = Emittance[];
+Print["A EMI ", {(Emittances/.emi)[1], (Emittances/.emi)[2], MomentumSpread/.emi, EnergyLossU0/.emi}];
+Print["A TSR ", TuneShiftByRadiation/.emi];
+Print["A DMP ", DampingRate/.emi];
+
+LINE["DX","QFX"] = 3e-4;
+LINE["DY","QFX"] = -2e-4;
+LINE["ROTATE","QFX"] = 1.5e-3;
+LINE["DX","QDX"] = -2.5e-4;
+LINE["DY","QDX"] = 4e-4;
+LINE["DX","SFX"] = 5e-4;
+LINE["DY","SFX"] = -4e-4;
+LINE["ROTATE","SFX"] = 2e-3;
+CELL;
+CALC;
+Print["=== B: ずれ・ロールあり (DP0=0) ==="];
+Print["B TWI ", {Twiss["BX","^^^"], Twiss["AX","^^^"], Twiss["EX","^^^"], Twiss["EPX","^^^"], Twiss["BY","^^^"], Twiss["AY","^^^"], Twiss["EY","^^^"], Twiss["EPY","^^^"]}];
+Print["B RR ", {Twiss["R1","^^^"], Twiss["R2","^^^"], Twiss["R3","^^^"], Twiss["R4","^^^"]}];
+Print["B TUN ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi}];
+Print["B COD ", {Twiss["DX","^^^"], Twiss["DPX","^^^"], Twiss["DY","^^^"], Twiss["DPY","^^^"]}];
+Print["B COD100 ", {Twiss["DX",100], Twiss["DPX",100], Twiss["DY",100], Twiss["DPY",100]}];
+DP0 = 0.003;
+CELL;
+CALC;
+Print["=== B2: ずれ・ロールあり (DP0=0.003) ==="];
+Print["B2 TWI ", {Twiss["BX","^^^"], Twiss["AX","^^^"], Twiss["EX","^^^"], Twiss["EPX","^^^"], Twiss["BY","^^^"], Twiss["AY","^^^"], Twiss["EY","^^^"], Twiss["EPY","^^^"]}];
+Print["B2 RR ", {Twiss["R1","^^^"], Twiss["R2","^^^"], Twiss["R3","^^^"], Twiss["R4","^^^"]}];
+Print["B2 TUN ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi}];
+Print["B2 COD ", {Twiss["DX","^^^"], Twiss["DPX","^^^"], Twiss["DY","^^^"], Twiss["DPY","^^^"], Twiss["DDP","^^^"]}];
+DP0 = 0;
+CELL;
+CALC;
+Print["=== C: Emittance[] (誤差あり) ==="];
+emi = Emittance[];
+Print["C EMI ", {(Emittances/.emi)[1], (Emittances/.emi)[2], MomentumSpread/.emi, EnergyLossU0/.emi}];
+Print["C TUN ", Tunes/.emi];
+Print["C TSR ", TuneShiftByRadiation/.emi];
+Print["C DMP ", DampingRate/.emi];
+Print["C COD ", OrbitAtExit/.emi];
+stop;
+stop;

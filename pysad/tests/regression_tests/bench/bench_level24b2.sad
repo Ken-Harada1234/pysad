@@ -1,0 +1,36 @@
+! Level 24B-2: CHROMATICITY コマンド (MULT の K1/K2 経路、四極・六極・BEND 混在、DP0 ≠ 0)
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+      DS = (L=1.0)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+MULT  MF = (L=0.2 K1= 0.1 K2= 0.3)
+      MD = (L=0.1 K1=-0.1 K2=-0.5)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF SF DS B D1 MF QD SD MD DS B D1);
+LINE RING = (20*CELL);
+;
+FFS;
+$FORM="15.10";
+PageWidth=999;
+USE RING;
+CELL;
+CALC;
+Print["B001 begin"];
+CHROMATICITY;
+Print["B001 end"];
+DP0=0.002;
+CALC;
+Print["B002 begin"];
+CHRO;
+Print["B002 end"];
+STOP;

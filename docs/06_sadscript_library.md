@@ -61,7 +61,7 @@ StringToStream (文字列を開く)、TemporaryName、ListRandom (`{"SAD"}`)、M
 - **`GaussianCoulomb[x, y, sigx, sigy]`**: 大きさ (sigx, sigy) のガウス分布が (x, y) に作る力 `f_x + i f_y` (複素数。虚部が 0 なら実数で返す: K64 と同じ)。Yokoya の `CWERF` (Gautschi) をそのまま写した。
 - **`GaussianCoulombU[x, y, sigx, sigy]`**: ポテンシャル。a+b<30 はロンバーグ積分 (k=5 の多項式外挿)、それ以上は漸近展開、r=1 は `gamma0log`。許容は (1e-10, 1e-13)。
 - **`GaussianCoulombFitted[x, y, sigx, sigy]`** = `{fx, fy, fu, fxx, fyy, fxy}` (`twspfu`): 21×61×61 の表 (`twspu` と `bbkick1` から) を `spline1` で作り、3 次のスプラインで補間する (最初の呼び出しで表を作る、数秒)。K64 の `twspfuinit` は `spline1` の境界値に `ktaloc` の記憶を読む (uxx の 2 回目の呼び出し) が、0 とみなす。`sigx < sigy` のとき K64 は fxx と fyy を入れ替えない (そのまま写した)。
-- 検証 ([`test_gausscoul.py`](../pysad/tests/test_gausscoul.py)): 軸上・x 軸上・y 軸上・負の座標・σx<σy・σx≈σy・大きい引数・小さい引数の 15 点で K64 と 12 桁一致。`GaussianCoulombFitted` は相対 1e-9 以内 (`test_gaussian_coulomb_fitted_matches_gs`)。
+- 検証 ([`test_gausscoul.py`](../pysad/tests/script_tests/test_gausscoul.py)): 軸上・x 軸上・y 軸上・負の座標・σx<σy・σx≈σy・大きい引数・小さい引数の 15 点で K64 と 12 桁一致。`GaussianCoulombFitted` は相対 1e-9 以内 (`test_gaussian_coulomb_fitted_matches_gs`)。
 
 `BBBrem1` (ビーム・ビーム制動放射の 1 事象) は [14_beambeam.md](14_beambeam.md) に書く。
 
@@ -119,7 +119,7 @@ pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に�
 
 ### 5.4 Packages の関数ごとの動作と、モードによる違い
 
-次の表は、Packages の主なファイルについて、v2 と k64 で結果が変わる点 (K64 の誤りに由来) と、残っている差をまとめたもの。確認した台本は [`example/13_packages/fn_packages_compare.sad`](../example/13_packages/fn_packages_compare.sad)・`fn_PeriodicR.sad`・`fn_CorrectLocal.sad`・`fn_CorrectOrbit_Micado.sad`、試験は [`test_v2_B2_script.py`](../pysad/tests/test_v2_B2_script.py)・[`test_v2_D2_packages.py`](../pysad/tests/test_v2_D2_packages.py)。
+次の表は、Packages の主なファイルについて、v2 と k64 で結果が変わる点 (K64 の誤りに由来) と、残っている差をまとめたもの。確認した台本は [`example/13_packages/fn_packages_compare.sad`](../example/13_packages/fn_packages_compare.sad)・`fn_PeriodicR.sad`・`fn_CorrectLocal.sad`・`fn_CorrectOrbit_Micado.sad`、試験は [`test_v2_B2_script.py`](../pysad/tests/script_tests/test_v2_B2_script.py)・[`test_v2_D2_packages.py`](../pysad/tests/script_tests/test_v2_D2_packages.py)。
 
 | ファイル | 関数 | k64 と v2 の違い・残っている差 |
 |---|---|---|
@@ -135,7 +135,7 @@ pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に�
 
 ### 5.5 SAD 自身の Packages を読むときの注意
 
-- Python 3.14 (Tcl/Tk 9.0) でも [`test_tclbridge.py`](../pysad/tests/test_tclbridge.py)・[`test_plot.py`](../pysad/tests/test_plot.py)・[`test_gui_lang.py`](../pysad/tests/test_gui_lang.py)・[`test_corr.py`](../pysad/tests/test_corr.py) が通る (Windows の Tk 9.0 は `$DefaultFixedFont` を `Courier New` にする: [20_tcltk_gui.md](20_tcltk_gui.md))。numba のキャッシュは `py -3.12 -m pysad.nbcache` ([12_pysad_api.md](12_pysad_api.md))。
+- Python 3.14 (Tcl/Tk 9.0) でも [`test_tclbridge.py`](../pysad/tests/script_tests/test_tclbridge.py)・[`test_plot.py`](../pysad/tests/script_tests/test_plot.py)・[`test_gui_lang.py`](../pysad/tests/script_tests/test_gui_lang.py)・[`test_corr.py`](../pysad/tests/script_tests/test_corr.py) が通る (Windows の Tk 9.0 は `$DefaultFixedFont` を `Courier New` にする: [20_tcltk_gui.md](20_tcltk_gui.md))。numba のキャッシュは `py -3.12 -m pysad.nbcache` ([12_pysad_api.md](12_pysad_api.md))。
 
 ## 6. v2 モードで変わった値と、モードによらない修正
 
@@ -172,7 +172,7 @@ K64 が誤値を返す、または pysad の不具合だったもの。k64 モ�
 
 **複素の FindRoot** (v2): 初期値に複素数があると、式を変数について正則と仮定して、前進差分のヤコビアンと最小二乗 (numpy lstsq) の Newton 法 (歩幅を半分にする減速つき) で解く。z² = -1 → i、e^z = 2 → ln 2、z³ = 1、連立 zw = i・z + w = 2 が残差 1e-12 以下。使い方・使えない範囲は [05_sadscript.md](05_sadscript.md) §6.2。
 
-**複素の特殊関数** ([`pysad/specfn_cx.py`](../pysad/specfn_cx.py)。両モード。mpmath はこの環境に無いので、級数・Euler–Maclaurin・解析接続・積分表示を自前で実装した。試験 [`test_v2_B2_specfn_cx.py`](../pysad/tests/test_v2_B2_specfn_cx.py)、例 [`example/10_math_data/fn_SpecialFunctions_complex.sad`](../example/10_math_data/fn_SpecialFunctions_complex.sad)): 次の表は、複素の特殊関数の実装・使える範囲・独立な参照との一致。
+**複素の特殊関数** ([`pysad/specfn_cx.py`](../pysad/specfn_cx.py)。両モード。mpmath はこの環境に無いので、級数・Euler–Maclaurin・解析接続・積分表示を自前で実装した。試験 [`test_v2_B2_specfn_cx.py`](../pysad/tests/script_tests/test_v2_B2_specfn_cx.py)、例 [`example/10_math_data/fn_SpecialFunctions_complex.sad`](../example/10_math_data/fn_SpecialFunctions_complex.sad)): 次の表は、複素の特殊関数の実装・使える範囲・独立な参照との一致。
 
 | 関数 | 実装 (複素の z・s。主値) | 使える範囲 | 参照との一致 |
 |---|---|---|---|
