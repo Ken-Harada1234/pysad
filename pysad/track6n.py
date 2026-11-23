@@ -2432,7 +2432,7 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
             from . import multa as _ma
             (al, phi, psi1, psi2, ak, dx, dy, theta, dth, dchi2, alg, phig, eps0, radok, fb1, fb2, frmd, fringe) = pr
             _ma.k_multa(S, n, al, phi, psi1, psi2, ak, dx, dy, theta, dth, dchi2, alg, phig, eps0, radok,
-                        fb1, fb2, frmd, fringe, _ma.GKN, _ma._FACT, rad, fluc, rs, p0, h0 * tm, anrad, cuc)
+                        fb1, fb2, frmd, fringe, _ma.GKN, _ma._FACT, rad, fluc, rs, p0, h0 * tm, anrad, cuc, _cav_b2())
         elif kind == K_UND:
             from . import und as _un
             if pr[1] != 0.0 or pr[2] != 0.0:        # v2: 磁場あり (FBX・FBY。k64 では常に 0)

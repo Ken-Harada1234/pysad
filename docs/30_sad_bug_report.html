@@ -2112,6 +2112,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>確定 (gs・独立な数値積分)</td>
 <td><strong>v2 は直した</strong> (<code>track6._tcavfrin</code>・<code>track6n.tcavfrin1</code>・<code>emit6d._tcavfrie_map</code>・<code>trptacc._cavfrie_piece</code>。粒子の β = p/h の 1/β を kick とエネルギー変化にかけ、H_f ∝ 1/β(E) の整合の時間のずれ −(x² + y²)κ0/(2p³) を入れる)。k64 は K64 のまま (gs と同じ)。試験 <code>test_v250_cavi_edge_beta.py</code></td>
 </tr>
+<tr>
+<td>B331</td>
+<td><strong>ANGLE ≠ 0 の MULT で、FB1・FB2 による長さ L' の補正が二重に入る</strong>: K64 は L' = L − ((φ FB1)² + (φ FB2)²)/(48 L)·sin(w/2)/sin(φ/2) を <code>tffs.f:1368</code> で <code>p_L_MULT</code> に入れる (BEND は <code>tffs.f:1282</code> で 1 回だけ) が、<code>tmulta.f:82-90</code> が受け取った al (すでに L') からスライス長 <code>aln = al/ndiv</code> をもう一度同じ式で引く (<code>tmulta.f:327-333</code> の CALC <code>tmultae</code> も同じ式)。gs で確認: 3 GeV/c、L = 1 m、ANGLE = 0.3、E1 = 0.5、E2 = 0.3、F1 (FB1 = FB2) = 0.5、FRINGE = 3 の BEND と MULT の TrackParticles (x・px・y・py・δ = 1e-2 の 5 粒子) は x で 2.78e-7、z で 2.46e-8 違う (ANGLE = 0.1・F1 = 0.2 でも δ = 1e-3 の x が 8.32e-10 違い、これは二重の分の L の短縮 1.67e-5 m × dispersion の予想 8.3e-10 と一致)。MULT の L を二重の補正の分だけ先に伸ばした (L − c(L) − c(L − c(L)) = BEND の L'、L = 1.00018814134845) MULT は、gs の BEND と全成分で差 0 (ビット単位) で一致する。ヘルプの L' の式 (BEND の F1) を 1 回とすれば MULT も 1 回。F1 なし (FB = 0) の MULT は BEND と差 0。pysad の k64 は gs と 1e-15 以内で一致 (BEND・MULT・伸ばした MULT)。BEND と MULT (FRINGE = 1・2 の片側だけ) には x で 3e-5 の別の食い違いがあり、K1 ≠ 0 では y で 1e-5 級の食い違いがある (どちらも長さの補正と別。未調査)</td>
+<td>tffs.f:1368・tmulta.f:82-90 (・:327-333)</td>
+<td>FB1・FB2 ≠ 0 かつ FRINGE = 1・2・3 の ANGLE ≠ 0 の MULT の追跡 (本体が二重に短くなり、x・z が F1 = 0.5・φ = 0.3 で 3e-7・2e-8、分散のある粒子で効く)</td>
+<td>低</td>
+<td>確定 (gs)</td>
+<td><strong>v2 は直した</strong> (<code>multa.k_multa</code> の 2 回目の補正を <code>b2</code> で省く。MULT が BEND と全桁一致)。k64 は K64 のまま (gs と同じ)。CALC・Emittance[] は pysad が FB1/FB2 を未対応。試験 <code>test_v250_mult_angle_fb_double.py</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>

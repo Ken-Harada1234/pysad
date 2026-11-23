@@ -109,7 +109,7 @@ def _tbend(S, n, al, ak0, phi0, psi1, psi2, ak, fb1, fb2, mfr, fringe, krad, eps
 
 @njit(**NJ)
 def k_multa(S, n, al, phi, psi1, psi2, ak0, dx, dy, theta, dtheta, dchi2, alg, phig, eps0, radok,
-            fb1, fb2, mfring, fringe, gkn, fact, rad, fluc, rs, p0, h0, anrad, cuc):
+            fb1, fb2, mfring, fringe, gkn, fact, rad, fluc, rs, p0, h0, anrad, cuc, b2=False):
     krad = rad and radok
     cost = math.cos(theta)
     sint = math.sin(theta)
@@ -141,10 +141,11 @@ def k_multa(S, n, al, phi, psi1, psi2, ak0, dx, dy, theta, dtheta, dchi2, alg, p
         ndiv = max(ndiv, ndivrad(phib, ak1r, 0.0, eps0, h0))
     ndiv = min(NDIVMAX, ndiv)
     aln = al / ndiv
-    if fb1 != 0.0:
-        aln = aln - (phi * fb1)**2 / al / 48.0 * math.sin(0.5 * (phi - psi1 - psi2)) / math.sin(0.5 * phi) / ndiv
-    if fb2 != 0.0:
-        aln = aln - (phi * fb2)**2 / al / 48.0 * math.sin(0.5 * (phi - psi1 - psi2)) / math.sin(0.5 * phi) / ndiv
+    if not b2:          # v2 (B331): al は tffs.f:1368 で L' に補正済み。K64 はここでもう一度引く (二重)
+        if fb1 != 0.0:
+            aln = aln - (phi * fb1)**2 / al / 48.0 * math.sin(0.5 * (phi - psi1 - psi2)) / math.sin(0.5 * phi) / ndiv
+        if fb2 != 0.0:
+            aln = aln - (phi * fb2)**2 / al / 48.0 * math.sin(0.5 * (phi - psi1 - psi2)) / math.sin(0.5 * phi) / ndiv
     rho0 = al / phi
     phin = phi / ndiv
     ak0n = ak0r / ndiv

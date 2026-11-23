@@ -1,0 +1,10 @@
+MOMENTUM = 3GEV;
+BEND EL=(L=1 ANGLE=0.3 E1=0.5 E2=0.3 F1=0.5 FRINGE=3);
+MARK ST = ();
+LINE ONE = (ST EL);
+FFS; NORFSW; NORAD; NOFLUC;
+$FORM = "22.16";
+beam = {{0.0, 1e-3, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 1e-3, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 1e-2}, {1.0, 1.0, 1.0, 1.0, 1.0}};
+USE ONE; CELL;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["X ", r[[2,1]]]; Print["P ", r[[2,2]]]; Print["Y ", r[[2,3]]]; Print["Q ", r[[2,4]]]; Print["Z ", r[[2,5]]]; Print["D ", r[[2,6]]];
