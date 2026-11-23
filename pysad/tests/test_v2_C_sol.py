@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""担当 C: ソレノイド領域 (BOUND≠0 の SOL の間) の中の BEND・MULT・CAVI・APERT (docs/21 B69、docs/46)、MULT のスキュー成分。
+"""担当 C: ソレノイド領域 (BOUND≠0 の SOL の間) の中の BEND・MULT・CAVI・APERT (docs/30 B69、docs/31)、MULT のスキュー成分。
 
 K64 の tsol.f は領域内の BEND を tdrift(al, bzs, phiy, phix)、MULT を tmulti1、CAVI を tmultiacc (どれも bz つき) で進めるが、
 gs (この K64 のビルド) は領域内の偏向をほぼ無視する (B69)。pysad の v1 は未対応 (NotImplementedError) だった。v2 は実装する。

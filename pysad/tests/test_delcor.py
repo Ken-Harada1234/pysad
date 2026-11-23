@@ -1,6 +1,6 @@
 """DELCOR (tcorr.f / tvcorr.f): リングに沿った相関のあるランダムなずれ。参照は SAD K64 (gs) の出力 (乱数も gs と同じ列)。
 dc1: CELL。相関長 2 m、相関長 0 (ランダムウォーク)、ADD とワイルドカード。dc2: INS、MARK・SEXT・BEND を含み、`*` で全要素。
-MARK には DX DY ではなく DETR と DPX が入る (K64 の latt+15, +17)。参照の作り方: local/wake/dc*.sad を gs で実行 (docs/31_delcor.md)。"""
+MARK には DX DY ではなく DETR と DPX が入る (K64 の latt+15, +17)。参照の作り方: local/wake/dc*.sad を gs で実行 (docs/04_ffs_small_commands.md)。"""
 import io
 import re
 
@@ -86,7 +86,7 @@ def test_delcor_matches_gs(name):
 
 
 def test_delcor_cavity_writes_harm_and_phi_like_gs():
-    """CAVI への DELCOR は K64 の添字のずれで DX・DY ではなく HARM・PHI に書く (tcorr.f の le=latt+3)。1 回目の値は gs と一致 (docs/31、B62)"""
+    """CAVI への DELCOR は K64 の添字のずれで DX・DY ではなく HARM・PHI に書く (tcorr.f の le=latt+3)。1 回目の値は gs と一致 (docs/04、B62)"""
     from pysad.ffscmd import run_sad_string
     buf = io.StringIO()
     run_sad_string(r"""MOMENTUM = 3GEV;

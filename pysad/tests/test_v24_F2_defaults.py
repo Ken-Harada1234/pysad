@@ -3,7 +3,7 @@
 (a) B200: Touschek の損失率の δ_old = 0 の基準 (K64・Piwinski・elegant) はバンチ内の δ の分布を無視する近似。v2 の既定は BunchDelta・BunchQs つき (->False で切る、k64 は False)。
 (b) B201: DynamicApertureSurvey の ExpandElementValues の既定 True は補正磁石の成分ごとの値 (K0・位置ずれ) を代表の値に揃えて消す。v2 の既定は False (k64 は True)。
 (c) pysad 自身: FrequencyMap・MomentumAcceptance・NormalFormTune の TrackSetup への受け渡しが NOCALEXP でも無条件に揃えていた (補正後の状態を渡す経路)。
-(d) WSPACSC の既定は 0 のまま (理由は docs/47)。"""
+(d) WSPACSC の既定は 0 のまま (理由は docs/28)。"""
 import contextlib
 import io
 import os

@@ -15,7 +15,15 @@ FIT・FREE・FIX・VARY・GO・SHOW・VARIABLES・REJECT・RECOVER/SAVE/RESET、
 | [flag_UNIPOL_BIPOL](flag_UNIPOL_BIPOL.md) | UNIPOL と BIPOL | △ (収束しない B の BIPOL で gs と pysad が別の点で止まる) |
 | [flag_ABSW_RELW](flag_ABSW_RELW.md) | ABSW と RELW | △ (収束しない問題。pysad は RELW が効かない) |
 | [fn_FitValue_FitWeight_VariableRange_VariableWeight](fn_FitValue_FitWeight_VariableRange_VariableWeight.md) | FitValue・FitWeight・VariableRange・VariableWeight | ○ (FitValue 時の残差の表示のみ) |
-| [fn_OptimizeOptics](fn_OptimizeOptics.md) | OptimizeOptics (ダウンヒルシンプレックス) | ○ (v2 で gs と同じ値・同じ反復。デバッグ表示の 2 行だけ違う) |
+| [fn_OptimizeOptics](fn_OptimizeOptics.md) | OptimizeOptics (ダウンヒルシンプレックス) | ○ (gs と同じ値・同じ反復。デバッグ表示の 2 行だけ違う) |
 | [var_CONVERGENCE](var_CONVERGENCE.md) | CONVERGENCE・MAXITERATION・DP・DP0 など | ○ |
+| [flag_FREE_component](flag_FREE_component.sad) | 成分ごとの FREE (`FREE QF.1 K1;`・`FREE B.3 K1;`) | ○ (gs と一致) |
+| [flag_FREE_noop_variable](flag_FREE_noop_variable.sad) | 要素ごとの FREE の「何もしない変数」(`FREE QF.3 K1`)。VAR の表・エラー・フィットの変数の数 | ○ (全桁一致。v2・k64 とも) |
+| [FFS_FIT_geometry_quad_dx](FFS_FIT_geometry_quad_dx.sad) | SOL 領域内の四極の DX・DY を変数にした幾何の fit | ○ (gs と v2 が 2 回の Newton で収束し、QF DX = 2.788484326e-3、QD DY = 2.667980563e-3 が 1e-12 で一致。k64 は SOL 自体のずれが未対応で動かない) |
+| [flag_FITP_five](flag_FITP_five.sad) | FITP>1 (オフモメンタム 5 点 δ = −2%〜+2%、NX NY)。12 セル FODO (3 GeV、52.8 m) | △ (最終の残差が gs と 2e-4 以内。反復の経路は違う) |
+| [flag_FITP_beta](flag_FITP_beta.sad) | FITP>1 (3 点 δ = −1%・0・+1%)、NX・NY と BX・BY (`$$$` の β)。自由変数は QF QD SF SD | 同上 |
+| [flag_FITP_one](flag_FITP_one.sad) | FITP>1 と比べる基準 (FITP 1、オフモメンタムなし) | 同上 |
+
+上の表のうち、拡張子つきのリンクの行 (`.sad`・`.py`) は説明の `.md` を持たない。内容と結果の要点は表と、台本・スクリプトの先頭のコメントに書いた。`.py` の例は、リポジトリ直下から `py -3.12 example/03_matching/NAME.py` で走らせる (出力は `NAME.out.txt`)。gs と同じ動作で走らせるときは `PYSAD_COMPAT=k64`。
 
 FITP>1 は docs/03 では gs が再起動するとあるが、今回の `FFS_FITPOINTS` では gs は完走した。

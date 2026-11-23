@@ -1,6 +1,6 @@
 # fn_Entry_ListBox_Scale (Entry・ListBox・Scale・RadioButton)
 
-種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし。pysad でも動く (2026-11-17 に修正。親の違いが残る)
+種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし。pysad でも動く (親の違いが残る)
 
 ## 何を見る例か
 入力欄 (`Entry`、`TextVariable` で SAD の変数 `ev` に結ぶ)、一覧 (`ListBox`)、スライダ (`Scale`、`Variable`)、ラジオボタン 2 個 (`RadioButton`、`Value` と `Variable`)。ウィジェットのメソッド `e[Insert]={"end","XY"}` も試す。
@@ -25,8 +25,8 @@ e[Insert]={"end","XY"};   lb[Insert]={"end","item1"};   lb[Insert]={"end","item2
 
 ## gs と pysad の比較
 - 変数との結びつき (`entry=abc`、`rv=2`、`sv=8`) は gs・pysad で一致 (○)。
-- **○ メソッドも一致 (2026-11-17 に修正)**: `e[Insert]={"end","XY"}` で Entry が `abcXY`、`lb[Insert]` 2 回で ListBox が 2 項目、`Head[e]` は `Widget` で gs と同じ。以前は `Head[e]` が `Symbol` で `e[...]` が何も呼ばなかった (`Tkinter.n` の入れ子の規則で `With` が呼び出し元の引数名 (ユーザーの `w`) を見て、`a$:=Widget[a$,…]` が別名に付いていた。docs/22、試験 `test_widget_values_and_methods_like_gs`)。
-- **窓の親が違う (pysad の既知の差、docs/41 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
+- **○ メソッドも一致**: `e[Insert]={"end","XY"}` で Entry が `abcXY`、`lb[Insert]` 2 回で ListBox が 2 項目、`Head[e]` は `Widget` で gs と同じ。`Tkinter.n` の入れ子の規則では、`With` が呼び出し元の引数名 (ユーザーの `w`) を見ると `a$:=Widget[a$,…]` が別名に付き、`Head[e]` が `Symbol` で `e[...]` が何も呼ばない。pysad はこれを避けている (docs/20、試験 `test_widget_values_and_methods_like_gs`)。
+- **窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
 - **`Head[w]`・`Head[b]`**: gs・pysad とも `Widget` (○)。`tree:` の `Entry s6tv_8` (gs) と `Entry s2tv_4` (pysad) の番号の差は、gs が起動時に「Return to SAD」ボタンなどのウィジェットを先に作っていることによる (表示の番号の差)。
 
 ## 未確認・限界

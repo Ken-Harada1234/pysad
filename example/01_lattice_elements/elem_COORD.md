@@ -1,5 +1,5 @@
 # elem_COORD (座標変換 COORD)
-種別: elem。フォルダ: 01_lattice_elements (pysad に実装済みの範囲: docs/25)。ラティスは START-COORD-DRIFT-FIN の輸送路 (INS)。エネルギー 3 GeV (結果は無関係)。
+種別: elem。フォルダ: 01_lattice_elements (pysad に実装済みの範囲: docs/19)。ラティスは START-COORD-DRIFT-FIN の輸送路 (INS)。エネルギー 3 GeV (結果は無関係)。
 
 ## 何を見る例か
 `COORD C1 = (DX=1E-3)`: ずれ・回転の座標変換そのものを 1 つの要素にしたもの (軸外の要素の表現などに使う)。`DX DY` (ずれ)、`CHI1 CHI2 CHI3` (回転)、`DIR` (0 で順変換、≠0 で逆変換)。
@@ -36,5 +36,5 @@ SADHelp の COORD の式 ($DIR=0$): $(x,y,z)_1=R_3R_2R_1\,(x-DX,\,y-DY,\,z)_0$�
 全桁一致。
 
 ## 未確認・限界
-- `DY DZ CHI1 CHI2`、`DIR≠0` (逆変換)、COORD を含むリングでの Emittance・追跡 (docs/25 に gs との照合が書かれているが、この例では確認していない)、COORD のパラメータを FIT 変数にする場合は未確認。
-- 追跡の低速経路 (track6) は COORD に未対応 (docs/25)。
+- `DY DZ CHI1 CHI2`、`DIR≠0` (逆変換)、COORD を含むリングでの Emittance・追跡 (docs/19 に gs との照合が書かれているが、この例では確認していない)、COORD のパラメータを FIT 変数にする場合は未確認。
+- 追跡の低速経路 (track6) は COORD に未対応 (docs/19)。

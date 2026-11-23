@@ -1,7 +1,7 @@
 """POL (スピン): Emittance[] の PolarizationTime / SpinTune / PolarizationVector / SpinPrecessionMatrix と EMIT の報告。
 参照は SAD K64 (gs) の出力 (local/wake/pol1.sad, pol2.sad, pol5.sad)。
 
-Polarization (平衡偏極度) は K64 では NaN (spdepol の cerfc(cb) が |cb|>18 の漸近式で exp(-cb²)=0、exp(cb²)=∞ の積が NaN: docs/21 B55)。
+Polarization (平衡偏極度) は K64 では NaN (spdepol の cerfc(cb) が |cb|>18 の漸近式で exp(-cb²)=0、exp(cb²)=∞ の積が NaN: docs/30 B55)。
 pysad も K64 の式をそのまま写すので NaN になる (どちらも NaN) ことを確かめる。"""
 import io
 import math

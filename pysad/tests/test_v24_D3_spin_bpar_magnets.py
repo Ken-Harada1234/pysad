@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 担当 D3: 磁石の本体の運動量の向きの磁場 (1+a)B∥ ds の範囲拡大 (docs/21 B230・B231。B165 の続き)。
+"""v2.4.0 担当 D3: 磁石の本体の運動量の向きの磁場 (1+a)B∥ ds の範囲拡大 (docs/30 B230・B231。B165 の続き)。
 
 独立な基準 `_spin_maxwell_indep2.maxwell_R`: Maxwell 方程式を満たす直線の磁石 (QUAD・MULT・SEXT・ステアリング) の中の Thomas-BMT の数値積分
 (フリンジ幅 w = 8e-3 と 4e-3 m の結果を w² で外挿)。入口の面の座標 (x, px, y, py) = (2e-3, 3e-3, 2e-3, 3e-3)、0.5 GeV、L = 0.4 m。

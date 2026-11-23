@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn TrackParticles (PF): 1 要素のトラッキングと転送行列</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_TrackParticles_PF.md</div>
+<h1 id="fn-trackparticles-pf-1-要素のトラッキングと転送行列">fn TrackParticles (PF): 1 要素のトラッキングと転送行列</h1>
+<p>種別: 関数 (KEK の SAD チュートリアルの話題をもとにした)。加速器: PF 2.5 GeV リング (<code>lattice/v9_16_asym.sad</code>、周長 187.035 m、チューン 9.5975 / 5.2790)。追跡: <code>OFF RAD FLUC; ON COD RFSW RADCOD</code>。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>TrackParticles[{始点要素番号, 座標}, 終点要素番号]</code> で、四極 QF (149 番) を 1 個通し、手計算の転送行列と比べる。座標は
+<code>{{x...},{x'...},{y...},{y'...},{z...},{dP/P...},{生死...}}</code> の 7 個のリスト (粒子ごとの列)。結果は <code>{終点番号, 座標}</code>。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>rqk = Sqrt[LINE[&quot;K1&quot;,&quot;QF&quot;]/LINE[&quot;L&quot;,&quot;QF&quot;]];   ! SAD の K1 は積分強度 B'L/(Bρ) なので L で割って平方根
+qkmath = {{Cos[rqk*ql], Sin[rqk*ql]/rqk},{-rqk*Sin[rqk*ql], Cos[rqk*ql]}};   ! x 方向 (集束)
+qkmatv = {{Cosh[rqk*ql], Sinh[rqk*ql]/rqk},{rqk*Sinh[rqk*ql], Cosh[rqk*ql]}}; ! y 方向 (発散)
+after = TrackParticles[{iq, c}, iq+1];       ! c は 1 μm の振幅を 1 つの座標にだけ入れる
+</code></pre>
+<p>始点は要素番号で、<code>iq</code> (入口) から <code>iq+1</code> (出口) まで。1 から始めると 1→1 でリング 1 周分回るので注意。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>QF.1 (K1 = 0.74832、L = 0.4 m、$\sqrt{K} = 1.36777\ {\rm m^{-1}}$):</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>手計算</th>
+<th>TrackParticles (1 μm)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x: {{cos, sin/√K},{-√K sin, cos}}</td>
+<td>{{0.8540322588, 0.3803413501},{-0.7115421473, 0.8540322588}}</td>
+<td>列 1 = (0.8540322588, -0.7115421473)、列 2 = (0.3803413501, 0.8540322588)</td>
+</tr>
+<tr>
+<td>y: {{cosh, sinh/√K},{√K sinh, cosh}}</td>
+<td>{{1.1534345676, 0.4202559819},{0.7862143932, 1.1534345676}}</td>
+<td>列 3 = (1.1534345676, 0.7862143932)、列 4 = (0.4202559819, 1.1534345676)</td>
+</tr>
+<tr>
+<td>det</td>
+<td>1.0000000000 (x、y とも)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>10 桁一致。1 mm の振幅だと x の値が .8540322719 になり (1 μm では .8540322588)、1.3e-8 ずれる。原因は確認していない (振幅に依る高次の項の可能性)。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>薄くない四極の行列 $\begin{pmatrix}\cos\sqrt K L &amp; \sin\sqrt K L/\sqrt K\ -\sqrt K\sin\sqrt K L &amp; \cos\sqrt K L\end{pmatrix}$ (x、K&gt;0)。y は cos→cosh、sin→sinh、符号反転。上の表で照合済み。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>○ 全桁一致。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>4 粒子を一度に通す形 ($x, x', y, y'$ を別の粒子にする) にはしていない (粒子を 1 つずつ 4 回通した)。</li>
+<li>四極の端のフリンジ場の扱いは SAD の既定のままで、<code>FRINGE</code> フラグは変えていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

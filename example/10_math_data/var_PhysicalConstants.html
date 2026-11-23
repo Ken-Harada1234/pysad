@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>var_PhysicalConstants (物理定数)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: var_PhysicalConstants.md</div>
+<h1 id="var_physicalconstants-物理定数">var_PhysicalConstants (物理定数)</h1>
+<p>種別: 変数 (SADHelp の physical-constants) / フォルダ: 10_math_data / ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>FFS から参照できる物理定数 (<code>SpeedOfLight</code> <code>PlanckConstant</code> <code>PlanckHbar</code> <code>ElectronCharge</code> <code>FineStructureConstant</code> <code>ElectronMass</code> <code>ElectronRadius</code> <code>ProtonMass</code> <code>ProtonRadius</code> <code>SIMu0</code> <code>SIEpsilon0</code> <code>ElectronGminus2over2</code> <code>BoltzmannConstant</code>) を表示し、SADHelp が書く定義値・定義式と照合する。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>Print[&quot;R:SpeedOfLight=&quot;,SpeedOfLight];  ...  (13 個)
+Print[&quot;R:re_formula=&quot;,FineStructureConstant*PlanckHbar*SpeedOfLight/(ElectronCharge*ElectronMass)];
+</code></pre>
+<p><code>$FORM="S17.12"</code> (12 桁)。質量は eV 単位 (<code>ElectronMass</code> = 510998.95 eV)。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>R:名前=値</code> の行。単位は SADHelp の表のとおり: <code>SpeedOfLight</code> m/s、<code>PlanckConstant</code> Js、<code>ElectronCharge</code> C、<code>ElectronMass</code>・<code>ProtonMass</code> eV、<code>ElectronRadius</code>・<code>ProtonRadius</code> m、<code>BoltzmannConstant</code> J/K。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>SADHelp の定義: $c=299792458$ m/s、$h=6.62607015\times10^{-34}$ Js、$\hbar=h/2\pi$、$e=1.602176634\times10^{-19}$ C、$\alpha=1/137.035999084$、$m_ec^2=0.51099895$ MeV、$m_pc^2=938.27208816$ MeV、
+$$r_e=\frac{\alpha\hbar c}{e\,m_e}\ [\mathrm m],\qquad \mu_0=\frac{2\alpha h}{c\,e^2},\qquad \epsilon_0=\frac1{\mu_0c^2}$$
+($m_e$ は eV 単位なので $e\,m_e$ が J になる)。<code>ProtonRadius</code> は $r_p=\alpha\hbar c/(e\,m_p)=r_e\,m_e/m_p$ と値が合う (定義の式は SADHelp に無いので、値から推定した)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>式・SADHelp の定義値 (Python で計算)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SpeedOfLight $c$ [m/s]</td>
+<td>299792458</td>
+<td>299792458</td>
+<td>299792458</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>PlanckConstant $h$ [Js]</td>
+<td>6.62607015e-34</td>
+<td>6.62607015E-34</td>
+<td>6.62607015E-34</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>PlanckHbar $\hbar=h/2\pi$</td>
+<td>1.054571818e-34</td>
+<td>1.05457181765E-34</td>
+<td>1.05457181765E-34</td>
+<td>3.6e-12</td>
+<td>3.6e-12</td>
+</tr>
+<tr>
+<td>ElectronCharge $e$ [C]</td>
+<td>1.602176634e-19</td>
+<td>1.602176634E-19</td>
+<td>1.602176634E-19</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>FineStructureConstant $\alpha=1/137.035999084$</td>
+<td>0.00729735256928</td>
+<td>.007297352569</td>
+<td>.007297352569</td>
+<td>3.9e-11</td>
+<td>3.9e-11</td>
+</tr>
+<tr>
+<td>ElectronMass $m_e$ [eV]</td>
+<td>510998.95</td>
+<td>510998.95</td>
+<td>510998.95</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>ElectronRadius $r_e=\alpha\hbar c/(e m_e)$ [m]</td>
+<td>2.817940326e-15</td>
+<td>2.81794032619E-15</td>
+<td>2.81794032619E-15</td>
+<td>1.4e-12</td>
+<td>1.4e-12</td>
+</tr>
+<tr>
+<td>ProtonMass $m_p$ [eV]</td>
+<td>938272088.2</td>
+<td>938272088.1599999</td>
+<td>938272088.1599999</td>
+<td>1.3e-16</td>
+<td>1.3e-16</td>
+</tr>
+<tr>
+<td>ProtonRadius $=\alpha\hbar c/(e m_p)$ [m]</td>
+<td>1.534698267e-18</td>
+<td>1.53469826718E-18</td>
+<td>1.53469826718E-18</td>
+<td>8.3e-13</td>
+<td>8.3e-13</td>
+</tr>
+<tr>
+<td>SIMu0 $\mu_0=2\alpha h/(c e^2)$</td>
+<td>1.256637062e-06</td>
+<td>1.256637062121E-6</td>
+<td>1.256637062121E-6</td>
+<td>3.8e-14</td>
+<td>3.8e-14</td>
+</tr>
+<tr>
+<td>SIEpsilon0 $=1/(\mu_0c^2)$</td>
+<td>8.854187813e-12</td>
+<td>8.85418781279E-12</td>
+<td>8.85418781279E-12</td>
+<td>3.4e-13</td>
+<td>3.4e-13</td>
+</tr>
+<tr>
+<td>ElectronGminus2over2 $(g-2)/2$</td>
+<td>0.00115965218128</td>
+<td>.001159652181</td>
+<td>.001159652181</td>
+<td>2.4e-10</td>
+<td>2.4e-10</td>
+</tr>
+<tr>
+<td>BoltzmannConstant [J/K]</td>
+<td>1.380649e-23</td>
+<td>1.380649E-23</td>
+<td>1.380649E-23</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>$r_e$ を定義式で再計算 (SAD の変数から)</td>
+<td>2.817940326e-15</td>
+<td>2.81794032619E-15</td>
+<td>2.81794032619E-15</td>
+<td>1.4e-12</td>
+<td>1.4e-12</td>
+</tr>
+<tr>
+<td>$\mu_0$ を定義式で再計算</td>
+<td>1.256637062e-06</td>
+<td>1.256637062121E-6</td>
+<td>1.256637062121E-6</td>
+<td>3.8e-14</td>
+<td>3.8e-14</td>
+</tr>
+<tr>
+<td>$\epsilon_0$ を定義式で再計算</td>
+<td>8.854187813e-12</td>
+<td>8.85418781279E-12</td>
+<td>8.85418781279E-12</td>
+<td>3.4e-13</td>
+<td>3.4e-13</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>全 16 行が 12 桁で一致 (○)。<code>ProtonMass</code> は gs・pysad とも <code>938272088.1599999</code> (浮動小数点の表現による。値は 938272088.16)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>SADHelp の定義値は CODATA 2018 相当。<code>ProtonRadius</code> の定義式は推定。<code>ElectronMass</code> の値 (docs/06) は、この例の範囲では gs の値が 510998.95 であることまで確認。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

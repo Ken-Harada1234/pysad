@@ -42,4 +42,4 @@ CALC;                                ! OPTICS の写像で Twiss
 
 ## 未確認・限界
 - 6×6 の恒等に近い単純な写像 (薄い四極) だけ。`"EMIT"` (Emittance[] 用) と `"GEO"` は見ていない。落ちた粒子の復活、`ExternalMap` が受け取る `nt` は見ていない。
-- docs/30 のとおり、MAIN の `TRACK`・`DynamicApertureSurvey`・Touschek の経路は MAP を恒等として通す (ExternalMap を呼ばない)。
+- docs/19 のとおり、MAIN の `TRACK`・`DynamicApertureSurvey`・Touschek の経路は MAP を恒等として通す (ExternalMap を呼ばない)。

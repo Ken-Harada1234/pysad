@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Canvas (Canvas)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#画面-pysad-の窓">画面 (pysad の窓)</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Canvas.md</div>
+<h1 id="fn_canvas-canvas">fn_Canvas (Canvas)</h1>
+<p>種別: GUI (Packages/Tkinter.n の Canvas)・フォルダ 12_gui_tkinter・ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>Canvas[w, Width-&gt;, Height-&gt;, Background-&gt;]</code> を作り、Tk の <code>create</code> 命令 (四角・楕円・線・文字) を <code>TclEval</code> で送って絵を描く。<code>find all</code>・<code>type</code>・<code>bbox</code> で項目を調べる。描画関数 (<code>Plot</code> など) が内部で使う仕組みと同じ (docs/21)。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>c=Canvas[w,Width-&gt;300,Height-&gt;200,Background-&gt;&quot;white&quot;,Side-&gt;&quot;top&quot;];
+TclEval[&quot;set cv [lindex [ff . Canvas] 0]&quot;];
+TclEval[&quot;$cv create rectangle 20 20 120 90 -fill lightblue -outline blue&quot;];   (* 楕円・線・文字も同様 *)
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>items=4</code>、<code>types=rectangle oval line text</code>、<code>bbox oval=149 29 251 91</code> (楕円 2 番目の項目の外接矩形)。窓には水色の四角、ピンクの楕円、緑の太い斜線、「Canvas demo」の文字が出る。</p>
+<h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAADzCAIAAAB421iSAAAJQ0lEQVR42u3db2jU9x3A8e9P21plQqlCEnxWLuUIGXvSgstPiS2MLvrkoEXKGBXtzPVB4VzB0TLxwQg4yMoS9mCN63Q+GRIauCf1EEqXMpO184nQ1GXJFbEwPKHVUaFVRnt7cMl55mKi+Xt/Xq9H+rv7/e783b3v87vz/kS3bt0KQH3aYBeAgAEBAwIGAQMCBuoi4PPnz//8lVeOvvlruxXWxiMrspWbN28eP37839P/+sXvPjh9tMduhXoK+K233nr+9Xd2h3B2tPDEE0/YrVA3Ab/22mvPv/5OCGHwD39p+eFPH3300S+//HL79u12Lmvp448/npycLBaLc5ZHUZRMJnfu3Llm1+S9996Ld+1qa22ds/xaoTB24cJLL71UQwF/++23V67kQwi/+dWRp/e++d2lP27cuPGh6j179mx3d3dbW5u7IMsxOTmZSqW2bNkyZ/mdO3dGRkbWMuB4166PRke79+ypbPhaoVBaGGrqRaxMJvPq2x+EEK7+/c8hhJtTf+vv7190rWw2Ozk56T7HCioWi1u2bHmsytatW6vH8qpqa23t3rPno9HRa4XCnHqrx/J6BnzlypXPPpsIIbz6460/OTEdQnjqqaccPENlw6tX73IPod99993M0Hj5r7f+8fZj391+kPF748aN8fHxS5cuvfzyy5XH0o8//ngqlXLz00gNhxBWqd7lBvzFF1/8aHb8Fr///n//ufjXDz9cdK1UKpXNZpPJZDKZrKx6x44du3fvdsPXndOnTy9w6sGDB+2iUJuvQm/cuLH85/+O/f65557bsGEpx+SffPLJtm3b1FunJDqvyletVu8QesMyAz608wczjwQ3Lh0/fnxp27l9+/ZXX33lJqfx6m1rba1+TatWAr569erPDh4KIfzzt8+eOHEiiqIHXHHz5s2V3wTS3d29efPm8+fPu+FZsiiK7ty5U738m2++efB75orXe7/XpWviEHpwcPDw4cMhhDfe+OUzzzzz4Cs++eSTn3766eeff15+EeuFF17IZrOnTp06dOiQ+yJLkEwmR0ZG7vdGjrW8JmMXLlQfMJcaXvE3ckTL/E6sr7/+eseOHb5YC0I9fhpp06ZNdiLUccCnTp2yH2F9nvk7+gUf6AcEDAgYBAwIGBAwIGBoKPd9k3dhFT45ASxN630+imgCQ2jYD/S3tLTYR7COrl+/7jkwBC9iAQIGBAwIGAQMCBgQMAgYEDAgYEDAIGBAwICAQcCAgIFQQ9/IEZb4U8t27EOo+kVbWNeAQwgjk9fs3AfxYrLNTsAhNAgYEDAgYEDAIGBAwICAgRDC6r2Rg2a3hLfjeUuagKmVXEcvrsBGJC1g1qLYJeRarXojcy5FzwJmZbpdkWIfNunypStZwCxl2K5Nt4v2XHmVmjtmAbNYuusb7aKTuXQlmzVjAVNX6d4v5mbNWMDUbboyFjB1n25zZyxgGiLdZs1YwOqNGifdeTNu6IYFbPBebOR/4+jFxh7FAjZ4G11Dj2KfRlJvaJaMG/HrjgWsXg0LGPVqWMCoV8MCRr3N0rCA1athAQMCxvg1hAUMzdKwgI1fBIx6DWEBAwIGAQMCxhNgT4MFDAgYBAwIGBAwCBgQMLWkWAx7nrUbFrfn2fr9wkoBgwkMCBgQMJ4GN8UTYAFrWL1FExgQMIaw8StgMIExhI1fAaNh9QoYDatXwDR9w41Vr4A1rF4Bo2H1rpNH3Jmbt+HSVzE2/DdXlh6qGrFeATd9w6HRv322QQevgGn0UdzQg1fAzDeKGyPj5khXwDRcxs2UroBpoIybL10B0xAZN2u6AuZhMg6hhmKu/E/sZk1XwDxMxiHcE/O6lFzutrmjFTDLjnnO73GuUs9z3i6mWwGz8mO5uuelJV397k7FrlfALybb7Nzm7XnepJewEdYlYDcE7gTBp5EAAYOAAQEDAgYEDAIGBAwIGAQMCBgQMCBgEDAgYEDAIGBAwICAAQGDgAEBAwIGBAwCBgQMCBiC30YCVkJ0+O4PuxX/VBQw1HSlJjAIVcBQA5Wu9mGzgFFpPVUqYIRa36EKGJXWa6UCRqV1XKmAEWrwRg5QqYBRqUoFjFARMCoVMCpVqYARKgJWqUoFjEoRMEJFwCpVKQJWKQJGqAhYpSpFwCpFwEIVKgJWKQhYpdCoAQsVaj1glUKtB6xSqIOAhQr1FPDyi1Up1PohtEqhDgIWKtRTwIqFtbHBLgABAwIGBAwCBgQMCBgQMAgYEDAgYBAwIGBAwICAQcCAgAEBAwIGAQMCBgQMAgYEzGLyucF0HEVRFEVxOpdf+8sfjOPBvNtBwCyl3vSBvpA6UywWi8XimdTU+1IiNMkPfNe/XP/ecKyY6Zn5a6Ink7FTMIHrpd/syd5UzzxTOY7jOI6iOJ0rnS8dpQcH05XLculo5sS7B8HVK+bLR+flM89edDqOojiO4/T7lysXzrh7IYO59MwW8/nZqzB7xF1aMHuy27NGFQqFQqFQZKVND3R1DUw/wOnnekPoPVe1bO6iqhXvnqdqw+UTpge6QtfA9L2bmVnxXG+YWTQ90FW+CjMnljZyd4UF/ymshFKJJnCtSDzdOX55et4nxnEcx/GBI+Pl02cndXmdnlTvyWwuhJB/f7jzWCYx34rtHV0n+9KDVcNx+vJ4efIn9u3vml04PnygNID7JrrCVD6EEDqfTsxcbPkqtHd0TUzlZzaSKG2l5+hAGPb83XPg5tLe0XUymxvq6bn34LY9m5oeG0qEkEtH2fuu3JPq3ZvNDYXscGdqbP4VE5mx4r58rv9A3Nd5bGxo9mLyUxNdHUfn2WRvxZlCCCG38NXv6mh3G3oO3MwjOHOs9+Tee/8TJz810dXRnph5irzQ2j1HByay6ezE/qM9C6yYSPQMndkfStO6PHTDkf7c7Otow+MVjyb5h3j0CUf6Z8+f6x8O+/cl3KQCbi49Q8Xp/ZcPRFEUxVEURfFgyBzrHG6P4jhOT3X0Ltz/vv0TJydmu0lUr5hLl17Bah/uPFc5WhOZMwOhLyqdNzVzCJ3InDkX+tqj0kH0YG7xR5+xc6Fv9pg7HBvL6HddRQu8iBVCaGlpsY9gHV2/fj2E0NraagKDQ2hAwICAQcCAgAEBAwIGAQMCBgQMCBgEDAgYEDAIGAgN9Z1YpQ8TAyYwAAAAAAAAAAAL+D/0cMWsfCILWwAAAABJRU5ErkJggg==" /><figcaption>pysad が開いた窓</figcaption></figure>
+<p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
+<strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>3 行とも gs と pysad で一致 (○)。窓の見た目は pysad の分だけ撮った。</li>
+<li><strong>窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)</strong>: gs では <code>Window[]</code> が Toplevel を作り、部品はその下に並ぶ (ルート <code>.</code> の下には「Return to SAD」ボタンと Toplevel)。pysad では <code>Window[]</code> が別の窓を作らず、部品がルート窓 <code>.</code> の直下に並ぶ。<code>tree:</code> の行のインデントの差はこのため。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は <code>update</code> で窓を作り、Tcl の <code>invoke</code> で操作を模している)。 項目の色・太さは比べていない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

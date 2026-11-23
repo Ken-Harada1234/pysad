@@ -22,7 +22,7 @@ pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD ス
 | SAD (gs) の画面表示 (参照結果) | `bench_levelN.result` |
 | pysad 用の台本 | `bench_levelN_pysad.py` (一部は `.sad` を `run_sad.py` で走らせる) |
 | pysad の画面表示 | `bench_levelN_pysad.result`、実行ごとの出力は `regression_out/<名前>.txt` |
-| 判定と許容 | `run_regression.py`、`docs/10_benchmarks.md` |
+| 判定と許容 | `run_regression.py`、`docs/27_benchmarks.md` |
 
 ## 試験関数とスクリプト
 
@@ -434,7 +434,7 @@ pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD ス
 | [`test_v2_C_measure.py`](test_v2_C_measure.py) | v2: FFS の MEASURE / TRCOD / LOGMEASURE と MAIN の TRACK TURNS=-1 (pysad/measure.py)、B41。 |
 | [`test_v2_C_phsrot.py`](test_v2_C_phsrot.py) | v2 の修正 B38: PHSROT (6 次元 Twiss による位相空間の回転)。K64 は行列がすべて 0 になり動作しない。 |
 | [`test_v2_C_radlight.py`](test_v2_C_radlight.py) | v2 の修正 B65: RADLIGHT の軌道 (TrackParticles の {t, x, y, z})。K64 は横方向の座標が入らず、BEND で向きが変わらず、BEND の中を記録しない。 |
-| [`test_v2_C_sol.py`](test_v2_C_sol.py) | 担当 C: ソレノイド領域 (BOUND≠0 の SOL の間) の中の BEND・MULT・CAVI・APERT (docs/21 B69、docs/46)、MULT のスキュー成分。 |
+| [`test_v2_C_sol.py`](test_v2_C_sol.py) | 担当 C: ソレノイド領域 (BOUND≠0 の SOL の間) の中の BEND・MULT・CAVI・APERT (docs/30 B69、docs/31)、MULT のスキュー成分。 |
 | [`test_v2_C_spch.py`](test_v2_C_spch.py) | v2 (担当 C): 空間電荷の追跡 — SPAC フラグ + DRIFT の RADIUS、PSPAC フラグ + SPCH 要素 (pysad/spch.py)。 |
 | [`test_v2_C_track.py`](test_v2_C_track.py) | 担当 C の追跡まわり: B10 (tdusrn の NaN)、B33 (最初の tapert の l_track=0)、B35 (SOL 領域の未対応要素)、LOSSMAP (戻りの 2 行)。 |
 | [`test_v2_C_und.py`](test_v2_C_und.py) | v2 の修正 B37: UND の磁場 (FBX・FBY [T])。K64 はキーワードが登録されず磁場なしのドリフトになる。 |
@@ -462,7 +462,7 @@ pysad の試験 (`pysad/tests/test_*.py`) が `run_sad_string` に渡す SAD ス
 | [`test_v2_P5_micado_fitp_oy.py`](test_v2_P5_micado_fitp_oy.py) | 担当 P5 (v2next) 項目 4・5・6: OYStability の後半、Micado の変種、FITP>1 を gs と比べる。 |
 | [`test_v2_P5_proton_beta.py`](test_v2_P5_proton_beta.py) | 担当 P5 (v2next) 項目 8: 陽子 (電子以外) の放射の β の因子 (B112) の確認。 |
 | [`test_v2_P5_specfn_cx.py`](test_v2_P5_specfn_cx.py) | 担当 P5 (v2next) 項目 3: 複素引数の特殊関数の k64 の挙動を gs と比べ、足りなかった関数を足した (pysad/specfn_cx2.py)。 |
-| [`test_v2_P5_syntax.py`](test_v2_P5_syntax.py) | 担当 P5 (v2next) 項目 9: MAIN の要素定義の式の文法の細部 (docs/47 §(d) の D2 の 3 件) を gs と比べる。 |
+| [`test_v2_P5_syntax.py`](test_v2_P5_syntax.py) | 担当 P5 (v2next) 項目 9: MAIN の要素定義の式の文法の細部 (docs/28 §(d) の D2 の 3 件) を gs と比べる。 |
 | [`test_v2_P5_tk90.py`](test_v2_P5_tk90.py) | 担当 P5 (v2next) 項目 7: Tk 9.0 (Python 3.14 の venv (環境変数 PYSAD_PY314 か ~/venvs/py314)) で pysad の GUI が動き、窓の見た目が撮れる。 |
 
 ## `pysad/tests/` に置いてある台本・ラティスの入力

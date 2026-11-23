@@ -848,7 +848,7 @@ def test_mult_radius_readable(v2_mode):
     assert (I.globals['r1'], I.globals['r2'], I.globals['r3']) == (0.02, -0.001, -0.001)
 
 
-# ============================================================================ 走る例 (example/v2_C/C2s_*.sad、example/05_tracking/flag_SPAC.sad)
+# ============================================================================ 走る例 (example/05_tracking/flag_SPAC_MULT_radius.sad・flag_WSPAC_tune_shift.sad、example/05_tracking/flag_SPAC.sad)
 def _example(name):
     import os
     root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'example')
@@ -866,11 +866,11 @@ def _nums(out, key):
 
 
 def test_example_wspac_script(v2_mode):
-    """example/v2_C/C2s_wspac.sad が走り、WSPAC のチューンシフトが Laslett の式 (スクリプトの中で Emittance のビーム行列から計算) と
+    """example/05_tracking/flag_WSPAC_tune_shift.sad が走り、WSPAC のチューンシフトが Laslett の式 (スクリプトの中で Emittance のビーム行列から計算) と
     1% で合う。SELFCOD で重心のキックが 0 になる。平らなリングはエラーで知らせ、WSPACBEAM を与えると走る。
     同じスクリプトの gs (K64、EMIT を WSPAC つきで実行) の追跡は dnux = −2.938e-5、dnuy = −1.210e-3 (ビームの大きさを空間電荷込みで
     解き直しているので 1% 違う)"""
-    ffs, I, out = setup(_example('v2_C/C2s_wspac.sad'))
+    ffs, I, out = setup(_example('05_tracking/flag_WSPAC_tune_shift.sad'))
     tr, las = _nums(out, 'tracking:'), _nums(out, 'Laslett:')
     assert tr == pytest.approx([-2.9627e-5, -1.196e-3], rel=1.2e-2)      # v2: tradke の ddpx の符号 (A1 項目 7) でビーム行列が 2e-4 変わる
     assert tr == pytest.approx(las, rel=0.01)
@@ -882,10 +882,10 @@ def test_example_wspac_script(v2_mode):
 
 
 def test_example_mult_radius_script(v2_mode):
-    """example/v2_C/C2s_mult_radius.sad が走る: (1) 四極 (MULT) の中の KV ビームの 2·rms が包絡方程式 (スクリプトの中で積分) と 1% で
+    """example/05_tracking/flag_SPAC_MULT_radius.sad が走る: (1) 四極 (MULT) の中の KV ビームの 2·rms が包絡方程式 (スクリプトの中で積分) と 1% で
     合う、(2) リングのチューンシフトが、SPAC (MULT で全周)・PSPAC・WSPAC と Laslett の式 (全周) で合う (SPAC・PSPAC は 4000 個の
     準乱数のビームの雑音で 7%、WSPAC は 1%)。DRIFT だけの式 (全周の 80%) とは合わない"""
-    ffs, I, out = setup(_example('v2_C/C2s_mult_radius.sad'))
+    ffs, I, out = setup(_example('05_tracking/flag_SPAC_MULT_radius.sad'))
     text = out.getvalue()
     sp = _nums(out, '(1) SPAC ')
     l = [t for t in text.splitlines() if t.startswith('(1) envelope')][0]

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2next 担当 P5 の試験の補助: 例 (example/v2_next/P5_*) の台本・gs の出力を読み、pysad を指定の互換モードで走らせる。"""
+"""MEASURE・DETR・FITP・Micado・OYStability・陽子の β・複素特殊関数の走査の例 (example の機能別フォルダ) の台本・gs の出力を読み、pysad を指定の互換モードで走らせる補助。"""
 import io
 import os
 import re
@@ -8,7 +8,29 @@ import pytest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-EX = os.path.join(ROOT, 'example', 'v2_next')
+EX = os.path.join(ROOT, 'example')
+# 例の名前 → example からの相対パス (拡張子なし。.sad と .gs.txt が並ぶ)
+EXAMPLES = {
+    'detr_astrid2': '02_optics_cod/flag_DETR_astrid2',
+    'detr_pf': '02_optics_cod/flag_DETR_pf',
+    'detr_ring_a': '02_optics_cod/flag_DETR_ring_a',
+    'fitp_beta': '03_matching/flag_FITP_beta',
+    'fitp_five': '03_matching/flag_FITP_five',
+    'fitp_one': '03_matching/flag_FITP_one',
+    'measure_astrid2': '02_optics_cod/fn_MEASURE_astrid2',
+    'measure_default_np': '02_optics_cod/fn_MEASURE_default_np',
+    'measure_fodo': '02_optics_cod/fn_MEASURE_fodo',
+    'measure_pf': '02_optics_cod/fn_MEASURE_pf',
+    'measure_ring_a': '02_optics_cod/fn_MEASURE_ring_a',
+    'micado_bump': '13_packages/fn_CorrectOrbit_Bump',
+    'micado_variants': '13_packages/fn_CorrectOrbit_Micado_variants',
+    'oy_pipeline': '13_packages/fn_OYStability_pipeline',
+    'oy_pipeline_unstable': '13_packages/fn_OYStability_pipeline_unstable',
+    'proton_beta_p1p5': '04_emittance_radiation/var_MASS_proton_beta_p1p5',
+    'proton_beta_p3': '04_emittance_radiation/var_MASS_proton_beta_p3',
+    'proton_beta_p30': '04_emittance_radiation/var_MASS_proton_beta_p30',
+    'specfn_cx_scan': '10_math_data/fn_SpecialFunctions_complex_scan',
+}
 LAT = {
     'A': os.path.join(HERE, 'kek-ls_v03_12.lat'),
     'PF': os.path.join(ROOT, 'example', 'pf', 'lattice', 'v9_16_asym.sad'),
@@ -28,15 +50,15 @@ def need(path):
 
 
 def example_src(name, lat=None):
-    """example/v2_next/P5_<name>.sad (lat があれば、そのラティスを先頭に連結。gs に渡した台本と同じ)"""
-    src = open(need(os.path.join(EX, 'P5_%s.sad' % name)), encoding='utf-8').read()
+    """EXAMPLES[name] の .sad (lat があれば、そのラティスを先頭に連結。gs に渡した台本と同じ)"""
+    src = open(need(os.path.join(EX, EXAMPLES[name] + '.sad')), encoding='utf-8').read()
     if lat:
         src = open(need(LAT[lat]), encoding='utf-8', errors='replace').read() + '\n' + src
     return src
 
 
 def gs_text(name):
-    return open(need(os.path.join(EX, 'P5_%s.gs.txt' % name)), encoding='utf-8', errors='replace').read()
+    return open(need(os.path.join(EX, EXAMPLES[name] + '.gs.txt')), encoding='utf-8', errors='replace').read()
 
 
 def run(src, mode):

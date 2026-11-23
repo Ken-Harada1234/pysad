@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """v2.3.0 S1: 周波数マップと RDT・ADTS の接続 (pysad/fmapres.py)、誤差つき・δ つき・k64・MPW つきの周波数マップ、gs との比較 (KEK-LS)。
-追跡の重い計算は小さな格子にする。保存済みの出力 (example/v2_3/S1_*) を読む試験は、その出力が無ければ skip する。"""
+追跡の重い計算は小さな格子にする。保存済みの出力 (example/14_nonlinear_dynamics/frequency_map/fmap_* 等) を読む試験は、その出力が無ければ skip する。"""
 import math
 import os
 
@@ -13,7 +13,7 @@ from pysad.trksetup import TrackSetup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
-EX = os.path.join(ROOT, 'example', 'v2_3')
+EX = os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'frequency_map')
 ASTRID = os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_01.sad')
 ASTRID_ID = os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_02_id.sad')
 FODO = os.path.join(ROOT, 'example', '00_lattice', 'FODO_ring.sad')
@@ -106,14 +106,14 @@ def test_lines_distance_and_other_mn():
     assert (1, -1) in oth and (3, 0) not in oth and (1, 2) not in oth
 
 
-@pytest.mark.skipif(not os.path.exists(os.path.join(EX, 'S1_fmap_rdt_fodo.table.txt')), reason='S1 の出力がない')
+@pytest.mark.skipif(not os.path.exists(os.path.join(EX, 'fmap_rdt_fodo.table.txt')), reason='S1 の出力がない')
 def test_fodo_fmap_ridge_matches_3nux_prediction():
     """FODO (QF の K1 = 0.697、νx = 6.6578): D > -5 の点がすべて 3νx の予想の領域に入り、共鳴の中心の予想 (ADTS) が D の尾根の x と 1 mm 以内"""
     from pysad.parser import load_sad_string
     lat = load_sad_string(_fodo_src()).build_lattice('RING')
     rows = lat.twiss_table()
     pr = FR.ResonancePredictor.from_lattice(lat, 1, rows)
-    r = FMapResult.load_table(os.path.join(EX, 'S1_fmap_rdt_fodo.table.txt'))
+    r = FMapResult.load_table(os.path.join(EX, 'fmap_rdt_fodo.table.txt'))
     nu = (r.nux1 + 6, r.nuy1 + 4)
     P = pr.predict(r.x, r.y, nu=nu)
     s = FR.coverage_stats(r.D, P['any'], r.grid, thr=-5.0)
@@ -138,7 +138,7 @@ def test_fodo_fmap_ridge_matches_3nux_prediction():
 def test_adts_tune_prediction_small_amplitude_astrid2():
     """線形の ADTS ν0 + A·J は、追跡 (NAFF) のチューンと、小振幅 (νの動きが 0.003 以下) で 5e-4 以内 (保存済みの Q1 の表)"""
     from pysad.parser import load_sad_string
-    p = os.path.join(EX, 'Q1_fmap_astrid2.table.txt')
+    p = os.path.join(EX, 'fmap_astrid2.table.txt')
     if not os.path.exists(p):
         pytest.skip('Q1 の出力がない')
     lat = load_sad_string(_src(ASTRID)).build_lattice('RING')
@@ -243,12 +243,12 @@ def test_naff_window_and_turns_regular_point():
 
 
 # ---------------------------------------------------------------------------------------------------------------------
-@pytest.mark.skipif(not os.path.exists(os.path.join(EX, 'S1_gs_fmap_kekls.out.txt')), reason='S1 の gs の出力がない')
+@pytest.mark.skipif(not os.path.exists(os.path.join(EX, 'gs_fmap_kekls.out.txt')), reason='S1 の gs の出力がない')
 def test_kekls_gs_fmap_tracks_match():
     """KEK-LS の周波数マップの追跡を gs と比べた保存済みの出力: 規則的な点 (D < -3.5) の座標が 1e-9 m 以内、D の差が小さい、失われる点 (1 周目) の落ちた周が一致、
     カオス的な点の食い違いは初期値 1e-13 m の摂動の増幅と同じ大きさ、gs の終了後に残りなし"""
     import re
-    txt = open(os.path.join(EX, 'S1_gs_fmap_kekls.out.txt'), encoding='utf-8').read()
+    txt = open(os.path.join(EX, 'gs_fmap_kekls.out.txt'), encoding='utf-8').read()
     m = re.search(r'規則的な点 \(D < -3.5\) の座標列の最大の差: ([0-9.e+-]+)、\|D\(gs の座標\) − D\(frequency_map\)\| の最大 = ([0-9.e+-]+)', txt)
     assert m and float(m.group(1)) < 1e-9 and float(m.group(2)) < 1e-5
     assert re.search(r'落ちた周: API 1 / 台本 1 / gs 1', txt)

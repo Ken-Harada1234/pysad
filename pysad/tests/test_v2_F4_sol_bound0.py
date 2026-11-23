@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """F4: BOUND=0 の SOL (BZ≠0) が領域の外にあるときの追跡。K64 の tsol は BOUND≠0 でなくてもその SOL を領域の始点として、次の BOUND≠0 の SOL まで
 ソレノイド領域として追う (幾何 tsgeo は BOUND≠0 だけを始点とみなして ` Missing BOUND of Solenoid` を出す)。gs (K64) は追跡では BOUND=1 の始点と全桁一致。
-example/v2_next/F4_sol_bound0_track.sad (1.7 GeV、BZ=0.8 T、QUAD ×4、3 粒子 1 周 RAD OFF) の 6 座標 18 個が gs と 10 桁一致 (両モード)。
+example/07_spin_solenoid_special/elem_SOL_bound0_track.sad (1.7 GeV、BZ=0.8 T、QUAD ×4、3 粒子 1 周 RAD OFF) の 6 座標 18 個が gs と 10 桁一致 (両モード)。
 Twiss・CALC は gs が SIGSEGV で基準が無く未対応のまま。"""
 import io
 import os
@@ -13,7 +13,7 @@ import pytest
 from pysad import compat, ffscmd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SAD = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'example', 'v2_next', 'F4_sol_bound0_track.sad')
+SAD = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'example', '07_spin_solenoid_special', 'elem_SOL_bound0_track.sad')
 
 
 def _res(text):

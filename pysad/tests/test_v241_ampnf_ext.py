@@ -17,7 +17,7 @@ from pysad.parser import load_sad_string
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
-sys.path.insert(0, os.path.join(ROOT, 'example', 'v2_4'))
+sys.path.insert(0, os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'normal_form'))
 BASE = open(os.path.join(ROOT, 'example', '00_lattice', 'FODO_ring.sad'), encoding='utf-8').read()
 PAT = 'AABABBABAABBBAABABBAABBA'
 OPT = dict(bend_cubic=True, kin=True, fringe=True, nslice_bend=8)
@@ -87,7 +87,7 @@ def test_island_theory_reports_unreachable_resonance():
 def test_k0_nonlinear_switch_is_independent_of_other_options():
     """K0≠0 の磁石 (3 極の挿入光源) の非線形だけを切る: ν0 は同じ (線形の光学は残る)、J¹ の差は磁石自身の非線形の分 (xx・yy で 0.02〜0.1%)。
     既定 (None) は従来どおり: 3 つのオプションが全部 False のときだけ 1 次 (k0_nonlinear=False と同じ)、1 つでも True なら全部入り (True と同じ)"""
-    import G_k0_ampnf as G
+    import k0_ampnf as G
     lat = G.build(a=0.06)
     opt = dict(D=4, nslice=8, nslice_bend=4)
     full = A.amplitude_tune(lat, bend_cubic=True, kin=True, fringe=True, **opt)

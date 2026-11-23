@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>elem_BEND (偏向磁石: ANGLE・E1・E2・FRINGE)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: elem_BEND.md</div>
+<h1 id="elem_bend-偏向磁石-anglee1e2fringe">elem_BEND (偏向磁石: ANGLE・E1・E2・FRINGE)</h1>
+<p>種別: elem。フォルダ: 01_lattice_elements。ラティスは START-BEND-FIN の輸送路 (INS、初期 BX=BY=10 m、分散 0)。エネルギー 3 GeV。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>BEND B = (L=1.2 ANGLE=0.2618 E1=.. E2=.. [F1=.. FRINGE=..])</code>。<strong><code>ANGLE</code> は偏向角 [rad]、<code>E1</code> <code>E2</code> は入口・出口の面の角度を ANGLE に対する比で与える</strong> (実効の面の角は <code>E1*ANGLE</code>)。
+長方形磁石は <code>E1=E2=0.5</code>。3 つの磁石を比べる。</p>
+<ul>
+<li><code>BS</code>: セクター型 (E1=E2=0)</li>
+<li><code>BR</code>: 長方形 (E1=E2=0.5)</li>
+<li><code>BF</code>: 長方形 + 線形フリンジ (<code>F1=0.3 FRINGE=3</code>: 入口と出口の両方)</li>
+</ul>
+<p>(注: <code>00_lattice/FODO_ring.sad</code> の BEND は <code>E1=E2=0.1309</code> と書かれていて、これは ANGLE=0.2618 の半分の rad の値だが、SAD は比と読むので実効の面の角は 0.0343 rad。長方形ではない。この例は E1=E2=0.5 で長方形にした。)</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>BEND BS = (L=1.2 ANGLE=0.2617993877991494 E1=0 E2=0);
+BEND BR = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5);
+BEND BF = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5 F1=0.3 FRINGE=3);
+LINE TS = (START BS FIN);  (TR、TF も同様)
+FFS;
+USE TS; INS; CALC;
+m = TransferMatrix[&quot;START&quot;,&quot;FIN&quot;];   Print[&quot;BS EX EPX = &quot;, Twiss[&quot;EX&quot;,&quot;FIN&quot;], &quot; &quot;, Twiss[&quot;EPX&quot;,&quot;FIN&quot;]];
+</code></pre>
+<p>各ラインを <code>USE</code> して <code>INS; CALC;</code> し、転送行列と出口の分散を表示する。最後に <code>LINE["GX","FIN"]</code> などで幾何 (座標) も出す。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>BS</code>/<code>BR</code>/<code>BF</code> それぞれ 3 行: 水平 2x2、垂直 2x2、<code>EX EPX</code> (出口の分散)。<code>geometry</code> の行は設計軌道の座標 (GX GY GZ [m]) と回転角 (GCHI1..3 [rad])。
+SAD の幾何では水平な偏向は CHI1 の回転、局所の進行方向が GX、水平の横方向が GY に出る (GZ は 0)。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>$\rho=L/\theta=4.5837$ m。セクター型:
+$$M_x=\begin{pmatrix}\cos\theta&amp;\rho\sin\theta\-\sin\theta/\rho&amp;\cos\theta\end{pmatrix},\quad
+\eta=\rho(1-\cos\theta),\ \eta'=\sin\theta,\quad M_y=\begin{pmatrix}1&amp;L\0&amp;1\end{pmatrix}$$
+面の角度 $e$ の硬い縁は水平に $\tan e/\rho$、垂直に $-\tan e/\rho$ の薄い収束 $\begin{pmatrix}1&amp;0\\pm\tan e/\rho&amp;1\end{pmatrix}$。
+長方形は $e=\theta/2$ なので水平は $M_{11}=1$、$M_{21}=0$ (ドリフトと同じ)、垂直は縁で収束される。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式の値</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>セクター M11 = cos θ</td>
+<td>0.965926</td>
+<td>0.965926</td>
+<td>0.965926</td>
+</tr>
+<tr>
+<td>M12 = ρ sin θ</td>
+<td>1.18634</td>
+<td>1.18634</td>
+<td>1.18634</td>
+</tr>
+<tr>
+<td>M21 = -sin θ/ρ</td>
+<td>-0.0564656</td>
+<td>-0.056466</td>
+<td>-0.056466</td>
+</tr>
+<tr>
+<td>M34 = L (垂直はドリフト)</td>
+<td>1.2</td>
+<td>1.2</td>
+<td>1.2</td>
+</tr>
+<tr>
+<td>EX = ρ(1-cos θ)</td>
+<td>0.156185</td>
+<td>0.156185</td>
+<td>0.156185</td>
+</tr>
+<tr>
+<td>EPX = sin θ</td>
+<td>0.258819</td>
+<td>0.258819</td>
+<td>0.258819</td>
+</tr>
+<tr>
+<td>GX(FIN) = ρ sin θ</td>
+<td>1.18634</td>
+<td>1.18634</td>
+<td>1.18634</td>
+</tr>
+<tr>
+<td>GY(FIN) = ρ(1-cos θ)</td>
+<td>0.156185</td>
+<td>0.156185</td>
+<td>0.156185</td>
+</tr>
+<tr>
+<td>GCHI1(FIN) = θ</td>
+<td>0.261799</td>
+<td>0.261799</td>
+<td>0.261799</td>
+</tr>
+</tbody>
+</table>
+<p>長方形 (<code>BR</code>、$e=\theta/2$ の縁の行列を両側にかけた値):</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式の値</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>長方形 M11</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>M12</td>
+<td>1.18634</td>
+<td>1.18634</td>
+<td>1.18634</td>
+</tr>
+<tr>
+<td>M21</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>垂直 M33</td>
+<td>0.965533</td>
+<td>0.965533</td>
+<td>0.965533</td>
+</tr>
+<tr>
+<td>垂直 M43</td>
+<td>-0.0564543</td>
+<td>-0.056454</td>
+<td>-0.056454</td>
+</tr>
+<tr>
+<td>EX</td>
+<td>0.156185</td>
+<td>0.156185</td>
+<td>0.156185</td>
+</tr>
+<tr>
+<td>EPX</td>
+<td>0.263305</td>
+<td>0.263305</td>
+<td>0.263305</td>
+</tr>
+</tbody>
+</table>
+<p><code>BF</code> (F1=0.3、FRINGE=3) は、水平は <code>BR</code> と同じ ($M_{11}$=1、$M_{21}$=-2.760e-17) で、垂直の収束が変わる: gs $M_{43}$=-0.051852、pysad -0.051852 (BR は -0.056454)。フリンジの式 (SADHelp の <code>F1</code> の項、$V=-\frac1p(\frac{F_1^2}{24\rho}p_x-\frac{F_1}{12\rho}y^2+\dots)$) を解析値と照合するところまでは行っていない (gs と pysad の一致だけ確認)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>全項目が一致 (1e-12 以内。0 になるべき行列要素の雑音 1e-17〜1e-13 だけ両者で値が違う)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li><code>FRINGE</code> の効きの解析値との照合なし (上記)。<code>K1</code>≠0 の BEND (複合機能)、<code>K0</code>、<code>AE1</code>/<code>AE2</code>、<code>DISFRIN</code>、<code>ROTATE</code>、<code>DROTATE</code> は扱っていない。</li>
+<li>長方形磁石の垂直収束の式 $\tan e/\rho$ は硬縁のモデル。SAD は <code>F1</code>=0 でこの形を使う (表のとおり 6 桁一致)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

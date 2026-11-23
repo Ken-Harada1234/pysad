@@ -16,7 +16,7 @@ Print[Out[1]];  Print[%];  Print[$Line];
 gs: `Null` の `Head` は `Symbol`、`Length[{Null,Null}]`=2、`{1,Null}` の表示は `{1,}`。`Out[1]` は 2、`%` は直前の出力 2、`$Line`=1 (入力行の数ではなく Out の番号付き行の数)。`Out[-1]` と `%%` は評価されずそのまま出る (SAD に相対参照はない)。`BoundQ[x]` は値があれば 1。
 
 ## gs と pysad の比較
-○ `%`・`%n`・`Out[n]`・`$Line` は一致 (2026-11-17 に修正: `%` は `Out[$Line]`、`%%` は gs でも記号のまま、未定義の `Out[-1]` は未評価)。差が残るのは `BoundQ` (gs は `BoundQ[zzz]` を 0、`BoundQ[x]` を 1 と評価、pysad は未評価): 今回の対象外。
+○ `%`・`%n`・`Out[n]`・`$Line` は一致 (2026-11-17 確認: `%` は `Out[$Line]`、`%%` は gs でも記号のまま、未定義の `Out[-1]` は未評価)。差が残るのは `BoundQ` (gs は `BoundQ[zzz]` を 0、`BoundQ[x]` を 1 と評価、pysad は未評価): 今回の対象外。
 
 ## 未確認・限界
 - `Out[n]` の番号は、`Print` の行や `;` で終わる行には付かない。どの行が番号を持つかは gs の画面で確認する。

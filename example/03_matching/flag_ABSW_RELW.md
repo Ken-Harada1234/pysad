@@ -21,7 +21,7 @@ QF K1 0.7; QD K1 -0.6;   RELW;   GO;               ! RELW
 
 ## gs と pysad の比較
 - gs では ABSW と RELW で止まる点が違う ((-0.005524, -0.005792) と (-0.005465, -0.005850))、つまりフラグが効いている。
-- pysad は ABSW と RELW で**同じ結果**になり (RELW が効いていない)、gs の RELW とも ABSW とも違う。docs/35 では RELW を `ffscmd.matcher_` で `match6` の重みにつないだとあるが、この収束しない問題では効きが見えない。
+- pysad は ABSW と RELW で**同じ結果**になり (RELW が効いていない)、gs の RELW とも ABSW とも違う。docs/04 では RELW を `ffscmd.matcher_` で `match6` の重みにつないだとあるが、この収束しない問題では効きが見えない。
 - 収束しない問題での比較なので、不一致の意味は小さい (flag_UNIPOL_BIPOL の B BIPOL と同じ状況)。収束する問題では重みは効かないので、ABSW/RELW を意味のある条件で比べる例は作れなかった。
 
 ## 未確認・限界

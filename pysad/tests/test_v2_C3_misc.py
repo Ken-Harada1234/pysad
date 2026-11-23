@@ -111,14 +111,14 @@ r = SynchroBetaEmittance[{0.0142, 0.0142, 0.001}, AzimuthalModes->5];
 Print["SB ", r];
 Exit;
 '''
-# gs (K64) の参照 (example/v2_next/C3_synchrobeta_coupled.gs.txt): {νs, εx, εy, εx', εy', 収束}
+# gs (K64) の参照 (example/04_emittance_radiation/fn_SynchroBetaEmittance_coupled.gs.txt): {νs, εx, εy, εx', εy', 収束}
 _GS_SB = [0.0142, 1.360336495570143e-6, 4.751665441653782e-8, 1.3599991774350626e-6, 4.925609883688084e-8, -5.079004432581897e-7]
 
 
 @needs_pk
 def test_synchrobeta_coupled_ring_matches_gs_k64(k64_mode):
     """結合のある 24 セル FODO (skew 四極 1 台、6 極なし、3 GeV、RF 4 MV): k64 の SynchroBetaEmittance が gs と εx・εy で 1e-6、εx'・εy' で 1e-6 一致する
-    (gs はこの結合のあるリングで落ちない。「結合のあるラティスで gs が落ちる」(docs/46) は再現しなかった)。v2 は追跡の放射の式の修正で 1.3% 違う"""
+    (gs はこの結合のあるリングで落ちない。「結合のあるラティスで gs が落ちる」(docs/31) は再現しなかった)。v2 は追跡の放射の式の修正で 1.3% 違う"""
     buf = io.StringIO()
     ffscmd.run_sad_string(_SB_COUPLED, out=buf)
     line = [l for l in buf.getvalue().splitlines() if l.startswith('SB ')][0]

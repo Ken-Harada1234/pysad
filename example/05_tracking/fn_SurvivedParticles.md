@@ -23,5 +23,5 @@ SurvivedParticles[r3[[2]]]         ! 全滅: {{},{},{},{},{},{},{}}
 ○ 一致 (全 3 行が同じ)。
 
 ## 未確認・限界
-- 損失の位置と周は戻りに入らない (LOSSMAP を使う: [flag_LOSSMAP](flag_LOSSMAP.md)。pysad も v2 で LOSSMAP に対応し、gs と同じ値が出る)。
+- 損失の位置と周は戻りに入らない (LOSSMAP を使う: [flag_LOSSMAP](flag_LOSSMAP.md)。pysad も LOSSMAP に対応し、gs と同じ値が出る)。
 - POL ON の 9〜11 列のビームでの動作は見ていない。

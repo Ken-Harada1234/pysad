@@ -28,8 +28,8 @@ TclEval["foreach c [ff . Button] {$c invoke; $c invoke}"];   (* ボタンを 2 �
 
 ## gs と pysad の比較
 - 動作の結果 (`n=2`、`ck=1`) は gs と pysad で一致 (○)。部品の種類・文字も同じ。
-- **窓の親が違う (pysad の既知の差、docs/41 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
-- **`Head[w]`・`Head[b]`**: gs・pysad とも `Widget` (○。2026-11-17 に修正: `Tkinter.n` の入れ子の規則で `With` が呼び出し元の引数名を見ていた。docs/22)。
+- **窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)**: gs では `Window[]` が Toplevel を作り、部品はその下に並ぶ (ルート `.` の下には「Return to SAD」ボタンと Toplevel)。pysad では `Window[]` が別の窓を作らず、部品がルート窓 `.` の直下に並ぶ。`tree:` の行のインデントの差はこのため。
+- **`Head[w]`・`Head[b]`**: gs・pysad とも `Widget` (○。`Tkinter.n` の入れ子の規則で `With` が呼び出し元の引数名を見ると別名に付く。docs/20)。
 
 ## 未確認・限界
 Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は `update` で窓を作り、Tcl の `invoke` で操作を模している)。

@@ -1,0 +1,25 @@
+! k64 モードの PSPAC (K64 の spch.c の形状関数を直訳: 横 CIC・縦「ほぼ最近接」・双 3 次の電位・3 次スプラインの線密度)。gs と全桁一致 (k64)。v2 は別の形状関数で、粗いメッシュ (縦 4 セル) では gs と 4.5% 違う。
+! 条件: 5 MeV の電子、1e11 個、半径 1 mm の一様な円 (準乱数 4096 個)、縦の長さ lb = 0.02 m (PSPACDZ = 0.005 m で 4 セル)、D(0.5) SPCH D(0.5) SPCH。
+! NPARA = 1 が要る (gs の既定は粒子を子プロセスに分け、各プロセスが自分の粒子だけで電位を作る)。gs は 1 セッションの 2 回目の TrackParticles で PSPAC が働かない (SPC8) ので 1 回だけ。
+MOMENTUM = 5MEV;
+DRIFT D1 = (L=0.5);
+SPCH SP1 = ();
+MARK ORIGIN = ();
+LINE TL = (ORIGIN D1 SP1 D1 SP1);
+FFS;
+NPARA = 1; RFSW; NORAD; NOFLUC;
+USE TL; INS; CALC;
+PBUNCH = 1e11;
+PSPACNX = 128; PSPACNY = 128; PSPACDX = 0.0001; PSPACDY = 0.0001; PSPACNZ = 32; PSPACDZ = 0.005;
+
+a = 0.001; n = 4096; lb = 0.02;
+u = Table[Mod[i*0.6180339887, 1], {i,1,n}];
+v = Table[Mod[i*0.7548776662, 1], {i,1,n}];
+w = Table[Mod[i*0.5698402910, 1], {i,1,n}];
+rms[l_] := Sqrt[Plus@@(l^2)/Length[l]];
+$FORM = "20.14";
+PSPAC;
+bm = {a*Sqrt[u]*Cos[2*Pi*v], Table[0,{n}], a*Sqrt[u]*Sin[2*Pi*v], Table[0,{n}], lb*(w-0.5), Table[0,{n}], Table[1,{n}]};
+r = TrackParticles[{1,bm},1,1,1];
+Print["RMS ", rms[r[[2,1]]], " ", rms[r[[2,3]]], " ", rms[r[[2,2]]], " ", rms[r[[2,4]]], " ", Plus@@(r[[2,6]])/n, " ", rms[r[[2,6]]]];
+Exit;

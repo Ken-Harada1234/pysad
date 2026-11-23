@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Gamma_Erf (Gamma 族と誤差関数)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Gamma_Erf.md</div>
+<h1 id="fn_gamma_erf-gamma-族と誤差関数">fn_Gamma_Erf (Gamma 族と誤差関数)</h1>
+<p>種別: 関数 (SADHelp functions の Special-functions) / フォルダ: 10_math_data / ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>Gamma</code>、<code>LogGamma</code>、<code>LogGamma1</code>、<code>Factorial</code>、<code>Erf</code>、<code>Erfc</code>、<code>InverseErf</code>、<code>GammaRegularized</code>・<code>GammaRegularizedP</code>・<code>GammaRegularizedQ</code>、<code>Beta</code> の実数値と、複素引数の <code>Gamma</code>・<code>Erf</code>。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>Gamma[.5]  Gamma[5.]  Gamma[-1.5]  LogGamma[10.5]  LogGamma1[10.5]  Factorial[5.5]  Erf[.5]  Erfc[.5]  InverseErf[.5]
+GammaRegularized[2.,3.]  GammaRegularizedP[2.,3.]  GammaRegularizedQ[2.,3.]  Beta[2.,3.]  Gamma[1.+I]  Erf[1.+I]
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>R:名前=値</code> の行。複素の 2 行 (<code>GammaC=</code>、<code>ErfC=</code>) は <code>(実部+虚部 I)</code> の形。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>$\Gamma(z)=\int_0^\infty t^{z-1}e^{-t}dt$、$\Gamma(n)=(n-1)!$、$\Gamma(1/2)=\sqrt\pi$、$\Gamma(-3/2)=\frac{4}{3}\sqrt\pi$。<code>Factorial[x]</code> $=\Gamma(x+1)$。
+$\mathrm{erf}\,x=\frac2{\sqrt\pi}\int_0^xe^{-t^2}dt$、$\mathrm{erfc}=1-\mathrm{erf}$。正規化不完全ガンマ $P(a,x)=\frac1{\Gamma(a)}\int_0^xt^{a-1}e^{-t}dt$、$Q=1-P$。
+<code>GammaRegularized[a,x]</code> は上側の $Q(a,x)$ (表の値で確認: $Q(2,3)=4e^{-3}=0.19915$)。<code>Beta</code>$(a,b)=\Gamma(a)\Gamma(b)/\Gamma(a+b)$。
+<code>LogGamma1</code> は SADHelp に説明がなく、gs の値は $\ln\Gamma(x+1)$ に一致する (推定)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>式の値 (scipy.special)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\Gamma(1/2)=\sqrt\pi$</td>
+<td>1.77245385091</td>
+<td>1.772453850905516</td>
+<td>1.772453850905516</td>
+<td>1.3e-16</td>
+<td>1.3e-16</td>
+</tr>
+<tr>
+<td>$\Gamma(5)=24$</td>
+<td>24</td>
+<td>24</td>
+<td>24</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>$\Gamma(-3/2)=\frac{4\sqrt\pi}3$</td>
+<td>2.36327180121</td>
+<td>2.363271801207355</td>
+<td>2.363271801207354</td>
+<td>0.0e+00</td>
+<td>3.8e-16</td>
+</tr>
+<tr>
+<td>LogGamma[10.5] = $\ln\Gamma(10.5)$</td>
+<td>13.9406252194</td>
+<td>13.94062521940376</td>
+<td>13.94062521940376</td>
+<td>2.5e-16</td>
+<td>2.5e-16</td>
+</tr>
+<tr>
+<td>LogGamma1[10.5] = $\ln\Gamma(11.5)$ (出力から推定した定義)</td>
+<td>16.2920004766</td>
+<td>16.29200047656724</td>
+<td>16.29200047656724</td>
+<td>2.2e-16</td>
+<td>2.2e-16</td>
+</tr>
+<tr>
+<td>Factorial[5.5] = $\Gamma(6.5)$</td>
+<td>287.885277815</td>
+<td>287.8852778150444</td>
+<td>287.8852778150444</td>
+<td>2.0e-16</td>
+<td>2.0e-16</td>
+</tr>
+<tr>
+<td>Factorial[5] = 120</td>
+<td>120</td>
+<td>120</td>
+<td>120</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>Erf[.5]</td>
+<td>0.520499877813</td>
+<td>.520499877813047</td>
+<td>.520499877813047</td>
+<td>8.5e-16</td>
+<td>8.5e-16</td>
+</tr>
+<tr>
+<td>Erfc[.5]</td>
+<td>0.479500122187</td>
+<td>.479500122186953</td>
+<td>.479500122186953</td>
+<td>1.0e-15</td>
+<td>1.0e-15</td>
+</tr>
+<tr>
+<td>Erf[-1.2]</td>
+<td>-0.91031397823</td>
+<td>-.910313978229635</td>
+<td>-.910313978229635</td>
+<td>3.7e-16</td>
+<td>3.7e-16</td>
+</tr>
+<tr>
+<td>InverseErf[.5]</td>
+<td>0.476936276204</td>
+<td>.476936271460083</td>
+<td>.476936271460083</td>
+<td>9.9e-09</td>
+<td>9.9e-09</td>
+</tr>
+<tr>
+<td>GammaRegularized[2,3] = $Q(2,3)$</td>
+<td>0.199148273471</td>
+<td>.199148273471456</td>
+<td>.199148273471456</td>
+<td>9.8e-16</td>
+<td>9.8e-16</td>
+</tr>
+<tr>
+<td>GammaRegularizedP[2,3] = $P(2,3)$</td>
+<td>0.800851726529</td>
+<td>.800851726528544</td>
+<td>.800851726528544</td>
+<td>2.8e-16</td>
+<td>2.8e-16</td>
+</tr>
+<tr>
+<td>GammaRegularizedQ[2,3] = $Q(2,3)$</td>
+<td>0.199148273471</td>
+<td>.199148273471456</td>
+<td>.199148273471456</td>
+<td>9.8e-16</td>
+<td>9.8e-16</td>
+</tr>
+<tr>
+<td>Beta[2,3] = $\Gamma(2)\Gamma(3)/\Gamma(5)$</td>
+<td>0.0833333333333</td>
+<td>.083333333333333</td>
+<td>.083333333333333</td>
+<td>4.0e-15</td>
+<td>4.0e-15</td>
+</tr>
+</tbody>
+</table>
+<p>複素: $\Gamma(1+i)=0.4980156681-0.1549498283\,i$、$\mathrm{erf}(1+i)=1.3161512817+0.1904534692\,i$ (参照値は一般に知られた値)。gs・pysad の出力はこれに一致 (pysad の虚部の末尾 1 桁だけ違う)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>14 値は 15 桁一致 (○。<code>Gamma[-1.5]</code> だけ末尾 1 桁違い)。</li>
+<li><code>LogGamma1[10.5]</code> = 16.29200047656724 は gs と一致 (○。<code>LogGamma1[x]=LogGamma[x+1]</code>、負の引数の複素数の虚部も gs と同じ)。</li>
+<li>複素引数の <code>Gamma</code>・<code>Erf</code> は一致。</li>
+<li><code>InverseErf[.5]</code>: gs は真値 (0.476936276204) と相対 1e-8 ずれる (K64 の近似の誤差。B47)。pysad は <strong>v2 (既定) では真値 .47693627620447 を返す</strong> (K64 のバグは直してある。<code>docs/28_v2_vs_k64.md</code>)。<code>PYSAD_COMPAT=k64</code> では gs と同じ .476936271460083。上の表の pysad 列と相対差は k64 の値。<code>.pysad.txt</code> は v2 の出力なので、この行だけ違う。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p><code>Gamma</code> の極 (0、負の整数)、大きな引数、<code>GammaRegularized</code> の端の値は試していない。複素数の参照値は教科書値で、桁数は 10 桁までしか確かめていない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

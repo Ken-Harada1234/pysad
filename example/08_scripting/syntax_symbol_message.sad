@@ -1,0 +1,15 @@
+FFS;
+(* Symbol["x"] は x の値 (未定義なら記号)、Message[f::tag, 値…] は ???f::tag:  本文 を出す (本文の `n` を値に置き換える)。gs と全行一致 *)
+Print["a ",Symbol["zzq"]];
+zzq=3; Print["b ",Symbol["zzq"]+1];
+Symbol["zzq"]=9; Print["c ",zzq," ",Head[Symbol["zzq"]]];
+Print["d ",Symbol["Sin"][0.5]];
+f::x="a `1` b `2`";
+Message[f::x,10,"q"];
+Message[f::x];
+Message[f::none];
+g::usage="usage of g";
+Message[g::usage];
+Print["e ",Message[g::usage]];
+Message["abc"];
+Exit;

@@ -1,0 +1,18 @@
+! 陽子 (MASS = 938.272088 MeV) の放射の β の因子 (B112)。Emittance[] の EnergyLossU0 を、古典式 U0 = (2/3) r_p m c² β³ γ⁴ Σ θ²/L と比べる。
+! 条件: 運動量 30e9 eV/c (p = 30e9)、12 セルの FODO (周長 45.6 m、偏向 15 度 × 12)、RF 2 MV・h = 24。k64 は gs と全桁一致。v2 は古典半径を陽子の値にする (B112) が β の因子は直していない。
+MASS = 938.272088e6;
+MOMENTUM = 30e9;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=2e6 HARM=24 PHI=0);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+USE RING; CELL; CALC; RFSW; NORAD;
+e = Emittance[];
+$FORM = "14.8";
+Print["U0 ", EnergyLossU0/.e];
+Print["Qs ", Tunes/.e];
+Exit;

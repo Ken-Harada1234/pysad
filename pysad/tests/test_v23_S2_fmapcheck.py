@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """v2.3.0 S2: 周波数マップを信頼して使うための補助 (pysad/fmapcheck.py、freqmap.py の警告・周回数の換算、fmapres.apply_alignment_errors の streams='type')。
-追跡は小さな格子・少ない周回数。保存済みの出力 (example/v2_3/S2_*) を読む試験は、無ければ skip する。"""
+追跡は小さな格子・少ない周回数。保存済みの出力 (example/14_nonlinear_dynamics/frequency_map/fmap_check_*) を読む試験は、無ければ skip する。"""
 import json
 import os
 import warnings
@@ -14,7 +14,7 @@ from pysad.trksetup import TrackSetup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
-EX = os.path.join(ROOT, 'example', 'v2_3')
+EX = os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'frequency_map')
 ASTRID = os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_01.sad')
 SIG = dict(quad_dxy=50e-6, quad_rot=0.2e-3, sext_dxy=50e-6, bend_dxy=50e-6, bend_rot=0.1e-3)
 
@@ -166,14 +166,14 @@ def test_default_map_has_no_warning(st0):
 # 保存済みの出力
 # ---------------------------------------------------------------------------------------------------------------------
 def _jsonl(name):
-    p = os.path.join(EX, 'S2_data', name)
+    p = os.path.join(EX, 'fmap_check_data', name)
     if not os.path.exists(p):
         pytest.skip('保存済みの出力がない: ' + name)
     return [json.loads(l) for l in open(p, encoding='utf-8')]
 
 
 def test_saved_errors_scan_astrid2():
-    rows = _jsonl('S2_errors_astrid2.jsonl')
+    rows = _jsonl('errors_astrid2.jsonl')
     allr = [d for d in rows if d['kind'] == 'all']
     for k in (0.3, 1.0, 3.0):
         L = [d for d in allr if d['k'] == k]
@@ -184,7 +184,7 @@ def test_saved_errors_scan_astrid2():
 
 
 def test_saved_gs_errors():
-    p = os.path.join(EX, 'S2_gs_errors.out.txt')
+    p = os.path.join(EX, 'fmap_check_gs_errors.out.txt')
     if not os.path.exists(p):
         pytest.skip('保存済みの出力がない')
     txt = open(p, encoding='utf-8').read()
@@ -240,7 +240,7 @@ def test_rf_on_rad_off_has_zero_synchronous_phase():
 def test_saved_mpw():
     """4νy = 9 は MPW で点が失われる原因ではない: νy を ±0.05 動かしても失われる点は 207〜252 のまま (62〜75%)、νx・νy を MPW なしに戻しても 200 以上、
     MPW を弱めると y の限界が広がる"""
-    rows = {d['case']['name']: d for d in _jsonl('S2_mpw.jsonl')}
+    rows = {d['case']['name']: d for d in _jsonl('mpw.jsonl')}
     lost = lambda n: rows[n]['stats']['nlost']        # noqa
     assert lost('A_s0') == 0
     sweep = [lost(n) for n in rows if n.startswith('B_')]
@@ -251,7 +251,7 @@ def test_saved_mpw():
 
 
 def test_saved_k1opts():
-    rows = {d['case']: d for d in _jsonl('S2_k1opts.jsonl')}
+    rows = {d['case']: d for d in _jsonl('k1opts.jsonl')}
     D = lambda n: np.array([np.nan if v is None else v for v in rows[n]['D']])          # noqa
     ok = np.isfinite(D('default')) & np.isfinite(D('lin'))
     assert np.allclose(D('face'), D('default'), equal_nan=True) and np.allclose(D('k64'), D('default'), equal_nan=True)     # E = 0 では face・k64 は v2 と同じ
@@ -263,7 +263,7 @@ def test_saved_k1opts():
 
 
 def test_saved_rfsw():
-    rows = {d['case']: d for d in _jsonl('S2_rfsw.jsonl')}
+    rows = {d['case']: d for d in _jsonl('rfsw.jsonl')}
     assert rows['base']['stats']['frac_hi'] < 0.05
     for k in ('rf', 'rfrad', 'rfradfluc17', 'radfluc17'):
         assert rows[k]['stats']['frac_hi'] > 0.5            # RF・RAD ON では D > −5 が多数 (拡散の指標でなくなる)
@@ -273,7 +273,7 @@ def test_saved_rfsw():
 
 
 def test_saved_nturn_scaling():
-    p = os.path.join(EX, 'S2_data', 'S2_nturn_astrid2.npz')
+    p = os.path.join(EX, 'fmap_check_data', 'nturn_astrid2.npz')
     if not os.path.exists(p):
         pytest.skip('保存済みの出力がない')
     z = np.load(p)
@@ -288,13 +288,13 @@ def test_saved_nturn_scaling():
 
 
 def test_saved_coupling_only():
-    rows = _jsonl('S2_coupling.jsonl')
+    rows = _jsonl('coupling.jsonl')
     f = [d['stats']['frac_hi'] for d in sorted(rows, key=lambda d: d['target'])]
     assert f[0] > 0.1 and all(b > a for a, b in zip(f[:-1], f[1:]))        # 結合だけで D > −5 が 0.03 → 0.13 以上、結合の強さに単調
 
 
 def test_saved_errors_scan_kekls():
-    rows = _jsonl('S2_errors_kekls.jsonl')
+    rows = _jsonl('errors_kekls.jsonl')
     base = [d for d in rows if d['kind'] == 'none'][0]
     assert base['stats']['nlost'] == 125 and abs(base['stats']['frac_hi'] - 0.142) < 0.005
     a = [d for d in rows if d['kind'] == 'all' and d['k'] == 0.03]

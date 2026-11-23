@@ -1,0 +1,25 @@
+! SynchroBetaEmittance (B128) はリングの始点の分散 η ≠ 0 のとき Emittance[] の数倍〜40 倍の値を返す (K64 の式の誤り)。
+! 同じ 24 セルの FODO (3 GeV、RF 4 MV) を、始点を変えた 2 つのライン (QF から: η = 0.70 m、BEND から: η = 0.57 m) で走らせる。
+! 物理的には始点に依らないはずの量。K64 (gs・pysad k64) は SB が Emittance[] の 6.5 倍で、始点にも依る。v2 は 1.0004 倍。
+! (大きなリング A (kek-ls_v03_12.lat、3 GeV、周長 603 m) は始点の η = 0.0445 m で、K64 の SB は 40 倍 (6.18e-9 対 1.55e-10)。fn_SynchroBetaEmittance_rings.py)
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 HARM=64);
+LINE CELLQ = (QF D2 B D2 QD D1);
+LINE CELLB = (B D2 QD D1 QF D2);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+LINE RINGB = (ORIGIN RF 24*CELLB);
+FFS;
+PageWidth = 1999;
+USE RINGQ; CELL; RFSW; RAD; CALC;
+em = Emittance[]; nus = Abs[(Tunes/.em)[[3]]];
+r = SynchroBetaEmittance[{nus, nus, 0.001}, AzimuthalModes->3];
+Print["RINGQ (QF start) eta0 = ", Twiss["EX", 1], "  Emittance[] ex = ", (Emittances/.em)[[1]], "  SB ex = ", r[[1,2]], "  SB/EM = ", r[[1,2]]/(Emittances/.em)[[1]]];
+USE RINGB; CELL; RFSW; RAD; CALC;
+em = Emittance[]; nus = Abs[(Tunes/.em)[[3]]];
+r = SynchroBetaEmittance[{nus, nus, 0.001}, AzimuthalModes->3];
+Print["RINGB (B start)  eta0 = ", Twiss["EX", 1], "  Emittance[] ex = ", (Emittances/.em)[[1]], "  SB ex = ", r[[1,2]], "  SB/EM = ", r[[1,2]]/(Emittances/.em)[[1]]];
+Exit;

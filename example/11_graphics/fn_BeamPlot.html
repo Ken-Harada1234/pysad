@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_BeamPlot (BeamPlot)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#図">図</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_BeamPlot.md</div>
+<h1 id="fn_beamplot-beamplot">fn_BeamPlot (BeamPlot)</h1>
+<p>種別: 関数 (描画)・フォルダ 11_graphics・ラティス FODO_ring (24 セル、3 GeV、周長 105.6 m)・<code>RFSW; RAD; CODPLOT; CALC; EMIT</code>。<strong>gs と pysad が食い違う</strong></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>BeamPlot[loc, {ax,ay}, options]</code> でビーム楕円を描く。事前に <code>CODPLOT; EMIT</code> などでビームの大きさを計算しておく。<code>QF.5</code> の位置の $(x,y)$ 楕円を描く。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>USE RING; CELL; RFSW; RAD; CODPLOT; CALC; EMIT;
+Print[&quot;SIGXX(QF.5)=&quot;,LINE[&quot;SIGXX&quot;,&quot;QF.5&quot;],&quot;  SIZEXX=&quot;,LINE[&quot;SIZEXX&quot;,&quot;QF.5&quot;]];
+g=BeamPlot[&quot;QF.5&quot;,{&quot;X&quot;,&quot;Y&quot;},SizeFunction-&gt;&quot;SIG&quot;];
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>SIGXX(QF.5)=</code> が gs は 0、pysad は 1.657e-6。<code>Head=List Length=4</code>。窓: pysad は枠の中に細い横長の楕円 ($x$ の大きさが $y$ よりずっと大きい)、gs は枠だけ (楕円なし、Canvas は 3 項目)。</p>
+<h2 id="図">図</h2>
+<figure><img alt="gs と pysad の Canvas を再描画した図" src="data:image/png;base64,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" /><figcaption>gs と pysad の Canvas を再描画した図</figcaption></figure>
+<p>左が gs、右が pysad。どちらも Tk の Canvas の項目 (線・四角・文字など) を Tcl で書き出し、<code>example/tools/canvas_render.py</code> で matplotlib に描き直した図 (色・フォント・文字の大きさは実際の窓とは違う)。
+<strong>gs の窓の画面そのものは撮れない</strong> (gs は WSLg の X11 に窓を開く。<code>winfo ismapped</code> は 1 で窓は出ているが、WSL に xwd・import が無く、Windows 側の画面切り取りも使えなかった)。
+pysad の側の保存の仕方: 台本の <code>Exit;</code> の前に、全 Canvas の <code>find all</code>・<code>type</code>・<code>coords</code>・<code>itemcget</code> を Tcl の <code>TclEval[...]</code> でファイルに書き出す文を足し (<code>canvas_render.py</code> の <code>DUMP</code>)、それを読んで描く。
+元の <code>.sad</code> は書き換えない。項目の数は図の題に出している。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 の注記</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を直してあるので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直してあるため。<code>docs/28_v2_vs_k64.md</code>)。以下の表と本文の「pysad」の値と「一致」の判定は、<code>PYSAD_COMPAT=k64</code> での結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<ul>
+<li><strong>×/△ 食い違い</strong>: gs の <code>LINE["SIGXX",...]</code>・<code>SIZEXX</code> は 0 のまま (EMIT のあとでも)、そのため楕円の半径が 0 になり、gs は楕円を描かない。pysad は <code>EMIT</code> の結果から $\sigma_{xx}$ を作り、楕円を描く。docs/21 §8 の既知の差と同じ (どちらが正しいかは未確認。K64 の仕様か、この gs ビルドの不具合かは不明)。</li>
+<li>画面にエラーは出ず、gs・pysad とも最後まで走る。</li>
+<li>楕円の大きさ (pysad の $\sigma_{xx}=1.657\times10^{-6}\ \mathrm{m^2}$ が $\varepsilon\beta+\eta^2\sigma_\delta^2$ と合うか) は確かめていない。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/21 §9)。比べたのは Canvas の項目の種類・数 (図の題)。<code>Orbit</code>・<code>DataRange</code>・他の軸の組 ({"PX","X"} など) は試していない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -47,4 +47,4 @@ $$\cos\mu=\tfrac12{\rm tr}M_{\rm cell},\quad \beta=\frac{M_{12}}{\sin\mu},\quad 
 ## 未確認・限界
 - 6 次元 (CALC6D)、誤差のあるリング、結合のあるリング (R 行列) は別の例 (flag_CALC4D_CALC6D、flag_COD)。
 - 不安定な光学のときの出力 (`Unstable`)、`CALC` の表示関数の追加 (`CALC BX`) は未確認。
-- `RF` は CALC では効かない (リングでは RFSW に関係なくドリフト扱い、docs/11)。
+- `RF` は CALC では効かない (リングでは RFSW に関係なくドリフト扱い、docs/29)。

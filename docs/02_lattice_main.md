@@ -1,6 +1,12 @@
-# 02. SAD の MAIN レベル (ラティス定義) と pysad parser.py
+# 02. SAD の MAIN レベル (ラティス定義) と pysad の parser
 
-最終更新: 2026-11-17 (現状のスナップショット)。照合対象: `<SAD>\src` (K64 版 SAD, Fortran) と [`pysad/parser.py`](../pysad/parser.py)。SAD ソースの行番号は 2026-10 時点。
+**この文書で分かること**: SAD の入力ファイルの前半 (MAIN レベル: 要素の定義、`LINE`、`MOMENTUM=` などの変数) がどう読まれるか、要素型ごとのキーワードと単位、pysad の parser がそれをどう Python の要素に変換するか。
+**前提**: SAD のラティス (`QUAD QF=(L=0.25 K1=1.0);` のような書き方) を見たことがあること。FFS (対話コマンド) の部分は [03_ffs_commands.md](03_ffs_commands.md) と [04_ffs_small_commands.md](04_ffs_small_commands.md)。
+**読む順**: 初めての人は §1 (入力の構造) → §4 (動く例) → 必要になったら §2 (キーワード表)・§3 (parser の変換)。
+
+用語: **MAIN レベル** = `FFS;` より前の、要素・LINE・変数を定義する部分。**FFS** = その後の対話コマンド層。**K64** = 本プロジェクトが翻訳の元にした SAD (Fortran) のビルド。**gs** = その実行ファイル。
+
+照合対象: `<SAD>\src` (K64 版 SAD, Fortran) と [`pysad/parser.py`](../pysad/parser.py)。SAD ソースの行番号は 2026-10 時点。
 表記: 無印 = コードで確認した事実 / 「解釈」= 推論 / 「未検証」= 未確認。parser.py は改訂が続くため行番号ではなく関数名で示す。
 
 ---
@@ -88,16 +94,16 @@ pysad は `parser.parse_main_commands` (ON/OFF, EMIT, `NAME=値`, TRACK, STOP �
 | BEND (1008-1042) | L, ANGLE, E1, E2, ROTATE, DISRAD, K1, DX, DY, K0, DISFRIN, EPS, RANKICK, F1, FRINGE, COUPLE, DROTATE, AE1, AE2, FB1, FB2, INDEX, AX, AY, LDEV, LRAD, CHI2, DZ | ANGLE [rad] = 基準座標系の偏向角 (phi0)。**K0 [rad] は追加の双極場で、磁場の偏向角は phib = ANGLE+K0** (tbend.f:565, qtwiss.f:281)。**E1/E2 は ANGLE に対する比**: 実エッジ角 psi1 = E1·ANGLE + AE1 (tffs.f:1261)。**K1 は積分値 K1·L [1/m]** (tbend.f:566-573 で tquad に渡す)。ROTATE [rad] = 設計ロール角 (tffs.f:1294 で cos/sin を取る)。DX/DY [m] 据え付けずれ。DISFRIN=0 でフリンジ有効 (tturn.f:342)。FRINGE ≤0 のとき FB1/FB2 を 0 にする (−1 で入口のみ, −2 で出口のみ残す; tffs.f:1271-1278)。F1+FB1/FB2 は有効長補正 `al −= ((φ·fb1)²+(φ·fb2)²)/al/48·sin(w/2)/sin(φ/2)` (tffs.f:1280-1284)。 |
 | QUAD (1044-1073) | L, K1, ROTATE, DX, DY, DISRAD, ACHROMA, DISFRIN, F1, F2, FRINGE, EPS, DISKIN, COUPLE, INDEX, AX, AY, LDEV, LRAD, F1K1F… | **K1 は積分値 K1·L [1/m]**: `akk = K1/al` (tffs.f:1316)、L=0 なら薄レンズ強度 (tquad.f:22-24)。ROTATE [rad] (tffs.f:1312)。 |
 | SEXT/OCT/DECA/DODECA (1076-1106, THIN 共通) | L, K2/K3/K4/K5 (同じスロット `ky_K_THIN`), ROTATE, DX, DY, DISRAD, DISFRIN, COUPLE, INDEX, AX, AY, LDEV, LRAD | K は積分値 (tthine で K/fact(n)/2 のキック; Level 3A で SAD の色収差と一致, docs/history/00_RESUME.md)。 |
-| MULT (1110-) | L, DX, DY, DZ, CHI1, CHI2, CHI3=ROTATE, EPS, DISRAD, DISFRIN, F1, F2, FRINGE, VOLT, DVOLT, HARM, PHI, FREQ, COUPLE, ANGLE(23), K0..K21 (30,32,…), SK0..SK21 (31,33,…) | K_n の単位は未検証 (解釈: 積分値。tffs.f:1440 の分割数推定は K/al を使う)。ANGLE≠0 (曲げつき多極) の追跡・Twiss・Emittance[] は docs/28 のとおり gs と一致 (BZ・RF・F1・SK0・FB1/FB2 を伴う Twiss は未対応)。回転キーワードは `ROTATE` (`ROTATION` は gs で Undefined keyword)、`CHI2`・`TAPER` も読む。 |
-| SOL (1239-1258) | L, BZ, DX, DY, DZ, DPX, DPY, BOUND, CHI1-3, GEO, F1, DBZ, COUPLE, DISFRIN, DISRAD, FLAT | BZ [T]。BOUND≠0 から次の BOUND≠0 までが領域で、領域内は tsole1 の写像 (docs/29)。K64 は BOUND≠0 の SOL の長さを周長に入れない (pysad の `emit6d._emit_circ`、追跡の circ も同じ)。領域内の BEND・MULT・CAVI は未対応。 |
+| MULT (1110-) | L, DX, DY, DZ, CHI1, CHI2, CHI3=ROTATE, EPS, DISRAD, DISFRIN, F1, F2, FRINGE, VOLT, DVOLT, HARM, PHI, FREQ, COUPLE, ANGLE(23), K0..K21 (30,32,…), SK0..SK21 (31,33,…) | K_n の単位は未検証 (解釈: 積分値。tffs.f:1440 の分割数推定は K/al を使う)。ANGLE≠0 (曲げつき多極) の追跡・Twiss・Emittance[] は docs/19 のとおり gs と一致 (BZ・RF・F1・SK0・FB1/FB2 を伴う Twiss は未対応)。回転キーワードは `ROTATE` (`ROTATION` は gs で Undefined keyword)、`CHI2`・`TAPER` も読む。 |
+| SOL (1239-1258) | L, BZ, DX, DY, DZ, DPX, DPY, BOUND, CHI1-3, GEO, F1, DBZ, COUPLE, DISFRIN, DISRAD, FLAT | BZ [T]。BOUND≠0 から次の BOUND≠0 までが領域で、領域内は tsole1 の写像 (docs/17)。K64 は BOUND≠0 の SOL の長さを周長に入れない (pysad の `emit6d._emit_circ`、追跡の circ も同じ)。領域内の BEND・MULT・CAVI は未対応。 |
 | CAVI (1268-1295) | L, VOLT, DVOLT, HARM, PHI, FREQ, RANVOLT, RANPHASE, LWAKE, TWAKE, DX, DY, ROTATE, V1, V20, V11, V02, COUPLE, DPHI, DISFRIN, FRINGE, AX, AY, LDEV, AUTOPHI | VOLT [V], FREQ [Hz], PHI [rad] (**既定 0**: ゼロクリア)。波数 `w = 2π·FREQ/c` (HARM=0) または `ω0·HARM/c`、`ω0 = 2π c p0/h0/C` (tffs.f:1452-1454, tfsetparam.f:124) → FREQ = HARM·βc/C。 |
 | MARK (1512-1556) | AX, BX, PSIX, AY, BY, PSIY, EX, EPX, EY, EPY, R1-R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, PSIZ, ZX, ZPX, ZY, ZPY, DP(29), OFFSET, SIGZ, SIGE, GEO, JDX…, EMITX(40), EMITY, EMITZ, COUPLE | 先頭 1..28 は FFS の mfit 順と同じ (ky_AX_Mark=1; tffsmatch.f:133 `rlist(latt(1)+mfitddp)`)。`tffsinitparam` (tffs.f:2904-2965): 先頭 MARK の EMITX/EMITY/EMITZ/SIGE/SIGZ が >0 ならグローバルを上書き、DP ≤0 なら `DP` 変数 → それも 0 なら 0.01、BX/BY/BZ ≤0 なら 1。 |
 | MONI (1576-1582) | DX, DY, OFFSET, COUPLE, ROTATE | **L なし** (L を書くとエラー)。 |
-| TCAVI (docs/26) | L, K0 (偏向の強さ)、FREQ/HARM、PHI、DX、DY、ROTATE、RAD、RANKICK、RANPHASE | 横偏向空洞。RFSW OFF では長さ L のドリフト。追跡は RANKICK・RANPHASE 未対応。 |
-| UND (docs/27) | L, KX, QY, POLE, SLICE, PHI | **K64 は磁場のキーワード (FBX など) が Undefined keyword になり設定できない** (B37)。磁場なしのドリフトとして動く。 |
-| COORD (docs/25) | DX, DY, DZ, CHI1, CHI2, CHI3, DIR | 座標変換 (ずれと回転)。DIR≠0 は逆変換。長さを持たない。 |
-| MAP (docs/30) | L (K64 は使わない) | `ExternalMap[...]` で写像をユーザーが与える。定義が無ければ恒等で長さ 0。 |
-| BEAMBEAM (docs/24) | AX BX AY BY, R1..R4, EMIX EMIY, DP, SIGZ, XANGLE, SLICE, NP, BSTRL など | 強弱ビームのビーム・ビーム。追跡のみ (光学には効かない)。 |
+| TCAVI (docs/19) | L, K0 (偏向の強さ)、FREQ/HARM、PHI、DX、DY、ROTATE、RAD、RANKICK、RANPHASE | 横偏向空洞。RFSW OFF では長さ L のドリフト。追跡は RANKICK・RANPHASE 未対応。 |
+| UND (docs/19) | L, KX, QY, POLE, SLICE, PHI | **K64 は磁場のキーワード (FBX など) が Undefined keyword になり設定できない** (B37)。磁場なしのドリフトとして動く。 |
+| COORD (docs/19) | DX, DY, DZ, CHI1, CHI2, CHI3, DIR | 座標変換 (ずれと回転)。DIR≠0 は逆変換。長さを持たない。 |
+| MAP (docs/19) | L (K64 は使わない) | `ExternalMap[...]` で写像をユーザーが与える。定義が無ければ恒等で長さ 0。 |
+| BEAMBEAM (docs/14) | AX BX AY BY, R1..R4, EMIX EMIY, DP, SIGZ, XANGLE, SLICE, NP, BSTRL など | 強弱ビームのビーム・ビーム。追跡のみ (光学には効かない)。 |
 | PHSROT | (K64 で動作しない: B38) | 行列が全部 0、PX PY PZ が指定できない。pysad は読むが追跡は NotImplementedError。 |
 | INS | (領域の区切り) | INS を含むリングの `Emittance[]` のチューン (相対 1e-15)・`TrackParticles` (1e-13) は gs と一致を 2026-11-16 に確認 (3 セルのリング、BEND E1・E2 付き)。 |
 
@@ -130,8 +136,8 @@ pysad は `parser.parse_main_commands` (ON/OFF, EMIT, `NAME=値`, TRACK, STOP �
 | SEXT K2 / OCT K3 / DECA K4 | `Sextupole(K2/L)`, `Octupole(K3/L)`, `Decapole(K4/L)` | 積分値 → 長さあたり (L=0 ならそのまま) |
 | CAVI VOLT, FREQ, HARM | `Cavity(VOLT, FREQ)` + `_harm` | FREQ=0 かつ HARM>0 なら `_harm` を記録 → build_lattice で FREQ = HARM·c/C。物理計算 (emit6d.py, track6.py) は `_harm` と ω0 から SAD と同じ `w` を作るので β=1 近似の FREQ は使われない。 |
 | MONI / MARK | `Monitor(L)`, `Marker()` | MARK の Twiss キーワード (BX, AX, EMITX, DP, …) は `_raw` と `env._elements` に残り、ffscmd/ffs が参照する。 |
-| MULT | `Multipole(L)` | `_apply_extra_params` が K0..K21 を `KnL`、SK0..SK21 を `KsL` に、ANGLE・E1・E2・VOLT・FREQ・PHI・HARM・BZ・DVOLT・DPHI・AUTOPHI・CHI2・TAPER を属性に渡す (ANGLE≠0 は docs/28)。 |
-| SOL | `Solenoid(L)` | BZ・BOUND・GEO・DPX・DPY・DX・DY・DISFRIN・DBZ を属性に渡す。領域の扱いは docs/29。 |
+| MULT | `Multipole(L)` | `_apply_extra_params` が K0..K21 を `KnL`、SK0..SK21 を `KsL` に、ANGLE・E1・E2・VOLT・FREQ・PHI・HARM・BZ・DVOLT・DPHI・AUTOPHI・CHI2・TAPER を属性に渡す (ANGLE≠0 は docs/19)。 |
+| SOL | `Solenoid(L)` | BZ・BOUND・GEO・DPX・DPY・DX・DY・DISFRIN・DBZ を属性に渡す。領域の扱いは docs/17。 |
 | TCAVI / UND / PHSROT / MAP / COORD / BEAMBEAM | `TCavity` / `Undulator` / `PhsRot` / `Map` / `Coord` / `BeamBeam` | 数値キーワードを全部 `params` に入れる (DX 等は誤差の属性にせず変換のパラメータ。`_apply_extra_params` は何もしない)。PhsRot・Map・Coord・BeamBeam は Marker の派生 (長さ 0)。 |
 | 不明な型 (SPCH、PROF、TEST など) | `Drift(L)` | キーワードは無視 (SPCH・PROF の物理は未翻訳。11/16 に K64 のソースで確認: tturn.f:521 の `case (icSPCH)` が PSPAC フラグのとき `tpspac` を呼ぶので SPCH は K64 では物理を持つが pysad は未翻訳。PROF は K64 のソースに現れない) |
 | BEAMBEAM を含むリング (補足) | Marker 扱い | 11/16 に gs と比較: Twiss のチューン 1e-14、運動量収縮 4e-12 で一致。`STURN`・`COUPLE` は K64 のソースでキーワードの登録 (initb1.f) 以外に参照がなく使われない |
@@ -144,21 +150,19 @@ pysad は `parser.parse_main_commands` (ON/OFF, EMIT, `NAME=値`, TRACK, STOP �
 
 ---
 
-## 4. 実例: 3 GeV 20 セルのリング (Level 12)
+## 4. 実例: 3 GeV 20 セルのリング
 
-- ラティス: `<試験用ラティス>.lat` (209 行)。`MOMENTUM = 3GEV;` の後に DRIFT/BEND/QUAD/SEXT/OCT/CAVI/MARK/MONI を定義 (式 `L=.413/2`, `K3=-6000*0.0125`, `VD=(ROTATE=-90 DEG)`, MKS/MKE に Twiss・EMITX・DP)、`LINE ARCAH … ARCAH2 … ARCA=(ARCAH -ARCAH2) RING=(MKS 20×ARCA + RFC MKE);`、その後 BEND/QUAD/SEXT (+DRCT) を 3 回再定義 (最後が有効。再定義は全キーワードを書いている)。
-- SAD 側: `bench_level12.sad` = 上記 + FFS 部 (`USE RING; LINE["NAME"|"TYPE"|"L"|"K1"|"ANGLE"|"K2"|"K3"|"E1"|"ROTATE","*"]` を出力し `CELL; CALC;` → Twiss、`RFSW; emit;`)。結果 `bench_level12.result`。
-- pysad 側: `bench_level12_pysad.py` が `parser.load_sad_file(<試験用ラティス>.lat)` → `build_lattice('RING')` し、SAD の `LINE[]` 出力と要素ごとに比較する (pysad の K1·L, K2·L, K3·L を SAD の積分値と、Bend.E1 を SAD の E1×ANGLE と比較)。結果 `bench_level12_pysad.result`:
+読み方の例として、3 GeV の 20 セルのリング (周長 603.12 m、3563 要素) のラティスファイル (209 行) を parser で読む。
 
-| 項目 | pysad | SAD | 差 |
-|---|---|---|---|
-| 要素数 / 周長 | 3563 / 603.120000 m | NLAT−1 = 3563 / 603.120000 m | 一致 |
-| 要素名 (順序込み) | 不一致 0 | | |
-| L, ANGLE, K1, K2, K3, E1, ROTATE | 最大差 K1 4.9e-11, ANGLE 4.0e-11, K2 4.5e-11 | (`$FORM="15.10"` の 10 桁出力) | 表示桁の丸め |
-| Twiss 末尾 `$$$` (BX, AX, BY, AY, EX, EPX, NX, NY) | | | ≤ 4e-11 |
-| Twiss `MKC` | | | ≤ 4e-11 |
-| emit (εx, σE, σz, α, U0, Qx/Qy/Qz, 減衰) | | | 相対差 ≤ 2e-5 (SAD 5 桁出力) |
+- 内容: `MOMENTUM = 3GEV;` の後に DRIFT/BEND/QUAD/SEXT/OCT/CAVI/MARK/MONI を定義する。式 (`L=.413/2`、`K3=-6000*0.0125`、`VD=(ROTATE=-90 DEG)`)、MKS/MKE に Twiss・EMITX・DP を書く、`LINE ARCAH … ARCAH2 … ARCA=(ARCAH -ARCAH2) RING=(MKS 20×ARCA + RFC MKE);` と反転ライン、LINE の後での BEND/QUAD/SEXT (+DRCT) の 3 回の再定義 (最後が有効。再定義は全キーワードを書いている)、が入っている。
+- 使い方 (番号順):
+  1. `from pysad.parser import load_sad_file`
+  2. `sc = load_sad_file(<ラティスファイル>)`
+  3. `lat = sc.build_lattice('RING')` (要素 3563 個、周長 603.12 m)
+  4. 要素の属性 (`el.K1` は長さあたり、`el._raw['K1']` が SAD の積分値) を見る。
+- 実行ファイルに通す場合は、ラティスファイルと FFS スクリプトを連結して 1 本にして `gs` に渡す。pysad では `python run_sad.py <ラティス> <スクリプト>` が同じ連結を行う。
+- ANGLE=0 の `VD`/`HD` は §3.2 のとおり Bend のまま保持される。反転ライン `-ARCAH2` の中の要素は `REV_EL` 経由で SAD と同じ順序になる。
 
-ANGLE=0 の `VD`/`HD` の扱いは §3.2 (Bend のまま保持) のとおりで、要素数・名前・周長は SAD と一致する。反転ライン `-ARCAH2` の中の要素も (`REV_EL` 経由で) 同じ順序になることをこの比較が保証している (ARCAH2 の BEND に E1/E2 は無いので入替の効果は Level 12 では見えない)。
+**検証**: 要素数・名前の順序・周長が K64 の `LINE[]` 出力と一致し、L・ANGLE・K1・K2・K3・E1・ROTATE は K64 の 10 桁出力の丸め (最大 4.9e-11) の範囲で一致、末尾 Twiss は 4e-11 以内。詳細は [history/02_lattice_main_validation.md](history/02_lattice_main_validation.md)。
 
 **BEND の K0 / E1 の FFS 側の意味 (bench_level23)**: `LINE["K0","BPI6.1"]=v` は読み出しでは 1 台だけ変わるが、次の CALC / Emittance[] / TrackParticles でファミリー全体が最初の 1 台 (.1) の値に揃えられる (`.3` だけ設定した値は CALC 後に消える)。`LINE["K0","BPI6"]` (ドット無し) や FFS の要素値コマンド `BPI6 K0 v` はファミリー全体に即座に効く。`BPI6.1 K0 v;` と書くと SAD は式として評価して何もしない。`LINE["E1",name]` は ANGLE 比を返す (ANGLE=0 の BEND でもファイルの値)。pysad は `ffscmd.FFS.spread_pending`、`_e_ratio` で対応。

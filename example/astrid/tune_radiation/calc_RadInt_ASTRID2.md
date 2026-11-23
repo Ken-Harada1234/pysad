@@ -20,6 +20,10 @@ Jx = 1 - I4/I2,  Jy = 1,  Jz = 2 + I4/I2
 ## 結果の読み方
 `I1 I2 I3 I4 I5 = ...` の行が積分、`Jx Jy Jz` が分配数、`emitx from integrals` が式の εx、`emitx from Emittance[]` が SAD の値。
 
+![ASTRID2 の標準セルの H 関数](fig_ASTRID2_H.png)
+
+横軸は標準セルの始点 (MKS) からの距離 s [m]、縦軸は分散関数 H = (η² + (βη' + αη)²)/β [mm]。橙の帯が 2 台の偏向磁石 BH (ρ = 1.623 m、長さ 0.85 m) で、放射積分 I5 は帯の内側の H/ρ³ だけを積分した量になる。H は磁石の入口で 0、出口で約 129 mm に達し、2 台の間の直線部では 129 mm で一定。この点列から台形則で求めたリング全体 (セル 6 個) の I5 は 0.136708 で、出力の `I5` = 0.1367071 と合う。
+
 ## 物理・解析式
 ベンドは偏向角 $\theta=0.523599$、長さ 0.85 m、$\rho=L/\theta=1.62338$ m が 12 台 (合計 $2\pi$)。分散の無い量は閉じた式で出る:
 $$I_2=\frac{2\pi}{\rho},\quad I_3=\frac{2\pi}{\rho^2},\quad U_0=\frac{C_\gamma E^4}{2\pi}I_2,\quad \alpha_c=\frac{I_1}{C},\quad \epsilon_x=\frac{C_q\gamma^2 I_5}{J_x I_2},\quad J_x=1-\frac{I_4}{I_2},\ J_z=2+\frac{I_4}{I_2}$$

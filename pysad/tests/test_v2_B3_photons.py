@@ -3,7 +3,7 @@
 
 根拠:
   (a) gs (K64) との照合 (k64 モード): 乱数の引き方 (tdusrnpl・radangle1 の tgauss) と tphrec の位置・方向・偏光の式まで直訳した。BEND (K1=0・K1≠0・ROTATE・DX・DY・DROTATE) と QUAD の光子
-      358 個 (example/v2_next/B3_photons_bend.sad、4 粒子 × 2 セル) が、gs と光子数・位置 (gx gy gz)・方向・偏光・粒子番号・要素番号まで一致する。
+      358 個 (example/07_spin_solenoid_special/flag_PHOTONS_bend.sad、4 粒子 × 2 セル) が、gs と光子数・位置 (gx gy gz)・方向・偏光・粒子番号・要素番号まで一致する。
       エネルギー列 (E) だけ 3e-8 (相対) 違う (原因は gs の gammab と pysad の h0 の定義の違いと推定。確かめていない)。
   (b) 解析式 (gs を使わない、v2): 曲率半径 ρ の偏向磁石で、1 粒子 1 回通過あたりの光子数 = (5/(2√3)) α γ θ、臨界エネルギー u_c = (3/2) ħc γ³/ρ、
       平均エネルギー <u> = (8/(15√3)) u_c、<u²> = (11/27) u_c²、スペクトル (3/(5π)) ∫_y^∞ K_{5/3}(z) dz (y = u/u_c)。
@@ -67,8 +67,8 @@ def _parse_gs(path):
 
 def test_photon_list_matches_gs_for_bend_and_quad(k64_mode):
     """K1≠0・ROTATE・DX・DY・DROTATE つきの BEND と QUAD の光子 358 個が gs と一致する (E 列だけ 3e-8)"""
-    ref = _parse_gs(os.path.join(ROOT, 'example', 'v2_next', 'B3_photons_bend.gs.txt'))
-    src = open(os.path.join(ROOT, 'example', 'v2_next', 'B3_photons_bend.sad'), encoding='utf-8').read()
+    ref = _parse_gs(os.path.join(ROOT, 'example', '07_spin_solenoid_special', 'flag_PHOTONS_bend.gs.txt'))
+    src = open(os.path.join(ROOT, 'example', '07_spin_solenoid_special', 'flag_PHOTONS_bend.sad'), encoding='utf-8').read()
     _ffs, ph = _run(src)
     assert ph.shape == ref.shape == (358, 12)
     assert np.abs(ph[:, 0] / ref[:, 0] - 1).max() < 5e-8

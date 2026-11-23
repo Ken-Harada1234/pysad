@@ -2,7 +2,7 @@
 """v2.3.0 Q1: 周波数マップ (pysad/freqmap.py)、局所運動量アクセプタンス (pysad/lma.py)、共通の追跡設定 (pysad/trksetup.py)、SAD の台本の関数
 (FrequencyMap・MomentumAcceptance・TouschekLifetimeLMA、pysad/q1cmd.py)。
 
-根拠: (1) 追跡は SAD の TrackParticles と同じ損失判定 (台本の TrackParticles と数値が一致、gs の値 `_Q1_GS_LOSS` は example/v2_3/Q1_gs_loss_compare.py の gs の出力)、
+根拠: (1) 追跡は SAD の TrackParticles と同じ損失判定 (台本の TrackParticles と数値が一致、gs の値 `_Q1_GS_LOSS` は example/15_lma_touschek/lma/gs_loss_compare.py の gs の出力)、
 (2) 小さな振幅の周波数マップのチューンは CALC のチューンと一致、(3) 周期 (セルの数) は要素の並びから (24 セルの FODO、ASTRID2 は 6、kek-ls_v03_12.lat は 20)、
 (4) LMA は、RF バケットの高さ以下 (開口が広いとき)・線形の見積もり以下 (開口が狭いとき)・周期的なセルで同じ値、(5) Touschek に渡した一様な受容は TouschekTable の値と一致。
 """
@@ -121,8 +121,8 @@ def test_track_matches_trackparticles_script(fodo_rf):
 
 
 def _gs_lines():
-    """example/v2_3/Q1_gs_loss_astrid2.gs.txt (gs の出力。K64、2026-10-19 ビルド): 'P loc i 旗 x' の行と 'B loc 符号 lo hi' の行"""
-    p = os.path.join(ROOT, 'example', 'v2_3', 'Q1_gs_loss_astrid2.gs.txt')
+    """example/15_lma_touschek/lma/gs_loss_astrid2.gs.txt (gs の出力。K64、2026-10-19 ビルド): 'P loc i 旗 x' の行と 'B loc 符号 lo hi' の行"""
+    p = os.path.join(ROOT, 'example', '15_lma_touschek', 'lma', 'gs_loss_astrid2.gs.txt')
     if not os.path.exists(p):
         return None, None
     pr, br = [], []
@@ -137,7 +137,7 @@ def _gs_lines():
 
 def _gs_module():
     import importlib.util
-    spec = importlib.util.spec_from_file_location('q1_gs_loss', os.path.join(ROOT, 'example', 'v2_3', 'Q1_gs_loss_compare.py'))
+    spec = importlib.util.spec_from_file_location('q1_gs_loss', os.path.join(ROOT, 'example', '15_lma_touschek', 'lma', 'gs_loss_compare.py'))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -384,7 +384,7 @@ def test_lma_check_every_finer_checks_lower_the_limit(fodo_rf):
 
 
 def _table_case(name):
-    p = os.path.join(ROOT, 'example', 'v2_3', 'Q1_fmap_%s_v241.table.txt' % name)   # v2.4.1 の 4 次の合成 (B226) で再作成した表 (v2.3.0 の表は旧い 2 次の積分器)
+    p = os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'frequency_map', 'fmap_%s.table.txt' % name)   # v2.4.1 の 4 次の合成 (B226) で再作成した表 (v2.3.0 の表は旧い 2 次の積分器)
     if not os.path.exists(p):
         pytest.skip('例の表がない')
     return freqmap.FMapResult.load_table(p)
@@ -392,7 +392,7 @@ def _table_case(name):
 
 @pytest.mark.parametrize('name,path', [('astrid2', ASTRID), ('kekls', KEKLS)])
 def test_example_frequency_map_tables(name, path):
-    """例の表 (example/v2_3/Q1_fmap_*_v241.table.txt。41 × 31 の格子、1024 周、RFSW・RAD OFF): (1) 表の読み込み、(2) 拡散 D が大きい点は、次数 4 以下の共鳴線 (距離 < 0.003) の近くに、
+    """例の表 (example/14_nonlinear_dynamics/frequency_map/fmap_*.table.txt。41 × 31 の格子、1024 周、RFSW・RAD OFF): (1) 表の読み込み、(2) 拡散 D が大きい点は、次数 4 以下の共鳴線 (距離 < 0.003) の近くに、
     遠くより 1.5 倍以上多い (D > −5 の割合)、(3) 表の 4 点を、同じ条件で追跡し直すと tune・D が 1e-8 以内で再現する"""
     if not os.path.exists(path):
         pytest.skip('ラティスがない')
@@ -420,7 +420,7 @@ def test_example_lma_tables_are_consistent():
     """例の LMA の表: ASTRID2 (check_every=1、±10 mm) は δ+ の最大が RF バケットの高さの ±3% 以内、δ± は線形の見積もり以下 (×1.05)、
     大きなリング A (check_every=5) は RF バケットで決まる (δ+ の最大が バケット高さの 1.0〜1.03 倍)"""
     for name, kind in (('astrid2', 'a'), ('kekls', 'k')):
-        p = os.path.join(ROOT, 'example', 'v2_3', 'Q1_lma_%s.table.txt' % name)
+        p = os.path.join(ROOT, 'example', '15_lma_touschek', 'lma', 'lma_%s.table.txt' % name)
         if not os.path.exists(p):
             pytest.skip('例の表がない')
         cond = {}

@@ -18,8 +18,8 @@ from pysad.elements import Bend
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
-sys.path.insert(0, os.path.join(ROOT, 'example', 'v2_4'))
-import G_k0_ampnf as G  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'normal_form'))
+import k0_ampnf as G  # noqa: E402
 
 OPT = G.OPT
 CASES = {'steer': dict(L=0.3, K0=0.06), 'steer_edge': dict(L=0.3, K0=0.06, E1=0.1, E2=-0.05),
@@ -90,9 +90,9 @@ def test_unsupported_k0_bends_raise():
 @pytest.mark.parametrize('kw', [dict(L=0.3, K0=0.06, K1=0.1), dict(L=0.3, K0=-0.12, K1=0.1), dict(L=0.5, K0=0.03, K1=0.4)])
 def test_straight_k0_k1_magnet_equals_independent_flow(kw):
     """ANGLE = 0 で K1≠0 かつ K0≠0 の直線の磁石 (K64 の tmulti。gs は SIGSEGV で基準なし): 厳密な Hamiltonian の対称な 4 次の分割の TPSA (`_straight_k1_core`、Lee–Whiting の四極のフリンジと
-    双極子の Maxwell の端つき) が、独立な運動方程式の積分 (四極 + 双極子の Maxwell を満たす場、端の幅 w、`G_independent_flow.lorentz_straight_k1`) と w に比例以上で収束する
+    双極子の Maxwell の端つき) が、独立な運動方程式の積分 (四極 + 双極子の Maxwell を満たす場、端の幅 w、`k0_independent_flow.lorentz_straight_k1`) と w に比例以上で収束する
     (w = 4e-3 → 1e-3 で 1.6e-7 → 1e-8 以下)。pysad の tmulti の追跡は 4e-7〜1.6e-5 外れる (積分器の精度。K0 = −0.12 の極で最大)"""
-    import G_independent_flow as F
+    import k0_independent_flow as F
     tab = A.get_tab(5, 5)
     sd, s = 1e-2, 1e-3
     rng = np.random.default_rng(3)
@@ -112,7 +112,7 @@ def test_straight_k0_k1_magnet_equals_independent_flow(kw):
 def test_curved_k1_body_equals_independent_planar_flow(kd):
     """K1≠0 の曲がった磁石 (tbendi の積分器。K0≠0 を含む) の本体 (水平面 y = 0、E = 0、DISFRIN = 1 でフリンジなし) が、独立な運動方程式の積分 (曲率中心のまわりの軸対称な場
     B_Y(r) = b0 + K1 ρ0 ln(r/ρ0) ('log' = K64 の暗黙の K1 の定義) または b0 + K1 (r − ρ0) ('lin' = v2 のオプション)) と 1e-9 以内。垂直方向 (Maxwell の端・K1 の場の y の依存) は未確認"""
-    import G_independent_flow as F
+    import k0_independent_flow as F
     old = compat.mode()
     compat.set_mode('v2')
     compat.set_bend_k1_def(kd)
@@ -272,8 +272,8 @@ def test_ring_with_k1_shift_f1_matches_tracking(name, kw):
 
 def test_zero_field_bend_is_free_flight_limit():
     """ANGLE + K0 = 0 (場が 0 の曲がった幾何の磁石): K64 の式は phib = 0 で割る (追跡は NaN) ので phib → 0 の極限 (1e-9 ANGLE) で入れる。
-    独立な基準 = 場が 0 の自由な直進 (実験室の直線を、入口の面から出口の座標系へ。`G_independent_flow.lorentz_map` の b = 0) と 3e-8 以内 (E1・E2 あり・なし、δ = 0・2e-3)"""
-    import G_independent_flow as F
+    独立な基準 = 場が 0 の自由な直進 (実験室の直線を、入口の面から出口の座標系へ。`k0_independent_flow.lorentz_map` の b = 0) と 3e-8 以内 (E1・E2 あり・なし、δ = 0・2e-3)"""
+    import k0_independent_flow as F
     tab = A.get_tab(5, 5)
     sd, s = 1e-2, 1e-3
     rng = np.random.default_rng(1)
@@ -292,9 +292,9 @@ def test_zero_field_bend_is_free_flight_limit():
                                      ('steer', dict(L=0.3, K0=0.06)), ('reverse', dict(L=0.5, ANGLE=-0.1, K0=0.05, E1=0.04, E2=0.03))])
 def test_k64_formula_equals_independent_equations_of_motion(name, kw):
     """K64 の追跡の式 (tbendcore1・k_steer。v2 モード) が、K64 の式を使わない独立な基準 (実験室の直交座標での荷電粒子の運動方程式の数値積分。端の幅 w の
-    Maxwell を満たす場、`example/v2_4/G_independent_flow.py`) と: 水平面 (y = 0、w = 2e-5) で 1e-11 以内 (楔・曲がる軌道の厳密な幾何)、4 次元 (Maxwell の項を含む) の差が w = 2e-3 → 1e-3 でほぼ半分になり
+    Maxwell を満たす場、`example/14_nonlinear_dynamics/normal_form/k0_independent_flow.py`) と: 水平面 (y = 0、w = 2e-5) で 1e-11 以内 (楔・曲がる軌道の厳密な幾何)、4 次元 (Maxwell の項を含む) の差が w = 2e-3 → 1e-3 でほぼ半分になり
     (w に比例して 0 に向かう = 硬い端の極限で一致)、w = 1e-3 で 1e-7 以下"""
-    import G_independent_flow as F
+    import k0_independent_flow as F
     old = compat.mode()
     compat.set_mode('v2')
     try:
@@ -320,7 +320,7 @@ def test_independent_flow_on_steer_wedge_k64_vs_v2():
     """独立な運動方程式の積分が見つけた K64 の ANGLE=0 の磁石 (tsteer) の端の近似: (1) k64 モードは出口の楔 E2 を入れない (B140、fb2 = 0 のとき)。入れない写像は E2 = −0.05 で
     9e-5 外れる (面の符号は v2 の線形の項で決めた sig = (−1, 1))。(2) v2 の `tsteer` は、以前は楔を薄い蹴り x tan(E)/ρ (線形) だけで入れ 3e-7 外れていたが、B221 (放射担当) が端の面を
     CALC と同じ厳密な硬い端の鎖にしたので、独立な基準と 1e-11 以内で一致する (K0 = 0.06 rad・E1 = 0.1・E2 = −0.05・L = 0.3 m。水平面、w = 2e-5)"""
-    import G_independent_flow as F
+    import k0_independent_flow as F
     el = _mk(dict(L=0.3, K0=0.06, E1=0.1, E2=-0.05))
     out = {}
     for mode in ('k64', 'v2'):
@@ -447,12 +447,12 @@ def test_astrid2_delta_difference_is_bend_slicing():
     ('k1_edge_face', dict(L=0.5, ANGLE=0.1, K0=-0.02, K1=0.4, E1=0.04, E2=0.03), 'face', True),
     ('k1_edge_radial', dict(L=0.5, ANGLE=0.1, K0=-0.02, K1=0.4, E1=0.04, E2=0.03), 'radial', False)])
 def test_curved_k1_with_edges_equals_independent_flow(name, kw, edge, tight):
-    """K1≠0 の曲がった磁石 (K0≠0・E1・E2 を含む) の全 4 次元・端つきの独立な基準 (`G_independent_flow.lorentz_curved_k1`: 曲率中心のまわりの軸対称な中心面の場 b(r) ('log') に面の関数 G を掛け、
+    """K1≠0 の曲がった磁石 (K0≠0・E1・E2 を含む) の全 4 次元・端つきの独立な基準 (`k0_independent_flow.lorentz_curved_k1`: 曲率中心のまわりの軸対称な中心面の場 b(r) ('log') に面の関数 G を掛け、
     多極 (調和) 展開の端 = Lee–Whiting の前提の x³ ΔG の項を足し、Maxwell を満たす Y³ までの場。端の幅 w)。追跡 (tbendi の積分器 + Lee–Whiting + Maxwell の端 + 楔) が
     w に対して w² で 0 に向かう (w = 2e-3 → 1e-3 で減り (E なしは 4 倍、E ありの face は 1.5 倍で 2.6e-8 に近づく)、1e-3 で 5e-8 以下): E なし (K0 = 0・K0 = 0.03)、E1 = 0.04・E2 = 0.03 は v2 の 'face' (四極の場も端面から始まる模型 = 独立な基準と同じ)。
     **K64 の既定の 'radial' (四極の場は動径方向の面から始まる) は、E≠0・K1≠0・K0≠0 で 3.5e-7 に止まる** (面の取り方の違い。K64 の模型の選択で、誤りとは言えない)"""
     import warnings
-    import G_independent_flow as F
+    import k0_independent_flow as F
     warnings.filterwarnings('ignore')
     old = compat.mode()
     compat.set_mode('v2')

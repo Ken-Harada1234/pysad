@@ -1,7 +1,0 @@
-&run_setup
-  lattice = T1_kekls_all.lte, use_beamline = RING, p_central_mev = 3000.000000, default_order = 3, rootname = tw, magnets = %s.mag,
-&end
-&run_control &end
-&twiss_output filename = %s.twi, radiation_integrals = 1, &end
-&bunched_beam n_particles_per_bunch = 1 &end
-&track &end

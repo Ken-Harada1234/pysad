@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>その他の要素 (COORD・TCAVI・UND・曲げつき MULT・MAP)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#0-対応表">0. 対応表</a></li>
+<li><a href="#1-coord-座標変換">1. COORD (座標変換)</a><ul>
+<li><a href="#使われる所">使われる所</a></li>
+<li><a href="#検証">検証</a></li>
+<li><a href="#限界">限界</a></li>
+</ul>
+</li>
+<li><a href="#2-tcavi-横偏向空洞クラブ空洞">2. TCAVI (横偏向空洞・クラブ空洞)</a><ul>
+<li><a href="#使われる所-1">使われる所</a></li>
+<li><a href="#検証-1">検証</a></li>
+<li><a href="#k64-の癖不具合">K64 の癖・不具合</a></li>
+<li><a href="#限界-1">限界</a></li>
+</ul>
+</li>
+<li><a href="#3-und-アンジュレータ">3. UND (アンジュレータ)</a><ul>
+<li><a href="#31-モードによる違い">3.1 モードによる違い</a></li>
+<li><a href="#32-使われる所">3.2 使われる所</a></li>
+<li><a href="#33-検証">3.3 検証</a></li>
+<li><a href="#34-使える範囲と条件-v2">3.4 使える範囲と条件 (v2)</a></li>
+<li><a href="#35-限界">3.5 限界</a></li>
+</ul>
+</li>
+<li><a href="#4-mult-angle0曲げつき多極">4. MULT (ANGLE≠0、曲げつき多極)</a><ul>
+<li><a href="#使われる所-2">使われる所</a></li>
+<li><a href="#検証-2">検証</a></li>
+<li><a href="#限界未確認">限界・未確認</a></li>
+</ul>
+</li>
+<li><a href="#5-map-externalmap">5. MAP (ExternalMap)</a><ul>
+<li><a href="#使われる所-3">使われる所</a></li>
+<li><a href="#検証-3">検証</a></li>
+<li><a href="#限界未確認-1">限界・未確認</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 19_other_elements.md</div>
+<h1 id="その他の要素-coordtcaviund曲げつき-multmap">その他の要素 (COORD・TCAVI・UND・曲げつき MULT・MAP)</h1>
+<p>この文書で分かること: 専用の文書を持たない 5 種類の要素 (座標変換 COORD、横偏向空洞 TCAVI、アンジュレータ UND、曲げつき多極 MULT (ANGLE≠0)、外部写像 MAP) が、pysad のどの計算 (追跡・光学・エミッタンス・幾何) でどう扱われ、何ができないか。
+前提: SAD の要素定義 (<code>要素名 = (キーワード=値 …);</code>、<a href="02_lattice_main.html">02_lattice_main.md</a>) と、追跡・光学の基本 (<a href="07_calc_optics.html">07_calc_optics.md</a>、<a href="10_tracking.html">10_tracking.md</a>、<a href="09_emittance.html">09_emittance.md</a>)。
+読む順: 下の対応表で要素を探し、該当の章を読む。各章は「定義 → 使われる所 → 検証 → 限界」の順。</p>
+<p>用語: <strong>K64</strong> は SAD のソース (Fortran、K. Oide ら)。<strong>gs</strong> は K64 から作った SAD の実行体。<strong>v2</strong> は pysad の既定動作、<strong>k64</strong> は <code>PYSAD_COMPAT=k64</code> で K64 の動作に合わせるモード (<a href="28_v2_vs_k64.html">28_v2_vs_k64.md</a>)。<strong>Emittance[]</strong> は放射減衰・量子励起を含む 6 次元のエミッタンス計算 (<a href="09_emittance.html">09_emittance.md</a>)。<strong>RFSW</strong> は RF の ON/OFF。<strong>COD</strong> は閉軌道。</p>
+<h2 id="0-対応表">0. 対応表</h2>
+<p>次の表は、各要素の K64 での元のルーチンと、pysad の実装ファイルを示す。</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+<th>K64 のルーチン</th>
+<th>pysad の実装</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>COORD</td>
+<td>座標の平行移動と回転</td>
+<td><code>tcoord.f</code> (追跡)、<code>tcoorde.f</code>・<code>qcoord.f</code> (6 次元の写像と行列)</td>
+<td><a href="../pysad/coord.py"><code>pysad/coord.py</code></a></td>
+</tr>
+<tr>
+<td>TCAVI</td>
+<td>横偏向空洞 (クラブ空洞)</td>
+<td><code>ttcav.f</code> (追跡)、<code>ttcave.f</code> (6 次元の写像と行列)</td>
+<td><a href="../pysad/tcav.py"><code>pysad/tcav.py</code></a></td>
+</tr>
+<tr>
+<td>UND</td>
+<td>アンジュレータ</td>
+<td><code>undulator.f</code> (K. Ohmi と E. Forest、KEK Report 92-14)</td>
+<td><a href="../pysad/und.py"><code>pysad/und.py</code></a></td>
+</tr>
+<tr>
+<td>MULT (ANGLE≠0)</td>
+<td>曲げの上に多極をのせる</td>
+<td><code>tmulta.f</code> (追跡 <code>tmulta</code>、Twiss・Emittance[] の <code>tmultae</code>)</td>
+<td><a href="../pysad/multa.py"><code>pysad/multa.py</code></a> (追跡)、<a href="../pysad/multae.py"><code>pysad/multae.py</code></a> (COD 写像と行列)</td>
+</tr>
+<tr>
+<td>MAP</td>
+<td>ユーザーが SADScript で与える写像</td>
+<td><code>temap.f</code> (追跡 <code>temap</code>、Emittance[] <code>temape</code>、Twiss <code>qemap</code>、幾何 <code>tgmap</code>)</td>
+<td><a href="../pysad/elements.py"><code>pysad/elements.py</code></a> の <code>Map</code>、<code>ffscmd._install_map_hooks</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="1-coord-座標変換">1. COORD (座標変換)</h2>
+<p>K64 の <code>tcoord.f</code> (追跡)、<code>tcoorde.f</code> / <code>qcoord.f</code> (6 次元の写像と行列)。幾何 (<code>LINE["GX"]</code> など) は <code>geo.py</code> (<code>tfgeo1</code> の icCOORD)。</p>
+<pre><code>COORD CO = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03 DIR=0);
+</code></pre>
+<ul>
+<li>DIR=0 (既定): 入口で DX DY DZ だけずらして (位置の変換は 1 を引く向き) から CHI1・CHI2・CHI3 で回す。DIR≠0: 逆変換 (回して、出口で戻す)。</li>
+<li>DX DY DZ は誤差の属性ではなく変換のパラメータ。pysad は <code>Coord.params</code> に置き、ずれ・回転の誤差のコードに混ざらないようにしている (BEAMBEAM も同じ)。</li>
+</ul>
+<h3 id="使われる所">使われる所</h3>
+<p>次の表は、COORD がどの計算のどの実装で扱われるかを示す。</p>
+<table>
+<thead>
+<tr>
+<th>計算</th>
+<th>実装</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>追跡 (TrackParticles)</td>
+<td><code>track6n</code> の <code>K_COORD</code> (<code>coord.k_coord</code>)。<code>tturn</code> の icCOORD は <code>exit</code> なので、tapert までの要素数 (la) を減らさない</td>
+</tr>
+<tr>
+<td>Twiss (CALC、INS、CELL)</td>
+<td><code>lattice._el_cod_step</code> の Coord (qcoord → tcoorde の COD 写像と解析行列)。COD が設計軌道上でも動く</td>
+</tr>
+<tr>
+<td>Emittance[]、CALC6D、Touschek</td>
+<td><code>emit6d._tcoord</code> (<code>piece</code>、z 行のシンプレクティック組み直しなし)</td>
+</tr>
+<tr>
+<td>幾何</td>
+<td><code>geo._coord</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="検証">検証</h3>
+<p>K64 (gs) と一致する (追跡は相対 0、Twiss と幾何は 1e-11 以下、Emittance[] は 5e-10 以下)。<a href="../pysad/tests/test_coord_elem.py"><code>pysad/tests/test_coord_elem.py</code></a> 12 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<h3 id="限界">限界</h3>
+<ul>
+<li>track6 (低速追跡) は COORD を扱わない (NotImplementedError)。</li>
+<li>COORD を含むリングでの FIT (解析微分の経路) は gs と全桁一致を確認した (2026-11-16: COORD の対を含むリングで NX・NY=0.2、QF K1・QD K1 を FREE)。COORD のパラメータそのものを FIT 変数にする場合は未確認 (数値微分にもならない可能性がある)。</li>
+<li>TrackParticles の <code>dv</code> は COORD で更新されない (<code>tcoord.f</code> のまま)。</li>
+</ul>
+<h2 id="2-tcavi-横偏向空洞クラブ空洞">2. TCAVI (横偏向空洞・クラブ空洞)</h2>
+<p>K64 の <code>ttcav.f</code> (追跡)、<code>ttcave.f</code> (6 次元の写像と行列)。</p>
+<pre><code>TCAVI TC = (L=0.4 K0=1e-4 FREQ=4.5e8 PHI=0.1 DX=2e-4 DY=-1e-4 ROTATE=0.05);
+</code></pre>
+<p>次の表は TCAVI の主なキーワード。</p>
+<table>
+<thead>
+<tr>
+<th>キーワード</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K0</td>
+<td>偏向の強さ (ak、kick = ak sin(位相))</td>
+</tr>
+<tr>
+<td>FREQ / HARM</td>
+<td>RF の周波数。HARM≠0 は ω0·HARM/c。HARM の小数部は周回ごとに位相をずらす (追跡)</td>
+</tr>
+<tr>
+<td>PHI</td>
+<td>位相 (電荷の符号を掛ける)</td>
+</tr>
+<tr>
+<td>DX DY ROTATE</td>
+<td>ずれと回転 (入口と出口の TENT/TEXIT)</td>
+</tr>
+<tr>
+<td>RAD</td>
+<td>0 (既定) で放射する (追跡は RAD と FLUC の両方が要る)</td>
+</tr>
+<tr>
+<td>RANKICK RANPHASE</td>
+<td>乱数の揺らぎ (tgauss)。<strong>追跡は未対応</strong> (NotImplementedError)</td>
+</tr>
+</tbody>
+</table>
+<p>RFSW OFF (CALC の既定) では長さ L のドリフト (tturn、ttcave とも)。</p>
+<h3 id="使われる所-1">使われる所</h3>
+<table>
+<thead>
+<tr>
+<th>計算</th>
+<th>実装</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>追跡</td>
+<td><code>track6n</code> の <code>K_TCAV</code> (<code>tcav.apply_tcav</code>)。TENT/TEXIT の回転は K64 の式の順 (更新した x を使う) のまま</td>
+</tr>
+<tr>
+<td>Emittance[]、CALC6D、Touschek</td>
+<td><code>emit6d._ttcave</code> (tchge → [tsetr0] → 半ドリフト → キック (解析行列) → 半ドリフト [tradke] → tchge)</td>
+</tr>
+<tr>
+<td>Twiss (CALC)</td>
+<td>RFSW OFF はドリフト。<strong>RFSW ON の CALC は未対応</strong> (NotImplementedError。Twiss が momentum を持たないため)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="検証-1">検証</h3>
+<p>追跡・Emittance[] とも K64 (gs) と一致する (追跡は相対 0。Emittance[] は L=0 でエミッタンス 1e-11)。追跡と 6 次元の写像が同じ写像であることも確認済み (1 粒子で 1e-19)。<a href="../pysad/tests/test_tcav.py"><code>pysad/tests/test_tcav.py</code></a> 8 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<h3 id="k64-の癖不具合">K64 の癖・不具合</h3>
+<ul>
+<li><strong>L≠0 の TCAVI を含むリングの Emittance[] は gs が壊れる</strong> (<a href="30_sad_bug_report.html">30_sad_bug_report.md</a> B36)。K0=0 でも EnergyLossU0 が NaN、縦のチューンが 0、エミッタンスが桁違い (K0=1e-6 で 1.3e-13 など) になる。ドリフトに置き換えると正常。<code>ttcave</code> の 2 番目のドリフトが <code>tdrife0</code> に放射の旗 <code>krad</code> を渡し、長さ 0 の放射 (alr=0) で <code>tradke</code> を呼ぶことが疑わしいが、RAD=1 でも NaN が出るので、原因は特定できていない。pysad は gs の NaN を再現せず、物理として自然な値を出す (ドリフトと同じ結果から K0 の効果が加わる)。L=0 は gs と一致する。</li>
+<li>追跡は RAD と FLUC の両方 (<code>rad .and. RAD_TCAV==0</code>) のときだけ放射する。Emittance[] は <code>RAD_TCAV==0</code> だけを見る (NORAD でも TCAVI は放射の旗が立つ)。pysad は Emittance[] の <code>enarad</code> に従う。</li>
+</ul>
+<h3 id="限界-1">限界</h3>
+<ul>
+<li>RANKICK・RANPHASE (追跡)。</li>
+<li>RFSW ON の Twiss (CALC、INS)。</li>
+<li>wake との併用、SOL 領域内の TCAVI (track6n の領域外の要素のみ対応) は確認していない。</li>
+</ul>
+<h2 id="3-und-アンジュレータ">3. UND (アンジュレータ)</h2>
+<p>K64 の <code>undulator.f</code> (K. Ohmi と E. Forest、KEK Report 92-14)。</p>
+<pre><code>UND U1 = (L=1 KX=0.1 QY=0.2 POLE=10 SLICE=4 PHI=30);              ! 磁場なし (k64 と v2 の両方で書ける)
+UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つき (v2 だけ)
+</code></pre>
+<h3 id="31-モードによる違い">3.1 モードによる違い</h3>
+<p><strong>K64 の UND は磁場を設定できない</strong> (<a href="30_sad_bug_report.html">30_sad_bug_report.md</a> B37): <code>initb1.f</code> は <code>kytbl(kwFBX,icUND)=ky_FBX_UND</code> と書くが、<code>kwFBX</code> は未定義の変数 (=0) で、<code>FBX</code> <code>FBY</code> <code>BX</code> <code>BY</code> はどれも "Undefined keyword" になる。そのため F0 = G0 = 0 で、undulator は磁場なしの (正準運動量の近似の) ドリフトを刻みごとに行う。
+さらに <code>undulator.f</code> は陰的な刻みの右辺に dpds を二重に掛けている (<a href="30_sad_bug_report.html">30_sad_bug_report.md</a> B78)。磁場があっても収束力が刻み幅に比例して消える (200 刻みと 2000 刻みで py が 10 倍違う)。</p>
+<p>次の表は k64 モードと v2 モードの UND の違い (v2 だけが磁場を受け、光学・放射にも効果が入る)。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>k64 モード (K64 と同じ)</th>
+<th>v2 モード (既定)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FBX</code>・<code>FBY</code></td>
+<td>NotImplementedError</td>
+<td>受ける (磁場つきの UND)</td>
+</tr>
+<tr>
+<td>追跡</td>
+<td>磁場なしのドリフト</td>
+<td>磁場つきのカーネル (<code>und.und_seg1</code>。dpds は 1 回だけ掛ける)</td>
+</tr>
+<tr>
+<td>Twiss・Emittance[]・CALC6D</td>
+<td>恒等 (長さは幾何にだけ入る)</td>
+<td>追跡の写像の数値微分が入る。<strong>磁場がなくても長さ L のドリフトとして光学に入る</strong> (追跡と揃えた。<code>SLICE=0</code> は恒等)</td>
+</tr>
+<tr>
+<td>放射 (RAD・FLUC)</td>
+<td>なし</td>
+<td>1 周期を 64 個以上に分けて <code>tradke</code>。RAD で放射する</td>
+</tr>
+</tbody>
+</table>
+<p>磁場なしの UND の追跡は両モードで同じ (gs と一致)。光学が違うのは「磁場なしで v2 はドリフト、k64 は恒等」の 1 点で、v2 のこの扱いは未決のまま (K64 の「光学では恒等」を仕様と見るなら、磁場つきのときだけにする選択もある)。</p>
+<table>
+<thead>
+<tr>
+<th>キーワード</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>L</td>
+<td>長さ</td>
+</tr>
+<tr>
+<td>FBX</td>
+<td>v2: 垂直磁場のピーク [T] (x 方向に蛇行)。軸上の By = (FBX·c/p) cos(kz s)</td>
+</tr>
+<tr>
+<td>FBY</td>
+<td>v2: 水平磁場のピーク [T]。Bx = (FBY·c/p) cos(kz s + PHI)</td>
+</tr>
+<tr>
+<td>KX、QY</td>
+<td>横方向の波数 (kx = KX、ky = √(kz²+KX²)、qy = QY、qx = √(kz²+QY²))</td>
+</tr>
+<tr>
+<td>PHI</td>
+<td>位相 [度]</td>
+</tr>
+<tr>
+<td>SLICE</td>
+<td>刻み数 (ds = L/SLICE)</td>
+</tr>
+<tr>
+<td>POLE</td>
+<td>極の数 (kz = 2π POLE / L)。0 だと kz=0 で NaN になる (K64 も同じ)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-使われる所">3.2 使われる所</h3>
+<table>
+<thead>
+<tr>
+<th>計算</th>
+<th>k64 モード</th>
+<th>v2 モード</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>追跡 (<code>TrackParticles</code>、MAIN の TRACK、DA。<code>track6n</code>)</td>
+<td><code>K_UND</code> (<code>und.k_und</code>)。入口・出口の TENT/TEXIT は dx=dy=θ=0 で何もしない</td>
+<td>磁場つきのカーネル</td>
+</tr>
+<tr>
+<td>Twiss・Emittance[]・EMIT・CALC6D・Touschek</td>
+<td>恒等 (K64 の <code>qtwiss</code>・<code>tturne</code> は <code>case default</code> で何もしない)</td>
+<td>追跡のカーネルの数値微分。放射は 1 周期を 64 個以上に分けた <code>tradke</code></td>
+</tr>
+<tr>
+<td>幾何</td>
+<td><code>geo</code> が <code>UND</code> の長さだけ直進</td>
+<td>同じ</td>
+</tr>
+<tr>
+<td>スピン追跡 (track6 の経路。POL + RAD)</td>
+<td>NotImplementedError</td>
+<td>刻みごとに [写像 → 放射とスピンの歳差]。縦磁場 Bs (軸外) と、周期の途中で終わる端のポテンシャルの飛び (薄い蹴り) の歳差も入る</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-検証">3.3 検証</h3>
+<ul>
+<li>k64 モードは gs と一致する (追跡は相対 0、INS の Twiss と幾何は 2e-10 以下)。<a href="../pysad/tests/test_und.py"><code>pysad/tests/test_und.py</code></a> 4 本。</li>
+<li>v2 モード (gs は磁場を設定できないので比べていない) は、平面アンジュレータの解析式 (軌道、行路長、垂直の収束、放射損失、リングでのチューン変化・U0・減衰率・量子励起) と 1e-3〜1e-7 で一致する (<a href="../pysad/tests/test_v2_C_und.py"><code>test_v2_C_und.py</code></a> 9 本)。スピンは Thomas-BMT の積分と 2e-6 で一致 (<a href="../pysad/tests/test_v2_C2_spin.py"><code>test_v2_C2_spin.py</code></a>)。個々の許容誤差は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</li>
+<li>例: <a href="../example/01_lattice_elements/elem_UND.sad"><code>example/01_lattice_elements/elem_UND.sad</code></a>。</li>
+</ul>
+<h3 id="34-使える範囲と条件-v2">3.4 使える範囲と条件 (v2)</h3>
+<ul>
+<li><code>SLICE</code> は <code>POLE</code> の 20 倍以上 (刻みは 1 次の陰的な蛙跳び。刻みが周期の整数倍だと sin(kz s) = 0 で磁場が見えない)。試験は 3 GeV (スピンは 1 GeV)、1 T・1.8 T、λ = 5 cm、20 周期。</li>
+<li>実機の大きなリング・挿入光源のあるリングでは確かめていない。</li>
+</ul>
+<h3 id="35-限界">3.5 限界</h3>
+<ul>
+<li>k64 モード: 磁場がないので、アンジュレータの放射・軌道への効果は計算されない (K64 と同じ)。</li>
+<li>v2 モード: <code>BX</code>・<code>BY</code> という名前は K64 にも無い (ValueError)。端の磁極の整形は無い (軌道は x' = −(F0/kz) sin(kz s) で、中心が −F0/kz² ずれる)。PHI≠0 の入口では正準運動量をそのままつなぐので、ベクトルポテンシャルの飛びが蹴りになる (K64 の式のまま)。</li>
+<li>track6 (低速追跡) は、k64 モードでは UND を扱わない。v2 では POL + RAD のスピン追跡の経路で扱う。</li>
+</ul>
+<h2 id="4-mult-angle0曲げつき多極">4. MULT (ANGLE≠0、曲げつき多極)</h2>
+<p>K64 の <code>tmulta.f</code> (追跡 <code>tmulta</code>、Twiss・Emittance[] の <code>tmultae</code>)。</p>
+<pre><code>MULT M1 = (L=1 ANGLE=0.05 K1=0.1 K2=0.5 E1=0.5 E2=0.5);
+</code></pre>
+<p>曲げ磁石 (ANGLE) の上に、K0 (双極の過不足)、K1、K2 … と SK0 … (スキュー) の多極をのせる要素。<code>ndiv</code> 個のスライスに割り、
+「半スライスの曲げ → 曲率つきの多極キック → 全スライスの曲げ → キック → … → 半スライスの曲げ」の順に進む。
+曲げは BEND と同じ <code>tbend</code> (K1=0 は tbendcore、K1≠0 は tbendi) をスライスの引数で呼ぶ。キックは <code>gkn</code> の表 (<code>gkninit</code>) を使う解析式。</p>
+<h3 id="使われる所-2">使われる所</h3>
+<table>
+<thead>
+<tr>
+<th>計算</th>
+<th>扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>追跡 (track6n)</td>
+<td><code>K_MULTA</code> (<code>multa.k_multa</code>)。放射 (RAD)、揺らぎ (FLUC)、TRPT の ndivrad ×10 も BEND と同じ</td>
+</tr>
+<tr>
+<td>Twiss (CALC)</td>
+<td><code>lattice._el_cod_step</code> → <code>multae.lattice_step</code>。COD 写像は解析、行列は各段の解析行列の積</td>
+</tr>
+<tr>
+<td>Emittance[]・CALC6D・Touschek</td>
+<td><code>emit6d._tmulte</code> → <code>multae.emit</code> (誤差なしの BEND の <code>_tbende_core</code> を段ごとに呼ぶ)</td>
+</tr>
+<tr>
+<td>幾何</td>
+<td>BEND と同じ (ANGLE を使う)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="検証-2">検証</h3>
+<p>追跡 (K1・K0・スキュー・E1 E2・フリンジ・ずれ・放射・大角度など 11 通り) は gs と相対 0、Twiss はチューン 1e-15・β α 1e-13、Emittance[] (12 セルのリング) は ε 1e-11・チューン 1e-13 で一致する。<a href="../pysad/tests/test_mult_angle.py"><code>pysad/tests/test_mult_angle.py</code></a> 21 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<h3 id="限界未確認">限界・未確認</h3>
+<ul>
+<li>未対応 (NotImplementedError): BZ≠0 (K64 自体が abort)、VOLT (RF)、F1、TAPER、スキュー双極 SK0 (K64 の ndiv 計算が <code>fact(-1)</code> を読む。結果が定まらない)、L=0。</li>
+<li>追跡の光子 (PHOTONS) は未対応 (ffscmd が SADError で拒否)。偏極 (CALPOL・POL) のスピンは、ANGLE=0 の MULT は <a href="16_spin_pol.html">16_spin_pol.md</a> のとおり gs と一致し、ANGLE≠0 の MULT (<code>tmultae</code>) も gs と一致した (2026-11-16: 偏極時間 14 桁、スピンチューン 1e-14。平面リングなので偏極ベクトルは 0,1,0 で、縦成分のある偏極ベクトルは確かめていない。TrackParticles のスピン追跡での ANGLE≠0 の MULT は未確認)。</li>
+<li>Twiss・Emittance[] で FB1/FB2 (tblfre) と CHI2 は未対応 (NotImplementedError)。追跡は対応。</li>
+<li>DROTATE≠0 の Emittance[] は ε で 5e-6 ずれる (チューン 1e-9)。追跡は一致。tchge の DROTATE の行列が数値微分のため (BEND と同じ)。</li>
+<li>K0 + DX DY + ROTATE を同時に与えたリングの Emittance[] は gs と一致しない (δ の閉軌道が 4e-3 と 5e-4 に分かれる)。水平チューンが 1e-3 で整数に近く、閉軌道の探索が不安定なためとみて追っていない。2 つずつの組み合わせはすべて一致する。</li>
+<li>tmultae の tradke は m ループの中にあり 22 回/スライス呼ばれる。結果に影響しない (1 回でも同じ) が、そのまま写してある (<code>multae.TRADKE_CALLS</code>)。</li>
+<li>追跡と tmultae は K64 の書き方どおり違う: tmultae は ndiv に放射の項がなく、キックを (1+δ) で割らない。</li>
+</ul>
+<h2 id="5-map-externalmap">5. MAP (ExternalMap)</h2>
+<p>K64 の <code>temap.f</code> (追跡 <code>temap</code>、Emittance[] <code>temape</code>、Twiss <code>qemap</code>、幾何 <code>tgmap</code>)。</p>
+<pre><code>MAP P1 = (L=0.5);
+ExternalMap[&quot;TRACK&quot;, LINE[&quot;POSITION&quot;,&quot;P1&quot;], nt_, x_] := (...);
+ExternalMap[&quot;EMIT&quot;,  LINE[&quot;POSITION&quot;,&quot;P1&quot;], cod_]    := {cod1, trans [, dtrans, dbeam]};
+ExternalMap[&quot;OPTICS&quot;, LINE[&quot;POSITION&quot;,&quot;P1&quot;], cod_]   := {cod1, trans};
+</code></pre>
+<p>MAP はユーザーが SADScript の関数 <code>ExternalMap</code> で写像を与える要素。<strong>定義がなければ恒等で、長さも 0</strong> (<code>L</code> は K64 では使われない。<code>tgmap</code> の既定は <code>pos(l+1)=pos(l)</code>)。
+MAP を長さ L のドリフトにすると周長が L だけ増えるので、pysad は長さ 0 にしている。</p>
+<h3 id="使われる所-3">使われる所</h3>
+<table>
+<thead>
+<tr>
+<th>計算</th>
+<th>呼び出し</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TrackParticles</td>
+<td><code>ExternalMap["TRACK", l, nt, x]</code>。x は (7, 粒子数): x, px(1+δ), y, py(1+δ), z, δ, 生存フラグ (番号順)</td>
+<td><code>track6n.K_MAP</code> → <code>ffscmd._map_track</code></td>
+</tr>
+<tr>
+<td>CALC・INS (Twiss、閉軌道)</td>
+<td><code>ExternalMap["OPTICS", l, cod]</code> → <code>{cod1, trans}</code></td>
+<td><code>lattice._map_step</code> (<code>_el_cod_step</code>、<code>Map.transfer_matrix</code>)</td>
+</tr>
+<tr>
+<td>Emittance[]・EMIT</td>
+<td><code>ExternalMap["EMIT", l, cod]</code> → <code>{cod1, trans}</code> か <code>{cod1, trans, dtrans, dbeam}</code></td>
+<td><code>emit6d._tmap</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>TRACK: 同じ形のリストが返れば座標を置き換える。返らなければ何もしない。フラグ 0 の粒子は落とす。<strong>落ちている粒子もフラグ≠0 なら生き返る</strong> (K64 の <code>doinject</code>。ヘルプには「復活できない」とあるが、コードは生き返らせる。gs で確認)。</li>
+<li>EMIT の 4 つ組: <code>T ← trans·T</code>、<code>D ← trans·D</code>、<code>B ← (trans+dtrans) B (trans+dtrans)ᵀ + dbeam (上三角)</code>、<code>D += dtrans (T+D)</code> (temape.f の順)。2 つ組: <code>T, D, B</code> に <code>trans</code>。</li>
+<li><strong>軌道 <code>cod1</code> はユーザーが返す。<code>trans</code> から作らない。</strong> <code>cod1</code> と <code>trans</code> が食い違うと (例: <code>cod+kick</code> に結合のある <code>trans</code>) K64 の閉軌道は物理的でない値で止まる。pysad は固定点を求めるので別の値になる。試験は <code>cod1 = trans.cod + kick</code> で作った。</li>
+</ul>
+<h3 id="検証-3">検証</h3>
+<p>CALC (OPTICS)、Emittance[] (EMIT、4 つ組も)、TrackParticles (TRPT、座標の書き換え・フラグ 0 での落下・復活を含む) とも gs と一致する (チューン 1e-14、エミッタンス 1e-11、追跡 10 桁)。既定 (ExternalMap なし) は恒等で、S は MAP の L を数えない (gs と同じ)。<a href="../pysad/tests/test_map.py"><code>pysad/tests/test_map.py</code></a> 5 本。詳細は <a href="history/19_other_elements_validation.md">history/19_other_elements_validation.md</a>。</p>
+<h3 id="限界未確認-1">限界・未確認</h3>
+<ul>
+<li><code>ExternalMap["GEO", l, geo, pos]</code> (幾何) は未対応 (MAP は直進、長さ 0)。<code>CompiledMap</code> (Fortran の動的コンパイル) も未対応。</li>
+<li>TRACK は TrackParticles (<code>TrackRun</code>) だけ。MAIN の <code>TRACK</code> 文・<code>track6.py</code> へのフォールバック・DAPERT・Touschek の経路は MAP を恒等として通す (ExternalMap を呼ばない)。</li>
+<li>最初からフラグ 0 で渡した粒子の復活は未対応 (SADError)。</li>
+<li>ExternalMap が返す形が違うときのメッセージは近い文面にしたが、gs の文面とは同一でない。</li>
+<li>CALC4D では trans の 4×5 だけが効く (ヘルプ) が、pysad は 6×6 をそのまま使う (z の行は 4D の結果に影響しないので差は出ないはず。未確認)。</li>
+<li>Emittance[] の Orbit・Matrix 規則 (<code>emit_extra</code>) は <code>Map</code> を通す (<code>_tmap</code> を入れた) が、gs との照合は基本の規則だけ。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

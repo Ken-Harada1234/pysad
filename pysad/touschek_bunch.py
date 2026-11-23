@@ -8,22 +8,22 @@ touschek_piwinski (Piwinski 型。K64・elegant も同じ) は δ_c = 0 (kick �
 (2 つのガウス変数の和と差は独立)。したがって 1 スライスの損失率は
   R_bunch = E_{δc}[ R_+(a+ − δ_c) + R_−(a− + δ_c) ]   (R_±: 片側の受容の J(2β a) の項)
 で、a ≫ σδ では R(a − δ_c) ≈ R(a)(1 + n(n+1)/4 σδ²/a²) (R ∝ a^−n、n ≈ 2〜3)。δ_c の 1 次は ± で消える。a − δ_c の下限は floor × a (既定 0.25)。
-【検証】 `example/v2_4/A3_mc_bunch.py`: 実験室系の 2 粒子の対のモンテカルロ (厳密な相対論の運動学、T2_mc と同じ。同じ標本で判定だけ変える)。
+【検証】 `example/15_lma_touschek/touschek_elegant/touschek_bunch_mc.py`: 実験室系の 2 粒子の対のモンテカルロ (厳密な相対論の運動学、`touschek_formula_mc.py` と同じ。同じ標本で判定だけ変える)。
  δ_c の効果だけを取り出した比 (絶対値の判定 / δ_c を基準にした kick の判定 − 1) が、理論 (この式) と 2% 以内で一致する:
  ASTRID2 (a/σδ = 9.1・13.7) MC +2.84・+1.32% (±0.3%) に理論 +2.70・+1.28%、KEK-LS (a/σδ = 8.0・13.3) MC +4.38・+1.75% に理論 +4.32・+1.78%。
 【入れていない効果 (限界)】
  (1) **相対運動量の縦成分 q_s の効果** (v2.4.0 A10 で `qs_ratio`・`touschek_piwinski_bunch(qs=True)` に入れた。既定は入れない): 通常の kick の判定 (δ_new − 元の自分の δ。K64・elegant・touschek_piwinski が同じ) は、
   δ_c を基準にした判定より損失率が小さい (MC: ASTRID2 で −2.0%、KEK-LS で −0.5%。相対運動量の δ 成分を 0 にすると 0)。この分、絶対値の判定の損失率は δ_c の効果より大きく増える
   (MC の全体の増え: ASTRID2 a/σδ = 9.1 で +4.8%、13.7 で +2.2%、KEK-LS 8.0 で +4.5%、13.3 で +1.8%。δ_c の効果だけの理論は ASTRID2 で +2.6%・+1.3%、KEK-LS で +4.0%・+1.6%)。
-  q_s の効果は位置を固定したときの相対 δ の分散 (分散関数との相関) に依る。`qs_ratio` は 3 次元の積分 (T2_check3d の g = n'_s − û_s を、絶対値の判定の g = n'_s に変え、δ_c の平均をとる) で、
+  q_s の効果は位置を固定したときの相対 δ の分散 (分散関数との相関) に依る。`qs_ratio` は 3 次元の積分 (touschek_formula_check3d の g = n'_s − û_s を、絶対値の判定の g = n'_s に変え、δ_c の平均をとる) で、
   絶対値 / kick の損失率の比を出す: ASTRID2 で +4.81・+2.22% (MC +4.84・+2.22%、スライス 3 つ・a 2 つで 0.1% 以内)。1 スライスに数秒かかるので、`touschek_piwinski_bunch(qs=True)` は
   12 スライスで求めて補正の係数 (3D の比 / δ_c だけの 1 次元の比) をスライスの順番で補間する。
  (2) a − δ_c が 0 に近い粒子は、小角散乱 (Rutherford の 1/K² の発散) で拡散と区別できない (IBS・量子励起の境界の問題)。a − δ_c の下限 floor × a で打ち切る。a ≳ 5σδ では打ち切りへの依存は
-  無視できる (δ_c が 0.75a を超える確率 < 1e-8。floor 0.1・0.5 で結果が同じ: A3_mc_bunch の出力)。a ≲ 3σδ では使わない (警告)。
+  無視できる (δ_c が 0.75a を超える確率 < 1e-8。floor 0.1・0.5 で結果が同じ: touschek_bunch_mc の出力)。a ≲ 3σδ では使わない (警告)。
  (3) δ の分布はガウス (シンクロトロン振動の位相の一様分布 + 放射減衰・量子励起の定常分布)。σδ はスライスの実験室系の共分散 (IBS・バンチ長の伸びを含む) から取る。
  (4) 散乱後の粒子の横方向 (ベータトロンの) 振幅の跳び (η Δ) による横方向の受容 (nx, ny) の効果は入れない (LMA の定義と同じ)。受容は位置ごとの LMA δ±(s) (シンクロトロン位相に依らない値)。
  (5) elegant の touschekLifetime には δ の分布を入れる機能が無い (Piwinski の式のまま) ので、elegant との比較は既定の δ_c = 0 の値で行う (T1・T2)。
-【T2 の概算との関係】 T2_limits.py の C は元の δ の分散を σδ² としていた (δ_c の σδ²/2 と q_s の効果を一緒にした上限に近い値。ASTRID2 では MC の全体と同程度、KEK-LS では 2 倍近く過大)。
+【`touschek_formula_limits.py` の概算との関係】 そのスクリプトの C は元の δ の分散を σδ² としていた (δ_c の σδ²/2 と q_s の効果を一緒にした上限に近い値。ASTRID2 では MC の全体と同程度、KEK-LS では 2 倍近く過大)。
 """
 import math
 import numpy as np
@@ -139,7 +139,7 @@ def _Kth(th):
 
 def _what(t, ca, absmode):
     """半球 (θ < π/2、û のまわり) の ∫ K(θ) [I(g > t) + I(g < −t)] dΩ'。g = n'_s − û_s (kick の判定、absmode=False)、または g = n'_s (絶対値の判定、True)。
-    ca = û_s、t = 2β a/k (配列)。T2_check3d.What の一般化"""
+    ca = û_s、t = 2β a/k (配列)。touschek_formula_check3d.What の一般化"""
     t = np.asarray(t, float)
     ca = np.asarray(ca, float)
     sa = np.sqrt(np.maximum(1 - ca ** 2, 0))

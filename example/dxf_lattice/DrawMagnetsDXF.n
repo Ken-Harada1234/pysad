@@ -28,7 +28,7 @@
 !     Parts->"body"     Mode->"3D" のときだけ。"body" (既定: 磁石 1 台 = 6 面体 1 個) か "split" (偏向磁石と四極をヨークとポールに分ける。
 !                       ポールはレイヤー POLE (色 9)。偏向磁石: 上下のヨークの板・側脚・上下のポール。四極: 枠 4 本・ポール 4 個 (模式図)。
 !                       Spec・MagnetSpec の Gap・PoleHeight・LegWidth (偏向磁石)、Aperture・LegWidth・PoleWidth (四極) で寸法を与える。
-!                       無ければ既定の割合 (docs/51 §2d)。入らない寸法は画面にメッセージを出して body で描く (Python 関数は ValueError))
+!                       無ければ既定の割合 (docs/22 §5)。入らない寸法は画面にメッセージを出して body で描く (Python 関数は ValueError))
 !   レイヤーと色: BEND 1, QUAD 5, SEXT 3, OCT 6, MULT 30, SOL 4, CAVI 2, MARK 8, TRAJECTORY 7, TEXT 7 (Parts->"split" のときだけ POLE 9)
 !   SOL は長さ 0 の境界なので、BZ≠0 の SOL から次の SOL までをソレノイド領域の矩形 (レイヤー SOL) にする。
 !   局所座標 (u, v) = (入口の進行方向, 左) を入口の GEO (gx, gy, chi1) で実験室の (X, Y) に写す。

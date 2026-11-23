@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>周波数マップの共鳴線の予想 (3 次 + 4 次 + 非共鳴の補正) と判別力の評価</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#結果-d--5-を正例解析の-νj補正つき--3-次--4-次--非共鳴の補正">結果 (D &gt; −5 を正例、解析の ν(J)、補正つき = 3 次 + 4 次 + 非共鳴の補正)</a></li>
+<li><a href="#コマンド">コマンド</a></li>
+<li><a href="#使えない範囲未確認">使えない範囲・未確認</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fmap_resonance_lines.md</div>
+<h1 id="周波数マップの共鳴線の予想-3-次--4-次--非共鳴の補正-と判別力の評価">周波数マップの共鳴線の予想 (3 次 + 4 次 + 非共鳴の補正) と判別力の評価</h1>
+<p>台本ごとの式・表・原因は <code>FMAP_summary.md</code> §13、導出は <code>docs/25</code> §12、試験は <code>pysad/tests/test_v23_S3_fmappred.py</code> (12 件)、コードは <code>pysad/fmappred.py</code> (<code>ResonancePredictorS3</code>・評価の関数)と <code>pysad/fmapres.py</code> (<code>from_lattice(model='s3')</code>)。
+ラティス: FODO (<code>example/00_lattice/FODO_ring.sad</code>、QF の K1 = 0.697・SF・SD の K2 = 4, −6、3 GeV、105.6 m)、ASTRID2 (<code>example/astrid/lattice/ASTRID2_v01_01.sad</code>、0.58 GeV、45.7 m)、ASTRID2 MPW (<code>ASTRID2_v01_02_id.sad</code> の <code>RINGMPW</code>)、KEK-LS (<code>pysad/tests/kek-ls_v03_12.lat</code>、大きなリング A。ESRF 型の HMBA、3 GeV、603 m)。
+条件: v2、周波数マップは保存済みの表 (1024 周、RFSW・RAD OFF、LOSSAMPL 0.1 m、41×31 の x–y)、<code>adts(fourth='r3', optics='calc')</code>。<strong>当てはめの項は入れない</strong> (摂動論の 3・4 次の h、非共鳴の補正、線形の ADTS、振り子の式だけ)。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fmap_predict.py</code></td>
+<td><code>astrid2|kekls|fodo|mpw</code>: 3 つの予想 (1 次の RDT だけ・4 次の h も入れた・非共鳴の補正つき) の判別力 (cov・面積・対照・AUC・順位相関・上位 10%・振幅だけの AUC)、信頼度、最寄りの共鳴線の次数、調和ごと、チューンの固着、ν(J) の誤差</td>
+</tr>
+<tr>
+<td><code>fmap_predict_&lt;ring&gt;.out.txt</code>・<code>.png</code></td>
+<td>出力 (全数値) と図 (D + 1 次だけの予想・補正つきの予想の包絡)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="結果-d--5-を正例解析の-νj補正つき--3-次--4-次--非共鳴の補正">結果 (D &gt; −5 を正例、解析の ν(J)、補正つき = 3 次 + 4 次 + 非共鳴の補正)</h2>
+<table>
+<thead>
+<tr>
+<th>リング</th>
+<th>1 次だけ cov/area</th>
+<th>4 次も cov/area</th>
+<th>補正つき cov/area</th>
+<th>対照</th>
+<th>補正つきの AUC</th>
+<th>振幅だけの AUC</th>
+<th>偏相関</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FODO</td>
+<td>1.00/0.35</td>
+<td>1.00/0.35</td>
+<td>1.00/0.35</td>
+<td>0.37±0.36</td>
+<td>0.94</td>
+<td>0.42</td>
+<td>+0.62</td>
+</tr>
+<tr>
+<td>ASTRID2</td>
+<td>0.04/0.02</td>
+<td>0.41/0.25</td>
+<td>0.45/0.25</td>
+<td>0.25±0.17</td>
+<td>0.68</td>
+<td>0.79</td>
+<td>−0.19</td>
+</tr>
+<tr>
+<td>KEK-LS</td>
+<td>0.32/0.17</td>
+<td>0.69/0.56</td>
+<td>0.66/0.49</td>
+<td>0.65±0.10</td>
+<td>0.60</td>
+<td>0.77</td>
+<td>+0.09</td>
+</tr>
+<tr>
+<td>ASTRID2 MPW</td>
+<td>0.21/0.11</td>
+<td>0.40/0.16</td>
+<td>0.33/0.14</td>
+<td>(不適切)</td>
+<td>0.79</td>
+<td>0.73</td>
+<td>+0.46</td>
+</tr>
+</tbody>
+</table>
+<p>結論: 予想できるのは小振幅・孤立した低次の共鳴 (FODO の 3νx、MPW の生き残り領域)。ASTRID2・KEK-LS は改善しなかった (理由: 次数 5 以上・どの線にも近くない点が D の大きい点の約半分、島の中は規則的で D の大きい点は縁・重なり、KEK-LS は大振幅)。島の位置・幅は当たる (2νx−2νy の島の中の点のチューンは線に固着)。</p>
+<h2 id="コマンド">コマンド</h2>
+<pre><code>set PYTHONUTF8=1
+py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_predict.py astrid2   (各 数秒。保存済みの表を読む。出力を上書きする)
+py -3.12 -m pytest pysad/tests/test_v23_S3_fmappred.py -q
+</code></pre>
+<p>Python から: <code>ResonancePredictor.from_lattice(lat, loc, rows, model='s3')</code>、<code>pr.predict(x, y)</code>・<code>pr.warnings_for(m)</code>、<code>fmappred.evaluate_prediction(r, m)</code>。</p>
+<h2 id="使えない範囲未確認">使えない範囲・未確認</h2>
+<p>δ ≠ 0、次数 5 以上の駆動項、J² の項、PF・SP8 (大きなリング B)、誤差つき・RFSW ON・放射つき、AUC の誤差の見積もり (docs/25 §12.7)。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

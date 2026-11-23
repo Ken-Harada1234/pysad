@@ -1209,7 +1209,7 @@ def compile_sol_region(prog, elements, i, ph):
 
 
 def _compile_sol_v2(prog, el, name, bzs, ph, sm, idx=None):
-    """v2: ソレノイド領域内の BEND・MULT・CAVI (docs/21 B69、docs/46)。K64 の tsol.f の呼び出しの意図どおり:
+    """v2: ソレノイド領域内の BEND・MULT・CAVI (docs/30 B69、docs/31)。K64 の tsol.f の呼び出しの意図どおり:
     BEND は直線の座標のまま一様な双極磁場 (tdrift(al, bzs, phiy, phix))、MULT は tmulti1、CAVI は tmultiacc (どちらも bz つき)。
     gs (この K64 のビルド) は領域内の偏向をほぼ無視するので、根拠は一様磁場の中の運動方程式の数値積分との一致 (test_v2_C_sol.py)"""
     g = _t6._g

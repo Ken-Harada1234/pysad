@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 担当 D: 磁石の本体の運動量の向きの磁場 (1+a)B∥ ds (docs/21 B165。B136・B137)。
+"""v2.4.0 担当 D: 磁石の本体の運動量の向きの磁場 (1+a)B∥ ds (docs/30 B165。B136・B137)。
 
 独立な基準 `_spin_maxwell_indep.maxwell_R`: Maxwell 方程式を満たす硬い端の扇形 BEND (15°、L = 1.2 m、0.5 GeV、K1 = 0、E1 = E2 = 0) の中の
 Thomas-BMT の数値積分。スピン回転行列 R (入口のフレーム → 出口のフレーム) の py に関する 1 次の係数 dR/dpy (py = ±2e-4 の差)。

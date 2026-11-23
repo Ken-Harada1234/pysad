@@ -24,7 +24,7 @@ pysad の側の保存の仕方: 台本の `Exit;` の前に、全 Canvas の `fi
 
 ## gs と pysad の比較
 - gs・pysad で `NX` と戻り値の形が同じ。
-- **△ Canvas の項目が gs 308、pysad 313 (5 個差)**。2026-11-17 に再確認した。text が gs 69、pysad 74 で、rectangle 196・line 43 は同数。文字の大きさの違いによる名前の重なり消し (`RemoveOverlap`) の結果で、docs/42 §5 と同じ原因。
+- **△ Canvas の項目が gs 308、pysad 313 (5 個差)**。text が gs 69、pysad 74 で、rectangle 196・line 43 は同数。文字の大きさの違いによる名前の重なり消し (`RemoveOverlap`) の結果で、docs/21 §7 と同じ原因。
 
 ## 未確認・限界
-色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/42 §7)。比べたのは Canvas の項目の種類・数 (図の題)。実ラティスの `OpticsPlot` は比べていない。`Region`・`Names`・ユーザー関数の描画は試していない。
+色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/21 §9)。比べたのは Canvas の項目の種類・数 (図の題)。実ラティスの `OpticsPlot` は比べていない。`Region`・`Names`・ユーザー関数の描画は試していない。

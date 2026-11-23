@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>KEKLS_calc_H</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: KEKLS_calc_H.md</div>
+<h1 id="kekls_calc_h">KEKLS_calc_H</h1>
+<p>種別: 解析式 (H 関数の積分によるエミッタンス)。フォルダ: <code>display</code>。元のスクリプト: calc_H.sad、calc_H_2.sad、calc_emit.sad (後半)。ラティス: <code>../lattice/kek_ls_v03_68.sad</code> (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: <code>ON RAD FLUC COD RFSW RADCOD</code>。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>標準セル (ARCA) の偏向磁石 (勾配つきを含む) の中点の Twiss から、各磁石の H 積分と分散の積分を解析式で求め、εx = Cq γ² ΣH / Σ(θ²/L) / Jx を、<code>cell calc emit</code> の RINGC の EMITX と比べる。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<p><code>KEKLS_calc_H.sad</code> (先頭に <code>../lattice/kek_ls_v03_68.sad</code> を貼った自己完結のファイル。台本の本体は <code>FFS;</code> から。説明のコメントは台本の先頭にある)。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>磁石ごとの H 積分の行の後に、<code>Jx = 1.31104</code>、H 積分からの εx = 131.18 pm rad、SAD の εx = 134.32 pm rad、比 0.9767。</p>
+<p>gs の出力の抜粋 (指定の行だけ。全体は <code>KEKLS_calc_H.gs.txt</code>):</p>
+<pre><code>Jx =    1.3110389414
+emittance from H integral [pm rad] =  131.1802005125
+EMITX of RINGC (cell calc emit) [pm rad] =  134.3162285432
+ratio =     .9766519052
+</code></pre>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>判定: <strong>○</strong> (比べた行 4、最大の相対差 0.0e+00、k64 モードの pysad)。全桁一致 (1e-10 以内)。</p>
+<p>所要時間: gs 1 秒、pysad 3 秒 (この PC。k64 モード)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>H 積分は SAD の εx より 2.3% 小さい。差の原因は未確認 (中点の Twiss から前向き・後ろ向きに積分する近似、E1・E2 の端の効果なし、減衰分配 Jx の評価など)。解析式を SAD の結果に合わせる補正はしていない。</li>
+<li>元の calc_emit.sad は勾配なしの式で、γ = 2500/0.511 (3 GeV に合わない)、途中の <code>stop;</code> で後半は動かない。calc_H.sad の Cq は <code>3.832/10000</code> (nm の単位)。</li>
+<li>整理前後の比較: 元の calc_H.sad (ラティスを貼り、NPARA だけ 4 にして) の gs の Jx = 1.3110389414、εx = 0.1311802005 (nm rad) が、この例の 131.1802005 pm rad と一致。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

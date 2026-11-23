@@ -27,7 +27,7 @@ BeamMatrix[1]    OrbitGeo[5]
 (gs・pysad とも `trace_x=-0.6617397308`、`cosmu=-0.3308698654` で、$2\cos\mu_x=-0.66174$ と一致。)
 
 - 4×4 の転送行列の全要素・`OrbitGeo` は gs と pysad で表示 10 桁一致 (○)。
-- `BeamMatrix[1]` の対角: 水平・垂直の $\sigma_{11},\sigma_{22}$ は一致。結合のない成分 ($\sigma_{33},\sigma_{44}$) は gs が 1e-37 の雑音、pysad は 0 (丸め誤差の差で、docs/34 と同じ)。
+- `BeamMatrix[1]` の対角: 水平・垂直の $\sigma_{11},\sigma_{22}$ は一致。結合のない成分 ($\sigma_{33},\sigma_{44}$) は gs が 1e-37 の雑音、pysad は 0 (丸め誤差の差で、docs/06 と同じ)。
 
 ## 未確認・限界
-`NormalCoordinates`・`PeriodicR` は試していない (`PeriodicR` は docs/34 でも呼び出し方が不明)。`OrbitGeo` の戻りの意味 (座標系) は確認していない。この例では RF なし (`RFSW` なし) で 4 次元。
+`NormalCoordinates`・`PeriodicR` は試していない (`PeriodicR` は docs/06 でも呼び出し方が不明)。`OrbitGeo` の戻りの意味 (座標系) は確認していない。この例では RF なし (`RFSW` なし) で 4 次元。

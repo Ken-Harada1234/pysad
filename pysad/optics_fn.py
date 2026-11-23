@@ -7,7 +7,7 @@ SADScript の光学・追跡の補助関数 (Packages/Optics.n, emit.n, dapert.n
   SymplecticJ[n]                  emit.n
   SurvivedParticles[x]            tftrack.f tfsurvivedparticles: flag≠0 の粒子だけ
   AccelerateParticles[beam, mom, {n, nturn}, Synchronize->f]   dapert.n: 周ごとに MOMENTUM を変えながら TrackParticles
-方針 (docs/15): .n のものは Python で書き直す (直訳ではない)。
+方針 (docs/36): .n のものは Python で書き直す (直訳ではない)。
 """
 import math
 from typing import List

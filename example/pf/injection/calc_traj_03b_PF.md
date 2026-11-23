@@ -2,7 +2,7 @@
 KEK の SAD チュートリアルの「グラフ表示」(`calc_traj_03`) を、pysad でも描ける `ListPlot` + `CanvasDrawer` に置き換えた版。加速器・ラティス・線は `calc_traj_01_PF` と同じ (PF 2.5 GeV、`lattice/v9_16_inj_noSF.sad`、`INJL`)。
 
 ## 何を見る例か
-`calc_traj_03_PF` (教材の書き方) は、2026-11-17 に pysad でも窓が描けるようになった (そちらの `.md` 参照)。ここでは別に、軌道を `ListPlot[{line1,line2,line3}, PlotJoined->True]` で描く。`$DisplayFunction = CanvasDrawer` だけにして、窓は `CanvasDrawer` が自分で作る (自前の `KBMainFrame` + `Canvas` は作らない)。gs でも pysad でも描けて、Canvas の項目数が一致する。ラティスの絵 (`OpticsPlot` の `Lattice->True`) は付かない。
+`calc_traj_03_PF` (教材の書き方) は pysad でも窓が描ける (そちらの `.md` 参照)。ここでは別に、軌道を `ListPlot[{line1,line2,line3}, PlotJoined->True]` で描く。`$DisplayFunction = CanvasDrawer` だけにして、窓は `CanvasDrawer` が自分で作る (自前の `KBMainFrame` + `Canvas` は作らない)。gs でも pysad でも描けて、Canvas の項目数が一致する。ラティスの絵 (`OpticsPlot` の `Lattice->True`) は付かない。
 
 ## スクリプト
 ```
@@ -34,12 +34,12 @@ k0k4 = k0k4 + 0.2;  SetKicker[]; CalcSBBump[]; CalcTrajectories[]; MakePlot[];  
 | `canvas items` (描き直し後) | 384 | 384 |
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。保存してあった旧い出力は `PYSAD_COMPAT=k64` の出力と同じ (確認済み)。v2 は K64 のバグを直したので (`docs/47_v2_changes.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 モードと k64 モード**: `.pysad.txt` は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (`docs/28_v2_vs_k64.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ 一致 (値と Canvas の項目数が両方とも一致)。描き直しで項目が 2 つ増える (382 → 384) のも同じ。窓の見た目 (色・マーカー) は pysad のものしか撮れておらず、gs の見た目との比較はしていない。
 
 ## 未確認・限界
 - gs の窓 (X11) は撮れていない。項目の数だけを比べた (線・マーカーの座標の一致は未確認)。
 - 描き直しで `ListPlot` を 2 回呼ぶと、窓の Canvas が 1 つのまま上書きされるか、重ねて描かれるかは確かめていない (項目数が 382 → 384 と増えているのは、前の図を消さずに追加している可能性がある)。
-- `OpticsPlot` のラティスの絵は、以前の pysad ではデータ列と一緒に描けなかった。2026-11-17 の修正のあとは `calc_traj_03_PF` で描ける。この例ではラティスの絵を付けていない。
+- `OpticsPlot` のラティスの絵は、データ列と一緒に `calc_traj_03_PF` で描ける。この例ではラティスの絵を付けていない。
 - ボタン・入力欄の窓は作っていない (`KBMainFrame` を作ると `CanvasDrawer` の窓と衝突する。gs でも 2 つ目の `KBMainFrame` は作れず、`CanvasDrawer` が自分で作る窓は `KBSubFrame` の名前の綴り (`DefauleCanvas$Frame`) の誤りで失敗した)。

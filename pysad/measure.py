@@ -1,7 +1,7 @@
 """
 MEASURE / TRCOD / LOGMEASURE (FFS のコマンド) と、その部品 (tlum.f、ttinit.f、ttstat.f、tbdecoup.f、tracke.f、trackb.f、trcoda.f) の翻訳。
 
-K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (docs/21 B42) ので、gs の参照は取れない。
+K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (docs/30 B42) ので、gs の参照は取れない。
 ここの実装は「ソースの読みのみ」で、値は解析式 (σ=√(εβ) など) と pysad の独立な経路 (CALC の Twiss、TrackParticles) で確かめた
 (pysad/tests/test_v2_C_measure.py、docs/history/v2_changes_C_measure.md)。
 

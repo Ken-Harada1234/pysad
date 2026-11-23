@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2.3.0 T1: elegant との比較 (局所運動量アクセプタンス・Touschek 寿命)。
 
-elegant を使わない部分: SAD→elegant の変換 (要素の対応、K2 = −K1·ANGLE/L)、保存済みの elegant の結果 (example/v2_3/T1_elegant_*) と pysad の結果 (Q1・T1 の表) の比較、
+elegant を使わない部分: SAD→elegant の変換 (要素の対応、K2 = −K1·ANGLE/L)、保存済みの elegant の結果 (example/15_lma_touschek/touschek_elegant/elegant_*) と pysad の結果 (Q1・T1 の表) の比較、
 K1≠0 の BEND のオフモメンタムの光学 (解析式と elegant・gs の保存値)。elegant を使う部分 (WSL の elegant で ASTRID2 の光学を計算して pysad と比べる) は、elegant が無い環境では skip。
 """
 import json
@@ -18,7 +18,7 @@ from pysad import compat
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-EX = os.path.join(ROOT, 'example', 'v2_3')
+EX = os.path.join(ROOT, 'example', '15_lma_touschek', 'touschek_elegant')
 sys.path.insert(0, EX)
 
 
@@ -32,7 +32,7 @@ def _v2():
 
 def _read_ele(name):
     rows = {}
-    for ln in open(os.path.join(EX, 'T1_elegant_%s.lma.txt' % name), encoding='utf-8'):
+    for ln in open(os.path.join(EX, 'elegant_%s.lma.txt' % name), encoding='utf-8'):
         if ln.startswith('#') or not ln.strip():
             continue
         t = ln.split()
@@ -52,7 +52,7 @@ def _read_pysad(path):
 
 def test_converter_astrid2(tmp_path):
     """変換: 要素の数・種類、複合機能の BEND の K2 = −K1·ANGLE/L、RF の位相、各要素の出口の MAXAMP"""
-    import T1_sad2ele as c
+    import sad2ele as c
     path, st, ffs = c.convert('astrid2', str(tmp_path), 6166.703905, aper=0.010)
     txt = open(path, encoding='utf-8').read()
     defs = dict(re.findall(r'^(\w+): (.*)$', txt, re.M))
@@ -75,7 +75,7 @@ def test_converter_astrid2(tmp_path):
 
 
 def test_converter_kekls(tmp_path):
-    import T1_sad2ele as c
+    import sad2ele as c
     path, st, ffs = c.convert('kekls', str(tmp_path), 296074.88, aper=0.010)
     txt = open(path, encoding='utf-8').read()
     defs = dict(re.findall(r'^(\w+): (.*)$', txt, re.M))
@@ -93,7 +93,7 @@ def test_lma_astrid2_saved_vs_pysad():
     """保存済みの elegant (全周 199 位置) と pysad (Q1、1 セル 25 位置): 同じ位置の δ± が elegant の最終刻み + pysad の tol の範囲で一致。
     分散の大きい位置はアパーチャが限界 (δ ≈ 0.83%)、直線部は RF バケット (δ_rf = 1.618%) で、どちらも相対差 0.5% 以内"""
     ele = _read_ele('astrid2')
-    py = _read_pysad(os.path.join(EX, 'Q1_lma_astrid2.table.txt'))
+    py = _read_pysad(os.path.join(EX, '..', 'lma', 'lma_astrid2.table.txt'))
     assert len(ele) == 199 and len(py) == 25
     for l, (s, dp, dm) in py.items():
         e = ele[l]
@@ -122,7 +122,7 @@ def test_lma_kekls_saved_vs_pysad():
     """保存済みの elegant (1500 周、14 位置) と pysad (check_every = 1、491 周、52 位置) の kek-ls_v03_12.lat (3 GeV、20 セル): 共通の 11〜12 位置の δ± が
     elegant の刻み 7.8e-5 + pysad の tol 1e-4 の範囲で一致し、全部 RF バケット (δ_rf = 2.994% の 1.00〜1.01 倍) で決まる"""
     ele = _read_ele('kekls')
-    py = _read_pysad(os.path.join(EX, 'T1_pysad_kekls.lma.txt'))
+    py = _read_pysad(os.path.join(EX, 'pysad_kekls.lma.txt'))
     assert len(ele) == 14 and len(py) == 52
     common = sorted(set(ele) & set(py))
     assert len(common) >= 11
@@ -142,9 +142,9 @@ def test_lma_kekls_saved_vs_pysad():
 
 def test_touschek_saved_astrid2():
     """保存済みの寿命: 一様な受容 (表の点 δ = 0.4・0.6・1.0%、δ_rf) の elegant / pysad が ±5% 以内、局所の LMA は 5% 以内 (elegant の式は 2 つの積分法で 3e-5 一致)"""
-    ref = json.load(open(os.path.join(EX, 'T1_pysad_astrid2.ref.json')))
+    ref = json.load(open(os.path.join(EX, 'pysad_astrid2.ref.json')))
     ele = {}
-    for ln in open(os.path.join(EX, 'T1_elegant_astrid2.touschek.txt'), encoding='utf-8'):
+    for ln in open(os.path.join(EX, 'elegant_astrid2.touschek.txt'), encoding='utf-8'):
         if ln.startswith('#'):
             continue
         lb, rest = ln.split(':', 1)
@@ -163,10 +163,10 @@ def test_touschek_saved_astrid2():
 def test_bend_k1_offmomentum_formula():
     """K1≠0 の BEND (複合機能) のオフモメンタムの光学: 一様な磁場指数 n = 0.4 の 16 台の扇形磁石。pysad (K64 と同じ) の dν/dδ は、勾配の力に曲率の因子 (1 + h x) を
     掛けない模型の解析式 (−0.1721、+0.2108) に一致し、K1 が一定の勾配とする厳密な曲線座標の解析式 (−0.6025、+0.7379。elegant はこちらに 5 桁一致) とは違う。
-    elegant の CSBEND に K2 = −h K1 を足すと pysad に一致する (elegant の値は example/v2_3/T1_gs_bend_k1.out.txt に記録)"""
+    elegant の CSBEND に K2 = −h K1 を足すと pysad に一致する (elegant の値は example/15_lma_touschek/touschek_elegant/gs_bend_k1.out.txt に記録)"""
     from pysad import resdrive
     from pysad.trksetup import TrackSetup
-    import T1_gs_bend_k1 as g
+    import gs_bend_k1 as g
     src = g.lattice()[0]
     st, ffs = TrackSetup.from_source(src, 'RING', rad=False, rfsw=False, alost=1.0)
     d1 = resdrive.chromaticity_numeric(ffs.lat)['d1']
@@ -190,8 +190,8 @@ def _elegant_ok():
 @pytest.mark.skipif(not _elegant_ok(), reason='WSL の elegant が無い')
 def test_elegant_optics_astrid2(tmp_path):
     """elegant (WSL) で変換した ASTRID2 の光学が pysad と合う: チューン 1e-5、αc 2e-4、自然エミッタンス 1e-4、エネルギー拡がり 1e-4、U0 1e-4、色収差 0.05 以内"""
-    import T1_sad2ele as c
-    ref = json.load(open(os.path.join(EX, 'T1_pysad_astrid2.ref.json')))
+    import sad2ele as c
+    ref = json.load(open(os.path.join(EX, 'pysad_astrid2.ref.json')))
     path, st, ffs = c.convert('astrid2', str(tmp_path), ref['U0_eV'], aper=0.010, maxamp=False)
     lte = os.path.basename(path)
     ele = ("&run_setup lattice = %s, use_beamline = RING, p_central_mev = 580.0, default_order = 3, rootname = t, &end\n&run_control &end\n"
@@ -221,9 +221,9 @@ def test_elegant_optics_astrid2(tmp_path):
 
 def test_touschek_saved_kekls():
     """kek-ls (3 GeV): 一様な受容 (表の点 0.4・0.6・1.0・2.0%) の elegant / pysad が ±4% 以内、δ_rf で +3% 以内、局所の LMA の寿命は pysad の式と +3% 以内"""
-    ref = json.load(open(os.path.join(EX, 'T1_pysad_kekls.ref.json')))
+    ref = json.load(open(os.path.join(EX, 'pysad_kekls.ref.json')))
     ele = {}
-    for ln in open(os.path.join(EX, 'T1_elegant_kekls.touschek.txt'), encoding='utf-8'):
+    for ln in open(os.path.join(EX, 'elegant_kekls.touschek.txt'), encoding='utf-8'):
         if ln.startswith('#'):
             continue
         lb, rest = ln.split(':', 1)

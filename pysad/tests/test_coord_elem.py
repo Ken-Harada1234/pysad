@@ -1,6 +1,6 @@
 """COORD 要素 (K64 の tcoord / tcoorde / qcoord)。参照は SAD K64 (gs) の出力。
 cd*: TrackParticles (全周 3 周、200 粒子)、cdo*: INS の Twiss と LINE["G.."] (幾何)、cde*: Emittance[] (リングの中の COORD の対)。
-参照の作り方: local/wake/gencd.py gencd2.py gencd3.py (docs/25_coord.md)。"""
+参照の作り方: local/wake/gencd.py gencd2.py gencd3.py (docs/19_other_elements.md)。"""
 import io
 import re
 

@@ -1,0 +1,18 @@
+! CAVI の DX・DY・ROTATE と V1・V20・V11・V02 (tcav.f の TENT・TEXIT と v1a…v02a)。
+! 条件: 3 GeV、12 セル FODO (周長 41.8 m)、CAVI L=0.5 m、RF 1.5 MV・h=64。gs と全桁一致 (k64 モード)。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0.5 VOLT=1.5e6 HARM=64 V1=1e5 V11=0.5e6 V20=1e6 V02=-3e5 DX=1e-3 DY=-2e-3 ROTATE=0.2);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+$FORM="14.8";
+bm={{1e-3,0,1e-3},{1e-4,0,0},{1e-3,0,-1e-3},{0,0,0},{0,0,0},{0,1e-3,-1e-2},{1,1,1}};
+USE RING; CELL; CALC; RFSW; NORAD;
+RAD; NOFLUC;
+r=TrackParticles[{1,bm},1,1,1];
+Print["1 turn (rows x px y py z dp) ", r[[2]]];
+Exit;

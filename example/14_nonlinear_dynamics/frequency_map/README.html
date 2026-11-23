@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>周波数マップ (frequency map) の例</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#例の一覧">例の一覧</a></li>
+<li><a href="#使った条件限界未確認">使った条件・限界・未確認</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="周波数マップ-frequency-map-の例">周波数マップ (frequency map) の例</h1>
+<p>周波数マップ (チューン拡散 D = log10 √(Δνx² + Δνy²) の地図) の作り方、共鳴駆動項 (RDT)・振幅依存チューンシフト (ADTS) から予想した共鳴の領域との比較、gs (SAD K64) との比較、結果を信頼できる範囲の確認の例です。
+実行はリポジトリ直下から <code>py -3.12 example/14_nonlinear_dynamics/frequency_map/&lt;スクリプト&gt; ...</code> (標準出力をファイルに落とすときは <code>PYTHONUTF8=1</code>)。すべて既定の v2 モードで (gs との比較のスクリプトも <code>compat.set_mode('v2')</code> のまま。gs と一致するのは <code>'k64'</code> に変えて走らせたとき。下の「使った条件・限界・未確認」)、周波数マップは RFSW・RAD OFF、LOSSAMPL = 0.1 m、1024 周 (前半・後半 512 周)、NAFF の窓は Hann。
+gs を走らせるスクリプト (<code>gs_fmap_compare_*</code>・<code>fmap_check_gs_*</code>) は WSL の gs と環境変数 <code>PYSAD_SAD_PACKAGES</code> (K64 版 SAD の Packages のフォルダ) が要る。<code>--nogs</code> を付けると保存済みの gs の出力を使う。</p>
+<p>説明の文書:</p>
+<table>
+<thead>
+<tr>
+<th>文書</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="fmap_basic.html"><code>fmap_basic.md</code></a></td>
+<td>基本の例 (周波数マップ、gs との比較、SAD の台本から)</td>
+</tr>
+<tr>
+<td><a href="fmap_validation.html"><code>fmap_validation.md</code></a></td>
+<td>検証 (RDT・ADTS との比較、δ・k64・誤差・MPW・格子)</td>
+</tr>
+<tr>
+<td><a href="fmap_reliability.html"><code>fmap_reliability.md</code></a></td>
+<td>信頼性 (誤差の統計、MPW、RFSW・FLUC、K1 の設定、周回数、gs・誤差つき)</td>
+</tr>
+<tr>
+<td><a href="fmap_resonance_lines.html"><code>fmap_resonance_lines.md</code></a></td>
+<td>共鳴線の予想 (3 次 + 4 次 + 非共鳴の補正) と判別力の評価</td>
+</tr>
+<tr>
+<td><a href="FMAP_summary.html"><code>FMAP_summary.md</code></a></td>
+<td>台本ごとのコマンド・式・結果・追跡の数値・比較・未確認のまとめ (全数値)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="例の一覧">例の一覧</h2>
+<p>名前の <code>fmap_*</code> は周波数マップの本体と検証、<code>gs_*</code> は gs との比較、<code>fmap_check_*</code> は信頼性の確認、<code>fn_*</code> は SAD の台本から呼ぶ関数の例です。各例は台本 (<code>.py</code>・<code>.sad</code>)・出力 (<code>.out.txt</code>・<code>.table.txt</code>・<code>.gs.txt</code>・<code>.pysad.txt</code>)・図 (<code>.png</code>) の 1 組です。</p>
+<table>
+<thead>
+<tr>
+<th>例 (台本)</th>
+<th>出力・図</th>
+<th>何の例か・結果の要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fmap_ring.py</code></td>
+<td><code>fmap_astrid2.*</code>・<code>fmap_kekls.*</code></td>
+<td>ASTRID2・KEK-LS (kek-ls_v03_12.lat) の x–y の周波数マップ (41 × 31)。D の大きい点が次数 4 以下の共鳴線 (差の共鳴 νx − νy = 整数など) に載る</td>
+</tr>
+<tr>
+<td><code>fn_FrequencyMap_MomentumAcceptance.sad</code></td>
+<td><code>.pysad.txt</code>・<code>_fmap.*</code>・<code>_lma.*</code></td>
+<td>SAD の台本から <code>FrequencyMap[]</code>・<code>MomentumAcceptance[]</code>・<code>TouschekLifetimeLMA[]</code> を呼ぶ (pysad のみ。gs では走らない)。周波数マップは 88 点、失われた点 0</td>
+</tr>
+<tr>
+<td><code>gs_fmap_compare_astrid2.py</code>・<code>gs_fmap_astrid2.sad</code></td>
+<td><code>gs_fmap_astrid2.*</code></td>
+<td>ASTRID2 の追跡 (512 周) を gs の <code>TrackParticles</code> と比較。k64 モードで座標の最大の差 2.8e-7 m、D は 6 桁一致 (v2 の既定では座標の差 3e-2 m)</td>
+</tr>
+<tr>
+<td><code>gs_fmap_compare_kekls.py</code>・<code>gs_fmap_kekls.sad</code></td>
+<td><code>gs_fmap_kekls.*</code></td>
+<td>KEK-LS の追跡を gs と比較 (512 周、8 点)。k64 モードで規則的な点は座標の差 1.2e-11 m (v2 の既定では 6.1e-3 m)</td>
+</tr>
+<tr>
+<td><code>fmap_rdt.py</code></td>
+<td><code>fmap_rdt_{fodo,astrid2,kekls}.*</code></td>
+<td>D の大きい領域を RDT・ADTS から予想した共鳴の領域と比較。FODO は 3νx の予想に D &gt; −5 の点がすべて入る。ASTRID2 は 1 次の RDT では予想できない</td>
+</tr>
+<tr>
+<td><code>fmap_variants.py</code></td>
+<td><code>fmap_{delta,k64,errors,mpw,grid,lambda}_*.*</code>、<code>fmap_variants_*.out.txt</code></td>
+<td>モード別の検証: x–δ・y–δ の地図、k64 との差 (チューンの差の中央値 9e-5・3e-5、四極の積分器の次数の違い)、位置ずれ・ロールの誤差つき、挿入光源 (MPW) つき、NAFF の窓・格子、6 極の強さ λ 倍</td>
+</tr>
+<tr>
+<td><code>fmap_grid_summary.py</code></td>
+<td><code>fmap_grid_summary.out.txt</code></td>
+<td>81 × 61 の格子から部分格子を取り出し、D の分布の格子の細かさへの依存を見る</td>
+</tr>
+<tr>
+<td><code>fmap_rdt4.py</code></td>
+<td><code>fmap_rdt4_{fodo,astrid2,kekls}.*</code></td>
+<td>4 次の RDT も入れた共鳴の領域の予想との比較</td>
+</tr>
+<tr>
+<td><code>fmap_predict.py</code></td>
+<td><code>fmap_predict_{fodo,astrid2,kekls,mpw}.*</code></td>
+<td>共鳴線の予想 (3 次 + 4 次 + 非共鳴の補正) の判別力の評価。FODO の 3νx のような孤立した低次の共鳴は予想できるが、ASTRID2・KEK-LS は改善しない</td>
+</tr>
+<tr>
+<td><code>fmap_check_errors_scan.py</code>・<code>fmap_check_errors_summary.py</code>・<code>fmap_check_coupling.py</code>・<code>fmap_check_kekls_orbit.py</code></td>
+<td><code>fmap_check_data/{errors_*,coupling}.jsonl</code>、<code>fmap_check_errors_summary_*.out.txt</code>、<code>fmap_check_kekls_orbit.out.txt</code></td>
+<td>誤差つき周波数マップの統計 (複数の種・強さ・要素の種類)。D &gt; −5 の割合は誤差なしの 7〜12 倍、主因は差の共鳴を駆動する結合</td>
+</tr>
+<tr>
+<td><code>fmap_check_mpw.py</code></td>
+<td><code>fmap_check_data/mpw.jsonl</code>、<code>fmap_check_mpw.out.txt</code></td>
+<td>MPW で多くの点が失われる原因の切り分け。4νy = 9 の共鳴ではなく、MPW の内部の非線形</td>
+</tr>
+<tr>
+<td><code>fmap_check_rfsw.py</code></td>
+<td><code>fmap_check_data/rfsw.jsonl</code></td>
+<td>RFSW・RAD・FLUC を ON にした周波数マップ。D が拡散の指標でなくなる</td>
+</tr>
+<tr>
+<td><code>fmap_check_gs_rfsw.py</code>・<code>fmap_check_gs_rfsw.sad</code></td>
+<td><code>fmap_check_gs_rfsw.*</code></td>
+<td>RFSW ON の追跡の gs との比較</td>
+</tr>
+<tr>
+<td><code>fmap_check_k1opts.py</code></td>
+<td><code>fmap_check_data/k1opts.jsonl</code>、<code>fmap_check_k1opts.out.txt</code></td>
+<td>K1 の設定 (v2 と k64 で動作が違う設定) ごとの周波数マップ</td>
+</tr>
+<tr>
+<td><code>fmap_check_nturn.py</code>・<code>fmap_check_grid.py</code></td>
+<td><code>fmap_check_data/nturn_*.npz</code>、<code>fmap_check_nturn_*.out.txt</code>、<code>fmap_check_grid.out.txt</code></td>
+<td>D の周回数 (512〜4096)・NAFF の窓・格子の細かさへの依存</td>
+</tr>
+<tr>
+<td><code>fmap_check_gs_errors.py</code>・<code>fmap_check_gs_errors.sad</code></td>
+<td><code>fmap_check_gs_errors.*</code></td>
+<td>誤差つき ASTRID2 の追跡の gs との比較 (pysad の誤差の値を gs の台本に明示して書く)</td>
+</tr>
+</tbody>
+</table>
+<p><code>fmap_check_data/</code> は誤差・MPW・結合・K1・RFSW などの統計の保存データ (<code>.jsonl</code> は 1 行 = 1 つの周波数マップ、<code>.npz</code> は D_N の配列) です。<code>fmap_check_*.py</code> はこの保存データに追記します。</p>
+<h2 id="使った条件限界未確認">使った条件・限界・未確認</h2>
+<ul>
+<li>ラティスは <code>example/astrid/lattice/ASTRID2_v01_01.sad</code> (0.58 GeV、周長 45.7 m)、<code>pysad/tests/kek-ls_v03_12.lat</code> (3 GeV、周長 603 m、20 セル)、<code>example/00_lattice/FODO_ring.sad</code> (24 セル、3 GeV、105.6 m)、<code>ASTRID2_v01_02_id.sad</code> の <code>RINGMPW</code>。磁場上限の制約はなく、既存のラティスをそのまま使っている。</li>
+<li>D の絶対値の閾値 (D &gt; −5 など) は周回数・窓に依存する (周回数を 2 倍にすると D が約 1 下がる)。別の条件の結果とは比べられない。</li>
+<li>RDT・ADTS の予想は、1 次の RDT が駆動する共鳴だけの場合 ASTRID2 では当たらない。4 次の項・非共鳴の補正を入れても ASTRID2・KEK-LS は改善しなかった。</li>
+<li>追跡の gs との比較は NORFSW・NORAD の座標だけで、pysad を k64 モード (四極 2 次の積分器。gs と同じ) にしたときに一致する。v2 の既定 (四極 4 次) は積分器が違うので一致しない。保存済みの <code>gs_fmap_kekls.*</code> の 8 点は、積分器を変える前の表から選んだ点 (<code>.pysad.txt</code> は v2 の既定で取り直した出力)。K64 に NAFF が無いので、gs の座標に pysad の NAFF をかけている。カオス的な点 (D &gt; −3 など) は初期値の 1e-13 m の摂動の増幅と同じ大きさで食い違いうる。</li>
+<li>補正つき・PF リング・MPW の RDT の予想は未確認。誤差つきの統計は ASTRID2 (補正なし) と KEK-LS (補正なし)。</li>
+<li>保存済みの <code>fmap_astrid2.table.txt</code>・<code>fmap_kekls.table.txt</code> は 4 次の合成の四極の積分器で作ったもの。<code>gs_fmap_*.pysad.txt</code> など一部の保存済みの出力・台本の標準出力の見出しには、作業中の呼び名 (S1・R5 など) が残っている。</li>
+<li>保存済みの <code>.pysad.txt</code> のうち <code>gs_fmap_astrid2</code>・<code>fmap_check_gs_rfsw</code>・<code>fn_FrequencyMap_MomentumAcceptance</code> は現行の v2 で取り直した (保存済みの出力との座標の差は相対 1e-5 程度 (絶対 3e-9 m)。gs との比較の出力 (<code>.out.txt</code>) は取り直していない)。他の台本の出力は取り直していない。</li>
+<li>局所運動量アクセプタンス (LMA) の例は <a href="../../15_lma_touschek/README.html"><code>../../15_lma_touschek/</code></a>。ADTS・RDT の例は <a href="../adts_rdt/"><code>../adts_rdt/</code></a>。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

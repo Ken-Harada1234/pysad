@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flag_TRPT</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: flag_TRPT.md</div>
+<h1 id="flag_trpt">flag_TRPT</h1>
+<p>種別: フラグ / フォルダ: 05_tracking / ラティス: <code>00_lattice/linac_line.sad</code> (新規。5 セルの簡易 FODO 直線加速器。入口 100 MeV、ACC 10 台 (各 L=1 m、10 MV、2.856 GHz)) / フラグ: <code>TRPT; INS; RFSW; NORAD; NOFLUC</code></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>TRPT</code> (輸送ライン) では、空洞 (CAVI) で基準運動量 (設計運動量) が上がる。リング (NOTRPT、既定) では空洞はエネルギーを与えないドリフト扱い。加速すると断熱減衰 ($x'\propto1/p$) でエミッタンスが $p_0/p$ に比例して小さくなる。CAVI の位相 <code>PHI</code> を変えて、加速量と減衰を確かめる。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>RFSW; NORAD; NOFLUC;
+USE LINAC;
+TRPT;                  ! 輸送ライン: 空洞で基準運動量が上がる
+INS; CALC;
+phis = {0, -0.25*Pi, -0.5*Pi};
+Do[ Element[&quot;PHI&quot;,&quot;ACC&quot;] = phis[[k]]; CALC;
+    r = TrackParticles[{1, {{1e-4},{0},{0},{0},{0},{0},{1}}}]; ...
+    inv = gf x^2 + 2 af x px + bf px^2 ; ratio = inv/inv0 ,  {k,1,3}];
+</code></pre>
+<ul>
+<li><code>MARK ORIGIN = (AX=0 BX=5 AY=0 BY=5 EMITX=1E-8 ...)</code> が入口の Twiss。TRPT ではラインの入口条件から追跡と光学を行う。</li>
+<li>CAVI の位相: $\Delta E=-eV\sin(\mathrm{PHI})$ (SADHelp)。電子では <code>PHI=−π/2</code> で最大の加速。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>各 <code>PHI</code> の行: 追跡した 1 粒子の終端の $x$、$p_x$ (入口の基準運動量で割った値)、$dp$ (その位置の基準運動量に対する値)。次の行: 終端の Twiss ($\beta_x$、$\alpha_x$)、入口の不変量 inv0 = $\gamma_0x_0^2=2\times10^{-9}$、終端の不変量 invf、比 <code>ratio</code>。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>基準運動量の増加: 1 台あたり $\Delta E=V|\sin\phi|$ なので 10 台で $\Delta E_{tot}=100\,\mathrm{MeV}\times|\sin\phi|$。$p_0=100$ MeV/c、$E_0=\sqrt{p_0^2+m^2}$ から $p_f=\sqrt{(E_0+\Delta E_{tot})^2-m^2}$。
+断熱減衰: 幾何エミッタンス $\varepsilon\propto1/p$ なので、同じ粒子の不変量は $J_f/J_0=p_0/p_f$。</p>
+<table>
+<thead>
+<tr>
+<th>PHI</th>
+<th>$\Delta E_{tot}$ [MeV]</th>
+<th>$p_f$ [MeV/c]</th>
+<th>式の $p_0/p_f$</th>
+<th>pysad の ratio</th>
+<th>gs の ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>100.000</td>
+<td>1.0000</td>
+<td>1.00003</td>
+<td>1.0812 (*)</td>
+</tr>
+<tr>
+<td>−π/4</td>
+<td>70.71</td>
+<td>170.711</td>
+<td>0.58578</td>
+<td>0.58678</td>
+<td>0.6055 (*)</td>
+</tr>
+<tr>
+<td>−π/2</td>
+<td>100.00</td>
+<td>200.001</td>
+<td>0.49999</td>
+<td>0.50175</td>
+<td>0.50175</td>
+</tr>
+</tbody>
+</table>
+<p>(*) の gs の値は、終端の Twiss が更新されないために生じた見かけの差 (下記)。粒子の座標 $x, p_x, dp$ そのものは gs と pysad が 8 桁以上一致している。
+pysad の ratio は式と 0.003〜0.35% 違う (この差は RF の横集束 (ponderomotive)・エッジ項と、$10^{-4}$ の有限振幅によると考えられるが、確認はしていない)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>△ 粒子の座標は一致 (表示の全桁、3 つの PHI すべて)。差が出たのは <code>Element["PHI","ACC"] = ...</code> の後の <code>CALC</code> の Twiss (BXend、AXend): pysad は PHI の変更ごとに終端の Twiss (加速で変わる) が更新され、gs は最初の PHI (−π/2) のときの値 ($\beta_x=19.153$) のまま変わらない。
+gs の TRPT の光学は、設計運動量の表 (<code>gammab</code>) を <code>USE</code>・最初の <code>CALC</code> で作り、<code>Element</code> で CAVI の PHI を変えても作り直さないとみられる (<code>USE</code> を再実行しても変わらないことを確認)。pysad は毎回作り直す。どちらが SAD の意図かは未確認 (gs の動作が本家)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>$E_0=100$ MeV、5 セル、振幅 $10^{-4}$ m の 1 粒子だけ。RAD は OFF。<code>PHI=+π/2</code> (減速) では運動量がほぼ 0 になり、gs は NaN、pysad は <code>math domain error</code> で止まる (比較しない)。</li>
+<li>加速のあるライン (TRPT) の <code>Emittance[]</code> や wake は見ていない (wake は <a href="../06_collective/flag_LWAKE_TWAKE_WAKEOPT.html">flag_LWAKE_TWAKE_WAKEOPT</a>)。</li>
+<li>式との差 (最大 0.35%) の原因は未確認。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

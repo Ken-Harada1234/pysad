@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2.3.0 S3: 共鳴線の予想の作り直し (pysad/fmappred.py)。保存済みの周波数マップの表 (example/v2_3/) を読むので速い。"""
+"""v2.3.0 S3: 共鳴線の予想の作り直し (pysad/fmappred.py)。保存済みの周波数マップの表 (example/14_nonlinear_dynamics/frequency_map/) を読むので速い。"""
 import math
 import os
 import sys
@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-EX = os.path.abspath(os.path.join(HERE, '..', '..', 'example', 'v2_3'))
+EX = os.path.abspath(os.path.join(HERE, '..', '..', 'example', '14_nonlinear_dynamics', 'frequency_map'))
 sys.path.insert(0, EX)
 
 from pysad import compat  # noqa: E402
@@ -28,11 +28,11 @@ def v2():
 
 
 def _case(name):
-    import S1_fmap_rdt as S1
+    import fmap_rdt as S1
     cs = S1.CASES[name]
     lat = load_sad_string(S1.source(name)).build_lattice(cs['line'])
     rows = lat.twiss_table()
-    tab = cs['table'] or os.path.join(EX, 'S1_fmap_rdt_%s.table.txt' % name)
+    tab = cs['table'] or os.path.join(EX, 'fmap_rdt_%s.table.txt' % name)
     return lat, rows, cs['loc'], FMapResult.load_table(tab)
 
 

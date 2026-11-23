@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """v2next E 項目 3: 高エネルギー・高 RF 電圧の Polarization の脱偏極率が FLUC つきのスピン追跡の約 2.3 倍小さい件の切り分けの道具 (δ の蹴りへの応答 G = ∂n/∂δ) の検証。
-記録は docs/history/v2next_E.md。長い測定 (追跡 M2 の振幅別の表) は example/v2_next/E_pol_kick_response.py (PYSAD_SLOW=1 でここでも 1 本走る)。"""
+記録は docs/history/v2next_E.md。長い測定 (追跡 M2 の振幅別の表) は example/16_spin_polarization/pol_kick_response.py (PYSAD_SLOW=1 でここでも 1 本走る)。"""
 import os
 import sys
 

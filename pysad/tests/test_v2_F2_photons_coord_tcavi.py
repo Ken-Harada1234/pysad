@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """F2: PHOTONS (PhotonList) と COORD・TCAVI を同じラティスに置く (track6 が COORD・TCAVI を通す)。
-K64 は tcoord・ttcave で光子を記録しない (BEND・QUAD などだけ)。gs (K64) との照合: example/v2_next/F2_photons_coord_tcavi.sad
+K64 は tcoord・ttcave で光子を記録しない (BEND・QUAD などだけ)。gs (K64) との照合: example/07_spin_solenoid_special/flag_PHOTONS_coord_tcavi.sad
 (3 GeV、BEND ×4 + COORD の対 ×2 + TCAVI ×2、4 粒子 8 周、RAD・FLUC) の光子 278 個が、個数・全 12 列 (gs の出力桁 1e-10 まで) で一致。
 MAP を含むラティスは未対応 (ExternalMap の呼び出しが TrackRun の状態に依る)。"""
 import io
@@ -12,7 +12,7 @@ from pysad import ffscmd
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-SAD = os.path.join(ROOT, 'example', 'v2_next', 'F2_photons_coord_tcavi.sad')
+SAD = os.path.join(ROOT, 'example', '07_spin_solenoid_special', 'flag_PHOTONS_coord_tcavi.sad')
 
 
 def _parse_gs(path):

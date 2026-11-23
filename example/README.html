@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>example: SAD の機能・関数ごとの短い例 (gs と pysad の比較つき)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#フォルダ">フォルダ</a></li>
+<li><a href="#走らせ方">走らせ方</a></li>
+<li><a href="#読むときの注意">読むときの注意</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="example-sad-の機能関数ごとの短い例-gs-と-pysad-の比較つき">example: SAD の機能・関数ごとの短い例 (gs と pysad の比較つき)</h1>
+<p>SAD の機能・関数を 1 つずつ短い例にしたものです。1 つの例は 4 つのファイルで 1 組です。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NAME.sad</code></td>
+<td>SAD スクリプト (サンプルのラティスを先頭に含み、そのまま走る)</td>
+</tr>
+<tr>
+<td><code>NAME.gs.txt</code></td>
+<td>SAD (gs) で走らせたときの画面表示のリダイレクト</td>
+</tr>
+<tr>
+<td><code>NAME.pysad.txt</code></td>
+<td>pysad で走らせたときの画面表示のリダイレクト</td>
+</tr>
+<tr>
+<td><code>NAME.md</code></td>
+<td>説明 (何を見る例か、結果の読み方、物理・解析式と数値の照合、gs と pysad の比較、未確認・限界)</td>
+</tr>
+</tbody>
+</table>
+<p>ファイル名は SAD の機能・関数そのものの名前です。種別の接頭辞は <code>FFS_</code> (FFS コマンド)、<code>fn_</code> (関数)、<code>flag_</code> (フラグ)、<code>elem_</code> (要素)、<code>var_</code> (特殊変数)、<code>syntax_</code> (文法) です。図は同じフォルダの PNG を <code>.md</code> から埋め込んでいます。式は LaTeX (<code>$...$</code>) で書いてあり、GitHub で表示されます。</p>
+<h2 id="フォルダ">フォルダ</h2>
+<table>
+<thead>
+<tr>
+<th>フォルダ</th>
+<th>分類</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="00_lattice"><code>00_lattice</code></a></td>
+<td>サンプルのラティス</td>
+<td><code>FODO_ring</code> (24 セル、3 GeV、周長 105.6 m) ほか</td>
+</tr>
+<tr>
+<td><a href="01_lattice_elements"><code>01_lattice_elements</code></a></td>
+<td>ラティスと要素定義</td>
+<td>要素、LINE、USE、SPLIT、TYPE、ORG、ワイルドカードなど</td>
+</tr>
+<tr>
+<td><a href="02_optics_cod"><code>02_optics_cod</code></a></td>
+<td>線形光学と COD</td>
+<td>CALCULATE、チューン、クロマティシティ、転送行列、COD、ジオメトリ</td>
+</tr>
+<tr>
+<td><a href="03_matching"><code>03_matching</code></a></td>
+<td>マッチング</td>
+<td>FIT・FREE・FIX・GO、フラグ、OptimizeOptics</td>
+</tr>
+<tr>
+<td><a href="04_emittance_radiation"><code>04_emittance_radiation</code></a></td>
+<td>エミッタンスと放射</td>
+<td>EMITTANCE、RADINT、RFSW・RAD・FLUC、放射積分の式</td>
+</tr>
+<tr>
+<td><a href="05_tracking"><code>05_tracking</code></a></td>
+<td>トラッキング</td>
+<td>TrackParticles、DA、APERT、TRPT、JITTER</td>
+</tr>
+<tr>
+<td><a href="06_collective"><code>06_collective</code></a></td>
+<td>集団効果</td>
+<td>WAKE、BEAMBEAM、CSR、Touschek、IBS</td>
+</tr>
+<tr>
+<td><a href="07_spin_solenoid_special"><code>07_spin_solenoid_special</code></a></td>
+<td>スピン・ソレノイド・特殊</td>
+<td>POL、SOL、MULT ANGLE、COORD、RADLIGHT</td>
+</tr>
+<tr>
+<td><a href="08_scripting"><code>08_scripting</code></a></td>
+<td>SADScript</td>
+<td>制御構文、反復子、<code>;</code>、リスト・文字列、関数定義、Module・Class、乱数</td>
+</tr>
+<tr>
+<td><a href="09_io_system"><code>09_io_system</code></a></td>
+<td>入出力・システム</td>
+<td>Print・Write・Read、ファイル、<code>$FORM</code>、時間</td>
+</tr>
+<tr>
+<td><a href="10_math_data"><code>10_math_data</code></a></td>
+<td>数値・データ処理</td>
+<td>Fit、Spline、NIntegrate、特殊関数、行列、定数</td>
+</tr>
+<tr>
+<td><a href="11_graphics"><code>11_graphics</code></a></td>
+<td>描画</td>
+<td>Plot 系、OpticsPlot、BeamPlot、LaTeX</td>
+</tr>
+<tr>
+<td><a href="12_gui_tkinter"><code>12_gui_tkinter</code></a></td>
+<td>Tkinter・GUI</td>
+<td>Tkinter.n、KBFrame.n</td>
+</tr>
+<tr>
+<td><a href="13_packages"><code>13_packages</code></a></td>
+<td>Packages/*.n</td>
+<td>CorrectOrbit、MakeBump、optimize、D.n、TableForm など</td>
+</tr>
+<tr>
+<td><a href="14_nonlinear_dynamics/README.html"><code>14_nonlinear_dynamics</code></a></td>
+<td>非線形ダイナミクス</td>
+<td>周波数マップ (<code>frequency_map/</code>)、6 極の共鳴駆動項 (RDT)・振幅依存チューンシフト (ADTS)・クロマティシティ (<code>adts_rdt/</code>)、1 周の写像の正規形・K0≠0 の偏向磁石・共鳴の島 (<code>normal_form/</code>)、入門の図 (<code>primer/</code>)。解説は docs/24〜26。台本ごとのまとめは <code>adts_rdt/ADTS_summary.md</code>・<code>frequency_map/FMAP_summary.md</code></td>
+</tr>
+<tr>
+<td><a href="15_lma_touschek/README.html"><code>15_lma_touschek</code></a></td>
+<td>局所運動量アクセプタンス (LMA) と Touschek 寿命</td>
+<td>LMA の計算・信頼性・誤差と補正 (<code>lma/</code>)、elegant との LMA・Touschek 寿命の比較と Touschek の式 (<code>touschek_elegant/</code>)。解説は docs/26</td>
+</tr>
+<tr>
+<td><a href="16_spin_polarization/README.html"><code>16_spin_polarization</code></a></td>
+<td>スピン追跡・偏極度・緩和率</td>
+<td>POL・Polarization・側帯・クロマティックな変調・領域内のスピン・加速中のスピン。解説は docs/16</td>
+</tr>
+<tr>
+<td><a href="pf"><code>pf</code></a></td>
+<td>PF (2.5 GeV) の例集</td>
+<td>実機ラティスでの光学・マッチング・チューンシフト・放射積分・トラッキング・入射軌道。PF の履歴ラティス (1981・1986・1997・2005 年、<a href="pf/lattice/PF_history.html"><code>pf/lattice/PF_history.md</code></a>) の例を含む。索引は <a href="pf/README.html"><code>pf/README.md</code></a></td>
+</tr>
+<tr>
+<td><a href="kek_ls"><code>kek_ls</code></a></td>
+<td>KEK-LS (3 GeV、20 セル、ESRF 型 HMBA) の例集</td>
+<td>設計 (セルのチューン・6 極・入射セル・リングを閉じる・縮小・セル数・チューンサーベイ)、パラメータ表示 (εx・ξ・オプティクス・チューンシフト)、誤差入りの COD の補正。元の設計用スクリプトを整えた一式。索引は <a href="kek_ls/README.html"><code>kek_ls/README.md</code></a>、元との対応は <a href="kek_ls/ORIGINAL_MAP.html"><code>kek_ls/ORIGINAL_MAP.md</code></a></td>
+</tr>
+<tr>
+<td><a href="ddba"><code>ddba</code></a></td>
+<td>複雑なセルのラティスの設計手順の例 (DDBA、HLS ring の系列。5 GeV・2.5 GeV、周長 731〜757 m)</td>
+<td>設計メモの版 <code>DDBA_01</code>〜<code>DDBA_28</code> を、基本セルの構想・セルのマッチング・チューン点・6 極・等時性セル・リングへの展開・誤差と補正・最終の版、の段階に並べ直したもの。28 本のラティス (<code>cell calc emit</code> の周長・チューン・εx の表、gs との比較)、最終の版の例。最終の版 v07_14 のチューンのマッチング・チューンサーベイ・誤差の計算 (補正しながら誤差を大きくする手法)・パラメータ表示の一式は <a href="ddba/v07_14/README.html"><code>ddba/v07_14/</code></a>、6 極の検討 (RDT・ADTS の解析式による検証と最適化の試作。最適化は最終設定より DA の広い解を出せなかった) は <a href="ddba/v07_14/sextupole/README.html"><code>ddba/v07_14/sextupole/</code></a> (台本 <code>V0714_*.sad</code>、gs と pysad の比較、元のスクリプトとの対応 <code>ORIGINAL_MAP.md</code>)。索引は <a href="ddba/README.html"><code>ddba/README.md</code></a>、元との対応は <a href="ddba/ORIGINAL_MAP.html"><code>ddba/ORIGINAL_MAP.md</code></a></td>
+</tr>
+<tr>
+<td><a href="astrid"><code>astrid</code></a></td>
+<td>ASTRID2 (0.58 GeV) の例集</td>
+<td>チューンサーベイ、MPW、位相空間、ラティスの作り方。索引は <a href="astrid/README.html"><code>astrid/README.md</code></a></td>
+</tr>
+<tr>
+<td><a href="dxf_lattice/README.html"><code>dxf_lattice</code></a></td>
+<td>ラティスの CAD 図 (DXF)</td>
+<td><code>DrawMagnetsDXF[]</code> の平面図・磁石の立体。解説は docs/22</td>
+</tr>
+<tr>
+<td><a href="_deletable/README.html"><code>_deletable</code></a></td>
+<td>削除してよい作業ファイルの置き場</td>
+<td>整理のあとに不要になった途中の出力。例の説明・試験は参照していない</td>
+</tr>
+<tr>
+<td><code>tools</code></td>
+<td>道具</td>
+<td><code>.sad</code> の作成と、gs・pysad での実行 (<code>mk.py</code>、<code>run_example.py</code> ほか。<code>pf_astrid/</code> は pf・astrid の作成用で、パスは整理前のまま)</td>
+</tr>
+</tbody>
+</table>
+<p>各フォルダの <code>README.md</code> に、そのフォルダの例の一覧と、gs と pysad の一致状況 (○ 一致、△ 差あり、× 未対応・失敗) があります。</p>
+<h2 id="走らせ方">走らせ方</h2>
+<pre><code class="language-bash">py -3.12 example/tools/run_example.py example/02_optics_cod/FFS_CALCULATE.sad
+</code></pre>
+<p>gs は WSL で、pysad は <code>PYSAD_SAD_PACKAGES</code> (K64 版 SAD の <code>Packages</code> のフォルダ) つきで走ります。gs の場所は <code>PYSAD_SAD_PACKAGES</code> の隣の <code>bin/gs</code> で、別の場所のときは <code>PYSAD_GS</code> (WSL から見た絶対パス) で指定します (<a href="tools/sadenv.py"><code>example/tools/sadenv.py</code></a>。gs を使う <code>example/</code> のスクリプトに共通)。<code>NAME.gs.txt</code> と <code>NAME.pysad.txt</code> が作り直されます。</p>
+<p><strong>v2 の注記</strong>: 例は既定の v2 モードで走らせた (<code>NAME.pysad.txt</code> は v2 モードの出力)。gs と同じ結果が要るときは <code>PYSAD_COMPAT=k64</code> を付けて走らせる (K64 のバグも再現する)。v2 で K64 のバグを直したために gs と違う値になる例は、各 <code>.md</code> の「gs と pysad の比較」に「v2 の注記」として書いてある (v2 の変更の一覧は <a href="../docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a>)。主な理由は、<code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75)、<code>MomentumCompaction</code> (B77)、<code>PolynomialFit</code> の x の平均が 0 のときの係数 (B18)、<code>InverseErf</code> (B47)、<code>For</code> の本体 (B71)、<code>RADLIGHT</code> の BEND の中の記録 (B65)、SPAC の空間電荷 (SPC1〜) です。各フォルダの <code>README.md</code> の ○△× は、v2 で違うものも含めて、<code>PYSAD_COMPAT=k64</code> では gs と一致するものを ○ としています (違いが残るものは行に書きました)。例外として <code>pf</code>・<code>astrid</code> のうち ASTRID2 の 5 例 (<code>MPW_v01_02_id</code>、<code>SetElement_BeamLine_Join</code>、<code>phase_x</code>、<code>amp_dep_ts</code>、<code>calc_RadInt</code>) は、v2 の既定との違いが表示の 7 桁目 (バケット高さ、αc) だけなので <code>.pysad.txt</code> を作り直していません。</p>
+<h2 id="読むときの注意">読むときの注意</h2>
+<ul>
+<li>表示や数字の桁、テキストの微妙なずれは追っていません。基準は、完走することと、意味のある値が合うことです。</li>
+<li>gs と pysad の差が大きいものは、各 <code>.md</code> の「gs と pysad の比較」と「未確認・限界」に書いてあります。主な pysad の未対応と差は、<code>For</code>・<code>Module</code> のスコープ・<code>BeginPackage</code>・<code>Read</code> の区切り・APERT の追跡・RADTAPER・SPAC・LOSSMAP・Tkinter ウィジェットのメソッドなどです。</li>
+<li>gs が落ちる例 (RadiationField の SIGSEGV など) は、その旨を <code>.gs.txt</code> と <code>.md</code> に残しています。</li>
+<li>gs の窓の画像は撮れていません。描画と GUI の図は、Canvas の項目を書き出した再描画と、pysad の窓の切り取りです。</li>
+<li>SAD は <code>E1</code>・<code>E2</code> を ANGLE に対する比として読みます (端の角度 = E1×ANGLE)。<code>FODO_ring</code> の BEND はこの読みで解析式と合います。</li>
+<li>ラティスはサンプルで、特定の実機のものではありません。エネルギー 3 GeV、周長 105.6 m、RF 電圧は例ごとに <code>.md</code> に書いてあります。</li>
+<li><code>pf</code> と <code>astrid</code> は、PF と ASTRID2 の実際のラティスを使った例集です。KEK の SAD チュートリアルの話題を、手元のラティスで作り直しました。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

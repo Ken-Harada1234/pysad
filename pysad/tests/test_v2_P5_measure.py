@@ -5,7 +5,7 @@ gs (K64、2026-11-19 の 10-19 ビルド) は、以前の記録 (B42) と違い�
 粒子の追跡 (tturn) で全粒子が落ちて np <= 1 になり、何も出力しない (FFS["MEASURE"] は {1, 0, 0})。TRCOD も先頭の位置だけ動き、ほかは SIGSEGV。
 k64 モードは gs と同じにした (measure.py の `_k64_measure`・`_k64_trcod`): 初期分布 (ttinit、B41 の DPY の読み違いも)・乱数の消費 (MEASURE ごとに種を戻さない)・
 統計の表示が、小さな FODO、大きなリング A (kek-ls_v03_12.lat、3 GeV、603 m)、PF リング (2.5 GeV、187 m)、ASTRID2 (0.58 GeV) で gs の表示と 4 桁で一致する。
-gs の出力は example/v2_next/P5_measure_*.gs.txt。v2 は追跡を通せる (B42 の修正) ので、位置が先頭でなくても出力する (その値の検証は test_v2_C*_measure.py)。
+gs の出力は example/02_optics_cod/fn_MEASURE_*.gs.txt。v2 は追跡を通せる (B42 の修正) ので、位置が先頭でなくても出力する (その値の検証は test_v2_C*_measure.py)。
 """
 import re
 

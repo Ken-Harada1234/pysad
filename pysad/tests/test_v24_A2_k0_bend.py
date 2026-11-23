@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2.4.0 A2: K0≠0 の偏向磁石 (挿入光源型) で ANGLE≠0・E1・E2≠0・K1≠0 がある場合の resdrive の解析式 (h・ADTS・ξ) を、独立な数値 (追跡の 1 周の写像のテイラー展開) と比べる。
 リング: 小さな FODO の 1 セルに 5 台の偏向磁石のブロック (K0 と ANGLE の列 (1/2, -1, 1, -1, 1/2) 倍で閉軌道が局所のバンプ)。条件: k64、RF・放射なし。
-ROTATE≠0 の偏向磁石は解析式に入れていない (警告が出る)。対応表は example/v2_4/A2_k0_bend_check.py の出力。"""
+ROTATE≠0 の偏向磁石は解析式に入れていない (警告が出る)。対応表は example/14_nonlinear_dynamics/normal_form/k0_bend_check.py の出力。"""
 import os
 import sys
 
@@ -14,8 +14,8 @@ from pysad import resdrive as R
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
-sys.path.insert(0, os.path.join(ROOT, 'example', 'v2_4'))
-import A2_k0_bend_check as C  # noqa: E402
+sys.path.insert(0, os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'normal_form'))
+import k0_bend_check as C  # noqa: E402
 
 
 def _h_err(lat, rows):

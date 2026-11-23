@@ -24,8 +24,8 @@ pysad の側の保存の仕方: 台本の `Exit;` の前に、全 Canvas の `fi
 元の `.sad` は書き換えない。項目の数は図の題に出している。
 
 ## gs と pysad の比較
-- **○ 一致 (2026-11-17 に修正)**: gs・pysad とも Tcl エラーなし、`Graphics` を返し、Canvas は 68 項目 (rectangle 20、polygon 8、line 21、text 19) で同数。
-- 以前の pysad は、2 つ目 (`MeshRange` つき) の描画中に `tagOrId "1" doesn't match any items` / `.1r.2b lower ...` の Tcl エラー (`Tkinter::tclerror: 1501`) を 9 回出した。原因は `TkCanvasLastItem`: K64 では Tk の `nextId-1` (`delete all` のあとも id は続く) だが、pysad は `find all` の最大値を返したので、再描画で全項目を消した直後は 0 になり、Canvas.n の `StartID=CanvasLastID+1` が古い 1 のままで `lower 85 1` (BelowFrame の矩形を枠の下へ) が存在しない項目 1 を指した。Canvas ごとに見た最大の id を覚えるようにした (試験 `test_tkcanvaslastitem_keeps_counting_after_delete_all`)。
+- **○ 一致**: gs・pysad とも Tcl エラーなし、`Graphics` を返し、Canvas は 68 項目 (rectangle 20、polygon 8、line 21、text 19) で同数。
+- `TkCanvasLastItem` は、K64 では Tk の `nextId-1` (`delete all` のあとも id は続く)。`find all` の最大値を返すと、再描画で全項目を消した直後は 0 になり、Canvas.n の `StartID=CanvasLastID+1` が古い 1 のままで `lower 85 1` (BelowFrame の矩形を枠の下へ) が存在しない項目 1 を指して、2 つ目 (`MeshRange` つき) の描画中に `tagOrId "1" doesn't match any items` / `.1r.2b lower ...` の Tcl エラー (`Tkinter::tclerror: 1501`) が出る。pysad は Canvas ごとに見た最大の id を覚えて同じ動きにする (試験 `test_tkcanvaslastitem_keeps_counting_after_delete_all`)。
 
 ## 未確認・限界
-色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/42 §7)。比べたのは Canvas の項目の種類・数 (図の題)。等高線の始点・向きは gs と pysad で違いうる (docs/42 §5)。`ColorFunction`・`Smoothing` は試していない。
+色・フォント・大きさの見た目、クリックなどの操作は比べていない (docs/21 §9)。比べたのは Canvas の項目の種類・数 (図の題)。等高線の始点・向きは gs と pysad で違いうる (docs/21 §7)。`ColorFunction`・`Smoothing` は試していない。

@@ -5,7 +5,7 @@
 ! 重要: 補正磁石 HD・VD は、リングの中で同じ要素名の繰り返しなので、既定の (EXPAND の) `cell calc` は K0 を全部同じ値に
 ! 揃えてしまい、成分ごとの LINE["K0","HD.7"] = … が効かない (HD.1 だけが全部に効く。gs・pysad とも)。そこで台本は
 ! `USE RING NOEXPAND` にして、`cc = "cell calc noexpand"`・`ccemit = "cell calc emit noexpand"` を使う
-! (docs/11 A56)。この modules も FFS[cc]・FFS[ccemit] を使う。元の台本は既定の `cell calc` のままで、
+! (docs/29 A56)。この modules も FFS[cc]・FFS[ccemit] を使う。元の台本は既定の `cell calc` のままで、
 ! 補正が効かなかった (README の「元の台本の問題」)。
 !
 ! 使う前に台本が用意するもの (大域変数):

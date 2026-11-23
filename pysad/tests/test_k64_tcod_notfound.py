@@ -51,7 +51,7 @@ def test_v2_solves_fixed_point(v2_mode):
     r, t = _run()
     assert 'closed orbit not found' not in t
     assert r['stable'] == 1.0
-    # k64 (収束していない軌道 + K64 の他の癖) と εx が 1〜3e-3 違う。固定点の側が正しい (docs/21 B163)
+    # k64 (収束していない軌道 + K64 の他の癖) と εx が 1〜3e-3 違う。固定点の側が正しい (docs/30 B163)
     assert 1e-3 < abs(r['ex'] / GS_SEXT['ex'] - 1.0) < 3e-3
 
 

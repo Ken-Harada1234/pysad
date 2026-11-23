@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CLAUDE.md</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#作業ルール">作業ルール</a></li>
+<li><a href="#要点">要点</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: CLAUDE.md</div>
+<h1 id="claudemd">CLAUDE.md</h1>
+<p>pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の <code>v2</code> は K64 のバグを直した動作で、<code>PYSAD_COMPAT=k64</code> で K64 と同じ動作に切り替える。最新は v2.4.1 (2026-11-23、<code>pysad.__version__</code> = 2.4.1)。PyPI は v2.4.0 まで (v2.4.1 は公開の準備中)。作業の前に次を読むこと。</p>
+<ol>
+<li><code>docs/history/00_RESUME.md</code>: 引き継ぎメモ (方針、構成、環境、現状、残課題、手順、落とし穴)。未解決の差の最新は <code>docs/history/work_unimpl.md</code>。</li>
+<li><code>docs/01_overview.md</code>: 全体像とモジュールの地図。</li>
+<li>必要に応じて <code>docs/29_sad_quirks.md</code> (SAD の癖)、<code>docs/12_pysad_api.md</code> (API)、<code>docs/31_unimplemented_and_unverified.md</code> (未実装・未確認・限界の一覧)、<code>docs/28_v2_vs_k64.md</code> (v2 と k64 の動作の違いの表)。K64 側のバグは <code>docs/30_sad_bug_report.md</code> (B01〜B162 とそれ以降の番号)。B160 は誤りではなく <strong>K1 の暗黙の定義</strong> ((1 + hx)∂b/∂x 一様、docs/29 A59)、B161 は CALC の行列の dk の不整合 (v2 は直してある)、B162 は Touschek の損失率の式 <code>touckf</code> の適用範囲 (v2 は Piwinski 型が既定)。</li>
+<li>要素・機能別 (使い方・式・K64 の癖・限界を 1 本にまとめてある): <code>docs/13_wake.md</code> (WAKE)、<code>docs/14_beambeam.md</code> (BEAMBEAM・BBBrem)、<code>docs/15_csr.md</code> (CSR)、<code>docs/16_spin_pol.md</code> (POL・スピン追跡)、<code>docs/17_sol.md</code> (SOL)、<code>docs/18_radlight.md</code> (RADLIGHT・放射場)、<code>docs/19_other_elements.md</code> (COORD・TCAVI・UND・MULT ANGLE・MAP)、<code>docs/20_tcltk_gui.md</code> (GUI/Tcl)、<code>docs/21_graphics.md</code> (描画)、<code>docs/22_lattice_dxf.md</code> (DXF)。FFS の小コマンド・DELCOR は <code>docs/04_ffs_small_commands.md</code>、特殊関数・Fit・GaussianCoulomb・SAD パッケージは <code>docs/06_sadscript_library.md</code>。
+   物理と理論: <code>docs/23_physics_guide.md</code> (K64 の計算の式)、<code>docs/24_adts_rdt_primer.md</code> (入門: ADTS・RDT・周波数マップ・LMA を何をどう求めたか。25・26 を読む前にこれ)、<code>docs/25_resonance_terms_adts.md</code> (共鳴駆動項・ADTS・クロマティシティ)、<code>docs/26_frequency_map_lma.md</code> (周波数マップ・局所運動量アクセプタンス)。旧い文書番号・名前の対応は <code>docs/history/docs_renumbering.md</code>。</li>
+</ol>
+<h2 id="作業ルール">作業ルール</h2>
+<ul>
+<li>md を作り直したら、同じ名前の .html も作り直す (<code>py -3.12 tools/build_html.py --changed</code>。ツールは <code>tools/</code> に別途作成中)。md にも HTML にも、履歴や版番号は入れない (必要なら本文に書く)。履歴は <code>docs/history/</code> だけに置く。</li>
+<li>解説文書 (<code>docs/*.md</code>) は現状の説明だけ。経緯は <code>docs/history/</code> に書く。未確認・限界・使った条件 (エネルギー、磁場、周長) を必ず書く。</li>
+</ul>
+<h2 id="要点">要点</h2>
+<ul>
+<li><strong>互換モード</strong>: 既定は <code>v2</code> (K64 のバグを直した動作)。gs (K64) と同じ結果が要るときは <code>PYSAD_COMPAT=k64</code> (または <code>pysad.compat.set_mode('k64')</code>)。既存の試験と回帰 (<code>run_regression.py</code>。作業者のローカルにあり、リポジトリには入っていない) は gs との比較なので k64 で走る (<code>pysad/tests/conftest.py</code>)。v2 の動作の試験は <code>test_v2_*.py</code> で <code>v2</code> を明示する。結果が変わる箇所を足すときは <code>compat.v2()</code> で分け、<code>docs/28_v2_vs_k64.md</code> と <code>docs/30_sad_bug_report.md</code> に書く。</li>
+<li>再導出せず直訳する。ただし v2 で変えたものは docs/28_v2_vs_k64.md の表のとおり。数値の根拠は K64 版のソース (v2 の修正の根拠は解析式・独立な数値計算)。ヘルプは CERN の SADHelp か K64 版同梱の SADHelp.html (KEK 公式サイトは別系統なので参照しない)。</li>
+<li>翻訳の対象は Fortran / C の物理計算。<code>Packages/*.n</code> は Python で書き直し、ファイル・リスト・GUI・描画は Python のライブラリに任せる。
+  例外: GUI (Tkinter.n / KBFrame.n など) と SAD のパッケージ (CorrectOrbit など) は書き直さず、SAD 自身の <code>.n</code> を pysad のインタプリタで解釈する (<code>docs/20_tcltk_gui.md</code>、<code>docs/06_sadscript_library.md</code>)。</li>
+<li>テストは <code>py -3.12 -m pytest pysad/tests -q</code> (旧式の 3 本を <code>--ignore</code>、手順は 00_RESUME.md §4)。現在の通しは 2507 通過・13 skip・失敗 0 (2520 件収集) (2026-11-23、1 時間 40 分。回帰 <code>QUICK=1</code> 50 ベンチ FAIL 0。<code>PYSAD_SAD_PACKAGES</code> つき、k64 が既定。内訳は README.md の試験の表)。GUI 系は <code>PYSAD_SAD_PACKAGES</code> が無いと skip。SAD 本体が無くても通る。各試験ファイルのあと、残った Tk のルート窓は <code>conftest.py</code> の autouse fixture が閉じる。<code>test_plot.py::test_fitgaussian_plot_matches_gs</code> は回帰と同時だと PermissionError で落ちることがあり、単独で通る。試験が走らせる SAD スクリプトと gs・pysad の画面表示は <code>pysad/tests/scripts/</code>、対応表は <code>pysad/tests/OUTPUTS.md</code> (<code>make_outputs_md.py</code> で作る)。</li>
+<li>numba のカーネル (<code>elkern.py</code>・<code>perfkern*.py</code>・<code>turnkern.py</code>・<code>track6n*.py</code> など) を編集したら、試験の前に <code>py -3.12 -m pysad.nbcache</code> を 1 回走らせる (キャッシュの無効化。<code>pysad/nbcache.py</code>)。</li>
+<li>主なモジュール (K64 にない機能は互換モードによらず同じ動作): <code>pysad/naff.py</code> (NAFF)、<code>specfn_cx.py</code>・<code>specfn_cx2.py</code> (複素の特殊関数)、<code>spch_k64.py</code> (k64 の PSPAC)、<code>trksetup.py</code> (追跡の設定・周期性)、<code>freqmap.py</code> (周波数マップ)、<code>fmapcheck.py</code> (周波数マップの信頼性・警告・<code>D_norm</code>)、<code>fmappred.py</code> (共鳴線の予想。追跡からの当てはめは足さない)、<code>fmapres.py</code> (周波数マップの D の大きい領域を、RDT・ADTS から予想した共鳴の領域と比べる。1 次の RDT の共鳴だけ)、<code>lma.py</code> (局所運動量アクセプタンス、Touschek への受け渡し)、<code>lmabucket.py</code> (RF バケットとアパーチャの限界の区別)、<code>q1cmd.py</code> (台本の関数)、<code>resdrive.py</code> (共鳴駆動項・ADTS・クロマティシティ)、<code>rdt2nd.py</code> (4 次の共鳴駆動項 h_jklm、6 極の 2 次)、<code>nform.py</code> (数値の正規形)、<code>rdttrack.py</code> (追跡の 1 周の写像のテイラー展開から共鳴駆動項を取り出す)、<code>adtsdirect.py</code> (実際の強さの追跡 + NAFF + フィットの ADTS の直接の検証)、<code>bendnl.py</code> (偏向磁石の 3 次のリー生成関数を追跡の写像から取り出す)、<code>touschek.py</code> の <code>touschek_piwinski</code> (Piwinski 型の損失率。v2 の <code>TouschekLifetime[INF, INF, nz]</code>・<code>TouschekLifetimeLMA[]</code> の既定。<code>Formula-&gt;"K64"</code>・k64 は K64 の表)、<code>sxtopt.py</code> (6 極の K2L の多項式モデル + 解析的な勾配 + SLSQP の最適化の試作)。SAD の台本の関数 <code>FrequencyMap[]</code>・<code>MomentumAcceptance[]</code>・<code>TouschekLifetimeLMA[]</code>・<code>ResonanceDrivingTerms[]</code>・<code>AmplitudeTuneShift[]</code>・<code>ChromaticityTerms[]</code> は pysad のみ (gs には無い)。解説は docs/26・25・24、例は <code>example/14_nonlinear_dynamics/</code>・<code>example/15_lma_touschek/</code>、試験は <code>test_v23_Q*.py</code>・<code>test_v23_R*.py</code> など。</li>
+<li>新しいオプション: <code>compat.set_bend_k1_edge('face')</code>、<code>spin.CHROMATIC</code>・<code>ST_EXACT</code>・<code>KINETIC</code>・<code>STEP_RATE</code>、FFS の <code>WSPACSC</code>。DAPWIDTH の既定は 7。</li>
+<li>解析式 (RDT・ADTS・共鳴線の予想) の方針: 摂動論の定義された次数と入れた効果の範囲で原理的に作り、追跡に合わせるための補正項は足さない。文書は「入れている効果と次数」「入れていない効果」「差の原因」の形で書く (docs/25 §11.9)。追跡から係数を取り出すのは偏向磁石の生成関数だけ (原理は docs/25 §8.1)。</li>
+<li>ADTS: 基準値は追跡 (<code>adtsdirect.direct_adts</code>)。<code>adts()</code> の <code>.total</code> は運動学・四極の端部のフリンジと、偏向磁石の 3 次の項 (曲率・硬い端・複合機能の本体・E1/E2) の対の項・6 極との交差項 (<code>bendnl.py</code> が追跡の写像から取り出す。<code>bend_cubic=True</code> が既定、<code>False</code> でそれを入れない) を足した値。既定は物理的な項だけ (<code>fourth='r3'</code>・<code>optics='calc'</code>)。<code>fourth='r6'</code> (四極の積分器の台形則と偏向磁石の 4 次の項。数値積分器の 0.1〜0.3% の端数) と <code>optics='tracked'</code> は精密版のオプション。追跡との差は 6 極 ×1 で 0.01〜0.26% (残りは 6 極に依らない 4 次の定数、ASTRID2 1.1・1.1・2.6 [1/(m rad)]。原因は、K64 の四極の本体が ∫p⁴/8 の台形則 (<code>kinematic_h4(quad_rule="k64")</code>) であること)。δ≠0 の kick の強さの 1/(1+δ) 倍の補正は入れてある。</li>
+<li>共鳴駆動項 <code>resonance_terms()</code> の <code>.total</code> は 6 極 + 偏向磁石の 3 次の項 (<code>bend_cubic=True</code> が既定、<code>.total_sext</code>・<code>.total_bend</code>、6 極のみは <code>bend_cubic=False</code>。δ の項は分散による軌道のずれの展開、δ≠0 では入れない)。4 次の名前 <code>h22000</code> などを渡すと 4 次の項が回る (<code>order2=True</code> が既定、台本 <code>Order2-&gt;</code>)。追跡の 1 周の写像の 2 次のテイラー展開との差は、6 極の分は 6 リングで 1e-6 以内、偏向磁石つきの全体は 1e-8 (FODO・ASTRID2)〜4e-7 (大きなリング A)・5e-5 (MPW)。ADTS との整合は、写像の対角 + 正規形の補正 (<code>nf_correction</code>) = <code>adts(fourth='r6')</code>。</li>
+<li>周波数マップ・LMA の既定: LMA の <code>check_every</code> = 1、<code>FrequencyMap[]</code> は RFSW・RAD・FLUC OFF、RAD OFF の RF の同期位相 0。</li>
+<li>elegant との比較 (<code>example/15_lma_touschek/touschek_elegant/</code>、<code>docs/history/v23_T1.md</code>): LMA は ASTRID2・kek-ls とも elegant と 0.5% 以内、Touschek 寿命の式は ±5% 違う。B160 (K1≠0 の BEND の K1 の暗黙の定義) は誤りではなく、elegant には K2 = −hK1 を足す (<code>docs/history/v23_U1.md</code>)。</li>
+<li>6 極の検討の試作 (<code>pysad/sxtopt.py</code>、例 <code>example/ddba/v07_14/sextupole/</code>、試験 <code>test_ddba_sextupole.py</code> 8 件): 6 極の組 32 通りで、解析式の目的関数と追跡の x–y DA 面積の順位相関は ρ = −0.89。検証 (小〜中振幅の DA の健全性チェック) には条件つきで使える。LMA の予測には使えない。最適化の試作は、最終設定より DA の広い解を出せない (DA 面積は最終設定の 0.60〜0.71 倍)。不足は、J² の ADTS・δ 依存・5 次以上の駆動項。</li>
+<li>パーサ・評価器・FIT の扱い (docs/31 §4): ユーザー定義の関数名 <code>At</code> (メンバー参照の内部の頭は <code>SAD$Member</code>)、<code>FitFunction</code> を併用する <code>fit</code> (NaN の行は条件にしない・末尾の数 <code>3.</code> のパース・FitFunction の行は k64 で不等式型・USE のたびに DP を MARK に戻す)、<code>pm1.sad</code> の NaN (qcod が見つからないとき tcod は 0 から始める)。パーサは、逆向きの文脈の <code>-LINE</code> を二重に反転せず、k64 の <code>1.7MV</code> など数に隣接する単位を解釈する。</li>
+<li>文書・例に出してよいラティス: <code>pysad/tests/kek-ls_v03_12.lat</code> (KEK-LS、大きなリング A。ESRF 型の HMBA で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した)・<code>example/kek_ls/lattice/*</code> (KEK-LS v03_68。3 GeV、周長 570.72 m)・<code>example/pf/lattice/*</code> (PF の履歴ラティス <code>pf_1981_460nmrad</code>・<code>pf_1986_128nmrad</code>・<code>pf_1997_036nmrad</code>・<code>pf_2005_036nmrad</code> を含む)・<code>example/astrid/lattice/*</code>・<code>example/ddba/lattice/*</code> (DDBA のラティス。5 GeV・2.5 GeV、周長 731〜757 m。複雑なセルの設計手順の例集 <code>example/ddba/</code>、最終版 <code>v07_14/</code>) と、名前だけ「SP8 (大きなリング B)」(SPring-8 型。デザインレポートより再現。8 GeV、周長 1436 m、矩形の偏向磁石 88 台。ラティスのファイルは追跡外なので、パスは書かない) だけ。それ以外の大きなリングはエネルギーと周長で書き、名前・パスを書かない。</li>
+<li>gs の 10-19 ビルドは、保存済みの参照 (10-14) と値が違うことがある (00_RESUME.md §8)。</li>
+<li>コミットしてよいのは追跡対象 (00_RESUME.md §9) だけ。出力や中間ファイルを入れない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

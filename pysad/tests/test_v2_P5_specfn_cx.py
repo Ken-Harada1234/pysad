@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """担当 P5 (v2next) 項目 3: 複素引数の特殊関数の k64 の挙動を gs と比べ、足りなかった関数を足した (pysad/specfn_cx2.py)。
 
-走査: 12 個の複素数 (|z| 0.05〜22) × 60 の関数・形 = 732 式を gs と pysad (k64) で評価した (example/v2_next/P5_specfn_cx_scan.*)。
+走査: 12 個の複素数 (|z| 0.05〜22) × 60 の関数・形 = 732 式を gs と pysad (k64) で評価した (example/10_math_data/fn_SpecialFunctions_complex_scan.*)。
 結果: 追加前は gs と 1e-9 で一致するのが 436 式。追加後は **641 式** (相対 1e-9)。残り 91 式は gs の値が誤る・不正確で、独立な基準 (scipy.special、級数) と比べて pysad が正しい:
   - gs の誤り (大きな差): LogGamma (Im z < 0 の Re z < 0 で虚部の分枝が 4π 違う)、Erf・Erfc (Re z < 0 で 2 − 真値など)、ExpIntegralEi (複素引数は全 12 点で誤り: D.n の式、
     実引数の B44 と同じ)、ArcCosh (複素数で符号が逆: 実数 0.5 の K64 の動作 −1.047 I と同じ向き)、FresnelS・FresnelC (|z| ≥ 12 で 1e38 など)、BesselY の複素引数 (gs は NaN)、
     HypergeometricU の整数 b (B120)・HurwitzZeta の Re s < −8 の点 (B118 の周辺)・PolyLog (B119)。
   - gs の精度の低さ: BesselK (|z| 大で 1e-9〜1e-1)、AiryAi・AiryBi (|z| 大)、ExpIntegralE[1,-20-10I] (4e-6)、Factorial (1e-9〜3e-8)。
-  k64 モードは gs が誤る点でも真値を返す (docs/21 B118〜B120 と同じ扱い。gs の誤りの再現には K64 の gamma.f・D.n の直訳が要るので、要判断のまま)。
+  k64 モードは gs が誤る点でも真値を返す (docs/30 B118〜B120 と同じ扱い。gs の誤りの再現には K64 の gamma.f・D.n の直訳が要るので、要判断のまま)。
 追加した関数 (実数引数は従来どおり。複素数が 1 つでもあれば複素の実装): ExpIntegralE[n,z] (整数 n)・ExpIntegralEi・PolyGamma・HarmonicNumber・ProductLog・SinIntegral・CosIntegral・
 FresnelS・FresnelC・Beta・Factorial・GammaRegularized (P・Q)・Gamma[a,z]・LegendreP[ν,z]・WhittakerM・WhittakerW・BesselJ[ν,x] (複素の次数、|x| ≤ 25)。
 従来の pysad は虚部を黙って捨てた実数を返す (ExpIntegralEi・SinIntegral・FresnelS/C・HarmonicNumber・LegendreP) か、何も返さなかった。

@@ -1,5 +1,0 @@
- Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  -3.85E-15 $$$       f BX    #######  #    .436787 $$$       f NX    #######  #   5.450000
-$$$       f AY    #######  #  6.335E-15 $$$       f BY    #######  #   1.623165 $$$       f NY    #######  #   2.140226
-$$$       f LENG  #######  #  45.704400
-Polarization, PolarizationTime [s] = {     .7007058290, 21914.454538124}

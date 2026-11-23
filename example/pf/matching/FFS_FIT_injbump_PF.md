@@ -26,6 +26,10 @@ free KK1 K0;  free KK2 K0;  free KK3 K0;  free KK4 K0;  go;
 
 収束は `Matched. (1.4e-10)`。
 
+![入射バンプの軌道](fig_FIT_injbump_PF.png)
+
+横軸は入射部分 (114 要素、27.7 m) の s [m]、縦軸は GO のあとの水平の閉軌道のずれ DX [mm]。点線がキッカー KK1〜KK4 の位置で、橙の点が入射点 INJ (DX = 15 mm)。軌道は KK1 から立ち上がり、INJ を通って最大約 17.5 mm になり、KK4 のあと 0 に戻る。KK3 は INJ の下流にあるが、バンプを閉じるために使う (表のとおり)。
+
 ## 物理・解析式
 薄い蹴りが下流で作る軌道は $x(s) = -\theta\sqrt{\beta_k\beta_s}\sin(\psi_s-\psi_k)$ (SAD の K0 の符号が負の向きなので負号)。INS モードの Twiss の位相 `Twiss["NX",...]` を使い、各キッカーの中央の値で和を取った。
 
@@ -37,7 +41,7 @@ free KK1 K0;  free KK2 K0;  free KK3 K0;  free KK4 K0;  go;
 式との差は INJ で 0.7%。キッカー (L=0.3 m) を中央の薄い蹴りに置き換えた近似と、KK2 (46 番) と INJ (48 番) の間の距離による。
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。保存してあった旧い出力は `PYSAD_COMPAT=k64` の出力と同じ (確認済み)。v2 は K64 のバグを直したので (`docs/47_v2_changes.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 モードと k64 モード**: `.pysad.txt` は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (`docs/28_v2_vs_k64.md`。主に `Emittance[]`・EMIT・追跡の Jx の端の項 B75 と `MomentumCompaction` B77)、この例の出力のうち `Emittance[]` の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ K0 は 9 桁一致 (-2.5210688818 / -2.5210688817 など)、DX・DPX の残りは 1e-10 の雑音の桁で違う。
 

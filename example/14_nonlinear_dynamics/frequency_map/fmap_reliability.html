@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>周波数マップの信頼性の例</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: fmap_reliability.md</div>
+<h1 id="周波数マップの信頼性の例">周波数マップの信頼性の例</h1>
+<p>解説は <code>docs/26_frequency_map_lma.md</code> (§3.2・3.3・3.6・§10)、台本ごとのまとめは <a href="FMAP_summary.html"><code>FMAP_summary.md</code></a> §14、試験は <code>pysad/tests/test_v23_S2_fmapcheck.py</code>、コードは <code>pysad/fmapcheck.py</code>・<code>freqmap.py</code>・<code>fmapres.py</code> (<code>apply_alignment_errors</code>)。
+実行はリポジトリ直下から <code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_xxx.py ...</code> (標準出力をファイルへ落とすときは <code>PYTHONUTF8=1</code>)。結果の数値は <code>example/14_nonlinear_dynamics/frequency_map/fmap_check_data/*.jsonl</code> (1 行 = 1 つの周波数マップ。走った組は飛ばして追記する)。
+共通の条件: v2、RFSW・RAD OFF、LOSSAMPL = 0.1 m、px = py = z = 0 から出発、NAFF の窓 Hann (p = 1)、規格化 = 標本の楕円、1024 周、<strong>格子 21 × 16 = 336 点</strong> (41 × 31 の格子の 1 つおき)。ASTRID2: 位置 2、x = 0.5〜18 mm、y = 0.5〜14 mm。KEK-LS: 位置 3、x = 0.2〜6 mm、y = 0.2〜8 mm。
+使ったラティス: <code>example/astrid/lattice/ASTRID2_v01_01.sad</code>・<code>ASTRID2_v01_02_id.sad</code> (MPW)、<code>pysad/tests/kek-ls_v03_12.lat</code> (KEK-LS、大きなリング A、ESRF 型の HMBA)。
+CPU は 4 コアまで (ProcessPoolExecutor で 1 つの周波数マップ = 1 プロセス、3 並列)。1 つの周波数マップ (336 点・1024 周) は ASTRID2 で 110〜150 s、KEK-LS で 90〜200 s (他の計算が同時に走っていた)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>ファイル</th>
+<th>内容・コマンド</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 誤差つき</td>
+<td><code>fmap_check_errors_scan.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_errors_scan.py astrid2 --seeds 1-8 --levels 0.3,1,3 --kinds all --jobs 3</code> (種類ごと: <code>--seeds 1-5 --levels 1,3 --kinds quad_dxy,sext_dxy,bend_rot,quad_rot,bend_dxy</code>、フィードダウンを切る: <code>--kinds all_cs</code>、KEK-LS: <code>kekls --seeds 1-5 --levels 0.03,0.1,0.3,1 --kinds all</code>、<code>kekls --seeds 1-3 --levels 0.1 --kinds quad_dxy,sext_dxy,oct_dxy,bend_rot,quad_rot,bend_dxy,all_cs</code>)</td>
+<td><code>errors_astrid2.jsonl</code>・<code>errors_kekls.jsonl</code></td>
+</tr>
+<tr>
+<td>〃 集計</td>
+<td><code>fmap_check_errors_summary.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_errors_summary.py astrid2</code> (または <code>kekls</code>)</td>
+<td><code>fmap_check_errors_summary_astrid2.out.txt</code>・<code>fmap_check_errors_summary_kekls.out.txt</code></td>
+</tr>
+<tr>
+<td>〃 結合だけ</td>
+<td><code>fmap_check_coupling.py</code></td>
+<td>1 台の QF3 のロールだけで</td>
+<td>c−</td>
+</tr>
+<tr>
+<td>〃 KEK-LS の閉軌道</td>
+<td><code>fmap_check_kekls_orbit.py</code></td>
+<td>補正なしの誤差 ×0.03〜×3 × 種 1〜5 の閉軌道・安定性・結合の見積もり</td>
+<td><code>fmap_check_kekls_orbit.out.txt</code></td>
+</tr>
+<tr>
+<td>2 MPW</td>
+<td><code>fmap_check_mpw.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_mpw.py --jobs 3</code>: MPW の強さ s = 0〜1、νy を ±0.01〜0.05 (四極 2 家族の Newton 法)、νx・νy を MPW なしに戻す</td>
+<td><code>mpw.jsonl</code>、<code>fmap_check_mpw.out.txt</code></td>
+</tr>
+<tr>
+<td>3 RFSW・FLUC</td>
+<td><code>fmap_check_rfsw.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_rfsw.py --jobs 3</code>: base・rf・rfrad・rfradfluc (種 17・29)・radfluc</td>
+<td><code>rfsw.jsonl</code></td>
+</tr>
+<tr>
+<td>〃 gs</td>
+<td><code>fmap_check_gs_rfsw.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_gs_rfsw.py</code> (gs は WSL、timeout 1700 s、終了後に sad1.exe の残りを確認): RFSW ON・RAD OFF の 6 点、512 周</td>
+<td><code>fmap_check_gs_rfsw.{sad,gs.txt,pysad.txt,out.txt}</code></td>
+</tr>
+<tr>
+<td>4 K1 の設定</td>
+<td><code>fmap_check_k1opts.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_k1opts.py --jobs 2</code>: default・face・lin・face_lin・k64</td>
+<td><code>k1opts.jsonl</code>、<code>fmap_check_k1opts.out.txt</code></td>
+</tr>
+<tr>
+<td>5 周回数・窓・格子</td>
+<td><code>fmap_check_nturn.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_nturn.py astrid2</code> (<code>kekls</code>、<code>--errors 1,1</code>): 1 回の追跡 4096 周から N = 256〜4096、窓 p = 0〜3。点ごとの傾き</td>
+<td><code>fmap_check_nturn_*.out.txt</code>、<code>fmap_check_data/nturn_*.npz</code></td>
+</tr>
+<tr>
+<td>〃 格子</td>
+<td><code>fmap_check_grid.py</code></td>
+<td>保存済みの 41 × 31 の表から 1〜5 つおきの部分格子</td>
+<td><code>fmap_check_grid.out.txt</code></td>
+</tr>
+<tr>
+<td>7 gs・誤差つき</td>
+<td><code>fmap_check_gs_errors.py</code></td>
+<td><code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_gs_errors.py</code>: pysad の誤差の値を実体ごとの要素定義として gs の台本に書く (<code>LINE["DX", n] = 値</code> は同じ名前の全実体に効くので使えない)、6 点、512 周</td>
+<td><code>fmap_check_gs_errors.{sad,gs.txt,pysad.txt,out.txt}</code></td>
+</tr>
+</tbody>
+</table>
+<p>台本からの警告: <code>FrequencyMap[]</code> は既定で RFSW・RAD OFF (現在のフラグは使わない。<code>UseFlags-&gt;True</code> で使う)、警告は <code>FrequencyMap: WARNING [コード] …</code> で出る (<code>test_script_frequency_map_safe_default</code>)。</p>
+<p>再現の確認: <code>py -3.12 -m pytest pysad/tests/test_v23_S2_fmapcheck.py -q</code> (約 10 s。保存済みの出力を読む試験を含む)。gs の再走 (<code>fmap_check_gs_errors.py</code>・<code>fmap_check_gs_rfsw.py</code>、各 1 分以内) は保存済みの出力と一致する。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

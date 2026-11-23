@@ -3,7 +3,7 @@
 
 (1) 平坦ビームの極限が Bruck・Piwinski の関数 D(ε) (記憶に基づく式) に一致、K64 の当てはめ touschek_f の誤差 (≤ 1.1%)、
 (2) 1 次元の式が、3 次元の一般の積分・実験室系の対のモンテカルロ (厳密な相対論の運動学) と一致 (ASTRID2 のスライス)、
-(3) ASTRID2 のリング: K64 の表・Piwinski 型の式・保存済みの elegant (example/v2_3/T2_scan_*.json) の比、
+(3) ASTRID2 のリング: K64 の表・Piwinski 型の式・保存済みの elegant (example/15_lma_touschek/touschek_elegant/touschek_formula_scan_*.json) の比、
 (4) 引数 (一様・要素ごとの配列、片側ずつ)、局所の受容 (lma.touschek_lifetime_local_piwinski)、台本の TouschekLifetime[INF, INF, nz] の既定 (v2 = Piwinski、k64 = 表)・Formula->。
 """
 import json
@@ -23,7 +23,7 @@ from pysad.trksetup import TrackSetup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-EX = os.path.join(ROOT, 'example', 'v2_3')
+EX = os.path.join(ROOT, 'example', '15_lma_touschek', 'touschek_elegant')
 ASTRID = os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_01.sad')
 sys.path.insert(0, EX)
 
@@ -77,11 +77,11 @@ def test_ring_values_k64_and_piwinski(ring):
 
 
 def test_stored_elegant_scan_agrees_with_independent_formula():
-    """保存済みの比較 (example/v2_3/T2_scan_*.json、elegant は全要素を 8 分割して標本化): elegant は独立な式と −1.6% … +0.3% (elegant の損失率が少し大きい)。
+    """保存済みの比較 (example/15_lma_touschek/touschek_elegant/touschek_formula_scan_*.json、elegant は全要素を 8 分割して標本化): elegant は独立な式と −1.6% … +0.3% (elegant の損失率が少し大きい)。
     K64 の式は丸いビーム (MINCOUP 1) などで −14%〜+21%"""
     ks = []
     for name in ('astrid2', 'kekls'):
-        for r in json.load(open(os.path.join(EX, 'T2_scan_%s.json' % name))):
+        for r in json.load(open(os.path.join(EX, 'touschek_formula_scan_%s.json' % name))):
             e = r['elegant'] / r['piwinski'] - 1
             assert -0.016 < e < 0.003
             ks.append(r['k64'] / r['piwinski'] - 1)
@@ -140,9 +140,9 @@ def test_script_default_and_formula_option(ring):
 
 
 def test_one_dimensional_formula_vs_3d_and_relativistic_mc(ring):
-    """ASTRID2 の 1 スライスで、1 次元の式を 3 次元の一般の積分 (T2_check3d) と実験室系の対のモンテカルロ (T2_mc、厳密な相対論) と比べる (小さな標本。本番は T2_validate: 3D は 1e-3、MC は 0.3% 以内)"""
-    from T2_check3d import slice_rate3d
-    from T2_mc import mc_rate
+    """ASTRID2 の 1 スライスで、1 次元の式を 3 次元の一般の積分 (touschek_formula_check3d) と実験室系の対のモンテカルロ (touschek_formula_mc、厳密な相対論) と比べる (小さな標本。本番は touschek_formula_validate: 3D は 1e-3、MC は 0.3% 以内)"""
+    from touschek_formula_check3d import slice_rate3d
+    from touschek_formula_mc import mc_rate
     st, ffs = ring
     old = compat._mode
     compat.set_mode('v2')

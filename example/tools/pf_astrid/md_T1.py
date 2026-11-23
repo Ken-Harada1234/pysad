@@ -141,7 +141,7 @@ DP0 = 0;   Print[PolynomialFit[tunex,3]];
 ## 結果の読み方
 ![tune vs dp](fn_PolynomialFit_PF_tune_vs_dp.png)
 - チューンは δ=0 の近くで極値 (6 極補正済みなので ξ≈0)、δ が大きいと高次の依存が見える。
-- **対称な範囲 (平均 0) の当てはめでは、最高次以外の係数が壊れる** (SAD の `Packages/Fit.n` の癖。pysad の `docs/04_sadscript.md` にも同じ記述。gs も pysad も同じ値を出す)。
+- **対称な範囲 (平均 0) の当てはめでは、最高次以外の係数が壊れる** (SAD の `Packages/Fit.n` の癖。pysad の `docs/05_sadscript.md` にも同じ記述。gs も pysad も同じ値を出す)。
   下の表のように、-2%〜+2% の 3 次当てはめは c3 (νx 257.84、νy 1049.07) だけが numpy と一致し、c0〜c2 は別の値 (c0 = 355.6 は明らかに誤り) になる。平均が 0 でない範囲 (-2%〜+1%、31 点) では全係数が numpy と一致する。
 
 | 当てはめ | 範囲 | c0 | c1 | c2 | c3 |

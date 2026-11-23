@@ -2,7 +2,7 @@
 """v2.3.0 R1: gs (SAD K64) の TrackParticles で、RF つきのラティスの 6 極 ×0 の ADTS が pysad (k64、rfsw=False) と食い違った原因。
 原因: FFS に入ると RFSW は ON (track.f:146-149) なので、gs の TrackParticles は RF つきのラティスで空洞を働かせる。1 周内の z (経路長の振幅依存) に応じて
 空洞が δ を与え、(自然クロマティシティ) × δ(J) の偽の ADTS が入る。台本に NORFSW を入れると pysad (rfsw=False) と一致する。
-基準値は gs の出力 (example/v2_3/R1_adts_gs_astrid_norfsw.txt・R1_adts_gs_astrid_rfsw.txt、1024 周、J = 2e-8、ASTRID2 0.58 GeV 45.7 m、6 極 ×0・8 極なし)。
+基準値は gs の出力 (example/14_nonlinear_dynamics/adts_rdt/adts_gs_astrid_norfsw.txt・adts_gs_astrid_rfsw.txt、1024 周、J = 2e-8、ASTRID2 0.58 GeV 45.7 m、6 極 ×0・8 極なし)。
 (gs の値は 1 周ずつ z を 0 に戻して回した追跡の NAFF。pysad は同じ方法)"""
 import os
 

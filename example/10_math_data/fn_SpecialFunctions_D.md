@@ -40,7 +40,7 @@ $W(1)e^{W(1)}=1$、${}_1F_1(1;2;z)=(e^z-1)/z$。
 - 13 値は一致 (表の相対差が 1e-14 以下)。`AiryBi`・`PolyLog` は末尾 1〜2 桁の違い。
 - **`HermiteH[3,.5]`: gs は `NaN`** (真値 -5)。pysad は -5。
 - **`ExpIntegralEi[1.]`: gs は複素数 (.2565-2.7164 I)** (真値は実数 1.8951)。pysad は 1.895118。
-- この 2 件は gs (K64 ビルド) の誤りで、pysad は真値を返す (docs/21 の方針)。△。
+- この 2 件は gs (K64 ビルド) の誤りで、pysad は真値を返す (docs/30 の方針)。△。
 
 ## 未確認・限界
-1 点ずつの確認のみ。引数の範囲 (負、大きい)、次数の高い場合は試していない。複素引数: 最初の版では pysad 未対応と書いたが、v2 で Airy・Bessel・Hypergeometric0F1・1F1・2F1 (実数のパラメータ) が複素引数に対応した (`docs/47_v2_changes.md`。`AiryAi[1+I]` が値を返すことを 2026-11-17 に確認)。複素の PolyLog・HypergeometricU・Zeta は v2 でも未対応 (`Zeta[2+I]` は TypeError で確認)。この例の表には複素引数を入れておらず、gs との比較はしていない。`HermiteH`・`ExpIntegralEi` の gs の誤りの条件 (どの引数で誤るか) は調べていない。
+1 点ずつの確認のみ。引数の範囲 (負、大きい)、次数の高い場合は試していない。複素引数: v2 の pysad は Airy・Bessel・Hypergeometric0F1・1F1・2F1 (実数のパラメータ) の複素引数に対応している (`docs/28_v2_vs_k64.md`。`AiryAi[1+I]` が値を返すことを 2026-11-17 に確認)。複素の PolyLog・HypergeometricU・Zeta は v2 でも未対応 (`Zeta[2+I]` は TypeError で確認)。この例の表には複素引数を入れておらず、gs との比較はしていない。`HermiteH`・`ExpIntegralEi` の gs の誤りの条件 (どの引数で誤るか) は調べていない。

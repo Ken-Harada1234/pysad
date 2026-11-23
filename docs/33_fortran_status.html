@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>33. SAD のソース (ファイル・ルーチン・機能) と pysad の翻訳状況</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#0-凡例と現在の-pysad-モジュール">0. 凡例と現在の pysad モジュール</a></li>
+<li><a href="#1-粒子トラッキング">1. 粒子トラッキング</a><ul>
+<li><a href="#11-tturn1-の要素ごとの分岐-tturnf-select-case-l286-552">1.1 tturn1 の要素ごとの分岐 (tturn.f select case L286-552)</a></li>
+<li><a href="#12-tturne1-の要素ごとの分岐-tturnef-select-case-l470-675">1.2 tturne1 の要素ごとの分岐 (tturne.f select case L470-675)</a></li>
+</ul>
+</li>
+<li><a href="#2-線形光学">2. 線形光学</a></li>
+<li><a href="#3-エミッタンス">3. エミッタンス</a></li>
+<li><a href="#4-放射">4. 放射</a></li>
+<li><a href="#5-cod-補正ffs-のコマンド類">5. COD 補正・FFS のコマンド類</a></li>
+<li><a href="#6-ffsマッチング">6. FFS・マッチング</a></li>
+<li><a href="#7-ビームライン定義座標">7. ビームライン定義・座標</a></li>
+<li><a href="#8-寿命その他">8. 寿命・その他</a><ul>
+<li><a href="#81-数学-b">8.1 数学 🟡B</a></li>
+<li><a href="#82-インタープリタ-c--グラフィックス-d--c-ソースsimincpackagesextensionscontrib">8.2 インタープリタ 🔵C / グラフィックス 🟢D / C ソース・sim・inc・Packages・extensions・contrib</a></li>
+</ul>
+</li>
+<li><a href="#未対応未確認の一覧">未対応・未確認の一覧</a></li>
+<li><a href="#9-機能別の状況-sad-の機能ごと">9. 機能別の状況 (SAD の機能ごと)</a><ul>
+<li><a href="#91-ffs-のコマンド-tffsaf-ほか">9.1 FFS のコマンド (tffsa.f ほか)</a></li>
+<li><a href="#92-onoff-のフラグ">9.2 ON/OFF のフラグ</a></li>
+<li><a href="#93-sadscript-の関数">9.3 SADScript の関数</a></li>
+<li><a href="#94-sadscript-言語系の組み込み">9.4 SADScript 言語系の組み込み</a></li>
+<li><a href="#95-パッケージ経由のものの注意">9.5 パッケージ経由のものの注意</a></li>
+<li><a href="#96-要素物理モジュール">9.6 要素・物理モジュール</a></li>
+<li><a href="#97-gui描画">9.7 GUI・描画</a></li>
+</ul>
+</li>
+<li><a href="#10-sadsrc-の-f-のうち-pysad-の中に名前が出てこないもの">10. &lt;SAD&gt;\src の *.f のうち pysad の中に名前が出てこないもの</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 33_fortran_status.md</div>
+<h1 id="33-sad-のソース-ファイルルーチン機能-と-pysad-の翻訳状況">33. SAD のソース (ファイル・ルーチン・機能) と pysad の翻訳状況</h1>
+<p>この文書で分かること: SAD の Fortran ファイルごとに、ルーチン (ファイル:行)・役割・対応する pysad の関数・翻訳の状態・照合の桁 (§1〜§8)、機能別の対応状況 (§9)、pysad のコードに名前が出てこない src のファイル (§10)。
+前提: SAD (K64 版) のソース構造 (docs/32)。互換モード (v2 と k64) の意味 (docs/28)。
+読む順: §0 の凡例、探したいファイルの節 (§1 追跡、§2 線形光学、…)、機能名から探すなら §9。未対応・未確認の一覧は docs/31。</p>
+<p>SAD は K64 版、ソースは <code>&lt;SAD&gt;\src</code>。表の「状態」は、特記がなければ <strong>k64 モード</strong> (K64 (gs) と同じ動作。gs との照合はこのモード) のもの。v2 モード (既定) で変わった動作は「v2 モード:」と書く (一覧は <a href="28_v2_vs_k64.html">28_v2_vs_k64.md</a>)。v2 の値は gs ではなく解析式・独立な数値計算で確かめたもので、gs と比較できないものがある (MEASURE・TRCOD、空間電荷の SPAC、領域内の SOL の要素など)。
+「デッドコード・ビルド対象外」の判定は mk/sad.obj.mk の有効リストに無い、または call 0 件のもの。行数の多いデッドコードは節ごとに 1 行にまとめる。
+<code>&lt;SAD&gt;\src</code> の *.f 474 本のうち、ファイル名・ルーチン名が <code>pysad/*.py</code> に 1 度も出てこないものの一覧は §10 に付けた (名前の grep だけの確認で、名前を変えて直訳した場合は漏れる)。
+根拠: <code>01_overview.md</code>、<code>27_benchmarks.md</code>、<code>history/00_RESUME.md</code>、<code>history/work_*.md</code>、<code>pysad/*.py</code> の実コード、<code>history/work_unimpl.md</code>、<code>history/v2_changes_*.md</code>。
+ルーチンの欄の <code>名前:数字</code> は SAD ソースの行番号 (2026-10 時点)。アーキテクチャとコールスタックは docs/32。</p>
+<h2 id="0-凡例と現在の-pysad-モジュール">0. 凡例と現在の pysad モジュール</h2>
+<p>表の「状態」欄の言葉は次の 4 つである。</p>
+<table>
+<thead>
+<tr>
+<th>状態</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>翻訳済み・照合済み (桁)</td>
+<td>pysad に直訳があり、SAD の出力と比較済み。桁は最大誤差 (<code>27_benchmarks.md</code> の値)</td>
+</tr>
+<tr>
+<td>翻訳済み・未照合</td>
+<td>コードはあるが SAD との数値比較が未実施、または再現が不完全 (括弧内に理由)</td>
+</tr>
+<tr>
+<td>未翻訳</td>
+<td>pysad にコードがない (NotImplementedError で止まるものを含む)</td>
+</tr>
+<tr>
+<td>対象外</td>
+<td>デッドコード、非リンク、GUI/グラフィックス、EPICS など</td>
+</tr>
+</tbody>
+</table>
+<p>現行の対応モジュール: parser / sadelem / lattice / elkern / perfkern / perfkern_bend / turnkern / emit6d / teigen / match6 / match6d / tsvd / track6 / track6n / track6n_ext / dapert / sadrandom / sadscript / sadlist / sadclass / ffscmd / ffsextra / calc6d / touschek / geo / sgeo / emit_extra / radint / maintrack / trptacc / optics_fn、
+要素・機能別のモジュール: coord / tcav / und / multa / multae / solmap / solemit / spin / csr / synchrobeta / wake / wakeopt / beambeam / gausscoul / bbbrem / measure / radfield / specfn / fitroot / miscfn / vecfn / fileops / corr / pkgload / tclbridge / tkcanvas、
+v2 のモジュール: compat (互換モード) / phsrot / radtaper / spch (空間電荷)。<code>measure</code> は v2 で MEASURE・TRCOD ほかを実装している。
+(<code>pysad/*.py</code> は 71 本・計 57124 行。<code>tracking.py</code> の ttcav 等への言及は旧 API の名残で、実装は <code>tcav.py</code>)
+<code>ffs.py</code>, <code>matching.py</code>, <code>tracking.py</code>, <code>optics.py</code> は非推奨の旧 API (SAD 未照合の独自実装) で、表には数えない。
+calc6d / match6d / touschek / geo / track6n_ext / emit_extra はいずれも <code>ffscmd.py</code> から呼ばれる (CALC6D、解析微分、INTRA/TouschekLifetime、LINE["GX"..]/GEO/ORG、MULT/SOL の numba 追跡、Emittance[] のオプション)。</p>
+<p>試験の現状 (<code>PYSAD_SAD_PACKAGES</code> つき): <code>py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/test_bend_feeddown.py --ignore=pysad/tests/test_coord.py --ignore=pysad/tests/test_sext_radiation.py</code> を実行する (件数は docs/27 §5.1 の最新の通し)。互換モードは k64 が既定 (<a href="../pysad/tests/conftest.py"><code>pysad/tests/conftest.py</code></a>)。v2 の試験 (<code>test_v2_*.py</code>) は <code>compat.set_mode('v2')</code> を明示する (本数・件数は未確認)。回帰 (<code>QUICK=1 run_regression.py</code>) の結果は docs/27 §5.1 (k64 モード)。</p>
+<p>照合桁の目安 (CALC 光学・Emittance[]・追跡・マッチング・DA) は <a href="history/33_fortran_status_validation.md">history/33_fortran_status_validation.md</a>。表の「照合」欄には個別の桁を書く。</p>
+<h2 id="1-粒子トラッキング">1. 粒子トラッキング</h2>
+<p>追跡 (TrackParticles) のほぼ全要素が翻訳済みで、SOL 領域内の一部と PHSROT・空間電荷はモードによる (次の表)。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合 (Level)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tftrack.f (tftrack:8)、tturn.f (tturn:36 / tturn1:153。要素ごとの分岐は select case L286-552)</td>
+<td>1 周のディスパッチ、tapert</td>
+<td>track6.py <code>_tturn1</code>, track6n.py <code>turn</code>。TrackParticles 本体は <code>track6.track_particles</code>、<code>track6n.track_particles_fast</code></td>
+<td>翻訳済み・照合済み</td>
+<td>≤5e-11 (L6〜12, 16)</td>
+</tr>
+<tr>
+<td>tdrift.f</td>
+<td>ドリフト (tdrift_free, tdrift_solenoid)</td>
+<td>track6 <code>_tdrift_free</code>, <code>_tdrift_solenoid</code></td>
+<td>翻訳済み・照合済み</td>
+<td>≤5e-11 (L6, L9)</td>
+</tr>
+<tr>
+<td>tquad.f (tquad、tthin:118、ttfrin。tthin 同居)</td>
+<td>四極・薄い多極、ttfrin</td>
+<td>track6 <code>_tquad</code>, <code>_tthin_gen</code>, <code>_ttfrin*</code> (n 版 <code>k_quad</code>, <code>k_thin</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤5e-11 (L6, L8)</td>
+</tr>
+<tr>
+<td>tbend.f (tbend:531、tbendcore、tbshift、tbrot)、tbendi.f</td>
+<td>BEND、K1≠0 の複合 (bendib)</td>
+<td>track6 <code>_tbendcore</code>, <code>_tbendi</code> (ほか <code>_tbshift</code>, <code>_tbrot</code>。n 版 <code>tbendcore1</code> ほか、K1≠0 は <code>k_bendi</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤5e-11、z のみ 1.7e-10 (L7)</td>
+</tr>
+<tr>
+<td>tbfrie.f の tbedge, tqfrie, tqlfre, tqente</td>
+<td>フリンジ</td>
+<td>track6 <code>_tsetfringep</code>, <code>_tqlfr</code>; lattice.py</td>
+<td>翻訳済み・照合済み</td>
+<td>≤5e-11 (L8)、emit/CALC 側も一致</td>
+</tr>
+<tr>
+<td>tcav.f (tcav、tcavfrin)</td>
+<td>RF 空洞 (tcavfrin 含む)</td>
+<td>track6 <code>_tcav</code> (n 版 <code>k_cav</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤5e-11 (L6, L8-2)</td>
+</tr>
+<tr>
+<td>tmulti.f (tmulti:37、tmulk)</td>
+<td>MULT (ANGLE=0, K0..K21, ずれ・回転)</td>
+<td>track6 <code>_tmulti_ens</code>、numba 版 track6n_ext.py</td>
+<td>翻訳済み・照合済み (track6 経由)</td>
+<td>≤5.9e-11 (L11)。ext は track6 と 4e-17、seed 一致</td>
+</tr>
+<tr>
+<td>tsolqu.f (tsolqu、tsolqum、tsolqur)、tsol.f (tsol:510)</td>
+<td>ソレノイド領域 (bz 分岐、tsolqur)</td>
+<td>track6 <code>_tsol_region</code>, <code>_tsolqu_bz_*</code>、track6n_ext.py (ほか <code>_tsolqur_ens</code>。n 版 <code>track6n.tsolqu1</code>、<code>track6n_ext.tsolqu_bz_all</code> (track6 と 4e-17)、<code>k_sol_*</code> (4e-17))</td>
+<td>翻訳済み・照合済み (領域内の DRIFT・QUAD・SOL)。v2 モード: 領域内の BEND・MULT・CAVI・APERT、ずれ・回転 (trots)・F1 (tradks)、領域内の空洞の TRPT 加速・wake・AUTOPHI も実装 (ローレンツ力の数値積分との一致で、gs との比較ではない。docs/17)。v2 は tsolqur の bzp (B08)・tsolqum の dv 項 (B14) も直している。K64 は SOL (BOUND≠0) の長さを周長に入れない (B63) ので、追跡の <code>circ</code> も <code>emit6d._emit_circ</code> を使う</td>
+<td>≤1.5e-10 (L9)。EPS≠1 は制限あり</td>
+</tr>
+<tr>
+<td>photons.f (tradk:1267) の tphoton</td>
+<td>放射キック (平均・FLUC)</td>
+<td>track6 <code>_tradk</code>, sadrandom.py (ほか <code>track6n.tradk_core1</code>、<code>sadrandom.drndsr/tdusrn</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤4.9e-11、乱数状態一致 (L10)</td>
+</tr>
+<tr>
+<td>tapert.f (tapert、tapert1)</td>
+<td>損失判定・APERT 要素 (tapert1)</td>
+<td>track6n.py <code>k_apert_gen</code>・<code>k_apert</code>・<code>k_apert_el</code>、track6.py <code>_apert_pass</code>、dapert.py、<code>TrackRun.l_track0</code></td>
+<td>翻訳済み・照合済み (APERT 要素: 楕円・矩形・DX DY・ROTATE・全部 0・複数周・JDPX JDPY DP が gs と一致、<code>tests/test_apert.py</code>。SOL 領域内の APERT は k64 モードでは未対応 (v2 モードは領域内の APERT で落ちる)。TRPT・RAD つきは未確認。JDPX の乱数は粒子 12 個以上で gs と不一致)</td>
+<td>DA の地図一致 (L16A)。ただし損失周の乱数消費は不一致 (RAD+FLUC)。K64 は落とす印に <code>kptbl(i,4)=l_track</code> を書くので、セッション最初の TrackParticles (l_track=0) の最初の tapert では最初から LOSSAMPL の外の粒子が落ちない。k64 モードはこの癖を再現し gs (1・2 回目) と全桁一致 (B33 の出力座標の差は出ない、docs/29 A52)。v2 モード: 最初の tapert で落とす。LOSSMAP (戻りに落ちた要素・周の 2 行) は両モードで gs の例と一致 (docs/10 §9.7)</td>
+</tr>
+<tr>
+<td>tsteer.f</td>
+<td>BEND ANGLE=0, K0≠0, L≠0</td>
+<td>track6.py <code>_tsteer_ens</code> (F1/FB1/FB2 フリンジ付きは NotImplementedError)</td>
+<td>翻訳済み・照合済み</td>
+<td>bendk1_* (history/work_bend_k0.md, history/work_trpt_acc.md 10 節)</td>
+</tr>
+<tr>
+<td>tmulta.f (tmulta, tmultae)</td>
+<td>MULT ANGLE≠0</td>
+<td>multa.py (追跡)、multae.py (Twiss・Emittance[])</td>
+<td>翻訳済み・照合済み (docs/19)</td>
+<td>追跡は相対 0、Twiss 1e-13、Emittance[] 1e-11。BZ・RF・F1・SK0 は未対応</td>
+</tr>
+<tr>
+<td>ttcav.f, ttcave.f</td>
+<td>TCAVI (クラブ空洞) の追跡と 6 次元写像</td>
+<td>pysad/tcav.py</td>
+<td>翻訳済み・照合済み (追跡 0、Emittance[] は L=0 のみ gs と一致。L≠0 は gs が壊れる) (ttcave の RFSW ON の CALC は未対応)</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>tcoord.f, tcoorde.f, qcoord.f</td>
+<td>COORD 要素</td>
+<td>pysad/coord.py</td>
+<td>翻訳済み・照合済み (追跡 0、Twiss・幾何 1e-11、Emittance[] 5e-10)</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>temap.f (temap/temape/qemap)、tins.f (tins)</td>
+<td>MAP 要素 (ExternalMap)</td>
+<td>elements.Map、ffscmd.<em>map</em>*、emit6d._tmap、track6n.K_MAP</td>
+<td>TRACK・EMIT・OPTICS を翻訳し gs と照合済み (GEO・CompiledMap は未対応)。INS (tins/tinse) は <code>lattice.ins_twiss</code> で扱い、追跡・Emittance[] も gs と一致を確認した (2026-11-16。追加の実装は不要)</td>
+<td>test_map.py</td>
+</tr>
+<tr>
+<td>undulator.f</td>
+<td>UND (追跡)</td>
+<td>pysad/und.py</td>
+<td>k64 モード: 翻訳済み・照合済み (追跡 0、Twiss・Emittance[] は恒等で一致)。K64 は磁場を設定できない (B37)。v2 モード: <code>FBX</code>・<code>FBY</code> の磁場つき (追跡・Twiss・Emittance[]・EMIT。dpds の二重掛け B78 も直している)。磁場なしでも光学にドリフトとして入る。track6 のスピン追跡も通る。解析式で確認し gs との比較は無い</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>bbstrhl.f (beambeam、bbinit)、bbtool.f、matrix.f (包絡行列)</td>
+<td>BEAMBEAM</td>
+<td>pysad/beambeam.py</td>
+<td>追跡 (track6n) を翻訳。BSTRL と光子 (PHOTONS、BEAMBEAM の分だけ)、LuminosityMonitor も対応。光学は恒等。傾き tilt の K64 の癖 (B34) は k64 モードでは直訳、v2 モードは (cos t, sin t) の回転に直している (残る差は docs/14)</td>
+<td>docs/14_beambeam.md</td>
+</tr>
+<tr>
+<td>photons.f の sprot、tradk のスピン部</td>
+<td>TrackParticles のスピン追跡 (POL かつ RAD ON のときだけ)</td>
+<td>track6.py (<code>sprot</code>、<code>bsi</code>)</td>
+<td>翻訳済み・照合済み (gs と 4e-12 以下: 平面リング、ずれ・回転した四極・偏向・6 極、MULT、K1 のある BEND、SEXT・薄い MULT、SOL 内のドリフト)。k64 モードは損失 (flag) の処理なし (v2 モードは落とす。領域内の BEND・MULT・CAVI・ずれ・F1、UND、PHSROT のスピンも通る。docs/16)。SOL 内の四極のスピン追跡は gs の食い違い (docs/17_sol.md §7) のため未確認</td>
+<td>test_spin_track.py、docs/16_spin_pol.md</td>
+</tr>
+<tr>
+<td>tlinit.f (tlinit/tlstore/tlresult)</td>
+<td>RADLIGHT の軌道の記録</td>
+<td>ffscmd <code>_RadLight</code></td>
+<td>k64 モード: 翻訳済み・照合済み (TrackParticles の戻り <code>{結果, 軌道{t,x,y,z}}</code>、gs と差 0。K64 は BEND の中を記録せず横方向の座標も入れない)。v2 モード: 3 次元の軌道、BEND は円弧で中も <code>RADLIGHTDIV</code> 点記録 (B65。Liénard-Wiechert のピークと 0.25%、gs との比較は無い)</td>
+<td>test_radlight.py、docs/18_radlight.md</td>
+</tr>
+<tr>
+<td>tbbbrem.f</td>
+<td>BBBrem1 関数</td>
+<td>bbbrem.py</td>
+<td>翻訳済み・gs と一致 (docs/06)</td>
+<td>test_bbbrem.py</td>
+</tr>
+<tr>
+<td>csrtrack.f, csroy.f, csrtest.f</td>
+<td>CSR 関数 (CSR.n が使う 7 関数: CSRTrack CSRHaissin CSRSetupOY CSROYMatrix CSRMatrix CSRConvert CSRInit)</td>
+<td>pysad/csr.py</td>
+<td>翻訳済み。CSRTrack・CSRHaissin は gs と 11 桁、CSRSetupOY は J・ω 1e-9、CSRMatrix (mode 22・33・23・32・110・220・330 と mode 1000 = csrhelmat)・CSRConvert (= K64 の tfcsrvec)・CSRInit は gs と相対 1e-10〜1e-13。CSROYMatrix は gs が wrongtype を返す (B60) ので未照合。<code>Packages/CSR.n</code> の MakeZL・SkinDepth・PathDifference などは SADScript のまま動かして gs と一致 (MakeZL は約 7 分、相対 1e-10)。ScanTrack・OYStability などの長い流れは未照合。<code>CSR.n</code> 全体は描画 (ListPlot) が要るので読み込まない</td>
+<td>docs/15_csr.md、test_csr.py</td>
+</tr>
+<tr>
+<td>track.f (track:1。twig:332 は空スタブ)、tracka.f、ActTra.f (ActTra:257)、ttinit.f</td>
+<td>MAIN の TRACK コマンド・初期分布</td>
+<td>ffscmd <code>TrackParticles[]</code> (SADScript 関数経由)、MAIN の TRACK コマンドは maintrack.py</td>
+<td>翻訳済み・照合済み</td>
+<td>TrackParticles は L6〜12。MAIN TRACK は SADScript で同じ手順を書いた版 (bench_level27a/b) と照合 (SAD K64 の MAIN TRACK 自体は tinip で SIGSEGV)。PHSPLOTS の描画は無視、FOURIE ON は未対応</td>
+</tr>
+<tr>
+<td>trackb.f, tracke.f, trcoda.f, ttinit.f, ttstat.f, tbdecoup.f, nalign.f, tfojit.f, tfgetm.f</td>
+<td>MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE、MAIN の <code>TRACK TURNS=-1</code></td>
+<td><code>measure.py</code></td>
+<td><strong>v2 モードで翻訳</strong> (K64 のソースの読み。TRCOD の FIXCOD/MVCOD/STNCOD/ALIGN も)。k64 モードは語を受理するのみ (無視)。<strong>gs との比較は無い</strong> (gs で TRCOD は SIGSEGV、MEASURE は出力なし: docs/30 B42)。解析式と pysad の独立な経路で確認。ttinit の読みの誤り B41 は v2 で直している。DRAW の中の粒子追跡 (tdrwdt.f) は K64 でも動かない死んだコードで翻訳しない (B105)</td>
+<td>test_v2_C_measure.py、test_v2_C2_measure.py、docs/03</td>
+</tr>
+<tr>
+<td>tturn.f・tcod.f・tturne.f の radtaper</td>
+<td>RADTAPER (磁石の強さを閉軌道の局所の運動量に合わせる)</td>
+<td><code>radtaper.py</code></td>
+<td>翻訳済み・gs と照合 (両モード。CODCONV=1e-4 の gs と x 6 桁・U0 10 桁・チューン全桁)。K64 の tcod の反復の直訳ではなく同じ不動点を外側の反復で求める。4 次元の CALC のテーパーは K64 も無い</td>
+<td>test_v2_C_track.py、test_v2_C2_optics.py</td>
+</tr>
+<tr>
+<td>spkick.f、tspch_.c・spch.c・psn.c、tintrb.f twspac</td>
+<td>空間電荷 SPAC・PSPAC・WSPAC</td>
+<td><code>spch.py</code></td>
+<td><strong>v2 モードで翻訳</strong> (k64 モードは入れない)。K64 の SPAC は力が 1/γ 倍に弱い (B89) ほか B90〜B98 の誤りがあり、v2 は直している。PSPAC は gs と 3〜4 桁、WSPAC は gs と 1% (Δν)、SPAC は gs の誤りのため解析式 (包絡方程式・Laslett の式) と比較。Emittance[]・EMIT・CALC6D・CALC (RFSW ON) の WSPAC は実装 (Emittance[]・EMIT は k64 も gs と全桁。K64 の最後のスライスのレンズが 8 倍強い誤り: B127)。追跡の WSPAC のビーム行列は空間電荷なしのまま</td>
+<td>test_v2_C_spch.py、test_v2_C2_spch.py、docs/10 §9.7</td>
+</tr>
+<tr>
+<td>trackd.f (trackd:37) / tfdapert.f (tfdapert:1)</td>
+<td>DynamicAperture 本体</td>
+<td>dapert.py</td>
+<td>翻訳済み・照合済み</td>
+<td>地図 153/153、Score 一致 (L16A、NORAD)</td>
+</tr>
+<tr>
+<td>tquads, tquase, tbrad, tmulbs, ttdr, bb, hg 等</td>
+<td>Obsolete・非リンク</td>
+<td>—</td>
+<td>対象外</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-tturn1-の要素ごとの分岐-tturnf-select-case-l286-552">1.1 tturn1 の要素ごとの分岐 (tturn.f select case L286-552)</h3>
+<p>追跡の 1 周のディスパッチ表で、✓ は翻訳済み、△ は一部、✗ は未実装を表す。</p>
+<table>
+<thead>
+<tr>
+<th>コード</th>
+<th>case</th>
+<th>呼出</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>icDRFT</td>
+<td>tdrift_free:294</td>
+<td>✓ <code>_tdrift_free</code> (≤5e-11)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>icBEND</td>
+<td>tbend:327</td>
+<td>✓ <code>_tbend</code> (K1≠0 <code>_tbendi</code>)、DX/DY/DROTATE も可</td>
+</tr>
+<tr>
+<td>4</td>
+<td>icQUAD</td>
+<td>tquad:355 → tsolqu</td>
+<td>✓ <code>_tquad</code> / <code>k_quad</code></td>
+</tr>
+<tr>
+<td>6,8,10,12</td>
+<td>SEXT/OCTU/DECA/DODECA</td>
+<td>tthin:380</td>
+<td>✓ <code>_tthin_gen</code> / <code>k_thin</code> (SEXT 厚肉放射も一致)</td>
+</tr>
+<tr>
+<td>22</td>
+<td>icMULT</td>
+<td>tmulti:395</td>
+<td>△ <code>_tmulti_ens</code> / <code>k_mult</code> (ANGLE=0。RF は <code>mult_full</code>)。ANGLE≠0 は ✓ <code>multa.py</code> (tmulta)。SK0・F1・TAPER・VOLT は未</td>
+</tr>
+<tr>
+<td>20</td>
+<td>icSOL</td>
+<td>tsol:410</td>
+<td>△ <code>_tsol_region</code> / <code>k_sol_*</code> (DRIFT/QUAD を含む領域のみ。内部 BEND/MULT/CAVI、DX/DY/DZ/CHI、F1 は未。領域内の BEND は gs が偏向をほぼ無視して合わず取り下げ: B69)</td>
+</tr>
+<tr>
+<td>31</td>
+<td>icCAVI</td>
+<td>tcav:443</td>
+<td>✓ <code>_tcav</code> / <code>k_cav</code></td>
+</tr>
+<tr>
+<td>41,42</td>
+<td>MARK, MONI</td>
+<td>—</td>
+<td>✓ (無作用)</td>
+</tr>
+<tr>
+<td>43</td>
+<td>icAPRT</td>
+<td>tapert1:418</td>
+<td>✓ <code>k_apert_el</code> (SOL 領域内の tapert1 は未翻訳)</td>
+</tr>
+<tr>
+<td>32</td>
+<td>icTCAV</td>
+<td>ttcav:480</td>
+<td>✓ <code>tcav.apply_tcav</code> (RANKICK・RANPHASE は未)</td>
+</tr>
+<tr>
+<td>33</td>
+<td>icMAP</td>
+<td>temap:490</td>
+<td>✓ <code>elements.Map</code>・<code>ffscmd._map_*</code> (ExternalMap の TRACK)</td>
+</tr>
+<tr>
+<td>34</td>
+<td>icINS</td>
+<td>tins:502</td>
+<td>✓ (gs と一致を確認。追加の実装は不要)</td>
+</tr>
+<tr>
+<td>35</td>
+<td>icCOORD</td>
+<td>tcoord:506</td>
+<td>✓ <code>coord.py</code></td>
+</tr>
+<tr>
+<td>36</td>
+<td>icBEAM</td>
+<td>beambeam:498</td>
+<td>✓ <code>beambeam.py</code></td>
+</tr>
+<tr>
+<td>37</td>
+<td>icPROT</td>
+<td>phsrot:517</td>
+<td>✗ (K64 で動作しない: B38。NotImplementedError)</td>
+</tr>
+<tr>
+<td>38</td>
+<td>icSPCH</td>
+<td>tpspac:525</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>18</td>
+<td>icUND</td>
+<td>undulator:537</td>
+<td>✓ <code>und.py</code> (磁場なしのドリフト: B37)</td>
+</tr>
+<tr>
+<td>19</td>
+<td>icWIG</td>
+<td>twig:541 (空スタブ)</td>
+<td>— (SAD も無作用)</td>
+</tr>
+<tr>
+<td>21</td>
+<td>icST</td>
+<td>abort ("Use BEND with ANGLE=0")</td>
+<td>—</td>
+</tr>
+<tr>
+<td>—</td>
+<td>wake / wspac</td>
+<td>txwake:266 / twspac:274</td>
+<td>wake ✓ <code>wake.py</code>。wspac (空間電荷) ✗</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-tturne1-の要素ごとの分岐-tturnef-select-case-l470-675">1.2 tturne1 の要素ごとの分岐 (tturne.f select case L470-675)</h3>
+<p>Emittance[] 用の 6 次元 1 周のディスパッチ表。</p>
+<table>
+<thead>
+<tr>
+<th>コード</th>
+<th>case</th>
+<th>呼出</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>icDRFT</td>
+<td>tdrife0:475</td>
+<td>✓ <code>emit6d._tdrife0</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>icBEND</td>
+<td>tbende:533</td>
+<td>✓ <code>_tbende</code> (<code>_tbendecorr</code>, <code>_tbendebody</code>)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>icQUAD</td>
+<td>tquade:569</td>
+<td>✓ <code>_tquade</code></td>
+</tr>
+<tr>
+<td>6,8,10,12</td>
+<td>tthine:592</td>
+<td>tthine</td>
+<td>✓ (6 極内のドリフトの dv 項を含む)</td>
+</tr>
+<tr>
+<td>20</td>
+<td>icSOL</td>
+<td>tsole:597</td>
+<td>△ <code>solemit.py</code> / <code>emit_extra._tturne1</code> の SOL 領域 (領域内は DRIFT・QUAD。POL のスピンも通る)</td>
+</tr>
+<tr>
+<td>21</td>
+<td>icST</td>
+<td>forcesf:602</td>
+<td>—</td>
+</tr>
+<tr>
+<td>22</td>
+<td>icMULT</td>
+<td>tmulte:621</td>
+<td>✓ <code>_tmulte</code> (ANGLE=0)、<code>multae.py</code> (ANGLE≠0。BZ・RF・F1・SK0 は未)</td>
+</tr>
+<tr>
+<td>31</td>
+<td>icCAVI</td>
+<td>tcave:635</td>
+<td>✓ <code>_tcave</code>, <code>_tcavfrie_map</code></td>
+</tr>
+<tr>
+<td>32</td>
+<td>icTCAV</td>
+<td>ttcave:648</td>
+<td>✓ <code>emit6d._ttcave</code> (L≠0 は gs が壊れる: B36)</td>
+</tr>
+<tr>
+<td>33</td>
+<td>icMAP</td>
+<td>temape:661 / qemap:657</td>
+<td>✓ <code>elements.Map</code> の EMIT・OPTICS フック</td>
+</tr>
+<tr>
+<td>34</td>
+<td>icINS</td>
+<td>tinse:665</td>
+<td>✓ (<code>lattice.ins_twiss</code>。gs と一致)</td>
+</tr>
+<tr>
+<td>35</td>
+<td>icCOORD</td>
+<td>tcoorde:668</td>
+<td>✓ <code>coord.py</code></td>
+</tr>
+<tr>
+<td>—</td>
+<td>default</td>
+<td>無作用 (WIG, MARK)。UND・BEAMBEAM は ✓ (<code>und.py</code>・<code>beambeam.py</code>)</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-線形光学">2. 線形光学</h2>
+<p>CALC・Emittance[] 用の線形・6 次元の写像は、MULT ANGLE≠0 と SOL 領域の一部を除いて翻訳済み・照合済みである。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合 (Level)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>qtwiss.f (qtwiss1:14、qcod:810、qquad:1737、qmat2twiss)</td>
+<td>Twiss 伝搬</td>
+<td>lattice.py <code>twiss_table</code> (<code>_transport_twiss</code>: qmat2twiss は独自の非結合の標準式)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤1e-10 (L1,12,13)、結合・誤差経由 ≤3e-7 (L3, L5)。結合時の qmat2twiss は部分</td>
+</tr>
+<tr>
+<td>qtwiss.f の qcod:810 / tcod.f</td>
+<td>4D 閉軌道</td>
+<td>lattice.py <code>_qcod_periodic</code>, <code>find_cod</code></td>
+<td>翻訳済み・照合済み</td>
+<td>9〜10 桁 (L3B)</td>
+</tr>
+<tr>
+<td>qcell.f (qcell1:27、qcell6d:404)</td>
+<td>CELL 周期解・INS</td>
+<td>lattice.py <code>twiss</code>, <code>ins_twiss</code> (A/B/分散は直訳、qmdiag は numpy 固有値分解)</td>
+<td>翻訳済み・照合済み</td>
+<td>CELL ≤1e-10。INS: 軌道 ≤1.3e-11、Twiss ≤2.6e-7 (L5)。初期軌道オフセット付き INS はチューン不一致</td>
+</tr>
+<tr>
+<td>qmdiag.f</td>
+<td>4x4 対角化</td>
+<td>lattice.py (numpy 固有値分解)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤1e-10</td>
+</tr>
+<tr>
+<td>tquade.f、tsolque.f (tsolque:313)、tbende.f (tbende:351、qbend:627、tbedge:88)、tdrife.f、tmulte.f</td>
+<td>6D 転送行列 (emit 用)</td>
+<td>emit6d.py。CALC 側の COD 写像は <code>lattice._tquade_cod</code>, <code>_tsolque_cod</code>, <code>_tqfrie_cod</code>, <code>_tqlfre_cod</code>, <code>_tqente_cod</code>, <code>_bend_cod_update</code>, <code>_tbedge_cod</code>, <code>_tblfre_cod</code>, <code>_mult_sequence</code>、emit 側は <code>emit6d._tquade</code>, <code>_tbende</code> (<code>_tbendecorr</code>, <code>_tbendebody</code>), <code>_tmulte</code></td>
+<td>翻訳済み・照合済み。BEND の K1≠0 は ≤3e-9。ANGLE=0 の BEND の F1 分岐は未実装。MULT ANGLE≠0 (tmultae) は <code>multae.py</code> (Twiss 1e-13、Emittance[] 1e-11。BZ・RF・F1・SK0・FB1/FB2 の Twiss は未対応。docs/19)。tmulke の bsir0 の更新も写している (B64)</td>
+<td>Emittance[] ≤1.3e-11 (L16B〜E)</td>
+</tr>
+<tr>
+<td>tthine.f (tthine)</td>
+<td>薄レンズ行列</td>
+<td>emit6d.py (CALC 側 <code>lattice._tthine_cod</code>, <code>_thin_offset_map</code>)</td>
+<td>翻訳済み・照合済み。6 極内のドリフトの dv 項を含む</td>
+<td>≤1.3e-11</td>
+</tr>
+<tr>
+<td>tcave.f (tcave、tcavfrie)</td>
+<td>空洞行列</td>
+<td>emit6d.py (<code>_tcavfrie_map</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤1.1e-7 (L4、RADCOD ON)</td>
+</tr>
+<tr>
+<td>tsole.f (tsole1)、tsolque.f、tqente.f (SOL 領域)</td>
+<td>ソレノイド領域の写像・放射</td>
+<td>solmap.py (Twiss)、solemit.py (Emittance[]・EMIT)</td>
+<td>追跡カーネルの数値微分で翻訳。Twiss は領域内の β・α・分散・結合 1e-11、Emittance[] は εx 2e-12〜4e-9・εy 4e-10〜2e-8 で gs と照合済み。未対応 (両モード): CALC6D・Touschek。k64 モードで未対応: 領域内の MULT・BEND・CAVI、SOL の DX DY DZ CHI・F1 (Twiss・Emittance[]・追跡)。v2 モードはこれらを実装 (ローレンツ力の積分との一致。gs との比較は無い。Emittance[] の POL の量は領域内だけ K64 の式)。数値微分なので解析行列の gs と 1e-10 程度の差が残る</td>
+<td>test_sol_optics.py、test_sol_emit.py、docs/17_sol.md</td>
+</tr>
+<tr>
+<td>tchge.f, qchg.f</td>
+<td>ずれ・回転座標変換</td>
+<td>lattice.py, emit6d.py、match6d.py <code>qchg</code></td>
+<td>翻訳済み・照合済み</td>
+<td>≤1e-8 (L3B, L3C)</td>
+</tr>
+<tr>
+<td>tturne.f (tturne:1、tturne1:334。要素ごとの分岐は select case L470-675)</td>
+<td>emit 用 1 周ディスパッチ</td>
+<td>emit6d.py <code>_turn</code> (ほか <code>tturne</code>、<code>emit_extra._turn_record</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤1.3e-11</td>
+</tr>
+<tr>
+<td>qdcell.f (qdcell、qdtwis、qdquad、qdbend、qdmdia、tdfun)、tffsqu</td>
+<td>解析微分</td>
+<td>match6d.py (<code>tffsqu</code>, <code>qdcell</code>, <code>qdtwis</code>, <code>qdquad</code>, <code>qdbend</code>, <code>qdmdia</code>。tdfun (残差 df) は <code>match6._tdfun1</code>, <code>_trdfun</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>マッチングの反復列・K1 を 12 桁再現 (L22A)。数値微分とは 2e-8〜4e-7</td>
+</tr>
+<tr>
+<td>qcell.f の qcell6d:404 / temit plot 経路</td>
+<td>CALC6D</td>
+<td>calc6d.py (<code>tfetwiss</code>, <code>etwiss2ri</code>, <code>_closed_orbit</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>1.7e-10 (L18A/B/C)</td>
+</tr>
+<tr>
+<td>qins.f, tins.f, tinse.f</td>
+<td>INS 要素 (領域の入口・出口を担う)</td>
+<td>lattice.py の INS の扱い (<code>ins_twiss</code>)</td>
+<td>ファイル名は pysad に出てこないが、INS を含む 3 セルのリング (BEND E1・E2 付き) の Emittance[] のチューン 1e-15、TrackParticles 1e-13 が gs と一致 (RFSW・RAD 込み)。追加の実装は不要と判断 (2026-11-16)</td>
+<td>docs/history/work_unimpl.md</td>
+</tr>
+<tr>
+<td>qquad, qthin, trad, twelm, pfcoup 等</td>
+<td>非リンク・デッド</td>
+<td>—</td>
+<td>対象外</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-エミッタンス">3. エミッタンス</h2>
+<p>Emittance[]・RADINT・Touschek は翻訳済みで、SynchroBetaEmittance と POL の一部だけが一部照合である。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合 (Level)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>temit.f (temit:78、tecalc:235、synchm)</td>
+<td>6D 平衡ビーム行列</td>
+<td>emit6d.py <code>emittance6d</code> (<code>tecalc</code>, <code>_tsolva</code>, <code>_normal_form</code>。teigenc + tsolva/tsvd)</td>
+<td>翻訳済み・照合済み</td>
+<td>全量 ≤1.3e-11 (L16)、RADCOD ON 1e-7 (L4)</td>
+</tr>
+<tr>
+<td>INTGRL.f (INTGRL:11)</td>
+<td>RADINT (I1〜I5, 結合, 色収差)</td>
+<td>radint.py (FFS RADINT)、lattice <code>_radiation_integrals_bend</code> (BEND のみの別実装)</td>
+<td>k64 モード: 翻訳済み・照合済み (K64 の癖: 最後の BEND の L/ANGLE を全 BEND に使う、6 極が直前の DL を使う、定数が単精度、CAVI は最後の値)。v2 モード: その BEND 自身の L/ANGLE、6 極は自分の L と K2、倍精度、VOLT は総和 (B06・B07・B12・B13)、量子寿命 (B72)、線形クロマティシティは dν/dδ (B73)、MULT・SOL が入らないときは表示 (B74)。RADINT の Jx が正しく、K64 の Emittance[] の Jx は端の角で誤る (B75。v2 は Emittance[] を直している)。MomentumCompaction の誤り (B77) も v2 で直している。MULT・SOL・BEND の K0 は積分に入らない。結合のあるリングの V 面 (I4V) は未確認。RF 関係 (INTGRL.f:249-273) は未実装 (モード別は未確認)</td>
+<td>7 桁 (L1、L29A)。v2: 解析式・自前の積分と 2e-5〜1e-13 (test_v2_A_radint.py)</td>
+</tr>
+<tr>
+<td>temit.f の INTRA、tintrb.f (touckl、touckm、toucke)、tintraconv</td>
+<td>IBS 付き emit / Touschek</td>
+<td>touschek.py <code>touschek_table</code>, <code>touschek_lifetime</code> (<code>_tintrb</code>, <code>_tturne_intra</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>15 ケース ≤7e-12 (L17A)、RADCOD ON 1.7e-8 (L17B)</td>
+</tr>
+<tr>
+<td>tfemit.f, emit.n</td>
+<td>Emittance[] のオプション (OneTurnInformation, Matrix)</td>
+<td>emit_extra.py</td>
+<td>翻訳済み・照合済み</td>
+<td>2.1e-10 (L21A)。SOL を含むと使えず <code>run_emit</code> の値に落ちる (Stable=0、HarmonicNumber=NaN)。軌道のある QUAD で Python 版 <code>_tquade</code> が 1e-5 ずれる (history/work_unimpl.md 不具合 1)</td>
+</tr>
+<tr>
+<td>temitf.f</td>
+<td>EMIT 報告 (temitprint ほか)</td>
+<td>ffscmd (EMIT 報告)</td>
+<td>翻訳済み・照合済み (報告の行を gs と比較: bench_level26a、29c)</td>
+<td>docs/09</td>
+</tr>
+<tr>
+<td>tfemit.f の tfemits、temits.f (temits1, tefsetup, tesolvd, tevdif, tesumb など)</td>
+<td>SynchroBetaEmittance</td>
+<td>synchrobeta.py、<code>ffscmd.fn_synchrobeta</code></td>
+<td>翻訳済み・一部照合 (12 セルのリング + CAVI で emitx が相対 4e-7〜1e-5、emity は 1e-18 の雑音で符号も違う。24 セルの平面リング + CAVI VOLT=2e6 の 4 点で emitx 1.4e-7〜1.4e-6 (local/wake/sb11.sad)。結合のあるラティスは gs が SIGSEGV で比較不能、不安定なチューン、emiout、RFSW の組み合わせは未確認)</td>
+<td>test_synchrobeta.py (許容 3e-5)</td>
+</tr>
+<tr>
+<td>calpol、spnorm、srequpol、spdepol (photons.f の tradke のスピン部、tchge.f の srot)</td>
+<td>POL (偏極時間・スピンチューン・偏極ベクトル・スピン歳差行列)</td>
+<td>spin.py、emit6d / emit_extra / elkern の spin 分岐</td>
+<td>翻訳済み・照合済み (平面リングの PolarizationTime は全桁、縦ずれ・傾き・6 極のリングは 13 桁。MULT・空洞・SOL (ドリフトのある領域) まで)。<code>Polarization</code> は K64 が NaN (B55) で K64 の式のまま。SOL 領域内の MULT・BEND・CAVI のスピンは未確認</td>
+<td>test_spin.py、docs/16_spin_pol.md</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-放射">4. 放射</h2>
+<p>放射 (追跡・Emittance[] 用) は翻訳済み・照合済みである。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>photons.f の tradk:1267 / tradkn / tradkfn</td>
+<td>追跡の放射</td>
+<td>track6 <code>_tradk</code>, sadrandom.py</td>
+<td>翻訳済み・照合済み</td>
+<td>≤4.9e-11 (L10)</td>
+</tr>
+<tr>
+<td>photons.f の tradke:1362</td>
+<td>emit 用放射</td>
+<td>emit6d.py (各 <code>_t***e</code> の krad 引数)</td>
+<td>翻訳済み・照合済み</td>
+<td>≤1.3e-11</td>
+</tr>
+<tr>
+<td>synradcl.f srfuncy</td>
+<td>光子エネルギー逆 CDF</td>
+<td>track6 に内蔵</td>
+<td>翻訳済み・照合済み</td>
+<td>L10 の乱数状態一致</td>
+</tr>
+<tr>
+<td>tsdrad, tserad, tstrad, tqrad, trad</td>
+<td>Obsolete</td>
+<td>—</td>
+<td>対象外</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-cod-補正ffs-のコマンド類">5. COD 補正・FFS のコマンド類</h2>
+<p>COD と FFS の小さなコマンドは翻訳済みで、MON/MCOD/TCOD は SAD も何もしない。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tcod.f (tcod:31)</td>
+<td>6D/4D COD、RADCOD</td>
+<td>lattice.py, emit6d.py (6D Newton)。<code>calc6d._closed_orbit</code>、<code>emit6d.emittance6d</code> 内の割線法 (RADCOD OFF は tcodz 相当)</td>
+<td>翻訳済み・照合済み</td>
+<td>9〜10 桁 (L7 の δ, trf0 一致)</td>
+</tr>
+<tr>
+<td>tffsmatch.f の変数の符号・重み (UNIPOL・RELW・BIPOL)</td>
+<td>FIT のフラグ</td>
+<td>ffscmd <code>matcher_</code> が match6 の bipol・absweit につなぐ</td>
+<td>翻訳済み・照合済み (UNIPOL は変数の符号を変えない、RELW は重みが変わる。fit1.sad の 3 通りで gs と全桁一致)。BIPOL の効果は FIT だけ。GAUSS・CTIME・CONV・EMIOUT はソースで効果を確認 (GAUSS・CTIME・CONV は MAIN の TRACK・MEASURE、CPU 時間の表示、収束の表示。EMIOUT は EMIT 報告の追加行で、pysad は spin の行だけ対応)</td>
+<td>test_item4.py</td>
+</tr>
+<tr>
+<td>tfdisp.f (DISP のモード GA・Z・P・A・B・D と REFERENCE・DREFERENCE)</td>
+<td>光学関数の表</td>
+<td>ffscmd <code>_disp_show</code></td>
+<td>翻訳済み・照合済み (gs と見出し・桁が一致。DISP B の REF は gs も未実装。雑音 1e-16 の列は 0)</td>
+<td></td>
+</tr>
+<tr>
+<td>tffsa.f tfsetref、tftwiss.f の R・D 接頭辞</td>
+<td>REFERENCE、Twiss["RBX"/"DBX"/"RALL"/"DALL"]</td>
+<td>ffscmd <code>_ref_rows</code>、<code>twiss_value</code>、<code>fn_twiss</code></td>
+<td>翻訳済み・照合済み (全桁)</td>
+<td></td>
+</tr>
+<tr>
+<td>tfinit.f tffsrenumber/tfinimult</td>
+<td>RENUMBER、LINE["MULT"]</td>
+<td>ffscmd <code>_renumber_cmd</code>、<code>line_value</code></td>
+<td>翻訳済み・照合済み (INDX 属性の初期値は未対応)</td>
+<td></td>
+</tr>
+<tr>
+<td>tffsa.f の USE/CALC/GO の EXPAND・NOEXPAND</td>
+<td>成分ごとの値を残す</td>
+<td>ffscmd <code>use</code>、<code>calc</code>、<code>go</code>、<code>spread_pending</code></td>
+<td>翻訳済み・照合済み (NOKEEPEXP は未対応)</td>
+<td></td>
+</tr>
+<tr>
+<td>DUMP コマンド</td>
+<td>要素の DK・DDK などの表</td>
+<td>ffscmd <code>_gwd</code></td>
+<td>翻訳済み・照合済み (パターンは 20 文字まで、DDK は K0 のある要素だけ。誤差入りリングで値は gs と一致。DK・DDK 列の書式 (Fortran の 1p g12.5: 0 → <code>0.0000</code>、小さい値 → <code>4.22829E-04</code>) は gs と同じ)</td>
+<td>test_ffsextra.py <code>test_dump_format_matches_gs</code></td>
+</tr>
+<tr>
+<td>MATRIX コマンド</td>
+<td>2 点間の転送行列</td>
+<td>ffsextra</td>
+<td>翻訳済み・照合済み (名前だけ (gs は NAME.1 として扱う) でも位置に指定でき、ラティスに無い名前を gs が読み飛ばす (to=<code>$$$</code>) のも再現)</td>
+<td>test_ffsextra.py (mt1・mt2.sad)</td>
+</tr>
+<tr>
+<td>LDSolve.n、行列演算 (Dot・Inverse)</td>
+<td>Optics.n・LDSolve.n の線形代数</td>
+<td>pysad の式評価</td>
+<td>翻訳済み・照合済み (<code>DiagonalMatrix</code> は複素数の列を受ける。行列の演算結果は要素ごとに虚部 0 の複素数を実数に戻す (gs と同じ)。LDSolve の終点と 3 通りの呼び出しが gs と一致。TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo も表示桁で一致)。PeriodicR は呼び出し方が不明で比較できず</td>
+<td>test_evalfixes.py</td>
+</tr>
+<tr>
+<td>OpenRead (開けないファイル)</td>
+<td>入力ファイルの読み</td>
+<td>pysad の IO</td>
+<td>gs と同じ (開けなければメッセージを出して入力行を打ち切り、Read・Close は wrongtype)</td>
+<td>test_evalfixes.py</td>
+</tr>
+<tr>
+<td>tcorr.f、tvcorr.f (DELCOR)</td>
+<td>相関付き誤差の補正</td>
+<td>ffscmd <code>_delcor</code></td>
+<td>翻訳済み・照合済み (チューン 1e-14、軌道 1e-10、乱数列も同じ)。k64 モード: MARK は DETR・DPX に入る (K64 の添字のずれ B40)。CAVI は K64 のとおり HARM・PHI に書き gs と一致、OCT はチューンと QF の DX が gs と 12 桁で一致 (OCT 自体の DX は gs も pysad も 0 で、効果そのものの比較ではない)。corlength≠0 の枝は K64 が cv(n) を設定しない (B62。2 回目以降の corlength≠0 の DELCOR は再現できない)。v2 モード: MARK・CAVI も DX・DY に入れる (B40)、波数 −1 の成分を対称に置く (B62)、corlength≠0 の規格化を rms = delx に直す (B99。作者の文書による裏づけは無い推定)。v2 は統計・解析式で確認し、gs との比較は無い</td>
+<td>docs/04_ffs_small_commands.md、test_delcor.py</td>
+</tr>
+<tr>
+<td>tcftr.f (FFT)</td>
+<td>実 FFT</td>
+<td>csr.py (CSRTrack 用)、ffscmd・maintrack</td>
+<td>翻訳済み (CSR 側は gs と照合)</td>
+<td>docs/15</td>
+</tr>
+<tr>
+<td>trcoda.f (TRCOD)</td>
+<td>追跡による COD</td>
+<td>measure.py (v2 モード)。k64 モードは ffscmd が受理のみ</td>
+<td>v2 モードで翻訳 (gs で SIGSEGV: B42。gs との比較は無い。上の MEASURE の行)</td>
+<td>docs/03</td>
+</tr>
+<tr>
+<td>terror.f (DELX/DK/DTHETA…)</td>
+<td>誤差コマンド</td>
+<td>ffscmd <code>_error_cmd</code></td>
+<td>翻訳済み・照合済み</td>
+<td>L3C/3D、L7-2</td>
+</tr>
+<tr>
+<td>MON/MCOD/TCOD コマンド</td>
+<td>COD 補正</td>
+<td>—</td>
+<td>対象外 (K64 の tffsa.f にこれらのコマンドは無いことをソースで確認 (2026-11-16)。FFS では式として評価されて何もしない)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>tsvdm.f 等</td>
+<td>SVD</td>
+<td>match6 の tfsolv が numpy で代替</td>
+<td>翻訳済み・未照合 (numpy 流)</td>
+<td>マッチング K1 ≤1e-10</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-ffsマッチング">6. FFS・マッチング</h2>
+<p>FFS のコマンドループとマッチングは翻訳済みで、FITP&gt;1 と fam 点だけ参照値が無い。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合 (Level)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tffsa.f (CALC:544、CHRO:609、RADINT:617、EMIT:988、GO:1207 の各分岐)</td>
+<td>コマンドループ</td>
+<td>ffscmd.py</td>
+<td>翻訳済み・照合済み</td>
+<td>L13, L14</td>
+</tr>
+<tr>
+<td>tffscalc.f (tffscalc:12)、tffsmatch.f (tffsmatch:15。tfsolv、tgrad、fmincube、tweigh)</td>
+<td>残差・GO (Newton/DESCEND, fuzz, fmincube)</td>
+<td>match6.py (<code>_tffscalc</code>、<code>Matcher.go</code>、<code>_fmincube</code>、<code>_tdfun1</code>)</td>
+<td>翻訳済み・照合済み</td>
+<td>反復数・残差・K1 ≤1e-10 (L13A/B)。FITP&gt;1 は参照値なし (L15A)</td>
+</tr>
+<tr>
+<td>tffsqu / qdcell</td>
+<td>解析微分</td>
+<td>match6d.py</td>
+<td>§2 参照</td>
+<td>L22A</td>
+</tr>
+<tr>
+<td>tgetfv.f, tfgetv.f, tflag.f, tfsetv.f</td>
+<td>FIT 条件・要素値・フラグ</td>
+<td>ffscmd.py</td>
+<td>翻訳済み・照合済み</td>
+<td>L13, L14</td>
+</tr>
+<tr>
+<td>tftwiss.f、tfchro.f (tfchro)、tfoptics.f (117 行。qcell1 の薄いラッパー)</td>
+<td>Twiss[]/LINE[]/Element[]、色収差、CalculateOptics</td>
+<td>ffscmd.py, lattice.py</td>
+<td>Twiss[]/LINE[]: 照合済み (L14A、PolynomialFit 1e-7)。CHROMATICITY (tfchro)、CalculateOptics (tfoptics; 4 次元の cell/INS・区間・結合・分散、idim=3 は全周): 翻訳済み。CHROMATICITY は QUAD / SEXT / MULT ごとの薄肉近似の表で、色収差の値はチューンの DP0 スキャン + <code>PolynomialFit</code> (Fit.n) でも求められる</td>
+<td>—</td>
+</tr>
+<tr>
+<td>tfgeo.f (tfgeo:1、tfgeo1、tfchi)、tdgeo.f、tgrot.f</td>
+<td>幾何 (GX…、ORG)</td>
+<td>geo.py (LINE["GX"] / fit GX.. / DISP G 経由)、match6d.py <code>tdgeo_term</code>。<code>tfchi</code>, <code>tfrotgeo</code>, <code>tgrot</code>, <code>tforbitgeo</code></td>
+<td>翻訳済み・照合済み</td>
+<td>4.8e-13 (L19A/B/C)。tdgeo は DRIFT の L・BEND の ANGLE・L (幾何の条件だけの行) を解析微分に翻訳 (有限差分と 1e-5 以内、test_tdgeo.py)。四極などの DX・DY、Twiss の条件が同じ行にある列は中心差分のまま (半セル ARCAH の例で収束位置が gs と相対 5.5e-7 ずれる)</td>
+</tr>
+<tr>
+<td>tfdapert.f (tfdapert:1)、trackd.f (trackd:37)</td>
+<td>DynamicAperture[]</td>
+<td>dapert.py (独自実装。スロット順・DAPWIDTH 窓・62 進地図 <code>rad62</code>。<code>ffscmd.FFS.fn_dasurvey</code> から呼ぶ)</td>
+<td>翻訳済み・照合済み</td>
+<td>L16A</td>
+</tr>
+<tr>
+<td>tffamsetup.f</td>
+<td>FITP の有限振幅ファミリー (MatchingAmplitude/NFAMP)</td>
+<td>match6.py <code>fam_setup</code> ほか</td>
+<td>翻訳済み・未照合 (SAD が FITP&gt;1 の GO で再起動するため自己検証のみ)</td>
+<td>test_fam_points.py</td>
+</tr>
+<tr>
+<td>tffswake.f</td>
+<td>ウェイク (<code>tffssetupwake</code> = 追跡用の表の取得、<code>tffswake</code> / <code>tffswakekick</code> = 光学)</td>
+<td>ffscmd.py <code>_wake_table</code> <code>ini_optics</code>、wakeopt.py</td>
+<td>追跡・光学とも翻訳済み・照合済み (InitialOrbits = tffsinitialcond、tfshow の軌道列も)</td>
+<td>test_wake.py、test_wake_optics.py</td>
+</tr>
+<tr>
+<td>tmulti.f tmultiacc</td>
+<td>RF のある MULT (TRPT か RFSW)</td>
+<td>track6n_ext.py <code>mult_full</code></td>
+<td>翻訳済み・照合済み (ANGLE=0、F1・FRINGE なし、AUTOPHI なし)</td>
+<td>test_wake.py</td>
+</tr>
+<tr>
+<td>tfstk, tfeval, tfetok 等 (SADScript)</td>
+<td>インタプリタ</td>
+<td>sadscript.py、sadlist.py (リスト系組み込み)</td>
+<td>翻訳済み・照合済み</td>
+<td>L14A</td>
+</tr>
+</tbody>
+</table>
+<h2 id="7-ビームライン定義座標">7. ビームライン定義・座標</h2>
+<p>MAIN 部とジオメトリは翻訳済みで、PHSROT だけモードで状態が違う。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>toplvl / doelem / doline / expln</td>
+<td>MAIN 部 (LINE, 繰り返し, 再定義)</td>
+<td>parser.py</td>
+<td>翻訳済み・照合済み</td>
+<td>L12 (3563 要素)</td>
+</tr>
+<tr>
+<td>talign.f, nalign.f</td>
+<td>ずれ・回転の設定</td>
+<td>ffscmd, lattice</td>
+<td>翻訳済み・照合済み</td>
+<td>L3B/3C</td>
+</tr>
+<tr>
+<td>tfgeo.f</td>
+<td>フロアー座標</td>
+<td>geo.py</td>
+<td>§6 参照</td>
+<td>4.8e-13</td>
+</tr>
+<tr>
+<td>tfloor.f</td>
+<td>数学関数 (cfunc)</td>
+<td>各所に個別実装 (xsincos 等)</td>
+<td>翻訳済み・未照合 (個別)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>tsgeo.f</td>
+<td>ソレノイドの幾何</td>
+<td>sgeo.py</td>
+<td>翻訳済み・照合済み (ずれ・傾きのある SOL の幾何)。k64 モード: 領域内の BEND・MULT・CAVI、領域内の L=0 / K1=0 の四極は未対応 (NotImplementedError)、tdgeo の領域幾何は未翻訳。v2 モード: 領域内の BEND・MULT・CAVI・K1=0 の四極も軌道を追い、領域内の変数の幾何 fit は中心差分 (設計軌道の粒子が出口で 0 に戻る 1e-12。gs との比較は無い)</td>
+<td>test_sol_geo.py</td>
+</tr>
+<tr>
+<td>phsrot.f</td>
+<td>PHSROT (位相空間の回転)</td>
+<td>phsrot.py</td>
+<td>k64 モード: 未対応 (K64 で動作しない: 行列がすべて 0。追跡は NotImplementedError、光学は恒等。docs/30 B38)。v2 モード: 意図された写像 M = N·Rot·(1−D)·N⁻¹ + 拡散を実装 (追跡・CALC・Emittance[]・EMIT。固有値・シンプレクティック性・平衡エミッタンスで確認。gs との比較は無い。K64 の拡散の乱数の誤り B79 も直している)。スピンは動かさない</td>
+<td>test_v2_C_phsrot.py</td>
+</tr>
+<tr>
+<td>tpara, tscale 等</td>
+<td>空・デッド</td>
+<td>—</td>
+<td>対象外</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="8-寿命その他">8. 寿命・その他</h2>
+<p>寿命・ウェイク・空間電荷関数・特殊関数は翻訳済みで、MAIN の TRACK の Fourier 解析 (wjfit 系) だけ未翻訳である。</p>
+<table>
+<thead>
+<tr>
+<th>Fortran (ルーチン:行)</th>
+<th>役割</th>
+<th>pysad</th>
+<th>状態</th>
+<th>照合</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Touschek (tintra 系、emit.n)</td>
+<td>TouschekTable/Lifetime</td>
+<td>touschek.py</td>
+<td>§3 参照</td>
+<td>≤7e-12</td>
+</tr>
+<tr>
+<td>tflifetrack.f</td>
+<td>LifeTrack</td>
+<td>— (SAD 側も空スタブ)</td>
+<td>対象外</td>
+<td>—</td>
+</tr>
+<tr>
+<td>tlum.f, tluma.f</td>
+<td>ルミノシティ (MEASURE の統計)</td>
+<td>measure.py</td>
+<td>翻訳済み・未照合 (MEASURE が gs で動かないので解析値との比較だけ。ffscmd からは呼ばれず、test_measure.py のみ。BEAMBEAM の LuminosityMonitor は beambeam.py)</td>
+<td>test_measure.py</td>
+</tr>
+<tr>
+<td>txwake.f</td>
+<td>ウェイクのキック (TrackParticles)</td>
+<td>wake.py</td>
+<td>翻訳済み・照合済み (普通の要素、CAVI、SOL の領域の内側)</td>
+<td>test_wake.py</td>
+</tr>
+<tr>
+<td>tfwake.f、twinit.f 他</td>
+<td>旧 WAKE コマンド</td>
+<td>— (同じ経路で動く)</td>
+<td>移植不要: K64 の tffsa.f:972 は tfwake.f を呼ばず WAKECOMMAND[] (配布に無い) を評価する。gs はエラーを出して行の残りを捨て、pysad も同じ経路 (エラー文の表示だけ未再現)</td>
+<td>docs/13</td>
+</tr>
+<tr>
+<td>wjfit、wfres、wfbin、wiord、wjdraw</td>
+<td>MAIN の TRACK の Fourier 解析・共鳴の描画</td>
+<td>—</td>
+<td>未翻訳 (FFS から使えない。maintrack.py の <code>FOURIE ON</code> も未対応)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>tspac.f (GaussianCoulomb) / tintrb.f (twspu、twspfu)</td>
+<td>空間電荷関数</td>
+<td>gausscoul.py</td>
+<td>GaussianCoulomb・GaussianCoulombU・GaussianCoulombFitted を翻訳し gs と 1e-9 以内で一致。<code>tspac.f</code> の <code>tspac</code> は K64 のどこからも呼ばれない死んだコード。追跡の空間電荷 (SPAC・PSPAC・WSPAC) は v2 モードで <code>spch.py</code> に実装 (上の行)</td>
+<td>test_gausscoul.py、docs/06</td>
+</tr>
+<tr>
+<td>tlinit.f (tlfield、tlcalc、tlspect)</td>
+<td>RadiationField・RadiationSpectrum</td>
+<td>radfield.py</td>
+<td>翻訳済み。RadiationField は gs が SIGSEGV (B49) なので等速運動の電荷の速度場と相対 6e-3 の確認のみ。RadiationSpectrum は gs と一致 (NPARA の fork 並列は逐次)</td>
+<td>test_radfield.py、docs/18_radlight.md</td>
+</tr>
+<tr>
+<td>gamma.f、hg.f、tfunc*.f (特殊関数)、tffindroot.f、D.n</td>
+<td>特殊関数・Fit・FindRoot・NIntegrate</td>
+<td>specfn.py、fitroot.py、miscfn.py</td>
+<td>458 式が gs と一致 (K64 が誤値を返す B43〜B47、B53、B54 は真値)。Fit・FindRoot は数値微分で 5e-10〜1e-9。NIntegrate は複素数の被積分関数を扱い (gs と虚部 1e-15)、<code>LogGamma1</code> もある。複素 FindRoot は v2 モードで実装 (gs が壊れた値: B61。k64 モードは TypeError)、複素引数の Bessel・超幾何・Airy (実数のパラメータ) と PolyLog の非整数次の大きい |z| (相対 1e-11、|z| ≤ 1e12) は両モードで実装。k64 と値が違う関数は InverseErf (B47) だけで、v2 は真値。複素引数の PolyLog・HypergeometricU・Zeta・HurwitzZeta は両モードで実装 (<code>specfn_cx.py</code>。gs が誤る点でも真値: B118〜B120)</td>
+<td>docs/06</td>
+</tr>
+<tr>
+<td>ActLie, ActGRA, tdlat, tmap, polpar 他</td>
+<td>空スタブ・描画・デッド</td>
+<td>—</td>
+<td>対象外</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h3 id="81-数学-b">8.1 数学 🟡B</h3>
+<p>数学ルーチンは numpy・scipy で置き換えている。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>ルーチン</th>
+<th>機能</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tsolvg.f</td>
+<td>tsolvg, tsolva, tsvd</td>
+<td>最小二乗・SVD</td>
+<td><code>numpy.linalg</code> / <code>emit6d._tsolva</code> (SVD 細部の対応は未確認)</td>
+</tr>
+<tr>
+<td>teigen.f</td>
+<td>teigenc ほか</td>
+<td>固有値</td>
+<td>numpy (qmdiag も固有値分解)</td>
+</tr>
+<tr>
+<td>matrix.f / tmultr.f / tinitr.f</td>
+<td>—</td>
+<td>6×6 行列</td>
+<td>numpy (<code>match6d.tmultr45</code>)</td>
+</tr>
+<tr>
+<td>spline.f</td>
+<td>spline, splint</td>
+<td>スプライン</td>
+<td><code>touschek.SadSpline</code>, <code>_spline_ddy</code></td>
+</tr>
+<tr>
+<td>gaussn.f / drndsr.f / random_plugin_sad.c</td>
+<td>—</td>
+<td>乱数</td>
+<td><code>sadrandom.py</code> (LCG、Box-Muller、drndsr、tdusrn) / seed 一致</td>
+</tr>
+<tr>
+<td>tffindroot.f</td>
+<td>—</td>
+<td>FindRoot / Fit</td>
+<td><code>fitroot.py</code> (tffit1・tfnewton の移植。FindRoot・Fit・FitGaussian・NIntegrate。gs と 5e-10〜1e-14)、PolynomialFit は <code>sadscript.py</code> で Fit.n を評価 (docs/06)</td>
+</tr>
+<tr>
+<td>gamma.f / hg.f / D.n</td>
+<td>—</td>
+<td>特殊関数</td>
+<td><code>specfn.py</code> (scipy.special。458 式が gs と一致。K64 が誤値を返す式 (B43〜B47) は真値を返す。docs/06)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="82-インタープリタ-c--グラフィックス-d--c-ソースsimincpackagesextensionscontrib">8.2 インタープリタ 🔵C / グラフィックス 🟢D / C ソース・sim・inc・Packages・extensions・contrib</h3>
+<p>要約:</p>
+<ul>
+<li>🔵C: tfstk/tfetok/tfeval/tfestk/tfeeval/tfefun/tfefun1/tfinitn/tffs/tffsa/tffscalc/toplvl/terror/initb1。pysad は <code>sadscript.py</code> (字句・Pratt 構文・評価、Module/Do/Table/パターン/ファイル I/O、autofg 書式)、<code>sadlist.py</code> (MapThread, Cases, MatchQ 等のリスト系組み込み)、<code>parser.py</code> (MAIN 部)、<code>ffscmd.py</code> (tffsa の語の解釈順、tflag/terror/tftype) で必要分のみ再実装。</li>
+<li>🟢D: tfTkInter_.c、tfXlib_.c、sad_tcltk.c、sad_xlib.c、geodrw.f、Packages の Plots 系。pysad の描画は matplotlib (<code>plot_optics.py</code>) が基本だが、<strong>例外あり</strong>: GUI (Tkinter.n・KBFrame.n) と描画 (ListPlot・Plot・OpticsPlot など) は SAD 自身の .n を pysad のインタプリタで解釈し、tkinter のキャンバスに描く (<code>tclbridge.py</code>・<code>tkcanvas.py</code>・<code>pkgload.py</code>。docs/20・21)。tfTkInter_.c のキャンバス関数は <code>tkcanvas.py</code> が tkinter の Tcl に置き換える。matplotlib の描画 (<code>plot_optics.py</code>) は別に残る。</li>
+<li>C: calc.c は SAD1 の数式用 (byacc 生成)、PySad.c は Python 2 API で非ビルド、tspch_.c/spch.c は空間電荷、tgauss_.c/random_driver.c/random_plugin_sad.c は乱数、sim/ は OS 抽象化 (unix_memory 系、sad_api、dynl 系ほか)。</li>
+<li>inc/: 実コードを含むのは TENT/TEXIT/common/MACexpn/TFMACRO/TMACRO/TFSF/coroper 程度。要素コードの実定義は tfstk.f の module maccode (icDRFT=1, icBEND=2, icQUAD=4, icSEXT=6, icOCTU=8, icDECA=10, icDODECA=12, icUND=18, icWIG=19, icSOL=20, icST=21, icMULT=22, icCAVI=31, icTCAV=32, icMAP=33, icINS=34, icCOORD=35, icBEAM=36, icPROT=37, icSPCH=38, icMARK=41, icMONI=42, icAPRT=43, icLINE=100)。pysad の <code>ffscmd._TYPECODE</code> が SOL=20, MULT=22 を使う。</li>
+<li>Packages: init.n (NPARA=4 など既定値)、Optics.n (CALC6D, NormalCoordinates)、emit.n (Emittance[] の規則名、TouschekLifetime)、dapert.n、Fit.n、correction.n、optimize.n、extmap.n。さらに <code>pkgload.py</code> が correction.n・bump.n・corutility.n・optimize.n・D.n・Plots.n・ListPlot.n・CSR.n などを SADScript のまま読む (<code>PYSAD_SAD_PACKAGES</code> が要る。docs/06)。</li>
+<li>extensions: RandomMT (MT19937/SFMT、既定の乱数は "SAD" 合同法)、sad+ (微分代数の C++)、Standard (Tkinter/Xlib)。pysad は使わない。</li>
+<li>contrib: gdtoa、BBBrem_dir (BBBrem.C)、libtai、tcl/tk ほか。不要。</li>
+</ul>
+<h2 id="未対応未確認の一覧">未対応・未確認の一覧</h2>
+<p>未翻訳・一部未対応・未照合の項目、優先度、未解決の差の一覧は docs/31 にある (未翻訳、一部未対応、モードで状態が違うもの、未照合、優先度、見送りの理由、未解決の差)。</p>
+<h2 id="9-機能別の状況-sad-の機能ごと">9. 機能別の状況 (SAD の機能ごと)</h2>
+<p>目的: SAD-master (<code>src/*.f</code>、<code>Packages/*.n</code>、SADHelp) の機能ごとに、pysad での対応状況 (済み・見送りと理由) を並べる。照合は <code>bin/gs</code> (SAD の WSL ビルド) の出力との比較で、数値は各文書にある範囲 (小さなリング・試験の条件) のもの。実用のリングや強い非線形での確認は別である。
+結論: FFS のコマンド、SADScript の関数、要素・物理モジュールのほぼすべてが対応済みで、未対応は FFSFlags の内容、MAP の GEO・CompiledMap、CanvasSymbol などに限られる (詳細は docs/31)。</p>
+<h3 id="91-ffs-のコマンド-tffsaf-ほか">9.1 FFS のコマンド (<code>tffsa.f</code> ほか)</h3>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>SAD 側</th>
+<th>pysad の状況</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>STOP / USE / VISIT / DISP / TYPE / SAVE / CALC / CAL / FIX / EXPAND / REJ / RESET / EXIT / ABORT / BYE</td>
+<td><code>tffsa.f</code></td>
+<td>済み (<code>USE BeamLine[..]</code> も可。反転要素名 <code>-NAME</code> の差は docs/29)</td>
+</tr>
+<tr>
+<td>FIT / FREE / GO / FITP / VariableRange / VariableWeight</td>
+<td><code>tffsmatch.f</code>、<code>qdcell.f</code> の tffsqu</td>
+<td>済み (解析微分 match6d.py が既定。多解問題の 2 段目以降は SAD と別解のことがある。FITP&gt;1 は SAD 側が再起動を繰り返して落ちるので参照値なし)</td>
+</tr>
+<tr>
+<td>DP / DP0 / GCUT / COUP / COUPLE</td>
+<td><code>tffsa.f</code></td>
+<td>済み</td>
+</tr>
+<tr>
+<td>DELX / DELY / DTHETA / DK / DDK / DL</td>
+<td><code>terror.f</code></td>
+<td>済み (直訳、照合済み)</td>
+</tr>
+<tr>
+<td>DUMP</td>
+<td><code>tffsa.f</code></td>
+<td>済み (DK・DDK 列の書式 (Fortran の 1p g12.5) を <code>ffscmd._gwd</code> で合わせている。<code>test_dump_format_matches_gs</code>)</td>
+</tr>
+<tr>
+<td>EMIT (コマンド/フラグ)</td>
+<td><code>temit.f</code></td>
+<td>済み</td>
+</tr>
+<tr>
+<td>要素値設定 (<code>SDA K2 …</code>、<code>MAX</code>/<code>MIN</code>)・FITFUNCTION・入口 Twiss (<code>AXI</code> <code>BXI</code> … <code>EPXI</code>)・fit 条件 (<code>NX</code> <code>NY</code> <code>BX</code> …)</td>
+<td><code>tffsa.f</code></td>
+<td>済み</td>
+</tr>
+<tr>
+<td>UNTIL / REPEAT</td>
+<td><code>tffsa.f:255-290</code> (入力位置 <code>ipoint</code> を保存して巻き戻す)</td>
+<td>済み (最上位の FFS 文列)</td>
+</tr>
+<tr>
+<td>IF / ELSEIF / ELSE / ENDIF</td>
+<td><code>tfif.f</code></td>
+<td>済み (同上)</td>
+</tr>
+<tr>
+<td>CHROMATICITY (CHRO)</td>
+<td><code>tfchro.f</code> (QUAD / SEXT / MULT ごとの薄肉近似)</td>
+<td>済み</td>
+</tr>
+<tr>
+<td>MAIN の TRACK (<code>TRACK USE= NPART= TURNS= NX= NY= NZ=</code>)</td>
+<td><code>track.f</code>、<code>tracka.f</code>、<code>ttinit.f</code></td>
+<td>済み (<a href="../pysad/maintrack.py"><code>pysad/maintrack.py</code></a>。K64 の MAIN の TRACK は SIGSEGV で動かず、SADScript で同じ手順を書いた版と一致)。PHSPLOTS の描画は無視、FOURIE ON は未対応 (docs/history/work_main_track.md)</td>
+</tr>
+<tr>
+<td>PRINT / REF / ORG / SHOW / STATUS / MATRIX / BEAMSIZE / VARY / RECOVER / REVERSE</td>
+<td><code>tffsa.f</code> の各分岐、<code>tfmat.f</code> (MATRIX)</td>
+<td>済み (docs/04)</td>
+</tr>
+<tr>
+<td>RENUMBER (要素番号の振り直し)</td>
+<td><code>tfinit.f</code> の tffsrenumber、tfinimult</td>
+<td>済み (<code>ffscmd._renumber_cmd</code>、<code>LINE["MULT"]</code> も。INDEX 属性が 2 以上なら番号をその値から振る。<code>LINE["INDEX",…]</code> も。gs と一致。両モード)</td>
+</tr>
+<tr>
+<td>GEO・DRAW</td>
+<td><code>tfgeo.f</code></td>
+<td>警告して無視 (描画・表示系)</td>
+</tr>
+<tr>
+<td>RADINT</td>
+<td><code>INTGRL.f</code> (693 行)</td>
+<td>済み (<code>radint.py</code> を FFS RADINT に接続。6 通りと小リング 3 通りが SAD と 7 桁一致)</td>
+</tr>
+<tr>
+<td>APERTURE / ZAP</td>
+<td><code>tfaprt.f</code>、<code>tfzap.f</code></td>
+<td>tapert (追跡側の損失判定) は翻訳済み。コマンドは未対応 (表示系)</td>
+</tr>
+<tr>
+<td>DELCOR</td>
+<td><code>tcorr.f</code>、<code>tvcorr.f</code>、<code>tffsa.f:982</code></td>
+<td>済み (k64 モードは gs と一致: CAVI は HARM・PHI に書く K64 のとおり、OCT も gs と一致。v2 モードは MARK・CAVI も DX・DY に書き、corlength≠0 の規格化は正しい式。docs/04)</td>
+</tr>
+<tr>
+<td>MON / MCOD / TCOD</td>
+<td></td>
+<td>受理のみ (K64 ビルドでは SAD も何もしない)</td>
+</tr>
+<tr>
+<td>MEASURE / PUTMEASURE / GETMEASURE / LOGMEASURE / ORBITJITTER / TRCOD (FIXCOD / MVCOD / STNCOD / ALIGN)</td>
+<td><code>tffsa.f:639-985</code>、<code>trcoda.f</code>、<code>trackb.f</code>、<code>tracke.f</code>、<code>ttinit.f</code>、<code>ttstat.f</code></td>
+<td><strong>v2 モードで実装</strong> (K64 のソースの読み。gs は MEASURE が無出力・TRCOD が SIGSEGV (B42) なので gs との比較は無い)。k64 モードは受理のみ (警告して無視)。docs/03</td>
+</tr>
+<tr>
+<td>LTRACK / PKSEED / PUSHSEED / POPSEED / EXCGSEED / DELWAVE</td>
+<td><code>tffsa.f:639-985</code></td>
+<td>未定義 (未確認)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="92-onoff-のフラグ">9.2 ON/OFF のフラグ</h3>
+<table>
+<thead>
+<tr>
+<th>フラグ</th>
+<th>pysad の状況</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LOG / COD / CELL / RADCOD / RFSW / FLUC / RAD / RING / INS / TRPT / CODPLOT</td>
+<td>済み (INS の初期軌道オフセットも一致。CODPLOT は表示なし)</td>
+</tr>
+<tr>
+<td>DAPERT</td>
+<td>済み (dapert.py、DA の地図一致。カオス的な領域の最終 seed は不一致)</td>
+</tr>
+<tr>
+<td>INTRA</td>
+<td>済み (EMIT が IBS 付き、TouschekLifetime の表。<code>temit.f</code> の INTRA 経路)</td>
+</tr>
+<tr>
+<td>CALC6D</td>
+<td>済み (CELL と INS、1.7e-10。<code>qcell.f</code> の qcell6d)</td>
+</tr>
+<tr>
+<td>CTIME / ECHO / EMIOUT / GAUSS / CONV</td>
+<td>フラグとして受理。効果はソースで確認 (2026-11-16): GAUSS は MAIN の TRACK・MEASURE の初期分布、CTIME は CPU 時間の表示、CONV は収束の判定・表示、EMIOUT は EMIT 報告の追加行 (pysad は spin の行だけ対応)</td>
+</tr>
+<tr>
+<td>BIPOL / UNIPOL / RELW / ABSW</td>
+<td>BIPOL は FIT だけ (tffsmatch.f)。UNIPOL・RELW は FIT の結果を変え、pysad も match6 につないで gs と全桁一致 (test_item4.py)</td>
+</tr>
+<tr>
+<td>WSPAC / SPAC / SELFCOD / PSPAC</td>
+<td>k64 モード: 受理のみ (空間電荷は追跡に入らない)。<strong>v2 モード: <code>TrackParticles</code> に入る</strong> (SPAC = DRIFT・MULT の RADIUS、PSPAC = SPCH 要素、WSPAC = ビーム行列のガウス分布の力、SELFCOD)。光学・Emittance への空間電荷は実装済み (Emittance[]・EMIT は両モード、CALC・CALC6D は v2 だけ。docs/09)。docs/10 §9.7。tspac.f の bbkick1 と tintrb.f の twspu は <code>GaussianCoulomb(Fitted)</code> として翻訳済み (docs/06)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="93-sadscript-の関数">9.3 SADScript の関数</h3>
+<p>「組」は 組み込み (B、<code>src/*.f</code> の <code>itfunaloc</code>) / パッケージ (P、<code>Packages/*.n</code>) / ラッパー (W: パッケージ経由で組み込みを呼ぶ)。</p>
+<table>
+<thead>
+<tr>
+<th>関数</th>
+<th>組</th>
+<th>SAD 側</th>
+<th>pysad の状況</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Twiss</td>
+<td>B</td>
+<td><code>tfetwiss</code> ほか</td>
+<td>済み。キー NX NY BX BY EX AX AY DX DY EY EPX DPX S <code>*</code>、SIGX/SIGY/SIGPX/SIGPY/SIGZ/SIGDP/SIGE/SX/SY (emit_extra.py、2.1e-10)</td>
+</tr>
+<tr>
+<td>LINE</td>
+<td>B</td>
+<td></td>
+<td>済み。キー NAME K1 LENGTH K2 POSITION K0 L ANGLE S ELEMENT DIR DX DY TYPE TYPENAME DK VOLT ROTATE E1 E2 GX GY GZ CHI1-3 OFFSET。RHO/RHOX/RHOY/KX/SK0 は要確認</td>
+</tr>
+<tr>
+<td>FFS</td>
+<td>B</td>
+<td></td>
+<td>済み</td>
+</tr>
+<tr>
+<td>Emittance</td>
+<td>W (emit.n)</td>
+<td><code>tfemit.f</code> (226 行)、<code>temit.f</code></td>
+<td>済み。オプション OneTurnInformation・Matrix・OneTurnTransferMatrix・SaveEMIT・Output は emit_extra.py (2.1e-10)。偏極・SpinTune は 0 固定</td>
+</tr>
+<tr>
+<td>DynamicApertureSurvey</td>
+<td>P (dapert.n)</td>
+<td></td>
+<td>済み (遅い。既定の Output / ExpandElementValues は ffscmd.py:880 で再現)</td>
+</tr>
+<tr>
+<td>TrackParticles</td>
+<td>B</td>
+<td><code>tftrack.f</code></td>
+<td>済み</td>
+</tr>
+<tr>
+<td>CalculateOptics</td>
+<td>B</td>
+<td><code>tfoptics.f</code> (117 行。初期条件 28 個を行 lb に書き込み qcell1 を実行)</td>
+<td>済み (4 次元の cell/INS・区間・結合・分散、idim=3 は全周)</td>
+</tr>
+<tr>
+<td>Monitor / Steer</td>
+<td>P (corutility.n)</td>
+<td><code>Master[]</code> (pgmast.f) と <code>LINE["type"/"element",…]</code> を呼ぶだけ</td>
+<td>済み (SAD の corutility.n を pysad のインタプリタで動かす。docs/06。FFS の MON とは別物)</td>
+</tr>
+<tr>
+<td>ExtractBeamLine / BeamLine / PrintBeamLine / WriteBeamLine / ExpandBeamLine</td>
+<td>B (tfbeamline.f:362-510) / P (beamline.n)</td>
+<td>逆向き要素は <code>-1*名前</code></td>
+<td>済み (<code>USE BeamLine[..]</code> / <code>VISIT</code> / <code>BYE</code> も)</td>
+</tr>
+<tr>
+<td>SetElement / Element</td>
+<td>W (element.n → SetElement$ / Element$)</td>
+<td><code>tfbeamline.f:10-340</code></td>
+<td>済み。<code>Element["KEYWORDS"/"DEFAULT"/"VALUE"/"POSITION"]</code>、型指定・新規定義とも。PROFILE, Saved-&gt;True, DK の連動を除く</td>
+</tr>
+<tr>
+<td>FLAG</td>
+<td>B (pgflag.f)</td>
+<td></td>
+<td>済み</td>
+</tr>
+<tr>
+<td>GetMAIN</td>
+<td>B (tffs.f tfmain)</td>
+<td></td>
+<td>済み (MAIN 形式ラティスの読込み)</td>
+</tr>
+<tr>
+<td>FFSFlags</td>
+<td>B (tfetok.f の tfflags)</td>
+<td></td>
+<td>登録名あり。内容は未対応</td>
+</tr>
+<tr>
+<td>CorrectOrbit / MakeBump</td>
+<td>P (correction.n、bump.n)</td>
+<td><code>pgrmat.f</code> (応答行列)、<code>pgsolvcond.f</code> (条件付き SVD)</td>
+<td>済み (SAD の .n を動かす。ResponseMatrix・LinearSolveConditioned・Master は <code>corr.py</code> に直訳。補正量は gs と相対 1e-7。docs/06)</td>
+</tr>
+<tr>
+<td>OptimizeOptics / DownhillSimplex</td>
+<td>P (optimize.n)</td>
+<td></td>
+<td>済み (K1・チューンが gs と 1e-10。DownhillSimplex は <code>miscfn.py</code> で gs と 1e-13。docs/06)</td>
+</tr>
+<tr>
+<td>TransferMatrix / BeamMatrix / NormalCoordinates / SymplecticInverse</td>
+<td>P (Optics.n、emit.n)</td>
+<td></td>
+<td>済み (optics_fn.py、SAD と 1e-9)</td>
+</tr>
+<tr>
+<td>PolynomialFit / Fit / FitEmit / FitGaussian / Spline / NIntegrate / Integrate / FindRoot / D</td>
+<td>P (Fit.n、D.n)</td>
+<td></td>
+<td>済み (<code>fitroot.py</code>。gs と 5e-10〜1e-14。ベクトル独立変数は対応 (gs が誤値: B52)、複素 FindRoot は v2 モードで実装 (gs が壊れた値: B61。k64 モードは TypeError)。複素の PolyLog・HypergeometricU・Zeta・HurwitzZeta は両モードで実装 (<code>specfn_cx.py</code>。gs が誤る点は B118〜B120。docs/06)。NIntegrate は複素数の被積分関数も可。D・Integrate は D.n を動かす。docs/06)</td>
+</tr>
+<tr>
+<td>TouschekLifetime / TouschekTable</td>
+<td>P (emit.n:129-)</td>
+<td><code>temit.f</code> の intra</td>
+<td>済み (15 ケース ≤7e-12)</td>
+</tr>
+<tr>
+<td>SynchroBetaEmittance</td>
+<td>B (<code>tfemit.f:144</code> の tfemits)</td>
+<td><code>temits.f</code> (1325 行)</td>
+<td>済み (<code>synchrobeta.py</code>、gs と相対 1e-5。24 セルの平面リング + CAVI。24 セル FODO + skew 四極の結合のあるリングは gs も落ちず 7 桁一致。<strong>大きなリング A では独立な値と 40 倍違い使えない (B128。v2 は警告)</strong>。不安定なチューンは未確認)</td>
+</tr>
+<tr>
+<td>SeedRandom / GaussRandom / Random</td>
+<td>B</td>
+<td></td>
+<td>済み (SAD と同じ乱数列)</td>
+</tr>
+<tr>
+<td>LDSolve ほか (ExpMatrix、rational.n、extmap.n、Misc.n)</td>
+<td>P</td>
+<td></td>
+<td>SAD 自身の <code>.n</code> を解釈する方式で動く (docs/06)。LDSolve は複素数・行列演算の虚部の扱いも含めて gs と一致。rational.n (Rational の和・積) と Couple.n の ElementValues (VISIT/BYE の退避・復元を除く) も gs と一致 (docs/06)。他は個別の照合なし</td>
+</tr>
+<tr>
+<td>Polarization / SpinTune / PolarizationTime</td>
+<td></td>
+<td><code>temit.f:491,1188</code> の calpol、<code>polpar.f</code>、<code>photons.f</code>・<code>tturn.f</code> の spin 部</td>
+<td>済み (Emittance[]・EMIT のスピン (MULT・空洞・SOL まで) と、POL かつ RAD ON の TrackParticles のスピン追跡。gs と 1e-11〜4e-12)。<code>Polarization</code> は K64 が NaN (B55)。k64 モードは NaN のまま、v2 モードは有限値 (線形のスピン軌道結合から。平面リング 92.376%。gs との照合は無く、FLUC つきのスピン追跡との比較のみ。docs/16)</td>
+</tr>
+<tr>
+<td>PHOTONS (<code>PhotonList</code>)</td>
+<td></td>
+<td><code>tftrack.f:144,315</code>、<code>photons.f</code> の kphlist</td>
+<td>一部対応 (BEND・QUAD・MULT・SEXT・OCT・磁場つきドリフト・BEAMBEAM + BEND の光子に対応 (k64 は gs と全列一致)。SOL 領域内・COORD・TCAVI・MAP のあるラティスの光子は未対応。RADLIGHT の軌道と RadiationField・RadiationSpectrum は docs/18)</td>
+</tr>
+<tr>
+<td>LMA</td>
+<td></td>
+<td></td>
+<td>SAD に組み込みはない</td>
+</tr>
+</tbody>
+</table>
+<h3 id="94-sadscript-言語系の組み込み">9.4 SADScript 言語系の組み込み</h3>
+<p><a href="../pysad/sadlist.py"><code>pysad/sadlist.py</code></a> に MapThread, ScanThread, MapAt, Complement, DeleteCases, Cases, MatchQ, Extract, Intersection, Union, Position, Count, MemberQ, FreeQ, Select, Sort, Take/Drop, Insert/Delete/ReplacePart, Apply, Map, Fold, Nest, FixedPoint, Through ほかを実装済み (SAD 側は <code>tfinitn.f</code> の <code>itfunaloc</code> 登録と tfefun*.f / tfeeval.f のディスパッチ)。Total/Cross/Norm/Riffle/StringSplit は SAD にも無い (未評価のまま返る。gs で確認)。Sleep は no-op、Fourier / InverseFourier / BesselJ / BesselK は FFT / Bessel で実装。</p>
+<h3 id="95-パッケージ経由のものの注意">9.5 パッケージ経由のものの注意</h3>
+<p>Emittance / Element / SetElement / Monitor / Steer / DynamicApertureSurvey / TouschekLifetime / PolynomialFit は SAD では SADScript パッケージ (<code>Packages/*.n</code>) の関数で、Fortran の組み込みではない。Python で個別に書き直しているものは、SAD のパッケージの既定値・オプションとの差が出やすい。<code>pkgload.py</code> が SAD の <code>Packages/*.n</code> を最初に使うときに読む (環境変数 <code>PYSAD_SAD_PACKAGES</code> が要る。docs/06)。</p>
+<h3 id="96-要素物理モジュール">9.6 要素・物理モジュール</h3>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>SAD 側</th>
+<th>pysad の状況</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BEND の K0 キック (steering)</td>
+<td><code>tsteer.f</code>、<code>tbende.f</code>、<code>tbend.f</code></td>
+<td>済み (CALC の tsteee、追跡の tsteer)</td>
+</tr>
+<tr>
+<td>幾何 (LINE["GX"/"GY"/"GZ"/"CHI1".."CHI3"]、fit の GX)</td>
+<td><code>tfgeo.f</code> (411 行)、<code>tdgeo.f</code></td>
+<td>済み (geo.py、4.8e-13。fit の幾何の微分は、DRIFT の L と BEND の ANGLE・L だけ解析微分 (tdgeo)、ほかは中心差分。SOL 領域内の四極の DX・DY の解析微分は <code>match6d.sol_dcod</code>。CHI3 の微分は K64 でも領域の終端のリセットと合わず fit は収束しない: B124)</td>
+</tr>
+<tr>
+<td>MULT ANGLE≠0</td>
+<td><code>tmulta.f</code> (433 行)</td>
+<td>済み (docs/19)</td>
+</tr>
+<tr>
+<td>SOL</td>
+<td><code>tsole.f</code>、<code>tsolque.f</code>、<code>tsgeo.f</code></td>
+<td>Twiss・Emittance[]・EMIT・追跡 (k64 モードは領域内が DRIFT・QUAD のみ)、幾何は gs と一致 (docs/17)。v2 モードは領域内の BEND・MULT・CAVI・APERT、ずれて傾いたソレノイドと F1、領域内の空洞の TRPT の加速・wake・AUTOPHI も (ローレンツ力の積分との一致で gs との比較ではない)。K64 は SOL (BOUND≠0) の長さを周長に入れない (B63) ので同じにしている</td>
+</tr>
+<tr>
+<td>TCAVI</td>
+<td><code>ttcav.f</code> (72 行)</td>
+<td>済み (docs/19)。L≠0 の Emittance[] が gs で壊れる: B36</td>
+</tr>
+<tr>
+<td>COORD</td>
+<td><code>tcoord.f</code> (82 行)</td>
+<td>済み (docs/19)</td>
+</tr>
+<tr>
+<td>MAP</td>
+<td><code>temap.f</code> (625 行)</td>
+<td>済み (docs/19)。<code>ExternalMap["GEO"]</code> は未対応 (直進、長さ 0)</td>
+</tr>
+<tr>
+<td>UND</td>
+<td><code>undulator.f</code> (165 行)</td>
+<td>済み (docs/19)。磁場は K64 に無い: B37。v2 モードは <code>FBX</code>・<code>FBY</code> の磁場つき (解析式で確認)</td>
+</tr>
+<tr>
+<td>WAKE</td>
+<td><code>tffswake.f</code>、<code>txwake.f</code></td>
+<td>追跡と光学 (WAKEOPT) が gs と一致 (docs/13)。旧式の WAKE コマンド (tfwake.f) は K64 が WAKECOMMAND.n (配布に無い) を呼ぶので k64 モードは同じ経路。v2 モードは <code>WAKE … ENDWAKE</code> の表を読む (B66)。wake の重み (B84) は v2 では正しい式</td>
+</tr>
+<tr>
+<td>BEAMBEAM</td>
+<td><code>bbstrhl.f</code></td>
+<td>強弱ビームが gs と一致 (docs/14)</td>
+</tr>
+<tr>
+<td>CSR</td>
+<td><code>csroy.f</code> ほか、CSR.n</td>
+<td>CSRTrack・CSRHaissin・CSRSetupOY・CSRMatrix (mode 1000 = csrhelmat を含む)・CSRInit・CSRConvert、MakeZL の 3 周波数 (docs/15)。ScanTrack・OYStability は未照合</td>
+</tr>
+<tr>
+<td>RADLIGHT・放射場</td>
+<td></td>
+<td>TrackParticles が軌道 {t,x,y,z} を返す (k64 モードは gs と差 0。v2 モードは 3 次元の軌道で BEND の中も記録: docs/18)。RadiationField・RadiationSpectrum を実装 (RadiationField は gs が落ちる: B49) (docs/18)</td>
+</tr>
+<tr>
+<td>GaussianCoulomb(Fitted)・BBBrem</td>
+<td><code>tspac.f</code> の bbkick1、<code>tintrb.f</code> の twspu、<code>tbbbrem.f</code></td>
+<td>直訳 (docs/06)</td>
+</tr>
+<tr>
+<td>ルミノシティ</td>
+<td><code>tlum.f</code>、<code>tluma</code></td>
+<td><code>measure.py</code>。MEASURE が gs で動かないので解析値との比較だけ</td>
+</tr>
+<tr>
+<td>空間電荷の追跡側 (SPCH 要素)</td>
+<td><code>spkick.f</code>、<code>tspch_.c</code>・<code>spch.c</code>・<code>psn.c</code>、<code>tintrb.f</code> の twspac、<code>tturn.f:521</code></td>
+<td><strong>v2 モードで実装</strong> (<code>spch.py</code>。K64 の SPAC の誤りは B89〜B98。k64 モードは入れない)。<code>tspac.f</code> の <code>tspac</code> は K64 のどこからも呼ばれない死んだコード。PROF は K64 に無い。docs/10 §9.7</td>
+</tr>
+</tbody>
+</table>
+<h3 id="97-gui描画">9.7 GUI・描画</h3>
+<p>Tkinter.n・Plots.n・OpticsPlot.n などを SAD の .n のまま tkinter で動かす (docs/20・21)。BeamPlot は未比較。CanvasSymbol・Canvas3D* は未着手。</p>
+<h2 id="10-sadsrc-の-f-のうち-pysad-の中に名前が出てこないもの">10. <code>&lt;SAD&gt;\src</code> の *.f のうち pysad の中に名前が出てこないもの</h2>
+<p><code>&lt;SAD&gt;\src\*.f</code> 474 本を <code>grep -w -i</code> で <code>pysad/*.py</code> と突き合わせた (2026-11-16)。名前が出ないだけで、別名のルーチンに直訳されている場合がある
+(例: <code>tins</code>・<code>tinse</code> は <code>lattice.py</code> の INS の扱い、<code>talign</code>・<code>nalign</code> は ffscmd / lattice のずれ・回転)。
+物理計算で名前が出ないもの: <code>qins tins tinse</code> (INS、§2。実装は別名で gs と一致)、<code>qmult qddrif</code> (qtwiss・qdcell 内の別実装に吸収: docs/29 D5)、<code>tfmap tmap</code> (MAP は別名)、
+<code>tflifetrack twinit wfbin wfres wiord wjdraw</code> (§1・§8・docs/31 の未翻訳の表。<code>trackb</code> は v2 の <code>measure.py</code> の MEASURE の実装で名前が出るので、この一覧の再現 (2026-11-17) では出ない。名前の再数えはしていない: 要確認)、<code>tbrad tquads tquase tsdrad tserad tstrad tqrad trad trade</code> (Obsolete)、
+<code>tconv</code> (追跡の変換は track6 内)、<code>tmuld tmultr</code> (行列の積は numpy)、<code>temitf</code> (EMIT 報告は ffscmd。ファイル名としては出ない)。
+それ以外は、旧 MAIN のユーティリティ (<code>pmbump pwrite pundo pkill</code> など)、SADScript のインタプリタ内部 (<code>tfeval1 tfstk tfpart tfsort tfreplace itf*</code> など)、描画 (<code>geodrw phdrw pmbdrw tdplt twsdrw</code>)、ファイル・バッファ (<code>filaux filbuf flmgr getbuf</code>) で、
+pysad の方針 (SADScript は Python のインタプリタ、ファイル・描画は Python のライブラリ。<code>36_sadhelp_purpose_policy.md</code>) により翻訳しない。
+一覧の再現: <code>for f in &lt;SAD&gt;/src/*.f; do b=$(basename $f .f); grep -q -w -i -- "$b" pysad/*.py || echo $b; done</code>。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

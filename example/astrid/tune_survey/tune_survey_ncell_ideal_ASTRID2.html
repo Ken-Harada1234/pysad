@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>tune_survey_ncell_ideal_ASTRID2 (ノーマルセルのチューンサーベイ: 誤差なし、縮小版)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト-元からの変更点">スクリプト (元からの変更点)</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: tune_survey_ncell_ideal_ASTRID2.md</div>
+<h1 id="tune_survey_ncell_ideal_astrid2-ノーマルセルのチューンサーベイ-誤差なし縮小版">tune_survey_ncell_ideal_ASTRID2 (ノーマルセルのチューンサーベイ: 誤差なし、縮小版)</h1>
+<p>KEK の SAD チュートリアルの「tune_survey_ncell_ideal.sad チューンサーベイのサンプル (ノーマルセルだけ)」をもとにした例。加速器: ASTRID2 (0.58 GeV、周長 45.7044 m、6 セル。設計チューンはリング 5.17999 / 2.14018、セル 0.86333 / 0.35670)。ラティス: <code>lattice/ASTRID2_v01_01.sad</code> の <code>NCELL</code> (1 セル) と <code>RING</code> (3<em>NCELL CAVI 3</em>NCELL)。フラグ: <code>RFSW RADCOD RAD COD DAPERT BIPOL</code> (<code>FLUC</code> は OFF)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>セル 1 つ (<code>NCELL</code>) の四極 (QF3・QF2) とベンドの K1 を FIT してセルのチューンを動かし (運転点は 0.86333 / 0.35669。チュートリアルは水平 0.55〜0.95、垂直 0.05〜0.45)、各点で6 極 (SF・SD) を色収差補正して、ダイナミックアパーチャ (DA) と水平エミッタンスを調べる、という設計の流れの例。点の数を大きく減らして、水平 {0.84, 0.88} × 垂直 {0.34, 0.38} の 4 点にした。</p>
+<h2 id="スクリプト-元からの変更点">スクリプト (元からの変更点)</h2>
+<p>全文は <code>.sad</code>。元の <code>ChromCor[]</code>・<code>InitMag[]</code>・<code>DAsv[]</code> と二重の <code>Do</code> を使い、次を変えた。</p>
+<ul>
+<li><strong>点の数と周回数</strong>: 水平 0.55〜0.95 を 0.01 刻み (41 点) × 垂直 0.05〜0.45 (41 点) を、4 点に。周回数 5000 を <strong>200</strong> に。DA の振幅範囲 (1〜200 σ) と運動量 (δ=-1 %, 0, +1 % の 3 点) は元のとおり。</li>
+<li><strong>DA を 1 セルでなくリングで測る</strong>: 元は <code>NCELL</code> のまま <code>DynamicApertureSurvey</code> を呼ぶ。現在の SAD (K64) では、RF の無い 1 セルの <code>cell calc emit</code> が閉軌道を見つけられず、<code>EMITX</code>・<code>SIGE</code> が NaN になり、σ 単位の振幅が決まらず DA が 0 になった (pysad は <code>normal_r</code> の KeyError で落ちる)。そこで <code>DAsv</code> の中で <code>USE RING</code> (6 セル + RF) にして測り、終わったら <code>USE NCELL</code> に戻す。<strong><code>USE</code> は保存値に戻す</strong>ので、FIT・色収差補正のあとで <code>SAVE ALL</code> してから <code>USE RING</code> する (保存しないと、補正前の磁石で DA を測ってしまった)。</li>
+<li><code>OFF FLUC</code> (量子励起の乱数を切って gs と pysad を比べやすくした)。結果は <code>Write</code> でファイルに書かず <code>Print["RESULT ..."]</code> で出す。</li>
+<li>セルの周期条件 <code>fit MKE EX 0</code>、<code>NX tunenx+0.0005</code> (共鳴上を避けるため 0.0005 ずらす) は元のとおり。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>RESULT</code> の行 (4 本。直前の <code>RESULT tunenx tuneny ...</code> は列名の行)。列は、セルの目標チューン (x, y)、セルのチューン (x, y)、リングのチューン (x, y)、DA x (δ=-1 %, 0, +1 %)、DA y (同)、εx [nm]、セルの MKS での BX・BY、SF・SD の K2。DA の単位は σ (リングの <code>EMITX</code>・<code>SIGE</code> で決まる振幅)。</p>
+<table>
+<thead>
+<tr>
+<th>セルの目標チューン x, y</th>
+<th>リングのチューン x, y (gs)</th>
+<th>6×(目標+0.0005)</th>
+<th>DA x δ=-1%, 0, +1% [σ] gs / pysad</th>
+<th>DA y gs / pysad</th>
+<th>εx [nm] gs / pysad</th>
+<th>SF, SD の K2 (gs)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.84, 0.34</td>
+<td>5.0430, 2.0430</td>
+<td>5.0430, 2.0430</td>
+<td>49, 48, 46 / 49, 48, 46</td>
+<td>38, 38, 38 / 38, 36, 38</td>
+<td>14.267 / 14.267</td>
+<td>9.252, -12.106</td>
+</tr>
+<tr>
+<td>0.88, 0.34</td>
+<td>5.2830, 2.0429</td>
+<td>5.2830, 2.0430</td>
+<td>30, 31, 30 / 30, 31, 30</td>
+<td>30, 30, 28 / 30, 30, 28</td>
+<td>11.599 / 11.599</td>
+<td>8.302, -11.382</td>
+</tr>
+<tr>
+<td>0.84, 0.38</td>
+<td>5.0430, 2.2830</td>
+<td>5.0430, 2.2830</td>
+<td>25, 26, 25 / 25, 26, 25</td>
+<td>27, 27, 27 / 27, 27, 27</td>
+<td>14.073 / 14.073</td>
+<td>9.267, -12.279</td>
+</tr>
+<tr>
+<td>0.88, 0.38</td>
+<td>5.2830, 2.2829</td>
+<td>5.2830, 2.2830</td>
+<td>27, 29, 28 / 27, 28, 28</td>
+<td>23, 24, 24 / 23, 24, 24</td>
+<td>11.443 / 11.442</td>
+<td>8.325, -11.550</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>セルの位相進みが $\mu$ の 6 セルの周期リングのチューンは $\nu=6\mu/2\pi$。FIT の目標を 0.0005 ずらしてあるので、リングのチューンは $6\times(\nu_{\rm cell}+0.0005)$ になるはずで、表の 2 列目と 3 列目が一致する (差は 1e-4 以下)。セルの FIT の残差 (<code>Matched.</code> の値) は 1e-11 台、色収差補正後のセルのチューンのずれは 5e-5 以下。</p>
+<p>DA は 4 点で 23〜49 σ で、リングで 5.04 / 2.04 (整数に近い) の点が最も大きい。DA をチューンから導く式は無く、どの共鳴が効いているかの説明はしていない。DA の単位 σ は点ごとの εx と SIGE で決まるので (εx は 11.4〜14.3 nm と点で違う)、点どうしの σ の数は同じ物差しではない。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 モードと k64 モード</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (<code>docs/28_v2_vs_k64.md</code>。主に <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 B75 と <code>MomentumCompaction</code> B77)、この例の出力のうち <code>Emittance[]</code> の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。
+チューン・K2 の表示は同じだが、動的口径の地図の Score は v2 が 141 と 114 (k64・旧い出力は 143 と 112)、地図の端の数文字が違う (EMIT のエミッタンスで決まる粒子の大きさが変わるため)。</p>
+<p>△ ほぼ一致: リングのチューン・εx・K2 は 4 桁以上で一致 (K2 は FIT の許容でわずかに違い、SF 9.2516 / 9.2332 (0.84, 0.34) など 2 % 以内)。DA は 4 点 × 6 値のうち 2 値が ±1〜2 σ ずれた (DA y の 38,38,38 / 38,36,38 と、DA x の 27,29,28 / 27,28,28。粒子の生死の境のずれ)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>4 点、200 周、δ 3 点の縮小版。元の「41×41 点、5000 周」の地図 (DA がチューンのどの領域で大きいか、共鳴線の位置) を作るものではない。200 周の DA は 5000 周より大きく出る。</li>
+<li>DA をリングで測っているため、元の NCELL で測る DA の値とは比べられない。運転点 (セル 0.86333 / 0.35669、リング 5.18 / 2.14) は 4 点の中に入れていない。</li>
+<li>共鳴 (整数・半整数、構造共鳴) 上の DA の落ち込みは、点を絞ったので確認していない。作動点のチューンは 4 点とも整数・半整数共鳴から 0.04 以上離れている (リングで 5.04, 5.28 / 2.04, 2.28)。</li>
+<li>色収差補正の <code>ChromCor</code> は SF・SD の K2 を動かすだけで、補正後のクロマティシティの値は表示していない (<code>.gs.txt</code> の <code>type S*</code> の出力で K2 だけ見られる)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

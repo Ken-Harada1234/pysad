@@ -107,7 +107,7 @@ def _element_maps_check():
 
 def test_h3_h4_match_old_path_and_tracked_map(base):
     """ROTATE を 1 台 (θ = 50 mrad、結合 9e-3、垂直分散あり): 3 次の h は従来の `ampnf.rdt_series` と 1e-12、追跡の写像のテイラー展開から取り出した h3 と 2e-5、h4 と 5e-4 (最大の項の相対。h4 の差は模型に入れていない
-    K64 の四極の積分器の台形則など、docs/49 §10.5 の FODO の 1.3e-4 と同じ水準)。ADTS の対角が `resdrive.rdt2nd` の解析式と 4e-4 以内 (傾けない lat)"""
+    K64 の四極の積分器の台形則など、docs/25 §10.5 の FODO の 1.3e-4 と同じ水準)。ADTS の対角が `resdrive.rdt2nd` の解析式と 4e-4 以内 (傾けない lat)"""
     lat, rm, rmt, e3, e4 = base
     assert rm.coupling > 5e-3 and rm.const < 1e-12 and np.abs(rm.orbit).max() < 1e-15
     r1 = A.one_turn_series(lat, D=3, nslice=16, bend_cubic=True, nslice_bend=4)
@@ -241,7 +241,7 @@ def test_adts_rotate_term_follows_delta_series(v2_mode):
 
 def test_h4_difference_to_tracking_is_the_k64_quadrature(k64_mode):
     """h4 の追跡との差 (3e-4〜6e-4) の原因の切り分け: 厚い 6 極を連続に近く (nslice=64) して四極の運動学を K64 の積分器の台形則 (quad_rule='k64') にすると差が 1.5e-4 以下 (7e-5) に下がり、
-    厳密な積分 (quad_rule='exact') のままだと 5e-4 以上残る。K64 の厚い 6 極の積分器の分 (docs/49 §10.5) が残りの 7e-5。傾けない FODO。k64 の追跡で見る (v2 の追跡の四極は 4 次の合成で台形則ではない。B226)"""
+    厳密な積分 (quad_rule='exact') のままだと 5e-4 以上残る。K64 の厚い 6 極の積分器の分 (docs/25 §10.5) が残りの 7e-5。傾けない FODO。k64 の追跡で見る (v2 の追跡の四極は 4 次の合成で台形則ではない。B226)"""
     lat = F.rolled(0.0, nrot=1)
     kw = dict(nslice=64, bend_cubic=True, kin=True, fringe=True, nslice_bend=8)
     rm_k = C.taylor_map(lat, D=4, quad_rule='k64', **kw)

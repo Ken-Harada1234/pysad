@@ -1,11 +1,15 @@
 # 12. pysad 公開 API リファレンス
 
-最終更新: 2026-11-20 (v2.3.0 の現状のスナップショット。新しい API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6、v2.1.0 の `naff`・`specfn_cx`・`nbcache` は §16.7、v2.3.0 の周波数マップ・LMA・共鳴駆動項は §16.8)
+**この文書で分かること**: pysad を Python から使うときの公開 API (関数・クラス・引数・戻り値) の一覧。§0 は単位・座標・位置の約束、§1〜15 はモジュール別の API、§16 は追加のモジュール。
+**前提**: SAD のラティスと FFS の用語 (docs/01・02・03)。例はコピーして実行できる。
+**読む順**: §0 → 使うモジュールの節 (§1 parser、§2 elements …)。互換モードは §16.6。
 
-> 場所: `pysad/`。全体像は `01_overview.md`、各計算の直訳メモは 05〜09、SAD の癖は `11_sad_quirks.md`。
+(§1〜15 に無い API は §16。互換モード `pysad.compat` と v2 のモジュールは §16.6、`naff`・`specfn_cx`・`nbcache` は §16.7、周波数マップ・LMA・共鳴駆動項は §16.8)
+
+> 場所: `pysad/`。全体像と文書の案内は `01_overview.md`、各計算の直訳メモは 07〜11、SAD の癖は `29_sad_quirks.md`。
 > 本書の例はすべて `PYTHONIOENCODING=utf-8 python -u` で実行して動作を確認してある (ラティスは `<試験用ラティス>.lat` と本文中の小さな FODO リング)。
 > [`pysad/__init__.py`](../pysad/__init__.py) の `from pysad import ...` は旧 API (§15) を export しているので、**各モジュールを直接 import する** (`from pysad.parser import load_sad_file` など)。
-> **互換モード**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ値が要るときは `PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` (§16.6)。本書の「K64 の動作」の記述は k64 モードのもの。モードで変わる箇所は docs/47。
+> **互換モード**: 既定は `v2` (K64 のバグを直した動作)。gs (K64) と同じ値が要るときは `PYSAD_COMPAT=k64` か `pysad.compat.set_mode('k64')` (§16.6)。本書の「K64 の動作」の記述は k64 モードのもの。モードで変わる箇所は docs/28。
 
 ## 0. 共通の約束 (単位・座標・位置)
 
@@ -404,10 +408,10 @@ print(score)                                               # 144
 
 `ffs.py`, `matching.py`, `tracking.py`, `optics.py` (`FFSState`, `Match`, `track_particles`(旧), `dynamic_aperture`(旧), `periodic_optics` 等) と `parser.SADScript.ffs` / `run_ffs` は独自実装で SAD と未照合 (tracking.py は放射係数に疑い)。[`pysad/__init__.py`](../pysad/__init__.py) がこれらを export しているが、新規コードでは使わず、本書のモジュールを直接 import すること。`lattice.py` の `chromaticity()` / `summary()` / `emittance()` も同じ系統。
 
-## 16. 追加した API (§1〜15 に無いもの)
+## 16. その他の API (§1〜15 に無いもの)
 
 組み込み関数は `Interp.builtins` (名前 → f(引数のリスト)) に登録される。ここでは前節までに無い物を書く。
-各項目の gs との一致の程度と限界は、対応する要素別の文書 (docs/22〜35) と docs/10 §6 にある。ここの関数名と引数の形は `pysad/*.py` のソース (登録箇所とドキュメント文字列) で確認したもので、実行して値を確かめたものではない。
+各項目の gs との一致の程度と限界は、対応する要素別の文書 (docs/13〜22) と docs/27 にある。ここの関数名と引数の形は `pysad/*.py` のソース (登録箇所とドキュメント文字列) で確認したもので、実行して値を確かめたものではない。
 
 ### 16.1 組み込み関数の登録場所 (一覧)
 
@@ -417,7 +421,7 @@ print(score)                                               # 144
 | `sadlist.py` (88 個) | `Append, Apply, Cases, Complement, Count, Delete, DeleteCases, Dimensions, Dot, Drop, Extract` などのリスト関数 |
 | `ffscmd.py` (22 個) | `Twiss, LINE, Element, FFS, Emittance, TrackParticles, SeedRandom, GaussRandom, Random, DynamicApertureSurvey, TouschekLifetime, CalculateOptics, Master, RenumberElement, ResponseMatrix, ParabolaRandom, FFSCalc, BeamLineName, SynchroBetaEmittance1, Set` ほか |
 | `sadelem.py` (9) | `Element, Element$, SetElement, FLAG, BeamLine, WriteBeamLine, ExtractBeamLine, PrintBeamLine, GetMAIN` |
-| `specfn.py` (22) | `HypergeometricPFQ(Regularized), LegendreP, Fourier, InverseFourier, Multinomial, BitwiseAnd/Or/Xor, Complex, Union1` ほか (特殊関数は 458 式で gs と照合: docs/33) |
+| `specfn.py` (22) | `HypergeometricPFQ(Regularized), LegendreP, Fourier, InverseFourier, Multinomial, BitwiseAnd/Or/Xor, Complex, Union1` ほか (特殊関数は 458 式で gs と照合: docs/06) |
 | `fitroot.py` (5) | `FindRoot, Fit, FitEmit, FitGaussian, NIntegrate` |
 | `vecfn.py` (2) | `Vector, ReleaseVector` |
 | `miscfn.py` (26) | `DownhillSimplex, StringToStream, TemporaryName, ListRandom, Fork, Short, Inequality, ToInputString, MessageName, SingularValues, MatrixBalance` ほか |
@@ -427,7 +431,7 @@ print(score)                                               # 144
 | `radfield.py` (2) | `RadiationField, RadiationSpectrum` |
 | `corr.py` (1) | `LinearSolveConditioned` (CorrectOrbit・MakeBump などは SAD の `Packages/*.n` を `pkgload.py` 経由でそのまま実行) |
 | `sadclass.py` (2) | `Class, At` (SAD のクラスの機構) |
-| `tclbridge.py`・`tkcanvas.py` | `Tcl*`・`Tk*`・`X*` (GUI: docs/22)、`TkCanvas*` (描画: docs/37) |
+| `tclbridge.py`・`tkcanvas.py` | `Tcl*`・`Tk*`・`X*` (GUI: docs/20)、`TkCanvas*` (描画: docs/21) |
 
 (表の数は `B['名前'] = ...` の形で代入している箇所を数えたもの。`B.update(...)` や関数経由で登録される名前は数えていないので全数ではない。)
 
@@ -435,15 +439,15 @@ print(score)                                               # 144
 
 | 関数 | 形式 | 説明 |
 |---|---|---|
-| `SynchroBetaEmittance1` | `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` → `{{nus, emitx, emity, emitxp, emityp, conv}, …}` | K64 の `tfemits`/`temits` (シンクロ・ベータ結合の平衡エミッタンス)。`Packages/emit.n` の `SynchroBetaEmittance` が呼ぶ。`USE` 後に使う。実装は `synchrobeta.py` (`synchro_beta_emittance`)。gs との差・未確認は docs/10 §6。24 セルの平面リング + CAVI で emitx が gs と 1.4e-7〜1.4e-6、結合のあるラティスは gs が SIGSEGV で比較不能 (pysad は NaN の ValueError で失敗) |
-| `CSRInit`, `CSRMatrix`, `CSRConvert` | `CSRMatrix[pipe, {dx,dy,f0..f3,tilt}, omega, rho, center, mode]`、`CSRConvert[v または m, pipe]` | CSR の行列。mode 22・33・23・32・110・220・330・1000 (らせん断面 `csrhelmat`)。`CSRConvert` は K64 の `tfcsrvec` と同じ。docs/36 |
+| `SynchroBetaEmittance1` | `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` → `{{nus, emitx, emity, emitxp, emityp, conv}, …}` | K64 の `tfemits`/`temits` (シンクロ・ベータ結合の平衡エミッタンス)。`Packages/emit.n` の `SynchroBetaEmittance` が呼ぶ。`USE` 後に使う。実装は `synchrobeta.py` (`synchro_beta_emittance`)。gs との差・未確認は docs/27。24 セルの平面リング + CAVI で emitx が gs と 1.4e-7〜1.4e-6、結合のあるラティスは gs が SIGSEGV で比較不能 (pysad は NaN の ValueError で失敗) |
+| `CSRInit`, `CSRMatrix`, `CSRConvert` | `CSRMatrix[pipe, {dx,dy,f0..f3,tilt}, omega, rho, center, mode]`、`CSRConvert[v または m, pipe]` | CSR の行列。mode 22・33・23・32・110・220・330・1000 (らせん断面 `csrhelmat`)。`CSRConvert` は K64 の `tfcsrvec` と同じ。docs/15 |
 | `CSRTrack`, `CSRHaissin`, `CSRSetupOY`, `CSROYMatrix` | `CSRTrack[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]` ほか | 縦方向のマクロ粒子追跡 (z・dp を**その場で更新**する)、Haissinski 方程式、OY の方法。`Packages/CSR.n` の `Track` などが呼ぶ |
 | `RadiationField`, `RadiationSpectrum` | `RadiationField[traj, obs]`、`RadiationSpectrum[{τ, f}, {λ1, λ2, dλ}]` | `traj = {{t..},{x..},{y..},{z..}}` (RADLIGHT の軌道) と観測点 `{x,y,z}` から放射場 (`radfield.py`、K64 の tlfield/tlcalc/tlspect)。`RadiationSpectrum` は NPARA の fork 並列なし (逐次) |
-| `GaussianCoulomb`, `GaussianCoulombU`, `GaussianCoulombFitted` | `GaussianCoulombFitted[x, y, sx, sy]` (実数 4 つ、リストを返す) | 横方向ガウス分布のクーロン場。`Fitted` は K64 の `twspfu` (フィット式、`gausscoul.py`)。docs/32 |
-| `BBBrem1` | `BBBrem1[e, ds/s]` (ds/s は 0〜1 の外でエラー) | 制動放射のモンテカルロ (`bbbrem.py`、docs/32) |
+| `GaussianCoulomb`, `GaussianCoulombU`, `GaussianCoulombFitted` | `GaussianCoulombFitted[x, y, sx, sy]` (実数 4 つ、リストを返す) | 横方向ガウス分布のクーロン場。`Fitted` は K64 の `twspfu` (フィット式、`gausscoul.py`)。docs/06 |
+| `BBBrem1` | `BBBrem1[e, ds/s]` (ds/s は 0〜1 の外でエラー) | 制動放射のモンテカルロ (`bbbrem.py`、docs/14) |
 | `Skip` | `Skip[unit, type, n]` | 型 (Character・Real・Word など) の項目を n 個読み飛ばし、最後に読んだ項目を返す。EOF なら `EndOfFile`。n≤0 や Record などは gs と同じく未評価で返す |
 | `Read` | `Read[unit, type]` | 型の読み方を gs に合わせた。`Real` で数でない語は式として評価した値を返す。`Word` は語の文字列 |
-| `FindRoot`, `Fit`, `NIntegrate`, `FitGaussian`, `FitEmit` | | 数値微分で gs と 5e-10〜1e-9。ベクトルの独立変数は実装。複素 `FindRoot` は v2 モードで実装 (複素の Newton 法。k64 モードは TypeError。gs は壊れた値: B61)。docs/04、33 |
+| `FindRoot`, `Fit`, `NIntegrate`, `FitGaussian`, `FitEmit` | | 数値微分で gs と 5e-10〜1e-9。ベクトルの独立変数は実装。複素 `FindRoot` は v2 モードで実装 (複素の Newton 法。k64 モードは TypeError。gs は壊れた値: B61)。docs/05・06 |
 | `DownhillSimplex` ほか | | `optimize.n` の Amoeba を移植 (gs と 1e-13) |
 
 注: `MessageName[f, "usage"]` の関数形は、gs は f を無視して `Undefined MessageName` を出す (B70)。v2 モードは f の本文を返す (`f::usage` と同じ。無ければ `General::tag`)。`f::usage` の形は一致。
@@ -452,7 +456,7 @@ print(score)                                               # 144
 
 | 関数 | 変更 |
 |---|---|
-| `TrackParticles` | (1) POL ON かつ RAD ON のとき、粒子ごとにスピンを追跡する (`track6.py` の `sprot`・`bsi`)。入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/\|s\|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/\|s\|`。この場合は高速追跡 (track6n) でなく Python の追跡 (track6) を使う。k64 モードは損失の処理が無く、v2 モードは落とす。(2) RADLIGHT が ON のとき `{結果, 軌道}` を返す: 軌道は粒子ごとに `{t, x, y, z}` の 4 本の表 (`ffscmd._RadLight`)。k64 モードは K64 と同じで BEND の中を記録せず横方向の座標も入れない。v2 モードは 3 次元の軌道 (BEND の中も `RADLIGHTDIV` 点)。(3) TRPT かつ LWAKE/TWAKE のときウェイクを適用 (`wake.py`、docs/23)。(4) `LOSSMAP` が ON のとき戻りに落ちた要素・落ちた周の 2 行を足す (両モード。POL のときは 10・11 行目)。(5) v2 モードで `SPAC`・`PSPAC`・`WSPAC` が ON のとき空間電荷を入れる (`spch.make`。docs/08 §9.7)。(6) `RADTAPER` が ON のとき直前の Emittance[] の係数でテーパーを入れる |
+| `TrackParticles` | (1) POL ON かつ RAD ON のとき、粒子ごとにスピンを追跡する (`track6.py` の `sprot`・`bsi`)。入力は 9〜11 列 `{x,px,y,py,z,dp, 角度, sy/\|s\|, flag}`、戻りの 7・8 列は `atan(sz,sx)` と `sy/\|s\|`。この場合は高速追跡 (track6n) でなく Python の追跡 (track6) を使う。k64 モードは損失の処理が無く、v2 モードは落とす。(2) RADLIGHT が ON のとき `{結果, 軌道}` を返す: 軌道は粒子ごとに `{t, x, y, z}` の 4 本の表 (`ffscmd._RadLight`)。k64 モードは K64 と同じで BEND の中を記録せず横方向の座標も入れない。v2 モードは 3 次元の軌道 (BEND の中も `RADLIGHTDIV` 点)。(3) TRPT かつ LWAKE/TWAKE のときウェイクを適用 (`wake.py`、docs/13)。(4) `LOSSMAP` が ON のとき戻りに落ちた要素・落ちた周の 2 行を足す (両モード。POL のときは 10・11 行目)。(5) v2 モードで `SPAC`・`PSPAC`・`WSPAC` が ON のとき空間電荷を入れる (`spch.make`。docs/10 §9.7)。(6) `RADTAPER` が ON のとき直前の Emittance[] の係数でテーパーを入れる |
 | `Emittance[]` | POL のスピン量 (偏極時間・スピンチューン・偏極ベクトル。MULT・空洞・SOL (ドリフトのある領域) まで。`Polarization` は v2 モードで有限値)、SOL 領域を含む Twiss・Emittance[] (`solmap.py`、`solemit.py`。v2 モードは領域内の BEND・MULT・CAVI・ずれ・F1 も)、COORD・TCAVI (L=0)・UND (v2 は磁場つき)・PHSROT (v2)・MULT ANGLE≠0・ExternalMap の要素。`RADTAPER`・`EMITDIV` が効く |
 | FIT の幾何の条件 (`GX GY GZ CHI1..3`) | DRIFT の L・BEND の ANGLE・L は K64 の `tdgeo` の解析微分 (`match6d.tdgeo_term`)、他の変数は中心差分 |
 | `obj@name[...]` | クラスのメンバーでない名前は式のまま (K64 と同じ) |
@@ -465,15 +469,15 @@ print(score)                                               # 144
 - `run_sad_string` は `FFS;` の行で MAIN 部と FFS 部に分ける。MAIN 部に `TRACK` 文があるときは、MAIN の命令 (ON/OFF, EMIT, 代入, TRACK, STOP) を書かれた順に実行する (`ffs.main_exec`)。
 - 実行中のエラーは `I.continue_on_error = True` で、SAD と同じく表示して次の文へ進む。`SystemExit` は捕まえて戻る。
 - 初期の `MOMENTUM` は 30 GeV (K64 の `initb1.f`)。
-- SAD の `Packages/*.n` (CorrectOrbit, MakeBump, OptimizeOptics, `CSR.n` の MakeZL・SkinDepth など) は `pkgload.py` 経由で SADScript のまま読み込まれる (docs/34)。
+- SAD の `Packages/*.n` (CorrectOrbit, MakeBump, OptimizeOptics, `CSR.n` の MakeZL・SkinDepth など) は `pkgload.py` 経由で SADScript のまま読み込まれる (docs/06)。
 
 ### 16.5 限界・未確認
 
 - 引数の検査 (引数の数・型のエラー文) は関数ごとに違うので、細部は各モジュールのソースを見ること。実行例は作っていない。
 - `B['名前']` の数え上げは全数ではない (§16.1 の注)。
-- 未翻訳: `wjfit/wfres/wfbin/wiord/wjdraw` (MAIN の TRACK の Fourier 解析。gs も SIGSEGV で参照が無い。チューンの抽出は v2.1.0 の `pysad.naff`: §16.7)。k64 モードでは MEASURE/TRCOD、SOL 領域内の MULT・BEND・CAVI、PHSROT、空間電荷、`Polarization` の有限値は動かない (v2 モードで実装。§16.6)。`measure.py` の `tlum/tluma`・MEASURE 系は gs と数値比較ができない (gs で MEASURE が動かない)。
+- 未翻訳: `wjfit/wfres/wfbin/wiord/wjdraw` (MAIN の TRACK の Fourier 解析。gs も SIGSEGV で参照が無い。チューンの抽出は `pysad.naff`: §16.7)。k64 モードでは MEASURE/TRCOD、SOL 領域内の MULT・BEND・CAVI、PHSROT、空間電荷、`Polarization` の有限値は動かない (v2 モードで実装。§16.6)。`measure.py` の `tlum/tluma`・MEASURE 系は gs と数値比較ができない (gs で MEASURE が動かない)。
 
-### 16.6 互換モード `pysad.compat` と v2 で追加した API
+### 16.6 互換モード `pysad.compat` と v2 のモジュール・API
 
 **互換モード** ([`pysad/compat.py`](../pysad/compat.py))
 
@@ -487,44 +491,44 @@ print(score)                                               # 144
 - 既定は v2。`py -3.12 run_sad.py lattice.sad script.sad` も v2 で走るので、gs と数値を比べるときは `PYSAD_COMPAT=k64` を付ける。
 - 既存の試験と回帰は k64 で走る ([`pysad/tests/conftest.py`](../pysad/tests/conftest.py)、`run_regression.py`)。v2 の試験 (`test_v2_*.py`) はフィクスチャ `v2_mode` で明示する。
 - 追跡のカーネルは `rs[1]` (v2 の印) を読むので、乱数状態 `rs` は必ず `track6n.make_rs()` で作る (`dapert.py`・`solmap.py`・`maintrack.py` も同じ)。
-- 互換モードで切り替えない変更 (pysad 自身の不具合の修正、K64 に無い機能・gs と同じ結果が出る機能) の一覧は docs/47。
+- 互換モードで切り替えない変更 (pysad 自身の不具合の修正、K64 に無い機能・gs と同じ結果が出る機能) の一覧は docs/28。
 
-**v2 で追加したモジュール** (`pysad/*.py`)
+**v2 のモジュール** (`pysad/*.py`)
 
 | モジュール | 内容 | 文書 |
 |---|---|---|
-| `compat.py` | 互換モード (上) | docs/47 |
-| `phsrot.py` | PHSROT (v2 だけ)。`matrices(params, rad, fluc)` (M0・減衰・拡散)、`k_phsrot` (numba の追跡カーネル)、`annotate`、`step`、`emit` (Emittance[] の T・D・B) | docs/08 §9.7 |
-| `radtaper.py` | RADTAPER。`solve(els, momentum_eV, dp0, fshift, charge, amass, tol, maxit)` が閉軌道の δ の分布と係数を外側の反復で求める。`scaled`・`factors`・`tapered` が磁石の強さに係数を掛ける | docs/08 §9.7 |
-| `spch.py` | 空間電荷 (v2 だけ)。`make(ffs, tr, npart)` (`TrackParticles` から。SPAC・PSPAC・WSPAC)、`SpaceCharge` (追跡に挿入するフック)、`Solver3D`・`kick3d` (SPAC の 3 次元)、`Solver2D`・`kick2d` (PSPAC)、`WSpace`・`gauss_field`・`gauss_potential`・`make_wspace` (WSPAC)、`SpaceChargeError` | docs/08 §9.7 |
+| `compat.py` | 互換モード (上) | docs/28 |
+| `phsrot.py` | PHSROT (v2 だけ)。`matrices(params, rad, fluc)` (M0・減衰・拡散)、`k_phsrot` (numba の追跡カーネル)、`annotate`、`step`、`emit` (Emittance[] の T・D・B) | docs/10 §9.7 |
+| `radtaper.py` | RADTAPER。`solve(els, momentum_eV, dp0, fshift, charge, amass, tol, maxit)` が閉軌道の δ の分布と係数を外側の反復で求める。`scaled`・`factors`・`tapered` が磁石の強さに係数を掛ける | docs/10 §9.7 |
+| `spch.py` | 空間電荷 (v2 だけ)。`make(ffs, tr, npart)` (`TrackParticles` から。SPAC・PSPAC・WSPAC)、`SpaceCharge` (追跡に挿入するフック)、`Solver3D`・`kick3d` (SPAC の 3 次元)、`Solver2D`・`kick2d` (PSPAC)、`WSpace`・`gauss_field`・`gauss_potential`・`make_wspace` (WSPAC)、`SpaceChargeError` | docs/10 §9.7 |
 | `measure.py` | MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE (v2 だけ)。`ttinit(mark, np0, rng, ...)` (初期分布)、`ttstat`・`ttstat_lines` (統計の表示)、`Tracker`、`cmd_measure`・`cmd_trcod`・`cmd_align`・`cmd_orbitjitter`・`cmd_putmeasure`・`cmd_getmeasure`、`trcod_fix`・`trcod_move`・`trcod_restore`・`trcod_reference` (基準の軌道)、`track_trpt` (MAIN の `TRACK … TURNS=-1`)、`close_measure_files`。`tlum`・`tluma` は従来のまま | docs/03 |
 
-**v2 で追加・変更した主な API**
+**v2 の主な API**
 
-- `emit6d.emittance6d(lat, p, rfsw=True, radcod=True, pol=True)['spin']` に、v2 の平衡偏極度の量が入る: `equpol` (偏極度)、`depol_rate` (1 周あたりの脱偏極率)、`taudep` (脱偏極時間 [s])、`spin_spread` (平衡分布での n の広がり)、`spin_orbit` (入口の ∂n/∂u、3x6)、`equpol_k64` (K64 の式の参考値)。docs/43 §8a。
-- `miscfn.allow_system(True)`: `System[cmd]` の実行を許可する (環境変数 `PYSAD_ALLOW_SYSTEM=1` でも)。許可がなければ v2 は実行しない。docs/04 §6。
+- `emit6d.emittance6d(lat, p, rfsw=True, radcod=True, pol=True)['spin']` に、v2 の平衡偏極度の量が入る: `equpol` (偏極度)、`depol_rate` (1 周あたりの脱偏極率)、`taudep` (脱偏極時間 [s])、`spin_spread` (平衡分布での n の広がり)、`spin_orbit` (入口の ∂n/∂u、3x6)、`equpol_k64` (K64 の式の参考値)。docs/16 §5.3。
+- `miscfn.allow_system(True)`: `System[cmd]` の実行を許可する (環境変数 `PYSAD_ALLOW_SYSTEM=1` でも)。許可がなければ v2 は実行しない。docs/05。
 - `track6.SolRegionError`: SOL 領域内に置けない要素 (v2)。
 - 環境変数: `PYSAD_COMPAT`、`PYSAD_ALLOW_SYSTEM`、`PYSAD_SYSTEM_SHELL` (許可があるときのシェル。sh・bash の実行ファイルを書くと `<shell> -c cmd`)、`PYSAD_SAD_PACKAGES` (SAD の `Packages` のある場所。GUI 系の試験・読み込みが使う)。
 - FFS の変数・フラグ (v2): `SPACSTEP`・`SPACNX/NY/NZ`・`PSPACNX/NY/DX/DY/NZ/DZ/NTURNCALC`・`WSPACBEAM`・`WSPACRADIUS`・`PBUNCH`、`RADLIGHTDIV`、`EMITDIV`・`EMITDIVB`・`EMITDIVQ` (両モード)。
 - `ffs.track_results` (MAIN の `TRACK … TURNS=-1` の戻り): entrance / exit の (重心, 分散行列)、final、alive (v2)。
 
-**使えない範囲・未確認**: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。`spch.py` の電子以外の粒子の式は 100 MeV の陽子で確かめた (`TrackParticles` は v2.1.0 から `MASS`・`CHARGE` を追跡に渡す。SAD スクリプトからの空間電荷の使用は未確認)。上のモジュールの公開関数名はソースの `def`・`class` から書いたもので、引数の細部は各ファイルの docstring を見ること。
+**使えない範囲・未確認**: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。`spch.py` の電子以外の粒子の式は 100 MeV の陽子で確かめた (`TrackParticles` は `MASS`・`CHARGE` を追跡に渡す。SAD スクリプトからの空間電荷の使用は未確認)。上のモジュールの公開関数名はソースの `def`・`class` から書いたもので、引数の細部は各ファイルの docstring を見ること。
 
-### 16.7 v2.1.0 で追加したモジュール (`pysad/*.py`)
+### 16.7 互換モードと切り替えないモジュール (`pysad/*.py`)
 
-互換モード (`pysad.compat`) と切り替えない追加 (どちらのモードでも同じ関数)。使い方・範囲は docs/47 の v2.1.0 の (b)。
+互換モード (`pysad.compat`) と切り替えない追加 (どちらのモードでも同じ関数)。使い方・範囲は docs/28。
 
 | モジュール | 内容 | 文書 |
 |---|---|---|
-| `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/47 v2.1.0 (b)、[`example/v2_next/B3_naff_tunes.py`](../example/v2_next/B3_naff_tunes.py) |
-| `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/33 | docs/33 |
-| `specfn_cx2.py` | 複素の特殊関数の追加 (v2.2.0)。scipy の複素対応 (`exp1`・`expi`・`digamma`・`sici`・`fresnel`・`lambertw`・`hyp1f1`・`hyp2f1`)、整数次の ExpIntegralE の漸化式・級数、`polygamma` (Hurwitz ゼータ経由)、複素の次数の BesselJ の級数 (\|x\| ≤ 25)、Whittaker W (`specfn_cx.hyperu_c`)。`specfn.install` が複素の引数で切り替える (実数は従来のまま)。両モード |
-| `spch_k64.py` | `K64Pspac` (v2.2.0。k64 モードの PSPAC。`SpaceCharge._kick2d` から呼ぶ)。K64 の形状関数: 横は CIC、縦は「ほぼ最近接」、電位は 5 点差分 (境界 φ = 0) の厳密解と双 3 次補間、線密度は 3 次スプライン。`PSPACNZ < 3` はエラー |
-| `nbcache.py` | numba のキャッシュの無効化。`py -3.12 -m pysad.nbcache [--force]` (`purge(dry_run=False, force=False)`、`stale_modules()`、`cached_modules()`)。numba の `cache=True` の索引 (`.nbi`) は関数を定義したファイル 1 つの内容のハッシュでしか無効にならないので、呼ばれる側 (別のファイルの njit 関数や、`emit6d.ELMASS` などの大域の定数) を編集しても呼ぶ側のキャッシュが古いまま残る。`__pycache__/nbdeps.json` にモジュールごとの依存先の内容のハッシュ (改行の違いは無視) を覚え、変わっていたら呼ぶ側の `.nbi`・`.nbc` を捨てる。最初の 1 回は記録だけ (最初から古いものがあるかもしれないときは `--force`)。**kernel (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py` など) を編集したら、試験の前に 1 回走らせる** (自動では呼ばない) | docs/47 v2.1.0 (b)、`test_nbcache_purges_caller_when_callee_file_changes` |
+| `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/28、[`example/05_tracking/fn_NAFF_tunes.py`](../example/05_tracking/fn_NAFF_tunes.py) |
+| `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/06 | docs/06 |
+| `specfn_cx2.py` | 複素の特殊関数の追加。scipy の複素対応 (`exp1`・`expi`・`digamma`・`sici`・`fresnel`・`lambertw`・`hyp1f1`・`hyp2f1`)、整数次の ExpIntegralE の漸化式・級数、`polygamma` (Hurwitz ゼータ経由)、複素の次数の BesselJ の級数 (\|x\| ≤ 25)、Whittaker W (`specfn_cx.hyperu_c`)。`specfn.install` が複素の引数で切り替える (実数の引数では切り替えない)。両モード |
+| `spch_k64.py` | `K64Pspac` (k64 モードの PSPAC。`SpaceCharge._kick2d` から呼ぶ)。K64 の形状関数: 横は CIC、縦は「ほぼ最近接」、電位は 5 点差分 (境界 φ = 0) の厳密解と双 3 次補間、線密度は 3 次スプライン。`PSPACNZ < 3` はエラー |
+| `nbcache.py` | numba のキャッシュの無効化。`py -3.12 -m pysad.nbcache [--force]` (`purge(dry_run=False, force=False)`、`stale_modules()`、`cached_modules()`)。numba の `cache=True` の索引 (`.nbi`) は関数を定義したファイル 1 つの内容のハッシュでしか無効にならないので、呼ばれる側 (別のファイルの njit 関数や、`emit6d.ELMASS` などの大域の定数) を編集しても呼ぶ側のキャッシュが古いまま残る。`__pycache__/nbdeps.json` にモジュールごとの依存先の内容のハッシュ (改行の違いは無視) を覚え、変わっていたら呼ぶ側の `.nbi`・`.nbc` を捨てる。最初の 1 回は記録だけ (最初から古いものがあるかもしれないときは `--force`)。**kernel (`elkern.py`・`perfkern*.py`・`turnkern.py`・`track6n*.py` など) を編集したら、試験の前に 1 回走らせる** (自動では呼ばない) | docs/28、`test_nbcache_purges_caller_when_callee_file_changes` |
 
-**v2.1.0 で追加・変更した主な API**
+**その他の主な API (1)**
 
-- `spin.sideband_depolarization(...)`: 偏極の脱偏極率にスピンの歳差の位相の変調 (シンクロトロン側帯) を厳密に取った項を入れる。`emit6d.emittance6d(..., pol=True)['spin']` に `depol_rate` (側帯込み)・`depol_rate_linear` (線形)・`spin_spread_sb`・`sideband_error`。`spin.SIDEBAND = False` で線形の式だけに戻る。`spin.SOL_BPAR = False` で K64 の縦磁場の足し方 (B130) に戻る。docs/43。
+- `spin.sideband_depolarization(...)`: 偏極の脱偏極率にスピンの歳差の位相の変調 (シンクロトロン側帯) を厳密に取った項を入れる。`emit6d.emittance6d(..., pol=True)['spin']` に `depol_rate` (側帯込み)・`depol_rate_linear` (線形)・`spin_spread_sb`・`sideband_error`。`spin.SIDEBAND = False` で線形の式だけに戻る。`spin.SOL_BPAR = False` で K64 の縦磁場の足し方 (B130) に戻る。docs/16。
 - `track6n.bend_links` (tfgeo の inext・iprev の再現。B113)、`track6n.tent_all`・`texit_all`・`k_cav_q` (CAVI の DX・DY と V1 V20 V11 V02)、`track6n.edge_exact1` (K1≠0 の BEND の追跡の厳密な端。B117)。
 - `emit6d._tbende_core`・`_tblfre`・`_tbendal` (BEND の F1・FRINGE の Emittance[])、`emit6d._tsteee`・`_tmulte` (ANGLE=0 の BEND・MULT の F1)。
 - `match6d.sol_dcod` (領域内の四極の DX・DY の解析微分)、`sgeo._quad_step`・`solemit._tquade` (領域内の四極のずれ)。
@@ -532,30 +536,30 @@ print(score)                                               # 144
 - `radfield._drop_repeated_points` (複数区間の `RadiationField`)。`fileops` の `Parallelize` (POSIX の fork。`PYSAD_PARALLELIZE=serial` で逐次)。
 - 環境変数: `PYSAD_PARALLELIZE` (`serial` で `Parallelize` を逐次にする)。
 
-**v2.2.0 で追加・変更した主な API**
+**その他の主な API (2)**
 
 - `compat.set_bend_k1_edge('face'|'radial'|None)`・`compat.bend_k1_edge()`・環境変数 `PYSAD_BEND_K1_EDGE`: K1≠0 の BEND の端の模型 (v2 だけ。k64 は常に `radial`)。実装は `lattice._face_kt`・`_face_kick_cod`・`_face_kick_jac`・`_bend_k1_cod_matrix`、`emit6d._tbende_core`、`track6n.k_bendi`・`track6._tbendi`。
-- `compat.set_bend_k1_def('log'|'lin'|None)`・`compat.bend_k1_def()`・`compat.bend_k1_lin()`・環境変数 `PYSAD_BEND_K1_DEF` (B160、v2.3.0 U2): K1≠0 の BEND の K1 の定義。'log' (既定) は K64 (中央面の磁場が B0 + (K1/h) ln(r/ρ0)、(1 + hx)∂b/∂x が一様)、'lin' は B' 一様 (elegant・MAD と同じ)。v2 だけ。k64 は常に 'log' (docs/11 A59、docs/47)。
-- `compat.bend_dk_fix()`・`compat.set_bend_dk_fix(True|False|None)` (B161、v2.3.0 U2): CALC・`Emittance[]` の K1≠0 の BEND の解析行列の dk を kick の導関数に直す修正。v2 は既定で True、k64 は常に False。`set_bend_dk_fix` は測定・試験用の強制 (None で既定に戻す)。
-- `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC` (v2 の Polarization。False で v2.1.0 の式)、`CHROM_KMAX`・`CHROM_NEL`。`spin.sideband_depolarization(..., C6=...)`、`spin._chromatic_matrix`。`spin_results` の `sdamp_rel` (厳密な緩和率)・`sdamp_rel_b2` (A2 の Σ r (b·n)²)・`kinetic`、不安定なリングの P = NaN (`depol_error`)。`track6._spin_rot_cs` (BEND の ROTATE のスピン)。
+- `compat.set_bend_k1_def('log'|'lin'|None)`・`compat.bend_k1_def()`・`compat.bend_k1_lin()`・環境変数 `PYSAD_BEND_K1_DEF` (B160): K1≠0 の BEND の K1 の定義。'log' (既定) は K64 (中央面の磁場が B0 + (K1/h) ln(r/ρ0)、(1 + hx)∂b/∂x が一様)、'lin' は B' 一様 (elegant・MAD と同じ)。v2 だけ。k64 は常に 'log' (docs/29 A59、docs/28)。
+- `compat.bend_dk_fix()`・`compat.set_bend_dk_fix(True|False|None)` (B161): CALC・`Emittance[]` の K1≠0 の BEND の解析行列の dk を kick の導関数に直す修正。v2 は既定で True、k64 は常に False。`set_bend_dk_fix` は測定・試験用の強制 (None で既定に戻す)。
+- `spin.ST_EXACT`・`KINETIC`・`STEP_RATE`・`CHROMATIC` (v2 の Polarization)、`CHROM_KMAX`・`CHROM_NEL`。`spin.sideband_depolarization(..., C6=...)`、`spin._chromatic_matrix`。`spin_results` の `sdamp_rel` (厳密な緩和率)・`sdamp_rel_b2` (A2 の Σ r (b·n)²)・`kinetic`、不安定なリングの P = NaN (`depol_error`)。`track6._spin_rot_cs` (BEND の ROTATE のスピン)。
 - `synchrobeta.tesumb_v2`・`tefsetup(jump=)` (v2 の SynchroBeta)。`perfkern.tradke_db` の `exactd` (v2 の tradke の微分)。`radtaper` (v2 の BEND の係数 (δ_l + δ_l+1)/2)。
 - `track6._tsteer_ens`・`_tblfri`・`_tmulk`・`_tmulti_ens` (F1・FB・FRINGE・AE の追跡)、`lattice._mult_params`・`_bend_as_mult` (MULT の AE)。F1 つきの MULT を含むリングは `track6n_ext.compile_mult` が NotImplementedError にして track6 に落とす。
 - `dapert.dynamic_aperture` (trackd.f のスロット管理。DAPWIDTH の既定 7)。FFS の大域変数 `WSPACSC` (追跡の WSPAC のビーム行列)。`measure._k64_measure`・`_k64_trcod` (k64 の MEASURE・TRCOD)。`lattice._exch_phase` (入れ替わる INS の位相の整数部。v2)。`parser.Token.pos/end`。
 - FFS: `NPARA=n;` (FLUC の追跡の子プロセスの分け方)。
 
-### 16.8 v2.3.0 で追加したモジュール (周波数マップ・LMA・共鳴駆動項・ADTS)
+### 16.8 周波数マップ・LMA・共鳴駆動項・ADTS のモジュール
 
-K64 にない追加。互換モードによらず同じ関数 (docs/47 の v2.3.0)。解説は docs/48・docs/49。SAD の台本の関数は pysad だけ (gs には無い)。
+K64 にない追加。互換モードによらず同じ関数 (docs/28)。解説は docs/26・docs/25。SAD の台本の関数は pysad だけ (gs には無い)。
 
 | モジュール | 内容 | 文書 |
 |---|---|---|
-| `trksetup.py` | `TrackSetup.from_source(src, 'RING', rad=True, rfsw=True, fluc=False, alost=None)` (追跡の設定。`.track`、`.tunes_full()`、閉軌道の求め直し、RF バケット `bucket_zlimit`)、`find_periodicity(els, rows)` (セルの数・各セルの最初の要素・セルの長さ)、`select_locations(st, i0, i1, ...)`、`lower_priority` | docs/48 §2 |
-| `freqmap.py` | `frequency_map(st, loc, x=, y=, dp=, nturn=1024, workers=1, norm='data')` → `FMapResult` (`D`・`nux1`・`nuy1`・`nux2`・`nuy2`・`lost_turn`・`x`・`y`・`dp`、`save`・`load_table`・`plot`)、`resonance_lines`・`resonance_check` (整数・半整数を含む)・`line_distance` | docs/48 §3 |
-| `lma.py` | `momentum_acceptance(st, locs, nturn=None, nsynch=2, check_every=None, workers=2, ...) (`check_every` の既定 None は 1 = 要素ごとの損失の判定、0 は SAD の tapert のまま。`TrackSetup` が 0 でない値を持つときはその値)` → `LMAResult` (`s`・`dp_plus`・`dp_minus`・`touschek_input()`・`save`・`plot`)、`touschek_lifetime_local(touschek_table, result, setup=, period=, s0=)`、`acceptance_at`、`linear_momentum_limit` | docs/48 §4 |
-| `q1cmd.py` | 台本の関数 `FrequencyMap[位置, nturn, X->, Y->, DP->, Output->, Plot->]` (既定は RFSW・RAD・FLUC OFF、S2)、`MomentumAcceptance[位置, Cell->, Distance->, CheckEvery->, Verify->, TurnCheck->, Workers->, Output->, Plot->]` (`CheckEvery` の既定は 1、L2)、`TouschekLifetimeLMA[Formula->]` (既定は Piwinski 型、T2) | docs/48 §3.3・§4.3・§4.5 |
-| `lmabucket.py`・`fmapcheck.py`・`fmapres.py`・`fmappred.py` | LMA の RF バケットとアパーチャの区別 (`limit_types`、`bucket_1d`)、周波数マップの信頼性 (`check_setup`・`check_result`・`D_norm`・`feeddown_estimate`)、RDT・ADTS から予想した共鳴領域との比較 (`ResonancePredictor`、`apply_alignment_errors`、`coverage_stats`)、予想の作り直し (`ResonancePredictorS3`、`evaluate_prediction`・`auc_score`) | docs/48 §3.5・§3.6・§4.5・§10、docs/49 §12 |
-| `rdt2nd.py`・`nform.py` | 4 次の h_jklm (`rdt4`、`resonance_terms` に 4 次の名前を渡すと回る)、正規形の補正 (`nf_correction_h4`・`rdt4_normal_form`)、`adts_from_rdt4`、`fourth_order_adts`、数値の正規形 (`nform.adts_from_map`・`adts_at_delta`・`adts_delta_derivative(method='analytic'\|'nform')`) | docs/49 §10・§11 |
-| `resdrive.py` | `resonance_terms(lat, terms=, method='analytic', nslice=8, delta=0, ref=None, rows=None, bend_cubic=True, bend_nslice=16, momentum_eV=3e9, order2=None, rdt4_options=None)` (引数の `None` は既定の動作。h_jklm、要素ごとの寄与。v2.3.0 R4: `bend_cubic=True` が既定で偏向磁石の 3 次の項の分 `.total_bend` を足す、`.total_sext` は 6 極のみ。δ≠0 では入れない)、`adts(lat, method=, include_octupole=True, delta=0, fourth=None, optics=None)` (6 極 2 次 + 8 極 1 次、`by_harmonic`・`per_element`。v2.3.0 V2: 既定は物理的な項だけ = `fourth='r3'`・`optics='calc'`。`fourth='r6'` は四極の積分器の台形則と偏向磁石の 4 次の項 (`.bend4`) を足す精密版、`optics='tracked'` は δ≠0 の光学を追跡の閉軌道から作る。docs/49 §11)、`chromaticity_numeric(lat, order=3, dmax=2e-3)`・`chromaticity_sextupole(lat)`・(R4) `chromaticity_natural(lat)` (自然クロマティシティの式 −(1/4π)∮(K1+h²)β + 端)・`chromaticity_bend(lat)` (偏向磁石の 3 次の項の分散による分)、`slice_thin`・`adts_tracking` (検証用)、v2.3.0 R2: `kinematic_adts`・`quad_fringe_adts` (`adts().kin`・`.fringe`・`.total`)。v2.3.0 R3: `adts(lat, bend_cubic=True, bend_nslice=16)` (偏向磁石の 3 次の項: `.bend`・`.cross`・`.total`、`bend_cubic=False` で R2 の値)、`bend_cubic_adts`。`bendnl.py`: `bend_decomposition(el, nslice)`・`bend_atoms`・`extract_map`・`Taylor2` (追跡の写像から偏向磁石の 3 次のリー生成関数を取り出す)。`rdttrack.py` (v2.3.0 R4、追跡から RDT を取り出す): `ring_map(elements, momentum, row0, amp=1e-5)`・`rdt_from_map(rm)` (1 周の写像の 2 次のテイラー展開から p=0 の h_jklm)・`delta_quadratic_total`・`delta2_orbit_h10002` (δ の項)・`tracked_rdt_table`・`periodic_points`・`predict_periodic_J` (3νx 共鳴線の近くの周期点)。`bendnl.py` (R4): `harmonic_amplitudes_shift`・`bend_atoms_rdt` (h への偏向磁石の寄与、δ の項は分散による軌道のずれの展開)。`adtsdirect.py`: `direct_adts(lat, momentum_eV, jmax, delta=0, order=2, nturn=1024)` (追跡 + NAFF + 多項式フィットの ADTS)・`tune_vs_delta`・`fit_tune_surface`・`fit_delta_curve`・`paraxial_tracker`。台本 `ResonanceDrivingTerms[]` (R4 で入力 `BendCubic->`・`BendSlices->` を追加)・`AmplitudeTuneShift[]` (R2 で `Kinematic->`・`QuadFringe->`・`Total->` を追加。R3 で入力 `BendCubic->`・`BendSlices->` と出力 `BendCubic->`・`SextBendCross->` を追加)・`ChromaticityTerms[]` (R4 で出力 `NaturalPart->`・`BendPart->` を追加) | docs/49 |
+| `trksetup.py` | `TrackSetup.from_source(src, 'RING', rad=True, rfsw=True, fluc=False, alost=None)` (追跡の設定。`.track`、`.tunes_full()`、閉軌道の求め直し、RF バケット `bucket_zlimit`)、`find_periodicity(els, rows)` (セルの数・各セルの最初の要素・セルの長さ)、`select_locations(st, i0, i1, ...)`、`lower_priority` | docs/26 §2 |
+| `freqmap.py` | `frequency_map(st, loc, x=, y=, dp=, nturn=1024, workers=1, norm='data')` → `FMapResult` (`D`・`nux1`・`nuy1`・`nux2`・`nuy2`・`lost_turn`・`x`・`y`・`dp`、`save`・`load_table`・`plot`)、`resonance_lines`・`resonance_check` (整数・半整数を含む)・`line_distance` | docs/26 §3 |
+| `lma.py` | `momentum_acceptance(st, locs, nturn=None, nsynch=2, check_every=None, workers=2, ...) (`check_every` の既定 None は 1 = 要素ごとの損失の判定、0 は SAD の tapert のまま。`TrackSetup` が 0 でない値を持つときはその値)` → `LMAResult` (`s`・`dp_plus`・`dp_minus`・`touschek_input()`・`save`・`plot`)、`touschek_lifetime_local(touschek_table, result, setup=, period=, s0=)`、`acceptance_at`、`linear_momentum_limit` | docs/26 §4 |
+| `q1cmd.py` | 台本の関数 `FrequencyMap[位置, nturn, X->, Y->, DP->, Output->, Plot->]` (既定は RFSW・RAD・FLUC OFF)、`MomentumAcceptance[位置, Cell->, Distance->, CheckEvery->, Verify->, TurnCheck->, Workers->, Output->, Plot->]` (`CheckEvery` の既定は 1)、`TouschekLifetimeLMA[Formula->]` (既定は Piwinski 型) | docs/26 §3.3・§4.3・§4.5 |
+| `lmabucket.py`・`fmapcheck.py`・`fmapres.py`・`fmappred.py` | LMA の RF バケットとアパーチャの区別 (`limit_types`、`bucket_1d`)、周波数マップの信頼性 (`check_setup`・`check_result`・`D_norm`・`feeddown_estimate`)、RDT・ADTS から予想した共鳴領域との比較 (`ResonancePredictor`、`apply_alignment_errors`、`coverage_stats`)、予想の作り直し (`ResonancePredictorS3`、`evaluate_prediction`・`auc_score`) | docs/26 §3.5・§3.6・§4.5・§10、docs/25 §12 |
+| `rdt2nd.py`・`nform.py` | 4 次の h_jklm (`rdt4`、`resonance_terms` に 4 次の名前を渡すと回る)、正規形の補正 (`nf_correction_h4`・`rdt4_normal_form`)、`adts_from_rdt4`、`fourth_order_adts`、数値の正規形 (`nform.adts_from_map`・`adts_at_delta`・`adts_delta_derivative(method='analytic'\|'nform')`) | docs/25 §10・§11 |
+| `resdrive.py` | `resonance_terms(lat, terms=, method='analytic', nslice=8, delta=0, ref=None, rows=None, bend_cubic=True, bend_nslice=16, momentum_eV=3e9, order2=None, rdt4_options=None)` (引数の `None` は既定の動作。h_jklm、要素ごとの寄与。`bend_cubic=True` が既定で偏向磁石の 3 次の項の分 `.total_bend` を足す、`.total_sext` は 6 極のみ。δ≠0 では入れない)、`adts(lat, method=, include_octupole=True, delta=0, fourth=None, optics=None)` (6 極 2 次 + 8 極 1 次、`by_harmonic`・`per_element`。既定は物理的な項だけ = `fourth='r3'`・`optics='calc'`。`fourth='r6'` は四極の積分器の台形則と偏向磁石の 4 次の項 (`.bend4`) を足す精密版、`optics='tracked'` は δ≠0 の光学を追跡の閉軌道から作る。docs/25 §11)、`chromaticity_numeric(lat, order=3, dmax=2e-3)`・`chromaticity_sextupole(lat)`・`chromaticity_natural(lat)` (自然クロマティシティの式 −(1/4π)∮(K1+h²)β + 端)・`chromaticity_bend(lat)` (偏向磁石の 3 次の項の分散による分)、`slice_thin`・`adts_tracking` (検証用)、`kinematic_adts`・`quad_fringe_adts` (`adts().kin`・`.fringe`・`.total`)。`adts(lat, bend_cubic=True, bend_nslice=16)` (偏向磁石の 3 次の項: `.bend`・`.cross`・`.total`、`bend_cubic=False` で偏向磁石の 3 次の項を入れない値)、`bend_cubic_adts`。`bendnl.py`: `bend_decomposition(el, nslice)`・`bend_atoms`・`extract_map`・`Taylor2` (追跡の写像から偏向磁石の 3 次のリー生成関数を取り出す)。`rdttrack.py` (追跡から RDT を取り出す): `ring_map(elements, momentum, row0, amp=1e-5)`・`rdt_from_map(rm)` (1 周の写像の 2 次のテイラー展開から p=0 の h_jklm)・`delta_quadratic_total`・`delta2_orbit_h10002` (δ の項)・`tracked_rdt_table`・`periodic_points`・`predict_periodic_J` (3νx 共鳴線の近くの周期点)。`bendnl.py`: `harmonic_amplitudes_shift`・`bend_atoms_rdt` (h への偏向磁石の寄与、δ の項は分散による軌道のずれの展開)。`adtsdirect.py`: `direct_adts(lat, momentum_eV, jmax, delta=0, order=2, nturn=1024)` (追跡 + NAFF + 多項式フィットの ADTS)・`tune_vs_delta`・`fit_tune_surface`・`fit_delta_curve`・`paraxial_tracker`。台本 `ResonanceDrivingTerms[]` (入力 `BendCubic->`・`BendSlices->`)・`AmplitudeTuneShift[]` (`Kinematic->`・`QuadFringe->`・`Total->`。入力 `BendCubic->`・`BendSlices->`、出力 `BendCubic->`・`SextBendCross->`)・`ChromaticityTerms[]` (出力 `NaturalPart->`・`BendPart->`) | docs/25 |
 | `sxtopt.py` | [試作] 6 極ファミリーの K2L の多項式モデル (`SxtModel`: RDT・ADTS の解析式を k の線形・二次形式で厳密に組み、`check(k)` で解析式の直接の値と比べる) と SLSQP の最適化。台本の関数なし。検証用で、LMA の予測には使えない ([`example/ddba/v07_14/sextupole/`](../example/ddba/v07_14/sextupole/)) | [`example/ddba/v07_14/sextupole/README.md`](../example/ddba/v07_14/sextupole/README.md) |
 
-限界・未確認 (詳細は docs/48 §7・docs/49 §5・§11.8・docs/46): 周波数マップ・LMA の誤差つき・結合・FLUC は S2・L2 で調べた条件だけ (docs/46)。k64 モードの LMA、PF リング、SP8 (大きなリング B) は未確認。共鳴駆動項・ADTS は結合・垂直分散・端部・運動学的な項・6 極×8 極・10 極以上を入れない。
+限界・未確認 (詳細は docs/26 §7・docs/25 §5・§11.8・docs/31): 周波数マップ・LMA の誤差つき・結合・FLUC は調べた条件だけ (docs/31)。k64 モードの LMA、PF リング、SP8 (大きなリング B) は未確認。共鳴駆動項・ADTS は結合・垂直分散・端部・運動学的な項・6 極×8 極・10 極以上を入れない。

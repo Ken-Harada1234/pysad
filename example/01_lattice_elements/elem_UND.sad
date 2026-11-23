@@ -1,0 +1,29 @@
+! (B37) UND の磁場 FBX・FBY [T]。追跡・CALC の Twiss・Emittance[] に同じ写像が入る (und.py)
+! 条件: 3 GeV、周長 37.8 m の小さなリング、アンジュレータ 1 m・20 周期・1.8 T。SLICE は POLE の 20 倍以上にする
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) DW = (L=1);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.19634954084936207 E1=0.0981747704 E2=0.0981747704);
+CAVI RFC = (VOLT=1.5e6 HARM=64);
+UND U1 = (L=1 FBX=1.8 POLE=20 SLICE=2000);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING0 = (ST 8*CELL1 DW RFC);
+LINE RING  = (ST 8*CELL1 U1 RFC);
+FFS;
+$FORM = "14.8";
+USE RING0; CELL; CALC;
+Print["drift : nux, nuy = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+e0 = Emittance[];
+Print["drift : U0 = ", EnergyLossU0/.e0, " eV, emittances = ", Emittances/.e0];
+USE RING; CELL; CALC;
+Print["UND   : nux, nuy = ", Twiss["NX","$$$"]/2/Pi, " ", Twiss["NY","$$$"]/2/Pi];
+e1 = Emittance[];
+Print["UND   : U0 = ", EnergyLossU0/.e1, " eV, emittances = ", Emittances/.e1];
+f0 = 1.8*299792458/3e9;
+Print["analytic dU0 = (2/3) r_e gamma^3 (F0^2/2) L E = ", 2/3*2.8179403e-15*(3e9/510998.95)^3*f0^2/2*3e9, " eV, pysad dU0 = ", (EnergyLossU0/.e1)-(EnergyLossU0/.e0)];
+Print["damping-rate sum / (2 U0/E) = ", -Plus@@(DampingRate/.e1)/(2 (EnergyLossU0/.e1)/3e9)];
+NORAD;
+r = TrackParticles[{1, {{0},{0},{1e-4},{0},{0},{0},{1}}}, LINE["POSITION","U1"]+1, 1, 1];
+Print["tracking through the ring up to the UND exit: y, py = ", r[[2,3,1]], " ", r[[2,4,1]]];
+Exit;

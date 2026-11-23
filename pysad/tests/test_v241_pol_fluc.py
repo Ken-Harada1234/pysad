@@ -5,7 +5,7 @@
 - ident (同一性): gs と pysad (k64) に同じ台本 (粒子ごとの追跡、乱数 SeedRandom・NPARA=1) を渡し、数値が一致する。
 - tune (スピンチューン): 閉軌道上の 1 粒子の毎周のスピンの回転角から求めたスピンチューンと、Emittance[] の SpinTune。
 - stat (統計): gs の大粒子数の追跡 (台本・出力を保存) の脱偏極率 (1 − <S·n0> の周あたりの増え) とその統計誤差。
-  pysad の式 (v2 の Polarization の `depol_rate`) との比は docs/46 と docs/43 の表。長い計算は `PYSAD_SLOW=1`。
+  pysad の式 (v2 の Polarization の `depol_rate`) との比は docs/31 と docs/16 の表。長い計算は `PYSAD_SLOW=1`。
 記録は docs/history/v241_pol_fluc.md。
 """
 import io
@@ -123,7 +123,7 @@ def test_spin_tune_from_gs_tracking_vs_emittance(ring):
     assert abs(abs(em[1]) - ref[0]) < 2e-8
     assert abs(abs(nu) - ref[1]) < 2e-8
     assert amp == pytest.approx(1.0, abs=1e-6) and abs(par) < 1e-3
-    # k64 の Emittance[] の SpinTune は追跡より大きく外れる (v2 の Emittance[] は追跡に近い: FODO 2e-6、PF 1e-4、ASTRID2 は 2.6e-3 (別の原因: 追跡側の刻み、docs/46))
+    # k64 の Emittance[] の SpinTune は追跡より大きく外れる (v2 の Emittance[] は追跡に近い: FODO 2e-6、PF 1e-4、ASTRID2 は 2.6e-3 (別の原因: 追跡側の刻み、docs/31))
     assert abs(abs(em[1]) - abs(nu)) > 3e-4
     if ring in ('fodo6', 'fodo24'):
         assert abs(ref[2] - abs(nu)) < 5e-5

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ASTRID2 の例集 (0.58 GeV)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#索引">索引</a></li>
+<li><a href="#参考文献">参考文献</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="astrid2-の例集-058-gev">ASTRID2 の例集 (0.58 GeV)</h1>
+<p>ASTRID2 のラティスを使った、SAD の基本的な使い方と計算の例です。KEK の SAD チュートリアルの話題を、ASTRID2 のラティスで作り直しました。各例は <code>.sad</code>、<code>.gs.txt</code>、<code>.pysad.txt</code>、<code>.md</code> の 4 点です。式と数値の照合は各 <code>.md</code> にあります。</p>
+<h2 id="索引">索引</h2>
+<table>
+<thead>
+<tr>
+<th>フォルダ</th>
+<th>例</th>
+<th>内容</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="lattice/README.html"><code>lattice/</code></a></td>
+<td>ラティス</td>
+<td>ASTRID2 のラティス</td>
+<td></td>
+</tr>
+<tr>
+<td><a href="tune_survey/README.html"><code>tune_survey/</code></a></td>
+<td><a href="tune_survey/tune_survey_ncell_ideal_ASTRID2.html"><code>tune_survey_ncell_ideal_ASTRID2</code></a></td>
+<td>ノーマルセルのチューンサーベイ (誤差なし、縮小版)</td>
+<td>△ (チューン・εx 一致、DA は ±1〜2 σ。4 点・200 周に縮小)</td>
+</tr>
+<tr>
+<td><a href="tune_survey/README.html"><code>tune_survey/</code></a></td>
+<td><a href="tune_survey/tune_survey_ncell_smallerror_ASTRID2.html"><code>tune_survey_ncell_smallerror_ASTRID2</code></a></td>
+<td>ノーマルセルのチューンサーベイ (小さい誤差あり、縮小版)</td>
+<td>△ (乱数列が違う。チューン・DA の傾向は一致)</td>
+</tr>
+<tr>
+<td><a href="tune_radiation/README.html"><code>tune_radiation/</code></a></td>
+<td><a href="tune_radiation/amp_dep_ts_ASTRID2.html"><code>amp_dep_ts_ASTRID2</code></a></td>
+<td>振幅依存チューンシフト</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="tune_radiation/README.html"><code>tune_radiation/</code></a></td>
+<td><a href="tune_radiation/calc_RadInt_ASTRID2.html"><code>calc_RadInt_ASTRID2</code></a></td>
+<td>放射積分 I1〜I5 と、エミッタンスの式による検算</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="tune_radiation/README.html"><code>tune_radiation/</code></a></td>
+<td><a href="tune_radiation/mom_dep_ts_ASTRID2.html"><code>mom_dep_ts_ASTRID2</code></a></td>
+<td>運動量依存チューンシフト (チューンと運動量ずれの関係)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="tracking/README.html"><code>tracking/</code></a></td>
+<td><a href="tracking/phase_x_ASTRID2.html"><code>phase_x_ASTRID2</code></a></td>
+<td>位相空間の軌跡 (水平 x-x')</td>
+<td>○ (失われた粒子の座標の符号だけ違う)</td>
+</tr>
+<tr>
+<td><a href="insertion_device/README.html"><code>insertion_device/</code></a></td>
+<td><a href="insertion_device/MPW_v01_02_id_ASTRID2.html"><code>MPW_v01_02_id_ASTRID2</code></a></td>
+<td>挿入光源 MPW の線形シミュレーション</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="lattice_building/README.html"><code>lattice_building/</code></a></td>
+<td><a href="lattice_building/SetElement_BeamLine_Join_ASTRID2.html"><code>SetElement_BeamLine_Join_ASTRID2</code></a></td>
+<td>周期性のあるラティスの作り方 (6 極だけ全セル独立にする)</td>
+<td>○</td>
+</tr>
+</tbody>
+</table>
+<h2 id="参考文献">参考文献</h2>
+<ul>
+<li>ASTRID2 のデザインレポート: <em>ASTRID2 Preliminary Design Report</em> (Aarhus University、ISA、2009 年 8 月)。<a href="https://www.isa.au.dk/facilities/astrid2/docs/astrid2-preliminarydesign-report-august2009.pdf">https://www.isa.au.dk/facilities/astrid2/docs/astrid2-preliminarydesign-report-august2009.pdf</a>
+  ASTRID2 のリングの設計 (エネルギー 0.58 GeV、周長、セル構造、光学) の公開資料。このリポジトリの例のラティスは、設計値 (誤差なし) のラティスで、デザインレポートの値との照合は、一部の主要なパラメータ (エネルギー、周長、セル数) に限り、全部は確かめていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

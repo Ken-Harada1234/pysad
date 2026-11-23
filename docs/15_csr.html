@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>15. CSR (コヒーレント放射)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-何ができるか">1. 何ができるか</a></li>
+<li><a href="#2-使い方-動く-sad-スクリプト">2. 使い方 (動く SAD スクリプト)</a><ul>
+<li><a href="#21-csrtrack-ウェイク付きの追跡">2.1 CSRTrack: ウェイク付きの追跡</a></li>
+<li><a href="#22-csrhaissin-定常分布">2.2 CSRHaissin: 定常分布</a></li>
+<li><a href="#23-oide-yokoya-の行列">2.3 Oide-Yokoya の行列</a></li>
+<li><a href="#24-ダクト断面の行列と電場">2.4 ダクト断面の行列と電場</a></li>
+<li><a href="#25-csrn-ダクトから-zl-を作る">2.5 CSR.n: ダクトから ZL を作る</a></li>
+<li><a href="#26-csrstability-追跡と安定性-書き方の骨格通しの照合は未">2.6 CSRStability: 追跡と安定性 (書き方の骨格。通しの照合は未)</a></li>
+</ul>
+</li>
+<li><a href="#3-物理と式">3. 物理と式</a><ul>
+<li><a href="#31-ダクト断面のモデル-csrn-と-csrtestf">3.1 ダクト断面のモデル (CSR.n と csrtest.f)</a></li>
+<li><a href="#32-固有値共鳴減衰インピーダンス">3.2 固有値・共鳴減衰・インピーダンス</a></li>
+<li><a href="#33-ウェイクの追跡-csrtrackf">3.3 ウェイクの追跡 (csrtrack.f)</a></li>
+<li><a href="#34-haissinski-と-oide-yokoya">3.4 Haissinski と Oide-Yokoya</a></li>
+</ul>
+</li>
+<li><a href="#4-関数ごとの対応">4. 関数ごとの対応</a></li>
+<li><a href="#5-k64-の癖">5. K64 の癖</a></li>
+<li><a href="#6-検証">6. 検証</a></li>
+<li><a href="#7-遅い箇所と限界未確認">7. 遅い箇所と限界・未確認</a><ul>
+<li><a href="#71-遅い箇所">7.1 遅い箇所</a></li>
+<li><a href="#72-限界未確認">7.2 限界・未確認</a></li>
+</ul>
+</li>
+<li><a href="#8-開発者向け-実装の構成">8. 開発者向け: 実装の構成</a></li>
+<li><a href="#9-関連文書">9. 関連文書</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 15_csr.md</div>
+<h1 id="15-csr-コヒーレント放射">15. CSR (コヒーレント放射)</h1>
+<p>最終更新: 2026-11-23</p>
+<p><strong>この文書で分かること</strong>: 偏向磁石の中でバンチが出す CSR (coherent synchrotron radiation) のウェイクを、SAD K64 の組み込み関数と <code>CSR.n</code> で計算・追跡する方法、物理と式、K64 の癖、限界。
+<strong>前提</strong>: 縦方向のビーム力学 (バンチ長、エネルギー広がり、R56) の基本。SAD の台本の書き方 (<a href="03_ffs_commands.html"><code>docs/03_ffs_commands.md</code></a>)。
+<strong>読む順</strong>: 1 (全体の流れ) → 2 (動く台本) → 3 (物理) → 5・7 (癖と限界)。実装の詳細は 8 (開発者向け)。</p>
+<p>用語: <strong>ZL(k)</strong> = 波数 k での縦のインピーダンス。<strong>ウェイク</strong> = ZL をフーリエ変換した時間領域の力。<strong>Haissinski 方程式</strong> = ウェイクのある定常な縦分布を決める方程式。<strong>Oide-Yokoya (OY)</strong> = 定常分布のまわりの線形安定性の解析。</p>
+<h2 id="1-何ができるか">1. 何ができるか</h2>
+<p>偏向磁石の中でバンチが出す CSR (coherent synchrotron radiation) のウェイクを、SAD K64 で計算・追跡する道具の解説。
+対象は 2 層ある。K64 本体の組み込み関数 (Fortran: <code>csrtrack.f</code>、<code>csroy.f</code>、<code>csrtest.f</code>) と、<code>Packages/CSR.n</code> の 2 つのクラス <code>CSR</code> (ダクトの断面からインピーダンスを求める) と <code>CSRStability</code> (ウェイクを使う追跡と安定性)。
+pysad は組み込み関数を <a href="../pysad/csr.py"><code>pysad/csr.py</code></a> に直訳し、<code>CSR.n</code> は書き直さず SAD のソースのまま pysad のインタプリタで動かす (<a href="../pysad/pkgload.py"><code>pysad/pkgload.py</code></a>)。</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>名前</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>組み込み</td>
+<td><code>CSRInit</code></td>
+<td>ダクト断面の格子上で、バンチの電荷分布が作る静電場 (2 成分) を解く</td>
+</tr>
+<tr>
+<td>組み込み</td>
+<td><code>CSRMatrix</code></td>
+<td>ダクト断面の格子上の差分行列 (波動方程式の固有値問題の行列)。mode で種類を選ぶ</td>
+</tr>
+<tr>
+<td>組み込み</td>
+<td><code>CSRConvert</code></td>
+<td>断面の格子 (列ごとの表) と 1 次元ベクトルの相互変換 (K64 内部名 tfcsrvec)</td>
+</tr>
+<tr>
+<td>組み込み</td>
+<td><code>CSRTrack</code></td>
+<td>ウェイクの kick を入れたマクロ粒子の縦方向追跡 (z, dp)</td>
+</tr>
+<tr>
+<td>組み込み</td>
+<td><code>CSRHaissin</code></td>
+<td>Haissinski 方程式 (ウェイクのある定常分布) を Newton 法で解く</td>
+</tr>
+<tr>
+<td>組み込み</td>
+<td><code>CSRSetupOY</code>、<code>CSROYMatrix</code></td>
+<td>Oide-Yokoya の線形安定性の行列を作る (作用角の格子)</td>
+</tr>
+<tr>
+<td><code>CSR.n</code> の <code>CSR</code></td>
+<td><code>MakeZL</code>、<code>Ez</code>、<code>ZL</code>、<code>WL</code>、<code>ZThre</code>、<code>SkinDepth</code> ほか</td>
+<td>ダクト断面と曲率半径から CSR インピーダンス ZL(k) を作る</td>
+</tr>
+<tr>
+<td><code>CSR.n</code> の <code>CSRStability</code></td>
+<td><code>InitializeParticles</code>、<code>Track</code>、<code>ScanTrack</code>、<code>OYStability</code> ほか</td>
+<td>ZL を使ったバンチ長・エネルギー幅の時間発展と閾値の探索</td>
+</tr>
+</tbody>
+</table>
+<p>全体の流れ: ダクト断面 → <code>CSRMatrix</code>・<code>CSRInit</code>・固有値分解で ZL(k) → (ファイルに保存) → <code>CSRStability</code> が ZL を格子 (FFT 形式) に直し、<code>CSRHaissin</code> で定常分布、<code>CSRTrack</code> で追跡、<code>CSRSetupOY</code>・<code>CSROYMatrix</code> で安定性。</p>
+<h2 id="2-使い方-動く-sad-スクリプト">2. 使い方 (動く SAD スクリプト)</h2>
+<p>以下は <a href="../pysad/tests/test_csr.py"><code>pysad/tests/test_csr.py</code></a> などから取った (2.1〜2.4 は K64 の出力と照合済み。2.5 の <code>MakeZL</code> も照合済み。2.6 は未照合の骨格)。</p>
+<h3 id="21-csrtrack-ウェイク付きの追跡">2.1 CSRTrack: ウェイク付きの追跡</h3>
+<pre><code>FFS;
+$FORM=&quot;18.14&quot;;
+SeedRandom[12];
+nr=256; dz=2e-5; np=2000;
+zl=Table[0.02*Cos[0.3 i]/(1+i/10.), {i,1,nr}];      (* 実 FFT 形式の ZL。ここは試験用の人工値 *)
+z=3e-4*GaussRandom[np]; dp=1e-3*GaussRandom[np];
+r=CSRTrack[z,dp,zl,{dz,4,0.5,0.1,-0.5,0,0,1e-3,1e-3},5];
+Print[&quot;R &quot;,r];
+Exit;
+</code></pre>
+<p><code>CSRTrack[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]</code>:</p>
+<ul>
+<li><code>z</code>, <code>dp</code> は粒子ごとの縦位置とエネルギー偏差の表。<strong>その場で書き換わる</strong> (K64 はリスト本体を更新する)。</li>
+<li><code>zl</code> は 2 のべき乗の長さ <code>nr</code> の実 FFT 形式のインピーダンス (k = 0 から Nyquist まで、実部・虚部の組。Nyquist は 2 番目の要素に入る)。</li>
+<li><code>dz</code> はビン幅 (m)、<code>ndiv</code> は 1 周を何分割してウェイクを当てるか、<code>inten</code> は粒子数に比例する強度 (内部で <code>inten/粒子数</code> を 1 粒子の重みにする)。</li>
+<li><code>r56</code>、<code>r65</code> は 1 周の縦方向の行列要素 (m、1/m)。<code>frf</code>、<code>phirf</code> は RF の周波数 (Hz) と位相 (rad)、0 なら RF なしで <code>r65*z</code> の線形復元力。<code>damp</code> は 1 周の放射減衰、<code>sigmae</code> は平衡エネルギー幅。</li>
+<li>戻りは各周回の {σz, σδ} を順に並べた長さ <code>2·nturn</code> のリスト。σz が <code>nr·dz/4</code> を超えるか σδ が上限を超えると発散とみなし、その周以降は 0 を返す (乱数は ffs と共通の <code>SadRandom</code>)。</li>
+</ul>
+<h3 id="22-csrhaissin-定常分布">2.2 CSRHaissin: 定常分布</h3>
+<pre><code>rho=CSRHaissin[zl,{dz,1e-8,-0.3,3e-4}];     (* {dz, inten, r65, sigz} *)
+Print[Length[rho],&quot; &quot;,Max[rho]];
+</code></pre>
+<p>ウェイクのある定常な縦分布 (長さ <code>nr</code> の表、前半だけが非零) を返す。解けなければ <code>General::toomany</code> で停止する。</p>
+<h3 id="23-oide-yokoya-の行列">2.3 Oide-Yokoya の行列</h3>
+<pre><code>s=CSRSetupOY[rho,zl,{dz,6,3,1e-8,0.05,-0.3,3}];       (* {dz, nj, nphi, inten, r56, r65, zspan} *)
+m=CSROYMatrix[s,{dz,1e-8,0.01,3e-4,1e-3}];             (* {dz, inten, nus, sigz, sige} *)
+Print[Dimensions[m]];                                  (* {18,18} = nj*nphi の正方行列 *)
+</code></pre>
+<p><code>CSRSetupOY</code> は作用角 J の <code>nj</code> 点の格子、方位角のモード <code>nphi</code> で線形化する。戻りは {wi, J, ω, zj, dpj, rhoj}。4 番目 (zj) と 5 番目 (dpj) は、v2 モードでは位置と運動量、k64 モードでは K64 の取り違え (5 節の B59) のまま。<strong><code>CSROYMatrix</code> は K64 (gs) では動かない</strong> (5 節の B60)。pysad は動く (行列を返すが gs との照合はできない)。</p>
+<h3 id="24-ダクト断面の行列と電場">2.4 ダクト断面の行列と電場</h3>
+<pre><code>a=CSRMatrix[{3,4,4,3},{1e-3,2e-3,1.1,1.3,0.9,0.7,0.1},3e3,5.0,2,22];
+v=CSRConvert[Range[14],{3,4,4,3}];                      (* ベクトル → 列ごとの表 *)
+r=CSRInit[{{0.5e-3,0.5e-3},4,1e-3,{4,6,8,8,8,8,6,4}}];   (* {{dx,dy}, 中心列, rho, pipe} *)
+</code></pre>
+<ul>
+<li><code>pipe</code> は x 方向の各列の y 方向の格子点数の表 (中心線から上半分の断面)。<code>CSRConvert</code> は点を列ごとに上から数えて並べる。</li>
+<li><code>CSRMatrix[pipe, {dx, dy, f0, f1, f2, f3, tilt}, omega, rho, center, mode]</code>: <code>omega</code> は ω/c = k (1/m)、<code>rho</code> は曲率半径 (0 は直線部)、<code>center</code> は軌道の列。<code>f0..f3</code> は境界の補正係数 (fudge)。mode は 22・33・23・32 (縦・横の 4 つのブロック)、110・220・330 (抵抗壁の減衰用。第 1 列だけのベクトル)、1000 (らせん断面)。</li>
+<li>mode 1000 (<code>csrhelmat</code>) は境界の点列を中点で 2 倍に細かくして境界要素法で各セルの電場への応答を作る (2nm × 2nm の行列)。K64 の添字のずれまで写してある。</li>
+<li><code>CSRInit</code> の第 1 要素に実数 1 つを渡すと、K64 は dx を読まず 0 のまま (バグ) で常に <code>wrongtype</code>。必ず <code>{dx, dy}</code> で渡す。</li>
+</ul>
+<h3 id="25-csrn-ダクトから-zl-を作る">2.5 CSR.n: ダクトから ZL を作る</h3>
+<p><code>CSR</code>、<code>CSRStability</code> は <code>init.n</code> の AutoLoad の表にあり、pysad も最初に使われたときだけ <code>Packages/CSR.n</code> を読む (<code>PYSAD_SAD_PACKAGES</code> か、pysad の隣の <code>SAD-master/Packages</code> が必要)。</p>
+<pre><code>FFS;
+$FORM=&quot;18.14&quot;;
+PageWidth=1999;
+c=CSR[NParallel-&gt;1,Nk-&gt;4,BunchLength-&gt;3e-4,BendingRadius-&gt;10,PipeWidth-&gt;0.04,Center-&gt;0.02,MeshRatio-&gt;{2,2}];
+Print[&quot;A &quot;,c@SkinDepth[1e3],&quot; &quot;,c@EffectiveSkinDepth[2e3],&quot; &quot;,c@EffectiveCond[2e3]];
+Print[&quot;C &quot;,c@StandardKList[]];
+Print[&quot;D &quot;,c@VariableMesh[3000.,10.]];
+Print[&quot;E &quot;,c@ZThre[1e-3,0.01,1e-3]];
+z=c@MakeZL[{{10.,1.}},2000.,6000.,3];                  (* 約 7 分 (pysad) *)
+Print[&quot;Z &quot;,z];
+Exit;
+</code></pre>
+<p>(<code>MakeZL</code> は <code>test_csr_makezl_matches_gs</code> で gs と照合した。)</p>
+<p>主な使い方:</p>
+<ul>
+<li><code>CSR[オプション...]</code>: ダクトを作る。主なオプションは <code>BunchLength</code> (σz)、<code>BendingRadius</code>、<code>PipeWidth</code>、<code>PipeHeight</code>、<code>PipeFun</code> (x の関数としての半高さ。既定は定数 0.05)、<code>Center</code> (軌道の x 位置、既定は幅の半分)、<code>MeshRatio</code>、<code>Nk</code> (波数の点数)、<code>NParallel</code> (並列数。<code>Parallelize</code> を使う)、<code>Resistive</code> (抵抗壁)、<code>Material</code>・<code>Cond</code>、<code>CacheFile</code> (途中結果の保存)、<code>Adaptive</code> (波数の適応刻み)。</li>
+<li><code>MakeZL[l, k1, k2, n]</code>: <code>l = {{ρ1, s1}, {ρ2, s2}, ...}</code> は 偏向の曲率半径と長さの並び (ρ=0 は直線部) で、波数 k1〜k2 の <code>n</code> 点の ZL を作る。戻りは <code>{k, ZLr, ZLi}</code> の表 (単位は ZL の内部単位。Ω に直すには <code>ZUnit</code> を掛ける)。<code>MakeZL[l]</code> (引数なし) は <code>StandardKList[]</code> (k = (i/Nk)^(4/3) · 3.5/σz) を使う。</li>
+<li><code>ZL[omega, l]</code>: 1 つの波数の ZL。<code>Ez[omega, rho, s]</code>: 定常な曲率半径 ρ の偏向の長さ s での縦電場 (<code>{k, Re, Im}</code>)。引数を 1 つ減らした <code>Ez[z, sz]</code> は <code>MakeEz</code> が作った表から z での縦電場 (Gauss バンチ) を数値積分で返す。</li>
+<li><code>WL[z, sz]</code>: ZL から時間領域のウェイク関数 (V/pC)。<code>WLPlot</code>・<code>ZLPlot</code>・<code>PipePlot</code>・<code>EzPlot</code>・<code>Er0Plot</code>・<code>WLPrint</code>・<code>ZLPrint</code> は描画・表示。</li>
+<li><code>ZThre[acoulomb, r56, sigdp]</code>: 簡易な不安定閾値の式 (<code>sqrt(π/2)·(p/m)·Z0/r_e/(N)·|R56|·σδ²·c</code>)。</li>
+<li><code>WriteZL[file, ...]</code>: ZL を <code>{"BunchLength"-&gt;σz, "ZL"-&gt;{ZLr, ZLi}}</code> の形でファイルに保存。<code>ReadWake[file]</code>: 外部のウェイク表 (z, W) から ZL を作る。<code>MakeResZL[a]</code>: 抵抗壁の解析式の ZL。</li>
+</ul>
+<h3 id="26-csrstability-追跡と安定性-書き方の骨格通しの照合は未">2.6 CSRStability: 追跡と安定性 (書き方の骨格。通しの照合は未)</h3>
+<pre><code>(* 未実行の骨格: ZL ファイルは MakeZL → WriteZL で作ったもの *)
+s=CSRStability[BunchLength-&gt;3e-4, MomentumSpread-&gt;1e-3, DampingRate-&gt;1e-4,
+   SynchrotronTune-&gt;-0.01, MeshSize-&gt;3e-5, Meshes-&gt;512, Division-&gt;4];
+s@SetupZL[{{&quot;zl.dat&quot;,1}}];                       (* ZL の読み込み (複数ファイルの和) *)
+{z,dp}=s@InitializeParticles[20000,aw];          (* Haissinski の分布から z、dp は Gauss *)
+s@Track[aw,z,dp,2000,100];                       (* 2000 周、100 周ごとに描画 *)
+s@ScanTrack[awlist,np,{t1,t2}];                  (* 強度のスキャン *)
+r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固有値, 固有ベクトル} *)
+</code></pre>
+<ul>
+<li><code>Constructor</code> は <code>r56 = 2 sin(μ)/(1+cos μ) · σz/σe</code>、<code>r65 = −4 sin²(μ/2)/r56</code> (μ = 2π·νs。νs は α&gt;0 なら負で与える) とし、ZL の格子の幅 <code>zspan = dz/σz · nr/2</code> を決める。</li>
+<li><code>GetZL</code> は ZL を k = 2π/(dz·nr) の刻みの格子に直し、ビン幅の平均化 <code>exp(−(k dz)²/12)</code> を掛け、バンチ長補正 <code>min(exp((kσ)²/2), enh)</code> を掛けた実 FFT 形式の表にする。<code>SetupZL</code> はそれを <code>SetZl</code> で <code>Zl</code> に入れる。</li>
+<li><code>Haissinski-&gt;True</code> (既定) だと <code>InitializeParticles</code> は <code>CSRHaissin</code> の解から z を作る。解けなければ Gauss にフォールバックする。</li>
+<li><code>Track[aw, z, dp, nt, ntplot]</code> は <code>CSRTrack</code> を <code>ntplot</code> 周ずつ呼び σz/σz0、σδ/σδ0 を描く。<code>ScanTrack</code> は強度ごとに <code>CSRTrack</code> を走らせ、後半の平均と揺らぎを描く。<code>ScanBL</code> は バンチ長と νs のスキャン。<code>TrackAnimate</code> は <code>ListPlot</code> のあと <code>System["import -silent -window … -format -jpeg …"]</code> (ImageMagick) と <code>System["mkdir …"]</code> を呼ぶので、<code>System</code> を実行しない Windows の pysad では画像を作れない (K64 の <code>CSR.n</code> のソースで確認、2026-11-16)。</li>
+<li><code>OYStability[aw, nj, nphi, Range-&gt;4, BLFactor-&gt;1]</code>: <code>CSRHaissin</code> → <code>CSRSetupOY</code> → <code>CSROYMatrix</code> → <code>Eigensystem</code>。成長率は <code>max(|Im √ev| − damp·clip(|Re √ev|/(2π νs), 1, ∞))</code>、負なら安定。<code>GuessOYStability</code>・<code>GuessOYStability1</code>・<code>OYScan</code> は BLFactor を動かして閾値を探す (割線法/FindRoot)。</li>
+</ul>
+<h2 id="3-物理と式">3. 物理と式</h2>
+<h3 id="31-ダクト断面のモデル-csrn-と-csrtestf">3.1 ダクト断面のモデル (CSR.n と csrtest.f)</h3>
+<p>ダクトは矩形ではなく「x の各列の高さ」<code>pipe[i]</code> (<code>PipeFun[x]/dy</code> を丸めた格子点数) で表す断面で、軌道は <code>Center</code> の列にある。<code>dx = PipeWidth/mx</code>、<code>dy = min(dx·MeshRatio1/MeshRatio2, MaxMeshSize)</code>。メッシュ数 <code>mx</code> は <code>VariableMesh[ω, ρ]</code> が <code>(|ρ|/ω²)^(1/3)</code> に比例して決め、<code>mxmin=20</code>〜<code>mxmax=3201</code> に制限する (ω が大きいほど細かい)。</p>
+<p>波数 ω (=k) ごとに、縦 (22, 33) と横 (23, 32) の場の成分を 1 つの行列 <code>[[a22, a23],[a32, a33]]</code> にまとめ (<code>CSRDataCache</code>)、<code>RealEig</code> で固有値 ev・固有ベクトル u を求める。<code>ρ = 0</code> (直線) の行列は k=<code>omega0</code> (10000) で 1 度だけ作り、<code>ev·(omega0/ω)</code> で他の k に使い回す (<code>CSRStraight</code>)。
+<code>CSRMatrix</code> の係数 (ac, ce, cg) は <code>ωρ</code> を含む (<code>0.5ω/((ωρ)²−1)</code> など)。曲がったダクトでは <code>1/(ωρ)² → 1</code> のところに特異点がある。
+境界付近の格子には補正係数 <code>fudge0〜3</code> が掛かる。<code>CSR.n</code> の既定 (<code>fudge1=-1.83985</code>、<code>fudge3=1.30899</code>) は円形と角形ダクトの固有値に合わせた当てはめ値であり、物理の導出値ではない。</p>
+<h3 id="32-固有値共鳴減衰インピーダンス">3.2 固有値・共鳴減衰・インピーダンス</h3>
+<ul>
+<li>固有値が複素になる (<code>ComplexEig</code>/<code>RealEig</code>) と、虚部を捨てて逆行列の許容誤差を <code>svdcmp</code> (2e-2) に緩める。固有値が近すぎる (<code>epsev=1e-4</code>) ときは <code>sttaper</code> のテーパーを加えて最大 10 回やり直す。</li>
+<li>抵抗壁 (<code>Resistive-&gt;True</code>) は <code>ResDamp</code> が、壁の格子点を拾う mode 220・330 のベクトルの固有モードへの射影から減衰率 dev を作り、<code>EffectiveSkinDepth</code> (TiN 被膜の 2 層の表皮厚) を掛ける。ZL では <code>exp(−dev·s)</code> の減衰として現れる (<code>ZL</code> の <code>a=dev*s</code>)。これが「共鳴の減衰」。</li>
+<li>初期の静電場は <code>CSRInit</code> が解き、<code>CSRConvert</code> でベクトルにして固有ベクトルに射影する。</li>
+<li>区間 (ρ, s) の ZL は、固有モードごとに <code>cos(ev·s)</code>、<code>sin(ev·s)</code> の積分 (<code>coswi=sin w/ev</code>、<code>sinwi=2 sin²(w/2)/ev</code>、<code>w=ev·s</code>) で場を進め、偏向を渡るたびに初期条件を引き継ぐ (<code>ZL</code> の <code>Do</code> ループ)。最終の縦インピーダンスは軌道の列 (<code>cent0</code>、<code>cent1</code>) の場の差分を <code>Wnorm=1e-12/(2π ε0)</code> で規格化したもの。</li>
+<li>全体の波数の表を FFT の格子に載せるときは、負の k に対称に延ばし (実部は偶、虚部は奇)、自然スプラインで補間する。</li>
+</ul>
+<h3 id="33-ウェイクの追跡-csrtrackf">3.3 ウェイクの追跡 (csrtrack.f)</h3>
+<p>1 周を <code>ndiv</code> 回に分け、各回で (1) <code>z += (r56/ndiv)·dp</code>、(2) 粒子を <code>nr</code> のビンに線形配分して密度 rho を作る、(3) rho の実 FFT に ZL を掛けて戻しウェイクを得る (<code>csrwake</code>)、(4) 3 次スプラインで各粒子の位置のウェイクを補間し <code>dp += (inten/np/ndiv)·W</code>、(5) 分割の真ん中で <code>r65·z</code> (RF ありなら <code>vr·sin(ωz+φ)−dpr</code>) の復元力、(6) <code>ad=1−2·damp/ndiv</code> の減衰と <code>bd</code> の量子励起の乱数、を行う。周ごとに重心を引いて σz、σδ を記録する。RF ありは粒子の分離 (|z| が RF バケットの半周期を超える) や <code>dp&lt;−DPMAX</code> の損失を扱う。</p>
+<h3 id="34-haissinski-と-oide-yokoya">3.4 Haissinski と Oide-Yokoya</h3>
+<ul>
+<li>Haissinski: ρ(z) = exp(u(z)) と置いた非線形方程式 <code>u = u0 − aw·(W*ρ)</code> (u0 は線形復元力の Gauss) を、規格化条件を付けた Newton 法 (しきい 1e-5、最大 100 回。ヤコビアンは <code>tsvd</code> の最小ノルム解) で解く。<code>aw = inten/(r65·σz²)</code>。</li>
+<li>Oide-Yokoya: 定常分布のまわりの線形摂動を、作用 J・方位角 φ の格子で展開した 1 周写像に直す。<code>CSRSetupOY</code> は各 J の軌道を <code>dt = min(1, 0.01/√|r56·r65|)</code> の刻みで周回して ω(J)、位相空間の座標を作り、<code>CSROYMatrix</code> が (nj·nphi)² の行列を返す。その固有値 ev の平方根の虚部が成長率で、<code>OYStability</code> は減衰 <code>damp</code> を差し引いて安定を判定する。</li>
+</ul>
+<h2 id="4-関数ごとの対応">4. 関数ごとの対応</h2>
+<p>組み込み関数の実装状況の一覧 (pysad の名前は K64 と同じ)。</p>
+<table>
+<thead>
+<tr>
+<th>関数</th>
+<th>引数</th>
+<th>pysad の状態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CSRTrack</code></td>
+<td><code>[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]</code></td>
+<td>実装済み。乱数は ffs と共通の SadRandom、z・dp はその場で更新、発散後は 0、RF あり・なし</td>
+</tr>
+<tr>
+<td><code>CSRHaissin</code></td>
+<td><code>[zl, {dz, inten, r65, sigz}]</code></td>
+<td>実装済み (Newton 反復。tsolvg は <code>pysad/tsvd.py</code>)</td>
+</tr>
+<tr>
+<td><code>CSRSetupOY</code></td>
+<td><code>[rho, zl, {dz, nj, nphi, inten, r56, r65, zspan}]</code></td>
+<td>実装済み。dpjn の記憶域の重なり (B59) は k64 モードで再現、v2 モードは直す</td>
+</tr>
+<tr>
+<td><code>CSROYMatrix</code></td>
+<td><code>[...]</code></td>
+<td>ソースどおりに実装。<code>CSRSetupOY</code> の出力を渡すと K64 (gs) は wrongtype (B60)、pysad は動く</td>
+</tr>
+<tr>
+<td><code>CSRMatrix</code></td>
+<td><code>[pipe, {dx,dy,f0..f3,tilt}, omega, rho, center, mode]</code></td>
+<td>mode 22・33・23・32・110・220・330 と mode 1000 (らせん断面 <code>csrhelmat</code>) を実装</td>
+</tr>
+<tr>
+<td><code>CSRConvert</code></td>
+<td><code>[v or m, pipe]</code></td>
+<td>実装済み (K64 の tfcsrvec と同じ)</td>
+</tr>
+<tr>
+<td><code>CSRInit</code></td>
+<td><code>[{{dx,dy}, center, rho, pipe}]</code></td>
+<td>実装済み (csrtest.f の csrphimesh・csr2dpoisson。電場は 3 回の繰り返し)。実数 1 つの dx は K64 のバグで常に wrongtype</td>
+</tr>
+</tbody>
+</table>
+<p>実 FFT (<code>tcftr</code>・<code>trftr</code>・<code>tftrr</code>) と自然スプライン (<code>spline1</code>) も写した。<code>CSR.n</code> の流れ (<code>CSR[…]</code> の生成、<code>MakePipe[]</code>、<code>CSRData</code> (CSRMatrix → RealEig → CSRInit → CSRConvert)、<code>Ez</code>、<code>MakeZL</code>) が動く。</p>
+<h2 id="5-k64-の癖">5. K64 の癖</h2>
+<p>(<a href="30_sad_bug_report.html"><code>docs/30_sad_bug_report.md</code></a> の B59・B60。pysad の <code>CSRSetupOY</code> は両モードで正しい形の出力を返し、gs の wrongtype は再現しない。B59 は k64 モードが K64 どおりに再現し、v2 モードは修正している。)</p>
+<ul>
+<li><strong>B59</strong> (k64 と v2 で違う): <code>CSRSetupOY</code> は <code>dpjn</code> を <code>zjn</code> と同じ記憶域に割り当てる。返す 4 番目の表 (zj) は z ではなく dp の値、5 番目 (dpj) は 0 のまま。続く <code>CSROYMatrix</code> は zj を位置として使うので、行列は物理的には狂う。また、しきい値以上の点が無いと i1 が未初期化になる。<strong>k64 モードは同じ上書きを写す。v2 モードは zj が位置、dpj が運動量になる</strong> (点が無ければ失敗 <code>CSR::irreg</code>。<code>CSROYMatrix</code> は v2 では直った zj・dpj を使う)。根拠: 蛙跳びの関係 z_{k+1} − z_k = p_k r56 dt1 (1e-9)、半周期の間 p の符号が同じで両端 (折り返し点) で |p| が小さい、z がバンチの範囲 (<a href="../pysad/tests/test_v2_C_csr.py"><code>test_v2_C_csr.py</code></a> 2 件)。<strong><code>CSROYMatrix</code> の行列そのものは未照合のまま</strong> (gs が wrongtype を返す。B60)。</li>
+<li><strong>B60</strong>: <code>CSROYMatrix</code> が、<code>CSRSetupOY</code> の出力を渡すと <code>General::wrongtype</code> を返す (この K64 ビルドで再現)。<strong>手で作った正しい形の実数リストなら gs でも動く</strong>。原因: <code>tfcsroysetup</code> (csroy.f) が 4 番目 (zj) の実数リストへ <code>c_f_pointer(c_loc(rlist(kazjn)), zjn, [mphi,nj])</code> で書くとき、先頭の語 <code>rlist(kazjn)</code> (リストの頭 = head) から書き始める (要素は <code>rlist(kazjn+1)</code> から書くべきで、ほかの 4 つの配列は <code>rlist(k+1:…)</code> で正しい)。head が zjn(1,1) で上書きされるので、<code>tfcsroymat</code> の <code>tfreallistq(las%dbody(4), lazj)</code> が偽になる (B59 の <code>dpjn</code> と <code>zjn</code> が同じ記憶域も同じ箇所)。gs で <code>CSRSetupOY</code> の出力の各要素の <code>Head</code> を調べ、4 番目が実数 (1.2952814481588496e-5) で List でないことを確認した。登録名は <code>CSRSetupOY</code>・<code>CSROYMatrix</code> だが、ソース内の関数名は <code>tfcsroysetup</code>・<code>tfcsroymat</code> で綴りが違う。<code>OYStability</code> と <code>OYScan</code> は gs で完走しない (K64 の誤り)。pysad は両モードで正しい形の出力を返して動く (k64 で wrongtype を再現するかは要判断)。手で作った入力 (nr=64、nj=3、nphi=2) の 6x6 の行列 (36 要素) は gs と相対 4e-20 で一致 (<a href="../example/13_packages/fn_CSROYMatrix.sad"><code>example/13_packages/fn_CSROYMatrix.sad</code></a>、<code>test_csroymatrix_hand_made_input_matches_gs</code>)。</li>
+<li><code>CSRInit</code> の実数 1 つの dx は常に <code>wrongtype</code> (dx を読まない)。</li>
+<li><code>CSRMatrix</code> mode 1000 は、K64 が <code>phix(0:nphimax)</code> を <code>csrphimesh</code> の <code>phix(*)</code> に渡すため、点の添字が 1 つずれる (pysad も同様)。また <code>{4,4,4,4}</code> などの断面は gs 自体が SIGABRT/SIGSEGV で落ちる (参照なし)。</li>
+<li><code>CSR.n</code> の <code>FreeMem[]</code> は <code>top</code> の出力 (<code>OSTYPE</code> で Switch) を読むので、非対話の WSL では <code>OSTYPE</code> が空で <code>OpenRead</code> が失敗する。gs の参照を取るときは WSL に <code>top</code> を入れるか、<code>Mem: ... free ...</code> を出す代用を PATH に置き、<code>OSTYPE=linux</code> を設定した。pysad は Windows などの <code>top</code> のない環境では代用の行を内部で作る。</li>
+<li><code>CSR.n</code> は GUI・描画 (<code>ListPlot</code>、<code>Plot</code>、<code>HistoPlot</code>、<code>WidgetInfo</code>) を呼ぶ。<code>pkgload.py</code> の許可リストには <code>CSR.n</code> と <code>ListPlot.n</code>・<code>Plots.n</code> が入っている (描画の可否は docs/21)。</li>
+</ul>
+<h2 id="6-検証">6. 検証</h2>
+<ul>
+<li><code>CSRTrack</code>・<code>CSRHaissin</code> は K64 (gs) と相対 1e-11、<code>CSRMatrix</code>・<code>CSRConvert</code>・<code>CSRInit</code> は 1e-10〜1e-13、<code>CSRSetupOY</code> は 1e-9〜1e-7、<code>MakeZL</code> (3 周波数・1 区間) は 1e-10 以内で一致する。</li>
+<li>試験は <code>py -3.12 -m pytest pysad/tests/test_csr.py</code> (<code>PYSAD_SAD_PACKAGES</code> 付きで 6 通過・1 skip。skip は <code>PYSAD_SLOW=1</code> が要る <code>MakeZL</code>)。</li>
+<li>試験の量は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、実際のダクト、周長) での物理的な妥当性の検証ではない。<code>MakeZL</code> の照合は 3 周波数・1 区間だけ。</li>
+<li>一致の表は <a href="history/15_csr_validation.md"><code>docs/history/15_csr_validation.md</code></a>。</li>
+</ul>
+<h2 id="7-遅い箇所と限界未確認">7. 遅い箇所と限界・未確認</h2>
+<h3 id="71-遅い箇所">7.1 遅い箇所</h3>
+<ul>
+<li><code>MakeZL</code> (上の 3 点) は pysad で約 7 分 (試験は <code>PYSAD_SLOW=1</code>)。メッシュ数が波数とともに増え (<code>mxmax=3201</code>)、各 k で <code>CSRMatrix</code> と固有値分解 (密行列) が走る。k の点数 <code>Nk</code> の既定は 32 (+ <code>StandardKList</code>)、実用の ZL の作成は桁違いに長くなる (未計測)。</li>
+<li><code>CSR[...]</code> の <code>Wait[]</code> は <code>FreeMem[]</code> (K64 では <code>top</code> を呼ぶ) と <code>Sleep</code> で空きメモリと並列数を見て待つ (<code>NParallel</code> 本)。gs はこの環境に <code>top</code> が無く <code>FreeMem</code> が OpenRead エラーで失敗する。pysad の <code>FreeMem</code> は Python (psutil) で代替して 1.0 を返す。pysad は fork しないので、並列を多くして速くなるかは確かめていない (未確認)。</li>
+<li><code>CSRTrack</code> と <code>CSRHaissin</code> の中の <code>tsvd</code> (ヤコビアン) は numpy で速い。<code>CSRSetupOY</code> は nj・nphi に比例して重い。</li>
+</ul>
+<h3 id="72-限界未確認">7.2 限界・未確認</h3>
+<ul>
+<li><code>ScanTrack</code>・<code>OYStability</code>・<code>OYScan</code>・<code>GuessOYStability*</code>・<code>ScanBL</code>・<code>TrackAnimate</code> (画像の生成は pysad では不可、上記)・<code>SetupZL</code>・<code>GetZL</code>・<code>CSRStability</code> のコンストラクタ・<code>ReadWake</code>・<code>MakeEz</code> の長い流れは、gs と照合していない (pysad での完走の試験もない)。<code>OYStability</code> は B60 により gs では参照が取れない。</li>
+<li>描画 (<code>WLPlot</code> <code>ZLPlot</code> <code>PipePlot</code> <code>EzPlot</code> <code>Er0Plot</code>) の出力は確認していない。</li>
+<li><code>CSROYMatrix</code> の値は、手で作った入力 (nr=64、nj=3、nphi=2) で gs と一致、<code>CSRSetupOY</code> の出力から作ったものは gs が作れず未照合。nj・nphi が大きい手作りの入力、<code>OYStability</code>・<code>OYScan</code> の gs との比較は未確認。</li>
+<li>抵抗壁 (<code>Resistive-&gt;True</code>、<code>ResDamp</code>) と <code>Adaptive-&gt;True</code> の経路は gs と照合していない。</li>
+<li>中心がダクトの中央でない (<code>Center≠PipeWidth/2</code>) 場合、<code>PipeFun</code> が定数でない断面、<code>MeshRatio</code> が 1 でない場合の一致は、<code>MakeZL</code> の 1 例 (<code>Center=0.02</code>、<code>PipeWidth=0.04</code>、<code>MeshRatio-&gt;{2,2}</code>、一定の高さ) 以外は未確認。</li>
+<li><code>CSRMatrix</code> mode 1000 は小さな断面 2 例のみ。{4,4,4,4} など gs が落ちる断面は参照がない。</li>
+<li>物理モデルとしての CSR の公式 (ウェイク・Haissinski・OY の式) の独立な導出や、実験との比較はしていない。K64 の実装の直訳であり、<code>fudge</code> 係数は当てはめ値。</li>
+</ul>
+<h2 id="8-開発者向け-実装の構成">8. 開発者向け: 実装の構成</h2>
+<ul>
+<li>組み込み関数は <a href="../pysad/csr.py"><code>pysad/csr.py</code></a> (K64 の <code>csrtrack.f</code>、<code>csroy.f</code>、<code>csrtest.f</code> の直訳)。<code>CSR.n</code> は <a href="../pysad/pkgload.py"><code>pysad/pkgload.py</code></a> が最初に使われたときに読み込む (許可リストに <code>CSR.n</code> と描画の <code>ListPlot.n</code>・<code>Plots.n</code>)。<code>Packages/CSR.n</code> は 1088 行。</li>
+<li><code>CSR.n</code> を動かすための対応: <code>Do[…, {Infinity}]</code>・<code>{i, Infinity}</code> (Break するまで続ける)、<code>OpenRead["!コマンド"]</code> (コマンドの出力を読む。<code>top</code> のない環境 (Windows) では <code>FreeMem</code> 用に空き記憶領域を旧形式の top の行で作る)、開けないファイルは <code>$Failed</code>。</li>
+<li><code>CSRMatrix</code> mode 1000: <code>tsolvm(svd=.true.)</code> は最小ノルム解 (特異値 &lt; 最大×1e-4 を捨てる) として numpy の SVD で解いた。<code>CSRInit</code> の境界の電荷は <code>tsolva</code> = <code>tsvd(.false.)</code> の最小ノルム解 (pysad の <code>tsvd</code>)。</li>
+<li>gs の参照を取るには、WSL に <code>top</code> を入れるか、PATH に <code>top</code> の代用 (<code>Mem: …k total, …k used, …k free, …k buffers</code> を出すスクリプト) を置き、<code>OSTYPE=linux</code> を設定する (非対話の WSL では OSTYPE が空で、<code>FreeMem</code> の <code>Switch</code> が未評価になり OpenRead が失敗する)。</li>
+<li>試験: <a href="../pysad/tests/test_csr.py"><code>pysad/tests/test_csr.py</code></a>。K64 のソース: <code>Packages/CSR.n</code>、<code>src/csrtrack.f</code>、<code>src/csroy.f</code>、<code>src/csrtest.f</code>。</li>
+</ul>
+<h2 id="9-関連文書">9. 関連文書</h2>
+<ul>
+<li><a href="30_sad_bug_report.html"><code>docs/30_sad_bug_report.md</code></a>: B59、B60 の K64 の癖。</li>
+<li><a href="13_wake.html"><code>docs/13_wake.md</code></a>: ウェイク一般 (WAKE)。</li>
+<li><a href="21_graphics.html"><code>docs/21_graphics.md</code></a>: 描画 (<code>ListPlot</code>、<code>Plot</code>、Canvas)。</li>
+<li><a href="20_tcltk_gui.html"><code>docs/20_tcltk_gui.md</code></a>: GUI。</li>
+<li><a href="06_sadscript_library.html"><code>docs/06_sadscript_library.md</code></a>: <code>Packages/*.n</code> の自動読み込みの仕組み。</li>
+<li><a href="history/work_unimpl.md"><code>docs/history/work_unimpl.md</code></a>: 未解決の差と最新の記録。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

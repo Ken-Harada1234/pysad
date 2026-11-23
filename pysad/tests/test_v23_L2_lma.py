@@ -15,7 +15,7 @@ from pysad.trksetup import TrackSetup
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
-EX = os.path.join(ROOT, 'example', 'v2_3')
+EX = os.path.join(ROOT, 'example', '15_lma_touschek', 'lma')
 
 FODO = '''MOMENTUM = 3GEV;
 DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
@@ -214,7 +214,7 @@ def _read(path):
 def test_saved_limit_types(name, n, lo):
     """保存した limit_types の表 (ASTRID2 25 位置、kek-ls 11 位置): LMA = min(RF バケットの限界 (6 次元)、実効のアパーチャの限界 (4 次元)) が 4e-4 以内で成り立つ。
     ASTRID2 (±10 mm) は全位置がアパーチャ、kek-ls は全位置が RF バケット"""
-    p = os.path.join(EX, 'L2_limit_types_%s.table.txt' % name)
+    p = os.path.join(EX, 'lma_limit_types_%s.table.txt' % name)
     if not os.path.exists(p):
         pytest.skip('例の表がない')
     rows = _read(p)

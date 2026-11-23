@@ -23,7 +23,7 @@ BLANK = 'SF = (L=0.2 K2=0) SD = (L=0.2 K2=0)'
 P0 = 3e9
 ASTRID = os.path.join(ROOT, 'example', 'astrid', 'lattice', 'ASTRID2_v01_01.sad')
 KEKLS = os.path.join(HERE, 'kek-ls_v03_12.lat')
-EX = os.path.join(ROOT, 'example', 'v2_3')
+EX = os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'adts_rdt')
 
 
 def fodo(k_sf=4.0, k_sd=-6.0):
@@ -73,7 +73,7 @@ def test_sector_bend_generator_is_curvature_and_hard_edge_terms():
 
 def test_combined_function_body_cubic_is_k1_h_x3_over_6():
     """K1≠0 の偏向磁石 (ASTRID2 の BH、30°、K1=-1.68): 本体の 3 次の項 = (h/2) x (px²+py²) + (K1 h/6) x³ (K64 の bendecorr の kick Δpx = −K1 h x²/2 と一致)。
-    Maxwell の方程式を満たす項 (K1 h x³/3 − K1 h x y²/2) とは違う (K64 の定義。docs/49 §8 の注)"""
+    Maxwell の方程式を満たす項 (K1 h x³/3 − K1 h x y²/2) とは違う (K64 の定義。docs/25 §8 の注)"""
     b = find(load_sad_file(ASTRID).build_lattice('RING'), 'BH')
     h = b.ANGLE / b.L
     d = B.bend_decomposition(b, 16)
@@ -116,8 +116,8 @@ def test_fodo_adts_with_bend_cubic_matches_tracking():
     for k, key in (('xx', 'xx'), ('xy', 'xy_mean'), ('yy', 'yy')):
         assert rel(A1.total[k], r[key]) < 2e-3, (k, A1.total[k], r[key])
     assert rel(A0.total['yy'], r['yy']) > 5e-2 and rel(A0.total['xx'], r['xx']) > 1e-2
-    # 保存した 1024 周・70 粒子の追跡 (R3_scan_fodo.pysad.json)
-    f = os.path.join(EX, 'R3_scan_fodo.pysad.json')
+    # 保存した 1024 周・70 粒子の追跡 (adts_bend_scan_fodo.pysad.json)
+    f = os.path.join(EX, 'adts_bend_scan_fodo.pysad.json')
     if os.path.exists(f):
         d = [x for x in json.load(open(f))['rows'] if x['lam'] == 1.0][0]
         for k in ('xx', 'xy', 'yy'):
@@ -154,10 +154,10 @@ def test_nslice_convergence_second_order():
 
 
 def test_astrid2_and_large_ring_a_vs_saved_tracking():
-    """ASTRID2 (30° の複合機能偏向磁石) と大きなリング A (kek-ls_v03_12.lat) の、保存した追跡 (R3_scan_*.pysad.json、1024 周・70 粒子・6 極 ×1) との差:
+    """ASTRID2 (30° の複合機能偏向磁石) と大きなリング A (kek-ls_v03_12.lat) の、保存した追跡 (adts_bend_scan_*.pysad.json、1024 周・70 粒子・6 極 ×1) との差:
     ASTRID2 は 4e-3 以内 (R2: 11%・15%・6.5%)、大きなリング A は xx・xy が 1e-3、yy が 5e-3 以内 (R2: 0.2%・1.2%・3.6%)"""
     for path, line, name, tol in ((ASTRID, 'RING', 'astrid', (4e-3, 4e-3, 4e-3)), (KEKLS, 'RING', 'kekls', (1e-3, 1e-3, 5e-3))):
-        f = os.path.join(EX, 'R3_scan_%s.pysad.json' % name)
+        f = os.path.join(EX, 'adts_bend_scan_%s.pysad.json' % name)
         if not os.path.exists(f):
             pytest.skip('保存した追跡がない')
         d = [x for x in json.load(open(f))['rows'] if x['lam'] == 1.0][0]

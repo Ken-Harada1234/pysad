@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2next 担当 P4 項目 4: 追跡の WSPAC のビーム行列に、空間電荷つきの自己無撞着な平衡値 (MINCOUP の下限つき) を使うオプション `WSPACSC = 1;` (v2)。
 
-K64 の追跡 (tturn の twspac) は `beamsize(:,l)` (`CODPLOT; WSPAC; EMIT;` の最後の一周のビーム行列) を使う。gs で確かめた: 結合のあるリング (`example/v2_C/C2s_wspac.sad` の 0.5 GeV)
+K64 の追跡 (tturn の twspac) は `beamsize(:,l)` (`CODPLOT; WSPAC; EMIT;` の最後の一周のビーム行列) を使う。gs で確かめた: 結合のあるリング (`example/05_tracking/flag_WSPAC_tune_shift.sad` の 0.5 GeV)
 の追跡のチューンシフトは (−2.938e-5、−1.210e-3) で、ゼロ電流の行列 (v2 の既定: −2.963e-5、−1.196e-3) と 1% で合う。**MINCOUP の下限 (εy ≥ MINCOUP (εx + εy)) を入れた行列
 (−2.79e-5、−3.81e-4) とは合わない**。垂直のエミッタンスが 0 の平らなリングは gs が NaN (ビームの高さ 0)。したがって K64 の追跡のビーム行列には MINCOUP の下限が入らない。
 v2 の既定はゼロ電流の行列のまま (gs と 1%) で、**`WSPACSC = 1;` のとき Emittance[] と同じ反復 (`touschek_table(wspac=True)`) の最終パス (`BeamMatricesSC`、MINCOUP の下限つき) を

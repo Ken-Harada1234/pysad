@@ -123,7 +123,7 @@ def test_chromatic_response_matches_deterministic_tracking_models_v2(v2_mode):
         C6 = spin._chromatic_matrix(els, ph, np.array(e['orbit_entrance']), e.get('trf0', 0.0), True, True, ring['secs'])
     finally:
         compat.set_mode('k64')
-    # (u の δ、x、M1 の |G|、M2 の |G|) は example/v2_next/P1_response_samples.json の抜粋。ここでは ξ = 0 の式が M1 と一致することだけ確かめる
+    # (u の δ、x、M1 の |G|、M2 の |G|) は example/16_spin_polarization/pol_chromatic_response_samples_*.json の抜粋。ここでは ξ = 0 の式が M1 と一致することだけ確かめる
     rng = np.random.default_rng(5)
     L = np.linalg.cholesky(s0)
     U = (L @ rng.standard_normal((6, 6))).T

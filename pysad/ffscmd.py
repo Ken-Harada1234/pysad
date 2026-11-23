@@ -304,7 +304,7 @@ def _mark_offset_value(el) -> float:
 class _RadLight:
     """RADLIGHT (tlinit.f tlinit / tlstore / tlresult): 粒子の軌道 {t, x, y, z} (GEO 座標) を要素ごとに記録する。
     k64: 記録するのは区間の始めと、L≠0 の BEND 以外 (型 < CAVI) の要素の後だけ (tturn.f:555。BEND と曲げのある MULT の中は記録しない: K64 のまま)。
-         横方向の軸は 0 (tlinit が geo0 の軸 1・2 を書かない) で、BEND で向きも変わらない (docs/21 B65)。
+         横方向の軸は 0 (tlinit が geo0 の軸 1・2 を書かない) で、BEND で向きも変わらない (docs/30 B65)。
     v2 (B65 の修正): 横方向の軸を幾何から取り、BEND では tlstore の dphi≠0 の式 (円弧) で位置と向きを進める。BEND の中は
          1/γ の角度あたり RADLIGHTDIV 点 (既定 16) に刻んで記録する (放射場の時間構造は 1/γ の角度で決まる)。
     geo = ls の位置の幾何 (3×4: 列 0..2 が x, y, z の軸、列 3 が位置)"""
@@ -3506,7 +3506,7 @@ class FFS:
             # (<work-userscripts>/kekls correct_cod, print_emittance: SAD は FFS::error で Do を抜ける)
             if _compat.v2():
                 # v2 (B22): K64 にこのコマンドは無い。文の残りを式として読んで別のエラー (Missing value for PM*) で止まるのを避け、
-                # 無いことを知らせて文全体を読み飛ばす (軌道補正は CorrectOrbit パッケージ: docs/34)
+                # 無いことを知らせて文全体を読み飛ばす (軌道補正は CorrectOrbit パッケージ: docs/06)
                 self.write(f' ???-FFS-Warning-{W} is not a command of SAD K64 (ignored): {" ".join(words[i:])} ' + chr(10))
                 return len(words) - i
             return 1
@@ -4714,7 +4714,7 @@ class FFS:
                             continue
                         if id_ == 31:
                             # K64 (tcorr.f): CAVI は latt+3, +4 = HARM と PHI に (DX, DY ではなく) 書く。add でなければ設計の DX・DY (idvalc+13, +14) から
-                            # delx・dely を引いた値、add なら -delx・-dely を足す (K64 の添字のずれ。gs で確かめた: docs/21 B62)
+                            # delx・dely を引いた値、add なら -delx・-dely を足す (K64 の添字のずれ。gs で確かめた: docs/30 B62)
                             dxo = float(getattr(ej, 'DX', 0.0) or 0.0)
                             dyo = float(getattr(ej, 'DY', 0.0) or 0.0)
                             if add:

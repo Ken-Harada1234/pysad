@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_ExternalMap</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_ExternalMap.md</div>
+<h1 id="fn_externalmap">fn_ExternalMap</h1>
+<p>種別: 関数 (ユーザー定義の写像) / フォルダ: 06_collective / ラティス: <code>00_lattice/map_ring.sad</code> (新規。<code>FODO_ring.sad</code> の ORIGIN の直後に <code>MAP MP</code> を置いた <code>RINGM</code>)。3 GeV / フラグ: <code>NORFSW NORAD NOFLUC</code></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>MAP</code> 要素は、SADScript の関数 <code>ExternalMap</code> で写像を与えるための要素 (定義がなければ恒等で長さ 0)。追跡 (<code>"TRACK"</code>) と光学 (<code>"OPTICS"</code>) の両方に、薄い四極 (集束 $px\to px-kx$、非集束 $py\to py+ky$) を与え、チューンが解析式どおり変わることを確かめる。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>MAP MP = (L=0);   LINE RINGM = (ORIGIN MP RF 24*CELL);
+pm = LINE[&quot;POSITION&quot;, &quot;MP&quot;];        ! 2
+k = 0.05;
+ExternalMap[&quot;OPTICS&quot;, n_, cod_] := {cod, {{1,0,0,0,0,0},{-k,1,0,0,0,0},{0,0,1,0,0,0},{0,0,k,1,0,0},{0,0,0,0,1,0},{0,0,0,0,0,1}}};
+ExternalMap[&quot;TRACK&quot;, n_, nt_, x_] := {x[[1]], x[[2]] - k*x[[1]], x[[3]], x[[4]] + k*x[[3]], x[[5]], x[[6]], x[[7]]};
+CALC;                                ! OPTICS の写像で Twiss
+</code></pre>
+<ul>
+<li><code>"OPTICS"</code>: 引数の軌道 <code>cod</code> に対し <code>{cod1, trans}</code> を返す (6×6 の行列 $(x,p_x,y,p_y,z,\delta)$)。</li>
+<li><code>"TRACK"</code>: <code>x_</code> は (7, 粒子数) の表 $(x,p_x(1+\delta),y,p_y(1+\delta),z,\delta,\mathrm{flag})$。同じ形の表を返せば座標が置き換わる。</li>
+<li>位置 <code>n</code> は <code>LINE["POSITION","MP"]</code> (= 2) と比べて使い分けてもよい (この例は全 MAP に同じ写像)。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>gs = pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ring only の NX, NY</td>
+<td>6.69632894、4.90605604</td>
+</tr>
+<tr>
+<td>with MAP (CALC) NX, NY</td>
+<td>6.71594967、4.89631791</td>
+</tr>
+<tr>
+<td>with MAP (追跡のチューン小数部) x, y</td>
+<td>0.71594964、0.89631931</td>
+</tr>
+<tr>
+<td>1 要素だけの追跡</td>
+<td>$x,p_x,y,p_y=10^{-6},\,9.5\times10^{-7},\,10^{-6},\,1.05\times10^{-6}$</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>薄いレンズ $L_k=\begin{pmatrix}1&amp;0\-k&amp;1\end{pmatrix}$ を 1 周の行列 $M$ に掛けた $L_kM$ から、$\cos\mu'=\cos\mu-\frac{k\beta}{2}\sin\mu$ ($\beta$ は MP の位置のリングのβ。垂直は $k\to-k$)。1 要素の追跡は $p_x=p_{x0}-kx_0=10^{-6}-0.05\times10^{-6}=9.5\times10^{-7}$、$p_y=p_{y0}+ky_0=1.05\times10^{-6}$ ($x_0=y_0=p_{x0}=p_{y0}=10^{-6}$)。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式 (行列)</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\nu_x$ の小数部</td>
+<td>0.7159497</td>
+<td>0.71594967 (CALC)、0.71594964 (追跡)</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>$\nu_y$ の小数部</td>
+<td>0.8963179</td>
+<td>0.89631791 (CALC)、0.89631931 (追跡)</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>MAP の $p_x$</td>
+<td>$9.5\times10^{-7}$</td>
+<td>$9.5\times10^{-7}$</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>MAP の $p_y$</td>
+<td>$1.05\times10^{-6}$</td>
+<td>$1.05\times10^{-6}$</td>
+<td>同左</td>
+</tr>
+</tbody>
+</table>
+<p>($\nu_y$ の追跡値 0.8963193 の式との差 $1.4\times10^{-6}$ は、小振幅 $10^{-6}$ の 3 周の座標から求めた $\cos\mu$ の有限振幅の誤差。CALC は 8 桁で一致。)</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>○ 一致 (全 4 行が印字桁まで同じ)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>6×6 の恒等に近い単純な写像 (薄い四極) だけ。<code>"EMIT"</code> (Emittance[] 用) と <code>"GEO"</code> は見ていない。落ちた粒子の復活、<code>ExternalMap</code> が受け取る <code>nt</code> は見ていない。</li>
+<li>docs/19 のとおり、MAIN の <code>TRACK</code>・<code>DynamicApertureSurvey</code>・Touschek の経路は MAP を恒等として通す (ExternalMap を呼ばない)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

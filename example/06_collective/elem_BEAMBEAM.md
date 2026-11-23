@@ -10,7 +10,7 @@ BEAMBEAM BB = (BX=1 BY=1 EMIX=1E-8 EMIY=1E-8 SIGZ=1E-3 DP=1E-3 SLICE=1 NP=1E9);
 LINE RINGB = (ORIGIN BB RF 24*CELL);
 ```
 - `BX BY` と `EMIX EMIY` は強ビームの IP でのβとエミッタンス: $\sigma_x=\sqrt{EMIX\cdot BX}=10^{-4}$ m、$\sigma_y=10^{-4}$ m。`SIGZ` と `DP` は縦の大きさ、`SLICE` は z スライス数 (1 = 薄いレンズ)、`NP` は強ビームの粒子数 ($10^9$)。
-- 弱ビームの γ は MOMENTUM (3 GeV の電子) から決まる ($\gamma=5870.85$)。SADHelp には BEAMBEAM の記述がなく、根拠は K64 の `bbstrhl.f` (`docs/39_beambeam_guide.md`)。
+- 弱ビームの γ は MOMENTUM (3 GeV の電子) から決まる ($\gamma=5870.85$)。SADHelp には BEAMBEAM の記述がなく、根拠は K64 の `bbstrhl.f` (`docs/14_beambeam.md`)。
 - チューンは、小振幅 ($a=10^{-6}$ m = 0.01σ) の粒子の 3 周分の座標から $\cos\mu=(x_{n+1}+x_{n-1})/(2x_n)$ で求める ([fn_TrackParticles](../05_tracking/fn_TrackParticles.md))。
 
 ## 結果の読み方

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FFS EMIT (EMITTANCE)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#ラティスについて">ラティスについて</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方-gs-の出力から">結果の読み方 (gs の出力から)</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: FFS_EMITTANCE.md</div>
+<h1 id="ffs-emit-emittance">FFS EMIT (EMITTANCE)</h1>
+<p>種別: FFS コマンド / フォルダ: 04_emittance_radiation / ラティス: <code>00_lattice/FODO_ring_V4MV.sad</code> (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる <code>RINGQ</code> を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz / フラグ: RFSW ON, RAD ON。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>EMIT;</code> は、閉軌道、拡張 Twiss、$U_0$、減衰、平衡エミッタンス、エネルギー拡がり、バンチ長、シンクロトロン振動数を一度に表示する。この値を放射積分 ($I_1\ldots I_5$) の式で検算する。</p>
+<h2 id="ラティスについて">ラティスについて</h2>
+<ul>
+<li><code>FODO_ring.sad</code> の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで RF 電圧を 4 MV にした <code>FODO_ring_V4MV.sad</code> を追加した。</li>
+<li>RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと <code>DL=0. IN TCAL</code> で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の <code>RINGQ = (ORIGIN RF 24*CELLQ)</code> を使う (磁石の並びは同じ、位相だけ違う)。</li>
+<li>SAD の BEND の <code>E1</code>, <code>E2</code> は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の <code>K1</code> は積分強度 (k=K1/L)。</li>
+</ul>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>USE RINGQ;  CELL;  CALCULATE;
+RFSW;  RAD;
+EMIT;
+</code></pre>
+<p>全文は <code>FFS_EMITTANCE.sad</code>。式の検算は <code>formula_check.py</code> が行う (SAD を使わず、3x3 行列で $I_1\ldots I_5$ を自前で積分し、結果を <code>formula_check.txt</code> に書く)。</p>
+<h2 id="結果の読み方-gs-の出力から">結果の読み方 (gs の出力から)</h2>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>値</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Energy loss per turn U0</code></td>
+<td>1.5632657 MV</td>
+<td>一周のエネルギー損失</td>
+</tr>
+<tr>
+<td><code>Effective voltage Vc</code></td>
+<td>4.0000000 MV</td>
+<td>RF 実効電圧</td>
+</tr>
+<tr>
+<td><code>Equilibrium position dz</code></td>
+<td>38.315657 mm</td>
+<td>同期位置</td>
+</tr>
+<tr>
+<td><code>Momentum compact. alpha</code></td>
+<td>0.0221837</td>
+<td>運動量圧縮 (6D、$-R_{56}/C$)</td>
+</tr>
+<tr>
+<td><code>Synchrotron frequency</code></td>
+<td>78426.782 Hz (f0=2838943.6 Hz)</td>
+<td>$\nu_s=0.0276253$</td>
+</tr>
+<tr>
+<td><code>Damping time (sec)</code></td>
+<td>X 1.401206E-3, Y 1.351875E-3, Z 6.646461E-4</td>
+<td>$\tau_i$</td>
+</tr>
+<tr>
+<td><code>Damping partition number</code></td>
+<td>0.9651, 1.0003, 2.0346</td>
+<td>$J_x,J_y,J_\epsilon$</td>
+</tr>
+<tr>
+<td><code>Emittance X</code></td>
+<td>1.73577E-7 m</td>
+<td>$\epsilon_x$ (Y は 1e-38 の雑音)</td>
+</tr>
+<tr>
+<td><code>Energy spread</code></td>
+<td>0.00119140</td>
+<td>$\sigma_\delta$</td>
+</tr>
+<tr>
+<td><code>Bunch Length</code></td>
+<td>16.0597178 mm</td>
+<td>$\sigma_z$</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>放射積分 ($\rho$ は曲率半径、$\eta$ は分散、$\mathcal H=\gamma\eta^2+2\alpha\eta\eta'+\beta\eta'^2$):</p>
+<p>$$I_1=\oint\frac{\eta}{\rho}ds,\quad I_2=\oint\frac{ds}{\rho^2},\quad I_3=\oint\frac{ds}{|\rho|^3},\quad I_4=\oint\frac{\eta}{\rho}\Big(\frac1{\rho^2}+2k\Big)ds+(\text{端の項}),\quad I_5=\oint\frac{\mathcal H}{|\rho|^3}ds$$</p>
+<p>$$U_0=\frac{C_\gamma E^4 I_2}{2\pi},\quad \tau_i=\frac{2E_0T_0}{J_iU_0},\quad J_x=1-\frac{I_4}{I_2},\ J_y=1,\ J_\epsilon=2+\frac{I_4}{I_2}$$</p>
+<p>$$\epsilon_x=C_q\gamma^2\frac{I_5}{J_xI_2},\quad \sigma_\delta^2=C_q\gamma^2\frac{I_3}{J_\epsilon I_2},\quad \alpha_c=\frac{I_1}{C},\quad \nu_s=\sqrt{\frac{h\,\alpha_c\,eV\cos\phi_s}{2\pi\beta^2E_0}},\ \sin\phi_s=\frac{U_0}{eV},\quad \sigma_z=\frac{\alpha_c c}{2\pi f_s}\sigma_\delta$$</p>
+<p>$C_\gamma=\frac{4\pi}{3}\frac{r_e}{(mc^2)^3}=8.846\times10^{-5}$ m/GeV³、$C_q=\frac{55}{32\sqrt3}\frac{\hbar}{mc}=3.832\times10^{-13}$ m、$T_0=C/c$、$h=f_{RF}/f_0$。</p>
+<p><code>formula_check.py</code> の結果 (自前で積分した $I$ から式で計算した値):</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式 (I4 の端の項 係数 -1)</th>
+<th>式 (係数 -2)</th>
+<th>RADINT gs</th>
+<th>EMIT gs</th>
+<th>EMIT pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$U_0$ [eV]</td>
+<td>1.56327e6</td>
+<td>1.56327e6</td>
+<td>1.563e6</td>
+<td>1.56327e6</td>
+<td>1.56327e6</td>
+</tr>
+<tr>
+<td>$J_x$</td>
+<td>0.941466</td>
+<td>0.9641</td>
+<td>0.941466</td>
+<td>0.9651</td>
+<td>0.9651</td>
+</tr>
+<tr>
+<td>$\tau_x$ [s]</td>
+<td>1.43601e-3</td>
+<td>1.4023e-3</td>
+<td>1.436e-3</td>
+<td>1.40121e-3</td>
+<td>1.40121e-3</td>
+</tr>
+<tr>
+<td>$\tau_y$ [s]</td>
+<td>1.35195e-3</td>
+<td>1.35195e-3</td>
+<td>1.352e-3</td>
+<td>1.35187e-3</td>
+<td>1.35187e-3</td>
+</tr>
+<tr>
+<td>$\tau_z$ [s]</td>
+<td>6.56755e-4</td>
+<td>6.64057e-4</td>
+<td>6.568e-4</td>
+<td>6.64646e-4</td>
+<td>6.64646e-4</td>
+</tr>
+<tr>
+<td>$\epsilon_x$ [m]</td>
+<td>1.7767e-7</td>
+<td>1.73499e-7</td>
+<td>1.7767e-7</td>
+<td>1.73577e-7</td>
+<td>1.73577e-7</td>
+</tr>
+<tr>
+<td>$\sigma_\delta$</td>
+<td>1.18311e-3</td>
+<td>1.18967e-3</td>
+<td>1.1831e-3</td>
+<td>1.1914e-3</td>
+<td>1.1914e-3</td>
+</tr>
+<tr>
+<td>$\alpha_c$</td>
+<td>0.0221368</td>
+<td>0.0221368</td>
+<td>0.022137</td>
+<td>0.0221837</td>
+<td>0.02218 (表示桁)</td>
+</tr>
+<tr>
+<td>$\nu_s$</td>
+<td>0.0275961</td>
+<td>0.0275961</td>
+<td>0.027596</td>
+<td>0.0276253</td>
+<td>0.0276253</td>
+</tr>
+<tr>
+<td>$\sigma_z$ [m]</td>
+<td>0.0159506</td>
+<td>0.016039</td>
+<td>0.0159506</td>
+<td>0.0160597</td>
+<td>0.0160597</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>「係数 -1」の列は、SAD の RADINT と同じ $I_4$ (= 0.0802372。自前の積分も 0.0802373 と一致)。式は RADINT の表示と相対 7e-5 以内で一致した ($\epsilon_x$ は 1.6e-6、$J_x$ は 3e-8)。</li>
+<li><strong>EMIT (6D の一周写像から求める) の $J_x=0.9651$ は RADINT の 0.9415 と 2.4% 違う。</strong> 原因を切り分けた。RFSW OFF でも同じ (0.96487) なので、RF 空洞の分散位置が原因ではない。$I_4$ の端の項 (BEND の端の角 $\epsilon$ の項 $\eta\tan\epsilon/\rho^2$) の係数を -1 (RADINT) から -2 にすると $J_x=0.9641$ になり、EMIT の 0.9651 に 0.1% まで近づく。つまり RADINT (INTGRL.f) は端の項を片側 1 回分しか入れておらず、EMIT のほうが一周写像に忠実、というのが現時点の見立て (<strong>ソースでは確認していない</strong>。端の点の曲率を 1/(2ρ) とみなす扱いかもしれない)。この差は $\epsilon_x$ に 2.4%、$\sigma_\delta$ に 0.7% の差として出る。</li>
+<li>$\alpha_c$: RADINT の $I_1/C=0.022137$ と EMIT の 6D の $\alpha=0.0221837$ は 0.2% 違う (SAD の MomentumCompaction は 6D の値で、RADINT とは別。docs/27 の level 1)。$\nu_s$ に EMIT の $\alpha$ を入れた式の値は 0.0276253 で EMIT と 6 桁一致。</li>
+<li>$\sigma_z=\alpha_cc\,\sigma_\delta/(2\pi f_s)$ に EMIT の値を入れると 16.079 mm (EMIT の Bunch Length 16.060 mm、0.12% 差)。</li>
+</ul>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>○ 一致。EMIT 報告の全行が表示桁で一致する。差は 0 同然の量だけ: Emittance Y (gs 2.8e-38、pysad 2.4e-50。どちらも 0 とみなせる)、Beam tilt、<code>alpha</code> の表示桁 (gs <code>.0221837</code>、pysad <code>.02218</code>)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>使った条件: 3 GeV、周長 105.6 m、$V_{RF}=4$ MV、$f_{RF}=500$ MHz、RAD ON、FLUC は既定、結合なし (平面リング)、6 極は K2=0。</li>
+<li>$J_x$ の RADINT 対 EMIT の 2.4% の差の原因は K64 の EMIT の端の項 (B75): 解析式 Jx = 1 − I4/I2 と厳密な幾何 + Robinson の式が一致し、RADINT が正しく K64 の EMIT が誤り (端の角の蹴りが行路を変えない)。v2 の EMIT の Jx は 0.9429 で、RADINT の 0.9415 に近い。k64 モードは gs と同じ 0.9651。この例のリング以外 (矩形磁石でない BEND など) の確認は記録の条件に限る。</li>
+<li>縦の量 ($\sigma_z$) は線形の式で、非線形性は入れていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>elem_MULT_ANGLE</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: elem_MULT_ANGLE.md</div>
+<h1 id="elem_mult_angle">elem_MULT_ANGLE</h1>
+<p>種別: 要素 (ANGLE 付きの MULT) / フォルダ: 07_spin_solenoid_special / ラティス: <code>00_lattice/multa_ring.sad</code> (新規。<code>FODO_ring.sad</code> の偏向磁石を ANGLE 付きの <code>MULT</code> に置き換えた <code>RINGMA0</code> と <code>RINGMA1</code>)。3 GeV / フラグ: <code>NORFSW NORAD NOFLUC</code>。参考: <code>docs/19_other_elements.md</code></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>MULT</code> は多極磁石だが、<code>ANGLE</code>≠0 を与えると曲げ磁石の上に多極成分 ($K_0$、$K_1$、$K_2$、…) をのせた要素になる (<code>tmulta</code>)。ANGLE 付きの MULT で、(1) 多極成分なしなら BEND と同じ結果になること、(2) $K_1\ne0$ の複合機能型磁石を、解析式 (行列の積) と照合する。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>MULT MA0 = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747)
+     MA1 = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747 K1=0.05);
+LINE RINGMA0 = (ORIGIN RF 24*CMA0);   ! BEND を MA0 に置き換え
+LINE RINGMA1 = (ORIGIN RF 24*CMA1);   ! K1=0.05 付き
+USE RINGMA1; CELL; CALC;  r = TrackParticles[...1 周...]
+</code></pre>
+<ul>
+<li><code>K1</code> は積分強度 (1/m)。長さ $L=1.2$ m なので勾配は $k_1=K1/L$。</li>
+<li><code>E1 E2</code> は SAD では ANGLE に対する比として読まれる (端の角度 $e=E1\cdot$ANGLE。<a href="../05_tracking/fn_TrackParticles.html">fn_TrackParticles</a>)。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<table>
+<thead>
+<tr>
+<th>リング</th>
+<th>NX</th>
+<th>NY</th>
+<th>$\beta_x$(ORIGIN)</th>
+<th>$\eta_x$(ORIGIN)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BEND (RING)</td>
+<td>6.69632894</td>
+<td>4.90605604</td>
+<td>5.02518491</td>
+<td>0.56522773</td>
+</tr>
+<tr>
+<td>MULT ANGLE K1=0</td>
+<td>6.69632894</td>
+<td>4.90605604</td>
+<td>5.02518491</td>
+<td>0.56522773</td>
+</tr>
+<tr>
+<td>MULT ANGLE K1=0.05</td>
+<td>6.98599451</td>
+<td>4.52286209</td>
+<td>4.86338095</td>
+<td>0.52740295</td>
+</tr>
+</tbody>
+</table>
+<p>1 周の追跡 ($x_0=y_0=10^{-5}$): BEND と K1=0 の MULT は $x=1.713426\times10^{-5}$、$p_x=1.069066\times10^{-5}$、$y=1.58646\times10^{-6}$、$p_y=5.349766\times10^{-6}$ で完全に同じ。K1=0.05 では $x=1.186292\times10^{-5}$、$p_x=1.026738\times10^{-6}$、$y=-1.17827\times10^{-5}$、$p_y=1.381372\times10^{-6}$。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>複合機能型の扇形偏向 (曲率半径 $\rho=L/\theta=4.5837$ m、勾配 $k=K1/L$) の水平・垂直の伝達行列:</p>
+<p>$$M_x=\begin{pmatrix}\cos\phi_x&amp;\sin\phi_x/\sqrt{K_x}\-\sqrt{K_x}\sin\phi_x&amp;\cos\phi_x\end{pmatrix},\ K_x=\frac1{\rho^2}+k,\qquad K_y=-k$$</p>
+<p>($\phi=\sqrt{K}L$。$K_y&lt;0$ は双曲線関数)。両端に薄いエッジ $\begin{pmatrix}1&amp;0\\pm\tan e/\rho&amp;1\end{pmatrix}$ (水平 +、垂直 −)、$e=E1\cdot\theta=0.03427$ rad。セル全体の行列の 24 乗からチューンと β を出す (Python)。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式 (K1=0.05)</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\nu_x$ の小数部</td>
+<td>0.9859945</td>
+<td>0.98599451</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>$\nu_y$ の小数部</td>
+<td>0.5228621</td>
+<td>0.52286209</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>$\beta_x$(ORIGIN)</td>
+<td>4.8633810</td>
+<td>4.86338095</td>
+<td>同左</td>
+</tr>
+<tr>
+<td>$\nu_x$、$\nu_y$ (K1=0 の場合)</td>
+<td>0.6963289、0.9060560</td>
+<td>0.69632894、0.90605604</td>
+<td>同左</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>○ 一致 (全 6 行が印字桁まで同じ。式とも 8 桁一致)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>$K_1$ だけ。$K_0$ (双極の過不足)、$K_2$ 以上、スキュー成分 (<code>SK</code>)、<code>BZ</code>、<code>VOLT</code> (v2 の SOL 領域内の MULT と領域の外の RF つき MULT の記述が <code>docs/28_v2_vs_k64.md</code> にあるが、この例では確かめていない)、<code>F1</code>、<code>TAPER</code>、<code>L=0</code> は見ていない。</li>
+<li>追跡の 1 周の式による照合はしていない (チューンと β だけ)。</li>
+<li>水平のエッジ項の符号 (+) と垂直 (−) は、$K_1=0$ のチューンが一致するように選んだ (SAD ソースでの確認ではない)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

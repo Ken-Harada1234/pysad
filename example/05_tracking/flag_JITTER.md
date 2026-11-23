@@ -19,7 +19,7 @@ Print["case ", k, ": sum x=", Plus@@r[[1]], ...];
 なし。重心のゆらぎとは、粒子数 $N$ が有限の乱数サンプルでは、重心が $\sigma/\sqrt N$ ほど揺れることを指す。`NOJITTER` は、その平均を引いて重心を 0 にそろえる (`ttinit.f` の `sx, sy, ...` の平均を引く処理)。
 
 ## gs と pysad の比較
-○ 一致 (全 6 行)。pysad では JITTER は値を保持するだけ (`pysad/ffscmd.py` の `_FLAGS_DEFAULT`、docs/16 で「実装 (値を保持するだけ)」)。MAIN レベルの `TRACK`/`MEASURE` は K64 でも動かない (docs/08 §8) ため、効果を比べられる経路が無い。
+○ 一致 (全 6 行)。pysad では JITTER は値を保持するだけ (`pysad/ffscmd.py` の `_FLAGS_DEFAULT`、docs/33 で「実装 (値を保持するだけ)」)。MAIN レベルの `TRACK`/`MEASURE` は K64 でも動かない (docs/10 §8) ため、効果を比べられる経路が無い。
 
 ## 未確認・限界
 - JITTER が効く経路 (ttinit の初期分布生成) は、gs でも pysad でも試していない。この例は「`TrackParticles` に影響しない」ことの確認だけ。

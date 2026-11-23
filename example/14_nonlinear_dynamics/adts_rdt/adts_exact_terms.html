@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>解析式の物理の項 (K0≠0 の偏向磁石・δ≠0・閉形式・非対角の正規形の補正) と精密版 adts() (a)〜(e)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#既定の解析と精密版の表-解析と追跡の相対差">既定の解析と精密版の表 (解析と追跡の相対差)</a></li>
+<li><a href="#コマンド">コマンド</a></li>
+<li><a href="#使えない範囲未確認">使えない範囲・未確認</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: adts_exact_terms.md</div>
+<h1 id="解析式の物理の項-k00-の偏向磁石δ0閉形式非対角の正規形の補正-と精密版-adts-ae">解析式の物理の項 (K0≠0 の偏向磁石・δ≠0・閉形式・非対角の正規形の補正) と精密版 <code>adts()</code> (a)〜(e)</h1>
+<p><strong>この文書で分かること</strong>: ADTS・RDT の解析式を、挿入光源型の偏向磁石 (K0≠0)・δ≠0・偏向磁石の生成関数の閉形式・非対角の調和の正規形の補正まで広げたとき、追跡との差がどこまで縮むか。<code>adts()</code> の既定は物理的な項だけ (<code>fourth='r3'</code>・<code>optics='calc'</code>)、数値積分器の端数まで入れる精密版は <code>fourth='r6'</code> のオプション。
+<strong>前提</strong>: <code>adts_bend_cubic.md</code> と <code>rdt4_normal_form.md</code>。
+<strong>読む順</strong>: 表の前の説明 → 「既定の解析と精密版の表」。</p>
+<p>式・導出・検証の表は <code>docs/25</code> §11、入門は <code>docs/24</code> §7.6、試験は <code>pysad/tests/test_v23_R6_bend_orbit.py</code> (14 件)、コードは <code>pysad/bendnl.py</code> (閉軌道・δ のまわりの分解、K0≠0、閉形式)・<code>pysad/resdrive.py</code> (<code>adts</code> の <code>fourth</code>・<code>optics</code>)・<code>pysad/rdt2nd.py</code> (非対角の正規形の補正、4 次の ADTS)・<code>pysad/rdttrack.py</code> (<code>tracked_rows</code>、<code>element_h4</code> の軌道・δ)・<code>pysad/nform.py</code> (δ の ADTS と δ 微分)。
+ラティス: FODO (<code>example/00_lattice/FODO_ring.sad</code>、SF・SD の K2L = 4, −6、3 GeV、105.6 m)、ASTRID2 (<code>example/astrid/lattice/ASTRID2_v01_01.sad</code>、0.58 GeV、45.7 m)、ASTRID2 MPW (<code>ASTRID2_v01_02_id.sad</code> の <code>RINGMPW</code>)、KEK-LS (<code>pysad/tests/kek-ls_v03_12.lat</code>、大きなリング A。ESRF 型の HMBA、3 GeV、603 m)。
+条件 (すべて): pysad k64 (gs と同じ式) の追跡 (RF 空洞止め、放射なし、結合なし、閉軌道のまわり)、6 極 ×1 (指定以外)、直接の追跡は J の格子 6×6 (±位相の対 = 70 粒子)・1024 周・NAFF Hann p=1・order 2 のフィット (Jmax は FODO 1e-7、ASTRID2・MPW 2e-8、KEK-LS 2e-10)、3 次のテイラー展開の振幅 amp3 = 1e-4 √m (KEK-LS 1e-5)、偏向磁石の分割 16。実行は <code>PYTHONUTF8=1</code>。<strong>スクリプトは出力を <code>example/14_nonlinear_dynamics/adts_rdt/</code> へ上書きする</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>adts_exact.py</code></td>
+<td><code>mpw</code>・<code>delta &lt;fodo\|astrid\|kekls&gt;</code>・<code>bend</code>・<code>nf</code>・<code>adts</code>: (a)〜(e) の表を作る</td>
+</tr>
+<tr>
+<td><code>adts_exact_mpw.out.txt</code></td>
+<td>(a) MPW: h・f4・ξ・ADTS (λ = 0, 1, 2、追跡の Jmax・order)</td>
+</tr>
+<tr>
+<td><code>adts_exact_delta_&lt;ring&gt;.out.txt</code>・<code>.track.json</code></td>
+<td>(b) δ = ±0.002 の ADTS と ∂(ADTS)/∂δ: 解析 (精密版 <code>fourth='r6'</code>・<code>optics='tracked'</code>、既定 <code>fourth='r3'</code>・CALC の光学)・数値の正規形・直接の追跡 (追跡は <code>.track.json</code> に保存)</td>
+</tr>
+<tr>
+<td><code>adts_exact_bend.out.txt</code></td>
+<td>(c) 偏向磁石の閉形式 対 取り出し、スライス数への依存</td>
+</tr>
+<tr>
+<td><code>adts_exact_nf.out.txt</code></td>
+<td>(d) 非対角の正規形の補正の独立な検証 (数値のリー変換)</td>
+</tr>
+<tr>
+<td><code>adts_exact_adts.out.txt</code></td>
+<td>(e) <code>adts()</code> の 4 次の項: 既定 (<code>fourth='r3'</code>) 対 精密版 (<code>fourth='r6'</code>) 対 追跡</td>
+</tr>
+</tbody>
+</table>
+<h2 id="既定の解析と精密版の表-解析と追跡の相対差">既定の解析と精密版の表 (解析と追跡の相対差)</h2>
+<p>以下の「精密版」の列は、精密版 (<code>fourth='r6'</code>、δ≠0 は <code>optics='tracked'</code> も) の値 (数値積分器の 0.1〜0.3% の端数を含む)。既定 (<code>fourth='r3'</code>・<code>optics='calc'</code>) は物理的な項だけで、追跡との差は (e) の表の左の列の値 と δ≠0 の表 (docs/25 §11.4)。追跡との一致は入れた効果の検証の結果で、追跡に合わせて項を足したのではない。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>精密版の項を入れない解析</th>
+<th>精密版</th>
+<th>差の原因・精密版で入れた項</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a) MPW の h10020・h10200</td>
+<td>4.6e-5・2.0e-5</td>
+<td>2.5e-9・5.5e-10</td>
+<td>K0≠0 の偏向磁石 (内部の軌道が ±0.032 rad 傾く) の内部の軌道。閉軌道のまわりで取り出す</td>
+</tr>
+<tr>
+<td>(a) MPW の f4 (6 極 ×0、19 項の最大)</td>
+<td>8.7e-3</td>
+<td>2.6e-6</td>
+<td>同上 (4 次の項は要素の写像から、軌道のまわり)</td>
+</tr>
+<tr>
+<td>(a) MPW の ξy (CALC − 解析)</td>
+<td>−0.173</td>
+<td>+3.5e-4</td>
+<td>K0 の磁石の δ の項を要素の追跡から (スロープ座標)</td>
+</tr>
+<tr>
+<td>(a) MPW λ=2 の ADTS (xx, xy, yy)</td>
+<td>−2.1e-3, −2.0e-3, −5.8e-3</td>
+<td>−1.5e-3, −1.8e-3, −5.3e-3 (Jmax 2e-8)、−1e-4, −3e-5, −4.9e-4 (Jmax 5e-9)、+2.5e-5, +2.6e-4, +2.9e-4 (Jmax 1e-8、order 3)</td>
+<td>残りは物理でなく追跡側のフィットの偏り (4νy = 8.997 が整数 9 の近く)</td>
+</tr>
+<tr>
+<td>(b) ASTRID2 の ADTS (δ = ±0.002、xx, xy, yy)</td>
+<td>6e-3 程度</td>
+<td>精密版 −9e-5/−9e-5, +2e-5/−5e-5, +3e-4/−7e-4。既定 −1.5e-3/−3.4e-3, +8e-4/−2.5e-3, −2e-4/−3.7e-3</td>
+<td>kick の強さの 1/(1+δ) の誤り (既定にも入る)、偏向磁石・四極・ドリフトの項、追跡の光学 (精密版)</td>
+</tr>
+<tr>
+<td>(b) ASTRID2 の ∂(ADTS)/∂δ の解析/追跡</td>
+<td>0.95, 0.28, 4.6</td>
+<td>精密版 1.000, 0.997, 1.285。既定 0.962, 0.847, 1.971 (数値の正規形: 1.003, 0.999, 1.050)</td>
+<td>同上。既定の差は 4 次の積分器の分が 2 点の差で増幅される</td>
+</tr>
+<tr>
+<td>(b) FODO の ∂(ADTS)/∂δ の解析/追跡</td>
+<td>(比較なし)</td>
+<td>1.049, 0.794, 1.045 (数値の正規形: 1.000, 1.001, 1.000)</td>
+<td>解析の残りは未解明</td>
+</tr>
+<tr>
+<td>(b) KEK-LS の ADTS (δ = ±0.002、xx, xy, yy) と ∂(ADTS)/∂δ</td>
+<td>比較なし (8 極のフィードダウンなしで 1.4e-2, 2.0e-2, 7.8e-2)</td>
+<td>−1.8e-5/+1.1e-5, −7.8e-5/+6.6e-5, −4.0e-4/+3.7e-4。微分の比 1.000, 1.001, 1.004 (数値の正規形 1.000)</td>
+<td>軌道がずれた 8 極の 6 極へのフィードダウン K2 = K3·x0</td>
+</tr>
+<tr>
+<td>(c) 閉形式と取り出し (E1・E2≠0 の FODO)</td>
+<td>閉形式なし (1 個のスライスで 1e-5〜8e-5)</td>
+<td>1.6e-8 (K1=0)、ASTRID2 1.8e-6、KEK-LS K1≠0 の 2 台 9e-5・3e-4</td>
+<td>全体の和 (積分) と比べる。端の閉形式を導出</td>
+</tr>
+<tr>
+<td>(c) スライス数への依存 (n = 4 と 64)</td>
+<td>1e-6〜6e-5</td>
+<td>6e-11 (FODO)、4e-8 (ASTRID2)</td>
+<td>4 次の項を要素の写像から取り出して内部の対の項を引く</td>
+</tr>
+<tr>
+<td>(d) 非対角 35 調和</td>
+<td>補正なし</td>
+<td>独立な数値のリー変換と 1.2e-8</td>
+<td>F4' = F4 + ½{R⁻¹W, W}</td>
+</tr>
+<tr>
+<td>(e) <code>adts()</code> と追跡 (FODO, xx xy yy)</td>
+<td>−3.6e-4, +4.1e-4, −3.4e-4 (これが既定)</td>
+<td>精密版 −8.8e-5, −1.7e-5, −1.2e-4</td>
+<td>四極の台形則 + 偏向磁石の 4 次の項 (積分器の端数)</td>
+</tr>
+<tr>
+<td>(e) ASTRID2</td>
+<td>−2.4e-3, −8.2e-4, −1.9e-3</td>
+<td>−5.8e-5, +2.0e-5, −1.8e-4</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>(e) ASTRID2 MPW</td>
+<td>−2.4e-3, −8.4e-4, −2.2e-3</td>
+<td>−1.0e-4, −5.3e-5, −4.7e-4</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>(e) KEK-LS</td>
+<td>−1.4e-4, +1.7e-4, +2.6e-3</td>
+<td>−6.9e-7, +1.8e-6, +8.3e-6</td>
+<td>同上</td>
+</tr>
+</tbody>
+</table>
+<h2 id="コマンド">コマンド</h2>
+<pre><code>set PYTHONUTF8=1
+py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_exact.py mpw          (数分。追跡 6 回)
+py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_exact.py delta astrid (追跡 3 回 × 35 s。fodo は 7 s ずつ、kekls は大きなリングの追跡で数十分)
+py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_exact.py bend         (数秒)
+py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_exact.py nf           (数秒)
+py -3.12 example/14_nonlinear_dynamics/adts_rdt/adts_exact.py adts         (KEK-LS を含めて 10 s、追跡は `rdt4_*` の保存値)
+</code></pre>
+<p>Python から: <code>R.adts(lat)</code> (既定: <code>fourth='r3'</code>・<code>optics='calc'</code>)、<code>R.adts(lat, fourth='r6')</code> (精密版)、<code>R.adts(lat, delta=0.002, fourth='r6', optics='tracked')</code> (δ≠0 の精密版)、<code>nform.adts_delta_derivative(lat, p, 2e-3, method='nform')</code> (δ 微分)、<code>rdt2nd.rdt4_normal_form(lat)</code> (4 次の 35 調和の正規形の値)。</p>
+<h2 id="使えない範囲未確認">使えない範囲・未確認</h2>
+<p>docs/25 §11.8・§11.9 のとおり。主なもの: δ 微分の解析式の yy (精密版で ASTRID2 28%、FODO で xy が 21% 外れる。原因は未特定。数値の正規形を使う)、K1≠0 の本体の閉形式の 1e-4 (K64 の積分器と推定)、K0≠0 の磁石に E・ROTATE がある場合、共鳴線の上での非対角の補正、<code>other_atoms</code> は四極を分割しない、KEK-LS の δ≠0 の解析は 20 秒程度。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -16,9 +16,9 @@ Print[Shared[s]];   Close[s];
 gs: 親が `{1,2,3}` を書き、子が `{10,20,30}` に書き換えて終了し、0.5 秒待った親が `{10,20,30}` を読む。`SharedSize[{1,2,3}]`=32 バイト。親の `Fork[]` は実数 (pid、正)。
 
 ## gs と pysad の比較
-△ **Windows の pysad は子プロセスを作らない (2026-11-17、v2.0.0 の再実行。`.pysad.txt` はこの結果)。** `SharedSize[{1,2,3}]` は 32 になり gs と一致した (最初の版は 1。v2 で gs と同じ式にした)。`Fork[]` は Windows に fork が無いので、v2 は `???System::error: Fork[] is not available on this platform` を出し (k64 モードは従来どおり実数 1 を返す)、子の分岐を通らず、共有メモリは親のものだけで `{1,2,3}` のまま (gs は `{10,20,30}`)。Linux・WSL・macOS では v2 の `Fork[]` が `os.fork` で子を作る (`docs/47_v2_changes.md`。記録は WSL で確認)。**この例を WSL の pysad では再実行していない** (WSL の Python に numpy が無い)。要確認。
+△ **Windows の pysad は子プロセスを作らない (`.pysad.txt` はこの結果)。** `SharedSize[{1,2,3}]` は 32 になり gs と一致する。`Fork[]` は Windows に fork が無いので、v2 は `???System::error: Fork[] is not available on this platform` を出し (k64 モードは実数 1 を返す)、子の分岐を通らず、共有メモリは親のものだけで `{1,2,3}` のまま (gs は `{10,20,30}`)。Linux・WSL・macOS では v2 の `Fork[]` が `os.fork` で子を作る (`docs/28_v2_vs_k64.md`。記録は WSL で確認)。**この例を WSL の pysad では再実行していない** (WSL の Python に numpy が無い)。要確認。
 
 ## 未確認・限界
 - 子の標準出力は親と共有されるので、子で `Print` すると行が重なる。子では何も表示していない。
 - 待ちは `Wait` ではなく `Pause[0.5]` (SADHelp の `Wait` は未使用)。
-- 初版で `Wait[pid]` を使った例は gs が 120 秒止まったので外した。
+- `Wait[pid]` を使うと gs が 120 秒止まるので、この例では使わない。

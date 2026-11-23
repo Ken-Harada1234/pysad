@@ -1,0 +1,36 @@
+! Packages/functions.n・Misc.n・element.n・beamline.n の主な関数を gs と比べた小さな台本 (gs との差は記録に表で書いた)。
+! 条件: 3 GeV、FODO 半セル 2 つ (周長 4.2 m)。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+MARK ST = ();
+LINE CELL1 = (QF D2 QD D1);
+LINE RING = (ST 2*CELL1);
+LINE R2 = (ST QD D2 QF);
+FFS;
+Print["a1 ",Log2$[10,100]," ",Log2$[2,8]];
+Print["a3 ",RotateRight[{1,2,3,4}]," ",RotateLeft[{1,2,3,4},1]," ",RotateRight[{{1,2,3},{4,5,6}},{1,1}]];
+Print["a5 ",Union[{3,1,2,1,3}]," ",Union[{1,1.0000001,2},SameTest->(Abs[#-#2]<1e-3&)]," ",Union[{5,1,3,1,5},SameTest:>(#==#2&)]];
+Print["a6 ",ListQ[{1}]," ",MatrixQ[{{1,2},{3,4}}]," ",Count[{1,2,1,3,1},1]," ",MemberQ[{1,2,3},2]," ",FreeQ[{1,2,x},x]];
+Print["a8 ",Nest[(#^2)&,2,3]," ",NestList[(#^2)&,2,3]," ",Fold[Plus,0,{1,2,3}]," ",FoldList[Plus,0,{1,2,3}]];
+Print["b1 ",Positive[{-1,2}]," ",NonNegative[{0,-1}]," ",IntegerQ[{1,1.5}]," ",Xor[True,False]," ",FractionalPart[-3.75]];
+Print["b7 ",StringDrop["abcdef",{2,3}]," ",StringInsert["abcdef","-",{2,4}]," ",Characters["abc"]];
+Print["c1 ",NearlySameQ[1,1+1e-13]," ",NearlySameQ[1,1.001,Threshold->1e-2]];
+Print["c2 ",FixedPoint[(#+2/#)/2&,1.]];
+sq[x_Real]:=x^2; sq[x_String]:=x//x;
+Print["c7 ",FunctionDefinition[Subtract[1,2]]," ",FunctionDefinition[sq[3.]]," ",FunctionDefinition[sq["a"]]];
+zq1=1; f1[x_]:=x;
+Print["n1 ",Names["Sin"]," ",Names["Para*"]," ",Names["zq*"]," ",Names["f1"]];
+Print["r ",First[a->1]," ",Last[a->1]," ",Length[a->1]," ",Map[First,{a->1,b->2}]];
+USE RING; CELL; CALC;
+Element["K1","QF"]=0.9; Element["K1","QF"]+=0.1; Print["e1 ",Element["K1","QF"]];
+Element["VALUE","QF"]=0.5; Print["e2 ",Element["K1","QF"]];
+Element["K1","QD"]*=2; Print["e3 ",Element["K1","QD"]];
+Print["e4 ",SetElement["QF"][[3,2]]," ",SetElement["QF","QUAD",{"L"->0.35}][[3,{1,2}]]," ",Element["L","QF"]];
+b=ExtractBeamLine[];
+Print["f1 ",b," ",-BeamLine[QF,D1]," ",2*BeamLine[QF,D1]];
+PrintBeamLine[b];
+PrintBeamLine[BeamLine[QF,D1],Format->"MAIN"];
+WriteBeamLine[$Output,{BeamLine[QF],BeamLine[QD]},Name->{"A","B"}];
+Print["g1 ",Fill$String["abc",9],"|",Remove$Paren["(abc)"]];
+Exit;

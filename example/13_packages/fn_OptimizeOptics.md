@@ -25,7 +25,7 @@ CALC;    Twiss["NX","$$$"]/(2Pi)
 | $K_1$(QD) | -0.6 | - | -0.5970513 | -0.5970513 |
 
 - gs と pysad は全桁一致 (○)。目標との残差は $3\times10^{-5}$ ($\nu_x$)、$4\times10^{-4}$ ($\nu_y$)。止まった理由 (`Tolerance` の判定か `MaxIteration->60` か) は見ていない。
-- 出力: gs・pysad とも `Output->0` で反復を出さない (2026-11-17 に修正。`OptimizeOptics` は選択肢を `Join[{opt},{VariableRange->limit}]` の規則のリストで `DownhillSimplex` に渡すので、pysad は入れ子のリストを読む。`MaxIteration` も効く)。ただし gs は最初に ``{{`,System`},System`}`` (BeginPackage の戻り値) を 1 行出し、pysad は ``{$ContextPath,"`"}`` を出す (文脈を持たないため。結果には影響しない)。
+- 出力: gs・pysad とも `Output->0` で反復を出さない (`OptimizeOptics` は選択肢を `Join[{opt},{VariableRange->limit}]` の規則のリストで `DownhillSimplex` に渡すので、pysad は入れ子のリストを読む。`MaxIteration` も効く)。ただし gs は最初に ``{{`,System`},System`}`` (BeginPackage の戻り値) を 1 行出し、pysad は ``{$ContextPath,"`"}`` を出す (文脈を持たないため。結果には影響しない)。
 
 ## 未確認・限界
 `VariableRange`・`Weight`・他の FIT 項 (`BX`・`EX` など) は試していない。収束の判定の細かい値は見ていない。

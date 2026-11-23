@@ -120,8 +120,8 @@ def test_adts_result_total_and_ffs_function():
 
 
 def test_direct_fodo_matches_stored_gs_if_present():
-    """保存した gs (NORFSW、70 粒子) の直接のフィットが、pysad の追跡と 1e-4 以内 (gs が走る環境で作った出力 example/v2_3/R2_adts_direct_fodo.gs.json)"""
-    f = os.path.join(ROOT, 'example', 'v2_3', 'R2_adts_direct_fodo.gs.json')
+    """保存した gs (NORFSW、70 粒子) の直接のフィットが、pysad の追跡と 1e-4 以内 (gs が走る環境で作った出力 example/14_nonlinear_dynamics/adts_rdt/adts_direct_fodo.gs.json)"""
+    f = os.path.join(ROOT, 'example', '14_nonlinear_dynamics', 'adts_rdt', 'adts_direct_fodo.gs.json')
     if not os.path.exists(f):
         pytest.skip('gs の保存出力がない')
     d = json.load(open(f))

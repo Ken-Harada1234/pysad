@@ -1,6 +1,6 @@
 """UND (アンジュレータ、K64 の undulator.f)。参照は SAD K64 (gs) の出力。
 und1: TrackParticles (20 粒子、3 周)。undo: INS の Twiss と LINE["G.."] (UND は恒等)。unde: Emittance[] (UND は恒等)。
-参照の作り方: local/wake/und1.sad などを gs で実行 (docs/27_und.md)。"""
+参照の作り方: local/wake/und1.sad などを gs で実行 (docs/19_other_elements.md)。"""
 import io
 import re
 

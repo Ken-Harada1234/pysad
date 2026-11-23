@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_DynamicApertureSurvey と flag_DAPERT</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_DynamicApertureSurvey_flag_DAPERT.md</div>
+<h1 id="fn_dynamicaperturesurvey-と-flag_dapert">fn_DynamicApertureSurvey と flag_DAPERT</h1>
+<p>種別: 関数とフラグ / フォルダ: 05_tracking / ラティス: <code>00_lattice/FODO_ring_V4MV.sad</code> (RF 4 MV、3 GeV) / フラグ: <code>RFSW; RAD; NOFLUC; EMIT; NORAD</code>。50 周</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>DynamicApertureSurvey[range, nturn, Output-&gt;6]</code> は、閉軌道・規格化座標・平衡エミッタンス (先に EMIT 等が必要。<a href="multi-turn-tracking.html">multi-turn-tracking</a>) を使い、規格化振幅の格子で多周回追跡して、粒子が生き残る周数の地図 (1 周 = 1 文字) と Score を返す。<code>DAPERT</code> フラグはこの手順 (DAPERT 手続き) をマクロ粒子追跡に対して有効にするフラグで、<code>DynamicApertureSurvey</code> の内部が使う (利用者が ON/OFF する必要は通常ない)。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>RFSW; RAD; NOFLUC;
+EMIT;                       ! RF 4 MV で U0=1.56 MV を補い、平衡エミッタンスを決める
+NORAD;
+DAPWIDTH = 51;              ! 追跡を始める粒子の窓の幅 (既定 7)
+res = DynamicApertureSurvey[{{1,400},{1,1},{-0.5,0,0.5}}, 50, Output-&gt;6];
+</code></pre>
+<ul>
+<li><code>range = {xrange, yrange, zrange}</code>。既定の Axes <code>"ZX"</code> では zrange に値のリスト (ここでは $z$ 方向の規格化振幅 −0.5, 0, 0.5)、xrange は {最小, 最大} で 51 点に分けて走査する。値は初期振幅を $\sqrt{(\varepsilon_x+\varepsilon_y)}$ (ここでは $\sqrt{\mathrm{EMITX}+\mathrm{EMITY}}=\sqrt{1.7358\times10^{-7}}=4.17\times10^{-4}$) で割った規格化値。</li>
+<li><code>Output-&gt;6</code> で標準出力に地図を出す。戻りは <code>{Score, 走査結果}</code>。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<pre><code> Turns = 50  Maximum number of particles = 306
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    -0.50 40 UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUNIUaH1  1 .
+     0.00 39 UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUURMNja82  1 .
+     0.50 39 UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUsqNOA61  1 .
+    Score:   118
+</code></pre>
+<p>(上は gs。文字は損失した周を表す符号で、<code>U</code> は 50 周生き残り、左から $x$ の規格化振幅が大きくなる。)
+行頭の数 (40, 39, 39) は、$z$ の規格化振幅 (−0.5, 0, 0.5) ごとの score で、50 周生き残った $x$ 振幅の点の数 (51 点中)。戻り値の Score は各 $z$ の score の和 $40+39+39=118$ (SADHelp)。地図の左端から続く <code>U</code> が 50 周生き残る範囲で、右の文字は損失した周 (数字や英字) を表す。
+$y$ の初期振幅は、<code>yrange={1,1}</code> により一定の規格化振幅 1 で与える ($x$ の振幅には比例しない)。EMITX=1.7358e-7 m、SIGE=1.1914e-3。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>動的口径は非線形で決まるので解析式はない。規格化振幅 $n$ の水平の初期振幅は、定義 $n=\sqrt{2J_x/(\mathrm{EMITX}+\mathrm{EMITY})}$ から $x_0=n\sqrt{(\mathrm{EMITX}+\mathrm{EMITY})\beta_x}$ ($\beta_x=5.025$ m、ORIGIN) となり、1σ 相当は $9.3\times10^{-4}$ m。51 点は $n=1$ から 400 を 51 等分 (間隔 7.98) なので、40 点目 ($n\approx312$) までが 50 周生き残り、$x_0\approx0.29$ m、角度 $\sim0.3$ rad に相当する。
+ここまで大きいのは、このラティスの6 極が $K2=0$ で、非線形が厳密なドリフト・エッジの運動学だけだから。この限界は大振幅の運動学的非線形で決まり (解析式の裏付けは無い)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。
+動的口径の地図は EMIT のエミッタンスで決まる粒子の大きさを使うので、v2 の Score は 115 (gs・k64 は 118)、地図の端の数文字が変わる。</p>
+<p>△ 概ね一致。Score (118) と、地図の 3 行は 1 文字 (または 2 文字) を除いて一致 (gs は <code>j</code>・<code>N</code>・<code>A</code>、pysad は <code>J</code>・<code>U</code> の箇所)。
+損失の境界付近の粒子の周数が 1 周違うことによる差で、docs/10 の説明 (「損失境界の 1 粒子の周数が SAD と違う」、カオス的な境界) と同じ。走査結果の戻り値 (RES) も同じ理由で数カ所違う (数値は 1 周以内)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>50 周、3 GeV、NORAD の短い追跡。放射減衰を入れる <code>Damping-&gt;True</code> は pysad 未対応。<code>DAPWIDTH</code> は 51 のときだけ gs と同じ窓にしてある (pysad は 51 以外の窓を再現しない)。</li>
+<li>地図の <code>j</code>/<code>J</code> などの文字の意味 (どの周か) は SADHelp の DynamicApertureSurvey の記述 (損失した周数を 1 文字で示す) による。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

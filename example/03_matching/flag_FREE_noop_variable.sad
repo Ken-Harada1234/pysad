@@ -1,0 +1,24 @@
+! 要素ごとの FREE の「何もしない変数」(`FREE QF.3 K1`)。gs (K64) と全桁一致 (k64・v2 とも。K64 の動作の再現)。
+! 条件: 3 GeV、周長 18.4 m の FODO (QF・QD 各 4 台、BEND B 8 台)。実機の大きなリングでは確かめていない。
+! 規則: 既定のキーの先頭でない成分 (QF.3) の変数は結合先 QF.1 を持つ何もしない変数 (変数の数・VAR の行に数える。Now は先頭に追従)。FREE QF K1 のあとの FREE QF.3 K1 などはエラー。
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+MARK ST = ();
+BEND B = (L=0.5 ANGLE=0.1);
+LINE CELL1 = (QF D2 B D1 QD D2 B D1);
+LINE RING = (ST 4*CELL1);
+FFS;
+USE RING; CELL; CALC;
+FREE QF K1; FREE QF.3 K1; VAR;
+FIX *;
+FREE QF.3 K1; FREE QF K1; VAR;
+FIX *;
+FREE QF.1 K1; FREE QF K1; VAR;
+FIX *;
+FREE QF.1 K1; FREE QF.1 K1; VAR;
+FIX *;
+FREE QF.3 K1; FREE QD K1; FIT $$$ NX 1.30 NY 0.95; GO; VAR; FIX QF; VAR; FIX QF.*; VAR;
+FIX *;
+FREE QF.3 K1; FREE QF.1 K1; FIT $$$ NX 1.30; GO; VAR;
+Exit;

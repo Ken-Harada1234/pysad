@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>design: KEK-LS の設計・マッチング</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#流れ">流れ</a></li>
+<li><a href="#一覧-gs-と-pysad-の一致--一致-差あり-不一致または未対応">一覧 (gs と pysad の一致: ○ 一致、△ 差あり、× 不一致または未対応)</a></li>
+<li><a href="#元の設定と例の設定">元の設定と例の設定</a></li>
+<li><a href="#元の台本の問題と直したもの">元の台本の問題と直したもの</a></li>
+<li><a href="#要確認-pysad">要確認 (pysad)</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="design-kek-ls-の設計マッチング">design: KEK-LS の設計・マッチング</h1>
+<p>v03_68 のセル・リング・入射セルのマッチングと、セルの縮小・セル数の変更・チューンサーベイ。元のスクリプトを <code>kek_ls_v03_68.sad</code> で動くように整えた。各例は <code>.sad</code>・<code>.gs.txt</code>・<code>.pysad.txt</code>・<code>.md</code> の 4 点 (<code>NAME.time.txt</code> は所要時間の記録)。</p>
+<h2 id="流れ">流れ</h2>
+<ol>
+<li><strong>セルのチューン</strong> <code>KEKLS_match_cell_tune</code>: 標準セル <code>ARCA</code> の位相進みを (48.58, 17.62)/20 に合わせる (四極の K1)。</li>
+<li><strong>6 極</strong> <code>KEKLS_match_chrom</code>: リング <code>RINGC</code> の6 極 <code>SDH</code>・<code>SFH</code> でクロマティシティを 0 にする。</li>
+<li><strong>入射セル</strong> <code>KEKLS_match_injcell</code>: <code>ARCINJH</code> の四極 <code>QS0</code>〜<code>QS5</code> で、入射点の位相・ツイスを合わせる。</li>
+<li><strong>リングを閉じる</strong> <code>KEKLS_match_ring_geo</code>: 入射セルの長直線部 <code>DRID1INJ</code> で、ジオメトリを閉じる (GX = GY = 0)。</li>
+<li>設計の変形: <code>KEKLS_scale_mini</code> (全体の一様な縮小)、<code>KEKLS_scale_ncell</code> (セル数の変更)。</li>
+<li>セルのチューンサーベイ <code>KEKLS_tune_survey_cell</code>、再現性の診断 <code>KEKLS_match_repeat</code>。</li>
+</ol>
+<h2 id="一覧-gs-と-pysad-の一致--一致-差あり-不一致または未対応">一覧 (gs と pysad の一致: ○ 一致、△ 差あり、× 不一致または未対応)</h2>
+<table>
+<thead>
+<tr>
+<th>例</th>
+<th>内容</th>
+<th>元のスクリプト</th>
+<th>出力</th>
+<th>所要時間</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="KEKLS_match_cell_tune.html"><code>KEKLS_match_cell_tune</code></a></td>
+<td>セルのチューンのマッチング</td>
+<td>matching2_01 前半</td>
+<td>セルの位相進み・四極の K1</td>
+<td>gs 1 s / pysad 2 s</td>
+<td>△</td>
+</tr>
+<tr>
+<td><a href="KEKLS_match_chrom.html"><code>KEKLS_match_chrom</code></a></td>
+<td>6 極のクロマティシティ調整</td>
+<td>matching2_01 後半</td>
+<td>ξ・6 極の K2</td>
+<td>gs 1 s / pysad 9 s</td>
+<td>△</td>
+</tr>
+<tr>
+<td><a href="KEKLS_match_injcell.html"><code>KEKLS_match_injcell</code></a></td>
+<td>入射セルのマッチング</td>
+<td>matching2_03_INJ</td>
+<td>入射点の Twiss・QS0〜QS5 の K1</td>
+<td>gs 1 s / pysad 2 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="KEKLS_match_ring_geo.html"><code>KEKLS_match_ring_geo</code></a></td>
+<td>入射セルを含めてリングを閉じる (ジオメトリ)</td>
+<td>matching2_02_geo</td>
+<td>DRID1INJ・GX・GY</td>
+<td>gs 1 s / pysad 2 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="KEKLS_match_repeat.html"><code>KEKLS_match_repeat</code></a></td>
+<td>マッチングの再現性の診断</td>
+<td>(新規)</td>
+<td>K1・K2 (3 回の繰り返し)</td>
+<td>gs 1 s / pysad 20 s</td>
+<td>△</td>
+</tr>
+<tr>
+<td><a href="KEKLS_scale_mini.html"><code>KEKLS_scale_mini</code></a></td>
+<td>セルの一様な縮小</td>
+<td>matching23_v03_35_mini</td>
+<td>セル長・位相進み・K1</td>
+<td>gs 1 s / pysad 4 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="KEKLS_scale_ncell.html"><code>KEKLS_scale_ncell</code></a></td>
+<td>セル数を変える</td>
+<td>matching21_v03_35</td>
+<td>j セルのリングの εx・チューン・周長</td>
+<td>gs 1 s / pysad 3 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="KEKLS_tune_survey_cell.html"><code>KEKLS_tune_survey_cell</code></a></td>
+<td>セルのチューンサーベイ</td>
+<td>matching05 + modules_tune_sv_v03_68.n</td>
+<td>ξ・εx・6 極の強さの 25 点の地図</td>
+<td>gs 10 s / pysad 160 s</td>
+<td>△</td>
+</tr>
+</tbody>
+</table>
+<p>マッチング後のラティスの保存: 各例は、結果を画面 (<code>type</code>・<code>Print</code>) に出す。元の台本の <code>SAVE ALL</code> はラティス全体を画面に書き出す (gs・pysad とも) ので、例では K1・K2 の値を <code>Print</code> する形にした。<code>SAVE ALL</code> の出力をファイルに取るには、台本の <code>SAVE ALL;</code> を FFS の最後に書いて標準出力を保存する (<code>FFS["SAVE ALL", ファイル]</code> の形はファイルが空になるので使えない)。</p>
+<h2 id="元の設定と例の設定">元の設定と例の設定</h2>
+<table>
+<thead>
+<tr>
+<th>台本</th>
+<th>元の設定</th>
+<th>例の設定</th>
+<th>完全な設定にするには</th>
+<th>見込みの所要時間 (完全)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KEKLS_match_cell_tune</code></td>
+<td><code>exmkc</code> 0.004 → 0 (0.001 刻み 5 点)、NPARA 32/16</td>
+<td>0.004 → 0 (0.002 刻み 3 点)、NPARA 8</td>
+<td><code>{exmkc,0.004,0.0,-0.001}</code></td>
+<td>gs 1 秒、pysad 数秒</td>
+</tr>
+<tr>
+<td><code>KEKLS_match_injcell</code></td>
+<td>マッチングを 50 回繰り返す</td>
+<td>2 回 (1 回で収束)</td>
+<td><code>iterations = 50</code></td>
+<td>gs 数秒</td>
+</tr>
+<tr>
+<td><code>KEKLS_scale_mini</code></td>
+<td>factor 1 → 0.5 を 0.01 刻み (51 点)、NPARA 8</td>
+<td>0.1 刻み (6 点)</td>
+<td><code>{factor,1,0.5,-0.01}</code></td>
+<td>gs 約 10 秒、pysad 約 1 分</td>
+</tr>
+<tr>
+<td><code>KEKLS_scale_ncell</code></td>
+<td>j = 20 → 2 (19 点)、NPARA 8</td>
+<td>j = 20, 18, 16, 12, 10 (5 点)</td>
+<td><code>names</code>・<code>ncs</code> を増やす</td>
+<td>gs 数秒</td>
+</tr>
+<tr>
+<td><code>KEKLS_tune_survey_cell</code></td>
+<td>tunex 46.05〜46.55 (6 点) × tuney 16.05〜19 (30 点) = 180 点、各点に DA (5000 周)</td>
+<td>48.30〜48.90 (5 点) × 17.30〜17.90 (5 点) = 25 点、DA なし</td>
+<td><code>tx0 = 46.05; dtx = 0.1; ntx = 6; ty0 = 16.05; dty = 0.1; nty = 30;</code> + <code>DAsv[]</code></td>
+<td>25 点で gs 10 秒・pysad 約 160 秒から、DA なしで gs 約 1.2 分・pysad 約 19 分。DA は未測定</td>
+</tr>
+</tbody>
+</table>
+<p>(見込みは、例の設定の所要時間からの比例の外挿。DA の時間は測っていない。元のスクリプトのファイルの更新日時は 2016 年で、当時の所要時間の記録は元のフォルダに無い。)</p>
+<h2 id="元の台本の問題と直したもの">元の台本の問題と直したもの</h2>
+<ul>
+<li><code>matching2_02_geo</code>: <code>USE RINGI</code> (v03_68 に無い) → <code>RING</code>。</li>
+<li><code>matching2_01</code>・<code>modules_tune_sv_v03_68.n</code>・<code>matching23</code>・<code>matching21</code>: <code>free BPI6 K1</code>・<code>free BPI7 K1</code> は v03_68 の名前 <code>BPI6H</code>・<code>BPI7H</code> に一致せず効かない。<code>matching23</code>・<code>matching21</code>・<code>tune_survey_cell</code> の例は <code>BPI6H</code>・<code>BPI7H</code> に直した (<code>freebend</code>)。<code>match_cell_tune</code> は元の挙動 (効かない) を既定に残した。</li>
+<li><code>matching2_01</code>・<code>matching21</code>: FitFunction が <code>EMITX</code> を使うが、閉じていない ARCA では EMITX は NaN (<code>matching21</code> は <code>1^-9</code> の書き間違いも)。gs では何も効かず、pysad では fit が動かなくなる。この 2 本は FitFunction を除いた。</li>
+<li><code>matching23</code>・<code>modules_tune_sv_v03_68.n</code>: v03_35 の <code>MKSFA2</code>・<code>SDA</code>・<code>SFA</code>・<code>QFA4A/B</code>・<code>ARCA1</code>・目標値が残っていた → v03_68 の名前・設計値に直した。</li>
+<li><code>matching05</code>: <code>modules_tune_sv_v03_35.n</code> を読む。v03_68 用の <code>modules_tune_sv_v03_68.n</code> を読む台本は無い。</li>
+<li>元の台本の <code>WriteGraphs[]</code> (<code>draw</code> コマンド)・<code>datas.txt</code> への書き出し・<code>SAVE ALL</code>・<code>stop; stop;</code> の後ろの旧い試行は、例では除いた (描画は PNG に別に、数表は画面に)。</li>
+</ul>
+<h2 id="要確認-pysad">要確認 (pysad)</h2>
+<ul>
+<li><code>FitFunction</code> を <code>fit</code> 条件と併用する <code>MatchingARCA</code> (<code>KEKLS_match_repeat</code>・<code>KEKLS_tune_survey_cell</code>・<code>KEKLS_scan_target</code>) で、pysad は gs と違う解に落ち、同じ入力の繰り返しでも結果が変わる (1 回目と 2 回目以降が違う)。NaN の FitFunction では fit が動かない。pysad のコードは変えていない (追跡に合わせる補正は足さない)。</li>
+<li><code>GaussRandom[]</code> の <code>GCUT = 0</code> の扱い (gs は ≈ 0、pysad は打ち切りなし) は <code>../errors/</code> で確認 (台本は <code>GCUT = 1</code>)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

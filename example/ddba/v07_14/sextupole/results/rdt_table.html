@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>rdt_table.md</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: rdt_table.md</div>
+<p>| 名前 | 組の種類 | max|K2L| | ξx,ξy (CALC) | ξ2x,ξ2y (CALC) | Σ|h3| (5 項) | h30000 | h10020 | h21000 | 4 次 非対角 Σ | ADTS xx | xy | yy | 目的/最終 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| v07_11 | historic | 35.7 | -0.329, -0.047 | 189, 192 | 231.3 | 5.8 | 120.1 | 67.8 | 2.49e+05 | 3.47e+05 | 2.74e+05 | 1.68e+05 | 179 |
+| v07_12 | historic | 35.7 | -0.068, 0.101 | 191, 200 | 233.2 | 5.7 | 123.6 | 67.2 | 2.51e+05 | 3.48e+05 | 2.75e+05 | 1.72e+05 | 181 |
+| retune1 | historic | 34.4 | -0.069, 0.095 | -5, 268 | 134.4 | 1.2 | 91.0 | 11.2 | 1.54e+05 | 7.02e+04 | 5.58e+04 | 3.92e+04 | 10.2 |
+| final | historic | 32.6 | -0.069, 0.100 | -30, 218 | 61.3 | 2.5 | 30.5 | 13.9 | 8.21e+04 | 2.4e+03 | 1.01e+04 | 872 | 1 |
+| rev9 | historic | 34.4 | 1.930, 3.099 | -29, 245 | 62.4 | 2.8 | 29.5 | 15.0 | 8.17e+04 | 2.39e+03 | 1e+04 | 893 | 0.965 |
+| opt_full_1 | optimized | 32.6 | -0.069, 0.100 | -76, 137 | 24.4 | 11.3 | 7.7 | 1.2 | 5.19e+04 | -654 | 148 | -470 | 0.127 |
+| opt_full_2 | optimized | 32.6 | -0.069, 0.100 | -78, 128 | 24.6 | 11.4 | 7.6 | 1.2 | 5.21e+04 | -699 | 158 | -469 | 0.127 |
+| opt_full_3 | optimized | 32.6 | -0.069, 0.100 | -75, 145 | 24.2 | 11.1 | 7.7 | 1.2 | 5.14e+04 | -621 | 140 | -478 | 0.127 |
+| opt_full_4 | optimized | 32.6 | -0.069, 0.100 | -83, 140 | 24.3 | 11.4 | 7.6 | 1.2 | 5.09e+04 | -601 | 131 | -494 | 0.127 |
+| opt_rdt1 | optimized | 32.6 | -0.069, 0.100 | 29, -728 | 2.9 | 2.3 | 0.0 | 0.2 | 2.05e+06 | 2.16e+05 | 1.39e+05 | -1.51e+06 | 1.12e+03 |
+| opt_adts | optimized | 31.9 | -0.069, 0.100 | 39, 341 | 331.0 | 5.4 | 230.1 | 25.8 | 3.94e+05 | -4.22 | -4.32 | 9.47 | 13.3 |
+| opt_rdt4 | optimized | 31.0 | -0.069, 0.100 | -210, 735 | 326.5 | 10.4 | 108.8 | 46.2 | 50 | -9.04e+04 | 6.17e+05 | -4.66e+05 | 687 |
+| opt_full_k125 | optimized | 37.0 | -0.069, 0.100 | 54, 240 | 21.0 | 8.4 | 7.0 | 0.8 | 5.12e+04 | -794 | 192 | -442 | 0.118 |
+| rnd10_0 | random | 29.2 | -0.069, 0.100 | -22, 228 | 148.7 | 4.1 | 26.3 | 21.8 | 1.17e+05 | 1.1e+04 | 3e+04 | -1.78e+04 | 6.69 |
+| rnd10_1 | random | 32.9 | -0.069, 0.100 | -44, 181 | 161.5 | 2.0 | 110.5 | 10.0 | 1.36e+05 | -1.98e+04 | -7.44e+03 | 1.98e+04 | 2.79 |
+| rnd10_2 | random | 36.4 | -0.069, 0.100 | -7, 217 | 236.8 | 2.4 | 159.0 | 21.4 | 2.66e+05 | 2.86e+04 | 2.81e+03 | 2.05e+04 | 8.22 |
+| rnd10_3 | random | 32.7 | -0.069, 0.100 | 27, 247 | 115.6 | 1.6 | 64.5 | 10.9 | 7.38e+04 | 2.57e+04 | 1.42e+04 | -6.44e+03 | 1.93 |
+| rnd10_4 | random | 38.9 | -0.069, 0.100 | -440, 183 | 357.3 | 8.2 | 164.0 | 62.0 | 1.73e+05 | -1.31e+05 | -5.77e+04 | 1.1e+05 | 27 |
+| rnd10_5 | random | 36.9 | -0.069, 0.100 | -205, 218 | 271.7 | 5.4 | 139.2 | 55.1 | 1.96e+05 | -8.43e+04 | -2.63e+04 | 1.12e+05 | 15.1 |
+| rnd10_6 | random | 33.7 | -0.069, 0.100 | 29, 228 | 218.5 | 2.4 | 88.5 | 27.8 | 1.95e+05 | 2.14e+04 | -1.6e+04 | -2.48e+04 | 7.4 |
+| rnd10_7 | random | 34.2 | -0.069, 0.100 | -121, 273 | 203.3 | 1.5 | 122.6 | 31.9 | 1.29e+05 | -8.13e+04 | 2.43e+04 | 1.3e+05 | 13.7 |
+| rnd30_0 | random | 33.2 | -0.069, 0.100 | -145, 4434 | 876.1 | 6.9 | 699.7 | 13.9 | 2.93e+06 | -2.65e+05 | -1.11e+06 | -6.64e+05 | 2.38e+03 |
+| rnd30_1 | random | 49.3 | -0.069, 0.100 | 468, -40 | 599.8 | 7.6 | 325.8 | 81.2 | 9.09e+05 | 1.14e+05 | -2.64e+05 | 5.14e+05 | 277 |
+| rnd30_2 | random | 31.2 | -0.069, 0.100 | -238, 159 | 407.7 | 6.0 | 137.5 | 48.4 | 4.59e+05 | 2.3e+05 | 2.28e+03 | -6.25e+04 | 52.4 |
+| rnd30_3 | random | 30.1 | -0.069, 0.100 | -388, 1242 | 1039.9 | 28.1 | 576.6 | 132.9 | 4.61e+06 | -3.63e+03 | 3.31e+05 | -3.79e+05 | 1.12e+03 |
+| rnd30_4 | random | 35.2 | -0.069, 0.100 | -1193, 1231 | 645.3 | 5.4 | 456.8 | 48.6 | 9.76e+05 | -4.89e+05 | -3.82e+05 | 3.91e+05 | 430 |
+| rnd30_5 | random | 32.2 | -0.069, 0.100 | 280, 518 | 259.2 | 4.5 | 144.3 | 16.5 | 3.12e+05 | -5.93e+04 | -5.61e+04 | 1.13e+05 | 19.1 |
+| rnd30_6 | random | 39.1 | -0.069, 0.100 | -888, 1167 | 688.3 | 10.2 | 242.2 | 68.6 | 4.49e+05 | -3.3e+05 | 4.13e+05 | -1.08e+05 | 392 |
+| rnd30_7 | random | 39.8 | -0.069, 0.100 | 49, 279 | 563.5 | 6.3 | 344.4 | 43.3 | 1.07e+06 | -6.06e+04 | -3.2e+05 | 2.38e+05 | 232 |
+| opt_J3e-07 | optimized | 32.6 | -0.069, 0.100 | -158, 57 | 21.9 | 11.0 | 4.1 | 2.0 | 5.93e+04 | -1.17e+03 | 336 | -828 | 0.138 |
+| opt_J3e-06 | optimized | 32.6 | -0.069, 0.100 | 359, 664 | 38.6 | 4.3 | 15.6 | 2.4 | 3.24e+04 | -165 | 32.8 | -209 | 0.198 |
+| opt_J1e-05 | optimized | 32.6 | -0.069, 0.100 | 453, 916 | 55.4 | 9.9 | 20.8 | 4.3 | 1.74e+04 | -51.7 | 12.4 | -46.5 | 0.342 |</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -1,0 +1,20 @@
+! ずれた BEND の CALC (tbende の tchge) と追跡 (tbend の tbshift) の差。矩形磁石 (E1=E2=0.5) 1 台を DX=2 mm ずらす。
+! 弦に垂直な方向への平行移動は、矩形磁石 (平行な面) の光学を変えない (厳密)。追跡は変わらない。k64/gs の CALC は出口のドリフトが逆向きで、
+! チューンが 2.7e-5 動く。v2 は動かない。条件: 3 GeV、24 セル FODO (周長 105.6 m)。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5);
+BEND  BE = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5 DX=2E-3);
+MARK  ORIGIN = ();
+LINE CELLQ = (QF D2 B D2 QD DS D1);
+LINE CELLE = (QF D2 BE D2 QD DS D1);
+LINE RING0 = (ORIGIN 24*CELLQ);
+LINE RING  = (ORIGIN CELLE 23*CELLQ);
+FFS;
+$FORM = "16.10";
+USE RING0; CELL; CALC;
+Print["unshifted : NX NY = ", Twiss["NX","$$$"]/(2*Pi), Twiss["NY","$$$"]/(2*Pi)];
+USE RING; CELL; CALC;
+Print["one BEND DX=2mm : NX NY = ", Twiss["NX","$$$"]/(2*Pi), Twiss["NY","$$$"]/(2*Pi)];
+Exit;

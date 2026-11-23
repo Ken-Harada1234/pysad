@@ -92,7 +92,7 @@ class ResonancePredictor:
     def from_lattice(cls, lat, loc, rows=None, delta=0.0, bend_cubic=None, order_adts=True, order2=False, amin2=1e-3, model=None):
         """lat: Lattice。loc: 位置 (1 始まり、要素の入口)。rows: lat.twiss_table(delta=delta) (省略可)。RDT は resonance_terms、A は adts().total。
         order2=True (v2.3.0 R5): 4 次の RDT (second_order_terms) も調和ごとに足す (1 次だけでは予想できなかった νx−νy・2νx±2νy・4νx・νx±3νy などの島の領域)
-        model='s3' (v2.3.0 S3): `fmappred.ResonancePredictorS3` を返す (4 次の h に非共鳴の 3 次の補正、連続のスコア、信頼度のフラグ。docs/49 §12)"""
+        model='s3' (v2.3.0 S3): `fmappred.ResonancePredictorS3` を返す (4 次の h に非共鳴の 3 次の補正、連続のスコア、信頼度のフラグ。docs/25 §12)"""
         if model == 's3':
             from .fmappred import ResonancePredictorS3
             return ResonancePredictorS3.from_lattice(lat, loc, rows, delta=delta, bend_cubic=bend_cubic)

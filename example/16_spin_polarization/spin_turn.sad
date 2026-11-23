@@ -1,0 +1,30 @@
+! example/07_spin_solenoid_special の flag_POL_RADPOL で、500 周後のスピン角が gs・k64 (0.8794 rad) と v2 (1.1516 rad) で違う原因。
+! 原因: K64 の sprot の刻みの角 (1+aγ)·2 sin(θ/2)。放射の分割 EPS を細かくすると k64 と v2 が一致する (1 周の差 5.6e-4 rad -> 8e-8 rad)。
+! 条件: 3 GeV、24 セルの平面 FODO (周長 105.6 m)、RAD NOFLUC POL、RF 4 MV、閉軌道の近く (z = zeq)。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+BEND  BF = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747 EPS=1E-5);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE CELLF = (SF DS QF D2 BF D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+LINE RINGF = (ORIGIN RF 24*CELLF);
+FFS;
+$FORM = "16.10";
+zeq = 0.038315657;
+beam = {{0},{0},{0},{0},{zeq},{0},{0},{0},{1}};
+USE RING; CELL; CALC; RFSW; RAD; NOFLUC; POL;
+r = TrackParticles[{1, beam}, 1, 1, 1][[2]];
+Print["default EPS : 1 turn spin angle = ", r[[7,1]]];
+r = TrackParticles[{1, beam}, 1, 1, 500][[2]];
+Print["default EPS : 500 turns spin angle = ", r[[7,1]]];
+USE RINGF; CELL; CALC;
+r = TrackParticles[{1, beam}, 1, 1, 1][[2]];
+Print["EPS=1E-5    : 1 turn spin angle = ", r[[7,1]]];
+r = TrackParticles[{1, beam}, 1, 1, 500][[2]];
+Print["EPS=1E-5    : 500 turns spin angle = ", r[[7,1]]];
+Exit;

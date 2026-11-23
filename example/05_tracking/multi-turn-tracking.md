@@ -16,7 +16,7 @@ Do[ X = b[[1,1]]/Sqrt[bx]; P = (ax b[[1,1]] + bx b[[2,1]])/Sqrt[bx];   ! 規格�
 nu = Mean[Mod[dph, 2 Pi]]/(2 Pi)        ! 1 周の位相の進み / 2 pi
 smear = (Max[inv]-Min[inv])/Mean[inv]
 ```
-MAIN レベルの `TRACK USE=… NX=… NY=…` 文 (`ActTra.f`) は K64 では動かない (docs/08 §8) ので、同じ手順を SADScript で書いた。
+MAIN レベルの `TRACK USE=… NX=… NY=…` 文 (`ActTra.f`) は K64 では動かない (docs/10 §8) ので、同じ手順を SADScript で書いた。
 
 ## 結果の読み方
 `amp=n sigma (x0=...) nu_x(tracking)=... smear=...` の各行。EMITX=1.7358e-7、$\nu_x$(CALC)=6.696329。
@@ -42,7 +42,7 @@ MAIN レベルの `TRACK USE=… NX=… NY=…` 文 (`ActTra.f`) は K64 では�
 (1σ の追跡値 0.696366−0.696329=$3.7\times10^{-5}$ から $\kappa$ を決め、10σ の値は $\kappa\times100$ と比べた。10σ で 0.00370 と一致するので、2 次の依存性が確認できる。20σ・30σ は 4 次以上の項のため、式と 0.3%、1% ずれる。) smear は振幅に比例してほぼ線形に増える (解析式は用意していない)。
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 と k64 の違い**: `.pysad.txt` は既定の v2 モードの出力。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は `PYSAD_COMPAT=k64` での結果 (2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ 一致 (全 5 行が印字桁まで同じ)。
 

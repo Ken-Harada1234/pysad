@@ -43,5 +43,5 @@ $$\beta_z=\frac{|\alpha_c|C}{2\pi\nu_s}=\frac{0.0221837\times105.6}{2\pi\times0.
 
 ## 未確認・限界
 - この例は RADCOD OFF (閉軌道に放射損失を入れない) の 6D だけ。RADCOD ON の CALC6D は見ていない。
-- `CALC6D;` 単独は再計算しない (SAD の癖。CALCULATE が要る。docs/11 A36)。4D の CALC は縦の列を作り直さない。
+- `CALC6D;` 単独は再計算しない (SAD の癖。CALCULATE が要る。docs/29 A36)。4D の CALC は縦の列を作り直さない。
 - $\beta_z$ の式は近似で、結果は 0.2% 違う。

@@ -216,15 +216,15 @@ def _photons(src):
     return (np.hstack([np.array(A), np.array(B)]) if A else np.zeros((0, 12))), out
 
 
-_PH_MULT_SRC = os.path.join(_ROOT, 'example', 'v2_next', 'D1_photons_mult.sad')
-_PH_BB_SRC = os.path.join(_ROOT, 'example', 'v2_next', 'D1_photons_bb_bend.sad')
+_PH_MULT_SRC = os.path.join(_ROOT, 'example', '07_spin_solenoid_special', 'flag_PHOTONS_mult.sad')
+_PH_BB_SRC = os.path.join(_ROOT, 'example', '07_spin_solenoid_special', 'flag_PHOTONS_beambeam_bend.sad')
 
 
 def test_photons_in_mult_match_gs_k64(k64_mode):
     """k64: BEND・QUAD・MULT (K0・K1・K2、ずれ・ROTATE つき) の光子 325 個の PhotonList が gs と一致する: 要素ごとの個数 (4: 66、10: 62、16: 67、24: 56、
     32: 69、34 (MULT): 3、36 (QUAD): 2)、E・位置・方向の列の和。E 列は K64 が γ でなく gammab = βγ を掛ける (相対 1/(2γ²) = 1.45e-8) ことまで再現する"""
     if not os.path.exists(_PH_MULT_SRC):
-        pytest.skip('D1_photons_mult.sad')
+        pytest.skip('flag_PHOTONS_mult.sad')
     P, _out = _photons(open(_PH_MULT_SRC, encoding='utf-8').read())
     assert len(P) == 325
     cnt = {int(e): int((P[:, 11] == e).sum()) for e in set(P[:, 11])}
@@ -238,7 +238,7 @@ def test_photons_beambeam_with_bend_and_trpt_match_gs_k64(k64_mode):
     """k64: BEAMBEAM と BEND (と QUAD) を同じ輸送路に置いた PHOTONS + TRPT が gs と一致する (以前は SADError)。光子 71 個 (BEAMBEAM 7、BEND 64)、
     追跡のあとの乱数の状態 (RND .5837396986 .9722504371) と座標の和 (TRK) まで一致する。TRPT の放射の分割 (ndivrad × 10) を track6 の経路でも効かせた"""
     if not os.path.exists(_PH_BB_SRC):
-        pytest.skip('D1_photons_bb_bend.sad')
+        pytest.skip('flag_PHOTONS_beambeam_bend.sad')
     P, out = _photons(open(_PH_BB_SRC, encoding='utf-8').read())
     assert len(P) == 71
     assert {int(e): int((P[:, 11] == e).sum()) for e in set(P[:, 11])} == {4: 7, 6: 64}
@@ -339,7 +339,7 @@ def test_k64_spdepol_rate_scales_as_emittance_over_damping_v2(v2_mode):
     1.95 倍・0.53 倍)。正しい脱偏極率は光子の跳びの拡散 D (減衰率に依らない) で決まる ½ Σ tr(N B Nᵀ) = 2.3e-8 /周 (線形)。K64 の式は
     2 次の摂動の零位相の項で 1/(1 − e^{−2λ}) (= 平衡エミッタンスが含む 1/(2λ) の二重数え) を掛けた形で、1000 倍以上大きい。docs/history/v2next_D1.md §6"""
     from pysad import spin
-    src = open(os.path.join(_ROOT, 'example', 'v2_next', 'B3_pol_sideband.sad'), encoding='utf-8').read().split('FFS;')[0]
+    src = open(os.path.join(_ROOT, 'example', '16_spin_polarization', 'pol_sideband.sad'), encoding='utf-8').read().split('FFS;')[0]
     ffs, _ = ffscmd.run_sad_string(src + 'FFS;\nUSE RING; CELL; CALC; RFSW; RAD; NOFLUC; POL;\nExit;\n', out=io.StringIO())
     PST = 8.0 / (5.0 * math.sqrt(3.0))
     orig = spin.spdepol

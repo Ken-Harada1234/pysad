@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>calc_traj_03_PF (Tk の窓、入力欄・ボタン、OpticsPlot)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: calc_traj_03_PF.md</div>
+<h1 id="calc_traj_03_pf-tk-の窓入力欄ボタンopticsplot">calc_traj_03_PF (Tk の窓、入力欄・ボタン、OpticsPlot)</h1>
+<p>KEK の SAD チュートリアルの「GUI 入出力化」(<code>calc_traj_03</code>) と、「グラフ表示」の <code>OpticsPlot</code> をもとにした例。加速器・ラティス・線は <code>calc_traj_01_PF</code> と同じ (PF 2.5 GeV、<code>lattice/v9_16_inj_noSF.sad</code>、<code>INJL</code>)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>軌道を <code>OpticsPlot</code> で描き (ラティスの絵つき)、キッカーの値を窓の入力欄 (<code>Entry</code>) とボタン (<code>Button</code>、Command で関数を呼ぶ) で変えて、軌道と Courant-Snyder 不変量を再計算し、グラフを描き直す。教材の書き方どおり、<code>KBMainFrame[...]</code> の枠の中に <code>Canvas</code> を置き、<code>$DisplayFunction = CanvasDrawer; Canvas$Widget = c1;</code> でそこに描く。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>w = KBMainFrame[&quot;plot&quot;, plotframe, Title-&gt;&quot;Trajectory Plot&quot;];
+c1 = Canvas[plotframe, Width-&gt;800, Height-&gt;500];
+$DisplayFunction = CanvasDrawer;  Canvas$Widget = c1;                         (* 描く先を c1 に *)
+MakePlot[];      (* OpticsPlot[{{{line1},{line2},{line3}, PlotJoined-&gt;True, PlotColor-&gt;{...}, ...}}, Lattice-&gt;True, Names-&gt;&quot;B*&quot;] *)
+k4b3 = Entry[f01, Width-&gt;9, TextVariable:&gt;k0k4, Side-&gt;&quot;left&quot;];               (* 入力欄: 変数 k0k4 と結ぶ *)
+k4b5 = Button[f01, Text-&gt;&quot;Weaker&quot;, Command:&gt;(k4deltaup[]; Recalc[])];         (* ボタンを押すと KK4 を 0.2 mrad 変えて再計算・再描画 *)
+</code></pre>
+<ul>
+<li>窓の入力欄 (<code>Entry</code>) の値は文字列になる。数にするには <code>ToExpression[ToString[x]*1.00]*1.00</code> を通す (入力が文字列でないと <code>ToExpression</code> がエラーになるので、いったん <code>ToString</code> する)。入力欄に使った変数は型を変えられないので、入力欄用 (<code>k0k4</code>) と計算用 (<code>k0k4v</code>) を別の名前にする。</li>
+<li>描画の実際のボタン操作はできないので、Command の中身 (<code>k4deltaup[]; Recalc[]</code>) を台本から直接呼んで、押した代わりにした。</li>
+<li>窓の項目数は、<code>TclEval</code> で <code>Canvas</code> の全項目の個数を読んで書いた (<code>canvas items = ...</code>)。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>GUI-start</code> の行 (窓を作る前の計算: 蓄積ビームの終端の x と CS 不変量)、<code>canvas items</code> (窓の Canvas の項目数)、<code>after Weaker</code> の行 (KK4 を 0.2 mrad 弱くしたあとの値)。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GUI-start</code>: 終端の x [mm]、CS 不変量 [nm rad]</td>
+<td>0.518722、391.460</td>
+<td>0.518722、391.460</td>
+</tr>
+<tr>
+<td><code>canvas items</code> (窓を作った直後)</td>
+<td><strong>114</strong></td>
+<td><strong>114</strong></td>
+</tr>
+<tr>
+<td><code>after Weaker</code>: KK4 [mrad]、終端の x [mm]、CS 不変量</td>
+<td>-2.6、0.346732、74.531</td>
+<td>-2.6、0.346732、74.531</td>
+</tr>
+<tr>
+<td><code>canvas items</code> (再描画後)</td>
+<td><strong>115</strong></td>
+<td><strong>115</strong></td>
+</tr>
+</tbody>
+</table>
+<p>KK4 を -2.8 → -2.6 mrad にすると、蓄積ビームの終端の x が 0.5187 → 0.3467 mm、CS 不変量が 391.5 → 74.5 nm rad に下がる (<code>calc_traj_02_PF</code> の SCAN と同じ値)。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>計算の中身は <code>calc_traj_02_PF</code> と同じ (式と数値の照合はそちら)。窓の描画項目の個数 (114) は、OpticsPlot がラティスの絵 (ベンド・四極・6 極の矩形と名前、枠、目盛り、3 本の軌道) を Canvas の項目として描いた数。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 モードと k64 モード</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (<code>docs/28_v2_vs_k64.md</code>。主に <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 B75 と <code>MomentumCompaction</code> B77)、この例の出力のうち <code>Emittance[]</code> の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p><strong>○ 一致</strong>: 計算の値 (<code>GUI-start</code>・<code>after Weaker</code>) も、窓の Canvas の項目数 (114、再描画後 115) も gs と pysad で一致する。<code>.pysad.txt</code> にエラー表示は無い。<code>Canvas$Widget = c1</code> の描く先は gs と同じく <code>c1</code> になる (docs/20)。<code>OpticsPlot</code> に自前のデータ列を渡す動作は試験 <code>test_opticsplot_with_own_data_lists_like_gs</code> が確かめる (自前データの x は要素番号で、この例は <code>TrackParticles</code> が返す位置番号)。</p>
+<p>gs の窓の画像は撮れていない (gs の X11 の窓は撮る道具が無い)。pysad の窓の画像は <code>calc_traj_03b_PF</code> を参照。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>実際に窓のボタンを押す操作 (ユーザーの操作への反応) は確かめていない (Command の中身を呼んで代用)。</li>
+<li><code>KBMainFrame</code> は 1 つのプロセスで 1 回しか呼べない (2 回目は <code>KBF::main: KBMainFrame can be called only once</code>)。窓のレイアウト (<code>f01</code>・<code>Entry</code> の並び) の見た目は、gs の画面で確認していない。</li>
+<li>チュートリアルの GUI には KK1〜KK4 それぞれの入力欄・Up/Down ボタン・入射位置の入力欄がある。ここは KK1 の入力欄と KK4 のボタンだけに絞った (残りは同じ部品の繰り返し)。</li>
+<li><code>Canvas</code> のサイズ (800×500) は元 (800×600) から縮めた。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -37,7 +37,7 @@ $$\xi_{x}^{\rm (CHRO)}=-\frac{K_1}{L}\!\int\!\beta_x ds\ (\text{QUAD}),\quad +\f
 
 ## gs と pysad の比較
 - `CHRO` の表、チューン、β、行列はすべて一致。
-- `TYPE D6` の `K5 =10000` も一致 (2026-11-17 に修正: pysad は DODECA の K5 を長さあたりの内部値 (50000) のまま返していた。`LINE["K5"]`・`Element["K5"]`・TYPE・ATTRIBUTE は積分強度 10000)。
+- `TYPE D6` の `K5 =10000` も一致 (2026-11-17 確認。DODECA の K5 の内部値は長さあたり (50000) で、`LINE["K5"]`・`Element["K5"]`・TYPE・ATTRIBUTE は積分強度 10000)。
 
 ## 未確認・限界
 - OCT・DECA・DODECA の非線形の効果 (振幅依存のチューンシフトなど) は 05_tracking の例で扱い、ここでは確認していない。

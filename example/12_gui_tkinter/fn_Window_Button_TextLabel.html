@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Window_Button_TextLabel (Window・TextLabel・Button・CheckButton)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#画面-pysad-の窓">画面 (pysad の窓)</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Window_Button_TextLabel.md</div>
+<h1 id="fn_window_button_textlabel-windowtextlabelbuttoncheckbutton">fn_Window_Button_TextLabel (Window・TextLabel・Button・CheckButton)</h1>
+<p>種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>最小の窓の例。最上位の窓 <code>Window[]</code> に、文字 (<code>TextLabel</code>)、ボタン (<code>Button</code>、押すと <code>Command</code> を評価)、チェックボタン (<code>CheckButton</code>、<code>Variable</code> に結ぶ) を縦に並べる。画面表示が主役。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>w=Window[];
+l=TextLabel[w,Text-&gt;&quot;Hello SAD&quot;,Side-&gt;&quot;top&quot;];
+b=Button[w,Text-&gt;&quot;Count&quot;,Command:&gt;(n=n+1),Side-&gt;&quot;top&quot;];
+c=CheckButton[w,Text-&gt;&quot;Option&quot;,Variable:&gt;ck,Side-&gt;&quot;top&quot;];
+TclEval[&quot;update&quot;];                 (* 窓を描く *)
+TclEval[&quot;foreach c [ff . Button] {$c invoke; $c invoke}&quot;];   (* ボタンを 2 回押す *)
+</code></pre>
+<p><code>Side-&gt;"top"</code> は <code>Pack</code> のオプションで、作ると同時に配置される。補助の Tcl 手続き (部品の木を出すもの、クラスで部品を探すもの) は、台本の先頭で定義している。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>tree:</code> の行が部品の木 (クラスと <code>-text</code>、<code>;</code> 区切り)。<code>n=2</code> はボタンを 2 回 <code>invoke</code> した結果 (<code>Command:&gt;(n=n+1)</code> が 2 回評価された)、<code>ck=1</code> はチェックボタンを 1 回押した結果 (<code>Variable:&gt;ck</code> が 1)。
+窓には「Hello SAD」のラベル、「Count」ボタン、「Option」のチェックボタンが縦に並ぶ (下の画面)。</p>
+<h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
+<p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
+<strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>動作の結果 (<code>n=2</code>、<code>ck=1</code>) は gs と pysad で一致 (○)。部品の種類・文字も同じ。</li>
+<li><strong>窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)</strong>: gs では <code>Window[]</code> が Toplevel を作り、部品はその下に並ぶ (ルート <code>.</code> の下には「Return to SAD」ボタンと Toplevel)。pysad では <code>Window[]</code> が別の窓を作らず、部品がルート窓 <code>.</code> の直下に並ぶ。<code>tree:</code> の行のインデントの差はこのため。</li>
+<li><strong><code>Head[w]</code>・<code>Head[b]</code></strong>: gs・pysad とも <code>Widget</code> (○。<code>Tkinter.n</code> の入れ子の規則で <code>With</code> が呼び出し元の引数名を見ると別名に付く。docs/20)。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は <code>update</code> で窓を作り、Tcl の <code>invoke</code> で操作を模している)。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

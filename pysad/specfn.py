@@ -2,7 +2,7 @@
 特殊関数・数学関数。K64 の組み込み (src/tfinitn.f の itfunaloc、tfunc*.f) と Packages/D.n の SADScript 定義の置き換え。
 
 SAD の実数引数の結果を scipy.special で計算する (K64 は Fortran の自前実装)。値は標準の数学的な値で、
-K64 が誤った値を返す箇所 (docs/21 の B43〜) はそちらに合わせず、正しい値を返す:
+K64 が誤った値を返す箇所 (docs/30 の B43〜) はそちらに合わせず、正しい値を返す:
   - ExpIntegralEi: D.n の式が実引数で複素数の誤値になる (Ei[1.5] → .164-2.985 I; 正しくは 3.3012)
   - HermiteH[3,.7] (整数 n、Gamma[(1-n)/2] の極で NaN)、LegendreP[n,m,z] (整数 m で NaN)、Binomial[-3,2] (NaN)
   - HypergeometricU[1,2,.5] (INF; 正しくは 2)、BesselY[0,.1] (NaN)、BesselK[1.5,.7] (INF)、BesselJ[-1,1.5]/BesselY[1,2.5] (gs が応答しない)
@@ -775,7 +775,7 @@ def _flattenat(lst, n):
 
 # ---------------------------------------------------------------------------------------------------------------------
 # v2.4.0 (担当 E): 組込の数学関数・特殊関数の監査 (mpmath との比較、pysad/tests/test_v24_E_specfn_audit.py) で見つけた誤りの v2 での修正。
-# k64 は変えない (従来の値のまま。gs の NaN・誤った符号・複素数の取りこぼしを再現する)。記録は docs/21 の B180〜 と docs/47 の v2.4.0 の節。
+# k64 は変えない (従来の値のまま。gs の NaN・誤った符号・複素数の取りこぼしを再現する)。記録は docs/30 の B180〜 と docs/28 の v2.4.0 の節。
 # ---------------------------------------------------------------------------------------------------------------------
 def _lerch_integral(z, s, a):
     """Φ(z,s,a) = 1/Γ(s) ∫_0^∞ t^{s-1} e^{-a t} / (1 - z e^{-t}) dt (s > 0、a > 0、z が [1, ∞) の外の実数)"""
@@ -857,7 +857,7 @@ def _install_v2_fixes(I):
     from . import compat
     B = I.builtins
 
-    # gs (10-19 ビルド) が真値を返す関数は k64 も同じ修正を使う (2026-11-22 に gs と照合して確認。docs/21 の B185〜B196 の注記)。
+    # gs (10-19 ビルド) が真値を返す関数は k64 も同じ修正を使う (2026-11-22 に gs と照合して確認。docs/30 の B185〜B196 の注記)。
     # gs が誤る・NaN を返すもの (ArcCosh・ArcTanh・BesselY (x<0)・HermiteH (複素)・LegendreP[ν,m,x]・HarmonicNumber の小さい x・U の大きい z) は v2 だけ
     both = {'BesselJ', 'BesselI', 'BesselK', 'CoshIntegral', 'LogIntegral', 'ExpIntegralE', 'Hypergeometric2F1', 'Hypergeometric2F1Regularized',
             'ProductLog', 'GammaRegularized', 'GammaRegularizedQ', 'LerchPhi', 'HurwitzLerchPhi', 'Hypergeometric1F1', 'Hypergeometric1F1Regularized',
@@ -1060,7 +1060,7 @@ def _install_v2_fixes(I):
     v2('GammaRegularized', gamreg)
     v2('GammaRegularizedQ', gamreg)
 
-    # v2.4.0 E (docs/47): 複素の次数の PolyLog (実数の z も)・ExpIntegralE (z は実数・複素数)。従来は SADError・未評価
+    # v2.4.0 E (docs/28): 複素の次数の PolyLog (実数の z も)・ExpIntegralE (z は実数・複素数)。従来は SADError・未評価
     old_pl = B['PolyLog']
 
     def pl_w(a, old=old_pl):

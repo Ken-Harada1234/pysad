@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_NumericalFunctions (Abs Ceiling Floor Round Max Min MinMax Mod Sign FractionalPart ほか)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_NumericalFunctions.md</div>
+<h1 id="fn_numericalfunctions-abs-ceiling-floor-round-max-min-minmax-mod-sign-fractionalpart-ほか">fn_NumericalFunctions (Abs Ceiling Floor Round Max Min MinMax Mod Sign FractionalPart ほか)</h1>
+<p>種別: 関数 (SADHelp functions の Numerical-functions) / フォルダ: 10_math_data / ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>数値を整える・比べる関数の約束 (端数処理の向き、負数の <code>Mod</code>、<code>FractionalPart</code> の符号など) を、小さな入力で確かめる。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>Abs[-3.5] Abs[3+4I]   Ceiling[-2.3]   Floor[-2.3]   Round[2.5] Round[-2.6]   Max[{1,9},{3,4}]   MinMax[{3,-1,7,2}]
+Mod[-7,3]   Mod[7.5,2]   Sign[-2.]   FractionalPart[-3.75]   Positive[2] Negative[2] NonNegative[0]
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>各行が <code>名前={結果のリスト}</code>。真偽は 1 (True) と 0 (False)。</p>
+<table>
+<thead>
+<tr>
+<th>式</th>
+<th>結果 (gs・pysad とも同じ)</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Abs[-3.5]</code>, <code>Abs[2]</code>, <code>Abs[3+4I]</code></td>
+<td>3.5, 2, 5</td>
+<td>複素数は大きさ</td>
+</tr>
+<tr>
+<td><code>Ceiling[2.3]</code>, <code>Ceiling[-2.3]</code></td>
+<td>3, -2</td>
+<td>切り上げ</td>
+</tr>
+<tr>
+<td><code>Floor[2.7]</code>, <code>Floor[-2.3]</code></td>
+<td>2, -3</td>
+<td>切り捨て (負でも小さい側へ)</td>
+</tr>
+<tr>
+<td><code>Round[2.4]</code>, <code>Round[2.6]</code>, <code>Round[-2.6]</code>, <code>Round[2.5]</code>, <code>Round[3.5]</code></td>
+<td>2, 3, -3, 3, 4</td>
+<td>最近接。0.5 は絶対値が大きい側へ (Mathematica は偶数側へ丸めるので 2.5 は 2。違う)</td>
+</tr>
+<tr>
+<td><code>Max[1,5,3]</code>, <code>Max[{2,8,4}]</code>, <code>Max[{1,9},{3,4}]</code></td>
+<td>5, 8, 9</td>
+<td>リストを平らにして最大</td>
+</tr>
+<tr>
+<td><code>Min[1,5,3]</code>, <code>Min[{2,8,4}]</code></td>
+<td>1, 2</td>
+<td></td>
+</tr>
+<tr>
+<td><code>MinMax[{3,-1,7,2}]</code></td>
+<td>{-1, 7}</td>
+<td>最小と最大 (SADHelp の <code>*</code> つき、SAD 独自)</td>
+</tr>
+<tr>
+<td><code>Mod[7,3]</code>, <code>Mod[-7,3]</code>, <code>Mod[7.5,2]</code></td>
+<td>1, 2, 1.5</td>
+<td>結果は除数と同じ符号 (<code>Mod[-7,3]</code>=2)</td>
+</tr>
+<tr>
+<td><code>Sign[-2.]</code>, <code>Sign[0]</code>, <code>Sign[5]</code></td>
+<td>-1, 0, 1</td>
+<td></td>
+</tr>
+<tr>
+<td><code>FractionalPart[3.75]</code>, <code>FractionalPart[-3.75]</code></td>
+<td>.75, .25</td>
+<td>$x-\lfloor x\rfloor$ (Mathematica の -.75 とは違い、常に 0 以上)</td>
+</tr>
+<tr>
+<td><code>Positive[2]</code>, <code>Negative[2]</code>, <code>NonNegative[0]</code></td>
+<td>1, 0, 1</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>式で値が決まる性質: $\mathrm{Mod}(a,b)=a-b\lfloor a/b\rfloor$、$\mathrm{FractionalPart}(x)=x-\lfloor x\rfloor$、$|3+4i|=5$。表の結果はこれで確かめられる ($-7-3\lfloor-7/3\rfloor=-7+9=2$、$-3.75-(-4)=0.25$)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>全ての行が一致 (○)。出力は全く同じ文字列。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<p><code>Round</code> の「0.5 は絶対値が大きい側」は 2.5→3、3.5→4、-2.5 は未確認 (-2.6 だけ試した)。<code>Mod</code> の負の除数、<code>Max</code>・<code>Min</code> の引数なし、複素数の <code>Round</code> は試していない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

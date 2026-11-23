@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>04. FFS の小さなコマンドと DELCOR</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-小さなコマンドの表">1. 小さなコマンドの表</a><ul>
+<li><a href="#11-動作の補足">1.1 動作の補足</a></li>
+</ul>
+</li>
+<li><a href="#2-delcor-相関のあるずれ">2. DELCOR (相関のあるずれ)</a><ul>
+<li><a href="#21-k64-モードと-v2-モードの違い">2.1 k64 モードと v2 モードの違い</a></li>
+<li><a href="#22-作り方">2.2 作り方</a></li>
+<li><a href="#23-v2-モードの根拠と使える範囲-統計解析式test_v2_c_delcorpytest_v2_c2_delcorpy">2.3 v2 モードの根拠と使える範囲 (統計・解析式。test_v2_C_delcor.py、test_v2_C2_delcor.py)</a></li>
+<li><a href="#24-k64-モードの動作と限界">2.4 k64 モードの動作と限界</a></li>
+</ul>
+</li>
+<li><a href="#3-限界k64-との差">3. 限界・K64 との差</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 04_ffs_small_commands.md</div>
+<h1 id="04-ffs-の小さなコマンドと-delcor">04. FFS の小さなコマンドと DELCOR</h1>
+<p><strong>この文書で分かること</strong>: FFS の小さなコマンド (VARIABLES・MATRIX・SHOW・PRINT・OUTPUT など、1 行で使えるもの) の働きと pysad での扱い (§1)、リングに沿った相関のあるずれを入れる DELCOR の使い方・作り方・使える範囲 (§2)、限界 (§3)。
+<strong>前提</strong>: <a href="03_ffs_commands.html">03_ffs_commands.md</a> の FFS の基本 (USE・CALC・FIT・FREE) を読んでいること。
+<strong>読む順</strong>: §1 の表で目的のコマンドを探す。誤差入りのリングを作りたい人は §2。</p>
+<p>用語: <strong>FFS</strong> = SAD の対話コマンド層。<strong>K64</strong> = 翻訳の元にした SAD (Fortran)、<strong>gs</strong> = その実行ファイル。<strong>k64 モード</strong> = <code>PYSAD_COMPAT=k64</code> で K64 と同じ動作、<strong>v2 モード</strong> = pysad の既定 (K64 の誤りを直した動作)。</p>
+<p>小さなコマンドは K64 の tfvars.f・tfattr.f・tfmat.f・tshow.f・tffsa.f の直訳で、実装は <code>pysad/ffsextra.py</code>。表の書式は autofg (<code>'12.9'</code> など) まで gs の出力と同じ (<code>tests/test_ffsextra.py</code>)。</p>
+<h2 id="1-小さなコマンドの表">1. 小さなコマンドの表</h2>
+<p>下の表は、FFS の小さなコマンドと、その入力・出力を一覧にしたもの。</p>
+<table>
+<thead>
+<tr>
+<th>コマンド</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>VARIABLES</code> (<code>VARS</code>、<code>VAR</code>)</td>
+<td>FREE した変数の表 (Now、Previous、Saved、Minimum、Maximum、結合先、係数)。<code>FFS["VAR"]</code> は同じ値のリスト</td>
+</tr>
+<tr>
+<td><code>ATTRIBUTE</code> (<code>ATTR</code>)</td>
+<td>要素の既定キーの値と限界値</td>
+</tr>
+<tr>
+<td><code>MATRIX [SYMPLECTIC\|PHYSICAL] [from to]</code></td>
+<td>転送行列 (CALC4D は 4×5、CALC6D は 6×6)</td>
+</tr>
+<tr>
+<td><code>SHOW</code></td>
+<td>現在のマッチング条件 (<code>FFS["SHOW"]</code> はリスト)</td>
+</tr>
+<tr>
+<td><code>VARY keyword pattern</code></td>
+<td>要素の既定キーを変える</td>
+</tr>
+<tr>
+<td><code>RECOVER</code></td>
+<td>FREE した要素の値を、直前の GO の前の値と交換</td>
+</tr>
+<tr>
+<td><code>REVERSE</code></td>
+<td>入口の AX AY EPX EPY R2 R3 DPX DPY の符号を反転</td>
+</tr>
+<tr>
+<td><code>PRINT expr</code>、<code>EXECUTE "文字列"</code></td>
+<td>式の値を <code>Out[n]:= 値</code> で出す、文字列を FFS コマンドとして実行</td>
+</tr>
+<tr>
+<td><code>OUTPUT(OUT) file</code> / <code>APPEND(APP) file</code> / <code>CLOSE OUTPUT</code></td>
+<td>出力 (FFS の表示と <code>Print</code>) をファイルへ切り替え・追記・戻す。ファイル名は引用符つき、またはファイル番号</td>
+</tr>
+<tr>
+<td><code>INPUT(IN) file</code> / <code>READ file</code></td>
+<td>ファイルの文を続けて実行 (末尾で元の入力に戻る)</td>
+</tr>
+<tr>
+<td><code>STATUS</code> (<code>STAT</code>)</td>
+<td>フラグ・特別変数の一覧 (twbuf と同じ 8 桁の桁揃え)。CTIME・DT は実行時間なので gs と一致しない</td>
+</tr>
+<tr>
+<td><code>CLOSE</code>・<code>TERMINATE</code>・<code>SUSPEND</code>・<code>RESUME</code></td>
+<td>入力側は何もしない (入力はファイルを丸ごと実行するため)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="11-動作の補足">1.1 動作の補足</h3>
+<ul>
+<li><code>MATRIX</code> の名前だけの引数 (例 <code>MATRIX 要素名</code>) は <code>NAME.1</code> として扱い、ラティスに無い名前は読み飛ばす (to=<code>$$$</code>)。</li>
+<li><code>DUMP pat</code>: 語の変数は <code>character*20</code> で、パターンは 20 文字で切れる。合う要素がなければ全要素。DK・DDK 列は Fortran の <code>1p g12.5</code> (0 は <code>0.0000</code>、小さい値は <code>4.22829E-04</code>) で、<code>ffscmd._gwd</code> が同じ書式にする。DDK 列は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ (QUAD にはない)。</li>
+<li>FIT のフラグ UNIPOL・RELW: UNIPOL は変数の符号を変えず (tffsmatch.f:669)、RELW は重みを相対にする。pysad は <code>ffscmd.matcher_</code> で match6 のフラグとつなぐ。</li>
+<li><code>DISP</code> のモード R・O・P・GA・Z・A・B (BEAM、EMIT 後)・D・G・OG と REFERENCE・DREFERENCE (見出しの文字の置換は tfdisp.f の trefheader/tdrefheader のとおり)、<code>REFERENCE</code> コマンド、<code>Twiss["R…"/"D…"/"RALL"/"DALL"]</code> を実装 (詳細は <a href="03_ffs_commands.html">03_ffs_commands.md</a> §5・§8)。</li>
+<li><code>RENUMBER comp</code> と <code>LINE["MULT"]</code> (tfinimult の直訳。同名 1 台だけは 0)、<code>USE [NO]EXPAND</code>・<code>CALC|GO [NO]EXPAND</code> を実装 (<a href="03_ffs_commands.html">03_ffs_commands.md</a>)。<code>NOKEEPEXP</code> (tffsa.f の <code>calexp = .not. tfvcomp()</code>) と RENUMBER の INDEX 属性 (2 以上なら同名の要素の番号をその値から振る。<code>LINE["INDEX",…]</code> も読める) を実装 (両モード)。<code>tfvcomp</code> は、既定でないキーの成分の変数 (成分ごとの FREE) があれば真 (<a href="03_ffs_commands.html">03_ffs_commands.md</a> §3.3)。</li>
+<li><code>QF.3 K1 0.9;</code> のように <code>名前.番号</code> で始まる文は、K64 では式として評価されて何も設定しない。pysad も何も設定しない (<code>Out[n]:=</code> 行は再現しない)。</li>
+<li>K64 の tffsa.f に無いコマンド (MON・MCOD・TCOD): FFS では式として評価されて何も起きない。v2 モードは「K64 に無いコマンド」と警告して文全体を読み飛ばす (機能は実装しない)。</li>
+<li>フラグの効果: GAUSS は MAIN の TRACK・MEASURE の初期分布、CTIME は CPU 時間の表示、CONV は収束の判定・表示、EMIOUT は EMIT 報告の追加行 (pysad は spin の行だけ対応)、BIPOL は tffsmatch.f だけ。</li>
+</ul>
+<h2 id="2-delcor-相関のあるずれ">2. DELCOR (相関のあるずれ)</h2>
+<p>K64 の <code>tcorr.f</code> と <code>tvcorr.f</code> (FFT は <code>tcftr.f</code>)。実装は <code>ffscmd._delcor</code>、<code>_tvcorr</code>。</p>
+<pre><code>DELCOR [ADD] corlength delx dely element [element1 ...];
+</code></pre>
+<p>リングに沿った相関のあるランダムなずれを、指定した要素の DX・DY に入れる。<code>corlength</code> は相関長 [m]、<code>delx</code> <code>dely</code> は大きさ。ADD が付けば足し、なければ置き換える。</p>
+<h3 id="21-k64-モードと-v2-モードの違い">2.1 k64 モードと v2 モードの違い</h3>
+<p>以下の 3 点が違う (それ以外は両モードで同じ)。k64 モードは K64 (gs) と同じ動作、v2 モード (既定) は修正した動作。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>k64 モード</th>
+<th>v2 モード</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MARK・CAVI の書き込み先 (B40)</td>
+<td>MARK は DETR・DPX、CAVI は HARM・PHI (符号も逆)</td>
+<td>MARK・CAVI も DX・DY に、ほかの磁石と同じ符号 (+delx) で入れる</td>
+</tr>
+<tr>
+<td>corlength≠0 の波数 −1 の成分 (B62)</td>
+<td><code>cv(n)</code> が未設定 (2 回目以降は古い記憶域の値)。負の波数の重みが 1 つずれる</td>
+<td>正負の波数で対称に置く (乱数を引く順は同じ)</td>
+</tr>
+<tr>
+<td>corlength≠0 の規格化 (B99)</td>
+<td><code>s = 1/sqrt(4Σw²+2)</code>。複素数 c の絶対値の 2 乗平均が 1 なので、DX の rms は delx/√2</td>
+<td><code>s = 1/sqrt(2Σw²+1)</code>。実部・虚部それぞれの分散が 1。DX の rms = delx、DY の rms = dely</td>
+</tr>
+</tbody>
+</table>
+<p>corlength = 0 の枝 (ランダムウォーク、1 m あたり分散 1) は両モードでビット単位で同じ。</p>
+<h3 id="22-作り方">2.2 作り方</h3>
+<ul>
+<li>周長 <code>al = pos(nlat)</code> (INS は 2 倍)。点数 <code>nc = 128</code> から <code>nc/2 &lt; al</code> になるまで 2 倍 (最大 65536)。</li>
+<li><code>tvcorr</code>: <code>corlength=0</code> は 2 つのガウス乱数を足していくランダムウォークで、両端が合うように直線を引く。≠0 は周波数空間に <code>exp(-(k·2π cl/(2 al))²/4)</code> の重みのガウス乱数 (実部・虚部) を置き、
+  <code>tcftr</code> (exp(+2πi jk/n) の和 = <code>n·ifft</code>) で戻して規格化の定数を掛ける (k64 は <code>1/sqrt(4Σw²+2)</code>、v2 は <code>1/sqrt(2Σw²+1)</code>)。乱数は <code>tgauss</code> と同じ列 (<code>SadRandom</code>、GCUT 適用)。呼び出しの最初に必要な分をまとめて引く。</li>
+<li>要素ごとに、中心位置 s の周期的な線形補間の値 (実部 × delx、虚部 × dely) を入れる。同じ要素の連なり (master) には同じ値、ワイルドカード以外は最初の 1 つだけ。最後に <code>tfadjst</code> (隙間なく並んだ磁石は先頭と同じずれ)。</li>
+<li>対象は BEND QUAD SEXT OCT (と MARK、CAVI)。DECA・DODECA・MULT・MONI・ドリフトは <code>Undefined element</code> 扱い (K64 の型の判定どおり)。</li>
+</ul>
+<h3 id="23-v2-モードの根拠と使える範囲-統計解析式test_v2_c_delcorpytest_v2_c2_delcorpy">2.3 v2 モードの根拠と使える範囲 (統計・解析式。<code>test_v2_C_delcor.py</code>、<code>test_v2_C2_delcor.py</code>)</h3>
+<ul>
+<li>規格化: 場の rms (500 m、512 点、400 標本) は x0 = 3、15、5000 m で実部・虚部とも 1 ± (2、4、8)% 以内 (k64 は 0.708、0.703)。DELCOR コマンド (12 セルのリング 62.4 m、四極 24 台、corlength 5 m、150 回) で rms(DX)/delx = 1.021、rms(DY)/dely = 1.043 (統計誤差 約 2.6%。k64 は 0.713、0.746)。</li>
+<li>相関関数 ⟨c(s) c*(s+Δ)⟩/⟨|c|²⟩ = exp(−Δ²/(2x0²)) が 5% 以内 (虚部 2%)。相関長 1000 km ではリング全体が同じ値 (差 &lt; 1e-9) で、rms 1.0 ± 5% のガウス分布。</li>
+<li>B40: 相関長 ≫ 周長なら全要素のずれが同じ値・同じ符号になる (QF・RFC・ST が 5% 以内。相関長 5 km では全桁同じ)。</li>
+<li>使える範囲: v2 モード、corlength &gt; 0。rms は多数回の平均としての値で、GCUT を掛ければその分小さい。相関長が格子間隔 (周長/nc、nc ≥ 128、INS は周長の 2 倍) より短いと線形補間で rms が下がる (間隔 = 相関長/4 で約 1%)。corlength = 0 の枝は別の量 (分散 = delx²·s(1−s/周長) [m]) で、delx の意味は「1 m あたりの rms」。</li>
+<li>未確認・判断: 規格化 (delx を DX の rms と読む) は作者の文書による裏づけが無い推定 (SADHelp に DELCOR の項は無い)。K64 の値が必要なら k64 モード、または delx に 1/√2 を掛ける。CAVI の符号 (+delx) は決定済みだが、K64 が SOL と同じ形の式 ((設計の DX) − delx) を写した意図があるなら逆。</li>
+<li>例: <a href="../example/02_optics_cod/flag_DELCOR_rms.sad"><code>example/02_optics_cod/flag_DELCOR_rms.sad</code></a>。</li>
+</ul>
+<h3 id="24-k64-モードの動作と限界">2.4 k64 モードの動作と限界</h3>
+<ul>
+<li><strong>MARK には DX・DY ではなく DETR と DPX が入る (k64 モード。v2 は DX・DY)。</strong> K64 は <code>latt(j)+15</code> と <code>+17</code> に書くが、値の添字では <code>ky_DETR_Mark=15</code>、<code>ky_DPX_Mark=17</code> (<code>ky_DX_Mark=16</code>、<code>ky_DY_Mark=18</code>)。
+  一つずれた書き方に見える (docs/30 B40)。gs と合わせるためそのまま写した。INS の始点 (MARK の DETR・DPX) が変わる。</li>
+<li>SOL は master が 0 なので K64 でも対象にならない (何も起きない)。<strong>CAVI</strong> は (k64 モードでは) K64 の添字のずれで DX・DY ではなく <strong>HARM と PHI</strong> に書く (tcorr.f の <code>le=latt+3</code>、<code>le1=le+1</code>)。add でなければ設計の DX・DY (<code>idvalc+13</code>, <code>+14</code>) から delx・dely を引いた値、add なら -delx・-dely を足す。gs で確かめた (<code>CAVI RFC=(VOLT=1.5e6 HARM=64 DX=1e-5 DY=2e-5)</code>、<code>DELCOR 3 1e-4 1e-4 RFC</code> で HARM=-.00015145432812411818、PHI=.00011480572629164664。pysad は同じ値)。HARM は実数のまま持つ。</li>
+<li>各要素の DX・DY の添字 (QUAD は 5、BEND は 9 など) は gs の結果で合うことを確認 (QUAD・SEXT・BEND)。OCT は対象に含めた DELCOR で、チューンと QF の DX が gs と 12 桁で一致した (2026-11-16 夜)。ただし OC 自体の DX は gs も pysad も 0 を返すので、OCT への効果そのものを見る強い比較ではない。</li>
+<li>'DELCOR' 以外の Rule 系の誤差コマンド (ERROR の DELX など) は従来どおり (docs/29)。</li>
+<li><strong>2 回目以降の <code>DELCOR</code> で corlength≠0 の場合、gs と値が一致しない (乱数の列は同じ)。k64 モードのこと。v2 は cv(n) を対称に置くので、この不一致は起きない (gs とは違う値になる)。</strong> K64 の <code>tvcorr</code> の corlength≠0 の枝は <code>cv(n)</code> (最後の要素) を設定しない
+  (<code>cv(2..n/2)</code> と <code>cv(n/2+1..n-1)</code> と <code>cv(1)</code> だけ) ので、<code>tcftr</code> は <code>ktaloc</code> で得た記憶の古い内容を読む。1 回目は 0 で pysad (0) と一致するが、2 回目以降は前の確保の中身が入って
+  数 % 違う (corlength=0 の枝と ADD の回は一致。確かめた 4 通りの組み合わせ: 0→3 と 3→2 と 3→3 は不一致、3→0 と 0→0 は一致)。再現できないので pysad は 0 のままにし、docs/30 に B62 として残した。</li>
+</ul>
+<p><strong>検証</strong>: CELL・INS のリングで、DELCOR のあとのチューンと閉軌道が gs と一致する (CAVI の書き込みも)。詳細は <a href="history/04_ffs_small_commands_validation.md">history/04_ffs_small_commands_validation.md</a>。</p>
+<h2 id="3-限界k64-との差">3. 限界・K64 との差</h2>
+<ul>
+<li><code>PRINT</code> の <code>Out[n]</code> は、USE が <code>Out[1]:= USE</code> を出したものとして 2 から数える (pysad は USE でこの行を出さない)。</li>
+<li><code>MATRIX</code> の 5 列目 (分散の項) は η(l2) − M·η(l1)。要素が 1e-16 程度の雑音を持つ箇所は gs が <code>-4.798E-16</code> などと出すのに対し、pysad は 0 を出す。</li>
+<li><code>MEASURE</code>・<code>TRCOD</code>・<code>LOGMEASURE</code>・<code>ORBITJITTER</code>・<code>PUTMEASURE</code>・<code>GETMEASURE</code>: <strong>v2 モードだけ</strong>実装した (<a href="../pysad/measure.py"><code>pysad/measure.py</code></a>。使い方は docs/03 の「v2 モードの MEASURE・TRCOD」)。k64 モードは未対応 (警告して無視)。<code>MEASURE</code> は gs が何も出力せず (B42、<code>TRCOD</code> は SIGSEGV)、<strong>gs との数値比較は無い</strong> (K64 のソースの読みと解析式・pysad の独立な経路で確かめた)。<code>SPLIT</code> は K64 でも obsolete。<code>SEED</code> も obsolete。</li>
+<li>v2 モードの台本の読み方 (MAIN の <code>OFF RFSW</code> が FFS に届く、<code>ORG</code> の負の値、MOMENTUM を設定しない計算の警告、<code>FFS;</code> の書き方、MAIN の代入 <code>NAME = 式;</code>) は docs/03 の同じ節に書いた。</li>
+<li>gs は <code>TERMINATE INPUT</code> の後で入力が尽きて止まるが、pysad は続ける。</li>
+</ul>
+<p><strong>検証</strong> (小さなコマンド): MATRIX・DUMP・DISP・REFERENCE・FIT の UNIPOL/RELW・RENUMBER・NOKEEPEXP は gs の出力と一致 (K64 に無いコマンドと MEASURE 系は除く)。詳細は <a href="history/04_ffs_small_commands_validation.md">history/04_ffs_small_commands_validation.md</a>。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

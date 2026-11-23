@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """6 極 (と 8 極) による共鳴駆動項 h_jklmp、振幅依存チューンシフト (ADTS)、クロマティシティの高次項 (v2.3.0 Q2、K64 にない機能)。
 
-解説と式は docs/49_resonance_terms_adts.md。ここは実装の要約。
+解説と式は docs/25_resonance_terms_adts.md。ここは実装の要約。
 
 ハミルトニアン (s 方向、パラキシャル): H = ½(px²+py²) + Σ_n (1/(n+1)!) Re[(K_n + i S_n)(x+iy)^(n+1)] (n=2 が 6 極、n=3 が 8 極。
 K_n は SAD の KnL (積分値) を長さで割った密度。SAD の符号の向きは pysad の追跡の kick で確認済み: Δpx = −(K2L/2)(x²−y²)、Δpy = +K2L·x·y)。
@@ -459,7 +459,7 @@ class RDTResult:
         return [(self.elem_names[i], self.elem_s[i], v[i]) for i in order]
 
 
-# 偏向磁石の 3 次の項を共鳴駆動項 h に入れるか (v2.3.0 R4)。検証 (docs/49 §9) の結果で既定を決めた
+# 偏向磁石の 3 次の項を共鳴駆動項 h に入れるか (v2.3.0 R4)。検証 (docs/25 §9) の結果で既定を決めた
 BEND_RDT_DEFAULT = True
 
 
@@ -739,12 +739,12 @@ def resonance_terms(lat, terms=DEFAULT_TERMS, method='analytic', nslice=8, delta
                     bend_cubic=None, bend_nslice=None, momentum_eV=3e9, order2=None, rdt4_options=None, coupled=None):
     """共鳴駆動項 h_jklmp。3 次 (j+k+l+m = 3) と δ の項 (p ≥ 1) は 6 極の 1 次 (+ 偏向磁石の 3 次の項、R4)。
     **v2.3.0 R5: j+k+l+m = 4 (p=0) の名前 ('h22000'、'h31000'…) は 4 次の項 (写像の 4 次の生成関数の係数: 8 極 1 次 + 運動学 + 端のフリンジ + 偏向磁石の 4 次の項 + 3 次 (6 極・偏向磁石) の 2 次、
-    `rdt2nd.rdt4`、docs/49 §10)**。order2=True (既定) で 3 次の 2 次 (Magnus の第 2 項) を入れる、False で 4 次のハミルトニアンの 1 次だけ。
+    `rdt2nd.rdt4`、docs/25 §10)**。order2=True (既定) で 3 次の 2 次 (Magnus の第 2 項) を入れる、False で 4 次のハミルトニアンの 1 次だけ。
     4 次の項は ref=None・δ=0 のリング先頭が位相の基準。rdt4_options: rdt4 への追加のオプション (dict)。戻り: RDTResult
     (4 次の項は .total に入る。.per_element は 3 次・δ の項だけ。.rdt4 に RDT4Result (内訳 .parts))
     **v2.4.0 F1: ロールした (ROTATE・ROTATION≠0) BEND・QUAD がある lat は、coupled=None (既定) で結合した光学 (4×4 の固有モード) の模型の写像から求める
     (`_resonance_terms_coupled`。全次数の θ)。coupled=False で従来 (その素子を飛ばす)。
-    **v2.4.0 H1 (`ampnf_coupled.py`、docs/49 §14.5): ロール・DX・DY・DZ・DROTATE のある lat で、4 次の名前 (h4 = 写像 e^{−:h3 + h4:} の h4)・delta≠0 (そのエネルギーの閉軌道のまわり)・ref≠None (位相の基準。
+    **v2.4.0 H1 (`ampnf_coupled.py`、docs/25 §14.5): ロール・DX・DY・DZ・DROTATE のある lat で、4 次の名前 (h4 = 写像 e^{−:h3 + h4:} の h4)・delta≠0 (そのエネルギーの閉軌道のまわり)・ref≠None (位相の基準。
     resdrive の ref と同じ定義) も結合した経路で出る (3 次・4 次の p=0 の項)。δ の項 (p ≥ 1) は δ=0・ref=None・ずれなしだけ。rdt4_options={'D': n} は結合した経路の TPSA の次数 (既定 4、δ≠0 は 6)。**"""
     coupled_explicit = coupled is not None
     if coupled is None:
@@ -904,7 +904,7 @@ def _second_order(byk, a_all, igt, Ne, qx, qy, warnings):
     return Kc, per_e3, harm
 
 
-# 偏向磁石の 3 次の項 (曲率・硬い端・複合機能の本体・E1/E2≠0 の端) を入れるか。検証 (docs/49 §8) の結果で既定を決めた
+# 偏向磁石の 3 次の項 (曲率・硬い端・複合機能の本体・E1/E2≠0 の端) を入れるか。検証 (docs/25 §8) の結果で既定を決めた
 BEND_CUBIC_DEFAULT = True
 BEND_NSLICE_DEFAULT = 16
 # 4 次の項 (運動学・フリンジ・偏向磁石の 4 次) の既定は 'r3' (物理的な項だけ: 四極は厳密な積分、偏向磁石は運動学的な項だけ)。'r6' = 精密版のオプション (四極の K64 積分器の台形則 + 偏向磁石の 4 次の項。0.1〜0.3% の端数を含む)
@@ -1135,7 +1135,7 @@ def adts(lat, method='analytic', nslice=8, delta=0.0, include_octupole=True, row
     res.fourth = None
     if include_kinematic and fourth == 'r6':
         # 精密版のオプション (fourth='r6'): 四極は K64 の積分器の台形則 (kinematic_h4(quad_rule='k64'))、偏向磁石 (K0≠0 を含む) は要素の追跡の写像から取り出した 4 次の項の全部
-        # (運動学・端・K1 の端のフリンジ・積分器の誤差。数値積分器の 0.1〜0.3% の端数を含む)。既定は物理的な項だけの 'r3' (docs/49 §8.1、§11)
+        # (運動学・端・K1 の端のフリンジ・積分器の誤差。数値積分器の 0.1〜0.3% の端数を含む)。既定は物理的な項だけの 'r3' (docs/25 §8.1、§11)
         from . import rdt2nd
         bu = rdt2nd.bend_units(elements, rows, bend_nslice or BEND_NSLICE_DEFAULT, momentum_eV, res.warnings, delta=delta)
         f4 = rdt2nd.fourth_order_adts(elements, rows, bu, momentum_eV, delta=delta, warnings=res.warnings)

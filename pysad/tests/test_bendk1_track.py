@@ -1,4 +1,4 @@
-"""ANGLE=0 で K1≠0 の BEND の追跡 (tbend.f:566-590 → tquad。SAD K64 の癖: K1 の符号を失う、11_sad_quirks A38) と
+"""ANGLE=0 で K1≠0 の BEND の追跡 (tbend.f:566-590 → tquad。SAD K64 の癖: K1 の符号を失う、29_sad_quirks A38) と
 TrackParticles の粒子損失 (tapert: LOSSAMPL/LOSSDZ、落ちた粒子は alive=0 で座標は limittrack で抑えた値)。
 参照値は SAD K64 (<work-perf>/bendk1_{plain,dxy,drot,quad}.sad.out)。"""
 import io

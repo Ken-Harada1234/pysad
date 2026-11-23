@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2.4.1: 四極の本体の積分器 (K64 の tsolqu・tsolque の bz=0 の枝、docs/21 B226) の共通化と、v2 の 4 次の合成。
+"""v2.4.1: 四極の本体の積分器 (K64 の tsolqu・tsolque の bz=0 の枝、docs/30 B226) の共通化と、v2 の 4 次の合成。
 
 K64 の四極の本体は、運動学的な非線形ドリフト D (運動量は変えない) と厳密な線形の本体 B を D(h/2) B(h) D(h/2) の Strang 分割 (2 次) で積分する。
 刻みの数 1 + int(L·|K1|L/ε) は軌道のずれの大きさに依らないので、軌道が 3 mm・2 mrad ずれた四極 (L = 0.3 m、K1L = −0.6) のヤコビアンが厳密な写像と
@@ -242,7 +242,7 @@ def test_calc_jacobian_is_symplectic_v2():
 
 def test_k64_calc_and_tracking_jacobians_keep_k64_error():
     """k64: 軌道が 3 mm・2 mrad ずれた四極 (L = 0.3、K1L = −0.6) の追跡と CALC のヤコビアンの厳密な写像との差は、K64 のまま
-    (追跡 7.1e-7、CALC 1.8e-7)。v2 は CALC が 5e-10、追跡が 1/50 以下 (8e-9) (docs/21 B226)"""
+    (追跡 7.1e-7、CALC 1.8e-7)。v2 は CALC が 5e-10、追跡が 1/50 以下 (8e-9) (docs/30 B226)"""
     L, KL = 0.3, -0.6
     eld, el = _quad_el(L, KL)
     c0 = np.array([0.003, 0.002, 0, 0, 0, 0.0])

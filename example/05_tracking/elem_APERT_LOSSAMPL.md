@@ -31,11 +31,11 @@ USE RING; LOSSAMPL = 0.005; ...                      ! (B)
 (B) の LOSSAMPL は、判定点 (15 要素ごと) での位置で決まるので、解析式では示さない。
 
 ## gs と pysad の比較
-(A)(B)(C) とも gs と一致 (○)。pysad の追跡 (numba 版 `track6n.py` の `k_apert_el`、Python 版 `track6.py` の `_apert_pass`) は、APERT 要素について `tapert.f` / `tapert1` の判定をそのまま行う。LOSSAMPL ((B)、(C)) は従来から一致している。
+(A)(B)(C) とも gs と一致 (○)。pysad の追跡 (numba 版 `track6n.py` の `k_apert_el`、Python 版 `track6.py` の `_apert_pass`) は、APERT 要素について `tapert.f` / `tapert1` の判定をそのまま行う。LOSSAMPL ((B)、(C)) は一致している。
 別に 16 粒子で、楕円・矩形・楕円+矩形・中心のずれ DX DY・ROTATE・全キーワード既定 0 (全粒子が落ちる)・APERT 2 個・3 周・JDPX/JDPY/DP の場合を gs と比べ、flag と落ちた時点の座標が一致した (`pysad/tests/test_apert.py`)。
 
 ## 未確認・限界
 - ここでの比較は 3 GeV の FODO リング (RFSW/RAD なし、TrackParticles、1 周と 3 周) だけ。RAD・FLUC ありの追跡での落ち方、MAIN の TRACK の損失の報告 (`P. n lost in ... at l(APERT名)`)、TRPT は gs と比べていない。
-- ソレノイド領域 (SOL BOUND≠0 の間) の中にある APERT: この例の最初の版では pysad が拒否していた (gs の tsol は tapert1 を呼ぶ)。v2 で追跡に対応した (`docs/47_v2_changes.md` の B69・B80。k64 モードは NotImplementedError)。この例のリング (SOL なし) では使っておらず、gs との比較はしていない。領域内の APERT のスピン追跡は未対応。
+- ソレノイド領域 (SOL BOUND≠0 の間) の中にある APERT (gs の tsol は tapert1 を呼ぶ): v2 は追跡に対応している (B69・B80。k64 モードは NotImplementedError)。この例のリング (SOL なし) では使っておらず、gs との比較はしていない。領域内の APERT のスピン追跡は未対応。
 - JDPX/JDPY の再入射 (落とさず境界へ乱数で入れ直す) は、粒子が 11 個以下なら gs と同じ乱数列で一致するが、12 個以上では gs の値が一致しない (gs が別の乱数列を使うように見える。原因は未調査)。
 - DP は JDPX/JDPY のどちらかが 0 でないときだけ効く (tapert.f のまま)。COUPLE は tapert が使わない。

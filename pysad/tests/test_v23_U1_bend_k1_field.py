@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2.3.0 U1: K1≠0 の BEND (複合機能) の K1 の定義 (B160 の切り分け)。
 
-独立な数値積分 (_u1_indep.py: 実験室系のローレンツ力、Bρ0 = 1) と、gs の保存値 (example/v2_3/T1_gs_bend_k1.out.txt の 5 つの δ のチューンの端数) の比較。
+独立な数値積分 (_u1_indep.py: 実験室系のローレンツ力、Bρ0 = 1) と、gs の保存値 (example/15_lma_touschek/touschek_elegant/gs_bend_k1.out.txt の 5 つの δ のチューンの端数) の比較。
 磁場の模型は K1 = g'(ρ0)/Bρ0 が共通で、g''(ρ0) だけが違う: 'lin' (B の勾配が x に一様、elegant K2 = 0)、'log' (r ∂B/∂r が一様)、'pow' (磁場指数が一様)。
 結論: K64 の BEND の K1 の本体 (硬い端・フリンジなし) は 'log' の磁場の厳密な運動と 1e-10 で一致する。'lin' とは一致しない (1e-5〜1e-4 違う)。
 pysad の挙動は変えない (試験は元の挙動の確認だけ)。
@@ -25,7 +25,7 @@ RHO = LB / ANG
 K1 = -NIDX / RHO**2          # per length [1/m^2]
 H = 1.0 / RHO
 
-# gs (K64) の追跡のチューンの端数 |f| (x, y)。example/v2_3/T1_gs_bend_k1.out.txt (400 周、1e-6 m の振動の NAFF)。ν = 1 − |f|
+# gs (K64) の追跡のチューンの端数 |f| (x, y)。example/15_lma_touschek/touschek_elegant/gs_bend_k1.out.txt (400 周、1e-6 m の振動の NAFF)。ν = 1 − |f|
 GS_DELTAS = [-0.004, -0.002, 0.0, 0.002, 0.004]
 GS_FX = [0.2247161719, 0.2250594092, 0.2254033310, 0.2257479407, 0.2260932435]
 GS_FY = [0.3683869964, 0.3679659188, 0.3675444692, 0.3671226428, 0.3667004387]

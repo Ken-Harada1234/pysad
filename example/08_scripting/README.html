@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>08_scripting 一覧</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="08_scripting-一覧">08_scripting 一覧</h1>
+<p>SADScript の関数・文法・クラス化・乱数の例。ラティスは使わない (<code>syntax_Semicolon_Toplevel</code> だけ <code>FODO_ring</code> を使う)。比較は、gs と pysad が同じスクリプトで出す画面表示 (<code>Print</code> など) どうしで行う。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>説明</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>fn_Apply_Thread</td>
+<td>fn_Apply_Thread (Apply, @@, Thread)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Cases_DeleteCases_Position</td>
+<td>fn_Cases_DeleteCases_Position (Cases, DeleteCases, Position)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Class</td>
+<td>fn_Class (Class[], メンバー・メソッド・継承・コンストラクタ)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Do</td>
+<td>fn_Do (Do, Break, Continue, Catch, Throw)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_FixedPoint</td>
+<td>fn_FixedPoint (FixedPoint, FixedPointList, Nest, NestList)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_For</td>
+<td>fn_For (For、本体を実行しない gs の癖)</td>
+<td>△ (v2 は K64 のバグ B71 に合わせないので gs と違う。k64 モードは一致)</td>
+</tr>
+<tr>
+<td>fn_Function_Options_Return</td>
+<td>fn_Function_Options_Return (オプション・既定値・Return・再帰)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Function_Pattern</td>
+<td>fn_Function_Pattern (defining-functions, pattern)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Get_Needs_BeginPackage</td>
+<td>fn_Get_Needs_BeginPackage (Get, BeginPackage, Begin, End, EndPackage, 文脈)</td>
+<td>△ (<code>Names["Stat</code>*"]` だけ違う。k64 モードは一致)</td>
+</tr>
+<tr>
+<td>fn_If</td>
+<td>fn_If (If, 論理演算, FORTRAN 風 IF-ELSEIF-ELSE-ENDIF)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_List_functions</td>
+<td>fn_List_functions (Take, Drop, Join, Flatten, Sort, ...)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Map_MapThread</td>
+<td>fn_Map_MapThread (Map, /@, MapAll, MapThread)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Module_Block_With</td>
+<td>fn_Module_Block_With (局所変数のスコープ)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_ParabolaRandom_ListRandom</td>
+<td>fn_ParabolaRandom_ListRandom (ParabolaRandom, ListRandom, SeedRandom[plugin])</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Random_GaussRandom_SeedRandom</td>
+<td>fn_Random_GaussRandom_SeedRandom (Random, GaussRandom, SeedRandom)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Scan_ScanThread</td>
+<td>fn_Scan_ScanThread (Scan, ScanThread)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_String_functions</td>
+<td>fn_String_functions (character-string の項)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Switch</td>
+<td>fn_Switch (Switch)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_SwitchCases</td>
+<td>fn_SwitchCases (SwitchCases, SelectCases)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Table</td>
+<td>fn_Table (Table, Sum, Product)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Which</td>
+<td>fn_Which (Which)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_While</td>
+<td>fn_While (While, Break, Continue)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Brackets</td>
+<td>syntax_Brackets (() [] {} [[ ]])</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Comments</td>
+<td>syntax_Comments (! と (* *))</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Iterator</td>
+<td>syntax_Iterator (反復子 {n} {i,n} {i,a,b,step})</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Operators</td>
+<td>syntax_Operators (= := == === など)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Rules</td>
+<td>syntax_Rules (/. -&gt; :&gt; //. Replace)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Semicolon_Compound</td>
+<td>syntax_Semicolon_Compound (括弧・関数の中の ;)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>syntax_Semicolon_Toplevel</td>
+<td>syntax_Semicolon_Toplevel (最上位の ;)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>var_Null_Out</td>
+<td>var_Null_Out (Null, Out[n], %, <code>$Line</code>)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>FFS_VISIT_BYE</td>
+<td>FFS_VISIT_BYE (VISIT で FitFunction・FitValue・ElementValues・OpticsProlog・OpticsEpilog を退避し、BYE で戻す。USE は 5 つとも消す)</td>
+<td>○ (k64 モード。v2 は gs と全行一致)</td>
+</tr>
+<tr>
+<td>syntax_context</td>
+<td>syntax_context (<code>$Context</code>・<code>$ContextPath</code> への代入、WithContext、入れ子の文脈 <code>A`B`</code>)</td>
+<td>○ (k64 モード。文脈の記号は <code>`</code> が <code>$ContextPath</code> に無いと <code>`A`</code> と表示する)</td>
+</tr>
+<tr>
+<td>syntax_package_context</td>
+<td>syntax_package_context (BeginPackage・Begin の文脈。パッケージのファイルを書き出して Get で読む。パッケージの名前は <code>Stat`名</code> になり、大域の同名の変数と衝突しない)</td>
+<td>gs の出力なし (v2 の機能。<code>.gs.txt</code> は無い)</td>
+</tr>
+<tr>
+<td>syntax_symbol_message</td>
+<td>syntax_symbol_message (<code>Symbol["x"]</code> は x の値 (未定義なら記号)、<code>Message[f::tag, 値…]</code> は本文の <code>`n`</code> を値に置き換えて出す)</td>
+<td>○ (gs と全行一致)</td>
+</tr>
+</tbody>
+</table>
+<p>○一致 / △差あり (原因は各 .md) / ×gs 失敗 / ×pysad 未対応。</p>
+<p>次の項目は<code>Module</code> の字句スコープ、<code>Return</code> の範囲、<code>Switch</code>/<code>Which</code> の一致なし、<code>{1,2}=={1,3}</code>・<code>Thread</code>、<code>Out[n]</code>・<code>%</code>、<code>StringMatchQ</code>・8 進エスケープ、<code>Random[n,m]</code>・<code>SeedRandom</code> は gs と一致する (2026-11-17 確認)。残る差は <code>For</code> (gs は本体を実行しない K64 の癖。pysad v2 は定義どおり実行、docs/30 B71。k64 モードは gs と同じ) と <code>BeginPackage</code>/<code>Begin</code> の <code>Names["Stat</code>*"]<code>(v2 は文脈の記号の一覧、gs は</code>{"Stat<code>"}</code>)。文脈そのものは v2 が対応していて gs と一致する (2026-11-17 確認)。乱数の列は一致した。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

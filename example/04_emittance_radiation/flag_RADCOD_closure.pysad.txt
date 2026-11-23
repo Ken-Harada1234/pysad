@@ -1,0 +1,7 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.506166 $$$       f BX    #######  #   6.426926 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #    .919277 $$$       f BY    #######  #   1.919589 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+no taper: closed orbit x, px at exit =  -7.88678E-5,  -4.94760E-5; one-turn change (x px y py z dp) = { 1.217692E-9, 2.74147E-10,
+  -6.5453E-20, 3.45283E-20, -3.44686E-9, 1.672658E-9}
+RADTAPER: one-turn change (x px y py z dp) = { 6.04261E-10, 2.13005E-10, 4.23386E-24, -6.4110E-24, -1.10323E-9, 8.40332E-10}

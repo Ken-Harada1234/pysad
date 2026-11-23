@@ -3,7 +3,7 @@
 
 (1) k64 モード: gs (K64 の 10-19 ビルド) と全桁一致 (gs の表示 10 桁)。条件: 3 GeV、周長 45.6 m の 12 セル FODO (QF D2 B D2 QD D1)。
     ステアリング (L=0.2 m、K0 = ±8e-4 を交互に、F1・FRINGE=−2..3・FB1・FB2・AE1・AE2 の組み合わせ) と、
-    QF・QD を MULT (K1 = 0.7・−0.6、F1 などを付ける) に替えたリング。台本は example/v2_next/E_steer_f1.sad・E_mult_f1.sad。
+    QF・QD を MULT (K1 = 0.7・−0.6、F1 などを付ける) に替えたリング。台本は example/01_lattice_elements/elem_BEND_steer_F1.sad・elem_MULT_F1.sad。
 (2) B108 (ANGLE=0 の BEND の端の角 AE1・AE2): K64 は端の蹴りを偏向角に入れるが場の中の行路を変えないので、端の項が 2 倍になる
     (ANGLE≠0 の BEND の B75 と同じ構造)。v2 は行路を x·tan(e) だけ短くする。独立な値 = 硬い端の一様磁場の極 (円弧と直線の厳密な幾何) の
     ロビンソンの定理 Je = 2 + dln(∮B² dl)/dδ。極 3 個の組 (K0・−2K0・K0。軌道が極の外で 0 に戻る) を 24 セルの FODO に入れる。

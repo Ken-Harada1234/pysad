@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>tools: md を図入りの HTML にする</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#使い方">使い方</a></li>
+<li><a href="#変換の内容">変換の内容</a></li>
+<li><a href="#折りたたみ">折りたたみ</a></li>
+<li><a href="#限界">限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="tools-md-を図入りの-html-にする">tools: md を図入りの HTML にする</h1>
+<p>リポジトリ内の md を、目次つき・図入りの 1 枚の HTML にする。使うのは <code>markdown</code> パッケージだけで、外部通信・外部ライブラリの読み込みはない。HTML は md から作る生成物なので、md を直したら作り直す。</p>
+<h2 id="使い方">使い方</h2>
+<pre><code>py -3.12 tools/build_html.py                  # 追跡対象の md をすべて変換
+py -3.12 tools/build_html.py docs README.md   # 指定したファイル・フォルダの分だけ
+py -3.12 tools/build_html.py --changed        # 変更された md だけ
+py -3.12 tools/build_html.py --check          # 壊れたリンクの検査だけ (HTML は書かない)
+py -3.12 tools/md_to_html.py README.md        # 1 ファイルだけ (-o 出力先、--fold-regex、--fold-level)
+</code></pre>
+<ul>
+<li>出力は、md と同じ名前の <code>.html</code> を同じフォルダに置く (名前に版・日付は付けない)。同名の <code>.html</code> が本ツールの生成物なら上書きする。そうでない既存の <code>.html</code> は、何もせず警告する。</li>
+<li>引数なしの対象は <code>git ls-files '*.md'</code> のうち、作業ツリーに存在するもの。ただし <code>docs/history/</code> の下、<code>CHANGELOG.md</code>、<code>LICENSE</code> 類、<code>example/tools/kek_ls_src/</code> (生成用の断片) は除く。<code>--include-untracked</code> で、追跡されていない md も対象にする (コミット前の検査は <code>--check --include-untracked</code>)。</li>
+<li><code>--changed</code> は、<code>git status</code> に出ている md と、HTML がない・HTML より新しい md を対象にする。ほかの引数と併用すると、その範囲の中で絞る。</li>
+<li>終わりに、変換した件数・埋め込んだ図の枚数・警告・壊れたリンクの一覧を表示する。<code>--check</code> は壊れたリンク (md への相対リンク、画像、<code>#</code> のアンカー) があると終了コード 1。</li>
+</ul>
+<h2 id="変換の内容">変換の内容</h2>
+<ul>
+<li>左に固定の目次 (見出し 2〜3 階層)。表は見出し行を固定し、見出しのクリックで並べ替える。明暗の配色は OS の設定に従う。</li>
+<li>ページのタイトルは最初の h1。先頭に、元の md のファイル名だけの注記を付ける。</li>
+<li>図: (a) <code>![説明](相対パス)</code> の画像 (png・jpg・gif・svg・webp) は base64 で埋め込む。1 枚が 3 MB を超えるときは埋め込まず相対リンクのままにして警告する。(b) 本文中にバッククォートで書かれた図のファイル名 (<code>fig_xxx.png</code> など) が、md と同じフォルダまたは <code>results/</code> にあれば、最初の言及を含む段落・箇条書き・表などのブロックの直後に図を置く。コードブロックの中の名前は無視する。画像記法で既に載せた図は重ねない。</li>
+<li>文書間リンク <code>[..](xxx.md)</code>・<code>(xxx.md#anchor)</code> は、変換対象の md なら <code>.html</code> に書き換える。対象でなければそのまま。</li>
+<li>見出しのアンカーは GitHub 風 (小文字化し、英数字・日本語・<code>_</code>・<code>-</code> 以外を除き、空白を <code>-</code> にする。同じ見出しは <code>-1</code>、<code>-2</code>)。日本語の見出しでも同じ。リンクの <code>#</code> が大文字小文字だけ違うときは、実在の ID に合わせる。</li>
+<li>段落の直後に空行なしで始まる箇条書き・表、2 スペースの入れ子の箇条書きは、GitHub と同じように読めるよう前処理で整える (コードブロックの中は触らない)。</li>
+</ul>
+<h2 id="折りたたみ">折りたたみ</h2>
+<p>既定では折りたたまない。<code>--fold-regex</code> (見出しの文字列に一致する正規表現) と <code>--fold-level</code> (既定 3) で、その階層の見出しの節 (同じか上の階層の見出しまで) を <code>&lt;details&gt;</code> にする。折りたたんだ節の中を指すリンクを開くと、その節が開く。</p>
+<p><code>build_html.py</code> では、<code>tools/html_config.json</code> に「リポジトリの根からの相対パス → オプション」を書く。</p>
+<pre><code class="language-json">{
+  &quot;example/ddba/v07_14/sextupole_v2/README.md&quot;: {&quot;fold_regex&quot;: &quot;^(ラウンド|揺らぎの確認|反省)&quot;, &quot;fold_level&quot;: 3}
+}
+</code></pre>
+<h2 id="限界">限界</h2>
+<ul>
+<li>数式 (TeX) は描画しない。md の中の HTML タグはそのまま通す。</li>
+<li>図の名前の言及は、同じフォルダと <code>results/</code> の直下だけを探す。</li>
+<li>試験は <code>py -3.12 -m pytest pysad/tests/test_tools_md_to_html.py -q</code>。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

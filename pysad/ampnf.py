@@ -16,12 +16,12 @@
   fringe=True: 四極と K1≠0 の偏向磁石の端の Lee–Whiting のフリンジ H_f = σ (K1/12)[(x³+3xy²)px − (y³+3x²y)py]/(1+δ)^FRINGE_POWER (FRINGE_POWER = 1)。
   非線形の項はハミルトン流を Lie 級数 exp(ds {·, H}) で次数 D まで厳密に求め、Strang 分割で線形の部分と組み合わせる (nslice・nslice_bend・nslice_quad、誤差 O(1/n²))。
 【v2.4.0 F1】 ROTATE・ROTATION した BEND・QUAD・SEXT・OCT は R⁻¹ ∘ (回していない素子) ∘ R で入る (全次数の θ)。結合した線形光学は 4×4 の固有モード (linear_modes) の正規形で扱う。
-  rdt_series は 1 周の写像の 2 次の部分から共鳴駆動項 h を出す (結合した光学でも動く)。docs/49 §14。
+  rdt_series は 1 周の写像の 2 次の部分から共鳴駆動項 h を出す (結合した光学でも動く)。docs/25 §14。
 【v2.4.0 G】 K0≠0 の偏向磁石 (K1 = 0。挿入光源・逆曲げ・MPW・傾けた MPW) は、K64 の追跡の閉じた式を磁石内の軌道のまわりで TPSA 評価した写像 (ampnf_k0.py、op 'tmap') で入る。
   v2.4.1: その非線形を他の素子のオプションと独立に入れる・落とす `k0_nonlinear` (True・False。None = 従来: 3 つのオプションが全部 False のときだけ落とす)。
-  閉軌道が原点にない 1 周の写像は 2 段 (不動点 c を求め、c を定数項に入れて通す。res['orbit'])。docs/49 §14.4。
+  閉軌道が原点にない 1 周の写像は 2 段 (不動点 c を求め、c を定数項に入れて通す。res['orbit'])。docs/25 §14.4。
 【入れていない効果】 K1≠0 かつ K0≠0 の偏向磁石 (NotImplementedError)、F1・DX・DY・DROTATE、誤差、K1 の偏向磁石の 4 次以上、K64 の四極の積分器の台形則、10 極以上、放射・RF。
-  差の原因は docs/49 §13.3。使い方・検証は docs/49 §13、記録は docs/history/v24_A.md。
+  差の原因は docs/25 §13.3。使い方・検証は docs/25 §13、記録は docs/history/v24_A.md。
 """
 import math
 import itertools
@@ -411,7 +411,7 @@ FRINGE_POWER = 1      # 端部の Lee-Whiting のフリンジの強さは K1/(1+
 
 
 def _fringe_h(tab, K1, sigma):
-    """四極・K1≠0 の偏向磁石の端の Lee-Whiting の非線形フリンジ (K64 の ttfrin4 の 3 次の項、docs/49 §2): H_f = σ (K1/12) [(x³ + 3 x y²) px − (y³ + 3 x² y) py] (σ = +1 入口、−1 出口。δ に依らない)"""
+    """四極・K1≠0 の偏向磁石の端の Lee-Whiting の非線形フリンジ (K64 の ttfrin4 の 3 次の項、docs/25 §2): H_f = σ (K1/12) [(x³ + 3 x y²) px − (y³ + 3 x² y) py] (σ = +1 入口、−1 出口。δ に依らない)"""
     x, px, y, py = (tab.var(j) for j in range(4))
     x2, y2 = tab.mul(x, x), tab.mul(y, y)
     a = tab.mul(tab.mul(x, x2) + 3.0 * tab.mul(x, y2), px)
@@ -505,7 +505,7 @@ def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8,
             if float(getattr(el, 'ANGLE', 0.0) or 0.0) == 0.0 and float(getattr(el, 'CHI2', 0.0) or 0.0) != 0.0:
                 warn.append('ANGLE=0 の K0≠0 の BEND %s の CHI2 は K64 の追跡 (tsteer・tmulti) が使わないので入れていない (追跡に合わせる)' % el.name)
             # v2.4.1: k0_nonlinear=None は従来どおり (bend_cubic・kin・fringe が全部 False のときだけ 1 次)。True・False は K0≠0 の磁石の自身の非線形を、
-            # ほかの素子のオプションと独立に入れる・落とす (曲率・運動学・楔・端は閉じた式に分けられず、個別には切れない。docs/46)
+            # ほかの素子のオプションと独立に入れる・落とす (曲率・運動学・楔・端は閉じた式に分けられず、個別には切れない。docs/31)
             lin = (not (bend_cubic or kin or fringe)) if k0_nonlinear is None else (not k0_nonlinear)
             ops.append(('tmap', _k0.bend_k0_map(el, linear=lin), el, lin))
             cur = new0()
@@ -769,7 +769,7 @@ def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, 
         pass
     has_t = any(o[0] == 'tmap' for o in ops)
     if has_t and D < 4:
-        warn.append('K0≠0 の磁石があり D < 4: 軌道の傾きによる運動学 (4 次のハミルトニアン) のフィードダウンが 2 次の写像に入らない (D ≥ 4 を勧める。docs/49 §14.4)')
+        warn.append('K0≠0 の磁石があり D < 4: 軌道の傾きによる運動学 (4 次のハミルトニアン) のフィードダウンが 2 次の写像に入らない (D ≥ 4 を勧める。docs/25 §14.4)')
     if has_t:
         # v2.4.0 G: K0≠0 の偏向磁石がある (閉軌道が原点にない・写像に定数項)。第 1 段: 物理座標 (原点が入口) の 1 周の写像 F(u) を作り、不動点 c (閉軌道) と
         # そのまわりのヤコビ行列 A を求める。第 2 段: ζ = (モード) の正規化座標で、c を定数項に入れた状態から出発して全素子を通す (磁石の内部の軌道は閉じた式の展開で厳密)

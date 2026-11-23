@@ -14,7 +14,7 @@ Write[$Output, "writing to the console via $Output"];
 `$Output`=-1、`$FORM` の初期値は空白 1 文字、`$Input` は gs・pysad とも 77 (SADHelp は既定 -1 だが、スクリプトを読み込んでいる間はそのファイルの番号 77 になる)。`$Input` と `$Output` の `Head` はどちらも `Real`。`$FORM="8.3"` で `Pi`→`   3.142` (幅 8、小数 3)、`1/3`→`    .333`。`Write[$Output, ...]` は画面に出る。
 
 ## gs と pysad の比較
-○ 一致する (2026-11-17 に `Write[$Output, ...]` を修正)。`$FORM`・`$Input`・`$Output` の値は一致。
+○ 一致する (`Write[$Output, ...]` を含む)。`$FORM`・`$Input`・`$Output` の値は一致。
 
 ## 未確認・限界
 - `$Input` の 77 は gs の読み込みの実装に依る値で、環境により違いうる。

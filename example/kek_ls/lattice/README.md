@@ -36,7 +36,7 @@ HMBA の特徴 (低磁場の偏向磁石 `BID*` が分散を作り、高磁場�
 
 ## パラメータ表 (実際に再計算して確認した値)
 
-`KEKLS_cell_calc_emit`・`KEKLS_ring_params` の出力 (`ON RAD FLUC COD RFSW RADCOD`、gs と pysad の k64 モードは全桁一致)。pysad の v2 (既定) モードは、K64 のバグを直した `Emittance[]` で εx などが数 % の 0.1〜0.5 % 内で違う (括弧内)。
+`KEKLS_cell_calc_emit`・`KEKLS_ring_params` の出力 (`ON RAD FLUC COD RFSW RADCOD`、gs と pysad の k64 モードは全桁一致)。pysad の v2 (既定) モードは、K64 のバグを含まない `Emittance[]` で εx などが数 % の 0.1〜0.5 % 内で違う (括弧内)。
 
 | 量 | RINGC (標準セル 20 個) | RING (入射セル込み) |
 |---|---|---|

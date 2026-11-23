@@ -1,6 +1,6 @@
 """SOL 領域の Twiss (CALC、INS と CELL)。参照は SAD K64 (gs) の出力。
 s1: 単純な領域 (チューン、β)。s2: 領域内の各要素の Twiss (β、α、分散、結合 R2 R3) と回転四極・領域内の SOL。s3: INS・RAD ON。
-参照の作り方: local/sol/s*.sad を gs で実行 (docs/29_sol_optics.md)。"""
+参照の作り方: local/sol/s*.sad を gs で実行 (docs/17_sol.md)。"""
 import io
 import re
 

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>04_emittance_radiation 一覧</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#このフォルダで分かったこと">このフォルダで分かったこと</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="04_emittance_radiation-一覧">04_emittance_radiation 一覧</h1>
+<p>ラティスは <code>00_lattice/FODO_ring_V4MV.sad</code> (FODO_ring の RF 電圧だけ 4 MV に変更)。<code>RINGQ</code> を使う (RADINT の NaN を避けるため)。式の検算は <code>formula_check.py</code> → <code>formula_check.txt</code>。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>説明</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FFS_EMITTANCE</td>
+<td>EMIT の報告と放射積分の式による検算 (U0, τ, εx, σδ, νs, σz)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>FFS_RADINT</td>
+<td>RADINT の I1〜I5 と自前の積分</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Emittance</td>
+<td>Emittance[] の規則</td>
+<td>○</td>
+</tr>
+<tr>
+<td>flag_RFSW_RAD_RADCOD_FLUC</td>
+<td>4 つのフラグの効き方</td>
+<td>△ (Emittance[] は一致、FLUC の追跡は乱数列が違う)</td>
+</tr>
+<tr>
+<td>flag_RADTAPER</td>
+<td>RADTAPER の前後</td>
+<td>○ (k64 モードで gs と一致。v2 の既定では εx が 2.4% 違う: Jx の式の違い B75)</td>
+</tr>
+<tr>
+<td>flag_CALC6D</td>
+<td>CALC6D の縦の光学</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_SynchroBetaEmittance</td>
+<td>シンクロ・ベータ結合の emitx (平面リング)</td>
+<td>○ (結合のあるラティスは gs が落ちる)</td>
+</tr>
+<tr>
+<td><a href="flag_RADCOD_closure.sad">flag_RADCOD_closure</a></td>
+<td>RADTAPER・RADCOD の閉軌道が、追跡 (RAD) の 1 周で閉じるか</td>
+<td>△ (gs は閉じない: x 4e-7 m、RADTAPER ありで 2e-6 m。v2 は閉じる (1e-9 m)。k64 は gs と同じ)</td>
+</tr>
+<tr>
+<td><a href="flag_RADTAPER_optics.sad">flag_RADTAPER_optics</a></td>
+<td>RADTAPER の閉軌道 (収束)、CALC6D の RADTAPER、CalculateOptics の TRPT の加速、加速区間の分散</td>
+<td>軌道 −2.1732e-7 (gs は既定の CODCONV で −2.1977e-7、CODCONV=1e-4 で −2.1732e-7。CalculateOptics = CALC)</td>
+</tr>
+<tr>
+<td><a href="flag_NORFSW_orbit.sad">flag_NORFSW_orbit</a></td>
+<td><code>NORFSW; RAD</code> の Emittance[] と閉軌道のずれ (12 セル FODO、3 GeV、QF に DX = 1e-4)。K64 の tcod は RFSW OFF で x px y py だけ閉じ、δ・z は動かさない</td>
+<td>○ (k64 モードは gs と一致: εx = 2.70000645e-7 (gs 2.70000647e-7)。v2 は追跡の放射の式が違うので少し違う)</td>
+</tr>
+<tr>
+<td><a href="var_MASS_CHARGE_proton_ring.sad">var_MASS_CHARGE_proton_ring</a></td>
+<td>TrackParticles・Emittance[]・CALC6D の <code>MASS</code>・<code>CHARGE</code> (30 GeV/c の陽子)</td>
+<td>○ (Qs、1 周・100 周の追跡が一致 (表示 6 桁)。U0 は v2 が 6.89e-4 eV (古典式)、gs・k64 が 1.265 eV: K64 の放射は電子の古典半径を使う)</td>
+</tr>
+<tr>
+<td><a href="var_MASS_proton_beta_p1p5.sad">var_MASS_proton_beta_p1p5</a></td>
+<td>陽子 (MASS = 938.272088 MeV) の放射の β の因子 (B112)。Emittance[] の EnergyLossU0 を古典式 U0 = (2/3) r_p m c² β³ γ⁴ Σ θ²/L と比べる (p = 1.5 GeV/c)</td>
+<td>○ (k64 モードは gs と全桁一致。v2 の U0 は古典式の 1/β³ 倍 (限界))</td>
+</tr>
+<tr>
+<td><a href="var_MASS_proton_beta_p3.sad">var_MASS_proton_beta_p3</a></td>
+<td>同 (p = 3 GeV/c)</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><a href="var_MASS_proton_beta_p30.sad">var_MASS_proton_beta_p30</a></td>
+<td>同 (p = 30 GeV/c)</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><a href="elem_BEND_F1_emittance.sad">elem_BEND_F1_emittance</a></td>
+<td>Emittance[]・EMIT・CALC6D の BEND の F1・FRINGE (K1≠0 の複合機能も)</td>
+<td>○ (k64 モードは全桁一致 (表示 10 桁)。v2 は端の角の行路の補正で U0 が 1e-3 違う)</td>
+</tr>
+<tr>
+<td><a href="FFS_RADINT_I4V_coupled.sad">FFS_RADINT_I4V_coupled</a></td>
+<td>結合のあるリング (45 度傾いた四極 4 台) の RADINT の I4V。I4U + I4V = 物理的な I4 (1e-5)、DU・DV・Je と自前の 6x6 行列 + 1 次の摂動論との一致 (3e-3)</td>
+<td>v2 の出力と独立な式の照合 (gs の出力あり)</td>
+</tr>
+<tr>
+<td><a href="FFS_RADINT_k1_bend_vdisp.sad">FFS_RADINT_k1_bend_vdisp</a></td>
+<td>K1≠0 の BEND + 結合による Y 方向の分散の RADINT (B107)</td>
+<td>△ (k64 モードは gs と全桁一致 (I4U + I4V = 0.420949)。v2 は独立な I4 (0.414392) と 1e-7)</td>
+</tr>
+<tr>
+<td><a href="FFS_RADINT_quad_offset.sad">FFS_RADINT_quad_offset</a></td>
+<td>据え付けのずれた四極の RADINT (B107b)</td>
+<td>△ (k64 モードは gs と全桁一致 (ΔJx = +0.0028)。v2 は独立な積分・追跡・Emittance[] の ΔJx = +0.0078)</td>
+</tr>
+<tr>
+<td><a href="FFS_RADINT_pf.sad">FFS_RADINT_pf</a></td>
+<td>PF リング (2.5 GeV、187 m) の RADINT・Emittance[]・EMITDIV と Polarization。自前の積分 (3x3 行列) との比較で I1〜I5 が 1e-6 以下、τp が 2e-5 (Polarization = 0.92376)</td>
+<td>v2 の出力と独立な式の照合 (gs の出力あり)</td>
+</tr>
+<tr>
+<td><a href="fn_SynchroBetaEmittance_coupled.sad">fn_SynchroBetaEmittance_coupled</a></td>
+<td>結合のあるリング (24 セル FODO + skew 四極) の SynchroBetaEmittance</td>
+<td>○ (gs も走り、k64 モードは 7 桁以上一致。v2 は追跡の放射の式が違うので SB が 1.3% 違う)</td>
+</tr>
+<tr>
+<td><a href="fn_SynchroBetaEmittance_dispersion_start.sad">fn_SynchroBetaEmittance_dispersion_start</a></td>
+<td>始点を変えた 24 セル FODO の SynchroBetaEmittance (B128)。始点の分散 η ≠ 0 のとき K64 は Emittance[] の数倍〜40 倍を返す</td>
+<td>△ (gs と k64 は SB が Emittance[] の 6.54 倍 (1e-7 で一致)。v2 は 1.0003〜1.0004 倍)</td>
+</tr>
+<tr>
+<td><a href="fn_SynchroBetaEmittance_rings.py">fn_SynchroBetaEmittance_rings</a></td>
+<td>大きなリング A (kek-ls_v03_12.lat)・PF・ASTRID2 の SB と Emittance[] の比 (結果は <code>.out.txt</code>、A の gs は <code>_ring_a.gs.txt</code>)</td>
+<td>△ (A の k64 は 39.88 倍で gs と 2e-7 一致 (6.178294e-9)。v2 は 1.0084 倍)</td>
+</tr>
+<tr>
+<td><a href="flag_EMITDIV_rect.py">flag_EMITDIV_rect</a></td>
+<td>Emittance[] の EMITDIV の収束 (矩形・扇形の FODO)。v2 の Emittance[] と RADINT の差の原因は EMITDIV の既定 (1) の離散化 (結果は <code>.out.txt</code>)</td>
+<td>gs は使わない</td>
+</tr>
+<tr>
+<td><a href="flag_RAD_tradke_exact.py">flag_RAD_tradke_exact</a></td>
+<td>放射反作用の ddpx の符号 (B111)。放射反作用つきのローレンツ力の積分と、tradke・追跡 (tradkn) の比較 (結果は <code>.out.txt</code>)</td>
+<td>v2 の tradke・追跡は厳密な積分と一致、k64 の tradke は既定の刻みで 9% ずれる。gs は走らない (Python の内部関数を使う)</td>
+</tr>
+<tr>
+<td><a href="flag_RADCOD_derivative.py">flag_RADCOD_derivative</a></td>
+<td>RADCOD の解析 T + D と数値微分 (4 次の中心差分) の差 (結果は <code>.out.txt</code>)</td>
+<td>v2 は BEND 1 台で 1.7e-10 (k64 は 5e-7)。gs は使わない</td>
+</tr>
+</tbody>
+</table>
+<p>上の表のうち、拡張子つきのリンクの行 (<code>.sad</code>・<code>.py</code>) は説明の <code>.md</code> を持たない。内容と結果の要点は表と、台本・スクリプトの先頭のコメントに書いた。<code>.py</code> の例は、リポジトリ直下から <code>py -3.12 example/04_emittance_radiation/NAME.py</code> で走らせる (出力は <code>NAME.out.txt</code>)。gs と同じ動作で走らせるときは <code>PYSAD_COMPAT=k64</code>。</p>
+<h2 id="このフォルダで分かったこと">このフォルダで分かったこと</h2>
+<ul>
+<li>RADINT の $J_x$ (0.9415) と EMIT の $J_x$ (0.9651) は 2.4% 違う。$I_4$ の端の項を 2 倍にすると EMIT に近づく (FFS_EMITTANCE.md)。原因: K64 の <code>Emittance[]</code>・EMIT が端の角の蹴りの行路を入れず $I_4$ の端の項が 2 倍になっていた (B75。RADINT が正しい)。v2 の既定では EMIT の $J_x$ は 0.9429 で RADINT に近い (gs と違う値になる)。<code>PYSAD_COMPAT=k64</code> では gs と同じ 0.9651。この節の他の例の pysad の出力 (<code>.pysad.txt</code>) は v2 のもの。</li>
+<li>例 (<code>FFS_EMITTANCE</code>、<code>FFS_RADINT</code>、<code>fn_Emittance</code>、<code>flag_RFSW_RAD_RADCOD_FLUC</code>、<code>fn_SynchroBetaEmittance</code>) の判定は k64 モードでの gs との一致。v2 の既定では εx・減衰率・α などが B75・B77 の違いの分だけ gs と違う。</li>
+<li><code>FODO_ring</code> の RF 1.5 MV は $U_0$ より小さく、バケットがない。</li>
+<li>4 次元の CALC は RADTAPER を見ない (gs も同じ。試験 <code>test_v2_B1_optics.py</code> の <code>test_calc_4d_ignores_radtaper_like_k64</code>)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

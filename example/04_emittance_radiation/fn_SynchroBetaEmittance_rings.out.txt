@@ -1,0 +1,8 @@
+large ring A (kek-ls_v03_12.lat, 3 GeV, 603 m)       modes  3 k64  Emittance[] 1.5494e-10  SB 6.1783e-09  SB/EM 39.8761
+large ring A (kek-ls_v03_12.lat, 3 GeV, 603 m)       modes  3 v2   Emittance[] 1.5213e-10  SB 1.5340e-10  SB/EM 1.0084
+large ring A (kek-ls_v03_12.lat, 3 GeV, 603 m)       modes 12 k64  Emittance[] 1.5494e-10  SB 3.1859e-09  SB/EM 20.5627
+large ring A (kek-ls_v03_12.lat, 3 GeV, 603 m)       modes 12 v2   Emittance[] 1.5213e-10  SB 1.5279e-10  SB/EM 1.0043
+PF ring (v9_16_asym.sad, 2.5 GeV, 187 m)             modes  3 k64  Emittance[] 3.4542e-08  SB 3.4927e-08  SB/EM 1.0111
+PF ring (v9_16_asym.sad, 2.5 GeV, 187 m)             modes  3 v2   Emittance[] 3.5380e-08  SB 3.5569e-08  SB/EM 1.0054
+ASTRID2 (ASTRID2_v01_01.sad, 0.58 GeV, 45.7 m)       modes  3 k64  Emittance[] 1.2680e-08  SB 1.2787e-08  SB/EM 1.0084
+ASTRID2 (ASTRID2_v01_01.sad, 0.58 GeV, 45.7 m)       modes  3 v2   Emittance[] 1.2680e-08  SB 1.2760e-08  SB/EM 1.0063

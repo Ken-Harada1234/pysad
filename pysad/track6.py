@@ -463,7 +463,7 @@ def _tsolqu(p: _Particle, al, ak, eps0=0.0, ak0x=0.0, ak0y=0.0, qum=False, ibsi=
     ak = 0 なら tdrift (ak0 付きの厳密ドリフト)。
     qum=True は tsolqum (tmulti の放射なしで使う版): z の dv の項が tsolqu と違い
     −0.25·(ap − dv)·aln0 (tsolqu は −0.25·ap·aln0 − dv·aln0)。SAD のまま (Level 11 で確認)。
-    本体の積分は quadbody (k64: K64 の Strang 分割、v2: 4 次の合成。docs/21 B226)"""
+    本体の積分は quadbody (k64: K64 の Strang 分割、v2: 4 次の合成。docs/30 B226)"""
     if ak == 0.0:
         _tdrift_kick(p, al, ak0x, ak0y, False)
         return
@@ -562,7 +562,7 @@ def _ndivrad(phi, ak, bz, eps, h0, trpt=None):
 
 def _tsolqur_ens(parts, al, ak, eps0=0.0):
     """tsolqu.f tsolqur (bz=0, ak0x=ak0y=0): スライス外側・粒子内側で、各スライスの後に全粒子 tradk
-    (SAD と同じ順で乱数を引くため)。本体の積分は quadbody (docs/21 B226)"""
+    (SAD と同じ順で乱数を引くため)。本体の積分は quadbody (docs/30 B226)"""
     eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
     sch = _qb.scheme()
     ndiv = _qb.ndiv(abs(al) * ak, eps, sch)
@@ -1693,7 +1693,7 @@ def _bend_k1_proxy(el):
     from types import SimpleNamespace
     th = _lat._bend_theta(el) + _g(el, 'DROTATE')
     if _g(el, 'K0') == 0.0:
-        # SAD K64 の癖 (11_sad_quirks A35): tbend.f:573 は tquad に theta2=theta+dtheta を渡し、akang (K1<0 の π/2) を含めない。
+        # SAD K64 の癖 (29_sad_quirks A35): tbend.f:573 は tquad に theta2=theta+dtheta を渡し、akang (K1<0 の π/2) を含めない。
         # tquad は ak=sign(ak0,al) で符号を theta2 に任せるので、K1<0 の BEND は |K1| の集束四極として追跡される
         # (SAD で QUAD K1=+0.5 と BEND ANGLE=0 K1=-0.5 の追跡が全桁同じ、CALC は正しく -0.5)。それを再現する
         return 'quad', SimpleNamespace(L=el.L, K1=abs(_g(el, 'K1')), DX=_g(el, 'DX'), DY=_g(el, 'DY'), ROTATION=th,
@@ -2290,7 +2290,7 @@ def _tmulti(p: _Particle, el, krad):
 # ---------------------------------------------------------------------------
 
 class SolRegionError(NotImplementedError):
-    """SOL 領域 (BOUND≠0 の SOL の間) に置けない要素がある (v2: K64 の tsol.f が出すはずの文で止める。K64 は SIGSEGV、docs/21 B35)"""
+    """SOL 領域 (BOUND≠0 の SOL の間) に置けない要素がある (v2: K64 の tsol.f が出すはずの文で止める。K64 は SIGSEGV、docs/30 B35)"""
 
 
 _SOL_OK = ('Drift', 'Bend', 'Quadrupole', 'Solenoid', 'Multipole', 'Cavity', 'Map', 'Marker', 'Monitor')
@@ -3110,7 +3110,7 @@ def _step_el(p: _Particle, el, trf0, rfsw, rad):
         if _compat.v2():
             _phsrot_v2([p], el, rad)
             return
-        raise NotImplementedError('track6: PHSROT は K64 で動作しない (docs/21 B38)')
+        raise NotImplementedError('track6: PHSROT は K64 で動作しない (docs/30 B38)')
     elif el.L == 0.0:
         return          # MARK など
     else:

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flag_INTRA</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: flag_INTRA.md</div>
+<h1 id="flag_intra">flag_INTRA</h1>
+<p>種別: フラグ / フォルダ: 06_collective / ラティス: <code>00_lattice/FODO_ring_V4MV_0p5GeV.sad</code> (新規。<code>FODO_ring_V4MV.sad</code> の運動量を 0.5 GeV に下げた版) / フラグ: <code>RFSW; RAD; FLUC; MINCOUP=0.01</code></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>INTRA</code> を ON にすると、エミッタンス計算 (<code>Emittance[]</code>、<code>EMIT</code>) にバンチ内散乱 (IBS: 同じバンチの粒子どうしのクーロン散乱) が入る。バンチの粒子数 <code>PBUNCH</code> を変えて、平衡エミッタンス・エネルギー広がり・バンチ長がどう増えるかを見る。3 GeV では IBS が小さすぎて見えないので 0.5 GeV にした。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>NOINTRA;  em0 = Emittance[];            ! IBS なし
+INTRA;
+Do[ PBUNCH = {1e4, 1e8, 3e8, 1e9, 3e9}[[k]];
+    em = Emittance[];
+    Print[Emittances/.em, MomentumSpread/.em, BunchLength/.em], {k, 1, 5}];
+</code></pre>
+<ul>
+<li><code>MINCOUP</code>: IBS の計算で使う垂直エミッタンスの下限 = <code>MINCOUP*(EMITX+EMITY)</code> (理想リングは $\varepsilon_y=0$ で、IBS が非現実的に大きくなるのを避ける)。</li>
+<li>運動量はラティス側 (MAIN レベル) で 0.5 GeV にした。<code>FFS</code> の中で <code>MOMENTUM=0.5e9</code> と書く方法は、gs は反映するが、当時の pysad は反映しなかったので避けた (現在の pysad は反映する。<a href="../05_tracking/flag_SPAC.html">flag_SPAC</a>)。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<table>
+<thead>
+<tr>
+<th>PBUNCH</th>
+<th>$\varepsilon_x$ [m]</th>
+<th>$\varepsilon_y$ [m]</th>
+<th>$\varepsilon_z$ [m]</th>
+<th>$\sigma_\delta$</th>
+<th>$\sigma_z$ [mm]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NOINTRA</td>
+<td>5.093949e-9</td>
+<td>0</td>
+<td>2.066340e-7</td>
+<td>2.001562e-4</td>
+<td>1.056</td>
+</tr>
+<tr>
+<td>$10^4$</td>
+<td>5.100944e-9</td>
+<td>1.0e-16</td>
+<td>2.068383e-7</td>
+<td>2.002551e-4</td>
+<td>1.056</td>
+</tr>
+<tr>
+<td>$10^8$</td>
+<td>1.698986e-8</td>
+<td>1.64e-13</td>
+<td>5.538140e-7</td>
+<td>3.276815e-4</td>
+<td>1.728</td>
+</tr>
+<tr>
+<td>$3\times10^8$</td>
+<td>2.386539e-8</td>
+<td>2.58e-13</td>
+<td>7.544618e-7</td>
+<td>3.824625e-4</td>
+<td>2.017</td>
+</tr>
+<tr>
+<td>$10^9$</td>
+<td>3.507525e-8</td>
+<td>4.12e-13</td>
+<td>1.081594e-6</td>
+<td>4.579338e-4</td>
+<td>2.415</td>
+</tr>
+<tr>
+<td>$3\times10^9$</td>
+<td>5.019766e-8</td>
+<td>6.19e-13</td>
+<td>1.522903e-6</td>
+<td>5.433839e-4</td>
+<td>2.866</td>
+</tr>
+</tbody>
+</table>
+<p>(gs の値。pysad も同じ。NOINTRA の $\varepsilon_y$ は gs で $5\times10^{-36}$、pysad で 0 (数値雑音の違い)。)</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>式による照合は、次の極限と傾向だけ (IBS の Bjorken-Mtingwa 式の係数は検証していない)。</p>
+<table>
+<thead>
+<tr>
+<th>性質</th>
+<th>式</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$N\to0$ で IBS なしに戻る</td>
+<td>$\varepsilon_x(N\to0)=\varepsilon_{x0}$</td>
+<td>$N=10^4$: $5.100944\times10^{-9}$ vs NOINTRA $5.093949\times10^{-9}$ (差 0.14%)</td>
+</tr>
+<tr>
+<td>増加は $N$ の増加より緩やか (放射減衰との釣り合い: 平衡では IBS 拡散 ∝ 減衰 × ε)</td>
+<td>$\varepsilon_x\propto N^{p}$, $p&lt;1$</td>
+<td>$N=10^8\to10^9$: $p=0.31$、$3\times10^8\to10^9$: $p=0.32$、$10^9\to3\times10^9$: $p=0.33$</td>
+</tr>
+<tr>
+<td>$\sigma_z=\sigma_\delta\cdot</td>
+<td>\eta_c</td>
+<td>c/\omega_s$ (縦の関係)</td>
+</tr>
+</tbody>
+</table>
+<p>縦の関係は、バンチ長がエネルギー広がりに比例して伸びる (RF が一定) ことの確認 ($\sigma_z/\sigma_\delta=5.27$ m は 6 行で変わらない)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。
+バンチ内散乱の平衡値も、NOINTRA の基準 (εx 5.094E-9 → 5.202E-9) と INTRA の各 PBUNCH で約 2% 変わる。</p>
+<p>○ 一致 (全 6 行が印字桁まで同じ)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>0.5 GeV (電子)、RF 4 MV、理想リング (垂直エミッタンスが MINCOUP の下限)、粒子数 $10^4$〜$3\times10^9$。実機のパラメータではない。</li>
+<li>IBS の絶対値の式 (Piwinski、Bjorken-Mtingwa、Bane の高エネルギー近似) との照合は未実施。$N^{1/3}$ に近い傾きは計算結果から読んだもので、理論的な導出はしていない。</li>
+<li>pysad は <code>INTRA</code> を <code>SOL</code> のあるリングとは併用できない (docs/17)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

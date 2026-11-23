@@ -1,5 +1,5 @@
 """RadiationField / RadiationSpectrum (K64 tlinit.f)。RadiationSpectrum は gs と全桁一致 (rf2.sad)。
-RadiationField は gs がこのビルドで SIGSEGV するので参照が取れない (docs/21 B49)。等速運動の電荷の場 (Liénard-Wiechert の速度場) と比べる。"""
+RadiationField は gs がこのビルドで SIGSEGV するので参照が取れない (docs/30 B49)。等速運動の電荷の場 (Liénard-Wiechert の速度場) と比べる。"""
 import math
 
 import numpy as np

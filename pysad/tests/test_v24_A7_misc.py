@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 A7〜A10: (1) Touschek の q_s の効果 (3 次元の積分 touschek_bunch.qs_ratio) が対のモンテカルロ (A3_mc_bunch_astrid2.out.txt) と一致、
+"""v2.4.0 A7〜A10: (1) Touschek の q_s の効果 (3 次元の積分 touschek_bunch.qs_ratio) が対のモンテカルロ (touschek_bunch_mc_astrid2.out.txt) と一致、
 (2) fmapcheck.errors_summary が RFSW・RAD ON でも誤判定しない (stable=False の誤判定を直した)、(3) 台本の関数 NormalFormTune[] (pysad のみ)。"""
 import contextlib
 import io

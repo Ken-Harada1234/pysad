@@ -1,5 +1,5 @@
 """特殊関数・数学関数 (specfn.py と sadscript の基本関数)。参照は SAD K64 (gs) の出力 (specfn_ref.json: 式と数値のリスト)。
-gs が誤値を返す式 (docs/21 B43〜B47) と、gs が応答しない式は入れていない。"""
+gs が誤値を返す式 (docs/30 B43〜B47) と、gs が応答しない式は入れていない。"""
 import io
 import json
 import os

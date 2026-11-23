@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>09. Emittance[] / EMIT — SAD の temit と pysad の emit6d.py</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#0-使い方と結果の読み方">0. 使い方と結果の読み方</a></li>
+<li><a href="#1-emittanceopt-の定義-packagesemitn">1. Emittance[opt] の定義 (Packages/emit.n)</a></li>
+<li><a href="#2-計算の流れ-temitf">2. 計算の流れ (temit.f)</a><ul>
+<li><a href="#2-1-tturne1-の要素ごとの扱い">2-1. tturne1 の要素ごとの扱い</a></li>
+<li><a href="#2-2-放射-tradke-photonsf">2-2. 放射 tradke (photons.f)</a></li>
+<li><a href="#2-3-tecalc">2-3. tecalc</a></li>
+<li><a href="#2-4-報告-temitprint--ffsprint_emit">2-4. 報告 (temitprint / FFS.print_emit)</a></li>
+</ul>
+</li>
+<li><a href="#3-内部の座標変数">3. 内部の座標・変数</a></li>
+<li><a href="#4-pysad-emit6dpy-の構造">4. pysad emit6d.py の構造</a><ul>
+<li><a href="#解析ヤコビアンの対象と理由">解析ヤコビアンの対象と理由</a></li>
+</ul>
+</li>
+<li><a href="#4b-要素機能の範囲">4b. 要素・機能の範囲</a><ul>
+<li><a href="#pol-のスピン-docs16_spin_polmd">POL のスピン (docs/16_spin_pol.md)</a></li>
+<li><a href="#synchrobetaemittance-pysadsynchrobetapy">SynchroBetaEmittance (pysad/synchrobeta.py)</a></li>
+<li><a href="#solcoordtcaviundmapmult-angle0-と-emittance">SOL・COORD・TCAVI・UND・MAP・MULT (ANGLE≠0) と Emittance[]</a></li>
+<li><a href="#v2-モードで変わった放射エミッタンス-radintjxmomentumcompactionemitdiv-ほか">v2 モードで変わった放射・エミッタンス (RADINT・Jx・MomentumCompaction・EMITDIV ほか)</a></li>
+<li><a href="#f1fringek0-の極wspacsynchrobeta-の警告">F1・FRINGE・K0 の極・WSPAC・SynchroBeta の警告</a></li>
+</ul>
+</li>
+<li><a href="#5-注意点-仕様と落とし穴">5. 注意点 (仕様と落とし穴)</a></li>
+<li><a href="#6-検証">6. 検証</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 09_emittance.md</div>
+<h1 id="09-emittance--emit--sad-の-temit-と-pysad-の-emit6dpy">09. Emittance[] / EMIT — SAD の temit と pysad の emit6d.py</h1>
+<p><strong>この文書で分かること</strong>: リングの平衡エミッタンス、エネルギー広がり、バンチ長、放射減衰、RF の量 (同期位相・バケット高さ・シンクロトロンチューン) を、放射の量子励起と減衰から求める <code>Emittance[]</code> (台本の関数) と <code>EMIT</code> (FFS のコマンド) の使い方と結果の読み方。計算の流れ、要素ごとの扱い、v2 モードの動作、使える範囲と限界。
+<strong>前提</strong>: CELL の <code>CALC</code> (docs/07_calc_optics.md)。放射積分 (<code>RADINT</code>) は docs/23_physics_guide.md を参照。
+<strong>読む順</strong>: §0 (動かして数字を読む) → §1 (戻り値の規則) → §5 (注意点) → §4b の範囲・限界の表。§2〜§4 (計算の流れと pysad の構造) は開発者向け。</p>
+<p>照合先: <code>Packages/emit.n</code>, <code>src/tfemit.f</code>, <code>temit.f</code>, <code>tcod.f</code>, <code>tturne.f</code>, <code>tquade.f</code>, <code>tbende.f</code>, <code>tthine.f</code>, <code>tcave.f</code>, <code>tmulte.f</code>, <code>photons.f (tradke)</code>, <code>tffs.f (module temw)</code>, <code>tnorm.f</code>, <code>tdrife.f</code> と <a href="../pysad/emit6d.py"><code>pysad/emit6d.py</code></a>, <code>pysad/ffscmd.py (print_emit)</code>。</p>
+<h2 id="0-使い方と結果の読み方">0. 使い方と結果の読み方</h2>
+<p>用語: <strong>平衡エミッタンス</strong>は、放射の量子励起 (エミッタンスを増やす) と放射減衰 (減らす) がつり合う値。<strong>RFSW</strong> は RF 空洞の電圧を計算に入れるスイッチ、<strong>RADCOD</strong> は放射による閉軌道のエネルギー損失を入れるスイッチ。</p>
+<ol>
+<li>次のスクリプトを <code>ffs_emit.sad</code> として保存する (docs/07_calc_optics.md の §0 と同じ 24 セルの FODO リング、3 GeV、周長 105.6 m。RF 空洞の電圧だけ 4 MV に上げた)。</li>
+</ol>
+<pre><code>MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (SF DS QF D2 B D2 QD DS SD D1);
+LINE RING = (ORIGIN RF 24*CELL);
+FFS;
+$FORM = &quot;10.6&quot;;
+USE RING;
+CELL;
+CALCULATE;
+e = Emittance[];
+Print[&quot;Emit=&quot;, Emittances/.e];
+Print[&quot;U0=&quot;, EnergyLossU0/.e, &quot; sigE=&quot;, MomentumSpread/.e, &quot; sigz=&quot;, BunchLength/.e];
+Print[&quot;alpha=&quot;, MomentumCompaction/.e, &quot; Tunes=&quot;, Tunes/.e];
+Print[&quot;Damp=&quot;, DampingRate/.e];
+Print[&quot;Vc=&quot;, RfVoltageVc/.e, &quot; bh=&quot;, BucketHeight/.e, &quot; h=&quot;, HarmonicNumber/.e];
+Exit;
+</code></pre>
+<ol start="2">
+<li>実行: <code>py -3.12 run_sad.py ffs_emit.sad</code></li>
+<li>出力 (pysad で確認した値):</li>
+</ol>
+<pre><code>Emit={ 1.7771E-7,   .000000, 1.8852E-5}
+U0= 1563265.7 sigE=   .001185 sigz=   .015968
+alpha=   .022128 Tunes={  -.303759,  -.093944,  -.027625}
+Damp={ -2.453E-4, -2.606E-4, -5.361E-4}
+Vc= 4000000.0 bh=   .010047 h= 176.12184
+</code></pre>
+<p>数字の意味 (この例):</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>値</th>
+<th>読み方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Emittances</code></td>
+<td>(1.777e-7, 0, 1.885e-5)</td>
+<td>水平エミッタンス 178 nm·rad。垂直は、このリング (平面・結合なし) では数値的に 0。縦は σE·σz [m]</td>
+</tr>
+<tr>
+<td><code>EnergyLossU0</code></td>
+<td>1.563e6</td>
+<td>1 周の放射損失 [eV] (1.56 MeV)。RF 電圧 4 MV の 39%</td>
+</tr>
+<tr>
+<td><code>MomentumSpread</code></td>
+<td>1.185e-3</td>
+<td>エネルギー広がり σδ = 0.12%</td>
+</tr>
+<tr>
+<td><code>BunchLength</code></td>
+<td>0.015968</td>
+<td>バンチ長 σz = 16.0 mm</td>
+</tr>
+<tr>
+<td><code>MomentumCompaction</code></td>
+<td>0.0221</td>
+<td>運動量圧縮率 α</td>
+</tr>
+<tr>
+<td><code>Tunes</code></td>
+<td>(−0.3038, −0.0939, −0.0276)</td>
+<td>x, y, シンクロトロンの小数部 (符号つき)。−0.3038 は 6.696 (= 7 − 0.304) の整数を落とした値で、CALC の (6.696, 4.906) と同じ。シンクロトロンチューン νs = 0.0276</td>
+</tr>
+<tr>
+<td><code>DampingRate</code></td>
+<td>(−2.45e-4, −2.61e-4, −5.36e-4)</td>
+<td>振幅の一周あたりの減衰率。負が減衰。比から減衰分配数 Jx ≈ 0.94、Jy ≈ 1.00、Jz ≈ 2.06 (和は 4)</td>
+</tr>
+<tr>
+<td><code>RfVoltageVc</code>, <code>BucketHeight</code>, <code>HarmonicNumber</code></td>
+<td>4.0e6、0.01005、176.12</td>
+<td>実効 RF 電圧 [eV]、RF バケット高さ (δ の半幅) 1.0%、ハーモニック数 (RF 周波数 / 周回周波数。整数でない 176.12 はこの設定の周波数が整数倍でないため)</td>
+</tr>
+</tbody>
+</table>
+<p>(各量の定義は §1 の表。)</p>
+<figure><img alt="放射減衰と量子励起のつり合いに向かうバンチの広がり" src="data:image/png;base64,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" /><figcaption>放射減衰と量子励起のつり合いに向かうバンチの広がり</figcaption></figure>
+<p>図の読み方: 横軸は周回数。左は運動量の広がり σδ、右はバンチ長 σz。この例のラティス (RF 4 MV) で、広がりゼロ (全粒子が x = px = y = py = z = δ = 0) の 300 粒子を <code>RFSW; RADCOD; RAD; FLUC;</code> で追跡し、250 周ごとに σδ・σz を求めた (青)。橙の破線は上の <code>Emittance[]</code> の平衡値 (σδ = 1.185e-3、σz = 16.0 mm)。2000 周ほどで平衡値の近くに達し、その後は 300 粒子の統計の揺らぎ (数 %) の範囲で平衡値のまわりを動く。立ち上がりの周回数は、縦方向の振幅減衰率 5.36e-4 /周 (上の <code>DampingRate</code>) の逆数 約 1900 周と同じ程度である。</p>
+<h2 id="1-emittanceopt-の定義-packagesemitn">1. Emittance[opt] の定義 (Packages/emit.n)</h2>
+<p><code>Override[opt, default]</code> で選択肢を決め <code>CalculateEmittance[mode, out, {iniorbit, inibeam}, reg]</code> (= tfemit → temit) を呼ぶ。既定: <code>OneTurnInformation-&gt;False, Orbit-&gt;False, Matrix-&gt;False, ExpandElementValues-&gt;True, Emittance-&gt;True, SaveEMIT-&gt;False, InitialOrbit-&gt;Null, InitialBeamMatrix-&gt;Null, Region-&gt;{1,-1}, Output-&gt;0</code>。mode は Matrix→3, Orbit→2, OneTurnInformation→1, Emittance→0, Emittance-&gt;False→-1 (固有値のみ)。</p>
+<p>戻りは規則のリスト。<code>e[[2]]</code> = <code>params</code> (temw の ip* 番号)、<code>e[[3]]</code> = <code>setiamat</code> の 7 要素。</p>
+<table>
+<thead>
+<tr>
+<th>規則</th>
+<th>由来</th>
+<th>注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stable</td>
+<td>3 モードの |Re log λ|&lt;1e-6 かつ閉軌道あり</td>
+<td></td>
+</tr>
+<tr>
+<td>Tunes</td>
+<td>Im(cd(4:6))/2π</td>
+<td>小数部 (負もあり)</td>
+</tr>
+<tr>
+<td>EnergyLossU0 / RfVoltageVc</td>
+<td>u0·pgev / vceff</td>
+<td><strong>eV</strong> (報告の表示は MV)</td>
+</tr>
+<tr>
+<td>EquilibriumPosition</td>
+<td>trf0 [m]</td>
+<td>同期位置 dz</td>
+</tr>
+<tr>
+<td>MomentumCompaction, OrbitDilation, BucketHeight, HarmonicNumber</td>
+<td>alphap, dleng, bh, heff</td>
+<td></td>
+</tr>
+<tr>
+<td>OrbitAtExit</td>
+<td>cod (一周後)</td>
+<td></td>
+</tr>
+<tr>
+<td>DampingRate / TuneShiftByRadiation</td>
+<td>Re / Im (cd(1:3))</td>
+<td>一周あたり</td>
+</tr>
+<tr>
+<td>Emittances, MomentumSpread, BunchLength</td>
+<td>eemx..z, sige, sigz</td>
+<td></td>
+</tr>
+<tr>
+<td>OrbitAtEntrance, OneTurnTransferMatrix, OneTurnDampingMatrix, NormalCoordinates</td>
+<td>codin, T=trans(:,1:6), D=trans(:,7:12), <strong>ri</strong></td>
+<td>mode≥1</td>
+</tr>
+<tr>
+<td>OneTurnExcitation / EquilibriumBeamMatrix</td>
+<td>beamn (正規座標の励起) / emitp (物理座標) を 21 要素パックから 6×6 へ</td>
+<td>mode≥1</td>
+</tr>
+<tr>
+<td>ExtendedTwissParameters</td>
+<td>tfetwiss(ri, cod)</td>
+<td>mode≥1</td>
+</tr>
+<tr>
+<td>ClosedOrbit</td>
+<td>各要素入口の cod</td>
+<td>mode≥2</td>
+</tr>
+<tr>
+<td>TransferMatrices</td>
+<td>各要素入口までの<strong>累積</strong>行列</td>
+<td>mode≥3</td>
+</tr>
+<tr>
+<td>IntrabeamExcitation</td>
+<td></td>
+<td>mode=3 かつ INTRA</td>
+</tr>
+</tbody>
+</table>
+<p>SaveEMIT-&gt;False (既定) では計算後に EMITX/EMITY/EMITZ/SIGE/SIGZ を元に戻す。</p>
+<h2 id="2-計算の流れ-temitf">2. 計算の流れ (temit.f)</h2>
+<ol>
+<li><strong>tcod</strong> (CELL かつ calcod): 6D 閉軌道。RFSW なら先に RFSW を切った 4D 解 (δ 固定) を求め、<code>cod(5)=asinz((u0·pgev−vcacc)/vceff)/wrfeff−trf0</code> を初期値に 6D Newton。各反復は <code>tturne(update=.true.)</code> で、末尾が <code>trf0 = asin(U0/Vc)/wrfeff</code> (trans(5,6)&lt;0 なら π−asin) を決め直す。RADCOD では z のずれを trf0 へ移す (<code>trf0 += dz/v0</code>)。重み codw0=(1e-6,1e-7,1e-7,1e-8,1e-5,1e-6)、収束 1e-4。
+   <strong>RFSW OFF でも RADCOD ON なら放射込みの閉軌道</strong>を使う (tcod の rfsw=F 枝、出口 δ=−U0/P0、z のずれは trf0 へ。docs/29 A32)。</li>
+<li><code>irad=12</code>、<code>tinitr12</code>、<code>tsetr0</code> の後 <strong>tturne</strong> で一周。<code>trans(6,12)</code> の 1:6 列 = シンプレクティック部 T、7:12 列 = 放射減衰 D (<code>tmuld6: D += tr1·(T+D)</code>)。<code>beam(1:21)</code> = 量子励起の 2 次モーメント。</li>
+<li><strong>tecalc</strong> で固有値分解と平衡解。4. lfno&gt;0 なら <code>temitprint</code> (FFS の EMIT)。</li>
+</ol>
+<h3 id="2-1-tturne1-の要素ごとの扱い">2-1. tturne1 の要素ごとの扱い</h3>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DRIFT</td>
+<td><code>tdrife0(dvon=.true.)</code>: 放射なし、<code>z −= L·dv(δ)</code></td>
+</tr>
+<tr>
+<td>BEND (tbende)</td>
+<td><code>ndiv = 1 (K1=0) / 1+int(\|phic/eps\|)</code>。enarad なら <code>nrad=1+int(\|L·crad·(h0 b)²/epsrad\|)</code>, <code>1+int(\|phib·h0·anrad\|/epsrad/1e6)</code> との max (×EMITDIV·EMITDIVB)。K1=0 は tbendebody0、K1≠0 は tbendecorr+tbendebody (tbendib の解析行列)。スライス間と出口エッジ後に tradke</td>
+</tr>
+<tr>
+<td>QUAD (tquade)</td>
+<td>tsolrote → tsetr0 → tqfrie (DISFRIN=0) → tqlfre (FRINGE=1,3; F1) → <code>tradke(f1in)</code> か tsetr0 → tsolque×ndiv (<code>itgetqraddiv</code>: cod 依存) → 出口側を逆順</td>
+</tr>
+<tr>
+<td>SEXT/OCT/… (tthine)</td>
+<td><strong>放射なし</strong> (<code>enarad=.false.</code>)。L/6 ドリフト → キック → 2L/3 → キック → L/6。ドリフトは <code>tdrife0(dvon=.true.)</code> なので <strong>dv 項 <code>z −= L·dv(δ)</code> が付く</strong> (落とすと 実ラティス (16b) で νs 2.8e-6, α_c 5.6e-6 の相対差、累積行列の (5,6) が6 極 1 台ごとに 1.3e-9 ずれる)</td>
+</tr>
+<tr>
+<td>MULT (tmulte)</td>
+<td>キック分割数と itgetqraddiv の max (≤300)、スライスごとに tradke</td>
+</tr>
+<tr>
+<td>CAVI (tcave)</td>
+<td><code>ndiv = 1+int(min(\|wL\|, sqrt((v(1/h0+1/h1))²/3/0.01)))</code>。RFSW: tcavfrie → [ドリフト → 薄いキック]×ndiv → ドリフト → tcavfrie。キック <code>dh = −va(sin φ + offset1)</code>, <code>φ = w t + PHI − trf0·w</code>, offset1 = sin(trf0 w) (RADCOD OFF) / 0 (ON)。RFSW OFF: 積算のみで長さ L のドリフト</td>
+</tr>
+</tbody>
+</table>
+<p>tturneg が <code>wrfeff = sqrt|ddvcacc/vcacc|</code>, <code>vceff = hypot(vcacc, dvcacc/wrfeff)</code> を作る。tturneg/tecalc は <strong>RFSW に関係なく</strong>空洞の積算量から Vc, wrfeff を作る (RFSW OFF でも Vc, bh, dz, εz, σz は 0 ではない)。</p>
+<p>ROTATE と tchge: BEND は「tchge (入口) → 本体 → tchge (出口)」、薄い多極と L=0 の四極は tthine の先頭・末尾の tchge (pysad <code>_tbende</code> → <code>_tbende_core</code>、<code>_tthine</code>/<code>_tthine_gen</code>)。
+th≠0 かつずれ≠0 の要素は SAD の tchge の癖 (入口の行列に回転が入らない、docs/29 A25) を k64 モードの <code>_tchge_jac</code> が再現する (v2 モードは回転を行列に入れる。docs/07)。この要素を含むリングでは SAD の 6D 閉軌道 (tcod) の z が閉じない/収束が緩く、Emittance[] の δ・チューンは SAD と一致しない (CALC と追跡は一致)。bench_level25f、docs/history/work_rotate.md §3。</p>
+<h3 id="2-2-放射-tradke-photonsf">2-2. 放射 tradke (photons.f)</h3>
+<p>基準点 (codr0, transr) から現在点までの運動量ベクトルの角度 θ を外積 <code>xpa</code> から求め</p>
+<pre><code>anp = anrad·h1·θ,  uc = cuc·h1³/p0/al1·θ,  dg = −cave·anp·uc (cave=8/(15√3)),  u0 −= dg
+dee = anp·uc²·cuu (cuu=11/27)      ← beam の (px,px),(py,py),(δ,·) に加算
+</code></pre>
+<p><code>crad = r_e(c/amass)²/p0/1.5</code>, <code>cuc = 1.5 r_e/rcratio</code>, <code>anrad = 5/(2√3)·rcratio</code> (tphyzp)。<code>xpa=0</code> (軸上の四極) なら何も更新しない。RADCOD ON のときだけ cod を更新し <code>tesetdv</code> を取り直す。</p>
+<h3 id="2-3-tecalc">2-3. tecalc</h3>
+<ul>
+<li>RFSW OFF なら <code>rx(6,1:5)=0, rx(6,6)=1</code>。</li>
+<li><code>teigenc</code> (= teigen.f: tbal の vx, thess の高速 Givens, tqr の二重シフト QR; pysad は <a href="../pysad/teigen.py"><code>pysad/teigen.py</code></a> に直訳) → <strong>tnorm</strong>: 各モードのシンプレクティック積 s を 1 に正規化 (s&lt;0 なら固有値を共役に)、z 成分最大のモードを 5,6 列、x 成分の大きい方を 1,2 列に並べ替え、<code>r(i,i+1)=0, r(i,i)&gt;0</code> に回転。<code>r=tsymp(r)</code>, <code>ri=tinv6(r)</code>。</li>
+<li><code>synchm = rfsw ∧ Im(log λz)≠0</code>。真: <code>alphap = −Im(cd6)|Im(cd6)|/(c·2π/ω0)/(dvcacc/pgev)</code>, <code>ωz = |Im cd6|ω0/2π</code>。偽: <code>alphap = −rx(5,6)/2π/c/p0·h0·ω0</code>, <code>ωz = sqrt|αp·2π·heff·Vc/pgev·cos φrf|·ω0/2π</code>。</li>
+<li><code>φrf = asin(U0/Vc)</code>, <code>bh = sqrt|Vc/(π|αp| heff pgev)·(2cos φrf − (π−2φrf)U0/Vc)|</code>。</li>
+<li><code>rd = ri·D·r</code>, 2×2 ブロックから <code>cd = ((rd_ii+rd_jj)/2 + i(rd_ij−rd_ji)/2)/λ</code>: Re = 減衰率、Im = チューンシフト、J = 4·Re cd/ΣRe cd。</li>
+<li>平衡: beam を ri で正規座標へ (synchm でなければ z 行・列を 0)、<code>rdb</code> (rd + モード回転) から 21×21 の <code>btr</code> を組み、(Σ11±Σ22)/√2 の基底変換とスケーリングの後 <code>tsolva(btr, beam, emitn, 1e-8)</code> (SVD) で Σ = MΣMᵀ+B を解く。</li>
+<li><code>εx = sign(sqrt|e11e22−e12²|, e22·charge)</code>、<code>emitp = r·emitn·rᵀ</code>、<code>σE = sqrt|emitp(6,6)|</code>。synchm なら <code>σz = sqrt|emitp(5,5)|</code>、εz も行列式。そうでなければ <code>σz = |αp| σE c p0/h0/ωz</code>, <code>εz = σz σE</code>。</li>
+<li><code>rsetgl1</code> で EMITX/EMITY/EMITZ/SIGE/SIGZ に格納。</li>
+<li><strong>不安定な光学</strong> (docs/history/work_emit_unstable.md A): 固有値が実数 (λ, 1/λ) でも teigen/tnorm はそのまま通り、<code>stab=(|Re cd(4:6)|&lt;1e-6) ∧ fndcod</code> は戻り値 (Emittance[] の <code>Stable</code>) にしか効かない
+  (INTRA ON のとき <code>Skip intrabeam because of unstable.</code>)。Emittance は不安定でも計算・格納され、temitprint は一周行列の偏差 <code>Σ|rx·tinv6(rx)−1|&gt;1e-8</code> を <code>*** Deviation from symplectic matrix =</code> で出す。
+  実固有値の対の並び (λ と 1/λ のどちらが先か) は teigen の返す順で、始点が鏡映対称 (a=d) のときは丸め雑音の符号で決まる (pysad <code>_order_real_pairs</code> は雑音のとき増大側が先)。</li>
+</ul>
+<h3 id="2-4-報告-temitprint--ffsprint_emit">2-4. 報告 (temitprint / <code>FFS.print_emit</code>)</h3>
+<p>SAD の EMIT (temitprint) の行: Closed orbit (Entrance/Exit)、Extended Twiss、<code>P0, f0, U0 [MV], Vc [MV], dz [mm], alpha, dl, h, dV/P0, fs</code>、Imag./Real tune、Damping (一周・時間・チューンシフト・分配数)、<code>Emittance X/Y/Z, Energy spread, Bunch Length [mm], Beam tilt, Beam size</code>。
+pysad <code>FFS.print_emit</code> はこの全行を同じ書式で出す (docs/history/work_emit_report.md):</p>
+<ul>
+<li>Closed orbit (Entrance と Exit。値は <code>' '//autofg(v,'9.6')</code>)、Extended Twiss (EPX の欄は SAD の癖で EY の値、docs/29 A30)。</li>
+<li>P0/f0 (f0 は <code>c·β/C</code>、β=p/h)、U0/Vc、dz/alpha、Orbit dilation <code>dl = -FSHIFT·周長</code> (RFSW ON のとき <code>dvfs=FSHIFT</code> が全要素の dv に入る: <code>_Phys.dvfs</code>)、h = <code>wrfeff c/ω0</code>、Bucket height、fs = <code>omegaz/2π</code>。</li>
+<li>Imag.tune = <code>Re log λ/2π</code>、Real tune、Damping (一周あたり Re cd、Damping time = <code>-2π/ω0/Re cd</code>、Tune shift = <code>Im cd/2π</code>、分配数 <code>J = Re cd · 4/Σ Re cd</code>)。</li>
+<li>Emittance X/Y/Z、Energy spread、Bunch Length、Beam tilt、Beam size xi/eta。Beam tilt = atan2(−2σxy, σxx−σyy)/2、xi/eta = 主軸方向の rms (temit.f:1126-1141、<code>emit6d.beam_tilt_sizes</code>)。</li>
+<li>Nominal spin tune = <code>h0·GSPIN</code>、Polarization time (POL OFF は 0)。POL ON のスピンの行・表は 4b 節 (POL OFF の形は SAD と同じ)。</li>
+</ul>
+<p>書式: 実数は <code>fmt_real</code> (autofg 直訳)。<code>vout</code> は <code>autofg(x,'10.7')(1:10)</code> なので 7 桁目が<strong>切り捨てに見える</strong> (dz=20.61866962 mm → <code>20.618669</code>、f0=497069.3289 → <code>497069.32</code>) — <code>fmt_real(x,'10.7')</code>。
+<code>Damping</code> 系は gfortran の <code>1p g14.6</code> (<code>sadscript.fmt_g(v,14,6)</code>)、tune は <code>3(f10.7,10x)</code> (行末の X 編集は出力されない)。NaN の報告 (閉軌道なし) は幅に右詰めの <code>NaN</code>。</p>
+<h2 id="3-内部の座標変数">3. 内部の座標・変数</h2>
+<ul>
+<li>座標 (x, px/p0, y, py/p0, z, δ)。<code>tesetdv(δ)</code>: <code>dvemit = −(p1+p0)/h1/(p0h1+p1h0)·δ + dvfs</code>、<code>dvfs = FSHIFT</code> (RFSW のときのみ)。ドリフトは <code>tgetdv</code> の同じ式で <code>z −= L·dv</code>。</li>
+<li><code>trf0</code> = 同期位置 [m]、空洞位相 <code>phis = trf0·w</code>。<code>PHICAV, DTSYNCH, EFFVC, EFFRFFREQ</code> に書き出される。</li>
+<li>temw の <code>r</code> (正規→物理), <code>ri</code> (物理→正規) を tecalc が更新。</li>
+</ul>
+<h2 id="4-pysad-emit6dpy-の構造">4. pysad emit6d.py の構造</h2>
+<table>
+<thead>
+<tr>
+<th>部品</th>
+<th>SAD 対応</th>
+<th>要点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>_Phys</code></td>
+<td>tphyzp</td>
+<td>p0, h0, brhoz, crad, cuc, anrad, ω0, <code>dv(δ)</code> (dvfs=0)</td>
+</tr>
+<tr>
+<td><code>_State</code></td>
+<td>trans(6,12), beam, codr0/transr</td>
+<td><code>T, D, B(6×6), cod, u0, trf0, vc0/hvc0/vcacc/dvcacc/ddvcacc</code></td>
+</tr>
+<tr>
+<td><code>_State.piece(f, jac=)</code></td>
+<td>tmultr5+tmulbs</td>
+<td>COD 写像 f の Jacobian を T, D, B に掛ける。<strong>解析ヤコビアン <code>jac(cod)</code></strong> (ドリフト・薄い多極・四極 (tqente/tqfrie/tsolque 本体)・BEND (tbfrie.f/tbendebody0 の trans + dv 項)) があればそれを、なければ<strong>数値 Jacobian</strong> (<code>lattice._num_jacobian</code>, 中心差分 eps=1e-7)。z 行 (5,1..4) は SAD と同じ<strong>シンプレクティック条件</strong> <code>t(5,j) = −t(1,j)t(2,6)+t(2,j)t(1,6)−t(3,j)t(4,6)+t(4,j)t(3,6)</code> で組み直す (空洞は <code>symp_z=False</code>)。<code>want_jac=False</code> は cod だけ追う一周、<code>want_db=False</code> は SAD の irad=6 (D・B なし)</td>
+</tr>
+<tr>
+<td><code>_jac_drift/_jac_thin/_jac_tqente/_jac_tqfrie/_jac_tsolque_body/_jac_quad_full/_jac_tqlfre</code>, <code>_dvz</code></td>
+<td>tdrife0, tthine, tqente, tqfrie, tsolque, tsolrote, tqlfre, <code>h0/h1emit**3</code></td>
+<td>解析ヤコビアン。<code>z −= dv(δ)L</code> の δ 微分は <code>+h0/h1³·L</code> (<code>-dv'</code> と代数的に一致)。<code>_USE_ANALYTIC_JAC=False</code> で数値微分に戻る。ユニットテスト <code>tests/test_emit_jac.py</code></td>
+</tr>
+<tr>
+<td><code>_State.tradke</code></td>
+<td>tradke</td>
+<td>bzh=0 版の直訳 (radcod 分岐込み)</td>
+</tr>
+<tr>
+<td><code>_tdrife0, _tquade, _tbende, 薄い多極, _tcave, _tmulte, _tsteee</code></td>
+<td>同名</td>
+<td>分割数の式は SAD と同一。<code>_tbendecorr/_tbendebody</code> は解析行列ごと直訳</td>
+</tr>
+<tr>
+<td><code>tturne(els, cod0, ph, trf0, rfsw, radcod)</code></td>
+<td>tturne1</td>
+<td><code>_rf_effective</code> = tturneg、<code>_trf0_update</code> = tturne の update (mod は <code>math.fmod</code>)</td>
+</tr>
+<tr>
+<td><code>_normal_form</code></td>
+<td>teigenc+tnorm</td>
+<td>numpy eig → 共役対 → z 成分最大を 3 番目、x 成分で 1,2 → tnorm と同じ正規化・回転。RF なし (λz=1) は <code>r(:,5)=e5, r(:,6)=(η,0,1)</code> を直接作る</td>
+</tr>
+<tr>
+<td><code>tecalc</code></td>
+<td>tecalc</td>
+<td>btr の組み立て・<code>tsolva</code> (= <a href="../pysad/tsvd.py"><code>pysad/tsvd.py</code></a> の tsvd、特異値 1e-8) まで直訳</td>
+</tr>
+<tr>
+<td><code>_tcod_radcod(els, ph, cod, rfsw)</code></td>
+<td>tcod.f (RADCOD ON)</td>
+<td><strong>tcod の直訳</strong>: RFSW ON は先に RFSW OFF で自分を呼び (<code>cod(5)=asin((U0 pgev−vcacc)/vceff)/wrfeff−trf0</code>)、本体は Newton (T−1 を <code>tsvd</code> 1e-8)、一周ごとに z の平均 dz を <code>codi(5)</code> から引いて <code>trf0 += dz/v0</code> (<code>sign(1,trf0)·mod(…)</code> で折り返し)、<code>r=Σ(dcod1/codw)²&lt;1e-4</code> で収束、<code>fact</code> による減速 (fmin 1e-4)、<code>dpthre</code>。z と trf0 の最終値は反復の履歴で決まり、SAD と同じ分け方になる</td>
+</tr>
+<tr>
+<td><code>closed_orbit6d(els, ph, rfsw, radcod, close_z)</code></td>
+<td>tcod</td>
+<td>RFSW+RADCOD、RFSW OFF+RADCOD ON (<code>_tcod_radcod(rfsw=False)</code>)、および <strong>RFSW ON + RADCOD OFF (空洞あり) も <code>_tcod_radcod</code></strong> (後者は <code>radcod=False</code>: 各反復の tturne が trf0 を更新し、収束判定に (dtrf0/trw)² が入り、z を trf0 に移さない。FSHIFT≠0 でも SAD と ≤1.2e-11、bench_level30b)。初期値は CALC の 4D 閉軌道、z=0, dp=0。それ以外 (RFSW OFF + RADCOD OFF) は 4D 閉軌道 (δ 固定) で一周し、z の戻りが 0 になる δ を<strong>割線法</strong>で決める (tcod の直訳ではない。cod だけ追う一周 + <code>_qcod_accepts_start</code>)。RFSW: 1 周目 (trf0=0) で U0・Vc・T(5,6) の符号 → trf0。<code>calc6d._closed_orbit</code> (Emittance[]/CALC6D) も共用</td>
+</tr>
+<tr>
+<td><code>emittance6d(lat, p_eV, rfsw, radcod, close_z)</code></td>
+<td>temit</td>
+<td><code>closed_orbit6d</code> → tturne (irad=12; tcod の最後の反復が完全な一周ならそれを使う) → <code>tecalc</code>。RFSW OFF でも tecalc は空洞の積算量から Vc・h・bh・ωz・σz・trf0 を出す (SAD と同じ)</td>
+</tr>
+</tbody>
+</table>
+<p>返り値 dict: <code>emittance_x/y/z</code> = Emittances、<code>momentum_spread</code>、<code>bunch_length</code>、<code>momentum_compaction</code>、<code>rf_voltage_eff</code> = RfVoltageVc、<code>trf0</code> = EquilibriumPosition、<code>bucket_height</code>、<code>closed_orbit</code> = OrbitAtExit (RFSW+RADCOD は tcod の入口の値)、<code>orbit_entrance</code>/<code>orbit_exit</code> (EMIT の Closed orbit の 2 行、emittance6d のみ)、<code>energy_loss_eV</code> = EnergyLossU0、<code>tunes</code>、<code>damping_rate</code>、<code>beam_matrix</code> = EquilibriumBeamMatrix、<code>one_turn_matrix</code> = T+D、<code>normal_r</code> = r、<code>normal_ri</code> = NormalCoordinates。</p>
+<h3 id="解析ヤコビアンの対象と理由">解析ヤコビアンの対象と理由</h3>
+<ul>
+<li>対象: ドリフト、薄い多極 (SEXT〜DODECA、ずれ・ロールは tchge の行列)、四極 (ずれ・ロール付き tsolrote、ハードエッジ tqfrie、線形フリンジ FRINGE=1,2,3 の tqlfre、K1&lt;0 の −π/2 回転、tsolque 本体: <code>_jac_quad_full</code>/<code>_jac_tqlfre</code>)、BEND (K1=0 の <code>lattice._tbendebody0_mat</code> と K1≠0 の <code>_tbendecorr/_tbendebody</code>、エッジ)。lattice の CALC 経路と同じ関数を使う (docs/07 §2)。</li>
+<li>まだ数値微分: <code>MULT</code>、ANGLE=0 の BEND、DROTATE≠0 の BEND、空洞 (history/work_emit_report.md §5)。F1 付き BEND の本体は <code>emit6d._tbende_core</code> (tblfre・tbendal・断片のループ) として実装している (微分の方式は未確認)。</li>
+<li>理由 1 (桁落ち): K1=0 の BEND 本体の数値ヤコビアンは rhob≈20 倍の桁落ちで相対 1e-8〜1e-7 の雑音が出る (刻みを小さくすると悪化、1e-5 で 2e-10)。この雑音は量子励起の分割数 <code>int()</code> を跨ぐ形で効く。解析式にすると雑音が消え、RADCOD ON も SAD と 2e-11 以内になる。</li>
+<li>理由 2 (分岐境界): 数値微分の刻み 1e-6 は K1=0 BEND の式の分岐境界に当たり (1,6) に 5.6e-7 の誤差が出るため、残る数値微分の刻みは 1e-7。</li>
+<li>理由 3 (フリンジ四極): tqlfre を含む四極を数値微分にすると ε・チューンに 1e-5〜2.7e-7 の差が出る (<code>bench_level26b</code>)。解析式で 1.3e-9。</li>
+<li>z 行のシンプレクティック性: 数値微分の z 行をそのまま使うと T の誤差 6.6e-5、εy が 2% ずれる (Level 3C)。そのため z 行 (5,1..4) はシンプレクティック条件で組み直す (<code>_State.piece</code>)。</li>
+</ul>
+<h2 id="4b-要素機能の範囲">4b. 要素・機能の範囲</h2>
+<h3 id="pol-のスピン-docs16_spin_polmd">POL のスピン (docs/16_spin_pol.md)</h3>
+<p><code>POL;</code> を付けた <code>Emittance[]</code>/<code>EMIT</code> は、偏極時間 (<code>PolarizationTime</code>)・スピンチューン・偏極ベクトル・スピン歳差行列・1 周の脱偏極ベクトル (表) を出す (<a href="../pysad/spin.py"><code>pysad/spin.py</code></a> の <code>tradke_spin</code>、<code>spnorm</code>、<code>srequpol</code>)。
+放射の 1 ステップ (<code>tradke</code>) ごとに <code>srot</code> を回して積算し、<code>tchge</code> の回転 (ROTATE 付き偏向) でも回す。POL のとき BEND の分割数は <code>1+int(|φ|·h0·a/0.01)</code> 以上になる (K64 も同じ)。</p>
+<ul>
+<li>平面リング・縦ずれ・傾き・6 極つきのリングで、偏極時間・スピンチューン・偏極ベクトルを K64 と 10〜13 桁で確認した (エネルギー 3.0〜3.08 GeV、aγ=6.8〜6.99 の格子の範囲。§6)。</li>
+<li><strong>MULT</strong>: K1・K2・K3 とずれのある MULT のリングが gs と 1e-11 (<code>test_mult_ring_matches_gs</code>、L=0 の薄い MULT は <code>test_thin_mult_ring_spin_tune_matches_gs</code>)。<code>tmulke</code> の bsir0 の更新も入れた (この例では効かない)。
+  K3 が強くずれの大きい MULT リング (K3=300、ずれ 1e-4) は pysad の CALC (qcod) の閉軌道が gs と別の解になり Emittance が NaN (未解決、docs/07 4b)。</li>
+<li><strong>SOL</strong> (BOUND≠0 の領域): <code>emit_extra._tturne1</code> が SOL 領域 (<code>_solmap</code>) を通し、偏極時間・スピンチューン・偏極ベクトルが gs と一致 (<code>test_solenoid_ring_matches_gs</code>)。領域内の MULT・BEND・CAVI のスピンは未確認 (領域内の要素そのものが未対応)。</li>
+<li><strong>空洞</strong>: ROTATE+DX+DY 付きの空洞を含む結合リングのスピンは、2026-11-16 に gs と比べて確認済み (偏極時間 13 桁、スピンチューン 1e-14、偏極ベクトル 1e-13)。ただし専用の pytest はまだ無い (gs の出力との手動比較)。</li>
+<li><strong>MULT ANGLE≠0 (<code>tmultae</code>)</strong> の POL スピン: 2026-11-16 に確認済み (偏極時間 14 桁、スピンチューン 1e-14。偏極ベクトルは平面リングなので 0,1,0 で、傾きのあるリングでの偏極ベクトルは見ていない)。<strong><code>tbrote</code></strong> (BEND の DROTATE+DX): 確認済み (偏極時間 14 桁、スピンチューン 1e-14、偏極ベクトル 1e-14)。</li>
+<li><strong>Polarization2</strong>: gs の <code>Emittance[]</code> は Polarization2 の値を返さず (<code>Polarization2/.em</code> が未評価のまま)、pysad も同じ (2026-11-16 確認)。</li>
+<li>未対応・未確認: <code>Polarization</code> (平衡偏極度) は K64 が NaN (B55)。<strong>k64 モードは NaN のまま、v2 モードは有限値</strong> (docs/16、下の「v2 モードで変わった放射・エミッタンス」)。<code>MAP</code> のスピン、SOL 内のスピン (<code>tsconv</code>) は未対応。
+  縦オフセットのある偏向磁石の <code>bsi2</code> の項は K64 では捨てられる (B58。v2 モードは入れる。下記)。POL ON は numba の速い経路を使えない (Python 経路)。v2 モードの POL では四極・MULT を細かく分割するので Emittance[] が遅くなる。</li>
+<li><strong>TrackParticles のスピン追跡</strong>は docs/10 §9 (POL かつ RAD ON のときだけ、<code>track6.py</code> の <code>sprot</code>、損失の処理なし)。</li>
+</ul>
+<h3 id="synchrobetaemittance-pysadsynchrobetapy">SynchroBetaEmittance (<code>pysad/synchrobeta.py</code>)</h3>
+<p>K64 の <code>tfemits</code>・<code>temits</code> ほか (<code>tevdif</code>・<code>tesolvd</code>・<code>tesumb</code> など) の直訳。<code>Packages/emit.n</code> の <code>SynchroBetaEmittance</code> が <code>SynchroBetaEmittance1[nus0, nus1, dnus, mphi]</code> (<code>ffscmd.fn_synchrobeta</code>) を呼ぶ。
+運動量のずれ (2·ndims+1 点) ごとに <code>_tcod_radcod</code> で閉軌道、<code>tturne</code> で T・D・B を求め、(アクション J, 方位角モード m) の連立方程式を反復で解く。</p>
+<ul>
+<li>12 セルのリング + CAVI (VOLT=2e6, HARM=64) で、K64 と emitx が相対 1e-5 以内で一致する (§6)。試験は <a href="../pysad/tests/test_synchrobeta.py"><code>test_synchrobeta.py</code></a>。</li>
+<li>差の原因は閉軌道の収束の履歴と、条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) とみているが、確認していない。</li>
+<li>24 セルの平面リング + CAVI VOLT=2e6、AzimuthalModes-&gt;7 の 4 点で、emitx は K64 と相対 1e-6 台で一致し、emity は雑音 (1e-19 台)。<strong>結合のあるラティス</strong> (QT・SF・DY のずれ入り 8+4 セルのリング) は gs が SIGSEGV で落ちて比較できず、pysad も <code>ValueError: cannot convert float NaN to integer</code> で失敗する (エラーの出し方が粗い)。<strong>確認</strong>: 24 セルの平面 FODO + skew 四極 1 台 (3 GeV、RF 4 MV、6 極なし) の結合のあるリングでは gs は落ちず、k64 の pysad は gs と 7 桁以上一致した (εx 1.3603366e-6 対 1.3603365e-6、εy 4.7516654e-8 対 4.7516654e-8)。Emittance[] と、独立な 6x6 の平衡エミッタンス (自前の 1 周写像 + 放射の減衰 + 量子励起の拡散 + Lyapunov 方程式) とも一致 (ASTRID2 + skew 四極 ks = 0.05 で ε₁ 6e-5、ε₂ 1.3e-4)。SB と Emittance[] の差 (ASTRID2 +0.8%、PF +1.1%・+2.9%) は結合の有無に依らず、シンクロ・ベータ結合と色収差の分。SOL・強い結合で gs が落ちるかは未確認。</li>
+<li><strong>大きなリング A (3 GeV、周長 603 m、νs = 0.0041、RF 1.4 MV) では使えない</strong> (B128): gs も pysad k64 も 6.18e-9 (AzimuthalModes ≥ 3 で変わらず) を返すが、Emittance[] の 1.55e-10、独立な 6x6 の平衡 1.5173e-10、RAD + FLUC の 6 次元追跡 (60 粒子、4000 周) の 1.6e-10 と 40 倍違う。AzimuthalModes 12・20・30・32 以上で 3.19e-9・1.46e-9・8.50e-10・7.87e-10 と動き続け、νs の入力・エネルギー・6 極の強さにも依らない。原因は未特定 (K64 の式の限界か、gs・pysad が共通に持つ誤りか)。PF・ASTRID2・SP8 (大きなリング B、8 GeV) は Emittance[] と 0.5〜1%。<strong>v2 は AzimuthalModes m と 1.5 倍の m の emitx が 20% 以上違うと警告を出す</strong> (値は変えない。大きなリング A の m = 9 で 5.1e-9 対 2.5e-9)。使うときは AzimuthalModes を変えて収束を確認し、Emittance[] と比べる。<code>AzimuthalModes-&gt;1</code> は pysad が IndexError (gs は 8.6e-7 を返すが意味がない)、2 以上を使う。</li>
+<li>未確認: 不安定なチューン、<code>emiout</code>、SOL・強い結合のラティスでの gs との一致、RFSW の組み合わせ。検証は最終の 6 つの値 (nus, emitx, emity, emitxp, emityp, conv) だけで、中間配列は比べていない。</li>
+</ul>
+<h3 id="solcoordtcaviundmapmult-angle0-と-emittance">SOL・COORD・TCAVI・UND・MAP・MULT (ANGLE≠0) と Emittance[]</h3>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>Emittance[]・EMIT の扱い</th>
+<th>文書</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SOL (BOUND≠0 の領域)</td>
+<td><code>solemit.py</code> (領域内を K64 の <code>tsole1</code> の順に、写像は追跡カーネルの数値微分、放射は bz 付きの <code>_State.tradke(al, 0, bzh)</code>)。BZ=2 T・5 T の 12 セルのリングで確認</td>
+<td>docs/17_sol.md</td>
+</tr>
+<tr>
+<td>COORD</td>
+<td><code>emit6d._tcoord</code> (<code>piece</code>、z 行のシンプレクティック組み直しなし)</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>TCAVI</td>
+<td><code>emit6d._ttcave</code> (tchge → 半ドリフト → キック → 半ドリフト [tradke] → tchge)。RFSW OFF はドリフト。<strong>L=0 のみ K64 と比較できる</strong>。L≠0 は K64 が壊れる (B36: EnergyLossU0 が NaN など) ので、pysad は NaN を再現せず自然な値を出す</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>UND</td>
+<td>k64 モード: 恒等 (K64 の <code>tturne</code> は <code>case default</code>)。K64 は磁場を設定できず磁場なしのドリフト (B37)。v2 モード: 磁場がなくても長さ L のドリフト、<code>FBX</code>・<code>FBY</code> つきは追跡のカーネルの数値微分と 1 周期 64 分割以上の <code>tradke</code>。v2 は K64 が磁場を設定できないので K64 との比較がなく、解析式で確認</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>MAP</td>
+<td><code>emit6d._tmap</code> (<code>ExternalMap["EMIT", l, cod]</code> の <code>{cod1, trans[, dtrans, dbeam]}</code>)。定義がなければ恒等・長さ 0</td>
+<td>docs/19_other_elements.md</td>
+</tr>
+<tr>
+<td>MULT (ANGLE≠0)</td>
+<td><code>emit6d._tmulte</code> → <code>multae.emit</code></td>
+<td>docs/19_other_elements.md</td>
+</tr>
+</tbody>
+</table>
+<p>(各要素の K64 との一致の桁は docs/history/09_emittance_validation.md。)</p>
+<ul>
+<li><strong>SOL の長さを周長に入れない</strong>: K64 は SOL (BOUND≠0) の長さを周長 (omega0・MomentumCompaction・偏極時間・空洞の位相) に入れない。<code>emit6d._emit_circ</code> が同じにしている (PLANAR + SOL で周長 45.6 のときと偏極時間が 15 桁一致)。
+  追跡の <code>circ</code> も同じ。GEO のない SOL では K64 の S 座標が途切れて周長がさらに狂う (偏極時間が約半分) が、pysad は再現しない (GEO=1 の参照だけ照合)。</li>
+<li>SOL を含む Emittance[] は <code>emit_extra.emittance_rules</code> (Orbit/Matrix の規則、BeamMatrices) を使わず <code>run_emit</code> に落ちる。EMT・TUN・ALP・COD は合うが、<strong>Stable は 0、HarmonicNumber は NaN、OneTurnTransferMatrix などの規則は出ない</strong> (docs/17)。</li>
+<li>SOL の限界: CALC6D・RADCOD つきの CALC・Touschek (INTRA) との組み合わせは未対応、RADCOD の閉軌道探索中に K64 が内部分割の間で固定するパラメータを pysad は毎スライスの δ で計算し直す (影響は 2 次とみているが未確認)、
+  領域内の MULT・BEND・CAVI は k64 モードでは未対応 (v2 モードでは solemit が扱う。docs/17)、行列は数値微分なので解析行列の gs と 1e-10 程度の差。</li>
+<li>v2 モードの SOL 領域: 領域内の BEND・MULT・CAVI (RF つき MULT を含む)・F1 つきの端の放射・ずれて傾いたソレノイド・TRPT の加速・AUTOPHI が Emittance[]・EMIT に入る (docs/17)。<strong>POL の量 (SpinTune・Polarization など)</strong>: k64 は領域の中が K64 の式 (縦磁場を z 軸の向きに足す: B130) のままで、ずれて傾いたソレノイドではスピンチューンが追跡と 1.5e-4〜1.1e-3、n0 の向きが 2.5e-3〜1.5e-2 rad 違う。<strong>v2 は修正してある</strong> (B⊥ と B∥ を運動量の向きに分けて足す。<code>spin.tradke_spin</code>・<code>solemit._trk</code>): 追跡との差は SpinTune で 1e-13〜5e-7、n0 で 0〜1e-5 rad (小さな FODO・大きなリング A・PF・ASTRID2・MPW 入りで確認)。回転した縦磁場の歳差の閉じた式とも 5e-7。条件 1〜3 T・0.3〜3 GeV。bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (docs/17)。</li>
+<li>MULT (ANGLE≠0) の限界: FB1/FB2・CHI2 は Twiss・Emittance[] で未対応、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/19)。</li>
+</ul>
+<h3 id="v2-モードで変わった放射エミッタンス-radintjxmomentumcompactionemitdiv-ほか">v2 モードで変わった放射・エミッタンス (RADINT・Jx・MomentumCompaction・EMITDIV ほか)</h3>
+<p>k64 モードは K64 (gs) と同じ。v2 モード (既定) は下の表の「v2」の動作。試験 <a href="../pysad/tests/test_v2_A_radint.py"><code>test_v2_A_radint.py</code></a>・<a href="../pysad/tests/test_v2_A_damping.py"><code>test_v2_A_damping.py</code></a>・<a href="../pysad/tests/test_v2_A_spin.py"><code>test_v2_A_spin.py</code></a>・<a href="../pysad/tests/test_v2_A_tchge.py"><code>test_v2_A_tchge.py</code></a>・<a href="../pysad/tests/test_v2_A_track.py"><code>test_v2_A_track.py</code></a>・<a href="../pysad/tests/test_v2_A_ffs.py"><code>test_v2_A_ffs.py</code></a> (計 67 件。詳細は <a href="history/v2_changes_A.md"><code>docs/history/v2_changes_A.md</code></a>)。根拠は解析式・独立な数値計算・保存則で、gs は根拠にしていない。条件は 3 GeV の FODO リング (24 セル 105.6 m / 91.2 m、12 セル 45.6 m / 62.4 m)、偏向磁石 L=1.2 m・15 度 (ρ=4.58 m)、RF 500 MHz。<strong>大きなリング・挿入光源・強い結合では確かめていない。</strong></p>
+<p><strong>(a) RADINT (INTGRL.f)</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>K64 の動作</th>
+<th>v2 の動作</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B06</td>
+<td>全 BEND に最後の BEND の L/ANGLE を使う</td>
+<td>その BEND 自身の L/ANGLE</td>
+<td>曲率の違う 2 種の BEND で自前の 3x3 行列の積分と I1〜I5 が 2e-5 (K64 は 1e-3 以上ずれる)</td>
+</tr>
+<tr>
+<td>B07</td>
+<td>6 極が直前の DL を使う。L=0 は 0.2 m。先頭が SEXT だと DL=0 で NaN。DKL2 を代入しない</td>
+<td>6 極は自分の L と K2。L=0 は寄与なし。モジュール変数を毎回初期化</td>
+<td>軌道 0 なら6 極は I1〜I5 を変えない (K2=3 と 0 で 12 桁同じ)。NaN にならない</td>
+</tr>
+<tr>
+<td>B12</td>
+<td>定数が単精度 (1e27、1.E-6、0.2、2.3026)</td>
+<td>倍精度</td>
+<td>ELOSS = Cγ E⁴ I2/(2π) と 1e-13 (K64 は相対 1.15e-8 小さい)</td>
+</tr>
+<tr>
+<td>B13</td>
+<td>CAVI は最後の空洞の値</td>
+<td>VOLT は総和。FREQ・HARM は電圧のある最初の空洞 (違う周波数が混ざると注意)</td>
+<td>2.5 MV + 1.5 MV → 4000 kV。νs と 2e-3</td>
+</tr>
+<tr>
+<td>B72</td>
+<td><code>QUANTUM LIFETIME(hours)</code> が exp(2.3026·τ[秒])</td>
+<td>τ[秒]/3600</td>
+<td>τq = τE/2·exp(ξ)/ξ</td>
+</tr>
+<tr>
+<td>B73</td>
+<td><code>LINEAR CHROMATICITY</code> が −I9/4π (磁石の中だけの ∮γ ds で色収差にならない。例: −2.36、実際は −7.30)</td>
+<td>運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (6 極・偏向の寄与を含む)</td>
+<td><code>DP0</code> をずらした CALC の差分と 2e-5</td>
+</tr>
+<tr>
+<td>B74</td>
+<td>MULT・SOL を黙って無視する</td>
+<td>場のある MULT・SOL があれば「入っていない」と表示する (積分には入れない)</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>(番号は docs/30 の B 番号。B72〜B77 と B106〜B110 は v2 の作業で採番した K64 のバグ。)</p>
+<p><strong>(b) Jx (減衰分配) の差と MomentumCompaction</strong> (旧 docs/31 の「RADINT と EMIT の Jx の差」「BUCKET HIGHT の差」の結論)</p>
+<ul>
+<li><strong>物理として正しいのは RADINT の Jx = 1 − I4/I2。</strong> K64 の Emittance[]・EMIT と追跡は、偏向磁石の端の角 e の蹴りを偏向角に入れるが場の中の行路 al1 を変えないので、放射 ∝ θ²/al1 の I4 の端の項 −η tan(e)/ρ² が 2 倍になる (矩形磁石のリングで Jx = 1.097、正しくは 1.006)。v2 は端の角のある面で場の中の行路を x·tan(e) だけ短くする (B75)。</li>
+<li>確認 (自前の I4/I2 と、硬い端の厳密な幾何で運動量のずれた閉軌道を求めた Je = 2 + dln l/dδ が 2e-6 で一致): E1=E2=0 で 0.920824、0.1309 で 0.941466、0.5 (矩形) で 1.005751。RADINT はこれと一致。Emittance[] は k64 が 0.92234 / 0.9648 / 1.09735、v2 が 0.92234 / 0.94263 / 1.00586 (<code>EMITDIV=100</code> で 0.94154 / 1.00580)。追跡の一周写像の固有値 (E1=E2=0.5) は k64 1.0964、v2 1.0033。K64 の中でも EMIT と RADINT で Jx が食い違う (Emittance[] の DampingRate は Jx = 1.0974、RADINT は 1.00575100)。正しいのは RADINT。</li>
+<li>影響: K64 の Emittance[] は、端の角のある偏向磁石のリングで εx を (矩形磁石の例で) 8% 小さく、σδ を 2% 大きく出す。v2 は RADINT と合う。</li>
+<li>v2 の既定の分割は EMITDIV=4 (<code>pysad/compat.py</code>。k64 は 1。環境変数 <code>PYSAD_EMITDIV_DEFAULT</code> で変えられる)。EMITDIV=1 (K64 と同じ分割) では v2 の Emittance[] の Jx が解析値より 1.5e-3 大きい (放射の刻みが粗い: K64 の精度)。既定の EMITDIV=4 での Jx の差は未確認 (εx の誤差は 2e-4 以下: <code>pysad/compat.py</code> の注記)。<code>EMITDIV=20;</code> で 1e-4。Jx+Jy+Je は 3.9990 (4 との差 2.5e-4 = U0/2E の 2 次の効果)。</li>
+<li>B76: 追跡の tbendi (K1≠0 の BEND) は放射で運動量が変わっても曲率半径 rhoe を入口の値のままにするので、減衰の和 Jx+Jy+Je が 4 にならない (K1=0.1 で 4.05、Jx=0.7385)。v2 は rhoe = rhob·(1+δ) を更新し、和が 4.000、Jx = 0.6875 (解析 0.68762、RADINT 0.68762、Emittance[] 0.6883)。</li>
+<li><strong>MomentumCompaction (B77)</strong>: K64 の RFSW OFF は −R56/C だけで入口の分散の項 Σ R5j η_j が抜ける (FODO の例で 0.022898、正しくは 0.022137: 3.4% 大きい)。RFSW ON はシンクロトロンチューンから μ² で求めるので μ²/12 だけ大きい (0.25%)。v2 は RFSW OFF が −(R56 + Σ R5j η_j)/C、RFSW ON が 4 sin²(μ/2)。自前の I1/C と 2e-4 (FODO の例は 6 桁: 0.0221368)。RFSW OFF の BucketHeight・BunchLength・νs (√α に比例) も直る: BucketHeight 0.009877 → 0.010045 (RADINT 0.010045、RFSW ON 0.010047。残りの 2e-4 は空洞と放射の分)。旧「<code>BUCKET HIGHT</code> の 0.010045 と 0.010035」の差の原因はこの α の差で、解決。</li>
+<li><strong>EMITDIV</strong>: 大域変数 <code>EMITDIV</code>・<code>EMITDIVB</code>・<code>EMITDIVQ</code> (放射の分割の倍率) が Emittance[] に効く。<strong>両モードで効く</strong> (MAIN 部の <code>EMITDIV = 20;</code> も効く)。</li>
+</ul>
+<p><strong>(c) 追跡・スピン・そのほか</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>K64 の動作</th>
+<th>v2 の動作</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B14</td>
+<td>tsolqum (放射なしの MULT) の z の dv の項が −0.25·(ap−dv)·aln0</td>
+<td>tsolqu と同じ −dv·aln0</td>
+<td>同じ K1・L の QUAD と MULT の z が 1e-12 (K64 は 1.25·dv·L ずれる。20 MeV・L=0.5 m で 1.9e-5 m)</td>
+</tr>
+<tr>
+<td>B08</td>
+<td>tsolqur (RAD、SOL 領域内の四極) が最後の半ステップで最後の粒子の bzp を全粒子に使う</td>
+<td>粒子ごとの BZ/(1+δ)</td>
+<td>1 粒子の結果が一緒に追う粒子に依らない (K64 は 2.6e-6)</td>
+</tr>
+<tr>
+<td>B39</td>
+<td>tradke (SOL 内) の dbeam(8) が B12 − B44 + b·B13</td>
+<td>B12 − B34 + b·B13</td>
+<td>力学的運動量 (px + b y, py − b x) の共分散</td>
+</tr>
+<tr>
+<td>B58</td>
+<td>BEND の端の縦磁場の積分 bsir0: 出口の項が常に捨てられる、K1 の項は積分値 akx を掛ける (次元が合わない)、スピン軌道結合に端の項の y・x 依存が入らない</td>
+<td>入口で +(y/ρ + k x y)、出口で −(y/ρ + k x y)。軌道についての微分もスピン軌道結合に入れる。追跡の tbendi も同じ</td>
+<td>1 要素のスピン回転が Emittance[] と追跡で一致: K1=0.3 の BEND 1.7e-6 (K64 2.0e-3)、K1=0 の BEND 7.5e-5 (K64 1.0e-3)</td>
+</tr>
+<tr>
+<td>B64</td>
+<td>tmulke の bsir0 が imag(cx)/aln (次元 1/m)。四極・MULT の分割は放射の大きさだけで決まる</td>
+<td>ψ = Im Σ k_n z^(n+1)/(n+1)! を入口で足し出口で引く。POL のときは四極・MULT を k·(L/n)² ≤ 2e-3 に分割</td>
+<td>MULT (K2=30) 3.1e-7 (K64 9.4e-5)。四極の分割が 1 個だと歳差の微分が追跡と 50% 違い、細かくすると 2%</td>
+</tr>
+<tr>
+<td>B55</td>
+<td><code>Polarization</code> が NaN</td>
+<td>有限値 (docs/16)</td>
+<td>平面リング 92.376% (Sokolov–Ternov)</td>
+</tr>
+<tr>
+<td>B56</td>
+<td>tbrote の srot の更新が行の逐次更新</td>
+<td>(I+rr)·srot (直交性 1e-14)</td>
+<td>入口と出口が互いに逆</td>
+</tr>
+<tr>
+<td>B111</td>
+<td>tradke (Emittance[]・閉軌道) の放射の反作用の角度の項の符号が tradkn (追跡) と逆。RADCOD の閉軌道が追跡で閉じない (小リングで x 4e-7 m)</td>
+<td>符号を反転 (<code>ddpx</code>・<code>ddpy</code> と行列 D・B の微分)。RADTAPER の追跡の BEND の重みも tturne と同じ (3δ_l + δ_l+1)/4</td>
+<td>閉軌道の 1 周の追跡の動きが 4e-7 → 1e-9 m (小リング)、大きなリング A −2.0e-8 → −4.5e-11 m。<strong>v2 の Emittance[] (RADCOD) は gs と 1e-4〜1e-3 ずれる</strong> (ε_x +1.9e-4、U0 +1e-7。大きなリング A)。符号は導出と閉軌道の閉じ方による (K64 の作者の意図の裏づけは無い)</td>
+</tr>
+<tr>
+<td>B112</td>
+<td>放射の古典半径が質量によらない (<code>re0 = elradi</code>)。陽子 (30 GeV/c) の U0 が 1.2651 eV</td>
+<td><code>re0 = elradi·elmass/amass</code></td>
+<td>古典式 U0 = (2/3) r_p mc² β³γ⁴ Σθ²/L = 6.88e-4 eV と追跡の 1 周の δ が 1e-6。電子は両モードで同じ</td>
+</tr>
+<tr>
+<td>B114</td>
+<td>ずれた BEND の CALC (tbrote の出口) の dx1・dz1 の符号</td>
+<td>出口も入口と同じ回し方</td>
+<td>厳密な幾何と CALC が 2e-8。矩形磁石 1 台の DX = 2 mm でチューンが動かない (K64 は 2.7e-5)</td>
+</tr>
+<tr>
+<td>B115</td>
+<td>RADINT が ANGLE=0・K0≠0 の BEND (挿入光源の極) を無視</td>
+<td>K0 を曲げ角として積分に入れる (端の角なし)</td>
+<td>ASTRID2 + MPW で U0 6.17 keV → 7.81 keV (Emittance[] 7.80 keV)。極を直線の基準軌道の場として積分 + CALC の分散の補正で、εx・Jx は RF なしの Emittance[] と 1e-4・2e-4 (docs/history/v24_RAD.md)</td>
+</tr>
+<tr>
+<td>B117</td>
+<td>K1≠0 の BEND の追跡 (tbendi) の端が薄い写像</td>
+<td><code>DISFRIN=0</code> かつ端の角 ≠ 0 のとき CALC と同じ厳密な tbedge</td>
+<td>厳密な写像と 1e-10。CALC との行列の差 1.1e-5 → 4e-8</td>
+</tr>
+<tr>
+<td>B107・B126</td>
+<td>RADINT の BMAG の CKL1Y = −cos θ·DKL1。QUADRU が四極自身の DX・DY を引かず K1&lt;0 で勾配ベクトルの符号が逆</td>
+<td>CKL1Y = +sin θ·DKL1。(dx, dy) = 閉軌道 − 要素のずれ</td>
+<td>I4U + I4V が物理的な I4 と 1e-7 (K64 は 1.6〜2.7%)。ΔJx = +0.0078 (追跡 +0.00781、K64 +0.0028)</td>
+</tr>
+<tr>
+<td>B106・B109</td>
+<td>tradke の b = bzh·0.5。tbgrote の trans(5,6)</td>
+<td>b = bzh。コメントアウトされた式</td>
+<td>B106 は数値の効果が 1e-13 以下 (式の一貫性)、B109 は有限差分と 4e-12 (K64 は px² + py² 分)</td>
+</tr>
+<tr>
+<td>B108</td>
+<td>ANGLE=0 の BEND の端の角 AE1・AE2 の放射の項が約 2 倍 (B75 と同じ)</td>
+<td>行路を x tan(e) だけ短くする (<code>tin</code>・<code>tout</code>)</td>
+<td>厳密な幾何 + ロビンソンの定理で ΔJx が厳密 : v2 : k64 = 1 : 1.03 : 2.08 (傾き 5 mrad の極。24 セル FODO の極 3 個の組)</td>
+</tr>
+<tr>
+<td>B127</td>
+<td>WSPAC の最後のスライスで <code>gammab(nlat+1) = 0</code> を読み、レンズが 8 倍強い (Emittance[] のチューンシフトが 3〜4% 強い)</td>
+<td>p1 = (1+δ) p0</td>
+<td>一次のラスレットの積分と 0.2〜1.8% (大きなリング A・PF・ASTRID2。K64 は 0.9〜7%)</td>
+</tr>
+<tr>
+<td>B130</td>
+<td>Emittance[] の tradke が縦磁場の積分を z 軸の向きに足す (傾いたソレノイド)</td>
+<td>運動量の向きに分けて足す</td>
+<td>上の POL の節</td>
+</tr>
+<tr>
+<td>B132</td>
+<td>PhotonList のエネルギー列に γ でなく βγ を掛ける</td>
+<td>γ を掛ける</td>
+<td>gs と E 列だけ相対 1/(2γ²) (3 GeV で 1.45e-8)</td>
+</tr>
+<tr>
+<td>B63・B36・B21</td>
+<td>(バグではない / pysad は有限 / z を閉じる δ)</td>
+<td>変更なし</td>
+<td>B63: SOL に L のキーワードは無い (L を書いても軌道・光学に入らない)。pysad は S 座標 (LENG) にだけ入れる。B36: L≠0 の TCAVI のリングの Emittance[] は gs が NaN、pysad は有限 (K0=0 で同じ長さのドリフトと 12 桁一致)。B21: RFSW OFF・RADCOD OFF の閉軌道は z が閉じる δ (1e-15)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>追跡の FLUC の乱数列は K64 と同じだが、v2 では端の角のある BEND の放射の大きさが変わるので値は K64 と違う。</li>
+<li>SOL (BOUND≠0) の長さを周長に入れないのは K64 の仕様 (B63。バグではない)。</li>
+</ul>
+<p><strong>使える範囲と条件・使えない範囲 (v2)</strong></p>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>使える範囲</th>
+<th>使えない・注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RADINT</td>
+<td>BEND (K1 つきも)・QUAD・SEXT のリングと輸送路 (INS)。先頭が SEXT でもよい。空洞が複数あってもよい (同じ周波数)。GX・GY は一次の色収差 dν/dδ</td>
+<td>MULT・SOL は積分に入らない (表示が出る)。ANGLE≠0 の BEND の K0 は入らない (ANGLE=0 の K0 の極は v2 で入る: B115。εx も RF なしの Emittance[] と 1e-4)。結合のあるリングの V 面 (I4V) は確認済み (I4U + I4V が独立な I4 と 1e-7、DU・DV・Je が 1 次の摂動論と 3e-3。K1≠0 の BEND は B107 の修正後)。軌道のずれのある四極は入る (B126)。SEXT・BEND のずれは入らない。空洞は VOLT を単純に足す (PHI を見ない。位相の違う空洞のベクトル和にするかは仕様の判断)。I1〜I5 は独立な積分 (大きなリング A・B・PF・ASTRID2) と 1e-6 以下</td>
+</tr>
+<tr>
+<td>Emittance[]・EMIT</td>
+<td>端の角のある偏向磁石 (E1・E2)、勾配つき偏向磁石。Jx は解析値と 1e-3 (EMITDIV=1)、<code>EMITDIV=20</code> で 1e-4</td>
+<td>ANGLE=0 の BEND (補正磁石・挿入光源の極) の AE1・AE2 の端の角は K64 が端の項を約 2 倍にする (B108。v2 は修正済み)。K1≠0・K0≠0 の ANGLE=0 BEND と MULT の端の角 (AE) は pysad が読まず未確認。EMITDIV=1 (v2 の既定は 4) では低エミッタンスのリング (大きなリング A) で εx が 2.1% 大きい (<code>EMITDIV=5</code> で 8e-5)。v2 の Emittance[] と RADINT が矩形磁石で 1.4e-3 違う (SP8 (大きなリング B)。未調査)</td>
+</tr>
+<tr>
+<td>MomentumCompaction・BucketHeight・BunchLength (RFSW OFF)</td>
+<td>I1/C と 2e-4</td>
+<td>—</td>
+</tr>
+<tr>
+<td>CALC のチューン・結合 (ロール + ずれのある BEND・6 極・薄い四極・空洞)</td>
+<td>追跡の一周写像と一致 (6 極 1e-9、BEND 4e-6)</td>
+<td>ずれた BEND の CALC は v2 で追跡と一致 (B114。矩形磁石 1 台の DX = 2 mm でチューンが動かない。k64 は 2.7e-5 動く)。K1≠0 の BEND は B117 の修正で追跡と 4e-8。CALC の解析行列は y ≠ 0 の軌道で自身の写像の数値微分と y = 2 mm で 1.5e-6 違う</td>
+</tr>
+<tr>
+<td>Polarization (POL)</td>
+<td>docs/16</td>
+<td>docs/16</td>
+</tr>
+</tbody>
+</table>
+<p><strong>要判断・直していない</strong>: K1=0 の BEND の追跡のスピン (tbend + tradk) が Emittance[]・tbendi (v2) と 2.2e-5 rad 違う (放射の分割が粗く、スライスの前のエネルギーで歳差を計算する。K64 の精度の範囲)、tthine (長さのある6 極など) の bsir0 (B110。次元が合わない式だが放射なしで呼ばれ入口と出口で打ち消すので影響なし)、RADCOD の 1 周の解析 T と写像の数値微分の 2e-3 の差 (K64 の tradke の微分が近似)、RADINT の SEXT・BEND のずれ、tradke の符号 (B111) と RADTAPER の重みの選択 (「閉じる」を根拠にした判断で、gs の Emittance[] (RADCOD) と 1e-4〜1e-3 違う)。詳細は docs/28 と docs/31。</p>
+<h3 id="f1fringek0-の極wspacsynchrobeta-の警告">F1・FRINGE・K0 の極・WSPAC・SynchroBeta の警告</h3>
+<p>試験 <a href="../pysad/tests/test_v2_B1_optics.py"><code>test_v2_B1_optics.py</code></a>・<a href="../pysad/tests/test_v2_E_steer.py"><code>test_v2_E_steer.py</code></a>・<a href="../pysad/tests/test_v2_D1_emit.py"><code>test_v2_D1_emit.py</code></a>・<a href="../pysad/tests/test_v2_A2_radint.py"><code>test_v2_A2_radint.py</code></a>・<a href="../pysad/tests/test_v2_C3_radint.py"><code>test_v2_C3_radint.py</code></a> ほか。記録 <code>history/v2next_{A1,A2,B1,C,D1,E}.md</code>。</p>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>モード</th>
+<th>使い方・使える範囲と条件</th>
+<th>使えない・未確認</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>BEND の F1・FRINGE・FB1・FB2</strong> の Emittance[]・EMIT・CALC6D</td>
+<td>両 (K64 の動作の追加)</td>
+<td><code>F1=0.1 FRINGE=3</code> など (FRINGE = 1・2・3・−1 (入口側だけ)・−2 (出口側だけ)、F1 + FB1 + FB2、K1≠0 (tbendebody の分割)、K0、RADCOD、DX・DY・ROTATE・DROTATE、POL ON の減衰率)。K64 の <code>tbende</code> の長さ補正 <code>alcorr</code>・入口の <code>tblfre</code>・断片 (K1=0 は n = 0 と ndiv+1 に <code>tbendef1</code>、K1≠0 は n = −1, 0 と ndiv+1, ndiv+2 の <code>tbendal</code>) の直訳。<strong>周長に F1 の長さ補正が入る</strong> (ω0・運動量圧縮・周回周波数)。12 セル FODO (3 GeV、F1 = 0.1 FRINGE = 3) で U0 は 739673.742271 eV (F1 なし 781633 eV)、大きなリング A (全 BEND に <code>F1=0.03 FRINGE=3</code>) で U0 は 285476.566791 eV (F1 なし 296074.86 eV)。k64 は K64 と一致 (§6)。放射・RF なしの Emittance[] のチューン = CALC のチューン (1e-9)。</td>
+<td>CALC の解析行列と <code>tbende</code> は DISFRIN=1 でも Maxwell のフリンジを入れる (追跡の tbendi は DISFRIN に従う。B134)。逆向きの要素 (<code>direlc&lt;0</code>) の F1 の入れ替えは未対応。隣り合う BEND の <code>bradprev</code> は tbende では使われない。<strong>TrackParticles の F1 は ANGLE=0 の BEND・MULT で未対応</strong></td>
+</tr>
+<tr>
+<td><strong>ANGLE=0 の BEND (補正磁石・挿入光源の極) と MULT の F1</strong> の Emittance[]・EMIT・CALC</td>
+<td>両</td>
+<td>ステアリング (<code>tsteee</code>: fb1 = F1 + FB1、fb2 = F1 + FB2、入口の <code>tblfre</code>・断片) と MULT (<code>tmulte</code>: F1・F2 は L≠0 かつ K1≠0 のときだけ、<code>tqfrie</code>・<code>tbfrme</code>・<code>tqlfre</code>・<code>tradke(f1in)</code> の順、<code>tbfrmle</code> の線形フリンジ)。k64 は K64 と全桁一致 (§6)。F1 の効果は U0 で −4.4 eV (ステアリング)、運動量圧縮で 2e-3 (MULT)</td>
+<td>MULT の AE1・AE2 (読まない)、<code>FB1/FB2</code> の <code>tblfre</code> (<code>multae.py</code>)、ステアリングに ROTATE と DX/DY を同時に付けると gs と CALC のチューンが 1e-4 違う (既存・未調査)</td>
+</tr>
+<tr>
+<td><strong>ANGLE=0 の BEND の端の角 AE1・AE2 (B108)</strong></td>
+<td>v2</td>
+<td>行路を x tan(e) だけ短くする。k64 は K64 のまま (端の項が約 2 倍)</td>
+<td>傾き 5 mrad の極で独立な値と 3〜4%、30 mrad で 2〜3%</td>
+</tr>
+<tr>
+<td><strong>RADINT の K0 の極 (B115)・四極のずれ (B126)・BMAG (B107)</strong></td>
+<td>v2</td>
+<td>上の表と使える範囲の表</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>WSPAC の Emittance[]・EMIT・CALC6D・CALC (RFSW ON)</strong></td>
+<td>Emittance[]・EMIT は両、CALC・CALC6D は v2</td>
+<td><code>WSPAC</code> を ON にして <code>Emittance[]</code> を呼ぶと、反復して空間電荷つきの一周の写像からチューン・エミッタンス・Twiss を作る (<code>PBUNCH</code>・<code>MINCOUP</code>。INTRA とも併用可)。K64 の <code>twspace</code>・<code>tintrb</code>・<code>tintraconv</code> の直訳。0.2 GeV の 12 セル FODO (PBUNCH 1e5〜1e8)。k64 は K64 の最後のスライスの 8 倍のレンズ (B127) を再現する (§6)。v2 は一次のラスレットの積分 (Δν = −(1/4π) ∮ β_u 2 N r0 /(β²γ³ √(2π) σz σ_u (σx+σy)) ds) と 0.2〜1.8%、PBUNCH に比例 (1e5 → 1e7 で比 100 ± 0.3%)。CALC・CALC6D は v2 だけ (k64・gs は入口以外の Twiss が NaN: B133)。CELL の CALC6D の Twiss は反復の最終パスの T から。CALC のチューンは Emittance[] のチューンと 2e-6</td>
+<td><strong>追跡の WSPAC (<code>LINE["SIG…"]</code>) のビーム行列は空間電荷なし・MINCOUP なしのまま</strong>。強い空間電荷 (0.2 GeV で PBUNCH ≳ 1e9) は反復が収束しない。RF なしの CALC。TouschekLifetime との併用。要素ごとのレンズの位置は K64 の近似。4D の CALC は K64 の <code>qwspac</code> の直訳ではない</td>
+</tr>
+<tr>
+<td><strong>SynchroBetaEmittance の収束の警告</strong></td>
+<td>v2</td>
+<td>本節の SynchroBeta の項。大きなリング A では使えない (B128)</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-注意点-仕様と落とし穴">5. 注意点 (仕様と落とし穴)</h2>
+<ol>
+<li><strong>Cavity PHI の既定は 0</strong>。<code>phic = PHI·sign(charge)</code>、同期位相は trf0 で入る。</li>
+<li><strong>4D CALC では空洞は RFSW に依らずドリフト</strong> (bench_level14a_dbg)。空洞が効くのは Emittance[] と追跡。</li>
+<li><strong>薄い多極の dv 項</strong>: tthine 内のドリフトにも <code>z −= L·dv(δ)</code> が付く (2-1 節)。表示桁 (εx 5 桁、Level 12) の照合ではこの差は見えないので、照合は全桁 (<code>$FORM="18.14"</code>、16b/16e) で行う。</li>
+<li><strong>閉軌道の δ</strong>: SAD の tcod は周長変化で δ≠0 を選ぶ (3C: δ=−4.85e-8)。close_z がないと U0・εx がずれる。</li>
+<li><strong>RADCOD ON の z と trf0 (Equilibrium dz)</strong>: tcod は一周ごとに z を trf0 に移し、収束判定が緩い (z は 1e-7 まで) ので、分け方は反復の履歴で決まる。<code>_tcod_radcod</code> が tcod を直訳しているので trf0 は 実ラティス で 12 桁一致する (trf0 固定の厳密な Newton では dz が 8e-4 mm ずれる)。
+   逆に言うと cod と trf0 の「和」だけが物理で、SAD の cod 自体は 1e-9 (dp) 程度しか収束していない (出口と入口がその分違う) — それでも emittance 等は 1e-11 で一致する。</li>
+<li><strong>RFSW OFF の RADCOD</strong>: SAD の tcod は RFSW OFF でも RADCOD ON なら放射込みの閉軌道を使う (<code>_tcod_radcod</code> の RFSW OFF 枝)。RFSW OFF を RADCOD OFF と同一視すると 実ラティス で U0 が 7e-5、α_c が 1e-4 ずれる。</li>
+<li><strong>RFSW OFF の RF の量</strong>: tturneg/tecalc は RFSW に関係なく空洞の積算量から Vc, wrfeff を作る (Vc, bh, dz, εz, σz は RFSW OFF でも 0 ではない)。</li>
+<li><strong>解析ヤコビアンの落とし穴</strong>:
+   (a) <code>lattice._tbendebody0_mat</code> の z 行 (5,6) (<code>xsn=sn−phi0</code>) は 4D の CALC では使われないので、z 行の検証は emit 側の照合 (<code>tests/test_emit_jac.py</code>) に依る。
+   (b) Newton 法のヤコビアンを使い回す (chord) と軌道が 1.7e-14 変わるだけで εx が 2e-8 変わる — 量子励起の分割数 (<code>nq</code>, <code>ndiv</code> の <code>int()</code>) の境界。
+   (c) <code>tecalc</code> の <code>tsolva</code> (= tsvd、特異値 1e-8 の打ち切り) を numpy の SVD で代用すると y 方向に εy~1e-21 の雑音が出る (SAD は ~1e-38) → <a href="../pysad/tsvd.py"><code>pysad/tsvd.py</code></a> (SAD の直訳) を使う。
+   emit の結果は軌道の連続関数ではない (1e-8 のレベル) ので、SAD との照合では軌道の差 1e-9 の影響を見分けられない場合がある (解析式で SAD と同じ分割になっている)。</li>
+</ol>
+<h2 id="6-検証">6. 検証</h2>
+<ul>
+<li>実ラティス (3563 要素) の <code>Emittance[]</code> (RFSW × RADCOD の 4 通りと <code>Matrix-&gt;True</code>) の εx・εz・σE・σz・チューン・減衰率・U0・trf0 が、K64 (gs) と 1e-11〜1e-12 (全桁表示) で一致する。FODO・結合・強さ誤差・ROTATE・MULT・FRINGE・不安定な光学・FSHIFT・EMIT の報告 (全行) の各ベンチも 1e-6〜1e-12 で一致する (不安定な光学の水平側は K64 の T の悪条件の範囲 3e-5)。比較の表は <a href="history/09_emittance_validation.md"><code>docs/history/09_emittance_validation.md</code></a>。</li>
+<li>例外 (一致しない): th≠0 かつずれ≠0 の要素 (K64 の tchge の癖) を含むリングでは、K64 の 6D 閉軌道が閉じず、Emittance[] の δ・チューンは K64 と一致しない (§2-1)。</li>
+<li><code>PYSAD_COMPAT=k64</code> で K64 と同じ動作になる (v2 との違いは §4b の表と docs/28_v2_vs_k64.md)。</li>
+</ul>
+<p>対応済み (別モジュール): INTRA (touschek.py: tintrb、TouschekTable/TouschekLifetime)、OneTurnInformation/Matrix 系 (emit_extra.py)、EMITXE/EMITYE/EMITZE の下限、CAVI の DX/DY/ROTATE。
+INTRA ON の EMIT 報告 (docs/29 A40): 零電流の報告 → Touschek の表 (運動量アクセプタンス 0.4〜24.2 % の寿命、Nx/Nz・Ny/Nz ごとの寿命/100s) → <code>Parameters with intrabeam scattering:</code> (PBUNCH/1e10、MINCOUP %、IBS 込みの EMITXC/EMITYC/EMITZC・SIGE・SIGZ)。PBUNCH の既定は 1e10 (A41)。<code>ffscmd._print_touschek</code>、<code>_print_emit_intra</code>。
+対応済み (4b 節): POL (calpol, spnorm, srequpol)、SOL (tsole)、SpinPrecessionMatrix の表、SynchroBetaEmittance (<a href="../pysad/synchrobeta.py"><code>pysad/synchrobeta.py</code></a>、gs と相対 1e-5)。
+未対応: Region (部分区間)、InitialBeamMatrix、TRPT 分岐、<code>Polarization</code> (K64 が NaN)、SOL 領域内の MULT・BEND・CAVI。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -1,0 +1,16 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.167206 $$$       f BX    #######  #   5.026207 $$$       f NX    #######  #   3.348176 $$$       f AY    #######  #   1.207769 $$$       f BY    #######  #   2.557146 $$$       f NY    #######  #   2.453036
+$$$       f LENG  #######  #  52.800000
+rms before Y 5.034716050760401e-5
+MakeBump steers {2,3,4,5,6,7} kicks {4.258872251818778e-5,.00027247859630332545,.0001114530499041058,.0001503725870551336,.00024354549063024554,-1.2725156525937371e-5} DY(BA5) .0010105535044391204
+ ???-FFS-Info-Element values are not expanded. 
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.167206 $$$       f BX    #######  #   5.026207 $$$       f NX    #######  #   3.348176 $$$       f AY    #######  #   1.207769 $$$       f BY    #######  #   2.557146 $$$       f NY    #######  #   2.453036
+$$$       f LENG  #######  #  52.800000
+???Part: index 15 out of range (length 2)
+Bump-> result r
+ ???-FFS-Info-Element values are not expanded. 
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  NOCALEXP
+$$$       f AX    #######  #  -2.167206 $$$       f BX    #######  #   5.026207 $$$       f NX    #######  #   3.348176 $$$       f AY    #######  #   1.207769 $$$       f BY    #######  #   2.557146 $$$       f NY    #######  #   2.453036
+$$$       f LENG  #######  #  52.800000
+after rms Y 5.034716050742232e-5

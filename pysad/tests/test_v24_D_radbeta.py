@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 担当 D: B112 の β の因子 (docs/21 B167) と BEND の T[z, δ] (B164 = B139)。
+"""v2.4.0 担当 D: B112 の β の因子 (docs/30 B167) と BEND の T[z, δ] (B164 = B139)。
 
 B167 (放射の β の因子): K64 の放射は β = 1 の式。v2 は厳密な放射のスペクトル (Schott) から決めた係数 (pysad/radbeta.py) を掛ける。
   独立な基準: (1) 円軌道の遅延放射場の時間領域の数値積分から求めた第 n 高調波のパワー (`_rad_beta_indep.schott_pn_direct`) が Schott の閉じた式と 1e-10 で一致、
   (2) 全放射パワーが Larmor の (2/3) β³γ⁴ (Σ n S_n)、(3) 古典式 U0 = (2/3) r mc² β³γ⁴ Σθ²/L と Emittance[]・RADINT の U0。
-  εx の β の因子 (r2/β⁴) は Emittance[] と RADINT が互いに一致する (どちらも同じ理論の実装。独立な写像との比較は未完: docs/46)。
+  εx の β の因子 (r2/β⁴) は Emittance[] と RADINT が互いに一致する (どちらも同じ理論の実装。独立な写像との比較は未完: docs/31)。
 B164 (T[z, δ]): `tbendebody0` の dω/dp の厳密な式を、写像の数値微分 (4 次の中心差分) と比べる。"""
 import io
 import math

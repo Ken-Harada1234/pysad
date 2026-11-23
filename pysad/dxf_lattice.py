@@ -32,7 +32,7 @@ USE した台本が定義していれば自動で読む。`magnet_spec=False` �
   にする。底面の頂点の (X, Y) は 2D の外形と同じ値。Height は `spec` / `MagnetSpec` の Height (なければ BEND 0.406 m (drawmagvw3d.n の既定)、
   他は幅 Width)。基準軌道の面 (z = 0) が磁石の中心。レイヤー・色は 2D と同じ規則。`parts='split'` で偏向磁石 (ANGLE≠0 の MULT も) と四極を
   ヨークとポールに分ける (ポールはレイヤー POLE、色 9)。コイル・端板・ベローズは未対応。
-限界は docs/51_lattice_dxf.md。
+限界は docs/22_lattice_dxf.md。
 """
 from __future__ import annotations
 
@@ -670,7 +670,7 @@ def write_dxf(src, path: str, region=None, scale: float = 1.0, text_height: floa
                他は Width)。コイル・端板・ベローズは描かない
     parts      mode='3d' のときだけ。'body' (既定: 磁石 1 台 = 6 面体 1 個) か 'split' (偏向磁石と四極をヨークとポールに分ける。ポールはレイヤー POLE
                (色 9)。偏向磁石: 上下のヨークの板・側脚・上下のポール。四極: 枠 4 本・ポール 4 個 (模式図)。spec・MagnetSpec の Gap・PoleHeight・LegWidth
-               (偏向磁石)、Aperture・LegWidth・PoleWidth (四極) で寸法を与える。無ければ既定の割合 (docs/51 §2d)。入らない寸法は ValueError)
+               (偏向磁石)、Aperture・LegWidth・PoleWidth (四極) で寸法を与える。無ければ既定の割合 (docs/22 §5)。入らない寸法は ValueError)
     """
     body, info = build_dxf(src, region, scale, text_height, names, mark_size, mark_text, arc_step, text_side, spec,
                            overlap, magnet_spec, magnet_type, mode, parts)

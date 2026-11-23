@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>05. SADScript 言語と pysad のインタプリタ</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-sadscript-の概要と-sad-内での位置付け">1. SADScript の概要と SAD 内での位置付け</a><ul>
+<li><a href="#11-動かし方-最小の例">1.1 動かし方 (最小の例)</a></li>
+</ul>
+</li>
+<li><a href="#2-演算子と字句">2. 演算子と字句</a><ul>
+<li><a href="#21-演算子表-tfstkf-の-opcodeiprior">2.1 演算子表 (tfstk.f の opcode/iprior)</a></li>
+<li><a href="#22-字句の規則-tfetokf">2.2 字句の規則 (tfetok.f)</a></li>
+</ul>
+</li>
+<li><a href="#3-評価の意味論-pysad-の実装">3. 評価の意味論 (pysad の実装)</a></li>
+<li><a href="#4-入出力と書式">4. 入出力と書式</a><ul>
+<li><a href="#41-数値の書式-form-と-fmt_real">4.1 数値の書式: $FORM と fmt_real</a></li>
+</ul>
+</li>
+<li><a href="#5-sad-独自の関数">5. SAD 独自の関数</a><ul>
+<li><a href="#51-数値行列乱数">5.1 数値・行列・乱数</a></li>
+<li><a href="#52-リスト文字列行列の関数-pysadsadlistpy">5.2 リスト・文字列・行列の関数 (pysad/sadlist.py)</a></li>
+<li><a href="#53-ffs-専用関数-pysadsadelempy-ffscmdpy">5.3 FFS 専用関数 (pysad/sadelem.py, ffscmd.py)</a></li>
+<li><a href="#54-追加の関数群-詳細は各文書">5.4 追加の関数群 (詳細は各文書)</a></li>
+</ul>
+</li>
+<li><a href="#6-対応していない構文関数と特殊な機能">6. 対応していない構文・関数と特殊な機能</a><ul>
+<li><a href="#61-未対応">6.1 未対応</a></li>
+<li><a href="#62-文脈forfindrootmessagenameparallelizevisit-など-両モードの扱い">6.2 文脈・For・FindRoot・MessageName・Parallelize・VISIT など (両モードの扱い)</a></li>
+<li><a href="#63-forksharedwait">6.3 Fork・Shared・Wait</a></li>
+</ul>
+</li>
+<li><a href="#7-検証試験">7. 検証・試験</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 05_sadscript.md</div>
+<h1 id="05-sadscript-言語と-pysad-のインタプリタ">05. SADScript 言語と pysad のインタプリタ</h1>
+<p>最終更新: 2026-11-23 (現状のスナップショット)</p>
+<p><strong>この文書で分かること</strong>: SADScript (SAD に内蔵された式言語) の文法と評価の規則、pysad のインタプリタ (<code>sadscript.py</code>) がどこまで対応しているか、対応していない構文、SAD の <code>Fork</code>・文脈 (<code>BeginPackage</code>) などの特殊な機能の扱い。
+<strong>前提</strong>: Mathematica 風の式言語を読める。FFS (SAD の対話コマンド部) の基本は <a href="03_ffs_commands.html">03_ffs_commands.md</a> §1 を先に見ると、MAIN 部・FFS 部の区別が分かる。
+<strong>読む順</strong>: §1 (全体と使い方) → §2・§3 (文法と意味) → §4 (入出力・書式) → §5 (SAD 独自の関数) → §6 (対応していないもの・特殊な機能)。特殊関数・Fit・SAD の Packages は <a href="06_sadscript_library.html">06_sadscript_library.md</a>。</p>
+<p>対象のコード: <a href="../pysad/sadscript.py"><code>pysad/sadscript.py</code></a> (字句解析・Pratt 構文解析・評価器、約 4800 行)、<a href="../pysad/sadlist.py"><code>pysad/sadlist.py</code></a> (リスト・文字列・行列の関数)、
+<a href="../pysad/sadelem.py"><code>pysad/sadelem.py</code></a> (FFS 専用関数)、<a href="../pysad/teigen.py"><code>pysad/teigen.py</code></a> (Eigensystem)、<a href="../pysad/sadclass.py"><code>pysad/sadclass.py</code></a> (Class)、<a href="../pysad/pkgload.py"><code>pysad/pkgload.py</code></a> (Packages/*.n の読み込み)、<a href="../pysad/specfn.py"><code>pysad/specfn.py</code></a>・<code>fitroot.py</code>・<code>miscfn.py</code>・<code>fileops.py</code> (特殊関数・Fit・ファイル関数など)。SAD 側の根拠は
+<code>src/tfetok.f</code> (字句)、<code>src/tfstk.f</code> (演算子表 <code>opcode</code>/<code>iprior</code>)、<code>src/autofg.f</code> (数値書式)、
+<code>Packages/Fit.n</code> (PolynomialFit)、<code>src/tffsa.f</code> (FFS コマンドの振り分け)、<code>src/teigen.f</code>、<code>src/tmatch.f</code>。</p>
+<h2 id="1-sadscript-の概要と-sad-内での位置付け">1. SADScript の概要と SAD 内での位置付け</h2>
+<p>SADScript は SAD に内蔵された Mathematica 風の式言語である。<code>f[x, y]</code> の関数呼び出し、<code>{...}</code> のリスト、
+<code>x_</code> のパターン、<code>-&gt;</code> の規則、<code>#&amp;</code> の純関数、<code>/@</code> の Map など、表記はほぼ Mathematica と同じだが、
+数値は倍精度実数のみ (整数型・有理数・任意精度はない) で、<code>True</code>/<code>False</code> も 1/0 の実数である。</p>
+<p>SAD のスクリプトは MAIN 部 (ラティス定義) と <code>FFS;</code> 以降の FFS 部に分かれる。FFS 部では各文を
+<code>tffsa.f</code> が先頭の語で判定し、<code>CALC</code>, <code>FIT</code>, <code>FREE</code>, <code>GO</code>, <code>USE</code>, <code>CELL</code>, <code>EMIT</code> などの FFS コマンド
+(<code>abbrev(word,'DELW_AVE ','_')</code> のような省略形付きの比較) と照合する。SAD では先頭の <code>tfprint</code> (tffsa.f:245) が
+<code>itfpeeko</code> で先読みし、定義済みシンボルや <code>name[</code>, <code>name=</code> のように式に見える語はコマンド照合より先に SADScript として
+評価する (<a href="03_ffs_commands.html">03_ffs_commands.md</a> §1)。pysad は判定の向きが逆で (コマンドでなければ式)、<code>Interp.run(src, 'ffs')</code> が文ごとに
+<code>_is_ffs_command</code> (先頭語が <code>ffs_words</code> に登録されたコマンドか、かつ続きが <code>=</code>, <code>[</code>, <code>(</code> などで
+始まらない) を見て、コマンドなら <code>ffs_handler</code> (ffscmd.py の <code>FFS.execute</code>) へ文字列のまま渡し、
+それ以外は <code>parse</code> → <code>eval</code> する。</p>
+<p>モジュールは <code>Get["file"]</code> で読み込む。SAD は起動時に <code>Packages/init.n</code> を読み、<code>functions.n</code>,
+<code>MessageName.n</code> を <code>Get</code> し、<code>Fit.n</code> (<code>PolynomialFit</code>, <code>FindRoot</code>) や <code>Matrix.n</code>, <code>Optics.n</code> などは
+<code>AutoLoad[symbol, file]</code> で最初に使われたときに読む。pysad では <code>Get</code> はファイルを読んで
+<code>run(src, 'ffs')</code> するだけ。Packages は、環境変数 <code>PYSAD_SAD_PACKAGES</code> (無ければ pysad の隣の <code>SAD-master/Packages</code>) が見つかるときだけ <code>pkgload.py</code> が <code>AutoLoad</code> と同じく最初に使われたときに読む (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational・tableform など。<a href="06_sadscript_library.html">06_sadscript_library.md</a> §5)。見つからなければ何も登録せず、必要な関数は Python 側の組み込みで動く (PolynomialFit は Fit.n の定義文字列 <code>_PRELUDE</code> を起動時に評価する。Python で持つ関数はパッケージの定義で上書きしない <code>pkgload._protect_builtins</code>)。Tkinter.n・KBFrame.n・ListPlot.n・Plots.n・Canvas.n も同じ方法で読む (<a href="20_tcltk_gui.html">20_tcltk_gui.md</a>、<a href="04_ffs_small_commands.html">04_ffs_small_commands.md</a>)。</p>
+<h3 id="11-動かし方-最小の例">1.1 動かし方 (最小の例)</h3>
+<ol>
+<li>式だけ試す (FFS コマンドなしの <code>'script'</code> モード):</li>
+</ol>
+<pre><code class="language-python">import io
+from pysad.sadscript import Interp
+o = io.StringIO()
+I = Interp(out=o)
+I.run('f[x_,y_:2]:=x+y; a={1,2,3}; Print[f[1], &quot; &quot;, a[2], &quot; &quot;, 3&lt;&gt;4, &quot; &quot;, &quot;a&quot;//&quot;b&quot;]', 'script')
+print(o.getvalue())      # → 3 2 1 ab
+</code></pre>
+<ol start="2">
+<li>ラティス付きのスクリプトは <code>py -3.12 run_sad.py lattice.sad script.sad</code> (SAD の <code>gs</code> に複数ファイルを連結して渡すのと同じ)。<code>ffscmd.run_sad</code> が MAIN 部を parser.py に、FFS 部を <code>Interp.run(src, 'ffs')</code> に渡す。Packages を使うときは先に環境変数 <code>PYSAD_SAD_PACKAGES</code> に SAD の <code>Packages</code> のフォルダを指定する。</li>
+</ol>
+<h2 id="2-演算子と字句">2. 演算子と字句</h2>
+<h3 id="21-演算子表-tfstkf-の-opcodeiprior">2.1 演算子表 (<code>tfstk.f</code> の <code>opcode</code>/<code>iprior</code>)</h3>
+<p>次の表は、演算子の結合の強さ (<code>iprior</code>: <strong>数値が小さいほど強く結合</strong>) と意味を示す。pysad の <code>_BIN</code> 表と Pratt パーサの
+<code>parse_expr(rbp)</code> はこの数値をそのまま使う (「rbp より強く結合する式を読む」)。</p>
+<table>
+<thead>
+<tr>
+<th>記号</th>
+<th>iprior</th>
+<th>意味 (head)</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>@</code></td>
+<td>5</td>
+<td><code>f@x</code> = <code>f[x]</code></td>
+<td>右結合</td>
+</tr>
+<tr>
+<td><code>[</code>, <code>[[</code></td>
+<td>6</td>
+<td>呼び出し / <code>Part</code></td>
+<td><code>a[[i]]</code> も <code>a[i]</code> も Part (§3)</td>
+</tr>
+<tr>
+<td><code>++</code>, <code>--</code></td>
+<td>7</td>
+<td>Increment / Decrement</td>
+<td>後置・前置</td>
+</tr>
+<tr>
+<td><code>/@</code>, <code>//@</code>, <code>@@</code></td>
+<td>9</td>
+<td>Map / MapAll / Apply</td>
+<td>右結合</td>
+</tr>
+<tr>
+<td><code>.</code></td>
+<td>10</td>
+<td>Dot (内積・行列積)</td>
+<td>単項 <code>-</code> もこの強さ</td>
+</tr>
+<tr>
+<td><code>^</code></td>
+<td>15</td>
+<td>Power</td>
+<td>右結合</td>
+</tr>
+<tr>
+<td><code>*</code>, <code>/</code></td>
+<td>40</td>
+<td>Times / Divide</td>
+<td></td>
+</tr>
+<tr>
+<td><code>+</code>, <code>-</code></td>
+<td>50</td>
+<td>Plus / Subtract</td>
+<td></td>
+</tr>
+<tr>
+<td><code>//</code></td>
+<td>80</td>
+<td>StringJoin</td>
+<td>数値も文字列化して連結</td>
+</tr>
+<tr>
+<td><code>==</code>, <code>&lt;&gt;</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>&lt;</code>, <code>&lt;=</code></td>
+<td>100</td>
+<td>Equal / <strong>Unequal</strong> / Greater …</td>
+<td><code>=&gt;</code>, <code>=&lt;</code>, <code>&gt;&lt;</code> も同義 (tfetok.f)</td>
+</tr>
+<tr>
+<td><code>===</code>, <code>&lt;=&gt;</code></td>
+<td>120</td>
+<td>SameQ / UnsameQ</td>
+<td></td>
+</tr>
+<tr>
+<td><code>~</code></td>
+<td>150</td>
+<td>Not</td>
+<td>前置</td>
+</tr>
+<tr>
+<td><code>&amp;&amp;</code></td>
+<td>160</td>
+<td>And</td>
+<td></td>
+</tr>
+<tr>
+<td><code>\|\|</code></td>
+<td>170</td>
+<td>Or</td>
+<td></td>
+</tr>
+<tr>
+<td><code>\|</code></td>
+<td>175</td>
+<td>Alternatives (パターン)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>:</code></td>
+<td>180</td>
+<td>Pattern / Optional (<code>x_:v</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>-&gt;</code>, <code>:&gt;</code></td>
+<td>190</td>
+<td>Rule / RuleDelayed</td>
+<td></td>
+</tr>
+<tr>
+<td><code>/.</code>, <code>//.</code></td>
+<td>200</td>
+<td>ReplaceAll / ReplaceRepeated</td>
+<td></td>
+</tr>
+<tr>
+<td><code>+=</code>, <code>-=</code>, <code>*=</code>, <code>/=</code></td>
+<td>210</td>
+<td>AddTo …</td>
+<td></td>
+</tr>
+<tr>
+<td><code>&amp;</code></td>
+<td>220</td>
+<td>Function (純関数)</td>
+<td>後置</td>
+</tr>
+<tr>
+<td><code>/:</code></td>
+<td>240</td>
+<td>TagSet</td>
+<td></td>
+</tr>
+<tr>
+<td><code>=</code>, <code>:=</code>, <code>^=</code>, <code>^:=</code></td>
+<td>250</td>
+<td>Set / SetDelayed / UpSet / UpSetDelayed</td>
+<td>右結合</td>
+</tr>
+<tr>
+<td><code>=.</code></td>
+<td>900</td>
+<td>Unset</td>
+<td></td>
+</tr>
+<tr>
+<td><code>;</code></td>
+<td>1000</td>
+<td>CompoundExpression</td>
+<td></td>
+</tr>
+<tr>
+<td><code>,</code></td>
+<td>9000</td>
+<td>引数区切り</td>
+<td></td>
+</tr>
+<tr>
+<td><code>#</code>, <code>##</code></td>
+<td>3</td>
+<td>Slot / SlotSequence</td>
+<td><code>#2</code> は直後の数字</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>4</td>
+<td>PatternTest</td>
+<td></td>
+</tr>
+<tr>
+<td><code>..</code>, <code>...</code></td>
+<td>172</td>
+<td>Repeated / RepeatedNull</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><code>/;</code> (Condition) は SAD に演算子が無く構文エラーになるので、pysad も実装しない。</p>
+<h3 id="22-字句の規則-tfetokf">2.2 字句の規則 (<code>tfetok.f</code>)</h3>
+<ul>
+<li>演算子は長いものから照合する (<code>//.</code>, <code>^:=</code>, <code>===</code>, <code>&lt;=&gt;</code> → 2 文字 → 1 文字)。ただし <code>=.</code>, <code>/.</code>, <code>//.</code>,
+  <code>++</code>, <code>--</code> の直後が数字なら短い方に戻す (tfetok.f の <code>case (mtfreplace, mtfunset, …)</code>)。
+  したがって <code>x=.5</code> は <code>x = 0.5</code>、<code>a/.5</code> は <code>a / 0.5</code>、<code>i++1</code> は <code>i + +1</code> である。pysad の <code>tokenize</code>
+  も同じ分岐を持つ。</li>
+<li><code>.</code> の直後が数字なら数値 (<code>eval2</code>)。数値は <code>1.5</code>, <code>.5</code>, <code>1e-3</code>, <code>1d-3</code> (Fortran 形式の <code>d</code> も可)。</li>
+<li><strong>暗黙の積</strong>: <code>2 Pi</code>, <code>a b</code>, <code>2 (x+1)</code>, <code>2Pi</code> は Times として解釈する (SAD と同じ)。改行をまたぐときは積にしない。</li>
+<li><code>!</code> から行末までがコメント。<code>(* ... *)</code> もコメント。文字列は <code>"..."</code> (または <code>'...'</code>) で、エスケープは tfetok.f の kxmakestring と同じ: <code>\n \r \t \f \e</code> (ESC)、<code>\</code> + 8 進 1〜3 桁 (<code>"\101"</code> は A、256 で折り返す)、<code>\x</code> + 16 進 2 桁まで、<code>\u</code> + 16 進 4 桁まで、<code>\</code> + 改行は行継続、それ以外は <code>\</code> を落として次の文字 (<code>\q</code> は q)。
+  pysad は <code>strip_comments</code> で文字列の中を保護しつつ先に落とす。</li>
+<li><code>\</code> + 改行は行継続 (<code>tremovecont</code>)。</li>
+<li>シンボルは英字・<code>$</code>・<code>`</code> で始まり英数字・<code>$</code>・<code>`</code> が続く。<code>x_</code>, <code>x__</code>, <code>x___</code>, <code>x_Real</code>, <code>_Real</code>
+  はパターン語として一語で読み、pysad では <code>tokenize_full</code> が <code>Pattern[x, Blank[Real]]</code> 等に分解する。</li>
+</ul>
+<h2 id="3-評価の意味論-pysad-の実装">3. 評価の意味論 (pysad の実装)</h2>
+<p>次の表は、値の型・リスト・代入・関数定義・パターン・局所変数・反復・制御などの評価規則をまとめたもの。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>実装</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>値の型</td>
+<td>実数 <code>float</code> (True=1, False=0)、文字列 <code>str</code>、リスト <code>list</code>、<code>Sym</code> (未定義シンボル)、<code>Rule</code>、<code>Func</code> (純関数)、<code>Expr</code> (未評価式)、<code>Null</code>、複素数 (<code>I</code>)</td>
+</tr>
+<tr>
+<td>リスト</td>
+<td>1 始まり。負の添字は末尾から。<code>a[[i,j]]</code> も <code>a[i,j]</code> も <code>Part</code> (値がリストのシンボルに <code>[ ]</code> を付けると <code>apply_value</code> が Part にする)。<code>a[[i]]=v</code> と <code>a[i]=v</code> は <code>set_part</code>。<code>a[0]</code> は head <code>List</code></td>
+</tr>
+<tr>
+<td>文字列</td>
+<td><code>s[i]</code> で 1 文字を取り出せる</td>
+</tr>
+<tr>
+<td>真偽判定</td>
+<td><code>truthy</code>: 数値なら <code>!= 0</code>、それ以外は未定 (<code>If[c, t, f, u]</code> の第 4 引数へ)</td>
+</tr>
+<tr>
+<td>代入</td>
+<td><code>x = v</code> は値を複製して格納 (<code>_copy</code>)、<code>x := e</code> は <code>downvalues</code> に遅延本体として登録</td>
+</tr>
+<tr>
+<td>関数定義</td>
+<td><code>f[x_, y_:2] := body</code> は <code>downvalues[f]</code> に (パターン列, 本体, delayed) で登録。リテラル引数の定義 <code>Mode["ZX"]={3,1}</code> はリテラルを <code>_Lit</code> として先頭に挿入し、<code>f[x_]</code> より先に照合する</td>
+</tr>
+<tr>
+<td>パターン</td>
+<td><code>x_</code> (1 個)、<code>x__</code> (1 個以上)、<code>x___</code> (0 個以上)、<code>x_Real</code>/<code>_String</code>/<code>_List</code>/<code>_Symbol</code>/<code>_Rule</code> の型制限、<code>x_:v</code> (既定値)、<code>p?test</code>、<code>a\|b</code>、<code>{x_, y_}</code> のリスト分解、リスト <code>{_,_}</code>、<code>f[__]</code>、<code>Repeated</code> (<code>{_Real..}</code>)。<code>x__</code> は残りのパターン数を残して貪欲に取る</td>
+</tr>
+<tr>
+<td>束縛</td>
+<td><code>:=</code> 定義は引数を <code>Frame</code> に積んで本体を評価、<code>=</code> 定義は本体に <code>_Lit</code> を代入してから評価</td>
+</tr>
+<tr>
+<td>記号式</td>
+<td>未定義シンボルを含む <code>+ - * / ^</code> は未評価の式にする。SAD と同じ整列と表示: <code>x+y+x → x+x+y</code>、<code>1+x+3 → 4+x</code>、<code>(2 x)</code>、<code>(x y)</code>、<code>x+(-y)</code>、<code>(x y^-1)</code>、<code>x^2</code>、<code>(-x)</code>。<code>Sin[x]</code> などの数学関数は未定義シンボルを渡すと未評価で返す。規則の右辺 (<code>Cases[l,{x_,y_}-&gt;x+y]</code>) に式を書く使い方が動く</td>
+</tr>
+<tr>
+<td>純関数</td>
+<td><code>body&amp;</code> は <code>Slot</code> を引数に置換 (<code>subst_slots</code>、内側の <code>Function</code> には入らない)。<code>Function[{x,y}, body]</code> は名前束縛</td>
+</tr>
+<tr>
+<td>局所変数</td>
+<td><code>Module</code> は字句スコープ (SAD と同じ): 宣言した名前を呼び出しごとに <code>名前$N</code> へ改名して本体を評価するので、本体から呼ぶ別の関数には見えない (<code>x=10; show[]:=x; Module[{x=7}, show[]]</code> は 10)。初期値は外側の環境で評価する (<code>Module[{x=7, y=x}, y]</code> の y は外側の x)。値を持たない局所は <code>t$N</code> と表示する。定義 (<code>f[x_]:=…</code>) や純関数を含む Module は、出た後も局所値を残す。<code>Block</code> は動的スコープ (<code>x=3; f[]:=x; Block[{x=5}, f[]]</code> は 5)。<code>{{x,b}=Thread[d]}</code> のようなリスト分解初期化、<code>x:=e</code> の遅延初期化 (<code>$Delayed</code>) も可。<code>With</code> は値を固定</td>
+</tr>
+<tr>
+<td>反復</td>
+<td><code>Do</code>, <code>Table</code>, <code>Sum</code>, <code>Product</code> の反復子 <code>{i, a, b, d}</code> / <code>{i, list}</code> / <code>{n}</code>。<code>Sum</code>/<code>Product</code> は複数反復子可。<code>Table/Do/Sum</code> の <code>{i,{a,b,c}}</code> 形式は SAD でエラー。反復変数は Module の局所名より優先して束縛する</td>
+</tr>
+<tr>
+<td>制御</td>
+<td><code>If</code>, <code>Which</code>, <code>Switch</code>, <code>While</code>, <code>For</code>, <code>Return</code> (例外 <code>_Return</code>)、<code>Break</code>/<code>Continue</code>、<code>Catch</code>/<code>Throw</code>、<code>Check[e, fail]</code>。<code>Return</code> は純関数・<code>Do</code>・<code>Scan</code>・<code>Module</code>・<code>Block</code> を抜けて、外側のユーザー定義関数 (<code>:=</code>) まで届く (SAD と同じ)。関数の外では <code>General::unexpbreak</code> でその文を打ち切る。<code>Which</code>/<code>Switch</code> は一致なしのとき式を返す (<code>Which[1&gt;2,"a"]</code> は未評価のまま。<code>Switch[a,1,2]</code> は <code>Switch[5,1,2]</code>、引数がすべて定数なら SAD が読み込み時に畳むので <code>Switch[9]</code>)。引数の個数の誤りは <code>General::narg</code>。<code>For</code> は 4 引数のときだけ評価し、3 引数は未評価で返す (k64 モード。本体 (4 番目) の扱いは v2 と k64 で異なる。§6 の <code>For</code>)</td>
+</tr>
+<tr>
+<td>代入演算</td>
+<td><code>++</code>, <code>--</code>, <code>+=</code> 等は <code>Set</code> を経由するので <code>a[[i]]++</code> も動く。<code>AppendTo</code></td>
+</tr>
+<tr>
+<td>改行と <code>;</code></td>
+<td><code>split_statements</code> が括弧の外の <code>;</code> と改行で文を切る。行末が演算子 (<code>+ - * / ^ = , &lt; &gt; &amp; \| : @ . ~</code>) なら次行へ継続 (<code>_incomplete</code>)。ただし <code>free Q*</code> のように英数字直後の <code>*</code> で終わる行はワイルドカードなので継続しない。括弧の中では改行は空白</td>
+</tr>
+<tr>
+<td>式 head</td>
+<td><code>f[a][b]</code>、<code>(f@g)[x]</code>、<code>Function[..][x]</code> のように head が式でもよい</td>
+</tr>
+<tr>
+<td>実行時エラー</td>
+<td>最上位の文での Python 例外 (TypeError など) は SAD の <code>???General::wrongtype</code> と同じく、その文を打ち切って続行 (<code>PYSAD_TRACE=1</code> で traceback)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-入出力と書式">4. 入出力と書式</h2>
+<ul>
+<li><code>Print[a, b, …]</code> は引数を文字列化して連結し、<code>PageWidth</code> (既定 131) で折り返して改行付きで出力。
+  <code>Write[unit, …]</code> は同じく改行付き、<code>WriteString[unit, …]</code> は改行なし。unit 6 は標準出力。</li>
+<li><code>OpenWrite[path]</code>/<code>OpenAppend[path]</code>/<code>OpenRead[path]</code> はユニット番号 (10 から) を返し、<code>Close[unit]</code> か <code>Close[{u1,u2,…}]</code>。<code>$Output</code> (= -1) への <code>Write</code>・<code>WriteString</code> は標準出力 (unit 6 と同じ)。<code>Write[$Output]</code> (引数 1 つ) は <code>General::narg</code>。
+  相対パスは <code>Interp.cwd</code> (run_sad では最後に渡したスクリプトのディレクトリ)。
+  <strong>OpenRead の失敗</strong> (SAD と同じ): 開けなければメッセージを出して入力行を打ち切り、戻りの値に対する <code>Read[h,…]</code>・<code>Close[h]</code> は wrongtype になる (<a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>。入力ファイルが無い場合がこれに当たる)。</li>
+<li><code>Read[unit, item, opts]</code> は SAD の <code>tfreadstringf</code> と同じ規則 (記録 = 1 行の中の位置を持つ)。<code>Word</code> は <code>WordSeparators</code> (既定は空白・<code>,</code>・タブ・改行) で区切り、語が記録の終わりなら次の記録へ (<code>ReadNewRecord-&gt;False</code> ならそのまま)、<code>NullWords-&gt;True</code> で隣り合う区切りの間に <code>""</code>。<code>Real</code> は語を読んで評価、<code>String</code> と <code>ReadString</code> は記録の残り、<code>Character</code> は 1 文字、<code>Expression</code> は現在位置から 1 つの式 (隣り合う項 <code>x+y  3*4</code> で切り、括弧が閉じなければ次の行も使う) を評価して返す。<code>{item,…}</code> はリスト、<code>n*item</code> は頭が Null のリスト (Print で連結される)。EOF は <code>EndOfFile</code>。<code>ReadList</code>・<code>Get</code> は上の §1 のとおり別。</li>
+<li><code>DateString[t]</code> は t (1900-01-01 0:0:0 からの秒、または <code>{Y,m,d[,H[,M[,S]]]}</code>) を <code>mm/dd/yyyy HH:MM:SS</code> にする (7 番目の offset は無視、未確認)。<code>System[cmd]</code> は、既定では実行しない (下の §6。EPICS の <code>Ca*</code> も動かさない)。<code>ToString[x, form]</code>, <code>StringJoin</code>, <code>StringForm</code> あり。</li>
+<li>リストの文字列化は <code>{1,2,3}</code> のように <code>,</code> だけで区切る (空白なし)。文字列はリストの中では <code>"..."</code> 付き。
+  <code>PageWidth</code> を超えると SAD と同じく <code>,</code> の後で折り返し、続きの行は 1 空白から始める (<code>wrap</code>)。
+  入れ子の長いリストの折り返しは SAD (要素の境界で改行、行の上限は pw-1) と pysad (区切りのカンマ、上限 pw) で異なる (PageWidth が十分大きければ一致)。</li>
+<li><code>Print[Null]</code> / <code>ToString[Null]</code> は <code>Null</code> (リストや関数の引数の中では空)。Expr の表示は <code>f[a,b]</code> (カンマ後に空白なし)。</li>
+<li>複素数の表示: <code>I</code>、<code>(-I)</code>、<code>(re+I)</code>、<code>(re-I)</code>、<code>(re+im I)</code>、虚部が負なら <code>(re&lt;虚部の書式&gt; I)</code>。</li>
+</ul>
+<h3 id="41-数値の書式-form-と-fmt_real">4.1 数値の書式: <code>$FORM</code> と <code>fmt_real</code></h3>
+<p><code>$FORM</code> (数の出力書式を決める SAD の変数) が <code>""</code> または <code>"S"</code> のときは最短の往復可能表現 (<code>_autos</code>: <code>0.5</code>, <code>5.07590922e-16</code>)。
+<code>"15.10"</code> のような <code>幅.小数桁</code> を指定すると <code>autofg.f</code> を直訳した <code>fmt_real</code> が使われる。
+特徴は、整数部が 0 のとき <code>0.</code> を書かず <code>.0000000000</code> とすること、小数桁に収まらない小さな数は
+<code>E</code> 形式にすること、先頭に 1 文字の符号桁を取ること。<code>S</code>/<code>M</code>/<code>C</code> 前置 (<code>"S15.10"</code>) は末尾の 0 と
+空白を落とす。<code>F</code>/<code>G</code>/<code>E</code> 前置は Fortran の編集記述子そのまま。次の表は、同じ値を三つの <code>$FORM</code> で出したときの表示。</p>
+<table>
+<thead>
+<tr>
+<th>値</th>
+<th><code>"15.10"</code></th>
+<th><code>"S15.10"</code></th>
+<th><code>""</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>7.4210230634</td>
+<td><code>7.4210230634</code></td>
+<td><code>7.4210230634</code></td>
+<td><code>7.4210230634</code></td>
+</tr>
+<tr>
+<td>0</td>
+<td><code>.0000000000</code></td>
+<td><code>0</code></td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td>5.07590922e-16</td>
+<td><code>5.07590922E-16</code></td>
+<td><code>5.07590922E-16</code></td>
+<td><code>5.07590922e-16</code></td>
+</tr>
+<tr>
+<td>-0.0012345678901</td>
+<td><code>-.0012345679</code></td>
+<td><code>-.0012345679</code></td>
+<td><code>-0.0012345678901</code></td>
+</tr>
+</tbody>
+</table>
+<p>内部では <code>_strfromd</code> (18 桁の数字列と 10 の指数)、<code>_roundnumstr</code> (指定桁で四捨五入、桁上がりで
+指数を 1 増やしてやり直し) を autofg.f と同じ手順で行う。<code>FFS</code> 側のマッチング表示 (tffsmatch の
+<code>1PG11.4</code>) は <code>fmt_g(x, 11, 4)</code> で、<code>0.1 ≤ |x| &lt; 10^4</code> なら F 形式 + 4 空白、それ以外は <code>2.5977E-03</code>
+のような 1PE 形式になる。整数に近い値は <code>1080.</code> (小数点付き)。</p>
+<h2 id="5-sad-独自の関数">5. SAD 独自の関数</h2>
+<h3 id="51-数値行列乱数">5.1 数値・行列・乱数</h3>
+<ul>
+<li><strong>PolynomialFit[data, nord]</strong> (B18): <code>Packages/Fit.n</code> の定義を <code>_PRELUDE</code> としてそのまま評価する。<strong>v2 モードは x の平均が 0 のときの係数の誤りを直す</strong> (下の <code>xl=1</code> の癖は k64 モードの動作)。例: <code>{{-1,1},{0,0},{1,1},{2,4.1},{-2,4}}</code> の 2 次で k64 は {1.0257, 2.0486, 1.0143}、v2 は {-.0085714, .02, 1.0142857} (numpy.polyfit と 1e-13 で一致。<code>test_b18_polynomialfit_mean_zero_v2</code>・<code>_k64_and_nonzero_mean</code>)。平均が 0 でないデータは両モードで同じ。v2 の判定は <code>Compat$V2[]</code> (互換モードが v2 なら 1) を prelude が使う。以下は k64 モードの説明。
+  データの x を平均 <code>xa</code> と <code>scale=1/Max[Abs[x-xa]]</code> で正規化し <code>LinearSolve</code> で最小二乗解を求めてから、
+  係数を元のスケールに戻す。ただし <code>Abs[xa]*scale &lt; 0.1</code> なら <code>xa=0</code> とし、そのとき
+  <code>xl=If[xa, Table[…], 1]</code> が<strong>スカラー 1</strong> になる (リストでない) ので、<code>cm = Table[...]/xl</code> の除算も
+  スカラー除算になる、という SAD の癖も含めて再現する。戻り値は <code>{{c0, c1, …}, {Residual -&gt; r}}</code>。
+  numpy 版 <code>PolynomialFit$numpy</code> も残してあるが既定では使わない。</li>
+<li><strong>Spline[{{x,y},…}]</strong> は scipy の <code>CubicSpline</code> を包んだ純関数を返す (自然スプライン)。<code>Spline[data,0,0]</code> は SAD も pysad も未評価のまま。</li>
+<li><strong>複素行列の演算</strong>: <code>Dot</code>・<code>Inverse</code> の結果は、SAD が<strong>要素ごと</strong>に虚部が 0 の複素数を実数に戻すので、pysad も要素ごとに戻す。<code>DiagonalMatrix</code> は複素数の列を受けて動く (<code>LDSolve.n</code> が動く)。<code>Packages/Optics.n</code> の <code>TransferMatrix</code>・<code>BeamMatrix</code>・<code>NormalCoordinates</code>・<code>OrbitGeo</code> も動く (SAD は 1e-16 の雑音の要素を出し、pysad は 0)。<code>PeriodicR</code> は <code>PeriodicOptics</code> を先に呼ぶ必要がある (<a href="06_sadscript_library.html">06_sadscript_library.md</a> §5)。</li>
+<li><strong>Eigensystem</strong> (<code>{値, ベクトル}</code>): 実行列は teigen.f の直訳 (<a href="../pysad/teigen.py"><code>pysad/teigen.py</code></a>) で解く。固有ベクトルは単位ベクトルではなく
+  SAD 固有の規格化、複素固有値の対は 行 k = 実部+i虚部 / 行 k+1 = 実部-i虚部。実行列の対称・縮退でも虚部の雑音が出ない。
+  ただし n&gt;8 の実対称行列は <code>np.linalg.eigh</code> (SAD の teigen は縮退で丸め依存)。n&lt;=8 や非対称は teigen の直訳。</li>
+<li><strong>LinearSolve</strong> (最小二乗 <code>lstsq</code>)、<code>Inverse</code>, <code>Det</code>, <code>Dot</code>, <code>Transpose</code>, <code>DiagonalMatrix</code>, <code>IdentityMatrix</code>, <code>SingularValues</code>。</li>
+<li><strong>Thread</strong>: リストのリストは転置、<code>Rule</code> のリストは要素ごとの規則、式は引数リストで分配。</li>
+<li><strong>Override[rules…]</strong>: 規則を平坦化し、同じ左辺は最初のものだけ残す (オプション処理用)。</li>
+<li><strong>Random/GaussRandom/SeedRandom</strong>: ffscmd.py が <code>sadrandom.SadRandom</code> (random_plugin_sad.c の
+  LCG <code>seed ← 48828125·seed mod 2^32</code>、初期種 17、Box–Muller、GCUT 棄却) を割り当てるので、
+  追跡の FLUC と同じ乱数列を共有する。<code>Random[n]</code> は n 個のリスト (<code>Random[0]</code> は <code>{}</code>、リスト引数は wrongtype、負は wrongnum)、
+  <code>Random[n,m,…]</code> は n×m×… の配列 (行優先に順に引く。小数は切り捨て。<code>GaussRandom</code>・<code>ParabolaRandom</code> も同じ)。<code>GaussRandom[]</code> はスカラー。
+  <code>SeedRandom[n]</code> は種、<code>SeedRandom[]</code> は <code>{"SAD", seed, filled, next の下位語, 上位語}</code>。<code>SeedRandom["SAD"]</code> と、先頭が文字列のリストは乱数の種類の選択だけで
+  状態は変わらない (<code>SeedRandom[状態]</code> で状態は復元されない: SAD の tfRandom_.c はリストの数を読まない。数だけのリストは種 1 になる)。"SAD" 以外は <code>System::error</code>。</li>
+<li><strong>StringMatchQ</strong>: ワイルドカードは <code>*</code> (0 個以上)、<code>%</code> (1 文字)、<code>{abc}</code>・<code>{^abc}</code>、<code>a|b</code> (SADHelp の wildcards)。<code>?</code> は普通の文字、大文字小文字は区別、空文字列は何にも合わない。</li>
+</ul>
+<h3 id="52-リスト文字列行列の関数-pysadsadlistpy">5.2 リスト・文字列・行列の関数 (<code>pysad/sadlist.py</code>)</h3>
+<p>SAD の実装 (組み込み + Packages/functions.n, Misc.n) の挙動に合わせてある: <code>MapThread MapAt ScanThread Complement Union Intersection DeleteCases Cases MatchQ Extract Position Count MemberQ FreeQ Select
+Sort Reverse Join Flatten Partition Transpose Take Drop Delete Insert ReplacePart Append Prepend Apply Map MapAll Scan Fold FoldList Nest NestList FixedPoint NearlySameQ Through Tr RotateLeft/Right Depth Level AtomQ IntegerQ
+EvenQ OddQ Positive.. Binomial FractionalPart Round Floor Ceiling Mod Max Min Length Dimensions Inverse Det Dot IdentityMatrix Outer Thread StringReplace ToExpression FromCharacterCode ToCharacterCode Order First Last Rest</code>。</p>
+<ul>
+<li>レベル指定 (n → {1,n}, {n}, {m,n}, Infinity, 負は高さ)、後順の走査。<strong>Position だけ頭部 <code>{0}</code> と全体 <code>{}</code> も走査し既定のレベルは {0,Infinity}</strong> (Count/MemberQ/FreeQ はこれの上に定義されている)。</li>
+<li>標準順序は 数 &lt; 文字列 &lt; シンボル &lt; 複合式 &lt; リスト (リストは長さ優先、文字列は <code>a&lt;A&lt;aa&lt;b&lt;B</code>)。</li>
+<li><code>Take[l,5]</code>/<code>Take[l,-5]</code>/<code>Take[l,{2,5}]</code> は範囲外で <code>{}</code>、<code>Drop[l,{2,5}]</code> は存在する分だけ落とす。</li>
+<li><strong>SAD に無い関数</strong> (未評価のまま返る): <code>Total Cross Norm Riffle StringSplit Mean Variance Most Accumulate StringTake IntegerPart Eigenvalues Ordering Tally DeleteDuplicates</code> など。
+  pysad の拡張 (Total, Most, Accumulate, StringTake, IntegerPart, Eigenvalues) は残してあるが、SAD のスクリプトは使えない前提。</li>
+<li>SAD の癖で再現していないもの: <code>Level[..,{-1}]</code> のバグ、<code>DeleteCases</code> の第 4 引数、非正方・ゼロ行列の <code>Inverse</code>、<code>Insert[l,x,0]</code>。</li>
+</ul>
+<h3 id="53-ffs-専用関数-pysadsadelempy-ffscmdpy">5.3 FFS 専用関数 (<code>pysad/sadelem.py</code>, ffscmd.py)</h3>
+<ul>
+<li><code>Element</code> (ファミリー単位、単一マッチはスカラー、リスト指定はリスト、マッチ無しは <code>{}</code>、<code>+= -= *= /=</code>)、<code>SetElement</code> (<code>{name, TYPE, {keyword-&gt;value..}}</code>、キーワード表は <a href="../pysad/sadkw.py"><code>pysad/sadkw.py</code></a>)、<code>FLAG</code> (大文字のみ)、
+  <code>ExtractBeamLine / BeamLine / PrintBeamLine / WriteBeamLine</code> (<code>-BeamLine</code> は逆順・反転、<code>n*BeamLine</code> は繰り返し、<code>Fill$String</code> の整形、デバッグ行 <code>WriteBeamLine {{..},..}</code> も SAD と同じ)、<code>GetMAIN</code>、<code>CalculateOptics</code>。</li>
+<li><code>Twiss[key,pattern]</code> / <code>LINE[key,pattern]</code>: 一致 1 件ならスカラー、0 件は <code>{}</code>、複数はリスト。</li>
+<li><strong><code>Twiss["DETR", …]</code></strong> (結合行列 R の行列式 det R = R1·R4 − R2·R3): CELL の CALC のあとだけでなく <strong>INS の CALC のあとも値が入る</strong> (両モード)。小さな結合リング (四極を 45 度回した 4 要素の FODO 風のリング) で INS の CALC のあと、位置 2 以降は DETR = R1R4 − R2R3 (例: 0.00213…)、入口の位置 1 は R1〜R4 が全て 0 で DETR も 0 (2026-11-23 に pysad で確認)。DETR ≥ 1 (モードが入れ替わる) の INS は未確認 (<a href="07_calc_optics.html">07_calc_optics.md</a>)。</li>
+<li>名前パターン (tmatch.f): <code>* % {abc} {^abc} |</code>。<code>?</code> は普通の文字。</li>
+<li>Twiss / LINE / FFS / Emittance / TrackParticles などの仕様は <a href="03_ffs_commands.html">03_ffs_commands.md</a> §7。</li>
+</ul>
+<h3 id="54-追加の関数群-詳細は各文書">5.4 追加の関数群 (詳細は各文書)</h3>
+<p>次の表は、この文書に書かなかった関数群の一覧と、詳しい説明のある文書への案内。</p>
+<table>
+<thead>
+<tr>
+<th>分野</th>
+<th>内容</th>
+<th>文書</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>特殊関数・数学関数</td>
+<td>Bessel・超幾何・ガンマ族・ゼータ・多重対数・D.n の特殊関数。K64 の <code>InverseErf</code> の誤差は k64 モードで再現。基本関数 (Log・ArcSin・Power・Erf・Factorial など) の複素・範囲外の扱いも SAD に合わせてある</td>
+<td><a href="06_sadscript_library.html">06_sadscript_library.md</a> §1</td>
+</tr>
+<tr>
+<td>Fit・FindRoot・NIntegrate・FitGaussian・DownhillSimplex</td>
+<td>数値微分で計算。ベクトル独立変数・複素 FindRoot は K64 が誤値 (B52, B61)</td>
+<td>06 §2・§3</td>
+</tr>
+<tr>
+<td>ファイル・文字列・システム関数</td>
+<td>FileQ・FileNames・CopyFile・ToDate・GetEnv など (Python の os・shutil で実装)、ARRAY・Len・StringInsert・Diagonal・Expand など</td>
+<td>06 §3</td>
+</tr>
+<tr>
+<td>記号微分・パッケージ</td>
+<td><code>D[f,x]</code> は D.n を SADScript のまま実行。CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・Rational・TableForm</td>
+<td>06 §5</td>
+</tr>
+<tr>
+<td>Class</td>
+<td><code>Class[親の列, クラス変数, インスタンス変数, メソッド…]</code>、<code>x@メンバー</code>、<code>Constructor</code>/<code>Destructor</code>、継承 (<code>sadclass.py</code>)</td>
+<td><a href="20_tcltk_gui.html">20_tcltk_gui.md</a></td>
+</tr>
+<tr>
+<td>Tk・描画</td>
+<td><code>TclEval</code>・<code>TkEventLoop</code> など Tcl との接点、<code>TkCanvasCreateItem</code>・<code>CanvasClipLine</code>・<code>Vector</code> (ListPlot・Plot・OpticsPlot の下地)</td>
+<td>20、<a href="21_graphics.html">21_graphics.md</a>、<a href="04_ffs_small_commands.html">04_ffs_small_commands.md</a></td>
+</tr>
+<tr>
+<td>CSR・GaussianCoulomb・BBBrem・RadiationField</td>
+<td>物理計算の関数</td>
+<td><a href="06_sadscript_library.html">06_sadscript_library.md</a> §4、<a href="14_beambeam.html">14_beambeam.md</a>、<a href="15_csr.html">15_csr.md</a>、<a href="18_radlight.html">18_radlight.md</a></td>
+</tr>
+</tbody>
+</table>
+<p>評価器の側で SAD に合わせた主な点 (試験は <a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>・<a href="../pysad/tests/test_gui_lang.py"><code>test_gui_lang.py</code></a>・<a href="../pysad/tests/test_symbolic.py"><code>test_symbolic.py</code></a> ほか): 連鎖した比較 <code>a&lt;x&lt;b</code>、<code>Null[a,b]</code> (空の Sequence) の展開、UpValue (<code>^:=</code>・<code>a/:f[a]:=…</code>・SubValue <code>f[a][b]</code>)、保持属性 (HoldAll など) の引数への置き換え、<code>//.</code> の不動点までの反復、Plus・Times の Flat・Orderless 照合、<code>Part[l,{i,j},k]</code>、<code>With[{f[x_]:=…},…]</code>、<code>StandardForm</code>、数の既定の書式 (<code>1e6</code>→<code>1e6</code>、<code>1e10</code>→<code>1e+10</code>)、<code>Skip</code>・<code>Read</code> の型。<code>ElectronMass</code> は 510998.95 eV。</p>
+<h2 id="6-対応していない構文関数と特殊な機能">6. 対応していない構文・関数と特殊な機能</h2>
+<h3 id="61-未対応">6.1 未対応</h3>
+<p>parse はできるが未実装、または parse できないもの:</p>
+<ul>
+<li><code>Condition</code> (<code>/;</code>: SAD に演算子が無い。<code>Condition[1,2]</code> は未評価のまま返ることを確認)、<code>Literal</code>、<code>Hold</code> 系の厳密な保持、<code>Message</code>、<code>Definition</code>、
+  <code>SetAttributes</code>/<code>Protect</code> (無視)、関数に対する <code>Options[f]</code> (常に <code>{}</code>。Class のインスタンスの <code>Options</code> は sadclass が扱う)、<code>DefineOptions</code></li>
+<li><code>Class</code>・<code>^=</code> による UpValue・<code>//.</code> の反復・<code>ReplaceAll</code> の構造パターン・<code>Module</code> と <code>Block</code> の区別は対応済み (§3、§5.4、<a href="20_tcltk_gui.html">20_tcltk_gui.md</a>)。ただし <code>Unevaluated</code> の扱いは <code>Unevaluated$[…]</code> の形の一部 (<a href="20_tcltk_gui.html">20_tcltk_gui.md</a> §4)、<code>^:=</code> のパターン付き UpValue の一般形、<code>Hold</code> 系の厳密な保持は確かめていない (未確認)。</li>
+<li>表示系 <code>Format</code>, <code>TableForm</code> (SAD の tableform.n は Packages で動く: <a href="06_sadscript_library.html">06_sadscript_library.md</a> §5)。<code>TkWait</code>・<code>Update</code>・<code>Pause</code> は sadscript の組み込みでは no-op (tclbridge が有効なときの挙動は未確認)</li>
+<li><code>System[]</code>: <strong>既定では実行しない</strong> (任意のシェルコマンドを実行できるため)。v2 モードは 1 行の案内を出して <code>$Failed</code> を返し、<code>[ -e path ]</code>・<code>[ -d path ]</code>・<code>[ -f path ]</code>・<code>[ -r path ]</code>・<code>[ -s path ]</code>・<code>test …</code> の形だけはシェルを使わずに判定して 0 (真)・1 (偽) を返す (KBFrame などの <code>System["[ -d dir ]"]==0</code> のため)。k64 モードは「実行しません」を出して 0。許可: 環境変数 <code>PYSAD_ALLOW_SYSTEM=1</code> (pysad を起動する前に設定)、または Python から <code>pysad.miscfn.allow_system(True)</code> (SADScript の中からは変えられない)。許可があるとき: シェルで実行し (作業ディレクトリ <code>Directory[]</code>、標準入力は空。Windows は cmd.exe、ほかは /bin/sh、<code>PYSAD_SYSTEM_SHELL</code> に sh・bash を書けば <code>&lt;shell&gt; -c cmd</code>)、戻り値は v2 が終了コード (成功 0)、k64 が 1 (K64 は起動できれば常に 1)。確かめた範囲は Windows (cmd.exe) と WSL (sh) の <code>echo … &gt; file</code>・<code>exit 3</code>・標準出力で、SAD の Packages が呼ぶ個々のコマンドは未確認 (<code>test_system_is_disabled_by_default</code>、<code>test_system_runs_only_with_permission</code>)。EPICS (<code>CaGet</code> など) は未対応。ソース確認: <code>CSR.n</code> の <code>TrackAnimate</code> は <code>System["import -silent -window …"]</code> (ImageMagick) と <code>System["mkdir …"]</code> を呼ぶので Windows の pysad では画像が作れない。<code>Wait[mem]</code> は <code>FreeMem[]</code> (top) と <code>Sleep</code> を使い、K64 (gs) はこの環境で top が無く <code>FreeMem</code> が OpenRead エラーになる。pysad の <code>FreeMem</code> は psutil で代替して 1.0 を返す。並列を増やしても速くなるかは未確認 (<code>Fork</code> は §6.3。<code>Parallelize</code> は §6.2 の項)</li>
+<li><strong>Tk ウィジェットの値</strong>: <code>w=Window[]</code>・<code>e=Entry[w,…]</code> の値は SAD と同じ <code>Widget[…]</code> (<code>Head[w]=Widget</code>) で、<code>e[Insert]</code>・<code>e[Get]</code>・<code>e[Delete]</code> (Entry・ListBox・Scale のメソッド) も働く (<a href="20_tcltk_gui.html">20_tcltk_gui.md</a>)。SAD と違う点は、最初の <code>Window[]</code> の親 (SAD は Toplevel、pysad は <code>.</code> 自身で、<code>TextVariable</code> の名前の番号が違う) と、<code>OpticsPlot</code> の text 項目の数 (フォントの測り方、<a href="21_graphics.html">21_graphics.md</a>)。パターン変数への代入 (<code>f[x_]:=(x=5); f[aa]</code>) は SAD と同じ。深い再帰では pysad は Python の RecursionError で落ちる (SAD は <code>General::deep</code>)。<code>Insert</code> の位置に <code>"End"</code> (大文字) を渡すと SAD は Tcl エラー 1501 (<a href="20_tcltk_gui.html">20_tcltk_gui.md</a>・<a href="14_beambeam.html">14_beambeam.md</a>)</li>
+<li><code>Check[Return[1], 2]</code> は SAD では Return を失敗として捕まえて 2 を返す。pysad は Return を <code>General::unexpbreak</code> で文ごと打ち切る (2 を返さない)。<code>Thread[a==b]</code> (a が値、b が未定義) は SAD が <code>3==b</code> を返すが、pysad は <code>==</code> が 0 を返すので Thread の引数にならない。リストと記号の ==・数どうしでない <code>==</code> の未評価形は一部だけ (<code>{1,2}==1</code> は未評価、記号どうしは 0)。</li>
+<li><code>Out[n]:=</code> の表示は、最上位 (run_sad_string) の <code>;</code> なしの式文だけ。未定義の記号 1 つだけの文での SAD の表示 (前の Out の値を繰り返す) は未対応。<code>%%</code> は SAD でも記号のまま。</li>
+<li>SAD に無い関数 (<code>Mean</code> <code>Cross</code> <code>StringSplit</code> など) は未評価のまま返る (SAD と同じ。<code>Total</code> は pysad の拡張で動く)</li>
+<li>FFS 側: <code>MCOD/TCOD/MON</code> の COD 補正は K64 でも式として評価されて何もしない。<code>Steer</code>/<code>Monitor</code>/<code>CorrectOrbit</code> は <code>Packages/correction.n</code> を SADScript のまま実行する (<a href="06_sadscript_library.html">06_sadscript_library.md</a> §5。<code>PYSAD_SAD_PACKAGES</code> が必要)。FFS コマンド・関数の対応状況と未対応の一覧は <a href="03_ffs_commands.html">03_ffs_commands.md</a> §8</li>
+<li><strong>Packages の関数</strong> (<code>Log2$</code>・<code>FunctionDefinition</code>・<code>Fill$String</code>・<code>Remove$Paren</code>・<code>Union</code> の <code>SameTest</code>・<code>Names</code>・<code>Emittance-&gt;False</code> ほか): <a href="06_sadscript_library.html">06_sadscript_library.md</a> §5。除算 <code>a/b</code> は K64 が <code>a*(1/b)</code> で計算するので最後の桁が違うことがある (<code>Log[100]/Log[10]</code> は K64 1.9999999999999998、pysad 2)。評価器全体は変えていない (全試験の基準値に影響するため。要判断)。</li>
+<li><strong>複素引数の <code>PolyLog</code>・<code>HypergeometricU</code>・<code>Zeta</code>・<code>HurwitzZeta</code></strong> (<a href="06_sadscript_library.html">06_sadscript_library.md</a> §1): <a href="../pysad/specfn_cx.py"><code>pysad/specfn_cx.py</code></a>。</li>
+</ul>
+<h3 id="62-文脈forfindrootmessagenameparallelizevisit-など-両モードの扱い">6.2 文脈・<code>For</code>・<code>FindRoot</code>・<code>MessageName</code>・<code>Parallelize</code>・<code>VISIT</code> など (両モードの扱い)</h3>
+<h4 id="文脈-beginpackagebeginendendpackage">文脈 (<code>BeginPackage</code>・<code>Begin</code>・<code>End</code>・<code>EndPackage</code>)</h4>
+<p>文脈 (名前空間) は、K64 (init.n の定義) の規則を写した。<strong>利用者のコードでは両モードで実装している</strong>。SAD 自身の Packages (<code>.n</code>) の読み込みは文脈を無視して大域で読む。名前は「現在の文脈 (<code>$Context</code>) → <code>$ContextPath</code> の順」に探し、無ければ現在の文脈に作る。<code>BeginPackage[c1,c2,…]</code> は <code>$ContextPath</code> を <code>{c1,c2,…,System</code>}<code>にし、</code>Begin[c]<code>は</code>$Context<code>を c にする。``</code>x <code>は大域の x。文脈の中の記号は</code>Stat<code>名`` という名前になり、外からは ``Stat</code>名<code>` で呼ぶ。</code>$Context<code>・</code>$ContextPath<code>・</code>Context[sym]` が読める。</p>
+<ul>
+<li>使い方: <a href="../example/08_scripting/syntax_package_context.sad"><code>example/08_scripting/syntax_package_context.sad</code></a>。大域に公開する関数は <code>`Name[…] := …</code> と定義する。大域の変数を使うときは <code>`var</code> と書くか、<code>BeginPackage[My</code>, <code>]</code> のように <code>$ContextPath</code> に大域を入れる。組み込み関数・FFS の関数 (Twiss、LINE、FFS[…]、DP0 など) はそのまま使える。</li>
+<li>k64 モードと v2 モードの違いは <code>Names</code> と、<code>Begin</code> に文脈を<strong>文字列</strong>で渡す形 (k64 は K64 と同じく拒否、v2 は受ける。<code>Context["A</code>x"]<code>の文字列も同じ) だけ: ``Names["Stat</code>*"]<code>は v2 がその文脈の記号の一覧、k64 が K64 と同じ</code>{"Stat<code>}</code>。</li>
+<li>K64 との意図的な差: (1) pysad の <code>System`</code> は組み込み関数 + pysad が記号として扱う名前 (<code>AccuracyGoal</code>・<code>Plot</code> などのオプション名を含む) で K64 より広い (K64 ではパッケージの中の <code>AccuracyGoal</code> は <code>Stat`AccuracyGoal</code> になり、<code>`AccuracyGoal</code> と書かないとオプションとして効かない。pysad はどちらでも効く)。(2) 表示: K64 は <code>$ContextPath</code> に無い文脈の記号に文脈名を付けて表示する (大域の記号が <code>`sq</code> になるなど)。pysad は文脈つきの名前だけ、<code>$ContextPath</code> にある文脈名を省く。(3) <code>Symbol["Stat`x"]</code> は K64 が値を返し、pysad は記号を返す。</li>
+<li><strong><code>$Context</code>・<code>$ContextPath</code> への代入、<code>WithContext</code>、入れ子の文脈</strong> (両モード): <code>$Context</code> への文脈の記号 (A の末尾にバッククォートを付けたもの) の代入と、文字列 (<code>"A</code>B<code>"</code> の形) の代入は init.n の <code>$SetContext</code> を呼び、読み取りの文脈が変わる (<code>End</code> の対象には積まない)。<code>$ContextPath</code> に文脈のリスト (A と System をバッククォートつきで並べたもの) を代入すると <code>$SetContextPath</code>。値が文脈でなければ <code>???General::wrongtype:  Argument must be Context (Symbol ending ...) in $SetContext[…]</code> (文脈はバッククォートで終わる記号) を出して元のまま。<code>Begin</code> は引数を <code>$SetContext</code> に渡すので、文字列で渡す <code>Begin</code> は拒否 (記号だけ。v2 は文字列も受ける)。<code>WithContext[{c__},body]</code> は <code>BeginPackage[c]; Begin[First[c]]; body; End[]; EndPackage[]</code> (body は文の読み取りの時点で名前が解決済み)。入れ子 <code>A`B</code> は一つの名前。<code>Context[x]</code> は文脈の記号を返し、文字列を渡す <code>Context</code> はエラー (k64)。文脈の記号は文脈が大域なので、大域が <code>$ContextPath</code> に無いとバッククォートつきの名前で表示する。<strong>K64 は x・l・a など init.n が大域に作った名前を、文脈の中で読んでも大域の記号に当たる</strong> (文脈 A の中で x=1 としたあとも <code>Context[x]</code> は大域): この 51 個の名前を pysad の大域の名前の初期値に入れた。使えない・未確認: 文脈つきの <code>Names</code> (K64 は状況で空のリストと文脈名のリストを返す。k64 は文脈名の一覧で規則が違う)、init.n が大域に作る名前の全部 (51 個しか調べていない)、System 文脈に入る名前 (pysad の System 文脈は K64 より広い)。文字列を <code>ToExpression</code> するときの文脈は「その時点の現在の文脈」。<code>BeginPackage</code> の戻り値 (<code>{$ContextPath,"</code>"}<code>) の K64 との一致は確かめていない (要確認)。SAD の Packages の読み込み (</code>load_package<code>、</code>PackagesDirectory<code>の下の</code>Get<code>) は文脈を扱わず、</code>PYSAD_SAD_PACKAGES` つきで GUI・描画・パッケージ系の試験が通る。</li>
+<li>試験: <code>test_context_package_file</code>、<code>test_context_resolution_rules</code>、<code>test_context_package_using_ffs_and_builtins</code>、<code>test_chromaticity_scan_in_user_package</code> (<a href="../pysad/tests/test_v2_B_script.py"><code>test_v2_B_script.py</code></a>)。</li>
+</ul>
+<h4 id="forfindroot-の複素messagename-の関数形"><code>For</code>、<code>FindRoot</code> の複素、<code>MessageName</code> の関数形</h4>
+<ul>
+<li><strong><code>For[ini,cond,incr,body]</code></strong> (B71): K64 (gs) は 4 番目の引数 (本体) を実行せず、incr だけ繰り返す (3 引数は未評価)。<code>Packages/functions.n</code> の定義 <code>For[`ini_,`cond_,`incr_,`body_]:=(ini;While[cond,body;incr];)</code> どおりなら実行するはずで、同じ式を別名で定義すると K64 も実行する (原因は未特定の K64 の読み込み時の癖)。<strong>k64 モードは K64 と同じ</strong> (本体を実行しない。SAD の Packages は <code>For</code> を使っていない)。<strong>v2 モードは本体を実行する</strong> (Break・Continue も効く。3 引数は本体なしのループ。t = Σ i² = 30)。<code>test_b71_for_body_v2</code>・<code>_k64</code>。</li>
+<li><strong>複素の初期値の <code>FindRoot</code></strong> (B61): v2 モードは複素の Newton 法で解く (前進差分のヤコビアンと最小二乗の Newton 法、歩幅を半分にする減速つき)。<code>FindRoot[z^2+1==0,{z,1.+1.*I}]</code> → <code>{z-&gt;(…+I),Residual-&gt;0}</code>。連立も可 (<code>{z*w==I,z+w==2}</code>)。<code>MaxIterations</code>・<code>AccuracyGoal</code> が効く。確かめた: z² = −1 → i、e^z = 2 → ln 2、z³ = 1、連立 zw = i・z + w = 2 (残差 1e-12 以下)。使えない: 変数の範囲 <code>{var, ini, {min, max}}</code> は複素では無視する、正則でない式 (Abs・Conjugate・Re・Im を含む) は収束を保証しない、実数の初期値で複素の値になる式は <code>General::wrongval</code>。k64 モードは TypeError。</li>
+<li><strong><code>MessageName[f,"usage"]</code></strong> (B70): K64 (gs) は関数形で f を無視して <code>Undefined MessageName General::"usage"</code> を返す。v2 モードは f の本文を返す (<code>f::usage</code> と同じ。無ければ <code>General::tag</code> の本文。<code>General::mytag</code> の継承は K64 の <code>h::mytag</code> と同じ)。k64 モードの pysad も f を見る (<code>General::tag</code> への継承だけ)。<code>Message[f::usage]</code> の表示は K64 が <code>???f::usage:  本文</code> を出す。<strong>pysad も出す</strong> (両モード): <code>Message[f::tag, 値…]</code> は <code>???f::tag:  本文</code> (本文の <code>`1`</code> を値で置換)、本文が無ければ <code>General::tag</code>、それも無ければ <code>Undefined MessageName General::tag</code>。<code>Message[9, CA::open]</code> の先頭の数は重大度。引数の評価で再帰するもの (Tkinter の未定義メソッド) では出さず、<code>Tkinter::undef</code> は出さない。<code>Symbol["x"]</code> は x の値 (未定義なら記号 x)。<code>Off[f::tag]</code> による抑止は未対応 (pysad の <code>Off</code> は何もしない)。例 <a href="../example/08_scripting/syntax_symbol_message.sad"><code>example/08_scripting/syntax_symbol_message.sad</code></a>。</li>
+<li><strong><code>Parallelize[f, n, lshare, npara]</code></strong> (両モード。<a href="../pysad/fileops.py"><code>pysad/fileops.py</code></a>。<code>Packages/shared.n</code> の <code>Fork</code>・共有メモリ・<code>Wait4</code> の動作に合わせた): POSIX (Linux・WSL・macOS) では npara &gt; 1・n &gt; 1 のとき <code>os.fork</code> で npara 個まで同時に f[k] を計算する (結果は子が一時ファイルに書き、親が回収)。結果の並びは SAD と同じ。子の代入は親に戻らない (親の変数は変わらない)。子の <code>Print</code> は出る (出力先が Python の StringIO のときは親に届かない: Fork と同じ)。lshare を超える結果は子が <code>Shared::toolarge</code> を出して <code>$Failed</code> (K64 は親が <code>Timeout</code> (2000 秒) まで待ち続ける)。Timeout 秒を超えた子は殺して <code>$Failed</code>。npara = 1・n = 1 は逐次。環境変数 <code>PYSAD_PARALLELIZE=serial</code> で逐次。<strong>Windows は逐次</strong> (<code>multiprocessing</code> の spawn は Interp・FFS・ラティスを pickle できず、子の側で作り直す方式は f が参照する大域の状態を再現できないので実装していない)。WSL (Python 3.14) で、FODO の CALC を 8 通りの K1 で逐次と並列の結果がビット単位で同じ。4 つの <code>Sleep[1]</code> が 1.02 秒。条件: <strong>親でカーネル (numba) を一度走らせてコンパイルとキャッシュを済ませてから呼ぶ</strong>。<strong>numba と fork の併用は実際には試せていない</strong> (WSL に numba が無く Windows に fork が無い。pysad のカーネルは <code>parallel=True</code>・<code>prange</code>・スレッドプールを使っていないので fork 後の子でそのまま動く見込みだが、(i) numba を <code>parallel=True</code> にする、(ii) 初回のコンパイルを子で行ってキャッシュ (<code>__pycache__</code>) を複数の子が同時に書く、(iii) OpenMP 版の BLAS を使う numpy、のどれかなら未確認)。例 <a href="../example/09_io_system/fn_Parallelize.sad"><code>example/09_io_system/fn_Parallelize.sad</code></a>。試験 <a href="../pysad/tests/test_v2_B2_script.py"><code>test_v2_B2_script.py</code></a>。</li>
+<li><strong><code>VISIT</code>・<code>BYE</code>・<code>USE</code> と <code>ElementValues</code> ほか</strong> (両モード): <code>VISIT</code> は FitFunction・FitValue・ElementValues・OpticsProlog・OpticsEpilog の 5 つの記号を隠し (訪問先では未定義)、<code>BYE</code> で戻る (入れ子も)、<code>USE</code> は 5 つとも消す (<code>tffsa.f</code> の <code>tfblocksym</code>・<code>tfunblocksym</code>)。<code>BYE</code> だけで VISIT が無いと <code>???-FFS-Error-BYE without VISIT.</code>。<code>BYE ALL</code> は K64 が SIGSEGV で動かない (pysad は一番外側の値に戻す)。台本 <code>FFS_VISIT_BYE.sad</code>。</li>
+<li><strong><code>Ffs;</code>・<code>ffs use ring;</code></strong>: <code>FFS</code> と <code>ffs</code> だけが FFS の語で、<code>Ffs;</code>・<code>FFs;</code> は MAIN の構文エラー (SAD と同じ)。LINE 名は書かれたとおり (<code>USE ring</code> は ring が無いとエラー)。<a href="03_ffs_commands.html">03_ffs_commands.md</a> の <code>FFS;</code> の項。</li>
+</ul>
+<h3 id="63-forksharedwait">6.3 <code>Fork</code>・<code>Shared</code>・<code>Wait</code></h3>
+<ul>
+<li><strong>共有メモリ</strong> (両モード): <code>s = OpenShared[n]</code> (n バイト)、<code>Shared[s] = 値</code>、<code>Shared[s]</code>、<code>Shared[s]++</code>、<code>Shared[s] += v</code>、<code>Close[s]</code>。値は数・文字列・記号・リスト・式・規則 (無名の mmap に符号化して書く)。<code>SharedSize[値]</code> が n を超えると <code>Shared::toolarge</code> (K64 と同じ式: リストは (1 + 要素数) × 8 + 中身。<code>SharedSize[{1,2,3}]</code> = 32)。</li>
+<li><strong><code>Fork[]</code></strong>: Linux・WSL・macOS では <code>os.fork</code> で本当に分ける (親には子の pid、子には 0。子は <code>Exit[]</code> か最上位の文の終わりで <code>os._exit</code>)。<code>Wait[]</code> は <code>{pid, status}</code>、<code>Wait4[pid, flags…]</code> は <code>{pid, 終了コード, Exited-&gt;…, …}</code>、<code>Kill[pid]</code> はこの pysad が作った子だけ (安全のための制限)、<code>Sleep[t]</code> は本当に待って 1 を返す、<code>Pause[t]</code> は子がいる間だけ待つ。<strong>Windows には fork が無い</strong>: v2 は <code>System::error: Fork[] is not available on this platform …</code> を出して文を打ち切る (k64 モードは pid を返し子は作らない)。並列の計算は <code>Parallelize[f, n, lshare, npara]</code> (§6.2)。</li>
+<li>確かめた範囲: WSL (Ubuntu、Python 3.14、numba は代用の空モジュール) で例 (<a href="../example/09_io_system/fn_SharedMemory_Parallelize_System_Fork.sad"><code>example/09_io_system/fn_SharedMemory_Parallelize_System_Fork.sad</code></a>) と 3 個の子の試験。ラティスを使う重い計算を子で走らせる使い方 (numba のスレッドと fork の併用) は未確認。子の <code>Print</code> は親と同じ出力先に出る (出力先が Python の StringIO のときは親に届かない)。</li>
+</ul>
+<h2 id="7-検証試験">7. 検証・試験</h2>
+<ul>
+<li>試験は <a href="../pysad/tests/"><code>pysad/tests/</code></a> (pytest。収集 941 件、2026-11-17 に 937 通過・4 skip。この件数は k64 モードを既定にした実行のもので、現在の既定の v2 での件数は未再確認) と <code>run_regression.py</code> (<code>QUICK=1</code> で 50 ベンチ FAIL 0。k64 モード)。</li>
+<li>K64 (SAD の gs) との比較では、FIT/FREE/GO の台本 (<code>bench_level13a</code>・<code>13b</code>) の出力、色収差スキャンの台本 (<code>bench_level14a</code>、チューン 21 点が 2e-8 以内)、Element/BeamLine 系 (<code>bench_level24f</code>、164 タグ一致) が一致する。詳細な突き合わせは <a href="27_benchmarks.html">27_benchmarks.md</a>。</li>
+<li>未確認・限界は §6 の各項と <a href="31_unimplemented_and_unverified.html">31_unimplemented_and_unverified.md</a>。</li>
+</ul>
+<p>関連文書: <a href="03_ffs_commands.html">03_ffs_commands.md</a> (FFS の語と関数)、<a href="06_sadscript_library.html">06_sadscript_library.md</a> (特殊関数・Fit・Packages)、<a href="12_pysad_api.html">12_pysad_api.md</a> (Python API)、<a href="28_v2_vs_k64.html">28_v2_vs_k64.md</a> (v2 と k64 の違い)、<a href="29_sad_quirks.html">29_sad_quirks.md</a> (SAD の癖)、<a href="30_sad_bug_report.html">30_sad_bug_report.md</a> (B 番号の目録)。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

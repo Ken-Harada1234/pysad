@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2.4.0 A3: Touschek の損失率にバンチ内の δ の分布 (対の重心の δ_c ~ N(0, σδ²/2)、touschek_bunch.py) を入れるオプション。
 リング: ASTRID2 (0.58 GeV、IBS 込み PBUNCH 1e9)。検証: (1) σδ → 0 で touschek_piwinski と一致、(2) a ≫ σδ の展開 R(a)(1 + n(n+1)/4 σδ²/a²) に合う、
-(3) 打ち切り floor に依らない、(4) 保存した実験室系の対のモンテカルロ (example/v2_4/A3_mc_bunch_astrid2.out.txt) の δ_c の効果の比と 5% 以内、
+(3) 打ち切り floor に依らない、(4) 保存した実験室系の対のモンテカルロ (example/15_lma_touschek/touschek_elegant/touschek_bunch_mc_astrid2.out.txt) の δ_c の効果の比と 5% 以内、
 (5) 局所の LMA の受け渡し lma.touschek_lifetime_local_piwinski(bunch_delta=True)・台本 TouschekLifetimeLMA[BunchDelta->True]、既定は変わらない。"""
 import math
 import os
@@ -68,12 +68,12 @@ def test_increase_follows_expansion_and_is_independent_of_floor(ring):
 
 
 def test_matches_saved_monte_carlo_delta_c_effect(ring):
-    """保存した対のモンテカルロ (A3_mc_bunch_astrid2.out.txt) の δ_c の効果 (abs/c − 1) の列 (スライス 76・152、a = 0.004・0.006) と、理論 (σδ²/2) が 5% 以内。
+    """保存した対のモンテカルロ (touschek_bunch_mc_astrid2.out.txt) の δ_c の効果 (abs/c − 1) の列 (スライス 76・152、a = 0.004・0.006) と、理論 (σδ²/2) が 5% 以内。
     (理論はスライス 76 でこの出力の「σδ²/2: δ_c のみ」の列と同じ)"""
     st, ffs = ring
     tt = ffs.touschek
     info = tt['rest_info']
-    txt = open(os.path.join(ROOT, 'example', 'v2_4', 'A3_mc_bunch_astrid2.out.txt'), encoding='utf-8').read().split('\n')
+    txt = open(os.path.join(ROOT, 'example', '15_lma_touschek', 'touschek_elegant', 'touschek_bunch_mc_astrid2.out.txt'), encoding='utf-8').read().split('\n')
     rows = []
     for i, ln in enumerate(txt):
         m = re.match(r'\s+\[δ_c 基準の kick .*abs/c = ([+-][0-9.]+)\]', ln)

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>03. FFS のコマンド解釈 (src/tffsa.f) と pysad の ffscmd.py</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-1-文の解釈順序-tffsaf-subroutine-tffsa">1. 1 文の解釈順序 (tffsa.f: subroutine tffsa)</a></li>
+<li><a href="#2-フラグ-tffsf-fnamesino-nflag53">2. フラグ (tffs.f fname/sino, nflag=53)</a></li>
+<li><a href="#3-fit-条件-tgetfvffreefix-tffsfreefixfgo-の解法とフック">3. FIT 条件 (tgetfv.f)、FREE/FIX (tffsfreefix.f)、GO の解法とフック</a><ul>
+<li><a href="#31-位置-fit-loc-loc1-tffsaf">3.1 位置: FIT [loc [loc1]] (tffsa.f)</a></li>
+<li><a href="#32-関数-fun-value-npoints">3.2 関数: FUN value [npoints]</a></li>
+<li><a href="#33-free--fix-tffsfreefixf">3.3 FREE / FIX (tffsfreefix.f)</a></li>
+<li><a href="#34-go-の解法微分フック-tffsmatchf">3.4 GO の解法・微分・フック (tffsmatch.f)</a></li>
+</ul>
+</li>
+<li><a href="#4-要素値コマンド-tfgetvf-と誤差コマンド-terrorf">4. 要素値コマンド (tfgetv.f) と誤差コマンド (terror.f)</a><ul>
+<li><a href="#41-name-keyrmaxminmaxabs-value-">4.1 NAME [KEY|R|MAX|MIN|MAXABS] value …</a></li>
+<li><a href="#42-誤差-delxdelydthetadldkddkdbeam-sigma-opts-pat-dump-pat">4.2 誤差: DELX/DELY/DTHETA/DL/DK/DDK/DBEAM sigma [opts] pat …、DUMP [pat]</a></li>
+</ul>
+</li>
+<li><a href="#5-use--cell--calc--go--emit--type--disp--save--reset--couple--chro">5. USE / CELL / CALC / GO / EMIT / TYPE / DISP / SAVE / RESET / COUPLE / CHRO</a></li>
+<li><a href="#6-線形加速器-trpt-の加速と-mark-の-offset">6. 線形加速器 (TRPT) の加速と MARK の OFFSET</a></li>
+<li><a href="#7-sadscript-側の組み込み-tftwissf-tffsaf-tfffs-tftrackf-tfopticsf">7. SADScript 側の組み込み (tftwiss.f, tffsa.f tfffs, tftrack.f, tfoptics.f)</a></li>
+<li><a href="#8-pysad-ffscmdpy-の対応表">8. pysad ffscmd.py の対応表</a><ul>
+<li><a href="#v2-モードの-measuretrcod-と台本の読み方小さな修正">v2 モードの MEASURE・TRCOD と、台本の読み方・小さな修正</a></li>
+</ul>
+</li>
+<li><a href="#9-この-sad-ビルド-wsl-k64-で分かった注意">9. この SAD ビルド (WSL, K64) で分かった注意</a></li>
+<li><a href="#10-検証-k64-との比較の要約">10. 検証 (K64 との比較の要約)</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 03_ffs_commands.md</div>
+<h1 id="03-ffs-のコマンド解釈-srctffsaf-と-pysad-の-ffscmdpy">03. FFS のコマンド解釈 (src/tffsa.f) と pysad の ffscmd.py</h1>
+<p><strong>この文書で分かること</strong>: SAD の対話コマンド層 FFS が 1 文をどの順に解釈するか (§1)、フラグ (§2)、マッチング (FIT・FREE・GO、§3)、要素値と誤差のコマンド (§4)、USE・CALC・EMIT・DISP などの主なコマンド (§5)、SADScript 側の組み込み関数 (§7)、pysad の対応表 (§8)、実行上の注意 (§9)。
+<strong>前提</strong>: <a href="02_lattice_main.html">02_lattice_main.md</a> (ラティスの定義) を読んでいること。FFS は <code>FFS;</code> と書いた後に使えるコマンド群で、<code>USE RING; CELL; CALC;</code> のように 1 文ずつ実行する。
+<strong>読む順</strong>: コマンドを使いたいだけなら §5 (USE・CALC・GO・EMIT・DISP) → §3 (FIT) → §2 (フラグ)。動作の細部 (K64 の仕様) が要るときに §1・§4・§7・§9。小さなコマンド (VARIABLES・MATRIX・DUMP など) と DELCOR は <a href="04_ffs_small_commands.html">04_ffs_small_commands.md</a>。</p>
+<p>用語: <strong>K64</strong> = 本プロジェクトが翻訳の元にした SAD (Fortran)、<strong>gs</strong> = その実行ファイル。<strong>k64 モード</strong> = <code>PYSAD_COMPAT=k64</code> で K64 と同じ動作、<strong>v2 モード</strong> = pysad の既定 (K64 の誤りを直した動作)。<strong>CELL / INS</strong> = 周期解 (リング) か、先頭 MARK の初期 Twiss からの伝搬 (輸送路) か。</p>
+<p>対象: SAD K64 (<SAD>\src) と pysad (<repo>\pysad)。すべて Fortran ソースと pysad のコードで確認した内容。行番号は 2026-10 時点のもの。</p>
+<h2 id="1-1-文の解釈順序-tffsaf-subroutine-tffsa">1. 1 文の解釈順序 (tffsa.f: subroutine tffsa)</h2>
+<p>FFS は <code>getwrd</code> で語 (word) を 1 つ取り、次の順で「誰かが受け取るまで」試す。受け取った (exist) ら次の語へ (<code>go to 10</code>)。</p>
+<table>
+<thead>
+<tr>
+<th>順</th>
+<th>呼び出し</th>
+<th>受け取る語</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>tfprint</code> (tfprint.f)</td>
+<td>SADScript 式</td>
+<td><code>itfpeeko</code> で先読みし、定義済みシンボルや <code>name[</code>、<code>name=</code> など「式」なら評価して値を表示。<code>;</code> で終わる式は表示しない。FFS コマンド名と一致しない語はここで式として評価される</td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>UNTIL</code> / <code>REP_EAT</code></td>
+<td>ループ</td>
+<td><code>nrpt(levelr)</code>、<code>irptp</code> で入力位置を巻き戻す (maxrpt=32)</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>tfif</code></td>
+<td><code>IF/ELSE/ENDIF</code></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>tflag</code> (tflag.f)</td>
+<td>フラグ</td>
+<td>§2</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>tgetfv</code> (tgetfv.f)</td>
+<td>FIT 条件 (<code>NX 7.5 2</code>, <code>BXM 10</code>, <code>BXI</code>, <code>BXSCALE</code>)</td>
+<td>§3</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>terror</code> (terror.f)</td>
+<td><code>DELX/DELY/DTHETA/DL/DK/DDK/DBEAM/DUMP</code></td>
+<td>§4</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>tffile</code></td>
+<td><code>INC_LUDE</code>, <code>OUT</code>, <code>LOG</code> などファイル系</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>tfgetlineps(word,…,mode=1)</code></td>
+<td>要素名・パターン (<code>QF</code>, <code>Q*</code>, <code>QF.2</code>)</td>
+<td>一致したら label 7000 の <code>tfgetv</code> (§4)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>コマンド群</td>
+<td><code>STOP/EXIT/QUIT/ABORT/USE/VISIT/BYE/SPLIT/MAXI_TERATION/ATT_RIBUTE/SAVE/EXPAND/RESET/FREE/FIX/FIT/FITP_OINTS/CAL_CULATE/GO/REC_OVER/T_YPE/DISP_LAY/SCALE/AP_ERTURE/MAT_RIX/CHRO_MATICITY/RADINT/REF_ERENCE/DIMAD/ZAP/TRC_OD/PUSHS_EED…/DELW_AVE</code></td>
+<td>第 1 群</td>
+</tr>
+<tr>
+<td>9</td>
+<td></td>
+<td><code>VARY/REJ_ECT/COUP_LE/DECOUP_LE/INDEP_ENDENT/ORI_GIN(ORG)/SHOW/STAT_US/VAR_IABLES(VARS)/RENUM_BER/REV_ERSE/DRAW/GEO/PRI_NT</code></td>
+<td>第 2 群</td>
+</tr>
+<tr>
+<td>10</td>
+<td></td>
+<td><code>MEA_SURE/ORBITJ_ITTER/PUTM_EASURE/GET_MEASURE/LOGM_EASURE</code></td>
+<td>第 3 群</td>
+</tr>
+<tr>
+<td>11</td>
+<td></td>
+<td><code>WAKE/DELC_OR/LTR_ACK/EMIT_TANCE/SYNCHROB_ETA/BEAM_SIZE/ALI_GN</code></td>
+<td>第 4 群。pysad: <code>DELCOR</code> は実装 (docs/04)、<code>WAKE</code> は k64 モードでは K64 と同じ経路・v2 モードでは表を読む (§9)、<code>SYNCHROB</code> の語と <code>ALIGN</code> (単独。<code>TRCOD ALIGN</code> は v2 で実装) は未対応 (§8)。第 3 群の <code>MEA_SURE/ORBITJ_ITTER/PUTM_EASURE/GET_MEASURE/LOGM_EASURE</code> と <code>TRC_OD</code> は v2 モードで実装 (§8)</td>
+</tr>
+<tr>
+<td>12</td>
+<td>label 7000 <code>tfgetv</code></td>
+<td>要素値</td>
+<td>失敗なら <code>?Undefined command or element:</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>abbrev の記法</strong> (abbrev.f): <code>abbrev(word,'CAL_CULATE','_')</code> は <code>_</code> より前 (<code>CAL</code>) が必須部分、以後は省略可能な接尾辞。<code>CAL</code>, <code>CALC</code>, <code>CALCU</code>, … <code>CALCULATE</code> のどれでも真、<code>CALCULATED</code> のように長い語や <code>CAX</code> は偽。<code>_</code> のない参照は完全一致。pysad では <code>_abbrev(word, 'CAL_CULATE')</code> が同じ規則。</p>
+<p><strong>REPEAT n … UNTIL cond</strong> (tffsa.f:255-290): <code>levelr</code>, <code>nrpt</code>, <code>irptp</code> で読み位置を巻き戻す。n 省略は 65535、UNTIL に条件が無ければ回数だけ、条件が真なら抜ける。多重可。pysad は <code>Interp.run</code> が最上位 FFS の文列を添字つきのループで回し、<code>_control_word</code>/<code>_control</code> が処理する (<code>FFS["…"]</code> の文字列の中では働かない)。</p>
+<p><strong>IF / ELSEIF / ELSE / ENDIF</strong> (tfif.f): 偽なら同じ深さの ELSE/ELSEIF まで読み飛ばし、ELSE に来たら ENDIF まで読み飛ばす。語の直後が <code>[ * / ) } ] &gt; &lt; = . &amp; ^ |</code> なら制御語ではない。<code>IF 条件 コマンド</code> の同じ行の続きも実行する。pysad は <code>_if_cond</code>/<code>_skip_if</code>。条件式は空白で終わる (演算子の前後の空白は式の続き)。エラーは <code>???-FFS-Error-?ELSE without IF</code> など SAD と同じ書式。</p>
+<p><code>CAL</code>/<code>GO</code> は label 1000 に飛び、<code>tfsetparam</code> → (CELL なら) <code>tfsetupcell</code> (区間 1..nlat の AX, AY = 0 の条件を追加、mfitp は既存条件の最大 |mfitp|) → 有効条件の抽出 (<code>kfit&lt;=mfit</code> かつ <code>mfitp/=0</code>) → <code>tffssetupcouple</code> → <code>nfr = max((|mfitp|-1)/2)</code> と dp 格子 (<code>DP</code>, <code>DPM</code>) → <code>tffsmatch</code> → <code>tfshow</code> → CELL で不安定なら <code>Horizontal/Vertical Unstable.</code> を出す。<code>busy</code> フラグで再帰を禁止 (<code>?Recursive CAL or GO</code>)。</p>
+<h2 id="2-フラグ-tffsf-fnamesino-nflag53">2. フラグ (tffs.f fname/sino, nflag=53)</h2>
+<p><code>tflag</code> は <code>NAME</code> → 真、<code>NONAME</code> → 偽、<code>SINO</code> (反対語) → 偽、<code>NOSINO</code> → 真。既定は initb1.f の <code>defflg</code> と tffsa.f の初期化 (cellstab, simulate, absweit, jitter, bipol, fseed = T; cell, gauss, ideal, codplt = F)。pysad は <code>_FLAGS_DEFAULT</code> と <code>_SINO</code>/<code>_FLAG_ALT</code> に同じ表を持つ。</p>
+<table>
+<thead>
+<tr>
+<th>fname</th>
+<th>sino</th>
+<th>既定</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TRPT</td>
+<td>RING</td>
+<td>F (RING)</td>
+<td>輸送路。Emittance[] の平衡計算を省く</td>
+</tr>
+<tr>
+<td>CELL</td>
+<td>INS</td>
+<td>F (INS)</td>
+<td>周期解 (閉軌道・周期 Twiss) か、先頭 MARK の Twiss から伝搬か</td>
+</tr>
+<tr>
+<td>RFSW</td>
+<td></td>
+<td>F (FFS 進入時に track.f:148 で ON に強制。TRPT=OFF, CALC6D=OFF も同時)</td>
+<td>空洞を ON (6D)</td>
+</tr>
+<tr>
+<td>RAD</td>
+<td></td>
+<td>F</td>
+<td>放射減衰 (追跡・EMIT)</td>
+</tr>
+<tr>
+<td>FLUC</td>
+<td>DAMPONLY</td>
+<td>T</td>
+<td>量子励起 (乱数)</td>
+</tr>
+<tr>
+<td>RADCOD</td>
+<td></td>
+<td>F</td>
+<td>閉軌道に放射損失を入れる</td>
+</tr>
+<tr>
+<td>RADTAPER</td>
+<td></td>
+<td>F</td>
+<td>局所運動量に合わせて磁石をスケール</td>
+</tr>
+<tr>
+<td>CALC6D</td>
+<td>CALC4D</td>
+<td>F</td>
+<td>6D の CAL/GO</td>
+</tr>
+<tr>
+<td>KEEPEXP / CALEXP</td>
+<td></td>
+<td></td>
+<td>要素値展開 (EXPAND/NOEXPAND) の既定</td>
+</tr>
+<tr>
+<td>EMIOUT</td>
+<td></td>
+<td>F</td>
+<td>EMIT の詳細出力</td>
+</tr>
+<tr>
+<td>CODPLOT</td>
+<td></td>
+<td>F</td>
+<td>EMIT で 6D ビームサイズも</td>
+</tr>
+<tr>
+<td>COD</td>
+<td></td>
+<td>T</td>
+<td>閉軌道計算</td>
+</tr>
+<tr>
+<td>INTRA</td>
+<td></td>
+<td>F</td>
+<td>粒子内散乱</td>
+</tr>
+<tr>
+<td>POL / RADPOL</td>
+<td></td>
+<td>F / T</td>
+<td>偏極 (POL を立てると Emittance[]・EMIT・TrackParticles (RAD ON のとき) がスピンを計算する。docs/16)</td>
+</tr>
+<tr>
+<td>LWAKE / TWAKE / WSPAC / SPAC / PSPAC</td>
+<td></td>
+<td>F</td>
+<td>ウェーク (LWAKE/TWAKE は TrackParticles の TRPT で実装、docs/13)・空間電荷 (SPAC 系は未翻訳)</td>
+</tr>
+<tr>
+<td>SELFCOD</td>
+<td></td>
+<td>F</td>
+<td></td>
+</tr>
+<tr>
+<td>CONV</td>
+<td></td>
+<td></td>
+<td>GO の収束 (内部)。11/16 に K64 のソースで確認: 収束の判定・表示 (tcod.f・qtwiss.f・temit.f) に効く。EMIOUT は EMIT 報告の追加行 (temit.f:992 ほか。pysad は spin の行だけ対応)、CTIME は CPU 時間の表示 (cputix.f ほか)</td>
+</tr>
+<tr>
+<td>STABLE</td>
+<td>UNSTABLE</td>
+<td>T</td>
+<td>不安定でも条件に入れるか (cellstab)</td>
+</tr>
+<tr>
+<td>GEOCAL</td>
+<td>GEOFIX</td>
+<td>T</td>
+<td>幾何の再計算</td>
+</tr>
+<tr>
+<td>RADLIGHT / PHOTONS / LOSSMAP / SORG</td>
+<td></td>
+<td>F</td>
+<td>RADLIGHT は TrackParticles が放射点の軌道を返す (§7、docs/18)。PHOTONS・LOSSMAP・SORG の物理は未翻訳 (LOSSMAP は gs が <code>TrackParticles</code> の戻りに足す損失要素・損失周の 2 列を pysad は足さない。未確認。ただし <code>PhotonList</code> の 12 列は 11/16 に photons.f tphotonlist の定義と照合済み: 1 エネルギー=|p|·amass·gammab、2-4 位置、5-7 方向、8-10 偏光、11 粒子番号、12 要素番号)</td>
+</tr>
+<tr>
+<td>INTRES / HALFRES / SUMRES / DIFFRES</td>
+<td></td>
+<td>T / T / T / F</td>
+<td>GO で整数・半整数・和・差共鳴をまたぐ解を不安定扱い</td>
+</tr>
+<tr>
+<td>FFSPRMPT / CONVCASE / PRSVCASE / SUS</td>
+<td></td>
+<td></td>
+<td>入力の大文字化など</td>
+</tr>
+<tr>
+<td>K64</td>
+<td>LEGACY</td>
+<td>T</td>
+<td>K64 仕様 (TYPE で DETR/BZ/NZ/DZ を出す等)</td>
+</tr>
+<tr>
+<td>GAUSS</td>
+<td>UNIFORM</td>
+<td>F</td>
+<td>追跡の初期分布 (11/16 に K64 のソースで確認: MAIN の TRACK・MEASURE の初期分布 (ttinit.f:139、track.f) にだけ効く)</td>
+</tr>
+<tr>
+<td>FIXSEED</td>
+<td>MOVESEED</td>
+<td>T</td>
+<td>乱数種の固定</td>
+</tr>
+<tr>
+<td>BIPOL</td>
+<td>UNIPOL</td>
+<td>T</td>
+<td>FIT の変数の符号を変えない (tffsmatch.f:669)。FIT につないである (<code>ffscmd.matcher_</code> から <code>match6</code> の <code>bipol</code> へ)。BIPOL は tffsmatch.f だけで効く。gs と全桁一致を確認している (検証の節)</td>
+</tr>
+<tr>
+<td>ORBITCAL / CALOPT (ORBONLY)</td>
+<td></td>
+<td>T</td>
+<td></td>
+</tr>
+<tr>
+<td>DAPERT</td>
+<td></td>
+<td>F</td>
+<td></td>
+</tr>
+<tr>
+<td>IDEAL</td>
+<td>REAL</td>
+<td>F</td>
+<td>誤差なしの理想値で計算</td>
+</tr>
+<tr>
+<td>FOURIER / TRACKSIZ</td>
+<td></td>
+<td>F</td>
+<td></td>
+</tr>
+<tr>
+<td>SIMULATE</td>
+<td>OPERATE</td>
+<td>T</td>
+<td></td>
+</tr>
+<tr>
+<td>ABSW</td>
+<td>RELW</td>
+<td>T</td>
+<td>FIT 重みを絶対/相対。<code>ffscmd.matcher_</code> で <code>match6</code> の <code>absweit</code> につないである</td>
+</tr>
+<tr>
+<td>JITTER</td>
+<td>QUIET</td>
+<td>T</td>
+<td></td>
+</tr>
+<tr>
+<td>TRGAUSS</td>
+<td>TRUNI</td>
+<td></td>
+<td>追跡の運動量分布</td>
+</tr>
+<tr>
+<td>BARYCOD / WAKEOPT</td>
+<td></td>
+<td>F</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>FFS 内の <code>ON flag;</code> / <code>OFF flag;</code> は無効</strong> (SAD K64、docs/29 A35): <code>ON</code>/<code>OFF</code> の語は <code>Out[1]:= USE</code> を出すだけで何もせず、後ろの語が普通に次の文として読まれる。つまり <code>ON INTRA;</code> ≡ <code>INTRA;</code> (立てる)、<code>OFF INTRA;</code> も INTRA を<strong>立てる</strong> (切るのは <code>NOINTRA;</code>)、<code>ON NORAD NOFLUC;</code> は RAD と FLUC を切る。MAIN 部 (FFS; の前) の ON/OFF は有効。(pysad: <code>_exec_word</code>、docs/history/work_small_items.md D)</p>
+<p><strong>EMIT コマンドは GAUSS を ON にする</strong> (temitf の終了後 <code>gauss=.true.</code>、docs/29 A39)。pysad も同じ。<code>?FLAG</code> でフラグの値を読める。</p>
+<p><code>STAT_US</code> で全フラグ (偽は sino か <code>NO</code>+名) と CHARGE/MASS/MOMENTUM/DP/DP0/EMITX…/NPARA、<code>twelm</code> による <code>FIT</code>, <code>DISP_LAY</code>, <code>ORG</code>, <code>MEA_SURE</code> の位置が表示される。</p>
+<h2 id="3-fit-条件-tgetfvffreefix-tffsfreefixfgo-の解法とフック">3. FIT 条件 (tgetfv.f)、FREE/FIX (tffsfreefix.f)、GO の解法とフック</h2>
+<h3 id="31-位置-fit-loc-loc1-tffsaf">3.1 位置: <code>FIT [loc [loc1]]</code> (tffsa.f)</h3>
+<ul>
+<li><code>FIT ALL</code> → <code>mfpnt=1, mfpnt1=nlat</code>。</li>
+<li><code>FIT loc</code> → <code>mfpnt=mfpnt1=ielme(loc)</code>。<code>FIT loc loc1</code> → 区間 (ifitp=min, ifitp1=max は tgetfv で正規化)。</li>
+<li>位置が解決できない語 (<code>FIT NX 7.5</code> の <code>NX</code>、<code>FIT;</code> の空語) は <code>ielmf</code> が <code>nlat</code> (<code>$$$</code>) を返すので <strong><code>FIT;</code> は位置を末尾 <code>$$$</code> に戻すだけで条件は消さない</strong> (消すのは <code>REJECT TOTAL</code>)。位置は次の <code>FIT</code> まで保持され、以後の <code>NX …</code> はその位置に付く。</li>
+<li><code>ielmf</code> (ielm.f): <code>$$$</code>/<code>***</code> → nlat、<code>^^^</code> → 1、<code>NAME.n</code> (n は式も可)、<code>NAME+k</code>/<code>NAME-k</code> (k は式、小数部は要素内の割合)。<code>fit QF</code> のようにファミリー名だけなら <code>ielmh(name,0)</code> = 単独要素か多重要素の <strong>先頭 (代表)</strong>。</li>
+</ul>
+<h3 id="32-関数-fun-value-npoints">3.2 関数: <code>FUN value [npoints]</code></h3>
+<ul>
+<li><code>FUN</code> は nlist (tffs.f:1622) の 64 個: <code>AX BX NX AY BY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP AZ BZ NZ ZX ZPX ZY ZPY PEX PEPX PEY PEPY PZX PZPX PZY PZPY GMX GMY GMZ BMAGX BMAGY BMAGZ TRX TRY TRZ LENG GX GY GZ CHI1 CHI2 CHI3 DEX DEPX DEY DEPY DDX DDPX DDY DDPY PDEX PDEPX PDEY PDEPY</code>。<code>mfit</code> までが FIT 可能 (TRX/TRY は末尾のみ、区間 FIT は mfit 以下で TRX/TRY 以外)。GX/GY/GZ/CHI1-3 の fit は、pysad では値を geo.py の幾何から取り、微分は数値微分、CHI の scale は π/180 (docs/history/work_geo_sig.md)。</li>
+<li>value: 実数、<code>{min,max}</code> (不等式。両端が同じなら実数扱い)、<code>{v}</code>、<code>*</code> (登録済みの値を保つ: 無ければ <code>No default value of</code>)、<code>@</code>/<code>@-</code>/<code>@*</code> (位置の MARK 要素の保存値、<code>@-</code> は符号反転、<code>@*</code> は進行方向 direlc で AX/EPX/R2 等を反転)。<code>:</code> を前置すると scale を掛けない (NX/NY/NZ は 2π、CHI1-3 は π/180 が scale)。</li>
+<li>npoints: <code>mfitp = n+1</code>。省略 (または 0) は既存値を保ち未設定なら 2。<code>-1</code> で無効 (mfitp=0)。<code>FUNM</code> (末尾 M) は最大/最小フィット (mfitp を負)。BX/BY に 0 以下を与えると <code>Non-positive value for</code>。</li>
+<li><code>FUNI v</code> (<code>BXI 1.0</code>) は先頭要素 (MARK) の初期 Twiss <code>rlist(latt(1)+i)</code> を設定。<code>FUNSCALE v</code> は scale(i) を変更。</li>
+<li><code>FITP_OINTS n</code> (tffsa.f): <strong>|mfitp|&gt;2 の条件だけ</strong> <code>sign(|n|+1, mfitp)</code> に一括変更。オフモメンタム点数 <code>nfr=max((|mfitp|-1)/2)</code> が 1 以上なら <code>DP</code> (dpmax) が必要 (<code>?No momentum bandwidth.</code>)。</li>
+<li>FITP&gt;1 のとき <code>MatchingAmplitude = {{dp, xamp, yamp}, …}</code> と <code>NFAMP</code> で有限振幅ファミリー (tffamsetup) を足す: 各 dp 点の軌道 + 正規モード振幅の軌道のまわりの周期解 (閉軌道は探さない) で条件を評価する。FitValue の {id, dp} の id は kfam (x: 1..NFAMP、y: −1..−NFAMP)。pysad に実装はあるが SAD との照合はない (自己検証のみ。§9 のとおり FITP&gt;1 の参照値が取れない)。</li>
+<li><code>REJ_ECT</code> (tfrej.f): <code>TOTAL</code> は全条件 mfitp=0 + <code>tfinitcalc</code>、<code>TOTALFIT</code> は mfitp=0 のみ、関数名 (パターン可、<code>…M</code> も) は現在位置 (mfpnt,mfpnt1) の該当条件だけ mfitp=0。</li>
+<li><code>CAL_CULATE [FUN|FUN-]…</code> (tfcalc.f): 表示に関数を追加/削除 (<code>txcalc</code>) してから計算。</li>
+</ul>
+<h3 id="33-free--fix-tffsfreefixf">3.3 FREE / FIX (tffsfreefix.f)</h3>
+<p><code>FREE pat [KEY] pat …</code>: <code>tfgetlineps(mode 0)</code> で要素位置を集め、<code>.</code> を含まない名前は <strong>ファミリー先頭 (klp==k) だけ</strong> を変数にする。<code>KEY</code> (次の語) が要素型のキーワード (<code>tfkwrd</code>) なら ivvar にそれを、無ければ既定キーワード <code>nelvx%ival</code> (tfinit.f: DRIFT は L (ival=1, 下限 vlim(1)=0.1)、BEND/QUAD/SEXT/OCT/DECA/DODECA/SOL/CAVI/TCAV は 2 番目のキーワード (ANGLE/K1/K2/K3/…/BZ/VOLT)、MULT は K1、MARK/MONI は 0 → <code>Can't use as variable</code>)。<code>BXI</code> 等の <code>nlistI</code> は先頭 MARK の初期値を変数にする (it=41)。<code>QF.2</code> のように成分を指定すると <code>ivcomp</code> 付き (<code>Info-Component … is coupled to</code>)。<code>valvar = 値/errk</code> で保持。<strong>成分ごとの FREE</strong> (<code>tffsfreefix.f</code>・<code>tfsetv.f</code>・<code>tffsa.f</code> の <code>tfvcomp</code> と gs の実測。両モード): 語に <code>.</code> があれば成分の変数。(a) 既定のキー (QUAD の K1 など) の変数は要素全体の値で、成分は先頭の成分に結合する。先頭の成分 (<code>QF.1</code>) は要素全体と同じ (結合先を <code>???-FFS-Info-Component QF.2 is coupled to QF.1 .</code> で知らせる)。<strong>先頭でない成分 (<code>QF.3</code>) の既定のキーの変数は値を持たず効かない</strong> (K1 は動かない。gs は変数の数に数え、pysad は作らない: 反復の行の最後の数が 1 つ違い、その変数だけで GO すると pysad は <code>?No variable.</code>)。(b) 既定でないキー (BEND の K1、ROTATE) の変数は、その成分だけの値 (<code>tfsetv</code> の <code>ievar2</code>)。(c) 同じ要素の変数は、後から FREE したものが先 (<code>LOOP_I_2</code>)。(d) 要素全体の変数がある所へ成分、成分がある所へ要素全体を FREE するとエラー (<code>A component has been already used as variable: B.6</code>)。(e) <code>tfvcomp</code> は (b) の変数があれば真で、NOKEEPEXP の CALC・GO は展開しない (NOCALEXP)。(f) FIX: <code>FIX B.3</code> は成分、<code>FIX B</code> は成分に触れない、<code>FIX B*</code>・<code>FIX *</code> は成分も消す。<code>VAR</code> の Couple の欄は既定のキーだけ <code>&lt;--</code>、制限値は既定のキー ±1e10、ほかは ±1e99。gs と一致を確認している (小さな FODO、大きなリング A。検証の節)。未確認: COUPLE で結合した要素の成分、<code>USE NOEXPAND</code> の展開済みの成分の値の保存。例 <a href="../example/03_matching/flag_FREE_component.sad"><code>example/03_matching/flag_FREE_component.sad</code></a>。<code>FIX pat [KEY]</code> は一致する変数を削除。ワイルドカード (<code>%*&lt;{|</code>) があれば複数語を続けて読む。</p>
+<h3 id="34-go-の解法微分フック-tffsmatchf">3.4 GO の解法・微分・フック (tffsmatch.f)</h3>
+<ul>
+<li><strong>tsvd (tfsolv → tsolva)</strong>: 2 重対角化の後、対角の最小値 &gt; <code>anorm*eps</code> なら特異値を落とさず直接解く (quick path)。そうでなければ暗黙 QR + 滑らかな減衰。pysad は <a href="../pysad/tsvd.py"><code>pysad/tsvd.py</code></a> (直訳)。J の条件数が 1e6 以上のとき (INS のフィット) numpy の硬い打ち切りと解が大きく違う。<code>PYSAD_TSVD_NUMPY=1</code> で numpy 版に切り替え。</li>
+<li><strong>INS のフィットの微分</strong>: SAD は INS でも解析微分 (tffsqu→qdcell→qdtwis、cell=False)。<code>FFS$NumericalDerivative</code> のときだけ数値微分。pysad も match6d の解析微分を INS で使う (<code>PYSAD_INS_NUMERIC=1</code> で数値微分)。未対応の条件・状況は中心差分に自動フォールバック (<code>Matcher._analytic_unsupported</code>)。</li>
+<li><strong>FitValue / FitWeight のフック</strong>: <code>FitValue[comp, fn, {id_,dp_}, goal_, now_]</code> (2 点条件は <code>FitValue[c1,c2,fn,{id,dp},goal,now1,now2]</code>)、<code>FitWeight[comp, fn, {id_,dp_}, w_]</code>。pysad は {id, dp} を <code>{0, dp}</code> のリストで渡す (裸の実数では <code>{_,dp_}</code> に一致しない)。</li>
+<li><strong>VariableRange / VariableWeight</strong> (tffsvarfun、tffsmatch.f:717): VariableRange が実数を返せば dlim、0 なら変更前の値、<code>{min,max}</code> で範囲を狭める。VariableWeight は変数の重み gw を置換。pysad は <code>Matcher.var_range/var_weight</code> (<code>_vlimit</code>/<code>_tweigh</code>)。</li>
+<li><strong>OpticsProlog / OpticsEpilog</strong>: <code>OpticsProlog := …</code> / <code>OpticsEpilog := …</code> を定義すると CALC (と fit の各評価) の前後で呼ばれる。<code>=.</code> で外す。</li>
+</ul>
+<h2 id="4-要素値コマンド-tfgetvf-と誤差コマンド-terrorf">4. 要素値コマンド (tfgetv.f) と誤差コマンド (terror.f)</h2>
+<h3 id="41-name-keyrmaxminmaxabs-value-">4.1 <code>NAME [KEY|R|MAX|MIN|MAXABS] value …</code></h3>
+<p><code>tfgetlineps(mode 1)</code> でファミリーを列挙し、次の語が <code>R_ELATIVE</code> (相対: <code>v*(1+x)</code>)、<code>MAX</code>/<code>MIN</code>/<code>MAXABS|ABSMAX|MAXMIN|MINMAX</code> (変数の上下限 <code>nelvx%vlim</code> を設定し、現在値をその範囲に丸める)、要素型のキーワード (<code>itftypekey</code>)、または値。キーワードなしは既定キーワード (<code>?No default keyword for</code> は MARK など)。パターンで型が混ざると <code>Info-Different types of elements match</code>。既定キーワードの代入は <code>cmpd%value(iv)=vx*errk(1,ii)</code> (誤差係数を掛けた実効値)。それ以外は <code>tftouch</code>。<code>S* 0</code>, <code>SDA MAX 0</code>, <code>QF K1 0.5</code>, <code>QF R 0.01</code> が典型。<code>QF.3 K1 v</code> (<code>.</code> 入り) は成分だけ。</p>
+<p><code>LINE[key,name]=</code> で触ったキーは USE まで残り、CALC のたびに代表の値に揃える (tftouch)。</p>
+<h3 id="42-誤差-delxdelydthetadldkddkdbeam-sigma-opts-pat-dump-pat">4.2 誤差: <code>DELX/DELY/DTHETA/DL/DK/DDK/DBEAM sigma [opts] pat …</code>、<code>DUMP [pat]</code></h3>
+<ul>
+<li><code>sigma</code> の前後に <code>U_NIFORM</code>/<code>R_ANDOM</code> (uni)、<code>C_OHERENT</code>/<code>INC_OHERENT</code> (cohe)、<code>A_DD</code>/<code>P_UT</code> (add) を置ける。既定は RANDOM・INCOHERENT・PUT。</li>
+<li>各要素 (パターン一致、DRFT 以外は <code>master(i)</code> の先頭から成分列) に <code>errg = sigma*tgauss()</code> (uni なら sigma、coherent なら 1 回だけ引いた値を共用) を加える。<strong>乱数は要素ごとに 1 回</strong>引く (tgauss は GCUT で切る正規乱数、追跡と同じ乱数列)。</li>
+<li>master グループ (tmast.f): 同じ要素の分割片 (間にゼロ長要素のみ) はグループの先頭ごとに乱数を 1 回引き、同じ誤差を共有する。pysad は <code>_master_array</code>。</li>
+<li>代入先: DELX→DX、DELY→DY、DTHETA→DROT (無ければ ROT)、DL→L (<code>max(0, …)</code>)、DDK→K0、DK→<code>errk(1,j)=1+errg</code> (ADD なら <code>errk+errg</code>) で、既定キーワードの実効値 <code>= 設計値/er*errk*couple(j)</code>。PUT の基準は設計値 <code>idval</code> (SAVE で更新)、ADD は現在値。DK は主強さだけに掛ける。<code>LINE["K1"/"ANGLE", …]</code> は DK 込みの値を返し、<code>Element[]</code> は設計値を返す。</li>
+<li><code>DBEAM</code> は先頭の Twiss を揺らす。<code>DUMP pat</code> は <code>element DL(mm) DK DDK DTHETA(mrad) DELX(mm) DELY(mm)</code> を <code>(1x,a,3p,f10.5,1p,2g12.5,3p,3f10.5)</code> で、ずれのある要素だけ表示。DK・DDK 列は Fortran の <code>1p g12.5</code> (0 → <code>0.0000</code>、小さい値 → <code>4.22829E-04</code>) に合わせる (<code>ffscmd._gwd</code>。誤差入りリングで gs と値・書式が一致。<code>test_ffsextra.py::test_dump_format_matches_gs</code>)。</li>
+<li>uni でなければ最後に <code>tfadjst</code> (tfadjst.f): 隙間なく並ぶ磁石の鎖は先頭磁石の DX/DY のずれを共有する。pysad は <code>_tfadjst</code>。</li>
+</ul>
+<h2 id="5-use--cell--calc--go--emit--type--disp--save--reset--couple--chro">5. USE / CELL / CALC / GO / EMIT / TYPE / DISP / SAVE / RESET / COUPLE / CHRO</h2>
+<ul>
+<li><strong>USE line</strong> (<code>VISIT</code> は保存付き、<code>BYE</code> で戻る): <code>[NO]EXP_AND</code> → <code>tfbeamline</code> でビームライン決定 → <code>expnln</code> で展開 → <code>nlat=nlat0+1</code> → <code>chguse=.true.</code> で label 101 に戻り再初期化。LINE 名は書かれたとおりに引く (大文字小文字混じりの <code>LinacPFBT</code> も可。pysad <code>Env.resolve_beamline</code>)。<code>USE BeamLine[ORG,..]</code> / <code>VISIT BeamLine[..]</code> は新しい LINE <code>L000001$</code> を作る (先頭は MARK 必須)。VISIT/BYE は直前のラインに戻る (pysad <code>_use_beamline_expr</code>, <code>_visit_stack</code>)。
+  最初の USE では <code>{EMITX,EMITY,EMITZ,SIGZ,SIGE}=LINE[{"EMITX","EMITY","EMITZ","SIGMAZ","SIGE"},1]; DP0=LINE["DDP",1]</code> で <strong>先頭 MARK の値をグローバルに取り込む</strong> (tffsa.f:135 <code>if(.not. chguse)</code>: FFS に入った最初の 1 回だけ)。以後の USE では直前の値 (emit 失敗時は NaN も) が残る。scale(NX,NY,NZ)=2π、ExponentOfResidual=2、NP=1000 も設定 (tffsa.f:141-177)。CONVERGENCE=1e-9 は FFS 進入時に track.f:35 の <code>tfevals</code> で設定される。</li>
+<li><strong>CELL/INS</strong> はフラグ。CELL では周期解を求め、INS では MARK の初期値 (twiss(1,0,:)) から伝搬する。</li>
+<li><strong>CALC の閉軌道 (qcod)</strong>: 一周行列の跡が NaN なら over で打ち切り、twiss は前回の値のまま (pysad <code>_qcod_periodic</code>、<code>_last_rows</code>)。</li>
+<li><strong>CALC/GO 後の表示</strong> (tffsmatch.f:170-191): 収束で <code>Matched. (res)</code> 、未収束で <code>Residual =res</code>、不安定で <code>Unstable = n Residual =res</code>。書式 <code>(a,1pG11.4,a,' DP =',0pf8.5,'  DP0 =',f8.5,'  ExponentOfResidual =',f4.1,a,' OffMomentumWeight =',f8.3,a)</code>、末尾は <code>CALEXP</code>/<code>NOCALEXP</code>。続いて <code>tfshow</code> (tfshow.f) が条件表: nfam&gt;0 なら <code>DP</code>/<code>Res.</code> 行、各条件は <code>名前(11 桁, FIT 位置なら 11 桁目 'f')</code>+<code>関数(5)</code>+<code>目標値 (voutfv, S 書式)</code>+<code>点数 (|mfitp|-1, I3)</code>+<code>現在値 (autofg, 幅 lf=6..10)</code>。未登録の表示関数は <code>#######  #</code>。区間条件は <code>名/名1</code> と差 (BX 等は比、BMAG は tgetbmagu2)。</li>
+<li><strong>EMIT_TANCE [pspan]</strong> → <code>temitf</code> (EMIT は自動的に RING)。閉軌道、P0/f0、U0/Vc、dz/alpha、Bucket height、Real tune、Damping、Emittance X/Y/Z、Energy spread、Bunch Length、<strong>Beam tilt、Beam size xi/eta</strong> を表示し EMITX… を更新。pysad <code>print_emit</code> はこの書式を再現 (Extended Twiss・Orbit dilation・h・fs・Imag.tune・Damping time・Tune shift・partition の行は未出力。POL ON で <code>EMIOUT; EMIT;</code> のときのスピン歳差行列と 1 周の脱偏極ベクトルの表は書式まで gs と一致: docs/16)。
+  7 桁目は <code>autofg('10.7')(1:10)</code> で切り捨てに見える (dz, f0)。f0=c·β/C。
+  EMIT の後に DTSYNCH / PHICAV / EFFVCRATIO / EFFVC / EFFRFFREQ も書き出す。OMEGA0 は USE と EMIT で更新。EMITXE/EMITYE/EMITZE はエミッタンスの下限。EMIT は GAUSS を ON にする (§2)。</li>
+<li><strong>CHRO_MATICITY</strong> (tffsa.f:609 → tfchro.f): 四極・6 極・MULT の寄与を <code>1x,a12,1x,2f17.3</code> で 1 要素ずつ + <code>TOTAL</code>。BEND は数えない。6 極単独の ξy は代入なので K2=0 で <code>-0.000</code>。pysad は <code>FFS.chro_cmd</code>。960 要素のラティスと MULT 入りの小リングで全行一致 (bench_level24b/24b2)。</li>
+<li><strong>EMIT のあとの <code>USE</code></strong> (両モード。K64 の仕様): <code>EMIT</code> (または <code>Emittance[]</code>・<code>CALC6D</code>) のあとに <code>USE RING;</code> しても、追跡の RF の位相の基準 <code>trf0</code> は EMIT の値のまま (<code>trf0</code> は <code>tmacro</code> の大域変数。<code>temit.f</code> が 0 にしてから <code>tturne</code> で計算し、<code>tffsa.f</code> の MEASURE (<code>trf0 = 0</code>) だけが他に触る。<code>USE</code> は触らない)。<code>CELL; CALC;</code> のあとも変わらない。gs と一致を確認している (検証の節)。<code>emit</code>・Touschek の結果 (Twiss など) は USE で作り直される (捨てる。K64 での残り方は未確認)。例 <a href="../example/01_lattice_elements/FFS_USE_after_EMIT.sad"><code>example/01_lattice_elements/FFS_USE_after_EMIT.sad</code></a>。</li>
+<li><strong>T_YPE [pat …]</strong> (tftype.f): 型 (ltyp の順: DRIFT, BEND, QUAD, SEXT, OCT, DECA, DODECA, MULT, SOL, CAVI, TCAVI, MAP, BEAM, SPCH, INS, COORD, APRT, MONI, MARK) ごとに <code>;</code> 行→型名→<code>NAME    =(KW =v KW =v )</code> を <code>twbuf</code> (タブ 7/5、行幅 lpw-2) で折り返す。値は <code>autos1</code> の最短表現、0 の項目は既定キーワード以外省略、<code>ROTATE</code> は DEG。MARK は twiss(l,0,:) (l=1 は保存値) と EMITX/EMITY/EMITZ/SIGZ/SIGE/DP。</li>
+<li><strong>DISP_LAY [opts] [loc [loc1]] [pat]</strong> (tfdisp.f): オプション <code>ALL, A_CCELERATION, G_EOMETRY, GA_MMA, OG_EOMETRY, O_RBIT, R_MATRIX, B_EAM, P_HYSICAL, D_UMPOPTICS, Z, E_XTREMUM, RE_FERENCE, DRE_FERENCE</code>。既定ヘッダ <code>AX      BX      NX      EX      EPX   Element   Length   Value      s(m)       AY      BY      NY      EY      EPY    DetR     #</code>、各行は 8.5 幅の tdispv (NX/NY は /2π)、Length 10.6、Value は既定キーワードの値、s(m) は 11.6 (値 0 は <code>tdtrimz</code> で <code>.0</code>)、Value は 10.7、<code>(a,a,a,1x,i5)</code> で位置番号。ヘッダは 66 行ごとに繰り返す (<code>nlc=66</code>)。パターンに一致した行だけを出す (<code>$$$</code> は一致したときだけ)。名前が 10 桁を超えると後ろの欄の連続空白を詰めて桁を保つ (<code>tfsqueezespace</code>)。
+  s(m) は tfgeo の pos (F1/FB1/FB2 付き BEND/MULT のフリンジの長さ補正、OFFSET MARK の位置、§6)。Value 欄は既定キーのある要素なら値が 0 でも <code>.0</code>、MARK や既定キーの無い要素は <code>0</code>。
+  <strong>位置の指定</strong>: 語を 1 つずつ読み、<code>| &lt; { * %</code> を含む語はパターン (表示する要素名の絞り込み <code>temat</code>)、<code>ALL</code> は範囲 1..nlat、モード語、それ以外は位置 (数式・<code>NAME</code>・<code>NAME.n</code>・<code>NAME.n±k</code>・<code>$$$</code>・<code>^^^</code>)。1 つ目が loc1、続く 1 語が位置なら loc2 (そうでなければ loc2=loc1 で、その語は次のコマンド)。位置でない語に出会うと何も表示せずに戻る。<strong>範囲 (id1, id2) は FFS が保持</strong> (USE で 1..nlat に戻る) し、位置を省いた <code>DISP;</code> や <code>DISP QF*;</code> は前回の範囲を使う。<code>loc1==loc2</code> はその要素から <code>$$$</code> まで (2 行)、<code>loc2&lt;loc1</code> は nlat を超えて周回する。数式は <code>int(v+0.499)</code> (負は <code>nlat+1+v+0.5</code>) で 1..nlat に収める。<code>NAME</code> は 1 台だけの要素かファミリーの代表、<code>NAME.n</code> は同名が複数あるときの n 番目 (1 台だけの <code>RFC.1</code> は未定義)。未定義の <code>NAME.n</code> は <code>???-FFS-Error-?Undefined location NAME.n</code> + <code>Out[1]:= USE</code>。パターン (temat) は標準名 (<code>NAME</code>/<code>NAME.n</code>)、1 台だけの要素の <code>NAME.1</code>、複数ある要素の代表のファミリー名に合うもの (<code>2*47</code> のように <code>*</code> を含む語は数式でなくパターン)。モード R (R1〜R4)・O (DX DPX DY DPY)・E (β の極値のみ)・<strong>G/OG (幾何: Gx Gy Gz, s, Length, Value, Chi1-3 (度)。OG は閉軌道を乗せた tforbitgeo。docs/history/work_geo_sig.md)</strong> は実装、A/GA/B/P/D/Z と REFERENCE/DREFERENCE も実装 (見出しの文字の置換は tfdisp.f の trefheader/tdrefheader のとおり。<code>bench_level29b</code>、<code>example/02_optics_cod/FFS_DISPLAY</code>・<code>FFS_REFERENCE</code>。<a href="../pysad/tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a> は GA・Z・B・REFERENCE・DREFERENCE。pysad の解析は docs/history/work_small_items.md B)。
+  <strong>反転配置 (LINE の <code>-</code>、<code>cmp%ori=.false.</code>) の要素名は <code>' -'//name</code></strong> (<code>max(10,lname+2)</code> 桁。通常は <code>lname&lt;=8</code> で <code>'  '//name</code> を 10 桁、それより長ければ <code>' '//name</code>、tfdisp.f:438-448)。<code>-</code> が付くのは DISP の表だけで、
+  <code>LINE["NAME"]</code>・<code>LINE["ELEMENT"]</code>・<code>Twiss[…]</code> の返値には付かない (<code>Twiss["NAME",k]</code> は SAD ではエラー)。<code>LINE["DIR",k]</code> が −1。pysad は parser が立てる <code>el._rev</code> を見る。66 行ごとに端末なら <code>(c_ontinue, q_uit, a_ll)?</code>。</li>
+<li><strong>SAVE [ALL] [pat…]</strong> (tfsave.f): 現在値を設計値 <code>idval</code> に書き戻す (既定キーワードは <code>/errk</code>)。MARK は twiss(l,0,:) (l=1 は現在の初期値) と EMITX 等を保存。<code>EXPAND</code> も同じ。<strong>RESET [ALL|TOTAL] [pat]</strong> (tfrst) は設計値を現在値に戻す (<code>TOTAL</code> は <code>tffsresetall</code>)。</li>
+<li><strong>COUP_LE slave master coef</strong> (tfcoup.f): 同型・同キーワードのみ。<code>icomp(slave)=master</code>, <code>couple(slave)=coef</code> で以後 slave の値は <code>master*coef</code>。<code>COUPLE *</code> は <code>tffssetupcouple</code>。<code>DECOUP_LE</code>/<code>INDEP_ENDENT</code> で解除。</li>
+<li><strong>REC_OVER</strong>: 変数の <code>valvar</code> と <code>valvar2</code> (GO 直前の値) を交換して <code>tfsetv</code>。<strong>MAXI_TERATION n</strong>: <code>flv%itmax</code> (既定 40)。このビルドでの実際の効き方は §9。</li>
+</ul>
+<h2 id="6-線形加速器-trpt-の加速と-mark-の-offset">6. 線形加速器 (TRPT) の加速と MARK の OFFSET</h2>
+<ul>
+<li>TRPT かつ RFSW のとき、CAVI と VOLT≠0 の MULT は加速する (tfgeo1 の gammab = tfacc、qcav/qmult1 → tcave/tmulte の acc、qcopymatg の sqrt(gammab(l+1)/gammab(l))、qmat2twiss の gr)。RING では空洞は RFSW に依らずドリフト (docs/29 A4)。pysad は <a href="../pysad/trptacc.py"><code>pysad/trptacc.py</code></a>。</li>
+<li><code>LINE["GAMMABETA", k]</code> = gammab(k) (p/mc、TRPT の加速分布込み)、<code>LINE["GAMMA", k]</code> = sqrt(1+gammab²)。</li>
+<li>OFFSET≠0 の MARK は位置 OFFSET+l (前後の要素の中の分数位置) の Twiss と s を自分の行にする (qcell.f:318-345)。</li>
+<li>CAVI の DX/DY/ROTATE は emit / CALC6D / TRPT で tcave の tchge (回してからずらす) として効く。追跡 (tcav.f) では SAD も無視する。</li>
+</ul>
+<p>詳細は docs/history/work_trpt_acc.md。</p>
+<h2 id="7-sadscript-側の組み込み-tftwissf-tffsaf-tfffs-tftrackf-tfopticsf">7. SADScript 側の組み込み (tftwiss.f, tffsa.f tfffs, tftrack.f, tfoptics.f)</h2>
+<ul>
+<li><strong>Twiss[key, loc]</strong> (<code>tftwiss</code>): key は nlist の名前、<code>"*"/"ALL"</code> (全関数のリスト)、<code>"DALL"/"RALL"</code>、先頭 <code>D</code>/<code>R</code> 付き (<code>"DBX"</code> = 参照との差、<code>"RBX"</code> = REFERENCE 列)、<code>"LENGTH"</code> (=nlat)。<code>SIG…/SIZE…/GAMMA/GAMMABETA/S</code> は tfline に委譲。loc 省略で全位置のリスト、loc は実数 (端数は要素内の割合、<code>qtwissfrac</code> で補間)、文字列、文字列のリスト。<code>Twiss[...]=v</code> は参照 (ref) で代入可。</li>
+<li><strong>位置の解決 <code>tflinestk</code> → <code>tflinenamestk</code></strong>: 実数なら <code>floor</code> + 端数 (<code>ielma</code> で負数は末尾から)。文字列は <code>@</code> 前置で名前そのまま、<code>NAME+expr</code>/<code>NAME-expr</code> で位置オフセット (端数可)、<code>NAME.*</code> でファミリー全成分、<code>*%{|</code> を含めばパターン (temat)、<code>$$$</code>/<code>***</code>/<code>^^^</code>/<code>NAME.n</code> は <code>ielmf</code>。一致が 1 件ならパターンの形に関わらず実数 (<code>***</code>、<code>RFC*</code> も)、0 件は <code>{}</code>、複数はリスト (bench_level31b)。名前は文字列でも裸のシンボル (<code>{Q1A, Q2A}</code> の要素) でもよい (tfgetstrns)。要素の型名と同じ名前の LINE (<code>TEST = (…)</code>) も読める。</li>
+<li><strong>名前パターン</strong> (tmatch.f): <code>* % {abc} {^abc} |</code>。<code>?</code> は普通の文字。pysad は <code>_wild_match</code> (<code>?</code> はワイルドカードではなく、<code>{^..}</code> に対応)。</li>
+<li><strong>LINE[key, loc]</strong> (<code>tfline</code>/<code>tfline1</code>): <code>LENGTH</code>, <code>EXPAND</code> (値展開), <code>SPOSITION</code> (s→位置), <code>S|LENG</code> (端数で補間), <code>GAMMABETA</code>, <code>GAMMA</code>, <code>MULT</code>, <code>TYPE</code> (idtype 番号), <code>TYPENAME</code>, <code>NAME</code> (elname: 複数なら NAME.n), <code>ELEMENT</code> (ファミリー名, 末尾は <code>$$$</code>), <code>POSITION</code>, <code>GEO/GX/GY/GZ/GCHI1-3</code>, <code>OGEO/OGX…</code>, <code>DIR</code>, <code>BZS</code>, <code>BZT</code>, <code>UPDATE</code>, <code>DK</code> (errk), <code>NDIV</code>; その他は要素キーワード (<code>tflinek</code>: <code>LINE["K1","QF"]</code>)。<code>LINE[key,loc]=v</code> は代入 (ref)。K1.. は積分強度なので <code>LINE["L","QF"]=x</code> / <code>Element["L","QF"]=x</code> で K1 は保たれる (pysad は <code>set_value('L')</code> が <code>_PER_LENGTH</code> の積分強度を保存)。</li>
+<li><strong>FFS["cmd" [, unit]]</strong> (<code>tfffs</code>): 文字列をファイルとして開き <code>tffsa(lfnp+1, …)</code> で実行。unit 省略時 <code>outfl=0</code> で <strong>出力は抑制</strong>、<code>-1</code> は現在の出力、OpenWrite 等の番号へ向ける。<code>CAL/GO/VAR/SHOW</code> は結果のリスト (<code>{dp, kind, {residual,xstab,ystab}, function-values}</code>) を返す。エラーは <code>FFS::error</code>。IF/REPEAT は 1 回の FFS[] 内で完結させる。<code>FFS$SHOW[]</code> = <code>FFS["SHOW"]</code> (fit 条件の平らなリスト)。</li>
+<li><strong>Element[key, name [, Saved-&gt;True]]</strong> (<code>tfelement</code>): <code>LENGTH</code> (=nele), <code>EXPAND</code> (<code>tffsadjust</code>), <code>NAME</code>, <code>VALUE</code> (既定キーワード), その他キーワード。name はファミリー名。<code>Element / SetElement / FLAG / ExtractBeamLine / BeamLine / PrintBeamLine / WriteBeamLine / GetMAIN</code> (Packages/element.n, beamline.n, src/tftwiss.f) は pysad では <a href="../pysad/sadelem.py"><code>pysad/sadelem.py</code></a> (bench_level24f で 164 タグ一致)。</li>
+<li><strong>CalculateOptics[lb,le,inicond,cell,idim]</strong> (tfoptics.f → qcell1): <code>{各位置の 28 個の Twiss, {stab}, {trace}}</code> を返し、大域の Twiss も書き換える。pysad は <code>FFS.fn_calculate_optics</code> (cell は周期解、cell=0 は <code>ins_twiss</code>、idim=3 は全周の CALC6D)。stabz と idim=3 の stab/trace は SAD で未初期化。</li>
+<li><strong>Emittance[]</strong>: Packages (<code>CalculateEmittance</code> 内部関数 1004) で、<code>Stable, Tunes, EnergyLossU0, RfVoltageVc, EquilibriumPosition, MomentumCompaction, BucketHeight, OrbitAtExit, DampingRate, Emittances, MomentumSpread, BunchLength, EquilibriumBeamMatrix, OneTurnTransferMatrix</code> の規則リスト。POL ON のときは <code>PolarizationTime, SpinTune, PolarizationVector, SpinPrecessionMatrix</code> も (<code>Polarization</code> は K64 が NaN: B55。docs/16)。SOL・COORD・MULT ANGLE≠0・MAP・TCAVI (L=0) を含むリングも扱う (docs/19)。SOL を含む Emittance[] は <code>run_emit</code> の値に落ち、Stable=0・HarmonicNumber=NaN・Matrix 系の規則なし (docs/17、work_unimpl)。</li>
+<li><strong>SynchroBetaEmittance1[nus0, nus1, dnus, mphi]</strong> (<code>ffscmd.fn_synchrobeta</code>、<a href="../pysad/synchrobeta.py"><code>pysad/synchrobeta.py</code></a>): <code>Packages/emit.n</code> の <code>SynchroBetaEmittance</code> が呼ぶ。emitx は gs と相対 1e-5 以内で一致 (検証の節。emity は 0 に近い雑音)。<strong>限界</strong>: 結合のあるラティス (QT・SF・DY のずれ入り 8+4 セルのリング) では gs が SIGSEGV で落ちて比較できず、pysad も <code>ValueError: cannot convert float NaN to integer</code> で失敗する (エラーの出し方が粗い)。不安定なチューン・<code>emiout</code> は未確認。</li>
+<li><strong>光学関数ほか</strong> (SADHelp の仕様に合わせたもの): <code>TransferMatrix[p1, p2, Fold-&gt;False, Symplectic-&gt;False]</code>、<code>BeamMatrix[p]</code>、<code>NormalCoordinates[p]</code> (4D は R 行列+Twiss、CALC6D なら 6×6)、<code>OrbitGeo[p]</code>、<code>GeoBase[{χ1,χ2,χ3}]</code>、<code>SymplecticJ[n]</code>、<code>SymplecticInverse[m]</code>、<code>SurvivedParticles[beam]</code>、<code>AccelerateParticles[beam, p(n), {n, nmax}]</code>、<code>ParabolaRandom[n]</code>。位置 p は要素名か番号。(docs/history/work_trpt_acc.md 11 節)</li>
+<li><strong>TrackParticles[beam, dest, nbegin, nend]</strong> (tftrack.f:35-100): beam は <code>{loc, {{x..},{px..},{y..},{py..},{z..},{dp..}[,{sz},{psi}],{flag..}[,{lost..}]}}</code>。dest は到達位置 (省略 nlat)、nbegin/nend で周回数 (<code>#4 &gt;= #3</code>)。<code>loc</code> と dest は nlat-1 を法として巻く (ls∈[1,nlat]、ld∈[2,nlat]; ld&lt;=ls なら 1 周足す)。mt=nend−nbegin+1 周: mt&gt;1 なら ls→nlat、(mt−2) 周、1→ld、mt==1 なら ls→ld。戻りは <code>{正規化した ld, 座標}</code> (<code>merge(ld,ls,normal)</code>)。RFSW OFF では tturn (区間) ごとに z=0。NPARA≥2 で粒子 9 個以上なら fork。tapert (LOSSAMPL/LOSSDZ) で落ちた粒子は alive=0 になり、座標は落ちた時点の値 (limittrack で抑えたもの) で返る。初期フラグ 0 は追跡しない。<strong>セッション最初の TrackParticles は <code>l_track=0</code></strong> (K64 の tmacro のセッション変数。CALC をしても変わらない): 最初から LOSSAMPL の外にいる粒子は、最初の tapert (tturn の最初の要素) で落ちる印 <code>kptbl(i,4)=l_track</code> が 0 = 「生きている」になり落ちず、座標は 3·LOSSAMPL に頭打ちされて追跡を続け、後の tapert で落ちる。2 回目の TrackParticles からは <code>l_track≠0</code> で最初の要素で落ちる。pysad は <code>TrackRun.l_track0</code> と <code>k_apert</code> の lcur==0 で再現する (gs を直した版と全桁一致。検証の節。元の K64 は B33 でこの状況に SIGSEGV する)。ANGLE=0 で K1≠0 の BEND の追跡は tbend の tquad/tmulti 呼び出しに従う (K1&lt;0 の符号を失う SAD の癖、docs/29 A38)。pysad <code>fn_track</code> は区間ごとに <code>track_particles_fast(els[a-1:b-1], …, circ=全周長)</code> (docs/history/work_zdp.md)。
+  <strong>POL のスピン追跡</strong> (POL かつ RAD が ON のときだけ): 純 Python の追跡 (<code>track6.py</code> の <code>sprot</code>・<code>bsi</code>) に切り替わり、入力の 9〜11 列 <code>{x,px,y,py,z,dp, 角度, sy/|s|, flag}</code>、戻りの 7・8 列は <code>atan(sz,sx)</code> と <code>sy/|s|</code> (tftrack.f の ktfresetparticles と tfsetparticles)。gs と 4e-12 以下 (<a href="../pysad/tests/test_spin_track.py"><code>test_spin_track.py</code></a>)。限界: 損失 (flag) の処理が無く粒子は落ちない、SOL 領域内の MULT・BEND・CAVI のスピンは未確認 (docs/16)。
+  <strong>RADLIGHT</strong>: RADLIGHT のとき RAD・TRPT を ON にし、戻りは <code>{{ls または ld, 座標}, 軌道}</code> (軌道は粒子ごとに <code>{t,x,y,z}</code> の 4 本の表)。gs と差 0 (<a href="../pysad/tests/test_radlight.py"><code>test_radlight.py</code></a>)。K64 は BEND と曲げのある MULT の中を記録せず (各区間の始めと、L≠0 の BEND 以外の要素の後だけ)、横方向の座標も軌道に入れない。
+  <strong>SOL (BZ≠0) 領域内の BEND・MULT・CAVI</strong> は未対応 (NotImplementedError)。MAP は <code>ExternalMap["TRACK",…]</code>、TCAVI は RANKICK・RANPHASE 未対応 (docs/19)。</li>
+<li><strong>SeedRandom[n]</strong> (tfRandom_.c): 種を設定し <code>{"SAD", seed, …}</code> 形式の状態リストを返す。<code>tfaddseed</code> は第 2 要素に kseed を足して再設定。</li>
+<li><strong>Random[]</strong> は RandomUniform0 (tfRandom_.c <code>REG8("Random", RandomUniform0)</code>) = random_plugin_sad.c の RANDOM_UNIFORM0: (seed + 2³¹)/2³² の [0,1)。RANDOM_UNIFORM (0,1) は +0.5 の式で別物 (こちらを使うと seed 列が稀に 2 ずれる)。GaussRandom[] は tgauss (Box–Muller、GCUT 付き)。</li>
+<li><strong>単位付き数値</strong>: SADScript の <code>1GEV</code> <code>30DEG</code> <code>3MM</code> は SAD では <code>1*GEV</code> = 1 になる (docs/29 C24)。pysad は単位を掛けて読む (仕様差)。</li>
+<li><strong>FFS[] の中のエラー</strong>: <code>FFS["…"]</code> の中のコマンドがエラーを出すと <code>???FFS::error: Error in FFS command n in FFS["…"]</code> で最上位の文 (Do など) を打ち切る。<code>LINE[key,"NAME"]=v</code> の未定義要素は <code>???General::invset</code>。qcod の溢れは止まらず NaN (直前の twiss があればそれ) で続行 (docs/29 C25, C26)。</li>
+</ul>
+<h2 id="8-pysad-ffscmdpy-の対応表">8. pysad ffscmd.py の対応表</h2>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad (<code>class FFS</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>文の振り分け</td>
+<td><code>sadscript.Interp.run(src,'ffs')</code> → <code>_is_ffs_command</code> が先頭語を <code>FFS.is_word</code> で判定 (フラグ/<code>_COMMANDS</code>/<code>_ERRCMDS</code>/<code>_FUNS</code>(+M/I/SCALE)/要素名・パターン)。式 (<code>x=1</code>, <code>f[</code>) は SADScript へ</td>
+</tr>
+<tr>
+<td>1 文の解釈</td>
+<td><code>execute(stmt)</code> → <code>_split_words</code> ({} [] "" 内は分けない) → <code>_exec_word(words,i)</code> が消費語数を返す。順序: フラグ → FIT 条件 (<code>_fit_condition</code>) → <code>FUNI</code>/<code>FUNSCALE</code> → 誤差 (<code>_error_cmd</code>) → コマンド → 要素値 (<code>_element_value</code>) → <code>?Undefined command or element:</code></td>
+</tr>
+<tr>
+<td>REPEAT/UNTIL, IF/ELSEIF/ELSE/ENDIF</td>
+<td><code>Interp.run</code> の最上位 FFS 文列の添字ループ + <code>_control_word</code>/<code>_control</code>、<code>_if_cond</code>/<code>_skip_if</code> (§1)</td>
+</tr>
+<tr>
+<td>abbrev</td>
+<td><code>_abbrev(word,'CAL_CULATE')</code></td>
+</tr>
+<tr>
+<td>tflag</td>
+<td><code>self.flags</code> + <code>_FLAG_ALT</code> (sino/NOsino)</td>
+</tr>
+<tr>
+<td>tgetfv</td>
+<td><code>_fit_condition</code> → <code>Matcher.fit(fun[+'M'], value, npoints)</code> (match6.py)。<code>{min,max}</code>, <code>*</code> 対応、<code>@</code> は未対応 (<code>SADError</code>)。<code>_fit_location</code> が <code>FIT [loc [loc1]]</code> (<code>FIT;</code> は位置を <code>$$$</code> に戻すだけ)</td>
+</tr>
+<tr>
+<td>FITP</td>
+<td><code>Matcher.fitp(n)</code> (|mfitp|&gt;2 のみ変更)。FITP&gt;1 の MatchingAmplitude/NFAMP も実装 (§3.2)</td>
+</tr>
+<tr>
+<td>FREE/FIX</td>
+<td><code>_freefix</code> → <code>_free_family</code> (既定キーワードは <code>default_key</code>: DRIFT は L、他は <code>_KEYS[型][1]</code>、MARK/MONI は不可、vlim は DRIFT L [0.1,1e10]) / <code>Matcher.fix</code></td>
+</tr>
+<tr>
+<td>tfgetv</td>
+<td><code>_element_value</code> (R/MAX/MIN/MAXABS、キーワード、<code>set_family</code> で couple も反映、<code>_vlim</code>)</td>
+</tr>
+<tr>
+<td>terror</td>
+<td><code>_error_cmd</code>/<code>_apply_error</code> (<code>errk</code> は <code>el._errk</code>、PUT の基準は <code>env._elements</code> の設計値、乱数は <code>self.rng.gauss</code> = track6 と同じ <code>SadRandom</code>、master グループは <code>_master_array</code>、<code>_tfadjst</code>)、<code>_dump</code></td>
+</tr>
+<tr>
+<td>USE</td>
+<td><code>use(name)</code>: <code>build_lattice</code>、<strong>最初の USE だけ</strong> 先頭 MARK の EMITX/EMITY/EMITZ/SIGZ/SIGE/DDP(→DP0)/DP を取り込む (tffsa.f:135 の <code>if(.not. chguse)</code>)。<code>USE BeamLine[..]</code> は <code>_use_beamline_expr</code>、<code>VISIT</code>/<code>BYE</code> は <code>_visit_stack</code> (§5)</td>
+</tr>
+<tr>
+<td>CAL/GO</td>
+<td><code>go(fit)</code>: MAXITERATION/CONVERGENCE/ExponentOfResidual/OffMomentumWeight/DP/DP0/DPM/INTRES… を <code>Matcher</code> に渡し、<code>Matcher.go</code> (<code>Matched.</code>/<code>Residual =</code> 行は match6.py:781-792、<code>fmt_g</code> = 1PG11.4) → <code>print_fit_table</code> (tfshow 風)。解法は <a href="../pysad/tsvd.py"><code>pysad/tsvd.py</code></a>、VariableRange/VariableWeight は <code>Matcher.var_range/var_weight</code> (§3.4)</td>
+</tr>
+<tr>
+<td>微分 (GO)</td>
+<td><code>go()</code> が <code>FFS$NumericalDerivative</code> を <code>Matcher.numerical_derivative</code> に渡す。既定は <code>match6d.analytic_qu</code> (INS でも解析微分。未対応の条件・状況は中心差分に自動フォールバック: <code>Matcher._analytic_unsupported</code>)</td>
+</tr>
+<tr>
+<td>EMIT</td>
+<td><code>run_emit</code> (emit6d) + <code>print_emit</code></td>
+</tr>
+<tr>
+<td>CHRO</td>
+<td><code>chro_cmd</code> (bench_level24b/24b2 で全行一致)</td>
+</tr>
+<tr>
+<td>TYPE / DISP</td>
+<td><code>type_cmd</code> (型順・タブ 26,31,…) / <code>disp_cmd</code> (tfdisp の解析の直訳: 位置範囲・パターン・ALL・R/O/E/G/OG モード、bench_level29b 36 ブロック一致。A/GA/B/P/D/Z と REFERENCE/DREFERENCE も実装 (<a href="../pysad/tests/test_ffs_gs_match.py"><code>test_ffs_gs_match.py</code></a>、FFS_DISPLAY・FFS_REFERENCE)。反転配置の <code>-</code> と桁は SAD と一致、docs/history/work_item6.md / docs/history/work_small_items.md B)</td>
+</tr>
+<tr>
+<td>CALC6D</td>
+<td><code>calc()</code> が CELL + CALC6D で <code>calc6d.calc6d</code> を呼び <code>self.rows</code> (拡張 Twiss 28 成分) と <code>self.calc6d_result</code> を作る。分数位置は <code>row_frac</code> → <code>calc6d.twiss_frac</code></td>
+</tr>
+<tr>
+<td>TRPT の加速</td>
+<td><a href="../pysad/trptacc.py"><code>pysad/trptacc.py</code></a> (§6)</td>
+</tr>
+<tr>
+<td>INTRA / TouschekLifetime</td>
+<td><code>run_emit</code> が INTRA ON で <code>touschek.touschek_table</code> を呼び EMITX.. / EMITXC.. / <code>TouschekTable</code> をグローバルに入れる。<code>fn_touschek</code> = <code>touschek.touschek_lifetime</code></td>
+</tr>
+<tr>
+<td>GEO / ORG</td>
+<td><code>ensure_geo()</code> (= <code>geo.compute_geo</code>, GEOCAL/GEOFIX)、<code>line_value</code> の <code>GX GY GZ GCHI1-3 GEO OGX.. OGEO</code> と <code>S/LENG</code> (geo の pos)、<code>_org</code> (ORG [要素 gx gy gz chi1 chi2 chi3])。<code>Twiss["GX"]</code> は SAD と同じくエラー、γ は <code>GMX</code>/<code>GMY</code></td>
+</tr>
+<tr>
+<td>Emittance[opt]</td>
+<td><code>fn_emittance</code> = <code>emit_extra.emittance_rules</code> (mode: Matrix 3 ⊃ Orbit 2 ⊃ OneTurnInformation 1)。SaveEMIT-&gt;False (既定) では EMITX.. を元に戻す。<code>LINE["SIG"+key, l]</code> / <code>Twiss["SIG"+key, l]</code> は <code>beam_size_value</code>: CALC6D なら <code>beam_matrix_at</code> (6D 平衡ビーム行列)、そうでなければ <code>beam_matrix_twiss</code> (tfbeam.f の直訳: 基準座標の Twiss + EMITX/EMITY (MINCOUP 下限) + SIGE² を R1-R4 で物理座標へ。<strong>pysad の仕様: EMIT の事前実行が必要</strong>、docs/history/work_geo_sig.md)。<code>BEAM_SIZE</code> コマンドは EMIT 済みの確認だけ</td>
+</tr>
+<tr>
+<td>CalculateOptics</td>
+<td><code>fn_calculate_optics</code> (§7)</td>
+</tr>
+<tr>
+<td>SAVE/RESET</td>
+<td><code>save_cmd</code> (設計値 <code>env._elements</code> と <code>el._saved</code>) / <code>reset_cmd</code></td>
+</tr>
+<tr>
+<td>COUPLE</td>
+<td><code>_couple</code> → <code>self.couples[slave]=(master,coef)</code>; DECOUPLE/INDEPENDENT で全解除</td>
+</tr>
+<tr>
+<td>Twiss/LINE/Element/FFS/Emittance/TrackParticles/SeedRandom</td>
+<td><code>fn_twiss</code>/<code>fn_line</code>/<code>fn_element</code>/<code>fn_ffs</code>/<code>fn_emittance</code>/<code>fn_track</code>/<code>fn_seedrandom</code>、代入は <code>set_line</code>/<code>set_element</code> (Set をラップ)。位置解決は <code>_resolve_loc</code> → <code>positions</code> (tflinenamestk 相当: <code>$$$</code>, <code>NAME.*</code>, パターン, <code>NAME.n</code>, <code>NAME±k</code>)</td>
+</tr>
+<tr>
+<td>Element/SetElement/BeamLine 系</td>
+<td><a href="../pysad/sadelem.py"><code>pysad/sadelem.py</code></a> (§7)</td>
+</tr>
+<tr>
+<td>FFS の小さなコマンド</td>
+<td><a href="../pysad/ffsextra.py"><code>pysad/ffsextra.py</code></a> の <code>COMMANDS</code> (<code>ffscmd</code> が <code>_fx.run</code> で先に呼ぶ): VARIABLES(VARS/VAR)・ATTRIBUTE(ATTR/ATT)・MATRIX(MAT。名前だけの引数は NAME.1 として扱い、ラティスに無い名前は gs と同じく読み飛ばす (to=<code>$$$</code>)。<a href="../pysad/tests/test_ffsextra.py"><code>test_ffsextra.py</code></a>)・SHOW・VARY・RECOVER(REC)・REVERSE(REV)・PRINT(PRI)・EXECUTE(EXEC)・OUTPUT/APPEND/CLOSE・INPUT/READ・STATUS(STAT)・SUSPEND/RESUME (docs/04)</td>
+</tr>
+<tr>
+<td>DELCOR / WAKE</td>
+<td><code>ffscmd._delcor</code> (tcorr・tvcorr。k64 モードは MARK が DETR・DPX、CAVI が HARM・PHI に入る K64 の添字のずれまで再現、v2 モードは DX・DY。docs/04)、<code>_wake_cmd</code> (§9)</td>
+</tr>
+<tr>
+<td>MEASURE・TRCOD・LOGMEASURE・ORBITJITTER・PUTMEASURE・GETMEASURE</td>
+<td>v2 モードだけ。<a href="../pysad/measure.py"><code>pysad/measure.py</code></a>。使い方は下の「v2 モードの MEASURE・TRCOD」</td>
+</tr>
+<tr>
+<td>CSR 系・Fit 系・パッケージ</td>
+<td>SADScript の関数として csr.py・fitroot.py・corr.py・pkgload.py が提供 (docs/15・06)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>既知の未対応</strong> (<code>ffscmd.py</code> で確認。<code>[pysad] FFS command … は未対応 (無視)</code> と出すもの): DRAW, GEO (描画コマンド)、BEAM, ALIGN (単独)、INC(INCLUDE), SCALE, ZAP, DIMAD, SYNCHROB。k64 モードでは MEASURE・TRC(TRCOD) と ORBITJITTER・PUTMEASURE・GETMEASURE も同じ扱い (v2 モードでは実装した。下記)。<code>MON</code>・<code>MCOD</code>・<code>TCOD</code> のコマンドは K64 の tffsa.f にも無い (grep で 0 件確認。FFS では式として評価されて何もしない。v2 モードは「K64 に無いコマンド」と警告して文全体を読み飛ばす。B22)。SHOW・STAT・VARS・VARY・ATT・MATRIX・REC・REV・PRINT・REJ は実装済み (docs/04、REJECT は <code>ffscmd</code>)。そのほか:</p>
+<ul>
+<li>MON/MCOD/TCOD: v2 でも機能は実装しない (K64 にコマンドが無く、古い SAD の MON の書式・意味を確かめる資料が無い。軌道補正は CorrectOrbit パッケージ、docs/06)。</li>
+<li>INS での fit (Matcher は <code>cell=False</code> で安定判定を省くだけで、SAD の INS 条件照合は未了。INS のリングの Emittance[]・追跡は gs と一致を確認: <code>history/work_unimpl.md</code> の記録)。</li>
+<li>FITP&gt;1 のオフモメンタム条件と MatchingAmplitude (match6 に実装済みだが SAD との照合はない: §9)。</li>
+<li>FIT の <code>@</code> (<code>SADError</code> で停止する)。</li>
+<li><code>NOKEEPEXP</code> の tfvcomp: 既定でないキーの成分の変数があれば真 (成分ごとの FREE を実装済み。K64 の定義と同じ)。NOKEEPEXP と RENUMBER の INDEX 属性による番号の初期値は実装した (両モード。gs の実測と一致。下記)。</li>
+<li><code>Twiss["R…"/"D…"/"RALL"/"DALL"]</code> は整数位置だけ (参照光学は要素の入口の値のみ)。</li>
+</ul>
+<p><strong>gs に合わせた FFS の動作 (2026-11-17、gs で確認)</strong></p>
+<ul>
+<li>FFS 内の <code>MOMENTUM = …;</code> は追跡・Emittance[]・光学に効き、<code>USE</code> で MAIN 側の値に戻らない (MAIN 側の値が変わったときだけ取り込む)。</li>
+<li><code>NOKEEPEXP</code> のとき、EXPAND/NOEXPAND を付けない CALC・GO は <code>calexp = .not. tfvcomp()</code> (tffsa.f:553、569 を写した。gs の実測 10 行と一致。<code>test_nokeepexp_matches_gs</code>)。<code>RENUMBER</code> は BEND・QUAD・SEXT… の <code>INDEX</code> 属性が 2 以上なら、同名の要素の番号をその値から振る (QF の INDEX=5 → QF.5 QF.6 …。USE でも RENUMBER でも。<code>LINE["INDEX",…]</code> も読める。tfinit.f tfinimult を写した。<code>test_renumber_with_index_attribute_matches_gs</code>)。両モードで同じ。</li>
+<li><code>USE [NOEXPAND|EXPAND] line</code>、<code>CALC|GO [NOEXPAND|EXPAND]</code>: NOEXPAND は成分ごとのずれ (<code>LINE["K1","QF.2"]=…</code>) を残し、<code>???-FFS-Info-Element values are not expanded.</code> を出して表示が <code>NOCALEXP</code> になる。KEEPEXP なので次の CALC にも残る。<code>SAVE</code>・<code>EXPAND</code> は触れた値を代表 (最初の 1 台) に揃える。CALC と Emittance[] は揃え、TrackParticles は揃えない。</li>
+<li><code>名前.番号 K1 0.9;</code> のように要素の成分名を先頭にした文は式として評価され、何も設定しない (<code>LINE["K1","QF.3"]=0.9</code> を使う)。</li>
+<li><code>RENUMBER comp</code> は comp を起点に周回順で番号を振り直し、<code>LINE["MULT"]</code> もその番号 (同名が 1 台だけなら 0)。起点が無ければ <code>???-FFS-Error-Missing origin component for RENUM_BER</code>。</li>
+<li><code>REFERENCE</code> (参照光学の保存)、<code>Twiss["RBX"/"DBX"/"RALL"/"DALL"]</code>、<code>Twiss["LENGTH"/"GAMMA"/"GAMMABETA"/"S"]</code>。</li>
+<li><code>DISP</code> のモード R・O・P・GA・Z・A・B (BEAM、EMIT 後)・D・G・OG と REFERENCE・DREFERENCE (見出しの置換まで gs と同じ)。</li>
+<li><code>DUMP</code> の語は 20 文字で切れる (長い <code>A|B|…</code> は先頭 20 文字)。合う要素がなければ全要素。<code>DDK</code> は K0 のキーワードのある要素 (BEND・MULT・TCAVI) だけ。</li>
+<li>DODECA の K5 は積分強度 (TYPE・ATTRIBUTE・LINE・Element で同じ値)。</li>
+<li>CELL の CALC の最後の行 (<code>$$$</code>) の DZ は一周の経路長のずれ (<code>OrbitGeo[$$$]</code> の GX が gs と一致)。</li>
+<li>TYPE の PROF 等リスト値。</li>
+<li><code>FUNSCALE</code> (値を読み飛ばすだけで scale は変わらない)。</li>
+<li><code>DBEAM</code> (読み飛ばすだけ)。</li>
+<li>FFS の termes エラーでの外側 Do の中断、<code>FFS["…"]</code> 文字列内の REPEAT/UNTIL、一致なしパターンの無言処理。</li>
+<li>GO の幾何の条件 (GX GY GZ CHI1..3) の解析微分 (<code>tdgeo</code> の直訳 <code>match6d.tdgeo_term</code>) は、幾何の条件だけの行で、変数が DRIFT の L・BEND の ANGLE・L のときだけ。四極などの DX・DY や、Twiss の条件が同じ行にある列は中心差分のまま (<a href="../pysad/tests/test_tdgeo.py"><code>test_tdgeo.py</code></a>)。半セル + <code>fit gx 20; free DRID1 L</code> の例では gs とのフィット後の L が相対 5.5e-7 違う (収束判定と微分の差。不安定な光学の fit は罰則の扱いが違い比べていない)。</li>
+</ul>
+<h3 id="v2-モードの-measuretrcod-と台本の読み方小さな修正">v2 モードの MEASURE・TRCOD と、台本の読み方・小さな修正</h3>
+<p><strong>v2 モードの MEASURE・TRCOD・LOGMEASURE</strong> (<a href="../pysad/measure.py"><code>pysad/measure.py</code></a>。k64 モードは <code>FFS command MEASURE は未対応 (無視)</code>)。K64 の実行ファイル (gs) は MEASURE が無出力、TRCOD が SIGSEGV (B42)、MAIN の TRACK も落ちるので、<strong>gs との数値比較は 1 件もない</strong>。実装は K64 のソース (<code>tffsa.f</code>、<code>trackb.f</code>、<code>tracke.f</code>、<code>trcoda.f</code>、<code>ttinit.f</code>、<code>ttstat.f</code>、<code>tbdecoup.f</code>) の読みで、値は解析式と pysad の独立な経路 (CALC の Twiss、EMIT、TrackParticles) で確かめた。表示の書式は gfortran で同じ FORMAT を出して合わせた (gs の実出力との比較ではない)。</p>
+<ul>
+<li><code>MEASURE [位置]</code> (省略形 <code>MEA</code>): 先頭 MARK の入口条件 (Twiss、EMITX、EMITY、DP、SIGZ、AZ) の分布の NP 個 (既定 1000) の粒子を位置の入口まで追い、重心・6×6 の分散行列・射影/非結合の emittance と Twiss・ビームサイズを表示する。位置は要素名・<code>NAME.n</code>・<code>$$$</code>・<code>^^^</code>。省略すると前回の MEASURE / TRCOD の位置 (最初は終端)。<code>FFS["MEASURE 位置"]</code> は <code>{np, {重心 6}, {分散行列 6×6}}</code>。<code>LOGMEASURE</code> (<code>LOGM</code>) は xa ya xxa xya yya を表示する。</li>
+<li><code>TRCOD [位置]</code> (<code>TRC</code>): JITTER を OFF 扱いにして分布を作り、位置 1 から指定位置まで、各要素の入口の重心を Twiss の DX DPX DY DPY に、<u·dp>/<dp²> を EX EPX EY EPY に書く。次の CALC で Twiss は計算し直される。</li>
+<li><code>TRCOD FIXCOD [位置]</code> / <code>MVCOD [位置]</code> / <code>STNCOD</code>: 軌道・分散の「基準」を取っておき、<code>Twiss["RDX", k]</code> で基準、<code>Twiss["DDX", k]</code> で現在 − 基準 (EX EPX EY EPY DX DPX DY DPY)。基準は REFERENCE と同じ参照光学に置く (K64 の <code>twiss(*,ndim,*)</code> を利用者が読む手段が無いため。<code>REF;</code> で上書きされるので戻すには <code>TRCOD STNCOD;</code>)。<code>TRCOD ALIGN 要素1 要素2</code>: 要素1 の DX・DY を、その次から 要素2 までの BEND QUAD SEXT OCT DECA DODECA MULT の DX・DY に書く (DECA DODECA MULT も対象。回転・縦のずれは揃えない)。<code>ORBITJITTER xj yj</code>: Twiss の DX・DY に位置ごとの正規乱数を足す。</li>
+<li><code>PUTMEASURE</code> / <code>GETMEASURE [alpha]</code>: 環境変数 SADPOUT / SADPIN のファイルで測定値 (重心 x、y と <xx> <xy> <yy>) を受け渡し、GETMEASURE は measp の 1 点の fit 条件の DX・DY の目標値を (相手の重心 − 自分の重心)/2·alpha + 今の値·(1 − alpha) にする。Windows は FIFO が無いので普通のファイル (待たない)。</li>
+<li>初期分布の注意: MARK に DP を書かないと DP は 0.01 (既定) で、運動量の広がり 1% (一様) の分布になる。0 にするには <code>DP=0;</code>。リングでは <code>CELL; CALC;</code> の後 (周期解が先頭 MARK に入る)。MOMENTUM を設定すること。</li>
+<li>MEASURE と TRPT: K64 は <code>trpt=.true.</code> にしたまま戻さないが、v2 は追跡の間だけ ON にして戻す (後の計算に副作用を残さない。K64 のとおりにしたければ MEASURE の後に <code>TRPT;</code>)。MAIN の <code>TRACK … TURNS=-1</code> は、v2 は K64 のソースどおり輸送路の 1 回通過 (Entrance / Exit の統計を表示)、k64 モードは 1 周のリングの追跡として扱う。</li>
+<li>使えない・未確認 (要判断を含む): GETMEASURE の対象の関数 (DX・DY) は K64 の関数番号 32・34 (今の番号では PEPY・PZPX) からは確定できず、式から軌道の関数と判断した。FIFO での待ち合わせ (二つの SAD を同時に走らせる使い方) は未確認。<code>TRCOD ALIGN</code> の SOL・MONI は動かさない。<code>Twiss["DETR"]</code> は INS の CALC のあとも値が入る (DETR = R1R4 − R2R3。入口の位置 1 は R が全て 0 なので DETR = 0。両モード。pysad で確認)。ただし DETR ≥ 1 (モードが入れ替わる) の INS と MEASURE は未確認。TWAKE / LWAKE ON の MEASURE は z の分布を作る (K64 は全粒子 z = 0 にするので K64 と違う。一様・階段状の wake の重心と広がりだけ確認)。<code>DRAW</code> の中の粒子追跡 (<code>tdrwdt.f</code>) は K64 でも動かない死んだコードで実装しない。TRCOD の途中の統計 (K64 は標準エラーに出す) は出さない。</li>
+<li>実効面積 (tlum) と垂直の 4・6・8 次のモーメントは K64 の MEASURE からは呼ばれない (<code>measure.ttstat_lines(…, lum=True)</code> で出せる)。</li>
+<li>詳細: <a href="history/v2_changes_C_measure.md"><code>docs/history/v2_changes_C_measure.md</code></a>、<a href="history/v2_changes_C2_measure.md"><code>docs/history/v2_changes_C2_measure.md</code></a>。試験 <a href="../pysad/tests/test_v2_C_measure.py"><code>test_v2_C_measure.py</code></a> (19)・<a href="../pysad/tests/test_v2_C2_measure.py"><code>test_v2_C2_measure.py</code></a> (20)。例 <a href="../example/02_optics_cod/flag_TRCOD_reference.sad"><code>example/02_optics_cod/flag_TRCOD_reference.sad</code></a>・<code>fn_PUTMEASURE_GETMEASURE.sad</code>。</li>
+</ul>
+<p><strong>台本の読み方と FFS の小さな修正</strong> (<a href="../pysad/tests/test_v2_B_ffs.py"><code>test_v2_B_ffs.py</code></a>、<a href="../pysad/tests/test_v2_C2_script.py"><code>test_v2_C2_script.py</code></a>)</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>k64 モード</th>
+<th>v2 モード</th>
+<th>根拠</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MAIN の <code>OFF RFSW</code> (B30)</td>
+<td>FFS に届かない (FFS は RFSW ON で始まる。K64 と同じ)</td>
+<td>届く (<code>ON RFSW</code> も)。FFS の中の <code>RFSW;</code>・<code>NORFSW;</code> が後から優先</td>
+<td>FFS の <code>NORFSW;</code> と全桁同じ追跡結果 (δ が保存)</td>
+</tr>
+<tr>
+<td><code>ORG B3 1.5 -2.5 0.5 10 20 30</code> (B26)</td>
+<td><code>1.5-2.5</code> と読まれ値が 1 つ足りなくなる</td>
+<td>空白で区切った <code>-2.5</code> は別の値。<code>3/2</code>、<code>2 *5</code> などの式も書ける。k64 モードは K64 と同じ読み方のまま</td>
+<td>K64 で曖昧さのない書き方 (<code>1.5 0-2.5 …</code>) と同じ ORG の値 (gx=1.5, gy=-2.5)</td>
+</tr>
+<tr>
+<td>MOMENTUM の警告 (B67)</td>
+<td>警告なし</td>
+<td>MOMENTUM を MAIN でも FFS でも設定しないまま、運動量を使う計算 (追跡・EMIT・Emittance・RADINT・CALC6D・DA ほか) に入ると 1 度だけ警告 (値は変えず 30 GeV)。CALC (4D) と幾何では出さない</td>
+<td>明示の <code>MOMENTUM=30e9</code> では出ない</td>
+</tr>
+<tr>
+<td><code>MON</code>・<code>MCOD</code>・<code>TCOD</code> (B22)</td>
+<td>後ろの語が式として読まれ <code>Missing value for PM*</code> で文が止まる</td>
+<td>「K64 に無いコマンド」と警告して文全体を読み飛ばす (定義はしない。k64 モードは K64 と同じ)</td>
+<td>K64 の tffsa.f に無い</td>
+</tr>
+<tr>
+<td><code>FFS;</code> の書き方</td>
+<td>(gs の動作)</td>
+<td>gs に合わせた (モードによらない)。<code>FFS USE RING;</code>・<code>FFS USE=RING;</code>・行の途中の <code>FFS;</code>・<code>FFS NPARA=3;</code> (gs と同じエラー)。<strong><code>FFS</code> と <code>ffs</code> だけが FFS の語</strong>で、<code>Ffs;</code>・<code>FFs;</code> は MAIN の構文エラー (<code>LALR(1) parser: syntax error</code>) で FFS 部に入れず何も実行されない。<strong>LINE 名は書かれたとおり</strong> (LINE ring と USE RING は別。<code>USE ring</code> は ring が無いので <code>???General::wrongtype:  Argument must be BeamLine[ ... ]:</code> と <code>???-FFS-Error-Missing beamline in USE.</code>)</td>
+<td>台本 15 本 + 6 本を gs と照合。同じ行の <code>FFS;NPARA=3;</code> の <code>NPARA=3;</code> は FFS 部では実行されない (gs と同じ)</td>
+</tr>
+<tr>
+<td>MAIN の一般の代入 <code>NAME = 式;</code> と要素定義の式 (<code>ANGLE=PI/8</code>)</td>
+<td>無視されていた (要素定義の式は <code>PI</code>・関数を文字列として扱い警告して要素を捨てた)</td>
+<td>gs と同じ式の文法 (約 100 通りを gs で実測): 単位つき数 (<code>DEG MM CM …</code> は<strong>数の直後だけ</strong>。<code>10 DEG/2</code> は (10 DEG)/2)、<code>+ - * / ^</code> (<code>^</code> は右結合)、関数 <code>SIN COS TAN ATAN SQRT EXP LOG (常用) LN SINH COSH TANH ATAN2(y,x)</code> (関数名は大文字小文字を問わない、丸括弧)、<code>PI</code> (大文字だけ)、<code>MOMENTUM</code>、前の変数。0 での割り算は ±Infinity・NaN、定義域の外は NaN。gs で構文エラーになる形 (<code>pi/8</code>・<code>Pi/8</code>・<code>(1+2) MM</code>・<code>SQRT 2</code>・<code>ABS</code>・<code>2**3</code>・<code>2^-1</code> ・引数の数が違う関数など) は警告 <code>syntax error in MAIN expression (gs: …)</code> を出して捨てる</td>
+<td>代入 32 個の式を gs の値と 2e-14、要素定義の式 37 通りの値と 19 通りの構文エラーを gs と全桁 (モードによらない)。大きなリング A・B、PF、ASTRID2 の全要素の値は v2.0.0 の読み取りとビット一致。例 <a href="../example/01_lattice_elements/syntax_MAIN_expression.sad"><code>example/01_lattice_elements/syntax_MAIN_expression.sad</code></a></td>
+</tr>
+</tbody>
+</table>
+<p><code>FFS;</code> と MAIN の代入の残した違い: <code>FFS</code> (<code>;</code> なし) の次の行が USE 以外の文のとき gs はエラーにして行の残りを捨てるが pysad は FFS 部として実行する、<code>A = 3 B = 4;</code> は gs では A = 3 (エラーつき) だが pysad は代入しない、gs が構文エラーにするが pysad が受ける形 (<code>45DEG</code>・<code>SIN[0.1]</code>・未定義の名前 <code>L=A</code>)、gs が受けるが pysad が構文エラーにする形 (末尾の <code>1+</code>)、MAIN の変数を <code>E</code>・<code>Pi</code>・<code>Degree</code> で代入しても要素定義の式の <code>E</code> は SADScript の定数 (gs は利用者の値)、<code>LINE[{"EMITY",…},1]</code> は gs が MAIN の値、pysad が MARK に書いた値 (0)。k64 モードでも MAIN で PBUNCH・EMITX・MASS などを代入している TRACK なしの台本は、その値が効く (gs と同じ向き)。</p>
+<h2 id="9-この-sad-ビルド-wsl-k64-で分かった注意">9. この SAD ビルド (WSL, K64) で分かった注意</h2>
+<ul>
+<li><strong>NPARA の既定は 4</strong> (Packages/init.n:219 <code>NPARA=4;</code>。initb1.f の <code>RsetGL('NPARA',1)</code> を init.n が上書き)。TrackParticles は粒子 9 個以上 (有効な並列数 = min(NPARA, np/9 + 1, ne·np/3000 + 1)。np ≥ 13 で実際に分かれる) で fork するため乱数列が分岐する。pysad の既定は NPARA=1。gs と比較するには <code>NPARA=1;</code> をスクリプトに入れるか、<strong><code>NPARA=n;</code> を FFS で設定して同じ分け方を再現する</strong> (子の乱数の種 = 親の種 + 2k。RAD + FLUC の追跡だけ。gs の NPARA=1 と 4 の rms dp・最終の種と全桁一致: docs/10)。</li>
+<li><strong>FITP&gt;1 の GO で SAD が再起動することがある</strong> (<code>*** Run time Environment</code> バナーが再び出る)。NPARA=1 でも起きるので、オフモメンタム条件の参照値は得られていない。確認: <a href="../example/03_matching/FFS_FITPOINTS.sad"><code>example/03_matching/FFS_FITPOINTS.sad</code></a> (24 セル FODO、δ = −1%・0・+1% の 3 点で NX = 6.7・NY = 4.9) は今の gs は再起動せず完走し、<strong>最小値の手前で止まった</strong> (K1 (QF, QD) = (0.700211, −0.599628)、K2 (SF, SD) = (1.695226, −2.439058)、残差 6.3321e-6 が独立な最小値 6.33178e-6 より相対 5e-5 大きい。<code>Overflow &amp; closed orbit not found</code> の試行点での打ち切り)。pysad の GO の最終解は独立な最小化 (残差の定義 Σ w (f − goal)² scale² の scipy の最小二乗) と 5e-8 以内で一致。</li>
+<li><strong>NPARA&gt;1 では出力が子プロセスで重複する</strong> (tffsmatch の fork)。参照出力は NPARA=1 で取る。</li>
+<li><strong>FFS["…"] の unit 省略は非表示</strong> (<code>outfl=0</code>)。画面に出すには <code>FFS["…", 6]</code> か <code>-1</code>。</li>
+<li><strong>MAXITERATION はこのビルドでは GO の反復数に効かない</strong> (<code>MAXITERATION 1</code> でも 7 反復)。pysad はコマンドを受理する。</li>
+<li>EMIT は <code>codin=twiss(1,0,DX:DDP)</code> を初期軌道にし、終了後 <code>gauss=.true.</code>。DISP/TYPE の前には <code>tfsetparam</code> が呼ばれる。</li>
+<li><strong>MOMENTUM の初期値は 30 GeV</strong> (K64 initb1.f の <code>RsetGL('MOMENTUM',30.d9)</code>)。MAIN で書かなければ FFS も 30 GeV で計算する (pysad の <code>ffscmd</code> も同じ既定)。</li>
+<li><strong>旧 WAKE コマンド</strong>: K64 の tffsa.f は tfwake.f を呼ばず <code>WAKECOMMAND[]</code> (init.n の AutoLoad。<code>Packages/WAKECOMMAND.n</code> は配布に無い) を評価する。gs は fileopen のエラーを出して行の残りを捨てる。k64 モードの pysad も同じ経路 (エラー文の表示だけ未再現)。v2 モードは tfwake.f の構文 <code>WAKE L|T 要素 s1 w1 … ENDWAKE</code> を WakeFunction の表として登録する (CAVI だけ。docs/13)。</li>
+<li><strong><code>Skip</code>・<code>Read</code> の型</strong> (Character・Real・Word の読み方、数でない語の Real は式の値) は gs に合わせた (<a href="../pysad/tests/test_evalfixes.py"><code>test_evalfixes.py</code></a>)。<code>MessageName[f,"usage"]</code> の関数形は、gs は f を無視して <code>Undefined MessageName General::"usage"</code> を出す (B70)。v2 モードは f の本文を返す (<code>f::usage</code> と同じ。無ければ <code>General::tag</code> の本文)。k64 モードの pysad も f を見る (<code>General::tag</code> へ継承する)。</li>
+<li><strong>MEASURE</strong> は INS; CALC のあとでも gs は何も出力しない。TRCOD は SIGSEGV (B42)。v2 モードの pysad は K64 のソースの読みで実装した (上の「v2 モードの MEASURE・TRCOD」)。</li>
+<li><strong>SOL (BOUND≠0) の長さ</strong>は周長に入れない (K64。<code>emit6d._emit_circ</code>、追跡の circ も)。GEO の無い SOL では K64 の S 座標が途切れて周長が狂うが pysad は再現しない (docs/17)。</li>
+</ul>
+<h2 id="10-検証-k64-との比較の要約">10. 検証 (K64 との比較の要約)</h2>
+<ul>
+<li>マッチング (FIT・FREE・GO): UNIPOL・RELW・既定の 3 通り、成分ごとの FREE (小さな FODO、大きなリング A) の反復の行・チューン・K1 が gs と一致する。</li>
+<li><code>EMIT</code> の後の <code>USE</code> で RF の位相の基準が変わらない動作は、小リング・大きなリング A・PF リングで gs と一致する。</li>
+<li><code>SynchroBetaEmittance1[]</code> の emitx は gs と相対 1e-5 以内、TrackParticles の <code>l_track</code> の挙動は gs を直した版と全桁一致する。</li>
+<li>MEASURE・TRCOD・LOGMEASURE は K64 が無出力・SIGSEGV のため、gs との数値比較は無い (§8 の「v2 モードの MEASURE・TRCOD」)。</li>
+<li>数値の詳細は <a href="history/03_ffs_commands_validation.md">history/03_ffs_commands_validation.md</a>。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

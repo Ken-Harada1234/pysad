@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>09_io_system 一覧</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="09_io_system-一覧">09_io_system 一覧</h1>
+<p>入出力とシステムの例。ラティスは使わない。ファイルは作業ディレクトリ (gs は実行時の一時フォルダ) に作り、最後に削除する。実行ごとに変わる値 (日時、一時ファイル名、CPU 時間) は表示しない。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>説明</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FFS_PRINT_OUTPUT_APPEND_READ_INPUT</td>
+<td>FFS PRINT・OUTPUT・APPEND・CLOSE・READ・INPUT</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_DateString_TimeUsed_Timing</td>
+<td>fn_DateString_TimeUsed_Timing (DateString, TimeUsed, Timing)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_FORM_PageWidth</td>
+<td>fn_FORM_PageWidth (<code>$FORM</code>, PageWidth, StandardForm)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Fork_Shared</td>
+<td>fn_Fork_Shared (Fork, OpenShared, Shared, SharedSize)</td>
+<td>△ (SharedSize は gs と一致。Windows の pysad は子を作らない。v2 は WSL で子を作る (この例では未再実行))</td>
+</tr>
+<tr>
+<td>fn_OpenRead_OpenWrite_OpenAppend_Close</td>
+<td>fn_OpenRead_OpenWrite_OpenAppend_Close (OpenRead, OpenWrite, OpenAppend, Close)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Print_Write_WriteString</td>
+<td>fn_Print_Write_WriteString (Print, Write, WriteString)</td>
+<td>△</td>
+</tr>
+<tr>
+<td>fn_Read_ReadString</td>
+<td>fn_Read_ReadString (Read, ReadString)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_StringToStream</td>
+<td>fn_StringToStream (StringToStream)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_System_TemporaryName</td>
+<td>fn_System_TemporaryName (System, TemporaryName, Directory, Environment)</td>
+<td>△ (v2 は既定で実行しない。許可すると実行でき、戻り値は v2 が 0、gs と k64 モードが 1)</td>
+</tr>
+<tr>
+<td>var_FORM_Input_Output</td>
+<td>var_FORM_Input_Output (<code>$FORM</code>, <code>$Input</code>, <code>$Output</code>)</td>
+<td>○</td>
+</tr>
+<tr>
+<td>fn_Parallelize</td>
+<td>fn_Parallelize (<code>Parallelize[f, n, lshare, npara]</code>。POSIX (Linux・WSL) は fork した子で npara 個まで同時に計算する。Windows は逐次)</td>
+<td><code>.pysad.txt</code> は Windows の出力、<code>.pysad_wsl.txt</code> は WSL の出力 (gs は <code>.gs.txt</code>)</td>
+</tr>
+<tr>
+<td>fn_SharedMemory_Parallelize_System_Fork</td>
+<td>fn_SharedMemory_Parallelize_System_Fork (OpenShared・Shared、Parallelize、Fork、System。<code>Fork[]</code> は Linux・WSL・macOS だけ、Windows は v2 がエラーにする。<code>System[cmd]</code> は既定で実行せず、<code>PYSAD_ALLOW_SYSTEM=1</code> で許可したときだけ実行して終了コードを返す)</td>
+<td>gs の出力なし。<code>.pysad.txt</code> は Windows の出力 (WSL では <code>child wrote: written by child</code>、許可すると <code>System の戻り値 = 0</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>○一致 / △差あり / ×gs 失敗 / ×pysad 未対応。</p>
+<p><code>Read</code> (区切り・リスト・式・WordSeparators)、<code>Write[$Output]</code>、<code>Close[{..}]</code>、<code>DateString[date]</code> は gs と一致する。残る差は <code>System</code> (v2 は既定で実行しない。<code>PYSAD_ALLOW_SYSTEM=1</code> で実行でき、戻り値は v2 が 0、gs と k64 モードが 1)、<code>Fork</code> (子を作らない。v2 は POSIX で子を作る (docs/28)。この例の範囲では未確認)。FFS のコマンド (OUTPUT・APPEND・READ・INPUT) と <code>$FORM</code> は一致した。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

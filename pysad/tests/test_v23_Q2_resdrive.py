@@ -235,7 +235,7 @@ def test_astrid2_adts_vs_tracking():
 
 def test_large_ring_a_adts_against_recorded_tracking():
     """大きなリング A (kek-ls_v03_12.lat、3 GeV、603 m)。追跡 (NAFF、1024 周、J = 2e-10 m·rad) の記録値
-    (example/v2_3/Q2_adts_summary.md): 6 極 2 次 C = (86842, −75097, −1608)、8 極 1 次 B = (−36905, 32480, −7154)"""
+    (example/14_nonlinear_dynamics/adts_rdt/ADTS_summary.md): 6 極 2 次 C = (86842, −75097, −1608)、8 極 1 次 B = (−36905, 32480, −7154)"""
     path = os.path.join(HERE, 'kek-ls_v03_12.lat')
     if not os.path.exists(path):
         pytest.skip('kek-ls_v03_12.lat がない')

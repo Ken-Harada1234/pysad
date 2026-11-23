@@ -38,4 +38,4 @@ $$\cos\mu_x=-0.18129,\quad \mu_x/2\pi=0.279014,\quad \nu_x/24=0.279014$$
 
 ## 未確認・限界
 - CALC6D の 6x6 行列は flag_CALC4D_CALC6D。TRPT (加速のある輸送路) の PHYSICAL と SYMPLECTIC の違いは未確認 (リングでは同じ)。
-- `MATRIX` の引数が名前だけのとき (`NAME.1` 扱い、docs/35) は MATRIX QF.1 QD.1 の形で使った (一致)。
+- `MATRIX` の引数が名前だけのとき (`NAME.1` 扱い、docs/04) は MATRIX QF.1 QD.1 の形で使った (一致)。

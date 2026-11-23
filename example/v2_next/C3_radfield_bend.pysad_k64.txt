@@ -1,8 +1,0 @@
- Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #    .000000 $$$       f BX    #######  #   1.000000 $$$       f NX    #######  #    .063662
-$$$       f AY    #######  #   -.400000 $$$       f BY    #######  #   1.160000 $$$       f NY    #######  #    .060559
-$$$       f LENG  #######  #    .400000
-trajectory points = 1
-<repo>\pysad\radfield.py:80: RuntimeWarning: invalid value encountered in scalar divide
-  f[m - 1, i] = f[m - 1, 9] + f[m - 1, 7] * ((f[m - 1, 9] - f[m - 2, 9]) / dt + dt * (f1 + 2.0 * f[m - 1, i]))
-max |E| (RadiationField) = NaN  analytic peak = 1.831078349041252e-5  ratio = NaN

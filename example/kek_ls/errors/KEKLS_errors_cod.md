@@ -34,6 +34,6 @@ R    3.0 dtheta |  -3.08171855E-4  5.569498809E-4 |     .6103098390   61.9462916
 
 ## 未確認・限界
 - 元は 115 個の種 (SeedRandom[187] と Random[1000] で作る)、結果を datas_e.txt に書く。例は 3 本。完全な設定は `seeds` を 115 個に (1 つの種 (4 通り) あたり gs で約 0.3 秒、pysad で約 2 秒)。
-- 位置ずれは `DELX`・`DELY` ではなく成分ごとの `LINE["DX"/"DY", ...]` (K64 の `DELX`・`DELY` は閉軌道に効かない。`modules/modules_errors.n`)。`USE RING NOEXPAND` と `cell calc noexpand` が必要 (`docs/11_sad_quirks.md` A56)。
+- 位置ずれは `DELX`・`DELY` ではなく成分ごとの `LINE["DX"/"DY", ...]` (K64 の `DELX`・`DELY` は閉軌道に効かない。`modules/modules_errors.n`)。`USE RING NOEXPAND` と `cell calc noexpand` が必要 (`docs/29_sad_quirks.md` A56)。
 - 元の `FFS["MON 0 0 0 0 PM*;"]` は K64 では何もしない (エラーになる) ので除いた。
 - `GCUT = 0` のとき、gs の `GaussRandom[]` は 1e-9 程度の値を返し、pysad は打ち切りなしのガウス乱数を返す (差の確認のみ。pysad は変えていない)。

@@ -1,7 +1,7 @@
 """SOL 領域の Emittance[] (放射は bz 付きの tradke、写像は追跡のカーネルの数値微分)。参照は SAD K64 (gs) の出力。
 e1: 12 セルのリングの 1 セルに SOL 領域 (SA GEO=1 BZ=2、回転四極、領域内の SOL SM)。QFE の DX DY で軌道が領域を斜めに通る。
 e2: 強い場 (BZ=5)・長い四極 (K1=0.3, L=0.5)・大きい軌道 (放射の分割数が増える)。e1z: BZ=0 の領域 (普通の要素になる)。
-参照の作り方: local/sol/e*.sad を gs で実行 (docs/29_sol_optics.md)。SOL には GEO=1 が要る (K64 の tsgeo。なければ S 座標が壊れ周長が狂う)。"""
+参照の作り方: local/sol/e*.sad を gs で実行 (docs/17_sol.md)。SOL には GEO=1 が要る (K64 の tsgeo。なければ S 座標が壊れ周長が狂う)。"""
 import io
 import re
 

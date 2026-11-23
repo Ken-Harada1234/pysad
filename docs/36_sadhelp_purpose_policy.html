@@ -1,0 +1,2046 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SADHelp (1.4.4.2k64 Updated: 10/19/2026) の項目の目的別分類と翻訳方針</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#方針の一覧">方針の一覧</a></li>
+<li><a href="#件数-方針別">件数 (方針別)</a></li>
+<li><a href="#物理計算-26--方針-直接翻訳">物理計算 (26) — 方針: 直接翻訳</a></li>
+<li><a href="#マッチング最適化の仕組み-21--方針-直接翻訳">マッチング・最適化の仕組み (21) — 方針: 直接翻訳</a></li>
+<li><a href="#要素ビームラインの操作-7--方針-python-で書き直し">要素・ビームラインの操作 (7) — 方針: Python で書き直し</a></li>
+<li><a href="#乱数-6--方針-直接翻訳">乱数 (6) — 方針: 直接翻訳</a></li>
+<li><a href="#数値計算フィット-6--方針-python-ライブラリで代替">数値計算・フィット (6) — 方針: Python ライブラリで代替</a></li>
+<li><a href="#リスト関数型-言語機能-21--方針-python-で書き直し-インタプリタ">リスト・関数型 (言語機能) (21) — 方針: Python で書き直し (インタプリタ)</a></li>
+<li><a href="#文字列式-言語機能-13--方針-python-で書き直し-インタプリタ">文字列・式 (言語機能) (13) — 方針: Python で書き直し (インタプリタ)</a></li>
+<li><a href="#ファイル入出力-15--方針-python-ライブラリで代替">ファイル・入出力 (15) — 方針: Python ライブラリで代替</a></li>
+<li><a href="#gui描画-14--方針-python-ライブラリで代替">GUI・描画 (14) — 方針: Python ライブラリで代替</a></li>
+<li><a href="#システムプロセス並列-7--方針-python-ライブラリで代替">システム・プロセス・並列 (7) — 方針: Python ライブラリで代替</a></li>
+<li><a href="#ユーティリティ-時刻計測デバッグ-5--方針-python-ライブラリで代替">ユーティリティ (時刻・計測・デバッグ) (5) — 方針: Python ライブラリで代替</a></li>
+<li><a href="#表示-表一覧-9--方針-python-で書き直し">表示 (表・一覧) (9) — 方針: Python で書き直し</a></li>
+<li><a href="#制御入出力-ffs-コマンド-19--方針-python-ライブラリで代替">制御・入出力 (FFS コマンド) (19) — 方針: Python ライブラリで代替</a></li>
+<li><a href="#要素編集変数-ffs-コマンド-12--方針-python-で書き直し">要素編集・変数 (FFS コマンド) (12) — 方針: Python で書き直し</a></li>
+<li><a href="#誤差-ffs-コマンド-1--方針-直接翻訳">誤差 (FFS コマンド) (1) — 方針: 直接翻訳</a></li>
+<li><a href="#ffs-フラグ物理パラメータ-変数-30--方針-直接翻訳">FFS フラグ・物理パラメータ (変数) (30) — 方針: 直接翻訳</a></li>
+<li><a href="#表示書式-変数-4--方針-python-で書き直し">表示・書式 (変数) (4) — 方針: Python で書き直し</a></li>
+<li><a href="#フック特殊-変数-6--方針-直接翻訳">フック・特殊 (変数) (6) — 方針: 直接翻訳</a></li>
+<li><a href="#現状-2026-11-17-の補足">現状 (2026-11-17) の補足</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 36_sadhelp_purpose_policy.md</div>
+<h1 id="sadhelp-1442k64-updated-10192026-の項目の目的別分類と翻訳方針">SADHelp (1.4.4.2k64 Updated: 10/19/2026) の項目の目的別分類と翻訳方針</h1>
+<p><strong>この文書で分かること</strong>: SADHelp の各項目を目的別 (物理計算、マッチング、ファイル・入出力、GUI・描画など) に分類し、pysad での扱い方針 (直接翻訳、Python で書き直し、Python のライブラリで代替) を示す。
+<strong>前提</strong>: 項目の一覧は docs/34_sad_help_index.md、実装状況は docs/35_pysad_vs_sadhelp.md。
+<strong>読む順</strong>: 先頭の方針の一覧 → 自分の関心のある分類の表 → 末尾の補足。</p>
+<p>最終更新: 2026-11-17 (現状のスナップショット。pysad の列は docs/35_pysad_vs_sadhelp.md の 2026-11-16 の照合による。RENUMBER・ElementValues の 2 行は手で直してある。MEASURE・Fork・OpenShared・Shared・SharedSize・System の行と「現状の補足」は v2 の実装に合わせている)</p>
+<p>ユーザー方針 (2026-11-06): <strong>直接翻訳するのは、ソースが Fortran/C で内容が物理計算のもの</strong>。<strong>ソースが .n のものは Python で書き直す</strong> (直訳ではない)。<strong>ファイル操作・リスト操作・GUI・描画は Python のライブラリ (open, list/numpy, matplotlib 等) に置き換える</strong>ので翻訳対象外 (必要なら Python で書き直す)。</p>
+<p>分類と SAD 側・pysad の列は docs/35_pysad_vs_sadhelp.md と同じ機械照合 (生成: <code>perf_work/sadhelp_purpose.py</code>、分類は手で割り当て)。</p>
+<h2 id="方針の一覧">方針の一覧</h2>
+<table>
+<thead>
+<tr>
+<th>分類</th>
+<th>方針</th>
+<th>具体的に</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>物理計算 (26)</td>
+<td>直接翻訳</td>
+<td>Fortran/C の式・分割・反復順序を写す (pysad の本体)。ソースが .n のものは Python で書き直す</td>
+</tr>
+<tr>
+<td>マッチング・最適化の仕組み (21)</td>
+<td>直接翻訳</td>
+<td>tffsmatch/tffscalc/qdcell の直訳 (フックの呼び出しを含む)。.n のもの (OptimizeOptics, DownhillSimplex) は Python で書き直す</td>
+</tr>
+<tr>
+<td>要素・ビームラインの操作 (7)</td>
+<td>Python で書き直し</td>
+<td>pysad のデータ構造 (Element, Lattice, Env) の上で同じ意味になるよう書く。直訳ではない</td>
+</tr>
+<tr>
+<td>乱数 (6)</td>
+<td>直接翻訳</td>
+<td>FLUC の照合に SAD と同じ乱数列が要るので C (tfRandom_.c) を写す (sadrandom.py)</td>
+</tr>
+<tr>
+<td>数値計算・フィット (6)</td>
+<td>Python ライブラリで代替</td>
+<td>numpy/scipy (curve_fit, integrate, interpolate, optimize) に置き換える。翻訳対象外、必要なら Python で書き直す</td>
+</tr>
+<tr>
+<td>リスト・関数型 (言語機能) (21)</td>
+<td>Python で書き直し (インタプリタ)</td>
+<td>SADScript を走らせるために sadscript.py が Python のリスト演算で実装する。pysad を Python から直接使うときは list/numpy</td>
+</tr>
+<tr>
+<td>文字列・式 (言語機能) (13)</td>
+<td>Python で書き直し (インタプリタ)</td>
+<td>sadscript.py が Python の str で実装。直接使うときは str</td>
+</tr>
+<tr>
+<td>ファイル・入出力 (15)</td>
+<td>Python ライブラリで代替</td>
+<td>open/print/csv/json に置き換える。翻訳対象外 (OpenRead の失敗の扱いは gs に合わせた: 開けなければ入力行を打ち切る。11-16)</td>
+</tr>
+<tr>
+<td>GUI・描画 (14)</td>
+<td>Python ライブラリで代替</td>
+<td>2026-11-06 の方針は matplotlib への置き換え。<strong>現状 (2026-11-16) は例外</strong>: GUI (Tkinter.n・KBFrame.n など) と描画 (ListPlot・Plot・OpticsPlot など) は SAD 自身の .n を pysad のインタプリタで解釈し、tkinter に表示する (docs/20・21)。matplotlib の描画 (<code>plot_optics.py</code>) は別に残る</td>
+</tr>
+<tr>
+<td>システム・プロセス・並列 (7)</td>
+<td>Python ライブラリで代替</td>
+<td>subprocess / multiprocessing / tempfile に置き換える。翻訳対象外</td>
+</tr>
+<tr>
+<td>ユーティリティ (時刻・計測・デバッグ) (5)</td>
+<td>Python ライブラリで代替</td>
+<td>time / datetime / logging に置き換える。翻訳対象外</td>
+</tr>
+<tr>
+<td>表示 (表・一覧) (9)</td>
+<td>Python で書き直し</td>
+<td>DISP/TYPE のように SAD と同じ文字列を出すものは照合のため書き直す。それ以外 (SHOW, STATUS, MATRIX 等) は ffsextra.py に実装 (docs/04)</td>
+</tr>
+<tr>
+<td>制御・入出力 (FFS コマンド) (19)</td>
+<td>Python ライブラリで代替</td>
+<td>入力の切り替え・停止・中断は Python の制御構造とファイル操作で置き換える。翻訳対象外</td>
+</tr>
+<tr>
+<td>要素編集・変数 (FFS コマンド) (12)</td>
+<td>Python で書き直し</td>
+<td>FREE/FIX/SAVE/RESET/COUPLE 等は pysad の要素値の仕組みで書く</td>
+</tr>
+<tr>
+<td>誤差 (FFS コマンド) (1)</td>
+<td>直接翻訳</td>
+<td>terror.f の乱数の引き方まで写す (照合済み)</td>
+</tr>
+<tr>
+<td>FFS フラグ・物理パラメータ (変数) (30)</td>
+<td>直接翻訳</td>
+<td>tfsetparam/tffsa が読む意味のとおりに使う</td>
+</tr>
+<tr>
+<td>表示・書式 (変数) (4)</td>
+<td>Python で書き直し</td>
+<td><code>$FORM</code>/PageWidth/TITLE/CASE は出力の書式。照合に要る <code>$FORM</code>/PageWidth は書き直し済み、描画用は対象外</td>
+</tr>
+<tr>
+<td>フック・特殊 (変数) (6)</td>
+<td>直接翻訳</td>
+<td>FitFunction/MatchingAmplitude/InitialOrbits/OpticsProlog 等は SAD が評価する仕組みごと写す</td>
+</tr>
+</tbody>
+</table>
+<h2 id="件数-方針別">件数 (方針別)</h2>
+<table>
+<thead>
+<tr>
+<th>方針</th>
+<th>項目数</th>
+<th>うち pysad 実装・参照あり</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python ライブラリで代替</td>
+<td>66</td>
+<td>57</td>
+</tr>
+<tr>
+<td>Python で書き直し</td>
+<td>32</td>
+<td>29</td>
+</tr>
+<tr>
+<td>直接翻訳</td>
+<td>77</td>
+<td>73</td>
+</tr>
+<tr>
+<td>Python で書き直し (インタプリタ)</td>
+<td>34</td>
+<td>33</td>
+</tr>
+<tr>
+<td>Python で書き直し (.n)</td>
+<td>13</td>
+<td>13</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理計算-26--方針-直接翻訳">物理計算 (26) — 方針: 直接翻訳</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>BEAMSIZE(BEAM)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>CALCULATE(CAL)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>CHROMATICITY(CHRO)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>EMITTANCE(EMIT)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>MEASURE(MEA)</code></td>
+<td>Fortran tffsa.f</td>
+<td>v2 モードで実装 (<a href="../pysad/measure.py"><code>pysad/measure.py</code></a>。K64 のソースの読み。gs は無出力なので gs との比較は無い: B42。docs/03)。k64 モードは無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>ORG</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>RADINT</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>AccelerateParticles</code></td>
+<td>.n dapert.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>BeamMatrix</code></td>
+<td>.n Optics.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>DynamicApertureSurvey</code></td>
+<td>.n dapert.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Emittance</code></td>
+<td>.n emit.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ExternalMap</code></td>
+<td>.n init.n</td>
+<td>実装 (MAP 要素が呼ぶユーザー定義のフック <code>ExternalMap["TRACK"/"EMIT"/"OPTICS"]</code> を pysad が評価。docs/19)</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>GaussianCoulomb</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (<code>GaussianCoulombFitted</code>・<code>GaussianCoulombU</code> も。pysad/gausscoul.py、docs/06)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>GeoBase</code></td>
+<td>.n Optics.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>LINE</code></td>
+<td>Fortran tfinitn.f; .n OpticsPlot.n,OpticsPlot_230724a.n,correction.n,…</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OrbitGeo</code></td>
+<td>.n Optics.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>RadiationField</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (pysad/radfield.py。BEND の中を記録しない K64 の仕様のまま。gs の RadiationField は SIGSEGV (docs/30 B49) なので値の照合は等速運動の場との比較だけ。docs/16)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>RadiationSpectrum</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (pysad/radfield.py。docs/16)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SurvivedParticles</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SymplecticJ</code></td>
+<td>.n emit.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SynchroBetaEmittance</code></td>
+<td>.n emit.n</td>
+<td>実装 (pysad/synchrobeta.py。gs と相対 1e-5、24 セルの平面リング + CAVI で emitx が 1.4e-7〜1.4e-6。24 セル FODO + skew 四極の結合のあるリングは gs と 7 桁一致。大きなリング A では使えない (B128)。組み込みの登録ではなく emit.n の呼び出しを置き換える)</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>TouschekLifetime</code></td>
+<td>.n emit.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>TrackParticles</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (POL かつ RAD ON でスピン追跡、RADLIGHT で <code>{結果, 軌道{t,x,y,z}}</code> を返す。docs/16)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>TransferMatrix</code></td>
+<td>.n Optics.n</td>
+<td>実装 (Optics.n の TransferMatrix・BeamMatrix・NormalCoordinates・OrbitGeo が gs と表示桁で一致。gs は 1e-16 の雑音の要素を出し pysad は 0。11-16)</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Twiss</code></td>
+<td>Fortran tfinitn.f; .n correction.n,corutility.n,optimize.n</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>WakeFunction</code></td>
+<td>Fortran txwake.f, tffswake.f</td>
+<td>実装 (ユーザー定義の表 <code>WakeFunction[Longitudinal/Transverse, 要素名]</code> を pysad が読み、ウェイク追跡と WAKEOPT に使う。docs/13)</td>
+<td>直接翻訳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="マッチング最適化の仕組み-21--方針-直接翻訳">マッチング・最適化の仕組み (21) — 方針: 直接翻訳</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>FIT</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>FITPOINTS(FITP)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>FIX</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>FREE</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>GO</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>REJECT(REJ)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FFS</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FFS$SHOW</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FitValue</code></td>
+<td>Fortran? qdcell.f,tdfun.f,tffsa.f</td>
+<td>実装 (ユーザー定義のフック (tfgetfitval) を pysad が呼ぶ)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FitWeight</code></td>
+<td>Fortran? tffscalc.f</td>
+<td>実装 (ユーザー定義のフック (twfit) を pysad が呼ぶ)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OptimizeOptics</code></td>
+<td>.n optimize.n</td>
+<td>実装 (SAD の optimize.n を pysad のインタプリタで動かす。K1・チューンは gs と 1e-10。docs/06)</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>VariableRange</code></td>
+<td>Fortran? tffsmatch.f,tfvars.f</td>
+<td>実装 (ユーザー定義のフック (tffsvarfun) を pysad が呼ぶ)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>VariableWeight</code></td>
+<td>Fortran? tffsmatch.f</td>
+<td>実装 (ユーザー定義のフック (tffsvarfun) を pysad が呼ぶ)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>DownhillSimplex</code></td>
+<td>.n optimize.n</td>
+<td>実装</td>
+<td>Python で書き直し (.n)</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>CONVERGENCE</code></td>
+<td>Fortran tffsa.f,tffsmatch.f</td>
+<td>参照あり (ffscmd.py, ffsextra.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>ExponentOfResidual</code></td>
+<td>Fortran tffsa.f,tffsmatch.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>FFS$NumericalDerivative</code></td>
+<td>Fortran tffsmatch.f</td>
+<td>参照あり (ffscmd.py, sadscript.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>MatchingResidual</code></td>
+<td>Fortran tffscalc.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>NetResidual</code></td>
+<td>Fortran tffscalc.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>OffMomentumWeight</code></td>
+<td>Fortran tffsmatch.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>UnstableLevel</code></td>
+<td>Fortran tffscalc.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="要素ビームラインの操作-7--方針-python-で書き直し">要素・ビームラインの操作 (7) — 方針: Python で書き直し</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数</td>
+<td><code>Element</code></td>
+<td>.n element.n</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SetElement</code></td>
+<td>.n element.n</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>BeamLine</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>BeamLineName</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>ExtractBeamLine</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>PrintBeamLine</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>WriteBeamLine</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+</tbody>
+</table>
+<h2 id="乱数-6--方針-直接翻訳">乱数 (6) — 方針: 直接翻訳</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>SEED</code></td>
+<td>Fortran? initb1.f,tfinitn.f</td>
+<td>未対応 (K64 でも obsolete。docs/04)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Random</code></td>
+<td>C tfRandom_.c</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>GaussRandom</code></td>
+<td>C tfRandom_.c</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ParabolaRandom</code></td>
+<td>C tfRandom_.c</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SeedRandom</code></td>
+<td>C tfRandom_.c</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ListRandom</code></td>
+<td>C tfRandom_.c</td>
+<td>実装 (限定: <code>{"SAD"}</code> を返すだけ)</td>
+<td>直接翻訳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="数値計算フィット-6--方針-python-ライブラリで代替">数値計算・フィット (6) — 方針: Python ライブラリで代替</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数</td>
+<td><code>Fit</code></td>
+<td>.n Fit.n</td>
+<td>実装 (pysad/fitroot.py。導関数は数値微分。docs/06)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FitEmit</code></td>
+<td>.n Fit.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FitGaussian</code></td>
+<td>.n Fit.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>NIntegrate</code></td>
+<td>.n D.n,OpticsPlot_230724b.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>PolynomialFit</code></td>
+<td>.n Fit.n</td>
+<td>実装 (SAD の Fit.n の定義を評価し、内部で <code>PolynomialFit$numpy</code>。xa=0 のとき xl=1 になる SAD の癖もそのまま)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Spline</code></td>
+<td>.n D.n,OpticsPlot_230724b.n</td>
+<td>実装 (自然スプライン・<code>Spline[data,0,0]</code> の形が gs と全桁一致。後者は gs も pysad も未評価のまま。11-16)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+</tbody>
+</table>
+<h2 id="リスト関数型-言語機能-21--方針-python-で書き直し-インタプリタ">リスト・関数型 (言語機能) (21) — 方針: Python で書き直し (インタプリタ)</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数</td>
+<td><code>Apply</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Cases</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>DeleteCases</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Difference</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FixedPoint</code></td>
+<td>.n Misc.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FixedPointList</code></td>
+<td>.n Misc.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Map</code></td>
+<td>Fortran tfinitn.f; .n correction.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>MapThread</code></td>
+<td>Fortran tfinitn.f; .n Canvas.n,bump.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Position</code></td>
+<td>Fortran tfinitn.f; .n functions.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Scan</code></td>
+<td>Fortran tfinitn.f; .n Canvas.n,Canvas3D.n,CheckEntryList.n,…</td>
+<td>実装 (Sort[list, Greater] と共に gs と全桁一致。11-16)</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ScanThread</code></td>
+<td>Fortran tfinitn.f; .n correction.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SelectCases</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SwitchCases</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Thread</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Class</code></td>
+<td>.n Class.n</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>Extract</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>Head</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>Length</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>List</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>Part</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>MatchQ</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="文字列式-言語機能-13--方針-python-で書き直し-インタプリタ">文字列・式 (言語機能) (13) — 方針: Python で書き直し (インタプリタ)</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>FromCharacterCode</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringFill</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringJoin</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringLength</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringMatchQ</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringPart</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>未対応</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringPosition</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringReplace</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>StringTrim</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>Symbol</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>ToCharacterCode</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>ToExpression</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+<tr>
+<td>関数 (言語機能の章)</td>
+<td><code>ToString</code></td>
+<td>Fortran (tfinitn.f)</td>
+<td>実装</td>
+<td>Python で書き直し (インタプリタ)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ファイル入出力-15--方針-python-ライブラリで代替">ファイル・入出力 (15) — 方針: Python ライブラリで代替</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数</td>
+<td><code>$FORM</code></td>
+<td>.n KBFrame.n,KBMainFrame.n,Plots.n,…</td>
+<td>文字列参照あり</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>$Input</code></td>
+<td>.n init.n</td>
+<td>文字列参照あり</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>$Output</code></td>
+<td>.n init.n</td>
+<td>文字列参照あり</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Close</code></td>
+<td>.n KBFrame.n,init.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OpenAppend</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OpenRead</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (開けないファイルでは gs と同じに入力行を打ち切る。11-16)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OpenWrite</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>PageWidth</code></td>
+<td>.n latex.n</td>
+<td>文字列参照あり</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Print</code></td>
+<td>Fortran tfinitn.f; .n Class.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Read</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (型は gs に合わせた。docs/06)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ReadString</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>StandardForm</code></td>
+<td>Fortran tfinitn.f; .n KBMainFrame.n</td>
+<td>実装 (sadscript.py。HoldAll の表示形)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>StringToStream</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Write</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>WriteString</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gui描画-14--方針-python-ライブラリで代替">GUI・描画 (14) — 方針: Python ライブラリで代替</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>DRAW</code></td>
+<td>Fortran tffsa.f</td>
+<td>無視 (読み飛ばし、[pysad] FFS command … は未対応 と表示)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>BeamPlot</code></td>
+<td>.n OpticsPlot.n,OpticsPlot_230724a.n</td>
+<td>.n は読み込めるが gs との比較はしていない (未確認。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ColumnPlot</code></td>
+<td>.n Plots.n</td>
+<td>.n は読み込めるが動作は未確認</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>FitPlot</code></td>
+<td>.n Plots.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。43 項目。当てはめの値は 1e-8 相対。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>GeometryPlot</code></td>
+<td>.n GeometryPlot.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。線 74・多角形 37 が gs と一致。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>HistoPlot</code></td>
+<td>.n Plots.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。38 項目が全部一致。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>LaTeX</code></td>
+<td>.n latex.n</td>
+<td>未確認 (<code>$HaveLaTeX</code> は gs と同じく <code>""</code>)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ListContourPlot</code></td>
+<td>.n Plots.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。種類と数は一致、等高線の始点・向きが違う。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ListDensityPlot</code></td>
+<td>.n Plots.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ListPlot</code></td>
+<td>.n ListPlot.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。キャンバスの 43 項目が gs と全部一致。オプション (PlotRange・Scale・PlotLabel・GridLines・Frame・Legend・FontScale・Prolog・Epilog・Background・Plot-&gt;False・AspectRatio) を与えた戻りの Graphics 式も gs と文字列で完全に一致 (10 例。窓の見た目ではなく式の比較。<code>Options[g]</code> は gs が全オプションを返し pysad は {} の差)。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OpticsPlot</code></td>
+<td>.n OpticsPlot.n,OpticsPlot_230724a.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。枠・矩形・線は一致、文字の数は Tk のフォントで違う。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>ParametricPlot</code></td>
+<td>.n Plots.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Plot</code></td>
+<td>.n Plots.n</td>
+<td>実装 (SAD の .n を動かし tkinter に描く。全項目が gs と一致。ListPlot と同じオプションを与えた戻りの Graphics 式も gs と文字列で一致。docs/21)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>PointSymbol</code></td>
+<td>.n? CSR.n,Canvas.n,ListPlot.n,…</td>
+<td>ListPlot が内部で使う (<code>CanvasSymbolDirect</code>)。単独では未確認</td>
+<td>Python ライブラリで代替</td>
+</tr>
+</tbody>
+</table>
+<h2 id="システムプロセス並列-7--方針-python-ライブラリで代替">システム・プロセス・並列 (7) — 方針: Python ライブラリで代替</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数</td>
+<td><code>Fork</code></td>
+<td>C tfProcess_.c</td>
+<td>実装。v2 モード: POSIX では <code>os.fork</code> で本当に分ける、Windows はエラー。k64 モード: 本当には fork せず自分のプロセス番号を返す (限定)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>OpenShared</code></td>
+<td>.n shared.n</td>
+<td>実装 (無名の mmap に値を符号化して書く。fork した子と共有する)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Shared</code></td>
+<td>.n CSR.n,shared.n</td>
+<td>実装 (同上)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>SharedSize</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (K64 と同じ式)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>System</code></td>
+<td>C tfProcess_.c</td>
+<td>実装。既定では実行しない (<code>PYSAD_ALLOW_SYSTEM=1</code> で許可。docs/05 §6)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>TemporaryName</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>NPARA</code></td>
+<td>Fortran initb1.f,tfefun1.f,tfsetparam.f,…; .n init.kekb.n,init.n,init.skekb.n</td>
+<td>参照あり (ffscmd.py, ffsextra.py, parser.py)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ユーティリティ-時刻計測デバッグ-5--方針-python-ライブラリで代替">ユーティリティ (時刻・計測・デバッグ) (5) — 方針: Python ライブラリで代替</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>関数</td>
+<td><code>DateString</code></td>
+<td>.n init.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>MemoryCheck</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (限定: <code>{0,0,0,0}</code> を返すだけ)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>TimeUsed</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>Timing</code></td>
+<td>.n functions.n</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>関数</td>
+<td><code>TracePrint</code></td>
+<td>Fortran tfinitn.f</td>
+<td>実装 (限定: 何もしない)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+</tbody>
+</table>
+<h2 id="表示-表一覧-9--方針-python-で書き直し">表示 (表・一覧) (9) — 方針: Python で書き直し</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>ATTRIBUTE(ATTR)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>DISPLAY(DISP)</code></td>
+<td>Fortran tffsa.f,tracke.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>MATRIX(MAT)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (pysad/ffsextra.py、docs/04。表の書式は gs と同じ)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>PRINT(PRI)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>REFERENCE(REF)</code></td>
+<td>Fortran tfdisp.f,tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>SHOW</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (pysad/ffsextra.py、docs/04。表の書式は gs と同じ)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>STATUS(STAT)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (pysad/ffsextra.py、docs/04。表の書式は gs と同じ)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>TYPE(T)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>VARIABLES(VAR)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+</tbody>
+</table>
+<h2 id="制御入出力-ffs-コマンド-19--方針-python-ライブラリで代替">制御・入出力 (FFS コマンド) (19) — 方針: Python ライブラリで代替</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>ABORT</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>APPEND(APP)</code></td>
+<td>Fortran phdrw.f,pstati.f,tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>CLOSE(CLO)</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>ELSE</code></td>
+<td>Fortran tfif.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>ELSEIF</code></td>
+<td>Fortran tfif.f</td>
+<td>実装 (sadscript.py の制御文 IF/ELSEIF/ELSE/ENDIF。対応する IF がなければ gs と同じ <code>???-FFS-Error-?ELSEIF without IF</code>)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>END</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>ENDIF</code></td>
+<td>Fortran tfif.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>EXECUTE(EXEC)</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>IF</code></td>
+<td>Fortran tfif.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>INPUT(IN)</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>OUTPUT(OUT)</code></td>
+<td>Fortran phdrw.f,pstati.f,tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>QUIT</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>READ</code></td>
+<td>Fortran tffile.f</td>
+<td>実装 (ファイルの文を続けて実行。関数 <code>Read</code> の型は §2)</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>REPEAT(REP)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>RESUME(RES)</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>STOP</code></td>
+<td>Fortran pstati.f,tffsa.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>SUSPEND(SUSP)</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>TERMINATE(TERM)</code></td>
+<td>Fortran tffile.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>UNTIL</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python ライブラリで代替</td>
+</tr>
+</tbody>
+</table>
+<h2 id="要素編集変数-ffs-コマンド-12--方針-python-で書き直し">要素編集・変数 (FFS コマンド) (12) — 方針: Python で書き直し</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>BYE</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>COUPLE(COUP)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>EXPAND</code></td>
+<td>Fortran tffsa.f,tftwiss.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>RECOVER(REC)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (pysad/ffsextra.py、docs/04。表の書式は gs と同じ)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>RENUMBER(RENUM)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (tffsrenumber の直訳。gs と一致)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>RESET</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>REVERSE(REV)</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (pysad/ffsextra.py、docs/04。表の書式は gs と同じ)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>SAVE</code></td>
+<td>Fortran tffsa.f,tracke.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>SPLIT</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>USE</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>VARY</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (pysad/ffsextra.py、docs/04。表の書式は gs と同じ)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>VISIT</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装</td>
+<td>Python で書き直し</td>
+</tr>
+</tbody>
+</table>
+<h2 id="誤差-ffs-コマンド-1--方針-直接翻訳">誤差 (FFS コマンド) (1) — 方針: 直接翻訳</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>コマンド</td>
+<td><code>DUMP</code></td>
+<td>Fortran terror.f</td>
+<td>実装</td>
+<td>直接翻訳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ffs-フラグ物理パラメータ-変数-30--方針-直接翻訳">FFS フラグ・物理パラメータ (変数) (30) — 方針: 直接翻訳</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>変数</td>
+<td><code>CHARGE</code></td>
+<td>Fortran initb1.f,tfsetparam.f,track.f</td>
+<td>参照あり (ffscmd.py, ffsextra.py, parser.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>DP</code></td>
+<td>Fortran tffs.f,tfsetparam.f,tftwiss.f</td>
+<td>参照あり (beambeam.py, emit_extra.py, ffscmd.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>DP0</code></td>
+<td>不明</td>
+<td>参照あり (ffscmd.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>DTSYNCH</code></td>
+<td>Fortran initb1.f,track.f,tturne.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EFFRFFREQ</code></td>
+<td>Fortran initb1.f,tturne.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EFFVC</code></td>
+<td>Fortran initb1.f,tturne.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EFFVCRATIO</code></td>
+<td>Fortran initb1.f,track.f,tturne.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EMITX</code></td>
+<td>Fortran initb1.f,temit.f,tffs.f,…; .n emit.n</td>
+<td>参照あり (ffscmd.py, ffsextra.py, maintrack.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EMITXE</code></td>
+<td>Fortran initb1.f,temit.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EMITY</code></td>
+<td>Fortran initb1.f,temit.f,tffs.f,…</td>
+<td>参照あり (ffscmd.py, ffsextra.py, maintrack.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EMITYE</code></td>
+<td>Fortran initb1.f,temit.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EMITZ</code></td>
+<td>Fortran initb1.f,temit.f,tffs.f,…</td>
+<td>参照あり (ffscmd.py, ffsextra.py, maintrack.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>EMITZE</code></td>
+<td>Fortran initb1.f,temit.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>FSHIFT</code></td>
+<td>Fortran ActTra.f,initb1.f,temitf.f,…</td>
+<td>参照あり (ffscmd.py, ffsextra.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>GCUT</code></td>
+<td>Fortran initb1.f; C tfRandom_.c,tgauss_.c</td>
+<td>参照あり (csr.py, ffscmd.py, ffsextra.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>LOSSAMPL</code></td>
+<td>Fortran initb1.f,tfsetparam.f,track.f</td>
+<td>参照あり (ffscmd.py, maintrack.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>LOSSDZ</code></td>
+<td>Fortran initb1.f,tfsetparam.f,track.f</td>
+<td>参照あり (ffscmd.py, maintrack.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>MASS</code></td>
+<td>Fortran initb1.f,tfsetparam.f,track.f</td>
+<td>参照あり (ffscmd.py, ffsextra.py, optics_fn.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>MINCOUP</code></td>
+<td>Fortran initb1.f,tfbeam.f,tffs.f,…</td>
+<td>参照あり (ffscmd.py, ffsextra.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>MOMENTUM</code></td>
+<td>Fortran ActTra.f,bb.f,bbstrhl.f,…; .n dapert.n</td>
+<td>参照あり (ffs.py, ffscmd.py, optics_fn.py)。初期値は K64 の initb1.f で 30 GeV (docs/30 B67)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>NBUNCH</code></td>
+<td>Fortran initb1.f,tfsetparam.f,track.f</td>
+<td>参照あり (ffscmd.py, ffsextra.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>NP</code></td>
+<td>Fortran initb1.f,tfdapert.f,tffsa.f,…; .n dapert.n</td>
+<td>参照あり (beambeam.py, ffscmd.py, ffsextra.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>OMEGA0</code></td>
+<td>Fortran ActTra.f,initb1.f,tfgeo.f,…</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>PBUNCH</code></td>
+<td>Fortran initb1.f,tfsetparam.f,track.f</td>
+<td>参照あり (ffscmd.py, ffsextra.py, parser.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>PhotonList</code></td>
+<td>Fortran photons.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>PHICAV</code></td>
+<td>Fortran initb1.f,tturne.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>SIGE</code></td>
+<td>Fortran initb1.f,temit.f,tffs.f,…</td>
+<td>参照あり (ffscmd.py, ffsextra.py, maintrack.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>SIGZ</code></td>
+<td>Fortran initb1.f,temit.f,tffs.f,…</td>
+<td>参照あり (beambeam.py, ffscmd.py, ffsextra.py…)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>SpeedOfLight</code></td>
+<td>Fortran tfinitn.f</td>
+<td>参照あり (<strong>init</strong>.py, parser.py, sadscript.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>Track$Excitation</code></td>
+<td>Fortran tffs.f</td>
+<td>未対応 (参照なし)</td>
+<td>直接翻訳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="表示書式-変数-4--方針-python-で書き直し">表示・書式 (変数) (4) — 方針: Python で書き直し</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>変数</td>
+<td><code>$Line</code></td>
+<td>Fortran tfinitn.f; .n SADTerminal.n,init.n</td>
+<td>参照あり (sadscript.py)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>CASE</code></td>
+<td>Fortran tffsa.f</td>
+<td>未対応 (参照なし)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>DAPWIDTH</code></td>
+<td>Fortran initb1.f,tfdapert.f,trackd.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>Python で書き直し</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>TITLE</code></td>
+<td>Fortran tffsa.f,twsdrw.f</td>
+<td>未対応 (参照なし)</td>
+<td>Python で書き直し</td>
+</tr>
+</tbody>
+</table>
+<h2 id="フック特殊-変数-6--方針-直接翻訳">フック・特殊 (変数) (6) — 方針: 直接翻訳</h2>
+<table>
+<thead>
+<tr>
+<th>種別</th>
+<th>名前</th>
+<th>SAD 側</th>
+<th>pysad</th>
+<th>方針</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>変数</td>
+<td><code>ElementValues</code></td>
+<td>Fortran tffsa.f</td>
+<td>Couple.n (SetCoupledElements) を CALC の前に実行 (gs と一致)。VISIT の退避・BYE の復元は実装 (docs/05)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>FitFunction</code></td>
+<td>Fortran qdcell.f,tdfun.f,tffsa.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>InitialOrbits</code></td>
+<td>Fortran tffsa.f</td>
+<td>実装 (INS。参照 ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>MatchingAmplitude</code></td>
+<td>Fortran tffamsetup.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>OpticsEpilog</code></td>
+<td>Fortran tffsa.f,tffscalc.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+<tr>
+<td>変数</td>
+<td><code>OpticsProlog</code></td>
+<td>Fortran tffsa.f,tffscalc.f</td>
+<td>参照あり (ffscmd.py)</td>
+<td>直接翻訳</td>
+</tr>
+</tbody>
+</table>
+<h2 id="現状-2026-11-17-の補足">現状 (2026-11-17) の補足</h2>
+<ul>
+<li>上の方針は 2026-11-06 のユーザー方針で、GUI・描画だけは実際には SAD の .n を pysad のインタプリタで動かす (上の表のとおり)。</li>
+<li>実装している項目 (docs/33): Fit・FitEmit・FitGaussian・NIntegrate・PolynomialFit、GaussianCoulomb 系、
+  RadiationField・RadiationSpectrum、SynchroBetaEmittance、OptimizeOptics、ExternalMap・VariableRange・VariableWeight・WakeFunction (ユーザー定義のフックを呼ぶ)、
+  Difference・FixedPointList・SelectCases・SwitchCases・StringToStream・TemporaryName、Plot 系の描画、MATRIX・SHOW・STATUS・VARY・RECOVER・REVERSE、RENUMBER、ELSEIF、LogGamma1。</li>
+<li>ListRandom・MemoryCheck・TracePrint は登録だけの限定版 (値は固定)。翻訳対象外の方針どおり。</li>
+<li>v2 モードで実装している: <code>Fork</code> (POSIX で本当に分ける)・<code>OpenShared</code>・<code>Shared</code>・<code>SharedSize</code> (fork した子と共有)、<code>System</code> (既定では実行せず、許可があれば実行)、<code>MessageName</code> の関数形、MEASURE・TRCOD ほか (K64 のソースの読み。gs が動かない B42)、<code>Polarization</code> (K64 が NaN)、PHSROT (K64 で動作しない)。k64 モードでは限定・未対応。docs/33、docs/28。</li>
+<li>件数の「実装・参照あり」は名前の登録と参照があるという意味で、挙動の一致は要素ごとの文書による (docs/33)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

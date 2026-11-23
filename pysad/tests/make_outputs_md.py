@@ -77,7 +77,7 @@ def main():
     A('| SAD (gs) の画面表示 (参照結果) | `bench_levelN.result` |')
     A('| pysad 用の台本 | `bench_levelN_pysad.py` (一部は `.sad` を `run_sad.py` で走らせる) |')
     A('| pysad の画面表示 | `bench_levelN_pysad.result`、実行ごとの出力は `regression_out/<名前>.txt` |')
-    A('| 判定と許容 | `run_regression.py`、`docs/10_benchmarks.md` |')
+    A('| 判定と許容 | `run_regression.py`、`docs/27_benchmarks.md` |')
     A('')
     A('## 試験関数とスクリプト')
     A('')

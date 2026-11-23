@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""v2.4.1 B: 6 極 (L≠0 の SEXT・OCT・DECA・DODECA) の端の非線形フリンジ ttfrin を CALC・Emittance[] の COD の写像とヤコビアンに入れる (v2、docs/21 B291)。
+"""v2.4.1 B: 6 極 (L≠0 の SEXT・OCT・DECA・DODECA) の端の非線形フリンジ ttfrin を CALC・Emittance[] の COD の写像とヤコビアンに入れる (v2、docs/30 B291)。
 
 K64 の追跡 (tthin) は L≠0 の 6 極以上に非線形のフリンジ (Lee-Whiting 型、DISFRIN=0 が既定) を入れるが、CALC・Emittance[] の tthine は入れない。
 フリンジの写像は座標の 3 次なので、軌道が 6 極の中心を通るとき (x = y = 0) はヤコビアンも COD も変わらず、理想のリングの結果は変わらない。

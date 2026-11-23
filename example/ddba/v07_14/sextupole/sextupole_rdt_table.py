@@ -5,7 +5,7 @@
 条件: 運動量 5 GeV (SAD の K は規格化済みで、2.5 GeV の版も光学は同じ)、リング先頭 (長直線部の中心) が位相の基準、偏向磁石の 3 次の項・八極 (K3 = 0)・運動学・フリンジを入れた
 pysad の解析式 (`resdrive.resonance_terms`・`rdt2nd.rdt4`・`resdrive.adts`、多項式モデル `sxtopt.SxtModel` が 1e-12 で一致)。クロマティシティの CALC は 4 次元の閉軌道の δ 依存 (order 3)。
 nform: 追跡の 1 周の写像の数値の正規形 (nform.adts_at_delta・adts_delta_derivative(method='nform')) で、全部の組の ADTS (δ=0、解析式の検証) と ∂(ADTS)/∂δ を出す (1 組に数秒)。
-解析式の δ 微分は yy などで外れる (docs/49) ので使わない。
+解析式の δ 微分は yy などで外れる (docs/25) ので使わない。
 """
 import argparse
 import io

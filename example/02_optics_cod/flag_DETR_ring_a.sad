@@ -1,0 +1,24 @@
+! DETR >= 1 (モードが入れ替わる) の CALC・INS・Emittance[] の gs との比較 (大きなリング A (kek-ls_v03_12.lat、3 GeV、603 m))。このファイルは台本の後半だけ: 先頭に pysad/tests/kek-ls_v03_12.lat を連結して走らせる。
+! リングの両端に 90 度の座標回転 (COORD CHI3 = +-pi/2) を入れる。回転の間 (リングの本体) は x モードが鉛直になり、K64 の DETR = 1 + xyth - R1 R4 + R2 R3 = 1.375 (R は 0) になる。
+! CELL CALC (周期解) と INS CALC (先頭 MARK の値から伝播) の Twiss、Emittance[] を gs と比べる。k64・v2 とも gs と一致する (K64 の誤りは見つからなかった)。
+COORD RA = (CHI3=1.5707963267948966) RB = (CHI3=-1.5707963267948966);
+MARK ST0 = ();
+LINE RINGX = (ST0 RA RING RB);
+FFS;
+$FORM="14.8";
+USE RINGX; CELL; CALC;
+Print["DETR ", Twiss["DETR",{1,2,3,40,200,"$$$"}]];
+Print["R ", Twiss["R1",{1,3,40,200}], Twiss["R4",{1,3,40,200}]];
+Print["B ", Twiss["BX",{1,3,40,200}], Twiss["BY",{1,3,40,200}]];
+Print["N ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+INS; CALC;
+Print["INS DETR ", Twiss["DETR",{1,2,3,40,200,"$$$"}]];
+Print["INS B ", Twiss["BX",{1,3,40,200}], Twiss["BY",{1,3,40,200}]];
+Print["INS N ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+CELL; CALC;
+e = Emittance[];
+Print["Tunes ", Tunes/.e];
+Print["Emittances ", Emittances/.e];
+Print["Damp ", DampingRate/.e];
+Print["U0 ", EnergyLossU0/.e];
+Exit;

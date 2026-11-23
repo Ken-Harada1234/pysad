@@ -31,9 +31,9 @@ NOEXPAND にすると `???-FFS-Info-Element values are not expanded.` が出て�
 QF 1 台の K1 を 0.7→0.6 に弱めたときのチューンの変化は、線形近似で $\Delta\nu_x\approx\frac1{4\pi}\beta_x\,\Delta K_1$ ($\beta_x$=QF.5 の中心、約 6.8 m、$\Delta K_1=-0.1$) $=-0.054$ (実測 -0.05893 は同符号・同程度。β の平均値を使った見積もりなので桁だけ確認)。
 
 ## gs と pysad の比較
-**○ 一致 (2026-11-17 に対応)。** `USE EXPAND/NOEXPAND RING`、`CALC NOEXPAND`・`CALC EXPAND`・`GO NOEXPAND` が gs と同じ動作になった: NOEXPAND で成分ごとのずれ (QF.5 の K1=0.6、NX=6.637402) が残り、`???-FFS-Info-Element values are not expanded.` と `NOCALEXP` の表示が出る。`NOEXPAND` は KEEPEXP なので以後の `CALC` にも残る (`CALC EXPAND` か `USE` で戻る)。`SAVE`・`EXPAND` は代表 (最初の 1 台) の値を全成分に揃える。TrackParticles は成分ごとの値をそのまま使う (CALC・Emittance[] で揃う)。
+**○ 一致 (2026-11-17 確認)。** `USE EXPAND/NOEXPAND RING`、`CALC NOEXPAND`・`CALC EXPAND`・`GO NOEXPAND` が gs と同じ動作をする: NOEXPAND で成分ごとのずれ (QF.5 の K1=0.6、NX=6.637402) が残り、`???-FFS-Info-Element values are not expanded.` と `NOCALEXP` の表示が出る。`NOEXPAND` は KEEPEXP なので以後の `CALC` にも残る (`CALC EXPAND` か `USE` で戻る)。`SAVE`・`EXPAND` は代表 (最初の 1 台) の値を全成分に揃える。TrackParticles は成分ごとの値をそのまま使う (CALC・Emittance[] で揃う)。
 
 ## 未確認・限界
 - `QF.3 K1 0.9;` のように `名前.番号` を先頭にした値設定は、gs では式として評価されて何も設定されない。pysad も同じ (何もしない) にした。成分だけの設定は `LINE["K1","QF.3"]=0.9`。
-- `NOKEEPEXP` (CALC のたびに tfvcomp で EXPAND を決める): 最初の版では未対応だった。v2 で gs に合わせて対応した (`docs/47_v2_changes.md`。gs の実測と一致と記録されている)。ただし pysad の `tfvcomp` は常に偽 (成分ごとの FREE が無い)。この例では使っておらず、再実行していない。
+- `NOKEEPEXP` (CALC のたびに tfvcomp で EXPAND を決める): v2 は gs に合わせて対応している (gs の実測と一致と記録されている)。ただし pysad の `tfvcomp` は常に偽 (成分ごとの FREE が無い)。この例では使っておらず、再実行していない。
 - `KEEPEXP`/`CALEXP` フラグ、`USE BeamLine[...]` は未確認。

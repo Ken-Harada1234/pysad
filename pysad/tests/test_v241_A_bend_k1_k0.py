@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """v2.4.1 A: ANGLE=0 で K1≠0 かつ K0≠0 の BEND (F1・FB1・FB2 を含む。tbend の tmulti、tbende の tmulte の経路)。
 
-(1) gs (K64 の 10-19 ビルド) の BEND はこの組み合わせを正しく扱わない (docs/21 B290): 追跡は tmulti に rtaper = 0 (掛け算の係数) を渡すので K0・K1 とも
+(1) gs (K64 の 10-19 ビルド) の BEND はこの組み合わせを正しく扱わない (docs/30 B290): 追跡は tmulti に rtaper = 0 (掛け算の係数) を渡すので K0・K1 とも
     無視して**ただのドリフト**になり (nmmax の判定も逆)、CALC・Emittance[] は tmulte の引数が 2 個足りず SIGSEGV で落ちる。pysad はこれを再現せず
     (どちらのモードも)、tbend が tmulti に渡すはずの値 (akm(0) = K0、akm(1) = K1·L) で追跡・CALC・Emittance[] を計算する = **同じ K0・K1・L の MULT と同じ**。
     したがって gs との照合は gs の MULT (tmulti・tmulte の正しい呼び出し) で行う (FB1 = F1 + FB1。BEND の F1 は MULT の FB に行く)。

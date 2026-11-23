@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>elem_SEXT_OCT_DECA_DODECA (6 極・八極・十極・十二極)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: elem_SEXT_OCT_DECA_DODECA.md</div>
+<h1 id="elem_sext_oct_deca_dodeca-6-極八極十極十二極">elem_SEXT_OCT_DECA_DODECA (6 極・八極・十極・十二極)</h1>
+<p>種別: elem。フォルダ: 01_lattice_elements。ラティス: 前半は 4 要素の輸送路 (INS)、後半は <code>FODO_ring.sad</code> と同じ光学のリング (定義はファイル内、RF なし)。エネルギー 3 GeV。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>多極磁石の要素の定義: <code>SEXT</code>(K2)、<code>OCT</code>(K3)、<code>DECA</code>(K4)、<code>DODECA</code>(K5)。<strong>K2〜K5 は積分強度</strong> (L を含む)。
+(1) 輸送路で S3 O4 D5 D6 を並べると、線形の転送行列はドリフトと同じ (多極は 2 次以上の力だけ)。
+(2) リングの SF/SD の K2 を変えても、設計軌道上 (COD=0) ではチューンも β も変わらず、<strong>クロマティシティだけ</strong>が変わる。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>SEXT  S3 = (L=0.2 K2=10);   OCT O4 = (L=0.2 K3=100);   DECA D5 = (L=0.2 K4=1000);   DODECA D6 = (L=0.2 K5=10000);
+FFS;
+USE T; INS; CALC;   TYPE S3 O4 D5 D6;   m = TransferMatrix[&quot;START&quot;,&quot;FIN&quot;];
+USE RING; CELL; CALC;   SF K2 5;   SD K2 -8;   CALC;   CHRO;
+ps = LINE[&quot;POSITION&quot;,&quot;SF.1&quot;] + {0,.25,.5,.75,1};   Print[&quot;SF.1 along s: BX = &quot;, Twiss[&quot;BX&quot;,ps], ...];
+</code></pre>
+<p><code>TYPE 名前</code> は要素の定義を表示。<code>SF K2 5;</code> は要素 SF の K2 を 5 にする (全 SF)。<code>CHRO</code> は要素ごとのクロマティシティ寄与 (次節)。全文は <code>.sad</code>。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<ul>
+<li>輸送路: <code>with S3 O4 D5 D6 : M11 M12 M21 M22 = 1 0.8 0 1</code> (L の合計 0.8 m のドリフト)。</li>
+<li>リング: K2=0 でも K2=(5,-8) でもチューンは 6.696329 / 4.906056 (同じ)。</li>
+<li><code>CHRO;</code> の表 (1 要素 1 行、最後に <code>TOTAL</code>): x と y の列。SF.1 と SD.1 の行を下表で解析式と比べる。</li>
+</ul>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>SAD の <code>CHRO</code> は四極と6 極の寄与を
+$$\xi_{x}^{\rm (CHRO)}=-\frac{K_1}{L}!\int!\beta_x ds\ (\text{QUAD}),\quad +\frac{K_2}{L}!\int!\eta_x\beta_x ds\ (\text{SEXT}),\qquad
+\xi_y^{\rm (CHRO)}=+\frac{K_1}{L}!\int!\beta_y ds,\ -\frac{K_2}{L}!\int!\eta_x\beta_y ds$$
+で出す (これが $4\pi\xi$ の寄与: 実際の chromaticity は $\xi=\frac1{4\pi}\sum$)。6 極の符号は、SADHelp の式 ($-\frac{K_2}{L}\eta\beta$) とは逆で、コード・gs・pysad の値は上の符号 (物理的にも $\xi_x=-\frac1{4\pi}\oint(K_1-K_2\eta)\beta ds$ と合う)。
+積分は FODO リングの周期解に沿って 2x2 行列で 200 分割して数値積分した (<code>tools/ana_fodo_ring.py</code>)。</p>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>式の値 (x, y)</th>
+<th>gs (x, y)</th>
+<th>pysad (x, y)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SF.1 (K2=5)</td>
+<td>15.9701, -6.78278</td>
+<td>16.019, -6.788</td>
+<td>16.019, -6.788</td>
+</tr>
+<tr>
+<td>SD.1 (K2=-8)</td>
+<td>-4.8355, 18.8283</td>
+<td>-4.875, 18.804</td>
+<td>-4.875, 18.804</td>
+</tr>
+</tbody>
+</table>
+<p>差は 0.3 % 以内 (SAD の積分の取り方と、こちらの台形則の差と思われる。原因までは調べていない)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li><code>CHRO</code> の表、チューン、β、行列はすべて一致。</li>
+<li><code>TYPE D6</code> の <code>K5 =10000</code> も一致 (2026-11-17 確認。DODECA の K5 の内部値は長さあたり (50000) で、<code>LINE["K5"]</code>・<code>Element["K5"]</code>・TYPE・ATTRIBUTE は積分強度 10000)。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>OCT・DECA・DODECA の非線形の効果 (振幅依存のチューンシフトなど) は 05_tracking の例で扱い、ここでは確認していない。</li>
+<li>COD≠0 (ずれのある6 極) のときの線形光学への効き (フィードダウン) は扱っていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

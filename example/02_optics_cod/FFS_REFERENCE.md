@@ -20,7 +20,7 @@ DISP REFERENCE 1 8;      DISP DREFERENCE 1 8;
 `DBX` は β の相対差 (BX − RBX) / RBX。gs で (6.68626 − 6.42693) / 6.42693 = 0.040352、(1.12741 − 1.30734) / 1.30734 = -0.13763 となり、表の `DBX` と合う (差そのもの 0.259337、-0.179929 ではない)。
 
 ## gs と pysad の比較
-**○ 一致 (2026-11-17 に対応)。** `REFERENCE` (略 `REF`) は直前の CALC の光学を参照光学にする。`Twiss["RBX",…]` (参照)、`Twiss["DBX",…]` (現在 - 参照、BX BY BZ は比)、`Twiss["RALL"/"DALL",…]`、`DISP REFERENCE`・`DREFERENCE` (見出しの文字の置換も含む) が gs と全桁一致。参照光学の位置は整数位置だけ (小数位置はエラー)。REFERENCE 前の参照は 0。
+**○ 一致 (2026-11-17 確認)。** `REFERENCE` (略 `REF`) は直前の CALC の光学を参照光学にする。`Twiss["RBX",…]` (参照)、`Twiss["DBX",…]` (現在 - 参照、BX BY BZ は比)、`Twiss["RALL"/"DALL",…]`、`DISP REFERENCE`・`DREFERENCE` (見出しの文字の置換も含む) が gs と全桁一致。参照光学の位置は整数位置だけ (小数位置はエラー)。REFERENCE 前の参照は 0。
 
 ## 未確認・限界
 - `BMAGX` などの BMAG 係数 (`Twiss["BMAGX",...]`、参照光学とのミスマッチ) は gs でも出していない。
