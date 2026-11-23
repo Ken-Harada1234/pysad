@@ -1315,9 +1315,9 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, 
     elif kind == _n.K_UND:
         from . import und as _un
         if pr[1] != 0.0 or pr[2] != 0.0:
-            _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc)
+            _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc, _n._cav_b2())
         else:
-            _un.k_und(S, n, *pr, p0, h0)
+            _un.k_und(S, n, *pr, p0, h0, _n._cav_b2())
     elif kind == _n.K_DRIFT:
         _n.k_drift(S, n, pr[0])
     elif kind == _n.K_QUAD:

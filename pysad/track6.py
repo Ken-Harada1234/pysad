@@ -2984,13 +2984,13 @@ def _und_v2(parts, el, rad):
     n = len(parts)
     rs = _kernel_rs()
     if pr[1] == 0.0 and pr[2] == 0.0:
-        _un.k_und(S, n, *pr, ph.p0, ph.h0)
+        _un.k_und(S, n, *pr, ph.p0, ph.h0, _compat.v2())
         _state_back(parts, S)
         return
     (nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds) = pr
     krad = rad and _g(el, 'RAD') == 0.0
     if not krad:
-        _un.k_und_field(S, n, *pr, ph.p0, ph.h0, False, False, rs, ph.anrad, ph.cuc)
+        _un.k_und_field(S, n, *pr, ph.p0, ph.h0, False, False, rs, ph.anrad, ph.cuc, _compat.v2())
         _state_back(parts, S)
         return
     for k, p in enumerate(parts):
@@ -3024,6 +3024,8 @@ def _und_v2(parts, el, rad):
             else:
                 _tradk_sol(p, ds, 0.0)
             S[k, 6] = p.dv
+            if _compat.v2():
+                c[4] -= p.dv * ds          # v2 (B334): 速度の差による z の更新 −dv·ds (刻みごと。放射で p が変わるので)
         # 出口: 力学的運動量の向き → 正準運動量 (外側。出口の位置のポテンシャルを足す: und_seg1 の j1 = nslice と同じ)
         a1x, a1y = _un._und_a(c[0], c[2], nslice * ds, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
         pn = 1.0 + c[5]

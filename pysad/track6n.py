@@ -2438,9 +2438,9 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
         elif kind == K_UND:
             from . import und as _un
             if pr[1] != 0.0 or pr[2] != 0.0:        # v2: 磁場あり (FBX・FBY。k64 では常に 0)
-                _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc)
+                _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc, _cav_b2())
             else:
-                _un.k_und(S, n, *pr, p0, h0)
+                _un.k_und(S, n, *pr, p0, h0, _cav_b2())
         elif kind == K_TCAV:
             if rfsw:
                 from . import tcav as _tc

@@ -12,7 +12,7 @@
 
 - **UND の模型**: $A_x$、$A_y$ を (16.1) の形に与える。軸上で $B_y = F_0\cos(K_z s)$、$B_x = G_0\cos(K_z s + \varphi)$ ($F_0 = \mathtt{FBX}\,c/p$ [1/m]、$G_0 = \mathtt{FBY}\,c/p$、$K_z = 2\pi\,\mathtt{POLE}/L$)。$K_y^2 = K_z^2 + K_x^2$、$Q_x^2 = K_z^2 + Q_y^2$ のとき $\nabla\times\vec B = 0$ ($\nabla\cdot\vec B = 0$ は恒等)。[und_01_field_map.out.txt](outputs/und_01_field_map.out.txt) (a): sympy の $\nabla\times\vec B$ を数値代入して最大 $8\times10^{-15}$ (B ~ 0.3)。
 - **UND の写像**: $H = [(p_x - A_x)^2 + (p_y - A_y)^2]/(2(1+\delta))$ (傍軸)。スライスごとに、2 型の母関数 $F_2 = q\cdot P + ds\,H(q, P; s_j)$ の陰的な写像 (記号は §3.3)。**1 次の精度**で厳密にシンプレクティック。確認 (b): 3 GeV、$B_y = 1$ T、$B_x = 0.4$ T、Kx・Qy・位相あり、10 周期・1 m で、DOP853 の積分との $p_x$ の誤差は slice = 1000・2000・4000・8000 で $1.07\times10^{-11}$、$7.07\times10^{-12}$、$3.97\times10^{-12}$、$2.09\times10^{-12}$ (比 1.51、1.78、1.90、→ 2)。1 次。
-- **K64 の UND の癖**: 磁場のキーワードが設定できない (B37、v2 だけ `FBX`・`FBY`)。陰的な刻みの右辺に `dpds` を二重にかける (B78、v2 は 1 回)。**$-dv\,L$ の項 (速度の差による $z$ の更新) がない** (疑い、§13): 磁場なしの UND と DRIFT で $z$ が $-2.897\times10^{-11}$ m ($= dv\,L$、3 GeV・$\delta = 10^{-3}$・$L = 1$ m) 違う。
+- **K64 の UND の癖**: 磁場のキーワードが設定できない (B37、v2 だけ `FBX`・`FBY`)。陰的な刻みの右辺に `dpds` を二重にかける (B78、v2 は 1 回)。**$-dv\,L$ の項 (速度の差による $z$ の更新) がない** (K64 の誤り。gs で確認、v2 は修正 = B334、付録 B): 磁場なしの UND と DRIFT で $z$ が $-2.897\times10^{-11}$ m ($= dv\,L$、3 GeV・$\delta = 10^{-3}$・$L = 1$ m) 違う。
 - **BEAMBEAM の力**: 強ビーム (2 次元ガウス、$\sigma_x,\sigma_y$) が弱粒子に与えるキックは Bassetti-Erskine の式。[bb_01_kick_slice.out.txt](outputs/bb_01_kick_slice.out.txt) (a): 丸い・$\sigma_x > \sigma_y$・$\sigma_x < \sigma_y$ の 3 通り各 4 点で、$\Delta p_x$、$\Delta p_y$ が 2 次元ポテンシャルの数値積分の微分と $10^{-13}$ 以下の絶対差 (相対 $10^{-9}$) で一致。小振幅の傾き $-2c/(\sigma_x(\sigma_x+\sigma_y))$ ($c = N r_e/\gamma$) とも一致。
 - **エネルギーのキック**: $\delta$ の変化 $= -g_{xy} + \tfrac14|\Delta p|^2$ ($g_{xy} = \sigma_{12x}\,\partial U/\partial\sigma_x^2 + \sigma_{12y}\,\partial U/\partial\sigma_y^2$) が、$\sigma_{12}\ne0$ (Twiss $\alpha\ne0$) の強ビームで $10^{-18}$ 以下の差で一致 (3 通り各 4 点)。
 - **6 次元写像**: スライスごとに、衝突点まで drift ($x \mathrel{+}= p_x s^*$、$\delta \mathrel{-}=p_\perp^2/4$、$s^* = (z - z_s)/2$)、キック、同じ $s^*$ で戻す。$F = s^*(z)\,p_\perp^2/2$ の流れの共役で、厳密にシンプレクティック。確認 (b): SLICE = 5・交差角 10 mrad・軌道のずれ・傾いた強ビームで、$\|J^\top SJ - S\|$ (規格化) $\le 1.5\times10^{-11}$。キックなし (NP = 0) の往復は恒等 ($\le10^{-19}$)。
@@ -300,8 +300,9 @@ $$
 - **B78**: `undulator.f:92-93` で `dpds` を二重に掛ける。磁場があっても収束力が刻み幅に比例して消える (200 と 2000 スライスで $p_y$ が 10 倍違う)。本章の確認 (b) は v2 の式で、DOP853 との一致 (1 次) を示す。
 - **B34**: BEAMBEAM の傾きの回転が $c, s$ の読み位置を誤る (`sint = xangle(5)`、`cost = xangle(6) = sin t`)。**$\sigma_x < \sigma_y$ の強ビームは傾き $t = \pi/2$ になるので、k64 では $\Delta p$ が誤る** (本章確認 (a)、$-7.9\times10^{-5}$ 対 $-2.6\times10^{-5}$)。
 
+- **B334**: UND の $z$ の更新に $-dv\,L$ (速度が $v_0$ と違うための遅れ、$R_{56} = L/\gamma^2$) がない (磁場なしの UND と DRIFT で $z$ が $dv\,L$ 違う、本章確認 (d))。DRIFT は持つ (02 章)。**gs で確認**: UND ($L$ = 1 m、KX = 0.1、QY = 0.2、POLE = 10、SLICE = 4、PHI = 30) と DRIFT の `TrackParticles` で、UND − DRIFT の $z$ が 3 GeV/c の $\delta = 10^{-3}$ で $-2.90\times10^{-11}$、$\delta = \pm10^{-2}$ で $\mp2.9\times10^{-10}$、10 MeV/c で $-2.60\times10^{-6}$、$\mp2.6\times10^{-5}$ ($= dv\,L$。自由飛行の式 $L(h_0/p_0 - h/p)$ と相対 $2\times10^{-3}$ で一致)。k64 は gs と全桁一致。v2 は $-dv\,L$ を足し、磁場なしの UND の $z$ が DRIFT と $10^{-14}$ で一致 (試験 `test_v250_und_dv.py`)。限界: 磁場なし (gs は磁場を設定できない) だけを gs で確認。v2 の磁場つきの $z$ の絶対値は未確認。
+
 **疑い**:
-- UND の $z$ の更新に $-dv\,L$ (速度が $v_0$ と違うための遅れ、$R_{56} = L/\gamma^2$) がない (磁場なしの UND と DRIFT で $z$ が $dv\,L$ 違う、本章確認 (d))。DRIFT は持つ (02 章)。$H_{\rm UND}$ の定数項 $-(1+\delta)$ と $E/(p_0v_0)$ の項を落としているため。意図的かどうか未確認。
 - ビームストラールングの光子エネルギーの表: 累積の矩形則とみられる誤差で、平均が $+1.6\%$、2 次モーメントが $+2.6\%$ (理論比)。影響は小さい。
 
 ## 付録 C. この章で使う Fortran の変数名
