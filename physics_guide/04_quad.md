@@ -389,7 +389,7 @@ h &= \frac{K}{2p}\,x_1y_1\left(1 - \tfrac{\mathrm{ab}}{3}\right),\quad f = x_xy_
 \tag{4.30}
 $$
 
-(点変換 (4.29) の偏微分: $x_x = \partial x_2/\partial x_1$、$h = \partial x_2/\partial y_1 = -\partial y_2/\partial x_1$、$y_y = \partial y_2/\partial y_1$、$f = \det J$。) $z$ は $\partial G/\partial p$ で、$G$ が $p$ の 1 次 ($H_0$) と 2 次 ($t$ の項) の成分からなることから $z_2 = z_1 - \bigl[p_{x2}(x_2 - x_1) + p_{y2}(y_2 - y_1)\bigr]/p$。つまり**非線形フリンジは $(x, y)$ の点変換で、運動量は逆転置、$z$ はその $p$ 依存の補正**。点変換から作る写像なので、シンプレクティック性は構成から厳密に成り立つ。
+(点変換 (4.29) の偏微分: $x_x = \partial x_2/\partial x_1$、$h = \partial x_2/\partial y_1 = -\partial y_2/\partial x_1$、$y_y = \partial y_2/\partial y_1$、$f = \det J$。) $z$ は $z_2 = z_1 + \partial G/\partial p$ (新しい運動量 $p_{x2}, p_{y2}$ を固定して微分)。$G$ の 1 次の部分 $p_2\cdot V_1$ ($V_1 \propto 1/p$) と 2 次の部分 $p_2\cdot V_2$ ($V_2 = \tfrac12(V_1\cdot\nabla)V_1 \propto 1/p^2$。$V_2 = t\,(x_1, y_1)$) の $p$ 微分は、それぞれ $-1/p$ 倍と $-2/p$ 倍なので $z_2 = z_1 - \bigl[p_{x2}(\Delta x_1 + t\,x_1) + p_{y2}(\Delta y_1 + t\,y_1)\bigr]/p$ ($\Delta x_1 = x_2 - x_1$ は $t$ を含むので、2 次の項が 2 回入る。K64 の `dz1` と同じ。[edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) (c))。つまり**非線形フリンジは $(x, y)$ の点変換で、運動量は逆転置、$z$ はその $p$ 依存の補正**。点変換から作る写像なので、シンプレクティック性は構成から厳密に成り立つ。
 
 [quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) の (a): 母関数 (4.28) を複素ステップ微分で処理して作った写像と、K64 の式 (`ttfrin`、nord = 4、`tqfrie`) は、$x, p_x, y, p_y, z$ のすべてで $3 \times 10^{-18}$ の差で一致。1 次の項は (4.27) の流れ ($\Delta x$ は $7.300012 \times 10^{-7}$ に対し $7.300000 \times 10^{-7}$。差 $1.2 \times 10^{-12}$ は $t\,x$) 。(d): 6×6 ヤコビアンの $|M^\top J M - J| = 1.4 \times 10^{-12}$ (中心差分の精度)。
 

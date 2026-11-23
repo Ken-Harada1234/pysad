@@ -20,7 +20,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [03_symplectic_integrators.md](03_symplectic_integrators.md) | **シンプレクティックな分割の一般論**。BCH と Strang (2 次)、Yoshida (4 次)、後方誤差解析、力勾配型の係数 $\alpha, \beta, \gamma$ の導出、K64 の刻みの数の式の一覧 | ✓ |
 | [04_quad.md](04_quad.md) | **四極**。$H_2$ の厳密解、運動学的な $\Delta H$、Strang と Yoshida、刻みの数、フリンジ、行列と追跡の関係 | ✓ |
 | [05_bend.md](05_bend.md) | **偏向磁石**。$H_2$ の厳密解、K1 = 0 の円弧と端面角の厳密解、Maxwell フリンジ・線形フリンジ (F1)、複合機能 (K1 ≠ 0)、行列と追跡の関係 | ✓ |
-| 06_edge_fringe.md | 端部の一般論 (Maxwell、F1・F2、非線形フリンジ) | 予定 (四極の端部は 04 章 §7) |
+| [06_edge_fringe.md](06_edge_fringe.md) | **端部 (フリンジ)**。Maxwell 方程式から縦磁場と高次の項、ベクトルポテンシャルと $H$ の展開、階段の端のリー生成関数 $f$ (偏向・四極・多極・ソレノイドが同じ手順)、母関数による閉じた写像 (リー変換の 2 次までの打ち切り)、偏向の Maxwell フリンジの因子 $p$ の再確認 (CALC の疑い)、CAVI・SOL・MULT の端、FRINGE・DISFRIN の表 | ✓ |
 | [07_thin_multipole.md](07_thin_multipole.md) | **薄い多極 (SEXT・OCT・DECA・DODECA)**。ポテンシャルと積分強度、薄いキックの厳密解 ($\exp(:f:)$ の級数が止まる)、4 次の力勾配型 (`tthin`) の補正キックの導出、CALC の 2 次の分割 (`tthine`)、フィードダウン、非線形フリンジ (Maxwell 方程式から) | ✓ |
 | 08_mult.md | MULT (多極) | 予定 |
 | 09_solenoid.md | ソレノイド。$H_2$ の 4×4 の厳密解、記号の対応 | 予定 |
@@ -71,6 +71,7 @@ py -3.12 physics_guide/scripts/drift_01_h_to_map.py             # 02 章 (ドリ
 py -3.12 physics_guide/scripts/integ_01_bch_force_gradient.py   # 03 章 (分割の一般論) の確認 (integ_01、integ_02)
 py -3.12 physics_guide/scripts/thin_01_potential_kick.py        # 07 章 (薄い多極) の確認 (thin_01〜thin_03)
 py -3.12 physics_guide/scripts/bend_01_h2_body.py               # 05 章 (偏向磁石) の確認 (bend_01〜bend_04)
+py -3.12 physics_guide/scripts/edge_01_gauge_generators.py       # 06 章 (端部) の確認 (edge_01〜edge_04)
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -96,6 +97,12 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
 | `bend_04_matrix_vs_map.py` | 05 | CALC の行列と追跡の写像の関係、段ごとの比較、端面の 2×2 行列 |
+| `edge_01_gauge_generators.py` | 06 | $
+abla	imesec A = ec b$ (偏向・四極・$2m$ 極・ソレノイド)、端の生成関数 $f = \int H_1ds$ から (4.27)・(7.17)・(5.35)・DISFRIN の $H$ が出る (sympy)、偏向の $y^4$ の項 |
+| `edge_02_generating_function.py` | 06 | 母関数 $G$ = 点変換 $x + V + 	frac12V\cdot
+abla V$ (sympy)、厳密な $\exp(:f:)$ との差 ($K^3$)、$z$ の更新 ($\partial G/\partial p$) |
+| `edge_03_bend_maxwell_recheck.py` | 06 | 偏向の Maxwell フリンジの因子 $p$ (ローレンツ力の積分、CALC の COD の更新と解析行列の比較) |
+| `edge_04_solenoid_fringe.py` | 06 | `tsfrin` = $f$ の厳密な流れ、Maxwell の端の場のローレンツ力の積分との比較 |
 | `ham_01_lorentz_potential.py` | 01a | ベクトル恒等式、$dA/dt$、一般化力 (追加項)、$\vec p = \gamma m_0\vec v + e\vec A$、ラグランジュ方程式 |
 | `ham_02_legendre.py` | 01a | ルジャンドル変換、$H = c\sqrt{(\vec p - e\vec A)^2 + m_0^2c^2} + e\phi$ |
 | `ham_03_frenet_f3.py` | 01a | 母関数 $F_3$ の $\vec P$、ポアソン括弧、$A_s$ と磁場 |
