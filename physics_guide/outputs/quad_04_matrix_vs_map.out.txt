@@ -1,4 +1,4 @@
-使った pysad: D:\work\SAD-master\pysad-v244-work\pysad (環境変数 PYSAD_SRC = D:/work/SAD-master/pysad-v244-work)
+使った pysad: このリポジトリの pysad
 
 
 ########## K64 の動作 (k64: 2 次の Strang) ##########

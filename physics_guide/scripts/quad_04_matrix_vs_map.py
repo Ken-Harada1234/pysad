@@ -7,10 +7,10 @@
 (c) z の行がシンプレクティック条件 T(5,j) = -T(1,j)T(2,6) + T(2,j)T(1,6) - T(3,j)T(4,6) + T(4,j)T(3,6) で組めることを、J_track で確かめる。
 (d) J_track のシンプレクティック性 |M^T J M - J|。
 K64 の動作 (k64) と v2 の動作の両方で行う。
-実行環境: (f) の F1 < 0 の v2 の結果 (追跡と CALC が一致) は、四極の線形フリンジの F1 の符号を直した pysad (v2.4.4 以降) が要る。
-そうでない pysad では v2 も k64 と同じ値 (2.1e-3) になる。直した pysad を使うときは、環境変数 PYSAD_SRC にその pysad のルートを指定する:
+実行環境: (f) の F1 < 0 の v2 の結果 (追跡と CALC が一致) は、四極の線形フリンジの F1 の符号を残す pysad が要る。
+そうでない pysad では v2 も k64 と同じ値 (2.1e-3) になる。別の pysad を使うときは、環境変数 PYSAD_SRC にその pysad のルートを指定する:
     PYSAD_SRC=<pysad のルート> py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py
-使った pysad の場所は出力の先頭に書く。
+使った pysad が、このリポジトリのものか、PYSAD_SRC で指定したものかは、出力の先頭に書く。
 """
 import math
 import os
@@ -20,7 +20,7 @@ import _common as C
 
 C.start(__file__)
 from pysad import lattice as lat
-print('使った pysad: %s (環境変数 PYSAD_SRC = %s)\n' % (C.pysad_src(), os.environ.get('PYSAD_SRC')))
+print('使った pysad: %s\n' % ('このリポジトリの pysad' if not os.environ.get('PYSAD_SRC') else 'PYSAD_SRC で指定した pysad'))
 
 L, K1 = 0.3, -0.6
 ffs, el = C.make_quad(L, K1, 'DISFRIN=1')
