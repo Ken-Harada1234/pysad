@@ -10,10 +10,10 @@
 |---|---|---|---|
 | 空間電荷 (WSPAC) | Lorentz 力から $1/(\beta^2\gamma^3)$、ガウス分布のキック、$\delta$ のキックと壁の基準、条件付き分散、線形のレンズ、チューンシフト | 数値積分・sympy・追跡のチューンシフト | §3〜§4 |
 | ウェイク (LWAKE・TWAKE) | ウェイク関数から $\delta$・横のキック、自己項の 1/2、K64 の切片の方法、解析式 | 追跡と解析式、切片の粗視化の粒子数依存 | §5〜§6 |
-| 空間電荷 (SPAC・PSPAC) | 静止系の Poisson 方程式、実験室系のキック、円筒の壁、矩形の箱の級数解、長いバンチの極限 | 数値 (Poisson 方程式、箱と自由空間) | §7 |
+| 空間電荷 (SPAC・PSPAC) | 静止系の Poisson 方程式、実験室系のキック、円筒の壁の Green 関数 (フーリエ変換・加法定理・像の項・一意性)、3 次元ガウス分布の電位 (平方完成)、矩形の箱の級数解、長いバンチの極限 | 数値 (Poisson 方程式、箱と自由空間、加法定理、壁での消滅) | §7 |
 | Touschek 寿命 | クーロン散乱の断面積から、損失の立体角、運動量の平均、寿命の式、平坦ビームの極限 | モンテカルロ、pysad の式との一致、K64 の当てはめ関数との比較 | §8 |
 | IBS (INTRA) | 小角散乱の拡散と摩擦、拡散行列の構造 | モンテカルロと K64 の積分の比較 | §9 |
-| CSR (自由空間の定常ウェイク) | シンクロトロン放射のスペクトルからインピーダンスと時間領域のウェイク | 数値積分 (周波数領域と時間領域) | §10 |
+| CSR (自由空間の定常ウェイク) | 標準の放射積分 (入力) から単一電子のスペクトル (Airy 積分・角度分布、$\psi$ 積分は Bessel の恒等式を入力) と、インピーダンス、時間領域のウェイク (Γ 関数の解析接続) | 数値積分 ($\psi$ 積分と (17.37)、周波数領域と時間領域) | §10 |
 | 定常分布の方程式 (Haissinski) | Fokker-Planck の定常解 | K64 の Newton 解・追跡との比較 | §11 |
 
 **読む順**: §1 (結論) → §3 → §5 → §8 (Touschek) → §13 (確認)。空間電荷だけなら §3、§4、§7。
@@ -34,7 +34,7 @@ $$
 - **SPAC・PSPAC** (§7): 静止系の Poisson 方程式の解を、実験室系の力 $\vec F_\perp = e\vec E'_\perp/\gamma$、$F_z = eE'_z$ に変換する。一様な円柱で $x'' = Kx/a^2$、$K = 2r_e\lambda/(\beta^2\gamma^3)$。長いバンチの 3 次元ガウス分布の場は、$\sigma_\zeta/\sigma_x = 3, 10, 30, 100$ で 2 次元の場 $\times\lambda(0)$ の $0.89, 0.979, 0.9965, 0.9996$ 倍に近づく (WSPAC・PSPAC の近似の条件)。接地した矩形の箱の級数解は、$a/\sigma \ge 20$ で自由空間の解と $r = 4\sigma$ でも 0.8% 以内。
 - **Touschek 寿命** (§8): 静止系のクーロン散乱 (非相対論的な Møller の断面積) と、散乱後の縦運動量が運動量アクセプタンスを超える条件から、$1/\tau = r_e^2cN\,J/(\gamma\,V^*\sqrt{\lambda_1\lambda_2})$ ($J$ は 1 次元積分)。モンテカルロと 1.2σ 以内、pysad の損失率の式 (`touschek_piwinski`、v2 の既定) と係数まで一致 (比 1.000000)。横の運動量が 1 方向だけの極限は K64 の `touckf` (当てはめ関数) の関数形と $\varepsilon = 10^{-3}$〜$10$ で 1% 以内で一致する。
 - **IBS** (§9): 小角クーロン散乱の拡散と摩擦から、静止系の運動量の共分散の増加率は $\propto\langle(q^2\delta_{ij}-3q_iq_j)/|q|^3\rangle$。K64 の `tintrb` の係数 $e_i = f_j+f_k-2f_i$ は、モンテカルロの平均と 4 組の固有値で $\pm0.3\%$ (統計誤差の範囲) で一致する。
-- **CSR** (§10): 単一電子のシンクロトロン放射の低周波のスペクトルと因果律から、自由空間の定常ウェイクは $dE/ds = \dfrac{2Ne^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}\displaystyle\int_0^\infty\lambda'(z+s)\,s^{-1/3}ds$ (符号は §10 の約束)。ガウス分布の平均の損失は $-\dfrac{\Gamma(2/3)}{3^{1/3}\Gamma(1/3)}\dfrac{Ne^2}{4\pi\epsilon_0R^{2/3}\sigma_z^{4/3}}$ ($=-0.3505\ldots$)。周波数領域と時間領域の数値積分が 8 桁で一致する。
+- **CSR** (§10): 単一電子のシンクロトロン放射の低周波のスペクトルと因果律から、自由空間の定常ウェイクは $dE/ds = \dfrac{2Ne^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}\displaystyle\int_0^\infty\lambda_z(z+s)\,s^{-1/3}ds$ (符号は §10 の約束)。ガウス分布の平均の損失は $-\dfrac{\Gamma(2/3)}{3^{1/3}\Gamma(1/3)}\dfrac{Ne^2}{4\pi\epsilon_0R^{2/3}\sigma_z^{4/3}}$ ($=-0.3505\ldots$)。周波数領域と時間領域の数値積分が 8 桁で一致する。
 - **定常分布の方程式** (§11): $\rho(z) = K\exp[-z^2/(2\sigma_{z0}^2) - a_wV(z)]$。K64 の `csrhaissin` の解は、独立に書いた Newton 解と $\sigma_z$ で $0.5\%$ 以内 (強い結合で $10^{-4}$)、K64 の追跡の平衡と、ウェイクの強さ $a_{wH} \le 1.25$ で $\sigma_z$ が $0.2\%$ 以内で一致する。$a_{wH} = 2.5$ では追跡の $\sigma_z$ が時間変動し (15%)、$\sigma_\delta$ も 24% 増えて、$\sigma_z$ は定常解より 3% 大きい。定常解が不安定で、追跡は揺らぐ状態になっている可能性がある (安定性は未解析。§11.3)。
 - **K64 の疑い** (§17): WSPAC の縦の力の電位の基準が軸上 (壁の半径に依る $\ln(b/\sigma)$ の項が無い)、WSPAC の Emittance[] の最後のスライスでレンズが 8 倍 (B127)、SPAC の力が $1/\gamma$ 倍 (B89)、IBS の係数の $\gamma^4$ (導出は $(\beta\gamma)^4$、§9.3)。
 
@@ -164,11 +164,11 @@ $$
 ($\gamma_E = 0.5772\ldots$ は Euler 定数。**確認** ([coll_05_spac_pspac.out.txt](outputs/coll_05_spac_pspac.out.txt) (b)): $\int_r^bE_rdr$ と $\tfrac12[\mathrm{Ein}(b^2/2\sigma^2)-\mathrm{Ein}(r^2/2\sigma^2)]$ が $r/\sigma = 0.5, 1.5, 3$、$b/\sigma = 20$ で 10 桁一致、$\mathrm{Ein}(b^2/2\sigma^2) - [\ln(b^2/2\sigma^2)+\gamma_E]$ は $10^{-15}$。) したがって $U_{\rm ref} = U(b)$ (壁の電位) と取るのが、物理的な縦の力に対応する。軸上 ($U = 0$) の縦の力は
 
 $$
-\Delta\delta\big|_{\rm axis} = -A'(z)\,U(b) = -\frac{r_eL}{\beta^2\gamma^3}\,\lambda'(z)\left[2\ln\frac b\sigma + \gamma_E - \ln2\right]
+\Delta\delta\big|_{\rm axis} = -A_z(z)\,U(b) = -\frac{r_eL}{\beta^2\gamma^3}\,\lambda_z(z)\left[2\ln\frac b\sigma + \gamma_E - \ln2\right]
 \tag{17.11}
 $$
 
-(ここで $A = r_eL\lambda(z)/(\beta^2\gamma^3)$ を使った。) これは標準の縦の空間電荷の式、$E_z = -\dfrac{g\,e}{4\pi\epsilon_0\gamma^2}\dfrac{d\lambda}{dz}$ ($g \simeq 2\ln(b/\sigma)$ + 定数) と $\Delta\delta = eE_zL/(\beta^2\gamma mc^2)$ で一致する。導出は §7.2 (静止系の縦の電場 $E'_z = -\partial\phi'/\partial\zeta$、$\partial/\partial\zeta = \gamma^{-1}\partial/\partial z$、$\lambda' = \lambda/\gamma$ から $\gamma^{-2}$)。**符号の物理**: $U_{\rm ref} = U(b)$ のとき、先頭 ($z > z_c$) の $\Delta\delta$ は正 (加速)、後尾は負 (減速) で、縦の空間電荷の向き (先頭が前へ押され、後尾が後ろへ押される) になる。K64 の $U_{\rm ref} = U(0,0) = 0$ では、軸外 ($U > 0$) で先頭が減速される向きになるが、これは基準の取り方の違い (定数 $U(b)$ の項を落とした) で、軸上の縦の力が 0 になる。K64 がこの定数を意図して落としたのか誤りかは、ソースだけでは決まらない (§17)。pysad (v2) は `WSPACRADIUS` ($> 0$) で $U_{\rm ref} = U(b)$ にする。**確認** (b): pysad の $\Delta\delta$ は、(17.9) を $U_{\rm ref} = 0$ として数値積分の $U$ から作った値と、**絶対差 $3\times10^{-16}$ 以下** (値 $\sim10^{-6}$) で一致する。
+(ここで $A = r_eL\lambda(z)/(\beta^2\gamma^3)$ と、実験室系の線密度の $z$ 微分 $\lambda_z\equiv d\lambda/dz$、$A_z\equiv dA/dz = r_eL\lambda_z/(\beta^2\gamma^3)$ を使った。$\lambda_z$ は微分を表す記号で、静止系の線密度 $\lambda' = \lambda/\gamma$ (本節の (17.1) 以降) とは別のもの。) これは標準の縦の空間電荷の式、$E_z = -\dfrac{g\,e}{4\pi\epsilon_0\gamma^2}\dfrac{d\lambda}{dz}$ ($g \simeq 2\ln(b/\sigma)$ + 定数) と $\Delta\delta = eE_zL/(\beta^2\gamma mc^2)$ で一致する。導出は §7.2 (静止系の縦の電場 $E'_z = -\partial\phi'/\partial\zeta$、$\partial/\partial\zeta = \gamma^{-1}\partial/\partial z$、$\lambda' = \lambda/\gamma$ から $\gamma^{-2}$)。**符号の物理**: $U_{\rm ref} = U(b)$ のとき、先頭 ($z > z_c$) の $\Delta\delta$ は正 (加速)、後尾は負 (減速) で、縦の空間電荷の向き (先頭が前へ押され、後尾が後ろへ押される) になる。K64 の $U_{\rm ref} = U(0,0) = 0$ では、軸外 ($U > 0$) で先頭が減速される向きになるが、これは基準の取り方の違い (定数 $U(b)$ の項を落とした) で、軸上の縦の力が 0 になる。K64 がこの定数を意図して落としたのか誤りかは、ソースだけでは決まらない (§17)。pysad (v2) は `WSPACRADIUS` ($> 0$) で $U_{\rm ref} = U(b)$ にする。**確認** (b): pysad の $\Delta\delta$ は、(17.9) を $U_{\rm ref} = 0$ として数値積分の $U$ から作った値と、**絶対差 $3\times10^{-16}$ 以下** (値 $\sim10^{-6}$) で一致する。
 
 **運動量の更新** (`twspac` の末尾): SAD の内部変数 $p_x$ は $P_x/(p_0(1+\delta))$。キックの前の正準運動量は $p_xp_r$ ($p_r = 1+\delta_{\rm old}$)、キック後は $\delta_{\rm new} = \delta_{\rm old} + \Delta\delta$ なので
 
@@ -242,7 +242,19 @@ $$
 
 (2 つ目は、$\Delta p_xc = e\cdot eN\int\lambda\,x\,W_T$ を同様に $p_0\,mc$ で割ったもの。K64 の式は $\beta\to1$ の近似で、厳密には $\Delta\delta$ に $1/\beta$ が掛かる。$e$ は C、$W$ は V/C、$mc^2$ は eV で、$eW$ が eV になる。)
 
-**自己項**: 粒子自身が作るウェイクを自分が受ける項 ($z' = z$) は、ウェイクが $s = 0$ で飛び ($s < 0$ で 0、$s = 0^+$ で $W(0^+)$)、**$W_L(0)$ の 1/2** で数える (beam loading の基本定理)。理由: 自分と十分近い、対称な分布の 2 粒子の間 ($s$ の分布が $s = 0$ について対称) で、$s > 0$ になる確率が 1/2 だから。粒子 1 個の幅を $\varepsilon$ の対称な分布として、$\int\!\!\int\rho\rho'\,W(z'-z) \to W(0^+)\,P(z'-z>0) = \tfrac12W(0^+)$ ($\varepsilon\to0$)。(17.18) の $\sigma\to0$ の極限 $k\to1/2$ も同じ。K64 は、同じ切片の内部の対 ($n = m$) で、表の最初の点が $z \ge 0$ のとき $\tfrac12W(z_1)\,ws(n)$ を使う。表が負の $z$ から始まると、$n = m$ も補間で $W(0)$ (全重み) が使われる (`txwake.f` の `if(n /= m .or. zw0l < 0.d0)` の読み。§5.3)。
+**自己項**: 粒子自身が作るウェイクを自分が受ける項 ($z' = z$) は、ウェイクが $s = 0$ で飛び ($s < 0$ で 0、$s = 0^+$ で $W(0^+)$)、**$W_L(0)$ の 1/2** で数える (beam loading の基本定理)。理由を式で書く。粒子 1 個が点でなく、幅 $\varepsilon$ の対称な分布 $\rho_1(z)$ ($\rho_1(-u)=\rho_1(u)$、$\int\rho_1=1$) を持つとする。自分が作るウェイクを自分が受ける項は、源の位置 $z'$ と試験の位置 $z$ をそれぞれ $\rho_1$ で振って平均した
+
+$$
+\langle W\rangle_{\rm self} = \iint\rho_1(z)\rho_1(z')\,W_L(z'-z)\,dz\,dz' = \int_{-\infty}^{\infty}p(s)\,W_L(s)\,ds,\qquad p(s) = \int\rho_1(z)\rho_1(z+s)\,dz
+$$
+
+(第 2 の等号は $s = z'-z$ と置いた)。$p(s)$ は 2 つの独立な対称な確率変数の差の分布なので、(i) 規格化 $\int p\,ds = 1$、(ii) 対称 $p(-s) = p(s)$。(ii) から $\int_{s>0}p\,ds = \int_{s<0}p\,ds$、これと (i) から (1 点の確率は 0 なので) $\int_{s>0}p\,ds = \tfrac12$。$W_L(s)$ は $s<0$ で 0、$s>0$ では $W_L(0^+)+O(s)$ なので、
+
+$$
+\langle W\rangle_{\rm self} = \int_0^\infty p(s)\bigl[W_L(0^+)+O(s)\bigr]ds = \tfrac12W_L(0^+) + O(\varepsilon)\qquad(\varepsilon\to0)
+$$
+
+($p(s)$ の幅は $\sim\varepsilon$ なので、$O(s)$ の項は $O(\varepsilon)$。数値: $W_L = W_0e^{-s/\ell}$、$s\sim\mathcal N(0,2\varepsilon^2)$ で $\langle W\rangle/W_0 = 0.4482,\ 0.4944,\ 0.4994$ ($\varepsilon/\ell = 0.1,\ 0.01,\ 0.001$。差は $-0.56\,\varepsilon/\ell$ で $O(\varepsilon)$ と一致): [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (a)。これが「beam loading の基本定理」の 1/2 である。) (17.18) の $\sigma\to0$ の極限 $k\to1/2$ も同じ。K64 は、同じ切片の内部の対 ($n = m$) で、表の最初の点が $z \ge 0$ のとき $\tfrac12W(z_1)\,ws(n)$ を使う。表が負の $z$ から始まると、$n = m$ も補間で $W(0)$ (全重み) が使われる (`txwake.f` の `if(n /= m .or. zw0l < 0.d0)` の読み。§5.3)。
 
 **解析式** (確認 (c) の基準): $W_L(s) = W_0e^{-s/\ell}$ ($s \ge 0$) とガウス分布 ($\sigma_z = \sigma$) の平均の損失。2 粒子の距離 $s = z'-z$ は、独立な 2 つの $N(0,\sigma^2)$ の差なので、分散 $2\sigma^2$ のガウス分布 $e^{-s^2/4\sigma^2}/(2\sigma\sqrt\pi)$。$s > 0$ の寄与だけ (源が先行):
 
@@ -321,7 +333,37 @@ $$
 
 ($r_c$ = 粒子の古典半径、$w$ = マクロ粒子 1 個の実粒子数 ($\mathtt{PBUNCH}/n_{p0}$)。横は (17.3) の $eE'L/(\beta^2\gamma^2mc^2)$ に $E' = -\partial\phi'/\partial x$ を入れたもの。縦は $\Delta\gamma = eE_zL/(mc^2)$。$\Delta p/p_0 = \Delta\gamma/(\beta^2\gamma)$ なので縦の運動量の変化は $\Delta\delta = \Delta\gamma/(\beta^2\gamma)$。) $\varphi$ は静止系の座標の関数で、$\varphi\propto\lambda' = \lambda/\gamma$ を含むので、(17.4) の $1/(\beta^2\gamma^3)$ に戻る。pysad の `Solver3D` はこの式の係数 $C = r_cwL/(\beta_0^2\gamma_0^2)$ を使う (docstring)。**K64 の SPAC は電場が $\gamma$ 倍分、$1/\gamma$ 倍に弱い (B89)**: 例えば 5 MeV・$10^{11}$ 個・半径 1 mm の一様な円・長さ 0.1 m のバンチの 1 m のドリフトで、gs の rms $x$ 0.6226 mm に対し、包絡方程式 $a'' = K/a$ の式は 1.639 mm、pysad (v2) は 1.623 mm で、gs は $K/\gamma$ の式 (0.645 mm) に近い ([docs/10_tracking.md](../docs/10_tracking.md) §9.7 (c) の記載。本章では取り直していない)。
 
-壁 (円筒、半径 $R$、電位 0) は、Green 関数に像の電荷を足して入れる。$\zeta$ 方向にフーリエ変換 ($e^{ik\zeta}$) すると、自由空間の Green 関数 $1/|\vec r-\vec r'|$ は 2 次元の遮蔽された Green 関数 $2K_0(k\,d)$ ($d$ は横の距離。$\int d\zeta\,e^{-ik\zeta}/\sqrt{d^2+\zeta^2} = 2K_0(|k|d)$)。円筒座標の加法定理 $K_0(k|\vec r-\vec r'|) = \sum_m\varepsilon_mK_m(kr_>)I_m(kr_<)\cos m(\theta-\theta')$ ($\varepsilon_0 = 1$、$\varepsilon_{m\ge1} = 2$、数値で確認、[coll_05_spac_pspac.out.txt](outputs/coll_05_spac_pspac.out.txt) (f)) に、$r = R$ で消える像の項 $-2\sum_m\varepsilon_m\frac{K_m(kR)}{I_m(kR)}I_m(kr)I_m(kr')\cos m(\theta-\theta')$ を足す (pysad の `Solver3D` の docstring の式。$r=R$ で $K_m(kR)I_m(kr')$ が項ごとに相殺する)。
+壁 (円筒、半径 $R$、電位 0) は、Green 関数に像の電荷 (内側で正則な調和関数) を足して入れる。以下 4 段で、Green 関数の形を作る。
+
+**段 1: $\zeta$ 方向のフーリエ変換**。自由空間の Green 関数 $1/|\vec r-\vec r'| = 1/\sqrt{d^2+\zeta^2}$ ($d$ は横の距離、$\zeta$ は縦の距離) を $\zeta$ について $e^{-ik\zeta}$ で変換する。標準の積分表示 $K_0(x) = \int_0^\infty\dfrac{\cos(xt)}{\sqrt{1+t^2}}dt$ に $t = \zeta/d$ を入れると
+
+$$
+\int_{-\infty}^\infty\frac{e^{-ik\zeta}}{\sqrt{d^2+\zeta^2}}d\zeta = 2\int_0^\infty\frac{\cos k\zeta}{\sqrt{d^2+\zeta^2}}d\zeta = 2K_0(|k|d)
+$$
+
+(被積分関数が偶関数なので $\sin$ の部分は消え、$\cos$ だけが残る。数値: $d = 0.8$、$k = 1.7$ で $0.5137514413$ (積分) と $2K_0(kd) = 0.5137514413$。) 変換後の Green 関数は横 2 次元の方程式 $(\nabla_\perp^2-k^2)G = -4\pi\delta^2(\vec r_\perp-\vec r_\perp')$ ($G = 2K_0(k\,d)$ が解) の解で、遮蔽された 2 次元の Green 関数になる。
+
+**段 2: 方位角の展開 (Graf の加法定理)**。円筒座標で $d = |\vec r_\perp-\vec r_\perp'| = \sqrt{r^2+r'^2-2rr'\cos(\theta-\theta')}$ とすると、標準の加法定理
+
+$$
+K_0(k\,d) = \sum_{m=0}^\infty\varepsilon_mK_m(kr_>)I_m(kr_<)\cos m(\theta-\theta')\qquad(\varepsilon_0 = 1,\ \varepsilon_{m\ge1} = 2)
+$$
+
+($r_>$、$r_<$ は $r$、$r'$ の大きい方・小さい方。数値: $kr = 1.02$、$kr' = 1.53$、$\Delta\theta = 0.7$ で左辺 $0.422814881402$、右辺 $0.422814881402$。[coll_05_spac_pspac.out.txt](outputs/coll_05_spac_pspac.out.txt) (f) と [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (c)。)
+
+**段 3: 像の項を $r = R$ で全体が 0 になるように決める**。壁の内側 ($r,r'<R$) で、自由空間の項に、$r = 0$ で正則で修正 Helmholtz 方程式 $(\nabla_\perp^2-k^2)H = 0$ を満たす項 $H = \sum_mc_mI_m(kr)I_m(kr')\cos m(\theta-\theta')$ ($c_m$ は未定) を足す。$H$ は $r'$ の源を含まない (内側で正則) ので、源の性質は変えない。全体 $G = 2K_0(kd)+H$ が $r = R$ で 0 になる条件を項ごとに書く。$r = R > r'$ なので $r_> = R$、$r_< = r'$ で
+
+$$
+2\varepsilon_mK_m(kR)I_m(kr')+c_mI_m(kR)I_m(kr') = 0\ \Longrightarrow\ c_m = -2\varepsilon_m\frac{K_m(kR)}{I_m(kR)}
+$$
+
+(各 $m$ で $\cos m(\theta-\theta')$ が独立な関数なので、項ごとに 0 にする必要がある。) 以上から
+
+$$
+G(r,r') = 2\sum_m\varepsilon_m\left[K_m(kr_>)I_m(kr_<)-\frac{K_m(kR)}{I_m(kR)}I_m(kr)I_m(kr')\right]\cos m(\theta-\theta')
+$$
+
+**段 4: $r = R$ での消滅の確認**。$r = R$ を代入すると、第 1 項は $K_m(kR)I_m(kr')$ ($r_> = R$)、第 2 項は $\dfrac{K_m(kR)}{I_m(kR)}I_m(kR)I_m(kr') = K_m(kR)I_m(kr')$ で、$K_m(kR)I_m(kr')-K_m(kR)I_m(kr') = 0$ が**すべての $m$ で項ごとに**成り立つ。数値 ($kR = 2.55$、$kr' = 1.53$、$\Delta\theta = 0.7$、60 項) で $G(R,r') = 2\times10^{-27}$ (打ち切りと桁落ちの範囲で 0)、各 $m$ の和は $3\times10^{-27}$ 以下。**一意性**: 壁の内側で $(\nabla_\perp^2-k^2)G = -4\pi\delta$ と $G|_{r=R} = 0$ を満たす 2 つの解の差は、$(\nabla_\perp^2-k^2)u = 0$ で壁の電位が 0 の関数。両辺に $u$ を掛けて内側で積分し、部分積分すると $\int(|\nabla u|^2+k^2u^2)dA = 0$ ($r=R$ の境界項は $u = 0$ で消える) になり $u\equiv0$ なので、この $G$ が唯一の解。pysad の `Solver3D` の docstring の式と同じ (確認: 式の形の突き合わせのみ。メッシュ上の離散化は導出しない)。
 
 ### 7.2 一様な円柱とペルビアンス、縦の電場
 
@@ -338,7 +380,25 @@ $$
 
 ### 7.3 長いバンチの極限: 3 次元ガウス分布
 
-3 次元ガウス分布 (標準偏差 $\sigma_x,\sigma_y,\sigma_\zeta$、全電荷 $Q$) の静電ポテンシャルは、$1/r = \frac{2}{\sqrt\pi}\int_0^\infty e^{-r^2\tau^2}d\tau$ とガウス分布の畳み込み ($\int e^{-(x-x')^2\tau^2}\mathcal N(x';\sigma^2)dx' = (1+2\sigma^2\tau^2)^{-1/2}\exp[-x^2\tau^2/(1+2\sigma^2\tau^2)]$) から
+3 次元ガウス分布 (標準偏差 $\sigma_x,\sigma_y,\sigma_\zeta$、全電荷 $Q$、密度 $\rho = Q\prod_i\mathcal N(x_i;\sigma_i^2)$、$\mathcal N(x;\sigma^2) = e^{-x^2/2\sigma^2}/\sqrt{2\pi\sigma^2}$) の静電ポテンシャルを、次の 3 段で作る。
+
+**段 1: $1/r$ の積分表示**。$\int_0^\infty e^{-r^2\tau^2}d\tau = \dfrac{\sqrt\pi}{2r}$ ($u = r\tau$ とおくとガウス積分 $\int_0^\infty e^{-u^2}du = \sqrt\pi/2$ を $r$ で割ったもの)。したがって $\dfrac1r = \dfrac2{\sqrt\pi}\displaystyle\int_0^\infty e^{-r^2\tau^2}d\tau$。$r^2 = \sum_i(x_i-x'_i)^2$ なので $e^{-r^2\tau^2}$ は 3 方向の積 $\prod_ie^{-(x_i-x_i')^2\tau^2}$ に分かれる。
+
+**段 2: 電位は電荷分布との畳み込み**。$\phi(\vec x) = \dfrac1{4\pi\epsilon_0}\displaystyle\int\frac{\rho(\vec x')}{|\vec x-\vec x'|}d^3x'$ に段 1 を入れ、$\tau$ の積分を外に出すと
+
+$$
+\phi = \frac{Q}{4\pi\epsilon_0}\frac2{\sqrt\pi}\int_0^\infty d\tau\prod_{i}g_i(x_i),\qquad g(x) \equiv \int_{-\infty}^\infty\mathcal N(x';\sigma^2)\,e^{-(x-x')^2\tau^2}dx'
+$$
+
+**段 3: 1 方向の畳み込み $g(x)$ (平方完成)**。指数部は
+$-\dfrac{x'^2}{2\sigma^2}-(x-x')^2\tau^2 = -a\,x'^2+2\tau^2x\,x'-\tau^2x^2$、$a \equiv \dfrac1{2\sigma^2}+\tau^2 = \dfrac{1+2\sigma^2\tau^2}{2\sigma^2}$。$x'$ について平方完成すると
+$-a\left(x'-\dfrac{\tau^2x}a\right)^2+\dfrac{\tau^4x^2}a-\tau^2x^2$。定数項は $-\tau^2x^2\left(1-\dfrac{\tau^2}a\right)$ で、$\dfrac{\tau^2}a = \dfrac{2\sigma^2\tau^2}{1+2\sigma^2\tau^2}$ から $1-\dfrac{\tau^2}a = \dfrac1{1+2\sigma^2\tau^2}$。$x'$ の積分は中心 $\tau^2x/a$ のガウス積分 $\int e^{-a u^2}du = \sqrt{\pi/a}$ で、前因子 $1/\sqrt{2\pi\sigma^2}$ を掛けて $\sqrt{\pi/a}/\sqrt{2\pi\sigma^2} = 1/\sqrt{2\sigma^2a} = (1+2\sigma^2\tau^2)^{-1/2}$。よって
+
+$$
+g(x) = \frac{1}{\sqrt{1+2\sigma^2\tau^2}}\exp\!\left[-\frac{x^2\tau^2}{1+2\sigma^2\tau^2}\right]
+$$
+
+(平方完成の恒等式、$1-\tau^2/a$、前因子を sympy で、$g$ を数値積分 ($\sigma = 0.7$、$\tau = 0.9$、$x = 1.3$ で $0.348089136980$、閉じた式と 12 桁一致) で確認: [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (b)。) 3 方向の積を段 2 に入れて
 
 $$
 \phi(x,y,\zeta) = \frac{Q}{4\pi\epsilon_0}\,\frac{2}{\sqrt\pi}\int_0^\infty d\tau\prod_{i=x,y,\zeta}\frac{\exp\!\bigl[-x_i^2\tau^2/(1+2\sigma_i^2\tau^2)\bigr]}{\sqrt{1+2\sigma_i^2\tau^2}}
@@ -414,7 +474,13 @@ $$
 
 ### 8.4 損失率: 数え上げと運動量の平均
 
-**数え上げ**: 静止系の密度 $n(\vec r,\vec p) = n_s(\vec r)f(\vec p)$、$\int n_s d^3r = N$。損失する粒子の単位体積・単位時間あたりの数は、順序つきの対について $\iint nn'\,v_{\rm rel}\,\sigma$ だが、(i) 対を重複して数えないので $\tfrac12$、(ii) 同種粒子の断面積 (17.27) は「$d\Omega$ に粒子が見つかる」断面積で、全立体角で積分すると衝突 1 回あたり 2 個の出射粒子 ($\hat n$ と $-\hat n$) をそれぞれ数える。(17.29) は損失する出射粒子を 1 個ずつ数えているので、上の $\tfrac12$ だけが残る: $R^* = \tfrac12\iint nn'v_{\rm rel}\sigma_{\rm loss}$。空間の積分は、ガウス分布 $n_s$ の $\int n_s^2d^3r = N^2/V^*$、$V^* = (4\pi)^{3/2}\sqrt{\det\Sigma^*}$ ($\Sigma^*$: 静止系の位置の共分散。$z^* = \gamma z$ なので $\Sigma^*_{zz} = \gamma^2\sigma_z^2$、$V^* = \gamma(4\pi)^{3/2}\sigma_x\sigma_y\sigma_z$)。粒子あたりの率は
+**数え上げ**: 静止系の密度 $n(\vec r,\vec p) = n_s(\vec r)f(\vec p)$、$\int n_s d^3r = N$。損失する**粒子**の単位体積・単位時間あたりの数を、次の 3 段で書く。
+
+1. **衝突の対**。運動量 $\vec p_1$ の粒子と $\vec p_2$ の粒子の組を、順序をつけて ($\vec p_1$ 側と $\vec p_2$ 側を区別して) $\iint n(\vec p_1)n(\vec p_2)\,d^3p_1d^3p_2$ と積分すると、同じ対 $\{a,b\}$ を ($a$ が 1 の側・$b$ が 2 の側)、($b$ が 1 の側・$a$ が 2 の側) の 2 回数える。対の数は $\tfrac12\iint nn'$。
+2. **1 つの対の散乱**。(17.27) の同種粒子の $d\sigma/d\Omega$ は、「質量中心系で、$\hat n$ 方向の $d\Omega$ に**粒子が 1 個見つかる**」確率の断面積 (対称化した振幅の 2 乗で、粒子 $a$ が $\hat n$ に行く場合と $b$ が $\hat n$ に行く場合を区別しない)。1 回の衝突で出射粒子は $\hat n$ と $-\hat n$ の 2 個なので、全立体角の積分 $\int_{4\pi}\frac{d\sigma}{d\Omega}d\Omega$ は衝突の数の**2 倍** (衝突の数は $\tfrac12\int_{4\pi}\frac{d\sigma}{d\Omega}d\Omega$) に当たる。
+3. **損失する粒子の数え方**。損失は出射粒子 1 個ごとの性質 ($|n_z|>1/\kappa$)。方向 $\hat n$ の出射粒子が損失なら 1、そうでなければ 0 とする関数 $\chi_{\rm loss}(\hat n)$ を掛けて $\int_{4\pi}\chi_{\rm loss}\frac{d\sigma}{d\Omega}d\Omega$ とすれば、衝突 1 回の 2 個の出射粒子 ($\hat n$ と $-\hat n$) がそれぞれ積分の 2 つの点 ($\hat n$ と $-\hat n$) として 1 回ずつ数えられ、**損失する粒子の数**そのものになる。これが $\sigma_{\rm loss} = \int_{4\pi}\chi_{\rm loss}\frac{d\sigma}{d\Omega}d\Omega$ ((17.29) の正側と負側の和。$K(\chi)$ は $\chi\to\pi-\chi$ で不変で、同じ衝突の 2 粒子を区別しない) で、**(2) の「衝突の数の 2 倍」の 2 は出射粒子を 1 個ずつ数えるので消える**。
+
+したがって、対の重複 (1) の $\tfrac12$ だけが残り、$R^* = \tfrac12\iint nn'v_{\rm rel}\sigma_{\rm loss}$ (単位体積あたりの損失粒子の数/時間)。(衝突の数 ($\tfrac12\int d\sigma$) で数えて 1 衝突あたり 1 個だけが損失と数える、あるいは 2 個とも損失と数える、のどちらも (3) の書き方に含まれる。) 空間の積分は、ガウス分布 $n_s$ の $\int n_s^2d^3r = N^2/V^*$、$V^* = (4\pi)^{3/2}\sqrt{\det\Sigma^*}$ ($\Sigma^*$: 静止系の位置の共分散。$z^* = \gamma z$ なので $\Sigma^*_{zz} = \gamma^2\sigma_z^2$、$V^* = \gamma(4\pi)^{3/2}\sigma_x\sigma_y\sigma_z$)。粒子あたりの率は
 
 $$
 \frac1{\tau^*} = \frac{R^*}{N} = \frac{Nc}{2V^*}\Big\langle|q|\,\sigma_{\rm loss}(\vec q)\Big\rangle_{\vec q},\qquad v_{\rm rel} = c|q|\ (\text{非相対論})
@@ -484,7 +550,13 @@ $$
 
 ### 9.2 小角の断面積と Coulomb 対数
 
-小角の Rutherford (§8.2 の (17.27) 前の式): $d\sigma/d\Omega\simeq r_e^2/(|q|^4\sin^4(\theta/2))\simeq16r_e^2/(|q|^4\theta^4)$。$\int\theta^2d\sigma = 2\pi\int\theta^3\frac{16r_e^2}{|q|^4\theta^4}d\theta = \frac{32\pi r_e^2}{|q|^4}\ln\frac{\theta_{\max}}{\theta_{\min}}$ (対数発散を、最大・最小の角度で切る)。$\ln(\theta_{\max}/\theta_{\min})\equiv\ln\Lambda$。古典的な小角散乱は、衝突係数 $b$ で $\theta\simeq r_e/(\beta^{*2}b)$ ($\theta = 2k/(\mu v_{\rm rel}^2b)$) なので、$\ln\Lambda = \ln(b_{\max}/b_{\min})$。したがって $n$ を相手の密度として、$w$ の衝突率あたりの総和は $n\,v_{\rm rel}\int w\,d\sigma = nc|q|\cdot\frac{|q|^2}{2}\cdot\frac{32\pi r_e^2\ln\Lambda}{|q|^4} = \frac{16\pi r_e^2c\,n\ln\Lambda}{|q|}$ となり、(17.34) を掛けて
+小角の Rutherford (§8.2 の (17.27) 前の式): $d\sigma/d\Omega\simeq r_e^2/(|q|^4\sin^4(\theta/2))\simeq16r_e^2/(|q|^4\theta^4)$。$\int\theta^2d\sigma = 2\pi\int\theta^3\frac{16r_e^2}{|q|^4\theta^4}d\theta = \frac{32\pi r_e^2}{|q|^4}\ln\frac{\theta_{\max}}{\theta_{\min}}$ (対数発散を、最大・最小の角度で切る)。$\ln(\theta_{\max}/\theta_{\min})\equiv\ln\Lambda$。古典的な小角散乱の角度を、衝突係数 $b$ との関係として書く。クーロン斥力 $k/r$ ($k = r_emc^2$) の Rutherford 散乱の軌道から、散乱角 $\theta$ と衝突係数は $b = \dfrac{k}{\mu v_{\rm rel}^2}\cot\dfrac\theta2$ (標準の結果)。小角 ($\cot\frac\theta2\simeq2/\theta$) で $\theta\simeq\dfrac{2k}{\mu v_{\rm rel}^2b}$。$\mu = m/2$、$v_{\rm rel} = 2\beta^*c$、$k = r_emc^2$ を入れると $\mu v_{\rm rel}^2 = 2m\beta^{*2}c^2$ から
+
+$$
+\theta\simeq\frac{2r_emc^2}{2m\beta^{*2}c^2\,b} = \frac{r_e}{\beta^{*2}\,b}
+$$
+
+(整合の確認: 衝突係数が $b$ から $b+db$ の環の断面積 $d\sigma = 2\pi b\,|db|$ に $b = r_e/(\beta^{*2}\theta)$、$|db| = r_e\,d\theta/(\beta^{*2}\theta^2)$ を入れると $d\sigma = 2\pi r_e^2\,d\theta/(\beta^{*4}\theta^3)$。$d\Omega = 2\pi\theta\,d\theta$ で割って $d\sigma/d\Omega = r_e^2/(\beta^{*4}\theta^4) = 16r_e^2/(|q|^4\theta^4)$ ($\beta^* = |q|/2$)。上の小角の式と一致する: sympy、[coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (d)。) $\theta\propto1/b$ なので、$\theta_{\max}/\theta_{\min} = b_{\max}/b_{\min}$、すなわち $\ln\Lambda = \ln(b_{\max}/b_{\min})$ ($\theta_{\min}$ は $b_{\max}$ (遮蔽)、$\theta_{\max}$ は $b_{\min}$ に対応)。したがって $n$ を相手の密度として、$w$ の衝突率あたりの総和は $n\,v_{\rm rel}\int w\,d\sigma = nc|q|\cdot\frac{|q|^2}{2}\cdot\frac{32\pi r_e^2\ln\Lambda}{|q|^4} = \frac{16\pi r_e^2c\,n\ln\Lambda}{|q|}$ となり、(17.34) を掛けて
 
 $$
 \frac{d\langle p_ip_j\rangle}{dt^*} = 4\pi r_e^2\,c\,n\,\ln\Lambda\;\Big\langle\frac{q^2\delta_{ij}-3q_iq_j}{|q|^3}\Big\rangle_{\vec q}
@@ -524,7 +596,45 @@ $V^* = (4\pi)^{3/2}\sqrt{\det\Sigma^*_{xx}}$ ($=(4\pi)^{3/2}\mathtt{vol1}$) を�
 
 ### 10.1 出発点: 単一電子のパワースペクトル
 
-超相対論的な電子の 1 回の周回で、角周波数 $\omega$ あたりに出る平均のパワー ($\omega>0$ だけ) は、標準の結果として
+円軌道 (半径 $R$) の超相対論的な電子の、角周波数 $\omega$ あたりの放射パワー ($\omega>0$ だけ) を、標準の放射積分 (Jackson『Classical Electrodynamics』の放射の章) から出す。**入力として使う標準の結果**は (S1) 放射積分と (S2) ψ 積分の Bessel 関数の恒等式の 2 つで、それ以外は下で式を書く。
+
+**(S1) 放射積分** (入力。電子が 1 回通過するとき、方向 $\hat n$ の立体角 $d\Omega$、$\omega>0$ のエネルギー):
+
+$$
+\frac{d^2I}{d\omega\,d\Omega} = \frac{e^2\omega^2}{16\pi^3\epsilon_0c}\left|\int_{-\infty}^\infty\hat n\times(\hat n\times\vec\beta)\,e^{i\omega(t-\hat n\cdot\vec r(t)/c)}\,dt\right|^2
+$$
+
+**段 1: 円軌道と小角近似**。軌道面内の方向 (方位角 $\varphi$) を $\varphi = 0$ に取って、観測方向は軌道面から角度 $\psi$ ($\ll1$)。電子の軌道 $\vec r(t) = R(\sin(ct/R),\,\ldots)$ で、$t = 0$ に観測方向と速度が平行になる。$\hat n\times(\hat n\times\vec\beta)$ は、面内成分 $-\beta\sin(ct/R)\,\hat\epsilon_\parallel$ と面外成分 $\beta\sin\psi\cos(ct/R)\,\hat\epsilon_\perp$ で、位相は $\omega\bigl[t-(R/c)\cos\psi\sin(ct/R)\bigr]$。$ct/R\ll1$、$\psi\ll1$、$\beta\simeq1-1/2\gamma^2$ (この近似が効く時間は $t\sim R/(\gamma c)$) で展開する: $\sin(ct/R)\simeq ct/R-(ct/R)^3/6$、$\cos\psi\simeq1-\psi^2/2$ を入れると、位相の括弧は $t-\beta t(1-\psi^2/2)+\beta c^2t^3/(6R^2) = t(1-\beta)+\tfrac12\beta\psi^2t+c^2t^3/(6R^2)$ ($\beta\simeq1$ を $\psi^2$ と $t^3$ の項に使い、$1-\beta\simeq1/2\gamma^2$) で
+
+$$
+\omega\left(t-\beta\frac{R}{c}\cos\psi\sin\frac{ct}R\right)\simeq\frac\omega2\left[\left(\frac1{\gamma^2}+\psi^2\right)t+\frac{c^2t^3}{3R^2}\right],\qquad
+\text{振幅: }\ -\frac{ct}{R}\,\hat\epsilon_\parallel+\psi\,\hat\epsilon_\perp
+$$
+
+**段 2: 無次元化**。$g\equiv\gamma^{-2}+\psi^2$、$x\equiv ct/(R\sqrt g)$ ($t = R\sqrt g\,x/c$、$dt = R\sqrt g\,dx/c$)、$\xi\equiv\dfrac{\omega R}{3c}g^{3/2}$ とおくと、位相 $=\dfrac\omega2\Bigl[g\cdot\dfrac{R\sqrt g}c x+\dfrac{c^2}{3R^2}\dfrac{R^3g^{3/2}}{c^3}x^3\Bigr] = \dfrac{\omega Rg^{3/2}}{2c}\Bigl(x+\dfrac{x^3}3\Bigr) = \dfrac32\xi\Bigl(x+\dfrac{x^3}3\Bigr)$、振幅は $-\sqrt g\,x\,\hat\epsilon_\parallel+\psi\,\hat\epsilon_\perp$。2 つの積分は
+
+$$
+\int_{-\infty}^\infty\cos\!\left[\tfrac32\xi\bigl(x+\tfrac{x^3}3\bigr)\right]dx = \frac2{\sqrt3}K_{1/3}(\xi),\qquad
+\int_{-\infty}^\infty x\sin\!\left[\tfrac32\xi\bigl(x+\tfrac{x^3}3\bigr)\right]dx = \frac2{\sqrt3}K_{2/3}(\xi)
+$$
+
+(証明: $t' = (3\xi/2)^{1/3}x$ とおくと $\frac32\xi(x+x^3/3) = t'^3/3+z\,t'$、$z = (3\xi/2)^{2/3}$。Airy 関数の定義 $\int_{-\infty}^\infty\cos(t'^3/3+zt')dt' = 2\pi\,{\rm Ai}(z)$ と、その $z$ 微分 $\int t'\sin(t'^3/3+zt')dt' = -2\pi\,{\rm Ai}'(z)$ に、${\rm Ai}(z) = \frac1\pi\sqrt{z/3}\,K_{1/3}(\xi)$、${\rm Ai}'(z) = -\frac{z}{\pi\sqrt3}K_{2/3}(\xi)$ ($\xi = \frac23z^{3/2}$) を入れる。$\cos$ の積分に $(3\xi/2)^{-1/3}$、$x\sin$ の積分に $(3\xi/2)^{-2/3}$ が掛かり、$z^{1/2} = (3\xi/2)^{1/3}$、$z = (3\xi/2)^{2/3}$ で相殺する。数値: $\xi = 0.7$ で Airy 関数経由 $0.8042836359$、$(2/\sqrt3)K_{1/3} = 0.8042836359$。$x\sin$ は $0.9408316844$ と $0.9408316844$: [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (e)。)
+
+**段 3: 角度分布**。$\hat\epsilon_\parallel$ 成分は $x$ が奇関数なので $i\sin$ の部分だけ、$\hat\epsilon_\perp$ 成分は $\cos$ の部分だけが残る (残りは奇関数の積分で 0)。積分の大きさの 2 乗は $\dfrac{4R^2}{3c^2}g^2\left[K_{2/3}^2(\xi)+\dfrac{\psi^2}gK_{1/3}^2(\xi)\right]$ ($|{-\sqrt g\cdot R\sqrt g/c}\cdot\frac2{\sqrt3}K_{2/3}|^2 = \frac{4R^2g^2}{3c^2}K_{2/3}^2$、面外は $|\psi R\sqrt g/c\cdot\frac2{\sqrt3}K_{1/3}|^2 = \frac{4R^2g\psi^2}{3c^2}K_{1/3}^2$)。(S1) に入れて
+
+$$
+\frac{d^2I}{d\omega\,d\Omega} = \frac{e^2}{12\pi^3\epsilon_0c}\left(\frac{\omega R}c\right)^2g^2\left[K_{2/3}^2(\xi)+\frac{\psi^2}{g}K_{1/3}^2(\xi)\right]
+$$
+
+**段 4: 周回あたりのパワー**。軌道面内の各方位 $\varphi$ に、電子は 1 周に 1 回だけ向くので、1 周のエネルギーは $2\pi\int d\psi\,\frac{d^2I}{d\omega d\Omega}$ ($d\Omega = d\varphi\,d\psi$)。周期 $2\pi R/c$ で割って
+
+$$
+P_\omega = \frac cR\int_{-\infty}^\infty d\psi\,\frac{d^2I}{d\omega\,d\Omega}
+$$
+
+**(S2) $\psi$ 積分** (入力: $K_{2/3}^2$、$K_{1/3}^2$ の $\psi$ 積分を $K_{5/3}$ の積分に直す Bessel 関数の恒等式。手では展開していない)。この結果が次の (17.37) である。
+
+**確認**: 段 3 の式を $\psi$ で数値積分し ($\gamma = 50$、$R = c = 1$)、(17.37) の右辺と比べると、$y = \omega/\omega_c = 0.05,\ 0.3,\ 1,\ 3$ で比が $1.00000000$ (8 桁): [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (e)。したがって (S2) の恒等式は数値で確認済み。
 
 $$
 P_\omega = \frac{\sqrt3\,e^2\gamma}{8\pi^2\epsilon_0R}\,F\!\left(\frac\omega{\omega_c}\right),\quad F(y) = y\int_y^\infty K_{5/3}(t)\,dt,\quad \omega_c = \frac{3\gamma^3c}{2R}
@@ -579,21 +689,51 @@ A = \frac{1}{\sqrt3\,\epsilon_0\,\Gamma(1/3)\,3^{1/3}R^{2/3}}
 \tag{17.43}
 $$
 
-(虚部は $\mathrm{Im}\,\hat w = -\frac12Ak^{1/3}$ と決まる。) 時間領域: $\int_0^\infty s^{\mu-1}e^{-(\varepsilon-ik)s}ds = \Gamma(\mu)(\varepsilon-ik)^{-\mu}$ (sympy で確認) より、$\mu = 2/3$ で $(-ik)^{-2/3}\leftrightarrow s^{-1/3}/\Gamma(2/3)$。$(-ik)^{1/3} = (-ik)\cdot(-ik)^{-2/3}$ で、$-ik$ を掛けることは $s$ での微分 ($\int w'e^{iks}ds = -ik\hat w$、$w(0)$ の境界項は超関数の意味で落とす) に当たるので
+(虚部は $\mathrm{Im}\,\hat w = -\frac12Ak^{1/3}$ と決まる。) **時間領域への逆変換 (Γ 関数の解析接続)**。$\hat w(k) = \int_0^\infty w(s)e^{iks}ds = A(-ik)^{1/3}$ になる因果的な $w(s)$ を求める。
+
+(i) **基本公式**: $\mathrm{Re}\,p>0$、$\mu>0$ で $\displaystyle\int_0^\infty s^{\mu-1}e^{-ps}ds = \Gamma(\mu)\,p^{-\mu}$ ($u = ps$ とおいた Γ 関数の定義。$p = \varepsilon-ik$ とし、$\varepsilon\to+0$ で $k$ が実軸の極限)。$p^{-\mu}$ の形のものは、$s^{\mu-1}/\Gamma(\mu)$ の変換になる。
+
+(ii) **$\mu = -1/3$ への解析接続**: 求めたいのは $p^{1/3}$ なので $\mu = -1/3$。しかし $\mu\le0$ では $\int_0^\infty s^{\mu-1}ds$ が $s = 0$ で発散して (i) の積分は存在しない。$\mu$ について解析接続する: $-1<\mu<0$ では、発散する定数項を引いた
 
 $$
-w(s) = \frac{A}{\Gamma(2/3)}\frac{d}{ds}\left[s^{-1/3}\theta(s)\right] = -\frac{A}{3\Gamma(2/3)}\,s^{-4/3}\ (s>0)\ \text{(超関数)}
+\int_0^\infty s^{\mu-1}\bigl(e^{-ps}-1\bigr)ds = \Gamma(\mu)\,p^{-\mu}\qquad(-1<\mu<0)
+$$
+
+が成り立つ (左辺は $s\to0$ で $s^{\mu}$、$s\to\infty$ で $s^{\mu-1}$ で収束。部分積分 $\int s^{\mu-1}(e^{-ps}-1)ds = [\frac{s^\mu}\mu(e^{-ps}-1)]+\frac p\mu\int s^\mu e^{-ps}ds$ の境界項は 0、残りは $\frac p\mu\Gamma(\mu+1)p^{-\mu-1} = \Gamma(\mu)p^{-\mu}$)。$\mu = -1/3$ で $\Gamma(-\tfrac13) = -3\Gamma(\tfrac23)$ ($\Gamma(z+1) = z\Gamma(z)$ から $\Gamma(\tfrac23) = -\tfrac13\Gamma(-\tfrac13)$) なので、$p = -ik$ を入れて
+
+$$
+(-ik)^{1/3} = \frac1{\Gamma(-1/3)}\int_0^\infty s^{-4/3}\bigl(e^{iks}-1\bigr)ds = -\frac{1}{3\Gamma(2/3)}\int_0^\infty s^{-4/3}\bigl(e^{iks}-1\bigr)ds
+$$
+
+(数値: $p = 0.5$ で $\int s^{-4/3}(e^{-ps}-1)ds = -3.2242923617$、$\Gamma(-1/3)p^{1/3} = -3.2242923623$。複素数 $p = 0.3-1.2i$ でも 10 桁一致: [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) (f)。)
+
+(iii) **$w(s)$ の読み取り**: 「$-1$」の項は $k$ によらない定数 (一定値 $\int_0^\infty s^{-4/3}ds$ の発散部分) で、$\hat w(k)$ の $k = 0$ の値を引く操作に当たる。つまり $w(s)$ は、$s>0$ で $-\dfrac{A}{3\Gamma(2/3)}s^{-4/3}$、$s = 0$ の発散は**有限部分** (Hadamard の有限部分: 試験関数 $f$ に対して $\int_0^\infty w(s)f(s)ds\equiv-\dfrac{A}{3\Gamma(2/3)}\int_0^\infty s^{-4/3}[f(s)-f(0)]ds$) で定義する。$f = e^{iks}$ の場合が上の式で、$A(-ik)^{1/3}$ になる。
+
+$$
+w(s) = -\frac{A}{3\Gamma(2/3)}\,s^{-4/3}\ (s>0)\ \text{(有限部分)}\ =\ \frac{A}{\Gamma(2/3)}\frac{d}{ds}\left[s^{-1/3}\theta(s)\right]\ \text{(超関数としての微分)}
 \tag{17.44}
 $$
+
+(右辺は超関数の微分: $\theta(s)s^{-1/3}$ は局所可積分で、その微分は試験関数 $f$ に対して $\langle(\theta s^{-1/3})',f\rangle = -\int_0^\infty s^{-1/3}f'(s)ds$ と定義される。これが下の部分積分の式の右辺に一致するので、2 つの書き方は同じ $w$ である。)
+
+**部分積分の式 (有限部分が微分の形になること)**: $\int_0^\infty s^{-4/3}[f(s)-f(0)]ds$ を、$s^{-4/3} = \frac{d}{ds}(-3s^{-1/3})$ で部分積分する。境界項 $[-3s^{-1/3}(f(s)-f(0))]_0^\infty$ は、$s\to0$ で $f(s)-f(0)\sim f'(0)s$ から $s^{2/3}\to0$、$s\to\infty$ で $f\to0$ (有限の $f(0)$ に $s^{-1/3}\to0$) で 0。よって
+
+$$
+\int_0^\infty s^{-4/3}[f(s)-f(0)]ds = 3\int_0^\infty s^{-1/3}f'(s)\,ds,\qquad\Longrightarrow\qquad \int_0^\infty w(s)f(s)ds = -\frac{A}{\Gamma(2/3)}\int_0^\infty s^{-1/3}f'(s)\,ds
+$$
+
+(数値: $f(s) = \lambda(z+s)$、$\lambda$ は $\sigma = 1$ のガウス分布で、$z = 2,\ -2,\ 0$ で左辺の有限部分の積分が $0.0695791154,\ -0.0957296018,\ 0.2962742577$、右辺が $0.0695791154,\ -0.0957296018,\ 0.2962742578$ と 10 桁一致。同じ出力 (f)。)
+
+**$f = e^{iks}$ での確認**: 右辺は $-\dfrac{A}{\Gamma(2/3)}\,ik\displaystyle\int_0^\infty s^{-1/3}e^{iks}ds = -\dfrac{A}{\Gamma(2/3)}\,ik\,\Gamma(\tfrac23)(-ik)^{-2/3} = A\,(-ik)(-ik)^{-2/3} = A(-ik)^{1/3}$ ((i) で $\mu = 2/3$)。$-ik$ を掛けることが $s$ での微分に当たる、という見方と同じで、$w(0)$ に当たる発散する境界項は有限部分の定義で落ちる。
 
 試験粒子が受けるエネルギー変化は、$\int\lambda(z')\,w(z'-z)\,dz'$ を部分積分して微分を $\lambda$ に移す ($s = z'-z$、$\frac{d}{ds}$ は $z'$ について):
 
 $$
-\frac{dE}{ds}(z) = +\frac{Ne^2A}{\Gamma(2/3)}\int_0^\infty\lambda'(z+s)\,s^{-1/3}ds = \frac{2Ne^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}\int_0^\infty\lambda'(z+s)\,s^{-1/3}ds
+\frac{dE}{ds}(z) = +\frac{Ne^2A}{\Gamma(2/3)}\int_0^\infty\lambda_z(z+s)\,s^{-1/3}ds = \frac{2Ne^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}\int_0^\infty\lambda_z(z+s)\,s^{-1/3}ds
 \tag{17.45}
 $$
 
-(係数: $\dfrac{e^2A}{\Gamma(2/3)} = \dfrac{e^2}{\sqrt3\epsilon_0\Gamma(1/3)\Gamma(2/3)3^{1/3}R^{2/3}} = \dfrac{e^2}{2\pi\epsilon_0\,3^{1/3}R^{2/3}}$ ($\Gamma(1/3)\Gamma(2/3) = 2\pi/\sqrt3$。数値: $1/(\sqrt3\Gamma(1/3)\Gamma(2/3)) = 0.159154943092 = 1/2\pi$) $= \dfrac{2e^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}$。符号: $z$ は先頭が正 (§5.1)。先頭 ($\lambda'<0$ の側) は損失、後尾は利得。) 単位: $e^2/(4\pi\epsilon_0)$ [J m] $\times R^{-2/3}\times\int\lambda'(z+s)s^{-1/3}ds$ [$\mathrm m^{-2}\cdot\mathrm m^{2/3} = \mathrm m^{-4/3}$] で J/m。
+(係数: $\dfrac{e^2A}{\Gamma(2/3)} = \dfrac{e^2}{\sqrt3\epsilon_0\Gamma(1/3)\Gamma(2/3)3^{1/3}R^{2/3}} = \dfrac{e^2}{2\pi\epsilon_0\,3^{1/3}R^{2/3}}$ ($\Gamma(1/3)\Gamma(2/3) = 2\pi/\sqrt3$。数値: $1/(\sqrt3\Gamma(1/3)\Gamma(2/3)) = 0.159154943092 = 1/2\pi$) $= \dfrac{2e^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}$。符号: $z$ は先頭が正 (§5.1)。先頭 ($\lambda_z<0$ の側) は損失、後尾は利得。) 単位: $e^2/(4\pi\epsilon_0)$ [J m] $\times R^{-2/3}\times\int\lambda'(z+s)s^{-1/3}ds$ [$\mathrm m^{-2}\cdot\mathrm m^{2/3} = \mathrm m^{-4/3}$] で J/m。
 
 **ガウス分布の平均の損失**: $\lambda = e^{-z^2/2\sigma^2}/(\sqrt{2\pi}\sigma)$ で (17.41) を使う ($|\tilde\lambda|^2 = e^{-k^2\sigma^2}$、$\int_0^\infty k^{1/3}e^{-k^2\sigma^2}dk = \Gamma(2/3)/(2\sigma^{4/3})$):
 
@@ -693,6 +833,7 @@ K64 の `tfcsrhaissin` は `aw = rbody(2)/r65/sigz**2` (`rbody(2)` = `inten`、`
 | `coll_05_spac_pspac.py` | (a) 一様な円柱、(b) 壁の基準の電位、(c) 3 次元ガウス分布の電位、(d) 矩形の箱の級数解、(e) 線形のレンズの積分とチューンシフトの行列、(f) 円筒の Green 関数の加法定理 | [coll_05_spac_pspac.out.txt](outputs/coll_05_spac_pspac.out.txt) |
 | `coll_06_ibs.py` | IBS の拡散の核 (17.36) と (17.35) の平均のモンテカルロ | [coll_06_ibs.out.txt](outputs/coll_06_ibs.out.txt) |
 | `coll_07_wake_slices.py` | 切片の粗視化の誤差の粒子数依存 | [coll_07_wake_slices.out.txt](outputs/coll_07_wake_slices.out.txt) |
+| `coll_08_derivation_steps.py` | 途中式の検算: (a) 自己項の 1/2、(b) ガウスの畳み込みの平方完成、(c) 円筒壁の Green 関数 (フーリエ表示・加法定理・$r=R$ での消滅)、(d) Rutherford の小角 ($\theta$ と $b$)、(e) CSR の角度分布の $\psi$ 積分と Airy 積分、(f) $(-ik)^{1/3}$ の有限部分と部分積分 | [coll_08_derivation_steps.out.txt](outputs/coll_08_derivation_steps.out.txt) |
 
 実行: リポジトリのルートから `py -3.12 -W ignore physics_guide/scripts/coll_01_spacecharge_wake.py` (数秒) など。`coll_04` は追跡を含み数分、`coll_02`・`coll_05`・`coll_06`・`coll_07` は 1 分前後。
 
@@ -801,3 +942,14 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `bmax`、`bmin`、`ci`、`cintrb` | Coulomb 対数の上下限、拡散行列の係数 | `tintrb`、`temit.f:801` | |
 | `fintrbu(u,a1,a2)` | 角度積分の被積分関数 | `tintrb.f` | `fintrbu` |
 | `aw`、`inten`、`ndiv`、`r56`、`r65` | CSR のキックの強さ、分割数、$r_{56}$、$r_{65}$ | `csrtrack.f`、`CSR.n` | `aw`、`ndiv` |
+| `rbody(i)` | SAD の実数リスト (`sad_rlist`) の本体の $i$ 番目。`csrtrack` の引数のリストは `kll%rbody(1..9)` = ($dz$ = 格子の間隔、`ndiv`、`inten`、$r_{56}$、$r_{65}$、`frf`、`phirf`、`damp`、`sigmae`)。`tfcsrhaissin` は `rbody(1..4)` = ($dz$、`inten`、$r_{65}$、$\sigma_z$) | `csrtrack.f:33-41`、`:104-107` | |
+| `zi(i)`、`wi(i)` | `zl` (インピーダンス。FFT の並びで (実部, 虚部) が交互に入る) から作る配列: `zi(i) = zl(i+1)/ak`、`zi(i+1) = -zl(i)/ak` ($ak = dk(i-1)$、$dk = \pi/(dz\,nr)$。$k$ で割る = 虚部と実部を入れ替えて積分に当たる形)。`wi = zi/nr/dz` を逆 FFT した配列は、Newton 法のヤコビアン $g_{km}$ の畳み込みの核 (§11.2)。意味の導出は §11.2 の範囲 | `csrtrack.f:163-170` | |
+| `trans1(6,6)` | `tintrb` の、要素の入口からスライスの中心 (長さ `alx = al/2 - al1`) までのドリフトの 6×6 行列。`ale = alx/pzi`、`alz = ale/pzi²`、`trans1(1,2) = ale+pxi²·alz`、`trans1(1,4) = pxi·pyi·alz`、`trans1(1,6) = -pxi·alz·pr`、`trans1(5,6) = h0/hi³·alx+s·alz` ($pzi$ = 縦運動量、`pxi`・`pyi` = 閉軌道の傾き) | `tintrb.f:64-77` | |
+| `trans2(6,6)` | `tintrb` の作業用の 6×6 行列で、3 通りに使われる: (i) WSPAC で $T_1^{-1}\,T_{\rm sp}\,T_1$ (スライス中心で作ったレンズ行列を入口に戻す、`:87`)、(ii) INTRA の入口で、位置・運動量を `a = p0²/(h+1)`、`b = a/h` の式で変える線形の座標変換 (`:102-125`。導出は §17 の未確認)、(iii) 拡散行列を入口に戻す $T_1^{-1}$ (`:229`) | `tintrb.f` | |
+| `bm`、`bn` | `bm` = 位置の 3×3 共分散の最小固有値の平方根 (最小のビームの大きさ)、`bn` = $(V^*/N)^{1/3}$ (粒子間の距離)。$b_{\max} = \min(bm,bn)$ (§9.2) | `tintrb.f:138`、`:222` | |
+| `vol1`、`pvol` | `vol1` = 位置の 3×3 共分散の固有値の積の平方根 ($= \sqrt{\det\Sigma_{xx}}$。$V^* = (4\pi)^{3/2}\mathtt{vol1}$)、`pvol` = 運動量の条件付き共分散 `pl` の固有値の積の平方根 ($= \sqrt{\lambda_1\lambda_2\lambda_3}$) | `tintrb.f:136`、`:172` | |
+| `taurdx`、`taurdy`、`taurdz` | $x$・$y$・$z$ の放射減衰時間 (`taurdx = -2π/ω0/cd(1)` の形。`cd` は減衰の量で、読んだのは代入だけ。K64 は `max(taurd)` を $b_{\min}$ の式 (§9.2) に使う) | `temit.f:341`、`tintrb.f:227` | |
+| `cintrb` | IBS の拡散行列の定数 $r_e^2N/(4\pi)$ (`pbunch` を含む)。`ci = cintrb·al·ln(2 b_max/b_min)/vol1/pvol/h0⁴` (§9.3) | `temit.f:801`、`tintrb.f:231` | |
+| `touckl(i)` | 運動量アクセプタンス $\delta_i = (i+1)\times2\times10^{-3}$ ($i = 1\ldots120$、`ntouckl`) ごとの Touschek 損失率 (要素ごとの `touckf(aez/eztrans)·tf` を 1 周で足した値。`temit.f` で `tf` を掛けて率にする) | `tintrb.f:181-185`、`temit.f:655-667` | |
+| `toucke(i,ll)` | `touckl` を要素 `ll` ごとに分けたもの (同じ式) | `tintrb.f:185` | |
+| `touckm(j,i,1..2)` | 縦の振幅 $j$ と横の振幅 $i$ の組ごとの損失率。第 3 添字 1 は $x$、2 は $y$ ($aexz = 1/(e_{x,\rm trans}/a_{x0}+e_{z,\rm trans}/a_{z0})$ を `touckf` に入れる) | `tintrb.f:186-196` | |
