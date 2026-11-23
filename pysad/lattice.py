@@ -4087,43 +4087,34 @@ class Lattice:
 
     def chromaticity(self, ddelta: float = 1e-4) -> tuple:
         """
-        色収差 (ξx, ξy)。10/11 系から移植した pysad 独自の計算法
-        (SAD の直訳ではない。SAD との照合は未実施 = 次のベンチ Level 3 の対象)。
+        一次の色収差 (ξx, ξy) = dν/dδ。δ = ±ddelta で閉軌道と光学を求め (twiss_table = SAD の CALC と同じ流れ)、
+        1 周の位相進みの中心差分 (ν(+ddelta) − ν(−ddelta)) / (2 ddelta) を返す (ν = μ/2π。整数部を含む連続値)。
 
-        自然色収差: 線形一周行列のトレースの数値微分
-            ξ = (1/2π)·(−1/sin 2πQ)·d(cos 2πQ)/dδ
-        6 極の寄与: 解析式 ±Σ K2 η β L/(4π) を加算 (線形行列に K2 が現れないため)
+        閉軌道が分散で動くので、四極の自然な色収差、偏向磁石 (本体の弱収束・端面・K1≠0 の複合機能) が動いた軌道上で見る
+        δ 依存、6 極 (分散による軌道のずれ × K2) をまとめて含む。追跡の 1 周写像のヤコビアンから出したチューンの差分、
+        gs (K64) の ``Twiss["NX",-1]`` の DP0 差分と一致する (docs/12 の線形光学の章 §7)。
+        FFS の ``CHROMATICITY`` コマンドとは別の量: コマンドは QUAD・SEXT・MULT だけの閉形式 (ヘルプの「simplest formula」、
+        BEND を数えない) で、値は 4π·ξ の単位 (四極だけなら TOTAL = 4π·ξ)。
+
+        RF は無視 (RFSW を一時的に OFF)。閉軌道の初期値・安定判定の状態は呼ぶ前に戻す。
+        不安定な δ では twiss_table が例外を出す。
         """
-        from .elements import Sextupole
-        M_p = np.eye(6)
-        M_m = np.eye(6)
-        M_0 = np.eye(6)
-        for el in self.elements:
-            M_p = el.transfer_matrix(+ddelta) @ M_p
-            M_m = el.transfer_matrix(-ddelta) @ M_m
-            M_0 = el.transfer_matrix(0.0) @ M_0
-        cos_x0 = (M_0[0, 0] + M_0[1, 1]) / 2.0
-        cos_y0 = (M_0[2, 2] + M_0[3, 3]) / 2.0
-        sign_sin_x = np.sign(M_0[0, 1]) if abs(M_0[0, 1]) > 1e-15 else 1.0
-        sign_sin_y = np.sign(M_0[2, 3]) if abs(M_0[2, 3]) > 1e-15 else 1.0
-        sin_x0 = np.sqrt(max(1e-30, 1.0 - cos_x0**2)) * sign_sin_x
-        sin_y0 = np.sqrt(max(1e-30, 1.0 - cos_y0**2)) * sign_sin_y
-        d_cos_x = ((M_p[0, 0] + M_p[1, 1]) - (M_m[0, 0] + M_m[1, 1])) / (2.0 * ddelta) / 2.0
-        d_cos_y = ((M_p[2, 2] + M_p[3, 3]) - (M_m[2, 2] + M_m[3, 3])) / (2.0 * ddelta) / 2.0
-        xi_x = (1.0 / (2.0 * np.pi)) * (-1.0 / sin_x0) * d_cos_x
-        xi_y = (1.0 / (2.0 * np.pi)) * (-1.0 / sin_y0) * d_cos_y
-
-        tw_list = self.twiss(delta=0.0, full=True)
-        for i, el in enumerate(self.elements):
-            if isinstance(el, Sextupole) and abs(el.K2) > 1e-15:
-                tw_in  = tw_list[i]
-                tw_out = tw_list[i + 1]
-                bx = 0.5 * (tw_in['bx'] + tw_out['bx'])
-                by = 0.5 * (tw_in['by'] + tw_out['by'])
-                ex = 0.5 * (tw_in['ex'] + tw_out['ex'])  # η_x
-                xi_x += el.K2 * ex * bx * el.L / (4.0 * np.pi)
-                xi_y -= el.K2 * ex * by * el.L / (4.0 * np.pi)
-
+        global RFSW
+        cod0 = None if self._cod_prev is None else self._cod_prev.copy()
+        q0 = getattr(self, '_qstat', None)
+        rf0 = RFSW
+        RFSW = False
+        try:
+            mu = []
+            for sgn in (1.0, -1.0):
+                t = self.twiss_table(delta=sgn * ddelta)[-1]
+                mu.append((float(t.mux), float(t.muy)))
+        finally:
+            RFSW = rf0
+            self._cod_prev = cod0
+            self._qstat = q0
+        xi_x = (mu[0][0] - mu[1][0]) / (4.0 * np.pi * ddelta)
+        xi_y = (mu[0][1] - mu[1][1]) / (4.0 * np.pi * ddelta)
         return xi_x, xi_y
 
     # ------------------------------------------------------------------

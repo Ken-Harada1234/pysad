@@ -304,6 +304,11 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 <td>四極・MULT の線形フリンジの係数 F1 の符号 (追跡と CALC・数値積分・gs の保存した出力、B323)</td>
 </tr>
 <tr>
+<td><a href="test_v250_chromaticity_bend.py"><code>test_v250_chromaticity_bend.py</code></a></td>
+<td>14</td>
+<td><code>Lattice.chromaticity()</code> の dν/dδ が偏向磁石 (なし・E1/E2・K1≠0・6 極つき) で追跡のヤコビアン・gs の <code>Twiss["NX",-1]</code> の差分と一致。<code>CHROMATICITY</code> コマンドの単位と BEND の寄与の欠落 (B325)</td>
+</tr>
+<tr>
 <td><a href="test_v2_P3_ae.py"><code>test_v2_P3_ae.py</code></a></td>
 <td>24</td>
 <td>MULT の端の角 AE1・AE2 と K0 つき MULT のエミッタンス (SAD 照合)</td>

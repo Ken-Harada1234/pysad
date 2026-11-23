@@ -134,6 +134,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>B73</td>
 </tr>
 <tr>
+<td><code>Lattice.chromaticity()</code> (pysad の API。FFS の <code>CHROMATICITY</code> コマンドは両モードとも K64 の式のまま)</td>
+<td><code>twiss_table(±δ)</code> の位相進みの中心差分 dν/dδ (閉軌道の動き・BEND の端面・本体・K1・6 極を含む。追跡のヤコビアン・gs の <code>Twiss["NX",-1]</code> の DP0 差分と一致)</td>
+<td>同じ (K64 に対応する式がなく、両モードで同じ。旧い実装は BEND の寄与を落としていた)</td>
+<td>B325</td>
+</tr>
+<tr>
 <td>RADINT の MULT・SOL</td>
 <td>場のある MULT・SOL があれば「入っていない」と表示 (積分には入れない)</td>
 <td>黙って無視 (表示なし)</td>

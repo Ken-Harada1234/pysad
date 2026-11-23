@@ -6,7 +6,7 @@
 (c) Courant-Snyder の行列 A と (α, β, μ): B A B^{-1} = 回転 (sympy)。伝搬 (ドリフト) の式。
 (d) x-y 結合の分解 (qmdiag): 結合した安定なシンプレクティック行列で、K64 の式 (qmdiag.f の通常の場合) が R M R^{-1} をブロック対角にするか。
     c^2 + det r = 1、R のシンプレクティック性、ヘルプの R^{-1} (r の符号を反転) の確認。pysad.optics.periodic_r との一致。
-(e) 色収差: 1 周の追跡の Jacobian から作ったチューンの δ 微分と lat.chromaticity() の比較。
+(e) 色収差 (偏向あり): 1 周の追跡の Jacobian から作ったチューンの δ 微分、lat.chromaticity()、SAD の CHROMATICITY (CELL; CALC) の比較。
 """
 import io
 import math
@@ -171,13 +171,13 @@ print('r̂ = κ (Q - N̄)、κ = -2/(tr(P-K) + sgn √(trab2)) との差 = %.1e'
 print('\n== (e) 色収差 ==')
 chx, chy = lat.chromaticity()
 src = ('MOMENTUM = 3GEV;\nDRIFT D1=(L=0.8) D2=(L=0.3);\nBEND B=(L=1.2 ANGLE=%.15g);\nQUAD QF=(L=0.3 K1=0.35) QD=(L=0.3 K1=-0.33);\nMARK ST=();\n'
-       'LINE CELL=(QF D1 B D2 QD D1 B D2);\nLINE RING=(ST CELL CELL CELL CELL CELL CELL CELL CELL);\nFFS;\nUSE RING;\nCALC;\nCHROMATICITY;\n') % (2 * math.pi / 16)
+       'LINE CELL=(QF D1 B D2 QD D1 B D2);\nLINE RING=(ST CELL CELL CELL CELL CELL CELL CELL CELL);\nFFS;\nUSE RING;\nCELL;\nCALC;\nCHROMATICITY;\n') % (2 * math.pi / 16)
 buf = io.StringIO()
 run_sad_string(src, out=buf)
 tot = [ln for ln in buf.getvalue().splitlines() if ln.strip().startswith('TOTAL')]
-print('SAD の CHROMATICITY の TOTAL (四極・6 極だけの閉形式、BEND は数えない。SAD の位相 [rad] の δ 微分):', tot[-1].strip() if tot else '(出力なし)')
+print('SAD の CHROMATICITY の TOTAL (CELL; CALC のあと。四極・6 極だけの閉形式、BEND は数えない。四極だけなら 4π dν/dδ の単位):', tot[-1].strip() if tot else '(出力なし)')
 gx, gy = [float(v) for v in tot[-1].split()[1:3]] if tot else (float('nan'), float('nan'))
-print('  -> 2π で割ると (dνx/dδ, dνy/dδ) = (%.4f, %.4f)' % (gx / (2 * math.pi), gy / (2 * math.pi)))
+print('  -> 4π で割ると (BEND の寄与を含まない) (%.4f, %.4f)' % (gx / (4 * math.pi), gy / (4 * math.pi)))
 nus = []
 for dd in (1e-4, -1e-4):
     fd = rdttrack.one_turn(elements, mom, dd)
@@ -192,7 +192,8 @@ for dd in (1e-4, -1e-4):
     nus.append((mux / (2 * math.pi), muy / (2 * math.pi)))
 print('追跡 + Newton + 1 周の Jacobian の μ (符号は M12 で決める) から: dν/dδ = (%.4f, %.4f) (小数部。整数部は 1 周の行列では決まらない)' % (
     (nus[0][0] - nus[1][0]) / 2e-4, (nus[0][1] - nus[1][1]) / 2e-4))
-print('lat.chromaticity() (pysad 独自の計算、要素の transfer_matrix(δ) による): (ξx, ξy) = (%.4f, %.4f)' % (chx, chy))
+print('lat.chromaticity() (twiss_table(±δ) の位相進みの差分): (ξx, ξy) = (%.4f, %.4f)' % (chx, chy))
+print('  gs (K64) の Twiss["NX",-1] の DP0 = ±1e-4 の差分 (CELL; NORFSW): (-0.7797363826, -0.8786795941) (保存した値。この環境で別に実行)')
 
 print('\n== (e2) 四極だけのリング (偏向なし): 追跡の色収差と閉形式 -(1/4π) Σ K1L β の比較 ==')
 srcq = '''MOMENTUM = 3GEV;

@@ -93,6 +93,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 | [`test_v241_C_mult_edge_ykick.py`](test_v241_C_mult_edge_ykick.py) | 12 | MULT の端 (AE1・AE2) の縦方向の収束 |
 | [`test_v241_quad_integrator.py`](test_v241_quad_integrator.py) | 31 | 四極本体の積分器の構造と、追跡の写像の正確さ |
 | [`test_v244_quad_linear_fringe_f1.py`](test_v244_quad_linear_fringe_f1.py) | 68 | 四極・MULT の線形フリンジの係数 F1 の符号 (追跡と CALC・数値積分・gs の保存した出力、B323) |
+| [`test_v250_chromaticity_bend.py`](test_v250_chromaticity_bend.py) | 14 | `Lattice.chromaticity()` の dν/dδ が偏向磁石 (なし・E1/E2・K1≠0・6 極つき) で追跡のヤコビアン・gs の `Twiss["NX",-1]` の差分と一致。`CHROMATICITY` コマンドの単位と BEND の寄与の欠落 (B325) |
 | [`test_v2_P3_ae.py`](test_v2_P3_ae.py) | 24 | MULT の端の角 AE1・AE2 と K0 つき MULT のエミッタンス (SAD 照合) |
 | [`test_v2_P3_f1.py`](test_v2_P3_f1.py) | 100 | ANGLE=0 の BEND と MULT の F1・FB1・FB2 の追跡 (SAD 照合) |
 | [`test_v2_D2_edge.py`](test_v2_D2_edge.py) | 36 | 硬い端の極 (ANGLE=0 の BEND) の端の幾何を独立な基準と比べる |

@@ -338,7 +338,7 @@ qf<span class="o">.</span>K1, qf<span class="o">.</span>_raw                    
 <tr>
 <td><code>chromaticity()</code>, <code>summary()</code>, <code>radiation_integrals()</code>, <code>emittance(energy_eV)</code></td>
 <td></td>
-<td>旧 API 系で SAD 未照合。色収差は <code>Matcher</code>/FFS の DP 走査か <code>emit6d</code> を使う</td>
+<td><code>chromaticity()</code> は dν/dδ (<code>twiss_table(±1e-4)</code> の位相進みの差分。BEND・6 極を含む。追跡のヤコビアン・gs の <code>Twiss["NX",-1]</code> の DP0 差分と一致。3 GeV の 1 リング構成で確認、docs/30 B325)。他は旧 API 系で SAD 未照合。FFS の <code>CHROMATICITY</code> は QUAD・SEXT・MULT だけ・単位 4π·ξ</td>
 </tr>
 </tbody>
 </table>

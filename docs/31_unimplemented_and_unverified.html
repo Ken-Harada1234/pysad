@@ -1059,6 +1059,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>v2 は F1 の符号を残す</strong> (CALC と同じ。1 周写像の線形部分が CALC と 1e-10 以下、独立な数値積分と K の 2 次まで)。k64 は gs と同じ (F1 &lt; 0 で CALC と 2e-3 食い違う)。限界: 設計軌道まわりの線形部分だけを確かめた (軌道がずれたときの 2 次以上・δ の列は未確認)。放射の <code>tradk</code> の引数は K64 の癖 (長さに係数 f1 を渡す) のまま。F1 &lt; 0 の RAD の追跡は gs と比べていない (k64 の F1 &lt; 0 は符号を捨てる)。逆向きの要素 (<code>cmp%ori</code> が偽) の係数は未対応</td>
 </tr>
 <tr>
+<td><code>Lattice.chromaticity()</code> の dν/dδ (B325)</td>
+<td>両</td>
+<td><code>twiss_table(±1e-4)</code> の位相進みの差分。BEND なし・E1/E2・K1≠0 の 4 構成は追跡のヤコビアンと 5e-6、gs の <code>Twiss["NX",-1]</code> の DP0 差分と 1e-8 (相対) で一致 (3 GeV、周長 41.6 m、8 セル)。<strong>6 極つきは追跡と 4e-4 ずれ (gs とは 1e-8。CALC の off-momentum の線形化と追跡の厳密なヤコビアンの差で、原因は未調査)</strong>。δ の 1 次の中心差分だけ。RF・放射は無視。<code>CHROMATICITY</code> コマンドは QUAD・SEXT・MULT だけ・単位 4π·ξ のままで、BEND の寄与を数えない</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>

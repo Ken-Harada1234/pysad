@@ -2103,6 +2103,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>= −24·I1) から a = −K0·F1·</td>
 <td>F1</td>
 </tr>
+<tr>
+<td>B325</td>
+<td><strong><code>CHROMATICITY</code> コマンド (<code>tfchro</code>) は BEND を数えず、単位が 4π·ξ なので、偏向磁石のあるリングの色収差 dν/dδ にならない (pysad 側の <code>Lattice.chromaticity()</code> も同じ理由で追跡・gs とずれていた)</strong>: ヘルプは「QUAD と SEXT だけの simplest formula」と書き、K64 はそのとおり (仕様どおりで、K64 の誤りではない)。TOTAL は四極だけなら 4π·dν/dδ (3 GeV、周長 41.6 m、8 セルの FODO + 偏向のリング: BEND を drift にすると gs の TOTAL = (−15.260, −14.827)、dν/dδ = (−1.2144, −1.1799) の 4π 倍と 2e-3 で一致)。BEND を入れると、分散で動いた閉軌道が BEND の端面 (実効の端面角 e + η'δ)・本体・K1 を通るときの δ 依存が落ち、gs の dν/dδ = (−0.7797, −0.8787) に対し TOTAL/4π = (−0.8446, −1.1799) (垂直は BEND の寄与 0.30 を落とす)。pysad の <code>Lattice.chromaticity()</code> (旧い実装) は、閉軌道 = 0 の線形行列 <code>transfer_matrix(δ)</code> のトレースの微分 + 6 極の解析式 K2 η β L/4π で、同じ BEND の寄与を落とし (−1.4563, −1.1799)。gs の <code>Twiss["NX",-1]</code> の DP0 = ±1e-4 の差分・追跡の 1 周写像のヤコビアン (閉軌道まわり)・pysad の <code>twiss_table(δ)</code> の 3 つは 1e-6 (相対) 以内で一致 (BEND なし・端面 E1 = E2 = 0.1・K1 = 0.02・それらと 6 極の 5 構成。6 極つきの追跡とは 4e-4。gs とは 1e-8)</td>
+<td>tfchro.f (CHROMATICITY)・pysad <code>Lattice.chromaticity</code></td>
+<td>CHROMATICITY の TOTAL を色収差として読むと偏向磁石のあるリングで違う (水平 8%、垂直 34%)。<code>Lattice.chromaticity()</code> の値 (水平 −1.456 対 −0.780、垂直 −1.180 対 −0.879)</td>
+<td>中 (pysad 側)・低 (K64 側。ヘルプの仕様)</td>
+<td>確定 (gs・追跡)</td>
+<td><strong>コマンドは両モードとも変えない</strong> (ヘルプの定義。色収差が要るときは DP0 の差分、docs/29 C20)。<strong><code>Lattice.chromaticity()</code> は両モードとも直した</strong> (<code>twiss_table(±δ)</code> の位相進みの中心差分。閉軌道・BEND・6 極を含み、RF は無視)。試験 <code>test_v250_chromaticity_bend.py</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>
