@@ -1,0 +1,67 @@
+== (a) E-01: 相互作用表示 (一般の導出の確認) ==
+  [M0 a, M0 b] - M0 [a, b] = 0 (a = x² p_y + y³、b = y p_x² + x p_y)
+  Δx(S) の厳密な 1 次 - (Δx_f + S Δp_f)   = 0
+  Δy(S) の厳密な 1 次 - (Δy_f + S Δp_yf)  = 0
+  Δp_x(S) の厳密な 1 次 - Δp_xf           = 0
+  Δp_y(S) の厳密な 1 次 - Δp_yf           = 0
+  (参考) 終点に引き戻す f_end - f = S**2*(11*S**4*p_x**2*p_y/60 + S**3*p_x**2*p_y/4 + S**3*p_x**2*y/6 + S**3*p_x*p_y*x/3 + S**2*p_x**2*p_y/2 + S**2*p_x**2*y/6 + S**2*p_x*p_y*x/3 + 2*S**2*p_x*x*y/3 + S**2*p_y*x**2/3 + S*p_x*x*y + S*p_y*x**2/2 + 2*p_x*x*y + p_y*x**2) (≠ 0。順序で f が変わる)
+
+== (b) E-02: (V·∇)V の y 成分 ==
+  (V·∇)V_x = 3*c**2*x*(x - y)**2*(x + y)**2
+  (V·∇)V_y = 3*c**2*y*(x - y)**2*(x + y)**2
+  差 (V·∇)V_y - 3c² y (x²-y²)² = 0
+  t y - ½(V·∇)V_y = 0 (t = (a-b)²/6)
+  (4.29): y(1 - a - b/3 + t) の y 成分のずれ = V_y + ½(V·∇)V_y: 差 = 0
+
+== (c) E-03: K64 の写像 = exp(:f':)、f' = -p·U、U = V - (1/6)D²V + O(K⁴) ==
+  U = V - (1/6)(V·∇)²V の時間 1 の流れ - K64 の位置の写像 を e の冪で: 
+   x 成分: e^1,e^2,e^3 の係数 = 0、0、0 (0 のはず)、e^4 の係数は 0 でない: True
+   y 成分: e^1,e^2,e^3 の係数 = 0、0、0 (0 のはず)、e^4 の係数は 0 でない: True
+  (V·∇)²V_x = 3*c**3*x*(x - y)*(x + y)*(5*x**4 + 26*x**2*y**2 + y**4)
+  (V·∇)²V_y = 3*c**3*y*(x - y)*(x + y)*(x**4 + 26*x**2*y**2 + 5*y**4)
+  運動量の持ち上げ: d(J^{-T})/dτ = -(∂U)^T J^{-T} は、d J/dτ = (∂U) J から (一般の恒等式。ここでは確認しない)
+
+== (d) E-04: CAVI の端 ==
+  φ = -E G + (r²/4) E g'、E_r = -∂φ/∂r = -r*E(t)*Derivative(G(s), (s, 2))/2
+  E_z = -∂φ/∂s = (-r**2*Derivative(G(s), (s, 3)) + 4*Derivative(G(s), s))*E(t)/4 (= E g - (r²/4) E g'')
+  ∇·E = -r**2*E(t)*Derivative(G(s), (s, 4))/4 (= -(r²/4) E g'''。r^0 の項は 0。r² の項は φ の r⁴ の項で打ち消す)
+  ∂H/∂φ (φ = 0) = E_k*e/sqrt(E_k**2 - m**2) (= e E_k/p_z = e/β_z)
+  H_f = V*(x**2 + y**2)*(offset - sin(dphi) + sin(dphi - omega*t))/(4*L*beta) (δ の係数)。β = 1 でヘルプの (6.13)
+  Δp_x = -∂H_f/∂x = V*x*(-offset + sin(dphi) - sin(dphi - omega*t))/(2*L*beta)
+  ΔE   = +∂H_f/∂t = -V*omega*(x**2 + y**2)*cos(dphi - omega*t)/(4*L*beta)
+  力の積分: ΔP_x = ∫ E_r ds/(β) = -(x/2)(E/β)(g(+) - g(-)) = -(x/2)E/β → -∂H_f/∂x と同じ
+  z の更新: t を保つと z_2 = -t p_2/h_2 = h1*p2*z1/(h2*p1) (K64 の z → z p2/p1 · h1/h2。z_1 = z1 の比 h1*p2/(h2*p1))
+  ODE (静的な場。m = c = e = 1、E = 1e-3、d = 1e-3、x = 1e-4):
+   β = 0.30: Δp_x / (-E x/(2β)) = 1.00083
+   β = 0.60: Δp_x / (-E x/(2β)) = 1.00083
+   β = 0.95: Δp_x / (-E x/(2β)) = 1.00083
+
+== (e) E-05: MULT の複素強度・ttfrins の回転・tblfri ==
+  m = 2: b_s = ∂_x a_y - ∂_y a_x - κ' Im(κ_c w^m)/m! = 0
+  m = 3: b_s = ∂_x a_y - ∂_y a_x - κ' Im(κ_c w^m)/m! = 0
+  m = 4: b_s = ∂_x a_y - ∂_y a_x - κ' Im(κ_c w^m)/m! = 0
+  pysad の _ttfrins (m = 3、複素 ak) の位置 - [w + Δw、Δw = -(1/(4 m! p)) w (κ_c w^m/(m+1) - conj(κ_c) conj(w)^m)] の最大差 = 4.47e-19
+   (κ_c = ak/al = ak1 + i ak2 は Φ = Im(κ_c w^m)/m! の複素強度)。差が 1e-18 台なら回転の向き (+θ で入れ -θ で戻す) と複素強度の規約が一致
+  (参考) 回転を逆向きに取ったときの同じ量との差 = 1.17e-10 (0 でない: 向きが決まる)
+  tblfri: 垂直 (ck0 = i k0) - [水平を +90° 回して入れ戻したもの] の最大差 = 0.00e+00
+  f_V = f_H(x'=-y, y'=x, p_x'=-p_y) = (dxfr*p_y*(p - 1) + dyfr*x**2/2 - dyfra*x**4/4)/p
+   Δy = -∂f_V/∂p_y = -dxfr + dxfr/p、Δp_x = ∂f_V/∂x = x*(dyfr - dyfra*x**2)/p
+   Δx = -∂f_V/∂p_x = 0 (0)、Δz = -∂f_V/∂p = (-dxfr*p_y + dyfr*x**2/2 - dyfra*x**4/4)/p**2
+
+== (f) E-06: ソレノイドの端の流れから (x, y, p_x, p_y) を戻す ==
+  p_x - (x p_u - y p_φ)/r² = 0
+  p_y - (y p_u + x p_φ)/r² = 0
+  この戻し方 (r1 = r e^{-k p_φ}、φ1 = φ - k p_u、p_x = (x p_u - y p_φ)/r² …) - tsfrin = 1.73e-18 (最大)
+
+== (g) E-08: edge_04 (b) の 2 つの外挿の差 ==
+  成分 (x, px, y, py)
+  tsfrin に対する 外挿 1 (d = 0.5/1 mm) の比   = [0.9988 1.0158 0.9717 1.11  ]
+  tsfrin に対する 外挿 2 (d = 0.25/0.5 mm) の比 = [0.9997 0.9741 1.0643 0.8348]
+  |外挿 1 - 外挿 2| / |tsfrin|                  = [0.0009 0.0417 0.0926 0.2752]
+
+== (h) E-07 の補足: 偏向の端の場 b_y + i b_s = g(s + i y) (6.1 の級数の和) ==
+  Re g(s+iy) = y**4*Derivative(g(s), (s, 4))/24 - y**2*Derivative(g(s), (s, 2))/2 + g(s)
+  Im g(s+iy) = y**5*Derivative(g(s), (s, 5))/120 - y**3*Derivative(g(s), (s, 3))/6 + y*Derivative(g(s), s)
+  (6.1): b_y = g - y² g''/2 + y⁴ g''''/24、b_s = y g' - y³ g'''/6 + y⁵ g^(5)/120 と一致
+  tanh の端 g = (1 + tanh(ζ/d))/2 の極: tanh ζ/d の分母 cosh(ζ/d) = 0 → ζ = ±iπ d/2: |y| < π d/2 でだけ場は有限
+  cosh(ζ/d) at ζ = i π d/2: 0

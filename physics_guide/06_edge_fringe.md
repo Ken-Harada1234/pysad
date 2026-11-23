@@ -11,8 +11,8 @@
 1. 端の効果は、場が $s$ とともに変わるために現れる (i) **縦成分** $b_s$ と (ii) 横成分の**高次の項** ($\nabla\cdot\vec b = 0$、$\nabla\times\vec b = 0$ が要求するもの) である。どちらも、場の強さの $s$ 微分 ($\kappa'$、$\kappa''$) に比例する。
 2. ベクトルポテンシャルを選ぶと ($\nabla\times\vec A = \vec b$)、端の効果は**横成分 $\vec a_\perp \propto \kappa'$** に集約される ($A_s$ は本体の場を作るだけ)。$H$ を $a_\perp$ で展開した 1 次の項は $H_1 = -(\vec p_\perp\cdot\vec a_\perp)/p_z$。階段の端 ($\kappa' = \kappa_0\,\delta(s)$) で積分すると、**端のリー生成関数** $f = -\int H_1\,ds$ が出る (式 (6.8)。符号は [C_poisson_lie.md](C_poisson_lie.md) の約束、§2)。$\delta'$、$\delta''$ の項は、自由な運動に沿った微分になる (式 (6.9))。
 3. この 1 つの手順から、(a) 偏向磁石の $f = -\dfrac{y^2}{2\rho_b}\dfrac{p_x}{p_z}$ (05 章 (5.34))、(b) 四極の $f_{\rm in}$ ((4.27))、(c) $2m$ 極の位置のずれ $\Delta w$ ((7.17))、(d) ソレノイドの $f = +\dfrac{b_z}{8p^2}\,p_\phi p_r$ (ヘルプの DISFRIN の $H = -\dfrac{B_z}{8p^2B\rho}p_\phi p_r$ が $H = -f$ に当たる) が出る。確認は sympy ([edge_01_gauge_generators.out.txt](outputs/edge_01_gauge_generators.out.txt)、途中式は [edge_05_derivation_steps.out.txt](outputs/edge_05_derivation_steps.out.txt))。**注**: (c) の「$\Delta w$ が (7.17) と一致」は、(7.17) の $\tilde a_w$ を同じ式から取っているので、それ自体は同語反復に近い (微分の符号と係数の確認)。独立な確認は、(a) $\nabla\times\vec A = \vec b$ の確認 (§4.1。手計算と sympy)、偏向の端のローレンツ力の積分 (§8.3)、ソレノイドの端のローレンツ力の積分 (§9.3)、07 章のローレンツ力の積分 (thin_03)。
-4. K64 の四極・多極の非線形フリンジは、$f$ の厳密な流れ $\exp(:f:)$ ではなく、**点変換 $x \to x + V + \tfrac12(V\cdot\nabla)V$ を母関数で正準化したもの**。$f = -p\cdot V(x)$ の流れの 2 次までと一致し、**差は $K^3$ に比例**する (位置の差の主要項は $\tfrac16(V\cdot\nabla)^2V$。[edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) (b)。$K \le 2000$ /m² で全成分の差が $K$ を 2 倍にして 7.7〜8.1 倍、$K \ge 8000$ では $p_x$・$z$ の増え方が小さくなる ($K^4$ 以上の項が混じる))。K64 の $z$ の更新は $\partial G/\partial p$ と一致する。
-5. ソレノイドの端 (`tsfrin`) は $f$ の**厳密な流れ** (差 $4 \times 10^{-19}$。$f$ が $(p_\phi, p_u)$ だけの関数なので流れが閉じた形になる、§9.3)。Maxwell の端の場のローレンツ力の積分とも $b$ の 1 次の項で合う ($x$ で $0.9997$。他の成分は 3〜20%、§14)。
+4. K64 の四極・多極の非線形フリンジは、$f$ の厳密な流れ $\exp(:f:)$ ではなく、**点変換 $x \to x + V + \tfrac12(V\cdot\nabla)V$ を母関数で正準化したもの**。$f = -p\cdot V(x)$ の流れの 2 次までと一致し、**差は $K^3$ に比例**する (位置の差の主要項は $\tfrac16(V\cdot\nabla)^2V$。[edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) (b)。$K \le 2000$ /m² で全成分の差が $K$ を 2 倍にして 7.7〜8.1 倍、$K \ge 8000$ では $p_x$・$z$ の増え方が小さくなる ($K^4$ 以上の項が混じる))。K64 の $z$ の更新は $\partial G/\partial p$ と一致する。厳密には、K64 の写像は $f' = f + \tfrac16\,p\cdot(V\cdot\nabla)^2V + O(K^4)$ の別の生成子の厳密な流れ ((6.12b))。
+5. ソレノイドの端 (`tsfrin`) は $f$ の**厳密な流れ** (差 $4 \times 10^{-19}$。$f$ が $(p_\phi, p_u)$ だけの関数なので流れが閉じた形になる、§9.3)。Maxwell の端の場のローレンツ力の積分とも $b$ の 1 次の項で合う ($x$ で $0.9997$。他の成分は、$d \to 0$ の外挿の取り方でずれが変わり、$p_x$ で 2〜3%、$y$ で 3〜6%、$p_y$ で 11〜17%、§9.3・§14)。
 6. 偏向磁石の硬い端の Maxwell フリンジ ($\Delta x$、$\Delta z$) の因子は $p^2$ 型 (追跡・ヘルプ)。ローレンツ力の積分で独立に確認した ($\delta = 0, 0.3, -0.2$ で比 $1.0000$)。**CALC の `tbedgemaxwell` の COD の更新は $p^1$ 型で、$\delta \ne 0$ のとき $1 + \delta$ 倍ずれる (疑い。05 章 付録 B-1)**。確定には SAD (gs) での確認が要る。
 7. 端の効果が使える範囲は、場の展開が収束する $y \ll d$ ($d$ は端の幅)、1 次の摂動が効く $y^2/(2\rho_b d) \ll 1$。階段の極限 $d \to 0$ は**場の強さの 1 次の近似**で、それ以上の次数は意味を持たない (§4.4)。
 
@@ -192,6 +192,39 @@ $$
 
 になる。ここで $M_0(s)z_0$ は始点 $z_0$ から自由な運動で $s$ 進んだ位置と運動量 ($x(s) = x + \dfrac{p_x}{p_z}s$、$y(s) = y + \dfrac{p_y}{p_z}s$、$p_\perp$ 一定)。つまり、摂動の各点での値を自由な運動で始点に引き戻して足し、約束 (6.0) の $f = -\int H\,ds$ とする。
 
+**(6.7) の導出** (一般の $H = H_0 + H_1(s)$。$H_1$ は小さいとする。確認: [edge_06_derivations.out.txt](outputs/edge_06_derivations.out.txt) (a))。次の 6 段で、各行に何をしたかを添える。
+
+(1) **記号**。始点 $z_0$ から $s$ まで進んだ点を $\mathsf M(s)z_0$、関数 $g$ への作用を「終点で評価する」引き戻し $(\mathcal M(s)\,g)(z_0) = g\bigl(\mathsf M(s)z_0\bigr)$ と書く。$\exp(:f:)$ も同じ意味 ($g \mapsto g + [f, g] + \tfrac12[f, [f, g]] + \cdots$。$:f:$ が微分演算なので、点の流れ $z \mapsto z + [f, z] + \cdots$ を $g$ に代入したものに等しい)。
+
+(2) **$\mathcal M$ の微分方程式**。正準方程式 $\dot z = [z, H]$ (約束 (6.0) と同じ: $x' = \partial H/\partial p_x = [x, H]$) から、粒子に沿った任意の関数 $g$ の変化は $\dfrac{d}{ds}g(z(s)) = [g, H] = -{:}H{:}\,g$。長さ $\mathrm d s$ の 1 歩は $\exp(-\mathrm d s\,{:}H(s){:})$ で、その前に $s$ まで進んでいるので
+
+$$
+\mathcal M(s + \mathrm d s)\,g = \mathcal M(s)\Bigl[e^{-\mathrm d s\,:H(s):}g\Bigr]
+\quad\Longrightarrow\quad
+\frac{d\mathcal M}{ds} = \mathcal M(s)\,\bigl(-{:}H(s){:}\bigr)
+\tag{6.7a}
+$$
+
+(「点 $z(s)$ から 1 歩進めた値」$= \bigl(e^{-\mathrm ds:H:}g\bigr)(z(s)) = \mathcal M(s)\bigl[e^{-\mathrm ds:H:}g\bigr](z_0)$。右辺の $\mathrm d s$ の 1 次を取った。)
+
+(3) **自由な運動を分ける**。$H_0$ だけの転送 $\mathcal M_0(s)$ は $d\mathcal M_0/ds = \mathcal M_0(-{:}H_0{:})$、$\mathcal M_0(0) = 1$。$\mathcal M = \mathcal N\,\mathcal M_0$ とおく ($\mathcal N(0) = 1$)。(6.7a) の左辺は $\mathcal N'\mathcal M_0 + \mathcal N\mathcal M_0(-{:}H_0{:})$、右辺は $\mathcal N\mathcal M_0\bigl(-{:}H_0{:} - {:}H_1{:}\bigr)$ なので、$-\mathcal N\mathcal M_0{:}H_0{:}$ が両辺で消えて
+
+$$
+\mathcal N'\,\mathcal M_0 = -\,\mathcal N\,\mathcal M_0\,{:}H_1{:}
+\quad\Longrightarrow\quad
+\mathcal N' = -\,\mathcal N\;\mathcal M_0{:}H_1{:}\mathcal M_0^{-1}
+$$
+
+(右から $\mathcal M_0^{-1}$ をかけた)。
+
+(4) **$\mathcal M_0$ をポアソン括弧の中へ入れる**。$\mathsf M_0$ は正準変換 (自由な運動) なので、括弧が保たれる: $[\mathcal M_0a, \mathcal M_0b] = \mathcal M_0[a, b]$ (sympy で、自由な運動 $x \to x + p_xs$ に対して確認: edge_06 (a))。これを使うと、任意の $b$ について $\mathcal M_0{:}H_1{:}\mathcal M_0^{-1}b = \mathcal M_0[H_1, \mathcal M_0^{-1}b] = [\mathcal M_0H_1,\ b]$、すなわち $\mathcal M_0{:}H_1{:}\mathcal M_0^{-1} = {:}h{:}$。ここで $h(s; z_0) \equiv (\mathcal M_0H_1)(z_0) = H_1\bigl(\mathsf M_0(s)z_0,\ s\bigr)$ (自由な運動で $s$ 進んだ位置と運動量を $H_1$ に代入したもの。$x(s) = x + p_xs/p_z$ など)。よって $\mathcal N' = -\mathcal N\,{:}h(s){:}$。
+
+(5) **1 次で積分**。$\mathcal N(0) = 1$ から、$H_1$ の 1 次まで $\mathcal N(S) = 1 - \displaystyle\int_0^S{:}h(s){:}\,ds + O(H_1^2) = \exp(:f:) + O(H_1^2)$、$f = -\displaystyle\int_0^Sh\,ds$ ($:f:$ は $f$ について線形なので積分が中に入る)。$O(H_1^2)$ は、異なる $s$ の ${:}h(s){:}{:}h(s'){:}$ の積 (一般に非可換。Magnus 展開の 2 次) で、$\delta$ 関数の端では $\delta(s)^2$ になる (§4.4)。
+
+(6) **点の写像に戻す**。$\mathcal M g = \mathcal N(\mathcal M_0g)$ は、$(\mathcal Mg)(z_0) = (\mathcal M_0g)\bigl(\mathsf N z_0\bigr) = g\bigl(\mathsf M_0(S)\,\mathsf N z_0\bigr)$ ($\mathsf N$ は $\exp(:f:)$ の流れ)。つまり**点としては $\mathsf N$ が先、自由な運動 $\mathsf M_0(S)$ が後**: $\mathsf M = \mathsf M_0(S)\circ\exp(:f:)$。これが (6.7) の順序で、**$f$ の引数は始点の変数 $z_0$** ($h$ は始点から自由に進んだ点での値)。もし $\exp(:f:)$ を $\mathsf M_0$ の後に置く ($f$ を終点の変数で書く) と、$f$ が別の関数になる ($f_{\rm end} \ne f$、edge_06 (a) の参考行)。階段の端が始点 $s = 0$ にあるときは $\mathsf M_0(0) = 1$ なので順序は効かない。出口の端は、出口の面を始点にとった長さ 0 の要素 (自由な運動の長さが 0 なので $\mathsf M_0 = 1$) として扱い、本体 (と本体までの自由な運動) の写像のあとに合成する。(6.8) の $f_{\rm out}$ はその要素の生成関数で、出口の面での変数で書く。
+
+**確認** (edge_06 (a)): 2 自由度 $H_0 = (p_x^2 + p_y^2)/2$、$H_1 = \epsilon\,x^2y\,(1 + s + s^2)$ で、厳密な 1 次の応答 ($\delta x' = \delta p_x$、$\delta p_x' = -\partial_xH_1(\text{自由軌道})$、…を $s$ で積分) と、(6.7) の $f$ から (6.0a) で作った $\mathsf M_0(S)\circ\exp(\epsilon:f:)$ の $\epsilon$ の 1 次が、$x, p_x, y, p_y$ の 4 成分とも **差 0** (sympy)。
+
 **検算** (1 自由度のおもちゃ、$H_0 = p^2/2$、$H_1 = \epsilon x^2h(s)$、$h = s + s^2$、$0 \le s \le S$。edge_05 (f)): 厳密な 1 次の応答は $x_1'' = -2x_0h$、$x_0 = q_0 + p_0s$ から $\Delta x(S) = \int_0^S(S - s)(-2x_0h)\,ds$、$\Delta p(S) = \int_0^S(-2x_0h)\,ds$。(6.7) の $f = -\int_0^S(q_0 + p_0s)^2h\,ds$ から (6.0a) で $\Delta x_f = -\partial f/\partial p_0 = \int2(q_0 + p_0s)s\,h\,ds$、$\Delta p_f = \partial f/\partial q_0 = -\int2(q_0 + p_0s)h\,ds$、出力 $= (q_0 + \Delta x_f + S(p_0 + \Delta p_f),\ p_0 + \Delta p_f)$。自由な運動の部分を除くと $\Delta x_f + S\Delta p_f = \int2(q_0 + p_0s)h\,(s - S)\,ds$ で、厳密な 1 次の応答に一致 (sympy で差 0)。
 
 階段の端 $\kappa' = \kappa_0\,\delta(s)$ では、$H_1$ が $\delta(s)$ に比例し、積分範囲の $s = 0$ だけが効くので ($M_0(0) = $ 恒等、$\vec a_\perp = \kappa'\tilde a_\perp$ とおく)
@@ -310,7 +343,13 @@ $$
 - 位置: $\vec x_2 = \vec x_1 + \partial G/\partial\vec p_2 = \vec x_1 + \vec W$。$G$ の第 2 項の $\partial/\partial p_{x2}$ が $\tfrac12(V_x\partial_xV_x + V_y\partial_yV_x)$。
 - 運動量: $\vec p_1 = \vec p_2 + \partial G/\partial\vec x_1 = \vec p_2 + (\partial_{x_1}\vec W)^\top\vec p_2 = J^\top\vec p_2$ ($J_{ij} = \partial(x_2)_i/\partial(x_1)_j$)。逆に解いて $\vec p_2 = J^{-\top}\vec p_1$ (運動量の逆転置)。
 
-**sympy で、四極の $V$ (4.27) について $x_2 - (x + V + \tfrac12 V\cdot\nabla V) = 0$、$p_1 - J^\top p_2 = 0$ と、(4.29) の $x(1 + a/3 + b + t)$、$y(1 - a - b/3 + t)$ ($a = Kx^2/(4p)$、$b = Ky^2/(4p)$、$t = (a - b)^2/6$) との一致を確認した** ([edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) (a))。手計算 ($c \equiv K/(12p)$、$V_x = c\,x(x^2 + 3y^2)$、$V_y = -c\,y(3x^2 + y^2)$): $V_x = x(a/3 + b)$ ($a/3 = Kx^2/(12p)$、$b = 3Ky^2/(12p)$)。$(V\cdot\nabla)V_x = V_x\,c(3x^2 + 3y^2) + V_y\,6c\,xy = c^2\bigl[(x^3 + 3xy^2)(3x^2 + 3y^2) - 6xy(3x^2y + y^3)\bigr] = c^2\,(3x^5 - 6x^3y^2 + 3xy^4) = 3c^2x(x^2 - y^2)^2$。$a - b = 3c\,(x^2 - y^2)$ なので $t\,x = \dfrac{9c^2(x^2 - y^2)^2}{6}\,x = \tfrac12\cdot3c^2x(x^2 - y^2)^2 = \tfrac12(V\cdot\nabla)V_x$。つまり $t\,(x, y) = \tfrac12(V\cdot\nabla)V$ ($K$ の 2 次)。
+**sympy で、四極の $V$ (4.27) について $x_2 - (x + V + \tfrac12 V\cdot\nabla V) = 0$、$p_1 - J^\top p_2 = 0$ と、(4.29) の $x(1 + a/3 + b + t)$、$y(1 - a - b/3 + t)$ ($a = Kx^2/(4p)$、$b = Ky^2/(4p)$、$t = (a - b)^2/6$) との一致を確認した** ([edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) (a))。手計算 ($c \equiv K/(12p)$、$V_x = c\,x(x^2 + 3y^2)$、$V_y = -c\,y(3x^2 + y^2)$): $V_x = x(a/3 + b)$ ($a/3 = Kx^2/(12p)$、$b = 3Ky^2/(12p)$)。$(V\cdot\nabla)V_x = V_x\,c(3x^2 + 3y^2) + V_y\,6c\,xy = c^2\bigl[(x^3 + 3xy^2)(3x^2 + 3y^2) - 6xy(3x^2y + y^3)\bigr] = c^2\,(3x^5 - 6x^3y^2 + 3xy^4) = 3c^2x(x^2 - y^2)^2$。$a - b = 3c\,(x^2 - y^2)$ なので $t\,x = \dfrac{9c^2(x^2 - y^2)^2}{6}\,x = \tfrac12\cdot3c^2x(x^2 - y^2)^2 = \tfrac12(V\cdot\nabla)V_x$。$y$ 成分も同じ手順で (edge_06 (b))。$\partial_xV_y = -6c\,xy$、$\partial_yV_y = -c(3x^2 + 3y^2)$ なので
+
+$$
+(V\cdot\nabla)V_y = V_x\,\partial_xV_y + V_y\,\partial_yV_y = c^2\bigl[-6x^2y(x^2 + 3y^2) + 3y(3x^2 + y^2)(x^2 + y^2)\bigr]
+$$
+
+(第 1 項は $c\,x(x^2 + 3y^2)\cdot(-6c\,xy)$、第 2 項は $\bigl(-c\,y(3x^2 + y^2)\bigr)\bigl(-c(3x^2 + 3y^2)\bigr)$)。展開して $(3x^2 + y^2)(x^2 + y^2) = 3x^4 + 4x^2y^2 + y^4$ を使うと $c^2y\bigl[(-6x^4 - 18x^2y^2) + (9x^4 + 12x^2y^2 + 3y^4)\bigr] = 3c^2y\,(x^4 - 2x^2y^2 + y^4) = 3c^2\,y\,(x^2 - y^2)^2$。$y$ の更新 $V_y = -c\,y(3x^2 + y^2) = -y(a + b/3)$ (4.29) に加わる $\tfrac12(V\cdot\nabla)V_y = \tfrac32c^2y(x^2 - y^2)^2$ は、$t\,y = \tfrac{9c^2(x^2 - y^2)^2}{6}\,y$ に等しい (符号は $x$ と同じ正)。つまり $t\,(x, y) = \tfrac12(V\cdot\nabla)V$ ($K$ の 2 次)。
 
 - 点変換 (位置が運動量によらない) に直した写像は、運動量を $J^{-\top}$ で更新すれば、**構成からシンプレクティック**。
 - $z$ の更新。$V \propto 1/p$、$\tfrac12(V\cdot\nabla)V \propto 1/p^2$ なので $G = \vec p_2\cdot\vec W_1/p + \vec p_2\cdot\vec W_2/p^2$ ($W_1 = pV$、$W_2 = \tfrac12p^2(V\cdot\nabla)V$ は $p$ に依らない)。(6.0a) の $\Delta z = -\partial f/\partial p$ に相当する母関数の形は $z_2 = z_1 + \partial G/\partial p$ で、$\vec p_2$ を固定して
@@ -333,7 +372,33 @@ $$
 $K \le 2000$ では $x$・$p_x$・$y$・$p_y$・$z$ の全成分の比が 7.7〜8.1 で、差は $K^3$ に比例する。$K \ge 8000$ で $p_x$・$z$ の比が 8 を下回るのは、$K^4$ 以上の項が $K^3$ の項と逆符号で混じるため ($K^4$ 以上の項と考えられる。個別の係数は確認していない)。$x$ の差の主要項 $\tfrac16(V\cdot\nabla)^2V_x$ との比は、$K = 1000$ で $1.008$、$4000$ で $1.034$、$16000$ で $1.14$ ($y$: 1.005、1.021、1.078)。ただし**この 2 次の項 ($t$) 自体は、1 次の Maxwell の導出 (4.24) の範囲では物理的な意味を持たない** (母関数が 2 次を保つのは、点変換を厳密に正準にするため)。
 - $m \ge 3$ の多極は (7.17) の 1 次の項だけ ($\tfrac12(V\cdot\nabla)V$ を足さない)。差 ($\kappa_0^2$ で減る) が出るのは四極だけ (07 章 §9.2)。
 
-この「リー変換 → 点変換 + 逆転置」の形が、**母関数の分解**の中身: リー生成子 $f = -p\cdot V$ の流れを、位置の点変換 (写像の 2 次までの級数) と運動量の逆転置の 2 段に分ける。BCH ([03_symplectic_integrators.md](03_symplectic_integrators.md)) の意味では、点変換の流れを 2 次で止めることは、生成子を $f + O(K^3)$ の別の生成子に置き換えることに当たる。
+この「リー変換 → 点変換 + 逆転置」の形が、**母関数の分解**の中身: リー生成子 $f = -p\cdot V$ の流れを、位置の点変換 (写像の 2 次までの級数) と運動量の逆転置の 2 段に分ける。この「2 次で止める」ことが、生成子を $f + O(K^3)$ の別の生成子に置き換えることに当たる、を式で示す (edge_06 (c))。
+
+**K64 の写像は別の生成子の厳密な流れ**。K64 の写像 $\mathsf K$ は、位置が $x \mapsto \Phi(x) = x + V + \tfrac12(V\cdot\nabla)V$、運動量が $p \mapsto J^{-\top}p$ ($J = \partial\Phi/\partial x$) という点変換。$K$ ($V \propto K$) の級数で恒等写像から出発する点変換は、ベクトル場 $U = KU_1 + K^2U_2 + K^3U_3 + \cdots$ の時間 1 の流れとして一意に書ける (対数)。位置の流れの級数は、$\mathcal D_U = U\cdot\nabla$ として
+
+$$
+\Phi(x) = x + U + \tfrac12\mathcal D_UU + \tfrac16\mathcal D_U^2U + \cdots
+\tag{6.12a}
+$$
+
+(前の (6.11) と同じ形で、$V$ を $U$ に替えたもの)。$f' = -\vec p\cdot U(\vec x)$ とおくと、(6.0a) から $\Delta x = -\partial f'/\partial p = U$ で位置は $\dot x = U(x)$ の流れ、運動量は $\dot p = +\partial f'/\partial x = -(\partial U)^{\top}p$。流れの $J(\tau)$ は $\dot J = (\partial U)J$ を満たすので $\tfrac{d}{d\tau}J^{-\top} = -(\partial U)^{\top}J^{-\top}$、したがって $p(\tau) = J(\tau)^{-\top}p_0$。時間 1 で、これが K64 の運動量の逆転置に一致する。すなわち**$\mathsf K = \exp(:f':)$ が厳密に成り立つ** (生成子 $f'$ は点変換から決まる)。
+
+次に $f'$ を $f$ と比べる。(6.12a) の左辺を K64 の $\Phi = x + V + \tfrac12\mathcal DV$ ($\mathcal D = V\cdot\nabla$) とおいて、$K$ の次数ごとに比べる:
+
+- $K^1$: $U_1 = V$。
+- $K^2$: $U_2 + \tfrac12\mathcal DV = \tfrac12\mathcal DV$ より $U_2 = 0$。
+- $K^3$: $U_3 + \tfrac12\bigl[(V\cdot\nabla)U_2 + (U_2\cdot\nabla)V\bigr] + \tfrac16\mathcal D^2V = 0$ (右辺は K64 の $K^3$ の項 = 0)。$U_2 = 0$ なので $U_3 = -\tfrac16\mathcal D^2V$。
+
+よって
+
+$$
+f' = -\vec p\cdot U = f + \tfrac16\,\vec p\cdot(V\cdot\nabla)^2V + O(K^4)
+\tag{6.12b}
+$$
+
+(sympy: 四極の $V$ で $U = V - \tfrac16\mathcal D^2V$ の流れを $K^4$ まで展開し、K64 の位置 $x + V + \tfrac12\mathcal DV$ との差が $K^1, K^2, K^3$ で 0、$K^4$ で 0 でない。$(V\cdot\nabla)^2V_x = 3c^3x(x^2 - y^2)(5x^4 + 26x^2y^2 + y^4)$、$(V\cdot\nabla)^2V_y = 3c^3y(x^2 - y^2)(x^4 + 26x^2y^2 + 5y^4)$)。つまり K64 の四極のフリンジは、**$f$ ではなく $f + \tfrac16\,p\cdot\mathcal D^2V$ の厳密な $\exp(:\cdot:)$** で、$f$ に対する差は $K^3$ から。厳密な $\exp(:f:)$ の位置が (6.11) の第 3 項 $+\tfrac16\mathcal D^2V$ を持ち、K64 がそれを持たない差 ($-\tfrac16\mathcal D^2V$) が、$f'$ の $+\tfrac16\,p\cdot\mathcal D^2V$ ($:f':x = -\partial f'/\partial p$ の符号を見ると $-\tfrac16\mathcal D^2V$) に当たる。
+
+この置き換えの大きさは、BCH ([03_symplectic_integrators.md](03_symplectic_integrators.md)) の意味では、$\exp(:f + g:)$ ($g = \tfrac16\,p\cdot\mathcal D^2V$) が $\exp(:f:)\exp(:g:)$ と交換子 $\tfrac12[f, g] = O(K^4)$ だけ違う、という話で、$K^3$ の評価には影響しない。物理的には、$K^3$ の項は 1 次の Maxwell の導出 (4.24) の範囲に無いので、$f$ と $f'$ のどちらが正しいかを決める根拠は、この章の導出にない (場の強さの 1 次の摂動 (6.7) は生成子の $K^1$ の項だけを決める。$K^2$ 以上の項は、2 次以上の摂動 (§4.4。階段の端では発散する) を入れないと決まらず、$f$ の累乗 $\tfrac12{:}f{:}^2$ も $f'$ の $K^3$ の項も、その意味では同じく近似である)。
 
 ## 7. 線形フリンジ (F1・F2)
 
@@ -391,7 +456,8 @@ $\int g'\,ds = 1$ (0 から 1 への立ち上がり) から $\Delta P_y = -(p_x/
 - **1 次の摂動 (6.8) では出ない**: $\Delta p_y$ の $y^3/\rho_b^3$ の項、$\Delta x$ の $y^4/\rho_b^3$ の項は、$\rho_b^{-1}$ の 3 次の量。(6.8) は $\epsilon = 1/\rho_b$ の 1 次なので $y/\rho_b$ と $y^2/\rho_b$ の項しか持たない。
 - **2 次・3 次の摂動は階段の極限で定義できない**: $H_2$ ((6.6)) は $\delta(s)^2$、3 次の項は $\delta(s)^3$ を含み、$d \to 0$ で発散する (§4.4)。端の幅 $d$ が有限の模型が必要で、ヘルプ・K64 はその模型 (端の形) を書いていない。
 - **確認できた一致** (導出ではない): $a$ と $b$ は、$\theta = y/\rho_b$ として $\dfrac{\sin\theta}{\theta} = 1 - \dfrac{\theta^2}{6} + \dfrac{\theta^4}{120} - \cdots$、$\dfrac{1 - \cos\theta}{\theta^2} = \dfrac12 - \dfrac{\theta^2}{24} + \dfrac{\theta^4}{720} - \cdots$ の $\theta^2$ までの展開に等しい ($\Delta p_y = -(p_x/p_v)\sin(y/\rho_b)$、$\Delta x = \rho_b(1 - \cos(y/\rho_b))\,p^2/p_v^3$ の $\theta^2$ まで。sympy: edge_05 (h))。K64 には $\theta^4$ 以上が無い。この三角関数の形が物理的に何を表すか (例えば有限の曲率半径の円弧上の幾何) は、確認していない。
-- **足りないもの**: (a) 端の形を指定した場合の、$\epsilon^3$ までの摂動計算 (または厳密な軌道) と、その $d \to 0$ の極限。ローレンツ力の積分で取り出すには、$y \ll d$ の窓 ($y = 0.3$ mm、$\rho_b = 50$ m) で補正が $(y/\rho_b)^2\sim4\times10^{-11}$ 倍と小さすぎ、ODE の精度 (相対 $10^{-4}$ 程度) に届かない。(b) $b$ の $\Delta x$ の補正の符号と係数の、独立な確認。この項の大きさは相対 $y^2/(6\rho_b^2)$ ($y = 10$ mm、$\rho_b = 10$ m で $1.7\times10^{-7}$) で、物理の結果への影響は小さい。
+- **場の $y$ のべき級数は閉じた形に足せるが、その収束域が限界を決める**。(6.1) は $b_y + i\,b_s = g(s + iy)$ ($g$ の複素平面への解析接続) と書ける (展開すると $g + iy\,g' - \tfrac{y^2}2g'' - \tfrac{i\,y^3}6g''' + \cdots$ で実部が $b_y$、虚部が $b_s$)。これは、$(s, y)$ 平面の調和関数 $\Phi$ ($\vec b = \nabla\Phi$) が中央面で $b_y = g(s)$、$b_s = 0$ を満たす唯一の解析的な場、という条件から出る ($F = \Phi + i\Psi$ が解析的で $F' = b_s - i\,b_y$、$F'(s) = -i\,g(s)$)。例えば $g = \tfrac12(1 + \tanh(s/d))$ は $s = \pm i\pi d/2$ に極を持つので、場は $|y| < \pi d/2$ でだけ有限。$y \gtrsim d$ の領域の場は、磁石の磁極の形 (境界条件) で決まり、端の関数 $g(s)$ だけからは決まらない。これが、$d \to 0$ の階段の極限で $y \gg d$ の粒子 ($y^2/\rho_b^2$ の補正の主な対象) を扱うときの根本的な限界である。
+- **足りないもの**: (a) 端の形を指定した場合の、$\epsilon^3$ までの摂動計算 (または厳密な軌道) と、その $d \to 0$ の極限。ローレンツ力の積分で取り出すには、$y \ll d$ の窓 ($y = 0.3$ mm、$\rho_b = 50$ m) で補正が $(y/\rho_b)^2\sim4\times10^{-11}$ 倍と小さすぎ、ODE の精度 (相対 $10^{-4}$ 程度) に届かない。$y^3/\rho_b^3$ の項を数値で取り出すには、(i) $\rho_b \to -\rho_b$ (場の符号) で奇数次だけを残して $H_2$ (偶数次。階段の極限で $y^3/(\rho_b^2d)$ 型に大きくなる項) を除き、(ii) $\rho_b$ を小さく ($y/\rho_b \sim 10^{-2}$) して補正を $10^{-5}$ に上げ、(iii) ODE を相対 $10^{-10}$ 以下で解き、(iv) 端の幅の有限の補正 ($d/\rho_b$ の項) を $d$ の複数の値で外挿する、の 4 つが要る。さらに、窓が $y < \pi d/2$ (tanh の場合) に限られるので、得られる係数は「その端の形での $y \ll d$ の値」で、$y \gg d$ の階段の極限の値とは限らない (上の閉じた形)。この章ではやっていない。(b) $b$ の $\Delta x$ の補正の符号と係数の、独立な確認。この項の大きさは相対 $y^2/(6\rho_b^2)$ ($y = 10$ mm、$\rho_b = 10$ m で $1.7\times10^{-7}$) で、物理の結果への影響は小さい。
 
 ## 9. CAVI・SOL・MULT の端部
 
@@ -406,26 +472,97 @@ $$
 
 ($H_f$ は、ヘルプの流儀の $H$ ($H_{\rm help} = -f$、§2)。$p_0c$ で規格化する。) $d\varphi$ と offset は、空洞の位相と放射による損失 (NORAD でだけ非 0) で決まる。構造は §3.4 の $E_r = -\tfrac r2E\,g'$ と同じ。
 
-**キックの導出** (大きさ): 入口で $g$ が $0 \to 1$ に立ち上がるとき、横方向の力 $eE_r$ の時間積分は、通過時間 $dt = ds/v$ ($v = \beta c$) から
+**(6.13) の導出** (端の $E_z = E\,g(s)$ から。$c = 1$、$e$ は電荷。確認: [edge_06_derivations.out.txt](outputs/edge_06_derivations.out.txt) (d))。1 つだけ入力が要る。それは、$E(t)$ の符号と大きさを、ヘルプの $dE = -eV\sin(\ldots)$ (CAVI の本体のエネルギー利得) から読む約束 $eE(t) = -\dfrac{eV}{L}\bigl(\sin(\omega t - d\varphi) + \sin d\varphi - \mathrm{offset}\bigr)$ (本体の長さ $L$ にわたる $\int eE_z\,dz = eEL$) である。以下は、各行を式として追う。
+
+**段 1: 端のスカラーポテンシャル**。§3.4 より $E_z = E\,g - \dfrac{r^2}4E\,g'' + \cdots$、$E_r = -\dfrac r2E\,g' + \cdots$ ($g$ は 0 → 1 に立ち上がる)。静電場として $\vec E = -\nabla\phi$ を満たす $\phi(r, s)$ を $r$ のべき級数で組む。$g = G'$ ($G$ は $g$ の積分) として
 
 $$
-\Delta P_x = e\int E_r\,dt = \frac{e}{\beta c}\int\Bigl(-\frac x2\Bigr)E\,g'\,ds = -\frac{e\,E\,x}{2\beta c}
+\phi = -E\,G(s) + \frac{r^2}4E\,g'(s) + O(r^4)
 $$
 
-ヘルプの $dE = -eV\sin(\ldots)$ (CAVI の DPHI の項) の符号から、$eE_z = -(eV/L)(\sin(\omega t - d\varphi) + \sin d\varphi - \mathrm{offset})$ と読むと、$\Delta P_x = +\dfrac{eV}{2\beta cL}(\sin\ldots)\,x$ で、(6.13) の $H_f$ から $\Delta p_x = -\partial H_f/\partial x = +(eV/L)(\sin\ldots)x/2$ と同じ符号 (約束 (6.0a): $f = -H_f = +\dfrac{eV}{L}(\ldots)\dfrac{x^2 + y^2}{4}\delta$ から $\Delta p_x = +\partial f/\partial x$)。**エネルギー**は $\partial H_f/\partial t$ から $\Delta E = -(\omega eV/L)\cos(\omega t - d\varphi)\,r^2/4$。
+(確認: $-\partial_s\phi = E\,g - \tfrac{r^2}4E\,g''$、$-\partial_r\phi = -\tfrac r2E\,g'$。$\nabla\cdot\vec E = -\nabla^2\phi$ は $r^0$ の項が 0 で、残る $-\tfrac{r^2}4E\,g'''$ は $\phi$ の $r^4$ の項で打ち消す。sympy。) 第 1 項 $-E\,G$ は軸上の加速 (本体と同じ項) で、端に $\delta$ 関数を作るのは**第 2 項**、$\phi_\delta = \dfrac{r^2}4E\,g'(s)$。$E$ が時間変化するときの磁場 ($B_\theta = r\dot E\,g/(2c^2)$、§3.4) は $g$ に比例し、階段の端で段差を作るだけで $\delta$ 関数ではない (本体の項に入る)。
 
-**$1/\beta$ の因子**: スカラーポテンシャル $\phi$ のあるときの $H = -\sqrt{(E - e\phi)^2 - m^2 - p_\perp^2}$ ($c = 1$) を $\phi$ で微分すると $\partial H/\partial\phi|_0 = eE/p_z = e/\beta_z$ (edge_05 (d))。つまり位置依存の電位 (または $E_r$ から作る $\phi$) のキックは、$s$ 独立の $H$ の形でも $1/\beta$ を含む。$H_f$ (6.13) には $1/\beta$ が書かれていない ($\beta = 1$ とした近似か、規格化に含まれているかは、ヘルプの記述からは分からない)。
+**段 2: $H$ への入り方**。位置依存の電位 $\phi$ のある $s$ 独立でない $H$ は $H = -\sqrt{(E_k - e\phi)^2 - m^2 - p_\perp^2}$ ($E_k$ はエネルギー)。$\phi$ の 1 次で $\partial H/\partial\phi\big|_0 = e\,E_k/p_z = e/\beta_z$ (edge_05 (d)、sympy)。したがって端の項は $H_f = \dfrac e{\beta}\,\phi_\delta$:
+
+$$
+H_f = \frac{e\,E(t)}{\beta}\,\frac{x^2 + y^2}4\,g'(s) \;\xrightarrow{\;g' = \delta(s - s_0)\;}\; -\frac{eV}{\beta L}\bigl(\sin(\omega t - d\varphi) + \sin d\varphi - \mathrm{offset}\bigr)\frac{x^2 + y^2}4\,\delta(s - s_0)
+$$
+
+($eE(t)$ に上の約束を代入。**$\beta = 1$ でヘルプの (6.13) に一致する**。ヘルプには $1/\beta$ が無い。)
+
+**段 3: 横方向のキック**。$s$ が独立変数で $(x, p_x)$ が正準対なので (Hamilton の方程式 $dp_x/ds = -\partial H/\partial x$) $\delta$ の係数を積分して
+
+$$
+\Delta p_x = -\frac{\partial H_f}{\partial x} = -\frac{eE\,x}{2\beta} = +\frac{eV}{2\beta L}\bigl(\sin(\omega t - d\varphi) + \sin d\varphi - \mathrm{offset}\bigr)\,x
+$$
+
+$y$ も同じ ($\Delta p_y = -\partial H_f/\partial y$)。これは力の積分と同じ: 横方向の力の時間積分 $e\int E_r\,dt = \dfrac e\beta\int\bigl(-\tfrac x2\bigr)E\,g'\,ds = -\dfrac{eE\,x}{2\beta}$ ($dt = ds/\beta$、$\int g'\,ds = 1$)。静的な場 ($E$ 一定) の中の粒子を数値積分した結果は、$\beta = 0.3, 0.6, 0.95$ で $\Delta p_x\big/\bigl(-eE\,x/(2\beta)\bigr) = 1.0008$ (3 つとも同じ。$E = 10^{-3}$、$d = 10^{-3}$、$x = 10^{-4}$、$m = c = e = 1$。残りの $8\times10^{-4}$ は端の幅 $d$ の有限の補正)。つまり**キックは $1/\beta$ に比例する**。(約束 (6.0a): $f = -H_f$ から $\Delta p_x = +\partial f/\partial x$、同じ符号。)
+
+**段 4: エネルギーの変化**。縦方向は、$t$ を座標、$-E_k$ をその運動量とする正準対にとる ($z$、$\delta$ への換算は段 5)。$s$ が独立変数で $H = -p_z$ のとき、Hamilton の方程式は $dt/ds = \partial H/\partial(-E_k) = (E_k - e\phi)/p_z = 1/\beta$ (時間が進む向きが正になる符号) と $d(-E_k)/ds = -\partial H/\partial t$、すなわち
+
+$$
+\frac{dE_k}{ds} = +\frac{\partial H}{\partial t}
+$$
+
+$H_f$ の $t$ 依存は $E(t)$ だけなので、$\delta$ 関数の層でのエネルギーの跳びは ($t$ は層の中で変わらない)
+
+$$
+\Delta E_k = \frac{\partial H_f}{\partial t} = -\frac{\omega eV}{\beta L}\cos(\omega t - d\varphi)\,\frac{x^2 + y^2}4
+$$
+
+(これが「$\partial H_f/\partial t$」の符号の約束: $t$ と $-E_k$ が共役で $dE_k/ds = +\partial H/\partial t$。)直接の確認として、$\phi_\delta$ のエネルギーへの寄与は力の仕事 $e\int E_z\,ds$ の $-\tfrac{r^2}4E\,g''$ の項で $e\cdot\bigl(-\tfrac{r^2}4\bigr)\int E(t)\,g''\,ds = +\dfrac{e\,r^2\dot E}{4\beta}$ ($g'' = \delta'$、(6.9) $n = 1$ で $-F'(0)$ に $F = E(t_0 + s/\beta)$、$F' = \dot E/\beta$)。$e\dot E = -(\omega eV/L)\cos(\ldots)$ で上と一致する。層の前後で $\phi$ は連続 ($G$ は連続) なので、$E_k$ の跳びは運動エネルギーの跳びに等しい。
+
+**段 5: $z$ の更新**。SAD の縦座標は $t$ との関係 $t = -z/\beta = -z\,h/p$ ($h = E_k/(p_0c)$、$p$ は規格化した運動量、$\beta = p/h$。コードの `t = -z*h1/p1`) で決まる。層の中で $t$ は変わらず ($\partial H_f/\partial E_k = 0$ の 1 次まで)、$E_k$ だけが $h_1 \to h_2 = h_1 + dh$、運動量が $p_1 \to p_2$ に変わる。$z = -t\,p/h$ なので
+
+$$
+z_2 = -t\,\frac{p_2}{h_2} = z_1\,\frac{p_2/h_2}{p_1/h_1} = z_1\,\frac{p_2}{p_1}\,\frac{h_1}{h_2}
+$$
+
+($z\,p/h = -t$ が不変、という言い方もできる。sympy: edge_06 (d))。K64 の `z → z p2/p1 · h1/h2` と同じ。ここで $dh = \Delta E_k/(p_0c)$、コードの `dh = -w*p0*vf*(x²+y²)/2*cos(ph - dphis)` ($vf = V/(2Lp_0)$) は $-\omega V r^2\cos/(4L)$ で段 4 の $\beta = 1$ の値と一致する。
+
+$d\varphi$ と offset は、空洞の位相と放射による損失 (NORAD でだけ非 0) で決まり、導出には入らない (上の約束の中)。構造は §3.4 の $E_r = -\tfrac r2E\,g'$ と同じ。
 
 K64 `tcavfrin` (`tcav.f:209-249`): `vf = v/al/p0*.5`、`s0 = sin(dphis) - offset`、`dpt = vf*(sin(ph - dphis) + s0)/p1r`、`px += x*dpt`、`py += y*dpt`、`dh = -w*p0*vf*(x²+y²)/2*cos(ph - dphis)`、$h_2 = h_1 + dh$ から $\delta$ と $z$ ($z \to z\,p_2/p_1\cdot h_1/h_2$) と $dv$ を更新する。入口は `fringe` かつ `mfring >= 0` かつ `mfring /= 2` (`tcav.f:82`)、出口は `mfring /= 1` (`:185`)。コードを式に直すと ($v$ = 電圧 [V]、`p0` = 規準運動量 $p_0c$ [eV]、`p1r` $= p = 1 + \delta$): `px` は $q = p_x/p$ の変数なので、$\Delta q_x = \Delta P_x/(p_0p) = \dfrac{V}{2Lp_0}(\sin\ldots + s_0)\,\dfrac{x}{p}$ で、`1/p1r` は**この $q$ への変換**。この式は上の $\Delta P_x$ で $\beta = 1$ としたものに一致する。時間は `t = -z*h1/p1` ($= -z/\beta$、`h1/p1` $= 1/\beta$) とエネルギーと運動量から $\beta$ を使って計算しているので、コードは粒子の $\beta$ を持っているが、**`dpt` には $1/\beta$ が掛かっていない**。
 
-**判断**: 「`1/p1r` が速度の代わりになる」という読みは成り立たない: `1/p1r` は $q$ への変換 ($p$ で割る) で、速度 ($v = \beta c$) の代わりにはならない。**$\beta \to 1$ でだけ正しい式の疑い**があり、低エネルギー (陽子・イオン) では $1/\beta$ だけ小さく見積もる。例えば $\beta = 0.9$ なら $1/\beta - 1 = 11\%$。**未確認**: (a) (6.13) の導出 (端の $E_z$ の形から) とヘルプの規格化の定義、(b) $\beta < 1$ での gs・独立な追跡との比較、(c) `tcavfrin` の写像のシンプレクティック性。電子 ($\beta \approx 1$) では差は出ない。詳しい扱いは [10_cavity.md](10_cavity.md)。
+**判断**: 「`1/p1r` が速度の代わりになる」という読みは成り立たない: `1/p1r` は $q$ への変換 ($p$ で割る) で、速度 ($v = \beta c$) の代わりにはならない。**$\beta \to 1$ でだけ正しい式の疑い**があり、低エネルギー (陽子・イオン) では $1/\beta$ だけ小さく見積もる。例えば $\beta = 0.9$ なら $1/\beta - 1 = 11\%$。上の導出 (段 2〜4) は、$\Delta p_x$ と $\Delta E_k$ のどちらにも $1/\beta$ が入ることを示す (`dpt` と `dh` の両方が $\beta = 1$ の式)。**導出で入れた仮定と未確認**: (a) $E(t)$ の符号と大きさの読み (ヘルプの $dE = -eV\sin$ から。ヘルプの規格化の記述が $\beta$ を含むかは未確認)、端の層の中で $E(t)$ が変わらない、$B_\theta$ は $\delta$ 関数を作らない、$\phi$ の 1 次 (摂動の 1 次) の近似。(b) $\beta < 1$ での gs・独立な追跡 (空洞全体の ODE) との比較。(c) `tcavfrin` の写像のシンプレクティック性。電子 ($\beta \approx 1$) では差は出ない。詳しい扱いは [10_cavity.md](10_cavity.md)。
 
 ### 9.2 MULT
 
-`tmulti` (`tmulti.f:125-139`、`:253-282`): 入口 `ttfrins(np,..., nord = 2n+2, akr(n), al, bzs)` を $n = 0, \ldots, nmmax$ (`dofr(n)` が真のもの) について、線形フリンジ ($\mathrm{F1}$・$\mathrm{F2}$: `f1in`、`f2in` の $\exp(a)$ 型 ((4.33) と同じ式)、`tblfri` ($\mathrm{FB1}$)) → 本体 → 出口 (逆順、$-\mathrm{akr}$)。`akr(n)` は複素 (実部が正規成分、虚部が skew)。`ttfrins` (`tquad.f:453-500`) は、成分を回転して正規成分にそろえ、`ttfrin` を呼び、逆回転する。回転の角は、$m$ 極 ($m = $ nord$/2$) の傾き $\theta$ の磁石が $\kappa\,\mathrm{Im}\bigl[(we^{-i\theta})^m\bigr] = \kappa\,\mathrm{Im}\bigl[e^{-im\theta}w^m\bigr] = \kappa\bigl[\cos m\theta\,\mathrm{Im}\,w^m - \sin m\theta\,\mathrm{Re}\,w^m\bigr]$ (正規成分 $\propto\cos m\theta$、skew 成分 $\propto -\sin m\theta$) を与えるので、$\arg(\mathrm{ak}_1 + i\,\mathrm{ak}_2) = \mp m\theta$、$\theta = \tfrac{2}{\mathrm{nord}}\arg(\ldots)$ (符号の向きは複素成分の約束によるので、コードでは未確認)。
+`tmulti` (`tmulti.f:125-139`、`:253-282`): 入口 `ttfrins(np,..., nord = 2n+2, akr(n), al, bzs)` を $n = 0, \ldots, nmmax$ (`dofr(n)` が真のもの) について、線形フリンジ ($\mathrm{F1}$・$\mathrm{F2}$: `f1in`、`f2in` の $\exp(a)$ 型 ((4.33) と同じ式)、`tblfri` ($\mathrm{FB1}$)) → 本体 → 出口 (逆順、$-\mathrm{akr}$)。`akr(n)` は複素 (実部が正規成分、虚部が skew)。`ttfrins` (`tquad.f:453-500`) は、成分を回転して正規成分にそろえ、`ttfrin` を呼び、逆回転する。この回転の向きを、座標の回転の定義から決める (確認: [edge_06_derivations.out.txt](outputs/edge_06_derivations.out.txt) (e))。
+
+**(1) 複素強度とスカラーポテンシャル**。$\kappa_c = \mathrm{ak}/\mathrm{al} = \mathrm{ak}_1 + i\,\mathrm{ak}_2$ ($\mathrm{ak}_1$ = 正規、$\mathrm{ak}_2$ = skew) に対して、$m$ 極 ($m = \mathrm{nord}/2$) のポテンシャルを
+
+$$
+\Phi = \frac{1}{m!}\,\mathrm{Im}\bigl(\kappa_c\,w^m\bigr) = \frac{1}{m!}\bigl[\mathrm{ak}_1\,\mathrm{Im}\,w^m + \mathrm{ak}_2\,\mathrm{Re}\,w^m\bigr]
+\tag{6.13a}
+$$
+
+と定義する (正規成分 $\mathrm{Im}\,w^m$ は §3.2 と同じ。$\mathrm{ak}_2$ が $+\mathrm{Re}\,w^m$ の係数)。これが `ttfrins` と、本体側の薄い蹴り `tmulk` の約束と合うことは、2 点で確かめる。(i) `ttfrins` の分岐 `ak(1) == 0` (純 skew) は $\theta = \pi/\mathrm{nord} = \pi/(2m)$ で、正規成分 $\mathrm{ak}_2$ を入れる。(ii) 薄い蹴りの `tmulk` (pysad の `_tmulk`) の Horner 形は、$p_x - ip_y$ の変化 $= -\sum_n\mathrm{akr}(n)\,w^n/n!$ ($p_x \mathrel{-}= \mathrm{Re}$、$p_y \mathrel{+}= \mathrm{Im}$)。(6.13a) では $F(w) = \kappa_cw^m/m!$ として $b_y + i\,b_x = F'(w) = \kappa_cw^{m-1}/(m-1)!$ ($\partial_x\mathrm{Im}F = \mathrm{Im}F'$、$\partial_y\mathrm{Im}F = \mathrm{Re}F'$)、力は $\Delta p_x = -b_y$、$\Delta p_y = +b_x$ なので $\Delta(p_x - ip_y) = -F'$。$n = m - 1$ で `tmulk` と一致する。
+
+**(2) 回転の向き**。コード (Fortran・pysad とも同じ) は、入口で粒子の座標と運動量に
+
+$$
+x' = x\cos\theta - y\sin\theta,\quad y' = x\sin\theta + y\cos\theta
+\quad\Longleftrightarrow\quad w' = e^{i\theta}w,\qquad p_{w}' = e^{i\theta}p_w
+$$
+
+($p_w = p_x + ip_y$ も同じ回転) を施し、$\theta = \dfrac2{\mathrm{nord}}\arg(\mathrm{ak}_1 + i\,\mathrm{ak}_2) = \dfrac{\arg\kappa_c}m$、強さ $|\kappa_c|$ の**正規**成分で `ttfrin` ((7.17)) を作用させ、$-\theta$ で戻す。回転した座標での作用は $\Delta w' = -\dfrac{|\kappa_c|}{4\,m!\,p}\,w'\Bigl(\dfrac{w'^m}{m + 1} - \bar w'^m\Bigr)$。戻すと ($w' = e^{i\theta}w$、$\Delta w = e^{-i\theta}\Delta w'$、$|\kappa_c|\,e^{im\theta} = \kappa_c$)
+
+$$
+\Delta w = -\frac{1}{4\,m!\,p}\;w\Bigl(\frac{\kappa_c\,w^m}{m + 1} - \bar\kappa_c\,\bar w^m\Bigr)
+\tag{6.13b}
+$$
+
+(途中: $e^{-i\theta}\cdot e^{i\theta}w\cdot|\kappa_c|\bigl(e^{im\theta}w^m/(m + 1) - e^{-im\theta}\bar w^m\bigr) = w\bigl(\kappa_cw^m/(m + 1) - \bar\kappa_c\bar w^m\bigr)$。実の $\kappa_c$ なら (7.17)。) (6.13b) は、§4.1 の表の $a_w$ が強さについて実数線形であることを使い、$\kappa_c$ の実部 (正規) と虚部 (skew) に分けて足したものにも当たる (sympy で $m = 2, 3, 4$ について $b_s = \kappa'\,\mathrm{Im}(\kappa_cw^m)/m!$ を確認)。数値でも、pysad の `_ttfrins` ($m = 3$、ランダムな複素 `ak`、$\delta \neq 0$) の位置が (6.13b) と $4\times10^{-19}$ で一致する。**回転を逆向き ($w' = e^{-i\theta}w$) にすると $\bar\kappa_c$ になり**、同じ入力との差が $10^{-10}$ 出る。したがって (6.13a) の約束 ($\mathrm{ak}_2$ が $+\mathrm{Re}\,w^m$) のもとで、**向きは上の $+\theta$ に決まる**。残る未確認は、「SAD の skew 成分の符号が (6.13a) の約束と同じ向きであること」で、根拠は本体の `tmulk` との整合 (上の (ii)) だけである (SAD 本体 (gs) での直接の確認はしていない)。
 
 - `ttfrin` の分岐: nord = 2 (双極子、$n = 0$): $x \mathrel{+}= \tfrac12\,\mathrm{aki}\,y^2$、$p_y \mathrel{-}= \mathrm{aki}\,p_xy$、$z \mathrel{-}= \tfrac12\,\mathrm{aki}\,p_xy^2$ ($\mathrm{aki} = \mathrm{ak}/(\mathrm{al}(1 + \delta))$)。これは (5.35) の $p_z \to p$、$p_x/p \to p_x$ の近似 ($\Delta x = y^2/(2\rho)$、$\Delta p_y = -y\,p_x/\rho$、$\Delta z = -y^2p_x/(2\rho)$) と同じ ((5.35) で $p_z = p_v \to p$、$p^2/p_z^3 \to 1/p$)。双極子の端は (6.1) の直線の端を仮定していて、(7.17) を $m = 1$ に当てはめた式とは違う (§3.2)。nord = 4 は四極 (§6)、nord $\ge 6$ は (7.17)。
-- `tblfri` (`tmulti.f:681-720`): 複素の `ck0` (水平の曲がりが実部、垂直が虚部) と `fb1` から、水平・垂直の両方の線形フリンジ: `dxfrx` $= \mathrm{fb1}^2/\rho_b/24$、`dyfrx` $= \mathrm{fb1}/\rho_b^2/6$、`dyfrax` $= 4\,\mathrm{dyfrx}/\mathrm{fb1}^2$ ((5.42) と同じ)。$x \mathrel{+}= \mathrm{dxfrx}\,\delta/p$、$p_y \mathrel{+}= (\mathrm{dyfrx} - \mathrm{dyfrax}\,y^2)\,y/p^2$ ($q$ 単位)。
+- `tblfri` (`tmulti.f:681-720`): 複素の `ck0` (水平の曲がりが実部、垂直が虚部) と `fb1` から、水平・垂直の両方の線形フリンジを入れる。水平 (`ck0.real`、$\rho_b = \mathrm{al}/\mathrm{ck0.real}$) は (5.42) そのもの: `dxfrx` $= \mathrm{fb1}^2/\rho_b/24$ (= dxfr)、`dyfrx` $= \mathrm{fb1}/\rho_b^2/6$ (= dyfr)、`dyfrax` $= 4\,\mathrm{dyfrx}/\mathrm{fb1}^2$ (= dyfra)。$x \mathrel{+}= \mathrm{dxfrx}\,\delta/p$、$p_y \mathrel{+}= (\mathrm{dyfrx} - \mathrm{dyfrax}\,y^2)\,y/p^2$ ($q$ 単位)。
+
+**垂直への拡張**は、水平の式を $+90°$ 回したものになる。座標の回転 $x' = -y$、$y' = x$、$p_x' = -p_y$、$p_y' = p_x$ ($w' = iw$。垂直の双極子 $\mathrm{Im}(i\kappa w) = \kappa\,x$ ($\mathrm{ak}_2$、$b_x = \kappa$) は、水平の双極子 $\mathrm{Im}(\kappa w') = \kappa\,y'$ を回したもの) を (5.42) の $f_{\rm lin}$ に代入すると
+
+$$f_V = f_{\rm lin}(x' = -y,\ y' = x,\ p_x' = -p_y) = p_y\,\mathrm{dxfr}\Bigl(1 - \frac1p\Bigr) + \frac1p\Bigl(\frac{\mathrm{dyfr}}2x^2 - \frac{\mathrm{dyfra}}4x^4\Bigr)$$
+
+で、(6.0a) から $\Delta y = -\partial f_V/\partial p_y = -\mathrm{dxfr}\,\delta/p$、$\Delta p_x = +\partial f_V/\partial x = (\mathrm{dyfr} - \mathrm{dyfra}\,x^2)\,x/p$、$\Delta z$ は $p_y$ の項が $-\mathrm{dxfr}\,p_y/p^2$、$x$ の項が $(\tfrac12\mathrm{dyfr} - \tfrac14\mathrm{dyfra}\,x^2)x^2/p^2$。これは、コードの `dyfry`・`dxfry`・`dxfray` (垂直の $\rho_b = \mathrm{al}/\mathrm{ck0.imag}$ から水平と同じ式で作る) による $y \mathrel{-}= \mathrm{dyfry}\,\delta/p$、$p_x \mathrel{+}= (\mathrm{dxfry} - \mathrm{dxfray}\,x^2)\,x/p^2$、$z \mathrel{+}= \bigl(-\mathrm{dyfry}\,p_y + (\tfrac12\mathrm{dxfry} - \tfrac14\mathrm{dxfray}\,x^2)x^2/p\bigr)/p$ と同じ ($q$ 単位)。数値でも、pysad の `_tblfri` の垂直の枝 (`ck0` が純虚) は、「座標・運動量を回して水平の枝を作用させ、戻す」と差 0 (edge_06 (e))。水平と垂直が両方あるときは、コードが 2 つの写像を 1 つの式の中で足し合わせる ($x$ を更新してから $p_x$ の更新に使う順序つき。$\mathrm{dyfry}\cdot\mathrm{dxfrx}$ などの交差項は 2 次の微小量で、導出の範囲外)。以上は 05 章 §6.3 の (5.42) の導出 (水平) を前提にした拡張で、Maxwell の場の数値積分は**垂直についてはしていない**。
 - 以上は K64 のコードを読んだ範囲で、**MULT の端部を数値では確認していない**。ANGLE $\ne 0$ の MULT は [08_mult.md](08_mult.md)。
 
 ### 9.3 ソレノイド
@@ -438,10 +575,30 @@ $$
 \Delta u = -\frac{\partial f}{\partial p_u} = -k\,p_\phi,\qquad \Delta\phi = -\frac{\partial f}{\partial p_\phi} = -k\,p_u,\qquad \Delta z = -\frac{\partial f}{\partial p} = +\frac{2k}{p}\,p_\phi p_u = +\frac{b_0}{4p^3}p_\phi p_u
 $$
 
-($\Delta z$ は $p_\phi p_u$ が一定なので 1 ステップ。) $r_1 = re^{\Delta u}$、$\phi_1 = \phi + \Delta\phi$、$p_x$、$p_y$ は $(p_u, p_\phi)$ 一定から決まる。コードの $bq\,p_\phi$ は、$q$ 単位の運動量 ($p_\phi/p$) を使うので $bq = -b_0/(8p)$ と $k\,p_\phi = (b_0/8p^2)p_\phi = (b_0/8p)(p_\phi/p)$ が対応し、$bp = -2bq$ が $\Delta z$ の $2k/p$ に対応する (向きは §2 の約束で一致)。
+($\Delta z$ は $p_\phi p_u$ が一定なので 1 ステップ。) **$(x, y, p_x, p_y)$ に戻す**。$u = \ln r$ なので $r_1 = r\,e^{\Delta u}$、角は $\phi_1 = \phi + \Delta\phi$:
+
+$$
+r_1 = r\,e^{-k\,p_\phi},\quad \phi_1 = \phi - k\,p_u,\qquad x_1 = r_1\cos\phi_1,\quad y_1 = r_1\sin\phi_1
+$$
+
+運動量は、$p_u$ と $p_\phi$ が保存される ($f$ が $u$、$\phi$ を含まない) ことと、定義 $p_u = x p_x + y p_y$、$p_\phi = x p_y - y p_x$ の逆から。$x$ 倍・$y$ 倍して足し引きすると: $x\,p_u - y\,p_\phi = x^2p_x + xy\,p_y - xy\,p_y + y^2p_x = r^2p_x$、$y\,p_u + x\,p_\phi = xy\,p_x + y^2p_y + x^2p_y - xy\,p_x = r^2p_y$。よって新しい位置 $(x_1, y_1)$、$r_1^2 = x_1^2 + y_1^2$ と、保存された $p_u$、$p_\phi$ から
+
+$$
+p_{x,1} = \frac{x_1\,p_u - y_1\,p_\phi}{r_1^2},\qquad p_{y,1} = \frac{y_1\,p_u + x_1\,p_\phi}{r_1^2},\qquad z_1 = z + \frac{2k}{p}\,p_\phi p_u
+$$
+
+(sympy: 定義から恒等式。数値: $b = 1.7$ /m、$\delta = 0.01$ で `tsfrin` と $1.7\times10^{-18}$ で一致。edge_06 (f)。$q$ 単位では $k \to b_0/(8p)$ で、$p_u$・$p_\phi$ も $q$ 単位。) コードの $bq\,p_\phi$ は、$q$ 単位の運動量 ($p_\phi/p$) を使うので $bq = -b_0/(8p)$ と $k\,p_\phi = (b_0/8p^2)p_\phi = (b_0/8p)(p_\phi/p)$ が対応し、$bp = -2bq$ が $\Delta z$ の $2k/p$ に対応する (向きは §2 の約束で一致)。
 
 - **厳密な流れとの一致**: $f$ の $\exp(:f:)$ の流れ ((6.0a) のハミルトン方程式) を DOP853 で積分した流れと `tsfrin` は、$(x, p_x, y, p_y, z)$ で $4 \times 10^{-19}$ 以内 ($b = 1.7$ /m、3 mm・20 mrad) ([edge_04_solenoid_fringe.out.txt](outputs/edge_04_solenoid_fringe.out.txt) (a))。**$f$ は paraxial ($p_z \to p$) なので、閉じた式は $f$ の厳密な流れで、シンプレクティック性は構成から厳密**。
-- **Maxwell の端の場との比較**: (6.3) の場 ($g = (1 + \tanh(s/d))/2$) のローレンツ力の積分 (kinematic momentum、窓 $\pm8d$)。モデルは「自由な運動 → 硬い端 (**正準運動量が連続**) → 一様な $B_z$ の中」で、これと ODE の差から**線形な端の集束 ($b$ の偶数次) を除くため、$b \to -b$ で符号が変わる部分 (奇数部分) を取り**、$d = 1, 0.5, 0.25$ mm から $d \to 0$ に外挿して `tsfrin` の効果と比べた ($b = 1$ /m、$x_0 = 0.3$ mm、$y_0 = -0.2$ mm、$p_x = 3$ mrad、$p_y = 2$ mrad。効果は $10^{-10}$ 程度): $x$: $0.9997$、$p_x$: $0.97$、$y$: $1.06$、$p_y$: $0.83$ ([edge_04_solenoid_fringe.out.txt](outputs/edge_04_solenoid_fringe.out.txt) (b))。効果が小さく ($10^{-11}\sim10^{-10}$)、$d$ への残りの依存 (2 つの外挿の差) が $p_y$ で 20% あるので、**$x$ 以外の成分は 3〜20% の確認**。
+- **Maxwell の端の場との比較**: (6.3) の場 ($g = (1 + \tanh(s/d))/2$) のローレンツ力の積分 (kinematic momentum、窓 $\pm8d$)。モデルは「自由な運動 → 硬い端 (**正準運動量が連続**) → 一様な $B_z$ の中」で、これと ODE の差から**線形な端の集束 ($b$ の偶数次) を除くため、$b \to -b$ で符号が変わる部分 (奇数部分) を取り**、$d = 1, 0.5, 0.25$ mm から $d \to 0$ に外挿して `tsfrin` の効果と比べた ($b = 1$ /m、$x_0 = 0.3$ mm、$y_0 = -0.2$ mm、$p_x = 3$ mrad、$p_y = 2$ mrad。効果は $10^{-10}$ 程度): $x$: $0.9997$、$p_x$: $0.97$、$y$: $1.06$、$p_y$: $0.83$ ([edge_04_solenoid_fringe.out.txt](outputs/edge_04_solenoid_fringe.out.txt) (b))。効果が小さく ($10^{-11}\sim10^{-10}$) 外挿の取り方に依るので、**$x$ 以外の成分は数 % 〜 17% の確認**にとどまる。具体的には、$d = 0.5/1$ mm の組から外挿した値 (外挿 1) と $d = 0.25/0.5$ mm の組から外挿した値 (外挿 2) の、`tsfrin` に対する比は
+
+| 成分 | $x$ | $p_x$ | $y$ | $p_y$ |
+|---|---|---|---|---|
+| 外挿 1 ÷ `tsfrin` | 0.9988 | 1.016 | 0.972 | 1.110 |
+| 外挿 2 ÷ `tsfrin` (上の $0.9997$、$0.97$、$1.06$、$0.83$) | 0.9997 | 0.974 | 1.064 | 0.835 |
+| $\lvert$外挿 1 − 外挿 2$\rvert$ ÷ $\lvert$`tsfrin`$\rvert$ | 0.09% | 4.2% | 9.3% | **27.5%** |
+
+最後の行が「$d$ への残りの依存」の定義で、2 つの外挿の差を `tsfrin` の効果の大きさで割った値 ($p_y$ の $1.1405\times10^{-10}$ と $8.58\times10^{-11}$ の差 $2.8\times10^{-11}$ を `tsfrin` の $1.03\times10^{-10}$ で割って約 27%。edge_06 (g))。$d$ の外挿が収束していないので、$p_y$ の一致の度合いは 17% (外挿 2 のずれ) よりよい保証はなく、27% の幅を持つ。$x$ は 0.1% 以内で確認でき、$p_x$・$y$ は数 %〜10% 以内、$p_y$ は 3 割程度の幅で `tsfrin` と符号・大きさが合う、という意味である。
 - 端部の線形な効果 (一様な $B_z$ の中の $p_x \mathrel{+}= b\,y/2$ の跳び) は正準運動量の連続で自動的に入る。**ヘルプの DISFRIN は、この非線形項 (6.10) だけを止める**。`tsol.f:588`、`:753`: `cmp%value(ky_FRIN_SOL) == 0` のとき `tsfrin` を $\mathrm{dbz}$ (端での $b_z$ の跳び) で呼ぶ。
 - ヘルプの F1 (SOL) は EMITTANCE の計算にだけ効く (放射のため)。この章では扱わない。
 
@@ -513,13 +670,14 @@ BEND の DISFRIN が Maxwell を止めない点は、ヘルプの記述と違う
 | `edge_02_generating_function.py` | 母関数 $G$ ↔ $x + V + \tfrac12 V\cdot\nabla V$ と $p_1 = J^\top p_2$ (sympy)、厳密な $\exp(:f:)$ との差 ($K^3$、$K$ の走査、$\tfrac16(V\cdot\nabla)^2V$ との比)、$z$ の更新 ($\partial G/\partial p$) | [edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) |
 | `edge_03_bend_maxwell_recheck.py` | ヘルプ・追跡の同値、偏向の Maxwell の因子 $p$ (ローレンツ力の積分)、CALC の行列と更新、1 つの端面のずれの大きさ | [edge_03_bend_maxwell_recheck.out.txt](outputs/edge_03_bend_maxwell_recheck.out.txt) |
 | `edge_04_solenoid_fringe.py` | `tsfrin` = $f$ の流れ、Maxwell の端の場のローレンツ力の積分との比較 ($b$ の奇数部分) | [edge_04_solenoid_fringe.out.txt](outputs/edge_04_solenoid_fringe.out.txt) |
+| `edge_06_derivations.py` | (a) (6.7) の一般の導出 (相互作用表示。2 自由度で厳密な 1 次と一致、括弧の保存)、(b) $(V\cdot\nabla)V_y$、(c) K64 の四極の写像 = $\exp(:f':)$、$U = V - \tfrac16\mathcal D^2V$、(d) CAVI: $\phi$・$H_f$・$\Delta p_x$・$\Delta E$・$z$ の更新・静的な場の ODE ($1/\beta$)、(e) MULT: 複素強度・`ttfrins` の回転の向き・`tblfri` の垂直、(f) ソレノイドの端の戻し式、(g) edge_04 (b) の外挿の差 | [edge_06_derivations.out.txt](outputs/edge_06_derivations.out.txt) |
 | `edge_05_derivation_steps.py` | §3〜§4 の途中式: (6.1) の漸化式、(6.2) の $c$、(6.3) の発散・回転、CAVI の $E_r$ と $\partial H/\partial\phi = e/\beta_z$、(6.6) の 1 次・2 次、(6.7) の検算、偏向の力の積分、$a$・$b$ と三角関数の展開、ソレノイドの $(u, \phi)$ 座標 | [edge_05_derivation_steps.out.txt](outputs/edge_05_derivation_steps.out.txt) |
 
 ## 14. 未確認・限界・使った条件
 
 - **使った条件**: 偏向の ODE は $\rho_b = 50$ m、$y = 0.3$ mm、端の形 $\tanh$、$p_y = 0$、$q = 0.1, 0.3$、$\delta = 0, 0.3, -0.2$。エネルギーは規格化 ($p_0 = 1$) で、絶対値を使わない。四極の流れの比較は $K = 250 \sim 1.6 \times 10^4$ /m²、入射 4 mm・3 mrad など (大きな強さで 3 次の差を出した)。ソレノイドは $|b| = 1$ /m、振幅 0.3 mm。
 - **SAD (gs) との比較はしていない** (ソース・ヘルプ・独立な数値計算だけ)。05 章 付録 B-1 の確定には gs での COD の比較が要る。
-- **確認できなかった**: (i) 偏向の $a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$ ((5.36) の $y^2/\rho_b^2$ 項): 1 次の摂動 (6.8) では出ない ($\rho_b^{-3}$ の 3 次の量。2 次以上の摂動は階段の極限で定義できない)。$\sin\theta/\theta$、$(1 - \cos\theta)/\theta^2$ の展開に一致することは確かめたが、導出していない (足りないもの: 端の形を指定した $\epsilon^3$ の摂動計算または厳密な軌道、§8.4)。(ii) 偏向の $p_y$ 依存の補正 $f_4$ (§4.3): 導出と sympy の展開のみで、ローレンツ力の積分では未確認 ($y \ll d$ の窓では $p_y$ を大きくして $y$ を動かせない)。K64 には無い。(iii) CAVI の端 (6.13) の導出、ヘルプの規格化、$1/\beta$ の因子 ($\beta < 1$ で $1/\beta$ だけ小さく見積もる疑い。§9.1)、`tcavfrin` の数値確認。(iv) MULT の端部 (`ttfrins`、`tblfri`) の数値確認。(v) ソレノイドの $p_x$・$y$・$p_y$ は 3〜20% の確認 (§9.3)。(vi) 線形フリンジ ($F1$・$F2$) の導出は 04・05 章。偏向の $L'$ の補正の導出は 05 章。(vii) ヘルプの式は、K64 版同梱の原文 `Documents/SADHelp.html` (式は TeX と平文の両方で埋め込まれている) を直接読んで照合した (付録 A)。ヘルプの図 (`SADHelp_img`) は端部の式に関係しない。(viii) $K^4$ 以上の個別の係数、点変換の 2 次の項 $t$ の物理的な意味 (§6)。
+- **確認できなかった**: (i) 偏向の $a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$ ((5.36) の $y^2/\rho_b^2$ 項): 1 次の摂動 (6.8) では出ない ($\rho_b^{-3}$ の 3 次の量。2 次以上の摂動は階段の極限で定義できない)。$\sin\theta/\theta$、$(1 - \cos\theta)/\theta^2$ の展開に一致することは確かめたが、導出していない (足りないもの: 端の形を指定した $\epsilon^3$ の摂動計算または厳密な軌道、$\rho_b \to -\rho_b$ の奇数部分の数値分離、$y \gg d$ の磁極の形に依る領域の扱い。具体的な内訳は §8.4)。(ii) 偏向の $p_y$ 依存の補正 $f_4$ (§4.3): 導出と sympy の展開のみで、ローレンツ力の積分では未確認 ($y \ll d$ の窓では $p_y$ を大きくして $y$ を動かせない)。K64 には無い。(iii) CAVI の端: (6.13) は導出した (§9.1。$E(t)$ の符号と大きさの読み、層の中で $E$ が変わらないこと、$\phi$ の 1 次を仮定)。$1/\beta$ の因子は導出では入り、ヘルプ・`tcavfrin` には無い ($\beta < 1$ で $1/\beta$ だけ小さく見積もる疑い)。ヘルプの規格化、gs・空洞全体の ODE との比較、`tcavfrin` のシンプレクティック性は未確認。(iv) MULT の端部: `ttfrins` の回転の向きは座標の回転から決めた (§9.2。SAD の skew の符号の約束の直接確認は未)、`tblfri` の垂直は水平の回転として導出した (数値の Maxwell 積分は垂直について未)。MULT 全体の端部を gs や磁場の数値積分と比べてはいない。(v) ソレノイドは $x$ で 0.1%、$p_x$・$y$・$p_y$ は数 %〜17% の確認で、2 つの外挿の差が $p_y$ で 27% ある (§9.3)。(vi) 線形フリンジ ($F1$・$F2$) の導出は 04・05 章。偏向の $L'$ の補正の導出は 05 章。(vii) ヘルプの式は、K64 版同梱の原文 `Documents/SADHelp.html` (式は TeX と平文の両方で埋め込まれている) を直接読んで照合した (付録 A)。ヘルプの図 (`SADHelp_img`) は端部の式に関係しない。(viii) $K^4$ 以上の個別の係数、点変換の 2 次の項 $t$ の物理的な意味 (§6。K64 の写像が $f' = f + \tfrac16\,p\cdot\mathcal D^2V + O(K^4)$ の厳密な流れであること (6.12b) は導出した)。
 - **範囲**: 場の強さの 1 次の摂動。$y \ll d$ の展開。階段の端 ($d \to 0$) の極限で、$d$ が有限のときの補正は線形フリンジ (§7) が担う。端の形が違えば高次の項 (特に (6.2) の調和多項式の足し算) は変わる。
 
 ## 15. この章で使う Fortran の変数名
@@ -536,7 +694,7 @@ BEND の DISFRIN が Maxwell を止めない点は、ヘルプの記述と違う
 | `pv1sqi` | $1/(1 - q_x^2)$ | `ff` の分母 |
 | `dxfr1`、`dyfr1`、`dyfra1`、`dzfr1` | $F1^2/(24\rho_b)$、$F1/(6\rho_b^2)$、$4\,\mathrm{dyfr}/F1^2$、$\mathrm{dxfr}\sin\psi_1$ | 偏向の線形フリンジ (5.42)。`dyfra` は DISFRIN で 0 |
 | `akk`、`aki` | `akk` $= \mathrm{ak}/\mathrm{al}/4$ ($m = 2$)。`aki` $= \mathrm{akk}/p$ | $K/(4p)$。$a = \mathrm{aki}\,x^2$、$b = \mathrm{aki}\,y^2$ |
-| `a`、`b`、`d`、`ab`、`t` | $a = Kx^2/(4p)$、$b = Ky^2/(4p)$、$d = a + b$、$ab = a - b$、$t = ab^2/6$ | (4.28)〜(4.29)。$t = \tfrac12(V\cdot\nabla)V$ の係数 |
+| `a`、`b`、`d`、`ab`、`t` | $a = Kx^2/(4p)$、$b = Ky^2/(4p)$、$d = a + b$、$ab = a - b$、$t = ab^2/6$ | (4.28)〜(4.29)。$t = \tfrac12(V\cdot\nabla)V$ の係数。**注意: Fortran の `d` は $a + b$ (四極の `ttfrin` の中の局所変数) で、本章 §1・§4.4・§7・§8 の端の幅 $d$ (磁場が立ち上がる長さ) とは別の量**。§6 の式 (6.11)〜(6.12b) には端の幅は出てこない |
 | `dx1`、`dy1` | $x(a/3 + b + t)$、$-y(a + b/3 - t)$ | 点変換のずれ ($t$ を含む、$W - x$ に当たる)。`z` の更新は `dx1 + t*xi` ($t$ が 2 回) |
 | `xx`、`yy`、`h`、`f` | $\partial x_2/\partial x_1$、$\partial y_2/\partial y_1$、$\partial x_2/\partial y_1$、$\det J$ | (4.30)。運動量の逆転置 |
 | `kord`、`an` | 多極の次数 $m$、$\mathrm{an}(k) = k$ | (7.17) |
