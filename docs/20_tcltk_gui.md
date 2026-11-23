@@ -207,7 +207,7 @@ pysad が合わせた K64 の挙動。
 | `Entry`・`ListBox`・`Scale`・`RadioButton`・`Canvas`・`TextEditor` (単体) | 作成し `Pack` して `update` (2026-11-16) | エラー無しで作成された (木のクラス名のみ確認) |
 | `Button` の `Command` | Tcl から `invoke` | SAD の式が評価された (`n = 5`) |
 
-試験: [`test_tclbridge.py`](../pysad/tests/script_tests/test_tclbridge.py) 7、[`test_sadclass.py`](../pysad/tests/script_tests/test_sadclass.py) 16、[`test_gui_lang.py`](../pysad/tests/script_tests/test_gui_lang.py) 10、[`test_plot.py`](../pysad/tests/script_tests/test_plot.py) 8。リポジトリ全体の試験の通しは 2521 通過・13 skip・失敗 0 (2534 件収集、2026-11-23)。gs との比較の詳細は [history/20_tcltk_gui_validation.md](history/20_tcltk_gui_validation.md)。
+試験: [`test_tclbridge.py`](../pysad/tests/script_tests/test_tclbridge.py) 7、[`test_sadclass.py`](../pysad/tests/script_tests/test_sadclass.py) 16、[`test_gui_lang.py`](../pysad/tests/script_tests/test_gui_lang.py) 10、[`test_plot.py`](../pysad/tests/script_tests/test_plot.py) 8。リポジトリ全体の試験の通しは 2552 通過・14 skip・失敗 0 (2566 件収集、2026-11-23)。gs との比較の詳細は [history/20_tcltk_gui_validation.md](history/20_tcltk_gui_validation.md)。
 
 ### 7.1 ヘッドレスでの試験の実行
 
