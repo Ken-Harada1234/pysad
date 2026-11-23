@@ -1094,6 +1094,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>v2 は台形則 + 裾</strong> (理論値との差 +0.016%・+0.046%)。k64 は gs と同じ (+1.60%・+2.62%。422 個の光子のエネルギーが gs と 1.6e-7 以内)。限界: 表から厳密に積分したモーメントと、光子ごとの gs との一致で確認 (gs の標本平均の統計は取っていない)。表の線形補間 (2% 刻みの ln ξ) の誤差は +0.02% 程度で未対策。BSTRL を使ったリングの EMIT・Touschek などの積算への影響は未確認</td>
 </tr>
 <tr>
+<td>Emittance[] (POL) の <code>dbtz</code> の割り算 (B336)</td>
+<td>両</td>
+<td><strong>v2 は pr²</strong> (δ = 0.05 の偏向磁石のスピン軌道結合 D が追跡の差分と 1.2%、K64 の式は 13%)。k64 は K64 のまま。<strong>gs では確認できない</strong> (K64 の Polarization は NaN、srot の微分列は出力されない)。限界: 15° の矩形の偏向磁石 (K1 = 0・0.3) と四極の 1 要素 + ドリフト 1 m、δ = 0〜0.1。δ = 0.1 の K1 = 0 の偏向磁石の v2 の 2.2% の残りは別の項 (未調査)</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>

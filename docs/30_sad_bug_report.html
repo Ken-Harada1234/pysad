@@ -2157,6 +2157,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>確定 (gs の光子の一致 + 厳密な積分)</td>
 <td><strong>v2 は直した</strong> (<code>beambeam._besseltab_v2</code>: 台形則 + 小 x の漸近形 3·ξ_min·Sw(ξ_min) の裾を全体に入れる。SwI(1000) = 0.994、u がそれより大きい光子は ξ → 0。+0.016%・+0.046%)。k64 は K64 のまま (gs と同じ)。試験 <code>test_v250_bstrl_table.py</code></td>
 </tr>
+<tr>
+<td>B336</td>
+<td><strong><code>tradke</code> のスピンの回転ベクトルの z 成分の微分 <code>dbtz</code> が pr² でなく pr で割る</strong>: <code>photons.f:1537-1550</code> で btx = xpx/pr² − blx、bty = xpy/pr² − bly、btz = xpzb/pr² − blz だが、微分は dbtx = dxpx/pr² − dblx (δ の列に −2·xpx/pr³)、dbty も同じ、dbtz = dxpzb/pr − dblz (δ の列に −2·xpzb/pr³)。z 成分だけ pr で割るのは自分の btz の微分として不整合 (誤植)。δ ≠ 0 の軌道 (pr ≠ 1) で、Emittance[] (POL) のスピン軌道結合 D = srot(:,4:9) の z の行 (縦の歳差) が δ に比例して誤る。独立な基準 (追跡のスピン回転の中心差分から作る D) と比べた最大値の相対誤差: 3 GeV/c、K1 = 0 の矩形の偏向磁石 (15°、L = 1.2 m)・軌道 (x, px, y, py) = (8e-3, 1e-3, 6e-3, −1e-3) の周りで、δ = 0.05 で pr で割る式 13.2%・pr² で割る式 1.20%、δ = 0.10 で 26.9% 対 2.24%。K1 = 0.3 の偏向磁石は δ = 0.05 で 6.3% 対 0.18%、δ = 0.10 で 12.4% 対 0.15%。δ = 0 は同じ (0.8%、0.24%)。四極は δ に依らず 0.2%。TrackParticles のスピン追跡 (別のコード) には影響しない。<strong>gs では確認できない</strong>: K64 の Polarization は NaN (B55) で、srot の微分列 (4:9) は Emittance[] の他の出力 (SpinPrecessionMatrix は srot(:,1:3)) に出ない。pysad の k64 は誤植をそのまま写している</td>
+<td>photons.f:1550</td>
+<td>δ ≠ 0 の閉軌道・分散のある偏向磁石の Emittance[] (POL) のスピン軌道結合 (脱偏極・運動論的偏極の元)。δ = 0.05 で z 行が 13%</td>
+<td>低 (δ ~ 1e-3 で 0.3%)</td>
+<td>確定 (代数的な不整合 + 追跡の差分)</td>
+<td><strong>v2 は直した</strong> (<code>spin.tradke_spin</code> の <code>dbtz = dxpzb/pr² − dblz</code>。<code>spin.DBTZ_PR2</code> で戻せる)。k64 は K64 のまま。試験 <code>test_v250_spin_dbtz.py</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>

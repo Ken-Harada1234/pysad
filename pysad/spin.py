@@ -26,6 +26,7 @@ CFPD = 5.0 * math.sqrt(3.0) / 8.0
 CEZLIM = 18.0
 SOL_BPAR = True            # v2 (E): SOL 領域の中の Emittance[] の POL は、運動量の向きの磁場の積分 B∥ を向きの変化から作る B⊥ と分けて足す。False で K64 のまま (bsi を z 軸の向きに足す)
 SPIN_ANGLE_EXACT = True    # v2 (E): tradke_spin の向きの変化の大きさを sin θ でなく θ にする (追跡と同じ。False で A の v2 のまま)
+DBTZ_PR2 = True          # v2 (B336): dbtz を pr² で割る (試験が False にして K64 の式 (pr) と比べる)
 STEP_RATE = True           # v2 (P1): 線形の脱偏極率を、放射の刻みごとのスピン軸の場 N_s (要素の出口の N ではなく) で積分する。False で B3 までの要素の出口の N
 KINETIC = True             # v2 (P1): 平衡偏極度の分子に運動論的偏極 b·∂n/∂δ (DK の式の −b·γ∂n/∂γ の項) を入れる。False で n·b だけ (B3 まで)
 STEP_ACC = False           # slim_depolarization の中だけ True: tradke_spin が刻みごとの積算量 (kin_A・kin_Y・rt_M・rt_F・rt_G) を作る
@@ -193,7 +194,8 @@ def tradke_spin(st, c):
         dbtx[5] -= 2.0 * xpx / pr ** 3
         dbty = dxpy / pr ** 2 - dbly
         dbty[5] -= 2.0 * xpy / pr ** 3
-        dbtz = dxpzb / pr - dblz                       # K64 のまま (pr**2 ではなく pr)
+        # v2 (B336): btz = xpzb/pr² − blz の微分は dxpzb/pr² (x・y 成分と同じ)。K64 は pr で割る (誤植。δ ≠ 0 の軌道で効く)
+        dbtz = dxpzb / (pr ** 2 if (_compat.v2() and DBTZ_PR2) else pr) - dblz
         dbtz[5] -= 2.0 * xpzb / pr ** 3
     bpot = c.get('bpot')
     if bpot is not None and not (hint is not None and _compat.v2()):

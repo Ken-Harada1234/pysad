@@ -385,7 +385,7 @@ SAD スクリプトでは、`POL` を有効にして `Emittance[]` の `Polariza
 - `tbrote`・`serot` の行の逐次更新 (B56)、`bsi2` の項の脱落 (B58): docs/16。
 
 **疑い**:
-- `tradke` の `dbtz = dxpzb/pr - dblz` (`photons.f:1550`): $x$ 成分・$y$ 成分は `dxpx/pr**2` だが、$z$ 成分だけ `pr` で割っている。$\delta\ne0$ での $\partial b_{tz}/\partial x$ の誤りになる (大きさは $\delta$ の程度)。誤植の可能性 (docs/16 は「写している」とだけ書く)。この章では数値で確かめていない。
+- **確定 (K64 の誤り、v2 は修正 = B336、gs では確認できない)**: `tradke` の `dbtz = dxpzb/pr - dblz` (`photons.f:1550`): $x$ 成分・$y$ 成分は `dxpx/pr**2` だが、$z$ 成分だけ `pr` で割っている。自分の `btz = xpzb/pr**2 - blz` の微分として不整合 (誤植)。$\delta \ne 0$ の軌道で Emittance[] (POL) のスピン軌道結合 $D = \mathtt{srot}(:,4{:}9)$ の $z$ の行 (縦の歳差) が $\delta$ に比例して誤る。追跡のスピン回転の中心差分から作った $D$ との最大値の相対差は、3 GeV/c、15° の矩形の偏向磁石 ($K_1 = 0$)・軌道 $(x, p_x, y, p_y) = (8, 1, 6, -1)\times10^{-3}$ の周りで、$\delta$ = 0.05 に $\mathrm{pr}$ で割る式 13.2%、$\mathrm{pr}^2$ で割る式 1.20%、$\delta$ = 0.10 に 26.9% 対 2.24% ($K_1$ = 0.3 は 6.3% 対 0.18%、12.4% 対 0.15%)。$\delta$ = 0 は同じ。四極は 0.2% で $\delta$ に依らない。TrackParticles のスピン追跡には影響しない (別のコード)。gs では確認できない: K64 の Polarization は NaN (B55)、`srot` の微分列は Emittance[] の他の出力に出ない。限界: 1 要素 + ドリフトの比較 ($\delta$ = 0.1 の $K_1 = 0$ の偏向磁石の v2 の 2.2% の残りは別の項、未調査)。試験 `test_v250_spin_dbtz.py`。
 - `tradke` の `call tadddsg(dsg,srot,dgx,dgy,dgx,dbeam)`: `dgz` のところに `dgx` を渡している (B57)。`dsg` は使われないので影響なし。
 
 ## 付録 C. この章で使う Fortran の変数名

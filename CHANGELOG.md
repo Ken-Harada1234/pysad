@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**Emittance[] (POL) のスピン軌道結合の `dbtz` の割り算 (B336、v2 のみ。k64 は K64 のまま)**: K64 の `tradke` (`photons.f:1550`) は btz = xpzb/pr² − blz の微分を dxpzb/pr − dblz と書く (x・y 成分は pr²。誤植)。δ ≠ 0 の軌道で、スピン軌道結合 D の z の行が誤る (追跡のスピン回転の中心差分との差が、15° の偏向磁石で δ = 0.05 に 13%、v2 は 1.2%)。gs では確認できない (K64 の Polarization は NaN)。記録 `docs/history/B336_spin_dbtz.md`、試験 `test_v250_spin_dbtz.py`。
+
 **ビームストラールングの光子エネルギーの逆引き表 (B335、v2 のみ。k64 は K64 のまま)**: K64 の `mkbesseltab` は光子数のスペクトルの累積を矩形則で作り、soft な裾 (全体の 0.6%) を捨てて規格化する。表のモーメントが理論値に対し ⟨ξ⟩ で +1.60%、⟨ξ²⟩ で +2.62% (光子のエネルギーの平均損失と量子励起が大きい)。gs の BSTRL の光子 422 個のエネルギーは k64 と 1.6e-7 以内で一致 (表が同じ)。v2 は台形則と裾の見積りで +0.016%・+0.046% にする。記録 `docs/history/B335_bstrl_table.md`、試験 `test_v250_bstrl_table.py`。
 
 **UND の z の更新の −dv·L (B334、v2 のみ。k64 は K64 のまま)**: K64 の `undulator.f` の z の更新には速度の差による −dv·ds の項が無く、磁場なしの UND (K64 は磁場を設定できない) と DRIFT で δ ≠ 0 の粒子の z が dv·L 違う (3 GeV/c・L = 1 m・δ = 1e-3 で 2.9e-11 m、10 MeV/c で 2.6e-6 m、δ = 1e-2 で 2.6e-5 m。gs で確認)。v2 は −dv·L を足し、磁場なしの UND の z が DRIFT と 1e-14 以内で一致する。記録 `docs/history/B334_und_dv.md`、試験 `test_v250_und_dv.py`。
