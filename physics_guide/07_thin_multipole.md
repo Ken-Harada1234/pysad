@@ -17,7 +17,7 @@ $$
 $$
 
  だけ変える (K64 の `px -= aki*Re(cx)`、`py -= aki*Im(cx)`、`cx = (x - iy)^k`、`aki = ak/k!`)。リー演算子 $\exp(:f:)$ ($f = -V$) の級数は 2 項で止まる (§4)。シンプレクティック。pysad の追跡と $9 \times 10^{-19}$ 以下で一致 ([thin_01_potential_kick.out.txt](outputs/thin_01_potential_kick.out.txt) (c))。
-- **長さのある多極**は、ドリフト (厳密) とキックの積に分割する。K64 の**追跡** (`tthin`) は 4 次の力勾配型: ドリフト $\alpha_1L$、キック 1/2、ドリフト $\alpha L$、**補正キック**、ドリフト $\alpha L$、キック 1/2、ドリフト $\alpha_1L$ ($\alpha = 1/\sqrt{12}$、$\alpha_1 = \tfrac12 - \alpha$。補正キックは $|\nabla V|^2$ ($\beta$) と $V_jV_kV_{jk}$ ($\gamma$) の座標だけの関数。式 (7.9)〜(7.12))。**CALC** (`tthine`) は補正なしの 2 次の分割 ($L/6$、キック 1/2、$2L/3$、キック 1/2、$L/6$)。
+- **長さのある多極**は、ドリフト (厳密) とキックの積に分割する。K64 の**追跡** (`tthin`) は 4 次の力勾配型: ドリフト $\alpha_1L$、キック 1/2、ドリフト $\alpha L$、**補正キック**、ドリフト $\alpha L$、キック 1/2、ドリフト $\alpha_1L$ ($\alpha = 1/\sqrt{12}$、$\alpha_1 = \tfrac12 - \alpha$。補正キックは $|\nabla V|^2$ ($\beta$) と $V_jV_kV_{jk}$ ($\gamma$) の座標だけの関数。式 (7.9)〜(7.12))。**CALC** (`tthine`) は、k64 では補正なしの 2 次の分割 ($L/6$、キック 1/2、$2L/3$、キック 1/2、$L/6$)。**v2 は CALC も追跡と同じ 4 次** (docs/30 B326、§7)。
 - **4 次であることの確認**: $L$ を 2 倍にしたときの厳密な積分との差の比が、小さい $L$ で 32 ($L^5$)。6 極 ($\kappa = 400$ /m³、$x = 20$ mm) で $L = 0.05$ m: pysad の追跡 $2.1 \times 10^{-10}$、補正キックの $\gamma$ の項なし $2.7 \times 10^{-9}$、補正なし $2.2 \times 10^{-6}$、CALC の分割 $6.3 \times 10^{-8}$、1 つのキックを挟むだけの Strang $1.7 \times 10^{-5}$ ([thin_02_fourth_order.out.txt](outputs/thin_02_fourth_order.out.txt) (b))。
 - **軌道がずれたとき (フィードダウン)**: 中心から $(d_x, d_y)$ ずれた 6 極のキックは、(7.1) の $x - iy$ を $(x - d_x) - i(y - d_y)$ に替えたもので、展開すると 6 極 + 四極 ($K_1 = -K\,d_x$ と、強さ $K\,d_y$ のスキュー) + 二極のキック ($-K(d_x^2 - d_y^2)/2$、$K\,d_xd_y$) の和になる (§8)。
 - **端部の非線形フリンジ** ($L \neq 0$、DISFRIN = 0): $2m$ 極 ($m = k + 1$) で、硬い端の座標のずれが、K の 1 次で
@@ -130,7 +130,7 @@ $$
 | 実装 | 分割 ($L$ の割合) | 次数 | 消える項 |
 |---|---|---|---|
 | 追跡 `tthin` (`tquad.f:128`) | $\alpha_1$、キック 1/2、$\alpha$、補正、$\alpha$、キック 1/2、$\alpha_1$ | 4 次 | $[A,[A,B]]$、$[B,[B,A]]$ (3 次)、5 次の座標だけの項 |
-| CALC `tthine` (`tthine.f:1`) | $1/6$、キック 1/2、$2/3$、キック 1/2、$1/6$ | 2 次 | $[B,[B,A]]$ (3 次の力の勾配の項)。$[A,[A,B]]$ が $\tfrac1{72}$ で残る |
+| CALC `tthine` (`tthine.f:1`)。k64 (v2 は上の `tthin` と同じ 4 次) | $1/6$、キック 1/2、$2/3$、キック 1/2、$1/6$ | 2 次 | $[B,[B,A]]$ (3 次の力の勾配の項)。$[A,[A,B]]$ が $\tfrac1{72}$ で残る |
 | (比較) Strang | 1/2、キック、1/2 | 2 次 | なし |
 
 ## 6. 追跡の 4 次の分割 (`tthin`)
@@ -224,7 +224,7 @@ $$
 
 ## 7. CALC (行列) の `tthine`
 
-CALC・Emittance[] の薄い多極は、COD $\xi$ を通る粒子の写像と、そのヤコビアン ([02_drift.md](02_drift.md) §8 の `tdrife1` と同じ考え方) を、2 次の分割 (§5 の表) で作る。ドリフトは `tdrife0` (厳密。$dv$ の項を含む)。キックは正準運動量のまま ($1/p$ なし): $\Delta p_x = -\mathrm{aki}\,\mathrm{Re}\,\mathrm{cx}$、$\Delta p_y = -\mathrm{aki}\,\mathrm{Im}\,\mathrm{cx}$ (`aki = ak/fact(kord)`、半分ずつの 2 回は `aki*.5`)。キックのヤコビアンは、$\mathrm{cx} = \bar z^k$ の微分 ($\partial_x\bar z^k = k\bar z^{k-1}$、$\partial_y\bar z^k = -ik\bar z^{k-1}$) から ($g_r + ig_i \equiv k\,\bar z^{k-1}$):
+CALC・Emittance[] の薄い多極は、COD $\xi$ を通る粒子の写像と、そのヤコビアン ([02_drift.md](02_drift.md) §8 の `tdrife1` と同じ考え方) を、k64 は 2 次の分割 (§5 の表) で作る (v2 の 4 次は下の段落)。ドリフトは `tdrife0` (厳密。$dv$ の項を含む)。キックは正準運動量のまま ($1/p$ なし): $\Delta p_x = -\mathrm{aki}\,\mathrm{Re}\,\mathrm{cx}$、$\Delta p_y = -\mathrm{aki}\,\mathrm{Im}\,\mathrm{cx}$ (`aki = ak/fact(kord)`、半分ずつの 2 回は `aki*.5`)。キックのヤコビアンは、$\mathrm{cx} = \bar z^k$ の微分 ($\partial_x\bar z^k = k\bar z^{k-1}$、$\partial_y\bar z^k = -ik\bar z^{k-1}$) から ($g_r + ig_i \equiv k\,\bar z^{k-1}$):
 
 $$
 \frac{\partial(\Delta p_x, \Delta p_y)}{\partial(x, y)} = -\,\mathrm{aki}\begin{pmatrix} g_r & g_i\\ g_i & -g_r\end{pmatrix}
@@ -235,7 +235,7 @@ $$
 
 - **設計軌道上** ($\xi = 0$): キックのヤコビアンは 0 ($k \geq 2$ で $\bar z^{k-1} = 0$) で、行列はドリフトそのもの。追跡と CALC の差は $1.3 \times 10^{-11}$ (L = 0.1 m、4×4 と $z$ の行。[thin_02_fourth_order.out.txt](outputs/thin_02_fourth_order.out.txt) (c))。
 - **軌道がずれたとき**: 追跡 (4 次) と CALC (2 次) は分割が違うので、ヤコビアンが違う。厳密な積分のヤコビアンとの最大差は、6 極 ($L = 0.1$ m、$\kappa = 400$ /m³、COD $x = 20$ mm など) で、追跡 $4.2 \times 10^{-6}$、CALC $2.3 \times 10^{-4}$。追跡と CALC の差は $2.3 \times 10^{-4}$ (同 (c))。**CALC の行列は、追跡のヤコビアンに対して、COD がずれるほど 2 次の分割の誤差だけ違う**。シンプレクティック性は、CALC の行列が $2 \times 10^{-16}$ (解析的)、追跡が $3 \times 10^{-12}$ (中心差分の精度)。
-- 厚い多極の磁場の勾配が小さい (リングの 6 極は $K_2L \sim 10$〜$100$ /m²、$L \sim 0.1$ m) とき、この差は実用上小さい。
+- **v2 (B326)**: $L \neq 0$ の CALC・Emittance[] は、追跡と同じ 4 次の分割 (§6) にした。COD の写像は、ドリフト $\alpha_1L$ → キック 1/2 → ドリフト $\alpha L$ → 補正キック → ドリフト $\alpha L$ → キック 1/2 → ドリフト $\alpha_1L$。補正キックは座標 $(x, y)$ と $\delta$ だけの関数 (正準運動量では、追跡の規格化した運動量の補正に $(1+\delta)$ を掛けたもの: $\Delta p_x = \dfrac{a^2}{p}f_1 r^{k-1}x - \dfrac{a^3}{p^2}\bigl(f_2 r^{k-2}x\,R + f_3 r^{k-1}\mathrm{Re}\,\bar z^k\bigr)$、$\Delta z = \dfrac{a^2}{p^2}f_4 r^{k}- \dfrac{a^3}{p^3}f_5 r^{k-1}R$、$a = $ `ak/fact(k)`、$p = 1+\delta$、$r = x^2 + y^2$、$R = \mathrm{Re}\,\bar z^{k+1}$、$f_1$〜$f_5$ は (7.12) と同じ)。行列は、各段 (厳密なドリフト、キック (7.13)、補正キックの $(x, y, \delta)$ での解析微分) の積 (連鎖律)。$k = 2$〜5、$L = 0.1$〜$0.4$ m で、COD の写像は追跡の 1 刻みと $10^{-14}$ 以内で一致し、行列の厳密な積分との差は $L^5$ に比例 (k64 の 2 次は $L^3$。例: 6 極 $\kappa = 50$ /m³、$L = 0.2$ m で $5\times10^{-8}$ 対 $3.4\times10^{-5}$)。シンプレクティック性は $10^{-16}$。設計軌道上 ($\xi = 0$) では補正キックのヤコビアンも 0 で、行列は k64 と同じドリフト。MULT (`tmulke`) と BEND の 6 極成分は対象外 (従来のまま)。\n- 厚い多極の磁場の勾配が小さい (リングの 6 極は $K_2L \sim 10$〜$100$ /m²、$L \sim 0.1$ m) とき、この差は実用上小さい。
 
 ## 8. フィードダウン (ずれた多極)
 
@@ -421,6 +421,6 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 |---|---|
 | CALC・Emittance[] の `tthine` にフリンジがない (B291) | 追跡の `tthin` は非線形フリンジ `ttfrin` を入れる (`DISFRIN = 0` が既定) が、K64 の `tthine` (`tturne.f:592`、`qtwiss.f:1729` の `qthin`) は入れない。フリンジの写像は座標の 3 次なので、軌道が 6 極の中心を通るとき (設計軌道) は影響がない。軌道が中心からずれる (ステアリング、ずれた 6 極、分散軌道) と、CALC の行列・COD が追跡の 1 周写像と合わない。**K64 の癖 (欠落)**。v2 は追跡と同じ `ttfrin` を CALC・Emittance[] の COD の写像とヤコビアンに入れる (`lattice._thin_fringe_flag`)。k64 は K64 のまま。docs/30 の B291。この章では、`tthin` と `tthine` の差をフリンジの有無で数値化していない (未確認)。 |
 | CALC・Emittance[] の `tthine` に放射がない (B240) | 追跡の `tthin` は $L \neq 0$ の多極で 1 刻みの放射 (`tradk`) をするが、K64 の `tthine` は `enarad = .false.` (放射せず、Emittance[] の減衰・量子励起とスピンの歳差に多極が入らない)。v2 は追跡と同じ 1 刻みの `tradke` を入れる。docs/30 の B240。この章では扱っていない (放射の章で)。 |
-| 追跡と CALC の分割の次数の違い | 追跡 4 次、CALC 2 次 (誤りではないが、軌道がずれると行列が追跡のヤコビアンからずれる。§7)。 |
+| 追跡と CALC の分割の次数の違い (B326) | 追跡 4 次、K64 の CALC 2 次 (軌道がずれると行列が追跡のヤコビアンからずれる。§7)。v2 は CALC も 4 次。 |
 | `ttfrin` の `cx` の意味 | `tthin` の `cx` は $\bar z^k$、`ttfrin` の `cx` は $w = x + iy$ (§15。同じ名前で別の量。誤りではない)。 |
 | 薄い多極の `DISKIN` | pysad は `DISKIN` を使わない ([02_drift.md](02_drift.md) 付録 A)。薄い多極の `tthin` の中のドリフトは常に `pxy2dpz` の厳密な式 (`DISKIN` は多極には見ない。K64 の確認は `DRIFT`・`QUAD` の分岐だけ)。 |

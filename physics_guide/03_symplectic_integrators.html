@@ -222,11 +222,11 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
 <td>4 次</td>
 </tr>
 <tr>
-<td>薄い多極 (CALC <code>tthine</code>)</td>
+<td>薄い多極 (CALC <code>tthine</code>。k64。v2 は上の <code>tthin</code> と同じ)</td>
 <td>厳密なドリフト</td>
 <td>多極のキック</td>
 <td><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mi mathvariant="normal">/</mi><mn>6</mn></mrow><annotation encoding="application/x-tex">L/6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mord">/6</span></span></span></span>、キック 1/2、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn><mi>L</mi><mi mathvariant="normal">/</mi><mn>3</mn></mrow><annotation encoding="application/x-tex">2L/3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">2</span><span class="mord mathnormal">L</span><span class="mord">/3</span></span></span></span>、キック 1/2、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi><mi mathvariant="normal">/</mi><mn>6</mn></mrow><annotation encoding="application/x-tex">L/6</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">L</span><span class="mord">/6</span></span></span></span> (補正なし)</td>
-<td>2 次 (§8.4)</td>
+<td>2 次 (§8.4)。v2 は 4 次</td>
 </tr>
 </tbody>
 </table>
@@ -867,7 +867,7 @@ M834 80h400000v40h-400000z"/></svg></span></span></span><span class="vlist-s">�
 </tr>
 </tbody>
 </table>
-<p>K64 の側の注意 (誤りではない): CALC の <code>tthine</code> は 2 次、追跡の <code>tthin</code> は 4 次で、同じ薄い多極でも分割が違う。したがって、軌道が大きくずれたとき、CALC の行列と追跡のヤコビアンは 2 次の分割の誤差だけ違う (07 章)。</p>
+<p>K64 の側の注意 (v2 は直してある。docs/30 B326): CALC の <code>tthine</code> は 2 次、追跡の <code>tthin</code> は 4 次で、同じ薄い多極でも分割が違う。v2 は CALC も <code>tthin</code> と同じ 4 次にした。以下は k64 の話。したがって、軌道が大きくずれたとき、CALC の行列と追跡のヤコビアンは 2 次の分割の誤差だけ違う (07 章)。</p>
 </main><script>
 document.querySelectorAll('table').forEach(function (t) {
   t.querySelectorAll('th').forEach(function (th, i) {

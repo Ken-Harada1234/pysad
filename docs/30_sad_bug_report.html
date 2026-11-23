@@ -2119,7 +2119,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>厚い 6 極のあるリングで、CALC の dν/dδ・フィードダウン (軌道のずれ × K2) が追跡と O(K2·x_co·L²) ずれる (K2 L = 0.4 で 4e-4 (相対))。δ = 0 の線形光学や 6 極のない部分には出ない</td>
 <td>低 (数値精度の差)</td>
 <td>確定 (gs の CALC と追跡・薄い 6 極への分割の極限)</td>
-<td><strong>直していない (両モード。CALC の 6 極の分割次数を変えると ADTS・RDT・LMA の CALC 基準が全部動くため、統括の判断待ち)</strong>。追跡の評価が正しい基準。試験 <code>test_v250_chromaticity_bend.py</code></td>
+<td><strong>v2 で修正 (k64 は K64 のまま)</strong>: v2 は CALC・Emittance[] の厚い多極 (SEXT・OCT・DECA・DODECA、L ≠ 0) の COD の写像と解析ヤコビアンを、追跡 <code>tthin</code> と同じ 4 次の力勾配型の分割 (L(1/2−α)・キック/2・αL・補正キック・αL・キック/2・L(1/2−α)、α = 1/√12、補正キックの係数は <code>tquad.f</code> の f1〜f5) にした (<code>lattice._tthine_cod</code>・<code>_thin4_corr</code>、<code>emit6d._jac_thin4</code>、<code>elkern._tthine_map</code>・<code>_jac_thin4</code>。行列は 4 次の写像の COD まわりの微分を連鎖律の解析式の積で作る)。L = 0 は変えない。CALC の写像は追跡の 1 刻みと 1e-14 以内で一致、行列は厳密な運動方程式の積分と L⁵ で一致 (k64 は L³)、dν/dδ は追跡と 3e-6 (相対) 以内。MULT (<code>tmulke</code> の分割) と BEND の 6 極成分は対象外。試験 <code>test_v250_calc_thick_sext_4th.py</code>・<code>test_v250_chromaticity_bend.py</code></td>
 </tr>
 </tbody>
 </table>
