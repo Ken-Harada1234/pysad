@@ -1,0 +1,5 @@
+# 生の計算結果 (results_raw.tar.gz に固めた。展開すると results/ に戻る)
+results/*
+!results/*.png
+!results/*.md
+!results/cands.json

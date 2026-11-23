@@ -1,0 +1,67 @@
+MOMENTUM = 4.2GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3=(L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD QFE = (L=0.3 K1=0.7 DY=0.003) QDE = (L=0.3 K1=-0.6 DY=-0.003);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (VOLT=24e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELL2 = (QFE D2 B D2 QD D1);
+LINE CELL3 = (QF D2 B D2 QDE D1);
+LINE RING = (ST 2*CELL1 CELL2 4*CELL1 CELL3 4*CELL1 RFC);
+FFS;
+$FORM = "14.8";
+PageWidth = 1999;
+NPARA = 1;
+USE RING;
+CELL;
+CALC;
+
+RFSW; RAD; NOFLUC; NORADPOL;
+POL;
+em = Emittance[];
+Print["EM ", {PolarizationTime, SpinTune, NominalSpinTune, Polarization, PolarizationVector}/.em];
+Print["EMB ", {MomentumSpread, EquilibriumPosition}/.em, " ", Emittances/.em];
+n0 = {0.0177663965162,0.996497490274,-0.0817135670074};
+N0 = {{-3.78335074763,-0.00486515030769,-0.0637178408331,1.62444890681,-0.0862917058421,2.41957171729},{-0.559694747254,1.42504259283,0.674583821763,-0.149239796618,0.00501752568358,0.0339446009693},{-7.65513379294,17.3720969489,8.21006755571,-1.46232248614,0.0422004553239,0.94573434743}};
+cod = {-0.000439862036394,-0.000199150229102,-0.00622611788946,0.00856188463412,-2.80724689504e-07,-0.000137341064566};
+np = 1000;
+one = Table[1, {i, np}];
+beam = {cod[[1]]*one, cod[[2]]*one, cod[[3]]*one, cod[[4]]*one, cod[[5]]*one, cod[[6]]*one, one};
+SeedRandom[201];
+FLUC; NOPOL;
+If[20000 > 0, beam = TrackParticles[{1, beam}, 1, 1, 20000][[2]]];
+rms[v_] := Sqrt[Plus@@(v^2)/Length[v]];
+Print["EQ turns=", 20000, " rms x px y py z dp ", rms[beam[[1]]-cod[[1]]], " ", rms[beam[[2]]-cod[[2]]], " ", rms[beam[[3]]-cod[[3]]], " ", rms[beam[[4]]-cod[[4]]], " ", rms[beam[[5]]-cod[[5]]], " ", rms[beam[[6]]-cod[[6]]]];
+u = Table[{beam[[1,i]]-cod[[1]], beam[[2,i]]-cod[[2]], beam[[3,i]]-cod[[3]], beam[[4,i]]-cod[[4]], beam[[5,i]]-cod[[5]], beam[[6,i]]-cod[[6]]}, {i, np}];
+s = Table[n0 + N0.u[[i]], {i, np}];
+s = Table[s[[i]]/Sqrt[s[[i]].s[[i]]], {i, np}];
+ang = Table[ArcTan[s[[i,1]], s[[i,3]]], {i, np}];
+sy = Table[s[[i,2]], {i, np}];
+beam = {beam[[1]], beam[[2]], beam[[3]], beam[[4]], beam[[5]], beam[[6]], ang, sy, one, one, one};
+sn[b_] := Table[Sqrt[1-b[[8,i]]^2]*Cos[b[[7,i]]]*n0[[1]] + b[[8,i]]*n0[[2]] + Sqrt[1-b[[8,i]]^2]*Sin[b[[7,i]]]*n0[[3]], {i, Length[b[[1]]]}];
+snl[b_] := Table[Module[{uu, nn, ss},
+  uu = {b[[1,i]]-cod[[1]], b[[2,i]]-cod[[2]], b[[3,i]]-cod[[3]], b[[4,i]]-cod[[4]], b[[5,i]]-cod[[5]], b[[6,i]]-cod[[6]]};
+  nn = n0 + N0.uu; nn = nn/Sqrt[nn.nn];
+  ss = {Sqrt[1-b[[8,i]]^2]*Cos[b[[7,i]]], b[[8,i]], Sqrt[1-b[[8,i]]^2]*Sin[b[[7,i]]]};
+  nn.ss], {i, Length[b[[1]]]}];
+Print["S0 1-<S.n0> = ", 1 - Plus@@sn[beam]/np, " L= ", 1 - Plus@@snl[beam]/np];
+POL;
+Do[
+  FFS["FLUC"];
+  beam = TrackParticles[{1, beam}, 1, 1, 2500][[2]];
+  bd = beam;
+  a = sn[beam];
+  Print["STAGE ", k, " turns ", k*2500, " A= ", 1 - Plus@@a/np, " sdA= ", Sqrt[(Plus@@(a^2)/np - (Plus@@a/np)^2)/np], " L= ", 1 - Plus@@snl[beam]/np,
+        " rms x y dp z ", rms[beam[[1]]-cod[[1]]], " ", rms[beam[[3]]-cod[[3]]], " ", rms[beam[[6]]-cod[[6]]], " ", rms[beam[[5]]-cod[[5]]]];
+  FFS["NOFLUC"];
+  bd = TrackParticles[{1, bd}, 1, 1, 8000][[2]];
+  d = sn[bd];
+  Print["DAMP ", k, " turns ", k*2500, " D= ", 1 - Plus@@d/np, " sdD= ", Sqrt[(Plus@@(d^2)/np - (Plus@@d/np)^2)/np],
+        " orb ", Max[Abs[bd[[1]]-cod[[1]]]], " ", Max[Abs[bd[[3]]-cod[[3]]]]];
+  Print["DV ", k, " ", 1-d];
+  Print["AV ", k, " ", 1-a];
+  Print["LV ", k, " ", 1-snl[beam]],
+  {k, 1, 4}];
+Print["SPART ", Table[1-sn[beam][[i]], {i, Min[np, 8]}]];
+Exit;

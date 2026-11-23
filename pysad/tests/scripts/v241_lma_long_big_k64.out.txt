@@ -1,0 +1,1 @@
+v241_lma_long_kekls_fluc_n120_t10000 k64: 1292 s

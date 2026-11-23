@@ -42,7 +42,7 @@ class Sym:
         self.name = name
 
     def __eq__(self, o):
-        return isinstance(o, Sym) and o.name == self.name
+        return o is self or (isinstance(o, Sym) and o.name == self.name)
 
     def __hash__(self):
         return hash(('Sym', self.name))
@@ -150,8 +150,86 @@ class SADError(Exception):
     pass
 
 
+_SYMS = {}
+
+
 def S(name):
-    return Sym(name)
+    # 記号は変更されない (name を書き換える箇所はない) ので、同じ名前は同じ Sym を共有する (パターン照合が毎回 S('Pattern') などを作っていた)
+    s = _SYMS.get(name)
+    if s is None:
+        s = _SYMS[name] = Sym(name)
+    return s
+
+
+# 評価器・パターン照合が使う head の記号 (毎回 S(...) で探さない)
+_SY__D_Delayed = S('$Delayed')
+_SY__D_Failed = S('$Failed')
+_SY__D_Op = S('$Op')
+_SY_Alternatives = S('Alternatives')
+_SY_And = S('And')
+_SY_Apply = S('Apply')
+_SY_BeamLine = S('BeamLine')
+_SY_Begin = S('Begin')
+_SY_BeginPackage = S('BeginPackage')
+_SY_Blank = S('Blank')
+_SY_BlankNullSequence = S('BlankNullSequence')
+_SY_BlankSequence = S('BlankSequence')
+_SY_Complex = S('Complex')
+_SY_CompoundExpression = S('CompoundExpression')
+_SY_Condition = S('Condition')
+_SY_Divide = S('Divide')
+_SY_End = S('End')
+_SY_EndOfFile = S('EndOfFile')
+_SY_EndPackage = S('EndPackage')
+_SY_Equal = S('Equal')
+_SY_Evaluate = S('Evaluate')
+_SY_Expression = S('Expression')
+_SY_FFS_D_FlagQ = S('FFS$FlagQ')
+_SY_For = S('For')
+_SY_Function = S('Function')
+_SY_Hold = S('Hold')
+_SY_If = S('If')
+_SY_List = S('List')
+_SY_MessageName = S('MessageName')
+_SY_Minus = S('Minus')
+_SY_Name = S('Name')
+_SY_Not = S('Not')
+_SY_Null = S('Null')
+_SY_Optional = S('Optional')
+_SY_Or = S('Or')
+_SY_Out = S('Out')
+_SY_Part = S('Part')
+_SY_Pattern = S('Pattern')
+_SY_PatternTest = S('PatternTest')
+_SY_Plus = S('Plus')
+_SY_Power = S('Power')
+_SY_PreDecrement = S('PreDecrement')
+_SY_PreIncrement = S('PreIncrement')
+_SY_Rational = S('Rational')
+_SY_Real = S('Real')
+_SY_Repeated = S('Repeated')
+_SY_RepeatedNull = S('RepeatedNull')
+_SY_Rule = S('Rule')
+_SY_RuleDelayed = S('RuleDelayed')
+_SY_SAD_D_Member = S('SAD$Member')
+_SY_Sequence = S('Sequence')
+_SY_Set = S('Set')
+_SY_SetDelayed = S('SetDelayed')
+_SY_Skip = S('Skip')
+_SY_Slot = S('Slot')
+_SY_SlotSequence = S('SlotSequence')
+_SY_String = S('String')
+_SY_StringTake = S('StringTake')
+_SY_Switch = S('Switch')
+_SY_Symbol = S('Symbol')
+_SY_TagSet = S('TagSet')
+_SY_Times = S('Times')
+_SY_Unequal = S('Unequal')
+_SY_Unevaluated = S('Unevaluated')
+_SY_Unevaluated_D_ = S('Unevaluated$')
+_SY_Unset = S('Unset')
+_SY_Which = S('Which')
+_SY_WithContext = S('WithContext')
 
 
 # ============================================================================ 字句解析
@@ -224,7 +302,7 @@ def _is_const(a):
     if isinstance(a, list):
         return all(_is_const(x) for x in a)
     if isinstance(a, Expr):
-        if a.head == S('Blank'):
+        if a.head == _SY_Blank:
             return True
         return (isinstance(a.head, Sym) and a.head.name in ('List', 'Plus', 'Times', 'Power', 'Blank', 'Alternatives', 'Minus', 'Divide', 'Subtract')
                 and all(_is_const(x) for x in a.args))
@@ -481,7 +559,7 @@ class Parser:
                     args = self.parse_args(']')
                     self.expect(']')
                     self.depth -= 1
-                    left = Expr(S('Part'), [left] + args)
+                    left = Expr(_SY_Part, [left] + args)
                     continue
                 if v == '::':
                     # Sym::tag (メッセージ名)。Sym::tag = "..." でメッセージを定義、Message[Sym::tag, ...] / Off[Sym::tag] で使う
@@ -491,13 +569,13 @@ class Parser:
                     tg = self.next()
                     if tg.kind not in ('sym', 'str'):
                         raise SADError(f'line {tg.line}: expected message tag after ::')
-                    left = Expr(S('MessageName'), [left, tg.val if tg.kind == 'str' else tg.val])
+                    left = Expr(_SY_MessageName, [left, tg.val if tg.kind == 'str' else tg.val])
                     continue
                 if v == '&':
                     if 220 >= rbp:
                         break
                     self.next()
-                    left = Expr(S('Function'), [left])
+                    left = Expr(_SY_Function, [left])
                     continue
                 if v in ('++', '--'):
                     if 7 >= rbp:
@@ -509,7 +587,7 @@ class Parser:
                     if 900 >= rbp:
                         break
                     self.next()
-                    left = Expr(S('Unset'), [left])
+                    left = Expr(_SY_Unset, [left])
                     continue
                 if v == ';':
                     if 1000 >= rbp:
@@ -522,10 +600,10 @@ class Parser:
                         right = Null
                     else:
                         right = self.parse_expr(1000)
-                    if isinstance(left, Expr) and left.head == S('CompoundExpression'):
-                        left = Expr(S('CompoundExpression'), left.args + [right])
+                    if isinstance(left, Expr) and left.head == _SY_CompoundExpression:
+                        left = Expr(_SY_CompoundExpression, left.args + [right])
                     else:
-                        left = Expr(S('CompoundExpression'), [left, right])
+                        left = Expr(_SY_CompoundExpression, [left, right])
                     continue
                 if v == '..' or v == '...':
                     self.next()
@@ -537,7 +615,7 @@ class Parser:
                         # x@member (クラスのメンバー参照): 右は記号だけ。x@m[args] は (x@m)[args]、x@a@b は (x@a)@b
                         self.next()
                         nm_ = self.next()
-                        left = Expr(S('SAD$Member'), [left, Sym(nm_.val)])
+                        left = Expr(_SY_SAD_D_Member, [left, Sym(nm_.val)])
                         continue
                 if v in _BIN:
                     prio, rassoc, head = _BIN[v]
@@ -552,7 +630,7 @@ class Parser:
                         self.depth += 1
                         extra = self.parse_args(']')
                         self.depth -= 1
-                        left = Expr(S('Apply'), [left] + extra)
+                        left = Expr(_SY_Apply, [left] + extra)
                         continue
                     if v in (':>', '->') and self.peek().kind == 'op' and self.peek().val in (',', ']', ')', '}'):
                         right = Null                       # `Command$:>,` のように右辺が空のルールは Null
@@ -571,7 +649,7 @@ class Parser:
                     and (t.pre or (t.kind == 'sym' and isinstance(left, float)) or closed_
                          or (t.kind == 'op' and t.val == '(' and isinstance(left, Sym))) and 40 < rbp):      # s2(a|b): 記号の直後の ( も積 (GeometryPlot.n の s2(_Real|_String))
                 right = self.parse_expr(40)
-                left = Expr(S('Times'), [left, right])
+                left = Expr(_SY_Times, [left, right])
                 continue
             break
         return left
@@ -581,11 +659,11 @@ class Parser:
             return Expr(left, [right])
         if head == 'Pattern':
             # x_ : default  → Optional
-            if isinstance(left, Expr) and left.head == S('Pattern'):
-                return Expr(S('Optional'), [left, right])
-            if isinstance(left, Expr) and left.head == S('Blank'):
-                return Expr(S('Optional'), [left, right])
-            return Expr(S('Pattern'), [left, right])
+            if isinstance(left, Expr) and left.head == _SY_Pattern:
+                return Expr(_SY_Optional, [left, right])
+            if isinstance(left, Expr) and left.head == _SY_Blank:
+                return Expr(_SY_Optional, [left, right])
+            return Expr(_SY_Pattern, [left, right])
         if (head in ('SameQ', 'UnsameQ', 'Less', 'LessEqual', 'Greater', 'GreaterEqual', 'Equal') and isinstance(left, Expr)
                 and left.head == S(head) and not getattr(left, 'paren', False)):
             return Expr(S(head), left.args + [right])           # a===b===c, a<=>b<=>c は 1 つの n 項
@@ -646,11 +724,11 @@ class Parser:
                 e = self.parse_expr(20)   # -2^2 = -4, -a.b = -(a.b) (SAD で確認; Power=15, Dot=10 を含める)
                 if isinstance(e, float):
                     return -e
-                return Expr(S('Minus'), [e])
+                return Expr(_SY_Minus, [e])
             if v == '+':
                 return self.parse_expr(20)
             if v == '~':
-                return Expr(S('Not'), [self.parse_expr(150)])
+                return Expr(_SY_Not, [self.parse_expr(150)])
             if v == '?':
                 # SAD: ?FLAG (FFS のフラグの問い合わせ、True/False)。FFS が FFS$FlagQ を登録する
                 t2 = self.peek()
@@ -658,11 +736,11 @@ class Parser:
                     # `X->??` (Tk の bind の %x が イベントに無いときの ?? ) など、? の後に名前が無ければ Null
                     return Null
                 self.next()
-                return Expr(S('FFS$FlagQ'), [t2.val])
+                return Expr(_SY_FFS_D_FlagQ, [t2.val])
             if v == '++':
-                return Expr(S('PreIncrement'), [self.parse_expr(7)])
+                return Expr(_SY_PreIncrement, [self.parse_expr(7)])
             if v == '--':
-                return Expr(S('PreDecrement'), [self.parse_expr(7)])
+                return Expr(_SY_PreDecrement, [self.parse_expr(7)])
             if v == '(':
                 self.depth += 1
                 self.skip_nl()
@@ -677,15 +755,15 @@ class Parser:
                 self.depth += 1
                 args = self.parse_args('}')
                 self.depth -= 1
-                return Expr(S('List'), args)
+                return Expr(_SY_List, args)
             if v == '#':
                 if self.peek().kind == 'num' and not self.peek().pre:
-                    return Expr(S('Slot'), [self.next().val])
-                return Expr(S('Slot'), [1.0])
+                    return Expr(_SY_Slot, [self.next().val])
+                return Expr(_SY_Slot, [1.0])
             if v == '##':
                 if self.peek().kind == 'num' and not self.peek().pre:
-                    return Expr(S('SlotSequence'), [self.next().val])
-                return Expr(S('SlotSequence'), [1.0])
+                    return Expr(_SY_SlotSequence, [self.next().val])
+                return Expr(_SY_SlotSequence, [1.0])
             if v == '_':
                 return self.parse_blank(None)
             if v == '[':
@@ -693,7 +771,7 @@ class Parser:
                 self.depth += 1
                 args = self.parse_args(']')
                 self.depth -= 1
-                return args[0] if len(args) == 1 else Expr(S('Sequence'), args)
+                return args[0] if len(args) == 1 else Expr(_SY_Sequence, args)
             if v == '{':
                 pass
         if t.kind == 'nl':
@@ -731,7 +809,7 @@ class Parser:
             raise SADError(f'line {t.line}: expected ; or {close}, got {t.val!r}')
         if len(exprs) == 1:
             return exprs[0]
-        return Expr(S('CompoundExpression'), exprs)
+        return Expr(_SY_CompoundExpression, exprs)
 
     def parse_symbol(self, name):
         """シンボル。x_, x__, x___, x_Real, _Real などのパターンも"""
@@ -739,7 +817,7 @@ class Parser:
         return S(name)
 
     def parse_blank(self, name):
-        return Expr(S('Blank'), [])
+        return Expr(_SY_Blank, [])
 
 
 # '_' をパターンとして扱うため、トークナイザの後処理でシンボル名の '_' を処理する
@@ -790,7 +868,7 @@ _GS_GLOBAL_NAMES = ('ExternalMap', 'a', 'act', 'al', 'arg', 'argv', 'b', 'body',
 
 
 def _sysnames():
-    """pysad が記号として扱う名前 (pysad のソース中の S('Name')・.name == 'Name' の文字列)。文脈の名前解決で System` の記号とみなす。
+    """pysad が記号として扱う名前 (pysad のソース中の _SY_Name・.name == 'Name' の文字列)。文脈の名前解決で System` の記号とみなす。
     大文字か $ で始まる 2 文字以上の名前だけ (1 文字は I・E・D・N)。最初に文脈を使ったときに 1 回だけ集める"""
     global _SYSNAMES
     if _SYSNAMES is None:
@@ -834,7 +912,7 @@ def _parse_prefix_pat(self: Parser, t: Tok):
     head = {1: 'Blank', 2: 'BlankSequence', 3: 'BlankNullSequence'}[nb]
     blank = Expr(S(head), [S(typ)] if typ else [])
     if name:
-        return Expr(S('Pattern'), [S(name), blank])
+        return Expr(_SY_Pattern, [S(name), blank])
     return blank
 
 
@@ -1468,7 +1546,7 @@ class Interp:
                         result = self.eval(node)
                     if getattr(self, 'echo_out', False) and mode == 'ffs' and self._run_depth == 1 and nodes_                             and k - 1 < len(semis) and not semis[k - 1] and stmts[k - 1] is stmt_src:
                         v_ = result
-                        if isinstance(nodes_[-1], Expr) and nodes_[-1].head == S('SetDelayed') and len(nodes_[-1].args) == 2:
+                        if isinstance(nodes_[-1], Expr) and nodes_[-1].head == _SY_SetDelayed and len(nodes_[-1].args) == 2:
                             v_ = nodes_[-1].args[1]                 # gs: f[x_] := body の値は未評価の本体
                         if v_ is not Null and not isinstance(v_, Seq):
                             self.out_line += 1
@@ -1749,7 +1827,7 @@ class Interp:
                         if pats is None:
                             return self.eval(body) if delayed else body
                 return node
-            if isinstance(v, Expr) and v.head == S('$Delayed'):
+            if isinstance(v, Expr) and v.head == _SY__D_Delayed:
                 return self.eval(v.args[0])
             if isinstance(v, Seq) and any(isinstance(q_, _HeldArg) for q_ in v.items):
                 # HoldRest の関数の par0__ (保持された引数の列) は、使われるときに呼び出し側の環境で 1 つずつ評価する (Plots.n の FitPlot の {par0})
@@ -1811,7 +1889,7 @@ class Interp:
                         pass
                 if found_ and (is_num(v2) or isinstance(v2, (str, list))):
                     return v2
-            if isinstance(v, Expr) and v.head != S('$Delayed') and not isinstance(v.head, Expr) and getattr(self, '_expr_reeval', False):
+            if isinstance(v, Expr) and v.head != _SY__D_Delayed and not isinstance(v.head, Expr) and getattr(self, '_expr_reeval', False):
                 # 関数の引数に束縛された未評価の式 (Sin[x]) は、本体の中で評価が続く: SAD は引数を本体へ文字どおり代入してから評価するので、
                 # With[{x = Vector[#]}, … Sin[x] …] の x が効く (Plots.n の PlotInterpolate の fxin)。評価は呼び出し環境に戻さず現在の環境で行う
                 fr_b = None
@@ -1998,9 +2076,9 @@ class Interp:
                         h_ = self._close(a) if self._has_immut() else a
                         if isinstance(h_, _Lit) and isinstance(h_.v, Expr):
                             h_ = h_.v
-                        if isinstance(h_, Expr) and h_.head == S('Unevaluated') and len(h_.args) == 1:
+                        if isinstance(h_, Expr) and h_.head == _SY_Unevaluated and len(h_.args) == 1:
                             h_ = h_.args[0]                   # 保持引数の位置では Unevaluated[x] の外側を外す (Widget[Unevaluated[Root$Window], Null])
-                        elif isinstance(h_, Expr) and h_.head == S('Evaluate') and len(h_.args) == 1:
+                        elif isinstance(h_, Expr) and h_.head == _SY_Evaluate and len(h_.args) == 1:
                             h_ = self.eval(h_.args[0])        # 保持引数の位置の Evaluate[x] は評価する (ParametricPlot[Evaluate[ReleaseHold[a]], …])
                         args.append(_HeldArg(h_))
                     else:
@@ -2010,11 +2088,11 @@ class Interp:
                         else:
                             args.append(v)
             else:
-                if dv and any(isinstance(a_, Expr) and a_.head == S('Unevaluated$') and len(a_.args) == 1 for a_ in node.args):
+                if dv and any(isinstance(a_, Expr) and a_.head == _SY_Unevaluated_D_ and len(a_.args) == 1 for a_ in node.args):
                     # f[Unevaluated$[i]]: i を評価せずに (変数 i そのものを) 渡す。関数の中の i++ や w[i] = … が呼び出し側の i を進める (KBF$ArrangeComponents)
                     args = []
                     for a_ in node.args:
-                        if isinstance(a_, Expr) and a_.head == S('Unevaluated$') and len(a_.args) == 1:
+                        if isinstance(a_, Expr) and a_.head == _SY_Unevaluated_D_ and len(a_.args) == 1:
                             u_ = a_.args[0]
                             if isinstance(u_, Sym):
                                 u_ = _VarRef(u_.name)
@@ -2055,16 +2133,16 @@ class Interp:
                 if at:
                     args = [x.node if isinstance(x, _HeldArg) else x for x in args]    # 保持された引数は式のまま返す (Widget[w, ...] など)
                 return Expr(head, args)
-            if isinstance(hv, Expr) and hv.head == S('$Delayed'):
+            if isinstance(hv, Expr) and hv.head == _SY__D_Delayed:
                 hv = self.eval(hv.args[0])            # Module[{h}, h := Sqrt[#]&; h[4]]: 局所変数の遅延した値
             return self.apply_value(hv, args, head)
         # head が式 (f[a][b], (f@g)[x], Function[...][x])
-        if isinstance(head, Expr) and head.head == S('SAD$Member') and len(head.args) == 2 and isinstance(head.args[1], Sym):
+        if isinstance(head, Expr) and head.head == _SY_SAD_D_Member and len(head.args) == 2 and isinstance(head.args[1], Sym):
             ms_ = self.resolve_member_head(head)
             if ms_ is not None:
                 return self.eval_expr(Expr(ms_, node.args))            # x@method[args]: インスタンス x のメソッド
             return self.eval(Expr(head.args[0], [Expr(head.args[1], node.args)]))     # f@g[x] は f[g[x]]
-        if isinstance(head, Expr) and head.head == S('Unevaluated$') and len(head.args) == 1:
+        if isinstance(head, Expr) and head.head == _SY_Unevaluated_D_ and len(head.args) == 1:
             head = head.args[0]                   # Unevaluated$[tf1][Background] は tf1[Background]
             if isinstance(head, Sym):
                 return self.eval_expr(Expr(head, node.args))
@@ -2075,7 +2153,7 @@ class Interp:
     def apply_value(self, hv, args, head=None):
         if hv is Null:
             return Seq(list(args))                # Hold[x] /. Hold -> Null は Null[x] で、Null[a, b] は a, b を並べる Sequence
-        if isinstance(hv, Expr) and hv.head == S('Unevaluated$') and len(hv.args) == 1:
+        if isinstance(hv, Expr) and hv.head == _SY_Unevaluated_D_ and len(hv.args) == 1:
             hv = self.eval(hv.args[0])            # Unevaluated$[tf1][Background] は tf1[Background]
             if isinstance(hv, Sym):
                 return self.eval_expr(Expr(hv, [_Lit(x) for x in args]))
@@ -2167,14 +2245,14 @@ class Interp:
 
     def subst_slots(self, node, args):
         if isinstance(node, Expr):
-            if node.head == S('Slot'):
+            if node.head == _SY_Slot:
                 k = int(node.args[0]) if node.args else 1
                 if 1 <= k <= len(args):
                     return _Lit(args[k - 1])
                 return Null
-            if node.head == S('SlotSequence'):
-                return Expr(S('Sequence'), [_Lit(a) for a in args])
-            if node.head == S('Function') or node.head == S('Hold'):
+            if node.head == _SY_SlotSequence:
+                return Expr(_SY_Sequence, [_Lit(a) for a in args])
+            if node.head == _SY_Function or node.head == _SY_Hold:
                 return node       # 内側の純関数・Hold の中は置換しない (gs: (Hold[f[#]]&)[3] は Hold[f[#]])
             return Expr(self.subst_slots(node.head, args), [self.subst_slots(a, args) for a in node.args])
         if isinstance(node, list) and any(isinstance(a, (Expr, list)) for a in node):
@@ -2182,9 +2260,46 @@ class Interp:
         return node
 
     def apply_downvalues(self, name, dv, args):
+        # 規則が多い定義 (f["x"] = … の記憶、UpValue の Set など) は、合わない規則を照合の機構に入れずに捨てる (_quick_reject。結果は同じ)
+        prefilter = len(dv) > 1 and bool(args)
+        symv = None
+        if prefilter and type(dv) is RuleList and len(dv) > 8:
+            a0_ = args[0]
+            ta_ = type(a0_)
+            if ta_ is float or ta_ is str or ta_ is Sym:
+                dv = dv.candidates(a0_)
         for pats, body, delayed in dv:
             if pats is None:
                 continue
+            if prefilter and pats:
+                rej = False
+                for i_ in range(min(len(pats), len(args))):
+                    p_ = pats[i_]
+                    a_ = args[i_]
+                    if type(p_) is _Lit and type(p_.v) is Expr and i_ == 0 and isinstance(a_, Sym) and not self.same(p_.v, a_):
+                        # 記号の引数はその値でも照合される (_match_one)。値は規則ごとに変わらないので 1 回だけ求める
+                        if symv is None:
+                            if any(d_[0] is None for d_ in (self.downvalues.get(a_.name) or ())):
+                                symv = (False, None, None)
+                            else:
+                                try:
+                                    va0 = self.eval(a_)
+                                except Exception:
+                                    va0 = a_
+                                if isinstance(va0, Sym) and va0.name == a_.name:
+                                    symv = (False, None, None)
+                                else:
+                                    symv = (True, va0, repr(va0))
+                        if not symv[0] or not (self.same(p_.v, symv[1]) or repr(p_.v) == symv[2]):
+                            rej = True
+                            break
+                    elif _quick_reject(p_, a_, i_ == 0):
+                        rej = True
+                        break
+                    if not _single_pat(p_):
+                        break
+                if rej:
+                    continue
             b = self.match_args(pats, args)
             if b is None:
                 continue
@@ -2213,7 +2328,7 @@ class Interp:
                     v = fr[node.name]
                     if isinstance(v, _HeldArg):
                         return v.node
-                    if isinstance(v, Expr) and v.head == S('$Delayed'):
+                    if isinstance(v, Expr) and v.head == _SY__D_Delayed:
                         return node
                     return _Lit(v)
             return node
@@ -2229,15 +2344,15 @@ class Interp:
     @staticmethod
     def _declared_names(decl):
         names = set()
-        items = decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl]
+        items = decl.args if isinstance(decl, Expr) and decl.head == _SY_List else [decl]
         for it in items:
-            if isinstance(it, Expr) and it.head == S('CompoundExpression'):
+            if isinstance(it, Expr) and it.head == _SY_CompoundExpression:
                 items = list(items) + list(it.args)
                 continue
-            tgt = it.args[0] if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')) and it.args else it
+            tgt = it.args[0] if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed) and it.args else it
             if isinstance(tgt, Sym):
                 names.add(tgt.name)
-            elif isinstance(tgt, Expr) and tgt.head == S('List'):
+            elif isinstance(tgt, Expr) and tgt.head == _SY_List:
                 for x in tgt.args:
                     if isinstance(x, Sym):
                         names.add(x.name)
@@ -2246,7 +2361,7 @@ class Interp:
     @staticmethod
     def _pattern_var_names(x, acc):
         if isinstance(x, Expr):
-            if x.head == S('Pattern') and x.args and isinstance(x.args[0], Sym):
+            if x.head == _SY_Pattern and x.args and isinstance(x.args[0], Sym):
                 acc.add(x.args[0].name)
             for a in x.args:
                 Interp._pattern_var_names(a, acc)
@@ -2272,7 +2387,7 @@ class Interp:
                     if not fr.immut:
                         return node
                     v = fr[node.name]
-                    if isinstance(v, (Expr,)) and v.head == S('$Delayed'):
+                    if isinstance(v, (Expr,)) and v.head == _SY__D_Delayed:
                         return self._close(v.args[0]) if not head else node     # With[{g:=e/2}, f[e_]:=g*3]: 定義の中へは式 (評価前) を埋め込む
                     if isinstance(v, _HeldArg):
                         return v.node
@@ -2281,17 +2396,17 @@ class Interp:
                     return node if head else _Lit(v)
             return node
         if isinstance(node, Expr):
-            if node.head == S('Pattern') and node.args:
+            if node.head == _SY_Pattern and node.args:
                 return Expr(node.head, [node.args[0]] + [self._close(a) for a in node.args[1:]])
             hn_ = node.head.name if isinstance(node.head, Sym) else None
             if hn_ in ('With', 'Module', 'Block') and len(node.args) >= 2 and not self._xs.issuperset(self._declared_names(node.args[0])):
                 # 内側の宣言が同じ名前を束縛し直す: その名前は本体の中では置き換えない (宣言の右辺は外側の環境)
                 decl = node.args[0]
                 names = self._declared_names(decl)
-                if isinstance(decl, Expr) and decl.head == S('List'):
+                if isinstance(decl, Expr) and decl.head == _SY_List:
                     nd = []
                     for it in decl.args:
-                        if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')) and len(it.args) == 2:
+                        if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed) and len(it.args) == 2:
                             nd.append(Expr(it.head, [it.args[0], self._close(it.args[1])]))
                         else:
                             nd.append(it)
@@ -2315,7 +2430,7 @@ class Interp:
                         self._xs = old_xs
                     return Expr(node.head, [lhs, rhs])
             if hn_ == 'Function' and len(node.args) == 2:
-                pn = self._declared_names(node.args[0] if isinstance(node.args[0], Expr) and node.args[0].head == S('List') else Expr(S('List'), [node.args[0]]))
+                pn = self._declared_names(node.args[0] if isinstance(node.args[0], Expr) and node.args[0].head == _SY_List else Expr(_SY_List, [node.args[0]]))
                 if pn:
                     old_xs = self._xs
                     self._xs = old_xs | pn
@@ -2361,7 +2476,7 @@ class Interp:
             # 評価した右辺 (G[x_] = Round[{x}*3]) は値のリストを含む。その中の記号 x も置き換えるので、List 式にして評価し直す
             if not self._mentions(node, b):
                 return node
-            return Expr(S('List'), [self.subst_bindings(a, b) for a in node])
+            return Expr(_SY_List, [self.subst_bindings(a, b) for a in node])
         return node
 
     # ---- パターン照合
@@ -2381,10 +2496,10 @@ class Interp:
             rest = len(pats) - 1
             nmin = 1 if kind == 'seq' else 0
             inner_ = None
-            q_ = p.args[1] if (isinstance(p, Expr) and p.head == S('Pattern') and len(p.args) == 2) else p
+            q_ = p.args[1] if (isinstance(p, Expr) and p.head == _SY_Pattern and len(p.args) == 2) else p
             pinner_ = None
-            if isinstance(q_, Expr) and q_.head in (S('Repeated'), S('RepeatedNull')) and q_.args:
-                if not _is_pattern(q_.args[0]) and not (isinstance(q_.args[0], Expr) and q_.args[0].head == S('Alternatives')):
+            if isinstance(q_, Expr) and q_.head in (_SY_Repeated, _SY_RepeatedNull) and q_.args:
+                if not _is_pattern(q_.args[0]) and not (isinstance(q_.args[0], Expr) and q_.args[0].head == _SY_Alternatives):
                     inner_ = q_.args[0]                      # {0 ..}: 要素がすべて 0 のリスト
                 else:
                     pinner_ = q_.args[0]                     # (_Rule|_RuleDelayed)... : 要素がすべてこのパターンに合う
@@ -2419,7 +2534,7 @@ class Interp:
                     return True
             return False
         a = args[0]
-        if (isinstance(p, Expr) and (p.head == S('Plus') or p.head == S('Times')) and isinstance(a, Expr) and a.head == p.head):
+        if (isinstance(p, Expr) and (p.head == _SY_Plus or p.head == _SY_Times) and isinstance(a, Expr) and a.head == p.head):
             # Orderless の引数の入れ替え方のうち、後ろのパターン (D$[x_*y_, x_] の 2 つ目の x_) とも合うものを探す
             for b3 in self._orderless_alts(p.args, [x.v if isinstance(x, _Lit) else x for x in a.args], b):
                 if self._match_seq(pats[1:], args[1:], b3):
@@ -2446,23 +2561,23 @@ class Interp:
         """(kind, name, type, default): kind ∈ blank/seq/nullseq/optional/literal/test"""
         if isinstance(p, Expr):
             h = p.head
-            if h == S('Pattern'):
+            if h == _SY_Pattern:
                 name = p.args[0].name if isinstance(p.args[0], Sym) else None
                 k, _, typ, d = self._pat_info(p.args[1])
                 return k, name, typ, d
-            if h == S('Blank'):
+            if h == _SY_Blank:
                 return 'blank', None, (p.args[0].name if p.args else None), None
-            if h == S('BlankSequence'):
+            if h == _SY_BlankSequence:
                 return 'seq', None, (p.args[0].name if p.args else None), None
-            if h == S('BlankNullSequence'):
+            if h == _SY_BlankNullSequence:
                 return 'nullseq', None, (p.args[0].name if p.args else None), None
-            if h in (S('Repeated'), S('RepeatedNull')):
+            if h in (_SY_Repeated, _SY_RepeatedNull):
                 k, name, typ, d = self._pat_info(p.args[0])
-                return ('seq' if h == S('Repeated') else 'nullseq'), name, typ, d
-            if h == S('Optional'):
+                return ('seq' if h == _SY_Repeated else 'nullseq'), name, typ, d
+            if h == _SY_Optional:
                 k, name, typ, _ = self._pat_info(p.args[0])
                 return 'optional', name, typ, self.eval(p.args[1]) if len(p.args) > 1 else Null
-            if h == S('PatternTest'):
+            if h == _SY_PatternTest:
                 k, name, typ, d = self._pat_info(p.args[0])
                 return k, name, typ, d
         return 'literal', None, None, None
@@ -2477,7 +2592,7 @@ class Interp:
         if typ == 'String':
             return isinstance(a, str)
         if typ == 'List':
-            return isinstance(a, list) or (isinstance(a, Expr) and a.head == S('List'))     # 保持された (評価前の) {Sin[y], Cos[y]} も List
+            return isinstance(a, list) or (isinstance(a, Expr) and a.head == _SY_List)     # 保持された (評価前の) {Sin[y], Cos[y]} も List
         if typ == 'Symbol':
             return isinstance(a, Sym)
         if typ == 'Rule':
@@ -2511,8 +2626,8 @@ class Interp:
         """a は評価されていない引数 (_HeldArg)。リテラルは式として比べ、構造パターンは式の構造で照合する (束縛される値は保持された式)"""
         node = a.node.v if isinstance(a.node, _Lit) else a.node
         if isinstance(p, Expr) and not is_num(node):
-            pt_ = p.args[1] if (p.head == S('Pattern') and len(p.args) == 2) else p
-            if isinstance(pt_, Expr) and pt_.head == S('Blank') and pt_.args:
+            pt_ = p.args[1] if (p.head == _SY_Pattern and len(p.args) == 2) else p
+            if isinstance(pt_, Expr) and pt_.head == _SY_Blank and pt_.args:
                 fv_ = self._const_fold(node)
                 if fv_ is not None:
                     a = _HeldArg(fv_)           # x_Real は定数式 (2*Pi など) の値に照合し、値を束縛する
@@ -2521,7 +2636,7 @@ class Interp:
             return self.same(p.v, node) or repr(p.v) == repr(node)
         if isinstance(p, Expr):
             h = p.head
-            if h == S('Pattern'):
+            if h == _SY_Pattern:
                 name = p.args[0].name
                 if not self._match_one(p.args[1], a, b):
                     return False
@@ -2529,18 +2644,18 @@ class Interp:
                     return False
                 b[name] = a
                 return True
-            if h in (S('Blank'), S('BlankSequence'), S('BlankNullSequence')):
+            if h in (_SY_Blank, _SY_BlankSequence, _SY_BlankNullSequence):
                 return self._type_ok(p.args[0].name if p.args else None, node)
-            if h == S('Optional'):
+            if h == _SY_Optional:
                 return self._match_one(p.args[0], a, b)
-            if h == S('PatternTest'):
+            if h == _SY_PatternTest:
                 if not self._match_one(p.args[0], a, b):
                     return False
                 try:
                     return truthy(self.eval(Expr(p.args[1], [_Lit(self.eval(node))]))) is True
                 except SADError:
                     return False
-            if h == S('Alternatives'):
+            if h == _SY_Alternatives:
                 for q in p.args:
                     b2 = dict(b)
                     if self._match_one(q, a, b2):
@@ -2549,7 +2664,7 @@ class Interp:
                 return False
             if (isinstance(node, Expr) and (node.head == h or (isinstance(h, Expr) and _is_pattern(h) and self._match_one(h, node.head, b))) and (len(node.args) == len(p.args) or any(_is_seq_pat(q) for q in p.args))):
                 return self._match_seq(p.args, [_HeldArg(c) for c in node.args], b)
-            if isinstance(node, list) and h == S('List') and (len(node) == len(p.args) or any(_is_seq_pat(q) for q in p.args)):
+            if isinstance(node, list) and h == _SY_List and (len(node) == len(p.args) or any(_is_seq_pat(q) for q in p.args)):
                 return self._match_seq(p.args, [_HeldArg(c) for c in node], b)
             return False
         if isinstance(p, Sym):
@@ -2563,7 +2678,7 @@ class Interp:
         orders = [cand]
         # 列の途中に素の Blank (x_) と列パターン (m__) が両方あるときは標準順だけ (K64 の x_*(m__)+x_*(n__) の共通因子の括り出しは標準順の先頭どうしだけ)
         kinds = [self._pat_info(q)[0] for q in pargs]
-        bare = [k_ == 'blank' and (isinstance(q, Expr) and (q.head == S('Blank') or (q.head == S('Pattern') and len(q.args) == 2 and isinstance(q.args[1], Expr) and q.args[1].head == S('Blank') and not q.args[1].args)))
+        bare = [k_ == 'blank' and (isinstance(q, Expr) and (q.head == _SY_Blank or (q.head == _SY_Pattern and len(q.args) == 2 and isinstance(q.args[1], Expr) and q.args[1].head == _SY_Blank and not q.args[1].args)))
                 for k_, q in zip(kinds, pargs)]
         restrict = any(k_ in ('seq', 'nullseq') for k_ in kinds) and any(bare)
         if len(aargs) <= 6 and not restrict:
@@ -2632,7 +2747,7 @@ class Interp:
             return self._match_seq(p, list(a), b)
         if isinstance(p, Expr):
             h = p.head
-            if h == S('Pattern'):
+            if h == _SY_Pattern:
                 name = p.args[0].name
                 if not self._match_one(p.args[1], a, b):
                     return False
@@ -2640,11 +2755,11 @@ class Interp:
                     return False
                 b[name] = a.v if isinstance(a, _Lit) else a
                 return True
-            if h in (S('Blank'), S('BlankSequence'), S('BlankNullSequence')):
+            if h in (_SY_Blank, _SY_BlankSequence, _SY_BlankNullSequence):
                 return self._type_ok(p.args[0].name if p.args else None, a)
-            if h == S('Optional'):
+            if h == _SY_Optional:
                 return self._match_one(p.args[0], a, b)
-            if h == S('PatternTest'):
+            if h == _SY_PatternTest:
                 if not self._match_one(p.args[0], a, b):
                     return False
                 try:
@@ -2652,15 +2767,15 @@ class Interp:
                 except SADError:
                     return False                   # gs: 検査の中のエラー (Second[List] など) は不一致 (メッセージなし)
                 return truthy(t) is True
-            if h == S('Alternatives'):
+            if h == _SY_Alternatives:
                 for q in p.args:
                     b2 = dict(b)
                     if self._match_one(q, a, b2):
                         b.update(b2)               # 一致した選択肢の束縛を残す (Widget[master_,_] | master_)
                         return True
                 return False
-            if h == S('List'):
-                if isinstance(a, Expr) and a.head == S('List'):
+            if h == _SY_List:
+                if isinstance(a, Expr) and a.head == _SY_List:
                     a = list(a.args)                  # 評価されていない {x, y} (a[Protocol] := {"WM_DELETE_WINDOW", cb} の右辺) も List として照合する
                 if not isinstance(a, list):
                     return False
@@ -2669,13 +2784,13 @@ class Interp:
                 return self._match_seq(p.args, list(a), b)
             if isinstance(a, Rule) and len(p.args) == 2:
                 # a->b / a:>b は Rule[a, b] / RuleDelayed[a, b] と同じ形として照合する。head は Rule, RuleDelayed, (Rule|RuleDelayed) など
-                nm_ = S('RuleDelayed') if a.delayed else S('Rule')
+                nm_ = _SY_RuleDelayed if a.delayed else _SY_Rule
                 if h == nm_ or (isinstance(h, Expr) and self._match_one(h, nm_, dict(b))):
                     return self._match_seq(p.args, [a.lhs, a.rhs], b)
                 return False
             if (isinstance(a, Expr) and (a.head == h or (isinstance(h, Expr) and _is_pattern(h) and self._match_one(h, a.head, b))) and (len(a.args) == len(p.args) or any(_is_seq_pat(q) for q in p.args))):
                 aa_ = [x.v if isinstance(x, _Lit) else x for x in a.args]
-                if h == S('Plus') or h == S('Times'):
+                if h == _SY_Plus or h == _SY_Times:
                     return self._match_orderless(p.args, aa_, b)           # Orderless: 引数の順を入れ替えて照合 (D.n の x_*y_、b___*Sin[x_]*Cos[x_])
                 return self._match_seq(p.args, aa_, b)         # wid_[master_, opt___] のように head もパターン (保持引数の _Lit は値に戻す)
             return False
@@ -2723,7 +2838,7 @@ class Interp:
                 raise SADError(f'Part: not a list ({v!r})')
             i = int(k)
             if i == 0:
-                return S('List')
+                return _SY_List
             if i < 0:
                 i = len(v) + i + 1
             if not 1 <= i <= len(v):
@@ -2797,7 +2912,7 @@ class Interp:
                 return '(' + ' '.join(self._paren_plus(a, form) for a in v.args) + ')'
             if hn == 'Power' and len(v.args) == 2:
                 base_ = self._paren_plus(v.args[0], form)
-                if isinstance(v.args[0], Expr) and v.args[0].head == S('Times') and len(v.args[0].args) >= 2:
+                if isinstance(v.args[0], Expr) and v.args[0].head == _SY_Times and len(v.args[0].args) >= 2:
                     base_ = '(' + base_ + ')'              # K64: Power の底の Times は括弧が 2 重 ((a x))^3
                 return base_ + '^' + self._paren_plus(v.args[1], form)
             if hn == 'Blank' and len(v.args) <= 1:
@@ -2817,7 +2932,7 @@ class Interp:
 
     def _paren_plus(self, a, form):
         t = self.to_str(a, form, True)
-        if isinstance(a, Expr) and a.head == S('Plus'):
+        if isinstance(a, Expr) and a.head == _SY_Plus:
             return '(' + t + ')'
         return t
 
@@ -2867,19 +2982,19 @@ class Interp:
             lhs, rhs = args[0], args[1] if len(args) > 1 else Null
             if isinstance(lhs, _Lit) and isinstance(lhs.v, (Sym, Expr)):
                 lhs = lhs.v                       # 引数を代入した形 (x → cbv[0]) の代入先
-            if isinstance(lhs, Expr) and lhs.head == S('Unevaluated$') and len(lhs.args) == 1:
+            if isinstance(lhs, Expr) and lhs.head == _SY_Unevaluated_D_ and len(lhs.args) == 1:
                 lhs = lhs.args[0]                 # Unevaluated$[tf1] = … は tf1 = … (With[{wsym = Extract[wv, {1,2}, Unevaluated$]}, wsym = …])
-            elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == S('Unevaluated$') and len(lhs.head.args) == 1:
+            elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == _SY_Unevaluated_D_ and len(lhs.head.args) == 1:
                 lhs = Expr(lhs.head.args[0], lhs.args)    # Unevaluated$[w][Create$Line] = … は w[Create$Line] = … (CanvasW[Create$Line] = {…})
-            if isinstance(lhs, Expr) and lhs.head == S('SAD$Member') and len(lhs.args) == 2 and isinstance(lhs.args[1], Sym):
+            if isinstance(lhs, Expr) and lhs.head == _SY_SAD_D_Member and len(lhs.args) == 2 and isinstance(lhs.args[1], Sym):
                 ms_ = I.resolve_member_head(lhs)
                 if ms_ is not None:
                     lhs = ms_                         # x@v = 3 はインスタンス x のメンバー v への代入
-            elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == S('SAD$Member'):
+            elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and lhs.head.head == _SY_SAD_D_Member:
                 ms_ = I.resolve_member_head(lhs.head)
                 if ms_ is not None:
                     lhs = Expr(ms_, lhs.args)         # x@c[Background] = v
-            if isinstance(lhs, Expr) and lhs.head == S('TagSet') and len(lhs.args) == 2:
+            if isinstance(lhs, Expr) and lhs.head == _SY_TagSet and len(lhs.args) == 2:
                 lhs = lhs.args[1]                 # a/:f[a, x] := … は f[a, x] := … と同じ (タグは定義の置き場なので無視)
             if I._has_immut():
                 # 関数の引数・With の変数が Symbol のとき、代入先は (Mathematica の代入と同じく) その Symbol
@@ -2901,7 +3016,7 @@ class Interp:
                     nh = I._close(lhs.head)               # a[$Window][Title] = … の head (a[$Window]) の中の a も、その Symbol に置き換える
                     if nh is not lhs.head:
                         lhs = Expr(nh, lhs.args)
-            if isinstance(lhs, Expr) and lhs.head == S('Unevaluated$') and len(lhs.args) == 1:
+            if isinstance(lhs, Expr) and lhs.head == _SY_Unevaluated_D_ and len(lhs.args) == 1:
                 lhs = lhs.args[0]                 # 引数 w が Unevaluated$[tf1] に束縛されている: w = … は tf1 = …
             if delayed and I._has_immut() and isinstance(lhs, (Sym, Expr)):
                 # 関数・With の中の遅延定義 (a$ := Widget[a$, w[master$]]): 本体へ現在の引数値を埋め込む。
@@ -2910,7 +3025,7 @@ class Interp:
 
                 def _pn(e_):
                     if isinstance(e_, Expr):
-                        if e_.head == S('Pattern') and e_.args and isinstance(e_.args[0], Sym):
+                        if e_.head == _SY_Pattern and e_.args and isinstance(e_.args[0], Sym):
                             pn_.add(e_.args[0].name)
                         _pn(e_.head)
                         for a_ in e_.args:
@@ -2954,11 +3069,11 @@ class Interp:
             if isinstance(lhs, Sym):
                 v = rhs if delayed else I.eval(rhs)
                 if delayed and any(lhs.name in fr_ and not fr_.immut for fr_ in I.frames):
-                    I.assign(lhs.name, Expr(S('$Delayed'), [rhs]))        # Module の局所変数への h := … は、その局所の遅延した値 (同名の大域の定義は触らない)
+                    I.assign(lhs.name, Expr(_SY__D_Delayed, [rhs]))        # Module の局所変数への h := … は、その局所の遅延した値 (同名の大域の定義は触らない)
                     return Null
                 if delayed:
-                    I.downvalues.setdefault(lhs.name, [])
-                    I.downvalues[lhs.name] = [d for d in I.downvalues[lhs.name] if d[0] is not None]
+                    I.downvalues.setdefault(lhs.name, RuleList())
+                    I.downvalues[lhs.name] = RuleList([d for d in I.downvalues[lhs.name] if d[0] is not None])
                     I.downvalues[lhs.name].insert(0, (None, rhs, True))
                     I.globals.pop(lhs.name, None)
                     return Null
@@ -2973,7 +3088,7 @@ class Interp:
                     rhs = I._close(rhs)
             if isinstance(lhs, Expr):
                 h = lhs.head
-                if h == S('List') and not delayed:
+                if h == _SY_List and not delayed:
                     v = I.eval(rhs)
                     if not isinstance(v, list) or len(v) != len(lhs.args):
                         if os.environ.get('PYSAD_TB'):
@@ -2982,12 +3097,12 @@ class Interp:
                     for l1, v1 in zip(lhs.args, v):
                         _set([l1, _Lit(v1)])
                     return v
-                if h == S('Part'):
+                if h == _SY_Part:
                     base = lhs.args[0]
                     idx = I.eval_args(lhs.args[1:])
                     v = I.eval(rhs)
                     return I.set_part(base.name, idx, _copy(v))
-                if h == S('Symbol') and len(lhs.args) == 1:
+                if h == _SY_Symbol and len(lhs.args) == 1:
                     nm = I.eval(lhs.args[0])
                     if not isinstance(nm, str):
                         raise SADError('General::wrongtype: Argument must be Character-string in Symbol')
@@ -3015,20 +3130,73 @@ class Interp:
                                 pats.append(a if _is_pattern(a) else (_Lit(a.v if isinstance(a, _Lit) else a) if held else _Lit(I.eval(a))))
                         else:
                             pats = [a if _is_pattern(a) else _Lit(I.eval(a)) for a in lhs.args]
-                    dv = I.downvalues.setdefault(h.name, [])
-                    dv[:] = [d for d in dv if not (d[0] is not None and _same_pats(d[0], pats))]
+                    dv = I.downvalues.setdefault(h.name, RuleList())
+                    key_ = _scalar_key(pats)
+                    if key_ is None:
+                        dv[:] = [d for d in dv if not (d[0] is not None and _same_pats(d[0], pats))]
+                    else:
+                        # リテラル (記号・文字列・実数) だけの規則どうしは、repr を作らずに値の並びで比べる (repr の比較と同じ判定)
+                        rp_ = None
+                        keep_ = []
+                        dvs_ = dv
+                        if type(dv) is RuleList and len(dv) > 8 and pats:
+                            # 同じ鍵の規則は同じ先頭リテラルを持つので、索引の候補だけを調べる。重複がなければ並びは変えない
+                            k0_ = pats[0].v
+                            if type(k0_) is float or type(k0_) is str or type(k0_) is Sym:
+                                dvs_ = dv.candidates(k0_)
+                        if dvs_ is not dv:
+                            dup_ = False
+                            for d in dvs_:
+                                if d[0] is not None:
+                                    k2_ = _scalar_key(d[0])
+                                    if k2_ is not None:
+                                        if k2_ == key_:
+                                            dup_ = True
+                                            break
+                                    else:
+                                        if rp_ is None:
+                                            rp_ = repr(pats)
+                                        if repr(d[0]) == rp_:
+                                            dup_ = True
+                                            break
+                            if not dup_:
+                                keep_ = None
+                            else:
+                                dvs_ = dv
+                        if keep_ is not None:
+                            for d in dvs_:
+                                if d[0] is not None:
+                                    k2_ = _scalar_key(d[0])
+                                    if k2_ is not None:
+                                        if k2_ == key_:
+                                            continue
+                                    else:
+                                        if rp_ is None:
+                                            rp_ = repr(pats)
+                                        if repr(d[0]) == rp_:
+                                            continue
+                                keep_.append(d)
+                            if len(keep_) != len(dv):
+                                dv[:] = keep_
                     body = rhs if delayed else I.eval(rhs)
                     # 具体的なパターン (リテラル) を先に
                     nlit = _spec_score(pats)
                     pos = 0
-                    for pos, d in enumerate(dv):
+                    rl_ = type(dv) is RuleList
+                    if rl_ and dv.hint is not None and dv.hint[0] == dv.ver and dv.hint[1] == nlit:
+                        pos = dv.hint[2]          # 直前の挿入のあと並びが変わっていなければ、手前は同じ点数以上の規則だけ (走査の続きから)
+                    n_dv = len(dv)
+                    while pos < n_dv:
+                        d = dv[pos]
                         if d[0] is not None and _spec_score(d[0]) < nlit:
                             break
-                    else:
-                        pos = len(dv)
-                    if getattr(I, 'priority', False):
+                        pos += 1
+                    prio_ = getattr(I, 'priority', False)
+                    if prio_:
                         pos = 0                       # WithPriority[...] の中の定義は先頭に置く (init.n の $Priority)
                     dv.insert(pos, (pats, body, delayed))
+                    if rl_:
+                        dv.hint = None if prio_ else (dv.ver, nlit, pos + 1)
                     I.globals.pop(h.name, None)
                     return Null if delayed else body          # f[x] = v の値は v (WidgetName[x]=... を本体に持つ関数の戻り値)
                 if isinstance(h, Expr) and isinstance(h.head, Sym):
@@ -3098,7 +3266,7 @@ class Interp:
                     keep = [d for d in dv if not (d[0] is not None and _same_pats(d[0], pats))]
                     if len(keep) == len(dv) and not any(_is_pattern(q) for q in pats):
                         pass                      # 該当なし
-                    I.downvalues[nm] = keep
+                    I.downvalues[nm] = RuleList(keep)
                     if not keep:
                         I.downvalues.pop(nm, None)
             elif isinstance(lhs, Expr) and isinstance(lhs.head, Expr) and isinstance(lhs.head.head, Sym):
@@ -3160,7 +3328,7 @@ class Interp:
         # ---- 制御 (hold)
         def _iter_values(spec):
             # {i, a, b, d}: 先頭の i は評価しない (Module の局所変数 i があっても反復変数として束縛する)
-            if isinstance(spec, Expr) and spec.head == S('List'):
+            if isinstance(spec, Expr) and spec.head == _SY_List:
                 if len(spec.args) >= 2 and isinstance(spec.args[0], Sym):
                     spec = [spec.args[0]] + [I.eval(x) for x in spec.args[1:]]
                 else:
@@ -3284,7 +3452,7 @@ class Interp:
                 return I.eval(args[2]) if len(args) > 2 else Null
             if len(args) <= 3:
                 # 条件が真偽に決まらない (x==y、x<y、If[x,1,2]) とき gs・Mathematica は式のまま返す (B199。従来の pysad は Null を返した)
-                return Expr(S('If'), [c] + list(args[1:]))
+                return Expr(_SY_If, [c] + list(args[1:]))
             return I.eval(args[3])
         B['If'] = _if
 
@@ -3308,7 +3476,7 @@ class Interp:
                 if v2 and len(args) == 3:
                     args = list(args) + [Null]         # v2: For[ini,cond,incr] は本体なしのループ (K64 は未評価のまま)
                 else:
-                    return Expr(S('For'), list(args))      # gs: For[ini_,cond_,incr_,body_] は 4 引数だけ (3 引数は未評価のまま)
+                    return Expr(_SY_For, list(args))      # gs: For[ini_,cond_,incr_,body_] は 4 引数だけ (3 引数は未評価のまま)
             I.eval(args[0])
             try:
                 while truthy(I.eval(args[1])) is True:
@@ -3334,7 +3502,7 @@ class Interp:
             for k in range(0, len(args) - 1, 2):
                 if truthy(I.eval(args[k])) is True:
                     return I.eval(args[k + 1])
-            return Expr(S('Which'), list(args))        # gs: 一致なしは式をそのまま返す
+            return Expr(_SY_Which, list(args))        # gs: 一致なしは式をそのまま返す
         B['Which'] = _which
 
         def _switch(args):
@@ -3345,14 +3513,14 @@ class Interp:
                     pv_ = I.eval(p)
                     if isinstance(pv_, Expr) and _is_pattern(pv_):
                         p = pv_                       # 変数が持つパターン (Switch[val, types, ...] の types = _Real)
-                if (isinstance(p, Expr) and p.head in (S('Blank'),) and not p.args) or I.same(I.eval(p), x) or I._match_one(p, x, {}):
+                if (isinstance(p, Expr) and p.head in (_SY_Blank,) and not p.args) or I.same(I.eval(p), x) or I._match_one(p, x, {}):
                     return I.eval(args[k + 1])
             if len(args) % 2 == 0:
                 raise SADError('General::narg:  Number of arguments is expected to be odd number in Switch[%s]' % ','.join(I.to_str(a) for a in args))
             # gs: 一致なしは Switch[値, 規則…] を返す。引数がすべて定数なら読み込み時に畳まれて Switch[値] だけになる
             if all(_is_const(a) for a in args):
-                return Expr(S('Switch'), [x])
-            return Expr(S('Switch'), [x] + list(args[1:]))
+                return Expr(_SY_Switch, [x])
+            return Expr(_SY_Switch, [x] + list(args[1:]))
         B['Switch'] = _switch
 
         def _resolve(nm):
@@ -3371,17 +3539,17 @@ class Interp:
         def _module(args):
             fr = Frame()
             decl = args[0]
-            items = decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl]
+            items = decl.args if isinstance(decl, Expr) and decl.head == _SY_List else [decl]
             inits = []
             for it in items:
-                if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')):
-                    inits.append((it.args[0], it.args[1], it.head == S('SetDelayed')))
+                if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed):
+                    inits.append((it.args[0], it.args[1], it.head == _SY_SetDelayed))
                 elif isinstance(it, Sym):
                     inits.append((it, None, False))
             I.frames.append(fr)
             try:
                 for lhs, init, delayed in inits:
-                    if isinstance(lhs, Expr) and lhs.head == S('List'):
+                    if isinstance(lhs, Expr) and lhs.head == _SY_List:
                         vals = I.eval(init)
                         for sym, v in zip(lhs.args, vals if isinstance(vals, list) else [vals]):
                             fr[sym.name] = _copy(v)
@@ -3390,7 +3558,7 @@ class Interp:
                     if init is None:
                         fr[name] = Sym(name)          # 未代入のローカル変数は Symbol 自身として評価される
                     elif delayed:
-                        fr[name] = Expr(S('$Delayed'), [init])
+                        fr[name] = Expr(_SY__D_Delayed, [init])
                     else:
                         fr[name] = _copy(I.eval(init))
                 r_ = Null
@@ -3429,17 +3597,17 @@ class Interp:
             _modctr[0] += 1
             mp = {n_: '%s$%d' % (n_, _modctr[0]) for n_ in names}
             fl = [False]
-            items = decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl]
+            items = decl.args if isinstance(decl, Expr) and decl.head == _SY_List else [decl]
             vals = {}
             for it in items:                     # 初期値は外側の環境で評価する (Module[{x = 7, y = x}, y] の y は外側の x)
-                if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')):
+                if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed):
                     lhs, init = it.args[0], it.args[1]
-                    if isinstance(lhs, Expr) and lhs.head == S('List'):
+                    if isinstance(lhs, Expr) and lhs.head == _SY_List:
                         v_ = I.eval(init)
                         for sym, x_ in zip(lhs.args, v_ if isinstance(v_, list) else [v_]):
                             vals[mp[sym.name]] = _copy(x_)
-                    elif it.head == S('SetDelayed'):
-                        vals[mp[lhs.name]] = Expr(S('$Delayed'), [_rn(init, mp, fl)])
+                    elif it.head == _SY_SetDelayed:
+                        vals[mp[lhs.name]] = Expr(_SY__D_Delayed, [_rn(init, mp, fl)])
                     else:
                         vals[mp[lhs.name]] = _copy(I.eval(init))
                 elif isinstance(it, Sym):
@@ -3464,10 +3632,10 @@ class Interp:
             # Block[{mesh}, …]: 局所にした記号の関数定義 (mesh[x_] := …) は入るとき退避して空にし、出るとき戻す
             # (Plots.n は ListContourPlot の Block の中で、色の目盛りの ListDensityPlot が同じ Block[{nx, ny, mesh}] を使う)
             decl = args[0]
-            items = decl.args if isinstance(decl, Expr) and decl.head == S('List') else [decl]
+            items = decl.args if isinstance(decl, Expr) and decl.head == _SY_List else [decl]
             names = []
             for it in items:
-                t_ = it.args[0] if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')) and it.args else it
+                t_ = it.args[0] if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed) and it.args else it
                 if isinstance(t_, Sym):
                     names.append(_resolve(t_.name))
             saved = {}
@@ -3496,19 +3664,19 @@ class Interp:
             fr.immut = True
             fr.is_with = True
             decl = args[0]
-            items = list(decl.args) if isinstance(decl, Expr) and decl.head == S('List') else [decl]
+            items = list(decl.args) if isinstance(decl, Expr) and decl.head == _SY_List else [decl]
             k_ = 0
             while k_ < len(items):                 # With[{a=1; b=2, c=3}, …]: 宣言の中の ; で区切った代入も全部束縛する (KBMainFrame.n)
-                if isinstance(items[k_], Expr) and items[k_].head == S('CompoundExpression'):
+                if isinstance(items[k_], Expr) and items[k_].head == _SY_CompoundExpression:
                     items[k_:k_ + 1] = list(items[k_].args)
                     continue
                 k_ += 1
             for it in items:
-                if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')) and not isinstance(it.args[0], Sym):
+                if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed) and not isinstance(it.args[0], Sym):
                     # With[{f[x_] := …}, …]: 関数の定義を宣言に書ける (Canvas.n の TickFun)。定義はそのまま行う (K64 も同じ)
                     I.eval(it)
                     continue
-                if isinstance(it, Expr) and it.head in (S('Set'), S('SetDelayed')):
+                if isinstance(it, Expr) and it.head in (_SY_Set, _SY_SetDelayed):
                     nm_ = it.args[0].name
                     for fr0_ in reversed(I.frames):
                         if nm_ not in fr0_ and getattr(fr0_, 'boundary', False):
@@ -3517,7 +3685,7 @@ class Interp:
                             if fr0_.immut and isinstance(fr0_[nm_], Sym):
                                 nm_ = fr0_[nm_].name      # 関数の引数 z が記号 x に束縛されているとき、With[{z = …}, …] は x を束縛する (SAD は引数を本体に文字どおり代入する)
                             break
-                    fr[nm_] = I.eval(it.args[1]) if it.head == S('Set') else Expr(S('$Delayed'), [it.args[1]])
+                    fr[nm_] = I.eval(it.args[1]) if it.head == _SY_Set else Expr(_SY__D_Delayed, [it.args[1]])
                 elif isinstance(it, Sym):
                     try:
                         fr[it.name] = I.eval(it)               # With[{x}, ...] は x の現在値をそのまま埋め込む (Tkinter.n の With[{TkSymbol,WInfoKeys}, …])
@@ -3599,7 +3767,7 @@ class Interp:
                 # 他の引数 (General::wrongtype の形でないもの) は何もしない
                 off = I.__dict__.setdefault('_msg_off', set())
                 for x_ in a:
-                    if isinstance(x_, Expr) and x_.head == S('MessageName') and len(x_.args) == 2:
+                    if isinstance(x_, Expr) and x_.head == _SY_MessageName and len(x_.args) == 2:
                         sy_, tg_ = x_.args
                         key_ = ((sy_.name if isinstance(sy_, Sym) else str(sy_)), (tg_ if isinstance(tg_, str) else getattr(tg_, 'name', str(tg_))))
                         if on:
@@ -3622,7 +3790,7 @@ class Interp:
                     if x.name in fr_:
                         if getattr(fr_, 'is_with', False):
                             v_ = fr_[x.name]
-                            if not (isinstance(v_, Expr) and v_.head == S('$Delayed')):
+                            if not (isinstance(v_, Expr) and v_.head == _SY__D_Delayed):
                                 return v_
                         return x
                 return x
@@ -3638,7 +3806,7 @@ class Interp:
             a = [x_.v if isinstance(x_, _Lit) else x_ for x_ in a]
             if any(getattr(fr_, 'is_with', False) for fr_ in I.frames):
                 a = [_with_subst(x_) for x_ in a]
-            return Expr(S('Hold'), list(a))
+            return Expr(_SY_Hold, list(a))
         B['Hold'] = _hold                 # Hold[x] は x を評価しないまま Hold[x] を返す (WidgetCopyList = Hold[] に Union で足す)
 
         def _setattrs(a):
@@ -3646,7 +3814,7 @@ class Interp:
             def _names(x):
                 if isinstance(x, Sym):
                     return [x.name]
-                if isinstance(x, Expr) and x.head == S('List'):
+                if isinstance(x, Expr) and x.head == _SY_List:
                     return [n for y in x.args for n in _names(y)]
                 if isinstance(x, list):
                     return [n for y in x for n in _names(y)]
@@ -3666,15 +3834,15 @@ class Interp:
             rhs = I._close(a[1]) if I._has_immut() else a[1]
             return Rule(I.eval(a[0]), rhs, True)
         B['RuleDelayed'] = _ruledelayed
-        B['Pattern'] = lambda a: Expr(S('Pattern'), a)
-        B['Blank'] = lambda a: Expr(S('Blank'), a)
-        B['BlankSequence'] = lambda a: Expr(S('BlankSequence'), a)
-        B['BlankNullSequence'] = lambda a: Expr(S('BlankNullSequence'), a)
-        B['Optional'] = lambda a: Expr(S('Optional'), a)
-        B['PatternTest'] = lambda a: Expr(S('PatternTest'), a)
-        B['Condition'] = lambda a: Expr(S('Condition'), a)
-        B['Slot'] = lambda a: Expr(S('Slot'), a)
-        B['SlotSequence'] = lambda a: Expr(S('SlotSequence'), a)
+        B['Pattern'] = lambda a: Expr(_SY_Pattern, a)
+        B['Blank'] = lambda a: Expr(_SY_Blank, a)
+        B['BlankSequence'] = lambda a: Expr(_SY_BlankSequence, a)
+        B['BlankNullSequence'] = lambda a: Expr(_SY_BlankNullSequence, a)
+        B['Optional'] = lambda a: Expr(_SY_Optional, a)
+        B['PatternTest'] = lambda a: Expr(_SY_PatternTest, a)
+        B['Condition'] = lambda a: Expr(_SY_Condition, a)
+        B['Slot'] = lambda a: Expr(_SY_Slot, a)
+        B['SlotSequence'] = lambda a: Expr(_SY_SlotSequence, a)
 
         # ---- 算術 (リスト対応)
         def lmap2(f, a, b, name=None):
@@ -3703,7 +3871,7 @@ class Interp:
             if not args:
                 return 0.0
             if len(args) == 1 and _is_pattern(args[0]):
-                return Expr(S('Plus'), list(args))          # Plus[x_] は評価しない (D.n の規則 Plus[x_]:>x の左辺)
+                return Expr(_SY_Plus, list(args))          # Plus[x_] は評価しない (D.n の規則 Plus[x_]:>x の左辺)
             r = args[0]
             for b in args[1:]:
                 if isinstance(r, str) and isinstance(b, str):
@@ -3712,7 +3880,7 @@ class Interp:
                     r = lmap2(lambda x, y: x + y, r, b, 'Plus')
             return r
         B['Plus'] = _plus
-        B['Times'] = lambda a: (Expr(S('Times'), list(a)) if len(a) == 1 and _is_pattern(a[0])
+        B['Times'] = lambda a: (Expr(_SY_Times, list(a)) if len(a) == 1 and _is_pattern(a[0])
                                 else _fold(a, lambda x, y: lmap2(lambda p, q: p * q, x, y, 'Times'), 1.0))
         B['Subtract'] = lambda a: lmap2(lambda x, y: x - y, a[0], a[1], 'Subtract')
 
@@ -3741,16 +3909,16 @@ class Interp:
         B['Power'] = lambda a: lmap2(_pow, a[0], a[1], 'Power')
 
         def _is_rat(x):
-            return isinstance(x, Expr) and x.head == S('Rational')
+            return isinstance(x, Expr) and x.head == _SY_Rational
 
         def _wrap_rational(name, fn):
             def w(a):
                 # rational.n を読んだあと: a-b は a+(-b)、a/b は a*(1/b) として Rational の規則 (UpValue) へ回す (gs は Subtract・Divide を Plus・Times に直す)
                 if len(a) == 2 and (_is_rat(a[0]) or _is_rat(a[1])) and I.downvalues.get('Rational'):
                     if name == 'Subtract':
-                        return I.eval(Expr(S('Plus'), [_Lit(a[0]), Expr(S('Minus'), [_Lit(a[1])])]))
+                        return I.eval(Expr(_SY_Plus, [_Lit(a[0]), Expr(_SY_Minus, [_Lit(a[1])])]))
                     if not (name == 'Divide' and a[0] == 1.0):
-                        return I.eval(Expr(S('Times'), [_Lit(a[0]), Expr(S('Divide'), [1.0, _Lit(a[1])])]))
+                        return I.eval(Expr(_SY_Times, [_Lit(a[0]), Expr(_SY_Divide, [1.0, _Lit(a[1])])]))
                 return fn(a)
             return w
         B['Subtract'] = _wrap_rational('Subtract', B['Subtract'])
@@ -3771,7 +3939,7 @@ class Interp:
                         return 1.0 if all(r == 1.0 for r in rs) else 0.0
                     if any(isinstance(r, float) and r == 0.0 for r in rs):
                         return 0.0
-                    return Expr(S('And'), [1.0] + [r for r in rs if not (isinstance(r, float) and r == 1.0)])      # gs: x<y<z は 1&&x<y&&y<z
+                    return Expr(_SY_And, [1.0] + [r for r in rs if not (isinstance(r, float) and r == 1.0)])      # gs: x<y<z は 1&&x<y&&y<z
                 a, b = args[0], args[1]
                 if isinstance(a, str) and isinstance(b, str):
                     return 1.0 if f(a, b) else 0.0
@@ -3793,7 +3961,7 @@ class Interp:
             # x==x は Mathematica で True。K64 (gs) は x==x も式のまま、v2 は 1 (B199)
             if _compat.v2() and I.same(a[0], a[1]):
                 return 1.0
-            return Expr(S('Equal'), [a[0], a[1]])
+            return Expr(_SY_Equal, [a[0], a[1]])
         def _eqthread(x, y, neg):
             # gs: リストどうしの == は要素ごと ({1,2}=={1,3} は {1,0})、入れ子も再帰。長さが違えば 0。リストとスカラーは未評価
             if isinstance(x, list) and isinstance(y, list):
@@ -3815,7 +3983,7 @@ class Interp:
                 return _equal2(a)
             rs = [_equal2([a[k], a[k + 1]]) for k in range(len(a) - 1)]
             if any(isinstance(r, Expr) for r in rs):
-                return Expr(S('Equal'), list(a))
+                return Expr(_SY_Equal, list(a))
             return 1.0 if all(r == 1.0 for r in rs) else 0.0
         B['Equal'] = _equal
 
@@ -3823,7 +3991,7 @@ class Interp:
             if len(a) == 2 and (isinstance(a[0], list) or isinstance(a[1], list)):
                 return _eqthread(a[0], a[1], True)
             r = _equal(a)
-            return Expr(S('Unequal'), list(a)) if isinstance(r, Expr) else 1.0 - r
+            return Expr(_SY_Unequal, list(a)) if isinstance(r, Expr) else 1.0 - r
         B['Unequal'] = _unequal
         B['Greater'] = _cmp(lambda x, y: x > y, 'Greater')
         B['GreaterEqual'] = _cmp(lambda x, y: x >= y, 'GreaterEqual')
@@ -3845,7 +4013,7 @@ class Interp:
                 kept.append(v)
             if not kept:
                 return 1.0
-            return kept[0] if len(kept) == 1 else Expr(S('And'), kept)
+            return kept[0] if len(kept) == 1 else Expr(_SY_And, kept)
 
         def _or(args):
             kept = []
@@ -3859,10 +4027,10 @@ class Interp:
                 kept.append(v)
             if not kept:
                 return 0.0
-            return kept[0] if len(kept) == 1 else Expr(S('Or'), kept)
+            return kept[0] if len(kept) == 1 else Expr(_SY_Or, kept)
         B['And'] = _and
         B['Or'] = _or
-        B['Not'] = lambda a: (0.0 if truthy(a[0]) else 1.0) if truthy(a[0]) is not None else Expr(S('Not'), a)
+        B['Not'] = lambda a: (0.0 if truthy(a[0]) else 1.0) if truthy(a[0]) is not None else Expr(_SY_Not, a)
         B['Xor'] = lambda a: 1.0 if (truthy(a[0]) is True) != (truthy(a[1]) is True) else 0.0
 
         # ---- 数学
@@ -4083,8 +4251,8 @@ class Interp:
         B['Range'] = _range
         def _part_builtin(a):
             r_ = I.part(a[0], a[1:])
-            if isinstance(a[0], Expr) and a[0].head == S('Hold') and isinstance(r_, (list, Expr)):
-                r_ = I.eval(Expr(S('List'), list(r_)) if isinstance(r_, list) else r_)            # Hold[…][[1]] は取り出した式を評価し直す (Couple.n: EVCompiled[[1]])
+            if isinstance(a[0], Expr) and a[0].head == _SY_Hold and isinstance(r_, (list, Expr)):
+                r_ = I.eval(Expr(_SY_List, list(r_)) if isinstance(r_, list) else r_)            # Hold[…][[1]] は取り出した式を評価し直す (Couple.n: EVCompiled[[1]])
             return r_
         B['Part'] = _part_builtin
         B['First'] = lambda a: a[0][0]
@@ -4308,13 +4476,13 @@ class Interp:
                 i = n + i + 1 if i < 0 else i
                 j = n + j + 1 if j < 0 else j
                 if i < 1 or j > n or j < i - 1:
-                    return Expr(S('StringTake'), list(a))
+                    return Expr(_SY_StringTake, list(a))
                 return s[i - 1:j]
             k = int(spec)
             if k == 0 and not _compat.v2():
-                return Expr(S('StringTake'), list(a))
+                return Expr(_SY_StringTake, list(a))
             if abs(k) > n:
-                return Expr(S('StringTake'), list(a))
+                return Expr(_SY_StringTake, list(a))
             return s[:k] if k >= 0 else s[n + k:]
         B['StringTake'] = _stringtake
         B['StringDrop'] = lambda a: ''.join(B['Drop']([list(a[0]), a[1]]))
@@ -4327,7 +4495,7 @@ class Interp:
                 alts = [pat]
             elif isinstance(pat, list):
                 alts = list(pat)
-            elif isinstance(pat, Expr) and pat.head == S('Alternatives'):
+            elif isinstance(pat, Expr) and pat.head == _SY_Alternatives:
                 alts = list(pat.args)
             else:
                 raise SADError('General::wrongtype: Argument must be String, List of Strings or Alternatives for #2 in StringPosition')
@@ -4378,22 +4546,22 @@ class Interp:
         def _head(a):
             x = a[0]
             if isinstance(x, complex):
-                return S('Complex')
+                return _SY_Complex
             if is_num(x):
-                return S('Real')
+                return _SY_Real
             if isinstance(x, str):
-                return S('String')
+                return _SY_String
             if isinstance(x, list):
-                return S('List')
+                return _SY_List
             if x is Null or isinstance(x, Sym):
-                return S('Symbol')
+                return _SY_Symbol
             if isinstance(x, Rule):
-                return S('RuleDelayed') if getattr(x, 'delayed', False) else S('Rule')
+                return _SY_RuleDelayed if getattr(x, 'delayed', False) else _SY_Rule
             if isinstance(x, Func):
-                return S('Function')
+                return _SY_Function
             if isinstance(x, Expr):
-                return S('Times') if (isinstance(x.head, Sym) and x.head.name == 'Minus') else x.head
-            return S('Symbol')
+                return _SY_Times if (isinstance(x.head, Sym) and x.head.name == 'Minus') else x.head
+            return _SY_Symbol
         B['Head'] = _head
 
         def _string_replace(s, rules):
@@ -4458,7 +4626,7 @@ class Interp:
             return out
 
         def _replace_all(x, rules):
-            if isinstance(rules, Expr) and rules.head == S('Unevaluated$') and len(rules.args) == 1:
+            if isinstance(rules, Expr) and rules.head == _SY_Unevaluated_D_ and len(rules.args) == 1:
                 rules = I.eval(rules.args[0])             # x//.Unevaluated$[ReductionRule] (D.n)
             if isinstance(rules, Rule):
                 rules = [rules]
@@ -4492,10 +4660,10 @@ class Interp:
                 if isinstance(v, Rule):
                     return Rule(rep(v.lhs, ev), rep(v.rhs, ev and not v.delayed), v.delayed)       # a:>b の b は評価しない (Command:>KBF$AboutBox[])
                 if isinstance(v, Expr):
-                    if not ev or (v.head == S('Hold') and not any(isinstance(r_.lhs, Sym) and r_.lhs.name == 'Hold' for r_ in flat)):          # Hold[…] の中は規則の右辺 (:>) も評価せず埋め込む (Hold を別の頭部に替えるときは評価する)
+                    if not ev or (v.head == _SY_Hold and not any(isinstance(r_.lhs, Sym) and r_.lhs.name == 'Hold' for r_ in flat)):          # Hold[…] の中は規則の右辺 (:>) も評価せず埋め込む (Hold を別の頭部に替えるときは評価する)
                         h_ = rep(v.head, False)
                         a_ = _splice([rep(y, False) for y in v.args])
-                        if isinstance(h_, _Null) or h_ == S('Null'):
+                        if isinstance(h_, _Null) or h_ == _SY_Null:
                             return Seq(a_)                 # Hold->Null: Null[x, …] は並びとして外側のリストに展開される
                         return Expr(h_, a_)
                     return I.eval(Expr(rep(v.head), [_Lit(y) for y in _splice([rep(y) for y in v.args])]))
@@ -4570,7 +4738,7 @@ class Interp:
                     # gs: OpenRead が開けないとメッセージを出して、その入力行の評価を打ち切る (h=OpenRead[..] の h は未代入のまま)。OpenWrite・OpenAppend は $Failed を返す
                     raise SADError('General::fileopen:  Open error for file %s in OpenRead[%s]' % (a[0], I.to_input_string(a[0]) if hasattr(I, 'to_input_string') else chr(34) + str(a[0]) + chr(34)))
                 I.out.write('???General::fileopen:  Open error for file ' + str(a[0]) + ':' + chr(10))
-                return S('$Failed')
+                return _SY__D_Failed
             I.next_unit += 1
             I.files[u] = f_
             return float(u)
@@ -4648,7 +4816,7 @@ class Interp:
             """tfread1: 現在位置から式を 1 つ読む (隣り合う項で切る。括弧が閉じなければ次の行も使う)。評価して返す"""
             while st[0] is None or not st[0][st[1]:].strip():
                 if not _rec_next(f, st):
-                    return S('EndOfFile')
+                    return _SY_EndOfFile
             txt = st[0][st[1]:]
             while True:
                 depth = 0
@@ -4702,11 +4870,11 @@ class Interp:
                     return _rd_expr(f, st)
                 if t == 'String':
                     w = _rd_string(f, st, False, new, '', False)
-                    return S('EndOfFile') if w is None else w
+                    return _SY_EndOfFile if w is None else w
                 if t in ('Word', 'Real', 'Character'):
                     w = _rd_string(f, st, t == 'Character', new, delim, null)
                     if w is None:
-                        return S('EndOfFile')
+                        return _SY_EndOfFile
                     if t != 'Real':
                         return w
                     if w == '':
@@ -4724,7 +4892,7 @@ class Interp:
                     else:
                         out.append(v)
                 return out
-            elif isinstance(item, Expr) and item.head == S('Times') and len(item.args) == 2 and is_num(item.args[0]):
+            elif isinstance(item, Expr) and item.head == _SY_Times and len(item.args) == 2 and is_num(item.args[0]):
                 return Seq([_read_item(f, st, item.args[1], opts) for _ in range(int(item.args[0]))])
             raise SADError('General::wrongval:  (n*) BinaryDouble, BinaryInteger, BinaryReal,  BinaryShortInteger, Byte, Character, Expression,  BinaryFloat, Real, String, or Word is for 2nd arg')
 
@@ -4734,9 +4902,9 @@ class Interp:
                 raise SADError('General::wrongtype:  Argument must be Real number or List of two Reals in Read[%s]' % ','.join(I.to_input_string(x) if hasattr(I, 'to_input_string') else I.to_str(x) for x in a))
             f = I.files.get(int(a[0]))
             if f is None:
-                return S('EndOfFile')
+                return _SY_EndOfFile
             st = _rst.setdefault(id(f), [None, 0])
-            item = a[1] if len(a) > 1 else S('Expression')
+            item = a[1] if len(a) > 1 else _SY_Expression
             new, delim, null = True, ' ,\n\t\r', False
             for o in a[2:]:                       # オプション WordSeparators / ReadNewRecord / NullWords (SADHelp の Read)
                 if isinstance(o, Rule) and isinstance(o.lhs, Sym):
@@ -4753,7 +4921,7 @@ class Interp:
             # Skip[unit, type, n]: type の項目を n 個読み飛ばし、最後に読んだ項目を返す (gs で確認: Skip[g, Word, 2] → 2 つ目の語、EOF なら EndOfFile)。
             # n=0 や Record などの型は gs も評価しない (引数の誤りのメッセージを出して未評価)
             if len(args) != 3 or not is_num(args[0]) or not is_num(args[2]) or int(args[2]) <= 0:
-                return Expr(S('Skip'), list(args))
+                return Expr(_SY_Skip, list(args))
             r = Null
             for _ in range(int(args[2])):
                 r = _read([args[0], args[1]])
@@ -4761,7 +4929,7 @@ class Interp:
                     break
             return r
         B['Skip'] = _skip
-        B['ReadString'] = lambda a: _read([a[0], S('String')] + list(a[1:]))
+        B['ReadString'] = lambda a: _read([a[0], _SY_String] + list(a[1:]))
         B['ReadList'] = lambda a: _readlist(a)
 
         def _readlist(a):
@@ -4783,7 +4951,7 @@ class Interp:
                 path = os.path.join(I.cwd, path)
             if not os.path.exists(path):
                 I.write_unit(6, f'?Get: file not found {a[0]}\n')
-                return S('$Failed')
+                return _SY__D_Failed
             src = open(path, encoding='utf-8', errors='replace').read()
             pk = I.globals.get('PackagesDirectory')
             if isinstance(pk, str) and pk and os.path.normcase(os.path.abspath(path)).startswith(os.path.normcase(os.path.abspath(pk))):
@@ -4801,7 +4969,7 @@ class Interp:
 
         def _beginpackage(a):
             if I._pkg_loading or not I._ctx_track:
-                return Expr(S('BeginPackage'), list(a))
+                return Expr(_SY_BeginPackage, list(a))
             cs = _ctxargs('BeginPackage', a)
             if not cs:
                 raise SADError('General::narg: Number of arguments is expected to be 1 or more in BeginPackage')
@@ -4817,7 +4985,7 @@ class Interp:
 
         def _endpackage(a):
             if I._pkg_loading or not I._ctx_track:
-                return Expr(S('EndPackage'), list(a))
+                return Expr(_SY_EndPackage, list(a))
             I._ctx_path = I._pkg_stack.pop() if I._pkg_stack else list(_ROOT_PATH)
             I._ctx_publish()
             return [Sym(c) for c in I._ctx_path]
@@ -4825,7 +4993,7 @@ class Interp:
 
         def _begin(a):
             if I._pkg_loading or not I._ctx_track:
-                return Expr(S('Begin'), list(a))
+                return Expr(_SY_Begin, list(a))
             cs = _ctxargs('Begin', a)
             if len(cs) != 1:
                 raise SADError('General::narg: Number of arguments is expected to be 1 in Begin')
@@ -4841,7 +5009,7 @@ class Interp:
 
         def _end(a):
             if I._pkg_loading or not I._ctx_track:
-                return Expr(S('End'), list(a))
+                return Expr(_SY_End, list(a))
             I._ctx_cur = I._ctx_stack.pop() if I._ctx_stack else '`'
             I._ctx_publish()
             return Null
@@ -4854,7 +5022,7 @@ class Interp:
                 raise SADError('General::narg: Number of arguments is expected to be 2 in WithContext')
             cs = I.eval(args[0])
             if not isinstance(cs, list) or not cs:
-                return Expr(S('WithContext'), list(args))
+                return Expr(_SY_WithContext, list(args))
             B['BeginPackage'](cs)
             B['Begin']([cs[0]])
             try:
@@ -4900,7 +5068,7 @@ class Interp:
         def _out(a):
             if len(a) == 1 and is_num(a[0]) and int(a[0]) in I.out_hist and float(a[0]) == int(a[0]):
                 return I.out_hist[int(a[0])]
-            return Expr(S('Out'), list(a))
+            return Expr(_SY_Out, list(a))
         B['Out'] = _out
 
         # ---- 多項式フィット (SAD の PolynomialFit: {{x,y}...} と次数 → 係数 {c0, c1, ...})
@@ -4953,26 +5121,31 @@ class Interp:
 
 def _spec_score(pats):
     """定義の特殊さ (リテラル > 構造パターン > 型つき Blank・選択肢 > 素の Blank)。Mathematica のように、特殊な定義を先に試すための順序"""
+    for p_ in pats:
+        if type(p_) is not _Lit or isinstance(p_.v, list):
+            break
+    else:
+        return 100 * len(pats)       # リテラル (リストでない) だけの定義 (f[x] = v の記憶): 下の計算と同じ値 (パターン変数の繰り返しもない)
     def one(p):
         if isinstance(p, _Lit):
             # リテラルのリスト {Automatic, Automatic} は、一部だけリテラルのパターン {Automatic, r2_} (20 + 100 + 0) より特殊
             return 21 + 100 * len(p.v) if isinstance(p.v, list) else 100
         if isinstance(p, Expr):
             h = p.head
-            if h == S('Pattern') and len(p.args) == 2:
+            if h == _SY_Pattern and len(p.args) == 2:
                 return one(p.args[1])
-            if h in (S('Blank'), S('BlankSequence'), S('BlankNullSequence')):
+            if h in (_SY_Blank, _SY_BlankSequence, _SY_BlankNullSequence):
                 # 長さの決まらない __・___ は、Blank を並べた定義 (f[_,_,_]) よりわずかに一般的 (OpticsPlot.n の OpticsList[__]={} は後の定義が先)
-                return (10 if p.args else 0) - (0 if h == S('Blank') else 1)
-            if h == S('Alternatives'):
+                return (10 if p.args else 0) - (0 if h == _SY_Blank else 1)
+            if h == _SY_Alternatives:
                 # リテラルだけの選択肢 ("" | " ") は個々のリテラルの定義と同じ扱い (K64 は Canvas.n の UnitLabelY[""|" ",__]=Null を先に試す)
                 return 105 if p.args and all(isinstance(q, str) for q in p.args) else 5
-            if h == S('Optional'):
+            if h == _SY_Optional:
                 return one(p.args[0]) if p.args else 0
-            if h in (S('PatternTest'), S('Condition')):
+            if h in (_SY_PatternTest, _SY_Condition):
                 # `{f_}?test` は検査つきの構造パターン (構造の特殊さ + 検査)。OpticsPlot.n の OpticsList1$[pr_,{f_}?(…)] は
                 # OpticsList1$[{pr1_,pr2_},f_,…] より先に試す (gs は定義の順)
-                return 8 + (one(p.args[0]) if p.args and isinstance(p.args[0], (Expr, list)) and not (isinstance(p.args[0], Expr) and p.args[0].head in (S('Blank'), S('Pattern'))) else 0)
+                return 8 + (one(p.args[0]) if p.args and isinstance(p.args[0], (Expr, list)) and not (isinstance(p.args[0], Expr) and p.args[0].head in (_SY_Blank, _SY_Pattern)) else 0)
             if _is_pattern(h):
                 return 3 + sum(one(a) for a in p.args)         # f_[y__] のように head もパターン: p_Plus (型つき Blank) より一般的
             return 20 + sum(one(a) for a in p.args)
@@ -4985,7 +5158,7 @@ def _spec_score(pats):
     cnt = {}
     def walk(x):
         if isinstance(x, Expr):
-            if x.head == S('Pattern') and x.args and isinstance(x.args[0], Sym):
+            if x.head == _SY_Pattern and x.args and isinstance(x.args[0], Sym):
                 cnt[x.args[0].name] = cnt.get(x.args[0].name, 0) + 1
             for a_ in x.args:
                 walk(a_)
@@ -5000,7 +5173,7 @@ def _spec_score(pats):
 def _as_expr(x):
     """式の中の Python のリストを List[…] の式に戻す (純関数の本体は評価のたびに要素を評価する)"""
     if isinstance(x, list):
-        return Expr(S('List'), [_as_expr(a) for a in x])
+        return Expr(_SY_List, [_as_expr(a) for a in x])
     if isinstance(x, Expr):
         return Expr(_as_expr(x.head), [_as_expr(a) for a in x.args])
     return x
@@ -5011,7 +5184,7 @@ def _unlit(x):
     if isinstance(x, _Lit):
         return _unlit(x.v)
     if isinstance(x, Expr):
-        if x.head == S('List'):
+        if x.head == _SY_List:
             return [_unlit(a) for a in x.args]
         return Expr(_unlit(x.head), [_unlit(a) for a in x.args])
     if isinstance(x, list):
@@ -5060,7 +5233,124 @@ def _eval2(self, node):
 
 Interp.eval = _eval2
 Interp._expr_reeval = True
+class RuleList(list):
+    """downvalues の規則の並び。先頭の引数がリテラル (実数・文字列・記号) の規則を、その値で引く索引を持つ (f[k] = v の記憶が何百・何千と並ぶとき、
+    線形に走査しない)。並びを変える操作のたびに版を進めて索引を作り直すので、索引が古いまま使われることはない。普通の list の代わりに使える"""
+    __slots__ = ('ver', 'ixver', 'bucket', 'wild', 'cand', 'hint')
+
+    def __init__(self, *a):
+        list.__init__(self, *a)
+        self.ver = 0
+        self.ixver = -1
+        self.bucket = None
+        self.wild = None
+        self.cand = None
+        self.hint = None
+
+    def _mut(name):
+        base = getattr(list, name)
+
+        def f(self, *a, **k):
+            self.ver += 1
+            return base(self, *a, **k)
+        f.__name__ = name
+        return f
+    append = _mut('append')
+    extend = _mut('extend')
+    insert = _mut('insert')
+    pop = _mut('pop')
+    remove = _mut('remove')
+    clear = _mut('clear')
+    sort = _mut('sort')
+    reverse = _mut('reverse')
+    __setitem__ = _mut('__setitem__')
+    __delitem__ = _mut('__delitem__')
+    __iadd__ = _mut('__iadd__')
+    __imul__ = _mut('__imul__')
+    del _mut
+
+    def candidates(self, a0):
+        """第 1 引数が a0 (実数・文字列・記号) のとき合う可能性のある規則 (元の順)。先頭がリテラルで a0 と違う規則は含まない"""
+        if self.ixver != self.ver:
+            bucket = {}
+            wild = []
+            for i, d in enumerate(self):
+                pats = d[0]
+                if pats is not None and pats and type(pats[0]) is _Lit:
+                    v = pats[0].v
+                    t = type(v)
+                    if (t is float and v == v) or t is str or t is Sym:
+                        bucket.setdefault(v, []).append(i)
+                        continue
+                wild.append(i)
+            self.bucket = bucket
+            self.wild = wild
+            self.cand = {}
+            self.ixver = self.ver
+        if a0 != a0:
+            key = None            # nan はどのリテラルとも等しくない
+        else:
+            key = a0
+        lst = self.cand.get(key)
+        if lst is None:
+            pos = self.bucket.get(key) if key is not None else None
+            if pos is None:
+                idx = self.wild
+            else:
+                idx = sorted(pos + self.wild) if self.wild else pos
+            lst = [self[i] for i in idx]
+            self.cand[key] = lst
+        return lst
+
+
 _NoMatch = object()
+_PAT_HEADS = frozenset(('Pattern', 'Blank', 'BlankSequence', 'BlankNullSequence', 'Optional', 'PatternTest', 'Alternatives', 'List',
+                        'Repeated', 'RepeatedNull', 'Plus', 'Times'))
+_NOT_SINGLE = frozenset(('BlankSequence', 'BlankNullSequence', 'Repeated', 'RepeatedNull', 'Optional', 'Alternatives'))
+
+
+def _single_pat(p):
+    """パターン p が引数をちょうど 1 つ取る (照合が前から順に 1 つずつ進む) ことが構造からわかるか"""
+    while isinstance(p, Expr):
+        h = p.head
+        if type(h) is Sym:
+            if h.name in _NOT_SINGLE:
+                return False
+            if (h.name == 'Pattern' and len(p.args) == 2) or (h.name == 'PatternTest' and p.args):
+                p = p.args[1] if h.name == 'Pattern' else p.args[0]
+                continue
+        return True
+    return True
+
+
+def _quick_reject(p, a, sym_ok):
+    """パターン p が引数 a に合わないことが、型と head だけからわかるなら True (合うかもしれないときは False)。_match_one と同じ判定の一部"""
+    if isinstance(a, _HeldArg):
+        return False
+    tp = type(p)
+    if tp is _Lit:
+        v = p.v
+        tv = type(v)
+        if tv is float or tv is str or tv is Sym:
+            return not Interp.same(v, a)
+        if tv is Expr and not isinstance(a, Sym):
+            return not Interp.same(v, a)
+        return False
+    if tp is Expr:
+        h = p.head
+        if type(h) is not Sym:
+            if type(h.head) is Sym and h.head.name not in _PAT_HEADS:
+                # Widget[b_, _][c_] の形: 式 (head が式) か a->b にしか合わない。head が記号の式は head どうしが合わない
+                if isinstance(a, Expr):
+                    return type(a.head) is Sym
+                return not isinstance(a, Rule)
+            return False
+        if h.name in _PAT_HEADS:
+            return False
+        if isinstance(a, Expr):
+            return a.head != h
+        return not isinstance(a, Rule)
+    return False
 
 
 def _mentions_hold(node):
@@ -5069,7 +5359,7 @@ def _mentions_hold(node):
     while stack:
         x = stack.pop()
         if isinstance(x, Expr):
-            if x.head == S('Hold'):
+            if x.head == _SY_Hold:
                 return True
             stack.append(x.head)
             stack.extend(x.args)
@@ -5080,7 +5370,7 @@ def _mentions_hold(node):
 
 def _is_pattern(a):
     if isinstance(a, Expr):
-        if a.head in (S('Pattern'), S('Blank'), S('BlankSequence'), S('BlankNullSequence'), S('Optional'), S('PatternTest'), S('Alternatives')):
+        if a.head in (_SY_Pattern, _SY_Blank, _SY_BlankSequence, _SY_BlankNullSequence, _SY_Optional, _SY_PatternTest, _SY_Alternatives):
             return True
         return any(_is_pattern(x) for x in a.args)
     return False
@@ -5098,8 +5388,23 @@ def _has_pat(x):
 
 
 def _is_seq_pat(q):
-    return isinstance(q, Expr) and (q.head in (S('BlankSequence'), S('BlankNullSequence'), S('Repeated'), S('RepeatedNull'), S('Optional'))
-                                    or (q.head == S('Pattern') and _is_seq_pat(q.args[1])))      # Optional (Right[sep_:0]) も引数の数が変わる
+    return isinstance(q, Expr) and (q.head in (_SY_BlankSequence, _SY_BlankNullSequence, _SY_Repeated, _SY_RepeatedNull, _SY_Optional)
+                                    or (q.head == _SY_Pattern and _is_seq_pat(q.args[1])))      # Optional (Right[sep_:0]) も引数の数が変わる
+
+
+def _scalar_key(pats):
+    """リテラル (実数・文字列・記号) だけの規則の鍵 (repr の並び)。パターンやリストを含むなら None"""
+    ks = []
+    for p in pats:
+        if type(p) is not _Lit:
+            return None
+        v = p.v
+        t = type(v)
+        if t is float or t is str or t is Sym:
+            ks.append(repr(v))
+        else:
+            return None
+    return tuple(ks)
 
 
 def _same_pats(p1, p2):
@@ -5197,12 +5502,12 @@ _BEAMLINE = None
 def _beamline_neg(b):
     """Packages/beamline.n: -BeamLine[x__] は順序を逆にして各要素の符号を反転 (逆向き通過)"""
     def neg(x):
-        if isinstance(x, Expr) and x.head == S('Minus'):
+        if isinstance(x, Expr) and x.head == _SY_Minus:
             return x.args[0]
         if isinstance(x, (Sym, str)):
-            return Expr(S('Minus'), [x])                 # ビームラインの逆向き要素は Minus[要素] (lattice の USE が読む形)
+            return Expr(_SY_Minus, [x])                 # ビームラインの逆向き要素は Minus[要素] (lattice の USE が読む形)
         return _symneg(x)
-    return Expr(S('BeamLine'), [neg(x) for x in reversed(b.args)])
+    return Expr(_SY_BeamLine, [neg(x) for x in reversed(b.args)])
 
 
 def _beamline_times(n, b):
@@ -5210,25 +5515,25 @@ def _beamline_times(n, b):
     if n < 0:
         b = _beamline_neg(b)
         n = -n
-    return Expr(S('BeamLine'), [x for _ in range(int(n)) for x in b.args])
+    return Expr(_SY_BeamLine, [x for _ in range(int(n)) for x in b.args])
 
 
 def _symneg(b):
     if is_num(b):
         return -b
-    if isinstance(b, Expr) and b.head == S('BeamLine'):
+    if isinstance(b, Expr) and b.head == _SY_BeamLine:
         return _beamline_neg(b)
-    if isinstance(b, Expr) and b.head == S('Minus'):
+    if isinstance(b, Expr) and b.head == _SY_Minus:
         return b.args[0]
-    if isinstance(b, Expr) and b.head == S('Times') and b.args:
+    if isinstance(b, Expr) and b.head == _SY_Times and b.args:
         if is_num(b.args[0]):
             c = -b.args[0]
             rest = b.args[1:]
             if c == 1.0:
-                return rest[0] if len(rest) == 1 else Expr(S('Times'), rest)      # -(-x) = x
-            return Expr(S('Times'), [c] + rest)
-        return Expr(S('Times'), [-1.0] + list(b.args))      # -(a b) = Times[-1, a, b] (入れ子にしない)
-    return Expr(S('Times'), [-1.0, b])                    # K64: -x は Times[-1, x] (Length[-x] は 2)
+                return rest[0] if len(rest) == 1 else Expr(_SY_Times, rest)      # -(-x) = x
+            return Expr(_SY_Times, [c] + rest)
+        return Expr(_SY_Times, [-1.0] + list(b.args))      # -(a b) = Times[-1, a, b] (入れ子にしない)
+    return Expr(_SY_Times, [-1.0, b])                    # K64: -x は Times[-1, x] (Length[-x] は 2)
 
 
 def _flat_head(name, items):
@@ -5267,9 +5572,9 @@ def _symb(name, a, b):
     if name == 'Plus':
         return _sym_assoc('Plus', [a, b], 0.0)
     if name == 'Times':
-        if is_num(a) and isinstance(b, Expr) and b.head == S('BeamLine'):
+        if is_num(a) and isinstance(b, Expr) and b.head == _SY_BeamLine:
             return _beamline_times(a, b)
-        if is_num(b) and isinstance(a, Expr) and a.head == S('BeamLine'):
+        if is_num(b) and isinstance(a, Expr) and a.head == _SY_BeamLine:
             return _beamline_times(b, a)
         return _sym_assoc('Times', [a, b], 1.0, 0.0)
     if name == 'Subtract':
@@ -5277,19 +5582,19 @@ def _symb(name, a, b):
     if name == 'Divide':
         if is_num(b) and not isinstance(b, complex):
             return _sym_assoc('Times', [a, (1.0 / b) if b != 0 else INF], 1.0, 0.0)       # x/2 は (.5 x)
-        return _sym_assoc('Times', [a, Expr(S('Power'), [b, -1.0])], 1.0, 0.0)
+        return _sym_assoc('Times', [a, Expr(_SY_Power, [b, -1.0])], 1.0, 0.0)
     if name == 'Power':
         if is_num(b) and b == 1:
             return a
-        if is_num(b) and not isinstance(b, complex) and isinstance(a, Expr) and a.head == S('Times') and a.args and is_num(a.args[0]) \
+        if is_num(b) and not isinstance(b, complex) and isinstance(a, Expr) and a.head == _SY_Times and a.args and is_num(a.args[0]) \
                 and not isinstance(a.args[0], complex) and a.args[0] != 0 and a.args[0] > 0:
             rest = a.args[1:]       # (2 x)^2 は (4 x^2): 数の係数だけ外へ出す (K64 で確認。負の係数は出さない)
-            r_ = rest[0] if len(rest) == 1 else Expr(S('Times'), rest)
+            r_ = rest[0] if len(rest) == 1 else Expr(_SY_Times, rest)
             return _sym_assoc('Times', [a.args[0] ** b, _symb('Power', r_, b)], 1.0, 0.0)
         if is_num(b) and b == 0:
             return 1.0
-        return Expr(S('Power'), [a, b])
-    return Expr(S('$Op'), [a, b])
+        return Expr(_SY_Power, [a, b])
+    return Expr(_SY__D_Op, [a, b])
 
 
 # ----------------------------------------------------------------------------

@@ -58,8 +58,28 @@ def test_v2_robust_qcod_finds_cod_where_k64_fails():
     tk, ck = _run(1.5, 'k64')
     assert max(ck) < 1e-10 and abs(tk[0] - 48.5800240787) < 1e-6
     tv, cv = _run(1.5, 'v2')
-    assert 1e-3 < cv[0] < 3e-3 and 2e-3 < cv[1] < 5e-3 and abs(tv[1] - 17.6923195779) < 1e-6
+    # v2 の既定のチューンは、四極の本体の 4 次の合成 (B226) と、6 極 (L ≠ 0) の非線形フリンジの CALC への追加 (B291。COD が 1.9・3.4 mm 外れた 6 極に効く) で、
+    # 従来の値 17.6923195779 (K64 の積分器・フリンジなし) から 5e-6 動いた。両方を戻す (方式 0・フリンジなし) と従来の値に戻る (下)。
+    assert 1e-3 < cv[0] < 3e-3 and 2e-3 < cv[1] < 5e-3 and abs(tv[1] - 17.6923143372) < 1e-8
+    from pysad import lattice, quadbody
+    old_s, old_f = quadbody.set_scheme(0), lattice._thin_fringe_flag
+    lattice._thin_fringe_flag = lambda *a: False
+    try:
+        tv0, cv0 = _run(1.5, 'v2')
+    finally:
+        quadbody.set_scheme(old_s)
+        lattice._thin_fringe_flag = old_f
+    assert abs(tv0[1] - 17.6923195779) < 1e-8 and abs(tv[1] - tv0[1]) > 1e-6
     t1k, c1k = _run(1.0, 'k64')
     t1v, c1v = _run(1.0, 'v2')
-    assert abs(t1k[0] - 48.576209589) < 1e-8 and abs(t1v[0] - 48.5760358865) < 1e-8      # k64 = gs の値。v2 は B161 などで k64 と 2e-4 違う (qcod の経路は同じ)
-    assert abs(c1v[0] - 1.3085727e-3) < 1e-9
+    assert abs(t1k[0] - 48.576209589) < 1e-8 and abs(t1v[0] - 48.5760353019) < 1e-8      # k64 = gs の値。v2 は B161 などで k64 と 2e-4 違う (qcod の経路は同じ)
+    assert abs(c1v[0] - 1.3085717e-3) < 1e-9
+    # v2 のチューンの従来の値 48.5760358865 (v2.4.0) からの 5.8e-7 の動きは 1.5 倍と同じ原因 (B226 の 4 次の合成と B291 の 6 極のフリンジ)。両方を戻すと従来の値と COD
+    old_s, old_f = quadbody.set_scheme(0), lattice._thin_fringe_flag
+    lattice._thin_fringe_flag = lambda *a: False
+    try:
+        t1v0, c1v0 = _run(1.0, 'v2')
+    finally:
+        quadbody.set_scheme(old_s)
+        lattice._thin_fringe_flag = old_f
+    assert abs(t1v0[0] - 48.5760358865) < 1e-8 and abs(c1v0[0] - 1.3085727e-3) < 1e-9

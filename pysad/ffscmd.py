@@ -2667,7 +2667,7 @@ class FFS:
             # BEAMBEAM だけが光子を出すラティスは今までどおり高速追跡 (numba)。SOL 領域内の光子は未対応 (記録しない)
             _ph_types = ('Quadrupole', 'Multipole', 'Sextupole', 'Octupole', 'Decapole', 'Dodecapole')
             photons_py = any((type(e).__name__ == 'Bend' and float(getattr(e, 'ANGLE', 0.0) or 0.0) != 0.0 and e.L != 0.0)
-                             or (type(e).__name__ in _ph_types and e.L != 0.0 and not any(type(x).__name__ in ('Coord', 'TCavity', 'Map') for x in els))
+                             or (type(e).__name__ in _ph_types and e.L != 0.0 and not any(type(x).__name__ == 'Map' for x in els))
                              for e in els)
             gg = self.ensure_geo().geo
             for i, e in enumerate(els):
@@ -3543,7 +3543,11 @@ class FFS:
             r_ = _fx.run(self, W, words, i)
             if r_ is not None:
                 return r_
-        if W in ('DRAW', 'GEO', 'SHOW', 'STAT', 'STATUS', 'VARS', 'VARIABLES', 'VARY',
+        if W == 'DRAW':
+            # v2.4.1: matplotlib で描く (pysad/draw_mpl.py。CANVASDRAW.n の構文解析の移植)。$DisplayFunction が Identity で保存先も無ければ K64 と同じく何もしない
+            from . import draw_mpl as _dm
+            return _dm.run_draw(self, words, i)
+        if W in ('GEO', 'SHOW', 'STAT', 'STATUS', 'VARS', 'VARIABLES', 'VARY',
                  'BEAM', 'MATRIX', 'MAT', 'ALIGN', 'ATT', 'ATTRIBUTE',
                  'INC', 'INCLUDE', 'REC', 'RECOVER', 'REJ', 'REJECT', 'SCALE', 'RENUM', 'REV', 'REVERSE', 'ZAP', 'DIMAD',
                  'SYNCHROB', 'REF', 'REFERENCE', 'MEASURE', 'TRC', 'TRCOD', 'PRINT'):

@@ -22,6 +22,7 @@ from .radbeta import ab as _rb_ab
 from .perfkern import edge_len
 from .elkern import _tbedgedrift, _tbedgemaxwell, _tbedgebody
 from . import lattice as _lat
+from . import quadbody as _qb
 from . import track6 as _t6
 from .elements import Drift, Bend, Quadrupole
 
@@ -190,11 +191,11 @@ def drndsr(rs):
 
 
 def make_rs(seed):
-    """乱数の状態の配列 [seed, v2 の印]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
+    """乱数の状態の配列 [seed, v2 の印, ..., rs[4] = 四極の本体の積分の方式 (quadbody.scheme(): 0 = K64、1 = 4 次の合成)]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
     njit の中からは compat を読めないので、状態の配列に印を載せて渡す (k64 では 0 で、今までと同じ動作)"""
     from . import compat
     return np.array([seed, 1 if compat.v2() else 0, 1 if compat.bend_k1_edge() == 'face' else 0,
-                     1 if compat.bend_k1_lin() else 0], dtype=np.int64)
+                     1 if compat.bend_k1_lin() else 0, _qb.scheme()], dtype=np.int64)
 
 
 @njit(**NJ)
@@ -452,49 +453,14 @@ def tzsetparam0(dp, aln0, akk):
     return w1, s1, xs1, dc1, sh2, xsh2, dch2
 
 
+_qb_drift, _qb_body, _qb_nonrad = _qb.make_track(sqrt1, tzsetparam0, njit(**NJ))     # 四極の本体 (B226): K64 の Strang 分割 (k64)・4 次の合成 (v2)
+
+
 @njit(**NJ)
-def tsolqu1(i, S, al, ak, eps0, qum):
-    """tsolqu / tsolqum (bz=0, ak0=0, ak>0)"""
-    eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
-    ndiv = 1 + int(abs(al * ak / eps))
-    aln0 = al / ndiv
-    akk = ak / al
-    w1, s1, xs1, dc1, sh2, xsh2, dch2 = tzsetparam0(S[i, 5], aln0, akk)
-    x = S[i, 0]; px = S[i, 1]; y = S[i, 2]; py = S[i, 3]; z = S[i, 4]
-    dv = S[i, 6]
-    for n in range(ndiv):
-        pxi = px; pyi = py
-        ap = pxi * pxi + pyi * pyi
-        dpz = sqrt1(-ap)
-        r = -dpz / (1.0 + dpz) * aln0
-        if n == 0:
-            r *= 0.5
-        x += pxi * r
-        y += pyi * r
-        xi = x; yi = y
-        u1 = xi * dc1 + pxi * s1 / w1
-        u2 = -xi * w1 * s1 + pxi * dc1
-        v1 = yi * dch2 + pyi * sh2 / w1
-        v2 = yi * w1 * sh2 + pyi * dch2
-        x += u1
-        px = pxi + u2
-        y += v1
-        py = pyi + v2
-        if qum:
-            z = (z - (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-                 - 0.25 * (w1 * (xi * xi * xs1 - yi * yi * xsh2) + (ap - dv) * aln0
-                           + u1 * px + xi * pxi * dc1 + v1 * py + yi * pyi * dch2))
-        else:
-            z = (z - (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-                 - 0.25 * (w1 * (xi * xi * xs1 - yi * yi * xsh2) + ap * aln0
-                           + u1 * px + xi * pxi * dc1 + v1 * py + yi * pyi * dch2)
-                 - dv * aln0)
-    ap = px * px + py * py
-    dpz = sqrt1(-ap)
-    r = -dpz / (1.0 + dpz) * aln0 * 0.5
-    x += px * r
-    y += py * r
-    z -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
+def tsolqu1(i, S, al, ak, eps0, qum, sch):
+    """tsolqu / tsolqum (bz=0, ak0=0, ak>0)。本体の積分は quadbody (sch: 0 = K64、1 = 4 次の合成。rs[4])"""
+    x, px, y, py, z = _qb_nonrad(S[i, 0], S[i, 1], S[i, 2], S[i, 3], S[i, 4], S[i, 5], S[i, 6],
+                                 al, ak, eps0, 0.0, 0.0, qum, sch)
     S[i, 0] = x; S[i, 1] = px; S[i, 2] = y; S[i, 3] = py; S[i, 4] = z
 
 
@@ -507,44 +473,26 @@ def ndivrad(phi, ak, bz, eps, h0):
 
 @njit(**NJ)
 def tsolqur_all(S, n, al, ak, eps0, fluc, rs, p0, h0, anrad, cuc):
+    sch = _qb.sch_of(rs)
     eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
-    ndiv = 1 + int(abs(al) * ak / eps)
+    ndiv = _qb.ndiv_nb(abs(al) * ak, eps, sch)
     ndiv = fmin(1000, fmax(ndiv, ndivrad(0.0, ak, 0.0, eps0, h0)))
     aln = al / ndiv
     akk = ak / al
-    for m in range(ndiv):
-        alr = aln * 0.5 if m == 0 else aln
+    m = _qb.QB_M[sch]
+    for g in range(m * ndiv):
+        dl, bl, jb, rad, fin = _qb.group_nb(g, aln, ndiv, sch)
         for i in range(n):
-            w1, s1, xs1, dc1, sh2, xsh2, dch2 = tzsetparam0(S[i, 5], aln, akk)
-            px = S[i, 1]; py = S[i, 3]
-            ap = px * px + py * py
-            dpz = sqrt1(-ap)
-            r = -dpz / (1.0 + dpz) * alr
-            S[i, 0] += px * r
-            S[i, 2] += py * r
-            S[i, 4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-            xi = S[i, 0]; yi = S[i, 2]
-            b = px; d = py
-            u1 = xi * dc1 + b * s1 / w1
-            u2 = -xi * w1 * s1 + b * dc1
-            v1 = yi * dch2 + d * sh2 / w1
-            v2 = yi * w1 * sh2 + d * dch2
-            S[i, 0] += u1
-            S[i, 1] += u2
-            S[i, 2] += v1
-            S[i, 3] += v2
-            S[i, 4] = (S[i, 4] - 0.25 * (w1 * (xi * xi * xs1 - yi * yi * xsh2) + (b * b + d * d) * aln
-                                         + u1 * (u2 + b) + xi * b * dc1 + v1 * (v2 + d) + yi * d * dch2)
-                       - S[i, 6] * aln)
-        tradk_all(S, n, aln, 0.0, fluc, rs, p0, anrad, cuc)
+            par = tzsetparam0(S[i, 5], bl, akk)
+            x, y, z = _qb_drift(S[i, 0], S[i, 1], S[i, 2], S[i, 3], S[i, 4], dl)
+            x, px, y, py, z = _qb_body(x, S[i, 1], y, S[i, 3], z, S[i, 6], par, bl, 0.0, 0.0, False)
+            S[i, 0] = x; S[i, 1] = px; S[i, 2] = y; S[i, 3] = py; S[i, 4] = z
+        if (g + 1) % m == 0:
+            tradk_all(S, n, aln, 0.0, fluc, rs, p0, anrad, cuc)
+    dl, bl, jb, rad, fin = _qb.group_nb(m * ndiv, aln, ndiv, sch)
     for i in range(n):
-        px = S[i, 1]; py = S[i, 3]
-        ap = px * px + py * py
-        dpz = sqrt1(-ap)
-        r = -dpz / (1.0 + dpz) * aln * 0.5
-        S[i, 0] += px * r
-        S[i, 2] += py * r
-        S[i, 4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
+        x, y, z = _qb_drift(S[i, 0], S[i, 1], S[i, 2], S[i, 3], S[i, 4], dl)
+        S[i, 0] = x; S[i, 2] = y; S[i, 4] = z
 
 
 @njit(**NJ)
@@ -573,7 +521,7 @@ def k_quad(S, n, L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2ou
         tsolqur_all(S, n, L, ak, eps0, fluc, rs, p0, h0, anrad, cuc)
     else:
         for i in range(n):
-            tsolqu1(i, S, L, ak, eps0, False)
+            tsolqu1(i, S, L, ak, eps0, False, _qb.sch_of(rs))
     for i in range(n):
         if mfring == 2 or mfring == 3:
             tqlfr1(i, S, -f1out, f2out)
@@ -2260,7 +2208,10 @@ class Prog:
                     # tbend.f: K0=0 なら tquad (theta+dtheta、フリンジ係数 0) → K_QUAD、K0≠0 なら tmulti → track6 へ
                     kind, proxy = _t6._bend_k1_proxy(el)
                     if kind != 'quad':
-                        raise NotImplementedError('track6n: ANGLE=0 で K1≠0 かつ K0≠0 の BEND (tmulti)')
+                        # K1≠0 かつ K0≠0: tbend → tmulti (akm(0) = K0、akm(1) = K1·L)。F1・FB1・FB2・端の角 (AE。v2 だけ追跡に使う) が無ければ
+                        # MULT と同じ numba の K_MULT で追跡する。あれば track6 (Python の _tmulti_ens) に落とす (compile_mult が NotImplementedError)
+                        # (v2.4.1 A: 以前は常に track6 に落ちていた)
+                        return _ext().compile_mult(proxy, ph)
                     L = proxy.L
                     K1L = proxy.K1 * L
                     if L == 0.0 or K1L == 0.0:

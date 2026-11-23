@@ -50,10 +50,16 @@ def _same(rows, ref, tol):
             assert abs(a - b) <= tol * max(abs(b), 1e-3)
 
 
+def _ref_same_mode():
+    """C3_SRC (同じ表を WakeFunction で与えた台本) を今の互換モードで走らせた行。C3_REF は gs (K64 の 2 次の四極の積分器) の値で、
+    v2 の既定 (4 次の合成。B226) の追跡とは 1e-9 台ずれるため、比べる相手は同じ積分器の WakeFunction の結果にする"""
+    return _rows(C3_SRC)[0]
+
+
 def test_multiline_table_equals_wakefunction(v2_mode):
     rows, out = _rows(_src(MULTI))
     assert '?' not in out
-    _same(rows, C3_REF, 2e-9)
+    _same(rows, _ref_same_mode(), 2e-9)
 
 
 def _table(n, kind):
@@ -122,7 +128,7 @@ def test_errors_are_explained(v2_mode):
 def test_statement_after_endwake_on_same_line(v2_mode):
     rows, out = _rows(_src(MULTI.replace('ENDWAKE\n', 'ENDWAKE; Print["AFTER ", 7];\n')))
     assert 'AFTER 7' in out
-    _same(rows, C3_REF, 2e-9)
+    _same(rows, _ref_same_mode(), 2e-9)
 
 
 def test_k64_mode_reads_line_by_line(k64_mode):

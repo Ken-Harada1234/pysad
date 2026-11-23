@@ -16,6 +16,7 @@ h=Plot[Sin[x],{x,0,6}];
 
 - `$DisplayFunction` は、Windows など画面のある環境と、Linux で `DISPLAY` があるときは `CanvasDrawer` (tkinter に描く)。画面がない環境や
   `PYSAD_NO_DISPLAY=1` では `Identity` で、`Graphics` の式を返すだけ。`DisplayFunction->Identity` を引数で与えても同じ。
+- v2.4.1: 環境変数 `PYSAD_DISPLAY=mpl` (または台本の `$DisplayFunction=MatplotlibDrawer;`) で、同じ `Graphics[…]` を Tk でなく matplotlib に描く (`pysad/mpl_display.py`。[docs/42 §7c](42_graphics_guide.md))。
 - `PYSAD_SAD_PACKAGES` (SAD の Packages の場所) が要る。
 
 ## 2. gs との一致

@@ -1,0 +1,30 @@
+MOMENTUM = 4.2GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3=(L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD QFE = (L=0.3 K1=0.7 DY=0.003) QDE = (L=0.3 K1=-0.6 DY=-0.003);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (VOLT=24e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELL2 = (QFE D2 B D2 QD D1);
+LINE CELL3 = (QF D2 B D2 QDE D1);
+LINE RING = (ST 2*CELL1 CELL2 4*CELL1 CELL3 4*CELL1 RFC);
+FFS;
+$FORM = "14.8";
+PageWidth = 1999;
+NPARA = 1;
+USE RING;
+CELL;
+CALC;
+
+RFSW; RAD; NOFLUC; NORADPOL;
+POL;
+em = Emittance[];
+Print["EM ", {PolarizationTime, SpinTune, NominalSpinTune, Polarization, PolarizationVector}/.em];
+cod = {-0.000439862036394,-0.000199150229102,-0.00622611788946,0.00856188463412,-2.80724689504e-07,-0.000137341064566};
+b = {{cod[[1]]},{cod[[2]]},{cod[[3]]},{cod[[4]]},{cod[[5]]},{cod[[6]]},{0.00145221299520426},{-0.0177069643161462},{1},{1},{1}};
+Do[
+  b = TrackParticles[{1, b}, 1, 1, 1][[2]];
+  Print["T ", k, " ", Sqrt[1-b[[8,1]]^2]*Cos[b[[7,1]]], " ", b[[8,1]], " ", Sqrt[1-b[[8,1]]^2]*Sin[b[[7,1]]], " ", Table[b[[j,1]]-cod[[j]], {j, 6}]],
+  {k, 1, 120}];
+Exit;

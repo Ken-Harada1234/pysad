@@ -30,6 +30,7 @@ from numba import njit
 from . import compat as _compat
 from . import emit6d as _e
 from . import lattice as _lat
+from . import quadbody as _qb
 from . import track6 as _t6
 from . import track6n as _n
 from .track6n import (NJ, p2h, fmax, fmin, sqrt1, pxy2dpz, asinz, xsincos, xsincosh, drift1, rot1, setr0_1,
@@ -105,55 +106,16 @@ def tdrift_kick1(i, S, al, ak0x, ak0y):
 
 # ============================================================================ tsolqu / tsolqum (MULT 用: K0 付き)
 @njit(**NJ)
-def tsolqu_m1(i, S, al, ak, eps0, ak0x, ak0y, qum):
+def tsolqu_m1(i, S, al, ak, eps0, ak0x, ak0y, qum, sch):
     """tsolqu.f tsolqu / tsolqum (bz=0, 放射なし) の MULT 用 (track6 _tsolqu と同じ)。
     ak = |K1|L ≥ 0、ak0x/ak0y は分割あたりの K0 (dx0 = ak0x/ak)。ak = 0 なら tdrift_kick1。
-    qum=True は tsolqum (放射なしの tmulti): z の dv の項が −0.25·(ap − dv)·aln0 (SAD のまま)"""
+    qum=True は tsolqum (tsolqu と違い z の dv の項が −0.25·(ap − dv)·aln0。SAD のまま)。
+    本体の積分は quadbody (sch: 0 = K64、1 = 4 次の合成。rs[4])"""
     if ak == 0.0:
         tdrift_kick1(i, S, al, ak0x, ak0y)
         return
-    eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
-    ndiv = 1 + int(abs(al * ak / eps))
-    aln0 = al / ndiv
-    dx0 = ak0x / ak
-    dy0 = ak0y / ak
-    akk = ak / al
-    w1, s1, xs1, dc1, sh2, xsh2, dch2 = tzsetparam0(S[i, 5], aln0, akk)
-    x = S[i, 0]; px = S[i, 1]; y = S[i, 2]; py = S[i, 3]; z = S[i, 4]
-    dv = S[i, 6]
-    for n in range(ndiv):
-        pxi = px; pyi = py
-        ap = pxi * pxi + pyi * pyi
-        dpz = sqrt1(-ap)
-        r = -dpz / (1.0 + dpz) * aln0
-        if n == 0:
-            r *= 0.5
-        x += pxi * r
-        y += pyi * r
-        xi = x + dx0; yi = y + dy0
-        u1 = xi * dc1 + pxi * s1 / w1
-        u2 = -xi * w1 * s1 + pxi * dc1
-        v1 = yi * dch2 + pyi * sh2 / w1
-        v2 = yi * w1 * sh2 + pyi * dch2
-        x += u1
-        px = pxi + u2
-        y += v1
-        py = pyi + v2
-        if qum:
-            z = (z - (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-                 - 0.25 * (w1 * (xi * xi * xs1 - yi * yi * xsh2) + (ap - dv) * aln0
-                           + u1 * px + xi * pxi * dc1 + v1 * py + yi * pyi * dch2))
-        else:
-            z = (z - (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-                 - 0.25 * (w1 * (xi * xi * xs1 - yi * yi * xsh2) + ap * aln0
-                           + u1 * px + xi * pxi * dc1 + v1 * py + yi * pyi * dch2)
-                 - dv * aln0)
-    ap = px * px + py * py
-    dpz = sqrt1(-ap)
-    r = -dpz / (1.0 + dpz) * aln0 * 0.5
-    x += px * r
-    y += py * r
-    z -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
+    x, px, y, py, z = _n._qb_nonrad(S[i, 0], S[i, 1], S[i, 2], S[i, 3], S[i, 4], S[i, 5], S[i, 6],
+                                    al, ak, eps0, ak0x, ak0y, qum, sch)
     S[i, 0] = x; S[i, 1] = px; S[i, 2] = y; S[i, 3] = py; S[i, 4] = z
 
 
@@ -235,7 +197,7 @@ def k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
         if nz:
             for i in range(n):
                 # 放射なしは tsolqum (K64)。v2 (B14, rs[1]=1) は tsolqu と同じ z の式 (-dv·aln0) を使う
-                tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, (not krad) and not (rs.shape[0] > 1 and rs[1] == 1))
+                tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, (not krad) and not (rs.shape[0] > 1 and rs[1] == 1), _qb.sch_of(rs))
             if krad:
                 tradk_all(S, n, al1, 0.0, fluc, rs, p0, anrad, cuc)
             wm = wi * 0.5 if m == ndiv else wi
@@ -250,7 +212,7 @@ def k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
                 mult_kick1(i, S, akrm, nmmax, 1)
     if nz:
         for i in range(n):
-            tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, (not krad) and not (rs.shape[0] > 1 and rs[1] == 1))
+            tsolqu_m1(i, S, al1, ak1, 0.0, ak01.real, ak01.imag, (not krad) and not (rs.shape[0] > 1 and rs[1] == 1), _qb.sch_of(rs))
         if fringe:
             for i in range(n):
                 for m in range(nmmax, -1, -1):
@@ -618,7 +580,7 @@ def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, c
             tsolqur_all(S, n, L, ak, 0.0, fluc, rs, p0, h0, anrad, cuc)
         else:
             for i in range(n):
-                tsolqu1(i, S, L, ak, 0.0, False)
+                tsolqu1(i, S, L, ak, 0.0, False, _qb.sch_of(rs))
     else:
         tsolqu_bz_all(S, n, L, ak, bz, 0.0, krad, fluc, rs, p0, h0, anrad, cuc)
     for i in range(n):
@@ -957,9 +919,9 @@ def compile_mult(el, ph=None, dz=0.0):
 
 # ============================================================================ MULT の RF (tmulti.f tmultiacc, ANGLE=0)
 @njit(**NJ)
-def mult_qu_all(S, n, al1, ak1, eps0, ak0x, ak0y):
+def mult_qu_all(S, n, al1, ak1, eps0, ak0x, ak0y, sch):
     for i in range(n):
-        tsolqu_m1(i, S, al1, ak1, eps0, ak0x, ak0y, False)           # tmultiacc は tsolqu (tsolqum ではない)
+        tsolqu_m1(i, S, al1, ak1, eps0, ak0x, ak0y, False, sch)           # tmultiacc は tsolqu (tsolqum ではない)
 
 
 @njit(**NJ)
@@ -1110,7 +1072,7 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
             kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, m == 1, p0, h0)
         akrm = akr[:nmmax + 1] * wsm
         if nz:
-            mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag)
+            mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag, _qb.sch_of(rs))
             if krad:
                 tradk_all(S, n, al1, 0.0, fluc, rs, p0, ph.anrad, ph.cuc)
             wm = 0.5 * (ws[m] + ws[m + 1])
@@ -1136,7 +1098,7 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
         kick.apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
         kick.fw = fw_save
     if nz:
-        mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag)
+        mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag, _qb.sch_of(rs))
         if fringe:
             mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
             _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)

@@ -32,7 +32,20 @@ def _rows(src):
 def test_b66_old_wake_command_equals_wakefunction(v2_mode):
     rows, _ = _rows(_src())
     assert len(rows) == 6
-    for r, q in zip(rows, C3_REF):
+    # 比べる相手は同じ表を WakeFunction で与えた台本 (C3_SRC) を同じ互換モードで走らせた結果。C3_REF は gs の値で、v2 の既定の
+    # 四極の 4 次の合成 (B226) とは 1e-9 台ずれる (k64・方式 0 なら 2e-9 で一致)
+    ref, _ = _rows(C3_SRC)
+    for r, q in zip(rows, ref):
+        for a, b in zip(r, q):
+            assert abs(a - b) <= 2e-9 * max(abs(b), 1e-3)
+    # 四極を K64 の方式 (方式 0) にすれば gs の値 C3_REF と一致する (v2 の WAKE コマンドの読み方は gs と同じ結果を与える)
+    from pysad import quadbody
+    old = quadbody.set_scheme(0)
+    try:
+        rows0, _ = _rows(_src())
+    finally:
+        quadbody.set_scheme(old)
+    for r, q in zip(rows0, C3_REF):
         for a, b in zip(r, q):
             assert abs(a - b) <= 2e-9 * max(abs(b), 1e-3)
 

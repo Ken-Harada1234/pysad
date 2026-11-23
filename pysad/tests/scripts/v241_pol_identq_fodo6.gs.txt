@@ -1,0 +1,98 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:40:23 Sunday 11/22/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 4.2GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) D3=(L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD QFE = (L=0.3 K1=0.7 DY=0.003) QDE = (L=0.3 K1=-0.6 DY=-0.003);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (VOLT=6e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELL2 = (QFE D2 B D2 QD D1);
+LINE CELL3 = (QF D2 B D2 QDE D1);
+LINE RING = (ST 2*CELL1 CELL2 4*CELL1 CELL3 4*CELL1 RFC);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "14.8";
+ PageWidth = 1999;
+ NPARA = 1;
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.156995 $$$       f BX    #######  #   5.011637 $$$       f NX    #######  #   2.708309 $$$       f AY    #######  #   1.391310 $$$       f BY    #######  #   2.628826 $$$       f NY    #######  #   1.869810
+$$$       f LENG  #######  #  45.600000
+ 
+ RFSW; RAD; NOFLUC; NORADPOL;
+ POL;
+ em = Emittance[];
+ Print["EM ", {PolarizationTime, SpinTune, NominalSpinTune, Polarization, PolarizationVector}/.em];
+EM {   23.05963626,    -.23625181,    9.53140745, 1.32427533E-4,{     .01685412,     .99641507,    -.08290325}}
+ Print["EMB ", {MomentumSpread, EquilibriumPosition}/.em, " ", Emittances/.em];
+EMB {     .00184668,     .06000335} { 5.07903588E-7, 1.57501317E-7, 3.93663015E-5}
+ n0 = {0.0177663965098,0.996497490278,-0.0817135669603};
+ N0 = {{-3.79884026353,-0.0219957001907,-0.0681313408124,1.60908983553,-0.0182834182345,2.35659051785},{-0.564417829055,1.43745659632,0.674078066589,-0.149762723177,0.00106304165828,0.033069124488},{-7.71611957699,17.51967431,8.2029314937,-1.47207410635,0.00894057359934,0.921215706047}};
+ cod = {-0.000439862035944,-0.000199150228845,-0.00622611788363,0.00856188463042,-1.00855789233e-06,-0.000137341066424};
+ np = 3;
+ one = Table[1, {i, np}];
+ beam = {cod[[1]]*one, cod[[2]]*one, cod[[3]]*one, cod[[4]]*one, cod[[5]]*one, cod[[6]]*one, one};
+ SeedRandom[7];
+ FLUC; NOPOL;
+ If[600 > 0, beam = TrackParticles[{1, beam}, 1, 1, 600][[2]]];
+ rms[v_] := Sqrt[Plus@@(v^2)/Length[v]];
+ Print["EQ turns=", 600, " rms x px y py z dp ", rms[beam[[1]]-cod[[1]]], " ", rms[beam[[2]]-cod[[2]]], " ", rms[beam[[3]]-cod[[3]]], " ", rms[beam[[4]]-cod[[4]]], " ", rms[beam[[5]]-cod[[5]]], " ", rms[beam[[6]]-cod[[6]]]];
+EQ turns=  600.00000000 rms x px y py z dp      .00118515  5.76823186E-4  2.79209829E-4  1.08989577E-4      .02077339  6.81125055E-4
+ u = Table[{beam[[1,i]]-cod[[1]], beam[[2,i]]-cod[[2]], beam[[3,i]]-cod[[3]], beam[[4,i]]-cod[[4]], beam[[5,i]]-cod[[5]], beam[[6,i]]-cod[[6]]}, {i, np}];
+ s = Table[n0 + N0.u[[i]], {i, np}];
+ s = Table[s[[i]]/Sqrt[s[[i]].s[[i]]], {i, np}];
+ ang = Table[ArcTan[s[[i,1]], s[[i,3]]], {i, np}];
+ sy = Table[s[[i,2]], {i, np}];
+ beam = {beam[[1]], beam[[2]], beam[[3]], beam[[4]], beam[[5]], beam[[6]], ang, sy, one, one, one};
+ sn[b_] := Table[Sqrt[1-b[[8,i]]^2]*Cos[b[[7,i]]]*n0[[1]] + b[[8,i]]*n0[[2]] + Sqrt[1-b[[8,i]]^2]*Sin[b[[7,i]]]*n0[[3]], {i, Length[b[[1]]]}];
+ snl[b_] := Table[Module[{uu, nn, ss},
+   uu = {b[[1,i]]-cod[[1]], b[[2,i]]-cod[[2]], b[[3,i]]-cod[[3]], b[[4,i]]-cod[[4]], b[[5,i]]-cod[[5]], b[[6,i]]-cod[[6]]};
+   nn = n0 + N0.uu; nn = nn/Sqrt[nn.nn];
+   ss = {Sqrt[1-b[[8,i]]^2]*Cos[b[[7,i]]], b[[8,i]], Sqrt[1-b[[8,i]]^2]*Sin[b[[7,i]]]};
+   nn.ss], {i, Length[b[[1]]]}];
+ Print["S0 1-<S.n0> = ", 1 - Plus@@sn[beam]/np, " L= ", 1 - Plus@@snl[beam]/np];
+S0 1-<S.n0> =  2.09401266E-5 L=      .00000000
+ POL;
+ Do[
+   FFS["FLUC"];
+   beam = TrackParticles[{1, beam}, 1, 1, 100][[2]];
+   bd = beam;
+   a = sn[beam];
+   Print["STAGE ", k, " turns ", k*100, " A= ", 1 - Plus@@a/np, " sdA= ", Sqrt[(Plus@@(a^2)/np - (Plus@@a/np)^2)/np], " L= ", 1 - Plus@@snl[beam]/np,
+         " rms x y dp z ", rms[beam[[1]]-cod[[1]]], " ", rms[beam[[3]]-cod[[3]]], " ", rms[beam[[6]]-cod[[6]]], " ", rms[beam[[5]]-cod[[5]]]];
+   FFS["NOFLUC"];
+   bd = TrackParticles[{1, bd}, 1, 1, 100][[2]];
+   d = sn[bd];
+   Print["DAMP ", k, " turns ", k*100, " D= ", 1 - Plus@@d/np, " sdD= ", Sqrt[(Plus@@(d^2)/np - (Plus@@d/np)^2)/np],
+         " orb ", Max[Abs[bd[[1]]-cod[[1]]]], " ", Max[Abs[bd[[3]]-cod[[3]]]]];
+   Print["DV ", k, " ", 1-d];
+   Print["AV ", k, " ", 1-a];
+   Print["LV ", k, " ", 1-snl[beam]],
+   {k, 1, 2}];
+STAGE     1.00000000 turns   100.00000000 A=  5.98236775E-5 sdA=  1.88384361E-5 L=  1.10286806E-5 rms x y dp z  6.97323707E-4  3.31442181E-4  3.94541424E-4      .02212674
+DAMP     1.00000000 turns   100.00000000 D=  3.74403909E-5 sdD=  1.81450056E-5 orb  8.07922606E-4  6.90018354E-4
+DV     1.00000000 { 8.57779945E-6, 8.11428040E-5, 2.26005693E-5}
+AV     1.00000000 { 1.36879696E-5, 8.36739693E-5, 8.21090936E-5}
+LV     1.00000000 { 3.05158613E-6, 1.28391792E-5, 1.71952766E-5}
+STAGE     2.00000000 turns   200.00000000 A=  5.99815631E-5 sdA=  2.36326380E-5 L=  2.88147046E-5 rms x y dp z  8.21527759E-4  4.16252172E-4  3.89694377E-4      .02376666
+DAMP     2.00000000 turns   200.00000000 D=  7.60653388E-5 sdD=  3.02093521E-5 orb      .00133882  5.58218792E-4
+DV     2.00000000 { 3.39419081E-5, 1.49814193E-4, 4.44399156E-5}
+AV     2.00000000 { 9.09374713E-6, 1.09322745E-4, 6.15281969E-5}
+LV     2.00000000 { 7.78919230E-6, 1.74902121E-5, 6.11647093E-5}
+ Print["SPART ", Table[1-sn[beam][[i]], {i, Min[np, 8]}]];
+SPART { 9.09374713E-6, 1.09322745E-4, 6.15281969E-5}
+ Exit;
+ FFS                  end:  CPU time =     0.812 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     T     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

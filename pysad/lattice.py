@@ -203,6 +203,7 @@ _XYTH = 0.375      # tffs.f:210 xyth (x-y モードの入れ替え判定)
 
 from .perfkern import twiss_chain as _twiss_chain_nb, TW_KEYS as _TW_KEYS
 from . import compat as _compat
+from . import quadbody as _qb
 
 
 def _chain(tw_cur: dict, el_mats, clamp: bool, check: bool):
@@ -1084,14 +1085,15 @@ def _tsolque_cod(cod: np.ndarray, L: float, akkp: float,
     ndiv = min(1000, 1+int(|al*hypot(ak,bz)|/eps)), eps=0.1 (tsolque.f)"""
     if ak is None:
         ak = akkp * (1.0 + cod[5]) * L
-    ndiv = min(1000, 1 + int(abs(L * ak) / 0.1))
+    sch = _qb.scheme()
+    ndiv = min(1000, _qb.ndiv_calc(L * ak, sch))
     aln1 = L / ndiv
-    al1 = aln1 * 0.5   # 最初は半幅
-    for _n in range(ndiv):
-        cod = _tqente_cod(cod, al1)
-        cod = _tsolque_body_cod(cod, aln1, akkp)
-        al1 = aln1      # 2回目以降は全幅
-    cod = _tqente_cod(cod, aln1 * 0.5)   # 最後の半ドリフト
+    for g in range(_qb.QB_M[sch] * ndiv):
+        dl, bl, _jb, _rad, _fin = _qb.group(g, aln1, ndiv, sch)     # k64: D = 最初は半幅・以降は全幅、B = aln1 (quadbody)
+        cod = _tqente_cod(cod, dl)
+        cod = _tsolque_body_cod(cod, bl, akkp)
+    dl, _bl, _jb, _rad, _fin = _qb.group(_qb.QB_M[sch] * ndiv, aln1, ndiv, sch)
+    cod = _tqente_cod(cod, dl)   # 最後の半ドリフト
     return cod
 
 
@@ -1349,6 +1351,9 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
     f1in, f2in, f1out, f2out, fb1, fb2 = pm['f1in'], pm['f2in'], pm['f1out'], pm['f2out'], pm['fb1'], pm['fb2']
     ak1h, al1h, ak0h = akn1 * 0.5, aln * 0.5, akn0 * 0.5
     apsi1, apsi2 = pm['ae1'], pm['ae2']
+    # v2 (B291): 追跡の tmulti は n ≥ 2 の多極にも非線形フリンジ ttfrins を入れる (dofr = akr[n] ≠ 0 かつ n ≤ 2 か |akr[n]|/L·0.05^(n+1)/(n+1) > ε)。K64 の tmulte は入れない
+    v2fr = bool(_compat.v2() and fringe and nz and nmmax >= 2)
+    dofr = [akr[n_] != 0 and (n_ <= 2 or abs(akr[n_]) / al * 0.05**(n_ + 1) / (n_ + 1) > pm['eps']) for n_ in range(nmmax + 1)] if nz else []
 
     def wrap(f):
         return lambda c, f=f: r_out(f(r_in(c)))
@@ -1398,16 +1403,21 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
     def free_w(c, a):
         return wrap(lambda cc: _exact_drift_cod(cc, a) if dvf(0.0) == 0.0 else _dv_drift(cc, a, dvf))(c)
 
-    def edge_ykick(c, apsi):
-        """v2 (B224): 端の面の縦方向の収束 (Maxwell の項: 面が傾くと横磁場の x 依存が縦の力になる)。K64 の tmulke の薄い蹴りの縦成分 Δpy = fe·Im(cx)
-        (fe = −tan e/L、cx = (Σ K_n z^n/n!) z、局所座標) と同じ。横方向の運動は厳密な硬い端の写像 (flow_w) が担うので、縦成分だけを足す"""
+    def edge_ykick(c, apsi, sgn, th=None):
+        """v2 (B224・B292): 端の面の縦方向の収束 (Maxwell の項)。面を横切る点 (局所座標) での Δpy = −tan(e + sgn·θ)·Im ψ、ψ = Σ_n (K_n/L) z^(n+1)/(n+1)!
+        (横磁場のスカラーポテンシャル、z = x + i y)、θ = atan(px/pz) は面を横切るときの粒子の水平方向の傾き (入口は面の外の入力の値、出口は面の内側の値。sgn = +1 (入口)、
+        −1 (出口))。厳密な式 (面の外から内へ磁場が立ち上がる薄い層の積分、docs/21 B292) で、θ = 0 かつ K0 だけのとき K64 の薄い蹴りの縦成分 Δpy = fe·Im(cx) と同じ。
+        K1 以上では、K64 の cx = (Σ K_n z^n/n!) z (= z B(z)) は、横方向の運動を厳密な流れ (flow_w) が担う v2 では「面までの余分な経路の寄与」を二重に数えるので ψ に直す
+        (K1 の項が K1·x·y tan e の 2 倍 → 1 倍)"""
         l = r_in(c)
-        cx0 = complex(l[0], l[2])
-        cx = 0j
-        for kord in range(nmmax, 0, -1):
-            cx = (cx + akr[kord] / al) * cx0 / kord
-        cx = -math.tan(apsi) * (cx + akr[0] / al) * cx0
-        l[3] += max(-0.9999, min(0.9999, cx.imag))
+        if th is None:
+            pr = 1.0 + l[5]
+            th = math.atan2(l[1], math.sqrt(max(1e-30, pr * pr - l[1] ** 2 - l[3] ** 2)))
+        z = complex(l[0], l[2])
+        g = 0j
+        for n in range(nmmax, -1, -1):
+            g = (g + akr[n] / al) * z / (n + 1)
+        l[3] += max(-0.9999, min(0.9999, -(math.tan(apsi + sgn * th) - math.tan(sgn * th)) * g.imag))
         return r_out(l)
 
     def exact_edge_in(apsi):
@@ -1420,7 +1430,8 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
             pr = 1.0 + l[5]
             pz = math.sqrt(max(1e-30, pr * pr - l[1] ** 2 - l[3] ** 2))
             zf = l[0] * t / (1.0 - l[1] / pz * t)
-            return edge_ykick(flow_w(free_w(c, zf), -zf), apsi)
+            th_in = math.atan2(l[1], pz)               # 面を横切るときの傾き = 面の外 (入力) の値
+            return flow_w(edge_ykick(free_w(c, zf), apsi, 1.0, th_in), -zf)
         return f
 
     def exact_edge_out(apsi):
@@ -1436,7 +1447,7 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
                     ell = new
                     break
                 ell = new
-            return edge_ykick(free_w(flow_w(c, -ell), ell), apsi)
+            return free_w(edge_ykick(flow_w(c, -ell), apsi, -1.0), ell)
         return f
 
     if nz:
@@ -1444,6 +1455,10 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
         # mfring = 1, 3 の tqlfre)。そのあと tradke(f1in) か tsetr0 (= 'radstart': 放射の基準点)
         if fringe and mfring != 2 and ak1h != 0.0:
             seq.append(('map', wrap(lambda c: _tqfrie_cod(c, ak1h, al1h))))
+        if v2fr and mfring != 2:
+            for n_ in range(2, nmmax + 1):           # v2 (B291): 6 極以上 (n ≥ 2) の非線形フリンジ ttfrins (入口は n の昇順)
+                if dofr[n_]:
+                    seq.append(('map', wrap(lambda c, n_=n_: _mult_fringe_cod(c, n_, akr[n_], al))))
         if bfrm and ak0h != 0.0:
             if mfring == 1 or mfring == 3:
                 seq.append(('map', wrap(lambda c: _tbfrme_cod(c, ak0h / al1h, True, fb1))))
@@ -1465,24 +1480,25 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
             out.append(('map', wrap(lambda c: _tsoldz_cod(c, al1, ak0.imag / al1, ak0.real / al1, dvf(c[5])))))
             out.append(('rad', al1))
             return out
-        ndiv_i = min(1000, 1 + int(abs(al1 * ak1) / 0.1))
+        sch = _qb.scheme()
+        ndiv_i = min(1000, _qb.ndiv_calc(al1 * ak1, sch))
         aln1 = al1 / ndiv_i
         dx0 = ak0.real / ak1
         dy0 = ak0.imag / ak1
-        a1 = aln1 * 0.5
-        for n in range(ndiv_i):
-            def body(c, a1=a1):
+        for g in range(_qb.QB_M[sch] * ndiv_i):
+            dl, bl, _jb, rad, _fin = _qb.group(g, aln1, ndiv_i, sch)
+            def body(c, dl=dl, bl=bl):
                 dv = dvf(c[5])
-                c = _tqente_cod(c, a1)
-                c = _tsolque_body_cod(c, aln1, ak1 / al1 / (1.0 + c[5]), dx0, dy0)
+                c = _tqente_cod(c, dl)
+                c = _tsolque_body_cod(c, bl, ak1 / al1 / (1.0 + c[5]), dx0, dy0)
                 c = c.copy()
-                c[4] -= dv * aln1
+                c[4] -= dv * bl
                 return c
             out.append(('map', wrap(body)))
-            if n != ndiv_i - 1:
+            if rad:
                 out.append(('rad', aln1))
-            a1 = aln1
-        out.append(('map', wrap(lambda c: _tqente_cod(c, aln1 * 0.5))))
+        dl_f = _qb.group(_qb.QB_M[sch] * ndiv_i, aln1, ndiv_i, sch)[0]
+        out.append(('map', wrap(lambda c: _tqente_cod(c, dl_f))))
         out.append(('rad', aln1))
         return out
 
@@ -1547,6 +1563,10 @@ def _mult_sequence(el, dvf, ndiv_override: int = None) -> list:
                 seq.append(('map', wrap(lambda c: _tbfrme_cod(c, -ak0 / al1, False, fb2))))
             elif mfring != 1:
                 seq.append(('map', wrap(lambda c: _tbfrme_cod(c, -ak0 / al1, False))))
+        if v2fr and mfring != 1:
+            for n_ in range(nmmax, 1, -1):           # v2 (B291): 出口は n の降順 (−akr[n])
+                if dofr[n_]:
+                    seq.append(('map', wrap(lambda c, n_=n_: _mult_fringe_cod(c, n_, -akr[n_], al))))
         if fringe and mfring != 1 and ak1 != 0.0:
             seq.append(('map', wrap(lambda c: _tqfrie_cod(c, -ak1, al1))))
         if f1out != 0.0:
@@ -1760,13 +1780,88 @@ def _tthine_cod(c: np.ndarray, L: float, ak: float, kord: int) -> np.ndarray:
     return _exact_drift_cod(c, L / 6.0)
 
 
+def _thin_fringe_flag(el, L: float, ak: float) -> bool:
+    """v2 (B291): L≠0 の 6 極以上 (ak≠0、DISFRIN=0) の非線形フリンジ ttfrin を CALC・Emittance[] の COD の写像とヤコビアンに入れるか。
+    追跡 (tthin) は入れ、K64 の tthine (CALC・Emittance[]) は入れない。k64 は入れない (K64 のまま)"""
+    return bool(_compat.v2() and L != 0.0 and ak != 0.0 and float(getattr(el, 'DISFRIN', 0.0) or 0.0) == 0.0)
+
+
+def _mult_fringe_cod(c: np.ndarray, n: int, akc: complex, al: float) -> np.ndarray:
+    """MULT の n 次 (n ≥ 2) の非線形フリンジ ttfrins (nord = 2n + 2)。複素の係数 akc (回した座標系) は主軸に回して ttfrin、戻す (track6._ttfrins と同じ)。
+    入口は +akr[n]、出口は −akr[n]。COD の正準運動量の写像 (elkern._fringe_step)"""
+    from . import elkern as _ek
+    akc = complex(akc)
+    nord = 2 * n + 2
+    if (akc.real == 0.0 and akc.imag == 0.0) or al == 0.0:
+        return c
+    if akc.real == 0.0:
+        th, aka = math.pi / nord, akc.imag
+    elif akc.imag == 0.0:
+        th, aka = 0.0, akc.real
+    else:
+        th, aka = math.atan2(akc.imag, akc.real) * 2.0 / nord, math.hypot(akc.real, akc.imag)
+    c = np.array(c, dtype=float)
+    if th != 0.0:
+        _ek._rot4(c, math.cos(th), math.sin(th))
+    _ek._fringe_step(c, aka, al, n + 1, False)
+    if th != 0.0:
+        _ek._rot4(c, math.cos(th), -math.sin(th))
+    return c
+
+
+def _thin_fringe_cod(c: np.ndarray, ak: float, L: float, kord: int) -> np.ndarray:
+    """thin 多極の端の非線形フリンジ (入口 +ak、出口 −ak) の COD の写像 (elkern._fringe_step、n = kord + 1)"""
+    from . import elkern as _ek
+    c = np.array(c, dtype=float)
+    _ek._fringe_step(c, ak, L, kord + 1, False)
+    return c
+
+
+def _thin_fringe_jac(c: np.ndarray, ak: float, L: float, kord: int):
+    """同、(出口の COD、ヤコビアン)"""
+    from . import elkern as _ek
+    c = np.array(c, dtype=float)
+    J = _ek._fringe_step(c, ak, L, kord + 1, True)
+    return c, J
+
+
 def _thin_offset_map(L: float, ak: float, kord: int,
-                     dx: float = 0.0, dy: float = 0.0, theta: float = 0.0):
+                     dx: float = 0.0, dy: float = 0.0, theta: float = 0.0, fringe: bool = False):
     """
     tthine の COD 写像に SAD tchge のずれ・回転を付けたもの (alg=phig=dz=dtheta=dchi2=0)。
     入口: (x,px),(y,py) を θ 回転 → x −= cosθ·dx − sinθ·dy, y −= sinθ·dx + cosθ·dy
     出口: 逆 (tchge.f, tbrote)。θ の向きの SAD との照合は回転ありのベンチで行う。
+    fringe=True (v2): tchge の内側で本体の前後に非線形フリンジ (+ak・−ak) を入れる (_thin_fringe_flag)。
     """
+    if fringe:
+        _core = _thin_offset_map(L, ak, kord)
+
+        def _core_fr(c):
+            c = _thin_fringe_cod(c, ak, L, kord)
+            c = _core(c)
+            return _thin_fringe_cod(c, -ak, L, kord)
+        if dx == 0.0 and dy == 0.0 and theta == 0.0:
+            return _core_fr
+        ct, st = math.cos(theta), math.sin(theta)
+        sx = ct * dx - st * dy
+        sy = st * dx + ct * dy
+
+        def f_fr(c):
+            c = c.copy()
+            x, y, px, py = c[0], c[2], c[1], c[3]
+            c[0] = ct * x - st * y - sx
+            c[2] = st * x + ct * y - sy
+            c[1] = ct * px - st * py
+            c[3] = st * px + ct * py
+            c = _core_fr(c)
+            x, y, px, py = c[0] + sx, c[2] + sy, c[1], c[3]
+            c = c.copy()
+            c[0] = ct * x + st * y
+            c[2] = -st * x + ct * y
+            c[1] = ct * px + st * py
+            c[3] = -st * px + ct * py
+            return c
+        return f_fr
     if dx == 0.0 and dy == 0.0 and theta == 0.0:
         return lambda c: _tthine_cod(c, L, ak, kord)
     ct, st = math.cos(theta), math.sin(theta)
@@ -1791,14 +1886,24 @@ def _thin_offset_map(L: float, ak: float, kord: int,
     return f
 
 
-def _thin_cod_matrix(L: float, ak: float, kord: int, dx: float, dy: float, th: float, cod: np.ndarray):
+def _thin_cod_matrix(L: float, ak: float, kord: int, dx: float, dy: float, th: float, cod: np.ndarray, fringe: bool = False):
     """薄い多極 (tthine) の (出口 COD, 転送行列)。ずれ・ロールは tthine の先頭と末尾の tchge (入口: 回す→ずらす、出口: 逆)。
     行列は J_出口·M·J_入口 (入口は SAD の癖で th≠0 かつずれ≠0 のとき回転が入らない: _tchge_jac)。ak=0 は tdrife0 だけ (tchge を呼ばない)。"""
-    _f = _thin_offset_map(L, ak, kord)
+    _f = _thin_offset_map(L, ak, kord, fringe=fringe)
 
     def _jm(c):
         # tthine の解析行列 (ドリフト L/6 → キック → 2L/3 → キック → L/6 の各段の微分の積)。pz が潰れるときだけ数値微分
         from .emit6d import _jac_thin
+        if fringe:
+            # v2: 入口のフリンジ → 本体 → 出口のフリンジ (各段の解析ヤコビアンの積)
+            c1, Jf1 = _thin_fringe_jac(c, ak, L, kord)
+            _fb = _thin_offset_map(L, ak, kord)
+            Jb = _jac_thin(c1, L, ak, kord, 0.0)
+            if Jb is None:
+                Jb = _num_jacobian(_fb, c1)
+            c2 = _fb(c1)
+            _c3, Jf2 = _thin_fringe_jac(c2, -ak, L, kord)
+            return Jf2 @ Jb @ Jf1
         J = _jac_thin(c, L, ak, kord, 0.0)
         return J if J is not None else _num_jacobian(_f, c)
     if ak == 0.0 or (dx == 0.0 and dy == 0.0 and th == 0.0):
@@ -2406,6 +2511,8 @@ def _ek_ph4():
         ph = _Phys(1e9, 1.0)
         _EK_PH4 = phys_array(ph)
         _EK_S3[1] = _p2h_ek(ph.p0)       # h1emit (K1≠0 BEND の z 行 (5,6) にだけ入る。4D の CALC は z 行を使わないが有限にしておく)
+    from .elkern import QBSCH as _QBSCH
+    _EK_PH4[_QBSCH] = _qb.scheme()       # 四極の本体の積分の方式 (B226。互換モードを切り替えても追従する)
     return _EK_PH4
 
 
@@ -2454,13 +2561,13 @@ def _quad_step_fast(el, cod, K1):
     return c, J
 
 
-def _thin_step_fast(L, ak, kord, dx, dy, th, cod):
+def _thin_step_fast(L, ak, kord, dx, dy, th, cod, fringe=False):
     """薄い多極 (tthine + tchge) の (出口 COD, 転送行列) を elkern.k_thin で"""
     from . import elkern as _ek
     c = np.array(cod, dtype=float)
     T = np.eye(6)
     r = _ek.k_thin(c, T, _EK_Z66, _EK_Z66, _EK_S3, _ek_ph4(), float(L), float(ak), int(kord), dx, dy, th,
-                   False, False, True, False, _compat.v2())
+                   False, False, True, False, _compat.v2(), fringe)
     if r != 0:
         return None
     return c, T
@@ -2610,11 +2717,12 @@ def _el_cod_step(el, cod, delta):
         _ak = _K * el.L if el.L != 0.0 else _K
         _dx, _dy, _th = (float(getattr(el, 'DX', 0.0) or 0.0), float(getattr(el, 'DY', 0.0) or 0.0),
                          float(getattr(el, 'ROTATION', 0.0) or 0.0))
-        r = _thin_step_fast(el.L, _ak, _kord, _dx, _dy, _th, cod) if _USE_ELKERN else None
+        _fr = _thin_fringe_flag(el, el.L, _ak)        # v2 (B291): 追跡と同じ非線形フリンジをヤコビアンと COD に入れる
+        r = _thin_step_fast(el.L, _ak, _kord, _dx, _dy, _th, cod, _fr) if _USE_ELKERN else None
         if r is not None:
             cod_out, M_el = r
         else:
-            cod_out, M_el = _thin_cod_matrix(el.L, _ak, _kord, _dx, _dy, _th, cod)
+            cod_out, M_el = _thin_cod_matrix(el.L, _ak, _kord, _dx, _dy, _th, cod, _fr)
 
     elif type(el).__name__ == 'Multipole' and float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0:
         from .multae import lattice_step as _mas
@@ -2643,7 +2751,7 @@ def _el_cod_step_cached(el, cod, delta):
     d = el.__dict__
     ent = _EL_CACHE.get(id(el))
     cb = cod.tobytes()
-    if ent is not None and ent[1] == cb and ent[2] == delta and ent[3] == RFSW and ent[0] is el and ent[4] == d:
+    if ent is not None and ent[1] == cb and ent[2] == delta and ent[3] == (RFSW, _compat.v2()) and ent[0] is el and ent[4] == d:
         return ent[5], ent[6].copy()
     M_el, cod_out = _el_cod_step(el, cod, delta)
     for k, v in d.items():
@@ -2656,7 +2764,7 @@ def _el_cod_step_cached(el, cod, delta):
     M_ro.flags.writeable = False
     c_ro = np.array(cod_out, dtype=float)
     c_ro.flags.writeable = False
-    _EL_CACHE[id(el)] = (el, cb, delta, RFSW, dict(d), M_ro, c_ro)
+    _EL_CACHE[id(el)] = (el, cb, delta, (RFSW, _compat.v2()), dict(d), M_ro, c_ro)      # モード (v2 のフリンジなど) が変わったら使い回さない
     return M_ro, c_ro.copy()
 
 
@@ -2736,7 +2844,8 @@ def _pack_el(pk: '_TurnPack', i: int, el, delta: float):
         _kn, _kord = _THIN_KORD[tn]
         _K = g(_kn)
         pk.kind[i] = _tk.K_THIN
-        P[0:6] = (float(el.L), _K * el.L if el.L != 0.0 else _K, _kord, g('DX'), g('DY'), g('ROTATION'))
+        P[0:7] = (float(el.L), _K * el.L if el.L != 0.0 else _K, _kord, g('DX'), g('DY'), g('ROTATION'),
+                  1.0 if _thin_fringe_flag(el, el.L, _K * el.L if el.L != 0.0 else _K) else 0.0)
     elif tn in ('Multipole', 'Coord'):
         pk.kind[i] = _tk.K_PY
     elif tn == 'Solenoid' and (g('BZ') != 0.0 or g('BOUND') != 0.0):

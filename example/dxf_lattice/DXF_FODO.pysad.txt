@@ -1,0 +1,6 @@
+USE RING:  242.000000000 elements, L =  105.600000000 m
+  wrote DXF_FODO_ring.dxf
+  start (gx, gy, chi1) =     .000000000     .000000000     .000000000
+  end   (gx, gy, chi1) =  -2.220446E-15  -1.707523E-14  -8.881784E-16
+  wrote DXF_FODO_ring_spec.dxf
+  wrote DXF_FODO_region_mm.dxf

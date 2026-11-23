@@ -1,0 +1,6 @@
+USE NCELL:   33.000000000 elements, L =    7.617400000 m
+  wrote DXF_ASTRID2_cell.dxf
+USE RING:  199.000000000 elements, L =   45.704400000 m
+  wrote DXF_ASTRID2_ring.dxf
+  start (gx, gy, chi1) =     .000000000     .000000000     .000000000
+  end   (gx, gy, chi1) =  1.87736262E-5  2.5289884E-11  2.69282041E-6

@@ -1,0 +1,2 @@
+USE RINGS:  244.000000000 elements, L =  105.600000000 m
+  wrote DXF_SOL_cells.dxf

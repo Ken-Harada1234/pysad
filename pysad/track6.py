@@ -27,6 +27,7 @@ import numpy as np
 from . import emit6d as _e
 from . import compat as _compat
 from . import lattice as _lat
+from . import quadbody as _qb
 from .elements import Drift, Bend, Quadrupole
 from .sadrandom import SadRandom, tdusrn, tdusrnpl
 from .perfkern import edge_len as _edge_len
@@ -454,65 +455,32 @@ def _tzsetparam0(dp, aln0, akk):
     return w1, s1, xs1, dc1, sh2, xsh2, dch2
 
 
+_qb_drift, _qb_body, _qb_nonrad = _qb.make_track(_sqrt1, _tzsetparam0)     # 四極の本体 (B226): K64 の Strang 分割 (k64)・4 次の合成 (v2)
+
+
 def _tsolqu(p: _Particle, al, ak, eps0=0.0, ak0x=0.0, ak0y=0.0, qum=False, ibsi=-1):
     """tsolqu.f tsolqu / tsolqum (bz=0, 放射なし)。ak = |K1|L > 0。ak0x/ak0y は MULT の K0 (dx0 = ak0x/ak)。
     ak = 0 なら tdrift (ak0 付きの厳密ドリフト)。
     qum=True は tsolqum (tmulti の放射なしで使う版): z の dv の項が tsolqu と違い
-    −0.25·(ap − dv)·aln0 (tsolqu は −0.25·ap·aln0 − dv·aln0)。SAD のまま (Level 11 で確認)。"""
+    −0.25·(ap − dv)·aln0 (tsolqu は −0.25·ap·aln0 − dv·aln0)。SAD のまま (Level 11 で確認)。
+    本体の積分は quadbody (k64: K64 の Strang 分割、v2: 4 次の合成。docs/21 B226)"""
     if ak == 0.0:
         _tdrift_kick(p, al, ak0x, ak0y, False)
         return
-    eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
-    ndiv = 1 + int(abs(al * ak / eps))
-    aln0 = al / ndiv
-    dx0 = ak0x / ak
-    dy0 = ak0y / ak
     akk = ak / al
     c = p.c
-    w1, s1, xs1, dc1, sh2, xsh2, dch2 = _tzsetparam0(c[5], aln0, akk)
     x, px, y, py, z = c[0], c[1], c[2], c[3], c[4]
-    dv = p.dv
     if _POL:
+        dx0 = ak0x / ak
+        dy0 = ak0y / ak
         if ibsi == 1:
             p.bsi = akk * (x + dx0) * (y + dy0)
         elif ibsi >= 0:
             p.bsi = 0.0
-    for n in range(ndiv):
-        pxi, pyi = px, py
-        ap = pxi**2 + pyi**2
-        dpz = _sqrt1(-ap)
-        r = -dpz / (1.0 + dpz) * aln0
-        if n == 0:
-            r *= 0.5
-        x += pxi * r
-        y += pyi * r
-        xi, yi = x + dx0, y + dy0
-        u1 = xi * dc1 + pxi * s1 / w1
-        u2 = -xi * w1 * s1 + pxi * dc1
-        v1 = yi * dch2 + pyi * sh2 / w1
-        v2 = yi * w1 * sh2 + pyi * dch2
-        x += u1
-        px = pxi + u2
-        y += v1
-        py = pyi + v2
-        if qum:
-            z = (z - (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-                 - 0.25 * (w1 * (xi**2 * xs1 - yi**2 * xsh2) + (ap - dv) * aln0
-                           + u1 * px + xi * pxi * dc1 + v1 * py + yi * pyi * dch2))
-        else:
-            z = (z - (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-                 - 0.25 * (w1 * (xi**2 * xs1 - yi**2 * xsh2) + ap * aln0
-                           + u1 * px + xi * pxi * dc1 + v1 * py + yi * pyi * dch2)
-                 - dv * aln0)
-    ap = px**2 + py**2
-    dpz = _sqrt1(-ap)
-    r = -dpz / (1.0 + dpz) * aln0 * 0.5
-    x += px * r
-    y += py * r
-    z -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
+    x, px, y, py, z = _qb_nonrad(x, px, y, py, z, c[5], p.dv, al, ak, eps0, ak0x, ak0y, qum, _qb.scheme())
     c[0], c[1], c[2], c[3], c[4] = x, px, y, py, z
     if _POL and ibsi == 2:
-        p.bsi = -akk * (x + dx0) * (y + dy0)
+        p.bsi = -akk * (x + ak0x / ak) * (y + ak0y / ak)
 
 
 def _tdrift_kick(p: _Particle, al, ak0x, ak0y, enarad, bz=0.0):
@@ -594,58 +562,44 @@ def _ndivrad(phi, ak, bz, eps, h0, trpt=None):
 
 def _tsolqur_ens(parts, al, ak, eps0=0.0):
     """tsolqu.f tsolqur (bz=0, ak0x=ak0y=0): スライス外側・粒子内側で、各スライスの後に全粒子 tradk
-    (SAD と同じ順で乱数を引くため)"""
+    (SAD と同じ順で乱数を引くため)。本体の積分は quadbody (docs/21 B226)"""
     eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
-    ndiv = 1 + int(abs(al) * ak / eps)
+    sch = _qb.scheme()
+    ndiv = _qb.ndiv(abs(al) * ak, eps, sch)
     ndiv = min(1000, max(ndiv, _ndivrad(0.0, ak, 0.0, eps0, parts[0].ph.h0)))
     aln = al / ndiv
     akk = ak / al
     bpar_on = _POL and _compat.spin_bpar()          # v2 (B165): 本体の B∥ の積分 ∫B·dr = Δψ (ψ = k x y) を刻みごとに足す
-    for n in range(ndiv):
-        alr = aln * 0.5 if n == 0 else aln
-        for p in parts:
+    m = _qb.QB_M[sch]
+    psi0 = [0.0] * len(parts)
+    for g in range(m * ndiv):
+        n, j = divmod(g, m)
+        dl, bl, jb, _rad, _fin = _qb.group(g, aln, ndiv, sch)
+        for ip, p in enumerate(parts):
             c = p.c
-            w1, s1, xs1, dc1, sh2, xsh2, dch2 = _tzsetparam0(c[5], aln, akk)
-            if _POL:
-                p.bsi = akk * c[0] * c[2] if n == 0 else 0.0
-            if bpar_on:
-                psi0_ = akk * c[0] * c[2]
-            ap = c[1]**2 + c[3]**2
-            dpz = _sqrt1(-ap)
-            r = -dpz / (1.0 + dpz) * alr
-            c[0] += c[1] * r
-            c[2] += c[3] * r
-            c[4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
-            xi, yi = c[0], c[2]
-            b, d = c[1], c[3]
-            u1 = xi * dc1 + b * s1 / w1
-            u2 = -xi * w1 * s1 + b * dc1
-            v1 = yi * dch2 + d * sh2 / w1
-            v2 = yi * w1 * sh2 + d * dch2
-            c[0] += u1
-            c[1] += u2
-            c[2] += v1
-            c[3] += v2
-            c[4] = (c[4] - 0.25 * (w1 * (xi**2 * xs1 - yi**2 * xsh2) + (b**2 + d**2) * aln
-                                   + u1 * (u2 + b) + xi * b * dc1 + v1 * (v2 + d) + yi * d * dch2)
-                    - p.dv * aln)
-            if _POL and n == ndiv - 1:
-                # v2: ndiv = 1 (弱い四極) では入口の +ψ を出口の −ψ が上書きして落ちる (K64 は =)。v2 は足す
-                p.bsi = (p.bsi if (ndiv == 1 and _compat.v2()) else 0.0) - akk * c[0] * c[2]
-            if bpar_on:
-                p.bpadd = (akk * c[0] * c[2] - psi0_) / (1.0 + c[5])
-        for p in parts:
-            _tradk(p, aln, 0.0)
-        if _PH is not None and _PH.get('ctx') is not None:
-            _PH['ctx']['fr0'] += aln / _PH['ctx']['al']      # tsolqu.f: pcvt%fr0 += alr/al
+            par = _tzsetparam0(c[5], bl, akk)
+            if j == 0:
+                if _POL:
+                    p.bsi = akk * c[0] * c[2] if n == 0 else 0.0
+                if bpar_on:
+                    psi0[ip] = akk * c[0] * c[2]
+            c[0], c[2], c[4] = _qb_drift(c[0], c[1], c[2], c[3], c[4], dl)
+            c[0], c[1], c[2], c[3], c[4] = _qb_body(c[0], c[1], c[2], c[3], c[4], p.dv, par, bl, 0.0, 0.0, False)
+            if j == m - 1:
+                if _POL and n == ndiv - 1:
+                    # v2: ndiv = 1 (弱い四極) では入口の +ψ を出口の −ψ が上書きして落ちる (K64 は =)。v2 は足す
+                    p.bsi = (p.bsi if (ndiv == 1 and _compat.v2()) else 0.0) - akk * c[0] * c[2]
+                if bpar_on:
+                    p.bpadd = (akk * c[0] * c[2] - psi0[ip]) / (1.0 + c[5])
+        if j == m - 1:
+            for p in parts:
+                _tradk(p, aln, 0.0)
+            if _PH is not None and _PH.get('ctx') is not None:
+                _PH['ctx']['fr0'] += aln / _PH['ctx']['al']      # tsolqu.f: pcvt%fr0 += alr/al
+    dl, _bl, _jb, _rad, _fin = _qb.group(m * ndiv, aln, ndiv, sch)
     for p in parts:
         c = p.c
-        ap = c[1]**2 + c[3]**2
-        dpz = _sqrt1(-ap)
-        r = -dpz / (1.0 + dpz) * aln * 0.5
-        c[0] += c[1] * r
-        c[2] += c[3] * r
-        c[4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
+        c[0], c[2], c[4] = _qb_drift(c[0], c[1], c[2], c[3], c[4], dl)
 
 
 def _tsolqur(p: _Particle, al, ak, eps0=0.0):
@@ -2100,15 +2054,18 @@ def _mult_flow(p, a, al, akr, nmmax):
     _tsolqu(p, a * 0.5, ak1, 0.0, ak0.real, ak0.imag, qum=False, ibsi=-1)
 
 
-def _mult_edge_ykick(p, apsi, al, akr, nmmax):
-    """v2 (B224): 端の面の縦方向の収束 (K64 の tmulk の縦成分 Δpy = fe·Im(cx)/(1+δ)、fe = −tan e/L)。lattice._mult_sequence の edge_ykick と同じ"""
+def _mult_edge_ykick(p, apsi, al, akr, nmmax, sgn, th=None):
+    """v2 (B224・B292): 端の面の縦方向の収束 (Maxwell の項)。面を横切る点での Δpy = −(tan(e + sgn·θ) − tan(sgn·θ))·Im ψ/(1+δ)、
+    ψ = Σ_n (K_n/L) z^(n+1)/(n+1)! (横磁場のスカラーポテンシャル)、θ = atan(px/pz) は面を横切るときの水平方向の傾き (入口は面の外の入力の値で th に渡す、
+    出口は面の内側 = 現在の値。sgn = +1 入口、−1 出口)。tan(sgn·θ) の分は本体 (tsolqu の双極の項) が持つ。lattice._mult_sequence の edge_ykick と同じ"""
     c = p.c
-    cx0 = complex(c[0], c[2])
-    cx = 0j
-    for kord in range(nmmax, 0, -1):
-        cx = (cx + akr[kord] / al) * cx0 / kord
-    cx = -math.tan(apsi) * (cx + akr[0] / al) * cx0
-    c[3] += cx.imag / (1.0 + c[5])
+    if th is None:
+        th = math.atan2(c[1], math.sqrt(max(1e-30, 1.0 - c[1] ** 2 - c[3] ** 2)))
+    z = complex(c[0], c[2])
+    g = 0j
+    for n in range(nmmax, -1, -1):
+        g = (g + akr[n] / al) * z / (n + 1)
+    c[3] += -(math.tan(apsi + sgn * th) - math.tan(sgn * th)) * g.imag / (1.0 + c[5])
 
 
 def _mult_edge_exact(p, entrance, apsi, al, akr, nmmax):
@@ -2120,9 +2077,10 @@ def _mult_edge_exact(p, entrance, apsi, al, akr, nmmax):
     if entrance:
         pzr = math.sqrt(max(1e-30, 1.0 - c[1] ** 2 - c[3] ** 2))
         zf = c[0] * t / (1.0 - c[1] / pzr * t)
+        th_in = math.atan2(c[1], pzr)                       # 面を横切るときの傾き = 面の外 (入力) の値
         _tdrift_free(p, zf)
+        _mult_edge_ykick(p, apsi, al, akr, nmmax, 1.0, th_in)      # 面の上 (Drift(z_f) の後、Φ(−z_f) の前) で縦の蹴り
         _mult_flow(p, -zf, al, akr, nmmax)
-        _mult_edge_ykick(p, apsi, al, akr, nmmax)
         return
     ell = t * c[0]
     for _ in range(40):
@@ -2135,8 +2093,8 @@ def _mult_edge_exact(p, entrance, apsi, al, akr, nmmax):
         if done:
             break
     _mult_flow(p, -ell, al, akr, nmmax)
+    _mult_edge_ykick(p, apsi, al, akr, nmmax, -1.0)         # 面の上 (Φ(−ℓ) の後、Drift(ℓ) の前)
     _tdrift_free(p, ell)
-    _mult_edge_ykick(p, apsi, al, akr, nmmax)
 
 
 def _mult_fb_ae(el, pm):
@@ -3338,6 +3296,39 @@ def _tapert_loss(full, nal, alost, zlost, mark, nodrop=False):
     return np_
 
 
+def _step_coord_tcav_ens(parts, el, rfsw, rad, kturn):
+    """COORD (coord.k_coord) と TCAVI (tcav.apply_tcav) を track6 (Python の追跡) で通す。track6n と同じ kernel に、全粒子の S (n, 11) を渡す
+    (K64 は tcoord・ttcave とも光子 (tphrec) を記録しない。BEND などが同じラティスにあるときの PHOTONS 用)。
+    TCAVI の RANKICK・RANPHASE は周回ごとに 1 回引く (全粒子に同じ値) ので、粒子ごとに分けず全粒子まとめて呼ぶ。dv は COORD で更新しない (tcoord.f)"""
+    name = type(el).__name__
+    ph = parts[0].ph
+    n = len(parts)
+    S = np.zeros((n, 11))
+    for i, p in enumerate(parts):
+        S[i, :6] = p.c
+        S[i, 6] = p.dv
+        S[i, 7], S[i, 8], S[i, 9] = p.pxr0, p.pyr0, p.zr0
+        S[i, 10] = ph.dvfs
+    if name == 'Coord':
+        from . import coord as _cd
+        _cd.k_coord(S, n, *_cd.params(el))
+    else:
+        from . import tcav as _tc
+        from . import track6n as _n6
+        pr = _tc.compile_tcav(el)
+        if rfsw:
+            rs = np.array([RNG.seed, 1 if _compat.v2() else 0], dtype=np.int64)
+            _tc.apply_tcav(S, n, pr, ph, bool(rad), bool(_FLUC), rs, kturn)
+            RNG.seed = int(rs[0])
+        else:
+            _n6.k_drift(S, n, pr['al'])
+    for i, p in enumerate(parts):
+        p.c[:] = S[i, :6]
+        p.dv = float(S[i, 6])
+        if name != 'Coord':
+            p.setr0()
+
+
 def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0, alost=None, l0=0, kturn=1, lt_prev=0, nodrop_first=False,
             links=None, links_off=0):
     """tturn.f tturn1: 要素を外側、粒子を内側に回す。放射ありの BEND/QUAD/MULT はスライスごとに
@@ -3375,8 +3366,8 @@ def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0, alost=None,
             la = 15
             continue
         if name == 'Solenoid':
-            if _g(el, 'BOUND') == 0.0:
-                raise NotImplementedError('track6: BOUND=0 の SOL (領域外)')
+            # BOUND=0 の SOL が領域の外にあるとき: K64 の tsol は BOUND≠0 でなくても、この SOL を領域の始点として次の BOUND≠0 の SOL まで
+            # 領域として追う (tsgeo の幾何・光学は BOUND≠0 だけを始点とみなす。gs の追跡は BOUND=1 の始点と全桁一致: F4)
             skip_to = _tsol_region(parts, elements, i, rad, trf0, rfsw)
             continue
         krad = rad and _g(el, 'RAD') == 0.0 and el.L != 0.0
@@ -3389,6 +3380,8 @@ def _tturn1(parts, elements, trf0, rfsw, rad, nal=None, zlost=100.0, alost=None,
             _tmulti_ens(parts, el, krad)
         elif name == 'Cavity' and _TRPT and _g(el, 'VOLT') != 0.0 and _cav_vnom(el, parts[0].ph) != 0.0:
             _tcav_acc_ens(parts, el, trf0, rfsw)          # D1: TRPT の加速 (基準運動量が変わる。スピンの aγ は p.ph の新しい値を使う)
+        elif name in ('Coord', 'TCavity'):
+            _step_coord_tcav_ens(parts, el, rfsw, rad, kturn)      # 光子 (PHOTONS) と COORD・TCAVI の併用 (track6n の kernel を全粒子にまとめて通す)
         else:
             for p in parts:
                 _step_el(p, el, trf0, rfsw, rad)

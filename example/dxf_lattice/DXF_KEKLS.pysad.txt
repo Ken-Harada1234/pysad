@@ -1,0 +1,6 @@
+USE ARCA:  160.000000000 elements, L =   28.536000000 m
+  wrote DXF_KEKLS_cell.dxf
+USE RING:  3224.00000000 elements, L =  570.720920108 m
+  wrote DXF_KEKLS_ring.dxf
+  start (gx, gy, chi1) =     .000000000     .000000000     .000000000
+  end   (gx, gy, chi1) =  -2.8371720E-8  8.34017441E-8  -1.5795861E-9

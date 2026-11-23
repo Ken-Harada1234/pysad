@@ -114,14 +114,14 @@ def test_h3_h4_match_old_path_and_tracked_map(base):
     ho = A.rdt_series(r1)
     h3 = C.rdt3(rm)
     assert max(abs(h3[k] - ho[k]) for k in h3) < 1e-10
-    assert e3 < 2e-5 and e4 < 5e-4
+    assert e3 < 2e-5 and e4 < 1e-3      # h4: 5e-4 → 1e-3 (v2 の追跡の四極が 4 次の合成 (B226) になり、K64 の台形則の誤差との相殺が無くなった)
     # 傾けない lat: 従来の解析式 (rdt2nd) と
     lat0 = F.rolled(0.0, nrot=1)
     rm0 = C.taylor_map(lat0, **OPT)
     h4, _ = C.rdt4(rm0)
     rl = R.resonance_terms(lat0, ['h22000', 'h11110', 'h00220', 'h31000'], nslice=16)
     for t in ('h22000', 'h11110', 'h00220', 'h31000'):
-        assert abs(h4[t] - rl.total[t]) < 5e-4 * abs(rl.total[t])
+        assert abs(h4[t] - rl.total[t]) < 1e-3 * abs(rl.total[t])
 
 
 def test_adts_from_h3_h4_equals_ampnf_normal_form(base):
@@ -196,14 +196,14 @@ def test_errors_dx_dy_drotate_match_tracked_map(v2_mode):
                 Sextupole=[(3, dict(DX=2e-4, DY=-1e-4)), (10, dict(DX=-1e-4, DY=3e-4))], Bend=[(5, dict(DX=2e-4, DY=1e-4))])
     late = _with(lat, **spec)
     rm, rmt, e3, e4 = _compare(late)
-    assert np.abs(rm.orbit).max() > 3e-4 and np.abs(rm.orbit - rmt.orbit).max() < 1e-8
+    assert np.abs(rm.orbit).max() > 3e-4 and np.abs(rm.orbit - rmt.orbit).max() < 5e-8
     assert e3 < 1e-4 and e4 < 1e-3
     spec2 = {k: [(i, {a: 2 * v for a, v in at.items()}) for i, at in lst] for k, lst in spec.items()}
     rm2 = C.taylor_map(_with(lat, **spec2), **OPT)
     assert np.abs(rm2.orbit).max() / np.abs(rm.orbit).max() == pytest.approx(2.0, rel=0.05)
     lat2 = _with(lat, Bend=[(1, dict(DROTATE=3e-3)), (7, dict(DROTATE=-2e-3)), (13, dict(DROTATE=4e-3))])
     rmd, rmtd, e3d, e4d = _compare(lat2)
-    assert np.abs(rmd.orbit).max() > 1e-3 and np.abs(rmd.orbit - rmtd.orbit).max() < 1e-8
+    assert np.abs(rmd.orbit).max() > 1e-3 and np.abs(rmd.orbit - rmtd.orbit).max() < 5e-8
     assert e3d < 3e-4 and e4d < 1e-3
 
 
@@ -239,9 +239,9 @@ def test_adts_rotate_term_follows_delta_series(v2_mode):
     assert not any('δ=0 の値' in w for w in r1.warnings)
 
 
-def test_h4_difference_to_tracking_is_the_k64_quadrature():
+def test_h4_difference_to_tracking_is_the_k64_quadrature(k64_mode):
     """h4 の追跡との差 (3e-4〜6e-4) の原因の切り分け: 厚い 6 極を連続に近く (nslice=64) して四極の運動学を K64 の積分器の台形則 (quad_rule='k64') にすると差が 1.5e-4 以下 (7e-5) に下がり、
-    厳密な積分 (quad_rule='exact') のままだと 5e-4 以上残る。K64 の厚い 6 極の積分器の分 (docs/49 §10.5) が残りの 7e-5。傾けない FODO"""
+    厳密な積分 (quad_rule='exact') のままだと 5e-4 以上残る。K64 の厚い 6 極の積分器の分 (docs/49 §10.5) が残りの 7e-5。傾けない FODO。k64 の追跡で見る (v2 の追跡の四極は 4 次の合成で台形則ではない。B226)"""
     lat = F.rolled(0.0, nrot=1)
     kw = dict(nslice=64, bend_cubic=True, kin=True, fringe=True, nslice_bend=8)
     rm_k = C.taylor_map(lat, D=4, quad_rule='k64', **kw)

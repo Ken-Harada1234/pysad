@@ -103,7 +103,7 @@ def turn4(i0, kind, has_off, P, Mlin, Klin, T0, hasT0, cod, Mtot, mats, cods, de
             c = cod.copy()
             T = np.eye(6)
             rc = k_thin(c, T, Z66, Z66, S3, PH, P[i, 0], P[i, 1], int(P[i, 2]), P[i, 3], P[i, 4], P[i, 5],
-                        False, False, True, False, v2)
+                        False, False, True, False, v2, P[i, 6] != 0.0)
             if rc != 0:
                 return i, 2
             cod[:] = c

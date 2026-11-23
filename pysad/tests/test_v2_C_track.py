@@ -297,7 +297,9 @@ def test_spin_tracking_loss_matches_gs(mode):
         compat.set_mode(old)
     g = lambda t: _nums([l for l in out.splitlines() if l.startswith(t + ' ')][0].replace(t + ' ', '=', 1))
     f, x, s, f2, x2 = g('F'), g('X'), g('S'), g('F2'), g('X2')
-    tol = 1e-12 if mode == 'k64' else 2e-7            # v2 は放射の式の修正 (担当 A) で 1e-7 ほど違う
+    # v2 は放射の式の修正 (担当 A) で 1e-7 ほど違い、さらに四極の本体の 4 次の合成 (B226) で、12 mm の粒子 (7 周) の x が gs と 6.5e-7 違う
+    # (K64 の Strang 分割 (2 次) の誤り。下の方式 0 の確認で 2e-7 以内に戻る)
+    tol = 1e-12 if mode == 'k64' else 2e-6
     assert f[:2] == [1.0, 0.0] and f[3:5] == [0.0, 74.0] and f[6:8] == [7.0, 1.0]
     assert abs(x[0] - -2.715851550e-4) < tol and abs(x[1] - .022037636775) < tol
     # スピンの角: v2 (C2) は刻みごとの歳差の角を厳密な θ にした (K64 は 2 sin(θ/2): 7 周で 1.6e-3 rad 小さい)
@@ -308,3 +310,16 @@ def test_spin_tracking_loss_matches_gs(mode):
     assert f[2] == 0.0 and f[8] == 1.0
     if mode == 'v2':
         assert f[5] == 74.0 and abs(x[2] - 0.03) < 1e-15
+    if mode == 'v2':
+        # 四極を K64 の方式 (方式 0) にすると、従来の許容 (2e-7) で gs と一致する = 差は四極の積分器の次数の違い
+        from pysad import quadbody
+        old_s = quadbody.set_scheme(0)
+        compat.set_mode(mode)
+        try:
+            out0 = _out(SPIN_LOSS)
+        finally:
+            compat.set_mode(old)
+            quadbody.set_scheme(old_s)
+        x0 = _nums([l for l in out0.splitlines() if l.startswith('X ')][0].replace('X ', '=', 1))
+        assert abs(x0[0] - -2.715851550e-4) < 2e-7 and abs(x0[1] - .022037636775) < 2e-7
+        assert abs(x[1] - x0[1]) > 1e-7                    # 4 次の合成が効いている

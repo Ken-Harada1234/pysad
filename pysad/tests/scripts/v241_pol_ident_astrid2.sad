@@ -1,0 +1,125 @@
+!********************************************************************
+!*
+!*   ASTRID2 - THE ULTIMATE SYNCHROTRON RADIATION SOURCE
+!*   http://www.isa.au.dk/facilities/astrid2/astrid2.asp
+!*
+!********************************************************************
+
+MOMENTUM= 0.58 GEV;
+
+MARK
+	MKS   =()
+	MKE   =()
+;
+
+MONI
+	PM     =()
+;
+
+CAVI
+	CAVI=(VOLT= 50000 FREQ = 104950000)
+;
+
+BEND
+	PV = ( L = 0    K0 = 0     ROTATE =-90 DEG ) 
+	PH = ( L = 0    K0 = 0  )
+;
+
+QUAD
+	QF3 = ( L =0.1800 K1 =5.939500*0.1800 )
+	QF2 = ( L =0.1800 K1 =6.070000*0.1800 )
+;
+
+SEXT
+	SF = ( L =0.0750   K2 =   125.62*0.0750 )
+	SD = ( L =0.1500   K2 =   -81.93*0.15 )
+;
+
+BEND
+	BH = (L = 0.8500 ANGLE = 0.523599 K1 = -1.678200*0.8500  E1=0 E2=0)
+;
+
+DRIFT
+	D14837    = (L = 1.4837 )
+	D0100     = (L = 0.1000 )
+	D0180     = (L = 0.1800 )
+	D0190     = (L = 0.1900 )
+	D0120     = (L = 0.1200 )
+;
+
+LINE
+	HV    = (PH PV)
+	NCELL
+	=(MKS
+	  D14837 PM D0100 QF3  D0180 HV D0180 
+          BH 
+          D0190 SD D0120 QF2 D0120 SF
+          PM
+	  SF D0120 QF2 D0120 SD D0190 
+          BH D0180 HV D0180 QF3 D0100 PM D14837
+          MKE) 
+
+	RING = (3*NCELL CAVI 3*NCELL)
+        RINGMPW = (3*NCELL CAVI 3*NCELL)
+!	RING = (6*CELL)
+;
+ SEXT   SD      =(L =.15  K2 =-11.729486011842393 )
+        SF      =(L =.075 K2 =8.681418961367605 )
+ ;
+FFS;
+$FORM = "14.8";
+PageWidth = 1999;
+NPARA = 1;
+USE RING;
+CELL;
+LINE["DY","Q*"] = {-0.001603863,-0.002648718,-0.000496723,0.00084089,0.002272093,0.000219413,-0.001105295,-0.001569561,0.001497492,0.003269566,0.000545538,-0.002466657,-0.00191653,0.003200038,0.000405765,-0.00346427,-0.000167392,-0.002326452,-0.001258576,-0.000976012,-0.001426627,0.001106757,-0.000126172,-0.001178863};
+CALC;
+
+RFSW; RAD; NOFLUC; NORADPOL;
+POL;
+em = Emittance[];
+Print["EM ", {PolarizationTime, SpinTune, NominalSpinTune, Polarization, PolarizationVector}/.em];
+Print["EMB ", {MomentumSpread, EquilibriumPosition}/.em, " ", Emittances/.em];
+n0 = {-0.000903738579213,0.999981216948,0.00606209597116};
+N0 = {{-0.42997316299,0.00590988250134,0.980567272861,0.000262597233688,3.10125454503e-07,0.0770171137842},{-0.00592730839106,0.000168515815529,0.0135170950888,0.000654369659668,3.25313111524e-09,0.00106200767581},{0.00105039406158,-0.738560112827,0.000297945546986,-5.52129498038,8.67075890952e-06,-0.00276552228668}};
+cod = {-0.00325958043236,-1.81497397353e-07,0.0119771972803,-7.45904399949e-08,8.57553550505e-05,0.000897059655269};
+np = 4;
+one = Table[1, {i, np}];
+beam = {{-0.00331303007819,-0.00352461074454,-0.00319535701131,-0.00288314028875},{-6.43666085842e-05,1.00475630048e-05,9.64837317653e-05,2.43295932388e-05},{0.0119530663142,0.0119340897945,0.0119776330626,0.0120962396185},{-1.81189250924e-05,-2.55018007888e-05,6.4307255929e-06,-7.13408423924e-06},{-0.0357432496124,0.00948138893681,0.00404602127218,0.035788407753},{0.00112361120574,0.0014607728652,0.00017794851885,0.000748741669893}, one};
+SeedRandom[10];
+FLUC; NOPOL;
+If[0 > 0, beam = TrackParticles[{1, beam}, 1, 1, 0][[2]]];
+rms[v_] := Sqrt[Plus@@(v^2)/Length[v]];
+Print["EQ turns=", 0, " rms x px y py z dp ", rms[beam[[1]]-cod[[1]]], " ", rms[beam[[2]]-cod[[2]]], " ", rms[beam[[3]]-cod[[3]]], " ", rms[beam[[4]]-cod[[4]]], " ", rms[beam[[5]]-cod[[5]]], " ", rms[beam[[6]]-cod[[6]]]];
+u = Table[{beam[[1,i]]-cod[[1]], beam[[2,i]]-cod[[2]], beam[[3,i]]-cod[[3]], beam[[4,i]]-cod[[4]], beam[[5,i]]-cod[[5]], beam[[6,i]]-cod[[6]]}, {i, np}];
+s = Table[n0 + N0.u[[i]], {i, np}];
+s = Table[s[[i]]/Sqrt[s[[i]].s[[i]]], {i, np}];
+ang = Table[ArcTan[s[[i,1]], s[[i,3]]], {i, np}];
+sy = Table[s[[i,2]], {i, np}];
+beam = {beam[[1]], beam[[2]], beam[[3]], beam[[4]], beam[[5]], beam[[6]], ang, sy, one, one, one};
+sn[b_] := Table[Sqrt[1-b[[8,i]]^2]*Cos[b[[7,i]]]*n0[[1]] + b[[8,i]]*n0[[2]] + Sqrt[1-b[[8,i]]^2]*Sin[b[[7,i]]]*n0[[3]], {i, Length[b[[1]]]}];
+snl[b_] := Table[Module[{uu, nn, ss},
+  uu = {b[[1,i]]-cod[[1]], b[[2,i]]-cod[[2]], b[[3,i]]-cod[[3]], b[[4,i]]-cod[[4]], b[[5,i]]-cod[[5]], b[[6,i]]-cod[[6]]};
+  nn = n0 + N0.uu; nn = nn/Sqrt[nn.nn];
+  ss = {Sqrt[1-b[[8,i]]^2]*Cos[b[[7,i]]], b[[8,i]], Sqrt[1-b[[8,i]]^2]*Sin[b[[7,i]]]};
+  nn.ss], {i, Length[b[[1]]]}];
+Print["S0 1-<S.n0> = ", 1 - Plus@@sn[beam]/np, " L= ", 1 - Plus@@snl[beam]/np];
+POL;
+Do[
+  FFS["FLUC"];
+  beam = TrackParticles[{1, beam}, 1, 1, 200][[2]];
+  bd = beam;
+  a = sn[beam];
+  Print["STAGE ", k, " turns ", k*200, " A= ", 1 - Plus@@a/np, " sdA= ", Sqrt[(Plus@@(a^2)/np - (Plus@@a/np)^2)/np], " L= ", 1 - Plus@@snl[beam]/np,
+        " rms x y dp z ", rms[beam[[1]]-cod[[1]]], " ", rms[beam[[3]]-cod[[3]]], " ", rms[beam[[6]]-cod[[6]]], " ", rms[beam[[5]]-cod[[5]]]];
+  FFS["NOFLUC"];
+  bd = TrackParticles[{1, bd}, 1, 1, 200][[2]];
+  d = sn[bd];
+  Print["DAMP ", k, " turns ", k*200, " D= ", 1 - Plus@@d/np, " sdD= ", Sqrt[(Plus@@(d^2)/np - (Plus@@d/np)^2)/np],
+        " orb ", Max[Abs[bd[[1]]-cod[[1]]]], " ", Max[Abs[bd[[3]]-cod[[3]]]]];
+  Print["DV ", k, " ", 1-d];
+  Print["AV ", k, " ", 1-a];
+  Print["LV ", k, " ", 1-snl[beam]],
+  {k, 1, 2}];
+Print["SPART ", Table[1-sn[beam][[i]], {i, Min[np, 8]}]];
+Exit;

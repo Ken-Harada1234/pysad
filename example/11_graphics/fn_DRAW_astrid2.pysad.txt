@@ -1,0 +1,5 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -1.400402 $$$       f BX    #######  #  12.579425 $$$       f NX    #######  #   5.230845
+$$$       f AY    #######  #   -.493978 $$$       f BY    #######  #   1.971040 $$$       f NY    #######  #   2.175103
+$$$       f LENG  #######  #  45.704400
+[pysad] DRAW: fn_DRAW_astrid2_plot.png に保存しました

@@ -336,7 +336,7 @@ def test_wiggler_ring_with_mult_poles_matches_exact_v2(ae, tol_damp, tol_nu):
 def test_tracking_calc_quad_jacobian_differs_at_orbit_offset_and_steer_does_not():
     """追跡と CALC のチューンの AE に依らない K0² の差 (K0 = 0.006 で 2.3e-6、0.012 で 9e-6) の原因: 四極の本体の積分器。軌道が x = 3 mm・px = 2 mrad ずれた
     四極 1 台 (DISFRIN = 1、K1 = −0.6) のヤコビアンが、追跡と CALC (どちらも K64 の tsolqu・tsolque) で 5e-7 違う (厳密な写像との差: CALC 1.8e-7、
-    追跡 7e-7)。ステアリング (AE = 0・0.3)・扇形の偏向磁石・ドリフトは 1e-9 以下で一致する"""
+    追跡 7e-7。v2 は 4 次の合成で CALC 5e-10・追跡 7.9e-9 に減った。B226)。ステアリング (AE = 0・0.3)・扇形の偏向磁石・ドリフトは 1e-9 以下で一致する"""
     old = _mode('v2')
     try:
         def diff(eld):
@@ -352,7 +352,10 @@ def test_tracking_calc_quad_jacobian_differs_at_orbit_offset_and_steer_does_not(
                 J[:, j] = (X.one_element_track(eld, cp, False, False)[:4] - X.one_element_track(eld, cm, False, False)[:4]) / (2 * h)
             M, _ = lat._el_cod_step(el, c0, 0.0)
             return np.abs(J - M[:4, :4]).max()
-        assert diff('QUAD SA=(L=0.3 K1=-0.6 DISFRIN=1);') > 1e-7
+        compat.set_mode('k64')
+        assert diff('QUAD SA=(L=0.3 K1=-0.6 DISFRIN=1);') > 4e-7      # K64 の四極の積分器の誤り (B226) は k64 で再現のまま
+        compat.set_mode('v2')
+        assert diff('QUAD SA=(L=0.3 K1=-0.6 DISFRIN=1);') < 3e-8      # v2 は 4 次の合成 (追跡 7.1e-7 → 7.9e-9、CALC 1.8e-7 → 5e-10。test_v241_quad_integrator.py)
         for eld in ('BEND SA=(L=0.2 ANGLE=0 K0=0.06 AE1=0.3 AE2=0.3);', 'BEND SA=(L=0.2 ANGLE=0 K0=0.06);',
                     'BEND SA=(L=1.2 ANGLE=0.26179938779914913 E1=0.1308996938995747 E2=0.1308996938995747);', 'DRIFT SA=(L=1);'):
             assert diff(eld) < 1e-9, eld

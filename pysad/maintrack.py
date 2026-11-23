@@ -347,7 +347,14 @@ def run_track(ffs, spec: dict, write):
     alive = np.zeros(np0, dtype=bool)
     alive[kid[:max(n, 0)]] = True
     tunes = None
-    if smearp:
+    if smearp and fl.get('FOURIER', False) and zbuf.shape[1] > 1 and int(round(float(g.get('MAXORDER', 6.0)))) > 0:
+        # tracka.f: fourie1 → wjfit の maxord > 0 (Fourier 解析。pysad/fourier_fit.py)。TunesByTracking は更新しない (K64 も)
+        from .fourier_fit import fourier_report
+        flines, tunes = fourier_report(zbuf, ~alive, int(round(float(g.get('MAXORDER', 6.0)))),
+                                       int(round(float(g.get('ADDTERMS', 0.0)))), rfsw, float(g.get('ADDDENSE', 6.0)))
+        for ln in flines:
+            write(ln + '\n')
+    elif smearp:
         lines: List[str] = []
         tunes = tune_table(zbuf, alive, lines)
         g['TunesByTracking'] = tunes

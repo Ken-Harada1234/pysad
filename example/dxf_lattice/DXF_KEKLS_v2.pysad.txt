@@ -1,0 +1,6 @@
+USE ARCA:  160.000000000 elements, L =   28.536000000 m
+  wrote DXF_KEKLS_cell_v2_remove.dxf
+  wrote DXF_KEKLS_cell_v2_spec.dxf
+  wrote DXF_KEKLS_cell_v2_spec_remove.dxf
+  wrote DXF_KEKLS_cell_v2_spec_h30.dxf
+  wrote DXF_KEKLS_cell_v2_spec_remove_h30.dxf

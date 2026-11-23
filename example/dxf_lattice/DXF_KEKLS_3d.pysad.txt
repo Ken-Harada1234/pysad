@@ -1,0 +1,3 @@
+USE ARCA:  160.000000000 elements, L =   28.536000000 m
+  wrote DXF_KEKLS_cell_3d.dxf
+  wrote DXF_KEKLS_cell_3d_split.dxf

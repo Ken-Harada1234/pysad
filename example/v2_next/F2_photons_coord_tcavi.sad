@@ -1,0 +1,25 @@
+MOMENTUM = 3 GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+COORD CI = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03 DIR=0)
+      CO = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03 DIR=1);
+TCAVI TC = (L=0.2 K0=3e-4 FREQ=4.5e8 PHI=0.1);
+MARK ST=();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE CELLC = (QF D2 CI B CO D2 QD D1 TC);
+LINE RING = (ST CELL1 CELLC CELL1 CELLC);
+FFS;
+USE RING; CELL; CALC;
+RAD; FLUC; PHOTONS;
+SeedRandom[7];
+n=4;
+x0=Table[1e-4*Sin[0.37*i],{i,n}]; px0=Table[1e-6*Cos[0.11*i],{i,n}]; y0=Table[3e-6*Cos[0.23*i],{i,n}];
+py0=Table[1e-7*Sin[0.71*i],{i,n}]; z0=Table[0.0,{i,n}]; dp0=Table[0.0,{i,n}]; fl0=Table[1,{i,n}];
+r=TrackParticles[{1,{x0,px0,y0,py0,z0,dp0,fl0}},32,8];
+$FORM="16.10";
+Print["NPH ",Length[PhotonList]];
+Print["R ",r[[2,1]]," ",r[[2,2]]," ",r[[2,3]]," ",r[[2,4]]," ",r[[2,5]]," ",r[[2,6]]];
+Do[Print["PA ",PhotonList[[k,1]]," ",PhotonList[[k,2]]," ",PhotonList[[k,3]]," ",PhotonList[[k,4]]," ",PhotonList[[k,5]]," ",PhotonList[[k,6]]],{k,Length[PhotonList]}];
+Do[Print["PB ",PhotonList[[k,7]]," ",PhotonList[[k,8]]," ",PhotonList[[k,9]]," ",PhotonList[[k,10]]," ",PhotonList[[k,11]]," ",PhotonList[[k,12]]],{k,Length[PhotonList]}];
+Exit;

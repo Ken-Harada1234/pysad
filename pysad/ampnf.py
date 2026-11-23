@@ -18,6 +18,7 @@
 【v2.4.0 F1】 ROTATE・ROTATION した BEND・QUAD・SEXT・OCT は R⁻¹ ∘ (回していない素子) ∘ R で入る (全次数の θ)。結合した線形光学は 4×4 の固有モード (linear_modes) の正規形で扱う。
   rdt_series は 1 周の写像の 2 次の部分から共鳴駆動項 h を出す (結合した光学でも動く)。docs/49 §14。
 【v2.4.0 G】 K0≠0 の偏向磁石 (K1 = 0。挿入光源・逆曲げ・MPW・傾けた MPW) は、K64 の追跡の閉じた式を磁石内の軌道のまわりで TPSA 評価した写像 (ampnf_k0.py、op 'tmap') で入る。
+  v2.4.1: その非線形を他の素子のオプションと独立に入れる・落とす `k0_nonlinear` (True・False。None = 従来: 3 つのオプションが全部 False のときだけ落とす)。
   閉軌道が原点にない 1 周の写像は 2 段 (不動点 c を求め、c を定数項に入れて通す。res['orbit'])。docs/49 §14.4。
 【入れていない効果】 K1≠0 かつ K0≠0 の偏向磁石 (NotImplementedError)、F1・DX・DY・DROTATE、誤差、K1 の偏向磁石の 4 次以上、K64 の四極の積分器の台形則、10 極以上、放射・RF。
   差の原因は docs/49 §13.3。使い方・検証は docs/49 §13、記録は docs/history/v24_A.md。
@@ -462,7 +463,7 @@ class NSeg:
         return NSeg(o.M @ self.M, o.M @ self.d + o.d)
 
 
-def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8, Dnl=5, kin=False, fringe=False, nslice_quad=4):
+def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8, Dnl=5, kin=False, fringe=False, nslice_quad=4, k0_nonlinear=None):
     """素子列を [('lin', Seg) | ('kick', k2l, k3l)] に。厚い 6 極・8 極は nslice 分割 (中点則 = 厳密な極限は nslice→∞、誤差 O(1/nslice²))"""
     dl = RAD * np.exp(2j * np.pi * np.arange(NTH) / NTH)
 
@@ -503,7 +504,9 @@ def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8,
             ops.append(('lin', cur))
             if float(getattr(el, 'ANGLE', 0.0) or 0.0) == 0.0 and float(getattr(el, 'CHI2', 0.0) or 0.0) != 0.0:
                 warn.append('ANGLE=0 の K0≠0 の BEND %s の CHI2 は K64 の追跡 (tsteer・tmulti) が使わないので入れていない (追跡に合わせる)' % el.name)
-            lin = not (bend_cubic or kin or fringe)
+            # v2.4.1: k0_nonlinear=None は従来どおり (bend_cubic・kin・fringe が全部 False のときだけ 1 次)。True・False は K0≠0 の磁石の自身の非線形を、
+            # ほかの素子のオプションと独立に入れる・落とす (曲率・運動学・楔・端は閉じた式に分けられず、個別には切れない。docs/46)
+            lin = (not (bend_cubic or kin or fringe)) if k0_nonlinear is None else (not k0_nonlinear)
             ops.append(('tmap', _k0.bend_k0_map(el, linear=lin), el, lin))
             cur = new0()
             continue
@@ -750,12 +753,12 @@ def _fixed_point(tab, Fp, s, maxit=40, tol=1e-15):
     return c, jac(u)
 
 
-def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4):
+def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4, k0_nonlinear=None):
     """1 周の写像を 5 変数 (ζx, ζ̄x, ζy, ζ̄y, δ̃) のべき級数で返す (ζ = s ζ̃、δ = sd δ̃ の規格化)。戻り dict(G (4 成分の TPSA)、tab、mux、muy、
     twiss0 = (αx, βx, αy, βy)、coupling (線形の結合の最大値)、warnings)"""
     tab = get_tab(5, D)
     if ops is None:
-        ops, warn = build_ops(lat, D, sd, nslice, bend_cubic=bend_cubic, nslice_bend=nslice_bend, Dnl=D, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
+        ops, warn = build_ops(lat, D, sd, nslice, bend_cubic=bend_cubic, nslice_bend=nslice_bend, Dnl=D, kin=kin, fringe=fringe, nslice_quad=nslice_quad, k0_nonlinear=k0_nonlinear)
     else:
         warn = []
     try:
@@ -839,8 +842,11 @@ def _compose(tab, P_list, Q, nmax):
     return outs
 
 
-def normal_form(res, warn_den=1e-4, skip_den=0.0):
-    """res = one_turn_series の結果。戻り dict: Gn (正規形の写像 4 成分)、phi (変換)、min_den (共鳴の分母の最小値)、near (近い共鳴の項)"""
+def normal_form(res, warn_den=1e-4, skip_den=0.0, keep=None):
+    """res = one_turn_series の結果。戻り dict: Gn (正規形の写像 4 成分)、phi (変換)、min_den (共鳴の分母の最小値)、near (近い共鳴の項)。
+    keep (v2.4.1): 消さずに残す単項式の集合 {(i, (e0, e1, e2, e3, e4))} (i = 方程式 0〜3、e = ζx, ζ̄x, ζy, ζ̄y, δ̃ のべき)。
+    1 本の共鳴を残した正規形 (島の幅。`ampnf_ext.resonance_normal_form`)。残した係数 Gn[i][m] はその共鳴の駆動項 (低い次数の非共鳴の項の変換を含む)"""
+    keep = set(keep) if keep else None
     tab = res['tab']
     D = res['D']
     mux, muy = res['mux'], res['muy']
@@ -870,7 +876,7 @@ def normal_form(res, warn_den=1e-4, skip_den=0.0):
                 if r == 0:
                     continue
                 d = lam_mon[m] - lam[i]
-                if abs(d) < 1e-9 or abs(d) < skip_den:      # skip_den > 0: 分母が小さい (共鳴に近い) 項は消さずに残す (診断。ν の級数にはその項は入らない)
+                if abs(d) < 1e-9 or abs(d) < skip_den or (keep is not None and (i, tuple(int(v) for v in tab.mons[m])) in keep):      # skip_den > 0: 分母が小さい (共鳴に近い) 項は消さずに残す (診断。ν の級数にはその項は入らない)
                     Gp[i][m] += r                     # 共鳴の項は残す (G' = R)
                 else:
                     Tm[i][m] += r / d                 # φ = R/(λ^α − λ_i)
@@ -934,9 +940,15 @@ class AmpTuneResult:
         self.near = nf['near']
         self.warnings = list(res['warnings'])
 
-    def nu(self, plane, jx=0.0, jy=0.0, delta=0.0):
+    def nu(self, plane, jx=0.0, jy=0.0, delta=0.0, jorder=None):
+        """ν_plane(Jx, Jy, δ)。jorder (v2.4.1): J のべきの和 a+b ≤ jorder だけの級数 (1 = J¹ のみ = ADTS、2 = J² まで。比較・次数の違いの表示用)"""
         ser = self.nux if plane == 0 else self.nuy
-        return self.nu0[plane] + sum(v * jx ** a * jy ** b * delta ** p for (a, b, p), v in ser.items())
+        return self.nu0[plane] + sum(v * jx ** a * jy ** b * delta ** p for (a, b, p), v in ser.items() if jorder is None or a + b <= jorder)
+
+    def d2nu(self, plane):
+        """J の 2 次の ADTS (v2.4.1): ∂²ν_plane/∂Ji∂Jj (δ = 0) の 2×2 行列 [1/(m rad)²] (J² の係数 c_20・c_11・c_02 の ∂ 二階微分: [[2c_20, c_11], [c_11, 2c_02]])。D ≥ 5 で入る"""
+        c20, c11, c02 = self.coef(plane, 2, 0, 0), self.coef(plane, 1, 1, 0), self.coef(plane, 0, 2, 0)
+        return np.array([[2 * c20, c11], [c11, 2 * c02]])
 
     def coef(self, plane, a, b, p=0):
         return (self.nux if plane == 0 else self.nuy).get((a, b, p), 0.0)
@@ -960,15 +972,17 @@ class AmpTuneResult:
         return math.factorial(p) * self.coef(plane, a, b, p)
 
 
-def amplitude_tune(lat, D=5, nslice=8, sd=1e-2, s=3e-4, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4, skip_den=0.0):
+def amplitude_tune(lat, D=5, nslice=8, sd=1e-2, s=3e-4, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4, skip_den=0.0, k0_nonlinear=None):
     """lat の ν_x, ν_y(Jx, Jy, δ) の級数 (D 次の 1 周の写像の Birkhoff 正規形)。戻り AmpTuneResult"""
     if ops is None:
         # v2.4.0 G: DX・DY (・DZ・DROTATE) のある素子 (BEND・QUAD・SEXT・OCT) は、以前は黙って無視されていた (pysad 自身の不具合)。H1 の `ampnf_coupled` (tchge の TPSA 版、
         # 閉軌道 ≠ 0 の展開) に渡す。D は 4 以上、skip_den は未対応
         from . import ampnf_coupled as _ac
         if _ac.has_errors(lat):
+            if k0_nonlinear is not None:
+                raise NotImplementedError('ampnf: k0_nonlinear は DX・DY・DROTATE のある lat (ampnf_coupled の経路) では未対応')
             return _ac.amplitude_tune_ext(lat, D=D, nslice=nslice, bend_cubic=bend_cubic, nslice_bend=nslice_bend, kin=kin, fringe=fringe, nslice_quad=nslice_quad, sd=sd, s=s)
-    res = one_turn_series(lat, D=D, nslice=nslice, sd=sd, s=s, ops=ops, bend_cubic=bend_cubic, nslice_bend=nslice_bend, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
+    res = one_turn_series(lat, D=D, nslice=nslice, sd=sd, s=s, ops=ops, bend_cubic=bend_cubic, nslice_bend=nslice_bend, kin=kin, fringe=fringe, nslice_quad=nslice_quad, k0_nonlinear=k0_nonlinear)
     nf = normal_form(res, skip_den=skip_den)
     nux = tune_series(res, nf, 0)
     nuy = tune_series(res, nf, 1)

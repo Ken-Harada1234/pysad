@@ -1,0 +1,9 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.166305 $$$       f BX    #######  #   5.025185 $$$       f NX    #######  #   6.696329
+$$$       f AY    #######  #   1.207630 $$$       f BY    #######  #   2.557661 $$$       f NY    #######  #   4.906056
+$$$       f LENG  #######  #  105.60000
+NX=6.696328940901378
+[pysad] MatplotlibDrawer: fn_OpticsPlot_mpl_plot.png に保存しました
+Head=Graphics Length=2
+[pysad] MatplotlibDrawer: fn_OpticsPlot_mpl_plot_2.png に保存しました
+[pysad] MatplotlibDrawer: fn_OpticsPlot_mpl_plot_3.png に保存しました
