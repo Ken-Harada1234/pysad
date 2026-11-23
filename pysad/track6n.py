@@ -1038,9 +1038,10 @@ def _edge_maxwell1(i, S, rhob):
     af = a * yi / rhob / pvi
     b = 0.5 - yr / 24.0
     bf = b * yi * yi / rhob / pvi2 / pvi
-    S[i, 0] = S[i, 0] + bf * pr
+    # v2 (B324): Δx = bf·p²、Δz = −bf·px·p (追跡 tbendcore と同じ。この関数は v2 の端の厳密な写像だけが使う)
+    S[i, 0] = S[i, 0] + bf * pr * pr
     S[i, 3] = min(pr, max(-pr, S[i, 3] - af * pxi))
-    S[i, 4] = S[i, 4] - bf * pxi
+    S[i, 4] = S[i, 4] - bf * pxi * pr
 
 
 @njit(**NJ)
@@ -1732,14 +1733,14 @@ def steer_edge_exact1(S, i, rhoc, psi, entrance):
     c[4] = S[i, 4]
     c[5] = S[i, 5]
     if psi == 0.0:
-        _tbedgemaxwell(c, rhoc if entrance else -rhoc)
+        _tbedgemaxwell(c, rhoc if entrance else -rhoc, True)
     elif entrance:
         _tbedgedrift(c, psi)
-        _tbedgemaxwell(c, rhoc)
+        _tbedgemaxwell(c, rhoc, True)
         _tbedgebody(c, rhoc, psi)
     else:
         _tbedgebody(c, rhoc, psi)
-        _tbedgemaxwell(c, -rhoc)
+        _tbedgemaxwell(c, -rhoc, True)
         _tbedgedrift(c, psi)
     S[i, 0] = c[0]
     S[i, 1] = c[1] / pr

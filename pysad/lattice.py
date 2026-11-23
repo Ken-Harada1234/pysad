@@ -511,7 +511,10 @@ def _tbedgebody_cod(cod: np.ndarray, rhob: float, psi: float) -> np.ndarray:
 
 def _tbedgemaxwell_cod(cod: np.ndarray, rhob: float) -> np.ndarray:
     """SADのtbedgemaxwell COD更新のみ (Fortranソース直訳)。
-    tbfrie.f subroutine tbedgemaxwell"""
+    tbfrie.f subroutine tbedgemaxwell
+
+    k64: Δx = bf·p、Δz = −bf·px (K64 の式。因子 p = 1+δ が 1 つ足りない)。
+    v2 (B324): Δx = bf·p²、Δz = −bf·px·p (追跡 tbendcore の式、(5.36)、解析行列 trans の微分と一致)"""
     cod = cod.copy()
     pr = 1.0 + cod[5]
     pxi = np.clip(cod[1], -pr, pr)
@@ -524,9 +527,10 @@ def _tbedgemaxwell_cod(cod: np.ndarray, rhob: float) -> np.ndarray:
     af = a * yi / rhob / pvi
     b = 0.5 - yr / 24.0
     bf = b * yi**2 / rhob / pvi2 / pvi
-    cod[0] = cod[0] + bf * pr
+    pp = pr if _compat.v2() else 1.0
+    cod[0] = cod[0] + bf * pr * pp
     cod[3] = np.clip(cod[3] - af * pxi, -pr, pr)
-    cod[4] = cod[4] - bf * pxi
+    cod[4] = cod[4] - bf * pxi * pp
     return cod
 
 

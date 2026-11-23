@@ -844,8 +844,8 @@ def _tbedgedrift(c, psi):
 
 
 @njit(**NJ)
-def _tbedgemaxwell(c, rhob):
-    """lattice._tbedgemaxwell_mat / _cod (in-place)"""
+def _tbedgemaxwell(c, rhob, p2=False):
+    """lattice._tbedgemaxwell_mat / _cod (in-place)。p2 = v2 (B324): COD の更新の Δx に bf·p²、Δz に −bf·px·p (k64 は p¹・p⁰)"""
     pr = 1.0 + c[5]
     pxi = min(pr, max(-pr, c[1]))
     pvi2 = (pr - pxi) * (pr + pxi)
@@ -872,9 +872,10 @@ def _tbedgemaxwell(c, rhob):
     pvic = math.sqrt(pvi2c)
     afc = a * yi / rhob / pvic
     bfc = b * yi**2 / rhob / pvi2c / pvic
-    c[0] = c[0] + bfc * pr
+    pp = pr if p2 else 1.0
+    c[0] = c[0] + bfc * pr * pp
     c[3] = min(pr, max(-pr, c[3] - afc * pxi))
-    c[4] = c[4] - bfc * pxi
+    c[4] = c[4] - bfc * pxi * pp
     return t
 
 
@@ -939,17 +940,17 @@ def _tbedgebody(c, rhob, psi):
 
 
 @njit(**NJ)
-def _edge_chain(c, rhob, psi, entrance):
+def _edge_chain(c, rhob, psi, entrance, p2=False):
     """lattice._bend_edge_chain: (cod in-place, M = 各段の trans の積)"""
     if psi == 0.0:
-        return _tbedgemaxwell(c, rhob if entrance else -rhob)
+        return _tbedgemaxwell(c, rhob if entrance else -rhob, p2)
     if entrance:
         M = _tbedgedrift(c, psi)
-        M = _mm(_tbedgemaxwell(c, rhob), M)
+        M = _mm(_tbedgemaxwell(c, rhob, p2), M)
         M = _mm(_tbedgebody(c, rhob, psi), M)
         return M
     M = _tbedgebody(c, rhob, psi)
-    M = _mm(_tbedgemaxwell(c, -rhob), M)
+    M = _mm(_tbedgemaxwell(c, -rhob, p2), M)
     M = _mm(_tbedgedrift(c, psi), M)
     return M
 
@@ -1732,7 +1733,7 @@ def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, sy
         ndiv = max(int(nrad * PH[EMIDIV] * PH[EMIDIB]),
                    1 + int(abs(k0 * PH[H0] * PH[ANRAD]) / EPSRAD / 1e6 * PH[EMIDIV] * PH[EMIDIB]))
     aln = al / ndiv
-    M = _edge_chain(c, rhoe, e1, True)
+    M = _edge_chain(c, rhoe, e1, True, edgefix)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
     # v2 (B108): 端の角 (AE1・AE2) のある面では場の中の行路が x·tan(e) だけ短い (_bend_core の edgefix と同じ)
     tin = math.tan(e1) if edgefix else 0.0
@@ -1745,7 +1746,7 @@ def _tsteee(c, T, D, B, codr0, transr, S, PH, al, k0, e1, e2, enarad, use_dv, sy
         if n != ndiv and krad:
             _tradke(c, T, D, B, codr0, transr, S, PH, aln, 0.0, want_jac, want_db, radcod, tin, 0.0)
             tin = 0.0
-    M = _edge_chain(c, rhoe, e2, False)
+    M = _edge_chain(c, rhoe, e2, False, edgefix)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
     if krad:
         _tradke(c, T, D, B, codr0, transr, S, PH, aln, 0.0, want_jac, want_db, radcod, tin, tout)
@@ -1781,7 +1782,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
         nrad = 1 + int(abs(al0 * rbc / EPSRAD * PH[CRAD] * (PH[H0] * b)**2))
         ndiv = max(ndiv, int(nrad * PH[EMIDIV] * PH[EMIDIB]),
                    1 + int(abs(phib * PH[H0] * PH[ANRAD]) / EPSRAD / 1e6 * PH[EMIDIV] * PH[EMIDIB]))
-    M = _edge_chain(c, rhob, e1, True)
+    M = _edge_chain(c, rhob, e1, True, edgefix)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
     # v2 (edgefix): 端の角 e のある面では、場の中の行路が x*tan(e) だけ短い。最初の tradke に入口、最後の tradke に出口の分を渡す
     tin = math.tan(e1) if edgefix else 0.0
@@ -1827,7 +1828,7 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
         t, cn = _bendecorr(c, akx0 * 0.5, alx0 * 0.5, rho0, PSQMAX, klin)
         _apply_tdb(t, T, D, B, want_db)
         c[:] = cn
-    M = _edge_chain(c, rhob, e2, False)
+    M = _edge_chain(c, rhob, e2, False, edgefix)
     _piece(M, T, D, B, want_jac, want_db, symp_fix)
     if enarad:
         _tradke(c, T, D, B, codr0, transr, S, PH, alr, phi1, want_jac, want_db, radcod, tin, tout)

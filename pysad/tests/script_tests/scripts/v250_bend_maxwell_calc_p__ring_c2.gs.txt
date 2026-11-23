@@ -1,0 +1,55 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:40:14 Monday 11/23/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+BEND B1 = (L=1.0 ANGLE=0.2 E1=0.05 E2=0.05 FRINGE=1 DISFRIN=0 );
+BEND B2 = (L=1.0 ANGLE=-0.2 E1=-0.05 E2=-0.05 FRINGE=1 DISFRIN=0 );
+QUAD QF = (L=0.3 K1=0.9 DY=0.003) QD = (L=0.3 K1=-0.9 DY=-0.003);
+DRIFT D = (L=0.5);
+MARK ORG = () ENDM = ();
+LINE CELL = (ORG QF D B1 D QD D B2 D ENDM);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ NORFSW; NORAD; NOFLUC;
+Out[1]:= NORFSW
+ $FORM = "22.16";
+ USE CELL; DP0 = -0.1; CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 =-0.10000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.518608 $$$       f BX    #######  #  12.214535 $$$       f NX    #######  #    .365539
+$$$       f AY    #######  #  -1.138169 $$$       f BY    #######  #    .733078 $$$       f NY    #######  #    .626748
+$$$       f LENG  #######  #   4.600000 ORG/$$$     BMAGX #######  #   3.538257 ORG/$$$     BMAGY #######  #   3.089819
+ Horizontal/Vertical Unstable.
+ Print["NXNY ", Twiss["NX",-1], " ", Twiss["NY",-1]];
+NXNY  2.296752364707861  3.937972446037323
+ c = {Twiss["DX",1], Twiss["DPX",1], Twiss["DY",1], Twiss["DPY",1], Twiss["DZ",1], Twiss["DDP",1]};
+ Print["EX ", Twiss["EX",1], " ", Twiss["EY",1]];
+EX   .000000000000000   .000000000000000
+ Print["COD ", c];
+COD { -.001650007187782,  .010195510691683, -.002818898053280,  .002545621431865,  .000000000000000, -.100000000000000}
+ beam = {{c[[1]]}, {c[[2]]}, {c[[3]]}, {c[[4]]}, {c[[5]]}, {c[[6]]}, {1.0}};
+ r = TrackParticles[{1, beam}, 1, 1, 1];
+ Print["R ", {r[[2,1,1]], r[[2,2,1]], r[[2,3,1]], r[[2,4,1]], r[[2,5,1]], r[[2,6,1]]}];
+R { -.001648395603007,  .010195833732317, -.002818894302862,  .002545617437869,  .000000000000000, -.100000000000000}
+ Print["RES ", {r[[2,1,1]]-c[[1]], r[[2,2,1]]-c[[2]], r[[2,3,1]]-c[[3]], r[[2,4,1]]-c[[4]], r[[2,5,1]]-c[[5]], r[[2,6,1]]-c[[6]]}];
+RES { 1.611584775150E-6, 3.230406339250E-7, 3.750418342205E-9, -3.99399580900E-9,  .000000000000000,  .000000000000000}
+ 
+ h = 1e-7;
+ mkb[x_] := Module[{b = Table[Table[c[[k]], {9}], {k, 6}], j},
+   Do[b[[j,2*j]] = b[[j,2*j]] + h; b[[j,2*j+1]] = b[[j,2*j+1]] - h, {j, 4}];
+   Join[b, {Table[1.0, {9}]}]];
+ b = mkb[0];
+ r = TrackParticles[{1, b}, 1, 1, 1];
+ Mt = Table[(r[[2,i,2*j]] - r[[2,i,2*j+1]])/(2*h), {i, 4}, {j, 4}];
+ d4 = Table[r[[2,i,1]] - c[[i]], {i, 4}];
+ dc = LinearSolve[IdentityMatrix[4] - Mt, d4];
+ Print["DCOD ", dc];
+DCOD { 3.714540407672E-8, -1.49087383474E-7, 3.330253319059E-9, -4.03053927891E-9}
+ c2 = Table[c[[i]] + dc[[i]], {i, 4}];
+ b = Join[Table[{c2[[i]]}, {i, 4}], {{c[[5]]}, {c[[6]]}, {1.0}}];
+ r = TrackParticles[{1, b}, 1, 1, 1];
+ Print["RES2 ", Table[r[[2,i,1]] - c2[[i]], {i, 4}]];
+RES2 { -7.8428366232E-14, 3.07115444187E-14, 8.53744158702E-15, 3.25737700702E-15}
+ In[2]:=  ???-getbuf-end of input stream
