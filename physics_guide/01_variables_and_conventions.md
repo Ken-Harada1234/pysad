@@ -13,7 +13,7 @@
 ## 1. 結論
 
 - SAD は、基準線に沿った距離 $s$ を独立変数にし、正準変数 $(x, p_x, y, p_y, z, \delta)$ で粒子の運動を書く。$p_x, p_y$ は設計運動量 $p_0$ で規格化した**正準運動量**、$\delta = p - 1$ ($p = P/p_0$ は全運動量の規格化値)、$z = -v\,(t - t_0(s))$ はバンチ内の位置で、**先頭が $z > 0$**。
-- ハミルトニアンは次の形 (ヘルプの dynamics > Hamiltonian。誤植を直した形):
+- ハミルトニアンは次の形 (ヘルプの dynamics > Hamiltonian の最終式と同じ。途中の式の誤植は付録 A):
 
 $$
 H = -\left(\sqrt{p^2 - (p_x - a_x)^2 - (p_y - a_y)^2} + a_s\right)\left(1 + \frac{x}{\rho}\right) + \frac{E}{p_0 v_0}
@@ -60,7 +60,13 @@ L_t = -\frac{mc}{p_0}\sqrt{1 - \dot x^2 - \dot y^2 - \left(1 + \frac{x}{\rho}\ri
 \tag{1.2}
 $$
 
-($\dot{\ } = d/d(ct)$)。**$s$ を独立変数に取り替える**には $L = L_t\, d(ct)/ds$ とする ($ct' \equiv d(ct)/ds$):
+($\dot{\ } = d/d(ct)$)。**$s$ を独立変数に取り替える**には $L = L_t\, d(ct)/ds$ とする ($ct' \equiv d(ct)/ds$)。途中の計算は次のとおり。
+
+- 時間微分から $s$ 微分への書き換え: $\dot x = dx/d(ct) = x'/(ct')$、$\dot y = y'/(ct')$、$\dot s = ds/d(ct) = 1/(ct')$ (連鎖律 $d/d(ct) = (ds/d(ct))\,d/ds$)。
+- 根号: $\sqrt{1 - \dot x^2 - \dot y^2 - (1 + x/\rho)^2\dot s^2} = \dfrac{1}{ct'}\sqrt{(ct')^2 - x'^2 - y'^2 - (1 + x/\rho)^2}$ ($ct' > 0$ なので $ct'$ を根号の外に出せる)。これに $d(ct)/ds = ct'$ をかけると $ct'$ が相殺する。
+- ベクトルポテンシャルの項: $a_x\dot x\cdot ct' = a_x x'$、$a_y\dot y\cdot ct' = a_y y'$、$(1 + x/\rho)\,a_s\dot s\cdot ct' = (1 + x/\rho)\,a_s$。
+
+まとめて:
 
 $$
 L = -\frac{mc}{p_0}\sqrt{(ct')^2 - x'^2 - y'^2 - \left(1 + \frac{x}{\rho}\right)^2}
@@ -70,7 +76,7 @@ $$
 
 (式 (1.2)(1.3) の根号の中の符号は、ヘルプの印刷では $+\dot y^2$ などになっている誤植。次の正準運動量の式の分母の符号が正しい。付録 A)。
 
-**正準運動量**。根号を $\Pi$ と書く ($\Pi = \sqrt{(ct')^2 - x'^2 - y'^2 - (1 + x/\rho)^2}$、$\hat m = mc/p_0$):
+**正準運動量**。根号を $\Pi$ と書く ($\Pi = \sqrt{(ct')^2 - x'^2 - y'^2 - (1 + x/\rho)^2}$、$\hat m = mc/p_0$)。$\Pi$ の偏微分は $\partial\Pi/\partial x' = -x'/\Pi$、$\partial\Pi/\partial y' = -y'/\Pi$、$\partial\Pi/\partial t' = c^2 t'/\Pi$ ($(ct')^2$ を $t'$ で微分すると $2c^2t'$、根号の微分は $1/(2\Pi)$ 倍)。$L = -\hat m\Pi + a_xx' + \cdots$ に $p_q = \partial L/\partial q'$ を使うと、($-\hat m$) と ($-x'/\Pi$) の積で符号が正になり:
 
 $$
 p_x = \frac{\partial L}{\partial x'} = \frac{\hat m x'}{\Pi} + a_x,\quad
@@ -79,13 +85,27 @@ p_t = \frac{\partial L}{\partial t'} = -\frac{\hat m c^2 t'}{\Pi}
 \tag{1.4}
 $$
 
-**ハミルトニアン** $H_t = x'p_x + y'p_y + t'p_t - L$。(1.4) を代入すると、$x'(p_x - a_x) + y'(p_y - a_y) + t'p_t = -\hat m\,[\Pi^2 + (1 + x/\rho)^2]/\Pi$ なので
+**ハミルトニアン** $H_t = x'p_x + y'p_y + t'p_t - L$。計算を 3 行に分ける。
+
+1. (1.4) を代入: $x'(p_x - a_x) + y'(p_y - a_y) + t'p_t = \hat m\,(x'^2 + y'^2 - c^2t'^2)/\Pi$。
+2. $\Pi$ の定義から $x'^2 + y'^2 - (ct')^2 = -\Pi^2 - (1 + x/\rho)^2$ なので、1. は $-\hat m\,[\Pi^2 + (1 + x/\rho)^2]/\Pi$。
+3. $L = -\hat m\Pi + a_xx' + a_yy' + (1 + x/\rho)a_s$ を引く。$a_xx'$ と $a_yy'$ は $x'p_x$、$y'p_y$ の $a$ の部分と相殺し、$+\hat m\Pi$ が 2. の $-\hat m\Pi^2/\Pi = -\hat m\Pi$ を消すので
 
 $$
 H_t = -\frac{\hat m (1 + x/\rho)^2}{\Pi} - \left(1 + \frac{x}{\rho}\right) a_s
 $$
 
-一方、(1.4) から $(p_t/c)^2 - (p_x - a_x)^2 - (p_y - a_y)^2 - \hat m^2 = \hat m^2 (1 + x/\rho)^2/\Pi^2$ なので、$\hat m(1 + x/\rho)/\Pi$ は左辺の平方根に等しい。結局
+(`outputs/var_01_expansions.out.txt` (b) で sympy 確認。)
+
+一方、(1.4) から、$(p_t/c)^2 = \hat m^2 (ct')^2/\Pi^2$、$(p_x - a_x)^2 = \hat m^2x'^2/\Pi^2$、$(p_y - a_y)^2 = \hat m^2y'^2/\Pi^2$ なので
+
+$$
+\frac{p_t^2}{c^2} - (p_x - a_x)^2 - (p_y - a_y)^2 - \hat m^2
+= \frac{\hat m^2\left[(ct')^2 - x'^2 - y'^2 - \Pi^2\right]}{\Pi^2}
+= \frac{\hat m^2 (1 + x/\rho)^2}{\Pi^2}
+$$
+
+(最後の等号は $\Pi^2$ の定義)。よって $\hat m(1 + x/\rho)/\Pi$ は左辺の平方根に等しい。結局
 
 $$
 H_t = -\left(\sqrt{\frac{p_t^2}{c^2} - \hat m^2 - (p_x - a_x)^2 - (p_y - a_y)^2} + a_s\right)\left(1 + \frac{x}{\rho}\right)
@@ -109,17 +129,17 @@ p = \frac{\partial G}{\partial z},\qquad t = \frac{\partial G}{\partial p_t},\qq
 \tag{1.7}
 $$
 
-(通常の型 3 の母関数 $F_3 = -G$ の関係式 $q = -\partial F_3/\partial p_{\rm old}$、$P = -\partial F_3/\partial z$、$K = H + \partial F_3/\partial s$ と同じ)。計算すると:
+(通常の型 3 の母関数 $F_3 = -G$ の関係式 $q = -\partial F_3/\partial p_{\rm old}$、$P = -\partial F_3/\partial z$、$K = H + \partial F_3/\partial s$ と同じ。$F_3$ の関係式の導出は [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) §6)。計算すると:
 
 - $p = \partial G/\partial z = p(p_t)$: 全運動量の規格化値。
-- $t = z\,\partial p/\partial p_t + t_0$。$\partial p/\partial p_t = p_t/(c^2 p)$ で、$p_t = -E/p_0$ なので $= -E/(p_0 p c^2) = -1/v$ ($v = P c^2/E = p_0 p c^2/E$ は粒子の速さ)。よって $t = -z/v + t_0$、すなわち **$z = -v\,(t - t_0(s))$**。遅れて着く粒子 ($t > t_0$) が $z < 0$、先頭は $z > 0$。
+- $t = z\,\partial p/\partial p_t + t_0$。$p = (1/c)\sqrt{p_t^2 - m^2c^4/p_0^2}$ の微分は $\partial p/\partial p_t = (1/c)\,p_t/\sqrt{p_t^2 - m^2c^4/p_0^2} = (1/c)\,p_t/(c\,p) = p_t/(c^2 p)$ (根号は $c\,p$)。$p_t = -E/p_0$ なので $= -E/(p_0 p c^2) = -1/v$ ($v = P c^2/E = p_0 p c^2/E$ は粒子の速さ)。よって $t = -z/v + t_0$、すなわち **$z = -v\,(t - t_0(s))$**。遅れて着く粒子 ($t > t_0$) が $z < 0$、先頭は $z > 0$。
 - $\partial G/\partial s = p_t\,t_0'(s) = p_t/v_0 = -E/(p_0 v_0)$ ($t_0' = 1/v_0$)。よって
 
 $$
 H = H_t + \frac{E}{p_0 v_0} \quad\Rightarrow\quad (1.1)
 $$
 
-ヘルプの $G$ は、$t_0(s)$ の項が $-t_0(s)$ と印刷され、$p, t$ の式の $c$ の置き方もずれている (自然単位 $c = 1$ で読めば一致)。上の (1.6) は、(1.7) から $z = -v(t - t_0)$ と式 (1.1) の $H$ が出るように直した形 (付録 A)。
+ヘルプの $G$ は、$t_0(s)$ の項が $-t_0(s)$ と印刷されている。$p, t$ の式の $c$ の置き方は、同じ節で $m^2c^2$ と $m^2c^4$ が混在する表記の不統一 ($c = 1$ の単位なら一致する。誤りとは断定しない)。上の (1.6) は、(1.7) から $z = -v(t - t_0)$ と式 (1.1) の $H$ が出るように直した形 (付録 A)。
 
 ## 4. $z$ の運動と $dv$
 
@@ -130,13 +150,13 @@ z' = \frac{\partial H}{\partial p} = -\frac{p}{\sqrt{p^2 - (p_x - a_x)^2 - (p_y 
 \tag{1.8}
 $$
 
-(第 2 項は $\partial E/\partial p = p_0 v$ から)。磁場のない直線上 ($\rho = \infty$、$a = 0$) の軸上の粒子 ($p_x = p_y = 0$) では $z' = -1 + v/v_0 = (v - v_0)/v_0$ で、速い粒子が前に出る、という常識と合う。この差を
+導出: (1.1) の第 1 項は $-\sqrt{p^2 - \cdots}\,(1 + x/\rho)$ で、$\partial\sqrt{p^2 - \cdots}/\partial p = p/\sqrt{p^2 - \cdots}$。第 2 項は、$E = \sqrt{m^2c^4 + p_0^2p^2c^2}$ から $\partial E/\partial p = p_0^2 p\,c^2/E = p_0 v$ ($v = p_0pc^2/E$) なので $\partial[E/(p_0v_0)]/\partial p = v/v_0$ (`outputs/var_01_expansions.out.txt` (c))。磁場のない直線上 ($\rho = \infty$、$a = 0$) の軸上の粒子 ($p_x = p_y = 0$) では $z' = -1 + v/v_0 = (v - v_0)/v_0$ で、速い粒子が前に出る、という常識と合う。この差を
 
 $$
 dv \equiv 1 - \frac{v}{v_0}
 $$
 
-と書く。K64 の `dv` はこれ。$\delta$ から閉じた式で作る: 設計運動量を $mc$ 単位で $p_0 \,(= \beta_0\gamma_0)$、$h_0 = \gamma_0 = \sqrt{1 + p_0^2}$、$h_1 = \sqrt{1 + p_0^2 (1 + \delta)^2}$ とすると $v/v_0 = \beta/\beta_0 = (1 + \delta)\,h_0/h_1$ なので
+と書く。K64 の `dv` はこれ。$\delta$ から閉じた式で作る: 設計運動量を $mc$ 単位で $p_0 \,(= \beta_0\gamma_0)$、$h_0 = \gamma_0 = \sqrt{1 + p_0^2}$、$h_1 = \sqrt{1 + p_0^2 (1 + \delta)^2}$ とすると $v/v_0 = \beta/\beta_0 = (1 + \delta)\,h_0/h_1$ ($\beta = p_1/h_1$、$\beta_0 = p_0/h_0$ ($p_1 = p_0(1+\delta)$) の比。$\beta = (\beta\gamma)/\gamma$ から) なので
 
 $$
 dv = 1 - \frac{(1+\delta)\,h_0}{h_1}
@@ -144,18 +164,23 @@ dv = 1 - \frac{(1+\delta)\,h_0}{h_1}
 \tag{1.9}
 $$
 
-(2 つ目の等号は $h_1^2 - (1 + \delta)^2 h_0^2 = 1 - (1 + \delta)^2 = -\delta(2 + \delta)$ を使った。差の形にして、$\delta \to 0$ の桁落ちを避けている。)
+(2 つ目の等号の導出: $1 - (1 + \delta)h_0/h_1 = [h_1 - (1 + \delta)h_0]/h_1$ の分子分母に $h_1 + (1 + \delta)h_0$ をかけると、分子は $h_1^2 - (1 + \delta)^2h_0^2 = [1 + p_0^2(1 + \delta)^2] - (1 + \delta)^2[1 + p_0^2] = 1 - (1 + \delta)^2 = -\delta(2 + \delta)$。差の形にして、$\delta \to 0$ の桁落ちを避けている。sympy 確認は `outputs/var_01_expansions.out.txt` (d)。)
 
 - `tconvm.f:18` (追跡の入口) の `dv=-g*(1.d0+pr)/h1/(h1+pr*h0)+dvfs` と `tturne.f:879` の `tgetdv` (CALC) は、この式 ($g = \delta$、$pr = 1 + \delta$) と $dv_{\rm fs}$ (RF 周波数のずらし。RFSW ON のときだけ入る) の和。
-- 小さい $\delta$ で $dv \approx -\delta/\gamma_0^2$。したがって $\partial z/\partial\delta = +L/\gamma_0^2$ (長さ $L$ の自由な区間)。K64 の行列の `trans(5,6)` の `dvdp*aln` は、$dv$ の $\delta$ 微分 $= h_0/h_1^3$ (これは $\delta = 0$ で $1/\gamma_0^2$) に $L$ をかけたもの。
+- 小さい $\delta$ の展開: $\delta \to 0$ で $h_1 \to h_0$、分子 $-\delta(2 + \delta) \to -2\delta$、分母 $h_1(h_1 + (1+\delta)h_0) \to h_0\cdot 2h_0$ なので $dv \approx -2\delta/(2h_0^2) = -\delta/\gamma_0^2$。したがって $\partial z/\partial\delta = +L/\gamma_0^2$ (長さ $L$ の自由な区間。$z' = -dv$)。
+- $dv$ の $\delta$ 微分: $v/v_0 = (1+\delta)h_0/h_1$ を $\delta$ で微分する。$h_1 = \sqrt{1 + p_0^2(1+\delta)^2}$ から $dh_1/d\delta = p_0^2(1+\delta)/h_1$。商の微分で $d[(1+\delta)/h_1]/d\delta = [h_1 - (1+\delta)\,p_0^2(1+\delta)/h_1]/h_1^2 = [h_1^2 - p_0^2(1+\delta)^2]/h_1^3 = 1/h_1^3$ ($h_1^2 - p_0^2(1+\delta)^2 = 1$)。よって $d(v/v_0)/d\delta = h_0/h_1^3$、したがって
+$$
+\frac{\partial\,dv}{\partial\delta} = -\frac{h_0}{h_1^3}\;\;(\delta = 0\ \text{で}\ -1/\gamma_0^2)
+$$
+  K64 の `dvdp = h0/h1**3` は**符号を反転した量** ($= -\partial dv/\partial\delta$)。K64 の行列の `trans(5,6)` の `dvdp*aln` は、これに $L$ をかけたもの ($z$ の $\delta$ 微分 $= -L\,\partial dv/\partial\delta = +L\,h_0/h_1^3$)。sympy 確認は `outputs/var_01_expansions.out.txt` (d)。
 - $z' = -dv$ は、$z$ を「基準粒子との経路差」と見るとき、速度差だけから来る部分。傾きを持つ粒子の経路の伸び ($-(1/p_z - 1)$ に当たる項) は、各要素の中で別に数える (四極なら ΔH の流れ。[04_quad.md](04_quad.md) §5)。
 
 ## 5. 追跡の内部変数 $q = p_x/(1+\delta)$
 
 ヘルプは $p_x$ を正準運動量として書くが、K64 の追跡は、座標の入口 (`tconvm`、`idir = -1`) で `px = px/pr`、`py = py/pr` ($pr = 1 + \delta$) に取り替え、出口 (`idir >= 0`) で `px = px + g*px` に戻す。内部の $q_x$ を使うと、式が次のように簡単になる。
 
-- 直線上の傾き: $x' = p_x/p_z = q_x/\sqrt{1 - q_x^2 - q_y^2}$ ($p_z = \sqrt{p^2 - p_x^2 - p_y^2} = p\sqrt{1 - q_x^2 - q_y^2}$)。$\delta$ が式から消え、根号が 1 つの量 $q_x^2 + q_y^2$ だけで書ける。
-- 四極の集束は、規格化した運動量で $q_x' = -(K/p)\,x$ ($K$ は長さあたりの強さ)。$\delta$ は $K/p$ の 1 か所だけに入る。
+- 直線上の傾き: (1.1) で $\rho = \infty$、$a = 0$ なら $H = -\sqrt{p^2 - p_x^2 - p_y^2} + (z\ \text{の項})$。$x' = \partial H/\partial p_x = p_x/\sqrt{p^2 - p_x^2 - p_y^2} = p_x/p_z$ ($p_z$ は $s$ 方向の運動量)。$p_x = p\,q_x$、$p_y = p\,q_y$ を代入すると $p_z = p\sqrt{1 - q_x^2 - q_y^2}$ で、$x' = q_x/\sqrt{1 - q_x^2 - q_y^2}$。$\delta$ ($p$) が式から消え、根号が 1 つの量 $q_x^2 + q_y^2$ だけで書ける (sympy 確認は `outputs/var_01_expansions.out.txt` (e))。
+- 四極の集束: 規格化した運動量の運動方程式は $p_x' = -K\,x$ ($K$ は長さあたりの強さ。勾配を $B\rho_0$ で割ったもので、$p$ を含まない)。$\delta$ は一定なので $q_x' = p_x'/p = -(K/p)\,x$。$\delta$ は $K/p$ の 1 か所だけに入る。
 
 行列 (CALC・Emittance[]) は、解析的な微分の連鎖 (正準運動量のヤコビアン) を作る都合で、正準運動量のまま作る。この 2 つの変数の間の変換 (ヤコビアンの $\delta$ の列の補正) は、[04_quad.md](04_quad.md) 式 (4.37) に書く。
 
@@ -190,8 +215,8 @@ $$
 | `h0` | $\gamma_0 = \sqrt{1 + p_0^2}$ | `tmacro` | `emit6d._Phys.h0` |
 | `p1`、`h1` | $p_1 = p_0\,p$、$h_1 = \sqrt{1 + p_1^2}$ (= `p2h(p1)`。`p2h` は `tfloor.f:463`。$p_1 > 10^3$ では級数) | `tconvm.f`、`tturne.f:869` | (式の内部) |
 | `dv` | $dv = 1 - v/v_0$ (式 (1.9))。`tconvm.f` では `-g*(1.d0+pr)/h1/(h1+pr*h0) + dvfs`、`tgetdv` では `-(pr+1.d0)/h1/(h1+pr*h0)*dp + dvfs` | `tconvm.f`、`tturne.f:879` | `_Particle.dv`、`_Phys.dv()` |
-| `dvfs` | RF 周波数のずらしによる $dv$ への足し込み (RFSW ON のときだけ) | `tmacro` (定義は未確認。使用は `tconvm.f`、`tturne.f:879`) | 未確認 |
-| `dvdp` | $\partial dv/\partial\delta$ = `h0/h1**3` (`tturne.f:880`)。$\delta = 0$ で $1/\gamma_0^2$ | `tgetdv` | `_dvz` (`elkern.py:112`、`emit6d.py:427`) |
+| `dvfs` | RF 周波数のずらしによる $dv$ への足し込み。`tsetdvfs` が `dvfs = FSHIFT` (RFSW ON のとき)、`0` (そうでないとき) とする | `tturne.f:859-866` (`tsetdvfs`、`dvfs=merge(rgetgl1('FSHIFT'),0.d0,rfsw)`)。使用は `tconvm.f`、`tturne.f:879` | `ph.dvfs` (`calc6d.py:533`) |
+| `dvdp` | $-\partial dv/\partial\delta$ = `h0/h1**3` (`tturne.f:880`。符号に注意、§4)。$\delta = 0$ で $1/\gamma_0^2$ | `tgetdv` | `_dvz` (`elkern.py:112`、`emit6d.py:427`) |
 | `cod(1..6)` | CALC の閉軌道 ($x, p_x, y, p_y, z, \delta$) の配列 | `tturne.f` など | `c[0..5]` (0 始まり) |
 | `akk` | $K1/L$ (長さあたりの四極強度、K1 は積分強度 `ak`) | `tsolqu.f:52` (`akk = ak/al`) | `akk` |
 
@@ -199,7 +224,7 @@ $$
 
 ## 付録 A. ヘルプの記述との違い (この章に関わる分)
 
-ヘルプ (K64 版同梱の `Documents/SADHelp.html`、dynamics の Lagrangean・Hamiltonian の節) の式を実際に導いてみて見つけた、記述の誤りと省略。下の表の「ヘルプの記述」は、すべて原文で確認した (この節は TeX 版だけで、平文版は無い)。内容は上の本文で正しい形に直してある。ヘルプの $L_t$ の根号の符号の誤植 ($-\dot y^2$ が $+\dot y^2$)、$H_t$ の $(p_y - a_y)^2$ の符号、$G$ の $t_0$ の項は、確定した誤植。
+ヘルプ (K64 版同梱の `Documents/SADHelp.html`、dynamics の Lagrangean・Hamiltonian の節) の式を実際に導いてみて見つけた、記述の誤りと省略。下の表の「ヘルプの記述」は、すべて原文で確認した (この節は TeX 版だけで、平文版は無い)。内容は上の本文で正しい形に直してある。確定した誤り (原文どうしの矛盾または独立な式の導出で確かめたもの) は、$L_t$ と $L$ の根号の符号 ($-\dot y^2$ が $+\dot y^2$、$-(1+x/\rho)^2\dot s^2$ が $+$ の 2 か所)、$H_t$ の $(p_y - a_y)^2$ の符号、$G$ の $t_0$ の項 (ヘルプ自身の $t = \partial G/\partial p_t$ と矛盾)、$t$ の式の根号内 $-m^2c^2$ (正しくは $+$)。$c$ の置き方の違い (下の表の最後の 2 行) は、$c = 1$ の単位なら一致する表記の不統一で、誤りとは数えない。
 
 | 箇所 | ヘルプの記述 | 正しい形 (本文の式) |
 |---|---|---|
@@ -207,7 +232,8 @@ $$
 | 同じ節の $L$ ($s$ を独立変数にしたもの、式 1.3) の根号 | $\sqrt{c^2t'^2 - x'^2 + y'^2 + (1 + x/\rho)^2}$ | $\sqrt{c^2t'^2 - x'^2 - y'^2 - (1 + x/\rho)^2}$ (次の $p_x, p_y$ の式の分母は正しい形) |
 | Hamiltonian の $H_t$ (式 1.5) | 根号の中に $+(p_y - a_y)^2$ | $-(p_y - a_y)^2$ |
 | 母関数 $G$ (式 1.6) | $G = \frac{z}{c}\sqrt{\cdots} - t_0(s)$ (これでは $t = \partial G/\partial p_t$ に $t_0$ が出ない) | $G = z\,p(p_t) + p_t\,t_0(s)$ |
-| $p, t$ の式 | $p = \sqrt{p_t^2 p_0^2 - m^2c^4}/p_0$ ($c$ が足りない)、$t = -z\sqrt{p^2p_0^2 - m^2c^2}/(cpp_0) + t_0$ (根号の中が $-m^2c^2$。$E$ を作るなら符号は + ) | 式 (1.6)(1.7) とその下の計算 |
-| $E$ の定義 | $E = \sqrt{m^2c^4 + p_0^2 p^2}$ | $E = \sqrt{m^2c^4 + p_0^2p^2c^2}$ ($c = 1$ なら同じ) |
+| $t$ の式 | $t = -z\sqrt{p^2p_0^2 - m^2c^2}/(cpp_0) + t_0$ (根号の中が $-m^2c^2$。$E$ を作るなら符号は + ) | 式 (1.6)(1.7) とその下の計算 |
+| $p$ の式 (表記の不統一) | $p = \sqrt{p_t^2 p_0^2 - m^2c^4}/p_0$ ($c$ が足りない。$c = 1$ なら同じ) | 式 (1.6) |
+| $E$ の定義 (表記の不統一) | $E = \sqrt{m^2c^4 + p_0^2 p^2}$ | $E = \sqrt{m^2c^4 + p_0^2p^2c^2}$ ($c = 1$ なら同じ) |
 
 省略されているもの: (1) 導出の途中全部 (本章の §3)。(2) 追跡の内部変数 $q = p_x/(1+\delta)$ (§5)。(3) $dv$ の式 (§4)。(4) K1 と $a_s$ の関係 ([04_quad.md](04_quad.md) §3)。

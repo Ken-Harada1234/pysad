@@ -1,0 +1,23 @@
+(a) (1.2) -> (1.3)
+  ctp * sqrt(1 - xd^2 - yd^2 - u^2 sd^2) = sqrt(ctp^2 - xp^2 - yp^2 - u^2) :  True
+  a_x xd * ctp = a_x xp (自明):  True
+(b) (1.4), H_t, (1.5)
+  dPi/dx' = -x'/Pi:  True
+  px - ax = mh x'/Pi:  True
+  pt = -mh c^2 t'/Pi:  True
+  x'(px-ax)+y'(py-ay)+t' pt = -mh (Pi^2 + u^2)/Pi:  True
+  H_t = -mh u^2/Pi - u a_s:  True
+  (pt/c)^2-(px-ax)^2-(py-ay)^2-mh^2 = mh^2 u^2/Pi^2:  True
+(c) (1.8)
+  dE/dp = p0^2 p c^2 / E:  True
+  d(-root)/dp = -p/root:  True
+(d) (1.9)
+  h1^2 - (1+d)^2 h0^2 = -d(2+d):  True
+  dv == 閉じた式:  True
+  d(dh1/dd): dh1/dd = P0^2 (1+d)/h1:  True
+  d(dv)/d(delta) + h0/h1^3 = 0:  True
+  d=0 で d(dv)/d(delta) = -1/gamma0^2:  True
+  v/v0 = (1+d) h0/h1 : beta = p1/h1, beta0 = P0/h0, p1 = P0 (1+d) ->  True
+  3 GeV 電子: gamma0 = 5870.85、1/gamma0^2 = 2.9013e-08
+(e) §5: H = -sqrt(p^2 - px^2 - py^2), x' = dH/dpx, q = px/p
+  x' = qx/sqrt(1-qx^2-qy^2):  True
