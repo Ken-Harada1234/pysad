@@ -665,7 +665,7 @@ def _edge_exact(x, px, y, py, pr, rhob, psi, entrance):
         yr = q * q
         af = (1.0 - yr * (1.0 / 6.0)) * y * (1.0 / rb) / pvi
         bf = (0.5 - yr * (1.0 / 24.0)) * y * y * (1.0 / rb) / (pvi2 * pvi)
-        return x + bf * pr, px, y, py - af * px
+        return x + bf * pr * pr, px, y, py - af * px
 
     def body(x, px, y, py):
         s = px * px + py * py
@@ -840,7 +840,7 @@ def _maxwell_edge(x, px, y, py, pr, rb):
     yr = q * q
     af = (1.0 - yr * (1.0 / 6.0)) * y * (1.0 / rb) / pvi
     bf = (0.5 - yr * (1.0 / 24.0)) * y * y * (1.0 / rb) / (pvi2 * pvi)
-    return x + bf * pr, px, y, py - af * px
+    return x + bf * pr * pr, px, y, py - af * px
 
 
 def _straight_k1_core(P, nstep=24):

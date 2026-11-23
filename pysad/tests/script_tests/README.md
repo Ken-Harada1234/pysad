@@ -95,6 +95,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 | [`test_v244_quad_linear_fringe_f1.py`](test_v244_quad_linear_fringe_f1.py) | 68 | 四極・MULT の線形フリンジの係数 F1 の符号 (追跡と CALC・数値積分・gs の保存した出力、B323) |
 | [`test_v250_chromaticity_bend.py`](test_v250_chromaticity_bend.py) | 19 | `Lattice.chromaticity()` の dν/dδ が偏向磁石 (なし・E1/E2・K1≠0・6 極つき) で追跡のヤコビアン・gs の `Twiss["NX",-1]` の差分と一致。`CHROMATICITY` コマンドの単位と BEND の寄与の欠落 (B325)、厚い 6 極の CALC と追跡のずれの切り分け (k64 は 4.4e-4 ずれ、v2 は 4 次にして追跡と一致)・gs の TrackParticles (B326) |
 | [`test_v250_calc_thick_sext_4th.py`](test_v250_calc_thick_sext_4th.py) | 35 | v2 の CALC・Emittance[] の厚い多極 (SEXT〜DODECA) が追跡と同じ 4 次の分割 (B326): 写像が追跡の 1 刻みと一致、行列が厳密な積分と L⁵ で一致 (k64 は L³)、シンプレクティック性、numba 版・python 版の一致、k64 のビット同一、L = 0 は不変、リングの dν/dδ が追跡と 1e-5 以内 |
+| [`test_v250_bend_maxwell_calc_p.py`](test_v250_bend_maxwell_calc_p.py) | 27 | 偏向磁石の端の Maxwell フリンジの COD の更新の因子 p (閉じた式・解析行列との整合・numba と python の一致・gs の保存した出力、B324) |
 | [`test_v2_P3_ae.py`](test_v2_P3_ae.py) | 24 | MULT の端の角 AE1・AE2 と K0 つき MULT のエミッタンス (SAD 照合) |
 | [`test_v2_P3_f1.py`](test_v2_P3_f1.py) | 100 | ANGLE=0 の BEND と MULT の F1・FB1・FB2 の追跡 (SAD 照合) |
 | [`test_v2_D2_edge.py`](test_v2_D2_edge.py) | 36 | 硬い端の極 (ANGLE=0 の BEND) の端の幾何を独立な基準と比べる |

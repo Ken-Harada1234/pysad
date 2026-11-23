@@ -13,7 +13,7 @@
 3. この 1 つの手順から、(a) 偏向磁石の $f = \dfrac{y^2}{2\rho_b}\dfrac{p_x}{p_z}$ (05 章 (5.34))、(b) 四極の $f_{\rm in}$ ((4.27))、(c) $2m$ 極の位置のずれ $\Delta w$ ((7.17))、(d) ソレノイドの $f = -\dfrac{b_z}{8p^2}\,p_\phi p_r$ (ヘルプの DISFRIN の $H$) が、**すべて sympy で一致**した ([edge_01_gauge_generators.out.txt](outputs/edge_01_gauge_generators.out.txt))。
 4. K64 の四極・多極の非線形フリンジは、$f$ の厳密な流れ $\exp(:f:)$ ではなく、**点変換 $x \to x + V + \tfrac12(V\cdot\nabla)V$ を母関数で正準化したもの**。$f = p\cdot V(x)$ の流れの 2 次までと一致し、**差は $K^3$ に比例**する ([edge_02_generating_function.out.txt](outputs/edge_02_generating_function.out.txt) (b): $K$ を 2 倍にして差が約 8 倍)。K64 の $z$ の更新は $\partial G/\partial p$ と一致する。
 5. ソレノイドの端 (`tsfrin`) は $f$ の**厳密な流れ** (差 $4 \times 10^{-19}$)。Maxwell の端の場のローレンツ力の積分とも $b$ の 1 次の項で合う ($x$ で $0.9997$。他の成分は 3〜20%、§14)。
-6. 偏向磁石の硬い端の Maxwell フリンジ ($\Delta x$、$\Delta z$) の因子は $p^2$ 型 (追跡・ヘルプ)。ローレンツ力の積分で独立に確認した ($\delta = 0, 0.3, -0.2$ で比 $1.0000$)。**CALC の `tbedgemaxwell` の COD の更新は $p^1$ 型で、$\delta \ne 0$ のとき $1 + \delta$ 倍ずれる (疑い。付録 B-1 の再確認)**。確定には SAD (gs) での確認が要る。
+6. 偏向磁石の硬い端の Maxwell フリンジ ($\Delta x$、$\Delta z$) の因子は $p^2$ 型 (追跡・ヘルプ)。ローレンツ力の積分で独立に確認した ($\delta = 0, 0.3, -0.2$ で比 $1.0000$)。**CALC の `tbedgemaxwell` の COD の更新は $p^1$ 型で、$\delta \ne 0$ のとき $1 + \delta$ 倍ずれる (K64 の誤り。gs で確認した (05 章 付録 B-1、docs/30 の B324)。pysad の v2 は直してある)**。
 7. 端の効果が使える範囲は、場の展開が収束する $y \ll d$ ($d$ は端の幅)、1 次の摂動が効く $y^2/(2\rho_b d) \ll 1$。階段の極限 $d \to 0$ は**場の強さの 1 次の近似**で、それ以上の次数は意味を持たない (§4.4)。
 
 ## 2. 記号と単位
@@ -207,7 +207,7 @@ $$
 
 05 章 §6.2 に代数的な同値を示した ($ff = \tfrac14(f + fa)\,y\,\mathtt{pv1sqi}$ が、ヘルプの $y^2(1 - y^2/(12\rho_b^2))\,p^2/(2\rho_b(p^2 - p_x^2)^{3/2})$ に等しい)。ここでは数値で再確認した: ランダムな 2000 点 ($\delta \in \pm0.3$、$p_x/p \in \pm0.3$、$y \in \pm10$ mm) で、追跡の式 (`f`、`fa`、`ff` を $q$ 単位から正準に直したもの) とヘルプの式 (入口の $x_2$、$p_{y2}$、$z_2$) の最大差は $2 \times 10^{-20}$ ([edge_03_bend_maxwell_recheck.out.txt](outputs/edge_03_bend_maxwell_recheck.out.txt) (a))。なお、ヘルプの $p_{y2}$ の式は $p_1$ が 1 つ多く、$q$ の規格化と読めば一致する (05 章 付録 A)。
 
-### 8.3 因子 $p$ の独立な再確認 (05 章 付録 B-1 の疑い)
+### 8.3 因子 $p$ の独立な再確認 (05 章 付録 B-1。gs で確認済み)
 
 **主張**: (5.35)〜(5.36) の $\Delta x = \dfrac{y^2}{2\rho_b}\dfrac{p^2}{p_v^3}$、$\Delta z = -\dfrac{y^2}{2\rho_b}\dfrac{p_xp}{p_v^3}$ は $p^2$、$p$ の因子を持つ。CALC の `tbedgemaxwell` (`tbfrie.f:209`、`:211`) の `cod(1) = cod(1) + bf*pr`、`cod(5) = cod(5) - bf*pxi` ($\texttt{bf} = b\,y^2/\rho_b/p_v^3$) は、それぞれ $p^1$、$p^0$。
 
@@ -217,7 +217,7 @@ $$
 
 **(iii) CALC の内部の矛盾**: 解析行列 (`trans`、`pysad.lattice._tbedgemaxwell_mat`) は、$\Delta x$ は $p^2$ 型の、$\Delta z$ は $-bf\,p_x\,p$ ($p^1$ 型) の微分に、$\delta = 0, \pm0.1$ で $10^{-12}$ で一致する。COD の更新 ($p^1$・$p^0$) の中心差分とは、$\delta = 0.1$ で $1.7 \times 10^{-5}$、$\delta = -0.1$ で $2.5 \times 10^{-5}$ 違い ($\delta = 0$ でも $10^{-6}$。$\partial x/\partial\delta$ の成分 (1, 6) が 2 倍違う)。シンプレクティック性 $|M^\top SM - S|$ は、解析行列が 0 (丸め誤差以内)、COD の更新は $1.7 \times 10^{-5}$ ($\delta = 0.1$) で破れ、$p^2$・$p^1$ 型の更新は $1.5 \times 10^{-12}$ ([edge_03_bend_maxwell_recheck.out.txt](outputs/edge_03_bend_maxwell_recheck.out.txt) (c))。
 
-**結論 (疑い)**: 追跡の式と解析行列は物理 ($p^2$ 型) に従い、**CALC の COD の更新だけが因子 $p$ を落としている**。ずれは $\delta\,y^2/(2\rho_b)$ 程度 ($y = 10$ mm、$\delta = 0.05$、$\rho_b = 10$ m で $2 \times 10^{-8}$ m)。**確定には SAD (gs) での COD の比較が要る** (この章では gs と比べていない)。pysad は K64 の直訳のまま (v2 も同じ)。
+**結論 (確定)**: 追跡の式と解析行列は物理 ($p^2$ 型) に従い、**CALC の COD の更新だけが因子 $p$ を落としている**。ずれは $\delta\,y^2/(2\rho_b)$ 程度 ($y = 10$ mm、$\delta = 0.05$、$\rho_b = 10$ m で $2 \times 10^{-8}$ m)。**gs で確認した**: 4 台の BEND ($|\rho_b| = 5$ m) と QUAD 2 台の 1 周 (3 GeV/c、$y = 4$〜$8$ mm、`NORFSW`) で、CALC の閉軌道と `TrackParticles` の閉軌道の差の $p_x$ は、$\delta = 0$ で $5 \times 10^{-13}$、$\delta = 0.05$ で $8.5 \times 10^{-8}$、$0.2$ で $3.8 \times 10^{-7}$、$-0.1$ で $-1.5 \times 10^{-7}$ ($\delta y^2/(2\rho_b)$ の大きさ)。pysad の k64 は gs と $10^{-15}$ 以下で一致し、v2 (COD の更新を $p^2$・$p^1$ 型に直した) では $\delta = 0.05$ で $3.8 \times 10^{-10}$ に下がる (05 章 付録 B-1、docs/30 の B324)。残りは端の Maxwell 以外の $\delta$ の項 (未特定)。
 
 ## 9. CAVI・SOL・MULT の端部
 
@@ -289,7 +289,7 @@ BEND の DISFRIN が Maxwell を止めない点は、ヘルプの記述と違う
 | MULT の回転つき非線形フリンジ | `tquad.f:453-500` | `ttfrins` | §9.2 |
 | 線形フリンジ F1・F2 (追跡) | `tquad.f:501-528` | `tqlfri` (この版では未使用)。`tquad.f:53-67` 等にインライン | (4.33) |
 | 偏向の端 (CALC) | `tbfrie.f:88-125` | `tbedge` | §8.1 |
-| 偏向の Maxwell (更新と行列) | `tbfrie.f:190-229` | `tbedgemaxwell` | (5.36)。B-1 |
+| 偏向の Maxwell (更新と行列) | `tbfrie.f:190-229` | `tbedgemaxwell` | (5.36)。B-1 (COD の更新の因子 $p$ は K64 の誤り、gs で確認) |
 | 偏向の面の直進・面から扇形の面へ | `tbfrie.f:231-289`、`:127-188` | `tbedgedrift`、`tbedgebody` | 05 章 §5 |
 | 偏向の線形フリンジ・Maxwell (追跡) | `tbend.f:372-527` | `tbendcore` | (5.36)、(5.42) |
 | K1 ≠ 0 の端 (CALC のフリンジ。`ak` つき) | `tbfrie.f:1-86` | `tbfrie` | 05 章 §8 |
@@ -304,7 +304,7 @@ BEND の DISFRIN が Maxwell を止めない点は、ヘルプの記述と違う
 |---|---|---|---|
 | 非線形フリンジ 4 次 / 一般 | `track6._ttfrin4`、`_ttfrin_n`、`_ttfrin6`、`_ttfrins` | `ttfrin`、`ttfrins` | 追跡は $q$ 単位。`track6n` (numba) に `ttfrin4_1` など |
 | CALC の四極フリンジ (COD) | `lattice._tqfrie_cod`、`elkern._tqfrie` | `tqfrie` | 正準運動量 |
-| 偏向の Maxwell (COD・行列) | `lattice._tbedgemaxwell_cod`、`_tbedgemaxwell_mat`、`elkern._tbedgemaxwell` | `tbedgemaxwell` | B-1 は直訳のまま |
+| 偏向の Maxwell (COD・行列) | `lattice._tbedgemaxwell_cod`、`_tbedgemaxwell_mat`、`elkern._tbedgemaxwell` | `tbedgemaxwell` | k64 は K64 の直訳 (B-1 の誤りを残す)、v2 は COD の更新を直した |
 | 偏向の端の合成 | `lattice._tbedge_cod`、`_tbedgedrift_cod`、`_tbedgebody_cod` | `tbedge`、`tbedgedrift`、`tbedgebody` | |
 | 双極子の線形フリンジ (CALC) | `lattice._tbfrme_cod` | `tbfrme` | |
 | MULT の線形フリンジ | `track6._tblfri` | `tblfri` | |
@@ -325,7 +325,7 @@ BEND の DISFRIN が Maxwell を止めない点は、ヘルプの記述と違う
 ## 14. 未確認・限界・使った条件
 
 - **使った条件**: 偏向の ODE は $\rho_b = 50$ m、$y = 0.3$ mm、端の形 $\tanh$、$p_y = 0$、$q = 0.1, 0.3$、$\delta = 0, 0.3, -0.2$。エネルギーは規格化 ($p_0 = 1$) で、絶対値を使わない。四極の流れの比較は $K = 4 \times 10^3 \sim 1.6 \times 10^4$ /m² (大きな強さで 3 次の差を出した)。ソレノイドは $|b| = 1$ /m、振幅 0.3 mm。
-- **SAD (gs) との比較はしていない** (ソース・ヘルプ・独立な数値計算だけ)。B-1 の確定には gs での COD の比較が要る。
+- **SAD (gs) との比較**: 偏向の Maxwell の因子 $p$ (B-1) だけ、gs の COD で確認した (4 次元、$\delta = 0.05$〜$0.2$・$-0.1$、$y \le 8$ mm、3 GeV/c、$|\rho_b| = 5$ m)。ほかの式は、ソース・ヘルプ・独立な数値計算だけで、gs とは比べていない。$\Delta z$ の gs での確認はしていない。
 - **確認できなかった**: (i) 偏向の $y^4/(12\rho_b^2)$ の係数 ((5.36) の $a$、$b$ の $y^2/\rho_b^2$ 項): 1 次の摂動 (6.8) では出ない ($1/\rho_b^3$ の 3 次の量)。導出していない。(ii) 偏向の $p_y$ 依存の補正 $f_4$ (§4.3): 導出のみで、ローレンツ力の積分では未確認 ($y \ll d$ の窓では $p_y$ を大きくして $y$ を動かせない)。K64 には無い。(iii) CAVI の端 (6.13) の導出と $1/\beta$ の因子、`tcavfrin` の数値確認。(iv) MULT の端部 (`ttfrins`、`tblfri`) の数値確認。(v) ソレノイドの $p_x$・$y$・$p_y$ は 3〜20% の確認 (§9.3)。(vi) 線形フリンジ ($F1$・$F2$) の導出は 04・05 章のまま。偏向の $L'$ の補正 (5.43) の導出は未。(vii) ヘルプの式は、K64 版同梱の原文 `Documents/SADHelp.html` (式は TeX と平文の両方で埋め込まれている) を直接読んで照合した (付録 A)。ヘルプの図 (`SADHelp_img`) は端部の式に関係しない。
 - **範囲**: 場の強さの 1 次の摂動。$y \ll d$ の展開。階段の端 ($d \to 0$) の極限で、$d$ が有限のときの補正は線形フリンジ (§7) が担う。端の形が違えば高次の項 (特に (6.2) の調和多項式の足し算) は変わる。
 
@@ -364,7 +364,7 @@ BEND の DISFRIN が Maxwell を止めない点は、ヘルプの記述と違う
 
 ## 付録 B. K64 の誤りの疑い (別枠。確定には SAD (gs) での確認が要る)
 
-**B-1 (再確認)**: CALC の `tbedgemaxwell` の COD の更新 (`tbfrie.f:209`、`:211`) が、$\Delta x$ で $p^1$、$\Delta z$ で $p^0$。正しい (追跡・ヘルプ・ローレンツ力の積分) のは $p^2$、$p^1$。ローレンツ力の積分で $\delta = 0.3$ で CALC は $\Delta x$、$\Delta z$ とも 1.3000 倍、$\delta = -0.2$ で 0.8000 倍 (§8.3)。解析行列は $p^2$ 型・$p^1$ 型の微分に一致し、COD の更新と内部で矛盾する。**疑い**。pysad は直していない。
+**B-1 (再確認)**: CALC の `tbedgemaxwell` の COD の更新 (`tbfrie.f:209`、`:211`) が、$\Delta x$ で $p^1$、$\Delta z$ で $p^0$。正しい (追跡・ヘルプ・ローレンツ力の積分) のは $p^2$、$p^1$。ローレンツ力の積分で $\delta = 0.3$ で CALC は $\Delta x$、$\Delta z$ とも 1.3000 倍、$\delta = -0.2$ で 0.8000 倍 (§8.3)。解析行列は $p^2$ 型・$p^1$ 型の微分に一致し、COD の更新と内部で矛盾する。**gs で確認した (K64 の誤り)**。pysad の v2 は直してある (k64 は K64 のまま)。
 
 **B-2 (05 章 B-2 と同じ)**: BEND の DISFRIN が Maxwell を止めない (ヘルプの記述との食い違い。追跡と CALC で一貫)。
 

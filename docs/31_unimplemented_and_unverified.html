@@ -1069,6 +1069,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>v2 は CALC・Emittance[] の厚い多極 (L ≠ 0) を追跡と同じ 4 次にした。k64 は 2 次のまま (差は K2 と L² に比例、L = 0.2・K2 = 2 で dν/dδ に 1.46e-3)。確認した条件: 3 GeV・周長 41.6 m・8 セルの 1 構成 (K2 = 2〜4、L = 0.1〜0.4 m、δ = ±1e-4)、大きなリング A (3 GeV、L = 0.045 m の 6 極) と ASTRID2 (0.58 GeV) の chromaticity()、1 要素の厳密な積分との比較 (L = 0.1〜0.4 m、SEXT・OCT・DECA・DODECA)。未確認: 他のエネルギー・分散の大きい所の強い 6 極での Emittance[]・Touschek の値の動き、MULT (<code>tmulke</code>) と BEND の 6 極成分 (従来のまま 2 次相当)、ずれ・ロールつきの 6 極のヤコビアンと追跡の比較 (対称性・numba 版との一致だけ)</td>
 </tr>
 <tr>
+<td>偏向磁石の端の Maxwell フリンジの COD の更新の因子 p = 1+δ (B324)</td>
+<td>両</td>
+<td><strong>v2 は Δx = bf·p²、Δz = −bf·px·p に直した</strong> (追跡 <code>tbendcore</code>・解析行列・ローレンツ力の積分と同じ。CALC の閉軌道と追跡の閉軌道の差 dc の px が k64 の 0.5〜9% に減る。δ = 0 は変わらない)。k64 は gs と同じ (dc の px が δ = 0.05 で 8.5e-8、0.2 で 3.8e-7)。限界: 4 次元の閉軌道だけ gs と比べた (3 GeV/c、ρ = ±5 m、y = 4〜8 mm、δ = 0.05〜0.2・−0.1、F1 = 0、FRINGE = 1・DISFRIN = 0)。Δz は gs と直接比べていない (閉じた式と解析行列の数値微分で確認)。v2 の dc の残り (δ = 0.2 で x 3e-8、px 3e-8) は端の Maxwell 以外の δ の項で未特定。F1 ≠ 0・FRINGE = 2・3・K1 ≠ 0 の BEND・ANGLE = 0 の BEND (tsteee) の gs の比較はしていない</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>
