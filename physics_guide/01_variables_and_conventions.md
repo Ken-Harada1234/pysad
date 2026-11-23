@@ -43,7 +43,7 @@ $$
 
 ## 3. ラグランジアンからハミルトニアンまで
 
-ヘルプの dynamics > Lagrangean・Hamiltonian の途中を、省かずに追う。
+ヘルプの dynamics > Lagrangean・Hamiltonian の途中を、省かずに追う。(解析力学の基礎からの別の導き方 (ローレンツ力の一般化ポテンシャル、$t \to s$ の入れ替え、展開の途中式) は [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md)。)
 
 **位置と時間の座標**。基準線に沿った距離 $s$ と、法線・従法線方向の変位 $(x, y)$ で位置を決める ($\vec{n}, \vec{b}, \vec{t}$ は右手系)。曲率 $1/\rho$ は水平面だけ (ヘルプの independent-variable)。微小な変位は
 
@@ -169,6 +169,33 @@ $$
 - この章は、曲率 $1/\rho$ が $0$ の場合の導出に絞った。$1/\rho \neq 0$ (偏向磁石) の $H$ の展開・ソレノイドの $a_x, a_y$ の取り扱いは、各要素の章で書く。
 - 加速のある要素 (設計運動量 $p_0$ が $s$ とともに変わる場合) は、(1.7) の $t_0(s)$ と $E/(p_0 v_0)$ の取り扱いを変える。ヘルプも「特別な扱い」としか書いていない。この章では扱わない。
 - SAD のヘルプの式と実装の関係 (「ヘルプの式は実装そのままではない」) は、各要素の章の「Fortran の対応」に書く。
+
+## 8. 記号の凡例 (SAD の変数名の注釈の規約と、共通の名前の表)
+
+物理ガイドは、SAD の Fortran の変数名をそのまま使う (`xs1`、`dc1`、`w1` など)。数学の標準の記号ではないので、次の規約で注釈する。
+
+1. **書き方**: SAD・Fortran・pysad の変数名は、コード体 (`xs1`) で書く。数学の記号 ($\varphi - \sin\varphi$) とは区別する。
+2. **初出で説明する**: 初めて出てくる場所で、「`xs1` ($= \varphi - \sin\varphi$、Fortran の `xsincos` が返す)」のように、(i) 中身の式、(ii) 定義の場所 (ファイル:行、サブルーチン)、(iii) なぜその形で持つか (例: $\varphi$ が小さいときの桁落ちの回避)、を書く。
+3. **以後も都度注釈する**: 式の直後や表の脚注で、「`xs1` ($= \varphi - \sin\varphi$)」のように、その式に出る名前を毎回書く。
+4. **章末の表**: 各章の末尾に「この章で使う Fortran の変数名」の表 (名前、式、定義の場所、pysad での名前) を置く。四極の章は [04_quad.md](04_quad.md) §16。
+5. **確認の基準**: 定義は実際のコード (SAD の Fortran と pysad) で確認する。確認できない名前は「未確認」と書く。
+
+この章で出てくる共通の名前:
+
+| Fortran の名前 | 式・意味 | 定義の場所 | pysad での名前 |
+|---|---|---|---|
+| `pr` | $p = 1 + \delta$ (全運動量の規格化値) | `tconvm.f` (`pr = 1.d0 + g`)、`tgetdv` (`tturne.f:869`、`pr = 1.d0 + dp`) | `pr` |
+| `g(i)`、`dp` | $\delta$ (運動量の偏差)。追跡の配列 `g(i)`、`tgetdv` の引数 `dp` | `tconvm.f`、`tturne.f:869` | `c[5]`・`dp` |
+| `p0` | 設計運動量 ($mc$ 単位。$\beta_0\gamma_0$) | `tmacro` (モジュール) | `emit6d._Phys.p0` |
+| `h0` | $\gamma_0 = \sqrt{1 + p_0^2}$ | `tmacro` | `emit6d._Phys.h0` |
+| `p1`、`h1` | $p_1 = p_0\,p$、$h_1 = \sqrt{1 + p_1^2}$ (= `p2h(p1)`。`p2h` は `tfloor.f:463`。$p_1 > 10^3$ では級数) | `tconvm.f`、`tturne.f:869` | (式の内部) |
+| `dv` | $dv = 1 - v/v_0$ (式 (1.9))。`tconvm.f` では `-g*(1.d0+pr)/h1/(h1+pr*h0) + dvfs`、`tgetdv` では `-(pr+1.d0)/h1/(h1+pr*h0)*dp + dvfs` | `tconvm.f`、`tturne.f:879` | `_Particle.dv`、`_Phys.dv()` |
+| `dvfs` | RF 周波数のずらしによる $dv$ への足し込み (RFSW ON のときだけ) | `tmacro` (定義は未確認。使用は `tconvm.f`、`tturne.f:879`) | 未確認 |
+| `dvdp` | $\partial dv/\partial\delta$ = `h0/h1**3` (`tturne.f:880`)。$\delta = 0$ で $1/\gamma_0^2$ | `tgetdv` | `_dvz` (`elkern.py:112`、`emit6d.py:427`) |
+| `cod(1..6)` | CALC の閉軌道 ($x, p_x, y, p_y, z, \delta$) の配列 | `tturne.f` など | `c[0..5]` (0 始まり) |
+| `akk` | $K1/L$ (長さあたりの四極強度、K1 は積分強度 `ak`) | `tsolqu.f:52` (`akk = ak/al`) | `akk` |
+
+数学関数 (`xsincos`・`xsincosh`・`sqrt1`・`p2h`) は `tfloor.f` の `mathfun` モジュール。小さい引数での桁落ちを避けるための関数で、定義は [04_quad.md](04_quad.md) §16 の表。
 
 ## 付録 A. ヘルプの記述との違い (この章に関わる分)
 

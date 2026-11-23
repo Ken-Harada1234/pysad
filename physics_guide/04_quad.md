@@ -2,7 +2,7 @@
 
 **この章で分かること**: 四極のハミルトニアンから、(1) 厳密に解ける部分と残りへの分割、(2) 追跡の写像 (K64 の Fortran と pysad の Python)、(3) 転送行列 (CALC・Emittance[] 用)、(4) 端部 (フリンジ) までを、途中の式を省かずに追う。ヘルプが書いていない途中を埋める。式番号 $(4.n)$ から、§12 の Fortran の対応表と §13 の pysad の対応表を引ける。
 
-**前提**: [01_variables_and_conventions.md](01_variables_and_conventions.md) の §1〜§2 (正準変数 $(x, p_x, y, p_y, z, \delta)$、追跡の内部変数 $q = p_x/(1+\delta)$、$dv$、K1 の約束)。解析力学と加速器の線形光学。SAD の内部は知らなくてよい。
+**前提**: [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) (ハミルトニアンと運動方程式の導出。§9.5 が四極) と、[01_variables_and_conventions.md](01_variables_and_conventions.md) の §1〜§2 と §8 (SAD の変数名の注釈の規約) (正準変数 $(x, p_x, y, p_y, z, \delta)$、追跡の内部変数 $q = p_x/(1+\delta)$、$dv$、K1 の約束)。解析力学と加速器の線形光学。SAD の内部は知らなくてよい。
 
 **読む順**: §1 (結論) → §2 (記号) → §3〜§5 (H と、厳密に解ける 2 つの部分) → §6 (分割と刻みの数) → §7 (端部) → §8〜§10 (行列と追跡の関係)。Fortran・Python のコードを読みながら使うときは §12・§13 から入る。放射・ソレノイド内の四極は別の章 (§11、§15)。
 
@@ -59,7 +59,7 @@ a_s = -\frac{K}{2}\left(x^2 - y^2\right)
 \tag{4.2}
 $$
 
-(これが水平収束 $p_x' = -Kx$ を与える符号は、次の式 (4.3) から $p_x' = -\partial H/\partial x$ を取って確かめられる。)
+(これが水平収束 $p_x' = -Kx$ を与える符号は、次の式 (4.3) から $p_x' = -\partial H/\partial x$ を取って確かめられる。) 曲線座標での $A_s$ と磁場の関係 ($B_x = \partial_yA_s/(1 + x/\rho)$ など)、偏向磁石の $A_s$ との対比、(4.2) から運動方程式を出すまでの途中式は、[01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) §9.3〜§9.5。ラグランジアンから $H$ とハミルトンの方程式を出す手順 (§5)、$t \to s$ の入れ替え (§8) も、そこに書いてある。
 
 ### 3.2 $H$、$H_2$、$\Delta H$
 
@@ -91,6 +91,15 @@ $$
 
 で、横方向の運動量の 4 乗の大きさ。
 
+**(4.6) の導出 (展開を 1 段ずつ)**。$Q \equiv p_x^2 + p_y^2$ ($\ll p^2$。条件: 傾き $\sqrt Q/p \ll 1$) とおく。
+
+1. $\sqrt{p^2 - Q} = p\sqrt{1 - Q/p^2}$。$u \equiv Q/p^2$ (2 次の微小量) で $\sqrt{1 - u} = 1 - \dfrac u2 - \dfrac{u^2}{8} - \dfrac{u^3}{16} - \cdots$。
+2. したがって $\sqrt{p^2 - Q} = p - \dfrac{Q}{2p} - \dfrac{Q^2}{8p^3} - \dfrac{Q^3}{16p^5} - \cdots$。
+3. $\Delta H = p - \sqrt{p^2 - Q} - \dfrac{Q}{2p}$ に入れると、$p$ の項と $Q/(2p)$ の項が相殺して $\Delta H = \dfrac{Q^2}{8p^3} + \dfrac{Q^3}{16p^5} + \cdots$。
+4. 最初の項 ($Q$ の 2 乗 = 運動量の 4 乗) を残し、次の $Q^3/(16p^5)$ (6 乗。最初の項との比が $Q/(2p^2)$) を捨てたのが (4.6)。
+
+(sympy の `series` で確認: [ham_06_series.out.txt](outputs/ham_06_series.out.txt) (f)。ただし SAD は、$\Delta H$ を (4.5) のまま**厳密に**使う (§5)。(4.6) は大きさの見積もりだけに使う。)
+
 ### 3.3 なぜ分けるか
 
 - $H_2$ は $(x, p_x, y, p_y)$ の 2 次式。運動方程式が線形で、**どんな強さ $KL$ でも厳密に解ける** (§4)。行列は強い四極でも (厚肉のまま) 正しい。ヘルプ (remarks-on-dynamics) の言う「設計軌道のまわりで厳密な線形の変換」はこれ。
@@ -112,7 +121,18 @@ z' = \frac{\partial H_2}{\partial p} = -dv - \frac{p_x^2 + p_y^2}{2p^2},\quad p'
 \tag{4.7}
 $$
 
-($z'$ の第 1 項は $E/(p_0 v_0)$ の $p$ 微分で、01 章 §4。第 2 項は $\partial[(p_x^2 + p_y^2)/(2p)]/\partial p$。) 規格化した運動量 $q_x = p_x/p$、$q_y = p_y/p$ と $w \equiv \sqrt{K/p}$ で書くと、
+($z'$ の第 1 項は $E/(p_0 v_0)$ の $p$ 微分で、01 章 §4。第 2 項は $\partial[(p_x^2 + p_y^2)/(2p)]/\partial p$。)
+
+**偏微分を 1 項ずつ書く**。(4.4) の $H_2$ の各項を、$T_1 = -p$、$T_2 = (p_x^2 + p_y^2)/(2p)$、$T_3 = K(x^2 - y^2)/2$、$T_4 = E/(p_0v_0)$ として ($s$ が独立変数。ハミルトンの方程式は [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) §8.3 の (1a.51a)):
+
+| 項 | $\partial/\partial p_x$ | $\partial/\partial x$ | $\partial/\partial p_y$ | $\partial/\partial y$ | $\partial/\partial p$ |
+|---|---|---|---|---|---|
+| $T_1 = -p$ | 0 | 0 | 0 | 0 | $-1$ |
+| $T_2 = (p_x^2 + p_y^2)/(2p)$ | $p_x/p$ | 0 | $p_y/p$ | 0 | $-(p_x^2 + p_y^2)/(2p^2)$ |
+| $T_3 = K(x^2 - y^2)/2$ | 0 | $Kx$ | 0 | $-Ky$ | 0 |
+| $T_4 = E/(p_0v_0)$ | 0 | 0 | 0 | 0 | $\partial[E/(p_0v_0)]/\partial p = v/v_0$ |
+
+表の合計から $x' = \partial H_2/\partial p_x = p_x/p$、$p_x' = -\partial H_2/\partial x = -Kx$、$y' = p_y/p$、$p_y' = -\partial H_2/\partial y = +Ky$、$z' = \partial H_2/\partial p = -1 + v/v_0 - (p_x^2 + p_y^2)/(2p^2)$ ($= -dv - (p_x^2+p_y^2)/(2p^2)$。$dv = 1 - v/v_0$)。$p' = -\partial H_2/\partial z = 0$ ($H_2$ が $z$ を含まない)。これが (4.7)。偏微分の表は sympy でも確認した ([ham_06_series.out.txt](outputs/ham_06_series.out.txt) (d))。 規格化した運動量 $q_x = p_x/p$、$q_y = p_y/p$ と $w \equiv \sqrt{K/p}$ で書くと、
 
 $$
 x'' = -w^2 x,\qquad y'' = +w^2 y
@@ -138,6 +158,8 @@ v_2 &= y\,w\sinh\varphi + q_y\,(\cosh\varphi - 1), & q_y &\to q_y + v_2
 \end{aligned}
 \tag{4.10}
 $$
+
+**Fortran の変数名の注釈** (定義は §16 の表): 式 (4.9)(4.10) の $\cos\varphi - 1$ は `dc1`、$\sin\varphi$ は `s1`、$\cosh\varphi - 1$ は `dch2`、$\sinh\varphi$ は `sh2`、$w = \sqrt{K/p}$ は `w1`、$\varphi = w\ell$ は `phi1`、$u_1, u_2, v_1, v_2$ は `u1`、`u2`、`v1`、`v2` ($x$ の更新量、$q_x$ の更新量、$y$ の更新量、$q_y$ の更新量。`tsolqu.f` のローカル変数)。`dc1`、`dch2` のように「$-1$」を引いた形で持つのは、$\varphi$ が小さいとき $\cos\varphi \approx 1$ で桁落ちする引き算を避けるため。
 
 「$x \to x + u_1$」と差の形で書き、$\cos\varphi - 1$ や $\varphi - \sin\varphi$ を級数で直接計算するのは、小さい $\varphi$ の桁落ちを避けるため (SAD の `xsincos`・`xsincosh`、`tfloor.f:260`・`:330`)。正準運動量 $p_x = p\,q_x$ の行列は、$p_x \to p\,q_x$ を代入して
 
@@ -602,6 +624,30 @@ z の行 (4.38):  追跡の数値微分とシンプレクティック条件で�
 - **CALC の $z$ の行**: pysad の `_el_cod_step` (4D の CALC 用) は $z$ の行 (5,1..4) を持たず、6 次元 (放射つき平衡エミッタンス) の `emit6d` が持つ。`emit6d._jac_tqente` の $z$ の行は (5,2)・(5,4) が欠けている (傾きの 3 乗の大きさ。$|J^\top J_0 J - J_0| = 2 \times 10^{-9}$。軌道が (3 mm, 2 mrad, 1 mm, −1 mrad、$\delta = 0.003$) の例)。
 - **sympy**: この環境には sympy がないので、導出の検算は数値 (行列指数・数値積分・複素ステップ微分・DOP853) で行い、導出の代数は本文に手で書いた。
 - ヘルプの誤植は [01_variables_and_conventions.md](01_variables_and_conventions.md) の付録 A。この章に関わる分は次の付録 A。
+
+## 16. この章で使う Fortran の変数名
+
+SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_variables_and_conventions.md) §8。この表の定義は、実際のコード (Fortran: `SAD-master/src`、pysad: `pysad/`) で確認した。以下、「小さい $\varphi$ の桁落ち」とは、$\cos\varphi - 1$、$\varphi - \sin\varphi$ のような、近い数の差が、$\varphi \to 0$ で有効数字を失うこと。`xsincos`・`xsincosh` は、小さい $|\varphi|$ ではこれらを直接テイラー級数で計算して防ぐ。
+
+| Fortran の名前 | 式 | 定義の場所 (Fortran) | pysad での名前 |
+|---|---|---|---|
+| `w1` | $w = \sqrt{K/p} = $ `sqrt(akkp)`、`akkp = akk/pr` ($p$ = `pr` $= 1 + \delta$、`akk` $= K1/L$) | `tsolque.f:217` `tzsetparam0` | `track6n.py:446` `tzsetparam0` の `w1` |
+| `phi1` | $\varphi = w L$ (本体では刻みの長さ `aln0`)。`min(phimax, max(-phimax, aln*w1))` で $\pm$`phimax` に切る (`phimax = 100.d0`、`tsolque.f:2`。極端に強い四極で $\cosh$ がオーバーフローしないため。この理由は推定) | `tsolque.f:234` の `tzsetparam0` | `phi1` (同じ関数。100 で切る) |
+| `s1` | $\sin\varphi$ | `xsincos(x,s,xs,c,dc)` の `s` (`tfloor.f:260`) | `geo.py:84` `xsincos` の戻り値 1 つ目 |
+| `xs1` | $\varphi - \sin\varphi$ | 同 `xs` | 戻り値 2 つ目 |
+| `c1` | $\cos\varphi$ | 同 `c` | (`tzsetparam0` は返さない) |
+| `dc1` | $\cos\varphi - 1$ (小さい $\varphi$ では $-\varphi^2/2 + \varphi^4/24 - \cdots$ の級数。大きい $\varphi$ では $-\sin^2\varphi/(1 + \cos\varphi)$) | 同 `dc` | 戻り値 4 つ目 |
+| `sh2` | $\sinh\varphi$ | `xsincosh(x,sh,xsh,ch,dch)` の `sh` (`tfloor.f:330`) | `xsincosh` の戻り値 1 つ目 |
+| `xsh2` | $\varphi - \sinh\varphi$ (負の値。小さい $\varphi$ では $-\varphi^3/6 - \cdots$) | 同 `xsh` | 戻り値 2 つ目 |
+| `ch2` | $\cosh\varphi$ | 同 `ch` | (返さない) |
+| `dch2` | $\cosh\varphi - 1$ (大きい $\varphi$ では $\sinh^2\varphi/(1 + \cosh\varphi)$) | 同 `dch` | 戻り値 4 つ目 |
+| `u1`、`u2`、`v1`、`v2` | 式 (4.9)(4.10) の $u_1 = x\,\mathrm{dc1} + q_x\,\mathrm{s1}/w$ など | `tsolqu.f` の本体ループ | `quadbody.py:133-150` `body` |
+| `pxi`、`pyi`、`ap` | 刻みの入口の $q_x$、$q_y$ (規格化した運動量)、`ap` $= q_x^2 + q_y^2$ | `tsolqu.f` | 同 |
+| `dpz`、`r` | `dpz = sqrt1(-ap)` ($= \sqrt{1 - q_x^2 - q_y^2} - 1$)、`r = -dpz/(1+dpz)*aln0` (ΔH の運動学的ドリフトの長さ。最初と最後の刻みは半分) | `tsolqu.f`、`sqrt1` は `tfloor.f:505` ($\sqrt{1+x} - 1$ を桁落ちなく) | `_qb_drift` |
+| `dv` | $dv = 1 - v/v_0$ (01 章 §8) | `tgetdv`、`tconvm.f` | `dv` |
+| `ndiv`、`aln0` | 刻みの数、1 刻みの長さ (§6.3) | `tsolqu.f` | `quadbody.ndiv()`、`aln1` |
+
+未確認: `dpz`・`r` の式と §5 の式 (4.15)〜(4.17) との対応の行ごとの確認 (§12 の表にある範囲を超えるもの)。
 
 ## 付録 A. ヘルプの記述・K64 との違い (四極)
 

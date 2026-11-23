@@ -1,0 +1,31 @@
+== (a) ベクトル恒等式 ∇(a·b) = (a·∇)b + (b·∇)a + a×(∇×b) + b×(∇×a) を成分で ==
+  4 項の恒等式 (3 成分): 成立
+  x 成分の中身: (a·∇)b_x + (b·∇)a_x + [a×(∇×b)]_x + [b×(∇×a)]_x。第 2・4 項は a の r 微分を含む
+
+  v が r と独立 (∂v/∂x_j = 0): 第 2・4 項が消えて ∇(v·A) = (v·∇)A + v×(∇×A) になる
+  (A·∇)v の 3 成分: [0, 0, 0]、A×(∇×v) の 3 成分: [0, 0, 0]
+  ∇(v·A) - [(v·∇)A + v×(∇×A)] = [0, 0, 0]
+  x 成分の展開: [v×(∇×A)]_x = v_y(∂_x A_y - ∂_y A_x) + v_z(∂_x A_z - ∂_z A_x)
+    手で書いた式との差: 0
+
+== (b) 全微分 dA/dt = ∂A/∂t + (v·∇)A (A は r(t) を通じて t に依存) ==
+  例 A_x = a1*t*z + t**2*x + x**2*y : 全微分 - (∂_t A + v·∇A) = 0
+  例 A_y = a2*t*z**3 + sin(x*y) : 全微分 - (∂_t A + v·∇A) = 0
+  例 A_z = a3*t**3*y + x*exp(z) : 全微分 - (∂_t A + v·∇A) = 0
+  → dA/dt = ∂_t A + v_x ∂_x A + v_y ∂_y A + v_z ∂_z A (成分ごとの鎖則)
+
+== (c) 一般化力 Q = -∂U/∂r + d/dt(∂U/∂v)、U = e(φ - A·v) ==
+  ∂U/∂v_i = -e A_i : [0, 0, 0]
+  成分 x: Q - e(E + v×B) = 0
+  成分 y: Q - e(E + v×B) = 0
+  成分 z: Q - e(E + v×B) = 0
+  第 2 項だけ (d/dt ∂U/∂v) を落とすと、差は x 成分で e*(v_x*Derivative(A_x(x, y, z, t), x) + v_y*Derivative(A_x(x, y, z, t), y) + v_z*Derivative(A_x(x, y, z, t), z) + Derivative(A_x(x, y, z, t), t))
+  → 落とした差は e dA/dt = e(∂_t A + (v·∇)A) そのもの。追加項 d/dt(∂U/∂v) = -e dA/dt が必要
+
+== (d) 相対論的ラグランジアン L = -m0 c^2 sqrt(1 - v^2/c^2) - e(φ - A·v) ==
+  p_i = ∂L/∂v_i - (γ m0 v_i + e A_i) = [0, 0, 0]
+  → 正準運動量 p = γ m0 v + e A (機械運動量 γ m0 v に e A が加わる)
+  成分 x: [d/dt(∂L/∂v) - ∂L/∂r] - [d(γ m0 v)/dt - e(E + v×B)] = 0
+  成分 y: [d/dt(∂L/∂v) - ∂L/∂r] - [d(γ m0 v)/dt - e(E + v×B)] = 0
+  成分 z: [d/dt(∂L/∂v) - ∂L/∂r] - [d(γ m0 v)/dt - e(E + v×B)] = 0
+  → EL 方程式は d(γ m0 v)/dt = e(E + v×B) (ローレンツ力の運動方程式) と同じ

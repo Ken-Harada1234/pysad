@@ -14,6 +14,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | 章 | 内容 | 状態 |
 |---|---|---|
 | [01_variables_and_conventions.md](01_variables_and_conventions.md) | 変数と約束。正準変数、ラグランジアンから母関数まで、$dv$、$p_x/(1+\delta)$、K1 の約束 (四極の章に必要な範囲) | ✓ (四極に必要な範囲。ほかは予定) |
+| [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) | **ハミルトニアンの導出**。ラグランジアン、速度依存のポテンシャルと一般化力・一般化運動量、ルジャンドル変換、正準変換、Frenet–Serret 座標、$t \to s$ の入れ替え、2 次の展開と偏向・四極の運動方程式 | ✓ |
 | 00_overview.md | 全体像。ハミルトニアンから Fortran・Python までの流れ、3 系統の実装 (追跡・行列・解析微分) | 予定 |
 | 02_drift.md | ドリフトと $dv$、COD のまわりの線形化 | 予定 |
 | 03_symplectic_integrators.md | 分割の一般論 (Strang、Yoshida、力勾配型)、刻みの数の一覧 | 予定 |
@@ -32,10 +33,11 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | 16_undulator_beambeam.md | アンジュレータ、ビーム・ビーム | 予定 |
 | 17_collective.md | 集団効果 (空間電荷、ウェイク、CSR、Touschek・IBS) | 予定 |
 | 18_nonlinear_bridge.md | 非線形への橋渡し (正規形、ADTS・RDT) | 予定 |
+| [C_poisson_lie.md](C_poisson_lie.md) | 付録: ポアソン括弧とリー演算子 $\exp(:f:)$ (ドリフト、四極、6 極の例、合成の順序、SAD のヘルプの記法との対応) | ✓ |
 | A_help_vs_source.md | 付録: ヘルプの式と K64 のソースの食い違い・誤植の一覧 | 予定 (01 章と 04 章の付録 A に先に書いてある) |
 | B_script_index.md | 付録: 確認スクリプトの一覧 | 予定 (下の表) |
 
-読む順の目安: **01 → 04** (四極を例に、ガイドの書き方を掴む)。そのあと、要素別に拾い読みしてよい。
+読む順の目安: **01 → 01a (導出を詳しく追うとき) → 04**。ヘルプの $\exp(:H:)$ の記法は付録 C。**01 → 04** (四極を例に、ガイドの書き方を掴む)。そのあと、要素別に拾い読みしてよい。
 
 ## 共通の記号の表 (最小限)
 
@@ -63,6 +65,7 @@ py -3.12 physics_guide/scripts/quad_03_integrator_order.py      # 図 physics_gu
 py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py
 py -3.12 physics_guide/scripts/quad_05_fringe.py
 py -3.12 physics_guide/scripts/quad_06_invariants.py
+py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
 結果は標準出力と `physics_guide/outputs/<スクリプト名>.out.txt` に出る (UTF-8)。本文に引用した数字は、この出力のもの。スクリプトは、どれも数十秒以内。`physics_guide/scripts/_common.py` が共通部 (リポジトリのルートを `sys.path` に足す、出力の保存、日本語フォントの設定、四極 1 台のラティスの作成)。
@@ -75,13 +78,20 @@ py -3.12 physics_guide/scripts/quad_06_invariants.py
 | `quad_04_matrix_vs_map.py` | 04 | CALC の行列と追跡の写像の微分の一致、$z$ の行、シンプレクティック性 |
 | `quad_05_fringe.py` | 04 | フリンジ (母関数、Maxwell の場の端の積分、F1・F2、シンプレクティック性) |
 | `quad_06_invariants.py` | 04 | 保存量と分割の誤差 |
+| `ham_01_lorentz_potential.py` | 01a | ベクトル恒等式、$dA/dt$、一般化力 (追加項)、$\vec p = \gamma m_0\vec v + e\vec A$、ラグランジュ方程式 |
+| `ham_02_legendre.py` | 01a | ルジャンドル変換、$H = c\sqrt{(\vec p - e\vec A)^2 + m_0^2c^2} + e\phi$ |
+| `ham_03_frenet_f3.py` | 01a | 母関数 $F_3$ の $\vec P$、ポアソン括弧、$A_s$ と磁場 |
+| `ham_04_t_to_s.py` | 01a | $t \to s$: $P_t = -H$、$\tilde H = -p_s$、陰関数の微分 |
+| `ham_05_expansion.py` | 01a | 2 次の展開、偏向磁石・四極の運動方程式、展開の誤差の振幅依存性 |
+| `ham_06_series.py` | 01a、04 | 展開の途中式 (series)、偏微分の 1 項ずつの表、$\Delta H$ の展開 |
+| `ham_07_lie_operator.py` | 付録 C | ポアソン括弧、$\exp(:f:)$ の例、合成の順序、BCH、線形写像 |
 
-**環境の注意**: 導出の検算は数値で行う (sympy は使っていない。環境に入っていないため)。numba のキャッシュが古いときは `py -3.12 -m pysad.nbcache --force`。台本の実行 (`run_sad_string`) を使うので、SAD の Packages は要らない。
+**環境の注意**: 四極の章の検算は数値 (numpy・scipy) で行う。導出の章 (01a と付録 C) の検算は sympy (`ham_*.py`。`py -3.12` に sympy 1.14 が入っていること。数秒) で行う。numba のキャッシュが古いときは `py -3.12 -m pysad.nbcache --force`。台本の実行 (`run_sad_string`) を使うので、SAD の Packages は要らない。
 
 ## 数式の書き方と HTML の注意
 
 - 数式は md の中に TeX で書く: インラインは `$x_1$`、独立した行は `$$ ... $$`、式番号は `\tag{4.7}`。文字の `$` は `\$`。インラインの `$` の内側の前後は空白にしない (閉じる `$` の直後に数字を置かない)。コードブロックと、バッククォートの中の `$` は数式にならない。
-- HTML は `py -3.12 tools/build_html.py --include-untracked physics_guide` で作る (md と同じ名前の `.html`)。**HTML を作るとき、数式は KaTeX で HTML の部品に変換され、数式として表示される** (変換は `tools/README.md` の「数式」。Node.js が要る。ない環境で作ると、数式は TeX のまま入り、警告が出る)。md を直接読むときは TeX のまま読む。この 3 つの文書で、変換エラーは 0。
+- HTML は `py -3.12 tools/build_html.py --include-untracked physics_guide` で作る (md と同じ名前の `.html`)。**このリポジトリの `tools/build_html.py` は数式 (TeX) を変換しない** (`tools/README.md` の「限界」)。数式は TeX のまま HTML に入るので、数式として読むときは md を、TeX を描画できるビューアで読む。KaTeX による描画 (Node.js が要る) の変換器は、この作業ツリーの `tools/` にはない。
 - 図は `physics_guide/figures/` に置き、md から相対パスで参照する (300 KB 以下の png。日本語のラベルは、スクリプトの `_common.font()` の設定で描く)。
 - 文書間のリンクは `[04_quad.md](04_quad.md)` のような相対リンク。docs への参照は、`docs/<名前>` の形で統一する (docs の番号が変わったときの一括置換のため)。
 
