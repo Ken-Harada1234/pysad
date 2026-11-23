@@ -11,6 +11,11 @@ import sys
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
+# 環境変数 PYSAD_SRC に別の pysad のルートを指定すると、そちらの pysad を使う (リポジトリのルートより優先)。
+# 例: ガイドの一部の確認は、v2.4.4 以降の pysad (B323 の修正入り) で行う。使った pysad の場所は pysad_src() で分かる。
+_SRC = os.environ.get('PYSAD_SRC')
+if _SRC:
+    sys.path.insert(0, os.path.abspath(_SRC))
 OUT_DIR = os.path.join(ROOT, 'physics_guide', 'outputs')
 FIG_DIR = os.path.join(ROOT, 'physics_guide', 'figures')
 
@@ -91,3 +96,9 @@ def make_bend(L, ANGLE, extra='', momentum='3GEV'):
            % (momentum, L, ANGLE, extra))
     ffs, _ = run_sad_string(src, out=io.StringIO())
     return ffs, [e for e in ffs.lat.elements if e.name == 'BA'][0]
+
+
+def pysad_src():
+    """実際に import される pysad のフォルダ (出力に書いておく用)"""
+    import pysad
+    return os.path.dirname(os.path.abspath(pysad.__file__))

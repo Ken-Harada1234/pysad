@@ -431,7 +431,7 @@ z_2 &= z_1 - \bigl(a x_1 + b(1 + \tfrac{a}{2})\,q_{x2}\bigr)q_{x1} + \bigl(a y_1
 \tag{4.33}
 $$
 
-(出口は $a \to -a$、$b$ はそのまま、$z_2 = z_1 + (a x_1 - b(1 - a/2)q_{x2})q_{x1} - (a y_1 - b(1 + a/2)q_{y2})q_{y1}$。) 行列式は $e^{a}e^{-a} = 1$ で、1 次の (4.32) を指数に直して、厳密にシンプレクティックにしてある。$z$ は、$x$ 平面の母関数 $F_2 = e^{a}x_1 p_{x2} + \tfrac12 b'e^{a}p_{x2}^2$ ($b' = b/p$ は正準運動量での係数) の $p$ 微分 ($a \propto 1/p$、$b' \propto 1/p^2$ を使う) $z_2 - z_1 = \partial F_2/\partial p$ から出る。K64 の `tquad` の入口・出口の式と `tqlfre.f` は、(4.33) をそのまま ($q$ または正準運動量に直して) 書いたもの。`tquad.f:501` の `tqlfri` は同じ式に $B_z$ の項を足したサブルーチンだが、この版のソースでは呼ばれていない。
+(出口は $a \to -a$、$b$ はそのまま、$z_2 = z_1 + (a x_1 - b(1 - a/2)q_{x2})q_{x1} - (a y_1 - b(1 + a/2)q_{y2})q_{y1}$。) 行列式は $e^{a}e^{-a} = 1$ で、1 次の (4.32) を指数に直して、厳密にシンプレクティックにしてある。$z$ は、$x$ 平面の母関数 $F_2 = e^{a}x_1 p_{x2} + \tfrac12 b'e^{a}p_{x2}^2$ ($b' = b/p$ は正準運動量での係数) の $p$ 微分 ($a \propto 1/p$、$b' \propto 1/p^2$ を使う) $z_2 - z_1 = \partial F_2/\partial p$ から出る。K64 の `tquad` の入口・出口の式と `tqlfre.f` は、(4.33) をそのまま ($q$ または正準運動量に直して) 書いたもの。`tquad.f:501` の `tqlfri` は同じ式に $B_z$ の項を足したサブルーチンだが、この版のソースでは呼ばれていない。なお `tquad` の `f1in`・`f2in` は、`tsetfringep` が作った**係数** ($a$ の分子 $f_1 = -K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ と $f_2$。長さの次元ではない) だが、放射を入れるときは `tradk` の長さの引数にそのまま渡される (K64 の癖)。K64 の $f_1 \le 0$ では長さのように使えて動くが、F1 の符号を残すと $f_1 > 0$ もありうるので、v2 は `tradk` へは $-\lvert f_1\rvert$ を渡す (癖そのものは直していない)。
 
 [quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) (c): $K(s) = K_0 (s/\ell)^2$ ($0 \le s \le \ell$、$\ell = 0.1$ m) の立ち上がりは、$s_0 = 2\ell/3$ で $I_0 = 0$、$I_1 = -\ell^2/36$、$I_2 = \ell^3/405$ (数値積分で一致)、F1 $= 0.08165$、F2 $= 2.469 \times 10^{-6}$。この端を通る線形の運動を数値積分した 2×2 行列と、硬い端 + (4.32)(4.33) の差は、$K_0 = 10^{-3}$ /m² で $3.5 \times 10^{-12}$ (フリンジなしの差は $2.8 \times 10^{-7}$)、$K_0$ を 2 倍にすると 4 倍 (K の 2 次)。**線形フリンジの式は K の 1 次まで正しい**。Maxwell の場の端での線形部分 (tanh、$d = 1$ mm、$r = 1$ mm) の残りは $2.8 \times 10^{-12}$ (F1 なしでは $1.2 \times 10^{-9}$。[quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) (b))。
 
@@ -514,13 +514,13 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 | 刻みの数 $\varepsilon_0$ | 0.2 (v2 0.1) | 0.1 (v2 0.05) |
 | 本体の式 | (4.9)(4.10)(4.14) | 同じ式を微分 (4.36)〜(4.38) |
 | 非線形フリンジ | `ttfrin` (nord = 4)。(4.28)〜(4.30) | `tqfrie`。同じ式の微分。判定は `mfring >= 0` |
-| 線形フリンジ | (4.33)。係数は `tsetfringep` (`f1 = -\lvert K\,\mathrm{F1}^2\rvert/24`) | (4.33) の微分 (`tqlfre`。$\mathrm{F1}\,\lvert\mathrm{F1}\rvert$) |
+| 線形フリンジ | (4.33)。係数は `tsetfringep`。K64: `f1 = -\lvert K\,\mathrm{F1}^2\rvert/24` (F1 の符号を捨てる)、v2: $f_1 = -\lvert K\rvert\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ (符号を残す) | (4.33) の微分 (`tqlfre`。$\mathrm{F1}\,\lvert\mathrm{F1}\rvert$) |
 | $z$ の更新 | 非線形の写像 | $z$ の行は (4.38) |
 | 放射 | `tradk` を各刻みの $B$ のあと | `tradke`。COD が 0 なら寄与 0 |
 
 - **同じ $H$ の同じ分割を、追跡は写像として、CALC は微分として使う**。したがって、設計軌道の近くでは追跡のヤコビアンと CALC の行列は一致する ($1.8 \times 10^{-13}$、[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt))。軌道がずれると、刻みの数の違い ($\varepsilon_0$) による積分の誤りの違いだけ食い違う (K64 で $5.3 \times 10^{-7}$、v2 で $7.4 \times 10^{-9}$)。
 - 次元の違いに注意: 追跡の `ttfrin` は $q$ で書いてあるが、CALC は正準運動量なので $p$ の因子が入る (たとえば `tqlfre.f` の `bp = b/p`)。
-- 違う点: (1) 線形フリンジの係数で、追跡は $\mathrm{F1}$ の符号を捨てる ($f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24$。`tffs.f:969`)。CALC は $-K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ で符号が残る (`tqlfre.f:12`)。F1 < 0 は、ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{|\alpha|}$ では起こりうるが、F1 = −0.1 の四極 (K1 = 0.6、$L = 0.3$ m) では、追跡と CALC の 4×4 が $2.1 \times 10^{-3}$ 食い違う (F1 = +0.1 では $1.8 \times 10^{-13}$。[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (f))。この違いは K64 のもので、v2 でも同じ。(2) フリンジの判定式 (§7.1)。
+- 違う点: (1) 線形フリンジの係数で、追跡は $\mathrm{F1}$ の符号を捨てる ($f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24$。`tffs.f:969`)。CALC は $-K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ で符号が残る (`tqlfre.f:12`)。F1 < 0 は、ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{|\alpha|}$ では起こりうるが、F1 = −0.1 の四極 (K1 = 0.6、$L = 0.3$ m) では、追跡と CALC の 4×4 が $2.1 \times 10^{-3}$ 食い違う (F1 = +0.1 では $1.8 \times 10^{-13}$。[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (f))。この違いは K64 のもの (k64 は K64 のまま)。**v2 は直してあり** ($f_1 = -\lvert K\rvert\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$、F1 の符号を残す。CALC の `tqlfre` と同じ)、F1 = −0.1 でも追跡と CALC の 4×4 は $1.7 \times 10^{-13}$ で一致する (同じ出力の (f)。この確認は、修正の入った pysad で行った。実行環境は §14 の注記)。(2) フリンジの判定式 (§7.1)。
 
 ## 11. 放射 (概要)
 
@@ -541,7 +541,7 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 | 最後の半分の $D$ | `tsolqu.f:90-95` | `tsolqu` | |
 | 非線形フリンジ (4.28)〜(4.30) | `tquad.f:325-370` | `ttfrin` (`nord == 4`) | `akk = ak/al/4`、`a, b, ab, t, dx1, dy1, xx, yy, h, f`、`px1 = (px*yy+py*h)/f`、`z -= px1*(dx1+t*xi)+py1*(dy1+t*yi)` (366) |
 | 線形フリンジ (4.33) | `tquad.f:52-66` (入口)、`:86-100` (出口)、`:501-` (`tqlfri`。呼ばれていない) | `tquad` | `a = f1in/p`、`b = f2in/p`、`ea = exp(a)` |
-| 線形フリンジの係数 | `tffs.f:952-980` | `tsetfringep` | `-abs(akk*f1in*f1in)/24`、`abs(akk)*f2in` |
+| 線形フリンジの係数 | `tffs.f:952-980` | `tsetfringep` | k64: `-abs(akk*f1in*f1in)/24`。v2 は F1 の符号を残す (§10)。`f2 = abs(akk)*f2in` (どちらも同じ) |
 | CALC の全体 | `tquade.f:1-82` | `tquade` | K1 < 0: `theta1 = theta - m_pi_2`、`ak1 = -ak` (30-35)。`tqfrie` (44、74)、`tqlfre` (47、71)、`tsolque` ($n$ 回、66-68) |
 | CALC の本体 | `tsolque.f:313-596` | `tsolque` | `eps = 0.1*eps0` (381)、`ndiv` (385)、`tzsetparam` (395)、`tgetdv` (398)、`tqente` (401、593)、$B$ (407-438)、$\delta$ 列の補正 (444-448)、$z$ 行 (577)、`tmultr5` (584) |
 | CALC の $D$ (4.35) | `tqente.f:1-40` | `tqente` | `r = -dpz/pz/pr*al` (20)、`trans2(1,2) = r + pxi*fx` (32)、`cod(5)` (24) |
@@ -560,7 +560,7 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 | 四極全体の追跡 (python) | `track6._tquad_ens` (`track6.py:662`)、`_tquad` (`:732`)、`_tsolqu` (`:461`)、`_tsolqur_ens` (`:563`) | `tquad`、`tsolqu`、`tsolqur` | 外から入る座標は正準運動量。`_Particle` が $p_x/(1+\delta)$ に直す。K1 < 0 は `th2 = ROTATION + π/2` |
 | 四極全体の追跡 (numba) | `track6n.k_quad` (`track6n.py:499`)、`tsolqu1` (`:460`)、`ttfrin4_1` (`:334`)、`tqlfr1` (`:361`) | 同上 | `scheme` は `rs[4]` で渡す (`make_rs`) |
 | 非線形フリンジ (追跡) | `track6._ttfrin4` (`:421`) | `ttfrin` (`nord == 4`) | `ak = abs(K1L)`、`al = L`。`c[1]`、`c[3]` は規格化した運動量 |
-| 線形フリンジ (追跡) | `track6._tqlfr` (`:632`)、係数 `track6._tsetfringep` (`:621`) | 同上 | `f1 = -abs(akk*F1^2)/24`、`f2 = abs(akk)*F2`。F1 の符号は捨てる (§10) |
+| 線形フリンジ (追跡) | `track6._tqlfr` (`:632`)、係数 `track6._tsetfringep` (`:621`) | 同上 | k64: `f1 = -abs(akk*F1^2)/24` (F1 の符号を捨てる)。v2: `-copysign(abs(akk*F1^2), F1)/24` (符号を残す)。`f2 = abs(akk)*F2` (§10) |
 | CALC の COD の更新 | `lattice._tquade_cod` (`lattice.py:1656`)、`_tsolque_cod` (`:1080`)、`_tsolque_body_cod` (`:1045`)、`_tqente_cod` (`:1021`)、`_tqfrie_cod` (`:1595`)、`_tqlfre_cod` (`:1631`) | `tquade`、`tsolque`、`tqente`、`tqfrie`、`tqlfre` | 正準運動量。K1 < 0 は −90° 回転 (`(x,px,y,py)→(y,py,-x,-px)`)。`el.K1` も `_tquade_cod` の `K1` 引数も長さあたり (積分強度 `ak1 = abs(K1)*L` を内部で作る)。`_tsolque_cod`・`_tqfrie_cod` の `ak` は積分強度 |
 | CALC の解析ヤコビアン (numpy) | `emit6d._jac_tqente` (`emit6d.py:505`)、`_jac_tqfrie` (`:539`)、`_jac_tsolque_body` (`:629`)、`_jac_tqlfre` (`:699`)、`_jac_quad_full` (`:748`)、`_tquade` (`:892`) | `tqente`、`tqfrie`、`tsolque`、`tqlfre` | $z$ の行: `_jac_tsolque_body` は v2 で $x, p_x, y, p_y$ での微分を持つ。`_jac_tqente` は $z$ の行の (5,2)・(5,4) を持たない (K64 の `trans2(5,2) = trans2(1,6)` に当たる $O(p^3)$) |
 | CALC の解析ヤコビアン (numba) | `elkern._tqente` (`elkern.py:1093`)、`_jac_tqente` (`:1115`)、`_tsolque_body` (`:1147`)、`_jac_tsolque_body` (`:1182`)、`_tqfrie` (`:1236`)、`_jac_tqfrie` (`:1270`)、`_tqlfre` (`:1367`)、`_jac_tqlfre` (`:1389`)、`k_quad` (`:1569`) | 同上 | numba 版と numpy 版は丸めが違う (v2 で $10^{-12}$ 以内) |
@@ -603,6 +603,15 @@ v2 (Yoshida):   設計軌道          CALC 4x4 と J_track の差 1.7e-13
 z の行 (4.38):  追跡の数値微分とシンプレクティック条件で組んだ値の差 5.3e-13 (K64)、1.3e-12 (v2)
 ```
 
+線形フリンジの F1 の符号 ($quad\_04$ (f)。K1 = 0.6、$L = 0.3$ m、FRINGE = 3、DISFRIN = 1)。追跡のヤコビアンと CALC の 4×4 の差:
+
+| | F1 = +0.1 | F1 = −0.1 |
+|---|---|---|
+| k64 | $1.8 \times 10^{-13}$ | $2.1 \times 10^{-3}$ |
+| v2 | $1.7 \times 10^{-13}$ | $1.7 \times 10^{-13}$ |
+
+**実行環境の注記**: (f) の v2・F1 = −0.1 の結果は、四極の線形フリンジの F1 の符号を直した pysad (v2.4.4 以降) で得た。直していない pysad では v2 も k64 と同じ $2.1 \times 10^{-3}$ になる。スクリプトは、環境変数 `PYSAD_SRC` に直した pysad のルートを指定すると、そちらを使う (`PYSAD_SRC=<ルート> py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py`)。出力の先頭に、使った pysad の場所を書いてある。ほかの節 (a)〜(e) は、どちらの pysad でも同じ値。
+
 非線形フリンジと Maxwell の場の端 ($quad\_05$ (b)、$K = 3$ /m²、振幅 $r$ = 1、2 mm): 非線形フリンジの効果 $\Delta$ (ODE と K64 の式) の相対差は、端の幅 $d = 0.5, 1, 2, 5$ mm で 0.13〜0.38%、0.25〜0.5%、1.0〜1.1%、2.9% (振幅に依らない)。
 
 ## 15. 未確認・限界・使った条件
@@ -618,7 +627,7 @@ z の行 (4.38):  追跡の数値微分とシンプレクティック条件で�
 
 **未確認・限界**:
 - **非線形フリンジ**: K の 1 次の硬い端の近似。Maxwell の場 (3 次まで) の端との相対差は、幅 $d = 1$ mm で 0.25〜0.5%、$d = 5$ mm で約 3% (§7.2)。残りが K の 2 次の項かは未確認。端の磁場の展開は 3 次までで、実際の端 ($d$ が孔径程度) では高次の項 ($K''''x^5$ など) が効く。
-- **線形フリンジ**: K の 1 次まで。式 (4.31) の $I_n$ のとり方 (硬い端との差のモーメント) は、ヘルプの記述 (全域の積分) の読み替え。F1 < 0 では、追跡と CALC が食い違う (§10)。
+- **線形フリンジ**: K の 1 次まで。式 (4.31) の $I_n$ のとり方 (硬い端との差のモーメント) は、ヘルプの記述 (全域の積分) の読み替え。F1 < 0 では、k64 だけ追跡と CALC が食い違う (v2 は直してあり一致。§10)。
 - **ヘルプの $z$ の更新**: ヘルプの複素正規座標の式と、K64 の実座標の式 (4.14) の同値性は、$B_z = 0$ で数値的には比べていない。ここでの $z$ の導出は (4.7) の $\partial H_2/\partial p$ から直接行った。
 - **刻みの数**: 4 次の方が悪くなる 1 刻みの強い四極 (§6.2)。v2 の追跡と CALC の刻みの基準 (0.1 と 0.05) の違いが残る。
 - **CALC の $z$ の行**: pysad の `_el_cod_step` (4D の CALC 用) は $z$ の行 (5,1..4) を持たず、6 次元 (放射つき平衡エミッタンス) の `emit6d` が持つ。`emit6d._jac_tqente` の $z$ の行は (5,2)・(5,4) が欠けている (傾きの 3 乗の大きさ。$|J^\top J_0 J - J_0| = 2 \times 10^{-9}$。軌道が (3 mm, 2 mrad, 1 mm, −1 mrad、$\delta = 0.003$) の例)。
@@ -658,4 +667,4 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | ヘルプ QUAD > F1 の $I_n$ | $\int_{-\infty}^{\infty}$ は発散する。硬い端との差の積分と読む (§7.4)。$\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{\alpha}$ の根号は $\sqrt{\lvert\alpha\rvert}$ |
 | ヘルプ QUAD > transformation の $H_{2n}$・$\Delta H$ | $E/v_0$ は $E/(p_0v_0)$ ($p_0$ の規格化を略した書き方) |
 | ヘルプに無いもの | (1) $H_2$ の解の導出 (ソレノイドつきの式だけ。$B_z = 0$ への縮約は §4.1)。(2) $\Delta H$ の流れ。(3) 分割の構成 ($D\,B\,D$ の順序、Yoshida)。(4) 非線形フリンジの Maxwell 方程式からの導出と、母関数から点変換への書き換え。(5) 線形フリンジの $a, b$ の導出。(6) 行列と追跡の関係。(7) $z$ の更新 (4.14) |
-| K64 の実装の癖 | 追跡の線形フリンジが F1 の符号を捨てる (§10)。追跡と CALC で $\varepsilon_0$ が違う (§6.3) |
+| K64 の実装の癖 | 追跡の線形フリンジが F1 の符号を捨てる (§10。v2 は修正済み)。追跡と CALC で $\varepsilon_0$ が違う (§6.3) |
