@@ -149,7 +149,7 @@ $$
 4. $x' = r'_x - (P'_x/p)\,z'$ の 1 次: $\delta x' = \delta r'_x - \dfrac{\delta P'_x}{p}z - \dfrac{p_x}{p}\,\delta z'$。第 1 項 $-\mathrm{DX} - \chi_3(y + zp_y/p) + \chi_1zp_z/p$、第 2 項 $-(-\chi_3p_y + \chi_1p_z)z/p$ の $z$ を含む項 ($-\chi_3zp_y/p + \chi_1zp_z/p$ と $+\chi_3zp_y/p - \chi_1zp_z/p$) は打ち消し合う。第 3 項は $+(p_x/p_z)(\mathrm{DZ} + \chi_1x + \chi_2y)$ なので
    $$x' \simeq x - \mathrm{DX} - \chi_3\,y + \frac{p_x}{p_z}\bigl(\mathrm{DZ} + \chi_1x + \chi_2y\bigr)$$
 
-($y'$ は $x \leftrightarrow y$、$\chi_3 \to -\chi_3$、$\chi_1 \leftrightarrow \chi_2$ の置き換えで同じ形。) この 1 次の係数は sympy で、(11.3)(11.4) の写像をパラメータで偏微分して確かめた ([mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (d)):
+($y'$ は、$x'$ の式で $\mathrm{DX} \to \mathrm{DY}$、$-\chi_3y \to +\chi_3x$、$p_x \to p_y$ としたもの。組 $(\chi_1x + \chi_2y + \mathrm{DZ})$ はそのまま。) この 1 次の係数は sympy で、(11.3)(11.4) の写像をパラメータで偏微分して確かめた ([mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (d)):
 
 | 出力 | 1 次の項 |
 |---|---|
