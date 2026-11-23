@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -63,7 +74,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 15_csr.md</div>
+<div class="meta">元: 15_csr.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="15-csr-コヒーレント放射">15. CSR (コヒーレント放射)</h1>
 <p>最終更新: 2026-11-23</p>
 <p><strong>この文書で分かること</strong>: 偏向磁石の中でバンチが出す CSR (coherent synchrotron radiation) のウェイクを、SAD K64 の組み込み関数と <code>CSR.n</code> で計算・追跡する方法、物理と式、K64 の癖、限界。
@@ -129,14 +140,14 @@ pysad は組み込み関数を <a href="../pysad/csr.py"><code>pysad/csr.py</cod
 <h2 id="2-使い方-動く-sad-スクリプト">2. 使い方 (動く SAD スクリプト)</h2>
 <p>以下は <a href="../pysad/tests/script_tests/test_csr.py"><code>pysad/tests/script_tests/test_csr.py</code></a> などから取った (2.1〜2.4 は K64 の出力と照合済み。2.5 の <code>MakeZL</code> も照合済み。2.6 は未照合の骨格)。</p>
 <h3 id="21-csrtrack-ウェイク付きの追跡">2.1 CSRTrack: ウェイク付きの追跡</h3>
-<pre><code>FFS;
-$FORM=&quot;18.14&quot;;
-SeedRandom[12];
-nr=256; dz=2e-5; np=2000;
-zl=Table[0.02*Cos[0.3 i]/(1+i/10.), {i,1,nr}];      (* 実 FFT 形式の ZL。ここは試験用の人工値 *)
-z=3e-4*GaussRandom[np]; dp=1e-3*GaussRandom[np];
-r=CSRTrack[z,dp,zl,{dz,4,0.5,0.1,-0.5,0,0,1e-3,1e-3},5];
-Print[&quot;R &quot;,r];
+<pre><code class="language-sad"><span class="k">FFS</span>;
+$FORM<span class="o">=</span><span class="s">"18.14"</span>;
+SeedRandom[<span class="m">12</span>];
+nr<span class="o">=</span><span class="m">256</span>; dz<span class="o">=</span><span class="m">2e-5</span>; np<span class="o">=</span><span class="m">2000</span>;
+zl<span class="o">=</span><span class="k">Table</span>[<span class="m">0.02</span><span class="o">*</span><span class="b">Cos</span>[<span class="m">0.3</span> i]<span class="o">/</span>(<span class="m">1</span><span class="o">+</span>i<span class="o">/</span><span class="m">10.</span>), {i,<span class="m">1</span>,nr}];      <span class="c">(*</span><span class="c"> 実 FFT 形式の ZL。ここは試験用の人工値 </span><span class="c">*)</span>
+z<span class="o">=</span><span class="m">3e-4</span><span class="o">*</span>GaussRandom[np]; dp<span class="o">=</span><span class="m">1e-3</span><span class="o">*</span>GaussRandom[np];
+r<span class="o">=</span>CSRTrack[z,dp,zl,{dz,<span class="m">4</span>,<span class="m">0.5</span>,<span class="m">0.1</span>,<span class="o">-</span><span class="m">0.5</span>,<span class="m">0</span>,<span class="m">0</span>,<span class="m">1e-3</span>,<span class="m">1e-3</span>},<span class="m">5</span>];
+<span class="b">Print</span>[<span class="s">"R "</span>,r];
 Exit;
 </code></pre>
 <p><code>CSRTrack[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]</code>:</p>
@@ -148,20 +159,20 @@ Exit;
 <li>戻りは各周回の {σz, σδ} を順に並べた長さ <code>2·nturn</code> のリスト。σz が <code>nr·dz/4</code> を超えるか σδ が上限を超えると発散とみなし、その周以降は 0 を返す (乱数は ffs と共通の <code>SadRandom</code>)。</li>
 </ul>
 <h3 id="22-csrhaissin-定常分布">2.2 CSRHaissin: 定常分布</h3>
-<pre><code>rho=CSRHaissin[zl,{dz,1e-8,-0.3,3e-4}];     (* {dz, inten, r65, sigz} *)
-Print[Length[rho],&quot; &quot;,Max[rho]];
+<pre><code class="language-sad">rho<span class="o">=</span>CSRHaissin[zl,{dz,<span class="m">1e-8</span>,<span class="o">-</span><span class="m">0.3</span>,<span class="m">3e-4</span>}];     <span class="c">(*</span><span class="c"> {dz, inten, r65, sigz} </span><span class="c">*)</span>
+<span class="b">Print</span>[<span class="b">Length</span>[rho],<span class="s">" "</span>,<span class="b">Max</span>[rho]];
 </code></pre>
 <p>ウェイクのある定常な縦分布 (長さ <code>nr</code> の表、前半だけが非零) を返す。解けなければ <code>General::toomany</code> で停止する。</p>
 <h3 id="23-oide-yokoya-の行列">2.3 Oide-Yokoya の行列</h3>
-<pre><code>s=CSRSetupOY[rho,zl,{dz,6,3,1e-8,0.05,-0.3,3}];       (* {dz, nj, nphi, inten, r56, r65, zspan} *)
-m=CSROYMatrix[s,{dz,1e-8,0.01,3e-4,1e-3}];             (* {dz, inten, nus, sigz, sige} *)
-Print[Dimensions[m]];                                  (* {18,18} = nj*nphi の正方行列 *)
+<pre><code class="language-sad">s<span class="o">=</span>CSRSetupOY[rho,zl,{dz,<span class="m">6</span>,<span class="m">3</span>,<span class="m">1e-8</span>,<span class="m">0.05</span>,<span class="o">-</span><span class="m">0.3</span>,<span class="m">3</span>}];       <span class="c">(*</span><span class="c"> {dz, nj, nphi, inten, r56, r65, zspan} </span><span class="c">*)</span>
+m<span class="o">=</span>CSROYMatrix[s,{dz,<span class="m">1e-8</span>,<span class="m">0.01</span>,<span class="m">3e-4</span>,<span class="m">1e-3</span>}];             <span class="c">(*</span><span class="c"> {dz, inten, nus, sigz, sige} </span><span class="c">*)</span>
+<span class="b">Print</span>[<span class="b">Dimensions</span>[m]];                                  <span class="c">(*</span><span class="c"> {18,18} = nj</span><span class="c">*</span><span class="c">nphi の正方行列 </span><span class="c">*)</span>
 </code></pre>
 <p><code>CSRSetupOY</code> は作用角 J の <code>nj</code> 点の格子、方位角のモード <code>nphi</code> で線形化する。戻りは {wi, J, ω, zj, dpj, rhoj}。4 番目 (zj) と 5 番目 (dpj) は、v2 モードでは位置と運動量、k64 モードでは K64 の取り違え (5 節の B59) のまま。<strong><code>CSROYMatrix</code> は K64 (gs) では動かない</strong> (5 節の B60)。pysad は動く (行列を返すが gs との照合はできない)。</p>
 <h3 id="24-ダクト断面の行列と電場">2.4 ダクト断面の行列と電場</h3>
-<pre><code>a=CSRMatrix[{3,4,4,3},{1e-3,2e-3,1.1,1.3,0.9,0.7,0.1},3e3,5.0,2,22];
-v=CSRConvert[Range[14],{3,4,4,3}];                      (* ベクトル → 列ごとの表 *)
-r=CSRInit[{{0.5e-3,0.5e-3},4,1e-3,{4,6,8,8,8,8,6,4}}];   (* {{dx,dy}, 中心列, rho, pipe} *)
+<pre><code class="language-sad">a<span class="o">=</span>CSRMatrix[{<span class="m">3</span>,<span class="m">4</span>,<span class="m">4</span>,<span class="m">3</span>},{<span class="m">1e-3</span>,<span class="m">2e-3</span>,<span class="m">1.1</span>,<span class="m">1.3</span>,<span class="m">0.9</span>,<span class="m">0.7</span>,<span class="m">0.1</span>},<span class="m">3e3</span>,<span class="m">5.0</span>,<span class="m">2</span>,<span class="m">22</span>];
+v<span class="o">=</span>CSRConvert[<span class="b">Range</span>[<span class="m">14</span>],{<span class="m">3</span>,<span class="m">4</span>,<span class="m">4</span>,<span class="m">3</span>}];                      <span class="c">(*</span><span class="c"> ベクトル → 列ごとの表 </span><span class="c">*)</span>
+r<span class="o">=</span>CSRInit[{{<span class="m">0.5e-3</span>,<span class="m">0.5e-3</span>},<span class="m">4</span>,<span class="m">1e-3</span>,{<span class="m">4</span>,<span class="m">6</span>,<span class="m">8</span>,<span class="m">8</span>,<span class="m">8</span>,<span class="m">8</span>,<span class="m">6</span>,<span class="m">4</span>}}];   <span class="c">(*</span><span class="c"> {{dx,dy}, 中心列, rho, pipe} </span><span class="c">*)</span>
 </code></pre>
 <ul>
 <li><code>pipe</code> は x 方向の各列の y 方向の格子点数の表 (中心線から上半分の断面)。<code>CSRConvert</code> は点を列ごとに上から数えて並べる。</li>
@@ -171,16 +182,16 @@ r=CSRInit[{{0.5e-3,0.5e-3},4,1e-3,{4,6,8,8,8,8,6,4}}];   (* {{dx,dy}, 中心列,
 </ul>
 <h3 id="25-csrn-ダクトから-zl-を作る">2.5 CSR.n: ダクトから ZL を作る</h3>
 <p><code>CSR</code>、<code>CSRStability</code> は <code>init.n</code> の AutoLoad の表にあり、pysad も最初に使われたときだけ <code>Packages/CSR.n</code> を読む (<code>PYSAD_SAD_PACKAGES</code> か、pysad の隣の <code>SAD-master/Packages</code> が必要)。</p>
-<pre><code>FFS;
-$FORM=&quot;18.14&quot;;
-PageWidth=1999;
-c=CSR[NParallel-&gt;1,Nk-&gt;4,BunchLength-&gt;3e-4,BendingRadius-&gt;10,PipeWidth-&gt;0.04,Center-&gt;0.02,MeshRatio-&gt;{2,2}];
-Print[&quot;A &quot;,c@SkinDepth[1e3],&quot; &quot;,c@EffectiveSkinDepth[2e3],&quot; &quot;,c@EffectiveCond[2e3]];
-Print[&quot;C &quot;,c@StandardKList[]];
-Print[&quot;D &quot;,c@VariableMesh[3000.,10.]];
-Print[&quot;E &quot;,c@ZThre[1e-3,0.01,1e-3]];
-z=c@MakeZL[{{10.,1.}},2000.,6000.,3];                  (* 約 7 分 (pysad) *)
-Print[&quot;Z &quot;,z];
+<pre><code class="language-sad"><span class="k">FFS</span>;
+$FORM<span class="o">=</span><span class="s">"18.14"</span>;
+PageWidth<span class="o">=</span><span class="m">1999</span>;
+c<span class="o">=</span>CSR[NParallel<span class="o">-&gt;</span><span class="m">1</span>,Nk<span class="o">-&gt;</span><span class="m">4</span>,BunchLength<span class="o">-&gt;</span><span class="m">3e-4</span>,BendingRadius<span class="o">-&gt;</span><span class="m">10</span>,PipeWidth<span class="o">-&gt;</span><span class="m">0.04</span>,Center<span class="o">-&gt;</span><span class="m">0.02</span>,MeshRatio<span class="o">-&gt;</span>{<span class="m">2</span>,<span class="m">2</span>}];
+<span class="b">Print</span>[<span class="s">"A "</span>,c<span class="o">@</span>SkinDepth[<span class="m">1e3</span>],<span class="s">" "</span>,c<span class="o">@</span>EffectiveSkinDepth[<span class="m">2e3</span>],<span class="s">" "</span>,c<span class="o">@</span>EffectiveCond[<span class="m">2e3</span>]];
+<span class="b">Print</span>[<span class="s">"C "</span>,c<span class="o">@</span>StandardKList[]];
+<span class="b">Print</span>[<span class="s">"D "</span>,c<span class="o">@</span>VariableMesh[<span class="m">3000.</span>,<span class="m">10.</span>]];
+<span class="b">Print</span>[<span class="s">"E "</span>,c<span class="o">@</span>ZThre[<span class="m">1e-3</span>,<span class="m">0.01</span>,<span class="m">1e-3</span>]];
+z<span class="o">=</span>c<span class="o">@</span>MakeZL[{{<span class="m">10.</span>,<span class="m">1.</span>}},<span class="m">2000.</span>,<span class="m">6000.</span>,<span class="m">3</span>];                  <span class="c">(*</span><span class="c"> 約 7 分 (pysad</span><span class="c">)</span> <span class="c">*)</span>
+<span class="b">Print</span>[<span class="s">"Z "</span>,z];
 Exit;
 </code></pre>
 <p>(<code>MakeZL</code> は <code>test_csr_makezl_matches_gs</code> で gs と照合した。)</p>
@@ -194,14 +205,14 @@ Exit;
 <li><code>WriteZL[file, ...]</code>: ZL を <code>{"BunchLength"-&gt;σz, "ZL"-&gt;{ZLr, ZLi}}</code> の形でファイルに保存。<code>ReadWake[file]</code>: 外部のウェイク表 (z, W) から ZL を作る。<code>MakeResZL[a]</code>: 抵抗壁の解析式の ZL。</li>
 </ul>
 <h3 id="26-csrstability-追跡と安定性-書き方の骨格通しの照合は未">2.6 CSRStability: 追跡と安定性 (書き方の骨格。通しの照合は未)</h3>
-<pre><code>(* 未実行の骨格: ZL ファイルは MakeZL → WriteZL で作ったもの *)
-s=CSRStability[BunchLength-&gt;3e-4, MomentumSpread-&gt;1e-3, DampingRate-&gt;1e-4,
-   SynchrotronTune-&gt;-0.01, MeshSize-&gt;3e-5, Meshes-&gt;512, Division-&gt;4];
-s@SetupZL[{{&quot;zl.dat&quot;,1}}];                       (* ZL の読み込み (複数ファイルの和) *)
-{z,dp}=s@InitializeParticles[20000,aw];          (* Haissinski の分布から z、dp は Gauss *)
-s@Track[aw,z,dp,2000,100];                       (* 2000 周、100 周ごとに描画 *)
-s@ScanTrack[awlist,np,{t1,t2}];                  (* 強度のスキャン *)
-r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固有値, 固有ベクトル} *)
+<pre><code class="language-sad"><span class="c">(*</span><span class="c"> 未実行の骨格: ZL ファイルは MakeZL → WriteZL で作ったもの </span><span class="c">*)</span>
+s<span class="o">=</span>CSRStability[BunchLength<span class="o">-&gt;</span><span class="m">3e-4</span>, MomentumSpread<span class="o">-&gt;</span><span class="m">1e-3</span>, DampingRate<span class="o">-&gt;</span><span class="m">1e-4</span>,
+   SynchrotronTune<span class="o">-&gt;</span><span class="o">-</span><span class="m">0.01</span>, MeshSize<span class="o">-&gt;</span><span class="m">3e-5</span>, Meshes<span class="o">-&gt;</span><span class="m">512</span>, Division<span class="o">-&gt;</span><span class="m">4</span>];
+s<span class="o">@</span>SetupZL[{{<span class="s">"zl.dat"</span>,<span class="m">1</span>}}];                       <span class="c">(*</span><span class="c"> ZL の読み込み (複数ファイルの和</span><span class="c">)</span> <span class="c">*)</span>
+{z,dp}<span class="o">=</span>s<span class="o">@</span>InitializeParticles[<span class="m">20000</span>,aw];          <span class="c">(*</span><span class="c"> Haissinski の分布から z、dp は Gauss </span><span class="c">*)</span>
+s<span class="o">@</span>Track[aw,z,dp,<span class="m">2000</span>,<span class="m">100</span>];                       <span class="c">(*</span><span class="c"> 2000 周、100 周ごとに描画 </span><span class="c">*)</span>
+s<span class="o">@</span>ScanTrack[awlist,np,{t1,t2}];                  <span class="c">(*</span><span class="c"> 強度のスキャン </span><span class="c">*)</span>
+r<span class="o">=</span>s<span class="o">@</span>OYStability[aw,nj,nphi];                     <span class="c">(*</span><span class="c"> {安定か, 成長率, 固有値, 固有ベクトル} </span><span class="c">*)</span>
 </code></pre>
 <ul>
 <li><code>Constructor</code> は <code>r56 = 2 sin(μ)/(1+cos μ) · σz/σe</code>、<code>r65 = −4 sin²(μ/2)/r56</code> (μ = 2π·νs。νs は α&gt;0 なら負で与える) とし、ZL の格子の幅 <code>zspan = dz/σz · nr/2</code> を決める。</li>

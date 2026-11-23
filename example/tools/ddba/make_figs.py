@@ -2,6 +2,8 @@
 """DDBA_NN の εx・チューン・周長・自然クロマティシティの図 (example/ddba/DDBA_overview.png)。
 結果は example/ddba/results_k64.json (pysad k64) と chrom_k64.json。段階ごとに色を変える。"""
 import os, sys, json
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'tools', 'figures'))
+import figsave  # 折れ線系は SVG、そうでなければ PNG
 import matplotlib; matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 HERE = os.path.dirname(os.path.abspath(__file__)); EX = os.path.dirname(os.path.dirname(HERE)); D = os.path.join(EX, 'ddba')
@@ -24,4 +26,4 @@ a.set_ylabel('自然クロマティシティ (6 極 K2 = 0)'); a.set_title('自�
 for x in ax.flat: x.set_xlabel('DDBA_NN'); x.grid(alpha=.3)
 h = [plt.Line2D([], [], marker='o', ls='', color=cols[k], label='%d. %s' % (k, v.split(' (')[0])) for k, v in I.STAGES.items()]
 fig.legend(handles=h, loc='lower center', ncol=3, fontsize=8, frameon=False)
-fig.tight_layout(rect=(0, 0.1, 1, 1)); fig.savefig(os.path.join(D, 'DDBA_overview.png'), dpi=130)
+fig.tight_layout(rect=(0, 0.1, 1, 1)); figsave.save_figure(fig, os.path.join(D, 'DDBA_overview.png'), dpi=130, bbox_inches=None)

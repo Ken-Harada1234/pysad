@@ -8,7 +8,7 @@
 `KEKLS_sextupole_tune_scan.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。
 
 ## 結果の読み方
-`S dsd dsf dtux dtuy` の行。設計値 (0, 0) の周りで Σ|Δν| は x が 1.25、y が 1.44。図: 25 点の地図 (`KEKLS_sextupole_tune_scan.png`)。SD・SF とも + 方向に動かすと (3, 3) 付近で大きく悪化する。
+`S dsd dsf dtux dtuy` の行。設計値 (0, 0) の周りで Σ|Δν| は x が 1.25、y が 1.44。図: 25 点の地図 (`KEKLS_sextupole_tune_scan.svg`)。SD・SF とも + 方向に動かすと (3, 3) 付近で大きく悪化する。
 
 gs の出力の抜粋 (指定の行だけ。全体は `KEKLS_sextupole_tune_scan.gs.txt`):
 ```
@@ -23,7 +23,7 @@ S   -1.5   -1.5    2.1222763268    5.0885780311
 ... (計 26 行)
 ```
 
-![KEKLS_sextupole_tune_scan.png](KEKLS_sextupole_tune_scan.png)
+![KEKLS_sextupole_tune_scan.svg](KEKLS_sextupole_tune_scan.svg)
 
 ## gs と pysad の比較
 判定: **△** (比べた行 26、最大の相対差 4.4e-01、k64 モードの pysad)。25 点中 20 点が 1e-8 以内で一致。残りは ΔK2 が大きい点 (±3) で、δ = ±3% のチューンが整数 (49・18) を越える点の収束が違う。

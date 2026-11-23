@@ -99,7 +99,7 @@ DISPLAY = '''# display: KEK-LS のパラメータ表示
 
 ''' + '{ROWS}' + '''
 
-図: [`KEKLS_ring_layout_optics.png`](KEKLS_ring_layout_optics.png) (リングの配置とオプティクス)、[`KEKLS_chromaticity.png`](KEKLS_chromaticity.png)、[`KEKLS_amp_dep_ts.png`](KEKLS_amp_dep_ts.png)、[`KEKLS_sextupole_tune_scan.png`](KEKLS_sextupole_tune_scan.png)。
+図: [`KEKLS_ring_layout_optics.png`](KEKLS_ring_layout_optics.png) (リングの配置とオプティクス)、[`KEKLS_chromaticity.svg`](KEKLS_chromaticity.svg)、[`KEKLS_amp_dep_ts.svg`](KEKLS_amp_dep_ts.svg)、[`KEKLS_sextupole_tune_scan.svg`](KEKLS_sextupole_tune_scan.svg)。
 
 ![リングの配置とオプティクス](KEKLS_ring_layout_optics.png)
 

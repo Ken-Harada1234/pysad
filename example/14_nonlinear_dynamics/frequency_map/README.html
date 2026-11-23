@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -38,7 +38,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="周波数マップ-frequency-map-の例">周波数マップ (frequency map) の例</h1>
 <p>周波数マップ (チューン拡散 D = log10 √(Δνx² + Δνy²) の地図) の作り方、共鳴駆動項 (RDT)・振幅依存チューンシフト (ADTS) から予想した共鳴の領域との比較、gs (SAD K64) との比較、結果を信頼できる範囲の確認の例です。
 実行はリポジトリ直下から <code>py -3.12 example/14_nonlinear_dynamics/frequency_map/&lt;スクリプト&gt; ...</code> (標準出力をファイルに落とすときは <code>PYTHONUTF8=1</code>)。すべて既定の v2 モードで (gs との比較のスクリプトも <code>compat.set_mode('v2')</code> のまま。gs と一致するのは <code>'k64'</code> に変えて走らせたとき。下の「使った条件・限界・未確認」)、周波数マップは RFSW・RAD OFF、LOSSAMPL = 0.1 m、1024 周 (前半・後半 512 周)、NAFF の窓は Hann。

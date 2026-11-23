@@ -620,11 +620,17 @@ def _rot(c, ct, st):
 
 def _tsetfringep(el, akk):
     """tffs.f tsetfringep (順方向要素): (f1in, f2in, f1out, f2out) の係数。
-    f1 = −|akk·F1²|/24、f2 = |akk|·F2 (F1 = F1+F1K1F/B, F2 = F2+F2K1F/B)。逆向き要素は未対応。"""
+    k64 (K64 のまま): f1 = −|akk·F1²|/24 (F1 の符号を捨てる。F1 < 0 でも f1 ≤ 0)。
+    v2 (B323): f1 = −|akk|·F1·|F1|/24 (CALC の tqlfre と同じ。F1 の符号が a の符号を決める)。
+    f2 = |akk|·F2 (F1 = F1+F1K1F/B, F2 = F2+F2K1F/B)。逆向き要素は未対応。"""
     f1in = _g(el, 'F1') + _g(el, 'F1K1F')
     f1out = _g(el, 'F1') + _g(el, 'F1K1B')
     f2in = _g(el, 'F2') + _g(el, 'F2K1F')
     f2out = _g(el, 'F2') + _g(el, 'F2K1B')
+    if _compat.v2():
+        # copysign(|akk·F1²|, F1) = |akk|·F1·|F1| (F1 ≥ 0 では k64 の式とビット同一)
+        return (-math.copysign(abs(akk * f1in * f1in), f1in) / 24.0, abs(akk) * f2in,
+                -math.copysign(abs(akk * f1out * f1out), f1out) / 24.0, abs(akk) * f2out)
     return (-abs(akk * f1in * f1in) / 24.0, abs(akk) * f2in,
             -abs(akk * f1out * f1out) / 24.0, abs(akk) * f2out)
 
@@ -701,10 +707,10 @@ def _tquad_ens(parts, el, krad):
             _tqlfr(p, f1in, f2in)
     if krad:
         if _PH is not None:
-            _ph_set(dx, dy, th2, 0.0, 0.0, 0.0, L, -0.5 * f1in / L)     # tquad.f: tsetpcvt(l_track, dx, dy, theta2, 0, 0, 0, al)、fr0 = −f1in/(2 al)
+            _ph_set(dx, dy, th2, 0.0, 0.0, 0.0, L, -0.5 * -abs(f1in) / L)     # tquad.f: tsetpcvt(l_track, dx, dy, theta2, 0, 0, 0, al)、fr0 = −f1in/(2 al) (放射の引数は −|f1in|: B323 の前と同じ)
         if f1in != 0.0:
             for p in parts:
-                _tradk(p, f1in, 0.0)     # SAD のまま: 長さの引数に係数 f1in を渡す
+                _tradk(p, -abs(f1in), 0.0)     # SAD のまま: 長さの引数に係数 f1in を渡す (K64 の癖。符号は B323 の前 (f1 ≤ 0) のまま −|f1in|)
         for p in parts:
             p.setr0()
         _tsolqur_ens(parts, L, ak)
@@ -718,9 +724,9 @@ def _tquad_ens(parts, el, krad):
             _ttfrin4(p, -ak, L)
     if krad and f1out != 0.0:
         if _PH is not None and _PH.get('ctx') is not None:
-            _PH['ctx']['fr0'] = 1.0 - 0.5 * f1out / L           # tquad.f:108
+            _PH['ctx']['fr0'] = 1.0 - 0.5 * -abs(f1out) / L           # tquad.f:108 (放射の引数は −|f1out|)
         for p in parts:
-            _tradk(p, f1out, 0.0)
+            _tradk(p, -abs(f1out), 0.0)
     for p in parts:
         c = p.c
         _rot(c, ct, -st)                 # tsolrot (exit): 回し戻す → ずらし戻す

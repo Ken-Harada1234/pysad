@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,7 +53,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_FitValue_FitWeight_VariableRange_VariableWeight.md</div>
+<div class="meta">元: fn_FitValue_FitWeight_VariableRange_VariableWeight.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_fitvalue_fitweight_variablerange_variableweight-マッチングのフック関数">fn_FitValue_FitWeight_VariableRange_VariableWeight (マッチングのフック関数)</h1>
 <p>種別: SADScript の関数 (ユーザー定義のフック)。フォルダ: 03_matching。ラティス: <code>00_lattice/FODO_ring.sad</code>。エネルギー 3 GeV。フラグ: CELL。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
@@ -74,10 +85,10 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tbody>
 </table>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>FitValue[&quot;$$$&quot;, &quot;NX&quot;, {_, dp_}, goal_, now_] := goal + 0.05*2*Pi;        ! NX の目標を 6.75 に
-FitWeight[&quot;$$$&quot;, &quot;NY&quot;, {_, dp_}, w_] := 100*w;
-VariableRange[&quot;QD&quot;, &quot;K1&quot;, v_] := {-0.58, 0};
-VariableWeight[&quot;QF&quot;, &quot;K1&quot;, v_] := 0.1*v;
+<pre><code class="language-sad">FitValue[<span class="s">"$$$"</span>, <span class="s">"NX"</span>, {_, dp_}, goal_, now_] <span class="o">:=</span> goal <span class="o">+</span> <span class="m">0.05</span><span class="o">*</span><span class="m">2</span><span class="o">*</span><span class="b">Pi</span>;        <span class="c">! NX の目標を 6.75 に</span>
+FitWeight[<span class="s">"$$$"</span>, <span class="s">"NY"</span>, {_, dp_}, w_] <span class="o">:=</span> <span class="m">100</span><span class="o">*</span>w;
+VariableRange[<span class="s">"QD"</span>, <span class="s">"K1"</span>, v_] <span class="o">:=</span> {<span class="o">-</span><span class="m">0.58</span>, <span class="m">0</span>};
+VariableWeight[<span class="s">"QF"</span>, <span class="s">"K1"</span>, v_] <span class="o">:=</span> <span class="m">0.1</span><span class="o">*</span>v;
 </code></pre>
 <p>(各例のあとには、同じ関数を恒等の定義 <code>... := goal;</code> に戻した。フックの定義は一度書くと残るため。)</p>
 <h2 id="結果の読み方-k1-の-qf-qd">結果の読み方 (K1 の QF, QD)</h2>

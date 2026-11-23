@@ -6,9 +6,9 @@ from pysad import draw_mpl
 import numpy as np
 
 ffs, I = start()
-draw_mpl.draw(ffs, "BX BY & EX LAT", region=(3, 13), save=str(OUT / "07_calc_optics_fodo_cell.png"), show=False,
-              title="FODO リング 1 セル (3 GeV)", figsize=(6.5, 4.6), dpi=115)
-print((OUT / "07_calc_optics_fodo_cell.png").stat().st_size // 1024, "KB")
+fig0 = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(3, 13), show=False,
+                     title="FODO リング 1 セル (3 GeV)", figsize=(6.5, 4.6))
+save(fig0, "07_calc_optics_fodo_cell.png")
 
 # チューンの DP0 依存 (6 極なし / SF=+5, SD=-8)
 dps = np.linspace(-0.01, 0.01, 11)

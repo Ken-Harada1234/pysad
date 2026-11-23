@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,17 +52,17 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_CorrectOrbit_Monitor_Steer.md</div>
+<div class="meta">元: fn_CorrectOrbit_Monitor_Steer.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_correctorbit_monitor_steer-correctionn-の-correctorbitmonitorsteer">fn_CorrectOrbit_Monitor_Steer (correction.n の CorrectOrbit・Monitor・Steer)</h1>
 <p>種別: パッケージ (Packages/correction.n)・フォルダ 13_packages・ラティス errors_ring_pkg (誤差入りの 24 セル、3 GeV、周長 105.6 m)</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>Monitor[{BPM の名前}]</code>、<code>Steer[{ステアラの名前}]</code> で補正系を定義し、<code>CorrectOrbit[kind, mon, str, opt]</code> で閉軌道のずれ (四極の据え付け誤差による) を最小二乗で補正する。ずれは BPM 48 台の rms で見る。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>mon=Monitor[Flatten[Table[{&quot;BA&quot;//ToString[k],&quot;BB&quot;//ToString[k]},{k,1,24}]]];
-sh=Steer[Table[&quot;SH&quot;//ToString[k],{k,1,24}]];   sv=Steer[Table[&quot;SV&quot;//ToString[k],{k,1,24}]];
-opt=CalculateOptics[1,LINE[&quot;LENGTH&quot;],Twiss[&quot;*&quot;,1],FLAG[&quot;CELL&quot;],2];
-r=CorrectOrbit[&quot;Y&quot;,mon,sv,opt];     (* 補正量 r (24 個) を返し、LINE[&quot;K0&quot;] にも足す *)
-CALC;                               (* 軌道を計算し直す。CALC NOEXP では補正が効かない *)
+<pre><code class="language-sad">mon<span class="o">=</span>Monitor[<span class="b">Flatten</span>[<span class="k">Table</span>[{<span class="s">"BA"</span><span class="o">//</span><span class="b">ToString</span>[k],<span class="s">"BB"</span><span class="o">//</span><span class="b">ToString</span>[k]},{k,<span class="m">1</span>,<span class="m">24</span>}]]];
+sh<span class="o">=</span>Steer[<span class="k">Table</span>[<span class="s">"SH"</span><span class="o">//</span><span class="b">ToString</span>[k],{k,<span class="m">1</span>,<span class="m">24</span>}]];   sv<span class="o">=</span>Steer[<span class="k">Table</span>[<span class="s">"SV"</span><span class="o">//</span><span class="b">ToString</span>[k],{k,<span class="m">1</span>,<span class="m">24</span>}]];
+opt<span class="o">=</span>CalculateOptics[<span class="m">1</span>,<span class="t">LINE</span>[<span class="s">"LENGTH"</span>],<span class="b">Twiss</span>[<span class="s">"*"</span>,<span class="m">1</span>],FLAG[<span class="s">"CELL"</span>],<span class="m">2</span>];
+r<span class="o">=</span>CorrectOrbit[<span class="s">"Y"</span>,mon,sv,opt];     <span class="c">(*</span><span class="c"> 補正量 r (24 個</span><span class="c">)</span><span class="c"> を返し、LINE["K0"] にも足す </span><span class="c">*)</span>
+<span class="k">CALC</span>;                               <span class="c">(*</span><span class="c"> 軌道を計算し直す。CALC NOEXP では補正が効かない </span><span class="c">*)</span>
 </code></pre>
 <p><code>Twiss["DY",名前]</code> の BPM での値から rms を作る。</p>
 <h2 id="結果の読み方">結果の読み方</h2>

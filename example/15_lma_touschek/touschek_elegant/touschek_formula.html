@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -40,7 +51,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: touschek_formula.md</div>
+<div class="meta">元: touschek_formula.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="touschek-寿命の式の例-pysad-k64-と-elegant-のどちらが正確か独立な式での確定">Touschek 寿命の式の例 (pysad (K64) と elegant のどちらが正確か。独立な式での確定)</h1>
 <p>試験は <code>pysad/tests/script_tests/test_v23_T2_touschek.py</code> (8 件)。独立な式は <code>pysad/touschek.py</code> の <code>touschek_piwinski</code> (v2 の <code>TouschekLifetime[INF, INF, nz]</code>・<code>TouschekLifetimeLMA[]</code> の既定)。
 実行はリポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/touschek_formula_xxx.py ...</code>。v2 モード。elegant は WSL (Ubuntu、<code>~/elegant/env.sh</code>、elegant 2026.4.0。作業フォルダ <code>~/t2/&lt;名前&gt;</code>)。
@@ -73,9 +84,9 @@ PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/touschek_formula_
 PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt; py -3.12 -m pytest pysad/tests/script_tests/test_v23_T2_touschek.py -q
 </code></pre>
 <p>SAD の台本では (INTRA ON の <code>Emittance[]</code> のあと):</p>
-<pre><code>Print[TouschekLifetime[INF, INF, 0.004/SIGE]];                       ! v2: Piwinski 型。k64 モード: K64 の表
-Print[TouschekLifetime[INF, INF, 0.004/SIGE, Formula-&gt;&quot;K64&quot;]];       ! 表
-Print[TouschekLifetimeLMA[Formula-&gt;&quot;Piwinski&quot;]];                      ! MomentumAcceptance[] のあと
+<pre><code class="language-sad"><span class="b">Print</span>[<span class="b">TouschekLifetime</span>[INF, INF, <span class="m">0.004</span><span class="o">/</span>SIGE]];                       <span class="c">! v2: Piwinski 型。k64 モード: K64 の表</span>
+<span class="b">Print</span>[<span class="b">TouschekLifetime</span>[INF, INF, <span class="m">0.004</span><span class="o">/</span>SIGE, Formula<span class="o">-&gt;</span><span class="s">"K64"</span>]];       <span class="c">! 表</span>
+<span class="b">Print</span>[<span class="b">TouschekLifetimeLMA</span>[Formula<span class="o">-&gt;</span><span class="s">"Piwinski"</span>]];                      <span class="c">! MomentumAcceptance[] のあと</span>
 </code></pre>
 <p>Python:</p>
 <pre><code>from pysad.touschek import touschek_piwinski

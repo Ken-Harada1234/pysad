@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,25 +53,25 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_Window_Button_TextLabel.md</div>
+<div class="meta">元: fn_Window_Button_TextLabel.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_window_button_textlabel-windowtextlabelbuttoncheckbutton">fn_Window_Button_TextLabel (Window・TextLabel・Button・CheckButton)</h1>
 <p>種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>最小の窓の例。最上位の窓 <code>Window[]</code> に、文字 (<code>TextLabel</code>)、ボタン (<code>Button</code>、押すと <code>Command</code> を評価)、チェックボタン (<code>CheckButton</code>、<code>Variable</code> に結ぶ) を縦に並べる。画面表示が主役。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>w=Window[];
-l=TextLabel[w,Text-&gt;&quot;Hello SAD&quot;,Side-&gt;&quot;top&quot;];
-b=Button[w,Text-&gt;&quot;Count&quot;,Command:&gt;(n=n+1),Side-&gt;&quot;top&quot;];
-c=CheckButton[w,Text-&gt;&quot;Option&quot;,Variable:&gt;ck,Side-&gt;&quot;top&quot;];
-TclEval[&quot;update&quot;];                 (* 窓を描く *)
-TclEval[&quot;foreach c [ff . Button] {$c invoke; $c invoke}&quot;];   (* ボタンを 2 回押す *)
+<pre><code class="language-sad">w<span class="o">=</span>Window[];
+l<span class="o">=</span>TextLabel[w,Text<span class="o">-&gt;</span><span class="s">"Hello SAD"</span>,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+b<span class="o">=</span>Button[w,Text<span class="o">-&gt;</span><span class="s">"Count"</span>,Command:<span class="o">&gt;</span>(n<span class="o">=</span>n<span class="o">+</span><span class="m">1</span>),Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+c<span class="o">=</span>CheckButton[w,Text<span class="o">-&gt;</span><span class="s">"Option"</span>,Variable:<span class="o">&gt;</span>ck,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+TclEval[<span class="s">"update"</span>];                 <span class="c">(*</span><span class="c"> 窓を描く </span><span class="c">*)</span>
+TclEval[<span class="s">"foreach c [ff . Button] {$c invoke; $c invoke}"</span>];   <span class="c">(*</span><span class="c"> ボタンを 2 回押す </span><span class="c">*)</span>
 </code></pre>
 <p><code>Side-&gt;"top"</code> は <code>Pack</code> のオプションで、作ると同時に配置される。補助の Tcl 手続き (部品の木を出すもの、クラスで部品を探すもの) は、台本の先頭で定義している。</p>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>tree:</code> の行が部品の木 (クラスと <code>-text</code>、<code>;</code> 区切り)。<code>n=2</code> はボタンを 2 回 <code>invoke</code> した結果 (<code>Command:&gt;(n=n+1)</code> が 2 回評価された)、<code>ck=1</code> はチェックボタンを 1 回押した結果 (<code>Variable:&gt;ck</code> が 1)。
 窓には「Hello SAD」のラベル、「Count」ボタン、「Option」のチェックボタンが縦に並ぶ (下の画面)。</p>
 <h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
-<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAABvCAMAAAAAJXhaAAABWVBMVEUAAAAAADQANDQANF0ANIIAXaYPDxAfPWMg/+AtLS0uLi0uWpMxMTEzMzM0AAA0ADQ0AF00NAA0NDQ0NF00NII0Smg0XYI0XaY0gqY0gsg3Nzc4ODg4Tmg5Ozc6Ojc8PDxCV3JEhdlFh9tLS0tMTExPUVFQUFBRUVFTU1NUVFRWVlZZWVlZYGFbW1tdAABdADRdAF1dNABdNDRdXTRdgshdpshdpuhgYGBoa25ubm50dHSBgYGCNACCNDSCXTSCgl2CgoKCgsiCpsiCpuiCyOiLi4uSkpKTk5Obm5udx/Oenp6fn5+mXQCmXTSmgjSmgoKmyOim6OisrKy7u7u/v7/IgjTIgl3Ipl3IpoLIyMjI6KbI6OjS0tLa29vf39/i4uLj4+Pl5eXm5ubopl3opoLoyILoyKbo6Kbo6Mjo6Ojp6enq6urs7Ozt7e3w8PDx8fHy8vLz8/P///8K0+FfAAADS0lEQVR42u3Z6VPTQBQA8A22ilfEiEi8rRdeXGq86g2tlait2IKN9SCWJipo+v9/cK+kaS2ZULvZoO8NEGZYNj/ebpZ9WeSlJBBAAAKQoUHeXrybBsinO6dKZ9IAuVEq5S6kAIId+3OXP275a8vFAo3icpybLDXYtbG0Xcj306U9ubNXtv614ucNGmvFOJDGi0bosh3ItVIJ5Q5snRCvsOF/48WWRDr6Qz7sw47clDc0CEFEO/pD7pGEnDw/RAiWRDtCkEIQ3iXsOHfwpyRIKKYw5Oh9T/7QXG2j3IlfQ4QMOlmPX0e730X2XFxj129iH9/3e9GD6K6TWtC+JP9Puf8df6QF4r2EjRFAAAKQnQfxYzMy3MEjuuNN1BsAAci/A3EeLuCvVZ3335qt4I/QDVcPo124hZMnLZz8CEITZRmQ5ljZXX+Kr9q4xRuvHFqQALEzFr1WddMIGmfFQmxNO1LhkOa8ptymsOlJi7Uit2eNmyQ5w4fkRzRNU3XavZ1lEDIgrRlyU9d5RUQ4Mc2xiliInxFbwaCJOoXY2dBwrc/prqljscEb0+ESCMl25oith+eNnalPk76yvLGpC50jZDh8CB2aefKDr8/I5KQ5wGNDGjuvyciInKwrqqY955MVT1zNoFPkEV44LJoDnAk8oVTlmAVLPEAAIh/iRzt2xOxwYEjcPCwCBCAASSdkdQ6xnapkyMp42XXeWH0FppEcpLuwkghhm1aXlxJkq44/W7OPNcXA+zRlwkoKwjfLvJTwIdMGNUnICC8lgoxU6JglCSEVFIHosiGuSetcXkqQu1czciBuTVVQxuKlRE3VnnQyYqvJTVZY4gECkB0JWYwbgiEofgiAuH8bAAHI/wkJrxFtqZBOU1cyZNSPAFJTkTLZVWfx7WwiEBRAqnjb7JjZ3toqIQgKIOyvZ2/Gk4Ug6gggvLwxdVLkIZ0WefXgLIlVfoIgiDp8CC/4qjop8sghDc5I5yzJr/zEQKijNyMGLcoxi0F4AeiXF0LmCHP8MUd6ILp4yCjqenxJwUeemtaMQQ/2QkPDCkBxkD7ryC3yvuQmPerERV49OEsSBwk9jj0ra+SLm6FDul60y4RERGogsDECSLIQCAgIiAHjNwd6neca1wmnAAAAAElFTkSuQmCC" /><figcaption>pysad が開いた窓</figcaption></figure>
 <p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
 <strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
 <h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>

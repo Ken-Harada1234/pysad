@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>summary_cmp.md</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: summary_cmp.md <span class="nav-links">| <a href="../../../../../search.html">検索</a> | <a href="../../../../../index.html">入口</a></span></div>
+<table>
+<thead>
+<tr>
+<th>候補</th>
+<th>誤差 rms</th>
+<th>シード数</th>
+<th>DA 面積 mm² 平均</th>
+<th>最悪</th>
+<th>各シード</th>
+<th>x の広さ mm 平均 (最悪)</th>
+<th>y の広さ mm 平均 (最悪)</th>
+<th>x-δ の広さ mm (δ 平均) 平均 (最悪)</th>
+<th>有効 δ の幅 % 平均 (最悪)</th>
+<th>周波数マップ悪い点の割合 平均 (最悪)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>final</td>
+<td>0%</td>
+<td>1</td>
+<td>51.4</td>
+<td>51.4</td>
+<td>51.4</td>
+<td>4.54 (4.54)</td>
+<td>4.35 (4.35)</td>
+<td>6.7 (6.7)</td>
+<td>6.0 (6.0)</td>
+<td>0.17 (0.17)</td>
+</tr>
+<tr>
+<td>r1a</td>
+<td>0%</td>
+<td>1</td>
+<td>32.3</td>
+<td>32.3</td>
+<td>32.3</td>
+<td>3.83 (3.83)</td>
+<td>4.41 (4.41)</td>
+<td>6.3 (6.3)</td>
+<td>6.0 (6.0)</td>
+<td>0.47 (0.47)</td>
+</tr>
+<tr>
+<td>r6a</td>
+<td>0%</td>
+<td>1</td>
+<td>74.1</td>
+<td>74.1</td>
+<td>74.1</td>
+<td>5.78 (5.78)</td>
+<td>4.91 (4.91)</td>
+<td>7.1 (7.1)</td>
+<td>6.0 (6.0)</td>
+<td>0.13 (0.13)</td>
+</tr>
+<tr>
+<td>r6b</td>
+<td>0%</td>
+<td>1</td>
+<td>66.0</td>
+<td>66.0</td>
+<td>66.0</td>
+<td>5.14 (5.14)</td>
+<td>4.61 (4.61)</td>
+<td>6.8 (6.8)</td>
+<td>6.0 (6.0)</td>
+<td>0.12 (0.12)</td>
+</tr>
+<tr>
+<td>r9c</td>
+<td>0%</td>
+<td>1</td>
+<td>71.7</td>
+<td>71.7</td>
+<td>71.7</td>
+<td>5.39 (5.39)</td>
+<td>5.32 (5.32)</td>
+<td>7.3 (7.3)</td>
+<td>6.0 (6.0)</td>
+<td>0.11 (0.11)</td>
+</tr>
+<tr>
+<td>final</td>
+<td>3%</td>
+<td>5</td>
+<td>44.6</td>
+<td>39.9</td>
+<td>39.9 47.2 49.2 42.6 44.2</td>
+<td>4.34 (4.14)</td>
+<td>3.86 (3.64)</td>
+<td>6.1 (5.9)</td>
+<td>6.0 (6.0)</td>
+<td>0.30 (0.34)</td>
+</tr>
+<tr>
+<td>r1a</td>
+<td>3%</td>
+<td>5</td>
+<td>29.3</td>
+<td>26.0</td>
+<td>28.9 30.7 31.0 26.0 30.1</td>
+<td>3.73 (3.44)</td>
+<td>3.42 (2.97)</td>
+<td>6.0 (5.7)</td>
+<td>6.0 (6.0)</td>
+<td>0.51 (0.58)</td>
+</tr>
+<tr>
+<td>r6a</td>
+<td>3%</td>
+<td>5</td>
+<td>48.7</td>
+<td>41.8</td>
+<td>44.8 52.0 61.8 43.1 41.8</td>
+<td>4.75 (4.06)</td>
+<td>4.12 (3.53)</td>
+<td>6.7 (6.4)</td>
+<td>6.0 (6.0)</td>
+<td>0.26 (0.32)</td>
+</tr>
+<tr>
+<td>r6b</td>
+<td>3%</td>
+<td>5</td>
+<td>52.6</td>
+<td>48.3</td>
+<td>50.2 58.9 53.0 52.4 48.3</td>
+<td>4.64 (4.28)</td>
+<td>4.18 (3.93)</td>
+<td>6.4 (6.2)</td>
+<td>6.0 (6.0)</td>
+<td>0.24 (0.32)</td>
+</tr>
+<tr>
+<td>r9c</td>
+<td>3%</td>
+<td>5</td>
+<td>50.9</td>
+<td>45.6</td>
+<td>47.2 52.1 63.0 46.7 45.6</td>
+<td>4.83 (4.47)</td>
+<td>4.05 (3.68)</td>
+<td>6.5 (6.4)</td>
+<td>6.0 (6.0)</td>
+<td>0.24 (0.29)</td>
+</tr>
+<tr>
+<td>final</td>
+<td>10%</td>
+<td>5</td>
+<td>24.5</td>
+<td>17.3</td>
+<td>21.5 32.3 27.4 23.8 17.3</td>
+<td>3.66 (2.73)</td>
+<td>2.69 (2.49)</td>
+<td>4.5 (4.1)</td>
+<td>5.4 (5.0)</td>
+<td>0.62 (0.74)</td>
+</tr>
+<tr>
+<td>r1a</td>
+<td>10%</td>
+<td>5</td>
+<td>20.3</td>
+<td>15.8</td>
+<td>19.3 27.3 23.2 16.0 15.8</td>
+<td>3.23 (2.92)</td>
+<td>2.34 (2.10)</td>
+<td>4.3 (4.0)</td>
+<td>5.4 (5.0)</td>
+<td>0.67 (0.76)</td>
+</tr>
+<tr>
+<td>r6a</td>
+<td>10%</td>
+<td>5</td>
+<td>23.3</td>
+<td>15.5</td>
+<td>23.5 30.3 27.0 20.2 15.5</td>
+<td>3.38 (2.39)</td>
+<td>2.67 (2.41)</td>
+<td>4.7 (4.1)</td>
+<td>5.4 (5.0)</td>
+<td>0.63 (0.76)</td>
+</tr>
+<tr>
+<td>r6b</td>
+<td>10%</td>
+<td>5</td>
+<td>25.8</td>
+<td>18.5</td>
+<td>21.3 32.8 29.9 26.3 18.5</td>
+<td>3.36 (2.81)</td>
+<td>2.85 (2.67)</td>
+<td>4.9 (4.7)</td>
+<td>5.6 (5.0)</td>
+<td>0.61 (0.68)</td>
+</tr>
+</tbody>
+</table>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

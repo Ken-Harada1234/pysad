@@ -2,7 +2,7 @@
 種別: FFS の `cell calc`、`Twiss[]`、`LINE[]`。フォルダ: `lattice`。元のスクリプト: disp_optics (要素ごとの表)。ラティス: `../lattice/kek_ls_v03_68.sad` (3 GeV、周長 570.72 m、標準セル 20 個)。フラグ: `ON RAD FLUC COD RFSW RADCOD`。
 
 ## 何を見る例か
-標準セル 1 個 (`ARCA`、28.536 m) の要素ごとの種類・位置・長さ・偏向角・K1・K2・βx・βy・ηx の数表。`../lattice/KEKLS_cell_layout_optics.png` の元データ (`example/tools/kek_ls_figs.py` が gs の出力から描く)。
+標準セル 1 個 (`ARCA`、28.536 m) の要素ごとの種類・位置・長さ・偏向角・K1・K2・βx・βy・ηx の数表。`../lattice/KEKLS_cell_layout_optics.svg` の元データ (`example/tools/kek_ls_figs.py` が gs の出力から描く)。
 
 ## スクリプト
 `KEKLS_cell_optics.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。
@@ -20,7 +20,7 @@ MKC  (cell end)         BX BY EX =     .6646218612    1.3317011803     .01999995
 MKSFA1 (SF centre)      BX BY EX =    8.3350203379    6.4000469233     .1399999420
 ```
 
-![KEKLS_cell_layout_optics.png](../lattice/KEKLS_cell_layout_optics.png)
+![KEKLS_cell_layout_optics.svg](../lattice/KEKLS_cell_layout_optics.svg)
 
 ## gs と pysad の比較
 判定: **○** (比べた行 167、最大の相対差 0.0e+00、k64 モードの pysad)。全桁一致 (数表 160 行)。

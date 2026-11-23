@@ -27,11 +27,11 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body class="nonav">
 <main>
-<div class="meta">元: adts_gs_norfsw.md</div>
+<div class="meta">元: adts_gs_norfsw.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="sad-gs-で-adts-を追跡で求めるときの-rf-の扱い-norfsw">SAD (gs) で ADTS を追跡で求めるときの RF の扱い (<code>NORFSW;</code>)</h1>
 <p><strong>この文書で分かること</strong>: gs (SAD 本家) の TrackParticles で ADTS を求めるとき、台本に <code>NORFSW;</code> (RF を止める) を入れる必要がある理由と、その確認用の出力ファイル。pysad の追跡 (RF 止め) と同じ条件で比べるための注意です。
 <strong>前提</strong>: ADTS が何かは <code>rdt_adts_basic.md</code>。</p>

@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -56,7 +56,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 35_pysad_vs_sadhelp.md</div>
+<div class="meta">元: 35_pysad_vs_sadhelp.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="pysad-と-sadhelp-1442k64-updated-10192026-の対応表--sad-側の定義場所つき">pysad と SADHelp (1.4.4.2k64 Updated: 10/19/2026) の対応表 — SAD 側の定義場所つき</h1>
 <p><strong>この文書で分かること</strong>: SADHelp の各項目 (FFS コマンド・関数・変数・要素) を、SAD 側のソースのどこで定義されているかと、pysad で実装済みか・未対応かの対応表。
 <strong>前提</strong>: 項目の説明は docs/34_sad_help_index.md。表中の「実装」は名前が登録されているという意味で、挙動が K64 と一致するかは各要素の文書 (docs/13〜21 など) を見る。

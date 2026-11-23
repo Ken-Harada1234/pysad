@@ -164,7 +164,7 @@ BSTRL ≥ 1 のとき、各スライスのキック (fx0, fy0) から曲率 ρ =
 - 乱数は SAD と同じ LCG (`tran`)。粒子 → スライスの順に 1 回ずつ引く。SeedRandom で再現する。
 - 表の定数は単精度のまま (`hbar=6.58211928e-16`、`1.1**40`、`1.02`、`5./3.`、`EPS=1e-10`)。
 
-![ビーム・ビームの振幅依存チューンシフト](figures/14_beambeam_tune_vs_amplitude.png)
+![ビーム・ビームの振幅依存チューンシフト](figures/14_beambeam_tune_vs_amplitude.svg)
 
 図の読み方: FODO リング (3 GeV。`example/00_lattice/bb_ring.sad` の `RINGB`: ORIGIN の直後に BEAMBEAM を 1 個。強ビームは IP で BX = BY = 1 m、EMIX = EMIY = 1e-8 m (σ = 0.1 mm)、NP = 1e9、SLICE = 1) で、弱ビームの 1 粒子 (y = 0) の水平振幅を変えて追跡し、3 周の座標から求めた νx の小数部 (縦軸) を振幅 [σ] (横軸) に対して描いた。灰色の破線は BEAMBEAM なしの値 0.6963 (光学計算の `CALC` には BEAMBEAM は効かない)。小振幅 (0.05σ) では 0.7151 (Δν = +0.019) だが、振幅が大きいほど強ビームの力が弱まるので Δν が小さくなり、5σ で 0.6968 になる。
 

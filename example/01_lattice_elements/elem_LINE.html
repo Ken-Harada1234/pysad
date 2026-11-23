@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,7 +53,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: elem_LINE.md</div>
+<div class="meta">元: elem_LINE.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="elem_line-line-の定義">elem_LINE (LINE の定義)</h1>
 <p>種別: elem (MAIN 部の定義)。フォルダ: 01_lattice_elements。ラティスは短い輸送路 (QUAD 2 種 + DRIFT。ファイル内)。エネルギー 3 GeV。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
@@ -53,12 +64,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <li>ラインの中にラインを入れ子にできる。<code>USE</code> したときは最下層まで展開され、同じ名前の要素は <code>Q.1</code>, <code>Q.2</code>, … と番号が付く。</li>
 </ul>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>LINE HALF = (Q D QQ D);
-LINE TWICE = (M 2*HALF);          ! M Q D QQ D Q D QQ D
-LINE REVL  = (M -HALF);           ! 逆向き
-LINE NEST  = (M HALF -HALF 2*Q);  ! 入れ子
-FFS;
-USE TWICE; INS; CALC; DISP ALL;   Print[&quot;nlat = &quot;, LINE[&quot;LENGTH&quot;]];
+<pre><code class="language-sad"><span class="t">LINE</span> HALF <span class="o">=</span> (Q D QQ D);
+<span class="t">LINE</span> TWICE <span class="o">=</span> (M <span class="m">2</span><span class="o">*</span>HALF);          <span class="c">! M Q D QQ D Q D QQ D</span>
+<span class="t">LINE</span> REVL  <span class="o">=</span> (M <span class="o">-</span>HALF);           <span class="c">! 逆向き</span>
+<span class="t">LINE</span> NEST  <span class="o">=</span> (M HALF <span class="o">-</span>HALF <span class="m">2</span><span class="o">*</span>Q);  <span class="c">! 入れ子</span>
+<span class="k">FFS</span>;
+<span class="k">USE</span> TWICE; <span class="k">INS</span>; <span class="k">CALC</span>; <span class="t">DISP</span> ALL;   <span class="b">Print</span>[<span class="s">"nlat = "</span>, <span class="t">LINE</span>[<span class="s">"LENGTH"</span>]];
 </code></pre>
 <p><code>DISP ALL;</code> は全要素を表示 (66 行ごとの停止を省く)。<code>LINE["LENGTH"]</code> は要素 (成分) の個数 (<code>$$$</code> を含む)。全文は <code>.sad</code>。</p>
 <h2 id="結果の読み方">結果の読み方</h2>

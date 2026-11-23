@@ -2,6 +2,7 @@
 """ASTRID2 のラティスの図を作る。リポジトリの直下から: py -3.12 example/astrid/lattice/figures_make_astrid_lattice.py
   fig_ASTRID2_cell_optics.png   標準セル NCELL (7.6174 m) の β・η とラティス (ASTRID2_v01_01.sad、周期解)
   fig_ASTRID2_ring_beta.png     リング全周 (45.7044 m) の βy。MPW なし (RING) と MPW あり (RINGMPW) の比較 (ASTRID2_v01_02_id.sad)
+"""
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "tools"))
 from figlib import *

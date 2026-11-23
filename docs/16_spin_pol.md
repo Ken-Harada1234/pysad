@@ -87,7 +87,7 @@ Print["S ",r[[2]]];
 結果の意味: `PolarizationTime` = 123.8 s は、このリング (3 GeV、aγ = 6.808) で偏極が 1−1/e まで立ち上がる時間。`SpinTune` = 0.404 は 1 周のスピン歳差の端数 (整数部を除く)。`PolarizationVector` = {0, 1, 0} は平面リングなのでスピンの周期解の軸が垂直 (y)。`Polarization` は k64 モードでは NaN (5.2)。v2 モードでは有限値 (92.376%、5.3)。
 
 
-![スピンの歳差と SpinTune](figures/16_spin_pol_precession.png)
+![スピンの歳差と SpinTune](figures/16_spin_pol_precession.svg)
 
 図の読み方: FODO リング (3 GeV、24 セル、RF 4 MV。`POL; RAD; NOFLUC`) で、水平面内に向けたスピンをもつ 1 粒子 (放射損失とつり合う同期位相の z から出発) を 200 周追跡した。右は粒子のエネルギーのずれ δ の推移で、約 36 周の周期 (νs = 0.0276) のシンクロトロン振動をする。左は、スピンの累積の回転数から SpinTune × 周回数 (`Emittance[]` の SpinTune = −0.19185) を引いた値で、δ の振動と同じ周期で約 0.1 回転の幅で揺れる。直線で近似した平均の傾きは −0.19188 回転/周で SpinTune に一致する。
 

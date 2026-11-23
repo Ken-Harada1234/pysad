@@ -51,6 +51,8 @@ pysad は、加速器コード SAD (K64 版) の計算 (光学・エミッタン
 
 手順 (`<repo>` の直下で実行):
 
+0. (任意) 最初の実行は、計算の核 (numba のカーネル) を機械語に変換するため約 1 分かかる (2 回目以降は 1〜2 秒)。先に済ませるには `pysad-warmup` を 1 回実行する (pip で入れたときのコマンド。リポジトリからは `py -3.12 -m pysad.warmup`)。`--check` で有効か確認、`--clear` で消す。
+
 1. SAD の台本を実行する。ラティスの台本と計算の台本を続けて渡す (SAD の `gs` に複数ファイルを連結して渡すのと同じ)。
 
    ```
@@ -195,6 +197,7 @@ pysad は `pysad/` の 102 本の Python ファイル (計 78235 行。2026-11-2
 | sxtopt.py | 935 | [試作] 6 極ファミリーの K2L の多項式モデルと SLSQP の最適化 (RDT・ADTS の解析式を k の線形・二次形式で組む。検証用。台本の関数なし。[`example/ddba/v07_14/sextupole/`](../example/ddba/v07_14/sextupole/)) | K64 にない追加 |
 | constants.py | 10 | 物理定数 (光速、電子の古典半径、電子・陽子の質量、Cγ、Cq など) | pysad の定数 |
 | nbcache.py | 146 | numba のキャッシュの無効化 (`py -3.12 -m pysad.nbcache`。kernel を編集したら試験の前に 1 回走らせる。docs/12 §16.7) | — |
+| warmup.py | 398 | numba のカーネルの事前コンパイル (コマンド `pysad-warmup`。インストールの直後に 1 回走らせると、初回の約 1 分の変換待ち (測定: 光学・追跡・エミッタンスの最初の実行で約 57 秒、キャッシュがあると 1〜2 秒)がなくなる。`--check`・`--clear`。docs/12 §16.7) | — |
 | fitroot.py / miscfn.py / fileops.py | 692 / 599 / 616 | Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/06) | tffindroot.f, Fit.n, D.n, optimize.n, Matrix.n, FileSystem.n, shared.n |
 | corr.py / pkgload.py | 293 / 148 | ResponseMatrix・LinearSolveConditioned・Master と、Packages/*.n (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational など) の自動読み込み (docs/06) | pgrmat.f, pgsolvcond.f, pmicad.f, pgmast.f, correction.n ほか |
 | ffsextra.py | 490 | FFS の VARIABLES・ATTRIBUTE・MATRIX・SHOW・VARY・RECOVER・REVERSE・STATUS・PRINT・EXECUTE・OUTPUT/APPEND/CLOSE・INPUT/READ (docs/04) | tfvars.f, tfattr.f, tfmat.f, tshow.f, tffsa.f |

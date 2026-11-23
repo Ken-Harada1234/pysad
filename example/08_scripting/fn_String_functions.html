@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,16 +52,16 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_String_functions.md</div>
+<div class="meta">元: fn_String_functions.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_string_functions-character-string-の項">fn_String_functions (character-string の項)</h1>
 <p>種別: 関数 (文字列) / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>文字列関数: <code>StringLength</code> <code>StringJoin</code> と <code>//</code>、部分文字列 <code>s[n1,n2]</code>、<code>StringPosition</code> <code>StringReplace</code> <code>StringTrim</code> <code>StringFill</code> <code>StringMatchQ</code> (ワイルドカード) <code>ToUpperCase</code> <code>ToLowerCase</code> <code>Characters</code> <code>ToCharacterCode</code> <code>FromCharacterCode</code> <code>ToExpression</code> <code>Symbol</code> <code>SymbolName</code> <code>DigitQ</code> <code>LetterQ</code> <code>StringDrop</code> <code>StringInsert</code>、エスケープ。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>s = &quot;Hello, SAD World&quot;;   StringLength[s];  s[1,5];  s[-5,-1];
-StringPosition[&quot;abcbcbcbcb&quot;, &quot;bcb&quot;];  StringReplace[&quot;abcbcbcbc&quot;, {&quot;bcb&quot;-&gt;&quot;xy&quot;, &quot;cbc&quot;-&gt;&quot;pqrs&quot;}];
-StringFill[&quot;ab&quot;, &quot;-&quot;, 7];  StringMatchQ[&quot;QF.1&quot;, &quot;QF*&quot;];  StringMatchQ[&quot;Q1&quot;, &quot;Q%&quot;];  StringMatchQ[&quot;QX&quot;, &quot;Q{^FD}&quot;];
-ToCharacterCode[&quot;\101&quot;];  &quot;x=&quot; // 1.5 // &quot;, n=&quot; // 3;
+<pre><code class="language-sad">s <span class="o">=</span> <span class="s">"Hello, SAD World"</span>;   <span class="b">StringLength</span>[s];  s[<span class="m">1</span>,<span class="m">5</span>];  s[<span class="o">-</span><span class="m">5</span>,<span class="o">-</span><span class="m">1</span>];
+StringPosition[<span class="s">"abcbcbcbcb"</span>, <span class="s">"bcb"</span>];  StringReplace[<span class="s">"abcbcbcbc"</span>, {<span class="s">"bcb"</span><span class="o">-&gt;</span><span class="s">"xy"</span>, <span class="s">"cbc"</span><span class="o">-&gt;</span><span class="s">"pqrs"</span>}];
+StringFill[<span class="s">"ab"</span>, <span class="s">"-"</span>, <span class="m">7</span>];  StringMatchQ[<span class="s">"QF.1"</span>, <span class="s">"QF*"</span>];  StringMatchQ[<span class="s">"Q1"</span>, <span class="s">"Q%"</span>];  StringMatchQ[<span class="s">"QX"</span>, <span class="s">"Q{^FD}"</span>];
+ToCharacterCode[<span class="s">"\101"</span>];  <span class="s">"x="</span> <span class="o">//</span> <span class="m">1.5</span> <span class="o">//</span> <span class="s">", n="</span> <span class="o">//</span> <span class="m">3</span>;
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>StringPosition</code> は重なりも数えて {{2,4},{4,6},{6,8},{8,10}} (SADHelp の例と同じ)、<code>StringReplace</code> は {"bcb"-&gt;"xy","cbc"-&gt;"pqrs"} で "axypqrsbc" (左から最初に合うもの)。<code>StringFill["ab","-",7]</code>="ab-----"、負なら "-----ab"。<code>//</code> は数も文字列にして連結 (<code>"x=1.5, n=3"</code>)。エスケープ <code>\t</code> <code>\"</code> <code>\\</code> <code>\101</code> (8 進) は gs で {9,34}、{92}、{65}。</p>

@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,20 +53,20 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_Menu_MenuButton.md</div>
+<div class="meta">元: fn_Menu_MenuButton.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_menu_menubutton-menubuttonmenu">fn_Menu_MenuButton (MenuButton・Menu)</h1>
 <p>種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>メニューボタン (<code>MenuButton</code>、「File」) にメニュー (<code>Menu</code>) を付け、エントリ (<code>Button</code>、<code>Separator</code>) を <code>Add-&gt;{...}</code> で与える。エントリを <code>invoke</code> すると <code>Command</code> が評価される。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>mb=MenuButton[w,Text-&gt;&quot;File&quot;,Side-&gt;&quot;top&quot;];
-m=Menu[mb,Add-&gt;{Button[Text-&gt;&quot;Open&quot;,Command:&gt;(fl=&quot;open&quot;)],Button[Text-&gt;&quot;Save&quot;,Command:&gt;(fl=&quot;save&quot;)],Separator[],Button[Text-&gt;&quot;Quit&quot;,Command:&gt;(fl=&quot;quit&quot;)]}];
-TclEval[&quot;$mn invoke 1&quot;];      (* 2 番目のエントリ「Save」を選ぶ *)
+<pre><code class="language-sad">mb<span class="o">=</span>MenuButton[w,Text<span class="o">-&gt;</span><span class="s">"File"</span>,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+m<span class="o">=</span>Menu[mb,Add<span class="o">-&gt;</span>{Button[Text<span class="o">-&gt;</span><span class="s">"Open"</span>,Command:<span class="o">&gt;</span>(fl<span class="o">=</span><span class="s">"open"</span>)],Button[Text<span class="o">-&gt;</span><span class="s">"Save"</span>,Command:<span class="o">&gt;</span>(fl<span class="o">=</span><span class="s">"save"</span>)],Separator[],Button[Text<span class="o">-&gt;</span><span class="s">"Quit"</span>,Command:<span class="o">&gt;</span>(fl<span class="o">=</span><span class="s">"quit"</span>)]}];
+TclEval[<span class="s">"$mn invoke 1"</span>];      <span class="c">(*</span><span class="c"> 2 番目のエントリ「Save」を選ぶ </span><span class="c">*)</span>
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>last index=3</code> (エントリは 0〜3 の 4 つ)、<code>labels=Open Save - Quit</code> (<code>-</code> は区切り線)、<code>fl=save</code> (「Save」の <code>Command</code> が評価された)。窓には「File」ボタンだけが見える (メニューは押したときだけ開く)。</p>
 <h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
-<figure><img alt="pysad が開いた窓" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAABACAIAAABOY6jcAAADNUlEQVR42u2ab0gTcRjHn/PyD6OBL4ROfDMGxnwRvVmwcOEcBBUSvvBVlHCa4gthJSyU4F74ZsHSGA0yMRcE0gv3JgYhyDVplpQvfJG4MpoTwnshbThQR+j1wjnGrpmwu3mu7+fV3e/Ydns+PM/z+93vmFQqRUB/VCAEEAMgBmIAxEAMKDMxMzMztzs73YMPEdbiOaPKtyQSCUEQvq6u3H08G3BfR1j1ImZoaMjZP3aF6HVYqq2tRVh1Iaavr8/ZP0ZEvqcvz124VllZubm5WVdXp9YtLiwsRKNRWZbzxhmGsVgsNputZMGanp5uttvrOS5vfEOS5iORjo4OHYnZ2dmJxb4T0fCDe+dvDO4tPWNZVkUrRBSNRtvb2w0GQ954Op0OBoOlFNNst8+Fwy0OR66bDUk6GNRX83e5XN0js0QUf/+CiBLf3nm9XnVvUZZlg8FQpcBoNCrTSFPqOa7F4ZgLhzckKc+KMo1OUkwsFlte/kJE3ZeNVz2rRGQ2m9VNF72R60Y7K8WWsomJCdfzD9nT1MeRqr3dsm/LWTdEpJGVf4gJBAJHXOV5fn19/eJhusj7+79/fp4SRUyoNBfD8/zRH2ZZNnucnH/S2tpaUVH+jxJyu712payoOLIs22U7mzH8a0kQhP/HSj3HKecCehETj8dv8V1E9OnRJY/HwzCMFrFgGCadTivHt7e3NfrF41gpNE/TRfP3+Xw9PT1ENDBw32q1ahQOi8USDAYLLTBLKWY+ElEWrgM3qi8wmSL3/Le2thoaGvDigO6eLldXVyOIOhUzOTmJOKrfWVGFsIMJIAZiAMRADIAYADGnbR1T6EIymdTD/e3uarXzVlNTo4c/WOilImQMShmAGIgBEAMxAGJAWYlZG2/juLYMbvFgwC0SEYnuzAHhbf8TwTrsD/Wasqe9IQkZAyDm2Pytgonu3GqHUlYaFoX+tjdERE03/d6cmpbThkYb/SGv6dCa5HVCTOl7jIIfq4uLKxl3RNamxjVymiBGF9wZCJ22LPkPmr+50frqrbiG5q83TL3+KRq1ZVY74yI2yggbZYSNMqxjAMQAiIEYADEQAwAAAAAAAAAA5PIH72g2fcj8dpUAAAAASUVORK5CYII=" /><figcaption>pysad が開いた窓</figcaption></figure>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAABACAIAAABOY6jcAAACTklEQVR42u3YwWoaQRyA8X2D9A36BAqioE3NJbSXKomLYjEiWHoRCh6KL6BQeo9Hqd48+QYePHbP3hIPgqKoWKj6APafapclq03TuLsT+T4Ew2wO6/yYmVVtRUqmMQXAEDDAEDDA0JHBtFqtS10vfCoyrarADAaDfD7/6nX42/dVNBplWlWByWazQiKvt1978XicaVUCxlTxX1UFRtf1fr9/wFtst9vVavXalgzKJTcnq9Fo3PZ69nEZlEtqwcxms9PTux3s5dlHUTl//zmVSh32FgVgOBz+sDUej+WSmzACUKvV7tnsHPQeJpPJbJaLpmkCEwgEDrtcJFkcwrDvkss7zD0Gh1SeCtPtdv1+n6kir2QyefBbVArGiuGcylNhisWidblELgqxWOzoYUwb51QegLn+a/IPiUTCVHnz5SYYDC4WC2C8XzGycZkwoXeFUqnkxC2ylT26dDq9Xq+3+1gkslwujx7meRz+4XA4k/8gMCcnLzqdjkNzIc/E8mRsH59Opzwu784wDJ/PJzDlctm56eAL5v80Go0Ehl9QlPtJZj6fA6MijFSv15lHFWEIGGAIGAIGGAIGGHIXZl8/1WjiWIp8QO2xAQMMMMAAAwwwwAADDDDPEcaohDQttC3X3AzcvU8mzdz2D2C8gQlVjJ2zDQwwwPwDjOlhgWnmrLsdMC6fMbnfQjYYq92eVQSMFytG3s3HA5MPGCVgHjprgPECZvMAbQCj3uFvyOH/ZzurNIHhmz8wwAADDDDAAAMMMMAA4xkMERERERGRov0CcaVh3HsLYXgAAAAASUVORK5CYII=" /><figcaption>pysad が開いた窓</figcaption></figure>
 <p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
 <strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
 <h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>

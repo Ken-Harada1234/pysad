@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,15 +52,15 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: FFS_PRINT_OUTPUT_APPEND_READ_INPUT.md</div>
+<div class="meta">元: FFS_PRINT_OUTPUT_APPEND_READ_INPUT.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="ffs-printoutputappendclosereadinput">FFS PRINT・OUTPUT・APPEND・CLOSE・READ・INPUT</h1>
 <p>種別: FFS コマンド / フォルダ: 09_io_system / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。ファイルは <code>TemporaryName[]</code> か実行ディレクトリの作業ファイルで、最後に <code>DeleteFile</code> で消す。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>PRINT 式</code> (式を評価して表示)、<code>OUTPUT "file"</code> (出力を file へ切り替え。ファイルは先頭から書く)、<code>APPEND "file"</code> (追記)、<code>CLOSE OUTPUT</code> (前の出力に戻る)、<code>READ "file"</code>・<code>INPUT "file"</code> (file の内容をコマンドとして読む。READ は巻き戻す、INPUT は巻き戻さない)。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>PRINT 1 + 2;   OUTPUT &quot;ex_out.txt&quot;;   PRINT 3 + 4;   Print[&quot;...&quot;];   CLOSE OUTPUT;
-APPEND &quot;ex_out.txt&quot;;   PRINT 5 * 6;   CLOSE OUTPUT;     (* ex_out.txt を読んで表示 *)
-READ &quot;ex_cmd.txt&quot;;   INPUT &quot;ex_cmd.txt&quot;;     (* x = 11; Print[...] を書いたファイル *)
+<pre><code class="language-sad"><span class="k">PRINT</span> <span class="m">1</span> <span class="o">+</span> <span class="m">2</span>;   <span class="k">OUTPUT</span> <span class="s">"ex_out.txt"</span>;   <span class="k">PRINT</span> <span class="m">3</span> <span class="o">+</span> <span class="m">4</span>;   <span class="b">Print</span>[<span class="s">"..."</span>];   <span class="k">CLOSE</span> <span class="k">OUTPUT</span>;
+<span class="k">APPEND</span> <span class="s">"ex_out.txt"</span>;   <span class="k">PRINT</span> <span class="m">5</span> <span class="o">*</span> <span class="m">6</span>;   <span class="k">CLOSE</span> <span class="k">OUTPUT</span>;     <span class="c">(*</span><span class="c"> ex_out.txt を読んで表示 </span><span class="c">*)</span>
+<span class="k">READ</span> <span class="s">"ex_cmd.txt"</span>;   INPUT <span class="s">"ex_cmd.txt"</span>;     <span class="c">(*</span><span class="c"> x = 11; Print[...] を書いたファイル </span><span class="c">*)</span>
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>PRINT 1+2</code> は <code>Out[2]:= 3</code> を表示 (最初の <code>PRINT</code> の呼び出しだけ、gs は余分に <code>Out[1]:= PRINT</code> も出す)。<code>OUTPUT</code> のあいだの <code>PRINT 3+4</code> と <code>Print[...]</code> は画面に出ず <code>ex_out.txt</code> に入る (<code>Out[3]:= 7</code>、<code>Print inside OUTPUT is also redirected</code>)。<code>CLOSE OUTPUT</code> で画面に戻る。<code>APPEND</code> した <code>Out[5]:= 30</code> が続けて入る。<code>READ</code>・<code>INPUT</code> でファイルの <code>x = 11;</code> と <code>Print[...]</code> が実行される (gs は読んだ行をエコー表示)。</p>

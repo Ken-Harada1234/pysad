@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -44,7 +44,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 01_overview.md</div>
+<div class="meta">元: 01_overview.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="01-pysad-の全体像と文書の案内">01. pysad の全体像と文書の案内</h1>
 <p>pysad は、加速器コード SAD (K64 版) の計算 (光学・エミッタンス・マッチング・粒子追跡・ダイナミックアパーチャ) を Python で再現し、SAD の台本をそのまま動かせるようにしたものである。</p>
 <ul>
@@ -151,8 +151,13 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </table>
 <h2 id="3-動かしてみる">3. 動かしてみる</h2>
 <p>手順 (<code>&lt;repo&gt;</code> の直下で実行):</p>
-<ol>
-<li>SAD の台本を実行する。ラティスの台本と計算の台本を続けて渡す (SAD の <code>gs</code> に複数ファイルを連結して渡すのと同じ)。</li>
+<ol start="0">
+<li>
+<p>(任意) 最初の実行は、計算の核 (numba のカーネル) を機械語に変換するため約 1 分かかる (2 回目以降は 1〜2 秒)。先に済ませるには <code>pysad-warmup</code> を 1 回実行する (pip で入れたときのコマンド。リポジトリからは <code>py -3.12 -m pysad.warmup</code>)。<code>--check</code> で有効か確認、<code>--clear</code> で消す。</p>
+</li>
+<li>
+<p>SAD の台本を実行する。ラティスの台本と計算の台本を続けて渡す (SAD の <code>gs</code> に複数ファイルを連結して渡すのと同じ)。</p>
+</li>
 </ol>
 <p><code>cd "&lt;repo&gt;"
    set PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;
@@ -581,6 +586,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>nbcache.py</td>
 <td style="text-align: right;">146</td>
 <td>numba のキャッシュの無効化 (<code>py -3.12 -m pysad.nbcache</code>。kernel を編集したら試験の前に 1 回走らせる。docs/12 §16.7)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>warmup.py</td>
+<td style="text-align: right;">398</td>
+<td>numba のカーネルの事前コンパイル (コマンド <code>pysad-warmup</code>。インストールの直後に 1 回走らせると、初回の約 1 分の変換待ち (測定: 光学・追跡・エミッタンスの最初の実行で約 57 秒、キャッシュがあると 1〜2 秒)がなくなる。<code>--check</code>・<code>--clear</code>。docs/12 §16.7)</td>
 <td>—</td>
 </tr>
 <tr>

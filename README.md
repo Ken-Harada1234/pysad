@@ -16,12 +16,14 @@
 pip install pysad-k64
 ```
 
+**初回の待ち時間**: 計算の核は numba で書いてあり、最初の実行のときに機械語へ変換する (CPU を使い、全体で約 1〜1.5 分。2 回目以降は保存した結果を読むだけ)。インストールの直後に `pysad-warmup` を 1 回実行すると、小さなラティスで全種類の計算を走らせて先に変換を済ませる (`--check` で有効か確認、`--clear` で消す)。
+
 ### pip で入るもの・入らないもの
 
 | | 内容 | pip |
 |---|---|---|
 | パッケージ本体 | `pysad/` (`import pysad`。約 100 モジュール) | **入る** |
-| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示) | **入る** |
+| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
 | 文書 | `docs/` (36 本の md と、図入りの同名の HTML。`docs/history/` と `docs/figures/` を含む)。場所: `<prefix>/share/pysad/docs` | **入る** |
 | 例 | `example/` (機能別の台本・出力・図・md・HTML。約 2500 ファイル)。場所: `<prefix>/share/pysad/example` | **入る** |
 | `run_sad.py` | 同上 (`<prefix>/share/pysad/run_sad.py`) | **入る** |
@@ -35,6 +37,8 @@ pip install pysad-k64
 全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。
 
 PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作をします (直訳ではありません)。インストールした版は `pysad.__version__` で確認できます。ソースに忠実な翻訳 (v1 系) は `pip install pysad-k64==1.0.0` で入ります。
+
+図入りの HTML (数式・コードの色分けつき) は、ダウンロードなしでブラウザから読めます: <https://ken-harada1234.github.io/pysad/> (入口)。全文検索は <https://ken-harada1234.github.io/pysad/search.html>。公開の設定は [`tools/README.md`](tools/README.md) の「GitHub Pages で公開する」。
 
 ## 必要なもの
 
@@ -106,7 +110,7 @@ pysad は直訳に加えて、**オリジナルの SAD (K64) にない解析機�
 
 **注意**
 - これらは **pysad のみ**で、gs (SAD 本体) では走りません。上の表の機能 (K64 にない新機能) は互換モード (`PYSAD_COMPAT=k64`) によらず同じ動作です。K64 の動作と変えたもの (互換モードで切り替わる) は [`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md) に区別して書いてあります。
-- PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は `pysad.__version__`)。SAD の台本を `py -3.12 run_sad.py lattice.sad script.sad` で動かすには、リポジトリを clone してください (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入りません)。
+- PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は `pysad.__version__`)。SAD の台本は、pip で入れた場合は `pysad-run lattice.sad script.sad`、リポジトリでは `py -3.12 run_sad.py lattice.sad script.sad` で動かせます (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入ります。試験と `tools/` は clone が必要です)。
 - 検証の範囲と未確認は [`docs/31_unimplemented_and_unverified.md`](docs/31_unimplemented_and_unverified.md)・[`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md)・docs/24〜26・[`example/14_nonlinear_dynamics/`](example/14_nonlinear_dynamics/README.md) の各まとめを参照してください。
 
 ## 構成
@@ -313,7 +317,7 @@ pysad の試験が走らせる台本と、その gs・pysad の画面表示は [
 | 集計 | 結果 |
 |---|---|
 | 回帰ベンチ (gs の出力との比較、`pysad/tests/regression_tests/run_regression.py`、`QUICK=1`、k64) | **50 ベンチ FAIL 0 (`QUICK=1`、133 s、k64)** |
-| 全試験 (`pytest pysad/tests`、gs の出力との比較を含む、k64 が既定) | **2521 通過・13 skip・失敗 0 (2534 件収集)** (2026-11-23 の通し (1 時間 36 分)。回帰 `QUICK=1` は 50 ベンチ FAIL 0。`PYSAD_SAD_PACKAGES` つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/script_tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/script_tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/script_tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/script_tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/script_tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/script_tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/script_tests/test_v2_B2_script.py))) |
+| 全試験 (`pytest pysad/tests`、gs の出力との比較を含む、k64 が既定) | **2620 通過・14 skip・失敗 0 (2634 件収集。通しは 2618 通過・2 失敗で、その 2 件 (版番号・索引の html) を直して再実行し通過)** (2026-11-23 の通し (1 時間 33 分)。回帰 `QUICK=1` は 50 ベンチ FAIL 0。`PYSAD_SAD_PACKAGES` つき、k64 が既定。skip の内訳: PYSAD_SLOW=1 が要る 4 件 ([`test_csr.py`](pysad/tests/script_tests/test_csr.py)・[`test_v2_C3_measure.py`](pysad/tests/script_tests/test_v2_C3_measure.py)・[`test_v2_D1_emit.py`](pysad/tests/script_tests/test_v2_D1_emit.py)・[`test_v2_E_pol_kick.py`](pysad/tests/script_tests/test_v2_E_pol_kick.py))、`PYSAD_ERR_LATTICE` が要る 2 件 ([`test_elkern.py`](pysad/tests/script_tests/test_elkern.py))、POSIX だけ・fork が要る 2 件 ([`test_v2_B_script.py`](pysad/tests/script_tests/test_v2_B_script.py)・[`test_v2_B2_script.py`](pysad/tests/script_tests/test_v2_B2_script.py))) |
 | `example/` の例 (下の表。gs と pysad の画面表示の比較。判定は各フォルダの README の ○△×) | 224 例中 ○ 189・△ 34・× 1 |
 
 `example/` の例のフォルダごとの内訳 (○ 一致、△ 差あり (理由は各例の `.md`)、× gs 失敗または pysad 未対応)。判定は、v2 で違うものも含めて `PYSAD_COMPAT=k64` で gs と一致するものを ○ としています。数えたスクリプトは [`example/tools/count_match.py`](example/tools/count_match.py)。

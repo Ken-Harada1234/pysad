@@ -110,14 +110,14 @@ PF リング (2.5 GeV) のラティスの歴史を、SAD の台本 4 本で追�
 - **1997 → 2005**: εx はほぼ変わらない (34.73 → 34.54 nm rad、⟨H⟩ 0.0337 → 0.0335 m)。変わったのは直線部: 空き長の合計が 41.6 m から 59.3 m (+17.7 m)。長直線部が 5.0 m から 8.93 m、中直線部が 3.55〜4.23 m から 4.6〜5.4 m。標準セルは位相進みが 98.7° (ばらつきあり) から 97.4° (±0.05°) に揃い、βy の最小の直線部 (βy = 1.08 → 1.16 m) と分散のある直線部 (ηx = 0.84 → 0.63 m、0.80 → 0.59 m) の値が少し変わった。チューンは νy が 4.29 から 5.28 に変わった (νx は 9.597 のまま)。四極は 74 → 78 個。
 - 推測 (数値では確かめていない): 1981 → 1986 は「同じ偏向磁石で、四極の配置を変えて分散を下げた」改造と読める。1997 の弧部改造は、偏向磁石 1 台ごとの短いセルにして ⟨H⟩ を一桁下げたものと読める。
 
-![リング 1 周の β と分散](PF_history_optics.png)
+![リング 1 周の β と分散](PF_history_optics.svg)
 
-![標準セルの拡大](PF_history_cell.png)
+![標準セルの拡大](PF_history_cell.svg)
 
 ## (d) 図
 
-- [`PF_history_optics.png`](PF_history_optics.png): 4 つのラティスのリング 1 周の βx、βy、ηx (×10) と磁石の並び。
-- [`PF_history_cell.png`](PF_history_cell.png): 標準セル (偏向磁石 2 個分、8.59 m) の拡大。
+- [`PF_history_optics.svg`](PF_history_optics.svg): 4 つのラティスのリング 1 周の βx、βy、ηx (×10) と磁石の並び。
+- [`PF_history_cell.svg`](PF_history_cell.svg): 標準セル (偏向磁石 2 個分、8.59 m) の拡大。
 - [`PF_history_layout.png`](PF_history_layout.png): 配置図 (偏向磁石 3 pt、長直線部 0.55 pt、その他の基準軌道 1.8 pt)。
 - 作り方: `tools/pf_history/make_figs.py` (pysad の k64 モードの Twiss から)。
 

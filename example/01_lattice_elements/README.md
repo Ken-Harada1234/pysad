@@ -5,7 +5,7 @@
 各例は 4 ファイル: `NAME.sad` (スクリプト)、`NAME.gs.txt` (gs の画面表示)、`NAME.pysad.txt` (pysad の画面表示)、`NAME.md` (説明)。
 走らせ方: `py -3.12 example/tools/run_example.py example/01_lattice_elements/NAME.sad`。凡例: ○ 一致 (表示の桁・書式の差は除く)、△ 差あり (内容を `.md` に書いた)、× gs 失敗、× pysad 未対応。
 
-![FODO_ring の 1 セルの β と分散](fig_FODO_cell_optics.png)
+![FODO_ring の 1 セルの β と分散](fig_FODO_cell_optics.svg)
 
 この節の多くの例が使う `00_lattice/FODO_ring.sad` (3 GeV、24 セル、周長 105.6 m) の 1 セル分の光学。上段は √βx (実線)・√βy (破線) [√m]、中段は水平分散 ηx [mm]、下段は磁石の配置 (SF・QF・B・QD・SD) で、横軸は 1 セルの始点からの距離 [m]。βx は 1.17〜6.85 m、βy は 1.75〜7.74 m、ηx は 309〜630 mm の範囲で、リング全体のチューンは (νx, νy) = (6.6963, 4.9061)。
 

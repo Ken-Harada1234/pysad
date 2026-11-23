@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""コマンドライン: `pysad-run` (SAD の台本を pysad で実行する) と `pysad-share` (文書・例のある場所を表示する)。
+"""コマンドライン: `pysad-run` (SAD の台本を pysad で実行する)、`pysad-share` (文書・例のある場所を表示する)、`pysad-warmup` (numba のカーネルを先に変換する)。
 
 pip で入れると、文書 (docs/) と例 (example/) はパッケージとは別に `<prefix>/share/pysad/` に入る
 (`pysad-share` がその場所を表示する)。リポジトリを clone して使うときは、リポジトリの直下の docs/ と example/ を返す。
@@ -52,3 +52,10 @@ def share_main(argv=None):
         return 1
     print(d)
     return 0
+
+
+def warmup_main(argv=None):
+    """`pysad-warmup [--check | --clear] [--quiet]`: numba のカーネルを事前に機械語へ変換してキャッシュを作る (最初の実行の待ち時間をなくす)。
+    `--check` はキャッシュが有効か調べ、`--clear` はキャッシュを消す。詳細は `pysad/warmup.py`。"""
+    from .warmup import main
+    return main(argv)

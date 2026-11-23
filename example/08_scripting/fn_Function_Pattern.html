@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,16 +52,16 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_Function_Pattern.md</div>
+<div class="meta">元: fn_Function_Pattern.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_function_pattern-defining-functions-pattern">fn_Function_Pattern (defining-functions, pattern)</h1>
 <p>種別: 関数 (定義とパターン) / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>関数の定義 <code>f[x_] := ...</code>、定数引数の定義 (<code>fib[0] = 0</code> が優先)、型つきパターン <code>x_Real</code>、<code>x_?test</code>、列パターン <code>x__</code> <code>x___</code>、既定値 <code>n_:2</code>、名前付き <code>x:pat</code>、<code>/.</code>・<code>//.</code>・<code>MatchQ</code>・<code>Alternatives</code>・<code>Repeated</code>、純関数、<code>TagSet</code>、メモ化、<code>Clear</code>。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>fib[0] = 0; fib[1] = 1; fib[n_] := fib[n-1] + fib[n-2];
-kind[x_Real] := &quot;real&quot;; kind[x_String] := &quot;string&quot;; kind[x_List] := &quot;list&quot;; kind[x_] := &quot;other&quot;;
-pos[x_?Positive] := &quot;positive&quot;;   cnt[x___] := Length[{x}];   pw[x_, n_:2] := x^n;
-MatchQ[f[1,2,3], f[_Real..]];   mem[n_] := mem[n] = n^2;   tg /: tg[a_] := &quot;tagged&quot;;
+<pre><code class="language-sad">fib[<span class="m">0</span>] <span class="o">=</span> <span class="m">0</span>; fib[<span class="m">1</span>] <span class="o">=</span> <span class="m">1</span>; fib[n_] <span class="o">:=</span> fib[n<span class="o">-</span><span class="m">1</span>] <span class="o">+</span> fib[n<span class="o">-</span><span class="m">2</span>];
+kind[x_Real] <span class="o">:=</span> <span class="s">"real"</span>; kind[x_String] <span class="o">:=</span> <span class="s">"string"</span>; kind[x_List] <span class="o">:=</span> <span class="s">"list"</span>; kind[x_] <span class="o">:=</span> <span class="s">"other"</span>;
+pos[x_<span class="o">?</span>Positive] <span class="o">:=</span> <span class="s">"positive"</span>;   cnt[x___] <span class="o">:=</span> <span class="b">Length</span>[{x}];   pw[x_, n_:<span class="m">2</span>] <span class="o">:=</span> x<span class="o">^</span>n;
+MatchQ[f[<span class="m">1</span>,<span class="m">2</span>,<span class="m">3</span>], f[_Real..]];   mem[n_] <span class="o">:=</span> mem[n] <span class="o">=</span> n<span class="o">^</span><span class="m">2</span>;   tg <span class="o">/</span>: tg[a_] <span class="o">:=</span> <span class="s">"tagged"</span>;
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>fib</code> は {0,1,1,2,3,5,8,13,21,34,55}、<code>kind</code> は {"real","string","list","other"}、<code>pw[3]</code>=9、<code>pw[3,3]</code>=27、<code>cnt[]</code>=0、<code>Replace[f[2], f[a:_] -&gt; g[a,a]]</code>=<code>g[2,2]</code>、<code>MatchQ[f[], f[_Real...]]</code>=1。<code>Clear[sq]</code> の後の <code>sq[3]</code> は未定義でそのまま。</p>

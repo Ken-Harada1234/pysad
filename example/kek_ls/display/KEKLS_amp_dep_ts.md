@@ -8,7 +8,7 @@
 `KEKLS_amp_dep_ts.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。共通モジュールは `Get["../modules/..."]` で読む (台本のあるフォルダをカレントにして走らせる)。
 
 ## 結果の読み方
-`AX n νx νy`・`AY n νx νy` の行。n = 101σ (水平 2.6 mm) で νx は 0.15 近く増え、νy が減る。垂直 51σ (0.9 mm) で νy が 0.1 以上動く。図: `KEKLS_amp_dep_ts.png`。
+`AX n νx νy`・`AY n νx νy` の行。n = 101σ (水平 2.6 mm) で νx は 0.15 近く増え、νy が減る。垂直 51σ (0.9 mm) で νy が 0.1 以上動く。図: `KEKLS_amp_dep_ts.svg`。
 
 gs の出力の抜粋 (指定の行だけ。全体は `KEKLS_amp_dep_ts.gs.txt`):
 ```
@@ -29,7 +29,7 @@ AY   51.0   48.5695242414   17.7145509989   amplitude y [mm]     .9113436460
 ... (計 15 行)
 ```
 
-![KEKLS_amp_dep_ts.png](KEKLS_amp_dep_ts.png)
+![KEKLS_amp_dep_ts.svg](KEKLS_amp_dep_ts.svg)
 
 ## gs と pysad の比較
 判定: **○** (比べた行 15、最大の相対差 0.0e+00、k64 モードの pysad)。全桁一致。

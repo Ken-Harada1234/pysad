@@ -219,6 +219,7 @@ v2 モードの実装は、特記がなければ**gs と比べていない** (gs
 | `dapert.n`・`element.n`・`emit.n`・`beamline.n`・`functions.n`・`Misc.n` の gs との比較 | 両 | 小さな台本で行ごとに比べた。差の一部は直している (`Log2$`・`FunctionDefinition`・`Fill$String`・`Remove$Paren`・`Emittance->False`・TURNS の既定・`Element[..]+=` のフック) |
 | Python 3.14 (Tk 9.0) の試験の失敗 2 件 | 両 | 対応 (`test_tk_version_and_font_system`、不安定なリングの `_spintrm`) |
 | TrackParticles の F1・FB1・FB2・FRINGE (`tsteer` (ANGLE=0 の BEND)・`tmulti` (MULT: F1・F2・F1K1F/B)) | 両 | 実装 (K64 の動作の追加)。k64 は gs と 10 桁表示の全桁一致 (12 セルの FODO・ステアリング 6 通り・MULT 9 通り、大きなリング A の補正磁石 2 台)。numba の高速追跡と Python は 1e-13。独立な基準 (軸上の偏向 1e-14、放射の積分 1e-5、Maxwell 場の端の運動 1e-3〜1e-10) |
+| 四極・MULT (K1≠0) の線形フリンジ F1・F2 の追跡の係数 (B323) | 両 | **v2 は F1 の符号を残す** (CALC と同じ。1 周写像の線形部分が CALC と 1e-10 以下、独立な数値積分と K の 2 次まで)。k64 は gs と同じ (F1 < 0 で CALC と 2e-3 食い違う)。限界: 設計軌道まわりの線形部分だけを確かめた (軌道がずれたときの 2 次以上・δ の列は未確認)。放射の `tradk` の引数は K64 の癖 (長さに係数 f1 を渡す) のまま。F1 < 0 の RAD の追跡は gs と比べていない (k64 の F1 < 0 は符号を捨てる)。逆向きの要素 (`cmp%ori` が偽) の係数は未対応 |
 | MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[]) | 両 | 実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。**K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた**)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内 |
 | TrackParticles の F1・AE の放射の行路 (B108 の MULT・追跡への拡張) | v2 | 修正 (厳密な幾何 + ロビンソンの定理と ΔJx が 1.03〜1.04 倍。K64 は約 2 倍) |
 | 要素ごとの FREE の何もしない変数 | 両 | gs と全桁一致 (`FREE QF.3 K1` は結合先 QF.1 を持つ何もしない変数として VAR に出る、変数の数・競合のエラー・FIX・Saved の欄・RESET) |

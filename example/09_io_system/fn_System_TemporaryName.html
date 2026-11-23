@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,14 +52,14 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_System_TemporaryName.md</div>
+<div class="meta">元: fn_System_TemporaryName.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_system_temporaryname-system-temporaryname-directory-environment">fn_System_TemporaryName (System, TemporaryName, Directory, Environment)</h1>
 <p>種別: 関数 / フォルダ: 09_io_system / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。ファイルは <code>TemporaryName[]</code> か実行ディレクトリの作業ファイルで、最後に <code>DeleteFile</code> で消す。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>TemporaryName[]</code> は一時ファイル名 (呼ぶたびに違う)、<code>System[cmd]</code> はシェルコマンドを実行してリターンコードを返す。<code>Directory[]</code>、<code>Environment[]</code>。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>t1 = TemporaryName[];   r = System[&quot;echo from-shell &gt; &quot; // t1];
-c = OpenRead[t1]; Print[ReadString[c]]; Close[c];   System[&quot;exit 3&quot;] &lt;&gt; 0;   DeleteFile[t1];
+<pre><code class="language-sad">t1 <span class="o">=</span> TemporaryName[];   r <span class="o">=</span> System[<span class="s">"echo from-shell &gt; "</span> <span class="o">//</span> t1];
+c <span class="o">=</span> OpenRead[t1]; <span class="b">Print</span>[ReadString[c]]; <span class="b">Close</span>[c];   System[<span class="s">"exit 3"</span>] <span class="o">&lt;</span><span class="o">&gt;</span> <span class="m">0</span>;   DeleteFile[t1];
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p>2 回呼ぶと別の名前 (<code>t1 &lt;=&gt; t2</code> が 1)、名前は文字列。gs で <code>System["echo from-shell &gt; file"]</code> はファイルを作り (内容 <code>from-shell</code>)、リターンコードは 1 (<strong>成功でも 0 ではなく 1 と返った</strong>。SADHelp は "system return code" とだけ)、<code>System["exit 3"]</code> も 1 以外 (<code>&lt;&gt; 0</code> が真)。名前そのもの (<code>/tmp/...</code> の乱数部分) は実行ごとに変わるので表示していない。</p>

@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -41,7 +41,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: OUTPUTS.md</div>
+<div class="meta">元: OUTPUTS.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="pysad-の試験が使う-sad-スクリプトとgspysad-の画面表示">pysad の試験が使う SAD スクリプトと、gs・pysad の画面表示</h1>
 <p>最終更新: 2026-11-17</p>
 <p>pysad の試験 (<code>pysad/tests/script_tests/test_*.py</code>) が <code>run_sad_string</code> に渡す SAD スクリプト (試験の中の文字列の台本) を、そのまま <code>scripts/NAME.sad</code> に取り出し、同じ台本を pysad と gs で走らせた画面表示を <code>NAME.pysad.txt</code>・<code>NAME.gs.txt</code> として並べたものです。ファイル名は <code>&lt;試験ファイル名 (test_ を除く)&gt;__&lt;試験関数 (クラス名を含む)&gt;</code> で、同じ試験に台本が複数あるときは <code>_2</code>、<code>_3</code>…が付きます。表は <code>py -3.12 pysad/tests/script_tests/make_outputs_md.py</code> で作ります。</p>

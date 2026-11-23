@@ -3,6 +3,8 @@
 作図のルール (D:\\work\\CLAUDE.md): ラティス配置図は、長直線部を細線 (0.55 pt)、その他の基準軌道 1.8 pt、偏向磁石 3 pt。"""
 import os, re, sys
 import numpy as np
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'tools', 'figures'))
+import figsave  # 折れ線系は SVG、そうでなければ PNG
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -19,9 +21,7 @@ def lines(rel, kind='gs'):
 
 def save(fig, rel):
     fig.tight_layout()
-    fig.savefig(os.path.join(EX, rel), dpi=90)
-    plt.close(fig)
-    print(rel, os.path.getsize(os.path.join(EX, rel)))
+    figsave.save_figure(fig, os.path.join(EX, rel), dpi=90, bbox_inches=None)
 
 
 def rows(rel, tag, kind='gs'):

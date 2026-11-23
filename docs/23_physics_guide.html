@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -60,7 +60,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 23_physics_guide.md</div>
+<div class="meta">元: 23_physics_guide.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="23-k64-の計算の式-sad-物理計算ガイド">23. K64 の計算の式 (SAD 物理計算ガイド)</h1>
 <p>最終更新: 2026-11-23 (現状のスナップショット)</p>
 <p>式中心。SAD = K64 版 (github KatsOide/SAD)、ソースは <code>&lt;SAD&gt;/src</code>、ヘルプは CERN SADHelp。
@@ -127,7 +127,7 @@ x+=px ale; y+=py ale; z += dpz ale - dvemit L
 <li>BEND F1 (tblfre, tbende.f:650): <code>x += dxfr d/pr</code>, <code>py += (dyfr - dyfra y^2) y/pr</code>; <code>dxfr=fb^2 phibl/24</code>, <code>dyfr=fb phibl^2/6</code>, <code>dyfra=fringe ? 4 dyfr/fb^2 : 0</code>、tbendef1 は長さ 0.5 fb rb の tbendebody0 を 2 回。</li>
 <li>tqfrie [転記] (hard-edge): <code>akk=ak/al/4; a=akk x^2/pr; b=akk y^2/pr; t=(aki(x^2-y^2))^2/6; dx=x(a/3+b+t); dy=-y(a+b/3-t)</code>。DISFRIN=0 で入る。</li>
 <li>tqlfre (線形): <code>af1=-ak/al f1|f1|/24; af2=ak/al f2; x -&gt; e^a x + (b/p) px, px -&gt; px e^-a, y -&gt; y e^-a - (b/p) py, py -&gt; py e^a</code> (a=af1/p, b=af2/p)。mfring=1,3 で入口、2,3 で出口。係数は tsetfringepe (tffs.f:982): K1≠0, L≠0 のときだけ f1in=F1+F1K1F 等。</li>
-<li>追跡: ttfrin (nord=4/6/一般)、追跡の線形フリンジは <code>f1=-|akk F1^2|/24, f2=|akk| F2</code> (K1 の符号によらず f1&lt;0)。hard-edge の条件は mfring&gt;-4 (tquad.f:49,103) で tquade と違う。</li>
+<li>追跡: ttfrin (nord=4/6/一般)、追跡の線形フリンジは k64 が <code>f1=-|akk F1^2|/24, f2=|akk| F2</code> (K1・F1 の符号によらず f1≤0)、v2 は <code>f1=-|akk| F1|F1|/24</code> (F1 の符号を残す。CALC の tqlfre と同じ。B323)。hard-edge の条件は mfring&gt;-4 (tquad.f:49,103) で tquade と違う。</li>
 </ul>
 <h2 id="7-6-極薄レンズmult">7. 6 極・薄レンズ・MULT</h2>
 <ul>

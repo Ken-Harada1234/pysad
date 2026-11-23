@@ -27,11 +27,11 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body class="nonav">
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="10_math_data-一覧">10_math_data 一覧</h1>
 <p>数値・データ処理の例。当てはめ・補間・積分・最小化、特殊関数、行列関数、定数。ラティスは使わない (<code>FFS;</code> の後に直接書く)。式で値を検算できるものは、md に式と数値の照合表がある (<code>R:</code> で始まる出力行が表の元)。</p>
 <p>○一致 / △差あり (理由は各 .md) / ×gs 失敗 / ×pysad 未対応・失敗</p>

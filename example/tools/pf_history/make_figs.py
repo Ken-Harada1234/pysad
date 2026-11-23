@@ -6,6 +6,8 @@
 使い方: py -3.12 example/tools/pf_history/make_figs.py"""
 import os, sys, math
 import numpy as np
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'tools', 'figures'))
+import figsave  # 折れ線系は SVG、そうでなければ PNG
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -79,7 +81,7 @@ def main():
             ax.legend(ncol=3, loc='upper right', fontsize=9)
     axs[-1].set_xlabel('s [m]')
     fig.suptitle('PF 2.5 GeV の履歴ラティス: リング 1 周の β 関数と分散 (pysad、設計値・誤差なし)\n下の帯: 黒 = 偏向磁石、青 = 収束四極、赤 = 発散四極、緑 = 6 極', fontsize=10)
-    fig.tight_layout(rect=(0, 0, 1, 0.96)); fig.savefig(os.path.join(OUT, 'PF_history_optics.png'), dpi=100); plt.close(fig)
+    fig.tight_layout(rect=(0, 0, 1, 0.96)); figsave.save_figure(fig, os.path.join(OUT, 'PF_history_optics.png'), dpi=100, bbox_inches=None); plt.close(fig)
     # ---- 標準セル
     fig, axs = plt.subplots(2, 2, figsize=(11, 6.5))
     for ax, (lat, yr, nm) in zip(axs.flat, pf_lib.LATS):
@@ -96,7 +98,7 @@ def main():
         if lat == pf_lib.LATS[0][0]:
             ax.legend(ncol=3, loc='upper right', fontsize=8)
     fig.suptitle('標準セルの拡大 (偏向磁石 2 個分)。帯の色はリング 1 周の図と同じ', fontsize=10)
-    fig.tight_layout(rect=(0, 0, 1, 0.96)); fig.savefig(os.path.join(OUT, 'PF_history_cell.png'), dpi=100); plt.close(fig)
+    fig.tight_layout(rect=(0, 0, 1, 0.96)); figsave.save_figure(fig, os.path.join(OUT, 'PF_history_cell.png'), dpi=100, bbox_inches=None); plt.close(fig)
     # ---- 配置図 (基準軌道を、偏向磁石の ANGLE で積分する。長直線部は細線)
     fig, axs = plt.subplots(2, 2, figsize=(10, 9.4))
     for ax, (lat, yr, nm) in zip(axs.flat, pf_lib.LATS):
@@ -134,9 +136,9 @@ def main():
         for s in ax.spines.values():
             s.set_visible(False)
     fig.suptitle('リングの配置図 (偏向磁石 3 pt、長直線部 0.55 pt、その他の基準軌道 1.8 pt)', fontsize=10)
-    fig.tight_layout(rect=(0, 0, 1, 0.96)); fig.savefig(os.path.join(OUT, 'PF_history_layout.png'), dpi=100); plt.close(fig)
+    fig.tight_layout(rect=(0, 0, 1, 0.96)); figsave.save_figure(fig, os.path.join(OUT, 'PF_history_layout.png'), dpi=100, bbox_inches=None); plt.close(fig)
     for f in ('optics', 'cell', 'layout'):
-        print(f, os.path.getsize(os.path.join(OUT, 'PF_history_%s.png' % f)))
+        p = os.path.join(OUT, 'PF_history_%s' % f); print(f, os.path.getsize(p + ('.svg' if os.path.exists(p + '.svg') else '.png')))
 
 
 if __name__ == '__main__':

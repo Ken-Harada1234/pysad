@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,15 +52,15 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: FFS_FIT_modules_PF.md</div>
+<div class="meta">元: FFS_FIT_modules_PF.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="ffs-fit-pf-チューンのマッチングと色収差補正のモジュール化">FFS FIT (PF): チューンのマッチングと色収差補正のモジュール化</h1>
 <p>種別: FFS コマンド <code>FIT</code> + ユーザー定義関数 (KEK の SAD チュートリアルの話題をもとにした)。加速器: PF 2.5 GeV リング (<code>lattice/v9_16_asym.sad</code>、周長 187.035 m、チューン 9.5975 / 5.2790)。標準セル <code>NCELL</code> (B20 を含む 1 セル、MKNCES から)。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>ChromCorrect[]</code>・<code>MatchingNcellTune[]</code> という関数にして、標準セルのチューンを 2x2 の格子点にマッチ → 色収差補正、を <code>Do</code> で回す。関数の中の FFS コマンドは <code>FFS["..."]</code> で包む。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>MatchingNcellTune[]:=( FFS[&quot;cell calc;&quot;]; FFS[&quot;fit NX tunex;&quot;]; FFS[&quot;fit NY tuney;&quot;]; FFS[&quot;free QD QF;&quot;]; FFS[&quot;go;&quot;]; FFS[&quot;cell calc&quot;]; );
-ChromCorrect[]:=( FFS[&quot;cell calc;&quot;]; {nx0, ny0} = Twiss[{&quot;NX&quot;,&quot;NY&quot;},&quot;***&quot;]/2/Pi; FFS[&quot;FIT;&quot;]; FFS[&quot;NX nx0 2;&quot;]; ... FFS[&quot;FREE SFH SDH;&quot;]; FFS[&quot;GO;&quot;]; FFS[&quot;FITP 1;&quot;]; );
-Do[ Do[ FFS[&quot;USE NCELL;&quot;]; MatchingNcellTune[]; ChromCorrect[]; Print[...]; ,{tuney,0.15,0.20,0.05}], {tunex,0.30,0.35,0.05}];
+<pre><code class="language-sad">MatchingNcellTune[]<span class="o">:=</span>( <span class="k">FFS</span>[<span class="s">"cell calc;"</span>]; <span class="k">FFS</span>[<span class="s">"fit NX tunex;"</span>]; <span class="k">FFS</span>[<span class="s">"fit NY tuney;"</span>]; <span class="k">FFS</span>[<span class="s">"free QD QF;"</span>]; <span class="k">FFS</span>[<span class="s">"go;"</span>]; <span class="k">FFS</span>[<span class="s">"cell calc"</span>]; );
+ChromCorrect[]<span class="o">:=</span>( <span class="k">FFS</span>[<span class="s">"cell calc;"</span>]; {nx0, ny0} <span class="o">=</span> <span class="b">Twiss</span>[{<span class="s">"NX"</span>,<span class="s">"NY"</span>},<span class="s">"***"</span>]<span class="o">/</span><span class="m">2</span><span class="o">/</span><span class="b">Pi</span>; <span class="k">FFS</span>[<span class="s">"FIT;"</span>]; <span class="k">FFS</span>[<span class="s">"NX nx0 2;"</span>]; ... <span class="k">FFS</span>[<span class="s">"FREE SFH SDH;"</span>]; <span class="k">FFS</span>[<span class="s">"GO;"</span>]; <span class="k">FFS</span>[<span class="s">"FITP 1;"</span>]; );
+<span class="k">Do</span>[ <span class="k">Do</span>[ <span class="k">FFS</span>[<span class="s">"USE NCELL;"</span>]; MatchingNcellTune[]; ChromCorrect[]; <span class="b">Print</span>[...]; ,{tuney,<span class="m">0.15</span>,<span class="m">0.20</span>,<span class="m">0.05</span>}], {tunex,<span class="m">0.30</span>,<span class="m">0.35</span>,<span class="m">0.05</span>}];
 </code></pre>
 <ul>
 <li>マッチングのたびに <code>USE NCELL</code> する (SAVE しないので、四極・6 極の値が元に戻る。発散しても引きずらない)。</li>

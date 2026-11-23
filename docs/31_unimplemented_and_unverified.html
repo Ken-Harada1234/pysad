@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -53,7 +53,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 31_unimplemented_and_unverified.md</div>
+<div class="meta">元: 31_unimplemented_and_unverified.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="31-オリジナル-sad-k64-に対する-pysad-の未対応未確認の一覧">31. オリジナル SAD (K64) に対する pysad の未対応・未確認の一覧</h1>
 <p><strong>この文書で分かること</strong>: オリジナルの SAD (K64) に対して pysad が「まだ対応していないもの」「対応したが gs で確かめていないもの」「gs が動かず比べられないもの」を、機能の分類ごとに 1 か所にまとめた一覧。pysad で計算する前に、自分の使う機能が使えるか・どこまで確かめられているかを調べるときに使う。
 <strong>前提</strong>: 互換モード (v2 = 既定、k64 = <code>PYSAD_COMPAT=k64</code>) の意味は docs/28 を見る。表の「モード」の欄は下に説明がある。
@@ -1052,6 +1052,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>TrackParticles の F1・FB1・FB2・FRINGE (<code>tsteer</code> (ANGLE=0 の BEND)・<code>tmulti</code> (MULT: F1・F2・F1K1F/B))</td>
 <td>両</td>
 <td>実装 (K64 の動作の追加)。k64 は gs と 10 桁表示の全桁一致 (12 セルの FODO・ステアリング 6 通り・MULT 9 通り、大きなリング A の補正磁石 2 台)。numba の高速追跡と Python は 1e-13。独立な基準 (軸上の偏向 1e-14、放射の積分 1e-5、Maxwell 場の端の運動 1e-3〜1e-10)</td>
+</tr>
+<tr>
+<td>四極・MULT (K1≠0) の線形フリンジ F1・F2 の追跡の係数 (B323)</td>
+<td>両</td>
+<td><strong>v2 は F1 の符号を残す</strong> (CALC と同じ。1 周写像の線形部分が CALC と 1e-10 以下、独立な数値積分と K の 2 次まで)。k64 は gs と同じ (F1 &lt; 0 で CALC と 2e-3 食い違う)。限界: 設計軌道まわりの線形部分だけを確かめた (軌道がずれたときの 2 次以上・δ の列は未確認)。放射の <code>tradk</code> の引数は K64 の癖 (長さに係数 f1 を渡す) のまま。F1 &lt; 0 の RAD の追跡は gs と比べていない (k64 の F1 &lt; 0 は符号を捨てる)。逆向きの要素 (<code>cmp%ori</code> が偽) の係数は未対応</td>
 </tr>
 <tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>

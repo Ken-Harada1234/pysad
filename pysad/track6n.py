@@ -515,7 +515,7 @@ def k_quad(S, n, L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2ou
             tqlfr1(i, S, f1in, f2in)
     if krad:
         if f1in != 0.0:
-            tradk_all(S, n, f1in, 0.0, fluc, rs, p0, anrad, cuc)
+            tradk_all(S, n, -abs(f1in), 0.0, fluc, rs, p0, anrad, cuc)    # K64 の癖: 長さの引数に係数 f1in を渡す (B323: v2 は f1in の符号が正にもなるので −|f1in| で従来のまま)
         for i in range(n):
             setr0_1(i, S)
         tsolqur_all(S, n, L, ak, eps0, fluc, rs, p0, h0, anrad, cuc)
@@ -528,7 +528,7 @@ def k_quad(S, n, L, K1L, dx, dy, ct, st, fringe, mfring, f1in, f2in, f1out, f2ou
         if fringe and mfring > -4 and mfring != 1:
             ttfrin4_1(i, S, -ak, L)
     if krad and f1out != 0.0:
-        tradk_all(S, n, f1out, 0.0, fluc, rs, p0, anrad, cuc)
+        tradk_all(S, n, -abs(f1out), 0.0, fluc, rs, p0, anrad, cuc)
     for i in range(n):
         rot1(i, S, ct, -st)
         S[i, 0] += dx
