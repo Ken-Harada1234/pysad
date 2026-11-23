@@ -52,7 +52,7 @@ H = -\sqrt{p^2 - p_x^2 - p_y^2} + \frac{E}{p_0 v_0}
 \tag{2.1}
 $$
 
-($E$ は粒子のエネルギー、$p_0 v_0$ は設計運動量と設計速度の積。$E/(p_0v_0)$ は $p$ だけの関数で、$z$ と共役な $p$ の側の量。) ヘルプの DRIFT の transformation には $H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ ($L$ をかけた形で、$\exp(:H:)$ に入れる) とある。定数 $1$ は運動に影響しない。$E/v_0$ の符号と、$p_0$ の規格化の略は、ヘルプの書き方 (付録 A。ヘルプの $H$ と (2.1) の関係は、[C_poisson_lie.md](C_poisson_lie.md) §8.2 の符号の注意による)。
+($E$ は粒子のエネルギー、$p_0 v_0$ は設計運動量と設計速度の積。$E/(p_0v_0)$ は $p$ だけの関数で、$z$ と共役な $p$ の側の量。) ヘルプ (K64 版同梱の `SADHelp.html`) の DRIFT > transformation には $H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ ($L$ をかけた形で、$\exp(:H:)$ に入れる。TeX 版・平文版とも同じ式) とある。**原文で確認**: $\sqrt{\ }$ の項と $L$ は (2.1) と同じ形で、定数 $1$ は運動に影響しない。$E/v_0$ は $p_0$ の規格化を略した書き方 (QUAD の $H_{2n}$ も同じ略記)。ただし**$E/v_0$ の符号は (2.1) と逆**で、これは誤植とみられる (付録 A。$\exp(:H:)$ を「$H$ を時間 1 のハミルトニアンとする流れ」と読む規約は [C_poisson_lie.md](C_poisson_lie.md) §8.2 に確定してある)。
 
 $E$ を $p$ で書く: 設計運動量を $mc$ の単位で $p_0$ ($= \beta_0\gamma_0$)、$h_0 = \gamma_0 = \sqrt{1 + p_0^2}$、$h_1 = \sqrt{1 + p_0^2p^2}$ とすると、$E = h_1\,mc^2$、$p_0v_0 \to p_0\cdot\beta_0 c\cdot mc = p_0^2 mc^2/h_0$ で
 
@@ -331,6 +331,7 @@ $$
 | `drift_01_h_to_map.py` | (a) sympy: $H$ の偏微分 (2.4)、$z'$ の整理 (2.5)、$dv$ の閉じた式。(b) 閉じた式 (2.6)・DOP853・pysad の追跡の比較。(c) 厳密 = 近軸 × $D$ (2.10)。(d) DISKIN | [drift_01_h_to_map.out.txt](outputs/drift_01_h_to_map.out.txt) |
 | `drift_02_linearization.py` | (a) sympy: (2.6) の 6×6 偏微分と `tdrife1` の式 (2.13) の一致。(b) pysad の行列と追跡の数値微分。(c) シンプレクティック性と $z$ の行 (2.15)。(d) 設計軌道と傾いた COD の成分 | [drift_02_linearization.out.txt](outputs/drift_02_linearization.out.txt) |
 | `drift_03_r56_example.py` | 最短の例: 3 GeV・10 MeV の電子で、ドリフトを 1〜4 回通った後の $z$。4 つのドリフトの行列 $T_{56}$ | [drift_03_r56_example.out.txt](outputs/drift_03_r56_example.out.txt) |
+| `drift_04_help_convention.py` | ヘルプの $\exp(:H:)$ の向き (流れ) の確定と、DRIFT の $E/v_0$ の符号の食い違い (sympy。DRIFT・QUAD・SEXT・BEND の $V$ の 4 つの式を同じ読みで検証) | [drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) |
 
 主な数字: (2.6) と DOP853 の差 $\le 1.8 \times 10^{-16}$、pysad の追跡との差 $\le 6.9 \times 10^{-17}$ (傾き最大 0.3)。(2.10) の分解の差 $\le 1.4 \times 10^{-17}$。sympy の 6×6 と (2.13) の差 $6.4 \times 10^{-18}$。pysad の行列と追跡の数値微分 (中心差分 $10^{-6}$) の差 $\le 3.9 \times 10^{-11}$ (傾き 0.3 の COD で最大)。
 
@@ -345,7 +346,7 @@ $$
 
 **未確認・限界**:
 - **DISKIN** は、Fortran の `tturn.f` の分岐 (近軸式) を読んだだけで、gs (K64 の実行) で数値を比べていない。pysad が `DISKIN` を使わないことは確認した (§7.2)。
-- **ヘルプの $H$** の符号・$E/v_0$ の規格化は、(2.1) と比べて読み替えた。ヘルプのポアソン括弧の定義が書かれていないので、$\exp(:H:)$ の符号の対応は推定 ([C_poisson_lie.md](C_poisson_lie.md) §8.2)。
+- **ヘルプの $H$**: 原文 (DRIFT > transformation) を確認した。$E/v_0$ の規格化 ($p_0$ の略) は読み替え、符号は誤植とみて (2.1) を使った。ヘルプにポアソン括弧の定義は無いが、$\exp(:H:)$ の向きは式どうしの整合で確定した ([C_poisson_lie.md](C_poisson_lie.md) §8.2、[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt))。
 - **`tdrife.f` の `tdrife`** と `tdrife0` の違い (ステアリングの有無) は、引数と分岐を読んだだけ。
 - 行列の確認は、pysad の追跡の数値微分と sympy の偏微分で行い、K64 (gs) の `trans` との比較は、この章ではしていない。
 - 傾きが非常に大きい粒子 ($p_x^2 + p_y^2 \to p^2$) では $p_z \to 0$ で式が発散する。K64 の `tdrift_free` は `ampmax = 0.9999` ($(p_x/p_0)^2 + (p_y/p_0)^2$ の最大値。`tdrift.f:4`) を定義しているが、この章の範囲では使い方を追っていない。
@@ -376,8 +377,8 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 
 | 箇所 | 内容 |
 |---|---|
-| ヘルプ DRIFT > transformation の $H$ | $H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ は、$L$ をかけた形で、$E/v_0$ は $E/(p_0v_0)$ ($p_0$ の規格化を略した書き方。四極の章の付録 A と同じ)。$\exp(:H:)$ の符号は [C_poisson_lie.md](C_poisson_lie.md) §8.2 の推定による (**疑い**: ヘルプにポアソン括弧の定義が無く、確認していない)。 |
-| ヘルプに無いもの | (1) 写像の具体式 (2.6)。(2) $dv$ の式 (1.9) と $z$ の整理 (2.5)。(3) COD のまわりの行列 (2.11)〜(2.13)。(4) 近軸の式との関係 (2.10)。(5) `DISKIN` の意味の説明 (キーワードの名前のみ。内容は `tturn.f` から) |
+| ヘルプ DRIFT > transformation の $H$ | **原文で確認** (`SADHelp.html`、DRIFT の transformation。TeX 版・平文版で同じ)。$H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ は $L$ をかけた形で、$E/v_0$ は $E/(p_0v_0)$ ($p_0$ の規格化を略した書き方。QUAD の $H_{2n}$ と同じ略記)。**確定した食い違い (誤植)**: $E/v_0$ の符号が逆。$\exp(:H:)$ を「$H$ の時間 1 の流れ」と読むと ($\sqrt{\ }$ の項から $x' = p_x/p_z$ が出る向き)、$\Delta z = \partial H/\partial p = -(p/p_z)L - (v/v_0)L$ になり、正しい $\Delta z = (-p/p_z + v/v_0)L$ (BEND > body の $z_2 = z_1 - s\,p_1/\sqrt{\cdot} + (v_1/v_0)L'$ の直線の極限、QUAD の $H_{2n}$ の $+E/v_0$、dynamics の $H$ の $+E/(p_0v_0)$ と同じ) より $2(v/v_0)L$ ずれる ([drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1))。$+1$ は $H$ を $-p + \ldots$ に近づけるための定数で運動に影響しない。 |
+| ヘルプに無いもの | (1) 写像の具体式 (2.6)。(2) $dv$ の式 (1.9) と $z$ の整理 (2.5)。(3) COD のまわりの行列 (2.11)〜(2.13)。(4) 近軸の式との関係 (2.10)。(5) `DISKIN`: **原文 (`SADHelp.html`) に DISKIN は出てこない** (DRIFT のキーワードは `L` と `RADIUS` だけ。要素の一覧表にも無い)。意味は `tturn.f` から |
 
 **K64 の実装の癖・誤りの疑い**
 

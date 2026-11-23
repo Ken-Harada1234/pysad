@@ -333,7 +333,7 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 
 | 箇所 | 内容 |
 |---|---|
-| ヘルプ OCT・DECA・DODECA の transformation の $V$ | $V_n = \sum\bigl(-\tfrac\beta2 H_{,k}^2 + \gamma H_{,j}H_{,k}H_{,jk}\bigr)$ の形 (ヘルプの $H$ は多極のポテンシャルに当たる。符号と規格化は本章 (3.15) と対応するが、ヘルプの記号の定義は未確認)。**疑い**: 係数の $\beta$、$\gamma$ の前の $1/2$ の有無は、ヘルプの $\exp(:\cdot:)$ の符号・規格化に依るので、本章の導出 ($c_3 = \beta/2$、$c_5 = \gamma/2$。K64 のコードと記号的に一致) で読み替えた。ヘルプの式の単独の検証はしていない。 |
+| ヘルプ SEXT・OCT・DECA・DODECA の transformation の $V_n$ | **原文で確認** (`SADHelp.html` の `transformation:THIN`)。$V_n = \sum_{j,k}\bigl(-\tfrac\beta2 H_{n,k}^2 + \gamma H_{n,j}H_{n,k}H_{n,jk}\bigr)$、$\beta = 1/6 - 1/\sqrt{48} = 0.0223291$、$\gamma = 1/40 - 1/(24\sqrt3) = 9.4374 \times 10^{-4}$。$H_n$ は多極のキックのハミルトニアン (積分強度)。ヘルプの $\exp(:\cdot:)$ は「ハミルトニアンの流れ」(C 付録 §8.2) なので、本章 (3.15) の $f_C$ (流れの生成元を $-H$ の側に書く) とは $V_n = -f_C$ の関係で、$c_3 = \beta/2$、$c_5 = \gamma/2$ と符号・係数が一致する (対称形での数値確認: [thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。ヘルプの式には $L$ と $1/p$ の因子が無い (略記の疑い。07 章付録 A)。ドリフトと H の並びは原文が非対称 (誤記。07 章付録 A)。 |
 | ヘルプに無いもの | (1) 力勾配型の係数 $\alpha, \beta, \gamma$ の導出。(2) 補正キックが力の勾配の項を消す理由。(3) 分割の次数の議論 |
 
 K64 の側の注意 (誤りではない): CALC の `tthine` は 2 次、追跡の `tthin` は 4 次で、同じ薄い多極でも分割が違う。したがって、軌道が大きくずれたとき、CALC の行列と追跡のヤコビアンは 2 次の分割の誤差だけ違う (07 章)。

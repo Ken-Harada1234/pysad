@@ -54,6 +54,10 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | cod | 閉軌道 | 正準運動量の 6 成分 |
 | `trans(6,12)` | CALC・Emittance[] の行列。1:6 が $T$、7:12 が励起 $D$ (放射の章) | |
 
+## ヘルプの原文
+
+各章が「ヘルプ」と言うのは、K64 版に同梱の `Documents/SADHelp.html` (画像は同じフォルダの `SADHelp_img`。CERN 版と同系統) の原文で、式・係数・記号を読んで照合してある。ヘルプの式は、TeX 版 (`EquAlign` の 1 つめ) と平文版 (2 つめ) が併記されていて、**両者が食い違う箇所がある** (BEND の線形フリンジ $V$、本体の $p_{x2}$、SEXT〜DODECA の説明文)。各章の付録 A に、原文の式を引いて「原文で確認」「確定した食い違い」「疑い」に分けて書いた。ヘルプには、ポアソン括弧・$\exp(:H:)$ の向き・積の順序の定義が無い。向きは式どうしの整合から確定した ([C_poisson_lie.md](C_poisson_lie.md) §8.2。$\exp(:H:)$ は $H$ (長さをかけた量) を時間 1 のハミルトニアンとする流れ)。
+
 ## 確認スクリプトの実行方法
 
 **前提**: 四極の線形フリンジの F1 の符号の修正 (v2 の追跡が CALC と一致する) は v2.4.4 に入る。この物理ガイド (dev/v2.5.0) は v2.4.4 の後に載せる前提で書いてあり、`quad_04_matrix_vs_map.py` の (f) の v2 の結果は、その修正の入った pysad で得た。この作業ツリーの pysad がまだ修正前のときは、環境変数 `PYSAD_SRC` に v2.4.4 以降の pysad のルートを指定して実行する (`scripts/_common.py` が読む)。
@@ -73,6 +77,7 @@ py -3.12 physics_guide/scripts/thin_01_potential_kick.py        # 07 章 (薄い
 py -3.12 physics_guide/scripts/bend_01_h2_body.py               # 05 章 (偏向磁石) の確認 (bend_01〜bend_04)
 py -3.12 physics_guide/scripts/edge_01_gauge_generators.py       # 06 章 (端部) の確認 (edge_01〜edge_04)
 py -3.12 physics_guide/scripts/sol_01_h2_exact.py               # 09 章 (ソレノイド) の確認 (sol_01、sol_02)
+py -3.12 physics_guide/scripts/drift_04_help_convention.py     # ヘルプ原文の確認 (drift_04、quad_07、bend_05、thin_04。各章の付録 A)
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -86,18 +91,22 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `quad_04_matrix_vs_map.py` | 04 | CALC の行列と追跡の写像の微分の一致、$z$ の行、シンプレクティック性 |
 | `quad_05_fringe.py` | 04 | フリンジ (母関数、Maxwell の場の端の積分、F1・F2、シンプレクティック性) |
 | `quad_06_invariants.py` | 04 | 保存量と分割の誤差 |
+| `quad_07_help_checks.py` | 04 | ヘルプ原文: 線形フリンジの $b$ の $1/p$、solution-H2 の $z$ の式、F1 の符号 |
 | `drift_01_h_to_map.py` | 02 | $H$ の偏微分・$z'$ の整理・$dv$ (sympy)、閉じた式と DOP853・pysad の追跡の比較、厳密 = 近軸 × $D$、DISKIN (pysad は未実装) |
 | `drift_02_linearization.py` | 02 | 6×6 の偏微分 (sympy) と `tdrife1` の式、pysad の行列と追跡の数値微分、シンプレクティック性と $z$ の行 |
 | `drift_03_r56_example.py` | 02 | 最短の例: ドリフトを 1〜4 回通った後の $z$ (3 GeV・10 MeV)、4 つのドリフトの $T_{56}$ |
+| `drift_04_help_convention.py` | 02、付録 C | ヘルプの $\exp(:H:)$ の向きの確定、DRIFT の $E/v_0$ の符号の食い違い (sympy) |
 | `integ_01_bch_force_gradient.py` | 03 | 自由代数の BCH (sympy): Strang・Yoshida の 3 次の係数、力勾配型の $t$・$c_3$・$c_5$ ($\alpha, \beta, \gamma$)、K64 の `tthin` の補正キックと記号的に一致、`tthine` の分割 |
 | `integ_02_order_symplectic.py` | 03 | 1 自由度の系で、Strang・Yoshida・力勾配型・RK4 の誤差の次数、シンプレクティック性、長時間の $H$ の誤差 |
 | `thin_01_potential_kick.py` | 07 | 多極のポテンシャル (調和・規格化)、$\exp(:f:)$ の級数が 2 項で止まる、pysad の薄い多極と閉じた式、フィードダウン (DX・DY) |
 | `thin_02_fourth_order.py` | 07 | 長さのある多極の `tthin` (4 次) を厳密な積分と比較: 誤差の次数 (L を 2 倍にした比)、$\gamma$ の項の効果、CALC の `tthine` (2 次) とのヤコビアンの違い |
 | `thin_03_fringe.py` | 07 | 多極 ($m = 2$〜6) の非線形フリンジの位置のずれ (Maxwell から導いた式と `ttfrin`)、運動量・$z$・シンプレクティック性、6 極・8 極のローレンツ力の数値積分との比較 |
+| `thin_04_help_order.py` | 03、07 | ヘルプ原文: SEXT〜DODECA の並び (原文は非対称で 2 次、対称形は 4 次以上)、$V_n$ の符号 |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
 | `bend_04_matrix_vs_map.py` | 05 | CALC の行列と追跡の写像の関係、段ごとの比較、端面の 2×2 行列 |
+| `bend_05_help_checks.py` | 05 | ヘルプ原文: 線形フリンジ $V$ の TeX 版・平文版、本体の $s$・$p_{x2}$、非線形フリンジの $p_{y2}$ |
 | `edge_01_gauge_generators.py` | 06 | $
 abla	imesec A = ec b$ (偏向・四極・$2m$ 極・ソレノイド)、端の生成関数 $f = \int H_1ds$ から (4.27)・(7.17)・(5.35)・DISFRIN の $H$ が出る (sympy)、偏向の $y^4$ の項 |
 | `edge_02_generating_function.py` | 06 | 母関数 $G$ = 点変換 $x + V + 	frac12V\cdot

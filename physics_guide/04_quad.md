@@ -82,7 +82,7 @@ $$
 \tag{4.5}
 $$
 
-(ヘルプの 2nd-order-Hamiltonian と QUAD の transformation の式。ヘルプの本体の式は $E/v_0$ のように $p_0$ の規格化を略して書かれている。) $\Delta H$ は運動量が小さいとき
+(ヘルプの 2nd-order-Hamiltonian と QUAD の transformation (body of quad) の式。**原文で確認**: $H_{2n}$・$\Delta H$ とも本章の式と同じ形。QUAD の本体の式は $E/v_0$ のように $p_0$ の規格化を略して書かれている (2nd-order-Hamiltonian は $E/(p_0v_0)$)。) $\Delta H$ は運動量が小さいとき
 
 $$
 \Delta H \simeq \frac{(p_x^2 + p_y^2)^2}{8p^3}
@@ -175,7 +175,7 @@ $$
 
 行列式は 1 ($\cos^2 + \sin^2 = 1$、$\cosh^2 - \sinh^2 = 1$)。行列指数 $\exp(AL)$ ($A = \begin{pmatrix}0 & 1/p\\ \mp K & 0\end{pmatrix}$) との一致は [quad_01_h2_exact.out.txt](outputs/quad_01_h2_exact.out.txt) (a) で $10^{-16}$、pysad の `Quadrupole.transfer_matrix` との一致は (b) で厳密に 0 (同じ式)。
 
-**ヘルプの solution-H2 との関係**: ヘルプはソレノイド ($B_z$) つきの一般の解を書く。$B_z = 0$ とすると、$V = \sqrt{(B_z/p)^4 + 4(K/p)^2} = 2K/p$、$w_1 = w_2 = w = \sqrt{K/p}$、$w_+ = 2w$、$U = 1/V = p/(2K)$ になり、係数は $a = x_0$、$b = q_{x0}$、$c = p_{y0}/(2K)$、$d = y_0/2$ ($p_{xm} = p_{x0}$、$p_{ym} = p_{y0}$)。ヘルプの $\Delta x = u_1/w_1 = a(\cos\varphi - 1) + (b/w)\sin\varphi = x_0(\cos\varphi - 1) + q_{x0}\sin\varphi/w$、$\Delta y = w_+v_2/w_2 = y_0(\cosh\varphi - 1) + q_{y0}\sinh\varphi/w$ は、式 (4.9)(4.10) の更新量と一致する。ソレノイドつきの 4×4 は `09_solenoid.md` (予定) に回す。
+**ヘルプの solution-H2 との関係**: ヘルプはソレノイド ($B_z$) つきの一般の解を書く。$B_z = 0$ とすると、$V = \sqrt{(B_z/p)^4 + 4(K/p)^2} = 2K/p$、$w_1 = w_2 = w = \sqrt{K/p}$、$w_+ = 2w$、$U = 1/V = p/(2K)$ になり、係数は $a = x_0$、$b = q_{x0}$、$c = p_{y0}/(2K)$、$d = y_0/2$ ($p_{xm} = p_{x0}$、$p_{ym} = p_{y0}$)。ヘルプの $\Delta x = u_1/w_1 = a(\cos\varphi - 1) + (b/w)\sin\varphi = x_0(\cos\varphi - 1) + q_{x0}\sin\varphi/w$、$\Delta y = w_+v_2/w_2 = y_0(\cosh\varphi - 1) + q_{y0}\sinh\varphi/w$ は、式 (4.9)(4.10) の更新量と一致する。(**原文の solution-H2 の式を読んで確認**。$a, b, c, d$ の縮約は手計算。) ソレノイドつきの 4×4 は [09_solenoid.md](09_solenoid.md)。$z$ の式 (複素正規座標) は §14 と付録 A。
 
 ### 4.2 $K < 0$ と $K = 0$
 
@@ -300,7 +300,7 @@ $K1$ は積分強度、$L K1 = KL^2 = \varphi^2$ は本体全体の位相の 2 �
 |---|---|---|---|
 | 追跡 (`tsolqu`) | 0.2 | 0.1 | `tsolqu.f:47`、`quadbody.ndiv()` |
 | CALC・Emittance[] (`tsolque`) | 0.1 | 0.05 | `tsolque.f:385`、`quadbody.ndiv_calc()` (CALC と放射つきの追跡は、刻みの数の上限が 1000) |
-| ヘルプの式 $1 + \lfloor 10\,\lvert K1\,L\rvert/\mathrm{EPS} \rfloor$ | CALC の K64 の値と同じ ($\varepsilon_0 = 0.1$ のとき $1/0.1 = 10$) | | |
+| ヘルプの式 $1 + \lfloor 10\,\lvert K1\,L\rvert/\mathrm{EPS} \rfloor$ (**原文で確認**: QUAD > transformation の body。「EPS = 0 のときは EPS = 1」も同じ) | CALC の K64 の値と同じ ($\varepsilon_0 = 0.1$ のとき $1/0.1 = 10$) | | |
 
 追跡の K64 は 0.2 (つまり $5\,L K1/\mathrm{EPS}$) で、ヘルプの式より刻みが少ない。同じ四極でも、追跡と CALC の刻みの数が違うので、軌道がずれたときの積分の誤りが違う (§1 の数字: 追跡 $7.1 \times 10^{-7}$、CALC $1.8 \times 10^{-7}$)。v2 はこれを、4 次の合成と刻みの半減で、どちらも $10^{-8}$ 以下にしてある。刻みの数の例 (EPS = 1。[quad_03_integrator_order.out.txt](outputs/quad_03_integrator_order.out.txt) (c)):
 
@@ -520,7 +520,7 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 
 - **同じ $H$ の同じ分割を、追跡は写像として、CALC は微分として使う**。したがって、設計軌道の近くでは追跡のヤコビアンと CALC の行列は一致する ($1.8 \times 10^{-13}$、[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt))。軌道がずれると、刻みの数の違い ($\varepsilon_0$) による積分の誤りの違いだけ食い違う (K64 で $5.3 \times 10^{-7}$、v2 で $7.4 \times 10^{-9}$)。
 - 次元の違いに注意: 追跡の `ttfrin` は $q$ で書いてあるが、CALC は正準運動量なので $p$ の因子が入る (たとえば `tqlfre.f` の `bp = b/p`)。
-- 違う点: (1) 線形フリンジの係数で、追跡は $\mathrm{F1}$ の符号を捨てる ($f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24$。`tffs.f:969`)。CALC は $-K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ で符号が残る (`tqlfre.f:12`)。F1 < 0 は、ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{|\alpha|}$ では起こりうるが、F1 = −0.1 の四極 (K1 = 0.6、$L = 0.3$ m) では、追跡と CALC の 4×4 が $2.1 \times 10^{-3}$ 食い違う (F1 = +0.1 では $1.8 \times 10^{-13}$。[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (f))。この違いは K64 のもの (k64 は K64 のまま)。**v2 は直してあり** ($f_1 = -\lvert K\rvert\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$、F1 の符号を残す。CALC の `tqlfre` と同じ)、F1 = −0.1 でも追跡と CALC の 4×4 は $1.7 \times 10^{-13}$ で一致する (同じ出力の (f)。この確認は、修正の入った pysad で行った。実行環境は §14 の注記)。(2) フリンジの判定式 (§7.1)。
+- 違う点: (1) 線形フリンジの係数で、追跡は $\mathrm{F1}$ の符号を捨てる ($f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24$。`tffs.f:969`)。CALC は $-K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ で符号が残る (`tqlfre.f:12`)。F1 < 0 は、ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(a)\sqrt{a}$ (原文のまま。$a < 0$ では $\sqrt{|a|}$ と読む) では起こりうるが、F1 = −0.1 の四極 (K1 = 0.6、$L = 0.3$ m) では、追跡と CALC の 4×4 が $2.1 \times 10^{-3}$ 食い違う (F1 = +0.1 では $1.8 \times 10^{-13}$。[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (f))。この違いは K64 のもの (k64 は K64 のまま)。**v2 は直してあり** ($f_1 = -\lvert K\rvert\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$、F1 の符号を残す。CALC の `tqlfre` と同じ)、F1 = −0.1 でも追跡と CALC の 4×4 は $1.7 \times 10^{-13}$ で一致する (同じ出力の (f)。この確認は、修正の入った pysad で行った。実行環境は §14 の注記)。(2) フリンジの判定式 (§7.1)。
 
 ## 11. 放射 (概要)
 
@@ -579,6 +579,7 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 | `quad_04_matrix_vs_map.py` | CALC の行列と追跡の写像の微分の一致。変分方程式との比較。$z$ の行 (4.38)。シンプレクティック性。K64 の動作と v2 の両方 | [quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) |
 | `quad_05_fringe.py` | (a) 母関数 (4.28) と K64 の式の一致 ($3 \times 10^{-18}$)。(b) Maxwell の場の端の積分との比較。(c) 線形フリンジ F1・F2。(d) シンプレクティック性 | [quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) |
 | `quad_06_invariants.py` | $B$ だけの $H_2$ の保存、分割した写像の $H$ の変化 ($n^{-2}$ と $n^{-4}$)、ヤコビアンのシンプレクティック性 | [quad_06_invariants.out.txt](outputs/quad_06_invariants.out.txt) |
+| `quad_07_help_checks.py` | ヘルプ原文の確認: (a) 線形フリンジの $b$ の $1/p$ ($p \neq 1$ の数値積分)、(b) solution-H2 の $z$ の式 ($B_z = 0$)、(c) F1 の $\mathrm{sgn}\sqrt{\ }$ | [quad_07_help_checks.out.txt](outputs/quad_07_help_checks.out.txt) |
 
 主な出力 (抜粋)。四極 ($L = 1$ m、K1 = 1.5 /m) を、10 mm・10 mrad の粒子が通ったときの、厳密な写像 (DOP853) との最大の差 ($quad\_03$):
 
@@ -627,8 +628,8 @@ z の行 (4.38):  追跡の数値微分とシンプレクティック条件で�
 
 **未確認・限界**:
 - **非線形フリンジ**: K の 1 次の硬い端の近似。Maxwell の場 (3 次まで) の端との相対差は、幅 $d = 1$ mm で 0.25〜0.5%、$d = 5$ mm で約 3% (§7.2)。残りが K の 2 次の項かは未確認。端の磁場の展開は 3 次までで、実際の端 ($d$ が孔径程度) では高次の項 ($K''''x^5$ など) が効く。
-- **線形フリンジ**: K の 1 次まで。式 (4.31) の $I_n$ のとり方 (硬い端との差のモーメント) は、ヘルプの記述 (全域の積分) の読み替え。F1 < 0 では、k64 だけ追跡と CALC が食い違う (v2 は直してあり一致。§10)。
-- **ヘルプの $z$ の更新**: ヘルプの複素正規座標の式と、K64 の実座標の式 (4.14) の同値性は、$B_z = 0$ で数値的には比べていない。ここでの $z$ の導出は (4.7) の $\partial H_2/\partial p$ から直接行った。
+- **線形フリンジ**: K の 1 次まで。式 (4.31) の $I_n$ のとり方 (硬い端との差のモーメント) は、ヘルプの記述 (原文: $\int_{-\infty}^{\infty}(s - s_0)^nK_1(s)/K_{10}\,ds$、全域の積分) の読み替え。ヘルプの $b = K1\,F2/L$ には $1/p_1$ が無い (付録 A)。F1 < 0 では、k64 だけ追跡と CALC が食い違う (v2 は直してあり一致。§10)。
+- **ヘルプの $z$ の更新** (solution-H2。複素正規座標 $u, p_u, v, p_v$ を使う式): 原文を読み、$B_z = 0$ で厳密な $z' = -q^2/2 - dv$ の積分と比べた ([quad_07_help_checks.out.txt](outputs/quad_07_help_checks.out.txt) (b))。結果は付録 A (一致しない。原因は未特定)。ここでの $z$ の導出は (4.7) の $\partial H_2/\partial p$ から直接行った。
 - **刻みの数**: 4 次の方が悪くなる 1 刻みの強い四極 (§6.2)。v2 の追跡と CALC の刻みの基準 (0.1 と 0.05) の違いが残る。
 - **CALC の $z$ の行**: pysad の `_el_cod_step` (4D の CALC 用) は $z$ の行 (5,1..4) を持たず、6 次元 (放射つき平衡エミッタンス) の `emit6d` が持つ。`emit6d._jac_tqente` の $z$ の行は (5,2)・(5,4) が欠けている (傾きの 3 乗の大きさ。$|J^\top J_0 J - J_0| = 2 \times 10^{-9}$。軌道が (3 mm, 2 mrad, 1 mm, −1 mrad、$\delta = 0.003$) の例)。
 - **sympy**: この環境には sympy がないので、導出の検算は数値 (行列指数・数値積分・複素ステップ微分・DOP853) で行い、導出の代数は本文に手で書いた。
@@ -662,9 +663,13 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 
 | 箇所 | 内容 |
 |---|---|
-| ヘルプ dynamics (Lagrangean・Hamiltonian) | 根号内の符号、母関数の $t_0$ の項などの誤植 ([01 章付録 A](01_variables_and_conventions.md#付録-a-ヘルプの記述との違い-この章に関わる分)) |
-| ヘルプ QUAD > transformation の刻みの数 | $1 + \lfloor 10\lvert K1\,L\rvert/\mathrm{EPS}\rfloor$ は CALC の値 ($\varepsilon_0 = 0.1$)。追跡は 0.2 で、半分の刻み (§6.3) |
-| ヘルプ QUAD > F1 の $I_n$ | $\int_{-\infty}^{\infty}$ は発散する。硬い端との差の積分と読む (§7.4)。$\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{\alpha}$ の根号は $\sqrt{\lvert\alpha\rvert}$ |
-| ヘルプ QUAD > transformation の $H_{2n}$・$\Delta H$ | $E/v_0$ は $E/(p_0v_0)$ ($p_0$ の規格化を略した書き方) |
+| ヘルプ dynamics (Lagrangean・Hamiltonian) | **原文で確認**: 根号内の符号、母関数の $t_0$ の項などの誤植 ([01 章付録 A](01_variables_and_conventions.md#付録-a-ヘルプの記述との違い-この章に関わる分)) |
+| ヘルプ QUAD > transformation の刻みの数 | (**原文で確認**) $1 + \lfloor 10\lvert K1\,L\rvert/\mathrm{EPS}\rfloor$ は CALC の値 ($\varepsilon_0 = 0.1$)。追跡は 0.2 で、半分の刻み (§6.3) |
+| ヘルプ QUAD > F1 の $I_n$ | $\int_{-\infty}^{\infty}$ は発散する。硬い端との差の積分と読む (§7.4)。$\mathrm{F1} = \mathrm{sgn}(a)\sqrt{a}$ (原文のまま、$a \equiv 24(I_0^2/2 - I_1)$) の根号は $\sqrt{\lvert\alpha\rvert}$ |
+| ヘルプ QUAD > transformation の $H_{2n}$・$\Delta H$ | **原文で確認**。$E/v_0$ は $E/(p_0v_0)$ ($p_0$ の規格化を略した書き方)。符号は $+E/v_0$ で正しい (DRIFT の $H$ は逆で誤植。02 章付録 A) |
+| ヘルプ QUAD > 線形フリンジの $b$ | **確定した食い違い**: 原文は $a = -K1\,F1|F1|/(24p_1L)$ (1/$p_1$ あり) に対し $b = K1\,F2/L$ ($1/p_1$ なし)。$q = p_x/p$ の単位の運動は $x'' = -(K(s)/p)\,x$ で、$K \to K/p$ の置き換えだけなので、$a$ にも $b$ にも $1/p$ が要る。$K(s) = K_0(s/\ell)^2$ の立ち上がりの数値積分との差は、$p = 1.2$ で $b = K_0F2/p$ なら $2.5 \times 10^{-12}$、ヘルプの $b$ なら $4.1 \times 10^{-10}$ ($p = 0.8$ で $5.5 \times 10^{-12}$ と $6.2 \times 10^{-10}$。$p = 1$ では同じ)。K64 (`_tqlfr`) は $b/p$ を使う ([quad_07_help_checks.out.txt](outputs/quad_07_help_checks.out.txt) (a))。 |
+| ヘルプ QUAD > 非線形フリンジの $G$ | **原文で確認**: $G = H_0 + \tfrac12(\partial_{x_1}H_0\,\partial_{p_{x2}}H_0 + \partial_{y_1}H_0\,\partial_{p_{y2}}H_0)$、$H_0 = p_{x2}\Delta x_1 + p_{y2}\Delta y_1$、$\Delta x_1 = x_1(a/3 + b)$、$\Delta y_1 = -y_1(a + b/3)$、入口 $a = K1\,x_1^2/(4p_1)$、$b = K1\,y_1^2/(4p_1)$、出口は符号が逆。式 (4.28) と一致。 |
+| ヘルプ QUAD > 線形フリンジの写像 | **原文で確認**: 入口の $p_{x2} = e^{-a}p_{x1}$、$x_2 = e^ax_1 + bp_{x1}$、$z_2 = z_1 - (ax_1 + b(1 + a/2)p_{x2})p_{x1} + (ay_1 + b(1 - a/2)p_{y2})p_{y1}$、出口は $a \to -a$ に当たる形 ($x_2 = e^{-a}x_1 + bp_{x1}$ など)。式 (4.33) (q の単位) と一致。 |
+| ヘルプ solution-H2 の $z$ (複素正規座標) | **原文で確認、食い違い (原因は未特定)**。(i) $B_z = 0$ で 4×4 の行列を作ると、4 行 3 列の $-\tfrac{ip}{4}(w_1 + w_2)^2$ の $i$ を除いた形でだけ正準 ($\lvert R^\top JR - J\rvert = 10^{-16}$。原文のままでは 0.71)。$i$ は誤植とみられる。(ii) $B_z \ne 0$ の行列は、原文のままでも、1〜2 項の $i$・符号を変えた形でも正準にならなかった (原因は未特定。$x, p_x, y, p_y$ の式そのものは 09 章で行列指数と $10^{-18}$ で一致)。(iii) $z = z_0 + (-iup_u\,\partial w_1/\partial p - vp_v\,\partial w_2/\partial p + \Delta v)\ell$ ($\Delta v$ は定義が無く、$-dv$ と読む) の 2 次の部分は、$B_z = 0$ の厳密な $-\int q^2/2\,ds$ ($K = 0.9$、$p = 1.01$、$\ell = 0.4$ で $-6.0 \times 10^{-8}$) と一致しない (原文の式は $+1.2 \times 10^{-7}$)。正規座標への変換が $p$ に依存する効果と、振動成分が入っていない可能性があるが未確認。(iv) 2 行目 $(U/p)(\ldots + \Delta v)\ell$ は $\Delta v$ まで $U/p$ がかかる書き方で、括弧の位置の誤りとみられる ([quad_07_help_checks.out.txt](outputs/quad_07_help_checks.out.txt) (b))。本章・09 章は $z' = \partial H_2/\partial p = -q^2/2 - dv$ の積分で組んであり、ヘルプのこの式は使っていない。 |
 | ヘルプに無いもの | (1) $H_2$ の解の導出 (ソレノイドつきの式だけ。$B_z = 0$ への縮約は §4.1)。(2) $\Delta H$ の流れ。(3) 分割の構成 ($D\,B\,D$ の順序、Yoshida)。(4) 非線形フリンジの Maxwell 方程式からの導出と、母関数から点変換への書き換え。(5) 線形フリンジの $a, b$ の導出。(6) 行列と追跡の関係。(7) $z$ の更新 (4.14) |
 | K64 の実装の癖 | 追跡の線形フリンジが F1 の符号を捨てる (§10。v2 は修正済み)。追跡と CALC で $\varepsilon_0$ が違う (§6.3) |

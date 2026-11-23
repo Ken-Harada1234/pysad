@@ -144,7 +144,7 @@ f_C = c_3\,L^3\,\frac{|\nabla V|^2}{p} - 2c_5\,L^5\,\frac{V_jV_kV_{jk}}{p^2},\qq
 \tag{7.9}
 $$
 
-(K64 では長さ $L$ の 1 つの刻み。$V = V_k$ は長さあたりの強さ $\kappa$ で書く。) 全体の並びは (ヘルプの $\exp(:F_{\rm in}:)\exp(:aL:)\exp(:H/2:)\exp(:bL:)\exp(:V:)\exp(:bL:)\exp(:H/2:)\exp(:aL:)\exp(:F_{\rm out}:)$ に当たる。符号と順序の対応は付録 A):
+(K64 では長さ $L$ の 1 つの刻み。$V = V_k$ は長さあたりの強さ $\kappa$ で書く。) 全体の並びは、ヘルプの $\exp(:F_{\rm in}:)\exp(:aL:)\exp(:H/2:)\exp(:bL:)\exp(:V:)\exp(:aL:)\exp(:H/2:)\exp(:bL:)\exp(:F_{\rm out}:)$ のうち、2 番目の $\exp(:aL:)$ と最後の $\exp(:bL:)$ を $\exp(:bL:)$、$\exp(:aL:)$ に入れ替えた前後対称の形 (原文の並びは非対称で、そのままでは 2 次にしかならない。付録 A) に当たる:
 
 1. 入口の非線形フリンジ (§9。`fringe` が真のとき)
 2. ドリフト $\alpha_1L$ (`ala = al*alpha1`、$\alpha_1 = \tfrac12 - \tfrac1{\sqrt{12}}$)
@@ -410,9 +410,9 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 
 | 箇所 | 内容 |
 |---|---|
-| ヘルプ OCT・DECA・DODECA の transformation の式 | $\exp(:F_{\rm in}:)\exp(:aL:)\exp(:H_n/2:)\exp(:bL:)\exp(:V:)\exp(:aL:)\exp(:H_n/2:)\exp(:bL:)\exp(:F_{\rm out}:)$ ($a = \tfrac12 - \tfrac1{\sqrt{12}}$、$b = \tfrac12 - a$) と書かれている (この式は [C_poisson_lie.md](C_poisson_lie.md) §8.1 に書き写してあるもので、原文との照合はしていない)。**疑い**: K64 の追跡の構成は、ドリフト $a$、キック 1/2、ドリフト $b$、補正、**ドリフト $b$**、キック 1/2、ドリフト $a$ で、前後対称 (`tquad.f:173-182` 以降)。ヘルプの式の 2 番目の $\exp(:aL:)$ の位置は、K64 の構成 ($b$) と違って読める。ヘルプの記号の定義 (どれが $a$ で、どの順に作用するか) は未確認で、K64 のコードに従って本章を書いた。 |
-| ヘルプの SEXT・DECA の説明の文面 | 「thin dipole kick」「thin quadrupole kick」と書かれているとの報告があるが、この章では原文を確認していない (**疑い**。6 極のキックは二極ではなく (7.1) の $k = 2$、10 極は四極ではなく $k = 4$)。 |
-| ヘルプの補正 $V_n$ | $-\tfrac\beta2H_{,k}^2 + \gamma H_{,j}H_{,k}H_{,jk}$ の形 (03 章付録 A)。本章 (7.9) の $c_3 = \beta/2$、$c_5 = \gamma/2$ と、$f_C$ の係数 ($c_3|\nabla V|^2$、$-2c_5V_jV_kV_{jk}$) で対応するが、ヘルプの $\exp(:\cdot:)$ の符号・規格化の定義は未確認。 |
+| ヘルプ SEXT・OCT・DECA・DODECA の transformation (`transformation:THIN`) の並び | **原文で確認** (4 要素とも同じ式。TeX 版・平文版とも)。$\exp(:F_{\rm in}:)\exp(:aL:)\exp(:H_n/2:)\exp(:bL:)\exp(:V_n:)\exp(:aL:)\exp(:H_n/2:)\exp(:bL:)\exp(:F_{\rm out}:)$、$a = \tfrac12 - \tfrac1{\sqrt{12}}$、$b = \tfrac12 - a$ ($L$ は長さ $L$ のドリフトのハミルトニアン、$H_n$ は薄いキック)。**確定した食い違い (誤記)**: 並びが前後対称でない ($a, H/2, b, V, a, H/2, b$)。K64 の追跡 (`tquad.f:173-182`)・03 章の力勾配型は $a, H/2, b, V, b, H/2, a$。1 自由度の 6 極 ($v = \kappa x^3/6$、$\kappa = 40$、$x_0 = 0.3$、$p_x0 = 0.1$) で厳密な流れと比べた誤差は、対称形が $L = 0.4 \to 0.05$ で $1.9 \times 10^{-3} \to 1.5 \times 10^{-8}$ (γ なしで 5 次)、原文の並びは $1.4 \times 10^{-2} \to 1.8 \times 10^{-4}$ (2 次。倍率の傾き 2.0) ([thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。2 番目の $\exp(:aL:)$ と最後の $\exp(:bL:)$ の入れ替えの誤記。 |
+| ヘルプの SEXT・OCT・DECA・DODECA の説明の文面 | **原文で確認**。TeX 版は「thin sextupole / octupole / decapole / dodecapole kick」と正しいが、**平文版 (`EquAlign` の 2 つめの文字列) は「thin dipole kick」(SEXT)、「thin 3-pole kick」(OCT)、「thin quadrupole kick」(DECA)、「thin 5-pole kick」(DODECA)** と、極数でなく添字 $n$ を数えた誤記 (確定。式 $H_n = K_n/(n+1)!\,\mathrm{Re}(x - iy)^{n+1}$ は両方とも正しく、本章 (7.1) と同じ)。6 極のキックは二極ではなく (7.1) の $k = 2$、10 極は四極ではなく $k = 4$。 |
+| ヘルプの補正 $V_n$ | **原文で確認**: $V_n = \sum_{j,k=(x,y)}\bigl[-\tfrac\beta2(H_{n,k})^2 + \gamma H_{n,j}H_{n,k}H_{n,jk}\bigr]$、$\beta = 1/6 - 1/\sqrt{48}$、$\gamma = 1/40 - 1/(24\sqrt3)$ (数値は K64 の `beta`・`gamma` と同じ。03 章 $c_3 = \beta/2$、$c_5 = \gamma/2$)。$\exp(:\cdot:)$ は「ハミルトニアンの流れ」の読み (C 付録 §8.2) で、$V_n = -f_C$ (本章 (7.9)。03 章は流れの生成元を $-H$ の側に書く) と**符号も係数も一致**する: 対称形で $V_n$ の符号を逆にすると 3 次にしかならず、正しい符号で 5 次以上 ([thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。**食い違い (略記の疑い)**: $H_n$ は積分強度なので、補正には長さ $L$ と $1/p$ の因子 ($-\tfrac\beta2 L(H_{n,k})^2/p$ など。(7.9) の $L^3|\nabla V|^2/p$、$L^5V_jV_kV_{jk}/p^2$ を積分強度で書いたもの) が要るが、原文の式には無い。 |
 | ヘルプに無いもの | (1) 補正キックの具体形 (7.12)。(2) 追跡 (4 次) と CALC (2 次) の分割の違い。(3) 非線形フリンジの Maxwell 方程式からの導出と、運動量・$z$ の更新。(4) フィードダウンの式。 |
 
 **K64 の実装の癖・誤りの疑い**
