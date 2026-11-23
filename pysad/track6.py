@@ -1921,6 +1921,8 @@ def _tcavfrin(p: _Particle, al, v, w, dphis, offset):
         dp2r = max(dp1r + p1r * dpr, 1e-10 - 1.0)
         p2r = 1.0 + dp2r
         c[5] = dp2r
+        c[1] *= p1r / p2r            # v2 (B332): p が変わるので q = p_x/p を再スケール (正準運動量 p_x を保つ)
+        c[3] *= p1r / p2r
         c[4] = -(t + dt) * p0 * p2r / h2
         p.dv = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + ph.dvfs
         return

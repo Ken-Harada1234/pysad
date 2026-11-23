@@ -1069,6 +1069,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>v2 は 1 回</strong> (gs の BEND と MULT の差が二重の分の短縮に一致し、L を先に伸ばした gs の MULT が BEND と差 0)。k64 は gs と同じ。限界: gs で確認したのは K1 = 0・K2 以上なし・NORAD・FRINGE = 3・3 GeV/c。FRINGE = 1・2 の MULT と BEND の x の 3e-5 の食い違い、K1 ≠ 0 の y の 1e-5 級の食い違いは別の原因で未調査。CALC の <code>tmultae</code> も同じ式を持つが pysad は FB1/FB2 の CALC を未対応 (gs の CALC は未確認)。L' の式そのもの (ヘルプの F1 の定義) の導出は physics_guide 05 章でも未確認</td>
 </tr>
 <tr>
+<td>CAVI の端の q の再スケール (B332)</td>
+<td>両</td>
+<td><strong>v2 は再スケールする</strong> (gs のヤコビアンの</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>

@@ -39,7 +39,7 @@ k64 の比は β (0.7613 に対し 0.754〜0.760)。端のエネルギー変化�
 
 - 追跡: `track6._tcavfrin` (python)・`track6n.tcavfrin1` (numba。引数 `b2` を k_cav・k_cav_q・k_cav_in・k_cav_out・cav_frin_all に通す。`track6n._cav_b2()` が `compat.v2()`、`track6n_ext` の呼び出しも同じ)。
 - CALC・Emittance: `emit6d._tcavfrie_map` (`solemit._cav_fringe`・`emit6d._tcave` から使う)、`trptacc._cavfrie_piece` (v2 は同じ写像の数値微分。K64 の解析ヤコビアンは 1/β の無い式なので使わない)。
-- 式: ib = h1/p1 (1/β、粒子の β) として、kick は Δ(p_x/p0) = x·vf·(sin(ωt − dphis) + s0)·ib、エネルギー変化は dh に ib をかける。H_f ∝ 1/β(E) を一貫させるため、時間のずれ Δt = −∂H_f/∂E = −(x² + y²)·κ0/(2 p1³) (κ0 = vf·p0·(sin(ωt − dphis) + s0)、∂(1/β)/∂h = −1/p³) を入れ、z = −(t + Δt)·p2/h2 にする。時間のずれが無いと、ヤコビアンのシンプレクティック条件の誤差が 0.6 MeV/c・L = 1 mm・VOLT = 1 kV・x = 3 mm・δ = 0.03 で 7e-4 に悪化する (入れると 7.8e-5。k64 は 6e-5 で、主因は端以外)。
+- 式: ib = h1/p1 (1/β、粒子の β) として、kick は Δ(p_x/p0) = x·vf·(sin(ωt − dphis) + s0)·ib、エネルギー変化は dh に ib をかける。H_f ∝ 1/β(E) を一貫させるため、時間のずれ Δt = −∂H_f/∂E = −(x² + y²)·κ0/(2 p1³) (κ0 = vf·p0·(sin(ωt − dphis) + s0)、∂(1/β)/∂h = −1/p³) を入れ、z = −(t + Δt)·p2/h2 にする。時間のずれが無いと、ヤコビアンのシンプレクティック条件の誤差が 0.6 MeV/c・L = 1 mm・VOLT = 1 kV・x = 3 mm・δ = 0.03 で 6.9e-4 に悪化する (入れると 7.8e-5、B332 の q の再スケールも入れると 1.7e-6。k64 は 6e-5 で、その主因は q の再スケール (B332))。
 - 3 GeV/c (1/β − 1 = 1.5e-8) では差が相対 1e-7 以下。DISFRIN = 1 と L = 0 は変わらない。
 
 ## 4. 限界・未確認

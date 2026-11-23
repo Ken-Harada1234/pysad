@@ -1376,6 +1376,8 @@ def tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2):
         dp2r = fmax(dp1r + p1r * dpr, 1e-10 - 1.0)
         p2r = 1.0 + dp2r
         S[i, 5] = dp2r
+        S[i, 1] *= p1r / p2r         # v2 (B332): q = p_x/p の再スケール (track6._tcavfrin と同じ)
+        S[i, 3] *= p1r / p2r
         S[i, 4] = -(t + dt) * p0 * p2r / h2
         S[i, 6] = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + S[i, 10]
         return

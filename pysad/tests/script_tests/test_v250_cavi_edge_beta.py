@@ -257,7 +257,7 @@ def _symp_err(ffs, c, h=1e-6):
 
 
 def test_v2_edge_keeps_symplectic_structure():
-    """端の 1/β を入れても、時間のずれ (−∂H_f/∂E) があるので、ヤコビアンのシンプレクティック性が k64 と同程度 (時間のずれが無いと 7e-4 で 1 桁悪い)。
+    """端の 1/β を入れても、時間のずれ (−∂H_f/∂E) があるので、ヤコビアンのシンプレクティック性が k64 と同程度 (時間のずれが無いと 6.9e-4。B332 の q の再スケール込みで 1.7e-6 対 k64 の 6e-5)。
     0.6 MeV/c、L = 1 mm、VOLT = 1 kV、x = 3 mm、δ = 0.03 (k64 自身が 6e-5 ずれる値。ずれの主因は端以外)"""
     c = np.array([3e-3, 2e-4, -2e-3, 1e-4, -0.02, 0.03])
     ffs = mk('CAVI CV=(L=1E-3 VOLT=1E3 FREQ=500E6 PHI=0.3 FRINGE=1);', '600KEV')
@@ -265,8 +265,7 @@ def test_v2_edge_keeps_symplectic_structure():
     e6 = _symp_err(ffs, c)
     compat.set_mode('v2')
     e2 = _symp_err(ffs, c)
-    assert e6 < 2e-4 and e2 < 2e-4, (e6, e2)
-    assert e2 < 3 * e6
+    assert e6 > 3e-5 and e2 < 1e-5, (e6, e2)
 
 
 def test_v2_calc_edge_map_matches_tracking():

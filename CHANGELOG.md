@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**CAVI の端のエネルギー変化のあとの q = p_x/p の再スケール (B332、v2 のみ。k64 は K64 のまま)**: K64 の `tcavfrin` は端のエネルギー変化で p を変えるのに、q = p_x/p に p1r/p2r をかけない (本体・TCAVI はかける)。端付きの空洞の追跡写像がシンプレクティックでなくなる (gs の TrackParticles の 13 点の中心差分ヤコビアンで、|JᵀSJ − S| = 0.6 MeV/c で 8.09e-5、3 GeV/c で 1.30e-8。x = 1 mm、px = 1e-2)。v2 は再スケールを入れ、0.6 MeV/c で 5.8e-8 に下がる。限界: 1 つの点のヤコビアンだけ。記録 `docs/history/B332_cavi_edge_q_rescale.md`、試験 `test_v250_cavi_edge_symplectic.py`。
+
 **ANGLE ≠ 0 の MULT の FB1・FB2 による長さ L' の補正の二重適用 (B331、v2 のみ。k64 は K64 のまま)**: K64 は L' の補正を `tffs.f:1368` で `p_L_MULT` に入れたあと、`tmulta.f:82-90` でスライス長からもう一度引く (BEND は 1 回)。gs の BEND (F1) と MULT (FB1 = FB2 = F1) の追跡は x で 2.78e-7、z で 2.46e-8 (ANGLE = 0.3、F1 = 0.5、3 GeV/c) 違い、MULT の L を二重の補正の分だけ先に伸ばすと全成分で差 0 になる。v2 は 2 回目の補正を省き、MULT が BEND と全桁一致する。限界: FRINGE = 3・K1 = 0 で確認 (FRINGE = 1・2 の x の 3e-5、K1 ≠ 0 の y の食い違いは別の原因で未調査)。記録 `docs/history/B331_mult_angle_fb_double.md`、試験 `test_v250_mult_angle_fb_double.py`。
 
 **CAVI の端の収束・エネルギー変化の 1/β (B330、v2 のみ。k64 は K64 のまま)**: K64 の追跡 (`tcavfrin`)・CALC・Emittance (`tcavfrie`) の端の収束 Δ(p_x/p0) = x·v/(2 L p0)·(sin(ωt − dphis) + s0) と端のエネルギー変化は、粒子の速度 β = p/h の因子を持たない。軸の近くの Maxwell の場の中のローレンツ力の数値積分 (DOP853) では、端を通る間の運動量変化は 1/β を持つ (追跡 / 数値積分は k64 が 0.6 MeV/c で 0.754〜0.760、2 MeV/c で 0.962〜0.968 = β。端のエネルギー変化の x² の項も β 倍)。gs の TrackParticles (CAVI 1 要素、FRINGE = 1 と DISFRIN = 1 の差) も 3 GeV/c・2 MeV/c・0.6 MeV/c で 1/β が無く、k64 と 12 桁一致。v2 は粒子の β の 1/β を kick とエネルギー変化にかけ、H_f ∝ 1/β(E) の整合の時間のずれを z に入れる (数値積分との差 1% 以内、δ ≠ 0 でも)。β = 1 (3 GeV/c) では差が 1e-7 以下。限界: 端 1 つの 1 次の収束と x² のエネルギー変化だけを確かめた (長い空洞の本体との組合せ・TCAVI・RF つき MULT の端は個別には未確認)。記録 `docs/history/B330_cavi_edge_beta.md`、試験 `test_v250_cavi_edge_beta.py`、確認スクリプト `physics_guide/scripts/cav_02_edge_lorentz.py`。

@@ -2121,6 +2121,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>確定 (gs)</td>
 <td><strong>v2 は直した</strong> (<code>multa.k_multa</code> の 2 回目の補正を <code>b2</code> で省く。MULT が BEND と全桁一致)。k64 は K64 のまま (gs と同じ)。CALC・Emittance[] は pysad が FB1/FB2 を未対応。試験 <code>test_v250_mult_angle_fb_double.py</code></td>
 </tr>
+<tr>
+<td>B332</td>
+<td><strong>CAVI の端 (<code>tcavfrin</code>) が、端のエネルギー変化で p を変えるのに q = p_x/p を再スケールしない</strong>: <code>tcav.f:218-247</code> の <code>tcavfrin</code> は dh で <code>g(i)</code> (δ)・z・dv を更新するが、<code>px</code>・<code>py</code> (q = p/p の横成分、正準運動量 p_x が保存量) に p1r/p2r をかけない (本体の <code>tcav.f</code> do 20 と <code>ttcav</code> は <code>px = px*p1r/p2r</code> とする)。端付きの空洞 (FRINGE ≥ 0、DISFRIN = 0) の追跡写像が、dh の x² の項 ∝ x·q·ω·p0·v_f のぶんシンプレクティックでない。gs で確認: CAVI (L = 0.1 m、VOLT = 1e5 V、500 MHz、PHI = 0.5、FRINGE = 1) の TrackParticles の 13 点 (点 (x, px, y, py, z, δ) = (1e-3, 1e-2, −5e-4, 5e-3, −0.02, 0.01) と各成分 ±1e-6) から作った 6×6 ヤコビアンの</td>
+<td>JᵀSJ − S</td>
+<td>は、gs で 3 GeV/c が 1.30e-8、0.6 MeV/c が 8.09e-5 (pysad の k64 は 13 点の追跡が gs と全桁一致)。q の再スケールを入れた v2 は 0.6 MeV/c で 5.8e-8、3 GeV/c で 4e-10 以下 (中心差分の丸め) に下がる (0.6 MeV/c・L = 1 mm・VOLT = 1 kV・x = 3 mm・δ = 0.03 の端 1 つでは k64 6.0e-5 対 v2 1.7e-6。B330 の時間のずれを除くと v2 は 6.9e-4)。端なし (DISFRIN = 1) は変わらない。q と p の関係: 本体・TCAVI と同じ規則 (正準運動量を保つ) に揃えるだけで、符号・係数の導出に依らない</td>
+<td>tcav.f <code>tcavfrin</code>・(CALC の <code>tcavfrie</code> は px を p0 規格化で持つので該当しない)</td>
+<td>端付き CAVI の追跡の δ・px の高次 (欠陥は x·q の積で 0.6 MeV/c・x = 1 mm・px = 1e-2 で 8e-5)。リングの空洞 (3 GeV/c) では 1e-8</td>
+<td>低 (低エネルギー・大振幅)</td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>
