@@ -5,7 +5,8 @@
     回す向きの符号 (sigma = +1 か -1) を数値で決める。
 (b) 正準性: 4x4 の回転 diag(R, R) は x-px、y-py の対を保つ。シンプレクティックな行列の確認。
 (c) BEND の DROTATE・CHI2 (tbrot): 剛体回転 (軸 = 弦の方向のロールと x 軸まわりの CHI2) を、弦の中点を支点に独立に作り、tbrot と比べる。
-(d) tsolrot の Bz = 0 の枝 (CHI1・CHI2・DZ。tsol.f の転記) を独立な 3 次元の幾何と比べる。pysad の追跡は直線の MULT の CHI1・CHI2・DZ を未実装。
+(d) 直線の MULT に CHI1・CHI2・DZ を指定した追跡が、指定なしの追跡と同じ (差 0) であること (pysad の追跡は CHI1・CHI2・DZ を使わない)。
+    tsolrot の Bz = 0 の枝の剛体運動との比較は sol_04_rotation_branches.py (09 章 §8)。
 (e) MARK・APERT・MAP は力学ではない: MARK は恒等、APERT は座標を変えず失う粒子を決めるだけ。
 """
 import io
