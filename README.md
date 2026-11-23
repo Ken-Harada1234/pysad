@@ -110,7 +110,7 @@ pysad は直訳に加えて、**オリジナルの SAD (K64) にない解析機�
 
 **注意**
 - これらは **pysad のみ**で、gs (SAD 本体) では走りません。上の表の機能 (K64 にない新機能) は互換モード (`PYSAD_COMPAT=k64`) によらず同じ動作です。K64 の動作と変えたもの (互換モードで切り替わる) は [`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md) に区別して書いてあります。
-- PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は `pysad.__version__`)。SAD の台本を `py -3.12 run_sad.py lattice.sad script.sad` で動かすには、リポジトリを clone してください (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入りません)。
+- PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は `pysad.__version__`)。SAD の台本は、pip で入れた場合は `pysad-run lattice.sad script.sad`、リポジトリでは `py -3.12 run_sad.py lattice.sad script.sad` で動かせます (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入ります。試験と `tools/` は clone が必要です)。
 - 検証の範囲と未確認は [`docs/31_unimplemented_and_unverified.md`](docs/31_unimplemented_and_unverified.md)・[`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md)・docs/24〜26・[`example/14_nonlinear_dynamics/`](example/14_nonlinear_dynamics/README.md) の各まとめを参照してください。
 
 ## 構成

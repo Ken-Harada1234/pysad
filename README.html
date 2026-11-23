@@ -305,7 +305,7 @@ ffs<span class="o">.</span>run_text(<span class="s">'</span><span class="s">fit 
 <p><strong>注意</strong></p>
 <ul>
 <li>これらは <strong>pysad のみ</strong>で、gs (SAD 本体) では走りません。上の表の機能 (K64 にない新機能) は互換モード (<code>PYSAD_COMPAT=k64</code>) によらず同じ動作です。K64 の動作と変えたもの (互換モードで切り替わる) は <a href="docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a> に区別して書いてあります。</li>
-<li>PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は <code>pysad.__version__</code>)。SAD の台本を <code>py -3.12 run_sad.py lattice.sad script.sad</code> で動かすには、リポジトリを clone してください (PyPI のパッケージには <code>run_sad.py</code>・<code>example/</code>・<code>docs/</code> が入りません)。</li>
+<li>PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は <code>pysad.__version__</code>)。SAD の台本は、pip で入れた場合は <code>pysad-run lattice.sad script.sad</code>、リポジトリでは <code>py -3.12 run_sad.py lattice.sad script.sad</code> で動かせます (PyPI のパッケージには <code>run_sad.py</code>・<code>example/</code>・<code>docs/</code> が入ります。試験と <code>tools/</code> は clone が必要です)。</li>
 <li>検証の範囲と未確認は <a href="docs/31_unimplemented_and_unverified.html"><code>docs/31_unimplemented_and_unverified.md</code></a>・<a href="docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a>・docs/24〜26・<a href="example/14_nonlinear_dynamics/README.html"><code>example/14_nonlinear_dynamics/</code></a> の各まとめを参照してください。</li>
 </ul>
 <h2 id="構成">構成</h2>
