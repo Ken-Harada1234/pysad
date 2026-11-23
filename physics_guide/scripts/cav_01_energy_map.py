@@ -175,8 +175,10 @@ b = flow(cs[0])
 print('   追跡 − H の流れ (x, px, y, py, z, δ) の最大 %.1e (z の変化の大きさ %.1e、δ の変化 %.1e)' % (np.abs(a - b).max(), abs(a[4] - cs[0][4]), abs(a[5] - cs[0][5])))
 print('   (3 GeV では z の変化が 1e-15 以下で、H の流れと「時間を保つ z の更新」の違いは見えない。δ・px の一致だけが確認。z の更新の違いは未確認。)')
 
-print('\n== (f) 入口の端 (tcavfrin) の収束: Δpx = x · v/(2 L p0) · (sin(ωt - dphis) + sin(phis)) / 1 (正準 px、p0 規格化) ==')
-print('   Maxwell から (10 章 §7): Δp_r = -(e r/2)(E_0/(β c)) cos(ωt + φ_E) で、β = 1 の近似。K64 の式は 1/β を持たない。FRINGE = 1 (入口だけ)、L = 0.1 m、DISFRIN = 0 と 1 の差。')
+print('\n== (f) 入口の端 (tcavfrin) の収束を、位相を選ばずに測る (参考。1/β の判定には使わない) ==')
+print('   FRINGE = 1 (入口だけ)、L = 0.1 m の、DISFRIN = 0 と 1 の差を、K64 の式 x v/(2 L p0) (sin(ωt - dphis)) (正準 px、p0 規格化) と比べる。')
+print('   この測り方では、端のキックで動いた x に本体の x 依存のキック (V20・V02 の補正) が反応する分が混ざり、低エネルギーで比が 1 からずれる。')
+print('   1/β の有無の判定は、本体のキックが 0 の位相に粒子を置く cav_02_derivations.py (d) で行う (比は β によらず 1)。')
 for mom, name in ((3.0e9, '3GEV'), (2.0e6, '2MEV'), (0.6e6, '600KEV')):
     pp = mom / MC2
     hh = math.sqrt(1 + pp * pp)
@@ -192,5 +194,5 @@ for mom, name in ((3.0e9, '3GEV'), (2.0e6, '2MEV'), (0.6e6, '600KEV')):
     ww = 2 * math.pi * 500e6 / c_light
     vv = 1e5 / MC2
     formula = cc[0] * vv / (2 * Lc * pp) * (math.sin(ww * tt - (0 - ph_)) + 0.0)
-    print('   p = %-7s βγ = %.3f、β = %.4f: Δpx(端) = %.4e、K64 の式 x v/(2 L p0)(sin(ωt - dphis)) = %.4e (比 %.4f)、1/β をかけた式 %.4e' % (
+    print('   p = %-7s βγ = %.3f、β = %.4f: Δpx(端) = %.4e、K64 の式 x v/(2 L p0)(sin(ωt - dphis)) = %.4e (比 %.4f)、(参考) 1/β をかけた式 %.4e' % (
         name, pp, beta, d, formula, d / formula, formula / beta))

@@ -7,7 +7,7 @@
 ## 1. 結論
 
 - **エネルギー利得** (ヘルプ): $\Delta E = -e\,(V + V_1x + \tfrac12V_{20}x^2 + \tfrac12V_{02}y^2 + V_{11}xy)\,\sin(\omega(t - t_s) + \mathrm{PHI} + \mathrm{DPHI})$。追跡の中では $h = E/mc^2$ の変化 `dh`= $-v\,[\sin(\omega t - \mathtt{dphis}) + \sin\mathtt{phis}]$ ($v = V/mc^2$、$\mathtt{phis} = \omega\,t_{rf0}$、$\mathtt{dphis} = \mathtt{phis} - \mathrm{PHI}$。RAD OFF のとき)。粒子の時間は位置から $t = -z\,h_1/p_1$ ($c = 1$) で決まる。
-- **写像**: 薄い空洞は、時間 $t$ を保ったまま、(i) $h_2 = h_1 + \Delta h$、(ii) $p_2 = \sqrt{h_2^2 - 1}$ ($mc$ 単位)、(iii) $z_2 = -t\,p_2/h_2$、(iv) 正準運動量 $p_x, p_y$ は変えない (追跡の内部変数 $q = p/(1+\delta)$ は $p_1/p_2$ 倍)、で、追跡と一致する (差 $2 \times 10^{-13}$、$\delta$ と $z$ は桁落ちの範囲)。**端なしの薄い空洞はシンプレクティック** (数値微分のヤコビアンで $10^{-10}$。§4)。端 ($H_f$) つきの空洞は、K64 の `tcavfrin` が $q$ を再スケールしないため、**シンプレクティックでない疑い**がある (§7.2、付録 A。傾き $p_x \sim 10^{-2}$ では $10^{-8}$〜$10^{-4}$ の欠陥)。
+- **写像**: 薄い空洞は、時間 $t$ を保ったまま、(i) $h_2 = h_1 + \Delta h$、(ii) $p_2 = \sqrt{h_2^2 - 1}$ ($mc$ 単位)、(iii) $z_2 = -t\,p_2/h_2$、(iv) 正準運動量 $p_x, p_y$ は変えない (追跡の内部変数 $q = p/(1+\delta)$ は $p_1/p_2$ 倍)、で、追跡と一致する (差 $2 \times 10^{-13}$、$\delta$ と $z$ は桁落ちの範囲)。**端なしの薄い空洞はシンプレクティック** (数値微分のヤコビアンで $10^{-10}$。§4)。端 ($H_f$) つきの空洞は、K64 の `tcavfrin` が $q$ を再スケールしないため、**シンプレクティックでない疑い**がある (§7.2、付録 A)。入口の端だけの写像の欠陥の大きさは $|\mathtt{dpr}| \simeq (h/p^2)\,|\Delta h|$ で、$p_x$ によらない (§7.2 の条件で、$x = 1$ mm、3 GeV/$c$ は $8 \times 10^{-10}$、0.6 MeV/$c$ は $6 \times 10^{-6}$)。
 - **横方向**: $V_1, V_{20}, V_{11}, V_{02}$ は、電場の振幅の横依存。Panofsky–Wenzel の定理で、横のキックは $\Delta p_x = -\partial_xV\,\cos(\omega t - \mathtt{dphis})/(\omega p_0)$。非相対論の補正 $V_{20}, V_{02} \mathrel{+}= V(2\pi f/c)^2/(\gamma\beta)^2/4$ は、変形ベッセル関数 $I_0(\omega r/\beta\gamma c) = 1 + (\omega r/\beta\gamma c)^2/4 + \cdots$ の第 2 項 (数値確認: 2 MeV/c で ΔE の $x$ 依存が $1 + (\omega x/\beta\gamma c)^2/4$ に一致)。
 - **長い空洞**: ドリフト−キック−ドリフトを、重みつきの長さ `al*ws(n)`・キックの割合 `ws(n)` で $\mathrm{ndiv}$ 回繰り返す (2 次の対称分割)。重みは $\sum\mathtt{ws} = 1$ で、設計運動量が空洞の中で増える (TRPT) とき、スライスごとに等比数列 $\mathtt{ws}(n) \propto (1+r)^{n/\mathrm{ndiv}}$ (数値確認: $e^{wl} = 1 + r$)。TRPT でない普通のリングでは $r = 0$ で一様 ($\mathtt{ws} = 1/\mathrm{ndiv}$)。
 - **端**: 入口で $H_f = -(eV/L)\,[\sin(\omega t - \mathrm{dphi}) + \sin\mathrm{dphi} - \mathrm{offset}]\,(x^2 + y^2)/4\;\delta(s - s_0)$、出口は符号が逆 (ヘルプ)。Maxwell 方程式から導くと、$\beta = 1$ で同じ形の収束 (横の力 $F_r = -(e r/2)\,[\partial_sE_z + (\beta/c)\,\partial_tE_z]$) になる。K64 の式は $1/\beta$ を略している (低エネルギーで効く。K64 の式に $1/\beta$ が入っていないことは pysad の追跡で確認した (§7.1)。$1/\beta$ が物理的に正しいかは Maxwell からの解析だけ)。
@@ -28,6 +28,15 @@
 | 分割 | `L`、`FREQ` | `ndiv`、`ws(1:ndiv)`、`wsn` | `ndiv`、`ws` |
 | 端 | `DISFRIN`、`FRINGE` | `fringe` (= DISFRIN が 0)、`mfring` | `fringe`、`mfring` |
 
+**この表と本文に出る名前の注釈** (規約は [01 章](01_variables_and_conventions.md) §8。定義はソースで確認、章末の付録 B に表):
+
+- `amass`: 粒子の静止エネルギー $mc^2$ [eV] (大域パラメータ `MASS`、`tfsetparam.f` の `amass=rgetgl1('MASS')`)。電圧 [V] を `amass` で割ると $mc^2$ 単位の無次元量になる ($e\,V/mc^2$、電荷の絶対値 `abs(charge)` が掛かる)。だから $v = \mathtt{vc}/\mathtt{amass}\cdot|\mathtt{charge}|$ (`tcav.f:34`) で、$h = E/mc^2$ と同じ単位で足せる。
+- `charge`: 粒子の電荷 (電子 $-1$。大域パラメータ `CHARGE`)。符号は位相 `phic` に入る (`sign(charge)`)。
+- `pgev`: 設計運動量 $p_0c$ [eV] (名前は gev だが単位は eV。`MOMENTUM` の値)。`tphyzp` (`tfsetparam.f:105`) は、`pgev` から $p_0$ = `pgev/amass`、$h_0$ = `p2h(p0)`、磁気剛性、放射の定数、周回の角周波数 $\omega_0$ など、設計運動量に従属する量を一括して作り直すサブルーチン。TRPT のとき、空洞を出たあとに `pgev=pe*amass` としてから `tphyzp` を呼ぶ (`tcav.f:202-203`) のは、設計運動量が空洞で変わったので、これらを新しい $p_e$ で更新するため。
+- `rad`・`trpt`・`autophi`: 論理変数。`rad` は放射の有無 (大域の `RAD`、RADCOD。`tffs.f` で `fff%rad`)、`trpt` は輸送路 (TRPT。運動量が空洞で変わる宣言、`tffs.f:589`)、`autophi` は CAVI の `APHI` ≠ 0 (自動位相。`tturn.f:438`、`autophi=cmp%value(ky_APHI_CAVI) /= 0.d0`)。いずれも §3.3 で `offset` と `phis` の場合分けに使う。
+- `mfring`・`frmd`: 端 (フリンジ) の有無を表す整数。`frmd` は入力の `FRINGE` (0, 1, 2, 3) で、`tffs.f:1447-1451` が `mfring` に直す: 要素が通常の向き (`cmp%ori`) なら `mfring = FRINGE`、逆向き (LINE の中で `-` をつけて逆向きに置いた要素) なら $\mathrm{frmd}\,(11 + \mathrm{frmd}\,(2\,\mathrm{frmd} - 9))/2$ で、FRINGE = 0, 1, 2, 3 がそれぞれ 0, 2, 1, 3 になる (代入で確かめる: 1 → $1\cdot(11 + 1\cdot(2 - 9))/2 = 2$、2 → $2\cdot(11 + 2\cdot(4 - 9))/2 = 1$、3 → $3\cdot(11 + 3\cdot(6 - 9))/2 = 3$)。逆向きの要素では入口と出口が入れ替わるので、1 (入口) と 2 (出口) を入れ替える。`tcav` の使い方: 入口の端は `mfring ≥ 0` かつ `mfring ≠ 2`、出口の端は `mfring ≥ 0` かつ `mfring ≠ 1` (`tcav.f:82`、`185`)。したがって `mfring` = 0 (FRINGE = 0) と 3 は両方、1 は入口だけ、2 は出口だけ。
+- `dvfs`: RFSW での周波数のずらしによる $dv$ への足し込み ([01 章](01_variables_and_conventions.md) §8 の表)。`al`: 空洞の長さ $L$、`alx`: 刻みの中のドリフトの長さ (§6.1)。
+
 SAD の座標は $(x, p_x, y, p_y, z, \delta)$ ([01 章](01_variables_and_conventions.md))。$z = -v(t - t_0(s))$、先頭が $z > 0$。追跡の内部では $p_x, p_y$ を $q = p/(1+\delta)$ の単位で持つ ([04 章](04_quad.md) 式 (4.37))。
 
 ## 3. エネルギー利得と時間
@@ -41,7 +50,7 @@ t = -\frac{z}{\beta} = -z\,\frac{h_1}{p_1}\qquad(h_1 = \sqrt{1 + p_1^2},\ p_1 = 
 \tag{10.1}
 $$
 
-(`t=-z(i)*h1/p1`、`tcav.f`)。$h_1$ は、$dv$ が小さいときは $dv$ から作る: $v/v_0 = p\,h_0/h_1$ ([01 章](01_variables_and_conventions.md) 式 (1.9)) から $h_1 = p_{1r}\,h_0/(1 - dv + \mathtt{dvfs})$ ($p_{1r} = 1 + \delta$、`dvfs` は RFSW での周波数のずらし)。$dv > 0.1$ では $h_1 = \sqrt{1 + p_1^2}$ (`p2h`)。RFSW OFF では `tlim=0` で、$t = \min(t_{\lim}, \max(-t_{\lim}, t)) = 0$ に潰れる (`tcav.f` の `tlim`)。つまり RF の位相に依存しない (§5.3)。
+(`t=-z(i)*h1/p1`、`tcav.f`)。$h_1$ は、$dv$ が小さいときは $dv$ から作る: $v/v_0 = p\,h_0/h_1$ ([01 章](01_variables_and_conventions.md) 式 (1.9)) から作る。導出 (1 行ずつ): $v/v_0 = (p/h_1)/(p_0/h_0) = p_{1r}\,h_0/h_1$ ($p = p_0p_{1r}$、$p_{1r} = 1 + \delta$)。一方、$dv$ の定義 $dv = 1 - v/v_0$ に周波数のずらし `dvfs` (RFSW での $dv$ への足し込み。`tcav.f` が `dvfs` を $dv$ に足す) を含めた式は $v/v_0 = 1 - dv + \mathtt{dvfs}$ で、両辺を等しくおく: $p_{1r}\,h_0/h_1 = 1 - dv + \mathtt{dvfs}$。これを $h_1$ について解くと $h_1 = p_{1r}\,h_0/(1 - dv + \mathtt{dvfs})$ (`dv` は粒子の持つ値。$\delta$ の小さい領域で $h_1 = \sqrt{1 + p_1^2}$ を直接引くより桁落ちが少ない)。$dv > 0.1$ では $h_1 = \sqrt{1 + p_1^2}$ (`p2h`)。RFSW OFF では `tlim=0` で、$t = \min(t_{\lim}, \max(-t_{\lim}, t)) = 0$ に潰れる (`tcav.f` の `tlim`)。つまり RF の位相に依存しない (§5.3)。
 
 ### 3.2 エネルギー利得
 
@@ -105,9 +114,39 @@ $$
 
 この写像は、(i) 運動量・エネルギーの関係が厳密、(ii) $z$ の更新が時間保存、(iii) 正準運動量が不変、なので、1 つの粒子についての写像として厳密である (空洞の長さが 0 の極限)。
 
-**シンプレクティック性の理由** (端なし、V1 などなし): $(t, E)$ ($E = h$) は共役な対で、この写像は「時刻 $t$ を保ち、$E \to E + \Delta E(t)$ ($\Delta E = -v\sin(\omega t - \mathtt{dphis})$ は $t$ だけの関数) と進める」もの。$E \to E + f(t)$ は、母関数 $F = f$ の位相空間の平行移動のような勾配のキック ($\Delta E = \partial_tK$ の形、$K(t) = \int f\,dt$) なので正準。$x, y, p_x, p_y$ は不変で自明に正準。$(z, \delta)$ はこの $(t, E)$ からの座標変換 ($z = -\beta t$、$\delta = p/p_0 - 1$。$\beta$、$p$ は $E$ の関数) で、ここでは $dv$ の項を含めて共役 ([01_variables_and_conventions.md](01_variables_and_conventions.md) の $z$、$\delta$ の定義) なので、合成も正準である。V1・V20 などで $\Delta E$ が $(x, y)$ に依存するときは §5.1 の横のキックが相手を務める ($K(x, y, t)$ の勾配キックなので正準)。
+**シンプレクティック性の理由** (端なし、V1 などなし)。座標を $(t, E)$ に取り替えて、行列を 1 段ずつ書く。以下 $E = h$ ($mc^2$ 単位)、$S = \begin{pmatrix}0&1\\-1&0\end{pmatrix}$。
 
-**確認**: 6×6 のヤコビアン (中心差分、刻み $10^{-7}$) で、V1・V20 なしの薄い空洞 $|J^\top SJ - S| = 1.2 \times 10^{-10}$ ($\det J - 1 = 1.2 \times 10^{-10}$)、V1・V20・V11・V02 ありで $2.1 \times 10^{-10}$ ([cav_01_energy_map.out.txt](outputs/cav_01_energy_map.out.txt) (b)。中心差分の精度)。**これは端 ($H_f$、§7) なしの空洞についての確認である。端つきの空洞の同じ量は (b) の 3 行目 ($L = 0.5$、フリンジあり) で $2.3 \times 10^{-10}$ だが、この例 ($x = 1$ mm、$p_x = 2 \times 10^{-4}$) は端の欠陥が $\propto x\,q\,\omega p_0v_f$ で小さすぎて検出できない。傾きを $10^{-2}$ にすると端つきは非シンプレクティックになる (§7.2)。**
+(i) **エネルギーの足し算のヤコビ行列**。この写像は「時刻 $t$ を保ち、$E \to E + f(t)$ と進める」もの。$f(t) \equiv -v\sin(\omega t - \mathtt{dphis})$ は $t$ だけの関数 ((10.2))。新しい値は $t' = t$、$E' = E + f(t)$ なので
+
+$$
+J_{tE} = \begin{pmatrix}\partial t'/\partial t & \partial t'/\partial E\\ \partial E'/\partial t & \partial E'/\partial E\end{pmatrix} = \begin{pmatrix}1 & 0\\ f'(t) & 1\end{pmatrix},\qquad \det J_{tE} = 1
+\tag{10.4a}
+$$
+
+2×2 の行列は $J^\top SJ = (\det J)\,S$ を満たす (成分で書く: $SJ = \begin{pmatrix}f' & 1\\ -1 & 0\end{pmatrix}$、$J^\top = \begin{pmatrix}1 & f'\\ 0 & 1\end{pmatrix}$ なので $J^\top SJ = \begin{pmatrix}f' - f' & 1\\ -1 & 0\end{pmatrix} = S$)。したがって $(t, E)$ の空間では、この写像は正準である。これは $\Delta E = \partial_tK$ の形のキック ($K(t) = \int^t f\,dt'$) の言い換えでもある: 正準の規則 $\Delta P = -\partial_tK$ ($P \equiv -E$) と同じ。
+
+(ii) **$(t, E) \to (z, \delta)$ の座標変換のヤコビ行列**。$z = -\beta(E)\,t$、$\delta = p(E)/p_0 - 1$ で、$p = \sqrt{E^2 - 1}$、$\beta = p/E$。微分は $dp/dE = E/p = 1/\beta$、$d\beta/dE = [E\cdot E/p - p]/E^2 = 1/(E^2p)$ (商の微分: $\beta = p/E$、$\beta' = (p'E - p)/E^2$、$p'E - p = (E^2 - p^2)/p = 1/p$)。したがって
+
+$$
+M \equiv \frac{\partial(z, \delta)}{\partial(t, E)} = \begin{pmatrix}-\beta & -t/(E^2p)\\ 0 & 1/(\beta p_0)\end{pmatrix},\qquad \det M = -\beta\cdot\frac{1}{\beta p_0} = -\frac1{p_0}
+\tag{10.4b}
+$$
+
+(上三角なので、行列式は対角の積。**定数**: $E$ にも $t$ にもよらない。) 括弧で書くと $[z, \delta]_{(t,P)} = \partial_tz\,\partial_P\delta - \partial_Pz\,\partial_t\delta = (-\beta)\cdot(-1/(\beta p_0)) - 0 = +1/p_0$ ($P = -E$ なので $\partial_P = -\partial_E$)。$x, y$ の対も、$p_x$ を $p_0$ で規格化した $p_x/p_0$ では $[x, p_x/p_0] = 1/p_0$。つまり SAD の 3 つの対 $(x, p_x/p_0)$、$(y, p_y/p_0)$、$(z, \delta)$ は、どれも標準の正準対の**共通の定数 $1/p_0$ 倍**で、座標変換は「正準変換 + 全体の定数倍」にあたる (付録 C の括弧の規約。この章の $(t, P)$ の対のキックは $\exp(-:K:)$、付録 C の記法)。
+
+(iii) **$(z, \delta)$ の空間での写像**。$(z, \delta) = G(t, E)$ とおくと、写像は $G\circ F\circ G^{-1}$ ($F$: (i) の写像)。そのヤコビ行列は $J_{z\delta} = M(F(q))\,J_{tE}\,M(q)^{-1}$ (連鎖律。$q = (t, E)$)。行列式は
+
+$$
+\det J_{z\delta} = \det M\cdot\det J_{tE}\cdot\frac{1}{\det M} = 1
+$$
+
+($\det M$ が定数なので、入口と出口で打ち消し合う。)  2×2 で $\det = 1$ なら $J_{z\delta}^\top SJ_{z\delta} = S$ ((i) と同じ式)。$x, y, p_x, p_y$ は変わらない (単位行列) ので、6×6 のヤコビ行列は 2×2 のブロックの直和で、$J^\top SJ = S$ が全体で成り立つ。$z, \delta$ の定義 ([01 章](01_variables_and_conventions.md)) のうち、$dv$ は $E$ だけの関数 ((10.6) の $z_2 = -t\beta_2$) なので上の $z = -\beta(E)t$ に含まれる。
+
+数値確認 ([cav_03_symplectic_proofs.out.txt](outputs/cav_03_symplectic_proofs.out.txt) (a)): sympy で $\det M = -1/p_0$、$\det J_{z\delta} = 1$、数値の $J_{z\delta}^\top SJ_{z\delta} - S$ の最大成分 $1 \times 10^{-16}$。
+
+V1・V20 などで $\Delta E$ が $(x, y)$ に依存するときは、§5.1 の横のキックが相手を務める ($K(x, y, t)$ から $\Delta E = \partial_tK$、$\Delta p_x = -\partial_xK$ を同時に取るので正準。$x$-$t$ 成分の混合 $\partial_x\partial_tK$ が両方に入ることが要点。§5.1 に行列を書く)。
+
+**確認**: 6×6 のヤコビアン (中心差分、刻み $10^{-7}$) で、V1・V20 なしの薄い空洞 $|J^\top SJ - S| = 1.2 \times 10^{-10}$ ($\det J - 1 = 1.2 \times 10^{-10}$)、V1・V20・V11・V02 ありで $2.1 \times 10^{-10}$ ([cav_01_energy_map.out.txt](outputs/cav_01_energy_map.out.txt) (b)。中心差分の精度)。**これは端 ($H_f$、§7) なしの空洞についての確認である。端つきの空洞の同じ量は (b) の 3 行目 ($L = 0.5$、フリンジあり) で $2.3 \times 10^{-10}$ で、フリンジなしの 4 行目 ($1.6 \times 10^{-10}$) と区別できない。この例 ($x = y = 1$ mm、3 GeV/$c$) の入口の端だけの欠陥の見積り (§7.2) は $|\mathtt{dpr}| \simeq (h/p^2)\,\omega p_0v_f\,(x^2 + y^2)\,|\cos\theta|/2 = 7 \times 10^{-9}\,|\cos\theta|$ ($\theta = \omega t - \mathtt{dphis}$) で、出口の端が $v \to -v$ で逆符号の寄与を持つこと (対称な配置で打ち消すと読めるが、その数値確認は未実施) と、中心差分の精度 ($10^{-10}$) から、この例では欠陥の有無が判定できない。端の欠陥の大きさは §7.2 の再実装で測る。**
 
 ## 5. 横方向の依存 (V1、V20、V11、V02) と非相対論の補正
 
@@ -128,7 +167,35 @@ $$
 \tag{10.8}
 $$
 
-(単位は $v = V/mc^2$ で測る)。$\partial_xV = V_1 + V_{20}x + V_{11}y$ ($=\mathtt{v1a} + 2\,\mathtt{v20a}\,x + \mathtt{v11a}\,y$、`v20a` $= \tfrac12V_{20}\ldots$)、$\partial_yV = V_{11}x + V_{02}y$。コードは `av=-(cos(2*ph-dphis)*wi-offset1*t)*wsn/p0`、`dpx=(v1a+2*v20a*x+v11a*y)*av`、`dpy=(v11a*x+2*v02a*y)*av`、`px=(px*p1r+dpx)/p2r` ($\mathtt{wi} = 1/\omega$)。$\cos(2\,ph - \mathtt{dphis}) = \cos(\omega t - \mathtt{dphis})$ で (10.8) と一致する。さらに $\mathtt{offset1}\ne0$ の項は、(10.4) の一定の利得 $-v(x, y)\,\mathtt{offset1}$ に対応するキックのハミルトニアン $K_{\rm extra} = -V(x, y)\,\mathtt{offset1}\,t$ ($\partial_tK_{\rm extra} = -V\,\mathtt{offset1}$) から $\Delta p_x = +\partial_xV\,\mathtt{offset1}\,t/p_0$ ($= -\partial_xK_{\rm extra}$)、コードの $-(\ldots - \mathtt{offset1}\,t)$ の第 2 項と同じ。つまり、$\mathtt{v1a}$ などのある空洞も、(10.7) と一定の項から導かれる**1 つの時間依存のハミルトニアンの流れ**に当たり、ヤコビアンの数値確認 (§4) と整合する。なお、横のキックの符号が逆だと $K(x, y, t)$ の勾配キックにならず、(§4) のヤコビアンの欠陥が $\partial_x V \sim V_1$ の大きさで出る。したがって (§4) の数値確認 (V1・V20・V11・V02 あり: $2 \times 10^{-10}$) は、横のキックの符号と、エネルギー利得との整合の確認にもなっている。
+(単位は $v = V/mc^2$ で測る)。$\partial_xV = V_1 + V_{20}x + V_{11}y$ ($=\mathtt{v1a} + 2\,\mathtt{v20a}\,x + \mathtt{v11a}\,y$、`v20a` $= \tfrac12V_{20}\ldots$)、$\partial_yV = V_{11}x + V_{02}y$。コードは `av=-(cos(2*ph-dphis)*wi-offset1*t)*wsn/p0`、`dpx=(v1a+2*v20a*x+v11a*y)*av`、`dpy=(v11a*x+2*v02a*y)*av`、`px=(px*p1r+dpx)/p2r` ($\mathtt{wi} = 1/\omega$)。$\cos(2\,ph - \mathtt{dphis}) = \cos(\omega t - \mathtt{dphis})$ で (10.8) と一致する。さらに $\mathtt{offset1}\ne0$ の項は、(10.4) の一定の利得 $-v(x, y)\,\mathtt{offset1}$ に対応するキックのハミルトニアン $K_{\rm extra} = -V(x, y)\,\mathtt{offset1}\,t$ ($\partial_tK_{\rm extra} = -V\,\mathtt{offset1}$) から $\Delta p_x = +\partial_xV\,\mathtt{offset1}\,t/p_0$ ($= -\partial_xK_{\rm extra}$)、コードの $-(\ldots - \mathtt{offset1}\,t)$ の第 2 項と同じ。つまり、$\mathtt{v1a}$ などのある空洞も、(10.7) と一定の項から導かれる**1 つの時間依存のハミルトニアンの流れ**に当たり、ヤコビアンの数値確認 (§4) と整合する。**横のキックの符号と正準性** (式を省かない形)。(10.7) の $K$ から、$(x, p_x, t, P)$ ($P = -E$) の写像は
+
+$$
+x' = x,\quad p_x' = p_x - s\,\partial_xK,\quad t' = t,\quad P' = P - \partial_tK\qquad(s = +1\ \text{が (10.8)、}s = -1\ \text{は符号を逆にした場合})
+$$
+
+(簡単のため $y$ は省く。$P' = P - \partial_tK$ は $\Delta E = +\partial_tK$ と同じ。) 偏導関数を $K_{xx} = \partial_x^2K$、$K_{xt} = \partial_x\partial_tK$、$K_{tt} = \partial_t^2K$ と書くと、ヤコビ行列と括弧の行列 $\Omega$ は
+
+$$
+J = \begin{pmatrix}1&0&0&0\\ -sK_{xx}&1&-sK_{xt}&0\\ 0&0&1&0\\ -K_{xt}&0&-K_{tt}&1\end{pmatrix},\qquad
+\Omega = \begin{pmatrix}0&1&0&0\\ -1&0&0&0\\ 0&0&0&1\\ 0&0&-1&0\end{pmatrix}
+$$
+
+$D \equiv J^\top\Omega J - \Omega$ を成分で計算すると ($\Omega J$ を作り、$J^\top$ をかける。成分は sympy でも確認)、0 でない成分は $x$-$t$ の対だけで
+
+$$
+D_{xt} = -(s - 1)\,K_{xt},\qquad D_{tx} = +(s - 1)\,K_{xt}
+$$
+
+$s = +1$ なら $D = 0$ (勾配キックは正準)。$s = -1$ だと $D_{xt} = 2K_{xt} = -2\,\partial_xV\,\sin(\omega t - \mathtt{dphis})$ ($K_{xt} = \partial_x[\partial_tK] = -\partial_xV\sin(\ldots)$)。つまり**符号を逆にした欠陥は $2\,\partial_xV\sin(\omega t - \mathtt{dphis})$、$\partial_xV \sim V_1$ の大きさ**で。正しい符号 ($s = +1$) では、$J$ の $(p_x, t)$ 成分 $-K_{xt}$ と $(P, x)$ 成分 $-K_{xt}$ が、偏微分の順序の交換 $\partial_x\partial_t = \partial_t\partial_x$ で同じ値になり、$D_{xt}$ で打ち消し合う ($K_{xx}$・$K_{tt}$ は $D$ に入らない)。$(z, \delta)$、$p_x/p_0$ で測った値は、$D_{\rm SAD} = (1/p_0)\,A^{-\top}DA^{-1}$ ($A = \partial(x, p_x/p_0, z, \delta)/\partial(x, p_x, t, P)$。(10.4b) の $M$ を使う。$A^\top S_{\rm SAD}A = \Omega/p_0$ からの帰結) となる。
+
+**数値** ([cav_03_symplectic_proofs.out.txt](outputs/cav_03_symplectic_proofs.out.txt) (b)(c)): 薄い空洞の写像 (10.1)(10.2)(10.5)(10.6)(10.8) を numpy で組み (オフセットなし。V1・V20・V02・V11 あり。$x = 2$ mm、$y = 1$ mm、$z = 0.05$ m)、中心差分のヤコビアンの $|J^\top SJ - S|$ は
+
+| 運動量 | $s = +1$ (正しい符号) | $s = -1$ (符号を逆) | 解析の予想 ($s = -1$) |
+|---|---|---|---|
+| 3 GeV/$c$ | $6.5 \times 10^{-10}$ | $3.70 \times 10^{-4}$ | $3.70 \times 10^{-4}$ |
+| 2 MeV/$c$ | $6.0 \times 10^{-10}$ | $0.615$ | $0.615$ |
+
+(予想との差は $6 \times 10^{-10}$ 以内。条件: VOLT = 2 MV、500 MHz、dphis = $-0.3$、V1 = $2 \times 10^6$ V/m、V20 = $2 \times 10^8$、V02 = $-10^8$、V11 = $10^8$ (V/m²)。)  したがって (§4) の数値確認 (V1・V20・V11・V02 あり: $2 \times 10^{-10}$) は、横のキックの符号と、エネルギー利得との整合の確認にもなっている。ただし、この表の $s = \pm1$ は、いずれも式 (10.1)(10.2)(10.5)(10.6)(10.8) の numpy の再実装の値で、pysad の追跡そのもので符号を反転した試験は行っていない (pysad の追跡で符号が正しいことは、上の §4 の (b) の $2 \times 10^{-10}$ が示す)。
 
 ### 5.2 非相対論の補正
 
@@ -178,7 +245,7 @@ $$
 
 ## 7. 端の効果 $H_f$
 
-ヘルプ (CAVI の VOLT の説明、原文で確認): 「CAVI は最低次の端の効果を含む。入口 $s_0$ でのハミルトニアン $H_f = -(e(\mathrm{VOLT}+\mathrm{DVOLT})/L)\,(\sin(\omega t - \mathrm{dphi}) + \sin(\mathrm{dphi}) - \mathrm{offset})\,(x^2 + y^2)/4\,\delta(s - s_0)$。$\mathrm{dphi}$ と offset は空洞の位相と放射の損失で決まる (NORAD のときだけ 0 でない)。符号は出口で反転する。既知の導出と整合する」(導出者の名前が書かれている。この文書では省く)。
+ヘルプ (CAVI の VOLT の説明、原文で確認): 「CAVI は最低次の端の効果を含む。入口 $s_0$ でのハミルトニアン $H_f = -(e(\mathrm{VOLT}+\mathrm{DVOLT})/L)\,(\sin(\omega t - \mathrm{dphi}) + \sin(\mathrm{dphi}) - \mathrm{offset})\,(x^2 + y^2)/4\,\delta(s - s_0)$。$\mathrm{dphi}$ と offset は空洞の位相と放射の損失で決まる (NORAD のときだけ 0 でない)。符号は出口で反転する。既知の導出と整合する」。
 
 ### 7.1 Maxwell からの導出
 
@@ -189,20 +256,43 @@ F_r = -\frac{e\,r}{2}\Bigl[\partial_sE_z + \frac\beta c\,\partial_tE_z\Bigr]
 \tag{10.11}
 $$
 
-入口の端では $g(s)$ が 0 から 1 に立ち上がり、$\partial_sE_z = E_0\,g'(s)\cos(\omega t + \varphi_E)$ が支配的 (第 2 項は端の外側の一様な場の区間でも出るが、端の幅 → 0 の極限で $g'$ の積分 1 に比べて小さい)。$ds = \beta c\,dt$ で $\int F_r\,dt = \int F_r\,ds/(\beta c)$ なので、端を通る間の運動量の変化は
+入口の端では $g(s)$ が 0 から 1 に立ち上がり、$\partial_sE_z = E_0\,g'(s)\cos(\omega t + \varphi_E)$ が支配的である。第 2 項が小さいことを、幅 $w$ の端で積分して示す。$ds = \beta c\,dt$ で $\int F_r\,dt = \int F_r\,ds/(\beta c)$ なので、(10.11) の 2 つの項の積分は
+
+$$
+\text{第 1 項: }-\frac{e\,r}{2\beta c}\int\partial_sE_z\,ds = -\frac{e\,r}{2\beta c}\,E_0\cos(\omega t + \varphi_E)\int g'\,ds = -\frac{e\,r\,E_0}{2\beta c}\cos(\omega t + \varphi_E)\quad(\int g'\,ds = 1)
+$$
+
+$$
+\Bigl|\text{第 2 項: }-\frac{e\,r}{2\beta c}\int\frac\beta c\,\partial_tE_z\,ds\Bigr| = \frac{e\,r}{2c^2}\Bigl|\int(-\omega E_0\,g(s)\sin(\omega t + \varphi_E))\,ds\Bigr| \le \frac{e\,r}{2c^2}\,\omega E_0\,w
+$$
+
+($\partial_tE_z = -\omega E_0\,g\sin(\ldots)$、$0 \le g \le 1$、端の幅 $w$ の積分区間。粒子が端の中で動く間の $t$ の変化は、$w \ll c/\omega$ では無視する。) 2 つの比は
+
+$$
+\frac{\text{第 2 項}}{\text{第 1 項}} \le \frac{\omega E_0\,w/c^2}{E_0/(\beta c)} = \beta\,\frac{\omega\,w}{c} = \beta\,\frac{2\pi w}{\lambda}\ \to\ 0\quad(w \to 0)
+$$
+
+($\lambda = 2\pi c/\omega$ は RF の波長、500 MHz で 0.6 m。) 第 2 項は、端の外側の一様な場 ($g = 1$) の区間にも出るが、それは長さ $L$ の本体の領域の力で、端の寄与ではない (本体の横のキックは §5.1)。したがって端の項は第 1 項だけで、端を通る間の運動量の変化は
 
 $$
 \Delta p_r = -\frac{e\,E_0\,r}{2\beta c}\cos(\omega t + \varphi_E)
 \tag{10.12}
 $$
 
-($\int g'\,ds = 1$。) $\Delta E = -eV\sin(\omega t - \ldots)$ の振幅は $eE_0L = eV$ で、位相は $E_0\cos(\omega t + \varphi_E) \leftrightarrow -(V/L)\sin(\omega t - \mathrm{dphi})$ の読み替えになり、$\Delta p_r = +\dfrac{e\,V\,r}{2L\,\beta c}\sin(\omega t - \mathrm{dphi})$。これは、ヘルプの $H_f$ から $\Delta p_x = -\partial_xH_f = (V/L)(\sin(\ldots) + \ldots)\,x/2$ ($e$ は $\Delta E$ の式の $e$ に入れた電荷 $\to$ $v$ で測る) と同じ形 (定数の $\sin\mathrm{dphi} - \mathrm{offset}$ の項を除く。定数の項は、(10.4) の一定の利得 $v\,[\sin\mathtt{dphis} - \mathtt{offset}]$ の横方向の相手として、(10.7) 以下と同じ議論で出る)。出口では $g' \to -g'$ で符号が反転する (ヘルプ)。
+($\int g'\,ds = 1$。) **ヘルプの記号への読み替えと単位換算**を 1 行ずつ書く。
+
+1. 空洞を通ったときの電場による利得は、$g = 1$ の一様な場で $\Delta E = eE_0\,L\cos(\omega t + \varphi_E)$ ($eE_0L$ は電圧 $eV$ に当たる)。ヘルプの $\Delta E = -eV\sin(\omega t - \mathrm{dphi})$ と等しくおくと $E_0\cos(\omega t + \varphi_E) = -(V/L)\sin(\omega t - \mathrm{dphi})$ (すなわち $\varphi_E = \pi/2 - \mathrm{dphi}$、$E_0 = V/L$。$e$ は電荷の符号を含む)。
+2. これを (10.12) に入れる: $\Delta p_r = -\dfrac{e\,r}{2\beta c}\cdot\Bigl[-\dfrac VL\sin(\omega t - \mathrm{dphi})\Bigr] = +\dfrac{e\,V\,r}{2L\,\beta c}\sin(\omega t - \mathrm{dphi})$ (運動量の次元)。
+3. **単位を $mc$ に直す** ($c = 1$、運動量は $mc$ 単位、$v = eV/mc^2$): $\Delta p_r/(mc) = \dfrac{e\,V}{mc^2}\cdot\dfrac{r}{2L\,\beta} \sin(\ldots) = \dfrac{v\,r}{2L\,\beta}\sin(\omega t - \mathrm{dphi})$ ($eVr/(2L\beta c)$ を $mc$ で割ると $eV/(mc^2)$ が出て、残りが $r/(2L\beta)$)。
+4. $p_0$ (設計運動量、$mc$ 単位) で規格化 (SAD の $p_x$ は $p_0$ で割った量): $\Delta p_r/(p_0\,mc) = \dfrac{v\,r}{2L\,\beta\,p_0}\sin(\omega t - \mathrm{dphi})$。
+
+これは、ヘルプの $H_f$ から $\Delta p_x = -\partial_xH_f$ ($c = 1$ で $v$ を使う) $= (v/L)\,[\sin(\ldots) + \ldots]\,x/2$ ($p_0$ 規格化で $v\,x/(2Lp_0)[\ldots]$) と、$1/\beta$ を除いて同じ形 (定数の $\sin\mathrm{dphi} - \mathrm{offset}$ の項を除く。定数の項は、(10.4) の一定の利得 $v\,[\sin\mathtt{dphis} - \mathtt{offset}]$ の横方向の相手として、(10.7) 以下と同じ議論で出る)。$1/\beta$ の因子が、Maxwell から出る式 (手順 3、4) とヘルプ・K64 の式の違いである。出口では $g' \to -g'$ で符号が反転する (ヘルプ)。
 
 **K64 は $1/\beta$ を略す**: 追跡 `tcavfrin` は `vf=v/al/p0*.5`、`dpt=vf*(sin(ph-dphis)+s0)/p1r`、`px=px+x*dpt` で、$\Delta q_x = x\,\dfrac{v}{2Lp_0}\bigl(\sin(\omega t - \mathtt{dphis}) + s_0\bigr)/p_{1r}$ ($s_0 = \sin\mathtt{dphis} - \mathtt{offset}$。正準運動量では $\Delta p_x/p_0 = x\,\dfrac{v}{2Lp_0}(\ldots)$)。(10.12) は $1/\beta$ を持つ。
 
 **数値** ([cav_02_derivations.out.txt](outputs/cav_02_derivations.out.txt) (d)): 本体のキックが 0 になる位相 ($\omega t - \mathtt{dphis} = \pi/2$ に粒子を置く。本体は $\cos(\omega t - \mathtt{dphis})$ に比例) で、pysad の入口の端だけ (FRINGE = 1 と DISFRIN = 1 の差) を取り出すと、$\Delta p_x$ は K64 の式 $x\,v/(2Lp_0)$ と、3 GeV ($\beta = 1.0000$)、2 MeV/c ($\beta = 0.9689$)、0.6 MeV/c ($\beta = 0.7613$) のすべてで比 $1.000000$ で一致する。**K64 の式に $1/\beta$ は入っていない**。(10.12) の $1/\beta$ が正しいなら、低エネルギー (0.6 MeV/c で 31%) の端の収束が足りない。(10.12) の導出は**解析だけで、ローレンツ力の数値積分では確認していない**。
 
-(出力 (f) の、本体の位相を選ばない測定では、比が 0.9993 (2 MeV/c)、0.9734 (0.6 MeV/c) と 1 からずれる。これは端の式の性質ではなく、端のキックで動いた $x$ に、本体の $x$ 依存のキック ($V_{20}$・$V_{02}$ の補正) が反応する分が混ざった測定のずれで、上のように本体のキックが 0 の位相に置くと消える。)
+(1/β の有無の判定に使う測定は、cav_02 (d) の上の結果だけである。[cav_01_energy_map.out.txt](outputs/cav_01_energy_map.out.txt) (f) は、位相を選ばずに同じ量を測った参考の測定で、比が 0.9993 (2 MeV/c)、0.9734 (0.6 MeV/c) と 1 からずれる。これは端の式の性質ではなく、端のキックで動いた $x$ に、本体の $x$ 依存のキック ($V_{20}$・$V_{02}$ の補正) が反応する分が混ざった測定のずれで、上のように本体のキックが 0 の位相に置くと消える。(f) の出力の「$1/\beta$ をかけた式」の列は参考値で、判定には使わない。)
 
 ### 7.2 端のエネルギー変化と、$q$ の再スケールの欠落 (疑い)
 
@@ -213,7 +303,7 @@ $$
 \frac{\Delta p_x}{p_0} = -\frac{\partial_xK}{p_0} = \frac{v\,x}{2Lp_0}\bigl[\sin(\omega t - \mathtt{dphis}) + s_0\bigr]
 $$
 
-コードの `dh=-w*p0*vf*(x**2+y**2)*.5*cos(ph-dphis)` ($v_f = v/(2Lp_0)$ なので $-\omega p_0\,v_f\,(x^2 + y^2)/2 = -\omega v(x^2 + y^2)/(4L)$) と、`dpt` の分子 $v_f(\sin + s_0)$ は、この 2 式と一致する (sympy で差 0: [cav_02_derivations.out.txt](outputs/cav_02_derivations.out.txt) (a))。出口は $v \to -v$ (`tcavfrin(…, -v, …)`)。入口は `mfring ≥ 0` かつ `mfring ≠ 2` (`FRINGE` = 0, 1, 3)、出口は `mfring ≥ 0` かつ `mfring ≠ 1`。`fringe` は DISFRIN が 0 のとき。**ヘルプの FRINGE・DISFRIN の表** (DISFRIN ≠ 0 は端なし。FRINGE = 1 は入口、2 は出口、3 は両方、0 も両方): 原文で確認。K64 の `mfring` の変換 (`tffs.f` の `frmd`) は FRINGE を 0, 1, 2, 3 から内部値に直す (FRINGE = 0 で両方になる表と整合するかは、ここでは確認していない)。
+コードの `dh=-w*p0*vf*(x**2+y**2)*.5*cos(ph-dphis)` ($v_f = v/(2Lp_0)$ なので $-\omega p_0\,v_f\,(x^2 + y^2)/2 = -\omega v(x^2 + y^2)/(4L)$) と、`dpt` の分子 $v_f(\sin + s_0)$ は、この 2 式と一致する (sympy で差 0: [cav_02_derivations.out.txt](outputs/cav_02_derivations.out.txt) (a))。出口は $v \to -v$ (`tcavfrin(…, -v, …)`)。入口は `mfring ≥ 0` かつ `mfring ≠ 2` (`FRINGE` = 0, 1, 3)、出口は `mfring ≥ 0` かつ `mfring ≠ 1`。`fringe` は DISFRIN が 0 のとき。**ヘルプの FRINGE・DISFRIN の表** (DISFRIN ≠ 0 は端なし。FRINGE = 1 は入口、2 は出口、3 は両方、0 も両方): 原文で確認。K64 の `mfring` への変換 (`tffs.f:1447-1451` の `frmd`。§2) は、通常の向きの要素では FRINGE をそのまま `mfring` とし、逆向きの要素では 1 と 2 を入れ替える。FRINGE = 0 は `mfring` = 0 で入口・出口の両方の条件 (`mfring ≥ 0`) を満たし、ヘルプの表 (0 は両方) と整合する。
 
 **`tcavfrin` の手続き** (`tcav.f:218-247`): (1) $h_1$ を作り、$t = -z\,h_1/p_1$、$\omega t$ を計算 (`ph=w*t`。本体と違い $\omega t$ そのもの)。(2) 傾きの kick $q \mathrel{+}= x\,\mathtt{dpt}$。(3) エネルギー変化 $dh$ から $p_{2r}$ を (10.5) と同じ形で計算、`g(i)=dp2r`。(4) $z \mathrel{*}= (p_{2r}/p_{1r})(h_1/h_2)$ ((10.6) と同じ。時間 $t$ を保つ)。(5) $dv$ を更新。
 
@@ -223,7 +313,33 @@ $$
 q_2^{\rm correct} - q_2^{\rm K64} = \frac{q_1p_{1r} + X}{p_{2r}} - \Bigl(q_1 + \frac{X}{p_{1r}}\Bigr) = (q_1p_{1r} + X)\,\frac{p_{1r} - p_{2r}}{p_{1r}\,p_{2r}},\qquad X \equiv x\,v_f\bigl[\sin(\ldots) + s_0\bigr]
 $$
 
-($q_1 + X/p_{1r} = (q_1p_{1r} + X)/p_{1r}$ を使った。) $p_{2r} - p_{1r} = p_{1r}\,\mathtt{dpr}$、$\mathtt{dpr} \simeq a/2 = dh(h_1 + h_2)/(2p_1^2)$、$dh \propto -\omega p_0v_f(x^2 + y^2)$ なので、欠落量は $\propto (q + \ldots)\,\omega p_0v_f\,x^2\,h/p^2$。ヤコビアンの欠陥 $|J^\top SJ - S|$ は、$\partial q_2/\partial x$ の欠落 $\propto x\,q\,\omega p_0v_f\,h/p^2$ の形で、傾き $q$ と低エネルギー ($h/p^2$ が大きい) で大きくなる。
+($q_1 + X/p_{1r} = (q_1p_{1r} + X)/p_{1r}$ を使った。) この欠落が $J^\top SJ - S$ にどう入るかを、成分で書く。
+
+**(1) 出力の正準 $p_x$ の差 $\eta$**。出力の正準運動量 ($p_0$ 規格化) は $q_2\,p_{2r}$ なので、再スケールありとなしの差は ($p_{x} = q_1p_{1r}$ は入力の正準 $p_x$、$X$ は上の定義の端のキック)
+$$
+\eta \equiv p_{2r}\,(q_2^{\rm correct} - q_2^{\rm K64}) = (q_1p_{1r} + X)\,\frac{p_{1r} - p_{2r}}{p_{1r}} = -(p_x + X)\,\mathtt{dpr}
+\tag{10.13}
+$$
+($p_{2r} - p_{1r} = p_{1r}\,\mathtt{dpr}$、すなわち $p_{1r} - p_{2r} = -p_{1r}\,\mathtt{dpr}$ を使った。) 同じ式が $p_y$ にもある ($y$、$p_y$、$Y \equiv y\,v_f[\ldots]$)。$\mathtt{dpr} \simeq a/2 = \Delta h\,(h_1 + h_2)/(2p_1^2) \simeq (h/p^2)\,\Delta h$ ($h_2 \simeq h_1$)、端のエネルギー変化は $\Delta h = -A\cos\theta$、$A \equiv \omega p_0v_f\,(x^2 + y^2)/2$、$\theta \equiv \omega t - \mathtt{dphis}$ ($dh$ の式は上のとおり)。
+
+**(2) ヤコビ行列の差**。再スケールありの写像のヤコビ行列を $J_c$ (本体と同じ扱い。シンプレクティック)、K64 の式のを $J_K$ とすると、$p_x$ の出力だけが $\eta$ だけ違うので $J_K = J_c - e_{p_x}\,g^\top$ ($g \equiv \nabla\eta$、$e_{p_x}$ は $p_x$ 成分の単位ベクトル)。$J_K^\top SJ_K - S$ を展開する ($J_c^\top SJ_c = S$ を使う):
+$$
+J_K^\top SJ_K - S = -J_c^\top S\,e_{p_x}\,g^\top - g\,e_{p_x}^\top SJ_c + g\,(e_{p_x}^\top Se_{p_x})\,g^\top
+$$
+$e_{p_x}^\top Se_{p_x} = 0$ (反対称)。$S$ の $(x, p_x)$ 成分は $S_{x\,p_x} = +1$、$S_{p_x\,x} = -1$ なので $Se_{p_x} = e_x$、$e_{p_x}^\top S = -e_x^\top$。端は $x$ を変えない ($x' = x$) ので $J_c$ の $x$ の行は $e_x^\top$ で、$J_c^\top e_x = e_x$、$e_x^\top J_c = e_x^\top$。したがって
+$$
+J_K^\top SJ_K - S = g\,e_x^\top - e_x\,g^\top\ (+\ y\ \text{方向の同じ項}\ g_y\,e_y^\top - e_y\,g_y^\top)
+$$
+(**反対称**。$g_x e_xe_x^\top$ は打ち消す。) すなわち欠陥は、$x$ の行・列に、$\eta$ の各座標での偏微分 $g_k = \partial\eta/\partial k$ ($k = p_x, z, \delta, y, p_y$) として入る。
+
+**(3) 各成分の大きさ**。(10.13) から ($X$ の微分は $\mathtt{dpr}$ の分だけ小さく、高次):
+$$
+g_{p_x} = \frac{\partial\eta}{\partial p_x} = -\mathtt{dpr}\ \ (\text{ほぼ正確}),\qquad
+g_z \simeq -(p_x + X)\,\partial_z\mathtt{dpr},\qquad \partial_z\mathtt{dpr} \simeq \frac h{p^2}\,\partial_z\Delta h = -\frac h{p^2}\,\frac{\omega A}{\beta}\sin\theta
+$$
+($\partial_z\theta = -\omega h_1/p_1 = -\omega/\beta$ から $\partial_z(-A\cos\theta) = A\sin\theta\cdot(-\omega/\beta)$。) $g_\delta$ も同様に $\partial_\delta\mathtt{dpr}$ に比例する。$g_{p_x}$ は $\mathtt{dpr} \sim (h/p^2)\,A$ そのもの (1 次) で、$g_z, g_\delta$ は $(p_x + X)\cdot(h/p^2)\,\omega A$ (さらに $p_x$ か $X$ と $\omega\times$長さの積) の大きさ。数値 (下の表の条件) では $g_{p_x}$ が最大で、$|J^\top SJ - S| \simeq |\mathtt{dpr}| = (h/p^2)\,A\,|\cos\theta|$、**傾き $p_x$ にはよらない** ($p_x = 0$ でも同じ値で残る。出力 (d))。$x^2$ に比例 (1 mm → 10 mm で 100 倍)、$h/p^2$ が大きい低エネルギーで大きくなる。**傾き $p_x$ の大きさで決まるのは $g_z, g_\delta$ だけで、これらは $|D|$ の主要部ではない。**
+
+数値確認 ([cav_03_symplectic_proofs.out.txt](outputs/cav_03_symplectic_proofs.out.txt) (d)): (10.13) の $\eta$ は数値の差と一致 (例: 2 MeV/$c$、$x = 1$ mm、$p_x = 0.01$ で $1.306 \times 10^{-8}$、式の値も同じ)。$g_{p_x} = -\mathtt{dpr}$ (2 MeV/$c$、$x = 1$ mm で $1.297 \times 10^{-6}$)。$J_K^\top SJ_K - S$ の数値の行列と、$g$ の数値微分から組んだ $g\,e_x^\top - e_x\,g^\top + (y\ \text{項})$ の差は、全 12 条件 (3 つの運動量、$x = 1, 10$ mm、$p_x = 0.01, 0$) で $2 \times 10^{-11}$ 以下。
 
 **数値** ([cav_02_derivations.out.txt](outputs/cav_02_derivations.out.txt) (b)(c)。CAVI、$L = 0.1$ m、VOLT = $10^5$ V、500 MHz、PHI = 0.5、$z = 0.02$ m、$\delta = 10^{-3}$、$(x, p_x) = (1\,\mathrm{mm}\ \text{または}\ 10\,\mathrm{mm},\ 0.01)$、中心差分): 入口の端だけを numpy で組み直した写像 ((b)。中心差分の精度は $10^{-9}$〜$10^{-10}$) の $|J^\top SJ - S|$ は、$q$ の再スケールなし (K64 の式) と、あり (本体と同じ扱い) で
 
@@ -233,7 +349,7 @@ $$
 | 2 MeV/c | 1 mm / 10 mm | $1.3 \times 10^{-6}$ / $1.3 \times 10^{-4}$ | $2.4 \times 10^{-9}$ / $2.3 \times 10^{-8}$ |
 | 0.6 MeV/c | 1 mm / 10 mm | $5.6 \times 10^{-6}$ / $5.6 \times 10^{-4}$ | $1.5 \times 10^{-8}$ / $2.0 \times 10^{-8}$ |
 
-(再スケールを入れると、中心差分の精度の範囲の $10^{-8}$ 以下に下がる。) pysad (v2 既定) の端つき CAVI 全体 ((c)。入口と出口の端、本体つき) では、フリンジあり $4.8 \times 10^{-8}$ (3 GeV、$x = 1$ mm)、$4.0 \times 10^{-6}$ (2 MeV/c)、$1.8 \times 10^{-5}$ (0.6 MeV/c)、$x = 10$ mm でそれぞれ $1.8 \times 10^{-8}$、$3.2 \times 10^{-5}$、$1.5 \times 10^{-4}$、DISFRIN = 1 では $10^{-8}$ 以下 ($3 \times 10^{-10}$〜$1.8 \times 10^{-7}$)。pysad の `tcavfrin` は K64 の式のまま ($q$ を再スケールしない。k64・v2 とも)。**確認の状況**: K64 の `tcavfrin` に再スケールが無いことはソースの読み (確定)、非シンプレクティック性は pysad のヤコビアンと再実装の数値までで、gs での確認と v2 での扱い (直すか) は未決。結論が出るまで「疑い」とする。
+(再スケールを入れると、中心差分の精度の範囲の $10^{-8}$ 以下に下がる。) pysad (v2 既定) の端つき CAVI 全体 ((c)。入口と出口の端、本体つき) では、フリンジあり $4.8 \times 10^{-8}$ (3 GeV、$x = 1$ mm)、$4.0 \times 10^{-6}$ (2 MeV/c)、$1.8 \times 10^{-5}$ (0.6 MeV/c)、$x = 10$ mm でそれぞれ $1.8 \times 10^{-8}$、$3.2 \times 10^{-5}$、$1.5 \times 10^{-4}$、DISFRIN = 1 では $10^{-8}$ 以下 ($3 \times 10^{-10}$〜$1.8 \times 10^{-7}$)。pysad の `tcavfrin` は K64 の式のまま ($q$ を再スケールしない。k64・v2 とも)。**確認の状況**: K64 の `tcavfrin` に再スケールが無いことはソースの読み (確定)、非シンプレクティック性は pysad のヤコビアンと再実装の数値までで、gs での確認と v2 での扱い (直すか) は未決。結論が出るまで「疑い」とする。(c) の数値は、DISFRIN = 1 (端なし) の値が $10^{-8}$ 以下〜$1.8 \times 10^{-7}$ と一様でなく、追跡側の中心差分の雑音を含む。(c) と、入口の端だけの (b) の欠陥 ((10.13) と $|\mathtt{dpr}|$ の見積り) との定量的な比較 (入口と出口の欠陥の重なり方を含む) は行っていない。
 
 ## 8. TCAVI (偏向空洞)
 
@@ -251,20 +367,21 @@ $$
 | スクリプト | 確認すること | 出力 |
 |---|---|---|
 | `cav_02_derivations.py` | (a) 端の項 $H_f$ から $\Delta E = \partial_tK$・$\Delta p_x = -\partial_xK$ を取り `tcavfrin` の式と照合 (sympy)、(b)(c) `tcavfrin` の $q$ の再スケールの有無とヤコビアン (numpy の再実装と pysad)、(d) 本体のキックが 0 の位相での端の収束の $\beta$ 依存、(e) $wl = \ln(1 + r)$、`dpepe` | [cav_02_derivations.out.txt](outputs/cav_02_derivations.out.txt) |
-| `cav_01_energy_map.py` | (a) 薄い CAVI の写像 (10.1)(10.4)〜(10.6) と追跡の一致、(b) シンプレクティック性 (V1・V20・フリンジつき)、(c) 非相対論の補正と $I_0$、(d) 重み `ws` の和と $e^{wl} = 1 + r$、(e) TCAVI の式・シンプレクティック性・$K$ の流れ、(f) 端の収束の $1/\beta$ | [cav_01_energy_map.out.txt](outputs/cav_01_energy_map.out.txt) |
+| `cav_03_symplectic_proofs.py` | (a) $(t, E) \to (t, E + f(t))$ と $(t, E) \to (z, \delta)$ のヤコビ行列 ((10.4a)(10.4b)、sympy)、(b) 横のキックの符号 $s$ と $D = J^\top\Omega J - \Omega$ (sympy)、(c) $s = \pm1$ の薄い空洞の数値ヤコビアンと予想の比較、(d) `tcavfrin` の欠陥 $J^\top SJ - S = g\,e_x^\top - e_x\,g^\top + (y\text{ 項})$ と (10.13) の確認 | [cav_03_symplectic_proofs.out.txt](outputs/cav_03_symplectic_proofs.out.txt) |
+| `cav_01_energy_map.py` | (a) 薄い CAVI の写像 (10.1)(10.4)〜(10.6) と追跡の一致、(b) シンプレクティック性 (V1・V20・フリンジつき)、(c) 非相対論の補正と $I_0$、(d) 重み `ws` の和と $e^{wl} = 1 + r$、(e) TCAVI の式・シンプレクティック性・$K$ の流れ、(f) 端の収束の測定 (位相を選ばない。参考。$1/\beta$ の判定は cav_02 (d)) | [cav_01_energy_map.out.txt](outputs/cav_01_energy_map.out.txt) |
 
 実行: リポジトリのルートから `py -3.12 physics_guide/scripts/cav_01_energy_map.py` (数秒。numba のキャッシュは環境変数 `NUMBA_CACHE_DIR` で指定できる)。
 
 ## 10. 未確認・限界・使った条件
 
-**使った条件**: 電子、運動量 3 GeV/$c$ (§3〜§5、§8)、低エネルギーの確認は 0.6〜2 MeV/c (§5.2、§7)。VOLT = 2 MV (§3、§4)、FREQ = 500 MHz、PHI = 0.3 rad、$\delta = O(10^{-3})$、$z = O(0.1)$ m。放射・スピン・ウェイク (`txwake`)・TRPT (`vnominal ≠ 0`) の追跡は確認していない。
+**使った条件**: 電子、運動量 3 GeV/$c$ (§3〜§5、§8)、低エネルギーの確認は 0.6〜2 MeV/c (§5.2、§7)。VOLT = 2 MV (§3、§4)、FREQ = 500 MHz、PHI = 0.3 rad (§5.1 の符号の確認は V1 = $2 \times 10^6$ V/m などと dphis = $-0.3$、§7.2 の端の欠陥は VOLT = $10^5$ V、$L = 0.1$ m、PHI = 0.5)、$\delta = O(10^{-3})$、$z = O(0.1)$ m。放射・スピン・ウェイク (`txwake`)・TRPT (`vnominal ≠ 0`) の追跡は確認していない。
 
 **この章の範囲外**: ウェイク場 (`txwake`、WAKE の章)、放射 (RADCOD、`tradk`、放射による損失と `trf0` の決め方)、`tmultiacc` (MULT + RF)、CALC (`tcave`) の行列の導出と追跡との比較、COORD・ずれ (DX・DY・ROTATE) の `TENT`/`TEXIT`。
 
 **未確認・限界**:
 - **TRPT (`vnominal ≠ 0`) の写像**は、読みだけ。$\mathtt{ws}$ の和と $e^{wl} = 1 + r$ は数値で確認したが、(10.10) の等比の重みを選ぶ理由、`ndiv` の式の係数 ($\sqrt{r^2/3\varepsilon}$ の 3 と $\varepsilon$。§6.1) の根拠、$dz_n$ の数値確認は行っていない。$wl = \ln(1 + r)$ と $dp_{epe}$ の式は導出した (§6.2)。
-- **端の収束の $1/\beta$** (§7.1): Maxwell からの解析の導出だけで、ローレンツ力の数値積分は未確認。K64 の式が $1/\beta$ を持たないことは確認済み (pysad の追跡、本体のキックが 0 の位相)。
-- **端のエネルギー変化**の符号と係数は、ヘルプの $H_f$ と整合する (§7.2、sympy)。**`tcavfrin` の $q$ の再スケールの欠落 (疑い)** は、gs での確認と v2 での扱いが未決 (§7.2、付録 A)。
+- **端の収束の $1/\beta$** (§7.1): Maxwell からの解析の導出だけで、ローレンツ力の数値積分は未確認 (端の幅 $w \to 0$ の極限で第 2 項が落ちることは、上限の式で示した)。K64 の式が $1/\beta$ を持たないことは確認済み (pysad の追跡、本体のキックが 0 の位相。cav_02 (d))。
+- **端のエネルギー変化**の符号と係数は、ヘルプの $H_f$ と整合する (§7.2、sympy)。**`tcavfrin` の $q$ の再スケールの欠落 (疑い)** は、gs での確認と v2 での扱いが未決 (§7.2、付録 A)。欠陥の構造 ($J^\top SJ - S = g\,e_x^\top - e_x\,g^\top$) と大きさ ($|\mathtt{dpr}|$) は入口の端だけの再実装で確認したが、pysad の端つき CAVI 全体 (入口・出口・本体) での欠陥との定量的な比較は未実施。
 - **設計粒子の $z$ の補正 `dzn`** (§6.2) の効果の数値確認、等比の重みを選ぶ理由。
 - **`offset` の意味** (§3.3): ソースの読み。$\mathtt{phis} \ne 0$ のときの一定のエネルギー利得の物理的な意味は確認していない。
 - **V1・V11・V02 は「Tracking only」** (ヘルプ) と書かれるが、`tcave.f` (CALC) は `v10`・`v20`・`v11`・`v02` を使う。CALC の V1 の行列の係数は確認していない。
@@ -287,7 +404,7 @@ $$
 
 **K64 の実装の癖・疑い**:
 1. 端の収束に $1/\beta$ が無い (§7.1。確認済み)。低エネルギーの空洞では、ヘルプの「lowest order」の範囲を超える。
-2. **`tcavfrin` が $q$ を再スケールしない (疑い)**: 端のエネルギー変化で $p$ が変わるのに、本体 `tcav` の `px=(px*p1r+dpx)/p2r` に相当する操作が無く、端つきの空洞が非シンプレクティックになる (§7.2。ソースの読み + ヤコビアンの数値。傾き $10^{-2}$、3 GeV で $10^{-8}$、2 MeV/c で $10^{-6}$〜$10^{-4}$)。gs での確認と v2 での扱いは未決のため「疑い」。
+2. **`tcavfrin` が $q$ を再スケールしない (疑い)**: 端のエネルギー変化で $p$ が変わるのに、本体 `tcav` の `px=(px*p1r+dpx)/p2r` に相当する操作が無く、端つきの空洞が非シンプレクティックになる (§7.2。ソースの読み + ヤコビアンの数値。入口の端だけの写像で、欠陥は $|\mathtt{dpr}| \simeq (h/p^2)\,|\Delta h|$、$p_x$ によらず $x^2$ に比例: $x = 1$ mm で 3 GeV/$c$ は $8 \times 10^{-10}$、2 MeV/$c$ は $1.3 \times 10^{-6}$、0.6 MeV/$c$ は $5.6 \times 10^{-6}$)。gs での確認と v2 での扱いは未決のため「疑い」。
 
 ## 付録 B. この章で使う Fortran の変数名
 
@@ -300,7 +417,19 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `phic`・`phis`・`dphis` | $(\mathrm{PHI} + \mathrm{DPHI})\,\mathrm{sign}(\mathtt{charge})$、$\omega\,t_{rf0}$、$\mathtt{phis} - \mathtt{phic}$ | `tcav.f` | `phic`・`phis`・`dphis` |
 | `trf0` | 同期時間 $t_s$ (global。RF の位相の基準) | `tmacro` | `trf0` |
 | `offset`・`offset1` | 一定の利得の調整 ($\sin\mathtt{dphis}$ または $\sin\mathtt{dphis} - \sin\mathtt{phis}$、$0$ または $\sin\mathtt{phis}$) | `tcav.f` | `offset`・`offset1` |
-| `h1`・`p1`・`p1r` | 入口のエネルギー ($mc^2$)、運動量 ($mc$)、$1 + \delta$ | `tcav.f` | `h1`・`p1`・`p1r` |
+| `amass` | 粒子の静止エネルギー $mc^2$ [eV] (電圧を割って $v$ を作る) | `tfsetparam.f:70` (`amass=rgetgl1('MASS')`) | `amass` |
+| `charge` | 電荷 (電子 $-1$)。`abs(charge)` が $v$ に、`sign(charge)` が位相に入る | `tfsetparam.f` (`rgetgl1('CHARGE')`) | `charge` |
+| `pgev`・`tphyzp` | $p_0c$ [eV] (名前は gev だが eV)。`tphyzp` は `pgev` から $p_0$ ($=$ `pgev/amass`)、$h_0$、磁気剛性、放射の定数、$\omega_0$ を作り直すサブルーチン (TRPT で空洞のあとに呼ぶ) | `tfsetparam.f:105` (`tphyzp`)、`tcav.f:202-203` | `p0`・`h0` ほか |
+| `rad`・`trpt`・`autophi` | 論理変数: 放射 (RADCOD)、輸送路 (TRPT)、自動位相 (`APHI` ≠ 0)。`offset`・`phis` の場合分け (§3.3) | `tffs.f:585-589` (`fff%rad`、`fff%trpt`)、`tturn.f:438` (`autophi`) | `rad`・`trpt`・`autophi` |
+| `mfring`・`frmd` | 端の有無の整数。`frmd` = `FRINGE`、逆向きの要素では 1 ↔ 2 を入れ替えて `mfring` にする。入口は `mfring ≥ 0` かつ `≠ 2`、出口は `≥ 0` かつ `≠ 1` | `tffs.f:1447-1451`、`tcav.f:82`・`185` | `mfring` |
+| `dvfs`・`al`・`alx` | RFSW の周波数ずらしによる $dv$ への足し込み、空洞の長さ $L$、刻みの中のドリフトの長さ | `tturne.f:859-866` (`tsetdvfs`)、`tcav.f` | `dvfs`・`al` |
+| `h1`・`p1`・`p1r` | 入口のエネルギー ($mc^2$)、運動量 ($mc$)、$1 + \delta$ | `tcav.f` | `amass` | 粒子の静止エネルギー $mc^2$ [eV] (電圧を割って $v$ を作る) | `tfsetparam.f:70` (`amass=rgetgl1('MASS')`) | `amass` |
+| `charge` | 電荷 (電子 $-1$)。`abs(charge)` が $v$ に、`sign(charge)` が位相に入る | `tfsetparam.f` (`rgetgl1('CHARGE')`) | `charge` |
+| `pgev`・`tphyzp` | $p_0c$ [eV] (名前は gev だが eV)。`tphyzp` は `pgev` から $p_0$ ($=$ `pgev/amass`)、$h_0$、磁気剛性、放射の定数、$\omega_0$ を作り直すサブルーチン (TRPT で空洞のあとに呼ぶ) | `tfsetparam.f:105` (`tphyzp`)、`tcav.f:202-203` | `p0`・`h0` ほか |
+| `rad`・`trpt`・`autophi` | 論理変数: 放射 (RADCOD)、輸送路 (TRPT)、自動位相 (`APHI` ≠ 0)。`offset`・`phis` の場合分け (§3.3) | `tffs.f:585-589` (`fff%rad`、`fff%trpt`)、`tturn.f:438` (`autophi`) | `rad`・`trpt`・`autophi` |
+| `mfring`・`frmd` | 端の有無の整数。`frmd` = `FRINGE`、逆向きの要素では 1 ↔ 2 を入れ替えて `mfring` にする。入口は `mfring ≥ 0` かつ `≠ 2`、出口は `≥ 0` かつ `≠ 1` | `tffs.f:1447-1451`、`tcav.f:82`・`185` | `mfring` |
+| `dvfs`・`al`・`alx` | RFSW の周波数ずらしによる $dv$ への足し込み、空洞の長さ $L$、刻みの中のドリフトの長さ | `tturne.f:859-866` (`tsetdvfs`)、`tcav.f` | `dvfs`・`al` |
+| `h1`・`p1`・`p1r` |
 | `dh`・`h2`・`a`・`dpr`・`p2r` | $\Delta h$、$h_1 + \Delta h$、$\Delta h(h_1 + h_2)/p_1^2$、$\sqrt{1 + a} - 1$、$p_{1r}(1 + \mathtt{dpr})$ | `tcav.f` | 同名 |
 | `t`・`ph`・`tlim` | $t = -z\,h_1/p_1$、$\omega t/2$、$|t|$ の上限 (RFSW OFF で 0) | `tcav.f` | 同名 |
 | `v1a`・`v20a`・`v11a`・`v02a` | $V_1$、$V_{20}/2$、$V_{11}$、$V_{02}/2$ ($/\mathtt{amass}$) | `tcav.f` | 同名 |
