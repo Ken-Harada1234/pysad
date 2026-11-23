@@ -1,0 +1,54 @@
+== (a) 出口の面から基準面への直進 (§5.2) ==
+  e_ref·e_f2 - cos ψ2 = 0 、e_ref·N2 - sin ψ2 = 0
+  N_ref·e_f2 + sin ψ2 = 0 、N_ref·N2 - cos ψ2 = 0
+  p_xr - (p_x2 cos ψ2 + p_z2 sin ψ2) = 0
+  p_zr - (-p_x2 sin ψ2 + p_z2 cos ψ2) = 0
+  x_out - x2 (cos ψ2 + (p_xr/p_zr) sin ψ2) = 0
+  面の点 + t P の基準面からの距離 (N_ref·(r - 0)) = 0 の確認 (E を原点とした座標): 0.e-142
+
+== (b) 各段の 1 次の微分と通分 (§5.4) ==
+  ∂p_x2/∂p_x1 - cos(ω+ψ1)/cosψ1 = 0
+  ∂x2/∂x1 - cos(ω+ψ2)/cosψ2 = 0   (ω + ψ2 = φ - ψ1)
+  通分後の分子 sinψ2 cos(ω+ψ1) + cosψ2 sin(ω+ψ1) - sin(ω+ψ1+ψ2) = 0
+  ∂x2/∂p_x1 - ρ sin φ/(cosψ1 cosψ2) = 0
+  S_x E_x(ψ1) = [sin(omega + psi1 + psi2)*tan(psi1) + cos(omega + psi1 + psi2), rho*sin(omega + psi1 + psi2), (-sin(omega + psi1 + psi2) + cos(omega + psi1 + psi2)*tan(psi1))/rho, cos(omega + psi1 + psi2)]
+  E_x(ψ2) S_x E_x(ψ1) の 4 成分 - J_out J_arc J_in = [0, 0, 0, 0]
+  M21 の括弧: c (t1 + t2) - s (1 - t1 t2) - (-sin ω/(cosψ1 cosψ2)) = 0
+  tanψ1 + tanψ2 - sin(ψ1+ψ2)/(cosψ1 cosψ2) = 0 、1 - tanψ1 tanψ2 - cos(ψ1+ψ2)/(cosψ1 cosψ2) = 0
+  ∂x1/∂p_x |_{x=0} = 0 、∂x1/∂x |_{x=0, p_x=0} = 1/cos(psi1) (= 1/cosψ1)
+
+== (c) tbendcore の t2t3・x3・da の導出の中間式 (§7.1。40 桁) ==
+  t2 = tan A                                                     最大 5.74e-42
+  t3 = tan B                                                     最大 5.74e-42
+  D3 - D2 = dpz32 - h dcosp                                      最大 1.29e-41
+  px1px3 (Fortran) = qx1 + px3                                   最大 2.87e-42
+  t2t3 (Fortran) = t2 + t3                                       最大 1.43e-42
+  cosω (t2+t3) + sinω (1 - t2 t3) = sin((Θ+φ)/2)/(cosA cosB)     最大 4.3e-42
+  A + B + ω = (Θ + φ0)/2                                         最大 2.87e-42
+  dpx2 = 2 h cosA sin a1                                         最大 2.51e-42
+  dpx3a = 2h [cosB sin a3 + sin a1 cos(ω+A)]                     最大 2.6e-42
+  B = h [cosθ3 - cos(θ1+ω)]                                      最大 8.25e-42
+  (I1) (cosω T + sinω (1 - t2 t3)) dpx2 - t3 dpx3a = B + h K     最大 9.2e-42
+  (I1) の左辺/h = 2 sin a1 sin(ω+A) - 2 sinB sin a3                 最大 5.61e-43
+  x3 (Fortran) = (5.23)                                          最大 1.35e-40
+  pz2px1 = h cos(θ1 - ψ1)                                        最大 1.15e-41
+  t4 = h cos(Δ1) cos(a3)/cos B                                   最大 2.3e-41
+  sqwht2 = (cosA - cos(ω+A))/cosA                                最大 4.66e-42
+  da の引数 = sin(Δ1 + Δ3)                                          最大 2.83e-42
+  ω の項: dpx2 t4 sqwht2 + (dpx3a の ω の部分) t4 = 2 h sin a1 cosA t4 最大 0.0
+  dpx3a の残り 2h cosB sin a3 × t4 = h^2 cosΔ1 sinΔ3                最大 3.59e-43
+  Bk0/h + cos a3 cosΔ1/cosB - cos a1 cosΔ3/cosA = 0              最大 2.3e-41
+  Θ - φ0 = Δ1 + Δ3                                               最大 1.43e-42
+
+== (d) §8: K1 の b_y と xi の厳密解との差 ==
+  ∫ K dx/(1 + h x) = K*log(h*x + 1)/h   (b_y(0) = h_b を境界条件として h_b + (K/h) ln(1 + h x))
+  (1 + h x) ∂b_y/∂x - K = 0
+  p_x' の K の分 -(1 + u)(K/h) ln(1 + u) の u 級数: -u - u**2/2 + u**3/6 - u**4/12 + u**5/20 + O(u**6)
+  厳密 - K64 の ℓ の 2 次まで = b*ell**2*(-a - b*x)/2  期待 -(b ℓ^2/2)(a + b x): 0
+  a, b を代入: (厳密 - K64) - ℓ^2 h q^2/(2 pzi^2) (dpzi - h x) = 0
+  (x + aℓ)/(1 - bℓ) - (-ℓ dpzi q + pzi x)/(pzi - h ℓ q) = 0
+
+== (e) §6.2 (5.33): p_z → p_v の近似の大きさ ==
+  p_v = 1、p_y = 0.001: (1/p_z)/(1/p_v) - 1 = 5.0e-7、p_y^2/(2 p_v^2) = 5.0e-7
+  p_v = 1、p_y = 0.002: (1/p_z)/(1/p_v) - 1 = 2.00001e-6、p_y^2/(2 p_v^2) = 2.0e-6
+  p_v = 1、p_y = 0.01: (1/p_z)/(1/p_v) - 1 = 5.00038e-5、p_y^2/(2 p_v^2) = 5.0e-5

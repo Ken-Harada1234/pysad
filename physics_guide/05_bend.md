@@ -13,7 +13,7 @@
 - **端面角の効果**は、面までの直進 (5.20) と円弧の幾何から出る。線形光学では、水平に $+\tan\psi/\rho$、垂直に $-\tan\psi/\rho$ の薄い蹴り (面の傾き $\psi = \mathrm{ANGLE}\cdot\mathrm{E} + \mathrm{AE}$)。垂直の収束は、Maxwell フリンジの $\Delta p_y = -(p_x/p_v)\,y/\rho$ ($p_v = \sqrt{p^2 - p_x^2}$。(5.33)) に、面の座標系の $p_x \simeq \sin\psi$ を入れたもの。設計軌道の 2×2 行列は、端面の薄い蹴りと扇形の本体の積と $5 \times 10^{-13}$ で一致する ([bend_04_matrix_vs_map.out.txt](outputs/bend_04_matrix_vs_map.out.txt) (e))。
 - **K1 ≠ 0 (複合機能)** は、本体を $H_2$ (曲率つきの四極。厳密に解ける) と、残りの非線形項に分け、スライスごとに交互に適用する (§8)。端面は薄い蹴りで近似する。$H_2$ の解の `xsxkx` の符号が $K1 > 0$ の枝で逆になっている (K64 の誤りの既知の例、付録 B)。
 - **非線形の Maxwell フリンジ**は、端の磁場 ($\nabla\cdot\vec b = 0$、$\nabla\times\vec b = 0$ を $y$ の 3 次まで満たすもの) から導く生成関数 $f = -\dfrac{y^2}{2\rho}\dfrac{p_x}{\sqrt{p^2 - p_x^2}}$ ($y^4$ の補正を除く) の $\exp(:f:)$ で、閉じた式 (5.35) になる。この章の $\exp(:f:)$ は、[C_poisson_lie.md](C_poisson_lie.md) の約束 (括弧 $[f, g] = \sum(\partial_qf\,\partial_pg - \partial_pf\,\partial_qg)$。長さ $s$ の転送は $f = -sH$ で、$\Delta x = -\partial f/\partial p_x$、$\Delta p_x = +\partial f/\partial x$) に統一してある。SAD のヘルプの $\exp(:H:)$ は括弧の符号が逆なので、ヘルプの $H$ はこの章の $f$ の符号を反対にしたもの ($H = -f$。C §8.2)。磁場の端の幅 $d$ を持つ Maxwell の場の中の運動を積分すると、$d \to 0$ の外挿で、$\delta = 0$ と $\delta = 0.3$ のどちらも閉じた式と一致する ([bend_03_fringe.out.txt](outputs/bend_03_fringe.out.txt) (b))。
-- **線形フリンジ (F1)** は、ヘルプの定義 $\mathrm{F1} = 6\int (g - g^2)\,ds$ ($g = B_y(s)/B_0$) から導ける。垂直の収束は $F_1/(6\rho^2)$、$y^3$ の項は $\tfrac23\cdot\dfrac{1}{F_1\rho^2}$、水平の $\delta$ 依存のずれは $F_1^2\delta/(24\rho p)$。この 3 つが同じ F1 だけで書けるのは、端が直線の立ち上がり (と $\tanh$ の一部) のとき。一般の端の形では近似 (§6.3)。
+- **線形フリンジ (F1)** は、ヘルプの定義 $\mathrm{F1} = 6\int (g - g^2)\,ds$ ($g = B_y(s)/B_0$) から導ける。垂直の収束は $F_1/(6\rho^2)$、$y^3$ の項は $\tfrac23\cdot\dfrac{1}{F_1\rho^2}$、水平の $\delta$ 依存のずれは $F_1^2\delta/(24\rho p)$。この 3 つが同じ F1 だけで書けるのは、端が直線の立ち上がり (と $\tanh$ の一部) のとき。一般の端の形では近似 (§6.3)。水平のずれは面に垂直な入射の式で、面が傾いて斜めに入射する場合は $1/\cos^3\psi$ 倍になる (§6.4 の (5.43a)。K64・ヘルプにこの因子は無い)。
 - **転送行列 (CALC・Emittance[])** は、追跡と同じ段を COD のまわりで微分して掛けたもの (§9)。設計軌道の近くでは追跡のヤコビアンと $10^{-12}$ 台で一致する。軌道が大きく外れたとき ($y = 10$ mm、$\delta = 0.05$) は、COD の更新の差が $2 \times 10^{-8}$ (F1 = 0)。この差は、CALC の `tbedgemaxwell` の COD の更新が $\Delta x$ と $\Delta z$ で因子 $p = 1 + \delta$ を落としていること (疑い。付録 B-1) で説明がつく: その更新だけを $p^2$ 型に差し替えると、$x$・$p_x$ の差は $10^{-16}$ 台、$z$ の差は $2 \times 10^{-8}$ から $1.4 \times 10^{-9}$ に下がる ([bend_07_b1_estimate.out.txt](outputs/bend_07_b1_estimate.out.txt) (b)。差し替えの試験で、gs との比較は未実施)。F1 ≠ 0 の 4×4 の差 ($4 \times 10^{-5}$) は別の原因で、未特定 (§9)。
 - **数字の例** (電子 3 GeV、$\gamma_0 = 5870.85$、扇形、$L = 1$ m、ANGLE = 0.1 rad で $\rho = 10$ m。[bend_01_h2_body.out.txt](outputs/bend_01_h2_body.out.txt) (g)): $R_{16} = \rho(1 - \cos\theta) = 0.0499583$ m、$R_{26} = \sin\theta = 0.0998334$、$R_{56} = -(L - \rho\sin\theta) + L/\gamma_0^2 = -1.6658 \times 10^{-3}$ m (追跡の中心差分と 9 桁一致)。矩形 (E1 = E2 = 0.5) の垂直の行列要素 $R_{43} = -2\tan\psi/\rho + (\tan\psi/\rho)^2 L = -0.009983$。
 - **使った条件と限界**は §13 に書く。
@@ -263,7 +263,25 @@ z_2 &= z_1 - \frac{p}{P_Z}\,x_2\sin\psi_1,\qquad p_{y2} = p_y
 \tag{5.21}
 $$
 
-(これが `tbendcore` の入口の `x1 = x/(cosp1 - pxi*sp1)` ($\texttt{sp1} = \sin\psi_1/p_z$)、`dz1 = x1*sp1`、`y1 = y + pyi*dz1`、`px1 = pxi*cosp1 + pzi*sinp1`。ヘルプの "drift to the entrance face" と同じ式 (原文で確認)。) 出口の面から出口の基準面への直進は、同じ式の逆 (面の座標系から基準面の座標系へ、$\psi \to \psi_2$ で $x_2 = x_1(\cos\psi_2 + (p_{x2}/p_{z2})\sin\psi_2)$ など) で、ヘルプの "drift from the exit face" に当たる。
+(これが `tbendcore` の入口の `x1 = x/(cosp1 - pxi*sp1)` ($\texttt{sp1} = \sin\psi_1/p_z$)、`dz1 = x1*sp1`、`y1 = y + pyi*dz1`、`px1 = pxi*cosp1 + pzi*sinp1`。ヘルプの "drift to the entrance face" と同じ式 (原文で確認)。) 出口の面から出口の基準面への直進は、次の小節で導く (ヘルプの "drift from the exit face" に当たる)。
+
+**出口の面から基準面への直進**。出口の面は基準軌道の出口 $E$ を通り、面の基底は $\hat e_{f2} = (\cos(\phi - \psi_2),\ \sin(\phi - \psi_2))$、法線 $\hat N_2 = (-\sin(\phi - \psi_2),\ \cos(\phi - \psi_2))$ (§5.3)。出口の基準面も $E$ を通り、基底は $\hat e_{\rm ref} = (\cos\phi,\ \sin\phi)$、法線 $\hat N_{\rm ref} = (-\sin\phi,\ \cos\phi)$ ($\psi_2 = 0$ に当たる面)。面の座標系 $(x_2, p_{x2}, p_{z2})$ から基準面の座標系 $(x_{\rm out}, p_{xr}, p_{zr})$ への変換を、入口の (5.20)(5.21) と同じ手順で作る。
+
+1. **基底の内積** (加法定理): $\hat e_{\rm ref}\cdot\hat e_{f2} = \cos\phi\cos(\phi - \psi_2) + \sin\phi\sin(\phi - \psi_2) = \cos\psi_2$。$\hat e_{\rm ref}\cdot\hat N_2 = -\cos\phi\sin(\phi - \psi_2) + \sin\phi\cos(\phi - \psi_2) = \sin\psi_2$。$\hat N_{\rm ref}\cdot\hat e_{f2} = -\sin\phi\cos(\phi - \psi_2) + \cos\phi\sin(\phi - \psi_2) = -\sin\psi_2$。$\hat N_{\rm ref}\cdot\hat N_2 = \sin\phi\sin(\phi - \psi_2) + \cos\phi\cos(\phi - \psi_2) = \cos\psi_2$。
+2. **運動量の成分**: $\vec P = p_{x2}\hat e_{f2} + p_{z2}\hat N_2$ の $\hat e_{\rm ref}$・$\hat N_{\rm ref}$ 成分を取ると、1 の内積から $p_{xr} = p_{x2}\cos\psi_2 + p_{z2}\sin\psi_2$、$\quad p_{zr} = -p_{x2}\sin\psi_2 + p_{z2}\cos\psi_2$。
+3. **直進の時間**: 面の上の点 $\vec r = E + x_2\hat e_{f2}$ から、$d\vec r/dt = \vec P$ で進んで基準面 $(\vec r' - E)\cdot\hat N_{\rm ref} = 0$ に当たる条件は $x_2(\hat e_{f2}\cdot\hat N_{\rm ref}) + t\,p_{zr} = 0$。1 で $\hat e_{f2}\cdot\hat N_{\rm ref} = -\sin\psi_2$ なので $-x_2\sin\psi_2 + t\,p_{zr} = 0$、すなわち $t = x_2\sin\psi_2/p_{zr}$。
+4. **基準面の座標**: $x_{\rm out} = (\vec r' - E)\cdot\hat e_{\rm ref} = x_2\cos\psi_2 + t\,p_{xr}$ ($\hat e_{f2}\cdot\hat e_{\rm ref} = \cos\psi_2$)。3 の $t$ を入れる。
+5. **$y$ と $z$**: 直進の間 $p_y$ は一定なので $\Delta y = p_yt$、経路長は $pt$ で $z$ は $pt$ だけ遅れる (§5.2 の入口と同じ)。まとめて
+
+$$
+\begin{aligned}
+&p_{xr} = p_{x2}\cos\psi_2 + p_{z2}\sin\psi_2,\qquad p_{zr} = p_{z2}\cos\psi_2 - p_{x2}\sin\psi_2,\qquad x_{\rm out} = x_2\left(\cos\psi_2 + \frac{p_{xr}}{p_{zr}}\sin\psi_2\right),\\
+&y_{\rm out} = y_2 + \frac{p_y}{p_{zr}}\,x_2\sin\psi_2,\qquad z_{\rm out} = z_2 - \frac{p}{p_{zr}}\,x_2\sin\psi_2
+\end{aligned}
+\tag{5.21a}
+$$
+
+($p_{zr} > 0$ の向きに進むとき。$\psi_2 = 0$ なら恒等。`tbendcore` の最後の `dz4 = x4*sinp2/(cosp2*(1+dpz4) + sinp2*px3)` は、$q$ の単位で $p_{zr}$ を $\cos\psi_2\,p_z + \sin\psi_2\,(-q_{x2})$ と書いた分母 (`px3` $= -q_{x2}$、§5.3) で、3 の $t = x_2\sin\psi_2/p_{zr}$ に当たる。sympy で 1 の 4 つの内積、2 の成分、4 の式を確認し、$t$ の入った点が基準面に載ること (残差 $10^{-142}$) を数値で確認した: [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (a)。) 入口の (5.20) は「基準面から面へ」の変換で $x_1$ に $1/(\cos\psi_1 - (p_x/p_z)\sin\psi_1)$ がかかるのに対し、これは「面から基準面へ」の変換で、係数は逆数の形 $\cos\psi_2 + (p_{xr}/p_{zr})\sin\psi_2$ になる。
 
 **シンプレクティック性**: (5.20)(5.21) に $\delta$ (変えない) を加えた 6 変数 $(x, p_x, y, p_y, z, \delta)$ の写像のヤコビアン $M$ について、$M^\top SM - S$ を 40 桁で評価すると最大 $6 \times 10^{-42}$ ($\psi = 0.3$ rad、$(x, p_x, y, p_y, \delta) = (3\ \mathrm{mm}, 2\ \mathrm{mrad}, 2\ \mathrm{mm}, -1\ \mathrm{mrad}, 0.02)$ の 1 点。[bend_02_arc_faces.out.txt](outputs/bend_02_arc_faces.out.txt) (a))。面は固定された平面で、その上の位置と運動量の取り替え (自由粒子の直進) なので、正準変換になる。
 
@@ -315,14 +333,32 @@ $$
 
 設計軌道 ($x = p_x = 0$、$p = 1$、$p_y = 0$) のまわりで 1 次まで展開する。入口の面の座標系では、設計軌道は $p_{x1} = \sin\psi_1$、$p_{z1} = \cos\psi_1$ で面に当たる ((5.21))。この点のまわりの 1 次の変分は、(5.20)(5.21) から $\delta x_1 = \delta x/\cos\psi_1$、$\delta p_{x1} = \cos\psi_1\,\delta p_x$、$\delta p_{z1} = -\sin\psi_1\,\delta p_x$。これを (5.22)(5.23) と出口の面から基準面への直進に代入して 1 次を取る。3 つの段に分けて行列を書く ($\rho_b = \rho_0 = \rho$、$\omega = \phi - \psi_1 - \psi_2$)。
 
-1. **入口の直進** (基準面 $(x, p_x)$ → 入口の面の座標系 $(x_1, p_{x1})$): $\delta x_1 = \delta x/\cos\psi_1$、$\delta p_{x1} = \cos\psi_1\,\delta p_x$。行列 $J_{\rm in} = \mathrm{diag}(1/\cos\psi_1,\ \cos\psi_1)$。
+1. **入口の直進** (基準面 $(x, p_x)$ → 入口の面の座標系 $(x_1, p_{x1})$): $\delta x_1 = \delta x/\cos\psi_1$、$\delta p_{x1} = \cos\psi_1\,\delta p_x$。行列 $J_{\rm in} = \mathrm{diag}(1/\cos\psi_1,\ \cos\psi_1)$。**対角になる理由**: (5.20) は $x_1 = x/(\cos\psi_1 - (p_x/p_z)\sin\psi_1)$ で、$x$ に比例する。$\partial x_1/\partial p_x = x\cdot\partial[\,\cdots]/\partial p_x$ は、設計軌道で $x = 0$ なので 0。$\partial x_1/\partial x = 1/(\cos\psi_1 - 0) = 1/\cos\psi_1$ ($p_x = 0$)。$p_{x1} = p_x\cos\psi_1 + p_z\sin\psi_1$ ((5.21)) は $x$ を含まないので $\partial p_{x1}/\partial x = 0$。$\partial p_{x1}/\partial p_x = \cos\psi_1 + (\partial p_z/\partial p_x)\sin\psi_1 = \cos\psi_1$ ($\partial p_z/\partial p_x = -p_x/p_z = 0$)。sympy で $x = 0$ の微分を確認: [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (b)。
 2. **円弧** ((5.22)(5.23) の 1 次、設計点 $x_1 = 0$、$p_{x1} = \sin\psi_1$、$p_{z1} = \cos\psi_1$。このとき $p_{x2} = -\sin\psi_2$、$p_{z2} = \cos\psi_2$): まず $\partial p_{z1}/\partial p_{x1} = -p_{x1}/p_{z1} = -\tan\psi_1$、$\partial p_{z2}/\partial p_{x2} = -p_{x2}/p_{z2} = +\tan\psi_2$。(5.22) から
    $\dfrac{\partial p_{x2}}{\partial x_1} = -\dfrac{\sin\omega}{\rho}$、$\dfrac{\partial p_{x2}}{\partial p_{x1}} = -\sin\omega\,\tan\psi_1 + \cos\omega = \dfrac{\cos(\omega + \psi_1)}{\cos\psi_1} = \dfrac{\cos(\phi - \psi_2)}{\cos\psi_1}$。
-   (5.23) から $\dfrac{\partial x_2}{\partial x_1} = \cos\omega + \rho\tan\psi_2\,\dfrac{\partial p_{x2}}{\partial x_1} = \cos\omega - \tan\psi_2\sin\omega = \dfrac{\cos(\phi - \psi_1)}{\cos\psi_2}$、$\dfrac{\partial x_2}{\partial p_{x1}} = \rho\left[\tan\psi_2\dfrac{\partial p_{x2}}{\partial p_{x1}} + \tan\psi_1\cos\omega + \sin\omega\right] = \dfrac{\rho\sin\phi}{\cos\psi_1\cos\psi_2}$ (最後の整理は sympy)。まとめて
-   $J_{\rm arc} = \begin{pmatrix}\cos(\phi - \psi_1)/\cos\psi_2 & \rho\sin\phi/(\cos\psi_1\cos\psi_2)\\ -\sin\omega/\rho & \cos(\phi - \psi_2)/\cos\psi_1\end{pmatrix}$。
-3. **出口の直進** (出口の面の座標系 → 基準面): $x_{\rm out} = x_2(\cos\psi_2 + (p_{xr}/p_{zr})\sin\psi_2)$、$p_{xr} = p_{x2}\cos\psi_2 + p_{z2}\sin\psi_2$ ($p_{xr}$ は基準面の座標系の $x$ 運動量。内積 $\hat e_{f2}\cdot\hat e_{\rm ref} = \cos\psi_2$、$\hat N_2\cdot\hat e_{\rm ref} = \sin\psi_2$ と、面から基準面への直進 (5.20) と同じ形の式から)。$p_{x2} = \sin\theta_2$ とおくと $p_{xr} = \sin(\theta_2 + \psi_2)$ で、設計点は $\theta_2 = -\psi_2$ ($p_{xr} = 0$)。$\partial x_{\rm out}/\partial x_2 = \cos\psi_2 + (p_{xr}/p_{zr})\sin\psi_2 = \cos\psi_2$、$\partial p_{xr}/\partial p_{x2} = \cos(\theta_2 + \psi_2)/\cos\theta_2 = 1/\cos\psi_2$。$J_{\rm out} = \mathrm{diag}(\cos\psi_2,\ 1/\cos\psi_2)$。
+   (5.23) を微分する ($x_2 = x_1\cos\omega + \rho(p_{z2} - p_{z1}\cos\omega + p_{x1}\sin\omega) + \text{定数}$。$p_{z2}$ は $p_{x2}$ を通して、$p_{z1}$ は $p_{x1}$ を通して $x_1$・$p_{x1}$ に依る)。
+   - $x_1$ で: $\dfrac{\partial x_2}{\partial x_1} = \cos\omega + \rho\tan\psi_2\,\dfrac{\partial p_{x2}}{\partial x_1} = \cos\omega - \tan\psi_2\sin\omega = \dfrac{\cos\omega\cos\psi_2 - \sin\omega\sin\psi_2}{\cos\psi_2} = \dfrac{\cos(\omega + \psi_2)}{\cos\psi_2} = \dfrac{\cos(\phi - \psi_1)}{\cos\psi_2}$ ($\omega + \psi_2 = \phi - \psi_1$)。
+   - $p_{x1}$ で: $\dfrac{\partial x_2}{\partial p_{x1}} = \rho\left[\tan\psi_2\dfrac{\partial p_{x2}}{\partial p_{x1}} + \tan\psi_1\cos\omega + \sin\omega\right]$ ($\partial p_{z2}/\partial p_{x1} = \tan\psi_2\,\partial p_{x2}/\partial p_{x1}$、$-\cos\omega\,\partial p_{z1}/\partial p_{x1} = +\tan\psi_1\cos\omega$、$\partial(p_{x1}\sin\omega)/\partial p_{x1} = \sin\omega$)。上の $\partial p_{x2}/\partial p_{x1} = \cos(\omega + \psi_1)/\cos\psi_1$ を入れて、**通分** ($\cos\psi_1\cos\psi_2$ をかける) すると
+     $\dfrac{\rho}{\cos\psi_1\cos\psi_2}\bigl[\sin\psi_2\cos(\omega + \psi_1) + \cos\psi_2(\sin\psi_1\cos\omega + \cos\psi_1\sin\omega)\bigr] = \dfrac{\rho}{\cos\psi_1\cos\psi_2}\bigl[\sin\psi_2\cos(\omega + \psi_1) + \cos\psi_2\sin(\omega + \psi_1)\bigr]$ ($\sin\psi_1\cos\omega + \cos\psi_1\sin\omega = \sin(\omega + \psi_1)$ を使った) $= \dfrac{\rho\,\sin(\omega + \psi_1 + \psi_2)}{\cos\psi_1\cos\psi_2} = \dfrac{\rho\sin\phi}{\cos\psi_1\cos\psi_2}$ (加法定理。$\omega + \psi_1 + \psi_2 = \phi$)。
+   - $p_{x2}$ の $p_{x1}$ 微分 (上の再掲): $\partial p_{x2}/\partial p_{x1} = -\sin\omega\tan\psi_1 + \cos\omega = (\cos\omega\cos\psi_1 - \sin\omega\sin\psi_1)/\cos\psi_1 = \cos(\omega + \psi_1)/\cos\psi_1$。
 
-積 $J_{\rm out}J_{\rm arc}J_{\rm in}$ の成分は、$M_{11} = \cos(\phi - \psi_1)/\cos\psi_1$、$M_{12} = \rho\sin\phi$、$M_{21} = -\sin\omega/(\rho\cos\psi_1\cos\psi_2)$、$M_{22} = \cos(\phi - \psi_2)/\cos\psi_2$。これは、次の標準的な端の行列と扇形の本体の積に一致する ($E_x(\psi_2)S_xE_x(\psi_1)$ の $(1,1)$ 成分は $\cos\phi + \sin\phi\tan\psi_1 = \cos(\phi - \psi_1)/\cos\psi_1$ 等、sympy で 4 成分とも差 0: [bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) (d)):
+   (sympy でここの各式の差 0: [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (b)。) まとめて
+   $J_{\rm arc} = \begin{pmatrix}\cos(\phi - \psi_1)/\cos\psi_2 & \rho\sin\phi/(\cos\psi_1\cos\psi_2)\\ -\sin\omega/\rho & \cos(\phi - \psi_2)/\cos\psi_1\end{pmatrix}$。
+3. **出口の直進** (出口の面の座標系 → 基準面。(5.21a)): $x_{\rm out} = x_2(\cos\psi_2 + (p_{xr}/p_{zr})\sin\psi_2)$、$p_{xr} = p_{x2}\cos\psi_2 + p_{z2}\sin\psi_2$。$p_{x2} = \sin\theta_2$ ($p_{z2} = \cos\theta_2$、$p = 1$、$p_y = 0$) とおくと $p_{xr} = \sin(\theta_2 + \psi_2)$、$p_{zr} = \cos(\theta_2 + \psi_2)$ で、設計点は $\theta_2 = -\psi_2$ ($p_{xr} = 0$、$p_{zr} = 1$)。**対角になる理由**: 設計点で $x_2 = 0$ なので、$x_{\rm out} = x_2\cdot(\cdots)$ の $p_{x2}$ 微分は $x_2\,\partial(\cdots)/\partial p_{x2} = 0$。$\partial x_{\rm out}/\partial x_2 = \cos\psi_2 + (p_{xr}/p_{zr})\sin\psi_2 = \cos\psi_2$ ($p_{xr} = 0$)。$p_{xr}$ は $x_2$ を含まないので $\partial p_{xr}/\partial x_2 = 0$。$\partial p_{xr}/\partial p_{x2} = \cos\psi_2 + (\partial p_{z2}/\partial p_{x2})\sin\psi_2 = \cos\psi_2 + \tan\psi_2\sin\psi_2 = 1/\cos\psi_2$ ($\partial p_{z2}/\partial p_{x2} = -p_{x2}/p_{z2} = +\tan\psi_2$)。$J_{\rm out} = \mathrm{diag}(\cos\psi_2,\ 1/\cos\psi_2)$。
+
+積 $J_{\rm out}J_{\rm arc}J_{\rm in}$ (対角行列を左右からかけるので、$(i,j)$ 成分に左の対角の $i$ 番目と右の対角の $j$ 番目がかかる) の 4 成分を陽に書く。
+   - $M_{11} = \cos\psi_2\cdot\dfrac{\cos(\phi - \psi_1)}{\cos\psi_2}\cdot\dfrac1{\cos\psi_1} = \dfrac{\cos(\phi - \psi_1)}{\cos\psi_1}$、
+   - $M_{12} = \cos\psi_2\cdot\dfrac{\rho\sin\phi}{\cos\psi_1\cos\psi_2}\cdot\cos\psi_1 = \rho\sin\phi$、
+   - $M_{21} = \dfrac1{\cos\psi_2}\cdot\left(-\dfrac{\sin\omega}{\rho}\right)\cdot\dfrac1{\cos\psi_1} = -\dfrac{\sin\omega}{\rho\cos\psi_1\cos\psi_2}$、
+   - $M_{22} = \dfrac1{\cos\psi_2}\cdot\dfrac{\cos(\phi - \psi_2)}{\cos\psi_1}\cdot\cos\psi_1 = \dfrac{\cos(\phi - \psi_2)}{\cos\psi_2}$。
+
+これを、次の標準的な端の行列と扇形の本体の積 $E_x(\psi_2)S_xE_x(\psi_1)$ と比べる ($c \equiv \cos\phi$、$s \equiv \sin\phi$、$t_i \equiv \tan\psi_i$ と略す)。まず $S_xE_x(\psi_1) = \begin{pmatrix}c + s\,t_1 & \rho s\\ (-s + c\,t_1)/\rho & c\end{pmatrix}$。左から $E_x(\psi_2)$ をかけると 1 行目は変わらず、2 行目は ($t_2/\rho$)×1 行目 + 2 行目:
+   - $(1,1)$: $c + s\,t_1 = (c\cos\psi_1 + s\sin\psi_1)/\cos\psi_1 = \cos(\phi - \psi_1)/\cos\psi_1$ ($= M_{11}$)。
+   - $(1,2)$: $\rho s$ ($= M_{12}$)。
+   - $(2,2)$: $(t_2/\rho)\,\rho s + c = c + s\,t_2 = \cos(\phi - \psi_2)/\cos\psi_2$ ($= M_{22}$)。
+   - $(2,1)$: $\dfrac{t_2}{\rho}(c + s\,t_1) + \dfrac{-s + c\,t_1}{\rho} = \dfrac1\rho\bigl[c\,(t_1 + t_2) - s\,(1 - t_1t_2)\bigr]$。ここで $t_1 + t_2 = \dfrac{\sin(\psi_1 + \psi_2)}{\cos\psi_1\cos\psi_2}$、$1 - t_1t_2 = \dfrac{\cos(\psi_1 + \psi_2)}{\cos\psi_1\cos\psi_2}$ ($\tan A + \tan B = (\sin A\cos B + \cos A\sin B)/(\cos A\cos B)$、$1 - \tan A\tan B = (\cos A\cos B - \sin A\sin B)/(\cos A\cos B)$ の通分) なので、括弧 $= \dfrac{c\sin(\psi_1 + \psi_2) - s\cos(\psi_1 + \psi_2)}{\cos\psi_1\cos\psi_2} = \dfrac{\sin(\psi_1 + \psi_2 - \phi)}{\cos\psi_1\cos\psi_2} = -\dfrac{\sin\omega}{\cos\psi_1\cos\psi_2}$ ($= \rho M_{21}$)。
+
+4 成分とも一致する (sympy で各式の差 0: [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (b)、[bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) (d)):
 
 $$
 \begin{pmatrix}x\\ p_x\end{pmatrix}_{\rm out} = E_x(\psi_2)\,S_x\,E_x(\psi_1)\begin{pmatrix}x\\ p_x\end{pmatrix},\quad
@@ -374,7 +410,7 @@ $$
 \tag{5.33}
 $$
 
-($p_z$ のかわりに、$p_y$ を入れない $p_v$ で書いた。K64 の名前)。
+($p_z$ のかわりに、$p_y$ を入れない $p_v$ で書いた。K64 の名前。**この近似の大きさ**: $p_z = \sqrt{p_v^2 - p_y^2}$ なので $1/p_z = p_v^{-1}(1 + p_y^2/(2p_v^2) + \cdots)$ で、(i) の $\Delta p_y$ は相対 $p_y^2/(2p_v^2)$ だけ小さく見積もる ($p_y = 1$ mrad で $5 \times 10^{-7}$、10 mrad で $5 \times 10^{-5}$。数値: [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (e))。ただし端の磁場の $y^4$ の項から来る補正 $f_4$ ([06_edge_fringe.md](06_edge_fringe.md) §4.3) を一緒に入れると、$f = -\dfrac{y^2}{2\rho_b}\dfrac{p_x}{p_v}\left(1 - \dfrac{p_y^2}{2p_v^2}\right) + O(p_y^4)$ となり、$p_y$ の補正は符号が逆の $-p_y^2/(2p_v^2)$ (大きさは同じ) になる。K64 とヘルプの式 (5.36) は、この $p_y$ の補正を入れていない。)
 
 **(ii) $p_x$ のスパイク**。(5.32) の $p_x$ の式で $p_y = 0$ とし、$b_y = (g - y^2g''/2)/\rho_b$ を入れると、$dp_x/ds = -g/\rho_b + y^2g''/(2\rho_b)$。積分すると
 
@@ -421,7 +457,13 @@ $a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$、$p_v = \sqrt{p^2
 
 **$a$ と $b$ の整合 (確認済み)**: 上の $f$ から $\Delta p_y = \partial f/\partial y = -\dfrac1{2\rho_b}\left(2y - \dfrac{4y^3}{12\rho_b^2}\right)\dfrac{p_x}{p_v} = -\dfrac{y}{\rho_b}\left(1 - \dfrac{y^2}{6\rho_b^2}\right)\dfrac{p_x}{p_v}$ で $a$ が出る。$\Delta x = -\partial f/\partial p_x = \dfrac1{2\rho_b}\left(y^2 - \dfrac{y^4}{12\rho_b^2}\right)\dfrac{p^2}{p_v^3} = \dfrac{y^2}{\rho_b}\left(\dfrac12 - \dfrac{y^2}{24\rho_b^2}\right)\dfrac{p^2}{p_v^3}$ で $b$ が出る。$\Delta z$ も同様 (sympy で 0: (g))。つまり 3 つの式は 1 つの $f$ から出ていて、$y^4$ の係数 $-1/(24\rho_b^3)$ ($f$ の中の $-\tfrac{1}{2\rho_b}\cdot\tfrac{1}{12\rho_b^2}$) の 1 つで $a$ と $b$ が決まる。
 
-**$y^4$ の係数の導出ができない理由**: この係数は $1/\rho_b^3$ の量で、上の (i)〜(iii) の $1/\rho_b$ の 1 次の摂動では出てこない。3 次まで進めると、スパイク $\kappa g'$ の自乗・3 乗や、$p_y$・$y$ の端の中での変化との積 ($\int g'^2ds \sim 1/d$ のように $d$ とともに発散する量と、$d$ に比例して消える量の積) が $d$ によらない項として残る。そのため、(a) 3 次の摂動 (リー展開で 3 次) を分布 ($\delta$ 関数とその微分) を含む積分として実行する必要があり、(b) $d$ とともに発散する量と消える量の積のうち、どこまでを硬い端の側に、どこを F1 の側に割り振るか、という約束 (ヘルプ・K64 がどう決めたか) が要る。この 2 つのうち、(b) の約束はヘルプに書かれておらず、手元の資料からは確定できない (未確認。$d$ の形に依存しうる、という見込みは推測)。数値でも、検証した磁場 (§13 の条件) では $y^2/\rho^2 \lesssim 10^{-9}$ で見えない。ここではヘルプ・K64 の係数をそのまま使う。
+**$y^4$ の係数の導出ができない理由** (何が足りないか)。
+1. **1 次の摂動は $y$ について厳密**: (i) の $\int b_s\,ds = \dfrac1{\rho_b}\bigl[V\bigr]$ は、(5.30) の $V$ の端での値の差で、$g$ が $0 \to 1$ に立ち上がるとき $y\,g$ の項だけが残り ($g''$、$g''''$ は端の外で 0)、$y/\rho_b$ ちょうどになる。つまり (5.33) の $\Delta p_y = -(p_x/p_v)\,y/\rho_b$ は、$1/\rho_b$ の 1 次では $y$ の高次の補正を持たない。$a$・$b$ の補正 $y^2/\rho_b^2$ は、$\Delta p_y$ では $y^3/\rho_b^3$、$\Delta x$ では $y^4/\rho_b^3$ で、**$1/\rho_b$ の 3 次**の量。
+2. **3 次の摂動に要るもの**: 3 次まで進めると、端の形 (幅 $d$) について $\int g'^2ds \sim 1/d$ のような $d$ とともに発散する積分と、端の中を進む長さ $\sim d$ の分の $y$・$p_y$ の変化 (消える量) の積が、$d$ によらない項として残る。さらに (5.31) は $y^2g''/g \sim y^2/d^2$ を展開パラメータとするべき級数なので、$d \to 0$ の極限は $y/d \to \infty$ で、この級数の収束域の外にある。硬い端の極限で $y^4/\rho_b^3$ の係数を一意に定めるには、(a) $d$ が有限の端の模型で $1/\rho_b^3$ までの摂動 (または厳密な軌道) を実行し、その $d \to 0$ の極限を取ること、(b) 発散する量と消える量の積のうち、どこまでを硬い端の側に、どこを F1 の側に割り振るかの約束 (ヘルプ・K64 が採った約束。資料に無い) が要る。(b) の約束が $d$ の形に依存するかどうかは、確認していない。
+3. **確かめられた対応 (導出ではない)**: $a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$ は、$\theta = y/\rho_b$ として $\sin\theta/\theta = 1 - \theta^2/6 + \cdots$、$(1 - \cos\theta)/\theta^2 = \tfrac12 - \theta^2/24 + \cdots$ の $\theta^2$ までの展開に等しい ([06_edge_fringe.md](06_edge_fringe.md) §8.4。$\Delta p_y = -(p_x/p_v)\sin(y/\rho_b)$、$\Delta x = \rho_b(1 - \cos(y/\rho_b))\,p^2/p_v^3$ の形。sympy)。K64 には $\theta^4$ 以上が無い。この三角関数の形が、有限の曲率半径の円弧の幾何から出るのかどうかは確認していない。
+4. **数値での確認も届かない**: 検証した端の磁場 (§13 の条件) では補正が $y^2/\rho^2 \lesssim 10^{-9}$ 倍で、ODE の精度 (相対 $10^{-4}$) に見えない。
+
+ここではヘルプ・K64 の係数をそのまま使う。
 
 **K64 のコードとの対応**: 追跡の `tbendcore` (`tbend.f:458-462`、$q$ の単位で `fa`、`f`、`ff`) と CALC の `tbedgemaxwell` (`tbfrie.f:190-229`、正準運動量) は、(5.36) を書いたもの。
 
@@ -457,6 +499,8 @@ $$
 $$
 \Delta X = \frac{I_1}{\rho_bp},\qquad I_1 = \int(s - s_0)\bigl(g - \Theta(s - s_0)\bigr)\,ds
 $$
+
+**近似の次数と範囲**: 上の 1〜3 の $1/p$ 依存 ($\Delta p_y \propto 1/p$、$\Delta X \propto 1/p$) は、$p_z \simeq p$ の近似から来る。入射が $p_x = 0$ で、端の中の $p_x(s) = -G(s)/\rho_b$ の大きさは $|G|/\rho_b \lesssim \mathrm{F1}/\rho_b$ (例: F1 = 0.1 m、$\rho_b = 10$ m で $10^{-2}$) なので、$p_z = p\sqrt{1 - p_x^2/p^2 - \cdots}$ の相対誤差は $p_x^2/(2p^2) \lesssim 5 \times 10^{-5}$、すなわち $(\mathrm{F1}/\rho_b)^2$ の次数と、$p_y^2/(2p^2)$ (§6.2 の (5.33) と同じ)。**面が傾いていて斜めに入射する**とき ($p_x$ が $p\sin\psi$ で、$p_z \simeq p$ が成り立たない) は、$\Delta X$ に因子 $1/\cos^3\psi$ が付く ((5.43a)、§6.4。数値で確認)。$\Delta p_y$ の $y$・$y^3$ の項の斜め入射の因子は導出していない。K64 の `dxfr1`・`dyfr1`・`dyfra1` は、これらの因子を持たない。
 
 端が**直線の立ち上がり (長さ $\ell$)** ($g = s/\ell + \tfrac12$、$-\ell/2 < s < \ell/2$) のとき: $\int g(1 - g)ds = \int_{-\ell/2}^{\ell/2}\left(\tfrac14 - \tfrac{s^2}{\ell^2}\right)ds = \tfrac\ell4 - \tfrac{\ell}{12} = \ell/6$、$\int g'^2ds = \ell\cdot\ell^{-2} = 1/\ell$、$I_0 = 0$ ($s_0 = 0$) で $I_1 = \int_{-\ell/2}^0s\left(\tfrac s\ell + \tfrac12\right)ds + \int_0^{\ell/2}s\left(\tfrac s\ell - \tfrac12\right)ds = -\ell^2/48 - \ell^2/48 = -\ell^2/24$ (sympy: [bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) (h))。つまり $\mathrm{F1} = \ell$ で、3 つの量が
 
@@ -501,21 +545,65 @@ $$
 
 に取り直す (ヘルプ。**原文で確認**: $L'$ の式は TeX 版・平文版とも同じ。K64 は入口と出口で別の F1 を許し、$((\phi_0\mathrm{fb1})^2 + (\phi_0\mathrm{fb2})^2)/(48L)$ と書く。`tffs.f:1282`、`tbende.f:384`)。同じ F1 では一致。
 
-**$L'$ の導出 (K0 = 0、$\mathrm{F1}^2$ の 1 次)**。設計軌道が入口の基準点 (原点) と出口の基準点 $E$ を通ることを条件にする。
+**$L'$ の導出 (K0 = 0、$\mathrm{F1}^2$ の 1 次)**。方針: 端の磁場が幅をもって立ち上がるとき、設計軌道 (入口の基準面で $x = p_x = 0$) が硬い端の円弧からどれだけずれるかを (5.41) と同じ $1/\rho_b$ の 1 次で求め、そのずれを吸収する円の半径 ($= L'/\phi_0$) を、円と面の幾何から決める。ヘルプの (5.43) は $\psi_1 = \psi_2 \approx 0$ の場合に当たり、以下では $\psi_1 \neq \psi_2$ と斜め入射にまで広げて、ヘルプの式との関係を調べる。記号: $\phi_0 = \mathrm{ANGLE}$、$s_0 \equiv -I_1/\rho_b$ ($I_1 = \int(s - s_0')(g - \Theta)\,ds$。直線の立ち上がりで $s_0 = \mathrm{F1}^2/(24\rho_b)$、(5.41))、$\hat e_{x1}$・$\hat e_{f2}$・$\hat E$ は §5.3 と同じ ($\hat E = (-\sin\tfrac{\phi_0}2,\ \cos\tfrac{\phi_0}2)$ は弦の向き)。
 
-1. (5.41) の $p = 1$ の面の座標系での $x$ のずれ $\Delta X = -s_0$、$s_0 \equiv \mathrm{F1}^2/(24\rho_b)$ は、硬い端の円弧の延長 (内側) に対して、実際の軌道が面の $x$ 方向に $-s_0$ だけずれる、という意味。出口の端も、時間を逆に追うと入口と同じ形の端なので、出口の面の座標系の $x$ でも同じ $-s_0$ のずれ。
-2. したがって、実際の内側の円 (半径 $\rho_b = L'/\phi_0$) は、入口の面の上の点 $-s_0\hat e_{x1}$ と、出口の面の上の点 $E - s_0\hat e_{f2}$ を通る。ここで基準点 $E = \rho_0(-(1 - \cos\phi_0),\ \sin\phi_0)$ は、要素の長さ $L$ の基準軌道の出口 ($\rho_0 = L/\phi_0$。§5.3)。
-3. 円が 2 つの面を横切る間の円弧の角は $\phi_0$ で一定 (面の傾きと入出射の向きが不変) なので、2 点の距離 (弦) は $2\rho_b\sin(\phi_0/2)$ に等しい。
-4. 2 点を結ぶベクトルは $E - s_0(\hat e_{f2} - \hat e_{x1})$。$E$ の向きは $\hat E = (-\sin\tfrac{\phi_0}2,\ \cos\tfrac{\phi_0}2)$ ($|E| = 2\rho_0\sin\tfrac{\phi_0}2$) なので、弦の長さの 1 次の変化は $-s_0(\hat e_{f2} - \hat e_{x1})\cdot\hat E = -s_0\left[\sin\left(\tfrac{\phi_0}2 - \psi_2\right) + \sin\left(\tfrac{\phi_0}2 - \psi_1\right)\right] = -2s_0\sin\tfrac\omega2\cos\tfrac{\psi_1 - \psi_2}2$ ($\omega = \phi_0 - \psi_1 - \psi_2$。$\hat e_{x1} = (\cos\psi_1, \sin\psi_1)$、$\hat e_{f2} = (\cos(\phi_0 - \psi_2), \sin(\phi_0 - \psi_2))$ の内積から。和積公式を使った)。
-5. $2\rho_b\sin(\phi_0/2) = 2\rho_0\sin(\phi_0/2) + \Delta C$ ($\Delta C$ = 上の弦の変化) から $L' - L = \phi_0(\rho_b - \rho_0) = \phi_0\Delta C/(2\sin(\phi_0/2))$。対称な面 ($\psi_1 = \psi_2$) では $\cos\tfrac{\psi_1 - \psi_2}2 = 1$ で、$s_0 = \mathrm{F1}^2/(24\rho_0)$、$\rho_0 = L/\phi_0$ を入れると
+**(A) 入口の端のずれ (斜め入射)**。入口の面の座標系 ($s$ が面の法線、$x$ が面に沿う向き) で、設計軌道は $p_x = p\sin\psi_1$、$p_z = p\cos\psi_1$ ($p = 1$ なら $\sin\psi_1$、$\cos\psi_1$) で入る ((5.21))。$y = p_y = 0$ とし、(5.32) を使う:
+1. $s$ を独立変数にしているので ($ds = p_z\,d\tau$)、$dp_x/ds = -b_y = -g(s)/\rho_b$ に $p_z$ は現れない。$dx/ds = F(p_x)$、$F(p_x) \equiv p_x/\sqrt{p^2 - p_x^2}$。
+2. 積分して $p_x(s) = p_{x0} - G(s)/\rho_b$ ($G = \int^sg$)。硬い端 ($G_{\rm hard} = (s - s_0')\Theta(s - s_0')$) との差を $D(s) \equiv G - G_{\rm hard}$ とおくと、$p_x = p_{x,{\rm hard}} - D/\rho_b$。$D$ は端の外で 0 (§6.3 の手順 3)。
+3. $x$ のずれ: $\Delta X = \int\bigl[F(p_{x,{\rm hard}} - D/\rho_b) - F(p_{x,{\rm hard}})\bigr]ds$。$1/\rho_b$ の 1 次を取り、$D$ が非零の端の中 (幅 $\sim\mathrm{F1}$) では $p_{x,{\rm hard}} \simeq p_{x0}$ とみなすと ($p_{x,{\rm hard}}$ の変化は $\mathrm{F1}/\rho_b$ で、さらに 1 桁小さい)、$\Delta X = -\dfrac{F'(p_{x0})}{\rho_b}\displaystyle\int D\,ds$。
+4. 部分積分 (§6.3 の手順 3 と同じ) で $\int D\,ds = -I_1$。$F'(p_x) = \dfrac1{\sqrt{p^2 - p_x^2}} + \dfrac{p_x^2}{(p^2 - p_x^2)^{3/2}} = \dfrac{p^2}{p_z^3}$。よって
 
 $$
-L' - L = -s_0\,\phi_0\,\frac{\sin(\omega/2)}{\sin(\phi_0/2)} = -\frac{(\phi_0\,\mathrm{F1})^2}{24\,L}\,\frac{\sin(\omega/2)}{\sin(\phi_0/2)}
+\Delta X_{\rm in} = \frac{I_1}{\rho_b}\,\frac{p^2}{p_{z}^3} = -\frac{s_0}{p\cos^3\psi_1}\qquad(\text{入口。}p_z = p\cos\psi_1)
+\tag{5.43a}
 $$
 
-で、(5.43) に一致する。扇形 ($\psi = 0$) では $\sin(\omega/2) = \sin(\phi_0/2)$ なので $L' = L - (\phi_0\mathrm{F1})^2/(24L)$。sympy で上の手順 (弦の内積・和積公式・$L'$ の式) を確認した: [bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) (i)。
+(面に垂直な入射 $\psi_1 = 0$ なら (5.41)。$p = 1$ で $-s_0/\cos^3\psi_1 \equiv -a_1$ と書く。)
 
-**この導出で確かめられていないこと**: (a) 非対称な面 ($\psi_1 \neq \psi_2$) では、上の 1 次の見積りは $\cos((\psi_1 - \psi_2)/2)$ の因子を余分に持ち、ヘルプ・K64 の式にはこの因子が無い (差は $(\psi_1 - \psi_2)^2/8$ 程度。例: $\psi_1 - \psi_2 = 0.04$ rad で $2\times10^{-4}$)。(b) 面が傾いているとき ($\psi \neq 0$)、軌道は端の領域を斜めに通る ($p_{x1} = \sin\psi$)。(5.41) の $\Delta X$ は面に垂直に入射した ($p_x = 0$) 場合の式で、斜めの入射では $1/\cos\psi$ 程度の因子が付く見込みだが、K64 の `dxfr1 = fb1**2/rhob/24` には無い。(c) 出口が入口と同じ $-s_0$ になること (手順 1) は、時間反転の対称性による議論で、出口を ODE で通した確認はしていない。(d) $\mathrm{F1}^2$ の 2 次以上と、$K0 \neq 0$ の場合は扱っていない。以上から、(5.43) は「扇形または $\psi_1 = \psi_2 \approx 0$ の 1 次」の範囲で導出できた、とする。K0 = 0 で F1 ≠ 0 のとき設計軌道 (0, 0, 0, 0, 0, 0) が出口で 0 のまま保たれることは [bend_02_arc_faces.out.txt](outputs/bend_02_arc_faces.out.txt) (c) で確認した ($\rho_b = L'/\mathrm{ANGLE}$ にとるので、これは $L'$ の補正の物理的な正しさの確認にはならない)。
+5. これは、運動量が端の外で硬い端と同じ ($D \to 0$) で、位置だけが**面に沿って $\Delta X$** ずれた、という結果なので、実際の軌道は硬い端の軌道を $\Delta X\,\hat e_{x1}$ だけ平行移動したもの。一様磁場の円は平行移動に対して閉じているので、本体の円 $C'$ は、硬い端の円 $C_h$ (原点を通り、向き $\hat z = (0, 1)$) を $-a_1\hat e_{x1}$ だけ平行移動したもの。$C'$ は点 $A \equiv -a_1\hat e_{x1}$ を向き $\hat z$ で通る。
+
+数値の確認 (端の形 $g = (1 + \tanh(s/d))/2$、$d = 10$ mm、$p = 1$ と 1.03、$\psi_1 = 0, 0.1, 0.3, 0.6$ rad。$\varepsilon = 10^{-6}$ で上の積分を mpmath で数値積分し、$\varepsilon I_1p^2/p_z^3$ との比を取る): **入口の比は 1.0000 (最大 $10^{-8}$ のずれ)**。1 次の $F'(p_{x0})$ の $1/\cos^3\psi$ (例えば $\psi = 0.6$ で 1.78 倍) がそのまま出る ([bend_08_lprime_general.out.txt](outputs/bend_08_lprime_general.out.txt) (b))。
+
+**(B) 出口の端のずれ (ODE で通す)**。出口の面の座標系で、端の場は入口を裏返したもの: $g_{\rm out}(s) = g(-s)$ ($s$ が増える向きに 1 から 0 へ落ちる)。出口の面に入る向きは $p_x = -p\sin\psi_2$ ($\theta_2 = -\psi_2$。§5.3)。(A) と同じ式 $dp_x/ds = -g_{\rm out}/\rho_b$ を積分する。硬い端との差 $D_{\rm out}(s) \equiv \int^s(g_{\rm out} - \Theta(-s'))\,ds'$ は、$s' \to -s'$ の置き換えと $I_0 = \int(g - \Theta)ds = 0$ から $D_{\rm out}(s) = -D(-s)$。したがって $\int D_{\rm out}\,ds = -\int D\,ds = +I_1$ で、(A) の手順 3〜4 から
+
+$$
+\Delta X_{\rm out} = -\frac{F'(p_{x})}{\rho_b}\int D_{\rm out}\,ds = -\frac{I_1}{\rho_b}\frac{p^2}{p_z^3} = +\frac{s_0}{p\cos^3\psi_2}\ \ (\equiv +a_2/p)\qquad(\text{出口。}F'\text{ は }p_x\text{ の偶関数})
+\tag{5.43b}
+$$
+
+**符号は入口と反対**: 入口では面の手前 ($s < 0$) にも磁場 ($g > 0$) がしみ出しているので、粒子は硬い端より先に曲がり始め、内側 ($-x$) に寄る ($D > 0$)。出口では、面の手前 ($s < 0$) で磁場が全強度に届かない分 ($g_{\rm out} < 1$)、硬い端より曲がり方が小さい期間があり ($D_{\rm out} < 0$)、面を出たあとの位置は外側 ($+x$) に寄る (面の外へしみ出した磁場は、積分した曲がり角を同じに戻すだけ)。つまり**出口を出る直線は、硬い端の直線を $+a_2\hat e_{f2}$ だけ平行移動したもの**で、符号は時間反転の対称性の議論ではなく、(5.32) の積分そのものから出る。数値 (同じ端の形): 出口の $-\Delta X/(\varepsilon I_1p^2/p_z^3)$ は 1.0000 ($\psi_2 = 0.6$ で $3 \times 10^{-7}$ のずれ)。([bend_08_lprime_general.out.txt](outputs/bend_08_lprime_general.out.txt) (b)。)
+
+**(C) 円の幾何**。以下 $p = 1$。$C'$ が出口の**硬い**面と交わる点を $Q$ とする。実際の出口の直線は、$Q$ から出る直線を $+a_2\hat e_{f2}$ 平行移動したものなので、$Q + a_2\hat e_{f2}$ が (面の上の) 基準軌道の出口の点 $E$ に一致すれば、出口の位置は設計どおり。出口の向きが設計どおり ($p_{xr} = 0$) であるためには、$C'$ の円弧の角 $\Theta$ が $\phi_0$ に一致することが要る。$\Theta = \phi_0$ のとき、$A$ から $Q$ への弦は、(5.12) で $P_{X0} = 0$、$P_{Z0} = 1$ とおいた $(X, Z) = \rho'(\cos\phi_0 - 1,\ \sin\phi_0) = 2\rho'\sin\tfrac{\phi_0}2\,\hat E$ (半径 $\rho'$、$\sin\phi_0 = 2\sin\tfrac{\phi_0}2\cos\tfrac{\phi_0}2$、$\cos\phi_0 - 1 = -2\sin^2\tfrac{\phi_0}2$)。設計の $E = 2\rho_0\sin\tfrac{\phi_0}2\,\hat E$ との差を $\Delta C' \equiv 2(\rho' - \rho_0)\sin\tfrac{\phi_0}2$ とおく ($L' - L = \phi_0(\rho' - \rho_0)$ なので $L' - L = \phi_0\,\Delta C'/(2\sin\tfrac{\phi_0}2)$)。すると $Q = A + 2\rho'\sin\tfrac{\phi_0}2\hat E = E - a_1\hat e_{x1} + \Delta C'\,\hat E$。
+
+**条件 (X): $Q$ が出口の面の上にある** ($\Theta = \phi_0$ で円が面に当たる条件): $(Q - E)\cdot\hat N_2 = 0$。内積は $\hat e_{x1}\cdot\hat N_2 = \cos\psi_1(-\sin(\phi_0 - \psi_2)) + \sin\psi_1\cos(\phi_0 - \psi_2) = -\sin\omega$ ($\omega = \phi_0 - \psi_1 - \psi_2$)、$\hat E\cdot\hat N_2 = \sin\tfrac{\phi_0}2\sin(\phi_0 - \psi_2) + \cos\tfrac{\phi_0}2\cos(\phi_0 - \psi_2) = \cos(\tfrac{\phi_0}2 - \psi_2)$。$a_1\sin\omega + \Delta C'\cos(\tfrac{\phi_0}2 - \psi_2) = 0$ から
+
+$$
+\Delta C' = -\,a_1\,\frac{\sin\omega}{\cos\left(\tfrac{\phi_0}2 - \psi_2\right)},\qquad
+L' - L = \frac{\phi_0\,\Delta C'}{2\sin(\phi_0/2)} = -\,\frac{\phi_0\,s_0}{2\sin(\phi_0/2)}\,\frac{1}{\cos^3\psi_1}\,\frac{\sin\omega}{\cos(\tfrac{\phi_0}2 - \psi_2)}
+\tag{5.43c}
+$$
+
+**(D) 特別な場合への帰着**。
+- **対称な面 ($\psi_1 = \psi_2 = \psi$)**: $\tfrac{\phi_0}2 - \psi = \tfrac\omega2$ なので $\sin\omega/\cos(\omega/2) = 2\sin(\omega/2)$ で、$\Delta C' = -2a\sin(\omega/2)$、$L' - L = -\phi_0\,s_0\,\dfrac{\sin(\omega/2)}{\sin(\phi_0/2)}\dfrac1{\cos^3\psi}$。さらに $Q + a_2\hat e_{f2} - E$ の $\hat e_{\rm ref}$ 成分は 0 になり (条件 (X) で位置も合う。数値は下の表)、**向きと位置が同時に満たされる**。$\psi = 0$ (扇形: $\omega = \phi_0$) では $L' - L = -s_0\phi_0 = -\dfrac{(\phi_0\mathrm{F1})^2}{24L}$ ($s_0 = \mathrm{F1}^2/(24\rho_b)$、$\rho_b = L/\phi_0$)、一般の $\omega$ では $-s_0\phi_0\sin(\omega/2)/\sin(\phi_0/2)$ で、**ヘルプの (5.43) に一致する**。つまり (5.43) は、面に垂直な入射の $\Delta X$ ((5.41) の $-s_0$) を使った $\psi_1 = \psi_2$ の場合 (扇形・対称な面) で、$1/\cos^3\psi$ を除いて正しい。矩形 ($\omega = 0$) では $L' = L$。
+- **斜め入射の因子**: ヘルプ・K64 は $1/\cos^3\psi$ を持たない。$\psi_1 = \psi_2 = 0.3$ rad で 15% (下の表の 0.495 と 0.568)、$\psi = 0.05$ rad で $3\psi^2/2 \approx 0.4\%$。
+- **非対称な面 ($\psi_1 \neq \psi_2$)**: (5.43c) とヘルプの (5.43) ($\propto 2\sin(\omega/2)$) の比は ($1/\cos^3$ を除いて) $\dfrac{\cos(\omega/2)}{\cos(\omega/2 + (\psi_1 - \psi_2)/2)}$ ($\tfrac{\phi_0}2 - \psi_2 = \tfrac\omega2 + \tfrac{\psi_1 - \psi_2}2$)。$\psi_1 - \psi_2$ の 1 次の差 (例: $\psi_1 = -0.05$、$\psi_2 = 0.25$、$\omega = -0.1$ で 1.9%)。
+- **弦の長さだけを合わせる見積り**: 向き (条件 (X)) を無視して、弦の $\hat E$ 方向の長さの 1 次の変化だけを $2(\rho' - \rho_0)\sin\tfrac{\phi_0}2$ に等しいとおくと、$\Delta C_\parallel = (a_1\hat e_{x1} - a_2\hat e_{f2})\cdot\hat E = -s_0\bigl[\sin(\tfrac{\phi_0}2 - \psi_1) + \sin(\tfrac{\phi_0}2 - \psi_2)\bigr] = -2s_0\sin\tfrac\omega2\cos\tfrac{\psi_1 - \psi_2}2$ (和積公式。$a_i \to s_0$)。ここに $\cos((\psi_1 - \psi_2)/2)$ の因子が出る。ヘルプの $2s_0\sin(\omega/2)$ ($= |\hat e_{x1} - \hat e_{f2}|\,s_0$。2 点の差のベクトルの大きさそのもの) との比は $\cos\tfrac{\psi_1 - \psi_2}2 \simeq 1 - (\psi_1 - \psi_2)^2/8$ (差 $(\psi_1 - \psi_2)^2/8$。$\psi_1 - \psi_2 = 0.04$ で $2 \times 10^{-4}$、0.2 で $5 \times 10^{-3}$。数値: [bend_08_lprime_general.out.txt](outputs/bend_08_lprime_general.out.txt) (a))。差のベクトル $\hat e_{x1} - \hat e_{f2}$ は弦の向き $\hat E$ に対して角 $(\psi_1 - \psi_2)/2$ だけ傾いていて、$\hat E$ 成分が $\cos$、直交する成分が $\sin\tfrac{\psi_1 - \psi_2}2$ (sympy で確認、(a))。ヘルプの式は**ベクトルの大きさ**を使った形に当たり、$\psi_1 = \psi_2$ でだけ弦の向きの成分と一致する。
+- **条件 (X) で残る位置のずれ**: 一般には $x_{\rm out} = \bigl[-a_1\hat e_{x1} + \Delta C'\hat E + a_2\hat e_{f2}\bigr]\cdot\hat e_{\rm ref}$ が 0 にならない。半径 $\rho'$ という 1 つの量では、出口の向きと位置の 2 つを同時には満たせないため。$\psi_1 \neq \psi_2$ (または斜め入射で $a_1 \neq a_2$) の磁石では、物理的な端の磁場の設計軌道は出口で $x_{\rm out} \neq 0$ になる。
+
+**ODE による確認** (実験室系の水平面内の運動。$p = 1$、$\phi_0 = 0.1$、$\rho_0 = 10$ m、$L = 1$ m。端の場 $b_y = g(s_1)\,g(-s_2)/\rho_b$ ($s_1$・$s_2$ は入口・出口の面の法線座標)、$g = (1 + \tanh(s/d))/2$、$F1 = 3d = 0.06, 0.03, 0.015$ m の 3 点から $F1 \to 0$ へ線形外挿。出口の向き $p_{xr} = 0$ になる $\rho_b$ を DOP853 の積分と割線法で求めて $L'$ とし、(5.43c) などと比べる。$L' - L$ と $x_{\rm out}$ は $s_I = -I_1/\rho_b = \pi^2d^2/(24\rho_b)$ を単位とする。tanh の端は $I_1 \neq -\mathrm{F1}^2/24$ ($\pi^2/9$ 倍。§6.3) なので、式の $s_0$ は $s_I$ に置き換えて比べる)。
+
+| $\psi_1$ | $\psi_2$ | $\omega$ | $(L' - L)/s_I$: ODE | (5.43c) | (5.43c) で $a_i = s_0$ | ヘルプ (5.43) | $x_{\rm out}/s_I$ (ODE、$p_{xr} = 0$) |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 0.10 | $-0.10000$ | $-0.10000$ | $-0.10000$ | $-0.10000$ | 0 |
+| 0.02 | 0.02 | 0.06 | $-0.06005$ | $-0.06005$ | $-0.06002$ | $-0.06002$ | 0 |
+| 0.3 | 0.3 | $-0.50$ | $0.56774$ | $0.56774$ | $0.49501$ | $0.49501$ | 0 |
+| 0.3 | 0 | $-0.20$ | $0.22824$ | $0.22824$ | $0.19900$ | $0.19975$ | $-0.11265$ |
+| 0.3 | $-0.1$ | $-0.10$ | $0.11585$ | $0.11585$ | $0.10101$ | $0.10000$ | $-0.10820$ |
+| $-0.05$ | 0.25 | $-0.10$ | $0.10229$ | $0.10229$ | $0.10191$ | $0.10000$ | $+0.07782$ |
+
+読み方: 6 行すべてで**ODE は (5.43c) と 5 桁一致**する (1 次の外挿の精度)。$\psi = 0$ ではヘルプの式とも一致、斜め入射 ($\psi \neq 0$) の対称な面では $1/\cos^3\psi$ の分だけヘルプの式からずれ (3 行目)、非対称な面ではさらに $\cos$ の比の分がずれる。最後の列は、条件 (X) の $\rho_b$ で残る出口の位置のずれで、(D) の最後の式 $x_{\rm out} = [\cdots]\cdot\hat e_{\rm ref}$ の予測と同じ値 (5 桁)。ヘルプの $L'$ をそのまま使った $\rho_b$ では、$x_{\rm out}/s_I$ は 3〜6 行目で $-0.0036$、$-0.114$、$-0.109$、$+0.0777$、$p_{xr}/s_I$ は $-0.0074$、$-0.0028$、$-0.0016$、$-0.0002$ ([bend_08_lprime_general.out.txt](outputs/bend_08_lprime_general.out.txt) (c))。$s_I$ の大きさは、F1 = 0.1 m、$\rho_b = 10$ m の tanh の端で $4.6 \times 10^{-5}$ m なので、残りのずれは $0.1\,s_I \approx 5 \times 10^{-6}$ m の桁。F1 の有限性 ($F1/\rho_b \sim 0.006$) による 2 次の補正は、$(L' - L)/s_I$ の相対 $7 \times 10^{-4}$ 以下 (F1 = 0.06 の生の値と外挿値の差。$\psi = 0$ では 5 桁で変わらない)。
+
+**この導出でまだ確かめられていないこと** (具体的に)。(1) **$K0 \neq 0$**: 場の角 $\phi_b = \phi_0 + K0$ が基準軌道の角 $\phi_0$ と違うと、$x = p_x = 0$ の軌道は出口で向きが $K0$ だけ曲がる (閉じない) ので、上の「出口の向き $\Theta = \phi_0$」の条件を置く根拠が無い。K64 の式 (`tffs.f:1282`) は $\phi_0$ だけを使い K0 を含まない。条件を何にするかの定義 (ヘルプにも書かれていない) が足りず、ODE でも確認していない。(2) **$\mathrm{F1}^2$ の 2 次以上**: 解析的には導出していない。ODE の外挿は、上のとおり $F1/\rho_b \sim 0.006$ で 2 次の補正が $10^{-3}$ 以下であることまで。(3) **端の場の模型**: ODE の場は、面に平行な等高線の水平面内の場 ($y = 0$)。実際の端の磁場の曲率と $y$ への依存 (Maxwell) は入れていない。(4) **K64 の設計軌道**: 上のとおり非対称・斜め入射では物理的な端の磁場で出口の位置が $0.1\,s_I$ 程度ずれるのに対し、K64 のコードは設計軌道を (x, p_x) = 0 に保つ (`dxfr1*dp/p` の $\delta$ 依存部分だけを入れ、$L'$ で閉じる) ので、K64 の設計軌道は物理的な端の磁場の設計軌道そのものではない (gs・実機の磁場との比較は未実施)。K0 = 0 で F1 ≠ 0 のとき設計軌道 (0, 0, 0, 0, 0, 0) が出口で 0 のまま保たれることは [bend_02_arc_faces.out.txt](outputs/bend_02_arc_faces.out.txt) (c) で確認した ($\rho_b = L'/\mathrm{ANGLE}$ にとるので、これは $L'$ の補正の物理的な正しさの確認にはならない。物理的な確認は上の ODE)。
 
 **F1 領域の分割 (放射のある追跡 `tbendr` と CALC の `tbendef1`)**。放射を入れる追跡と CALC は、本体の長さ $L'$ のうち入口と出口の $\mathrm{fb}/2$ ずつ (`f1r`・`f2r`) を、2 つの短い円弧に分ける (`tbendal`、`tbend.f:17-39`): 入口は先に $\mathrm{rbl}\cdot f1r$、次に $\mathrm{rbh}\cdot f1r$ の長さ ($n = -1, 0$)、出口は $\mathrm{rbh}\cdot f2r$、$\mathrm{rbl}\cdot f2r$ ($n = \mathrm{ndiv} + 1, +2$)。$\mathrm{rbh} = \tfrac12 + 1/\sqrt{12}$、$\mathrm{rbl} = 1/(6\,\mathrm{rbh})$。
 
@@ -557,15 +645,63 @@ $$
 | `px1px3` | $\texttt{ph2}(\sin\psi_2 + \sin\psi_1) + \texttt{dpx3a} + \texttt{dpx2}\cdot\texttt{sqwht2}$ | $q_{x1} + \texttt{px3}$ (和。恒等式で確認)。`sqwht2` $= (1 - \cos\omega) + \sin\omega\,\texttt{t2}$ |
 | `dpz32` | $\texttt{px1px3}(q_{x1} - \texttt{px3})/(\texttt{pz2} + \texttt{pz3})$ | $\texttt{pz3} - \texttt{pz2}$ ($\texttt{pz}^2 = \texttt{ph2}^2 - \texttt{px}^2$ の差を和で割った、桁落ちのない形) |
 | `t3` | $(\texttt{px3} + \texttt{ph2}\sin\psi_2)/(\texttt{pz3} + \texttt{ph2}\cos\psi_2)$ | $\tan\dfrac{\theta_3 + \psi_2}2$ (`t2` の出口版) |
-| `t2t3` | 長い式 (`tbend.f` の段 7) | **積ではなく和 `t2` + `t3`**。通分すると、$\texttt{t3} + q_{x1}/D_3 + \ldots$ の形で、$D_2 - D_3 = -\texttt{dpz32} + \texttt{ph2}\cdot\texttt{dcosp}$ ($D_2 = \texttt{pz2} + \texttt{ph2}\cos\psi_1$、$D_3 = \texttt{pz3} + \texttt{ph2}\cos\psi_2$) を使うと余りが消えて $\texttt{t2} + \texttt{t3}$ になる (差 0 を確認)。桁落ちを避けるための書き方 |
+| `t2t3` | 長い式 (`tbend.f` の段 7) | **積ではなく和 `t2` + `t3`**。分母の差 $D_3 - D_2 = \texttt{dpz32} - \texttt{ph2}\cdot\texttt{dcosp}$ ($D_2 = \texttt{pz2} + \texttt{ph2}\cos\psi_1$、$D_3 = \texttt{pz3} + \texttt{ph2}\cos\psi_2$) を使って通分すると余りが消える (§7.1 (1))。桁落ちを避けるための書き方 |
 | `pz2px1` | $\texttt{pz2}\cos\psi_1 + q_{x1}\sin\psi_1$ | 入口の面の座標系の運動量 $(q_{x1}, \texttt{pz2})$ を基準面の座標系に戻した $z$ 成分 $= \texttt{ph2}\cos(\theta_1 - \psi_1)$ |
 | `t4` | $(\cos\psi_2 + \texttt{t3}\sin\psi_2)\cdot\texttt{pz2px1}$ | $\texttt{ph2}\cos(\theta_1 - \psi_1)\,(\cos\psi_2 + \texttt{t3}\sin\psi_2)$ (定義から) |
-| `x3` | `tbend.f` の段 7 | 出口の面の上の位置 (5.23) ($10^{-40}$ で一致)。構造: $\rho_e(\texttt{pz3} - \texttt{pz2}\cos\omega + q_{x1}\sin\omega) = \rho_e(\texttt{dpz32} + \texttt{sqwh}\,\texttt{pz2} + \sin\omega\,q_{x1})$ ($\texttt{pz3} - \texttt{pz2} + \texttt{pz2}(1 - \cos\omega)$ に分けた)。$\rho_e = (\texttt{drho} + \rho_0)/\texttt{ph2}$ を使うと、`drho` に比例する部分が Fortran の最後の項 $-\texttt{drho}(\ldots)/\texttt{ph2}$、$\rho_0$ に比例する部分が $\rho_0/\rho_e\cdot\texttt{t3}$ を含む項にまとまる。(この最後の整理は $\cos\omega(\texttt{t2} + \texttt{t3}) + \sin\omega(1 - \texttt{t2}\,\texttt{t3}) = \sin(A + B + \omega)/(\cos A\cos B)$、$A = (\theta_1 + \psi_1)/2$、$B = (\theta_3 + \psi_2)/2$ という加法定理の形に帰着する。恒等式として 40 桁で確認したが、各項の代数的な導出 (どの項がどの恒等式でまとまるか) を紙の上で最後まで追ってはいない) |
-| `da` | $\sin(\texttt{da}) = [\ldots]/\texttt{ph2}^2$ を `asinz` したもの | $\texttt{da} = \Theta - \phi_0 = (\theta_1 - \psi_1) + (\theta_3 - \psi_2)$ ($\Theta$ は (5.12) の回転角。$\Theta = \theta_1 + \theta_3 + \omega$、$\phi_0 = \omega + \psi_1 + \psi_2$)。`asinz` の引数は $\sin(\theta_1 - \psi_1 + \theta_3 - \psi_2)$ に等しい ($10^{-43}$)。$\theta_1 - \psi_1$、$\theta_3 - \psi_2$ が小さいので、角そのものでなく $\sin$ の和の形 ($\sin a_1\cos a_3 + \cos a_1\sin a_3$) で書き、$\arcsin$ を最後に 1 回だけ取る。$\cos a_1 = \texttt{pz2px1}/\texttt{ph2}$、$\sin a_1 \propto \texttt{dpx2}$ |
+| `x3` | `tbend.f` の段 7 | 出口の面の上の位置 (5.23)。構造: $\rho_e(\texttt{pz3} - \texttt{pz2}\cos\omega + q_{x1}\sin\omega) = \rho_e(\texttt{dpz32} + \texttt{sqwh}\,\texttt{pz2} + \sin\omega\,q_{x1})$ ($\texttt{pz3} - \texttt{pz2} + \texttt{pz2}(1 - \cos\omega)$ に分けた)。Fortran の式と (5.23) の差は $(\rho_0/\texttt{ph2})\,R$ で、$R$ は加法定理で 0 になる (§7.1 (2)。数値は $10^{-40}$ で一致) |
+| `da` | $\sin(\texttt{da}) = [\ldots]/\texttt{ph2}^2$ を `asinz` したもの | $\texttt{da} = \Theta - \phi_0 = (\theta_1 - \psi_1) + (\theta_3 - \psi_2)$ ($\Theta$ は (5.12) の回転角。$\Theta = \theta_1 + \theta_3 + \omega$、$\phi_0 = \omega + \psi_1 + \psi_2$)。`asinz` の引数は $\sin(\theta_1 - \psi_1 + \theta_3 - \psi_2)$ に等しい (§7.1 (3)。$10^{-42}$)。$\theta_1 - \psi_1$、$\theta_3 - \psi_2$ が小さいので、角そのものでなく $\sin$ の和の形で書き、$\arcsin$ を最後に 1 回だけ取る |
 
-(行ごとの数学は上のとおりだが、`x3` の 1 行と `da` の長い括弧の代数的な導出は完結していない。全体が (5.12)〜(5.24) の幾何で $10^{-15}$ まで再現されること、上の恒等式が 40 桁で確認できることが根拠。)
+(各変数の導出は、次の §7.1 で 1 段ずつ追う。全体が (5.12)〜(5.24) の幾何で $10^{-15}$ まで再現されることは §5.3・[bend_02_arc_faces.out.txt](outputs/bend_02_arc_faces.out.txt) (d) で確認してある。)
 
 放射を入れる場合は、`tbendr` が長さを `ndivrad` ($\mathrm{ndivmax} = 1024$) で刻み、各刻みの `tbendcore` のあとに `tradk` (光子の放射。この章の範囲外) を入れる。
+
+### 7.1 `t2t3`・`x3`・`da` の導出 (紙の上で 1 段ずつ)
+
+`tbendcore` の段 7 の長い式を、中間変数を置いて 1 段ずつ (5.23) と $\Theta$ に結ぶ。以下、$q$ の単位で、$h \equiv \texttt{ph2}$ と書く。面の座標系の運動量の向きの角 $\theta_1$ ($q_{x1} = h\sin\theta_1$、$\texttt{pz2} = h\cos\theta_1$) と $\theta_3$ ($\texttt{px3} = h\sin\theta_3$、$\texttt{pz3} = h\cos\theta_3$) を使い、次の略記を置く。
+
+$$
+A \equiv \frac{\theta_1 + \psi_1}2,\ \ B \equiv \frac{\theta_3 + \psi_2}2,\ \ a_1 \equiv \frac{\theta_1 - \psi_1}2,\ \ a_3 \equiv \frac{\theta_3 - \psi_2}2,\ \ \Delta_1 \equiv \theta_1 - \psi_1 = 2a_1,\ \ \Delta_3 \equiv \theta_3 - \psi_2 = 2a_3
+$$
+
+使う道具は、和積公式 $\sin\theta - \sin\psi = 2\cos\tfrac{\theta + \psi}2\sin\tfrac{\theta - \psi}2$、$\cos\theta - \cos\psi = -2\sin\tfrac{\theta + \psi}2\sin\tfrac{\theta - \psi}2$ と、加法定理だけ。基本の関係を先に 4 つ。
+
+- **(F1)** $\texttt{t2} = \tan A$、$\texttt{t3} = \tan B$ (§7 の表の和積公式。$\texttt{t2} = (q_{x1} + h\sin\psi_1)/(\texttt{pz2} + h\cos\psi_1) = (\sin\theta_1 + \sin\psi_1)/(\cos\theta_1 + \cos\psi_1)$)。
+- **(F2)** $\texttt{dpx2} = q_{x1} - h\sin\psi_1 = h(\sin\theta_1 - \sin\psi_1) = 2h\cos A\sin a_1$。
+- **(F3)** `dpx3a` の角の形。§7 の表の `dpx3` の行から $\texttt{dpx3a} = (\texttt{px3} - h\sin\psi_2) + \texttt{dpx2}(\cos\omega - \sin\omega\,\texttt{t2})$。第 1 項は $h(\sin\theta_3 - \sin\psi_2) = 2h\cos B\sin a_3$。第 2 項は $2h\cos A\sin a_1\cdot\dfrac{\cos\omega\cos A - \sin\omega\sin A}{\cos A} = 2h\sin a_1\cos(\omega + A)$。よって $\texttt{dpx3a} = 2h\bigl[\cos B\sin a_3 + \sin a_1\cos(\omega + A)\bigr]$。
+- **(F4)** $\Theta = \theta_1 + \theta_3 + \omega$、$\phi_0 = \omega + \psi_1 + \psi_2$ (§5.3) から $A + B + \omega = (\Theta + \phi_0)/2$、$\Delta_1 + \Delta_3 = \Theta - \phi_0$。
+
+**(1) `t2t3` は和 `t2` + `t3`**。Fortran の式 $\texttt{t2t3} = \dfrac{h\sin\psi_2 + \texttt{px1px3}}{D_3} + \dfrac{h\sin\psi_1 + q_{x1}(\texttt{dpz32} - h\,\texttt{dcosp})/D_3}{D_2}$ ($D_2 = \texttt{pz2} + h\cos\psi_1$、$D_3 = \texttt{pz3} + h\cos\psi_2$) で、`px1px3` $= q_{x1} + \texttt{px3}$ ($\texttt{px1px3}$ の表の式を $\theta$ で書いて確認)。
+1. 第 1 項: $(h\sin\psi_2 + \texttt{px3} + q_{x1})/D_3 = \texttt{t3} + q_{x1}/D_3$ ($\texttt{t3} = (\texttt{px3} + h\sin\psi_2)/D_3$)。
+2. 第 2 項の分子の $q_{x1}$ の項を分けて、$\dfrac{h\sin\psi_1}{D_2} + \dfrac{q_{x1}(\texttt{dpz32} - h\,\texttt{dcosp})}{D_2D_3}$。
+3. 差 $D_3 - D_2 = \texttt{pz3} - \texttt{pz2} + h(\cos\psi_2 - \cos\psi_1) = \texttt{dpz32} - h\,\texttt{dcosp}$ ($\texttt{dcosp} = \cos\psi_1 - \cos\psi_2$)。これを 2 の第 2 項に入れると $\dfrac{q_{x1}(D_3 - D_2)}{D_2D_3} = q_{x1}\left(\dfrac1{D_2} - \dfrac1{D_3}\right)$。
+4. 1〜3 を足すと $\texttt{t3} + \dfrac{q_{x1}}{D_3} + \dfrac{h\sin\psi_1}{D_2} + \dfrac{q_{x1}}{D_2} - \dfrac{q_{x1}}{D_3} = \texttt{t3} + \dfrac{q_{x1} + h\sin\psi_1}{D_2} = \texttt{t3} + \texttt{t2}$。
+
+**(2) `x3` が (5.23) に一致する**。(5.23) を $q$ の単位で書く ($\rho_b p_{z} \to \rho_e\,\texttt{pz}$): $x_3 = x_2\cos\omega + \rho_eB_q + \rho_0K$、$B_q \equiv \texttt{pz3} - \texttt{pz2}\cos\omega + q_{x1}\sin\omega = \texttt{dpz32} + \texttt{sqwh}\,\texttt{pz2} + \sin\omega\,q_{x1}$、$K \equiv \cos(\omega + \psi_1) - \cos\psi_2$。
+1. $\texttt{drho} = \rho_e h - \rho_0$ ($\texttt{drho} = \rho_e\,\texttt{ph2} - \rho_0$) から $\rho_e = (\texttt{drho} + \rho_0)/h$。よって $\rho_eB_q = \texttt{drho}\,B_q/h + \rho_0B_q/h$。
+2. Fortran の `x3` の第 1 項 $x_2\bigl(\cos\omega - \tfrac{\rho_0}{\rho_e}\tfrac{\texttt{t3}\sin\omega}{h}\bigr)$ の $x_2\sin\omega$ を、`dpx3a` の定義 $\rho_e\,\texttt{dpx3a} = x_2\sin\omega - \texttt{drho}\,\texttt{sinp2wp1}$ で置き換える: $\dfrac{\rho_0\texttt{t3}}{\rho_eh}x_2\sin\omega = \dfrac{\rho_0\texttt{t3}}{h}\left(\texttt{dpx3a} + \dfrac{\texttt{drho}\,\texttt{sinp2wp1}}{\rho_e}\right)$。
+3. Fortran の最後の項 $-\texttt{drho}\bigl(-\texttt{sinp2wp1}\tfrac{\rho_0}{\rho_e}\texttt{t3} - \texttt{dpz32} - \texttt{sqwh}\,\texttt{pz2} - \sin\omega\,q_{x1}\bigr)/h = \texttt{drho}\bigl(B_q + \texttt{sinp2wp1}\tfrac{\rho_0}{\rho_e}\texttt{t3}\bigr)/h$。2 の $\texttt{drho}\,\texttt{sinp2wp1}$ の項と**打ち消し合う** ($-\tfrac{\rho_0\texttt{t3}}{h}\tfrac{\texttt{drho}\,\texttt{sinp2wp1}}{\rho_e} + \tfrac{\texttt{drho}}{h}\texttt{sinp2wp1}\tfrac{\rho_0}{\rho_e}\texttt{t3} = 0$)。
+4. 残ると Fortran の `x3` $= x_2\cos\omega + \texttt{drho}\,B_q/h + \dfrac{\rho_0}{h}\bigl[(\cos\omega\,(\texttt{t2} + \texttt{t3}) + \sin\omega\,(1 - \texttt{t2}\cdot\texttt{t3}))\,\texttt{dpx2} - \texttt{t3}\,\texttt{dpx3a}\bigr]$ (Fortran の変数 `t2t3` は (1) で和 $\texttt{t2} + \texttt{t3}$ と分かったので置き換え、$\texttt{t2}\cdot\texttt{t3}$ は積)。(5.23) との差は、1 の式から $(\rho_0/h)\,R$、
+   $R \equiv \bigl[\cos\omega\,(\tan A + \tan B) + \sin\omega\,(1 - \tan A\tan B)\bigr]\texttt{dpx2} - \tan B\,\texttt{dpx3a} - B_q - hK$。
+5. **$R = 0$**: ($\tan A + \tan B = \sin(A + B)/(\cos A\cos B)$、$1 - \tan A\tan B = \cos(A + B)/(\cos A\cos B)$ の通分で) 括弧 $= \dfrac{\cos\omega\sin(A + B) + \sin\omega\cos(A + B)}{\cos A\cos B} = \dfrac{\sin(A + B + \omega)}{\cos A\cos B}$。(F2) の $\texttt{dpx2} = 2h\cos A\sin a_1$ をかけて $2h\sin a_1\sin(A + B + \omega)/\cos B$。(F3) から $\tan B\,\texttt{dpx3a} = 2h\bigl[\sin B\sin a_3 + \sin a_1\sin B\cos(\omega + A)/\cos B\bigr]$。引くと、$\sin(A + B + \omega) - \sin B\cos(\omega + A) = \cos B\sin(\omega + A)$ ($\sin(X + B) = \sin X\cos B + \cos X\sin B$、$X = \omega + A$) から
+   $\bigl[\cdots\bigr]\texttt{dpx2} - \tan B\,\texttt{dpx3a} = 2h\bigl[\sin a_1\sin(\omega + A) - \sin B\sin a_3\bigr]$。
+   一方 $B_q + hK = h\bigl[\cos\theta_3 - \cos(\theta_1 + \omega) + \cos(\omega + \psi_1) - \cos\psi_2\bigr]$ ($B_q = h[\cos\theta_3 - \cos\theta_1\cos\omega + \sin\theta_1\sin\omega] = h[\cos\theta_3 - \cos(\theta_1 + \omega)]$)。和積公式で、$\cos(\omega + \psi_1) - \cos(\omega + \theta_1) = 2\sin(\omega + A)\sin a_1$ ($\tfrac{(\omega + \psi_1) + (\omega + \theta_1)}2 = \omega + A$、$\tfrac{(\omega + \psi_1) - (\omega + \theta_1)}2 = -a_1$)、$\cos\theta_3 - \cos\psi_2 = -2\sin B\sin a_3$。よって $B_q + hK = 2h[\sin(\omega + A)\sin a_1 - \sin B\sin a_3]$ で、$R = 0$。
+
+**(3) `da` の `asinz` の引数が $\sin(\Delta_1 + \Delta_3)$**。引数は $N/h^2$、
+$N = \texttt{dpx2}\bigl[\mathrm{Bk}_0 + \texttt{t4}\,\texttt{sqwht2}\bigr] + \texttt{dpx3a}\,\texttt{t4}$、
+$\mathrm{Bk}_0 \equiv \sin\psi_1\bigl(\texttt{t2}(\texttt{pz3}\cos\psi_2 + \texttt{px3}\sin\psi_2) - q_{x1}\cos\psi_2\bigr) - \sin\psi_2\bigl(\texttt{t3}\,\texttt{pz2px1} - \texttt{px3}\cos\psi_1\bigr) + \cos\psi_1\cos\psi_2\,\texttt{dpz32}$。
+1. **各部分を角で書く**: $\texttt{pz3}\cos\psi_2 + \texttt{px3}\sin\psi_2 = h\cos\Delta_3$、$\texttt{pz2px1} = \texttt{pz2}\cos\psi_1 + q_{x1}\sin\psi_1 = h\cos\Delta_1$ (加法定理)。$\texttt{t4} = (\cos\psi_2 + \tan B\sin\psi_2)\,h\cos\Delta_1 = h\cos\Delta_1\cos(B - \psi_2)/\cos B = h\cos\Delta_1\cos a_3/\cos B$ ($B - \psi_2 = a_3$)。$\texttt{sqwht2} = (1 - \cos\omega) + \sin\omega\tan A = (\cos A - \cos(\omega + A))/\cos A$。
+2. **$\omega$ を含む項が消える**: $\texttt{dpx2}\,\texttt{t4}\,\texttt{sqwht2} = 2h\sin a_1\,\texttt{t4}\,(\cos A - \cos(\omega + A))$ と、(F3) の $\omega$ を含む項 $2h\sin a_1\cos(\omega + A)\,\texttt{t4}$ の和は $2h\sin a_1\cos A\,\texttt{t4}$ ($\cos(\omega + A)$ が打ち消し合う)。
+3. (F3) の残りの項: $2h\cos B\sin a_3\cdot\texttt{t4} = h^2\cos\Delta_1\cdot2\sin a_3\cos a_3 = h^2\cos\Delta_1\sin\Delta_3$。
+4. 2・3 と (F2) から $N = 2h\cos A\sin a_1\bigl(\mathrm{Bk}_0 + \texttt{t4}\bigr) + h^2\cos\Delta_1\sin\Delta_3$。これが $h^2\sin(\Delta_1 + \Delta_3) = h^2(\sin\Delta_1\cos\Delta_3 + \cos\Delta_1\sin\Delta_3)$ に等しいためには、$\sin\Delta_1 = 2\sin a_1\cos a_1$ から、(I2) $\ \mathrm{Bk}_0/h + \cos\Delta_1\cos a_3/\cos B = \cos a_1\cos\Delta_3/\cos A$ が要る。
+5. **(I2) の証明**: $\mathrm{Bk}_0/h = \sin\psi_1\tan A\cos\Delta_3 - \sin\psi_1\sin\theta_1\cos\psi_2 - \sin\psi_2\tan B\cos\Delta_1 + \sin\psi_2\sin\theta_3\cos\psi_1 + \cos\psi_1\cos\psi_2(\cos\theta_3 - \cos\theta_1)$ (1 の置き換えと $q_{x1} = h\sin\theta_1$ 等)。(I2) の左辺 $-$ 右辺を 3 つのまとまりに分ける。
+   - $\cos\Delta_3\bigl(\sin\psi_1\tan A - \cos a_1/\cos A\bigr) = \cos\Delta_3\,(\sin\psi_1\sin A - \cos a_1)/\cos A$。$a_1 = A - \psi_1$ なので $\cos a_1 = \cos A\cos\psi_1 + \sin A\sin\psi_1$、よって括弧 $= -\cos A\cos\psi_1$ で、このまとまりは $-\cos\psi_1\cos\Delta_3$。
+   - $\cos\Delta_1\bigl(\cos a_3/\cos B - \sin\psi_2\tan B\bigr) = \cos\Delta_1(\cos a_3 - \sin\psi_2\sin B)/\cos B$。$a_3 = B - \psi_2$ なので $\cos a_3 = \cos B\cos\psi_2 + \sin B\sin\psi_2$、よって $= \cos\psi_2\cos\Delta_1$。
+   - 残り: $-\sin\psi_1\sin\theta_1\cos\psi_2 + \sin\psi_2\sin\theta_3\cos\psi_1 + \cos\psi_1\cos\psi_2(\cos\theta_3 - \cos\theta_1)$。
+   3 つを足し、$\cos\Delta_3 = \cos\theta_3\cos\psi_2 + \sin\theta_3\sin\psi_2$、$\cos\Delta_1 = \cos\theta_1\cos\psi_1 + \sin\theta_1\sin\psi_1$ を入れると、8 つの項が 2 つずつ打ち消し合って 0 になる ($-\cos\psi_1\cos\psi_2\cos\theta_3$ と $+\cos\psi_1\cos\psi_2\cos\theta_3$、$-\cos\psi_1\sin\psi_2\sin\theta_3$ と $+\sin\psi_2\sin\theta_3\cos\psi_1$、$+\cos\psi_2\cos\psi_1\cos\theta_1$ と $-\cos\psi_1\cos\psi_2\cos\theta_1$、$+\cos\psi_2\sin\psi_1\sin\theta_1$ と $-\sin\psi_1\sin\theta_1\cos\psi_2$)。
+6. 以上から $N/h^2 = \sin(\Delta_1 + \Delta_3)$ で、`da` $= \arcsin(\cdots) = \Delta_1 + \Delta_3 = \Theta - \phi_0$ ((F4))。
+
+各中間式 ((F1)〜(F3)、(1) の差、$R = 0$ の各行、2 の $\omega$ の消去、(I2)、$\texttt{pz2px1}$・$\texttt{t4}$・$\texttt{sqwht2}$ の角の形) を、3 組の入力 ($\psi_1 = 0.03, 0.3, -0.05$ など) で 40 桁で確認した (最大のずれ $1.4 \times 10^{-40}$): [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (c)。
+
 
 ## 8. K1 ≠ 0 (複合機能の偏向磁石)
 
@@ -582,7 +718,10 @@ $$
 - **分割数**: `tbendi.f:41` は $n = 1 + \mathrm{int}(|\phi_0/\varepsilon|)$、$\varepsilon = 10^{-3}\cdot\mathrm{EPS}$ (`epsbend = 1.d-3`、`tbend.f:12`)。放射があるときは `ndivrad` と大きい方 (上限 1000)。CALC (`tbende.f:455-460`) も $n = 1 + \mathrm{int}(|\phi_c/\varepsilon|)$ ($\phi_c = \phi_0\cdot r_{bc}$、F1 の分を除いた角)。**ヘルプの $1 + \lfloor\sqrt{|K1L'|/(12\cdot10^{-5}\mathrm{EPS})}\rfloor$ とは別の式** (§13・付録 A)。
 - **K1 の定義**: K64 の K1 は、中央面の磁場 $B_y = B_0 + (K1/h)\ln(r/\rho_0)$ ($r = \rho_0 + x$) の勾配、すなわち曲線座標の勾配 $(1 + hx)\,\partial b/\partial x$ が一様、という暗黙の定義 (誤りではなく定義。docs/29 の A59、docs/30 の B160)。
 
-  **$\mathcal{C}$ の K1 の項の導出** (確認済み。sympy: [bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) (k))。中央面 ($y = 0$) で、$b_y(x) = h_b + (K/h)\ln(1 + hx)$ ($K = K1/\mathrm{al}$ [1/m²]、$h = 1/\rho_0$)。$x$ の 1 次は $(K/h)\cdot hx = Kx$ で、$H_2$ の $K(x^2 - y^2)/2$ ((5.4) の $+(-Kx)$) に入っている。運動方程式の力は、(5.2) の $a_s$ の $x$ 微分から $p_x' \ni -(1 + hx)\,[b_y(x) - h_b]$ ($-h_b(1 + hx)$ は偏向の分で $H_2$ に入っている)。$u \equiv hx = x_r$ とおくと、K の分は $-(K/h)(1 + u)\ln(1 + u)$。級数展開すると
+  **$\mathcal{C}$ の K1 の項の導出** (確認済み。sympy: [bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) (k)、[bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (d))。中央面 ($y = 0$) の磁場 $b_y(x)$ を、上の K1 の定義から 1 段ずつ作る ($K = K1/\mathrm{al}$ [1/m²]、$h = 1/\rho_0$)。
+  1. **$b_y(x)$**: 定義 $(1 + hx)\,\partial b_y/\partial x = K$ (勾配が一様) から $\partial b_y/\partial x = K/(1 + hx)$。$x = 0$ で $b_y = h_b$ として $x$ で積分: $b_y(x) = h_b + K\int_0^x\dfrac{dx'}{1 + hx'} = h_b + \dfrac Kh\ln(1 + hx)$。小さい $x$ では $\dfrac Kh\cdot hx = Kx$。
+  2. **力**: (5.2) の $a_s$ の $x$ 微分は 01a の (1a.60a) から $\partial a_s/\partial x = -(1 + hx)\,b_y$ (一様磁場 $b_y = h_b$ なら (5.1) の $-(1 + hx)h_b$)。$p_x' = -\partial H/\partial x$ で、$H = -a_s - (1 + hx)\sqrt{\cdots}$ の $a_s$ の項からの寄与は $\partial a_s/\partial x = -(1 + hx)\,b_y(x)$、根号の項からの寄与は $hP_z$ ($P_z = \sqrt{p^2 - p_x^2 - p_y^2}$)。$b_y = h_b + \Delta b$ ($\Delta b \equiv b_y - h_b = (K/h)\ln(1 + hx)$) とおくと $p_x' = -(1 + hx)h_b + hP_z - (1 + hx)\,\Delta b$。最初の 2 項は偏向の分 ((5.4)〜$H_2$ と $H_{\rm rest}$ に入っている)、**最後の項 $-(1 + hx)\Delta b$ が K1 の力**。
+  3. **級数**: $u \equiv hx = x_r$ とおくと、K の力は $-(1 + u)\,\dfrac Kh\ln(1 + u)$。$x$ の 1 次は $-\dfrac Kh\cdot u = -Kx$ で、$H_2$ の $K(x^2 - y^2)/2$ の力 ((5.4) の $-Kx$) に入っている。級数展開すると
 
   $$
   (1 + u)\ln(1 + u) = u + \frac{u^2}2 - \frac{u^3}6 + \frac{u^4}{12} - \frac{u^5}{20} + \cdots
@@ -593,7 +732,9 @@ $$
 - **`tbendicorr` のその他の行 (運動学の残り)**: $H_{\rm rest}$ ($H$ から $H_2$ を引いたもの) に対応する、厳密な運動方程式から $H_2$ の分を引いた量を、スライスの長さ $\ell$ だけ、運動量 ($\texttt{pxi}$、$\texttt{pyi}$) を初期値に固定して積分したもの。$s = \min(\texttt{psqmax}, q_x^2 + q_y^2)$、$\texttt{dpzi} = p_z/p - 1$ ($\texttt{sqrt1}(-s)$)、$\texttt{pzi} = 1 + \texttt{dpzi}$ とする。
   - `zi`: 厳密な $z' = (1 - dv) - (1 + hx)p/P_z$ (01 章 (1.8))。$H_2$ の分 (5.10) $z' = -dv - hx - \tfrac12q^2$ を引くと、$[1 - (1 + hx)/p_{zi}] - [-hx - q^2/2] = \tfrac12q^2 + (1 + hx)(1 - 1/p_{zi}) = \tfrac12s + (1 + x/\rho_0)\,\texttt{dpzi}/\texttt{pzi}$ ($1 - 1/p_{zi} = (p_{zi} - 1)/p_{zi}$)。これに $\ell$ をかけたものが `zi = zi + (.5*s + (1 + xi/rho0)*dpzi/pzi)*al`。
   - `pxi`: 厳密な $p_x' = hP_z - h_b(1 + hx)$ ((5.2) の $a_s$ と根号の項) のうち、$H_2$ の $p_x' \ni hp - h_b - hh_bx$ との差は $h(P_z - p)$。$q$ の単位では $q_x' = h\,\texttt{dpzi}$。$\ell$ をかけて $\texttt{pxi} = \texttt{pxi} + \texttt{phi}\cdot\texttt{dpzi}$ ($\texttt{phi} = h\ell$)。
-  - `xi`: $x' = (1 + hx)\,q_x/p_{zi}$ から $H_2$ の $x' = q_x$ を引いた残り $= q_x(1/p_{zi} - 1) + hx\,q_x/p_{zi} = a + bx$、$a = -q_x\,\texttt{dpzi}/\texttt{pzi}$、$b = h\,q_x/\texttt{pzi}$。$x$ の 1 次の線形方程式で、厳密解は $x\,e^{b\ell} + a(e^{b\ell} - 1)/b$。K64 は $(x + a\ell)/(1 - b\ell)$ ($= (-\ell\,\texttt{dpzi}\,q_x + \texttt{pzi}\,x)/(\texttt{pzi} - \texttt{phi}\,q_x)$。分母分子に $\texttt{pzi}$ をかけた形) を使う。これは $e^{b\ell} \to 1/(1 - b\ell)$ の置き換え (後退オイラー型) で、厳密解との差は $\ell^2$ の項: $\dfrac{\ell^2h\,q_x^2}{2\,\texttt{pzi}^2}(\texttt{dpzi} - hx)$ (sympy)。
+  - `xi`: $x' = (1 + hx)\,q_x/p_{zi}$ から $H_2$ の $x' = q_x$ を引いた残り $= q_x(1/p_{zi} - 1) + hx\,q_x/p_{zi} = a + bx$、$a = -q_x\,\texttt{dpzi}/\texttt{pzi}$、$b = h\,q_x/\texttt{pzi}$ ($1/p_{zi} - 1 = (1 - p_{zi})/p_{zi} = -\texttt{dpzi}/\texttt{pzi}$)。$x$ の 1 次の線形方程式 ($q_x$ は固定) で、厳密解は $x\,e^{b\ell} + a(e^{b\ell} - 1)/b$。K64 は $(x + a\ell)/(1 - b\ell)$ ($= (-\ell\,\texttt{dpzi}\,q_x + \texttt{pzi}\,x)/(\texttt{pzi} - \texttt{phi}\,q_x)$。分母分子に $\texttt{pzi}$ をかけた形) を使う。これは $e^{b\ell} \to 1/(1 - b\ell)$ の置き換え (後退オイラー型)。**差の導出** ($\ell$ の 2 次まで展開): 厳密解 $= x(1 + b\ell + \tfrac12b^2\ell^2) + a\ell(1 + \tfrac12b\ell) + O(\ell^3)$ ($(e^{b\ell} - 1)/b = \ell(1 + b\ell/2 + \cdots)$)。K64 の式 $= (x + a\ell)(1 + b\ell + b^2\ell^2 + \cdots)$ ($1/(1 - b\ell)$ の級数) $= x(1 + b\ell + b^2\ell^2) + a\ell(1 + b\ell) + O(\ell^3)$。**厳密 $-$ K64** $= x\bigl(\tfrac12 - 1\bigr)b^2\ell^2 + a\ell\bigl(\tfrac12 - 1\bigr)b\ell = -\tfrac12b\ell^2(a + bx)$。$a + bx = (q_x/\texttt{pzi})(hx - \texttt{dpzi})$、$b = hq_x/\texttt{pzi}$ を入れると
+    $$\text{厳密} - \text{K64} = \frac{\ell^2h\,q_x^2}{2\,\texttt{pzi}^2}\,(\texttt{dpzi} - hx) + O(\ell^3)$$
+    (符号は**厳密 $-$ K64**。sympy で展開と代入の差 0: [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) (d)。)
   - `yi`: $y' = (1 + hx)q_y/p_{zi}$ から $H_2$ の $y' = q_y$ を引いた残り $= q_y(-\texttt{dpzi} + hx)/\texttt{pzi}$。積分して $\texttt{yi} + (-\ell\,\texttt{dpzi} + x\,\texttt{phi})\,q_y/\texttt{pzi}$。ここで $x$ は**更新後**の `xi` (中点でなく端の値)。
   - まとめると、$\mathcal{C}$ の各半ステップは、運動量を初期値に固定した 1 次精度の近似 (誤差は $\ell^2$ の項)。スライスの数 $n$ を増やすと全体が $O(1/n)$ で厳密解に近づくはずだが、Strang 型の合成 (5.50) での全体の次数は、この章では評価していない (未確認)。`zi` は更新前の `xi`、`yi` は更新後の `xi` を使うので、$z$ と $y$ の端の値の取り方が違う (どちらも $\ell^2$ の誤差)。
 - 水平・垂直の $H_2$ の解 (5.8)・(5.11) は、K1 の値によらず §4 で導いた。ただし `xsxkx` の符号は B250 (付録 B-4)。
@@ -626,7 +767,7 @@ CALC の `tbende` (`tbende.f:351-561`) は、追跡と**同じ段**の各写像�
 
 **F1 ≠ 0 の 4×4 の差 ($4.4 \times 10^{-5}$) は、B-1 とは別の原因**。上の (iii) の $4.5 \times 10^{-5}$ (`tbedgemaxwell` 1 段の、解析行列と更新の数値微分の違い) と数値が近いが、次の理由で同根とは言えない: (a) F1 = 0 では、同じ軌道 ($y = 10$ mm、$\delta = 0.05$) の 4×4 の差は扇形 $2.2 \times 10^{-8}$、矩形 $3.0 \times 10^{-10}$ と小さい。B-1 は F1 によらない (Maxwell フリンジは F1 = 0 でも入る) ので、B-1 の影響は 4×4 では $10^{-8}$ 以下。(b) F1 ≠ 0 の差の最大成分は $\partial x_{\rm out}/\partial p_y$ で、$y = 5, 10$ mm で $2.2$、$4.3 \times 10^{-5}$ ($y$ に比例)、$\delta = 0.02, 0.05, -0.05$ で $1.9$、$4.3$、$-5.8 \times 10^{-5}$ ($\delta$ にほぼ比例)、F1 = 0.05、0.1、0.2 でも E1 = E2 = 0、0.5 でも同じ値。F1 の大きさや面の角によらない。(c) $y = 0$ では $10^{-8}$〜$10^{-7}$ に落ちる。原因 (F1 ≠ 0 の経路 (`tblfre`・`tbendef1`) の中) は未特定。
 
-**シンプレクティック性**: 追跡のヤコビアン (数値微分) は $10^{-11}$ 台 (数値微分の精度)、$z$ の行も上の条件と $10^{-11}$ で一致。CALC の 6×6 は (F1 = 0 で) $5 \times 10^{-17}$ ($z$ の行を条件で組むので)。F1 つきでは $4.4 \times 10^{-5}$ ([bend_04_matrix_vs_map.out.txt](outputs/bend_04_matrix_vs_map.out.txt) (d))。
+**シンプレクティック性**: 追跡のヤコビアン (数値微分) は $10^{-11}$ 台 (数値微分の精度)、$z$ の行も上の条件と $10^{-11}$ で一致。CALC の 6×6 は (F1 = 0 で) $5.5 \times 10^{-17}$ (扇形)・$1.1 \times 10^{-16}$ (矩形)・$4.4 \times 10^{-16}$ (非対称。E1 = 0.3、E2 = 0.7) ($z$ の行を条件で組むので。3 つのうち最大は $4.4 \times 10^{-16}$)。F1 つきでは $4.4 \times 10^{-5}$ ([bend_04_matrix_vs_map.out.txt](outputs/bend_04_matrix_vs_map.out.txt) (d))。
 
 ## 10. Fortran の対応表
 
@@ -688,6 +829,8 @@ CALC の `tbende` (`tbende.f:351-561`) は、追跡と**同じ段**の各写像�
 | `bend_04_matrix_vs_map.py` | (a) CALC の 4×4・δ の列と COD の更新を追跡と比較。(c)(c2) CALC の解析行列と COD 更新の数値微分、段ごとの差。(d) シンプレクティック性。(e) 設計軌道の 2×2 と端面の行列。(f) F1 ≠ 0 の CALC と追跡の差 | [bend_04_matrix_vs_map.out.txt](outputs/bend_04_matrix_vs_map.out.txt) |
 | `bend_06_derivations.py` | 途中式を足した箇所の確認 (pysad は使わない。1〜2 分): (a) $\mathrm{hi} = (H_2 + p)/p$、(b) $z$ の更新 (5.11) と数値積分 (30 桁)、(c) 面の幾何・内積・$\Theta$、(d) 設計軌道の各段の 2×2 行列と積、(e) `tbendcore` の `t2`・`t3`・`t2t3`・`x3`・`da` の意味 (40 桁)、(f) 端の磁場、(g) 硬い端の Maxwell フリンジ (C 付録の括弧)、(h) F1 の積分と (5.42)、(i) $L'$ の導出、(j) `rbh`・`rbl`、(k) `tbendicorr`・K1 の級数、(l) 分散 | [bend_06_derivations.out.txt](outputs/bend_06_derivations.out.txt) |
 | `bend_07_b1_estimate.py` | 付録 B-1 の大きさの見積りと、`_tbedgemaxwell_cod` を $p^2$ 型に差し替える試験 (a)(b)、F1 ≠ 0 の 4×4 の差の依存性 (c) | [bend_07_b1_estimate.out.txt](outputs/bend_07_b1_estimate.out.txt) |
+| `bend_08_lprime_general.py` | $L'$ の導出の拡張 (§6.4): (a) 弦の幾何 (sympy。$\psi_1 \neq \psi_2$ の $\cos$ の因子、横ずれ、ヘルプの式との差 $(\psi_1 - \psi_2)^2/8$)、(b) 斜め入射の端の $x$ のずれ $\Delta X = I_1p^2/(\rho_bp_z^3)$ と出口の符号 (mpmath の求積)、(c) 実験室系の ODE (DOP853) で入口・出口の端の場を通し、出口の向きが設計どおりになる $\rho_b$ から $L'$ を求めて (5.43c)・ヘルプの式と比較 | [bend_08_lprime_general.out.txt](outputs/bend_08_lprime_general.out.txt) |
+| `bend_09_algebra_steps.py` | 紙の上で追う導出の各行の確認 (pysad は使わない): (a) 出口の面から基準面への直進 (5.21a)、(b) §5.4 の微分・通分・$E_xS_xE_x$ の 4 成分・$J_{\rm in}$ が対角になる理由、(c) §7.1 の `t2t3`・`x3`・`da` の中間式 (40 桁)、(d) §8 の $b_y$・`xi` の厳密解との差、(e) (5.33) の $p_z \to p_v$ の近似の大きさ | [bend_09_algebra_steps.out.txt](outputs/bend_09_algebra_steps.out.txt) |
 | `bend_05_help_checks.py` | ヘルプ原文の確認: (a) 線形フリンジの $V$ の TeX 版・平文版 (sympy)、(b) 本体の $s$、(d) 非線形フリンジの $p_{y2}$ の $1/p$、(e) 本体の $p_{x2}$ の TeX 版 | [bend_05_help_checks.out.txt](outputs/bend_05_help_checks.out.txt) |
 
 主な出力 (抜粋)。K64 の `tbendcore` と実験室系の幾何の差 ($bend\_02$ (b)、最大):
@@ -714,11 +857,11 @@ Maxwell フリンジの $\Delta x$ ($bend\_03$ (b)。$d \to 0$ の外挿):
 **この章の範囲外 (別の章)**: 取り付け誤差 (`tbshift`・`tbrot`・DROTATE の中点まわりの回転)、放射 (`tradk`・`ndivrad` の意味)、K1 ≠ 0 の複合機能の写像全体の厳密な基準との比較、ANGLE = 0 のステアリング (`tsteer`・`tsteee`)、端部の一般論 (CAVI・SOL・MULT の端)。
 
 **未確認・限界**:
-- **Maxwell フリンジの $y^4$ の係数** ($a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$): $f$ の $y^4$ の係数 $-1/(24\rho_b^3)$ と $a$・$b$ が 1 つの $f$ から出る (整合) ことは §6.2 で確認した。係数そのものは $1/\rho_b^3$ の量で、$1/\rho_b$ の 1 次の導出には出ない。導出に足りないもの: (a) 3 次の摂動を $\delta$ 関数とその微分を含む積分として実行すること、(b) 端の幅 $d$ とともに発散する量と消える量の積のうち、硬い端と F1 のどちらに割り振るかの約束 (ヘルプ・K64 が採った約束が資料に無い)。ヘルプ・K64 の係数を使っただけで、独立な導出も数値の検証もしていない (検証した磁場では $y^2/\rho^2$ が $10^{-9}$ 以下で見えない)。また (5.34) は $p_y$ を入れない $p_v$ を使う近似で、$p_y \neq 0$ の高次の効果は確認していない。
-- **F1 の式**: 1 つの F1 から $y$・$y^3$・$x$ の 3 つの効果を作るのは、直線の立ち上がりで厳密、$\tanh$ では $y^3$ の項が同じ形で $x$ の項が $\pi^2/9$ 倍、誤差関数では $y^3$ の項が -4.5% (§6.3。積分は導出して確認)。K64 の F1 は端の形を 1 つの長さで表した近似。斜めの入射での $\Delta X$ の因子は入れていない (§6.4)。
-- **$L'$ の補正 (5.43)**: 扇形または $\psi_1 = \psi_2 \approx 0$ の $\mathrm{F1}^2$ の 1 次を、弦の長さの条件から導出した (§6.4)。非対称な面での $\cos((\psi_1 - \psi_2)/2)$ の余分な因子、斜め入射の $\Delta X$ の因子、出口の端の $\Delta X$ の ODE での確認、$K0 \neq 0$ は未確認・未導出。
+- **Maxwell フリンジの $y^4$ の係数** ($a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$): $f$ の $y^4$ の係数 $-1/(24\rho_b^3)$ と $a$・$b$ が 1 つの $f$ から出る (整合) ことは §6.2 で確認した。係数そのものは $1/\rho_b^3$ の量で、$1/\rho_b$ の 1 次の導出には出ない (1 次は $y$ について厳密)。導出に足りないもの (§6.2 の 1〜4): (a) 端の幅 $d$ が有限の模型での $1/\rho_b^3$ までの摂動 (または厳密な軌道) とその $d \to 0$ の極限 ($y/d \to \infty$ は (5.31) の級数の収束域の外)、(b) $d$ とともに発散する量と消える量の積のうち、硬い端と F1 のどちらに割り振るかの約束 (ヘルプ・K64 が採った約束が資料に無い)。$a$・$b$ が $\sin\theta/\theta$、$(1 - \cos\theta)/\theta^2$ ($\theta = y/\rho_b$) の $\theta^2$ までの展開に等しいことは [06_edge_fringe.md](06_edge_fringe.md) §8.4 にある (導出ではない)。ヘルプ・K64 の係数を使っただけで、独立な導出も数値の検証もしていない (検証した磁場では $y^2/\rho^2$ が $10^{-9}$ 以下で見えない)。(5.34) は $p_y$ を入れない $p_v$ を使う近似で、$p_y$ の補正は相対 $-p_y^2/(2p_v^2)$ ([06_edge_fringe.md](06_edge_fringe.md) §4.3)。
+- **F1 の式**: 1 つの F1 から $y$・$y^3$・$x$ の 3 つの効果を作るのは、直線の立ち上がりで厳密、$\tanh$ では $y^3$ の項が同じ形で $x$ の項が $\pi^2/9$ 倍、誤差関数では $y^3$ の項が -4.5% (§6.3。積分は導出して確認)。K64 の F1 は端の形を 1 つの長さで表した近似。斜めの入射での $\Delta X$ の因子 $1/\cos^3\psi$ は導出して ODE で確認したが ((5.43a)、§6.4)、K64 の `dxfr1` にこの因子は無い (gs との比較は未実施)。$\Delta p_y$ の $y$・$y^3$ の項の斜め入射の因子は未導出。
+- **$L'$ の補正 (5.43)**: $\psi_1 = \psi_2$ (扇形・対称な面) の $\mathrm{F1}^2$ の 1 次を、端の $\Delta X$ (入口・出口を ODE で確認) と円の幾何から導出し、(5.43) に一致することを示した (§6.4)。一般の面では (5.43c) を導き、実験室系の ODE と 5 桁で一致した。(5.43) との違いは、斜め入射の因子 $1/\cos^3\psi$ ($\psi = 0.3$ rad で 15%) と、非対称な面の $\cos(\omega/2)/\cos(\omega/2 + (\psi_1 - \psi_2)/2)$ の比。非対称・斜め入射では、半径 1 つで出口の向きと位置を同時に満たせず、物理的な端の磁場の設計軌道は出口で $0.1\,s_I$ 程度 (F1 = 0.1 m、$\rho = 10$ m で $5 \times 10^{-6}$ m) ずれる。未確認: $K0 \neq 0$ (出口の向きの条件を置く根拠が無く、定義がヘルプに無い)、$\mathrm{F1}^2$ の解析的な 2 次 (ODE は $\mathrm{F1}/\rho_b = 0.006$ で $10^{-3}$ 以下)、実際の端の磁場の曲率・$y$ 依存、gs との比較。
 - **F1 の領域の 2 分割** (`rbh`・`rbl`): 2 点ガウス・ルジャンドルの節であり、直線の立ち上がりの $\int g^k$ ($k \le 3$) を 2 段の階段で再現することを示した (§6.4)。放射 (`tradk`) が偏向角から磁場を読む、という前提と、設計者の意図は確認していない。
-- **`tbendcore` の本体の各行**: `t2`・`t3`・`t2t3`・`px1px3`・`dpz32`・`t4`・`dpx3`・`da` の意味は §7 の表で数式にした (恒等式は 40 桁で確認)。`x3` と `da` の長い括弧の、紙の上の完全な代数的導出は残っている。
+- **`tbendcore` の本体の各行**: `t2`・`t3`・`t2t3`・`px1px3`・`dpz32`・`t4`・`dpx3`・`x3`・`da` の意味と導出は §7 の表と §7.1 にある (恒等式は 40 桁で確認)。`x3` と `da` の長い括弧は §7.1 で紙の上で最後まで導出した (加法定理と和積公式だけ。40 桁の数値確認つき)。
 - **K1 ≠ 0**: `tbendicorr` の各行 (運動学の残り) と K1 の非線形な蹴りの級数 (A59) は §8 で導出した。Strang 型の合成 (5.50) 全体の精度、端面の薄い蹴りと厳密な端の差 (B117)、写像全体の厳密な基準との比較は、この章では行っていない。分割数の式 (§8) はコードを読んだもので、gs での実測はしていない。
 - **CALC と追跡の違い** (§9): F1 ≠ 0 のとき、写像のヤコビアンが $10^{-7}$ の桁で、大きいずれでは $4 \times 10^{-5}$ ($\partial x_{\rm out}/\partial p_y$) で違う。原因は特定していない (B-1 とは別。F1 の大きさ・面の角によらない)。物理的にどちらが正しいかも確認していない。
 - **ヘルプと Fortran の Maxwell フリンジの式**: ヘルプの $x_2$ の式と `tbendcore` の `ff` は代数的に等しい (§6.2)。$p_{y2}$ は、ヘルプが $1/p_1$ を余分に持つ (付録 A。誤植か規格化の省略かは確定できない)。`f`・`fa`・`ff` の対称な書き方にした意図はコードから確認できない。
@@ -753,6 +896,15 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `dcx`・`sxkx`・`dcxkx`・`xsxkx`・`aksx` | $\cos\varphi_x - 1$、$\sin\varphi_x/\omega_x$、$\texttt{dcx}/\texttt{akxsq}$、$(\ell - \texttt{sxkx})/\texttt{akxsq}$、$-\omega_x\sin\varphi_x$ ($x$ の $q$ の $x$ 係数) | `tbend.f:63-92` | `m.dcx` など |
 | `dcy`・`syky`・`aksy` | 垂直の同様の量 | `tbend.f:93-114` | `m.dcy` など |
 | `hi` | $\tfrac12(q_x^2 + q_y^2 - \texttt{akxsq}\,x^2 - \texttt{akysq}\,y^2) - \texttt{drhop}\,x$ | `tbend.f:149` | `hi` |
+| `tanp1`・`tanp2` | $\tan\psi_1$、$\tan\psi_2$ (`sinp1/cosp1`)。数学の標準の記号ではなく、K64 の `tbendi` の局所変数。K1 ≠ 0 の端面の薄い蹴り $\Delta q_x = \tan\psi\cdot x/\rho_e$ に使う。形の理由: (5.25) の端の行列 $E_x(\psi) = \begin{pmatrix}1 & 0\\ \tan\psi/\rho & 1\end{pmatrix}$ の $p_x$ の行 ($\Delta p_x = \tan\psi\,x/\rho_b$) を $q = p_x/p$ に直したもの ($\rho_e = \rho_bp$) | `tbendi.f:98-108` | `tanp1`・`tanp2` |
+| `fpx` | $\texttt{af}\cdot q_x$ ($\texttt{af}$ は DISFRIN = 0 のとき 1、そうでなければ 0。`fringe`)。端の Maxwell フリンジの垂直の蹴りの $p_x/p_v \simeq q_x$ ((5.33)。$q_x \ll 1$ の近似)。`pyi = py - (tanp1 + fpx)*f` ($f = y/\rho_e$) は、幾何の端面の収束 $-\tan\psi\,y/\rho_e$ ((5.25) 直後の $E_y$) と、Maxwell の $-q_xy/\rho_e$ の和。`ff = af*y*f/2` $= y^2/(2\rho_e)$ は (5.35) の $\Delta x$ ($p^2/p_v^3 \to 1/p$)、`z -= ff*fpx` は (5.35) の $\Delta z$ ($-y^2q_x/(2\rho_ep)$ 型) | `tbendi.f:98-108` | `fpx`・`ff` |
+| `xr` | $x/\rho_0$ ($= hx = u$。§8 の $(1 + u)\ln(1 + u)$ の級数の変数)。K1 の非線形な蹴り `ak1*xi*xr*(0.5 - xr*(2 - xr)/12)/p` に使う | `tbend.f:118-134` (`tbendicorr`) | `xr` |
+| `ak1` | `tbendicorr` の引数。隣り合う 2 つの半スライスをまとめた積分 K1 ($(\texttt{akxn}(n) + \texttt{akx0})/2$)。§8 の蹴りの係数 $K\ell$ に当たる | `tbend.f:118`、`tbendi.f:115-121` | `ak1` |
+| `akxn`・`akx0` | `akxn(n)` $= \texttt{ak}\cdot\texttt{alx}(n)/\texttt{al}$ は $n$ 番目のスライスの積分 K1 ($K\ell_n$)。`akx0` は 1 つ前のスライスの値 (最初は 0、最後の半分は `akx0*.5`)。(5.50) の合成で、隣り合う $\mathcal{C}(\ell/2)$ を 1 つにまとめるために平均する | `tbendi.f:115-121`、`:147` | `akxn`・`akx0` |
+| `psqmax` | $q_x^2 + q_y^2$ の上限。追跡では 0.9999 (`min(0.9999, pxi**2 + pyi**2)`)。$\sqrt{1 - s}$ ($\texttt{dpzi} = p_z/p - 1$) が負や 0 にならないための切り捨て。CALC の `tbendecorr` の引数 | `tbend.f:118-134`、`perfkern_bend.py:65` | `psqmax` |
+| `phi` | $h\ell = \ell/\rho_0$ (スライスの偏向角。`phixn(n) = phi0*alx(n)/al` を隣と平均したもの)。§8 の `xi` の更新の分母 $\texttt{pzi} - \texttt{phi}\,q_x$ と、`pxi += phi*dpzi` に使う ($q_x' = h\,\texttt{dpzi}$ を $\ell$ 倍した量) | `tbend.f:118-134` | `phi` |
+| `s` | `tbendicorr` の局所変数 $= \min(\texttt{psqmax}, q_x^2 + q_y^2)$。`dpzi = sqrt1(-s)` の引数 (§8 の「運動学の残り」)。§8 の本文の $a$・$b$ は `xi` の方程式 $x' = a + bx$ の係数を指す説明用の記号で、Fortran の変数ではない | `tbend.f:118-134` | `s` |
+| `a`・`b` | `tbedgemaxwell` の局所変数: $a = 1 - y^2/(6\rho_b^2)$、$b = \tfrac12 - y^2/(24\rho_b^2)$ ((5.36)。`af = a*y/rhob/pvi`、`bf = b*y**2/rhob/pvi**3` として COD の更新に使う)。数学の標準の記号ではなく、$y^4$ の補正の係数 (§6.2。06 章 §8.4 の $\sin\theta/\theta$ との対応) | `tbfrie.f:190-229` | `a`・`b` (`lattice._tbedgemaxwell_cod`) |
 | `epsbend` | $10^{-3}$ (K1 ≠ 0 の分割の角) | `tbend.f:12` | 変数名なし (`track6._tbendi` の `eps = 1e-3 * eps0`、`track6.py:1287`) |
 | `ndiv` | スライスの数 | `tbendi.f:41`、`tbend.f:640`、`tbende.f:460` | `ndiv` |
 
@@ -771,7 +923,7 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | ヘルプ BEND の K1 ≠ 0 の分割数 | **原文で確認、確定した食い違い (ヘルプと実装が違う)**: 原文は 「$1 + \mathrm{floor}(\sqrt{|K1\,L'|/(12\cdot10^{-5}\,\mathrm{EPS})})$、EPS = 0 のときは EPS = 1」。コード `tbendi.f:41` は `ndiv = 1 + int(abs(phi0/eps))`、`eps = epsbend*eps0` (`epsbend = 1e-3`、EPS = 0 のとき `eps = epsbend`) で、式が違う (角で刻む)。追跡 (`tbendi.f:41`)・CALC (`tbende.f:460`) とも $1 + \mathrm{int}(|\phi/\varepsilon|)$、$\varepsilon = 10^{-3}\mathrm{EPS}$ (ソースを読んで確認)。放射があるときは `ndivrad` との大きい方 (gs での実測はしていない) |
 | ヘルプ BEND、K1 ≠ 0 の端面 | **原文で確認** (「the effects from E1 and E2 are approximated by thin quadrupoles」)。「E1・E2 の効果は薄い四極で近似する」。K64 のコードは、端面の薄い蹴りは偏向の蹴り (`tanp1*xi/rhoe`) と、垂直の Maxwell 型の蹴り (`(tanp1 + fpx)*f`) で、四極そのものではない (`tbendi.f:98-108`)。CALC は厳密な `tbedge` (B117) |
 | ヘルプ BEND > 出口の面からの直進の $\psi_2$ | **原文で確認、食い違い (省略)**: $\psi_2 \equiv \mathrm{ANGLE}\times\mathrm{E2}$ と定義していて $\mathrm{AE2}$ が無い。入口の $\psi_1 \equiv \mathrm{ANGLE}\times\mathrm{E1} + \mathrm{AE1}$ と、AE2 の説明 (有効な面の角は $\mathrm{E2}\times\mathrm{ANGLE} + \mathrm{AE2}$)、同じ節の $\Delta z_{fr}$ の式 ($\sin(\mathrm{ANGLE\,E2} + \mathrm{AE2})$) から、$\psi_2 = \mathrm{ANGLE}\times\mathrm{E2} + \mathrm{AE2}$ の書き落とし。 |
-| ヘルプに無いもの | (1) 円弧の厳密解の導出 (§5)。(2) $\omega = \mathrm{ANGLE} - \psi_1 - \psi_2$ の意味と、面の座標系 (§5.3)。(3) Maxwell フリンジの導出 (§6.2)。(4) F1 の 3 つの係数の導出 (§6.3)。(5) $L'$ の導出 (この章でも未)。(6) K1 ≠ 0 の本体の $H_2$ と、`tbendicorr`・`tbendibody` の式 (§4・§8)。(7) 行列と追跡の関係 (§9) |
+| ヘルプに無いもの | (1) 円弧の厳密解の導出 (§5)。(2) $\omega = \mathrm{ANGLE} - \psi_1 - \psi_2$ の意味と、面の座標系 (§5.3)。(3) Maxwell フリンジの導出 (§6.2)。(4) F1 の 3 つの係数の導出 (§6.3)。(5) $L'$ の導出 (§6.4。一般の面・斜め入射まで)。(6) K1 ≠ 0 の本体の $H_2$ と、`tbendicorr`・`tbendibody` の式 (§4・§8)。(7) 行列と追跡の関係 (§9) |
 
 ## 付録 B. K64 の誤りの疑い (別枠。確定には SAD (gs) での確認が要る)
 
