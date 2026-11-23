@@ -1,0 +1,36 @@
+== (a) Riccati 式の代数的な証明 (数値で恒等式を確認) ==
+  200 個のランダムなシンプレクティック行列 (4×4)、2×2 ブロック P N Q K、X = Q - bar(N)、tau = tr(P - K)、bar(A) = J A^T J:
+   max|X P - K X - tau Q|            = 5.2e-16   (恒等式 (i))
+   max|X N X - det(X) Q|             = 1.1e-16   (恒等式 (ii))
+   max|det N - det Q|                = 1.9e-16
+   max|det P + det Q - 1|            = 4.4e-16
+   max|Riccati の残差 E| (kappa は (12.6)) = 9.9e-15
+   max|c² - (1 + |tau|/sqrt(trab2))/2|  = 1.8e-15   (c² = 1/(1 + kappa² det X))
+   max|trA - trB - sgn(tau) sqrt(trab2)| = 5.0e-16
+   max|det(X) kappa² - tau kappa - 1|   = 4.4e-16   (kappa の 2 次方程式)
+
+== (b) qmdiag の特別な場合 (trab2 ≈ 0) ==
+  縮退した結合行列: trab2 = 4.0e-33 (= 4 det X + tau²)、tau = 5.6e-17
+  qmdiag の枝: trab2 = 0, det N ≠ 0, tr(QK) ≠ 0、c = 1.000000、(r1..r4) = (0.05243, -0.02409, -0.05243, 0.02409)
+  R M R^-1 の非対角ブロックの最大 = 4.5e-17、|R^T J4 R - J4| = 7.2e-20、c² + det r - 1 = 0.0e+00
+  通常の式 (12.6): c² = (1 + |tau|/sqrt(trab2))/2 は trab2 → 0 で 発散 (|tau|/sqrt(trab2) = 8.78e-01)
+  (理由: kappa の 2 次方程式 det(X) kappa² - tau kappa - 1 = 0 の判別式 trab2 = tau² + 4 det X が 0 で重根 kappa = tau/(2 det X) = -2/tau、
+   c² = 1/(2 + tau kappa) = 1/0。実の r が c = 1 で取れる別の式に切り替える。)
+  結合なし・等しいチューン (N = Q = 0): 枝 trab2 = 0, det N = 0, tr(QK)/tr(QJ)/tr(QL) ≠ 0、c = 1.000、r = (-0.0e+00, 0.0e+00, -0.0e+00, 0.0e+00)、非対角ブロック = 0.0e+00
+  和共鳴付近 (mu_x = 0.9、mu_y = -0.9)、結合の強さ k = 0.0: trab2 = +0.000e+00、枝 = trab2 = 0, det N = 0, tr(QK)/tr(QJ)/tr(QL) ≠ 0、固有値の絶対値の最大 = 1.0000
+  和共鳴付近 (mu_x = 0.9、mu_y = -0.9)、結合の強さ k = 0.1: trab2 = -2.454e-02、枝 = 和共鳴 (trab2 < 0)、固有値の絶対値の最大 = 1.0512
+  和共鳴付近 (mu_x = 0.9、mu_y = -0.9)、結合の強さ k = 0.3: trab2 = -2.209e-01、枝 = 和共鳴 (trab2 < 0)、固有値の絶対値の最大 = 1.1600
+
+== (c) 拡張 Twiss: etwiss2ri (K64) と V = B R6 H (ヘルプ)、tfetwiss (逆) ==
+  etwiss2ri (K64) - V = B R6 H (ヘルプ (12.10) の式から作ったもの) の最大 = 4.4e-16  (5 組のランダムなパラメータ、P なし)
+  この V はシンプレクティック: |V^T J6 V - J6| = 4.4e-16 (J6 = diag(J, J, J))
+  tfetwiss(etwiss2ri(…)) の往復: β_x、α_x、β_y、α_y の差 = 8.9e-16、r の差 = 5.6e-17
+  分散 (EX, EPX, EY, EPY) と R [H_x; H_y] の第 2 列の差 = 1.4e-17、(ZX, ZPX, ZY, ZPY) と第 1 列の差 = 1.4e-17
+
+== (d) Twiss の伝搬 (12.9)、位相の進み、薄いレンズの色収差 (sympy) ==
+  det A1 = 1
+  beta2 (A2 の (1,2) 成分 / sin mu) - (12.9) = 0
+  alpha2 ((A2_11 - A2_22)/(2 sin mu)) - (12.9) = 0
+  tan(Δψ) = (B2 T B1^-1)_12 / (B2 T B1^-1)_11 = t12/(-alpha1*t12 + beta1*t11)
+   (12.9 の下の式: t12/(beta1 t11 - alpha1 t12))
+  tr(M0 [[1,0],[-dk,1]]) - tr M0 = -dk*m12  → cos mu の変化 = -dk m12/2、m12 = beta sin mu より  d mu = dk beta/2
