@@ -6,7 +6,7 @@
 
 **読む順**: §1 (結論) → §2〜§4 (記法の意味) → §5 (例。ここが中心) → §6〜§7 (合成の順序、線形写像) → §8 (SAD での対応)。
 
-数式の番号 $(C.n)$ は、この付録の中と他の章からの参照に使う。確認の sympy スクリプトは `physics_guide/scripts/ham_07_lie_operator.py`、出力は [ham_07_lie_operator.out.txt](outputs/ham_07_lie_operator.out.txt)。
+数式の番号 $(C.n)$ は、この付録の中と他の章からの参照に使う。確認の sympy スクリプトは `physics_guide/scripts/ham_07_lie_operator.py` (出力は [ham_07_lie_operator.out.txt](outputs/ham_07_lie_operator.out.txt)) と、途中式の確認を足した `physics_guide/scripts/ham_08_bch_jacobi.py` (出力は [ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt))。
 
 ## 1. 結論
 
@@ -14,7 +14,7 @@
 - **リー演算子** $:f:$ は「$f$ とのポアソン括弧を取る」演算子 ($:f:\,g = [f, g]$)。$\exp(:f:) = \sum_n :f:^n/n!$ は、$f$ を生成関数とする相空間の変換 (リー変換) を表す。
 - ハミルトニアン $H$ (位置 $s$ によらない) で、長さ $s$ だけ進む転送は $\exp(-s:H:)$、つまり $f = -sH$ の $\exp(:f:)$。ドリフトは $x \to x + s p$ に、集束四極は $\cos$・$\sin$ の行列になり、6 極のキックは、級数が 2 項で止まって $p \to p - k_2x^2$ になる (§5)。
 - 2 次の $f$ の $\exp(:f:)$ は線形写像 (行列 $\exp(F)$)、3 次以上の $f$ は非線形な写像。いずれもシンプレクティック (§7)。
-- この付録の規約: $[f, g] = \sum_i\left(\dfrac{\partial f}{\partial q_i}\dfrac{\partial g}{\partial p_i} - \dfrac{\partial f}{\partial p_i}\dfrac{\partial g}{\partial q_i}\right)$。**文献によって括弧の符号が逆**のものがある。SAD のヘルプの $\exp(:H:)$ ($H$ は長さをかけたハミルトニアン) は、この付録と括弧の符号が逆の流儀で、ハミルトニアン (長さをかけたもの) の時間 1 の流れ (§8.2。ヘルプの式どうしの整合で確定)。
+- この付録の規約: $[f, g] = \sum_i\left(\dfrac{\partial f}{\partial q_i}\dfrac{\partial g}{\partial p_i} - \dfrac{\partial f}{\partial p_i}\dfrac{\partial g}{\partial q_i}\right)$。**文献によって括弧の符号が逆**のものがある。SAD のヘルプの $\exp(:H:)$ ($H$ は長さをかけたハミルトニアン) は、この付録と括弧の符号が逆の流儀で、ハミルトニアン (長さをかけたもの) の時間 1 の流れ (§8.2。ヘルプの式どうしの整合から読んだもので、SAD (gs) の実行での確認はしていない)。
 
 ## 2. ポアソン括弧と正準方程式
 
@@ -74,7 +74,7 @@ $$
 
 と定義する ($\exp(:f:)\,g = g + [f, g] + \frac12[f, [f, g]] + \cdots$)。
 
-**転送との関係**。ハミルトニアン $H$ が $s$ によらないとする。(C.3) を繰り返し使う ($g$ の $s$ 微分が $-:H:g$、その $s$ 微分が $(-:H:)^2g$、...)。出発点 $z_0$ から長さ $s$ 進んだ点での $g$ の値を、$s$ のテイラー級数で書くと
+**転送との関係**。ハミルトニアン $H$ が $s$ によらないとする。(C.3) を繰り返し使う。(C.3) は任意の関数 $h$ について $dh/ds = [h, H] = -:H:h$ ($H$ が $s$ を含まないので、右辺の $:H:$ は $s$ によらない演算子)。$g$ の 1 階微分は $dg/ds = -:H:g$。これも相空間の関数なので、$h = -:H:g$ に (C.3) を使うと $d^2g/ds^2 = -:H:(-:H:g) = (-:H:)^2g$。一般に $d^{n-1}g/ds^{n-1} = (-:H:)^{n-1}g$ なら、$h = (-:H:)^{n-1}g$ に使って $d^ng/ds^n = (-:H:)^ng$ (帰納法。例: $H = p^2/2$、$g = x^2$ で $n = 0\ldots3$ を厳密解のテイラー展開と比べた。[ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt) (c))。出発点 $z_0$ から長さ $s$ 進んだ点での $g$ の値を、$s$ のテイラー級数で書くと
 
 $$
 g\big(z(s)\big) = \sum_{n=0}^{\infty}\frac{s^n}{n!}\left(\frac{d^ng}{ds^n}\right)_{z_0}
@@ -112,7 +112,7 @@ $$
 \tag{C.9}
 $$
 
-(線形なので、$:f:$ は $(x, p)$ の中でしか動かない。) (C.6) に入れ、$w \equiv \sqrt k$ とすると
+(線形なので、$:f:$ は $(x, p)$ の中でしか動かない。) 規則は、$:f:^{2m}x = (-ks^2)^m x$、$:f:^{2m+1}x = (-ks^2)^m\,s\,p$、$:f:^{2m}p = (-ks^2)^m p$、$:f:^{2m+1}p = (-ks^2)^m(-ks)\,x$ ($m = 0, 1, 2, \ldots$。$n = 0\ldots6$ で sympy 確認、[ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt) (d))。(C.6) に入れ、$w \equiv \sqrt k$ とすると、$x$ の係数は偶数次だけ ($n = 2m$): $\sum_m\dfrac{(-1)^m(ws)^{2m}}{(2m)!} = \cos ws$ ($(-ks^2)^m = (-1)^m(ws)^{2m}$)。$p$ の係数は奇数次だけ ($n = 2m + 1$): $\sum_m\dfrac{(-1)^m s\,(ws)^{2m}}{(2m+1)!} = \dfrac1w\sum_m\dfrac{(-1)^m(ws)^{2m+1}}{(2m+1)!} = \dfrac{\sin ws}{w}$。つまり
 
 $$
 \exp(:f:)\,x = x\left(1 - \frac{w^2s^2}{2} + \frac{w^4s^4}{24} - \cdots\right) + \frac{p}{w}\left(ws - \frac{w^3s^3}{6} + \cdots\right)
@@ -125,11 +125,11 @@ $$
 \tag{C.11}
 $$
 
-(級数がそれぞれ $\cos$、$\sin$ のテイラー級数になる。) これは、四極の章 ([04_quad.md](04_quad.md) §4.1) の式 (4.11) の水平の行列で $p = 1$ とおいたものに一致する。$k < 0$ では $\cos \to \cosh$、$\sin \to \sinh$。$k \to 0$ の極限は、(C.8) のドリフト。スクリプトの (c) で、$s$ の 12 次未満の級数が $\cos$、$\sin$ の級数と一致することを確認した。
+($p$ の式は、$x$ の係数が $-w\sin ws$ ($:f:^{2m+1}p$ の $x$ の項 $-ks(-ks^2)^m\,x$ の和)、$p$ の係数が $\cos ws$。) これは、四極の章 ([04_quad.md](04_quad.md) §4.1) の式 (4.11) の水平の行列で $p = 1$ とおいたものに一致する。$k < 0$ では $\cos \to \cosh$、$\sin \to \sinh$。$k \to 0$ の極限は、(C.8) のドリフト。スクリプトの (c) で、$s$ の 12 次未満の級数が $\cos$、$\sin$ の級数と一致することを確認した。
 
 ### 5.3 例 3: 6 極のキック $f = -\dfrac{k_2}{3}x^3$ (スクリプトの (d))
 
-6 極の薄いキックを、位置 $x$ だけの関数のハミルトニアン $H = (k_2/3)x^3$ に長さ 1 (薄いレンズ) の流れとして書いた例。$k_2$ はここでは単なる係数で、SAD の K2 ($K2 = B''L/B\rho$) との関係 (係数の $1/2$ など) は確認していない。
+6 極の薄いキックを、位置 $x$ だけの関数のハミルトニアン $H = (k_2/3)x^3$ に長さ 1 (薄いレンズ) の流れとして書いた例。$k_2$ はここでは単なる係数。SAD の K2 ($K2 = B''L/B\rho$) とは、§8.2 (iii) の式との比較で $k_2 = K2/2$ ($y = 0$) の関係になる (§9)。
 
 $:f:\,x = [f, x] = -\partial_pf = 0$、$:f:\,p = [f, p] = \partial_xf = -k_2x^2$。次に $:f:^2p = [f, -k_2x^2] = \partial_xf\,\partial_p(-k_2x^2) - \partial_pf\,\partial_x(-k_2x^2) = 0$ ($f$ は $p$ を含まず、$-k_2x^2$ も $p$ を含まないので、どちらの項も 0)。したがって級数は 2 項で止まる:
 
@@ -174,7 +174,25 @@ $$
 \tag{C.14}
 $$
 
-($f$ と $g$ が可換 $[f, g] = 0$ なら、$\exp(:f + g:)$ に等しい。) 上のドリフトとキックの例 ($f = -\varepsilon p^2/2$、$g = -\varepsilon x^2/2$) で、$[f, g]/2$ までの $\exp$ が $\varepsilon^3$ の差を残し、3 次の項 $\frac{1}{12}([f,[f,g]] + [g,[g,f]])$ を足すとその差が消えることを、sympy で確認した ((f))。$[:f:, :g:] = :[f, g]:$ も、いくつかの多項式の $f$、$g$、$h$ で確認した。
+($f$ と $g$ が可換 $[f, g] = 0$ なら、$\exp(:f + g:)$ に等しい。)
+
+**[:f:, :g:] = :[f, g]: の導出**: 任意の関数 $h$ に作用させる。$[:f:, :g:]h = :f:(:g:h) - :g:(:f:h) = [f,[g,h]] - [g,[f,h]]$。ヤコビ恒等式 $[f,[g,h]] + [g,[h,f]] + [h,[f,g]] = 0$ ([ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt) (a) で、一般の関数 $f, g, h$ について sympy が 0 になることを確認) から $[f,[g,h]] - [g,[f,h]] = [f,[g,h]] + [g,[h,f]] = -[h,[f,g]] = [[f,g],h]$。したがって $[:f:, :g:]h = :[f,g]:\,h$。
+
+**BCH の 3 次までの導出**。$X$、$Y$ を非可換な演算子として $\log(e^Xe^Y)$ を展開する。$e^Xe^Y = 1 + u_1 + u_2 + u_3 + \cdots$ ($u_n$ は $n$ 次)、
+
+$$
+u_1 = X + Y,\quad u_2 = \tfrac12X^2 + XY + \tfrac12Y^2,\quad u_3 = \tfrac16X^3 + \tfrac12X^2Y + \tfrac12XY^2 + \tfrac16Y^3
+$$
+
+($e^Xe^Y$ の積で、$X$ の項は必ず左、$Y$ の項は必ず右)。$\log(1 + u) = u - u^2/2 + u^3/3 - \cdots$ で次数ごとに集める。
+
+- **2 次**: $u_2 - \tfrac12u_1^2 = \tfrac12X^2 + XY + \tfrac12Y^2 - \tfrac12(X^2 + XY + YX + Y^2) = \tfrac12(XY - YX) = \tfrac12[X, Y]$。
+- **3 次**: $u_3 - \tfrac12(u_1u_2 + u_2u_1) + \tfrac13u_1^3$。語 (非可換な積) ごとの係数を数える。例: $XXY$ は、$u_3$ から $\tfrac12$、$u_1u_2$ から 1 ($X\cdot XY$)、$u_2u_1$ から $\tfrac12$ ($\tfrac12X^2\cdot Y$)、$u_1^3$ から 1。合計 $\tfrac12 - \tfrac12(1 + \tfrac12) + \tfrac13 = \tfrac1{12}$。$XYX$ は、$u_3$ から 0、$u_1u_2$ から 0、$u_2u_1$ から 1 ($XY\cdot X$)、$u_1^3$ から 1。合計 $-\tfrac12 + \tfrac13 = -\tfrac16$。同様に $YXX$: $\tfrac1{12}$、$XYY$: $\tfrac1{12}$、$YXY$: $-\tfrac16$、$YYX$: $\tfrac1{12}$。全語の係数は sympy の非可換記号で数えた ([ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt) (b))。
+- 交換子で書く: $[X,[X,Y]] = XXY - 2XYX + YXX$、$[Y,[Y,X]] = YYX - 2YXY + XYY$。上の係数 ($XXY$、$YXX$、$YYX$、$XYY$ が $\tfrac1{12}$、$XYX$、$YXY$ が $-\tfrac16$) は、$\tfrac1{12}\bigl([X,[X,Y]] + [Y,[Y,X]]\bigr)$ に一致する。
+
+よって $\log(e^Xe^Y) = X + Y + \tfrac12[X,Y] + \tfrac1{12}([X,[X,Y]] + [Y,[Y,X]]) + \cdots$ (これが (C.14) の $X = :f:$、$Y = :g:$ の場合。上の交換子の関係で、演算子の交換子 $\to$ 関数の括弧 $:[f,g]:$ に直す)。
+
+上のドリフトとキックの例 ($f = -\varepsilon p^2/2$、$g = -\varepsilon x^2/2$) で、$[f, g]/2$ までの $\exp$ が $\varepsilon^3$ の差を残し、3 次の項 $\frac{1}{12}([f,[f,g]] + [g,[g,f]])$ を足すとその差が消えることを、sympy で確認した ((f))。$[:f:, :g:] = :[f, g]:$ も、いくつかの多項式の $f$、$g$、$h$ で確認した。
 
 **注意**: BCH の無限級数が実際に収束するか、どの次数まで足すか、は別の問題 (§9)。SAD のヘルプは、要素の変換を $\exp(:\cdot:)$ の積 (例えば DECA) で書き、次数をそろえるための補正項 $\exp(:V_4:)$ を足している (§8)。
 
@@ -203,7 +221,7 @@ K64 版同梱のヘルプ原文 (`Documents/SADHelp.html`) で、$\exp(:\cdot:)$
 
 | ヘルプの節 | 式 (ヘルプの記述の骨子) |
 |---|---|
-| DRIFT の transformation | $\exp(:H:)$、$H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ ($E/v_0$ の符号は誤植とみられる。02 章付録 A) |
+| DRIFT の transformation | $\exp(:H:)$、$H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ ($E/v_0$ の符号は、ヘルプの式どうしの整合から誤植と判断した。gs での確認なし。02 章付録 A) |
 | QUAD の本体 | スライスごとに $\exp(:H_{2n}:)$ ($H_{2n} = \frac1n\{(-p + \frac{p_x^2 + p_y^2}{2p} + \frac E{v_0})L + \frac{K1}{2}(x^2 - y^2)\}$)。スライスの間に $\exp(:\Delta H:)$ ($\Delta H = \frac1n(p - \sqrt{p^2 - p_x^2 - p_y^2} - \frac{p_x^2 + p_y^2}{2p})L$) |
 | BEND の線形フリンジ | $\exp(:V:)$、平文版 $V = -\tfrac1p\bigl(\tfrac{F1^2}{24\rho_b}p_x + \tfrac{F1}{12\rho_b^2}y^2 - \tfrac{y^4}{6F1\rho_b^2}\bigr)$ (TeX 版は $y^2$・$y^4$ の項が違う誤植。05 章付録 A)。QUAD のフリンジは母関数 (04 章) |
 | SEXT・OCT・DECA・DODECA の transformation | $\exp(:F_{\rm in}:)\exp(:aL:)\exp(:H_n/2:)\exp(:bL:)\exp(:V_n:)\exp(:aL:)\exp(:H_n/2:)\exp(:bL:)\exp(:F_{\rm out}:)$ ($L$ はドリフト、$H_n$ は薄い多極のキック $K_n/(n+1)!\,\mathrm{Re}(x - iy)^{n+1}$、$a = \frac12 - \frac1{\sqrt{12}}$、$b = \frac12 - a$、$V_n$ は 3 次を揃える補正)。原文の並びは前後対称でない (誤記。07 章付録 A) |
@@ -214,7 +232,7 @@ K64 版同梱のヘルプ原文 (`Documents/SADHelp.html`) で、$\exp(:\cdot:)$
 
 この付録の規約では、転送は $\exp(-s:H_{\rm ham}:)$、つまり $\exp(:f:)$ の $f$ は $-sH_{\rm ham}$ ((C.7))。ヘルプは、$f = +L\,H_{\rm ham}$ を $\exp(:f:)$ に入れている (例: DRIFT の $H$ は、ハミルトニアン $-\sqrt{p^2 - p_x^2 - p_y^2} + \ldots$ に $L$ をかけたもの)。ヘルプの $:f:$ は、この付録の $:f:$ と符号が逆、$:f:_{\rm SAD}\,g = -[f, g] = [g, f]$、すなわち **$\exp(:H:)$ は「$H$ を時間 1 のハミルトニアンとする流れ」** ($x \to x + \partial H/\partial p_x$、$p_x \to p_x - \partial H/\partial x$)。
 
-**確認** (ヘルプ原文には括弧の定義が無い。式どうしの整合で確定した。[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1)): (i) DRIFT の $\sqrt{\ }$ の項から $x' = p_x/p_z$ が正しい向きで出る。(ii) QUAD の $H_{2n}$ の $K1(x^2 - y^2)/2$ から $\Delta p_x = -K1\,x$ (K1 > 0 で水平収束。ヘルプの K1 の説明と一致)。(iii) SEXT の $H_2 = K2/3!\,\mathrm{Re}(x - iy)^3$ から $\Delta p_x = -(K2/2)(x^2 - y^2)$。(iv) BEND の線形フリンジ $V$ (平文版) から、ヘルプ自身の $x_2$、$p_{y2}$ の式が出る。(v) 04 章・07 章・03 章の数値 ($V_n$ の符号) とも整合 ([thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。標準の括弧で $\exp(:H:)$ と読むと、これらはすべて逆向きになる。唯一の例外が DRIFT の $E/v_0$ の符号 (QUAD・dynamics・BEND の body と逆、誤植とみられる)。
+**確認** (ヘルプ原文には括弧の定義が無い。式どうしの整合から読んだもので、gs での確認はしていない。[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1)): (i) DRIFT の $\sqrt{\ }$ の項から $x' = p_x/p_z$ が正しい向きで出る。(ii) QUAD の $H_{2n}$ の $K1(x^2 - y^2)/2$ から $\Delta p_x = -K1\,x$ (K1 > 0 で水平収束。ヘルプの K1 の説明と一致)。(iii) SEXT の $H_2 = K2/3!\,\mathrm{Re}(x - iy)^3$ から $\Delta p_x = -(K2/2)(x^2 - y^2)$。(iv) BEND の線形フリンジ $V$ (平文版) から、ヘルプ自身の $x_2$、$p_{y2}$ の式が出る。(v) 04 章・07 章・03 章の数値 ($V_n$ の符号) とも整合 ([thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。標準の括弧で $\exp(:H:)$ と読むと、これらはすべて逆向きになる。唯一の例外が DRIFT の $E/v_0$ の符号 (QUAD・dynamics・BEND の body と逆。式どうしの整合から誤植と判断した。gs での確認なし)。
 
 式を $\exp(:H_{\rm help}:)$ から本付録の記法に直すときは、$H_{\rm help} \to -H_{\rm help}$ とする。
 
@@ -228,11 +246,11 @@ K64 版同梱のヘルプ原文 (`Documents/SADHelp.html`) で、$\exp(:\cdot:)$
 ## 9. 未確認・限界
 
 - 級数 (C.6) (C.7) は**形式的なもの**として扱った (収束の議論はしていない)。ドリフト (C.8) や 6 極 (C.12) のように級数が止まる場合と、(C.10) のようにテイラー級数が既知の関数になる場合だけを例にした。
-- BCH (C.14) は 3 次の項までを確認した。それ以上の項と、実際に使う分割の精度の議論は、[03_symplectic_integrators.md] (予定) に回す。
-- ヘルプの $\exp(:\cdot:)$ の向きは、ヘルプに括弧の定義が無いので、式どうしの整合 (DRIFT・QUAD・SEXT・BEND の 4 つ) からの確定。定義の明記は原文に無い (§8.2)。順序の規約も明記が無い。
+- BCH (C.14) は 3 次の項までを確認した。それ以上の項と、実際に使う分割の精度の議論は、[03_symplectic_integrators.md](03_symplectic_integrators.md) に書いてある。
+- ヘルプの $\exp(:\cdot:)$ の向きは、ヘルプに括弧の定義が無いので、式どうしの整合 (DRIFT・QUAD・SEXT・BEND の 4 つ) から読んだもの (gs での確認なし)。定義の明記は原文に無い (§8.2)。順序の規約も明記が無い。
 - マグヌス展開 ($H$ が $s$ に依存する場合) は、名前の紹介だけで、式を導いていない。
 - 多自由度 (結合、$x$-$y$) の例は書いていない。2 次の $f$ の一般的な対応 (C.15) は、1 自由度の例だけ確認した。
-- この付録の 6 極の係数 $k_2$ と SAD の K2 の関係は確認していない。
+- この付録の 6 極の係数 $k_2$ は、§8.2 (iii) (ヘルプの SEXT の $H_2 = K2/3!\,\mathrm{Re}(x - iy)^3$ から $\Delta p_x = -(K2/2)(x^2 - y^2)$) と (C.12) ($\Delta p = -k_2x^2$、$y = 0$) を比べて $k_2 = K2/2$ に当たる。ヘルプの `K2` の定義の文面そのものとの照合はしていない。
 
 ## 参考
 

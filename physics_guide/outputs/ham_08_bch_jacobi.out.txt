@@ -1,0 +1,24 @@
+(a) ヤコビ恒等式と [:f:,:g:] = :[f,g]:
+  Jacobi (一般の f, g, h): True
+  [:f:,:g:] h = :[f,g]: h: True
+(b) BCH (3 次)
+  log(e^X e^Y) の 3 次までの各語の係数:
+     X
+     Y
+     X*Y/2
+     -Y*X/2
+     X*Y**2/12
+     Y*X**2/12
+     X**2*Y/12
+     Y**2*X/12
+     -X*Y*X/6
+     -Y*X*Y/6
+  log(e^X e^Y) - [X + Y + [X,Y]/2 + ([X,[X,Y]] + [Y,[Y,X]])/12] =  0
+  [X,[X,Y]] = -2*X*Y*X + X**2*Y + Y*X**2 、[Y,[Y,X]] = X*Y**2 - 2*Y*X*Y + Y**2*X
+(c) (C.7) の帰納法 (H = p^2/2、g = x^2): d^n g/ds^n = (-:H:)^n g
+  n=0: d^n g/ds^n|0 = x**2、(-:H:)^n g = x**2
+  n=1: d^n g/ds^n|0 = 2*p*x、(-:H:)^n g = 2*p*x
+  n=2: d^n g/ds^n|0 = 2*p**2、(-:H:)^n g = 2*p**2
+  n=3: d^n g/ds^n|0 = 0、(-:H:)^n g = 0
+(d) (C.9) の偶奇の規則 (f = -(s/2)(k x^2 + p^2))
+  n = 0..6 で規則と一致: True
