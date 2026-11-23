@@ -35,6 +35,7 @@ _KEYS = ['AX', 'BX', 'AY', 'BY', 'R1', 'R2', 'R3', 'R4', 'EX', 'EPX', 'EY', 'EPY
 _HBAR = float(np.float32(6.58211928e-16))      # besseltab の hbar [eV s] は単精度の定数のまま
 LBTAB = 1000
 _TABLE = None
+_TABLE_V2 = None
 
 
 def _chebev(a, b, c, m, x):
@@ -166,7 +167,11 @@ def _powi32(x, n):
 def besseltab():
     """bbstrhl.f mkbesseltab: (xi, SwI) の 1 始まりの表 (長さ 1002)。光子のエネルギー分布 S(x) の積分の逆引き。
     1.1**40、1.02、5./3. は単精度の定数のまま"""
-    global _TABLE
+    global _TABLE, _TABLE_V2
+    if compat.v2():
+        if _TABLE_V2 is None:
+            _TABLE_V2 = _besseltab_v2()
+        return _TABLE_V2
     if _TABLE is not None:
         return _TABLE
     xnu = float(np.float32(5.0) / np.float32(3.0))
@@ -193,6 +198,41 @@ def besseltab():
         swi[i] = swi[i] / top
     _TABLE = (xi, swi)
     return _TABLE
+
+
+def _besseltab_v2():
+    """v2 (B335): 光子エネルギーの逆引き表。K64 (`mkbesseltab`) は累積 SwI を Sw(x_i)·(x_{i-1} − x_i) の矩形則 (区間の下端の Sw) で作り、
+    x_min = 1.1^40/1.02^1000 = 1.1e-7 より下の光子 (全体の 0.6%) を捨てて SwI(1000) = 1 に規格化する。
+    v2 は累積を台形則 (区間の両端の平均) で作り、x_min より下の裾は小 x の漸近形 Sw ∝ x^(-2/3) から 3·x_min·Sw(x_min) と見積って全体に入れる
+    (SwI(1000) < 1)。u が SwI(1000) より大きい光子は、表の外側 (ξ → 0、1001 番目の点を ln ξ が 40 小さい点に置く) で、エネルギーはほぼ 0。
+    格子 (x = 1.1^40/1.02^i) と Sw の Simpson 積分は K64 と同じ。理論値 <ξ> = 0.30792、<ξ²> = 0.40741 に対し、表から (線形補間込みで) 求めたモーメントは K64 の表が +1.60%・+2.62%、この表が +0.016%・+0.046%"""
+    xnu = float(np.float32(5.0) / np.float32(3.0))
+    x = _powi32(1.1, 40)
+    c102 = float(np.float32(1.02))
+    xi = np.zeros(LBTAB + 2)
+    sw = np.zeros(LBTAB + 2)
+    swi = np.zeros(LBTAB + 2)
+    xs = np.zeros(LBTAB + 2)
+    rk0 = 0.0
+    for i in range(1, LBTAB + 1):
+        x0 = x
+        x = x / c102
+        x2 = (x + x0) * 0.5
+        dx6 = (x0 - x) / 6.0
+        xs[i] = x
+        xi[i] = math.log(x)
+        rk2 = _bessk(x2, xnu)
+        rk = _bessk(x, xnu)
+        if i > 1:
+            sw[i] = sw[i - 1] + (rk0 + 4 * rk2 + rk) * dx6
+            swi[i] = swi[i - 1] + 0.5 * (sw[i] + sw[i - 1]) * (x0 - x)
+        rk0 = rk
+    total = swi[LBTAB] + 3.0 * xs[LBTAB] * sw[LBTAB]
+    for i in range(1, LBTAB + 1):
+        swi[i] = swi[i] / total
+    xi[LBTAB + 1] = xi[LBTAB] - 40.0
+    swi[LBTAB + 1] = 1.0
+    return (xi, swi)
 
 
 def gauinv(p0):
