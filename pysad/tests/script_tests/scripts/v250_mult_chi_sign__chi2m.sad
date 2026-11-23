@@ -1,0 +1,10 @@
+MOMENTUM = 3GEV;
+MULT M=(L=1 K1=0.3 CHI2=-0.05);
+MARK ST = ();
+LINE ONE = (ST M);
+FFS; NORFSW; NORAD; NOFLUC;
+$FORM = "22.16";
+beam = {{0.0, 1e-3}, {0.0, 0.0}, {0.0, 1e-3}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 1.0}};
+USE ONE; CELL;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["R ", r[[2]]];

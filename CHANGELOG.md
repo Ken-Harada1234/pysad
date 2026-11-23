@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**`tsolrot` の傾いた枝の更新の符号の不整合 (B337、K64 の誤り。pysad は未実装のため v2・k64 とも変更なし) と MULT の CHI1・CHI2 の符号の確認**: K64 の `tsolrot` (SOL 領域内の MULT・QUAD の CHI1・CHI2・DZ、Bz ≠ 0) は、面の条件と位置・運動量の更新で dcosphi の符号が逆で、長さ 0 の傾いた MULT が恒等写像にならない (gs: px = 0.05・bz = 1.3 /m で 6.5e-6。numpy に写した式と同じ大きさ)。pysad の翻訳の誤りではない (この枝は未実装)。MULT の CHI1・CHI2 の符号はヘルプの R₁・R₂ と同じことを gs の厚い四極 (L = 1 m、CHI = ±0.05) で確認した (ODE と 0.13%)。記録 `docs/history/B337_tsolrot_tilt.md`、試験 `test_v250_tsolrot_tilt.py`。
+
 **Emittance[] (POL) のスピン軌道結合の `dbtz` の割り算 (B336、v2 のみ。k64 は K64 のまま)**: K64 の `tradke` (`photons.f:1550`) は btz = xpzb/pr² − blz の微分を dxpzb/pr − dblz と書く (x・y 成分は pr²。誤植)。δ ≠ 0 の軌道で、スピン軌道結合 D の z の行が誤る (追跡のスピン回転の中心差分との差が、15° の偏向磁石で δ = 0.05 に 13%、v2 は 1.2%)。gs では確認できない (K64 の Polarization は NaN)。記録 `docs/history/B336_spin_dbtz.md`、試験 `test_v250_spin_dbtz.py`。
 
 **ビームストラールングの光子エネルギーの逆引き表 (B335、v2 のみ。k64 は K64 のまま)**: K64 の `mkbesseltab` は光子数のスペクトルの累積を矩形則で作り、soft な裾 (全体の 0.6%) を捨てて規格化する。表のモーメントが理論値に対し ⟨ξ⟩ で +1.60%、⟨ξ²⟩ で +2.62% (光子のエネルギーの平均損失と量子励起が大きい)。gs の BSTRL の光子 422 個のエネルギーは k64 と 1.6e-7 以内で一致 (表が同じ)。v2 は台形則と裾の見積りで +0.016%・+0.046% にする。記録 `docs/history/B335_bstrl_table.md`、試験 `test_v250_bstrl_table.py`。

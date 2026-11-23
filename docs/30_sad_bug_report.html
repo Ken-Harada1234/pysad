@@ -2166,6 +2166,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>確定 (代数的な不整合 + 追跡の差分)</td>
 <td><strong>v2 は直した</strong> (<code>spin.tradke_spin</code> の <code>dbtz = dxpzb/pr² − dblz</code>。<code>spin.DBTZ_PR2</code> で戻せる)。k64 は K64 のまま。試験 <code>test_v250_spin_dbtz.py</code></td>
 </tr>
+<tr>
+<td>B337</td>
+<td><strong><code>tsolrot</code> の傾いた枝 (SOL 領域内の MULT・QUAD の CHI1・CHI2・DZ、Bz ≠ 0) で、位置・運動量の更新の dcosphi の符号が面の条件の式と逆</strong>: <code>tsol.f:83-100</code> は <code>xsincos</code> の dcosphi = cos θ − 1 を、面の条件 <code>s = plz*xsinphi + pz0*sinphi - pbz*dcosphi</code> では + pbz (1 − cos θ) の正しい符号で使い、更新 <code>x += (plx*phi + ptx*sinphi + pbx*dcosphi)*alb</code>・<code>px -= ptx*dcosphi + pbx*sinphi ...</code> では 1 − cos θ の想定の符号 (古い <code>dcosphi = 2 sin²(θ/2)</code> の名残とみられる) で使う。同じらせん運動 u(θ) = u_l + u_t cos θ + u_b sin θ の式の中で符号が逆。独立な基準 (長さ 0 の傾いた要素は恒等写像): 入口 (<code>ent</code>) と出口の写像を numpy に写して合成すると、更新を Fortran のまま (cos − 1) にしたものは恒等から 2.2e-7・3.9e-7・1.4e-6・6.5e-6 (px 最大 0.05 の 4 粒子) ずれ、更新の符号を反転したものは 1e-17 で恒等。gs で確認: 3 GeV/c、SOL (BZ = 13 T、bz = 1.3 /m) → MULT (L = 0、K2 = 1e-9、CHI1 = 0.03、CHI2 = −0.02、DZ = 0.01) → SOL (BZ = 0) の TrackParticles は入力に戻らず、同じ 2.2e-7・3.9e-7・1.4e-6・6.5e-6 (numpy の as と 3% 以内) ずれる (傾きなしは 5e-16〜6e-15 で戻る)。ずれの大きさは θ² p_t の程度。K64 自身の誤りで、pysad の翻訳の誤りではない (pysad には SOL 領域内の MULT の CHI1・CHI2・DZ の枝が無い: 未実装)。また (F) MULT の CHI1・CHI2 の符号は誤りではない: gs の MULT (L = 1 m、K1 = 0.3) の軸上の粒子の出口は CHI1 = +0.05 で x = +1.1939e-3・px = −1.8396e-4、CHI2 = +0.05 で y = −1.3064e-3・py = −1.9141e-4 (符号を変えると反転)。ヘルプの R₁・R₂ (3×3 の式) が与える軸の向き (R の 3 行目: CHI1 で (−sin χ1, 0, cos χ1)、CHI2 で (0, −sin χ2, cos χ2)) の周りの厚い四極の ODE の 1.1954e-3・−1.8393e-4・−1.3080e-3・−1.9144e-4 と 0.13% 以内で一致 (<code>tmulti</code> が −chi を <code>tsolrot</code> に渡すのは内部の規約)</td>
+<td>tsol.f:83-100 (tsolrot)</td>
+<td>SOL 領域内の傾いた (CHI1・CHI2・DZ ≠ 0) MULT・QUAD の追跡 (入口・出口で恒等でない。px = 0.05・bz = 1.3 /m で 6.5e-6)</td>
+<td>低</td>
+<td>確定 (gs。独立な基準は恒等写像)</td>
+<td>pysad は未実装 (NotImplementedError。k64・v2 とも)。実装するときは、k64 は K64 のまま、v2 は更新の dcosphi の符号を反転する。試験 <code>test_v250_tsolrot_tilt.py</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>
