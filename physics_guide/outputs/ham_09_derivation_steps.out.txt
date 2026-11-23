@@ -1,0 +1,15 @@
+(a) (1a.13)
+  EL(L) = [d/dt dT/dq' - dT/dq] - [-dU/dq + d/dt dU/dq']: True
+(b) Frenet-Serret (平面曲線)
+  n = [sin(theta(s)), 0, -cos(theta(s))] 、b = [0, 1, 0]
+  |n| = 1: True
+  t' = -n/ρ: True
+  n' = t/ρ: True
+  b' = 0: True
+  n'·t = -n·t' = 1/ρ、n'·b = 0: True True
+(c) (1a.21) の x 成分
+  x 成分の和 = ∂_x(a·b): True
+(d) 曲線座標の回転と A_s の積分
+  B_X = (1/h) ∂A_s/∂Y: True 、B_Y = -(1/h) ∂A_s/∂X: True
+  偏向: B_X = 0 、B_Y = B0
+  四極: B_X = ∂_y A_s = Bp*y_ 、B_Y = -∂_x A_s = Bp*x_
