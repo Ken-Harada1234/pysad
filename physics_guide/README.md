@@ -27,8 +27,8 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [10_cavity.md](10_cavity.md) | **加速空洞 (CAVI)・TCAVI**。$\Delta E$ から $\delta$・$z$・$p_x$ の更新 (時間を保つ)、同期位相と `offset`、横方向の依存と Panofsky–Wenzel、非相対論の補正 ($I_0$)、長い空洞の分割 (重み `ws`)、$p_0(s)$ の変化、端の効果 $H_f$ (Maxwell からの導出)、TCAVI | ✓ (TRPT の写像・CALC は読みだけ) |
 | [11_misalignment_and_coord.md](11_misalignment_and_coord.md) | **取り付け誤差と COORD**。剛体運動 + 直線の面への戻し (スナップショットと $z$)、`tcoord`・`tcoorde` の 6×6、COORD の DIR (K64 とヘルプの食い違いの疑い)、DX・DY・ROTATE の順序と符号、偏向磁石のロール (`tbrot`)、MARK・APERT・MAP は力学でないこと | ✓ (CHI1・CHI2・DZ の `tsolrot` は読みだけ) |
 | [12_linear_optics.md](12_linear_optics.md) | **行列から光学へ**。閉軌道の Newton 法 (`tcod`、2 次収束)、周期解と分散 $(1-M_4)^{-1}m_6$、x–y 結合の分解 (`qmdiag`: ヘルプの $R$ と K64 の閉じた式)、Twiss と伝搬、色収差、拡張 Twiss の $H$ | ✓ (`qmdiag` の特別な場合・RADCOD・`tecalc` の $V$ は読みだけ。偏向ありの色収差は未決) |
-| 13_radiation.md | 放射 (kinematical method、光子数、励起と減衰) | 予定 |
-| 14_emittance.md | 平衡エミッタンス | 予定 |
+| [13_radiation.md](13_radiation.md) | **放射 (kinematical method)**。曲げ角 $\phi$ と $\rho_r$ (ヘルプ)、$N_\gamma$・$u_c$・$\langle u\rangle$・$\langle u^2\rangle$ の古典の式と `anrad`・`cuc`・`cave`・`cuu`、追跡の 1 スライス (`tradk1`: 運動量の縮み、$-\tfrac12dp_x\,dg$ と $al/3$ の導出)、FLUC のポアソン過程と `drndsr`、CALC の励起 (`tradke` の `dee`)、放射積分 | ✓ (RADCOD・RADTAPER・`tr1` の導出・分割の定数は未確認) |
+| [14_emittance.md](14_emittance.md) | **平衡エミッタンス**。$\Sigma = M\Sigma M^\top + \Delta$ の導出、$\Delta$ の組み立て (`tmulbs`)、`tecalc` (固有値・正規座標・減衰率・分配数)、各モードの $\varepsilon_k = \bar\Delta_k/(1-e^{-2a_k})$、同期運動と RFSW、MINCOUP | ✓ (`tnorm`・`btr` の導出・IBS・SynchroBeta は未確認) |
 | 15_spin.md | スピンと偏極 | 予定 |
 | 16_undulator_beambeam.md | アンジュレータ、ビーム・ビーム | 予定 |
 | 17_collective.md | 集団効果 (空間電荷、ウェイク、CSR、Touschek・IBS) | 予定 |
@@ -82,6 +82,8 @@ py -3.12 physics_guide/scripts/mult_01_as_expansion.py          # 08 章 (MULT) 
 py -3.12 physics_guide/scripts/cav_01_energy_map.py            # 10 章 (空洞) の確認
 py -3.12 physics_guide/scripts/mis_01_coord_geometry.py        # 11 章 (取り付け誤差・COORD) の確認 (mis_01、mis_02)
 py -3.12 physics_guide/scripts/opt_01_linear_optics.py          # 12 章 (行列から光学へ) の確認
+py -3.12 physics_guide/scripts/rad_01_kinematical.py            # 13 章 (放射) の確認
+py -3.12 physics_guide/scripts/emit_01_equilibrium.py           # 14 章 (平衡エミッタンス) の確認
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -112,6 +114,8 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `mis_01_coord_geometry.py` | 11 | ヘルプの回転行列と `tcoord.f` の $r_{ij}$ (DIR ≠ 0 は不一致)、独立な剛体運動 + 面への戻しと追跡・CALC の一致、6×6 の解析式と数値微分、シンプレクティック性、DIR の非可逆 |
 | `mis_02_element_misalign.py` | 11 | QUAD の DX・DY・ROTATE の順序と符号、BEND の `tbrot` (DROTATE・CHI2) と支点まわりの剛体回転、直線の MULT の CHI1・CHI2・DZ が追跡で無視されること、MARK・APERT |
 | `opt_01_linear_optics.py` | 12 | 閉軌道の Newton 法の収束、分散 $(1-M_4)^{-1}m_6$ と追跡の差分、$BAB^{-1}=P(\mu)$ と Twiss の伝搬 (sympy)、`qmdiag` の式で $RMR^{-1}$ がブロック対角、色収差、ヘルプの $H$ のシンプレクティック性 |
+| `rad_01_kinematical.py` | 13 | 定数 `anrad`・`cuc`・`cave`・`cuu`、放射スペクトルのモーメント、`drndsr` のモーメント、偏向磁石 1 台の平均・分散、ずれた四極の損失、$-\tfrac12dp_x\,dg$ と $al/3$ の数値積分、$U_0 = C_\gamma E^4I_2/2\pi$ |
+| `emit_01_equilibrium.py` | 14 | `calc6d` (`tecalc`) の結果と放射積分の式 ($U_0$・$J_x$・$\varepsilon_x$・$\sigma_\delta$・$\alpha_p$・$\nu_s$)、$\Delta = \Sigma - M\Sigma M^\top$ と 13 章の励起、正規座標の $\Sigma_n$、各モードの $\varepsilon_k$ の式 |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
