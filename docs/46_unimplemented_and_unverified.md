@@ -306,7 +306,7 @@ K64 にない新機能 ([docs/51](51_lattice_dxf.md))。gs との照合は、同
 | SADScript 評価器の速度 (v2.4.1、`pysad/sadscript.py`) | 記憶 (`f[k] = v`) が増えるたびに照合が線形に遅くなる問題を、事前判定と先頭リテラルの索引 (`RuleList`) で直した (出力は変更前と完全一致。`OpticsPlot` の台本 44 秒 → 11 秒、KEK-LS 全周の `DrawMagnetsDXF` (Overlap 付き) 50 秒 → 28 秒)。**残り**: 規則の先頭がリテラルでない定義 (Pattern だけ) は線形のまま、`Module` の局所名の付け替え (`_rn`) が全体の約 1 割、`eval_expr` の分岐の呼び出しが数割 (どれも式の同一性・評価順に関わるので変えていない)。全周の `DrawMagnetsDXF` (Overlap 付き) は、文書にある gs の 9 秒 (再測定していない) の約 3 倍。FFS のマッチングは `lattice.py` の Twiss が支配的で評価器の問題ではない。周波数マップ・LMA の台本の内訳は未測定 |
 | 垂直面の幾何 (chi2・ROTATE のある偏向磁石、垂直ステアリング) | 平面の chi1 だけを使う。ROTATE のある BEND は偏向角 0 の矩形に見える |
 | 長さ 0 の磁石 (薄い MULT など)、ANGLE≠0 の MULT の端面 | 描かない / E1=E2=0 のセクター形 |
-| CAD ソフトで開く確認 | **未確認** (ezdxf・AutoCAD・LibreCAD・Vectorworks では開いていない。自前のパーサと matplotlib の描き直しだけ)。TEXT の中央寄せ・`$INSUNITS` の扱いは CAD で違うかもしれない |
+| CAD ソフトで開く確認 | **一部確認** (利用者が CAD ソフトで一部のサンプルを開き、概ね問題なし、2026-11-23。全サンプルは未確認で、どの CAD ソフトかは記録していない。ezdxf は未実施。そのほかは自前のパーサと matplotlib の描き直しだけ)。TEXT の中央寄せ・`$INSUNITS` の扱いは CAD で違うかもしれない |
 | `drawmagvw3d.n` と違う点 | 同名の要素だけをまとめる、直後の別の磁石を落とさない、出口の面の半幅を入口と同じにする、物理長を弦の中央に置く (docs/51 §2)。原版の出力 (VectorScript) と図を比べてはいない |
 
 ## v2.4.1 ampnf の限界の拡張 (J の高次・5・6 次の駆動項・島・K0≠0 のオプション、`pysad/ampnf_ext.py`) の未解決
