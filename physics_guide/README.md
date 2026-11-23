@@ -60,7 +60,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 
 ## 確認スクリプトの実行方法
 
-**前提**: 四極の線形フリンジの F1 の符号の修正 (v2 の追跡が CALC と一致する) は v2.4.4 に入る。この物理ガイド (dev/v2.5.0) は v2.4.4 の後に載せる前提で書いてあり、`quad_04_matrix_vs_map.py` の (f) の v2 の結果は、その修正の入った pysad で得た。この作業ツリーの pysad がまだ修正前のときは、環境変数 `PYSAD_SRC` に v2.4.4 以降の pysad のルートを指定して実行する (`scripts/_common.py` が読む)。
+**前提**: 確認 script の v2 の結果は、四極の線形フリンジの F1 の符号を修正した pysad (B323。v2 の追跡が CALC と一致する) で得た。修正前の pysad で実行すると、`quad_04_matrix_vs_map.py` の (f) の v2 の行が k64 と同じ値になる。その場合は、環境変数 `PYSAD_SRC` に修正後の pysad のルートを指定して実行する (`scripts/_common.py` が読む)。
 
 スクリプトは `physics_guide/scripts/` にあり、リポジトリのルートから実行する (Python 3.12。pysad は同じフォルダのものを使うので、インストールや `PYTHONPATH` は要らない。numpy・scipy・matplotlib が要る):
 
