@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**SOL 領域内の QUAD の ΔH の運動量の回転の順序 (B333、v2 のみ。k64 は K64 のまま)**: K64 の `tsolqu`・`tsolqum` は ΔH の運動量の回転 `pxi = a22*pxi + a24*py` のあとに `pyi = -a24*pxi + a22*py` と更新後の pxi を使い、行列式が cos²(wℓ) になる (シンプレクティックでない)。gs の SOL (bz = 1.3 /m) + QUAD + SOL の TrackParticles の中心差分ヤコビアンの 4×4 ブロックの欠陥は px = 0.05 で 1.5e-7、0.1 で 3.4e-6 (det J − 1 = −3.2e-6)。v2 は更新前の px で回し、4×4 の欠陥が 5e-10 (丸め) に下がる。限界: (y, δ)・(x, δ) の欠陥は v2 でも残る (別の原因、未調査)。記録 `docs/history/B333_sol_quad_rotation.md`、試験 `test_v250_sol_quad_rotation.py`。
+
 **CAVI の端のエネルギー変化のあとの q = p_x/p の再スケール (B332、v2 のみ。k64 は K64 のまま)**: K64 の `tcavfrin` は端のエネルギー変化で p を変えるのに、q = p_x/p に p1r/p2r をかけない (本体・TCAVI はかける)。端付きの空洞の追跡写像がシンプレクティックでなくなる (gs の TrackParticles の 13 点の中心差分ヤコビアンで、|JᵀSJ − S| = 0.6 MeV/c で 8.09e-5、3 GeV/c で 1.30e-8。x = 1 mm、px = 1e-2)。v2 は再スケールを入れ、0.6 MeV/c で 5.8e-8 に下がる。限界: 1 つの点のヤコビアンだけ。記録 `docs/history/B332_cavi_edge_q_rescale.md`、試験 `test_v250_cavi_edge_symplectic.py`。
 
 **ANGLE ≠ 0 の MULT の FB1・FB2 による長さ L' の補正の二重適用 (B331、v2 のみ。k64 は K64 のまま)**: K64 は L' の補正を `tffs.f:1368` で `p_L_MULT` に入れたあと、`tmulta.f:82-90` でスライス長からもう一度引く (BEND は 1 回)。gs の BEND (F1) と MULT (FB1 = FB2 = F1) の追跡は x で 2.78e-7、z で 2.46e-8 (ANGLE = 0.3、F1 = 0.5、3 GeV/c) 違い、MULT の L を二重の補正の分だけ先に伸ばすと全成分で差 0 になる。v2 は 2 回目の補正を省き、MULT が BEND と全桁一致する。限界: FRINGE = 3・K1 = 0 で確認 (FRINGE = 1・2 の x の 3e-5、K1 ≠ 0 の y の食い違いは別の原因で未調査)。記録 `docs/history/B331_mult_angle_fb_double.md`、試験 `test_v250_mult_angle_fb_double.py`。

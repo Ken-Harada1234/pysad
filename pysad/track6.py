@@ -2535,8 +2535,13 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0, fringe=True):
             pxi = c[1]
             c[0] += (a24 * pxi - a14 * c[3]) / bzp
             c[2] += (a14 * pxi + a24 * c[3]) / bzp
-            pxi = a22 * pxi + a24 * c[3]
-            pyi = -a24 * pxi + a22 * c[3]          # SAD のまま: 更新後の pxi を使う
+            if _compat.v2():
+                # v2 (B333): 運動量の回転は更新前の px で (行列式 1)。K64 (下) は更新後の pxi を使い、面積が cos²(wℓ) 倍になる
+                pyi = -a24 * pxi + a22 * c[3]
+                pxi = a22 * pxi + a24 * c[3]
+            else:
+                pxi = a22 * pxi + a24 * c[3]
+                pyi = -a24 * pxi + a22 * c[3]          # SAD のまま: 更新後の pxi を使う
             c[4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
             xi, yi = c[0], c[2]
             w1, w2, ws, wss, wd = tz.w1, tz.w2, tz.ws, tz.wss, tz.wd

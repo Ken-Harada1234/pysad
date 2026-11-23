@@ -431,7 +431,7 @@ def tztafs(zwu, pxt, pyt, zw1, wst, w12t, swss, g1t,
 
 
 @njit(**NJ)
-def tz_step1(i, S, aln0, akk, bz, first):
+def tz_step1(i, S, aln0, akk, bz, first, v2f=False):
     """tsolqu/tsolqur の bz≠0 分岐の 1 スライス (tzsetparams + 本体)。戻り: この粒子の bzp"""
     # --- tzsetparams (track6 _TZ.__init__)
     pr = 1.0 + S[i, 5]
@@ -476,8 +476,13 @@ def tz_step1(i, S, aln0, akk, bz, first):
     pxi = S[i, 1]
     S[i, 0] += (a24 * pxi - a14 * S[i, 3]) / bzp
     S[i, 2] += (a14 * pxi + a24 * S[i, 3]) / bzp
-    pxi = a22 * pxi + a24 * S[i, 3]
-    pyi = -a24 * pxi + a22 * S[i, 3]          # SAD のまま: 更新後の pxi を使う
+    if v2f:
+        # v2 (B333): 更新前の px で回転 (track6._tsolqu と同じ)
+        pyi = -a24 * pxi + a22 * S[i, 3]
+        pxi = a22 * pxi + a24 * S[i, 3]
+    else:
+        pxi = a22 * pxi + a24 * S[i, 3]
+        pyi = -a24 * pxi + a22 * S[i, 3]          # SAD のまま: 更新後の pxi を使う
     S[i, 4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
     xi = S[i, 0]; yi = S[i, 2]
     a = (w2 * ws * xi - bzp * pyi) * wss
@@ -538,7 +543,7 @@ def tsolqu_bz_all(S, n, al, ak, bz, eps0, krad, fluc, rs, p0, h0, anrad, cuc):
     bzp_last = 0.0
     for m in range(ndiv):
         for i in range(n):
-            bzp_last = tz_step1(i, S, aln0, akk, bz, m == 0)
+            bzp_last = tz_step1(i, S, aln0, akk, bz, m == 0, rs.shape[0] > 1 and rs[1] == 1)
         if krad:
             tradk_all(S, n, aln0, 0.0, fluc, rs, p0, anrad, cuc)
     if krad and not (rs.shape[0] > 1 and rs[1] == 1):

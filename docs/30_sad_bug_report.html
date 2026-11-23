@@ -2130,6 +2130,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>端付き CAVI の追跡の δ・px の高次 (欠陥は x·q の積で 0.6 MeV/c・x = 1 mm・px = 1e-2 で 8e-5)。リングの空洞 (3 GeV/c) では 1e-8</td>
 <td>低 (低エネルギー・大振幅)</td>
 </tr>
+<tr>
+<td>B333</td>
+<td><strong>SOL 領域内の QUAD (<code>tsolqu</code>・<code>tsolqum</code>) の ΔH の運動量の回転が、更新後の px を py の更新に使う</strong>: <code>tsolqu.f:122-123</code> (<code>tsolqum</code> の <code>:302-303</code> も同じ) は <code>pxi = a22*pxi + a24*py(i)</code> のあとに <code>pyi = -a24*pxi + a22*py(i)</code> と書き、2 行目の pxi は更新後の値。正しい回転は py' = −a24·px_old + a22·py で、K64 の写像は行列式 a22² = cos²(wℓ) (w = bz(−dpz)/(1+dpz)、ℓ = スライスの長さ) となり、運動量の面積が縮む (シンプレクティックでない)。位置 x・y の更新は正しい。gs で確認: 3 GeV/c、SOL (BZ = 13 T、bz = 1.3 /m、BOUND = 1) + QUAD (L = 0.4 m、K1 = 0.36 /m²) + SOL の TrackParticles の 13 点 (±1e-6) の中心差分ヤコビアンの 4×4 ブロック (x, px, y, py) の</td>
+<td>JᵀSJ − S</td>
+<td>は、点 (1e-3, 0.05, −5e-4, 0.02) で 1.54e-7、(1e-3, 0.1, −5e-4, 0.05) で 3.39e-6、det J − 1 は −1.50e-7、−3.23e-6 (回転の角 θ = wℓ の θ² の和 3.0e-6 の見積りと同じ大きさ)。k64 の追跡は gs と全桁一致。v2 は 4×4 の欠陥が 4e-10 以下 (中心差分の丸め)、det J − 1 が −6e-11・−5e-10 に下がる。(y, δ)・(x, δ) の欠陥 (px = 0.1 で 7.7e-6・1.7e-6) は v2 でも残る (別の原因。z の更新の近似などと思われる。未調査)。小さな傾き (px ~ 3e-3) では θ² ~ 1e-11 で見えない</td>
+<td>tsolqu.f:122-123・tsolqum :302-303</td>
+<td>SOL 領域内の QUAD (bz ≠ 0、MULT の K1 も) の追跡の傾きが大きい粒子 (px = 0.1・bz = 1.3 /m・ℓ = 0.4 m で運動量の面積が 3e-6 縮む。bz = 10 /m では 9e-5)</td>
+<td>低</td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>
