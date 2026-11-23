@@ -16,7 +16,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [01_variables_and_conventions.md](01_variables_and_conventions.md) | 変数と約束。正準変数、ラグランジアンから母関数まで、$dv$、$p_x/(1+\delta)$、K1 の約束 (四極の章に必要な範囲) | ✓ (四極に必要な範囲。ほかは予定) |
 | [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) | **ハミルトニアンの導出**。ラグランジアン、速度依存のポテンシャルと一般化力・一般化運動量、ルジャンドル変換、正準変換、Frenet–Serret 座標、$t \to s$ の入れ替え、2 次の展開と偏向・四極の運動方程式 | ✓ |
 | 00_overview.md | 全体像。ハミルトニアンから Fortran・Python までの流れ、3 系統の実装 (追跡・行列・解析微分) | 予定 |
-| 02_drift.md | ドリフトと $dv$、COD のまわりの線形化 | 予定 |
+| [02_drift.md](02_drift.md) | **ドリフト**。$H$ から $x' = p_x/p_z$、$z$ の更新と $dv$ の項、厳密 = 近軸 × $D$、近軸 (DISKIN)、COD のまわりの 6×6 (`tdrife1`)、最短の例 ($R_{56} = L/\gamma_0^2$) | ✓ |
 | 03_symplectic_integrators.md | 分割の一般論 (Strang、Yoshida、力勾配型)、刻みの数の一覧 | 予定 |
 | [04_quad.md](04_quad.md) | **四極**。$H_2$ の厳密解、運動学的な $\Delta H$、Strang と Yoshida、刻みの数、フリンジ、行列と追跡の関係 | ✓ |
 | [05_bend.md](05_bend.md) | **偏向磁石**。$H_2$ の厳密解、K1 = 0 の円弧と端面角の厳密解、Maxwell フリンジ・線形フリンジ (F1)、複合機能 (K1 ≠ 0)、行列と追跡の関係 | ✓ |
@@ -67,6 +67,7 @@ py -3.12 physics_guide/scripts/quad_03_integrator_order.py      # 図 physics_gu
 py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py
 py -3.12 physics_guide/scripts/quad_05_fringe.py
 py -3.12 physics_guide/scripts/quad_06_invariants.py
+py -3.12 physics_guide/scripts/drift_01_h_to_map.py             # 02 章 (ドリフト) の確認 (drift_01〜drift_03)
 py -3.12 physics_guide/scripts/bend_01_h2_body.py               # 05 章 (偏向磁石) の確認 (bend_01〜bend_04)
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
@@ -81,6 +82,9 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `quad_04_matrix_vs_map.py` | 04 | CALC の行列と追跡の写像の微分の一致、$z$ の行、シンプレクティック性 |
 | `quad_05_fringe.py` | 04 | フリンジ (母関数、Maxwell の場の端の積分、F1・F2、シンプレクティック性) |
 | `quad_06_invariants.py` | 04 | 保存量と分割の誤差 |
+| `drift_01_h_to_map.py` | 02 | $H$ の偏微分・$z'$ の整理・$dv$ (sympy)、閉じた式と DOP853・pysad の追跡の比較、厳密 = 近軸 × $D$、DISKIN (pysad は未実装) |
+| `drift_02_linearization.py` | 02 | 6×6 の偏微分 (sympy) と `tdrife1` の式、pysad の行列と追跡の数値微分、シンプレクティック性と $z$ の行 |
+| `drift_03_r56_example.py` | 02 | 最短の例: ドリフトを 1〜4 回通った後の $z$ (3 GeV・10 MeV)、4 つのドリフトの $T_{56}$ |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |

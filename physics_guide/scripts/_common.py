@@ -102,3 +102,13 @@ def pysad_src():
     """実際に import される pysad のフォルダ (出力に書いておく用)"""
     import pysad
     return os.path.dirname(os.path.abspath(pysad.__file__))
+
+
+def make_drift(L, extra='', momentum='3GEV', n=1):
+    """DRIFT 1 台 (n > 1 なら n 台を並べた LINE) のラティスを作り、(ffs, 要素) を返す。extra に DISKIN=1 などを書く"""
+    from pysad.ffscmd import run_sad_string
+    names = ' '.join(['DR'] * n)
+    src = ('MOMENTUM = %s;\nDRIFT DR=(L=%.15g %s);\nMARK ST = ();\nLINE ONE = (ST %s);\nFFS;\nUSE ONE;\n'
+           % (momentum, L, extra, names))
+    ffs, _ = run_sad_string(src, out=io.StringIO())
+    return ffs, [e for e in ffs.lat.elements if e.name == 'DR'][0]
