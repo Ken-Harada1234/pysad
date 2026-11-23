@@ -86,7 +86,7 @@ print('   Δpy = -∂H/∂y = %s' % sp.simplify(f['py']))
 print('   → Δpx = -(K2/2)(x²-y²)、Δpy = K2 x y: 6 極の標準のキック。K2 > 0 は「水平収束」の符号 (ヘルプの K2 の説明) と整合')
 print('   標準の括弧で exp(:H:) g = g + [H,g] と読むと符号が逆: [H, px] = %s' % sp.simplify(bracket_std(H2, px)))
 
-print('\n -- BEND の線形フリンジ: V = -(1/p)(F1²/(24ρb) px - F1/(12ρb²) y² ... ) (平文版) ----')
+print('\n -- BEND の線形フリンジ: V = -(1/p)(F1²/(24ρb) px + F1/(12ρb²) y² - y⁴/(6 F1 ρb²) ) (平文版) ----')
 F1, rb = sp.symbols('F1 rho_b', positive=True)
 V_ascii = -F1**2 / rb * px / p / 24 - F1 / rb**2 * y**2 / p / 12 + 1 / rb**2 / F1 * y**4 / p / 6
 f = flow_forward(V_ascii)
