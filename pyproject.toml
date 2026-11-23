@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysad-k64"
-version = "2.4.1"
+version = "2.4.2"
 description = "Python translation of SAD (Strategic Accelerator Design, K64 version): optics, tracking, emittance and the SADScript interpreter. v2 fixes K64 bugs and adds features; PYSAD_COMPAT=k64 reproduces K64"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,6 +22,10 @@ dependencies = ["numpy", "numba", "scipy"]
 
 [project.optional-dependencies]
 plot = ["matplotlib"]       # FFS の DRAW (pysad/draw_mpl.py、v2.4.1)。無くても DRAW 以外は動く
+
+[project.scripts]
+pysad-run = "pysad.cli:run_main"
+pysad-share = "pysad.cli:share_main"
 
 [project.urls]
 Homepage = "https://github.com/Ken-Harada1234/pysad"

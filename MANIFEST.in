@@ -1,0 +1,5 @@
+include README.md LICENSE run_sad.py
+graft docs
+graft example
+prune example/_deletable
+global-exclude __pycache__ *.pyc *.pyo

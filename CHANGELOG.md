@@ -6,6 +6,10 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## v2.4.2 (2026-11-23)
+
+**配布の内容 (パッケージ以外の追加。pysad のコードの動作は変えない)**: `pip install pysad-k64` で、パッケージ本体 (`import pysad`) のほかに、文書 `docs/` (HTML 版を含む) と例 `example/` (図・出力を含む) の全ファイルを `<prefix>/share/pysad/` に入れる (`setup.py` の `data_files`、sdist は `MANIFEST.in`)。全部で約 90 MB。場所は新しいコマンド `pysad-share` (または `pysad.cli.share_dir()`) が表示する。`pysad-run lattice_file [script_file ...]` (`pysad.cli.run_main`) を足した (リポジトリの `run_sad.py` と同じ。pip で入れた人も SAD の台本を実行できる)。
+
 ## v2.4.1 (2026-11-23)
 
 **偏光 (POL) の FLUC つきスピン追跡の gs との比較 (4 リング) と B270**: 12 セル FODO (6・24 MV)・PF・ASTRID2 で gs と pysad k64 の追跡が粒子ごとのスピンまで全桁一致。脱偏極率の式 / gs の追跡は 24 MV 1.05 ± 0.04、PF 0.98 ± 0.10、6 MV は追跡が重い裾で 0.49 ± 0.12。ASTRID2 (40 粒子 × 18000 周) は追跡の率 (1.04 ± 0.68)e-10 /周が 0 と区別できず (式は 5.4e-14)、評価不能。k64 の Emittance[] の SpinTune は追跡と 4e-4〜5e-3 違い、主因は K64 の B58。**pysad の誤り B270 を修正**: 台本の `Emittance[]` が L ≠ 0 の 6 極の B240 を渡さなかった (v2 のみ、k64 不変)。試験 `test_v241_pol_fluc.py`、記録 `docs/history/v241_pol_fluc.md`。

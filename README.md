@@ -16,6 +16,8 @@
 pip install pysad-k64
 ```
 
+パッケージ本体のほかに、**文書 (docs/、HTML 版を含む) と例 (example/、図・出力を含む) の全ファイル**も一緒に入ります (約 90 MB。場所は `pysad-share` で表示: `<prefix>/share/pysad/docs`・`example`)。SAD の台本は `pysad-run lattice_file [script_file ...]` で実行できます (リポジトリの `run_sad.py` と同じ)。
+
 PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作をします (直訳ではありません)。インストールした版は `pysad.__version__` で確認できます。ソースに忠実な翻訳 (v1 系) は `pip install pysad-k64==1.0.0` で入ります。
 
 ## 必要なもの

@@ -70,6 +70,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <h2 id="インストール-pypi">インストール (PyPI)</h2>
 <pre><code>pip install pysad-k64
 </code></pre>
+<p>パッケージ本体のほかに、<strong>文書 (docs/、HTML 版を含む) と例 (example/、図・出力を含む) の全ファイル</strong>も一緒に入ります (約 90 MB。場所は <code>pysad-share</code> で表示: <code>&lt;prefix&gt;/share/pysad/docs</code>・<code>example</code>)。SAD の台本は <code>pysad-run lattice_file [script_file ...]</code> で実行できます (リポジトリの <code>run_sad.py</code> と同じ)。</p>
 <p>PyPI: <a href="https://pypi.org/project/pysad-k64/">https://pypi.org/project/pysad-k64/</a>。import 名は <code>pysad</code> です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード <code>PYSAD_COMPAT=k64</code> で K64 と同じ動作をします (直訳ではありません)。インストールした版は <code>pysad.__version__</code> で確認できます。ソースに忠実な翻訳 (v1 系) は <code>pip install pysad-k64==1.0.0</code> で入ります。</p>
 <h2 id="必要なもの">必要なもの</h2>
 <p>Python 3.12 と numpy, scipy, numba, pytest (<code>py -3.12 -m pip install numpy scipy numba pytest</code>)。</p>
