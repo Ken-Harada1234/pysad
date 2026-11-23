@@ -5,7 +5,7 @@
 (b) 一様磁場のらせん軌道 (縦成分あり) で、BMT の厳密な積分 (DOP853) と、K64 の 1 ステップ回転
     Ω_step = (1+aγ) θ_vec + (1+a) ψ p̂_mid の積 (刻み数 N) を比べる。N を 2 倍にしたときの誤差の比 (次数)。
 (c) 定数の恒等式: cave·anrad·cuc² = r_e ƛ_C、(sflc·anrad·cuc の積) → Sokolov-Ternov の係数 cfpd、DK の 11/18。
-(d) 玩具の 1 周写像で、N M = R0 N + [n0]× D (SLIM の式) が R(x) n(x) = n(Mx) を 1 次で満たす。
+(d) 玩具の 1 周写像で、N M = R0 N + [n0]× D (SLIM の式) が R(x) n(x) = n(Mx) を 1 次で満たす (代数の自己無撞着の検査。K64 の D・N の検証ではない)。
 (e) 平面リング (3 GeV、12 セル、偏向の合計 π): pysad の Emittance[] の SpinTune、PolarizationTime、PolarizationVector、
     Polarization (v2) を、aγθ/2π・Sokolov-Ternov の式・8/(5√3) と比べる。
 """
@@ -191,15 +191,20 @@ Kmat = np.eye(18) - np.kron(Minv.T, R0)
 Nvec = np.linalg.lstsq(Kmat, rhs_mat.reshape(-1, order='F'), rcond=None)[0]
 N = Nvec.reshape((3, 6), order='F')
 print('n0·N の大きさ (0 のはず): %.2e' % np.abs(n0 @ N).max())
+u_dir = rng.normal(size=6)
+u_dir /= np.linalg.norm(u_dir)       # 方向を固定して大きさだけ変える (残差が |x0|² に比例するかを見るため)
+prev_res = None
 for eps in (1e-2, 1e-3, 1e-4):
-    x0 = eps * rng.normal(size=6)
+    x0 = eps * u_dir
     n_x0 = n0 + N @ x0
     n_x0 /= np.linalg.norm(n_x0)
     # R(x0) は 1 次まで exp(-[D x0]×) R0
     lhs = rot_matrix(-(Dm @ x0)) @ R0 @ n_x0
     n_x1 = n0 + N @ (M @ x0)
     n_x1 /= np.linalg.norm(n_x1)
-    print('|x0| = %.0e: |R(x0) n(x0) - n(M x0)| = %.3e   (|N x0| = %.2e)' % (eps, np.linalg.norm(lhs - n_x1), np.linalg.norm(N @ x0)))
+    res_ = np.linalg.norm(lhs - n_x1)
+    print('|x0| = %.0e: |R(x0) n(x0) - n(M x0)| = %.3e   (|N x0| = %.2e)%s' % (eps, res_, np.linalg.norm(N @ x0), '' if prev_res is None else '   (前の |x0| の残差との比 %.1f。|x0|² に比例なら 100)' % (prev_res / res_)))
+    prev_res = res_
 # 回転の向きの注意: rot_matrix(-v) = exp(-[v]×) = K64 の Rot(g)。
 
 # ---------------------------------------------------------------- (e)
