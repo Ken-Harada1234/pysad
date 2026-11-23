@@ -488,7 +488,7 @@ $$
 \tag{1a.38}
 $$
 
-(ねじれがあるときは $d\vec n/ds = \vec t/\rho - \tau\vec b$、$d\vec b/ds = -\tau\vec n$。この章では使わない。) 粒子の位置は、基準軌道の点 $\vec r_0(s)$ から水平に $X$、垂直に $Y$ 離れた点として
+(ねじれがあるときは $d\vec n/ds = \vec t/\rho - \tau\vec b$、$d\vec b/ds = +\tau\vec n$ ($\vec n\cdot\vec b = 0$ を $s$ で微分した $\vec n'\cdot\vec b + \vec n\cdot\vec b' = 0$ から、$\vec b'$ の $\vec n$ 成分は $\vec n'$ の $\vec b$ 成分と逆符号)。この章では使わない。) 粒子の位置は、基準軌道の点 $\vec r_0(s)$ から水平に $X$、垂直に $Y$ 離れた点として
 
 $$
 \vec r(X, Y, s) = \vec r_0(s) + X\,\vec n(s) + Y\,\vec b(s)
@@ -575,7 +575,7 @@ $$
 1. 和 $\sum$ には座標 $s$ も含まれ、$s' = ds/ds = 1$ という自明な項 $p_s\cdot 1$ が出る。$s$ はもう座標として動かない (独立変数そのもの) のに、運動量 $p_s$ が残る。
 2. 時間 $t$ は、独立変数だった立場から、$s$ の関数 $t(s)$ という「従属変数」に変わる。その運動を、座標と同じ正準方程式で追う形になっていない。
 
-**必要なのは入れ替え**: $s$ を座標から独立変数に移し、$t$ を独立変数から**座標に戻す**。「座標」が減る代わりに「座標」が増え、位相空間の次元は同じ (6 次元) になる。これは、同じ $t$ のもとの相空間 $(q, p) \to (Q, P)$ の写像 (§6) ではなく、座標とパラメータの役割を交換する変換 (一般の正準変換の枠に入らない。参考文献の Bell、Stupakov と Penn、小磯の解説に当たる) で、次のように組む。
+**必要なのは入れ替え**: $s$ を座標から独立変数に移し、$t$ を独立変数から**座標に戻す**。「座標」が減る代わりに「座標」が増え、位相空間の次元は同じ (6 次元) になる。これは、同じ $t$ のもとの相空間 $(q, p) \to (Q, P)$ の写像 (§6) ではなく、座標とパラメータの役割を交換する変換 (一般の正準変換の枠に入らない) で、次のように組む。この手続きは Bell (1955) の Appendix 1 に書かれている手続きと同じで、記号の対応は §8.6。
 
 ### 8.2 拡張位相空間と新しいラグランジアン
 
@@ -682,6 +682,25 @@ $$
 ### 8.5 $t$ と $z$
 
 $t$ の運動 ($dt/ds = \partial\tilde H/\partial P_t$) を、粒子の「バンチ内の位置」$z$ に変える変換は別にある。SAD は、母関数 $G(p_t, z; s) = z\,p(p_t) + p_t\,t_0(s)$ ([01_variables_and_conventions.md](01_variables_and_conventions.md) §3 の式 (1.6)) で $(t, p_t) \to (z, p)$ とし、ハミルトニアンに $E/(p_0v_0)$ の項が加わる (式 (1.1))。この章は、そこに行く前の、横方向の運動だけを扱う ($\delta$ は一定の定数)。
+
+### 8.6 Bell (1955) Appendix 1 との対応
+
+M. R. Bell, "Non-linear equations of motion in the synchrotron", A.E.R.E. T/M 125 (1955) の Appendix 1 (原本 9〜10 ページ。原本の画像で確認した) は、$t$ 以外の座標を独立変数に取り替えたときの新しいハミルトニアンを、次の流れで導いている。この節は、その流れと §8.2〜§8.3 の対応を示す。
+
+1. **作用の書き換え**。ハミルトンの原理 $\delta\int L\,dt = 0$ (Bell の (14)) で、独立変数を $t$ から別の変数 $u$ に替えると $\delta\int L\,\dfrac{dt}{du}\,du = 0$、すなわち $\delta\int M\,du = 0$ ((14)')。$M = L\,dt/du$ は $(q_n, t, \partial q_n/\partial u, \partial t/\partial u)$ の関数。$L = \sum p_n\dot q_n - H$ を使うと、(14)' は $\delta\int\left(\sum p_n\dfrac{dq_n}{du} - H\dfrac{dt}{du}\right)du = 0$。(本章の (1a.46) に当たる。)
+2. **対称性の議論**。この式は、$-H$ を運動量、$t$ を座標とみなすと、$\sum p\,dq$ の形と対称になる。この対称性から、「$t$ が独立変数のときのハミルトニアンが $H$ なら、$q_n$ が独立変数のときのハミルトニアンは $-p_n$」と Bell は言う。
+3. **計算による確認**。独立変数を $q_r$ にとり ($u = q_r$)、$M = L\,t'$ ($' = d/dq_r$)。$t$ に共役な運動量 $P = \partial M/\partial t' = L - \sum_n(\partial L/\partial\dot q_n)\,q_n'/t' = L - \sum p_n\dot q_n = -H$。ほかの座標 ($q_r$ 以外) の運動量は $P_j = \partial M/\partial q_j' = p_j$ (古い運動量のまま)。新しいハミルトニアンは $R = \sum_jP_jq_j' - M = -t'p_r\dot q_r = -p_r$ ($p_r$ は $q_r$ に共役な、古い運動量。新しい独立変数 $q_r$ に対応する運動量で、**符号が逆になる**)。
+
+| Bell (1955) | この章 | 備考 |
+|---|---|---|
+| $L$、$H$ (原文は花文字)、$p_n$、$q_n$ | $L$、$H$、$p_i$、$q_i$ | 時間 $t$ を独立変数とする古い系 |
+| 新しい独立変数 $u$、特に $q_r$ | $s$ ($q_r = s$) | |
+| $M = L\,dt/dq_r = L\,t'$ | $\tilde L = L\,t'$ (式 (1a.47)) | |
+| $P = \partial M/\partial t' = -H$ | $P_t = -H$ (式 (1a.48)) | $t$ が座標になり、共役運動量が $-H$ |
+| $P_j = \partial M/\partial q_j' = p_j$ | $P_x = p_x$、$P_y = p_y$ (式 (1a.49)) | $j$ は $q_r$ 以外の座標 |
+| $R = \sum P_jq_j' - M = -p_r$ | $\tilde H = -p_s$ (式 (1a.50)(1a.51)) | 新しいハミルトニアン。符号が逆 |
+
+**Bell の Appendix 1 と本章の違い**: (i) 本章は、$p_s$ を $P_t = -H$ から解いて $(x, y, P_x, P_y, t, P_t)$ の関数にする段階 ((1a.52)(1a.53)) と、元の方程式との一致の確認 ((1a.54)) を加えている。Appendix 1 の 9〜10 ページには、この部分は見当たらなかった。(ii) 本章の Frenet–Serret 座標、規格化、展開 (§7、§9) に当たる記述は、Appendix 1 にはない。**Bell の本文 (Appendix 1 以外のページ) は、本章では内容を確認していない (未確認)**。
 
 ## 9. 規格化と展開、偏向磁石と四極の運動方程式
 
@@ -931,7 +950,7 @@ sympy (1.14) で式を確かめる。`py -3.12 physics_guide/scripts/ham_01_lore
 | `ham_06_series.py` | §9.2、§9.4、§9.5 | $\sqrt{1 \pm u}$ と $1/(1+\delta)$ の展開、$H$ の因子ごとの展開と次数、偏向磁石・四極の偏微分の 1 項ずつの表、$x'' = p_x'/(1+\delta)$ の展開、$\Delta H$ の展開 (四極の章の (4.6)) |
 | `ham_07_lie_operator.py` | 付録 C | ポアソン括弧、$\exp(:f:)$ のドリフト・集束四極・6 極の例、合成の順序、BCH、2 次の $f$ と行列 ([C_poisson_lie.md](C_poisson_lie.md)) |
 
-確認できたこと: 上の各行。確認できなかったこと (または確認が間接的なもの): (i) ベクトル恒等式 (1a.21) は成分の展開で確認し、一般の証明は書いていない。(ii) §8 の「同じ作用の別の書き方」(1a.46)(1a.51) は、$P_t = -H$ と $\tilde H = -p_s$ の代数の確認で、作用の変分 (境界条件を含む) の厳密な議論は行っていない。(iii) 参考文献の原著 (Bell、Stupakov と Penn、小磯) は未入手で、この章の内容と照合していない。
+確認できたこと: 上の各行。確認できなかったこと (または確認が間接的なもの): (i) ベクトル恒等式 (1a.21) は成分の展開で確認し、一般の証明は書いていない。(ii) §8 の「同じ作用の別の書き方」(1a.46)(1a.51) は、$P_t = -H$ と $\tilde H = -p_s$ の代数の確認で、作用の変分 (境界条件を含む) の厳密な議論は行っていない。(iii) Bell (1955) は Appendix 1 だけを確認した (§8.6)。小磯の OHO テキストは I-1〜I-7 ページだけを目で照合した (参考文献)。Stupakov と Penn は未入手。
 
 ## 12. 未確認・限界・使った条件
 
@@ -946,4 +965,14 @@ sympy (1.14) で式を確かめる。`py -3.12 physics_guide/scripts/ham_01_lore
 ## 参考文献
 
 - SAD のヘルプ (CERN 版 SADHelp) の dynamics の節: Independent variable、Lagrangean、Hamiltonian ([01_variables_and_conventions.md](01_variables_and_conventions.md))。
-- $t \to s$ の入れ替え (拡張位相空間) の文献として、M. R. Bell, A.E.R.E. T/M 125 (1955)、G. Stupakov and G. Penn, "Classical Mechanics and Electromagnetism in Accelerator Physics"、小磯晴代、OHO (高エネルギー加速器セミナー) 1991 年のテキストがある。**いずれも入手しておらず、本章の内容とは照合していない (未確認)**。
+- M. R. Bell, "Non-linear equations of motion in the synchrotron", A.E.R.E. T/M 125 (1955)。**Appendix 1 (原本 9〜10 ページ) を確認した**: 独立変数を $t$ から別の座標に替えたときの新しいハミルトニアン ($M = Lt'$、$P = -H$、$R = -p_r$)。本章 §8 と同じ手続きで、対応は §8.6。Appendix 1 以外は未確認。
+- 小磯晴代、OHO (高エネルギー加速器セミナー) 1991 年のテキスト「ビーム貯蔵リングの基礎」(I 部、全 22 ページ)。**I-1〜I-7 ページを確認した** (8 ページ以降は、本章では未確認):
+  - I-1 (§2.1): ラグランジアンとハミルトニアン、正準運動量 $p_i = \gamma m\,dx_i/dt + eA_i$ が力学的運動量と異なること、正準方程式。本章 §3〜§5 と同じ内容。
+  - I-2〜I-3 (§2.2): Frenet–Serret 座標 (主法線 $\mathbf e_x$ はリングの外向きが正)、微分の公式、母関数 $G = -\mathbf p\cdot\mathbf r$、新しい運動量、$A_s$ の定義、$H$ ($s$ 成分に $1/(1+\kappa_xx+\kappa_yy)^2$)。本章 §7 と同じ内容。
+  - I-3 (§2.3): 座標 $q_j$ ($dq_j/dt \ne 0$、つまり $t$ の単調関数) を独立変数にして作用を書き直し、$H_a = -p_s$、$H = E$ を $p_s$ について解いた形、$s$ を独立変数とする正準方程式 (式 (2-3-8)。$dt/ds = \partial H_a/\partial(-E)$ を含む)。本章 §8 と同じ内容。単調性の条件は本章 §8 では書いていなかった。
+  - I-4 (§2.3〜§2.4): 運動量とハミルトニアンの規格化 (力学的全運動量 $p$ で割る。$p = 1$ のとき以外は正準変換ではないと書かれている)、$A_s$ から磁場を作る式 ($B_x = (1/h)(\partial A_s/\partial y - \partial A_y/\partial s)$ など。$h = 1 + \kappa_xx + \kappa_yy$)。本章の (1a.60a) と同じ。
+  - I-5 (§2.4): 偏向・四極・スキュー四極・六極・ソレノイドの $A_s$ (四極は $\frac{e}{p_0}A_s = \frac12K(y^2 - x^2)$。本章の (1a.65) と同じ)。
+  - I-6〜I-7 (§2.5〜§2.7): $H$ の 3 次までの展開と、ディスパージョンの方程式 ($D_x' = D_{px}$、$D_{px}' = -(\kappa_x^2 + K)D_x + \kappa_x$、$L = N = 0$)。本章 (1a.64) と同じ符号。
+  - **本章との違い**: OHO は $\delta \equiv (p - p_0)/p$ (本章・SAD は $(p - P_0)/P_0$) で、運動量を設計運動量 $P_0$ ではなく粒子自身の全運動量 $p$ で規格化する。$\tau$ の符号の約束 (OHO の (2-2-3) は $\mathbf e_x' = -\tau\mathbf e_y + \kappa\mathbf e_s$、$\mathbf e_y' = \tau\mathbf e_x$) は、本章 (1a.38) の下の注と同じ。
+  - 本章の式は、これらのページと目で照合した (sympy ではない)。
+- G. Stupakov and G. Penn, "Classical Mechanics and Electromagnetism in Accelerator Physics": 入手しておらず、内容は書いていない (未確認)。
