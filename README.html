@@ -32,7 +32,10 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
-<li><a href="#インストール-pypi">インストール (PyPI)</a></li>
+<li><a href="#インストール-pypi">インストール (PyPI)</a><ul>
+<li><a href="#pip-で入るもの入らないもの">pip で入るもの・入らないもの</a></li>
+</ul>
+</li>
 <li><a href="#必要なもの">必要なもの</a></li>
 <li><a href="#使い方">使い方</a></li>
 <li><a href="#オリジナルの-sad-にない機能-pysad-で追加">オリジナルの SAD にない機能 (pysad で追加)</a></li>
@@ -70,7 +73,74 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <h2 id="インストール-pypi">インストール (PyPI)</h2>
 <pre><code>pip install pysad-k64
 </code></pre>
-<p>パッケージ本体のほかに、<strong>文書 (docs/、HTML 版を含む) と例 (example/、図・出力を含む) の全ファイル</strong>も一緒に入ります (約 90 MB。場所は <code>pysad-share</code> で表示: <code>&lt;prefix&gt;/share/pysad/docs</code>・<code>example</code>)。SAD の台本は <code>pysad-run lattice_file [script_file ...]</code> で実行できます (リポジトリの <code>run_sad.py</code> と同じ)。</p>
+<h3 id="pip-で入るもの入らないもの">pip で入るもの・入らないもの</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>内容</th>
+<th>pip</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>パッケージ本体</td>
+<td><code>pysad/</code> (<code>import pysad</code>。約 100 モジュール)</td>
+<td><strong>入る</strong></td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>pysad-run lattice_file [script_file ...]</code> (SAD の台本の実行。リポジトリの <code>run_sad.py</code> と同じ)、<code>pysad-share</code> (文書・例のある場所の表示)</td>
+<td><strong>入る</strong></td>
+</tr>
+<tr>
+<td>文書</td>
+<td><code>docs/</code> (36 本の md と、図入りの同名の HTML。<code>docs/history/</code> と <code>docs/figures/</code> を含む)。場所: <code>&lt;prefix&gt;/share/pysad/docs</code></td>
+<td><strong>入る</strong></td>
+</tr>
+<tr>
+<td>例</td>
+<td><code>example/</code> (機能別の台本・出力・図・md・HTML。約 2500 ファイル)。場所: <code>&lt;prefix&gt;/share/pysad/example</code></td>
+<td><strong>入る</strong></td>
+</tr>
+<tr>
+<td><code>run_sad.py</code></td>
+<td>同上 (<code>&lt;prefix&gt;/share/pysad/run_sad.py</code>)</td>
+<td><strong>入る</strong></td>
+</tr>
+<tr>
+<td>依存ライブラリ</td>
+<td><code>numpy</code>・<code>scipy</code>・<code>numba</code> (自動)。<code>matplotlib</code> は <code>pip install pysad-k64[plot]</code> のときだけ</td>
+<td>自動 / 任意</td>
+</tr>
+<tr>
+<td>試験</td>
+<td><code>pysad/tests/</code> (<code>script_tests/</code> の pytest 約 2500 件、<code>regression_tests/</code> の SAD との照合ベンチ 50 本)</td>
+<td><strong>省かれる</strong> (GitHub にだけある)</td>
+</tr>
+<tr>
+<td>道具</td>
+<td><code>tools/</code> (md から HTML を作る <code>build_html.py</code>・図を作るスクリプト)</td>
+<td><strong>省かれる</strong></td>
+</tr>
+<tr>
+<td>変更履歴・ライセンス</td>
+<td><code>CHANGELOG.md</code> (GitHub にある)。<code>LICENSE</code> は配布物のメタデータに入る</td>
+<td>CHANGELOG は省かれる</td>
+</tr>
+<tr>
+<td>作業用のファイル</td>
+<td><code>example/_deletable/</code> (削除してよい作業ファイル)・<code>local/</code>・ビルドの中間物</td>
+<td><strong>省かれる</strong></td>
+</tr>
+<tr>
+<td>SAD 本体</td>
+<td>K64 版のソース (<code>src/*.f</code>・<code>Packages/*.n</code>)・実行ファイル <code>gs</code></td>
+<td><strong>含まれない</strong> (別に入手。pysad は SAD なしで動く。SAD の <code>Packages/*.n</code> を使う機能 (GUI・CorrectOrbit など) は、<code>PYSAD_SAD_PACKAGES</code> に <code>Packages</code> のフォルダを指定する)</td>
+</tr>
+</tbody>
+</table>
+<p>全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。</p>
 <p>PyPI: <a href="https://pypi.org/project/pysad-k64/">https://pypi.org/project/pysad-k64/</a>。import 名は <code>pysad</code> です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード <code>PYSAD_COMPAT=k64</code> で K64 と同じ動作をします (直訳ではありません)。インストールした版は <code>pysad.__version__</code> で確認できます。ソースに忠実な翻訳 (v1 系) は <code>pip install pysad-k64==1.0.0</code> で入ります。</p>
 <h2 id="必要なもの">必要なもの</h2>
 <p>Python 3.12 と numpy, scipy, numba, pytest (<code>py -3.12 -m pip install numpy scipy numba pytest</code>)。</p>

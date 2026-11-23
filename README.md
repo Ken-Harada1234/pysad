@@ -16,7 +16,23 @@
 pip install pysad-k64
 ```
 
-パッケージ本体のほかに、**文書 (docs/、HTML 版を含む) と例 (example/、図・出力を含む) の全ファイル**も一緒に入ります (約 90 MB。場所は `pysad-share` で表示: `<prefix>/share/pysad/docs`・`example`)。SAD の台本は `pysad-run lattice_file [script_file ...]` で実行できます (リポジトリの `run_sad.py` と同じ)。
+### pip で入るもの・入らないもの
+
+| | 内容 | pip |
+|---|---|---|
+| パッケージ本体 | `pysad/` (`import pysad`。約 100 モジュール) | **入る** |
+| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示) | **入る** |
+| 文書 | `docs/` (36 本の md と、図入りの同名の HTML。`docs/history/` と `docs/figures/` を含む)。場所: `<prefix>/share/pysad/docs` | **入る** |
+| 例 | `example/` (機能別の台本・出力・図・md・HTML。約 2500 ファイル)。場所: `<prefix>/share/pysad/example` | **入る** |
+| `run_sad.py` | 同上 (`<prefix>/share/pysad/run_sad.py`) | **入る** |
+| 依存ライブラリ | `numpy`・`scipy`・`numba` (自動)。`matplotlib` は `pip install pysad-k64[plot]` のときだけ | 自動 / 任意 |
+| 試験 | `pysad/tests/` (`script_tests/` の pytest 約 2500 件、`regression_tests/` の SAD との照合ベンチ 50 本) | **省かれる** (GitHub にだけある) |
+| 道具 | `tools/` (md から HTML を作る `build_html.py`・図を作るスクリプト) | **省かれる** |
+| 変更履歴・ライセンス | `CHANGELOG.md` (GitHub にある)。`LICENSE` は配布物のメタデータに入る | CHANGELOG は省かれる |
+| 作業用のファイル | `example/_deletable/` (削除してよい作業ファイル)・`local/`・ビルドの中間物 | **省かれる** |
+| SAD 本体 | K64 版のソース (`src/*.f`・`Packages/*.n`)・実行ファイル `gs` | **含まれない** (別に入手。pysad は SAD なしで動く。SAD の `Packages/*.n` を使う機能 (GUI・CorrectOrbit など) は、`PYSAD_SAD_PACKAGES` に `Packages` のフォルダを指定する) |
+
+全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。
 
 PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作をします (直訳ではありません)。インストールした版は `pysad.__version__` で確認できます。ソースに忠実な翻訳 (v1 系) は `pip install pysad-k64==1.0.0` で入ります。
 
