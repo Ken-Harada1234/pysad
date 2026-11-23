@@ -1067,7 +1067,17 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <tr>
 <td>ANGLE ≠ 0 の MULT の FB1・FB2 の長さの補正の二重 (B331)</td>
 <td>両</td>
-<td><strong>v2 は 1 回</strong> (gs の BEND と MULT の差が二重の分の短縮に一致し、L を先に伸ばした gs の MULT が BEND と差 0)。k64 は gs と同じ。限界: gs で確認したのは K1 = 0・K2 以上なし・NORAD・FRINGE = 3・3 GeV/c。FRINGE = 1・2 の MULT と BEND の x の 3e-5 の食い違い、K1 ≠ 0 の y の 1e-5 級の食い違いは別の原因で未調査。CALC の <code>tmultae</code> も同じ式を持つが pysad は FB1/FB2 の CALC を未対応 (gs の CALC は未確認)。L' の式そのもの (ヘルプの F1 の定義) の導出は physics_guide 05 章でも未確認</td>
+<td><strong>v2 は 1 回</strong> (gs の BEND と MULT の差が二重の分の短縮に一致し、L を先に伸ばした gs の MULT が BEND と差 0)。k64 は gs と同じ。限界: gs で確認したのは K1 = 0・K2 以上なし・NORAD・FRINGE = 3・3 GeV/c。FRINGE = 1・2 の x の食い違いは仕様の違い、K1 ≠ 0 の y の食い違いは B340 (下の 2 行)。CALC の <code>tmultae</code> も同じ式を持つが pysad は FB1/FB2 の CALC を未対応 (gs の CALC は未確認)。L' の式そのもの (ヘルプの F1 の定義) の導出は physics_guide 05 章でも未確認</td>
+</tr>
+<tr>
+<td>K1 ≠ 0・ANGLE ≠ 0 の MULT の FB1・FB2 の端が途中にも入る (B340)</td>
+<td>両</td>
+<td><strong>v2 は両端の 1 回ずつ</strong> (v2 の MULT が BEND と 1e-12 以内。gs の MULT は BEND と F1 ≠ 0 で両端 1.41e-4・入口のみ・出口のみ各 7.0e-5、F1 = 0 では 2.2e-11)。k64 は gs と同じ。限界: 3 GeV/c、L = 1 m、ANGLE = 0.3、K1 = 0.3、E1 = 0.5、E2 = 0.3、F1 = 0.5、NORAD の追跡だけ。RAD ON の <code>tbendi</code> の first・last (放射の端の断片)、CALC <code>tmultae</code> → <code>tbende</code> は未確認。K2 以上を持つ MULT は未確認 (本体のキックは B340 と別)</td>
+</tr>
+<tr>
+<td>BEND と MULT の FRINGE = 1・2 の食い違い</td>
+<td>両</td>
+<td><strong>仕様の違いで誤りではない</strong> (BEND は FRINGE ≠ 0 で F1 を両端に使い、片側は -1 (入口)・-2 (出口)。MULT は FRINGE = 1・2・3 が入口のみ・出口のみ・両端。<code>tffs.f:1263-1277</code>・<code>1346-1364</code>、SADHelp の BEND の FRINGE は「両端」)。BEND の -1・-2・3 と MULT の 1・2・3 を対にすると、gs の差は B331 の分だけ (1e-6 級、v2 は差 0)。BEND の -1・-2 はヘルプにない (K64 のソースと gs で確認)</td>
 </tr>
 <tr>
 <td>CAVI の端の q の再スケール (B332)</td>

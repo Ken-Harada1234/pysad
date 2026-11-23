@@ -8,8 +8,8 @@ gs の保存した出力 (scripts/v250_mult_angle_fb_double__{bend,mult,multc}.{
 TrackParticles の 5 粒子 (x, px, y, py, δ の 1 つずつ)): BEND と MULT は x で 2.8e-7、z で 2.5e-8 食い違い、MULT の L を二重の補正の分だけ先に長くした multc
 (L = 1.00018814134845: L − c(L) − c(L − c(L)) が BEND の L' に等しい) は BEND と 全成分で 0 (ビット単位) の差で一致する。
 v2 は tmulta の 2 回目の補正を入れない (MULT が BEND と全桁一致)。k64 は gs と同じ。
-限界: FRINGE = 1・2 (片側だけ) は BEND と MULT で x の写像が 3e-5 違い (δ = 1e-2 の粒子。長さの補正とは別の原因。未調査)、試験は FRINGE = 3 だけ。ANGLE ≠ 0 の MULT の追跡だけ (gs で確認したのは K1 = 0、K2 以上なし、NORAD)。CALC (`tmultae`、K64 は同じ式を持つ) は pysad が FB1/FB2 を未対応。
-K1 ≠ 0 では BEND と MULT の y の写像が 1e-5 級で違う (別の原因。BEND の K1 のフリンジと MULT の違い。未調査)。
+限界: FRINGE = 1・2 の BEND との差は仕様の違い (BEND は F1 を両端に使う。BEND の -1・-2 と MULT の 1・2 を対にすると B331 の分だけ。test_v250_mult_k1_fringe.py)、試験は FRINGE = 3 だけ。ANGLE ≠ 0 の MULT の追跡だけ (gs で確認したのは K1 = 0、K2 以上なし、NORAD)。CALC (`tmultae`、K64 は同じ式を持つ) は pysad が FB1/FB2 を未対応。
+K1 ≠ 0 の BEND と MULT の y の食い違いは別の誤り (B340、test_v250_mult_k1_fringe.py)。
 """
 import io
 import os

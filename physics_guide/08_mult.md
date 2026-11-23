@@ -237,10 +237,14 @@ $$
 1. ずれ: `tbshift` (DX、DY、ROTATE)、`tbrot` (DROTATE、CHI2)。**CHI1・DZ は ANGLE ≠ 0 では使わない** (`tmulta` の引数に無い)。
 2. `ak = ak0*rtaper`。K0 と K1 の実部は**偏向磁石の本体**に回し (`ak0r`、`ak1r`)、`ak(0)`・`ak(1)` からは実部を除く (`tmulta.f:50-55`)。つまり、K0・K1 の実部は、BEND のように厳密な円弧 (K1 ≠ 0 は複合機能の本体) で解き、スキュー成分 (SK0、SK1) と K2 以上の成分だけを $A_s$ (8.15) のキックで入れる。**K0 と K1 のキックの級数 ($k \ge 1$ の項) は入らない**。ヘルプの「K0 と K1 は BEND のものと違う」は、K0 は ANGLE の上の追加の偏向 ($\mathrm{ANGLE} + \mathrm{K0}$ が全体の偏向)、K1 は BEND の K1 と同じ暗黙の定義 ($\mathrm{B160}$) であることを指すと読める (未確認)。
 3. 刻み: $n_{\min}$〜$n_{\max}$ (`ak` の 0 でない最小・最大の次数) について $\mathrm{ndiv} = 1 + \lfloor\max_n\sqrt{a_{\max}^{\,n-1}|\mathrm{ak}(n)L|/(6(n-1)!\,\varepsilon)}\rfloor$ ((8.8) と同じ形、`tmulta.f:69-78`。$n$ の下限が 0 からで、$n = 0$ では `fact(-1)` が要る。SK0 > 0 の MULT が pysad で未対応な理由)。上限 2000。
-4. 各スライス: `tbend` (半分、入口の端面と Maxwell フリンジ込み) → [キック (8.16) → `tbend` (全体)] を $\mathrm{ndiv} - 1$ 回 → キック → `tbend` (半分、出口の端面)。BEND の $L'$ の補正 ([05 章](05_bend.md) 式 (5.43)) は、`aln` から $(\phi\,\mathrm{fb})^2/(48L)\,\sin(\ldots)/\sin(\phi/2)/\mathrm{ndiv}$ ずつ引く形 (`tmulta.f:82-90`)。**同じ補正が `tffs.f:1368` でも `p_L_MULT` に入っている** (`tmulta` に渡る `al` はすでに補正済み) ので、**二重に補正している (K64 の誤り。gs で確認、v2 は修正 = B331)**。gs で、3 GeV/c、$L$ = 1 m、ANGLE = 0.3、E1 = 0.5、E2 = 0.3、F1 (FB1 = FB2) = 0.5、FRINGE = 3 の BEND と MULT の `TrackParticles` は $x$ で $2.8\times10^{-7}$、$z$ で $2.5\times10^{-8}$ 違う。MULT の $L$ を二重の補正の分 ($L - c(L) - c(L - c(L)) = L'_{\rm BEND}$、$L$ = 1.00018814134845) だけ先に伸ばすと、全成分で BEND と差 0 (ビット単位) になる。F1 なしでは差 0。限界: FRINGE = 3・K1 = 0 で確認。FRINGE = 1・2 の $x$ の $3\times10^{-5}$ と K1 ≠ 0 の $y$ の $10^{-5}$ 級の食い違いは別の原因 (未調査)。CALC `tmultae` も同じ式を持つが gs では確かめていない。
+4. 各スライス: `tbend` (半分、入口の端面と Maxwell フリンジ込み) → [キック (8.16) → `tbend` (全体)] を $\mathrm{ndiv} - 1$ 回 → キック → `tbend` (半分、出口の端面)。BEND の $L'$ の補正 ([05 章](05_bend.md) 式 (5.43)) は、`aln` から $(\phi\,\mathrm{fb})^2/(48L)\,\sin(\ldots)/\sin(\phi/2)/\mathrm{ndiv}$ ずつ引く形 (`tmulta.f:82-90`)。**同じ補正が `tffs.f:1368` でも `p_L_MULT` に入っている** (`tmulta` に渡る `al` はすでに補正済み) ので、**二重に補正している (K64 の誤り。gs で確認、v2 は修正 = B331)**。gs で、3 GeV/c、$L$ = 1 m、ANGLE = 0.3、E1 = 0.5、E2 = 0.3、F1 (FB1 = FB2) = 0.5、FRINGE = 3 の BEND と MULT の `TrackParticles` は $x$ で $2.8\times10^{-7}$、$z$ で $2.5\times10^{-8}$ 違う。MULT の $L$ を二重の補正の分 ($L - c(L) - c(L - c(L)) = L'_{\rm BEND}$、$L$ = 1.00018814134845) だけ先に伸ばすと、全成分で BEND と差 0 (ビット単位) になる。F1 なしでは差 0。限界: FRINGE = 3・K1 = 0 で確認。BEND と MULT の FRINGE = 1・2 の $x$ の食い違いは仕様の違い (BEND は FRINGE ≠ 0 で F1 を両端に使い、片側は -1・-2。MULT の FRINGE = 1・2 は片側。対にすれば差は $L'$ の二重補正の分だけ)。K1 ≠ 0 の $y$ の食い違いは別の誤り (§6.5、B340)。CALC `tmultae` も同じ式を持つが gs では確かめていない。
 5. 逆のずれ。
 
 CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。キックを $(1+\delta)$ で割らないなど、追跡と違う点がある (読みだけ)。
+
+### 6.5 K1 ≠ 0 の MULT の端 (FB1・FB2) が途中にも入る (K64 の誤り。gs で確認、v2 は修正 = B340)
+
+前半・後半の半スライスの `tbend` には (fb1, fb2) の両方が渡る (入口は mfr = -1、出口は mfr = -2)。K1 = 0 の `tbend` は mfr で fb を選ぶので正しいが、K1 ≠ 0 は `tbendi` に行き、`tbendi` は mfr に関係なく fb1 を入口に・fb2 を出口に入れる。このため、MULT の前半の終わりに FB2、後半の始めに FB1 の端のキックが余計に入る (同じ磁場の BEND は端が両端の 1 回ずつ)。gs で、3 GeV/c、$L$ = 1 m、ANGLE = 0.3、K1 = 0.3、E1 = 0.5、E2 = 0.3、F1 (FB1 = FB2) = 0.5 の BEND と MULT は、F1 = 0 で 2.2e-11、F1 ≠ 0 で両端 1.41e-4 ($y$・$p_y$)、入口のみ・出口のみで各 7.0e-5 (余計な端 1 つぶん) 違う。v2 は前半に fb2、後半に fb1 を渡さず、MULT が BEND と 1e-12 以内で一致する。限界: NORAD の追跡だけ。RAD ON の `tbendi` の first・last の扱い、CALC (`tmultae` → `tbende`) は未確認。
 
 ## 7. 行列 (CALC・Emittance[])
 
@@ -268,7 +272,7 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 - **端面の角の式 (8.9)**: 高次の項を $z\,C(z)$ とする根拠は未導出 (§4.4)。K0 の極限だけ標準の端面収束と一致。pysad v2 は別の (幾何厳密な) 式で、K64 と違う。
 - **刻み数の式 (8.8)** の係数 6 の根拠。2 次の次数は数値で確認した。
 - **ANGLE ≠ 0**: (8.15) は Maxwell 方程式の厳密な解 ($k$ について無限級数) の $n + k \le 21$ での打ち切り。K0・K1 の ($k \ge 1$ の) 項は入れず、本体 (BEND の円弧) で扱う。追跡との比較 (§8) は、Maxwell フリンジに起因する $\sim 2 \times 10^{-7}$ の残りまでで、これ以上は分離していない。複数の多極 ($n \ge 3$) や、スキュー (SK$n$)・K1 ≠ 0 の ANGLE ≠ 0 は、ODE との比較をしていない。
-- **$L'$ の補正の二重適用** (§6.4): gs で確認済み (K64 の誤り、v2 は修正。B331)。未確認: FRINGE = 1・2、K1 ≠ 0 で BEND と MULT の追跡の食い違い (別の原因)、CALC。
+- **$L'$ の補正の二重適用** (§6.4): gs で確認済み (K64 の誤り、v2 は修正。B331)。FRINGE = 1・2 の BEND との食い違いは仕様の違い。未確認: CALC。
 
 ## 付録 A. ヘルプの記述・K64 との違い (MULT)
 
@@ -285,7 +289,7 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 | `K0`・`K1` の説明 | 「Positive sign means horizontal focusing」は K0 にも付く (K0 は偏向であって収束ではない。コピーの誤記とみられる。確認していない)。SK$n$ の説明の「$L$ is the length」(K$n$ は effective length)。 |
 | ヘルプに無いもの | (1) ANGLE = 0 の分割の構成 (8.7) と刻み数の式 (8.8)。(2) $A_s$ の導出と $g_{kn}$ の漸化式 (§6.2)。(3) 端面の角の式 (8.9)、FB1・FB2 の式。(4) ずれの `tsolrot` の式の詳細。 |
 
-**K64 の誤り (確定、v2 は修正)**: §6.4 の $L'$ の二重補正 (B331)。**K64 の実装の癖・疑い**: K1 の暗黙の定義 (B160) は MULT の K1 にも同じ。pysad の k64 は `tmulk` (K64)、v2 は面の厳密な幾何 (B223・B224・B292)。
+**K64 の誤り (確定、v2 は修正)**: §6.4 の $L'$ の二重補正 (B331)、§6.5 の K1 ≠ 0 の端の重複 (B340)。**K64 の実装の癖・疑い**: K1 の暗黙の定義 (B160) は MULT の K1 にも同じ。pysad の k64 は `tmulk` (K64)、v2 は面の厳密な幾何 (B223・B224・B292)。
 
 ## 付録 B. この章で使う Fortran の変数名
 

@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**K1 ≠ 0・ANGLE ≠ 0 の MULT の FB1・FB2 の端が MULT の途中にも入る (B340、v2 のみ。k64 は K64 のまま) と BEND・MULT の FRINGE の対応**: K64 の `tmulta` は前半・後半の半スライスの `tbend` に fb1・fb2 の両方を渡す。K1 = 0 は mfr で選ぶが、K1 ≠ 0 の `tbendi` は mfr を見ず、MULT の途中に FB2・FB1 の端が余計に入る (gs で、ANGLE = 0.3・K1 = 0.3・F1 = 0.5 の BEND と MULT が両端で 1.41e-4、入口のみ・出口のみで各 7.0e-5 違い、F1 = 0 では 2.2e-11)。v2 は途中に渡さず、MULT が BEND と 1e-12 以内で一致する。BEND と MULT の FRINGE = 1・2 の x の食い違い (3e-5 級) は誤りではなく仕様の違い (BEND の FRINGE ≠ 0 は F1 を両端に、MULT の 1・2 は片側。BEND の -1・-2 と MULT の 1・2 を対にすると差は B331 の分だけ)。記録 `docs/history/B340_mult_k1_fringe.md`、試験 `test_v250_mult_k1_fringe.py`。
+
 **`tsolrot` の傾いた枝の更新の符号の不整合 (B337、K64 の誤り。pysad は未実装のため v2・k64 とも変更なし) と MULT の CHI1・CHI2 の符号の確認**: K64 の `tsolrot` (SOL 領域内の MULT・QUAD の CHI1・CHI2・DZ、Bz ≠ 0) は、面の条件と位置・運動量の更新で dcosphi の符号が逆で、長さ 0 の傾いた MULT が恒等写像にならない (gs: px = 0.05・bz = 1.3 /m で 6.5e-6。numpy に写した式と同じ大きさ)。pysad の翻訳の誤りではない (この枝は未実装)。MULT の CHI1・CHI2 の符号はヘルプの R₁・R₂ と同じことを gs の厚い四極 (L = 1 m、CHI = ±0.05) で確認した (ODE と 0.13%)。記録 `docs/history/B337_tsolrot_tilt.md`、試験 `test_v250_tsolrot_tilt.py`。
 
 **Emittance[] (POL) のスピン軌道結合の `dbtz` の割り算 (B336、v2 のみ。k64 は K64 のまま)**: K64 の `tradke` (`photons.f:1550`) は btz = xpzb/pr² − blz の微分を dxpzb/pr − dblz と書く (x・y 成分は pr²。誤植)。δ ≠ 0 の軌道で、スピン軌道結合 D の z の行が誤る (追跡のスピン回転の中心差分との差が、15° の偏向磁石で δ = 0.05 に 13%、v2 は 1.2%)。gs では確認できない (K64 の Polarization は NaN)。記録 `docs/history/B336_spin_dbtz.md`、試験 `test_v250_spin_dbtz.py`。
