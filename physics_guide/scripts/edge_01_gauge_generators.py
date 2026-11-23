@@ -4,9 +4,10 @@
 (a) 偏向磁石の直線の端: A = (A_x, 0, A_s)、A_x = -(y²/2) g' + (y⁴/24) g'''、A_s = -x g (全体に 1/ρ)。∇×A が (5.31) の場に一致。
 (b) 四極: A_x = -K'(x³ + 3xy²)/12、A_y = K'(3x²y + y³)/12、A_s = -K(x²-y²)/2。∇×A が (4.25) の場に一致。
 (c) 2m 極 (m = 2, 3, 4): A_s = -κ Re w^m/m!、a_w = a_x + i a_y = κ' w (w^m/(m+1) - w̄^m)/(4 m!)。∇×A = ∇Φ (7.16)。
-(d) 硬い端 (κ' = κ0 δ(s)) の生成関数 f = -(1/p) Re(p_w conj(a_w)) の積分 → (4.27)、(7.17)。偏向磁石は f = (y²/2ρ) p_x/p_z。
+(d) 硬い端 (κ' = κ0 δ(s)) の生成関数 f = -∫H₁ ds = +κ0 (p_x ã_x + p_y ã_y)/p → (4.27)、(7.17)。偏向磁石は f = -(y²/2ρ) p_x/p_z。
+    約束は C_poisson_lie.md: exp(:f:) の流れは Δx = -∂f/∂p_x、Δp_x = +∂f/∂x、Δz = -∂f/∂p (f = -∫H_ham ds)。
 (e) 偏向磁石の y⁴ の項 (g''' = δ'') の寄与 (p_y に依存する項) と、p_y² の補正。
-(f) ソレノイド: A_φ = r b/2 - r³ b''/16。b'' = b0 δ'(s) の項から f = -(b0/(8 p p_z)) p_φ p_r (ヘルプの H の paraxial 形)。
+(f) ソレノイド: A_φ = r b/2 - r³ b''/16。b'' = b0 δ'(s) の項から f = +(b0/(8 p_z²)) p_φ p_r (paraxial で p_z → p。ヘルプの H = -(B_z/(8p²Bρ)) p_φ p_r は H = -f に当たる)。
 """
 import sympy as sp
 import _common as C
@@ -71,36 +72,36 @@ for m in (2, 3, 4):
     print('  m = %d: ∇×A - ∇Φ = %s' % (m, [sp.factor(r) for r in res]))
 print("  (残りは κ''' (k3) の項だけ。b_s = ∂Φ/∂s の κ''' の項で、A の次の次数の補正が要る。κ' (k1)・κ'' (k2) の次数では 0)")
 
-print('\n== (d) 硬い端の生成関数 f = ∫H₁ ds、H₁ = -(p_x a_x + p_y a_y)/p (p_z ≈ p)。κ\' = κ0 δ(s) ==')
+print('\n== (d) 硬い端の生成関数 f = -∫H₁ ds、H₁ = -(p_x a_x + p_y a_y)/p (p_z ≈ p)。κ\' = κ0 δ(s) ==')
 k0 = sp.symbols('kappa0', real=True)
 for m in (2, 3, 4):
     a_w = sp.expand(w * (w**m / (m + 1) - wb**m)) / (4 * sp.factorial(m))          # κ' の係数
     ax_, ay_ = sp.re(a_w), sp.im(a_w)
-    f = sp.expand(-k0 * (px * ax_ + py * ay_) / p)
-    dx_, dy_ = sp.diff(f, px), sp.diff(f, py)
+    f = sp.expand(k0 * (px * ax_ + py * ay_) / p)                 # f = -∫H₁ ds = +κ0 (p·ã)/p
+    dx_, dy_ = -sp.diff(f, px), -sp.diff(f, py)                 # Δx = -∂f/∂p_x (C_poisson_lie.md の約束)
     dw_formula = -k0 / p * a_w
     diff_ = sp.simplify(sp.expand(dx_ + sp.I * dy_ - dw_formula))
-    print('  m = %d: Δw = ∂f/∂p_x + i ∂f/∂p_y と -(κ0/p) a_w の差 = %s' % (m, diff_))
+    print('  m = %d: Δw = -∂f/∂p_x - i ∂f/∂p_y と -(κ0/p) ã_w の差 = %s' % (m, diff_))
     if m == 2:
-        f27 = k0 / (12 * p) * (x**3 * px + 3 * x * y**2 * px - 3 * x**2 * y * py - y**3 * py)
+        f27 = -k0 / (12 * p) * (x**3 * px + 3 * x * y**2 * px - 3 * x**2 * y * py - y**3 * py)
         print('         (4.27) の f_in との差 = %s' % sp.simplify(f - f27))
 rho = sp.symbols('rho', positive=True)
 pz = sp.sqrt(p**2 - px**2 - py**2)
-f_bend = sp.Rational(1, 2) * y**2 / rho * px / pz
-print('  偏向磁石: a_x = -y² g\'/(2ρ) → f = -(p_x a_x/p_z) の ∫ds = (y²/2ρ) p_x/p_z。Δx = ∂f/∂p_x = %s' % sp.simplify(sp.diff(f_bend, px)))
-print('     Δp_y = -∂f/∂y = %s、Δz = ∂f/∂p = %s' % (sp.simplify(-sp.diff(f_bend, y)), sp.simplify(sp.diff(f_bend, p))))
+f_bend = -sp.Rational(1, 2) * y**2 / rho * px / pz
+print('  偏向磁石: a_x = -y² g\'/(2ρ) → f = -∫H₁ ds = -(y²/2ρ) p_x/p_z。Δx = -∂f/∂p_x = %s' % sp.simplify(-sp.diff(f_bend, px)))
+print('     Δp_y = +∂f/∂y = %s、Δz = -∂f/∂p = %s' % (sp.simplify(sp.diff(f_bend, y)), sp.simplify(-sp.diff(f_bend, p))))
 
 print('\n== (e) 偏向磁石の y⁴ の項: A_x の y⁴ g\'\'\'/(24ρ) (g\'\'\' = δ\'\') の寄与 ==')
 sx = sp.symbols('sx', real=True)
 y_s = y + py / pz * sx                      # 自由な運動での y(s) (ε = 0 次)
-F = -px * y_s**4 / (24 * rho * pz)
+F = px * y_s**4 / (24 * rho * pz)                    # f = -∫H₁ ds、H₁ = -p_x a_x/p_z、a_x の y⁴ の項 = y⁴ g'''/(24ρ)
 f4 = sp.simplify(sp.diff(F, sx, 2).subs(sx, 0))        # ∫δ''(s) F(s) ds = F''(0)
 print('  f₄ = F\'\'(0) = %s' % f4)
 f2 = f_bend
 pv = sp.sqrt(p**2 - px**2)
 ser = sp.series((f2 + f4).subs(py, sp.Symbol('t') * py), sp.Symbol('t'), 0, 3).removeO().subs(sp.Symbol('t'), 1)
-ref = y**2 / (2 * rho) * px / pv * (1 - py**2 / (2 * pv**2))
-print('  f₂ + f₄ の p_y² までの展開 - (y²/2ρ)(p_x/p_v)(1 - p_y²/(2 p_v²)) = %s   (p_v = √(p² - p_x²))' % sp.simplify(ser - ref))
+ref = -y**2 / (2 * rho) * px / pv * (1 - py**2 / (2 * pv**2))
+print('  f₂ + f₄ の p_y² までの展開 - (-(y²/2ρ)(p_x/p_v)(1 - p_y²/(2 p_v²))) = %s   (p_v = √(p² - p_x²))' % sp.simplify(ser - ref))
 print('  → K64 の f (5.34)・(5.36) は p_y を p_z に入れない (p_v = √(p² - p_x²))。この 4 次 (y² p_y² p_x/ρ) の項は入れていない。')
 
 print('\n== (f) ソレノイドの端: A_φ = r b/2 - r³ b\'\'/16 (b(s) = 軸上の B_z/Bρ) ==')
@@ -116,13 +117,13 @@ print('  b_x - b_r x/r = %s、b_y - b_r y/r = %s、b_s - (b - r² b\'\'/4) = %s'
     sp.simplify(bx - bx_ref), sp.simplify(by - by_ref), sp.simplify(sp.expand(bs - bz_ref))))
 print('  (b_r = -r b\'/2 + r³ b\'\'\'/16、b_z = b - r² b\'\'/4。b\'\'\'\' 以上は打ち切り。)')
 pphi = x * py - y * px
-# 端の項: H₁ = +p_φ r² b''/(16 p_z)。 b'' = b0 δ'(s): ∫δ' F ds = -F'(0)
+# 端の項: H₁ = +p_φ r² b''/(16 p_z)。 b'' = b0 δ'(s): ∫δ' F ds = -F'(0)。f = -∫H₁ ds = +b0 F'(0)
 b0 = sp.symbols('b0', real=True)
 xs_ = x + px / pz * sx
 ys_ = y + py / pz * sx
 F = pphi * (xs_**2 + ys_**2) / (16 * pz)
-f_sol = sp.simplify(-b0 * sp.diff(F, sx).subs(sx, 0))
+f_sol = sp.simplify(b0 * sp.diff(F, sx).subs(sx, 0))
 pr_ = x * px + y * py
-print('  f = -b0 F\'(0) = %s' % f_sol)
-print('  f - (-(b0/(8 p_z²)) p_φ p_r) = %s    (p_z² → p² (paraxial) がヘルプの H = -Bz/(8 p² Bρ) p_φ p_r)' % sp.simplify(f_sol + b0 / (8 * pz**2) * pphi * pr_))
+print('  f = +b0 F\'(0) = %s' % f_sol)
+print('  f - (+(b0/(8 p_z²)) p_φ p_r) = %s    (p_z² → p² (paraxial)。ヘルプの H = -Bz/(8 p² Bρ) p_φ p_r は H = -f に当たる)' % sp.simplify(f_sol - b0 / (8 * pz**2) * pphi * pr_))
 print('  (p_φ = x p_y - y p_x は自由な運動で保存するので、微分は r² だけに掛かる。)')

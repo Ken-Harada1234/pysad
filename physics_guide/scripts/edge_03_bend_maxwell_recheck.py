@@ -161,3 +161,9 @@ for dl in (0.0, 0.1, -0.1):
     idx = np.unravel_index(np.argmax(diffs), diffs.shape)
     print('        解析行列と COD 更新の微分が最も違う成分 = (%d, %d)、行列 %.6e、更新の微分 %.6e' % (idx[0] + 1, idx[1] + 1, Ma[idx], Mc[idx]))
 print('  → CALC の解析行列は p² 型 (Δx) と、Δz = -bf px p (p¹) の微分に一致し、COD の更新 (p¹・p⁰) と合わない。')
+
+print('\n== (d) CALC の更新が因子 p を落とすことによる 1 つの端面の Δx のずれの大きさ ==')
+for yy_, dl_, rho_ in ((0.010, 0.05, 10.0), (0.002, 0.05, 50.0), (0.010, 0.01, 10.0)):
+    dx_true = yy_**2 / (2 * rho_)          # 桁の見積り: Δx ≈ y²/(2ρ_b) (p_x = 0 では (y²/2ρ_b)/p。p ≈ 1 とした)
+    print('  y = %.0f mm、δ = %.2f、ρ_b = %.0f m: δ y²/(2ρ_b) = %.2e m  (y²/(2ρ_b) = %.2e m)' % (yy_ * 1e3, dl_, rho_, dl_ * dx_true, dx_true))
+print('  (入口と出口で f が逆符号なので、Δx のずれも逆符号。1 つの端面のずれは上の値。入口と出口の合計は、対称な磁石ではほぼ相殺する (未確認))')

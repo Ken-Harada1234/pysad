@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """ソレノイドの端の非線形フリンジ (06_edge_fringe.md §8): H = -(Bz/(8 p² Bρ)) p_φ p_r。
 
-(a) K64 の tsfrin (pysad の _tsfrin) は、f = -(b/8) p_φ p_r (p = 1) の厳密な流れ (ハミルトン方程式の DOP853) と一致するか。
+(a) K64 の tsfrin (pysad の _tsfrin) は、f = +(b/8) p_φ p_r (p = 1。ヘルプの H = -(b/8) p_φ p_r は H = -f) の exp(:f:) の厳密な流れ (DOP853) と一致するか。
 (b) Maxwell を満たす端の磁場 (b_z = b g - r² b g''/4、b_r = -r b g'/2 + r³ b g'''/16、g = (1 + tanh(s/d))/2) の中のローレンツ力の積分と、
     モデル「自由な運動 → 硬い端 (正準運動量が連続) → 一様な Bz の中」の差を、tsfrin の写像と比べる (d → 0 に外挿)。
 """
@@ -16,7 +16,7 @@ import _common as C
 C.start(__file__)
 from pysad import track6 as t6
 
-print('== (a) tsfrin と f = -(b/8) p_φ p_r の流れ ==')
+print('== (a) tsfrin と f = +(b/8) p_φ p_r の流れ ==')
 b = 1.7
 
 
@@ -26,29 +26,19 @@ def tsf(c0, dbz):
     return q.c[:5].copy()
 
 
-def flow(c0, dbz):
-    def rhs(tau, v):
-        x, px, y, py = v[:4]
-        pphi = x * py - y * px
-        pr = x * px + y * py
-        f_px = -(dbz / 8) * (-y * pr + pphi * x)
-        f_py = -(dbz / 8) * (x * pr + pphi * y)
-        f_x = -(dbz / 8) * (py * pr + pphi * px)
-        f_y = -(dbz / 8) * (-px * pr + pphi * py)
-        return [f_px, -f_x, f_py, -f_y, -(dbz / 8) * 0.0]
-    r = solve_ivp(rhs, (0, 1), [c0[0], c0[1], c0[2], c0[3], 0.0], rtol=1e-13, atol=1e-18, method='DOP853')
-    v = r.y[:, -1]
-    # z: dz/dτ = ∂f/∂p (f = -(b/(8p²)) p_φ p_r → ∂f/∂p = +(b/(4p³)) p_φ p_r)。p_φ p_r は τ で変わるので積分
-    return v
-
-
 def flow_z(c0, dbz):
+    """f = +(b/(8p²)) p_φ p_r (C_poisson_lie.md の約束: Δx = -∂f/∂p_x、Δp_x = +∂f/∂x、Δz = -∂f/∂p) の流れ (τ = 0 → 1)。
+    p_φ p_r は τ で変わるので z も積分する (dz/dτ = -∂f/∂p = +(b/(4p³)) p_φ p_r)。"""
     def rhs(tau, v):
         x, px, y, py, z = v
         pphi = x * py - y * px
         pr = x * px + y * py
-        return [-(dbz / 8) * (-y * pr + pphi * x), (dbz / 8) * (py * pr + pphi * px),
-                -(dbz / 8) * (x * pr + pphi * y), (dbz / 8) * (-px * pr + pphi * py), (dbz / 4) * pphi * pr]
+        k = dbz / 8                      # f = k p_φ p_r (p = 1)
+        f_px = k * (-y * pr + pphi * x)  # ∂f/∂p_x (∂p_φ/∂p_x = -y、∂p_r/∂p_x = x)
+        f_py = k * (x * pr + pphi * y)
+        f_x = k * (py * pr + pphi * px)  # ∂f/∂x (∂p_φ/∂x = p_y、∂p_r/∂x = p_x)
+        f_y = k * (-px * pr + pphi * py)
+        return [-f_px, f_x, -f_py, f_y, 2 * k * pphi * pr]
     return solve_ivp(rhs, (0, 1), [c0[0], c0[1], c0[2], c0[3], 0.0], rtol=1e-13, atol=1e-18, method='DOP853').y[:, -1]
 
 
