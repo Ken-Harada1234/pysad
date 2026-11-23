@@ -2,7 +2,7 @@
 
 **この章で分かること**: 02〜11 章で作った**要素ごとのハミルトニアンと写像**が、リング全体の**非線形な共鳴・振幅依存チューンシフト (ADTS) の解析**にどうつながるかを、途中式つきで導く。(1) 要素の kick・運動学的な項のハミルトニアン (§3.1)、(2) 正規化座標・複素変数 $\zeta^\pm$・ポアソン括弧 (§3.2〜3.3)、(3) 要素の写像の合成が 1 周の写像になること (順序つき指数の展開) と、共鳴駆動項 (RDT) $h_{jklmp}$ の導出 (§3.4〜3.6)、(4) 1 次の摂動 (8 極・運動学・端部フリンジ) と 2 次の摂動 (6 極の対) による ADTS の導出 (§3.7〜3.8)、(5) クロマティシティ、1 本の共鳴の近くのハミルトニアン、強さと振幅の次数の勘定 (§3.9〜3.11)、(6) 周波数マップ・局所運動量アクセプタンス (LMA) の式 (§3.12)、(7) 追跡の写像から係数を取り出す方法 (§4)。
 
-**範囲**: §3 と §4 の式は本章で導出し、sympy ([nl_01_lie_rdt_adts_derivations.py](scripts/nl_01_lie_rdt_adts_derivations.py)、出力 [nl_01_lie_rdt_adts_derivations.out.txt](outputs/nl_01_lie_rdt_adts_derivations.out.txt)) と、薄い 6 極・8 極の列の写像の追跡 ([nl_02_adts_formula_vs_tracking.py](scripts/nl_02_adts_formula_vs_tracking.py)、出力 [nl_02_adts_formula_vs_tracking.out.txt](outputs/nl_02_adts_formula_vs_tracking.out.txt)) で確かめた。nl_02 は pysad を使わない自己完結の模型で、**pysad の `resdrive`・`rdt2nd` の数値との突き合わせは本章では取り直していない**。pysad の解析と追跡の比較 (§6) は [docs/24](../docs/24_adts_rdt_primer.md)・[docs/25](../docs/25_resonance_terms_adts.md)・[docs/26](../docs/26_frequency_map_lma.md) からの転記。導出していないもの (偏向磁石の 3 次の生成関数の解析式、厚い要素の閉形式、$\delta\ne0$ の ADTS、$J^2$ の項など) は §8 に分けて書く。
+**範囲**: §3 と §4 の式は本章で導出し、sympy ([nl_01_lie_rdt_adts_derivations.py](scripts/nl_01_lie_rdt_adts_derivations.py)、出力 [nl_01_lie_rdt_adts_derivations.out.txt](outputs/nl_01_lie_rdt_adts_derivations.out.txt)) と、薄い 6 極・8 極の列の写像の追跡 ([nl_02_adts_formula_vs_tracking.py](scripts/nl_02_adts_formula_vs_tracking.py)、出力 [nl_02_adts_formula_vs_tracking.out.txt](outputs/nl_02_adts_formula_vs_tracking.out.txt)) で確かめた。途中式の補足 (ヤコビ恒等式と BCH、起点の独立性、共鳴近傍の写像、Hann 窓の裾) は [nl_03_gap_fills.py](scripts/nl_03_gap_fills.py) (出力 [nl_03_gap_fills.out.txt](outputs/nl_03_gap_fills.out.txt))。nl_02 は pysad を使わない自己完結の模型で、**pysad の `resdrive`・`rdt2nd` の数値との突き合わせは本章では取り直していない**。pysad の解析と追跡の比較 (§6) は [docs/24](../docs/24_adts_rdt_primer.md)・[docs/25](../docs/25_resonance_terms_adts.md)・[docs/26](../docs/26_frequency_map_lma.md) からの転記。導出していないもの (偏向磁石の 3 次の生成関数の解析式、厚い要素の閉形式、$\delta\ne0$ の ADTS、$J^2$ の項など) は §8 に分けて書く。
 
 **前提**: 要素の章 (02〜11)、[C_poisson_lie.md](C_poisson_lie.md) (ポアソン括弧とリー演算子)、[03_symplectic_integrators.md](03_symplectic_integrators.md) (BCH)。
 
@@ -188,7 +188,16 @@ $$
 
 括弧の符号を逆にした $F$ では、$q$ の 3 次の項が $-18c_1c_2\,p\,q^2$、$p$ の 3 次の項が $+18c_1c_2\,p^2q$ だけ違ってしまう (sympy)。
 
-**(18.16) の導出**: 2 つの指数の積の BCH 公式 $e^Ae^B = e^{A + B + \frac12[A, B] + \cdots}$ を、$A = :F_1:$、$B = :F_2:$ に使う。リー演算子の交換子は $[:a:, :b:]\,g = [a, [b, g]] - [b, [a, g]] = [[a, b], g]$ (ヤコビ恒等式。sympy で具体的な多項式について確認)、つまり $[:a:, :b:] = :[a, b]:$ なので、指数の中の $\frac12[A, B] = \frac12:[F_1, F_2]:$。3 つの指数の積は $e^ae^be^c = \exp\{a + b + c + \frac12([a,b] + [a,c] + [b,c]) + \cdots\}$ (3 次式 $a, b, c$ について 3 次まで sympy で確認)。
+**(18.16) の導出**: 2 つの指数の積の BCH 公式 $e^Ae^B = e^{A + B + \frac12[A, B] + \cdots}$ ($[A, B] = AB - BA$ は演算子の交換子) を、$A = :F_1:$、$B = :F_2:$ に使う。まず演算子の交換子を、括弧 $[F_1, F_2]$ の演算子 $:[F_1, F_2]:$ に結びつける (手順 1〜2)。
+
+1. 演算子 $:a:$ は $:a:\,g = [a, g]$。交換子を関数 $g$ に作用させると、$[:a:, :b:]\,g = [a, [b, g]] - [b, [a, g]]$。
+2. ヤコビ恒等式 $[a, [b, g]] + [b, [g, a]] + [g, [a, b]] = 0$ に、$[g, a] = -[a, g]$、$[g, [a, b]] = -[[a, b], g]$ を入れると $[a, [b, g]] - [b, [a, g]] - [[a, b], g] = 0$。したがって $[:a:, :b:]\,g = [[a, b], g]$、すなわち
+   $$[:a:, :b:] = :[a, b]:$$
+   (一般の 3 次式 $a, b$ と $g$ に (18.9) の括弧を使って sympy で確認: [nl_03_gap_fills.out.txt](outputs/nl_03_gap_fills.out.txt) (a))。
+3. 手順 2 を BCH の $\frac12[A, B]$ に使うと、2 つの指数の積は $e^{:F_1:}e^{:F_2:} = \exp\{:F_1 + F_2 + \frac12[F_1, F_2]:\ +\cdots\}$ で、(18.16) の形になる (残りの項は 3 重の括弧 $[F_1, [F_1, F_2]]$ など。$F_i$ が 3 次式ならこれは 5 次式)。
+4. 3 つの指数の積は、BCH を 2 回使う。1 回目: $e^ae^b = e^{a + b + \frac12[a, b]}$ (3 重の括弧は 5 次式なので落とす)。2 回目: $e^{a + b + \frac12[a, b]}\,e^c = \exp\bigl\{(a + b + \tfrac12[a, b]) + c + \tfrac12[a + b + \tfrac12[a, b],\ c]\bigr\}$。最後の括弧を展開すると $\frac12[a, c] + \frac12[b, c] + \frac14[[a, b], c]$ で、最後の項は 5 次式。したがって
+   $$e^ae^be^c = \exp\Bigl\{a + b + c + \tfrac12\bigl([a,b] + [a,c] + [b,c]\bigr) + (5\text{ 次以上})\Bigr\}$$
+   (3 次式 $a, b, c$ について、$\zeta$ への作用を 3 次まで比べて確認: nl_03 (b))。
 
 **$N$ 個の要素**: 3 次式どうしの括弧は 4 次式 ($3 + 3 - 2 = 4$)、3 重の括弧は 5 次式なので、4 次までは
 
@@ -454,7 +463,23 @@ $$
 
 ($h^{(4)}_{22000}$: 8 極・運動学・端部フリンジなどの 1 次の項 (§3.7)。$h_{30000} = \sum c_{30}$、$h_{21000} = \sum c_{21}$ は全周の和。)
 
-**起点の取り方に依らないこと**: 要素 1 個 ($c_1$) を、起点の反対側に移す (位相 $e^{3i\mu}$ を足して最後に回す)。$P_3$ の変化は $\mathrm{Im}[X(e^{i\theta} + 1)]$、$|h_{30000}|^2$ の変化は $2\mathrm{Re}[X(e^{i\theta} - 1)]$ ($X = c_1\bar S'$、$S' = $ 他の要素の和、$\theta = 3\mu$)。$e^{i\theta} + 1 = 2\cos\frac\theta2\,e^{i\theta/2}$、$e^{i\theta} - 1 = 2i\sin\frac\theta2\,e^{i\theta/2}$ ($\mathrm{Re}(iz) = -\mathrm{Im}\,z$) から、$K_{2200}$ の変化は $-18\cdot2\cos\frac\theta2\,\mathrm{Im}(Xe^{i\theta/2}) - 9\cot\frac\theta2\cdot2\cdot(-2\sin\frac\theta2)\,\mathrm{Im}(Xe^{i\theta/2}) = (-36 + 36)\cos\frac\theta2\,\mathrm{Im}(Xe^{i\theta/2}) = 0$ (調和 1 は係数が $-6$、$-3$ で同じ)。**$h_4$ の対の項の起点依存は、正規形の補正の $\cot$ の項が打ち消す**。数値でも確かめた (nl_02 (D): 起点を最初の 6 極の後ろに移した式が小数 6 桁で一致)。
+**起点の取り方に依らないこと**。1 周の写像の起点 (周期の切れ目) を、要素 1 個ぶん先に動かしても ADTS が変わらないことを、(18.35) の $\mathrm{Im}\,P_3$ の項と $\cot$ の項の変化が打ち消し合うことで示す。$c_e \equiv c_{30}(e)$ (要素 $e$ の $\zeta^3$ の係数) は、起点から測った位相 $\mu_e$ を使って $c_e = |c_e|\,e^{3i\mu_e}$ の形で、$c_{21}$ は $e^{i\mu_e}$ の形である ((18.7) で $x\propto w\zeta$、$w\propto e^{i\mu}$ だから、$x^3$ の $\zeta^3$ の係数は $w^3\propto e^{3i\mu}$、$\zeta^2\bar\zeta$ は $w^2\bar w\propto e^{i\mu}$)。
+
+1. **起点を動かしたときの係数**: 起点を最初の要素 (1 とする) の直後に動かすと、すべての位相が $\mu_1$ だけ引かれ ($c_e\to c_e e^{-3i\mu_1}$、全要素に共通の位相因子)、要素 1 は最後に回って、さらに 1 周ぶん $\mu$ ($= 2\pi\nu$) が加わる ($c_1\to c_1e^{-3i\mu_1}e^{3i\mu}$)。$P_3$ ($c$ の双線形で $c_l\bar c_e$ の形)、$|h_{30000}|^2$ は共通の位相因子で変わらないので、**要素 1 の係数だけに $e^{i\theta}$ ($\theta = 3\mu$) を掛け、要素 1 を和の最後に回す**、と考えてよい。
+2. **$P_3$ の変化**: $S' \equiv \sum_{e\ne1}c_e$、$P_3' \equiv$ (要素 1 以外のあいだの対の和) とする。動かす前は、要素 1 が先頭なので、$l > e = 1$ の対は $\sum_{l\ne1}c_l\bar c_1 = S'\bar c_1$:
+   $$P_3 = P_3' + S'\,\bar c_1.$$
+   動かしたあとは、要素 1 が最後 ($l = 1$、$e$ はその他すべて) で、係数が $c_1e^{i\theta}$:
+   $$P_3^{\rm new} = P_3' + c_1e^{i\theta}\,\bar S'.$$
+   $X \equiv c_1\bar S'$ とおくと、$S'\bar c_1 = \bar X$ なので
+   $$\Delta P_3 = Xe^{i\theta} - \bar X,\qquad \mathrm{Im}\,\Delta P_3 = \mathrm{Im}(Xe^{i\theta}) + \mathrm{Im}\,X = \mathrm{Im}\bigl[X(e^{i\theta} + 1)\bigr]\quad(\mathrm{Im}\,\bar X = -\mathrm{Im}\,X).$$
+3. **$|h_{30000}|^2$ の変化**: $h_{30000} = S' + c_1$ が $S' + c_1e^{i\theta}$ になる。$|S' + c|^2 = |S'|^2 + |c|^2 + 2\,\mathrm{Re}(\bar S'c)$ なので
+   $$\Delta|h_{30000}|^2 = 2\,\mathrm{Re}\bigl[\bar S'c_1(e^{i\theta} - 1)\bigr] = 2\,\mathrm{Re}\bigl[X(e^{i\theta} - 1)\bigr].$$
+4. **$\theta/2$ で書き直す**: $e^{i\theta} + 1 = e^{i\theta/2}(e^{i\theta/2} + e^{-i\theta/2}) = 2\cos\frac\theta2\,e^{i\theta/2}$、$e^{i\theta} - 1 = 2i\sin\frac\theta2\,e^{i\theta/2}$。$\mathrm{Re}(iw) = -\mathrm{Im}\,w$ を使うと
+   $$\mathrm{Im}\,\Delta P_3 = 2\cos\tfrac\theta2\,\mathrm{Im}\bigl(Xe^{i\theta/2}\bigr),\qquad \Delta|h_{30000}|^2 = -4\sin\tfrac\theta2\,\mathrm{Im}\bigl(Xe^{i\theta/2}\bigr).$$
+5. **$K_{2200}$ の変化**: (18.35) の係数 $-18$ (Im $P_3$) と $-9\cot3\pi\nu_x = -9\cot\frac\theta2$ ($\theta = 3\mu = 6\pi\nu$ なので $3\pi\nu = \theta/2$) を使い、
+   $$\Delta K_{2200} = -18\cdot2\cos\tfrac\theta2\,\mathrm{Im}(\cdots) - 9\cot\tfrac\theta2\cdot\bigl(-4\sin\tfrac\theta2\bigr)\mathrm{Im}(\cdots) = (-36 + 36)\cos\tfrac\theta2\,\mathrm{Im}\bigl(Xe^{i\theta/2}\bigr) = 0.$$
+   調和 1 ($\zeta^2\bar\zeta$) は、$\theta\to\mu$、係数が $-6$ と $-3\cot\frac\mu2$ で、同じ計算が $(-12 + 12) = 0$ になる。8 極などの $h^{(4)}_{22000}$ は実数で位相に依らない。
+6. したがって **$h_4$ の対の項の起点依存は、正規形の補正の $\cot$ の項が打ち消す**。数値で確認: ランダムな 5 要素 (位相・強さ・$c_{21}$ も任意、$\nu_x = 0.2347$) で起点を 1 つずつ動かして、(18.35) の $P$ と $\cot$ の項の和は 15 桁以上一致する ($-0.87037331765626$。要素 1 個の移動の $\Delta P_3$、$\Delta|h|^2$ の式との差も $10^{-15}$ 程度): [nl_03_gap_fills.out.txt](outputs/nl_03_gap_fills.out.txt) (c)。nl_02 (D) では、起点を最初の 6 極の後ろに移した式が小数 6 桁で一致する。
 
 **1 個の薄い 6 極** ($P_3 = P_1 = 0$、$h_4^{(4)} = 0$): $|h_{30000}| = a/48$、$|h_{21000}| = a/16$ ($a = K_2L\beta^{3/2}$) を (18.35) に入れる。$9/48^2 = 1/256$、$3/16^2 = 3/256$:
 
@@ -493,14 +518,21 @@ $$
 
 ### 3.10 1 本の共鳴の近く
 
-共鳴 $\mathbf m\cdot\boldsymbol\nu = N$ の近くでは、その調和は (18.30) で消せない。残して、非共鳴の ADTS ((18.32)) と合わせた 1 周のハミルトニアンを、**共鳴角 $\theta = \mathbf m\cdot\boldsymbol\phi$ だけの 1 自由度**にする。例: $3\nu_x = N$ ($\nu_x = N/3 + \delta$)。$\phi$ を 1 周あたり $2\pi N/3$ ずつ回る系で見ると ($R_{N/3}$ は $\zeta^3$ を変えない)、残りの回転は $2\pi\delta$ だけで、平均化した (3 周を連続の時間とみなす) 近似で
+共鳴 $\mathbf m\cdot\boldsymbol\nu = N$ の近くでは、その調和は (18.30) で消せない (分母 $e^{i\mathbf m\cdot\boldsymbol\mu} - 1\to0$)。例: $3\nu_x = N$ ($\nu_x = N/3 + \delta$、$|\delta|\ll1$)。1 周の写像から、共鳴角 $3\phi$ だけを含む**1 自由度のハミルトニアン**を次の順で作る。
 
-$$
-K(J, \phi) = 2\pi\delta\,J + c\,J^2 + 2|h_{30000}|\,(2J)^{3/2}\cos(3\phi + \chi)
-\tag{18.38}
-$$
-
-($c = -12|h_{21000}|^2\cot\pi\nu$: (18.33) の第 2 項から $K\ni-3|h_{21000}|^2\cot\pi\nu\,(2J)^2$。$\chi = \arg h_{30000}$。)
+1. **共鳴の調和だけを残す**: §3.8 の変換 $e^{:g:}$ で、$g$ を共鳴でない調和に対してだけ (18.30) で作る。$\zeta^3$、$\bar\zeta^3$ の調和は分母が 0 に近いので $g$ に入れない。変換後の写像は $M' = e^{:F':}R$ ((18.29) の $e^{:d:}R$)、
+   $$F' = -\bigl(h_{30000}\,\zeta^3 + \bar h_{30000}\,\bar\zeta^3\bigr) - c\,J^2$$
+   (3 次: $F_3 = -h_3$ のうち共鳴の調和の項だけが残る。4 次: 対角項 $-K = -cJ^2$)。ここで $cJ^2$ は (18.32) の対角項から、共鳴の調和 $(3,0)$、$(0,3)$ を作る対 ($[g, Rg]$ の $18i$、$-18i$ の組、(18.33) の第 1 項) を**除いた**もの。$g_{30}$ が存在しないので、その対はない。$h_4$ の側の対 (18.34) と 8 極などの項は残る。$(2J)^2 = 4J^2$ から
+   $$c = 4\left[h^{(4)}_{22000} - 18\,\mathrm{Im}\,P_3 - 6\,\mathrm{Im}\,P_1 - 3|h_{21000}|^2\cot\pi\nu\right].$$
+   本節の例 (1 個の薄い 6 極、$P_3 = P_1 = 0$、$h^{(4)} = 0$) では $c = -12|h_{21000}|^2\cot\pi\nu$。
+2. **回転座標に移す**: $R = e^{-\mu:J:}$ で $\mu = 2\pi N/3 + 2\pi\delta$ なので $R = R_{N/3}R_\delta$ ($R_{N/3} = e^{-(2\pi N/3):J:}$、$R_\delta = e^{-2\pi\delta:J:}$。どちらも $J$ の関数の流れで可換)。$R_{N/3}$ は $\zeta^p\bar\zeta^q$ に $e^{i(p-q)2\pi N/3}$ を掛けるので、$\zeta^3$、$\bar\zeta^3$ ($p - q = \pm3$ で $e^{\pm2\pi iN} = 1$) と $J$ の関数は**変えない**: $R_{N/3}F' = F'$。したがって $R_{N/3}\,:F':\,R_{N/3}^{-1} = :R_{N/3}F': = :F':$ で、$R_{N/3}$ は $e^{:F':}$ と可換:
+   $$M' = R_{N/3}\;e^{:F':}R_\delta,\qquad M'^3 = R_{N/3}^3\bigl(e^{:F':}R_\delta\bigr)^3 = \bigl(e^{:F':}R_\delta\bigr)^3\qquad(R_{N/3}^3 = e^{-2\pi N:J:} = 1).$$
+   つまり、1 周あたり $2\pi N/3$ ずつ回る座標 ($\phi\to\phi + 2\pi N/3$ を 1 周の回転として取り除いた系) で見ると、残りの回転は $2\pi\delta$ だけで、$\zeta^3$ の位相 $3\phi$ は 1 周に $6\pi\delta$ しか動かない。元の座標の周期 3 の不動点 (3 周で戻る 3 点) は、回転座標では $e^{:F':}R_\delta$ の不動点に対応する。
+3. **1 周の写像を 1 つのハミルトニアンの流れで近似する**: BCH で $e^{:F':}e^{-2\pi\delta:J:} = \exp\{:F' - 2\pi\delta J + \tfrac12[F', -2\pi\delta J] + \cdots:\}$。共鳴の近傍では $\delta J$ と $F'\sim h(2J)^{3/2}$ が同じ大きさ ($\epsilon$ とおく) で、交換子の項は $\epsilon\,\delta$ (小さいパラメータ $\delta$ の分だけ小さい)。$O(\epsilon\delta)$ を落とすと、1 周の写像は時間 1 の流れ $e^{-:K:}$、$K = -F' + 2\pi\delta J$:
+   $$K(J, \phi) = 2\pi\delta\,J + c\,J^2 + 2|h_{30000}|\,(2J)^{3/2}\cos(3\phi + \chi)
+   \tag{18.38}$$
+   (共鳴の項: $\zeta = \sqrt{2J}e^{i\phi}$ ((18.9) の次の段落) から $h\zeta^3 + \bar h\bar\zeta^3 = 2|h|(2J)^{3/2}\cos(3\phi + \chi)$、$\chi = \arg h_{30000}$。**「3 周を連続の時間とみなす」平均化の近似**は、この BCH の $O(\epsilon\delta)$ を落とすことに当たり、$\delta$ が小さいほど良い。)
+   数値の確認 (nl_03 (d)): $h = 0.02$、$\chi = 0.4$、$c = -0.5$、$\delta = 10^{-3}$ ($\nu = 1/3 + \delta$) の写像 $e^{:F':}R$ (流れは数値積分) の周期 3 の不動点の $J = 9.77494\times10^{-4}$ が、(18.38) の不動点 ($3\phi + \chi = \pi$、$\partial K/\partial J = 0$) の $9.77457\times10^{-4}$ と相対 $4\times10^{-5}$ で一致する ($c$ を無視した (18.39) は $1.37\times10^{-3}$ で 40% 違う)。
 
 **固定点**: $\partial K/\partial\phi = 0$ から $\sin(3\phi + \chi) = 0$。$\partial K/\partial J = 2\pi\delta + 2cJ + 6\sqrt2|h|\sqrt J\cos(3\phi + \chi) = 0$ ($(2J)^{3/2}$ の $J$ 微分は $3\sqrt2\sqrt J$)。$\cos = -1$ の枝で $c \to 0$ なら
 
@@ -509,7 +541,7 @@ $$
 \tag{18.39}
 $$
 
-($c$ を含めると $\sqrt J = \frac{\sqrt2}{2c}\left[3|h| - \sqrt{9|h|^2 - 2\pi c\delta}\right]$ など 2 根。sympy。) **追跡との比較** (nl_02 (E): 1 個の薄い 6 極、$a = 0.5\times5^{3/2}$、$h_{30000} = a/48$): $\delta = 0.004$ で理論の $J_{\rm fp} = 5.973\times10^{-4}$ ($c$ を無視すると $6.468\times10^{-4}$)。1 周の写像の周期 3 の不動点 ($M^3z = z$) の $J$ は、3 点で $5.850\times10^{-4}$ と $6.087\times10^{-4}$、平均 $5.969\times10^{-4}$ (理論との相対差 $-7\times10^{-4}$)。$\delta = 0.008$ で理論 $2.234\times10^{-3}$、追跡の平均 $2.254\times10^{-3}$ (相対差 $9\times10^{-3}$)。**非共鳴の調和の項 $c$ を入れないと 10〜16% ずれる**ので、(18.38) の $c J^2$ は必要である。
+($c$ を含めると $\sqrt J = \frac{\sqrt2}{2c}\left[3|h| - \sqrt{9|h|^2 - 2\pi c\delta}\right]$ など 2 根。sympy。) **追跡との比較** (nl_02 (E): 1 個の薄い 6 極、$a = 0.5\times5^{3/2}$、$h_{30000} = a/48$): $\delta = 0.004$ で理論の $J_{\rm fp} = 5.973\times10^{-4}$ ($c$ を無視すると $6.468\times10^{-4}$)。1 周の写像の周期 3 の不動点 ($M^3z = z$) の $J$ は、3 点で $5.850\times10^{-4}$ と $6.087\times10^{-4}$、平均 $5.969\times10^{-4}$ (理論との相対差 $-7\times10^{-4}$)。$\delta = 0.008$ で理論 $2.234\times10^{-3}$、追跡の平均 $2.254\times10^{-3}$ (相対差 $9\times10^{-3}$)。**非共鳴の調和の項 $c$ を入れないと 8〜16% ずれる** ($\delta = 0.004$ で $6.468	imes10^{-4}/5.973	imes10^{-4}$ の 8.3%、$\delta = 0.008$ で $2.587	imes10^{-3}/2.234	imes10^{-3}$ の 15.8%) ので、(18.38) の $c J^2$ は必要である。
 
 **島の幅 (一般の共鳴、2 自由度)**: 作用 $(J_x, J_y)$ から共鳴角 $\theta = m_x\phi_x + m_y\phi_y$ とその共役な作用 $I$ に変数を取り替える ($J_a = J_a^{(0)} + m_aI$ と書ける: 母関数 $\theta I + \phi_yI_2$)。非共鳴の 2 次の項 $\frac12\sum\partial^2K/\partial J_a\partial J_b\,\Delta J_a\Delta J_b = \pi\sum A_{ab}\Delta J_a\Delta J_b$ ($A_{ab} = \partial\nu_a/\partial J_b$、$K = \pi A_{ab}J_aJ_b$ から $\nu = \frac1{2\pi}\partial K/\partial J$ で整合) に $\Delta J_a = m_aI$ を入れると $\pi\,G\,I^2$、$G \equiv \sum m_aA_{ab}m_b$。1 周のハミルトニアンは
 
@@ -555,11 +587,24 @@ S_{\rm Hann}(\Delta) = D(\Delta) - \tfrac12D\left(\Delta - \tfrac1N\right) - \tf
 \tag{18.43}
 $$
 
-($\Delta = 3.37/N$ で直接の和との差 $6\times10^{-17}$。nl_02 (F)。) (18.42) の $e^{i\pi N\Delta}\sin\pi N\Delta$ の振動因子 $e^{2\pi iN\Delta}$ は $\Delta\to\Delta\pm1/N$ で変わらないので、2 階差分 (18.43) で $1/\Delta$ の裾の主要部が消え、**裾は $1/\Delta^3$** に減る (nl_02 (F): $|S|/|S(0)| = 2.4\times10^{-2}$ ($\Delta = 2.5/N$)、$2.0\times10^{-3}$ (5.5)、$3.7\times10^{-5}$ (20.5)、$5.6\times10^{-7}$ (80.5)。矩形窓の $|D|$ は 0.127、0.058、0.0157、0.0047)。2 本の線 (振幅比 $10^{-3}$、距離 0.0245) の下での $\nu_0$ の誤差は、$N = 256$、1024、4096 で矩形窓 $-8\times10^{-8}$、$-1\times10^{-8}$、$-2\times10^{-10}$、Hann 窓 $4\times10^{-9}$、$3\times10^{-11}$、$5\times10^{-14}$。(精度の $N$ 依存の指数は、本章では測っていない。docs/24 §6 は数値で確認している。)
+($\Delta = 3.37/N$ で直接の和との差 $6\times10^{-17}$。nl_02 (F)。) (18.43) の括弧を、(18.42) の形に戻して展開する。
+
+1. **ずらした核**: $D(\Delta\mp1/N) = e^{i\pi(\Delta\mp1/N)(N-1)}\dfrac{\sin(\pi N\Delta\mp\pi)}{N\sin\pi(\Delta\mp1/N)}$。位相因子は $e^{i\pi\Delta(N-1)}\,e^{\mp i\pi(N-1)/N} = e^{i\pi\Delta(N-1)}\cdot(-1)\,e^{\pm i\pi/N}$ ($e^{\mp i\pi} = -1$、$-(N-1)/N = -1 + 1/N$)、分子は $\sin(\pi N\Delta\mp\pi) = -\sin\pi N\Delta$。2 つの $-1$ が打ち消し合うので
+   $$D\!\left(\Delta\mp\tfrac1N\right) = e^{i\pi\Delta(N-1)}\,\frac{\sin\pi N\Delta}{N}\cdot\frac{e^{\pm i\pi/N}}{\sin\pi(\Delta\mp1/N)}.$$
+   (振動因子 $e^{i\pi\Delta(N-1)}\sin\pi N\Delta$ は 3 項に共通で、符号は変わらない。位相は $e^{\pm i\pi/N}$ が残る。)
+2. **括弧**: (18.43) に代入すると
+   $$S_{\rm Hann}(\Delta) = \frac{e^{i\pi\Delta(N-1)}\sin\pi N\Delta}{N}\left[\frac1{\sin\pi\Delta} - \frac12\frac{e^{i\pi/N}}{\sin\pi(\Delta - 1/N)} - \frac12\frac{e^{-i\pi/N}}{\sin\pi(\Delta + 1/N)}\right].$$
+3. **括弧の展開**: $\varphi(\eta) \equiv e^{-i\pi\eta}/\sin\pi(\Delta + \eta)$ と置くと、括弧は $\varphi(0) - \tfrac12[\varphi(1/N) + \varphi(-1/N)]$ (第 2 項は $\eta = -1/N$ で $e^{-i\pi\eta} = e^{i\pi/N}$、第 3 項は $\eta = +1/N$)。$\eta$ の 2 次まで展開すると、1 次の項は打ち消し合って
+   $$\varphi(0) - \tfrac12\left[\varphi\!\left(\tfrac1N\right) + \varphi\!\left(-\tfrac1N\right)\right] = -\frac1{2N^2}\varphi''(0) + O(N^{-4}).$$
+   $\Delta\ll1$ ($\sin\pi\Delta\simeq\pi\Delta$) で、$\varphi\simeq e^{-i\pi\eta}/[\pi(\Delta + \eta)]$ の 2 階微分は $\varphi''(0) = \dfrac{2}{\pi\Delta^3} + \dfrac{2i}{\Delta^2} - \dfrac{\pi}{\Delta}$ (積の微分: $(1/\pi(\Delta+\eta))'' = 2/\pi\Delta^3$、交差項 $2\cdot(-i\pi)\cdot(-1/\pi\Delta^2) = 2i/\Delta^2$、$(e^{-i\pi\eta})'' = -\pi^2$ から $-\pi/\Delta$)。$N\Delta\gg1$ では第 1 項が主要部で、括弧 $\simeq -\dfrac{1}{\pi N^2\Delta^3}$。
+4. したがって $|S_{\rm Hann}|\simeq\dfrac{|\sin\pi N\Delta|}{N}\cdot\dfrac1{\pi N^2\Delta^3} \le \dfrac{1}{\pi(N\Delta)^3}$ で、**裾は $1/\Delta^3$** に減る (矩形窓の $1/(\pi N\Delta)$ に対し、差分で $1/\Delta$ と $1/\Delta^2$ の項が消える)。数値 ([nl_03_gap_fills.out.txt](outputs/nl_03_gap_fills.out.txt) (e)): $N\Delta = 5.5$ ($|\sin| = 1$) で $|S| = 1.979\times10^{-3}$、式 $1/(\pi\cdot5.5^3) = 1.913\times10^{-3}$、$N\Delta = 20.5$ で $3.7026\times10^{-5}$ と $3.6948\times10^{-5}$。$N = 1024$ では $N\Delta = 80.5$ でも $6.1013\times10^{-7}$ と $6.1019\times10^{-7}$。$\Delta$ が小さくない場合 ($N = 256$、$N\Delta = 80.5$ で $\Delta = 0.31$) は $\sin\pi\Delta\simeq\pi\Delta$ が崩れて式から外れる。括弧の式と (18.43) の直接の和は 5 桁以上一致する
+
+
+nl_02 (F) の確認 ($|S|/|S(0)| = 2.4\times10^{-2}$ ($\Delta = 2.5/N$)、$2.0\times10^{-3}$ (5.5)、$3.7\times10^{-5}$ (20.5)、$5.6\times10^{-7}$ (80.5)。矩形窓の $|D|$ は 0.127、0.058、0.0157、0.0047)。2 本の線 (振幅比 $10^{-3}$、距離 0.0245) の下での $\nu_0$ の誤差は、$N = 256$、1024、4096 で矩形窓 $-8\times10^{-8}$、$-1\times10^{-8}$、$-2\times10^{-10}$、Hann 窓 $4\times10^{-9}$、$3\times10^{-11}$、$5\times10^{-14}$。(精度の $N$ 依存の指数は、本章では測っていない。docs/24 §6 は数値で確認している。)
 
 **周波数マップ**: 追跡の前半・後半の各面の信号に NAFF をかけてチューン $\nu_1$、$\nu_2$ を求め、$D = \log_{10}\sqrt{(\nu_{x2} - \nu_{x1})^2 + (\nu_{y2} - \nu_{y1})^2}$。規則的な運動 ($\nu$ が一定) では $\Delta\nu$ は NAFF の誤差で、$D$ は小さい (FODO の線形な運動で $D\approx-11$、docs/26 §3.1)。共鳴・カオスで $\nu$ が周回とともに動くと $D$ が上がる。ADTS (§3.8) は $\nu$ が $J$ に依ることを意味し、RDT (§3.5) で $J$ が周回とともに変動すると、ADTS を通じてチューンが周回ごとに動き、前後半のずれ ($D$) になる (定性的な説明。定量的な関係は docs/26 §9.1)。「周波数マップが結果の地図、RDT と ADTS が原因の係数」という位置づけである。
 
-**局所運動量アクセプタンス (LMA) の RF バケットの限界**: 縦方向を、1 周あたり $\Delta\psi = \kappa\,\delta$、$\Delta\delta = -a\left[\sin(\varphi_s + \psi) - \sin\varphi_s\right]$ の写像 ($\psi$ は同期位相からの位相のずれ、$\kappa = 2\pi h\alpha_p$ (14 章の $kC\alpha_p$ に相当)、$a = V/(pc/e)$ ($V$ は 1 周の電圧、$\sin\varphi_s = U_0/V$)) とし、1 周を連続の時間とみなすと、ハミルトニアン
+**局所運動量アクセプタンス (LMA) の RF バケットの限界**: 縦方向を、1 周あたり $\Delta\psi = \kappa\,\delta$、$\Delta\delta = -a\left[\sin(\varphi_s + \psi) - \sin\varphi_s\right]$ の写像 ($\psi$ は同期位相からの位相のずれ、$\kappa = 2\pi h\alpha_p$ ($= kC\alpha_p$、14 章の $2\pi h\alpha_p$ と同じ大きさ。符号の約束は下の段落)、$a = V/(pc/e)$ ($V$ は 1 周の電圧、$\sin\varphi_s = U_0/V$)) とし、1 周を連続の時間とみなすと、ハミルトニアン
 
 $$
 H(\psi, \delta) = \tfrac12\kappa\,\delta^2 + a\left[-\cos(\varphi_s + \psi) - \psi\sin\varphi_s\right]
@@ -574,7 +619,9 @@ $$
 \tag{18.45}
 $$
 
-($H(\psi_u, 0) - H(0, 0) = a[-\cos(\pi - \varphi_s) - (\pi - 2\varphi_s)\sin\varphi_s + \cos\varphi_s] = a[2\cos\varphi_s - (\pi - 2\varphi_s)\sin\varphi_s]$。sympy で一致。) pysad の `lmabucket.rf_bucket_analytic` の式 ($A = V/E_0$ ($E_0 = p_0c$)、$\kappa = kC\alpha$ ($kC = 2\pi h$) と置いた形。ソースの docstring) と同じ形で、14 章 §5 の `bh` とも同じ ($a = V/p$)。減衰・$\alpha_p$ の 2 次を含まない理想化した式で、docs/26 の LMA の値は追跡で求める。docs/26 の `zlimit` $= (\pi + 2|\varphi_s|)/k$ は、力が 0 になる 2 つの不安定点 $\psi = \pi - 2\varphi_s$、$-\pi - 2\varphi_s$ の外側の値で、分離線が $\delta = 0$ と交わる反対側の位相 ($\varphi_s > 0$ ではこれより内側。(18.44) の線形項 $-a\psi\sin\varphi_s$ のため) とは別である。判定の端としての妥当性は本章では確認していない。
+($H(\psi_u, 0) - H(0, 0) = a[-\cos(\pi - \varphi_s) - (\pi - 2\varphi_s)\sin\varphi_s + \cos\varphi_s] = a[2\cos\varphi_s - (\pi - 2\varphi_s)\sin\varphi_s]$。sympy で一致。) pysad の `lmabucket.rf_bucket_analytic` の式 ($A = V/E_0$ ($E_0 = p_0c$)、$\kappa = kC\alpha$ ($kC = 2\pi h$) と置いた形。ソースの docstring) と同じ形で、14 章 §5 の `bh` とも同じ式 ($a = V/p$。符号の約束の対応は下の段落)。減衰・$\alpha_p$ の 2 次を含まない理想化した式で、docs/26 の LMA の値は追跡で求める。docs/26 の `zlimit` $= (\pi + 2|\varphi_s|)/k$ は、力が 0 になる 2 つの不安定点 $\psi = \pi - 2\varphi_s$、$-\pi - 2\varphi_s$ の外側の値で、分離線が $\delta = 0$ と交わる反対側の位相 ($\varphi_s > 0$ ではこれより内側。(18.44) の線形項 $-a\psi\sin\varphi_s$ のため) とは別である。判定の端としての妥当性は本章では確認していない。
+
+**14 章 §5 との符号の約束の対応**: (18.44) は、SAD・pysad の約束 ($\psi = \varphi_s + kz$、$z$ は先行が正、`lmabucket` の docstring) の写像 $\Delta\psi = -\kappa\delta$、$\Delta\delta = +a[\sin(\varphi_s + \psi) - \sin\varphi_s]$ ($H_{\rm SAD} = -\tfrac12\kappa\delta^2 + a[\cos(\varphi_s + \psi) + \psi\sin\varphi_s]$) の**両式の右辺の符号を同時に反転した** ($H = -H_{\rm SAD}$、時間を逆向きにたどる) ものである。軌道の曲線 (等高線)・固定点・安定性・分離線は同じで、(18.45) の $\delta_{\rm rf}$ も同じ ($H_{\rm SAD}$ では、分離線の条件 $-\tfrac12\kappa\delta_{\rm rf}^2 + a\cos\varphi_s = a[-\cos\varphi_s + (\pi - 2\varphi_s)\sin\varphi_s]$ から (18.45) が出る)。14 章 §5 は位相を時間の向き ($\varphi = \omega_{\rm RF}t$、遅れて着くと正) で書き、$d\delta/dn = +(V/E)[\sin(\varphi_s + \varphi) - \sin\varphi_s]$、$d\varphi/dn = 2\pi h\alpha_p\delta$ とする。これは SAD の約束から $\varphi = -\psi$、$\varphi_{s,14} = \pi - \varphi_s$ と置いた形である ($\sin(\pi - \varphi_s + \varphi) = \sin(\varphi_s - \varphi) = \sin(\varphi_s + \psi)$、$\sin\varphi_{s,14} = \sin\varphi_s = U_0/V$ は同じ)。したがって 14 章の $\cos\varphi_{s,14}$ は本章の $\cos\varphi_s$ と符号が逆で、安定性の条件は 14 章の $\alpha_pV\cos\varphi_{s,14} < 0$ と本章の $\kappa a\cos\varphi_s > 0$ で、同じ内容の別の書き方になる (14 章 §5 の式は別途見直されるので、ここに書いた対応は上の形の 14 章を前提とする)。
 
 ## 4. 追跡の写像から取り出す
 
@@ -639,7 +686,7 @@ K64 (gs) には RDT・ADTS・周波数マップ・LMA の機能がない (すべ
 | 合計 (全部入り) vs 追跡 + NAFF + フィット (6 極 ×1) | FODO $-0.04\%$、ASTRID2 $-0.24\%$・$-0.08\%$・$-0.19\%$、大きなリング A $-0.014\%$・$-0.017\%$・$-0.26\%$ |
 | 6 極の強さを 0.5〜2 倍 | $0.003$〜$0.7\%$ |
 | 厚い 6 極 vs 薄レンズ列 | $1/n^2$ で収束 |
-| RDT: 符号・規格化・位相 (FODO) | pysad の $h$ は $H$ の係数そのもの ((18.22))。docs/24 §4.1 は、文献型の薄い 6 極の式 (記憶に基づく。原文は未読) との比 $-1$ を報告している。符号の差は $h$ の定義 ($\zeta^\pm$ の向き、$F = \pm h$) の違いによると考えられるが、その文献の定義との照合は未確認。1 周の $\Delta J$ と 0.5% 以内、3$\nu_x$ の近くの固定点の振幅と 0.15〜1.3% |
+| RDT: 符号・規格化・位相 (FODO) | pysad の $h$ は $H$ の係数そのもの ((18.22))。docs/24 §4.1 は、文献の薄い 6 極の式との比 $-1$ を報告している。符号の差は $h$ の定義 ($\zeta^\pm$ の向き、$F = \pm h$) の違いによると考えられるが、文献との符号の照合は未了。1 周の $\Delta J$ と 0.5% 以内、3$\nu_x$ の近くの固定点の振幅と 0.15〜1.3% |
 | RDT: 追跡の 1 周の写像の 2 次のテイラー展開 | 6 極の分は 6 リングで $10^{-6}$ 以内、偏向磁石つきの全体は $10^{-8}$ (FODO・ASTRID2)〜$4\times10^{-7}$ (大きなリング A)・$5\times10^{-5}$ (MPW) |
 | ADTS: 4 次の項 (`adts(fourth='r6')`) と写像の対角 + 正規形の補正 | $10^{-15}$ ([docs/25](../docs/25_resonance_terms_adts.md) §10.4) |
 
@@ -669,8 +716,8 @@ pysad の比較 (§6 の転記): エネルギー・周長: FODO 3 GeV、105.6 m 
 - $\delta\ne0$ の ADTS の $\delta$ 微分は精密版 (`fourth='r6'`・`optics='tracked'`) で $x$-$x$・$x$-$y$ が 0.3% 以内 ($y$-$y$ は 28% 外れ、原因未特定)、既定は $10^{-3}$ 台の違いが微分で数十% に増える。$\partial^2\nu/\partial\delta^2$ の解析式はない。
 - RDT の追跡との照合: 1 周の $\Delta J$・共鳴線の近くの検証は FODO のみ (3$\nu_x$、$y = 0$ の 1 本)。$\delta$ の項 ($p > 0$) は $h_{11001}$・$h_{00111}$ とクロマティシティの比較まで。スペクトルの線から $h$ を求める方法は未実装。
 - v2 モードの追跡での偏向磁石の 3 次の項の検証は、k64 の追跡とだけ。
-- 文献との照合 (符号・規格化) は、docs/24 §4.1 が記憶に基づく薄い 6 極の式と行ったもので、論文の原文は未読。本章の (18.19)〜(18.21) は定義 ($H_3$ の単項式の係数をそのまま読む) から導いたもので、文献の式には依らない。
-- 共鳴の近くの (18.38) は、3 周を連続の時間とみなす平均化の近似。$\delta$ が小さいほど良く、$\delta = 0.008$ で 0.9% (nl_02 (E)、$J^{3/2}$ の項の高次は無視)。
+- 文献との照合 (符号・規格化) は未了 (docs/24 §4.1 が薄い 6 極の式との比を報告しているが、文献の定義との照合はしていない)。本章の (18.19)〜(18.21) は定義 ($H_3$ の単項式の係数をそのまま読む) から導いたもので、文献の式には依らない。
+- 共鳴の近くの (18.38) は、1 周の写像を時間 1 の流れで置き換える近似 (§3.10 手順 3 の BCH で $O(\epsilon\delta)$ を落とす)。$\delta$ が小さいほど良く、$\delta = 0.008$ で 0.9% (nl_02 (E)、$J^{3/2}$ の項の高次は無視)。
 - (18.45) は減衰・放射・$\alpha_p$ の 2 次を含まない理想化した式。docs/26 の LMA の値は追跡で求め、この式は上限の見積りに使う。
 - ヘルプには RDT・ADTS の式は一切ない。
 
@@ -699,3 +746,4 @@ pysad の比較 (§6 の転記): エネルギー・周長: FODO 3 GeV、105.6 m 
 | `nf_correction` | 正規形の補正 ((18.33) の $\cot$ の項に対応する構造) | `rdt2nd` |
 | `f4_from_map3` | 3 次のテイラー係数から $f_4$ ((18.47)) | `rdttrack` |
 | `adts_formula`・`pbracket` | 本章の確認用: (18.32) の一般の式・多項式の括弧 | `scripts/nl_02_adts_formula_vs_tracking.py` |
+| `pb`・`kfun`・`flow` | 本章の確認用 (補足): (18.9) の括弧、(18.35) の非 $h_4$ 部、共鳴近傍の流れ | `scripts/nl_03_gap_fills.py` |
