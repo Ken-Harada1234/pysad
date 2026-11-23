@@ -9,7 +9,9 @@
 基準 (1) 追跡: 閉軌道 (Newton) のまわりの 1 周写像のヤコビアンから出したチューンの差分 (pysad の光学を使わない)。
 基準 (2) gs (K64, 2026-10-22 ビルド) の `Twiss["NX",-1]` の DP0 = ±1e-4 の中心差分 (CELL; NORFSW)。値は下の定数に保存した。
 ラティス: 3 GeV、周長 41.6 m、8 セル (QF D1 B D2 QD D1 B D2 [+ SF/SD])、偏向磁石 16 台 (ANGLE = 2π/16、L = 1.2 m)。
-限界: 厚い 6 極つきのリングでは、CALC の厚い 6 極 (2 次の分割) と追跡 (4 次) が 4e-4 (相対) ずれる (docs/30 B326。下の試験で原因を切り分けた。6 極なしの 4 リング・薄い 6 極は 1e-6〜1e-5 で一致)。
+厚い 6 極 (B326): k64 の CALC の厚い 6 極 (tthine、2 次の分割) は追跡 (tthin、4 次) と dν/dδ が 4e-4 (相対) ずれる (K64 の再現。gs と 1e-7 で一致)。
+v2 は CALC も追跡と同じ 4 次の分割 (力勾配型の補正キック) にしたので、追跡と 1e-5 以内 (本リングで 1.5e-9) で一致し、gs (K64) とは 8e-5〜4e-4 離れる。
+限界: 6 極なしの 4 リング・薄い 6 極は 1e-6〜1e-5 で一致。
 1 つのエネルギー・1 つのリング構成だけ。RF・放射なし。δ = ±1e-4 の 1 次の中心差分 (2 次以上の δ 依存は見ない)。
 FFS の `CHROMATICITY` コマンドは QUAD・SEXT・MULT だけの閉形式 (ヘルプの simplest formula) で BEND を数えず、値は 4π·ξ の単位。
 ここでは、四極だけのリングで TOTAL = 4π·ξ、偏向磁石があると TOTAL/4π が dν/dδ と違うことだけを確かめる (コマンドは変えていない)。
@@ -82,9 +84,15 @@ def test_chromaticity_matches_tracking_and_gs(name, mode):
     trk = np.array(_tracking(ffs))
     gs = np.array(CASES[name][2])
     # 追跡のヤコビアンの差分と 5e-6 (相対。ヤコビアンの数値微分の誤差 ~6e-7)
-    # 6 極つきは、gs の CALC の線形化 (pysad も同じ) と追跡の厳密なヤコビアンが 4e-4 (相対) ずれる (h = 2e-5〜3e-4 で同じ)。限界に書いた
-    rt = 1e-3 if 'sext' in name else 5e-6
+    # 6 極つき: k64 は gs の CALC の線形化 (2 次の分割。pysad も同じ) と追跡の厳密なヤコビアンが 4e-4 (相対) ずれる (h = 2e-5〜3e-4 で同じ)。
+    # v2 (B326) は CALC も 4 次の分割にしたので追跡と 1e-5 以内 (ここでは 1.5e-9)、gs (K64) とは離れる
+    sext = 'sext' in name
+    rt = 1e-3 if (sext and mode == 'k64') else (1e-5 if sext else 5e-6)
     assert np.allclose(xi, trk, rtol=rt, atol=1e-6), (name, xi, trk)
+    if sext and mode == 'v2':
+        assert np.abs(xi / gs - 1).max() > 5e-5, (name, xi, gs)         # gs の 2 次の分割から動いた (水平 7.7e-5、垂直 4.2e-4)
+        assert np.abs(xi / gs - 1).max() < 2e-3
+        return
     # gs と (gs の出力は 10 桁)
     assert np.allclose(xi, gs, rtol=1e-7, atol=1e-8), (name, xi, gs)
 
@@ -146,7 +154,7 @@ def test_chromaticity_command_is_quad_sext_formula_in_4pi_units(mode):
 
 
 # ---------------------------------------------------------------------------------------------
-# 6 極つきのずれの原因 (docs/30 B326): CALC の厚い 6 極 (tthine、2 次の分割) と追跡 (tthin、4 次) の差
+# 6 極つきのずれの原因 (docs/30 B326): CALC の厚い 6 極 (tthine、2 次の分割) と追跡 (tthin、4 次) の差。v2 は CALC も 4 次にして直した
 # ---------------------------------------------------------------------------------------------
 def _sext_ring(K2, L, nslice=0):
     """3 GeV、8 セル、QF D1 B D2 SF QD D1 B D2。SF は厚い 6 極 (L)、nslice > 0 なら L=0 の薄い 6 極 nslice 個 (中点則) に分ける"""
@@ -173,19 +181,39 @@ def test_sextupole_thin_calc_equals_tracking(mode):
         assert np.allclose(ffs.lat.chromaticity(), _trk(ffs), rtol=2e-5, atol=1e-5), k2
 
 
-def test_sextupole_thick_calc_error_scales_L2_and_tracking_is_exact(mode):
-    """厚い 6 極: 差 (CALC − 追跡) は L² に比例 (L = 0.2 と 0.1 で 4 倍) し、薄い 6 極に分けた極限 (厳密) は追跡に一致、CALC は離れる。
+def test_sextupole_thick_calc_error_scales_L2_and_tracking_is_exact():
+    """k64: 厚い 6 極の差 (CALC − 追跡) は L² に比例 (L = 0.2 と 0.1 で 4 倍) し、薄い 6 極に分けた極限 (厳密) は追跡に一致、CALC は離れる。
     原因: CALC の tthine は L/6・キック/2・2L/3・キック/2・L/6 (2 次)。追跡の tthin は 4 次"""
-    d = {}
-    for L in (0.2, 0.1):
-        ffs = _sext_ring(2.0, L)
-        d[L] = np.array(ffs.lat.chromaticity()) - _trk(ffs)
-    assert abs(d[0.2][0]) > 1e-3 and abs(d[0.2][0] / d[0.1][0] - 4.0) < 0.2
-    ex = np.array(_sext_ring(2.0, 0.2, nslice=40).lat.chromaticity())      # 厳密 (40 分割の中点則。80 分割との差は 2e-6)
-    trk = _trk(_sext_ring(2.0, 0.2))
-    calc = np.array(_sext_ring(2.0, 0.2).lat.chromaticity())
-    assert np.allclose(trk, ex, rtol=0, atol=1e-4)
-    assert abs(calc[0] - ex[0]) > 1e-3
+    old = compat._mode
+    compat.set_mode('k64')
+    try:
+        d = {}
+        for L in (0.2, 0.1):
+            ffs = _sext_ring(2.0, L)
+            d[L] = np.array(ffs.lat.chromaticity()) - _trk(ffs)
+        assert abs(d[0.2][0]) > 1e-3 and abs(d[0.2][0] / d[0.1][0] - 4.0) < 0.2
+        ex = np.array(_sext_ring(2.0, 0.2, nslice=40).lat.chromaticity())      # 厳密 (40 分割の中点則。80 分割との差は 2e-6)
+        trk = _trk(_sext_ring(2.0, 0.2))
+        calc = np.array(_sext_ring(2.0, 0.2).lat.chromaticity())
+        assert np.allclose(trk, ex, rtol=0, atol=1e-4)
+        assert abs(calc[0] - ex[0]) > 1e-3
+    finally:
+        compat.set_mode(old)
+
+
+def test_sextupole_thick_calc_equals_tracking_v2():
+    """v2 (B326): 厚い 6 極の CALC も追跡と同じ 4 次の分割なので、dν/dδ が追跡と 1e-5 (相対) 以内で一致する (L = 0.2・0.1、K2 = 2。L = 0.4・K2 = 4)。
+    薄い 6 極 40 個の極限 (厳密) との差は 4 次の誤差 (L = 0.2 で水平 3e-6) だけ"""
+    old = compat._mode
+    compat.set_mode('v2')
+    try:
+        for K2, L in ((2.0, 0.2), (2.0, 0.1), (4.0, 0.4)):
+            ffs = _sext_ring(K2, L)
+            assert np.allclose(ffs.lat.chromaticity(), _trk(ffs), rtol=1e-5, atol=1e-5), (K2, L)
+        ex = np.array(_sext_ring(2.0, 0.2, nslice=40).lat.chromaticity())
+        assert np.allclose(_sext_ring(2.0, 0.2).lat.chromaticity(), ex, rtol=0, atol=1e-4)
+    finally:
+        compat.set_mode(old)
 
 
 def _nums(t, tag):

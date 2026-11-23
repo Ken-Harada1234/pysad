@@ -326,14 +326,125 @@ def _factorial(k):
     return f
 
 
+_TT_ALPHA = 2.88675134594812882e-1       # 4 次の力勾配型の分割の係数 (lattice._TT_*、K64 tquad.f tthin)
+_TT_BETA = 2.23290993692602255e-2
+_TT_GAMMA = 9.43738783765593145e-4
+_TT_ALPHA1 = 0.5 - _TT_ALPHA
+
+
 @njit(**NJ)
-def _jac_thin(c, L, ak, kord, dvzL):
-    """emit6d._jac_thin。戻り (ok, J)"""
+def _thin4_corr(x, y, pr, aki, kord, L, want_jac):
+    """lattice._thin4_corr (v2 の B326: 4 次の分割の中央の補正キック)。戻り (dp (3,) = (Δpx, Δpy, Δz)、Jd (3, 3) = (x, y, δ) での微分)"""
+    k = kord
+    f1 = _TT_BETA * k * L
+    f2 = 2.0 * _TT_GAMMA * k * (k - 1) * L**2
+    f3 = _TT_GAMMA * k * (k + 1) * L**2
+    f4 = 0.5 * _TT_BETA * L
+    f5 = 2.0 * _TT_GAMMA * k * L**2
+    r = x * x + y * y
+    rk1 = 1.0
+    for _ in range(k - 2):
+        rk1 *= r
+    rk = r * rk1
+    cr, ci = _cpowi(x, -y, k)
+    R = x * cr + y * ci
+    B1 = aki * aki / pr
+    B2 = aki**3 / pr**2
+    Sx = f2 * rk1 * x * R + f3 * rk * cr
+    Sy = f2 * rk1 * y * R + f3 * rk * ci
+    d3 = aki**2 / pr**2
+    d4 = aki**3 / pr**3
+    dp = np.zeros(3)
+    Jd = np.zeros((3, 3))
+    dp[0] = B1 * f1 * rk * x - B2 * Sx
+    dp[1] = B1 * f1 * rk * y - B2 * Sy
+    dp[2] = d3 * f4 * rk * r - d4 * f5 * rk * R
+    if not want_jac:
+        return dp, Jd
+    gr, gi = _cpowi(x, -y, k - 1)
+    gr *= k
+    gi *= k
+    drk_x = 2.0 * (k - 1) * rk1 * x
+    drk_y = 2.0 * (k - 1) * rk1 * y
+    r3 = 0.0
+    if k >= 3:
+        r3 = 1.0
+        for _ in range(k - 3):
+            r3 *= r
+    drk1_x = 2.0 * (k - 2) * r3 * x
+    drk1_y = 2.0 * (k - 2) * r3 * y
+    R_x = cr + x * gr + y * gi
+    R_y = ci + x * gi - y * gr
+    Sx_x = f2 * (drk1_x * x * R + rk1 * R + rk1 * x * R_x) + f3 * (drk_x * cr + rk * gr)
+    Sx_y = f2 * (drk1_y * x * R + rk1 * x * R_y) + f3 * (drk_y * cr + rk * gi)
+    Sy_x = f2 * (drk1_x * y * R + rk1 * y * R_x) + f3 * (drk_x * ci + rk * gi)
+    Sy_y = f2 * (drk1_y * y * R + rk1 * R + rk1 * y * R_y) + f3 * (drk_y * ci - rk * gr)
+    A = B1 * f1
+    Jd[0, 0] = A * (drk_x * x + rk) - B2 * Sx_x
+    Jd[0, 1] = A * drk_y * x - B2 * Sx_y
+    Jd[0, 2] = -A / pr * rk * x + 2.0 * B2 / pr * Sx
+    Jd[1, 0] = A * drk_x * y - B2 * Sy_x
+    Jd[1, 1] = A * (drk_y * y + rk) - B2 * Sy_y
+    Jd[1, 2] = -A / pr * rk * y + 2.0 * B2 / pr * Sy
+    Jd[2, 0] = d3 * f4 * (drk_x * r + rk * 2.0 * x) - d4 * f5 * (drk_x * R + rk * R_x)
+    Jd[2, 1] = d3 * f4 * (drk_y * r + rk * 2.0 * y) - d4 * f5 * (drk_y * R + rk * R_y)
+    Jd[2, 2] = -2.0 * d3 / pr * f4 * rk * r + 3.0 * d4 / pr * f5 * rk * R
+    return dp, Jd
+
+
+@njit(**NJ)
+def _jac_thin4(c, L, aki, kord, dvzL):
+    """emit6d._jac_thin4 (v2 の B326: 4 次の分割の COD まわりの微分)。戻り (ok, J)"""
+    ala = L * _TT_ALPHA1
+    alb = L * _TT_ALPHA
+    ok, J = _jac_drift(c, ala, 0.0)
+    if not ok:
+        return False, J
+    c1 = c.copy()
+    _exact_drift(c1, ala)
+    J = _mm(_jac_kick(c1, aki * 0.5, kord), J)
+    _kick(c1, aki * 0.5, kord)
+    ok, J2 = _jac_drift(c1, alb, 0.0)
+    if not ok:
+        return False, J
+    J = _mm(J2, J)
+    _exact_drift(c1, alb)
+    dp, Jd = _thin4_corr(c1[0], c1[2], 1.0 + c1[5], aki, kord, L, True)
+    Jc = np.eye(6)
+    for i in range(3):
+        row = 1 if i == 0 else (3 if i == 1 else 4)
+        Jc[row, 0] += Jd[i, 0]
+        Jc[row, 2] += Jd[i, 1]
+        Jc[row, 5] += Jd[i, 2]
+    J = _mm(Jc, J)
+    c1[1] += dp[0]
+    c1[3] += dp[1]
+    c1[4] += dp[2]
+    ok, J3 = _jac_drift(c1, alb, 0.0)
+    if not ok:
+        return False, J
+    J = _mm(J3, J)
+    _exact_drift(c1, alb)
+    J = _mm(_jac_kick(c1, aki * 0.5, kord), J)
+    _kick(c1, aki * 0.5, kord)
+    ok, J4 = _jac_drift(c1, ala, 0.0)
+    if not ok:
+        return False, J
+    J = _mm(J4, J)
+    J[4, 5] += dvzL
+    return True, J
+
+
+@njit(**NJ)
+def _jac_thin(c, L, ak, kord, dvzL, v2=False):
+    """emit6d._jac_thin。戻り (ok, J)。v2=True: L≠0・kord ≥ 2 は 4 次の分割 (B326)"""
     if ak == 0.0:
         return _jac_drift(c, L, dvzL)
     aki = ak / _factorial(kord)
     if L == 0.0:
         return True, _jac_kick(c, aki, kord)
+    if v2 and kord >= 2:
+        return _jac_thin4(c, L, aki, kord, dvzL)
     ok, J = _jac_drift(c, L / 6.0, 0.0)
     if not ok:
         return False, J
@@ -357,14 +468,26 @@ def _jac_thin(c, L, ak, kord, dvzL):
 
 
 @njit(**NJ)
-def _tthine_map(c, L, ak, kord):
-    """lattice._tthine_cod (in-place)"""
+def _tthine_map(c, L, ak, kord, v2=False):
+    """lattice._tthine_cod (in-place)。v2=True: L≠0・kord ≥ 2 は 4 次の分割 (B326)"""
     if ak == 0.0:
         _exact_drift(c, L)
         return
     aki = ak / _factorial(kord)
     if L == 0.0:
         _kick(c, aki, kord)
+        return
+    if v2 and kord >= 2:
+        _exact_drift(c, L * _TT_ALPHA1)
+        _kick(c, aki * 0.5, kord)
+        _exact_drift(c, L * _TT_ALPHA)
+        dp, Jd = _thin4_corr(c[0], c[2], 1.0 + c[5], aki, kord, L, False)
+        c[1] += dp[0]
+        c[3] += dp[1]
+        c[4] += dp[2]
+        _exact_drift(c, L * _TT_ALPHA)
+        _kick(c, aki * 0.5, kord)
+        _exact_drift(c, L * _TT_ALPHA1)
         return
     _exact_drift(c, L / 6.0)
     _kick(c, aki * 0.5, kord)
@@ -571,11 +694,11 @@ def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_
         _piece(Jf, Tl, Dl, Bl, want_jac, want_db, symp_fix)
     if want_jac:
         dvzL = _dvz(PH, c[5]) * L if use_dv else 0.0
-        ok, J = _jac_thin(c, L, ak, kord, dvzL)
+        ok, J = _jac_thin(c, L, ak, kord, dvzL, v2)
         if not ok:
             return 1
         _piece(J, Tl, Dl, Bl, want_jac, want_db, symp_fix)
-    _tthine_map(c, L, ak, kord)
+    _tthine_map(c, L, ak, kord, v2)
     if use_dv:
         c[4] -= _dv(PH, c[5]) * L
     if fr:

@@ -1752,6 +1752,72 @@ def _exact_drift_cod(c: np.ndarray, L: float) -> np.ndarray:
     return c
 
 
+# 4 次の力勾配型の分割の係数 (K64 tquad.f tthin。追跡 track6._TT_* と同じ値)
+_TT_ALPHA = 2.88675134594812882e-1
+_TT_BETA = 2.23290993692602255e-2
+_TT_GAMMA = 9.43738783765593145e-4
+_TT_ALPHA1 = 0.5 - _TT_ALPHA
+
+
+def _thin4_active(L: float, ak: float, kord: int) -> bool:
+    """v2 (B326): L≠0 の 6 極以上 (kord ≥ 2) の CALC・Emittance[] の厚いキックを追跡 (tthin) と同じ 4 次の分割にする。
+    K64 の tthine は 2 次 (L/6 → 2L/3 → L/6、補正キックなし) なので、動いた軌道のまわりの線形化 (チューン・クロマティシティ) が追跡とずれた"""
+    return bool(_compat.v2() and L != 0.0 and ak != 0.0 and kord >= 2)
+
+
+def _thin4_corr(x: float, y: float, pr: float, aki: float, kord: int, L: float, want_jac: bool = False):
+    """tthin の中央の補正キック (力勾配型。追跡の c[1] += aki²(f1 rk x − aki(f2 rk1 x rcx1 + f3 rk Re cx)) ほか、zi += ...) の、
+    正準運動量 (CALC の px・py = 追跡の px・py × (1+δ)) での (Δpx, Δpy, Δz) と、want_jac=True のときは (x, y, δ) に対する 3×3 の微分。
+    aki = ak/kord! (全強度)、pr = 1+δ。追跡の A = aki/pr として Δp_正準 = pr·ΔP_追跡 = (aki²/pr)·f1·rk·(x, y) − (aki³/pr²)·(f2 rk1 (x, y) R + f3 rk (Re, Im)(cx))、
+    Δz = (aki²/pr²)·f4 rk r − (aki³/pr³)·f5 rk R  (R = rcx1 = Re((x − iy)^(kord+1)))"""
+    k = kord
+    f1 = _TT_BETA * k * L
+    f2 = 2.0 * _TT_GAMMA * k * (k - 1) * L**2
+    f3 = _TT_GAMMA * k * (k + 1) * L**2
+    f4 = 0.5 * _TT_BETA * L
+    f5 = 2.0 * _TT_GAMMA * k * L**2
+    r = x * x + y * y
+    rk1 = r**(k - 2)
+    rk = r * rk1
+    w = complex(x, -y)
+    cx = w**k
+    R = x * cx.real + y * cx.imag
+    B1 = aki * aki / pr
+    B2 = aki**3 / pr**2
+    Sx = f2 * rk1 * x * R + f3 * rk * cx.real
+    Sy = f2 * rk1 * y * R + f3 * rk * cx.imag
+    d3 = aki**2 / pr**2
+    d4 = aki**3 / pr**3
+    dp = np.array([B1 * f1 * rk * x - B2 * Sx, B1 * f1 * rk * y - B2 * Sy, d3 * f4 * rk * r - d4 * f5 * rk * R])
+    if not want_jac:
+        return dp, None
+    g = k * w**(k - 1)
+    gr, gi = g.real, g.imag
+    drk_x = 2.0 * (k - 1) * rk1 * x
+    drk_y = 2.0 * (k - 1) * rk1 * y
+    r3 = r**(k - 3) if k >= 3 else 0.0
+    drk1_x = 2.0 * (k - 2) * r3 * x
+    drk1_y = 2.0 * (k - 2) * r3 * y
+    R_x = cx.real + x * gr + y * gi
+    R_y = cx.imag + x * gi - y * gr
+    Sx_x = f2 * (drk1_x * x * R + rk1 * R + rk1 * x * R_x) + f3 * (drk_x * cx.real + rk * gr)
+    Sx_y = f2 * (drk1_y * x * R + rk1 * x * R_y) + f3 * (drk_y * cx.real + rk * gi)
+    Sy_x = f2 * (drk1_x * y * R + rk1 * y * R_x) + f3 * (drk_x * cx.imag + rk * gi)
+    Sy_y = f2 * (drk1_y * y * R + rk1 * R + rk1 * y * R_y) + f3 * (drk_y * cx.imag - rk * gr)
+    A = B1 * f1
+    Jd = np.zeros((3, 3))
+    Jd[0, 0] = A * (drk_x * x + rk) - B2 * Sx_x
+    Jd[0, 1] = A * drk_y * x - B2 * Sx_y
+    Jd[0, 2] = -A / pr * rk * x + 2.0 * B2 / pr * Sx
+    Jd[1, 0] = A * drk_x * y - B2 * Sy_x
+    Jd[1, 1] = A * (drk_y * y + rk) - B2 * Sy_y
+    Jd[1, 2] = -A / pr * rk * y + 2.0 * B2 / pr * Sy
+    Jd[2, 0] = d3 * f4 * (drk_x * r + rk * 2.0 * x) - d4 * f5 * (drk_x * R + rk * R_x)
+    Jd[2, 1] = d3 * f4 * (drk_y * r + rk * 2.0 * y) - d4 * f5 * (drk_y * R + rk * R_y)
+    Jd[2, 2] = -2.0 * d3 / pr * f4 * rk * r + 3.0 * d4 / pr * f5 * rk * R
+    return dp, Jd
+
+
 def _tthine_cod(c: np.ndarray, L: float, ak: float, kord: int) -> np.ndarray:
     """
     SAD tthine.f の COD 更新のみ (放射なし, dx=dy=theta=0)。
@@ -1759,10 +1825,29 @@ def _tthine_cod(c: np.ndarray, L: float, ak: float, kord: int) -> np.ndarray:
     ak = 積分強度 (SAD の K)。aki = ak/kord!。
     長さありのとき: ドリフト L/6 → キック(aki/2) → ドリフト 2L/3 → キック(aki/2) → ドリフト L/6
     キック: cx = (x − i y)^kord,  px −= aki·Re(cx),  py −= aki·Im(cx)  (正準運動量、1/(1+δ) なし)
+    v2 (B326): L≠0 の kord ≥ 2 は追跡 (tthin) と同じ 4 次: ドリフト L(1/2−α) → キック(aki/2) → ドリフト αL → 補正キック (_thin4_corr) → ドリフト αL → キック(aki/2) → ドリフト L(1/2−α)
     """
     if ak == 0.0:
         return _exact_drift_cod(c, L)
     aki = ak / math.factorial(kord)
+    if _thin4_active(L, ak, kord):
+        def kick4(c, a):
+            c = c.copy()
+            cx = complex(c[0], -c[2]) ** kord
+            c[1] -= a * cx.real
+            c[3] -= a * cx.imag
+            return c
+        c = _exact_drift_cod(c, L * _TT_ALPHA1)
+        c = kick4(c, aki * 0.5)
+        c = _exact_drift_cod(c, L * _TT_ALPHA)
+        dp, _ = _thin4_corr(c[0], c[2], 1.0 + c[5], aki, kord, L)
+        c = c.copy()
+        c[1] += dp[0]
+        c[3] += dp[1]
+        c[4] += dp[2]
+        c = _exact_drift_cod(c, L * _TT_ALPHA)
+        c = kick4(c, aki * 0.5)
+        return _exact_drift_cod(c, L * _TT_ALPHA1)
 
     def kick(c, a):
         c = c.copy()

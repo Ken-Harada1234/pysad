@@ -466,6 +466,55 @@ def _jac_kick(c, aki, kord):
     return J
 
 
+def _jac_thin4(c, L, aki, kord, dvz):
+    """v2 (B326): 4 次の分割 (lattice._tthine_cod の v2 の枝) の COD のまわりの微分。
+    ドリフト L(1/2−α) → キック(aki/2) → ドリフト αL → 補正キック → ドリフト αL → キック(aki/2) → ドリフト L(1/2−α) の各段の解析ヤコビアンの積 (連鎖律)。
+    補正キックは (x, y, δ) だけの関数 (Δpx, Δpy, Δz) なので、単位行列に 3 行 (px, py, z) の (x, y, δ) 列を足したもの。全長 L の dv 項は最後に足す"""
+    ala = L * _lat._TT_ALPHA1
+    alb = L * _lat._TT_ALPHA
+    J = _jac_drift(c, ala)
+    if J is None:
+        return None
+    c1 = _lat._exact_drift_cod(c, ala)
+    J = _jac_kick(c1, aki * 0.5, kord) @ J
+    c1 = c1.copy()
+    cx = complex(c1[0], -c1[2]) ** kord
+    c1[1] -= aki * 0.5 * cx.real
+    c1[3] -= aki * 0.5 * cx.imag
+    J2 = _jac_drift(c1, alb)
+    if J2 is None:
+        return None
+    J = J2 @ J
+    c1 = _lat._exact_drift_cod(c1, alb)
+    dp, Jd = _lat._thin4_corr(c1[0], c1[2], 1.0 + c1[5], aki, kord, L, True)
+    Jc = _EYE6.copy()
+    for row, i in ((1, 0), (3, 1), (4, 2)):
+        Jc[row, 0] += Jd[i, 0]
+        Jc[row, 2] += Jd[i, 1]
+        Jc[row, 5] += Jd[i, 2]
+    J = Jc @ J
+    c1 = c1.copy()
+    c1[1] += dp[0]
+    c1[3] += dp[1]
+    c1[4] += dp[2]
+    J3 = _jac_drift(c1, alb)
+    if J3 is None:
+        return None
+    J = J3 @ J
+    c1 = _lat._exact_drift_cod(c1, alb)
+    J = _jac_kick(c1, aki * 0.5, kord) @ J
+    c1 = c1.copy()
+    cx = complex(c1[0], -c1[2]) ** kord
+    c1[1] -= aki * 0.5 * cx.real
+    c1[3] -= aki * 0.5 * cx.imag
+    J4 = _jac_drift(c1, ala)
+    if J4 is None:
+        return None
+    J = J4 @ J
+    J[4, 5] += dvz * L
+    return J
+
+
 def _jac_thin(c, L, ak, kord, dvz):
     """lattice._tthine_cod (ドリフト L/6 → キック → ドリフト 2L/3 → キック → ドリフト L/6) + 全長 L の dv 項"""
     if ak == 0.0:
@@ -473,6 +522,8 @@ def _jac_thin(c, L, ak, kord, dvz):
     aki = ak / math.factorial(kord)
     if L == 0.0:
         return _jac_kick(c, aki, kord)
+    if _lat._thin4_active(L, ak, kord):
+        return _jac_thin4(c, L, aki, kord, dvz)
     J = _jac_drift(c, L / 6.0)
     if J is None:
         return None
