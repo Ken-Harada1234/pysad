@@ -1105,6 +1105,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>仕様か誤りか未決</strong>。K64 の WSPAC は壁のない自由空間の 2 次元ガウス分布のモデルで、基準 (定数) が定義できない。軸上を 0 にするのは 1 つの選択 (横の位置に依る部分は数値積分と一致)。落ちる定数は大きい (丸いガウス分布で <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>b</mi><mi mathvariant="normal">/</mi><mi>σ</mi></mrow><annotation encoding="application/x-tex">b/\sigma</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">b</span><span class="mord">/</span><span class="mord mathnormal" style="margin-right:0.0359em;">σ</span></span></span></span> = 30 のとき、軸から σ までの電位差の 15 倍)。v2 は <code>WSPACRADIUS</code> (&gt; 0) で基準を壁の半径にできる (既定は K64 と同じ)。コードは変えない。限界: gs で軸上の δ の不変を確認しようとしたが、台本 (flag_WSPAC_tune_shift.sad に x = 1e-3・z ≠ 0 の粒子を追加) で WSPAC ON の追跡が粒子を動かさず (原因未調査)、未達</td>
 </tr>
 <tr>
+<td>POL の B55・B56・B78・B125 の確度 (独立レビューの指摘)</td>
+<td>両</td>
+<td>B56 の <code>tbrote</code> は <strong>gs で確認</strong> (DROTATE = 0.05 の偏向磁石のあるリングの 1 周のスピン行列の直交性の欠陥が gs で 9.76e-3、v2 は 8.4e-8)。B55 は NaN を gs で再現済みで、原因 (<code>cerfc</code> の桁あふれ) は推定のまま (gs で内部関数を呼べない)。結合のない平面 FODO は gs が有限の 92.376 % を返す。B125 の「二重数え」は数値の依存性からの位置の特定のまま (gs で偏向磁石を 0.8 rad ロールしたリングの有限値 2.098e-4 % が v2 の 1.994 % と 1e4 倍違うことは確認、独立な値は未確認)。B78 (UND の <code>dpds</code> の二重) は K64 の UND に磁場のキーワードが無く gs では確認できない (ソースの読み + 刻み数を変えた pysad の数値実験のまま)。CHI2・DX・DZ のずれのある偏向磁石の POL のスピン行列は、pysad の k64 が gs と 3.8e-3〜1.1e-2 違う (未調査)</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>

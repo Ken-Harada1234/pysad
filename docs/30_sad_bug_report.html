@@ -579,7 +579,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>photons.f:spintrm (cexp1・cerfc)、gamma.f:cerfc</td>
 <td>偏極度が使えない (PolarizationTime=1/ΣT 式は有限で正しい)</td>
 <td>中</td>
-<td>NaN は確定 (gs で再現)。原因は推定 (pysad で同じ式を写すと同じ NaN、erfcx 版で有限)。有限値の妥当性は未確認</td>
+<td>NaN は確定 (gs で再現)。原因は推定 (pysad で同じ式を写すと同じ NaN、erfcx 版で有限。gs でこの内部の cerfc を単独で呼ぶ方法は無く、原因そのものは gs では確認できない)。<strong>追加の gs の実測</strong>: 24 セルの FODO リング (3 GeV、POL・RAD・RFSW) で、結合も垂直の曲げも無いリングは gs が有限の 92.3760430 % (ST の上限 8/(5√3)) を返す (pysad の k64・v2 とも一致)。四極 (QD) を 0.5 rad ロールすると NaN、QD 1.2 rad・偏向磁石 0.3 rad では NaN で PolarizationTime も NaN、偏向磁石を 0.8 rad ロールすると有限だが 2.098e-4 % (pysad の k64 は gs と全桁一致、v2 は 1.994 %。独立な値は未確認)。したがって「平面でも NaN」は、結合のない平面 FODO では当てはまらない (有限で ST の値)。有限値の妥当性は未確認</td>
 <td>v2 で修正 (exp(cb²)·erfc(cb) を Faddeeva 関数で。平衡偏極度は線形のスピン軌道結合の脱偏極率から求め、平面リングで 92.376%)。k64 モードは K64 の式のまま (NaN も写す)</td>
 </tr>
 <tr>
@@ -588,7 +588,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>tchge.f:197、photons.f:850、1614</td>
 <td>偏向磁石のずれ (DX・DZ・DROTATE・CHI2) で POL の結果がずれる可能性</td>
 <td>低</td>
-<td>ソースの読み (gs での確認は serot と tradke 末尾だけ。tbrote は未確認)</td>
+<td>ソースの読み + <strong>gs で確認 (tbrote)</strong>: 3 GeV、24 セルの FODO リング (周長 105.6 m、矩形の偏向磁石、POL・RAD・RFSW) の最後の 1 台の偏向磁石に DROTATE = 0.05 rad を与えると、gs の <code>EMIT</code> の「Spin precession matrix」(1 周のスピンの回転行列) の直交性の欠陥 max|M Mᵀ − 1| が 9.76e-3 (ずれなしは表示の桁の 1.3e-7)。回転行列は直交行列でなければならないので、行の逐次更新の誤りが gs の出力に出ている。pysad の k64 は gs と全桁一致、v2 は 8.4e-8。限界: DROTATE = 0.05 の 1 要素 1 つの大きさ。CHI2 = 0.03 では gs の欠陥 1.9e-3 に対し pysad の k64 は 1.3e-7 (k64 と gs が 3.8e-3 違う)、DX・DZ のずれでも v2 と gs が 1.1e-2 違う (pysad の k64 の CHI2 のスピンが gs を再現していない疑い、未調査)。試験 <code>test_v250_spin_tbrote_gs.py</code></td>
 <td>v2 で修正 ((I+rr)·srot。k64 モードは再現)</td>
 </tr>
 <tr>
@@ -1236,8 +1236,8 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>photons.f (<code>spdepol</code>・<code>spintrm</code>)</td>
 <td><code>Polarization</code> が使えない (B55 の NaN は桁あふれで、直しても 4.2 GeV・12 MV の 12 セル FODO で P = 1.27e-4 (率 4.3e-5 /周)。独立な率 2.3e-8〜4.5e-8 の約 1000 倍。追跡は (10.4 ± 1.6)e-8)</td>
 <td>高</td>
-<td>位置の特定は数値の依存性 (e に比例、λ に反比例、ssprd に依らない) による。K64 の式の導出 (Mathematica 由来の 6 次までの展開) には戻っていない。独立な値は導出・線形の軌道 + 厳密なスピン回転の MC・追跡</td>
-<td>v2 は独立な式で置き換え (SLIM の 1 次の摂動にスピンの歳差の位相の変調 (シンクロトロン側帯) を厳密に取った項を入れる。<code>spin.sideband_depolarization</code>)。4.2 GeV・12 MV で追跡の 0.43 倍 (過小評価。軌道の非線形が残る)。k64 モードは K64 の式のまま (B55)</td>
+<td>位置の特定は数値の依存性 (e に比例、λ に反比例、ssprd に依らない) による。K64 の式の導出 (Mathematica 由来の 6 次までの展開) には戻っていない。独立な値は導出・線形の軌道 + 厳密なスピン回転の MC・追跡。追加の gs の実測: 24 セルの FODO リングで偏向磁石を 0.8 rad ロールすると gs の Polarization = 2.098e-4 % (有限、</td>
+<td>cb</td>
 </tr>
 <tr>
 <td>B126</td>
