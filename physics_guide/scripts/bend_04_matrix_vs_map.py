@@ -106,3 +106,47 @@ yr = (c[2] / rhob_)**2
 a_ = 1 - yr / 6
 print('  tbedgemaxwell の ∂x/∂y: 解析行列 trans(1,3) = %.6e、COD 更新 Δx = bf pr の数値微分 = %.6e、比 = %.5f (= 1 + δ = %.2f)' % (
     Mm[0, 2], numj(lambda cc: lat._tbedgemaxwell_cod(cc, rhob_), c)[0, 2], Mm[0, 2] / numj(lambda cc: lat._tbedgemaxwell_cod(cc, rhob_), c)[0, 2], pr))
+
+print('\n== (e) 設計軌道の 2x2 行列: 端面の収束 (x: +tan ψ/ρ、y: -tan ψ/ρ) と扇形の本体の積 ==')
+rho_ = 10.0
+th = 0.1
+
+
+def Ex(psi):
+    return np.array([[1, 0], [math.tan(psi) / rho_, 1]])
+
+
+def Ey(psi):
+    return np.array([[1, 0], [-math.tan(psi) / rho_, 1]])
+
+
+Sx_ = np.array([[math.cos(th), rho_ * math.sin(th)], [-math.sin(th) / rho_, math.cos(th)]])
+Sy_ = np.array([[1, 1.0], [0, 1]])
+for name, extra, e1, e2 in (('扇形', 'E1=0 E2=0', 0.0, 0.0), ('矩形 (E1 = E2 = 0.5)', 'E1=0.5 E2=0.5', 0.5 * th, 0.5 * th), ('非対称 (E1 = 0.3、E2 = 0.7)', 'E1=0.3 E2=0.7', 0.3 * th, 0.7 * th)):
+    ffs, el = C.make_bend(1.0, th, extra)
+    Jt = jac_track(ffs, np.zeros(6))
+    Mx = Ex(e2) @ Sx_ @ Ex(e1)
+    My = Ey(e2) @ Sy_ @ Ey(e1)
+    dx_ = np.abs(Jt[np.ix_([0, 1], [0, 1])] - Mx).max()
+    dy_ = np.abs(Jt[np.ix_([2, 3], [2, 3])] - My).max()
+    print('  %-28s 追跡のヤコビアンと 2x2 の積の差: x %.1e、y %.1e   (x の R21 = %+.6f、y の R43 = %+.6f)' % (name, dx_, dy_, Jt[1, 0], Jt[3, 2]))
+print('  (ψ の符号は、E > 0 が面を磁石の外側へ開く向き。x の端の収束は +tan ψ/ρ、y は -tan ψ/ρ)')
+
+print('\n== (f) F1 ≠ 0 (E = 0、FRINGE = 1、F1 = 0.1) の CALC と追跡のヤコビアンの差 (小さいずれ: x = 1 mm、px = 0.5 mrad、y = 0.3 mm、py = 0.2 mrad、δ = 0.002) ==')
+np.set_printoptions(precision=2, linewidth=200)
+ffs, el = C.make_bend(1.0, 0.1, 'FRINGE=1 F1=0.1')
+c = np.array([0.001, 0.0005, 0.0003, 0.0002, 0, 0.002])
+Jt = jac_track(ffs, c)
+Mc, _ = lat._el_cod_step(el, c, c[5])
+fb = lat._bend_fringe_params(el)
+
+
+def calc_map(cc):
+    return lat._bend_cod_update(cc, 1.0, 0.1, 0.0, 0.0, 0.1, fb[0], fb[1], fb[2], fb[3])
+
+
+Jc = numj(calc_map, c)
+print('  CALC の解析行列 - 追跡のヤコビアン (行 x px y py、列 x px y py z δ):')
+print(str((Mc - Jt)[:4, :]).replace('\n', '\n  '))
+print('  CALC の COD 更新の数値微分 - 追跡のヤコビアン (同じ形): 最大 %.1e (x の行の y・py の列が主)、解析行列 - 自身の数値微分: 最大 %.1e' % (np.abs((Jc - Jt)[:4, :]).max(), np.abs((Mc - Jc)[:4, :]).max()))
+print('  F1 = 0 では同じ軌道で 4x4 の差は 1.4e-12 (上の (a))。F1 ≠ 0 では、CALC の写像そのもの (COD の更新の微分) が追跡の写像と違う。原因は特定していない。')

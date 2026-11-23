@@ -238,3 +238,48 @@ maxwell = _no_maxwell
 ref0 = cartesian(c[:5], L, phi, 0.0, 0.5 * phi, 0.5 * phi, 0.02)
 maxwell = _mx
 print('  Maxwell フリンジなしの基準との差 %.1e (フリンジの効果の大きさ。上の一致が偶然でないことの確認)' % np.abs(tr[:5] - ref0).max())
+
+print('\n== (f) 曲線座標の H (一様磁場、根号つき) の運動方程式の積分と、実験室系の幾何 (扇形、ψ = 0、端なし) ==')
+from scipy.integrate import solve_ivp
+rho = L / phi
+hh = 1 / rho
+worst = 0.0
+for dp in (0.0, 0.02, -0.03):
+    p = 1 + dp
+    c0 = [0.003, 0.002 * 1.0, 0.002, 0.001]
+
+    def rhs(s_, v):
+        xx, pxx, yy, pyy, zz = v
+        Pz = math.sqrt(p * p - pxx**2 - pyy**2)
+        return [(1 + hh * xx) * pxx / Pz, -hh * (1 + hh * xx) + hh * Pz, (1 + hh * xx) * pyy / Pz, 0.0, 1 - dv_of(dp) - (1 + hh * xx) * p / Pz]
+    sol = solve_ivp(rhs, (0, L), c0 + [0.0], rtol=1e-13, atol=1e-17, method='DOP853').y[:, -1]
+    x2_, px2_, y2_, tau = arc_geo(c0[0], c0[1], c0[2], c0[3], p, L, phi, 0.0, 0.0, 0.0)
+    z2_ = -p * tau + (1 - dv_of(dp)) * L
+    d = max(abs(sol[0] - x2_), abs(sol[1] - px2_), abs(sol[2] - y2_), abs(sol[4] - z2_))
+    worst = max(worst, d)
+print('  H = (x + h x^2/2) hb - (1 + h x) sqrt(p^2 - px^2 - py^2) (hb = h) の正準方程式を DOP853 で L = %.1f m 積分した (x, px, y, z) と、幾何 (円の中心の座標) の差: δ = 0・0.02・-0.03 で最大 %.1e' % (L, worst))
+
+print('\n== (g) 水平 2x2 の線形化: (5.20)(5.21)(5.22)(5.23) と出口の直進を 1 次まで展開した行列が E(ψ2) S E(ψ1) になる (sympy) ==')
+xs_, pxs_ = sp.symbols('x p_x', real=True)
+ph1, ph2_, phi_s, rho_s = sp.symbols('psi_1 psi_2 phi rho', positive=True)
+om_ = phi_s - ph1 - ph2_
+pz_ = sp.sqrt(1 - pxs_**2)
+x1f = xs_ / (sp.cos(ph1) - pxs_ / pz_ * sp.sin(ph1))
+px1f = pxs_ * sp.cos(ph1) + pz_ * sp.sin(ph1)
+pz1f = pz_ * sp.cos(ph1) - pxs_ * sp.sin(ph1)
+px2f = -(sp.sin(ph2_) + sp.sin(om_ + ph1)) + pz1f * sp.sin(om_) + px1f * sp.cos(om_) - x1f * sp.sin(om_) / rho_s
+pz2f = sp.sqrt(1 - px2f**2)
+x2f = x1f * sp.cos(om_) + rho_s * (pz2f - pz1f * sp.cos(om_) + px1f * sp.sin(om_)) + rho_s * (sp.cos(om_ + ph1) - sp.cos(ph2_))
+pxo = px2f * sp.cos(ph2_) + pz2f * sp.sin(ph2_)
+pzo = sp.sqrt(1 - pxo**2)
+xo = x2f * (sp.cos(ph2_) + pxo / pzo * sp.sin(ph2_))
+Jm = sp.Matrix([[sp.diff(xo, xs_), sp.diff(xo, pxs_)], [sp.diff(pxo, xs_), sp.diff(pxo, pxs_)]])
+vals = {phi_s: sp.Rational(1, 10), ph1: sp.Rational(3, 100), ph2_: sp.Rational(7, 100), rho_s: 10, xs_: 0, pxs_: 0}
+Jn = Jm.subs(vals).evalf(30)
+th_ = vals[phi_s]
+Ex_ = lambda a: sp.Matrix([[1, 0], [sp.tan(a) / rho_s, 1]])
+Sx_ = sp.Matrix([[sp.cos(phi_s), rho_s * sp.sin(phi_s)], [-sp.sin(phi_s) / rho_s, sp.cos(phi_s)]])
+Mref = (Ex_(ph2_) * Sx_ * Ex_(ph1)).subs(vals).evalf(30)
+print('  設計軌道 (x = px = 0) の出口: x = %s、px = %s' % (sp.N(xo.subs(vals), 5), sp.N(pxo.subs(vals), 5)))
+print('  ヤコビアン (ψ1 = 0.03、ψ2 = 0.07、φ = 0.1、ρ = 10): %s' % str([float(v) for v in Jn]))
+print('  E(ψ2) S E(ψ1) = %s、最大の差 %.1e' % (str([float(v) for v in Mref]), float(max(abs(Jn[i] - Mref[i]) for i in range(4)))))

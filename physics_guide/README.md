@@ -19,7 +19,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | 02_drift.md | ドリフトと $dv$、COD のまわりの線形化 | 予定 |
 | 03_symplectic_integrators.md | 分割の一般論 (Strang、Yoshida、力勾配型)、刻みの数の一覧 | 予定 |
 | [04_quad.md](04_quad.md) | **四極**。$H_2$ の厳密解、運動学的な $\Delta H$、Strang と Yoshida、刻みの数、フリンジ、行列と追跡の関係 | ✓ |
-| 05_bend.md | 偏向磁石。円弧の厳密解、端面角、複合機能 | 予定 |
+| [05_bend.md](05_bend.md) | **偏向磁石**。$H_2$ の厳密解、K1 = 0 の円弧と端面角の厳密解、Maxwell フリンジ・線形フリンジ (F1)、複合機能 (K1 ≠ 0)、行列と追跡の関係 | ✓ |
 | 06_edge_fringe.md | 端部の一般論 (Maxwell、F1・F2、非線形フリンジ) | 予定 (四極の端部は 04 章 §7) |
 | 07_thin_multipole.md | 薄い 6 極・8 極など。4 次の分割 | 予定 |
 | 08_mult.md | MULT (多極) | 予定 |
@@ -37,7 +37,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | A_help_vs_source.md | 付録: ヘルプの式と K64 のソースの食い違い・誤植の一覧 | 予定 (01 章と 04 章の付録 A に先に書いてある) |
 | B_script_index.md | 付録: 確認スクリプトの一覧 | 予定 (下の表) |
 
-読む順の目安: **01 → 01a (導出を詳しく追うとき) → 04**。ヘルプの $\exp(:H:)$ の記法は付録 C。**01 → 04** (四極を例に、ガイドの書き方を掴む)。そのあと、要素別に拾い読みしてよい。
+読む順の目安: **01 → 01a (導出を詳しく追うとき) → 04 → 05**。ヘルプの $\exp(:H:)$ の記法は付録 C。**01 → 04** (四極を例に、ガイドの書き方を掴む)。そのあと、要素別に拾い読みしてよい。
 
 ## 共通の記号の表 (最小限)
 
@@ -65,6 +65,7 @@ py -3.12 physics_guide/scripts/quad_03_integrator_order.py      # 図 physics_gu
 py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py
 py -3.12 physics_guide/scripts/quad_05_fringe.py
 py -3.12 physics_guide/scripts/quad_06_invariants.py
+py -3.12 physics_guide/scripts/bend_01_h2_body.py               # 05 章 (偏向磁石) の確認 (bend_01〜bend_04)
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -78,6 +79,10 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `quad_04_matrix_vs_map.py` | 04 | CALC の行列と追跡の写像の微分の一致、$z$ の行、シンプレクティック性 |
 | `quad_05_fringe.py` | 04 | フリンジ (母関数、Maxwell の場の端の積分、F1・F2、シンプレクティック性) |
 | `quad_06_invariants.py` | 04 | 保存量と分割の誤差 |
+| `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
+| `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
+| `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
+| `bend_04_matrix_vs_map.py` | 05 | CALC の行列と追跡の写像の関係、段ごとの比較、端面の 2×2 行列 |
 | `ham_01_lorentz_potential.py` | 01a | ベクトル恒等式、$dA/dt$、一般化力 (追加項)、$\vec p = \gamma m_0\vec v + e\vec A$、ラグランジュ方程式 |
 | `ham_02_legendre.py` | 01a | ルジャンドル変換、$H = c\sqrt{(\vec p - e\vec A)^2 + m_0^2c^2} + e\phi$ |
 | `ham_03_frenet_f3.py` | 01a | 母関数 $F_3$ の $\vec P$、ポアソン括弧、$A_s$ と磁場 |
