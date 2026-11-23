@@ -1,0 +1,27 @@
+== (a) シンプレクティック Euler の局所誤差 ==
+P_eu = p - ds H_q + ds^2 (H_qp H_q) + ...: ds^2 の係数 sol2 = Derivative(H(q, p), q)*Derivative(H(q, p), p, q)
+q: (厳密 - Euler) の ds^2 の係数 = Derivative(H(q, p), p)*Derivative(H(q, p), p, q)/2 + Derivative(H(q, p), (p, 2))*Derivative(H(q, p), q)/2
+   期待値 1/2 (H_pq H_p + H_pp H_q) との差 = 0
+p: (厳密 - Euler) の ds^2 の係数 = -Derivative(H(q, p), p)*Derivative(H(q, p), (q, 2))/2 - Derivative(H(q, p), q)*Derivative(H(q, p), p, q)/2
+ds^1 の係数は両者とも H_p, -H_q で一致: 0 0
+
+== (b) 楕円ビームの U の遠方 ==
+d/dT で被積分関数に戻るか: 0  F(0) = 0
+T->∞: F - [ln(4T) - 2 ln(√A+√B)] -> 0
+ln2 + γ_E = 1.270362845
+σ = (1, 1): 誤差 U + 2ln(σx+σy) - ln r^2 - (ln2+γ_E) at r = 10, 30, 100, 300: ['3.78e-24 (r^2 d = 0.00)', '-3.94e-31 (r^2 d = -0.00)', '-3.94e-31 (r^2 d = -0.00)', '-5.13e-30 (r^2 d = -0.00)']
+σ = (3, 0.5): 誤差 U + 2ln(σx+σy) - ln r^2 - (ln2+γ_E) at r = 10, 30, 100, 300: ['3.16e-02 (r^2 d = 3.16)', '2.84e-03 (r^2 d = 2.55)', '2.46e-04 (r^2 d = 2.46)', '2.72e-05 (r^2 d = 2.45)']
+σ = (1, 4): 誤差 U + 2ln(σx+σy) - ln r^2 - (ln2+γ_E) at r = 10, 30, 100, 300: ['-1.07e-02 (r^2 d = -1.07)', '-4.30e-03 (r^2 d = -3.87)', '-4.17e-04 (r^2 d = -4.17)', '-4.66e-05 (r^2 d = -4.20)']
+
+== (c) K と z のポアソン括弧 ==
+[W(x,y,z), z] = 0  (K は z を変えない)
+[z, F] with F = s*(z) (px²+py²)/2: 0  (D も z を変えない)
+
+== (d) ブロック逆行列 ==
+Λ_aa^{-1} - (Σ_aa - Σ_az Σ_zz^{-1} Σ_za) = [[0, 0], [0, 0]]
+Λ_aa^{-1} Λ_az + Σ_az Σ_zz^{-1} = [[0], [0]]
+Λ_zz - 1/Σ_zz は Σ_za Schur^{-1} Σ_az / Σ_zz^2 に等しい: 0
+
+== (e) ct = -z ==
+ct = -z (導出) : boost 後の x_2 = x + z*sqrt(1 - c**2)/c   (= x + tanφc z なら z の係数 s/c)
+ct = +z (逆) : boost 後の x_2 = x - z*sqrt(1 - c**2)/c   (= x + tanφc z なら z の係数 s/c)

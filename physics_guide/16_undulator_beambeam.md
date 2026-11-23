@@ -11,7 +11,7 @@
 ## 1. 結論
 
 - **UND の模型**: $A_x$、$A_y$ を (16.1) の形に与える。軸上で $B_y = F_0\cos(K_z s)$、$B_x = G_0\cos(K_z s + \varphi)$ ($F_0 = \mathtt{FBX}\,c/p$ [1/m]、$G_0 = \mathtt{FBY}\,c/p$、$K_z = 2\pi\,\mathtt{POLE}/L$)。$B = \nabla\times A$ は $\nabla\cdot B = 0$ を恒等的に満たし、$\nabla\times B = 0$ は $K_y^2 = K_z^2 + K_x^2$、$Q_x^2 = K_z^2 + Q_y^2$ のとき成り立つ (§3.1 で成分ごとに導く)。[und_01_field_map.out.txt](outputs/und_01_field_map.out.txt) (a): sympy の $\nabla\times\vec B$ を数値代入して最大 $8\times10^{-15}$ (B ~ 0.3)。成分の導出は [und_02_derivations.out.txt](outputs/und_02_derivations.out.txt) (a)。
-- **UND の写像**: $H = [(p_x - A_x)^2 + (p_y - A_y)^2]/(2(1+\delta))$ (傍軸)。スライスごとに、2 型の母関数 $F_2 = q\cdot P + ds\,H(q, P; s_j)$ の陰的な写像 (記号は §3.3)。**1 次の精度**で厳密にシンプレクティック (任意の $ds$ で $\det J = 1$、$J^\top SJ = S$ が 40 桁で成り立つ: [und_02_derivations.out.txt](outputs/und_02_derivations.out.txt) (d))。確認 (b): 3 GeV、$B_y = 1$ T、$B_x = 0.4$ T、Kx・Qy・位相あり、10 周期・1 m で、DOP853 の積分との差は slice = 500・1000・2000・4000・8000 で、$|\Delta y|$ が $6.81\times10^{-10}$、$3.32\times10^{-10}$、$1.64\times10^{-10}$、$8.14\times10^{-11}$、$4.06\times10^{-11}$、$|\Delta p_y|$ が $1.30\times10^{-9}$、$6.35\times10^{-10}$、$3.14\times10^{-10}$、$1.56\times10^{-10}$、$7.76\times10^{-11}$。刻み数を 2 倍にしたときの比は $y$・$p_y$ とも 2.05、2.02、2.01、2.00 で、**1 次の収束**。$|\Delta x|$ の比も 2.24、2.13、2.06、2.03 で 2 に近づく。$|\Delta p_x|$ は $7.5\times10^{-12}$、$1.07\times10^{-11}$、$7.07\times10^{-12}$、$3.97\times10^{-12}$、$2.09\times10^{-12}$ で、500→1000 では増え (比 0.70)、その後 1.51、1.78、1.90 と 2 に近づく (単調でないので 1 次の証拠には $y$・$p_y$ を使う。$p_x$ の 1 次の係数が小さく、誤差が $10^{-11}$ の水準で高次の項や積分の許容誤差の影響を受けるためと読めるが、分けて確認していない)。
+- **UND の写像**: $H = [(p_x - A_x)^2 + (p_y - A_y)^2]/(2(1+\delta))$ (傍軸)。スライスごとに、2 型の母関数 $F_2 = q\cdot P + ds\,H(q, P; s_j)$ の陰的な写像 (記号は §3.3)。**1 次の精度**で厳密にシンプレクティック (任意の $ds$ で $\det J = 1$、$J^\top SJ = S$ が 40 桁で成り立つ: [und_02_derivations.out.txt](outputs/und_02_derivations.out.txt) (d))。確認 (b): 3 GeV、$B_y = 1$ T、$B_x = 0.4$ T、Kx・Qy・位相あり、10 周期・1 m で、DOP853 の積分との差は slice = 500・1000・2000・4000・8000 で、$|\Delta y|$ が $6.81\times10^{-10}$、$3.32\times10^{-10}$、$1.64\times10^{-10}$、$8.14\times10^{-11}$、$4.06\times10^{-11}$、$|\Delta p_y|$ が $1.30\times10^{-9}$、$6.35\times10^{-10}$、$3.14\times10^{-10}$、$1.56\times10^{-10}$、$7.76\times10^{-11}$。刻み数を 2 倍にしたときの比は $y$・$p_y$ とも 2.05、2.02、2.01、2.00 で、**1 次の収束** (局所誤差が $O(ds^2)$ であることは §3.3 で式から示す)。$|\Delta x|$ の比 (2.24、2.13、2.06、2.03) は 1 次の証拠には使わない: $x$ の誤差には $ds^2$ の項も混ざり、比が 2 より大きいところから 2 に近づくためである。$|\Delta p_x|$ は $7.5\times10^{-12}$、$1.07\times10^{-11}$、$7.07\times10^{-12}$、$3.97\times10^{-12}$、$2.09\times10^{-12}$ で、500→1000 では増え (比 0.70)、その後 1.51、1.78、1.90 と 2 に近づく (単調でないので 1 次の証拠には $y$・$p_y$ を使う。$p_x$ の 1 次の係数が小さく、誤差が $10^{-11}$ の水準で高次の項や積分の許容誤差の影響を受けるためと読めるが、分けて確認していない)。
 - **K64 の UND の癖**: 磁場のキーワードが設定できない (B37、gs で再現)。陰的な刻みの右辺に `dpds` を二重にかける (B78。**ソースの読み**。gs では磁場が設定できず確認できない。v2 は 1 回)。**$-dv\,L$ の項 (速度の差による $z$ の更新) がない** (疑い、§4、§13): 磁場なしの UND と DRIFT で $z$ が $-2.897\times10^{-11}$ m ($= dv\,L$、3 GeV・$\delta = 10^{-3}$・$L = 1$ m) 違う。
 - **BEAMBEAM の力**: 強ビーム (2 次元ガウス、$\sigma_x,\sigma_y$) が弱粒子に与えるキックは、2 次元ガウス分布の電場の閉じた式 (複素誤差関数、(16.8))。ポテンシャル (16.6) が 2 次元の Poisson 方程式 $\nabla^2U = 4\pi\rho$ を満たすこと、遠方で $\ln r^2$ になること、閉じた形が (16.6) の積分から出ることを §6.1 で導く。[bb_01_kick_slice.out.txt](outputs/bb_01_kick_slice.out.txt) (a): 丸い・$\sigma_x > \sigma_y$・$\sigma_x < \sigma_y$ の 3 通り各 4 点で、$\Delta p_x$、$\Delta p_y$ が 2 次元ポテンシャルの数値積分の微分と $10^{-13}$ 以下の絶対差 (相対 $10^{-9}$) で一致。小振幅の傾き $-2c/(\sigma_x(\sigma_x+\sigma_y))$ ($c = N r_e/\gamma$) とも一致。
 - **エネルギーのキック**: $\delta$ の変化 $= -g_{xy} + \tfrac14|\Delta p|^2$ ($g_{xy} = \sigma_{12x}\,\partial U/\partial\sigma_x^2 + \sigma_{12y}\,\partial U/\partial\sigma_y^2$) が、$\sigma_{12}\ne0$ (Twiss $\alpha\ne0$) の強ビームで $10^{-18}$ 以下の差で一致 (3 通り各 4 点)。
@@ -177,7 +177,19 @@ $$
 z' = \frac{\partial F_2}{\partial\delta'} = z + ds\,\partial_\delta H.
 $$
 
-(1 つめの式が (16.4) の $\vec P$ の式、3 つめは $\delta$ が保たれること。) 任意の $ds$ について**正準変換** (母関数から出る写像はシンプレクティック)。精度は 1 次 (シンプレクティック Euler)。数値の確認は、有限の $ds = 0.02$ で 1 スライスの $6\times6$ ヤコビアンを sympy で 40 桁で評価し、$\max|J^\top SJ - S| = 2.3\times10^{-41}$、$\det J = 1$ ([und_02_derivations.out.txt](outputs/und_02_derivations.out.txt) (d))。
+(1 つめの式が (16.4) の $\vec P$ の式、3 つめは $\delta$ が保たれること。) 任意の $ds$ について**正準変換** (母関数から出る写像はシンプレクティック)。
+
+**精度が 1 次であること** (局所誤差 $O(ds^2)$)。1 自由度の $H(q, p)$ で、$ds$ の級数を 2 次まで書いて厳密な流れと比べる (添字は偏微分: $H_q = \partial_qH$、$H_{pq} = \partial_p\partial_qH$ など。$s$ 依存は 2 次の項に同じ形で入るだけなので略す)。
+
+1. 厳密な流れ: $\dot q = H_p$、$\dot p = -H_q$ を時間で微分して $\ddot q = H_{pq}\dot q + H_{pp}\dot p = H_{pq}H_p - H_{pp}H_q$、$\ddot p = -(H_{qq}\dot q + H_{qp}\dot p) = -H_{qq}H_p + H_{qp}H_q$。したがって
+   $q_{\rm ex} = q + ds\,H_p + \tfrac{ds^2}2(H_{pq}H_p - H_{pp}H_q) + O(ds^3)$、$p_{\rm ex} = p - ds\,H_q + \tfrac{ds^2}2(-H_{qq}H_p + H_{qp}H_q) + O(ds^3)$。
+2. Euler の写像 (16.4): $P = p - ds\,H_q(q, P)$。右辺の $H_q(q, P)$ を $P - p = O(ds)$ で展開する: $H_q(q, P) = H_q + H_{qp}(P - p) + \cdots$。最低次で $P - p = -ds\,H_q$ なので $H_q(q, P) = H_q - ds\,H_{qp}H_q + \cdots$、よって $P = p - ds\,H_q + ds^2H_{qp}H_q + O(ds^3)$。
+3. 位置: $q' = q + ds\,H_p(q, P) = q + ds[H_p + H_{pp}(P - p)] = q + ds\,H_p - ds^2H_{pp}H_q + O(ds^3)$。
+4. 差 (厳密 − Euler): $ds^1$ の項は $H_p$、$-H_q$ で**一致**。$ds^2$ の項は
+   $$q_{\rm ex} - q' = \frac{ds^2}2\left(H_{pq}H_p + H_{pp}H_q\right),\qquad p_{\rm ex} - P = -\frac{ds^2}2\left(H_{qq}H_p + H_{qp}H_q\right)$$
+   (3 の $-ds^2H_{pp}H_q$ と 1 の $-\tfrac{ds^2}2H_{pp}H_q$ の差で $+\tfrac12H_{pp}H_q$、$p$ の側は $\tfrac12H_{qp}H_q - H_{qp}H_q = -\tfrac12H_{qp}H_q$)。一般には 0 でない。1 刻みの誤差が $O(ds^2)$ なので、長さ $L$ ($= L/ds$ 刻み) の累積は $O(ds)$、1 次の収束 (sympy で一般の $H(q,p)$ について確認: [bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) (a))。
+
+数値の確認は、有限の $ds = 0.02$ で 1 スライスの $6\times6$ ヤコビアンを sympy で 40 桁で評価し、$\max|J^\top SJ - S| = 2.3\times10^{-41}$、$\det J = 1$ ([und_02_derivations.out.txt](outputs/und_02_derivations.out.txt) (d))。
 
 $H$ が $\vec P$ の 2 次なので陰的な式は線形で、2×2 の行列で解ける。$\partial_xH = -\frac1{p_n}[(P_x - A_x)\partial_xA_x + (P_y - A_y)\partial_xA_y]$ なので、(16.4) の $\vec P$ の式を成分で書くと
 
@@ -256,7 +268,9 @@ $$
 \partial_tE = E\left[\frac{x^2}{a^2} + \frac{y^2}{b^2} - \frac1{2a} - \frac1{2b}\right] = \frac14E\left[\left(\frac{4x^2}{a^2} - \frac2a\right) + \left(\frac{4y^2}{b^2} - \frac2b\right)\right],
 $$
 
-一方 $\nabla^2E$ ($x$ と $y$ の 2 階微分) $= E\left[\left(\dfrac{4x^2}{a^2} - \dfrac2a\right) + \left(\dfrac{4y^2}{b^2} - \dfrac2b\right)\right]$ なので、$\nabla^2g = -\nabla^2E = -4\,\partial_tE$ (sympy で確認、[bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (a))。(16.6) の $t$ 積分は $x, y$ に依らない部分 (定数に当たる "1" の項) の微分が 0 なので $\nabla^2U = \int_0^\infty\nabla^2g\,dt = -4[E]_0^\infty = 4E|_{t=0} = \dfrac{4}{2\sigma_x\sigma_y}e^{-x^2/2\sigma_x^2 - y^2/2\sigma_y^2} = 4\pi\rho$ ($E|_{t=\infty} = 0$、$a_0b_0 = 4\sigma_x^2\sigma_y^2$)。したがって (i) を満たす。遠方の挙動 (ii) は次の丸いビームで見る。
+一方 $\nabla^2E$ ($x$ と $y$ の 2 階微分) $= E\left[\left(\dfrac{4x^2}{a^2} - \dfrac2a\right) + \left(\dfrac{4y^2}{b^2} - \dfrac2b\right)\right]$ なので、$\nabla^2g = -\nabla^2E = -4\,\partial_tE$ (sympy で確認、[bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (a))。(16.6) の $t$ 積分は $x, y$ に依らない部分 (定数に当たる "1" の項) の微分が 0 なので $\nabla^2U = \int_0^\infty\nabla^2g\,dt = -4[E]_0^\infty = 4E|_{t=0} = \dfrac{4}{2\sigma_x\sigma_y}e^{-x^2/2\sigma_x^2 - y^2/2\sigma_y^2} = 4\pi\rho$ ($E|_{t=\infty} = 0$、$a_0b_0 = 4\sigma_x^2\sigma_y^2$)。したがって (i) を満たす。遠方の挙動 (ii) は、丸いビームは次の検算で、楕円は (16.7b) の導出で示す。
+
+**一意性** (2 条件が $U$ を決めること)。(i)(ii) を満たす 2 つの関数 $U_1$、$U_2$ の差 $D = U_1 - U_2$ は、(i) の右辺が同じなので全平面で $\nabla^2D = 0$ (調和関数)。(ii) から $U_{1,2} - \ln r^2$ は遠方で有界なので $D$ は遠方で有界、したがって全平面で有界な調和関数で、リウヴィルの定理により定数。キックは $U$ の勾配だけを使うので、定数は力に効かない (§6.2 の $2\ln(\sigma_x+\sigma_y)$ も定数 + $\sigma$ の関数としては同じ)。(16.6) は $x = y = 0$ で被積分関数が 0 になる ($U(0, 0) = 0$) 形で定数を固定している。
 
 **丸いビームの検算** ($\sigma_x = \sigma_y = \sigma$、$u = 1/(2\sigma^2+t)$ と置換、$du = -u^2dt$): $\dfrac{\partial U}{\partial x} = \displaystyle\int_0^\infty\frac{2x\,e^{-r^2/(2\sigma^2+t)}}{(2\sigma^2+t)^2}dt = 2x\int_0^{1/2\sigma^2}e^{-r^2u}\,du = \frac{2x}{r^2}\left(1 - e^{-r^2/2\sigma^2}\right)$。したがって
 
@@ -273,6 +287,14 @@ U_{\rm round} = \int_0^w\frac{1 - e^{-q}}{q}\,dq \equiv \mathrm{Ein}(w)\ \xright
 $$
 
 ($\gamma_E$ はオイラー定数。$\mathrm{Ein}$ の数値積分との一致: [bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (b)。) 遠方で $\ln r^2$ になる (ii)。$\ln r^2$ の係数が 1 で、$\sigma$ に依る定数 $-\ln2\sigma^2 + \gamma_E$ が付く。これが §6.2 の $2\ln(\sigma_x+\sigma_y)$ の項の理由になる。
+
+**楕円の遠方** ($\sigma_x\ne\sigma_y$。$A = 2\sigma_x^2$、$B = 2\sigma_y^2$ とおき、$a = A + t$、$b = B + t$、$r^2 = x^2+y^2$)。$\sigma^2\ll T\ll r^2$ の中間の $T$ で (16.6) の $t$ 積分を 2 つに分ける。
+
+1. $0 < t < T$: $e^{-x^2/a - y^2/b}$ は $x^2/a + y^2/b\ge r^2/(T + \max(A, B))\gg1$ で無視でき、被積分関数は $1/\sqrt{ab}$。この積分は閉じた形で書ける: $\displaystyle\int_0^T\frac{dt}{\sqrt{(t+A)(t+B)}} = 2\ln\frac{\sqrt{T+A}+\sqrt{T+B}}{\sqrt A+\sqrt B}$ (右辺を $T$ で微分すると左辺の被積分関数に戻る。sympy で確認)。$T\gg A, B$ で $(\sqrt{T+A}+\sqrt{T+B})^2\to4T$ なので $\ln(4T) - 2\ln(\sqrt A+\sqrt B) = \ln(2T) - 2\ln(\sigma_x+\sigma_y)$ ($\sqrt A+\sqrt B = \sqrt2(\sigma_x+\sigma_y)$ から $2\ln(\sqrt A+\sqrt B) = \ln2 + 2\ln(\sigma_x+\sigma_y)$)。
+2. $t > T$: $t\gg\sigma^2$ なので $a\simeq b\simeq t$ ($a - b = A - B$ は一定で相対的に $O(\sigma^2/t)$)、$x^2/a + y^2/b\simeq r^2/t$ (方向に依らない)。$q = r^2/t$ と置換して $\displaystyle\int_T^\infty\frac{1 - e^{-r^2/t}}{t}dt = \int_0^{r^2/T}\frac{1 - e^{-q}}{q}dq = \mathrm{Ein}(r^2/T)\to\ln\frac{r^2}T + \gamma_E$ ($r^2/T\gg1$)。
+3. 足すと $T$ が消える: $U \simeq \ln(2T) - 2\ln(\sigma_x+\sigma_y) + \ln(r^2/T) + \gamma_E$、すなわち
+   $$U + 2\ln(\sigma_x+\sigma_y) - \ln r^2\ \to\ \ln2 + \gamma_E\qquad(r\gg\sigma_x, \sigma_y)\tag{16.7b}$$
+   で、$\sigma_x$、$\sigma_y$ にも方向にも依らない。$\ln r^2$ の係数が 1 なので (ii) も満たす。丸い場合 ($\sigma_x = \sigma_y = \sigma$) は $\ln r^2 + \ln2 + \gamma_E - 2\ln2\sigma = \ln r^2 - \ln2\sigma^2 + \gamma_E$ で (16.7a) と同じ。補正は $a\simeq b\simeq t$ の誤差から $O(\sigma^2/r^2)$ で、数値で $r^2\times$誤差が一定に近づく: $\sigma = (3, 0.5)$ で $r = 10, 30, 100, 300$ に対し $r^2\times$誤差 $= 3.16, 2.55, 2.46, 2.45$、$\sigma = (1, 4)$ で $-1.07, -3.87, -4.17, -4.20$ ([bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) (b)。mpmath、30 桁)。
 
 **一般の楕円 (閉じた形)**: (16.6) の閉じた形は、複素誤差関数 $w(\zeta) = e^{-\zeta^2}\mathrm{erfc}(-i\zeta)$ で書かれる。$\sigma_x > \sigma_y$ のとき、$S = \sqrt{2(\sigma_x^2 - \sigma_y^2)}$、$\zeta_1 = (|x| + i|y|)/S$、$\zeta_2 = (|x|\sigma_y/\sigma_x + i|y|\sigma_x/\sigma_y)/S$ として
 
@@ -300,7 +322,7 @@ $$
 
 ### 6.2 $z$ に依存する包絡と $\delta$ のキック
 
-強ビームのスライスは、衝突点の位置 $s^*$ により、衝突時の横の大きさが違う (包絡が $s^*$ の 2 次関数で、$\sigma_x^2(s) = \sigma_{11x} + 2\sigma_{12x}s + \sigma_{22x}s^2$ (`sig11x = Benv5(1) + 2*Benv5(2)*sz + Benv5(7)*sz**2`)、$\sigma_{12x}(s) = \sigma_{12x} + \sigma_{22x}s$ (`sig12x = Benv5(2) + Benv5(7)*sz`、$\partial_s\sigma_x^2 = 2\sigma_{12x}(s)$)。したがってポテンシャルは $z$ にも依存し、運動量 $\delta$ が変わる。物理的なポテンシャルは、遠方で $\sigma$ に依らず $\ln r^2$ + 定数になるもの $U_{\rm phys} = U + 2\ln(\sigma_x + \sigma_y)$ である。理由: 丸い場合 (16.7a) で $U\to\ln r^2 - \ln2\sigma^2 + \gamma_E$ なので $\sigma$ に依る定数 $-\ln2\sigma^2$ が付き、$2\ln(2\sigma) = \ln4\sigma^2$ を足すと $\ln r^2 + \ln2 + \gamma_E$ で $\sigma$ に依らない。楕円でも、遠方で $U + 2\ln(\sigma_x+\sigma_y) - \ln r^2\to\ln2 + \gamma_E$ が $\sigma_x, \sigma_y$ に依らず、方向にも依らない (数値で確認: $\sigma = (1,1),(2,1),(3,0.5),(1,4)$ で $r = 300$、誤差 $\sim10^{-4}$ (残りは $O(\sigma^2/r^2)$)、[bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (b2))。遠方の粒子は、電荷の総量だけで決まる力を受けるはずで、ビームの大きさの $s^*$ 依存でエネルギーを変えてはいけない、というのが必要な理由である。
+強ビームのスライスは、衝突点の位置 $s^*$ により、衝突時の横の大きさが違う (包絡が $s^*$ の 2 次関数で、$\sigma_x^2(s) = \sigma_{11x} + 2\sigma_{12x}s + \sigma_{22x}s^2$ (`sig11x = Benv5(1) + 2*Benv5(2)*sz + Benv5(7)*sz**2`)、$\sigma_{12x}(s) = \sigma_{12x} + \sigma_{22x}s$ (`sig12x = Benv5(2) + Benv5(7)*sz`、$\partial_s\sigma_x^2 = 2\sigma_{12x}(s)$)。したがってポテンシャルは $z$ にも依存し、運動量 $\delta$ が変わる。物理的なポテンシャルは、遠方で $\sigma$ に依らず $\ln r^2$ + 定数になるもの $U_{\rm phys} = U + 2\ln(\sigma_x + \sigma_y)$ である。理由: 丸い場合 (16.7a) で $U\to\ln r^2 - \ln2\sigma^2 + \gamma_E$ なので $\sigma$ に依る定数 $-\ln2\sigma^2$ が付き、$2\ln(2\sigma) = \ln4\sigma^2$ を足すと $\ln r^2 + \ln2 + \gamma_E$ で $\sigma$ に依らない。楕円でも、遠方で $U + 2\ln(\sigma_x+\sigma_y) - \ln r^2\to\ln2 + \gamma_E$ が $\sigma_x, \sigma_y$ に依らず、方向にも依らない。これは (16.7b) で $t$ 積分を $t<T$ (閉じた形) と $t>T$ ($\mathrm{Ein}$) に分けて**解析的に導いた**。数値の確認: $\sigma = (1,1),(2,1),(3,0.5),(1,4)$ で $r = 300$、誤差 $\sim10^{-4}$ (残りは $O(\sigma^2/r^2)$)、[bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (b2)、$r^2\times$誤差が一定になること: [bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) (b)。遠方の粒子は、電荷の総量だけで決まる力を受けるはずで、ビームの大きさの $s^*$ 依存でエネルギーを変えてはいけない、というのが必要な理由である。
 
 **$\delta$ のキックは $\delta \mathrel{-}= g_{xy}$**、
 
@@ -330,6 +352,8 @@ $$
 
 ($D$ の中の $s^* = (z - z_s)/2$ は D の前の $z$。$D^{-1}$ は、同じ $F$ の流れの**時間 $-1$** を、キック後の $p$ で行う: $x \mathrel{-}= p_xs^*$、$\delta \mathrel{+}= \tfrac14p_\perp^2$ (同じ $s^*$。$K$ は $z$ を変えないので $s^*$ は変わらない)。$D$ の単純な逆写像 (古い $p$ を使う) ではなく、$p$ が $K$ で変わった分だけ違う。$K$: $p_{x,y} \mathrel{-}= f_{x,y}$、$\delta \mathrel{-}= g_{xy}$。)
 
+**$D^{-1}$ が「同じ $s^*$ の時間 $-1$ の流れ」である根拠**。$K$ は生成関数 $W(x, y, z)$ ($p\to p - \partial_{\vec q}W$、$\delta\to\delta - \partial_zW$、§6.2) による変換で、$W$ は $p$・$\delta$ を含まないので、$z$ とのポアソン括弧は $[W, z] = \partial_zW\,\partial_\delta z - \partial_\delta W\,\partial_zz = 0$ ($\partial_\delta z = 0$、$\partial_\delta W = 0$)。つまり $K$ は $z$ を変えない。$D$ も $[z, F] = \partial_zz\,\partial_\delta F - \partial_\delta z\,\partial_zF = 0$ ($F$ は $\delta$ に依らない) で $z$ を変えない。したがって $s^* = (z - z_s)/2$ は $D$、$K$、$D^{-1}$ の間で一定で、$D^{-1} = \exp(+:F:)$ ($F = s^*H_0$ の $s^*$ を $z$ の関数のまま) を、$K$ のあとの $p$ に対して作用させれば、$D^{-1}KD$ は 3 つのシンプレクティック写像の合成になる (sympy: [bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) (c))。
+
 **$D$ の導出**: 生成関数 $F(x, y, p_x, p_y, z) = s^*(z)\,H_0$、$H_0 = (p_x^2 + p_y^2)/2$ ($s^* = (z - z_s)/2$) の流れを時間 1 だけ進める。[C_poisson_lie.md](C_poisson_lie.md) の約束 (ポアソン括弧 $[f, g] = \sum(\partial_qf\,\partial_pg - \partial_pf\,\partial_qg)$、転送は $\exp(-:F:)$ で、$g\mapsto g + [g, F] + \frac12[[g, F], F] + \cdots$) で書くと、座標・運動量 $g$ について級数の各項は ($(z, \delta)$ を共役な対として):
 
 | $g$ | $[g, F]$ | $[[g, F], F]$ |
@@ -357,7 +381,17 @@ $$
 = -\tfrac12\left(v_a + z\Lambda_{aa}^{-1}\Lambda_{az}\right)^\top\Lambda_{aa}\left(v_a + z\Lambda_{aa}^{-1}\Lambda_{az}\right) + (z\text{ だけの項})
 $$
 
-(平方完成)。$z$ を固定すると $v_a$ はガウス分布で、共分散は **$\Sigma_5 = \Lambda_{aa}^{-1}$** (精度行列の 5×5 のブロックの逆行列)、条件付き平均は $-z\,\Lambda_{aa}^{-1}\Lambda_{az} = z\cdot(-\Sigma_5\,b)$ ($b = \Lambda_{az}$)。これは $\Sigma$ のブロックで書いた $\Sigma_{aa} - \Sigma_{az}\Sigma_{zz}^{-1}\Sigma_{za}$ (Schur 補行列)、平均 $\Sigma_{az}\Sigma_{zz}^{-1}z$ と同じ (数値で $10^{-15}$ 以下: [bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (e))。K64: `m_zslice_5d` が `Benv_inv` から `m_sub5`、`v_sub5` を作り、固有値分解で $\Sigma_5 = \mathrm{Benv5}$ を作る (固有値が 0 以下ならエラー)。`v_cen` は $\langle x_i\rangle = v_i\,z$ ($i = 1\ldots4$)。このずれ (`deform`) は、各スライスで `x -= zslice*sigz*v_cen(1)` などの座標の平行移動として入れる ((16.10) の $D$ の前後)。
+(平方完成)。$z$ を固定すると $v_a$ はガウス分布で、共分散は **$\Sigma_5 = \Lambda_{aa}^{-1}$** (精度行列の 5×5 のブロックの逆行列)、条件付き平均は $-z\,\Lambda_{aa}^{-1}\Lambda_{az} = z\cdot(-\Sigma_5\,b)$ ($b = \Lambda_{az}$)。これは $\Sigma$ のブロックで書いた $\Sigma_{aa} - \Sigma_{az}\Sigma_{zz}^{-1}\Sigma_{za}$ (Schur 補行列)、平均 $\Sigma_{az}\Sigma_{zz}^{-1}z$ と同じ。**ブロック逆行列の導出**: $\Sigma = \begin{pmatrix}\Sigma_{aa}&\Sigma_{az}\\\Sigma_{za}&\Sigma_{zz}\end{pmatrix}$ ($\Sigma_{zz}$ はスカラー) は、下の積に分解できる (右辺を掛けて確かめる。(1,2) ブロックは $\Sigma_{az}\Sigma_{zz}^{-1}\cdot\Sigma_{zz} = \Sigma_{az}$、(1,1) ブロックは $S + \Sigma_{az}\Sigma_{zz}^{-1}\Sigma_{za} = \Sigma_{aa}$)。
+
+$$
+\Sigma = \begin{pmatrix}1&\Sigma_{az}\Sigma_{zz}^{-1}\\0&1\end{pmatrix}\begin{pmatrix}S&0\\0&\Sigma_{zz}\end{pmatrix}\begin{pmatrix}1&0\\\Sigma_{zz}^{-1}\Sigma_{za}&1\end{pmatrix},\qquad S = \Sigma_{aa} - \Sigma_{az}\Sigma_{zz}^{-1}\Sigma_{za}
+$$
+
+三角行列の逆は符号を変えるだけなので
+$$
+\Lambda = \Sigma^{-1} = \begin{pmatrix}1&0\\-\Sigma_{zz}^{-1}\Sigma_{za}&1\end{pmatrix}\begin{pmatrix}S^{-1}&0\\0&\Sigma_{zz}^{-1}\end{pmatrix}\begin{pmatrix}1&-\Sigma_{az}\Sigma_{zz}^{-1}\\0&1\end{pmatrix}.
+$$
+右から掛けて (1,1) ブロックは $\Lambda_{aa} = S^{-1}$、(1,2) ブロックは $\Lambda_{az} = -S^{-1}\Sigma_{az}\Sigma_{zz}^{-1}$。したがって $\Lambda_{aa}^{-1} = S$ (= $\Sigma_5$)、$-\Lambda_{aa}^{-1}\Lambda_{az} = \Sigma_{az}\Sigma_{zz}^{-1}$ (条件付き平均の係数) で、上の 2 つの主張が出る (sympy で 3×3 の一般の対称行列について確認、数値で $10^{-15}$ 以下: [bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) (d)、[bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) (e))。K64: `m_zslice_5d` が `Benv_inv` から `m_sub5`、`v_sub5` を作り、固有値分解で $\Sigma_5 = \mathrm{Benv5}$ を作る (固有値が 0 以下ならエラー)。`v_cen` は $\langle x_i\rangle = v_i\,z$ ($i = 1\ldots4$)。このずれ (`deform`) は、各スライスで `x -= zslice*sigz*v_cen(1)` などの座標の平行移動として入れる ((16.10) の $D$ の前後)。
 
 x-y 結合 (`Benv5(3)` の非対角) は、傾きの回転 (`benv_norm_axis`) で消す。角 $t$ の回転 $R_t = \begin{pmatrix}\cos t&\sin t\\-\sin t&\cos t\end{pmatrix}$ で $(x, y)$ の 2×2 の共分散 $\begin{pmatrix}\Sigma_{11}&\Sigma_{13}\\\Sigma_{13}&\Sigma_{33}\end{pmatrix}$ の非対角を消す条件は、$R_t\Sigma R_t^\top$ の (1,2) 成分が $\Sigma_{13}(\cos^2t - \sin^2t) + (\Sigma_{33} - \Sigma_{11})\sin t\cos t = 0$、つまり $\tan2t = 2\Sigma_{13}/(\Sigma_{11} - \Sigma_{33})$。K64 は $t = \tfrac12\arctan2(2\Sigma_{13}, \Sigma_{11} - \Sigma_{33})$ とする (数値で確認 (e))。**$\sigma_x < \sigma_y$ の強ビームは $t = \pi/2$ になる**: $\Sigma_{13} = 0$、$\Sigma_{11} < \Sigma_{33}$ なら $\arctan2(0, \text{負}) = \pi$ なので $t = \pi/2$。包絡が 90 度回され、$\sigma_x > \sigma_y$ の枝で計算される。K64 は傾きの回転に `sint = xangle(5)` ($= t$ そのもの)、`cost = xangle(6)` ($= \sin t$) を使う (`bbstrhl.f:220-221`、`xangle(6)=sin`、`xangle(7)=cos` と書いてあるのに読む位置が 1 つずれる、B34)。**確認** (a): $\sigma_x < \sigma_y$ で k64 モードは $\Delta p$ が v2 と違う: $(x, y) = (2\times10^{-5}, -10^{-5})$ で $\Delta p_x$ = $-7.9\times10^{-5}$ (k64)、$-2.6\times10^{-5}$ (v2、(16.6) と一致)。$\sigma_x > \sigma_y$ のビーム (傾き 0) は影響を受けない。
 
@@ -410,7 +444,12 @@ $$
    $$p_x' = \frac{p_x - t\,h_1}{c},\qquad p_y' = \frac{p_y}{c}.$$
    (16.12) の $\delta'$、$p_x'$、$p_y'$ と一致する ($1/c^2 = 1 + t^2$ を使った)。縦運動量は $p_s' = p_{s2}/c = (c\,p_z - s\,p_x)/c = p_z - t\,p_x$ で、質量殻の条件 $E_2^2 = p_{x2}^2 + p_y^2 + p_{s2}^2$ から $(1+\delta')^2 - p_x'^2 - p_y'^2 = p_s'^2$ なので、(16.12) の $p_z' = 1/\sqrt{(1+\delta')^2 - p_x'^2 - p_y'^2}$ は $1/p_s'$ である。また $(1+\delta') - p_s' = (E_2 - p_{s2})/c = h_1/c^2$ で、新しい系での $h_1' = h_1/\cos^2\varphi_c$。
 
-*位置*。変換前の面 $S = 0$ にいる粒子の事象は $(x, y, 0, ct)$ で、$ct = -z$ ($z>0$ は基準粒子より先行。この符号は、結果が (16.12) の $x'$ の $\tan\varphi_c\,z$ の符号と一致するように対応づけたもので、$z$ の定義から独立に導いたものではない)。
+*位置*。変換前の面 $S = 0$ にいる粒子の事象は $(x, y, 0, ct)$ である。この $ct$ と $z$ の関係は [01 章](01_variables_and_conventions.md) (1.7) から**直接**出る:
+
+- (1.7) の定義 $z = -v\,(t - t_0(s))$ ($v$ は粒子の速さ、$t_0(s)$ は設計粒子が位置 $s$ に着く時刻)。面 $S = 0$ の上で、設計粒子が来る時刻を時刻の原点にとる ($t_0 = 0$)。
+- 質量を無視する近似 ($E = |p|$、$\beta = 1$、本節の冒頭) で $v = c$。よって $z = -c\,t$、すなわち $ct = -z$ ($z>0$ の先頭の粒子は、設計粒子より**早く** ($t<0$) 面に着く)。
+
+これは座標の定義だけから決まり、(16.12) の結果を見て選んだものではない。逆の符号 $ct = +z$ を使うと、手順 4 の $x_2$ の $z$ の係数が $-\tan\varphi_c$ になり、(16.12) の $x'$ と符号が逆になる (すなわち $\varphi_c\to-\varphi_c$ の約束になる。sympy: [bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) (e))。したがって (16.12) の $x'$ の $+\tan\varphi_c\,z$ は、$ct = -z$ と「弱ビームが $+\varphi_c$ の向きに走る」(下の (i)) という約束の下で一致する、**独立な確認**になっている。
 
 4. 回転: $x_1 = c\,x$、$S_1 = -s\,x$。boost: $x_2 = \gamma(x_1 - \beta\,ct) = x + t\,z$、$ct_2 = \gamma(ct - \beta x_1) = -z/c - s\,x$、$S_2 = S_1 = -s\,x$。この事象は新しい面 $S_2 = 0$ にはない。
 5. **直進**: 粒子は新しい運動量の向き $(p_{x2}, p_y, p_{s2})$、エネルギー $E_2$ で直進するので、$S_2 = 0$ に達するまでの経路は、$\Delta S = s\,x$ に対し、運動量に比例して $\Delta x = \Delta S\,p_{x2}/p_{s2}$、$\Delta y = \Delta S\,p_y/p_{s2}$、$\Delta(ct) = \Delta S\,E_2/p_{s2}$。$p_{x2}/p_{s2} = p_x'/p_s' = p_x'p_z'$ (規格化の因子 $c$ は約分) を使って
@@ -438,7 +477,7 @@ $$
 
 **小振幅の極限**: 原点まわりの 1 次の係数 (ヤコビアン $J(0)$、行・列の順は $x, p_x, y, p_y, z, \delta$) は、sympy で $x' = x + \tan\varphi_c\,z$、$p_x' = p_x/\cos\varphi_c$、$y' = y$、$p_y' = p_y/\cos\varphi_c$、$z' = z/\cos\varphi_c$、$\delta' = \delta - \tan\varphi_c\,p_x$ ((5))。$h_1 = p_n - p_z = p_\perp^2/(p_n + p_z) = O(p_\perp^2)$ なので $h_1$ を含む項は 1 次に現れない。特に **$p_x'$ に $\delta$ の 1 次の項はなく、$p_x' = p_x/\cos\varphi_c + O(p_\perp^2)$、小角で $p_x' \approx p_x$** (数値: $p_x = 10^{-3}$ で $p_x' - p_x/\cos\varphi_c = -6.85\times10^{-9} = -\tan\varphi_c\,p_x^2/(2\cos\varphi_c)$。$\delta = 10^{-3}$、$p_x = 0$ では $p_x' = 0$ ((5)))。小角 $\varphi_c\to0$ で $x'\approx x + \varphi_cz$、$z'\approx z$、$\delta'\approx\delta - \varphi_cp_x$。この $J(0)$ は `beambeam.setup` が強ビームの包絡に掛ける $C$ (`C[0,4] = tanx`、`C[1,1] = C[3,3] = C[4,4] = 1/cos`、`C[5,1] = -tanx`) と一致する。強ビームの包絡も同じ線形写像で運ばれていることになる。
 
-**未導出・未確認の点**: (i) 幾何の読み。上の構成で、設計粒子は回転後 $p_{x1} = s$ (回した系の軸から $\varphi_c$ 傾く) になり、boost で $p_x' = 0$ になる。対向する強ビームは同じ boost で $x$ 方向の速度が 0 になる必要があるので、回した系の軸 (2 つのビームの二等分線) に対し、弱ビームが $+\varphi_c$、強ビームが $-\varphi_c$ の向きに走る配置、すなわち**全交差角が $2\varphi_c$ で XANGLE は半角**、という読みになる。ソースにも docs にもこの定義の記述はなく、(16.12) の構造からの逆算である。(ii) キックの係数 $c = Nr_e/\gamma$ (`ce`) には $\cos\varphi_c$ の因子がなく (`bbinit`: `ce = NP*re/gamma`)、boost 後の系で電荷分布 (密度、長さの収縮) がキックにどう入るかは導いていない。$\varphi_c = 10$ mrad で $\cos\varphi_c - 1 = 5\times10^{-5}$ の相対差。(iii) $E = |p|$ ($\beta = 1$) の近似の誤差 ($\gamma^{-2}$ の項)。(iv) $ct = -z$ の対応は、結果の符号の一致から選んだ。
+**未導出・未確認の点**: (i) 幾何の読み。上の構成で、設計粒子は回転後 $p_{x1} = s$ (回した系の軸から $\varphi_c$ 傾く) になり、boost で $p_x' = 0$ になる。対向する強ビームは同じ boost で $x$ 方向の速度が 0 になる必要があるので、回した系の軸 (2 つのビームの二等分線) に対し、弱ビームが $+\varphi_c$、強ビームが $-\varphi_c$ の向きに走る配置、すなわち**全交差角が $2\varphi_c$ で XANGLE は半角**、という読みになる。ソースにも docs にもこの定義の記述はなく、(16.12) の構造からの逆算である。(ii) キックの係数 $c = Nr_e/\gamma$ (`ce`) には $\cos\varphi_c$ の因子がなく (`bbinit`: `ce = NP*re/gamma`)、boost 後の系で電荷分布 (密度、長さの収縮) がキックにどう入るかは導いていない。$\varphi_c = 10$ mrad で $\cos\varphi_c - 1 = 5\times10^{-5}$ の相対差。(iii) $E = |p|$ ($\beta = 1$) の近似の誤差 ($\gamma^{-2}$ の項)。($ct = -z$ の対応は (1.7) から導いたので、未確認の項目ではない。)
 
 ## 9. ビームストラールング
 
@@ -496,8 +535,9 @@ $$
 | `bb_01_kick_slice.py` | (a) 閉じた形のキックと $\delta$ のキック (ポテンシャルの数値積分)、傾きの k64・v2、(b) 6 次元写像のシンプレクティック性、往復の恒等、(c) ビームストラールングの定数と光子エネルギーの表 | [bb_01_kick_slice.out.txt](outputs/bb_01_kick_slice.out.txt) |
 | `bb_02_crossing_angle.py` | 交差角の写像 (16.12) の導出 (回転 + boost + 規格化 + 直進) と Fortran の式の一致 (記号と 40 桁)、出口 = 入口の逆、$J^\top SJ = S/\cos\varphi_c$、小振幅の極限 | [bb_02_crossing_angle.out.txt](outputs/bb_02_crossing_angle.out.txt) |
 | `bb_03_kick_derivations.py` | (a) $\nabla^2U = 4\pi\rho$、(b) 丸いビームの $\mathrm{Ein}$・$\partial U_{\rm phys}/\partial\sigma^2$・楕円の遠方、(c) (16.8) の導出の各段、(d) $D$ のリー級数、(e) 条件付きガウス分布・傾き角、(f) (16.11)、(g) ビームストラールングの係数とモーメント、(h) 軌道のずれの符号 | [bb_03_kick_derivations.out.txt](outputs/bb_03_kick_derivations.out.txt) |
+| `bb_04_gap_fills.py` | (a) シンプレクティック Euler の局所誤差 $O(ds^2)$ (§3.3)、(b) 楕円ビームの $U$ の遠方 (16.7b) の $t<T$ の閉じた形と誤差の $1/r^2$、(c) $[W, z] = [z, F] = 0$ (§6.3)、(d) ブロック逆行列 (§7.2)、(e) $ct = \mp z$ の符号 (§8.2) | [bb_04_gap_fills.out.txt](outputs/bb_04_gap_fills.out.txt) |
 
-実行: リポジトリのルートから `py -3.12 physics_guide/scripts/und_01_field_map.py` (数秒)、`py -3.12 physics_guide/scripts/und_02_derivations.py` (20 秒程度)、`py -3.12 -W ignore physics_guide/scripts/bb_01_kick_slice.py` (数秒。scipy の積分の警告を抑える)、`py -3.12 physics_guide/scripts/bb_02_crossing_angle.py` (数秒)、`py -3.12 -W ignore physics_guide/scripts/bb_03_kick_derivations.py` (1 分程度)。BEAMBEAM の gs との照合・光子リスト・ルミノシティ・ビーム・ビーム・チューンシフトの図は [docs/14_beambeam.md](../docs/14_beambeam.md)。
+実行: リポジトリのルートから `py -3.12 physics_guide/scripts/und_01_field_map.py` (数秒)、`py -3.12 physics_guide/scripts/und_02_derivations.py` (20 秒程度)、`py -3.12 -W ignore physics_guide/scripts/bb_01_kick_slice.py` (数秒。scipy の積分の警告を抑える)、`py -3.12 physics_guide/scripts/bb_02_crossing_angle.py` (数秒)、`py -3.12 -W ignore physics_guide/scripts/bb_03_kick_derivations.py` (1 分程度)、`py -3.12 -W ignore physics_guide/scripts/bb_04_gap_fills.py` (数十秒)。BEAMBEAM の gs との照合・光子リスト・ルミノシティ・ビーム・ビーム・チューンシフトの図は [docs/14_beambeam.md](../docs/14_beambeam.md)。
 
 ## 13. 未確認・限界・使った条件
 
@@ -505,7 +545,7 @@ $$
 
 **未確認**:
 - UND: 端の処理 (終端の極)、傍軸近似の誤差 (§3.2 に見積り: $\pi^2/4p_n^2\sim10^{-6}$。$K$ がもっと大きいときは未確認)、放射 (v2 だけ)、スピンの結合 (v2 の POL)、`Pole` の数が整数でないとき。刻み数の選び方の指針。$p_x$ の誤差が刻み数に対して単調でない理由 (§1)。
-- BEAMBEAM の交差角 (§8.2): 幾何の読み (XANGLE が全交差角の半分) はソースにもヘルプにも記述がなく、(16.12) の構造からの逆算。キックの係数 $c$ に $\cos\varphi_c$ の因子がなく、boost 後の電荷分布 (密度) の変換との整合は未導出。$\beta = 1$ の近似の誤差 ($\gamma^{-2}$) は評価していない。$ct = -z$ の対応は結果の符号から選んだ。
+- BEAMBEAM の交差角 (§8.2): 幾何の読み (XANGLE が全交差角の半分) はソースにもヘルプにも記述がなく、(16.12) の構造からの逆算。キックの係数 $c$ に $\cos\varphi_c$ の因子がなく、boost 後の電荷分布 (密度) の変換との整合は未導出。$\beta = 1$ の近似の誤差 ($\gamma^{-2}$) は評価していない。
 - BEAMBEAM の軌道のずれ (§8.1): 位置は引き、運動量と $z$ は足す符号の理由は「強ビームの軌道は強ビームの進む向きの座標で与える」という読みで、数値の整合 (§8.1) はとれたが、ソースに記述がなく、$z$ の符号 ($z$ に足す $\mathtt{cod(5)}$) の独立な確認はしていない。強-強の自己無撞着な計算 (弱-強だけ)。`cerrf` の精度 (単精度の定数 3.2)。スライス数の収束 (本章は SLICE = 1〜5 で式の確認のみ、ルミノシティ・チューンシフトの収束は未確認)。スライスの重心 `deform` の符号 ($x$ と $p_x$ ともに引く) の理由 (軌道のずれの符号と同じ流儀かどうか)。
 - ビームストラールング: 光子エネルギーの表の精度の原因 (矩形則に近い累積という推定を表の作り方から確認していない)、$N_\gamma > 0.5$ の停止、光子 1 個の近似 (1 スライスに 2 個以上)、光子の放射角。
 - SOL 領域内の BEAMBEAM は未対応。
@@ -565,3 +605,13 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `cnbs`、`cpbs`、`cubs` | $a_{\rm nrad}\gamma$、$\tfrac23r_e\gamma^3$、$c_{\rm uc}\gamma^2$ | `beambeam`、`bbinit` | `cnbs`、`cubs` |
 | `SwI`、`xi` | 光子数分布の累積 (逆引き)、$\ln\xi$ | `besseltab` | `besseltab()` |
 | `pxy2`、`h1`、`pz` | $p_\perp^2$、$h_1 = p_n - p_z$、(16.12) で $1/p_z'$ | `beambeam` | |
+| `colb%xangle(5)`、`(6)`、`(7)`、`(8)` | `(5)` = 傾き角 $t$ ($\tfrac12\arctan2(2\Sigma_{13}, \Sigma_{11} - \Sigma_{33})$、§7.2。`benv_norm_axis` が書く)、`(6)` = $\sin t$、`(7)` = $\cos t$ (`bbinit` が `(5)` のあとで書く)、`(8)` は使われない (pysad は 0)。`beambeam` は `(5)` を `sint`、`(6)` を `cost` として読む (B34、本文 §7.2) | `bbinit` (`bbstrhl.f:758-760`)、読みは `beambeam` (`:220-221`) | `xangle[4..7]` (0 始まり) |
+| `icross`、`tilt`、`deform` | 論理値の旗: `icross` = `xangle(1) ≠ 0` (交差角の写像 (16.12) を行う)、`tilt` = `xangle(5) ≠ 0`、`deform` = `v_cen(1..4)` のどれかが 0 でない (スライスの重心の平行移動を行う) | `beambeam` (`bbstrhl.f:131-141`) | `icross`、`deform` (`bb_kick` の引数) |
+| `bbinit` | BEAMBEAM の初期化: 強ビームの 6×6 包絡 `Benv` (§7.1)、スライスの境界と重心 `zslice` (§7.3)、5×5 の条件付き包絡 `Benv5` と `v_cen` (§7.2)、傾き角 `xangle(5)`、軌道 `cod`、BSTRL のときの `cnbs`・`cpbs`・`cubs` と `besseltab` を作る。入力は `blist` (要素のパラメータ)、出力は `colb` の各成分 | `bbstrhl.f:690-` | `beambeam.setup` |
+| `m_zslice_5d` | 入力 `x(6,6)` = 精度行列 `Benv_inv` ($\Lambda = \Sigma^{-1}$)。出力 `a(5,5)` = $z$ 以外 ($x, p_x, y, p_y, \delta$) のブロック $\Lambda_{aa}$ (= `m_sub5`)、`b(5)` = $\Lambda_{az}$ (= `v_sub5`、$z$ の行の成分)、`c` = $\Lambda_{zz}$ | `matrix.f:472-488` | `bb['benv5']` を作る内部 |
+| `m_sub5`、`v_sub5` | 上の `a`、`b`。`bbinit` は `m_sub5` を固有値分解して逆行列 $\Lambda_{aa}^{-1} = $ `Benv5` を作り、`v_cen` $= -$`Benv5`$\cdot$`v_sub5` ($= \Sigma_{az}\Sigma_{zz}^{-1}$、§7.2) とする | `bbstrhl.f:735-758` | |
+| `benv_norm_axis` | 入力 `env(5,5)`、`vec(5)`。$x$-$y$ の結合を消す角 $t$ を $t = \tfrac12\arctan2(2\,\mathrm{env}_{13}, \mathrm{env}_{11} - \mathrm{env}_{33})$ で求め、回転 $u$ (§7.2) で `env` $\to u\,$`env`$\,u^\top$、`vec` $\to u\,$`vec` に更新し、$t$ を返す | `matrix.f:619-` | `beambeam._norm_axis` |
+| `deform` | 上の旗。真のとき各スライスで強ビームの重心の移動 `x -= zslice*sigz*v_cen(1)` などを (16.10) の $D$ の前後で行う | `beambeam` (`:262`、`:435`) | `deform` |
+| `gauinv` | 標準ガウス分布の累積分布の逆関数 (入力: 確率 $i/n$、出力: $z_i/\sigma_z$)。K64 は最大相対誤差 $6.4\times10^{-4}$ の近似式 (§7.3) | `bbstrhl.f` (`:778` で使用) | `beambeam` 内 |
+| `besseltab` | 光子数のスペクトル $\int_\xi^\infty K_{5/3}$ の累積分布の逆引き表を作る (`mkbesseltab`)。$\xi_i = 1.1^{40}/1.02^i$、累積 `SwI`、$\ln\xi$ = `xi` (§9) | `bbstrhl.f:871-904` | `beambeam.besseltab` (長さ 1002) |
+| `limitnan` | 配列の各要素 $a$ を、NaN なら $+X$ に、$\lvert a\rvert > X$ なら $\mathrm{sign}(a)X$ に置き換える (入力: 配列と上限 $X$。`x, px, y, py` は $X = 10^4$、`z` は $10^{10}$、`g` は $10^4$)。0/0 などの NaN を追跡の最後で抑える | `tfstk.f:5019-5027` | `beambeam._limitnan` |
