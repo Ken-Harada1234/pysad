@@ -55,7 +55,19 @@ $$
 \tag{15.1}
 $$
 
-に一致する ([spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (a)。差は 3 成分とも 0)。手で確かめるには、場の変換則 $B'_\parallel = B_\parallel$、$\vec B'_\perp = \gamma(\vec B - \vec\beta\times\vec E)_\perp = \gamma\vec B_\perp$ ($\vec E = 0$) から出発する。$\vec B_\parallel = \hat\beta(\hat\beta\cdot\vec B)$、$\vec B_\perp = \vec B - \vec B_\parallel$ なので
+に一致する ([spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (a)。差は 3 成分とも 0)。紙の上で追うと次のとおり ([spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (a) が各行を確かめる)。
+
+**(i) 場の成分**。座標 $(t, x, y, z)$、電磁場テンソルを $F^{0i} = -E_i$、$F^{ij} = -\epsilon_{ijk}B_k$ とおく。成分で書くと $F^{23} = -B_x$、$F^{31} = -B_y$、$F^{12} = -B_z$、$F^{30} = E_z$、$F^{02} = -E_y$。
+
+**(ii) ブースト**。$\vec\beta = (\beta, 0, 0)$ のブーストは $(t, x)$ の面だけを混ぜる: $\Lambda^0{}_0 = \Lambda^1{}_1 = \gamma$、$\Lambda^0{}_1 = \Lambda^1{}_0 = -\gamma\beta$、$\Lambda^2{}_2 = \Lambda^3{}_3 = 1$ (ほかは 0)。変換は $F'^{\mu\nu} = \Lambda^\mu{}_\alpha\Lambda^\nu{}_\beta F^{\alpha\beta}$。
+
+**(iii) 3 成分**。
+
+- $B'_x$: $F'^{23} = \Lambda^2{}_2\Lambda^3{}_3F^{23} = F^{23}$ ($y, z$ の添字はブーストで動かない)。したがって $B'_x = B_x$。
+- $B'_y$: $F'^{31} = \Lambda^3{}_3\bigl(\Lambda^1{}_0F^{30} + \Lambda^1{}_1F^{31}\bigr) = -\gamma\beta E_z - \gamma B_y$。したがって $B'_y = \gamma(B_y + \beta E_z)$。
+- $B'_z$: $F'^{12} = \Lambda^1{}_0F^{02} + \Lambda^1{}_1F^{12} = \gamma\beta E_y - \gamma B_z$。したがって $B'_z = \gamma(B_z - \beta E_y)$。
+
+**(iv) まとめ**。$\vec\beta = (\beta, 0, 0)$ では $(\vec\beta\times\vec E)_y = -\beta E_z$、$(\vec\beta\times\vec E)_z = \beta E_y$ なので、(iii) は $B'_\parallel = B_\parallel$、$\vec B'_\perp = \gamma(\vec B - \vec\beta\times\vec E)_\perp$ と書ける (電磁場の Lorentz 変換の標準の形)。$\vec E = 0$ では $B'_\parallel = B_\parallel$、$\vec B'_\perp = \gamma\vec B_\perp$。$\vec B_\parallel = \hat\beta(\hat\beta\cdot\vec B)$、$\vec B_\perp = \vec B - \vec B_\parallel$ なので
 
 $$
 \vec B' = \vec B_\parallel + \gamma(\vec B - \vec B_\parallel) = \gamma\vec B - (\gamma-1)\,\frac{\vec\beta(\vec\beta\cdot\vec B)}{\beta^2}
@@ -74,24 +86,75 @@ $$
 
 ### 3.2 Thomas 歳差
 
-加速される粒子の静止系の軸は、実験室系に対して、各瞬間の Lorentz ブーストの合成のために回転する。
+加速される粒子の静止系の軸は、実験室系に対して、各瞬間の Lorentz ブーストの合成のために回転する。ここでは、隣り合う 2 つのブーストの積を、速度の変化の 1 次まで成分で展開して回転を取り出し、その向きまで導く ([spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (b)(c) が各行を sympy・数値で確かめる)。
 
-**回転の大きさ**。時刻 $t$ の速度 $\vec v$ のブースト $\Lambda(\vec v)$ と、わずかに違う速度 $\vec v + \delta\vec v$ のブースト $\Lambda(\vec v+\delta\vec v)$ をつなぐ変換 $\Lambda(\vec v+\delta\vec v)\Lambda(\vec v)^{-1} = I + (\text{ブースト生成子}) + (\text{回転生成子})$ を 1 次で展開する。回転生成子は、この 4×4 行列の空間 3×3 部分の反対称部分である。ここで $\vec v = (\beta, 0, 0)$、$\delta\vec v = (\delta v_x, \delta v_y, \delta v_z)$ とすると、sympy ([spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (b)) で、反対称部分は回転ベクトル
+**手順 1: ブースト行列**。実験室系の座標 $(t, x, y, z)$ を、速度 $\vec u$ で動く系の座標に写す純ブーストは ($c = 1$、$u^2 = |\vec u|^2$、$\gamma_u = (1-u^2)^{-1/2}$)
+
+$$
+\Lambda(\vec u)_{00} = \gamma_u,\quad \Lambda(\vec u)_{0i} = \Lambda(\vec u)_{i0} = -\gamma_uu_i,\quad \Lambda(\vec u)_{ij} = \delta_{ij} + (\gamma_u - 1)\frac{u_iu_j}{u^2}
+$$
+
+逆は $\Lambda(\vec u)^{-1} = \Lambda(-\vec u)$。時刻 $t$ の速度を $\vec v = (\beta, 0, 0)$、わずか後の速度を $\vec v + \delta\vec v$ とする。$\delta v_x$ は $\gamma$ を変えるだけで (同じ向きのブーストどうしの合成は回転を生まない)、回転は横成分から出るので $\delta\vec v = (0, \delta v_y, \delta v_z)$ とおく。
+
+**手順 2: 1 次の成分**。$\vec u = (\beta, \delta v_y, \delta v_z)$ では $u^2 = \beta^2 + O(\delta v^2)$ なので $\gamma_u = \gamma$。$\delta v$ の 1 次まで、$\Lambda(\vec u)$ の成分は
+
+| 成分 | 値 |
+|---|---|
+| $\Lambda_{00}$、$\Lambda_{xx}$ | $\gamma$ ($\Lambda_{xx} = 1 + (\gamma-1)\beta^2/\beta^2$) |
+| $\Lambda_{0x} = \Lambda_{x0}$ | $-\gamma\beta$ |
+| $\Lambda_{0y} = \Lambda_{y0}$、$\Lambda_{0z} = \Lambda_{z0}$ | $-\gamma\,\delta v_y$、$-\gamma\,\delta v_z$ |
+| $\Lambda_{xy} = \Lambda_{yx}$、$\Lambda_{xz} = \Lambda_{zx}$ | $(\gamma-1)\,\delta v_y/\beta$、$(\gamma-1)\,\delta v_z/\beta$ ($(\gamma-1)\beta\,\delta v_y/\beta^2$) |
+| $\Lambda_{yy} = \Lambda_{zz}$ | $1$ ($\delta v^2$ は落とす)。$\Lambda_{yz} = 0$ |
+
+$\Lambda(-\vec v)$ は $\Lambda_{00} = \Lambda_{xx} = \gamma$、$\Lambda_{0x} = \Lambda_{x0} = +\gamma\beta$、$\Lambda_{yy} = \Lambda_{zz} = 1$ だけ。
+
+**手順 3: 積 $P = \Lambda(\vec v + \delta\vec v)\,\Lambda(-\vec v)$ の空間成分**。$P_{ij} = \sum_\mu\Lambda(\vec u)_{i\mu}\Lambda(-\vec v)_{\mu j}$ で、$\Lambda(-\vec v)$ の列 $j = y, z$ は対角成分 1 だけなので $P_{iy} = \Lambda_{iy}$、$P_{iz} = \Lambda_{iz}$。$j = x$ の列は $\mu = 0$ と $\mu = x$ から来る。
+
+- $P_{xy} = \Lambda_{xy} = (\gamma-1)\,\delta v_y/\beta$。
+- $P_{yx} = \Lambda_{y0}\,\gamma\beta + \Lambda_{yx}\,\gamma = -\gamma^2\beta\,\delta v_y + \gamma(\gamma-1)\,\delta v_y/\beta = \dfrac{\gamma\,\delta v_y}{\beta}\bigl[-\gamma\beta^2 + \gamma - 1\bigr]$。$\gamma(1-\beta^2) = \gamma\cdot\gamma^{-2} = 1/\gamma$ なので、括弧の中は $-\gamma\beta^2 + \gamma - 1 = \gamma(1-\beta^2) - 1 = 1/\gamma - 1$ で、$P_{yx} = \dfrac{\gamma\,\delta v_y}{\beta}\left(\dfrac1\gamma - 1\right) = -(\gamma-1)\,\delta v_y/\beta$。
+- $P_{zx}$、$P_{xz}$ は $y \to z$ で同じ。$P_{xx} = \Lambda_{x0}\gamma\beta + \Lambda_{xx}\gamma = -\gamma^2\beta^2 + \gamma^2 = 1$、$P_{yy} = P_{zz} = 1$、$P_{yz} = P_{zy} = 0$ (1 次)。
+
+**手順 4: 回転ベクトル**。$a \equiv (\gamma-1)/\beta$ とおくと、空間 $3\times3$ 部分は
+
+$$
+P_{\rm space} = I + \begin{pmatrix}0 & a\,\delta v_y & a\,\delta v_z\ -a\,\delta v_y & 0 & 0\ -a\,\delta v_z & 0 & 0\end{pmatrix}
+$$
+
+で、$I$ を除いた部分が**完全に反対称** (対称部分が 0)。反対称行列は回転 $I + [\vec w]_\times$、$[\vec w]_\times = \begin{pmatrix}0 & -w_z & w_y\ w_z & 0 & -w_x\ -w_y & w_x & 0\end{pmatrix}$ と書けるので、成分を比べて $-w_z = a\,\delta v_y$、$w_y = a\,\delta v_z$、$w_x = 0$:
+
+$$
+\vec w = \frac{\gamma-1}{\beta}\,(0,\ \delta v_z,\ -\delta v_y)
+$$
+
+$\delta\vec v\times\vec v = (0,\ \beta\,\delta v_z,\ -\beta\,\delta v_y)$ で、$\gamma^2\beta^2 = (\gamma-1)(\gamma+1)$ から $\gamma^2\beta/(\gamma+1) = (\gamma-1)/\beta$ なので、$\vec w$ はベクトルの形で
 
 $$
 \vec w = \frac{\gamma^2}{\gamma+1}\,\delta\vec v\times\vec v
 \tag{15.3a}
 $$
 
-に等しい。成分で書くと、$\delta\vec v\times\vec v = (0,\ \beta\,\delta v_z,\ -\beta\,\delta v_y)$ で、$\gamma^2\beta^2 = (\gamma-1)(\gamma+1)$ から $\gamma^2\beta/(\gamma+1) = (\gamma-1)/\beta$ なので、$\vec w = \dfrac{\gamma-1}{\beta}(0,\ \delta v_z,\ -\delta v_y)$。sympy の出力は、この 2 つの形の差が 3 成分とも 0 である。速度の変化 $\delta\vec v = \vec w_{\rm acc}\,dt$ ($\vec w_{\rm acc}$ は加速度) を入れると、静止系の軸の回転角速度は
+に等しい (回転不変なので $\vec v$ の向きによらない)。sympy の出力 ([spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (b)、[spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (b)) で、$P$ の各成分 ($P_{yx} = \delta v_y(1-\gamma)/\beta$ など) と $\vec w$ の差は 0。
+
+**手順 5: 時間成分と、回転と純ブーストの分離**。$P_{0y} = \Lambda_{0y} = -\gamma\,\delta v_y$、$P_{y0} = \Lambda_{y0}\gamma + \Lambda_{yx}\gamma\beta = -\gamma^2\delta v_y + \gamma(\gamma-1)\delta v_y = -\gamma\,\delta v_y$ で、$P_{0y} = P_{y0}$ (z も同様)。この 0-空間の部分は対称で、純ブースト $Q$ (隣り合う静止系の間の、回転のないブースト) の形である。したがって 1 次では $P = I + K + J$ ($K$: 対称な 0-空間の部分、$J$: 空間の反対称部分 $[\vec w]_\times$) で、$P = R(\vec w)\,Q$、$R(\vec w) = I + [\vec w]_\times$ と分けられる (sympy: $PQ^{-1}$ の時間行・列は 0、空間部分は反対称)。
+
+**手順 6: 回転の向き**。$K_t$ を時刻 $t$ の静止系で軸を「実験室から純ブースト」$\Lambda(\vec v(t))$ で決めたもの (ブースト軸) とする。トルクのないスピンの運動 (Fermi-Walker 輸送) は、静止系の軸を回さず、次の瞬間の静止系 $F_{t+dt}$ へ純ブースト $Q$ だけで移ることで定義される。一方、次の瞬間のブースト軸は、同じ座標を $P$ で写したものである。同じ 4 元ベクトルの座標について、$x_{B,t+dt} = P\,x_{B,t}$ (ブースト軸)、$x_{F,t+dt} = Q\,x_{B,t}$ (トルクなし輸送の軸、$F_t = B_t$)。ゆえに $x_{B,t+dt} = PQ^{-1}x_{F,t+dt} = R(\vec w)\,x_{F,t+dt}$ で、同じスピンのブースト軸での成分 $\vec S_B$ は、輸送された軸での成分 $\vec S_F$ より $R(\vec w)$ だけ回っている。トルクがなければ $\vec S_F$ は一定なので、$\vec S_B(t+dt) = (I + [\vec w]_\times)\vec S_F$、つまり
 
 $$
-\vec\omega_T = \frac{\gamma^2}{\gamma+1}\,\vec w_{\rm acc}\times\vec v\qquad(\vec w_{\rm acc}:\text{加速度})
+\frac{d\vec S_B}{dt} = \vec\omega_T\times\vec S_B,\qquad \vec\omega_T = \frac{\vec w}{dt}
 $$
 
-(回転の向きの約束は、静止系で測ったスピンの歳差 (15.2) に足したとき、標準の BMT の式 (15.4) になるように合わせてある。確認 (a)。)
+向きは、$P = \Lambda(\vec v+\delta\vec v)\Lambda(\vec v)^{-1}$ の積の順序 (後の速度のブーストが左) から決まり、$\vec w = \dfrac{\gamma^2}{\gamma+1}\delta\vec v\times\vec v$ の符号をそのまま持つ。BMT に合わせて選んだものではない。独立な数値確認 ([spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (c)): 速さ $\beta = 0.6$ の一様な円運動で、トルクなしの 4 元スピン ($dS^\mu/d\tau = -(a\cdot S)\,u^\mu$) を数値積分し、ブースト軸の成分 $\Lambda(\vec v(t))S_{\rm lab}(t)$ を取ると、軌道 1/4 周で $-0.392699$ rad ($z$ 軸まわり、軌道の向きと逆) 回る。$\vec\omega_T = \dfrac{\gamma^2}{\gamma+1}\vec a\times\vec v$ ($\vec a\times\vec v$ の $z$ 成分は $-\beta^2\omega$) による予想 $-(\gamma-1)\omega T = -0.392699$ rad と一致する。
 
-**磁場の場合**。磁場だけの力 $\vec w_{\rm acc} = \dfrac{q}{\gamma m}\vec v\times\vec B$ を入れ、$(\vec v\times\vec B)\times\vec v = \vec B(\vec v\cdot\vec v) - \vec v(\vec v\cdot\vec B) = \beta^2\vec B - \vec\beta(\vec\beta\cdot\vec B)$ ($\vec A\times\vec B\times\vec C$ の公式 $(\vec A\times\vec B)\times\vec C = \vec B(\vec A\cdot\vec C) - \vec A(\vec B\cdot\vec C)$ を $\vec A = \vec v$、$\vec C = \vec v$ に使った) を使うと、$\vec\omega_T = \dfrac{\gamma^2}{\gamma+1}\cdot\dfrac{q}{\gamma m}[\beta^2\vec B - \vec\beta(\vec\beta\cdot\vec B)]$ で、
+**手順 7: 静止系の方程式との合成**。静止系のスピン方程式 $d\vec S_F/dt = \vec\Omega_{\rm rest}\times\vec S_F$ (§3.1) はトルクを含む輸送された軸での式。$\vec S_B = R\,\vec S_F$ で $R$ が角速度 $\vec\omega_T$ で回る ($\dot R = [\vec\omega_T]_\times R$) から、$d\vec S_B/dt = \vec\omega_T\times\vec S_B + R(\vec\Omega_{\rm rest}\times\vec S_F)$、第 2 項は 1 次では $\vec\Omega_{\rm rest}\times\vec S_B$。実験室系で見た歳差は
+$\vec\Omega = \vec\Omega_{\rm rest} + \vec\omega_T$ である。速度の変化 $\delta\vec v = \vec a\,dt$ ($\vec a$: 実験室系の加速度) を入れると、$\vec\omega_T$ は
+
+$$
+\vec\omega_T = \frac{\gamma^2}{\gamma+1}\,\vec a\times\vec v
+$$
+
+(Thomas 歳差の標準の形)。
+
+**磁場の場合**。磁場だけの力で、加速度は $\vec a = \dfrac{q}{\gamma m}\vec v\times\vec B$ ($d\vec p/dt = q\vec v\times\vec B$ を $p = \gamma m v$ で割った。磁場は速さを変えないので $\gamma$ は一定)。これを手順 7 の $\vec\omega_T$ に入れ、$(\vec v\times\vec B)\times\vec v = \vec B(\vec v\cdot\vec v) - \vec v(\vec v\cdot\vec B) = \beta^2\vec B - \vec\beta(\vec\beta\cdot\vec B)$ ($\vec A\times\vec B\times\vec C$ の公式 $(\vec A\times\vec B)\times\vec C = \vec B(\vec A\cdot\vec C) - \vec A(\vec B\cdot\vec C)$ を $\vec A = \vec v$、$\vec C = \vec v$ に使った) を使うと、$\vec\omega_T = \dfrac{\gamma^2}{\gamma+1}\cdot\dfrac{q}{\gamma m}[\beta^2\vec B - \vec\beta(\vec\beta\cdot\vec B)]$ で、
 
 $$
 \vec\omega_T = \frac{q\gamma}{m(\gamma+1)}\left[\beta^2\vec B - \vec\beta(\vec\beta\cdot\vec B)\right]
@@ -113,7 +176,7 @@ $$
 \tag{15.4}
 $$
 
-(整理: $q/m$ に対する $\vec B$ の係数は $-(1+a) + \gamma\beta^2/(\gamma+1)$。$\gamma\beta^2/(\gamma+1) = (\gamma^2-1)/(\gamma(\gamma+1)) = (\gamma-1)/\gamma = 1 - 1/\gamma$ なので、$-(1+a) + 1 - 1/\gamma = -(a + 1/\gamma)$。$q/m$ に対する $\vec\beta(\vec\beta\cdot\vec B)$ の係数は $(1+a)\gamma/(\gamma+1) - \gamma/(\gamma+1) = a\gamma/(\gamma+1)$。これが (15.4) の第 2 項の $-a\gamma/(\gamma+1)$ に当たる。) これが Thomas-BMT 方程式 (電場なし) である。**確認** (a): sympy で $\vec\Omega_{\rm rest} + \vec\omega_T - \vec\Omega_{\rm BMT}$ の 3 成分が 0 になる。
+(整理: $q/m$ に対する $\vec B$ の係数は $-(1+a) + \gamma\beta^2/(\gamma+1)$。$\gamma\beta^2/(\gamma+1) = (\gamma^2-1)/(\gamma(\gamma+1)) = (\gamma-1)/\gamma = 1 - 1/\gamma$ なので、$-(1+a) + 1 - 1/\gamma = -(a + 1/\gamma)$。$q/m$ に対する $\vec\beta(\vec\beta\cdot\vec B)$ の係数は $(1+a)\gamma/(\gamma+1) - \gamma/(\gamma+1) = a\gamma/(\gamma+1)$。これが (15.4) の第 2 項の $-a\gamma/(\gamma+1)$ に当たる。) これが Thomas-BMT 方程式 (電場なし) である。**確認** (a): sympy で $\vec\Omega_{\rm rest} + \vec\omega_T - \vec\Omega_{\rm BMT}$ の 3 成分が 0 になる。$\vec\omega_T$ の向き (符号) は §3.2 の手順 6 の積の順序から決めたもので、BMT との一致はその結果の検査 (符号を合わせるための条件ではない)。
 
 ### 3.4 縦・横への分解
 
@@ -185,7 +248,18 @@ $$
 
 ### 4.2 刻みの誤差
 
-(15.9)〜(15.10) の列は、Thomas-BMT の厳密な積分に収束する。**確認** (b): $\hat B$ と運動量が $0.3$ rad の角をなす一様磁場 (らせん軌道、3 GeV、$\kappa L = 2$ rad、縦成分あり) で、(15.6) の DOP853 による積分を基準にすると、$\vec\omega_s$ の刻みごとの回転 $\mathrm{Rot}[(1+a\gamma)\vec\theta_{\rm step} + (1+a)\psi\,\hat p_m]$ の積は、刻み数 $N = 10, 20, 40, 80, 160$ で誤差 $1.08\times10^{-2}$、$2.69\times10^{-3}$、$6.73\times10^{-4}$、$1.68\times10^{-4}$、$4.21\times10^{-5}$、誤差の比はいつも $4.00$ で **2 次**。理由: 1 刻み ($\Delta s$) の厳密な転送は時間順序の指数関数で、刻みの中の角速度を $\vec\omega_s(s) = \vec\omega_m + \vec\omega_m'(s - s_m) + \cdots$ と中点のまわりに展開すると、1 次の項は 1 刻みの中で奇関数なので積分が 0 になり、2 次の項 (大きさ $\Delta s^3$ の $\vec\omega_m'\times\vec\omega_m$ 型の交換子) から誤差が出る (1 刻みの誤差 $O(\Delta s^3)$)。刻みの数は $1/\Delta s$ なので、全体の誤差は $O(\Delta s^2)$、$N$ を 2 倍にすると 1/4。K64 は縦成分の向きに中点の $\hat p_m$ を使い、この中点則の形になっている。
+(15.9)〜(15.10) の列は、Thomas-BMT の厳密な積分に収束する。**確認** (b): $\hat B$ と運動量が $0.3$ rad の角をなす一様磁場 (らせん軌道、3 GeV、$\kappa L = 2$ rad、縦成分あり) で、(15.6) の DOP853 による積分を基準にすると、$\vec\omega_s$ の刻みごとの回転 $\mathrm{Rot}[(1+a\gamma)\vec\theta_{\rm step} + (1+a)\psi\,\hat p_m]$ の積は、刻み数 $N = 10, 20, 40, 80, 160$ で誤差 $1.08\times10^{-2}$、$2.69\times10^{-3}$、$6.73\times10^{-4}$、$1.68\times10^{-4}$、$4.21\times10^{-5}$、誤差の比はいつも $4.00$ で **2 次**。理由: $d\vec S/ds = [\vec\omega_s(s)]_\times\vec S$ の 1 刻み (長さ $\Delta s$、中点 $s_m$) の厳密な転送は時間順序の指数関数で、Magnus 展開により $\exp([\vec\Omega]_\times)$ と書ける。回転ベクトルは ($[\vec a]_\times$ の交換子は $[[\vec a]_\times, [\vec b]_\times] = [\vec a\times\vec b]_\times$)
+
+$$
+\vec\Omega = \int\vec\omega_s\,ds + \frac12\iint_{s_1>s_2}\vec\omega_s(s_1)\times\vec\omega_s(s_2)\,ds_1ds_2 + O(\omega^3\Delta s^3)
+$$
+
+刻みの中で $\vec\omega_s(s) = \vec\omega_m + \vec\omega_m'\,(s-s_m) + \tfrac12\vec\omega_m''\,(s-s_m)^2 + \cdots$ と中点のまわりに展開して、各項を積分する。
+
+- 第 1 項: $\int(s-s_m)\,ds = 0$ (中点のまわりで奇関数) なので $\vec\omega_m'$ の項は消え、$\int\vec\omega_s\,ds = \Delta s\,\vec\omega_m + \dfrac{\Delta s^3}{24}\vec\omega_m'' + \cdots$ ($\int_{-\Delta s/2}^{\Delta s/2}\tfrac12u^2du = \Delta s^3/24$)。
+- 第 2 項: $\vec\omega_m\times\vec\omega_m = 0$ なので、残るのは $\vec\omega_m\times\vec\omega_m'(s_2-s_m) + \vec\omega_m'(s_1-s_m)\times\vec\omega_m = \vec\omega_m'\times\vec\omega_m\,(s_1 - s_2)$。$\iint_{s_1>s_2}(s_1-s_2)\,ds_1ds_2 = \int_0^{\Delta s}\tfrac12s_1^2\,ds_1 = \Delta s^3/6$ なので、第 2 項は $\dfrac{\Delta s^3}{12}\vec\omega_m'\times\vec\omega_m$。
+
+中点の回転 $\exp([\Delta s\,\vec\omega_m]_\times)$ との差は、$\vec\Omega - \Delta s\,\vec\omega_m = \Delta s^3\left(\dfrac{\vec\omega_m''}{24} + \dfrac{\vec\omega_m'\times\vec\omega_m}{12}\right) + O(\Delta s^5)$ で、1 刻みの誤差は $O(\Delta s^3)$ (1 次の項は奇関数で消えるので $\Delta s^2$ が出ない)。刻みの数は $1/\Delta s$ なので、全体の誤差は $O(\Delta s^2)$、$N$ を 2 倍にすると 1/4。乱数の $\vec\omega_m$、$\vec\omega_m'$、$\vec\omega_m''$ で厳密な転送を数値積分して比べると、上の $\Delta s^3$ の式との差は $\Delta s$ を半分にするごとに 1/32 以下、$|\vec\Omega - \Delta s\,\vec\omega_m|$ は 1/8 ([spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (f)、$\Delta s = 0.4\to0.05$ で比 8.13、8.03、8.01)。K64 は縦成分の向きに中点の $\hat p_m$ を使い、この中点則の形になっている。
 
 **K64 の弦**: K64 は $\theta$ のかわりに弦 $2\sin(\theta/2)$ を使う。$\theta = 0.2618$ rad の偏向の 1・3・10 刻みで、歳差の角の差は $-5.83\times10^{-3}$、$-6.49\times10^{-4}$、$-5.84\times10^{-5}$ rad、相対 $-\theta_n^2/24$ ($\theta_n = \theta/n$) と一致する。v2 は $\sin\theta$ の外積から $\theta = \arcsin$ を取り直して厳密な $\theta$ にする (B83)。
 
@@ -284,21 +358,34 @@ $$
 \hat n(x)\cdot\hat n(x+\xi) = \frac{1 + a^2 + a\cdot b}{\sqrt{1+a^2}\,\sqrt{1 + a^2 + 2a\cdot b + b^2}} = 1 - \tfrac12|b|^2 + O(|a||b|^2,\ |b|^3)
 $$
 
-(分母の展開は $\sqrt{1+u}\simeq1 + u/2 - u^2/8$ を $u = a^2$ と $u = a^2 + 2a\cdot b + b^2$ で使い、$|a|$ の 1 次までと $|b|$ の 2 次までを残した。$|a|\to0$ では分子 $= 1 + a\cdot b + a^2$ が 1 に、分母が $\sqrt{1+b^2} \simeq 1 + b^2/2$ になって直ちに $1 - \tfrac12|b|^2$。) スピンは跳びの直前の軸の向き ($\vec S = \hat n(x)$) にあるので、
+(分母の展開は $\sqrt{1+u}\simeq1 + u/2 - u^2/8$ を $u = a^2$ と $u = a^2 + 2a\cdot b + b^2$ で使い、$|a|$ の 1 次までと $|b|$ の 2 次までを残した (sympy: $|a|^0$ の項は厳密に $1/\sqrt{1+|b|^2}$、$|a|^1$ の項は $(a\cdot b)|b|^2$ で $O(|a||b|^3)$。[spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (d))。$|a|\to0$ では分子 $= 1 + a\cdot b + a^2$ が 1 に、分母が $\sqrt{1+b^2} \simeq 1 + b^2/2$ になって直ちに $1 - \tfrac12|b|^2$。) スピンは跳びの直前の軸の向き ($\vec S = \hat n(x)$) にあるので、
 
 $$
 \vec S\cdot\hat n(x+\xi) = 1 - \tfrac12|N\xi|^2 + O(\xi^3)
 \tag{15.14}
 $$
 
-(跳びのあと、スピンは新しい軸から角 $|N\xi|$ だけ離れ、軸のまわりを歳差するので、軸に垂直な成分は平均で 0 に位相がばらけて、軸の方向の成分だけが残る。つまり、偏極 $\langle\vec S\cdot\hat n\rangle$ は $1 - \tfrac12|N\xi|^2$ 倍に減ったまま続く。連続する跳びが独立 (相関しない) で、1 回の減りが小さい ($|N\xi|\ll1$) という近似。) $\langle\xi\xi^\top\rangle = B_i$ で平均すると $\langle|N\xi|^2\rangle = \mathrm{tr}(NB_iN^\top)$ ($|N\xi|^2 = \xi^\top N^\top N\xi$ の期待値)。したがって、1 周あたりの偏極の減りの率 (脱偏極率) は
+**跳びのあとの偏極**。(15.14) は、跳びの直前のスピンが $\hat n(x)$ に平行なときの値である。偏極度 $P$ が 1 より小さい一般の場合を、次の 4 段で書く。
+
+1. **跳びの直前**。1 粒子のスピンを $\vec S = s_\parallel\,\hat n(x) + \vec S_\perp$ ($\vec S_\perp\perp\hat n(x)$) と分ける。放射がない間は、1 周写像の軸の定義 $R(x)n(x) = n(Mx)$ ((15.13) の左辺) から、$\vec S\cdot\hat n(x)$ は保存される (断熱不変量。$|Nx|\ll1$ で、$\nu_s$ が共鳴から離れている前提)。したがって、アンサンブル平均のスピン $\langle\vec S\rangle$ の軸方向の成分が偏極度 $P = \langle\vec S\cdot\hat n\rangle$。
+2. **跳び**。光子の放射で座標が $x\to x + \xi$、スピンは変わらない ($\vec S$ は同じ)。軸だけが $\hat n' = \hat n(x+\xi)$ に変わるので、跳びの直後の軸方向の成分は $\vec S\cdot\hat n' = s_\parallel\,\hat n\cdot\hat n' + \vec S_\perp\cdot\hat n'$。
+3. **位相の平均化 (近似 A)**。跳びのあと、スピンは新しい軸 $\hat n'$ のまわりを 1 周あたり $\mu_s$ ずつ歳差し、軸自身も軌道の振動 (ベータトロン・シンクロトロンの位相) で動く。そのため、軸に垂直な成分 $\vec S_\perp$ の向きは粒子ごとに位相がばらけ、アンサンブル平均では 0 になる ($\vec S_\perp\cdot\hat n'$ も、平均すると $\hat n$ と $\hat n'$ のなす角の $O(|b|)$ の量が位相でばらけて 0)。残るのは軸に沿った成分で、断熱不変量は $s_\parallel\hat n\cdot\hat n'$ に更新される。平均すると $P\to P\,\hat n\cdot\hat n'$。
+4. **独立な跳びの積 (近似 B)**。$|b| = |N\xi|\ll1$ で、連続する跳びが独立 (相関なし) なら、(15.14) の $1 - \tfrac12|N\xi|^2$ の積が $P$ の変化になる:
+
+$$
+P \to P\,\Bigl(1 - \tfrac12|N\xi|^2\Bigr),\qquad d\ln P = -\tfrac12|N\xi|^2\quad(\text{1 回の跳びあたり})
+$$
+
+(積の対数は和: $\ln\prod_j(1 - \tfrac12|N\xi_j|^2)\simeq-\sum_j\tfrac12|N\xi_j|^2$。)
+
+ここで $\langle\xi\xi^\top\rangle = B_i$ ($B_i$: スライス $i$ の 1 周のうちの 1 回の放射の励起、`tradke` の `dbeam`) で平均すると、$\langle|N\xi|^2\rangle = \langle\xi^\top N^\top N\xi\rangle = \mathrm{tr}(NB_iN^\top)$ ($\langle\xi^\top Q\xi\rangle = \mathrm{tr}(Q\langle\xi\xi^\top\rangle)$ に $Q = N^\top N$ を入れ、$\mathrm{tr}(N^\top NB) = \mathrm{tr}(NBN^\top)$)。1 周の中の放射のスライス $i = 1, \dots, N_s$ を足すと、1 周あたりの $d\ln P$ は
 
 $$
 \frac{1}{\tau_{\rm dep}\,f_{\rm rev}} = \frac12\sum_i\mathrm{tr}\left(N_iB_iN_i^\top\right)
 \tag{15.15}
 $$
 
-(和は 1 周の放射のスライス $i$ について。$N_i$: そのスライスの出口での $N$。) $B_i$ のエネルギーの跳びの成分は $B_{\delta\delta} = N_\gamma\,u_c^2\,c_{\rm uu}$ ([13_radiation.md](13_radiation.md) の `dee`)。これが §7.3 で DK の係数 $11/18$ に対応する。
+(和は 1 周の放射のスライス $i$ について。$N_i$: そのスライスの出口での $N$ ((15.13') で送る)。$\ln P$ の減りは直線で、$P(n) = P(0)\,e^{-n\,r}$、1 周あたりの率 $r$ が右辺。) $B_i$ のエネルギーの跳びの成分は $B_{\delta\delta} = N_\gamma\,u_c^2\,c_{\rm uu}$ ([13_radiation.md](13_radiation.md) の `dee`)。これが §7.3 で DK の係数 $11/18$ に対応する。近似 A (位相の平均化) は、$\nu_s$ の分数部分が小さいとき ($\mu_s\simeq0$ mod $2\pi$) や、共鳴 ((15.13'') の分母が 0 に近い) では使えない。
 
 **確認 (モンテカルロ)**: 玩具の軌道 $x_{n+1} = Mx_n + \xi_n$ ($M$: 弱い減衰 $\lambda$ を持つ 3 つの回転、$\xi\sim N(0, B)$)、スピン $\vec S_{n+1} = \exp(-[Dx_n]_\times)R_0\vec S_n$ (厳密な回転) で、2000 個のスピンを平衡の分布から出発させて追跡し、偏極 $P(n) = \langle\vec S_n\cdot\hat n(x_n)\rangle$ ($\hat n(x_n)$ は (15.13) の $N$ から作った軸) の減り方から率を読んだ ([spin_03_slim_mc.out.txt](outputs/spin_03_slim_mc.out.txt))。(15.15) の $r = \tfrac12\mathrm{tr}(NBN^\top)$ との比 (測定/予想) は、4 つの条件 ($\lambda = 10^{-2}$〜$3\times10^{-3}$、$|N|_{\max} = 0.6$〜2.7、$x$ の rms $\le0.05$、率 $10^{-5}$〜$6\times10^{-5}$ /周) で $0.977$、$1.024$、$1.045$、$1.037$。統計誤差は 1〜2% 程度なので、(15.15) は 5% 以内で成り立つ (残りは $|N x|$ の 2 次以降と統計)。K64 の $D$・$N$ を使った確認ではなく、(15.15) の式の確率過程としての検査。
 
@@ -332,6 +419,14 @@ $$
 
 ### 6.5 K64 の `srequpol`・`spdepol` の構造と、導出できた範囲
 
+**この節の範囲 (3 区分)**。以下の内容は、根拠の程度で 3 つに分かれる。
+
+| 区分 | 内容 |
+|---|---|
+| ソースの読み (式の意味は未確認) | `spdepol` の表の構造 (`rm(m)`・`scmat`・`ind`・`mord = 6`、実際に回すのは $k = 2$ だけ)、`rm(1)` の係数 (`0.25`、`0.5`、$i$)、`spintrm` の `cm0`・`cm`・`cb`・`cphi` の式、`serot` が作る `se12`・`de12` |
+| 本章で導出・確認できた | 2 次の相関和から SLIM (15.15)・(15.13'') が出ること (下の導出、[spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (e)・[spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (l))。ガウス広がりの和の積分 (15.16a)。`a ≠ 0` の枝の $a\to0$ の極限が $2\pi$ 倍になること (m)。桁あふれの閾値 $|c_b|\simeq26.6$ (i) |
+| 導出できなかった | `rm(1)` の係数と `se12`・`de12` の導出、`ind` の添字の管理、4 次・6 次の項 (使われていない)、B125 の原因の確定 (本節の末尾) |
+
 **コードの構造 (ソースの読み)**。`spdepol` (`photons.f:620`) は、1 周のスピン回転の摂動を、モードごとの複素振幅 $\zeta_i,\bar\zeta_i$ ($i = x,y,z$) の単項式で展開した行列の表 (`rm(m)`、`scmat`。単項式の指数と、減衰・位相・スピン位相の個数を `ind(13)` に持つ) を使う。`mord = 6` で 6 次までの表を確保するが、実際に回すのは次だけ (ソースの読み):
 1. 1 次の表 `rm(1)` を作る (各モードの $D$ の係数 `gx, gy, gz` から。`0.25*gzc*[...]` などの $3\times3$ 行列は、$n_0$、$\vec e_2$、$\vec e_3$ の基底での回転の生成子の複素成分)。
 2. `spcalcres(..., k=2)` だけを回す (`do k=2,2`、他の次数の呼び出しは注釈の中)。`rm(2) = rm(1)·rm(1)/2` ($\exp(A)$ の 2 次の項 $A^2/2!$ の漸化式 $A^m/m! = (1/m)\,A\cdot A^{m-1}/(m-1)!$ の $m = 2$)、`rmi(2) = rm(2) + rm(1)·rmi(1)` (先の周回の項と今の周回の項の積の和)。
@@ -340,7 +435,16 @@ $$
 
 つまり K64 が実際に計算するのは**2 次の摂動の項だけ**である (6 次までの表は確保されるが、使われない)。
 
-**2 次の相関和から SLIM が出ること (導出)**。周回ごとのスピン回転を $U_n = \exp(A_n)$ ($A_n$: 軌道の振幅に 1 次の小さな反対称行列) と書くと、$N$ 周後の平均は $\langle U_N\cdots U_1\rangle \simeq 1 + \sum_n\langle A_n\rangle + \sum_n\tfrac12\langle A_n^2\rangle + \sum_{n_2>n_1}\langle A_{n_2}A_{n_1}\rangle + \cdots$。$\langle A\rangle = 0$ なので、周回数に比例して積算される 2 次の項の 1 周あたりの量は $\tfrac12\langle A^2\rangle + \sum_{m\ge1}\langle A_{n+m}A_n\rangle$。軌道が $x_{n+1} = Mx_n + \xi_n$ の定常過程なら、相関は $\langle x_{n+m}x_n^\top\rangle = M^m\Sigma$ で、あるモードの寄与は $\varepsilon|d|^2\bigl[\tfrac12 + \sum_{m\ge1}q^m\bigr]$ の実部 ($q = e^{-a_k\pm i(\mu_s\pm\mu_k)}$ の型、$\varepsilon = \langle|x|^2\rangle$)。幾何級数 $\sum_{m\ge1}q^m = q/(1-q)$ から $\tfrac12 + q/(1-q) = \tfrac12(1+q)/(1-q)$、実部は $\tfrac12(1 - |q|^2)/|1-q|^2$ (sympy で確認、[spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (l))。$|q|^2 = e^{-2a_k}$、平衡エミッタンスと励起の関係 $\varepsilon(1 - e^{-2a_k}) = \bar B_k$ (14 章 (14.5)) を使うと
+**2 次の相関和から SLIM が出ること (導出)**。複素振幅への展開から順に書く ([spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) (e) が各段の恒等式を確かめる)。
+
+1. **相互作用表示**。1 周のスピン写像は $\vec S_{n+1} = \exp(-[Dx_n]_\times)R_0\vec S_n$ (§5.1)。$\vec S_n = R_0^n\tilde{\vec S}_n$ とおくと、$\tilde{\vec S}_{n+1} = R_0^{-(n+1)}\exp(-[Dx_n]_\times)R_0^{n+1}\tilde{\vec S}_n = \exp(-[R_0^{-(n+1)}Dx_n]_\times)\,\tilde{\vec S}_n$ (§5.1 の $B\exp(-[v]_\times)B^{-1} = \exp(-[Bv]_\times)$、$B = R_0^{-(n+1)}$)。$U_n \equiv \exp(A_n)$、$A_n = -[\vec\omega_n]_\times$、$\vec\omega_n = R_0^{-(n+1)}Dx_n$ とおく。
+2. **複素成分**。$n_0$ に垂直な基底 $\vec e_2, \vec e_3 = n_0\times\vec e_2$ で $\omega_{c,n} = (\vec e_2 + i\vec e_3)\cdot\vec\omega_n$ (複素数) とおく。(§6.4 の) $(\vec e_2 + i\vec e_3)^\top R_0 = e^{-i\mu_s}(\vec e_2 + i\vec e_3)^\top$ から $(\vec e_2 + i\vec e_3)^\top R_0^{-(n+1)} = e^{i(n+1)\mu_s}(\vec e_2 + i\vec e_3)^\top$ なので、$\omega_{c,n} = e^{i(n+1)\mu_s}\,d\,x_n$ ($d = (\vec e_2 + i\vec e_3)^\top D$、$1\times6$)。$n_0$ 方向の成分は $n_0$ のまわりの回転で、$n_0$ 自身を動かさないので寄与しない。
+3. **偏極の 2 次の変化**。$\langle\tilde{\vec S}_N\rangle\cdot n_0$ を $A$ の 2 次まで展開すると $\langle U_N\cdots U_1\rangle\simeq1 + \sum_n\langle A_n\rangle + \sum_n\tfrac12\langle A_n^2\rangle + \sum_{n_2>n_1}\langle A_{n_2}A_{n_1}\rangle$。$\langle A\rangle = 0$。$n_0^\top A_2A_1n_0$ を計算する: $A_1n_0 = -\vec\omega_1\times n_0$、$n_0^\top A_2(A_1n_0) = n_0\cdot(\vec\omega_2\times(\vec\omega_1\times n_0)) = -\vec\omega_{2\perp}\cdot\vec\omega_{1\perp} = -\mathrm{Re}(\omega_{c,2}\overline{\omega_{c,1}})$。同じ計算で $n_0^\top A^2n_0 = -|\omega_c|^2$。したがって偏極の 1 周あたりの減り (周回数に比例する量) は
+$\dfrac12\langle|\omega_{c,n}|^2\rangle + \sum_{m\ge1}\mathrm{Re}\,\langle\omega_{c,n+m}\overline{\omega_{c,n}}\rangle$。
+4. **相関**。軌道を $x = \sum_k(\zeta_kv_k + {\rm c.c.})$ と、モード $k$ の複素振幅 $\zeta_k = X_k + iP_k$ (正規座標) で展開する。放射の励起で駆動される定常過程 $x_{n+1} = Mx_n + \xi_n$ では、$\zeta_{k,n+m} = \lambda_k^m\zeta_{k,n} + (\text{その後の励起})$、励起は $\zeta_{k,n}$ と無相関なので $\langle\zeta_{k,n+m}\overline{\zeta_{k,n}}\rangle = \lambda_k^m\varepsilon_k$ ($\lambda_{k\pm} = e^{-a_k\pm i\mu_k}$、$\varepsilon_k$ は平衡エミッタンスに当たる量。14 章の $\varepsilon_k = \langle|\zeta_k|^2\rangle/2$ と 2 倍の規格化の差があるが、$d$ に吸収して、(14.7) の関係 $\varepsilon_k(1 - e^{-2a_k}) = \bar B_k$ が成り立つ規約で書く。異なるモード、および $\zeta_k\zeta_k$ ($\bar\zeta$ なし) は無相関)。$\omega_c$ の位相 $e^{i(n+m+1)\mu_s}e^{-i(n+1)\mu_s} = e^{im\mu_s}$ が掛かって
+$\langle\omega_{c,n+m}\overline{\omega_{c,n}}\rangle = \sum_{k,\pm}|d_{k\pm}|^2\varepsilon_k\,(e^{-a_k\pm i\mu_k + i\mu_s})^m = \sum|d_{k\pm}|^2\varepsilon_k\,q_{k\pm}^m$、$q_{k\pm} = e^{-a_k + i(\mu_s\pm\mu_k)}$。$m = 0$ の項は $\varepsilon_k|d_{k\pm}|^2$。
+5. **幾何級数**。あるモードの寄与は $\varepsilon_k|d|^2\,\mathrm{Re}\bigl[\tfrac12 + \sum_{m\ge1}q^m\bigr]$。$\sum_{m\ge1}q^m = q/(1-q)$ ($|q| < 1$)、$\tfrac12 + q/(1-q) = \tfrac12(1+q)/(1-q)$。実部は $\mathrm{Re}\dfrac{(1+q)(1-\bar q)}{2|1-q|^2} = \dfrac{1 - |q|^2}{2|1-q|^2}$ ($(1+q)(1-\bar q) = 1 - |q|^2 + q - \bar q$ の虚数の項は実部に効かない。sympy で確認、[spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (l))。$|q|^2 = e^{-2a_k}$。
+6. **励起との関係**。平衡エミッタンスと 1 周の励起の関係 $\varepsilon_k(1 - e^{-2a_k}) = \bar B_k$ (14 章 (14.7)) を使うと、
 
 $$
 \text{脱偏極率(モードの寄与)} = \frac12\,\bar B_k\,\frac{|d|^2}{|1-q|^2}
@@ -354,20 +458,20 @@ $$
 
 $$
 \int_0^\infty e^{-ct - (a/2)^2t^2}dt = \frac{\sqrt\pi}{a}\,e^{c_b^2}\,\mathrm{erfc}(c_b),\qquad c_b = \frac ca
-\tag{15.23}
+\tag{15.16a}
 $$
 
-($c = -c\varphi$ の実数の場合の簡単な形。微分方程式 $dI/dc = -(1 - cI)/(2a_g^2)$ ($a_g = a/2$)、$I(0) = \sqrt\pi/(2a_g)$ を満たすことを sympy で確認し、数値積分と一致 (10 桁)、(i)・(m))。K64 の $\mathtt{cb} = -(e^{-c\varphi}-1)/a$ は、$|c\varphi|\ll1$ で $\simeq c\varphi/a$ となり (15.23) の $c_b$ と同じ形になる (周回の和を離散のまま扱うための補正)。一方、前の係数は $\sqrt\pi/a$ でなく $2\pi\sqrt\pi/a$ ($\mathtt{cm} = -\mathtt{mat}\cdot2\pi\sqrt\pi\,e^{c_b^2-c\varphi}\mathrm{erfc}(c_b)/a$)。$a\to0$ の極限で $\mathtt{cm}/\mathtt{cm0}\to2\pi$ (数値: $a = 10^{-2}, 10^{-3}, 10^{-4}, 10^{-5}$ で $6.2866, 6.28322, 6.283186, 6.283185$) となり、$a = 0$ の枝 (`cm = cm0`) には $2\pi$ がない。したがって、`a ≠ 0` の枝の係数 $2\pi$ は、(15.23) に比べて $2\pi$ 倍大きい (読みと数値による。docs/30 の B125 も同じ指摘)。
+($c = -c\varphi$ の実数の場合の簡単な形。微分方程式 $dI/dc = -(1 - cI)/(2a_g^2)$ ($a_g = a/2$)、$I(0) = \sqrt\pi/(2a_g)$ を満たすことを sympy で確認し、数値積分と一致 (10 桁)、(i)・(m))。K64 の $\mathtt{cb} = -(e^{-c\varphi}-1)/a$ は、$|c\varphi|\ll1$ で $\simeq c\varphi/a$ となり (15.16a) の $c_b$ と同じ形になる (周回の和を離散のまま扱うための補正)。一方、前の係数は $\sqrt\pi/a$ でなく $2\pi\sqrt\pi/a$ ($\mathtt{cm} = -\mathtt{mat}\cdot2\pi\sqrt\pi\,e^{c_b^2-c\varphi}\mathrm{erfc}(c_b)/a$)。$a\to0$ の極限で $\mathtt{cm}/\mathtt{cm0}\to2\pi$ (数値: $a = 10^{-2}, 10^{-3}, 10^{-4}, 10^{-5}$ で $6.2866, 6.28322, 6.283186, 6.283185$) となり、$a = 0$ の枝 (`cm = cm0`) には $2\pi$ がない。したがって、`a ≠ 0` の枝の係数 $2\pi$ は、(15.16a) に比べて $2\pi$ 倍大きい (読みと数値による。docs/30 の B125 も同じ指摘)。
 
 **NaN の機構 (B55)**。`cerfc(z)` は $|z| > 18$ (`cezlim`) で漸近式 $\mathrm{erfc}(z)\simeq e^{-z^2}(1 - x + 3x^2 - \cdots)/(z\sqrt\pi)$ ($x = 1/(2z^2)$) に切り替わる。`spintrm` は $e^{c_b^2 - c\varphi}$ と `cerfc` を別々に評価して掛けるので、$c_b$ が実数で大きいとき、倍精度で $e^{c_b^2}$ は $c_b^2 > 709.78$ ($c_b > 26.64$) で桁あふれして ∞ になり、$e^{-c_b^2}$ は 0 に潰れ、積は ∞ または NaN になる (数値: $c_b = 26$ までは積は有限で $1/(c_b\sqrt\pi)$ に一致、$26.7$ と $27$ で ∞、$30$ で NaN。[spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (i))。積自体は有限 ($\simeq1/(c_b\sqrt\pi)$) なので、$e^{c_b^2}\mathrm{erfc}(c_b)$ を直接 (Faddeeva 関数などで) 評価すれば有限である。docs/30 が書く「$|cb| > 18$」は漸近式に切り替わる境界で、積が桁あふれする境界は $|cb|\simeq26.6$ である (ここで確認した範囲)。B55 の NaN は gs で再現されている (確定)。原因を上の桁あふれとするのは推定で (docs/30: pysad で同じ式を写すと同じ NaN になり、桁あふれしない形に直すと有限になる)、実際のリングでの $c_b$ の値は本章では確かめていない。
 
-**導出できていないこと**。(i) `rm(1)` の各係数 (`0.25`、`0.5`、$i$ の因子) の、$\exp(-[Dx]_\times)$ から複素振幅への展開による導出、(ii) `serot` が作る $\mathtt{se12}$、$\mathtt{de12}$ (光子の放射の跳びを、モードの複素振幅に写した励起) の導出、(iii) `ind` の添字の管理 (単項式の足し算) の正しさ、(iv) 4 次・6 次の項 (使われていない)。これらが足りないので、K64 の `Polarization` の式全体は再導出できておらず、原因の確定は gs での確認 (別途進めている) を待つ。v2 はこの式を使わず、(15.15)〜(15.16) と側帯の項で置き換えた ([docs/16_spin_pol.md](../docs/16_spin_pol.md) §5.3、B125)。
+**導出できていないこと**。(i) `rm(1)` の各係数 (`0.25`、`0.5`、$i$ の因子) の、$\exp(-[Dx]_\times)$ から複素振幅への展開による導出、(ii) `serot` が作る $\mathtt{se12}$、$\mathtt{de12}$ (光子の放射の跳びを、モードの複素振幅に写した励起) の導出、(iii) `ind` の添字の管理 (単項式の足し算) の正しさ、(iv) 4 次・6 次の項 (使われていない)。これらが足りないので、K64 の `Polarization` の式全体は再導出できておらず、原因の確定には gs での確認が要り、未了である。v2 はこの式を使わず、(15.15)〜(15.16) と側帯の項で置き換えた ([docs/16_spin_pol.md](../docs/16_spin_pol.md) §5.3、B125)。
 
 ## 7. Sokolov-Ternov、定数の導出
 
 ### 7.1 QED の入力
 
-電子が磁場の中で放射するとき、スピンの向きによって放射の確率がわずかに違う (スピンフリップ)。これを積分した結果 (QED、ここでは導かない): 一様な曲率半径 $\rho$ の磁場で、スピンが磁場の向きに沿う ($\uparrow\downarrow$) 偏極の立ち上がりは
+電子が磁場の中で放射するとき、スピンの向きによって放射の確率がわずかに違う (スピンフリップ)。これを積分した結果 (QED、ここでは導かない): 一様な曲率半径 $\rho$ の磁場で、偏極の立ち上がりは
 
 $$
 \frac{dP}{dt} = \frac{P_{ST} - P}{\tau_{ST}},\qquad
@@ -378,7 +482,7 @@ $$
 
 ($\bar\lambda_C = \hbar/mc$)。磁場の向きが変わるリングでは $|\rho|^{-3}$ を $\langle|\rho|^{-3}\rangle$ (経路長の平均)、$P_{ST}$ の方向は $\hat b$ との内積で効く (§7.4)。
 
-**QED の入力 (引用) から (15.17) を組み立てる**。QED の計算 (ここでは導かない) の結果は、磁場に沿った向き ($\uparrow$) から逆向き ($\downarrow$) へのスピン反転率と、その逆の率が
+**QED の入力 (引用) から (15.17) を組み立てる**。QED の計算 (ここでは導かない) の結果は、二つの向き ($\uparrow$、$\downarrow$ は下で定義) の間のスピン反転率が
 
 $$
 w_{\uparrow\downarrow} = \frac{5\sqrt3}{16}\,w_0\left(1 + \frac{8\sqrt3}{15}\right),\qquad
@@ -386,7 +490,7 @@ w_{\downarrow\uparrow} = \frac{5\sqrt3}{16}\,w_0\left(1 - \frac{8\sqrt3}{15}\rig
 w_0 = \frac{r_e\bar\lambda_C\,c\,\gamma^5}{|\rho|^3}
 $$
 
-であることを与える ($w_{\uparrow\downarrow}$ は、偏極の増える向き (到達する向き) へ反転する率、$w_{\downarrow\uparrow}$ はその逆向きへの率)。到達する向きの粒子数を $N_\uparrow$、逆向きを $N_\downarrow$ ($N = N_\uparrow + N_\downarrow$、$N_{\uparrow,\downarrow} = N(1\pm P)/2$) とすると、$dN_\uparrow/dt = w_{\uparrow\downarrow}N_\downarrow - w_{\downarrow\uparrow}N_\uparrow$ で、$P = (N_\uparrow - N_\downarrow)/N$ の変化は $dP/dt = 2\,dN_\uparrow/(N\,dt) = w_{\uparrow\downarrow}(1 - P) - w_{\downarrow\uparrow}(1 + P) = (w_{\uparrow\downarrow} - w_{\downarrow\uparrow}) - (w_{\uparrow\downarrow} + w_{\downarrow\uparrow})P$ なので、$\tau_{ST}^{-1} = w_{\uparrow\downarrow} + w_{\downarrow\uparrow}$、$P_{ST} = (w_{\uparrow\downarrow} - w_{\downarrow\uparrow})/(w_{\uparrow\downarrow} + w_{\downarrow\uparrow})$。上の率を入れると $w_{\uparrow\downarrow} + w_{\downarrow\uparrow} = \tfrac{5\sqrt3}{16}w_0\cdot2 = \tfrac{5\sqrt3}{8}w_0$ で $\tau_{ST}^{-1}$ の式、$P_{ST} = (8\sqrt3/15\cdot2)/2 = 8\sqrt3/15 = 8/(5\sqrt3)$ ($= 0.923760$) (sympy で確認、[spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (e))。この章で QED として受け取るのは、上の $w_{\uparrow\downarrow}$、$w_{\downarrow\uparrow}$ の 2 つの数値係数 ($5\sqrt3/16$ と $8\sqrt3/15$) だけである。
+であることを与える。ここで $\uparrow$ は**偏極が到達する向き**、$\downarrow$ はその逆向きと定義する (電子の Sokolov-Ternov 偏極は磁場と反平行なので、$\uparrow$ は磁場の向きの逆。陽電子では磁場に沿う向き)。添字は「到達する向き・元の向き」の順で、$w_{\uparrow\downarrow}$ は $\downarrow$ から $\uparrow$ へ反転する率、$w_{\downarrow\uparrow}$ はその逆向き ($\uparrow$ から $\downarrow$) への率。$\uparrow$ の粒子数を $N_\uparrow$、$\downarrow$ の粒子数を $N_\downarrow$ ($N = N_\uparrow + N_\downarrow$、$N_{\uparrow,\downarrow} = N(1\pm P)/2$) とすると、$dN_\uparrow/dt = w_{\uparrow\downarrow}N_\downarrow - w_{\downarrow\uparrow}N_\uparrow$ で、$P = (N_\uparrow - N_\downarrow)/N$ の変化は $dP/dt = 2\,dN_\uparrow/(N\,dt) = w_{\uparrow\downarrow}(1 - P) - w_{\downarrow\uparrow}(1 + P) = (w_{\uparrow\downarrow} - w_{\downarrow\uparrow}) - (w_{\uparrow\downarrow} + w_{\downarrow\uparrow})P$ なので、$\tau_{ST}^{-1} = w_{\uparrow\downarrow} + w_{\downarrow\uparrow}$、$P_{ST} = (w_{\uparrow\downarrow} - w_{\downarrow\uparrow})/(w_{\uparrow\downarrow} + w_{\downarrow\uparrow})$。上の率を入れると $w_{\uparrow\downarrow} + w_{\downarrow\uparrow} = \tfrac{5\sqrt3}{16}w_0\cdot2 = \tfrac{5\sqrt3}{8}w_0$ で $\tau_{ST}^{-1}$ の式、$P_{ST} = (8\sqrt3/15\cdot2)/2 = 8\sqrt3/15 = 8/(5\sqrt3)$ ($= 0.923760$) (sympy で確認、[spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) (e))。この章で QED として受け取るのは、上の $w_{\uparrow\downarrow}$、$w_{\downarrow\uparrow}$ の 2 つの数値係数 ($5\sqrt3/16$ と $8\sqrt3/15$) だけである。
 
 ### 7.2 K64 の定数が (15.17) と一致すること
 
@@ -509,10 +613,11 @@ SAD スクリプトでは、`POL` を有効にして `Emittance[]` の `Polariza
 | スクリプト | 確認すること | 出力 |
 |---|---|---|
 | `spin_01_thomas_bmt.py` | (a) 静止系の歳差 + Thomas 歳差 = BMT (sympy)、縦・横の係数、(b) らせん軌道の BMT の厳密な積分 (DOP853) と 1 ステップ回転の積 (2 次)、(b2) 平面の偏向で $a\gamma\theta$、縦磁場で $(1+a)\psi$、K64 の弦 $-\theta^2/24$、(c) 定数 $c_{\rm ave}a_{\rm nrad}c_{\rm uc}^2 = r_e\bar\lambda_C$、$s_{\rm flc}a_{\rm nrad} = c_{\rm fpd}r_e\bar\lambda_C$、DK の 11/18、(d) (15.13) が 1 次で $R(x)n(x) = n(Mx)$ (代数の整合。方向を固定して残差が $|x_0|^2$ に比例)、(e) 平面リングの `SpinTune`・`PolarizationTime`・`Polarization` | [spin_01_thomas_bmt.out.txt](outputs/spin_01_thomas_bmt.out.txt) |
-| `spin_02_derivations.py` | 本文の途中式の確認 (sympy・数値): (a) 磁場の Lorentz 変換 (15.1)、(b) Thomas 歳差の回転 (15.3a)、(c) Rodrigues の式 (15.10)、(d) (15.11) の恒等式、(e) スピン反転率から $P_{ST}$・$\tau_{ST}^{-1}$、(f) $\gamma\partial/\partial\gamma$ と $\partial/\partial\delta$、(g) $D$ の積算 (15.12) の有限差分との比較、(h) 要素ごとの $N$ (15.13') と 1 周の (15.13)、(i) ガウス広がりの和の積分 (15.23) と $e^{x^2}\mathrm{erfc}\,x$ の桁あふれ、(j) K64 の弦と $\mathtt{pzm}$、(k) 正規座標の $N$ (15.13'')、(l) 2 次の相関和と SLIM、(m) `spintrm` の $a\to0$ の極限の $2\pi$ | [spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) |
+| `spin_02_derivations.py` | 本文の途中式の確認 (sympy・数値): (a) 磁場の Lorentz 変換 (15.1)、(b) Thomas 歳差の回転 (15.3a)、(c) Rodrigues の式 (15.10)、(d) (15.11) の恒等式、(e) スピン反転率から $P_{ST}$・$\tau_{ST}^{-1}$、(f) $\gamma\partial/\partial\gamma$ と $\partial/\partial\delta$、(g) $D$ の積算 (15.12) の有限差分との比較、(h) 要素ごとの $N$ (15.13') と 1 周の (15.13)、(i) ガウス広がりの和の積分 (15.16a) と $e^{x^2}\mathrm{erfc}\,x$ の桁あふれ、(j) K64 の弦と $\mathtt{pzm}$、(k) 正規座標の $N$ (15.13'')、(l) 2 次の相関和と SLIM、(m) `spintrm` の $a\to0$ の極限の $2\pi$ | [spin_02_derivations.out.txt](outputs/spin_02_derivations.out.txt) |
 | `spin_03_slim_mc.py` | SLIM の脱偏極率 (15.15) の、確率的な軌道 + 厳密なスピン回転の玩具のモンテカルロとの比較 | [spin_03_slim_mc.out.txt](outputs/spin_03_slim_mc.out.txt) |
+| `spin_04_handwork_checks.py` | 紙の上で追う途中式の検算: (a) $F' = \Lambda F\Lambda^\top$ の成分 (§3.1)、(b) Thomas 歳差の $P = \Lambda(\vec v+\delta\vec v)\Lambda(-\vec v)$ の 1 次の成分と回転ベクトル $\vec w$ (§3.2)、(c) トルクなしの円運動での Fermi-Walker 輸送による回転の向き、(d) 軸の内積の展開 (§6.2)、(e) 2 次の相関和の骨格 ($n_0^\top A_2A_1n_0$、$e^{i\mu}$ の位相、§6.5)、(f) 中点則の誤差 (Magnus 展開、§4.2) | [spin_04_handwork_checks.out.txt](outputs/spin_04_handwork_checks.out.txt) |
 
-実行: リポジトリのルートから `py -3.12 physics_guide/scripts/spin_01_thomas_bmt.py` (1 分弱。(e) の Emittance[] が大部分)、`spin_02_derivations.py` (数秒)、`spin_03_slim_mc.py` (1 分弱)。K64 との照合 (gs と 4e-12 以下、Emittance[] の偏極時間 14 桁など)、DK の数値積分との比較 (3 GeV〜4.2 GeV、追跡 FLUC) は、[docs/16_spin_pol.md](../docs/16_spin_pol.md) と `pysad/tests/script_tests/test_spin*.py`・`test_v2_*spin*.py`・`_p1_dk.py` に既にある。この章では新しく取り直していない。
+実行: リポジトリのルートから `py -3.12 physics_guide/scripts/spin_01_thomas_bmt.py` (1 分弱。(e) の Emittance[] が大部分)、`spin_02_derivations.py` (数秒)、`spin_03_slim_mc.py` (1 分弱)、`spin_04_handwork_checks.py` (数秒)。K64 との照合 (gs と 4e-12 以下、Emittance[] の偏極時間 14 桁など)、DK の数値積分との比較 (3 GeV〜4.2 GeV、追跡 FLUC) は、[docs/16_spin_pol.md](../docs/16_spin_pol.md) と `pysad/tests/script_tests/test_spin*.py`・`test_v2_*spin*.py`・`_p1_dk.py` に既にある。この章では新しく取り直していない。
 
 ## 12. 未確認・限界・使った条件
 
@@ -533,7 +638,7 @@ SAD スクリプトでは、`POL` を有効にして `Emittance[]` の `Polariza
 |---|---|
 | POL・RADPOL・TrackParticles・Emittance[] の説明 | **原文で確認**: 「POL が ON のとき TrackParticles はスピン追跡を行う。RADPOL は Sokolov-Ternov を入れる」。座標は `{x, px/p0, y, py/p0, z, dp/p0, sarg, sy}`。Emittance[] のキー: `Polarization`、`Polarization2`・`4`・`6`、`PolarizationVector`、`SpinTune`、`NominalSpinTune`。 |
 | `Polarization2`・`4`・`6` | ヘルプにだけある (2・4・6 次)。K64 のソースに文字列がなく、gs の `Emittance[]` も返さない (docs/16)。 |
-| ヘルプに無いもの | Thomas-BMT、`sprot` の式、$D$、$N$、Sokolov-Ternov の定数、`spnorm` の手順、`Polarization` の式。(15.1)〜(15.23) はすべて K64 のソースと標準の理論から。 |
+| ヘルプに無いもの | Thomas-BMT、`sprot` の式、$D$、$N$、Sokolov-Ternov の定数、`spnorm` の手順、`Polarization` の式。(15.1)〜(15.22) (枝番の式を含む) はすべて K64 のソースと標準の理論から。 |
 
 ## 付録 B. K64 の実装の癖・疑い (別枠)
 
@@ -585,3 +690,16 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `drot(3,6)` | `spsᵀ srot(:,4:9) r` (正規座標の $D$ を $n_0$ の基底で) | `srequpol` | |
 | `rmd`、`rm1`、`equpol` | 脱偏極の和、脱偏極行列、平衡偏極度 | `srequpol2`、`srequpol` | `equpol` |
 | `calpol`、`radpol` | `POL`、`RADPOL` のフラグ | `ffs_flag` | |
+| `scmat` (型) | 脱偏極の摂動の 1 次元の表: 単項式ごとの $3\times3$ 複素行列 `cmat(3,3,l)` と、指数の組 `ind(lind,l)`、並べ替えの添字 `ias` | `photons.f:391-` (module `tspin`) | |
+| `ind(13)` (`lind = 13`) | 単項式の指数: `ind(1:6)` は $\zeta_x,\bar\zeta_x,\zeta_y,\bar\zeta_y,\zeta_z,\bar\zeta_z$ のべき (読み)、`ind(7:9)` は減衰の個数、`ind(10:12)` は各モードの位相 $\pm\mu_k$ の個数、`ind(13)` はスピン位相の個数。`spintrm` で `cphi` と $a$ を作るのに使う | `photons.f:384` (`lind`)、`spintrm` (`:555-558`) | |
+| `iaind(rm, ind)` | 指数 `ind` の単項式の `rm` の中の添字 (なければ追加) | `photons.f:411` | |
+| `rm(m)`、`rmi(m)` | $m$ 次の摂動の表。`rm(2) = rm(1)·rm(1)/2` ($\exp A$ の $A^2/2!$)、`rmi(m)` は周回を累積した表 | `spdepol`、`spcalcres` | |
+| `mord` | 確保する最高次数 $= 6$ (実際に回すのは $k = 2$ だけ、`do k=2,2`) | `photons.f:384` | |
+| `spintrm` | 単項式ごとの係数 `cm0`・`cm` を `rmi` に掛け、位相が打ち消し合う項 (`ind(7:lind) = 0`) に積算する | `photons.f:543-` | |
+| `cphi` | 周回あたりの複素の減衰・位相 $= -\,(\mathtt{ind(7)}\,d_x + \mathtt{ind(8)}\,d_y + \mathtt{ind(9)}\,d_z) + i\,(\mathtt{ind(10)}\,a_{mx} + \mathtt{ind(11)}\,a_{my} + \mathtt{ind(12)}\,a_{mz} + \mathtt{ind(13)}\,a_{ms})$ ($d$: 減衰率、$a_m$: チューンの位相) | `spintrm` (`:555`) | |
+| `cm0` | $a = 0$ の枝の係数 $= -\mathtt{mat}/(e^{c\varphi} - 1)$ (`cexp1`)、幾何級数 | `spintrm` (`:557`) | |
+| `cm`、`cb` | $a \ne 0$ の枝: $\mathtt{cb} = -(e^{-c\varphi}-1)/a$、$\mathtt{cm} = -\mathtt{mat}\cdot2\pi\sqrt\pi\,e^{c_b^2 - c\varphi}\,\mathrm{erfc}(c_b)/a$ (§6.5) | `spintrm` (`:562-563`) | |
+| `ssprd` | スピンチューンの 1 周あたりの広がり $= \sqrt{\sum_j\mathtt{drot(1,j)}^2\,\varepsilon_{k(j)}}$ (`emit1` は 3 モードのエミッタンス)。$a = \sqrt2\,|\mathtt{ind(13)}|\,\mathtt{ssprd}$ | `srequpol` (`photons.f:899`、`952`) | |
+| `cezlim` | `cerfc` が漸近式に切り替わる $|z|$ の境界 $= 18$ | `gamma.f:120` | |
+| `serot` | 水平・垂直の相関のある $2\times2$ の行列 $(x_x, x_y, y_y)$ を、角 $\tfrac12\arctan(2x_y/(x_x - y_y))$ の回転で対角化し、同じ回転を $c_{1,2}$、$d_{1,2}$、$e_{1,2}$ (`drot` の行の対) にかけて固有エミッタンス `em1`・`em2` を返す (ソースの読み) | `photons.f:843-` | |
+| `dsg`、`tadddsg` | $\partial g/\partial x$ から作る $6$ 成分の積算 (旧ルーチンの `rm1` 用)。`tadddsg` が `dgz` の引数に `dgx` を渡す (B57)。現在は使われない | `photons.f:1625-`、`:1589`、`:960` (注釈) | |
