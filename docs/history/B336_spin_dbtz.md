@@ -1,6 +1,6 @@
 # v2.5.0 記録: Emittance[] (POL) のスピン軌道結合の dbtz の割り算 (B336)
 
-日付: 2026-11-23。試験 `pysad/tests/script_tests/test_v250_spin_dbtz.py` (11 件)。
+日付: 2026-11-23。試験 `pysad/tests/script_tests/test_v250_spin_dbtz.py` (9 件)。
 
 ## 1. 症状
 
