@@ -1,0 +1,34 @@
+== (a) 多極のポテンシャル V_k = K/(k+1)! Re (x - i y)^(k+1) ==
+  k = 1 (四極): ∇²V = 0、b_y(y=0) = K*x、b_x(y=0) = 0、∂^k b_y/∂x^k = K、(V_x + i V_y) - (K/k!) z̄^k = 0
+  k = 2 (6 極): ∇²V = 0、b_y(y=0) = K*x**2/2、b_x(y=0) = 0、∂^k b_y/∂x^k = K、(V_x + i V_y) - (K/k!) z̄^k = 0
+  k = 3 (8 極): ∇²V = 0、b_y(y=0) = K*x**3/6、b_x(y=0) = 0、∂^k b_y/∂x^k = K、(V_x + i V_y) - (K/k!) z̄^k = 0
+  k = 4 (10 極 (DECA)): ∇²V = 0、b_y(y=0) = K*x**4/24、b_x(y=0) = 0、∂^k b_y/∂x^k = K、(V_x + i V_y) - (K/k!) z̄^k = 0
+  k = 5 (12 極 (DODECA)): ∇²V = 0、b_y(y=0) = K*x**5/120、b_x(y=0) = 0、∂^k b_y/∂x^k = K、(V_x + i V_y) - (K/k!) z̄^k = 0
+  → V_x + i V_y = (K/k!)(x - i y)^k (z̄ = x - i y)。キック Δpx = -V_x、Δpy = -V_y から Δ(px + i py) = -(K/k!) z̄^k、すなわち Δpx = -(K/k!) Re z̄^k、Δpy = -(K/k!) Im z̄^k (K64 の px -= aki Re cx、py -= aki Im cx、cx = (x - i y)^k、aki = K/k!)
+  k = 2: -V_x - (-(K/k!) Re cx) = 0、-V_y - (-(K/k!) Im cx) = 0
+  k = 3: -V_x - (-(K/k!) Re cx) = 0、-V_y - (-(K/k!) Im cx) = 0
+
+== (b) exp(:f:) の級数: f = -V (座標だけの関数) ==
+  k = 2: [f, x] = 0、[f, y] = 0、[f, px] = -K*(x - y)*(x + y)/2
+         [f, py] = K*x*y、[f,[f, px]] = 0、[f,[f, py]] = 0 → 級数は 2 項で止まる
+         exp(:f:) px = px + -K*(x - y)*(x + y)/2、exp(:f:) py = py + K*x*y
+         シンプレクティック: [x, px'] = 1、[y, py'] = 1、[x, py'] = 0、[y, px'] = 0、[px', py'] = 0
+  k = 3: [f, x] = 0、[f, y] = 0、[f, px] = -K*x*(x**2 - 3*y**2)/6
+         [f, py] = K*y*(3*x**2 - y**2)/6、[f,[f, px]] = 0、[f,[f, py]] = 0 → 級数は 2 項で止まる
+         exp(:f:) px = px + -K*x*(x**2 - 3*y**2)/6、exp(:f:) py = py + K*y*(3*x**2 - y**2)/6
+         シンプレクティック: [x, px'] = 1、[y, py'] = 1、[x, py'] = 0、[y, px'] = 0、[px', py'] = 0
+
+== (c) pysad の薄い多極 (L = 0) の追跡と閉じた式 ==
+  SEXT (k = 2、K = 40、L = 0): pysad の追跡と閉じた式 px -= K/k! Re (x - i y)^k の最大差 4.34e-19 (δ = 0 と 0.01、乱数 6 点)
+  OCT (k = 3、K = 400、L = 0): pysad の追跡と閉じた式 px -= K/k! Re (x - i y)^k の最大差 8.67e-19 (δ = 0 と 0.01、乱数 6 点)
+  DECA (k = 4、K = 4000、L = 0): pysad の追跡と閉じた式 px -= K/k! Re (x - i y)^k の最大差 4.34e-19 (δ = 0 と 0.01、乱数 6 点)
+  DODECA (k = 5、K = 40000、L = 0): pysad の追跡と閉じた式 px -= K/k! Re (x - i y)^k の最大差 2.17e-19 (δ = 0 と 0.01、乱数 6 点)
+
+== (d) フィードダウン: 中心がずれた 6 極 ==
+  Δpx = -K*d_x**2/2 + K*d_x*x + K*d_y**2/2 - K*d_y*y - K*x**2/2 + K*y**2/2
+  Δpy = K*d_x*d_y - K*d_x*y + x*(-K*d_y + K*y)
+  展開: 6 極項 -(K/2)(x^2 - y^2)、四極項: Δpx ⊃ K d_x x - K d_y y、Δpy ⊃ -K d_y x - K d_x y、二極項: Δpx = -(K/2)(d_x^2 - d_y^2)、Δpy = K d_x d_y
+  = 四極 (K1 = -K d_x: Δpx = -K1 x、Δpy = +K1 y) + スキュー四極 (強さ K d_y) + 二極 (キック)。ずれ d_x が大きいほど 6 極が四極として働く (フィードダウン)
+  展開式との差: Δpx 0、Δpy 0
+  pysad の SEXT (K2 = 40、DX = 1.5 mm、DY = -0.8 mm) の追跡と、(x - DX, y - DY) を使う閉じた式の最大差 8.67e-19
+  軌道が x = y = 0 (磁石から (-DX, -DY) ずれ) のときの二極のキック (pysad): Δpx = -3.2200e-05、Δpy = -4.8000e-05 (式: -(K/2)(dx^2 - dy^2) = -3.2200e-05、K dx dy = -4.8000e-05)

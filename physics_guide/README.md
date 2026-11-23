@@ -21,7 +21,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [04_quad.md](04_quad.md) | **四極**。$H_2$ の厳密解、運動学的な $\Delta H$、Strang と Yoshida、刻みの数、フリンジ、行列と追跡の関係 | ✓ |
 | [05_bend.md](05_bend.md) | **偏向磁石**。$H_2$ の厳密解、K1 = 0 の円弧と端面角の厳密解、Maxwell フリンジ・線形フリンジ (F1)、複合機能 (K1 ≠ 0)、行列と追跡の関係 | ✓ |
 | 06_edge_fringe.md | 端部の一般論 (Maxwell、F1・F2、非線形フリンジ) | 予定 (四極の端部は 04 章 §7) |
-| 07_thin_multipole.md | 薄い 6 極・8 極など。4 次の分割 | 予定 |
+| [07_thin_multipole.md](07_thin_multipole.md) | **薄い多極 (SEXT・OCT・DECA・DODECA)**。ポテンシャルと積分強度、薄いキックの厳密解 ($\exp(:f:)$ の級数が止まる)、4 次の力勾配型 (`tthin`) の補正キックの導出、CALC の 2 次の分割 (`tthine`)、フィードダウン、非線形フリンジ (Maxwell 方程式から) | ✓ |
 | 08_mult.md | MULT (多極) | 予定 |
 | 09_solenoid.md | ソレノイド。$H_2$ の 4×4 の厳密解、記号の対応 | 予定 |
 | 10_cavity.md | 加速空洞 (CAVI)・TCAVI | 予定 |
@@ -69,6 +69,7 @@ py -3.12 physics_guide/scripts/quad_05_fringe.py
 py -3.12 physics_guide/scripts/quad_06_invariants.py
 py -3.12 physics_guide/scripts/drift_01_h_to_map.py             # 02 章 (ドリフト) の確認 (drift_01〜drift_03)
 py -3.12 physics_guide/scripts/integ_01_bch_force_gradient.py   # 03 章 (分割の一般論) の確認 (integ_01、integ_02)
+py -3.12 physics_guide/scripts/thin_01_potential_kick.py        # 07 章 (薄い多極) の確認 (thin_01〜thin_03)
 py -3.12 physics_guide/scripts/bend_01_h2_body.py               # 05 章 (偏向磁石) の確認 (bend_01〜bend_04)
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
@@ -88,6 +89,9 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `drift_03_r56_example.py` | 02 | 最短の例: ドリフトを 1〜4 回通った後の $z$ (3 GeV・10 MeV)、4 つのドリフトの $T_{56}$ |
 | `integ_01_bch_force_gradient.py` | 03 | 自由代数の BCH (sympy): Strang・Yoshida の 3 次の係数、力勾配型の $t$・$c_3$・$c_5$ ($\alpha, \beta, \gamma$)、K64 の `tthin` の補正キックと記号的に一致、`tthine` の分割 |
 | `integ_02_order_symplectic.py` | 03 | 1 自由度の系で、Strang・Yoshida・力勾配型・RK4 の誤差の次数、シンプレクティック性、長時間の $H$ の誤差 |
+| `thin_01_potential_kick.py` | 07 | 多極のポテンシャル (調和・規格化)、$\exp(:f:)$ の級数が 2 項で止まる、pysad の薄い多極と閉じた式、フィードダウン (DX・DY) |
+| `thin_02_fourth_order.py` | 07 | 長さのある多極の `tthin` (4 次) を厳密な積分と比較: 誤差の次数 (L を 2 倍にした比)、$\gamma$ の項の効果、CALC の `tthine` (2 次) とのヤコビアンの違い |
+| `thin_03_fringe.py` | 07 | 多極 ($m = 2$〜6) の非線形フリンジの位置のずれ (Maxwell から導いた式と `ttfrin`)、運動量・$z$・シンプレクティック性、6 極・8 極のローレンツ力の数値積分との比較 |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
