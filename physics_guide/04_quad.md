@@ -177,11 +177,19 @@ $$
 
 行列式は 1 ($\cos^2 + \sin^2 = 1$、$\cosh^2 - \sinh^2 = 1$)。行列指数 $\exp(AL)$ ($A = \begin{pmatrix}0 & 1/p\\ \mp K & 0\end{pmatrix}$) との一致は [quad_01_h2_exact.out.txt](outputs/quad_01_h2_exact.out.txt) (a) で $10^{-16}$、pysad の `Quadrupole.transfer_matrix` との一致は (b) で厳密に 0 (同じ式)。
 
-**ヘルプの solution-H2 との関係**: ヘルプはソレノイド ($B_z$) つきの一般の解を書く。$B_z = 0$ とすると、$V = \sqrt{(B_z/p)^4 + 4(K/p)^2} = 2K/p$、$w_1 = w_2 = w = \sqrt{K/p}$、$w_+ = 2w$、$U = 1/V = p/(2K)$ になり、係数は $a = x_0$、$b = q_{x0}$、$c = p_{y0}/(2K)$、$d = y_0/2$ ($p_{xm} = p_{x0}$、$p_{ym} = p_{y0}$)。ヘルプの $\Delta x = u_1/w_1 = a(\cos\varphi - 1) + (b/w)\sin\varphi = x_0(\cos\varphi - 1) + q_{x0}\sin\varphi/w$、$\Delta y = w_+v_2/w_2 = y_0(\cosh\varphi - 1) + q_{y0}\sinh\varphi/w$ は、式 (4.9)(4.10) の更新量と一致する。(**原文の solution-H2 の式を読んで確認**。$a, b, c, d$ の縮約は手計算。) ソレノイドつきの 4×4 は [09_solenoid.md](09_solenoid.md)。$z$ の式 (複素正規座標) は §14 と付録 A。
+**ヘルプの solution-H2 との関係**: ヘルプはソレノイド ($B_z$) つきの一般の解を書く。記号の定義 ($w_1$、$w_2$、$w_+$、$w_d = b_p/w_+$、$V = w_1^2 + w_2^2$、$U = 1/V$、係数 $a, b, c, d$。$b_p \propto B_z/p$) は [09_solenoid.md](09_solenoid.md) §4.2〜§4.3 にある (ここでは $B_z = 0$ への縮約だけ)。**縮約 (1 行ずつ)**:
+
+1. $B_z = 0$ なので $b_p = 0$。ヘルプの $w_{1,2}$ は $K/p$ だけで決まり、$w_1 = w_2 = w = \sqrt{K/p}$。したがって $w_+ = w_1 + w_2 = 2w$、$w_d = b_p/w_+ = 0$、$V = w_1^2 + w_2^2 = 2w^2 = 2K/p$、$U = 1/V = p/(2K)$。
+2. 係数 (09 章 §4.2 の式に $b_p = 0$、$w_d = 0$ を入れる): $a = (w_2w_+x_0 - b_pq_{ym})/V = 2w^2x_0/(2w^2) = x_0$。$bw = (w_+q_{xm} - b_pw_2y_0)/V = 2w\,q_{x0}/(2w^2) = q_{x0}/w$ なので、ヘルプの $b = w_1\,bw = q_{x0}$。$c = (w_1w_dx_0 + q_{ym})/V = q_{y0}/(2w^2) = p\,q_{y0}/(2K) = p_{y0}/(2K)$ ($p_{y0} = p\,q_{y0}$)。$dw = (-w_dq_{xm} + w_1y_0)/V = w\,y_0/(2w^2) = y_0/(2w)$ なので $d = w_2\,dw = y_0/2$。($B_z = 0$ では運動学的運動量と正準運動量が一致するので $q_{xm} = q_{x0}$、$q_{ym} = q_{y0}$。)
+3. 更新量 (ヘルプ): $\Delta x = u_1/w_1 = a\,(\cos\varphi - 1) + (b/w)\sin\varphi = x_0(\cos\varphi - 1) + q_{x0}\sin\varphi/w$。$\Delta y = w_+v_2/w_2 = w_+\bigl[c\sinh\varphi + (d/w)(\cosh\varphi - 1)\bigr] = 2w\Bigl[\dfrac{q_{y0}}{2w^2}\sinh\varphi + \dfrac{y_0}{2w}(\cosh\varphi - 1)\Bigr] = y_0(\cosh\varphi - 1) + q_{y0}\sinh\varphi/w$。
+
+これは式 (4.9)(4.10) の更新量と一致する。(**原文の solution-H2 の式を読んで確認**。縮約の代数は sympy でも確認した: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (E)。) ソレノイドつきの 4×4 は [09_solenoid.md](09_solenoid.md)。$z$ の式 (複素正規座標) は §14 と付録 A。
 
 ### 4.2 $K < 0$ と $K = 0$
 
-- **$K < 0$ (水平発散)**: 運動方程式は $(x, p_x, y, p_y) \to (y, p_y, -x, -p_x)$ の 90 度の回転 (これは正準変換) で $K \to -K$ に写る。**確認**: 新しい座標 $X = y$、$P_X = p_y$、$Y = -x$、$P_Y = -p_x$ で $H_2$ の $K(x^2 - y^2)/2$ を書くと $x^2 = Y^2$、$y^2 = X^2$ なので $K(Y^2 - X^2)/2 = (-K)(X^2 - Y^2)/2$、運動エネルギーの $(p_x^2 + p_y^2)/(2p)$ は不変。ポアソン括弧は $\{X, P_X\} = \{y, p_y\} = 1$、$\{Y, P_Y\} = \{-x, -p_x\} = 1$ で保たれる (正準変換)。したがって、K1 < 0 の四極は「座標を 90 度回し、$|K|$ の集束四極として (4.9)(4.10) を適用し、戻す」。結果は、$x$ が $\cosh$・$\sinh$、$y$ が $\cos$・$\sin$ になる。Fortran は `tquade` の `theta1 = theta - m_pi_2`、`ak1 = -ak` (CALC)、追跡は呼び出し側が `theta2` に $\pi/2$ を足して $|K1|$ を渡す (`tquad.f:37` の `ak = sign(ak0, al)`)。回転の向きは追跡と CALC で逆だが、四極は $(x, y) \to (-x, -y)$ で不変なので、結果は同じ。
+- **$K < 0$ (水平発散)**: 運動方程式は $(x, p_x, y, p_y) \to (y, p_y, -x, -p_x)$ の 90 度の回転 (これは正準変換) で $K \to -K$ に写る。**確認**: 新しい座標 $X = y$、$P_X = p_y$、$Y = -x$、$P_Y = -p_x$ で $H_2$ の $K(x^2 - y^2)/2$ を書くと $x^2 = Y^2$、$y^2 = X^2$ なので $K(Y^2 - X^2)/2 = (-K)(X^2 - Y^2)/2$、運動エネルギーの $(p_x^2 + p_y^2)/(2p)$ は不変。ポアソン括弧は $\{X, P_X\} = \{y, p_y\} = 1$、$\{Y, P_Y\} = \{-x, -p_x\} = 1$ で保たれる (正準変換)。したがって、K1 < 0 の四極は「座標を 90 度回し、$|K|$ の集束四極として (4.9)(4.10) を適用し、戻す」。**符号を追う (途中式)**: $w = \sqrt{|K|/p}$、$\varphi = w\ell$、$q = p_x/p$ 等として、(i) 回転: $X = y$、$Q_X = q_y$、$Y = -x$、$Q_Y = -q_x$。(ii) 回転後の系の更新 ($K \to -K$ なので (4.9)(4.10) をそのまま使える。$X$ が集束、$Y$ が発散): $X_f = y\cos\varphi + q_y\sin\varphi/w$、$Q_{Xf} = -y\,w\sin\varphi + q_y\cos\varphi$、$Y_f = Y\cosh\varphi + Q_Y\sinh\varphi/w = -x\cosh\varphi - q_x\sinh\varphi/w$、$Q_{Yf} = Y w\sinh\varphi + Q_Y\cosh\varphi = -x\,w\sinh\varphi - q_x\cosh\varphi$。(iii) 戻す: $x_f = -Y_f$、$q_{xf} = -Q_{Yf}$、$y_f = X_f$、$q_{yf} = Q_{Xf}$。**$Y = -x$ (入力) と $x_f = -Y_f$ (出力) の 2 つの符号が相殺して**
+$$x_f = x\cosh\varphi + \frac{q_x}{w}\sinh\varphi,\quad q_{xf} = x\,w\sinh\varphi + q_x\cosh\varphi,\quad y_f = y\cos\varphi + \frac{q_y}{w}\sin\varphi,\quad q_{yf} = -y\,w\sin\varphi + q_y\cos\varphi$$
+つまり、$x$ が $\cosh$・$\sinh$、$y$ が $\cos$・$\sin$ になる (K > 0 の (4.9)(4.10) で $x \leftrightarrow y$ を入れ替えた形。sympy で確認: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (F))。Fortran は `tquade` の `theta1 = theta - m_pi_2`、`ak1 = -ak` (CALC)、追跡は呼び出し側が `theta2` に $\pi/2$ を足して $|K1|$ を渡す (`tquad.f:37` の `ak = sign(ak0, al)`)。回転の向きは追跡と CALC で逆だが、四極は $(x, y) \to (-x, -y)$ で不変なので、結果は同じ。
 - **$K = 0$**: $\sin\varphi/w \to \ell$、$\cos\varphi \to 1$ の極限で、ドリフト $\begin{pmatrix}1 & \ell/p\\ 0 & 1\end{pmatrix}$ になる ($K = 10^{-12}$ で (4.11) は ドリフトと 12 桁一致、[quad_01_h2_exact.out.txt](outputs/quad_01_h2_exact.out.txt))。実装は `ak == 0` を別の枝 (`tdrift`・`tdrife`) にしている。
 - **$\delta$ 依存**: $\delta$ は $w = \sqrt{K/(1+\delta)}$ と (4.11) の $p$ にだけ入る。エネルギーの高い粒子ほど集束が弱い、という自然クロマティシティはこれ。
 
@@ -235,7 +243,7 @@ z' = \frac{\partial\Delta H}{\partial p} = 1 - \frac{p}{p_z} + \frac{p_x^2 + p_y
 \tag{4.15}
 $$
 
-($p_z = \sqrt{p^2 - p_x^2 - p_y^2}$。**途中**: $\partial p_z/\partial p_x = -p_x/p_z$、$\partial p_z/\partial p = p/p_z$ なので、$\partial\Delta H/\partial p_x = +p_x/p_z - p_x/p = p_x(1/p_z - 1/p)$、$\partial\Delta H/\partial p = 1 - p/p_z + (p_x^2 + p_y^2)/(2p^2)$ ($\partial_p[-(p_x^2 + p_y^2)/(2p)] = +(p_x^2 + p_y^2)/(2p^2)$)。$y$ は $x$ と同じ。複素ステップ微分で作った偏微分と手で導いたこの式は $10^{-16}$ で一致、[quad_02_dh_drift.out.txt](outputs/quad_02_dh_drift.out.txt) (a)。sympy でも 0 ([quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (B)。) 規格化した運動量 $q$ と $\zeta \equiv p_z/p = \sqrt{1 - q_x^2 - q_y^2}$ では、長さ $\ell$ ぶんの流れは
+($p_z = \sqrt{p^2 - p_x^2 - p_y^2}$。**途中**: $\partial p_z/\partial p_x = -p_x/p_z$、$\partial p_z/\partial p = p/p_z$ なので、$\partial\Delta H/\partial p_x = +p_x/p_z - p_x/p = p_x(1/p_z - 1/p)$、$\partial\Delta H/\partial p = 1 - p/p_z + (p_x^2 + p_y^2)/(2p^2)$ ($\partial_p[-(p_x^2 + p_y^2)/(2p)] = +(p_x^2 + p_y^2)/(2p^2)$)。$y$ は $x$ と同じ。複素ステップ微分で作った偏微分と手で導いたこの式は $10^{-16}$ で一致、[quad_02_dh_drift.out.txt](outputs/quad_02_dh_drift.out.txt) (a)。sympy でも 0 ([quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (B)。) 次に、規格化した運動量 $q_x = p_x/p$、$q_y = p_y/p$ と $\zeta \equiv p_z/p = \sqrt{1 - q_x^2 - q_y^2}$ で書き直す。**代入 (1 行ずつ)**: $p_x = p\,q_x$、$p_z = p\,\zeta$ を (4.15) に入れる。(i) $x' = p_x(1/p_z - 1/p) = p\,q_x\bigl(\tfrac{1}{p\zeta} - \tfrac1p\bigr) = q_x\bigl(\tfrac1\zeta - 1\bigr)$ ($p$ を括り出して約分。$y'$ も同じ)。(ii) $z' = 1 - p/p_z + (p_x^2 + p_y^2)/(2p^2) = 1 - \tfrac1\zeta + \tfrac{q_x^2 + q_y^2}{2}$ ($p/p_z = 1/\zeta$、$p_x^2 + p_y^2 = p^2(q_x^2 + q_y^2)$)。(4.15) の右辺は $x, y, z$ を含まず、$s$ の間 $p_x, p_y, p$ は一定なので右辺も一定。したがって長さ $\ell$ ぶんの流れは右辺に $\ell$ をかけたもので、(ii) の $z'$ は下の「整理」で $-(2 + \zeta)(1 - \zeta)^2/(2\zeta)$ になる。まとめて
 
 $$
 x \to x + q_x\left(\frac{1}{\zeta} - 1\right)\ell,\quad
@@ -276,7 +284,7 @@ $$
 
 ($\mathcal{B}, \mathcal{D}$ は $H_2$、$\Delta H$ のリー演算子。)  $h$ の項が厳密な $H$ の流れで、誤りは $h^3$ から。
 
-**(4.19) の係数の導出**。$X = h\mathcal D$、$Y = h\mathcal B$ として $S_2 = e^{X/2}e^{Y}e^{X/2}$。BCH の公式 $\log(e^Pe^Q) = P + Q + \tfrac12[P,Q] + \tfrac1{12}[P,[P,Q]] - \tfrac1{12}[Q,[P,Q]] + \cdots$ を 2 回使う (4 次以上は捨てる)。
+**(4.19) の係数の導出**。$X = h\mathcal D$、$Y = h\mathcal B$ として $S_2 = e^{X/2}e^{Y}e^{X/2}$。BCH の公式 $\log(e^Pe^Q) = P + Q + \tfrac12[P,Q] + \tfrac1{12}[P,[P,Q]] - \tfrac1{12}[Q,[P,Q]] + \cdots$ を 2 回使う (4 次以上は捨てる)。この BCH の 3 次までの式の導出 ($e^Xe^Y = 1 + u_1 + u_2 + u_3$ を $\log(1 + u)$ に入れて次数ごとに集める) は [C_poisson_lie.md](C_poisson_lie.md) §6.2 (式 (C.14) の下) にある。
 
 1. $Z_1 = \log(e^{X/2}e^{Y}) = \tfrac X2 + Y + \tfrac14[X,Y] + \tfrac1{48}[X,[X,Y]] - \tfrac1{24}[Y,[X,Y]]$ ($P = X/2$、$Q = Y$ を代入: $\tfrac12[P,Q] = \tfrac14[X,Y]$、$\tfrac1{12}[P,[P,Q]] = \tfrac1{48}[X,[X,Y]]$、$-\tfrac1{12}[Q,[P,Q]] = -\tfrac1{24}[Y,[X,Y]]$)。
 2. $Z_2 = \log(e^{Z_1}e^{X/2}) = Z_1 + \tfrac X2 + \tfrac12[Z_1,\tfrac X2] + \tfrac1{12}[Z_1,[Z_1,\tfrac X2]] - \tfrac1{12}[\tfrac X2,[Z_1,\tfrac X2]]$。右辺の各項を 3 次まで展開する:
@@ -296,7 +304,13 @@ S_4(h) = S_2(\kappa_1 h)\,S_2(\kappa_0 h)\,S_2(\kappa_1 h)
 \tag{4.20}
 $$
 
-**$\log S_4$ の展開**。$S_2(\kappa h) = \exp\bigl(\kappa h\,\mathcal L + \kappa^3h^3C_3 + O(h^5)\bigr)$ ($\mathcal L = \mathcal B + \mathcal D$、(4.19) の $h \to \kappa h$) を 3 つ掛ける。$h^1$ の項は $(2\kappa_1 + \kappa_0)h\,\mathcal L$、$h^3$ の項は $(2\kappa_1^3 + \kappa_0^3)h^3C_3$。3 つの指数 $e^{X_1}e^{X_0}e^{X_1}$ ($X_i = \kappa_ih\,\mathcal L + \kappa_i^3h^3C_3 + O(h^5)$) の積の BCH は、$X_i$ の和に、$X_i$ どうしの交換子の項を足したものになる。$[\mathcal L,\mathcal L] = 0$ なので、$X_i$ と $X_j$ の交換子は $h\mathcal L$ と $h^3C_3$ の交換子 $\propto h^4[\mathcal L,C_3]$ から始まる ($h^2$、$h^3$ の交換子は出ない)。つまり $h^3$ までは和だけが残る。$h^4$ は、$S_4$ も前後対称で奇数次だけになることから消える: $S_4(-h) = S_2(-\kappa_1h)S_2(-\kappa_0h)S_2(-\kappa_1h) = S_2(\kappa_1h)^{-1}S_2(\kappa_0h)^{-1}S_2(\kappa_1h)^{-1} = [S_2(\kappa_1h)S_2(\kappa_0h)S_2(\kappa_1h)]^{-1} = S_4(h)^{-1}$ (最後の等号は、3 つの積が回文 (前から読んでも後ろから読んでも同じ並び) なので逆順にしても同じ)。したがって
+**$\log S_4$ の展開**。$S_2(\kappa h) = \exp\bigl(\kappa h\,\mathcal L + \kappa^3h^3C_3 + O(h^5)\bigr)$ ($\mathcal L = \mathcal B + \mathcal D$、(4.19) の $h \to \kappa h$) を 3 つ掛ける。$h^1$ の項は $(2\kappa_1 + \kappa_0)h\,\mathcal L$、$h^3$ の項は $(2\kappa_1^3 + \kappa_0^3)h^3C_3$。3 つの指数 $e^{X_1}e^{X_0}e^{X_1}$ ($X_i = \kappa_ih\,\mathcal L + \kappa_i^3h^3C_3 + O(h^5)$) の積の BCH は、$X_i$ の和に、$X_i$ どうしの交換子の項を足したものになる。**交換子の次数を式で追う**:
+
+1. 2 つの $X_i, X_j$ の交換子 (括弧の中を展開し、$[\mathcal L,\mathcal L] = 0$、$[C_3,C_3] = 0$ を使う):
+$[X_i, X_j] = \kappa_i\kappa_j h^2[\mathcal L,\mathcal L] + \bigl(\kappa_i\kappa_j^3[\mathcal L,C_3] + \kappa_i^3\kappa_j[C_3,\mathcal L]\bigr)h^4 + O(h^6) = \kappa_i\kappa_j(\kappa_j^2 - \kappa_i^2)\,h^4\,[\mathcal L,C_3] + O(h^6)$
+($h^2$ の項は $\mathcal L$ 自身との交換子で 0。したがって 2 次の交換子は $h^4$ から始まり、$h^2$、$h^3$ には出ない。)
+2. 3 重の交換子 $[X_i,[X_j,X_k]]$ は、1 の結果に $X_i = O(h)$ をさらに括るので $O(h\cdot h^4) = O(h^5)$。BCH の 4 重以上の項はさらに高次。
+3. したがって $h^3$ までは $X_i$ の和だけが残る。$h^4$ は 1 の $O(h^4)$ の項だが、次のとおり消える。$S_4$ も前後対称で奇数次だけになる: $S_4(-h) = S_2(-\kappa_1h)S_2(-\kappa_0h)S_2(-\kappa_1h) = S_2(\kappa_1h)^{-1}S_2(\kappa_0h)^{-1}S_2(\kappa_1h)^{-1} = [S_2(\kappa_1h)S_2(\kappa_0h)S_2(\kappa_1h)]^{-1} = S_4(h)^{-1}$ (最後の等号は、3 つの積が回文 (前から読んでも後ろから読んでも同じ並び) なので逆順にしても同じ)。したがって
 
 $$
 \log S_4 = (2\kappa_1 + \kappa_0)\,h\,(\mathcal B + \mathcal D) + (2\kappa_1^3 + \kappa_0^3)\,h^3 C_3 + O(h^5)
@@ -386,7 +400,7 @@ $$
 
 縦成分 $b_s = K'xy$ は、端で $K$ が変わるときにだけ現れる (ヘルプの QUAD の非線形フリンジの出所)。
 
-**運動方程式と階段の端の積分 (1 段ずつ)**。力は $d(p_x, p_y)/ds = (\vec p\times\vec b)_{x,y}/p_z$ ($\vec p$ は運動学的運動量、$p_z \simeq p$)。外積の成分は $(\vec p\times\vec b)_x = p_yb_s - p_zb_y$、$(\vec p\times\vec b)_y = p_zb_x - p_xb_s$ なので
+**運動方程式と階段の端の積分 (1 段ずつ)**。まず力の式の出所と規格化。ローレンツ力は $d\vec p_{\rm phys}/dt = e\,\vec v\times\vec B$ ($\vec p_{\rm phys}$ は運動学的運動量、$\vec v$ は速度、$\vec p_{\rm phys} = \gamma m\vec v$)。独立変数を時間から $s$ に替えるには、両辺に $dt/ds = 1/v_z$ をかける。$\vec v/v_z = \vec p_{\rm phys}/p_{{\rm phys},z}$ ($\vec v$ と $\vec p_{\rm phys}$ は平行) なので $d\vec p_{\rm phys}/ds = e\,(\vec p_{\rm phys}\times\vec B)/p_{{\rm phys},z}$。両辺を $p_0$ で割り ($\vec p = \vec p_{\rm phys}/p_0$、$\vec b = e\vec B/p_0$)、$d\vec p/ds = (\vec p\times\vec b)/p_z$ ($p_z$ は $\vec p$ の $z$ 成分で、$p_z = \sqrt{p^2 - p_x^2 - p_y^2}$)。電荷の符号は $K$ の定義 (4.1) に含めてある。**符号の確認**: 本体の場 $b_y = Kx$、$b_x = Ky$、$b_s = 0$ を、下の成分の式に入れると $dp_x/ds = -b_y = -Kx$、$dp_y/ds = +b_x = +Ky$ となり、(4.7) の $p_x' = -Kx$、$p_y' = +Ky$ と一致する (sympy でも確認: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (G))。以下 $p_z \simeq p$ とする (この近似の大きさは下で評価する)。外積の成分は $(\vec p\times\vec b)_x = p_yb_s - p_zb_y$、$(\vec p\times\vec b)_y = p_zb_x - p_xb_s$ なので
 
 $$
 \frac{dp_x}{ds} = \frac{p_y}{p_z}\,b_s - b_y,\qquad
@@ -404,7 +418,14 @@ $$
 \tag{4.26}
 $$
 
-($b_s$ の項が、$xy\,p_y$ の係数を $-\tfrac12 \to +\tfrac12$ にする。) 垂直も同様: $b_x \supset -\tfrac{K''}{12}h$、$h \equiv 3x^2y + y^3$ から $\Delta p_y|_{K''} = +\tfrac K{12}h'(0)$、$h' = 6xy\,x' + 3(x^2 + y^2)y'$ で $\tfrac K2xy\,x' + \tfrac K4(x^2 + y^2)y'$。$b_s$ の項は $-\tfrac{p_x}{p}K\,xy$ なので、合計 $\Delta p_y = \dfrac Kp\bigl[\tfrac14(x^2 + y^2)p_y - \tfrac12\,xy\,p_x\bigr]$。
+($b_s$ の項が、$xy\,p_y$ の係数を $-\tfrac12 \to +\tfrac12$ にする。)
+
+**なぜ K の 1 次までで、$p_z \to p$ でよいか (2 つの近似の大きさ)**。
+
+- **K の 1 次への打ち切り**。上の積分では、端のまわりの軌道を**自由な運動** $x(s) = x_0 + x_0's$ としたが、実際には端の $\delta'(s)$ の力が運動量にスパイク ($p_x \ni \tfrac K{12}\delta(s)\,g$、下の「座標の階段」) を作り、座標が端で $\Delta x = O(K)$ だけ階段状に動く。この $\Delta x$ を $g'(0)$ の中の座標に入れると、$g'$ は座標の 2 次式なので $g'(x_0 + \Delta x) = g'(x_0) + O(\Delta x) = g'(x_0) + O(K)$ となり、$\Delta p_x = -\tfrac K{12}g'(0)$ にかかっている $K$ と合わせて**$O(K^2)$** の補正になる。(線形な項 $Ky$、$Kx$ は、上のとおり端では有限で運動量の飛びを作らないので、この階段の積分には入らない。) つまり (4.26) は「$K$ の 1 次」の結果として閉じていて、$K$ の 2 次は別の項 (下の検証の残りの原因と推定したもの。未確認)。
+- **$p_z \to p$**。$p_z = p\zeta$、$\zeta = \sqrt{1 - q^2}$ ($q^2 = q_x^2 + q_y^2$) なので、$1/p_z = (1/p)\,(1 + q^2/2 + 3q^4/8 + \cdots)$ (§5 の二項展開と同じ)。力の式で $p_z$ が出るのは $b_s$ の項 ($p_y b_s/p_z$、$p_xb_s/p_z$) と、自由運動の傾き $x_0' = p_x/p_z$ ($p_x/p$ と置いた) の 2 か所で、どちらも $p_z \to p$ で**相対誤差 $q^2/2$** を生む。大きさ: 傾き 1、10、30 mrad で $q^2/2 = 5\times10^{-7}$、$5\times10^{-5}$、$4.5\times10^{-4}$ (sympy: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (G))。この補正は (4.26) に入っておらず、K64 の `ttfrin` も同じ ($p$ を使う)。$K$ の 1 次の中の、傾きの 2 次の相対補正である。
+
+垂直も同様: $b_x \supset -\tfrac{K''}{12}h$、$h \equiv 3x^2y + y^3$ から $\Delta p_y|_{K''} = +\tfrac K{12}h'(0)$、$h' = 6xy\,x' + 3(x^2 + y^2)y'$ で $\tfrac K2xy\,x' + \tfrac K4(x^2 + y^2)y'$。$b_s$ の項は $-\tfrac{p_x}{p}K\,xy$ なので、合計 $\Delta p_y = \dfrac Kp\bigl[\tfrac14(x^2 + y^2)p_y - \tfrac12\,xy\,p_x\bigr]$。
 
 **座標の階段**: $K''$ の力は $\delta'(s)$ なので、運動量は $\delta(s)$ 型の「スパイク」を持つ: $dp_x/ds \supset \tfrac K{12}\delta'(s)g$ を積分して $p_x \supset \tfrac K{12}\delta(s)\,g$ (1 次)。スパイクの幅の間に座標が $dx/ds = p_x/p$ で進むので、座標は端で階段状に動く: $\Delta x = \int\tfrac{p_x}{p}ds = \dfrac K{12p}(x^3 + 3xy^2)$、$\Delta y = -\dfrac K{12p}(3x^2y + y^3)$。
 
@@ -451,22 +472,22 @@ y_2 = y_1\left(1 - a - \frac{b}{3} + t\right),\qquad t = \frac{(a - b)^2}{6}
 \tag{4.29}
 $$
 
-($t$ は、(4.28) の 2 項目の寄与 $\mathbf V_2$。) 運動量: $G$ が $\mathbf p_2$ に線形なので $F = \mathbf p_2\cdot\Phi(x_1, y_1)$ ($F = x_1p_{x2} + y_1p_{y2} + G$ の第 1・2 項と $G$ をまとめた)。$p_{x1} = \partial F/\partial x_1 = \sum_ip_{2i}\,\partial\Phi_i/\partial x_1$、すなわち $\mathbf p_1 = J^{\top}\mathbf p_2$ ($J_{ij} = \partial\Phi_i/\partial x_{1j}$)。逆に解いて $\mathbf p_2 = J^{-\top}\mathbf p_1$。$J = \begin{pmatrix}x_x & h\\ -h & y_y\end{pmatrix}$ ($d = a + b$、$\mathrm{ab} = a - b$) の成分を (4.29) から出す。$a - b = \tfrac K{4p}(x_1^2 - y_1^2)$ なので $x_1\partial_{x_1}(a - b) = 2a$、$y_1\partial_{y_1}(a - b) = -2b$、$\partial_{x_1}t = \tfrac13(a - b)\partial_{x_1}(a - b)$ などから:
+($t$ は、(4.28) の 2 項目の寄与 $\mathbf V_2$。) 運動量: $G$ が $\mathbf p_2$ に線形なので $F = \mathbf p_2\cdot\Phi(x_1, y_1)$ ($F = x_1p_{x2} + y_1p_{y2} + G$ の第 1・2 項と $G$ をまとめた)。$p_{x1} = \partial F/\partial x_1 = \sum_ip_{2i}\,\partial\Phi_i/\partial x_1$、すなわち $\mathbf p_1 = J^{\top}\mathbf p_2$ ($J_{ij} = \partial\Phi_i/\partial x_{1j}$)。逆に解いて $\mathbf p_2 = J^{-\top}\mathbf p_1$。$J = \begin{pmatrix}J_{xx} & J_{xy}\\ -J_{xy} & J_{yy}\end{pmatrix}$ の成分を (4.29) から出す。以下、$\Sigma \equiv a + b$、$\sigma \equiv a - b$、$\det J \equiv J_{xx}J_{yy} + J_{xy}^2$ と書く。これらは Fortran (`ttfrin`、`tquad.f:325-370`) では順に `d`、`ab`、`f`、$J_{xx}$ が `xx`、$J_{yy}$ が `yy`、$J_{xy}$ が `h` という名前の変数で、数学の標準の記号ではない。本文で別の記号にしたのは、`d` が §7.2・§7.4 の端の幅 $d$、`ab` が積 $a\times b$、`f` が §7.2 の生成関数 $f$、`h` が §6 の刻みの長さ $h$ と読まれるのを避けるため (定義は §16 の表。06 章 §15 にも同じ名前の注釈がある)。なお、この節の $a = Kx_1^2/(4p)$、$b = Ky_1^2/(4p)$ は、§7.4 の線形フリンジの係数 $a, b$ とは**別のもの**。$a - b = \tfrac K{4p}(x_1^2 - y_1^2)$ なので $x_1\partial_{x_1}(a - b) = 2a$、$y_1\partial_{y_1}(a - b) = -2b$、$\partial_{x_1}t = \tfrac13(a - b)\partial_{x_1}(a - b)$ などから:
 
-- $x_x = \partial_{x_1}[x_1(1 + a/3 + b + t)]$: $\partial_{x_1}[x_1\cdot a/3] = a$ ($a \propto x_1^2$ なので $x_1\cdot(a/3)$ は $\propto x_1^3$ で微分すると $3\times$)、$\partial_{x_1}[x_1b] = b$。すなわち $1 + a + b + t + x_1\partial_{x_1}t$、$x_1\partial_{x_1}t = \tfrac13(a - b)\,x_1\partial_{x_1}(a - b) = \tfrac23a(a - b)$。$t + \tfrac23a(a - b) = \tfrac{(a - b)}6\,[(a - b) + 4a] = \tfrac{\mathrm{ab}}6(5a - b)$。
-- $y_y = \partial_{y_1}[y_1(1 - a - b/3 + t)] = 1 - a - b + t + y_1\partial_{y_1}t$、$y_1\partial_{y_1}t = \tfrac13(a - b)(-2b)$ なので $t - \tfrac23b(a - b) = \tfrac{\mathrm{ab}}6(a - 5b)$。
-- $h = \partial_{y_1}x_2 = 6c\,x_1y_1 + x_1\partial_{y_1}t = \tfrac K{2p}x_1y_1 - \tfrac13(a - b)\tfrac K{2p}x_1y_1 = \tfrac K{2p}x_1y_1\bigl(1 - \tfrac{\mathrm{ab}}3\bigr)$。$\partial_{x_1}y_2 = -6c\,x_1y_1 + y_1\partial_{x_1}t = -h$ (符号だけが逆)。
+- $J_{xx} = \partial_{x_1}[x_1(1 + a/3 + b + t)]$: $\partial_{x_1}[x_1\cdot a/3] = a$ ($a \propto x_1^2$ なので $x_1\cdot(a/3)$ は $\propto x_1^3$ で微分すると $3\times$)、$\partial_{x_1}[x_1b] = b$。すなわち $1 + a + b + t + x_1\partial_{x_1}t$、$x_1\partial_{x_1}t = \tfrac13(a - b)\,x_1\partial_{x_1}(a - b) = \tfrac23a(a - b)$。$t + \tfrac23a(a - b) = \tfrac{(a - b)}6\,[(a - b) + 4a] = \tfrac{\sigma}6(5a - b)$。
+- $J_{yy} = \partial_{y_1}[y_1(1 - a - b/3 + t)] = 1 - a - b + t + y_1\partial_{y_1}t$、$y_1\partial_{y_1}t = \tfrac13(a - b)(-2b)$ なので $t - \tfrac23b(a - b) = \tfrac{\sigma}6(a - 5b)$。
+- $J_{xy} = \partial_{y_1}x_2 = 6c\,x_1y_1 + x_1\partial_{y_1}t = \tfrac K{2p}x_1y_1 - \tfrac13(a - b)\tfrac K{2p}x_1y_1 = \tfrac K{2p}x_1y_1\bigl(1 - \tfrac{\sigma}3\bigr)$。$\partial_{x_1}y_2 = -6c\,x_1y_1 + y_1\partial_{x_1}t = -J_{xy}$ (符号だけが逆)。
 
 $$
-\begin{pmatrix}p_{x}\\ p_{y}\end{pmatrix}_{\rm out} = \frac{1}{f}\begin{pmatrix}y_y & h\\ -h & x_x\end{pmatrix}\begin{pmatrix}p_{x}\\ p_{y}\end{pmatrix}_{\rm in},\quad
+\begin{pmatrix}p_{x}\\ p_{y}\end{pmatrix}_{\rm out} = \frac{1}{\det J}\begin{pmatrix}J_{yy} & J_{xy}\\ -J_{xy} & J_{xx}\end{pmatrix}\begin{pmatrix}p_{x}\\ p_{y}\end{pmatrix}_{\rm in},\quad
 \begin{aligned}
-x_x &= 1 + d + \tfrac{1}{6}\,\mathrm{ab}\,(5a - b),\quad y_y = 1 - d + \tfrac{1}{6}\,\mathrm{ab}\,(a - 5b),\\
-h &= \frac{K}{2p}\,x_1y_1\left(1 - \tfrac{\mathrm{ab}}{3}\right),\quad f = x_xy_y + h^2
+J_{xx} &= 1 + \Sigma + \tfrac{1}{6}\,\sigma\,(5a - b),\quad J_{yy} = 1 - \Sigma + \tfrac{1}{6}\,\sigma\,(a - 5b),\\
+J_{xy} &= \frac{K}{2p}\,x_1y_1\left(1 - \tfrac{\sigma}{3}\right),\quad \det J = J_{xx}J_{yy} + J_{xy}^2
 \end{aligned}
 \tag{4.30}
 $$
 
-($J^\top = \begin{pmatrix}x_x & -h\\ h & y_y\end{pmatrix}$ の逆行列は $\tfrac1{\det}\begin{pmatrix}y_y & h\\ -h & x_x\end{pmatrix}$、$\det J = x_xy_y + h^2 = f$。点変換 (4.29) の偏微分: $x_x = \partial x_2/\partial x_1$、$h = \partial x_2/\partial y_1 = -\partial y_2/\partial x_1$、$y_y = \partial y_2/\partial y_1$。以上の恒等式はすべて sympy で 0、[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (D)。) $z$ は $z_2 = z_1 + \partial G/\partial p$ (新しい運動量 $p_{x2}, p_{y2}$ を固定して微分)。$\mathbf V_1 \propto 1/p$ (1 次。$a, b, c$ が $1/p$)、$\mathbf V_2 \propto 1/p^2$ ($\mathbf V_2 = \tfrac12(\mathbf V_1\cdot\nabla)\mathbf V_1$ は $\mathbf V_1$ の 2 次) なので $\partial_p\mathbf V_1 = -\mathbf V_1/p$、$\partial_p\mathbf V_2 = -2\mathbf V_2/p$。よって
+($J^\top = \begin{pmatrix}J_{xx} & -J_{xy}\\ J_{xy} & J_{yy}\end{pmatrix}$ の逆行列は $\tfrac1{\det J}\begin{pmatrix}J_{yy} & J_{xy}\\ -J_{xy} & J_{xx}\end{pmatrix}$ ($2\times2$ 行列 $\begin{pmatrix}\alpha&\beta\\ \gamma&\epsilon\end{pmatrix}$ の逆は $\tfrac1{\alpha\epsilon - \beta\gamma}\begin{pmatrix}\epsilon&-\beta\\ -\gamma&\alpha\end{pmatrix}$ で、$\alpha = J_{xx}$、$\beta = -J_{xy}$、$\gamma = J_{xy}$、$\epsilon = J_{yy}$)、$\det J = J_{xx}J_{yy} - (-J_{xy})(J_{xy}) = J_{xx}J_{yy} + J_{xy}^2$。点変換 (4.29) の偏微分: $J_{xx} = \partial x_2/\partial x_1$、$J_{xy} = \partial x_2/\partial y_1 = -\partial y_2/\partial x_1$、$J_{yy} = \partial y_2/\partial y_1$。以上の恒等式はすべて sympy で 0、[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (D)。) $z$ は $z_2 = z_1 + \partial G/\partial p$ (新しい運動量 $p_{x2}, p_{y2}$ を固定して微分)。$\mathbf V_1 \propto 1/p$ (1 次。$a, b, c$ が $1/p$)、$\mathbf V_2 \propto 1/p^2$ ($\mathbf V_2 = \tfrac12(\mathbf V_1\cdot\nabla)\mathbf V_1$ は $\mathbf V_1$ の 2 次) なので $\partial_p\mathbf V_1 = -\mathbf V_1/p$、$\partial_p\mathbf V_2 = -2\mathbf V_2/p$。よって
 
 $$
 z_2 = z_1 - \frac{1}{p}\Bigl[p_{x2}\,(\Delta x_1 + 2t\,x_1) + p_{y2}\,(\Delta y_1 + 2t\,y_1)\Bigr]
@@ -527,7 +548,23 @@ $$I_1' = I_1 + \tfrac12I_0^2,\qquad I_2' = I_2 + 2I_0I_1 + \tfrac23I_0^3$$
 
 **ヘルプの一般形との関係 (未確認)**: ヘルプの定義 $\alpha = 24(I_0^2/2 - I_1)$、$\mathrm{F2} = I_2 - I_0^3/3$ は、上の定義 ((4.31): 硬い端との差) で $I_0 \ne 0$ のとき**一致しない** (同じ数値例で、ヘルプの形は $I_0 = \pm 0.01$ m で $24(I_0^2/2 - I_1) = 9.07 \times 10^{-3}$、$I_2 - I_0^3/3 = 8.0 \times 10^{-6}$ ($I_0 = +0.01$)・$-3.1 \times 10^{-6}$ ($I_0 = -0.01$) で、$I_0 = 0$ の値 $6.67 \times 10^{-3}$、$2.47 \times 10^{-6}$ にならない)。$I_0 = 0$ では両者は同じ。ヘルプの $I_n$ の定義 (全域の積分で、発散する) と $s_0$ の取り方が違う可能性があり、$I_0 \ne 0$ の一般式を導く元の式をヘルプから特定できなかった。F1・F2 を台本に直接与える使い方 (通常) には影響しない。$I_0 \ne 0$ のヘルプの式は、導けていないので使わない。
 
-SAD の F1・F2 は、$I_0 = 0$ の $I_1$、$I_2$ を長さの次元に直したもの。ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{|\alpha|}$、$\alpha = 24(I_0^2/2 - I_1)$、$\mathrm{F2} = I_2 - I_0^3/3$ で、$I_0 = 0$ なら $a = -K_0\,\mathrm{F1}\,|\mathrm{F1}|/(24p)$ ($\mathrm{F1}|\mathrm{F1}| = \alpha = -24I_1$ から $I_1 = -\mathrm{F1}|\mathrm{F1}|/24$)、$b = K_0\,\mathrm{F2}/p$ ($K_0 = K1/L$) で、これが (4.32) と同じ。**直線で立ち上がる (長さ $\ell$) 端は F1 = $\ell$、F2 = 0**、$\tanh(s/d)$ の端は F1 = $\pi d$、F2 = 0 ($I_1 = -\pi^2d^2/24$)。
+SAD の F1・F2 は、$I_0 = 0$ の $I_1$、$I_2$ を長さの次元に直したもの。ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(\alpha)\sqrt{|\alpha|}$、$\alpha = 24(I_0^2/2 - I_1)$、$\mathrm{F2} = I_2 - I_0^3/3$ で、$I_0 = 0$ なら $a = -K_0\,\mathrm{F1}\,|\mathrm{F1}|/(24p)$ ($\mathrm{F1}|\mathrm{F1}| = \alpha = -24I_1$ から $I_1 = -\mathrm{F1}|\mathrm{F1}|/24$)、$b = K_0\,\mathrm{F2}/p$ ($K_0 = K1/L$) で、これが (4.32) と同じ。**直線で立ち上がる (長さ $\ell$) 端は F1 = $\ell$、F2 = 0**、$\tanh(s/d)$ の端は F1 = $\pi d$、F2 = 0 ($I_1 = -\pi^2d^2/24$)。積分を実行した行を下に全部書く (sympy・mpmath で確認: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (A))。
+
+**(i) 直線の立ち上がり** $g(s) = s/\ell$ ($0 \le s \le \ell$、$s < 0$ で 0、$s > \ell$ で 1)。硬い端を $s_0$ ($0 < s_0 < \ell$) に置くと、$\delta g = g - \Theta(s - s_0)$ は $0 < s < s_0$ で $s/\ell$、$s_0 < s < \ell$ で $s/\ell - 1$、その外で 0。(4.31) の積分を 2 つの区間に分けて:
+
+1. $I_0 = \int_0^\ell\dfrac s\ell\,ds - \int_{s_0}^{\ell}ds = \dfrac\ell2 - (\ell - s_0) = s_0 - \dfrac\ell2$。$I_0 = 0$ から $s_0 = \ell/2$。
+2. $I_1 = \int_0^\ell(s - s_0)\dfrac s\ell\,ds - \int_{s_0}^\ell(s - s_0)\,ds = \Bigl[\dfrac{\ell^2}3 - \dfrac{s_0\ell}2\Bigr] - \dfrac{(\ell - s_0)^2}2$。($\int_0^\ell s^2/\ell\,ds = \ell^2/3$、$\int_0^\ell s_0s/\ell\,ds = s_0\ell/2$。) $s_0 = \ell/2$ を入れて $\bigl[\tfrac{\ell^2}3 - \tfrac{\ell^2}4\bigr] - \tfrac{\ell^2}8 = \dfrac{8 - 6 - 3}{24}\ell^2 = -\dfrac{\ell^2}{24}$。
+3. $I_2 = \int_0^\ell(s - s_0)^2\dfrac s\ell\,ds - \int_{s_0}^\ell(s - s_0)^2\,ds$。第 1 項は $(s^2 - 2s_0s + s_0^2)s/\ell$ を積分して $\dfrac{\ell^3}4 - \dfrac{2s_0\ell^2}3 + \dfrac{s_0^2\ell}2$ で、$s_0 = \ell/2$ で $\ell^3\bigl(\tfrac14 - \tfrac13 + \tfrac18\bigr) = \dfrac{\ell^3}{24}$。第 2 項は $\dfrac{(\ell - s_0)^3}3 = \dfrac{\ell^3}{24}$。差 $I_2 = 0$。
+4. $\alpha = -24I_1 = \ell^2$ なので F1 $= \mathrm{sgn}(\alpha)\sqrt{|\alpha|} = \ell$、F2 $= I_2 = 0$。
+
+**(ii) $\tanh$ の端** $g(u) = \tfrac12\bigl(1 + \tanh(u/d)\bigr)$、$s_0 = 0$ ($u = s$)。
+
+1. $u > 0$: $\delta g = \tfrac12(1 + \tanh x) - 1 = \tfrac12(\tanh x - 1)$ ($x = u/d$)。$\tanh x - 1 = \dfrac{e^x - e^{-x}}{e^x + e^{-x}} - 1 = \dfrac{-2e^{-x}}{e^x + e^{-x}} = \dfrac{-2}{e^{2x} + 1}$ なので $\delta g(u) = -\dfrac1{e^{2u/d} + 1}$。
+2. $u < 0$: $\delta g = \tfrac12(1 + \tanh x) = \dfrac{e^x}{e^x + e^{-x}} = \dfrac1{e^{-2x} + 1}$ なので $\delta g(u) = \dfrac1{e^{2|u|/d} + 1}$。
+3. 1・2 から $\delta g(-u) = -\delta g(u)$ (**奇関数**)。したがって $I_0 = \int\delta g\,du = 0$ ($s_0 = 0$ で $I_0 = 0$ が成り立つ)、$I_2 = \int u^2\delta g\,du = 0$ (偶関数 $\times$ 奇関数)。F2 $= I_2 - I_0^3/3 = 0$。
+4. $I_1 = \int u\,\delta g\,du$ は被積分関数が偶関数なので $= 2\int_0^\infty u\,\delta g\,du = -2\int_0^\infty\dfrac{u}{e^{2u/d} + 1}\,du$。$t = 2u/d$ ($u = dt/2$、$du = d\,dt/2$) と置いて $= -2\cdot\dfrac{d^2}{4}\int_0^\infty\dfrac t{e^t + 1}\,dt = -\dfrac{d^2}2\int_0^\infty\dfrac t{e^t + 1}\,dt$。
+5. $\dfrac1{e^t + 1} = \sum_{k\ge1}(-1)^{k-1}e^{-kt}$ ($t > 0$)、$\int_0^\infty t\,e^{-kt}dt = 1/k^2$ なので $\int_0^\infty\dfrac t{e^t + 1}dt = \sum_{k\ge1}\dfrac{(-1)^{k-1}}{k^2} = \Bigl(1 - \dfrac1{2}\Bigr)\zeta(2) = \dfrac12\cdot\dfrac{\pi^2}6 = \dfrac{\pi^2}{12}$ ($\sum(-1)^{k-1}/k^2 = \zeta(2) - 2\sum_{k\ \rm even}1/k^2 = \zeta(2) - \tfrac12\zeta(2)$)。mpmath の数値積分も $0.822467033\ldots = \pi^2/12$。
+6. よって $I_1 = -\dfrac{d^2}2\cdot\dfrac{\pi^2}{12} = -\dfrac{\pi^2d^2}{24}$、$\alpha = -24I_1 = \pi^2d^2$、F1 $= \pi d$。($d = 0.5$、$2$ で mpmath の直接積分が $I_1 = -0.1028083792$、$-1.6449340668$ で一致。)
 
 **線形フリンジの写像** (入口。運動量は規格化した $q$ で書く):
 
@@ -540,19 +577,34 @@ z_2 &= z_1 - \bigl(a x_1 + b(1 + \tfrac{a}{2})\,q_{x2}\bigr)q_{x1} + \bigl(a y_1
 \tag{4.33}
 $$
 
-(出口は $a \to -a$、$b$ はそのまま、$z_2 = z_1 + (a x_1 - b(1 - a/2)q_{x2})q_{x1} - (a y_1 - b(1 + a/2)q_{y2})q_{y1}$。) 行列式は $e^{a}e^{-a} = 1$ で、1 次の (4.32) を指数に直して、厳密にシンプレクティックにしてある。**$z$ の導出**: $x$ 平面の母関数 (型 2) を $F_2 = e^{a}x_1p_{x2} + \tfrac12b'e^{a}p_{x2}^2$ ($b' = b/p$ は正準運動量での係数) とおく。$x_2 = \partial F_2/\partial p_{x2} = e^ax_1 + b'e^{a}p_{x2}$ ($p_{x1} = e^ap_{x2}$ を使って $= e^ax_1 + b'p_{x1} = e^ax_1 + b\,q_{x1}$)、$p_{x1} = \partial F_2/\partial x_1 = e^{a}p_{x2}$ (すなわち $q_{x2} = e^{-a}q_{x1}$)。$z_2 - z_1 = \partial F_2/\partial p$ ($p_{x2}$、$x_1$ を固定。$a \propto 1/p$ から $\partial_pa = -a/p$、$b' \propto 1/p^2$ から $\partial_pb' = -2b'/p$) を項ごとに計算する:
+(出口は $a \to -a$、$b$ はそのまま、$z_2 = z_1 + (a x_1 - b(1 - a/2)q_{x2})q_{x1} - (a y_1 - b(1 + a/2)q_{y2})q_{y1}$。導出は下の「出口の符号」。) 行列式は $e^{a}e^{-a} = 1$ で、1 次の (4.32) を指数に直して、厳密にシンプレクティックにしてある。**$z$ の導出**: $x$ 平面の母関数 (型 2) を $F_2 = e^{a}x_1p_{x2} + \tfrac12b'e^{a}p_{x2}^2$ ($b' = b/p$ は正準運動量での係数) とおく。$x_2 = \partial F_2/\partial p_{x2} = e^ax_1 + b'e^{a}p_{x2}$ ($p_{x1} = e^ap_{x2}$ を使って $= e^ax_1 + b'p_{x1} = e^ax_1 + b\,q_{x1}$)、$p_{x1} = \partial F_2/\partial x_1 = e^{a}p_{x2}$ (すなわち $q_{x2} = e^{-a}q_{x1}$)。$z_2 - z_1 = \partial F_2/\partial p$ ($p_{x2}$、$x_1$ を固定。$a \propto 1/p$ から $\partial_pa = -a/p$、$b' \propto 1/p^2$ から $\partial_pb' = -2b'/p$) を項ごとに計算する:
 
 1. $\partial_p[e^ax_1p_{x2}] = e^a(-a/p)x_1p_{x2} = -a\,e^a\,x_1q_{x2}$ ($p_{x2} = p\,q_{x2}$)。
 2. $\tfrac12p_{x2}^2\,\partial_p[b'e^a] = \tfrac12p_{x2}^2\bigl[(-2b'/p)e^a + b'e^a(-a/p)\bigr] = -b'e^a\tfrac{p_{x2}^2}p\,(1 + \tfrac a2) = -b\,e^a(1 + \tfrac a2)q_{x2}^2$ ($b'p_{x2}^2/p = (b/p)(p^2q_{x2}^2)/p = b\,q_{x2}^2$)。
 3. 足して $z_2 - z_1 = -e^a q_{x2}\bigl[a\,x_1 + b(1 + \tfrac a2)q_{x2}\bigr] = -q_{x1}\bigl[a\,x_1 + b(1 + \tfrac a2)q_{x2}\bigr]$ ($e^aq_{x2} = q_{x1}$)。これが (4.33) の $z$ の $x$ の部分。$y$ 平面は $a \to -a$、$b \to -b$ ($y_2 = e^{-a}y_1 - bq_{y1}$) で同じ手順 (符号が $+(ay_1 + b(1 - a/2)q_{y2})q_{y1}$)。
 
-(sympy: $x_2$、$p_{x1}$、$z$ の差 0。[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (E)。) K64 の `tquad` の入口・出口の式と `tqlfre.f` は、(4.33) をそのまま ($q$ または正準運動量に直して) 書いたもの。`tquad.f:501` の `tqlfri` は同じ式に $B_z$ の項を足したサブルーチンだが、この版のソースでは呼ばれていない。なお `tquad` の `f1in`・`f2in` は、`tsetfringep` が作った**係数** ($a$ の分子 $f_1 = -K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ と $f_2$。長さの次元ではない) だが、放射を入れるときは `tradk` の長さの引数にそのまま渡される (K64 の癖)。K64 の $f_1 \le 0$ では長さのように使えて動くが、F1 の符号を残すと $f_1 > 0$ もありうるので、v2 は `tradk` へは $-\lvert f_1\rvert$ を渡す (癖そのものは直していない)。
+(sympy: $x_2$、$p_{x1}$、$z$ の差 0。[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (E)。)
 
-[quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) (c): $K(s) = K_0 (s/\ell)^2$ ($0 \le s \le \ell$、$\ell = 0.1$ m) の立ち上がりは、$s_0 = 2\ell/3$ で $I_0 = 0$、$I_1 = -\ell^2/36$、$I_2 = \ell^3/405$ (数値積分で一致。**手計算**: $I_0 = \int_0^\ell(s/\ell)^2ds - (\ell - s_0) = \ell/3 - (\ell - s_0) = 0$ から $s_0 = 2\ell/3$)、F1 $= 0.08165$、F2 $= 2.469 \times 10^{-6}$。この端を通る線形の運動を数値積分した 2×2 行列と、硬い端 + (4.32)(4.33) の差は、$K_0 = 10^{-3}$ /m² で $3.5 \times 10^{-12}$ (フリンジなしの差は $2.8 \times 10^{-7}$)、$K_0$ を 2 倍にすると 4 倍 (K の 2 次)。**線形フリンジの式は K の 1 次まで正しい**。Maxwell の場の端での線形部分 (tanh、$d = 1$ mm、$r = 1$ mm) の残りは $2.8 \times 10^{-12}$ (F1 なしでは $1.2 \times 10^{-9}$。[quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) (b))。
+**出口の符号 ($a \to -a$、$b \to b$) の導出**。出口は、入口の立ち上がりを $s$ の向きに反転した立ち下がりである: 端の位置 $s_0$ からの距離 $u = s - s_0$ で、出口の磁場の形は $g_{\rm out}(u) = g_{\rm in}(-u)$、硬い端 (K0 が $u < 0$ 側にある階段) は $\Theta(-u)$。1 行ずつ:
+
+1. 硬い端からのずれ: $\delta g_{\rm out}(u) = g_{\rm out}(u) - \Theta(-u) = g_{\rm in}(-u) - \Theta(-u) = \delta g_{\rm in}(-u)$。
+2. (4.31) のモーメント: $I_n^{\rm out} = \int u^n\,\delta g_{\rm in}(-u)\,du$。$v = -u$ と置くと $u^n = (-1)^nv^n$、$du \to dv$ (積分の範囲も反転して符号が戻る) で $I_n^{\rm out} = (-1)^n\int v^n\,\delta g_{\rm in}(v)\,dv = (-1)^nI_n^{\rm in}$。つまり $I_0^{\rm out} = I_0^{\rm in}$ (0 のまま)、$\boldsymbol{I_1^{\rm out} = -I_1^{\rm in}}$、$I_2^{\rm out} = +I_2^{\rm in}$。
+3. (4.32a)・(4.32) の導出は、$s$ に沿った任意の $\delta g(u)$ についてで、入口か出口かを使っていない。したがって出口の線形フリンジは $F_{\rm out} = \begin{pmatrix}1 + a_{\rm out} & b_{\rm out}\\ 0 & 1 - a_{\rm out}\end{pmatrix}$、$a_{\rm out} = K_0I_1^{\rm out}/p = -K_0I_1^{\rm in}/p = -a$、$b_{\rm out} = K_0I_2^{\rm out}/p = +b$。指数の形にして $x_2 = e^{-a}x_1 + b\,q_{x1}$、$q_{x2} = e^{a}q_{x1}$ ($q_{x2}$ の式から $q_{x1} = e^{-a}q_{x2}$)。$y$ は $K \to -K$ ($a_y = -a_{\rm out} = +a$、$b_y = -b$): $y_2 = e^{a}y_1 - b\,q_{y1}$、$q_{y2} = e^{-a}q_{y1}$。
+4. $z$: 上の入口の導出 (1〜3) の手順に、$x$ 平面で $a \to -a$ を代入する。母関数は $F_2 = e^{-a}x_1p_{x2} + \tfrac12b'e^{-a}p_{x2}^2$ で、$\partial_p a = -a/p$ から $\partial_p e^{-a} = +(a/p)e^{-a}$、$\partial_p b' = -2b'/p$。(i) $\partial_p[e^{-a}x_1p_{x2}] = +a\,e^{-a}x_1q_{x2}$。(ii) $\tfrac12p_{x2}^2\,\partial_p[b'e^{-a}] = \tfrac12p_{x2}^2\bigl[-\tfrac{2b'}pe^{-a} + b'e^{-a}\tfrac ap\bigr] = -b\,e^{-a}(1 - \tfrac a2)q_{x2}^2$。(iii) 足して $z_2 - z_1 = e^{-a}q_{x2}\bigl[a\,x_1 - b(1 - \tfrac a2)q_{x2}\bigr] = q_{x1}\bigl[a\,x_1 - b(1 - \tfrac a2)q_{x2}\bigr]$ ($e^{-a}q_{x2} = q_{x1}$)。$y$ 平面は $a \to a_y = +a$、$b \to b_y = -b$ を入口の式 $-q_{y1}[a_yy_1 + b_y(1 + a_y/2)q_{y2}]$ に代入して $-q_{y1}[a\,y_1 - b(1 + a/2)q_{y2}]$。これが上の出口の $z_2$ (sympy: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (A) の最後の 2 行)。
+5. 数値の確認: $K_0(s/\ell)^2$ の立ち上がりを反転した立ち下がり ($\ell = 0.1$ m、$K_0 = 10^{-4}$ /m²、$p = 1.2$) で、$I_n^{\rm out} = (0,\ +2.777778\times10^{-4},\ 2.469136\times10^{-6})$ と入口の $(0,\ -2.777778\times10^{-4},\ 2.469136\times10^{-6})$ の符号関係が成り立ち、数値積分した $2\times2$ 行列との差は、フリンジなしで $2.3\times10^{-8}$、上の $F_{\rm out}$ を入れて $2.5\times10^{-14}$ ([quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (A))。
+
+K64 の `tquad` の入口・出口の式と `tqlfre.f` は、(4.33) をそのまま ($q$ または正準運動量に直して) 書いたもの。`tquad.f:501` の `tqlfri` は同じ式に $B_z$ の項を足したサブルーチンだが、K64 のソースでは呼ばれていない。なお `tquad` の `f1in`・`f2in` は、`tsetfringep` が作った**係数** ($a$ の分子 $f_1 = -K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ と $f_2$。長さの次元ではない) だが、放射を入れるときは `tradk` の長さの引数にそのまま渡される (K64 の癖。`tradk` の説明は §16)。k64 では $f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24 \le 0$ なので長さのように使えて動く。v2 は F1 の符号を残すので $f_1 > 0$ もありうるため、`tradk` へは $-\lvert f_1\rvert$ を渡す (長さの引数に係数を渡す癖そのものは、k64・v2 とも同じ)。
+
+[quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) (c): $K(s) = K_0 (s/\ell)^2$ ($0 \le s \le \ell$、$\ell = 0.1$ m) の立ち上がりは、$s_0 = 2\ell/3$ で $I_0 = 0$、$I_1 = -\ell^2/36$、$I_2 = \ell^3/405$、F1 $= 0.08165$、F2 $= 2.469 \times 10^{-6}$ (数値積分でも一致)。**手計算 (積分を 1 行ずつ。$\delta g = g - \Theta(s - s_0)$ で、$0 < s < s_0$ では $g = s^2/\ell^2$、$s_0 < s < \ell$ では $g - 1$ なので、全区間の $\int g\ldots$ から $\int_{s_0}^\ell\ldots$ を引く。sympy: [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (A))**:
+
+1. $I_0 = \int_0^\ell\dfrac{s^2}{\ell^2}ds - (\ell - s_0) = \dfrac\ell3 - (\ell - s_0) = 0$ から $s_0 = \dfrac{2\ell}3$。
+2. $I_1 = \int_0^\ell(s - s_0)\dfrac{s^2}{\ell^2}ds - \int_{s_0}^\ell(s - s_0)ds = \Bigl[\dfrac{\ell^2}4 - \dfrac{s_0\ell}3\Bigr] - \dfrac{(\ell - s_0)^2}2$。$s_0 = 2\ell/3$ を入れて $\Bigl[\dfrac14 - \dfrac29\Bigr]\ell^2 - \dfrac1{18}\ell^2 = \dfrac{9 - 8 - 2}{36}\ell^2 = -\dfrac{\ell^2}{36}$ ($\ell - s_0 = \ell/3$、$(\ell/3)^2/2 = \ell^2/18$)。
+3. $I_2 = \int_0^\ell(s - s_0)^2\dfrac{s^2}{\ell^2}ds - \int_{s_0}^\ell(s - s_0)^2ds$。第 1 項は $(s^2 - 2s_0s + s_0^2)\,s^2/\ell^2$ を積分して $\dfrac{\ell^3}5 - \dfrac{s_0\ell^2}2 + \dfrac{s_0^2\ell}3 = \ell^3\Bigl(\dfrac15 - \dfrac13 + \dfrac4{27}\Bigr) = \dfrac{27 - 45 + 20}{135}\ell^3 = \dfrac{2\ell^3}{135}$。第 2 項は $\dfrac{(\ell - s_0)^3}3 = \dfrac{\ell^3}{81}$。差 $I_2 = \ell^3\Bigl(\dfrac2{135} - \dfrac1{81}\Bigr) = \dfrac{6 - 5}{405}\ell^3 = \dfrac{\ell^3}{405}$ (通分: $405 = 135\times3 = 81\times5$)。
+4. $\alpha = -24I_1 = \ell^2/1.5 = 2\ell^2/3$、F1 $= \ell\sqrt{2/3} = 0.08165$ ($\ell = 0.1$ m)。F2 $= I_2 = 10^{-3}/405 = 2.469\times10^{-6}$ m³ (長さの 3 乗の次元)。この端を通る線形の運動を数値積分した 2×2 行列と、硬い端 + (4.32)(4.33) の差は、$K_0 = 10^{-3}$ /m² で $3.5 \times 10^{-12}$ (フリンジなしの差は $2.8 \times 10^{-7}$)、$K_0$ を 2 倍にすると 4 倍 (K の 2 次)。**線形フリンジの式は K の 1 次まで正しい**。Maxwell の場の端での線形部分 (tanh、$d = 1$ mm、$r = 1$ mm) の残りは $2.8 \times 10^{-12}$ (F1 なしでは $1.2 \times 10^{-9}$。[quad_05_fringe.out.txt](outputs/quad_05_fringe.out.txt) (b))。
 
 ## 8. 転送行列 (CALC・Emittance[])
 
-CALC・Emittance[] の行列は、追跡と**同じ** $D$・$B$・フリンジの各段を、閉軌道 (COD) のまわりで微分して掛け合わせたもの。K64 の `tquade` は、COD $\xi$ (正準運動量の 6 成分) と行列 `trans` (6×12 の前半が $T$) を同時に更新する: 段 $k$ の写像 $\Phi_k$ と、その COD での微分 $M_k = \partial\Phi_k/\partial\xi\,|_{\xi_{k-1}}$ について
+CALC・Emittance[] の行列は、追跡と**同じ** $D$・$B$・フリンジの各段を、閉軌道 (COD) のまわりで微分して掛け合わせたもの。K64 の `tquade` は、COD $\xi$ (正準運動量の 6 成分) と行列 `trans` (6×12 の配列で、先頭 6 列が $T$) を同時に更新する (`trans`・`trans1`・`trans2`・`tmultr5` の注釈は §16 の表): 段 $k$ の写像 $\Phi_k$ と、その COD での微分 $M_k = \partial\Phi_k/\partial\xi\,|_{\xi_{k-1}}$ について
 
 $$
 \xi_k = \Phi_k(\xi_{k-1}),\qquad T = M_n M_{n-1}\cdots M_1
@@ -571,17 +623,34 @@ $$
 \tag{4.35}
 $$
 
-**導出**: $r = \ell(1/p_z - 1/p)$、$p_z = \sqrt{p^2 - p_x^2 - p_y^2}$ で $\partial p_z/\partial p_x = -p_x/p_z$、$\partial p_z/\partial p_y = -p_y/p_z$、$\partial p_z/\partial p = p/p_z$。したがって $\partial(1/p_z)/\partial p_x = +p_x/p_z^3$、$\partial(1/p_z)/\partial p = -p/p_z^3$。積 $x = x_0 + r\,p_x$ の微分: $\partial x/\partial p_x = r + p_x\,\partial r/\partial p_x = r + \ell p_x^2/p_z^3$、$\partial x/\partial p_y = p_x\,\ell p_y/p_z^3$、$\partial x/\partial p = p_x\,\partial r/\partial p$、$\partial r/\partial p = \ell(-p/p_z^3 + 1/p^2)$ ($-1/p$ の微分が $+1/p^2$)。($y$ は $x \leftrightarrow y$。sympy で差 0、[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (F)。) $z$ の行も解析的に持つ ($\partial z/\partial p_x \sim O(p^3)$。`tqente.f:32-40`)。
+**導出**: $r = \ell(1/p_z - 1/p)$、$p_z = \sqrt{p^2 - p_x^2 - p_y^2}$ で $\partial p_z/\partial p_x = -p_x/p_z$、$\partial p_z/\partial p_y = -p_y/p_z$、$\partial p_z/\partial p = p/p_z$。したがって $\partial(1/p_z)/\partial p_x = +p_x/p_z^3$、$\partial(1/p_z)/\partial p = -p/p_z^3$。積 $x = x_0 + r\,p_x$ の微分: $\partial x/\partial p_x = r + p_x\,\partial r/\partial p_x = r + \ell p_x^2/p_z^3$、$\partial x/\partial p_y = p_x\,\ell p_y/p_z^3$、$\partial x/\partial p = p_x\,\partial r/\partial p$、$\partial r/\partial p = \ell(-p/p_z^3 + 1/p^2)$ ($-1/p$ の微分が $+1/p^2$)。($y$ は $x \leftrightarrow y$。sympy で差 0、[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (F)。) $z$ の行も、次のように解析的に持つ (`tqente.f:32-40`)。$D$ の段の $z$ の変化は、(4.15) の $z'$ に $\ell$ をかけた $\Delta z = \ell\bigl[1 - p/p_z + (p_x^2 + p_y^2)/(2p^2)\bigr]$ (4.16 の $z$ と同じ。$p_x, p_y$ は正準運動量)。その偏微分を 1 行ずつ: (i) $\partial\Delta z/\partial p_x = \ell\bigl[-p\cdot p_x/p_z^3 + p_x/p^2\bigr] = p_x\ell\bigl(1/p^2 - p/p_z^3\bigr) = p_x\,\partial r/\partial p$ ($\partial(1/p_z)/\partial p_x = +p_x/p_z^3$、$-p/p_z$ の微分は $-p\cdot(+p_x/p_z^3)$)。右辺は上の $\partial x/\partial\delta$ ((4.35) の第 3 式) に等しい。同様に (ii) $\partial\Delta z/\partial p_y = p_y\,\partial r/\partial p$。(iii) $\partial\Delta z/\partial p = \ell\bigl[-1/p_z + p^2/p_z^3 - (p_x^2 + p_y^2)/p^3\bigr] = \ell\,a\,(1/p_z^3 - 1/p^3)$ ($a \equiv p_x^2 + p_y^2$、$p^2 - p_z^2 = a$ を使った)。これが Fortran の `trans2(5,2) = trans2(1,6)`、`trans2(5,4) = trans2(3,6)`、`trans2(5,6) = -a*g/pr*f` (`g = dpz*(1+rpz+rpz**2)`、`f = al/pz**3` から $gf = \ell(p_z^3 - p^3)/(p^2p_z^3)$ で、$-a\,gf/p = \ell a(1/p_z^3 - 1/p^3)$ に一致)。$\partial z/\partial p_x \sim O(p^3)$ は、小さい傾きで $1/p^2 - p/p_z^3 \simeq -3q^2/(2p^2)$ なので $\partial\Delta z/\partial p_x \simeq -\tfrac32 p_x\,q^2\ell/p^2$ ($p_x$ の 3 次)。**(4.38) との一致**: $D$ の段の行列は $T_{22} = 1$、$T_{26} = 0$ ($D$ は運動量を変えない)、$T_{12} = \partial x/\partial p_x$ など。(4.38) の $j = 2$ は $T_{52} = -T_{12}T_{26} + T_{22}T_{16} - T_{32}T_{46} + T_{42}T_{36} = T_{16}$ (他の項は $T_{26} = T_{46} = 0$ と $T_{42} = 0$ で消える)。$T_{16} = \partial x/\partial\delta = p_x\,\partial r/\partial p$ なので (i) と同じ。$j = 1, 3$ は $T_{51} = T_{53} = 0$ で、$z$ は $x, y$ に依存しない (ii の $j = 4$ も同様に $T_{54} = T_{36} = p_y\,\partial r/\partial p$)。sympy で 4 成分とも直接微分と一致 ([quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (D))。
 
 **$B$ (`tsolque` の本体)**: (4.9)(4.10) を、規格化した運動量 $(x, q_x, y, q_y)$ について微分し、$\delta$ の列は $w = \sqrt{K/p}$ の $\delta$ 依存だけ ($\partial w/\partial\delta = -w/(2p)$):
 
 $$
 \frac{\partial(x_f, q_{xf})}{\partial(x, q_x)} = \begin{pmatrix}\cos\varphi & \sin\varphi/w\\ -w\sin\varphi & \cos\varphi\end{pmatrix},\qquad
-\frac{\partial x_f}{\partial\delta} = \left(-\ell\,x\sin\varphi + q_x\,\frac{\varphi\cos\varphi - \sin\varphi}{w^2}\right)\frac{\partial w}{\partial\delta}\ \ \text{(など)}
+\frac{\partial x_f}{\partial\delta} = \left(-\ell\,x\sin\varphi + q_x\,\frac{\varphi\cos\varphi - \sin\varphi}{w^2}\right)\frac{\partial w}{\partial\delta}\ \ \text{(他の成分は下に 1 つずつ)}
 \tag{4.36}
 $$
 
-**$\delta$ 微分の導出**: $x_f = x\cos\varphi + q_x\sin\varphi/w$ ($\varphi = w\ell$) を $w$ で微分する ($p$ ($= 1 + \delta$) への依存は $w = \sqrt{K/p}$ だけ。$\partial w/\partial p = -w/(2p)$)。$\partial_w[x\cos(w\ell)] = -x\,\ell\sin\varphi$、$\partial_w[q_x\sin(w\ell)/w] = q_x[\ell\cos\varphi\,w - \sin\varphi]/w^2 = q_x(\varphi\cos\varphi - \sin\varphi)/w^2$。ここで $\varphi\cos\varphi - \sin\varphi = \varphi(\cos\varphi - 1) + (\varphi - \sin\varphi) = \varphi\,\mathrm{dc1} + \mathrm{xs1}$ (Fortran はこの形で持つ)。(Fortran の `trans1(1,6) = (-aln*xi*s1 + pxi*(phi1*dc1 + xs1)/w1**2)*w1p`、`tsolque.f:428`。`w1p` $= \partial w/\partial\delta$。sympy で差 0。)
+**$\delta$ 微分の導出 (全成分を 1 行ずつ)**。$q_x, q_y$ は独立変数として固定し、$p = 1 + \delta$ への依存は (4.9)(4.10) の中の $w = \sqrt{K/p}$ だけ ($\varphi = w\ell$ も $w$ を通る) なので、連鎖律で $\partial F/\partial\delta|_q = (\partial F/\partial w)\,w_\delta$、$w_\delta \equiv \partial w/\partial\delta = \partial w/\partial p = -\tfrac12\sqrt K\,p^{-3/2} = -w/(2p)$ (Fortran の `w1p`)、$\partial\varphi/\partial w = \ell$。以下 $\mathrm{s1} = \sin\varphi$ などは §2 の表の記号。
+
+1. **$x_f$**: $x_f = x\cos\varphi + q_x\sin\varphi/w$。$\partial_w[x\cos(w\ell)] = -x\,\ell\sin\varphi$。$\partial_w[q_x\sin(w\ell)/w] = q_x\bigl[\ell\cos\varphi\cdot w - \sin\varphi\bigr]/w^2 = q_x(\varphi\cos\varphi - \sin\varphi)/w^2$ (商の微分、$w\ell = \varphi$)。ここで $\varphi\cos\varphi - \sin\varphi = \varphi(\cos\varphi - 1) + (\varphi - \sin\varphi) = \varphi\,\mathrm{dc1} + \mathrm{xs1}$ (小さい $\varphi$ の桁落ちを避ける形)。よって
+   $\partial_w x_f = -\ell\,x\,\mathrm{s1} + q_x(\varphi\,\mathrm{dc1} + \mathrm{xs1})/w^2$ ($\to$ `trans1(1,6)`、`tsolque.f:428`)。
+2. **$q_{xf}$**: $q_{xf} = -x\,w\sin\varphi + q_x\cos\varphi$。$\partial_w[-x\,w\sin(w\ell)] = -x\sin\varphi - x\,w\,\ell\cos\varphi = -x(\sin\varphi + \varphi\cos\varphi)$ (積の微分)、$\partial_w[q_x\cos(w\ell)] = -q_x\ell\sin\varphi$。よって
+   $\partial_w q_{xf} = -x(\varphi\,\mathrm{c1} + \mathrm{s1}) - \ell\,q_x\,\mathrm{s1}$ ($\to$ `trans1(2,6)`、`:431`)。
+3. **$y_f$**: $y_f = y\cosh\varphi + q_y\sinh\varphi/w$。$\partial_w[y\cosh(w\ell)] = +y\,\ell\sinh\varphi$、$\partial_w[q_y\sinh(w\ell)/w] = q_y(\varphi\cosh\varphi - \sinh\varphi)/w^2$ で、$\varphi\cosh\varphi - \sinh\varphi = \varphi(\cosh\varphi - 1) + (\varphi - \sinh\varphi) = \varphi\,\mathrm{dch2} + \mathrm{xsh2}$。よって
+   $\partial_w y_f = \ell\,y\,\mathrm{sh2} + q_y(\varphi\,\mathrm{dch2} + \mathrm{xsh2})/w^2$ ($\to$ `trans1(3,6)`、`:434`)。
+4. **$q_{yf}$**: $q_{yf} = y\,w\sinh\varphi + q_y\cosh\varphi$。$\partial_w[y\,w\sinh(w\ell)] = y(\sinh\varphi + \varphi\cosh\varphi)$、$\partial_w[q_y\cosh(w\ell)] = \ell\,q_y\sinh\varphi$。よって
+   $\partial_w q_{yf} = y(\varphi\,\mathrm{ch2} + \mathrm{sh2}) + \ell\,q_y\,\mathrm{sh2}$ ($\to$ `trans1(4,6)`、`:437`)。
+5. **$z$ ($T_{56}$ の本体)**: (4.14) の各項を $w$ で微分する ($(q_x^2 + q_y^2)\ell$ は $w$ を含まない)。(a) $\partial_w[w\,x^2\,\mathrm{xs1}] = x^2\,\mathrm{xs1} + w\,x^2\ell(1 - \cos\varphi) = x^2(\mathrm{xs1} - \varphi\,\mathrm{dc1})$ ($d(\varphi - \sin\varphi)/d\varphi = 1 - \cos\varphi = -\mathrm{dc1}$、$\partial_w\varphi = \ell$、$w\ell = \varphi$)。(b) $\partial_w[-w\,y^2\,\mathrm{xsh2}] = -y^2\,\mathrm{xsh2} - w\,y^2\ell(1 - \cosh\varphi) = -y^2(\mathrm{xsh2} - \varphi\,\mathrm{dch2})$。(c) $\partial_w[u_1q_{xf}] = (\partial_wx_f)\,q_{xf} + u_1\,\partial_wq_{xf}$ ($u_1 = x_f - x$ で $x$ は固定なので $\partial_wu_1 = \partial_wx_f$)。(d) $\partial_w[x\,q_x\,\mathrm{dc1}] = -\ell\,x\,q_x\,\mathrm{s1}$。(e) $\partial_w[v_1q_{yf}] = (\partial_wy_f)\,q_{yf} + v_1\,\partial_wq_{yf}$。(f) $\partial_w[y\,q_y\,\mathrm{dch2}] = +\ell\,y\,q_y\,\mathrm{sh2}$。さらに $-dv\,\ell$ の $\delta$ 微分は $-(\partial dv/\partial\delta)\ell = +\mathrm{dvdp}\,\ell$ ($\mathrm{dvdp} \equiv -\partial dv/\partial\delta$、§16)。まとめて、$w_\delta$ を掛け、(c)(e) の $\partial_wx_f$ 等に (1〜4) を $w_\delta$ つきで入れて:
+
+$$
+\frac{\partial z}{\partial\delta}\bigg|_q = -\frac14\Bigl\{w_\delta\Bigl[x^2(\mathrm{xs1} - \varphi\,\mathrm{dc1}) - y^2(\mathrm{xsh2} - \varphi\,\mathrm{dch2}) + \ell\bigl(-x\,q_x\,\mathrm{s1} + y\,q_y\,\mathrm{sh2}\bigr)\Bigr] + \frac{\partial x_f}{\partial\delta}\,q_{xf} + u_1\frac{\partial q_{xf}}{\partial\delta} + \frac{\partial y_f}{\partial\delta}\,q_{yf} + v_1\frac{\partial q_{yf}}{\partial\delta}\Bigr\} + \mathrm{dvdp}\,\ell
+\tag{4.36a}
+$$
+
+($\partial x_f/\partial\delta = w_\delta\,\partial_wx_f$ など。これは Fortran の `trans1(5,6)` の式 (`tsolque.f:438-443`) そのもの。$q_{xf} = q_x + u_2$ が `u2+pxi`。) 別の道として (4.13) を直接微分すると、$C_x, C_y$ の $w$ 依存から $\partial_w[(C_x + C_y)\ell] = 2w(x^2 - y^2)\ell$、$\partial_w[x_fq_{xf} + y_fq_{yf}]$ は (1〜4) と積の微分で、$\partial_wz = -\tfrac14\{2w\ell(x^2 - y^2) + (\partial_wx_f)q_{xf} + x_f\partial_wq_{xf} + (\partial_wy_f)q_{yf} + y_f\partial_wq_{yf}\}$。この 2 つの道は同じ値になる (sympy で差 $3.5\times10^{-17}$ 以下、[quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (B))。(1〜4 の 4 つの偏微分、(a)〜(f) と (4.36a) もすべて (B) で sympy の微分と差 0。)
 
 **正準運動量に直す**: 追跡の内部変数 $q = p_x/p$ で作った微分 $M_n$ から、正準運動量の行列 $M$ に直す (K64 の `trans1(1:4,2)/pr`、`trans1(1:4,6)-...`、`trans1(2,1:6)*pr`、`tsolque.f:444-449, 575`):
 
@@ -593,7 +662,30 @@ $$
 
 **(4.37) の導出**: 追跡の変数 $q_x = p_x/p$ ($p = 1 + \delta$) の関数 $F(x, q_x, y, q_y, \delta)$ を、正準運動量 $(x, p_x, y, p_y, \delta)$ の関数 $\tilde F = F(x, p_x/p, y, p_y/p, \delta)$ とみなして微分する。連鎖律: $\partial\tilde F/\partial p_x = (1/p)\,\partial F/\partial q_x$。$\delta$ 微分は $p_x$ を固定して、$\partial q_x/\partial\delta = -p_x/p^2 = -q_x/p$ (同じく $q_y$) から $\partial\tilde F/\partial\delta = \partial F/\partial\delta - (q_x/p)\,\partial F/\partial q_x - (q_y/p)\,\partial F/\partial q_y$。これが (4.37)。
 
-出力の運動量 $p_{xf} = p\,q_{xf}(x, q, \delta)$ の行は、連鎖律 (積の微分) から、上の $q_{xf}$ の行を $p$ 倍し ($\partial p_{xf}/\partial x = p\,\partial q_{xf}/\partial x$ など。$q_x$ の列は $p\cdot(1/p) = 1$ 倍)、$\partial p_{xf}/\partial\delta$ にだけ $\partial p/\partial\delta\cdot q_{xf} = +q_{xf}$ を足す ($p_{yf}$ も同様)。
+**出力の運動量の行 (4.37 との合成)**。$p_{xf} = p\,q_{xf}(x, q_x, q_y, \delta)$ ($p = 1 + \delta$、$q = p_{\rm in}/p$ は入口の規格化運動量) を、正準運動量 $(x, p_x, y, p_y, \delta)$ で微分する。積の微分と連鎖律を 1 列ずつ:
+
+- $x$ の列: $\dfrac{\partial p_{xf}}{\partial x} = p\,\dfrac{\partial q_{xf}}{\partial x}$ ($p$ は $x$ によらない)。
+- $p_x$、$p_y$ の列: $\dfrac{\partial p_{xf}}{\partial p_x} = p\cdot\dfrac1p\dfrac{\partial q_{xf}}{\partial q_x} = \dfrac{\partial q_{xf}}{\partial q_x}$、$\dfrac{\partial p_{xf}}{\partial p_y} = \dfrac{\partial q_{xf}}{\partial q_y}$ ((4.37) の第 1 式)。
+- $\delta$ の列 ($p_x, p_y, x, y$ を固定): 積の微分 $\dfrac{\partial p}{\partial\delta}q_{xf} + p\,\dfrac{\partial q_{xf}}{\partial\delta}\Big|_{p_x}$ に $\partial p/\partial\delta = 1$ と (4.37) の第 2 式を入れて
+$$
+\frac{\partial p_{xf}}{\partial\delta}\bigg|_{p_x} = q_{xf} + p\left[\frac{\partial q_{xf}}{\partial\delta}\bigg|_q - \frac{q_x}{p}\frac{\partial q_{xf}}{\partial q_x} - \frac{q_y}{p}\frac{\partial q_{xf}}{\partial q_y}\right]
+\tag{4.37a}
+$$
+($p_{yf}$ も同じ形)。`trans1(2,6) = trans1(2,6) + pxf` (`tsolque.f:575`、$p_{yf}$ は `:576`) が最後の $+q_{xf}$ の項に当たる。
+
+**$B$ の段で明示する** ($\partial q_{xf}/\partial q_x = \cos\varphi$、$\partial q_{xf}/\partial q_y = 0$、$q_{xf} - q_x\cos\varphi = -x\,w\sin\varphi$、$p\,w_\delta = -w/2$)。(4.37a) は $-x\,w\sin\varphi + p\,w_\delta\bigl[-x(\sin\varphi + \varphi\cos\varphi) - \ell q_x\sin\varphi\bigr]$ となり、$w_\delta$ に $-w/(2p)$ を入れて整理すると、4 成分の $\delta$ の列 (正準運動量、$p_x, p_y$ を固定) の閉じた形が出る:
+
+$$
+\begin{aligned}
+\frac{\partial x_f}{\partial\delta} &= \frac1{2p}\Bigl[\varphi\,x\sin\varphi - \frac{q_x}{w}(\varphi\cos\varphi + \sin\varphi)\Bigr],\qquad
+\frac{\partial p_{xf}}{\partial\delta} = \frac w2\Bigl[x(\varphi\cos\varphi - \sin\varphi) + \ell\,q_x\sin\varphi\Bigr],\\
+\frac{\partial y_f}{\partial\delta} &= -\frac1{2p}\Bigl[\varphi\,y\sinh\varphi + \frac{q_y}{w}(\varphi\cosh\varphi + \sinh\varphi)\Bigr],\qquad
+\frac{\partial p_{yf}}{\partial\delta} = \frac w2\Bigl[y(\sinh\varphi - \varphi\cosh\varphi) - \ell\,q_y\sinh\varphi\Bigr]
+\end{aligned}
+\tag{4.37b}
+$$
+
+(導出の 1 例: $\partial x_f/\partial\delta|_{p_x} = w_\delta\,\partial_wx_f - (q_x/p)\sin\varphi/w = -\dfrac{w}{2p}\Bigl[-\ell x\sin\varphi + \dfrac{q_x(\varphi\cos\varphi - \sin\varphi)}{w^2}\Bigr] - \dfrac{q_x\sin\varphi}{p\,w}$、$w\ell = \varphi$ で整理して上の第 1 式。$p_{xf}$ は上のとおり。$y$ の側も同様。4 式とも、$w = \sqrt{K/p}$ を $\delta$ で直接微分した値と mpmath で差 $10^{-19}$ 以下、[quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) (C)(C2)。)
 
 **$z$ の行: シンプレクティック条件で組む**: $z$ に $H$ が依存しないので、$z$ の行は $x, p_x, y, p_y$ の行・$\delta$ の列から決まる。**導出**: 座標の順を $(x, p_x, y, p_y, z, \delta)$ とし、$J$ は $J_{12} = J_{34} = J_{56} = +1$、$J_{21} = J_{43} = J_{65} = -1$、他は 0。$M^\top J M = J$ の $(i, j)$ 成分は $\sum_{a,b}M_{ai}J_{ab}M_{bj} = J_{ij}$ で、3 つの組について
 
@@ -608,7 +700,7 @@ T_{5j} = -T_{1j}T_{26} + T_{2j}T_{16} - T_{3j}T_{46} + T_{4j}T_{36},\qquad j = 1
 \tag{4.38}
 $$
 
-(sympy で一般の $M$ について 4 成分とも確認、[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (F)。Fortran: `tsolque.f:577`、`tqfrie.f:93`。$T_{66} = 1$、$T_{6j} = 0$ を使う。)  $T_{56}$ ($\partial z/\partial\delta$) は、(4.14) の $\delta$ 微分と $dv$ の $\delta$ 微分 `dvdp*aln`。(4.38) が追跡の数値微分と一致することは、[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) で、$1.3 \times 10^{-12}$ 以下 (中心差分の精度)。
+(sympy で一般の $M$ について 4 成分とも確認、[quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) (F)。Fortran: `tsolque.f:577`、`tqfrie.f:93`。$T_{66} = 1$、$T_{6j} = 0$ を使う。)  $T_{56}$ ($\partial z/\partial\delta$) は、$B$ の段では (4.36a) ($q$ を固定した値。(4.14) の $w$ 依存の微分と $dv$ の微分 `dvdp*aln`) を、(4.37) と同じ変数変換で正準運動量に直したもの: $T_{56} = \partial z/\partial\delta|_q - q_xT_{52} - q_yT_{54}$ ($T_{52} = (1/p)\,\partial z/\partial q_x$ なので、(4.37) の第 2 式の $F = z$ の場合そのもの。Fortran: `trans1(5,6) = trans1(5,6) - (pxi*trans1(5,2) + pyi*trans1(5,4))`、`tsolque.f:582-583`)。ここで $T_{52}$、$T_{54}$ は (4.38) で組んだもの。$D$ の段では上の (iii)。(4.38) が追跡の数値微分と一致することは、[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) で、$1.3 \times 10^{-12}$ 以下 (中心差分の精度)。
 
 pysad の v2 は、`emit6d._jac_tsolque_body` が (4.14) を $x, p_x, y, p_y$ で直接微分し、(4.38) と $10^{-19}$ で一致する ([quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (e))。
 
@@ -643,11 +735,11 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 
 - **同じ $H$ の同じ分割を、追跡は写像として、CALC は微分として使う**。したがって、設計軌道の近くでは追跡のヤコビアンと CALC の行列は一致する ($1.8 \times 10^{-13}$、[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt))。軌道がずれると、刻みの数の違い ($\varepsilon_0$) による積分の誤りの違いだけ食い違う (K64 で $5.3 \times 10^{-7}$、v2 で $7.4 \times 10^{-9}$)。
 - 次元の違いに注意: 追跡の `ttfrin` は $q$ で書いてあるが、CALC は正準運動量なので $p$ の因子が入る (たとえば `tqlfre.f` の `bp = b/p`)。
-- 違う点: (1) 線形フリンジの係数で、追跡は $\mathrm{F1}$ の符号を捨てる ($f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24$。`tffs.f:969`)。CALC は $-K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ で符号が残る (`tqlfre.f:12`)。F1 < 0 は、ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(a)\sqrt{a}$ (原文のまま。$a < 0$ では $\sqrt{|a|}$ と読む) では起こりうるが、F1 = −0.1 の四極 (K1 = 0.6、$L = 0.3$ m) では、追跡と CALC の 4×4 が $2.1 \times 10^{-3}$ 食い違う (F1 = +0.1 では $1.8 \times 10^{-13}$。[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (f))。この違いは K64 のもの (k64 は K64 のまま)。**v2 は直してあり** ($f_1 = -\lvert K\rvert\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$、F1 の符号を残す。CALC の `tqlfre` と同じ)、F1 = −0.1 でも追跡と CALC の 4×4 は $1.7 \times 10^{-13}$ で一致する (同じ出力の (f)。この確認は、修正の入った pysad で行った。実行環境は §14 の注記)。(2) フリンジの判定式 (§7.1)。
+- 違う点: (1) 線形フリンジの係数で、追跡は $\mathrm{F1}$ の符号を捨てる ($f_1 = -\lvert K\,\mathrm{F1}^2\rvert/24$。`tffs.f:969`)。CALC は $-K\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$ で符号が残る (`tqlfre.f:12`)。F1 < 0 は、ヘルプの定義 $\mathrm{F1} = \mathrm{sgn}(a)\sqrt{a}$ (原文のまま。$a < 0$ では $\sqrt{|a|}$ と読む) では起こりうるが、F1 = −0.1 の四極 (K1 = 0.6、$L = 0.3$ m) では、追跡と CALC の 4×4 が $2.1 \times 10^{-3}$ 食い違う (F1 = +0.1 では $1.8 \times 10^{-13}$。[quad_04_matrix_vs_map.out.txt](outputs/quad_04_matrix_vs_map.out.txt) (f))。この違いは K64 のもの (k64 は K64 のまま)。**v2 は直してあり** ($f_1 = -\lvert K\rvert\,\mathrm{F1}\,\lvert\mathrm{F1}\rvert/24$、F1 の符号を残す。CALC の `tqlfre` と同じ)、F1 = −0.1 でも追跡と CALC の 4×4 は $1.7 \times 10^{-13}$ で一致する (同じ出力の (f)。k64・v2 の両方を、同じスクリプトの中で動作モードを切り替えて走らせた。§14 の注記)。(2) フリンジの判定式 (§7.1)。
 
 ## 11. 放射 (概要)
 
-放射を入れるとき、K64 の追跡 (`tsolqur`) は、刻みの数を $\max(n, n_{\rm rad})$ ($n_{\rm rad}$ は `ndivrad` で、1 刻みの光子数が $O(1)$ 以下になる数) にし、各刻みの $B$ のあとで放射のキック (`tradk`) を入れる (Strang の刻みは、$D(h/2)\,B(h)$ のあとで次の刻みの $D$ が続く)。四極の入口・出口の端も、`f1in`・`f1out` を長さの引数として `tradk` を呼ぶ (`tquad.f:74`、`:110`)。CALC の `tquade` は、COD から求めた分割数 (`itgetqraddiv`) で刻み、各刻みのあとに `tradke` (励起・減衰の行列) を入れる。臨界エネルギー・光子数・分散の式と、行列への入り方は [13_radiation.md](13_radiation.md) に書く。この章では、放射がない場合の分割と行列だけを扱う。
+放射を入れるとき、K64 の追跡 (`tsolqur`) は、刻みの数を $\max(n, n_{\rm rad})$ ($n_{\rm rad}$ は `ndivrad` で、1 刻みの光子数が $O(1)$ 以下になる数) にし、各刻みの $B$ のあとで放射のキック (`tradk`。§16) を入れる (Strang の刻みは、$D(h/2)\,B(h)$ のあとで次の刻みの $D$ が続く)。四極の入口・出口の端も、`f1in`・`f1out` を長さの引数として `tradk` を呼ぶ (`tquad.f:74`、`:110`)。CALC の `tquade` は、COD から求めた分割数 (`itgetqraddiv`) で刻み、各刻みのあとに `tradke` (励起・減衰の行列。§16) を入れる。臨界エネルギー・光子数・分散の式と、行列への入り方は [13_radiation.md](13_radiation.md) に書く。この章では、放射がない場合の分割と行列だけを扱う。
 
 ## 12. Fortran の対応表
 
@@ -662,7 +754,7 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 | $B$ の $x, q_x, y, q_y$ (4.9)(4.10) | `tsolqu.f:75-82` | `tsolqu` | `u1, u2, v1, v2` |
 | $B$ の $z$ (4.14) | `tsolqu.f:83-88` | `tsolqu` | `-0.25*(w1*(xi**2*xs1-yi**2*xsh2) + ap*aln0 + u1*px + xi*pxi*dc1 + ...) - dv*aln0` |
 | 最後の半分の $D$ | `tsolqu.f:90-95` | `tsolqu` | |
-| 非線形フリンジ (4.28)〜(4.30) | `tquad.f:325-370` | `ttfrin` (`nord == 4`) | `akk = ak/al/4`、`a, b, ab, t, dx1, dy1, xx, yy, h, f`、`px1 = (px*yy+py*h)/f`、`z -= px1*(dx1+t*xi)+py1*(dy1+t*yi)` (366) |
+| 非線形フリンジ (4.28)〜(4.30) | `tquad.f:325-370` | `ttfrin` (`nord == 4`) | `akk = ak/al/4`、`a, b, ab, t, dx1, dy1, xx, yy, h, f` (注釈は §16。数学の標準の記号ではない)、`px1 = (px*yy+py*h)/f`、`z -= px1*(dx1+t*xi)+py1*(dy1+t*yi)` (366) |
 | 線形フリンジ (4.33) | `tquad.f:52-66` (入口)、`:86-100` (出口)、`:501-` (`tqlfri`。呼ばれていない) | `tquad` | `a = f1in/p`、`b = f2in/p`、`ea = exp(a)` |
 | 線形フリンジの係数 | `tffs.f:952-980` | `tsetfringep` | k64: `-abs(akk*f1in*f1in)/24`。v2 は F1 の符号を残す (§10)。`f2 = abs(akk)*f2in` (どちらも同じ) |
 | CALC の全体 | `tquade.f:1-82` | `tquade` | K1 < 0: `theta1 = theta - m_pi_2`、`ak1 = -ak` (30-35)。`tqfrie` (44、74)、`tqlfre` (47、71)、`tsolque` ($n$ 回、66-68) |
@@ -705,6 +797,7 @@ K64 の追跡は、座標の入口で $q = p_x/(1+\delta)$、$dv$ を作って�
 | `quad_07_help_checks.py` | ヘルプ原文の確認: (a) 線形フリンジの $b$ の $1/p$ ($p \neq 1$ の数値積分)、(b) solution-H2 の $z$ の式 ($B_z = 0$)、(c) F1 の $\mathrm{sgn}\sqrt{\ }$ | [quad_07_help_checks.out.txt](outputs/quad_07_help_checks.out.txt) |
 | `quad_08_derivations.py` | 本文の途中式の sympy・数値確認: (A) BCH の係数 (4.19)、Yoshida (4.20)〜(4.22)。(B) ΔH の偏微分・(4.16)(4.17) の展開。(C) $H_2$ の解・$z$ の恒等式 (4.13)(4.14)・(4.36)。(D) 非線形フリンジ: (4.24)〜(4.27) の力の積分と $f$ の符号、(4.28)〜(4.30)・$z$。(E) 線形フリンジ: (4.32a)・$I_0 \ne 0$・(4.33) の $z$。(F) (4.35)〜(4.38) | [quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt) |
 | `quad_09_fringe_noise.py` | §7.2 の検証: Maxwell の場の端との差が、許容誤差を変えても動かないこと、振幅の 1・3・5 次への分解 | [quad_09_fringe_noise.out.txt](outputs/quad_09_fringe_noise.out.txt) |
+| `quad_10_gaps.py` | 本文の途中式 (§4.1・§4.2・§5・§6.2・§7.2・§7.4・§8) の追加分の sympy・mpmath 確認: (A) §7.4 の出口の符号、直線・tanh・$K_0(s/\ell)^2$ の $I_n$ と出口の $z$、数値積分との比較。(B) §8 (4.36)(4.36a) の $w$ 微分の全成分。(C) (4.37)(4.37a)(4.37b)。(D) $D$ の段の $z$ の行と (4.38)。(E) solution-H2 の $B_z = 0$ への縮約。(F) $K < 0$ の回転。(G) $p_z \to p$ の相対誤差と力の式。(H) §6.2 の交換子の次数 | [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt) |
 
 主な出力 (抜粋)。四極 ($L = 1$ m、K1 = 1.5 /m) を、10 mm・10 mrad の粒子が通ったときの、厳密な写像 (DOP853) との最大の差 ($quad\_03$):
 
@@ -736,7 +829,7 @@ z の行 (4.38):  追跡の数値微分とシンプレクティック条件で�
 | k64 | $1.8 \times 10^{-13}$ | $2.1 \times 10^{-3}$ |
 | v2 | $1.7 \times 10^{-13}$ | $1.7 \times 10^{-13}$ |
 
-**実行環境の注記**: (f) の v2・F1 = −0.1 の結果は、四極の線形フリンジで F1 の符号を残す pysad (このリポジトリの pysad) で得た。F1 の符号を捨てる pysad では v2 も k64 と同じ $2.1 \times 10^{-3}$ になる。スクリプトは、環境変数 `PYSAD_SRC` に別の pysad のルートを指定すると、そちらを使う (`PYSAD_SRC=<ルート> py -3.12 physics_guide/scripts/quad_04_matrix_vs_map.py`)。出力の先頭に、どちらの pysad を使ったかを書いてある。ほかの節 (a)〜(e) は、どちらの pysad でも同じ値。
+**実行環境の注記**: (f) は、同じスクリプトの中で動作モード (k64、v2) を切り替えて、同じ四極を両方で走らせた結果。線形フリンジの係数で F1 の符号を k64 は捨て、v2 は残す (§10) ので、F1 = −0.1 の追跡と CALC の差は k64 だけが $2.1 \times 10^{-3}$ になる。ほかの節 (a)〜(e) も、k64 と v2 の両方の値を出力に並べてある。
 
 非線形フリンジと Maxwell の場の端 ($quad\_05$ (b)、$K = 3$ /m²、振幅 $r$ = 1、2 mm): 非線形フリンジの効果 $\Delta$ (ODE と K64 の式) の相対差は、端の幅 $d = 0.5, 1, 2, 5$ mm で 0.13〜0.38%、0.25〜0.51%、1.0〜1.1%、2.9%。振幅によらないのは $d \ge 2$ mm だけ ($d \le 1$ mm は $r$ の 5 次で $1/d$ に比例する成分が混ざり、$r = 1$ と 2 mm で比が違う。積分の雑音ではない。§7.2、$quad\_09$)。
 
@@ -752,18 +845,18 @@ z の行 (4.38):  追跡の数値微分とシンプレクティック条件で�
 - 取り付け誤差の座標変換の導出: [11_misalignment_and_coord.md](11_misalignment_and_coord.md)。
 
 **未確認・限界**:
-- **非線形フリンジ**: K の 1 次の硬い端の近似。Maxwell の場 (3 次まで) の端との相対差は、幅 $d = 1$ mm で 0.25〜0.5% ($r = 1, 2$ mm)、$d = 5$ mm で約 3% (§7.2)。$d \le 1$ mm の差の振幅依存は雑音ではなく、$r^5/d$ に比例する成分によるもの (§7.2、`quad_09`)。残りが K の 2 次の項かは未確認 (K を変えていない)。端の磁場の展開は 3 次までで、実際の端 ($d$ が孔径程度) では高次の項 ($K''''x^5$ など) が効く。
+- **非線形フリンジ**: K の 1 次の硬い端の近似。入れていない効果は 2 つ: (i) K の 2 次 (端で座標が $\Delta x = O(K)$ だけ階段状に動く効果の反作用。§7.2)、(ii) $p_z \to p$ の相対補正 $q^2/2$ (傾き 10 mrad で $5\times10^{-5}$、30 mrad で $4.5\times10^{-4}$)。(i)(ii) とも大きさの見積りだけで、それぞれを入れた式との数値比較はしていない (未確認)。Maxwell の場 (3 次まで) の端との相対差は、幅 $d = 1$ mm で 0.25〜0.5% ($r = 1, 2$ mm)、$d = 5$ mm で約 3% (§7.2)。$d \le 1$ mm の差の振幅依存は雑音ではなく、$r^5/d$ に比例する成分によるもの (§7.2、`quad_09`)。残りが K の 2 次の項かは未確認 (K を変えていない)。端の磁場の展開は 3 次までで、実際の端 ($d$ が孔径程度) では高次の項 ($K''''x^5$ など) が効く。
 - **線形フリンジ**: K の 1 次まで。式 (4.31) の $I_n$ のとり方 (硬い端との差のモーメント) は、ヘルプの記述 (原文: $\int_{-\infty}^{\infty}(s - s_0)^nK_1(s)/K_{10}\,ds$、全域の積分) の読み替え。ヘルプの $b = K1\,F2/L$ には $1/p_1$ が無い (付録 A。ヘルプの $p_x$ を $q$ の単位と読んだ場合の指摘)。F1 < 0 では、k64 だけ追跡と CALC が食い違う (v2 は直してあり一致。§10)。
 - **ヘルプの $z$ の更新** (solution-H2。複素正規座標 $u, p_u, v, p_v$ を使う式): 原文を読み、$B_z = 0$ で厳密な $z' = -q^2/2 - dv$ の積分と比べた ([quad_07_help_checks.out.txt](outputs/quad_07_help_checks.out.txt) (b))。結果は付録 A (一致しない。正規座標への変換の $p$ 依存の項が未検討で、ヘルプの式が誤りとは断定できない)。ここでの $z$ の導出は (4.7) の $\partial H_2/\partial p$ から直接行った。
 - **刻みの数**: 4 次の方が悪くなる 1 刻みの強い四極 (§6.2)。v2 の追跡と CALC の刻みの基準 (0.1 と 0.05) の違いが残る。
 - **CALC の $z$ の行**: pysad の `_el_cod_step` (4D の CALC 用) は $z$ の行 (5,1..4) を持たず、6 次元 (放射つき平衡エミッタンス) の `emit6d` が持つ。`emit6d._jac_tqente` の $z$ の行は (5,2)・(5,4) が欠けている (傾きの 3 乗の大きさ。$|J^\top J_0 J - J_0| = 2 \times 10^{-9}$。軌道が (3 mm, 2 mrad, 1 mm, −1 mrad、$\delta = 0.003$) の例)。
-- **sympy**: 導出の代数は、本文に手で書いたものを sympy・数値 (行列指数・数値積分・複素ステップ微分・DOP853) でも確認した ([quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt))。確認した項目は、(4.19) の係数、(4.22) の解、(4.13)(4.14) の恒等式、(4.15)〜(4.17) の展開、(4.24)〜(4.27)、(4.28)〜(4.30) と $z$、(4.32)〜(4.33)、(4.35)〜(4.38)。
+- **sympy**: 導出の代数は、本文に手で書いたものを sympy・数値 (行列指数・数値積分・複素ステップ微分・DOP853) でも確認した ([quad_08_derivations.out.txt](outputs/quad_08_derivations.out.txt))。確認した項目は、(4.19) の係数、(追加分: §7.4 の出口の符号・$I_n$ の積分・出口の $z$、§8 の (4.36)(4.36a)(4.37a)(4.37b) と $D$ の段の $z$ の行、§4.1 の縮約、§4.2 の回転は [quad_10_gaps.out.txt](outputs/quad_10_gaps.out.txt))、(4.22) の解、(4.13)(4.14) の恒等式、(4.15)〜(4.17) の展開、(4.24)〜(4.27)、(4.28)〜(4.30) と $z$、(4.32)〜(4.33)、(4.35)〜(4.38)。
 - **$I_0 \ne 0$ のヘルプの式**: (4.31) の定義 (硬い端との差) では、$I_0 \ne 0$ の一般形は (4.32a) と端をずらす変換から導いた ($a \propto I_1 + I_0^2/2$、$b \propto I_2 + 2I_0I_1 + 2I_0^3/3$)。ヘルプの $\alpha = 24(I_0^2/2 - I_1)$、$\mathrm{F2} = I_2 - I_0^3/3$ はこれと一致しない (§7.4)。ヘルプの $I_n$ の定義 ($\int_{-\infty}^{\infty}$ で発散する形) からの導出ができていないので、$I_0 \ne 0$ の式の正否は未確認。
 - ヘルプの誤植は [01_variables_and_conventions.md](01_variables_and_conventions.md) の付録 A。この章に関わる分は次の付録 A。
 
 ## 16. この章で使う Fortran の変数名
 
-SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_variables_and_conventions.md) §8。この表の定義は、実際のコード (Fortran: `SAD-master/src`、pysad: `pysad/`) で確認した。以下、「小さい $\varphi$ の桁落ち」とは、$\cos\varphi - 1$、$\varphi - \sin\varphi$ のような、近い数の差が、$\varphi \to 0$ で有効数字を失うこと。`xsincos`・`xsincosh` は、小さい $|\varphi|$ ではこれらを直接テイラー級数で計算して防ぐ。
+SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_variables_and_conventions.md) §8。この表の定義は、実際のコード (Fortran: `SAD-master/src`、pysad: `pysad/`) で確認した。この表には、§7.3・§8・§11 で出る `ttfrin` の変数 (`a`、`b`、`ab`、`d`、`t`、`dx1`、`dy1`、`xx`、`yy`、`h`、`f`)、CALC の配列 (`trans`、`trans1`、`trans2`) とサブルーチン (`tmultr5`、`tradk`、`tradke`) も入れた。これらの名前は数学の標準の記号ではなく、同じ文字が本文の別の量 (端の幅 $d$、刻みの長さ $h$、生成関数 $f$、積 $ab$) と衝突するので、本文の式では別の記号に書き換えてある。以下、「小さい $\varphi$ の桁落ち」とは、$\cos\varphi - 1$、$\varphi - \sin\varphi$ のような、近い数の差が、$\varphi \to 0$ で有効数字を失うこと。`xsincos`・`xsincosh` は、小さい $|\varphi|$ ではこれらを直接テイラー級数で計算して防ぐ。
 
 | Fortran の名前 | 式 | 定義の場所 (Fortran) | pysad での名前 |
 |---|---|---|---|
@@ -782,6 +875,22 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `dpz`、`r` | `dpz = sqrt1(-ap)` ($= \sqrt{1 - q_x^2 - q_y^2} - 1$)、`r = -dpz/(1+dpz)*aln0` (ΔH の運動学的ドリフトの長さ。最初と最後の刻みは半分) | `tsolqu.f`、`sqrt1` は `tfloor.f:505` ($\sqrt{1+x} - 1$ を桁落ちなく) | `_qb_drift` |
 | `dv` | $dv = 1 - v/v_0$ (01 章 §8) | `tgetdv`、`tconvm.f` | `dv` |
 | `ndiv`、`aln0` | 刻みの数、1 刻みの長さ (§6.3) | `tsolqu.f` | `quadbody.ndiv()`、`aln1` |
+| `akk`、`aki` (非線形フリンジ) | `akk` $= \mathrm{ak}/\mathrm{al}/4 = K/4$、`aki` $= \mathrm{akk}/(1 + \delta) = K/(4p)$。$a = $ `aki`$\cdot x^2$ が (4.28) の $a = Kx^2/(4p)$ | `tquad.f:325-370` (`ttfrin` の nord = 4) | `track6._ttfrin4` |
+| `a`、`b` (`ttfrin`) | $a = Kx_1^2/(4p)$、$b = Ky_1^2/(4p)$ (4.28)。**§7.4 の線形フリンジの $a = K_0I_1/p$、$b = K_0I_2/p$ とは別のもの** (Fortran の `tquad` の `a = f1in/p`、`b = f2in/p` が §7.4 の方) | `tquad.f:325-370` | 同 |
+| `ab` | $a - b$ ($= \tfrac K{4p}(x_1^2 - y_1^2)$)。**積 $a\times b$ ではなく、1 つの変数名**。本文では $\sigma$。(コードには、コメントアウトされた別の書き方 `aki*(xi-yi)*(xi+yi)` が残っている。値は同じ) | 同 | 同 |
+| `d` | $a + b$。本文では $\Sigma$ (§7.2・§7.4 の端の幅 $d$ とは無関係)。$J_{xx} = 1 + \Sigma + \ldots$、$J_{yy} = 1 - \Sigma + \ldots$ に入る | 同 | 同 |
+| `t` | $t = \mathrm{ab}^2/6 = \sigma^2/6$ (4.29)。点変換の 2 次の項 $\mathbf V_2 = \tfrac12(\mathbf V_1\cdot\nabla)\mathbf V_1$ の係数 ($\mathbf V_2 = t\,(x_1, y_1)$、§7.3 の途中式 3) | 同 | 同 |
+| `dx1`、`dy1` | $x_2 - x_1 = x_1(a/3 + b + t)$、$y_2 - y_1 = -y_1(a + b/3 - t)$ (4.29)。**$t$ を含む変位全体**で、(4.28) の 1 次の $\Delta x_1$、$\Delta y_1$ ($t$ を含まない) とは違う。$z$ の更新は `z -= px1*(dx1+t*xi)+py1*(dy1+t*yi)` で、$t$ が 2 回入る ($\partial_p\mathbf V_2 = -2\mathbf V_2/p$ のため。§7.3) | 同 | 同 |
+| `xx`、`yy`、`h`、`f` | $J_{xx} = \partial x_2/\partial x_1$、$J_{yy} = \partial y_2/\partial y_1$、$J_{xy} = \partial x_2/\partial y_1 = $ `h` $= 2\,\mathrm{aki}\,x_1y_1(1 - \mathrm{ab}/3)$ ($= \tfrac K{2p}x_1y_1(1 - \sigma/3)$)、`f` $= J_{xx}J_{yy} + J_{xy}^2 = \det J$ (4.30)。出力の運動量 `px1 = (px*yy + py*h)/f`、`py1 = (py*xx - px*h)/f` (点変換の逆転置 $J^{-\top}$)。**`h` は刻みの長さ $h$ ではなく、`f` は生成関数 $f$ ではない** | 同 | 同 |
+| `trans` | CALC の 6×12 の配列。先頭 6 列が転送行列 $T$ ((4.34)。行は $x, p_x, y, p_y, z, \delta$ の順で、運動量は正準運動量)。後ろの 6 列は放射を入れるとき ($\mathrm{irad} > 6$) だけ使う (この章では扱わない) | `tquade`・`tsolque` など | `lattice`・`emit6d` の 6×6 行列 |
+| `trans1` | 1 つの段 (本体 $B$ の 1 刻み) の $6\times6$ ヤコビアン $M_k = \partial\Phi_k/\partial\xi$ ((4.34))。`tsolque.f` では、まず $q$ の変数で (4.36) の成分を入れ、(4.37) で正準運動量に直してから、$z$ の行 (4.38) を組む | `tsolque.f:393-583` | `emit6d._jac_tsolque_body` |
+| `trans2` | $D$ の段 (`tqente`) のヤコビアンのうち、単位行列と違う成分 ($x, y, z$ の行 $\times$ $p_x, p_y, \delta$ の列)。(4.35) と §8 の $z$ の行 (5,2)・(5,4)・(5,6)。`tqente` の `r`、`g`、`f`、`fx`、`fy` は、`r` $= \ell(1/p_z - 1/p)$ (4.16)、`g` $= (p_z - p)(1 + p_z/p + p_z^2/p^2) = (p_z^3 - p^3)/p^2$、`f` $= \ell/p_z^3$ ($\partial(1/p_z)/\partial p_x = p_x/p_z^3$ の因子)、`fx` $=$ `f`$\cdot p_x$ ($\partial x/\partial p_x = r + p_x\,\mathtt{fx}$)。**`f` は `ttfrin` の `f` ($\det J$) とは別の変数** | `tqente.f:1-40` | `emit6d._jac_tqente` |
+| `tmultr5(trans, trans1, n)` | $T \leftarrow M_k T$ (4.34)。`trans` の先頭 $n$ 列 ($n = $ `irad`) に、$6\times6$ の `trans1` を左から掛ける。$z$ の行は $z_{\rm new} = \sum_{j\ne5}M_{5j}\,v_j + z_{\rm old}$ ($M_{55} = 1$、$\delta$ の行は変わらない) | `tmultr.f:11` | 行列積 (numpy・numba) |
+| `w1p`、`pxf`、`pyf`、`dvdp` (`tsolque`) | `w1p` $= \partial w/\partial\delta = -w/(2p)$ (§8 の $w_\delta$)。`pxf`、`pyf` は出口の $q_{xf} = q_x + u_2$、$q_{yf} = q_y + v_2$。`dvdp` は 01 章 §8 (符号に注意: $-\partial dv/\partial\delta$) | `tsolque.f:405-446` | `elkern._tsolque_body`・`emit6d._jac_tsolque_body` |
+| `tradk` | **追跡**の放射のキック。各粒子 (`np` 個) に、長さ `al` の区間で放出する放射のエネルギー損失 (量子的な揺らぎ `rfluct` を入れるときは光子の確率的な放出) を適用し、$p_x, p_y, z, \delta$ を更新する。四極では、本体の各刻みの後 (`al` = 刻みの長さ) と、端で `al` $= f_1$ (`f1in`・`f1out`。係数を長さの引数に渡す癖、§7.4) で呼ぶ。式と光子数は [13_radiation.md](13_radiation.md) | `trad.f:75`、`photons.f:1267` | (13 章) |
+| `tradke` | **CALC** (転送行列) の放射の更新。`tradk` と同じ位置で、閉軌道 `cod`、行列 `trans`、ビーム行列 `beam` (励起・減衰) を更新する。COD が 0 なら寄与は 0 (§10) | `photons.f:1362` | `emit6d` (13 章) |
+
+(`ttfrin` の変数 `a`、`b`、`ab`、`d`、`t`、`dx1`、`dy1`、`xx`、`yy`、`h`、`f` は、06 章 §15 の表にも同じ名前の注釈がある。この章では式 (4.28)〜(4.30) と一対一に対応させるため、数学の式の側で $\sigma$、$\Sigma$、$J_{xx}$、$J_{yy}$、$J_{xy}$、$\det J$ と書き換えた。)
 
 未確認: `dpz`・`r` の式と §5 の式 (4.15)〜(4.17) との対応の行ごとの確認 (§12 の表にある範囲を超えるもの)。
 
