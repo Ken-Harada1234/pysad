@@ -12,7 +12,7 @@
 - **$\Delta$ の組み立て** (`tradke`): 要素ごとの励起 $\Delta_i$ (13 章) を、残りの要素の行列 $T_{i\to\mathrm{end}}$ で 1 周の終わりまで運ぶ: $\Delta = \sum_iT_{i\to\mathrm{end}}\Delta_iT_{i\to\mathrm{end}}^\top$。K64 は `beam(42)` に走る和を持ち、各要素の行列 `tr1` について `tmulbs(beam, tr1)` ($\mathrm{beam} \leftarrow T\,\mathrm{beam}\,T^\top$) をしてから、その要素の励起 `dbeam` を足す。減衰側 $D$ も同じ形の和 $D = \sum_iT_{i\to\mathrm{end}}D_iT_{0\to i}$ で、右から $T_{0\to i}$ (RF の kick を含む) が掛かる (§3.2)。
 - **`tecalc`**: $T$ (`trans(:,1:6)`、シンプレクティック) の固有値・固有ベクトルから正規座標の行列 $R$ を作り (`teigenc`、`tnorm`、`tsymp`: §4.1)、チューン ($\mathrm{Im}\log\lambda/2\pi$) を出す。減衰率は、$D$ を 1 次の摂動として固有値の変化から求める ($\mathtt{rd}=R^{-1}DR$ の対角ブロック: §4.2)。分配数は $J_k = 4a_k/\sum a$。正規座標の $\Sigma_n = R^{-1}\Sigma R^{-\top}$ は、モード $k$ の 2×2 のブロックの対角が $\varepsilon_k$ になる。モード $k$ のブロックの方程式のトレースから、**$\varepsilon_k = \bar\Delta_k/(1 - e^{-2a_k})$** ($\bar\Delta_k = (\Delta_{n,XX} + \Delta_{n,PP})/2$: §4.3)。K64 は 21 成分の連立方程式 `btr` を解く (§4.4)。
 - **確認** ([emit_01_equilibrium.out.txt](outputs/emit_01_equilibrium.out.txt)): 8 セルの FODO リング (3 GeV、周長 41.6 m、CAVI 3 MV) で、$\varepsilon_x = 5.2996\times10^{-5}$ m rad は、放射積分の式 $C_q\gamma^2I_5/(J_xI_2)$ と 2.2% 以内、$\sigma_\delta$ は 0.5%、$J_x$ ($0.1340$) は $1 - I_4/I_2 = 0.1364$ (1.8%)、$U_0 = 2.3449$ MeV は完全に一致、$\alpha_p$ は 0.2%、$\nu_s$ は 0.4%。各モードの $\varepsilon_k$ の式は $0.03\%$ 以内。
-- **標準の式との 1〜2% の差の原因は、有限のシンクロトロンチューン** (§6、[emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt))。放射積分の式は $\nu_s\to0$ の極限の式で、$\nu_s = 0.05$ では水平のシンクロ・ベータ結合の補正が入る。3 GeV で加速電圧だけを変えると、$\varepsilon_x$ の比 $-1$ は $\nu_s^2$ にほぼ比例する ($(\text{比}-1)/\nu_s^2 = 8.7$)。RF の kick を 0 に取る極限では、$J_x$・$\varepsilon_x$ とも標準の式に $2\times10^{-4}$ で一致する。このリングには軸ずれも誤差も無く、四極の軸ずれによる放射は原因ではない。
+- **標準の式との 1〜2% の差の原因は、有限のシンクロトロンチューン** (§6、[emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt))。放射積分の式は $\nu_s\to0$ の極限の式で、$\nu_s = 0.05$ では水平のシンクロ・ベータ結合の補正が入る。3 GeV で加速電圧だけを変えると、$\varepsilon_x$ の比 $-1$ は $\nu_s^2$ にほぼ比例する ($(\text{比}-1)/\nu_s^2$ は約 8.7。§6.1)。RF の kick を 0 に取る極限では、$J_x$・$\varepsilon_x$ とも標準の式に $2\times10^{-4}$ で一致する。このリングには軸ずれも誤差も無く、四極の軸ずれによる放射は原因ではない。
 - **注意**: $J_x$ が小さい ($0.13$、分散が大きくて $I_4/I_2 \approx 0.86$) 例では、$\varepsilon_x \propto 1/J_x$ なので、$J_x$ への補正が $\varepsilon_x$ に大きく効く。$\varepsilon_y = 0$ は、垂直の励起も結合もないため (結合があると §7、MINCOUP は §5)。
 
 ## 2. 記号と単位
@@ -74,7 +74,16 @@ $$
 \tag{14.2b}
 $$
 
-($M\Sigma M^\top$ を (14.2b) に代入すると、$\Sigma - \Delta$ に一致することが、項をずらして確かめられる。級数は $M\otimes M$ のスペクトル半径 $\max|\lambda|^2 < 1$ で収束する。) 減衰が弱い ($a_k\sim10^{-4}$) ので、解は $\Delta/(2a)$ のように大きな因子を持ち、$1 - M\otimes M$ は 1 に近い量の差になって桁落ちしやすい。K64 が `btr` の対角を別の式で作る理由である (§4.4)。
+(級数は $M\otimes M$ のスペクトル半径 $\max|\lambda|^2 < 1$ で収束する。(14.2b) が (14.2) を満たすことは、項をずらして確かめる。$n = 0$ の項を外に出して
+
+$$
+\Sigma = \Delta + \sum_{n=1}^{\infty}M^n\Delta\,(M^\top)^n
+= \Delta + M\left[\sum_{n=1}^{\infty}M^{n-1}\Delta\,(M^\top)^{n-1}\right]M^\top
+= \Delta + M\left[\sum_{m=0}^{\infty}M^m\Delta\,(M^\top)^m\right]M^\top
+= \Delta + M\Sigma M^\top
+$$
+
+(第 2 の等号で $M^n = M\cdot M^{n-1}$、$(M^\top)^n = (M^\top)^{n-1}M^\top$ とくくり出し、第 3 の等号で $m = n - 1$ と添字を付け替えた。括弧の中は (14.2b) の $\Sigma$ そのもの。数値でも、4×4 の安定な $M$ で級数 4000 項の $\Sigma - (\Delta + M\Sigma M^\top)$ の最大が $9\times10^{-16}$、$(1 - M\otimes M)\,\mathrm{vec}\,\Sigma = \mathrm{vec}\,\Delta$ の解との差が $1.3\times10^{-15}$: [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (e)。) 減衰が弱い ($a_k\sim10^{-4}$) ので、解は $\Delta/(2a)$ のように大きな因子を持ち、$1 - M\otimes M$ は 1 に近い量の差になって桁落ちしやすい。K64 が `btr` の対角を別の式で作る理由である (§4.4)。
 
 ### 3.2 $\Delta$ と $D$ の組み立て
 
@@ -103,7 +112,7 @@ B'_{\delta\delta} = B_{\delta\delta} + 2\kappa B_{z\delta} + \kappa^2B_{zz}
 \tag{14.3b}
 $$
 
-数値 ([emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (D)): RF 先頭 $6.7418\times10^{-9}$、RF 末尾 $6.1109\times10^{-9}$ ((14.3b) の右辺も $6.1109\times10^{-9}$ で一致、比 $0.9044$)。これは計算の違いではなく、観測点の違い (正準変換 $\Sigma' = K\Sigma K^\top$、$M' = KMK^{-1}$、$\Delta' = K\Delta K^\top$。$K$ はシンプレクティックで、$M'\Sigma'M'^\top = KM\Sigma M^\top K^\top$ なので (14.2) が保たれる)。エミッタンスは観測点によらず、$\varepsilon_x = 5.2996\times10^{-5}$ (両方)、$\sigma_\delta$ は $1.23475\times10^{-3}$ と $1.23479\times10^{-3}$ ($\delta$ の定義点が RF の前後で $\kappa z$ だけ違う分)。
+数値 ([emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (D)): RF 先頭 $6.7418\times10^{-9}$、RF 末尾 $6.1109\times10^{-9}$ ((14.3b) の右辺も $6.1109\times10^{-9}$ で一致)。RF 末尾の値は、RF 先頭の値の $6.1109/6.7418 = 0.9064$ 倍 (16 台の偏向磁石の励起の和 $6.7567\times10^{-9}$ に対する比で言えば $0.9044$)。これは計算の違いではなく、観測点の違い (正準変換 $\Sigma' = K\Sigma K^\top$、$M' = KMK^{-1}$、$\Delta' = K\Delta K^\top$。$K$ はシンプレクティックで、$M'\Sigma'M'^\top = KM\Sigma M^\top K^\top$ なので (14.2) が保たれる)。エミッタンスは観測点によらず、$\varepsilon_x = 5.2996\times10^{-5}$ (両方)、$\sigma_\delta$ は $1.23475\times10^{-3}$ と $1.23479\times10^{-3}$ ($\delta$ の定義点が RF の前後で $\kappa z$ だけ違う分)。
 
 **確認** ([emit_01_equilibrium.out.txt](outputs/emit_01_equilibrium.out.txt) (c)): RF をラインの先頭に置いた例で、$\Delta = \Sigma - M\Sigma M^\top$ の $\delta\delta$ 成分は $6.742\times10^{-9}$、16 台の偏向磁石の $N_\gamma\langle u^2\rangle$ の和 (13 章。$\gamma$、$\rho$ は 13 章の例と同じ) は $6.757\times10^{-9}$ (比 $0.9978$)。$\Delta$ は対称で、固有値は $\ge -3\times10^{-25}$ (半正定値)。$\Delta_{\delta\delta}$ の `st.B` を直接見ても同じ値 ($6.7417\times10^{-9}$) なので、比 0.9978 は $\Sigma - M\Sigma M^\top$ の計算の誤差ではない。この $-2.2\times10^{-3}$ の差は、RFSW OFF・RADCOD OFF (閉軌道の $\delta$ が 0) でも同じ ($-2.213\times10^{-3}$) で、$E = 1, 2, 3$ GeV で $-8.1\times10^{-5}$、$-6.5\times10^{-4}$、$-2.2\times10^{-3}$ と $U_0/E_0$ ($2.9\times10^{-5}$、$2.3\times10^{-4}$、$7.8\times10^{-4}$) の約 $2.8$ 倍に比例する。閉軌道の $\delta$ ののこぎり歯の効果ではない。原因は未確認 (13 章の式は一定の $\gamma$ の古典的な式で、$U_0/E_0$ の 1 次の補正は含まない。`tradke` のスライス内の扱いに由来する可能性がある)。
 
@@ -143,7 +152,7 @@ $$
 t'^st' = \left(1 - \tfrac E2\right)t^st\left(1 - \tfrac E2\right) = \left(1 - \tfrac E2\right)^2(1 + E) = 1 - \tfrac34E^2 + \tfrac14E^3,\qquad E' = -\tfrac34E^2 + \tfrac14E^3
 $$
 
-($E$ 同士は可換。sympy で $(1 - E/2)^2(1 + E)$ の展開、$(t^st)^s = t^st$ (4×4 の記号行列)、$(AB)^s = B^sA^s$ を確認した: [emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (a))。**2 次収束** (Newton 法の形): ランダムな摂動を加えた $R$ で、$|E| = 9.6\times10^{-2}\to1.70\times10^{-3}$ (予想 $\tfrac34|E^2| = 1.69\times10^{-3}$)、$1.04\times10^{-2}\to6.3\times10^{-5}$ (予想 $6.3\times10^{-5}$)。`tecalc` の $R$ 自体は $|R^\top SR - S| = 3.3\times10^{-16}$。
+($E$ 同士は可換。sympy で $(1 - E/2)^2(1 + E)$ の展開、$(t^st)^s = t^st$ (4×4 の記号行列)、$(AB)^s = B^sA^s$ を確認した: [emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (a))。**2 次収束** (Newton 法の形): ランダムな摂動を加えた $R$ で、$|E| = 9.6\times10^{-2}\to1.70\times10^{-3}$ (予想 $\tfrac34|E^2| = 1.69\times10^{-3}$)、$1.04\times10^{-2}\to6.3\times10^{-5}$ (予想 $6.3\times10^{-5}$)。ここで $|\cdot|$ は行列のノルムで、$|E^2|$ は**行列 $E^2$ を作ってからノルムを取ったもの** ($|E|^2$ ではない。1 行目は $|E^2| = 2.25\times10^{-3}$ で、$|E|^2 = 9.2\times10^{-3}$ より小さい。行列のノルムは $|E^2|\le|E|^2$ で、等号とは限らない)。`tecalc` の $R$ 自体は $|R^\top SR - S| = 3.3\times10^{-16}$。
 
 ### 4.2 減衰率: 固有値の 1 次の摂動
 
@@ -154,20 +163,22 @@ $$
 \tag{14.5}
 $$
 
+(2 次の微小量 $D\,\delta r$、$\delta\lambda\,\delta r$ は捨てた。左から $\ell$ を掛けると $\ell T\delta r = \lambda\,\ell\,\delta r$ が左辺の $T\delta r$ の項と右辺の $\lambda\delta r$ の項を打ち消し、$\ell Dr = \delta\lambda\,\ell r = \delta\lambda$ が残る。)
+
 $r = (R_X - iR_P)/2$ に対して $\ell = \ell_X + i\ell_P$ ($\ell_X$、$\ell_P$ は $R^{-1}$ の $X$、$P$ の行。$\ell r = \tfrac12(\ell_XR_X + \ell_PR_P + i(\ell_PR_X - \ell_XR_P)) = 1$) である。$\mathtt{rd} = R^{-1}DR$ の 2×2 ブロック (成分 $\mathtt{rd}_{XX} = \ell_XDR_X$ など) で書くと
 
 $$
 \ell Dr = \tfrac12\left[(\mathtt{rd}_{XX} + \mathtt{rd}_{PP}) + i(\mathtt{rd}_{PX} - \mathtt{rd}_{XP})\right]
 $$
 
-$\zeta = X + iP$ の 1 周の係数は $\lambda = e^{-i\mu}$ ($R^{-1}TR$ が $\begin{pmatrix}\cos\mu&\sin\mu\\-\sin\mu&\cos\mu\end{pmatrix}$ のとき、$\zeta' = (\cos\mu - i\sin\mu)\zeta$)。減衰率は $\delta\lambda/\lambda = -a + i\,\delta\mu$ の実部 (固有値の変化の比、絶対値の変化) である。K64 の式は、複素共役側 ($\lambda^* = e^{i\mu} = \mathtt{cc}$) で書いたもの:
+$\zeta = X + iP$ の 1 周の係数は $\lambda = e^{-i\mu}$ ($R^{-1}TR$ が $\begin{pmatrix}\cos\mu&\sin\mu\\-\sin\mu&\cos\mu\end{pmatrix}$ のとき、$\zeta' = (\cos\mu - i\sin\mu)\zeta$)。固有値の相対変化は (14.5) から $\delta\lambda/\lambda = \ell Dr/\lambda$ で、$\lambda e^{\delta\lambda/\lambda}$ とみると、$|\lambda|$ が $e^{-a}$ 倍になる (振幅の減衰) 部分が実部、位相 $\mu$ が $\delta\mu$ だけずれる部分が虚部: $\delta\lambda/\lambda = -a - i\,\delta\mu$ ($\lambda = e^{-i\mu}$ なので、$\mu\to\mu + \delta\mu$ は $\lambda\to\lambda\,e^{-i\delta\mu}$)。減衰率は $a = -\mathrm{Re}(\delta\lambda/\lambda)$ (固有値の変化の比、絶対値の変化)。K64 の式は、これを**複素共役側** ($\lambda^* = e^{i\mu} = \mathtt{cc}$) で書いたもの。上の $\ell Dr$ の式で $\mathtt{rd}$ は実なので、K64 の分子 $\tfrac12[(\mathtt{rd}_{ii} + \mathtt{rd}_{i+1,i+1}) + i(\mathtt{rd}_{i,i+1} - \mathtt{rd}_{i+1,i})]$ は $\ell Dr$ の**複素共役**に当たる ($\mathtt{rd}_{PX} = \mathtt{rd}_{i+1,i}$、$\mathtt{rd}_{XP} = \mathtt{rd}_{i,i+1}$ なので、$\ell Dr$ の虚部 $\tfrac12(\mathtt{rd}_{PX} - \mathtt{rd}_{XP})$ の符号が逆)。分母も $\lambda\to\lambda^* = \mathtt{cc}$ なので、K64 の式は次の形になる:
 
 $$
 \mathtt{cd}(k) = \frac{(\mathtt{rd}_{ii} + \mathtt{rd}_{i+1,i+1})/2 + \mathrm{i}\,(\mathtt{rd}_{i,i+1} - \mathtt{rd}_{i+1,i})/2}{\mathtt{cc}(i)} = \overline{\left(\frac{\delta\lambda}{\lambda}\right)},\quad a_k = -\mathrm{Re}\,\mathtt{cd}(k)
 \tag{14.6}
 $$
 
-(`cc` は $e^{i\mu_k}$。符号は SAD の約束で、`params(ipdampx) = dble(cd(1))` は負。虚部 `params(ipdnux)` は摂動によるチューンのずれ $\delta\mu$ の符号反転。) 減衰時間 $\tau_k = 2\pi/(\omega_0a_k)$ (`taurdx` など、$\omega_0$ は周回の角周波数)。**確認** ([emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (B)): $T$ の複素固有ベクトル ($i\,r^\dagger Sr = 1/2$) を直接作って $a_k = -\mathrm{Re}(\ell Dr/\lambda)$ を計算すると、$(5.232652\times10^{-5},\ 3.907412\times10^{-4},\ 1.118899\times10^{-3})$ で `tecalc` と 7 桁一致 (チューンも)。
+(`cc` は $e^{i\mu_k}$。共役を取っても実部は変わらないので $a_k = -\mathrm{Re}\,\mathtt{cd}$ は (14.5) の減衰率と同じ。`params(ipdampx) = dble(cd(1))` は $-a_k$ で負。虚部は、$\delta\lambda/\lambda = -a - i\delta\mu$ の共役 $-a + i\delta\mu$ の虚部なので $\mathrm{Im}\,\mathtt{cd} = +\delta\mu$ ($\mu$ は $P(\mu)$ の角度)。$\mathtt{cd}(4{:}6) = \log\mathtt{cc}$ (虚部 $+\mu$、チューン $\mathrm{Im}\,\mathtt{cd}(4{:}6)/2\pi$) と同じ向きに、減衰の補正の虚部 (`params(ipdnux)`) も揃えるための取り方である。) 数値で ($\mu = 0.83$、$2\times2$ の回転ブロックにランダムな小さい $D$): $\mathtt{cd}$ は $\overline{\ell Dr/\lambda}$ と完全に一致し、厳密な固有値の変化との差は 2 次 ([emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (d))。 減衰時間 $\tau_k = 2\pi/(\omega_0a_k)$ (`taurdx` など、$\omega_0$ は周回の角周波数)。**確認** ([emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (B)): $T$ の複素固有ベクトル ($i\,r^\dagger Sr = 1/2$) を直接作って $a_k = -\mathrm{Re}(\ell Dr/\lambda)$ を計算すると、$(5.232652\times10^{-5},\ 3.907412\times10^{-4},\ 1.118899\times10^{-3})$ で `tecalc` と 7 桁一致 (チューンも)。
 
 **分配数と和の関係。** $J_k = 4a_k/(a_x + a_y + a_z)$ (`sr = 4/sum`、`params(ipjx:ipjz)`)。$\sum J_k = 4$ は定義により自明なので、検証にはならない。非自明な関係は、$\sum a_k = 2U_0/E_0$ (放射積分の式 $J_x = 1 - I_4/I_2$、$J_y = 1$、$J_z = 2 + I_4/I_2$ の和が 4 になることの元) である。6 個の固有値の対数の和は $\sum_{6}\log\lambda = \log\det(T + D)$ で、右辺は $\det T = 1$ から $\log\det(1 + T^{-1}D)\approx\mathrm{Tr}(T^{-1}D)$ (1 次)。左辺は共役ペアで虚部が消えて $-2\sum_ka_k$ なので
 
@@ -176,7 +187,32 @@ $$
 \tag{14.6a}
 $$
 
-(最後の等号は (14.3a) と $\mathrm{Tr}(T_{0\to i}^{-1}T_{i\to\mathrm{end}}^{-1}\cdots)$ の巡回性による。$T^{-1}D = \sum_iT_{0\to i}^{-1}D_iT_{0\to i}$ の各項の跡が $\mathrm{Tr}\,D_i$ になる。) 各スライスの $D_i$ の跡は、$p_x$ と $p_y$ の縮み ($-u_i$ ずつ) と、損失の $\delta$ 依存 ($u\propto(1+\delta)^2$ による $-2u_i$) で $-4u_i$、したがって $\sum_ka_k = 2U_0/E_0$ が 1 次の理論の値。**数値**: $-\tfrac12\mathrm{Tr}(T^{-1}D) = 1.561966\times10^{-3}$ は `tecalc` の $\sum a_k$ と一致 (比 1.0000)、$2U_0/E_0 = 1.563266\times10^{-3}$ との比は $0.99917$。この差は $U_0/E_0$ に比例し (3 GeV で $-8.3\times10^{-4}$、1 GeV で $-3\times10^{-5}$、0.5 GeV で $-1\times10^{-5}$: 係数は約 $-1.06\,U_0/E_0$)、**$\nu_s$ には依らない** (3 GeV で加速電圧を 3〜24 MV に変えても 0.99917 で一定)。$U_0/E_0$ の 1 次の補正 (放射の 2 次の項) と見られるが、その導出は未確認。
+(最後の等号の中身。(14.3a) を $T = T_{i\to\mathrm{end}}T_{0\to i}$ ($i$ によらず、1 周の行列) と合わせて $T^{-1}D$ に代入すると、第 $i$ 項は $T_{0\to i}^{-1}T_{i\to\mathrm{end}}^{-1}\,T_{i\to\mathrm{end}}D_iT_{0\to i} = T_{0\to i}^{-1}D_iT_{0\to i}$ で、$T^{-1}D = \sum_iT_{0\to i}^{-1}D_iT_{0\to i}$。相似変換は跡を変えない ($\mathrm{Tr}(A^{-1}XA) = \mathrm{Tr}\,X$、巡回性) ので、各項の跡は $\mathrm{Tr}\,D_i$。)
+
+**各スライスの $D_i$ の跡 ($-4u_i$) の導出。** 13 章 §4・§6 の 1 スライスの更新から、$D_i$ を成分で書く。$u_i \equiv -dg\,|_{\delta=0} > 0$ (スライスで失う運動量の割合) とおく。
+
+1. **損失 $dg$ の $\delta$ 依存** (13 章 §6.3): $dg = -\mathtt{cave}\,\mathtt{anrad}\,\mathtt{cuc}\,h_1^4\theta^2/(p_0\,al_1)$。$h_1 = \sqrt{1 + p_0^2p_r^2}\simeq p_0p_r$ ($\gamma\gg1$、$p_r = 1 + \delta$)。曲がり角 $\theta$ は、磁場の力積 $\Delta p_\perp$ ($p$ に依らない) を運動量で割ったもの $\theta = \Delta p_\perp/p$ なので $\theta\propto1/p_r$。$al_1$ は $\delta$ に依らない。よって $dg\propto p_r^4\cdot p_r^{-2} = p_r^2$:
+$$
+dg = -u_i\,(1 + \delta)^2,\qquad D_{\delta\delta} = \frac{\partial\,dg}{\partial\delta}\bigg|_{\delta=0} = -2u_i
+$$
+($h_1$ を厳密に取ると $-u_i\,(2 - 4/(1 + p_0^2))$ で、3 GeV では $2$ から $1.2\times10^{-7}$ しか違わない。)
+2. **$p_x$ の縮み**: 追跡の運動量変数は $q = p_x/p$ で、光子が電子の進行方向に出るとき $q$ は変わらず、$p$ だけが $p\to p + dg$ に変わる (13 章 §4.1 末尾)。したがって $p_x^{\rm out} = q\,(1 + \delta + dg) = p_x\,(1 + \delta + dg)/(1 + \delta)$。放射による増分 $\Delta p_x = p_x\,dg/(1 + \delta)$ を $p_x$ で微分して $D_{p_xp_x} = dg/(1 + \delta)|_{\delta=0} = -u_i$。$p_y$ も同じで $D_{p_yp_y} = -u_i$。同じ増分を $\delta$ で微分すると $D_{p_x\delta} = -p_xu_i$ (対角ではないので跡には入らない)。
+3. **力の補正項** (13 章 §4.3、$\Delta p_x' = -\tfrac12dp_x\,dg$、$\Delta x = \Delta p_x'\,al_1/3$): $dp_x$ は磁場の衝撃で、$x$ だけに依る (四極 $-kLx$)。したがってこの項は $D_{p_xx} = -\tfrac12\,kLu_i$、$D_{xx} = -kL^2u_i/6$ に入り、$p_x$ での微分は 0。$D_{xx}$ だけが対角で、跡への寄与は $-kL^2u_i/6$ ($-4u_i$ に対して相対 $kL^2/24$、スライスの長さを焦点距離に比べたものの 2 乗。細かく分割すれば 0 に行く)。
+4. **残りの対角成分**: $D_{yy}$ は $y$ に依る力の補正から $D_{xx}$ と同じ形で $O(kL^2u_i)$。$D_{zz}$ は、速度の比 $\beta_2/\beta_1$ を $z$ にかける換算 (13 章 §4.1 項目 5) から $\beta_2/\beta_1 - 1 = O(u_i/\gamma^2)$ で、省く。
+
+以上をまとめて
+
+$$
+\mathrm{Tr}\,D_i = D_{p_xp_x} + D_{p_yp_y} + D_{\delta\delta} = -u_i - u_i - 2u_i = -4u_i
+$$
+
+(sympy で、上の 1 スライスの写像のヤコビアンを作って確認: 力の補正なしで $\mathrm{Tr} = -4u$、$\delta\ne0$ では $-4u(1 + \delta)$、力の補正を入れると $-4u(1 + kL^2/24)$: [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (a)。) $\sum_iu_i = U_0/E_0$ (1 周の損失は各スライスの損失の和) なので
+
+$$
+\sum_ka_k = -\tfrac12\sum_i\mathrm{Tr}\,D_i = 2\sum_iu_i = \frac{2U_0}{E_0}
+$$
+
+が 1 次の理論の値。ここで $u_i$ の和が $U_0/E_0$ に一致するのは 1 次の話で、スライスごとの $dg = -de/(1 + 2de)$ の 2 次の補正 ($de^2$ のオーダー) と、閉軌道の $\delta$ による $u$ の変化は入れていない。**数値**: $-\tfrac12\mathrm{Tr}(T^{-1}D) = 1.561966\times10^{-3}$ は `tecalc` の $\sum a_k$ と一致 (比 1.0000)、$2U_0/E_0 = 1.563266\times10^{-3}$ との比は $0.99917$。この差は $U_0/E_0$ に比例し (3 GeV で $-8.3\times10^{-4}$、1 GeV で $-3\times10^{-5}$、0.5 GeV で $-1\times10^{-5}$: 係数は約 $-1.06\,U_0/E_0$)、**$\nu_s$ には依らない** (3 GeV で加速電圧を 3〜24 MV に変えても 0.99917 で一定)。$U_0/E_0$ の 1 次の補正 (放射の 2 次の項) と見られるが、その導出は未確認。
 
 **$J_y$ のずれ。** 垂直方向は結合がなければ $y$ モードの固有ベクトルが $(y, p_y)$ だけで、$D$ のうち効くのは $D_{p_yp_y} = -U_0/E_0$ だけ。したがって $a_y = U_0/(2E_0)$ で、実際 $a_y/(U_0/2E_0) = 0.99981$。$J_y = 4a_y/\sum a_k = 0.99981/0.99917 = 1.00064$ で、`tecalc` の $J_y = 1.00064$ に一致する。**$J_y - 1$ の原因は、上の $\sum a_k$ の $U_0/E_0$ の補正である。**
 
@@ -217,16 +253,49 @@ $$
 \tag{14.8a}
 $$
 
-(sympy で確認: [emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (d)。固有値は $(1-a)^2$ と $(1-a)^2e^{\pm2i\mu}$。) **和 (トレース) は他の 2 成分と分離し、減衰率 $(1-a)^2$ だけを持つ。差と交差は $2\mu$ で回転して平均が 0 になる** ($\mu\ne0,\pi$ のとき、2 次モーメントの楕円が回転で円に均される)。したがって (14.8) を解くと、和の成分に対する対角の係数が $1 - (1-a)^2 = 2a - a^2$ で (14.7) の $1 - e^{-2a}$ に一致する (差は $a^2$ のオーダー: $a_x = 5.2\times10^{-5}$ で相対 $2.6\times10^{-5}$)。
+**導出。** $\Sigma = \begin{pmatrix}A&b\\b&C\end{pmatrix}$ ($A = \Sigma_{XX}$、$C = \Sigma_{PP}$、$b = \Sigma_{XP}$) に $P(\mu) = \begin{pmatrix}c&s\\-s&c\end{pmatrix}$ ($c = \cos\mu$、$s = \sin\mu$) を両側からかける。まず $P\Sigma$ の行は $(cA + sb,\ cb + sC)$ と $(-sA + cb,\ -sb + cC)$。これに右から $P^\top = \begin{pmatrix}c&-s\\s&c\end{pmatrix}$ をかけて
 
-$\mathtt{rd}$ に、$-aP$ ではない対称な部分 $S = \begin{pmatrix}s_1&s_2\\s_2&-s_1\end{pmatrix}$ (トレースなし) があるとき ($\mathtt{rd} = -aP + S$)、`tecalc` が `btr(k,k)` に代入する式 (Fortran: $-(\mathtt{rd}_{ii}^2 + \mathtt{rd}_{i,i+1}^2 + \mathtt{rd}_{i+1,i}^2 + \mathtt{rd}_{i+1,i+1}^2)/2 - \cos\mu\,(\mathtt{rd}_{ii} + \mathtt{rd}_{i+1,i+1}) - \sin\mu\,(\mathtt{rd}_{i,i+1} - \mathtt{rd}_{i+1,i})$) は、sympy で展開すると
+$$
+\begin{aligned}
+(P\Sigma P^\top)_{11} &= c(cA + sb) + s(cb + sC) = c^2A + 2cs\,b + s^2C,\\
+(P\Sigma P^\top)_{22} &= -s(-sA + cb) + c(-sb + cC) = s^2A - 2cs\,b + c^2C,\\
+(P\Sigma P^\top)_{12} &= -s(cA + sb) + c(cb + sC) = -cs\,A + (c^2 - s^2)\,b + cs\,C
+\end{aligned}
+$$
+
+(各行は「$P\Sigma$ の行」と「$P^\top$ の列」の積。$P\Sigma$ の第 1 行は $(cA + sb,\ cb + sC)$、第 2 行は $(-sA + cb,\ -sb + cC)$、$P^\top$ の第 1 列は $(c, s)^\top$、第 2 列は $(-s, c)^\top$。) 倍角の公式 $c^2 + s^2 = 1$、$c^2 - s^2 = \cos2\mu$、$2cs = \sin2\mu$ で整理する。
+
+- **和**: $(P\Sigma P^\top)_{11} + (P\Sigma P^\top)_{22} = (c^2 + s^2)(A + C) = A + C$。$\mu$ によらず保存される。
+- **差**: $(P\Sigma P^\top)_{22} - (P\Sigma P^\top)_{11} = (s^2 - c^2)A - 4cs\,b + (c^2 - s^2)C = \cos2\mu\,(C - A) - 2\sin2\mu\,b$。
+- **交差**: $(P\Sigma P^\top)_{12} = \tfrac12\sin2\mu\,(C - A) + \cos2\mu\,b$。
+
+$u = (A + C)/\sqrt2$、$v = (C - A)/\sqrt2$、$w = \sqrt2\,b$ で書き直す: $v' = [\cos2\mu\,(C - A) - 2\sin2\mu\,b]/\sqrt2 = \cos2\mu\,v - \sin2\mu\,w$ ($2b/\sqrt2 = \sqrt2b = w$)、$w' = \sqrt2[\tfrac12\sin2\mu\,(C - A) + \cos2\mu\,b] = \sin2\mu\,v + \cos2\mu\,w$ ($\sqrt2\cdot\tfrac12(C - A) = (C - A)/\sqrt2 = v$)、$u' = u$。さらに $\Lambda_k = (1 - a)P$ なので $\Lambda_k\Sigma\Lambda_k^\top = (1 - a)^2P\Sigma P^\top$、全体に $(1 - a)^2$ がかかって (14.8a)。固有値は $(1-a)^2$ と、$2\times2$ の回転ブロックの $(1-a)^2e^{\pm2i\mu}$ (sympy で各成分を確認: [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (c)、[emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (d))。
+
+**和 (トレース) は他の 2 成分と分離し、減衰率 $(1-a)^2$ だけを持つ。差と交差は $2\mu$ で回転して平均が 0 になる** ($\mu\ne0,\pi$ のとき、2 次モーメントの楕円が回転で円に均される)。したがって (14.8) を解くと、和の成分に対する対角の係数が $1 - (1-a)^2 = 2a - a^2$ で (14.7) の $1 - e^{-2a}$ に一致する (差は $a^2$ のオーダー: $a_x = 5.2\times10^{-5}$ で相対 $2.6\times10^{-5}$)。
+
+$\mathtt{rd}$ に、$-aP$ ではない対称な部分 $S = \begin{pmatrix}s_1&s_2\\s_2&-s_1\end{pmatrix}$ (トレースなし) があるとき ($\mathtt{rd} = -aP + S$)、`tecalc` が `btr(k,k)` に代入する式 (Fortran: $-(\mathtt{rd}_{ii}^2 + \mathtt{rd}_{i,i+1}^2 + \mathtt{rd}_{i+1,i}^2 + \mathtt{rd}_{i+1,i+1}^2)/2 - \cos\mu\,(\mathtt{rd}_{ii} + \mathtt{rd}_{i+1,i+1}) - \sin\mu\,(\mathtt{rd}_{i,i+1} - \mathtt{rd}_{i+1,i})$) は、次のように手で展開できる。$P = \begin{pmatrix}c&s\\-s&c\end{pmatrix}$ ($c = \cos\mu$、$s = \sin\mu$) なので、$\mathtt{rd} = -aP + S$ の 4 成分は
+
+$$
+\mathtt{rd}_{ii} = -ac + s_1,\quad
+\mathtt{rd}_{i,i+1} = -as + s_2,\quad
+\mathtt{rd}_{i+1,i} = +as + s_2,\quad
+\mathtt{rd}_{i+1,i+1} = -ac - s_1
+$$
+
+これを Fortran の式の 3 つの項に入れる。
+
+- 第 1 項 $-\tfrac12\sum\mathtt{rd}^2$: 2 乗和は $(a^2c^2 - 2acs_1 + s_1^2) + (a^2s^2 - 2ass_2 + s_2^2) + (a^2s^2 + 2ass_2 + s_2^2) + (a^2c^2 + 2acs_1 + s_1^2)$。交差項 ($\mp2acs_1$、$\mp2ass_2$) は対で消え、$a^2$ の項は $2a^2(c^2 + s^2) = 2a^2$ で、$s_1^2$、$s_2^2$ は 2 回ずつ出る。$= 2a^2 + 2(s_1^2 + s_2^2)$。$-\tfrac12$ をかけて $-a^2 - s_1^2 - s_2^2$。
+- 第 2 項 $-\cos\mu\,(\mathtt{rd}_{ii} + \mathtt{rd}_{i+1,i+1})$: 和は $-2ac$ ($\pm s_1$ が消える)。$-c\cdot(-2ac) = +2ac^2$。
+- 第 3 項 $-\sin\mu\,(\mathtt{rd}_{i,i+1} - \mathtt{rd}_{i+1,i})$: 差は $-2as$ ($s_2$ が消える)。$-s\cdot(-2as) = +2as^2$。
+
+合計: $-a^2 - s_1^2 - s_2^2 + 2a(c^2 + s^2)$ で
 
 $$
 \mathtt{btr}(k,k) = 2a - a^2 - s_1^2 - s_2^2
 \tag{14.8b}
 $$
 
-で、$\Lambda' = P + \mathtt{rd}$ の (和,和) の係数を $1$ から引いたものに**厳密に一致する** (差 0: 同じ出力 (b))。この置き換えの理由: 一般の対角 `1 - (Λ'⊗Λ')` は、$1$ から $1 - 10^{-4}$ を引く形の桁落ち (相対 $10^{-12}$ まで) を持つので、$\mathtt{rd}$ の成分から直接 $2a$ 程度の量を作る式に替える。`ab` による行・列のスケーリング ($\sqrt{|\mathtt{btr}(k_1,k_1)/\mathtt{btr}(k_2,k_2)|}$) は、和と差の行の大きさを揃えて連立方程式を解く (`tsolva`、特異値分解で $10^{-8}$ 以下の特異値を捨てる) ときの条件を良くするためと読める (数値の工夫で、物理には影響しない。未確認)。
+これが、$\Lambda' = P + \mathtt{rd} = (1 - a)P + S$ の (和,和) の係数を $1$ から引いたものに一致することを示す。$\Sigma\to\Lambda'\Sigma\Lambda'^\top$ の跡は $\mathrm{tr}(\Lambda'\Sigma\Lambda'^\top) = \mathrm{tr}(\Lambda'^\top\Lambda'\,\Sigma)$ (巡回性)。$\Lambda'^\top\Lambda' = (1-a)^2P^\top P + (1-a)(P^\top S + SP) + S^2$ ($P^\top P = 1$、$S^\top = S$)。$S^2 = (s_1^2 + s_2^2)\,1$ ($S$ は対称でトレースなしの 2×2 なので $S^2 = -\det S\cdot1$)。$P^\top S + SP$ は対称でトレースが 0 (成分: $(1,1) = 2(cs_1 - ss_2)$、$(2,2) = -2(cs_1 - ss_2)$、$(1,2) = 2(cs_2 + ss_1)$)。したがって $\Lambda'^\top\Lambda' = [(1-a)^2 + s_1^2 + s_2^2]\,1 + (\text{トレースなしの対称行列})$、トレースなしの部分 $N$ は、$\mathrm{tr}(N\Sigma) = N_{11}(A - C) + 2N_{12}b$ のように差 $v$ と交差 $w$ だけに掛かり ((和,差)・(和,交差) の成分を作る)、(和,和) の係数には入らない。したがって**(和,和) の係数は $(1-a)^2 + s_1^2 + s_2^2$**。$1$ から引くと $1 - (1-a)^2 - s_1^2 - s_2^2 = 2a - a^2 - s_1^2 - s_2^2$ で (14.8b) に**厳密に一致する** (sympy でも差 0: [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (b)、[emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (b))。この置き換えの理由: 一般の対角 `1 - (Λ'⊗Λ')` は、$1$ から $1 - 10^{-4}$ を引く形の桁落ち (相対 $10^{-12}$ まで) を持つので、$\mathtt{rd}$ の成分から直接 $2a$ 程度の量を作る式に替える。`ab` による行・列のスケーリング ($\sqrt{|\mathtt{btr}(k_1,k_1)/\mathtt{btr}(k_2,k_2)|}$) は、和と差の行の大きさを揃えて連立方程式を解く (`tsolva`、特異値分解で $10^{-8}$ 以下の特異値を捨てる) ときの条件を良くするためと読める (数値の工夫で、物理には影響しない。未確認)。
 
 **モード間の相関の見積り。** 異なるモード $k\ne l$ の相関 $\Sigma_{n,kl}$ は、(14.8) を複素座標 $\zeta_k = X_k + iP_k$ で書くと、励起 $\Delta_{kl}$ の項だけでなく、$\mathtt{rd}_{kl}$ (放射によるモード間の混合) の項からも生じる: $\langle\zeta_k\zeta_l^*\rangle = (\Delta_{kl} + \text{混合項})/(1 - \lambda_k\lambda_l^*)$。分母は共鳴 $\mu_k\mp\mu_l\approx2\pi\cdot$整数 の近くで小さくなる。**数値** ((E2)): $x$–$z$ の $|1 - \lambda_x\lambda_z^*| = 1.73$、$|1 - \lambda_x\lambda_z| = 1.96$ (共鳴から遠い)。励起だけの見積り $|\Delta_{xz}|/|1 - \lambda\lambda^*| = 5.6\times10^{-9}$。$\mathtt{rd}$ のモード間ブロック ($|\mathtt{rd}_{zx}|\le6.6\times10^{-4}$、$|\mathtt{rd}_{xz}|\le7.1\times10^{-5}$、対角ブロックの減衰 $a_x = 5.2\times10^{-5}$ より大きい) を 0 にして (14.8) を解くと、$x$–$z$ の相関の最大は $5.9\times10^{-9}$ (見積りに一致) で、ブロックを残した全体の解は $2.45\times10^{-8}$ (`tecalc` の $2.45\times10^{-8}$)。**主な源は $D$ のモード間の混合** である。このブロックを 0 にしたときの $\varepsilon_x = 5.2977\times10^{-5}$ は (14.7) の $5.2981\times10^{-5}$ とほぼ一致し、全体の解 $5.2996\times10^{-5}$ との $0.03\%$ の差は混合による。
 
@@ -239,28 +308,53 @@ $$
 \tag{14.9}
 $$
 
-(sympy で確認: [emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (c)。) $R_{56}^{\rm eff} = -\alpha_pC$ ($C = c\cdot2\pi/\omega_0$ は周長。$z$ の向きにより符号は変わる) とおくと、`tecalc` (`synchm`) の式:
+(sympy で確認: [emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) (c)。) $R_{56}^{\rm eff} = -\alpha_pC$ ($C = c\cdot2\pi/\omega_0$ は周長。01 章 (1.7) の $z$ の向き ($z = -v(t - t_0)$、遅れた粒子で $z < 0$) では、$\delta > 0$ の粒子の経路が $\alpha_pC\delta$ だけ長くて遅れるので $\Delta z = -\alpha_pC\delta$。$z$ の向きを逆に取れば符号は逆になる) とおくと、`tecalc` (`synchm`) の式:
 
 $$
 \alpha_p = -\frac{\mathrm{Im}\,\mathtt{cd}(6)\,|\mathrm{Im}\,\mathtt{cd}(6)|}{(c\,2\pi/\omega_0)\,(dv_{cacc}/p_{gev})},\qquad \omega_z = |\mathrm{Im}\,\mathtt{cd}(6)|\,\omega_0/2\pi
 \tag{14.10}
 $$
 
-(`dvcacc` は RF の電圧の $z$ 微分。$\mathrm{Im}\,\mathtt{cd}(6) = \mu_z$。$\mu|\mu|$ は $\mu^2$ (符号つき) で、(14.9) の $4\sin^2(\mu/2)$ の小さい $\mu$ の近似に当たる。v2 は $\mu|\mu|$ を $4\sin^2(\mu/2)$ (符号つき) に替えて (14.9) と一致させる。K64 の式は $\mu_z^2/12$ (相対) の分だけ $\alpha_p$ が大きく出る。) 標準の式 $\nu_s = \sqrt{h\alpha_pV\cos\varphi_s/(2\pi E)}$ ($\sin\varphi_s = U_0/V$) は (14.9) の $\mu_s^2$ に $\kappa = hV\cos\varphi_s\cdot2\pi/(CE)$ ($= 2\pi h/C\cdot V\cos\varphi_s/E$) を入れたもの。比較: $I_1/C$ から $\alpha_p = 0.39857$ ($\mathtt{calc6d}$ は $0.39780$、0.2% 低い)、$\nu_s = 0.0503$ (calc6d $0.0505$)。0.2% の差は、$x$–$z$ の結合 (§6) が縦の固有値を動かすことによる。縦の 2×2 から決める $\kappa R_{56}^{\rm eff} = -0.099969$ と、実際の (結合を含む) $\mu_z$ から決まる $-4\sin^2(\mu_s/2) = -0.099776$ の比は $1.00194$ で、$\alpha_p$ の比 $0.99807$ はその逆数 ([emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (D))。
+(`dvcacc` は RF の電圧の $z$ 微分。$\mathrm{Im}\,\mathtt{cd}(6) = \mu_z$。**(14.9) からの導出**: $R_{56}^{\rm eff} = -\alpha_pC$ を (14.9) に入れると $-\kappa\alpha_pC = -4\sin^2(\mu_s/2)\simeq-\mu_s^2$、したがって $\alpha_pC = \mu_s^2/\kappa$ ($\kappa = \mathtt{dvcacc}/p_{gev}$)。(14.10) の $-\mathrm{Im}\,\mathtt{cd}(6)\,|\mathrm{Im}\,\mathtt{cd}(6)|$ は、この $\mu_s^2$ の**符号つき**の書き方である。符号の意味: 縦の 2×2 を正規座標の回転 $P(\mu)$ ($R$ は $R_{12} = 0$ の形、$\mathrm{Im}\,\mathtt{cd}(6) = \mu$) で書くと $M_{12} = R_{11}^2\sin\mu$ ($R = \begin{pmatrix}a&0\\c&1/a\end{pmatrix}$ として $RP(\mu)R^{-1}$ の (1,2) 成分: [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (f))。$M_{12} = R_{56}^{\rm eff}$ なので $\sin\mu$ の符号は $R_{56}^{\rm eff}$ の符号で、$\alpha_p > 0$ ($R_{56}^{\rm eff} < 0$) なら $\mathrm{Im}\,\mathtt{cd}(6) < 0$、$-\mu|\mu| = +\mu^2$ になる ($\kappa > 0$、つまり $\cos\varphi_s > 0$ の本章の場合。$\kappa < 0$ の符号は確認していない)。$\mu|\mu|$ は $\mu^2$ (符号つき) で、(14.9) の $4\sin^2(\mu/2)$ の小さい $\mu$ の近似に当たる。v2 は $\mu|\mu|$ を $4\sin^2(\mu/2)$ (符号つき) に替えて (14.9) と一致させる。K64 の式は $\mu_z^2/12$ (相対) の分だけ $\alpha_p$ が大きく出る。) 標準の式 $\nu_s = \sqrt{h\alpha_pV\cos\varphi_s/(2\pi E)}$ ($\sin\varphi_s = U_0/V$) は (14.9) の $\mu_s^2$ に $\kappa = hV\cos\varphi_s\cdot2\pi/(CE)$ ($= 2\pi h/C\cdot V\cos\varphi_s/E$) を入れたもの。比較: $I_1/C$ から $\alpha_p = 0.39857$ ($\mathtt{calc6d}$ は $0.39780$、0.2% 低い)、$\nu_s = 0.0503$ (calc6d $0.0505$)。0.2% の差は、$x$–$z$ の結合 (§6) が縦の固有値を動かすことによる。縦の 2×2 から決める $\kappa R_{56}^{\rm eff} = -0.099969$ と、実際の (結合を含む) $\mu_z$ から決まる $-4\sin^2(\mu_s/2) = -0.099776$ の比は $1.00194$ で、$\alpha_p$ の比 $0.99807$ はその逆数 ([emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (D))。
 
-**バケット高さ `bh` の導出。** RF の 1 周の kick と位相の進みは、$\varphi$ (同期位相からのずれ) と $\delta$ で
+**バケット高さ `bh` の導出。** 出発点の 1 周の写像を、規約から順に作る。
 
+1. **位相の規約** (01 章 (1.7)、10 章 (10.4))。$z$ は 01 章の $z = -v(t - t_0)$ で、粒子が基準より遅れる ($t > 0$) と $z < 0$。10 章 (10.4) の CAVI のエネルギー利得は ($h = E/mc^2$、$v = V/mc^2$、$\mathtt{dphis} \to \varphi_s$) $\Delta h = -v\sin(\omega t - \varphi_s)$。$t = -z/c$ ($\beta\simeq1$) なので $\omega t = -\omega z/c$。そこで **$\varphi \equiv \omega z/c = 2\pi h\,z/C$** (RF の位相の、同期粒子からのずれ。$\omega/c = 2\pi h/C$、$h$ は harmonic 数、$C$ は周長) と定義すると、$\Delta h = v\sin(\varphi_s + \varphi)$、$p_0c$ 単位 ($E = p_{gev}$) で $\Delta\delta = (V/E)\sin(\varphi_s + \varphi)$。同期粒子 ($\varphi = 0$) の利得は 1 周の放射損失 $U_0/E$ に等しく、$\sin\varphi_s = U_0/V$ ($U_0$ は $V$ と同じ単位)。$\delta$ は 1 周で放射を引いた分が変わるので、
 $$
-\frac{d\delta}{dn} = \frac VE\left[\sin(\varphi_s + \varphi) - \sin\varphi_s\right],\qquad\frac{d\varphi}{dn} = 2\pi h\alpha_p\delta
+\Delta\delta = \frac VE\left[\sin(\varphi_s + \varphi) - \sin\varphi_s\right]
 $$
-
-($n$ は周回数、$E = p_{gev}$)。ハミルトニアン $H(\varphi,\delta) = \pi h\alpha_p\delta^2 + \frac VE[\cos(\varphi_s + \varphi) + \varphi\sin\varphi_s]$ ($\partial H/\partial\delta = 2\pi h\alpha_p\delta$、$-\partial H/\partial\varphi = \frac VE[\sin(\varphi_s + \varphi) - \sin\varphi_s]$) が保存する。不安定固定点は $\varphi_u = \pi - 2\varphi_s$ ($\sin(\varphi_s + \varphi_u) = \sin(\pi - \varphi_s) = \sin\varphi_s$)、$H_u = \frac VE[-\cos\varphi_s + (\pi - 2\varphi_s)\sin\varphi_s]$ で、これを通るセパラトリクスの $\varphi = 0$ (安定固定点) での $\delta$ が最大の $\delta_{\max}$:
-
+2. **経路の規約**。1 周の経路長が $C(1 + \alpha_p\delta)$ ($\alpha_p$: 運動量圧縮率) で、速度の差 $1/\gamma^2$ ($\eta = \alpha_p - 1/\gamma^2\simeq\alpha_p$ で、3 GeV の本例では $1/\gamma^2 = 2.9\times10^{-8}$ で無視) は入れない。$\delta > 0$ の粒子は経路が長くて遅れ、$z\to z - \alpha_pC\delta$ ($R_{56}^{\rm eff} = -\alpha_pC$ と同じ向き)。したがって $\Delta\varphi = (2\pi h/C)\,\Delta z = -2\pi h\alpha_p\delta$。
+3. 1 周の写像 (RF の kick のあとに経路):
 $$
-\pi h\alpha_p\delta_{\max}^2 + \frac VE\cos\varphi_s = H_u\ \Rightarrow\ \delta_{\max}^2 = \frac{V}{\pi h\alpha_pE}\left[-2\cos\varphi_s + (\pi - 2\varphi_s)\sin\varphi_s\right]
+\delta_{n+1} = \delta_n + \frac VE\left[\sin(\varphi_s + \varphi_n) - \sin\varphi_s\right],\qquad
+\varphi_{n+1} = \varphi_n - 2\pi h\alpha_p\,\delta_{n+1}
 $$
+$\nu_s\ll1$ (1 周の変化が小さい) として $n$ を連続の時間とみなすと
+$$
+\frac{d\delta}{dn} = \frac VE\left[\sin(\varphi_s + \varphi) - \sin\varphi_s\right],\qquad\frac{d\varphi}{dn} = -2\pi h\alpha_p\delta
+$$
+(線形化すると、$\sin(\varphi_s + \varphi) - \sin\varphi_s\simeq\varphi\cos\varphi_s$ から $\delta' = \kappa z$ ($\kappa = (V/E)\cos\varphi_s\,2\pi h/C$、本例で $6.0293\times10^{-3}$ m$^{-1}$ で、上の `dvcacc/pgev` と一致)、$z' = -\alpha_pC\delta$ で、(14.9) の 2×2 に当たる。)
 
-右辺は ($\alpha_p$ の符号を逆にする向きでは) $\dfrac{V}{\pi|\alpha_p|h\,p_{gev}}\left[2\cos\varphi_s - (\pi - 2\varphi_s)\dfrac{U_0p_{gev}}{V}\right]$ ($\sin\varphi_s = U_0p_{gev}/V$、`tecalc` の `bh`)。数値: $\varphi_s = 0.8973$ rad、$\alpha_p = I_1/C$ で $1.5583\times10^{-3}$、calc6d の $\alpha_p$ の式で $1.5598\times10^{-3}$、`tecalc` の `bh` は $1.5598\times10^{-3}$ (一致)。
+4. **ハミルトニアン**。
+$$
+H(\varphi,\delta) = -\pi h\alpha_p\,\delta^2 + \frac VE\left[\cos(\varphi_s + \varphi) + \varphi\sin\varphi_s\right]
+$$
+とおくと、$d\varphi/dn = \partial H/\partial\delta = -2\pi h\alpha_p\delta$、$d\delta/dn = -\partial H/\partial\varphi = (V/E)[\sin(\varphi_s + \varphi) - \sin\varphi_s]$ で、上の式に一致し、$H$ は保存する (sympy で確認: [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (f))。
+5. **固定点と安定性**。$d\delta/dn = 0$ と $\delta = 0$ の点: $\sin(\varphi_s + \varphi) = \sin\varphi_s$ から $\varphi = 0$ または $\varphi_u = \pi - 2\varphi_s$ ($\sin(\pi - \varphi_s) = \sin\varphi_s$)。$\varphi = 0$ では $\partial^2H/\partial\varphi^2 = -(V/E)\cos\varphi_s < 0$ ($\cos\varphi_s > 0$ の本例: $\varphi_s = 0.897$ rad)、$\partial^2H/\partial\delta^2 = -2\pi h\alpha_p < 0$ で、**$H$ は $(0, 0)$ で極大**、したがって周囲の等高線が閉じた安定な固定点。$\varphi_u$ では $\partial^2H/\partial\varphi^2 = -(V/E)\cos(\pi - \varphi_s) > 0$ で、$\delta$ 方向が負なので鞍点 (不安定な固定点)。
+6. **セパラトリクスの高さ**。不安定固定点を通る等高線が、安定な領域の境界:
+$$
+H(\varphi_u, 0) = \frac VE\left[\cos(\pi - \varphi_s) + (\pi - 2\varphi_s)\sin\varphi_s\right] = \frac VE\left[-\cos\varphi_s + (\pi - 2\varphi_s)\sin\varphi_s\right]
+$$
+この線が $\varphi = 0$ を通る点の $\delta = \delta_{\max}$: $H(0, \delta_{\max}) = -\pi h\alpha_p\delta_{\max}^2 + (V/E)\cos\varphi_s = H(\varphi_u, 0)$。$\cos\varphi_s$ の項を右辺に移すと $-\pi h\alpha_p\delta_{\max}^2 = (V/E)[-2\cos\varphi_s + (\pi - 2\varphi_s)\sin\varphi_s]$。両辺に $-1$ をかけて
+$$
+\delta_{\max}^2 = \frac{V}{\pi h\alpha_pE}\left[2\cos\varphi_s - (\pi - 2\varphi_s)\sin\varphi_s\right]
+= \frac{V}{\pi\alpha_p\,h\,p_{gev}}\left[2\cos\varphi_s - (\pi - 2\varphi_s)\frac{U_0\,p_{gev}}{V}\right]
+$$
+(2 つ目の等号は $\sin\varphi_s = U_0/V$ を、$U_0$ を $p_0$ 単位 ($\mathtt{u0}$) に取り $U_0p_{gev}$ を電圧の単位にして入れたもの。`tecalc` の `bh` はこの $\delta_{\max}$ で、$\alpha_p > 0$ ($|\alpha_p|$) と $\cos\varphi_s > 0$ の組で $\delta_{\max}^2 > 0$。)
+
+数値 (3 GeV、$V = 3$ MV、$h = 64$、$C = 41.6$ m、$\varphi_s = 0.89728$ rad): $\delta_{\max} = 1.5583\times10^{-3}$ ($\alpha_p = I_1/C = 0.39857$)、$1.5598\times10^{-3}$ (`calc6d` の $\alpha_p = 0.39780$)、`tecalc` の `bh` は $1.5598\times10^{-3}$ (一致。[emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) (D)、[emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) (f))。**写像でも確認した**: 上の 1 周の写像を、$\varphi = 0$ から $\delta_0 = 0.8, 0.95, 0.99\,\delta_{\max}$ で 6 万周回しても有界で、$1.02, 1.1\,\delta_{\max}$ では 30 周ほどで $|\varphi| > 12$ に逃げる (セパラトリクスの内外が $\delta_{\max}$ で切り替わる。同出力 (f))。
+
+**18 章 (18.44) との対応**: 18 章は $\Delta\psi = \kappa\delta$、$\Delta\delta = -a[\sin(\varphi_s + \psi) - \sin\varphi_s]$ ($\kappa = 2\pi h\alpha_p$) と書く。これは本節の $H$ を $-H$ とした (18 章の $H = \tfrac12\kappa\delta^2 + a[-\cos(\varphi_s + \psi) - \psi\sin\varphi_s]$ が $-H$ に当たる、$\psi = \varphi$) もので、流れの向きが逆 (時間反転 $n\to-n$) だが、等高線は同じ。したがってセパラトリクスと $\delta_{\max}$ の式 (18.45) は本節と同じである。
 
 **RFSW OFF**: 縦運動は閉じない。`rx(6,1:5) = 0`、`rx(6,6) = 1` として $\delta$ の変化を止める。`synchm` が偽のとき、$\alpha_p = -R_{56}\cdot\omega_0\,h_0/(2\pi c\,p_0)$ (`rx(5,6)` から。$h_0/p_0 = 1/\beta_0$ が、$z$ と経路長の差の換算)、`omegaz` は RF の電圧から (`sqrt(abs(alphap*...))`)。縦のエミッタンスは `beam(iaidx(5,1:6)) = 0` として扱わない (同期運動がないので $\varepsilon_z$ は定義されない)。
 
@@ -282,7 +376,7 @@ $$
 | 12 | 0.1288 | 1.13774 | 8.30 | 0.12499 | 0.13643 | 1.00064 | 0.99917 |
 | 24 | 0.1871 | 1.17739 | 5.07 | 0.13931 | 0.13643 | 1.00064 | 0.99917 |
 
-見方: $\varepsilon_x$ の標準の式からの比 $-1$ は、$\nu_s\le0.09$ では $\nu_s^2$ に比例する (列 4 が 8.7 で一定)。$\nu_s$ がさらに大きいと高次の項で比例からはずれる ($\nu_s = 0.19$ では $J_x$ の向きが逆転)。$J_y$ と $\sum a/(2U_0/E_0)$ は $V$ に依らない (これは $\nu_s$ ではなく $U_0/E_0$ の効果。§4.2)。
+見方: $\varepsilon_x$ の標準の式からの比 $-1$ は、$\nu_s\le0.09$ では $\nu_s^2$ にほぼ比例する (列 4 が 8.69〜8.71 でほぼ一定。次の段落の低エネルギーの例も含めると $8.7\sim9.8$ の幅で、低エネルギー側では $\nu_s$ が小さいほど係数が大きい。この傾向の原因は調べていない。12 MV は 8.30、24 MV は 5.07)。$\nu_s$ がさらに大きいと高次の項で比例からはずれる ($\nu_s = 0.19$ では $J_x$ の向きが逆転)。$J_y$ と $\sum a/(2U_0/E_0)$ は $V$ に依らない (これは $\nu_s$ ではなく $U_0/E_0$ の効果。§4.2)。
 
 エネルギーと電圧を同時に変えた場合 (2 GeV 以下は $U_0/E_0$ が小さい): 1 GeV・0.3 MV ($\nu_s = 0.0349$) で比 $1.0106$ ((比$-1$)$/\nu_s^2 = 8.76$)、1 GeV・0.1 MV ($\nu_s = 0.0197$) で $1.0035$ (8.95)、0.5 GeV・0.05 MV ($\nu_s = 0.0202$) で $1.0040$ (9.77)。$J_y - 1$ と $\sum a_k$ の不足は $U_0/E_0 = 2.9\times10^{-5}$ に比例して小さくなる ($J_y = 1.00003$、$\sum a/(2U_0/E_0) = 0.99997$)。
 
@@ -290,7 +384,7 @@ $$
 
 RF をラインの先頭に置くと、1 周の行列は $T = AK$。$A$ は残りの全要素の行列 (RF を含まない)、$K = 1 + \kappa\,e_\delta e_z^\top$ は RF の薄い kick ($\delta\to\delta + \kappa z$)。$A$ は $\kappa$ に依らず (差は $9\times10^{-10}$)、$\kappa$ は電圧に比例する。$\kappa = \kappa_0 = 6.0293\times10^{-3}$ m$^{-1}$ が基準 (3 MV)。次の 3 点が使える:
 
-1. **縦運動との関係**: $\kappa$ と $\nu_s$ は (14.9) $\kappa R_{56}^{\rm eff} = -4\sin^2(\mu_s/2)$ で結ばれる。$R_{56}^{\rm eff} = -16.581$ m ($= -I_1$、$\alpha_pC$)、$\kappa_0R_{56}^{\rm eff} = -0.09997$、$-4\sin^2(\mu_s/2) = -0.09978$ (比 1.0019 = 結合による $\mu_s$ の違い)。したがって $\kappa\simeq\mu_s^2/(\alpha_pC) = (2\pi\nu_s)^2/I_1$。
+1. **縦運動との関係**: $\kappa$ と $\nu_s$ は (14.9) $\kappa R_{56}^{\rm eff} = -4\sin^2(\mu_s/2)$ で結ばれる。$R_{56}^{\rm eff} = -16.581$ m ($= -I_1$、$\alpha_pC$)、$\kappa_0R_{56}^{\rm eff} = -0.09997$、$-4\sin^2(\mu_s/2) = -0.09978$ (比 1.0019 = 結合による $\mu_s$ の違い)。したがって $\kappa\simeq\mu_s^2/(\alpha_pC) = (2\pi\nu_s)^2/I_1$ ($\alpha_pC = I_1 > 0$ で、符号は §5 の規約 ($z$ の向き、$\kappa > 0$) のもの。数値は本章のリング (放射積分 $I_1 = 16.58$ m、$I_4 = 1.7756$) のもので、13 章 §7 の例の $I_1 = 11.665$ m とは四極の配置が別のリング (偏向磁石だけで決まる $I_2$・$I_3$ は共通))。
 2. **$D$ の依存**: $D = D'K$ (§3.2)。$B$ は $\kappa$ に依らない (RF が先頭で、観測点は RF の前)。
 3. **$\kappa\to0$**: RF なし (縦運動なし) の行列は $T_0 = A$。この極限で標準の式に戻るか?
 
@@ -386,8 +480,9 @@ $$
 | `emit_01_equilibrium.py` | (a) `calc6d` のチューン・減衰・エミッタンス、(b) 放射積分の式との比較 ($U_0$、$J_x$、$\varepsilon_x$、$\sigma_\delta$、$\alpha_p$、$\nu_s$)、(c) $\Delta = \Sigma - M\Sigma M^\top$ の $\delta\delta$ 成分と 13 章の $N_\gamma\langle u^2\rangle$、半正定値性、(d) 正規座標の $\Sigma_n$ の対角、(e) (14.7) | [emit_01_equilibrium.out.txt](outputs/emit_01_equilibrium.out.txt) |
 | `emit_02_syncbeta.py` | (A) 加速電圧を変えたときの $\varepsilon_x$・$J_x$・$\sum a$、(B) 複素固有ベクトルによるモードの量と `tecalc`、(C) $\kappa$ の掃引・1 次の摂動・RF なしの極限、(D) $\sum a$ と $2U_0/E_0$、$\Delta_{\delta\delta}$ の観測点、バケット高さ、(E) `tsymp` の収束・`tnorm`・`btr`・モード間の相関、(F) スキュー四極つきの $\varepsilon_y$ | [emit_02_syncbeta.out.txt](outputs/emit_02_syncbeta.out.txt) |
 | `emit_03_derivations.py` | (sympy) `tsymp` の誤差 $E\to-\tfrac34E^2$、`btr` の対角、和・差・交差の 3×3 行列、縦 2×2 の $\kappa R_{56}$ | [emit_03_derivations.out.txt](outputs/emit_03_derivations.out.txt) |
+| `emit_04_gaps.py` | 本文の途中式の確認 (sympy・numpy、pysad は使わない): (a) スライスの $D_i$ の跡 $-4u$ と力の補正の寄与、(b) (14.8b) の各項と $\Lambda'^\top\Lambda'$ の分解、(c) (14.8a) の成分、(d) $\ell Dr$ と `cd` の共役の関係、(e) (14.2b) の項ずらし、(f) RF の力学 (規約、$H$、固定点、$\delta_{\max}$、写像の追跡、縦の 2×2 の $\sin\mu$ と $R_{56}$ の符号) | [emit_04_gaps.out.txt](outputs/emit_04_gaps.out.txt) |
 
-実行: リポジトリのルートから `py -3.12 physics_guide/scripts/emit_01_equilibrium.py` (十数秒)、`emit_02_syncbeta.py` (約 15 秒、`calc6d` を十数回)、`emit_03_derivations.py` (数秒)。
+実行: リポジトリのルートから `py -3.12 physics_guide/scripts/emit_01_equilibrium.py` (十数秒)、`emit_02_syncbeta.py` (約 15 秒、`calc6d` を十数回)、`emit_03_derivations.py`・`emit_04_gaps.py` (数秒)。
 
 ## 9. 未確認・限界・使った条件
 
