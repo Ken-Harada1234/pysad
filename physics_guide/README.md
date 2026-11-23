@@ -24,7 +24,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [07_thin_multipole.md](07_thin_multipole.md) | **薄い多極 (SEXT・OCT・DECA・DODECA)**。ポテンシャルと積分強度、薄いキックの厳密解 ($\exp(:f:)$ の級数が止まる)、4 次の力勾配型 (`tthin`) の補正キックの導出、CALC の 2 次の分割 (`tthine`)、フィードダウン、非線形フリンジ (Maxwell 方程式から) | ✓ |
 | [08_mult.md](08_mult.md) | **多極 MULT**。ポテンシャルの展開と K・SK の意味、基準面 ($\theta_1$)、ANGLE = 0 の分割 (厳密な四極 + 双極の本体と薄いキックの対称な 2 次分割)、刻みの数、フリンジ、ずれ、ANGLE ≠ 0 の $A_s$ を Maxwell 方程式から導く (ヘルプの $g_{kn}$ との食い違い) | ✓ (CHI1・CHI2・DZ、RF・放射・ソレノイドつきは読みだけ・範囲外) |
 | [09_solenoid.md](09_solenoid.md) | **ソレノイド**。$H_2$ の厳密解 ($w_1$、$w_2$、固有モード)、$z$ の更新、$\Delta H$ のラーモア回転、Strang 分割、端部 (DISFRIN)、ヘルプ ↔ `tzparams` の対応表 | ✓ (領域・座標の切替 `tsolrot` は読みだけ) |
-| 10_cavity.md | 加速空洞 (CAVI)・TCAVI | 予定 |
+| [10_cavity.md](10_cavity.md) | **加速空洞 (CAVI)・TCAVI**。$\Delta E$ から $\delta$・$z$・$p_x$ の更新 (時間を保つ)、同期位相と `offset`、横方向の依存と Panofsky–Wenzel、非相対論の補正 ($I_0$)、長い空洞の分割 (重み `ws`)、$p_0(s)$ の変化、端の効果 $H_f$ (Maxwell からの導出)、TCAVI | ✓ (TRPT の写像・CALC は読みだけ) |
 | 11_misalignment_and_coord.md | 取り付け誤差と COORD (座標の正準変換) | 予定 |
 | 12_linear_optics.md | 行列から光学へ (閉軌道、周期解、結合、Twiss) | 予定 |
 | 13_radiation.md | 放射 (kinematical method、光子数、励起と減衰) | 予定 |
@@ -79,6 +79,7 @@ py -3.12 physics_guide/scripts/edge_01_gauge_generators.py       # 06 章 (端�
 py -3.12 physics_guide/scripts/sol_01_h2_exact.py               # 09 章 (ソレノイド) の確認 (sol_01、sol_02)
 py -3.12 physics_guide/scripts/drift_04_help_convention.py     # ヘルプ原文の確認 (drift_04、quad_07、bend_05、thin_04。各章の付録 A)
 py -3.12 physics_guide/scripts/mult_01_as_expansion.py          # 08 章 (MULT) の確認 (mult_01、mult_02)
+py -3.12 physics_guide/scripts/cav_01_energy_map.py            # 10 章 (空洞) の確認
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -105,6 +106,7 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `thin_04_help_order.py` | 03、07 | ヘルプ原文: SEXT〜DODECA の並び (原文は非対称で 2 次、対称形は 4 次以上)、$V_n$ の符号 |
 | `mult_01_as_expansion.py` | 08 | ANGLE ≠ 0 の $A_s$: ヘルプと K64 の $g_{kn}$、Maxwell 方程式の残差 (sympy) |
 | `mult_02_tracking.py` | 08 | MULT の追跡と厳密な ODE の比較 (`ndiv` の式・2 次の誤差、SK$n$ と ROTATE、DX・DY、ANGLE ≠ 0 の K2) |
+| `cav_01_energy_map.py` | 10 | CAVI の薄い写像 (追跡との一致)、シンプレクティック性、非相対論の補正と $I_0$、重み `ws`、TCAVI、端の収束の $1/\beta$ |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
