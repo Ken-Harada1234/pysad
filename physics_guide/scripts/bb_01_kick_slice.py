@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""BEAMBEAM (16_undulator_beambeam.md): Bassetti-Erskine のキック、スライスの写像、ビームストラールング。
+"""BEAMBEAM (16_undulator_beambeam.md): 2 次元ガウス分布の電場 (複素誤差関数の閉じた形) のキック、スライスの写像、ビームストラールング。
 
 (a) 1 スライス (SLICE = 1、z = 0 の粒子、px = py = 0) のキック Δpx、Δpy、Δδ を、ガウス分布の 2 次元ポテンシャル
     U = c ∫0^∞ [1 - exp(-x²/(2σx²+t) - y²/(2σy²+t))] / √((2σx²+t)(2σy²+t)) dt の数値積分 (scipy quad) の微分と比べる
@@ -50,7 +50,7 @@ def U_pot(x, y, sx2, sy2):
     return v + 2 * math.log(math.sqrt(sx2) + math.sqrt(sy2))     # 物理のポテンシャル: 遠方で ln r² (σ に依らない定数) になるよう σ 依存の定数を足す
 
 
-print('== (a) Bassetti-Erskine のキックと 2 次元ポテンシャル ==')
+print('== (a) 2 次元ガウス分布の電場 (複素誤差関数の閉じた形) のキックと 2 次元ポテンシャル ==')
 NP = 1e10
 ce = NP * re / gam
 print('γ = %.2f、NP = %.0e、ce = NP r_e/γ = %.5e m' % (gam, NP, ce))

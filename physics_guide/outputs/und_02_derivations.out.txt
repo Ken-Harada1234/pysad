@@ -1,0 +1,37 @@
+== (a) 磁場の成分 (条件を使わない) ==
+F0 の項 B_x = -F0*Kx*sin(Kx*x)*cos(Kz*s)*sinh(Ky*y)/Ky
+F0 の項 B_y = F0*cos(Kx*x)*cos(Kz*s)*cosh(Ky*y)
+F0 の項 B_z = F0*(Kx**2 - Ky**2)*sin(Kz*s)*cos(Kx*x)*sinh(Ky*y)/(Ky*Kz)
+∇·B (F0 の項、条件なし) = 0
+(∇×B)_x (F0 の項、条件なし) = F0*(Kx**2 - Ky**2 + Kz**2)*sin(Kz*s)*cos(Kx*x)*cosh(Ky*y)/Kz
+(∇×B)_y (F0 の項、条件なし) = F0*Kx*(Kx**2 - Ky**2 + Kz**2)*sin(Kx*x)*sin(Kz*s)*sinh(Ky*y)/(Ky*Kz)
+(∇×B)_z (F0 の項、条件なし) = 0
+(∇×B)_x に Ky² = Kz² + Kx² を代入 = 0
+G0 の項 B_x = G0*cos(Qy*y)*cos(Kz*s + phi)*cosh(Qx*x)
+G0 の項 B_y = -G0*Qy*sin(Qy*y)*cos(Kz*s + phi)*sinh(Qx*x)/Qx
+G0 の項 B_z = -G0*(Qx**2 - Qy**2)*sin(Kz*s + phi)*cos(Qy*y)*sinh(Qx*x)/(Kz*Qx)
+∇·B (G0 の項、条件なし) = 0
+(∇×B)_x (G0 の項、条件なし) = -G0*Qy*(Kz**2 - Qx**2 + Qy**2)*sin(Qy*y)*sin(Kz*s + phi)*sinh(Qx*x)/(Kz*Qx)
+(∇×B)_y (G0 の項、条件なし) = -G0*(Kz**2 - Qx**2 + Qy**2)*sin(Kz*s + phi)*cos(Qy*y)*cosh(Qx*x)/Kz
+(∇×B)_z (G0 の項、条件なし) = 0
+(∇×B)_x に Qx² = Kz² + Qy² を代入 = 0
+(∇×B)_y に Qx² = Kz² + Qy² を代入 = 0
+(∇×B)_z に Qx² = Kz² + Qy² を代入 = 0
+
+== (b) 周期の積分と端の A ==
+∫_0^{2π N/Kz} cos(Kz s) ds (N 周期) = 0
+軸上の A_x(s=0) = 0、A_y(s=0) = -G0*sin(phi)/Kz (φ ≠ 0 のとき -G0 sin φ/Kz)
+
+== (c) H の展開 ==
+H = -√(pn² - π²) の π² による展開: u**2/(8*p_n**3) + u/(2*p_n) - p_n + O(u**3)
+x' = ∂H/∂px = (p_x - A_x(x, y, s))/(delta + 1)
+px' = -∂H/∂x = ((p_x - A_x(x, y, s))*Derivative(A_x(x, y, s), x) + (p_y - A_y(x, y, s))*Derivative(A_y(x, y, s), x))/(delta + 1)
+z' = ∂H/∂δ = (-(p_x - A_x(x, y, s))**2 - (p_y - A_y(x, y, s))**2)/(2*(delta + 1)**2)
+
+== (d) スライスの写像 ==
+陰的な式の残差 (P - p + ds ∂qH): x = 0.e-130、y = -0.e-128
+ds = 0.02 (大きな刻み)、1 スライスの写像 (x, px, y, py, z, δ): max|J^T S J - S| = 2.30e-41、det J = 1.0000000000000000000
+
+== (e) -dv L と R56 = L/γ² ==
+E = 3.0 GeV: dv = -δ(2+δ)/[h1(h1+pn h0)] = -2.8970e-11、-δ/γ² = -2.9013e-11、比 0.99850
+E = 0.5 GeV: dv = -δ(2+δ)/[h1(h1+pn h0)] = -1.0429e-09、-δ/γ² = -1.0445e-09、比 0.99850

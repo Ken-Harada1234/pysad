@@ -1,5 +1,5 @@
 pysad: D:\work\SAD-master\pysad-v250-work\pysad
-== (a) Bassetti-Erskine のキックと 2 次元ポテンシャル ==
+== (a) 2 次元ガウス分布の電場 (複素誤差関数の閉じた形) のキックと 2 次元ポテンシャル ==
 γ = 3326.82、NP = 1e+10、ce = NP r_e/γ = 8.47038e-09 m
   (setup の傾き角 = 0.0000 rad。benv5 の σx = 1.000e-04、σy = 1.000e-04)
 
