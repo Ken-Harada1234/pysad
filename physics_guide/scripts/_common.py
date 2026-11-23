@@ -81,3 +81,13 @@ def track_one(ffs, c):
     a = np.zeros((1, 6))
     a[0, :] = c
     return np.asarray(track6.track_particles(ffs.lat.elements, a, 1, ffs.momentum(), 0.0, True, False, False))[0]
+
+
+def make_bend(L, ANGLE, extra='', momentum='3GEV'):
+    """BEND 1 台だけのラティスを作り、(ffs, 要素) を返す (BEND の章用)。extra に E1=… E2=… K1=… F1=… FRINGE=… DISFRIN=… などを書く。
+    要素の属性 (el.ANGLE、el.E1 など) は pysad の要素クラスのもの (ANGLE は角 [rad]、E1・E2 は ANGLE との比)"""
+    from pysad.ffscmd import run_sad_string
+    src = ('MOMENTUM = %s;\nBEND BA=(L=%.15g ANGLE=%.15g %s);\nMARK ST = ();\nLINE ONE = (ST BA);\nFFS;\nUSE ONE;\n'
+           % (momentum, L, ANGLE, extra))
+    ffs, _ = run_sad_string(src, out=io.StringIO())
+    return ffs, [e for e in ffs.lat.elements if e.name == 'BA'][0]
