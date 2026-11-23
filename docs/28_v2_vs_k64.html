@@ -332,6 +332,48 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>B324</td>
 </tr>
 <tr>
+<td>CAVI の端 (FRINGE ≥ 0、DISFRIN = 0) の収束とエネルギー変化 (追跡・CALC・Emittance)</td>
+<td>粒子の β = p/h の 1/β をかける (軸の近くの Maxwell の場のローレンツ力の積分と 1% 以内)。H_f ∝ 1/β(E) の整合の時間のずれ −(x² + y²)κ0/(2p³) を z に入れる。β = 1 では同じ</td>
+<td>1/β が無い (β = 0.76 で端の収束が 24% 不足。gs と同じ)</td>
+<td>B330</td>
+</tr>
+<tr>
+<td>ANGLE ≠ 0 の MULT の追跡の FB1・FB2 による長さ L' の補正</td>
+<td>1 回 (BEND と同じ。MULT (FB1 = FB2 = F1) が BEND (F1) と全桁一致)</td>
+<td>二重に補正 (<code>tffs.f:1368</code> と <code>tmulta.f:82-90</code>。gs と同じ)</td>
+<td>B331</td>
+</tr>
+<tr>
+<td>CAVI の端 (FRINGE ≥ 0、DISFRIN = 0) のエネルギー変化のあとの q = p_x/p</td>
+<td>p1r/p2r を掛けて正準運動量を保つ (ヤコビアンのシンプレクティック性の欠陥が 0.6 MeV/c で 8e-5 → 6e-8)</td>
+<td>再スケールしない (非シンプレクティック。gs と同じ)</td>
+<td>B332</td>
+</tr>
+<tr>
+<td>SOL 領域内の QUAD (bz ≠ 0) の ΔH の運動量の回転</td>
+<td>更新前の px で py を回す (行列式 1)</td>
+<td>更新後の px を使う (行列式 cos²(wℓ)。gs と同じ)</td>
+<td>B333</td>
+</tr>
+<tr>
+<td>UND の z の更新 (速度の差 −dv·L)</td>
+<td>−dv·L を足す (磁場なしの UND が DRIFT と同じ z)</td>
+<td>足さない (δ = 1e-2・10 MeV/c・1 m で z が 2.6e-5 m 違う。gs と同じ)</td>
+<td>B334</td>
+</tr>
+<tr>
+<td>BSTRL の光子エネルギーの逆引き表</td>
+<td>台形則の累積 + soft な裾 (ξ &lt; 1.1e-7、0.6%) を全体に入れる (⟨ξ⟩・⟨ξ²⟩ が理論値と +0.016%・+0.046%)</td>
+<td>矩形則の累積 + 裾を捨てて規格化 (⟨ξ⟩ が +1.60%、⟨ξ²⟩ が +2.62%。gs と同じ)</td>
+<td>B335</td>
+</tr>
+<tr>
+<td>Emittance[] (POL) のスピン軌道結合の btz の微分 <code>dbtz</code> (<code>photons.f:1550</code>)</td>
+<td>dxpzb/pr² (btz = xpzb/pr² − blz の微分。δ ≠ 0 で追跡の差分と 1.2% (δ = 0.05))</td>
+<td>dxpzb/pr (誤植。δ = 0.05 で z の行が 13% 誤る)</td>
+<td>B336</td>
+</tr>
+<tr>
 <td>L≠0 の SEXT・OCT・DECA・DODECA、MULT (n≥2) の端の非線形フリンジ ttfrin (DISFRIN=0)</td>
 <td>CALC・Emittance[] も入れる (追跡と一致)</td>
 <td>追跡は入れるが CALC・Emittance[] は入れない</td>

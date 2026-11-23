@@ -9,7 +9,7 @@
 - **K_n・SK_n の意味**: $\mathrm{K}n$ ($n = 0, 1, 2, \ldots$) は積分強度 $B^{(n)}L/B\rho$ [1/m$^n$] で、横方向のポテンシャル $U_n = \mathrm{Re}\,[(\mathrm{K}n + i\,\mathrm{SK}n)\,z^{n+1}]/(n+1)!$ ($z = x + iy$、長さあたりにするには $L$ で割る) を作る。キックは $\Delta(p_x, p_y) = (-\mathrm{Re}, +\mathrm{Im})\,[(\mathrm{K}n + i\,\mathrm{SK}n)\,z^n/n!]/(1+\delta)$ (追跡の内部変数 $q$ で)。SK$n$ > 0 は、K$n$ の磁石を ROTATE = $90°/(n+1)$ 回したものと**同じ** (ヘルプの記述を数値で確認: 差 $10^{-17}$)。
 - **基準面の取り方**: K1 + i SK1 の位相の半分 $\theta_1 = \tfrac12\arg(\mathrm{K1} + i\,\mathrm{SK1})$ だけ座標を回して、スキュー四極の成分を 0 にする (ヘルプの「reference plane is defined so that the skew quadrupole component becomes zero」)。各成分は $(\mathrm{K}n + i\,\mathrm{SK}n)\,e^{-i(n+1)\theta_1}$ に変わる。
 - **ANGLE = 0 の追跡** (`tmulti`): 本体は $B(h/2)\,K\,B(h)\,K\cdots K\,B(h/2)$ ($h = L/\mathrm{ndiv}$)。$B$ は K1 と K0 (と SK0) だけの**厳密な線形の本体** (`tsolqu`)、$K$ は $n \ge 2$ の多極の**薄いキック**。対称な 2 次の分割で、誤差は $\mathrm{ndiv}^{-2}$ に比例する (数値確認)。刻み数は $\mathrm{ndiv} = 1 + \bigl\lfloor\max_{n\ge2}\sqrt{a_{\max}^{\,n-1}\,|K_n L|/(6\,(n-1)!\,\varepsilon)}\,\bigr\rfloor$、$a_{\max} = 0.05$ m、$\varepsilon = 0.005\,\mathrm{EPS}$ (EPS = 0 は 1)、上限 1000。
-- **ずれ**: DX、DY、DZ、CHI1、CHI2、ROTATE (= CHI3) は剛体の座標変換 (ヘルプの 3×3 の式)。この章では DX・DY・ROTATE の向きだけ数値で確認した。CHI1・CHI2・DZ の幾何は読みだけ。
+- **ずれ**: DX、DY、DZ、CHI1、CHI2、ROTATE (= CHI3) は剛体の座標変換 (ヘルプの 3×3 の式)。この章では DX・DY・ROTATE の向きと、**CHI1・CHI2 の符号 (gs で確認: ヘルプの R₁・R₂ と同じ向き。§5)** を数値で確認した。DZ の符号と幾何は読みだけ。
 - **ANGLE ≠ 0**: 曲率 $1/\rho$ ($\rho = L/\mathrm{ANGLE}$) の座標で、$A_s$ は Maxwell 方程式から $\nabla^2F = F_x/(\rho + x)$ ($F \propto A_s$) を満たし、$A_s = \sum_{k,n}g_{kn}\,\mathrm{Re}\,[(\mathrm{K}n + i\,\mathrm{SK}n)\,(\rho + x)^{1/2-k}z^{n+k+1}]/((n+1)!\sqrt\rho)$、$g_{kn} = g_{k-1,n}\,(2k-3)(2k+1)/(8k(k+n+1))$ と解ける (§6.2。導出)。**ヘルプの式は、$g_{kn}$ の $(2k-1)!!$ (正しくは $(2k+1)!!$) と、$z$ の冪 $n + k$ (正しくは $n + k + 1$) が違う**。K64 (`gkninit`) の式は正しい。
 
 ## 2. 記号と単位
@@ -145,7 +145,9 @@ $$
 
 ($R_3$ は $z$ 軸まわりの回転。$c_i = \cos\mathrm{CHI}i$、$s_i = \sin\mathrm{CHI}i$。出口で逆変換) とする。粒子の線 (位置と向き) をこの変換で動かし、$\Delta s = 0$ の面まで直進させたのが入口の写像で、`tsolrot` の $B_z = 0$ の枝 (`tsol.f` の `ent = .true.`): `x-dx`、`y-dy` → $\mathrm{CHI}1$ の回転 (`cchi1*x - schi1*(s0s - dz)`、`px` も同様) → $\mathrm{CHI}2$ の回転 → 面までの直進 (`a=ds2/pz2`、`x-a*px`、`y-a*py`、`z+a`) → ROTATE (`theta2`) の回転 (`tsol.f` の `chi3`)、の順。MULT の `tmulti` は、`-chi1`、`-chi2` を渡して呼ぶ (符号は反転)。設計軌道の幾何は、保存された CHI1、CHI2、DZ で決まり、DX、DY、ROTATE は現在の値を使う (ヘルプ)。
 
-**確認したこと**: DX・DY は、$(x - \mathrm{DX}, y - \mathrm{DY})$ で通して $\mathrm{DX}$、$\mathrm{DY}$ を足すのと同じ (差 0)。ROTATE は、入口で座標を $+\theta$ 回し出口で戻すのと同じ (差 0、逆向きは $6 \times 10^{-4}$)。**確認していないこと**: CHI1・CHI2・DZ の幾何 (ヘルプの (8.10) の $\Delta s$ の符号とコードの `s0s`・`dz` の符号の対応、`alg` (設計軌道に沿った長さ) を回転の支点にとる意味)。`tsol.f` の式を読んだだけ。
+**確認したこと**: DX・DY は、$(x - \mathrm{DX}, y - \mathrm{DY})$ で通して $\mathrm{DX}$、$\mathrm{DY}$ を足すのと同じ (差 0)。ROTATE は、入口で座標を $+\theta$ 回し出口で戻すのと同じ (差 0、逆向きは $6 \times 10^{-4}$)。**gs で確認した CHI1・CHI2 の符号**: gs の MULT (L = 1 m、K1 = 0.3、3 GeV/c) の軸上の粒子の出口は、CHI1 = +0.05 で $x = +1.1939\times10^{-3}$・$p_x = -1.8396\times10^{-4}$、CHI2 = +0.05 で $y = -1.3064\times10^{-3}$・$p_y = -1.9141\times10^{-4}$ (CHI の符号を変えると符号が反転)。ヘルプの $R_1$・$R_2$ ((8.10)。要素の軸は $R$ の 3 行目: CHI1 で $(-\sin\chi_1, 0, \cos\chi_1)$、CHI2 で $(0, -\sin\chi_2, \cos\chi_2)$) の軸のまわりの厚い四極 (x 収束・y 発散) の ODE の $+1.1954\times10^{-3}$・$-1.8393\times10^{-4}$・$-1.3080\times10^{-3}$・$-1.9144\times10^{-4}$ と 0.13% 以内で一致する (符号まで)。`tmulti` が $-\mathrm{chi}$ を `tsolrot` に渡すのは内部の規約で、ヘルプの符号とは矛盾しない (試験 `test_v250_tsolrot_tilt.py`)。限界: L = 1 m の四極 1 つ・CHI = ±0.05。
+
+**確認していないこと**: CHI1・CHI2・DZ の幾何 (ヘルプの (8.10) の $\Delta s$ の符号とコードの `s0s`・`dz` の符号の対応、`alg` (設計軌道に沿った長さ) を回転の支点にとる意味)。`tsol.f` の式を読んだだけ。
 
 ## 6. ANGLE ≠ 0 の $A_s$
 
@@ -235,7 +237,7 @@ $$
 1. ずれ: `tbshift` (DX、DY、ROTATE)、`tbrot` (DROTATE、CHI2)。**CHI1・DZ は ANGLE ≠ 0 では使わない** (`tmulta` の引数に無い)。
 2. `ak = ak0*rtaper`。K0 と K1 の実部は**偏向磁石の本体**に回し (`ak0r`、`ak1r`)、`ak(0)`・`ak(1)` からは実部を除く (`tmulta.f:50-55`)。つまり、K0・K1 の実部は、BEND のように厳密な円弧 (K1 ≠ 0 は複合機能の本体) で解き、スキュー成分 (SK0、SK1) と K2 以上の成分だけを $A_s$ (8.15) のキックで入れる。**K0 と K1 のキックの級数 ($k \ge 1$ の項) は入らない**。ヘルプの「K0 と K1 は BEND のものと違う」は、K0 は ANGLE の上の追加の偏向 ($\mathrm{ANGLE} + \mathrm{K0}$ が全体の偏向)、K1 は BEND の K1 と同じ暗黙の定義 ($\mathrm{B160}$) であることを指すと読める (未確認)。
 3. 刻み: $n_{\min}$〜$n_{\max}$ (`ak` の 0 でない最小・最大の次数) について $\mathrm{ndiv} = 1 + \lfloor\max_n\sqrt{a_{\max}^{\,n-1}|\mathrm{ak}(n)L|/(6(n-1)!\,\varepsilon)}\rfloor$ ((8.8) と同じ形、`tmulta.f:69-78`。$n$ の下限が 0 からで、$n = 0$ では `fact(-1)` が要る。SK0 > 0 の MULT が pysad で未対応な理由)。上限 2000。
-4. 各スライス: `tbend` (半分、入口の端面と Maxwell フリンジ込み) → [キック (8.16) → `tbend` (全体)] を $\mathrm{ndiv} - 1$ 回 → キック → `tbend` (半分、出口の端面)。BEND の $L'$ の補正 ([05 章](05_bend.md) 式 (5.43)) は、`aln` から $(\phi\,\mathrm{fb})^2/(48L)\,\sin(\ldots)/\sin(\phi/2)/\mathrm{ndiv}$ ずつ引く形 (`tmulta.f:82-90`)。**同じ補正が `tffs.f:1368` でも `p_L_MULT` に入っている** (`tmulta` に渡る `al` はすでに補正済み) ので、二重に補正している可能性がある (疑い。数値では確認していない。設計軌道の $x, p_x$ は 0 のままで、$z$ は比べていない)。
+4. 各スライス: `tbend` (半分、入口の端面と Maxwell フリンジ込み) → [キック (8.16) → `tbend` (全体)] を $\mathrm{ndiv} - 1$ 回 → キック → `tbend` (半分、出口の端面)。BEND の $L'$ の補正 ([05 章](05_bend.md) 式 (5.43)) は、`aln` から $(\phi\,\mathrm{fb})^2/(48L)\,\sin(\ldots)/\sin(\phi/2)/\mathrm{ndiv}$ ずつ引く形 (`tmulta.f:82-90`)。**同じ補正が `tffs.f:1368` でも `p_L_MULT` に入っている** (`tmulta` に渡る `al` はすでに補正済み) ので、**二重に補正している (K64 の誤り。gs で確認、v2 は修正 = B331)**。gs で、3 GeV/c、$L$ = 1 m、ANGLE = 0.3、E1 = 0.5、E2 = 0.3、F1 (FB1 = FB2) = 0.5、FRINGE = 3 の BEND と MULT の `TrackParticles` は $x$ で $2.8\times10^{-7}$、$z$ で $2.5\times10^{-8}$ 違う。MULT の $L$ を二重の補正の分 ($L - c(L) - c(L - c(L)) = L'_{\rm BEND}$、$L$ = 1.00018814134845) だけ先に伸ばすと、全成分で BEND と差 0 (ビット単位) になる。F1 なしでは差 0。限界: FRINGE = 3・K1 = 0 で確認。FRINGE = 1・2 の $x$ の $3\times10^{-5}$ と K1 ≠ 0 の $y$ の $10^{-5}$ 級の食い違いは別の原因 (未調査)。CALC `tmultae` も同じ式を持つが gs では確かめていない。
 5. 逆のずれ。
 
 CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。キックを $(1+\delta)$ で割らないなど、追跡と違う点がある (読みだけ)。
@@ -262,11 +264,11 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 **この章の範囲外**: ソレノイド中の MULT (`bzs ≠ 0`)、RF つきの MULT (`tmultiacc`。10 章)、放射 (`tradk`、`ndivrad`)、空間電荷 (`spkick`)、MULT の `tmulte` の行列と追跡の比較 (§7)。
 
 **未確認・限界**:
-- **CHI1・CHI2・DZ** の符号と回転の支点 (§5)。DX・DY・ROTATE の向きだけ数値で確認した。
+- **DZ** の符号と回転の支点 (§5)。CHI1・CHI2 の符号は gs で確認した (ヘルプの $R_1$・$R_2$ と同じ)。
 - **端面の角の式 (8.9)**: 高次の項を $z\,C(z)$ とする根拠は未導出 (§4.4)。K0 の極限だけ標準の端面収束と一致。pysad v2 は別の (幾何厳密な) 式で、K64 と違う。
 - **刻み数の式 (8.8)** の係数 6 の根拠。2 次の次数は数値で確認した。
 - **ANGLE ≠ 0**: (8.15) は Maxwell 方程式の厳密な解 ($k$ について無限級数) の $n + k \le 21$ での打ち切り。K0・K1 の ($k \ge 1$ の) 項は入れず、本体 (BEND の円弧) で扱う。追跡との比較 (§8) は、Maxwell フリンジに起因する $\sim 2 \times 10^{-7}$ の残りまでで、これ以上は分離していない。複数の多極 ($n \ge 3$) や、スキュー (SK$n$)・K1 ≠ 0 の ANGLE ≠ 0 は、ODE との比較をしていない。
-- **$L'$ の補正の二重適用の疑い** (§6.4)。
+- **$L'$ の補正の二重適用** (§6.4): gs で確認済み (K64 の誤り、v2 は修正。B331)。未確認: FRINGE = 1・2、K1 ≠ 0 で BEND と MULT の追跡の食い違い (別の原因)、CALC。
 
 ## 付録 A. ヘルプの記述・K64 との違い (MULT)
 
@@ -283,7 +285,7 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 | `K0`・`K1` の説明 | 「Positive sign means horizontal focusing」は K0 にも付く (K0 は偏向であって収束ではない。コピーの誤記とみられる。確認していない)。SK$n$ の説明の「$L$ is the length」(K$n$ は effective length)。 |
 | ヘルプに無いもの | (1) ANGLE = 0 の分割の構成 (8.7) と刻み数の式 (8.8)。(2) $A_s$ の導出と $g_{kn}$ の漸化式 (§6.2)。(3) 端面の角の式 (8.9)、FB1・FB2 の式。(4) ずれの `tsolrot` の式の詳細。 |
 
-**K64 の実装の癖・疑い**: §6.4 の $L'$ の二重補正 (疑い)。K1 の暗黙の定義 (B160) は MULT の K1 にも同じ。pysad の k64 は `tmulk` (K64)、v2 は面の厳密な幾何 (B223・B224・B292)。
+**K64 の誤り (確定、v2 は修正)**: §6.4 の $L'$ の二重補正 (B331)。**K64 の実装の癖・疑い**: K1 の暗黙の定義 (B160) は MULT の K1 にも同じ。pysad の k64 は `tmulk` (K64)、v2 は面の厳密な幾何 (B223・B224・B292)。
 
 ## 付録 B. この章で使う Fortran の変数名
 

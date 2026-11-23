@@ -54,7 +54,7 @@ def compile_und(el, pgev):
 
 
 @njit(**NJ)
-def k_und(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0):
+def k_und(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0, b2=False):
     for i in range(n):
         pn = 1.0 + S[i, 5]
         S[i, 1] = S[i, 1] * pn
@@ -117,6 +117,8 @@ def k_und(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0):
         S[i, 3] = S[i, 3] / pn
         h1 = math.sqrt(1.0 + (pn * p0)**2)
         S[i, 6] = -S[i, 5] * (1.0 + pn) / h1 / (h1 + pn * h0) + S[i, 10]
+        if b2:
+            S[i, 4] -= S[i, 6] * (nslice * ds)       # v2 (B334): 速度の差による z の更新 −dv·L (K64 の undulator.f には無い。DRIFT は持つ)
 
 
 @njit(**NJ)
@@ -233,7 +235,7 @@ def und_seg1(i, S, j0, j1, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, rad, flu
 
 
 @njit(**NJ)
-def k_und_field(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0, rad, fluc, rs, anrad, cuc):
+def k_und_field(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0, rad, fluc, rs, anrad, cuc, b2=False):
     """v2: 磁場のある UND (F0 か G0 が 0 でない)。写像は undulator.f の刻み (k_und と同じ式)。
     H = [(px-ax)² + (py-ay)²]/(2(1+δ))、ax = ff、ay = gg。By(軸上) = F0·cos(kz s)、Bx(軸上) = G0·cos(kz s + dph) (1/ρ の単位)。
     rad が真なら、刻みごとに運動量の向きの変化から放射 (tradk_core1: SAD の tradk と同じ式、FLUC は tdusrn) を入れる。
@@ -243,6 +245,8 @@ def k_und_field(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0, rad, 
         pn = 1.0 + S[i, 5]
         h1 = math.sqrt(1.0 + (pn * p0)**2)
         S[i, 6] = -S[i, 5] * (1.0 + pn) / h1 / (h1 + pn * h0) + S[i, 10]
+        if b2:
+            S[i, 4] -= S[i, 6] * (nslice * ds)       # v2 (B334): −dv·L (k_und と同じ)
 
 
 # ---------------------------------------------------------------------------- 光学・エミッタンス (v2)

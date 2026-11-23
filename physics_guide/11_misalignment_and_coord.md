@@ -11,10 +11,10 @@
 - 取り付け誤差は、要素の前後で座標を取り替える操作で、要素の中の力学 (ハミルトニアン) は変えない。要素の入口で「ずれと回転を入れた座標」に移り、要素を通り、出口で元の座標に戻る。
 - **一般の剛体運動** ($\vec r \to R(\vec r - \vec d)$、$\vec P \to R\vec P$) は、粒子の軌跡が自由な直線であるところ (要素の端の面) では、正準変換である。位置と運動量を同じ回転で回すのは 3 次元の点変換で、正準だからである。回転すると基準面が傾くので、**直線を新しい面 $z' = 0$ まで延ばして測り直す** (§3)。この「回転 + 面への戻し」の写像は、数値で $|J^\top SJ - S| \lesssim 10^{-12}$ (シンプレクティック)。
 - 時間は保たれる: 粒子の位置を「基準粒子が面にいる時刻」のスナップショット $\vec r = (x, y, 0) + z\,\vec u$ ($\vec u = \vec P/p$ は進行方向の単位ベクトル。$z > 0$ は先) で表すと、剛体運動のあと新しい面から測った $z' = z'_{\rm 3D}/u'_z$ が出る (式 (11.4))。
-- COORD の DIR = 0 は、ヘルプの行列 $R_3R_2R_1$ と一致する。**DIR ≠ 0 の K64 の行列は、ヘルプの式と一致しない** ($R_3R_2R_1$ に $\pm$ の符号を入れ替えた形。付録 B (疑い))。DIR ≠ 0 は DIR = 0 の逆変換でもない (ヘルプが "NOT the inverse" と書く通り)。真の逆は $R^\top$ と平行移動の戻し。
+- COORD の DIR = 0 は、ヘルプの行列 $R_3R_2R_1$ と一致する。**DIR ≠ 0 の K64 の行列は、ヘルプの式と積の順序だけが逆** (K64 は $R_1R_2^{(-)}R_3$、ヘルプは $R_3R_2^{(-)}R_1$。gs で確認。K64 の誤りではなく、ヘルプの誤記の可能性が高い。付録 B)。DIR ≠ 0 は DIR = 0 の逆変換でもない (ヘルプが "NOT the inverse" と書く通り)。真の逆は $R^\top$ と平行移動の戻し。
 - **ROTATE**: 入口で $(x, y) \to R(+\theta)(x - \mathrm{DX},\, y - \mathrm{DY})$ ($p_x, p_y$ も同じ $R(\theta)$ で回す)、出口で逆。DX・DY は回転の前に引く (QUAD で差 $10^{-19}$)。
 - **MARK・APERT・MAP は座標を変える力学ではない**: MARK は恒等写像 (座標は変わらない)、APERT は通る粒子の座標を変えず、失う粒子の記録だけを作る (追跡のみ)、MAP はユーザー定義の写像 `ExternalMap` を呼ぶだけ (§8)。
-- pysad の追跡は、直線の MULT の CHI1・CHI2・DZ を使わない (指定しても結果が変わらない。確認した)。K64 の `tsolrot` にはある。BEND の CHI2・DROTATE (`tbrot`) は実装されていて、本章の構成と $10^{-17}$ で一致する (§6)。
+- pysad の追跡は、直線の MULT の CHI1・CHI2・DZ を使わない (指定しても結果が変わらない。確認した)。K64 の `tsolrot` にはある (MULT の CHI1・CHI2 の符号は gs で確認: ヘルプの $R_1$・$R_2$ と同じ。[08 章](08_mult.md) §5。SOL 領域内の傾いた枝には、更新の dcosphi の符号の K64 の誤りがある: B337)。BEND の CHI2・DROTATE (`tbrot`) は実装されていて、本章の構成と $10^{-17}$ で一致する (§6)。
 
 ## 2. 記号と単位
 
@@ -176,7 +176,9 @@ c_2s_3 & c_2c_3 & -s_2\\
 \tag{11.7}
 $$
 
-である。(11.7) は、ヘルプの DIR = 0 の行列 $M_0$ について $D M_0^\top D$ ($D = \mathrm{diag}(1, -1, -1)$) に等しい (sympy で確認)。つまり $M_0^\top$ (真の逆回転) の $(1,2), (1,3), (2,1), (3,1)$ 成分の符号を反転したもの。ヘルプの DIR ≠ 0 の式の行列とは一致しない ([mis_01_coord_geometry.out.txt](outputs/mis_01_coord_geometry.out.txt) (a)(b2): ヘルプの行列で作った写像は、追跡と $x$ で $5 \times 10^{-5}$、$p_x$ で $6 \times 10^{-4}$ 違う。K64 の行列で作った写像は $10^{-18}$ で一致)。どちらが意図かは、SAD (gs) で DIR ≠ 0 の COORD を試さないと決められない。**疑い**として付録 B に書く。
+である。(11.7) は、ヘルプの DIR = 0 の行列 $M_0$ について $D M_0^\top D$ ($D = \mathrm{diag}(1, -1, -1)$) に等しい (sympy で確認)。つまり $M_0^\top$ (真の逆回転) の $(1,2), (1,3), (2,1), (3,1)$ 成分の符号を反転したもの。ヘルプの DIR ≠ 0 の式の行列とは一致しない ([mis_01_coord_geometry.out.txt](outputs/mis_01_coord_geometry.out.txt) (a)(b2): ヘルプの行列で作った写像は、追跡と $x$ で $5 \times 10^{-5}$、$p_x$ で $6 \times 10^{-4}$ 違う。K64 の行列で作った写像は $10^{-18}$ で一致)。**積の順序**: (11.7) は $D M_0^\top D = D R_1^\top R_2^\top R_3^\top D = R_1\,R_2^{(-)}\,R_3$ ($D R_1(\chi)D = R_1(-\chi)$、$D R_3(\chi) D = R_3(-\chi)$、$D R_2 D = R_2$ なので $R_1^\top \to R_1$、$R_3^\top \to R_3$、$R_2^\top \to R_2^{(-)}$)。ヘルプの $R_3R_2^{(-)}R_1$ は、$R_2^{(-)}$ と平行移動 $(\mathrm{DX}, -\mathrm{DY})$ は $D$ で反転した形 (K64 と同じ) なのに、積の順序だけが DIR = 0 と同じ ($R_1$ が先) で、逆変換の構造 ((ABC)ᵀ = CᵀBᵀAᵀ で順序が反転) になっていない。
+
+**gs での確認** ([test_v250_coord_dir.py](../pysad/tests/script_tests/test_v250_coord_dir.py)、保存した出力は `scripts/v250_coord_dir__*.gs.txt`): 3 GeV/c、DX = 1 mm、DY = −2 mm、DZ = 3 mm、CHI1 = 0.02、CHI2 = −0.03、CHI3 = 0.04 の COORD (DIR = 0) の次に、COORD(DX, −DY, −DZ, −CHI1, CHI2, −CHI3; DIR = 1) を置くと、`TrackParticles` の 6 粒子が入力に戻る (差 $7\times10^{-18}$)。同じパラメータの DIR = 1 では戻らない (差 $4\times10^{-2}$)。pysad の k64 は gs と全桁一致。つまり K64 の DIR ≠ 0 は、「DIR = 0 の真の逆変換を、$(\mathrm{DX}, -\mathrm{DY}, -\mathrm{DZ})$ と $(-\mathrm{CHI1}, \mathrm{CHI2}, -\mathrm{CHI3})$ の符号反転で表せる」形になっている。ヘルプの積の順序 ($R_3R_2^{(-)}R_1$) では、同じ真の逆変換を作るパラメータが $(-0.0212, -0.0292, -0.0406)$ ($\mathrm{CHI} = 0.02, -0.03, 0.04$ のとき) で、単純な符号の反転にならない。したがって**ヘルプの積の順序の誤記の可能性が高い** (確定ではない: 座標系の定義の問題で、物理量として決まるものではなく、設計者に確かめていない)。K64 のコードは変えない (v2 も k64 も同じ)。
 
 ### 4.2 逆変換ではないこと
 
@@ -275,7 +277,7 @@ CALC の `tbgrote` は、$(R, \vec d, \text{面への戻し})$ の 6×6 の行�
 **未確認**:
 - `tsolrot` (CHI1・CHI2・DZ、直線の MULT・SOL) の符号と支点: pysad に実装がなく、K64 は動かしていない。
 - 偏向磁石の (11.9) は、軸と符号を数値で当てた (代数的な導出なし)。CALC の `tbgrote` の行列と pysad の対応関数の照合は未実施。
-- DIR ≠ 0 の COORD: K64 の行列とヘルプの式の食い違いの決着 (付録 B)。
+- DIR ≠ 0 の COORD: ヘルプの積の順序の誤記かどうか (K64 の形が逆変換を表せることは gs で確認済み。設計者への確認は未)。
 - ソレノイド中の変位による $p_x$ のゲージのずれ ($f_x$) の数値確認。
 - CALC の `tchge` の `trans1`・`trans2` の全成分の導出、`calpol` (スピン) の回転。
 - 厳密な「直線で面に戻す」が成り立つのは、要素の端の面の近くに場がないとき。端の場 (フリンジ) が回転した軸に対して持つ構造は、この章では扱わない。
@@ -285,7 +287,7 @@ CALC の `tbgrote` は、$(R, \vec d, \text{面への戻し})$ の 6×6 の行�
 | 箇所 | 内容 |
 |---|---|
 | COORD の DIR = 0 の行列 | **原文で確認** (TeX 版・平文版とも): $R_3R_2R_1$、(11.6)。K64 と一致。 |
-| COORD の DIR ≠ 0 | **原文で確認**: $R_3 R_2^{(-)} R_1\,(x, y, z)_0 + (\mathrm{DX}, -\mathrm{DY}, 0)$。K64 と一致しない (付録 B)。「these transformations are NOT the inverse to each other」は正しい (§4.2)。 |
+| COORD の DIR ≠ 0 | **原文で確認**: $R_3 R_2^{(-)} R_1\,(x, y, z)_0 + (\mathrm{DX}, -\mathrm{DY}, 0)$。K64 と積の順序が逆 (付録 B)。「these transformations are NOT the inverse to each other」は正しい (§4.2)。 |
 | COORD のキーワード | ヘルプの用法 `COORD name=(DX DY CHI1 CHI2 CHI3 DIR)` とキーワード一覧に DZ が無い。K64 の `tcoord` は DZ を使う。 |
 | MULT の misalignments | **原文で確認**: $(x, y, \Delta s)_1 = R_3R_2R_1^{(-)}(x - \mathrm{DX}, y - \mathrm{DY}, -\mathrm{DZ})_0$。「The inverse is applied at the exit」「The geometry of the design orbit is determined by the saved values of CHI1, CHI2, and DZ, while the current values are used for DX, DY, and ROTATE」。コードの符号との対応は §7 のとおり未確認。 |
 | BEND の ROTATE・DROTATE | **原文で確認**: ROTATE は「rotate the magnet around the local s-axis by $-$(ROTATE)」。DROTATE は「does not affect the geometry of the ring」(§6)。DX は「applied before the rotation by ROTATE」(§5.2 の順序と一致)。 |
@@ -294,7 +296,7 @@ CALC の `tbgrote` は、$(R, \vec d, \text{面への戻し})$ の 6×6 の行�
 
 ## 付録 B. K64 の実装の癖・疑い (別枠。確定には SAD (gs) での確認が要る)
 
-1. **COORD の DIR ≠ 0 の行列がヘルプの式と違う** (§4.1)。K64 の行列は $D M_0^\top D$。ヘルプは $R_3R_2^{(-)}R_1$ と書き、$s_2$ の符号だけを変えた形。どちらも直交行列だが一致せず、また逆変換 ($M_0^\top$) でもない。ヘルプの記述の誤りか、K64 の符号の誤りかは未決。出口側で使う変換として「$y$ と $z$ を反転した座標」で書いた逆変換、と読める可能性はある (確定していない)。
+1. **COORD の DIR ≠ 0 の行列がヘルプの式と違う** (§4.1)。K64 の行列は $D M_0^\top D$。ヘルプは $R_3R_2^{(-)}R_1$ と書き、K64 と積の順序だけが逆 ($R_1R_2^{(-)}R_3$)。**gs で、K64 の DIR ≠ 0 が真の逆変換を $(\mathrm{DX}, -\mathrm{DY}, -\mathrm{DZ})$・$(-\mathrm{CHI1}, \mathrm{CHI2}, -\mathrm{CHI3})$ で作れる (入力に戻る、差 $7\times10^{-18}$) ことを確認した。ヘルプの順序では単純な符号の反転で作れない。ヘルプの積の順序の誤記の可能性が高い (K64 の誤りとは言えない。設計者には未確認)**。K64 のコードは変えない。
 2. 平文版の APERT の式の `Max[DY2, DY2]` は誤植とみられる。
 
 ## 付録 C. この章で使う Fortran の変数名

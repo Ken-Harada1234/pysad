@@ -1,0 +1,25 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 22:35:53 Monday 11/23/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+CAVI C1 = (L=0.0001 VOLT=10 FREQ=500E6 PHI=0.3 FRINGE=1) C0 = (L=0.0001 VOLT=10 FREQ=500E6 PHI=0.3 DISFRIN=1);
+MARK ST = ();
+LINE ONE = (ST C1);
+LINE TWO = (ST C0);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "22.16";
+ beam = {{1e-5, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 1.0}};
+ USE ONE; CELL;
+Out[1]:= USE
+ r = TrackParticles[{1, beam}, 1, 1, 1];
+ Print["ONE PX ", r[[2,2]], " DP ", r[[2,6]]];
+ONE PX { 4.92533677720E-11,  .000000000000000} DP { -9.8507571248E-10, -9.8506736983E-10}
+ USE TWO; CELL;
+ r = TrackParticles[{1, beam}, 1, 1, 1];
+ Print["TWO PX ", r[[2,2]], " DP ", r[[2,6]]];
+TWO PX { -4.8409633133E-21,  .000000000000000} DP { -9.8506736983E-10, -9.8506736983E-10}
+ In[2]:=  ???-getbuf-end of input stream

@@ -579,7 +579,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>photons.f:spintrm (cexp1・cerfc)、gamma.f:cerfc</td>
 <td>偏極度が使えない (PolarizationTime=1/ΣT 式は有限で正しい)</td>
 <td>中</td>
-<td>NaN は確定 (gs で再現)。原因は推定 (pysad で同じ式を写すと同じ NaN、erfcx 版で有限)。有限値の妥当性は未確認</td>
+<td>NaN は確定 (gs で再現)。原因は推定 (pysad で同じ式を写すと同じ NaN、erfcx 版で有限。gs でこの内部の cerfc を単独で呼ぶ方法は無く、原因そのものは gs では確認できない)。<strong>追加の gs の実測</strong>: 24 セルの FODO リング (3 GeV、POL・RAD・RFSW) で、結合も垂直の曲げも無いリングは gs が有限の 92.3760430 % (ST の上限 8/(5√3)) を返す (pysad の k64・v2 とも一致)。四極 (QD) を 0.5 rad ロールすると NaN、QD 1.2 rad・偏向磁石 0.3 rad では NaN で PolarizationTime も NaN、偏向磁石を 0.8 rad ロールすると有限だが 2.098e-4 % (pysad の k64 は gs と全桁一致、v2 は 1.994 %。独立な値は未確認)。したがって「平面でも NaN」は、結合のない平面 FODO では当てはまらない (有限で ST の値)。有限値の妥当性は未確認</td>
 <td>v2 で修正 (exp(cb²)·erfc(cb) を Faddeeva 関数で。平衡偏極度は線形のスピン軌道結合の脱偏極率から求め、平面リングで 92.376%)。k64 モードは K64 の式のまま (NaN も写す)</td>
 </tr>
 <tr>
@@ -588,7 +588,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>tchge.f:197、photons.f:850、1614</td>
 <td>偏向磁石のずれ (DX・DZ・DROTATE・CHI2) で POL の結果がずれる可能性</td>
 <td>低</td>
-<td>ソースの読み (gs での確認は serot と tradke 末尾だけ。tbrote は未確認)</td>
+<td>ソースの読み + <strong>gs で確認 (tbrote)</strong>: 3 GeV、24 セルの FODO リング (周長 105.6 m、矩形の偏向磁石、POL・RAD・RFSW) の最後の 1 台の偏向磁石に DROTATE = 0.05 rad を与えると、gs の <code>EMIT</code> の「Spin precession matrix」(1 周のスピンの回転行列) の直交性の欠陥 max|M Mᵀ − 1| が 9.76e-3 (ずれなしは表示の桁の 1.3e-7)。回転行列は直交行列でなければならないので、行の逐次更新の誤りが gs の出力に出ている。pysad の k64 は gs と全桁一致、v2 は 8.4e-8。限界: DROTATE = 0.05 の 1 要素 1 つの大きさ。CHI2 = 0.03 では gs の欠陥 1.9e-3 に対し pysad の k64 は 1.3e-7 (k64 と gs が 3.8e-3 違う)、DX・DZ のずれでも v2 と gs が 1.1e-2 違う (pysad の k64 の CHI2 のスピンが gs を再現していない疑い、未調査)。試験 <code>test_v250_spin_tbrote_gs.py</code></td>
 <td>v2 で修正 ((I+rr)·srot。k64 モードは再現)</td>
 </tr>
 <tr>
@@ -1236,8 +1236,8 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>photons.f (<code>spdepol</code>・<code>spintrm</code>)</td>
 <td><code>Polarization</code> が使えない (B55 の NaN は桁あふれで、直しても 4.2 GeV・12 MV の 12 セル FODO で P = 1.27e-4 (率 4.3e-5 /周)。独立な率 2.3e-8〜4.5e-8 の約 1000 倍。追跡は (10.4 ± 1.6)e-8)</td>
 <td>高</td>
-<td>位置の特定は数値の依存性 (e に比例、λ に反比例、ssprd に依らない) による。K64 の式の導出 (Mathematica 由来の 6 次までの展開) には戻っていない。独立な値は導出・線形の軌道 + 厳密なスピン回転の MC・追跡</td>
-<td>v2 は独立な式で置き換え (SLIM の 1 次の摂動にスピンの歳差の位相の変調 (シンクロトロン側帯) を厳密に取った項を入れる。<code>spin.sideband_depolarization</code>)。4.2 GeV・12 MV で追跡の 0.43 倍 (過小評価。軌道の非線形が残る)。k64 モードは K64 の式のまま (B55)</td>
+<td>位置の特定は数値の依存性 (e に比例、λ に反比例、ssprd に依らない) による。K64 の式の導出 (Mathematica 由来の 6 次までの展開) には戻っていない。独立な値は導出・線形の軌道 + 厳密なスピン回転の MC・追跡。追加の gs の実測: 24 セルの FODO リングで偏向磁石を 0.8 rad ロールすると gs の Polarization = 2.098e-4 % (有限、</td>
+<td>cb</td>
 </tr>
 <tr>
 <td>B126</td>
@@ -2129,6 +2129,78 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>低 (δ y²/(2ρ): y = 10 mm・δ = 0.05・ρ = 10 m で 2e-8)</td>
 <td>確定 (gs・ローレンツ力の積分・解析行列との整合)</td>
 <td><strong>v2 は直した</strong> (<code>lattice._tbedgemaxwell_cod</code> が Δx = bf·p²、Δz = −bf·px·p。numba の <code>elkern._tbedgemaxwell(c, rhob, p2)</code> の <code>p2</code> は <code>compat.v2()</code> (CALC の <code>k_bend</code>・<code>_tsteee</code> の <code>edgefix</code>)、v2 だけが使う追跡の端 (<code>track6n._edge_maxwell1</code>・<code>steer_edge_exact1</code>、<code>ampnf_k0</code>) は常に p² 型。δ = 0 は k64 とビット同一)。k64 は K64 のまま (gs と同じ)。解析行列 (<code>_tbedgemaxwell_mat</code>) は両モードで変更なし。試験 <code>test_v250_bend_maxwell_calc_p.py</code></td>
+</tr>
+<tr>
+<td>B330</td>
+<td><strong>CAVI の端の収束・端のエネルギー変化に 1/β が無い</strong>: <code>tcavfrin</code> (<code>tcav.f:219</code>。CALC・Emittance は <code>tcave.f</code> の <code>tcavfrie</code>) は Δ(p_x/p0) = x·v/(2 L p0)·(sin(ωt − dphis) + s0)、端のエネルギー変化 −ω·p0·vf·(x² + y²)/2·cos(…) で、粒子の速度 β = p/h の因子を持たない。軸の近くの Maxwell の場 (E_r = −(r/2)∂_zE_z、B_θ = (r/2c²)∂_tE_z、E_z の r² の項) の中の電子のローレンツ力の数値積分 (DOP853、端の幅 1e-5 m) では、端を通る間 ∫F_r dt = ∫F_r ds/(βc) で Δp_x/p0 = x·v/(2 L p0 β)·(…)、エネルギー変化も 1/β。追跡 / 数値積分の比は k64 が 0.6 MeV/c (β = 0.761) で 0.754〜0.760、2 MeV/c (β = 0.969) で 0.962〜0.968、エネルギー変化の x² の項は 0.762・0.970 (β 倍)。δ ≠ 0 の粒子は設計の β でなく粒子の β に追随 (0.6 MeV/c、δ = −0.05〜+0.15 で 0.7372〜0.7953)。gs で確認: L = 1e-4 m・VOLT = 10 V・FREQ = 500 MHz・PHI = 0.3 の CAVI 1 要素の TrackParticles の端の px (FRINGE = 1 と DISFRIN = 1 の差、x = 1e-5) は、x·v·sin(PHI)/(2 L p0) と 3 GeV/c・2 MeV/c・0.6 MeV/c の全部で比 1.000000 (1/β が入っていない)。k64 の追跡と 12 桁一致。3 GeV/c では 1/β − 1 = 1.5e-8 で見えない。入口と出口の端が同じ位相なら打ち消し合うので、効くのは端 1 つ (FRINGE = 1 か 2)・粒子ごとに入口と出口で位相が違う場合 (δ ≠ 0 や z ≠ 0 の ωL/β の分)</td>
+<td>tcav.f <code>tcavfrin</code>・tcave.f <code>tcavfrie</code></td>
+<td>低エネルギーの CAVI (FRINGE ≥ 0、DISFRIN = 0) の追跡・CALC・Emittance[]。0.6 MeV/c で端の収束が 24% 不足</td>
+<td>低 (リングの空洞は β ≈ 1。入射器・低エネルギー)</td>
+<td>確定 (gs・独立な数値積分)</td>
+<td><strong>v2 は直した</strong> (<code>track6._tcavfrin</code>・<code>track6n.tcavfrin1</code>・<code>emit6d._tcavfrie_map</code>・<code>trptacc._cavfrie_piece</code>。粒子の β = p/h の 1/β を kick とエネルギー変化にかけ、H_f ∝ 1/β(E) の整合の時間のずれ −(x² + y²)κ0/(2p³) を入れる)。k64 は K64 のまま (gs と同じ)。試験 <code>test_v250_cavi_edge_beta.py</code></td>
+</tr>
+<tr>
+<td>B331</td>
+<td><strong>ANGLE ≠ 0 の MULT で、FB1・FB2 による長さ L' の補正が二重に入る</strong>: K64 は L' = L − ((φ FB1)² + (φ FB2)²)/(48 L)·sin(w/2)/sin(φ/2) を <code>tffs.f:1368</code> で <code>p_L_MULT</code> に入れる (BEND は <code>tffs.f:1282</code> で 1 回だけ) が、<code>tmulta.f:82-90</code> が受け取った al (すでに L') からスライス長 <code>aln = al/ndiv</code> をもう一度同じ式で引く (<code>tmulta.f:327-333</code> の CALC <code>tmultae</code> も同じ式)。gs で確認: 3 GeV/c、L = 1 m、ANGLE = 0.3、E1 = 0.5、E2 = 0.3、F1 (FB1 = FB2) = 0.5、FRINGE = 3 の BEND と MULT の TrackParticles (x・px・y・py・δ = 1e-2 の 5 粒子) は x で 2.78e-7、z で 2.46e-8 違う (ANGLE = 0.1・F1 = 0.2 でも δ = 1e-3 の x が 8.32e-10 違い、これは二重の分の L の短縮 1.67e-5 m × dispersion の予想 8.3e-10 と一致)。MULT の L を二重の補正の分だけ先に伸ばした (L − c(L) − c(L − c(L)) = BEND の L'、L = 1.00018814134845) MULT は、gs の BEND と全成分で差 0 (ビット単位) で一致する。ヘルプの L' の式 (BEND の F1) を 1 回とすれば MULT も 1 回。F1 なし (FB = 0) の MULT は BEND と差 0。pysad の k64 は gs と 1e-15 以内で一致 (BEND・MULT・伸ばした MULT)。BEND と MULT (FRINGE = 1・2 の片側だけ) には x で 3e-5 の別の食い違いがあり、K1 ≠ 0 では y で 1e-5 級の食い違いがある (どちらも長さの補正と別。未調査)</td>
+<td>tffs.f:1368・tmulta.f:82-90 (・:327-333)</td>
+<td>FB1・FB2 ≠ 0 かつ FRINGE = 1・2・3 の ANGLE ≠ 0 の MULT の追跡 (本体が二重に短くなり、x・z が F1 = 0.5・φ = 0.3 で 3e-7・2e-8、分散のある粒子で効く)</td>
+<td>低</td>
+<td>確定 (gs)</td>
+<td><strong>v2 は直した</strong> (<code>multa.k_multa</code> の 2 回目の補正を <code>b2</code> で省く。MULT が BEND と全桁一致)。k64 は K64 のまま (gs と同じ)。CALC・Emittance[] は pysad が FB1/FB2 を未対応。試験 <code>test_v250_mult_angle_fb_double.py</code></td>
+</tr>
+<tr>
+<td>B332</td>
+<td><strong>CAVI の端 (<code>tcavfrin</code>) が、端のエネルギー変化で p を変えるのに q = p_x/p を再スケールしない</strong>: <code>tcav.f:218-247</code> の <code>tcavfrin</code> は dh で <code>g(i)</code> (δ)・z・dv を更新するが、<code>px</code>・<code>py</code> (q = p/p の横成分、正準運動量 p_x が保存量) に p1r/p2r をかけない (本体の <code>tcav.f</code> do 20 と <code>ttcav</code> は <code>px = px*p1r/p2r</code> とする)。端付きの空洞 (FRINGE ≥ 0、DISFRIN = 0) の追跡写像が、dh の x² の項 ∝ x·q·ω·p0·v_f のぶんシンプレクティックでない。gs で確認: CAVI (L = 0.1 m、VOLT = 1e5 V、500 MHz、PHI = 0.5、FRINGE = 1) の TrackParticles の 13 点 (点 (x, px, y, py, z, δ) = (1e-3, 1e-2, −5e-4, 5e-3, −0.02, 0.01) と各成分 ±1e-6) から作った 6×6 ヤコビアンの</td>
+<td>JᵀSJ − S</td>
+<td>は、gs で 3 GeV/c が 1.30e-8、0.6 MeV/c が 8.09e-5 (pysad の k64 は 13 点の追跡が gs と全桁一致)。q の再スケールを入れた v2 は 0.6 MeV/c で 5.8e-8、3 GeV/c で 4e-10 以下 (中心差分の丸め) に下がる (0.6 MeV/c・L = 1 mm・VOLT = 1 kV・x = 3 mm・δ = 0.03 の端 1 つでは k64 6.0e-5 対 v2 1.7e-6。B330 の時間のずれを除くと v2 は 6.9e-4)。端なし (DISFRIN = 1) は変わらない。q と p の関係: 本体・TCAVI と同じ規則 (正準運動量を保つ) に揃えるだけで、符号・係数の導出に依らない</td>
+<td>tcav.f <code>tcavfrin</code>・(CALC の <code>tcavfrie</code> は px を p0 規格化で持つので該当しない)</td>
+<td>端付き CAVI の追跡の δ・px の高次 (欠陥は x·q の積で 0.6 MeV/c・x = 1 mm・px = 1e-2 で 8e-5)。リングの空洞 (3 GeV/c) では 1e-8</td>
+<td>低 (低エネルギー・大振幅)</td>
+</tr>
+<tr>
+<td>B333</td>
+<td><strong>SOL 領域内の QUAD (<code>tsolqu</code>・<code>tsolqum</code>) の ΔH の運動量の回転が、更新後の px を py の更新に使う</strong>: <code>tsolqu.f:122-123</code> (<code>tsolqum</code> の <code>:302-303</code> も同じ) は <code>pxi = a22*pxi + a24*py(i)</code> のあとに <code>pyi = -a24*pxi + a22*py(i)</code> と書き、2 行目の pxi は更新後の値。正しい回転は py' = −a24·px_old + a22·py で、K64 の写像は行列式 a22² = cos²(wℓ) (w = bz(−dpz)/(1+dpz)、ℓ = スライスの長さ) となり、運動量の面積が縮む (シンプレクティックでない)。位置 x・y の更新は正しい。gs で確認: 3 GeV/c、SOL (BZ = 13 T、bz = 1.3 /m、BOUND = 1) + QUAD (L = 0.4 m、K1 = 0.36 /m²) + SOL の TrackParticles の 13 点 (±1e-6) の中心差分ヤコビアンの 4×4 ブロック (x, px, y, py) の</td>
+<td>JᵀSJ − S</td>
+<td>は、点 (1e-3, 0.05, −5e-4, 0.02) で 1.54e-7、(1e-3, 0.1, −5e-4, 0.05) で 3.39e-6、det J − 1 は −1.50e-7、−3.23e-6 (回転の角 θ = wℓ の θ² の和 3.0e-6 の見積りと同じ大きさ)。k64 の追跡は gs と全桁一致。v2 は 4×4 の欠陥が 4e-10 以下 (中心差分の丸め)、det J − 1 が −6e-11・−5e-10 に下がる。(y, δ)・(x, δ) の欠陥 (px = 0.1 で 7.7e-6・1.7e-6) は v2 でも残る (別の原因。z の更新の近似などと思われる。未調査)。小さな傾き (px ~ 3e-3) では θ² ~ 1e-11 で見えない</td>
+<td>tsolqu.f:122-123・tsolqum :302-303</td>
+<td>SOL 領域内の QUAD (bz ≠ 0、MULT の K1 も) の追跡の傾きが大きい粒子 (px = 0.1・bz = 1.3 /m・ℓ = 0.4 m で運動量の面積が 3e-6 縮む。bz = 10 /m では 9e-5)</td>
+<td>低</td>
+</tr>
+<tr>
+<td>B334</td>
+<td><strong>UND の z の更新に −dv·L が無い</strong>: K64 <code>undulator.f:109</code> の z の更新は −(fgx² + fgy²)·dpds²/(2 ds) (横の運動の経路の長さ) だけで、速度の差による −dv·ds の項が無い (DRIFT の <code>tdrift</code> は <code>z += dpz·al1 − dv·al</code> で持つ)。K64 の UND は磁場を設定できない (B37) ので、磁場なしの UND は DRIFT と同じはずだが、δ ≠ 0 の粒子の z が dv·L だけ違う (R56 = L/γ² が欠ける)。gs で確認: UND (L = 1 m、KX = 0.1、QY = 0.2、POLE = 10、SLICE = 4、PHI = 30) と DRIFT (L = 1 m) の TrackParticles の 5 粒子 (δ = 1e-3・1e-3・1e-2・−1e-2・0) の z の差 (UND − DRIFT) は、3 GeV/c で −2.90e-11・−2.90e-11・−2.86e-10・+2.95e-10・0、10 MeV/c で −2.60e-6・−2.60e-6・−2.57e-5・+2.64e-5・0 (= dv·L。自由飛行の式 L(h0/p0 − h/p) の符号を変えたものと相対 2e-3 以内で一致)。k64 の追跡は gs と全桁一致。v2 は UND の z が DRIFT と 1e-14 以内で一致する。ビームのエネルギーが低いほど大きい (10 MeV/c・δ = 1e-2 で 2.6e-5 m)。意図的かどうかは K64 のコメントに無い (UND は磁場なしでは何もしない DRIFT とみなすのが自然)</td>
+<td>undulator.f:109</td>
+<td>UND (磁場なし) を通る δ ≠ 0 の粒子の z (低エネルギーほど大きい)</td>
+<td>低 (3 GeV で 2.9e-11 m)</td>
+<td>確定 (gs)</td>
+<td><strong>v2 は直した</strong> (<code>und.k_und</code>・<code>und.k_und_field</code> の最後に <code>z −= dv·L</code> (引数 <code>b2</code>)。放射つきの python 版は刻みごとに −dv·ds)。k64 は K64 のまま (gs と同じ)。試験 <code>test_v250_und_dv.py</code></td>
+</tr>
+<tr>
+<td>B335</td>
+<td><strong>ビームストラールングの光子エネルギーの逆引き表の累積が矩形則で、soft な裾を捨てて規格化する</strong>: <code>bbstrhl.f</code> の <code>mkbesseltab</code> は、光子数のスペクトル dN/dξ ∝ Sw(ξ) = ∫<em>ξ^∞ K</em>{5/3} (Sw は Simpson で正確) の累積 SwI を、格子 ξ_i = 1.1^40/1.02^i で <code>SwI(i) = SwI(i−1) + Sw(i)·(x0 − x)</code> (区間の下端 ξ_i の Sw = 矩形則。Sw は ξ の減少関数なので各区間で過大) と作り、最後に <code>SwI(lbtab)</code> で規格化する (ξ_min = 1.1e-7 より下の裾 = 全体の 0.6% を捨てる)。乱数 u を ln ξ の線形補間で ξ に直す (<code>bbstrhl.f:394-410</code>)。表から (線形補間込みで区間ごとに厳密に積分して) 求めた u 一様のモーメントは、理論値 ⟨ξ⟩ = 0.307920、⟨ξ²⟩ = 0.407407 (scipy の K_{5/3} の数値積分) に対し K64 の表が +1.601%・+2.617%。累積を台形則にすると +0.62%・+0.65%、残りの +0.6% は捨てた裾による規格化 (厳密な CDF を格子の点で使っても +0.60%・+0.61%)。gs で確認: BEAMBEAM (BSTRL = 1、1.7 GeV、4000 粒子 × 7 周) の PhotonList の 422 個の光子のエネルギーが pysad の k64 (K64 の表の再実装) と相対 1.6e-7 以内で一致する (表が gs と同じ)。表の誤差は光子エネルギーの平均を +1.6%、2 次モーメント (量子励起) を +2.6% 大きくする (BSTRL の平均エネルギー損失 +1.6%、エネルギー広がりの二乗 +2.6%)</td>
+<td>bbstrhl.f <code>mkbesseltab</code>・:394-410</td>
+<td>BEAMBEAM の BSTRL ≥ 1 の光子のエネルギー (平均損失 +1.6%、量子励起の二乗 +2.6%)</td>
+<td>低</td>
+<td>確定 (gs の光子の一致 + 厳密な積分)</td>
+<td><strong>v2 は直した</strong> (<code>beambeam._besseltab_v2</code>: 台形則 + 小 x の漸近形 3·ξ_min·Sw(ξ_min) の裾を全体に入れる。SwI(1000) = 0.994、u がそれより大きい光子は ξ → 0。+0.016%・+0.046%)。k64 は K64 のまま (gs と同じ)。試験 <code>test_v250_bstrl_table.py</code></td>
+</tr>
+<tr>
+<td>B336</td>
+<td><strong><code>tradke</code> のスピンの回転ベクトルの z 成分の微分 <code>dbtz</code> が pr² でなく pr で割る</strong>: <code>photons.f:1537-1550</code> で btx = xpx/pr² − blx、bty = xpy/pr² − bly、btz = xpzb/pr² − blz だが、微分は dbtx = dxpx/pr² − dblx (δ の列に −2·xpx/pr³)、dbty も同じ、dbtz = dxpzb/pr − dblz (δ の列に −2·xpzb/pr³)。z 成分だけ pr で割るのは自分の btz の微分として不整合 (誤植)。δ ≠ 0 の軌道 (pr ≠ 1) で、Emittance[] (POL) のスピン軌道結合 D = srot(:,4:9) の z の行 (縦の歳差) が δ に比例して誤る。独立な基準 (追跡のスピン回転の中心差分から作る D) と比べた最大値の相対誤差: 3 GeV/c、K1 = 0 の矩形の偏向磁石 (15°、L = 1.2 m)・軌道 (x, px, y, py) = (8e-3, 1e-3, 6e-3, −1e-3) の周りで、δ = 0.05 で pr で割る式 13.2%・pr² で割る式 1.20%、δ = 0.10 で 26.9% 対 2.24%。K1 = 0.3 の偏向磁石は δ = 0.05 で 6.3% 対 0.18%、δ = 0.10 で 12.4% 対 0.15%。δ = 0 は同じ (0.8%、0.24%)。四極は δ に依らず 0.2%。TrackParticles のスピン追跡 (別のコード) には影響しない。<strong>gs では確認できない</strong>: K64 の Polarization は NaN (B55) で、srot の微分列 (4:9) は Emittance[] の他の出力 (SpinPrecessionMatrix は srot(:,1:3)) に出ない。pysad の k64 は誤植をそのまま写している</td>
+<td>photons.f:1550</td>
+<td>δ ≠ 0 の閉軌道・分散のある偏向磁石の Emittance[] (POL) のスピン軌道結合 (脱偏極・運動論的偏極の元)。δ = 0.05 で z 行が 13%</td>
+<td>低 (δ ~ 1e-3 で 0.3%)</td>
+<td>確定 (代数的な不整合 + 追跡の差分)</td>
+<td><strong>v2 は直した</strong> (<code>spin.tradke_spin</code> の <code>dbtz = dxpzb/pr² − dblz</code>。<code>spin.DBTZ_PR2</code> で戻せる)。k64 は K64 のまま。試験 <code>test_v250_spin_dbtz.py</code></td>
+</tr>
+<tr>
+<td>B337</td>
+<td><strong><code>tsolrot</code> の傾いた枝 (SOL 領域内の MULT・QUAD の CHI1・CHI2・DZ、Bz ≠ 0) で、位置・運動量の更新の dcosphi の符号が面の条件の式と逆</strong>: <code>tsol.f:83-100</code> は <code>xsincos</code> の dcosphi = cos θ − 1 を、面の条件 <code>s = plz*xsinphi + pz0*sinphi - pbz*dcosphi</code> では + pbz (1 − cos θ) の正しい符号で使い、更新 <code>x += (plx*phi + ptx*sinphi + pbx*dcosphi)*alb</code>・<code>px -= ptx*dcosphi + pbx*sinphi ...</code> では 1 − cos θ の想定の符号 (古い <code>dcosphi = 2 sin²(θ/2)</code> の名残とみられる) で使う。同じらせん運動 u(θ) = u_l + u_t cos θ + u_b sin θ の式の中で符号が逆。独立な基準 (長さ 0 の傾いた要素は恒等写像): 入口 (<code>ent</code>) と出口の写像を numpy に写して合成すると、更新を Fortran のまま (cos − 1) にしたものは恒等から 2.2e-7・3.9e-7・1.4e-6・6.5e-6 (px 最大 0.05 の 4 粒子) ずれ、更新の符号を反転したものは 1e-17 で恒等。gs で確認: 3 GeV/c、SOL (BZ = 13 T、bz = 1.3 /m) → MULT (L = 0、K2 = 1e-9、CHI1 = 0.03、CHI2 = −0.02、DZ = 0.01) → SOL (BZ = 0) の TrackParticles は入力に戻らず、同じ 2.2e-7・3.9e-7・1.4e-6・6.5e-6 (numpy の as と 3% 以内) ずれる (傾きなしは 5e-16〜6e-15 で戻る)。ずれの大きさは θ² p_t の程度。K64 自身の誤りで、pysad の翻訳の誤りではない (pysad には SOL 領域内の MULT の CHI1・CHI2・DZ の枝が無い: 未実装)。また (F) MULT の CHI1・CHI2 の符号は誤りではない: gs の MULT (L = 1 m、K1 = 0.3) の軸上の粒子の出口は CHI1 = +0.05 で x = +1.1939e-3・px = −1.8396e-4、CHI2 = +0.05 で y = −1.3064e-3・py = −1.9141e-4 (符号を変えると反転)。ヘルプの R₁・R₂ (3×3 の式) が与える軸の向き (R の 3 行目: CHI1 で (−sin χ1, 0, cos χ1)、CHI2 で (0, −sin χ2, cos χ2)) の周りの厚い四極の ODE の 1.1954e-3・−1.8393e-4・−1.3080e-3・−1.9144e-4 と 0.13% 以内で一致 (<code>tmulti</code> が −chi を <code>tsolrot</code> に渡すのは内部の規約)</td>
+<td>tsol.f:83-100 (tsolrot)</td>
+<td>SOL 領域内の傾いた (CHI1・CHI2・DZ ≠ 0) MULT・QUAD の追跡 (入口・出口で恒等でない。px = 0.05・bz = 1.3 /m で 6.5e-6)</td>
+<td>低</td>
+<td>確定 (gs。独立な基準は恒等写像)</td>
+<td>pysad は未実装 (NotImplementedError。k64・v2 とも)。実装するときは、k64 は K64 のまま、v2 は更新の dcosphi の符号を反転する。試験 <code>test_v250_tsolrot_tilt.py</code></td>
 </tr>
 </tbody>
 </table>

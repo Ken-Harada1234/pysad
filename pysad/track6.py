@@ -1904,7 +1904,29 @@ def _tcavfrin(p: _Particle, al, v, w, dphis, offset):
         h1 = p1r * h0 / (1.0 - p.dv + ph.dvfs)
     t = -c[4] * h1 / p1
     phw = w * t
-    dpt = vf * (math.sin(phw - dphis) + s0) / p1r
+    sph = math.sin(phw - dphis) + s0
+    if _compat.v2():
+        # v2 (B330): 端の力は ∫F dt = ∫F ds/(β c) なので 1/β (粒子の β = p1/h1) がかかる。H_f ∝ 1/β(E) の整合のため、
+        # エネルギー変化 (∂H_f/∂t) にも同じ 1/β、時間のずれ −∂H_f/∂E = −(x²+y²) κ0/(2 p1³) (κ0 = vf p0 sph) を入れる (シンプレクティック性)
+        ib = h1 / p1
+        dpt = vf * sph * ib / p1r
+        c[1] += c[0] * dpt
+        c[3] += c[2] * dpt
+        r2 = c[0]**2 + c[2]**2
+        dh = -w * p0 * vf * r2 * 0.5 * math.cos(phw - dphis) * ib
+        dt = -0.5 * r2 * vf * p0 * sph / p1**3
+        h2 = h1 + dh
+        a = max(dh * (h1 + h2) / p1**2, -1.0)
+        dpr = _sqrt1(a)
+        dp2r = max(dp1r + p1r * dpr, 1e-10 - 1.0)
+        p2r = 1.0 + dp2r
+        c[5] = dp2r
+        c[1] *= p1r / p2r            # v2 (B332): p が変わるので q = p_x/p を再スケール (正準運動量 p_x を保つ)
+        c[3] *= p1r / p2r
+        c[4] = -(t + dt) * p0 * p2r / h2
+        p.dv = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + ph.dvfs
+        return
+    dpt = vf * sph / p1r
     c[1] += c[0] * dpt
     c[3] += c[2] * dpt
     dh = -w * p0 * vf * (c[0]**2 + c[2]**2) * 0.5 * math.cos(phw - dphis)
@@ -2513,8 +2535,13 @@ def _tsolqu_bz_ens(parts, al, ak, bz, krad, eps0=0.0, fringe=True):
             pxi = c[1]
             c[0] += (a24 * pxi - a14 * c[3]) / bzp
             c[2] += (a14 * pxi + a24 * c[3]) / bzp
-            pxi = a22 * pxi + a24 * c[3]
-            pyi = -a24 * pxi + a22 * c[3]          # SAD のまま: 更新後の pxi を使う
+            if _compat.v2():
+                # v2 (B333): 運動量の回転は更新前の px で (行列式 1)。K64 (下) は更新後の pxi を使い、面積が cos²(wℓ) 倍になる
+                pyi = -a24 * pxi + a22 * c[3]
+                pxi = a22 * pxi + a24 * c[3]
+            else:
+                pxi = a22 * pxi + a24 * c[3]
+                pyi = -a24 * pxi + a22 * c[3]          # SAD のまま: 更新後の pxi を使う
             c[4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
             xi, yi = c[0], c[2]
             w1, w2, ws, wss, wd = tz.w1, tz.w2, tz.ws, tz.wss, tz.wd
@@ -2957,13 +2984,13 @@ def _und_v2(parts, el, rad):
     n = len(parts)
     rs = _kernel_rs()
     if pr[1] == 0.0 and pr[2] == 0.0:
-        _un.k_und(S, n, *pr, ph.p0, ph.h0)
+        _un.k_und(S, n, *pr, ph.p0, ph.h0, _compat.v2())
         _state_back(parts, S)
         return
     (nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds) = pr
     krad = rad and _g(el, 'RAD') == 0.0
     if not krad:
-        _un.k_und_field(S, n, *pr, ph.p0, ph.h0, False, False, rs, ph.anrad, ph.cuc)
+        _un.k_und_field(S, n, *pr, ph.p0, ph.h0, False, False, rs, ph.anrad, ph.cuc, _compat.v2())
         _state_back(parts, S)
         return
     for k, p in enumerate(parts):
@@ -2997,6 +3024,8 @@ def _und_v2(parts, el, rad):
             else:
                 _tradk_sol(p, ds, 0.0)
             S[k, 6] = p.dv
+            if _compat.v2():
+                c[4] -= p.dv * ds          # v2 (B334): 速度の差による z の更新 −dv·ds (刻みごと。放射で p が変わるので)
         # 出口: 力学的運動量の向き → 正準運動量 (外側。出口の位置のポテンシャルを足す: und_seg1 の j1 = nslice と同じ)
         a1x, a1y = _un._und_a(c[0], c[2], nslice * ds, F0, G0, dph, Kz, Kx, Ky, Qx, Qy)
         pn = 1.0 + c[5]

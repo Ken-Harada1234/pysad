@@ -1,0 +1,22 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 23:38:53 Monday 11/23/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+MULT M=(L=1 K1=0.3 CHI1=0.05);
+MARK ST = ();
+LINE ONE = (ST M);
+FFS; NORFSW; NORAD; NOFLUC;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM = "22.16";
+ beam = {{0.0, 1e-3}, {0.0, 0.0}, {0.0, 1e-3}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 1.0}};
+ USE ONE; CELL;
+Out[1]:= USE
+ r = TrackParticles[{1, beam}, 1, 1, 1];
+ Print["R ", r[[2]]];
+R {{  .001193932374036,  .002047470620903},{ -1.83960586106E-4, -4.69547137447E-4},{  .000000000000000,  .001153963032534},
+ {  .000000000000000, 3.156508460503E-4},{ -8.82605638184E-7, -7.41323342981E-7},{  .000000000000000,  .000000000000000},
+ { 1.000000000000000, 1.000000000000000}}
+ In[2]:=  ???-getbuf-end of input stream
