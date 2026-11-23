@@ -29,7 +29,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [12_linear_optics.md](12_linear_optics.md) | **行列から光学へ**。閉軌道の Newton 法 (`tcod`、2 次収束)、周期解と分散 $(1-M_4)^{-1}m_6$、x–y 結合の分解 (`qmdiag`: ヘルプの $R$ と K64 の閉じた式)、Twiss と伝搬、色収差、拡張 Twiss の $H$ | ✓ (`qmdiag` の特別な場合・RADCOD・`tecalc` の $V$ は読みだけ。偏向ありの色収差は未決) |
 | [13_radiation.md](13_radiation.md) | **放射 (kinematical method)**。曲げ角 $\phi$ と $\rho_r$ (ヘルプ)、$N_\gamma$・$u_c$・$\langle u\rangle$・$\langle u^2\rangle$ の古典の式と `anrad`・`cuc`・`cave`・`cuu`、追跡の 1 スライス (`tradk1`: 運動量の縮み、$-\tfrac12dp_x\,dg$ と $al/3$ の導出)、FLUC のポアソン過程と `drndsr`、CALC の励起 (`tradke` の `dee`)、放射積分 | ✓ (RADCOD・RADTAPER・`tr1` の導出・分割の定数は未確認) |
 | [14_emittance.md](14_emittance.md) | **平衡エミッタンス**。$\Sigma = M\Sigma M^\top + \Delta$ の導出、$\Delta$ の組み立て (`tmulbs`)、`tecalc` (固有値・正規座標・減衰率・分配数)、各モードの $\varepsilon_k = \bar\Delta_k/(1-e^{-2a_k})$、同期運動と RFSW、MINCOUP | ✓ (`tnorm`・`btr` の導出・IBS・SynchroBeta は未確認) |
-| 15_spin.md | スピンと偏極 | 予定 |
+| [15_spin.md](15_spin.md) | **スピンと偏極**。Thomas-BMT (静止系の歳差 + Thomas 歳差、縦・横の係数 $(1+a)$・$(1+a\gamma)$)、1 スライスの回転 `sprot` (Rodrigues、刻みの 2 次、弦の誤差)、軌道との結合 $D$ (`tradke` の積算)、`spnorm` (偏極ベクトル・スピンチューン)、SLIM の $N$ の式と脱偏極率、Sokolov-Ternov の定数 (`pst`・`cfpd`・`sflc` が `anrad`・`cuc`・`cave`・`cuu` から出る)、DK との対応、平衡偏極度 | ✓ (ST・DK の QED の導出、`spdepol` の級数、高次共鳴は未確認) |
 | 16_undulator_beambeam.md | アンジュレータ、ビーム・ビーム | 予定 |
 | 17_collective.md | 集団効果 (空間電荷、ウェイク、CSR、Touschek・IBS) | 予定 |
 | 18_nonlinear_bridge.md | 非線形への橋渡し (正規形、ADTS・RDT) | 予定 |
@@ -84,6 +84,7 @@ py -3.12 physics_guide/scripts/mis_01_coord_geometry.py        # 11 章 (取り�
 py -3.12 physics_guide/scripts/opt_01_linear_optics.py          # 12 章 (行列から光学へ) の確認
 py -3.12 physics_guide/scripts/rad_01_kinematical.py            # 13 章 (放射) の確認
 py -3.12 physics_guide/scripts/emit_01_equilibrium.py           # 14 章 (平衡エミッタンス) の確認
+py -3.12 physics_guide/scripts/spin_01_thomas_bmt.py            # 15 章 (スピン) の確認
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -116,6 +117,7 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `opt_01_linear_optics.py` | 12 | 閉軌道の Newton 法の収束、分散 $(1-M_4)^{-1}m_6$ と追跡の差分、$BAB^{-1}=P(\mu)$ と Twiss の伝搬 (sympy)、`qmdiag` の式で $RMR^{-1}$ がブロック対角、色収差、ヘルプの $H$ のシンプレクティック性 |
 | `rad_01_kinematical.py` | 13 | 定数 `anrad`・`cuc`・`cave`・`cuu`、放射スペクトルのモーメント、`drndsr` のモーメント、偏向磁石 1 台の平均・分散、ずれた四極の損失、$-\tfrac12dp_x\,dg$ と $al/3$ の数値積分、$U_0 = C_\gamma E^4I_2/2\pi$ |
 | `emit_01_equilibrium.py` | 14 | `calc6d` (`tecalc`) の結果と放射積分の式 ($U_0$・$J_x$・$\varepsilon_x$・$\sigma_\delta$・$\alpha_p$・$\nu_s$)、$\Delta = \Sigma - M\Sigma M^\top$ と 13 章の励起、正規座標の $\Sigma_n$、各モードの $\varepsilon_k$ の式 |
+| `spin_01_thomas_bmt.py` | 15 | Thomas + 静止系 = BMT (sympy)、らせん軌道の BMT の DOP853 と 1 ステップ回転の積 (2 次)、平面の偏向 $a\gamma\theta$・縦磁場 $(1+a)\psi$、K64 の弦、定数 $c_{\rm ave}a_{\rm nrad}c_{\rm uc}^2 = r_e\bar\lambda_C$ と DK の 11/18、$NM = R_0N + [n_0]_\times D$、平面リングの SpinTune・PolarizationTime・Polarization |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
