@@ -146,4 +146,4 @@ print('  x のみ (1 mm)          : 差 (x, px, y, py) = %s' % np.array2string(c
 print('  δ のみ (1e-3)          : 差 = %s' % np.array2string(cmp_([0, 0, 0, 0, 0, 1e-3]), precision=2))
 print('  y のみ (1 mm)          : 差 = %s' % np.array2string(cmp_([0, 0, 1e-3, 0, 0, 0]), precision=2))
 print('  y = 1 mm、δ = 1e-3     : 差 = %s、h² L δ y = %.2e' % (np.array2string(cmp_([0, 0, 1e-3, 0, 0, 1e-3]), precision=2), h * h * 1.2 * 1e-3 * 1e-3))
-print('  (x のみ・δ のみでは差は 0。y ≠ 0 で p_y に差が出る: 硬い端のフリンジの寄与 (Δp_y ~ h y p_x の形) が追跡に入っていて、厳密な H の写像 (フリンジなし) に無い。)')
+print('  (x のみ・δ のみでは差は 0。y ≠ 0 で p_y に差が出る。h² L δ y と同じ大きさだが、原因 (硬い端の Maxwell フリンジか、本体の y 依存の項か) の内訳は未確認。)')
