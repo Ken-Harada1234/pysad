@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の `v2` は K64 のバグを直した動作で、`PYSAD_COMPAT=k64` で K64 と同じ動作に切り替える。最新は v2.4.1 (2026-11-23、`pysad.__version__` = 2.4.1)。PyPI は v2.4.0 まで (v2.4.1 は公開の準備中)。作業の前に次を読むこと。
+pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の `v2` は K64 のバグを直した動作で、`PYSAD_COMPAT=k64` で K64 と同じ動作に切り替える。最新は v2.4.1 (2026-11-23、`pysad.__version__` = 2.4.1)。PyPI は v2.4.1 まで公開。作業の前に次を読むこと。
 
 1. `docs/history/00_RESUME.md`: 引き継ぎメモ (方針、構成、環境、現状、残課題、手順、落とし穴)。未解決の差の最新は `docs/history/work_unimpl.md`。
 2. `docs/01_overview.md`: 全体像とモジュールの地図。
@@ -9,7 +9,7 @@ pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定
    物理と理論: `docs/23_physics_guide.md` (K64 の計算の式)、`docs/24_adts_rdt_primer.md` (入門: ADTS・RDT・周波数マップ・LMA を何をどう求めたか。25・26 を読む前にこれ)、`docs/25_resonance_terms_adts.md` (共鳴駆動項・ADTS・クロマティシティ)、`docs/26_frequency_map_lma.md` (周波数マップ・局所運動量アクセプタンス)。旧い文書番号・名前の対応は `docs/history/docs_renumbering.md`。
 
 ## 作業ルール
-- md を作り直したら、同じ名前の .html も作り直す (`py -3.12 tools/build_html.py --changed`。ツールは `tools/` に別途作成中)。md にも HTML にも、履歴や版番号は入れない (必要なら本文に書く)。履歴は `docs/history/` だけに置く。
+- md を作り直したら、同じ名前の .html も作り直す (`py -3.12 tools/build_html.py --changed`。ツールは `tools/` にある)。md にも HTML にも、履歴や版番号は入れない (必要なら本文に書く)。履歴は `docs/history/` だけに置く。
 - 解説文書 (`docs/*.md`) は現状の説明だけ。経緯は `docs/history/` に書く。未確認・限界・使った条件 (エネルギー、磁場、周長) を必ず書く。
 
 ## 要点
