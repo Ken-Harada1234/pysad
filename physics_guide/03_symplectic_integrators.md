@@ -103,7 +103,7 @@ $$
 
 **誤差の見積もり**: $n = L/h$ 刻みで、$S_2(h)^n = \exp\bigl(L(A + B) + L h^2 C_3 + \cdots\bigr)$ (同じ形の積を $n$ 回かけると指数が $n$ 倍になる)。したがって**誤差は $L h^2 C_3$** で、刻みの数 $n$ を 2 倍にすると $1/4$ ([integ_02_order_symplectic.out.txt](outputs/integ_02_order_symplectic.out.txt) (a): Strang の比 4.0)。
 
-四極の本体で $A = D$ (運動学的ドリフト)、$B = H_2$ の流れの場合は、$[B,[B,A]]$ が (4.19) の $\beta$ に、$[A,[A,B]]$ が $\alpha$ に当たる。
+四極の本体で $A = D$ (運動学的ドリフト)、$B = H_2$ の流れの場合は、$[B,[B,A]]$ は (4.19) の $C_3$ の $[\mathcal B,[\mathcal B,\mathcal D]]$ の項 (係数 $1/12$) に、$[A,[A,B]]$ は $[\mathcal D,[\mathcal D,\mathcal B]]$ の項 (係数 $-1/24$) に当たる。
 
 ## 5. 4 次への合成 (Yoshida)
 

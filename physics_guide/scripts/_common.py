@@ -12,7 +12,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 # 環境変数 PYSAD_SRC に別の pysad のルートを指定すると、そちらの pysad を使う (リポジトリのルートより優先)。
-# 例: ガイドの一部の確認は、v2.4.4 以降の pysad (B323 の修正入り) で行う。使った pysad の場所は pysad_src() で分かる。
+# 例: ガイドの一部の確認は、B323 の修正を含む pysad で行う。使った pysad の場所は pysad_src() で分かる。
 _SRC = os.environ.get('PYSAD_SRC')
 if _SRC:
     sys.path.insert(0, os.path.abspath(_SRC))
