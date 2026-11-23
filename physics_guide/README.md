@@ -112,10 +112,8 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
 | `bend_04_matrix_vs_map.py` | 05 | CALC の行列と追跡の写像の関係、段ごとの比較、端面の 2×2 行列 |
 | `bend_05_help_checks.py` | 05 | ヘルプ原文: 線形フリンジ $V$ の TeX 版・平文版、本体の $s$・$p_{x2}$、非線形フリンジの $p_{y2}$ |
-| `edge_01_gauge_generators.py` | 06 | $
-abla	imesec A = ec b$ (偏向・四極・$2m$ 極・ソレノイド)、端の生成関数 $f = \int H_1ds$ から (4.27)・(7.17)・(5.35)・DISFRIN の $H$ が出る (sympy)、偏向の $y^4$ の項 |
-| `edge_02_generating_function.py` | 06 | 母関数 $G$ = 点変換 $x + V + 	frac12V\cdot
-abla V$ (sympy)、厳密な $\exp(:f:)$ との差 ($K^3$)、$z$ の更新 ($\partial G/\partial p$) |
+| `edge_01_gauge_generators.py` | 06 | $\nabla\times\vec A = \vec b$ (偏向・四極・$2m$ 極・ソレノイド)、端の生成関数 $f = \int H_1ds$ から (4.27)・(7.17)・(5.35)・DISFRIN の $H$ が出る (sympy)、偏向の $y^4$ の項 |
+| `edge_02_generating_function.py` | 06 | 母関数 $G$ = 点変換 $x + V + \frac12V\cdot\nabla V$ (sympy)、厳密な $\exp(:f:)$ との差 ($K^3$)、$z$ の更新 ($\partial G/\partial p$) |
 | `edge_03_bend_maxwell_recheck.py` | 06 | 偏向の Maxwell フリンジの因子 $p$ (ローレンツ力の積分、CALC の COD の更新と解析行列の比較) |
 | `edge_04_solenoid_fringe.py` | 06 | `tsfrin` = $f$ の厳密な流れ、Maxwell の端の場のローレンツ力の積分との比較 |
 | `sol_01_h2_exact.py` | 09 | 特性方程式と $w_1$・$w_2$ (sympy)、ヘルプの式・K64 (`_TZ`) と行列指数の一致、$z$ の更新、$\Delta H$ の解 (ヘルプの $1/B_z$ の欠落)、固有モード |
