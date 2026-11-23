@@ -1,0 +1,144 @@
+! Level 24C: FFS の制御構文 REPEAT / UNTIL / IF / ELSEIF / ELSE / ENDIF (tffsa.f, tfif.f)
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+      DS = (L=1.0)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DS B D1 QD DS B D1);
+LINE RING = (20*CELL);
+;
+FFS;
+$FORM="15.10";
+PageWidth=999;
+USE RING;
+CELL;
+CALC;
+Print["C00 ",Twiss["NX","$$$"]/2/Pi," ",Twiss["NY","$$$"]/2/Pi];
+! (1) REPEAT n ... UNTIL 条件: 条件が真になったら抜ける
+k=0;
+REPEAT 6
+  k=k+1;
+  QF K1 0.5+0.02*k;
+  CALC;
+  Print["C01 ",k," ",Twiss["NX","$$$"]/2/Pi];
+UNTIL k>=3
+Print["C02 k=",k];
+! (2) 条件なしの UNTIL: 指定回数だけ繰り返す
+k=0;
+Repeat 4
+  k=k+1;
+  Print["C03 ",k];
+Until;
+Print["C04 k=",k];
+! (3) 条件が偽のままなら REPEAT の回数で終わる
+k=0;
+repeat 3
+  k=k+1;
+until k>100
+Print["C05 k=",k];
+! (4) 入れ子の REPEAT
+i=0;
+REPEAT 2
+  i=i+1;
+  j=0;
+  REPEAT 3
+    j=j+1;
+    Print["C06 ",i," ",j];
+  UNTIL j>=2
+UNTIL;
+! (5) REPEAT の中で FFS コマンドと CALC (K1 を変えてチューンを見る)
+q=0.45;
+REPEAT 4
+  QD K1 -q;
+  CALC;
+  Print["C07 ",q," ",Twiss["NX","$$$"]/2/Pi," ",Twiss["NY","$$$"]/2/Pi];
+  q=q+0.05;
+UNTIL
+! (6) IF / ELSE / ENDIF
+a=2;
+IF a==2
+  Print["C08 then"];
+ELSE
+  Print["C08 else"];
+ENDIF
+IF a==3
+  Print["C09 then"];
+ELSE
+  Print["C09 else"];
+ENDIF
+IF a>5
+  Print["C10 A"];
+ELSEIF a>1
+  Print["C10 B"];
+ELSEIF a>0
+  Print["C10 C"];
+ELSE
+  Print["C10 D"];
+ENDIF
+IF a<0
+  Print["C11 A"];
+ELSEIF a<1
+  Print["C11 B"];
+ELSE
+  Print["C11 D"];
+ENDIF
+! (7) 入れ子の IF
+IF a==2
+  IF a>5
+    Print["C12 inner-then"];
+  ELSE
+    Print["C12 inner-else"];
+  ENDIF
+  Print["C12 after-inner"];
+ELSE
+  IF a==2
+    Print["C12 wrong"];
+  ENDIF
+  Print["C12 wrong2"];
+ENDIF
+IF a==3
+  IF a==3
+    Print["C13 wrong"];
+  ELSE
+    Print["C13 wrong2"];
+  ENDIF
+ELSE
+  Print["C13 else"];
+ENDIF
+! (8) REPEAT の中の IF (カウンタで分岐)
+n=0;
+REPEAT 5
+  n=n+1;
+  IF n<=2
+    Print["C14 small ",n];
+  ELSE
+    Print["C14 large ",n];
+  ENDIF
+UNTIL
+! (9) IF の中の REPEAT
+IF a==2
+  m=0;
+  REPEAT 3
+    m=m+1;
+  UNTIL
+  Print["C15 m=",m];
+ENDIF
+! (10) IF 条件の後ろに同じ行でコマンドを続ける
+IF a==2 Print["C16 same-line"];
+! (11) ブロックの IF 文に FFS コマンド (CALC、DISP) を入れる
+IF a==2
+  CALC;
+  Print["C17 ",Twiss["NX","$$$"]/2/Pi];
+ENDIF
+! (12) エラー: 対応のないもの
+UNTIL a
+ELSE
+ENDIF
+Print["C18 end"];
+STOP;

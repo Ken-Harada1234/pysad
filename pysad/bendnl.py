@@ -599,7 +599,7 @@ def bend_edge_generators(el):
       入口  f_e1 = (h/2) sec²E1 · px y²  + h t² · x y py − (h t²/2) x² px − (h² t³/2) x y² − (h² t³/6) x³
       出口  f_e2 = −(h/2) sec²E2 · px y² − h t² · x y py + (h t²/2) x² px − (h² t/2) x y² + (h² t³/3) x³
     E=0 では ±(h/2) px y² (硬い端、Maxwell) だけ。K64 の tbendcore の端の式を 2 次まで展開して得た係数を、5 組の (E1, E2, h) の追跡から取り出した値と 1e-6 で確認
-    (導出は docs/49 §11.3、試験 test_bend_edge_closed_form)。戻り (f_e1, f_e2) = {(ex, epx, ey, epy): 係数}"""
+    (導出は docs/25 §11.3、試験 test_bend_edge_closed_form)。戻り (f_e1, f_e2) = {(ex, epx, ey, epy): 係数}"""
     L, ang = float(el.L), float(el.ANGLE)
     h = ang / L
     out = []

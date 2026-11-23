@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_TouschekLifetime</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_TouschekLifetime.md</div>
+<h1 id="fn_touscheklifetime">fn_TouschekLifetime</h1>
+<p>種別: 関数 / フォルダ: 06_collective / ラティス: <code>00_lattice/FODO_ring_V4MV.sad</code> (RF 4 MV、3 GeV) / フラグ: <code>RFSW; RAD; FLUC; INTRA; MINCOUP=0.01; PBUNCH=1e9</code></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>INTRA</code> を ON にして <code>EMIT</code> を実行すると、バンチ内散乱 (IBS) の拡散と同時に、Touschek 散乱の損失率の表 (<code>TouschekTable</code>) が作られる。<code>TouschekLifetime[nx, ny, nz]</code> は、その表から寿命 [秒] を補間して返す。<code>TouschekLifetime[Infinity, Infinity, nz]</code> は運動量アクセプタンス $nz\cdot\mathrm{SIGE}$ での寿命。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>RFSW; RAD; FLUC; INTRA;
+MINCOUP = 0.01;        ! 垂直エミッタンスの下限 = MINCOUP (EMITX+EMITY) (理想リングは EMITY≈0)
+PBUNCH = 1e9;
+EMIT;                  ! EMITX, EMITY, SIGE, SIGZ と TouschekTable
+TouschekLifetime[Infinity, Infinity, nz]       ! nz = 4, 6, 8
+</code></pre>
+<ul>
+<li><code>Emittance[]</code> でも表は作られるが、<code>SIGE</code> などの変数が更新されるのは <code>EMIT</code> (コマンド)。</li>
+<li>運動量アクセプタンスは SIGE ($\sigma_\delta=1.1914\times10^{-3}$) の <code>nz</code> 倍。RF バケットの高さは約 1% なので、<code>nz=8</code> ($9.5\times10^{-3}$) が RF の限界に近い。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>EMITX=1.735775e-7、EMITY=2.16e-21 (MINCOUP による下限が IBS の計算に使われる)、SIGE=1.1914e-3、SIGZ=16.06 mm。</p>
+<table>
+<thead>
+<tr>
+<th>nz</th>
+<th>運動量アクセプタンス</th>
+<th>寿命 $\tau$ [s]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>$4.766\times10^{-3}$</td>
+<td>$1.381730\times10^6$</td>
+</tr>
+<tr>
+<td>6</td>
+<td>$7.148\times10^{-3}$</td>
+<td>$3.908993\times10^6$</td>
+</tr>
+<tr>
+<td>8</td>
+<td>$9.531\times10^{-3}$</td>
+<td>$6.981234\times10^6$</td>
+</tr>
+</tbody>
+</table>
+<p>粒子数を 2 倍 (<code>PBUNCH=2e9</code>) にして <code>EMIT</code> し直した nz=6 の寿命: $1.954497\times10^6$ s、比 <code>tau(1e9)/tau(2e9)=2.000000</code>。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>Touschek 損失率は $1/\tau\propto N/(\sigma_x\sigma_y\sigma_z)\cdot\delta_{acc}^{-2}\times C(\varepsilon)$ の形 (Bruck の式。$\delta_{acc}$ は運動量アクセプタンス、$C(\varepsilon)$ は $\varepsilon=\delta_{acc}^2\beta^2\ldots$ の緩い関数)。式の係数は検証していないが、次の 2 つの性質は確認できる。</p>
+<table>
+<thead>
+<tr>
+<th>性質</th>
+<th>式</th>
+<th>結果 (gs = pysad)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$1/\tau\propto N$</td>
+<td>$\tau(N)/\tau(2N)=2$</td>
+<td>2.000000</td>
+</tr>
+<tr>
+<td>$\tau\propto\delta_{acc}^2\times$(緩い関数)</td>
+<td>$\tau(6)/\tau(4)\gtrsim(6/4)^2=2.25$、$\tau(8)/\tau(4)\gtrsim4$</td>
+<td>2.829、5.052 (ずれは $C(\varepsilon)$ の変化で 1.26 倍)</td>
+</tr>
+</tbody>
+</table>
+<p>2 つめは桁と傾向の確認だけ (係数は確かめていない)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。
+Touschek 寿命は EMIT のエミッタンスに依るので、v2 では全体に約 2% 長い (例: 表の先頭の寿命 1023084 → 1044275 s)。</p>
+<p>○ 一致 (全 10 行が印字桁まで同じ)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>絶対値 ($10^6$ s 台) は、このラティス (ビーム電流・ビームサイズは人工) での値で、実機との比較はしていない。<code>nx</code>・<code>ny</code> が有限の場合 (振幅アクセプタンス) と、<code>TouschekTable</code> の中身も見ていない。</li>
+<li>垂直エミッタンスは MINCOUP の下限 (0.01) で決まるので、寿命はこの値に依存する。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

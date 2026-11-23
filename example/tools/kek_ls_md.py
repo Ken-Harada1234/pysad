@@ -27,7 +27,7 @@ INFO = {
   what='周回ライン `RINGC` (標準セル 20 個) と `RING` (入射セル込み) の周期解 (`cell calc emit`)。周長・チューン・εx・σδ・σz を、`LINE[]`・`Twiss[]`・変数 `EMITX`・`SIGE`・`SIGZ`・`MOMENTUM` で読む。',
   how='`USE` するライン名を `FFS["USE " // nm]` で切り替えて 2 回回す。周長は `LINE["S","$$$"]` (終点の S)、チューンは `Twiss["NX","$$$"]/2/Pi`。RING は RINGC より 0.9 mm 長く (入射セルの `DRID1INJ`)、εx・σδ が少し大きい。',
   cmp='全項目が全桁一致。',
-  limits=['pysad の v2 (既定) モードは εx・σδ が K64 と 0.04% 違う (RINGC εx 134.37 pm rad、σδ 6.4045e-4。K64 のバグ B75 の修正。`docs/47_v2_changes.md`)。gs と同じ値は `PYSAD_COMPAT=k64`。',
+  limits=['pysad の v2 (既定) モードは εx・σδ が K64 と 0.04% 違う (RINGC εx 134.37 pm rad、σδ 6.4045e-4。K64 のバグ B75 の修正。`docs/28_v2_vs_k64.md`)。gs と同じ値は `PYSAD_COMPAT=k64`。',
           'エネルギー 3 GeV、周長 570.72 m、RF 2 MV、ハーモニック数 952 の設計値のラティス。誤差なし。'],
   show=r'(circumference|tune nx|EMITX|SIGE|SIGZ|LINE)', nshow=20),
  'KEKLS_cell_optics': dict(
@@ -174,7 +174,7 @@ INFO = {
   how='`R seed type | Δνx Δνy | COD rms x y [μm] | COD max x y [μm] | η のずれ rms x y [mm]` の行。位置ずれが COD の主因 (rms x 0.2〜0.4 mm、y 0.6〜1 mm)、回転は垂直の COD (rms 50〜100 μm)、強さの誤差は COD に効かずチューン・分散にだけ効く。',
   cmp='△ 種 111・3 は 1e-9 で一致。種 17 の「全部」「位置ずれ」の 2 行は違う (COD rms gs 184 / pysad 301 μm)。この種は垂直の COD が 2 mm 近い大きな場合で、閉軌道の解が前の状態に依り、gs・pysad で別の解に落ちる (乱数列は GCUT = 1 で全桁一致を確認)。',
   limits=['元は 115 個の種 (SeedRandom[187] と Random[1000] で作る)、結果を datas_e.txt に書く。例は 3 本。完全な設定は `seeds` を 115 個に (1 つの種 (4 通り) あたり gs で約 0.3 秒、pysad で約 2 秒)。',
-          '位置ずれは `DELX`・`DELY` ではなく成分ごとの `LINE["DX"/"DY", ...]` (K64 の `DELX`・`DELY` は閉軌道に効かない。`modules/modules_errors.n`)。`USE RING NOEXPAND` と `cell calc noexpand` が必要 (`docs/11_sad_quirks.md` A56)。',
+          '位置ずれは `DELX`・`DELY` ではなく成分ごとの `LINE["DX"/"DY", ...]` (K64 の `DELX`・`DELY` は閉軌道に効かない。`modules/modules_errors.n`)。`USE RING NOEXPAND` と `cell calc noexpand` が必要 (`docs/29_sad_quirks.md` A56)。',
           '元の `FFS["MON 0 0 0 0 PM*;"]` は K64 では何もしない (エラーになる) ので除いた。',
           '`GCUT = 0` のとき、gs の `GaussRandom[]` は 1e-9 程度の値を返し、pysad は打ち切りなしのガウス乱数を返す (差の確認のみ。pysad は変えていない)。'],
   show=r'(design|R )', nshow=13),
@@ -195,7 +195,7 @@ INFO = {
   how='`horizontal steerings 161 vertical steerings 121 monitors 201`、`Responsex[...]`・`Responsey[...]` の代表値、`steering HD.n ...` の行 (最大の |COD| と、SAD の COD + K0 × Response の最大の差)。SAD の COD は −K0 × Response と 1e-4 μm (最大振幅 1.7〜3.0 μm の 5e-5) 以内で一致。',
   cmp='○ 最大の COD は 1e-8、解析式との差 (1e-4 μm) の違いは 1e-7 μm 以内で一致。',
   limits=['元の WriteCODResponce[] はモニターを `BPM.*` で探し (v03_68 の BPM は `PM`) 行列が空になり、結果を fort.92 に書く。`PM.*` に直し、書き出しは省いて、代表値と SAD の COD の照合に変えた。',
-          '補正磁石 HD・VD は同じ要素名の繰り返しなので、既定の `cell calc` は K0 を全部同じ値に揃える (HD.1 に与えると全 161 個が同じ値になり、COD が 5 倍以上大きくなる)。`USE RING NOEXPAND` と `cell calc noexpand` で 1 個だけに効く (docs/11 A56)。',
+          '補正磁石 HD・VD は同じ要素名の繰り返しなので、既定の `cell calc` は K0 を全部同じ値に揃える (HD.1 に与えると全 161 個が同じ値になり、COD が 5 倍以上大きくなる)。`USE RING NOEXPAND` と `cell calc noexpand` で 1 個だけに効く (docs/29 A56)。',
           'SAD の K0 の符号は COD = −K0 × Response (PF の例 `pf/optics/calc_respx_PF` と同じ)。'],
   show=r'(horizontal|Responsex|Responsey|steering)', nshow=8),
 }

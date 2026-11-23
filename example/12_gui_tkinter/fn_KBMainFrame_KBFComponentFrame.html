@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_KBMainFrame_KBFComponentFrame (KBFrame.n の主窓と部品の枠)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#画面-pysad-の窓">画面 (pysad の窓)</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_KBMainFrame_KBFComponentFrame.md</div>
+<h1 id="fn_kbmainframe_kbfcomponentframe-kbframen-の主窓と部品の枠">fn_KBMainFrame_KBFComponentFrame (KBFrame.n の主窓と部品の枠)</h1>
+<p>種別: GUI (Packages/KBFrame.n)・フォルダ 12_gui_tkinter・ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>KEK の標準の窓の枠 <code>KBMainFrame</code> (メニューバー KEK・File・Edit・Window・Task・Help、時計、状態行) の中に、<code>KBFComponentFrame</code> で枠付きのチェックボタンの組 (<code>KBFGroup</code> のラベルにチェックボタン「Enable」、中に <code>KBFCheckButton</code> A・B・C) を置く。「Enable」で A〜C の有効・無効が切り替わる。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>w = KBMainFrame[&quot;LabelFrameDemo&quot;, f, Title-&gt;&quot;LabelFrame Demo&quot;];
+cb[0] = CheckButton[Text-&gt;&quot;Enable&quot;, Variable:&gt;cbv[0], Command:&gt;(Scan[(cb[#][State] = If[cbv[0],&quot;normal&quot;,&quot;disabled&quot;])&amp;, Range[3]])];
+cf = KBFComponentFrame[f, Add-&gt;{KBFHook[...], KBFGroup[WidgetOption-&gt;{LabelWidget-&gt;cb[0]}],
+  KBFCheckButton[Text-&gt;&quot;A&quot;, Variable:&gt;cbv[1], WidgetVariable:&gt;cb[1]], ... B, C }];
+</code></pre>
+<p><code>KBMainFrame</code> の引数は <code>KBMainFrame[名前, 枠の変数, Title-&gt;...]</code>。(<code>TkinterCore.n</code> の Tcl の準備は <code>Tkinter.n</code>・<code>KBFrame.n</code> が先に読み込む。)</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>Menubutton・Checkbutton・Labelframe の数を数えて出す。窓の画面: 上端にメニューバーと時計 (日時の表示)、中央に「Enable」を見出しにした枠、その中に A・B・C のチェックボタン、下端に状態行 (「LabelFrameDemo on :0.0」)。</p>
+<h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
+<p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
+<strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>Menubutton 6、Checkbutton 4、Labelframe 2 が gs・pysad で一致 (○)。docs/20 の記録 (木 36 行が一致、差は時刻と状態行の Label 1 個) と同じ範囲の確認。</li>
+<li><strong>窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)</strong>: gs では <code>Window[]</code> が Toplevel を作り、部品はその下に並ぶ (ルート <code>.</code> の下には「Return to SAD」ボタンと Toplevel)。pysad では <code>Window[]</code> が別の窓を作らず、部品がルート窓 <code>.</code> の直下に並ぶ。<code>tree:</code> の行のインデントの差はこのため。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は <code>update</code> で窓を作り、Tcl の <code>invoke</code> で操作を模している)。<code>KBFFrameToggled</code>・<code>KBFFrameTabed</code> (demo-KBFrame1) は pysad で途中までしか動かない (docs/20 §8) ので例にしていない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

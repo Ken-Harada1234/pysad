@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>regression_tests/ (回帰テスト)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#目次">目次</a></li>
+<li><a href="#必要な環境">必要な環境</a></li>
+<li><a href="#実行手順">実行手順</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#50-ベンチの一覧">50 ベンチの一覧</a></li>
+<li><a href="#ファイルの構成と名前の規則">ファイルの構成と名前の規則</a></li>
+<li><a href="#基準の作り方">基準の作り方</a></li>
+<li><a href="#bench_extra-自動判定の対象外">bench_extra/ (自動判定の対象外)</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="regression_tests-回帰テスト">regression_tests/ (回帰テスト)</h1>
+<p>SAD (K64) との照合ベンチ 50 本 (Level 1〜14・16・22・24・26〜31) を、子プロセスで順に走らせて合否を一覧にする。
+<strong>基準はあらかじめ SAD (K64) で取って保存した出力 (<code>bench/bench_levelN.result</code>)</strong> で、実行時に SAD (WSL) は要らない。pysad は互換モード k64 (<code>PYSAD_COMPAT</code> が未設定なら自動で k64) で走り、SAD の出力と数値を突き合わせる。
+機能ごとの自動試験は姉妹フォルダ <a href="../script_tests/README.html"><code>../script_tests/</code></a>。上位の説明は <a href="../README.html"><code>../README.md</code></a>。</p>
+<h2 id="目次">目次</h2>
+<ol>
+<li><a href="#必要な環境">必要な環境</a></li>
+<li><a href="#実行手順">実行手順</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#50-ベンチの一覧">50 ベンチの一覧</a></li>
+<li><a href="#ファイルの構成と名前の規則">ファイルの構成と名前の規則</a></li>
+<li><a href="#基準の作り方">基準の作り方</a></li>
+<li><a href="#bench_extra-自動判定の対象外">bench_extra/ (自動判定の対象外)</a></li>
+</ol>
+<h2 id="必要な環境">必要な環境</h2>
+<ul>
+<li>Python 3.12、pysad の依存 (numpy・numba など)。リポジトリのルートの pysad を使う (ベンチの pysad スクリプトは <code>sys.path</code> にルートを足す)。</li>
+<li>SAD (K64) は不要。ベンチの台本 <code>.sad</code> は、pysad の <code>run_sad.py</code> が実行する。</li>
+<li>目安時間は <code>run_regression.py</code> の値 (実測の記録ではなく目安)。合計は全部で約 17 分、<code>QUICK=1</code> で約 7 分。</li>
+</ul>
+<h2 id="実行手順">実行手順</h2>
+<p>リポジトリのルートから (どのフォルダからでも動く)。</p>
+<pre><code>PYTHONIOENCODING=utf-8 py -3.12 -u pysad/tests/regression_tests/run_regression.py            # 全部 (約 17 分)
+QUICK=1 PYTHONIOENCODING=utf-8 py -3.12 -u pysad/tests/regression_tests/run_regression.py    # 遅い 4 本 (7・12t・13a・16a) を飛ばす (約 7 分)
+py -3.12 -u pysad/tests/regression_tests/run_regression.py 3b 12 13a                          # 指定したものだけ (キーは下の表)
+</code></pre>
+<p>PowerShell では <code>$env:QUICK="1"; $env:PYTHONIOENCODING="utf-8"</code> を設定してから実行する。各ベンチの出力は <code>regression_tests/regression_out/&lt;キー&gt;.txt</code> に保存される (実行ごとの出力なので git には入れない)。終了コードは FAIL があれば 1。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<ul>
+<li><strong>PASS</strong>: 全項目が許容内。<code>PASS*</code>: 既知の不一致 (KNOWN) だけで、ほかは許容内。<strong>FAIL</strong>: 許容を超える項目がある (一覧の最後に項目と差・許容が出る)。<strong>SKIP</strong>: <code>QUICK=1</code> で省略。</li>
+<li>許容 (<code>run_regression.py</code> の定数、<code>docs/27_benchmarks.md</code>): 追跡は座標の絶対差 1e-9。CALC (オンモメンタム、閉軌道 0) は 1e-9。CALC (閉軌道・結合・オフモメンタム経由) は相対 1e-7 (SAD の qcod の収束と pysad の数値微分の丸めのため)。Emittance[] (6D) は相対 1e-6、SAD の表示が 5 桁のときは相対 5e-5。マッチングは 1e-9。DA は地図の文字列と Score が一致 (損失周数は境界粒子 1 個の ±1 周まで既知)。Level 1・2 の Twiss は SAD の表示が 6 桁なので絶対 1e-6、RADINT は 7 桁表示なので相対 1e-6、色収差の 1 次係数は 1e-5。</li>
+</ul>
+<h2 id="50-ベンチの一覧">50 ベンチの一覧</h2>
+<p>キーは実行時の指定名。「実行」の (A) は pysad スクリプト <code>bench/bench_levelN_pysad.py</code> を直接、(B) は <code>run_sad.py</code> に <code>bench/bench_levelN.sad</code> を渡す。(A) は 1〜12・12t・12f・27a・27b の 17 本、(B) は残り 33 本。</p>
+<table>
+<thead>
+<tr>
+<th>キー</th>
+<th>Level</th>
+<th>何を確かめるか</th>
+<th>実行</th>
+<th>許容</th>
+<th>目安時間</th>
+<th>QUICK</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>L1</td>
+<td>線形光学・COD (QD に DX)・RADINT・Emittance[] (小リング)</td>
+<td>(A)</td>
+<td>Twiss 絶対 1e-6 (SAD 表示 6 桁)、COD 1e-10+相対 1e-7、RADINT 相対 1e-6、Emittance 相対 1e-6</td>
+<td>3 s</td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>L2</td>
+<td>オフモメンタム Twiss (dp=0, ±0.01, ±0.02) と K1 付き BEND (小リング)</td>
+<td>(A)</td>
+<td>Twiss 絶対 1e-6、RADINT 1e-6、Emittance 1e-6</td>
+<td>6 s</td>
+<td></td>
+</tr>
+<tr>
+<td>3a</td>
+<td>L3A</td>
+<td>6 極と色収差 (DP0 スキャン 21 点、3 次当てはめ)</td>
+<td>(A)</td>
+<td>チューン 1e-7 (相対)、色収差 c1 は 1e-5</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>3b</td>
+<td>L3B</td>
+<td>6 極を通る COD (DELX/DELY 1 台)</td>
+<td>(A)</td>
+<td>閉軌道 1e-12+相対 1e-7、光学 1e-8+相対 1e-7、Emittance 1e-6</td>
+<td>6 s</td>
+<td></td>
+</tr>
+<tr>
+<td>3c</td>
+<td>L3C</td>
+<td>x-y 結合 (DTHETA)・Emittance[]</td>
+<td>(A)</td>
+<td>同上 (結合 R は 1e-7)</td>
+<td>4 s</td>
+<td></td>
+</tr>
+<tr>
+<td>3d</td>
+<td>L3D</td>
+<td>強さの誤差 (DK/DDK)</td>
+<td>(A)</td>
+<td>同上</td>
+<td>3 s</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>L4</td>
+<td>RF 空洞 (RFSW・RADCOD) の Emittance[]</td>
+<td>(A)</td>
+<td>Emittance 相対 1e-6、閉軌道 1e-9</td>
+<td>4 s</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>L5</td>
+<td>輸送ライン (INS) とフリンジ</td>
+<td>(A)</td>
+<td>Twiss 絶対 1e-6、軌道 1e-9、位相 1e-7</td>
+<td>1 s</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>L6</td>
+<td>追跡: RAD OFF・RAD ON NOFLUC (5 粒子、1/10/100 周)</td>
+<td>(A)</td>
+<td>座標の絶対 1e-9</td>
+<td>9 s</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>L7</td>
+<td>追跡: 誤差入り要素・K1≠0 の BEND</td>
+<td>(A)</td>
+<td>1e-9</td>
+<td>2 min</td>
+<td>飛ばす</td>
+</tr>
+<tr>
+<td>8</td>
+<td>L8</td>
+<td>追跡: 四極フリンジ・長い空洞・MULT</td>
+<td>(A)</td>
+<td>1e-9</td>
+<td>35 s</td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>L9</td>
+<td>追跡: ソレノイド (SOL BZ=2 T)</td>
+<td>(A)</td>
+<td>1e-9</td>
+<td>9 s</td>
+<td></td>
+</tr>
+<tr>
+<td>10</td>
+<td>L10</td>
+<td>追跡: RAD+FLUC (SAD の乱数列)</td>
+<td>(A)</td>
+<td>1e-9</td>
+<td>9 s</td>
+<td></td>
+</tr>
+<tr>
+<td>11</td>
+<td>L11</td>
+<td>追跡: MULT の K0/K1/K2 とずれ・回転</td>
+<td>(A)</td>
+<td>1e-9</td>
+<td>17 s</td>
+<td></td>
+</tr>
+<tr>
+<td>12</td>
+<td>L12</td>
+<td>ESRF 型の実ラティス (3 GeV、20 セル、3564 要素): 読み込み・CELL CALC・emit</td>
+<td>(A)</td>
+<td>読み込み・CALC 1e-9、emit 相対 5e-5 (SAD 表示 5〜8 桁)</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>12t</td>
+<td>L12</td>
+<td>同: 追跡 (純 Python の track6)</td>
+<td>(A)</td>
+<td>1e-9</td>
+<td>1 min</td>
+<td>飛ばす</td>
+</tr>
+<tr>
+<td>12f</td>
+<td>L12</td>
+<td>同: 追跡 (numba の track6n)</td>
+<td>(A)</td>
+<td>純 Python との一致を判定</td>
+<td>20 s</td>
+<td></td>
+</tr>
+<tr>
+<td>13a</td>
+<td>L13A</td>
+<td>マッチング FIT/FREE/GO (小リング)。13A-2 は収束しない場合の反復も比較</td>
+<td>(B)</td>
+<td>1e-9 (タグ: K1、残差、Twiss)</td>
+<td>3〜4 min</td>
+<td>飛ばす</td>
+</tr>
+<tr>
+<td>13b</td>
+<td>L13B</td>
+<td>マッチング (ESRF 型、7 ファミリー)</td>
+<td>(B)</td>
+<td>1e-9</td>
+<td>10 s〜</td>
+<td></td>
+</tr>
+<tr>
+<td>14a</td>
+<td>L14A</td>
+<td>SADScript: esrf/calc_chromaticity</td>
+<td>(B)</td>
+<td>(check_level14a)</td>
+<td>30 s</td>
+<td></td>
+</tr>
+<tr>
+<td>16a</td>
+<td>L16A</td>
+<td>DynamicApertureSurvey (NORAD)</td>
+<td>(B)</td>
+<td>地図の文字列と Score が一致。損失周は ±1 周まで既知</td>
+<td>30 s〜</td>
+<td>飛ばす</td>
+</tr>
+<tr>
+<td>27a</td>
+<td>L27A</td>
+<td>MAIN の TRACK: 規格化振幅→初期分布、smear、チューン (wtunem)、RAD/FLUC (SAD 側は SADScript 版)</td>
+<td>(A)</td>
+<td>(check_level27: 保存した SAD 版の出力と比較)</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>27b</td>
+<td>L27B</td>
+<td>MAIN の TRACK: 粒子が落ちる場合 (損失周、落ちた粒子の x,y,z)</td>
+<td>(A)</td>
+<td>同上</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>22e</td>
+<td>L22E</td>
+<td>INS/CELL: 四極ずれ・DP0≠0 (閉軌道≠0、ESRF 型)</td>
+<td>(B)</td>
+<td>行比較 1e-10</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>26a</td>
+<td>L26A</td>
+<td>EMIT 報告の全行 (ESRF 型。RFSW × RADCOD の 4 通り)</td>
+<td>(B)</td>
+<td>報告行の数値 (雑音 1e-11、相対 1e-9)</td>
+<td>12 s</td>
+<td></td>
+</tr>
+<tr>
+<td>26b</td>
+<td>L26B</td>
+<td>四極 FRINGE=1〜3・ずれ・ロール付き四極・6 極 (CALC と Emittance[])</td>
+<td>(B)</td>
+<td>行比較 3e-9</td>
+<td>3 s</td>
+<td></td>
+</tr>
+<tr>
+<td>26c</td>
+<td>L26C</td>
+<td>Orbit dilation (FSHIFT): EMIT 報告・Emittance[]・CALC6D</td>
+<td>(B)</td>
+<td>報告行+行比較 1e-9</td>
+<td>8 s</td>
+<td></td>
+</tr>
+<tr>
+<td>26d</td>
+<td>L26D</td>
+<td>RFSW OFF+RADCOD ON の Emittance[]・CALC6D (ESRF 型)</td>
+<td>(B)</td>
+<td>行比較 1e-9</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>28a</td>
+<td>L28A</td>
+<td>不安定ライン (INTRES/HALFRES ON) の CELL CALC の続行・Unstable 表示・GO (nstab) (V・H・HV の 3 通り)</td>
+<td>(B)</td>
+<td>1e-8 (一部のタグは 1e-3〜1e-6 に緩める)</td>
+<td>12 s</td>
+<td></td>
+</tr>
+<tr>
+<td>28b</td>
+<td>L28B</td>
+<td>不安定ライン: INTRES/HALFRES の 4 通りと GO</td>
+<td>(B)</td>
+<td>1e-8 (一部緩める)</td>
+<td>12 s</td>
+<td></td>
+</tr>
+<tr>
+<td>28c</td>
+<td>L28C</td>
+<td>不安定な光学 (V: QD ×1.19) の EMIT 報告の全行</td>
+<td>(B)</td>
+<td>雑音 1e-10</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>28d</td>
+<td>L28D</td>
+<td>不安定な光学 (H: QF ×0.9) の EMIT 報告の全行</td>
+<td>(B)</td>
+<td>雑音 1e-4・相対 3e-5 (T の悪条件)</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>28f</td>
+<td>L28F</td>
+<td>不安定な光学の Emittance[] (V・H): Stable=0、戻り値の全量</td>
+<td>(B)</td>
+<td>行比較 3e-5</td>
+<td>15 s</td>
+<td></td>
+</tr>
+<tr>
+<td>30a</td>
+<td>L30A</td>
+<td>INS+CALC6D (qcell6d の cell=.false. の枝): 先頭 MARK の 28 成分から 6D 伝搬 (5 通り)</td>
+<td>(B)</td>
+<td>行比較 1e-9</td>
+<td>20 s</td>
+<td></td>
+</tr>
+<tr>
+<td>30b</td>
+<td>L30B</td>
+<td>RFSW ON+RADCOD OFF+FSHIFT≠0 の Emittance[] (tcod の 6D Newton)</td>
+<td>(B)</td>
+<td>行比較 1e-10</td>
+<td>60 s</td>
+<td></td>
+</tr>
+<tr>
+<td>29a</td>
+<td>L29A</td>
+<td>RADINT コマンド (ESRF 型 6 通り: RFSW/EMIT 後/ずれ・ロール/DP0/COD)</td>
+<td>(B)</td>
+<td>相対 1e-6</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>29a2</td>
+<td>L29A</td>
+<td>RADINT: 小リング (E1/E2 付き BEND、RF なし/あり、結合)</td>
+<td>(B)</td>
+<td>相対 1e-4</td>
+<td>3 s</td>
+<td></td>
+</tr>
+<tr>
+<td>29b</td>
+<td>L29B</td>
+<td>DISP の位置範囲 (数値・名前・NAME.n±k・パターン・周回・ALL・R/O/E モード)</td>
+<td>(B)</td>
+<td>ブロック比較 1e-9 (D37 を除く)</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>29c</td>
+<td>L29C</td>
+<td>CALC6D;/CALC4D; 単独 (CALC なし) の挙動</td>
+<td>(B)</td>
+<td>行比較 1e-9</td>
+<td>15 s</td>
+<td></td>
+</tr>
+<tr>
+<td>29d</td>
+<td>L29D</td>
+<td>FFS 内の ON/OFF flag</td>
+<td>(B)</td>
+<td>ブロック比較 1e-10 (E17 を除く)</td>
+<td>5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>29e</td>
+<td>L29E</td>
+<td>FSHIFT の追跡: NORAD / RAD / RAD+FLUC (乱数も)</td>
+<td>(B)</td>
+<td>行比較 5e-11</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>31a</td>
+<td>L31A</td>
+<td>誤差コマンド (DELX/DELY/DK/DTHETA/DDK、UNIFORM/COHERENT/ADD) と CALC (ESRF 型、128 タグ)</td>
+<td>(B)</td>
+<td>タグ比較 (1e-10, 1e-7)</td>
+<td>10 s</td>
+<td></td>
+</tr>
+<tr>
+<td>31b</td>
+<td>L31B</td>
+<td>Twiss[]/LINE[] の位置パターンの返り値 (一致 1 個はスカラー、0 個は {}) (ESRF 型)</td>
+<td>(B)</td>
+<td>タグ比較 (1e-10, 1e-8)</td>
+<td>5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24a</td>
+<td>L24A</td>
+<td>SADScript のリスト・文字列・行列関数 (559 タグ。ラティス不要)</td>
+<td>(B)</td>
+<td>タグ比較。既知の不一致 10 タグ (T118 T191 T195 T220 T221 T222 T229 T231 U143 W075)</td>
+<td>3 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24b</td>
+<td>L24B</td>
+<td>CHROMATICITY コマンド (ESRF 型、全 960 要素)</td>
+<td>(B)</td>
+<td>タグ比較</td>
+<td>15 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24b2</td>
+<td>L24B</td>
+<td>CHROMATICITY (MULT の K1/K2、DP0≠0)</td>
+<td>(B)</td>
+<td>タグ比較</td>
+<td>5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24c</td>
+<td>L24C</td>
+<td>FFS の REPEAT/UNTIL、IF/ELSEIF/ELSE/ENDIF</td>
+<td>(B)</td>
+<td>タグ比較</td>
+<td>5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24d</td>
+<td>L24D</td>
+<td>CalculateOptics (4 次元、cell/INS・区間・結合・分散)</td>
+<td>(B)</td>
+<td>タグ比較 (1e-8, 1e-7)</td>
+<td>5 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24d2</td>
+<td>L24D</td>
+<td>CalculateOptics (ESRF 型、6 次元)</td>
+<td>(B)</td>
+<td>タグ比較 (1e-8, 1e-7)</td>
+<td>60 s</td>
+<td></td>
+</tr>
+<tr>
+<td>24f</td>
+<td>L24F</td>
+<td>Element/SetElement/FLAG/BeamLine/WriteBeamLine/USE BeamLine</td>
+<td>(B)</td>
+<td>タグ比較。既知 1 タグ (G004)</td>
+<td>5 s</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>QUICK=1 で飛ばすのは 7・12t・13a・16a の 4 本。ラティスの種別は、<code>run_regression.py</code> の説明とベンチ冒頭の記述による (26b・24 系の一部は未確認)。Level 1〜12 の小リングは Level 4・6 で共有する 2.5 GeV 前後のリング、ESRF 型の大きなリング (3 GeV、20 セル、3564 要素) は台本の冒頭に埋め込む。pysad スクリプトは 12・12t・12f・13b で <code>pysad/tests/kek-ls_v03_12.lat</code> を直接読む。</p>
+<h2 id="ファイルの構成と名前の規則">ファイルの構成と名前の規則</h2>
+<pre><code>regression_tests/
+  run_regression.py         実行と判定 (BENCHES に 50 本の定義)
+  cmp_tags.py cmp_lines.py cmp_blocks.py cmp_radint.py cmp_emit_report.py   判定の部品 (script_tests の一部の試験も import する)
+  bench/                    50 本が使う台本・pysad スクリプト・基準結果 (+ lat_extra.sad・modules_general.n: 台本が相対パスで読む補助)
+  bench_extra/              自動判定の対象外のもの (手動確認用)
+  regression_out/           実行ごとの出力 (追跡しない)
+</code></pre>
+<p>N = Level 番号 + 枝 (3a、13b、26c など)。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bench_levelN.sad</code></td>
+<td>SAD (K64) 用の台本。<code>run_sad.py</code> で pysad にも走らせる</td>
+</tr>
+<tr>
+<td><code>bench_levelN.result</code></td>
+<td>SAD (K64) で取った基準の出力 (保存したもの。判定の基準)</td>
+</tr>
+<tr>
+<td><code>bench_levelN_pysad.py</code></td>
+<td>pysad 側のスクリプト。差を印字する。<code>.result</code> を読んで比べるものもある (1・2・7・12 ほか)</td>
+</tr>
+<tr>
+<td><code>bench_levelN_pysad.result</code></td>
+<td>pysad の出力の保存 (参考。判定には使わない。<code>bench_extra/</code>)</td>
+</tr>
+<tr>
+<td><code>bench_level12_track_pysad.py</code>・<code>bench_level12_track_fast.py</code></td>
+<td>12t・12f 用 (純 Python と numba の追跡)</td>
+</tr>
+<tr>
+<td><code>bench_level27a.sad</code>・<code>bench_level27a_main.sad</code>・<code>bench_level27b_main.sad</code>・<code>bench_level27a_pysad.py</code></td>
+<td>27a・27b 用。MAIN の TRACK は SAD (K64) では動かないため、SAD 側は SADScript で書いた版 (<code>bench_level27a.sad</code>)、pysad 側は MAIN 形式 (<code>_main.sad</code>)</td>
+</tr>
+<tr>
+<td><code>bench_levelN.pysad</code></td>
+<td>(24a〜24f の一部) pysad の出力の保存</td>
+</tr>
+<tr>
+<td><code>cmp_*.py</code></td>
+<td>判定の部品 (タグ・行・ブロック・RADINT・EMIT 報告の比較)</td>
+</tr>
+</tbody>
+</table>
+<p>実行時に生成される <code>bench_level27a_pysad.out</code>・<code>bench_level27b_pysad.out</code>・<code>datas.txt</code> は追跡しない (リポジトリ直下の <code>.gitignore</code>)。</p>
+<h2 id="基準の作り方">基準の作り方</h2>
+<p>SAD (K64) がある環境 (WSL の <code>gs</code>) で行う。この手順は、このリポジトリでは実行していない (保存済みの基準を使うため)。</p>
+<ol>
+<li><code>bench/</code> へ移り、台本を SAD で走らせて画面出力を保存する (例: <code>gs bench_level26a.sad &lt; /dev/null &gt; bench_level26a.result</code>)。台本の相対パスの読み込み (<code>lat_extra.sad</code>・<code>modules_general.n</code>) は <code>bench/</code> が基準。</li>
+<li><code>run_regression.py</code> の <code>BENCHES</code> に、キー・実行するファイル・判定関数・許容を足す。判定関数は <code>check_tags</code> (タグ付き <code>Print</code>)、<code>check_lines</code>、<code>check_emit_report</code>、<code>check_radint</code>、<code>check_blocks</code> などから選ぶ。</li>
+<li><code>py -3.12 -u pysad/tests/regression_tests/run_regression.py &lt;キー&gt;</code> で PASS を確認する。SAD の値が小数 6〜7 桁表示のときは許容を表示桁に合わせる (上の許容)。</li>
+</ol>
+<h2 id="bench_extra-自動判定の対象外">bench_extra/ (自動判定の対象外)</h2>
+<p><code>run_regression.py</code> の 50 本に入らないベンチの台本と基準 (245 ファイル)。自動判定は無く、必要なときに手で走らせる (<code>py -3.12 -u run_sad.py pysad/tests/regression_tests/bench_extra/bench_levelNN.sad</code>)。内容: Level 15・16b〜l・17〜21・23・25 の台本と基準 (<code>bench_level16*.sad</code> は DA の大規模な走査、<code>bench_level20_dasv_*</code> は DAsv[] の長い計算)、<code>bench_item6_*</code> (Emittance 表示・DISP の名前の台本。<code>script_tests/test_emit_jac.py</code> が読む)、<code>bench_level25a〜f</code> (<code>test_rotate.py</code> が読む)、調査用 (<code>bench_level14a_dbg*.sad</code>・<code>bench_match6d_check.py</code>)、実行の記録 (<code>.npy</code>・<code>.start</code>・<code>.end</code>・<code>.time</code>)。説明は <code>docs/27_benchmarks.md</code>。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

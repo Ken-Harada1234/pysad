@@ -1,0 +1,110 @@
+! ============================================================
+! bench_level3b.sad — Level 3B benchmark: closed orbit through sextupoles
+!   ラティスは bench_level3a.sad を基に、QF-SF と QD-SD の間に 0.1 m のドリフト DQS を挟んだもの
+!   (ドリフトなしで続けると SF は QF と一緒に動き、SF 単独の誤差を入れられないため)。
+!   周長 140 m を保つため DS を 0.9 m にした。六極は補正前の K2。
+!   誤差を 1 台だけ入れる: QD.1 に DELX、SF.1 に DELY (σ=1e-4, GCUT=2, SeedRandom[13])。
+!   比べる量: 誤差の値, 閉軌道, COD ありの光学 (チューン, β, 結合 R1-R4), 色収差。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+CELL;
+CALC;
+
+! 最小二乗の多項式当てはめ (bench_level3a.sad と同じ。SAD の PolynomialFit はバグあり)
+MyPolyFit[d_,nord_]:=Module[{x,y,h,u,col,a,m,v,c,k,res},
+  {x,y}=Thread[d];
+  h=Max[Abs[x]];
+  u=x/h;
+  col=Table[1,{Length[x]}];
+  a={};
+  Do[AppendTo[a,col]; col=col*u,{k,0,nord}];
+  a=Transpose[a];
+  m=Transpose[a].a;
+  v=Transpose[a].y;
+  c=LinearSolve[m,v];
+  res=Sqrt[(Plus@@((a.c-y)^2))/Length[x]];
+  {Table[c[[k+1]]/h^k,{k,0,nord}],res}];
+
+! ------------------------------------------------------------
+! (1) 誤差を 1 台だけ入れる
+! ------------------------------------------------------------
+GCUT = 2;
+SeedRandom[13];
+DELX 1E-4 QD.1;
+DELY 1E-4 SF.1;
+cell calc;
+COD;
+dump;
+Print["=== Test 3B-1: errors ==="];
+Print["E DX QD.1 ",LINE["DX","QD.1"]];
+Print["E DY SF.1 ",LINE["DY","SF.1"]];
+
+! ------------------------------------------------------------
+! (2) 閉軌道 (入口, QD.1 入口, SF.1 入口, ORG.11)
+! ------------------------------------------------------------
+Print["=== Test 3B-2: closed orbit ==="];
+Print["O ^^^    ",{Twiss["DX","^^^"],Twiss["DPX","^^^"],Twiss["DY","^^^"],Twiss["DPY","^^^"]}];
+Print["O QD.1   ",{Twiss["DX","QD.1"],Twiss["DPX","QD.1"],Twiss["DY","QD.1"],Twiss["DPY","QD.1"]}];
+Print["O SF.1   ",{Twiss["DX","SF.1"],Twiss["DPX","SF.1"],Twiss["DY","SF.1"],Twiss["DPY","SF.1"]}];
+Print["O ORG.11 ",{Twiss["DX","ORG.11"],Twiss["DPX","ORG.11"],Twiss["DY","ORG.11"],Twiss["DPY","ORG.11"]}];
+
+! ------------------------------------------------------------
+! (3) COD ありの光学 (入口)
+! ------------------------------------------------------------
+Print["=== Test 3B-3: optics with COD ==="];
+Print["T BX  ",Twiss["BX","^^^"]];
+Print["T BY  ",Twiss["BY","^^^"]];
+Print["T AX  ",Twiss["AX","^^^"]];
+Print["T AY  ",Twiss["AY","^^^"]];
+Print["T EX  ",Twiss["EX","^^^"]];
+Print["T EY  ",Twiss["EY","^^^"]];
+Print["T R   ",{Twiss["R1","^^^"],Twiss["R2","^^^"],Twiss["R3","^^^"],Twiss["R4","^^^"]}];
+Print["T QX  ",Twiss["NX","$$$"]/2/Pi];
+Print["T QY  ",Twiss["NY","$$$"]/2/Pi];
+
+! ------------------------------------------------------------
+! (4) COD ありの色収差: DP0 = -0.01 .. 0.01 (0.001 刻み) のチューンを 3 次で当てはめ
+! ------------------------------------------------------------
+Print["=== Test 3B-4: chromaticity with COD ==="];
+tunex=Table[{i,0},{i,-0.01,0.01,0.001}];
+tuney=Table[{i,0},{i,-0.01,0.01,0.001}];
+j=0;
+Do[
+  j = j + 1;
+  DP0=i;
+  FFS["cell calc;"];
+  Print["Q ",{i,Twiss["NX","$$$"]/2/Pi,Twiss["NY","$$$"]/2/Pi}];
+  tunex[j,2] = Twiss["NX","$$$"]/2/Pi;
+  tuney[j,2] = Twiss["NY","$$$"]/2/Pi;
+,{i,-0.01,0.01,0.001}];
+DP0=0;
+FFS["cell calc;"];
+Print["FITX ",MyPolyFit[tunex,3]];
+Print["FITY ",MyPolyFit[tuney,3]];
+
+stop;
+stop;

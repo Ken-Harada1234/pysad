@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Entry_ListBox_Scale (Entry・ListBox・Scale・RadioButton)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#画面-pysad-の窓">画面 (pysad の窓)</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Entry_ListBox_Scale.md</div>
+<h1 id="fn_entry_listbox_scale-entrylistboxscaleradiobutton">fn_Entry_ListBox_Scale (Entry・ListBox・Scale・RadioButton)</h1>
+<p>種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし。pysad でも動く (親の違いが残る)</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>入力欄 (<code>Entry</code>、<code>TextVariable</code> で SAD の変数 <code>ev</code> に結ぶ)、一覧 (<code>ListBox</code>)、スライダ (<code>Scale</code>、<code>Variable</code>)、ラジオボタン 2 個 (<code>RadioButton</code>、<code>Value</code> と <code>Variable</code>)。ウィジェットのメソッド <code>e[Insert]={"end","XY"}</code> も試す。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>e=Entry[w,TextVariable:&gt;ev,Width-&gt;20,Side-&gt;&quot;top&quot;];     lb=ListBox[w,Height-&gt;3,Side-&gt;&quot;top&quot;];
+s=Scale[w,From-&gt;0,To-&gt;10,Orient-&gt;&quot;horizontal&quot;,Variable:&gt;sv,Side-&gt;&quot;top&quot;];
+r1=RadioButton[w,Text-&gt;&quot;A&quot;,Value-&gt;1,Variable:&gt;rv,Side-&gt;&quot;top&quot;];   r2=RadioButton[w,Text-&gt;&quot;B&quot;,Value-&gt;2,Variable:&gt;rv,Side-&gt;&quot;top&quot;];
+e[Insert]={&quot;end&quot;,&quot;XY&quot;};   lb[Insert]={&quot;end&quot;,&quot;item1&quot;};   lb[Insert]={&quot;end&quot;,&quot;item2&quot;};
+</code></pre>
+<p><code>Insert</code> の位置は Tcl の添字なので小文字の <code>"end"</code> (大文字 <code>"End"</code> は gs で Tcl エラー 1501)。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>entry=</code> は Entry の中身 (<code>ev="abc"</code> が入る)、<code>entry after Insert=</code> は <code>e[Insert]</code> のあと、<code>listbox size=</code> は ListBox の項目数、<code>rv=</code>・<code>sv=</code> はラジオボタン B を押し Scale を 8 にしたあとの変数。</p>
+<h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
+<p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
+<strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>変数との結びつき (<code>entry=abc</code>、<code>rv=2</code>、<code>sv=8</code>) は gs・pysad で一致 (○)。</li>
+<li><strong>○ メソッドも一致</strong>: <code>e[Insert]={"end","XY"}</code> で Entry が <code>abcXY</code>、<code>lb[Insert]</code> 2 回で ListBox が 2 項目、<code>Head[e]</code> は <code>Widget</code> で gs と同じ。<code>Tkinter.n</code> の入れ子の規則では、<code>With</code> が呼び出し元の引数名 (ユーザーの <code>w</code>) を見ると <code>a$:=Widget[a$,…]</code> が別名に付き、<code>Head[e]</code> が <code>Symbol</code> で <code>e[...]</code> が何も呼ばない。pysad はこれを避けている (docs/20、試験 <code>test_widget_values_and_methods_like_gs</code>)。</li>
+<li><strong>窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)</strong>: gs では <code>Window[]</code> が Toplevel を作り、部品はその下に並ぶ (ルート <code>.</code> の下には「Return to SAD」ボタンと Toplevel)。pysad では <code>Window[]</code> が別の窓を作らず、部品がルート窓 <code>.</code> の直下に並ぶ。<code>tree:</code> の行のインデントの差はこのため。</li>
+<li><strong><code>Head[w]</code>・<code>Head[b]</code></strong>: gs・pysad とも <code>Widget</code> (○)。<code>tree:</code> の <code>Entry s6tv_8</code> (gs) と <code>Entry s2tv_4</code> (pysad) の番号の差は、gs が起動時に「Return to SAD」ボタンなどのウィジェットを先に作っていることによる (表示の番号の差)。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は <code>update</code> で窓を作り、Tcl の <code>invoke</code> で操作を模している)。<code>SpinBox</code>・<code>OptionMenu</code>・<code>ScrollBar</code>・<code>TextEditor</code> は例にしていない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

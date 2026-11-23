@@ -1,0 +1,6 @@
+{
+  "example/ddba/v07_14/sextupole_v2/README.md": {
+    "fold_regex": "^(ラウンド|揺らぎの確認|反省)",
+    "fold_level": 3
+  }
+}

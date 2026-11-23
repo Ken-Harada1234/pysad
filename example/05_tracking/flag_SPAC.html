@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flag_SPAC</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト-要点">スクリプト (要点)</a></li>
+<li><a href="#結果">結果</a><ul>
+<li><a href="#a-1-m-のドリフト-20-mev1e12-個01-m半径-1-mm--rms-05-mm">(A) 1 m のドリフト (20 MeV、1e12 個/0.1 m、半径 1 mm → rms 0.5 mm)</a></li>
+<li><a href="#b-リング-1-周のチューンシフト-ν--6696-490615e9-個σz--1-cm">(B) リング 1 周のチューンシフト (ν = (6.696, 4.906)、1.5e9 個、σz = 1 cm)</a></li>
+<li><a href="#c-radius--04-mm-絞りだけ2-周">(C) RADIUS = −0.4 mm (絞りだけ、2 周)</a></li>
+</ul>
+</li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: flag_SPAC.md</div>
+<h1 id="flag_spac">flag_SPAC</h1>
+<p>種別: フラグ / フォルダ: 05_tracking / ラティス: <code>00_lattice/spac_ring.sad</code> (<code>FODO_ring.sad</code> の <code>DRIFT</code> に <code>RADIUS=0.03</code> を付けた版。運動量 20 MeV、空洞の電圧 0、1 m のドリフトだけの輸送路 <code>TL</code> つき) / フラグ: <code>SPAC</code>、<code>RFSW NORAD NOFLUC</code></p>
+<p><strong>出力のモード</strong>: <code>flag_SPAC.pysad.txt</code> は pysad の <strong>v2 モード</strong> (既定。<code>PYSAD_COMPAT</code> を指定しない) の出力、<code>flag_SPAC.gs.txt</code> は gs (K64、2026-10-19 ビルド) の出力 (2026-11-17)。pysad の k64 モード (<code>PYSAD_COMPAT=k64</code>) では空間電荷は追跡に入らない (K64 の SPAC の誤りを再現する翻訳はしていない。RADIUS&lt;0 の絞りも k64 モードでは入らない)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>SPAC</code> を ON にすると、追跡 (<code>TrackParticles</code>) で空間電荷が入る (1 バンチの実粒子数 <code>PBUNCH</code>。マクロ粒子 1 個の電荷は PBUNCH/粒子数)。真空ダクトは設計軌道を軸とする円筒で、半径を <code>DRIFT</code> (と <code>MULT</code>) の <code>RADIUS</code> で与える: RADIUS&gt;0 なら空間電荷を入れ、その半径の絞りも置く。RADIUS&lt;0 なら空間電荷なしで半径 |RADIUS| の絞りだけ。RADIUS=0 は何もしない (SADHelp)。</p>
+<p>この例は 3 つの部分からなる。</p>
+<ul>
+<li>(A) 1 m のドリフト: 一様なビームの広がりを、包絡方程式 $a''=K/a$ と比べる。</li>
+<li>(B) リング 1 周: 試験粒子のチューンシフトを Laslett の式と比べる。空間電荷は RADIUS&gt;0 の DRIFT の中だけなので、周長の 50% (52.8 m / 105.6 m) にしか入らない。</li>
+<li>(C) RADIUS&lt;0: 絞りだけ。</li>
+</ul>
+<h2 id="スクリプト-要点">スクリプト (要点)</h2>
+<pre><code>RFSW; NORAD; NOFLUC;             ! フラグは FFS の最上位に書く
+USE TL; INS; CALC;               ! (A)
+PBUNCH = 1e12;
+NOSPAC;  r = TrackParticles[{1, beam}][[2]];
+SPAC;    r = TrackParticles[{1, beam}][[2]];
+USE RING; CELL; CALC;            ! (B)
+PBUNCH = 1.5e9;  SPACSTEP = 0.1;
+NOSPAC;  nu0 = tune[];           ! tune[]: 試験粒子 1 個をビームと一緒に 1 周させて 1 周の行列の対角和を作る関数
+SPAC;    nu1 = tune[];
+Element[&quot;RADIUS&quot;,&quot;D1&quot;] = -4e-4; ...                   ! (C) 負の RADIUS = 絞りだけ
+</code></pre>
+<ul>
+<li><strong>フラグは最上位に書く。</strong> <code>Do[..., NOSPAC; ...; SPAC; ...]</code> のように式の中に書くと、フラグの命令にならず切り替わらない。式の中で切り替えるなら <code>FFS["SPAC"]</code>。</li>
+<li><strong><code>RFSW</code> を ON にする。</strong> <code>NORFSW</code> は区間 (周) ごとに粒子の z を 0 にするので、バンチの線密度が決まらない。pysad v2 は <code>NORFSW</code> で空間電荷 (RADIUS&gt;0) を入れようとするとエラーにする。そのためラティスの空洞の電圧は 0 にした (20 MeV のビームに 1.5 MV の空洞を掛けると、空間電荷と関係なくビームが乱れる)。RADIUS&lt;0 の絞りだけなら <code>NORFSW</code> でも走る。</li>
+<li>粒子は乱数を使わない決定的な分布。(A) は半径 1 mm の一様な円 × 長さ 0.1 m の一様なバンチ (2000 個、角度 0)、(B) は整合したガウス分布 (εx = εy = 1e-6 m、σz = 1 cm、4000 個)、(C) は 200 個。</li>
+<li><code>PBUNCH</code> は効果が見えて破綻しない値にしている (<code>PBUNCH = 1e13</code> は桁外れで、チューンシフトが 100 を超える): (A) 1e12 (20 MeV で半径が 1.44 倍)、(B) 1.5e9 (Δν ≈ −0.01)。</li>
+<li><code>SPACSTEP</code> (キックの間隔 [m]) は pysad v2 の変数 (既定 0.05)。gs では普通の変数で、意味を持たない (5 cm 固定)。</li>
+</ul>
+<h2 id="結果">結果</h2>
+<h3 id="a-1-m-のドリフト-20-mev1e12-個01-m半径-1-mm--rms-05-mm">(A) 1 m のドリフト (20 MeV、1e12 個/0.1 m、半径 1 mm → rms 0.5 mm)</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>rms x [mm]</th>
+<th>rms y [mm]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空間電荷なし (NOSPAC、gs・pysad とも)</td>
+<td>0.5003</td>
+<td>0.4997</td>
+</tr>
+<tr>
+<td>解析式 (包絡方程式、K = 9.397e-7)</td>
+<td>0.7197</td>
+<td>0.7197</td>
+</tr>
+<tr>
+<td><strong>pysad v2</strong> (SPAC)</td>
+<td>0.7159</td>
+<td>0.7151</td>
+</tr>
+<tr>
+<td>解析式で力を 1/γ 倍にしたもの (K/γ)</td>
+<td>0.5060</td>
+<td>0.5060</td>
+</tr>
+<tr>
+<td><strong>gs (K64)</strong> (SPAC)</td>
+<td>0.5060</td>
+<td>0.5047</td>
+</tr>
+</tbody>
+</table>
+<p>pysad v2 は解析式と 0.6% で合う (差は、バンチの両端で線密度が下がる分。試験 <code>test_spac_kv_envelope_in_drift</code> はバンチの中央部だけで 0.5% 以内)。gs は「力が 1/γ 倍」の式に合う: <strong>K64 の SPAC は力が 1/γ 倍に弱い</strong> (SPC1。<code>spkick.f</code> の <code>spfield</code> が、バンチの静止系の電位の勾配をそのまま実験室系の場として使う。γ = 39.2 なので 1/39)。</p>
+<h3 id="b-リング-1-周のチューンシフト-ν--6696-490615e9-個σz--1-cm">(B) リング 1 周のチューンシフト (ν = (6.696, 4.906)、1.5e9 個、σz = 1 cm)</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Δνx</th>
+<th>Δνy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Laslett の式、DRIFT の中だけ (52.8 m)</td>
+<td>−0.011087</td>
+<td>−0.012541</td>
+</tr>
+<tr>
+<td><strong>pysad v2</strong> (SPAC、追跡)</td>
+<td>−0.011795</td>
+<td>−0.013227</td>
+</tr>
+<tr>
+<td>Laslett の式、全周 (105.6 m。参考)</td>
+<td>−0.022172</td>
+<td>−0.025083</td>
+</tr>
+<tr>
+<td>Laslett の式 (DRIFT だけ) を 1/γ 倍したもの</td>
+<td>−2.832e-4</td>
+<td>−3.203e-4</td>
+</tr>
+<tr>
+<td><strong>gs (K64)</strong> (SPAC、追跡)</td>
+<td>−1.853e-4</td>
+<td>−2.079e-4</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>pysad v2 は Laslett の式 (DRIFT だけ) の 1.064 倍、1.055 倍。差は主にマクロ粒子の雑音 (中心の勾配はビームの中心付近の少数の粒子で決まる): 同じリングで、分布を Sobol 列の 4096 個に替えると 0.964 倍、0.978 倍、この例の分布の 1000 個では 1.10 倍、1.15 倍になる。粒子を増やすと式に近づく (小さなリングの試験では 16384 個で 0.98)。</li>
+<li>gs は「1/γ 倍」の式の 0.65 倍 (SPC1 に加えて、K64 のメッシュが粗い: SPC4)。正しい値の 1/60 しか入らない。</li>
+<li>作動点: νx の小数部 0.696、νy は 0.906 (整数 5 から 0.094)。空間電荷でチューンは下がるので整数からは離れる向きで、半整数 (0.5) までは 0.196、0.406 ある。</li>
+<li>SPAC が入るのは RADIUS&gt;0 の DRIFT の中だけなので、このリング (四極は <code>QUAD</code>、偏向は <code>BEND</code>) では全周の 50% の分しか入らない。全周に入れる方法 (pysad v2): 四極を <code>MULT</code> で書いて <code>RADIUS</code> を付ける (<code>example/05_tracking/flag_SPAC_MULT_radius.sad</code>。偏向磁石の中は未対応)、<code>PSPAC</code> + <code>SPCH</code> 要素、<code>WSPAC</code> (<code>example/05_tracking/flag_WSPAC_tune_shift.sad</code>)。</li>
+</ul>
+<h3 id="c-radius--04-mm-絞りだけ2-周">(C) RADIUS = −0.4 mm (絞りだけ、2 周)</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>gs</th>
+<th>pysad v2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>初期ラティスの <code>Element["RADIUS","D1"]</code></td>
+<td>0.03</td>
+<td>0.03</td>
+</tr>
+<tr>
+<td>SPAC、2 周: 生存数</td>
+<td>84 / 200</td>
+<td>84 / 200</td>
+</tr>
+<tr>
+<td>NOSPAC で同じ半径: 生存数</td>
+<td>200 / 200</td>
+<td>200 / 200</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<ul>
+<li>一様な円柱のビーム (半径 $a$、線密度 $\lambda$): $x''=K\,x/a^2$、ペルビアンス $K=\dfrac{2 r_e\lambda}{\beta^2\gamma^3}$ ($r_e=2.818\times10^{-15}$ m)。電場の反発 (∝γ) と磁場の引力の打ち消し ($1-\beta^2=\gamma^{-2}$)、慣性 γ で $1/(\beta^2\gamma^3)$ になる。エミッタンス 0 の包絡は $a''=K/a$ (スクリプトの <code>env[]</code> が 1 m 積分する。一様な円の rms は $a/2$)。</li>
+<li>ガウスビームの中心の収束力の変化: $k_x=\dfrac{2 r_e\lambda_{peak}}{\beta^2\gamma^3}\dfrac{1}{\sigma_x(\sigma_x+\sigma_y)}$ (y も同様)、$\lambda_{peak}=N/(\sqrt{2\pi}\sigma_z)$。チューンシフト (Laslett、1 次の摂動): $\Delta\nu_u=-\dfrac{1}{4\pi}\oint\beta_u k_u\,ds$。スクリプトは $\sigma_u=\sqrt{\beta_u\varepsilon}$ として、各要素を Simpson 則 (<code>Twiss["BX", k+0.5]</code> が要素の中点) で積分する。</li>
+</ul>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>(A)・(B): pysad v2 は解析式に合い、gs (K64) は力が 1/γ 倍に弱い (上の表)。K64 の誤り (SPC1〜SPC9) と v2 の実装は <code>docs/history/v2_changes_C_spch.md</code>、MULT の RADIUS と WSPAC は <code>docs/history/v2_changes_C2_spch.md</code>。</li>
+<li>(C): 一致 (生存数 84)。</li>
+<li><strong>gs は SPAC の粒子数が少ないと落ちる</strong>: 小さい RADIUS&gt;0 (0.4 mm) で gs が不正終了する原因。<code>spkick.f</code> の <code>spmesh</code> は縦を 10 枚のスライスに分け、最後のスライスが空 (粒子数 np が 9·ceil(np/10)+1 より小さい) だと配列の外を読み、1 粒子だと厚さ 0 で割る。gs で確かめた: np = 2、15、33 は SIGSEGV、5 は Bus error、9・10・11・19・25・28・81・82 は NaN で全粒子が失われ、20・30・40・…・100・200 と 1 は正常。小さい絞りで粒子が減っていくと、これに当たる。pysad v2 は粒子数によらず走る (試験 <code>test_spac_small_particle_number</code>)。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>使った条件: 電子、20 MeV (γ = 39.2)、周長 105.6 m、ダクトの半径 3 cm、ビームの大きさ 0.5〜3 mm、1.5e9〜1e12 個/バンチ、2000〜4000 マクロ粒子。</li>
+<li>(B) の追跡と式の差 (+6%) はマクロ粒子の雑音の範囲で、この例の粒子数ではこれ以上の精度の比較にならない。1 周の線形のチューンシフトだけを見ており、多数周の追跡 (エミッタンスの増大、共鳴) は確かめていない。</li>
+<li>gs の値は K64 の誤りを含むので、正しさの根拠にはならない (根拠は解析式)。pysad の k64 モードは gs の SPAC を再現しない (空間電荷なし)。</li>
+<li>SPAC は偏向磁石・<code>QUAD</code>・<code>SEXT</code> の中には入らない。真空ダクトは円筒だけ。複数バンチ、壁の抵抗は扱わない。</li>
+<li>FFS の中の <code>MOMENTUM = …</code> の再設定は pysad の追跡に反映される (2026-11-17 確認)。この例は運動量をラティスの先頭 (MAIN レベル) に置いている。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

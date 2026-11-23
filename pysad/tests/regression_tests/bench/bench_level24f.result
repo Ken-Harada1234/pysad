@@ -1,0 +1,521 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-15 11:48:12 +0900 ***
+ *** Today: 00:58:34 Friday 10/16/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! Level 24F: Element / SetElement / FLAG / ExtractBeamLine / BeamLine / PrintBeamLine / WriteBeamLine / GetMAIN / USE BeamLine
+! (SAD の出力は pty 経由 (script -qec) で取る: ファイルへのリダイレクトだと SetElement 付近で SIGSEGV する)
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+      DS = (L=1.0)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELA = (ORG QF DS B D1 QD DS B D1);
+LINE RING = (4*CELA);
+LINE HALF = (ORG QF DS QD);
+;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ PageWidth=99999;
+ USE RING;
+Out[1]:= USE
+ CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.637782 $$$       f BX    #######  #  13.330899 $$$       f NX    #######  #   1.324595 $$$       f AY    #######  #    .418288 $$$       f BY    #######  #    .941646 $$$       f NY    #######  #   1.426661
+$$$       f LENG  #######  #  26.400000
+ USE RING;
+ CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.637782 $$$       f BX    #######  #  13.330899 $$$       f NX    #######  #   1.324595 $$$       f AY    #######  #    .418288 $$$       f BY    #######  #    .941646 $$$       f NY    #######  #   1.426661
+$$$       f LENG  #######  #  26.400000
+ Print["F001 ",Element["LENGTH"]];
+F001    6.0000000000
+ Print["F002 ",Element["NAME"]];
+F002 {"ORG","QF","DS","B","D1","QD"}
+ Print["F003 ",Element["NAME","Q*"]];
+F003 {"QF","QD"}
+ Print["F004 ",Element["POSITION"]];
+F004 {   1.0000000000,   2.0000000000,   3.0000000000,   4.0000000000,   5.0000000000,   6.0000000000}
+ Print["F005 ",Element["POSITION","QF"]];
+F005    2.0000000000
+ Print["F006 ",Element["VALUE","QF"]];
+F006     .5400000000
+ Print["F007 ",Element["K1","QF"]];
+F007     .5400000000
+ Print["F008 ",Element["KEYWORDS","QF"]];
+F008 {"L","K1","ROTATE","DX","DY","DISRAD","ACHROMA","DISFRIN","F1","F2","FRINGE","EPS","DISKIN","COUPLE","INDEX","AX","AY","LDEV","LRAD","F1K1F","F2K1F","F1K1B","F2K1B"}
+ Print["F009 ",Element["DEFAULT","QF"]];
+F009 K1
+ Print["F010 ",Element["TYPE","QF"]];
+F010    4.0000000000
+ Print["F011 ",Element["TYPENAME","QF"]];
+F011 QUAD
+ Print["F012 ",Element["K1","Q*"]];
+F012 {    .5400000000,   -.5400000000}
+ Print["F013 ",Element["K1",{"QF","QD"}]];
+F013 {    .5400000000,   -.5400000000}
+ Print["F014 ",Element[{"K1","L"},"QF"]];
+F014 {    .5400000000,    .3000000000}
+ Print["F015 ",Element["K1",3]];
+F015     .0000000000
+ Print["F016 ",Element["K1",2]];
+F016     .5400000000
+ Print["F017 ",Element["L"]];
+F017 {    .0000000000,    .3000000000,   1.0000000000,    .8000000000,   1.2000000000,    .3000000000}
+ Print["F018 ",Element["K1"]];
+F018 {    .0000000000,    .5400000000,    .0000000000,    .0000000000,    .0000000000,   -.5400000000}
+ Print["F019 ",Element["VALUE"]];
+F019 {    .0000000000,    .5400000000,   1.0000000000,    .1570796327,   1.2000000000,   -.5400000000}
+ Print["F020 ",Element["TYPENAME"]];
+F020 {"MARK","QUAD","DRIFT","BEND","DRIFT","QUAD"}
+ Print["F021 ",Element["L","B"]];
+F021     .8000000000
+ Print["F022 ",Element["ANGLE","B"]];
+F022     .1570796327
+ Print["F023 ",Element["E1","B"]];
+F023     .5000000000
+ Print["F024 ",Element["K2","SF"]];
+F024 {}
+ Print["F025 ",Element["K2","QF"]];
+F025     .0000000000
+ Print["F026 ",Element["Value","QF"]];
+F026     .5400000000
+ Print["F027 ",Element['K1','QD']];
+F027    -.5400000000
+ Print["F028 ",Element["POSITION",{"QF","QD"}]];
+F028 {   2.0000000000,   6.0000000000}
+ Print["F029 ",Element["NAME",{1,2,3}]];
+F029 {"ORG","QF","DS"}
+ Print["F030 ",Element["NAME",5]];
+F030 D1
+ Print["F031 ",Element["VALUE","D*"]];
+F031 {   1.0000000000,   1.2000000000}
+ Print["F032 ",Element["VALUE","B"]];
+F032     .1570796327
+ Print["F033 ",Element["KEYWORDS","B"]];
+F033 {"L","ANGLE","E1","E2","ROTATE","DISRAD","K1","DX","DY","K0","DISFRIN","EPS","RANKICK","F1","FRINGE","COUPLE","DROTATE","AE1","AE2","FB1","FB2","INDEX","AX","AY","LDEV","LRAD","CHI2","DZ"}
+ Print["F034 ",Element["KEYWORDS","D1"]];
+F034 {"L","DISKIN","COUPLE","RADIUS","AX","AY","DISRAD"}
+ Print["F035 ",Element["DEFAULT","B"]];
+F035 ANGLE
+ Print["F036 ",Element["TYPE","B"]];
+F036    2.0000000000
+ Print["F037 ",Element["NAME","XX"]];
+F037 {}
+ Print["F038 ",Element["K1","XX"]];
+F038 {}
+ Print["F039 ",Element["K1","QF",Saved->True]];
+F039     .5400000000
+ Element["K1","QF"]=0.4;
+ Print["F040 ",Element["K1","QF"]," ",LINE["K1","QF"]];
+F040     .4000000000     .4000000000
+ Element["VALUE","QD"]=-0.4;
+ Print["F041 ",Element["K1","QD"]," ",LINE["K1","QD"]];
+F041    -.4000000000    -.4000000000
+ Element["L","D1"]=1.1;
+ Print["F042 ",Element["L","D1"]," ",LINE["L","D1"]];
+F042    1.1000000000    1.1000000000
+ Print["F043 ",Element["K1","Q*"]];
+F043 {    .4000000000,   -.4000000000}
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.052480 $$$       f BX    #######  #  10.230717 $$$       f NX    #######  #    .849805 $$$       f AY    #######  #    .514448 $$$       f BY    #######  #   2.259658 $$$       f NY    #######  #    .952908
+$$$       f LENG  #######  #  25.600000
+ Print["F044 ",Twiss["NX","$$$"]/2/Pi];
+F044     .8498052976
+ Element["K1","Q*"]=0.5;
+ Print["F045 ",Element["K1","Q*"]];
+F045 {    .5000000000,    .5000000000}
+ Print["F046 ",Element["K1",{"QF","QD"}]=0.45];
+F046 {    .4500000000,    .4500000000}
+ Print["F047 ",Element["K1","QF"]];
+F047     .4500000000
+ Print["F048 ",Element["UPDATE"]];
+F048 {    .0000000000,    .0000000000,    .0000000000,    .0000000000,    .0000000000,    .0000000000}
+ Print["F049 ",Element["EXPAND"]];
+F049 Null
+ FLAG["CELL"];
+ Print["F050 ",FLAG["CELL"]];
+F050    1.0000000000
+ Print["F051 ",FLAG["RFSW"]];
+F051    1.0000000000
+ Print["F052 ",FLAG["RAD"]];
+F052     .0000000000
+ Print["F053 ",FLAG[{"CELL","RAD"}]];
+F053 {   1.0000000000,    .0000000000}
+ USE RING;
+ Print["J001 ",Element["NAME","Q?"]];
+J001 {}
+ Print["J002 ",Element["NAME","Q%"]];
+J002 {"QF","QD"}
+ Print["J003 ",Element["NAME","%"]];
+J003 B
+ Print["J004 ",Element["NAME","?"]];
+J004 {}
+ Print["J005 ",Element["NAME","*F"]];
+J005 QF
+ Print["J006 ",Element["NAME","{QD}F"]];
+J006 QF
+ Print["J007 ",Element["NAME","{BQ}*"]];
+J007 {"QF","B","QD"}
+ Print["J008 ",Element["NAME","D?"]];
+J008 {}
+ Print["J009 ",Element["NAME","QF|QD"]];
+J009 {"QF","QD"}
+ Print["J010 ",Element["NAME","qf"]];
+J010 QF
+ Print["J011 ",Element["K1","QF"]];
+J011     .5400000000
+ Element["L","QF"]=0.5;
+ Print["J012 ",Element["K1","QF"]," ",Element["L","QF"]," ",LINE["K1","QF"]];
+J012     .5400000000     .5000000000     .5400000000
+ Element["L","B"]=1.6;
+ Print["J013 ",Element["ANGLE","B"]," ",Element["L","B"]," ",Element["K1","B"]];
+J013     .1570796327    1.6000000000     .0000000000
+ LINE["L","QD"]=0.6;
+ Print["J014 ",LINE["K1","QD"]," ",LINE["L","QD"]];
+J014    -.5400000000     .6000000000
+ USE RING;
+ Print["I001 ",Element["NAME","O*"]];
+I001 ORG
+ Print["I002 ",Element["K1","QF*"]];
+I002     .5400000000
+ Print["I003 ",Element[{"K1","L"},{"QF","QD"}]];
+I003 {{    .5400000000,   -.5400000000},{    .3000000000,    .3000000000}}
+ Print["I004 ",Element["K1",{"QF"}]];
+I004 {    .5400000000}
+ Print["I005 ",Element["K1",{2}]];
+I005 {    .5400000000}
+ Print["I006 ",Element["K1",{}]];
+I006 {}
+ Print["I007 ",Element["K1","*"]];
+I007 {    .0000000000,    .5400000000,    .0000000000,    .0000000000,    .0000000000,   -.5400000000}
+ Print["I008 ",Element["NAME","?"]];
+I008 {}
+ Print["I009 ",Element["NAME","{QF,QD}"]];
+I009 {}
+ Print["I010 ",Element["NAME","{QF,XX}"]];
+I010 {}
+ Print["I011 ",Element["L",{"QF","XX"}]];
+I011 {    .3000000000,{}}
+ Print["I012 ",Element["NAME",0]];
+???General::wrongnum:  Number must be positive and less than length of beam line in Element$["NAME",0]
+... in Element["NAME",0]
+... in Print["I012 ",Element["NAME",0]]
+ Print["I013 ",Element["NAME",7]];
+???General::wrongnum:  Number must be positive and less than length of beam line in Element$["NAME",7]
+... in Element["NAME",7]
+... in Print["I013 ",Element["NAME",7]]
+ Print["I014 ",Element["NAME",-1]];
+I014 QD
+ Print["I015 ",Element["NAME",1.5]];
+I015 ORG
+ Print["I016 ",Element["POSITION","QD*"]];
+I016    6.0000000000
+ Print["I020 ",Element["NAME"][[2]]];
+I020 QF
+ Print["I021 ",Element["ZZZ","QF"]];
+I021     .0000000000
+ Print["I022 ",Element["k1","qf"]];
+I022     .5400000000
+ Print["I023 ",Element["DX","QF"]];
+I023     .0000000000
+ Print["I024 ",Element["ROTATE","B"]];
+I024     .0000000000
+ Print["I025 ",Element["K0","B"]];
+I025     .0000000000
+ Print["I026 ",Element["VALUE","ORG"]];
+I026     .0000000000
+ Print["I027 ",Element["DEFAULT","ORG"]];
+I027 
+ Print["I028 ",Element["TYPENAME","D*"]];
+I028 {"DRIFT","DRIFT"}
+ USE LX;
+???General::wrongtype:  Argument must be BeamLine[ ... ]:
+ ???-FFS-Error-Missing beamline in USE. 
+ Print["I029 ",GetMAIN["lat_extra.sad"]];
+I029 Null
+ Print["I030 ",Element["LENGTH"]];
+I030    6.0000000000
+ Print["I031 ",ExtractBeamLine["LX"]];
+I031 BeamLine[ORG,DX1,QX,DX1]
+ USE RING;
+ CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.637782 $$$       f BX    #######  #  13.330899 $$$       f NX    #######  #   1.324595 $$$       f AY    #######  #    .418288 $$$       f BY    #######  #    .941646 $$$       f NY    #######  #   1.426661
+$$$       f LENG  #######  #  26.400000
+ Print["G001 ",SetElement["QF"]];
+G001 {"QF","QUAD",{"L"->    .3000000000,"K1"->    .5400000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ Print["G002 ",SetElement["D1"]];
+G002 {"D1","DRIFT",{"L"->   1.2000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"RADIUS"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"DISRAD"->    .0000000000}}
+ Print["G003 ",SetElement["B"]];
+G003 {"B","BEND",{"L"->    .8000000000,"ANGLE"->    .1570796327,"E1"->    .5000000000,"E2"->    .5000000000,"ROTATE"->    .0000000000,"DISRAD"->    .0000000000,"K1"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"K0"->    .0000000000,"DISFRIN"->    .0000000000,"EPS"->    .0000000000,"RANKICK"->    .0000000000,"F1"->    .0000000000,"FRINGE"->    .0000000000,"COUPLE"->    .0000000000,"DROTATE"->    .0000000000,"AE1"->    .0000000000,"AE2"->    .0000000000,"FB1"->    .0000000000,"FB2"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"CHI2"->    .0000000000,"DZ"->    .0000000000}}
+ Print["G004 ",SetElement["ORG"]];
+G004 {"ORG","MARK",{"AX"->    .0000000000,"BX"->    .0000000000,"PSIX"->    .0000000000,"AY"->    .0000000000,"BY"->    .0000000000,"PSIY"->    .0000000000,"EX"->    .0000000000,"EPX"->    .0000000000,"EY"->    .0000000000,"EPY"->    .0000000000,"R1"->    .0000000000,"R2"->    .0000000000,"R3"->    .0000000000,"R4"->    .0000000000,"DETR"->    .0000000000,"DX"->    .0000000000,"DPX"->    .0000000000,"DY"->    .0000000000,"DPY"->    .0000000000,"DZ"->    .0000000000,"DDP"->    .0000000000,"AZ"->    .0000000000,"BZ"->    .0000000000,"PSIZ"->    .0000000000,"ZX"->    .0000000000,"ZPX"->    .0000000000,"ZY"->    .0000000000,"ZPY"->    .0000000000,"DP"->    .0000000000,"OFFSET"->    .0000000000,"SIGMAZ"->    .0000000000,"SIGE"->    .0000000000,"GEO"->    .0000000000,"JDX"->    .0000000000,"JDPX"->    .0000000000,"JDY"->    .0000000000,"JDPY"->    .0000000000,"JDZ"->    .0000000000,"JDPZ"->    .0000000000,"EMITX"->    .0000000000,"EMITY"->    .0000000000,"EMITZ"->    .0000000000,"COUPLE"->    .0000000000}}
+ Print["G005 ",SetElement["XX"]];
+G005 {"XX",""}
+ Print["G006 ",SetElement["Q1","QUAD","K1"->0.1]];
+G006 {"Q1","QUAD",{"L"->    .0000000000,"K1"->    .1000000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ Print["G007 ",SetElement["Q1"]];
+G007 {"Q1","QUAD",{"L"->    .0000000000,"K1"->    .1000000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ Print["G008 ",SetElement["QF","QUAD",{"K1"->0.5}]];
+G008 {"QF","QUAD",{"L"->    .3000000000,"K1"->    .5000000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ Print["G009 ",LINE["K1","QF"]];
+G009     .5000000000
+ Print["G010 ",SetElement["QF","QUAD","K1"->0.4,"L"->0.31]];
+G010 {"QF","QUAD",{"L"->    .3100000000,"K1"->    .4000000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ Print["G012 ",SetElement["M1","MULT",{"L"->0.1,"K1"->0.2,"K2"->0.3}]];
+G012 {"M1","MULT",{"L"->    .1000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DZ"->    .0000000000,"CHI1"->    .0000000000,"CHI2"->    .0000000000,"ROTATE"->    .0000000000,"EPS"->    .0000000000,"DISRAD"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"VOLT"->    .0000000000,"HARM"->    .0000000000,"PHI"->    .0000000000,"FREQ"->    .0000000000,"COUPLE"->    .0000000000,"RADIUS"->    .0000000000,"DPHI"->    .0000000000,"W1"->    .0000000000,"ANGLE"->    .0000000000,"E1"->    .0000000000,"E2"->    .0000000000,"DROTATE"->    .0000000000,"DISK0FR"->    .0000000000,"FB1"->    .0000000000,"FB2"->    .0000000000,"K0"->    .0000000000,"SK0"->    .0000000000,"K1"->    .2000000000,"SK1"->    .0000000000,"K2"->    .3000000000,"SK2"->    .0000000000,"K3"->    .0000000000,"SK3"->    .0000000000,"K4"->    .0000000000,"SK4"->    .0000000000,"K5"->    .0000000000,"SK5"->    .0000000000,"K6"->    .0000000000,"SK6"->    .0000000000,"K7"->    .0000000000,"SK7"->    .0000000000,"K8"->    .0000000000,"SK8"->    .0000000000,"K9"->    .0000000000,"SK9"->    .0000000000,"K10"->    .0000000000,"SK10"->    .0000000000,"K11"->    .0000000000,"SK11"->    .0000000000,"K12"->    .0000000000,"SK12"->    .0000000000,"K13"->    .0000000000,"SK13"->    .0000000000,"K14"->    .0000000000,"SK14"->    .0000000000,"K15"->    .0000000000,"SK15"->    .0000000000,"K16"->    .0000000000,"SK16"->    .0000000000,"K17"->    .0000000000,"SK17"->    .0000000000,"K18"->    .0000000000,"SK18"->    .0000000000,"K19"->    .0000000000,"SK19"->    .0000000000,"K20"->    .0000000000,"SK20"->    .0000000000,"K21"->    .0000000000,"SK21"->    .0000000000,"AE1"->    .0000000000,"AE2"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"AUTOPHI"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000,"DVOLT"->    .0000000000,"PROFILE"->    .0000000000}}
+ Print["G013 ",SetElement["M1"]];
+G013 {"M1","MULT",{"L"->    .1000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DZ"->    .0000000000,"CHI1"->    .0000000000,"CHI2"->    .0000000000,"ROTATE"->    .0000000000,"EPS"->    .0000000000,"DISRAD"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"VOLT"->    .0000000000,"HARM"->    .0000000000,"PHI"->    .0000000000,"FREQ"->    .0000000000,"COUPLE"->    .0000000000,"RADIUS"->    .0000000000,"DPHI"->    .0000000000,"W1"->    .0000000000,"ANGLE"->    .0000000000,"E1"->    .0000000000,"E2"->    .0000000000,"DROTATE"->    .0000000000,"DISK0FR"->    .0000000000,"FB1"->    .0000000000,"FB2"->    .0000000000,"K0"->    .0000000000,"SK0"->    .0000000000,"K1"->    .2000000000,"SK1"->    .0000000000,"K2"->    .3000000000,"SK2"->    .0000000000,"K3"->    .0000000000,"SK3"->    .0000000000,"K4"->    .0000000000,"SK4"->    .0000000000,"K5"->    .0000000000,"SK5"->    .0000000000,"K6"->    .0000000000,"SK6"->    .0000000000,"K7"->    .0000000000,"SK7"->    .0000000000,"K8"->    .0000000000,"SK8"->    .0000000000,"K9"->    .0000000000,"SK9"->    .0000000000,"K10"->    .0000000000,"SK10"->    .0000000000,"K11"->    .0000000000,"SK11"->    .0000000000,"K12"->    .0000000000,"SK12"->    .0000000000,"K13"->    .0000000000,"SK13"->    .0000000000,"K14"->    .0000000000,"SK14"->    .0000000000,"K15"->    .0000000000,"SK15"->    .0000000000,"K16"->    .0000000000,"SK16"->    .0000000000,"K17"->    .0000000000,"SK17"->    .0000000000,"K18"->    .0000000000,"SK18"->    .0000000000,"K19"->    .0000000000,"SK19"->    .0000000000,"K20"->    .0000000000,"SK20"->    .0000000000,"K21"->    .0000000000,"SK21"->    .0000000000,"AE1"->    .0000000000,"AE2"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"AUTOPHI"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000,"DVOLT"->    .0000000000,"PROFILE"->    .0000000000}}
+ Print["G014 ",SetElement["S1","SEXT","L"->0.2,"K2"->0.5]];
+G014 {"S1","SEXT",{"L"->    .2000000000,"K2"->    .5000000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"DISFRIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000}}
+ Print["G015 ",SetElement["QF","BEND"]];
+???FFS::equaltype:  Type BEND must be equal to the previous definition in SetElement$["QF","BEND"]
+... in SetElement["QF","BEND"]
+... in Print["G015 ",SetElement["QF","BEND"]]
+ Print["G016 ",SetElement["N1",Null]];
+G016 {"N1",""}
+ Print["G017 ",SetElement["QF","QUAD","K1":>0.2]];
+G017 {"QF","QUAD",{"L"->    .3100000000,"K1"->    .2000000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ Print["G018 ",SetElement["D9","DRIFT","L"->2.0]];
+G018 {"D9","DRIFT",{"L"->   2.0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"RADIUS"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"DISRAD"->    .0000000000}}
+ Print["G019 ",Element["LENGTH"]];
+G019    6.0000000000
+ Print["G020 ",SetElement["QF","QUAD","K1"->0.45]];
+G020 {"QF","QUAD",{"L"->    .3100000000,"K1"->    .4500000000,"ROTATE"->    .0000000000,"DX"->    .0000000000,"DY"->    .0000000000,"DISRAD"->    .0000000000,"ACHROMA"->    .0000000000,"DISFRIN"->    .0000000000,"F1"->    .0000000000,"F2"->    .0000000000,"FRINGE"->    .0000000000,"EPS"->    .0000000000,"DISKIN"->    .0000000000,"COUPLE"->    .0000000000,"INDEX"->    .0000000000,"AX"->    .0000000000,"AY"->    .0000000000,"LDEV"->    .0000000000,"LRAD"->    .0000000000,"F1K1F"->    .0000000000,"F2K1F"->    .0000000000,"F1K1B"->    .0000000000,"F2K1B"->    .0000000000}}
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.675676 $$$       f BX    #######  #  11.809658 $$$       f NX    #######  #    .967548 $$$       f AY    #######  #    .382543 $$$       f BY    #######  #    .956552 $$$       f NY    #######  #   1.456379
+$$$       f LENG  #######  #  26.440000
+ Print["G021 ",Twiss["NX","$$$"]/2/Pi];
+G021     .9675479526
+ Print["G022 ",ExtractBeamLine[]];
+G022 BeamLine[ORG,QF,DS,B,D1,QD,DS,B,D1,ORG,QF,DS,B,D1,QD,DS,B,D1,ORG,QF,DS,B,D1,QD,DS,B,D1,ORG,QF,DS,B,D1,QD,DS,B,D1]
+ Print["G023 ",ExtractBeamLine["HALF"]];
+G023 BeamLine[ORG,QF,DS,QD]
+ Print["G024 ",ExtractBeamLine[HALF]];
+G024 BeamLine[ORG,QF,DS,QD]
+ Print["G025 ",Head[ExtractBeamLine[]]];
+G025 BeamLine
+ Print["G026 ",Length[ExtractBeamLine[]]];
+G026   36.0000000000
+ Print["G027 ",BeamLine[QF,DS,QD]];
+G027 BeamLine[QF,DS,QD]
+ Print["G028 ",BeamLine["QF",2*"DS","QD"]];
+G028 BeamLine["QF","DS","DS","QD"]
+ Print["G029 ",BeamLine[-QF,HALF]];
+G029 BeamLine[(-QF),HALF]
+ Print["G030 ",Length[BeamLine[HALF]]];
+G030    1.0000000000
+ Print["G031 ",BeamLineName[]];
+G031 RING
+ Print["L001 begin"];
+L001 begin
+ PrintBeamLine[ExtractBeamLine["HALF"]];
+WriteBeamLine {{Name->None},"FFS",None}
+BeamLine[
+        ORG,      QF,      DS,      QD       ];
+ Print["L001 end"];
+L001 end
+ Print["L002 begin"];
+L002 begin
+ PrintBeamLine[ExtractBeamLine["HALF"],Format->"MAIN"];
+WriteBeamLine {{Name->None,Format->"MAIN"},"MAIN",None}
+       (ORG        QF       DS       QD      )
+ Print["L002 end"];
+L002 end
+ Print["L003 begin"];
+L003 begin
+ PrintBeamLine[BeamLine[QF,DS,QD,QF]];
+WriteBeamLine {{Name->None},"FFS",None}
+BeamLine[
+        QF,       DS,      QD,      QF       ];
+ Print["L003 end"];
+L003 end
+ Print["L004 begin"];
+L004 begin
+ PrintBeamLine[BeamLine[QF,3*DS,-B]];
+WriteBeamLine {{Name->None},"FFS",None}
+BeamLine[
+        QF,       DS,      DS,      DS,      -B       ];
+ Print["L004 end"];
+L004 end
+ Print["L005 begin"];
+L005 begin
+ PrintBeamLine[Format->"MAIN"];
+WriteBeamLine {{Name->None,Format->"MAIN"},"MAIN",None}
+       (ORG        QF       DS       B        D1       QD       DS      
+        B D1       ORG      QF       DS       B        D1      
+        QD         DS       B        D1       ORG      QF       DS      
+        B D1       QD       DS       B        D1       ORG     
+        QF         DS       B        D1       QD       DS       B       
+        D1        )
+ Print["L005 end"];
+L005 end
+ Print["L006 begin"];
+L006 begin
+ WriteBeamLine[6,ExtractBeamLine["HALF"],Format->"MAIN"];
+WriteBeamLine {{Name->None,Format->"MAIN"},"MAIN",None}
+       (ORG        QF       DS       QD      )
+ Print["L006 end"];
+L006 end
+ Print["L007 begin"];
+L007 begin
+ WriteBeamLine[6,ExtractBeamLine["HALF"],Format->"MAIN",Name->{"NEWL"}];
+WriteBeamLine {{Name->"NEWL",Format->"MAIN",Name->{"NEWL"}},"MAIN","NEWL"}
+
+LINE NEWL = 
+       (ORG        QF       DS       QD      )
+;
+ Print["L007 end"];
+L007 end
+ Print["L008 begin"];
+L008 begin
+ WriteBeamLine[6,BeamLine[QF,DS,QD],BeamLine[QD,DS,QF],Format->"MAIN",Name->{"A1","A2"}];
+WriteBeamLine {{Name->"A1",Format->"MAIN",Name->{"A1","A2"}},"MAIN","A1"}
+
+LINE A1 = 
+       (QD         DS       QF      )
+;
+WriteBeamLine {{Name->"A2",Format->"MAIN",Name->{"A1","A2"}},"MAIN","A2"}
+
+LINE A2 = 
+       (QF         DS       QD      )
+;
+ Print["L008 end"];
+L008 end
+ Print["G040 ",Join[ExtractBeamLine["HALF"],ExtractBeamLine["HALF"]]];
+G040 BeamLine[ORG,QF,DS,QD,ORG,QF,DS,QD]
+ Print["G041 ",Reverse[ExtractBeamLine["HALF"]]];
+G041 BeamLine[QD,DS,QF,ORG]
+ Print["G042 ",-ExtractBeamLine["HALF"]];
+G042 BeamLine[(-QD),(-DS),(-QF),(-ORG)]
+ Print["G043 ",Join[ExtractBeamLine["HALF"],-ExtractBeamLine["HALF"]]];
+G043 BeamLine[ORG,QF,DS,QD,(-QD),(-DS),(-QF),(-ORG)]
+ USE BeamLine[QF,DS,QD];
+???FFS::firstmark:  The 1st component must be MARK:
+Q
+^
+ ???-FFS-Error-Missing beamline in USE. 
+ Print["G044 ",BeamLineName[]];
+G044 RING
+ Print["G045 ",Element["LENGTH"]," ",LINE["LENGTH"]];
+G045    6.0000000000   37.0000000000
+ CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.675676 $$$       f BX    #######  #  11.809658 $$$       f NX    #######  #    .967548 $$$       f AY    #######  #    .382543 $$$       f BY    #######  #    .956552 $$$       f NY    #######  #   1.456379
+$$$       f LENG  #######  #  26.440000
+ Print["G046 ",Twiss["NX","$$$"]/2/Pi];
+G046     .9675479526
+ aaa=ExtractBeamLine["HALF"];
+ USE Join[aaa,-aaa];
+ Print["G047 ",BeamLineName[]];
+G047 L000001$
+ Print["G048 ",LINE["LENGTH"]];
+G048    9.0000000000
+ FFS["USE RING"];
+ Print["G049 ",LINE["LENGTH"]];
+G049   37.0000000000
+ USE RING;
+ CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.675676 $$$       f BX    #######  #  11.809658 $$$       f NX    #######  #    .967548 $$$       f AY    #######  #    .382543 $$$       f BY    #######  #    .956552 $$$       f NY    #######  #   1.456379
+$$$       f LENG  #######  #  26.440000
+ Element["K1","QF"]=0.54;
+ Element["K1","QD"]=-0.54;
+ Print["H001 ",BeamLineName[]];
+H001 RING
+ USE BeamLine[ORG,QF,DS,QD];
+ Print["H002 ",BeamLineName[]];
+H002 L000002$
+ Print["H003 ",Element["LENGTH"]," ",LINE["LENGTH"]];
+H003    4.0000000000    5.0000000000
+ Print["H004 ",ExtractBeamLine[]];
+H004 BeamLine[ORG,QF,DS,QD]
+ CELL; CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.552404 $$$       f BX    #######  #   5.639187 $$$       f NX    #######  #    .046437 $$$       f AY    #######  #   1.472972 $$$       f BY    #######  #   3.636790 $$$       f NY    #######  #    .071990
+$$$       f LENG  #######  #   1.610000 ORG/$$$     BMAGX #######  #   1.180415 ORG/$$$     BMAGY #######  #   1.000000
+ Horizontal Unstable.
+ aaa=ExtractBeamLine["HALF"];
+ USE Join[aaa,-aaa];
+ Print["H006 ",BeamLineName[]];
+H006 L000003$
+ Print["H007 ",LINE["LENGTH"]];
+H007    9.0000000000
+ Print["H008 ",ExtractBeamLine[]];
+H008 BeamLine[ORG,QF,DS,QD,(-QD),(-DS),(-QF),(-ORG)]
+ USE Join[aaa,Reverse[aaa]];
+ Print["H009 ",BeamLineName[]," ",LINE["LENGTH"]];
+H009 L000004$    9.0000000000
+ USE RING;
+ Print["H012 ",BeamLineName[]];
+H012 RING
+ VISIT BeamLine[ORG,QF,QD];
+ Print["H013 ",BeamLineName[]];
+H013 L000005$
+ BYE;
+ Print["H014 ",BeamLineName[]];
+H014 RING
+ Print["H015 ",ExtractBeamLine["CELL"]];
+???MAIN::wrongtype:  Wrong type of symbol CELL in MAIN in ExtractBeamLine["CELL"]
+... in Print["H015 ",ExtractBeamLine["CELL"]]
+ Print["H016 ",ExtractBeamLine[CELL]];
+???MAIN::wrongtype:  Wrong type of symbol CELL in MAIN in ExtractBeamLine[CELL]
+... in Print["H016 ",ExtractBeamLine[CELL]]
+ Print["H017 ",ExtractBeamLine["RING"][[1]]];
+H017 ORG
+ Print["H018 ",ExtractBeamLine["NOLINE"]];
+???MAIN::wrongtype:  Wrong type of symbol NOLINE in MAIN in ExtractBeamLine["NOLINE"]
+... in Print["H018 ",ExtractBeamLine["NOLINE"]]
+ Print["H019 ",BeamLine[ORG,{QF,QD}]];
+H019 BeamLine[ORG,{QF,QD}]
+ Print["H020 ",2*BeamLine[QF,QD]];
+H020 BeamLine[QF,QD,QF,QD]
+ Print["H021 ",-2*BeamLine[QF,QD]];
+H021 BeamLine[(-QD),(-QF),(-QD),(-QF)]
+ Print["H022 ",BeamLine[2*HALF]];
+H022 BeamLine[HALF,HALF]
+ Print["H023 ",BeamLine[-HALF]];
+H023 BeamLine[(-HALF)]
+ Print["H026 ",BeamLine[]];
+H026 BeamLine[]
+ Print["H027 ",Length[BeamLine[]]];
+H027     .0000000000
+ Print["H028 ",ExtractBeamLine[][[2]]];
+H028 QF
+ Print["H029 ",Map[ToString,ExtractBeamLine["HALF"]]];
+H029 BeamLine["ORG","QF","DS","QD"]
+ Print["H030 ",Table[ExtractBeamLine["HALF"][[i]],{i,3}]];
+H030 {ORG,QF,DS}
+ Print["F054 ",FLAG["xxx"]];
+  ???Non-existent flag
+???FFS::undefflag:  Undefined flag in FLAG["xxx"]
+... in Print["F054 ",FLAG["xxx"]]
+ Print["F055 ",FLAG["cell"]];
+  ???Non-existent flag
+???FFS::undefflag:  Undefined flag in FLAG["cell"]
+... in Print["F055 ",FLAG["cell"]]
+ Print["J015 ",FLAG["cell"]];
+  ???Non-existent flag
+???FFS::undefflag:  Undefined flag in FLAG["cell"]
+... in Print["J015 ",FLAG["cell"]]
+ Print["P010 ",Element["COMPONENT","B"]];
+P010 {   4.0000000000,   8.0000000000,  13.0000000000,  17.0000000000,  22.0000000000,  26.0000000000,  31.0000000000,  35.0000000000}
+ Print["P011 ",Element["COMPONENT"]];
+P011 {{   1.0000000000,  10.0000000000,  19.0000000000,  28.0000000000},{   2.0000000000,  11.0000000000,  20.0000000000,  29.0000000000},{   3.0000000000,   7.0000000000,  12.0000000000,  16.0000000000,  21.0000000000,  25.0000000000,  30.0000000000,  34.0000000000},{   4.0000000000,   8.0000000000,  13.0000000000,  17.0000000000,  22.0000000000,  26.0000000000,  31.0000000000,  35.0000000000},{   5.0000000000,   9.0000000000,  14.0000000000,  18.0000000000,  23.0000000000,  27.0000000000,  32.0000000000,  36.0000000000},{   6.0000000000,  15.0000000000,  24.0000000000,  33.0000000000}}
+ stop;
+ FFS                  end:  CPU time =     0.013 sec
+  *** gettok *** EOF has been read. ercode =            0

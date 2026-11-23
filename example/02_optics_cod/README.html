@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>02 線形光学と COD</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="02-線形光学と-cod">02 線形光学と COD</h1>
+<p>CALC・チューン・クロマティシティ・転送行列・ビームサイズ・閉軌道・幾何。ラティスは <code>00_lattice/FODO_ring.sad</code>、閉軌道は新規の <code>00_lattice/errors_ring.sad</code> (ずれのある四極 2 台)。解析値の検算は <code>tools/ana_fodo_ring.py</code> (2x2 行列)。</p>
+<p>各例は 4 ファイル: <code>NAME.sad</code> (スクリプト)、<code>NAME.gs.txt</code> (gs の画面表示)、<code>NAME.pysad.txt</code> (pysad の画面表示)、<code>NAME.md</code> (説明)。
+走らせ方: <code>py -3.12 example/tools/run_example.py example/02_optics_cod/NAME.sad</code>。凡例: ○ 一致 (表示の桁・書式の差は除く)、△ 差あり (内容を <code>.md</code> に書いた)、× gs 失敗、× pysad 未対応。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="FFS_CALCULATE.html">FFS_CALCULATE</a></td>
+<td>CALC。チューン・Twiss と 2x2 行列の解析値</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="FFS_CHROMATICITY.html">FFS_CHROMATICITY</a></td>
+<td>CHRO と DP0 の有限差分 (ξ)、6 極の寄与</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="FFS_DISPLAY.html">FFS_DISPLAY</a></td>
+<td>DISP の各モード (標準 R O E G GA Z)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="FFS_DUMP.html">FFS_DUMP</a></td>
+<td>誤差コマンド (DELX DELY DTHETA DL DK DDK) と DUMP</td>
+<td>○ (gs の DUMP は語を 20 文字で切る)</td>
+</tr>
+<tr>
+<td><a href="FFS_MATRIX.html">FFS_MATRIX</a></td>
+<td>MATRIX。1 セルの行列、cos μ</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="FFS_REFERENCE.html">FFS_REFERENCE</a></td>
+<td>REFERENCE。参照光学との差</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="FFS_COUPLE.html">FFS_COUPLE</a></td>
+<td>COUPLE と DECOUPLE</td>
+<td>△ (DECOUPLE 後の gs の値が式と合わない。pysad は ATTRIBUTE に結合を出さない)</td>
+</tr>
+<tr>
+<td><a href="FFS_BEAMSIZE.html">FFS_BEAMSIZE</a></td>
+<td>BEAMSIZE。σ² = εβ + (ησδ)²</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_Twiss.html">fn_Twiss</a></td>
+<td>Twiss 関数。補間・ALL・PEX・GMX</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_TransferMatrix_BeamMatrix.html">fn_TransferMatrix_BeamMatrix</a></td>
+<td>TransferMatrix と BeamMatrix</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="flag_CELL_INS.html">flag_CELL_INS</a></td>
+<td>CELL (周期解) と INS (初期値からの伝搬)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="flag_COD.html">flag_COD</a></td>
+<td>誤差入りリング (errors_ring) の閉軌道と 2x2 行列の式</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_OrbitGeo_GeoBase.html">fn_OrbitGeo_GeoBase</a></td>
+<td>OrbitGeo と GeoBase</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="flag_GEOCAL_GEOFIX.html">flag_GEOCAL_GEOFIX</a></td>
+<td>GEOCAL と GEOFIX。幾何の更新</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="flag_CALC4D_CALC6D.html">flag_CALC4D_CALC6D</a></td>
+<td>CALC4D と CALC6D。6x6 行列の M56 = -α_c C</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="flag_INS_DETR.sad">flag_INS_DETR</a></td>
+<td>INS の CALC のあとの <code>Twiss["DETR"]</code> (結合行列の行列式)。45 度回した四極 1 個の結合リング</td>
+<td>○ (全桁一致、DETR = 0.0021332)</td>
+</tr>
+<tr>
+<td><a href="flag_DETR_ring_a.sad">flag_DETR_ring_a</a></td>
+<td>DETR ≥ 1 (モードが入れ替わる) の CELL・CALC・INS・Emittance[] (大きなリング A、3 GeV、603 m)。台本の先頭にラティスを連結して走らせる (<code>pysad/tests/kek-ls_v03_12.lat</code>)</td>
+<td>○ (β・DETR・Emittance[] は一致。一周の位相の整数部は k64 が ±1 ずれ (丸め誤差の符号)、v2 は gs と一致)</td>
+</tr>
+<tr>
+<td><a href="flag_DETR_pf.sad">flag_DETR_pf</a></td>
+<td>同 (PF リング、2.5 GeV、187 m)。先頭に <code>pf/lattice/v9_16_asym.sad</code> を連結</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><a href="flag_DETR_astrid2.sad">flag_DETR_astrid2</a></td>
+<td>同 (ASTRID2、0.58 GeV、45.7 m)。先頭に <code>astrid/lattice/ASTRID2_v01_01.sad</code> を連結</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><a href="fn_MEASURE_fodo.sad">fn_MEASURE_fodo</a></td>
+<td>MEASURE・LOGMEASURE・TRCOD (3 GeV、周長 48 m の 12 セル FODO + スキュー四極 1 台)</td>
+<td>○ (k64 モードは gs の統計ブロック (4 桁) と全一致。gs は先頭 MARK の位置だけ出力し、TRCOD は SIGSEGV。v2 は種を戻す・重心が 0)</td>
+</tr>
+<tr>
+<td><a href="fn_MEASURE_default_np.sad">fn_MEASURE_default_np</a></td>
+<td>NP を指定しない MEASURE。gs は粒子数 1000 (NP の既定)</td>
+<td>○ (k64 も同じ。v2 は NP の指定を要求する)</td>
+</tr>
+<tr>
+<td><a href="fn_MEASURE_ring_a.sad">fn_MEASURE_ring_a</a></td>
+<td>MEASURE・TRCOD (大きなリング A)。先頭に <code>pysad/tests/kek-ls_v03_12.lat</code> を連結</td>
+<td>同 fn_MEASURE_fodo</td>
+</tr>
+<tr>
+<td><a href="fn_MEASURE_pf.sad">fn_MEASURE_pf</a></td>
+<td>MEASURE・TRCOD (PF リング)。先頭に <code>pf/lattice/v9_16_asym.sad</code> を連結</td>
+<td>同 fn_MEASURE_fodo</td>
+</tr>
+<tr>
+<td><a href="fn_MEASURE_astrid2.sad">fn_MEASURE_astrid2</a></td>
+<td>MEASURE・TRCOD (ASTRID2)。先頭に <code>astrid/lattice/ASTRID2_v01_01.sad</code> を連結</td>
+<td>同 fn_MEASURE_fodo</td>
+</tr>
+<tr>
+<td><a href="flag_TRCOD_orbit.sad">flag_TRCOD_orbit</a></td>
+<td>TRCOD の閉軌道の測定。24 セルの平面 FODO (3 GeV)、リングの先頭に薄いキック (L=0 の BEND、K0=1e-5)</td>
+<td>CALC との差 7e-10、解析式との差 5e-6。gs は SIGSEGV (B42)</td>
+</tr>
+<tr>
+<td><a href="flag_TRCOD_reference.sad">flag_TRCOD_reference</a></td>
+<td>TRCOD FIXCOD / MVCOD / STNCOD (基準軌道の保存と差 <code>Twiss["DDX"]</code>)、TRCOD ALIGN、ORBITJITTER。1 GeV の輸送路</td>
+<td>v2 のみ (K64 では TRCOD が落ちる。gs の参照なし)</td>
+</tr>
+<tr>
+<td><a href="fn_PUTMEASURE_GETMEASURE.sad">fn_PUTMEASURE_GETMEASURE</a></td>
+<td>PUTMEASURE / GETMEASURE (測定値をファイルで受け渡し、fit の目標値にする) と LWAKE ON の MEASURE。実行すると <code>fn_PUTMEASURE_GETMEASURE.measure.dat</code> ができる (消してよい)</td>
+<td>v2 のみ (K64 では MEASURE が無出力。gs の参照なし)</td>
+</tr>
+<tr>
+<td><a href="flag_DELCOR_rms.sad">flag_DELCOR_rms</a></td>
+<td>DELCOR の規格化。v2 は DX の rms = delx、DY の rms = dely (相関長 5 m と 5 km、150 回の統計)</td>
+<td>v2 の規格化。k64 は 1/√2 (rms の比が 0.71 前後)</td>
+</tr>
+<tr>
+<td><a href="FFS_misc_DELCOR_WAKE_MULT_skew.sad">FFS_misc_DELCOR_WAKE_MULT_skew</a></td>
+<td>DELCOR (CAVI・MARK にも DX が入る)、ResponseMatrix の TRPT (応答に sqrt(p(補正磁石)/p(モニタ)) が掛かる)、旧式の WAKE コマンド (<code>WAKE L 名前 s w … ENDWAKE</code>)、MULT のスキュー成分 (B40・B62・B66)</td>
+<td>v2 の出力だけ</td>
+</tr>
+</tbody>
+</table>
+<p>上の表のうち、拡張子つきのリンクの行 (<code>.sad</code>・<code>.py</code>) は説明の <code>.md</code> を持たない。内容と結果の要点は表と、台本・スクリプトの先頭のコメントに書いた。<code>.py</code> の例は、リポジトリ直下から <code>py -3.12 example/02_optics_cod/NAME.py</code> で走らせる (出力は <code>NAME.out.txt</code>)。gs と同じ動作で走らせるときは <code>PYSAD_COMPAT=k64</code>。</p>
+<p><code>flag_CALC4D_CALC6D</code> では <code>CALC6D</code> に RF の効果が入らず NZ に意味のある値が出なかった (gs・pysad とも)。シンクロトロンチューンは <code>01_lattice_elements/elem_CAVI</code> の <code>Emittance[]</code> で確認した。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

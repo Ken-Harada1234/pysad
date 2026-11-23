@@ -9,7 +9,7 @@
 
 FFS からは呼べない (MAIN の TRACK だけ)。gs も MAIN の TRACK は SIGSEGV (tracka → tinip) で参照が無いので、
 K64 の Fortran 自体 (wjfit・wfres・wfbin・wiord を gfortran で組んだ独立な基準。tfstk に依る else 枝だけを外した)
-と比べる (docs/46、試験 test_fourier_fit.py)。未確認: 失った粒子の zbuf の扱い (K64 は失った粒子も 0 を含む全長で当てはめる)、
+と比べる (docs/31、試験 test_fourier_fit.py)。未確認: 失った粒子の zbuf の扱い (K64 は失った粒子も 0 を含む全長で当てはめる)、
 |mz| の項が lcoeff を超える場合 (ADDTERMS が分解能に比べて大きすぎるとき、K64 は iord の未初期化の値を使う → ここは 0 の組)。
 """
 from __future__ import annotations

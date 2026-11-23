@@ -14,7 +14,7 @@ t0 = TimeUsed[];   r = Timing[s = 0; Do[s += Sin[i], {i, 20000}]; s];   TimeUsed
 `DateString[]` の長さ 19。`DateString[{2000,1,2,3,4,5}]`=`01/02/2000 03:04:05`、`DateString[0]`=`01/01/1900 00:00:00`、`DateString[86400*365]`=`01/01/1901 00:00:00` (365 日後)。`TimeUsed[]` は実数で、`Timing` は長さ 2 のリスト、値は 0.46196... ($\sum_{i=1}^{20000}\sin i$)。`Date[]` は長さ 6。
 
 ## gs と pysad の比較
-○ 一致する (2026-11-17 に修正: `DateString[date]` は 1900-01-01 からの秒、または {Y,m,d,H,M,S} を `mm/dd/yyyy HH:MM:SS` にする)。引数なし、`TimeUsed`、`Timing`、`Date` も一致 (`Timing` の合計は 16 桁目まで一致)。
+○ 一致する (`DateString[date]` は 1900-01-01 からの秒、または {Y,m,d,H,M,S} を `mm/dd/yyyy HH:MM:SS` にする)。引数なし、`TimeUsed`、`Timing`、`Date` も一致 (`Timing` の合計は 16 桁目まで一致)。
 
 ## 未確認・限界
 - 7 番目の要素 (offset) は無視している (未確認)。

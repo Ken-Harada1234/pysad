@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn DynamicApertureSurvey (PF): sample_DAsv</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方-スコアスコア-1100σ50-が振幅-σ">結果の読み方 (スコア、(スコア-1)×100σ/50 が振幅 σ)</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_DynamicApertureSurvey_DAsv_PF.md</div>
+<h1 id="fn-dynamicaperturesurvey-pf-sample_dasv">fn DynamicApertureSurvey (PF): sample_DAsv</h1>
+<p>種別: 関数 (サンプル集 sample_DAsv.sad)。加速器: PF 2.5 GeV リング (<code>lattice/v9_16_asym.sad</code>、周長 187.035 m、チューン 9.5975 / 5.2790)。追跡: <code>OFF RAD FLUC; ON COD RFSW RADCOD</code>。<strong>2000 周</strong> (サンプル集は 5000 周)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>運動量方向 -2%〜+2% (0.5% おき、9 点)、水平 (y=1σ) と垂直 (x=1σ) の振幅 1〜100σ のサーベイ。<code>dp = 0.01/SIGE</code> (1% が何 σE か = 13.63)、σ = 水平エミッタンス × β のルート (垂直も水平エミッタンスを使うのがサンプル集の書き方)。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>dp = 0.01/SIGE;  zrange = Range[-2.0*dp, 2.01*dp, dp/2];
+range = {{1,100},{1,1},zrange};  res = DynamicApertureSurvey[range, 2000, Output-&gt;6];
+Print[Table[res[2,2,i,2], {i,1,Length[zrange]}]];      ! 運動量ごとのスコア
+</code></pre>
+<p>(サンプル集は <code>Print[res[2,2,1,2], res[2,2,2,2], ...]</code> と並べるが、<code>Table</code> で書き直した。)</p>
+<h2 id="結果の読み方-スコアスコア-1100σ50-が振幅-σ">結果の読み方 (スコア、(スコア-1)×100σ/50 が振幅 σ)</h2>
+<table>
+<thead>
+<tr>
+<th>dp/p</th>
+<th>-2%</th>
+<th>-1.5%</th>
+<th>-1%</th>
+<th>-0.5%</th>
+<th>0</th>
+<th>+0.5%</th>
+<th>+1%</th>
+<th>+1.5%</th>
+<th>+2%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>x スコア (gs, pysad)</td>
+<td>0</td>
+<td>0</td>
+<td>20</td>
+<td>19</td>
+<td>22</td>
+<td>19</td>
+<td>19</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>y スコア (gs)</td>
+<td>0</td>
+<td>0</td>
+<td>11</td>
+<td>13</td>
+<td>14</td>
+<td>14</td>
+<td>13</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>y スコア (pysad)</td>
+<td>0</td>
+<td>0</td>
+<td>13</td>
+<td>13</td>
+<td>14</td>
+<td>14</td>
+<td>13</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>運動量 0 で x のスコア 22 = (22-1)×2σ = 42σx = 27.0 mm、y のスコア 14 = (14-1)×2σ = 26σy = 10.8 mm (σx = 0.6433 mm、σy = 0.4154 mm)。±1.5% はスコア 0 (RF バケットの外、バケット半高さ 1.18%)。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>式の照合はなし。1000 周 (<code>pf/tracking/fn_DynamicApertureSurvey_PF</code>) と比べると、x のスコアは 22 (同じ)、-1% で 21 → 20 と小さくなる。周回数 1000 → 2000 で DA はほぼ飽和している (放射なしの設計ラティス)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 モードと k64 モード</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (<code>docs/28_v2_vs_k64.md</code>。主に <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 B75 と <code>MomentumCompaction</code> B77)、この例の出力のうち <code>Emittance[]</code> の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>△ x は全点で一致。y の -1% (-13.6σE) の行だけ gs 11、pysad 13。DA の境界に近い粒子で、gs と pysad の周回数の端数の差がスコアに出た (他の 8 行は一致)。画面の記号 (<code>P</code>、<code>K</code> など) も境界付近で違う。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>5000 周でなく 2000 周。放射・量子励起は切ってある (サンプル集は <code>ON RAD FLUC</code>)。</li>
+<li>gs と pysad を合わせて約 14 秒。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

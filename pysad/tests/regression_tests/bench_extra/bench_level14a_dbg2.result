@@ -1,0 +1,303 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 21:37:01 Wednesday 10/14/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! 3.0 GEV RING, 20 CELLS
+ MOMENTUM = 3GEV;
+ DRIFT  DRID    =(L =2.9 )   DR20    =(L =.2 )    DR08    =(L =.12 )
+        DRSS    =(L =.4325 ) DRDD    =(L =.55 )    DRSO    =(L =.2525 )
+        DR28    =(L =.19 )   DRCT    =(L = 0 )
+ ;
+ DRIFT  DRID1    =(L =2.85 )
+        DRID2    =(L =0.05 )
+        DRSS1    =(L = 0.05)
+        DRSS2    =(L = 0.3825)
+        DRDD1    =(L = 0.45)
+        DRDD2    =(L = 0.05)
+        DR281    =(L = 0.05 )
+        DR282    =(L = 0.14 )
+        DR08H    =(L = 0.06)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3    =(L =.413 ANGLE =.00827209392 )
+        BID3H    =(L =.413/2 ANGLE =.00827209392/2 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3    =(L =.413 ANGLE =.00758109248 )
+        BPI3H    =(L =.413/2 ANGLE =.00758109248/2 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.900241394141 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7428636614916 )
+ ;
+ QUAD   QFA1    =(L =.25  K1 =1.0302859090451 )
+          QFA1H   =(L =.125  K1 =1.0302859090451/2 )
+        QDA2    =(L =.2   K1 =-.7358342943058 )
+        QDA3    =(L =.2   K1 =-.4409470413988 )
+        QFA4    =(L =.2   K1 =.4313378432341 )
+        QDA5    =(L =.2   K1 =-.4602777086531 )
+        QFA6    =(L =.335 K1 =1.7377379386433 )
+          QFA6H    =(L =.335/2 K1 =1.7377379386433/2 )
+        QFA8    =(L =.5   K1 =2.1955902812884 )
+          QFA8H    =(L =.25   K1 =2.1955902812884/2 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.8417491573899 )
+        SFA     =(L =.045 K2 =4.4168227049674 )
+
+        SDC     =(L =.045 K2 =-3.8417491573899 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ OCT    OCFA    =(L =.0125     K3 =-6000*0.0125 )
+        OCF2    =(L =.03  K3 =-0 )
+ ;
+ CAVI   RFC     =(VOLT =1.4e+06    HARM =992 )
+ ;
+ MARK   MKS     =(AX =-1.1334938917928409e-11 BX =3.892652430016132    AY =-1.5622147715617673e-11   BY =2.613264010640574
+           EX =.005215052091902209  EPX =-1.0535665167994642e-16  DP =.01   SIGZ =.0012504235342250764
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKE     =(AX =-7.74500093989406e-11   BX =3.89265242969666     PSIX =14.960907314634563 AY =2.1766446880965991e-10
+           BY =2.613264011187758    PSIY =5.479949219457121  EX =.005215052091894469  EPX =-1.078998002057574e-15   DP =.01
+           EMITX =1.8058612106805037e-09 EMITY =1e-12 )
+        MKSFA1 = ()
+        MKSFA2 = ()
+        MKSDA1 = ()
+        MKSDA2 = ()
+        MKSDC1 = ()
+        MKSDC2 = ()
+        MKC = ()
+        MKBE  = ()
+ ;
+
+!-----------------------------------------
+! ARC CELLS
+!-----------------------------------------
+
+  MONI
+         BPM = ()
+  ;
+
+  BEND   HD = ()
+         VD = (ROTATE = -90 DEG)
+  ;
+  LINE   HV = (HD VD)
+  ;
+LINE
+  ARCAH    =(MKS
+             DRID1 BPM DRID2 QFA1H VD QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H, BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5,
+             DR08H BPM DR08H, QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08H BPM DR08H, SHA, DR08,
+             BPI7 HD DRCT MKC
+             MKE)
+  ARCAH2    =(MKS
+             DRID1 BPM DRID2 QFA1H QFA1H DR20, QDA2, DR08 MKBE
+             BID5, BID4, BID3H HD BID3H BID2, BID1,
+             DR08, QDA3, DR08
+             2*SDA MKSDA1 2*SDA
+             DRSS1 BPM
+             DRSS2  DRDD
+             QFA4, DR08,
+             2*SFA MKSFA1 2*SFA
+             DR08, QFA4, DR08, 8*OCFA,
+             DRSO DRDD1 BPM DRDD2
+             2*SDC MKSDC1 2*SDC
+             DR08, QDA5, DR08,
+             BPI1, BPI2, BPI3H HD BPI3H BPI4, BPI5
+             DR08H BPM DR08H QFA6H QFA6H DR28,
+             BPI6 HD BPI6 DR281 DR282 QFA8H VD QFA8H DR08, SHA, DR08,
+             BPI7 DRCT MKC
+             MKE)
+ ARCA      = (ARCAH -ARCAH2)
+ RING      =(MKS
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA, RFC,
+             ARCA, ARCA, ARCA, ARCA,
+             ARCA, ARCA, ARCA, ARCA
+             MKE)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9131278249857536 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7045722303066142 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4630117112293077 )
+        QDA2    =(L =.2   K1 =-.6604776361997438 )
+        QDA3    =(L =.2   K1 =-.42451439357520854 )
+        QFA4    =(L =.2   K1 =.414636958834372 )
+        QDA5    =(L =.2   K1 =-.458157393322574 )
+        QFA6H   =(L =.1675     K1 =.8517302592904823 )
+        QFA8H   =(L =.25  K1 =1.1273255587393383 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-3.0348531183690555 )
+        SFA     =(L =.045 K2 =3.29744673430139 )
+        SDC     =(L =.045 K2 =-3.0348531183690555 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+
+ DRIFT  DRCT    =(L =.5)
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292271132168 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001834063768251 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4117427225413435 )
+        QDA2    =(L =.2   K1 =-.661274491217251 )
+        QDA3    =(L =.2   K1 =-.38822139139626954 )
+        QFA4    =(L =.2   K1 =.4109218113797463 )
+        QDA5    =(L =.2   K1 =-.4733016273637364 )
+        QFA6H   =(L =.1675     K1 =.9215539290295219 )
+        QFA8H   =(L =.25  K1 =1.098917369966305 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.192657116323371 )
+        SFA     =(L =.045 K2 =5.099276103295176 )
+        SDC     =(L =.045 K2 =-4.192657116323371 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+ BEND   BID5    =(L =.413 ANGLE =.01989677344 )
+        BID4    =(L =.413 ANGLE =.01093590672 )
+        BID3H   =(L =.2065     ANGLE =.00413604696 )
+        BID2    =(L =.413 ANGLE =.00653919168 )
+        BID1    =(L =.413 ANGLE =.00532646 )
+        BPI1    =(L =.413 ANGLE =.0052368512 )
+        BPI2    =(L =.413 ANGLE =.00631565072 )
+        BPI3H   =(L =.2065     ANGLE =.00379054624 )
+        BPI4    =(L =.413 ANGLE =.00957848528 )
+        BPI5    =(L =.413 ANGLE =.01350338256 )
+        BPI6    =(L =.403 ANGLE =.02726687232 K1 =-.9126292489795 )
+        BPI7    =(L =.352 ANGLE =.00936  K1 =-.7001833009675 )
+ ;
+ QUAD   QFA1H   =(L =.125 K1 =.4359417592282 )
+        QDA2    =(L =.2   K1 =-.6422919019387 )
+        QDA3    =(L =.2   K1 =-.4086041625487 )
+        QFA4    =(L =.2   K1 =.4009936242199 )
+        QDA5    =(L =.2   K1 =-.4346576537471 )
+        QFA6H   =(L =.1675     K1 =.9049532139395 )
+        QFA8H   =(L =.25  K1 =1.0604857646104 )
+ ;
+ SEXT   SDA     =(L =.045 K2 =-4.206799858141086 )
+        SFA     =(L =.045 K2 =4.601104566854821 )
+        SDC     =(L =.045 K2 =-4.206799858141086 )
+        SHA     =(L =.03  K2 =0 )
+ ;
+! bench_level14a_dbg2.sad — DP0=0.01 のチューンのずれの原因の切り分け (OCT / K1 付き BEND / 六極)
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ USE RING;
+Out[1]:= USE
+ CELL;
+ DP0=0.01;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.01000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.6200E-8 $$$       f BX    #######  #   5.949924 $$$       f NX    #######  #  47.596484
+$$$       f AY    #######  #  -1.821E-8 $$$       f BY    #######  #   5.300204 $$$       f NY    #######  #  17.629755
+$$$       f LENG  #######  #  603.12000
+ Print["T_full ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","$$$"], Twiss["EX","$$$"], Twiss["DX","$$$"]}];
+T_full {  47.5964843199,  17.6297550923,   5.9499244741,    .0455820336, 4.484475467E-4}
+ Print["OCTS ", LINE["NAME","OC*"]];
+OCTS {"OCFA.1","OCFA.2","OCFA.3","OCFA.4","OCFA.5","OCFA.6","OCFA.7","OCFA.8","OCFA.9","OCFA.10","OCFA.11","OCFA.12","OCFA.13",
+ "OCFA.14","OCFA.15","OCFA.16","OCFA.17","OCFA.18","OCFA.19","OCFA.20","OCFA.21","OCFA.22","OCFA.23","OCFA.24","OCFA.25","OCFA.26",
+ "OCFA.27","OCFA.28","OCFA.29","OCFA.30","OCFA.31","OCFA.32","OCFA.33","OCFA.34","OCFA.35","OCFA.36","OCFA.37","OCFA.38","OCFA.39",
+ "OCFA.40","OCFA.41","OCFA.42","OCFA.43","OCFA.44","OCFA.45","OCFA.46","OCFA.47","OCFA.48","OCFA.49","OCFA.50","OCFA.51","OCFA.52",
+ "OCFA.53","OCFA.54","OCFA.55","OCFA.56","OCFA.57","OCFA.58","OCFA.59","OCFA.60","OCFA.61","OCFA.62","OCFA.63","OCFA.64","OCFA.65",
+ "OCFA.66","OCFA.67","OCFA.68","OCFA.69","OCFA.70","OCFA.71","OCFA.72","OCFA.73","OCFA.74","OCFA.75","OCFA.76","OCFA.77","OCFA.78",
+ "OCFA.79","OCFA.80","OCFA.81","OCFA.82","OCFA.83","OCFA.84","OCFA.85","OCFA.86","OCFA.87","OCFA.88","OCFA.89","OCFA.90","OCFA.91",
+ "OCFA.92","OCFA.93","OCFA.94","OCFA.95","OCFA.96","OCFA.97","OCFA.98","OCFA.99","OCFA.100","OCFA.101","OCFA.102","OCFA.103",
+ "OCFA.104","OCFA.105","OCFA.106","OCFA.107","OCFA.108","OCFA.109","OCFA.110","OCFA.111","OCFA.112","OCFA.113","OCFA.114",
+ "OCFA.115","OCFA.116","OCFA.117","OCFA.118","OCFA.119","OCFA.120","OCFA.121","OCFA.122","OCFA.123","OCFA.124","OCFA.125",
+ "OCFA.126","OCFA.127","OCFA.128","OCFA.129","OCFA.130","OCFA.131","OCFA.132","OCFA.133","OCFA.134","OCFA.135","OCFA.136",
+ "OCFA.137","OCFA.138","OCFA.139","OCFA.140","OCFA.141","OCFA.142","OCFA.143","OCFA.144","OCFA.145","OCFA.146","OCFA.147",
+ "OCFA.148","OCFA.149","OCFA.150","OCFA.151","OCFA.152","OCFA.153","OCFA.154","OCFA.155","OCFA.156","OCFA.157","OCFA.158",
+ "OCFA.159","OCFA.160","OCFA.161","OCFA.162","OCFA.163","OCFA.164","OCFA.165","OCFA.166","OCFA.167","OCFA.168","OCFA.169",
+ "OCFA.170","OCFA.171","OCFA.172","OCFA.173","OCFA.174","OCFA.175","OCFA.176","OCFA.177","OCFA.178","OCFA.179","OCFA.180",
+ "OCFA.181","OCFA.182","OCFA.183","OCFA.184","OCFA.185","OCFA.186","OCFA.187","OCFA.188","OCFA.189","OCFA.190","OCFA.191",
+ "OCFA.192","OCFA.193","OCFA.194","OCFA.195","OCFA.196","OCFA.197","OCFA.198","OCFA.199","OCFA.200","OCFA.201","OCFA.202",
+ "OCFA.203","OCFA.204","OCFA.205","OCFA.206","OCFA.207","OCFA.208","OCFA.209","OCFA.210","OCFA.211","OCFA.212","OCFA.213",
+ "OCFA.214","OCFA.215","OCFA.216","OCFA.217","OCFA.218","OCFA.219","OCFA.220","OCFA.221","OCFA.222","OCFA.223","OCFA.224",
+ "OCFA.225","OCFA.226","OCFA.227","OCFA.228","OCFA.229","OCFA.230","OCFA.231","OCFA.232","OCFA.233","OCFA.234","OCFA.235",
+ "OCFA.236","OCFA.237","OCFA.238","OCFA.239","OCFA.240","OCFA.241","OCFA.242","OCFA.243","OCFA.244","OCFA.245","OCFA.246",
+ "OCFA.247","OCFA.248","OCFA.249","OCFA.250","OCFA.251","OCFA.252","OCFA.253","OCFA.254","OCFA.255","OCFA.256","OCFA.257",
+ "OCFA.258","OCFA.259","OCFA.260","OCFA.261","OCFA.262","OCFA.263","OCFA.264","OCFA.265","OCFA.266","OCFA.267","OCFA.268",
+ "OCFA.269","OCFA.270","OCFA.271","OCFA.272","OCFA.273","OCFA.274","OCFA.275","OCFA.276","OCFA.277","OCFA.278","OCFA.279",
+ "OCFA.280","OCFA.281","OCFA.282","OCFA.283","OCFA.284","OCFA.285","OCFA.286","OCFA.287","OCFA.288","OCFA.289","OCFA.290",
+ "OCFA.291","OCFA.292","OCFA.293","OCFA.294","OCFA.295","OCFA.296","OCFA.297","OCFA.298","OCFA.299","OCFA.300","OCFA.301",
+ "OCFA.302","OCFA.303","OCFA.304","OCFA.305","OCFA.306","OCFA.307","OCFA.308","OCFA.309","OCFA.310","OCFA.311","OCFA.312",
+ "OCFA.313","OCFA.314","OCFA.315","OCFA.316","OCFA.317","OCFA.318","OCFA.319","OCFA.320"}
+ OC* K3 0;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.01000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.2336E-6 $$$       f BX    #######  #   5.991929 $$$       f NX    #######  #  47.611827
+$$$       f AY    #######  #  -6.614E-6 $$$       f BY    #######  #   5.314872 $$$       f NY    #######  #  17.623596
+$$$       f LENG  #######  #  603.12000
+ Print["T_nooct ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","$$$"], Twiss["EX","$$$"], Twiss["DX","$$$"]}];
+T_nooct {  47.6118272088,  17.6235957489,   5.9919290982,    .0455754337, 4.483426001E-4}
+ BPI6 K1 0;
+ BPI7 K1 0;
+ CALC;
+ *****qcod---> Overflow & closed orbit not found            1
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.01000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.2336E-6 $$$       f BX    #######  #   5.991929 $$$       f NX    #######  #  47.611827
+$$$       f AY    #######  #  -6.614E-6 $$$       f BY    #######  #   5.314872 $$$       f NY    #######  #  17.623596
+$$$       f LENG  #######  #  603.12000 MKS.1/$$$   BMAGX #######  #   1.000000 MKS.1/$$$   BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+ Print["T_nooct_nok1 ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","$$$"], Twiss["EX","$$$"], Twiss["DX","$$$"]}];
+T_nooct_nok1 {  47.6118272088,  17.6235957489,   5.9919290982,    .0455754337, 4.483426001E-4}
+ S* K2 0;
+ CALC;
+ *****qcod---> Overflow & closed orbit not found            1
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.01000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.2336E-6 $$$       f BX    #######  #   5.991929 $$$       f NX    #######  #  47.611827
+$$$       f AY    #######  #  -6.614E-6 $$$       f BY    #######  #   5.314872 $$$       f NY    #######  #  17.623596
+$$$       f LENG  #######  #  603.12000 MKS.1/$$$   BMAGX #######  #   1.000000 MKS.1/$$$   BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+ Print["T_linear ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","$$$"], Twiss["EX","$$$"], Twiss["DX","$$$"]}];
+T_linear {  47.6118272088,  17.6235957489,   5.9919290982,    .0455754337, 4.483426001E-4}
+ DP0=0;
+ CALC;
+ *****qcod---> Overflow & closed orbit not found            1
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  4.2336E-6 $$$       f BX    #######  #   5.991929 $$$       f NX    #######  #  47.611827
+$$$       f AY    #######  #  -6.614E-6 $$$       f BY    #######  #   5.314872 $$$       f NY    #######  #  17.623596
+$$$       f LENG  #######  #  603.12000 MKS.1/$$$   BMAGX #######  #   1.000000 MKS.1/$$$   BMAGY #######  #   1.000000
+ Horizontal/Vertical Unstable.
+ Print["T_linear_dp0 ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","$$$"], Twiss["EX","$$$"], Twiss["DX","$$$"]}];
+T_linear_dp0 {  47.6118272088,  17.6235957489,   5.9919290982,    .0455754337, 4.483426001E-4}
+ stop;
+ FFS                  end:  CPU time =     0.015 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

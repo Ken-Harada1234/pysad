@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>elegant との比較の例 (局所運動量アクセプタンスと Touschek 寿命)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#走らせるコマンド">走らせるコマンド</a></li>
+<li><a href="#ファイル">ファイル</a></li>
+<li><a href="#結果の要約">結果の要約</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: elegant_comparison.md</div>
+<h1 id="elegant-との比較の例-局所運動量アクセプタンスと-touschek-寿命">elegant との比較の例 (局所運動量アクセプタンスと Touschek 寿命)</h1>
+<p>試験は <code>pysad/tests/script_tests/test_v23_T1_elegant.py</code>。この例は比較と、SAD → elegant の変換のスクリプトである。
+実行はリポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/xxx.py ...</code> (標準出力をファイルにリダイレクトするには <code>PYTHONUTF8=1</code> が要る)。すべて v2 モード。
+elegant は WSL (Ubuntu、<code>~/elegant/env.sh</code>、elegant 2026.4.0)。使い方は elegant の公式文書。CPU は最大 4 コア (serial の elegant を <code>xargs -P 4</code>、または <code>mpirun -np 4 Pelegant</code>)。
+gs (K64、2026-10-19 ビルド、WSL、NPARA = 1) は <code>gs_bend_k1.py</code> だけ (timeout 600 s、終了後に <code>ps</code> で sad1.exe の残りがないことを確かめた)。
+使ったラティス: <code>example/astrid/lattice/ASTRID2_v01_01.sad</code> (ASTRID2、0.58 GeV、45.7 m、6 セル)、<code>pysad/tests/kek-ls_v03_12.lat</code> (3 GeV、603 m、20 セル)。</p>
+<h2 id="走らせるコマンド">走らせるコマンド</h2>
+<pre><code># 1. pysad 側の基準値 (光学、IBS 込みのビーム、一様な受容の Touschek 寿命) → pysad_&lt;名前&gt;.ref.json
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/pysad_ref.py astrid2
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/pysad_ref.py kekls              # pysad の LMA の表 (3.) があれば pysad_local (局所の寿命) も入る
+# 2. SAD → elegant の変換 (lte と要素の対応表 .map.json)。--u0 は RF の位相用 (省略なら pysad の値)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/sad2ele.py astrid2 example/15_lma_touschek/touschek_elegant
+# 3. LMA: pysad (kek-ls は elegant と同じ位置で走らせる。ASTRID2 は保存済みの表 (`lma_astrid2.table.txt`) を使う) と elegant → 比較の表・図
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/lma/lma_compare.py kekls --pysad --workers 2     # pysad の LMA を pysad_kekls.lma.txt に (52 位置、約 23 分)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_lma.py astrid2 --mpi --np 4            # elegant の LMA、全周 199 位置、Pelegant (約 9 分)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_lma.py kekls --np 4                    # 1500 周、14 位置、serial の elegant を位置ごとに 4 本同時
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_lma.py astrid2 --mpi --np 4 --exact-k1 --cell   # 感度: K2 = −h K1 を足さない厳密な勾配 (1 セル)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/lma/lma_compare.py astrid2                         # 比較 (表 lma_compare_astrid2.table.txt、図)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/lma/lma_compare.py kekls
+# 4. Touschek 寿命: elegant の touschekLifetime (一様な受容、elegant の LMA、pysad の LMA) → elegant_&lt;名前&gt;.touschek.txt
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_touschek.py astrid2
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_touschek.py kekls
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_touschek_scan.py astrid2 1e6 0.01 0.1 1.0     # 式の差の切り分け (電流 1e6、結合の下限 MINCOUP)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/elegant_summary.py                                       # 寿命の表 (計算なし)
+# 5. K1≠0 の BEND のオフモメンタムの光学 (gs・pysad・elegant・解析式)
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/gs_bend_k1.py
+PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_elegant.py
+# 試験
+PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt; py -3.12 -m pytest pysad/tests/script_tests/test_v23_T1_elegant.py -q      # elegant が無いと光学の 1 件は skip
+</code></pre>
+<h2 id="ファイル">ファイル</h2>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sad2ele.py</code> / <code>astrid2.lte</code>・<code>kekls.lte</code>・<code>*_ma.lte</code>・<code>*_all.lte</code> (+ <code>.map.json</code>)</td>
+<td><strong>SAD → elegant の変換</strong>。pysad で展開した要素の並びから lte を書く。DRIFT → DRIF、QUAD → KQUAD、SEXT → KSEXT、OCT → KOCT、BEND → CSBEND (K1≠0 は <code>K2 = −K1·ANGLE/L</code>、<code>EDGE_ORDER = 2</code>。E1・E2 は SAD の値 × ANGLE)、CAVI → RFCA (<code>PHASE = 180° − asin(U0/V)</code>)、MARK・MONI・L = 0 で ANGLE = 0 の BEND → MARK。放射は SYNCH_RAD = 1・ISR = 0。<code>_ma</code>・<code>_all</code> は各要素の出口に MAXAMP (±10 mm、位置の名前 <code>AM</code> が momentum_aperture の対象) を足したもの。<code>.map.json</code> は要素の番号 ↔ s・名前</td>
+</tr>
+<tr>
+<td><code>pysad_ref.py</code> / <code>pysad_astrid2.ref.json</code>・<code>pysad_kekls.ref.json</code>・<code>.ref.out.txt</code></td>
+<td>pysad の光学 (チューン、色収差、β・η の最大・最小、αc、U0)、自然・IBS 込みのビーム (EMITXC・EMITYC・EMITZC・SIGE・SIGZ)、一様な受容 a での Touschek 寿命、局所の LMA の寿命 (<code>pysad_local</code>)</td>
+</tr>
+<tr>
+<td><code>elegant_lma.py</code> / <code>elegant_astrid2.lma.txt</code>・<code>elegant_kekls.lma.txt</code>・<code>elegant_astrid2_exactk1.lma.txt</code>・<code>*_ma.ele</code></td>
+<td>elegant の <code>momentum_aperture</code> (RF・放射つき、ISR なし、MAXAMP ±10 mm、x = y = 0)。位置ごとの δ±・損失の周・位置。ASTRID2 は全周 199 位置 (Pelegant、1312 周)、kek-ls は 14 位置 (最初のセルの 11 位置 + 9 番目のセルの 3 位置。serial の elegant を位置ごとに 4 本同時、1500 周)</td>
+</tr>
+<tr>
+<td><code>lma_compare.py</code> / <code>lma_compare_astrid2.{table.txt,png,out.txt}</code>・<code>lma_compare_kekls.{table.txt,png,out.txt}</code>・<code>pysad_kekls.lma.txt</code></td>
+<td>LMA の比較 (同じ位置の pysad と elegant の δ±、相対差、限界の種類 = アパーチャ / RF バケット)。elegant の周期性の確認</td>
+</tr>
+<tr>
+<td><code>elegant_touschek.py</code> / <code>elegant_{astrid2,kekls}.touschek.txt</code>・<code>*.aper_*.sdds</code></td>
+<td>elegant の <code>touschekLifetime</code>。入力は pysad の IBS 込みのビーム。受容: 一様な δ、elegant の LMA、pysad の LMA</td>
+</tr>
+<tr>
+<td><code>elegant_touschek_scan.py</code> / <code>elegant_touschek_scan_astrid2.out.txt</code></td>
+<td>式の差の切り分け (電流 1e6 で IBS を小さくし、MINCOUP = 0.01・0.1・1 で一様な δ の寿命の elegant / pysad)</td>
+</tr>
+<tr>
+<td><code>elegant_summary.py</code> / <code>elegant_summary.out.txt</code></td>
+<td>寿命の比較の表 (保存済みの結果から)</td>
+</tr>
+<tr>
+<td><code>gs_bend_k1.py</code> / <code>.out.txt</code>・<code>gs_bend_k1.sad</code></td>
+<td>一様な磁場指数の扇形磁石 16 台のリング (K1≠0 の BEND) のオフモメンタムのチューン: gs・pysad の追跡 (1e-12 で一致)、解析式。B160 (K1 の暗黙の定義) の根拠</td>
+</tr>
+<tr>
+<td><code>bend_k1_elegant.py</code> / <code>.out.txt</code></td>
+<td>同じリングを elegant の CSBEND (K2 = 0、−h K1、−2 h K1) で</td>
+</tr>
+</tbody>
+</table>
+<h2 id="結果の要約">結果の要約</h2>
+<ul>
+<li>光学: ASTRID2・kek-ls とも、チューン 1e-5 以内、αc 1.3e-4、U0 1e-5、σδ 5e-5、自然 εx は ASTRID2 で 2e-6 (kek-ls は pysad の分割 EMITDIV = 1 の既知の差 2.1%)。色収差は K1≠0 の BEND に K2 = −h K1 と EDGE_ORDER = 2 を足して合わせた (ξ の差 0.01〜0.03)。</li>
+<li>LMA (ASTRID2): 全周 199 位置の elegant と pysad の 1 セル 25 位置が相対差 0.5% 以内 (最大 7e-5)。アパーチャが限界の位置 (δ = 0.83%) も RF バケットで決まる位置 (δ = 1.60%) も同じ。</li>
+<li>LMA (kek-ls、周回数 491、アパーチャ ±10 mm): 最初のセルの 11 位置で、elegant と pysad の δ± の最大の差は 1.05e-4 (δ+)・8.95e-5 (δ−)、相対差は 0.35% 以内 (<code>lma_compare_kekls.out.txt</code>)。全位置が RF バケット (δ_rf = 2.994%) で決まる。別のセルの同じ位置との差 (elegant) は最大 7.8e-5。</li>
+<li>Touschek の式: 同じビーム・同じ一様な δ で elegant / pysad = 0.957〜1.025 (ASTRID2、δ = 0.4% → δ_rf)。pysad (SAD) の式は当てはめと等方の近似を含む。どちらが正確かは未確認。</li>
+<li>B160: K1≠0 の BEND のオフモメンタムの光学が gs = pysad と、解析式・elegant (B' 一様) で違う。「誤りではなく K1 の暗黙の定義 ((1 + hx)∂b/∂x 一様、B'' = −h B')」である (docs/29 A59)。elegant には K2 = −hK1 を足して合わせる。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

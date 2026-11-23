@@ -18,7 +18,7 @@ Write[$Output, "Write to $Output"];
 `Print` は引数を文字列にして連結 (`1 2.5 str {1,2} x+y`)、実数は SAD の既定の書式 (`1/3`→`.3333333333333333`、`1.5e10`→`1.5e+10`)。ファイルから読み戻すと 1 行目 `Write adds a newline 1 {1,2,3}`、2 行目 `WriteString: no newline (same line) 3.5`、3 行目 `a+b`。`$Output`=-1 で、`Write[$Output, ...]` は画面に出る。
 
 ## gs と pysad の比較
-△ (1) `Print[]` (引数なし): gs は `Null` を表示、pysad は空行。(2) 整数値の実数 `123456789012` は gs `123456789012.`、pysad `123456789012` (表示の差だけ)。(3) `Write[$Output, ...]` と `WriteString[$Output, ...]` は 2026-11-17 に修正 (`$Output` = -1 は標準出力。`Write[$Output]` は gs と同じ `General::narg`)。ファイルへの書き出し・読み戻しは一致。
+△ (1) `Print[]` (引数なし): gs は `Null` を表示、pysad は空行。(2) 整数値の実数 `123456789012` は gs `123456789012.`、pysad `123456789012` (表示の差だけ)。(3) `Write[$Output, ...]` と `WriteString[$Output, ...]` は gs と一致 (`$Output` = -1 は標準出力。`Write[$Output]` は gs と同じ `General::narg`)。ファイルへの書き出し・読み戻しは一致。
 
 ## 未確認・限界
 - 文字コードは UTF-8 で、日本語の出力は確認していない (`Print` の中は ASCII)。

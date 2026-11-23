@@ -39,7 +39,7 @@ Print[Emittances /. e, MomentumSpread /. e, BunchLength /. e, EnergyLossU0 /. e,
 - 他の式 ($U_0,\tau,\epsilon_x,\sigma_\delta,\nu_s$) と放射積分との照合は FFS_EMITTANCE.md の表。
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 と k64 の違い**: `.pysad.txt` は既定の v2 モードの出力。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は `PYSAD_COMPAT=k64` での結果 (2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ 一致。`Emittances` の第 2 成分は 0 同然の雑音 (gs 2.8E-38、pysad 1.2E-67)。`OrbitAtExit` も 1e-17 の雑音で、値の差はない。
 

@@ -37,7 +37,7 @@ QF.1 の入口、B.1 の入口、QD.1 の入口の BX、B.1 入口の分散を�
 (gs の `Twiss["BX", 要素番号+小数]` を 0.1 刻みで 100 点読み、pysad (黒点)、2x2 行列の要素端の値 (白丸) と重ねた。作成: SAD スクリプトの `Do` で出力した値を matplotlib で描画。)
 
 ## gs と pysad の比較
-値はすべて一致 (全桁)。2026-11-17: `Twiss["LENGTH"]` (成分数。引数を付けると `General::narg`)、`Twiss["GAMMA",1]`・`"GAMMABETA"`・`"S"`・`"SIZE…"` (LINE と同じ値) に対応した。光学関数でない名前は `General::wrongval:  #1 (NAME) is must be to be name of optical function` (gs と同じ)。
+値はすべて一致 (全桁)。`Twiss["LENGTH"]` (成分数。引数を付けると `General::narg`)、`Twiss["GAMMA",1]`・`"GAMMABETA"`・`"S"`・`"SIZE…"` (LINE と同じ値) にも対応 (2026-11-17 確認)。光学関数でない名前は `General::wrongval:  #1 (NAME) is must be to be name of optical function` (gs と同じ)。
 
 ## 未確認・限界
 - `DBX` `RBX` (REFERENCE が必要) は FFS_REFERENCE。`BMAGX`、`SIG...` (EMIT が必要) は未確認。

@@ -1,0 +1,71 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-15 11:48:12 +0900 ***
+ *** Today: 22:09:00 Thursday 10/15/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+ MOMENTUM = 3GEV;
+ DRIFT D1=(L=0.5);
+ BEND BID5 =(L =.413 ANGLE =.01989677344 ) BID4 =(L =.413 ANGLE =.01093590672 ) BID3H =(L =.413/2 ANGLE =.00827209392/2 );
+ BEND BPI6 =(L =.403 ANGLE =.02726687232 K1 =-.900241394141 );
+ QUAD QFA1 =(L =.25  K1 =1.0302859090451 );
+ SEXT SDA =(L =.045 K2 =-3.8417491573899 );
+ MARK M0 =(AX=0.1 BX=4 AY=-0.2 BY=3 EX=0.04 EPX=0.001 DX=1e-3 DPX=-2.6e-4 DY=2e-4 DPY=1e-4);
+ LINE L1=(M0 BID5);
+ LINE L2=(M0 BID4);
+ LINE L3=(M0 BID3H);
+ LINE L4=(M0 BPI6);
+ LINE L5=(M0 QFA1);
+ LINE L6=(M0 SDA);
+ LINE L7=(M0 D1);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.12"; PageWidth=1999;
+ USE L1; INS CALC;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.063E-4 $$$       f BX    #######  #   3.958861 $$$       f NX    #######  #    .016547 $$$       f AY    #######  #   -.343179 $$$       f BY    #######  #   3.224375 $$$       f NY    #######  #    .021198
+$$$       f LENG  #######  #    .413000
+ Print["T 1 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 1   .103970195856  3.958860542215  -5.06279329E-4   .044621168507   .020856929170   .133189881789  3.224375417927  -.343178985152  8.924236441E-4  -2.60907798E-4  2.413029190E-4  9.999947209E-5
+ USE L2; INS CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.003143 $$$       f BX    #######  #   3.959973 $$$       f NX    #######  #    .016545 $$$       f AY    #######  #   -.343176 $$$       f BY    #######  #   3.224355 $$$       f NY    #######  #    .021197
+$$$       f LENG  #######  #    .413000
+ Print["T 2 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 2   .103958204542  3.959972739263  -.003142824294   .042776233139   .011924049486   .133187550659  3.224355233481  -.343176497213  8.925593187E-4  -2.60274446E-4  2.413016051E-4  9.999971390E-5
+ USE L3; INS CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .048186 $$$       f BX    #######  #   3.969390 $$$       f NX    #######  #    .008252 $$$       f AY    #######  #   -.271588 $$$       f BY    #######  #   3.097391 $$$       f NY    #######  #    .010790
+$$$       f LENG  #######  #    .206500
+ Print["T 3 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 3   .051847764013  3.969390202099   .048186209391   .040686872299   .005132714177   .067795772242  3.097391379624  -.271587983481  9.463004473E-4  -2.60080778E-4  2.206506184E-4  9.999989210E-5
+ USE L4; INS CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.473010 $$$       f BX    #######  #   5.576639 $$$       f NX    #######  #    .014436 $$$       f AY    #######  #   1.913263 $$$       f BY    #######  #   2.211772 $$$       f NY    #######  #    .023508
+$$$       f LENG  #######  #    .403000
+ Print["T 4 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 4   .090701921218  5.576638614603  -4.47301017338   .053479359905   .068269368189   .147705636713  2.211772302156  1.913262615699   .001075348491  6.451264371E-4  2.027123762E-4  -8.69439494E-5
+ USE L5; INS CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   3.448998 $$$       f BX    #######  #   3.027817 $$$       f NX    #######  #    .010957 $$$       f AY    #######  #  -4.064128 $$$       f BY    #######  #   3.983048 $$$       f NY    #######  #    .012022
+$$$       f LENG  #######  #    .250000
+ Print["T 5 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 5   .068846457814  3.027816721283  3.448998343141   .035380466090  -.038666270349   .075539107356  3.983047698675  -4.06412841630  8.117096648E-4  -.001213852726  2.524019160E-4  3.281741998E-4
+ USE L6; INS CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #    .073392 $$$       f BX    #######  #   3.992200 $$$       f NX    #######  #    .001792 $$$       f AY    #######  #   -.204073 $$$       f BY    #######  #   3.018183 $$$       f NY    #######  #    .002380
+$$$       f LENG  #######  #    .045000
+ Print["T 6 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 6   .011261493339  3.992199653518   .073391546093   .040060106504   .001152883884   .014954949134  3.018183061780  -.204072892601  9.883411890E-4  -2.58180026E-4  2.044826612E-4  9.922758530E-5
+ USE L7; INS CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   -.026250 $$$       f BX    #######  #   3.963125 $$$       f NX    #######  #    .020040 $$$       f AY    #######  #   -.373333 $$$       f BY    #######  #   3.286667 $$$       f NY    #######  #    .025451
+$$$       f LENG  #######  #    .500000
+ Print["T 7 ", Twiss["NX","$$$"], " ", Twiss["BX","$$$"], " ", Twiss["AX","$$$"], " ", Twiss["EX","$$$"], " ", Twiss["EPX","$$$"], " ", Twiss["NY","$$$"], " ", Twiss["BY","$$$"], " ", Twiss["AY","$$$"], " ", Twiss["DX","$$$"], " ", Twiss["DPX","$$$"], " ", Twiss["DY","$$$"], " ", Twiss["DPY","$$$"]];
+T 7   .125912639110  3.963125002793  -.026250013433   .040630000068   .001000000000   .159913130582  3.286666684885  -.373333341792  8.699999950E-4  -2.60000000E-4  2.500000019E-4  1.000000000E-4
+ stop;
+ FFS                  end:  CPU time =     0.003 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

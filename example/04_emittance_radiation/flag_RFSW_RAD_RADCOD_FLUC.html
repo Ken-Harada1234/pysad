@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flag RFSW, RAD, RADCOD, FLUC</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#ラティスについて">ラティスについて</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方-gspysad-も同じ">結果の読み方 (gs。pysad も同じ)</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: flag_RFSW_RAD_RADCOD_FLUC.md</div>
+<h1 id="flag-rfsw-rad-radcod-fluc">flag RFSW, RAD, RADCOD, FLUC</h1>
+<p>種別: フラグ / フォルダ: 04_emittance_radiation / ラティス: <code>00_lattice/FODO_ring_V4MV.sad</code> (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる <code>RINGQ</code> を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz / フラグ: <code>RFSW</code>・<code>NORFSW</code>、<code>RAD</code>・<code>NORAD</code>、<code>RADCOD</code>・<code>NORADCOD</code>、<code>FLUC</code>・<code>NOFLUC</code>。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>4 つのフラグが <code>Emittance[]</code> (平衡の計算) と <code>TrackParticles</code> (追跡) のどちらにどう効くかを表にする。</p>
+<h2 id="ラティスについて">ラティスについて</h2>
+<ul>
+<li><code>FODO_ring.sad</code> の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで RF 電圧を 4 MV にした <code>FODO_ring_V4MV.sad</code> を追加した。</li>
+<li>RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと <code>DL=0. IN TCAL</code> で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の <code>RINGQ = (ORIGIN RF 24*CELLQ)</code> を使う (磁石の並びは同じ、位相だけ違う)。</li>
+<li>SAD の BEND の <code>E1</code>, <code>E2</code> は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の <code>K1</code> は積分強度 (k=K1/L)。</li>
+</ul>
+<h2 id="スクリプト">スクリプト</h2>
+<p>フラグの組ごとに <code>Emittance[]</code> を呼び、$U_0$、$V_c$、同期位置 dz、$\epsilon_x$、$\sigma_\delta$、$\sigma_z$ を <code>Print</code> する。最後に FLUC あり・なしで、原点から 200 粒子を 100 周追跡して $\delta$ の rms を比べる (<code>SeedRandom[7]</code>)。</p>
+<h2 id="結果の読み方-gspysad-も同じ">結果の読み方 (gs。pysad も同じ)</h2>
+<table>
+<thead>
+<tr>
+<th>RFSW</th>
+<th>RAD</th>
+<th>RADCOD</th>
+<th>FLUC</th>
+<th>$U_0$ [eV]</th>
+<th>dz [m]</th>
+<th>$\epsilon_x$</th>
+<th>$\sigma_\delta$</th>
+<th>$\sigma_z$ [m]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1563265.7</td>
+<td>0.038316</td>
+<td>1.7355E-7</td>
+<td>0.001190</td>
+<td>0.016315</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1563265.7</td>
+<td>0.038316</td>
+<td>1.7355E-7</td>
+<td>0.001190</td>
+<td>0.016315</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+<td>1563265.7</td>
+<td>0.038316</td>
+<td>1.7358E-7</td>
+<td>0.001191</td>
+<td>0.016060</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>1563265.7</td>
+<td>0.038316</td>
+<td>1.7358E-7</td>
+<td>0.001191</td>
+<td>0.016060</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1563263.2</td>
+<td>0.038316</td>
+<td>1.7358E-7</td>
+<td>0.001191</td>
+<td>0.016060</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1562441.8</td>
+<td>3.0206E-4</td>
+<td>1.7201E-7</td>
+<td>0.001192</td>
+<td>0.016334</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>1563265.7</td>
+<td>0.038316</td>
+<td>1.7358E-7</td>
+<td>0.001191</td>
+<td>0.016060</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>Emittance[]</code> は <strong>RAD と FLUC に依存しない</strong> (RAD を切っても、NOFLUC でも平衡値は同じ。これらは追跡 <code>TrackParticles</code> のフラグ)。効くのは RFSW と RADCOD。</li>
+<li>RFSW OFF でも $V_c$ と $\sigma_z$ は 0 でなく、空洞の積算量から作られる (docs/09 の tecalc)。RFSW ON との差は $\sigma_z$ で 1.6%、$\epsilon_x$ で 0.02%。</li>
+<li>RADCOD ON は閉軌道にエネルギー損失を入れる (RFSW ON で $U_0$ が 2.5 eV 小さい)。RFSW OFF と組み合わせると、同期位置が 0.0003 m になり、$U_0$ は 0.05%、$\epsilon_x$ は 0.9% 小さくなる (原因は未調査。RFSW OFF + RADCOD ON は docs/09 に別の閉軌道の扱いがある)。</li>
+<li>追跡 (200 粒子、100 周、原点から): FLUC ON の $\delta$ rms は gs 4.2074E-4、pysad 4.5223E-4。NOFLUC は 2.6063E-4 (gs・pysad 同じ、原点が同期位置からずれているための同期振動)。量子励起の分は $\sqrt{4.2^2-2.6^2}\times10^{-4}=3.3\times10^{-4}$ (gs)、$3.7\times10^{-4}$ (pysad)。</li>
+</ul>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>$\delta$ の励起の成長は $\sigma_\delta^2(n)=\sigma_{\delta0}^2\,[1-e^{-2nT_0/\tau_\epsilon}]$ ($\tau_\epsilon=0.6646$ ms、100 周 = 35.2 μs なので $1-e^{-0.1060}=0.1006$)。$\sigma_{\delta0}=1.1914\times10^{-3}$ なので $\sigma_\delta\simeq3.78\times10^{-4}$ で、gs・pysad の量子励起分 (3.3、3.7)E-4 と同じ桁 (200 粒子の統計誤差は 5% 程度、同期振動の位相の影響もある)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<ul>
+<li><code>Emittance[]</code> は、表の 7 行とも ○ 一致。</li>
+<li>追跡の FLUC ON は △。同じ種 (<code>SeedRandom[7]</code>) でも、<code>TrackParticles</code> の量子励起の乱数列が gs と pysad で異なり、rms が 7% 違う。NOFLUC は一致。<code>Random[]</code>・<code>GaussRandom[]</code> の列そのものは一致する (08 の fn_Random_GaussRandom_SeedRandom) ので、差は放射の光子の引き方にある (原因は未調査)。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>追跡の粒子数・周回数が少なく (200 粒子、100 周)、統計の差かアルゴリズムの差かは判別していない。</li>
+<li>INTRA、POL、結合のあるラティスは見ていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>errors: KEK-LS の誤差入りの計算・補正</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#誤差の与え方と補正の流れ">誤差の与え方と補正の流れ</a></li>
+<li><a href="#一覧-gs-と-pysad-の一致--一致-差あり-不一致または未対応">一覧 (gs と pysad の一致: ○ 一致、△ 差あり、× 不一致または未対応)</a></li>
+<li><a href="#元の設定と例の設定">元の設定と例の設定</a></li>
+<li><a href="#元のスクリプトのうち取り込んでいないもの">元のスクリプトのうち取り込んでいないもの</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="errors-kek-ls-の誤差入りの計算補正">errors: KEK-LS の誤差入りの計算・補正</h1>
+<p>誤差 (位置ずれ・強さ・回転) を入れたリングの COD・分散・チューンのずれと、COD の補正。元の <code>correct_cod.sad</code>・<code>print_*.sad</code>・<code>write_cod_response.sad</code> を、短く動く形に整えた。各例は <code>.sad</code>・<code>.gs.txt</code>・<code>.pysad.txt</code>・<code>.md</code> の 4 点。</p>
+<h2 id="誤差の与え方と補正の流れ">誤差の与え方と補正の流れ</h2>
+<ul>
+<li>乱数の種: <code>SeedRandom[seed]</code>。例は seeds = {17, 111, 3} (補正の例は {17, 111})。元の台本は <code>SeedRandom[187]</code> と <code>Random[1000]</code> から作った 115 個の種。<code>GCUT = 1</code> (σ 単位の打ち切り。元の台本と同じ)。</li>
+<li>位置ずれ ae = 40 μm: 四極・6 極の成分ごとの <code>LINE["DX"/"DY", 成分名] = ae GaussRandom[]</code> (<code>modules/modules_errors.n</code>)。元の <code>DELX</code>・<code>DELY</code> コマンドは、この K64 ビルドでは <code>cell calc</code> の閉軌道に効かない (DUMP には値が出るだけ。gs・pysad とも) ので使わない。</li>
+<li>強さの誤差 fe = 4e-4 (<code>DK</code>)、回転の誤差 te = 100 μrad (<code>DTHETA</code>): FFS のコマンド (偏向磁石・四極・6 極に)。</li>
+<li>成分ごとの値 (DX・DY・K0) は、<code>USE RING NOEXPAND</code> と <code>cell calc noexpand</code> でないと同名の要素の値に揃えられてしまう (<a href="../../../docs/29_sad_quirks.html"><code>docs/29_sad_quirks.md</code></a> A56)。HD・VD (補正磁石) は同じ名前の繰り返しなので K0 は NOEXPAND が必要。</li>
+<li>補正の流れ: (1) COD 応答行列を解析式で作る (<code>KEKLS_cod_response</code> で SAD の COD と照合)、(2) 誤差を与える、(3) 応答行列の特異値分解の疑似逆行列で K0 を求め、0.5 倍ずつ繰り返しかける、(4) COD・分散の rms と最大値、チューンの変化を表示する。</li>
+</ul>
+<h2 id="一覧-gs-と-pysad-の一致--一致-差あり-不一致または未対応">一覧 (gs と pysad の一致: ○ 一致、△ 差あり、× 不一致または未対応)</h2>
+<table>
+<thead>
+<tr>
+<th>例</th>
+<th>内容</th>
+<th>元のスクリプト</th>
+<th>出力</th>
+<th>所要時間</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="KEKLS_errors_cod.html"><code>KEKLS_errors_cod</code></a></td>
+<td>誤差の種類ごとの COD・分散・チューン</td>
+<td>print_all_error.sad ほか print_*</td>
+<td>COD・分散・チューンのずれ</td>
+<td>gs 1 s / pysad 6 s</td>
+<td>△</td>
+</tr>
+<tr>
+<td><a href="KEKLS_correct_cod.html"><code>KEKLS_correct_cod</code></a></td>
+<td>COD・分散の補正</td>
+<td>correct_cod.sad</td>
+<td>補正前後の COD・分散</td>
+<td>gs 1 s / pysad 37 s</td>
+<td>△</td>
+</tr>
+<tr>
+<td><a href="KEKLS_cod_response.html"><code>KEKLS_cod_response</code></a></td>
+<td>COD 応答行列と解析式の照合</td>
+<td>write_cod_response.sad</td>
+<td>応答行列の代表値・解析式との差</td>
+<td>gs 1 s / pysad 9 s</td>
+<td>○</td>
+</tr>
+</tbody>
+</table>
+<h2 id="元の設定と例の設定">元の設定と例の設定</h2>
+<table>
+<thead>
+<tr>
+<th>台本</th>
+<th>元の設定</th>
+<th>例の設定</th>
+<th>完全な設定にするには</th>
+<th>見込みの所要時間 (完全)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KEKLS_errors_cod</code></td>
+<td>種 115 個</td>
+<td>種 3 個 × 誤差 4 通り</td>
+<td><code>seeds</code> を 115 個に、<code>nseed = 115</code></td>
+<td>3 つの種 (各 4 通り) で gs 1 秒、pysad 6 秒 → 115 個で gs 約 40 秒、pysad 約 4 分</td>
+</tr>
+<tr>
+<td><code>KEKLS_correct_cod</code></td>
+<td>種 115 個 (k = 1〜115)、補正 40 回、毎回 DA (5000 周)</td>
+<td>種 2 個、補正 6 回、DA なし</td>
+<td><code>seeds</code>・<code>niter = 40</code>・<code>doDA = 1; DAturns = 5000</code></td>
+<td>種 2 個で gs 1 秒、pysad 37 秒 (応答行列の準備に約 17 秒) → 115 個で gs 約 1 分、pysad 約 20 分。DA は未測定</td>
+</tr>
+<tr>
+<td><code>KEKLS_cod_response</code></td>
+<td>全ステアリング分を fort.92 に書く</td>
+<td>代表値と照合 3 個</td>
+<td><code>j0</code> を 1〜ICX</td>
+<td>pysad 約 9 秒</td>
+</tr>
+</tbody>
+</table>
+<h2 id="元のスクリプトのうち取り込んでいないもの">元のスクリプトのうち取り込んでいないもの</h2>
+<ul>
+<li><code>correct_cod_best</code>・<code>_worst</code>・<code>_noSX</code>・<code>_GCUT1</code>・<code>_v03_70</code>: <code>correct_cod.sad</code> の設定違い (monitor 名 <code>BPM.*</code>、DA の範囲、誤差の大きさ ae = 5e-5・fe = 5e-4、6 極を切る <code>S* 0</code>、チューンの窓 18〜18.5 など)。例の変数 (<code>ae</code>・<code>fe</code>・<code>te</code>・<code>doDA</code>、チューンの窓) を変えれば同じ形になる。</li>
+<li><code>print_*.sad</code> 11 本: 同じ台本に表示だけ違う (<code>print_IEX_after</code>・<code>print_IEY_after</code>・<code>print_rep_after</code> は補正の固有値の数 IEX・IEY、<code>print_residual_cod</code>・<code>print_cod_kick_ratio</code> は補正後の COD・キック、<code>print_emittance</code>・<code>print_solution_ok</code>・<code>print_all_error_after</code>・<code>print_cod_form</code> は表示の形式)。誤差だけの <code>print_all_error</code>・<code>print_dk_effect</code>・<code>print_dt_error</code>・<code>print_cod_magnitude</code> の流れは <code>KEKLS_errors_cod</code>、補正は <code>KEKLS_correct_cod</code> に統合した。</li>
+<li><code>modules_correctoptics.n</code>・<code>modules_write_correctdata.n</code>: <code>correct_cod.sad</code> は読み込んでいない (コメントアウトされた <code>Get</code> のみ)。光学補正 (ベータ関数の補正) の関数集で、v03_68 の補正には使っていない。<code>modules_correctoptics_pf.n</code> は PF 用。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

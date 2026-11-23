@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>calc_RadInt (PF): 放射積分と平衡エミッタンス</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: calc_RadInt_PF.md</div>
+<h1 id="calc_radint-pf-放射積分と平衡エミッタンス">calc_RadInt (PF): 放射積分と平衡エミッタンス</h1>
+<p>種別: スクリプト (サンプル集 calc_RadInt.sad)。加速器: PF 2.5 GeV リング (<code>lattice/v9_16_asym.sad</code>、周長 187.035 m、チューン 9.5975 / 5.2790)。フラグ: <code>ON RAD FLUC COD RFSW RADCOD</code>。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>偏向磁石 28 台の放射積分 $I_1\ldots I_5$ を Twiss 関数から数値積分し、$\epsilon_x$・$U_0$・$\sigma_E$・減衰分配数・運動量コンパクション率を、<code>emit</code> の出力 (SAD が 6 次元で求める値) と照合する。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<p>サンプル集は、勾配つき偏向磁石の H 関数の積分の閉じた式 (半分ずつ、中央のツイスから) を使う。PF の偏向磁石は勾配なし (K1 = 0) なので、ここでは各磁石の中を 17 点に分けて <code>Twiss["EX", n+f]</code> (f = 0〜1) を読み、合成 Simpson で積分した。</p>
+<pre><code>sa += w*t[3];  sh += w*(((1+t[2]^2)/t[1])*t[3]^2 + 2*t[2]*t[3]*t[4] + t[1]*t[4]^2);   ! ∫η ds、∫H ds (t = {BX,AX,EX,EPX})
+I1 += sa/ρ;  I2 += L/ρ²;  I3 += L/|ρ|³;  I4 += sa/ρ³ - 2(η0 tan e1 + η1 tan e2)/ρ²;  I5 += sh/|ρ|³
+</code></pre>
+<p><code>I4</code> の最後の項は矩形磁石の端 (E1 = E2 = 0.5 ANGLE) の収束で、強さ $-\tan e/\rho$ の薄い四極として $2k\eta/\rho$ に入る。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式 (数値積分)</th>
+<th>SAD (emit)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>I1</td>
+<td>1.22742 m</td>
+<td></td>
+</tr>
+<tr>
+<td>I2</td>
+<td>0.725766 /m</td>
+<td></td>
+</tr>
+<tr>
+<td>I3</td>
+<td>0.0838328 /m²</td>
+<td></td>
+</tr>
+<tr>
+<td>I4</td>
+<td>-0.0224985 /m</td>
+<td></td>
+</tr>
+<tr>
+<td>I5</td>
+<td>0.00281098 /m</td>
+<td></td>
+</tr>
+<tr>
+<td>α_c = I1/C</td>
+<td>0.0065625</td>
+<td>0.0065627</td>
+</tr>
+<tr>
+<td>U0 = Cγ E⁴ I2/(2π)</td>
+<td>0.399139 MeV</td>
+<td>0.3991454 MV</td>
+</tr>
+<tr>
+<td>Jx = 1 - I4/I2</td>
+<td>1.0310</td>
+<td>1.0313</td>
+</tr>
+<tr>
+<td>σE = √(Cq γ² I3/(Jz I2))</td>
+<td>7.3353e-4</td>
+<td>7.3366e-4</td>
+</tr>
+<tr>
+<td>εx = Cq γ² I5/(Jx I2)</td>
+<td>34.456 nm rad</td>
+<td>34.538 nm rad</td>
+</tr>
+</tbody>
+</table>
+<p>($C_q = 3.832\times10^{-13}$ m、$C_\gamma = 8.846\times10^{-5}$ m/GeV³、γ = 4892.38。)</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>$$\epsilon_x = C_q\gamma^2\frac{I_5}{J_x I_2},\quad J_x = 1-\frac{I_4}{I_2},\quad \sigma_E^2 = C_q\gamma^2\frac{I_3}{J_z I_2},\quad U_0 = \frac{C_\gamma E^4}{2\pi}I_2,\quad \alpha_c = \frac{I_1}{C}$$
+εx は 0.24%、Jx は 0.03%、σE は 0.02%、U0 は 0.002% で SAD の値と一致する。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 モードと k64 モード</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (<code>docs/28_v2_vs_k64.md</code>。主に <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 B75 と <code>MomentumCompaction</code> B77)、この例の出力のうち <code>Emittance[]</code> の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>○ 全桁一致。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>サンプル集の閉じた式 (半磁石ごと) を最初に PF に当てはめたところ、I5 が 0.00736 で εx が SAD の約 2.8 倍になった。式の転記か適用の誤りと見て、原因は調べずに、数値積分に置き換えた (サンプル集の式そのものは検証していない)。</li>
+<li><code>I4</code> の端の項の符号と係数 2 は上のとおりに導いたが、Jx が SAD の減衰分配数 (1.0313) と 3 桁一致することで確認した (係数 1 だと 1.0042 で合わない)。</li>
+<li>勾配つき偏向磁石、垂直偏向、ウィグラーは含まない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

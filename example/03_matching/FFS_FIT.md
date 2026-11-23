@@ -26,6 +26,10 @@ GO;                 SHOW;   VARIABLES;
 - `GO`: ` 2 0 3.38E-05 (NEWTON) …` の反復の行と `Matched. ( 3.58E-11 )`。
 - `VARIABLES`: GO 後の `Now` = QFH K1 = 0.321805、QD K1 = -0.643611 (QFH は半分の磁石 2 個の片方)。
 
+![マッチング前後の β](fig_FFS_FIT_before_after.png)
+
+横軸は 1 セルの始点からの距離 s [m]、縦軸は上が βx、下が βy [m]。破線がマッチング前 (QFH の K1 = 0.3、QD の K1 = -0.6。位相進み 0.229)、実線が後 (K1 = 0.321805 と -0.643611。位相進み 0.25)。βx は QF の位置 (両端) で大きく QD の位置 (中央) で小さく、βy は逆になる。最小の β は 1.60 m から 1.37 m に、最大は 7.59 m から 7.73 m に変わる。
+
 ## 物理・解析式
 対称 FODO のセルでは $\cos\mu=\tfrac12{\rm tr}M$。$\mu=90^\circ$ は ${\rm tr}M=0$。厚いレンズを正確に解く式は 2x2 行列の積 (`tools/ana_fodo_ring.py` の `quad`・`drift`) で書け、薄レンズでは ($L_c$=QF-QD 間の中心距離 2.3 m、f=焦点距離)
 $$\sin\frac{\mu}{2}=\frac{L_c}{2f},\quad f=\frac{L_c}{2\sin45^\circ}=1.62635\ \text{m},\ K_1^{\rm int}=1/f=0.614875;\qquad \beta_{\max,\min}=\frac{L(1\pm\sin\frac\mu2)}{\sin\mu},\ L=4.6\ \text{m}$$

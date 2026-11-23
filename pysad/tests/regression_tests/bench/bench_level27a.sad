@@ -1,0 +1,153 @@
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+nfre = 8;
+
+! ---- wtunem.f の直訳 (SADScript): zl = 複素座標のリスト (長さ lsp, 2 のべき)
+wtun[zl_] := (
+  lsp = Length[zl];
+  ff = Fourier[zl];
+  pp = lsp*Abs[ff]^2;
+  rr1 = Table[pp[[i]] + .5*(pp[[Mod[i-2,lsp]+1]] + pp[[Mod[i,lsp]+1]]), {i,1,lsp}];
+  f1 = Table[0, {j,1,nfre}];
+  fa = Table[0, {j,1,nfre}];
+  Do[
+    i1 = Mod[i+lsp-2,lsp]+1; i2 = Mod[i,lsp]+1;
+    aa = rr1[[i1]]+rr1[[i2]]-2*rr1[[i]];
+    If[aa < 0,
+      xi = -(rr1[[i2]]-rr1[[i1]])*.5/aa;
+      If[xi >= -.5 && xi < .5,
+        ri2 = rr1[[i]] + xi*(rr1[[i2]]-rr1[[i1]])*.25;
+        fi = i-1+xi;
+        done = 0;
+        Do[
+          If[done == 0 && Abs[f1[[j]]-fi] < 1,
+            If[ri2 > fa[[j]], fa[[j]] = ri2; f1[[j]] = fi];
+            done = 1],
+          {j,1,nfre}];
+        If[done == 0,
+          Do[
+            If[done == 0 && ri2 > fa[[j]],
+              Do[fa[[l]] = fa[[l-1]]; f1[[l]] = f1[[l-1]], {l,nfre,j+1,-1}];
+              fa[[j]] = ri2; f1[[j]] = fi; done = 1],
+            {j,1,nfre}]
+        ]
+      ]
+    ],
+    {i,1,lsp}];
+  fa = fa/lsp^2;
+  f1 = f1/lsp;
+  f1 = Table[If[f1[[j]] > .5, f1[[j]]-1, f1[[j]]], {j,1,nfre}];
+  {f1, fa}
+);
+
+! ---- MAIN の TRACK と同じ手順 (ActTra.f / tracka.f)
+mtrack[tag_, np0_, nturn_, nxl_, nyl_, nzl_, rfsw_] := (
+  em = Emittance[Matrix->True];
+  ri = NormalCoordinates/.em;
+  rmat = Inverse[ri];
+  cod = OrbitAtEntrance/.em;
+  emx = Sqrt[Abs[EMITX+EMITY]];
+  emz = If[rfsw == 1, Sqrt[Abs[EMITZ]], Abs[SIGE]];
+  Print[tag, " EM ", {EMITX, EMITY, EMITZ, SIGE, emx, emz}];
+  Print[tag, " COD ", cod];
+  xs = Table[0, {j,1,np0}]; pxs = xs; ys = xs; pys = xs; zs = xs; gs = xs; fl = Table[1, {j,1,np0}];
+  Do[
+    amp = {nxl[[Mod[j-1,Length[nxl]]+1]], 0, nyl[[Mod[j-1,Length[nyl]]+1]], 0, 0, nzl[[Mod[j-1,Length[nzl]]+1]]};
+    xa = rmat.(amp*{emx,emx,emx,emx,emz,emz}) + cod;
+    xs[[j]] = xa[[1]]; pxs[[j]] = xa[[2]]; ys[[j]] = xa[[3]]; pys[[j]] = xa[[4]]; zs[[j]] = xa[[5]]; gs[[j]] = xa[[6]],
+    {j,1,np0}];
+  bm = {1, {xs, pxs, ys, pys, zs, gs, fl}};
+  nts = 2;
+  While[nts < nturn+1, nts = nts*2];
+  If[nts >= 2*(nturn+1), nts = nts/2];
+  nsmear = Floor[Max[100, Floor[nturn/50]]/100]*100;
+  Print[tag, " NTS ", {nts, nsmear}];
+  Do[Do[zz[i,k,n] = 0, {n,1,nts}], {i,1,np0}, {k,1,3}];
+  sj = Table[0, {i,1,np0}, {k,1,3}]; sjj = sj;
+  Do[
+    Do[
+      If[bm[[2,7,i]] > 0,
+        xa = ri.({bm[[2,1,i]],bm[[2,2,i]],bm[[2,3,i]],bm[[2,4,i]],bm[[2,5,i]],bm[[2,6,i]]} - cod);
+        zz[i,1,n] = xa[[1]] + I*xa[[2]];
+        zz[i,2,n] = xa[[3]] + I*xa[[4]];
+        zz[i,3,n] = xa[[5]] + I*xa[[6]];
+        Do[
+          aj = xa[[2*k-1]]^2 + xa[[2*k]]^2;
+          sj[[i,k]] = sj[[i,k]] + aj;
+          sjj[[i,k]] = sjj[[i,k]] + aj^2,
+          {k,1,3}]],
+      {i,1,np0}];
+    If[Mod[n,nsmear] == 0 || n == nturn+1,
+      nsm = Mod[n-1,nsmear]+1;
+      If[nsm > 1,
+        Do[
+          If[bm[[2,7,i]] > 0,
+          sx = sj[[i,1]]/nsmear; sy = sj[[i,2]]/nsmear; sz = sj[[i,3]]/nsmear;
+          sxx = If[sx > 0, Sqrt[Abs[sjj[[i,1]]/nsmear - sx^2]]/sx, 0];
+          syy = If[sy > 0, Sqrt[Abs[sjj[[i,2]]/nsmear - sy^2]]/sy, 0];
+          szz = If[sz > 0, Sqrt[Abs[sjj[[i,3]]/nsmear - sz^2]]/sz, 0];
+          Print[tag, " SMEAR ", n, " ", i, " ", {sx, sy, sz, sxx, syy, szz}]],
+          {i,1,np0}]];
+      sj = Table[0, {i,1,np0}, {k,1,3}]; sjj = sj];
+    If[n <= nturn,
+      bo = bm;
+      bm = TrackParticles[bm, 1, 1, 1];
+      Do[If[bo[[2,7,i]] > 0 && bm[[2,7,i]] <= 0, Print[tag, " LOST ", i, " ", n]], {i,1,np0}]],
+    {n,1,nturn+1}];
+  Do[Print[tag, " FIN P", i, " ", {bm[[2,1,i]], bm[[2,2,i]], bm[[2,3,i]], bm[[2,4,i]], bm[[2,5,i]], bm[[2,6,i]], bm[[2,7,i]]}], {i,1,np0}];
+  Do[
+    Do[
+      zl = Table[zz[i,k,n], {n,1,nts}];
+      tt = wtun[zl];
+      Print[tag, " TUNE P", i, " ", k, " ", tt[[1]]];
+      Print[tag, " AMPL P", i, " ", k, " ", tt[[2]]],
+      {k,1,3}],
+    {i,1,np0}]
+);
+
+nxl = {1, 3, 5}; nyl = {1, 2}; nzl = {1, 2, 0};
+
+Print["=== Test 27a-1: RFSW ON, RAD OFF ==="];
+RFSW; NORAD;
+CELL; CALC; emit;
+mtrack["N1", 6, 250, nxl, nyl, nzl, 1];
+
+Print["=== Test 27a-2: RAD ON, FLUC OFF ==="];
+RFSW; RAD; NOFLUC;
+CELL; CALC; emit;
+mtrack["R1", 6, 250, nxl, nyl, nzl, 1];
+
+Print["=== Test 27a-3: RAD ON, FLUC ON (SeedRandom[17]) ==="];
+RFSW; RAD; FLUC;
+SeedRandom[17];
+mtrack["F1", 6, 250, nxl, nyl, nzl, 1];
+
+stop;
+stop;

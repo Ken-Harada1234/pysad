@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Menu_MenuButton (MenuButton・Menu)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#画面-pysad-の窓">画面 (pysad の窓)</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Menu_MenuButton.md</div>
+<h1 id="fn_menu_menubutton-menubuttonmenu">fn_Menu_MenuButton (MenuButton・Menu)</h1>
+<p>種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>メニューボタン (<code>MenuButton</code>、「File」) にメニュー (<code>Menu</code>) を付け、エントリ (<code>Button</code>、<code>Separator</code>) を <code>Add-&gt;{...}</code> で与える。エントリを <code>invoke</code> すると <code>Command</code> が評価される。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>mb=MenuButton[w,Text-&gt;&quot;File&quot;,Side-&gt;&quot;top&quot;];
+m=Menu[mb,Add-&gt;{Button[Text-&gt;&quot;Open&quot;,Command:&gt;(fl=&quot;open&quot;)],Button[Text-&gt;&quot;Save&quot;,Command:&gt;(fl=&quot;save&quot;)],Separator[],Button[Text-&gt;&quot;Quit&quot;,Command:&gt;(fl=&quot;quit&quot;)]}];
+TclEval[&quot;$mn invoke 1&quot;];      (* 2 番目のエントリ「Save」を選ぶ *)
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>last index=3</code> (エントリは 0〜3 の 4 つ)、<code>labels=Open Save - Quit</code> (<code>-</code> は区切り線)、<code>fl=save</code> (「Save」の <code>Command</code> が評価された)。窓には「File」ボタンだけが見える (メニューは押したときだけ開く)。</p>
+<h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIgAAABACAIAAABOY6jcAAADNUlEQVR42u2ab0gTcRjHn/PyD6OBL4ROfDMGxnwRvVmwcOEcBBUSvvBVlHCa4gthJSyU4F74ZsHSGA0yMRcE0gv3JgYhyDVplpQvfJG4MpoTwnshbThQR+j1wjnGrpmwu3mu7+fV3e/Ydns+PM/z+93vmFQqRUB/VCAEEAMgBmIAxEAMKDMxMzMztzs73YMPEdbiOaPKtyQSCUEQvq6u3H08G3BfR1j1ImZoaMjZP3aF6HVYqq2tRVh1Iaavr8/ZP0ZEvqcvz124VllZubm5WVdXp9YtLiwsRKNRWZbzxhmGsVgsNputZMGanp5uttvrOS5vfEOS5iORjo4OHYnZ2dmJxb4T0fCDe+dvDO4tPWNZVkUrRBSNRtvb2w0GQ954Op0OBoOlFNNst8+Fwy0OR66bDUk6GNRX83e5XN0js0QUf/+CiBLf3nm9XnVvUZZlg8FQpcBoNCrTSFPqOa7F4ZgLhzckKc+KMo1OUkwsFlte/kJE3ZeNVz2rRGQ2m9VNF72R60Y7K8WWsomJCdfzD9nT1MeRqr3dsm/LWTdEpJGVf4gJBAJHXOV5fn19/eJhusj7+79/fp4SRUyoNBfD8/zRH2ZZNnucnH/S2tpaUVH+jxJyu712payoOLIs22U7mzH8a0kQhP/HSj3HKecCehETj8dv8V1E9OnRJY/HwzCMFrFgGCadTivHt7e3NfrF41gpNE/TRfP3+Xw9PT1ENDBw32q1ahQOi8USDAYLLTBLKWY+ElEWrgM3qi8wmSL3/Le2thoaGvDigO6eLldXVyOIOhUzOTmJOKrfWVGFsIMJIAZiAMRADIAYADGnbR1T6EIymdTD/e3uarXzVlNTo4c/WOilImQMShmAGIgBEAMxAGJAWYlZG2/juLYMbvFgwC0SEYnuzAHhbf8TwTrsD/Wasqe9IQkZAyDm2Pytgonu3GqHUlYaFoX+tjdERE03/d6cmpbThkYb/SGv6dCa5HVCTOl7jIIfq4uLKxl3RNamxjVymiBGF9wZCJ22LPkPmr+50frqrbiG5q83TL3+KRq1ZVY74yI2yggbZYSNMqxjAMQAiIEYADEQAwAAAAAAAAAA5PIH72g2fcj8dpUAAAAASUVORK5CYII=" /><figcaption>pysad が開いた窓</figcaption></figure>
+<p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
+<strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li><code>labels=</code>・<code>fl=save</code> は gs と pysad で一致 (○)。</li>
+<li><strong>窓の親が違う (pysad の既知の差、docs/20 §3.1・§8)</strong>: gs では <code>Window[]</code> が Toplevel を作り、部品はその下に並ぶ (ルート <code>.</code> の下には「Return to SAD」ボタンと Toplevel)。Menu が Menubutton の下に入る段は gs と同じ (<code>Menubutton File;   Menu</code>)。差は、pysad では <code>Window[]</code> が別の窓を作らず、部品がルート窓 <code>.</code> の直下に並ぶ。<code>tree:</code> の行のインデントの差はこのため。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>Windows の Tk 8.6 の見た目 (フォント・色・枠) と X11 の Tk は違う。実際の mainloop で操作し続ける使い方 (ユーザーの操作への反応) は確認していない (台本は <code>update</code> で窓を作り、Tcl の <code>invoke</code> で操作を模している)。 メニューを実際に開いた画面 (ポップアップ) は撮っていない。<code>CheckButton</code>・<code>Cascade</code> のエントリは試していない。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

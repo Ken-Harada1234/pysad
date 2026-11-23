@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Fit_FitGaussian_FitEmit (Fit・FitGaussian・FitEmit)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Fit_FitGaussian_FitEmit.md</div>
+<h1 id="fn_fit_fitgaussian_fitemit-fitfitgaussianfitemit">fn_Fit_FitGaussian_FitEmit (Fit・FitGaussian・FitEmit)</h1>
+<p>種別: 関数 (データ当てはめ) / フォルダ: 10_math_data / ラティスなし (乱数なし、決定的なデータ)、<code>FFS;</code> の後に直接書く</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>非線形最小二乗 <code>Fit</code>、1 次元データのガウス分布当てはめ <code>FitGaussian</code>、位相空間の粒子分布から $\alpha,\beta,\epsilon$ を求める <code>FitEmit</code> の 3 つ。
+<code>FitGaussian</code>・<code>FitEmit</code> は <code>Fit</code> の仕組み (<code>Packages/Fit.n</code>、K64 の tffit1) の上に作られている。データは乱数を使わず、式で作った決定的な点を使う。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>dat=Table[{i,2*i+1+0.1*Sin[i*3]},{i,1,10}];
+r=Fit[dat,a+b*x,x,{a,1},{b,1}];   (* {a-&gt;..,b-&gt;..,ChiSquare-&gt;..,GoodnessOfFit-&gt;..,ConfidenceInterval-&gt;..,CovarianceMatrix-&gt;..,DesignMatrix-&gt;..} *)
+g=FitGaussian[d];                  (* {sigma, mean, {sigma_conf, mean_conf}, chisq} *)
+e=FitEmit[x,px];                   (* {{xmean,pxmean,alpha,beta,emittance},{同じ並びの信頼区間}} *)
+</code></pre>
+<ul>
+<li>(1) $y=2x+1+0.1\sin 3x$ (10 点) を $a+bx$ で当てはめる。<code>Fit</code> の引数は <code>Fit[data, expr, var, {par,初期値}, ...]</code>。初期値は必須。</li>
+<li>(2) <code>FitGaussian</code> の入力は、正規分布の分位点 $\sqrt2\,\mathrm{erf}^{-1}(2(i-0.5)/n-1)$ ($n=400$) に $\sigma=0.8$、平均 0.3、揺らぎ $0.05\sin 1.3i$ を足した 400 個の数。</li>
+<li>(3) <code>FitEmit</code> の入力は、(2) と同じ形の分位点を 2 組 (添字を <code>Mod[i*37,n]</code> で入れ替えて独立に近くした) 作り、$x=\sqrt{\epsilon\beta}\,u$、$p_x=\sqrt{\epsilon/\beta}\,(v-\alpha u)$ ($\epsilon=10^{-6}$、$\beta=5$、$\alpha=-1$) とした 300 粒子。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<ul>
+<li><code>fit=</code> の行が <code>Fit</code> の戻り値。<code>a-&gt;</code>、<code>b-&gt;</code> が当てはめ値、<code>ChiSquare</code> は残差の二乗和 (<code>dy</code> を与えないとき)、<code>GoodnessOfFit</code>、<code>ConfidenceInterval</code>、<code>CovarianceMatrix</code>、<code>DesignMatrix</code> が続く。</li>
+<li><code>fg=</code> の行は <code>{sigma, mean, {sigma_conf, mean_conf}, chisq}</code>。</li>
+<li><code>fe=</code> の行は 2 つのリスト。1 つ目が <code>{xmean, pxmean, alpha, beta, emittance}</code>、2 つ目が各量の信頼区間。</li>
+<li><code>R:</code> で始まる行は、下の照合表のために数値だけを出したもの。</li>
+</ul>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>(1) 線形最小二乗の解は $\hat\theta=(A^TA)^{-1}A^Ty$ ($A$ は <code>DesignMatrix</code>)。<code>ChiSquare</code> $=\sum_i(y_i-f_i)^2$、共分散行列は $\frac{\mathrm{ChiSquare}}{N-n_p}(A^TA)^{-1}$ ($N=10$、$n_p=2$。表示の CovarianceMatrix と一致することを確認した)。
+<code>GoodnessOfFit</code> は、誤差を与えないとき分散の推定で規格化した $\chi^2=N-n_p=8$ を使い、<code>GammaRegularized[(N-n_p)/2, 8/2]</code> = <code>GammaRegularized[4,4]</code> = 0.4334701204 になる (gs・pysad とも .4334701204)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>最小二乗 (numpy)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$a$</td>
+<td>1.0132993837</td>
+<td>1.0132993837</td>
+<td>1.0132993864</td>
+<td>2.3e-12</td>
+<td>2.7e-09</td>
+</tr>
+<tr>
+<td>$b$</td>
+<td>1.99673824342</td>
+<td>1.9967382434</td>
+<td>1.9967382425</td>
+<td>1.0e-11</td>
+<td>4.6e-10</td>
+</tr>
+<tr>
+<td>ChiSquare (残差二乗和)</td>
+<td>0.0484421798622</td>
+<td>.0484421799</td>
+<td>.0484421799</td>
+<td>7.8e-10</td>
+<td>7.8e-10</td>
+</tr>
+</tbody>
+</table>
+<p>(2) <code>FitGaussian</code> は分布の累積分布を逆誤差関数の直線で当てはめるので、$\sigma$ は標本の標準偏差とは少し違う値になる (真値 0.8、データに足した揺らぎのため 0.8032)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>標本の統計 (np.std, np.mean)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\sigma$ (真値 0.8 に揺らぎ)</td>
+<td>0.798983946906</td>
+<td>.8032255747</td>
+<td>.8032255747</td>
+<td>5.3e-03</td>
+<td>5.3e-03</td>
+</tr>
+<tr>
+<td>平均 (真値 0.3)</td>
+<td>0.30001439618</td>
+<td>.300007049</td>
+<td>.300007049</td>
+<td>2.4e-05</td>
+<td>2.4e-05</td>
+</tr>
+</tbody>
+</table>
+<p>(3) 参照値は同じ粒子の 2 次モーメント (平均を引いた分散) から $\epsilon=\sqrt{\langle x^2\rangle\langle p^2\rangle-\langle xp\rangle^2}$、$\beta=\langle x^2\rangle/\epsilon$、$\alpha=-\langle xp\rangle/\epsilon$ とした値。
+<code>FitEmit</code> は 1 次元の <code>FitGaussian</code> で分布の幅を求めるので、モーメント法とは一致しない。作った分布が理想の $\beta=5,\alpha=-1,\epsilon=10^{-6}$ から外れるのは、添字の入れ替えによる 2 変数の相関が残るため。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>モーメント法 (下式)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\alpha$</td>
+<td>-0.968499544999</td>
+<td>-1.0081380609</td>
+<td>-1.0081380613</td>
+<td>4.1e-02</td>
+<td>4.1e-02</td>
+</tr>
+<tr>
+<td>$\beta$ [m]</td>
+<td>5.00256138134</td>
+<td>5.0646593893</td>
+<td>5.0646593909</td>
+<td>1.2e-02</td>
+<td>1.2e-02</td>
+</tr>
+<tr>
+<td>$\epsilon$ [m]</td>
+<td>9.952015026e-07</td>
+<td>8.778359965211E-7</td>
+<td>8.778359962437E-7</td>
+<td>1.2e-01</td>
+<td>1.2e-01</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li><code>Fit</code>: ChiSquare、GoodnessOfFit、ConfidenceInterval、CovarianceMatrix は 9 桁以上一致。a と b は 3e-9 の差 (pysad は常に数値微分の経路、K64 は解析的な導関数を使う)。
+  DesignMatrix の中身が違う: gs は {1,1},{1,2},... と正確な値だが、pysad は 1.0000000028、0.9999999984 のように数値微分の誤差の混じった値を返す。</li>
+<li><code>FitGaussian</code>: 全桁一致 (k64 モード)。v2 (既定) は <code>InverseErf</code> が真値になる (B47) ので、σ が 8 桁 (.8032255801 と gs の .8032255747)、他の値が 1e-8 の桁で変わる。<code>FitEmit</code> も alpha・beta・emittance が 1e-8 以内の差 (gs の alpha -1.0081380609、v2 -1.0081380566)。<code>.pysad.txt</code> は v2 の出力。</li>
+<li><code>FitEmit</code>: alpha、beta、emittance が 1e-9 以内で一致。</li>
+<li>判定: ○ (値は一致。DesignMatrix の表示だけ pysad が数値微分の値)。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>ConfidenceInterval の係数は式で確かめていない (標準誤差 0.0532 に対し 0.0805、比 1.515)。</li>
+<li><code>Fit</code> の <code>D-&gt;False</code>・<code>Cutoff</code>・<code>MaxIterations</code>、$dy$ つきのデータ、非線形の式は例にしていない。</li>
+<li><code>FitEmit</code> の信頼区間は表に入れていない。モーメント法との差の説明 (FitGaussian の仕様) は式の推定で、<code>FitEmit</code> のソースまでは確かめていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

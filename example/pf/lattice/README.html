@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>lattice: PF (2.5 GeV) のラティス</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#確認した値-gs-と-pysad-で全桁一致pfopticsffs_cell_calc_emit_pf">確認した値 (gs と pysad で全桁一致、pf/optics/FFS_cell_calc_emit_PF)</a></li>
+<li><a href="#使い方">使い方</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="lattice-pf-25-gev-のラティス">lattice: PF (2.5 GeV) のラティス</h1>
+<p>PF リングの低エミッタンスラティス (周長 187.035 m、28 台の偏向磁石) の台本 2 本と、PF の履歴ラティス 4 本 (1981・1986・1997・2005 年)。元の台本のコピーを改変せずに置いた (改行コードだけ LF に変えた)。ASTRID2 のラティスは <code>astrid/lattice/</code> にある。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+<th>使う例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>v9_16_asym.sad</code></td>
+<td>PF 2.5 GeV の周回ラティス (asym = 始点が B01 側の直線部の端。ラティスの鏡面対称点が始点のものは sym)。ライン <code>RING</code> (756 要素)、標準セル 1 個の <code>NCELL</code>、入射点マーク <code>INJ</code>、モニター <code>PM</code> (65 台)、四極 <code>Q*</code>、6 極 <code>SFH</code>・<code>SDH</code> (2 ファミリー)、八極 <code>OCT</code> (K3=0)、偏向磁石 <code>B01</code>〜<code>B28</code> (矩形、各 0.2244 rad、L = 1.9427 m)、ステアリング <code>PH</code>・<code>PV</code>・<code>VD</code>・<code>VS</code> (K0 = 0)、空洞 <code>CAVI</code> (VOLT 0.85 MV、FREQ 499.99 MHz)</td>
+<td><code>cell calc emit</code>・<code>disp</code>・<code>type</code> などの基本の例、軌道応答・分散・色収差・DA・運動量依存・振幅依存・放射積分・位相空間・topdrawer の例</td>
+</tr>
+<tr>
+<td><code>v9_16_inj_noSF.sad</code></td>
+<td>入射バンプの計算用。キッカー <code>KK1</code>〜<code>KK4</code> (BEND、L=0.3 m、K0=0)、入射点を含む部分ライン <code>INJL</code> (114 要素)。入射バンプの内側の6 極 2 台のうち 1 台を外した (ケーブルでバイパスした実機の状態を反映、というチュートリアルの説明による) 版で、末尾で <code>SFH</code>・<code>SDH</code> の K2 を 3.879 / -4.396 に再定義している。空洞は <code>HARM = 312</code></td>
+<td>入射バンプの例 (<code>FFS_FIT_injbump_PF</code>)、入射軌道の例 (<code>calc_traj_*_PF</code>)</td>
+</tr>
+<tr>
+<td><code>pf_1981_460nmrad.sad</code></td>
+<td>PF の建設時のオプティクス (1981 年)。ライン <code>RING = (IMARK III 2*HALF RMARK)</code>、偏向磁石 28 台。周長 187.0741 m、チューン (5.2987, 4.1638)、εx 403 (k64) / 460 (v2) nm rad。元は <code>pf_460nmrad</code></td>
+<td><code>optics/FFS_cell_calc_emit_PF_1981_460nmrad</code></td>
+</tr>
+<tr>
+<td><code>pf_1986_128nmrad.sad</code></td>
+<td>最初の高輝度化 (1986 年)。周長 187.0741 m、チューン (8.4540, 3.3000)、εx 121 (k64) / 128 (v2) nm rad。元は <code>pf_128nmrad</code></td>
+<td><code>optics/FFS_cell_calc_emit_PF_1986_128nmrad</code></td>
+</tr>
+<tr>
+<td><code>pf_1997_036nmrad.sad</code></td>
+<td>弧部改造・高輝度化 (1997 年)。周長 187.0741 m、チューン (9.5972, 4.2902)、εx 34.7 (k64) / 35.7 (v2) nm rad。元は <code>pf_036nmrad</code></td>
+<td><code>optics/FFS_cell_calc_emit_PF_1997_036nmrad</code></td>
+</tr>
+<tr>
+<td><code>pf_2005_036nmrad.sad</code></td>
+<td>直線部増強 (2005 年)。周長 187.0355 m、チューン (9.5975, 5.2790)、εx 34.5 (k64) / 35.4 (v2) nm rad。元は <code>pf_036nmrad_2005</code> (MARK に <code>INJ</code> を足した)</td>
+<td><code>optics/FFS_cell_calc_emit_PF_2005_036nmrad</code></td>
+</tr>
+</tbody>
+</table>
+<p>履歴ラティス 4 本 (<code>pf_1981_460nmrad</code>〜<code>pf_2005_036nmrad</code>) の説明・表・図・ヘッダとの食い違い (要確認) は <a href="PF_history.html"><code>PF_history.md</code></a>。</p>
+<h2 id="確認した値-gs-と-pysad-で全桁一致pfopticsffs_cell_calc_emit_pf">確認した値 (gs と pysad で全桁一致、<code>pf/optics/FFS_cell_calc_emit_PF</code>)</h2>
+<ul>
+<li>エネルギー 2.5 GeV、周長 187.0355 m、チューン (9.59753, 5.27896)、エミッタンス 34.54 nm rad、エネルギー拡がり 7.337e-4、運動量コンパクション率 6.56e-3、U0 0.3991 MV。</li>
+<li>台本の末尾に、各 MARK のツイスの保存値が付いている (<code>INJ</code>、<code>U19</code> など)。<code>cell calc</code> を実行するたびに上書きされるので、そのまま使ってよい。</li>
+</ul>
+<h2 id="使い方">使い方</h2>
+<ul>
+<li><code>FFS;</code> の前にラティスを置き、後ろに計算を続ける (gs はラインや要素の定義を <code>FFS;</code> の前に置く必要がある)。各例の <code>.sad</code> は、このラティスを先頭に貼った自己完結のファイル。作り方は <code>tools/mkpf.py</code> (<code>mk(rel, body, lat)</code>)。</li>
+<li><code>ON RAD FLUC COD RFSW RADCOD;</code> は KEK のチュートリアルと同じ (光学・チューン・放射の例)。追跡の例 (DA、位相空間、TrackParticles) は決定性のため <code>OFF RAD FLUC; ON COD RFSW RADCOD;</code>。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>元の台本には、誤差入りではなく<strong>設計値のラティス</strong>が入っている (ASTRID2 の誤差入りとは違う)。</li>
+<li><code>v9_16_inj_noSF</code> でどの6 極を外したか (台本のどこに反映されているか) は確かめていない。リング全体の周期解 (チューンなど) が <code>v9_16_asym</code> と同じかも確かめていない。</li>
+<li>周長・チューンなどは <code>v9_16_asym</code> について確認した値。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

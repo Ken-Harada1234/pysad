@@ -1,0 +1,2787 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SAD/FFS &amp; SADScript のコマンド・関数・変数一覧 (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-ffs-コマンド-56">1. FFS コマンド (56)</a></li>
+<li><a href="#functions-108">functions (108)</a><ul>
+<li><a href="#data-manipulation-6">Data-Manipulation (6)</a></li>
+<li><a href="#downhillsimplex">DownhillSimplex</a></li>
+<li><a href="#functional-operations-15">functional-operations (15)</a></li>
+<li><a href="#ffs-dedicated-functions-31">FFS-dedicated-functions (31)</a></li>
+<li><a href="#graphics-13">Graphics (13)</a></li>
+<li><a href="#inputoutput-15">Input/Output (15)</a></li>
+<li><a href="#multiprocessing-4">Multiprocessing (4)</a></li>
+<li><a href="#object-oriented-programing-1">Object-oriented-programing (1)</a></li>
+<li><a href="#random-number-functions-5">Random-number-functions (5)</a></li>
+<li><a href="#system-interface-2">System-interface (2)</a></li>
+<li><a href="#utilities-5">Utilities (5)</a></li>
+</ul>
+</li>
+<li><a href="#special-variables-48">special-variables (48)</a></li>
+<li><a href="#constants-0">constants (0)</a></li>
+<li><a href="#physical-constants-0">physical-constants (0)</a></li>
+<li><a href="#その他の章-19">その他の章 (19)</a><ul>
+<li><a href="#beam-line-の下位項目-7">beam-line の下位項目 (7)</a></li>
+<li><a href="#character-string-の下位項目-13">character-string の下位項目 (13)</a></li>
+<li><a href="#command-syntax-本文">command-syntax (本文)</a></li>
+<li><a href="#components-本文">components (本文)</a></li>
+<li><a href="#data-structure-の下位項目-5">data-structure の下位項目 (5)</a></li>
+<li><a href="#defining-functions-本文">defining-functions (本文)</a></li>
+<li><a href="#dynamics-の下位項目-13">dynamics の下位項目 (13)</a></li>
+<li><a href="#elements-の下位項目-170">elements の下位項目 (170)</a></li>
+<li><a href="#expression-の下位項目-46">expression の下位項目 (46)</a></li>
+<li><a href="#flags-の下位項目-60">flags の下位項目 (60)</a></li>
+<li><a href="#geometric-functions-本文">geometric-functions (本文)</a></li>
+<li><a href="#machine-error-commands-本文">machine-error-commands (本文)</a></li>
+<li><a href="#matching-function-commands-本文">matching-function-commands (本文)</a></li>
+<li><a href="#multi-turn-tracking-本文">multi-turn-tracking (本文)</a></li>
+<li><a href="#off-momentum-matching-本文">off-momentum-matching (本文)</a></li>
+<li><a href="#optical-functions-本文">optical-functions (本文)</a></li>
+<li><a href="#pattern-の下位項目-1">pattern の下位項目 (1)</a></li>
+<li><a href="#set-value-of-element-の下位項目-2">set-value-of-element の下位項目 (2)</a></li>
+<li><a href="#wildcards-本文">wildcards (本文)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 34_sad_help_index.md</div>
+<h1 id="sadffs--sadscript-のコマンド関数変数一覧-sadhelp-1442k64-updated-10192026-から機械的に抽出">SAD/FFS &amp; SADScript のコマンド・関数・変数一覧 (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出)</h1>
+<p><strong>この文書で分かること</strong>: SADHelp (SAD のヘルプ文書) に載っている FFS コマンド・SADScript 関数・特別変数などの名前と、説明の最初の行の一覧。機械的に抽出した表で、pysad の実装状況は含まない。
+<strong>前提</strong>: SAD の用語 (FFS = SAD のコマンド言語、SADScript = SAD のスクリプト言語) を知っていること。
+<strong>読む順</strong>: 項目の意味を引くときは本文 (この文書)、pysad で使えるかは docs/35_pysad_vs_sadhelp.md、翻訳の方針は docs/36_sadhelp_purpose_policy.md。</p>
+<p>最終更新: 2026-11-17 (現状のスナップショット。SADHelp は 1.4.4.2k64 Updated: 10/19/2026。この文書は SADHelp.html の機械的な抽出で、pysad の状態は含まない。K64 版 <code>Documents/SADHelp.html</code> の項目数 (FFS コマンド 56)。KEK 公式の SAD ヘルプは別の SAD なので見ていない)</p>
+<p>出典: ローカル <code>&lt;SAD&gt;\Documents\SADHelp.html</code> (1.4.4.2k64 Updated: 10/19/2026。CERN の https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html は 1.4.0.0k64 2025-07-14 の同系統)。各行は見出しと、その説明の最初の行 (Usage があればその形)。括弧内は最短の省略形。pysad での対応状況は、docs/35_pysad_vs_sadhelp.md (名前ごとの対応表。2026-11-16 に更新)、docs/36_sadhelp_purpose_policy.md (分類と方針)、docs/03_ffs_commands.md §7、docs/05_sadscript.md を参照。</p>
+<h2 id="1-ffs-コマンド-56">1. FFS コマンド (56)</h2>
+<table>
+<thead>
+<tr>
+<th>コマンド</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ABORT</code></td>
+<td>Terminates SAD immediately.</td>
+</tr>
+<tr>
+<td><code>APPEND(APP)</code></td>
+<td>APP {filename | file-number} switches the output stream to the specified file or the file number. The output is appended to th</td>
+</tr>
+<tr>
+<td><code>ATTRIBUTE(ATTR)</code></td>
+<td>Usage: ATTR element-pattern</td>
+</tr>
+<tr>
+<td><code>BEAMSIZE(BEAM)</code></td>
+<td>Calculate the beam size with the current Twiss parameters. The calculation is in 5D and not correct if the synchrotron motion</td>
+</tr>
+<tr>
+<td><code>BYE</code></td>
+<td>Exits from the current beam line and returns to the original beam line where VISIT command was issued. All information specifi</td>
+</tr>
+<tr>
+<td><code>CALCULATE(CAL)</code></td>
+<td>Usage: (1) CALCULATE(CAL) [[NO]EXPAND]]</td>
+</tr>
+<tr>
+<td><code>CHROMATICITY(CHRO)</code></td>
+<td>CHRO prints out the chromaticity of QUAD and SEXT in the entire beam line using the simplest formula:</td>
+</tr>
+<tr>
+<td><code>CLOSE(CLO)</code></td>
+<td>CLOSE [INPUT(IN)] closes the current input stream and switches it to the previous input stream.</td>
+</tr>
+<tr>
+<td><code>COUPLE(COUP)</code></td>
+<td>Usage: COUP slave-element master-element coefficient</td>
+</tr>
+<tr>
+<td><code>DISPLAY(DISP)</code></td>
+<td>Usage: DISP_LAY [keywords] [pattern-string] [region]</td>
+</tr>
+<tr>
+<td><code>DRAW</code></td>
+<td>Usage: DRAW [begin end] fun1 [fun2..] [&amp; fun11 [fun12..]] [element-pattern]</td>
+</tr>
+<tr>
+<td><code>DUMP</code></td>
+<td>Usage: DUMP component-pattern [component-pattern1..]</td>
+</tr>
+<tr>
+<td><code>ELSE</code></td>
+<td>Usage: IF expr1 body1 [ELSEIF expr2 body2 [ELSEIF ..]] [ELSE body3] ENDIF</td>
+</tr>
+<tr>
+<td><code>ELSEIF</code></td>
+<td>Usage: IF expr1 body1 [ELSEIF expr2 body2 [ELSEIF ..]] [ELSE body3] ENDIF</td>
+</tr>
+<tr>
+<td><code>EMITTANCE(EMIT)</code></td>
+<td>Usage: (1) EMIT</td>
+</tr>
+<tr>
+<td><code>END</code></td>
+<td>Closes the current output-stream and set the output stream to the standard output(6). It also suspends all the input streams a</td>
+</tr>
+<tr>
+<td><code>ENDIF</code></td>
+<td>Usage: IF expr1 body1 [ELSEIF expr2 body2 [ELSEIF ..]] [ELSE body3] ENDIF</td>
+</tr>
+<tr>
+<td><code>EXECUTE(EXEC)</code></td>
+<td>Usage: EXEC character-string-expression</td>
+</tr>
+<tr>
+<td><code>EXPAND</code></td>
+<td>EXPAND distributes all variable keys to each corresponding components. Individual deviations (machine errors) are cleared.</td>
+</tr>
+<tr>
+<td><code>FIT</code></td>
+<td>Usage: (1) FIT [component]</td>
+</tr>
+<tr>
+<td><code>FITPOINTS(FITP)</code></td>
+<td>Usage: FITP n</td>
+</tr>
+<tr>
+<td><code>FIX</code></td>
+<td>Usage: (1) FIX element-pattern [keyword] [element-pattern1 [keyword1]..]</td>
+</tr>
+<tr>
+<td><code>FREE</code></td>
+<td>Usage: FREE element-pattern [keyword] [element-pattern1 [keyword1]..]</td>
+</tr>
+<tr>
+<td><code>GO</code></td>
+<td>Usage: GO [[NO]EXPAND]</td>
+</tr>
+<tr>
+<td><code>IF</code></td>
+<td>Usage: IF expr1 body1 [ELSEIF expr2 body2 [ELSEIF ..]] [ELSE body3] ENDIF</td>
+</tr>
+<tr>
+<td><code>INPUT(IN)</code></td>
+<td>IN {filename | file-number} switches the input stream to the specified file or the file-number. The original stream is kept an</td>
+</tr>
+<tr>
+<td><code>MATRIX(MAT)</code></td>
+<td>Usage: MATRIX [{SYMPLECTIC(S) | PHYSICAL(P)}] [from to]</td>
+</tr>
+<tr>
+<td><code>MEASURE(MEA)</code></td>
+<td>Usage: MEA [end-component] [OUT file plot-spaces]</td>
+</tr>
+<tr>
+<td><code>ORG</code></td>
+<td>Usage: ORG location, dgx, dgy, dgz, dchi1, dchi2, dch3</td>
+</tr>
+<tr>
+<td><code>OUTPUT(OUT)</code></td>
+<td>OUT {filename | file-number} switches the output stream to the specified file or the file-number. The file is written from the</td>
+</tr>
+<tr>
+<td><code>PRINT(PRI)</code></td>
+<td>PRI expression evaluates expression and prints out the result.</td>
+</tr>
+<tr>
+<td><code>QUIT</code></td>
+<td>Exits FFS and return to SAD/MAIN level, without saving the values of the elements.</td>
+</tr>
+<tr>
+<td><code>RADINT</code></td>
+<td>RADINT prints out the radiation integrals involving the x-coupling for all components of the beam line.</td>
+</tr>
+<tr>
+<td><code>READ</code></td>
+<td>READ {filename | file-number} switches the input stream to the specified file or the file-number. The original stream is kept</td>
+</tr>
+<tr>
+<td><code>RECOVER(REC)</code></td>
+<td>REC exchanges the values of FREEd elements with those when the last GO command was issued. FIXed elements are not affected.</td>
+</tr>
+<tr>
+<td><code>REFERENCE(REF)</code></td>
+<td>REFERENCE(REF) sets the current optics as the reference optics.</td>
+</tr>
+<tr>
+<td><code>REJECT(REJ)</code></td>
+<td>Usage: (1) REJ matching-function-pattern [matching-function-pattern1..]</td>
+</tr>
+<tr>
+<td><code>RENUMBER(RENUM)</code></td>
+<td>RENUM comp renumbers the component number starting from a component comp.</td>
+</tr>
+<tr>
+<td><code>REPEAT(REP)</code></td>
+<td>Usage: REP [n] body UNTIL [expr1]</td>
+</tr>
+<tr>
+<td><code>RESET</code></td>
+<td>Usage: RESET [ALL] [element-pattern]</td>
+</tr>
+<tr>
+<td><code>RESUME(RES)</code></td>
+<td>Resumes reading from the previous input stream suspended by SUSPEND(SUSP) or END.</td>
+</tr>
+<tr>
+<td><code>REVERSE(REV)</code></td>
+<td>REV changes the sign of AX, AY, EPX, EPY, R2, R3, DPX, DPY at the</td>
+</tr>
+<tr>
+<td><code>SAVE</code></td>
+<td>Usage: SAVE [element-pattern]</td>
+</tr>
+<tr>
+<td><code>SEED</code></td>
+<td>The SEED command is obsolete. Use SeedRandom[] function instead of SEED.</td>
+</tr>
+<tr>
+<td><code>SHOW</code></td>
+<td>SHOW prints out the current matching conditions.</td>
+</tr>
+<tr>
+<td><code>SPLIT</code></td>
+<td>Usage: SPLIT component length</td>
+</tr>
+<tr>
+<td><code>STATUS(STAT)</code></td>
+<td>STAT shows the current settings of flags, fit points,</td>
+</tr>
+<tr>
+<td><code>STOP</code></td>
+<td>Exits FFS and returns to SAD/MAIN level, with saving the values of the elements.</td>
+</tr>
+<tr>
+<td><code>SUSPEND(SUSP)</code></td>
+<td>Suspend reading from the current input stream, and wait for input from the console. Resumes by RESUME(RES)</td>
+</tr>
+<tr>
+<td><code>TERMINATE(TERM)</code></td>
+<td>TERM [INPUT(IN)] suspends the current input stream and switches it to the previous input stream.</td>
+</tr>
+<tr>
+<td><code>TYPE(T)</code></td>
+<td>Usage: TYPE [element-pattern [element-pattern1..]]</td>
+</tr>
+<tr>
+<td><code>UNTIL</code></td>
+<td>Usage: REP [n] body UNTIL [expr1]</td>
+</tr>
+<tr>
+<td><code>USE</code></td>
+<td>Usage: USE [[NO]EXPAND] beam-line</td>
+</tr>
+<tr>
+<td><code>VARIABLES(VAR)</code></td>
+<td>VARIABLES displays a list of current matching-variables and their present, previous, saved, minimum, and maximum values togeth</td>
+</tr>
+<tr>
+<td><code>VARY</code></td>
+<td>Usage: VARY keyword element-pattern</td>
+</tr>
+<tr>
+<td><code>VISIT</code></td>
+<td>Usage: VISIT [[NO]EXPAND] beam-line</td>
+</tr>
+</tbody>
+</table>
+<h2 id="functions-108">functions (108)</h2>
+<p><strong>数え方 (2026-11-17 に、CERN の SADHelp (1.4.0.0k64, 2025-07-14) の目次の <code>functions</code> 節で数えた。K64 版同梱の SADHelp.html (1.4.4.2k64) も同じ数)</strong>: 見出しの 108 = 分類の見出し 10 + 分類の中の関数 94 + 分類に入らない関数 <code>DownhillSimplex</code> 1 + 下位項目 3 (<code>Element</code> の key-strings、<code>ExternalMap</code> の CompiledMap、<code>LINE</code> の key-strings)。<strong>関数そのものの数は 95</strong> (94 + <code>DownhillSimplex</code>)。分類ごとの内訳は下の小見出しの括弧 (Data-Manipulation 6、functional-operations 15、FFS-dedicated-functions 31 (関数 28 + 下位項目 3)、Graphics 13、Input/Output 15、Multiprocessing 4、Object-oriented-programing 1、Random-number-functions 5、System-interface 2、Utilities 5)。<code>functions</code> 節の外にも関数があり (beam-line-functions 5、character-string 13、data-structure 5 ほか)、この数には含まない。</p>
+<p>FFS functions:</p>
+<h3 id="data-manipulation-6">Data-Manipulation (6)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Fit</code></td>
+<td>Usage: Fit[data, expr, var,</td>
+</tr>
+<tr>
+<td><code>FitEmit</code></td>
+<td>Obtain the emittance, beta, alpha, etc. from data of particles x and px using FitGaussian.</td>
+</tr>
+<tr>
+<td><code>FitGaussian</code></td>
+<td>Performs Gaussian fit of 1D list data:</td>
+</tr>
+<tr>
+<td><code>NIntegrate</code></td>
+<td>NIntegrate returns numerical integration of a Real or Complex</td>
+</tr>
+<tr>
+<td><code>PolynomialFit</code></td>
+<td>Usage: PolynomialFit[data, n]</td>
+</tr>
+<tr>
+<td><code>Spline</code></td>
+<td>Spline returns data for cubic-spline interpolation.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="downhillsimplex">DownhillSimplex</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DownhillSimplex</code></td>
+<td>Usage: DownhillSimplex[initial, f, options]</td>
+</tr>
+</tbody>
+</table>
+<h3 id="functional-operations-15">functional-operations (15)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Apply</code></td>
+<td>Apply[f, x [, level]] or f@@x [f@@[x, level]]</td>
+</tr>
+<tr>
+<td><code>Cases</code></td>
+<td>Cases[l, pat [, level [,n]]]</td>
+</tr>
+<tr>
+<td><code>DeleteCases</code></td>
+<td>DeleteCases[l, pat [, level [,n]]]</td>
+</tr>
+<tr>
+<td><code>Difference</code></td>
+<td>Difference[list] returns Rest[list] - Drop[list, -1] .</td>
+</tr>
+<tr>
+<td><code>FixedPoint</code></td>
+<td>FixedPoint[f, e] starts from f[e] then applies f repeatedly until the result no longer changes. FixedPoint[f, e, n] specifies</td>
+</tr>
+<tr>
+<td><code>FixedPointList</code></td>
+<td>FixedPointList[f, e] returns the intermediate values of FixedPoint[f, e] as a list. FixedPointList[f, e, n] and options for Fi</td>
+</tr>
+<tr>
+<td><code>level-spec</code></td>
+<td>Functions Map, Apply, Scan, Cases, Position, Count, Level, DeleteCases takes an optional argument level to specify which level</td>
+</tr>
+<tr>
+<td><code>Map</code></td>
+<td>Map[f, x [, level]] or f/@x [f/@[x, level]]</td>
+</tr>
+<tr>
+<td><code>MapThread</code></td>
+<td>MapThread[f, l] ===&gt; f@@[Thread[l], {1}]</td>
+</tr>
+<tr>
+<td><code>Position</code></td>
+<td>Position[l, pat [, level [,n]]]</td>
+</tr>
+<tr>
+<td><code>Scan</code></td>
+<td>Scan[f, x [, level]]</td>
+</tr>
+<tr>
+<td><code>ScanThread</code></td>
+<td>ScanThread[f, l] ===&gt; (f@@[Thread[l], {1}];Null) ,</td>
+</tr>
+<tr>
+<td><code>SelectCases</code></td>
+<td>Usage: SelectCases[list, {test1,..}]</td>
+</tr>
+<tr>
+<td><code>SwitchCases</code></td>
+<td>Usage: SwitchCases[list, {case1,..}]</td>
+</tr>
+<tr>
+<td><code>Thread</code></td>
+<td>Thread[l] returns a threaded list of l:</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ffs-dedicated-functions-31">FFS-dedicated-functions (31)</h3>
+<p>Functions dedicated to the optics calculations and simulations in FFS.</p>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AccelerateParticles</code></td>
+<td>AccelerateParticles does TrackParticles with acceleration in a ring for a given number of turns. The adiabatic damping is auto</td>
+</tr>
+<tr>
+<td><code>BeamMatrix</code></td>
+<td>BeamMatrix[i] returns a 6 by 6 beam-matrix (i.e., <x_k x_l>) at location i. The index i can have a fraction to specify interme</td>
+</tr>
+<tr>
+<td><code>DynamicApertureSurvey</code></td>
+<td>Usage: DynamicApertureSurvey[range,nturn,options]</td>
+</tr>
+<tr>
+<td><code>Element</code></td>
+<td>Element[key-string, {element-pattern-string | element-position}] returns values for key-string of elements which match element</td>
+</tr>
+<tr>
+<td><code>key-strings:Element</code></td>
+<td>The key-string is not case-sensitive. Available key-strings are:</td>
+</tr>
+<tr>
+<td><code>Emittance</code></td>
+<td>Emittance[option] returns a set of rules as</td>
+</tr>
+<tr>
+<td><code>ExternalMap</code></td>
+<td>With MAP elements, ExternalMap defines a user-defined map of particles. It also allows a user to do anything (doing statistics</td>
+</tr>
+<tr>
+<td><code>CompiledMap</code></td>
+<td>ExternapMa["TRACK", n, nt_, x_]:=CompiledMap[nt, x, src, prm, opt___];</td>
+</tr>
+<tr>
+<td><code>FFS</code></td>
+<td>FFS[command-string] executes command-string as FFS commands. Any commands can be used. Some commands CALCULATE(CAL), GO, VARIA</td>
+</tr>
+<tr>
+<td><code>FFS$SHOW</code></td>
+<td>FFS["SHOW"] or FFS$SHOW[] returns the current matching conditions as a list. Each element has a form of</td>
+</tr>
+<tr>
+<td><code>FitValue</code></td>
+<td>(1) FitValue[component, function, {id_,dp_}, goal_, now_] := body</td>
+</tr>
+<tr>
+<td><code>FitWeight</code></td>
+<td>A defined function to modify the weight of matching of particular function at particular component with particular momentum o</td>
+</tr>
+<tr>
+<td><code>GaussianCoulomb</code></td>
+<td>EquAlign["Text[{\tt GaussianCoulomb[x, y, sigx, sigy]} returns the electromagnetic force $f_x+if_y$ at the coordinates $(x,y\</td>
+</tr>
+<tr>
+<td><code>GeoBase</code></td>
+<td>GeoBase[{chi1, chi2, chi3}] converts the rotation angles of the coordinate base vectors to a transformation matrix {{x_gx,x_gy</td>
+</tr>
+<tr>
+<td><code>LINE</code></td>
+<td>LINE[key-string, {component-pattern-string | component-position}]</td>
+</tr>
+<tr>
+<td><code>key-strings:LINE</code></td>
+<td>The key-string is not case-sensitive. Available key-strings are:</td>
+</tr>
+<tr>
+<td><code>OptimizeOptics</code></td>
+<td>Usage: OptimizeOptics[options]</td>
+</tr>
+<tr>
+<td><code>OrbitGeo</code></td>
+<td>OrbitGeo[location] returns the geometry {GX, GY, GZ} of the current (not design) orbit.</td>
+</tr>
+<tr>
+<td><code>RadiationField</code></td>
+<td>To calculate the field of the synchrotron radiation from particles, first record trajectories of particles. This is done by th</td>
+</tr>
+<tr>
+<td><code>RadiationSpectrum</code></td>
+<td>To calculate the field of the synchrotron radiation from particles, first record trajectories of particles. This is done by th</td>
+</tr>
+<tr>
+<td><code>SetElement</code></td>
+<td>Create/set/read a MAIN-level element.</td>
+</tr>
+<tr>
+<td><code>SurvivedParticles</code></td>
+<td>SurvivedParticles[x]</td>
+</tr>
+<tr>
+<td><code>SymplecticJ</code></td>
+<td>SymplecticJ[n] returns an n by n symplectic matrix:</td>
+</tr>
+<tr>
+<td><code>SynchroBetaEmittance</code></td>
+<td>SynchroBetaEmittance calculates equilibrium emittance under influence of synchrotron motion and chromaticity.</td>
+</tr>
+<tr>
+<td><code>TouschekLifetime</code></td>
+<td>TouschekLifetime interpolates the data calculated by EMIT or Emittance[]. There are three ways of usage:</td>
+</tr>
+<tr>
+<td><code>TrackParticles</code></td>
+<td>TrackParticles[beam, destination-component, nbegin, nend]</td>
+</tr>
+<tr>
+<td><code>TransferMatrix</code></td>
+<td>TransferMatrix[from_, to_, options___] returns the 4x4 or 6x6 transfer matrix (TM) from component 'from' to component 'to', de</td>
+</tr>
+<tr>
+<td><code>Twiss</code></td>
+<td>Twiss[optical-function, component] returns the value of the optical-function at the entrance of component. The values are tho</td>
+</tr>
+<tr>
+<td><code>VariableRange</code></td>
+<td>Usage: VariableRange[element, keyword ,v_] := expression</td>
+</tr>
+<tr>
+<td><code>VariableWeight</code></td>
+<td>Usage: VariableWeight[element, keyword ,v_] := expression</td>
+</tr>
+<tr>
+<td><code>WakeFunction</code></td>
+<td>WakeFunction[Longitudinal, comp]={{z1, wl1}, ..., {zn, wln}};</td>
+</tr>
+</tbody>
+</table>
+<h3 id="graphics-13">Graphics (13)</h3>
+<p>Graphics represents an object for 2D graphics with the form</p>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BeamPlot</code></td>
+<td>Usage: BeamPlot[loc, axes, options]</td>
+</tr>
+<tr>
+<td><code>ColumnPlot</code></td>
+<td>Usage: ColumnPlot[data, options, ...]</td>
+</tr>
+<tr>
+<td><code>FitPlot</code></td>
+<td>Usage: FitPlot[data, fun, var, {par1,ini1}, .. , {parn, inin}, opt].</td>
+</tr>
+<tr>
+<td><code>GeometryPlot</code></td>
+<td>Usage: GeometryPlot[options]</td>
+</tr>
+<tr>
+<td><code>HistoPlot</code></td>
+<td>Usage: HistoPlot[data, options, ...]</td>
+</tr>
+<tr>
+<td><code>LaTeX</code></td>
+<td>Some Graphics options and the Text primitive accept a LaTeX input, if the string</td>
+</tr>
+<tr>
+<td><code>ListContourPlot</code></td>
+<td>Usage: ListContourPlot[list, options, ...]</td>
+</tr>
+<tr>
+<td><code>ListDensityPlot</code></td>
+<td>Usage: ListDensityPlot[list, options, ...]</td>
+</tr>
+<tr>
+<td><code>ListPlot</code></td>
+<td>Usage: ListPlot[{{x1,y1},..,{xn,yn}}, options]</td>
+</tr>
+<tr>
+<td><code>OpticsPlot</code></td>
+<td>Usage: OpticsPlot[fun_list, options]</td>
+</tr>
+<tr>
+<td><code>ParametricPlot</code></td>
+<td>Usage: ParametricPlot[{funx,funy}, range, options] or Plot[{{funx1, funy1} .. }, range, options],</td>
+</tr>
+<tr>
+<td><code>Plot</code></td>
+<td>Usage: Plot[fun, range, options] or Plot[{fun1, .. }, range, options],</td>
+</tr>
+<tr>
+<td><code>PointSymbol</code></td>
+<td>Notations for symols to be plotted:</td>
+</tr>
+</tbody>
+</table>
+<h3 id="inputoutput-15">Input/Output (15)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$FORM</code></td>
+<td>$FORM is a character-string to specify the format of the output of a real number.</td>
+</tr>
+<tr>
+<td><code>$Input</code></td>
+<td>$Input holds the file number for console input stream. The default is -1.</td>
+</tr>
+<tr>
+<td><code>$Output</code></td>
+<td>$Output holds the file number for console output. The default is -1.</td>
+</tr>
+<tr>
+<td><code>Close</code></td>
+<td>Close[f] closes file number [f]. It is necessary to complete the output to an external file.</td>
+</tr>
+<tr>
+<td><code>OpenAppend</code></td>
+<td>f = OpenAppend[file]</td>
+</tr>
+<tr>
+<td><code>OpenRead</code></td>
+<td>f = OpenRead[file]</td>
+</tr>
+<tr>
+<td><code>OpenWrite</code></td>
+<td>f = OpenWrite[file]</td>
+</tr>
+<tr>
+<td><code>PageWidth</code></td>
+<td>PageWidth is the number of columns of the output. The default is set from GetEnv["WIDTH"].</td>
+</tr>
+<tr>
+<td><code>Print</code></td>
+<td>Print[expr1 [,expr2 ...]]</td>
+</tr>
+<tr>
+<td><code>Read</code></td>
+<td>Read[f, item [, item1...] [, opts..]]</td>
+</tr>
+<tr>
+<td><code>ReadString</code></td>
+<td>ReadString[f]</td>
+</tr>
+<tr>
+<td><code>StandardForm</code></td>
+<td>StandardForm[expr]</td>
+</tr>
+<tr>
+<td><code>StringToStream</code></td>
+<td>f = StringToStream[string]</td>
+</tr>
+<tr>
+<td><code>Write</code></td>
+<td>Write[f, expr1 [,expr2 ...]]</td>
+</tr>
+<tr>
+<td><code>WriteString</code></td>
+<td>WriteString[f, expr1 [,expr2 ...]]</td>
+</tr>
+</tbody>
+</table>
+<h3 id="multiprocessing-4">Multiprocessing (4)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Fork</code></td>
+<td>Forks the process into a parent and a child processes.</td>
+</tr>
+<tr>
+<td><code>OpenShared</code></td>
+<td>Allocated shared memory of n bytes.</td>
+</tr>
+<tr>
+<td><code>Shared</code></td>
+<td>Read/Write to the shared memory.</td>
+</tr>
+<tr>
+<td><code>SharedSize</code></td>
+<td>Returns the size of an object for OpenShared.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="object-oriented-programing-1">Object-oriented-programing (1)</h3>
+<p>Environment for an object-oriented-programming is supplied by:</p>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Class</code></td>
+<td>Class sets up a class of objects.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="random-number-functions-5">Random-number-functions (5)</h3>
+<p>The random number functions use common seed given by SEED command or SeedRandom function. It has an initial value 17 at the be</p>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Random</code></td>
+<td>Random[] gives a uniform random number between 0 and 1.</td>
+</tr>
+<tr>
+<td><code>GaussRandom</code></td>
+<td>GaussRandom[] gives a Gaussian random number with average 0,</td>
+</tr>
+<tr>
+<td><code>ParabolaRandom</code></td>
+<td>ParabolaRandom[] gives a parabola random number between -1 and 1.</td>
+</tr>
+<tr>
+<td><code>SeedRandom</code></td>
+<td>SeedRandom[plugin_String] selects new pseudo random-number generator</td>
+</tr>
+<tr>
+<td><code>ListRandom</code></td>
+<td>ListRandom[] returns List of available pseudo random-number generator plugins.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="system-interface-2">System-interface (2)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>System</code></td>
+<td>System[string] executes string as a shell command. It returns the system return code.</td>
+</tr>
+<tr>
+<td><code>TemporaryName</code></td>
+<td>TemporaryName[] returns a unique file name for a temporary use.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="utilities-5">Utilities (5)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DateString</code></td>
+<td>DateString[] returns the current date and time as string "mm/dd/CCYY HH:MM:SS".</td>
+</tr>
+<tr>
+<td><code>MemoryCheck</code></td>
+<td>MemoryCheck[n]</td>
+</tr>
+<tr>
+<td><code>TimeUsed</code></td>
+<td>TimeUsed[] returns the cputime since the start of SAD in seconds.</td>
+</tr>
+<tr>
+<td><code>Timing</code></td>
+<td>Timing[fun]</td>
+</tr>
+<tr>
+<td><code>TracePrint</code></td>
+<td>TracePrint[fun]</td>
+</tr>
+</tbody>
+</table>
+<h2 id="special-variables-48">special-variables (48)</h2>
+<p>There are several variables which have special rolls in FFS. Some of them are also accessible in the MAIN level.</p>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>$Line</code></td>
+<td>%Line counts the number of the results in FFS Shown with Out[]:= . Out remembers all outputs up to Out[$Line]. $Line = 0 rese</td>
+</tr>
+<tr>
+<td><code>CASE</code></td>
+<td>CASE is a character-string to be attached with TITLE to issue the CASE command of TopDrawer in DRAW or GEO commands.</td>
+</tr>
+<tr>
+<td><code>CHARGE</code></td>
+<td>CHARGE contains the charge of the particle. The default is +1.</td>
+</tr>
+<tr>
+<td><code>CONVERGENCE</code></td>
+<td>CONVERGENCE is the goal of the convergence(==MatchingResidual) in the matching. If MatchingResidual becomes smaller than CONVE</td>
+</tr>
+<tr>
+<td><code>DAPWIDTH</code></td>
+<td>DAPWIDTH is the successive width of the x-amplitudes to terminate the tracking assuming that the aperture is enough. The defau</td>
+</tr>
+<tr>
+<td><code>DP</code></td>
+<td>DP represents the relative momentum spread of the beam. It is automatically set by the keyword DP of the MARK element at the b</td>
+</tr>
+<tr>
+<td><code>DP0</code></td>
+<td>DP0 represents the central value of the relative momentum offset in the optics calculation, or the center of the momentum dis</td>
+</tr>
+<tr>
+<td><code>DTSYNCH</code></td>
+<td>DTSYNCH is the equilibrium arrival time advance (= -c*delta t, in meter) where the synchrotron radiation loss balances with t</td>
+</tr>
+<tr>
+<td><code>EFFRFFREQ</code></td>
+<td>The effective angular frequency weff (= 2 Pi EFFRFFREQ) is obtained using the second derivative</td>
+</tr>
+<tr>
+<td><code>EFFVC</code></td>
+<td>Effective peak rf voltage EFFVC is given by</td>
+</tr>
+<tr>
+<td><code>EFFVCRATIO</code></td>
+<td>Ratio of (effective voltage)/(Sum[VOLT_k,{k}]) (default: 1). Set by EMITTANCE(EMIT) or Emittance[]. Effective with RING only.</td>
+</tr>
+<tr>
+<td><code>ElementValues</code></td>
+<td>ElementValues is a symbol to assign rules to determine values of keywords of elements or components. This is used to give a de</td>
+</tr>
+<tr>
+<td><code>EMITX</code></td>
+<td>EMITX is a real variable for the horizontal emittance (not normalized by gamma beta). It is automatically set by the keyword E</td>
+</tr>
+<tr>
+<td><code>EMITXE</code></td>
+<td>EMITXE specifies the minimum horizontal emittance for EMITTANCE(EMIT) and Emittance[] calculations. It is useful to give emitt</td>
+</tr>
+<tr>
+<td><code>EMITY</code></td>
+<td>EMITY is a real variable for the vertical emittance (not normalized by gamma beta). It is automatically set by the keyword EMI</td>
+</tr>
+<tr>
+<td><code>EMITYE</code></td>
+<td>EMITYE specifies the minimum vertical emittance for EMITTANCE(EMIT) and Emittance[] calculations. It is useful to give emittan</td>
+</tr>
+<tr>
+<td><code>EMITZ</code></td>
+<td>EMITZ is a real variable for the longitudinal emittance (not normalized by gamma beta). It is automatically set by the keyword</td>
+</tr>
+<tr>
+<td><code>EMITZE</code></td>
+<td>EMITZE specifies the minimum longitudinal emittance for EMITTANCE(EMIT) and Emittance[] calculations. It is useful to give emi</td>
+</tr>
+<tr>
+<td><code>ExponentOfResidual</code></td>
+<td>The exponent to calculate MatchinResidual. The default is 2.</td>
+</tr>
+<tr>
+<td><code>FFS$NumericalDerivative</code></td>
+<td>If False (default), the calculation of response matrix for each matching variables uses analytical expressions as much as poss</td>
+</tr>
+<tr>
+<td><code>FitFunction</code></td>
+<td>FitFunction is a symbol to assign user-defined functions for matching with the GO command.</td>
+</tr>
+<tr>
+<td><code>FSHIFT</code></td>
+<td>FSHIFT is the relative shift df/f0 of the revolution (or rf) frequency in a ring. This is valid in EMITTANCE(EMIT), the partic</td>
+</tr>
+<tr>
+<td><code>GCUT</code></td>
+<td>GCUT specifies the cut-off value of Gaussian distribution in unit of the standard deviation. Accessible in MAIN.</td>
+</tr>
+<tr>
+<td><code>InitialOrbits</code></td>
+<td>Usage: InitialOrbits = { {x1, px1, y1, py1, z1, dp1}, ...};</td>
+</tr>
+<tr>
+<td><code>LOSSAMPL</code></td>
+<td>LOSSAMPL is the transverse amplitude beyond which a particle is judged to have been lost. The default is 1 m. Accessible in MAIN.</td>
+</tr>
+<tr>
+<td><code>LOSSDZ</code></td>
+<td>LOSSDZ is the longitudinal position z beyond which a particle is judged to have been lost. The default is 100 m. Accessible in</td>
+</tr>
+<tr>
+<td><code>MatchingAmplitude</code></td>
+<td>MatchingAmplitude is a list of amplitudes for the finite-amplitude matching.</td>
+</tr>
+<tr>
+<td><code>MatchingResidual</code></td>
+<td>MatchingResidual holds the convergence in the last GO or CALCULATE(CAL) commands. It is calculated by</td>
+</tr>
+<tr>
+<td><code>MASS</code></td>
+<td>MASS is the rest mass of the particle in eV. The default is the electron mass.</td>
+</tr>
+<tr>
+<td><code>MINCOUP</code></td>
+<td>MINCOUP is the minimum emittance ratio to be assumed in the calculation of intrabeam effects in EMITTANCE(EMIT) and Emittance[</td>
+</tr>
+<tr>
+<td><code>MOMENTUM</code></td>
+<td>MOMENTUM is the nominal momentum of the beam line at the entrance in eV/c. Accessible in MAIN.</td>
+</tr>
+<tr>
+<td><code>NBUNCH</code></td>
+<td>NBUNCH is the number of bunches for the calculation of WakeFunction. Accessible in MAIN.</td>
+</tr>
+<tr>
+<td><code>NetResidual</code></td>
+<td>The net residual of convergence except the penalty for unstable optics.</td>
+</tr>
+<tr>
+<td><code>NP</code></td>
+<td>NP is the number of particles in the tracking. Accessible in MAIN.</td>
+</tr>
+<tr>
+<td><code>NPARA</code></td>
+<td>NPARA specifies the maximum number of parallel processes for various calculations such as CALC, GO, TrackParticles, DynamicApe</td>
+</tr>
+<tr>
+<td><code>OffMomentumWeight</code></td>
+<td>Relative weight of the off-momentum deviation for the off-momentum matching. The default is 1.</td>
+</tr>
+<tr>
+<td><code>OMEGA0</code></td>
+<td>OMEGA0 is 2<em>Pi</em>SpeedOfLight/LINE["s","$$$"] . Accessible in MAIN.</td>
+</tr>
+<tr>
+<td><code>OpticsEpilog</code></td>
+<td>OpticsEpilog is a variable to assign a user-defined function which is to be executed every time after an optics calculation is</td>
+</tr>
+<tr>
+<td><code>OpticsProlog</code></td>
+<td>OpticsProlog is a variable to assign a user-defined function which is to be executed every time before an optics calculation i</td>
+</tr>
+<tr>
+<td><code>PBUNCH</code></td>
+<td>PBUNCH is the number of particles/bunch for the calculation of the intra-beam and space charge effects in EMITTANCE(EMIT), and</td>
+</tr>
+<tr>
+<td><code>PhotonList</code></td>
+<td>When PHOTONS is ON (default is OFF), with RAD and FLUC, TrackParticles generates a list of all photons radiated through the tr</td>
+</tr>
+<tr>
+<td><code>PHICAV</code></td>
+<td>The equilibrium RF phase (in radian, = 2 Pi EFFRFFREQ DTSYNCH/c) where the synchrotron radiation loss and acceleration balance</td>
+</tr>
+<tr>
+<td><code>SIGE</code></td>
+<td>SIGE is the equilibrium momentum spread at the entrance of the beam line calculated by EMIT/Emittance[SaveEMIT-&gt;True].</td>
+</tr>
+<tr>
+<td><code>SIGZ</code></td>
+<td>SIGZ is the equilibrium bunch length at the entrance of the beam line calculated by EMIT/Emittance[SaveEMIT-&gt;True].</td>
+</tr>
+<tr>
+<td><code>SpeedOfLight</code></td>
+<td>SpeedOfLight is 299792458.</td>
+</tr>
+<tr>
+<td><code>TITLE</code></td>
+<td>TITLE is a character-string to make the title of the plot in DRAW or GEO commands.</td>
+</tr>
+<tr>
+<td><code>Track$Excitation</code></td>
+<td>An artificial random beam exciation is added in the tracking, by setting</td>
+</tr>
+<tr>
+<td><code>UnstableLevel</code></td>
+<td>Number of unstable planes in the optics calculations. Equal to zero if all x and y optics are stable for on/off-momentum and f</td>
+</tr>
+</tbody>
+</table>
+<h2 id="constants-0">constants (0)</h2>
+<p>There are pre-defined special symbols for constants in FFS:</p>
+<pre><code>There are pre-defined special symbols for constants in FFS:
+
+symbol         value
+True           1
+False          0
+Infinity       INF
+INF            INF
+NaN            NaN
+Pi             ArcSin[1]*2
+E              Exp[1]
+I              Complex[0,1]
+Degree         Pi/180
+GoldenRatio    (1+Sqrt[5])/2
+EulerGamma     0.57721566490153286061
+</code></pre>
+<h2 id="physical-constants-0">physical-constants (0)</h2>
+<p>EquAlign["Text[Physical constants available in FFS are:\n\begin{align*}\n{\tt SpeedOfLight} &amp;\qquad c\equiv 299792458 {\\</p>
+<pre><code>EquAlign[&quot;Text[Physical constants available in FFS are:\n\\begin{align*}\n{\\tt SpeedOfLight} &amp;\\qquad c\\equiv 299792458 {\\\
+rm\\ m/s}\\\\\n{\\tt PlanckConstant} &amp;\\qquad h \\equiv 6.62607015\\times 10^{-34} {\\rm\\ Js}\\\\\n{\\tt PlanckHbar} &amp;\\qquad \\h\
+bar\\equiv h/(2\\pi)\\\\\n{\\tt ElectronCharge} &amp;\\qquad  e_e \\equiv 1.602176634\\times 10^{-19} {\\rm\\ C}\\\\\n{\\tt FineStruct\
+ureConstant}&amp;\\qquad  \\alpha = 1/137.035999084 \\\\\n{\\tt ElectronMass}&amp;\\qquad  m_e = 0.51099895000\\times 10^6 {\\rm\\ eV}\\\\\
+\n{\\tt ElectronRadius}&amp;\\qquad  {\\rm classical\\ radius\\ of\\ electron\\ in\\ m,} r_e \\equiv \\alpha \\hbar c / (e_e m_e)\\\\\\
+n{\\tt ProtonMass}&amp;\\qquad  m_p  = 938.27208816\\times 10^6 {\\rm\\ eV}\\\\\n{\\tt ProtonRadius}&amp;\\qquad  {\\rm classical\\ radius\
+\\ of\\ proton\\ in\\ m}\\\\\n{\\tt SIMu0}&amp;\\qquad \\mu_0\\equiv 2\\alpha h/(c e_e^2)\\\\\n{\\tt SIEpsilon0}&amp;\\qquad    \\varepsil\
+on_0\\equiv 1/(\\mu_0 c^2)\\\\\n{\\tt ElectronGminus2over2}&amp;\\qquad   (g-2)/2 {\\rm\\ of\\ electron} = 0.001159652181280002\\\\\n{\
+\\tt BoltzmannConstant}&amp;\\qquad   1.380649\\times 10^{-23} {\\rm\\ J/K .}\n\\end{align*};;;0]&quot;,
+&quot;Physical constants available in FFS are:\n\nSpeedOfLight           c = 299792458 m/s\nPlanckConstant         h = 6.62607015d-34 J\
+s\nPlanckHbar             hbar = h/2/Pi\nElectronCharge         e_e = 1.602176634d-19 C\nFineStructureConstant  alpha = 1.d0 / 137\
+.035999084d0\nElectronMass           m_e in eV = 0.51099895000d6\nElectronRadius         classical radius of electron = alpha hbar\
+ c / (e_e m_e), in m\nProtonMass             m_p in eV = 938.27208816d6\nProtonRadius           classical radius of Proton, in m\n\
+SIMu0                  2 alpha h / e_e^2 / c\nSIEpsilon0             1/SIMu0/c^2\nElectronGminus2over2   (g-2)/2 of electrons = 0.\
+001159652181280002\nBoltzmannConstant      1.380649d-23 J/K&quot;
+]
+</code></pre>
+<h2 id="その他の章-19">その他の章 (19)</h2>
+<table>
+<thead>
+<tr>
+<th>章</th>
+<th>下位項目数</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>beam-line</code></td>
+<td>7</td>
+<td>A beam line is defined in the MAIN level by LINE command as:</td>
+</tr>
+<tr>
+<td><code>character-string</code></td>
+<td>13</td>
+<td>A character-string is expressed by enclosing in "". Special characters are expressed using \:</td>
+</tr>
+<tr>
+<td><code>command-syntax</code></td>
+<td>0</td>
+<td>The command syntax in FFS is</td>
+</tr>
+<tr>
+<td><code>components</code></td>
+<td>0</td>
+<td>Components are the objects which consist the beam line. A component simulates an individual magnet, drift space, or rf-cavity.</td>
+</tr>
+<tr>
+<td><code>data-structure</code></td>
+<td>5</td>
+<td>All data and "programs" in SAD Script are expressed either by an atom or a list-structure:</td>
+</tr>
+<tr>
+<td><code>defining-functions</code></td>
+<td>0</td>
+<td>A function is defined by one of the following forms:</td>
+</tr>
+<tr>
+<td><code>dynamics</code></td>
+<td>13</td>
+<td></td>
+</tr>
+<tr>
+<td><code>elements</code></td>
+<td>170</td>
+<td>An element in FFS represents an object which has a unique name and several keywords with values. This simulates a power supply</td>
+</tr>
+<tr>
+<td><code>expression</code></td>
+<td>46</td>
+<td>An expression in FFS consists of a symbol, constants, and operators.</td>
+</tr>
+<tr>
+<td><code>flags</code></td>
+<td>60</td>
+<td>Usage: [NO]flag</td>
+</tr>
+<tr>
+<td><code>geometric-functions</code></td>
+<td>0</td>
+<td>Available geometric-functions are:</td>
+</tr>
+<tr>
+<td><code>machine-error-commands</code></td>
+<td>0</td>
+<td>Usage: machine-error-command [options] amount component-pattern ..</td>
+</tr>
+<tr>
+<td><code>matching-function-commands</code></td>
+<td>0</td>
+<td>Usage: (1) matching-function goal-value [off-momentum-points]</td>
+</tr>
+<tr>
+<td><code>multi-turn-tracking</code></td>
+<td>0</td>
+<td>The multi-turn tracking can be done by TrackParticles or DynamicApertureSurvey[] function in FFS.</td>
+</tr>
+<tr>
+<td><code>off-momentum-matching</code></td>
+<td>0</td>
+<td>FFS matches the optical functions for an orbit with finite momentum deviation.</td>
+</tr>
+<tr>
+<td><code>optical-functions</code></td>
+<td>0</td>
+<td>Available optical functions for matching are:</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>1</td>
+<td>Pattern is a special expression for mathing arguments in function definitions and rules with several forms:</td>
+</tr>
+<tr>
+<td><code>set-value-of-element</code></td>
+<td>2</td>
+<td>Usage: element-pattern [keyword] [{MIN | MAX | MINMAX | MAXMIN}] value</td>
+</tr>
+<tr>
+<td><code>wildcards</code></td>
+<td>0</td>
+<td>Many commands and functions accept the wildcards as a specification for the name of elements or components. The valid wildc</td>
+</tr>
+</tbody>
+</table>
+<h3 id="beam-line-の下位項目-7">beam-line の下位項目 (7)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>beam-line-functions</code></td>
+<td>Functions/objects to construct/edit beam lines and elements in FFS.</td>
+</tr>
+<tr>
+<td><code>BeamLine</code></td>
+<td>Usage: BeamLine[e1, e2, ...];</td>
+</tr>
+<tr>
+<td><code>BeamLineName</code></td>
+<td>BeamLineName[] returns the name of the current beam line. If a BeamLine object is used by USE or VISIT, the new beam line beco</td>
+</tr>
+<tr>
+<td><code>ExtractBeamLine</code></td>
+<td>Usage: ExtractBeamLine[line]</td>
+</tr>
+<tr>
+<td><code>PrintBeamLine</code></td>
+<td>Usage: PrintBeamLine[b1,.. ,option]</td>
+</tr>
+<tr>
+<td><code>WriteBeamLine</code></td>
+<td>Usage: WriteBeamLine[f, b1,.. ,option]</td>
+</tr>
+<tr>
+<td><code>orientation-of-an-element</code></td>
+<td>An element with negative orientation means a reversal of the element along the z-axis. Thus all magnets except for a solenoid</td>
+</tr>
+</tbody>
+</table>
+<h3 id="character-string-の下位項目-13">character-string の下位項目 (13)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FromCharacterCode</code></td>
+<td>FromCharacterCode[r_Real] returns a character whose character code is r.</td>
+</tr>
+<tr>
+<td><code>StringFill</code></td>
+<td>StringFill[s, sf, n] with strings s and sf, n &gt; 0, returns (s//sf//sf...)[1,n] .</td>
+</tr>
+<tr>
+<td><code>StringJoin</code></td>
+<td>StringJoin[s1, s2, [,s3...]] ===&gt; s1 // s2 [//s3...] concatenates strings s1, s2 [,s3...].</td>
+</tr>
+<tr>
+<td><code>StringLength</code></td>
+<td>StringLength[s] returns the length of string s.</td>
+</tr>
+<tr>
+<td><code>StringMatchQ</code></td>
+<td>StringMatchQ[s, spat] returns True/False whether string s matches string-patten spat.</td>
+</tr>
+<tr>
+<td><code>StringPart</code></td>
+<td>s_String[n] returns the n-th character in s.</td>
+</tr>
+<tr>
+<td><code>StringPosition</code></td>
+<td>StringPosition[s, subs] returns a list of positions of subs in string s.</td>
+</tr>
+<tr>
+<td><code>StringReplace</code></td>
+<td>StringReplace[s, rules] replaces the parts of string s accoding to rules, which is a Rule or a list of Rules:</td>
+</tr>
+<tr>
+<td><code>StringTrim</code></td>
+<td>StringTrim[s] removes the leading and trailing spaces and tabs from s.</td>
+</tr>
+<tr>
+<td><code>Symbol</code></td>
+<td>Symbol[s] returns a Symbol whose name is character-string s.</td>
+</tr>
+<tr>
+<td><code>ToCharacterCode</code></td>
+<td>ToCharacterCode[s] returns the list of character codes of character-string s.</td>
+</tr>
+<tr>
+<td><code>ToExpression</code></td>
+<td>ToExpression[s] converts a character-string s to an expression and evaluate it.</td>
+</tr>
+<tr>
+<td><code>ToString</code></td>
+<td>ToString[expr] evaluates an expression expr, then converts to a character-string.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="command-syntax-本文">command-syntax (本文)</h3>
+<pre><code>The command syntax in FFS is
+
+     expression1 [param1..] [;] expression2..   
+
+(1) The input is first evaluated as an expression. If the expression returns a Symbol with the same name as the expression itself, 
+it is interpreted as an FFS command, otherwise the returned value is printed out unless it is Null.
+(2) Each command takes succeeding its parameters if necessary. A command with indefinite number of parameters can be terminated by 
+semicolon. Most commands terminate itself at the end of line.
+(3) A line can be continued to the next line if a backslash is placed at the end of the line.
+(4) An expression continues to the next line if it is not closed in the line.
+(5) An exclamation mark comments out the rest of the line.  
+
+Example: A command line
+
+          QF* .1
+
+means the set-value-of-element command as unless the symbol QF has been defined otherwise. If QF has been defines as a number, such
+ as QF=2.5, the above command line is interpreted as Times[QF,.1] then returns .25 .
+</code></pre>
+<h3 id="components-本文">components (本文)</h3>
+<pre><code>Components are the objects which consist the beam line. A component simulates an individual magnet, drift space, or rf-cavity.
+ The parameters of a component is specified the values in the corresponding element with the same name as the component, which simu
+lates a power supply. Many components can be attached to the same element. Parameters of each component may deviate from the corres
+ponding element if machine errors are given.
+   A component is specified with the form name[.order][{+-}offset], where name is the name of the component. The number order means
+ the order-th component which belongs to name element, counted from the beginning of the line starting from 1. Offset is a positive
+ or negative number to specify the downstream or upstream components from the given component. If order is omitted, the first eleme
+nt is assumed, and if offset is omitted, zero is assumed. The order can be renumbererd by RENUMBER(RENUM).
+   The end of line is specified by $$$. The first component can be specified by ^^^.
+</code></pre>
+<h3 id="data-structure-の下位項目-5">data-structure の下位項目 (5)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Extract</code></td>
+<td>Extract[f, part [,head]]</td>
+</tr>
+<tr>
+<td><code>Head</code></td>
+<td>Head[f] takes the head of an expression f.</td>
+</tr>
+<tr>
+<td><code>Length</code></td>
+<td>Length[f] returns the number of elements in the body of a structure f.</td>
+</tr>
+<tr>
+<td><code>List</code></td>
+<td>List is a special symbol to be the head of generic list-structure.</td>
+</tr>
+<tr>
+<td><code>Part</code></td>
+<td>Part[f, a [,b ,...]] ===&gt; f[[a, [,b ...]]]</td>
+</tr>
+</tbody>
+</table>
+<h3 id="defining-functions-本文">defining-functions (本文)</h3>
+<pre><code> A function is defined by one of the following forms:
+
+f[pat1 [,pat2...]] (:)= body;
+f[pat1 [,pat2...]] ^(:)= body;
+g/:f[pat1 [,pat2...]] (:)= body;
+
+where pat1 [,pat2...] are patterns (including expressions).
+ If UpSet(^=) or UpSetDelayed (^:=) is used, the definition is associated with the symbol in the first level of l.h.s.
+ If TagSet(/:) is used, the definition is associated with the symbol on the left of /: .
+
+ The patters can be an expression including constants. The definition with constant arguments can be accessed faster than searching
+ a list, in general, so they are suitable for a data base. Definitions with constant arguments have higher priorities than with pat
+terns.
+</code></pre>
+<h3 id="dynamics-の下位項目-13">dynamics の下位項目 (13)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>independent-variable</code></td>
+<td>EquAlign["Text[SAD uses $s$, the distance along a reference line as the independent variable. The reference line is either a \</td>
+</tr>
+<tr>
+<td><code>Lagrangean</code></td>
+<td>EquAlign["Text[The primary position variables are $(x,y,s)$, where $x$ and $y$ are the displacements along the normal and bin\</td>
+</tr>
+<tr>
+<td><code>Hamiltonian</code></td>
+<td>EquAlign["Text[The Lagrangean $L$ defines the {\it canonical} momenta as\n\begin{align}\np_x=&amp;\frac{\partial L}{\partial\</td>
+</tr>
+<tr>
+<td><code>2nd-order-Hamiltonian</code></td>
+<td>EquAlign["Text[The Hamiltonian $H$ can be expanded up to the second order of the transverse coordinates as:\n\begin{align}\n\</td>
+</tr>
+<tr>
+<td><code>solution-H2</code></td>
+<td>EquAlign["Text[We assume the focusing is uniform and $K=B'/(B\rho)&gt;0$, which can be always obtained by an appropriate rotati\</td>
+</tr>
+<tr>
+<td><code>solution-dH</code></td>
+<td>EquAlign["Text[The transformation for the correction term $\varDelta H=H-H_2$ for $1/\rho=0$:\begin{align}\varDelta H&amp;=-\</td>
+</tr>
+<tr>
+<td><code>remarks-on-dynamics</code></td>
+<td>EquAlign["Text[There are several remarks on the dynamics in SAD:\n\begin{itemize}\n\item All transformations in SAD are sym\</td>
+</tr>
+<tr>
+<td><code>x-y-coupling</code></td>
+<td>EquAlign["Text[The transformation matrix from the physical coordinate $(x,p_x,y,p_y)$ to the $x$-$y$ decoupled coordinate $(X\</td>
+</tr>
+<tr>
+<td><code>extended-Twiss-parameters</code></td>
+<td>A symplectic matrix such as the normal mode matrix can be expressed in terms of the extended Twiss parameters. In 6 by 6 case,</td>
+</tr>
+<tr>
+<td><code>definitions</code></td>
+<td>EquAlign["Text[Let V denote the matrix to define the normal mode, i.e.,\n\begin{align}\n {\bm U} = {\rm V}{\bm u}\,,\n\</td>
+</tr>
+<tr>
+<td><code>synchrotron-radiation</code></td>
+<td>EquAlign["Text[The evaluation of synchrotron radiation in SAD is done usingbased on ``kinematical method\":\\\n\\\nLet ${\</td>
+</tr>
+<tr>
+<td><code>equilibrium-beam-envelope</code></td>
+<td>EquAlign["Text[The equilibrium beam envelope (second order moment) $\left\langle X_iX_j\right\rangle$ is calculated by th\</td>
+</tr>
+<tr>
+<td><code>Bmag-coefficient</code></td>
+<td>EquAlign["Text[The $B_{\rm mag}$ coeeficient represents the mismatch between two optics:\n\begin{align}B_{\rm mag}\equiv\</td>
+</tr>
+</tbody>
+</table>
+<h3 id="elements-の下位項目-170">elements の下位項目 (170)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>APERT</code></td>
+<td>An aperture. Only valid in tracking. A particle with</td>
+</tr>
+<tr>
+<td><code>BEND</code></td>
+<td>A bending magnet.</td>
+</tr>
+<tr>
+<td><code>AE1</code></td>
+<td>The absolute face angle at the entrance. The effective face angle is E1 * ANGLE + AE1, and a positive angle at the entrance co</td>
+</tr>
+<tr>
+<td><code>AE2</code></td>
+<td>The absolute face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive angle a</td>
+</tr>
+<tr>
+<td><code>ANGLE</code></td>
+<td>The bending angle. If positive, it bends the orbit in x-s plane toward negative-x-direction. ANGLE determines the geometry of</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear Maxwellian fringe is suppressed.</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DROTATE</code></td>
+<td>Additional rotation in x-y plane to simulate a rotation error. DROTATE does not affect the geometry of the ring.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>E1</code></td>
+<td>The ratio of the face-angle at the entrance to the bending angle. The effective face angle is E1 * ANGLE + AE1, and a positive</td>
+</tr>
+<tr>
+<td><code>E2</code></td>
+<td>The ratio of the face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive ang</td>
+</tr>
+<tr>
+<td><code>F1</code></td>
+<td>Length of the slope of the field at the edge as:</td>
+</tr>
+<tr>
+<td><code>FB1</code></td>
+<td>F1 at the entrance. Actually F1 + FB1 is used at the entrance.</td>
+</tr>
+<tr>
+<td><code>FB2</code></td>
+<td>F1 at the exit. Actually F1 + FB2 is used at the exit.</td>
+</tr>
+<tr>
+<td><code>FRINGE</code></td>
+<td>When FRINGE is non-zero, the effect of the linear fringe F1 is taken into account both at the entrance and the exit.</td>
+</tr>
+<tr>
+<td><code>K0</code></td>
+<td>The normal dipole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K1</code></td>
+<td>The normal quadrupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length along the arc of the orbit.</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>transformation:BEND</code></td>
+<td>The transformation of a bend depends on the value of K1. If K1 is zero, it is a series of transformations:</td>
+</tr>
+<tr>
+<td><code>CAVI</code></td>
+<td>Accelerating structure.</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the Maxwellian fringe is suppressed. The effects of DISFRIN and FRINGE are summarized as</td>
+</tr>
+<tr>
+<td><code>DPHI</code></td>
+<td>Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given by</td>
+</tr>
+<tr>
+<td><code>DVOLT</code></td>
+<td>Additional accelerating voltage to be added to VOLT without affecting the design momentum.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>FREQ</code></td>
+<td>Rf frequency. If this keyword is nonzero, the keyword HARM is ignored.</td>
+</tr>
+<tr>
+<td><code>HARM</code></td>
+<td>A harmonic number. This is valid only when FREQ is zero.</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>PHI</code></td>
+<td>Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given by</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>V02</code></td>
+<td>The y^2-dependence of the acceleration. Tracking only.</td>
+</tr>
+<tr>
+<td><code>V1</code></td>
+<td>The linear x-dependence of the acceleration. Tracking only.</td>
+</tr>
+<tr>
+<td><code>V11</code></td>
+<td>The xy-dependence of the acceleration. Tracking only.</td>
+</tr>
+<tr>
+<td><code>VOLT</code></td>
+<td>Accelerating peak voltage in Volt.</td>
+</tr>
+<tr>
+<td><code>COORD</code></td>
+<td>An element for an arbitrary coordinate transformation. This element can be used to express an off-axis element.</td>
+</tr>
+<tr>
+<td><code>default-keyword</code></td>
+<td>The default and available non-default variable keywords are:</td>
+</tr>
+<tr>
+<td><code>DECA</code></td>
+<td>A decapole magnet.</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear Maxwellian fringe is suppressed.</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>K4</code></td>
+<td>The normal decapole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>transformation:THIN</code></td>
+<td>EquAlign["Text[The transformation of a {\tt DECA} is given as\n\begin{align}\n &amp;\exp(:F_{\rm in}:)\exp(:a {\tt L}:)\\</td>
+</tr>
+<tr>
+<td><code>DODECA</code></td>
+<td>A dodecapole magnet.</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear Maxwellian fringe is suppressed.</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>K5</code></td>
+<td>The normal dodecapole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>transformation:THIN</code></td>
+<td>EquAlign["Text[The transformation of a {\tt DODECA} is given as\n\begin{align}\n &amp;\exp(:F_{\rm in}:)\exp(:a {\tt L}:)\</td>
+</tr>
+<tr>
+<td><code>DRIFT</code></td>
+<td>A drift space.</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The length, can be negative.</td>
+</tr>
+<tr>
+<td><code>RADIUS</code></td>
+<td>Radius of the vacuum chamber. Effective when SPAC is ON.</td>
+</tr>
+<tr>
+<td><code>transformation:DRIFT</code></td>
+<td>The transformation of a drift is written as</td>
+</tr>
+<tr>
+<td><code>keywords</code></td>
+<td>Available keywords are:</td>
+</tr>
+<tr>
+<td><code>MARK</code></td>
+<td>MARK elements play special roles in FFS:</td>
+</tr>
+<tr>
+<td><code>OFFSET</code></td>
+<td>OFFSET is a relative position from the current position. A fraction is allowed to specify a location within an element.</td>
+</tr>
+<tr>
+<td><code>MULT</code></td>
+<td>A magnet with multipoles. Note that the reference plane is defined so that the skew quadrupole component becomes zero.</td>
+</tr>
+<tr>
+<td><code>K0</code></td>
+<td>The normal dipole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK0</code></td>
+<td>The skew dipole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K1</code></td>
+<td>The normal quadrupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK1</code></td>
+<td>The skew quadrupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K2</code></td>
+<td>The normal sextupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK2</code></td>
+<td>The skew sextupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K3</code></td>
+<td>The normal octupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK3</code></td>
+<td>The skew octupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K4</code></td>
+<td>The normal decapole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK4</code></td>
+<td>The skew decapole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K5</code></td>
+<td>The normal dodecapole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK5</code></td>
+<td>The skew dodecapole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K6</code></td>
+<td>The normal 14-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK6</code></td>
+<td>The skew 14-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K7</code></td>
+<td>The normal 16-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK7</code></td>
+<td>The skew 16-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K8</code></td>
+<td>The normal 18-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK8</code></td>
+<td>The skew 18-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K9</code></td>
+<td>The normal 20-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK9</code></td>
+<td>The skew 20-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K10</code></td>
+<td>The normal 22-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK10</code></td>
+<td>The skew 22-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K11</code></td>
+<td>The normal 24-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK11</code></td>
+<td>The skew 24-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K12</code></td>
+<td>The normal 26-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK12</code></td>
+<td>The skew 26-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K13</code></td>
+<td>The normal 28-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK13</code></td>
+<td>The skew 28-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K14</code></td>
+<td>The normal 30-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK14</code></td>
+<td>The skew 30-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K15</code></td>
+<td>The normal 32-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK15</code></td>
+<td>The skew 32-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K16</code></td>
+<td>The normal 34-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK16</code></td>
+<td>The skew 34-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K17</code></td>
+<td>The normal 36-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK17</code></td>
+<td>The skew 36-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K18</code></td>
+<td>The normal 38-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK18</code></td>
+<td>The skew 38-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K19</code></td>
+<td>The normal 40-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK19</code></td>
+<td>The skew 40-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K20</code></td>
+<td>The normal 42-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK20</code></td>
+<td>The skew 42-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>K21</code></td>
+<td>The normal 44-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>SK21</code></td>
+<td>The skew 44-pole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>AE1</code></td>
+<td>The absolute face angle at the entrance. The effective face angle is E1 * ANGLE + AE1, and a positive angle at the entrance co</td>
+</tr>
+<tr>
+<td><code>AE2</code></td>
+<td>The absolute face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive angle a</td>
+</tr>
+<tr>
+<td><code>ANGLE</code></td>
+<td>The bending angle. If positive, it bends the orbit in x-s plane toward negative-x-direction. ANGLE determines the geometry of</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear maxwellian fringe is suppressed. The effects of DISFRIN and FRINGE are summarized as</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DPHI</code></td>
+<td>Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0. The acceleration is given as</td>
+</tr>
+<tr>
+<td><code>DVOLT</code></td>
+<td>Additional accelerating peak voltage to be added to Volt, without affecting the design momentum p0(s).</td>
+</tr>
+<tr>
+<td><code>E1</code></td>
+<td>The ratio of the face-angle at the entrance to the bending angle. The effective face angle is E1 * ANGLE + AE1, and a positive</td>
+</tr>
+<tr>
+<td><code>E2</code></td>
+<td>The ratio of the face-angle at the exit to the bending angle. The effective face angle is E2 * ANGLE + AE2, and a positive ang</td>
+</tr>
+<tr>
+<td><code>F1</code></td>
+<td>EquAlign["Text[{\tt F1} and {\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\begin</td>
+</tr>
+<tr>
+<td><code>F2</code></td>
+<td>EquAlign["Text[{\tt F1} and {\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\begin</td>
+</tr>
+<tr>
+<td><code>FB1</code></td>
+<td>Linear Fringe length F1 for the K0 component at the entrance.</td>
+</tr>
+<tr>
+<td><code>FB2</code></td>
+<td>Linear Fringe length F1 for the K0 component at the exit.</td>
+</tr>
+<tr>
+<td><code>FREQ</code></td>
+<td>Rf frequency. If this keyword is nonzero, the keyword HARM is ignored.</td>
+</tr>
+<tr>
+<td><code>FRINGE</code></td>
+<td>The effects of the linear fringe (characterized by F1 and F2), and the nonlinear Mexwellian fringe are controled as:</td>
+</tr>
+<tr>
+<td><code>HARM</code></td>
+<td>A harmonic number. This is valid only when FREQ is zero.</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>misalignments</code></td>
+<td>Misalignments of a MULT element are expressed by the keywords DX, DY, DZ, CHI1, CHI2, and ROTATE(=CHI3). They specify all misa</td>
+</tr>
+<tr>
+<td><code>multipole_with_nonzero_ANGLE</code></td>
+<td>The multipoles in MULT with nonzero ANGLE are defined by</td>
+</tr>
+<tr>
+<td><code>PHI</code></td>
+<td>Relative phase offset. The stable synchrotron phase above the transition is near PHI = 0.</td>
+</tr>
+<tr>
+<td><code>RADIUS</code></td>
+<td>Radius of the vacuum chamber. Effective when SPAC is ON.</td>
+</tr>
+<tr>
+<td><code>VOLT</code></td>
+<td>Accelerating peak voltage in Volt.</td>
+</tr>
+<tr>
+<td><code>OCT</code></td>
+<td>A octupole magnet.</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear Maxwellian fringe is suppressed.</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>K3</code></td>
+<td>The normal octupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>transformation:THIN</code></td>
+<td>EquAlign["Text[The transformation of a {\tt OCT} is given as\n\begin{align}\n &amp;\exp(:F_{\rm in}:)\exp(:a {\tt L}:)\e\</td>
+</tr>
+<tr>
+<td><code>QUAD</code></td>
+<td>A quadrupole magnet.</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear maxwellian fringe is suppressed. The effects of DISFRIN and FRINGE are summarized as</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>F1</code></td>
+<td>EquAlign["Text[{\tt F1} and {\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\begin</td>
+</tr>
+<tr>
+<td><code>F2</code></td>
+<td>EquAlign["Text[{\tt F1} and {\tt F2} are parameters to characterize the slope of the field at the edges defined as:\n\begin</td>
+</tr>
+<tr>
+<td><code>FRINGE</code></td>
+<td>The effects of the linear fringe (characterized by F1 and F2), and the nonlinear Mexwellian fringe are controled as:</td>
+</tr>
+<tr>
+<td><code>K1</code></td>
+<td>The normal quadrupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>transformation:QUAD</code></td>
+<td>The transformation in a QUAD is a sequence of:</td>
+</tr>
+<tr>
+<td><code>SEXT</code></td>
+<td>A sextupole magnet.</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>If nonzero, the nonlinear Maxwellian fringe is suppressed.</td>
+</tr>
+<tr>
+<td><code>DISRAD</code></td>
+<td>If nonzero, the synchrotron radiation in the particle-tracking is inhibited.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>Horizontal displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>Vertical displacement of magnet. This applied before the rotation by ROTATE.</td>
+</tr>
+<tr>
+<td><code>K2</code></td>
+<td>The normal sextupole magnetic field component (times the length L).</td>
+</tr>
+<tr>
+<td><code>L</code></td>
+<td>The effective length.</td>
+</tr>
+<tr>
+<td><code>ROTATE</code></td>
+<td>Rotation in x-y plane. After displacing the magnet by DX and DY, rotate the magnet around the local s-axis by -(amount given b</td>
+</tr>
+<tr>
+<td><code>transformation:THIN</code></td>
+<td>EquAlign["Text[The transformation of a {\tt SEXT} is given as\n\begin{align}\n &amp;\exp(:F_{\rm in}:)\exp(:a {\tt L}:)\\</td>
+</tr>
+<tr>
+<td><code>SOL</code></td>
+<td>A solenoid. Unlike other elements, SOL elements inserted at boundaries or of a solenoid or at where the field changes. Between</td>
+</tr>
+<tr>
+<td><code>BOUND</code></td>
+<td>BOUND = 1 must be given at both sides of the boundaries of a solenoid, otherwise SOL only specifies the change of BZ</td>
+</tr>
+<tr>
+<td><code>BZ</code></td>
+<td>The longitudinal field of a solenoid. If a SOL is used with BOUND = 0 (default), only BZ is used to change the field, and no c</td>
+</tr>
+<tr>
+<td><code>DISFRIN</code></td>
+<td>EquAlign["Text[Disables the nonlinear fringe of solenoid if nonzero. The default is 0. The transformation for the nonlinear f\</td>
+</tr>
+<tr>
+<td><code>DPX</code></td>
+<td>An offset of the design ORBIT angle CHI1 relative to the solenoid axis at SOL with GEO = 1.</td>
+</tr>
+<tr>
+<td><code>DPY</code></td>
+<td>An offset of the design ORBIT angle CHI2 relative to the solenoid axis at SOL with GEO = 1.</td>
+</tr>
+<tr>
+<td><code>DX</code></td>
+<td>An x-offset of the design ORBIT relative to the solenoid center at SOL with GEO = 1.</td>
+</tr>
+<tr>
+<td><code>DY</code></td>
+<td>A y-offset of the design ORBIT relative to the solenoid center at SOL with GEO = 1.</td>
+</tr>
+<tr>
+<td><code>F1</code></td>
+<td>The length of fringe of the solenoid field. It affects only the EMITTANCE calculation. If F1 = 0 (default), no radiation arise</td>
+</tr>
+<tr>
+<td><code>GEO</code></td>
+<td>One of boundaries (with GEO = 1) of a solenoid must have GEO = 1 to specify the alignment of the design orbit. At a SOL elemen</td>
+</tr>
+</tbody>
+</table>
+<h3 id="expression-の下位項目-46">expression の下位項目 (46)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(-)</code></td>
+<td>operator for subtraction or unary minus.</td>
+</tr>
+<tr>
+<td><code>(/)</code></td>
+<td>operator for division.</td>
+</tr>
+<tr>
+<td><code>AddTo(+=)</code></td>
+<td>a+=b is equivalent to a=a+b .</td>
+</tr>
+<tr>
+<td><code>Alternatives(|)</code></td>
+<td>a | b | ... represents a pattern which matches one of patterns a, b, ...</td>
+</tr>
+<tr>
+<td><code>And(&amp;&amp;)</code></td>
+<td>a &amp;&amp; b returns True(==1) when both a and b are nonzero real, False(==0) otherwise. b is not evaluated when a is zero.</td>
+</tr>
+<tr>
+<td><code>Apply (@@)</code></td>
+<td>f@@a applies function f to subexpressions of a. f@@[a,level] specifies a levelspec to apply by level.</td>
+</tr>
+<tr>
+<td><code>CompoundExpression(;)</code></td>
+<td>a ; b evaluates a, then evaluates b and returns its result.</td>
+</tr>
+<tr>
+<td><code>Decrement(--)</code></td>
+<td>a-- decrements a by 1, returning the old value of a. --a decrements a by 1, returning the new value of a.</td>
+</tr>
+<tr>
+<td><code>DivideBy(/=)</code></td>
+<td>a/=b is equivalent to a=a/b.</td>
+</tr>
+<tr>
+<td><code>Dot(.)</code></td>
+<td>a . b returns the inner product of a and b.</td>
+</tr>
+<tr>
+<td><code>Equal(==)</code></td>
+<td>a == b returns True(==1) if a and b are both Real with the same value or a String with same length and value. If one of a or b</td>
+</tr>
+<tr>
+<td><code>Function(&amp;)</code></td>
+<td>a &amp; is a pure-function whose argument is specified #, #n, ##, ##n.</td>
+</tr>
+<tr>
+<td><code>Greater(&gt;)</code></td>
+<td>If both a and b are real, a &gt; b returns True if a is greater than b, False otherwise. If one of a or b is a list, or both are</td>
+</tr>
+<tr>
+<td><code>GreaterEqual(&gt;= or =&gt;)</code></td>
+<td>If both a and b are real, a =&gt; b returns True if a is greater than or equal to b, False otherwise. If one of a or b is a list,</td>
+</tr>
+<tr>
+<td><code>Increment(++)</code></td>
+<td>a++ increments a by 1, returning the old value of a. ++a increments a by 1, returning the new value of a.</td>
+</tr>
+<tr>
+<td><code>Less(&lt;)</code></td>
+<td>If both a and b are real, a &lt; b returns True if a is less than b, False otherwise. If one of a or b is a list, or both are lis</td>
+</tr>
+<tr>
+<td><code>LessEqual(&lt;= or =&lt;)</code></td>
+<td>If both a and b are real, a &lt;= b returns True if a is less than or equal to b, False otherwise. If one of a or b is a list, or</td>
+</tr>
+<tr>
+<td><code>List({})</code></td>
+<td>{a,b,c...} is a list structure.</td>
+</tr>
+<tr>
+<td><code>Map (/@)</code></td>
+<td>f/@a maps function f to subexpressions of a. f/@[a,level] specifies a levelspec of map by level.</td>
+</tr>
+<tr>
+<td><code>MapAll(//@)</code></td>
+<td>f//@a maps function f to all subexpressions of a. f//@[a,Heads-&gt;True] maps including the heads of a and its subexpressions.</td>
+</tr>
+<tr>
+<td><code>Member(@)</code></td>
+<td>f@a refers the member a of an instance or a class f. Otherwise it is same as f[a]. f@g@h means (f@g)@h, and f@g[h] (f@g)[h].</td>
+</tr>
+<tr>
+<td><code>MessageName(::)</code></td>
+<td>symbol::tag returns a message associated with symbol and tag</td>
+</tr>
+<tr>
+<td><code>Not(~)</code></td>
+<td>~a returns True(==1) when a is zero, False(==0) when a is a nonzero real.</td>
+</tr>
+<tr>
+<td><code>Or(||)</code></td>
+<td>a || b returns True(==1) when a is nonzero real or b is nonzero real, False(==0) otherwise. b is not evaluated when a is nonzero.</td>
+</tr>
+<tr>
+<td><code>Part([[]])</code></td>
+<td>a[[b,..]] is a subexpression of an expression a.</td>
+</tr>
+<tr>
+<td><code>PatternTest(?)</code></td>
+<td>pattern?test matches to an object which matches pattern then test[object] gives True.</td>
+</tr>
+<tr>
+<td><code>Plus(+)</code></td>
+<td>a + b returns the sum of a and b. If one of a or b is a list, or both are lists with same size, returns a list of element-wise</td>
+</tr>
+<tr>
+<td><code>Power(^)</code></td>
+<td>a ^ b returns the power of a to b. If one of a or b is a list, or both are lists with same size, returns a list of element-wis</td>
+</tr>
+<tr>
+<td><code>Repeated(..)</code></td>
+<td>p.. matches sequence of one ore more expressions, each matching p.</td>
+</tr>
+<tr>
+<td><code>RepeatedNull(...)</code></td>
+<td>p... matches sequence of zero ore more expressions, each matching p.</td>
+</tr>
+<tr>
+<td><code>ReplaceAll(/.)</code></td>
+<td>expr/.rule replaces all subexpressions of expr using rule.</td>
+</tr>
+<tr>
+<td><code>ReplaceRepeated(//.)</code></td>
+<td>expr//.rule replaces all subexpressionso of expr using rule, while a replacement is performed.</td>
+</tr>
+<tr>
+<td><code>Rule(-&gt;)</code></td>
+<td>pattern-&gt;expr represents a rule for ReplaceAll.</td>
+</tr>
+<tr>
+<td><code>RuleDelayed(:&gt;)</code></td>
+<td>pattern:&gt;expr represents a rule for ReplaceAll, where expr is kept unevaluated until the replacement.</td>
+</tr>
+<tr>
+<td><code>SameQ(===)</code></td>
+<td>a === b returns True(==1) if a and b have the same type and same value, False(==0) otherwise.</td>
+</tr>
+<tr>
+<td><code>Sequence([])</code></td>
+<td>a[b,c,..] means a list of b, c,.. with the head a. It is evaluated as a function-reference when a is a function or a defined-f</td>
+</tr>
+<tr>
+<td><code>Set(=)</code></td>
+<td>a = value sets the value b to the symbol a. {a,b,..}={v1,v2,..} sets a,b,c simultaneously. a[b,c,..]=v1 sets the part of a[b,c</td>
+</tr>
+<tr>
+<td><code>SetDelayed(:=)</code></td>
+<td>same as Set but the right hand side is not evaluated when it is set.</td>
+</tr>
+<tr>
+<td><code>StringJoin (//)</code></td>
+<td>a // b converts a and b to character-strings, then join them.</td>
+</tr>
+<tr>
+<td><code>SubtractFrom(-=)</code></td>
+<td>a-=b is equivalent to a=a-b .</td>
+</tr>
+<tr>
+<td><code>TagSet(/:)</code></td>
+<td>symb/:lhs = rhs sets rhs to lhs, associated with symbol symb. symb/:lhs := rhs sets rhs to lhs unevaluated, associated with sy</td>
+</tr>
+<tr>
+<td><code>Times(*)</code></td>
+<td>a * b returns the product of a and b. If one of a or b is a list, or both are lists with same size, returns a list of element-</td>
+</tr>
+<tr>
+<td><code>TimesBy(*=)</code></td>
+<td>a<em>=b is equivalent to a=a</em>b .</td>
+</tr>
+<tr>
+<td><code>Unequal(&lt;&gt;)</code></td>
+<td>a &lt;&gt; b returns True(==1) if a and b are both Real with different values or a String with different length or values. If one of</td>
+</tr>
+<tr>
+<td><code>UnsameQ(&lt;=&gt;)</code></td>
+<td>a &lt;=&gt; b returns True(==1) if a and b have the different types or different values. False(==0) otherwise.</td>
+</tr>
+<tr>
+<td><code>Unset(=.)</code></td>
+<td>a=. clears the definition assigned to a.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="flags-の下位項目-60">flags の下位項目 (60)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ABSW</code></td>
+<td>ABSW or NORELW sets the weights of variable elements independent from their values in the matching. Otherwise they are weighte</td>
+</tr>
+<tr>
+<td><code>BIPOL</code></td>
+<td>BIPOL or NOUNIPOL allows the change of sign of the value of the element during the matching. It affects the default keywords o</td>
+</tr>
+<tr>
+<td><code>CALC4D</code></td>
+<td>If CALC4D is on, the optics calculation in CALCULATE(CAL) and GO performs a 4x5 calculation (4D + dispersion). The antonyms is</td>
+</tr>
+<tr>
+<td><code>CALC6D</code></td>
+<td>If CALC6D is on, the optics calculation in CALCULATE(CAL) and GO performs full 6D calculation, which may takes RADCOD into acc</td>
+</tr>
+<tr>
+<td><code>CALEXP</code></td>
+<td>The default behavior on EXPAND for CALCULATE(CAL) and GO, when unspecified. If it is ON, the values of elements are expanded t</td>
+</tr>
+<tr>
+<td><code>CELL</code></td>
+<td>CELL or NOINS sets the periodic condition in calculating the optical-functions.</td>
+</tr>
+<tr>
+<td><code>CMPLOT</code></td>
+<td>CMPLOT enables the shift of the center of mass at the beginning of the tracking. This is almost obsolete.</td>
+</tr>
+<tr>
+<td><code>COD</code></td>
+<td>COD turns on finding the closed-orbit in the emittance calculation. Accessible in MAIN level.</td>
+</tr>
+<tr>
+<td><code>CODPLOT</code></td>
+<td>CODPLOT lets the emittance calculation return the information on the closed-orbit, extended Twiss parameters, and the beam siz</td>
+</tr>
+<tr>
+<td><code>CONV</code></td>
+<td>CONV is a flag set by the CALCULATE(CAL) or GO commands. It becomes True when MatchingResidual is less than CONVERGENCE.</td>
+</tr>
+<tr>
+<td><code>CONVCASE</code></td>
+<td>When CONVCASE is on, FFS command line parser converts the input characters to the upper case.(Default on) CONVCASE actions for</td>
+</tr>
+<tr>
+<td><code>DAMPONLY</code></td>
+<td>DAMPONLY is the antonym of FLUC.</td>
+</tr>
+<tr>
+<td><code>DAPERT</code></td>
+<td>DAPERT enables the DAPERT procedure in the multi-turn tracking to obtain the dynamic aperture diagram. Accessible in the MAIN</td>
+</tr>
+<tr>
+<td><code>DIFFRES</code></td>
+<td>In the case of CELL, if the total tune deviates across a difference resonance, it is counted as unstable. The default is NODIFFRES.</td>
+</tr>
+<tr>
+<td><code>ECHO</code></td>
+<td>ECHO enables the echo of the main input in the MAIN level.</td>
+</tr>
+<tr>
+<td><code>EMIOUT</code></td>
+<td>EMIOUT turns on the extended output of emittance calculation.</td>
+</tr>
+<tr>
+<td><code>FFSPRMPT</code></td>
+<td>When FFSPRMPT is off(default) the input prompt is In[n]:= , where n is $Line+1. Otherwise the prompt is the traditional FFS pr</td>
+</tr>
+<tr>
+<td><code>FIXSEED</code></td>
+<td>FIXSEED or NOMOVESEED disables the change of the seed of the random number generator after the particle tracking.</td>
+</tr>
+<tr>
+<td><code>FLUC</code></td>
+<td>FLUC or NODAMPONLY enables the diffusion due to synchrotron radiation in the particle tracking. Otherwise only the damping is</td>
+</tr>
+<tr>
+<td><code>GAUSS</code></td>
+<td>GAUSS or NOUNIFORM sets the momentum distribution of the incoming beam to be Gaussian, otherwise uniform(square) distribution</td>
+</tr>
+<tr>
+<td><code>GEOCAL</code></td>
+<td>When GEOCAL is on(default), the geometry of the beam line is always updated by CALCULATE(CAL) or GO commands using the current</td>
+</tr>
+<tr>
+<td><code>GEOFIX</code></td>
+<td>GEOFIX is the antonym of GEOCAL.</td>
+</tr>
+<tr>
+<td><code>HALFRES</code></td>
+<td>In the case of CELL, if the total tune deviates across a half-integer resonance, or the traces is less than -2, it is counted</td>
+</tr>
+<tr>
+<td><code>IDEAL</code></td>
+<td>IDEAL or NOREAL inhibits to use the component-specific deviations in the optics calculation.</td>
+</tr>
+<tr>
+<td><code>INS</code></td>
+<td>INS is the antonym of CELL.</td>
+</tr>
+<tr>
+<td><code>INTRA</code></td>
+<td>INTRA turns on the calculation of intra-beam scattering in the emittance calculation. Accessible in MAIN level.</td>
+</tr>
+<tr>
+<td><code>INTRES</code></td>
+<td>In the case of CELL, if the total tune deviates across an integer resonance, or the trace is larger than 2, it is counted as u</td>
+</tr>
+<tr>
+<td><code>JITTER</code></td>
+<td>JITTER or NOQUIET allows jitter of the center-of-mass of the incoming beam in the case of TRPT. Otherwise the center-of-mass s</td>
+</tr>
+<tr>
+<td><code>KEEPEXP</code></td>
+<td>If it is ON, CALCULATE(CAL) preserves the behavior on EXPAND of the last CALCULATE(CAL) or GO. The default is ON.</td>
+</tr>
+<tr>
+<td><code>LOG</code></td>
+<td>LOG enables the echo of all inputs in the MAIN level. Also suppresses the prompt in FFS.</td>
+</tr>
+<tr>
+<td><code>LOSSMAP</code></td>
+<td>If LOSSMAP is on, TrackParticles returns the location and turn where the particle lost is detected, in the 8/10th and 9/11th e</td>
+</tr>
+<tr>
+<td><code>LWAKE</code></td>
+<td>LWAKE turns on optics calculation with Longitudinal WakeFunction</td>
+</tr>
+<tr>
+<td><code>MOVESEED</code></td>
+<td>MOVESEED is the antonym of FIXSEED.</td>
+</tr>
+<tr>
+<td><code>PHOTONS</code></td>
+<td>When PHOTONS is ON (default is OFF), with RAD and FLUC, TrackParticles generates a list of all photons radiated through the tr</td>
+</tr>
+<tr>
+<td><code>POL</code></td>
+<td>POL turns on spin tracking and the calculation of equilibrium polarization in EMIT/Emittance[].</td>
+</tr>
+<tr>
+<td><code>PRSVCASE</code></td>
+<td>When PRSVCASE is on, FFS command line parser preserves the input characters for the element names and patterns.(Default off)</td>
+</tr>
+<tr>
+<td><code>PSPAC</code></td>
+<td>When on, performs space-charge simulation in a "Particle-In-Cell" method. PSPAC is effective in tracking only.</td>
+</tr>
+<tr>
+<td><code>QUIET</code></td>
+<td>QUIET is the antonym of JITEER.</td>
+</tr>
+<tr>
+<td><code>RAD</code></td>
+<td>RAD turns on the synchrotron radiation in the particle-tracking. Accessible in the MAIN level.</td>
+</tr>
+<tr>
+<td><code>RADCOD</code></td>
+<td>RADCOD turns on the energy loss due to synchrotron radiation at the closed-orbit in the emittance calculation. Also turns off</td>
+</tr>
+<tr>
+<td><code>RADLIGHT</code></td>
+<td>When RADLIGHT is on, the function TrackParticles returns a list of trajectories which are used to calculate the synchrotron ra</td>
+</tr>
+<tr>
+<td><code>RADPOL</code></td>
+<td>If POL is on, RADPOL turns on Sokolov-Ternov effect in tracking.</td>
+</tr>
+<tr>
+<td><code>RADTAPER</code></td>
+<td>Scales all magnets except for solenoids according to the local momentum (DDP) of the closed orbit. It uses the average of DDPs</td>
+</tr>
+<tr>
+<td><code>REAL</code></td>
+<td>REAL is the antonym of IDEAL.</td>
+</tr>
+<tr>
+<td><code>RELW</code></td>
+<td>RELW is the antonym of ABSW.</td>
+</tr>
+<tr>
+<td><code>RFSW</code></td>
+<td>RFSW turns on the acceleration by CAVI and TCAVI element in the particle-tracking and the emittance calculation. Accessible in</td>
+</tr>
+<tr>
+<td><code>RING</code></td>
+<td>RING is the antonym of TRPT.</td>
+</tr>
+<tr>
+<td><code>SELFCOD</code></td>
+<td>When on with WSPAC, in tracking, the space charge force is calculated relative to the center of mass of the current set of par</td>
+</tr>
+<tr>
+<td><code>SORG</code></td>
+<td>SORG sets the origin of S (design orbit length) at the location set by ORG.</td>
+</tr>
+<tr>
+<td><code>SPAC</code></td>
+<td>When SPAC is on, tracking is done with space charge effect. The actual number of particles in the beam and the number of macro</td>
+</tr>
+<tr>
+<td><code>STABLE</code></td>
+<td>STABLE is a flag set by the CALCULATE(CAL) or GO commands in the case of CELL. It becomes True when the closed orbit is found</td>
+</tr>
+<tr>
+<td><code>SUMRES</code></td>
+<td>In the case of CELL, if the total tune deviates across a sum resonance, it is counted as unstable. The default is SUMRES.</td>
+</tr>
+<tr>
+<td><code>SUS</code></td>
+<td>If OFF, SUSPEND(SUSP) and END commands have no action. The default is ON.</td>
+</tr>
+<tr>
+<td><code>TRPT</code></td>
+<td>TRPT or NORING declares that the beam line is a transport line, not a part of a storage ring. The nominal momentum be changed</td>
+</tr>
+<tr>
+<td><code>TWAKE</code></td>
+<td>TWAKE turns on optics calculation with Transverse WakeFunction</td>
+</tr>
+<tr>
+<td><code>UNIFORM</code></td>
+<td>UNIFORM is the antonym of GAUSS. It assumes the momentum distribution to be a uniform(square) within +-DP.</td>
+</tr>
+<tr>
+<td><code>UNIPOL</code></td>
+<td>UNIPOL is the antonym of BIPOL.</td>
+</tr>
+<tr>
+<td><code>UNSTABLE</code></td>
+<td>UNSTABLE is the antonym of STABLE.</td>
+</tr>
+<tr>
+<td><code>WAKEOPT</code></td>
+<td>WAKEOPT enables an optics calculation with LWAKE or TWAKE under TRPT. The default is OFF.</td>
+</tr>
+<tr>
+<td><code>WSPAC</code></td>
+<td>When on, performs space-charge simulation in a "strong-weak" mode. The beam size through the beam line is to be calculated by</td>
+</tr>
+</tbody>
+</table>
+<h3 id="geometric-functions-本文">geometric-functions (本文)</h3>
+<pre><code>Available geometric-functions are:
+
+GX      geometrical coordinate xi
+GY      geometrical coordinate eta
+GZ      geometrical coordinate zeta
+CHI1    geometrical rotation angle ch1_1
+CHI2    geometrical rotation angle ch1_2
+CHI3    geometrical rotation angle ch1_3
+
+The geometrical coordinate {xi, eta, zeta} is set by the ORG command, and its default origin is at the entrance of the beam line, a
+nd the default directions are xi in s-direction, eta in -(x-direction), and zeta in -(y-direction) at the entrance. The set {xi, et
+a, zeta} forms a right-hand system.
+   The rotation angles are defined so as to give the local {x,y,s} is written
+
+    {x, y, s}_local
+   = rotate[s, chi3] rotate[x, chi2] rotate[y, -chi1]{x, y, s}_origin,
+
+where rotate[a, b] reads &quot;rotate around the new-a vector by b right-handedly.
+
+geometric functions disignate the geometry of the coordinate. If the geometry of orbit is needed, use LINE[&quot;OGEO&quot;], etc., or DISP O
+G.
+</code></pre>
+<h3 id="machine-error-commands-本文">machine-error-commands (本文)</h3>
+<pre><code>Usage: machine-error-command [options] amount component-pattern ..
+
+where machine-error-command is one of
+
+command    keyword affected     applicable types
+DELX       DX                   BEND QUAD SEXT OCT DECA DODECA SOL CAV
+DELY       DY                   BEND QUAD SEXT OCT DECA DODECA SOL CAV
+DL         L                    DRIFT SOL
+DTHETA     ROTATE               QUAD SEXT OCT DECA DODECA CAV
+DTHETA     DROTATE              BEND
+DK         default-keyword      DRIFT BEND QUAD SEXT OCT DECA DODECA MULT SOL CAV
+DDK        K0 or DBZ            BEND SOL
+
+   amount is the amount of the error,
+   component-pattern is the pattern to specify the components to be applied.
+
+   Options are  
+
+RANDOM(R)        Set amount*GaussRandom[] to the keyword. 
+UNIFORM(U)       Set the specified amount to the keyword without random number.
+INCOHERENT(INC)  GaussRandom[] is called for each component. Default.
+COHERENT(C)      GaussRandom[] is called once for each component-pattern.
+PUT(P)           Set the error to the keyword. Default.
+ADD(A)           Add the error to the keyword.  
+</code></pre>
+<h3 id="matching-function-commands-本文">matching-function-commands (本文)</h3>
+<pre><code>Usage: (1) matching-function  goal-value [off-momentum-points]
+       (2) matching-functionM goal-value [off-momentum-points]
+       (3) matching-functionI incoming-value
+       (4) matching-functionSCALE scale
+
+(1) sets the matching condition for matching-function at the current fitting point or region with the goal-value and the off-moment
+um-points (see off-momentum-matching).
+   If off-momentum-points is omitted, the previous value for this matching-function at this fitting-point is assumed. If the previo
+us value is not defined, 1 is assumed. If -1 is given for off-momentum-points, the matching-function is rejected from the matching 
+(see REJECT(REJ)).
+   If &quot;*&quot; is given for goal-value, the previous value is used if exists.
+
+Example:   BX 10 3    (beta_x to be 10 at 3 momenta) 
+           BX 20      (now beta_x to be 20 at 3 momenta (previous setting))
+           BX *  5    (now beta_x to be 20 (previous setting) at 5 momenta)
+
+(2) If the letter &quot;M&quot; is appended to matching-function, it means the maximum-fitting for the function. The maximum of either the va
+lue (for positive-definite functions) or the absolute value (for bipolar functions) are to be limited in the matching.
+
+(3) If SCALE is appended to matching-function, it sets the scale of the input/output of the function to scale. This scale is used i
+n the matching-function commands, DISPLAY(DISP), SHOW, etc.
+
+(4) If the current fit location is at a MARK, @ refers the saved value at the MARK. @- refers -(saved value), and @* refers (the or
+ientation of MARK)*(saved value).  These are useful to match using the already-saved values, for instance to match between two beam
+ lines having the common MARK.
+
+   Available matching-functions are:
+optical-functions (see optical-functions):
+AX BX GMX NX AY BY GMY NY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY DZ DDP PEX PEPX PEY PEPY TRX TRY LENG
+geometric-functions (see geometric-functions):
+GX GY GZ CHI1 CHI2 CHI3
+</code></pre>
+<h3 id="multi-turn-tracking-本文">multi-turn-tracking (本文)</h3>
+<pre><code>The multi-turn tracking can be done by TrackParticles or DynamicApertureSurvey[] function in FFS.
+
+The multi-turn tracking uses the closed orbit, normal coordinate, and the equilibrium emittances. Therefore One of EMITTANCE(EMIT),
+ the Emittance[] function, or the EMIT command in the MAIN level are necessary to be done once in prior to the multi-turn-tracking.
+ The values of EMITX, EMITY, EMITZ, SIGE can be changed between EMITs and the multi-turn-tracking.
+</code></pre>
+<h3 id="off-momentum-matching-本文">off-momentum-matching (本文)</h3>
+<pre><code>FFS matches the optical functions for an orbit with finite momentum deviation.
+
+Example: 
+   DP=0.01;      sets the range of momentum to DP0-0.01 &lt; dp/p0 &lt; DP0+0.01 .
+   BX 10 9;      sets the goal of betax to 10 m, at 9 points.
+                 in the range above, i.e.,
+                 dp/p0 = {-0.01,-0.0075,-0.005,-0.0025,0,
+                          0.0025,0.005,0.0075,0.01} + DP0 .
+   GO starts the matching.
+
+As this example, the off-momentum points are chosen with equal separation. If the off-momentum point n is an even number, the chose
+n points are same as the case of n+1, but the on-momentum point (==DP0) is excluded.
+ If a list {min, max} is set to DP, the off-momentum matching is performed at dp/p(k) = min*Sin[k Pi/2/n], max*Sin[k Pi/2/n], {k,0,
+fitp/2}, where fitp is the number of off-momentum points given by FITP.
+</code></pre>
+<h3 id="optical-functions-本文">optical-functions (本文)</h3>
+<pre><code>Available optical functions for matching are:   
+
+AX      alpha_X
+BX      beta_X
+GMX     gamma_X
+NX      psi_X, the default scale is 1/(2Pi)
+AY      alpha_Y
+BY      beta_Y
+GMY     gamma_Y
+NY      psi_Y, the default scale is 1/(2Pi)
+EX      eta_X   (dispersion_X)
+EPX     eta_Px  (dispersion_PX) 
+EY      eta_Y   (dispersion_Y)
+EPY     eta_Py  (dispersion_PY)
+R1      R_1     (see x-y-coupling)
+R2      R_2     (see x-y-coupling)
+R3      R_3     (see x-y-coupling)
+R4      R_4     (see x-y-coupling)
+DETR    R_1*R_4 - R_2*R_3 (see x-y-coupling)
+DX      dx
+DPX     dpx
+DY      dy
+DPY     dpy
+DZ      dz
+DDP     delta=dp/p0
+AZ      alpha_Z
+BZ      beta_Z
+GMZ     gamma_Z
+NZ      psi_Z, the default scale is 1/(2Pi)
+ZX      zeta_X  (z-dispersion_X)
+ZPX     zeta_Px (z-dispersion_PX) 
+ZY      zeta_Y  (z-dispersion_Y)
+ZPY     zeta_Py (z-dispersion_PY)
+PEX     eta_x   (dispersion_x)
+PEPX    eta_px  (dispersion_px) 
+PEY     eta_y   (dispersion_y)
+PEPY    eta_yy  (dispersion_py)
+TRX     trace(T_X), only defined at the end of the beam line.
+TRY     trace(T_Y), only defined at the end of the beam line.
+BMAGX   BmagX, against the reference optics.
+BMAGY   BmagY, against the reference optics.
+BMAGZ   BmagZ, against the reference optics.
+LENG    length of the design orbit  
+
+In the above, upper case X, Px, Y, Py represents the x-y decoupled coordinate. EX, EPX, EY, EPY refer the decoupled coordinate, whi
+le PEX, PEPX, PEY, PEPY are in the physical coordinate. On the other hand,  DX, DPX, DY, DPY refer the physical coordinate.
+</code></pre>
+<h3 id="pattern-の下位項目-1">pattern の下位項目 (1)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>MatchQ</code></td>
+<td>MatchQ[x, pat] returns True if x matches pat</td>
+</tr>
+</tbody>
+</table>
+<h3 id="set-value-of-element-の下位項目-2">set-value-of-element の下位項目 (2)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>説明 (最初の行)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>keywords</code></td>
+<td>Available keywords are:</td>
+</tr>
+<tr>
+<td><code>default-keyword</code></td>
+<td>The default and available non-default variable keywords are:</td>
+</tr>
+</tbody>
+</table>
+<h3 id="wildcards-本文">wildcards (本文)</h3>
+<pre><code>   Many commands and functions accept the wildcards as a specification for the name of elements or components. The valid wildc
+ards are:
+
+       *         matches any zero or more characters.
+       %         matches one character.
+       {..}      matches any character enclosed.
+       {^..}     matches any character not enclosed.
+       ..|..     alternative pattern.
+</code></pre>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

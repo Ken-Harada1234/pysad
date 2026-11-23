@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Fork_Shared (Fork, OpenShared, Shared, SharedSize)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Fork_Shared.md</div>
+<h1 id="fn_fork_shared-fork-openshared-shared-sharedsize">fn_Fork_Shared (Fork, OpenShared, Shared, SharedSize)</h1>
+<p>種別: 関数 / フォルダ: 09_io_system / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。ファイルは <code>TemporaryName[]</code> か実行ディレクトリの作業ファイルで、最後に <code>DeleteFile</code> で消す。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>Fork[]</code> はプロセスを 2 つに分け、子で 0、親で子の pid を返す。<code>OpenShared[n]</code> は共有メモリ、<code>Shared[s]</code> で読み書き、<code>SharedSize[x]</code> は値の大きさ。子が共有メモリに書いた値を親が読む。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>s = OpenShared[64];   Shared[s] = {1, 2, 3};   SharedSize[{1,2,3}];
+pid = Fork[];
+If[pid == 0, Shared[s] = {10, 20, 30}; Exit[0], Pause[0.5]; Print[&quot;parent ...&quot;]];
+Print[Shared[s]];   Close[s];
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>gs: 親が <code>{1,2,3}</code> を書き、子が <code>{10,20,30}</code> に書き換えて終了し、0.5 秒待った親が <code>{10,20,30}</code> を読む。<code>SharedSize[{1,2,3}]</code>=32 バイト。親の <code>Fork[]</code> は実数 (pid、正)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>△ <strong>Windows の pysad は子プロセスを作らない (<code>.pysad.txt</code> はこの結果)。</strong> <code>SharedSize[{1,2,3}]</code> は 32 になり gs と一致する。<code>Fork[]</code> は Windows に fork が無いので、v2 は <code>???System::error: Fork[] is not available on this platform</code> を出し (k64 モードは実数 1 を返す)、子の分岐を通らず、共有メモリは親のものだけで <code>{1,2,3}</code> のまま (gs は <code>{10,20,30}</code>)。Linux・WSL・macOS では v2 の <code>Fork[]</code> が <code>os.fork</code> で子を作る (<code>docs/28_v2_vs_k64.md</code>。記録は WSL で確認)。<strong>この例を WSL の pysad では再実行していない</strong> (WSL の Python に numpy が無い)。要確認。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>子の標準出力は親と共有されるので、子で <code>Print</code> すると行が重なる。子では何も表示していない。</li>
+<li>待ちは <code>Wait</code> ではなく <code>Pause[0.5]</code> (SADHelp の <code>Wait</code> は未使用)。</li>
+<li><code>Wait[pid]</code> を使うと gs が 120 秒止まるので、この例では使わない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

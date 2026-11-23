@@ -1,9 +1,0 @@
-mode k64
-quad  p = 1.0 GeV  bz = 0.30 1/m  spin error vs Thomas-BMT 6.01e-02
-quad  p = 0.3 GeV  bz = 3.00 1/m  spin error vs Thomas-BMT 1.55e-01
-quad  p = 0.1 GeV  bz = 4.50 1/m  spin error vs Thomas-BMT 1.79e-01
-quad  p = 0.1 GeV  bz = 8.99 1/m  spin error vs Thomas-BMT 1.87e-01
-mult  p = 1.0 GeV  bz = 0.30 1/m  NotImplementedError (k64: region MULT unsupported)
-mult  p = 0.3 GeV  bz = 3.00 1/m  NotImplementedError (k64: region MULT unsupported)
-mult  p = 0.1 GeV  bz = 4.50 1/m  NotImplementedError (k64: region MULT unsupported)
-mult  p = 0.1 GeV  bz = 8.99 1/m  NotImplementedError (k64: region MULT unsupported)

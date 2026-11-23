@@ -1,0 +1,42 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.566190 $$$       f BX    #######  #   7.210256 $$$       f NX    #######  #   1.194249
+$$$       f AY    #######  #    .688734 $$$       f BY    #######  #   1.740664 $$$       f NY    #######  #    .863868
+$$$       f LENG  #######  #  18.400000
+       2        0   2.1729E-03  (NEWTON)    1.000          1
+       3        0   4.8421E-08  (NEWTON)    1.000          1
+ Matched. ( 3.2593E-17) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.797257 $$$       f BX    #######  #  13.993905 $$$       f NX   1.3       1   1.300000
+$$$       f AY    #######  #    .259764 $$$       f BY    #######  #   2.185773 $$$       f NY    #######  #    .782337
+$$$       f LENG  #######  #  18.400000
+A 8.168140905042476 4.915571256742766
+ ???-FFS-Info-Component QF.2 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.4 is coupled to QF.1 .
+ ???-FFS-Info-Component QF.3 is coupled to QF.1 .
+ ???-FFS-Error-A component has been already used as variable: B.6 
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ QF.1         K1        .700000000000 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ B.6          K1        .000000000000 !  .000000000  .000000000  -1.00000E99   1.000000E99               1.00000000
+ B.3          K1        .356930109735 !  .356930110  .356930110  -1.00000E99   1.000000E99               1.00000000
+      23        0   0.9537      (DESCEND)  0.1250          4
+      26        0   0.1237      (NEWTON)   0.5677          4
+      27        0   2.4315E-02  (NEWTON)    1.000          4
+      28        0   1.6613E-03  (NEWTON)    1.000          4
+      29        0   6.6614E-06  (NEWTON)    1.000          4
+ Matched. ( 1.0435E-10) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -3.605344 $$$       f BX    #######  #  10.675157 $$$       f NX   1.3       1   1.300000
+$$$       f AY    #######  #    .477929 $$$       f BY    #######  #  10.041112 $$$       f NY   .95       1    .950002
+$$$       f LENG  #######  #  18.400000
+B 8.168140935628179 5.969036257047183 .7194089450875897 .7194089450875897 .2955337518774659 -.24893819218394994 0
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .719408945088 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ QF.1         K1        .719408945088 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ B.6          K1       -.248938192184 !  .000000000 -.248938192  -1.00000E99   1.000000E99               1.00000000
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .719408945088 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ QF.1         K1        .719408945088 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000
+ B.6          K1       -.248938192184 !  .000000000 -.248938192  -1.00000E99   1.000000E99               1.00000000
+!Variable     Keyword    Now          !   Previous    Saved         Minimum      Maximum       Couple      Coefficient
+ QF.3         K1        .719408945088 !  .700000000  .700000000  -1.00000E10   1.000000E10 QF.1          1.00000000
+ QF.1         K1        .719408945088 !  .700000000  .700000000  -1.00000E10   1.000000E10 <--           1.00000000

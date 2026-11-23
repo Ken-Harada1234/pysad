@@ -1,0 +1,371 @@
+R1 plain
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.39E-14 $$$       f BX    #######  #   4.643203 $$$       f NX    #######  #  47.580034
+$$$       f AY    #######  #  -1.13E-14 $$$       f BY    #######  #   6.231611 $$$       f NY    #######  #  17.620044
+$$$       f LENG  #######  #  603.12000
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   603.120
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.283185    
+ RF VOLTAGE (kV)            =    1400.000    
+ HARMONIC NUMBER            =   992.
+ RF FREQUENCY (MHz)         =   493.0928
+
+ RADIATION INTEGRALS  
+   I1X =   0.1399118        I1Y =    0.000000    
+   I2  =   0.2596187    
+   I3  =   1.3616669E-02
+   I4U =  -0.1417873        I4V =    0.000000    
+   I5U =   4.5706250E-06    I5V =    0.000000    
+
+ NU-X-  = 47.58003    NU-Y- = 17.62004
+ MOMENTUM COMPACTION FAC X  =   2.3198E-04
+ MOMENTUM COMPACTION FAC Y  =    0.000    
+ ENERGY LOSS PER TURN (kV)  =    296.1    
+ DU=1-I4U/I2                =   1.54613671
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    26.37    
+                TAUV (msec) =    40.77    
+                TAUE (msec) =    28.04    
+ ENERGY SPREAD (SIG) DE/E   =   6.9027E-04
+            EMITTANCE U     =   1.5039E-10
+            EMITTANCE V     =    0.000    
+
+ NU-S                       =     0.004087
+ BUCKET HIGHT   DEMAX/E     =     0.029851
+ NATURAL BUNCH LENGTH (mm)  =     3.760659
+ Q.LIFE IS TOO LONG      XI =   9.3512D+02
+
+ LINEAR CHROMATICITY GX     =   -33.763129
+ LINEAR CHROMATICITY GY     =   -23.592236
+R2 after emit
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :   .000000   .000000   .000000   .000000   .000000  1.75E-17
+      Exit :  -3.8E-18  2.12E-19   .000000   .000000  5.82E-19  1.75E-17
+
+    Extended Twiss Parameters
+AX: -8.27E-7 BX: 4.643193                            ZX: -1.08E-4  EX:  .044503
+           PSIX: 2.09E-19                           ZPX: -1.17E-6 EPX: 5.06E-17
+R1: -3.7E-17 R2: -1.1E-16 AY: 4.68E-11 BY: 6.231611  ZY: -2.8E-16  EY: 5.06E-17
+R3: 4.32E-18 R4: -1.9E-17            PSIY: 1.19E-32 ZPY: 6.52E-18 EPY: 2.98E-17
+                                                     AZ: -.002561  BZ: 5.431660
+                                                                 PSIZ: 2.82E-19
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 497069.32 Hz 
+Energy loss per turn U0 =  .2960749 MV  Effective voltage    Vc = 1.4000000 MV 
+Equilibrium position dz = 20.619465 mm  Momentum compact. alpha = 2.3063E-4
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 992.00000
+Bucket height     dV/P0 =  .0299390     Synchrotron frequency   = 2025.6903 Hz 
+
+  Imag.tune:-0.0000000           0.0000000          -0.0000000
+  Real tune:-0.4199659          -0.3799558          -0.0040753
+
+    Damping per one revolution:
+          X : -7.720987E-05   Y : -4.932836E-05   Z : -7.082902E-05
+    Damping time (sec):
+          X :  2.605615E-02   Y :  4.078368E-02   Z :  2.840349E-02
+    Tune shift due to radiation:
+          X :  6.986348E-07   Y : -2.236621E-06   Z :  1.350947E-10
+    Damping partition number:
+          X :    1.5648       Y :    0.9997       Z :    1.4355
+
+Emittance X            = 1.5494E-10 m   Emittance Y            = 6.3306E-30 m
+Emittance Z            = 2.62131E-6 m   Energy spread          = 6.94695E-4
+Bunch Length           = 3.77333263 mm  Beam tilt              = 5.8948E-13 rad
+Beam size xi           =  .04093026 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =   .0000000 min
+
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   603.120
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.283185    
+ RF VOLTAGE (kV)            =    1400.000    
+ HARMONIC NUMBER            =   992.
+ RF FREQUENCY (MHz)         =   493.0928
+
+ RADIATION INTEGRALS  
+   I1X =   0.1399118        I1Y =    0.000000    
+   I2  =   0.2596187    
+   I3  =   1.3616669E-02
+   I4U =  -0.1417873        I4V =    0.000000    
+   I5U =   4.5706250E-06    I5V =    0.000000    
+
+ NU-X-  = 47.58003    NU-Y- = 17.62004
+ MOMENTUM COMPACTION FAC X  =   2.3198E-04
+ MOMENTUM COMPACTION FAC Y  =    0.000    
+ ENERGY LOSS PER TURN (kV)  =    296.1    
+ DU=1-I4U/I2                =   1.54613671
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    26.37    
+                TAUV (msec) =    40.77    
+                TAUE (msec) =    28.04    
+ ENERGY SPREAD (SIG) DE/E   =   6.9027E-04
+            EMITTANCE U     =   1.5039E-10
+            EMITTANCE V     =    0.000    
+
+ NU-S                       =     0.004087
+ BUCKET HIGHT   DEMAX/E     =     0.029851
+ NATURAL BUNCH LENGTH (mm)  =     3.760659
+ Q.LIFE IS TOO LONG      XI =   9.3512D+02
+
+ LINEAR CHROMATICITY GX     =   -33.763129
+ LINEAR CHROMATICITY GY     =   -23.592236
+R3 RFSW off
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.39E-14 $$$       f BX    #######  #   4.643203 $$$       f NX    #######  #  47.580034
+$$$       f AY    #######  #  -1.13E-14 $$$       f BY    #######  #   6.231611 $$$       f NY    #######  #  17.620044
+$$$       f LENG  #######  #  603.12000
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   603.120
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.283185    
+ RF VOLTAGE (kV)            =    1400.000    
+ HARMONIC NUMBER            =   992.
+ RF FREQUENCY (MHz)         =   493.0928
+
+ RADIATION INTEGRALS  
+   I1X =   0.1399118        I1Y =    0.000000    
+   I2  =   0.2596187    
+   I3  =   1.3616669E-02
+   I4U =  -0.1417873        I4V =    0.000000    
+   I5U =   4.5706250E-06    I5V =    0.000000    
+
+ NU-X-  = 47.58003    NU-Y- = 17.62004
+ MOMENTUM COMPACTION FAC X  =   2.3198E-04
+ MOMENTUM COMPACTION FAC Y  =    0.000    
+ ENERGY LOSS PER TURN (kV)  =    296.1    
+ DU=1-I4U/I2                =   1.54613671
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    26.37    
+                TAUV (msec) =    40.77    
+                TAUE (msec) =    28.04    
+ ENERGY SPREAD (SIG) DE/E   =   6.9027E-04
+            EMITTANCE U     =   1.5039E-10
+            EMITTANCE V     =    0.000    
+
+ NU-S                       =     0.004087
+ BUCKET HIGHT   DEMAX/E     =     0.029851
+ NATURAL BUNCH LENGTH (mm)  =     3.760659
+ Q.LIFE IS TOO LONG      XI =   9.3512D+02
+
+ LINEAR CHROMATICITY GX     =   -33.763129
+ LINEAR CHROMATICITY GY     =   -23.592236
+R4 coupled: DY QDA2 2e-6, ROTATE QFA4 BID3H 5e-4
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  3.4067E-7 $$$       f BX    #######  #   4.642908 $$$       f NX    #######  #  47.579915
+$$$       f AY    #######  #  -2.536E-7 $$$       f BY    #######  #   6.231918 $$$       f NY    #######  #  17.619969
+$$$       f LENG  #######  #  603.12000
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   603.120
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.283186    
+ RF VOLTAGE (kV)            =    1400.000    
+ HARMONIC NUMBER            =   992.
+ RF FREQUENCY (MHz)         =   493.0928
+
+ RADIATION INTEGRALS  
+   I1X =   0.1399120        I1Y =  -1.2777379E-06
+   I2  =   0.2596191    
+   I3  =   1.3616669E-02
+   I4U =  -0.1407016        I4V =  -9.2371025E-03
+   I5U =   4.5709989E-06    I5V =   1.1296208E-09
+
+ NU-X-  = 47.57991    NU-Y- = 17.61997
+ MOMENTUM COMPACTION FAC X  =   2.3198E-04
+ MOMENTUM COMPACTION FAC Y  =  -2.1185E-09
+ ENERGY LOSS PER TURN (kV)  =    296.1    
+ DU=1-I4U/I2                =   1.54195403
+ DV=1-I4V/I2                =   1.03557944
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    26.44    
+                TAUV (msec) =    39.37    
+                TAUE (msec) =    28.66    
+ ENERGY SPREAD (SIG) DE/E   =   6.9784E-04
+            EMITTANCE U     =   1.5081E-10
+            EMITTANCE V     =   5.5492E-14
+
+ NU-S                       =     0.004087
+ BUCKET HIGHT   DEMAX/E     =     0.029852
+ NATURAL BUNCH LENGTH (mm)  =     3.801918
+ Q.LIFE IS TOO LONG      XI =   9.1494D+02
+
+ LINEAR CHROMATICITY GX     =   -33.762921
+ LINEAR CHROMATICITY GY     =   -23.592550
+R5 DP0=0.003
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00300  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.0620E-9 $$$       f BX    #######  #   5.002592 $$$       f NX    #######  #  47.581477
+$$$       f AY    #######  #  -8.45E-10 $$$       f BY    #######  #   5.941366 $$$       f NY    #######  #  17.621065
+$$$       f LENG  #######  #  603.12000
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.003
+ TOTAL LENGTH (m)           =   603.120
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.306342    
+ RF VOLTAGE (kV)            =    1400.000    
+ HARMONIC NUMBER            =   992.
+ RF FREQUENCY (MHz)         =   493.0928
+
+ RADIATION INTEGRALS  
+   I1X =   0.1404808        I1Y =  -1.6549819E-21
+   I2  =   0.2596407    
+   I3  =   1.3616683E-02
+   I4U =  -0.1333631        I4V =  -2.2109118E-11
+   I5U =   4.5040100E-06    I5V =   1.5622113E-23
+
+ NU-X-  = 47.58148    NU-Y- = 17.62106
+ MOMENTUM COMPACTION FAC X  =   2.3292E-04
+ MOMENTUM COMPACTION FAC Y  =  -2.7440E-24
+ ENERGY LOSS PER TURN (kV)  =    296.1    
+ DU=1-I4U/I2                =   1.51364469
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    26.93    
+                TAUV (msec) =    40.77    
+                TAUE (msec) =    27.43    
+ ENERGY SPREAD (SIG) DE/E   =   6.8265E-04
+            EMITTANCE U     =   1.5136E-10
+            EMITTANCE V     =   7.9467E-28
+
+ NU-S                       =     0.004096
+ BUCKET HIGHT   DEMAX/E     =     0.029790
+ NATURAL BUNCH LENGTH (mm)  =     3.726735
+ Q.LIFE IS TOO LONG      XI =   9.5220D+02
+
+ LINEAR CHROMATICITY GX     =   -34.140260
+ LINEAR CHROMATICITY GY     =   -23.433014
+R6 DP0=0 DX QFA4 1e-4
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  1.1461E-4 $$$       f BX    #######  #   4.502269 $$$       f NX    #######  #  47.510758
+$$$       f AY    #######  #  -1.255E-5 $$$       f BY    #######  #   6.217073 $$$       f NY    #######  #  17.604470
+$$$       f LENG  #######  #  603.12000
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     3.000
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   603.120
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.281169    
+ RF VOLTAGE (kV)            =    1400.000    
+ HARMONIC NUMBER            =   992.
+ RF FREQUENCY (MHz)         =   493.0928
+
+ RADIATION INTEGRALS  
+   I1X =   0.1403092        I1Y =  -1.7597860E-26
+   I2  =   0.2597142    
+   I3  =   1.3616836E-02
+   I4U =  -0.1363255        I4V =   8.3093542E-15
+   I5U =   4.5681804E-06    I5V =   1.1151799E-28
+
+ NU-X-  = 47.51076    NU-Y- = 17.60447
+ MOMENTUM COMPACTION FAC X  =   2.3264E-04
+ MOMENTUM COMPACTION FAC Y  =  -2.9178E-29
+ ENERGY LOSS PER TURN (kV)  =    296.2    
+ DU=1-I4U/I2                =   1.52490570
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    26.73    
+                TAUV (msec) =    40.75    
+                TAUE (msec) =    27.63    
+ ENERGY SPREAD (SIG) DE/E   =   6.8516E-04
+            EMITTANCE U     =   1.5234E-10
+            EMITTANCE V     =   5.6711E-33
+
+ NU-S                       =     0.004093
+ BUCKET HIGHT   DEMAX/E     =     0.029807
+ NATURAL BUNCH LENGTH (mm)  =     3.738164
+ Q.LIFE IS TOO LONG      XI =   9.4628D+02
+
+ LINEAR CHROMATICITY GX     =   -33.627057
+ LINEAR CHROMATICITY GY     =   -23.502336

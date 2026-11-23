@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>elem_SOL</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: elem_SOL.md</div>
+<h1 id="elem_sol">elem_SOL</h1>
+<p>種別: 要素 / フォルダ: 07_spin_solenoid_special / ラティス: <code>00_lattice/sol_ring.sad</code> (新規。<code>FODO_ring.sad</code> の 1 セル目の D1 (1 m) をソレノイド領域 <code>SA</code> ... <code>SB</code> にした <code>RINGS</code>。BZ=5 T)。3 GeV / フラグ: <code>NORFSW NORAD NOFLUC</code>。参考: <code>docs/17_sol.md</code></p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>SOL は「ソレノイド領域の境界」を表す長さ 0 の要素で、<code>BOUND=1</code> の SOL を対にして置く。最初の SOL から次の BOUND≠0 の SOL までが領域で、領域の中は縦磁場 $B_z$ で運動する。1 つの領域 (<code>DRIFT</code> だけ) を通る 4×4 行列を追跡で求め、ソレノイドの伝達行列 (結合) の解析式と照合する。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>SOL SA = (L=0 BZ=5 BOUND=1 GEO=1) SB = (L=0 BZ=0 BOUND=1);
+LINE CELLS = (SF DS QF D2 B D2 QD DS SD SA D1 SB);
+LINE RINGS = (ORIGIN RF CELLS 23*CELL);
+USE RINGS; CELL; CALC;                       ! 結合したリングのチューン
+beam = (x, px, y, py をそれぞれ a=1e-6 にした 4 粒子);
+r = TrackParticles[{pa, beam}, pb+1, 1, 1];   ! SA の位置から SB の次まで (領域を 1 回)
+</code></pre>
+<ul>
+<li><code>GEO=1</code> は対の片方 (<code>SA</code>) だけに付ける。両方に付けると K64 は <code>Duplicated GEO of Solenoid</code> を出して領域を扱わない。付けないと S 座標が途切れて周長を使う量が狂う (K64 の癖、docs/17 §5.2)。</li>
+<li><code>L=0</code> にする (領域の長さは中の DRIFT・QUAD の長さの和)。領域内に置けるのは DRIFT と QUAD、領域内の SOL (BOUND=0) まで。</li>
+<li>この例は領域の中に四極を置かない。SOL 内の四極 (<code>tsolqu</code>) に <code>RAD</code> を組み合わせると、gs の結果は粒子の並びに依存する癖があり (docs/17 §5.2、pysad は再現しているが gs の現行ビルドと参照の保存値が食い違うことがある)、避けた。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<ul>
+<li><code>SA position=12 SB position=14 MOMENTUM=3e9</code></li>
+<li><code>with solenoid</code>: 領域のあるリングの <code>NX=6.69418751 NY=4.97467992</code>。ソレノイドなしは (6.696329, 4.906056)。結合のため、チューンの小数部が変わる。</li>
+<li><code>M[i,j]</code>: 領域の 4×4 行列の行 $i$ (列 $j$ は $x,p_x,y,p_y$ に $a$ を与えた粒子の応答)。</li>
+</ul>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>一様な縦磁場 $B_z$ (長さ $L$) の中の運動 (力学的運動量 $p_x,p_y$ で、領域の外は磁場なし。端のフリンジ込み)。$K=B_z/(2B\rho)$、$B\rho=p/e=10.0069$ T·m (3 GeV/c)、$C=\cos KL$、$S=\sin KL$:</p>
+<p>$$M=\begin{pmatrix}C^2&amp;SC/K&amp;SC&amp;S^2/K\-KSC&amp;C^2&amp;-KS^2&amp;SC\-SC&amp;-S^2/K&amp;C^2&amp;SC/K\KS^2&amp;-SC&amp;-KSC&amp;C^2\end{pmatrix}$$</p>
+<p>($x$ と $y$ の結合は $\pm SC$、$S^2$ の項)。$B_z=5$ T では $K=0.249827$ m$^{-1}$、$KL=0.249827$:</p>
+<table>
+<thead>
+<tr>
+<th>要素</th>
+<th>式</th>
+<th>gs = pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$M_{11}=M_{33}=M_{22}=M_{44}$ ($C^2$)</td>
+<td>0.93887417</td>
+<td>0.93887417</td>
+</tr>
+<tr>
+<td>$M_{12}=M_{34}$ ($SC/K$)</td>
+<td>0.95890728</td>
+<td>0.95890728</td>
+</tr>
+<tr>
+<td>$M_{13}=-M_{31}$ ($SC$)、$M_{24}$、$-M_{42}$</td>
+<td>0.23956098</td>
+<td>0.23956098</td>
+</tr>
+<tr>
+<td>$M_{14}=-M_{32}$ ($S^2/K$)</td>
+<td>0.24467258</td>
+<td>0.24467258</td>
+</tr>
+<tr>
+<td>$M_{21}=M_{43}$ ($-KSC$)</td>
+<td>−0.05984881</td>
+<td>−0.05984881</td>
+</tr>
+<tr>
+<td>$M_{23}=-M_{41}$ ($-KS^2$)</td>
+<td>−0.01527089</td>
+<td>−0.01527089</td>
+</tr>
+</tbody>
+</table>
+<p>16 要素すべてが 8 桁で一致する (gs と pysad は印字桁まで同じ、式 (Python) とも 8 桁一致)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>○ 一致。全 7 行が印字桁まで同じ (チューン、4×4 行列の 16 要素)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>領域は DRIFT だけ (BZ=5 T、L=1 m、3 GeV)。BEND・MULT・CAVI が領域内にあるリングと DX・DY・CHI のずれたソレノイドは、v2 が対応している (B69・B80 と「ずれて傾いたソレノイド」。追跡・CALC・Emittance[]・EMIT。bz = 0.3〜3 1/m で確認)。ただしこの例では使っておらず、gs との比較もしていない (gs は領域内の BEND の偏向をほぼ無視し、領域内の四極 + RAD も保存値と食い違う: B68・B69)。BOUND=0 で BZ≠0 の SOL は未確認。</li>
+<li>結合したリングのチューン (6.69418751, 4.97467992) は、解析式で確認していない (gs と pysad の一致のみ)。</li>
+<li>RAD ON の領域内の四極、放射とスピン (POL) の組み合わせは見ていない。</li>
+<li>SOL を含む CALC6D と RADCOD つき CALC は pysad で拒否される (docs/17)。v2 での扱いは未確認。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

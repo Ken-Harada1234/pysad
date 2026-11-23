@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>calc_respx (PF): 軌道応答行列と解析式</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: calc_respx_PF.md</div>
+<h1 id="calc_respx-pf-軌道応答行列と解析式">calc_respx (PF): 軌道応答行列と解析式</h1>
+<p>種別: スクリプト (サンプル集 calc_respx.sad と calc_resp_analy.sad を一つにした)。加速器: PF 2.5 GeV リング (<code>lattice/v9_16_asym.sad</code>、周長 187.035 m、チューン 9.5975 / 5.2790)。フラグ: <code>ON RAD FLUC COD RFSW RADCOD</code> (RFSW は例の中で切り替える)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>ステアリングに蹴り角 K0 を与え、<code>cell calc</code> で閉軌道を求め、ビーム位置モニター (<code>PM*</code>、65 台) の位置 <code>Twiss["DX","PM*"]</code> を読む (calc_respx)。同じ量を解析式
+$$\frac{x_i}{\theta_j} = \frac{\sqrt{\beta_i\beta_j}}{2\sin\pi\nu}\cos\bigl(\pi\nu-|\phi_i-\phi_j|\bigr)$$
+で計算し (calc_resp_analy)、比べる。蹴り角は偏向磁石 <code>B*</code> の K0 (28 台)、ここでは B16・B25・B07 の 3 台に 1e-5 rad (10 μrad) を与えた (チュートリアルの <code>bkick</code> は電流から換算した値)。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>dtnx = LINE[&quot;NAME&quot;,&quot;B*&quot;];                      ! 28 台の偏向磁石の名前
+LINE[&quot;K0&quot;, dtnx[j]] = kick;  FFS[&quot;cell calc;&quot;];  sx = Twiss[&quot;DX&quot;,&quot;PM*&quot;];
+LINE[&quot;K0&quot;, dtnx[j]] = 0;                        ! 戻す
+an = -kick*0.5*Sqrt[bpm[i]*bb]*Cos[tunex*Pi - Abs[ppm[i]-pb2]]/Sin[tunex*Pi];   ! 解析式 (SAD の符号)
+</code></pre>
+<p><code>bb</code>・<code>pb2</code> は蹴った磁石の中央 (<code>LINE["POSITION",名前]+0.5</code>) の βx と位相 (チュートリアルは入口の値)。<code>bpm</code>・<code>ppm</code> はモニターの βx と位相 (<code>Twiss["NX",...]</code> は 2π で割る前の位相)。
+<code>FFS["OFF RFSW"]</code> で RF を切った場合と <code>ON RFSW</code> の場合を回す。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<ul>
+<li><strong>SAD では K0 &gt; 0 の蹴りで DX は負</strong>になるので、解析式に -1 を掛けた。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>蹴った磁石</th>
+<th>PM#1 の DX (SAD)</th>
+<th>解析式</th>
+<th>max abs DX</th>
+<th>rms (SAD - 解析式)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>B16</td>
+<td>-9.5809 μm</td>
+<td>-9.6028 μm</td>
+<td>26.25 μm</td>
+<td>0.0211 μm</td>
+</tr>
+<tr>
+<td>B25</td>
+<td>+10.6160 μm</td>
+<td>+10.6382 μm</td>
+<td>34.52 μm</td>
+<td>0.0259 μm</td>
+</tr>
+<tr>
+<td>B07</td>
+<td>+23.7395 μm</td>
+<td>+23.7906 μm</td>
+<td>30.76 μm</td>
+<td>0.0270 μm</td>
+</tr>
+</tbody>
+</table>
+<p>(65 台すべての rms。最大軌道変位の 0.08% 以内で解析式と一致する。)</p>
+<ul>
+<li>RFSW を ON にしても OFF と相対 4e-8 しか違わない (B16 の max abs DX は 26.2514467 → 26.2514476 μm)。10 μrad の蹴りでは、周長変化によるエネルギーのずれ (分散項) は見えない。</li>
+</ul>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>上の式。ν は小数部を含めた全チューン (9.5975)。表の「解析式」は、蹴った磁石の中央の β と位相を使った薄い蹴りの近似。位置は PM (モニター) の点。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 モードと k64 モード</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (<code>docs/28_v2_vs_k64.md</code>。主に <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 B75 と <code>MomentumCompaction</code> B77)、この例の出力のうち <code>Emittance[]</code> の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>○ 全 3 磁石 × 2 モードで全桁一致 (DX は 9 桁、max |DX| は 10 桁)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>蹴りは 3 台だけ (28 台全部の応答行列は作っていない)。垂直方向 (<code>calc_respy</code>) は作っていない。</li>
+<li>解析式は分散項 (周長変化) を含まない。RF ON でも差が出なかったので、この大きさの蹴りでは見えていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

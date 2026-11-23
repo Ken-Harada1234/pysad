@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>元のスクリプトとの対応</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#ユーザーの指定と実際のファイル名の違い">ユーザーの指定と実際のファイル名の違い</a></li>
+<li><a href="#ラティスモジュール">ラティス・モジュール</a></li>
+<li><a href="#設計マッチング-design">設計・マッチング (design/)</a></li>
+<li><a href="#パラメータ表示-display">パラメータ表示 (display/)</a></li>
+<li><a href="#誤差補正-errors">誤差・補正 (errors/)</a></li>
+<li><a href="#取り込まなかった元のスクリプト">取り込まなかった元のスクリプト</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: ORIGINAL_MAP.md</div>
+<h1 id="元のスクリプトとの対応">元のスクリプトとの対応</h1>
+<p>新しい名前 ← 元のファイル名 (元のフォルダは読むだけで、書き換えていない)、変更点、元の <code>NPARA</code> (並列数。例は 8 以下に直した)。元のスクリプトはファイル名に拡張子の無いものが多く、<code>USE</code> するライン名やモジュール名、要素の名前が版ごとに違う。ベースは設計版 <code>v03_68</code>。</p>
+<h2 id="ユーザーの指定と実際のファイル名の違い">ユーザーの指定と実際のファイル名の違い</h2>
+<table>
+<thead>
+<tr>
+<th>ユーザーの指定</th>
+<th>実際のファイル</th>
+<th>判断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>matching_02_geo</code> (入射セルを含めてリングを閉じる)</td>
+<td><code>matching2_02_geo</code> (ほかに <code>matching16_geo</code>・<code>matching20_geo</code>。20_geo は <code>RINGI</code> を使う同じ内容)</td>
+<td>ファイル名の誤り (<code>matching2_</code>)。→ <code>design/KEKLS_match_ring_geo</code></td>
+</tr>
+<tr>
+<td><code>matching23_v03_35_mini</code> (ノーマルセルのチューンサーベイ)</td>
+<td><code>matching23_v03_35_mini</code> は全体を一様に縮小する台本。チューンサーベイではない</td>
+<td>ノーマルセルのチューンサーベイは、ファイルの中身を読んで判断した: <code>modules_tune_sv_v03_68.n</code> (<code>InitMag</code>・<code>MatchingARCA</code>・<code>ChromCor</code> を持つ v03_68 用のモジュール) と、それを (v03_35 版 <code>modules_tune_sv_v03_35.n</code> の名前で) 使う <code>matching05</code> 系 (<code>matching05</code>・<code>_2</code>・<code>_3</code>・<code>_46</code>・<code>_46.5</code>・<code>_47</code>・<code>_47.5</code>・<code>_48</code>・<code>_48.5</code>・<code>_5</code>・<code>_6</code>・<code>_7</code>。セルのチューンを tunex, tuney の格子で振り、<code>MatchingARCA</code> → <code>ChromCor</code> → <code>DAsv</code> を行う)。→ <code>design/KEKLS_tune_survey_cell</code>。<code>modules_tune_sv_v03_68.n</code> を読み込む台本は元のフォルダに無い。<code>tune_survey*</code> (<code>tune_survey</code>・<code>_amp_dep_coef</code>(1〜3)・<code>_disp</code>・<code>_linear</code>・<code>_linear_from_zero</code>・<code>_momentum</code>・<code>_ncell</code>・<code>_write_QS</code>) は、別のリング (6 極 S1L・S2L…、チューン 15.x/5.x、<code>hsx_value.csv</code>) 用の <code>modules_tune_sv.n</code> を使い、v03_68 には適用できない</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ラティスモジュール">ラティス・モジュール</h2>
+<table>
+<thead>
+<tr>
+<th>新しい名前</th>
+<th>元</th>
+<th>変更点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lattice/kek_ls_v03_68.sad</code></td>
+<td><code>v03_68</code> (7127 B)</td>
+<td>先頭の 1 行 (<code>! 3.0 GEV RING, 20 CELLS</code>) をヘッダ (KEK-LS の説明、エネルギー・周長・セル数・ライン・チューン・εx) に替えた。改行を LF に。要素・ラインの定義は変えていない (先頭の 1 行以外が一致することを確認)</td>
+</tr>
+<tr>
+<td><code>modules/modules_general.n</code></td>
+<td><code>modules_general.n</code></td>
+<td><code>WriteGraphs[]</code> (<code>draw</code> コマンド) と使われない <code>GetA[]</code> を除いた。<code>DAsv[]</code> の中身は元のまま、追跡の周回数を変数 <code>DAturns</code> (既定 5000) にした</td>
+</tr>
+<tr>
+<td><code>modules/modules_amp_dep_ts.n</code></td>
+<td><code>modules_amp_dep_ts.n</code></td>
+<td>コメントアウトされた旧い行を除いた。式・順序は元のまま。<code>ResetInit[]</code> を追加 (失敗した点の初期座標が次の点に残るのを防ぐ)</td>
+</tr>
+<tr>
+<td><code>modules/modules_cell_match.n</code></td>
+<td><code>modules_tune_sv_v03_68.n</code> の <code>InitMag</code>・<code>MatchingARCA</code>・<code>MatchingARCA2</code>・<code>ChromCor</code></td>
+<td>v03_68 に合わせて直した (目標値、<code>MKSFA2</code> → <code>MKSFA1.2</code>、6 極 <code>SDA</code>・<code>SFA</code> → <code>SDH</code>・<code>SFH</code>、<code>BPI6/7</code> → <code>BPI6H/7H</code>)。<code>Chrom[]</code>・<code>GetKQ[]</code>・<code>PutKQ[]</code> を追加。元の <code>DAsv[]</code> は modules_general の <code>DAsv[]</code> とほぼ同じなので取り込まない</td>
+</tr>
+<tr>
+<td><code>modules/modules_errors.n</code></td>
+<td>(correct_cod.sad・print_*.sad の誤差を与える部分)</td>
+<td><code>SetErrors[]</code>・<code>ClearErrors[]</code>・<code>GetMagnetNames[]</code> にまとめた。位置ずれは <code>DELX</code>・<code>DELY</code> コマンドではなく成分ごとの <code>LINE["DX"/"DY"]</code></td>
+</tr>
+<tr>
+<td>(取り込まない)</td>
+<td><code>modules_matching_noID.n</code>・<code>modules_write_correctdata.n</code>・<code>modules_correctoptics.n</code>・<code>modules_correctoptics_pf.n</code>・<code>modules_tune_sv.n</code>・<code>modules_tune_sv_v03_35.n</code>・<code>drawmagvw3d.n</code> (元のフォルダに無い)</td>
+<td>ID 入りラティス・別のリング・PF・v03_35 用、または描画。<code>correct_cod.sad</code> は <code>modules_correctoptics.n</code>・<code>modules_write_correctdata.n</code> を読み込まない</td>
+</tr>
+</tbody>
+</table>
+<h2 id="設計マッチング-design">設計・マッチング (<code>design/</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>新しい名前</th>
+<th>元</th>
+<th>元の NPARA</th>
+<th>変更点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KEKLS_match_cell_tune</code></td>
+<td><code>matching2_01</code> 前半</td>
+<td>32 → 16</td>
+<td><code>Get["modules_general.n"]</code>・<code>datafile</code>・描画・コメントの試行を除く。EMITX の FitFunction を除く。<code>free BPI6/7</code> は元の挙動 (効かない) を既定に残し <code>freebend</code> を足した。DAsv は含めない</td>
+</tr>
+<tr>
+<td><code>KEKLS_match_chrom</code></td>
+<td><code>matching2_01</code> 後半</td>
+<td>(同上)</td>
+<td>前半から独立に、設計値の RINGC から始める。元の最後の <code>Print[...resx...]</code> は記号のまま出ていたので、ξ の差分表示に置き換えた</td>
+</tr>
+<tr>
+<td><code>KEKLS_match_injcell</code></td>
+<td><code>matching2_03_INJ</code></td>
+<td>16</td>
+<td><code>WriteGraphs[]</code> を除く。50 回の繰り返し → 2 回。K1 を 1.2 倍にして始める手順を足した</td>
+</tr>
+<tr>
+<td><code>KEKLS_match_ring_geo</code></td>
+<td><code>matching2_02_geo</code> (<code>matching20_geo</code>)</td>
+<td>64</td>
+<td><code>RINGI</code> → <code>RING</code>。始めを 2.94 m にする手順を足した</td>
+</tr>
+<tr>
+<td><code>KEKLS_scale_mini</code></td>
+<td><code>matching23_v03_35_mini</code></td>
+<td>8</td>
+<td>v03_35 → v03_68 の名前、MKSFA1/2 → MKSFA1.1/.2、<code>free BPI6/7</code> → <code>BPI6H/7H</code>、factor の刻み 0.1、datas.txt への書き出しを除く</td>
+</tr>
+<tr>
+<td><code>KEKLS_scale_ncell</code></td>
+<td><code>matching21_v03_35</code> (<code>matching21</code>・<code>matching22</code>・<code>matching21_v03_35_fix</code>)</td>
+<td>8</td>
+<td>v03_35 → v03_68 の名前、FitFunction (EMITX、<code>1^-9</code>) → <code>fit NX/NY</code>、j セルのリング <code>RINGJ..</code> を定義して εx を出す、j = 20,18,16,12,10</td>
+</tr>
+<tr>
+<td><code>KEKLS_tune_survey_cell</code></td>
+<td><code>matching05</code> 系 + <code>modules_tune_sv_v03_68.n</code></td>
+<td>8</td>
+<td>モジュールは <code>modules/modules_cell_match.n</code> へ。格子 6×30 → 5×5。DA (5000 周) と <code>SAVE ALL</code>・<code>datas_46.txt</code> への書き出しを除く。RING → RINGC</td>
+</tr>
+<tr>
+<td><code>KEKLS_match_repeat</code></td>
+<td>(新規)</td>
+<td>8</td>
+<td>再現性の診断</td>
+</tr>
+</tbody>
+</table>
+<h2 id="パラメータ表示-display">パラメータ表示 (<code>display/</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>新しい名前</th>
+<th>元</th>
+<th>元の NPARA</th>
+<th>変更点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KEKLS_ring_params</code></td>
+<td><code>calc_emit.sad</code> 前半・<code>disp</code>・<code>disp_emit</code>・<code>chromaticity_plot.sad</code></td>
+<td>64 (<code>disp</code> は 20 をコメント)</td>
+<td>emit の表と ξ を RINGC・RING で出す。<code>TkWait</code>・<code>WriteGraphs</code>・<code>datas.txt</code> を除く</td>
+</tr>
+<tr>
+<td><code>KEKLS_optics_table</code></td>
+<td><code>disp_optics</code>・<code>disp</code> (+ <code>draw_cad.sad</code> の入力)</td>
+<td>64</td>
+<td>要素ごとの表と <code>disp geo $$$</code>。<code>draw_cad.sad</code> (<code>ring.vss</code>、<code>drawmagvw3d.n</code> が元のフォルダに無い) は取り込まない</td>
+</tr>
+<tr>
+<td><code>KEKLS_calc_H</code></td>
+<td><code>calc_H.sad</code> (<code>calc_H_2.sad</code>・<code>calc_emit.sad</code> 後半)</td>
+<td>64</td>
+<td>γ を MOMENTUM から、Cq を m に、<code>DP</code> の上書きを <code>DJ</code> に</td>
+</tr>
+<tr>
+<td><code>KEKLS_chromaticity</code></td>
+<td><code>chromaticity_plot.sad</code> (<code>amp_dep_ts_dp.sad</code>)</td>
+<td>64</td>
+<td>δ の刻み 0.5%、毎回の <code>DP0 = 0; cell calc</code> を省く、RINGC</td>
+</tr>
+<tr>
+<td><code>KEKLS_amp_dep_ts</code></td>
+<td><code>amp_dep_ts.sad</code>・<code>amp_dep_ts_x.sad</code>・<code>amp_dep_ts_y.sad</code></td>
+<td>64</td>
+<td>x・y の 2 本の表に、振幅の範囲を有効な範囲に、<code>ResetInit[]</code>、RINGC。後半の DAsv・旧い試行は除く</td>
+</tr>
+<tr>
+<td><code>KEKLS_sextupole_tune_scan</code></td>
+<td><code>dp_sv_sx.sad</code> (<code>dp_sv_sx_dp_n0.03</code>・<code>_res</code>・<code>_v02_42</code> 系)</td>
+<td>8</td>
+<td>6 極を SDH・SFH の 2 本に、基準を設計値に、5×5</td>
+</tr>
+<tr>
+<td><code>KEKLS_scan_target</code></td>
+<td><code>dp_sv.sad</code>・<code>dx_sv.sad</code>・<code>dx_sv_{ay,by,ex}.sad</code>・<code>dy_sv.sad</code>・<code>dy_sv_{ay,by,ex}.sad</code></td>
+<td>8</td>
+<td>v02 の K1 の直接代入 → <code>InitMag[]</code>・<code>MatchingARCA[]</code>、AY・BY・EX を 3 点ずつ、RINGC</td>
+</tr>
+</tbody>
+</table>
+<h2 id="誤差補正-errors">誤差・補正 (<code>errors/</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>新しい名前</th>
+<th>元</th>
+<th>元の NPARA</th>
+<th>変更点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>KEKLS_errors_cod</code></td>
+<td><code>print_all_error.sad</code>・<code>print_dk_effect.sad</code>・<code>print_dt_error.sad</code>・<code>print_cod_magnitude.sad</code></td>
+<td>8</td>
+<td>誤差の種類ごとに表示、種 3 個。<code>DELX/DELY</code> → 成分ごとの <code>DX/DY</code></td>
+</tr>
+<tr>
+<td><code>KEKLS_correct_cod</code></td>
+<td><code>correct_cod.sad</code> (<code>_best</code>・<code>_worst</code>・<code>_noSX</code>・<code>_GCUT1</code>・<code>_v03_70</code>)</td>
+<td>64</td>
+<td>種 2 個、補正 6 回、DA は任意。<code>MON ...</code>・<code>s!top;</code> を除く。<code>NOEXPAND</code>。ほかの <code>print_*.sad</code> の表示 (補正後の表など) の一部を統合</td>
+</tr>
+<tr>
+<td><code>KEKLS_cod_response</code></td>
+<td><code>write_cod_response.sad</code></td>
+<td>64</td>
+<td><code>BPM.*</code> → <code>PM.*</code>、書き出しを SAD の COD との照合に</td>
+</tr>
+</tbody>
+</table>
+<h2 id="取り込まなかった元のスクリプト">取り込まなかった元のスクリプト</h2>
+<p>全部の中身を読んだわけではない (約 290 ファイル。名前と、読んだ範囲から判断した)。</p>
+<ul>
+<li><code>matching</code>・<code>matching01</code>〜<code>matching22</code>・<code>matching_v04_02</code> (ここで読んだのは 05・16_geo・20_geo・21・22・23 とその版違い): 設計の過程の試行。<code>matching05</code> 系は <code>design/KEKLS_tune_survey_cell</code>、<code>matching16_geo</code> は <code>STR</code>・<code>STRNINV</code> の別のライン (v03_68 に無い) を使い、<code>matching20_geo</code> は <code>matching2_02_geo</code> と同じ内容。</li>
+<li><code>disp2</code>・<code>disp_arc_optics</code>・<code>disp_emit</code>・<code>disp_matching_tune</code>・<code>disp_matrix</code>: <code>modules_matching_noID.n</code>・<code>modules_write_correctdata.n</code> (ID 入りラティス用) を読む。</li>
+<li><code>touscheklife.sad</code>・<code>touscheck*</code>: Touschek 寿命 (この例集の範囲外)。</li>
+<li><code>da_xy</code>・<code>phase</code>・<code>test*</code>・<code>NG_script.sad</code>・<code>PF_v9_21_simple</code>・<code>SPring8</code>・<code>cod_pf.sad</code>: 別の用途・別のラティスの台本。</li>
+<li><code>v01_*</code>・<code>v03_01</code>〜<code>v03_72</code> (v03_68 以外)・<code>v04_*</code>・<code>v05_*</code>・<code>v8_07_35nmrad</code>・<code>v03_35_*</code> (セル数や縮小率の変形)・<code>v03_44_*cells</code>・<code>~</code> つきのバックアップ・<code>#...#</code>: ほかの版のラティス。ベースは <code>v03_68</code> だけ。</li>
+<li>版違い・断片の台本: <code>disp_b</code>・<code>disp_bunchlength</code>・<code>disp_eta</code>・<code>disp_NPARA_20/40</code>・<code>calc_H_2</code>・<code>dp_sv_2</code>・<code>dp_sv_R</code>・<code>dp_sv_v2_11</code>・<code>dx_sv_R</code>・<code>dx_sv_v2_11</code>・<code>dy_sv_R</code>・<code>dy_sv_v2_11</code>・<code>amp_dep_ts_{x,y,dp}</code>・<code>dp_sv_sx_res*</code>・<code>dp_sv_sx_v02_42</code>・<code>correct_cod_*</code> (設定違い)・<code>print_*.sad</code> (表示違い)。詳しい理由は各フォルダの README の「取り込んでいないもの」。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

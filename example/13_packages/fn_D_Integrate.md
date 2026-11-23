@@ -28,4 +28,4 @@ Integrate[x^2,x]   Integrate[Sin[x],x]   Integrate[x^2,{x,0,3}]
 - `Integrate[1/x,x]` の表示だけ違う (gs `Integrate[x^-1,x]`、pysad `Integrate[Divide[1,x],x]`、評価されない点は同じ)。
 
 ## 未確認・限界
-`D` の `Derivative`・`ReduceExpression`・特殊関数の微分、`D` の出力の標準形 (docs/34 に「記号式の標準形は gs と同じではない」とある。59 式で一致を確認した範囲外は未確認) は試していない。
+`D` の `Derivative`・`ReduceExpression`・特殊関数の微分、`D` の出力の標準形 (docs/06 に「記号式の標準形は gs と同じではない」とある。59 式で一致を確認した範囲外は未確認) は試していない。

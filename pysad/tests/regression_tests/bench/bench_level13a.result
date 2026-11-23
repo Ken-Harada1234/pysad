@@ -1,0 +1,93 @@
+/mnt/d/work/SAD-master/SAD-master/bin/gs: 7: cd: can't cd to /mnt/d/work/SAD-master/Claude
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-12 12:07:14 +0900 ***
+ *** Today: 20:53:06 Wednesday 10/14/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+! ============================================================
+! bench_level13a.sad — Level 13A: マッチング (FIT/FREE/GO) の小さなリング版
+!   Level 6 のリング (QF/QD, 六極, BEND, 空洞なし)。
+!   (1) NX/NY を QF, QD で合わせる  (2) ORG の BX/BY も加えて QF, QD, QF2 (別ファミリー) で合わせる
+!   GO の反復の表示 (Iterations/Residual/Method) と最終の K1、残差を出す。
+! ============================================================
+ON LOG;
+MOMENTUM= 2.5 GEV;
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF  = (L=0.3 K1= 1.8*0.3)
+      QD  = (L=0.3 K1=-1.7*0.3)
+      QF2 = (L=0.3 K1= 1.8*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL2 = (ORG QF2 DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELLP = (CELL CELL2);
+LINE RING  = (10*CELLP);
+;
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ $FORM="15.10";
+ USE RING;
+Out[1]:= USE
+ CELL;
+ CALC;
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.654735 $$$       f BX    #######  #  17.037700 $$$       f NX    #######  #   7.421023
+$$$       f AY    #######  #    .420675 $$$       f BY    #######  #    .960619 $$$       f NY    #######  #   7.157653
+$$$       f LENG  #######  #  140.00000
+ Print["TUNE0 ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","ORG"], Twiss["BY","ORG"]}];
+TUNE0 {   7.4210230634,   7.1576530904,  17.0376996439,    .9606187796}
+ Print["=== 13A-1: fit NX NY, free QF QD ==="];
+=== 13A-1: fit NX NY, free QF QD ===
+ FIT;
+ fit NX 7.55;
+ fit NY 7.18;
+ free QF QD;
+ go;
+       2        0   1.6776E-06  (NEWTON)    1.000          2
+ Matched. ( 5.0759E-16) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -4.729507 $$$       f BX    #######  #  17.011454 $$$       f NX   7.55      1   7.550000
+$$$       f AY    #######  #    .424380 $$$       f BY    #######  #    .952004 $$$       f NY   7.18      1   7.180000
+$$$       f LENG  #######  #  140.00000
+ Print["K1A ", {LINE["K1","QF"], LINE["K1","QD"], LINE["K1","QF2"]}];
+K1A {    .5493746088,   -.5111584429,    .5400000000}
+ Print["TUNEA ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi}];
+TUNEA {   7.5499999997,   7.1800000036}
+ Print["RESA ", {MatchingResidual, NetResidual, UnstableLevel}];
+RESA { 5.07590922E-16, 5.07590922E-16,    .0000000000}
+ Print["=== 13A-2: fit NX NY and BX/BY at ORG, free QF QD QF2 ==="];
+=== 13A-2: fit NX NY and BX/BY at ORG, free QF QD QF2 ===
+ fix QF QD;
+ FIT;
+ fit NX 7.55;
+ fit NY 7.18;
+ fit ORG BX 17.5;
+ fit ORG BY 1.0;
+ free QF QD QF2;
+ go;
+       2        0   2.6362E-03  (NEWTON)    1.000          3
+ *****qcod---> Overflow & closed orbit not found            1
+ *****qcod---> Overflow & closed orbit not found            2
+ Residual = 2.5977E-03  DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+ORG.1     f BX   17.5      1  17.436251 ORG.1     f BY   1         1    .950523 $$$         AX    #######  #  -4.822664
+$$$         BX    #######  #  17.436251 $$$         NX   7.55      1   7.549997 $$$         AY    #######  #    .422919
+$$$         BY    #######  #    .950523 $$$         NY   7.18      1   7.179507 $$$         LENG  #######  #  140.00000
+ Print["K1B ", {LINE["K1","QF"], LINE["K1","QD"], LINE["K1","QF2"]}];
+K1B {    .5465445160,   -.5111339350,    .5426651388}
+ Print["TWB ", {Twiss["NX","$$$"]/2/Pi, Twiss["NY","$$$"]/2/Pi, Twiss["BX","ORG"], Twiss["BY","ORG"]}];
+TWB {   7.5499966624,   7.1795073165,  17.4362514520,    .9505231603}
+ Print["RESB ", {MatchingResidual, NetResidual, UnstableLevel}];
+RESB {    .0025977284,    .0025977284,    .0000000000}
+ stop;
+ FFS                  end:  CPU time =     0.009 sec
+stop;
+  *** dostop *** Good Bye! ercode =            0

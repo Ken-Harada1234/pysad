@@ -23,7 +23,7 @@ DISP E 1 40;         DISP G 1 8;              DISP GA 1 6;       DISP Z 1 4;
 `GA` の `GMX` = $(1+\alpha_x^2)/\beta_x$: ORIGIN で $(1+2.1663^2)/5.02518=1.13287$ ✓ (表の値)。
 
 ## gs と pysad の比較
-**○ 一致 (2026-11-17 に対応)。** 標準・`R`・`O`・`E`・`G` に加え `GA`・`Z`・`P`・`A`・`B` (`DISP BEAM`、EMIT 後)・`D` (28 光学関数の 1 行ダンプ)・`REFERENCE`・`DREFERENCE` の表を gs と同じ見出し・桁で出す (表の数値は全桁一致。雑音 1e-16 の列だけ pysad は 0 を出す)。`DISP B REFERENCE` は gs と同じ `???-FFS-Info-REF and DREF not implemented for DISP B.`。
+**○ 一致 (2026-11-17 確認)。** 標準・`R`・`O`・`E`・`G` に加え `GA`・`Z`・`P`・`A`・`B` (`DISP BEAM`、EMIT 後)・`D` (28 光学関数の 1 行ダンプ)・`REFERENCE`・`DREFERENCE` の表を gs と同じ見出し・桁で出す (表の数値は全桁一致。雑音 1e-16 の列だけ pysad は 0 を出す)。`DISP B REFERENCE` は gs と同じ `???-FFS-Info-REF and DREF not implemented for DISP B.`。
 
 ## 未確認・限界
 - `DISP B` (ビームサイズ) は EMIT のあと (FFS_BEAMSIZE)、`REFERENCE` モードは FFS_REFERENCE で扱う。66 行ごとの停止の対話 (`ALL` で抑止) は非対話の実行なので確認していない。

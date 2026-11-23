@@ -2,7 +2,7 @@
 """
 PHSROT 要素 (6 次元 Twiss による位相空間の回転、K64 の phsrot.f、K. Ohmi 1994)。v2 だけで動く。
 
-K64 では動作しない (docs/21 B38): phsinit の行列がどんな入力でも 0 になり粒子の座標が 0 になる。位相 PX PY PZ は名前表に
+K64 では動作しない (docs/30 B38): phsinit の行列がどんな入力でも 0 になり粒子の座標が 0 になる。位相 PX PY PZ は名前表に
 未登録で指定できず、dv の更新は未定義の添字 i_p0 を使う。v2 は phsrot.f と matrix.f の式から意図された写像を実装する。
 
   M0 = N · Rot(2π PX, 2π PY, 2π PZ) · N⁻¹           (シンプレクティック)
@@ -85,7 +85,7 @@ def compile_phsrot(el):
     """追跡用: (M0 と減衰つき M、拡散 G) を rad・fluc の組ごとに作っておく"""
     from . import compat
     if not compat.v2():
-        raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/21 B38)。写さない')
+        raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/30 B38)。写さない')
     m0 = matrices(el.params)
     m1 = matrices(el.params, rad=True, fluc=True)
     return (np.ascontiguousarray(m0['M0']), np.ascontiguousarray(m1['M']), np.ascontiguousarray(m1['G']),

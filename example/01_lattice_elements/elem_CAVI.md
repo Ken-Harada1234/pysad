@@ -34,7 +34,7 @@ $$\nu_s=\sqrt{\frac{h\,\alpha_c\,eV\cos\phi_s}{2\pi E}},\qquad h=176,\ E=3\ \tex
 - `PHI` を 0.5 にしても結果が変わらない (最後の行): SAD は放射損失とつり合う平衡位相を自分で決める (SADHelp の `DPHI` の項の ts)。
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 と k64 の違い**: `.pysad.txt` は既定の v2 モードの出力。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は `PYSAD_COMPAT=k64` での結果 (2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 チューン・U0・α は全桁一致。**`TYPE RF` の表示だけ違う**: gs は `HARM =176`、pysad は `FREQ =499654096.67` (HARM を周波数に直した値で表示)。
 

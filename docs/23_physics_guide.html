@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>23. K64 の計算の式 (SAD 物理計算ガイド)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-座標単位キーワード">1. 座標・単位・キーワード</a></li>
+<li><a href="#2-計算の流れ-確認">2. 計算の流れ [確認]</a></li>
+<li><a href="#3-ドリフト">3. ドリフト</a></li>
+<li><a href="#4-四極">4. 四極</a></li>
+<li><a href="#5-曲げ磁石">5. 曲げ磁石</a></li>
+<li><a href="#6-エッジフリンジ">6. エッジ・フリンジ</a></li>
+<li><a href="#7-6-極薄レンズmult">7. 6 極・薄レンズ・MULT</a></li>
+<li><a href="#8-空洞">8. 空洞</a></li>
+<li><a href="#9-閉軌道-qcod-qtwissf810-970-確認">9. 閉軌道 qcod (qtwiss.f:810-970) [確認]</a></li>
+<li><a href="#10-周期解twiss分散結合">10. 周期解・Twiss・分散・結合</a></li>
+<li><a href="#11-放射積分-radint-intgrlf">11. 放射積分 RADINT (INTGRL.f)</a></li>
+<li><a href="#12-6d-エミッタンス-temitf--photonsf">12. 6D エミッタンス (temit.f / photons.f)</a></li>
+<li><a href="#13-粒子追跡と放射-tturnf-photonsf">13. 粒子追跡と放射 (tturn.f, photons.f)</a></li>
+<li><a href="#14-マッチング-tffsmatchf-tffscalcf-qdcellf--詳細は-docs08">14. マッチング (tffsmatch.f, tffscalc.f, qdcell.f) — 詳細は docs/08</a></li>
+<li><a href="#15-dynamicaperturesurvey-trackdf-tapertf--詳細は-docs11">15. DynamicApertureSurvey (trackd.f, tapert.f) — 詳細は docs/11</a></li>
+<li><a href="#16-要素値と誤差の展開">16. 要素値と誤差の展開</a></li>
+<li><a href="#17-解析微分-qdcellf-tffsqu-qdtwisf-qdquadf-qdbendf-qdmdiaf-確認pysad-match6dpy--直訳">17. 解析微分 (qdcell.f tffsqu, qdtwis.f, qdquad.f, qdbend.f, qdmdia.f) [確認、pysad match6d.py = 直訳]</a></li>
+<li><a href="#18-calc6d-の拡張-twiss-qcellf404-qcell6d-tffsf2413-tfetwiss-tturnef775-確認pysad-calc6dpy">18. CALC6D の拡張 Twiss (qcell.f:404 qcell6d, tffs.f:2413 tfetwiss, tturne.f:775) [確認、pysad calc6d.py]</a></li>
+<li><a href="#19-touschek-と-ibs-temitf-tintrbf-packagesemitn-確認pysad-touschekpy">19. Touschek と IBS (temit.f, tintrb.f, Packages/emit.n) [確認、pysad touschek.py]</a></li>
+<li><a href="#20-要素幾何-geo-tfgeof-tgrotf-qtwissf-qfraccomp-確認pysad-geopy">20. 要素幾何 GEO (tfgeo.f, tgrot.f, qtwiss.f qfraccomp) [確認、pysad geo.py]</a></li>
+<li><a href="#21-mult-と-sol-領域の追跡-tmultif-tsolf-tsolquf-pysad-track6n_extpy">21. MULT と SOL 領域の追跡 (tmulti.f, tsol.f, tsolqu.f; pysad track6n_ext.py)</a></li>
+<li><a href="#22-未解析未検証リスト">22. 未解析・未検証リスト</a></li>
+<li><a href="#23-pysad-対応表">23. pysad 対応表</a></li>
+<li><a href="#24-機能別の物理の場所とその他の要素機能への案内">24. 機能別の物理の場所と、その他の要素・機能への案内</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 23_physics_guide.md</div>
+<h1 id="23-k64-の計算の式-sad-物理計算ガイド">23. K64 の計算の式 (SAD 物理計算ガイド)</h1>
+<p>最終更新: 2026-11-23 (現状のスナップショット)</p>
+<p>式中心。SAD = K64 版 (github KatsOide/SAD)、ソースは <code>&lt;SAD&gt;/src</code>、ヘルプは CERN SADHelp。
+詳細・ベンチ結果は docs/07 (CALC)、08 (マッチング)、09 (emit)、10 (追跡)、11 (DA)、29 (癖)、work_*.md を参照。行番号は 2026-10 時点の src/ 以下。
+POL・SOL・WAKE・BEAM-BEAM・CSR・RADLIGHT の式 (物理) は、機能別の文書 (docs/16・17・13・14・15・18) の「物理」の章にある。24 節はその場所の案内。
+凡例: [確認]=ソースを読んだ / [転記]=式は分かるが導出していない / [解釈]=コードからの推論。pysad の欄は 直訳=行単位の移植 / 独自=別実装 / 未=未実装。</p>
+<h2 id="1-座標単位キーワード">1. 座標・単位・キーワード</h2>
+<ul>
+<li>1.1 座標 (x, px, y, py, z, δ)。px, py は p0 で規格化した<strong>正準運動量</strong> (tquade.f:39 のコメント)。ドリフト pzi = sqrt((1+δ)^2 - px^2 - py^2)。追跡の内部だけは px/(1+δ) (tconvm.f、§13)。</li>
+<li>1.2 K1, K2... は<strong>積分強度</strong> (K1*L)。tsolque.f:390 <code>akk=ak/al</code>、tbend.f:60、tffs.f:1316。L=0 の QUAD は K1 が薄レンズ強度 (tquad.f:22)。SEXT 等は tthine.f:31 <code>aki=ak/kord!</code> (§7)。</li>
+<li>1.3 BEND の <strong>E1/E2 は ANGLE との比</strong>: <code>psi1 = E1*ANGLE + AE1</code> (tffs.f:1261)、tbende.f:448、INTGRL.f:91。逆向き要素では E1&lt;-&gt;E2, AE1&lt;-&gt;AE2, FB1&lt;-&gt;FB2 を入れ替える。</li>
+<li>1.4 <code>phib = ANGLE + K0</code> (磁場の曲げ)、<code>phi0 = ANGLE</code> (基準座標)。<code>rhob = al/phib</code>, <code>rho0 = al/phi0</code>, <code>drhob = rhob - rho0</code> (tbende.f:430)。K1≠0 の駆動項 <code>drhop = 1/rho0 - 1/rhoe</code> (rhoe = rhob*p)、p=1 なら -K0/L。</li>
+<li>1.5 キーワード: DISFRIN (内部 FRIN, fringe=(DISFRIN==0))、FRINGE (mfring=nint)、DISRAD (0 で放射)、DISKIN (追跡のドリフトを近軸に)。</li>
+<li>1.6 速度項 [転記] tturne.f:847-867:
+  <code>dvemit = -(p1+p0)/h1/(p0*h1+p1*h0)*dp + dvfs</code>、<code>p1=p0(1+dp)</code>、dvfs=FSHIFT (RFSW のみ)。要素ごとに <code>z -= dvemit*L</code>。(5,6) 成分に <code>h0/h1^3*L</code>。</li>
+<li>1.7 <strong>SAD の <code>sinc(x) = x cos x - sin x</code></strong>、<code>sinhc(x) = x cosh x - sinh x</code> (tfloor.f:369-395、小さい x は級数)。sin x/x ではない。qdbend 等の <code>a12 = rho/phi*sinc(phi)*dphi</code> はこの定義 (§17)。</li>
+<li>1.8 FRINGE/DISFRIN の既定: pysad は FRINGE=0, DISFRIN=0 を仮定する。tqfrie は既定で入り、切るのは DISFRIN=1 (A15)。</li>
+<li>1.9 <strong>MOMENTUM の初期値は 30 GeV</strong> (initb1.f:1698 <code>RsetGL('MOMENTUM',30.d9)</code>)。設定しないスクリプトは 30 GeV で計算される (docs/29 A43)。</li>
+<li>1.10 <strong>周長 (周回周波数 ω0)</strong>: K64 は SOL (BOUND≠0) の長さを周長に入れない。ω0、αp、空洞の位相、偏極時間に効く (docs/29 A42、docs/17)。</li>
+</ul>
+<h2 id="2-計算の流れ-確認">2. 計算の流れ [確認]</h2>
+<pre><code>CALC : tffsa -&gt; tffsmatch -&gt; tffscalc -&gt; qcell1 -&gt; { qcod(qtwiss.f:810) ; qmdiag ; qtwiss(mat=.false.) }   (calc6d なら qcell6d, §18)
+EMIT/Emittance[] : temit.f (tcod -&gt; tturne -&gt; tecalc)        RADINT : tffsa.f:617 -&gt; intgrl (INTGRL.f)
+TrackParticles : tftrack -&gt; tturn -&gt; tturn1 (tturn.f:286-552)      DA : dapert.n -&gt; tfdapert -&gt; trackd -&gt; tturn
+</code></pre>
+<p>要素ルーチンは 3 系統。CALC (qtwiss1、4x5 行列) と 6D (tturne1) は同じ tquade/tbende/tthine を使い、<strong>追跡は別コード</strong> (tquad, tbend, tthin) (A16)。qtwiss1 は IDEAL で要素値 idvalc、通常は各位置の値を読む (qtwiss.f:189)。pqcell/qquad(単体ファイル)/qthin はビルドされない。</p>
+<h2 id="3-ドリフト">3. ドリフト</h2>
+<p>CALC (qtwiss.f:205-224) [確認]: 閉軌道上で線形化。</p>
+<pre><code>pr=1+d; a=px^2+py^2; dpz=-a/pr/(1+sqrt(1-a/pr^2)); pzi=pr+dpz; ale=L/pzi; alz=ale/pzi^2
+a12=ale+px^2 alz  a14=px py alz  a15=-pr px alz  a34=ale+py^2 alz  a35=-pr py alz
+x+=px ale; y+=py ale; z += dpz ale - dvemit L
+</code></pre>
+<p>追跡 tdrift_free (tdrift.f:10): <code>al1=L/(1+dpz)</code>, <code>z += dpz al1 - dv L</code>。DISKIN≠0 で近軸 (tturn.f:296)。
+<strong>薄い多極 tthine の中のドリフトにも dv 項</strong> (<code>tdrife0(dvon=.true.)</code>、<code>z -= L dv(d)</code>、A6): これが抜けると TransferMatrices の (5,6) が6 極 1 台ごとに 1.3e-9 ずれる。</p>
+<h2 id="4-四極">4. 四極</h2>
+<ul>
+<li>tquade (tquade.f:1-82): <code>al=0 -&gt; tthine</code>, <code>ak=0 -&gt; tdrife0</code>, <code>K1 L&lt;0 -&gt; theta-pi/2, ak=-ak</code>。順序: tsolrote (x-=DX, y-=DY, 回転) -&gt; tqfrie -&gt; tqlfre -&gt; tsolque -&gt; 出口を逆順。取付誤差は座標変換で入る (feed-down は自動)。</li>
+<li>tsolque (tsolque.f:380-596): <code>eps=0.1*EPS (EPS=0 なら 0.1)</code>, <code>ndiv=min(1000, 1+int(|al hypot(ak,bz)|/eps))</code>, <code>akk=ak/al</code>。tqente(aln/2) -&gt; {本体 -&gt; tqente(aln)}... -&gt; 本体 -&gt; tqente(aln/2)。
+  本体 (bz=0): <code>x'=x dc1 + px s1/w1, px'=-x w1 s1 + px dc1</code> (y は cosh/sinh)。z 補正は [転記] (tsolque.f:420-425)。
+  <strong>z 行はシンプレクティック条件で組む</strong> (tqfrie, tbendebody0, tsolque; A11):
+  <code>T(5,j) = -T(1,j)T(2,6) + T(2,j)T(1,6) - T(3,j)T(4,6) + T(4,j)T(3,6)</code>。数値微分だけでは一周行列が 6.6e-5 非シンプレクティックになり εy が 2% ずれる。</li>
+<li>追跡 tquad: tsolqu は <code>eps=0.2*EPS</code> (EMIT の 0.1 と違う)、<code>ndiv=1+int(|L hypot(ak,bz)|/eps)</code>。<strong>tsolqur (RAD ON, bz≠0) は最後の粒子の bzp を全粒子の最後の半ステップに使う</strong> (tsolqu.f:268,273,519-531): <code>bzp=bz/(1+d_i)</code> がスライス内の粒子ごとに更新されるのに最終ステップで再計算されない。結果が粒子の並びに依存 (差 ∝ d_i - d_last、Level 9 で SAD 自身が 1.15e-6 変わる)。放射なしの tsolqu は粒子ループ内で完結。</li>
+<li>tsolqum (放射なし MULT) は z の dv 項が違う: tsolqu <code>-0.25(...+ap aln0...) - dv aln0</code>、tsolqum <code>-0.25(...+(ap-dv) aln0...)</code> (tsolqu.f:86,250; A2)。</li>
+<li>pysad: 写像は直訳、CALC の行列は数値 Jacobian (eps=1e-7: 1e-6 だと K1=0 BEND の分岐境界で (1,6) に 5.6e-7)。</li>
+</ul>
+<h2 id="5-曲げ磁石">5. 曲げ磁石</h2>
+<ul>
+<li>tbende の分岐 (tbende.f:390-423): ANGLE=0 かつ K1=0 -&gt; tsteee、K0=0 -&gt; tquade、他 -&gt; tmulte。phib=0 -&gt; tbdrifte。L=0 -&gt; tbthie (<code>cod(2) += (phi0-phib) + d phi0</code>)。通常: tchge -&gt; tblfre(F1) -&gt; tbedge -&gt; 本体 -&gt; tbedge -&gt; tblfre -&gt; tchge。</li>
+<li>K1=0 本体 tbendebody0 (tbende.f:223-317): <code>xf = rhob(sn pxi - cn dpzi - dcn dp + dpzf) + cn xi - dcn drhob</code>、<code>da=asin(..)</code>、<code>zf = z - da p rhob - phi0n (drhob + d rhob)</code>。</li>
+<li>K1≠0 本体 tbendiinit (tbend.f:41):
+  <code>rhosq=rho0 rhoe; drhop=(rhoe-rho0)/rhosq; akxsq=-1/rhosq - akk/p; akysq=akk/p</code>、
+  <code>dxf = dcxkx(drhop + akxsq xi) + sxkx pxi</code>、<code>dpxf = sxkx(drhop + akxsq xi) + dcx pxi</code> (tbende.f:146)。
+  <strong>tbendi (追跡) の <code>rhoe = rhob (1+d)</code> は入口で 1 回だけ決め、放射で d が変わっても更新しない</strong> (module bendib、A5)。</li>
+<li>tbendecorr [転記] (tbende.f:61-121): <code>pxf -= ak1 xf xr (0.5 - xr(2-xr)/12)/p</code>。スライスは [tbendecorr(平均) + tbendebody] 反復、最後に tbendecorr(akx0/2, alx0/2)。</li>
+<li>分割 (tbende.f:453-460): <code>rbc=1-(f1r+f2r)/al0; phic=phi0 rbc; eps=epsbend(1e-3)*EPS; ndiv=1 (K1=0) / 1+int(|phic/eps|)</code>。</li>
+<li>フリンジ長補正 alcorr [転記] (tbende.f:381): <code>al = al0 - ((phi0 fb1)^2+(phi0 fb2)^2)/48/al0 * sin(.5(phi0(1-psi1-psi2)-apsi1-apsi2))/sin(.5 phi0)</code>。同式が pos (LINE["S"]) にも使われる (§20)。</li>
+<li>追跡 tbendcore (tbend.f:372-527): 入口端面・F1・本体・出口端面を閉じた式で 1 ステップ [転記]。K1≠0 は tbendi (§13)。</li>
+<li>ロール誤差 DROTATE は中点まわりの 3 次元回転 (tbrote/tbgrote、LGEO=L/2, ANGLGEO=ANGLE/2; tfgeo.f:212)。回転の向き <code>x'=cos x - sin y</code>。DTHETA は QUAD では ROTATE、BEND では DROTATE。</li>
+<li>pysad: tbende は lattice/emit6d に直訳 (F1・ANGLE=0 分岐は一部)。tmulke の bsir0 と tbendebody の bsi2 は POL のスピンに効く (docs/16)。</li>
+</ul>
+<h2 id="6-エッジフリンジ">6. エッジ・フリンジ</h2>
+<ul>
+<li>tbedge (tbfrie.f:88-125) は fringe/mfring に無関係に常に呼ばれる: 入口 psi≠0: <code>tbedgedrift(psi) -&gt; tbedgemaxwell(rhob) -&gt; tbedgebody(rhob,psi)</code>、出口は逆順 (-rhob)。tbedgemaxwell: <code>af=(1-(y/rhob)^2/6) y/rhob/pvi</code>。</li>
+<li>BEND F1 (tblfre, tbende.f:650): <code>x += dxfr d/pr</code>, <code>py += (dyfr - dyfra y^2) y/pr</code>; <code>dxfr=fb^2 phibl/24</code>, <code>dyfr=fb phibl^2/6</code>, <code>dyfra=fringe ? 4 dyfr/fb^2 : 0</code>、tbendef1 は長さ 0.5 fb rb の tbendebody0 を 2 回。</li>
+<li>tqfrie [転記] (hard-edge): <code>akk=ak/al/4; a=akk x^2/pr; b=akk y^2/pr; t=(aki(x^2-y^2))^2/6; dx=x(a/3+b+t); dy=-y(a+b/3-t)</code>。DISFRIN=0 で入る。</li>
+<li>tqlfre (線形): <code>af1=-ak/al f1|f1|/24; af2=ak/al f2; x -&gt; e^a x + (b/p) px, px -&gt; px e^-a, y -&gt; y e^-a - (b/p) py, py -&gt; py e^a</code> (a=af1/p, b=af2/p)。mfring=1,3 で入口、2,3 で出口。係数は tsetfringepe (tffs.f:982): K1≠0, L≠0 のときだけ f1in=F1+F1K1F 等。</li>
+<li>追跡: ttfrin (nord=4/6/一般)、追跡の線形フリンジは <code>f1=-|akk F1^2|/24, f2=|akk| F2</code> (K1 の符号によらず f1&lt;0)。hard-edge の条件は mfring&gt;-4 (tquad.f:49,103) で tquade と違う。</li>
+</ul>
+<h2 id="7-6-極薄レンズmult">7. 6 極・薄レンズ・MULT</h2>
+<ul>
+<li>tthine (CALC/6D, tthine.f:1-93) [確認]: <code>kord=nord/2-1; aki=ak/kord!</code>。L≠0: <code>drift(L/6) -&gt; kick(aki/2) -&gt; drift(2L/3) -&gt; kick(aki/2) -&gt; drift(L/6)</code>。kick: <code>cx=(x-iy)^kord; px -= aki Re cx; py -= aki Im cx</code>。行列は閉軌道上の微分 (feed-down)。enarad=.false.。</li>
+<li>追跡 tthin (tquad.f:118-322): 4 次積分 <code>alpha=1/sqrt12, beta=1/6-alpha/2, gamma=1/40-1/(24 sqrt3), alpha1=1/2-alpha</code>: drift(alpha1 L) -&gt; 半キック -&gt; drift(alpha L) -&gt; 補正キック(beta,gamma) -&gt; drift(alpha L) -&gt; 半キック -&gt; drift。入口出口で ttfrin、放射は最後に tradk(L) 1 回。キックは <code>aki=K/kord!/(1+d)</code>。</li>
+<li>MULT: CALC は qmult1 -&gt; tmulte (ANGLE=0)、追跡 tmulti: tsolrot -&gt; ttfrins(n=0..2, dofr) -&gt; [tsolqu/tsolqum + n&gt;=2 キック]xndiv -&gt; tsolqu -&gt; ttfrins -&gt; 戻し。放射は各 tsolqu の後。追跡の MULT にはフリンジ ttfrin が入り、emit の tmulte には入らない (A16)。ANGLE≠0 は tmulta (追跡) / tmultae (Twiss・Emittance[]): 曲がり (tbend の分割スライス) と曲率つきの多極キック (gkn の表) を ndiv 回繰り返す。pysad は <code>multa.py</code> / <code>multae.py</code> (docs/19。BZ・RF・F1・SK0 は未対応)。</li>
+</ul>
+<h2 id="8-空洞">8. 空洞</h2>
+<ul>
+<li>CALC の qcav は <code>rfsw = rfsw .and. trpt</code> で tcave を呼ぶので、<strong>リングの 4D CALC では RFSW に関係なく空洞は長さ L のドリフト</strong> (qcav.f:19; A4)。追跡の CAVI は RFSW に関係なく tcav (RFSW OFF は周回末に z=0 にするだけ、tturn.f:142)。TCAV (横方向) だけが OFF でドリフト。</li>
+<li>tcave (L=0, 6D): <code>w=omega0 HARM/c</code>, <code>phis=trf0 w</code>, <code>v=VOLT/amass |charge|</code>, RFSW ON: <code>phi=w t + PHI - phis; dh = -va(sin phi + offset1); va = v + v20a x^2 + v02a y^2; v20a = v (w/p0)^2/4</code>、<code>offset1 = sin phis</code> (RADCOD OFF) / 0 (ON)。<strong>PHI の既定は 0</strong> で同期位相は trf0 (<code>asin(U0/Vc)/w</code>、R56 の符号で π-asin) として決まる (A3)。長さあり: <code>ndiv=1+int(min(|wL|, sqrt((v(1/h0+1/h1))^2/3/0.01)))</code>、tcavfrie が入口出口。</li>
+<li>追跡 tcav (tcav.f): <code>tlim=1e4 (RFSW)/0</code>, <code>t=clamp(-z h1/p1, +-tlim)</code>, <code>dh = max(oneev-h1, V(-2 sin ph cos(ph-dphis) + offset) wsn)</code>、RAD または TRPT で offset=sin dphis/offset1=0、それ以外 offset=sin dphis - sin phis/offset1=sin phis。</li>
+</ul>
+<h2 id="9-閉軌道-qcod-qtwissf810-970-確認">9. 閉軌道 qcod (qtwiss.f:810-970) [確認]</h2>
+<pre><code>itmax=10 (最大11 パス); conv = min(1e-10, 1e-18 (1 + (d/1e-3)^2 + nlat))          (qtwiss.f:821,837)
+毎パス: cod0 から qtwiss1(mat=.true.) で一周 -&gt; T (4x5); limitcod でクランプ
+cx=(T11+T22)/2 (|cx|&gt;1 なら 1/cx) から sx, ax, bx を推定
+r = dx^2/bx + bx (dpx + ax/bx dx)^2 + (y 同様)     [= (1+a^2)/b dx^2 + 2a dx dpx + b dpx^2 の Courant-Snyder 不変量]
+r &lt;= conv: 収束。Newton: (T-I) cod0_new = T cod0 - cod_end を tsolvg (SVD, 1e-8) で解く
+悪化 (r&gt;r0): fact(初期 .5) &gt;= 1e-3 なら cod0=(1-fact) cod00 + fact cod0, fact=|fact|/2; fact&lt;1e-3 なら fact*=16, cod0=(1+fact) cod00 - fact cod0
+改善: fact=min(.5, 2 fact)
+</code></pre>
+<p>閉じるのは (x,px,y,py) のみ、d 固定、z は閉じない。<strong>返す行列は最後に一周させた出発点 cod0 の行列で収束後に評価し直さない</strong>。ゆえに off-momentum の β は初期値で相対 1e-6 揺らぐ (A13)。初期値は twmov で復元した前回安定解 (先頭 MARK に保存、tffscalc.f:93,118)。Emittance[] の tcod (6D) は z を閉じる d を選ぶ (周長変化で d≠0; 3C で -4.85e-8、A12)。RFSW ON: 先に RF なし 4D 解 -&gt; <code>z=asin((U0-vcacc)/Vc)/w - trf0</code> -&gt; 6D Newton、収束 1e-4 (重み codw=(1e-6,1e-7,1e-7,1e-8,1e-5,1e-6))。pysad は割線法/Newton で独自 (物理量は一致)。</p>
+<h2 id="10-周期解twiss分散結合">10. 周期解・Twiss・分散・結合</h2>
+<ul>
+<li>qmdiag [転記] (qmdiag.f:7-75): <code>M=S^-1 Md S, S=(c I, J R^T J; R, c I)</code>。<code>trpq=T11+T22-T33-T44; trab2=4[(T31+T24)(T42+T13)+(T14-T32)(T41-T23)] + trpq^2</code>、<code>c^2 = (1+|trpq|/sqrt(trab2))/2</code>、<code>aa=∓1/(c sqrt trab2)</code>、<code>r1=aa(T31+T24), r2=aa(T32-T14), r3=aa(T41-T23), r4=aa(T42+T13)</code>。trab2&lt;0 は "Sum resonance"。pysad は numpy 固有値。</li>
+<li>|cos mu|&gt;1: 常に 1/cos mu に置き換えて続行。INTRES(&gt;1)/HALFRES(&lt;-1) が立っているときだけ stabx=.false. (qcell.f:209-248; A14、pysad は <code>lattice._qmdiag</code>/<code>_qcell_periodic_sad</code> で直訳)。<code>sin mu = sign(sqrt(1-cos^2), a12); alpha=(a11-cos)/sin; beta=a12/sin</code>。</li>
+<li><strong>分散は周期解</strong> (qcell.f:267-279): <code>(a13,a23)=S T(:,5)</code>, <code>dcosmu=2 sin^2(mu/2)</code>, <code>EX = .5(a13 + a12 a23 - a22 a13)/dcosmu</code>, <code>EPX = .5(a23 + a21 a13 - a11 a23)/dcosmu</code> (x_cod/d の差分ではない; A10)。モード分散で、物理分散 PEX は tgetphysdispu (tgfun.f:239): <code>PEX=cc EX + r4 EY - r2 EPY, cc=sqrt(1-(r1 r4-r2 r3))</code> (未)。</li>
+<li>伝搬 qmat2twiss (qtwiss.f:705): <code>aa=bx0 T11-ax0 T12; cc=(T12-ax0 aa)/bx0; BX=T11 aa+T12 cc; AX=-(T21 aa+T22 cc); dNX=atan2(T12,aa)</code>、<code>EX = T11 ex0 + T12 epx0 + sqrdet T15 - r4 T35 + r2 T45</code>。pysad の <code>_transport_twiss</code> は非結合の標準式 (途中位相は結合なし)。結合素子 (qtwiss.f:541-691、DETR の 1+xyth-detR フラグ) は未。</li>
+<li>Twiss 配列 <code>twiss(nlat,-1:1,28)</code> (tffs.f:101): 1-6 AX..NY、7-10 EX..EPY、11-15 R1-R4 DETR、16-21 DX..DDP (閉軌道)、22-28 AZ BZ NZ ZX ZPX ZY ZPY。<code>twiss(l)</code> は要素 l の入口。位相は rad、tune=NX/2pi。</li>
+</ul>
+<h2 id="11-放射積分-radint-intgrlf">11. 放射積分 RADINT (INTGRL.f)</h2>
+<p>RADINT コマンドだけが使う (Emittance[] は INTGRL を使わない; 結合 BEND では 13% 差 [原因未特定。INTGRL は 4D の積分で、bendib の rhob/rho0 を設定せず直前の値 (最後の BEND の L/ANGLE) を全 BEND に使う癖があり (docs/29 A34)、候補の 1 つ])。
+<strong>pysad は <a href="../pysad/radint.py"><code>pysad/radint.py</code></a> が INTGRL.f の直訳で、FFS の RADINT コマンドに接続済み</strong> (6 通りの大型リングと小リング 3 通りが SAD と 7 桁一致。history/work_small_items.md A)。
+<code>COEFF=(elradi/elmass^3/3)1e27</code>, 対象は BEND/QUAD/SEXT/CAVI。BEND: <code>IR=min(14,max(1,int(|ANG|/.002))), IRP=2IR</code>、SYMPS (複合 Simpson)。K0, AE1, F1 は読まない。
+被積分: <code>I2=CURV^2 DL, I3=|CURV|^3 DL, I4 = (CKL0X + 2CKL1X/CURV) CURV^2 (R11 EU + R12 EPU), I5 = |CURV|^3 (GU EU^2 + 2AU EPU EU + BU EPU^2) DL</code>。エッジ項 TEDGE (CURV tan e)。出力: <code>DAMPU=1-I4/I2</code>, <code>EMITU = CO5 E^2 I5/(I2-I4)</code>, <code>SIG = CO4 E sqrt(I3/(2I2+I4u+I4v))</code>。SEXT の DKL2 は未代入 (寄与実質 0、バグの疑い)。lattice の <code>_radiation_integrals_bend</code> は BEND のみ・非結合の別実装。</p>
+<h2 id="12-6d-エミッタンス-temitf--photonsf">12. 6D エミッタンス (temit.f / photons.f)</h2>
+<ul>
+<li>流れ: tcod -&gt; <code>irad=12; tinitr12; tsetr0</code> -&gt; tturne (trans(6,12): 1:6=T, 7:12=D、beam(21)=B) -&gt; tecalc。</li>
+<li>tradke (photons.f:1409): 基準 codr0 から現在の運動量方向の外積 <code>xpa</code>, <code>theta=asinz(xpa)</code>, <code>h1=p2h(p0 pr)</code>, <code>al1=al-cod(5)+codr0(5)</code>:
+  <code>anp = anrad h1 theta; uc = cuc h1^3/p0 theta/al1; dg = -cave anp uc (cave=8/(15 sqrt3)); dee = anp uc^2 cuu (cuu=11/27)</code>。<code>anrad=5/(2 sqrt3) rcratio, cuc=1.5 r_cl/rcratio</code> (tfsetparam.f:105)。xpa=0 なら更新なし。RADCOD ON のときだけ cod を更新し <code>tesetdv(g)</code>。
+  D &lt;- D + tr1 (T+D) (tmuld6)、B &lt;- (I+tr1) B (I+tr1)^T + dbeam (tmulbs; irad&lt;12 なら何もしない)。</li>
+<li>分割: BEND (enarad) <code>nrad=1+int(|al0 rbc/epsr1 crad (h0 b)^2|)</code> (epsrad=1e-6)、<code>ndiv=max(ndiv, int(nrad emidiv emidib), 1+int(|phib h0 anrad|/epsr1/1e6 ...))</code>。QUAD <code>nrad=int(|al crad/epsrad (h0 b)^2|)</code> (itgetqraddiv)。SEXT 等は放射なし。</li>
+<li><strong>tecalc の定義</strong> (temit.f:235-510): <code>rx=T</code> (RFSW OFF なら <code>rx(6,1:5)=0, rx(6,6)=1</code>) -&gt; teigenc -&gt; tnorm (各モードのシンプレクティック積 s=1、z 成分最大を第 3 モード、残りを x 成分で並べる) -&gt; <code>r=tsymp(r), ri=tinv6(r)</code>。<code>rd=ri D r</code>、対角 2x2 から <code>cd</code>: <code>taurd=-2pi/omega0/Re cd; J=4 Re cd/sum Re cd</code>。B を ri で正規座標へ、<code>btr</code> (21x21) を組み <code>tsolva(btr, beam, emitn, 1e-8)</code> (SVD) で <code>Sigma = M Sigma M^T + B</code> を解く。<code>eemx=sqrt|e11 e22-e12^2|, emitp=r emitn r^T, sige=sqrt(emitp(6,6))</code>。
+  synchm=(rfsw and Im cd6≠0): 真 <code>alphap = -Im(cd6)|Im(cd6)|/(c 2pi/omega0)/(dvcacc/pgev)</code>、<code>sigz=sqrt emitp(5,5)</code>、<code>bh=sqrt|Vc/(pi|a|h pgev)(2cos phi - (pi-2phi)U0/Vc)|</code>、<code>phi=asin(U0/Vc)</code>。偽: <code>alphap=-R56/C</code> (<code>-rx(5,6)/2pi/c/p0 h0 omega0</code>)、<code>sigz=|alphap| sige c p0/h0/omegaz</code>、z の行列は 0。</li>
+<li>単位: EnergyLossU0, RfVoltageVc は <strong>eV</strong>。TransferMatrices は先頭からの<strong>累積</strong>行列。</li>
+<li>pysad emit6d.py: 全桁 1.3e-11 (16b/16e)。RADCOD ON も SAD と 2e-11 以内 (tcod の直訳 + 解析ヤコビアン)。INTRA は §19、POL は docs/16、SynchroBetaEmittance (temits) は <code>synchrobeta.py</code> (§30、gs と 4e-7〜1e-5)。</li>
+</ul>
+<h2 id="13-粒子追跡と放射-tturnf-photonsf">13. 粒子追跡と放射 (tturn.f, photons.f)</h2>
+<ul>
+<li>内部座標 (tconvm.f): <code>px &lt;- px/(1+d)</code>, 粒子ごとの <code>dv = -d(2+d)/h1/(h1+(1+d)h0) + dvfs</code>。要素外側・粒子内側 (tturn1)。<strong>tapert</strong>: 最初の要素、以後 15 要素ごと、周末。先に <code>limitnan</code> (NaN -&gt; +x、|a|&gt;x は +-x。x,y は 3 LOSSAMPL、px,py は 0.9999、z は 1e10; tturn.f:7-18)、判定は <code>-alost&lt;x&lt;alost, -alost&lt;y&lt;alost, |z|&lt;=LOSSDZ</code> を否定形で (NaN も落とす)。落ちた粒子は末尾の生きている粒子と入れ替え (並びが変わる)。RFSW OFF は周末に z=0。</li>
+<li>ndivrad (tffs.f:641): <code>arad=0.02; aka=(|phi|+hypot(ak,bz) arad)/eps1; ndivrad=int(1+h0/100 aka) (TRPT なら x10)</code>。K1=0 BEND: <code>ndiv=min(1024, ndivrad(phir,0,0,eps))</code>。K1≠0 (tbendi): <code>max(1+int(|phi0/eps|), ndivrad)</code>、上限 1000。</li>
+<li>tradkn (FLUC なし) / tradkfn (FLUC あり):</li>
+</ul>
+<pre><code>theta = asinz(|pp|)  (入口出口の単位運動量の外積);  al1 = al - z + zr0
+anp = anrad h1 theta
+tradkn : uc = cuc h1^3/p0 theta/al1;  de = cave anp uc
+tradkfn: rho = al1/theta; uc = cuc h1^3/p0/rho;  de = dph uc  (dph = sum x_i, tdusrn)
+dg = -de/(1+2de);  g = max(gmin, g+dg), gmin=-0.999999
+tradkn : ddpx = -.5 dpx dg; x += ddpx al1/3      tradkfn: ddpx = -r1 dpx dg; x += r2 ddpx al1
+dv = -g(1+pr)/h2/(h2+p2) + dvfs  (tgetdv の h2+pr h0 とは違うが SAD のまま);  z &lt;- z p2/h2 h1/p
+</code></pre>
+<p>基準点 pxr0, pyr0, zr0 は要素入口と各 tradk の後で更新。tradke (emit) は別式 (dg=-cave anp uc)。
+- tdusrn (drndsr.f:71): <code>p=tran()</code> を<strong>必ず 1 回</strong>引き (光子 0 個でも)、<code>p&lt;=pn</code> になるまで光子を加える (ポアソン累積、打ち切り pn&gt;0.9999 または 10000 個)。光子ごとに drndsr (横谷の逆関数近似) と位置用 <code>tran()</code> を 1 回ずつ。NaN の粒子では両条件が偽になり 10000 回ループし約 20001 個の乱数を消費する (gfortran の MAX/MIN は NaN を無視; D2)。損失周の乱数のずれの原因候補 (B6、未解決)。
+- 乱数 (random_plugin_sad.c): <code>seed &lt;- 48828125 seed</code> (int32 折り返し)、<code>Random[]=(seed+2^31)/2^32</code>、GaussRandom は Box-Muller (<code>rho=sqrt(-2 log(seed/2^32+.5))</code>, rho sin を次回へ)、<code>SeedRandom[n]: seed=|n/2| 2+1</code>、初期 17。FLUC は要素外側・粒子内側、放射ありの BEND/QUAD/MULT はスライスごとに全粒子の本体 -&gt; 全粒子の tradk (B4)。NPARA の既定は 4 (init.n)、9 粒子以上で fork し乱数列が分かれるので比較は NPARA=1。
+- RADTAPER [未]。PHOTONS の光子リストは BEAMBEAM の光子だけ実装 (docs/14)、他の要素の光子 (tphrec) は [未]。pysad: track6.py/track6n.py (numba)、Level 6-12・16 で ≤5e-11、乱数状態まで一致。</p>
+<h2 id="14-マッチング-tffsmatchf-tffscalcf-qdcellf--詳細は-docs08">14. マッチング (tffsmatch.f, tffscalc.f, qdcell.f) — 詳細は docs/08</h2>
+<ul>
+<li>残差: BX,BY は <code>log目標 - log値</code>、AX,AY は atan、NX 等は差 (qdcell.f tdfun1)。<code>r = wsum (sum|df wiq|^p/wsum)^(2/p)</code>、p=ExponentOfResidual。off-momentum は <code>wi=(OffMomentumWeight/2/sqrt|mfitp|)^2</code> (ヘルプは sqrt(点数) と違う)。</li>
+<li>重み wfit (tffscalc.f:442-501) [転記]: EX <code>dpm/sqrt(emxx bx)</code>、R1..R4 <code>coup sqrt(bx/by)</code> 等。emx が NaN のとき gfortran の MAX/MIN は NaN を無視し <code>emxx=0.01/1.01 emminv(1e-15)=9.9e-18</code> となり EX/EPX の重みが 1e6 前後になる (別解になる原因、work_analytic_deriv)。</li>
+<li>反復: Newton <code>qu dval = df</code> を tsolva(eps=1e-6/fact) で解く、dg&gt;0 なら最急降下、非改善は fmincube の 3 次補間。モード切替は fuzz(<code>max(0,min(1,(x-a)/(b-a)))</code>): crate&lt;0 で log10 が NaN -&gt; fuzz=1 -&gt; モードを変えず直線探索 (C7)。収束 <code>res2r(r) &lt;= CONVERGENCE max(nfcol,1)</code>、MAXITERATION は上限そのものではない。</li>
+<li>微分は既定で<strong>解析的</strong> (§17)。<code>FFS$NumericalDerivative=True</code> や SOL があると数値微分。</li>
+<li>pysad: match6.py (Matcher; ループ・fuzz・fmincube・数値微分は直訳)、解析微分は match6d.py。matching.py (Nelder-Mead) は非推奨の旧 API で SAD 非準拠。</li>
+</ul>
+<h2 id="15-dynamicaperturesurvey-trackdf-tapertf--詳細は-docs11">15. DynamicApertureSurvey (trackd.f, tapert.f) — 詳細は docs/11</h2>
+<ul>
+<li>軸: <code>Axes</code> の 1 文字目 ivar1=値リスト (最大 200 点)、2 文字目 ivar2=51 点で走査、残り ivar3 (同じ j で同時に動く)。<code>a2step=(max-min)/50</code>。起動順 i=1..n1p, j=51-&gt;1 (RAD+FLUC の乱数順に効く)。</li>
+<li>初期座標 (tinip1): <code>xa=(x,px,y,py,z,d) x (emx,emx,emx,emx,emz,emz)</code> -&gt; <code>r</code> (temw, 正規-&gt;物理) -&gt; <code>+codin</code> -&gt; tconv。<code>emx=sqrt(|EMITX|+|EMITY|)</code>, <code>emz=sqrt|EMITZ| (RFSW) / |SIGE|</code>。PhaseZ=-pi/2 で z=0, d=a。</li>
+<li>損失窓: 幅 ncons=max(1,nint(DAPWIDTH)) (既定 7) の窓を下へ動かし <code>nxm(i)</code> を下げる。Score=sum nsc (nsc は最初に損失した j-1)。判定は tapert (§13)、alost=LOSSAMPL(1)、zlost=LOSSDZ(100)。損失周は <code>ntloss=完了周数</code>。trackd は TRPT を .false. にして戻さない。</li>
+<li>Damping: 毎周 <code>exp(-T0/taurd)</code> を正規座標で掛ける (tpdamp)、DampEnough は早期に生存扱い [未]。</li>
+<li>pysad: dapert.py (trackd の順序を再現) + track6n.k_apert。NORAD の地図 153 文字一致。</li>
+</ul>
+<h2 id="16-要素値と誤差の展開">16. 要素値と誤差の展開</h2>
+<ul>
+<li>値は 3 層: 要素定義 idval、代表位置 klp (Element[key,"QD"])、各位置 LINE[key,"QD.n"]。<code>LINE["DX","QD.1"]=v</code> は CALC 時に tffsadjust (tfsetv.f:95-148) が klp の値を全 QD に複写する。<code>LINE["DX","QD.5"]</code> は上書きされる (C1)。1 台だけの誤差は <code>DELX sigma QD.1</code>。</li>
+<li>誤差: DK=K1 相対、DDK=K0 絶対 (errk を CALC で掛ける)、DELX/DELY/DTHETA (QUAD: ROTATE, BEND: DROTATE)。ガウス値は GCUT で棄却、同じコマンドは値を置き換える。</li>
+<li><strong>部分要素 qfraccomp</strong> (qtwiss.f, Twiss[key,{"Q1",0.3}] や LINE[.,200.5]): <code>r=rx2-rx1</code>, <code>L r, ANGLE r, K0 r, K1 r, VOLT r</code>、<strong>E1 は rx1=0 のときだけ E1/r、E2 は rx2=1 のときだけ</strong>残り他は 0 (E1 は ANGLE 比なので部分角では 1/r 倍)、FRMD=-f1-2 f2 で端の側だけフリンジ。BEND: FRINGE=0 なら F1=0。pysad は ffscmd.row_frac が線形近似 (未対応: K1 のスケール等)、geo.py の部分要素は qfraccomp どおり。</li>
+<li>IDEAL [未]、expnln の統計誤差チェーン (expln.f:57) [転記・未]。</li>
+</ul>
+<h2 id="17-解析微分-qdcellf-tffsqu-qdtwisf-qdquadf-qdbendf-qdmdiaf-確認pysad-match6dpy--直訳">17. 解析微分 (qdcell.f tffsqu, qdtwis.f, qdquad.f, qdbend.f, qdmdia.f) [確認、pysad match6d.py = 直訳]</h2>
+<p>qu の定義: <code>qu[cond,var] = df/dv wiq / wvar</code> (tffsmatch.f:395)。f は比較の形: BX は log b (dtwiss=db/b)、AX は atan (da/(1+a^2))、NX は psi。呼び出し: <code>tffsqu -&gt; qdcell(k,lp) -&gt; qdtwis -&gt; qddrif/qdbend/qdquad/qdthin/qdtrans(数値)</code>、周期補正と dgammag。</p>
+<ul>
+<li>要素: <code>dtrans = dM_k S_k</code> (S_k=qtentu の R 変換、5 列は eta_k)。QUAD K1: <code>k=K1/(L pr), phi=sqrt|k| L, dphi/dK1 = phi/(2 K1)</code>、<code>da11=-sin phi dphi, da12=(cos phi - sin phi/phi) dphi/sqrt k, da21=-(cos phi + sin phi/phi) dphi sqrt k</code> (発散は sinh/cosh)。BEND K1: <code>a12 = rho/phi sinc(phi) dphi</code> (sinc は §1.7 の定義; sin x/x と取ると BPI 列が 10-300% ずれる)。端面は <code>tan(psi1 phi0)</code> の薄レンズ。</li>
+<li>輸送: <code>trans1 = tftmatu(k+1-&gt;l) dtrans</code>、<code>X = qgettru(k-&gt;l)</code> (k&gt;=l は一周をまたぐ)、<code>x_ij = X/sqrt(1-detR)</code>:
+  <code>db_l/b_l = 2(-(dx11 x12 + x11 dx12) a_k + dx11 x11 b_k + dx12 x12 g_k)/b_l</code>、
+  <code>da_l = (dx11 x22 + x11 dx22 + dx12 x21 + x12 dx21) a_k - (dx11 x21 + x11 dx21) b_k - (dx12 x22 + x12 dx22) g_k</code>、
+  <code>dpsi = (dx12(b_k x11 - a_k x12) - x12(b_k dx11 - a_k dx12))/(x12^2 + (b_k x11 - a_k x12)^2)</code>、<code>deta_l = trans1(1,5)+(R の項)</code>。</li>
+<li>周期補正 (CELL): 一周行列の微分 <code>dM_l = d(M_{k-&gt;l}) M_{l-&gt;k}</code>、qdmdia で dr1..dr4、<code>dmd = dS (M S^-1) + S (dM S^-1) + S (M dS^-1)</code> から
+  <code>d mu = -(da11+da22)/(2 sin mu)</code>, <code>d alpha = (.5(da11-da22) - alpha cos mu d mu)/sin mu</code>, <code>db/b = (da12 - b cos mu d mu)/(b sin mu)</code>。位相: k&lt;l は <code>dpsi_l = d mu + sin psi'[(cos psi' + a sin psi') db/b - sin psi' da]</code> (psi'=mu-psi_l)、k&gt;=l は <code>-sin psi_l[(cos psi_l - a sin psi_l) db/b + sin psi_l da]</code>。閉軌道 <code>dx=(I-X)^-1(dM x + dx_k)</code> (det=4 sin^2(mu/2))。</li>
+<li>照合: 数値微分と 2e-8 (RING)/4e-7 (ARCA)。SAD の反復列 (8.7338E-09) と K1 を 12-13 桁再現。未移植: qdthin、qdini、qddtwiss、BMAG、COUPLE、qdtrans (数値で代用)。</li>
+</ul>
+<h2 id="18-calc6d-の拡張-twiss-qcellf404-qcell6d-tffsf2413-tfetwiss-tturnef775-確認pysad-calc6dpy">18. CALC6D の拡張 Twiss (qcell.f:404 qcell6d, tffs.f:2413 tfetwiss, tturne.f:775) [確認、pysad calc6d.py]</h2>
+<p><code>CELL; CALC6D; CALC;</code> で qcell1 -&gt; qcell6d -&gt; <code>temit(plot=.true.)</code> (Emittance[] と同じ)。tcod -&gt; tturne -&gt; tecalc (stab=|Re log lambda|&lt;1e-6) -&gt; 一周を plot 付きで再実行し、要素入口ごとに <code>tsetetwiss</code>: <code>ti = ri inv(trans)</code> (l=1 のみ temw の ri を掛ける)、<code>twi = tfetwiss(ti, cod)</code>、<code>NX = NX(1) + twi(NX)</code> (twi&lt;-toln=-0.1 なら +2pi)。NZ は 2pi 補正なし。tfadjustn が NX,NY を単調化。RAD は結果に影響せず (temit は放射減衰込み)、RADCOD は閉軌道に放射損失、RFSW は閉軌道の z と tecalc の rx 6 行目。不安定時 "qcell6d---&gt; Unstable optics" で cell=.false. にし transport 伝搬。
+tfetwiss(ri, cod): z ブロック <code>az=sqrt det ri[5:6,5:6]</code>, <code>uz = ri[5:6,5:6]/az</code>、x,y と z の結合 hx, hy -&gt; H(6x6)、<code>hi = ri H</code>、<code>detm=(det_12 + det_34)/2</code>、<strong>detm&lt;=xyth(0.375) なら x-y モードが入れ替わりとみなし行を入れ替え</strong>。<code>axy=sqrt detm</code>、<code>R1..R4=R/axy</code>、<code>bx=(hi12^2+hi22^2)/axy^2</code>、<code>NX=atan2(-hi12, hi22)</code>、<code>EX..ZPY = axy h +- R h</code>、<code>DETR=R1 R4-R2 R3</code>、<code>DX..DDP</code>=閉軌道、<code>AZ=bz21 bz22, BZ=crz^2, NZ=atan2(sz,cz)</code>。逆変換 etwiss2ri (tffs.f:2569)。RFSW OFF では z 固有値が 1 (Jordan) で <code>r(:,5)=e5, r(:,6)=(eta,0,1)</code> となり BZ,AZ,NZ は R56 に対する擬似 Twiss (18b: BZ=1.019)。分数位置は qtwissfrac の calc6d 分岐で <code>trans=inv(etwiss2ri(twiss(l)))</code> から部分要素 (irad=6) を伝搬。FFS 起動時 calc6d は .false. に固定 (track.f:104)。
+照合 (bench_level18a/b/c): 全 28 成分 1.7e-10。pysad は不安定時の ri を ri0 とする点が SAD と違う可能性あり (未検証)。</p>
+<h2 id="19-touschek-と-ibs-temitf-tintrbf-packagesemitn-確認pysad-touschekpy">19. Touschek と IBS (temit.f, tintrb.f, Packages/emit.n) [確認、pysad touschek.py]</h2>
+<p>INTRA ON の emit は一周追跡の各要素で <code>tintrb</code> を呼び、(a) IBS 拡散を beam(1:21) に加え (b) 最終パスで Touschek 損失率表 (touckl/touckm/toucke) を積算する。<code>temit.f</code> の converge ループ (<code>ITMAX=100, RESIB=3e-6, DCMIN=1e-6</code>、MINCOUP 下限)、<code>eintrb</code> で加速、収束後 <code>caltouck=T</code> でもう一周。</p>
+<ul>
+<li>部品: <code>touckf(x)</code> (emit.n TouschekF, C(x)/x の近似; x=0 で 1e200)、<code>fintrbu</code> (IBS 被積分)、<code>bint.f</code> (台形則の細分 + Simpson 外挿)、<code>teigens33</code> (thess3+tqr3)、<code>sols33</code>、<code>tmulbs(calint=T)</code> で beam(22:42) も同じ J で変換、<code>tradke</code> は <code>B2_new = B_new + J (B2 - B) J^T</code>。表: dp=0.004-0.242 (0.002 刻み, 120)、振幅表 tampl(34,3)、<code>TouschekTable = [id, [dp, 1/tau], [[nx,ny,nz], mx(34x25), my(34x25)], toucke(nlat x 120)]</code>。</li>
+<li><code>TouschekLifetime[nx,ny,nz]</code> (emit.n Touschek): spz, spxz, spyz の自然スプライン (spline.f, 範囲外は端区間で外挿)。nx,ny が両方 INF なら dp 受容、片方 INF なら振幅-nz の 2 次元補間、両方有限は NaN。PBUNCH=0 なら IBS も Touschek も 0。</li>
+<li>pysad: 3x3 固有値だけ LAPACK でなく 2 側 Jacobi (eigh は絶対誤差で sigma_y^2 が 1% 狂う)。17a (RADCOD OFF) 寿命 15 ケース 7e-12、17b (RADCOD ON) 1.7e-8。FFS 接続は済み (<code>ffscmd.run_emit</code> → <code>_print_touschek</code> → <code>_print_emit_intra</code>、docs/29 A40)。</li>
+</ul>
+<h2 id="20-要素幾何-geo-tfgeof-tgrotf-qtwissf-qfraccomp-確認pysad-geopy">20. 要素幾何 GEO (tfgeo.f, tgrot.f, qtwiss.f qfraccomp) [確認、pysad geo.py]</h2>
+<p><code>geo(3,4,k)</code>: 要素 k 入口のビーム x,y,z 軸の実験室系方向余弦と位置。初期値 geoini: x軸=(0,-1,0), y軸=(0,0,-1), z軸=(1,0,0) (正の ANGLE で GY 増)。角度 (tfchi): <code>CHI1=atan2(zy,zx), CHI2=asinz(zz), CHI3=atan2(xz,-yz)</code>。FFS からは <code>LINE["GX"|"GCHI1"|"GEO"|"OGX"..., loc]</code> (Twiss["GX"] は K64 ではエラー)。
+BEND/MULT (ANGLE=phi≠0): ROTATE=theta (≠0 なら x'=cos x - sin y, y'=sin x + cos y)、<code>rho=Lgeo/phi, (sp,.,cp,dc)=xsincos(phi), r1=rho sp, r2=-rho dc</code>、<code>pos' = pos + r1 z - r2 x'</code>、<code>x'' = cp x' + sp z</code>、<code>z' = -sp x' + cp z</code>。ANGLE=0 は直進 (ROTATE=-90 の VD でも)。COORD は回転・並進、MARK の OFFSET は後処理で geo をコピー (整数) か部分要素 (小数)。
+<code>Lgeo = L - ((phi fb1)^2+(phi fb2)^2)/L/48 sin(.5(phi(1-E1-E2)-AE1-AE2))/sin(.5 phi)</code> (FRINGE≠0 のみ; §5 の alcorr)、これが <code>pos(i+1)=pos(i)+Lgeo</code> (LINE["S"]) にも使われる。部分要素は §16 の qfraccomp (E1 は E1/r)。loc が nlat を超えると k-nlat に周回。ORG コマンド: <code>geo(:,4,:) -= dgo; geo(:,1:4,k) = geo2 geo(:,1:4,k)</code>、chi は度。getvad は負数を式と読む (<code>1.5 -2.5</code> は -1.0)。GEOCAL/GEOFIX フラグ。SOL (tsgeo) は <code>sgeo.py</code> に翻訳済み (docs/17。領域内の BEND・MULT・CAVI は k64 モードで未、v2 モードは対応)。未: MAP の GEO (tgmap)、SORG、逆向き要素の部分要素。照合 19A 4.8e-13、19B/19C 1e-13。</p>
+<h2 id="21-mult-と-sol-領域の追跡-tmultif-tsolf-tsolquf-pysad-track6n_extpy">21. MULT と SOL 領域の追跡 (tmulti.f, tsol.f, tsolqu.f; pysad track6n_ext.py)</h2>
+<ul>
+<li>MULT: §7。ANGLE≠0 は tmulta (<code>multa.py</code>、§7)。F1 は未。VOLT≠0 は TRPT か RFSW のとき <code>mult_full</code> (tmultiacc、13_wake.md 3.3 節)。<code>akr[n] = K_n cr1^(n+1)</code> (cr1=theta2 の回転)、ndiv0 は tpara が ampmaxm=0.05 から決め <code>ndiv=max(ndiv0, ndivrad(|K0|,K1))</code> (&lt;=1000)。ak=0 で K0 のみの MULT は厳密ドリフトのキック (tdrift_kick)。多極キックは Horner <code>cx</code> 複素で n&gt;=2。</li>
+<li>SOL 領域 (tsol.f:510-): BOUND=1 の SOL から次の BOUND=1 の SOL まで。<code>bzs = charge (BZ+DBZ)/(p0/c)</code> (tfbzs)。入口 trots -&gt; <code>tradks</code>(F1≠0) -&gt; <code>tsfrin(bzs)</code> (DISFRIN=0)、出口 <code>tsfrin(-bzs)</code>。領域内: DRIFT <code>tdrift_solenoid</code> (<code>px += bzp y/2</code> で回転)、QUAD <code>tquad(bz)</code> -&gt; ttfrin の bz 分岐 + tsolqu/tsolqur の bz≠0 分岐 (tzsetparams; §4 の bzp の癖)、CAVI <code>tmultiacc</code>。tapert の la カウンタは領域内で tsol のループ (tsol.f:604) と主ループの両方で数える (損失周の番号付けのみに影響)。</li>
+<li>track6n_ext: track6.py の直訳を numba 化 (演算順序・括弧も同じ)、track6 と 3e-17、FFS 乱数 seed 一致。ソレノイド内四極は EPS を使わない (eps0=0、EPS≠1 で SAD と分割数が違い得る)。</li>
+</ul>
+<h2 id="22-未解析未検証リスト">22. 未解析・未検証リスト</h2>
+<p>[転記のみ・導出なし]: dvemit と (5,6) (tturne.f:847)、tsolque の z 補正 (tsolque.f:420)、tbendecorr、tbendcore/tbendi (追跡)、tbedgebody (tbfrie.f:127)、tqfrie の高次項 t、tthin 4 次積分の係数、qmdiag の c,r、qcell の A,B ブロック (qcell.f:144)、tfetwiss の H 構成、tecalc の btr と SVD (temit.f:371)、dbeam の dee 以外の成分、tdusrn の p 打ち切り、wfit、expnln、IBS 被積分 fintrbu、tintrb の Touschek 積分、tsolvg の SVD 細部。</p>
+<p>[未検証]: qdthin/qdini/qddtwiss、ttfrin の一般次数の導出、tmulta の式の導出 (翻訳は gs と一致)、tsole1/qsol (SOL の CALC。翻訳は数値微分)、tcavfrie 中身、TCAV (ttcav, ttcave。式の導出)、temits (SynchroBeta の式の導出)、POL (calpol, spnorm。式の導出と <code>Polarization</code> の有限値の妥当性)、INTRA の wspac 分岐、INTGRL の BMAG 状態依存 (bendib)、RADINT と Emittance[] の 13% 差、CHRX の意味、FFS 内 FLUC 初期値、OffMomentumWeight とヘルプの差、DA の Output-&gt;0、既定 keyword の個別変更 (<code>LINE["K1","QD.5"]</code>)、tinip1 の r 定義、損失周の乱数消費 (B6)、qcell6d 不安定時の ri (§18)、FITP&gt;1 の GO (WSL ビルドで再起動 D1)。</p>
+<h2 id="23-pysad-対応表">23. pysad 対応表</h2>
+<table>
+<thead>
+<tr>
+<th>SAD の計算</th>
+<th>SAD ルーチン</th>
+<th>pysad</th>
+<th>状態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CALC のドリフト</td>
+<td>qtwiss1 インライン</td>
+<td>lattice <code>_drift_matrix_at_cod</code>, <code>_exact_drift_cod</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>QUAD 写像 (CALC)</td>
+<td>tquade, tsolrote, tqfrie, tqlfre, tsolque, tqente</td>
+<td>lattice <code>_quad_offset_map</code>, <code>_tquade_cod</code>, <code>_tqfrie_cod</code>, <code>_tqlfre_cod</code>, <code>_tsolque_cod</code>, <code>_tqente_cod</code></td>
+<td>直訳 (行列は <code>_num_jacobian</code>)</td>
+</tr>
+<tr>
+<td>BEND K1=0</td>
+<td>tbedge, tbendebody0, tblfre, tbendef1</td>
+<td>lattice <code>_tbedge_cod</code>, <code>_tbendebody0_cod</code>, <code>_tblfre_cod</code>, <code>_bend_cod_update</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>BEND K1≠0</td>
+<td>tbende, tbendecorr, tbendebody</td>
+<td>emit6d <code>_tbende</code>, <code>_BendIBody</code>; lattice <code>_bend_k1_cod_matrix</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>BEND 誤差・K0</td>
+<td>tchge, tbrote, tbgrote, tdrife1</td>
+<td>lattice <code>_bend_err_wrap</code>, <code>_tbrote_cod</code>, <code>_tbgrote_cod</code>, <code>_tdrife1_cod</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>SEXT 等</td>
+<td>tthine</td>
+<td>lattice <code>_tthine_cod</code>, <code>_thin_offset_map</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>MULT (CALC/6D)</td>
+<td>tmulte, tmulke, tbfrme, tsoldz</td>
+<td>lattice <code>_mult_sequence</code>, <code>_mult_cod_map</code>, <code>_tsolconv</code>, <code>_tsoldz_cod</code>; emit6d <code>_tmulte</code></td>
+<td>直訳 (ANGLE=0)</td>
+</tr>
+<tr>
+<td>閉軌道</td>
+<td>qcod</td>
+<td>lattice <code>_qcod_periodic</code>, <code>_one_turn_cod_matrix</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>Twiss・分散・結合</td>
+<td>qcell1, qmdiag, qmat2twiss</td>
+<td>Lattice.twiss, <code>_transport_twiss</code></td>
+<td>周期解は直訳、伝搬は独自 (非結合)、qmdiag は numpy</td>
+</tr>
+<tr>
+<td>6D エミッタンス</td>
+<td>temit, tturne, tradke, tecalc, tsolva</td>
+<td>emit6d <code>tturne</code>, <code>_State.tradke</code>, <code>tecalc</code>, <code>_tsolva</code>, <code>emittance6d</code>, <code>_normal_form</code>, <code>_tcave</code></td>
+<td>直訳 (閉軌道 tcod は独自)</td>
+</tr>
+<tr>
+<td>Emittance[] の戻り規則</td>
+<td>emit.n</td>
+<td>emit_extra <code>emittance_rules</code>, <code>beam_size_at</code>, <code>rules_to_sad_list</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>CALC6D</td>
+<td>qcell6d, tfetwiss, etwiss2ri, tsetetwiss</td>
+<td>calc6d <code>calc6d</code>, <code>tfetwiss</code>, <code>etwiss2ri</code>, <code>twiss_frac</code></td>
+<td>直訳 (tcod は独自)</td>
+</tr>
+<tr>
+<td>Touschek/IBS</td>
+<td>tintrb, bint, touckf, spline</td>
+<td>touschek <code>touschek_table</code>, <code>touschek_lifetime</code>, <code>_tintrb</code>, <code>bint</code>, <code>touschek_f</code>, <code>SadSpline</code></td>
+<td>直訳 (固有値のみ Jacobi)</td>
+</tr>
+<tr>
+<td>幾何</td>
+<td>tfgeo1, tgrot, tfchi</td>
+<td>geo <code>compute_geo</code>, <code>GeoResult</code>, <code>tfchi</code>, <code>tforbitgeo</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>マッチング</td>
+<td>tffsmatch, tffscalc, tfsolv, tgrad</td>
+<td>match6 <code>Matcher.go</code>, <code>_tffscalc</code>, <code>_tfsolv</code>, <code>_tgrad</code>, <code>_fmincube</code>, <code>_fuzz</code></td>
+<td>直訳 (微分は数値)</td>
+</tr>
+<tr>
+<td>解析微分</td>
+<td>tffsqu, qdcell, qdtwis, qdquad, qdbend, qdmdia</td>
+<td>match6d <code>tffsqu</code>, <code>qdcell</code>, <code>qdtwis</code>, <code>qdquad</code>, <code>qdbend</code>, <code>qdmdia</code>, <code>AnalyticMatcher</code></td>
+<td>直訳 (qdthin 等は未)</td>
+</tr>
+<tr>
+<td>追跡の要素</td>
+<td>tdrift_free, tquad/tsolqu, tthin/ttfrin, tbend*, tcav, tmulti</td>
+<td>track6 <code>_tdrift_free</code>, <code>_tquad_ens</code>, <code>_tsolqu</code>, <code>_tthin_gen</code>, <code>_ttfrin_n</code>, <code>_tbend_ens</code>, <code>_tbendi</code>, <code>_tcav</code>, <code>_tmulti_ens</code> / track6n <code>k_drift</code>..<code>k_cav</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>追跡の SOL/MULT (numba)</td>
+<td>tsol, tmulti</td>
+<td>track6n_ext <code>k_mult</code>, <code>k_sol_frin</code>, <code>k_sol_drift</code>, <code>k_sol_quad</code>, <code>ProgExt</code>, <code>track_particles_ext</code></td>
+<td>直訳 (track6n 本体へ未統合)</td>
+</tr>
+<tr>
+<td>追跡の SOL (純 Python)</td>
+<td>tsol, tsolqur</td>
+<td>track6 <code>_tsol_region</code>, <code>_tsolqu_bz_ens</code>, <code>_tsolqu_bz_final</code>, <code>_tquad_sol</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>放射・乱数</td>
+<td>tradk, tradkn, tradkfn, drndsr, tdusrn</td>
+<td>track6 <code>_tradk</code>, <code>_tradk_core</code>; track6n <code>tradk_core1</code>, <code>tdusrn</code>; sadrandom <code>SadRandom</code></td>
+<td>直訳</td>
+</tr>
+<tr>
+<td>DA</td>
+<td>trackd, tapert</td>
+<td>dapert <code>dynamic_aperture</code>, <code>rad62</code>; track6n <code>k_apert</code>; ffscmd <code>fn_dasurvey</code></td>
+<td>直訳 (Damping 等は未)</td>
+</tr>
+<tr>
+<td>RADINT</td>
+<td>INTGRL</td>
+<td><code>radint.compute/report</code> (FFS <code>RADINT</code>)</td>
+<td>直訳 (BEND/QUAD/SEXT、結合、エッジ、SAD の癖込み)。<code>lattice._radiation_integrals_bend</code> は BEND のみ・非結合の別実装</td>
+</tr>
+<tr>
+<td>要素値・誤差</td>
+<td>tffsadjust, terror</td>
+<td>Lattice.set_element/set_error, ffscmd <code>set_family</code>, <code>_error_cmd</code></td>
+<td>独自</td>
+</tr>
+<tr>
+<td>MULT ANGLE≠0</td>
+<td>tmulta, tmultae</td>
+<td>multa.py <code>k_multa</code>、multae.py</td>
+<td>直訳 (BZ・RF・F1・SK0 は未対応。docs/19)</td>
+</tr>
+<tr>
+<td>COORD / TCAVI / UND / MAP</td>
+<td>tcoord(e)、ttcav(e)、undulator、temap</td>
+<td>coord.py、tcav.py、und.py、<code>elements.Map</code> + <code>ffscmd._map_*</code></td>
+<td>直訳 (docs/19・04。TCAVI の Emittance[] は L=0 のみ、UND は磁場なし)</td>
+</tr>
+<tr>
+<td>SOL 領域 (Twiss・Emittance[]・追跡・幾何)</td>
+<td>tsole1、tsolqu(r)、tsgeo</td>
+<td>solmap.py、solemit.py、track6n_ext.py、sgeo.py</td>
+<td>直訳 (行列は追跡カーネルの数値微分。領域内の BEND・MULT・CAVI は k64 モードで未、v2 モードは対応。docs/17)</td>
+</tr>
+<tr>
+<td>POL</td>
+<td>tradke のスピン部、spnorm、srequpol、spdepol、sprot</td>
+<td>spin.py、track6.py <code>sprot</code></td>
+<td>直訳 (<code>Polarization</code> は K64 が NaN。docs/16)</td>
+</tr>
+<tr>
+<td>WAKE</td>
+<td>txwake、tffswake</td>
+<td>wake.py、wakeopt.py</td>
+<td>直訳 (docs/13)</td>
+</tr>
+<tr>
+<td>BEAMBEAM</td>
+<td>bbstrhl、bbinit、bbtool</td>
+<td>beambeam.py</td>
+<td>直訳 (光学は恒等。docs/14)</td>
+</tr>
+<tr>
+<td>CSR</td>
+<td>csrtrack、csroy、csrtest</td>
+<td>csr.py</td>
+<td>直訳 (CSROYMatrix は未照合。docs/15)</td>
+</tr>
+<tr>
+<td>RADLIGHT・RadiationField</td>
+<td>tlinit、tlfield、tlcalc</td>
+<td><code>ffscmd._RadLight</code>、radfield.py</td>
+<td>直訳 (docs/18)</td>
+</tr>
+<tr>
+<td>SynchroBetaEmittance</td>
+<td>temits 一式</td>
+<td>synchrobeta.py</td>
+<td>直訳 (4 点だけ照合)</td>
+</tr>
+<tr>
+<td>物理分散 PEX, 逆向き要素の mfring</td>
+<td>tgetphysdispu 等</td>
+<td>—</td>
+<td>未</td>
+</tr>
+<tr>
+<td>matching.py (非推奨の旧 API; Nelder-Mead 等)</td>
+<td>—</td>
+<td>matching <code>Match</code>, <code>DynamicApertureSurvey</code></td>
+<td>独自 (SAD 非準拠)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="24-機能別の物理の場所とその他の要素機能への案内">24. 機能別の物理の場所と、その他の要素・機能への案内</h2>
+<p>POL・SOL・WAKE・BEAM-BEAM・CSR・RADLIGHT の式の要点 (物理) は、それぞれの機能別の文書の「物理」の章に置いた。使い方・K64 の癖・限界も同じ文書にある。</p>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>式の場所</th>
+<th>文書</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POL (スピン歳差・偏極時間・偏極ベクトル・平衡偏極度)</td>
+<td>3 (物理と K64 の式)</td>
+<td><a href="16_spin_pol.html"><code>docs/16_spin_pol.md</code></a></td>
+</tr>
+<tr>
+<td>SOL (ソレノイド領域)</td>
+<td>2 (領域の仕組み)、4 (各機能の対応)</td>
+<td><a href="17_sol.html"><code>docs/17_sol.md</code></a></td>
+</tr>
+<tr>
+<td>WAKE (ウェイク場)</td>
+<td>3 (物理と式)</td>
+<td><a href="13_wake.html"><code>docs/13_wake.md</code></a></td>
+</tr>
+<tr>
+<td>BEAM-BEAM (BEAMBEAM、BSTRL、PHOTONS、LuminosityMonitor、BBBrem)</td>
+<td>3 (物理と式)</td>
+<td><a href="14_beambeam.html"><code>docs/14_beambeam.md</code></a></td>
+</tr>
+<tr>
+<td>CSR (コヒーレント放射)</td>
+<td>3 (物理と K64 の式)</td>
+<td><a href="15_csr.html"><code>docs/15_csr.md</code></a></td>
+</tr>
+<tr>
+<td>RADLIGHT・RadiationField・RadiationSpectrum</td>
+<td>3 (物理と式)</td>
+<td><a href="18_radlight.html"><code>docs/18_radlight.md</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>その他の新しい要素・機能:</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>内容の要点</th>
+<th>文書</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>COORD</td>
+<td>座標変換 (並進 DX DY DZ と回転 CHI1..3)。追跡 0、Twiss・幾何 1e-11、Emittance[] 5e-10</td>
+<td><a href="19_other_elements.html"><code>docs/19_other_elements.md</code></a></td>
+</tr>
+<tr>
+<td>TCAVI</td>
+<td>横偏向空洞 (クラブ空洞)。追跡は RAD FLUC まで gs と一致、Emittance[] は L=0 のみ (L≠0 は gs が壊れる: B36)</td>
+<td><a href="19_other_elements.html"><code>docs/19_other_elements.md</code></a></td>
+</tr>
+<tr>
+<td>UND</td>
+<td>K64 は磁場を設定できず (B37) 磁場なしのドリフト</td>
+<td><a href="19_other_elements.html"><code>docs/19_other_elements.md</code></a></td>
+</tr>
+<tr>
+<td>MAP</td>
+<td>ExternalMap の TRACK・EMIT・OPTICS (GEO・CompiledMap は未)</td>
+<td><a href="19_other_elements.html"><code>docs/19_other_elements.md</code></a></td>
+</tr>
+<tr>
+<td>DELCOR</td>
+<td>相関付き補正。MARK は DETR・DPX に入る (B40)、CAVI は HARM・PHI に入る (K64 の添字のずれ。gs と一致)</td>
+<td><a href="04_ffs_small_commands.html"><code>docs/04_ffs_small_commands.md</code></a></td>
+</tr>
+<tr>
+<td>GaussianCoulomb(U・Fitted)・BBBrem1</td>
+<td>空間電荷関数と制動放射</td>
+<td><a href="06_sadscript_library.html"><code>docs/06_sadscript_library.md</code></a>、<a href="14_beambeam.html"><code>docs/14_beambeam.md</code></a></td>
+</tr>
+<tr>
+<td>特殊関数・Fit・FindRoot</td>
+<td>458 式が gs と一致。K64 が誤値を返す式 (B43〜B47、B53、B54) は真値</td>
+<td><a href="06_sadscript_library.html"><code>docs/06_sadscript_library.md</code></a></td>
+</tr>
+<tr>
+<td>SynchroBetaEmittance</td>
+<td>シンクロトロン運動と色収差下の平衡エミッタンス。δ ごとの閉軌道・1 周写像・拡散行列から (J, 方位角モード m) の連立方程式を解く。12 セルのリング + CAVI で emitx が 4e-7〜1e-5、24 セルの平面リング + CAVI VOLT=2e6 (AzimuthalModes-&gt;7) で 1.4e-7〜1.4e-6 (結合のあるラティスは gs が SIGSEGV で比較不能、不安定なチューンは未確認)</td>
+<td><a href="../pysad/synchrobeta.py"><code>pysad/synchrobeta.py</code></a></td>
+</tr>
+<tr>
+<td>SAD パッケージ・FFS の小コマンド</td>
+<td>CorrectOrbit・MakeBump など <code>.n</code> をそのまま実行</td>
+<td><a href="06_sadscript_library.html"><code>docs/06_sadscript_library.md</code></a>、<a href="04_ffs_small_commands.html"><code>docs/04_ffs_small_commands.md</code></a></td>
+</tr>
+<tr>
+<td>GUI (Tcl/Tk)・描画</td>
+<td>SAD の <code>.n</code> を pysad のインタプリタで tkinter に表示</td>
+<td><a href="20_tcltk_gui.html"><code>docs/20_tcltk_gui.md</code></a>、<a href="21_graphics.html"><code>docs/21_graphics.md</code></a></td>
+</tr>
+</tbody>
+</table>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

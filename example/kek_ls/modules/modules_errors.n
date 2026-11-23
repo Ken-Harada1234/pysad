@@ -2,7 +2,7 @@
 ! 元の correct_cod.sad・print_*.sad は、`DELX ae Q*;` などの FFS の誤差コマンドを直接並べていた。この K64 のビルドでは、
 ! DELX・DELY (位置ずれ) は `cell calc` の COD に効かない (DUMP には値が出るが閉軌道は変わらない。gs・pysad とも)。DK (強さ)・DTHETA (回転) は効く。
 ! そこで位置ずれは、成分ごとの DX・DY (LINE["DX","QFA1H.7"]) に GaussRandom[] で直接入れる。成分ごとの値が効くのは `USE ... NOEXPAND` と
-! `cell calc noexpand` (docs/11 A56)。GaussRandom[] は GCUT (打ち切り、σ 単位) を使う。
+! `cell calc noexpand` (docs/29 A56)。GaussRandom[] は GCUT (打ち切り、σ 単位) を使う。
 ! 使い方: ae・fe・te (位置ずれ [m]、強さの相対誤差、回転 [rad] の rms) と GCUT を決めて SeedRandom[seed]; SetErrors[]; ClearErrors[];
 
 ! 四極 (Q*)・6 極 (S*) の成分名のリスト (USE の後に呼ぶ)

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_Elementary (初等関数)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_Elementary.md</div>
+<h1 id="fn_elementary-初等関数">fn_Elementary (初等関数)</h1>
+<p>種別: 関数 (SADHelp functions の Elementary-functions) / フォルダ: 10_math_data / ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>Sin Cos Tan ArcSin ArcCos ArcTan Sinh Cosh Tanh ArcSinh ArcCosh ArcTanh Exp Log Sqrt</code> と定数 <code>Degree</code>。実数の値を式の値と比べ、定義域の外 (負の <code>Log</code>、$|x|&gt;1$ の <code>ArcSin</code>、負の <code>Sqrt</code>) の複素数の扱いを見る。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>Sin[1.]  ArcSin[.5]  ArcTan[2.]  ArcTan[1.,-1.]  Sinh[1.]  ArcCosh[2.]  ArcTanh[.5]  Exp[1.5]  Log[10.]  Sqrt[2.]  Sin[30*Degree]
+Log[-1.]  ArcSin[2.]  Sqrt[-4.]  ArcCosh[.5]  ArcTanh[2.]  Exp[I*Pi/3]
+</code></pre>
+<p><code>$FORM="S17.15"</code> で 15 桁出し、<code>R:</code> の行を表にした。引数は実数 (<code>1.</code>) にする (整数のままだと <code>Sin[1]</code> は記号式のまま)。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>R:名前=値</code> の行が実数の値。最後の 6 行 (<code>LogNeg=</code> 以降) は定義域の外の例で、複素数は <code>(実部+虚部 I)</code> の形で出る。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>定義どおりの式。逆双曲線関数は $\mathrm{arcsinh}\,x=\ln(x+\sqrt{x^2+1})$、$\mathrm{arccosh}\,x=\ln(x+\sqrt{x^2-1})$、$\mathrm{arctanh}\,x=\frac12\ln\frac{1+x}{1-x}$。
+<code>ArcTan[x,y]</code> は Mathematica と同じ引数の順で、$\mathrm{atan2}(y,x)$ を返す ($\arg(x+iy)$)。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>式の値 (Python math)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$\sin 1$</td>
+<td>0.841470984808</td>
+<td>.841470984807896</td>
+<td>.841470984807896</td>
+<td>6.6e-16</td>
+<td>6.6e-16</td>
+</tr>
+<tr>
+<td>$\cos 1$</td>
+<td>0.540302305868</td>
+<td>.54030230586814</td>
+<td>.54030230586814</td>
+<td>4.1e-16</td>
+<td>4.1e-16</td>
+</tr>
+<tr>
+<td>$\tan 1$</td>
+<td>1.55740772465</td>
+<td>1.557407724654902</td>
+<td>1.557407724654902</td>
+<td>1.4e-16</td>
+<td>1.4e-16</td>
+</tr>
+<tr>
+<td>$\arcsin .5=\pi/6$</td>
+<td>0.523598775598</td>
+<td>.523598775598299</td>
+<td>.523598775598299</td>
+<td>2.1e-16</td>
+<td>2.1e-16</td>
+</tr>
+<tr>
+<td>$\arccos .5=\pi/3$</td>
+<td>1.0471975512</td>
+<td>1.047197551196598</td>
+<td>1.047197551196598</td>
+<td>2.1e-16</td>
+<td>2.1e-16</td>
+</tr>
+<tr>
+<td>$\arctan 2$</td>
+<td>1.10714871779</td>
+<td>1.10714871779409</td>
+<td>1.10714871779409</td>
+<td>4.0e-16</td>
+<td>4.0e-16</td>
+</tr>
+<tr>
+<td><code>ArcTan[1,-1]</code> = $\mathrm{atan2}(-1,1)$</td>
+<td>-0.785398163397</td>
+<td>-.785398163397448</td>
+<td>-.785398163397448</td>
+<td>4.2e-16</td>
+<td>4.2e-16</td>
+</tr>
+<tr>
+<td>$\sinh 1$</td>
+<td>1.17520119364</td>
+<td>1.175201193643801</td>
+<td>1.175201193643801</td>
+<td>3.8e-16</td>
+<td>3.8e-16</td>
+</tr>
+<tr>
+<td>$\cosh 1$</td>
+<td>1.54308063482</td>
+<td>1.543080634815244</td>
+<td>1.543080634815244</td>
+<td>1.4e-16</td>
+<td>1.4e-16</td>
+</tr>
+<tr>
+<td>$\tanh 1$</td>
+<td>0.761594155956</td>
+<td>.761594155955765</td>
+<td>.761594155955765</td>
+<td>1.5e-16</td>
+<td>1.5e-16</td>
+</tr>
+<tr>
+<td>$\mathrm{arcsinh}\,1=\ln(1+\sqrt2)$</td>
+<td>0.88137358702</td>
+<td>.881373587019543</td>
+<td>.881373587019543</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>$\mathrm{arccosh}\,2=\ln(2+\sqrt3)$</td>
+<td>1.31695789692</td>
+<td>1.316957896924817</td>
+<td>1.316957896924817</td>
+<td>3.4e-16</td>
+<td>3.4e-16</td>
+</tr>
+<tr>
+<td>$\mathrm{arctanh}\,.5=\frac12\ln3$</td>
+<td>0.549306144334</td>
+<td>.549306144334055</td>
+<td>.549306144334055</td>
+<td>2.0e-16</td>
+<td>2.0e-16</td>
+</tr>
+<tr>
+<td>$e^{1.5}$</td>
+<td>4.48168907034</td>
+<td>4.481689070338064</td>
+<td>4.481689070338064</td>
+<td>2.0e-16</td>
+<td>2.0e-16</td>
+</tr>
+<tr>
+<td>$\ln 10$</td>
+<td>2.30258509299</td>
+<td>2.302585092994046</td>
+<td>2.302585092994046</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+<tr>
+<td>$\sqrt2$</td>
+<td>1.41421356237</td>
+<td>1.414213562373095</td>
+<td>1.414213562373095</td>
+<td>1.6e-16</td>
+<td>1.6e-16</td>
+</tr>
+<tr>
+<td><code>Degree</code> $=\pi/180$</td>
+<td>0.0174532925199</td>
+<td>.017453292519943</td>
+<td>.017453292519943</td>
+<td>1.7e-14</td>
+<td>1.7e-14</td>
+</tr>
+<tr>
+<td>$\sin(30°)$</td>
+<td>0.5</td>
+<td>.5</td>
+<td>.5</td>
+<td>0.0e+00</td>
+<td>0.0e+00</td>
+</tr>
+</tbody>
+</table>
+<p>複素数 (どちらも同じ値): $\ln(-1)=i\pi$、$\arcsin 2=\pi/2+1.3170\,i$、$\sqrt{-4}=2i$、$e^{i\pi/3}=0.5+0.8660\,i$。
+<code>ArcCosh[.5]</code> は $-1.0472\,i$ ($=-i\pi/3$。$\arccos .5=\pi/3$ の分枝で符号が負、K64 の符号を pysad が合わせたもの)。<code>ArcTanh[2.]</code> は数学的には複素数だが、gs も pysad も <code>NaN</code>。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>実数の 18 値は、gs と pysad が表示した全桁で一致 (○)。複素数の例は、<code>ArcSin[2.]</code> の虚部の末尾 1 桁 (gs ...816、pysad ...817) と、<code>ArcCosh[.5]</code> の実部 (gs は丸め誤差の -5.55E-17、pysad は 0) が違う。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>大きな引数 (オーバーフロー、桁落ち)、<code>Tan</code> の極の近傍、複素引数の双曲線関数は試していない (<code>Exp[1000.]</code> は var_Constants で <code>INF</code> を確認)。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

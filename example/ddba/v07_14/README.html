@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>v07_14: チューンのマッチング・チューンサーベイ・誤差の計算 (補正しながら誤差を大きくする手法) の一式</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-v07_14-のラティス">1. v07_14 のラティス</a></li>
+<li><a href="#2-全体の流れ">2. 全体の流れ</a></li>
+<li><a href="#3-スクリプトの一覧">3. スクリプトの一覧</a></li>
+<li><a href="#4-誤差の計算の手法-補正しながら誤差を大きくしていく-errorsv0714_correct_cod">4. 誤差の計算の手法: 補正しながら誤差を大きくしていく (errors/V0714_correct_cod)</a><ul>
+<li><a href="#41-手順-1-つの乱数の種ごとフロー">4.1 手順 (1 つの乱数の種ごと。フロー)</a></li>
+<li><a href="#42-何がずるか-実機にない手順をコードから特定したもの">4.2 何が「ずる」か (実機にない手順を、コードから特定したもの)</a></li>
+<li><a href="#43-例の設定の結果-種-2-個段階-5補正-333310-回5-gev">4.3 例の設定の結果 (種 2 個、段階 5、補正 3+3+3+3+10 回、5 GeV)</a></li>
+<li><a href="#44-完全な設定での走らせ方と見込み時間">4.4 完全な設定での走らせ方と見込み時間</a></li>
+</ul>
+</li>
+<li><a href="#5-チューンサーベイ-surveyv0714_tune_survey">5. チューンサーベイ (survey/V0714_tune_survey)</a></li>
+<li><a href="#6-元のスクリプトの問題と直したもの">6. 元のスクリプトの問題と直したもの</a></li>
+<li><a href="#7-未確認限界">7. 未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="v07_14-チューンのマッチングチューンサーベイ誤差の計算-補正しながら誤差を大きくする手法-の一式">v07_14: チューンのマッチング・チューンサーベイ・誤差の計算 (補正しながら誤差を大きくする手法) の一式</h1>
+<blockquote>
+<p><strong>注意 (6 極の値について)</strong>: この例のラティス台本 (<code>v07_14_*.sad</code>) に入っている 6 極の値と、ここで「完成版」と呼ぶ有効な 6 極のセットは、<strong>論文用の最終版ではない</strong>。設計の途中の版であり、この例は 6 極の最適化の手順を示すためのものである。ここで出した DA・LMA などの数値は、この簡略な設定での比較で、論文や最終設計の値としては使わないこと。</p>
+</blockquote>
+<p>DDBA 型ハイブリッドリングの最終の版 v07_14 (周長 749.48 m、30 セル、5 GeV と 2.5 GeV) について、設計のスクリプト (チューンのマッチング、6 極の色収差補正)、チューンサーベイ、誤差の計算 (<strong>誤差を段階的に大きくしながら、各段階で COD を補正していく手法</strong>)、パラメータ表示を、元の SAD スクリプト群から読み解いて、一式の例にしたものです。gs (SAD K64) と pysad (k64 モード) で走らせて比べてあります。</p>
+<ul>
+<li>元のスクリプトとの対応、変更点、元の設定と例の設定: <a href="ORIGINAL_MAP.html"><code>ORIGINAL_MAP.md</code></a></li>
+<li>6 極の最適化の検証・代替の検討 (別の担当): <a href="sextupole"><code>sextupole/</code></a></li>
+<li>DDBA の 28 のラティスの一覧: <a href="../README.html"><code>../README.md</code></a></li>
+</ul>
+<p><strong>関連する公開論文</strong> (6 極の設定について): K. Harada et al., "Conceptual design of the Hybrid Ring with superconducting linac", J. Synchrotron Rad. 29, 118–124 (2022), DOI 10.1107/S1600577521012753。この論文は 3 GeV・周長 350 m・16 セルの暫定設計で、v07_14 (5 GeV・2.5 GeV、周長 749.48 m、30 セル) とは別の版です。論文には6 極の K2 の値や最適化の手法の記述はなく、「6 極の最適化で、入射に必要な水平アパーチャを、通常の 16 回対称 DDBA リングの約 80% まで回復した」という記述だけがあります。<strong>この例の6 極 (最終設定、20231205 の再調整版) は、pysad の作者とは別の研究者 (この論文の著者の一人) の手による最適化の結果</strong>で、論文の設定と一致する、同じ最適化の結果である、という意味ではありません。</p>
+<h2 id="1-v07_14-のラティス">1. v07_14 のラティス</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>エネルギー</td>
+<td>5 GeV (RF 6.5 MV) と 2.5 GeV (RF 1.6 MV)。ハーモニック数 1250 (RF 500 MHz 台、周回周波数は 5 GeV で 400.0 kHz)</td>
+</tr>
+<tr>
+<td>周長</td>
+<td>749.4809 m (<code>RING</code>、要素 3540 個)</td>
+</tr>
+<tr>
+<td>セル</td>
+<td>30 セル = 長直線部のセル (LS、直線部の長さ約 10.02 m) 15 個 + 中直線部のセル (MS、約 5.02 m) 15 個が交互。LS の中心のツイス (βx, βy) = (20.9, 5.26) m、MS の中心 (21.7, 3.24) m、セルの中心 (偏向磁石のあいだ、MKLC・MKMC) は (2.70, 4.70) m、分散 0.03 m</td>
+</tr>
+<tr>
+<td>磁石</td>
+<td>偏向磁石 120 台 (1 セル 4 台、L = 1.2 m、角度 0.0524 rad (通常) / 0.0614〜0.0653 rad (A 版)、K1 ≠ 0 の複合機能型)、四極 330 台 (A 版の Q3・Q4 は逆向き偏向 -0.009 rad を持つ BEND)、6 極 600 台 (1 セル 20 台、5 種類 × 2 台 × 2 分割)、モニター PM 300、水平・垂直の補正磁石 HD・VD 各 240</td>
+</tr>
+<tr>
+<td>対称性</td>
+<td><strong>鏡面対称の 1 回対称だけ</strong> (周期性なし)。ライン <code>RINGSYM = HRING RFC -HRING</code> が鏡面対称の並び。実際に使う <code>RING</code> は、元の台本では版ごとに別の並びだった (下の表)</td>
+</tr>
+<tr>
+<td>チューン</td>
+<td>(47.8651, 16.6551) (どの並びも同じ。5 GeV・2.5 GeV とも)。<code>matching_v07_13</code> の nx0 = 45.865・ny0 = 21.665 はチューンの打ち間違いの版</td>
+</tr>
+<tr>
+<td>εx (cell calc emit、RAD ON)</td>
+<td>5 GeV: 0.832 nm rad、2.5 GeV: 0.208 nm rad</td>
+</tr>
+<tr>
+<td>αc</td>
+<td>3.24e-5 (5 GeV)</td>
+</tr>
+<tr>
+<td>クロマティシティ</td>
+<td>6 極 ON: ξ = (-0.069, 0.100) (δ = ±1e-4 の中心差分、<code>display/V0714_chromaticity</code>)。この ξ の値は DDBA の記録 (-0.07, 0.10) と一致する</td>
+</tr>
+</tbody>
+</table>
+<p>リングの並び (<code>lattice/*.sad</code> にすべて名前付きで入っている。チューン・周長はすべて同じで、cell calc の εx も 3 桁で同じ):</p>
+<table>
+<thead>
+<tr>
+<th>ライン</th>
+<th>並び</th>
+<th>元の台本での役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>RINGSP</code> (5 GeV 版の <code>RING</code>)</td>
+<td><code>MRST LCELLHA 10*TCELLA 2*TCELL -MCELLHA RFC MCELLHA LCELL TCELL MCELL -LCELLHA MRED</code></td>
+<td>元の <code>v07_14</code> の有効な <code>RING</code> (SP の輸送の計算用)。鏡面対称ではない</td>
+</tr>
+<tr>
+<td><code>RINGINJ</code> (2.5 GeV 版の <code>RING</code>)</td>
+<td><code>MRST LCELLH MCELL (LCELLA MCELLA)×6 -LCELLHA HRING RFC MCELLHA LCELL MCELL -LCELLH MRED</code></td>
+<td>元の <code>v07_14_2.5GeV</code> の有効な <code>RING</code> (通常の入射用の並び)</td>
+</tr>
+<tr>
+<td><code>RINGSYM</code></td>
+<td><code>HRING RFC -HRING</code></td>
+<td>鏡面対称の並び (元の台本ではコメントアウト)。要素 3542 個 (<code>HRING</code> の両端の <code>MRST</code>・<code>MRED</code> が 2 回入るぶん)</td>
+</tr>
+<tr>
+<td><code>RINGL</code>・<code>RINGM</code>・<code>RINGLA</code>・<code>RINGMA</code>・<code>RINGN</code>・<code>RINGA</code></td>
+<td>1 種類のセルだけ、または <code>TCELL</code>・<code>TCELLA</code> だけを並べたリング</td>
+<td>6 極のマッチング・クロマティシティの確認用 (設計の道具)</td>
+</tr>
+</tbody>
+</table>
+<p>2.5 GeV のラティスは、元の <code>v07_14_2.5GeV</code> ではなく、<strong>最終設定の6 極 (20231205 の再調整版)</strong> を入れてある (元の <code>v07_14_2.5GeV</code> は古い6 極の組だけを持つ。再調整版は 2.5 GeV 用のファイルにも別にある)。光学 (cell calc) は同じなので、<code>V0714_correct_cod_2.5GeV</code> の誤差の計算には元の台本から6 極の違いが入る。</p>
+<h2 id="2-全体の流れ">2. 全体の流れ</h2>
+<pre><code>ラティス (lattice/)
+   │
+   ├─ design/V0714_match_tune     チューンのマッチング: 2 セルの単位 (TCELLA・TCELL) のセルチューン = リングのチューン/15 に、
+   │                              四極・偏向磁石の K1 で合わせる → セルごとの6 極 S3・S4 の色収差補正 → リングの δ スキャン・R56
+   ├─ design/V0714_chrom_cell     6 極の色収差補正 (S1・S2 = 0 で S3・S4 だけ。設計の道具)
+   │
+   ├─ survey/V0714_tune_survey    チューンサーベイ: リングのチューン (nx0, ny0) の格子ごとに、設計値から再マッチング → ξ・εx・αc・ADTS
+   │
+   ├─ errors/V0714_correct_cod    誤差の計算: 誤差 (位置ずれ・強さ・回転) を与え、位置ずれを段階的に大きくしながら、
+   │  errors/..._2.5GeV           各段階で COD を補正 → 補正後のチューン・COD・分散のずれ・動的口径
+   │
+   └─ display/                    パラメータ表示: V0714_ring_params (光学・ジオメトリ)、V0714_radint (放射積分)、
+                                  V0714_chromaticity (δ に対するチューン)、V0714_amp_dep_ts (振幅依存チューンシフト)
+</code></pre>
+<p>設計の流れ (マッチング → 6 極の補正) は、ラティスの値を決め直す道具で、v07_14 のラティスはその結果をすでに持つ。例の台本は、設計値から出発して、意図的に崩した偏向角を戻す (<code>V0714_match_tune</code>)、または設計のチューンの周りの格子を振る (<code>V0714_tune_survey</code>) 形にした。<strong>6 極の最終設定は、このマッチングの出力ではない</strong> (6 極は別のソフトで別の研究者が最適化した結果で、<code>V0714_match_tune</code> の6 極の補正 (S3・S4 の色収差補正) は設計の出発点と同じ種類の道具)。</p>
+<h2 id="3-スクリプトの一覧">3. スクリプトの一覧</h2>
+<p>走らせ方 (リポジトリ直下から。台本は自己完結で、ラティスは先頭に貼ってあり、<code>modules/</code> を <code>Get["../modules/..."]</code> の相対パスで読むので、台本のあるフォルダをカレントにして走らせる):</p>
+<pre><code class="language-bash">py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/design/V0714_match_tune.sad [--gs-timeout 1800] [--py-timeout 3600] [--only gs|py]
+</code></pre>
+<p>gs は WSL、pysad は k64 モード (<code>PYTHONUTF8=1</code>) で走り、<code>NAME.gs.txt</code>・<code>NAME.pysad.txt</code>・<code>NAME.time.txt</code> ができる。台本は <code>py -3.12 example/tools/mk_ddba_v07_14.py</code> で作る (<code>example/tools/ddba_v07_14_src/&lt;フォルダ&gt;/NAME.body</code> の前に <code>lattice/</code> のラティスを貼る。<code>--full</code> で完全な設定の版 <code>NAME_full.sad</code>)。</p>
+<p>gs と pysad の一致: ○ = 画面表示の数値が 1e-6 (相対) 以内で一致、△ = 一部の数値が違う (理由は下)、× = 走らない。<strong>一致しないものは、追跡や出力に合わせる補正をせず、そのまま書いた。</strong></p>
+<table>
+<thead>
+<tr>
+<th>新しい名前</th>
+<th>元の名前</th>
+<th>何をするか</th>
+<th>入力・出力</th>
+<th>所要時間 (gs / pysad)</th>
+<th>一致</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="design/V0714_match_tune.sad"><code>design/V0714_match_tune</code></a></td>
+<td><code>matching_v07_11</code></td>
+<td>チューンのマッチング (TCELLA 5 回・TCELL 20 回)、セルの6 極 S3・S4 の色収差補正、リングの δ スキャン (6 極 0)、R56</td>
+<td>リング (設計値)・出力: K1・K2 の表、ツイス、リングのチューン・εx</td>
+<td>6 s / 78 s</td>
+<td>△ (1)</td>
+</tr>
+<tr>
+<td><a href="design/V0714_chrom_cell.sad"><code>design/V0714_chrom_cell</code></a></td>
+<td><code>chrom_v07_12rev</code></td>
+<td>S1・S2 = 0 で S3・S4 だけのセルの色収差補正</td>
+<td>出力: S3・S4 の K2、RING のチューン</td>
+<td>1 s / 3 s</td>
+<td>△ (1)</td>
+</tr>
+<tr>
+<td><a href="survey/V0714_tune_survey.sad"><code>survey/V0714_tune_survey</code></a></td>
+<td>(新規。<code>tune_sv_v06_10_parm</code> + <code>matching_v07_11</code>)</td>
+<td>チューンサーベイ: (nx0, ny0) の格子 3 × 3 (設計 ±0.1) で再マッチング → ξ・εx・αc・ADTS (5σ)</td>
+<td>出力: 1 行 / 格子点 (標準出力と <code>V0714_tune_survey.dat</code>)</td>
+<td>5 s / 75 s (9 点)</td>
+<td>△ (1)</td>
+</tr>
+<tr>
+<td><a href="errors/V0714_correct_cod.sad"><code>errors/V0714_correct_cod</code></a></td>
+<td><code>correct_cod_v07_14_grad_res</code></td>
+<td>誤差の計算 (5 GeV、種 2 個、段階 5、補正 3+3+3+3+10 回、DA 200 周)</td>
+<td>出力: 補正の履歴、チューン、COD・K0・RMS のファイル、DA</td>
+<td>183 s / 94 s</td>
+<td>△ (DA)</td>
+</tr>
+<tr>
+<td><a href="errors/V0714_correct_cod_2.5GeV.sad"><code>errors/V0714_correct_cod_2.5GeV</code></a></td>
+<td><code>correct_cod_v07_14_grad_res_2</code></td>
+<td>同 (2.5 GeV、ae = 25 μm)</td>
+<td>同</td>
+<td>316 s / 120 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="display/V0714_ring_params.sad"><code>display/V0714_ring_params</code></a></td>
+<td><code>disp</code>・<code>dispA</code></td>
+<td>光学・ジオメトリの表示 (RING とセルの単位)</td>
+<td>出力: ツイスの表</td>
+<td>1 s / 3 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="display/V0714_radint.sad"><code>display/V0714_radint</code></a></td>
+<td><code>calc_RadInt.sad</code></td>
+<td>放射積分の数え直しと SAD の εx との比較</td>
+<td>出力: I1〜I5、Jx・Jz、εx</td>
+<td>1 s / 3 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="display/V0714_chromaticity.sad"><code>display/V0714_chromaticity</code></a></td>
+<td><code>calc_chromaticity.sad</code>・<code>amp_dep_ts_dp.sad</code></td>
+<td>δ に対するチューン、ξ (中心差分と、元の PolynomialFit の係数)</td>
+<td>出力: ξ の表</td>
+<td>2 s / 41 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="display/V0714_amp_dep_ts.sad"><code>display/V0714_amp_dep_ts</code></a></td>
+<td><code>amp_dep_ts_x/y/dp.sad</code></td>
+<td>ADTS (x・y 振幅 1〜101σ の 3 点)、δ 依存</td>
+<td>出力: {νx, νy} の表</td>
+<td>1 s / 18 s</td>
+<td>○</td>
+</tr>
+<tr>
+<td><code>*_full.sad</code></td>
+<td>(上と同じ)</td>
+<td>完全な設定の版 (走らせていない。見込みは下)</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>一致の注記:</p>
+<ul>
+<li>(1) 設計値から出発して合わせる部分 (K1 のマッチング、チューン、εx、αc、ADTS) は gs と pysad が 1e-6 以内で一致する。一致しないのは、<strong>セルの6 極の色収差補正</strong> (<code>DP = 0.01</code> の長直線部のセルの FIT) だけで、gs は <code>closed orbit not found</code>、pysad は <code>Unstable</code> と出して、6 極の K2 が違う値になる (元の台本を gs で走らせても同じ <code>closed orbit not found</code> が出る)。そのため6 極つきのチューン・ξ が 0.01〜0.1 の程度違う (<code>V0714_match_tune</code> の最後のリングのチューン: gs (47.86502, 16.65502)、pysad (47.86167, 16.66183)。サーベイの ξ: gs (0.022, 0.081)、pysad (-0.036, 0.068))。原因 (オフモーメンタムの optics が不安定なときの扱い) は追っていない (要確認)。</li>
+<li><code>V0714_match_tune</code> の最後の表示 <code>emit =</code> の値は gs と pysad で違う (リング RING: gs 9.45e-10、pysad 8.32e-10)。元の台本が δ スキャンの最後の δ (+0.5%) の状態で EMITX を読むためで、gs は δ ≠ 0 で、pysad は δ = 0 の値 (RING の εx = 0.832 nm rad) を返す (pysad が <code>DP0</code> を EMIT に反映していない疑い。要確認)。</li>
+</ul>
+<h2 id="4-誤差の計算の手法-補正しながら誤差を大きくしていく-errorsv0714_correct_cod">4. 誤差の計算の手法: 補正しながら誤差を大きくしていく (<code>errors/V0714_correct_cod</code>)</h2>
+<p>元の台本名の <code>grad_res</code> は gradual (段階的に) ... のように読めるが、台本に説明はない。台本の中身から読み取ると、<strong>位置ずれの大きさを 1/5、2/5、…、全部 の 5 段階で段階的に大きくし、各段階で COD の補正を繰り返して、補正した状態 (補正磁石の K0) を次の段階に引き継ぐ</strong>手法である。</p>
+<h3 id="41-手順-1-つの乱数の種ごとフロー">4.1 手順 (1 つの乱数の種ごと。フロー)</h3>
+<pre><code> 設計の光学 (誤差なし)
+   │  tunex・tuney、PM・HD・VD でのツイス、設計の分散 (etaideal*) を取る
+   │  COD 応答行列 Responsex[j, i] = 0.5 √(βm βc) cos(πν − |φm − φc|) / sin(πν)   (設計のツイスの解析式。補正磁石 j・モニター i)
+   ▼
+ 種 k (SeedRandom[187] から作った 1000 個の表の k 番目) で誤差を与える
+   │  位置ずれ DX・DY: B*・Q*・S*・補正磁石 H*・V* に、ガウス分布 (σ = ae、±1σ で打ち切り GCUT = 1)
+   │  強さの誤差 DK: B*・Q*・S* に σ = fe = 5e-4 (相対)
+   │  回転 DTHETA: B*・Q*・S* に σ = te = 1e-4 rad
+   │  ・位置ずれの全体 (aexall0・aeyall0) を覚える
+   ▼
+ 段階 j = 1 … 5   位置ずれ = 全体 × j/5   (DK・DTHETA は初めから全部)
+   │
+   │   補正の繰り返し (段階 1〜4: nitr 回、最後の段階: nitrlast 回)
+   │     ① cell calc。全モニター PM* の COD (befx・befy) を読む
+   │     ② CodCorr: (応答行列 × 応答行列の転置) の固有値分解 → 大きい方から ICX/2 個 (= 120 個) の固有値だけで逆行列 → kick
+   │     ③ 補正磁石 HD*・VD* の K0 を  K0 ← K0 − ゲイン × kick  (ゲイン 0.5。元は 4 段階目だけ 0.6)
+   │     ④ cell calc。補正後の COD の rms と、チューンを表示
+   │
+   │   K0 は次の段階に引き継ぐ (0 に戻さない)
+   ▼
+ 補正後のチューンが窓 (47.5〜48、16.5〜17) に入っていれば動的口径サーベイ (x・y、δ = zrange、DAturns 周)。
+ 窓の外なら DA = 0 を記録 (チューンの補正はない)
+   ▼
+ 書き出し: 全要素の COD・分散のずれ (ResultWrite)、補正磁石の K0 (WriteKick)、PM での統計 (RMSWrite)、DA
+   ▼
+ 誤差と K0 を 0 に戻して次の種へ
+</code></pre>
+<p>誤差の想定 (DDBA の記録と一致): 据え付け 50 μm、強さ 0.05%、回転 0.1 mrad、±1σ カット、種 100 通り、on-momentum の DA が最悪 30σ・平均 40σ (β = 21 m、εx = 830 pm rad で 30σ = 4 mm)。2.5 GeV 版 (<code>_2</code>) は位置ずれを半分 (25 μm) にしてある。</p>
+<h3 id="42-何がずるか-実機にない手順をコードから特定したもの">4.2 何が「ずる」か (実機にない手順を、コードから特定したもの)</h3>
+<ol>
+<li><strong>誤差を段階的に入れる</strong>: 実機の据え付け誤差は一度に全部入る。ここでは位置ずれだけを 1/5 から順に大きくし、前の段階の補正済みの状態から次に進む。強さの誤差・回転の誤差は初めから全部で、段階的にしない (台本のコメントは位置ずれの大きさ ae = 10・20・30・40・50 μm とだけ書く)。K64 の <code>cell calc</code> は、位置ずれの倍率を変えて呼び直したとき、COD が更新されないことがあった (同じ乱数の誤差を、倍率 1 → 0.5 → 0.2 → 2 の順に与えて <code>cell calc</code> を呼ぶ試験で、1・0.5・0.2 では COD が変わったが、0.2 の次の 2 では前の値のまま。pysad (k64) も同じ値)。段階的に上げる理由は、前の状態が COD の初期値になるため解が求まりやすいから、と考えられる (台本に理由の記載はなく、確かめていない)。</li>
+<li><strong>補正の失敗の扱いが無い</strong>: 台本は補正が収束したかを調べない。<code>Twiss</code> を読むだけで、COD が求まらなかった (<code>closed orbit not found</code>) ときも続行する (その場合、gs は Twiss が 0 を返し、pysad は前の値のまま残るので、表示の rms が 0 や前の値になる)。最後にチューンが窓の外の種を DA = 0 と記録するだけで、補正が効かなかった種かどうかは区別しない。</li>
+<li><strong>応答行列は設計の解析式</strong>: 実機のように補正磁石を振って測った行列ではない。誤差のない理想のラティスのツイス・位相進みから作る (誤差のあるラティスの応答との違いは、ゲイン 0.5 の反復で吸収される)。</li>
+<li><strong>モニターは理想</strong>: SAD の COD (<code>Twiss["DX","PM*.*"]</code>) をそのまま読む。モニターの位置ずれ・読み取りノイズ・ゲイン誤差がない (モニター PM* は位置ずれの対象 <code>{BQSHV}*</code> にも入っていない)。</li>
+<li><strong>補正磁石は理想</strong>: K0 を直接実数で設定する。電源の分解能・キャリブレーション誤差がない。補正磁石 (HD・VD) 自身の位置ずれは乱数に含まれるが、L = 0 なので効かない (この例では、K64 の問題を避けるため VD の位置ずれは 0 に戻した。下の 6 節)。</li>
+<li><strong>反復の回数</strong>: ゲイン 0.5 で 5 回 (最後の段階だけ 50 回)。実機の測定→補正の数回より多く、収束させている。補正は水平・垂直を独立に行う (結合は無視)。</li>
+<li><strong>同じ乱数の実現を拡大</strong>: 各段階は別の誤差の実現ではなく、同じ誤差の実現の大きさを変えたもの。</li>
+<li><strong>チューン・分散・β の補正は無い</strong>: 補正するのは COD だけで、チューンのずれ (誤差でどれだけずれたか) は結果として記録されるだけ。窓の外のチューンは DA = 0 にする。元のフォルダに <code>modules_correctoptics.n</code> (分散・COD・β の応答、固有値を選ぶ補正) があるが、v07_14 のどの台本からも読み込まれない。</li>
+<li><strong>乱数の設計</strong>: <code>SeedRandom[187]</code> から作った 1000 個の表の k 番目を種にする (種の値は <code>seeds[k]</code>)。同じ種は同じ誤差を作る (gs と pysad で同じ乱数列になることを確認した: 同じ種で、補正前の COD が 10 桁一致)。</li>
+</ol>
+<h3 id="43-例の設定の結果-種-2-個段階-5補正-333310-回5-gev">4.3 例の設定の結果 (種 2 個、段階 5、補正 3+3+3+3+10 回、5 GeV)</h3>
+<p>gs の画面表示から (<code>errors/V0714_correct_cod.gs.txt</code>)。補正前 = 誤差を全部入れて補正しない状態 (RMSDisp の出力)。COD の rms はモニター 300 台、分散のずれは PM での設計との差の rms。</p>
+<table>
+<thead>
+<tr>
+<th>5 GeV (ae = 50 μm)</th>
+<th>種 1</th>
+<th>種 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>補正前の COD の rms (x / y)</td>
+<td>0.85 mm / 2.39 mm</td>
+<td>3.09 mm / 2.73 mm</td>
+</tr>
+<tr>
+<td>補正後の COD の rms (x / y)</td>
+<td>24.6 μm / 8.1 μm</td>
+<td>21.7 μm / 8.5 μm</td>
+</tr>
+<tr>
+<td>補正前 → 後の分散のずれの rms (x / y)</td>
+<td>16 → 5.1 mm / 25 → 4.9 mm</td>
+<td>152 → 6.1 mm / 113 → 7.3 mm</td>
+</tr>
+<tr>
+<td>補正後のチューン (窓 47.5〜48、16.5〜17)</td>
+<td>(47.8649, 16.6597) 窓内</td>
+<td>(47.8651, 16.6495) 窓内</td>
+</tr>
+<tr>
+<td>DA (200 周、δ = −5%・0・+5%、x の DA / y の DA)。<code>ExpandElementValues-&gt;False</code> の <code>DAsv</code></td>
+<td>gs: 0・36・0 / 0・34・0、pysad: 0・35・0 / 0・34・0</td>
+<td>gs: 0・29・0 / 0・29・0、pysad: 0・30・0 / 0・29・0</td>
+</tr>
+<tr>
+<td>(参考) <code>DAsv</code> の既定 (既定の <code>ExpandElementValues-&gt;True</code>。補正した K0 が消える)</td>
+<td>gs・pysad とも 0・0・0 / 0・0・0</td>
+<td>gs: 0・1・0 / 0・0・0、pysad: 0・38・0 / 0・27・0</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>2.5 GeV (ae = 25 μm)</th>
+<th>種 1</th>
+<th>種 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>補正前の COD の rms (x / y)</td>
+<td>0.28 mm / 1.13 mm</td>
+<td>1.10 mm / 0.76 mm</td>
+</tr>
+<tr>
+<td>補正後の COD の rms (x / y)</td>
+<td>11.1 μm / 4.1 μm</td>
+<td>10.1 μm / 4.3 μm</td>
+</tr>
+<tr>
+<td>補正後のチューン</td>
+<td>(47.8633, 16.6553) 窓内</td>
+<td>(47.8673, 16.6507) 窓内</td>
+</tr>
+<tr>
+<td>DA (on-momentum の x / y)</td>
+<td>gs・pysad とも 44σ / 28σ</td>
+<td>gs・pysad とも 51σ / 51σ (DAPWIDTH = 51 の上限)</td>
+</tr>
+</tbody>
+</table>
+<p>補正は水平・垂直の COD を、段階の最後で 1 桁以上下げる (補正前 mm → 補正後 数十 μm)。補正の途中経過 (<code>mat x rms</code> の列) は、段階ごとに 3 回の補正で rms が 1/2〜1/4 に下がり、最後の段階の 10 回で収束する (<code>sad x rms</code> は √(Σ COD²)/モニター数で、rms の 1/√300 に当たる値。元の台本の定義)。gs と pysad で補正後のチューンは 2e-5 以内、COD の rms は x が 4 桁、y が 2 桁一致する (補正前の COD は 10 桁一致)。
+<strong>5 GeV の DA の gs と pysad の食い違い (<code>ExpandElementValues</code> の効き)</strong>: 原因は <code>DynamicApertureSurvey</code> の既定 <code>ExpandElementValues-&gt;True</code> が補正磁石 HD・VD の成分ごとの K0 を代表の値に揃え、補正した状態を消すこと (gs も pysad もサーベイのあとはチューン 47.960・COD −1.8 mm・全 HD の K0 が同じ値)。その状態の DA は補正がなく、gs 0〜1σ・pysad 0〜38σ の偶然の値になっていた。<code>DAsv</code> を <code>ExpandElementValues-&gt;False</code> にすると、gs と pysad が DA 29〜36σ で一致する (DDBA の記録 最悪 30σ・平均 40σ の水準)。pysad は <code>ExpandElementValues</code> を読む。出力: <code>errors/V0714_correct_cod.expandfalse.gs.txt</code>・<code>.pysad.txt</code> (既定の <code>ExpandElementValues-&gt;True</code> の DA の出力は <code>V0714_correct_cod.gs.txt</code>・<code>.pysad.txt</code>)。切り分けの経緯は <code>docs/history/v24_A.md</code>。</p>
+<h3 id="44-完全な設定での走らせ方と見込み時間">4.4 完全な設定での走らせ方と見込み時間</h3>
+<pre><code class="language-bash">py -3.12 example/tools/mk_ddba_v07_14.py --full                  # NAME_full.sad を作る (作成済み)
+py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/errors/V0714_correct_cod_full.sad --gs-timeout 100000 --only gs
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>設定</th>
+<th>元 (完全)</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>種</td>
+<td>100</td>
+<td>2</td>
+</tr>
+<tr>
+<td>補正の回数 / 段階</td>
+<td>5 (最後の段階は 50)</td>
+<td>3 (最後の段階は 10)</td>
+</tr>
+<tr>
+<td>DA の追跡の周回数</td>
+<td>5000</td>
+<td>200</td>
+</tr>
+<tr>
+<td>DA の δ の点数</td>
+<td>11 (−5〜+5%、σδ 単位の刻み 1)</td>
+<td>3 (刻み 5)</td>
+</tr>
+<tr>
+<td>NPARA (並列数)</td>
+<td>20</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<p>見込み時間 (走らせていない。例の実測からの外挿): 補正の部分 (DA なし) は 1 種あたり gs で約 4 s (例の 2 種で約 8 s のうち)、完全な設定 (補正 70 回/種に増える) で 1 種 10 s 前後、100 種で約 20 分。DA が支配的で、例の 2 種 (DA 200 周 × δ 3 点 × 2 方向) で gs 約 90〜150 (種 1 つあたり) s、周回数 25 倍・δ の点 11/3 倍・種 50 倍の単純な外挿で、NPARA = 8 でも数十時間〜数日のオーダー (DA はロスした粒子で探索が早く終わるので、実際はこれより短い。元の台本は NPARA = 20 で半日〜1 日以上、という報告)。<code>DAturns</code>・<code>DAzstep</code>・<code>nseed</code> を変えて、速度と統計の兼ね合いを選ぶ。</p>
+<h2 id="5-チューンサーベイ-surveyv0714_tune_survey">5. チューンサーベイ (<code>survey/V0714_tune_survey</code>)</h2>
+<p><strong>元のフォルダに v07_14 用のチューンサーベイの台本は無い。</strong> <code>tune_sv_v06_10</code>・<code>_parm</code> (28 セルの旧い版 v06_10 用。<code>LCELLA</code>・<code>LCELL</code> を 28 セルとして <code>nx0/28</code> に合わせ、リングのチューンを格子で振って、ADTS と ξ を書き出す) が元の枠組みで、<code>modules_tune_sv.n</code> は別の旧いリング用 (<code>BPI6</code>・<code>QFA1</code> など。v07_14 には適用できない)。この台本は、その枠組みと <code>matching_v07_11</code> のマッチング (v07_14 の 2 セル単位 TCELLA・TCELL) を組み合わせた<strong>新規の台本</strong>で、元との比較はできない (部品ごとの一致は <code>V0714_match_tune</code> で確認)。</p>
+<ul>
+<li>振るもの: リング全体のチューン (nx0, ny0)。格子点ごとに、設計の K1・K2 に戻してから、セルのチューン (nx0/15、ny0/15) に TCELLA を <code>nitA</code> 回、TCELL を <code>nitN</code> 回、四極と偏向磁石の K1 でマッチングし、セルごとの6 極 S3・S4 の色収差補正をして、リングを組み直す (マッチングの結果は <code>SAVE ALL</code> でリングの定義に書き戻す)。</li>
+<li>表示するもの (1 行 / 格子点): nx0 ny0 / リングのチューン (マッチングの達成度) / εx [nm rad]・αc / ξx ξy (δ = ±1e-4 の中心差分) / 振幅 5σ の ADTS (x 振幅の νx・νy のずれ、y 振幅の νx・νy のずれ) / 収束の目印 (リングのチューンが nx0・ny0 から 0.01 以内なら 1)。</li>
+<li>例の結果 (設計 ±0.1、9 点、pysad): 全点で収束 (リングのチューンは目標に 3e-3 以内)、εx は 0.830〜0.833 nm rad、αc は 3.22〜3.25e-5、ADTS は設計のチューンの点で、x 方向 5σ の振幅で (νx, νy) が (7.6e-5, 5.1e-4)、y 方向 5σ で (4.3e-4, −9.0e-4) ずれる。<strong>設計から ±2 の格子は、設計値から再マッチングするので、遠い点で収束しない可能性がある</strong> (確かめていない。収束の目印で分かる)。ξ は、gs と pysad で値が違う (3 節の注記 (1))。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>設定</th>
+<th>元 (v06_10 版)</th>
+<th>v07_14 の完全な設定</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>チューンの範囲</td>
+<td>nx0 = 43.11〜47.12、ny0 = 10.12〜14.13 (0.1 刻み)</td>
+<td>設計のチューン ±2 (0.1 刻み、41 × 41 = 1681 点)</td>
+<td>設計 ±0.1 (3 × 3 = 9 点)</td>
+</tr>
+<tr>
+<td>マッチングの繰り返し</td>
+<td>(毎点 1 回)</td>
+<td>nitA = 5、nitN = 20</td>
+<td>2、2</td>
+</tr>
+<tr>
+<td>ADTS の位相の分割</td>
+<td>36</td>
+<td>36</td>
+<td>8</td>
+</tr>
+<tr>
+<td>所要時間 (見込み)</td>
+<td>—</td>
+<td>gs で約 1〜3 時間、pysad で約 1 日 (1 点あたり gs 約 3〜6 s、pysad 約 40〜60 s の概算)。例の実測 (nitA = nitN = 2、位相 8 分割): 1 点あたり gs 約 0.4 s、pysad 約 8 s。マッチングの回数 (25 回と 4 回) と位相の分割 (36 と 8) からの外挿で、走らせていない</td>
+<td>gs 5 s、pysad 75 s</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-元のスクリプトの問題と直したもの">6. 元のスクリプトの問題と直したもの</h2>
+<ol>
+<li><strong>元のスクリプトはラティスを読み込まない</strong>: <code>gs ラティス スクリプト</code> と 2 つ並べて走らせる使い方で、スクリプト単体では動かない (前提が無い)。→ 例の台本は、ラティスを先頭に貼った自己完結のファイルにした。</li>
+<li><strong><code>matching_v07_13</code> のチューンの打ち間違い</strong>: nx0 = 45.865、ny0 = 21.665 (v07_14 は 47.865・16.655)。→ <code>matching_v07_11</code> を使う。</li>
+<li><strong>誤差の計算の補正が効かない (K0 が成分ごとに効かない)</strong>: 補正磁石 HD・VD は、リングの中で同じ要素名の繰り返しなので、既定の (EXPAND の) <code>cell calc</code> は K0 を全部同じ値に揃える。<code>LINE["K0","HD.7"] = …</code> と書いても、HD.1 の値だけが全部に効き、ほかの成分への代入は読み戻すと 0 のまま (試験: HD.1 に 1e-4 を入れると COD が 2.7 mm、HD.2〜HD.12 に入れても COD は変わらない)。元の台本はこの状態のまま補正を繰り返すので、補正が効かず、<code>closed orbit not found</code> になる (元の台本を、種 2 個・補正を減らして走らせて確認: gs は補正のあとのチューンが 0 になり (closed orbit not found)、pysad は補正を繰り返しても rms が下がらない)。→ <code>USE RING NOEXPAND</code> と <code>cell calc noexpand</code> を使う (docs/29 A56)。</li>
+<li><strong>垂直補正磁石 VD の位置ずれ</strong>: <code>ROTATE = -90 度</code> の BEND (L = 0) VD は、位置ずれ (DX・DY) があって K0 が 0 でないと、<code>cell calc</code> が <code>closed orbit not found</code> になる (K64 の gs・pysad とも。試験: VD の位置ずれを 0 にすると K0 が効く。HD は位置ずれがあっても効く)。→ 補正磁石の位置ずれは L = 0 の要素に物理的に効かないので、VD の DX・DY を 0 に戻す (乱数の列は元のまま: <code>DELX</code> は VD にも与えてから 0 に戻す。補正の対象 <code>{BQSHV}*</code> を <code>{BQSH}*</code> にした)。</li>
+<li><strong>DA を先に走らせると、書き出す値が補正後の状態でない</strong>: <code>DynamicApertureSurvey</code> のあとは <code>cell calc</code> のチューンが変わる (47.865 → 47.98。原因は追っていない)。元の台本は DA のあとに COD・K0・統計を書き出していた。→ 書き出しを DA の前に移した。</li>
+<li><strong><code>RMSWrite</code> の「チューンのずれ」の列</strong>: 旧い設計のチューン 48.6・12.7 を引いていた (v07_14 は 47.865・16.655)。→ 設計のチューンに直した。</li>
+<li><strong>出力ファイル名</strong>: <code>correct_cod_v07_14_grad_res</code> は <code>datas*_v07_16_1.txt</code> (v07_16 のコピーの名前) に書く。→ <code>V0714_correct_cod_5GeV_*.txt</code> に。</li>
+<li><strong><code>CalculateCODResponse</code> の無駄</strong>: 補正磁石の数 (240) 回の <code>cell calc</code>。→ 除いた (結果は変わらない)。</li>
+<li><strong><code>calc_chromaticity.sad</code> の末尾</strong>: 未定義の変数 (<code>nx0</code>・<code>ny0</code>・<code>emitring</code> など) を <code>Print</code> する。→ 除いた。</li>
+<li><strong>K64 のバグ B18 の影響 (直していない)</strong>: <code>PolynomialFit</code> を δ を ±対称に振ったデータに使うと、係数が壊れる (docs/29 C6、docs/30 B18)。元の <code>matching_v07_11</code>・<code>calc_chromaticity.sad</code> が出す「係数 [1,2]」は ξ ではない。例: 6 極 0 の RING で、係数 [1,2] は x が −21828、中心差分の ξ は −67.7 (DDBA の記録の自然クロマティシティ −67.7 と一致)。→ 元の出し方 (係数 [1,2]) を残し、<strong>中心差分の ξ を足した</strong>。</li>
+<li><strong>使われないモジュール</strong>: <code>modules_correctoptics.n</code> (分散・COD・β の応答行列、固有値を選ぶ補正) は v07_14 のどの台本からも読み込まれない。<code>modules_matching_noID.n</code> は <code>matching_v07_11</code> が Get するだけで使わない。→ 取り込まない。</li>
+<li><strong>元の台本のコメントの数字</strong>: <code>correct_cod_v07_14_grad_res_2</code> (2.5 GeV) の「ae 20um」などの表示は 5 GeV の値のまま (ae = 25 μm なので実際は半分)。→ 段階の表示を実際の ae から出すようにした。</li>
+<li><strong><code>FitValue</code> の定義の順序</strong>: <code>matching_v07_11</code> は各 fit 条件の直後に <code>FitValue</code> を定義する。まとめて先に定義すると、TCELLA のマッチングが収束しなかった。→ 元の順序のまま。</li>
+</ol>
+<h2 id="7-未確認限界">7. 未確認・限界</h2>
+<ul>
+<li>元の台本の本来の環境 (台本が走っていた SAD のバージョン) は分からない。この環境の SAD K64 (gs) と pysad (k64) で、6 節の 3・4 の問題が出る。元のバージョンで動いていたか、動いていたとして結果がどう違うかは確かめていない。</li>
+<li><strong>DA の gs・pysad の食い違い (<code>ExpandElementValues-&gt;True</code> の既定)</strong>: 上の 4.3 のとおり原因は確定していて、<code>ExpandElementValues-&gt;False</code> で一致する。pysad の DA は周回数 200 周・1〜2 種・δ 3 点だけなので 100 種の統計ではない。2.5 GeV の DA は <code>False</code> で、gs・pysad とも 2 種・x・y・on-momentum で 51σ (DAPWIDTH の上限) で一致 (<code>errors/V0714_correct_cod_2.5GeV.expandfalse.*.txt</code>)。</li>
+<li>gs と pysad の △ (3 節の注記): セルの6 極の色収差補正 (<code>DP = 0.01</code> の長直線部のセルの FIT) で gs と pysad の K2 が違う。ξ・6 極つきの値が 0.01〜0.1 違う。誤差の計算 (COD の補正) のあとのチューンは gs と pysad で 1e-4 程度、COD の rms は 3 桁目から違う。</li>
+<li>チューンサーベイは設計値から毎回再マッチングする。設計から遠い点の収束と、DA など非線形の量は確かめていない (サーベイは ADTS・ξ まで)。完全な設定の <code>*_full.sad</code> は走らせていない (見込み時間は外挿)。</li>
+<li>6 極の最終設定 (20231205 の再調整版) は、このスクリプト群の出力ではなく、別のソフトで別の研究者が最適化した結果を入れたもの (冒頭の公開論文の注意を参照)。<code>V0714_match_tune</code>・<code>V0714_chrom_cell</code> の6 極の補正 (S3・S4 の色収差補正) は、その最終設定を再現するものではない (<code>chrom_v07_12rev</code> は S1・S2 を 0 にして S3・S4 だけで補正する旧い版の道具)。</li>
+<li>2.5 GeV のラティスは、元の <code>v07_14_2.5GeV</code> (古い6 極の組) ではなく最終設定の6 極にしてある。元の <code>v07_14_2.5GeV</code> のままで走らせた結果との違いは確かめていない。</li>
+<li>元の台本は、補正に失敗した種 (COD が求まらない) を検出しない。例の設定の種では失敗は出なかったが、100 種では出る可能性がある (確かめていない)。</li>
+<li>ラティスは設計値で、ID・ウィグラー・入射の要素は入っていない。RF 電圧は 5 GeV で 6.5 MV (<code>v07_14</code>)、2.5 GeV で 1.6 MV。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

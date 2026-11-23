@@ -1,0 +1,32 @@
+! 空間電荷 (WSPAC) の Emittance[]・EMIT・CALC6D・CALC。K64 の tintrb の twspace (ビーム行列 σ のガウス分布の線形レンズ
+! k = 2 N r0 L / (β²γ³ (σx+σy) √(2π) σz σ_u)) をスライスの中心に入れ、temit の反復 (tintraconv) でビーム行列を自己無撞着にする。
+! 条件: 0.2 GeV、周長 45.6 m の 12 セル FODO、RF 0.2 MV・h=64、PBUNCH = 1e8 個、MINCOUP = 0.5 (εy の下限 = 0.5 (εx+εy))。
+! 結果 (pysad v2 の ZERO・SC): チューンが空間電荷で下がる (x −4.1e-3、y −8.5e-3)。一次のラスレットの式と 0.15% (試験 test_wspac_tune_shift_equals_first_order_laslett_formula)。
+! gs (Emittance[] だけ動く): ZERO は全桁一致、SC は gs の方がシフトが 4% (x)・3% (y) 強い (原因未特定。シフトは PBUNCH・σz・εy に依らず比が一定)。
+!   gs の CALC・CALC6D は WSPAC ON で先頭以外の Twiss が NaN になる (K64 の誤り)。v2 の CALC6D (と RFSW ON の CALC) は空間電荷つきの周期的な Twiss を返す。
+MOMENTUM = 0.2GEV;
+PBUNCH = 1E8;
+MINCOUP = 0.5;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=0.2e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+$FORM="14.10";
+USE RING; CELL; CALC;
+RFSW; RAD; NOFLUC; CALC6D;
+CALC;
+Print["CALC6D, no SC: NX NY NZ BX(1) BX($$$) ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["NZ","$$$"]/(2Pi), Twiss["BX",1], Twiss["BX","$$$"]];
+NOCALC6D;
+e0 = Emittance[];
+Print["ZERO ", Tunes/.e0, Emittances/.e0];
+WSPAC;
+e = Emittance[];
+Print["SC   ", Tunes/.e, Emittances/.e];
+Print["EMITC (EMITXC EMITYC EMITZC) ", EMITXC, EMITYC, EMITZC];
+CALC6D; CALC;
+Print["CALC6D, SC: NX NY NZ BX(1) BX($$$) ", Twiss["NX","$$$"]/(2Pi), Twiss["NY","$$$"]/(2Pi), Twiss["NZ","$$$"]/(2Pi), Twiss["BX",1], Twiss["BX","$$$"]];
+Exit;

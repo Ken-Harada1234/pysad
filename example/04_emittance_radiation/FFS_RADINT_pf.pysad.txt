@@ -1,0 +1,60 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -5.109E-4 $$$       f BX    #######  #  11.983746 $$$       f NX    #######  #   9.597530
+$$$       f AY    #######  #  2.8029E-4 $$$       f BY    #######  #   4.995584 $$$       f NY    #######  #   5.278960
+$$$       f LENG  #######  #  187.03548
+****************************************************************
+
+     RADIATION INTEGRALS OF A LATTICE WITH X-Y COUPLING
+
+     CONTRIBUTIONS FROM SOLENOID MAGNETS ARE NOT included 
+              IN THIS VERSION.   1991.2.26 
+                  Refurbished:  2019.10.10 
+             Added K1 of BEND:  2022.08.05 
+****************************************************************
+
+
+    SYNCHROTRON RADIATION INTEGRALS
+
+ ENERGY (GeV)               =     2.500
+ DP/P                       =     0.000
+ TOTAL LENGTH (m)           =   187.035
+ TOTAL BENDING ANGLE (DEG)  =   360.000
+ TOTAL BENDING ANGLE (RAD)  =    6.283185    
+ RF VOLTAGE (kV)            =    1700.000    
+ HARMONIC NUMBER            =   312.
+ RF FREQUENCY (MHz)         =   499.9903
+
+ RADIATION INTEGRALS  
+   I1X =    1.227417        I1Y =    0.000000    
+   I2  =   0.7257664    
+   I3  =   8.3832777E-02
+   I4U =  -3.0609190E-03    I4V =    0.000000    
+   I5U =   2.8109735E-03    I5V =    0.000000    
+
+ NU-X-  =  9.59753    NU-Y- =  5.27896
+ MOMENTUM COMPACTION FAC X  =   6.5625E-03
+ MOMENTUM COMPACTION FAC Y  =    0.000    
+ ENERGY LOSS PER TURN (kV)  =    399.2    
+ DU=1-I4U/I2                =   1.00421750
+ DV=1-I4V/I2                =   1.00000000
+
+ DAMPING TIME CONSTANTS
+                TAUU (msec) =    7.782    
+                TAUV (msec) =    7.815    
+                TAUE (msec) =    3.916    
+ ENERGY SPREAD (SIG) DE/E   =   7.2859E-04
+            EMITTANCE U     =   3.5375E-08
+            EMITTANCE V     =    0.000    
+
+ NU-S                       =     0.014675
+ BUCKET HIGHT   DEMAX/E     =     0.011804
+ NATURAL BUNCH LENGTH (mm)  =     9.698829
+ Q.LIFE IS TOO LONG      XI =   1.3124D+02
+
+ LINEAR CHROMATICITY GX     =    -0.000416
+ LINEAR CHROMATICITY GY     =    -0.001258
+EMITDIV=1  DampingRate = { -8.015475637E-5, -7.982932341E-5, -1.592985228E-4}  Emittances = { 3.5451265272E-8,     .0000000000,
+  7.0663098129E-6}  MomentumSpread =  7.2868056219E-4
+EMITDIV=20 DampingRate = { -8.016419391E-5, -7.983134590E-5, -1.592984512E-4}  Emittances = { 3.5374700223E-8,     .0000000000,
+  7.0663109138E-6}  MomentumSpread =  7.2868039510E-4
+Polarization, PolarizationTime [s] = {     .9237604307, 2253.9825094894}

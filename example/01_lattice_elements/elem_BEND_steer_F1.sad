@@ -1,0 +1,33 @@
+! ANGLE=0 の BEND (補正磁石、K64 の tsteee) の F1・FB1・FB2・FRINGE・AE1・AE2 の Emittance[] と CALC。
+! tsteee の tblfre (dxfr1 = -fb1^2/rhob/24 ...)、入口の断片 2 つ (n = -1, 0)、
+! 出口の断片 2 つ、本体の長さ alc = al*rbc、FRINGE = -1・-2 の片側だけのエッジを入れた。
+! 条件: 3 GeV、周長 45.6 m の 12 セル FODO、補正磁石 SA・SB (L = 0.2 m、K0 = +-8e-4 を 1 セルおきに)、RF 3 MV・h=64。
+! k64 モード (PYSAD_COMPAT=k64) は gs と全桁一致 (表示 10 桁: CALC のチューン、Emittance[] のチューン・U0・運動量圧縮・減衰率・エミッタンス)。
+! v2 (既定) は B108 の修正 (端の角 AE1・AE2 のある面で場の中の行路を x tan(e) だけ短くする) が入るので Emittance[] の U0・減衰が少し違う
+! (この台本の AE は小さいので差は 1e-6 以下)。B108 の効果は大きな端の角と強い極で見える: elem_BEND_steer_AE_poles.py。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5) DS = (L=0.2);
+QUAD QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+BEND SA = (L=0.2 ANGLE=0 K0=0.0008 F1=0.04 FB1=0.03 FB2=0.02 FRINGE=3 AE1=0.02 AE2=-0.01);
+BEND SB = (L=0.2 ANGLE=0 K0=-0.0008 F1=0.04 FB1=0.03 FB2=0.02 FRINGE=3 AE1=0.02 AE2=-0.01);
+CAVI RFC = (L=0 VOLT=3e6 HARM=64);
+MARK ST = ();
+LINE CELLA = (QF D2 B D2 QD DS SA D1);
+LINE CELLB = (QF D2 B D2 QD DS SB D1);
+LINE CC = (CELLA CELLB);
+LINE RING = (ST 6*CC RFC);
+FFS;
+$FORM="14.10";
+USE RING; CELL; CALC;
+Print["CALC tunes ", Twiss["NX","$$$"]/(2Pi), " ", Twiss["NY","$$$"]/(2Pi)];
+NORFSW; NORAD;
+e = Emittance[];
+Print["noRF Tunes ", Tunes/.e];
+RFSW; RAD; NOFLUC;
+e = Emittance[];
+Print["Tunes ", Tunes/.e];
+Print["U0 ", EnergyLossU0/.e, " alpha ", MomentumCompaction/.e, " EqPos ", EquilibriumPosition/.e];
+Print["Emittances ", Emittances/.e];
+Print["Damp ", DampingRate/.e];
+Exit;

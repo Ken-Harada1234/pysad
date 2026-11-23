@@ -11,7 +11,7 @@ SAD の使い方 (SADHelp の WakeFunction):
   ただし CAVI は tcav.f の中で分割ごとに呼ばれる (track6n.cav_full / k_cav_in・mid・out)。MULT は VOLT≠0 のとき tmulti の中で呼ばれるが、MULT の RF の追跡自体が無いので未対応。
   SOL の領域の内側は tsol.f が要素ごとに呼ぶ (turn の通常の前後と同じ。dy=DY、theta=ROTATE)。
 
-K64 のソースのままにした癖 (未確認の項目は docs/23_wake.md):
+K64 のソースのままにした癖 (未確認の項目は docs/13_wake.md):
   - tturn.f:263-264 の `dy=cmp%value(krot)` (ROTATE を dy に代入し、実際の dy は捨てる)、rot は未初期化の局所変数 → ここでは theta=0、dy=ROTATE の値。
   - txwdefslice のバンチ分割は、バンチ数 nb より多い間隔があると配列の外に書く (mb(nb+1)=np)。ここでは mb(nb+1)=np が読めるとして扱う。
   - 表の最後の 1 行は追跡では使われない (twxiwp の lwl0 = 行数 - 1。gs の実測で確認)。

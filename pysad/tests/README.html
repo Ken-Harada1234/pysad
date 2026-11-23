@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>pysad/tests/ (試験)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#目次">目次</a></li>
+<li><a href="#2-つの違い">2 つの違い</a></li>
+<li><a href="#全体の実行方法">全体の実行方法</a></li>
+<li><a href="#所要時間の目安">所要時間の目安</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="pysadtests-試験">pysad/tests/ (試験)</h1>
+<p>pysad の試験は、目的の違う 2 つのサブフォルダに分けてある。</p>
+<table>
+<thead>
+<tr>
+<th>フォルダ</th>
+<th>目的</th>
+<th>中身</th>
+<th>実行</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="script_tests/README.html"><code>script_tests/</code></a></td>
+<td>機能ごとの自動試験 (スクリプトテスト)</td>
+<td>198 本の試験ファイル、収集 2534 件。保存した SAD (K64) の出力、解析式、独立な数値計算と比べる</td>
+<td>pytest。全部で 1 時間 45 分ほど</td>
+</tr>
+<tr>
+<td><a href="regression_tests/README.html"><code>regression_tests/</code></a></td>
+<td>SAD (K64) との照合ベンチ (回帰テスト)</td>
+<td>50 ベンチ (Level 1〜14・16・22・24・26〜31)。保存済みの基準結果 (<code>.result</code>) と比べる。SAD の実行は不要</td>
+<td><code>run_regression.py</code>。全部で約 17 分、<code>QUICK=1</code> で約 7 分</td>
+</tr>
+</tbody>
+</table>
+<p><code>pysad/tests/</code> の直下には、この README と、両方が共有するラティス <code>kek-ls_v03_12.lat</code> (大きなリング A: 3 GeV、周長 603 m、3563 要素) がある。</p>
+<h2 id="目次">目次</h2>
+<ol>
+<li><a href="#2-つの違い">2 つの違い</a></li>
+<li><a href="#全体の実行方法">全体の実行方法</a></li>
+<li><a href="#所要時間の目安">所要時間の目安</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+</ol>
+<h2 id="2-つの違い">2 つの違い</h2>
+<ul>
+<li><strong>script_tests</strong>: 要素・コマンド・関数ごとに、小さなラティスや SAD スクリプトを pysad で走らせて判定する。基準は、(a) 保存した SAD (K64) の出力、(b) 解析式、(c) SAD・pysad のコードを使わない独立な数値計算。既定で互換モード k64 で走る。v2 の動作の試験は試験の中で <code>v2</code> を明示する。</li>
+<li><strong>regression_tests</strong>: SAD (K64) で取って保存した出力 (<code>bench_levelN.result</code>) と、pysad の出力を、ベンチごとの許容 (追跡は座標 1e-9 など) で突き合わせる。ベンチの内容はラティス全体の光学・エミッタンス・追跡・マッチング・DA・SADScript の関数など。</li>
+<li>一部の試験 (<code>test_emit_*</code>・<code>test_rotate</code>・<code>test_small_items</code>・<code>test_unstable</code>・<code>test_main_track</code>・<code>test_fourier_fit</code>) は、<code>regression_tests/</code> の基準結果と判定の部品 (<code>cmp_*.py</code>) を読む。</li>
+</ul>
+<h2 id="全体の実行方法">全体の実行方法</h2>
+<p>リポジトリのルートから (Python 3.12)。</p>
+<pre><code>set PYSAD_SAD_PACKAGES=&lt;SAD の Packages フォルダ&gt;              (PowerShell: $env:PYSAD_SAD_PACKAGES=&quot;...&quot;)
+py -3.12 -m pysad.nbcache --force                                numba のキャッシュを作り直す (初回・カーネルを直したあと)
+
+# script_tests (pytest)
+py -3.12 -m pytest pysad/tests -q -p no:cacheprovider `
+    --ignore=pysad/tests/script_tests/test_bend_feeddown.py `
+    --ignore=pysad/tests/script_tests/test_coord.py `
+    --ignore=pysad/tests/script_tests/test_sext_radiation.py
+
+# regression_tests
+set QUICK=1
+py -3.12 -u pysad/tests/regression_tests/run_regression.py
+</code></pre>
+<ul>
+<li><code>PYSAD_SAD_PACKAGES</code> (SAD の <code>Packages</code> のフォルダ) を設定しないと、GUI 系 (<code>test_plot.py</code>・<code>test_tclbridge.py</code> ほか) が skip する。SAD 本体が無くても、それ以外は通る。</li>
+<li><code>--ignore</code> する旧式の 3 本 (<code>test_bend_feeddown.py</code>・<code>test_coord.py</code>・<code>test_sext_radiation.py</code>) は、スクリプト形式で import 時に <code>sys.exit</code> を呼ぶため、pytest の収集を止める。</li>
+<li><code>PYSAD_SLOW=1</code> を設定すると、遅い試験 (CSR MakeZL など) も走る。ほかの環境変数 (<code>PYSAD_ERR_LATTICE</code>・<code>PYSAD_PY314</code>・<code>V241_POL_CACHE</code>) は <a href="script_tests/README.html"><code>script_tests/README.md</code></a> にある。</li>
+<li>試験と回帰を同時に走らせると、<code>test_plot.py::test_fitgaussian_plot_matches_gs</code> が PermissionError で落ちることがある (単独では通る)。続けて走らせる。</li>
+<li>回帰は <code>QUICK=1</code> なしで全部走らせることもできる。指定したベンチだけ走らせる (<code>run_regression.py 3b 12</code>) 方法は <a href="regression_tests/README.html"><code>regression_tests/README.md</code></a>。</li>
+</ul>
+<h2 id="所要時間の目安">所要時間の目安</h2>
+<ul>
+<li>script_tests 全部: 1 時間 45 分ほど。FITP の five の試験が約 10 分以上かかる。</li>
+<li>regression_tests: 全部で約 17 分、<code>QUICK=1</code> で約 7 分 (<code>run_regression.py</code> の各ベンチの目安の和。実測ではない)。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<ul>
+<li>pytest: 「通過・skip・失敗」の件数が出る。失敗は 0 が期待値。skip は、環境変数が無い試験 (上記) と、POSIX の fork が要る試験などで、件数は環境で変わる (<code>-rs</code> で理由が出る)。参照ファイルの読み先を直し忘れると、<code>skipif(not exists)</code> 付きの試験が skip になって気づきにくいので、skip の件数が増えていないか確認する。</li>
+<li>回帰: ベンチごとに PASS・<code>PASS*</code> (既知の不一致のみ)・FAIL・SKIP (<code>QUICK=1</code>) が一覧に出る。FAIL があれば終了コードが 1。</li>
+<li>件数・時間の現在の値は、リポジトリ直下の <a href="../../README.html"><code>README.md</code></a> の「オリジナルの SAD (gs) との一致度」の節にある。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

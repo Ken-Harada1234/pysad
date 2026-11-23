@@ -63,7 +63,13 @@ class TclBridge:
                 return chr(34) + x.replace(chr(92), chr(92) * 2).replace(chr(34), chr(92) + chr(34)) + chr(34)
             return self.I.to_str(x)
         B['ToInputString'] = _toinput
-        B['Environment'] = lambda a: os.environ.get(str(a[0]), '') if a and isinstance(a[0], str) else ''
+        # Environment[名前] は値を返し、Environment[名前, 値] は環境変数を設定する (fileops.py の定義と同じ。2 引数形を無視しない)
+        def _environment(a):
+            if len(a) == 2:
+                os.environ[str(a[0])] = str(a[1])
+                return Null
+            return os.environ.get(str(a[0]), '') if a and isinstance(a[0], str) else ''
+        B['Environment'] = _environment
         B['GetPID'] = lambda a: float(os.getpid())
         B['XQueryTree'] = lambda a: [a[0] if a else 0.0, 0.0, []]
         B['XInternAtom'] = lambda a: 1.0

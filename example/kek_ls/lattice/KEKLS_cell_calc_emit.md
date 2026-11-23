@@ -33,5 +33,5 @@ SIGZ [m]            =     .0027312327
 所要時間: gs 1 秒、pysad 3 秒 (この PC。k64 モード)。
 
 ## 未確認・限界
-- pysad の v2 (既定) モードは εx・σδ が K64 と 0.04% 違う (RINGC εx 134.37 pm rad、σδ 6.4045e-4。K64 のバグ B75 の修正。`docs/47_v2_changes.md`)。gs と同じ値は `PYSAD_COMPAT=k64`。
+- pysad の v2 (既定) モードは εx・σδ が K64 と 0.04% 違う (RINGC εx 134.37 pm rad、σδ 6.4045e-4。K64 のバグ B75 の修正。`docs/28_v2_vs_k64.md`)。gs と同じ値は `PYSAD_COMPAT=k64`。
 - エネルギー 3 GeV、周長 570.72 m、RF 2 MV、ハーモニック数 952 の設計値のラティス。誤差なし。

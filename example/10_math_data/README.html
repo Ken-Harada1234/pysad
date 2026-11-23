@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>10_math_data 一覧</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="10_math_data-一覧">10_math_data 一覧</h1>
+<p>数値・データ処理の例。当てはめ・補間・積分・最小化、特殊関数、行列関数、定数。ラティスは使わない (<code>FFS;</code> の後に直接書く)。式で値を検算できるものは、md に式と数値の照合表がある (<code>R:</code> で始まる出力行が表の元)。</p>
+<p>○一致 / △差あり (理由は各 .md) / ×gs 失敗 / ×pysad 未対応・失敗</p>
+<table>
+<thead>
+<tr>
+<th>例 (NAME.sad・.gs.txt・.pysad.txt・.md)</th>
+<th>内容</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="fn_Fit_FitGaussian_FitEmit.html">fn_Fit_FitGaussian_FitEmit</a></td>
+<td>Fit・FitGaussian・FitEmit</td>
+<td>○ (DesignMatrix の表示だけ pysad が数値微分の値。v2 は <code>InverseErf</code> が真値で FitGaussian が 1e-8 の桁で違う: B47)</td>
+</tr>
+<tr>
+<td><a href="fn_PolynomialFit.html">fn_PolynomialFit</a></td>
+<td>PolynomialFit (2 次・1 次)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_Spline.html">fn_Spline</a></td>
+<td>Spline (自然・傾き指定)、導関数、積分</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_NIntegrate.html">fn_NIntegrate</a></td>
+<td>NIntegrate (滑らか・特異・複素)</td>
+<td>△ (特異点の収束の警告の数値が違う。複素数は一致)</td>
+</tr>
+<tr>
+<td><a href="fn_DownhillSimplex.html">fn_DownhillSimplex</a></td>
+<td>DownhillSimplex (SADHelp の例ほか)</td>
+<td>○ (反復の出力形式が違う。A・B は最小に届かない K64 の動作)</td>
+</tr>
+<tr>
+<td><a href="fn_Elementary.html">fn_Elementary</a></td>
+<td>初等関数 (三角・指数・対数・双曲線・逆関数)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_Gamma_Erf.html">fn_Gamma_Erf</a></td>
+<td>Gamma・Erf・GammaRegularized ほか</td>
+<td>○ (LogGamma1 に対応。<code>InverseErf</code> は v2 が真値を返し gs の 1e-8 の誤差と違う: B47。k64 モードは一致)</td>
+</tr>
+<tr>
+<td><a href="fn_Bessel.html">fn_Bessel</a></td>
+<td>BesselJ・I・K</td>
+<td>△ (gs が J0(100)・I0(0) で誤り)</td>
+</tr>
+<tr>
+<td><a href="fn_BesselY_JZero.html">fn_BesselY_JZero</a></td>
+<td>BesselY・BesselJZero</td>
+<td>×gs 失敗 (NaN または応答なし。pysad は値を返す)</td>
+</tr>
+<tr>
+<td><a href="fn_SpecialFunctions_D.html">fn_SpecialFunctions_D</a></td>
+<td>LegendreP・HermiteH・Ei・Si・Fresnel・Airy・Zeta・PolyLog ほか</td>
+<td>△ (gs が HermiteH・Ei で誤り)</td>
+</tr>
+<tr>
+<td><a href="fn_NumericalFunctions.html">fn_NumericalFunctions</a></td>
+<td>Abs・Round・Mod・FractionalPart ほか</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_Matrix_LinearAlgebra.html">fn_Matrix_LinearAlgebra</a></td>
+<td>Det・Inverse・LinearSolve・Transpose・Outer・Inner・Dot</td>
+<td>○ (丸め誤差の差)</td>
+</tr>
+<tr>
+<td><a href="fn_Eigensystem.html">fn_Eigensystem</a></td>
+<td>Eigensystem (対称・回転・1 ターン行列)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_SingularValues.html">fn_SingularValues</a></td>
+<td>SingularValues (既定は逆数を返す)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="var_PhysicalConstants.html">var_PhysicalConstants</a></td>
+<td>物理定数 13 個と定義式の再計算</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="var_Constants.html">var_Constants</a></td>
+<td>Pi・Degree・GoldenRatio・I・INF・NaN</td>
+<td>△ (<code>I*I</code> の表示、<code>NaN==NaN</code>)</td>
+</tr>
+<tr>
+<td>fn_SpecialFunctions_gs_errors</td>
+<td>K64 (gs) が誤値・NaN・INF・無応答になる特殊関数の式 (Hypergeometric2F1・BesselJ・ExpIntegralEi・HermiteH・LegendreP・Binomial・HypergeometricU・BesselY・BesselK・Fresnel・AiryAi・InverseErf)。各行のコメントに真値と K64 の値</td>
+<td>v2 は真値を返す。gs の出力なし (<code>InverseErf[.3]</code> だけ v2 は .272462714727、k64 モードは K64 と同じ .272462711811)</td>
+</tr>
+<tr>
+<td>fn_SpecialFunctions_complex</td>
+<td>複素引数の PolyLog・Zeta・HurwitzZeta・HypergeometricU。独立な参照 (Borwein、Euler–Maclaurin、spence、積分表示) と相対 1e-11 以内</td>
+<td>gs の出力は <code>.gs.txt</code>。pysad の値は独立な参照と合う</td>
+</tr>
+<tr>
+<td>fn_SpecialFunctions_complex_scan</td>
+<td>複素引数の特殊関数の走査。12 個の複素数 × 60 の関数・形 = 732 式</td>
+<td>641 式が gs と 1e-9 で一致。残りは gs の誤り・不正確 (scipy と比べて pysad が正しい)。試験 <code>test_v2_P5_specfn_cx.py</code></td>
+</tr>
+</tbody>
+</table>
+<p>数値の桁・表示の細かい違いは追っていない (大きな差だけ md に書いた)。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

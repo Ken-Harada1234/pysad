@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flag_UNIPOL_BIPOL (UNIPOL と BIPOL)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方-k1-の-qf-qd">結果の読み方 (K1 の QF, QD)</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: flag_UNIPOL_BIPOL.md</div>
+<h1 id="flag_unipol_bipol-unipol-と-bipol">flag_UNIPOL_BIPOL (UNIPOL と BIPOL)</h1>
+<p>種別: フラグ。フォルダ: 03_matching。ラティス: <code>00_lattice/FODO_ring.sad</code>。エネルギー 3 GeV。フラグ: CELL。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>BIPOL</code> (既定): マッチング中に変数 (K1 など) の符号が変わってよい。<code>UNIPOL</code>: 符号を変えない (正の K1 は負にならない)。ただし各要素の <code>MIN</code>/<code>MAX</code> や <code>VariableRange</code> があればそちらが優先 (SADHelp)。</p>
+<ul>
+<li><strong>A</strong>: 解の K1 の符号が変わらない目標 (NX=6.2、NY=4.2): BIPOL でも UNIPOL でも同じ解になる。</li>
+<li><strong>B</strong>: 解のない目標 (NX=0.2、NY=0.2。安定領域の外) では収束せず (<code>Residual</code> が大きいまま)、どこで止まるかが経路 (フラグ) に依存する。</li>
+</ul>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>FREE QF QD;   FIT $$$;
+NX 6.2 NY 4.2;   GO;                     ! A BIPOL
+QF K1 0.7; QD K1 -0.6;   UNIPOL;   GO;   ! A UNIPOL
+BIPOL;   QF K1 0.7; QD K1 -0.6;   NX 0.2 NY 0.2;   GO;     ! B BIPOL
+QF K1 0.7; QD K1 -0.6;   UNIPOL;   GO;                      ! B UNIPOL
+</code></pre>
+<h2 id="結果の読み方-k1-の-qf-qd">結果の読み方 (K1 の QF, QD)</h2>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A BIPOL</td>
+<td>(0.648109, -0.539021)</td>
+<td>(0.648109, -0.539021)</td>
+</tr>
+<tr>
+<td>A UNIPOL</td>
+<td>(0.648109, -0.539021)</td>
+<td>(0.648109, -0.539021)</td>
+</tr>
+<tr>
+<td>B BIPOL</td>
+<td>(-0.005524, -0.005792) → NX,NY = (1.42, 1.299)</td>
+<td>(-0.008547, -0.008878) → (1.275, 1.443)</td>
+</tr>
+<tr>
+<td>B UNIPOL</td>
+<td>(0.111921, -0.138159) → (1.43, 1.913)</td>
+<td>(0.111921, -0.138159) → (1.43, 1.913)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>A: 2 変数 2 条件なので解は一意で、FODO の 2x2 行列の模型 (<code>tools/ana_fodo_ring.py</code>) で解ける: (0.648109, -0.539021) (gs・pysad の値 (0.648109, -0.539021) と 6 桁一致)。
+B: 安定領域 ($|\mathrm{tr}M|&lt;2$) の外へ目標があり、<strong>解は存在しない</strong> (式のとおり)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>A: <strong>一致</strong> (BIPOL・UNIPOL とも、解析解とも)。</li>
+<li>B UNIPOL: <strong>一致</strong> (K1 と最終チューンが全桁同じ)。</li>
+<li><strong>B BIPOL: 不一致 (△)。</strong> 解のない問題なので、gs と pysad で最終的に止まる点が違う (gs: K1=(-0.005524, -0.005792)、pysad: (-0.008547, -0.008878))。収束しない最適化の経路 (反復の刻み・特異値の扱い) に依存し、どちらが SAD の動作かは決められない。意味のある比較は収束する A。docs/04 の <code>fit1.sad</code> では gs と全桁一致とあるが、この目標では一致しない。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>実際に UNIPOL が効く (符号を変えたい解があるが禁止される) ケースを、安定領域の中で作れなかった (ここでは安定領域の外の B でだけ差が出る)。</li>
+<li><code>VariableRange</code> との優先関係は fn_FitValue_... の例で、K1 の限界だけ確認。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

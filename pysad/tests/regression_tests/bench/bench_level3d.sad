@@ -1,0 +1,90 @@
+! ============================================================
+! bench_level3d.sad — Level 3D benchmark: strength errors (DK, DDK)
+!   ラティスは bench_level3c.sad と同じ (QD K1=-1.7*0.3, QF-DQS-SF, QD-DQS-SD, DS=0.9)。
+!   DK  σ elem : 既定キーワード (QUAD は K1) への相対誤差 (errk, terror.f)
+!   DDK σ elem : K0 への絶対誤差 (BEND では追加の曲げ角)
+!   誤差: QF.2 に DK (1 台), QD* に DK (全台に別々の乱数), B.3 に DDK (1 台)。
+!   σ: DK 1e-3, DDK 1e-4。GCUT=2, SeedRandom[23]。
+!   比べる量: 誤差の値, 閉軌道, 光学 (β, η, チューン), Emittance[]。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING = (20*CELL);
+;
+
+FFS;
+$FORM="15.10";
+USE RING;
+CELL;
+CALC;
+emit;
+
+! ------------------------------------------------------------
+! (1) 強さの誤差
+! ------------------------------------------------------------
+GCUT = 2;
+SeedRandom[23];
+DK  1E-3 QF.2;
+DK  1E-3 QD*;
+DDK 1E-4 B.3;
+cell calc;
+dump;
+Print["=== Test 3D-1: errors (K1 / K0 after CALC) ==="];
+Print["E K1 QF.1 ",LINE["K1","QF.1"]];
+Print["E K1 QF.2 ",LINE["K1","QF.2"]];
+Print["E K1 QF.3 ",LINE["K1","QF.3"]];
+Do[Print["E K1 QD.",i," ",LINE["K1","QD."//ToString[i]]],{i,1,20}];
+Print["E K0 B.3  ",LINE["K0","B.3"]];
+Print["E K0 B.4  ",LINE["K0","B.4"]];
+
+! ------------------------------------------------------------
+! (2) 閉軌道 (入口, ORG.11)
+! ------------------------------------------------------------
+Print["=== Test 3D-2: closed orbit ==="];
+Print["O ^^^    ",{Twiss["DX","^^^"],Twiss["DPX","^^^"],Twiss["DY","^^^"],Twiss["DPY","^^^"]}];
+Print["O ORG.11 ",{Twiss["DX","ORG.11"],Twiss["DPX","ORG.11"],Twiss["DY","ORG.11"],Twiss["DPY","ORG.11"]}];
+
+! ------------------------------------------------------------
+! (3) 光学 (入口, ORG.11)
+! ------------------------------------------------------------
+Print["=== Test 3D-3: optics ==="];
+Print["T BX  ",Twiss["BX","^^^"]];
+Print["T BY  ",Twiss["BY","^^^"]];
+Print["T AX  ",Twiss["AX","^^^"]];
+Print["T AY  ",Twiss["AY","^^^"]];
+Print["T EX  ",Twiss["EX","^^^"]];
+Print["T EPX ",Twiss["EPX","^^^"]];
+Print["T BX11 ",Twiss["BX","ORG.11"]];
+Print["T BY11 ",Twiss["BY","ORG.11"]];
+Print["T QX  ",Twiss["NX","$$$"]/2/Pi];
+Print["T QY  ",Twiss["NY","$$$"]/2/Pi];
+
+! ------------------------------------------------------------
+! (4) エミッタンス
+! ------------------------------------------------------------
+Print["=== Test 3D-4: emittance ==="];
+emi=Emittance[];
+Print["M EMITX ",(Emittances/.emi)[1]];
+Print["M EMITY ",(Emittances/.emi)[2]];
+Print["M SIGE  ",MomentumSpread/.emi];
+Print["M U0    ",EnergyLossU0/.emi];
+
+stop;
+stop;

@@ -207,7 +207,7 @@ LINE
 !                                               `cell calc` の COD に効かないので (DUMP には値が出る)、成分ごとの DX・DY に直接入れる
 !   DK fe B*,Q*,S*       : 強さの誤差 (相対 rms fe)
 !   DTHETA te B*,Q*,S*   : 回転の誤差 (rms te [rad])
-! 成分ごとの値が効くように、`USE RING NOEXPAND` と `cell calc noexpand` を使う (既定の `cell calc` は同名の要素の値を揃える。docs/11 A56)。
+! 成分ごとの値が効くように、`USE RING NOEXPAND` と `cell calc noexpand` を使う (既定の `cell calc` は同名の要素の値を揃える。docs/29 A56)。
 ! 元の台本にあった FFS["MON 0 0 0 0 PM*;"] (モニターの誤差) は、K64 では何もしない (エラーになる) ので除いた。
 ! 種 seeds ごとに、(全部)・(ずれだけ)・(強さだけ)・(回転だけ) の 4 通りで、モニター PM.* の COD と分散のずれ、チューンを表示する。
 ! 元の print_*.sad (11 本) は同じ台本に、表示 (print_IEX_after・print_IEY_after・print_rep_after = 補正の固有値の数 IEX・IEY による差、

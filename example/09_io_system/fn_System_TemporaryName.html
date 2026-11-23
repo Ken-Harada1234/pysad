@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_System_TemporaryName (System, TemporaryName, Directory, Environment)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_System_TemporaryName.md</div>
+<h1 id="fn_system_temporaryname-system-temporaryname-directory-environment">fn_System_TemporaryName (System, TemporaryName, Directory, Environment)</h1>
+<p>種別: 関数 / フォルダ: 09_io_system / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。ファイルは <code>TemporaryName[]</code> か実行ディレクトリの作業ファイルで、最後に <code>DeleteFile</code> で消す。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>TemporaryName[]</code> は一時ファイル名 (呼ぶたびに違う)、<code>System[cmd]</code> はシェルコマンドを実行してリターンコードを返す。<code>Directory[]</code>、<code>Environment[]</code>。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>t1 = TemporaryName[];   r = System[&quot;echo from-shell &gt; &quot; // t1];
+c = OpenRead[t1]; Print[ReadString[c]]; Close[c];   System[&quot;exit 3&quot;] &lt;&gt; 0;   DeleteFile[t1];
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>2 回呼ぶと別の名前 (<code>t1 &lt;=&gt; t2</code> が 1)、名前は文字列。gs で <code>System["echo from-shell &gt; file"]</code> はファイルを作り (内容 <code>from-shell</code>)、リターンコードは 1 (<strong>成功でも 0 ではなく 1 と返った</strong>。SADHelp は "system return code" とだけ)、<code>System["exit 3"]</code> も 1 以外 (<code>&lt;&gt; 0</code> が真)。名前そのもの (<code>/tmp/...</code> の乱数部分) は実行ごとに変わるので表示していない。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>△ <strong>既定では意図して実行しない。</strong> pysad v2 は <code>System</code> を既定で実行せず、<code>$Failed</code> を返して案内を出す (<code>.pysad.txt</code> はこの状態。ファイルは作られず、そのあとの <code>OpenRead</code> のエラーが残る)。環境変数 <code>PYSAD_ALLOW_SYSTEM=1</code> (起動前) か <code>pysad.miscfn.allow_system(True)</code> で許可すると、シェルで実行して終了コード (成功 0) を返す。許可して走らせると、ファイルが作られ内容 (<code>from-shell</code>。Windows の <code>echo</code> で末尾に空白が付く) も読め、<code>System["exit 3"] &lt;&gt; 0</code> は真で gs と同じ。戻り値は <strong>v2 では成功が 0、gs は 1</strong>: <code>PYSAD_COMPAT=k64</code> + 許可なら 1 で gs と合う (確認済み。k64 で許可なしは 0 と「実行しません」の表示)。この 1 と 0 の違いは K64 の戻り値の癖で、成功時の意味は未確認 (SADHelp は "system return code" とだけ)。<code>TemporaryName</code>・<code>Directory</code>・<code>Environment</code> は一致。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li><code>System</code> の結果は OS (gs は WSL の Ubuntu、パスは <code>/tmp/...</code>) に依る。</li>
+<li>戻り値 1 の意味 (成功時) は未確認。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

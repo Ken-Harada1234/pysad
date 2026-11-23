@@ -1,9 +1,9 @@
 """
 MEASURE / TRCOD / LOGMEASURE (FFS のコマンド) と、その部品 (tlum.f、ttinit.f、ttstat.f、tbdecoup.f、tracke.f、trackb.f、trcoda.f) の翻訳。
 
-K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (docs/21 B42) ので、gs の参照は取れない。
+K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (docs/30 B42) ので、gs の参照は取れない。
 ここの実装は「ソースの読みのみ」で、値は解析式 (σ=√(εβ) など) と pysad の独立な経路 (CALC の Twiss、TrackParticles) で確かめた
-(pysad/tests/test_v2_C_measure.py、docs/history/v2_changes_C_measure.md)。
+(pysad/tests/script_tests/test_v2_C_measure.py、docs/history/v2_changes_C_measure.md)。
 
 - tlum / tluma : tlum.f の直訳 (二つのビームの重なりの実効面積)。bin は real*4 (K64 の `real*4 bin(2,0:nmesh,0:nmesh), alum`)。
 - tbdecoup     : tbdecoup.f の直訳 (6×6 のビーム行列 → 射影 / 非結合の emittance・β・α・分散・R1..R4)。
@@ -17,7 +17,7 @@ K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (
 - cmd_align    : TRCOD ALIGN (nalign.f)。区間の磁石の DX・DY を先頭の磁石の値に揃える。
 - cmd_putmeasure / cmd_getmeasure : PUTMEASURE / GETMEASURE (nfgetm.c、tfgetm.f)。測定値を環境変数 SADPOUT / SADPIN のファイルで受け渡す。
 - cmd_orbitjitter : ORBITJITTER x y (tfojit.f)。Twiss の DX・DY に要素ごとの正規乱数を足す。
-  (以上は v2 だけ。記録は docs/history/v2_changes_C2_measure.md、試験は pysad/tests/test_v2_C2_measure.py)
+  (以上は v2 だけ。記録は docs/history/v2_changes_C2_measure.md、試験は pysad/tests/script_tests/test_v2_C2_measure.py)
 - track_trpt   : MAIN の TRACK で TRPT ON のとき (tracka.f の trpt の枝: ttinit → Entrance の統計 → 追跡 → Exit の統計)。v2 だけ。
 """
 from __future__ import annotations

@@ -8,18 +8,18 @@ Plot 系の関数の例。グラフは Tk の窓に出るので標準出力に�
 |---|---|---|
 | [fn_Plot](fn_Plot.md) | Plot (関数 2 本、Identity) | ○ |
 | [fn_ListPlot](fn_ListPlot.md) | ListPlot (折れ線・点・誤差棒・凡例) | ○ |
-| [fn_ListContourPlot](fn_ListContourPlot.md) | ListContourPlot (sin cos のデータ) | ○ (2026-11-17 に lower の Tcl エラーを直した。項目 68 で同数) |
-| [fn_ListContourPlot_SADHelp](fn_ListContourPlot_SADHelp.md) | ListContourPlot の SADHelp の例 | ○ (2026-11-17 に修正。項目 132 で同数) |
+| [fn_ListContourPlot](fn_ListContourPlot.md) | ListContourPlot (sin cos のデータ) | ○ (項目 68 で同数) |
+| [fn_ListContourPlot_SADHelp](fn_ListContourPlot_SADHelp.md) | ListContourPlot の SADHelp の例 | ○ (項目 132 で同数) |
 | [fn_ListDensityPlot](fn_ListDensityPlot.md) | ListDensityPlot | ○ |
 | [fn_HistoPlot](fn_HistoPlot.md) | HistoPlot | ○ |
-| [fn_ParametricPlot](fn_ParametricPlot.md) | ParametricPlot (範囲に Pi あり / なし) | ○ (2026-11-17 に修正。範囲に Pi を含む A も一致) |
+| [fn_ParametricPlot](fn_ParametricPlot.md) | ParametricPlot (範囲に Pi あり / なし) | ○ (範囲に Pi を含む A も一致) |
 | [fn_FitPlot](fn_FitPlot.md) | FitPlot | ○ |
 | [fn_ColumnPlot](fn_ColumnPlot.md) | ColumnPlot (pysad で未確認だった) | ○ (動く) |
-| [fn_PointSymbol](fn_PointSymbol.md) | PointSymbol の一覧 (未確認だった) | ○ (2026-11-17 に修正。名前の文字も項目 30 も一致) |
+| [fn_PointSymbol](fn_PointSymbol.md) | PointSymbol の一覧 | ○ (名前の文字も項目 30 も一致) |
 | [fn_LaTeX](fn_LaTeX.md) | LaTeX 文字列 (未確認だった) | ○ (両方 LaTeX 無効の状態で一致。LaTeX 有効時は未確認) |
 | [fn_OpticsPlot](fn_OpticsPlot.md) | OpticsPlot (BX BY EX と配置) | △ (項目数 308 対 313、文字の重なり消し) |
-| [fn_OpticsPlot_mpl](fn_OpticsPlot_mpl.md) | OpticsPlot・Plot・ListPlot を matplotlib に描く (`$DisplayFunction=MatplotlibDrawer;`、v2.4.1。pysad のみ) | gs には `MatplotlibDrawer` が無い。Graphics の要素数・座標と matplotlib 側のデータが一致 (docs/42 §7c) |
-| [fn_DRAW](fn_DRAW.md) | FFS の DRAW (v2.4.1、matplotlib。FODO・ASTRID2) | gs は表示環境がなく描けない。描く前のデータは gs の Graphics と一致 (docs/42 §7b) |
+| [fn_OpticsPlot_mpl](fn_OpticsPlot_mpl.md) | OpticsPlot・Plot・ListPlot を matplotlib に描く (`$DisplayFunction=MatplotlibDrawer;`、pysad のみ) | gs には `MatplotlibDrawer` が無い。Graphics の要素数・座標と matplotlib 側のデータが一致 (docs/21 §6) |
+| [fn_DRAW](fn_DRAW.md) | FFS の DRAW (matplotlib。FODO・ASTRID2) | gs は表示環境がなく描けない。描く前のデータは gs の Graphics と一致 (docs/21 §5) |
 | [fn_GeometryPlot](fn_GeometryPlot.md) | GeometryPlot | ○ |
 | [fn_BeamPlot](fn_BeamPlot.md) | BeamPlot (未確認だった) | △ (gs は楕円なし、pysad は描く) |
 

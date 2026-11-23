@@ -1,5 +1,5 @@
 # elem_MULT_ANGLE
-種別: 要素 (ANGLE 付きの MULT) / フォルダ: 07_spin_solenoid_special / ラティス: `00_lattice/multa_ring.sad` (新規。`FODO_ring.sad` の偏向磁石を ANGLE 付きの `MULT` に置き換えた `RINGMA0` と `RINGMA1`)。3 GeV / フラグ: `NORFSW NORAD NOFLUC`。参考: `docs/28_mult_angle.md`
+種別: 要素 (ANGLE 付きの MULT) / フォルダ: 07_spin_solenoid_special / ラティス: `00_lattice/multa_ring.sad` (新規。`FODO_ring.sad` の偏向磁石を ANGLE 付きの `MULT` に置き換えた `RINGMA0` と `RINGMA1`)。3 GeV / フラグ: `NORFSW NORAD NOFLUC`。参考: `docs/19_other_elements.md`
 
 ## 何を見る例か
 `MULT` は多極磁石だが、`ANGLE`≠0 を与えると曲げ磁石の上に多極成分 ($K_0$、$K_1$、$K_2$、…) をのせた要素になる (`tmulta`)。ANGLE 付きの MULT で、(1) 多極成分なしなら BEND と同じ結果になること、(2) $K_1\ne0$ の複合機能型磁石を、解析式 (行列の積) と照合する。
@@ -42,6 +42,6 @@ $$M_x=\begin{pmatrix}\cos\phi_x&\sin\phi_x/\sqrt{K_x}\\-\sqrt{K_x}\sin\phi_x&\co
 ○ 一致 (全 6 行が印字桁まで同じ。式とも 8 桁一致)。
 
 ## 未確認・限界
-- $K_1$ だけ。$K_0$ (双極の過不足)、$K_2$ 以上、スキュー成分 (`SK`)、`BZ`、`VOLT` (最初の版では pysad 未対応と書いた。v2 の SOL 領域内の MULT と領域の外の RF つき MULT の記述が `docs/47_v2_changes.md` にあるが、この例では確かめていない)、`F1`、`TAPER`、`L=0` は見ていない。
+- $K_1$ だけ。$K_0$ (双極の過不足)、$K_2$ 以上、スキュー成分 (`SK`)、`BZ`、`VOLT` (v2 の SOL 領域内の MULT と領域の外の RF つき MULT の記述が `docs/28_v2_vs_k64.md` にあるが、この例では確かめていない)、`F1`、`TAPER`、`L=0` は見ていない。
 - 追跡の 1 周の式による照合はしていない (チューンと β だけ)。
 - 水平のエッジ項の符号 (+) と垂直 (−) は、$K_1=0$ のチューンが一致するように選んだ (SAD ソースでの確認ではない)。

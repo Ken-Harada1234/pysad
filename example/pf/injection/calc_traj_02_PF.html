@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>calc_traj_02_PF (計算の関数化と Courant-Snyder 不変量)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: calc_traj_02_PF.md</div>
+<h1 id="calc_traj_02_pf-計算の関数化と-courant-snyder-不変量">calc_traj_02_PF (計算の関数化と Courant-Snyder 不変量)</h1>
+<p>KEK の SAD チュートリアルの「モジュール化」(<code>calc_traj_02</code>) をもとにした例。加速器・ラティス・線・フラグは <code>calc_traj_01_PF</code> と同じ (PF 2.5 GeV、<code>lattice/v9_16_inj_noSF.sad</code>、<code>INJL</code>、放射などは OFF)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>calc_traj_01</code> の計算を関数にまとめ、キッカーの値を変えて繰り返せるようにする。関数は <code>名前[引数_]:=( 文; 文; 戻り値 )</code> の形で、メインレベルのコマンドは <code>FFS["..."];</code> に入れる。さらに、振動のエミッタンス (Courant-Snyder 不変量) を、ライン終端の Twiss パラメータと (x, x') から計算する。GUI のボタン (Up/Down) の代わりに、<code>Do</code> で KK4 を 0.2 mrad ずつ振る。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>CalcSBBump[] := ( Twiss[&quot;DX&quot;,&quot;^^^&quot;] = 0; Twiss[&quot;DPX&quot;,&quot;^^^&quot;] = 0; FFS[&quot;ins calc;&quot;]; );   (* 初期の軌道をゼロにして INS *)
+DispCSInv[dx0_,dxp0_] := ( b0 = Twiss[&quot;BX&quot;,&quot;$$$&quot;]; a0 = Twiss[&quot;AX&quot;,&quot;$$$&quot;]; g0 = (1+a0*a0)/b0;
+    csinv = g0*dx0*dx0 + 2*a0*dx0*dxp0 + b0*dxp0*dxp0;  csinv*1e9 );                   (* 最後の式が戻り値、nm rad *)
+SetKicker[k1_,k2_,k3_,k4_] := ( LINE[&quot;K0&quot;,&quot;KK1&quot;] = k1/1000; ... FFS[&quot;ins calc;&quot;]; );
+CalcTrajectories[dxinj_,dxpinj_,dpinj_] := ( ... TrackParticles ... {x(INJ), x(end), x'(end), CS蓄積, CS入射, CS入射dp} );
+Do[ SetKicker[-1.89, 0, -1.4, k4]; CalcSBBump[]; r = CalcTrajectories[21.5, 2, 1]; Print[...]; ,{k4,-3.2,-2.4,0.2}];
+</code></pre>
+<p>元のスクリプトの GUI 用の変数の型の扱い (<code>ToExpression[ToString[x]*1.00]</code>) は、ここでは窓が無いので使わない (<code>calc_traj_03_PF</code> で使う)。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>END BX AX PSIX(end)</code> と <code>KK4 ...</code> は照合用の Twiss。<code>BASE</code> の 3 行 (基準のキッカー値: 入射点の蓄積ビームの x、終端の x・x'、CS 不変量 3 つ)。<code>SCAN</code> の 5 行 (KK4 を -3.2 から -2.4 mrad まで)。</p>
+<table>
+<thead>
+<tr>
+<th>KK4 [mrad]</th>
+<th>蓄積ビーム x(入射点) [mm]</th>
+<th>終端の x [mm]</th>
+<th>終端の x' [mrad]</th>
+<th>CS 不変量 [nm rad]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-3.2</td>
+<td>11.2447</td>
+<td>0.8625</td>
+<td>-0.5591</td>
+<td>1828.8</td>
+</tr>
+<tr>
+<td>-3.0</td>
+<td>11.2447</td>
+<td>0.6907</td>
+<td>-0.4014</td>
+<td>976.2</td>
+</tr>
+<tr>
+<td>-2.8 (基準)</td>
+<td>11.2447</td>
+<td>0.5187</td>
+<td>-0.2437</td>
+<td>391.5</td>
+</tr>
+<tr>
+<td>-2.6</td>
+<td>11.2447</td>
+<td>0.3467</td>
+<td>-0.0859</td>
+<td>74.5</td>
+</tr>
+<tr>
+<td>-2.4</td>
+<td>11.2447</td>
+<td>0.1747</td>
+<td>+0.0718</td>
+<td>25.3</td>
+</tr>
+</tbody>
+</table>
+<p>基準の CS 不変量 (nm rad): 蓄積ビーム 391.5、入射ビーム 7115.8、δ=+1 % の入射ビーム 4870.9 (PF の εx=34.5 nm に対して、入射ビームの振動のエミッタンスは 200 倍ほど大きい)。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<ul>
+<li>入射点 (KK4 より上流) の蓄積ビームの x は、KK4 に依らず 11.2447 mm で一定 (表のとおり)。</li>
+<li>KK4 は終端より上流にあるので、終端の x は KK4 に 1 次で比例する。傾きは $\partial x_{\rm end}/\partial\theta_4=-\sqrt{\beta_4\beta_{\rm end}}\sin(\psi_{\rm end}-\psi_4)$。</li>
+<li>不変量: 蓄積ビームの終端での $\gamma x^2+2\alpha xx'+\beta x'^2$ の式を、表の x・x' と終端の Twiss ($\beta=4.6293$ m、$\alpha=-0.2202$) で手計算して比べた。</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>傾き $\partial x_{\rm end}/\partial k_4$ [mm/mrad] ($\beta_4$=3.3454、$\psi_4$=6.1392、$\beta_{\rm end}$=4.6293、$\psi_{\rm end}$=9.0605)</td>
+<td>0.863 (符号は K0 の向き)</td>
+<td>0.860 (表の -3.2 と -2.4 の差から)</td>
+<td>0.860</td>
+</tr>
+<tr>
+<td>基準の CS 不変量 [nm rad] ($\gamma x^2+2\alpha xx'+\beta x'^2$、x=0.518722 mm、x'=-0.243671 mrad)</td>
+<td>391.46</td>
+<td>391.46</td>
+<td>391.46</td>
+</tr>
+</tbody>
+</table>
+<p>傾きは 0.4 % で一致 (厚いキッカーを中点で近似)。CS 不変量は同じ式を別に評価した検算で、全桁一致。KK4 を -2.4 から -3.2 へ強めると不変量が増える (KK4 が弱いほど蓄積ビームの終端のずれが小さく、-2.4 mrad で 25 nm rad まで下がる)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 モードと k64 モード</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は K64 のバグを含まない計算なので (<code>docs/28_v2_vs_k64.md</code>。主に <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 B75 と <code>MomentumCompaction</code> B77)、この例の出力のうち <code>Emittance[]</code> の表示 (εx が数 % 大きい、εz・減衰率・α・バケット高さなど) と、それに依る量が gs と違う。以下の「一致」の判定は k64 モードの結果。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>○ 一致 (<code>BASE</code>・<code>SCAN</code> の 8 行、<code>END</code>・<code>KK4</code> の行が全桁一致)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>KK4 の値を変えても入射点の蓄積ビームの位置が変わらない (KK4 は入射点の下流) ので、入射ビームとの分離は KK1〜KK3 で決まる。この例は KK4 だけ振っており、KK1・KK3 の組み合わせでバンプを最適化する (FIT) ことはしていない。</li>
+<li>不変量は線の終端 (INJL の端) での値で、リングを 1 周した値ではない (<code>INJL</code> は直線部の終わりまで)。</li>
+<li>関数名・引数の型 (<code>dx0_</code> など) の指定は元と同じ書き方。引数に型を付けない <code>_</code> だけのパターンのみ使い、<code>Module</code>・<code>Block</code> での局所変数化はしていない (変数はすべて大域)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

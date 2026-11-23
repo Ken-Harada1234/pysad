@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>32. SAD ソースの構造とコールスタック</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-概要">1. 概要</a></li>
+<li><a href="#2-フォルダツリー-実在するもののみ">2. フォルダツリー (実在するもののみ)</a></li>
+<li><a href="#3-アーキテクチャ">3. アーキテクチャ</a><ul>
+<li><a href="#31-6-層">3.1 6 層</a></li>
+<li><a href="#32-nan-タギング">3.2 NaN タギング</a></li>
+<li><a href="#33-32-bit-制約">3.3 32 bit 制約</a></li>
+<li><a href="#34-ビルド-mk--config">3.4 ビルド (mk/ + config/)</a></li>
+<li><a href="#35-インタープリタチェーン">3.5 インタープリタチェーン</a></li>
+</ul>
+</li>
+<li><a href="#4-主要コマンド関数と実装pysad-の対応">4. 主要コマンド・関数と実装、pysad の対応</a></li>
+<li><a href="#5-コールスタックと-pysad-の関数名">5. コールスタックと pysad の関数名</a><ul>
+<li><a href="#51-trackparticles">5.1 TrackParticles</a></li>
+<li><a href="#52-emittance">5.2 Emittance</a></li>
+<li><a href="#53-calc-cal">5.3 CALC (CAL)</a></li>
+<li><a href="#54-go-fit">5.4 GO (FIT)</a></li>
+<li><a href="#55-dynamicaperturesurvey">5.5 DynamicApertureSurvey</a></li>
+</ul>
+</li>
+<li><a href="#6-デッドコード">6. デッドコード</a></li>
+<li><a href="#7-関連文書">7. 関連文書</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 32_source_analysis.md</div>
+<h1 id="32-sad-ソースの構造とコールスタック">32. SAD ソースの構造とコールスタック</h1>
+<p>この文書で分かること: K64 版 SAD のソースの構成 (フォルダ、6 層のアーキテクチャ、ビルド)、主要コマンドが Fortran のどのルーチンを通って実行されるか、pysad のどの関数がそれに対応するか、使われていないコード (デッドコード)。
+前提: SAD (Strategic Accelerator Design。KEK 発の加速器光学・追跡コード) の基本的な使い方と、pysad の概要 (docs/01)。
+読む順: §1 概要、§3 アーキテクチャ、§4 コマンドと実装の対応表、§5 コールスタックの順。§2 と §6 は必要なときに引く。</p>
+<p>対象 SAD は K64 版 (https://github.com/KatsOide/SAD)。K64 は、このリポジトリが翻訳元にしている SAD のソース版である。コマンドの意味は CERN SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html) を先に見る。数値の根拠はローカルの <code>&lt;SAD&gt;\src</code>。ソースの行番号は 2026-10 時点、ファイル数・行数は 2026-11-06 に数えた値。</p>
+<p>用語:</p>
+<ul>
+<li><strong>SADScript</strong>: SAD の Mathematica 風のスクリプト言語 (拡張子 .n)。</li>
+<li><strong>FFS</strong>: SAD のラティスに対して CALC (光学計算)・FIT (マッチング)・EMIT (エミッタンス)・USE などのコマンドを実行する部分。コマンド分岐は <code>tffsa.f</code>、本体は <code>tffs.f</code> と <code>tffscalc.f</code>。FFS の語の展開名は未確認 (「Flexible Function System」は根拠なし)。</li>
+<li><strong>pysad の「直訳」</strong>: Fortran のルーチンを、構造・手順を変えずに Python に書き写したもの。</li>
+</ul>
+<p>未対応・状況は docs/31、ファイル別の翻訳状況は docs/33 にある。この文書は構造とルーチンの対応だけを扱う。</p>
+<hr />
+<h2 id="1-概要">1. 概要</h2>
+<p>SAD は、固定形式 Fortran (module / select case などの F90 構文を多用) と一部の C/C++ をコアに、Mathematica 風の SADScript を持つ。次の表は、ソースの規模と pysad の規模を並べたものである。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>実測</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/*.f</code></td>
+<td>474 本、計 141,678 行 (<code>cat src/*.f \| wc -l</code>)</td>
+</tr>
+<tr>
+<td><code>src/*.c</code> / <code>src/sim/</code></td>
+<td>38 本 / 42 ファイル (.c 20、.h 16 ほか)</td>
+</tr>
+<tr>
+<td><code>src/inc/</code></td>
+<td>35 エントリ (.inc 33 + changelog + k64.readme)。大半は全行コメントアウト</td>
+</tr>
+<tr>
+<td><code>Packages/</code></td>
+<td>82 エントリ (.n 73、.py 6 ほか)</td>
+</tr>
+<tr>
+<td><code>mk/</code></td>
+<td>.mk 19 本 + Makefile 2 本</td>
+</tr>
+<tr>
+<td>pysad (現行系統)</td>
+<td><code>pysad/*.py</code> 71 本、計 57,124 行 (2026-11-17 に数えた。非推奨の旧 API ffs/matching/tracking/optics の 3,911 行を含む)。試験の件数は docs/27 §5.1 の最新の通し (GUI 系は <code>PYSAD_SAD_PACKAGES</code> が無いと skip)</td>
+</tr>
+</tbody>
+</table>
+<p>ファイルの分類 (この記号は docs/33 の表でも使う): 🔴A 物理コア / 🟡B 数学 / 🔵C インタープリタ / 🟢D グラフィックス / ⚫E ビルド / 🟣F SADScript パッケージ / 🟤G 外部ライブラリ。pysad の翻訳の対象は A と B。C は <code>sadscript.py</code> + <code>ffscmd.py</code> で最小限を自前実装し、D・E・G は不要としている。</p>
+<h2 id="2-フォルダツリー-実在するもののみ">2. フォルダツリー (実在するもののみ)</h2>
+<pre><code>&lt;SAD&gt;/
+├ src/   *.f 474 / *.c 38 / *.h 9
+│   ├ tftrack.f tturn.f track.f tturne.f tbend.f tquad.f tsol.f ... (追跡・行列)
+│   ├ qcell.f qtwiss.f tffscalc.f temit.f INTGRL.f                  (CALC / EMIT / RADINT)
+│   ├ tfstk.f tfetok.f tfeval.f tfestk.f tfeeval.f tfefun.f tfefun1.f (インタープリタ)
+│   ├ calc.y/calc.c  SAD1 MAIN の数値式 (SADScript とは無関係)
+│   ├ inc/  gdtoa/(51)  sim/(OS 抽象化 C 層)
+├ Packages/ init.n Optics.n emit.n dapert.n Fit.n correction.n optimize.n ... Plots 系 / Tkinter 系 / CaSad 系 / sad.py
+├ extensions/ RandomMT/  sad+/ (DA (微分代数), C++ 33 本)  Standard/ (Tkinter, Xlib)
+├ contrib/ gdtoa BBBrem_dir libtai-0.60 tcl8.6.11 tk8.5.18 tk8.6.11 btkshim patches tools
+├ mk/ (sad.obj.mk ほか)  config/ (GCC.spec)  sad.conf  Makefile
+</code></pre>
+<h2 id="3-アーキテクチャ">3. アーキテクチャ</h2>
+<h3 id="31-6-層">3.1 6 層</h3>
+<p>SAD は 6 層でできており、pysad は 1〜5 層を Python のモジュールに対応させ、6 層は不要としている。</p>
+<table>
+<thead>
+<tr>
+<th>層</th>
+<th>内容</th>
+<th>pysad 側</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 SADScript (.n/.sad)</td>
+<td>ユーザスクリプト・格子</td>
+<td><code>sadscript.py</code></td>
+</tr>
+<tr>
+<td>2 パーサ</td>
+<td>tfetok (字句) + tfeval/tfestk (演算子順位)。式木はリスト。<strong>バイトコードやスタックマシンではない</strong>。calc.y は無関係</td>
+<td><code>sadscript.py</code> (Pratt 構文)</td>
+</tr>
+<tr>
+<td>3 評価器</td>
+<td>tfeeval (式木の再帰評価)、tfefun/tfefun1 (組込関数、id&gt;1000 は tfefun1 の computed goto)</td>
+<td><code>sadscript.py</code> / <code>ffscmd.py</code> の組込表、<code>sadlist.py</code> (リスト系組み込み)</td>
+</tr>
+<tr>
+<td>4 FFS</td>
+<td>tffs / tffsa (コマンド分岐) / tffscalc</td>
+<td><code>ffscmd.py</code></td>
+</tr>
+<tr>
+<td>5 物理コア Fortran</td>
+<td>tturn/tturne/qtwiss/temit/...</td>
+<td>docs/33 の各モジュール</td>
+</tr>
+<tr>
+<td>6 C OS 層</td>
+<td>sim/ (メモリ、シグナル、動的リンク、X11/Tk 薄グルー)</td>
+<td>不要</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-nan-タギング">3.2 NaN タギング</h3>
+<p>全 SADScript オブジェクトは 64 bit ディスクリプタ。実数以外は IEEE double の NaN 空間に型とアドレスを埋める (<code>tfstk.f:822-823</code>: ktfmask = z'fffe000000000000'、ktamask = z'0001ffffffffffff')。型は ktfnull / ktfother / ktfoper / ktfref / ktflist (= ktfobj) / ktfpat / ktfcx / ktfstring / ktfsymbol。要素・ビームラインは FFS 側データ構造で別管理 (要素コードは module maccode)。pysad は Python のネイティブ型で表すため、この仕組みは不要。</p>
+<h3 id="33-32-bit-制約">3.3 32 bit 制約</h3>
+<p>ヒープ全体が 32 bit 前提 (MAP_32BIT) ということはない。アドレスは integer*8 (有効 49 bit)。残る 32 bit 制約は k64.readme の通りスタック索引とリスト/文字列長 (&lt; 2**31)。<code>sim/unix_memory_.c</code> は既定 SAD_OFFSET_T=integer4 (MAP_32BIT は TRY_SAD_MAP_ADDR32 定義時のみ)、<code>unix_memory8_.c</code> は integer8 版の 22 行ラッパで、どちらも OBJSIM でビルドされ使用される。</p>
+<h3 id="34-ビルド-mk--config">3.4 ビルド (mk/ + config/)</h3>
+<ul>
+<li>コンパイラフラグは <code>config/GCC.spec</code>: <code>-fno-second-underscore -fdollar-ok -fargument-alias -falign-functions=8 -fno-range-check</code> など。</li>
+<li><code>mk/sad.obj.mk</code>: OBJMOD (tfstk, temit, tffs など 13 本)、OBJF、OBJRC、OBJAUTO (tturn, tturne, tbend, tquad, qtwiss, qcell, tcod, tftrack, track 等 127 本)、OBJ0〜6、OBJSIM、OBJGLUE。<strong>OBJOBS (mbmp, pqcell, ttdr, pmeas 等 66 本) は定義のみでビルドされない</strong>。</li>
+<li><code>sad.conf</code>: USE_X11 / USE_TCLTK は YES、USE_EPICS は既定コメントアウト。<code>PySad.c</code> / <code>tfPyInter_.c</code> / <code>PyConfig.c</code> (Python 2 系 API) は mk/ に載らず既定ビルドに入らない。pysad はこのブリッジを使わない (Python 側が SAD を呼ぶ構成ではなく、SAD の計算を Python に直訳している)。</li>
+</ul>
+<h3 id="35-インタープリタチェーン">3.5 インタープリタチェーン</h3>
+<pre><code>tfeval (tfetok でトークン化 → tfestk で式木) → tfeevalref (tfeeval) → tfefun (組込) → tfefun1 (ID 1001〜: FFS 系)
+  → tftrack→tturn / temit / tfdapert / tffs ...
+</code></pre>
+<p>主要ファイル行数: tfstk.f 5,222、tfetok.f 640、tfeval.f 428、tfestk.f 975、tfeeval.f 1,059、tfefun.f 4,451、tfefun1.f 170、tfinitn.f 993、tffs.f 3,191、tffsa.f 1,838、tffscalc.f 629。<code>pqcell.f</code> は mbmp.f からのみ呼ばれ OBJOBS なので非ビルド。</p>
+<hr />
+<h2 id="4-主要コマンド関数と実装pysad-の対応">4. 主要コマンド・関数と実装、pysad の対応</h2>
+<p>次の表は、主要なコマンドが SAD でどのルーチンを通って実行され (呼出チェーン。<code>ファイル:行</code>)、pysad のどの関数が対応するかを示す。右端の列は、その対応の限界・注意 (gs との照合の桁は <a href="history/32_source_analysis_validation.md">history/32_source_analysis_validation.md</a>)。</p>
+<table>
+<thead>
+<tr>
+<th>コマンド / 関数</th>
+<th>SAD 実装 (呼出チェーン)</th>
+<th>pysad 対応</th>
+<th>限界・注意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TrackParticles[]</code></td>
+<td>tfinitn:917 (ID 1005) → tfefun1:70 → tftrack:8 → tturn:36 → tturn1:153</td>
+<td><code>ffscmd.FFS.fn_track</code> → <code>track6n.track_particles_fast</code> (numba) / <code>track6.track_particles</code>。POL かつ RAD ON は純 Python の <code>track6</code> (<code>sprot</code>・<code>bsi</code>)、RADLIGHT は <code>ffscmd._RadLight</code> (tlinit / tlstore / tlresult)、MULT ANGLE≠0 は <code>multa.py</code>、COORD・TCAVI・UND・BEAMBEAM・WAKE・MAP はそれぞれ <code>coord.py</code>・<code>tcav.py</code>・<code>und.py</code>・<code>beambeam.py</code>・<code>wake.py</code>・<code>elements.Map</code></td>
+<td>FLUC の乱数状態は SAD と一致する</td>
+</tr>
+<tr>
+<td>FFS CALC (4D)</td>
+<td>tffsa:544 → tffscalc:109 → qcell1 (qcell:27) → qcod/qtwiss1</td>
+<td><code>lattice.Lattice.twiss</code>, <code>_qcod_periodic</code>, <code>_one_turn_cod_matrix</code></td>
+<td>誤差・オフモメンタム付きは照合の桁が下がる (docs/27 §3.1)</td>
+</tr>
+<tr>
+<td>FFS CALC6D</td>
+<td>tffscalc → qcell1 → qcell6d (qcell.f:404)</td>
+<td><code>calc6d.calc6d</code> (<code>tfetwiss</code>, <code>etwiss2ri</code>, <code>_closed_orbit</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td>FFS EMIT / <code>Emittance[]</code></td>
+<td>tffsa:988 → temitf → temit:78 → tcod → tturne → tecalc</td>
+<td><code>emit6d.emittance6d</code> / <code>tturne</code> / <code>tecalc</code>、規則一式は <code>emit_extra.emittance_rules</code>。POL のスピンは <code>spin.py</code>、SOL 領域は <code>solemit.py</code>、COORD・TCAVI・UND・MULT ANGLE≠0・MAP は <code>coord.py</code>・<code>tcav.py</code>・<code>und.py</code>・<code>multae.py</code>・<code>elements.Map</code></td>
+<td>OneTurn/Matrix 系は照合の桁が別。POL の MULT・空洞・SOL は <a href="../pysad/tests/script_tests/test_spin.py"><code>test_spin.py</code></a></td>
+</tr>
+<tr>
+<td>FFS RADINT</td>
+<td>tffsa:617 → INTGRL:11</td>
+<td><code>radint.py</code> (直訳)。<code>lattice._radiation_integrals_bend</code> は BEND のみの独自実装</td>
+<td></td>
+</tr>
+<tr>
+<td>FFS CHRO / 色収差</td>
+<td>tffsa:609 → tfchro.f</td>
+<td><code>CHROMATICITY</code> コマンドに対応 (docs/33 §9)。色収差の値はチューンの DP0 スキャン + <code>PolynomialFit</code> (Fit.n) でも求める</td>
+<td></td>
+</tr>
+<tr>
+<td>FFS GO (FIT)</td>
+<td>tffsa:1207 → tffsmatch:15 (tfsolv, tgrad, fmincube)</td>
+<td><code>match6.Matcher.go</code> (数値微分)、<code>match6d.AnalyticMatcher</code> (tffsqu/qdcell 解析微分)</td>
+<td>反復数・残差・K1 は SAD と一致。解析版は SAD の反復列と K1 を再現</td>
+</tr>
+<tr>
+<td><code>CalculateOptics[]</code></td>
+<td>tfoptics.f (qcell1 の薄いラッパー)</td>
+<td><code>ffscmd.fn_calculate_optics</code> (4 次元の cell/INS・区間・結合・分散、idim=3 は全周)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>DynamicApertureSurvey</code></td>
+<td>dapert.n → tfdapert:1 → trackd:37 → tturn、損失は tapert</td>
+<td><code>dapert.dynamic_aperture</code> (trackd/tapert の独自実装)、追跡は track6n</td>
+<td>NORAD は地図・Score が完全一致。RAD+FLUC は損失周の乱数が未一致</td>
+</tr>
+<tr>
+<td><code>TouschekLifetime</code></td>
+<td>emit.n → temit (INTRA ON: tintrb) の TouschekTable</td>
+<td><code>touschek.touschek_table</code> / <code>touschek_lifetime</code></td>
+<td>RADCOD ON は照合の桁が下がる</td>
+</tr>
+<tr>
+<td>ジオメトリ (GX/GY/GZ/CHI)</td>
+<td>tfgeo:1 (tfgeo/tfgeo1) / tgrot.f (geolib)</td>
+<td><code>geo.compute_geo</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>SynchroBetaEmittance</code></td>
+<td>emit.n → tfemits / temits.f</td>
+<td><code>synchrobeta.py</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>RadiationField</code> / <code>RadiationSpectrum</code></td>
+<td>tlinit.f の tlcalc ほか (RADLIGHT の軌道が入力)</td>
+<td><code>radfield.py</code></td>
+<td>RadiationField は gs が SIGSEGV (docs/30 B49) なので、等速運動の場との比較のみ。軌道は gs と一致</td>
+</tr>
+<tr>
+<td>CSR 系 (<code>CSRTrack</code> <code>CSRHaissin</code> <code>CSRSetupOY</code> <code>CSRMatrix</code> <code>CSRInit</code> <code>CSRConvert</code>)</td>
+<td>csrtrack.f、csroy.f、csrtest.f (csrhelmat)</td>
+<td><code>csr.py</code></td>
+<td>CSROYMatrix は gs が wrongtype (B60) で未照合</td>
+</tr>
+<tr>
+<td><code>GaussianCoulomb(Fitted)</code> / BBBrem</td>
+<td>tspac.f (bbkick1)、tintrb.f (twspu)、tbbbrem.f</td>
+<td><code>gausscoul.py</code>、<code>bbbrem.py</code></td>
+<td>docs/06・14</td>
+</tr>
+<tr>
+<td>DELCOR</td>
+<td>tcorr.f、tvcorr.f</td>
+<td><code>ffscmd._delcor</code></td>
+<td>docs/04</td>
+</tr>
+<tr>
+<td>MAIN TRACK</td>
+<td>ActTra:257 → track.f:1</td>
+<td><code>maintrack.py</code> (TRACK コマンドの手順を再現。PHSPLOTS の描画は無視、FOURIE ON は未対応)</td>
+<td>SAD K64 の MAIN TRACK 自体は tinip で SIGSEGV のため、SADScript で同じ手順を書いた版 (bench_level27a/b) と照合</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-コールスタックと-pysad-の関数名">5. コールスタックと pysad の関数名</h2>
+<p>次の 5 つの表は、コマンドごとに SAD のコールスタックを上から順に並べ、各段に対応する pysad の関数を示す。</p>
+<h3 id="51-trackparticles">5.1 TrackParticles</h3>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad (純 Python: track6.py / numba: track6n.py)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TrackParticles[...]</code> (tfinitn:917, ID 1005)</td>
+<td><code>ffscmd.FFS.fn_track</code> → <code>track6n.track_particles_fast</code> (MULT/SOL は <code>track6n_ext.track_particles_ext</code>) / <code>track6.track_particles</code></td>
+</tr>
+<tr>
+<td>tfefun1:70 → tftrack:8</td>
+<td><code>track_particles</code> (粒子配列準備、RNG は <code>track6.RNG</code>)</td>
+</tr>
+<tr>
+<td>tturn:36 → tturn1:153</td>
+<td><code>track6._tturn1</code> / <code>track6n.turn</code> (要素外側・粒子内側)</td>
+</tr>
+<tr>
+<td>要素 select case</td>
+<td><code>track6._step_el</code> / <code>track6n.Prog</code> の kind 表</td>
+</tr>
+<tr>
+<td>放射 tradk (photons)</td>
+<td><code>track6._tradk</code> → <code>_tradk_core</code>、<code>track6n.tradk_core1</code></td>
+</tr>
+<tr>
+<td>tapert (損失判定)</td>
+<td><code>track6n.k_apert_gen</code>・<code>k_apert</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-emittance">5.2 Emittance</h3>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Emittance[]</code> (emit.n) → temitf → temit:78</td>
+<td><code>emit_extra.emittance_rules</code> → <code>emit6d.emittance6d</code></td>
+</tr>
+<tr>
+<td>tcod:31 (tturne の Newton 閉軌道)</td>
+<td><code>emittance6d</code> 内 (割線法/6D Newton)、<code>calc6d._closed_orbit</code></td>
+</tr>
+<tr>
+<td>tturne:1 / tturne1:334</td>
+<td><code>emit6d.tturne</code> (<code>_tdrife0</code>, <code>_tquade</code>, <code>_tbende</code>, <code>_tcave</code>, <code>_tmulte</code>、tthine は lattice の関数)</td>
+</tr>
+<tr>
+<td>tradke</td>
+<td>各 <code>_t***e</code> の krad 引数</td>
+</tr>
+<tr>
+<td>tecalc:235 → teigenc / tsolva</td>
+<td><code>emit6d.tecalc</code> / <code>_tsolva</code> / <code>_normal_form</code></td>
+</tr>
+<tr>
+<td>INTRA ON: tintrb</td>
+<td><code>touschek._tintrb</code>, <code>_tturne_intra</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="53-calc-cal">5.3 CALC (CAL)</h3>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tffsa:544 → tffscalc:12</td>
+<td><code>ffscmd</code> の CALC → <code>match6.Matcher._tffscalc</code> (残差) / <code>Lattice.twiss</code></td>
+</tr>
+<tr>
+<td>qcell1:27</td>
+<td><code>Lattice.twiss</code>, <code>twiss_table</code></td>
+</tr>
+<tr>
+<td>qcod:810</td>
+<td><code>lattice._qcod_periodic</code>, <code>_one_turn_cod_matrix</code></td>
+</tr>
+<tr>
+<td>qtwiss1:14 → qquad / qbend / qthin</td>
+<td>要素ごとの COD 写像 (<code>_tquade_cod</code>, <code>_bend_cod_update</code>, <code>_tthine_cod</code>) の数値微分ヤコビアン (<code>_num_jacobian</code>、eps=1e-7)</td>
+</tr>
+<tr>
+<td>qmdiag</td>
+<td><code>Lattice.twiss</code> 内 (numpy 固有値分解)</td>
+</tr>
+<tr>
+<td>qcell6d:404 (CALC6D)</td>
+<td><code>calc6d.calc6d</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-go-fit">5.4 GO (FIT)</h3>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tffsa:1207 → tffsmatch:15</td>
+<td><code>match6.Matcher.go</code></td>
+</tr>
+<tr>
+<td>tfsolv / tgrad / fmincube</td>
+<td><code>Matcher</code> 内、<code>match6._fmincube</code>、tdfun は <code>_tdfun1</code>、重みは tweigh</td>
+</tr>
+<tr>
+<td>tffsqu → qdcell → qdtwis → qdquad/qdbend/qdmdia</td>
+<td><code>match6d.tffsqu</code> → <code>qdcell</code> → <code>qdtwis</code> → <code>qdquad</code>/<code>qdbend</code>/<code>qdmdia</code> (<code>AnalyticMatcher</code>)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="55-dynamicaperturesurvey">5.5 DynamicApertureSurvey</h3>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dapert.n → tfdapert:1</td>
+<td><code>ffscmd.FFS.fn_dasurvey</code> → <code>dapert.dynamic_aperture</code></td>
+</tr>
+<tr>
+<td>trackd:37 (走査・境界探索・Score)</td>
+<td><code>dapert.dynamic_aperture</code> (独自実装。スロット順・DAPWIDTH 窓・62 進地図 <code>rad62</code>)</td>
+</tr>
+<tr>
+<td>tturn (1 周)</td>
+<td><code>track6n.turn</code></td>
+</tr>
+<tr>
+<td>tapert:1 (損失)</td>
+<td><code>track6n.k_apert_gen</code>・<code>k_apert_el</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-デッドコード">6. デッドコード</h2>
+<p>呼出元なし AND (Obsolete コメント OR 非ビルド) のもの: <code>tquads.f</code>, <code>tquase.f</code>, <code>tbrad.f</code> (tlinit の旧コピー)、<code>tmulbs.f</code> (ファイルのみ dead、関数 tmulbs は tffs.f:2761 に移設され現役)、<code>ttdr.f</code>、<code>trad.f</code> (現役は photons.f の tradk)、<code>tserad.f</code>, <code>tstrad.f</code>, <code>tqrad.f</code>, <code>trade.f</code> (現役は tradke)。<code>tmuld.f</code> は一部のみ dead (tmuld6 は photons.f:1494、temap.f:432 から現役)。<code>tbfrie.f</code> は現役 (tbedge が tbende/tsteee から)。OBJOBS 66 本ほか非ビルドの .f は個別判定未実施 (未確認)。pysad は dead を一切移植していない。</p>
+<h2 id="7-関連文書">7. 関連文書</h2>
+<ul>
+<li>未対応・未確認の一覧: docs/31。</li>
+<li>ファイル別・ルーチン別・機能別の翻訳状況 (ファイル分類表、tturn / tturne のディスパッチ表を含む): docs/33。</li>
+<li>モジュール地図: docs/01。ベンチマークと回帰: docs/27。K64 のバグ目録: docs/30。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

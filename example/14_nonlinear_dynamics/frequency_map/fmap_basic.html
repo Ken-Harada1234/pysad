@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>周波数マップの例</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: fmap_basic.md</div>
+<h1 id="周波数マップの例">周波数マップの例</h1>
+<p>解説は <code>docs/26_frequency_map_lma.md</code>、試験は <code>pysad/tests/script_tests/test_v23_Q1_fmap_lma.py</code> (21 件)、コードは <code>pysad/trksetup.py</code>・<code>freqmap.py</code>・<code>lma.py</code>・<code>q1cmd.py</code>。
+実行はリポジトリ直下から <code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_ring.py astrid2</code> など (Windows では <code>PYTHONIOENCODING=utf-8</code> を付けると日本語の出力がファイルに書ける)。台本 <code>.sad</code> は <code>example/14_nonlinear_dynamics/frequency_map</code> で
+<code>py -3.12 ../../../run_sad.py ../../astrid/lattice/ASTRID2_v01_01.sad fn_FrequencyMap_MomentumAcceptance.sad</code>。局所運動量アクセプタンス (LMA) の例は <code>example/15_lma_touschek/lma/</code> (その <code>README.md</code>)。すべて v2 モード。gs の出力は WSL の gs (K64、2026-10-19 ビルド、NPARA = 1) で取った
+(timeout 1800 s、終了後に <code>ps</code> で sad1.exe の残りがないことを確かめた)。使ったラティスは <code>kek-ls_v03_12.lat</code> (大きなリング A、3 GeV、603 m、誤差なし) と ASTRID2 (0.58 GeV、45.7 m、誤差なし)。PF は使っていない。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>fmap_ring.py</code> / <code>fmap_astrid2.{out.txt,table.txt,png}</code> / <code>fmap_kekls.{out.txt,table.txt,png}</code></td>
+<td><strong>周波数マップ</strong>: 1 つの位置 (長直線部) の 41 × 31 の (x, y) の格子、1024 周、RFSW・RAD OFF。表 (x, y, δ, 前半・後半のチューン、D、落ちた周)、図 (左: チューン平面を D で色づけ + 次数 4 以下の共鳴線、右: 初期条件平面、失われた点は黒い ×)、出力 (作動点に近い共鳴線の表 = 整数・半整数を含む、D の大きい点の最も近い共鳴線、共鳴線の近くの点の統計)</td>
+</tr>
+<tr>
+<td><code>gs_fmap_compare_astrid2.py</code> / <code>gs_fmap_astrid2.{sad,gs.txt,pysad.txt,out.txt}</code></td>
+<td><strong>周波数マップの追跡の gs との比較</strong>: gs で 1 周ずつ <code>TrackParticles</code> を回して 512 周の座標を印刷し、NAFF をかけて D を出す。k64 モードで座標の差 2.8e-7、D は 6 桁一致 (v2 の既定の追跡は四極の積分器が違い、一致しない)</td>
+</tr>
+<tr>
+<td><code>fn_FrequencyMap_MomentumAcceptance.sad</code> / <code>.pysad.txt</code>、<code>fn_FrequencyMap_MomentumAcceptance_fmap.{table.txt,png}</code>、<code>fn_FrequencyMap_MomentumAcceptance_lma.{table.txt,png}</code></td>
+<td><strong>SAD の台本から</strong>: <code>FrequencyMap[]</code>・<code>MomentumAcceptance[]</code>・<code>TouschekLifetimeLMA[]</code> (pysad のみ。gs では走らない)</td>
+</tr>
+</tbody>
+</table>
+<p>結果の要約 (条件は <code>docs/26_frequency_map_lma.md</code> §5・§6):</p>
+<ul>
+<li>周波数マップ: 作動点 (ASTRID2: νx = 5.18、νy = 2.14。大きなリング A: νx = 47.58、νy = 17.62) の整数・半整数の共鳴は格子のチューンから離れている (0.08 以上)。D の大きい点は
+  νx − νy = 整数 (差の共鳴)、3 次 (3νy、νx + 2νy、3νx)、5 次の線の上に載る。次数 4 以下の線に近い点は D &gt; −5 の割合が遠い点の 1.9〜2.7 倍 (ASTRID2 2.7 倍、大きなリング A 1.9 倍)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

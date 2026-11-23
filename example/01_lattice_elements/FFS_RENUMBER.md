@@ -26,8 +26,8 @@ gs: `QF.3` を起点に番号が振り直され (QF.3 → QF.1)、それより�
 なし。
 
 ## gs と pysad の比較
-**○ 一致 (2026-11-17 に対応)。** `RENUMBER comp` (略 `RENUM`) は comp を起点に周回順で同名の要素の番号を 1 から振り直す (gs の `QF.23 D2.45 B.23 QD.23 SF.23 DS.46` と同じ)。`LINE["MULT"]` も振り直した番号になる。起点が無い (`RENUMBER;`、存在しない名前) と ` ???-FFS-Error-Missing origin component for RENUM_BER ` を出す。
+**○ 一致 (2026-11-17 確認)。** `RENUMBER comp` (略 `RENUM`) は comp を起点に周回順で同名の要素の番号を 1 から振り直す (gs の `QF.23 D2.45 B.23 QD.23 SF.23 DS.46` と同じ)。`LINE["MULT"]` も振り直した番号になる。起点が無い (`RENUMBER;`、存在しない名前) と ` ???-FFS-Error-Missing origin component for RENUM_BER ` を出す。
 
 ## 未確認・限界
-- `RENUMBER QF` (名前だけ) は最初の QF が起点なので変化しない (gs と一致)。要素の INDEX 属性による番号の初期値は、最初の版では未対応だった。v2 で対応した (`docs/47_v2_changes.md`。gs の `LINE["NAME"]`・`RENUMBER` 後の名前と一致と記録されている)。この例では INDEX を使っておらず、再実行していない。RENUMBER のあと `LINE["POSITION","QF.1"]` が gs は `LINE["NAME"]` の表示と食い違い、pysad は表示と一致する位置を返す (意図した差、docs/47)。
+- `RENUMBER QF` (名前だけ) は最初の QF が起点なので変化しない (gs と一致)。要素の INDEX 属性による番号の初期値は v2 が対応している (gs の `LINE["NAME"]`・`RENUMBER` 後の名前と一致と記録されている)。この例では INDEX を使っておらず、確かめていない。RENUMBER のあと `LINE["POSITION","QF.1"]` が gs は `LINE["NAME"]` の表示と食い違い、pysad は表示と一致する位置を返す (意図した差、docs/28)。
 - 番号の振り直し後に、`QF.1` を使う FIT の位置指定が新しい番号を参照するかは未確認 (`Twiss`・`LINE`・`DISP` の位置指定は新しい番号)。

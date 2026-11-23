@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_SingularValues (SingularValues)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_SingularValues.md</div>
+<h1 id="fn_singularvalues-singularvalues">fn_SingularValues (SingularValues)</h1>
+<p>種別: 関数 (SADHelp functions の Matrix-operations、<code>*</code> つき = SAD 独自。<code>Packages/Matrix.n</code>) / フォルダ: 10_math_data / ラティスなし</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>3×2 の行列 $A=\begin{pmatrix}3&amp;1\1&amp;3\0&amp;2\end{pmatrix}$ の特異値分解。<code>SingularValues[a]</code> は <code>{u, w, v}</code> を返す。<strong>既定では <code>Inverse-&gt;True</code> で、<code>w</code> は特異値の逆数 (昇順)</strong>。<code>Inverse-&gt;False</code> にすると特異値そのもの (降順)。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>s=SingularValues[a];                    (* {u, 1/w, v}: 1/w は昇順 *)
+t=SingularValues[a,Inverse-&gt;False];     (* {u, w, v}: w は降順 *)
+Transpose[t[[1]]].DiagonalMatrix[t[[2]]].t[[3]]     (* = A *)
+Transpose[s[[1]]].DiagonalMatrix[s[[2]]].s[[3]]     (* 既定: 疑似逆行列の転置 (A^+)^T *)
+</code></pre>
+<p>オプションは <code>Tolerance</code> (既定 1e-8、これ以下の特異値を 0 扱い)、<code>Inverse</code>、<code>Sort</code>。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>dims=</code> は {{2,3},{2},{2,2}}。<code>u</code> は 2×3、<code>w</code> は長さ 2、<code>v</code> は 2×2 で、行が特異ベクトル (行列の形は <code>A=Transpose[u].DiagonalMatrix[w].v</code> となる並び)。<code>recon=</code> は元の $A$ に戻る (丸め誤差程度のずれ)。<code>pinvT=</code> は $(A^+)^T$。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>$A=U\,\mathrm{diag}(w)\,V^T$、特異値は $A^TA=\begin{pmatrix}10&amp;6\6&amp;14\end{pmatrix}$ の固有値の平方根。固有値は $12\pm2\sqrt{10}=18.325,\ 5.675$ なので $w=4.2807,\ 2.3823$。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>式 (numpy.linalg.svd)</th>
+<th>gs</th>
+<th>pysad</th>
+<th>gs の相対差</th>
+<th>pysad の相対差 (参照値が 0 の行は絶対差)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>特異値 $w_1$ (Inverse-&gt;False)</td>
+<td>4.28071901908</td>
+<td>4.280719019083</td>
+<td>4.280719019083</td>
+<td>5.9e-14</td>
+<td>5.9e-14</td>
+</tr>
+<tr>
+<td>特異値 $w_2$</td>
+<td>2.3823191809</td>
+<td>2.382319180896</td>
+<td>2.382319180896</td>
+<td>1.5e-13</td>
+<td>1.5e-13</td>
+</tr>
+<tr>
+<td>既定の出力 $1/w_1$ (小さい 1/w が先)</td>
+<td>0.233605615211</td>
+<td>.233605615211</td>
+<td>.233605615211</td>
+<td>1.7e-12</td>
+<td>1.7e-12</td>
+</tr>
+<tr>
+<td>既定の出力 $1/w_2$</td>
+<td>0.419759034818</td>
+<td>.419759034818</td>
+<td>.419759034818</td>
+<td>1.2e-12</td>
+<td>1.2e-12</td>
+</tr>
+</tbody>
+</table>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<ul>
+<li>特異値・特異ベクトルは 12 桁で一致 (○)。特異ベクトルの符号は pysad が gs に合わせてある (各 u の先頭成分が負)。</li>
+<li><code>recon</code> の (3,1) 要素は 0 の丸め (gs 2.2E-16、pysad 4.18E-17) で一致しない。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<p>特異値が <code>Tolerance</code> 以下のランク落ち行列、複素行列 (K64 は対応、pysad は未確認)、200 次元超の行列は試していない。この例でも、特異ベクトルの符号を gs に合わせた pysad の実装 (3 行列で確認) 以外の行列での符号の一致は未確認。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

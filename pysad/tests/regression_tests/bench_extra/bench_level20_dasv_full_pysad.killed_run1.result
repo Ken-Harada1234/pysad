@@ -1,0 +1,35 @@
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$         AX    #######  #  -2.08E-14 $$$         BX    #######  #   4.643203 $$$         NX    #######  #  47.580034
+$$$         AY    #######  #  8.993E-15 $$$         BY    #######  #   6.231611 $$$         NY    #######  #  17.620044
+$$$         LENG  #######  #  603.12000
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+      Exit : -3.83E-18 2.117E-19   .000000   .000000 5.817E-19 1.745E-17
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 497069.34 Hz 
+Energy loss per turn U0 =  .2960749 MV  Effective voltage    Vc = 1.4000000 MV 
+Equilibrium position dz = 20.619466 mm  Momentum compact. alpha = 2.3063E-4
+Bucket height     dV/P0 =  .0299390
+
+  Real tune:-0.4199659         -0.3799558         -0.0040753
+
+    Damping per one revolution:
+          X : -7.720987E-05   Y : -4.932836E-05   Z : -7.082902E-05
+
+Emittance X            = 1.5494E-10 m   Emittance Y            = 1.2747E-21 m
+Emittance Z            = 2.62131E-6 m   Energy spread          = 6.94695E-4
+Bunch Length           = 3.77333263 mm
+
+EMITS { 1.54937137E-10, 1.27474763E-21, 2.621305729E-6, 6.946947034E-4,    .0037733326}
+DP   14.3948124999 NZ   17.0000000000
+ZRANGE { -57.5792499996, -50.3818437497, -43.1844374997, -35.9870312498, -28.7896249998, -21.5922187499, -14.3948124999,  -7.1974062500,    .0000000000,   7.1974062500,  14.3948124999,  21.5922187499,  28.7896249998,  35.9870312498,  43.1844374997,  50.3818437497,  57.5792499996}
+ Turns = 5000.000000000 Maximum number of particles = 1734.000000000
+ Range    Xmin:   0.000 Xmax: 400.000
+         (Ymin:   1.000 Ymax:   1.000)
+          Zmin: -57.579 Zmax:  57.579
+ Display:   100 turns/character
+      NZ     0----|----1----|----2----|----3----|----4----|----5
+    [dapert] turn 500/5000 alive 315/867 (157.1 s)
+    [dapert] turn 1000/5000 alive 275/867 (303.4 s)
+    [dapert] turn 1500/5000 alive 275/867 (441.7 s)

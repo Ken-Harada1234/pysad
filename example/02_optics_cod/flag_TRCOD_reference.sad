@@ -1,0 +1,50 @@
+! TRCOD FIXCOD / MVCOD / STNCOD (基準軌道の保存と差)、TRCOD ALIGN (磁石を揃える)、ORBITJITTER (軌道の読みの揺らぎ)
+! 条件: 1 GeV の輸送路 (長さ 9.2 m)。入口の軌道 0。ST は薄いステアリング (L=0)。K64 (gs) では TRCOD が落ちるので gs の参照は無い。
+MOMENTUM = 1 GEV;
+MARK M0 = (BX=8 BY=3 AX=0.5 AY=-0.3 EX=0.2 EPX=0.01 EMITX=1E-16 EMITY=1E-16 DP=1E-5) MM=();
+DRIFT D1 = (L=1.0);
+QUAD QA = (L=0.3 K1=0.25 DX=1E-4 DY=-2E-4) QF = (L=0.3 K1=0.25) QD=(L=0.3 K1=-0.25);
+BEND B1 = (L=1 ANGLE=0.05) ST=(L=0 ANGLE=0 K0=0);
+SEXT SX = (L=0.2 K2=3);
+LINE TL = (M0 QF D1 B1 D1 QD ST D1 MM B1 D1 QF D1 QD D1);
+LINE TA = (M0 QA D1 QF D1 QD SX D1 MM D1 QF D1);
+FFS;
+USE TL;
+INS; CALC;
+$FORM="12.5";
+! --- 1. 基準を取る。Twiss["DX"] は絶対値のまま、基準は Twiss["RDX"]、差は Twiss["DDX"]
+TRCOD FIXCOD;
+ST K0 1E-4;
+CALC;
+k1=LINE["POSITION","ST"]; k2=LINE["POSITION","$$$"];
+ana=-1E-4*Sqrt[Twiss["BX",k1]*Twiss["BX",k2]]*Sin[Twiss["NX",k2]-Twiss["NX",k1]];
+Print["FIXCOD: DX, RDX, DDX at $$$ = ",Twiss["DX",k2]," ",Twiss["RDX",k2]," ",Twiss["DDX",k2]];
+Print["        analytic -dtheta*Sqrt[b1*b2]*Sin[psi2-psi1] = ",ana];
+! --- 2. 1 点だけ基準を今の値に (MVCOD)。REFERENCE で上書きされた基準を STNCOD で戻す
+TRCOD MVCOD MM;
+Print["MVCOD MM: DDX at MM, $$$ = ",Twiss["DDX","MM"]," ",Twiss["DDX",k2]];
+REF;
+Print["REF:      DDX at $$$ = ",Twiss["DDX",k2]];
+TRCOD STNCOD;
+Print["STNCOD:   DDX at MM, $$$ = ",Twiss["DDX","MM"]," ",Twiss["DDX",k2]];
+! --- 3. 追跡の重心 (TRCOD) を基準にする。NP 個の粒子の重心と、dp との相関 (分散)
+NP=500; GAUSS;
+TRCOD;
+TRCOD FIXCOD;
+Print["TRCOD+FIXCOD: RDX, REX at $$$ = ",Twiss["RDX",k2]," ",Twiss["REX",k2]];
+CALC;
+Print["after CALC:   DDX, DEX at $$$ = ",Twiss["DDX",k2]," ",Twiss["DEX",k2],"  (tracking - CALC)"];
+! --- 4. ORBITJITTER: Twiss の DX DY に要素ごとの正規乱数を足す (x 10 um、y 5 um)
+x0=Twiss["DX","MM"];
+ORBITJITTER 1E-5 5E-6;
+Print["ORBITJITTER: change of DX DY at MM = ",Twiss["DX","MM"]-x0," ",Twiss["DY","MM"]];
+! --- 5. ALIGN: QA から MM までの磁石の DX DY を QA の値 (0.1 mm, -0.2 mm) に揃える
+USE TA;
+INS; CALC;
+Print["before ALIGN: DX of QA QF.1 QD SX QF.2 = ",LINE["DX","QA"]," ",LINE["DX","QF.1"]," ",LINE["DX","QD"]," ",LINE["DX","SX"]," ",LINE["DX","QF.2"]];
+Print["              orbit DX DY at MM = ",Twiss["DX","MM"]," ",Twiss["DY","MM"]];
+TRCOD ALIGN QA MM;
+CALC;
+Print["after ALIGN:  DX of QA QF.1 QD SX QF.2 = ",LINE["DX","QA"]," ",LINE["DX","QF.1"]," ",LINE["DX","QD"]," ",LINE["DX","SX"]," ",LINE["DX","QF.2"]];
+Print["              orbit DX DY at MM = ",Twiss["DX","MM"]," ",Twiss["DY","MM"]];
+STOP;

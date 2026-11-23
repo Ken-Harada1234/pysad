@@ -2294,7 +2294,7 @@ class Prog:
             # L=0 の MULT (薄い多極) や SOL を黙って無視しないよう、L==0 の判定より前に置く
             raise NotImplementedError(f'track6n: 要素 {tn} は未対応')
         if tn == 'PhsRot':
-            from . import phsrot as _pr          # v2 だけ (k64 は NotImplementedError: K64 では動作しない、docs/21 B38)
+            from . import phsrot as _pr          # v2 だけ (k64 は NotImplementedError: K64 では動作しない、docs/30 B38)
             return _pr.K_PHSROT, _pr.compile_phsrot(el)
         if tn == 'Undulator':
             from . import und as _un

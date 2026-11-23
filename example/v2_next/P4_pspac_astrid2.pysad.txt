@@ -1,8 +1,0 @@
- Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
-$$$       f AX    #######  #  2.889E-15 $$$       f BX    #######  #   3.891569 $$$       f NX    #######  #   5.179990
-$$$       f AY    #######  #  -1.27E-15 $$$       f BY    #######  #   1.622525 $$$       f NY    #######  #   2.140178
-$$$       f LENG  #######  #  45.704400
-NOSC RMS  4.631005788911E-5  1.225966723745E-4  3.662585174694E-5  5.345561570691E-5  1.189492796769E-8  1.639409595839E-5
-  ???-PSPAC-Warning-9.5% of the particles are outside the mesh (PSPACNX x PSPACDX, PSPACNY x PSPACDY); they get no kick.
-
-PSPAC RMS    .00210901950103  6.728372712375E-4  3.986077306989E-4  2.258510674096E-4  1.396801304484E-7  2.683360500743E-4

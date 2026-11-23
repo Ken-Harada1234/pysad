@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_SynchroBetaEmittance</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#ラティスについて">ラティスについて</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方-gs">結果の読み方 (gs)</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_SynchroBetaEmittance.md</div>
+<h1 id="fn_synchrobetaemittance">fn_SynchroBetaEmittance</h1>
+<p>種別: 関数 / フォルダ: 04_emittance_radiation / ラティス: <code>00_lattice/FODO_ring_V4MV.sad</code> (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる <code>RINGQ</code> を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz / フラグ: RFSW, RAD。<strong>平面リング (結合なし) のみ</strong>。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>SynchroBetaEmittance[{nus0, nus1, dnus}, AzimuthalModes-&gt;7]</code> が、シンクロ・ベータ結合 (RF が分散のある場所にあるときや、色収差のあるとき) を含む平衡エミッタンスを、$\nu_s$ を与えて計算する。返り値は <code>{{nus, emitx, emity, emitxp, emityp, conv}, ...}</code>。</p>
+<h2 id="ラティスについて">ラティスについて</h2>
+<ul>
+<li><code>FODO_ring.sad</code> の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで RF 電圧を 4 MV にした <code>FODO_ring_V4MV.sad</code> を追加した。</li>
+<li>RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと <code>DL=0. IN TCAL</code> で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の <code>RINGQ = (ORIGIN RF 24*CELLQ)</code> を使う (磁石の並びは同じ、位相だけ違う)。</li>
+<li>SAD の BEND の <code>E1</code>, <code>E2</code> は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の <code>K1</code> は積分強度 (k=K1/L)。</li>
+</ul>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>RFSW; RAD;
+r = SynchroBetaEmittance[{0.005, 0.025, 0.01}, AzimuthalModes-&gt;7];
+</code></pre>
+<h2 id="結果の読み方-gs">結果の読み方 (gs)</h2>
+<table>
+<thead>
+<tr>
+<th>$\nu_s$</th>
+<th>emitx</th>
+<th>emity</th>
+<th>emitxp</th>
+<th>conv</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.005</td>
+<td>1.3380E-6</td>
+<td>-1.57E-19</td>
+<td>1.3377E-6</td>
+<td>3.0706E-9</td>
+</tr>
+<tr>
+<td>0.015</td>
+<td>1.3285E-6</td>
+<td>-1.10E-19</td>
+<td>1.3283E-6</td>
+<td>6.289E-10</td>
+</tr>
+<tr>
+<td>0.025</td>
+<td>1.3393E-6</td>
+<td>-6.76E-21</td>
+<td>1.3394E-6</td>
+<td>5.100E-10</td>
+</tr>
+</tbody>
+</table>
+<p>conv は正 (収束)。<code>Emittance[]</code> の $\epsilon_x=1.7358\times10^{-7}$ に対して <strong>約 7.7 倍</strong>。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>このリングは RF 空洞 (ORIGIN の直後) が分散のある場所 ($\eta_x=0.6256$ m、$\beta_x=6.43$ m、$\alpha_x=-2.51$ で $\mathcal H=0.443$ m) にある。空洞でエネルギーが変わると betatron 振幅が変わるため、通常の放射積分の $\epsilon_x=C_q\gamma^2I_5/(J_xI_2)$ (1.7e-7) には入らない励起が加わる。目安として $\mathcal H_{cav}\sigma_\delta^2=0.443\times(1.19\times10^{-3})^2=6.3\times10^{-7}$ m で、差 $1.34\times10^{-6}-1.7\times10^{-7}=1.2\times10^{-6}$ と同じ桁。ただし <strong>この桁の一致だけで、係数の厳密な式の検算はしていない</strong>。$\nu_s$ にほとんど依らない ($0.005\to0.025$ で ±0.4%) のも、この説明と矛盾しない。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>○ 一致。emitx は pysad も 1.3380E-6, 1.3285E-6, 1.3393E-6 (5 桁)、conv は 3.0718E-9 (gs 3.0706E-9) など。emity は両方 0 同然の雑音 (符号が違う: gs -1.57E-19、pysad +1.68E-19)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li><strong>結合のあるラティスでは gs が SIGSEGV で落ちる</strong> (docs/03 (SynchroBetaEmittance1 の項) と docs/27 に記録がある。QT・ずれ入りの 8+4 セルのリングでの確認)。pysad も <code>ValueError: cannot convert float NaN to integer</code> で落ちる。この例は平面リングだけ。</li>
+<li>不安定な $\nu_s$、<code>emiout</code>、RFSW の組み合わせは見ていない。</li>
+<li>7.7 倍の物理的な内訳は上の桁の推定だけで、確かめていない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

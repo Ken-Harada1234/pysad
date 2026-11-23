@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>11_graphics: 描画関数</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="11_graphics-描画関数">11_graphics: 描画関数</h1>
+<p>Plot 系の関数の例。グラフは Tk の窓に出るので標準出力には出ない (<code>.gs.txt</code>・<code>.pysad.txt</code> には起動表示・台本・<code>Print</code>・エラーだけが残る)。図 (<code>NAME_plot.png</code>) は、Canvas の項目を Tcl で書き出し、matplotlib で再描画したもの (左 gs、右 pysad)。作り方と、gs の窓が撮れない理由は、各 <code>.md</code> の「図」と <a href="../tools/canvas_render.py"><code>example/tools/canvas_render.py</code></a> を見る。</p>
+<p>一致の記号: ○ 一致 / △ 差あり (md に理由) / ×gs 失敗 / ×pysad 未対応・失敗</p>
+<table>
+<thead>
+<tr>
+<th>例 (NAME.sad・.gs.txt・.pysad.txt・.md)</th>
+<th>内容</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="fn_Plot.html">fn_Plot</a></td>
+<td>Plot (関数 2 本、Identity)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_ListPlot.html">fn_ListPlot</a></td>
+<td>ListPlot (折れ線・点・誤差棒・凡例)</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_ListContourPlot.html">fn_ListContourPlot</a></td>
+<td>ListContourPlot (sin cos のデータ)</td>
+<td>○ (項目 68 で同数)</td>
+</tr>
+<tr>
+<td><a href="fn_ListContourPlot_SADHelp.html">fn_ListContourPlot_SADHelp</a></td>
+<td>ListContourPlot の SADHelp の例</td>
+<td>○ (項目 132 で同数)</td>
+</tr>
+<tr>
+<td><a href="fn_ListDensityPlot.html">fn_ListDensityPlot</a></td>
+<td>ListDensityPlot</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_HistoPlot.html">fn_HistoPlot</a></td>
+<td>HistoPlot</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_ParametricPlot.html">fn_ParametricPlot</a></td>
+<td>ParametricPlot (範囲に Pi あり / なし)</td>
+<td>○ (範囲に Pi を含む A も一致)</td>
+</tr>
+<tr>
+<td><a href="fn_FitPlot.html">fn_FitPlot</a></td>
+<td>FitPlot</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_ColumnPlot.html">fn_ColumnPlot</a></td>
+<td>ColumnPlot (pysad で未確認だった)</td>
+<td>○ (動く)</td>
+</tr>
+<tr>
+<td><a href="fn_PointSymbol.html">fn_PointSymbol</a></td>
+<td>PointSymbol の一覧</td>
+<td>○ (名前の文字も項目 30 も一致)</td>
+</tr>
+<tr>
+<td><a href="fn_LaTeX.html">fn_LaTeX</a></td>
+<td>LaTeX 文字列 (未確認だった)</td>
+<td>○ (両方 LaTeX 無効の状態で一致。LaTeX 有効時は未確認)</td>
+</tr>
+<tr>
+<td><a href="fn_OpticsPlot.html">fn_OpticsPlot</a></td>
+<td>OpticsPlot (BX BY EX と配置)</td>
+<td>△ (項目数 308 対 313、文字の重なり消し)</td>
+</tr>
+<tr>
+<td><a href="fn_OpticsPlot_mpl.html">fn_OpticsPlot_mpl</a></td>
+<td>OpticsPlot・Plot・ListPlot を matplotlib に描く (<code>$DisplayFunction=MatplotlibDrawer;</code>、pysad のみ)</td>
+<td>gs には <code>MatplotlibDrawer</code> が無い。Graphics の要素数・座標と matplotlib 側のデータが一致 (docs/21 §6)</td>
+</tr>
+<tr>
+<td><a href="fn_DRAW.html">fn_DRAW</a></td>
+<td>FFS の DRAW (matplotlib。FODO・ASTRID2)</td>
+<td>gs は表示環境がなく描けない。描く前のデータは gs の Graphics と一致 (docs/21 §5)</td>
+</tr>
+<tr>
+<td><a href="fn_GeometryPlot.html">fn_GeometryPlot</a></td>
+<td>GeometryPlot</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="fn_BeamPlot.html">fn_BeamPlot</a></td>
+<td>BeamPlot (未確認だった)</td>
+<td>△ (gs は楕円なし、pysad は描く)</td>
+</tr>
+</tbody>
+</table>
+<p>gs の窓の画面そのものは撮れていない (WSL に撮る道具が無い)。gs が窓を開いたことは <code>winfo ismapped</code>=1 で確かめた。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

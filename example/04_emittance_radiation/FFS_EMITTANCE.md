@@ -59,15 +59,15 @@ $C_\gamma=\frac{4\pi}{3}\frac{r_e}{(mc^2)^3}=8.846\times10^{-5}$ m/GeV³、$C_q=
 
 - 「係数 -1」の列は、SAD の RADINT と同じ $I_4$ (= 0.0802372。自前の積分も 0.0802373 と一致)。式は RADINT の表示と相対 7e-5 以内で一致した ($\epsilon_x$ は 1.6e-6、$J_x$ は 3e-8)。
 - **EMIT (6D の一周写像から求める) の $J_x=0.9651$ は RADINT の 0.9415 と 2.4% 違う。** 原因を切り分けた。RFSW OFF でも同じ (0.96487) なので、RF 空洞の分散位置が原因ではない。$I_4$ の端の項 (BEND の端の角 $\epsilon$ の項 $\eta\tan\epsilon/\rho^2$) の係数を -1 (RADINT) から -2 にすると $J_x=0.9641$ になり、EMIT の 0.9651 に 0.1% まで近づく。つまり RADINT (INTGRL.f) は端の項を片側 1 回分しか入れておらず、EMIT のほうが一周写像に忠実、というのが現時点の見立て (**ソースでは確認していない**。端の点の曲率を 1/(2ρ) とみなす扱いかもしれない)。この差は $\epsilon_x$ に 2.4%、$\sigma_\delta$ に 0.7% の差として出る。
-- $\alpha_c$: RADINT の $I_1/C=0.022137$ と EMIT の 6D の $\alpha=0.0221837$ は 0.2% 違う (SAD の MomentumCompaction は 6D の値で、RADINT とは別。docs/10 の level 1)。$\nu_s$ に EMIT の $\alpha$ を入れた式の値は 0.0276253 で EMIT と 6 桁一致。
+- $\alpha_c$: RADINT の $I_1/C=0.022137$ と EMIT の 6D の $\alpha=0.0221837$ は 0.2% 違う (SAD の MomentumCompaction は 6D の値で、RADINT とは別。docs/27 の level 1)。$\nu_s$ に EMIT の $\alpha$ を入れた式の値は 0.0276253 で EMIT と 6 桁一致。
 - $\sigma_z=\alpha_cc\,\sigma_\delta/(2\pi f_s)$ に EMIT の値を入れると 16.079 mm (EMIT の Bunch Length 16.060 mm、0.12% 差)。
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 と k64 の違い**: `.pysad.txt` は既定の v2 モードの出力。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は `PYSAD_COMPAT=k64` での結果 (2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ 一致。EMIT 報告の全行が表示桁で一致する。差は 0 同然の量だけ: Emittance Y (gs 2.8e-38、pysad 2.4e-50。どちらも 0 とみなせる)、Beam tilt、`alpha` の表示桁 (gs `.0221837`、pysad `.02218`)。
 
 ## 未確認・限界
 - 使った条件: 3 GeV、周長 105.6 m、$V_{RF}=4$ MV、$f_{RF}=500$ MHz、RAD ON、FLUC は既定、結合なし (平面リング)、6 極は K2=0。
-- $J_x$ の RADINT 対 EMIT の 2.4% の差の原因は、端の項の取り扱いと推定した段階 (ソース未確認、他の BEND 形状での確認なし)。どちらが物理的に正しいかは、追跡で測っていない。**2026-11-17 に v2.0.0 で決着** (`docs/47_v2_changes.md` の B75): 解析式 Jx = 1 − I4/I2 と厳密な幾何 + Robinson の式が一致し、RADINT が正しく K64 の EMIT が誤り (端の角の蹴りが行路を変えない)。v2 の EMIT の Jx は 0.9429 (この例の再実行) で、RADINT の 0.9415 に近づいた。k64 モードは gs と同じ 0.9651。この例のリング以外 (矩形磁石でない BEND など) の確認は記録の条件に限る。
+- $J_x$ の RADINT 対 EMIT の 2.4% の差の原因は K64 の EMIT の端の項 (B75): 解析式 Jx = 1 − I4/I2 と厳密な幾何 + Robinson の式が一致し、RADINT が正しく K64 の EMIT が誤り (端の角の蹴りが行路を変えない)。v2 の EMIT の Jx は 0.9429 で、RADINT の 0.9415 に近い。k64 モードは gs と同じ 0.9651。この例のリング以外 (矩形磁石でない BEND など) の確認は記録の条件に限る。
 - 縦の量 ($\sigma_z$) は線形の式で、非線形性は入れていない。

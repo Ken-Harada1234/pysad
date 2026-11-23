@@ -43,7 +43,7 @@ PF リング (2.5 GeV) のラティスの歴史を、SAD の台本 4 本で追�
 | 2005 | 名前の 36 nm rad | k64 34.54 / v2 35.45 | k64 −4.1%、v2 −1.5% |
 | 1981 | `matched optics, 90deg, 90deg cell` (台本のコメント) | 偏向磁石 2 個で 90.0° / 90.0° | 一致 |
 
-名前の値が v2 モードの値に近い、という数値の事実だけを記す。K64 と v2 の違いは Jx (減衰分配) の端の項 (docs/47、docs/21 B75) で、元の履歴フォルダの計算がどちらに近い式だったかは分からない (要確認)。
+名前の値が v2 モードの値に近い、という数値の事実だけを記す。K64 と v2 の違いは Jx (減衰分配) の端の項 (docs/28、docs/30 B75) で、元の履歴フォルダの計算がどちらに近い式だったかは分からない (要確認)。
 
 ## (b) 各ラティスの説明
 
@@ -150,7 +150,7 @@ Exit;
 - 例: [`optics/FFS_cell_calc_emit_PF_1981_460nmrad`](../optics/FFS_cell_calc_emit_PF_1981_460nmrad.md)、`..._1986_128nmrad`、`..._1997_036nmrad`、`..._2005_036nmrad` (すべて同じ台本で、ラティスだけ違う)。
 - gs: `gs file.sad < /dev/null`。pysad: `PYSAD_COMPAT=k64 py -3.12 -c "from pysad.ffscmd import run_sad_string; run_sad_string(open('file.sad',encoding='utf-8').read())"` (k64 が gs と同じ。省略すると v2)。
 - 作り方: `tools/pf_history/mk_lattices.py <履歴フォルダ>` (ラティス)、`build_examples.py` (例)、`ana_pf_history.py` (表)、`cmp_gs_pysad.py` (gs と pysad の比較)。
-- 試験: `pysad/tests/test_pf_history_lattices.py`。
+- 試験: `pysad/tests/script_tests/test_pf_history_lattices.py`。
 
 ### 元の履歴フォルダの `matching`・`disp` (台本の用途。ここには置いていない)
 - `matching`: `USE RING; cell calc; calc; emit;` のあと、`MKA.1`〜`MKA.3` で `AX`・`AY`・`EPX` を 0、`DMARK` で `EX`・`EPX` を 0 にするフィット (`free Q1*,...,Q9*;` `go;`)。`MKA` と `DMARK` の両方があるのは `pf_460nmrad` (1981) だけなので、1981 のオプティクス (標準セルを 90° / 90° にそろえる、`matched optics` のコメントの四極を出した計算) のためのものと読める。確認はしていない。補助の `modules_general.n`・`modules_matching.n` (`Get[]`) と、`datas.txt` への書き込みを使う。
@@ -160,7 +160,7 @@ Exit;
 ## (g) 未確認・限界
 - 元の履歴フォルダのラティスは設計値で、誤差なし。実機の運転 (エネルギー・結合・ID・実測のオプティクス) との対応は確かめていない。
 - ヘッダ・名前と計算値の食い違い (上の表の「要確認」): 1981 の NUX/NUY、各ラティスの名前のエミッタンス (k64 とは 4〜12% 違い、v2 には近い)、1997・2005 の標準セルの位相進み (105°・115° に対し 98.7°・97.4°)。理由は調べていない。
-- 1981 の台本は、元のままでは pysad が二重の反転 `-RQUAD` (中に `-RQUADM`) を誤って展開し、リングが不安定になっていた (gs は元から正しい)。`pysad/parser.py` の `-LINE` の展開を直した (反転の文脈の中の `-LINE` は正順に戻す)。直したあと k64 で gs と一致する。K64 側の誤りではなく pysad 側の不具合。docs/21・docs/47 への記載は保留 (他の担当が編集中)。
+- 1981 の台本は二重の反転 `-RQUAD` (中に `-RQUADM`) を含む。pysad は `pysad/parser.py` で、反転の文脈の中の `-LINE` を正順に戻して展開する (これで k64 で gs と一致する。gs は元から正しい)。K64 側の誤りではなく pysad 側の展開の問題だった。
 - pysad で、ユーザー定義の関数名 `At[]` は呼んでも何も起こらず (gs では動く)。この例では `ShowAt[]` と名づけた。原因は調べていない。
 - 2005 のラティスは元のまま (`INJ` の MARK を足したのを除く)。`v9_16_asym.sad` との違い (6 極の強さ、ヘッダ) の網羅は確認していない。
 - 履歴の背景は公開資料の検索結果の要約によるもので、本文は精読していない。2005 年の年は確認できなかった。

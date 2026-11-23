@@ -458,7 +458,7 @@ def _has_poles(els):
 
 def compute(ffs, rows, stale_rho=None):
     """INTGRL の本体。戻り: 結果の辞書 (RI, 補助量) と出力する行のリスト。
-    v2 (B115): ANGLE=0・K0≠0 の極 (挿入光源) があるとき、CALC の分散 (rows。正準運動量の分散 EPX = η' + px_cod で、K64 の CALC は誤っていない: docs/21 B222) は、放射積分の線形の理論が使う角度の分散 η' の極の中の発生 (η' += K0 δ) を含まない。
+    v2 (B115): ANGLE=0・K0≠0 の極 (挿入光源) があるとき、CALC の分散 (rows。正準運動量の分散 EPX = η' + px_cod で、K64 の CALC は誤っていない: docs/30 B222) は、放射積分の線形の理論が使う角度の分散 η' の極の中の発生 (η' += K0 δ) を含まない。
     そこで、要素ごとの 4x4 行列 T と極の分散ベクトル V を集める 1 周目で、周期解の補正 Δ (Δ = T Δ + V_pole) を求め、
     2 周目で各要素の分散の初期値に Δ を足す。I1・I4・I5 が極の中も含めた正しい分散で積分される"""
     if _compat.v2() and _has_poles(ffs.els):
@@ -558,7 +558,7 @@ def _compute_pass(ffs, rows, stale_rho, seeds, coll):
             elif v2 and rle != 0.0 and float(getattr(el, 'K0', 0.0) or 0.0) != 0.0:
                 # v2 (A2、docs/history/v2next_A2.md §3): ANGLE=0 で K0≠0 の BEND (挿入光源の極: 基準軌道は曲がらず、場だけがある) は、K64 では
                 # 放射積分に入らない (Emittance[] と追跡には入る)。K0 を曲げ角として扱う (端の角はなし。tbende の ANGLE=0 の枝と同じ)。
-                # 基準軌道の回転は無いので TOTAL BENDING ANGLE には足さない。極の中は直線の基準軌道の中の場だけ (bmag_pole: 扇形の収束 h² も I4 の h³ も無い。独立な積分と 1e-6 で一致、docs/21 B115)
+                # 基準軌道の回転は無いので TOTAL BENDING ANGLE には足さない。極の中は直線の基準軌道の中の場だけ (bmag_pole: 扇形の収束 h² も I4 の h³ も無い。独立な積分と 1e-6 で一致、docs/30 B115)
                 k0 = float(el.K0)
                 ir = min(14, max(1, int(abs(k0) / 0.002)))
                 irp = 2 * ir

@@ -1,0 +1,115 @@
+! ============================================================
+! bench_level7.sad — Level 7 benchmark: 誤差入り要素と K1≠0 BEND の粒子追跡
+!   7-1: K1≠0 の BEND (複合機能) のリング。誤差なし。RAD OFF / RAD ON (NOFLUC)
+!   7-2: Level 6 と同じリングに誤差 (DELX/DELY/DTHETA) を入れて追跡。RAD OFF / RAD ON (NOFLUC)
+!        DELX QD.1, DELY SF.1, DTHETA QF.3 (四極のロール), DTHETA B.5 (BEND の DROTATE), DELX B.2
+!   どちらも emit で trf0 を決めてから 5 粒子を 1, 100 周追跡。
+!   ※ USE で 2 本のラインを切り替えている。誤差は 7-2 の USE の後に入れる。改修をお願いします。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.7*0.3)
+;
+SEXT  SF = (L=0.2 K2= 0.6)
+      SD = (L=0.2 K2=-1.2)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+      BK = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5 K1=-0.05)
+;
+CAVI  CA = (L=0 VOLT=1.5E6 HARM=234)
+;
+LINE CELL0 = (ORG CA QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE CELL  = (ORG QF DQS SF DS B D1 QD DQS SD DS B D1);
+LINE RING  = (CELL0 19*CELL);
+LINE CELLK0 = (ORG CA QF DQS SF DS BK D1 QD DQS SD DS BK D1);
+LINE CELLK  = (ORG QF DQS SF DS BK D1 QD DQS SD DS BK D1);
+LINE RINGK  = (CELLK0 19*CELLK);
+;
+
+FFS;
+$FORM="15.10";
+
+! 粒子: {x, px, y, py, z, dp, 生存フラグ} を列ごとに並べる (Level 6 と同じ)
+x0  = { 1E-3, 3E-3, 0,     1E-3,  0    };
+px0 = { 0,    0,    0,     1E-4,  0    };
+y0  = { 0,    0,    1E-3,  1E-3,  0    };
+py0 = { 0,    0,    0,     0,     0    };
+z0  = { 0,    0,    0,     0,     1E-3 };
+dp0 = { 0,    0,    0,     1E-3,  1E-3 };
+fl0 = { 1,    1,    1,     1,     1    };
+beam0 = {1, {x0, px0, y0, py0, z0, dp0, fl0}};
+
+prtb[tag_, b_] := Do[
+  Print[tag, " P", i, " ", {b[[2,1,i]], b[[2,2,i]], b[[2,3,i]], b[[2,4,i]], b[[2,5,i]], b[[2,6,i]], b[[2,7,i]]}],
+  {i, 1, 5}];
+
+! ------------------------------------------------------------
+! 7-1: K1≠0 BEND
+! ------------------------------------------------------------
+Print["=== Test 7-1: RINGK (BEND K1=-0.05) ==="];
+USE RINGK;
+RFSW;
+CELL;
+CALC;
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["K N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["K N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["K R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["K R T100", b100];
+NORAD;
+FLUC;
+
+! ------------------------------------------------------------
+! 7-2: 誤差入り (Level 6 のリング)
+! ------------------------------------------------------------
+Print["=== Test 7-2: RING with errors ==="];
+USE RING;
+RFSW;
+CELL;
+DELX 1E-4 QD.1;
+DELY 1E-4 SF.1;
+DTHETA 1E-3 QF.3;
+DTHETA 1E-3 B.5;
+DELX 1E-4 B.2;
+CALC;
+DUMP;
+! 誤差の正確な値 (DUMP は 5 桁しか出ないので)
+Print["ERR QD.1 DX ", LINE["DX","QD.1"]];
+Print["ERR SF.1 DY ", LINE["DY","SF.1"]];
+Print["ERR QF.3 ROTATE ", LINE["ROTATE","QF.3"]];
+Print["ERR B.5 DROTATE ", LINE["DROTATE","B.5"]];
+Print["ERR B.2 DX ", LINE["DX","B.2"]];
+Print["ERR BK K1 ", LINE["K1","BK"]];
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["E N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["E N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["E R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["E R T100", b100];
+NORAD;
+FLUC;
+
+stop;
+stop;

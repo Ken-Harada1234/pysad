@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tcl/Tk の GUI (SAD の Tkinter.n / KBFrame.n を pysad で動かす)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-何ができるか方針">1. 何ができるか・方針</a></li>
+<li><a href="#2-使い方">2. 使い方</a></li>
+<li><a href="#3-使える部品">3. 使える部品</a><ul>
+<li><a href="#31-動く-sad-スクリプト例">3.1 動く SAD スクリプト例</a></li>
+<li><a href="#32-試験の台本の探し方">3.2 試験の台本の探し方</a></li>
+</ul>
+</li>
+<li><a href="#4-実装の構成">4. 実装の構成</a><ul>
+<li><a href="#41-pysadtclbridgepy-接点">4.1 pysad/tclbridge.py (接点)</a></li>
+<li><a href="#42-pysadtkcanvaspy-キャンバス">4.2 pysad/tkcanvas.py (キャンバス)</a></li>
+<li><a href="#43-sadscript-の言語機能-sadscriptpysadlistpysadclasspy">4.3 SADScript の言語機能 (sadscript.py、sadlist.py、sadclass.py)</a></li>
+</ul>
+</li>
+<li><a href="#5-class-sadclasspy">5. Class (sadclass.py)</a></li>
+<li><a href="#6-k64-の癖">6. K64 の癖</a></li>
+<li><a href="#7-検証と現状">7. 検証と現状</a><ul>
+<li><a href="#71-ヘッドレスでの試験の実行">7.1 ヘッドレスでの試験の実行</a></li>
+</ul>
+</li>
+<li><a href="#8-限界未確認">8. 限界・未確認</a></li>
+<li><a href="#9-関連文書">9. 関連文書</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 20_tcltk_gui.md</div>
+<h1 id="tcltk-の-gui-sad-の-tkintern--kbframen-を-pysad-で動かす">Tcl/Tk の GUI (SAD の Tkinter.n / KBFrame.n を pysad で動かす)</h1>
+<p>この文書で分かること: SAD の GUI の台本 (窓、ボタン、入力欄、キャンバス、メニュー) を書き換えずに pysad で動かす仕組み、使い方 (環境変数)、使える部品、実装の構成、SAD の癖、確かめた範囲と限界。
+前提: SADScript の基本 (<a href="05_sadscript.html">05_sadscript.md</a>)。Tk の知識は要らない。
+読む順: 初めての人は 1 → 2 → 3 の順。実装を触る人は 4 以降。描画 (<code>ListPlot</code> など) の詳細は <a href="21_graphics.html">21_graphics.md</a>。経緯は <a href="history/work_gui_tclbridge.md"><code>history/work_gui_tclbridge.md</code></a>。</p>
+<p>用語: <strong>Tcl/Tk</strong> は GUI の部品と、それを動かすスクリプト言語。<strong>tkinter</strong> は Python が持つ Tk の窓口。<strong>Tkinter.n / KBFrame.n</strong> は SAD に付属する、Tk の部品を SADScript から使うためのパッケージ (<code>Packages/*.n</code>、SADScript で書かれている)。<strong>ウィジェット</strong> は窓の部品 (ボタンや入力欄)。<strong>ウィジェット木</strong> は窓の親子関係 (<code>winfo children</code> で辿れる)。<strong>gs</strong> は K64 (SAD のソース) から作った SAD の実行体。</p>
+<h2 id="1-何ができるか方針">1. 何ができるか・方針</h2>
+<ul>
+<li>SAD の GUI 台本 (<code>w = Window[]</code>、<code>b = Button[w, Text-&gt;"Go", Command:&gt;...]</code>、<code>KBMainFrame[...]</code>、<code>ListPlot[...]</code> など) が、そのまま動く。</li>
+<li>方針は「GUI のコードを Python へ訳さない」こと。SAD が C / Fortran で持っているのは Tcl との接点 (<code>src/tfTkInter_.c</code>、<code>src/tfTclArg.f</code>、<code>src/tfXlib_.c</code>) だけで、<code>.n</code> のパッケージ (<code>Tkinter.n</code>、<code>TkinterCore.n</code>、<code>KBFrame.n</code>、<code>KBMainFrame.n</code>、<code>TabFrame.n</code>、<code>Canvas.n</code> ほか) は SADScript で書かれている。pysad はその接点だけを Python の tkinter (Tk 8.6) で作り、<code>.n</code> は SAD のまま pysad のインタプリタで解釈する。(リポジトリ直下 <code>CLAUDE.md</code> の「例外: GUI は書き直さず .n を解釈する」に当たる。)</li>
+<li>層の構成:</li>
+</ul>
+<pre><code>SAD 台本 (Window[]、KBMainFrame[...]、ListPlot[...])
+   │   Packages/*.n を pysad の SADScript インタプリタが解釈 (Class は sadclass.py)
+   ▼
+Tkinter.n / TkinterCore.n / KBFrame.n / Canvas.n   →  TclEval[&quot;...&quot;] などの組み込み関数を呼ぶ
+   ▼
+pysad/tclbridge.py (Tcl/Tk の接点)、pysad/tkcanvas.py (キャンバス項目の作成)
+   ▼
+Python の tkinter (Tk 8.6) が窓を表示
+</code></pre>
+<p>対象のファイル: <a href="../pysad/tclbridge.py"><code>pysad/tclbridge.py</code></a>、<a href="../pysad/tkcanvas.py"><code>pysad/tkcanvas.py</code></a>、<a href="../pysad/sadclass.py"><code>pysad/sadclass.py</code></a>、<a href="../pysad/sadscript.py"><code>pysad/sadscript.py</code></a> / <code>sadlist.py</code> の言語機能。</p>
+<h2 id="2-使い方">2. 使い方</h2>
+<ol>
+<li>SAD の <code>Packages</code> の場所を環境変数で渡す。<strong><code>PYSAD_SAD_PACKAGES</code> が無いと、GUI は何も有効にならず、GUI の自動試験は skip になる。</strong></li>
+<li>台本を <code>Interp</code> で走らせる。</li>
+</ol>
+<pre><code>set PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;
+py -3.12 -c &quot;from pysad.sadscript import Interp; I=Interp(); I.run(open('demo.sad').read(),'script')&quot;
+</code></pre>
+<p><code>Interp()</code> を作ると、<code>Tkinter.n</code> などの名前 (<code>Window</code>、<code>Button</code>、<code>KBMainFrame</code>、…) は <code>init.n</code> の <code>AutoLoad</code> と同じく、最初に使われたときに読み込まれる。</p>
+<table>
+<thead>
+<tr>
+<th>環境変数</th>
+<th>意味</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PYSAD_SAD_PACKAGES</code></td>
+<td>SAD の <code>Packages</code> (例: <code>&lt;SAD のソース&gt;/Packages</code>)。これがあるときだけ <code>tclbridge.install</code> が働く</td>
+</tr>
+<tr>
+<td><code>PYSAD_TK_NOLOOP=1</code></td>
+<td><code>TkEventLoop[]</code> が 1 回 <code>update</code> して戻る (自動試験・ウィジェット木の比較用)。無ければ本物の mainloop (窓を閉じるまで戻らない)</td>
+</tr>
+<tr>
+<td><code>PYSAD_NO_DISPLAY=1</code></td>
+<td><code>$DisplayFunction</code> を <code>Identity</code> にする。<code>ListPlot</code> などは窓を開かず <code>Graphics[...]</code> の式を返すだけ (<code>pkgload.py</code>)。Linux で <code>DISPLAY</code> が無いときも同じ</td>
+</tr>
+<tr>
+<td><code>PYSAD_TRACE=1</code></td>
+<td>パッケージの読み込み中に失敗した文を標準エラーに出す</td>
+</tr>
+<tr>
+<td><code>PYSAD_TRACE_TCL=1</code></td>
+<td>Tcl に送った命令を標準エラーに出す</td>
+</tr>
+</tbody>
+</table>
+<p>FFS から使うときは <code>FFS;</code> の後に同じ台本を書く (<code>run_sad_string</code> 経由。<code>ListPlot</code> の例は <a href="21_graphics.html">21_graphics.md</a>)。</p>
+<h2 id="3-使える部品">3. 使える部品</h2>
+<p>次の表は、<code>Tkinter.n</code> の <code>Widgets</code> 一覧 (Tk の部品との対応) と、<code>KBFrame.n</code> / <code>TabFrame.n</code> の部品。</p>
+<table>
+<thead>
+<tr>
+<th>SAD の部品</th>
+<th>Tk のクラス</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Frame</code>、<code>Window</code>、<code>LabelFrame</code></td>
+<td>Frame、Toplevel(<code>.</code>)、Labelframe</td>
+<td><code>Window[]</code> は最上位の窓</td>
+</tr>
+<tr>
+<td><code>PanedWindow</code></td>
+<td>Panedwindow</td>
+<td></td>
+</tr>
+<tr>
+<td><code>TextLabel</code>、<code>Button</code>、<code>CheckButton</code>、<code>RadioButton</code></td>
+<td>Label、Button、Checkbutton、Radiobutton</td>
+<td><code>Command:&gt;(...)</code> が押されたとき評価される</td>
+</tr>
+<tr>
+<td><code>MenuButton</code>、<code>Menu</code>、<code>OptionMenu</code></td>
+<td>Menubutton、Menu、optMenu.tcl</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Entry</code>、<code>SpinBox</code></td>
+<td>Entry、Spinbox</td>
+<td><code>TextVariable:&gt;変数</code> で変数と結ぶ</td>
+</tr>
+<tr>
+<td><code>ListBox</code></td>
+<td>Listbox</td>
+<td><code>ListVariable</code></td>
+</tr>
+<tr>
+<td><code>Scale</code>、<code>ScrollBar</code></td>
+<td>Scale、Scrollbar</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Canvas</code></td>
+<td>Canvas</td>
+<td>描画は <code>tkcanvas.py</code> (<a href="21_graphics.html">21_graphics.md</a>)</td>
+</tr>
+<tr>
+<td><code>TextEditor</code>、<code>TextMessage</code></td>
+<td>Text、Message</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Pack</code>、<code>Grid</code>、<code>Place</code></td>
+<td>配置</td>
+<td>オプションは <code>Side</code>、<code>Fill</code>、<code>Expand</code>、<code>Row</code>、<code>Column</code> など</td>
+</tr>
+<tr>
+<td><code>KBMainFrame</code>、<code>KBFrame</code>、<code>KBSubFrame</code>、<code>KBDialogFrame</code>、<code>KBFComponentFrame</code>、<code>KBFGroup</code>、<code>KBFCheckButton</code>、<code>KBFHook</code>、<code>KBFFrameToggled</code>、<code>KBFFrameTabed</code>、<code>KBFTabFrame</code> ほか</td>
+<td>上の部品の組み合わせ</td>
+<td>KEK の標準の枠 (メニューバー、状態行、時計)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="31-動く-sad-スクリプト例">3.1 動く SAD スクリプト例</h3>
+<p>下は試験 (<a href="../pysad/tests/script_tests/test_tclbridge.py"><code>pysad/tests/script_tests/test_tclbridge.py</code></a>) にある台本。<code>Interp()</code> に <code>run(src, 'script')</code> で渡す。</p>
+<p>簡単な部品 (4 個。Window、Button、CheckButton、TextLabel):</p>
+<pre><code>w = Window[];
+b = Button[w, Text-&gt;&quot;Hi&quot;];
+c = CheckButton[w, Text-&gt;&quot;Chk&quot;];
+l = TextLabel[w, Text-&gt;&quot;Lab&quot;];
+TclEval[&quot;update&quot;];
+info = TclEval[&quot;set r {}; foreach c [winfo children .] {lappend r [winfo class $c] [$c cget -text]}; return $r&quot;, String];
+</code></pre>
+<p><code>info</code> は <code>Button Hi Checkbutton Chk Label Lab</code> になる (SAD の gs と一致)。</p>
+<p>メインフレーム (メニューバー付き):</p>
+<pre><code>mf = KBMainFrame[&quot;TkTest&quot;, f, Title-&gt;&quot;Test&quot;];
+TclEval[&quot;update&quot;];
+</code></pre>
+<p><code>.</code> の下に Menubutton 6 個 (KEK、File、Edit、Window、Task、Help)、仕切り、時計の Label ができる。</p>
+<p>LabelFrame のラベルにチェックボタンを埋め込む入れ子の部品:</p>
+<pre><code>w = KBMainFrame[&quot;LabelFrameDemo&quot;, f, Title-&gt;&quot;LabelFrame Demo&quot;];
+cb[0] = CheckButton[Text-&gt;&quot;Enable&quot;, Variable:&gt;cbv[0],
+  Command:&gt;(Scan[(cb[#][State] = If[cbv[0], &quot;normal&quot;, &quot;disabled&quot;])&amp;, Range[3]])];
+cf = KBFComponentFrame[f, Add-&gt;{
+  KBFHook[Command:&gt;(cbv[0] = True)],
+  KBFGroup[WidgetOption-&gt;{LabelWidget-&gt;cb[0]}],
+  KBFCheckButton[Text-&gt;&quot;A&quot;, Variable:&gt;cbv[1], WidgetVariable:&gt;cb[1]],
+  KBFCheckButton[Text-&gt;&quot;B&quot;, Variable:&gt;cbv[2], WidgetVariable:&gt;cb[2]],
+  KBFCheckButton[Text-&gt;&quot;C&quot;, Variable:&gt;cbv[3], WidgetVariable:&gt;cb[3]]}];
+TclEval[&quot;update&quot;];
+</code></pre>
+<p>Checkbutton 4 個、Labelframe 2 個、Menubutton 6 個ができる (SAD と一致)。</p>
+<figure><img alt="KBMainFrame の窓" src="data:image/png;base64,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" /><figcaption>KBMainFrame の窓</figcaption></figure>
+<p>図の読み方: 上の台本の実行結果の窓。KBMainFrame の標準の枠 (メニューバー File・Edit・Window・Help、時計、下の状態行) の中に、ラベルがチェックボタン (Enable) になった LabelFrame と、その中の A・B・C のチェックボタンが入る。Enable がオンのとき A・B・C が使える (<code>KBFHook</code> が最初にオンにする)。時計は実行時の時刻。</p>
+<p>描画 (<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>。キャンバスに 43 項目、gs と全部一致):</p>
+<pre><code>FFS;
+g=ListPlot[{1,4,9,16},PlotJoined-&gt;True];     (* 窓が開く。戻り値は Graphics[...] *)
+h=Plot[Sin[x],{x,0,6}];
+</code></pre>
+<p>2026-11-16 に追加で動かして確かめた最小の例 (試験には入れていない。ウィジェットが作られ、<code>Command</code> が評価されるまで):</p>
+<pre><code>w = Window[];
+ev = &quot;abc&quot;;
+e = Entry[w, TextVariable:&gt;ev];
+b = Button[w, Text-&gt;&quot;Go&quot;, Command:&gt;(n = 5)];
+Scan[Pack, {e, b}];
+TclEval[&quot;update&quot;];
+(* Tcl 側から押す: b を invoke すると n = 5 になった *)
+</code></pre>
+<p>同様に <code>Entry</code>、<code>ListBox</code>、<code>Scale</code>、<code>RadioButton</code>、<code>Canvas</code>、<code>TextEditor</code> を <code>Window</code> の下に作り <code>Pack</code> すると、<code>winfo children .</code> が <code>Entry Listbox Scale Radiobutton Canvas Text Button</code> の順に返った (エラーなし)。
+ウィジェットへの操作は <code>TclEval["... "]</code> で Tk の命令を直接送る形でも、<code>e[Insert]={"end","XY"}</code> (Entry・ListBox) の形でも書く (後者は <code>Tkinter.n</code> の定義)。Insert の位置は Tcl の添字なので <strong>小文字の <code>"end"</code></strong> を使う。大文字の <code>"End"</code> は gs で Tcl エラー 1501 になる。
+<code>e=Entry[w]</code> のあと <code>e</code> は gs と同じく <code>Widget[e,Entry[w]]</code> を値に持ち (<code>Head[e]=Widget</code>、<code>w=Window[]</code> も同様)、<code>e[Insert]={"end","XY"}</code>・<code>lb[Insert]=…</code>・<code>e[Get]</code>・<code>e[Delete]</code> が効く (Entry の内容 abc→abcXY、Listbox 2 項目、gs と一致)。</p>
+<ul>
+<li>仕組み (開発者向け): <code>DefineWidget</code> の <code>(a$_=w[opt$___])^:=(a$=w[Widget[Root$Window,Null],opt$])</code> が、次の規則 <code>(a$$_=w[Widget[master$_,_],opt$___])^:=With[{a$=a$$,…},…]</code> を呼ぶ入れ子になっている。このとき <code>With</code> は、呼び出し元の規則の引数 <code>a$</code> (ユーザーの <code>w</code>) を見つけ、<code>a$</code> でなく <code>w</code> を束縛しがちである。<code>sadscript._with</code> は、この探索を別の規則 (関数) の呼び出しの境界 (<code>boundary</code> の frame) で止める。探索を止めないと、本体の <code>a$:=Widget[a$,…]</code> が別の名前に付いて、ユーザーの <code>w</code> に遅延した値が付かない。</li>
+<li><code>Canvas$Widget = c1</code> (<code>Canvas.n</code> の UpValue) は、左辺の記号が最初の使用で読み込みの引き金になり、UpValue の照合で、遅延した定義 (<code>The$CanvasObject := …</code>) を持つ記号を評価しない。教材の台本の <code>Canvas$Widget=c1</code> で tclerror が出ず、窓の Canvas に 114 項目 (再描画後 115) で gs と同じ。</li>
+<li><strong>残る差</strong>: gs は <code>Window[]</code> の最初が Toplevel (<code>.5</code>) で、<code>.</code> には K64 起動時の「Return to SAD」ボタンがある。pysad は最初の <code>Window[]</code> が <code>.</code> (root) そのもの (<code>TkPathName[w]</code> が <code>.</code>、Entry は <code>.3</code>)。このためウィジェットの木に Button と Toplevel の 2 段が無く、<code>TextVariable</code> の変数名の番号 (<code>s6tv_8</code> 対 <code>s2tv_4</code>) も違う。</li>
+</ul>
+<h3 id="32-試験の台本の探し方">3.2 試験の台本の探し方</h3>
+<ul>
+<li><a href="../pysad/tests/script_tests/test_tclbridge.py"><code>pysad/tests/script_tests/test_tclbridge.py</code></a> (7 本): Tk の版と <code>$FontSystem</code>、簡単な部品、<code>KBMainFrame</code> のメニューバー、<code>KBFComponentFrame</code>、<code>Entry</code>・<code>ListBox</code> の Widget 値とメソッド、<code>Canvas$Widget</code> の UpValue。</li>
+<li><a href="../pysad/tests/script_tests/test_gui_lang.py"><code>pysad/tests/script_tests/test_gui_lang.py</code></a> (10 本): GUI を使わない言語機能 (<code>Sym::tag</code>、<code>f@@[x,{1}]</code>、<code>Null[]</code>、<code>0x33</code>、UpValue、SubValue、Hold 属性、<code>Difference</code>、<code>SwitchCases</code>、<code>StringFill</code>、<code>BaseForm</code> など)。<code>PYSAD_SAD_PACKAGES</code> が無くても走る。</li>
+<li><a href="../pysad/tests/script_tests/test_sadclass.py"><code>pysad/tests/script_tests/test_sadclass.py</code></a> (16 本): <code>Class</code> (§5)。</li>
+<li><a href="../pysad/tests/script_tests/test_plot.py"><code>pysad/tests/script_tests/test_plot.py</code></a> (8 本): <code>ListPlot</code>、<code>OpticsPlot</code>、<code>HistoPlot</code>、<code>ListContourPlot</code>、<code>FitPlot</code>、<code>Plot</code>、<code>GeometryPlot</code>、<code>FitGaussian</code> のキャンバス。</li>
+</ul>
+<h2 id="4-実装の構成">4. 実装の構成</h2>
+<h3 id="41-pysadtclbridgepy-接点">4.1 <code>pysad/tclbridge.py</code> (接点)</h3>
+<ul>
+<li><code>TclCreateInterp</code>、<code>Tcl</code> / <code>TclEval</code>、<code>TclSetResult</code>、<code>TclArg</code> / <code>TclArg1</code>、<code>TkEventLoop</code> / <code>TkQuitEventLoop</code>、<code>TkDefineBitmap</code>。Tcl のコマンド <code>sadeval</code> / <code>sadcommand</code> を tkinter の <code>createcommand</code> で登録し、Tk のイベント (ボタン、メニュー) から SAD の式を呼ぶ。</li>
+<li><code>TclArg</code> は <code>tfTclArg.f</code> の <code>tftclarggen</code> と同じ規則 (規則 <code>a-&gt;b</code> はラベルと値、リストは <code>{}</code>、<code>Widget[...]</code> はパス名、<code>String[...]</code> はそのまま)。SAD が手を入れた Tk にしか無い <code>-scriptfont</code>、<code>-altfont</code>、<code>-altscriptfont</code> は標準の Tk に無いので送らない。</li>
+<li>実数を Tcl に渡すときは <code>$FORM</code> に左右されず、整数なら整数 (Tk の <code>-width</code> や <code>after</code> は整数を要求する)、それ以外は最短の表記。<code>$FORM = "6.2"</code> の台本でも <code>1001.</code> にならないよう、<code>StandardForm</code> の中で評価する。</li>
+<li>Xlib の関数 (<code>XQueryTree</code>、<code>XInternAtom</code> など) は「他のアプリは見つからない」と答える空の実装 (Windows の tkinter には X のウィンドウ木が無い)。</li>
+<li>SAD の既定値: X11 のフォント名 (<code>$DefaultSansSerifFont</code> = "helvetica neue"、serif = "utopia"、fixed = "courier"、…、WSL の gs で実測)、<code>$FontSystem</code> = "X11"、<code>ReturnToSAD</code> = 0、<code>KBF$ConfDir</code> = <code>&lt;SAD&gt;/KBFrame</code> (<code>share/KBFrame</code> が無いソース配布のとき)。</li>
+<li>Windows の Tcl はまれに起動直後の初期化 (tk.tcl の探索) に失敗するので、<code>tkinter.Tk()</code> は数回やり直す。</li>
+<li>EPICS (<code>CaGet</code>、<code>CaPut</code>、<code>CaMonitor</code> …) と <code>System[]</code> は実行しない。サンプルを動かすときは、複製の中でこれらの呼び出しを <code>$off</code> の名前に替えて無効にする。原本は書き換えない。</li>
+<li>窓の更新は <code>TclEval["update"]</code>。台本の最後の <code>TkEventLoop[]</code> は、<code>PYSAD_TK_NOLOOP=1</code> なら 1 回の <code>update</code> で戻る。</li>
+</ul>
+<h3 id="42-pysadtkcanvaspy-キャンバス">4.2 <code>pysad/tkcanvas.py</code> (キャンバス)</h3>
+<p><code>Canvas.n</code> が使う <code>TkCanvas*</code> (<code>TkCanvasGetTypes</code>・<code>TkCanvasPointer</code>・<code>TkCanvasCreateItem(Direct)</code>・<code>TkCanvasLastItem</code>・<code>TkCanvasFindEnclosed</code>)、<code>CanvasClipLine</code>・<code>CanvasSymbolDirect</code> (<code>tfcanvasclip.f</code>) を実装。K64 は Tk の内部構造を C で直接たたくが、pysad は tkinter の Tcl に <code>create</code> を送る。<code>TkDefineBitmap</code> は Windows の Tcl が名前つきビットマップを登録できないので XBM ファイルに書き、<code>-stipple</code> の名前を <code>@ファイル</code> に替える。詳しくは <a href="21_graphics.html">21_graphics.md</a>。</p>
+<h3 id="43-sadscript-の言語機能-sadscriptpysadlistpysadclasspy">4.3 SADScript の言語機能 (<code>sadscript.py</code>、<code>sadlist.py</code>、<code>sadclass.py</code>)</h3>
+<p><code>Tkinter.n</code>・<code>KBFrame.n</code> を動かすために、K64 の実測と SADHelp に合わせて次の機能を実装している。試験は <a href="../pysad/tests/script_tests/test_gui_lang.py"><code>test_gui_lang.py</code></a> と <a href="../pysad/tests/script_tests/test_sadclass.py"><code>test_sadclass.py</code></a>。</p>
+<ul>
+<li>式: <code>Sym::tag</code>、<code>f@@[x, {1}]</code>、<code>Null[]</code> と <code>Null[a, b]</code> と <code>Null@@list</code> (引数列として展開。SAD では Sequence = Null)、<code>0x33</code>、n 項の <code>&lt;=&gt;</code> と <code>===</code>、空の右辺の規則 <code>x-&gt;</code>、<code>a@b</code> (クラスのメンバー参照。右は記号だけ、<code>x@m[args]</code> は <code>(x@m)[args]</code>。インスタンスでなければ <code>f@g[x]</code> = <code>f[g[x]]</code> のまま)。</li>
+<li>代入: UpValue (<code>(w_ = f[...]) ^:= …</code>、Set / SetDelayed の UpValue)、SubValue (<code>f[a][b]</code>、3 段の <code>f[a][b][c]</code> まで)、<code>a/:f[a, x] := …</code> (TagSet)、<code>f[x] = v</code> の値は v、<code>Unevaluated$[x]</code> を引数にすると変数 x そのもの (名前) を渡して関数の中の <code>i++</code> や <code>w[i] = …</code> が呼び出し側の x に届く、局所変数への代入で同名の大域変数の定義を消さない。</li>
+<li>評価の規則: 保持属性 (HoldAll / HoldFirst / HoldRest) の引数に対する置き換え (関数の引数・With の変数を、その時点の値で定義へ埋め込む。内側の With / Module / Function / パターン変数が同じ名前を束縛し直したときは置き換えない)、<code>With[{a=1; b=2, c}, …]</code> (宣言の中の <code>;</code>、<code>{c}</code> は現在値)、<code>WithPriority</code> / <code>Priority</code> (先頭に定義を置く)、定義の並び (リテラル &gt; 構造パターン &gt; 型つき Blank・Alternatives &gt; 素の Blank の順に試す)、<code>And</code> / <code>Or</code> の短絡評価、<code>Hold[x]</code> が x を評価しない、遅延した値を持つ変数が <code>f[x]</code> の <code>f</code> に来たとき (<code>fr := Widget[fr, …]</code> の <code>fr[Background]</code>) の適用。</li>
+<li>パターン: 構造パターン (<code>wid_[master_, opt___]</code>、<code>(Rule|RuleDelayed)[Options[w], _]</code>)、Rule オブジェクトとの照合 (<code>Rule[_String, _]</code>)、変数が持つパターン (<code>Switch[val, types, …]</code> の types)、型つき Blank、評価されていない <code>{x, y}</code> との照合、パターンを含む規則の <code>ReplaceAll</code> (<code>{x_-&gt;_, y_} :&gt; …</code>)。<code>a:&gt;b</code> の b は <code>ReplaceAll</code> でも評価しない。</li>
+<li>関数: <code>Difference</code>、<code>SwitchCases</code> (リスト以外の式の引数も)、<code>StringFill</code>、<code>Symbol</code>、<code>Second</code> / <code>Third</code>、<code>BaseForm</code>、<code>Names</code>、<code>RGBColor</code> (<code>#RRGGBB</code>、tfloor.f と同じ丸め)、<code>StandardForm[expr]</code> (評価の間だけ <code>$FORM</code> を既定の書式にする)、<code>Reverse[a-&gt;b]</code>、<code>Union</code> (同じ頭の式どうし)、<code>Extract</code> (規則の中)、<code>l[[, 2]]</code> (空の添字は全要素)、<code>DateString[]</code> は SAD と同じ <code>mm/dd/yyyy hh:mm:ss</code>、<code>ToLowerCase</code> / <code>ToUpperCase</code> は文字列以外をそのまま返す。</li>
+<li>Python の <code>TypeError</code> / <code>AttributeError</code> が組み込み関数から漏れたときは、SAD の式のエラー (<code>General::wrongtype</code>) にして止める。</li>
+</ul>
+<h2 id="5-class-sadclasspy">5. Class (sadclass.py)</h2>
+<p>SADHelp の「Class」の節に沿った実装。<code>Class[親の列, クラス変数, インスタンス変数, メソッド…]</code>、<code>x = c[引数]</code> (規則 <code>a-&gt;1</code> はメンバーの初期値、他の規則は <code>Options</code>)、<code>Constructor</code> / <code>Destructor</code> (<code>x=.</code> で呼ぶ)、<code>x@メンバー</code>、<code>x@メソッド[引数]</code>、<code>x@メンバー = 値</code>、<code>This</code>、親クラスの継承 (子の同じ形の定義が親のものを置き換える)、<code>x = c1</code> の複写 (同じインスタンス)。
+「メンバーが出てきたら <code>This@メンバー</code> と読む」という規則は、メンバーの記号をインスタンスごとに一意な記号 (<code>c$i12</code>) に置き換えて実現している。メソッドの本体は普通の関数として評価され、ウィジェットの生成 (<code>c = Canvas[...]</code>) や <code>coords[0] = …</code> のように記号に定義を付ける処理も、そのままインスタンスごとの記号に対して働く。
+未対応: <code>親</code> メンバーの書き方、上位値 (<code>h_[f_[arg___], b___] ^:= g</code>) の形のメソッド、<code>Members[]</code> / <code>Parents[]</code> などの問い合わせ。</p>
+<h2 id="6-k64-の癖">6. K64 の癖</h2>
+<p>pysad が合わせた K64 の挙動。</p>
+<ul>
+<li>SAD の Tk は改造版。<code>-scriptfont</code>・<code>-altfont</code>・<code>-altscriptfont</code> (ウィジェット全般) と、text 項目の <code>-usebg</code> は標準の Tk に無いので、pysad は送らない/落とす (文字の背景は塗らない)。</li>
+<li>既定のフォント名は X11 のもの (<code>$DefaultSansSerifFont</code> = "helvetica neue" など、<code>$FontSystem</code> = "X11")。Windows の Tk と見た目が違う。</li>
+<li><code>Tkinter.n</code> の <code>FontSubstitute$X11</code> に <code>Returun[...]</code> の綴りの誤りがあり、「フォント表が見つからない」ときの早期復帰が効かない (結果は変わらない)。</li>
+<li>SAD の <code>Sequence</code> は <code>Null</code>。<code>Null@@list</code> を引数列として展開しないと <code>-bg</code> などのオプションが消える。</li>
+<li><code>KBMainFrame</code> の Menubutton は 6 個 (7 ではない)。<code>KBF$ConfDir</code> はソース配布に <code>share/KBFrame</code> が無いので <code>&lt;SAD&gt;/KBFrame</code> に落とす。</li>
+<li>ビットマップは XBM 形式の改行位置を守らないと <code>Image</code> が置換されず <code>DeleteImage</code> が再帰する。</li>
+<li>値が <code>Null</code> の規則 (<code>Fill-&gt;Null</code>) は Tk の項目に渡さない。gs は既定の色 (X11 で <code>#000000</code>) になり、Windows の Tk では <code>SystemButtonText</code> になる (色の違い)。</li>
+<li>Tk の <code>create</code> が失敗しても SAD は <code>???Tkinter::tclerror: ...</code> のメッセージだけで <code>Null</code> を返して続ける (pysad も同じ)。</li>
+</ul>
+<h2 id="7-検証と現状">7. 検証と現状</h2>
+<p>基準は、WSL の SAD (gs、Tk 8.6.11 X11、WSLg の <code>DISPLAY=:0</code>) で同じ台本を走らせて取ったウィジェット木 (<code>winfo children</code> を辿った、クラス・<code>-text</code>・<code>-state</code>・<code>-title</code>) とキャンバス項目。次の表は、どの部品を実際に確かめたかを示す。</p>
+<table>
+<thead>
+<tr>
+<th>部品・台本</th>
+<th>確かめた内容</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Window</code>・<code>Button</code>・<code>CheckButton</code>・<code>TextLabel</code></td>
+<td>木 (クラス、<code>-text</code>)</td>
+<td>gs と一致 (<a href="../pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>)</td>
+</tr>
+<tr>
+<td><code>KBMainFrame</code></td>
+<td>メニューバー (Menubutton 6 個と Menu、Frame、時計の Label)、状態行、進捗表示</td>
+<td>一致</td>
+</tr>
+<tr>
+<td>demo-LabelFrame (<code>KBFComponentFrame</code>、<code>KBFGroup</code>、<code>KBFCheckButton</code>)</td>
+<td>木 36 行</td>
+<td>一致。差は時刻の文字列と、状態行の進捗表示の Label が 1 個多いこと (原因未確認)</td>
+</tr>
+<tr>
+<td>demo-KBFrame1 (<code>KBFFrameToggled</code>・<code>KBFFrameTabed</code>)</td>
+<td>木</td>
+<td><strong>途中まで</strong> (SAD 57 行に対し pysad 43 行)。入れ子の部品の配置 <code>KBF$ArrangeComponents</code> (<code>w[iwsym]</code> を使う親の背景の参照) で失敗</td>
+</tr>
+<tr>
+<td><code>Canvas</code> (ListPlot・Plot・ParametricPlot・ListDensityPlot・HistoPlot・GeometryPlot)</td>
+<td>キャンバスの全項目 (種類・座標・タグ)</td>
+<td>gs と一致 (文字の外接矩形だけ Tk のフォントで違う)。詳細は <a href="21_graphics.html">21_graphics.md</a></td>
+</tr>
+<tr>
+<td><code>OpticsPlot</code></td>
+<td>枠・矩形・線</td>
+<td>一致。text は gs 58 に対し pysad 72 (12 セルの例。FODO 24 セルでは 69 対 74。フォントで <code>RemoveOverlap</code> が変わる)</td>
+</tr>
+<tr>
+<td><code>ListContourPlot</code></td>
+<td>種類と数</td>
+<td>一致。等高線の始点・向きは違う</td>
+</tr>
+<tr>
+<td>GUI のサンプル台本 161 本 (2026-11-13)</td>
+<td>EPICS と <code>System[]</code> を無効にした複製で実行</td>
+<td>Tk を開く約 50 本は最後まで走り、Tcl・pysad ともエラー無し。残り約 81 本は Tk を使わない計算の台本</td>
+</tr>
+<tr>
+<td><code>Entry</code>・<code>ListBox</code>・<code>Scale</code>・<code>RadioButton</code>・<code>Canvas</code>・<code>TextEditor</code> (単体)</td>
+<td>作成し <code>Pack</code> して <code>update</code> (2026-11-16)</td>
+<td>エラー無しで作成された (木のクラス名のみ確認)</td>
+</tr>
+<tr>
+<td><code>Button</code> の <code>Command</code></td>
+<td>Tcl から <code>invoke</code></td>
+<td>SAD の式が評価された (<code>n = 5</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>試験: <a href="../pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a> 7、<a href="../pysad/tests/script_tests/test_sadclass.py"><code>test_sadclass.py</code></a> 16、<a href="../pysad/tests/script_tests/test_gui_lang.py"><code>test_gui_lang.py</code></a> 10、<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a> 8。リポジトリ全体の試験の通しは 2521 通過・13 skip・失敗 0 (2534 件収集、2026-11-23)。gs との比較の詳細は <a href="history/20_tcltk_gui_validation.md">history/20_tcltk_gui_validation.md</a>。</p>
+<h3 id="71-ヘッドレスでの試験の実行">7.1 ヘッドレスでの試験の実行</h3>
+<ol>
+<li><code>set PYSAD_SAD_PACKAGES=&lt;SAD のソース&gt;/Packages</code> を設定する。</li>
+<li><code>py -3.12 -m pytest pysad/tests/script_tests/test_tclbridge.py pysad/tests/script_tests/test_sadclass.py pysad/tests/script_tests/test_gui_lang.py pysad/tests/script_tests/test_plot.py -q</code>。
+   全体は <code>py -3.12 -m pytest pysad/tests -q</code> (手順は <code>docs/history/00_RESUME.md</code> §4)。</li>
+</ol>
+<ul>
+<li><code>PYSAD_SAD_PACKAGES</code> が無いか、tkinter が使えない (画面が無い) ときは GUI の試験は skip になる (GUI を使わない言語機能の試験は常に走る)。試験の fixture は <code>PYSAD_TK_NOLOOP=1</code> を設定し、<code>tkinter.Tk()</code> が作れなければ skip する。</li>
+<li>Windows の Tcl はまれに起動直後に "Can't find a usable tk.tcl" で失敗するので、<code>tkinter.Tk()</code> は最大 5 回やり直す (ブリッジ側は 4 回)。</li>
+<li><strong>窓を出さずに描画だけ確かめる</strong>: <code>PYSAD_NO_DISPLAY=1</code> で <code>ListPlot</code> などを呼ぶと <code>Graphics[...]</code> の式 (<code>Head</code> = Graphics、<code>Length</code> = 2) が返る (<code>test_listplot_returns_graphics_and_plot_matches_gs</code>)。この方式では Tk を使わない。</li>
+<li><strong>ウィジェット木で比べる</strong>: <code>PYSAD_SAD_PACKAGES</code> を設定して台本を走らせたあと、<code>TclEval</code> で <code>winfo children</code> を再帰して、クラス・<code>-text</code>・<code>-state</code>・<code>-title</code> を書き出し、SAD (gs) の同じ台本の木と比べる。</li>
+<li><strong>キャンバスの項目で比べる</strong>: <code>$c find all</code> と <code>$c type</code>・<code>$c coords</code>・<code>$c gettags</code> を書き出す (<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a> の台本)。</li>
+<li><strong>サンプル一括</strong>: 台本の写し (EPICS と <code>System[]</code> を <code>$off</code> の名前に替えたもの) を 1 本ずつ 120 秒の制限で走らせる。</li>
+<li>全体試験では GUI 系 (<code>test_plot</code>、<code>test_tclbridge</code>) が数回に 1 回、単独なら通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら単独で回し直す。</li>
+</ul>
+<h2 id="8-限界未確認">8. 限界・未確認</h2>
+<ul>
+<li><strong>見た目 (色、大きさ、フォント) と操作 (ボタンを押す、メニューを開く、拡大) は SAD と比べていない。</strong> 比べたのはウィジェット木とキャンバスの項目の座標。Windows の Tk は X11 の Tk と違う (フォント名、<code>-scriptfont</code>、<code>wm</code> の挙動、X のウィンドウ木)。表示の違いはここから出る。</li>
+<li>木を gs と比べたのは、§7 の表の台本 (Window 系、KBMainFrame、demo-LabelFrame、キャンバス系)。残りのサンプルは「エラー無しで木ができた」までで、gs とは未比較。</li>
+<li><code>Entry</code>・<code>ListBox</code>・<code>Scale</code>・<code>RadioButton</code>・<code>TextEditor</code>・<code>SpinBox</code>・<code>PanedWindow</code>・<code>OptionMenu</code>・<code>TextMessage</code>・<code>ScrollBar</code> は、単体の台本で gs と木を比べていない (<code>Entry</code>・<code>ListBox</code>・<code>Scale</code>・<code>RadioButton</code> の例は、メソッドの結果は gs と一致し、木は root と Toplevel の段が違う。§3.1)。<code>TextVariable</code> で結んだ変数への値の反映は確認していない。</li>
+<li><code>TabFrame.n</code> の描画 (<code>KBFTabFrame</code>、<code>KBFToggleFrame</code>) は未検証。demo-KBFrame1 は入れ子の部品の配置で失敗する (<code>cf[13]</code> が未定義。原因は未解決)。</li>
+<li><code>Class</code> の未対応: §5。</li>
+<li>キャンバス: <code>CanvasSymbol</code> (Tcl 文字列を返す版)、<code>Canvas3DClipTriangle</code>・<code>Canvas3DLightTriangle</code>・<code>Canvas3DProjection</code> (<code>Canvas3D.n</code>) は未対応。<code>BeamPlot</code> は gs が <code>SIGXX=0</code> で楕円を描かず、比べられない (<a href="21_graphics.html">21_graphics.md</a>)。<code>UseBG-&gt;True</code> の文字の背景は描かない。</li>
+<li>EPICS 関係 (<code>CaGet</code> など) と <code>System[]</code> は動かさない。</li>
+<li>使った環境の制約: Windows、Python 3.12、Tk 8.6 (tkinter)。画面が無いと Tk の試験は skip になる。GUI の台本は、本物の mainloop で長く動かし続ける使い方 (ユーザーの操作に反応し続ける) は確認していない。</li>
+</ul>
+<h2 id="9-関連文書">9. 関連文書</h2>
+<ul>
+<li><a href="21_graphics.html">21_graphics.md</a> (描画と <code>tkcanvas.py</code>、gs との一致)</li>
+<li><a href="history/work_gui_tclbridge.md"><code>history/work_gui_tclbridge.md</code></a> (実装の経緯、落とし穴、未解決)</li>
+<li><a href="05_sadscript.html">05_sadscript.md</a>、<a href="29_sad_quirks.html">29_sad_quirks.md</a> (SADScript と K64 の癖)</li>
+<li><a href="06_sadscript_library.html">06_sadscript_library.md</a> (SAD パッケージ)、<a href="15_csr.html">15_csr.md</a> (<code>CSR.n</code>)</li>
+<li><a href="history/00_RESUME.md"><code>history/00_RESUME.md</code></a> (引き継ぎ、環境、試験の手順)</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>03 マッチング</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body class="nonav">
+<main>
+<div class="meta">元: README.md</div>
+<h1 id="03-マッチング">03 マッチング</h1>
+<p>FIT・FREE・FIX・VARY・GO・SHOW・VARIABLES・REJECT・RECOVER/SAVE/RESET、フラグ、フック関数、OptimizeOptics、オフモメンタム、特殊変数。解析解は FODO の 2x2 行列の模型 (<code>tools/ana_fodo_ring.py</code>) と薄レンズの式。</p>
+<p>各例は 4 ファイル: <code>NAME.sad</code> (スクリプト)、<code>NAME.gs.txt</code> (gs の画面表示)、<code>NAME.pysad.txt</code> (pysad の画面表示)、<code>NAME.md</code> (説明)。
+走らせ方: <code>py -3.12 example/tools/run_example.py example/03_matching/NAME.sad</code>。凡例: ○ 一致 (表示の桁・書式の差は除く)、△ 差あり (内容を <code>.md</code> に書いた)、× gs 失敗、× pysad 未対応。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+<th>gs と pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="FFS_FIT.html">FFS_FIT</a></td>
+<td>1 セル FODO で位相 90 度のマッチング。厚いレンズ・薄レンズの解析解</td>
+<td>○ (<code>VARIABLES</code> の Saved 列のみ違う)</td>
+</tr>
+<tr>
+<td><a href="FFS_FREE_FIX_VARY.html">FFS_FREE_FIX_VARY</a></td>
+<td>FREE・FIX・VARY・VARIABLES</td>
+<td>○ (変数の並び順の表示のみ)</td>
+</tr>
+<tr>
+<td><a href="FFS_REJECT.html">FFS_REJECT</a></td>
+<td>REJECT。条件 1 つ・変数 2 つの最小ノルム解の解析値</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="FFS_RECOVER_SAVE_RESET.html">FFS_RECOVER_SAVE_RESET</a></td>
+<td>RECOVER・SAVE・RESET</td>
+<td>○ (pysad は RESET で警告を出す)</td>
+</tr>
+<tr>
+<td><a href="FFS_FITPOINTS.html">FFS_FITPOINTS</a></td>
+<td>FITPOINTS (オフモメンタムのマッチング、DP)。6 極 K2 の 1 次の解析値</td>
+<td>△ (完走、値は 5e-5 以内。pysad は点ごとの表を出さない)</td>
+</tr>
+<tr>
+<td><a href="flag_UNIPOL_BIPOL.html">flag_UNIPOL_BIPOL</a></td>
+<td>UNIPOL と BIPOL</td>
+<td>△ (収束しない B の BIPOL で gs と pysad が別の点で止まる)</td>
+</tr>
+<tr>
+<td><a href="flag_ABSW_RELW.html">flag_ABSW_RELW</a></td>
+<td>ABSW と RELW</td>
+<td>△ (収束しない問題。pysad は RELW が効かない)</td>
+</tr>
+<tr>
+<td><a href="fn_FitValue_FitWeight_VariableRange_VariableWeight.html">fn_FitValue_FitWeight_VariableRange_VariableWeight</a></td>
+<td>FitValue・FitWeight・VariableRange・VariableWeight</td>
+<td>○ (FitValue 時の残差の表示のみ)</td>
+</tr>
+<tr>
+<td><a href="fn_OptimizeOptics.html">fn_OptimizeOptics</a></td>
+<td>OptimizeOptics (ダウンヒルシンプレックス)</td>
+<td>○ (gs と同じ値・同じ反復。デバッグ表示の 2 行だけ違う)</td>
+</tr>
+<tr>
+<td><a href="var_CONVERGENCE.html">var_CONVERGENCE</a></td>
+<td>CONVERGENCE・MAXITERATION・DP・DP0 など</td>
+<td>○</td>
+</tr>
+<tr>
+<td><a href="flag_FREE_component.sad">flag_FREE_component</a></td>
+<td>成分ごとの FREE (<code>FREE QF.1 K1;</code>・<code>FREE B.3 K1;</code>)</td>
+<td>○ (gs と一致)</td>
+</tr>
+<tr>
+<td><a href="flag_FREE_noop_variable.sad">flag_FREE_noop_variable</a></td>
+<td>要素ごとの FREE の「何もしない変数」(<code>FREE QF.3 K1</code>)。VAR の表・エラー・フィットの変数の数</td>
+<td>○ (全桁一致。v2・k64 とも)</td>
+</tr>
+<tr>
+<td><a href="FFS_FIT_geometry_quad_dx.sad">FFS_FIT_geometry_quad_dx</a></td>
+<td>SOL 領域内の四極の DX・DY を変数にした幾何の fit</td>
+<td>○ (gs と v2 が 2 回の Newton で収束し、QF DX = 2.788484326e-3、QD DY = 2.667980563e-3 が 1e-12 で一致。k64 は SOL 自体のずれが未対応で動かない)</td>
+</tr>
+<tr>
+<td><a href="flag_FITP_five.sad">flag_FITP_five</a></td>
+<td>FITP&gt;1 (オフモメンタム 5 点 δ = −2%〜+2%、NX NY)。12 セル FODO (3 GeV、52.8 m)</td>
+<td>△ (最終の残差が gs と 2e-4 以内。反復の経路は違う)</td>
+</tr>
+<tr>
+<td><a href="flag_FITP_beta.sad">flag_FITP_beta</a></td>
+<td>FITP&gt;1 (3 点 δ = −1%・0・+1%)、NX・NY と BX・BY (<code>$$$</code> の β)。自由変数は QF QD SF SD</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><a href="flag_FITP_one.sad">flag_FITP_one</a></td>
+<td>FITP&gt;1 と比べる基準 (FITP 1、オフモメンタムなし)</td>
+<td>同上</td>
+</tr>
+</tbody>
+</table>
+<p>上の表のうち、拡張子つきのリンクの行 (<code>.sad</code>・<code>.py</code>) は説明の <code>.md</code> を持たない。内容と結果の要点は表と、台本・スクリプトの先頭のコメントに書いた。<code>.py</code> の例は、リポジトリ直下から <code>py -3.12 example/03_matching/NAME.py</code> で走らせる (出力は <code>NAME.out.txt</code>)。gs と同じ動作で走らせるときは <code>PYSAD_COMPAT=k64</code>。</p>
+<p>FITP&gt;1 は docs/03 では gs が再起動するとあるが、今回の <code>FFS_FITPOINTS</code> では gs は完走した。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

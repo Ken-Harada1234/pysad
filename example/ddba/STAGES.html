@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>STAGES: 設計の段階ごとの索引</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#段階-1-基本セルの構想-セル数直線部偏向磁石の構成">段階 1: 基本セルの構想 (セル数・直線部・偏向磁石の構成)</a></li>
+<li><a href="#段階-2-セルの光学のマッチング-βηチューンの目標四極の自由度">段階 2: セルの光学のマッチング (β・η・チューンの目標、四極の自由度)</a></li>
+<li><a href="#段階-3-チューン点の選択-チューンサーベイ">段階 3: チューン点の選択 (チューンサーベイ)</a></li>
+<li><a href="#段階-4-6-極の配置と最適化-色収差補正ハーモニック6-極">段階 4: 6 極の配置と最適化 (色収差補正・ハーモニック6 極)</a></li>
+<li><a href="#段階-5-特殊なセル-等時性セル直線部セルの構成の変更">段階 5: 特殊なセル: 等時性セル、直線部・セルの構成の変更</a></li>
+<li><a href="#段階-6-リング全体への展開-周長ハーモニクス幾何学的な閉合八極">段階 6: リング全体への展開 (周長・ハーモニクス・幾何学的な閉合・八極)</a></li>
+<li><a href="#段階-7-誤差と軌道補正-補正しながら誤差を大きくする手法">段階 7: 誤差と軌道補正 (補正しながら誤差を大きくする手法)</a></li>
+<li><a href="#段階-8-エネルギーrf-の条件の変更と周辺の計算">段階 8: エネルギー・RF の条件の変更と周辺の計算</a></li>
+<li><a href="#段階-9-最終の版の詰め">段階 9: 最終の版の詰め</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: STAGES.md</div>
+<h1 id="stages-設計の段階ごとの索引">STAGES: 設計の段階ごとの索引</h1>
+<p>設計メモの版 (<code>DDBA_NN</code>) を、複雑なセルのラティスを設計する手順の段階に並べたもの。各段階の説明 (設計の考え方・調整する変数・結果の数値・うまくいかなかった点) は <a href="README.html">README.md</a>。時間順の対応は <a href="ORIGINAL_MAP.html">ORIGINAL_MAP.md</a>。</p>
+<h2 id="段階-1-基本セルの構想-セル数直線部偏向磁石の構成">段階 1: 基本セルの構想 (セル数・直線部・偏向磁石の構成)</h2>
+<ul>
+<li><a href="lattice/DDBA_01_v03_12_30cells_DDBA.sad"><code>DDBA_01</code></a> (2023/07/13): セル数の決定</li>
+<li><a href="lattice/DDBA_02_v05_08_30cell.sad"><code>DDBA_02</code></a> (2023/07/24): DBA x 2 を 28 セル (機能結合型の偏向磁石、直線部 7.5 m と 2 m が交互) で検討した後、30 セルにして6 極 (S1〜S5) を当てずっぽうで入れた版</li>
+</ul>
+<h2 id="段階-2-セルの光学のマッチング-βηチューンの目標四極の自由度">段階 2: セルの光学のマッチング (β・η・チューンの目標、四極の自由度)</h2>
+<ul>
+<li><a href="lattice/DDBA_03_v05_12.sad"><code>DDBA_03</code></a> (2023/07/27): 直線部を 5 m + 10 m にする</li>
+<li><a href="lattice/DDBA_06_v05_14_2.5GeV.sad"><code>DDBA_06</code></a> (2023/08/02): DDBA から DQBA へ</li>
+<li><a href="lattice/DDBA_13_v05_17.sad"><code>DDBA_13</code></a> (2023/08/18): 線形オプティクスの微調</li>
+<li><a href="lattice/DDBA_21_v05_30.sad"><code>DDBA_21</code></a> (2023/10/11): 短直線部の条件の再検討</li>
+</ul>
+<h2 id="段階-3-チューン点の選択-チューンサーベイ">段階 3: チューン点の選択 (チューンサーベイ)</h2>
+<ul>
+<li><a href="lattice/DDBA_04_v05_12.sad"><code>DDBA_04</code></a> (2023/07/28): DBA x 2 x 30 セルの場合のチューンサーベイ (6 極 2 ファミリー x 2、セルごとに補正)</li>
+<li><a href="lattice/DDBA_10_v05_14.sad"><code>DDBA_10</code></a> (2023/08/17): 垂直チューンを増やす</li>
+<li><a href="lattice/DDBA_12_v05_14_47.1_13.2.sad"><code>DDBA_12</code></a> (2023/08/25): ほかのチューンにしてみる (総当たり)</li>
+</ul>
+<h2 id="段階-4-6-極の配置と最適化-色収差補正ハーモニック6-極">段階 4: 6 極の配置と最適化 (色収差補正・ハーモニック6 極)</h2>
+<ul>
+<li><a href="lattice/DDBA_05_v05_12.sad"><code>DDBA_05</code></a> (2023/08/01): DBA x 2 x 30 セルの6 極の最適化 (総当たり)</li>
+<li><a href="lattice/DDBA_11_v05_14_sx.sad"><code>DDBA_11</code></a> (2023/08/13): pysad の作者とは別の研究者に依頼した6 極の最適化結果 (S1〜S5 の MH・LH の 10 ファミリー) を v05_14 に入れ、誤差の補正スクリプトを走らせて DA の 100 通りを計算</li>
+</ul>
+<h2 id="段階-5-特殊なセル-等時性セル直線部セルの構成の変更">段階 5: 特殊なセル: 等時性セル、直線部・セルの構成の変更</h2>
+<ul>
+<li><a href="lattice/DDBA_14_v05_20.sad"><code>DDBA_14</code></a> (2023/09/14): セルの等時化</li>
+<li><a href="lattice/DDBA_15_v05_21.sad"><code>DDBA_15</code></a> (2023/09/12): 等時セルの6 極</li>
+<li><a href="lattice/DDBA_19_v06_14_45.13_12.21.sad"><code>DDBA_19</code></a> (2023/10/05): 全セルの直線部の長さを統一する案 (9.5 m、28 セル、744 m)</li>
+<li><a href="lattice/DDBA_20_v05_29_manyrings.sad"><code>DDBA_20</code></a> (2023/10/01): 5 m + 10 m 構成の部分等時化リングで、どこで回らなくなるか調べる</li>
+<li><a href="lattice/DDBA_22_v07_12.sad"><code>DDBA_22</code></a> (2023/10/16): 10 m セルに電磁石を追加</li>
+<li><a href="lattice/DDBA_23_v06_26.sad"><code>DDBA_23</code></a> (2023/10/13): 9.5 m x 28 セルの場合の垂直チューン (色収差) の最適化</li>
+</ul>
+<h2 id="段階-6-リング全体への展開-周長ハーモニクス幾何学的な閉合八極">段階 6: リング全体への展開 (周長・ハーモニクス・幾何学的な閉合・八極)</h2>
+<ul>
+<li><a href="lattice/DDBA_16_v05_22.sad"><code>DDBA_16</code></a> (2023/09/14): 周長とハーモニクスを合わせてリングを閉じた案</li>
+<li><a href="lattice/DDBA_17_v05_28.sad"><code>DDBA_17</code></a> (2023/10/13): TCELL 単位で色収差を最適化する</li>
+<li><a href="lattice/DDBA_18_v05_29.sad"><code>DDBA_18</code></a> (2023/10/13): チューンの端数を下げ、ほぼもとの点に戻した案 (48.61/12.72)</li>
+</ul>
+<h2 id="段階-7-誤差と軌道補正-補正しながら誤差を大きくする手法">段階 7: 誤差と軌道補正 (補正しながら誤差を大きくする手法)</h2>
+<ul>
+<li><a href="lattice/DDBA_07_v05_14_spcod.sad"><code>DDBA_07</code></a> (2023/08/03): 初期解無しのケースの補正の検討</li>
+<li><a href="lattice/DDBA_08_v05_14_spcod.sad"><code>DDBA_08</code></a> (2023/08/08): 初期解無しの場合の COD 補正</li>
+<li><a href="lattice/DDBA_09_v05_14_spcod.sad"><code>DDBA_09</code></a> (2023/08/11): 初期解無しの COD 補正 (その 2)</li>
+</ul>
+<h2 id="段階-8-エネルギーrf-の条件の変更と周辺の計算">段階 8: エネルギー・RF の条件の変更と周辺の計算</h2>
+<ul>
+<li><a href="lattice/DDBA_24_v07_14_SP_transport.sad"><code>DDBA_24</code></a> (2023/11/16): SP ビーム (別のビームの輸送) の計算</li>
+<li><a href="lattice/DDBA_26_v07_14_2.5GeV.sad"><code>DDBA_26</code></a> (2023/10/18): SAD による簡易 Touschek 寿命の計算</li>
+</ul>
+<h2 id="段階-9-最終の版の詰め">段階 9: 最終の版の詰め</h2>
+<ul>
+<li><a href="lattice/DDBA_25_v07_14_2.5GeV.sad"><code>DDBA_25</code></a> (2023/12/15): CDR 用の台本と計算</li>
+<li><a href="lattice/DDBA_27_v07_14_sx_20231205.sad"><code>DDBA_27</code></a> (2024/02/21): ELEGANT のシミュレーション向けのパラメータ計算</li>
+<li><a href="lattice/DDBA_28_v07_16_sx_rev9_5GeV.sad"><code>DDBA_28</code></a> (2024/05/31): CDR の 2024.07 の更新向けに、新しい6 極セット (rev9) に対する誤差入りの DA 計算</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

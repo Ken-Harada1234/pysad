@@ -1,0 +1,19 @@
+! SOL 領域 (BOUND=1 の SOL の間) の中の四極の DX・DY を変数にした幾何の fit。
+! gs は 2 回の Newton で収束 (QF DX = 2.78848432670e-3、QD DY = 2.66798056318e-3)。v2 は四極のずれの解析微分 (tdgeo の qdtrans・tftmatu 相当) で同じ値に収束する。
+! 領域内の四極のずれは、追跡・CALC・Emittance[]・tsgeo のすべてが扱う。k64 モードは SOL 自体のずれ (trots) が未対応で使えない。
+MOMENTUM = 3 GEV;
+DRIFT DR = (L=1) DR2 = (L=0.5) DV=(L=0.5);
+QUAD QF = (L=0.3 K1=0.3) QD = (L=0.3 K1=-0.25);
+SOL SA = (L=0 BZ=3 BOUND=1 GEO=1 DX=0.002 DY=-0.001 DPX=0.003 DPY=0.002) SB = (L=0 BZ=0 BOUND=1);
+MARK ST = (BX=5 BY=5) M2=();
+LINE BL = (ST DR SA DR2 QF DV QD DR2 SB DR M2);
+FFS;
+USE BL;
+INS; NORAD; NOFLUC; CALC;
+$FORM="18.14";
+PageWidth=1999;
+FIT M2 GY 0.0008; FIT M2 GZ -0.0035;
+FREE QF DX; FREE QD DY;
+GO;
+Print["G1 =",LINE[{"GY","GZ"},"M2"]," ",LINE["DX","QF"]," ",LINE["DY","QD"]];
+Exit;

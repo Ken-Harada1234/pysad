@@ -1,0 +1,90 @@
+! ============================================================
+! bench_level1.sad  — Level 1 benchmark
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1 = (L=1.2)
+;
+QUAD  QF = (L=0.3 K1= 1.8*0.3)
+      QD = (L=0.3 K1=-1.8*0.3)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+LINE CELL = (ORG QF D1 B D1 QD D1 B D1)
+;
+LINE RING = (20*CELL)
+;
+
+FFS USE=RING;
+
+! ============================================================
+! Test 1: Linear optics
+! ============================================================
+CELL;
+CALC;
+
+Print["--- Test 1: Linear optics ---"];
+Print["--- lattice entrance (^^^) ---"];
+Print["  BetaX  = ", Twiss["BX","^^^"]];
+Print["  BetaY  = ", Twiss["BY","^^^"]];
+Print["  AlphaX = ", Twiss["AX","^^^"]];
+Print["  AlphaY = ", Twiss["AY","^^^"]];
+Print["  EtaX   = ", Twiss["EX","^^^"]];
+Print["  EtaPX  = ", Twiss["EPX","^^^"]];
+Print["  Qx     = ", Twiss["NX","$$$"]/2/Pi];
+Print["  Qy     = ", Twiss["NY","$$$"]/2/Pi];
+Print[];
+
+Print["--- QF exit ---"];
+Print["  BetaX  = ", Twiss["BX","QF"]];
+Print["  BetaY  = ", Twiss["BY","QF"]];
+Print["  EtaX   = ", Twiss["EX","QF"]];
+Print[];
+
+Print["--- QD exit ---"];
+Print["  BetaX  = ", Twiss["BX","QD"]];
+Print["  BetaY  = ", Twiss["BY","QD"]];
+Print["  EtaX   = ", Twiss["EX","QD"]];
+Print[];
+
+! ============================================================
+! Test 2: COD with QD.1 DX misalignment = 0.1 mm
+! ============================================================
+Print["--- Test 2: COD (QD.1 DX = 1e-4 m) ---"];
+LINE["DX","QD.1"] = 1e-4;
+COD;
+DUMP;
+CELL;
+CALC;
+
+Print["--- COD at ring entrance (^^^) ---"];
+Print["  COD_x  = ", Twiss["DX","^^^"]];
+Print["  COD_px = ", Twiss["DPX","^^^"]];
+Print["  COD_y  = ", Twiss["DY","^^^"]];
+Print["  COD_py = ", Twiss["DPY","^^^"]];
+Print[];
+
+Print["--- COD at QD.1 exit ---"];
+Print["  COD_x  = ", Twiss["DX","QD.1"]];
+Print[];
+
+! ============================================================
+! Test 3: Radiation integrals & emittance (design orbit)
+! ============================================================
+LINE["DX","QD.1"] = 0;
+CELL;
+CALC;
+
+Print["--- Test 3: Radiation integrals (RADINT) ---"];
+RADINT;
+Print[];
+
+Print["--- Emittance ---"];
+Print["  Emittance x        = ", (Emittances/.Emittance[])[1]];
+Print["  MomentumSpread     = ", MomentumSpread/.Emittance[]];
+Print["  MomentumCompaction = ", MomentumCompaction/.Emittance[]];
+Print["  EnergyLossU0       = ", EnergyLossU0/.Emittance[]];

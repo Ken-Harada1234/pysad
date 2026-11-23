@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>02. SAD の MAIN レベル (ラティス定義) と pysad の parser</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#1-sad-入力ファイルの構造-main-レベル">1. SAD 入力ファイルの構造 (MAIN レベル)</a><ul>
+<li><a href="#11-トップレベルの読み取り-toplvlf-toplvl">1.1 トップレベルの読み取り (toplvl.f: toplvl)</a></li>
+<li><a href="#12-momentum-グローバル変数-式と単位">1.2 MOMENTUM=, グローバル変数, 式と単位</a></li>
+<li><a href="#13-onoff-行-doflagf">1.3 ON/OFF 行 (doflag.f)</a></li>
+<li><a href="#14-要素定義-doelemf-rdkwdlf-rdexprf">1.4 要素定義 (doelem.f, rdkwdl.f, rdexpr.f)</a></li>
+<li><a href="#15-line-定義と展開-dolinef-lreadf-explnf">1.5 LINE 定義と展開 (doline.f, lread.f, expln.f)</a></li>
+<li><a href="#16-main-の-track--emit-コマンド-詳細は-docshistorywork_main_trackmd">1.6 MAIN の TRACK / EMIT コマンド (詳細は docs/history/work_main_track.md)</a></li>
+</ul>
+</li>
+<li><a href="#2-要素型とキーワード">2. 要素型とキーワード</a></li>
+<li><a href="#3-pysad-parserpy-の対応">3. pysad parser.py の対応</a><ul>
+<li><a href="#31-構成">3.1 構成</a></li>
+<li><a href="#32-_build_element0-の変換-sad-値--pysad-属性">3.2 _build_element0 の変換 (SAD 値 → pysad 属性)</a></li>
+<li><a href="#33-既知の制限sad-との差-2026-11-16-に確認">3.3 既知の制限・SAD との差 (2026-11-16 に確認)</a></li>
+</ul>
+</li>
+<li><a href="#4-実例-3-gev-20-セルのリング">4. 実例: 3 GeV 20 セルのリング</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 02_lattice_main.md</div>
+<h1 id="02-sad-の-main-レベル-ラティス定義-と-pysad-の-parser">02. SAD の MAIN レベル (ラティス定義) と pysad の parser</h1>
+<p><strong>この文書で分かること</strong>: SAD の入力ファイルの前半 (MAIN レベル: 要素の定義、<code>LINE</code>、<code>MOMENTUM=</code> などの変数) がどう読まれるか、要素型ごとのキーワードと単位、pysad の parser がそれをどう Python の要素に変換するか。
+<strong>前提</strong>: SAD のラティス (<code>QUAD QF=(L=0.25 K1=1.0);</code> のような書き方) を見たことがあること。FFS (対話コマンド) の部分は <a href="03_ffs_commands.html">03_ffs_commands.md</a> と <a href="04_ffs_small_commands.html">04_ffs_small_commands.md</a>。
+<strong>読む順</strong>: 初めての人は §1 (入力の構造) → §4 (動く例) → 必要になったら §2 (キーワード表)・§3 (parser の変換)。</p>
+<p>用語: <strong>MAIN レベル</strong> = <code>FFS;</code> より前の、要素・LINE・変数を定義する部分。<strong>FFS</strong> = その後の対話コマンド層。<strong>K64</strong> = 本プロジェクトが翻訳の元にした SAD (Fortran) のビルド。<strong>gs</strong> = その実行ファイル。</p>
+<p>照合対象: <code>&lt;SAD&gt;\src</code> (K64 版 SAD, Fortran) と <a href="../pysad/parser.py"><code>pysad/parser.py</code></a>。SAD ソースの行番号は 2026-10 時点。
+表記: 無印 = コードで確認した事実 / 「解釈」= 推論 / 「未検証」= 未確認。parser.py は改訂が続くため行番号ではなく関数名で示す。</p>
+<hr />
+<h2 id="1-sad-入力ファイルの構造-main-レベル">1. SAD 入力ファイルの構造 (MAIN レベル)</h2>
+<h3 id="11-トップレベルの読み取り-toplvlf-toplvl">1.1 トップレベルの読み取り (<code>toplvl.f: toplvl</code>)</h3>
+<p><code>gs file.sad</code> で起動した SAD は <code>MAIN.f</code> → <code>initbl.f</code> (コマンド表) → <code>initb1.f</code> (要素型・キーワード・単位・グローバル変数の表) を経て <code>toplvl</code> に入り、トークン単位で次のように振り分ける (toplvl.f:1700-1760)。</p>
+<table>
+<thead>
+<tr>
+<th>トークン</th>
+<th>種別 (idtype)</th>
+<th>処理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DRIFT</code>, <code>BEND</code>, <code>QUAD</code>, …</td>
+<td>icDEF (&lt; icMXEL)</td>
+<td><code>doelem</code> — 要素定義ブロック (doelem.f)</td>
+</tr>
+<tr>
+<td><code>LINE</code> / <code>CELL</code></td>
+<td>icDEF (icLINE=100)</td>
+<td><code>doline</code> — ライン定義ブロック (doline.f, lread.f)</td>
+</tr>
+<tr>
+<td><code>FFS</code>, <code>TRACK</code>, <code>EMIT</code>, <code>QUICK</code>, <code>LIE</code>, <code>PLOT</code></td>
+<td>icACT</td>
+<td><code>doACT</code> → <code>ActTra</code> (track.f) など。<code>FFS;</code> 以降は FFS コマンド層 (tffsa.f)</td>
+</tr>
+<tr>
+<td><code>ON</code> / <code>OFF</code> / <code>READ</code> / <code>PRINT</code> / <code>STOP</code> / <code>EXPAND</code> / <code>REVERSE</code> / <code>LIST</code></td>
+<td>sethtbr 登録のサブルーチン (initbl.f)</td>
+<td><code>doonfl</code>/<code>dooffl</code> (doflag.f), <code>doread</code>, <code>dostop</code> など</td>
+</tr>
+<tr>
+<td>既存の要素名 / LINE 名</td>
+<td>1..icMXEL / icLINE</td>
+<td><code>doelm2</code> / <code>dolin2</code> — 型キーワードなしの再定義</td>
+</tr>
+<tr>
+<td>それ以外の識別子</td>
+<td>—</td>
+<td><code>dAssgn</code> (dAssgn.f): <code>NAME = 式;</code> でグローバル実数 (icGLR) を定義・代入</td>
+</tr>
+<tr>
+<td><code>;</code>, <code>}</code>, CR</td>
+<td>—</td>
+<td>読み飛ばし</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><code>!</code> から行末まではコメント (gettok.f:55 <code>if (curc == '!') call myfflush</code>)。文の区切りは <code>;</code>、ブロックは <code>{ }</code> でも囲める (<code>doelem</code>/<code>doline</code> は <code>{</code> を任意で受ける)。</li>
+<li><code>FFS;</code> で ActTra に入り、FFS 内の <code>STOP</code>/<code>END</code> で MAIN に戻る。MAIN の <code>STOP;</code> (<code>dostop</code>) で SAD が終了する (bench_level12.result 末尾の <code>*** dostop *** Good Bye!</code>)。</li>
+<li>初期の <code>MOMENTUM</code> は 30 GeV (initb1.f の <code>RsetGL('MOMENTUM',30.d9)</code>。pysad も <code>ffscmd</code> で同じ既定)。MAIN で <code>MOMENTUM=</code> を書かない台本は FFS の <code>USE</code> 以後も 30 GeV で計算される。</li>
+<li><strong>gs の慣習</strong>: ラティスファイル (MAIN 部のみ) と FFS スクリプトを連結して 1 本の <code>.sad</code> として <code>bin/gs</code> に渡す。本プロジェクトでは <code>bench_level12.sad</code> = <code>&lt;試験用ラティス&gt;.lat</code> + FFS 部であり、pysad 側は <code>load_sad_files(lat, script)</code> / <code>run_sad.py lattice script</code> が同じ連結を行う (docs/history/00_RESUME.md Level 14)。</li>
+</ul>
+<h3 id="12-momentum-グローバル変数-式と単位">1.2 <code>MOMENTUM=</code>, グローバル変数, 式と単位</h3>
+<ul>
+<li><code>MOMENTUM = 3GEV;</code> は <code>dAssgn</code> → <code>rdterm</code> → <code>yyparse</code> (calc.y) で評価される。文法は <code>NUM UNIT → $1*$2</code> (calc.y:65)、演算子 <code>+ - * / ^</code>、関数 <code>SIN COS TAN ATAN ATAN2 SINH COSH TANH SQRT EXP LOG LN</code> (yylex_.c:25-38)。</li>
+<li>単位表 (initb1.f:1618-1670, <code>icUNIT</code>): <code>%</code>=0.01, <code>RAD</code>=1, <code>MRAD</code>=1e-3, <code>DEG</code>=π/180, <code>M</code>=1, <code>CM</code>=1e-2, <code>MM</code>=1e-3, <code>T</code>=1, <code>GAUSS</code>=1e-4, <code>JOULE</code>=1/e, <code>EV/KEV/MEV/GEV</code>=1/1e3/1e6/1e9, <code>V/KV/MV/GV</code>, <code>HZ/KHZ/MHZ/GHZ</code>。大文字小文字の両方が登録されている。</li>
+<li>既定のグローバル (initb1.f:1697-1790, <code>defglb</code>+<code>RsetGL</code>): <code>MOMENTUM</code>=30e9 (<strong>既定 30 GeV</strong>), <code>MASS</code>=電子質量, <code>CHARGE</code>=0, <code>PBUNCH</code>=1e10, <code>NBUNCH</code>=1, <code>EMITX/Y/Z</code>=0, <code>SIGE</code>, <code>SIGZ</code>, <code>FSHIFT</code>=0, <code>DP</code>… など。</li>
+<li>式の中の識別子が icGLR のグローバルなら値に置き換わる (yylex_.c:93-96)。したがって <code>QFK1=1.2; QUAD QF=(K1=QFK1);</code> のように要素パラメータに変数を使える。</li>
+</ul>
+<h3 id="13-onoff-行-doflagf">1.3 <code>ON</code>/<code>OFF</code> 行 (doflag.f)</h3>
+<p><code>ON ECHO; OFF LOG;</code> は <code>$ECHO$</code>, <code>$LOG$</code> という整数フラグ (icFLAG) に FLAGON/FLAGOF を入れる。未定義の名前は新規フラグとして定義され "New flag … is defined." と表示される (doflag.f:36-48)。MAIN の <code>$RAD$ $FLUC$ $COD$ $RADCOD$ $INTRA$ $POL$ $DAPERT$ $EMIOUT$ …</code> は FFS 入口 (track.f:80-107、<code>IgetGL('$RAD$')</code> 等) で FFS のフラグに写される (実測: <code>OFF RAD FLUC COD RFSW RADCOD;</code> で RAD/FLUC/COD/RADCOD が F)。<strong><code>$RFSW$</code> だけは届かない</strong>: <code>isynch=IgetGL('$RFSW$')</code> を読んだ後、FFS に入るとき <code>rfsw=.true.</code> に固定される (track.f:149)。FFS 入口の表 <code>RFSW RADCOD RAD …</code> の RFSW 列は <code>$RFSW$</code> の値 (既定 F) で、FFS の <code>FLAG[{"RFSW"}]</code> は 1。pysad: <code>run_sad_string</code>/<code>main_exec</code> は RFSW を <code>main_flags</code> (MAIN の TRACK 用) に入れ、FFS の RFSW は ON のまま (docs/history/work_zdp.md)。既定で ON の MAIN フラグは FLUC と COD。</p>
+<h3 id="14-要素定義-doelemf-rdkwdlf-rdexprf">1.4 要素定義 (doelem.f, rdkwdl.f, rdexpr.f)</h3>
+<pre><code>QUAD   QFA1 =(L =.25  K1 =1.0302859090451 )
+       QFA1H=(L =.125 K1 =1.0302859090451/2 )
+ ;
+</code></pre>
+<ul>
+<li><code>TYPE name=(kw=式 kw=式 …) name2=(…) … ;</code> — 名前はいくつでも続けられ、区切りは空白または <code>,</code>。</li>
+<li>新しい名前: <code>idtype=型</code>, <code>idval=ktcaloc(kwMAX+1)</code> (doelem.f:43-48)。<code>ktcaloc</code> はゼロクリアするので (italoc.f:86-94) <strong>書かなかったキーワードは 0</strong>。</li>
+<li>キーワードは <code>CAPITA</code> で大文字化 (rdkwdl.f:40) し、icKWRD かつその型で有効 (<code>kytbl(kw,型)≠0</code>) でなければ "invalid key word name" / "Undefined keyword" でエラー (rdkwdl.f:43-66)。値は <code>rdexpr</code> → <code>yyparse</code> なので <code>L=.413/2</code>, <code>K3=-6000*0.0125</code>, <code>ROTATE=-90 DEG</code> のような式が書ける。</li>
+<li><strong>再定義 (後勝ち)</strong>: 同じ型で同じ名前を再定義すると同じ格納領域に <code>rdkwdl</code> を再実行する (doelem.f:57-60)。つまり <strong>書いたキーワードだけが上書きされ、書かなかったキーワードは前の値を保持</strong>する。別の型で再定義すると "already used as …" エラー (doelem.f:61-66)。</li>
+<li>要素の値が LINE 展開にコピーされるのは <code>USE</code> 時 (§1.5) なので、LINE を書いた後で要素を再定義しても反映される (&lt;試験用ラティス&gt;.lat は LINE の後に BEND/QUAD/SEXT を 3 回再定義しており、最後の値が有効)。</li>
+</ul>
+<h3 id="15-line-定義と展開-dolinef-lreadf-explnf">1.5 <code>LINE</code> 定義と展開 (doline.f, lread.f, expln.f)</h3>
+<pre><code>LINE  ARCA = (ARCAH -ARCAH2)
+      RING = (MKS ARCA, ARCA, … RFC, ARCA … MKE)
+ ;
+</code></pre>
+<ul>
+<li><code>lread</code> が項目ごとに多重度 <code>mult</code> と名前を積む: <code>-</code> で <code>mult=-mult</code>、<code>N*</code> で <code>mult=mult*N</code> (lread.f:36-71)。したがって <code>-ARCAH2</code> は逆順、<code>2*SDA</code> は 2 回、<code>-2*X</code> は逆順 2 回。<code>+</code> は無視。項目は要素名でも LINE 名でもよく (入れ子)、定義時点で未定義の名前も許される (展開時に "is not defined yet" 警告, expln.f:110-116)。</li>
+<li>LINE の再定義は "… is redefined" の通知 (レベル −1) とともに旧定義を解放して <strong>全体を置き換える</strong> (doline.f:49-78)。要素の部分上書きとは挙動が違う。</li>
+<li>展開は FFS の <code>USE</code> で <code>expnln</code> (expln.f:11-77) が行う: <code>explnstk(idxl, direct)</code> が再帰的に平坦化し、LINE 項目は <code>|mult|</code> 回・向き <code>dir=sign(direct*mult)</code> で再帰、要素項目は <code>|mult|</code> 回積む。<strong>反転は要素順を逆にし、各要素インスタンスに <code>ori=.false.</code></strong> を付ける (expln.f:96-123, 51)。要素の値は展開時に定義からコピーされる (<code>tfvcopycmpall</code>)。</li>
+<li><code>ori=.false.</code> の BEND では <code>tpara</code> が E1↔E2, AE1↔AE2, FB1↔FB2 を入れ替える (tffs.f:1259-1270)。QUAD/CAVI では FRINGE モードの入れ替え (tffs.f:1322-1325, 1447-1450)。</li>
+</ul>
+<h3 id="16-main-の-track--emit-コマンド-詳細は-docshistorywork_main_trackmd">1.6 MAIN の <code>TRACK</code> / <code>EMIT</code> コマンド (詳細は docs/history/work_main_track.md)</h3>
+<p><code>TRACK USE=RING NPART=21 TURNS=1000 NX=(1,10,20) NY=(0) NZ=(1);</code> は <code>initbl.f</code> が icACT として登録 (<code>ActTra.f</code> → <code>track.f</code> → <code>tracka.f</code>)。
+キーワードは USE TURNS NPART XEMI YEMI SIGS SIGE ELEC POSI PROTON RADI SPAN CENTER AFTER AXIS SYNC NX NY NZ。
+粒子 j の規格化振幅 = (x,px,y,py,z,dp) = (NX[j], 0, NY[j], 0, 0, NZ[j]) (リストは繰り返し、無ければ x=y=1, dp=0)、初期座標 = r·(振幅×(emx,emx,emx,emx,emz,emz)) + codin
+(r, codin, EMITX/Y/Z, SIGE は直前の <code>EMIT USE=..;</code> が作る古典 SAD の意味)。出力は、追跡前のフラグ一覧、損失の報告、smear の表 (SMEAR ON 既定)、tune (FFT ピーク 8 本) の表、<code>Tracking end:</code>、NX=/NY=/NZ= の確認。
+<code>PHSPLOTS=n;</code> の TopDrawer 描画は無視してよい。
+<strong>K64 版では MAIN の EMIT は何もせず (<code>Use EMIT_TANCE or Emittance[] within FFS.</code>)、TRACK は <code>tinip</code> で SIGSEGV する</strong>ので SAD で出力を取れない。
+pysad は <code>parser.parse_main_commands</code> (ON/OFF, EMIT, <code>NAME=値</code>, TRACK, STOP を順に読む) + <code>FFS.main_exec</code> + <code>maintrack.run_track</code> で古典の意味に実装している (SADScript で同じ手順を書いた版と一致)。</p>
+<hr />
+<h2 id="2-要素型とキーワード">2. 要素型とキーワード</h2>
+<p>型コード (tfstk.f:277-285): DRIFT=1, BEND=2 (<code>ST</code> も BEND, initb1.f:1004), QUAD=4, SEXT=6, OCT=8, DECA=10, DODECA=12, SOL=20, MULT=22, CAVI=31, TCAV=32, MARK=41, MONI=42, APERT=43, LINE=100。
+キーワード名の別名 (initb1.f:729-994): <code>ANGLE</code>, <code>ROT</code>=<code>TILT</code>=<code>ROTATE</code>, <code>DISRAD</code>(RAD), <code>DISFRIN</code>(FRIN), <code>FRINGE</code>(FRMD), <code>ACHROMA</code>(CHRO), <code>RANKICK</code>, <code>ALPHAX</code>=<code>AX</code>, <code>BETAX</code>=<code>BX</code>, <code>PSIX</code>, <code>EMIX</code>=<code>EMITX</code>, <code>SIGZ</code>=<code>SIGMAZ</code>, <code>DROT</code>=<code>DROTATE</code>, <code>K0</code>…<code>K21</code>, <code>SK0</code>…<code>SK21</code>。</p>
+<table>
+<thead>
+<tr>
+<th>型 (initb1.f)</th>
+<th>キーワード (格納順 <code>ky_*</code>)</th>
+<th>単位・意味 (根拠)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DRIFT (995-1004)</td>
+<td>L, DISKIN, COUPLE, RADIUS, AX, AY, DISRAD</td>
+<td>L [m]</td>
+</tr>
+<tr>
+<td>BEND (1008-1042)</td>
+<td>L, ANGLE, E1, E2, ROTATE, DISRAD, K1, DX, DY, K0, DISFRIN, EPS, RANKICK, F1, FRINGE, COUPLE, DROTATE, AE1, AE2, FB1, FB2, INDEX, AX, AY, LDEV, LRAD, CHI2, DZ</td>
+<td>ANGLE [rad] = 基準座標系の偏向角 (phi0)。<strong>K0 [rad] は追加の双極場で、磁場の偏向角は phib = ANGLE+K0</strong> (tbend.f:565, qtwiss.f:281)。<strong>E1/E2 は ANGLE に対する比</strong>: 実エッジ角 psi1 = E1·ANGLE + AE1 (tffs.f:1261)。<strong>K1 は積分値 K1·L [1/m]</strong> (tbend.f:566-573 で tquad に渡す)。ROTATE [rad] = 設計ロール角 (tffs.f:1294 で cos/sin を取る)。DX/DY [m] 据え付けずれ。DISFRIN=0 でフリンジ有効 (tturn.f:342)。FRINGE ≤0 のとき FB1/FB2 を 0 にする (−1 で入口のみ, −2 で出口のみ残す; tffs.f:1271-1278)。F1+FB1/FB2 は有効長補正 <code>al −= ((φ·fb1)²+(φ·fb2)²)/al/48·sin(w/2)/sin(φ/2)</code> (tffs.f:1280-1284)。</td>
+</tr>
+<tr>
+<td>QUAD (1044-1073)</td>
+<td>L, K1, ROTATE, DX, DY, DISRAD, ACHROMA, DISFRIN, F1, F2, FRINGE, EPS, DISKIN, COUPLE, INDEX, AX, AY, LDEV, LRAD, F1K1F…</td>
+<td><strong>K1 は積分値 K1·L [1/m]</strong>: <code>akk = K1/al</code> (tffs.f:1316)、L=0 なら薄レンズ強度 (tquad.f:22-24)。ROTATE [rad] (tffs.f:1312)。</td>
+</tr>
+<tr>
+<td>SEXT/OCT/DECA/DODECA (1076-1106, THIN 共通)</td>
+<td>L, K2/K3/K4/K5 (同じスロット <code>ky_K_THIN</code>), ROTATE, DX, DY, DISRAD, DISFRIN, COUPLE, INDEX, AX, AY, LDEV, LRAD</td>
+<td>K は積分値 (tthine で K/fact(n)/2 のキック; Level 3A で SAD の色収差と一致, docs/history/00_RESUME.md)。</td>
+</tr>
+<tr>
+<td>MULT (1110-)</td>
+<td>L, DX, DY, DZ, CHI1, CHI2, CHI3=ROTATE, EPS, DISRAD, DISFRIN, F1, F2, FRINGE, VOLT, DVOLT, HARM, PHI, FREQ, COUPLE, ANGLE(23), K0..K21 (30,32,…), SK0..SK21 (31,33,…)</td>
+<td>K_n の単位は未検証 (解釈: 積分値。tffs.f:1440 の分割数推定は K/al を使う)。ANGLE≠0 (曲げつき多極) の追跡・Twiss・Emittance[] は docs/19 のとおり gs と一致 (BZ・RF・F1・SK0・FB1/FB2 を伴う Twiss は未対応)。回転キーワードは <code>ROTATE</code> (<code>ROTATION</code> は gs で Undefined keyword)、<code>CHI2</code>・<code>TAPER</code> も読む。</td>
+</tr>
+<tr>
+<td>SOL (1239-1258)</td>
+<td>L, BZ, DX, DY, DZ, DPX, DPY, BOUND, CHI1-3, GEO, F1, DBZ, COUPLE, DISFRIN, DISRAD, FLAT</td>
+<td>BZ [T]。BOUND≠0 から次の BOUND≠0 までが領域で、領域内は tsole1 の写像 (docs/17)。K64 は BOUND≠0 の SOL の長さを周長に入れない (pysad の <code>emit6d._emit_circ</code>、追跡の circ も同じ)。領域内の BEND・MULT・CAVI は未対応。</td>
+</tr>
+<tr>
+<td>CAVI (1268-1295)</td>
+<td>L, VOLT, DVOLT, HARM, PHI, FREQ, RANVOLT, RANPHASE, LWAKE, TWAKE, DX, DY, ROTATE, V1, V20, V11, V02, COUPLE, DPHI, DISFRIN, FRINGE, AX, AY, LDEV, AUTOPHI</td>
+<td>VOLT [V], FREQ [Hz], PHI [rad] (<strong>既定 0</strong>: ゼロクリア)。波数 <code>w = 2π·FREQ/c</code> (HARM=0) または <code>ω0·HARM/c</code>、<code>ω0 = 2π c p0/h0/C</code> (tffs.f:1452-1454, tfsetparam.f:124) → FREQ = HARM·βc/C。</td>
+</tr>
+<tr>
+<td>MARK (1512-1556)</td>
+<td>AX, BX, PSIX, AY, BY, PSIY, EX, EPX, EY, EPY, R1-R4, DETR, DX, DPX, DY, DPY, DZ, DDP, AZ, BZ, PSIZ, ZX, ZPX, ZY, ZPY, DP(29), OFFSET, SIGZ, SIGE, GEO, JDX…, EMITX(40), EMITY, EMITZ, COUPLE</td>
+<td>先頭 1..28 は FFS の mfit 順と同じ (ky_AX_Mark=1; tffsmatch.f:133 <code>rlist(latt(1)+mfitddp)</code>)。<code>tffsinitparam</code> (tffs.f:2904-2965): 先頭 MARK の EMITX/EMITY/EMITZ/SIGE/SIGZ が &gt;0 ならグローバルを上書き、DP ≤0 なら <code>DP</code> 変数 → それも 0 なら 0.01、BX/BY/BZ ≤0 なら 1。</td>
+</tr>
+<tr>
+<td>MONI (1576-1582)</td>
+<td>DX, DY, OFFSET, COUPLE, ROTATE</td>
+<td><strong>L なし</strong> (L を書くとエラー)。</td>
+</tr>
+<tr>
+<td>TCAVI (docs/19)</td>
+<td>L, K0 (偏向の強さ)、FREQ/HARM、PHI、DX、DY、ROTATE、RAD、RANKICK、RANPHASE</td>
+<td>横偏向空洞。RFSW OFF では長さ L のドリフト。追跡は RANKICK・RANPHASE 未対応。</td>
+</tr>
+<tr>
+<td>UND (docs/19)</td>
+<td>L, KX, QY, POLE, SLICE, PHI</td>
+<td><strong>K64 は磁場のキーワード (FBX など) が Undefined keyword になり設定できない</strong> (B37)。磁場なしのドリフトとして動く。</td>
+</tr>
+<tr>
+<td>COORD (docs/19)</td>
+<td>DX, DY, DZ, CHI1, CHI2, CHI3, DIR</td>
+<td>座標変換 (ずれと回転)。DIR≠0 は逆変換。長さを持たない。</td>
+</tr>
+<tr>
+<td>MAP (docs/19)</td>
+<td>L (K64 は使わない)</td>
+<td><code>ExternalMap[...]</code> で写像をユーザーが与える。定義が無ければ恒等で長さ 0。</td>
+</tr>
+<tr>
+<td>BEAMBEAM (docs/14)</td>
+<td>AX BX AY BY, R1..R4, EMIX EMIY, DP, SIGZ, XANGLE, SLICE, NP, BSTRL など</td>
+<td>強弱ビームのビーム・ビーム。追跡のみ (光学には効かない)。</td>
+</tr>
+<tr>
+<td>PHSROT</td>
+<td>(K64 で動作しない: B38)</td>
+<td>行列が全部 0、PX PY PZ が指定できない。pysad は読むが追跡は NotImplementedError。</td>
+</tr>
+<tr>
+<td>INS</td>
+<td>(領域の区切り)</td>
+<td>INS を含むリングの <code>Emittance[]</code> のチューン (相対 1e-15)・<code>TrackParticles</code> (1e-13) は gs と一致を 2026-11-16 に確認 (3 セルのリング、BEND E1・E2 付き)。</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-pysad-parserpy-の対応">3. pysad parser.py の対応</h2>
+<h3 id="31-構成">3.1 構成</h3>
+<table>
+<thead>
+<tr>
+<th>部品</th>
+<th>役割</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tokenize</code> / <code>_TOKEN_RE</code></td>
+<td>正規表現トークナイザ。<code>(* *)</code> と <code>!…行末</code> をコメントとして捨てる。NUMBER は <code>.05</code> 形式も可、IDENT は <code>$</code> と <code>`</code> を含む。</td>
+</tr>
+<tr>
+<td><code>_Parser.parse_program</code> → <code>parse_statement</code> → <code>_try_special_form</code></td>
+<td>文ごとに特別形を判定: <code>SetElement[…]</code>、要素型キーワード (<code>_SAD_ELEMENT_TYPES</code>、DECA/DODECA を含む) → <code>_parse_native_element_block</code>、<code>LINE</code> (直後が <code>[</code> でない) → <code>_parse_line_block</code>、<code>x = BeamLine[…]</code>、<code>Twiss/Emittance/RadiationIntegrals[…]</code>。それ以外は式/代入 (<code>MOMENTUM = 3GEV;</code> → <code>env.set('MOMENTUM', 3e9)</code>)。エラーは警告を出して次の <code>;</code> まで読み飛ばす。</td>
+</tr>
+<tr>
+<td><code>_parse_native_element_block</code> / <code>_parse_sad_params</code></td>
+<td><code>TYPE name=(kw=式 [単位] …) …</code> を読む。<code>;</code>、次の型キーワード、<code>LINE</code> でブロック終了。型名と同じ要素名 (<code>CAVI CAVI=(…)</code>) も可。<code>kw</code> だけで <code>=</code> がなければ <code>True</code>。単位は <code>_SAD_UNITS</code> (§1.2 の initb1.f の単位表: DEG/MRAD/RAD, M/CM/MM, EV/KEV/MEV/GEV, V/KV/MV/GV, HZ/…/GHZ, %, T, GAUSS, JOULE)。<code>env.define_element(name, type, dict)</code>。同じ型で同じ名前を再定義したときは書いたキーワードだけを上書きする (doelem.f と同じ、§1.4)。</td>
+</tr>
+<tr>
+<td><code>_parse_line_block</code> / <code>_parse_beamline_refs_sad</code></td>
+<td><code>LINE name=(…) …;</code>。項目は <code>ID</code>、<code>N*ID</code> → <code>('REPEAT', N, ID)</code>、<code>-ID</code> → <code>('REVERSE', ID)</code>、<code>-N*ID</code> は反転 + 繰り返し。</td>
+</tr>
+<tr>
+<td><code>_parse_primary</code></td>
+<td>数値直後の単位 (<code>3GEV</code>, <code>-90 DEG</code>) を掛ける。未知の識別子は文字列として返す。</td>
+</tr>
+<tr>
+<td><code>SADEnvironment</code></td>
+<td><code>_vars</code> (組込み定数+グローバル), <code>_elements</code> {名前: {TYPE, kw: 値}}, <code>_beamlines</code> {名前: 参照列}, <code>_ffs_state</code> (Twiss[]/LINE[] のディスパッチ先)。</td>
+</tr>
+<tr>
+<td><code>SADEnvironment.build_lattice</code></td>
+<td><code>_expand_refs</code> で平坦化 → <code>_build_element</code> → <code>Lattice</code>。最後に周長 C を取り、<code>_harm</code> を持つ空洞に <code>FREQ = HARM·c/C</code> を入れる。</td>
+</tr>
+<tr>
+<td><code>_expand_refs</code></td>
+<td>再帰展開 (深さ 50 まで)。<code>REVERSE</code> は参照列を逆順にし <code>is_reversed</code> を反転して再帰、要素は <code>('REV_EL', name)</code> にする (二重反転で正順に戻る)。</td>
+</tr>
+<tr>
+<td><code>_build_element</code> / <code>_build_element0</code> / <code>_apply_extra_params</code></td>
+<td>下表の変換で pysad 要素を作り、<code>_apply_extra_params</code> が DX, DY, K0, F1, FB1, FB2, FRINGE, DROTATE, AE1/AE2 などを属性に渡す (BEND の K0 はファイルで定義しても読まれる = bench_level23h)。数値パラメータ全部を <code>el._raw</code> に残す (FFS の <code>LINE["…"]</code> 表示用, ffscmd.get_value)。QUAD/SEXT/OCT の ROTATE, DX, DY, K0, F1, F2, FRINGE, DISFRIN、CAVI の PHI, DX, DY のうち属性に無いものは <code>_raw</code> のみで、読み込み時の計算には効かず、FFS 側 (<code>ffscmd.set_value</code>, <code>ffs.set_element</code>) で設定した値だけが効く。SAD の既定 (PHI=0, FRINGE=0, DISFRIN=0 など) と一致する限り結果は変わらない。</td>
+</tr>
+<tr>
+<td><code>SADScript</code> / <code>load_sad_file</code> / <code>load_sad_string</code> / <code>load_sad_files</code></td>
+<td>公開 API。<code>load_sad_files(lat, script)</code> は複数ファイルを同じ環境に順に読む (= gs への連結)。<code>.ffs</code> / <code>run_ffs</code> で FFSState に接続。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-_build_element0-の変換-sad-値--pysad-属性">3.2 <code>_build_element0</code> の変換 (SAD 値 → pysad 属性)</h3>
+<table>
+<thead>
+<tr>
+<th>SAD</th>
+<th>pysad</th>
+<th>変換</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DRIFT L</td>
+<td><code>Drift(L)</code></td>
+<td>そのまま</td>
+</tr>
+<tr>
+<td>QUAD L, K1</td>
+<td><code>Quadrupole(L, K1)</code></td>
+<td><strong>K1 → K1/L</strong> (L&gt;0; pysad の K1 は長さあたり [m⁻²])。<code>K1L</code> キーワードがあればそれを /L。</td>
+</tr>
+<tr>
+<td>BEND L, ANGLE, K1, E1, E2, AE1, AE2, ROTATE</td>
+<td><code>Bend(L, ANGLE, K1, E1, E2, ROTATE)</code></td>
+<td>K1 → K1/L。<strong>E1 → E1·ANGLE + AE1, E2 → E2·ANGLE + AE2</strong> (SAD の比→ラジアン、tbende.f:448)。逆向き通過 (<code>REV_EL</code>) では E1↔E2。ROTATE は Bend では設計ロール角 (elements.py Bend.transfer_matrix)。<strong>ANGLE=0 でも ROTATE があれば Drift にせず <code>Bend(ANGLE=0, ROTATE=…)</code> のまま保持する</strong> (ROTATE 付きの ANGLE=0 の BEND に K0 を与えたとき効かせるため)。SAD では ANGLE=0, K1=0 の BEND は tsteee/tsteer (K0=0 ならドリフト、L=0 なら薄いキック <code>px −= K0</code>) で、ROT は tchge で回す (docs/history/work_rotate.md)。BEND の ROT は <code>Bend.ROTATE</code> (設計ロール)、DROT は <code>DROTATE</code>。FFS の <code>LINE["ROTATE",…]</code> もそれぞれの属性に入る。</td>
+</tr>
+<tr>
+<td>SEXT K2 / OCT K3 / DECA K4</td>
+<td><code>Sextupole(K2/L)</code>, <code>Octupole(K3/L)</code>, <code>Decapole(K4/L)</code></td>
+<td>積分値 → 長さあたり (L=0 ならそのまま)</td>
+</tr>
+<tr>
+<td>CAVI VOLT, FREQ, HARM</td>
+<td><code>Cavity(VOLT, FREQ)</code> + <code>_harm</code></td>
+<td>FREQ=0 かつ HARM&gt;0 なら <code>_harm</code> を記録 → build_lattice で FREQ = HARM·c/C。物理計算 (emit6d.py, track6.py) は <code>_harm</code> と ω0 から SAD と同じ <code>w</code> を作るので β=1 近似の FREQ は使われない。</td>
+</tr>
+<tr>
+<td>MONI / MARK</td>
+<td><code>Monitor(L)</code>, <code>Marker()</code></td>
+<td>MARK の Twiss キーワード (BX, AX, EMITX, DP, …) は <code>_raw</code> と <code>env._elements</code> に残り、ffscmd/ffs が参照する。</td>
+</tr>
+<tr>
+<td>MULT</td>
+<td><code>Multipole(L)</code></td>
+<td><code>_apply_extra_params</code> が K0..K21 を <code>KnL</code>、SK0..SK21 を <code>KsL</code> に、ANGLE・E1・E2・VOLT・FREQ・PHI・HARM・BZ・DVOLT・DPHI・AUTOPHI・CHI2・TAPER を属性に渡す (ANGLE≠0 は docs/19)。</td>
+</tr>
+<tr>
+<td>SOL</td>
+<td><code>Solenoid(L)</code></td>
+<td>BZ・BOUND・GEO・DPX・DPY・DX・DY・DISFRIN・DBZ を属性に渡す。領域の扱いは docs/17。</td>
+</tr>
+<tr>
+<td>TCAVI / UND / PHSROT / MAP / COORD / BEAMBEAM</td>
+<td><code>TCavity</code> / <code>Undulator</code> / <code>PhsRot</code> / <code>Map</code> / <code>Coord</code> / <code>BeamBeam</code></td>
+<td>数値キーワードを全部 <code>params</code> に入れる (DX 等は誤差の属性にせず変換のパラメータ。<code>_apply_extra_params</code> は何もしない)。PhsRot・Map・Coord・BeamBeam は Marker の派生 (長さ 0)。</td>
+</tr>
+<tr>
+<td>不明な型 (SPCH、PROF、TEST など)</td>
+<td><code>Drift(L)</code></td>
+<td>キーワードは無視 (SPCH・PROF の物理は未翻訳。11/16 に K64 のソースで確認: tturn.f:521 の <code>case (icSPCH)</code> が PSPAC フラグのとき <code>tpspac</code> を呼ぶので SPCH は K64 では物理を持つが pysad は未翻訳。PROF は K64 のソースに現れない)</td>
+</tr>
+<tr>
+<td>BEAMBEAM を含むリング (補足)</td>
+<td>Marker 扱い</td>
+<td>11/16 に gs と比較: Twiss のチューン 1e-14、運動量収縮 4e-12 で一致。<code>STURN</code>・<code>COUPLE</code> は K64 のソースでキーワードの登録 (initb1.f) 以外に参照がなく使われない</td>
+</tr>
+</tbody>
+</table>
+<h3 id="33-既知の制限sad-との差-2026-11-16-に確認">3.3 既知の制限・SAD との差 (2026-11-16 に確認)</h3>
+<ol>
+<li><strong>型が違う再定義</strong>: SAD は "already used as …" エラー (§1.4)、pysad は黙って型を変える (<code>DRIFT D1=…; QUAD D1=…;</code> で D1 が QUAD になることを確認)。</li>
+<li>MAIN 式の関数 (<code>SIN( )</code>, <code>SQRT( )</code>, <code>ATAN2( )</code> …) は未対応 (四則と <code>^</code> のみ。<code>A=SIN(0.5)+…</code> が警告になることを <code>load_sad_string</code> で確認)。未定義の要素名は SAD が警告するのに対し pysad は黙って飛ばす。</li>
+<li><code>FFS;</code> 以降を同じファイルに含めても <code>USE RING; CELL; CALC;</code> などは読み飛ばされるが、<code>Print[…]</code>, <code>LINE["…"]</code>, <code>FFS["…"]</code> はその場で評価される。FFS 部は <code>run_sad.py</code> / <code>sadscript.py</code> + <code>ffscmd.py</code> で扱う (docs/history/00_RESUME.md Level 14)。</li>
+</ol>
+<hr />
+<h2 id="4-実例-3-gev-20-セルのリング">4. 実例: 3 GeV 20 セルのリング</h2>
+<p>読み方の例として、3 GeV の 20 セルのリング (周長 603.12 m、3563 要素) のラティスファイル (209 行) を parser で読む。</p>
+<ul>
+<li>内容: <code>MOMENTUM = 3GEV;</code> の後に DRIFT/BEND/QUAD/SEXT/OCT/CAVI/MARK/MONI を定義する。式 (<code>L=.413/2</code>、<code>K3=-6000*0.0125</code>、<code>VD=(ROTATE=-90 DEG)</code>)、MKS/MKE に Twiss・EMITX・DP を書く、<code>LINE ARCAH … ARCAH2 … ARCA=(ARCAH -ARCAH2) RING=(MKS 20×ARCA + RFC MKE);</code> と反転ライン、LINE の後での BEND/QUAD/SEXT (+DRCT) の 3 回の再定義 (最後が有効。再定義は全キーワードを書いている)、が入っている。</li>
+<li>使い方 (番号順):<ol>
+<li><code>from pysad.parser import load_sad_file</code></li>
+<li><code>sc = load_sad_file(&lt;ラティスファイル&gt;)</code></li>
+<li><code>lat = sc.build_lattice('RING')</code> (要素 3563 個、周長 603.12 m)</li>
+<li>要素の属性 (<code>el.K1</code> は長さあたり、<code>el._raw['K1']</code> が SAD の積分値) を見る。</li>
+</ol>
+</li>
+<li>実行ファイルに通す場合は、ラティスファイルと FFS スクリプトを連結して 1 本にして <code>gs</code> に渡す。pysad では <code>python run_sad.py &lt;ラティス&gt; &lt;スクリプト&gt;</code> が同じ連結を行う。</li>
+<li>ANGLE=0 の <code>VD</code>/<code>HD</code> は §3.2 のとおり Bend のまま保持される。反転ライン <code>-ARCAH2</code> の中の要素は <code>REV_EL</code> 経由で SAD と同じ順序になる。</li>
+</ul>
+<p><strong>検証</strong>: 要素数・名前の順序・周長が K64 の <code>LINE[]</code> 出力と一致し、L・ANGLE・K1・K2・K3・E1・ROTATE は K64 の 10 桁出力の丸め (最大 4.9e-11) の範囲で一致、末尾 Twiss は 4e-11 以内。詳細は <a href="history/02_lattice_main_validation.md">history/02_lattice_main_validation.md</a>。</p>
+<p><strong>BEND の K0 / E1 の FFS 側の意味 (bench_level23)</strong>: <code>LINE["K0","BPI6.1"]=v</code> は読み出しでは 1 台だけ変わるが、次の CALC / Emittance[] / TrackParticles でファミリー全体が最初の 1 台 (.1) の値に揃えられる (<code>.3</code> だけ設定した値は CALC 後に消える)。<code>LINE["K0","BPI6"]</code> (ドット無し) や FFS の要素値コマンド <code>BPI6 K0 v</code> はファミリー全体に即座に効く。<code>BPI6.1 K0 v;</code> と書くと SAD は式として評価して何もしない。<code>LINE["E1",name]</code> は ANGLE 比を返す (ANGLE=0 の BEND でもファイルの値)。pysad は <code>ffscmd.FFS.spread_pending</code>、<code>_e_ratio</code> で対応。</p>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

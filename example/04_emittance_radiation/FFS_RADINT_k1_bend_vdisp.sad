@@ -1,0 +1,21 @@
+! (B107) K1≠0 の偏向磁石 + 結合による Y 方向の分散。RADINT の I4U + I4V (= 物理的な I4) と減衰分配 (DU, DV)。
+! 24 セルの FODO (3 GeV、RF 1.8 MV)、偏向磁石に K1 = 0.1 (積分値)、skew 四極 SQ (K1=0.05、45 度) 4 台。
+! 独立な値 (試験 test_v2_C3_radint.py、5x5 行列の物理的な I4 = 0.414392 (η_x h (h²+2k) の積分)、1 次の摂動論の Jx, Jy, Je):
+!   I4U + I4V = 0.4143918 (k64: 0.420949)、(DU, DV, Je) の摂動論 = (0.70109, 0.99828, 2.30063)。
+! k64 = gs: I4V の y 成分の勾配 CKL1Y = −cos(θ)·DKL1 が θ=0 でも 0 にならず、η_y と K1 の積が余計に入る。v2: CKL1Y = +sin(θ)·DKL1。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+QUAD  SQ = (L=0.2 K1=0.05 ROTATE=0.7853981633974483);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 K1=0.1 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=1.8E6 FREQ=5.0E8 PHI=0);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE CELLS = (QF D2 B D2 SQ QD DS SD D1 SF DS);
+LINE BLK = (CELLS 5*CELLQ);                      ! gs は 4*(CELLS 5*CELLQ) の入れ子の繰り返しを読めない (syntax error)
+LINE RINGQ = (ORIGIN RF 4*BLK);
+FFS;
+USE RINGQ; CELL; CALC; RFSW; RAD; NOFLUC;
+RADINT;
+Exit;

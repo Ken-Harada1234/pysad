@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>fn_OptimizeOptics (OptimizeOptics)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: fn_OptimizeOptics.md</div>
+<h1 id="fn_optimizeoptics-optimizeoptics">fn_OptimizeOptics (OptimizeOptics)</h1>
+<p>種別: SADScript 関数。フォルダ: 03_matching。ラティス: <code>00_lattice/FODO_ring.sad</code>。エネルギー 3 GeV。フラグ: CELL。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>OptimizeOptics[オプション]</code>: <code>GO</code> のように条件 (<code>FIT</code>) と変数 (<code>FREE</code>) を使い、<strong>ダウンヒルシンプレックス法</strong>で $1+\text{MatchingResidual}$ (または <code>OptimizeFunction-&gt;</code> の任意の関数) を最小化する。<code>GO</code> と違い、微分を使わないのでどんなキーワード (<code>L</code> など) も変数にできる。戻り値は最終のシンプレックス。変数は最小値の点に設定される。
+<code>Tolerance-&gt;</code>、<code>SimplexSize-&gt;</code> (初期の相対的な大きさ) などの DownhillSimplex のオプションが使える。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>FREE QF QD;   FIT $$$;   NX 6.7 NY 4.9;
+r = OptimizeOptics[Tolerance-&gt;1E-12, SimplexSize-&gt;0.1];
+Print[&quot;OptimizeOptics: K1 QF QD = &quot;, LINE[&quot;K1&quot;,&quot;QF.1&quot;], &quot; &quot;, LINE[&quot;K1&quot;,&quot;QD.1&quot;]];
+CALC;     Print[&quot;NX NY = &quot;, ...];
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>DownhillSimplex {limit, Option}: ...</code> のあと、シンプレックスの 3 頂点の関数値 (1+残差) が 1.00198… → 1.000000 に下がっていく行が並ぶ (gs の出力。pysad も同じ形)。最後の K1 と、<code>CALC</code> 後のチューン。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>目標 (6.7, 4.9) の厳密な解は 2x2 行列の模型で (0.700221, -0.599636) (FFS_FIT の解と同じ問題。この模型は FFS_FIT、fn_FitValue_... でも使用)。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式の値</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K1(QF)</td>
+<td>0.700221</td>
+<td>0.700221</td>
+<td>0.700225</td>
+</tr>
+<tr>
+<td>K1(QD)</td>
+<td>-0.599636</td>
+<td>-0.599636</td>
+<td>-0.599635</td>
+</tr>
+<tr>
+<td>NX</td>
+<td>6.7</td>
+<td>6.70001</td>
+<td>6.70006</td>
+</tr>
+<tr>
+<td>NY</td>
+<td>4.9</td>
+<td>4.9</td>
+<td>4.89997</td>
+</tr>
+</tbody>
+</table>
+<p>(<code>GO</code> の解 (0.700221, -0.599636) との差は 1e-5 以下 = シンプレックス法の収束の許容)</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>○ 一致 (2026-11-17)。</strong> 最終値は gs と同じ: K1 (QF, QD) = (0.700221, -0.599636)、<code>Matched. ( 3.5504E-09)</code>、NX NY = 6.700009、4.900003 (6 桁)。シンプレックスの反復の表も gs と同じ行数 (最小値に達したあとの 1.000000 の行を含む) が出る。互換モードによらず同じ (<code>PYSAD_COMPAT=k64</code> でも gs と同じ値を確認)。表示の差が 2 行だけ残る: デバッグ出力 <code>{{</code>,System<code>},System</code>}<code>の引用符 (pysad は</code>"System<code>"</code>)、<code>DownhillSimplex {limit, Option}:</code> の行を pysad は <code>...</code> で省略する。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li><code>L</code> など <code>GO</code> が扱えないキーワードを変数にする例 (SADHelp の例) は未確認。<code>OptimizeFunction-&gt;</code> に自作の関数を渡す例、<code>VariableRange</code> との組み合わせも未確認。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

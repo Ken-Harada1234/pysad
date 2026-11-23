@@ -24,7 +24,7 @@ Python から:
     fig = mpl_display.render(I, g, save="x.png")       # I: インタプリタ、g: Graphics[…] の式 (DisplayFunction->Identity で得たもの)
     mpl_display.last_figure()                           # 最後に描いた Figure
 
-matplotlib は遅延 import。無ければ警告を出すだけで何もしない (評価は続く)。未対応の要素は警告して飛ばす (docs/42 §7c)。
+matplotlib は遅延 import。無ければ警告を出すだけで何もしない (評価は続く)。未対応の要素は警告して飛ばす (docs/21 §6)。
 """
 from __future__ import annotations
 

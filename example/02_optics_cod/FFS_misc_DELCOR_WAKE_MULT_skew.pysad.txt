@@ -1,0 +1,13 @@
+DELCOR: DX of QF.1, RFC, ST =  -1.2815596E-4  -1.2727264E-4  -1.2727264E-4   (v2: CAVI and MARK get DX DY too)
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #   5.149474 $$$       f BX    #######  #  16.096990 $$$       f NX    #######  #    .408543
+$$$       f AY    #######  #   -.471843 $$$       f BY    #######  #   1.533252 $$$       f NY    #######  #    .291878
+$$$       f LENG  #######  #   8.100000
+ResponseMatrix: TRPT {   -5.52342770,   -1.89781774}, NOTRPT {   -5.70457160,   -1.89781774},
+  ratio      .96824584  (Sqrt[p(steer)/p(monitor)] = Sqrt[3.0/3.2] =      .96824584)
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.583838 $$$       f BX    #######  #   6.907684 $$$       f NX    #######  #    .395886
+$$$       f AY    #######  #  -14.37149 $$$       f BY    #######  #  62.315145 $$$       f NY    #######  #    .044887
+$$$       f LENG  #######  #   4.200000
+WAKE command: mean dp after the cavity =  -1.6038487E-8
+MULT with SK1 SK2: R1 at the end =     -.24959709  (the skew components were ignored before)

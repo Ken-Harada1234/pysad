@@ -1,0 +1,71 @@
+! ============================================================
+! bench_level11.sad — Level 11 benchmark: MULT の K0 / K1 とずれ・回転 (ANGLE=0) の粒子追跡
+!   Level 6 のリングで、四極 QF/QD を MULT (K1) に、六極 SF/SD を MULT (K2, 一部 K0 付き) に置き換え、
+!   D1 の先頭に K0 だけの MULT (MK0, L=0.1) を入れる (D1 は 1.1 m に短縮して周長を保つ)。
+!   ずれ・回転: MQD に DX=1E-4、MSD に DY=1E-4 と ROTATE=1E-3。
+!   emit で trf0 を決めてから 5 粒子を 1, 100 周追跡。RAD OFF / RAD ON (NOFLUC)。
+! ============================================================
+ON LOG;
+
+MOMENTUM= 2.5 GEV;
+
+MARK ORG = ()
+;
+DRIFT D1  = (L=1.2)
+      D1S = (L=1.1)
+      DQS = (L=0.1)
+      DS  = (L=0.9)
+;
+MULT  MQF = (L=0.3 K1= 1.8*0.3)
+      MQD = (L=0.3 K1=-1.7*0.3 DX=1E-4)
+      MSF = (L=0.2 K2= 0.6 K0=2E-4)
+      MSD = (L=0.2 K2=-1.2 DY=1E-4 ROTATE=1E-3)
+      MK0 = (L=0.1 K0=1E-4)
+;
+BEND  B  = (L=0.8 ANGLE=0.157079632679490 E1=0.5 E2=0.5)
+;
+CAVI  CA  = (L=0   VOLT=1.5E6 HARM=234)
+;
+LINE CELLK0 = (ORG CA MQF DQS MSF DS B MK0 D1S MQD DQS MSD DS B D1);
+LINE CELLK  = (ORG MQF DQS MSF DS B MK0 D1S MQD DQS MSD DS B D1);
+LINE RINGK  = (CELLK0 19*CELLK);
+;
+
+FFS;
+$FORM="15.10";
+
+x0  = { 1E-3, 3E-3, 0,     1E-3,  0    };
+px0 = { 0,    0,    0,     1E-4,  0    };
+y0  = { 0,    0,    1E-3,  1E-3,  0    };
+py0 = { 0,    0,    0,     0,     0    };
+z0  = { 0,    0,    0,     0,     1E-3 };
+dp0 = { 0,    0,    0,     1E-3,  1E-3 };
+fl0 = { 1,    1,    1,     1,     1    };
+beam0 = {1, {x0, px0, y0, py0, z0, dp0, fl0}};
+
+prtb[tag_, b_] := Do[
+  Print[tag, " P", i, " ", {b[[2,1,i]], b[[2,2,i]], b[[2,3,i]], b[[2,4,i]], b[[2,5,i]], b[[2,6,i]], b[[2,7,i]]}],
+  {i, 1, 5}];
+
+Print["=== Test 11: RINGK (MULT K0/K1/K2 with DX/DY/ROTATE) ==="];
+USE RINGK;
+RFSW;
+CELL;
+CALC;
+emit;
+NORAD;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["K N T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["K N T100", b100];
+RAD;
+NOFLUC;
+b1   = TrackParticles[beam0, 1, 1, 1];
+prtb["K R T1", b1];
+b100 = TrackParticles[beam0, 1, 1, 100];
+prtb["K R T100", b100];
+NORAD;
+FLUC;
+
+stop;
+stop;

@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>settings_table.md</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#表-1-設定と6-極の種類">表 1: 設定と6 極の種類</a></li>
+<li><a href="#表-2-1-次の-rdt-h-6-極の-3-次偏向磁石込み-と-δ-の項要素ごとの寄与の相殺-6-極だけの-σσ寄与最大の-1-台の寄与">表 2: 1 次の RDT |h| (6 極の 3 次、偏向磁石込み) と δ の項、要素ごとの寄与の相殺 (6 極だけの Σ/Σ|寄与|、最大の 1 台の寄与)</a></li>
+<li><a href="#表-3-4-次の-rdt-h-写像の係数6-極の-2-次--八極--運動学--フリンジ--偏向磁石-と-adts-fourthr3opticscalc">表 3: 4 次の RDT |h| (写像の係数。6 極の 2 次 + 八極 + 運動学 + フリンジ + 偏向磁石) と ADTS (fourth='r3'、optics='calc')</a></li>
+<li><a href="#表-4-クロマティシティ-6-極込みの-ξ自然偏向磁石の-δ-の項6-極の内訳calc">表 4: クロマティシティ (6 極込みの ξ、自然・偏向磁石の δ の項・6 極の内訳、CALC)</a></li>
+<li><a href="#表-5-追跡の-da-簡略化-512-周rf放射なしδ0誤差なしlossampl-50-mmリング先頭から光学が違う設定は-β-が違うので-da-の-mm-は直接比べられない">表 5: 追跡の DA (簡略化: 512 周、RF・放射なし、δ=0、誤差なし、LOSSAMPL ±50 mm、リング先頭から。光学が違う設定は β が違うので DA の mm は直接比べられない)</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: settings_table.md</div>
+<h3 id="表-1-設定と6-極の種類">表 1: 設定と6 極の種類</h3>
+<p>| 名前 | 種類 | 設定 | 光学 | 運動量 GeV | ファミリー数 / 台数 | 全ファミリー独立か | K2L の並び (セルの種類ごと) | max|K2L| 1/m² |
+|---|---|---|---|---|---|---|---|---|
+| final | A | v07_14 の 20231205 再調整版 (最終) | v07_14 (載せ替え) | 5 | 20 / 600 | 全ファミリー独立 | LHA: 5 個とも独立; MHA: 5 個とも独立; MH: 5 個とも独立; LH: 5 個とも独立 | 32.6 |
+| rev9 | A | v07_16 の再調整 (rev9) | v07_14 (載せ替え) | 5 | 20 / 600 | 全ファミリー独立 | LHA: 5 個とも独立; MHA: 5 個とも独立; MH: 5 個とも独立; LH: 5 個とも独立 | 34.4 |
+| retune1 | A | 第 1 次の再調整 (2023-10) | v07_14 (載せ替え) | 5 | 20 / 600 | 全ファミリー独立 | LHA: 5 個とも独立; MHA: 5 個とも独立; MH: 5 個とも独立; LH: 5 個とも独立 | 34.4 |
+| v07_12 | B | v07_12 の6 極 (同上、M-A だけ少し違う) | v07_14 (載せ替え) | 5 | 12 / 360 | ファミリーでまとめた | LHA: S1,S2 は 0 (未使用), S3=S5; MHA: S1,S2 は 0 (未使用), S3=S5; MH: S1,S2 は 0 (未使用), S3=S5; LH: S1,S2 は 0 (未使用), S3=S5 | 35.7 |
+| v07_11 | B | v07_11 の6 極 (S1=S2=0、S3=S5 の 3 個) | v07_14 (載せ替え) | 5 | 12 / 360 | ファミリーでまとめた | LHA: S1,S2 は 0 (未使用), S3=S5; MHA: S1,S2 は 0 (未使用), S3=S5; MH: S1,S2 は 0 (未使用), S3=S5; LH: S1,S2 は 0 (未使用), S3=S5 | 35.7 |
+| zero_v07_14 | C | 6 極を全部 0 (v07_14 の光学) | v07_14 | 5 | 0 / 0 | (6 極なし) |  | 0.0 |
+| DDBA_11 | A | DDBA_11 (v05_14 に入れた MH・LH 10 ファミリーの結果。2023-08) | 元の光学 (v05_14_sx) | 5 | 10 / 600 | 全ファミリー独立 | MH: 5 個とも独立; LH: 5 個とも独立 | 38.3 |
+| DDBA_22 | B | DDBA_22 = v07_12 そのまま (元の並び) | 元の光学 (v07_12) | 5 | 12 / 360 | ファミリーでまとめた | MHA: S1,S2 は 0 (未使用), S3=S5; LHA: S1,S2 は 0 (未使用), S3=S5; MH: S1,S2 は 0 (未使用), S3=S5; LH: S1,S2 は 0 (未使用), S3=S5 | 35.7 |
+| DDBA_05 | B | DDBA_05 (v05_12、6 極の総当たり探索の版) | 元の光学 (v05_12) | 5 | 10 / 600 | ファミリーでまとめた | MH: S1=-S2, S3=S5; LH: S1=-S2, S3=S5 | 25.5 |
+| DDBA_10 | B | DDBA_10 (v05_14) | 元の光学 (v05_14) | 5 | 10 / 600 | ファミリーでまとめた | MH: S1=-S2; LH: S1=-S2 | 25.2 |
+| v07_13 | B | v07_13 の6 極 (元の光学。チューン 45.865/21.665 で違う) | 元の光学 (v07_13) | 5 | 12 / 360 | ファミリーでまとめた | MHA: S1,S2 は 0 (未使用), S3=S5; LHA: S1,S2 は 0 (未使用), S3=S5; MH: S1,S2 は 0 (未使用), S3=S5; LH: S1,S2 は 0 (未使用), S3=S5 | 56.2 |
+| zero_DDBA_05 | C | 6 極を全部 0 (DDBA_05 の光学) | 元の光学 (v05_12) | 5 | 0 / 0 | (6 極なし) |  | 0.0 |
+| zero_DDBA_10 | C | 6 極を全部 0 (DDBA_10 の光学) | 元の光学 (v05_14) | 5 | 0 / 0 | (6 極なし) |  | 0.0 |</p>
+<h3 id="表-2-1-次の-rdt-h-6-極の-3-次偏向磁石込み-と-δ-の項要素ごとの寄与の相殺-6-極だけの-σσ寄与最大の-1-台の寄与">表 2: 1 次の RDT |h| (6 極の 3 次、偏向磁石込み) と δ の項、要素ごとの寄与の相殺 (6 極だけの Σ/Σ|寄与|、最大の 1 台の寄与)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>h21000</th>
+<th>h30000</th>
+<th>h10110</th>
+<th>h10020</th>
+<th>h10200</th>
+<th>h11001</th>
+<th>h00111</th>
+<th>h20001</th>
+<th>h00201</th>
+<th>h10002</th>
+<th>相殺 h21000</th>
+<th>h30000</th>
+<th>h10020</th>
+<th>最大寄与 h21000</th>
+<th>h30000</th>
+<th>h10020</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>final</td>
+<td>13.9</td>
+<td>2.53</td>
+<td>0.637</td>
+<td>30.5</td>
+<td>13.7</td>
+<td>212</td>
+<td>234</td>
+<td>4.32</td>
+<td>0.603</td>
+<td>0.00217</td>
+<td>0.00262</td>
+<td>0.00144</td>
+<td>0.00367</td>
+<td>27</td>
+<td>9</td>
+<td>27.5</td>
+</tr>
+<tr>
+<td>rev9</td>
+<td>15</td>
+<td>2.83</td>
+<td>0.638</td>
+<td>29.5</td>
+<td>14.4</td>
+<td>219</td>
+<td>243</td>
+<td>4.29</td>
+<td>0.168</td>
+<td>0.00334</td>
+<td>0.00269</td>
+<td>0.00153</td>
+<td>0.00342</td>
+<td>30.3</td>
+<td>10.1</td>
+<td>27.6</td>
+</tr>
+<tr>
+<td>retune1</td>
+<td>11.2</td>
+<td>1.23</td>
+<td>20.1</td>
+<td>91</td>
+<td>10.9</td>
+<td>212</td>
+<td>233</td>
+<td>5.33</td>
+<td>2.44</td>
+<td>0.0172</td>
+<td>0.00225</td>
+<td>0.000746</td>
+<td>0.012</td>
+<td>37.6</td>
+<td>12.5</td>
+<td>33.3</td>
+</tr>
+<tr>
+<td>v07_12</td>
+<td>67.2</td>
+<td>5.75</td>
+<td>28.2</td>
+<td>124</td>
+<td>8.47</td>
+<td>212</td>
+<td>234</td>
+<td>5.54</td>
+<td>2.08</td>
+<td>0.12</td>
+<td>0.0194</td>
+<td>0.00499</td>
+<td>0.0189</td>
+<td>28</td>
+<td>9.33</td>
+<td>26.6</td>
+</tr>
+<tr>
+<td>v07_11</td>
+<td>67.8</td>
+<td>5.79</td>
+<td>29.2</td>
+<td>120</td>
+<td>8.52</td>
+<td>212</td>
+<td>233</td>
+<td>5.55</td>
+<td>2.08</td>
+<td>0.125</td>
+<td>0.0196</td>
+<td>0.00504</td>
+<td>0.0184</td>
+<td>28</td>
+<td>9.33</td>
+<td>26.6</td>
+</tr>
+<tr>
+<td>zero_v07_14</td>
+<td>0.075</td>
+<td>0.00668</td>
+<td>0.636</td>
+<td>0.882</td>
+<td>0.0361</td>
+<td>0.202</td>
+<td>1.81</td>
+<td>0.00485</td>
+<td>0.0211</td>
+<td>0.000985</td>
+<td>nan</td>
+<td>nan</td>
+<td>nan</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>DDBA_11</td>
+<td>15.5</td>
+<td>0.992</td>
+<td>59.9</td>
+<td>20</td>
+<td>0.0685</td>
+<td>257</td>
+<td>312</td>
+<td>4.37</td>
+<td>4.57</td>
+<td>0.592</td>
+<td>0.00131</td>
+<td>0.000252</td>
+<td>0.00136</td>
+<td>63.1</td>
+<td>21</td>
+<td>44</td>
+</tr>
+<tr>
+<td>DDBA_22</td>
+<td>20</td>
+<td>23.8</td>
+<td>55.5</td>
+<td>105</td>
+<td>16.4</td>
+<td>220</td>
+<td>233</td>
+<td>4.71</td>
+<td>5.09</td>
+<td>0.14</td>
+<td>0.00565</td>
+<td>0.0201</td>
+<td>0.0158</td>
+<td>28</td>
+<td>9.33</td>
+<td>26.7</td>
+</tr>
+<tr>
+<td>DDBA_05</td>
+<td>15.8</td>
+<td>2.96</td>
+<td>72</td>
+<td>19.5</td>
+<td>0.102</td>
+<td>252</td>
+<td>294</td>
+<td>3.17</td>
+<td>3.24</td>
+<td>0.354</td>
+<td>0.00232</td>
+<td>0.00131</td>
+<td>0.00186</td>
+<td>20.7</td>
+<td>6.91</td>
+<td>28.4</td>
+</tr>
+<tr>
+<td>DDBA_10</td>
+<td>2.65</td>
+<td>4.4</td>
+<td>91.7</td>
+<td>11.1</td>
+<td>0.189</td>
+<td>257</td>
+<td>312</td>
+<td>3.67</td>
+<td>4.57</td>
+<td>0.3</td>
+<td>0.000242</td>
+<td>0.00119</td>
+<td>0.000701</td>
+<td>41.4</td>
+<td>13.8</td>
+<td>39.9</td>
+</tr>
+<tr>
+<td>v07_13</td>
+<td>132</td>
+<td>23</td>
+<td>147</td>
+<td>205</td>
+<td>71.8</td>
+<td>209</td>
+<td>249</td>
+<td>12.7</td>
+<td>5.6</td>
+<td>1.3</td>
+<td>0.0412</td>
+<td>0.0215</td>
+<td>0.0371</td>
+<td>27.4</td>
+<td>9.12</td>
+<td>23.6</td>
+</tr>
+<tr>
+<td>zero_DDBA_05</td>
+<td>0.0522</td>
+<td>0.0156</td>
+<td>0.15</td>
+<td>0.12</td>
+<td>0.000215</td>
+<td>0.0209</td>
+<td>1.67</td>
+<td>0.000728</td>
+<td>0.0159</td>
+<td>9.18e-05</td>
+<td>nan</td>
+<td>nan</td>
+<td>nan</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>zero_DDBA_10</td>
+<td>0.0352</td>
+<td>0.00285</td>
+<td>0.0943</td>
+<td>0.108</td>
+<td>0.000292</td>
+<td>0.0496</td>
+<td>1.74</td>
+<td>0.000792</td>
+<td>0.0166</td>
+<td>7.62e-05</td>
+<td>nan</td>
+<td>nan</td>
+<td>nan</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<h3 id="表-3-4-次の-rdt-h-写像の係数6-極の-2-次--八極--運動学--フリンジ--偏向磁石-と-adts-fourthr3opticscalc">表 3: 4 次の RDT |h| (写像の係数。6 極の 2 次 + 八極 + 運動学 + フリンジ + 偏向磁石) と ADTS (fourth='r3'、optics='calc')</h3>
+<p>| 名前 | h22000 | h11110 | h00220 | h31000 | h40000 | h20020 | h20200 | h11200 | h00310 | h00400 | h20110 | h11020 | ADTS ∂νx/∂Jx | ∂νx/∂Jy | ∂νy/∂Jy |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| final | 582 | 1.76e+04 | 845 | 1.62e+03 | 2.11e+03 | 1.54e+04 | 3.9e+03 | 5.02e+03 | 3.31e+03 | 2.46e+03 | 8.79e+03 | 5.02e+03 | 2400 | 1.006e+04 | 871.8 |
+| rev9 | 363 | 1.76e+04 | 907 | 600 | 1.93e+03 | 1.53e+04 | 3.53e+03 | 5e+03 | 4.15e+03 | 2.25e+03 | 9.86e+03 | 5e+03 | 2388 | 1e+04 | 892.6 |
+| retune1 | 5.43e+04 | 9.22e+04 | 2.87e+04 | 3e+03 | 1.11e+03 | 2.54e+04 | 8.47e+03 | 2.71e+04 | 7.48e+03 | 1.5e+03 | 7.99e+03 | 2.71e+04 | 7.015e+04 | 5.58e+04 | 3.92e+04 |
+| v07_12 | 2.43e+05 | 4.27e+05 | 1.31e+05 | 1.33e+04 | 4.47e+03 | 3.25e+04 | 2.54e+03 | 4.39e+04 | 4.23e+03 | 5e+03 | 6.81e+03 | 4.39e+04 | 3.477e+05 | 2.75e+05 | 1.719e+05 |
+| v07_11 | 2.42e+05 | 4.23e+05 | 1.28e+05 | 1.33e+04 | 4.47e+03 | 3.22e+04 | 2.66e+03 | 4.35e+04 | 4.31e+03 | 4.86e+03 | 7.24e+03 | 4.35e+04 | 3.465e+05 | 2.735e+05 | 1.683e+05 |
+| zero_v07_14 | 826 | 4.2e+03 | 3.9e+03 | 65.7 | 8.91 | 70.6 | 4.2 | 30.2 | 73.2 | 28.3 | 158 | 30.2 | 1042 | 2666 | 4943 |
+| DDBA_11 | 1.45e+04 | 6.8e+03 | 8.34e+04 | 1.44e+03 | 7.97e+03 | 3.86e+03 | 3.54e+04 | 1.5e+04 | 3.74e+03 | 1.54e+03 | 3.24e+03 | 1.5e+04 | -1.811e+04 | -2548 | 1.07e+05 |
+| DDBA_22 | 2.46e+05 | 4.43e+05 | 1.34e+05 | 1.33e+04 | 4.16e+03 | 2.85e+04 | 3.5e+03 | 3.75e+04 | 8.57e+03 | 2.34e+03 | 1.73e+04 | 3.75e+04 | 3.185e+05 | 2.842e+05 | 1.805e+05 |
+| DDBA_05 | 1.46e+04 | 4.46e+04 | 2.94e+05 | 442 | 2.58e+03 | 2.99e+03 | 2.93e+04 | 5e+03 | 6.17e+03 | 108 | 1.59e+03 | 5e+03 | 1.902e+04 | 3.063e+04 | 3.757e+05 |
+| DDBA_10 | 1.44e+04 | 5.46e+03 | 3.96e+05 | 1.33e+03 | 787 | 4.48e+03 | 4.28e+04 | 7.39e+03 | 1.27e+04 | 921 | 7.5e+03 | 7.39e+03 | -1.805e+04 | -2990 | 5.071e+05 |
+| v07_13 | 9.76e+04 | 1.4e+06 | 3.95e+04 | 1.18e+04 | 1.5e+04 | 2.94e+04 | 1.26e+05 | 5.68e+04 | 1.37e+04 | 3.02e+03 | 1.14e+04 | 5.68e+04 | 2.732e+05 | 9.7e+05 | 7605 |
+| zero_DDBA_05 | 655 | 3.28e+03 | 2.73e+03 | 9.49 | 8.88 | 11.5 | 25 | 40.9 | 47.2 | 7.89 | 31.8 | 40.9 | 827.2 | 2083 | 3461 |
+| zero_DDBA_10 | 745 | 3.97e+03 | 3.66e+03 | 11.6 | 19.7 | 19 | 25.5 | 50.6 | 74.9 | 9.4 | 39.5 | 50.6 | 942.4 | 2520 | 4641 |</p>
+<h3 id="表-4-クロマティシティ-6-極込みの-ξ自然偏向磁石の-δ-の項6-極の内訳calc">表 4: クロマティシティ (6 極込みの ξ、自然・偏向磁石の δ の項・6 極の内訳、CALC)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>ξx 自然</th>
+<th>ξy 自然</th>
+<th>ξx 偏向磁石</th>
+<th>ξy 偏向磁石</th>
+<th>ξx 6 極</th>
+<th>ξy 6 極</th>
+<th>ξx 解析</th>
+<th>ξy 解析</th>
+<th>ξx CALC</th>
+<th>ξy CALC</th>
+<th>∂²νx/∂δ² (CALC)</th>
+<th>∂²νy/∂δ²</th>
+<th>チューン (CALC)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>final</td>
+<td>-67.652</td>
+<td>-74.330</td>
+<td>-0.064</td>
+<td>-0.575</td>
+<td>67.666</td>
+<td>74.905</td>
+<td>-0.051</td>
+<td>-0.001</td>
+<td>-0.069</td>
+<td>0.100</td>
+<td>-30</td>
+<td>218</td>
+<td>47.865, 16.655</td>
+</tr>
+<tr>
+<td>rev9</td>
+<td>-67.652</td>
+<td>-74.330</td>
+<td>-0.064</td>
+<td>-0.575</td>
+<td>69.666</td>
+<td>77.905</td>
+<td>1.949</td>
+<td>2.999</td>
+<td>1.930</td>
+<td>3.099</td>
+<td>-29</td>
+<td>245</td>
+<td>47.865, 16.655</td>
+</tr>
+<tr>
+<td>retune1</td>
+<td>-67.652</td>
+<td>-74.330</td>
+<td>-0.064</td>
+<td>-0.575</td>
+<td>67.667</td>
+<td>74.899</td>
+<td>-0.050</td>
+<td>-0.006</td>
+<td>-0.069</td>
+<td>0.095</td>
+<td>-5</td>
+<td>268</td>
+<td>47.865, 16.655</td>
+</tr>
+<tr>
+<td>v07_12</td>
+<td>-67.652</td>
+<td>-74.330</td>
+<td>-0.064</td>
+<td>-0.575</td>
+<td>67.666</td>
+<td>74.905</td>
+<td>-0.050</td>
+<td>-0.001</td>
+<td>-0.068</td>
+<td>0.101</td>
+<td>191</td>
+<td>200</td>
+<td>47.865, 16.655</td>
+</tr>
+<tr>
+<td>v07_11</td>
+<td>-67.652</td>
+<td>-74.330</td>
+<td>-0.064</td>
+<td>-0.575</td>
+<td>67.405</td>
+<td>74.757</td>
+<td>-0.311</td>
+<td>-0.149</td>
+<td>-0.329</td>
+<td>-0.047</td>
+<td>189</td>
+<td>192</td>
+<td>47.865, 16.655</td>
+</tr>
+<tr>
+<td>zero_v07_14</td>
+<td>-67.652</td>
+<td>-74.330</td>
+<td>-0.064</td>
+<td>-0.575</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>-67.717</td>
+<td>-74.906</td>
+<td>-67.706</td>
+<td>-74.766</td>
+<td>-148</td>
+<td>-51</td>
+<td>47.865, 16.655</td>
+</tr>
+<tr>
+<td>DDBA_11</td>
+<td>-81.773</td>
+<td>-99.581</td>
+<td>0.016</td>
+<td>-0.555</td>
+<td>81.767</td>
+<td>99.986</td>
+<td>0.010</td>
+<td>-0.150</td>
+<td>-0.011</td>
+<td>0.047</td>
+<td>715</td>
+<td>365</td>
+<td>48.600, 12.700</td>
+</tr>
+<tr>
+<td>DDBA_22</td>
+<td>-69.978</td>
+<td>-74.202</td>
+<td>-0.057</td>
+<td>-0.555</td>
+<td>69.978</td>
+<td>74.732</td>
+<td>-0.058</td>
+<td>-0.025</td>
+<td>-0.076</td>
+<td>0.075</td>
+<td>138</td>
+<td>201</td>
+<td>47.865, 16.665</td>
+</tr>
+<tr>
+<td>DDBA_05</td>
+<td>-79.852</td>
+<td>-93.193</td>
+<td>0.007</td>
+<td>-0.531</td>
+<td>80.106</td>
+<td>94.096</td>
+<td>0.261</td>
+<td>0.372</td>
+<td>0.238</td>
+<td>0.546</td>
+<td>-8</td>
+<td>215</td>
+<td>48.600, 12.700</td>
+</tr>
+<tr>
+<td>DDBA_10</td>
+<td>-81.773</td>
+<td>-99.581</td>
+<td>0.016</td>
+<td>-0.555</td>
+<td>81.767</td>
+<td>99.985</td>
+<td>0.010</td>
+<td>-0.151</td>
+<td>-0.011</td>
+<td>0.039</td>
+<td>5</td>
+<td>267</td>
+<td>48.600, 12.700</td>
+</tr>
+<tr>
+<td>v07_13</td>
+<td>-66.242</td>
+<td>-79.217</td>
+<td>-0.052</td>
+<td>-0.409</td>
+<td>66.633</td>
+<td>79.593</td>
+<td>0.338</td>
+<td>-0.033</td>
+<td>0.327</td>
+<td>0.001</td>
+<td>135</td>
+<td>1367</td>
+<td>45.865, 21.665</td>
+</tr>
+<tr>
+<td>zero_DDBA_05</td>
+<td>-79.852</td>
+<td>-93.193</td>
+<td>0.007</td>
+<td>-0.531</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>-79.846</td>
+<td>-93.724</td>
+<td>-79.838</td>
+<td>-93.490</td>
+<td>-177</td>
+<td>38</td>
+<td>48.600, 12.700</td>
+</tr>
+<tr>
+<td>zero_DDBA_10</td>
+<td>-81.773</td>
+<td>-99.581</td>
+<td>0.016</td>
+<td>-0.555</td>
+<td>0.000</td>
+<td>0.000</td>
+<td>-81.757</td>
+<td>-100.136</td>
+<td>-81.752</td>
+<td>-99.889</td>
+<td>-242</td>
+<td>25</td>
+<td>48.600, 12.700</td>
+</tr>
+</tbody>
+</table>
+<h3 id="表-5-追跡の-da-簡略化-512-周rf放射なしδ0誤差なしlossampl-50-mmリング先頭から光学が違う設定は-β-が違うので-da-の-mm-は直接比べられない">表 5: 追跡の DA (簡略化: 512 周、RF・放射なし、δ=0、誤差なし、LOSSAMPL ±50 mm、リング先頭から。光学が違う設定は β が違うので DA の mm は直接比べられない)</h3>
+<table>
+<thead>
+<tr>
+<th>名前</th>
+<th>DA 面積 mm²</th>
+<th>x_DA mm</th>
+<th>y_DA mm</th>
+<th>x-δ の幅 (平均) mm</th>
+<th>β (x, y) 先頭</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>final</td>
+<td>51.1</td>
+<td>4.54</td>
+<td>4.35</td>
+<td>6.7</td>
+<td>5.4, 5.1</td>
+</tr>
+<tr>
+<td>rev9</td>
+<td>61.4</td>
+<td>4.86</td>
+<td>4.76</td>
+<td>7.4</td>
+<td>5.4, 5.1</td>
+</tr>
+<tr>
+<td>retune1</td>
+<td>32.6</td>
+<td>3.43</td>
+<td>3.51</td>
+<td>5.9</td>
+<td>5.4, 5.1</td>
+</tr>
+<tr>
+<td>v07_12</td>
+<td>9.2</td>
+<td>1.46</td>
+<td>1.89</td>
+<td>1.1</td>
+<td>5.4, 5.1</td>
+</tr>
+<tr>
+<td>v07_11</td>
+<td>9.1</td>
+<td>1.47</td>
+<td>1.89</td>
+<td>1.1</td>
+<td>5.4, 5.1</td>
+</tr>
+<tr>
+<td>zero_v07_14</td>
+<td>260.3</td>
+<td>9.27</td>
+<td>9.00</td>
+<td>27.0</td>
+<td>5.4, 5.1</td>
+</tr>
+<tr>
+<td>DDBA_11</td>
+<td>34.0</td>
+<td>3.64</td>
+<td>3.34</td>
+<td>6.8</td>
+<td>2.7, 3.7</td>
+</tr>
+<tr>
+<td>DDBA_22</td>
+<td>10.8</td>
+<td>1.92</td>
+<td>2.64</td>
+<td>2.0</td>
+<td>2.7, 4.7</td>
+</tr>
+<tr>
+<td>DDBA_05</td>
+<td>30.0</td>
+<td>5.22</td>
+<td>2.10</td>
+<td>8.2</td>
+<td>2.7, 3.7</td>
+</tr>
+<tr>
+<td>DDBA_10</td>
+<td>17.4</td>
+<td>4.36</td>
+<td>1.62</td>
+<td>7.9</td>
+<td>2.7, 3.7</td>
+</tr>
+<tr>
+<td>v07_13</td>
+<td>2.1</td>
+<td>1.08</td>
+<td>0.83</td>
+<td>0.5</td>
+<td>2.7, 4.7</td>
+</tr>
+<tr>
+<td>zero_DDBA_05</td>
+<td>157.9</td>
+<td>6.57</td>
+<td>7.69</td>
+<td>33.8</td>
+<td>2.7, 3.7</td>
+</tr>
+<tr>
+<td>zero_DDBA_10</td>
+<td>157.9</td>
+<td>6.57</td>
+<td>7.69</td>
+<td>30.2</td>
+<td>2.7, 3.7</td>
+</tr>
+</tbody>
+</table>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

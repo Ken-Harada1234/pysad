@@ -206,7 +206,7 @@ LINE
 ! リング RING の Twiss から作り、(1) 行列の大きさ・代表値を表示、(2) 水平ステアリング 3 個 (1・2・3 番目) に K0 = 1e-6 を順に与えて `cell calc` した SAD の COD と比べる。
 ! SAD の K0 の符号は、COD = −K0 × Response (PF の例 pf/optics/calc_respx_PF と同じ)。補正の台本 (KEKLS_correct_cod) は K0 を −0.5 × kick ずつ足す形でこの符号に合わせてある。
 ! 補正磁石 HD・VD は同じ要素名の繰り返しなので、既定の `cell calc` (EXPAND) は K0 を全部同じ値に揃えてしまい、1 個だけに K0 を与えられない
-! (HD.1 に与えると全 161 個が同じ値になり COD が 5 倍以上大きくなる。gs・pysad とも同じ)。`USE RING NOEXPAND` と `cell calc noexpand` で成分ごとの K0 が効く (docs/11 A56)。
+! (HD.1 に与えると全 161 個が同じ値になり COD が 5 倍以上大きくなる。gs・pysad とも同じ)。`USE RING NOEXPAND` と `cell calc noexpand` で成分ごとの K0 が効く (docs/29 A56)。
 ! 元との違い: 元の WriteCODResponce[] は、モニターを BPM.* (v03_68 は PM) で探し (見つからず行列が空になる)、結果を fort.92 に書いていた。
 !   モニター名を PM.* に直し、書き出しは省いて、代表値の表示と SAD の COD との照合に変えた。
 !   元は応答行列の計算の中で `cell calc` をステアリング 1 個ごとに繰り返していた。同じ結果なので 1 回だけにした。

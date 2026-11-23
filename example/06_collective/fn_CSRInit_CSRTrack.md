@@ -1,5 +1,5 @@
 # fn_CSRInit と fn_CSRTrack
-種別: 関数 / フォルダ: 06_collective / ラティス: なし (縦の 1 周写像を直接与える)。参考: `docs/40_csr_guide.md`
+種別: 関数 / フォルダ: 06_collective / ラティス: なし (縦の 1 周写像を直接与える)。参考: `docs/15_csr.md`
 
 ## 何を見る例か
 CSR (コヒーレント放射) の組み込み関数のうち、`CSRInit` (ダクト断面の格子上で静電場を解く) と `CSRTrack` (ウェイクのキックを入れたマクロ粒子の縦方向追跡) の使い方。`CSRTrack` の縦の線形写像を、ウェイクなしの極限で式と照合する。
@@ -14,7 +14,7 @@ r = CSRTrack[z1, dp1, zl, {dz, 4, 0, 0.05, -0.3, 0, 0, 0, 0}, 6];
 ```
 - `CSRTrack[z, dp, zl, {dz, ndiv, inten, r56, r65, frf, phirf, damp, sigmae}, nturn]`: `zl` は長さ 2 のべきの実 FFT 形式のインピーダンス、`dz` はビン幅、`ndiv` は 1 周の分割数、`inten` は強度、`r56`、`r65` は 1 周の縦の行列要素 (m、1/m)。戻りは各周の $\{\sigma_z,\sigma_\delta\}$ を並べた長さ $2\,n_{turn}$ のリスト。
 - `z`、`dp` は**その場で書き換わる** (gs も pysad も)。この例の 2 行目の出力 (`in-place`) で確認している。
-- `zl` は人工の値で、物理的な CSR インピーダンスではない (`CSR.n` が作る ZL を使う場合は docs/40 の 2.5)。
+- `zl` は人工の値で、物理的な CSR インピーダンスではない (`CSR.n` が作る ZL を使う場合は docs/15 の 2.5)。
 
 ## 結果の読み方
 - `CSRInit: Dimensions={2, 8, 8}`: 戻りは 2 成分 (電場の 2 成分) で各 8×8 の格子 (pipe の列 8 本、高さは列ごとに 4〜8)。
@@ -39,5 +39,5 @@ r = CSRTrack[z1, dp1, zl, {dz, 4, 0, 0.05, -0.3, 0, 0, 0, 0}, 6];
 
 ## 未確認・限界
 - ZL は人工値。実際のダクトの CSR インピーダンスは `CSR.n` で作るが、約 7 分かかる (pysad) ので例にしていない。
-- ndiv 分割の正確な式は未確認 (上の差)。`CSRHaissin`、`CSRSetupOY`、`CSROYMatrix`、`CSRStability` は動かしていない (`CSROYMatrix` は K64 の gs では動かない: docs/40 の B60)。
+- ndiv 分割の正確な式は未確認 (上の差)。`CSRHaissin`、`CSRSetupOY`、`CSROYMatrix`、`CSRStability` は動かしていない (`CSROYMatrix` は K64 の gs では動かない: docs/15 の B60)。
 - 乱数 (`damp`、`sigmae`) を使う設定は見ていない。

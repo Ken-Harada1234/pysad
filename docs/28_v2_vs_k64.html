@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>28. v2 (既定) と k64 (PYSAD_COMPAT=k64) の違い</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#互換モードの使い方">互換モードの使い方</a></li>
+<li><a href="#1-放射エミッタンス光学">1. 放射・エミッタンス・光学</a></li>
+<li><a href="#2-スピン偏極">2. スピン・偏極</a></li>
+<li><a href="#3-追跡要素">3. 追跡・要素</a></li>
+<li><a href="#4-特殊関数数値組込関数">4. 特殊関数・数値・組込関数</a></li>
+<li><a href="#5-スクリプトffsパッケージ">5. スクリプト・FFS・パッケージ</a></li>
+<li><a href="#6-確認状況">6. 確認状況</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: 28_v2_vs_k64.md</div>
+<h1 id="28-v2-既定-と-k64-pysad_compatk64-の違い">28. v2 (既定) と k64 (<code>PYSAD_COMPAT=k64</code>) の違い</h1>
+<p><strong>この文書で分かること</strong>: pysad の計算結果が v2 (既定) と k64 でどこが違うか。K64 (SAD の公式配布版の実行系。gs はその実行ファイル) の誤りを v2 が直しているため、同じ入力でも値が変わる機能の一覧である。
+<strong>前提</strong>: 数値を gs (K64) と比べたいとき、または K64 と同じ結果が欲しいときは <code>PYSAD_COMPAT=k64</code> を付ける。それ以外は v2 のままでよい。
+<strong>読む順</strong>: 互換モードの使い方 → 自分の機能の表 (§1 放射・光学、§2 スピン、§3 追跡・要素、§4 数学関数、§5 スクリプト) → §6 の確認状況。</p>
+<p>pysad には互換モードが 2 つある。<strong>v2 (既定)</strong> は K64 のバグを直した動作、<strong>k64</strong> は K64 (gs) と同じ結果を出す動作である。この文書は、モードで結果が変わる機能・動作の一覧である。K64 側の誤りの本体と B 番号は <a href="30_sad_bug_report.html"><code>30_sad_bug_report.md</code></a>、未実装・未確認・限界は <a href="31_unimplemented_and_unverified.html"><code>31_unimplemented_and_unverified.md</code></a> にある。</p>
+<h2 id="互換モードの使い方">互換モードの使い方</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>モード</td>
+<td><code>v2</code> (既定): K64 のバグを直した動作。<code>k64</code>: K64 (gs) の動作</td>
+</tr>
+<tr>
+<td>切り替え</td>
+<td>環境変数 <code>PYSAD_COMPAT=k64</code> (または <code>v2</code>)。Python からは <code>from pysad import compat; compat.set_mode('k64')</code> (<code>None</code> で環境変数に戻す)。<code>compat.mode()</code> が現在のモード、<code>compat.v2()</code>・<code>compat.k64()</code> が真偽</td>
+</tr>
+<tr>
+<td>試験・回帰</td>
+<td>gs との数値比較の試験と回帰 (<code>pysad/tests/regression_tests/run_regression.py</code>) は k64 で走る (<code>pysad/tests/script_tests/conftest.py</code> が <code>PYSAD_COMPAT</code> の既定を <code>k64</code> にする)。v2 の動作の試験は <code>test_v2_*.py</code> で、フィクスチャ <code>v2_mode</code> で v2 を明示する</td>
+</tr>
+<tr>
+<td>gs と比べるとき</td>
+<td><code>PYSAD_COMPAT=k64</code> を付ける。<code>py -3.12 run_sad.py lattice.sad script.sad</code> の既定は v2</td>
+</tr>
+<tr>
+<td>内部の約束</td>
+<td>追跡のカーネルが <code>rs[1]</code> (v2 の印) を読むので、<code>rs</code> は必ず <code>track6n.make_rs()</code> で作る</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>この表に入れないもの</strong>: モードによらず同じ動作の機能 (K64 にない新機能、K64 に無い機能・動かない機能のうち gs と同じ結果が出るもの、pysad 自身の不具合の修正、<code>DAPWIDTH</code> の既定 7 など両モードで同じ既定) は含めない。新機能の解説は各機能の文書 (docs/13〜22、24〜26) にある。</li>
+<li><strong>k64 モードも K64 と完全に同じではない点がある</strong>: gs に合わせて、(1) <code>For</code> の本体を実行しない (B71)、(2) 利用者のコードの <code>BeginPackage</code>・<code>Begin</code> が名前空間を作る。また、gs が真値を返すのに pysad の値が誤っていた点 (B183・B185〜B196・B199 の一部) は、k64 でも真値にしている (該当行に書いた)。</li>
+<li>表の「根拠」は、v2 の動作を確かめた基準 (解析式・独立な数値計算・厳密な幾何・gs など) と B 番号。数値の細部は <a href="30_sad_bug_report.html"><code>30_sad_bug_report.md</code></a> と試験 (<code>pysad/tests/script_tests/test_v2_*.py</code>、<code>test_v24_*.py</code>、<code>test_v241_*.py</code>) にある。</li>
+<li>確認できなかった点は §6 にまとめた (「要確認」と書いた行)。</li>
+</ul>
+<h2 id="1-放射エミッタンス光学">1. 放射・エミッタンス・光学</h2>
+<table>
+<thead>
+<tr>
+<th>機能・動作</th>
+<th>v2 の動作</th>
+<th>k64 の動作</th>
+<th>根拠 (B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RADINT の BEND の L/ANGLE</td>
+<td>その BEND 自身の L/ANGLE</td>
+<td>全 BEND に最後の BEND の L/ANGLE</td>
+<td>B06</td>
+</tr>
+<tr>
+<td>RADINT の 6 極</td>
+<td>自分の L と K2。L=0 は寄与なし</td>
+<td>直前の DL を使う。L=0 は 0.2 m。先頭が SEXT だと NaN</td>
+<td>B07</td>
+</tr>
+<tr>
+<td>RADINT の定数</td>
+<td>倍精度</td>
+<td>単精度の定数 (1e27、1.E-6、0.2、2.3026)</td>
+<td>B12</td>
+</tr>
+<tr>
+<td>RADINT の CAVI</td>
+<td>VOLT は総和。FREQ・HARM は電圧のある最初の空洞</td>
+<td>最後の空洞の値</td>
+<td>B13</td>
+</tr>
+<tr>
+<td>RADINT の <code>QUANTUM LIFETIME(hours)</code></td>
+<td>τ[秒]/3600</td>
+<td>exp(2.3026·τ[秒])</td>
+<td>B72</td>
+</tr>
+<tr>
+<td>RADINT の <code>LINEAR CHROMATICITY</code></td>
+<td>運動量を ±1e-4 ずらした光学のチューンの差分 dν/dδ (6 極・偏向の寄与を含む)</td>
+<td>−I9/4π (磁石の中だけの積分で色収差にならない)</td>
+<td>B73</td>
+</tr>
+<tr>
+<td>RADINT の MULT・SOL</td>
+<td>場のある MULT・SOL があれば「入っていない」と表示 (積分には入れない)</td>
+<td>黙って無視 (表示なし)</td>
+<td>B74</td>
+</tr>
+<tr>
+<td>RADINT の BMAG の CKL1Y・QUADRU、tbgrote の (5,6)、tradke の b</td>
+<td>CKL1Y = +sin θ·DKL1、QUADRU は (dx, dy) = 閉軌道 − 要素のずれ、(5,6) は修正式、b = bzh</td>
+<td>CKL1Y = −cos θ·DKL1、QUADRU は四極自身の DX・DY を引かず K1&lt;0 で符号が逆、(5,6) に px²+py² が残る、b = bzh·0.5</td>
+<td>B107・B126・B109・B106</td>
+</tr>
+<tr>
+<td>RADINT の ANGLE=0・K0≠0 の BEND (挿入光源の極)</td>
+<td>極を積分に入れる (I2 = Σ(ANGLE+K0)²/L)。直線の基準軌道の場として積分し、CALC の分散が極の分散の発生を含まない分を周期解で補正</td>
+<td>無視</td>
+<td>B115</td>
+</tr>
+<tr>
+<td>Jx の端の項 (Emittance[]・EMIT・追跡の端の角 e)</td>
+<td>場の中の行路を x·tan(e) だけ短くする。端の角の放射の行程は面までの直進の厳密な行程 (CALC・Emittance[]・追跡の全ての端の角)</td>
+<td>端の角の蹴りを偏向角に入れるが行路を変えない (端の項が 2 倍。矩形磁石のリングで Jx = 1.097)</td>
+<td>B75・B108・B143・B220</td>
+</tr>
+<tr>
+<td>ANGLE=0 の BEND・MULT の端の角の放射</td>
+<td>行路を x·tan(e) 短くする (さらに B220 の厳密な行程)。MULT の端は入口 Φ(−z_f)∘Drift(z_f)・出口 Drift(ℓ)∘Φ(−ℓ) の厳密な硬い端 (K1≠0 は厳密な逆行列でシンプレクティック性を保つ)</td>
+<td>薄い蹴りで、行路を変えない</td>
+<td>B108・B143・B223・B224</td>
+</tr>
+<tr>
+<td>追跡 <code>tsteer</code> の端</td>
+<td>CALC の <code>tsteee</code> と同じ厳密な硬い端の鎖 (F1・FB1・FB2 なしのとき)</td>
+<td>薄い蹴り x tan(e)/ρ</td>
+<td>B221</td>
+</tr>
+<tr>
+<td>追跡 <code>tsteer</code> の出口の AE2</td>
+<td>常に入れる</td>
+<td>fb2≠0 のときだけ入れる (CALC・Emittance[] は常に)</td>
+<td>B140</td>
+</tr>
+<tr>
+<td><code>tmulte</code> (CALC・Emittance[] の MULT) の出口の端の蹴りの位置</td>
+<td>最後の半スライスの後 (追跡と同じ)</td>
+<td>最後の半スライスの前</td>
+<td>B141</td>
+</tr>
+<tr>
+<td>K1≠0・K0≠0 の ANGLE=0 BEND の追跡の AE</td>
+<td>AE を使う</td>
+<td><code>tmulti</code> に psi=0 を渡し AE を無視</td>
+<td>B142</td>
+</tr>
+<tr>
+<td>MULT の硬い端 (AE1・AE2) の縦方向の収束</td>
+<td>面を横切る水平の傾き θ への依存 (tan(e±θ)−tan(±θ)) を入れ、K1 以上は横磁場のポテンシャルから求める</td>
+<td>K64 の薄い蹴り</td>
+<td>B292</td>
+</tr>
+<tr>
+<td>放射の反作用の角度の符号 (tradke)</td>
+<td>追跡 (tradkn) と同じ符号。放射反作用つきのローレンツ力の数値積分と 6 桁一致</td>
+<td>tradke の <code>ddpx</code> の符号が追跡と逆</td>
+<td>B111</td>
+</tr>
+<tr>
+<td>RADTAPER の BEND の係数</td>
+<td>Emittance[]・追跡とも (δ_l+δ_l+1)/2</td>
+<td>Emittance[] は 3/4、追跡は 1/2</td>
+<td>B111</td>
+</tr>
+<tr>
+<td>放射の古典半径 (MASS≠電子)</td>
+<td><code>re0 = elradi·elmass/amass</code>。陽子の U0 は古典式と一致。γ&lt;300 では r²/β⁴・β² の因子を入れる (<code>pysad/radbeta.py</code>)。RADINT も陽子で電子の定数を使わない。電子 (γ≥300) の結果は両モードでビット単位で同じ</td>
+<td><code>re0 = elradi</code> (質量によらない)</td>
+<td>B112・B167</td>
+</tr>
+<tr>
+<td>tradke の微分 (RADCOD の解析 T + D)</td>
+<td>4 点の誤りを直す (<code>perfkern.tradke_db</code> の <code>exactd</code>)</td>
+<td>4 点の誤り (tr1 の始点・終点の取り違え、dddpx の 2 項目、c1 の微分、dxpa のべき)</td>
+<td>B138</td>
+</tr>
+<tr>
+<td>BEND の T[z, δ]</td>
+<td><code>tbendebody0</code> の (5,6) の px² の項・dω/dp を厳密にする</td>
+<td>近似 (1 周で 1e-7)</td>
+<td>B139・B164</td>
+</tr>
+<tr>
+<td>K1≠0 の BEND の追跡の曲率半径</td>
+<td>スライスごとの放射のあとに rhoe = rhob·(1+δ) を更新</td>
+<td>入口の値のまま (減衰の和が 4 にならない)</td>
+<td>B76</td>
+</tr>
+<tr>
+<td>MomentumCompaction (Emittance[])</td>
+<td>RFSW OFF は −(R56 + Σ R5j η_j)/C、RFSW ON は 4 sin²(μ/2)</td>
+<td>RFSW OFF は −R56/C だけ、RFSW ON は μ² から</td>
+<td>B77</td>
+</tr>
+<tr>
+<td>tchge の入口のロール + ずれ</td>
+<td>入口の回転を行列に掛ける</td>
+<td>tbrote が回転行列を上書きし一周行列に回転が入らない</td>
+<td>B09</td>
+</tr>
+<tr>
+<td>ずれた BEND の CALC (tbrote の出口)</td>
+<td>出口も入口と同じ回し方</td>
+<td>出口のドリフトが逆向き</td>
+<td>B114</td>
+</tr>
+<tr>
+<td>補正磁石の ROTATE と DX・DY を同時に付けた CALC</td>
+<td>追跡と 5e-7 で一致</td>
+<td>gs の CALC のチューンが追跡と違う。pysad の k64 の CALC は gs と 1e-4〜7e-4 違い K64 を再現していない (要確認: 原因は未調査。<a href="30_sad_bug_report.html"><code>30_sad_bug_report.md</code></a> の B144 も未調査と記している)</td>
+<td>B144</td>
+</tr>
+<tr>
+<td>4D の CALC の縦方向の Twiss 列</td>
+<td>既定値 (AZ=0、BZ=1、他 0)</td>
+<td>作り直さず 6D の値が残る</td>
+<td>B11</td>
+</tr>
+<tr>
+<td><code>UnstableLevel</code></td>
+<td>不安定な点の数 nstab</td>
+<td>常に 0</td>
+<td>B15</td>
+</tr>
+<tr>
+<td>CalculateOptics の stabz・tracez</td>
+<td>idim=3 は tracez = 2cos(μz) と stabz、idim=2 は stabz=1・tracez=0</td>
+<td>未初期化 (k64 は 1 と 0)</td>
+<td>B16</td>
+</tr>
+<tr>
+<td>入れ替わる (DETR≥1) INS の一周の位相の整数部</td>
+<td>入る要素の跳びを +π、出る要素を −π と決めて打ち消す。gs と同じ整数部</td>
+<td>跳び ±π が丸め誤差の符号で決まる (ASTRID2・PF・大きなリング A で gs と整数部がずれる)</td>
+<td>B153</td>
+</tr>
+<tr>
+<td>周期閉軌道の探索 (CALC・Emittance[]・追跡の初期軌道)</td>
+<td>K64 の qcod が収束しなかったときだけ堅牢な解法 (<code>lattice._qcod_robust</code>) にフォールバック。収束した計算はビット単位で同じ</td>
+<td>qcod のまま</td>
+<td>B260</td>
+</tr>
+<tr>
+<td>tcod が収束しないときの Emittance[]</td>
+<td>6D 固定点を Newton 法で解く (メッセージなし)</td>
+<td>gs と同じ。収束していない軌道から続行し <code>???-Emittance[]-closed orbit not found.</code> (Stable = 0)</td>
+<td>B163</td>
+</tr>
+<tr>
+<td><code>EMITDIV</code> の既定</td>
+<td>4 (<code>compat.emitdiv_default()</code>、環境変数 <code>PYSAD_EMITDIV_DEFAULT</code>)。台本が与えればその値。EMITDIVB・EMITDIVQ は 1。POL ON のスピンの計算では 16</td>
+<td>1</td>
+<td>(B 番号なし。K64 のバグではなく v2 の既定の選択。放射の刻みが 1 では粗く、εx が +1e-3〜+2e-2 大きいため。<code>pysad/compat.py</code> の記述による)</td>
+</tr>
+<tr>
+<td>CALC・Emittance[] の BEND (K1≠0) の行列の dk</td>
+<td>kick の導関数に直す (<code>compat.bend_dk_fix()</code>)</td>
+<td>K64 のまま (行列の dk の不整合)</td>
+<td>B161</td>
+</tr>
+<tr>
+<td>四極の本体の積分 (CALC・Emittance[]・追跡)</td>
+<td>4 次の合成 (<code>pysad/quadbody.py</code>)。軌道がずれたとき CALC・Emittance[] の四極の行列が 1e-7〜1e-6 変わる</td>
+<td>K64 の 2 次の Strang 分割 (<code>quadbody.set_scheme(0)</code> と同じ)</td>
+<td>B226・B243</td>
+</tr>
+<tr>
+<td>L≠0 の SEXT・OCT・DECA・DODECA、MULT (n≥2) の端の非線形フリンジ ttfrin (DISFRIN=0)</td>
+<td>CALC・Emittance[] も入れる (追跡と一致)</td>
+<td>追跡は入れるが CALC・Emittance[] は入れない</td>
+<td>B291</td>
+</tr>
+<tr>
+<td>ANGLE=0・K1≠0・K0≠0 の BEND</td>
+<td>(両モードで同じ) 追跡・CALC・Emittance[] とも、同じ K0・K1・L の MULT として扱う</td>
+<td>(K64 は追跡が長さ L のドリフト、CALC・Emittance[] が SIGSEGV。pysad は k64 でも gs の誤りを再現しない)</td>
+<td>B290・B02</td>
+</tr>
+<tr>
+<td>Emittance[] の 6 極 (L≠0) の放射・スピン</td>
+<td>追跡と同じ 1 刻みの <code>tradke</code> (<code>_tthine(enarad=True)</code>)</td>
+<td><code>tthine</code> は放射しない (spin・D・B に入らない)</td>
+<td>B240</td>
+</tr>
+<tr>
+<td>WSPAC の Emittance[]・EMIT のチューンシフト</td>
+<td>p1 = (1+δ) p0</td>
+<td>最後のスライスの <code>gammab(nlat+1) = 0</code> でレンズが 8 倍強い</td>
+<td>B127</td>
+</tr>
+<tr>
+<td>WSPAC ON の CALC・CALC6D</td>
+<td>空間電荷を入れる (6D の経路。RFSW ON の 4D の CALC も)</td>
+<td>空間電荷を入れない (gs は NaN)</td>
+<td>B133</td>
+</tr>
+<tr>
+<td>追跡の WSPAC のビーム行列</td>
+<td>既定はゼロ電流の平衡行列。FFS の大域変数 <code>WSPACSC = 1;</code> で空間電荷つき (MINCOUP の下限つき)</td>
+<td>追跡に WSPAC を入れない</td>
+<td>B149</td>
+</tr>
+<tr>
+<td>SynchroBetaEmittance (リングの始点の分散 η≠0)</td>
+<td>源泉から ηδ を引き軌道の δ 依存を解析的な 2 項で入れる (<code>synchrobeta.tesumb_v2</code>)。AzimuthalModes m と 1.5 倍の m の emitx が 20% 以上違えば収束の警告</td>
+<td>源泉に閉軌道 c(δ) をそのまま使う (始点により εx が数倍〜40 倍過大)。警告なし</td>
+<td>B128</td>
+</tr>
+<tr>
+<td>PhotonList のエネルギー列</td>
+<td>γ を掛ける (陽子は dp·β p0 m でエネルギー保存。軟らかい光子の方向は単位球に載せる)</td>
+<td>βγ を掛ける (電子の 3 GeV で 1.45e-8 小さい)</td>
+<td>B132・B233</td>
+</tr>
+<tr>
+<td>光子の偏光 ξ1 (tphrec)</td>
+<td>pp で割らない (</td>
+<td>ξ1</td>
+<td>,</td>
+</tr>
+<tr>
+<td>RF の同期位相 (エネルギー損失・電荷。陽子・イオン γ&lt;300)</td>
+<td>β·Δp c/</td>
+<td>z</td>
+<td>(<code>emit6d._u0_energy</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="2-スピン偏極">2. スピン・偏極</h2>
+<table>
+<thead>
+<tr>
+<th>機能・動作</th>
+<th>v2 の動作</th>
+<th>k64 の動作</th>
+<th>根拠 (B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tradke (SOL 内) の dbeam(8)</td>
+<td>B12 − B34 + b·B13 (力学的運動量の共分散)</td>
+<td>B12 − B44 + b·B13</td>
+<td>B39</td>
+</tr>
+<tr>
+<td>tbrote のスピン回転 srot</td>
+<td>(I+rr)·srot (直交性が 1e-14)</td>
+<td>行の逐次更新で行列積にならない</td>
+<td>B56</td>
+</tr>
+<tr>
+<td>BEND の端の縦磁場の積分 bsir0 (Emittance[]・追跡の POL)</td>
+<td>入口で +(y/ρ + k x y)、出口で −(…)。軌道の微分もスピン軌道結合に入れる。追跡の tbendi も同じ</td>
+<td>出口の項が常に捨てられる、K1 の項の次元が合わない、追跡は y/ρ がない</td>
+<td>B58</td>
+</tr>
+<tr>
+<td>MULT の bsir0 (Emittance[] の POL)</td>
+<td>ψ = Im Σ k_n z^(n+1)/(n+1)! を入口で足し出口で引く。四極は k x y。POL のとき四極・MULT を k·(L/n)² ≤ 2e-3 に分割</td>
+<td>imag(cx)/aln。四極は入れない。分割は放射の大きさだけ</td>
+<td>B64</td>
+</tr>
+<tr>
+<td>平衡偏極度 <code>Polarization</code></td>
+<td>Faddeeva 関数 w(i·cb) で exp(cb²)·erfc(cb) を評価。平衡偏極度は線形のスピン軌道結合の脱偏極率から P = (8/5√3)·sdamp/(sdamp+rate)。平面リングで 92.376%</td>
+<td>NaN (k64 も NaN)</td>
+<td>B55</td>
+</tr>
+<tr>
+<td>脱偏極率 (spdepol)</td>
+<td>側帯 (シンクロトロン振動によるスピンの位相の変調) を厳密に取った式 (<code>depol_rate</code>・<code>depol_rate_linear</code>)。ベータトロンのチューンの δ 依存 (クロマティシティ) も入れる (<code>spin.CHROMATIC</code>)</td>
+<td>emittance/減衰率に比例 (独立な率の約 1000 倍)</td>
+<td>B125</td>
+</tr>
+<tr>
+<td><code>Polarization</code>・<code>PolarizationTime</code> の緩和率</td>
+<td>Sokolov-Ternov の厳密式 Σ r (1 − 2/9 (n·v)²) (<code>spin.ST_EXACT</code>)、運動論的偏極 (<code>spin.KINETIC</code>)、脱偏極率を放射の刻みごとのスピン軸の場で積分 (<code>spin.STEP_RATE</code>)。逆向きの BEND (挿入光源の極) でも極が相殺しない。モジュール変数を False にすると簡略式</td>
+<td>符号つきの率 Σ r (b·n) (逆向きの極が相殺)</td>
+<td>B116</td>
+</tr>
+<tr>
+<td>不安定リングの P</td>
+<td>P = NaN (<code>depol_error = 'unstable optics: …'</code>。1 周の写像 T + D の固有値の大きさが 1+1e-6 超)</td>
+<td>NaN</td>
+<td>B55</td>
+</tr>
+<tr>
+<td>追跡のスピンの BEND の ROTATE</td>
+<td>座標と同じ回転をスピンに掛ける (<code>track6._spin_rot_cs</code>)</td>
+<td>座標だけ回す</td>
+<td>B135</td>
+</tr>
+<tr>
+<td>追跡の MULT の ROTATE のスピン</td>
+<td>入口で回し出口で戻す</td>
+<td>座標だけ回す</td>
+<td>B241</td>
+</tr>
+<tr>
+<td>sprot の刻みの歳差の角</td>
+<td>厳密な θ</td>
+<td>(1+aγ)·2 sin(θ/2) (刻みが粗いと θ²/24 小さい。平面リング 500 周のスピン角の保存値 0.8794 rad に対し v2 は 1.1516 rad)</td>
+<td>B83</td>
+</tr>
+<tr>
+<td>sprot の縦磁場 bsi (SOL 領域と UND)</td>
+<td>∫B∥dl/(Bρ) = [(bz pz + Bx px + By py)·al/pz + ψ]/(1+δ) を運動量の向きに置く</td>
+<td>bz = bz0/pzm + bsi を z 軸の向きに足す</td>
+<td>B81</td>
+</tr>
+<tr>
+<td>BEND の本体の運動量の向きの磁場 B∥</td>
+<td>(ψ_終 − ψ_始)/(1+δ) を足す</td>
+<td>端の ψ だけ</td>
+<td>B136・B137・B165</td>
+</tr>
+<tr>
+<td>QUAD・MULT の本体の B∥</td>
+<td>刻みごとに Δψ/(1+δ) を足す (追跡 <code>p.bpadd</code>、Emittance[] <code>st.bpot</code>)</td>
+<td>端の ψ だけ (ndiv=1 の四極は入口の +ψ を出口の −ψ が上書き)</td>
+<td>B230・B231</td>
+</tr>
+<tr>
+<td>端の ψ の運動量の規格化</td>
+<td>(1+δ) で割る</td>
+<td>p0 規格化のまま</td>
+<td>B242</td>
+</tr>
+<tr>
+<td>追跡の BEND のスピンの刻み</td>
+<td>POL ON の追跡は 1 刻みの偏向角 5e-3 rad 以下</td>
+<td>放射の刻み</td>
+<td>B235</td>
+</tr>
+<tr>
+<td>Emittance[]・EMIT の POL の量 (傾いた・ずれたソレノイド)</td>
+<td>B⊥ と B∥ を運動量の向きに分けて足す。向きの変化の大きさを sin θ でなく θ に</td>
+<td>縦磁場を z 軸の向きに足す</td>
+<td>B130</td>
+</tr>
+<tr>
+<td>SOL 領域内の端の縦磁場の積分 ψ・QUAD の刻み</td>
+<td>ψ は DISFRIN=0 のときだけ。POL のとき QUAD を bz·al/ndiv ≤ 0.02 に刻む。四極の本体は Δψ/(1+δ) を足す (追跡 <code>p.bpar</code>、Emittance[] <code>solemit._quad_trk</code>)</td>
+<td>ψ が DISFRIN に関係なく入る。QUAD の刻み bz·al/ndiv ≈ 0.2</td>
+<td>B146・B234</td>
+</tr>
+<tr>
+<td>SOL 領域内の DRIFT のスピン・放射の刻み</td>
+<td>ndiv = 1 + int(</td>
+<td>bz·al</td>
+<td>/0.02)</td>
+</tr>
+<tr>
+<td>SOL 領域内の CAVI のスピン (追跡)</td>
+<td>放射・スピンの刻みに通す。TRPT の加速 + POL は <code>sol_mult_full</code> に TRPT を渡して対応</td>
+<td>歳差しない。SOL 内の加速 (POL + TRPT) は明示のエラー</td>
+<td>B131・B238</td>
+</tr>
+<tr>
+<td>tsolqur の縦磁場と放射の基準 (SOL 領域内の四極、RAD)</td>
+<td>スライスごとに bz·aln/(1+δ)。放射の基準は力学的運動量</td>
+<td>bsi を最初・最後のスライスは半分で上書き。基準 pxr0 が正準運動量</td>
+<td>B82</td>
+</tr>
+<tr>
+<td>tsolqur (RAD、SOL 内の四極) の bzp</td>
+<td>粒子ごとの BZ/(1+δ)</td>
+<td>最後の粒子の bzp を全粒子に使う</td>
+<td>B08</td>
+</tr>
+<tr>
+<td>tsolqum (放射なしの MULT) の z の dv の項</td>
+<td>tsolqu と同じ −dv·aln0</td>
+<td>−0.25·(ap−dv)·aln0</td>
+<td>B14</td>
+</tr>
+<tr>
+<td>SOL 領域内の DRIFT・QUAD・MULT の光子 (RAD + FLUC + PHOTONS)</td>
+<td>DRIFT・QUAD・MULT (ANGLE=0) で軌道上の位置に記録</td>
+<td>領域内の QUAD は記録しない (MULT・DRIFT は領域の始点または要素の範囲)</td>
+<td>B150</td>
+</tr>
+<tr>
+<td>SOL の trots の z の DZ</td>
+<td>入口・出口とも (1 − dv) (k64 は SOL のずれ・回転が未対応)</td>
+<td>入口は DZ、出口は DZ·(1 − dv)</td>
+<td>B86</td>
+</tr>
+<tr>
+<td>SOL 領域内の BEND・MULT・CAVI・APERT</td>
+<td>BEND = 直線の座標のままの一様な双極磁場、MULT = tmulti1、CAVI = tmultiacc を bz つきで。領域内の BEND・MULT は bz·L/ndiv ≤ 0.02 に刻む。APERT で落ちる</td>
+<td>gs が領域内の BEND の偏向をほぼ無視。k64 は NotImplementedError。放射 (tdrift) は 1 刻みの弦から損失を出し小さく出る</td>
+<td>B69・B80</td>
+</tr>
+<tr>
+<td>SOL 領域内の想定外の要素</td>
+<td><code>SolRegionError</code> (長さ 0 の SEXT なども通さない)</td>
+<td>gs は SIGSEGV (k64 は NotImplementedError。L=0 は素通し)</td>
+<td>B35</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-追跡要素">3. 追跡・要素</h2>
+<table>
+<thead>
+<tr>
+<th>機能・動作</th>
+<th>v2 の動作</th>
+<th>k64 の動作</th>
+<th>根拠 (B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tdusrn の NaN の anp</td>
+<td>NaN・±Inf なら光子を出さず乱数は 1 個 (有限の anp は K64 と同じ乱数列)</td>
+<td>npmax = 10000 回まわり乱数を 20001 個引く</td>
+<td>B10</td>
+</tr>
+<tr>
+<td>セッション最初の TrackParticles の最初の tapert</td>
+<td>最初の tapert で落ちる (座標は 3·LOSSAMPL に頭打ち)</td>
+<td>l_track = 0 で LOSSAMPL の外の粒子が落ちない</td>
+<td>B33</td>
+</tr>
+<tr>
+<td>UND の磁場</td>
+<td><code>FBX</code>・<code>FBY</code> [T] を受ける (追跡・CALC・Emittance[]・EMIT。RAD で放射も)。磁場なしでも UND は長さ L のドリフトとして光学に入る。磁場つきカーネルは dpds を 1 回だけ掛ける</td>
+<td>磁場のキーワードが無くドリフト。陰的刻みの右辺で dpds を二重に掛け収束力が消える。FBX は NotImplementedError、光学は恒等</td>
+<td>B37・B78</td>
+</tr>
+<tr>
+<td>PHSROT</td>
+<td>意図された写像 M = N·Rot(2πPX, 2πPY, 2πPZ)·(1−D)·N⁻¹ + 拡散 (RAD・FLUC)。PX・PY・PZ を指定できる</td>
+<td>行列がすべて 0 で粒子の座標が 0 になる。追跡は NotImplementedError、光学は恒等</td>
+<td>B38・B79</td>
+</tr>
+<tr>
+<td>DELCOR</td>
+<td>MARK・CAVI も DX・DY に他の磁石と同じ符号で入れる。cv(n) を対称に置く。DX の rms = delx、DY の rms = dely</td>
+<td>MARK には DETR・DPX、CAVI には HARM・PHI に書く。corlength≠0 は cv(n) 未設定、規格化が複素 c の絶対値の 2 乗平均で DX の rms が delx/√2</td>
+<td>B40・B62・B99</td>
+</tr>
+<tr>
+<td>RADLIGHT の軌道</td>
+<td>横の軸を幾何から取り、BEND は円弧で進め中も 1/γ の角度あたり <code>RADLIGHTDIV</code> 点 (既定 16) 記録。曲げのある MULT は出口だけ、CAVI も記録</td>
+<td>横方向の座標が入らず、BEND で向きが変わらず、BEND の中を記録しない</td>
+<td>B65</td>
+</tr>
+<tr>
+<td>AUTOPHI</td>
+<td>位相の基準 = 設計軌道の到着時刻。追跡 (領域の内外)・CALC (TRPT)・Emittance[] に実装</td>
+<td>TRPT でないとき phis = phic で dphis = 0。k64 は NotImplementedError</td>
+<td>B85</td>
+</tr>
+<tr>
+<td>MEASURE の初期分布 (ttinit)</td>
+<td>JDX JDPX JDY JDPY (34..37) を読む。QUIET は分布と同じ写像で求めた重心に合わせる。z の分布を作る (<code>ttinit(b41=True, center_fix=False, wake=True)</code> で K64 の動作)</td>
+<td>軌道の揺らぎを MARK の添字 26..29 から読む。QUIET の基準が分布の作り方と合わない。TWAKE/LWAKE ON で全粒子 z=0。k64 は MEASURE を無視</td>
+<td>B41・B87・B88</td>
+</tr>
+<tr>
+<td>MEASURE・TRCOD・LOGMEASURE・MAIN の <code>TRACK TURNS=-1</code></td>
+<td>K64 のソースの意図どおりに動く。MEASURE の間だけ TRPT を ON にして戻す。追跡を通す (種を戻す)。gs との比較は無い</td>
+<td>MEASURE は無出力、TRCOD は SIGSEGV、MAIN の TRACK は落ちる (gs)。k64 は MEASURE・TRCOD を未対応 (無視)、先頭の位置だけ (種を戻さない)、TURNS=-1 は 1 周のリングの追跡</td>
+<td>B42</td>
+</tr>
+<tr>
+<td>TRCOD の FIXCOD・MVCOD・STNCOD・ALIGN、ORBITJITTER、PUTMEASURE・GETMEASURE</td>
+<td>実装 (基準は REFERENCE と同じ参照光学。<code>Twiss["RDX"]</code>・<code>Twiss["DDX"]</code> で読む)。gs との比較は無い</td>
+<td>K64 の FFS からは基準を読めない。k64 は語として認識しない / 未対応</td>
+<td>B100〜B105</td>
+</tr>
+<tr>
+<td>BEAMBEAM の傾き回転</td>
+<td>(cos t, sin t) の回転</td>
+<td>cost = sin(傾き角)、sint = 傾き角 (座標が潰れる)</td>
+<td>B34</td>
+</tr>
+<tr>
+<td>K1≠0 の BEND の追跡の端 (tbendi)</td>
+<td><code>DISFRIN=0</code> かつ端の角≠0 で CALC と同じ厳密な tbedge</td>
+<td>薄い端の写像 (CALC と x-px の行列が 1.1e-5 違う)</td>
+<td>B117</td>
+</tr>
+<tr>
+<td>K1≠0 の BEND の端の模型</td>
+<td>既定は <code>radial</code>。<code>compat.set_bend_k1_edge('face')</code> または <code>PYSAD_BEND_K1_EDGE=face</code> で、四極も端面から始まる硬い端の磁石 (<code>face</code>) を選べる</td>
+<td>常に <code>radial</code> (設定しても <code>radial</code>)</td>
+<td>(B 番号なし。K64 のバグではなく v2 の選択肢。<code>pysad/compat.py</code> の記述による)</td>
+</tr>
+<tr>
+<td><code>DynamicApertureSurvey</code> の <code>ExpandElementValues</code> の既定</td>
+<td>False (補正磁石の成分を消さない。<code>-&gt;True</code> で gs と同じ)</td>
+<td>True (gs と同じ。成分ごとの K0 などを代表の値に揃える)</td>
+<td>B201</td>
+</tr>
+<tr>
+<td>PSPAC (SPCH 要素)・SPAC</td>
+<td>バンチの静止系の 3 次元ポアソン方程式 (円筒の壁は像の電荷)、2 次 B スプライン。<code>PSPACNZ&lt;4</code> はバンチに合わせた 64 ノードを自動で張る。粒子数によらず走る。粗いメッシュの警告を出す</td>
+<td>PSPAC は K64 の形状関数 (<code>spch_k64.py</code>)。SPAC・WSPAC は追跡に入れない。K64 の誤りは力が 1/γ 倍に弱い、px を二重に (1+δ) で割る、整数の割り算のメッシュ、<code>PSPACNZ=1</code> で gs が SIGSEGV、np が少ないと SIGSEGV・NaN</td>
+<td>B89〜B98</td>
+</tr>
+<tr>
+<td>MULT の <code>RADIUS</code> の空間電荷</td>
+<td>ANGLE=0・VOLT=0・SOL 領域の外の MULT に入れる</td>
+<td>spkick の呼び出しの引数が合わない。最後の回だけ長さが半分</td>
+<td>B91</td>
+</tr>
+<tr>
+<td>空洞の wake の重み (tcav.f・tmulti.f)</td>
+<td>台形の重み fw0·(ws(n) + ws(n−1))/2 (合計 1)。領域の外の空洞・RF つき MULT も</td>
+<td>空洞が 2 つ以上に分割されると蹴りの合計が (1.5n − 0.5)/n 倍</td>
+<td>B84</td>
+</tr>
+<tr>
+<td>旧式の <code>WAKE</code> コマンド</td>
+<td><code>WAKE L 要素 s1 w1 … ENDWAKE</code> (横は <code>T</code>) を WakeFunction の表として登録 (CAVI だけ)</td>
+<td>配布に無い WAKECOMMAND.n を読もうとして失敗</td>
+<td>B66</td>
+</tr>
+<tr>
+<td>CSRSetupOY の戻り</td>
+<td>zj は位置、dpj は運動量。点が無ければ失敗 (CSR::irreg)</td>
+<td>dpjn が zjn と同じ記憶域 (zj に運動量が入り dpj は 0)。点が無いと i1 が未初期化</td>
+<td>B59</td>
+</tr>
+<tr>
+<td>Touschek のバンチ内の δ の分布 (<code>BunchDelta</code>・<code>BunchQs</code>)</td>
+<td>既定で入れる (<code>-&gt;False</code> で切る)</td>
+<td>入れない (δ_old = 0)</td>
+<td>B200</td>
+</tr>
+<tr>
+<td><code>TouschekLifetime[INF, INF, nz]</code>・<code>TouschekLifetimeLMA[]</code></td>
+<td>Piwinski 型の式 (<code>touschek.touschek_piwinski</code>) が既定。<code>Formula-&gt;"K64"</code> で K64 の表。K64 の式とは結合 1% で +0.1〜+6%、10% で +1〜+14%、丸いビームで −14〜+21% 違う</td>
+<td>K64 の式 (<code>touckf</code>) の表。<code>TouschekTable</code> (EMIT の報告・横の振幅の受容) は両モードで K64 のまま</td>
+<td>B162</td>
+</tr>
+</tbody>
+</table>
+<h2 id="4-特殊関数数値組込関数">4. 特殊関数・数値・組込関数</h2>
+<p>K64 の誤りを v2 が直す。k64 は gs の値を保つ。ただし gs が真値を返すのに pysad が誤っていた点は k64 も直してある。</p>
+<table>
+<thead>
+<tr>
+<th>機能・動作</th>
+<th>v2 の動作</th>
+<th>k64 の動作</th>
+<th>根拠 (B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>InverseErf</code>・<code>InverseErfc</code></td>
+<td>scipy の erfinv。<code>InverseErfc</code> は小さい z で桁落ちしない erfcinv。<code>FitGaussian</code> も真の InverseErf を使う</td>
+<td><code>InverseErf[.3]</code> = .272462711811 (Newton の係数が sqrt(π/2)、相対 1e-8 の誤差)</td>
+<td>B47</td>
+</tr>
+<tr>
+<td><code>PolynomialFit</code> (x の平均が 0)</td>
+<td>正しい係数</td>
+<td><code>xl=1</code> のまま二項係数の和を取り係数が壊れる (平均が 0 でないデータは両モード同じ)</td>
+<td>B18</td>
+</tr>
+<tr>
+<td>複素初期値の <code>FindRoot</code></td>
+<td>複素の Newton 法</td>
+<td>壊れた値。k64 は TypeError</td>
+<td>B61</td>
+</tr>
+<tr>
+<td><code>ArcCosh[x]</code> (</td>
+<td>x</td>
+<td>&lt;1 の符号)・<code>ArcTanh[x]</code> (</td>
+<td>x</td>
+</tr>
+<tr>
+<td>奇数乗のオーバーフローの符号・<code>Floor[Infinity]</code>・<code>Mod[Infinity,2]</code>・複素数の <code>Round</code>/<code>Floor</code>・<code>Sign</code>・<code>Exp</code> のオーバーフロー</td>
+<td>修正</td>
+<td>修正 (gs に合わせた。両モード同じ)</td>
+<td>B183</td>
+</tr>
+<tr>
+<td><code>Round</code> の半整数、<code>Mod</code> の桁落ち</td>
+<td>半整数は偶数へ丸める (台本の結果が変わる)。正確な剰余</td>
+<td>0 から遠い方へ丸める。桁落ちのある剰余</td>
+<td>B184</td>
+</tr>
+<tr>
+<td>x&lt;0 の Bessel・負/複素の Shi・Chi・li・E_n (z&lt;0)・2F1 (z&gt;1)</td>
+<td>複素数の真値</td>
+<td>gs が真値を返す BesselJ/I/K・Chi・li・E_n・2F1 は k64 も真値に直した。gs が NaN の <code>BesselY[0,-1.5]</code> (x&lt;0 の BesselY) は K64 のまま (B185)</td>
+<td>B185〜B189</td>
+</tr>
+<tr>
+<td>複素の 1F1・不完全ガンマ・ProductLog・Gamma[a,z]・LerchPhi・PolyLog[−n,z]・Binomial[−5,−2]</td>
+<td>真値</td>
+<td>真値 (gs が真値なので k64 も直した)</td>
+<td>B190〜B196</td>
+</tr>
+<tr>
+<td>HermiteH の複素・LegendreP[ν,m,x]・U の大きい z・Li2 の小さい z・HarmonicNumber の小さい x・Binomial[3.5,−1]</td>
+<td>真値</td>
+<td>gs が誤り・NaN の点は K64 のまま。点は、<code>HermiteH[3,1+I]</code> (gs は NaN)・<code>LegendreP[2.5,1,.3]</code> と <code>LegendreP[3.5,2,.3]</code> (gs は 0。B192)、<code>HypergeometricU[2.,2.5,30.]</code> (gs は .001111、真値 .0010766。B191)、<code>PolyLog[2,1e-10]</code> (相対 2e-4)・<code>HarmonicNumber[1e-10]</code> (相対 4e-6)・<code>Binomial[3.5,-1.]</code> (gs は .2222、真値 0。B196)</td>
+<td>B191・B192・B196</td>
+</tr>
+<tr>
+<td><code>Insert</code>・<code>StringInsert</code> の負の位置</td>
+<td>Mathematica (末尾)</td>
+<td>gs (1 つずれる)</td>
+<td>B197</td>
+</tr>
+<tr>
+<td><code>Table</code>・<code>Do</code>・<code>Sum</code>・<code>Product</code> の <code>{i,{a,b,c}}</code>、<code>Take[l,All]</code>・<code>Drop[l,All]</code></td>
+<td>受ける</td>
+<td>gs と同じエラー</td>
+<td>B198</td>
+</tr>
+<tr>
+<td>決まらない条件の <code>If</code>/<code>And</code>/<code>Or</code>/<code>Equal</code>、虚部 0 の複素数、<code>Inner</code>・<code>MapIndexed</code> のレベル、<code>StringTake[s,0]</code></td>
+<td>決まらない比較は式のまま (<code>x==x</code> は 1)。虚部 0 の複素数は実数</td>
+<td>gs に合わせて修正済み (両モード同じ)。<code>x==x</code> は式のまま</td>
+<td>B199</td>
+</tr>
+<tr>
+<td>大きい引数の特殊関数ほか (<code>Hypergeometric2F1</code>・<code>BesselJ</code> の打ち切り、<code>ExpIntegralEi</code>、<code>HermiteH</code>・<code>LegendreP</code>・<code>Binomial[-3,2]</code>、<code>HypergeometricU</code>・<code>BesselY</code>・<code>BesselK</code>・<code>BesselJZero</code>、<code>BesselJ/K/Y</code>・<code>FresnelS</code>・<code>AiryAi</code>、<code>PolyLog</code>)</td>
+<td>真値</td>
+<td>真値 (両モードで直してある。モードで変わらない)</td>
+<td>B43〜B46・B53・B54</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-スクリプトffsパッケージ">5. スクリプト・FFS・パッケージ</h2>
+<table>
+<thead>
+<tr>
+<th>機能・動作</th>
+<th>v2 の動作</th>
+<th>k64 の動作</th>
+<th>根拠 (B)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>For[ini,cond,incr,body]</code></td>
+<td>本体を実行 (Break・Continue も効く)。3 引数は本体なしのループ</td>
+<td>本体を実行せず incr だけ繰り返す (gs と同じ)</td>
+<td>B71</td>
+</tr>
+<tr>
+<td><code>Union[…, SameTest-&gt;f]</code>・<code>WriteBeamLine[…, Name-&gt;"L2"]</code></td>
+<td>真値 (<code>{1,3,5}</code>)・文字列の Name も受ける</td>
+<td>先頭の要素だけを返す・<code>Insufficient number of Names</code></td>
+<td>B121・B122</td>
+</tr>
+<tr>
+<td>MOMENTUM の既定</td>
+<td>既定は同じ 30 GeV。MOMENTUM を設定しないまま運動量を使う計算に入ると 1 度だけ警告</td>
+<td>警告なし</td>
+<td>B67</td>
+</tr>
+<tr>
+<td>文法 <code>45DEG</code>・<code>1+</code></td>
+<td><code>45DEG</code> は受ける、<code>1+</code> は構文エラー</td>
+<td><code>45DEG</code> は構文エラー、<code>1+</code> は値 1 (gs と同じ)</td>
+<td>B156</td>
+</tr>
+<tr>
+<td>実数の <code>a/b</code></td>
+<td>IEEE の <code>a/b</code></td>
+<td><code>a*(1/b)</code> (gs: <code>Log[100]/Log[10]</code> = 1.9999999999999998)</td>
+<td>(B 番号なし。K64 の演算の仕様。<code>pysad/sadscript.py</code> の記述による)</td>
+</tr>
+<tr>
+<td>FitFunction の行</td>
+<td>等式の条件</td>
+<td>不等式型 (gs の <code>tfsolv</code> が範囲外の添字を読む結果)</td>
+<td>(B 番号なし。<code>pysad/match6.py</code> の記述による)</td>
+</tr>
+<tr>
+<td><code>CorrectOrbit</code> の <code>Solver-&gt;{"Micado",n}</code></td>
+<td>選んだ nx 本だけを解く</td>
+<td>全補正量の最小二乗の先頭 nx 個を使い、補正が悪化する</td>
+<td>B129</td>
+</tr>
+</tbody>
+</table>
+<h2 id="6-確認状況">6. 確認状況</h2>
+<ul>
+<li>「根拠」に (B 番号なし) と書いた行は、<a href="30_sad_bug_report.html"><code>30_sad_bug_report.md</code></a> に対応する B 番号が無いことを確認した (K64 のバグ目録の対象ではなく、pysad の既定の選択や K64 の演算の仕様)。ただし、WSPAC の追跡のビーム行列の行は B149 に対応する。</li>
+<li>数学関数の点ごとの k64 の値 (gs が NaN・誤りの点) は §4 に書いた (B185〜B196 を照合)。表にない点は、目録の B185〜B196 の各行を見る。</li>
+<li>要確認: B144 の k64 の CALC が K64 を再現していない原因は未調査 (目録も未調査と記す)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

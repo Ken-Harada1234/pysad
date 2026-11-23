@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>elem_CAVI (高周波空洞)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: elem_CAVI.md</div>
+<h1 id="elem_cavi-高周波空洞">elem_CAVI (高周波空洞)</h1>
+<p>種別: elem。フォルダ: 01_lattice_elements。ラティスは <code>FODO_ring.sad</code> と同じ光学 (24 セル、周長 105.6 m、3 GeV) に <code>CAVI RF</code> を 1 台 (定義はファイル内: <code>HARM=176</code>)。フラグ: CELL、RFSW (FFS 進入時に ON)、RAD は OFF (Emittance[] が放射損失 U0 を内部で計算する)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>CAVI RF = (L=0 VOLT=1.5E6 HARM=176 PHI=0)</code>: <code>VOLT</code> は電圧 [V]、<code>HARM</code> は周波数を周回周波数の整数倍で指定 (代わりに <code>FREQ</code> [Hz] でも書ける)、<code>PHI</code> は位相。
+RF は <code>CALC</code> の Twiss には効かない (リングではドリフト扱い)。<strong><code>Emittance[]</code> でシンクロトロンチューンとして現れる。</strong>
+電圧を 1.5 → 3 → 6 MV と上げ、$\nu_s$ が式どおり変わることを見る。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>CAVI RF = (L=0 VOLT=1.5E6 HARM=176 PHI=0);
+USE RING; CELL; CALC;   TYPE RF;
+em = Emittance[];   Print[&quot;Tunes (x,y,s) = &quot;, Tunes/.em];
+RF VOLT 3.0E6;   CALC;   em = Emittance[];   ...      RF VOLT 6.0E6;  ...    RF PHI 0.5;  ...
+</code></pre>
+<p><code>RF VOLT 3.0E6;</code> は FFS から要素の値を変える。<code>Tunes/.em</code> で Emittance[] の戻り (規則のリスト) から値を取り出す。</p>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>Tunes (x,y,s)</code> は小数部のチューン (x, y は負の符号付きの小数部。<code>-0.3037</code> は 6.6963 の 1 に対する補数)、3 番目が $\nu_s$ (SAD は符号付きで返す)。
+<code>Stable</code>=1 は安定。<code>U0</code> は 1 周あたりの放射損失 [eV]、<code>Vc</code> は RF 電圧。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>1 周の放射損失 $U_0$ を差し引いた同期位相 $\sin\phi_s=U_0/V$ で、
+$$\nu_s=\sqrt{\frac{h\,\alpha_c\,eV\cos\phi_s}{2\pi E}},\qquad h=176,\ E=3\ \text{GeV},\ U_0=1563265.7\ \text{eV}$$
+(α_c は <code>MomentumCompaction</code>。この値は RF 電圧で少し変わる: 3 MV で 0.022169、6 MV で 0.022211。同期粒子の軌道が平衡位置にずれるため。)</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式の値</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>νs (V=3 MV)</td>
+<td>0.0230219</td>
+<td>0.023022</td>
+<td>0.023022</td>
+</tr>
+<tr>
+<td>νs (V=6 MV)</td>
+<td>0.0346604</td>
+<td>0.03466</td>
+<td>0.03466</td>
+</tr>
+<tr>
+<td>νs (V=1.5 MV &lt; U0)</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>1.5 MV は $U_0$=1.56 MV より小さい</strong>ので同期位相が存在せず (<code>Vc</code> &lt; <code>U0</code>)、$\nu_s$=0。</li>
+<li><code>PHI</code> を 0.5 にしても結果が変わらない (最後の行): SAD は放射損失とつり合う平衡位相を自分で決める (SADHelp の <code>DPHI</code> の項の ts)。</li>
+</ul>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>v2 と k64 の違い</strong>: <code>.pysad.txt</code> は既定の v2 モードの出力。v2 は <code>Emittance[]</code>・EMIT・追跡の Jx の端の項 (B75) と <code>MomentumCompaction</code> (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は <code>PYSAD_COMPAT=k64</code> での結果 (2026-11-17 に確認)。gs と同じ値が要るときは <code>PYSAD_COMPAT=k64</code> を付ける。</p>
+<p>チューン・U0・α は全桁一致。<strong><code>TYPE RF</code> の表示だけ違う</strong>: gs は <code>HARM =176</code>、pysad は <code>FREQ =499654096.67</code> (HARM を周波数に直した値で表示)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>RF のあるリングでの Twiss は RF の影響を受けない (SAD の仕様)。6 次元の Twiss は CALC6D (flag_CALC4D_CALC6D) を参照。</li>
+<li>空洞のフリンジ (<code>FRINGE</code>、<code>DISFRIN</code>)、<code>V1</code>/<code>V20</code> (横方向の電圧勾配)、<code>DX</code>/<code>DY</code>、<code>RANVOLT</code> は未確認。</li>
+<li>追跡での加速・減速は 05_tracking の例で扱う。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

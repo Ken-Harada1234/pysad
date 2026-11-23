@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>flag RADTAPER</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#ラティスについて">ラティスについて</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方-gs">結果の読み方 (gs)</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: flag_RADTAPER.md</div>
+<h1 id="flag-radtaper">flag RADTAPER</h1>
+<p>種別: フラグ / フォルダ: 04_emittance_radiation / ラティス: <code>00_lattice/FODO_ring_V4MV.sad</code> (FODO_ring と同じ磁石列、RF 電圧だけ 4 MV。QF から始まる <code>RINGQ</code> を使う)。3 GeV、周長 105.6 m、24 セル、RF 500 MHz / フラグ: RFSW, RAD, RADCOD, RADTAPER。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>RADTAPER を立てると、閉軌道の局所運動量 (DDP) に合わせて、磁石 (ソレノイドを除く) の強さがスケールされる。RADTAPER の前後で、閉軌道・$U_0$・チューンがどう変わるかを <code>Emittance[]</code> で見る。</p>
+<h2 id="ラティスについて">ラティスについて</h2>
+<ul>
+<li><code>FODO_ring.sad</code> の RF は 1.5 MV で、エネルギー損失 $U_0=1.563$ MV より小さく、バケットがない (同期位置 dz=150 mm、$\nu_s$ 虚数)。そこで RF 電圧を 4 MV にした <code>FODO_ring_V4MV.sad</code> を追加した。</li>
+<li>RADINT は先頭の要素が SEXT (L=0.2, K2=0) だと <code>DL=0. IN TCAL</code> で I2・I3・I5 が NaN になる (gs も pysad も同じ)。そのため先頭が QF の <code>RINGQ = (ORIGIN RF 24*CELLQ)</code> を使う (磁石の並びは同じ、位相だけ違う)。</li>
+<li>SAD の BEND の <code>E1</code>, <code>E2</code> は ANGLE に対する比なので、端の角は $\epsilon=E1\cdot\text{ANGLE}=0.0343$ rad (θ/2 ではない)。四極の <code>K1</code> は積分強度 (k=K1/L)。</li>
+</ul>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>RFSW; RAD; RADCOD;
+e0 = Emittance[];            (* RADTAPER なし *)
+RADTAPER;
+e1 = Emittance[];            (* RADTAPER あり *)
+Print[Twiss[&quot;DDP&quot;, {1, 60, 121, 243}]];
+(* 原点から 2 周 TrackParticles *)
+</code></pre>
+<h2 id="結果の読み方-gs">結果の読み方 (gs)</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>RADTAPER なし</th>
+<th>RADTAPER あり</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OrbitAtExit x</td>
+<td>-7.887E-5</td>
+<td>-2.198E-7</td>
+</tr>
+<tr>
+<td>OrbitAtExit δ</td>
+<td>-2.624E-4</td>
+<td>3.5126E-9</td>
+</tr>
+<tr>
+<td>$U_0$ [eV]</td>
+<td>1563263.2</td>
+<td>1564904.0</td>
+</tr>
+<tr>
+<td>$\epsilon_x$</td>
+<td>1.7358E-7</td>
+<td>1.7372E-7</td>
+</tr>
+<tr>
+<td>Tunes</td>
+<td>-.303702, -.093902, -.027625</td>
+<td>-.303633, -.094058, -.027619</td>
+</tr>
+</tbody>
+</table>
+<p>DDP (閉軌道の運動量偏差、一周で $U_0$ ぶんだけ下がり RF で戻る) は {0, 3.9113E-4, 2.6068E-4, 3.5126E-9} (要素番号 1, 60, 121, 243)。RADTAPER なしの閉軌道は、損失エネルギーでずれた位置 (x=-79 μm、δ=-2.6E-4) を通り、RADTAPER ありでは磁石が運動量に追従するので軌道が原点近くに戻る (x=-0.2 μm)。</p>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>エネルギー損失の比 $U_0/E_0=5.2\times10^{-4}$ に対し、一周の途中の運動量偏差は最大 $\delta\approx4\times10^{-4}$ (DDP の値)。磁石の強さを局所運動量に合わせてスケールするので、軌道のずれ (x=-79 μm) が 0.2 μm に減り、$U_0$ は 1641 eV (0.1%) 増え、チューンが $10^{-4}$ の桁で動く。$\Delta\nu\approx\xi\,\delta_{\rm local}$ (色収差 $\xi_x=-2.7$、$\delta\sim3\times10^{-4}$ で $10^{-3}$ の桁) より小さいのは、磁石が追従して補正されるため、と推定する (式の値としての照合は未実施)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p><strong>○ 一致 (k64 モード)。v2 の既定では εx・εz が gs と 2.4%・1% 違う (意図した差)。</strong> 2026-11-17 の実行。RADTAPER は v2 が実装している。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>gs</th>
+<th>pysad v2 (既定)</th>
+<th>pysad k64 (<code>PYSAD_COMPAT=k64</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RADTAPER なし OrbitAtExit x</td>
+<td>-7.887E-5</td>
+<td>-7.887E-5</td>
+<td>-7.887E-5</td>
+</tr>
+<tr>
+<td>RADTAPER あり OrbitAtExit x</td>
+<td>-2.198E-7</td>
+<td>-2.173E-7</td>
+<td>-2.173E-7</td>
+</tr>
+<tr>
+<td>$U_0$ (なし / あり) [eV]</td>
+<td>1563263.2 / 1564904.0</td>
+<td>同じ</td>
+<td>同じ</td>
+</tr>
+<tr>
+<td>Tunes (あり)</td>
+<td>-.303633, -.094058, -.027619</td>
+<td>同じ</td>
+<td>同じ</td>
+</tr>
+<tr>
+<td>$\epsilon_x$ (なし / あり)</td>
+<td>1.7358E-7 / 1.7372E-7</td>
+<td><strong>1.7767E-7 / 1.7781E-7</strong></td>
+<td>1.7358E-7 / 1.7372E-7</td>
+</tr>
+<tr>
+<td>$\epsilon_z$ (なし / あり)</td>
+<td>1.9069E-5 / 1.9077E-5</td>
+<td><strong>1.8863E-5 / 1.8871E-5</strong></td>
+<td>1.9069E-5 / 1.9077E-5</td>
+</tr>
+<tr>
+<td>DDP (要素 1, 60, 121, 243)</td>
+<td>{0, 3.9113E-4, 2.6068E-4, 3.5126E-9}</td>
+<td>{0, 3.9112E-4, 2.6068E-4, -6E-20}</td>
+<td>同左 (9.5E-20)</td>
+</tr>
+<tr>
+<td>2 周後の x (RADTAPER あり)</td>
+<td>4.8092E-5</td>
+<td>4.8089E-5</td>
+<td>4.8090E-5</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>RADTAPER の効果 (軌道が原点近くに戻る、$U_0$ が 1641 eV 増える、チューンが $10^{-4}$ の桁で動く) は gs と同じに出る。$U_0$・チューンは 8 桁、DDP は 4 桁で一致する。</li>
+<li>軌道の x が gs と 1% (-2.198E-7 と -2.173E-7) 違うのは、gs の閉軌道の収束判定が緩いため (<code>CODCONV = 1e-4</code> にすると pysad は -2.17319735E-7 で、docs/28 に書いてある)。出口の δ・z の 1e-9 以下の値は収束の残りで、比較に使えない。</li>
+<li><strong>εx・εz の差は RADTAPER ではなく v2 の Jx の式による</strong>: RADTAPER なしの εx も 1.7358E-7 (gs) と 1.7767E-7 (v2) で違う。K64 の <code>Emittance[]</code> の Jx の端の項 (B75) を v2 は正しい式にしているため。k64 モードでは gs と 5 桁以上一致する。</li>
+</ul>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>gs の RADTAPER ありの <code>Twiss["DDP"]</code> を要素番号で引いている (名前 <code>QF.1</code> では 0 が返った)。</li>
+<li>追跡は 2 周だけ。gs・pysad とも RADTAPER あり (v2 の追跡の閉軌道は <code>Emittance[]</code> の閉軌道から 1 周で x が 4e-7 m 動く。K64 も同じ、docs/28)。</li>
+<li>運動量偏差が小さい (3 GeV、$U_0/E=5 imes10^{-4}$) ので効果は小さい。大きな損失のリングでの確認はしていない。CALC (4 次元の光学) の RADTAPER は K64 も pysad も未対応。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

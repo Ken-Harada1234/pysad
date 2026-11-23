@@ -10,7 +10,7 @@
   (C) 参考: 6 極を全部 0 にしたもの (v07_14 の光学。DDBA_05・DDBA_10 の光学)
 同じ光学 (v07_14) に6 極だけ載せ替えたものと、元の光学のままのもの (表の「光学」の列) を分ける。
 計算: resdrive.resonance_terms (1 次、δ の項。偏向磁石の 3 次の項込み)、rdt2nd.rdt4 (4 次、6 極の 2 次込み)、resdrive.adts(fourth='r3'、optics='calc')、
-resdrive.chromaticity_natural + 6 極 + 偏向磁石の δ の項、chromaticity_numeric (CALC、order 3)。単位は docs/49 と同じ (h は (2J)^{n/2} で規格化、ADTS は 1/(m rad))。
+resdrive.chromaticity_natural + 6 極 + 偏向磁石の δ の項、chromaticity_numeric (CALC、order 3)。単位は docs/25 と同じ (h は (2J)^{n/2} で規格化、ADTS は 1/(m rad))。
 """
 import argparse
 import glob

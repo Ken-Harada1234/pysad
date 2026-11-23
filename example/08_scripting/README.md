@@ -8,7 +8,7 @@ SADScript の関数・文法・クラス化・乱数の例。ラティスは使�
 | fn_Class | fn_Class (Class[], メンバー・メソッド・継承・コンストラクタ) | ○ |
 | fn_Do | fn_Do (Do, Break, Continue, Catch, Throw) | ○ |
 | fn_FixedPoint | fn_FixedPoint (FixedPoint, FixedPointList, Nest, NestList) | ○ |
-| fn_For | fn_For (For、本体を実行しない gs の癖) | △ (v2 は K64 のバグ B71 を直したので gs と違う。k64 モードは一致) |
+| fn_For | fn_For (For、本体を実行しない gs の癖) | △ (v2 は K64 のバグ B71 に合わせないので gs と違う。k64 モードは一致) |
 | fn_Function_Options_Return | fn_Function_Options_Return (オプション・既定値・Return・再帰) | ○ |
 | fn_Function_Pattern | fn_Function_Pattern (defining-functions, pattern) | ○ |
 | fn_Get_Needs_BeginPackage | fn_Get_Needs_BeginPackage (Get, BeginPackage, Begin, End, EndPackage, 文脈) | △ (`Names["Stat`*"]` だけ違う。k64 モードは一致) |
@@ -33,7 +33,11 @@ SADScript の関数・文法・クラス化・乱数の例。ラティスは使�
 | syntax_Semicolon_Compound | syntax_Semicolon_Compound (括弧・関数の中の ;) | ○ |
 | syntax_Semicolon_Toplevel | syntax_Semicolon_Toplevel (最上位の ;) | ○ |
 | var_Null_Out | var_Null_Out (Null, Out[n], %, `$Line`) | ○ |
+| FFS_VISIT_BYE | FFS_VISIT_BYE (VISIT で FitFunction・FitValue・ElementValues・OpticsProlog・OpticsEpilog を退避し、BYE で戻す。USE は 5 つとも消す) | ○ (k64 モード。v2 は gs と全行一致) |
+| syntax_context | syntax_context (`$Context`・`$ContextPath` への代入、WithContext、入れ子の文脈 ``A`B` ``) | ○ (k64 モード。文脈の記号は `` ` `` が `$ContextPath` に無いと `` `A` `` と表示する) |
+| syntax_package_context | syntax_package_context (BeginPackage・Begin の文脈。パッケージのファイルを書き出して Get で読む。パッケージの名前は ``Stat`名`` になり、大域の同名の変数と衝突しない) | gs の出力なし (v2 の機能。`.gs.txt` は無い) |
+| syntax_symbol_message | syntax_symbol_message (`Symbol["x"]` は x の値 (未定義なら記号)、`Message[f::tag, 値…]` は本文の `` `n` `` を値に置き換えて出す) | ○ (gs と全行一致) |
 
 ○一致 / △差あり (原因は各 .md) / ×gs 失敗 / ×pysad 未対応。
 
-見つけた差のうち、`Module` の字句スコープ、`Return` の範囲、`Switch`/`Which` の一致なし、`{1,2}=={1,3}`・`Thread`、`Out[n]`・`%`、`StringMatchQ`・8 進エスケープ、`Random[n,m]`・`SeedRandom` は 2026-11-17 に gs に合わせた。残る差は `For` (gs は本体を実行しない K64 の癖。pysad v2 は定義どおり実行、docs/21 B71。k64 モードは gs と同じ) と `BeginPackage`/`Begin` の `Names["Stat`*"]` (v2 は文脈の記号の一覧、gs は `{"Stat`"}`)。文脈そのものは v2 で対応した (2026-11-17 に再実行して gs と一致を確認)。乱数の列は一致した。
+次の項目は`Module` の字句スコープ、`Return` の範囲、`Switch`/`Which` の一致なし、`{1,2}=={1,3}`・`Thread`、`Out[n]`・`%`、`StringMatchQ`・8 進エスケープ、`Random[n,m]`・`SeedRandom` は gs と一致する (2026-11-17 確認)。残る差は `For` (gs は本体を実行しない K64 の癖。pysad v2 は定義どおり実行、docs/30 B71。k64 モードは gs と同じ) と `BeginPackage`/`Begin` の `Names["Stat`*"]` (v2 は文脈の記号の一覧、gs は `{"Stat`"}`)。文脈そのものは v2 が対応していて gs と一致する (2026-11-17 確認)。乱数の列は一致した。

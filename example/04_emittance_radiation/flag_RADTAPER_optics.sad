@@ -1,0 +1,35 @@
+! RADTAPER の閉軌道 (収束)、CALC6D の RADTAPER (v2)、CalculateOptics の TRPT の加速、加速区間の分散
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6);
+SEXT  SF = (L=0.2 K2=0) SD = (L=0.2 K2=0);
+BEND  B  = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+MARK  ORIGIN = () M0 = (BX=8 BY=3 AX=0.5 AY=-0.3 EX=0.1);
+CAVI RF = (L=0 VOLT=4.0E6 FREQ=5.0E8 PHI=0) CB = (L=0 VOLT=2E8 FREQ=1.3E9 PHI=1.2);
+LINE CELLQ = (QF D2 B D2 QD DS SD D1 SF DS);
+LINE RINGQ = (ORIGIN RF 24*CELLQ);
+LINE TL = (M0 D1 CB D1 QF D1 CB D1);
+FFS;
+USE RINGQ;
+CELL; CALC;
+$FORM = "14.10";
+RFSW; RAD; RADCOD;
+e0 = Emittance[];
+Print["no taper : orbit x = ", (OrbitAtExit/.e0)[[1]], "  U0 = ", EnergyLossU0/.e0];
+RADTAPER;
+e1 = Emittance[];
+Print["RADTAPER : orbit x = ", (OrbitAtExit/.e1)[[1]], "  z = ", (OrbitAtExit/.e1)[[5]], "  U0 = ", EnergyLossU0/.e1];
+Print["           (gs: x = -2.19771E-7 with the default CODCONV, -2.17320E-7 with CODCONV = 1E-4)"];
+Print["DDP along the ring : ", Twiss["DDP", {1, 60, 121}]];
+CALC6D; CALC;
+Print["CALC6D + RADTAPER  : DX(1) = ", Twiss["DX",1], "  DDP(60) = ", Twiss["DDP",60]];
+CALC4D; NORADTAPER; NORAD; NORADCOD;
+! 輸送路: 加速 (この例は電荷 +1 で PHI = 1.2 なので減速) の区間の光学
+USE TL; TRPT; INS; CALC;
+n = LINE["LENGTH"];
+Print["TRPT CALC : p/mc = ", LINE["GAMMABETA", {1, n}]];
+Print["            EX along the line = ", Twiss["EX", "*"]];
+t0 = Twiss[{"BX","EX"}, n];
+CalculateOptics[1, n, Twiss["*", 1], 0, 2];
+Print["CalculateOptics - CALC (BX, EX at the end) = ", Twiss[{"BX","EX"}, n] - t0];
+Exit;

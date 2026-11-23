@@ -1,0 +1,18 @@
+! NORFSW; RAD の Emittance[] と閉軌道のずれ (12 セル FODO、3 GeV、周長 45.6 m、QF に DX = 1e-4)。K64 の tcod は RFSW OFF で x px y py だけ閉じ δ・z は動かさない。
+! gs の εx = 2.70000647e-7、k64 モードは 2.70000645e-7 で一致。v2 は追跡の放射の式が違うので値が少し違う。
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1) D2 = (L=0.5);
+QUAD QF = (L=0.3 K1=0.7 DX=1e-4) QD = (L=0.3 K1=-0.6);
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.1308996938995747 E2=0.1308996938995747);
+CAVI RFC = (L=0 VOLT=3e6 HARM=64);
+MARK ST = ();
+LINE CELL1 = (QF D2 B D2 QD D1);
+LINE RING = (ST 12*CELL1 RFC);
+FFS;
+$FORM="14.10";
+USE RING; CELL; CALC;
+NORFSW; RAD; NOFLUC;
+e = Emittance[];
+Print["NORFSW ", Emittances/.e, Tunes/.e, DampingRate/.e];
+Print["COD ", Twiss["DX",1], Twiss["DDP",1], Twiss["DDP",20]];
+Exit;

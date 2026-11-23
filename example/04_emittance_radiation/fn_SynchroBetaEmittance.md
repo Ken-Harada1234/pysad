@@ -28,11 +28,11 @@ conv は正 (収束)。`Emittance[]` の $\epsilon_x=1.7358\times10^{-7}$ に対
 このリングは RF 空洞 (ORIGIN の直後) が分散のある場所 ($\eta_x=0.6256$ m、$\beta_x=6.43$ m、$\alpha_x=-2.51$ で $\mathcal H=0.443$ m) にある。空洞でエネルギーが変わると betatron 振幅が変わるため、通常の放射積分の $\epsilon_x=C_q\gamma^2I_5/(J_xI_2)$ (1.7e-7) には入らない励起が加わる。目安として $\mathcal H_{cav}\sigma_\delta^2=0.443\times(1.19\times10^{-3})^2=6.3\times10^{-7}$ m で、差 $1.34\times10^{-6}-1.7\times10^{-7}=1.2\times10^{-6}$ と同じ桁。ただし **この桁の一致だけで、係数の厳密な式の検算はしていない**。$\nu_s$ にほとんど依らない ($0.005\to0.025$ で ±0.4%) のも、この説明と矛盾しない。
 
 ## gs と pysad の比較
-**v2 の注記 (2026-11-17、v2.0.0 の再実行)**: `.pysad.txt` は既定の v2 モードの出力に作り直した。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を直したので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う (K64 のバグを直したため。`docs/47_v2_changes.md`)。以下の表と本文の「pysad」の値と「一致」の判定は、v1 と同じ `PYSAD_COMPAT=k64` での結果 (旧い出力と同じことを 2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
+**v2 と k64 の違い**: `.pysad.txt` は既定の v2 モードの出力。v2 は `Emittance[]`・EMIT・追跡の Jx の端の項 (B75) と `MomentumCompaction` (B77) を K64 のバグに依らず正しい式で計算するので、この例の pysad の値のうち εx (約 2.4% 大きい)・εz・減衰率の X と Z・σδ・バンチ長・α・バケット高さ・放射によるチューンシフトが gs と違う。以下の表と本文の「pysad」の値と「一致」の判定は `PYSAD_COMPAT=k64` での結果 (2026-11-17 に確認)。gs と同じ値が要るときは `PYSAD_COMPAT=k64` を付ける。
 
 ○ 一致。emitx は pysad も 1.3380E-6, 1.3285E-6, 1.3393E-6 (5 桁)、conv は 3.0718E-9 (gs 3.0706E-9) など。emity は両方 0 同然の雑音 (符号が違う: gs -1.57E-19、pysad +1.68E-19)。
 
 ## 未確認・限界
-- **結合のあるラティスでは gs が SIGSEGV で落ちる** (docs/03 §175 と docs/10 に記録がある。QT・ずれ入りの 8+4 セルのリングでの確認)。pysad も `ValueError: cannot convert float NaN to integer` で落ちる。この例は平面リングだけ。
+- **結合のあるラティスでは gs が SIGSEGV で落ちる** (docs/03 (SynchroBetaEmittance1 の項) と docs/27 に記録がある。QT・ずれ入りの 8+4 セルのリングでの確認)。pysad も `ValueError: cannot convert float NaN to integer` で落ちる。この例は平面リングだけ。
 - 不安定な $\nu_s$、`emiout`、RFSW の組み合わせは見ていない。
 - 7.7 倍の物理的な内訳は上の桁の推定だけで、確かめていない。

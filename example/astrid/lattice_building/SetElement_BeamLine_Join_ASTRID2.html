@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SetElement_BeamLine_Join_ASTRID2 (周期性のあるラティスの作り方: 6 極だけ全セル独立にする)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#物理解析式">物理・解析式</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: SetElement_BeamLine_Join_ASTRID2.md</div>
+<h1 id="setelement_beamline_join_astrid2-周期性のあるラティスの作り方-6-極だけ全セル独立にする">SetElement_BeamLine_Join_ASTRID2 (周期性のあるラティスの作り方: 6 極だけ全セル独立にする)</h1>
+<p>KEK の SAD チュートリアルの「SAD スクリプト上でラティスを定義する例」をもとにした例(<code>16*NCELL</code> のように作ったリングで、6 極だけ全セルで別の値にしたい。LINE を全部書き下さず、<code>SetElement</code>・<code>BeamLine</code>・<code>Join</code> で組む)。教材は別の 16 セルのリングだが、ここは ASTRID2 (0.58 GeV、周長 45.7044 m、6 セル、チューン 5.17999 / 2.14018) の要素で書き直した。ラティス: <code>lattice/ASTRID2_v01_01.sad</code> (<code>RING = (3*NCELL CAVI 3*NCELL)</code>)。フラグ: <code>RFSW RADCOD RAD COD</code> (<code>FLUC</code> は OFF)。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p><code>6*NCELL</code> のリングでは同じ要素 (SF・SD) を 6 回使うので、セルごとに K2 を変えられない。そこで6 極だけを <code>SetElement</code> でセルごとに別の名前の要素として作り (SDA01…SDB06、24 台)、6 極以外の部分を <code>BeamLine[...]</code> でくくり、<code>Join</code> でつないで 6 セルのリングを作る。元の <code>RING</code> と同じ光学になること (確認) と、1 つのセルの6 極だけを変えられること (応用) を見る。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>aa = {&quot;01&quot;,&quot;02&quot;,&quot;03&quot;,&quot;04&quot;,&quot;05&quot;,&quot;06&quot;};              ! セル番号の文字列 (名前の連結用)
+Do[ id = aa[j];
+    SetElement[&quot;SDA&quot;//id, &quot;SEXT&quot;, {&quot;L&quot;-&gt;lsd}, {&quot;K2&quot;-&gt;ksd}];   (* SDA01 ... : 要素を新しく作る *)
+    SetElement[&quot;SFA&quot;//id, &quot;SEXT&quot;, {&quot;L&quot;-&gt;lsf}, {&quot;K2&quot;-&gt;ksf}];   (* SFA, SFB, SDB も同様 *)
+,{j,1,6}];
+bl1 = BeamLine[MKS, D14837, PM, D0100, QF3, D0180, PH, PV, D0180, BH, D0190];   ! 6 極 (SDA) の手前まで
+bl2 = BeamLine[D0120, QF2, D0120];  bl3 = BeamLine[PM];  bl4 = BeamLine[D0120, QF2, D0120];
+bl5 = BeamLine[D0190, BH, D0180, PH, PV, D0180, QF3, D0100, PM, D14837, MKE];
+FFS[&quot;USE BeamLine[MKS];&quot;];  bl = ExtractBeamLine[];            ! 出発点: 要素 1 つの BeamLine
+Do[ id = aa[j];
+    bl = Join[bl, bl1]; bl = Join[bl, BeamLine[&quot;SDA&quot;//id]]; bl = Join[bl, bl2]; bl = Join[bl, BeamLine[&quot;SFA&quot;//id]];
+    bl = Join[bl, bl3]; bl = Join[bl, BeamLine[&quot;SFB&quot;//id]]; bl = Join[bl, bl4]; bl = Join[bl, BeamLine[&quot;SDB&quot;//id]];
+    bl = Join[bl, bl5];  If[j == 3, bl = Join[bl, BeamLine[CAVI]]];                ! 3 セルのあとに RF
+,{j,1,6}];
+FFS[&quot;USE Join[bl];&quot;];
+</code></pre>
+<ul>
+<li>1 セルの要素の並びは <code>NCELL</code> と同じ: <code>MKS D14837 PM D0100 QF3 D0180 HV D0180 BH D0190 SD D0120 QF2 D0120 SF PM SF D0120 QF2 D0120 SD D0190 BH D0180 HV D0180 QF3 D0100 PM D14837 MKE</code> (<code>HV = (PH PV)</code> はベンドの回転 0 と 90 度の 2 要素を <code>PH, PV</code> と並べた)。</li>
+<li><code>Join</code> でつないだ <code>BeamLine</code> を <code>USE Join[bl]</code> でラインとして使う。</li>
+<li><strong>名前の連結に <code>ToString[j]</code> や <code>"0"//id</code> を使うと、名前が <code>SFA0</code> に切れて全セルが同じ名前になった</strong> (gs・pysad とも。<code>SetElement</code> が前の要素を上書きし、<code>LINE["K2","SFA03"]</code> は空になって <code>Invalid set to LINE</code> で失敗した)。教材のように、文字列のリスト (<code>aa</code>) から取り出して連結すると、<code>SFA01</code>〜<code>SFA06</code> の別の名前になる。</li>
+<li>元の <code>RING</code> が 200 要素なのに、新しいリングは 201 要素なのは、先頭に <code>USE BeamLine[MKS]</code> の出発点の <code>MKS</code> が 1 つ余計に入るため (教材の <code>BeamLine[MKNS]</code> から始める作り方と同じ)。</li>
+</ul>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p><code>RING</code> と <code>NEWRING</code> で始まる行 (チューン、要素数、εx)。<code>xi (all same K2)</code> は全部同じ K2 のときのクロマティシティ (<code>DP0=±1e-4</code> の差分)。<code>formula:</code> と <code>SF of cell 3 -&gt; 0 : xi</code> は、セル 3 の SF 2 台 (SFA03・SFB03) の K2 を 0 にしたときの ξ の変化 (式と計算)。</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>元の RING</th>
+<th>組み直した NEWRING</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NX, NY</td>
+<td>5.179990, 2.140178</td>
+<td>5.179990, 2.140178 (小数 8 桁まで同じ)</td>
+</tr>
+<tr>
+<td>要素数</td>
+<td>200</td>
+<td>201</td>
+</tr>
+<tr>
+<td>εx [m]</td>
+<td>1.268037e-8</td>
+<td>1.268037e-8 (比 1.000000)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="物理解析式">物理・解析式</h2>
+<p>6 極 (薄肉) が与える色収差は
+$$\xi_x^{\rm sext}=+\frac1{4\pi}\sum_i K_{2,i}\,\eta_i\,\beta_{x,i},\qquad \xi_y^{\rm sext}=-\frac1{4\pi}\sum_i K_{2,i}\,\eta_i\,\beta_{y,i}$$
+($K_2$ は SAD の積分強度、$\eta$・$\beta$ は6 極の中点の値。符号は SAD の定義に合わせた。<code>mom_dep_ts_ASTRID2</code> の式と同じ。)
+セル 3 の SF 2 台を外すと、ξ はその 2 台の寄与分だけ変わる:</p>
+<table>
+<thead>
+<tr>
+<th>量</th>
+<th>式</th>
+<th>gs</th>
+<th>pysad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全部同じ K2 のときの $\xi_x$, $\xi_y$ (色収差補正済みで ~0)</td>
+<td></td>
+<td>-2.10e-4, -2.79e-4</td>
+<td>同じ</td>
+</tr>
+<tr>
+<td>SF(セル 3) を 0 にしたときの $\Delta\xi_x$</td>
+<td>-2.0649</td>
+<td>-2.0664 (= -2.0666 - (-0.0002))</td>
+<td>同じ</td>
+</tr>
+<tr>
+<td>同 $\Delta\xi_y$</td>
+<td>+2.9691</td>
+<td>+2.9692 (= 2.9689 - (-0.0003))</td>
+<td>同じ</td>
+</tr>
+</tbody>
+</table>
+<p>式と計算が 0.1 % 以内で一致する。つまり、6 極をセルごとに別の要素にして、1 つのセルだけ変えられることが確かめられた (SFA03 だけ 0 に、他の 5 つのセルの <code>LINE["K2","SFA*"]</code> は 8.68 のまま)。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>○ 一致 (表のすべての値が全桁一致)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>教材のリングは 16 セル (2 種類のセルを前半 10 / 後半 6 に使う特殊なリング) で、6 極は 5 種類 × 2 (反対向き) × 10 セル。ここは ASTRID2 の 6 セル (6 極 4 種類: SDA・SFA・SFB・SDB) に書き直した。教材の <code>-NCELLHA</code> (反転したライン) と <code>MULT</code> 要素への置換 (<code>SetElement[...,"MULT",{"L"-&gt;...},{"K2"-&gt;...}]</code>) は使っていない (ここは <code>"SEXT"</code>)。</li>
+<li>作ったのは線形・色収差の確認まで。6 極を独立にしたあとの DA や多極成分の独立化 (<code>MULT</code>) は試していない。</li>
+<li>要素名の長さ・文字の制約 (名前に <code>_</code> を含めるとき等) は調べていない。ここでは <code>SDA01</code> のような英数字 5 文字の名前を使い、<code>LINE["K2","SFA03"] = 0</code> で個別に値を変えられた。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

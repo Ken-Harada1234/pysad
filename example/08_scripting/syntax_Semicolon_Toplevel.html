@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>syntax_Semicolon_Toplevel (最上位の ;)</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#何を見る例か">何を見る例か</a></li>
+<li><a href="#スクリプト">スクリプト</a></li>
+<li><a href="#結果の読み方">結果の読み方</a></li>
+<li><a href="#gs-と-pysad-の比較">gs と pysad の比較</a></li>
+<li><a href="#未確認限界">未確認・限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: syntax_Semicolon_Toplevel.md</div>
+<h1 id="syntax_semicolon_toplevel-最上位の-">syntax_Semicolon_Toplevel (最上位の ;)</h1>
+<p>種別: 文法 / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。</p>
+<h2 id="何を見る例か">何を見る例か</h2>
+<p>FFS の最上位では <code>;</code> は 1 行の中の文の区切りで、<strong>末尾の <code>;</code> は結果の表示 (<code>Out[n]:= ...</code>) を抑える</strong>。FFS コマンド (<code>USE RING; CELL; CALCULATE;</code>) と SADScript の式を 1 行に混ぜられる。ラティスは <code>FODO_ring</code>。</p>
+<h2 id="スクリプト">スクリプト</h2>
+<pre><code>1 + 2          (* gs: Out[1]:= 3 *)
+1 + 2;         (* 表示なし *)
+b = 1; c = 2; d = b + c     (* 行の最後の式の値 Out[3]:= 3 *)
+z = 1 +
+  2 +
+  3;                (* 行が完結していなければ次行へ続く *)
+USE RING; CELL; CALCULATE; Print[&quot;NX=&quot;, ...];
+</code></pre>
+<h2 id="結果の読み方">結果の読み方</h2>
+<p>gs は <code>;</code> のない行の式の値を <code>Out[n]:= 値</code> で表示する (1+2→<code>Out[1]:= 3</code>、<code>a = 5</code>→<code>Out[2]:= 5</code>、<code>x = 1</code> <code>y = 2</code> も)。<code>;</code> で終わる行は表示しない。1 行に複数文を書くと、表示されるのは最後の式 (<code>d = b + c</code>→3)。式が完結しない行 (<code>1 +</code>) は次の行に続く。<code>USE RING; CELL; CALCULATE;</code> のように FFS コマンドを 1 行に並べてよい。</p>
+<h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>
+<p>○ 一致する (2026-11-17 確認: <code>;</code> のない最上位の式の値を <code>Out[n]:= 値</code> で表示する)。値の末尾の桁は表示の差 (NX=6.696328940901385 gs、...378 pysad)。pysad の CALCULATE は <code>Matched.</code> の行を表示する (gs も表示する。<code>.gs.txt</code> で確認)。</p>
+<h2 id="未確認限界">未確認・限界</h2>
+<ul>
+<li>gs の <code>Out[n]</code> の番号は FFS 全体で数えられ、<code>In[n]:=</code> の表示は最後の行だけ。</li>
+<li><code>Print</code> の出力は <code>Out</code> に出ない。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

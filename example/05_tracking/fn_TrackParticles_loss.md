@@ -12,7 +12,7 @@ flag = {1, 1, 1, 1, 0};
 beam = {x0, zero, zero, zero, zero, zero, flag};
 r = TrackParticles[{1, beam}, 1, 1, nt];           ! nt = 1, 2, 3, 5, 20
 ```
-- 判定は `tapert`: 最初の要素の前、以後 15 要素ごと、周の終わりに行う (`docs/08_tracking.md` §2.3)。|x| と |y| が `LOSSAMPL` を超えた粒子が落ちる。
+- 判定は `tapert`: 最初の要素の前、以後 15 要素ごと、周の終わりに行う (`docs/10_tracking.md` §2.3)。|x| と |y| が `LOSSAMPL` を超えた粒子が落ちる。
 - 損失した粒子の座標は初期値に戻らず、落ちた時点の値 (limittrack で丸めた値) が残る。
 
 ## 結果の読み方
@@ -31,5 +31,5 @@ $x_0=0.04, 0.045$ の粒子は最初の 1 周で落ちる (nt=1 から flag=0)�
 
 ## 未確認・限界
 - 3 GeV、`LOSSAMPL=0.05`、5 粒子だけ。
-- gs の K64 は、セッション最初の `TrackParticles` では `l_track=0` のため、最初から `LOSSAMPL` の外にいる粒子の損失印が 0 になり落ちない (docs/08 §2.3)。この例では最初の呼び出しの粒子はすべて最初は枠の中にある。
+- gs の K64 は、セッション最初の `TrackParticles` では `l_track=0` のため、最初から `LOSSAMPL` の外にいる粒子の損失印が 0 になり落ちない (docs/10 §2.3)。この例では最初の呼び出しの粒子はすべて最初は枠の中にある。
 - 損失の位置・周は [flag_LOSSMAP](flag_LOSSMAP.md)、要素としての絞りは [elem_APERT_LOSSAMPL](elem_APERT_LOSSAMPL.md)。
