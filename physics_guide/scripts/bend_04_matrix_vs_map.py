@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""BEND の転送行列 (CALC・Emittance[]) と追跡の写像の関係 (05_bend.md §9、式 (5.61)〜(5.70))。
+"""BEND の転送行列 (CALC・Emittance[]) と追跡の写像の関係 (05_bend.md §9)。
 
 K1 = 0 の BEND 1 台 (L = 1 m、ANGLE = 0.1 rad、電子 3 GeV)。
 (a) 追跡の写像の中心差分ヤコビアン J_track (6x6、刻み 1e-6) と、CALC の行列 (lattice._el_cod_step) の 4x4 と δ の列の差。

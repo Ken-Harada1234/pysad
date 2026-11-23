@@ -1,0 +1,121 @@
+== (a) hi = (H2 + p)/p、C_x、C_y との関係 ==
+  (H2 + p)/p - hi  (px = p qx, py = p qy を代入) = 0
+  hi - (C_x/2 + C_y/2 - omega_x^2 x_e^2/2) = 0
+
+== (b) z の更新 (5.11) と、厳密解の数値積分 (30 桁) ==
+  K = 0.0     数値積分 -0.00013862961428827097526  (5.11) -0.00013862961428827097526  差 1.4e-43
+     -∫x dl - T = 1.43e-42
+     ∫q_x^2 dl - (C_x L + Δ(u q_x))/2 = 2.47e-45
+  K = 0.31    数値積分 -0.00011550842073876373509  (5.11) -0.00011550842073876373509  差 1.4e-45
+     -∫x dl - T = 4.48e-44
+     ∫q_x^2 dl - (C_x L + Δ(u q_x))/2 = 1.75e-46
+  K = -0.4    数値積分 (-0.00017080517691306050557 + 0.0j)  (5.11) (-0.00017080517691306050557 + 0.0j)  差 (-5.61e-45 + 0.0j)
+     -∫x dl - T = (0.0 + 0.0j)
+     ∫q_x^2 dl - (C_x L + Δ(u q_x))/2 = (5.47e-48 + 0.0j)
+
+== (c) 面までの直進・出口の面の内積・Θ (sympy) ==
+  E·e_f2 - rho[cos psi2 - cos(omega+psi1)] = 0
+  E·N2 - rho[sin psi2 + sin(omega+psi1)]   = 0
+  e_x1·e_f2 - cos(omega) = 0  e_z1·e_f2 - sin(omega) = 0
+  e_x1·N2 + sin(omega)   = 0  e_z1·N2 - cos(omega) = 0
+  e_f2·e_ref - cos psi2 = 0   e_f2·N_ref + sin psi2 = 0   N2·e_ref - sin psi2 = 0
+  面の条件の残差 (t を代入) = 0    x2 - (x1 + P_X t)/cos... : 面上の x2 = (x1 + P_X t)cos psi1 + P_Z t sin psi1 の差 = 0
+  P_Z t - x2 sin psi1 = 0  (これが z の更新の p/P_Z x2 sin psi1 の根拠: 経路長 = p t)
+  Θ = (phi - psi2 - theta2) - (psi1 - theta1) =  phi - psi1 - psi2 + theta1 - theta2  = omega + theta1 - theta2
+
+== (d) 設計軌道のまわりの 1 次の展開 (§5.4): 入口・円弧・出口の各段の 2x2 行列 ==
+  設計点 (x1 = 0、p_x1 = sin psi1): p_x2 = -sin(psi2)  (= -sin psi2)
+  円弧の 2x2 [[∂x2/∂x1, ∂x2/∂p_x1], [∂p_x2/∂x1, ∂p_x2/∂p_x1]] (omega = phi - psi1 - psi2、rho_b = rho_0 = rho。ここで -px2/cos(psi2) -> tan(psi2) を使用):
+     ['cos(phi - psi1)/cos(psi2)', 'rho*sin(phi)/(cos(psi1)*cos(psi2))']
+     ['sin(-phi + psi1 + psi2)/rho', 'cos(phi - psi2)/cos(psi1)']
+  出口の直進 (面の座標系 -> 基準面) の 2x2 = [[cos(psi2), 0], [0, 1/cos(psi2)]]   (設計点で p_xr = sin(theta2 + psi2) = 0 )
+  入口の直進 (基準面 -> 面の座標系) の 2x2 = [[1/cos(psi1), 0], [0, cos(psi1)]]
+  積 Jout·Jarc·Jin - E_x(psi2) S_x E_x(psi1) の数値 (psi1 = 0.03、psi2 = 0.07、phi = 0.1、rho = 10) = [[0.0, 0.0], [6.938893903907229e-19, 0.0]]
+  数値: Jin = [[1.000450169, 0.0], [0.0, 0.999550034]]  Jarc = [[1.0, 1.001235611], [0.0, 1.0]]  Jout = [[0.997551, 0.0], [0.0, 1.002455012]]
+  積の (2,1) 成分を symbolic に簡約 (omega を phi - psi1 - psi2 に戻す): sin(-phi + psi1 + psi2)/(rho*cos(psi1)*cos(psi2))
+  積の (1,1)・(1,2)・(2,2) と (5.25) の差を symbolic に: [0, 0, 0]
+
+== (e) tbendcore の t2・t3・t2t3・px3・dpz32・x3・da (mpmath、40 桁) ==
+  ケース p = 1.03、psi1 = 0.03、psi2 = 0.07
+    px3 + q_x2 (5.22 を p で割った値) = 0.0     (px3 = -q_x2)
+    t2 - tan((theta1 + psi1)/2) = -7.17e-43、t3 - tan((theta3 + psi2)/2) = 1.43e-42   (px1 = ph2 sin theta1、px3 = ph2 sin theta3)
+    t2t3 - (t2 + t3) = 0.0   (t2t3 は積ではなく和 t2 + t3 を、桁落ちなく書いたもの)
+    (t2 + t3) cos w + sin w (1 - t2 t3) - sin(A + B + w)/(cos A cos B) = 0.0   (A = (theta1 + psi1)/2、B = (theta3 + psi2)/2)
+    pz2 - (ph2 cos psi1 - dpx2 t2) = 0.0   (dpx2 = px1 - ph2 sin psi1)
+    px1px3 - (px1 + px3) = 0.0、dpz32 - (pz3 - pz2) = -4.76e-42
+    t4 - ph2 cos(a1)(cos psi2 + t3 sin psi2) = 0.0   (pz2px1 = ph2 cos a1、a1 = theta1 - psi1)
+    x3 - (5.23) = -6.64e-41
+    sin(da) の引数 - sin(a1 + a3) = 1.35e-43   (da = Theta - phi0 = a1 + a3、a1 = theta1 - psi1、a3 = theta3 - psi2)
+    Theta = theta1 + theta3 + omega: asin(px1/ph2) - asin(q_x2/ph2) + omega - (phi0 + da) = 0.0
+    pz3 - pz2 cos(w) + px1 sin(w) - K = 4.76e-42  (K = dpz32 + sqwh pz2 + sinw px1)
+  ケース p = 0.98、psi1 = -0.02、psi2 = 0.05
+    px3 + q_x2 (5.22 を p で割った値) = -7.17e-43     (px3 = -q_x2)
+    t2 - tan((theta1 + psi1)/2) = -1.79e-43、t3 - tan((theta3 + psi2)/2) = -7.17e-43   (px1 = ph2 sin theta1、px3 = ph2 sin theta3)
+    t2t3 - (t2 + t3) = 0.0   (t2t3 は積ではなく和 t2 + t3 を、桁落ちなく書いたもの)
+    (t2 + t3) cos w + sin w (1 - t2 t3) - sin(A + B + w)/(cos A cos B) = 0.0   (A = (theta1 + psi1)/2、B = (theta3 + psi2)/2)
+    pz2 - (ph2 cos psi1 - dpx2 t2) = -1.15e-41   (dpx2 = px1 - ph2 sin psi1)
+    px1px3 - (px1 + px3) = 0.0、dpz32 - (pz3 - pz2) = -7.44e-42
+    t4 - ph2 cos(a1)(cos psi2 + t3 sin psi2) = 2.3e-41   (pz2px1 = ph2 cos a1、a1 = theta1 - psi1)
+    x3 - (5.23) = -5.87e-41
+    sin(da) の引数 - sin(a1 + a3) = 8.97e-43   (da = Theta - phi0 = a1 + a3、a1 = theta1 - psi1、a3 = theta3 - psi2)
+    Theta = theta1 + theta3 + omega: asin(px1/ph2) - asin(q_x2/ph2) + omega - (phi0 + da) = 0.0
+    pz3 - pz2 cos(w) + px1 sin(w) - K = 3.41e-42  (K = dpz32 + sqwh pz2 + sinw px1)
+
+== (f) 端の磁場 (5.30)(5.31)(5.32) (sympy) ==
+  ∇²V (y と s だけ) = y**5*Derivative(g(s), (s, 6))/(120*rho_b)   (残りは y^5 g^(6) の 1 項だけ。V の打ち切りの次数)
+  b_y = y**4*Derivative(g(s), (s, 4))/(24*rho_b) - y**2*Derivative(g(s), (s, 2))/(2*rho_b) + g(s)/rho_b
+  b_s = y**5*Derivative(g(s), (s, 5))/(120*rho_b) - y**3*Derivative(g(s), (s, 3))/(6*rho_b) + y*Derivative(g(s), s)/rho_b
+  ∇·b = ∂_y b_y + ∂_s b_s = y**5*Derivative(g(s), (s, 6))/(120*rho_b)
+  P × b = [b_s*p_y - b_y*p_z, -b_s*p_x, b_y*p_x]   -> dp_x/ds = (p_y b_s - p_z b_y)/p_z、dp_y/ds = -p_x b_s/p_z
+
+== (g) 硬い端の Maxwell フリンジ (5.33)〜(5.36) ==
+  dx/ds = p_x/p_z の p_x に、スパイク kappa g' (kappa = y^2/(2 rho)) を足す。∫ g' ds = 1 の 1 次: Delta x = kappa dF/dp_x = kappa*p**2/(p**2 - p_x**2)**(3/2)   (p^2/p_z^3 に一致: 0 )
+  dz/ds = -p/p_z: Delta z = -p kappa d(1/p_z)/dp_x = -kappa*p*p_x/(p**2 - p_x**2)**(3/2)   (-(y^2/(2rho)) p_x p/p_z^3 = 0  の差)
+  f = -(y^2/(2 rho)) p_x/p_z (C 付録の約束)。 -∂f/∂p_x = p**2*y**2/(2*rho*(p**2 - p_x**2)**(3/2)) 、 +∂f/∂y = -p_x*y/(rho*sqrt(p**2 - p_x**2)) 、 -∂f/∂p = -p*p_x*y**2/(2*rho*(p**2 - p_x**2)**(3/2))
+  C 付録の括弧で :f: x = p**2*y**2/(2*rho*(p**2 - p_x**2)**(3/2)) 、:f: p_y = -p_x*y/(rho*sqrt(p**2 - p_x**2)) 、:f: z = -p*p_x*y**2/(2*rho*(p**2 - p_x**2)**(3/2))
+  :f:^2 x = 0 (級数は 1 項で止まる)
+  f_4 = -(1/(2 rho))(y^2 - y^4/(12 rho^2)) p_x/p_z:  ∂f/∂y + a y/rho p_x/p_z = 0 、 -∂f/∂p_x - b y^2/rho p^2/p_z^3 = 0
+
+== (h) F1 の積分 (6.3) ==
+  直線の立ち上がり: ∫g(1-g) ds = ell/6 (= ell/6 -> F1 = ell)
+                   ∫g'^2 ds = 1/ell
+                   I_0 = ∫(g - Θ) ds = 0 、 I_1 = ∫ s (g - Θ) ds = -ell**2/24 (= -ell^2/24)
+  tanh (d = 2 mm): F1 = 6∫g(1-g) = 0.006  (3d = 0.006)
+                   ∫g'^2 ds · F1 = 1.0
+                   I_1 = ∫ s (g - Θ) ds = -1.64493406685e-6   -pi^2 d^2/24 = -1.64493406685e-6   比 I_1/(-F1^2/24) = 1.096622711  pi^2/9 = 1.096622711
+  誤差関数 (sigma = 2 mm): F1 = 0.006770275003  ∫g'^2 F1 = 0.95492966  (3/pi 型の 0.955)
+  部分積分: ∫G g''' ds = [G g''] - ∫ g g'' ds = -[g g'] + ∫ g'^2 ds = ∫ g'^2 ds (境界項は g', g'' -> 0 で消える)。tanh で数値確認:
+    ∫G g''' ds = 166.6666667、 ∫g'^2 ds = 166.6666667
+  f_lin (C 付録の約束): -∂f/∂p_x = F1**2*(p - 1)/(24*p*rho) = dxfr δ/p: 0
+                        +∂f/∂y  = y*(F1**2 - 4*y**2)/(6*F1*p*rho**2)  vs (dyfr - dyfra y^2) y / p: 0
+                        -∂f/∂p  = (F1**3*p_x*rho + 2*y**2*(F1**2 - 2*y**2))/(24*F1*p**2*rho**2)  vs [dxfr p_x + (dyfr/2 - dyfra y^2/4) y^2/p]/p: F1**2*p_x*(1 - p)/(24*p**2*rho)
+  ヘルプ (平文版) の V - f_old (f_old = -f_lin) = -F1**2*p_x/(24*rho)   (= -dxfr p_x: p に依らない x のずれの項。L' で吸収される)
+
+== (i) L' の補正 (5.43): 面の変位 ΔX = -F1^2/(24 rho) からの幾何 ==
+  E の方向 E/|E| - (-sin(phi/2), cos(phi/2)) = Matrix([[0, 0]])
+  弦の長さの変化 (s0 の 1 次) = -s0*(sin(phi/2 - psi1) + sin(phi/2 - psi2))
+  (ef2 - ex1)·E_hat - 2 sin(omega/2) cos((psi1 - psi2)/2) = 0
+  L' の変化 = dC phi/(2 sin(phi/2)) = dC*phi/(2*sin(phi/2))
+  dC = -2 s0 sin(omega/2) とすると dL' - [-(phi F1)^2/(24 L) sin(omega/2)/sin(phi/2)] = 0   (K64・ヘルプの式の補正 L' - L に一致)
+
+== (j) rbh・rbl: 階段近似の 2 点ガウス・ルジャンドル ==
+  rbh = 0.788675134595、rbl = 0.211324865405、rbl - (1/2 - 1/sqrt(12)) = 5.74e-42、rbh + rbl = 1.0、rbh rbl = 0.166666666667
+  線形の立ち上がり g(u) = u (0 <= u <= 1) の ∫ g^k du = 1/(k+1) と、等しい幅 1/2 の 2 段の階段 (高さ rbl、rbh) の (1/2)(rbl^k + rbh^k):
+    k = 0: 厳密 1.0、階段 1.0、差 0.0
+    k = 1: 厳密 0.5、階段 0.5、差 0.0
+    k = 2: 厳密 0.333333333333、階段 0.333333333333、差 -5.74e-42
+    k = 3: 厳密 0.25、階段 0.25、差 -2.87e-42
+    k = 4: 厳密 0.2、階段 0.194444444444、差 -0.00556
+
+== (k) tbendicorr の各行と K1 の非線形の蹴り (sympy) ==
+  (1+u) ln(1+u) - u の級数 = -u**5/20 + u**4/12 - u**3/6 + u**2/2
+  K64 の x_r^2 (1/2 - x_r (2 - x_r)/12) = u**4/12 - u**3/6 + u**2/2  差 (u^4 まで) = -u**5/20
+  z' の残り = [1 - (1+hx)/pz] - [-hx - q^2/2] と q^2/2 + (1+hx)(1 - 1/pz) の差 = 0
+  (1 - 1/pz) = dpzi/pzi (dpzi = pz - 1): 0
+  x' = a + b x (a = -q_x dpzi/pzi、b = h q_x/pzi) の厳密解と tbendicorr の (x + a l)/(1 - b l) の級数の差: ell**2*h*q_x**2*(dpzi - h*x)/(2*pzi**2)
+  tbendicorr の x = (-al dpzi pxi + pzi x)/(pzi - phi pxi) は上の式 (a l = -l dpzi q_x/pzi、b l = phi q_x/pzi の分母分子に pzi をかけたもの): 0
+
+== (l) 分散 R16・R26・R56 (sympy、§4.1) ==
+  x_e = delta*rho  (rho delta)
+  R16 = ∂x/∂δ|0 = rho*(1 - cos(L/rho)) 、 R26 = ∂q/∂δ|0 = sin(L/rho)
+  R56 = ∂z/∂δ|0 (1 次) = -L + L/gamma0**2 + rho*sin(L/rho)  (= -(L - rho sin(L/rho)) + L/gamma0^2)
