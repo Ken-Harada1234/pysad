@@ -127,7 +127,7 @@ L = 0 → `tthin(nord=4)`、K1 = 0 → ドリフト (bz≠0 なら `tdrift_solen
 
 1. `tsolrot` (DX, DY のずらし → 回転 theta2)。theta2 = ROT + `akang` で K1 < 0 なら π/2 を足す (焦点面の入れ替え)、`ak = sign(K1L, L)`。回転は chi3≠0 のときだけ行う (pysad の `rot1` も th2=0 のときは回さない。x=inf, y=inf のとき 0·inf=NaN になるのを避けるためで、落ちる粒子の乱数消費 (§7) に効く)。
 2. 入口ハードエッジフリンジ `ttfrin(nord=4, +ak)` (DISFRIN=0 かつ mfring ≠ 2)。akk = ak/L/4 の x³, y³ 次の写像 (tquad.f:325-)。
-3. 線形フリンジ (FRINGE=1 or 3): `a = f1in/p, ea = e^a, b = f2in/p` で `x ← ea·x + b·px`, `y ← y/ea − b·py`, `px ← px/ea`, `py ← py·ea`, z も補正。`f1 = −|akk·F1²|/24`, `f2 = |akk|·F2` (tsetfringep, tffs.f:952)。
+3. 線形フリンジ (FRINGE=1 or 3): `a = f1in/p, ea = e^a, b = f2in/p` で `x ← ea·x + b·px`, `y ← y/ea − b·py`, `px ← px/ea`, `py ← py·ea`, z も補正。k64: `f1 = −|akk·F1²|/24` (F1 の符号を捨てる)、v2: `f1 = −|akk|·F1·|F1|/24` (符号を残す。CALC の tqlfre と同じ。B323)。`f2 = |akk|·F2` (tsetfringep, tffs.f:952)。
 4. 本体: 放射なし `tsolqu`、放射あり `tsolqur` (入口で f1in ≠ 0 なら `tradk(f1in)`)。
 5. 出口の線形フリンジ (FRINGE=2 or 3)、`ttfrin(−ak)` (mfring ≠ 1)、放射ありで f1out ≠ 0 なら `tradk(f1out)`、`tsolrot` の戻し。
 

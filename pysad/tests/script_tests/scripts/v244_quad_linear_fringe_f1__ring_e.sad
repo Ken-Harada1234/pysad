@@ -1,0 +1,13 @@
+MOMENTUM = 3GEV;
+QUAD QF = (L=0.3 K1=0.6 FRINGE=3 DISFRIN=1 F1=0.0) QD = (L=0.3 K1=-0.6 FRINGE=3 DISFRIN=1 F1=0.0);
+DRIFT D = (L=1.5);
+MARK ORG = () ENDM = ();
+LINE CELL = (ORG QF D QD D ENDM);
+FFS;
+NORFSW; NORAD; NOFLUC;
+$FORM = "22.16";
+USE CELL; CELL; CALC;
+Print["NXNY ", Twiss["NX",-1], " ", Twiss["NY",-1]];
+beam = {{0.0, 1e-06, -1e-06, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 1e-06, -1e-06, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 1e-06, -1e-06, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1e-06, -1e-06}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}, {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}};
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["X ", r[[2,1]]]; Print["P ", r[[2,2]]]; Print["Y ", r[[2,3]]]; Print["Q ", r[[2,4]]];

@@ -73,7 +73,7 @@ x+=px ale; y+=py ale; z += dpz ale - dvemit L
 - BEND F1 (tblfre, tbende.f:650): `x += dxfr d/pr`, `py += (dyfr - dyfra y^2) y/pr`; `dxfr=fb^2 phibl/24`, `dyfr=fb phibl^2/6`, `dyfra=fringe ? 4 dyfr/fb^2 : 0`、tbendef1 は長さ 0.5 fb rb の tbendebody0 を 2 回。
 - tqfrie [転記] (hard-edge): `akk=ak/al/4; a=akk x^2/pr; b=akk y^2/pr; t=(aki(x^2-y^2))^2/6; dx=x(a/3+b+t); dy=-y(a+b/3-t)`。DISFRIN=0 で入る。
 - tqlfre (線形): `af1=-ak/al f1|f1|/24; af2=ak/al f2; x -> e^a x + (b/p) px, px -> px e^-a, y -> y e^-a - (b/p) py, py -> py e^a` (a=af1/p, b=af2/p)。mfring=1,3 で入口、2,3 で出口。係数は tsetfringepe (tffs.f:982): K1≠0, L≠0 のときだけ f1in=F1+F1K1F 等。
-- 追跡: ttfrin (nord=4/6/一般)、追跡の線形フリンジは `f1=-|akk F1^2|/24, f2=|akk| F2` (K1 の符号によらず f1<0)。hard-edge の条件は mfring>-4 (tquad.f:49,103) で tquade と違う。
+- 追跡: ttfrin (nord=4/6/一般)、追跡の線形フリンジは k64 が `f1=-|akk F1^2|/24, f2=|akk| F2` (K1・F1 の符号によらず f1≤0)、v2 は `f1=-|akk| F1|F1|/24` (F1 の符号を残す。CALC の tqlfre と同じ。B323)。hard-edge の条件は mfring>-4 (tquad.f:49,103) で tquade と違う。
 
 ## 7. 6 極・薄レンズ・MULT
 

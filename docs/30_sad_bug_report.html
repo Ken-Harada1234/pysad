@@ -2094,6 +2094,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>確定 (Fortran を直接実行して確認)</td>
 <td>pysad は範囲外参照を再現せず、表の空きは <code>0 0 0</code> と 0、埋め残しの共鳴項は <code>(0, 0, 0)</code> の組にする (両モード)。試験 <code>test_fourier_fit.py</code> (Fortran の出力と全行一致、係数 1e-7)</td>
 </tr>
+<tr>
+<td>B323</td>
+<td><strong>四極・K1≠0 の MULT の線形フリンジの係数 F1 の符号を、追跡 (<code>tsetfringep</code>) が捨てる (CALC の <code>tqlfre</code> は残す)</strong>: 端で K(s) が立ち上がるとき、K の 1 次の摂動から線形フリンジの係数は a = K0·I1/p。ヘルプの定義 F1 = sgn(α)√</td>
+<td>α</td>
+<td>、α = 24(I0²/2 − I1) (I0 = 0 なら F1·</td>
+<td>F1</td>
+<td>= −24·I1) から a = −K0·F1·</td>
+<td>F1</td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>
