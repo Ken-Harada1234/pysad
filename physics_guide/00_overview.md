@@ -22,7 +22,7 @@
 | 9 | **放射と平衡**: kinematical method で放射 (平均損失と量子励起)。$\Sigma = M\Sigma M^\top + \Delta$ でエミッタンス | $\varepsilon$、$\sigma_\delta$、減衰率 | [13](13_radiation.md)・[14](14_emittance.md) |
 | 10 | **スピン**: Thomas-BMT → 1 スライスの回転 → 軌道との結合 $D$ → SLIM・Sokolov-Ternov | 偏極時間、偏極度 | [15](15_spin.md) |
 | 11 | **特殊な要素**: アンジュレータ (UND)、ビーム・ビーム (BEAMBEAM) | 写像 | [16](16_undulator_beambeam.md) |
-| 12 | **集団効果** (空間電荷、ウェイク、CSR、Touschek・IBS) と**非線形への橋渡し** (1 周の写像、正規形、ADTS・RDT) | | 17・18 (予定) |
+| 12 | **集団効果** (空間電荷、ウェイク、CSR、Touschek・IBS) と**非線形への橋渡し** (1 周の写像、正規形、ADTS・RDT) | | [17](17_collective.md)・[18](18_nonlinear_bridge.md) |
 | 13 | **Fortran と Python**: 各式が K64 のどのファイルのどのサブルーチンの、どの変数か。pysad のどの関数か | 各章の対応表 | 各章の「Fortran の対応」「pysad の対応」 |
 
 **一枚の流れ図** (矢印は「から」「へ」の変換。左が物理、右が実装):
@@ -90,8 +90,8 @@ K64 のサブルーチンの名前は、頭の文字と接尾の文字で系統�
 | [14](14_emittance.md) | 平衡エミッタンス | equilibrium-beam-envelope | `temit`、`tecalc`、`tmulbs` | `emit6d.py` |
 | [15](15_spin.md) | スピン・偏極 | POL・RADPOL (式なし) | `sprot`、`tradke`、`spnorm`、`srequpol` | `spin.py` |
 | [16](16_undulator_beambeam.md) | UND・BEAMBEAM | **節なし** | `undulator.f`、`bbstrhl.f` | `und.py`、`beambeam.py` |
-| 17 (予定) | 集団効果 | WSPAC・LWAKE・TWAKE・INTRA・Touschek (式は少ない) | `spkick`、`txwake`、`tffswake`、`tintrb`、`csrtrack` | |
-| 18 (予定) | 非線形への橋渡し | — | | `resdrive.py`、`nform.py`、`rdttrack.py` |
+| [17](17_collective.md) | 集団効果 (空間電荷・ウェイクを導出、CSR・Touschek・IBS は対応表) | WSPAC・LWAKE・TWAKE・INTRA・Touschek (機能の説明だけ。式なし) | `tintrb`(`twspac`)、`txwake`、`tffswake`、`spkick`、`csrtrack` | `spch.py`、`wake.py`、`csr.py`、`touschek.py` |
+| [18](18_nonlinear_bridge.md) | 非線形への橋渡し (要約と参照) | — (式なし) | — | `resdrive.py`、`nform.py`、`rdttrack.py`、`adtsdirect.py` |
 | [C](C_poisson_lie.md) | ポアソン括弧とリー演算子 | — | — | — |
 
 **読み方の目安**:
@@ -133,7 +133,8 @@ K64 のサブルーチンの名前は、頭の文字と接尾の文字で系統�
 | 14 | $\Sigma = M\Sigma M^\top + \Delta$、$\Delta$ の組立、各モードの $\varepsilon_k$ | 放射積分の式、13 章の励起、正規座標 | $\varepsilon_x$ 2.2%、$\sigma_\delta$ 0.5%、$J_x$ 1.8%、$\varepsilon_k$ の式 0.03% |
 | 15 | Thomas + 静止系 = BMT、1 ステップ回転の次数、定数 $c_{\rm ave}a_{\rm nrad}c_{\rm uc}^2 = r_e\bar\lambda_C$、SLIM の $N$、偏極時間 | sympy、DOP853 (らせん軌道)、玩具の 1 周写像、Sokolov-Ternov の式 | BMT 厳密一致 (sympy)、2 次収束 (比 4.00)、定数 $10^{-12}$、$N$ は 1 次、$\tau_{ST} = 123.8153$ s |
 | 16 | UND の Maxwell と写像、BE のキックと $\delta$ のキック、6 次元写像のシンプレクティック性 | sympy、DOP853、2 次元ポテンシャルの数値積分 | $\nabla\times\vec B$ $8\times10^{-15}$、1 次収束、キック $10^{-13}$ (絶対)、$\delta$ のキック $10^{-18}$、シンプレクティック $10^{-11}$ |
-| 17・18 | (予定) | | |
+| 17 | 空間電荷の係数 $1/(\beta^2\gamma^3)$、WSPAC のキック・線形のレンズ、ウェイクの規格化・符号・自己項の 1/2 | sympy、2 次元ポテンシャルの数値積分、ガウス + 指数関数の解析式 | 実験室系の力 $= eE'/\gamma$。WSPAC のキック $5\times10^{-12}$ (絶対)、$\delta$ のキック $3\times10^{-16}$。ウェイクの平均の損失は解析式の 1.007〜1.027 倍 (切片への粗視化) |
+| 18 | (参照の章。docs/24 §7 の比較を転記) | 追跡 + NAFF + フィット、1 周の写像のテイラー展開 | 6 極 2 次 $10^{-3}$ 前後、全部入り 0.01〜0.26% (6 極 ×1) |
 
 **確認の方針**: (a) 行列の $M^\top JM = J$ (シンプレクティック性)、(b) 追跡の数値微分と行列の一致、(c) 独立な数値積分 (DOP853 など) との一致、(d) 刻み数・振幅への収束 (次数)、(e) sympy による係数・恒等式、の 5 種類。**gs (K64 の実機) との比較は主役にしない**。
 
@@ -186,6 +187,7 @@ K64 のサブルーチンの名前は、頭の文字と接尾の文字で系統�
 | 07 | CALC の `tthine` に非線形フリンジも放射も無い (B291、B240) | 直した |
 | 15 | `Polarization` が NaN (`spdepol`、B55)。桁あふれを直しても約 1000 倍の脱偏極率 (B125)。符号つきの `sdamp` (B116)。刻みの角が弦 (B83)。`tbrote` などの行の逐次更新 (B56)、`bsi2` の脱落 (B58) | 直した |
 | 16 | UND の磁場が設定できない (B37)、`dpds` の二重 (B78)、BEAMBEAM の傾きの読み位置 (B34、$\sigma_x < \sigma_y$ で $\Delta p$ が誤る) | 直した |
+| 17 | WSPAC の最後のスライスで `gammab(nlat+1) = 0` を読みレンズが 8 倍 (B127)、SPAC の力が $1/\gamma$ 倍 (B89) など (docs/09・docs/10・docs/30 の記録。本章では係数の導出で $1/(\beta^2\gamma^3)$ を確認したのみ) | 直した |
 
 **疑い (ソースの読み・一部の数値。確定には gs での確認が要る。pysad は直していない)**:
 
@@ -198,6 +200,7 @@ K64 のサブルーチンの名前は、頭の文字と接尾の文字で系統�
 | 15 | `tradke` の `dbtz = dxpzb/pr - dblz` (`photons.f:1550`) が $x$・$y$ 成分 ($\mathrm{/pr^2}$) と不整合 | $\delta \ne 0$ での $\partial b_{tz}/\partial x$。数値で確認していない |
 | 16 | UND の $z$ の更新に $-dv\,L$ が無い ($R_{56} = L/\gamma^2$ の欠落) | 3 GeV・1 m・$\delta = 10^{-3}$ で $2.9\times10^{-11}$ m。低エネルギーで大きい |
 | 16 | ビームストラールングの光子エネルギーの表 (累積が矩形則) | 平均 $+1.6\%$、2 次モーメント $+2.6\%$ |
+| 17 | WSPAC の縦の力の電位の基準が軸上 (壁の半径に依る縦の空間電荷の主要項が入らない) | 軸上の縦の力が 0。v2 は `WSPACRADIUS` で基準を壁にできる。K64 の仕様か誤りか未決 |
 | 12 | (pysad 側) 偏向磁石のあるリングで `lat.chromaticity()` と追跡の $d\nu/d\delta$ が合わない | $-1.456$ 対 $-0.780$ など。K64 の誤りではなく pysad 独自の計算 |
 
 **K64 の誤りではないもの (仕様・定義の違い)**: 四極の母関数 $G$ は $\exp(:f:)$ の 2 次までの打ち切り (06)。偏向の Maxwell フリンジは $p_y$ の補正を持たない (06)。K1 の暗黙の定義 (B160、05)。追跡と CALC の分割の次数の違い (04・07)。`dpz` の名前が追跡と CALC で別の量 (02)。
@@ -223,6 +226,8 @@ K64 のサブルーチンの名前は、頭の文字と接尾の文字で系統�
 | 14 | `tnorm`・`btr` の導出、IBS、SynchroBeta、結合のあるリング・MINCOUP の数値 |
 | 15 | Sokolov-Ternov と DK の QED の導出、`spdepol` の級数、高次のスピン軌道共鳴、運動論的偏極 |
 | 16 | 交差角の変換 (16.12) の導出、BE の閉じた形の導出、強-強、スライス数の収束、UND の端の処理 |
+| 17 | SPAC・PSPAC・CSR・Haissinski・IBS・Touschek の導出と数値確認 (対応表のみ)、WSPAC の Laslett 式との一致の取り直し、ウェイクの光学 (`WAKEOPT`)・複数バンチ |
+| 18 | 参照の章。式の導出・数値は docs/24・25・26 |
 
 ## 8. 付録・ほかの文書との関係
 

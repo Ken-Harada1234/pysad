@@ -31,8 +31,8 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [14_emittance.md](14_emittance.md) | **平衡エミッタンス**。$\Sigma = M\Sigma M^\top + \Delta$ の導出、$\Delta$ の組み立て (`tmulbs`)、`tecalc` (固有値・正規座標・減衰率・分配数)、各モードの $\varepsilon_k = \bar\Delta_k/(1-e^{-2a_k})$、同期運動と RFSW、MINCOUP | ✓ (`tnorm`・`btr` の導出・IBS・SynchroBeta は未確認) |
 | [15_spin.md](15_spin.md) | **スピンと偏極**。Thomas-BMT (静止系の歳差 + Thomas 歳差、縦・横の係数 $(1+a)$・$(1+a\gamma)$)、1 スライスの回転 `sprot` (Rodrigues、刻みの 2 次、弦の誤差)、軌道との結合 $D$ (`tradke` の積算)、`spnorm` (偏極ベクトル・スピンチューン)、SLIM の $N$ の式と脱偏極率、Sokolov-Ternov の定数 (`pst`・`cfpd`・`sflc` が `anrad`・`cuc`・`cave`・`cuu` から出る)、DK との対応、平衡偏極度 | ✓ (ST・DK の QED の導出、`spdepol` の級数、高次共鳴は未確認) |
 | [16_undulator_beambeam.md](16_undulator_beambeam.md) | **アンジュレータ (UND) とビーム・ビーム (BEAMBEAM)**。ヘルプに節がないのでソースから。UND: $A_x, A_y$ の模型 (Maxwell 方程式)、傍軸の $H$、陰的な 1 次のシンプレクティック写像 (DOP853 と比較)。BEAMBEAM: Bassetti-Erskine のキック (ポテンシャルの数値積分と一致)、$\delta$ のキック、スライスの 6 次元写像 ($s^* = (z-z_s)/2$ への drift と戻し、$F = s^*H_0$ の流れの共役)、強ビームの包絡とスライス、交差角・傾き、ビームストラールング | ✓ (交差角の変換 (16.12) の導出は未確認。UND の $-dv\,L$ の欠落は疑い) |
-| 17_collective.md | 集団効果 (空間電荷、ウェイク、CSR、Touschek・IBS) | 予定 |
-| 18_nonlinear_bridge.md | 非線形への橋渡し (正規形、ADTS・RDT) | 予定 |
+| [17_collective.md](17_collective.md) | **集団効果**。ヘルプに式が無いので、標準の物理とソースの対応。**導出するのは 2 つ**: 空間電荷 WSPAC ($1/(\beta^2\gamma^3)$ の由来、2 次元ガウス分布のキック、$\delta$ のキック、線形のレンズ、Laslett) とウェイク LWAKE・TWAKE (縦・横のキックの式、自己項の 1/2、K64 の切片の方法、ガウス + 指数関数の解析式)。SPAC・PSPAC・CSR・Haissinski・IBS・Touschek は式とソースの対応表 (導出・数値確認なし) | ✓ (範囲は章の冒頭に明記。WSPAC の縦の力の基準・B127 などは疑い) |
+| [18_nonlinear_bridge.md](18_nonlinear_bridge.md) | **非線形への橋渡し**。要素の写像の合成 = 1 周の写像、リー表現 $M = Re^{:F:}$、$h_3 = \int H_3ds$ と $h_4$ (6 極の 2 次は素子の並びに依る対の和)、共鳴駆動項 $h_{jklmp}$、ADTS が 2 次で出る理由、追跡の写像から係数を取り出す道具、解析と追跡の比較の要約。**要約と参照の章** (導出・確認は docs/24・25・26。新しい確認スクリプトなし) | ✓ (参照の章) |
 | [C_poisson_lie.md](C_poisson_lie.md) | 付録: ポアソン括弧とリー演算子 $\exp(:f:)$ (ドリフト、四極、6 極の例、合成の順序、SAD のヘルプの記法との対応) | ✓ |
 | A_help_vs_source.md | 付録: ヘルプの式と K64 のソースの食い違い・誤植の一覧 | 予定 (01 章と 04 章の付録 A に先に書いてある) |
 | B_script_index.md | 付録: 確認スクリプトの一覧 | 予定 (下の表) |
@@ -87,6 +87,7 @@ py -3.12 physics_guide/scripts/emit_01_equilibrium.py           # 14 章 (平衡
 py -3.12 physics_guide/scripts/spin_01_thomas_bmt.py            # 15 章 (スピン) の確認
 py -3.12 physics_guide/scripts/und_01_field_map.py              # 16 章 (UND・BEAMBEAM) の確認 (und_01、bb_01。bb_01 は -W ignore を付けると scipy の警告が出ない)
 py -3.12 -W ignore physics_guide/scripts/bb_01_kick_slice.py
+py -3.12 -W ignore physics_guide/scripts/coll_01_spacecharge_wake.py   # 17 章 (集団効果) の確認
 py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C の sympy の確認 (ham_01〜ham_07)
 ```
 
@@ -122,6 +123,7 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `spin_01_thomas_bmt.py` | 15 | Thomas + 静止系 = BMT (sympy)、らせん軌道の BMT の DOP853 と 1 ステップ回転の積 (2 次)、平面の偏向 $a\gamma\theta$・縦磁場 $(1+a)\psi$、K64 の弦、定数 $c_{\rm ave}a_{\rm nrad}c_{\rm uc}^2 = r_e\bar\lambda_C$ と DK の 11/18、$NM = R_0N + [n_0]_\times D$、平面リングの SpinTune・PolarizationTime・Polarization |
 | `und_01_field_map.py` | 16 | $\nabla\times\vec B = 0$ (sympy)・軸上の磁場、スライスの写像と DOP853 (1 次)、最大角 $F_0/K_z$、UND と DRIFT の $z$ の差 $= dv\,L$ |
 | `bb_01_kick_slice.py` | 16 | Bassetti-Erskine のキックと $\delta$ のキック (ポテンシャルの数値積分、3 通りの楕円)、k64 の傾きの誤り (B34)、6 次元写像のシンプレクティック性・往復の恒等、ビームストラールングの定数と光子エネルギーの表 |
+| `coll_01_spacecharge_wake.py` | 17 | 実験室系の力 $= eE'/\gamma$ (sympy)、WSPAC のキック (横・$\delta$・線形のレンズ) と 2 次元ポテンシャルの数値積分、ウェイク (ガウス + 指数関数の平均の損失の解析式、横ウェイクの平均キック) |
 | `bend_01_h2_body.py` | 05 | $H_2$ の展開・運動方程式・厳密解、$z$ の更新 (K64 の `xsxkx` の符号)、分散・$R_{56}$ |
 | `bend_02_arc_faces.py` | 05 | K1 = 0 の円弧と端面角の厳密解 (実験室系の幾何・曲線座標の $H$ の ODE との比較)、端面の行列 |
 | `bend_03_fringe.py` | 05 | 端の磁場、Maxwell フリンジ、F1 (線形フリンジ)、CALC の `tbedgemaxwell` のシンプレクティック性 |
