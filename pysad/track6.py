@@ -1904,7 +1904,27 @@ def _tcavfrin(p: _Particle, al, v, w, dphis, offset):
         h1 = p1r * h0 / (1.0 - p.dv + ph.dvfs)
     t = -c[4] * h1 / p1
     phw = w * t
-    dpt = vf * (math.sin(phw - dphis) + s0) / p1r
+    sph = math.sin(phw - dphis) + s0
+    if _compat.v2():
+        # v2 (B330): 端の力は ∫F dt = ∫F ds/(β c) なので 1/β (粒子の β = p1/h1) がかかる。H_f ∝ 1/β(E) の整合のため、
+        # エネルギー変化 (∂H_f/∂t) にも同じ 1/β、時間のずれ −∂H_f/∂E = −(x²+y²) κ0/(2 p1³) (κ0 = vf p0 sph) を入れる (シンプレクティック性)
+        ib = h1 / p1
+        dpt = vf * sph * ib / p1r
+        c[1] += c[0] * dpt
+        c[3] += c[2] * dpt
+        r2 = c[0]**2 + c[2]**2
+        dh = -w * p0 * vf * r2 * 0.5 * math.cos(phw - dphis) * ib
+        dt = -0.5 * r2 * vf * p0 * sph / p1**3
+        h2 = h1 + dh
+        a = max(dh * (h1 + h2) / p1**2, -1.0)
+        dpr = _sqrt1(a)
+        dp2r = max(dp1r + p1r * dpr, 1e-10 - 1.0)
+        p2r = 1.0 + dp2r
+        c[5] = dp2r
+        c[4] = -(t + dt) * p0 * p2r / h2
+        p.dv = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + ph.dvfs
+        return
+    dpt = vf * sph / p1r
     c[1] += c[0] * dpt
     c[3] += c[2] * dpt
     dh = -w * p0 * vf * (c[0]**2 + c[2]**2) * 0.5 * math.cos(phw - dphis)

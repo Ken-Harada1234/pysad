@@ -1059,6 +1059,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>v2 は F1 の符号を残す</strong> (CALC と同じ。1 周写像の線形部分が CALC と 1e-10 以下、独立な数値積分と K の 2 次まで)。k64 は gs と同じ (F1 &lt; 0 で CALC と 2e-3 食い違う)。限界: 設計軌道まわりの線形部分だけを確かめた (軌道がずれたときの 2 次以上・δ の列は未確認)。放射の <code>tradk</code> の引数は K64 の癖 (長さに係数 f1 を渡す) のまま。F1 &lt; 0 の RAD の追跡は gs と比べていない (k64 の F1 &lt; 0 は符号を捨てる)。逆向きの要素 (<code>cmp%ori</code> が偽) の係数は未対応</td>
 </tr>
 <tr>
+<td>CAVI の端の収束・エネルギー変化の 1/β (B330)</td>
+<td>両</td>
+<td><strong>v2 は 1/β (粒子の β) を入れた</strong> (軸の近くの Maxwell の場の数値積分と、入口の px で 1% 以内、端のエネルギー変化の x² の項で 1% 以内)。k64 は gs と同じ (gs は 1/β なし、全桁一致)。限界: 端 1 つの 1 次の収束・x² のエネルギー変化だけ。長い空洞 (ωL/β が大きい) の本体との組合せ・定在波の位相の進み・TCAVI の端・RF つき MULT の端は個別に確かめていない。時間のずれの項はシンプレクティック性だけで決めた。CALC・Emittance[] の v2 の値は gs と比べていない (gs は 1/β なし)</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>

@@ -1341,8 +1341,14 @@ def cav_drift1(i, S, alx):
     S[i, 4] += dpz * al1 - S[i, 6] * alx
 
 
+def _cav_b2():
+    """v2 (B330): 空洞の端の収束に 1/β をかける (njit の中からは compat を読めないので引数で渡す)"""
+    from . import compat
+    return compat.v2()
+
+
 @njit(**NJ)
-def tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0):
+def tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2):
     vf = v / al / p0 * 0.5
     s0 = math.sin(dphis) - offset
     dp1r = S[i, 5]
@@ -1354,7 +1360,26 @@ def tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0):
         h1 = p1r * h0 / (1.0 - S[i, 6] + S[i, 10])
     t = -S[i, 4] * h1 / p1
     phw = w * t
-    dpt = vf * (math.sin(phw - dphis) + s0) / p1r
+    sph = math.sin(phw - dphis) + s0
+    if b2:
+        # v2 (B330): 1/β (粒子の β = p1/h1) と、H_f ∝ 1/β(E) の整合 (エネルギー変化の 1/β、時間のずれ。track6._tcavfrin と同じ)
+        ib = h1 / p1
+        r2 = S[i, 0]**2 + S[i, 2]**2
+        dpt = vf * sph * ib / p1r
+        S[i, 1] += S[i, 0] * dpt
+        S[i, 3] += S[i, 2] * dpt
+        dh = -w * p0 * vf * r2 * 0.5 * math.cos(phw - dphis) * ib
+        dt = -0.5 * r2 * vf * p0 * sph / p1**3
+        h2 = h1 + dh
+        a = fmax(dh * (h1 + h2) / (p1 * p1), -1.0)
+        dpr = sqrt1(a)
+        dp2r = fmax(dp1r + p1r * dpr, 1e-10 - 1.0)
+        p2r = 1.0 + dp2r
+        S[i, 5] = dp2r
+        S[i, 4] = -(t + dt) * p0 * p2r / h2
+        S[i, 6] = -(1.0 + p2r) / h2 / (h2 + p2r * h0) * dp2r + S[i, 10]
+        return
+    dpt = vf * sph / p1r
     S[i, 1] += S[i, 0] * dpt
     S[i, 3] += S[i, 2] * dpt
     dh = -w * p0 * vf * (S[i, 0]**2 + S[i, 2]**2) * 0.5 * math.cos(phw - dphis)
@@ -1425,7 +1450,7 @@ def texit_all(S, n, dx, dy, theta):
 
 
 @njit(**NJ)
-def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0):
+def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, b2=False):
     """tcav (vnominal=0, ndiv=1)。v = vc/amass·|charge|、w = 2π f/c、dphis = phis − phic、offset は rad で切替済み"""
     wsn = 1.0
     vcorr = v * (w * (0.5 / p0 + 0.5 / p0))**2 / 4.0
@@ -1433,7 +1458,7 @@ def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, 
     v02a = vcorr
     for i in range(n):
         if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
-            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2)
         if al != 0.0:
             cav_drift1(i, S, al * wsn * 0.5)
         dp1r = S[i, 5]
@@ -1464,11 +1489,11 @@ def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, 
         if al != 0.0:
             cav_drift1(i, S, al * wsn * 0.5)
             if fringe and mfring >= 0 and mfring != 1:
-                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0)
+                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0, b2)
 
 
 @njit(**NJ)
-def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, v1a, v20q, v11a, v02q):
+def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, v1a, v20q, v11a, v02q, b2=False):
     """k_cav (vnominal=0, ndiv=1) に CAVI の V1・V20・V11・V02 (横方向の電圧の依存。tcav.f の v1a, v20a, v11a, v02a) を入れたもの。
     v20q = V20/2·|charge|/amass、v02q = V02/2·|charge|/amass (vcorr は中で足す)。V1=V20=V11=V02=0 なら k_cav と同じ式だが丸めが違うので、呼び出し側が分ける"""
     wsn = 1.0
@@ -1477,7 +1502,7 @@ def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0
     v02a = v02q + vcorr
     for i in range(n):
         if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
-            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2)
         if al != 0.0:
             cav_drift1(i, S, al * wsn * 0.5)
         dp1r = S[i, 5]
@@ -1508,15 +1533,15 @@ def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0
         if al != 0.0:
             cav_drift1(i, S, al * wsn * 0.5)
             if fringe and mfring >= 0 and mfring != 1:
-                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0)
+                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0, b2)
 
 
 @njit(**NJ)
-def k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0):
+def k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, b2=False):
     """k_cav の前段: 入口のフリンジ (tcav.f:80-83)。WakeFunction のある CAVI で k_cav を 3 段に分けて使う"""
     if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
         for i in range(n):
-            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+            tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2)
 
 
 @njit(**NJ)
@@ -1557,19 +1582,19 @@ def k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0):
 
 
 @njit(**NJ)
-def k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0):
+def k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, b2=False):
     """k_cav の後段: 後半のドリフトと出口のフリンジ"""
     if al != 0.0:
         for i in range(n):
             cav_drift1(i, S, al * 0.5)
             if fringe and mfring >= 0 and mfring != 1:
-                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0)
+                tcavfrin1(i, S, al, -v, w, dphis, offset, p0, h0, b2)
 
 
 @njit(**NJ)
-def cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0):
+def cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0, b2=False):
     for i in range(n):
-        tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0)
+        tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2)
 
 
 @njit(**NJ)
@@ -1659,7 +1684,7 @@ def cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfrin
         ws = [0.0] + [1.0 / ndiv] * ndiv
     wsn = ws[ndiv]
     if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
-        cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+        cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0, _cav_b2())
     fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
     fw_save = kick.fw if kick is not None else 0.0
     from . import compat as _cmpw
@@ -1691,7 +1716,7 @@ def cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfrin
     if al != 0.0:
         cav_drift_all(S, n, al * ws[ndiv] * 0.5)
         if fringe and mfring >= 0 and mfring != 1:
-            cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+            cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0, _cav_b2())
     cav_to_exit_momentum(S, n, p0, pe, dpepe, he)
     ph2 = copy.copy(ph)
     ph2.set_pgev(pe * ph.amass)
@@ -2474,15 +2499,15 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
                 if any(q != 0.0 for q in vq):
                     raise NotImplementedError('track6n: WakeFunction のある CAVI の V1・V20・V11・V02 は未対応')
                 # tcav.f: 入口フリンジ → [wake 前半 (init)] → 前半ドリフトと電圧キック → [wake 後半] → 後半ドリフトと出口フリンジ。dx, dy, theta は 0 を渡す
-                k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0)
+                k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, _cav_b2())
                 wake[0].apply(S, n, wk[0], wk[1], 0.0, 0.0, True, p0, h0)
                 k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0)
                 wake[0].apply(S, n, wk[0], wk[1], 0.0, 0.0, False, p0, h0)
-                k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0)
+                k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, _cav_b2())
             elif any(q != 0.0 for q in vq):
-                k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, vq[0], vq[1], vq[2], vq[3])
+                k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, vq[0], vq[1], vq[2], vq[3], _cav_b2())
             else:
-                k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0)
+                k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, _cav_b2())
             if cdx != 0.0 or cdy != 0.0 or cth != 0.0:
                 texit_all(S, n, cdx, cdy, cth)        # inc/TEXIT.inc
         elif rfmult:

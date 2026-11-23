@@ -799,7 +799,7 @@ def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True,
     ak01 = akr0 * ws[1] * 0.5
     if nz and fringe and fr_in:
         if use_rf:
-            _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+            _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0, _n._cav_b2())
         mult_fringe_all(S, n, akr, dofr, nmmax, al, 1.0, False)
     fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
     fw_save = kick.fw if kick is not None else 0.0
@@ -848,7 +848,7 @@ def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True,
         if fringe and fr_out:
             mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
             if use_rf:
-                _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+                _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0, _n._cav_b2())
         if krad:
             if hook is not None:
                 hook.last = True
@@ -1059,7 +1059,7 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
     al1 = al * ws[1] * 0.5
     ak01 = akr0 * ws[1] * 0.5
     if nz and fringe:
-        _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+        _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0, _n._cav_b2())
         mult_fringe_all(S, n, akr, dofr, nmmax, al, 1.0, False)
     fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
     fw_save = kick.fw if kick is not None else 0.0
@@ -1101,7 +1101,7 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
         mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag, _qb.sch_of(rs))
         if fringe:
             mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
-            _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+            _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0, _n._cav_b2())
         if krad:
             tradk_all(S, n, al1, 0.0, fluc, rs, p0, ph.anrad, ph.cuc)
     mult_rot_out(S, n, dx, dy, ct, st)
@@ -1345,7 +1345,7 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, 
             offset = math.sin(dphis) - math.sin(phis)
             offset1 = math.sin(phis)
         tlim = 1e4 if rfsw else 0.0
-        _n.k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0)
+        _n.k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, _n._cav_b2())
     elif kind == _n.K_STEER0:
         _n.k_steer0(S, n, pr[0], pr[1], pr[2], pr[3], pr[4], pr[5])
     elif kind == _n.K_STEER:

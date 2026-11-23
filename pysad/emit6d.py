@@ -1481,6 +1481,8 @@ def _h2p(h):
 def _tcavfrie_map(al, v, w, dphis, s0, p0):
     """tcave.f tcavfrie の COD 写像 (autophi=F)。出口は v → −v で呼ぶ。"""
     vf = v / al / p0 * 0.5
+    from . import compat as _cmp
+    b2 = _cmp.v2()
 
     def f(cc):
         cc = cc.copy()
@@ -1493,11 +1495,18 @@ def _tcavfrie_map(al, v, w, dphis, s0, p0):
         ph = w * t - dphis
         sph, cph = math.sin(ph), math.cos(ph)
         dpt = vf * (sph + s0)
+        dt = 0.0
+        ib = 1.0
+        if b2:
+            # v2 (B330): 端の力の 1/β (粒子の β = v1)。H_f ∝ 1/β(E) の整合のため、エネルギー変化に同じ 1/β、時間のずれ (追跡の tcavfrin と同じ)
+            ib = 1.0 / v1
+            dpt *= ib
+            dt = -0.5 * (cc[0]**2 + cc[2]**2) * vf * p0 * (sph + s0) / p1**3
         cc[1] += cc[0] * dpt
         cc[3] += cc[2] * dpt
         wc = -w * vf
         dha = wc * (cc[0]**2 + cc[2]**2) * 0.5
-        dh = dha * cph * p0
+        dh = dha * cph * p0 * ib
         h2 = h1 + dh
         a = dh * (h1 + h2) / p1**2
         dpr = a / (1.0 + math.sqrt(1.0 + a))
@@ -1505,7 +1514,7 @@ def _tcavfrie_map(al, v, w, dphis, s0, p0):
         p2r = 1.0 + dp2r
         v2 = p2r * p0 / h2
         cc[5] = dp2r
-        cc[4] = cc[4] * v2 / v1
+        cc[4] = cc[4] * v2 / v1 if not b2 else -(t + dt) * v2
         return cc
     return f
 

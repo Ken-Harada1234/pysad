@@ -1,0 +1,14 @@
+MOMENTUM = 2MEV;
+CAVI C1 = (L=0.0001 VOLT=10 FREQ=500E6 PHI=0.3 FRINGE=1) C0 = (L=0.0001 VOLT=10 FREQ=500E6 PHI=0.3 DISFRIN=1);
+MARK ST = ();
+LINE ONE = (ST C1);
+LINE TWO = (ST C0);
+FFS;
+$FORM = "22.16";
+beam = {{1e-5, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {0.0, 0.0}, {1.0, 1.0}};
+USE ONE; CELL;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["ONE PX ", r[[2,2]], " DP ", r[[2,6]]];
+USE TWO; CELL;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["TWO PX ", r[[2,2]], " DP ", r[[2,6]]];

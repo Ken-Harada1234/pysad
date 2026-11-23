@@ -2103,6 +2103,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>= −24·I1) から a = −K0·F1·</td>
 <td>F1</td>
 </tr>
+<tr>
+<td>B330</td>
+<td><strong>CAVI の端の収束・端のエネルギー変化に 1/β が無い</strong>: <code>tcavfrin</code> (<code>tcav.f:219</code>。CALC・Emittance は <code>tcave.f</code> の <code>tcavfrie</code>) は Δ(p_x/p0) = x·v/(2 L p0)·(sin(ωt − dphis) + s0)、端のエネルギー変化 −ω·p0·vf·(x² + y²)/2·cos(…) で、粒子の速度 β = p/h の因子を持たない。軸の近くの Maxwell の場 (E_r = −(r/2)∂_zE_z、B_θ = (r/2c²)∂_tE_z、E_z の r² の項) の中の電子のローレンツ力の数値積分 (DOP853、端の幅 1e-5 m) では、端を通る間 ∫F_r dt = ∫F_r ds/(βc) で Δp_x/p0 = x·v/(2 L p0 β)·(…)、エネルギー変化も 1/β。追跡 / 数値積分の比は k64 が 0.6 MeV/c (β = 0.761) で 0.754〜0.760、2 MeV/c (β = 0.969) で 0.962〜0.968、エネルギー変化の x² の項は 0.762・0.970 (β 倍)。δ ≠ 0 の粒子は設計の β でなく粒子の β に追随 (0.6 MeV/c、δ = −0.05〜+0.15 で 0.7372〜0.7953)。gs で確認: L = 1e-4 m・VOLT = 10 V・FREQ = 500 MHz・PHI = 0.3 の CAVI 1 要素の TrackParticles の端の px (FRINGE = 1 と DISFRIN = 1 の差、x = 1e-5) は、x·v·sin(PHI)/(2 L p0) と 3 GeV/c・2 MeV/c・0.6 MeV/c の全部で比 1.000000 (1/β が入っていない)。k64 の追跡と 12 桁一致。3 GeV/c では 1/β − 1 = 1.5e-8 で見えない。入口と出口の端が同じ位相なら打ち消し合うので、効くのは端 1 つ (FRINGE = 1 か 2)・粒子ごとに入口と出口で位相が違う場合 (δ ≠ 0 や z ≠ 0 の ωL/β の分)</td>
+<td>tcav.f <code>tcavfrin</code>・tcave.f <code>tcavfrie</code></td>
+<td>低エネルギーの CAVI (FRINGE ≥ 0、DISFRIN = 0) の追跡・CALC・Emittance[]。0.6 MeV/c で端の収束が 24% 不足</td>
+<td>低 (リングの空洞は β ≈ 1。入射器・低エネルギー)</td>
+<td>確定 (gs・独立な数値積分)</td>
+<td><strong>v2 は直した</strong> (<code>track6._tcavfrin</code>・<code>track6n.tcavfrin1</code>・<code>emit6d._tcavfrie_map</code>・<code>trptacc._cavfrie_piece</code>。粒子の β = p/h の 1/β を kick とエネルギー変化にかけ、H_f ∝ 1/β(E) の整合の時間のずれ −(x² + y²)κ0/(2p³) を入れる)。k64 は K64 のまま (gs と同じ)。試験 <code>test_v250_cavi_edge_beta.py</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>
