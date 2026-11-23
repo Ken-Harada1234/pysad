@@ -1,0 +1,29 @@
+pysad: D:\work\SAD-master\pysad-v250-work\pysad
+== (a) DX・DY・ROTATE の QUAD ==
+DX=0.001 DY=0.002 ROTATE=0: 回す角 sigma*ROTATE の sigma = +1: 差 0.00e+00
+DX=0.001 DY=0.002 ROTATE=0: 回す角 sigma*ROTATE の sigma = -1: 差 0.00e+00
+   (参考) 先に回し後で DX・DY を引く順序: 差 0.00e+00
+DX=0 DY=0 ROTATE=0.1: 回す角 sigma*ROTATE の sigma = +1: 差 5.42e-20
+DX=0 DY=0 ROTATE=0.1: 回す角 sigma*ROTATE の sigma = -1: 差 2.05e-04
+   (参考) 先に回し後で DX・DY を引く順序: 差 5.42e-20
+DX=0.001 DY=0.002 ROTATE=0.1: 回す角 sigma*ROTATE の sigma = +1: 差 2.17e-19
+DX=0.001 DY=0.002 ROTATE=0.1: 回す角 sigma*ROTATE の sigma = -1: 差 5.93e-04
+   (参考) 先に回し後で DX・DY を引く順序: 差 1.04e-04
+
+== (b) 回転の 4x4 はシンプレクティック ==
+|M^T S M - S| = 2.2e-17 (x, px, y, py の順。x-y と px-py を同じ R で回す)
+
+== (c) BEND の tbrot (DROTATE・CHI2): 弦の中点まわりの剛体回転 ==
+ent=True DROTATE=0.02 CHI2=0: 最小の差 2.22e-18 (候補 ('Rn Rt', 't=-1', 'n=+1', 'roll=+1', 'chi2=+1'))
+ent=True DROTATE=0 CHI2=0.015: 最小の差 4.34e-17 (候補 ('Rn Rt', 't=+1', 'n=+1', 'roll=+1', 'chi2=-1'))
+ent=True DROTATE=0.02 CHI2=0.015: 最小の差 1.56e-17 (候補 ('Rt Rn', 't=-1', 'n=+1', 'roll=+1', 'chi2=-1'))
+ent=False DROTATE=0.02 CHI2=0: 最小の差 4.16e-17 (候補 ('Rn Rt', 't=-1', 'n=+1', 'roll=-1', 'chi2=+1'))
+ent=False DROTATE=0 CHI2=0.015: 最小の差 1.56e-17 (候補 ('Rn Rt', 't=+1', 'n=+1', 'roll=+1', 'chi2=+1'))
+ent=False DROTATE=0.02 CHI2=0.015: 最小の差 5.38e-17 (候補 ('Rn Rt', 't=-1', 'n=+1', 'roll=-1', 'chi2=+1'))
+
+== (d) CHI1・CHI2・DZ (直線の MULT の tsolrot) ==
+CHI1・CHI2・DZ を指定した MULT と指定なしの MULT の追跡の差 = 0.0e+00 (0 なら pysad の追跡は CHI1・CHI2・DZ を使っていない)
+
+== (e) MARK・APERT・MAP ==
+MARK: 出力 - 入力 の最大 = 0.0e+00
+APERT (AX = AY = 1 cm): 通過する粒子の出力 - 入力 の最大 = 0.0e+00
