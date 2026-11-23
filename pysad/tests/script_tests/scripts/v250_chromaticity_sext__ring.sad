@@ -1,0 +1,15 @@
+MOMENTUM = 3GEV;
+DRIFT D1=(L=0.8) D2=(L=0.3);
+BEND B=(L=1.2 ANGLE=0.39269908169872414);
+QUAD QF=(L=0.3 K1=0.35) QD=(L=0.3 K1=-0.33);
+SEXT SF=(L=0.2 K2=2);
+MARK ST=();
+LINE CELL=(QF D1 B D2 SF QD D1 B D2);
+LINE RING=(ST CELL CELL CELL CELL CELL CELL CELL CELL);
+FFS;
+USE RING;
+NORFSW; NORAD; NOFLUC; $FORM="22.16";
+beam = {{0.0, 1e-3, -2e-3, 0.0, 1e-3}, {0.0, 0.0, 1e-4, 0.0, -1e-4}, {0.0, 1e-3, 0.0, -1e-3, 5e-4}, {0.0, 0.0, 1e-4, 1e-4, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}, {1e-3, 1e-3, 1e-3, -2e-3, 3e-3}, {1.0, 1.0, 1.0, 1.0, 1.0}};
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["X ", r[[2,1]]]; Print["P ", r[[2,2]]]; Print["Y ", r[[2,3]]]; Print["Q ", r[[2,4]]];
+Exit;

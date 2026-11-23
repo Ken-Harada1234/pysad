@@ -1061,7 +1061,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <tr>
 <td><code>Lattice.chromaticity()</code> の dν/dδ (B325)</td>
 <td>両</td>
-<td><code>twiss_table(±1e-4)</code> の位相進みの差分。BEND なし・E1/E2・K1≠0 の 4 構成は追跡のヤコビアンと 5e-6、gs の <code>Twiss["NX",-1]</code> の DP0 差分と 1e-8 (相対) で一致 (3 GeV、周長 41.6 m、8 セル)。<strong>6 極つきは追跡と 4e-4 ずれ (gs とは 1e-8。CALC の off-momentum の線形化と追跡の厳密なヤコビアンの差で、原因は未調査)</strong>。δ の 1 次の中心差分だけ。RF・放射は無視。<code>CHROMATICITY</code> コマンドは QUAD・SEXT・MULT だけ・単位 4π·ξ のままで、BEND の寄与を数えない</td>
+<td><code>twiss_table(±1e-4)</code> の位相進みの差分。BEND なし・E1/E2・K1≠0 の 4 構成は追跡のヤコビアンと 5e-6、gs の <code>Twiss["NX",-1]</code> の DP0 差分と 1e-8 (相対) で一致 (3 GeV、周長 41.6 m、8 セル)。<strong>厚い 6 極つきは追跡と 4e-4 (相対) ずれ (gs とは 1e-8)。原因は CALC の厚い 6 極の 2 次の分割 (B326)</strong>。δ の 1 次の中心差分だけ。RF・放射は無視。<code>CHROMATICITY</code> コマンドは QUAD・SEXT・MULT だけ・単位 4π·ξ のままで、BEND の寄与を数えない</td>
+</tr>
+<tr>
+<td>厚い 6 極の CALC と追跡の線形化の差 (B326)</td>
+<td>両</td>
+<td>3 GeV・周長 41.6 m・8 セルの 1 構成、K2 = 2、L = 0.1・0.2 m、δ = ±1e-4 で測った。CALC の <code>tthine</code> が 2 次、追跡 <code>tthin</code> が 4 次で、差は K2 と L² に比例 (L = 0.2 で dν/dδ に 1.46e-3)。他のエネルギー・6 極の位置 (分散の大きい所)・8 極以上は未確認。v2 でも直していない</td>
 </tr>
 <tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>

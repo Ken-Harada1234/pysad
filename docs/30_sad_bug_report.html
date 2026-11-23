@@ -2112,6 +2112,15 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>確定 (gs・追跡)</td>
 <td><strong>コマンドは両モードとも変えない</strong> (ヘルプの定義。色収差が要るときは DP0 の差分、docs/29 C20)。<strong><code>Lattice.chromaticity()</code> は両モードとも直した</strong> (<code>twiss_table(±δ)</code> の位相進みの中心差分。閉軌道・BEND・6 極を含み、RF は無視)。試験 <code>test_v250_chromaticity_bend.py</code></td>
 </tr>
+<tr>
+<td>B326</td>
+<td><strong>CALC・Emittance[] の厚い 6 極 (<code>tthine</code>、L/6・キック/2・2L/3・キック/2・L/6 の 2 次) は、動いた閉軌道のまわりの線形化で、追跡 (<code>tthin</code>、4 次の力勾配型) とずれる</strong>: 6 極の本体を 2 次で分割するので、軌道が 6 極の中で傾いて (x' = η'δ) ずれるときのフィードダウンの四極 K2·x(s) の積分に O(L²) の誤差が残る。3 GeV、周長 41.6 m、8 セル (QF D1 B D2 SF QD D1 B D2、偏向 E1=E2=0)、SF の K2 = 2 で、δ = ±1e-4 の dν/dδ は、追跡のヤコビアン (3.32017, −19.99798)、SF を 40〜80 個の薄い 6 極に分けた厳密な極限 (3.32016, −19.99794。追跡と 2e-6 以内)、CALC (3.32163, −19.99773。gs の <code>Twiss["NX",-1]</code> の差分と 1e-8 で同じ) で、CALC だけが 1.46e-3 (水平 4.4e-4 (相対)) 離れる。差は K2 に比例し (K2 = 0.5〜4)、L² に比例 (L = 0.2 で 1.46e-3、0.1 で 3.6e-4、比 4.0)、薄い 6 極 (L = 0) では消える (2e-5 以内)。非線形フリンジ (B291) は原因ではない (k64 と v2 で差が同じ)。追跡側は正しい: pysad の追跡は gs の <code>TrackParticles</code> 1 周 (5 粒子、δ = 1e-3 を含む) と k64 で 1e-16 で一致</td>
+<td>tthine.f (CALC)・tquad.f (tthin)</td>
+<td>厚い 6 極のあるリングで、CALC の dν/dδ・フィードダウン (軌道のずれ × K2) が追跡と O(K2·x_co·L²) ずれる (K2 L = 0.4 で 4e-4 (相対))。δ = 0 の線形光学や 6 極のない部分には出ない</td>
+<td>低 (数値精度の差)</td>
+<td>確定 (gs の CALC と追跡・薄い 6 極への分割の極限)</td>
+<td><strong>直していない (両モード。CALC の 6 極の分割次数を変えると ADTS・RDT・LMA の CALC 基準が全部動くため、統括の判断待ち)</strong>。追跡の評価が正しい基準。試験 <code>test_v250_chromaticity_bend.py</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="1-落ちる動かない-重要度-高">1. 落ちる・動かない (重要度 高)</h2>

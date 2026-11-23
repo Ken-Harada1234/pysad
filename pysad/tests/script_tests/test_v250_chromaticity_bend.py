@@ -9,7 +9,7 @@
 基準 (1) 追跡: 閉軌道 (Newton) のまわりの 1 周写像のヤコビアンから出したチューンの差分 (pysad の光学を使わない)。
 基準 (2) gs (K64, 2026-10-22 ビルド) の `Twiss["NX",-1]` の DP0 = ±1e-4 の中心差分 (CELL; NORFSW)。値は下の定数に保存した。
 ラティス: 3 GeV、周長 41.6 m、8 セル (QF D1 B D2 QD D1 B D2 [+ SF/SD])、偏向磁石 16 台 (ANGLE = 2π/16、L = 1.2 m)。
-限界: 6 極つきのリングでは、gs の CALC の off-momentum の線形光学 (pysad も同じ) と追跡の厳密なヤコビアンが 4e-4 (相対) ずれる (原因は未調査。6 極なしの 4 リングは 1e-6 台で一致)。
+限界: 厚い 6 極つきのリングでは、CALC の厚い 6 極 (2 次の分割) と追跡 (4 次) が 4e-4 (相対) ずれる (docs/30 B326。下の試験で原因を切り分けた。6 極なしの 4 リング・薄い 6 極は 1e-6〜1e-5 で一致)。
 1 つのエネルギー・1 つのリング構成だけ。RF・放射なし。δ = ±1e-4 の 1 次の中心差分 (2 次以上の δ 依存は見ない)。
 FFS の `CHROMATICITY` コマンドは QUAD・SEXT・MULT だけの閉形式 (ヘルプの simplest formula) で BEND を数えず、値は 4π·ξ の単位。
 ここでは、四極だけのリングで TOTAL = 4π·ξ、偏向磁石があると TOTAL/4π が dν/dδ と違うことだけを確かめる (コマンドは変えていない)。
@@ -143,3 +143,69 @@ def test_chromaticity_command_is_quad_sext_formula_in_4pi_units(mode):
     assert np.allclose(t1, [-10.613, -14.827], atol=2e-3)
     xi1 = np.array(_ring('bend').lat.chromaticity())
     assert abs(t1[1] / (4 * math.pi) - xi1[1]) > 0.2        # 垂直: コマンドは −1.180、実際は −0.879 (BEND の分)
+
+
+# ---------------------------------------------------------------------------------------------
+# 6 極つきのずれの原因 (docs/30 B326): CALC の厚い 6 極 (tthine、2 次の分割) と追跡 (tthin、4 次) の差
+# ---------------------------------------------------------------------------------------------
+def _sext_ring(K2, L, nslice=0):
+    """3 GeV、8 セル、QF D1 B D2 SF QD D1 B D2。SF は厚い 6 極 (L)、nslice > 0 なら L=0 の薄い 6 極 nslice 個 (中点則) に分ける"""
+    if nslice:
+        d = L / nslice
+        sf = ('DRIFT DS=(L=%.15g);\nDRIFT DH=(L=%.15g);\nSEXT KS=(L=0 K2=%.15g);\n' % (d, d / 2, K2 / nslice)
+              + 'LINE SF=(DH ' + ' '.join(['KS'] + ['DS KS'] * (nslice - 1)) + ' DH);\n')
+    else:
+        sf = 'SEXT SF=(L=%.15g K2=%.15g);\n' % (L, K2)
+    src = ('MOMENTUM = 3GEV;\nDRIFT D1=(L=0.8) D2=(L=0.3);\nBEND B=(L=1.2 ANGLE=%.15g);\n'
+           'QUAD QF=(L=0.3 K1=0.35) QD=(L=0.3 K1=-0.33);\n' % ANG + sf +
+           'MARK ST=();\nLINE CELL=(QF D1 B D2 SF QD D1 B D2);\nLINE RING=(ST CELL CELL CELL CELL CELL CELL CELL CELL);\nFFS;\nUSE RING;\n')
+    return run_sad_string(src, out=io.StringIO())[0]
+
+
+def _trk(ffs):
+    return np.array(_tracking(ffs))
+
+
+def test_sextupole_thin_calc_equals_tracking(mode):
+    """薄い (L=0) 6 極では、CALC の線形化と追跡のヤコビアンが 2e-5 (相対) 以内 (6 極の強さ 2 と 4)"""
+    for k2 in (2.0, 4.0):
+        ffs = _sext_ring(k2, 0.0)
+        assert np.allclose(ffs.lat.chromaticity(), _trk(ffs), rtol=2e-5, atol=1e-5), k2
+
+
+def test_sextupole_thick_calc_error_scales_L2_and_tracking_is_exact(mode):
+    """厚い 6 極: 差 (CALC − 追跡) は L² に比例 (L = 0.2 と 0.1 で 4 倍) し、薄い 6 極に分けた極限 (厳密) は追跡に一致、CALC は離れる。
+    原因: CALC の tthine は L/6・キック/2・2L/3・キック/2・L/6 (2 次)。追跡の tthin は 4 次"""
+    d = {}
+    for L in (0.2, 0.1):
+        ffs = _sext_ring(2.0, L)
+        d[L] = np.array(ffs.lat.chromaticity()) - _trk(ffs)
+    assert abs(d[0.2][0]) > 1e-3 and abs(d[0.2][0] / d[0.1][0] - 4.0) < 0.2
+    ex = np.array(_sext_ring(2.0, 0.2, nslice=40).lat.chromaticity())      # 厳密 (40 分割の中点則。80 分割との差は 2e-6)
+    trk = _trk(_sext_ring(2.0, 0.2))
+    calc = np.array(_sext_ring(2.0, 0.2).lat.chromaticity())
+    assert np.allclose(trk, ex, rtol=0, atol=1e-4)
+    assert abs(calc[0] - ex[0]) > 1e-3
+
+
+def _nums(t, tag):
+    import re
+    m = re.search(r'^' + tag + r' \{([^}]*)\}', t, re.M | re.S)
+    return np.array([float(v) for v in m.group(1).replace('\n', ' ').split(',')])
+
+
+def test_k64_tracking_with_sextupole_matches_gs_trackparticles():
+    """6 極つきのリング (厚い SF) の TrackParticles 1 周 (5 粒子、δ = 1e-3 を含む) が gs と一致 (k64: 1e-16)。gs の出力は scripts/ に保存"""
+    import os
+    here = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'scripts')
+    src = open(os.path.join(here, 'v250_chromaticity_sext__ring.sad'), encoding='utf-8').read()
+    gs = open(os.path.join(here, 'v250_chromaticity_sext__ring.gs.txt'), encoding='utf-8', errors='replace').read()
+    old = compat._mode
+    compat.set_mode('k64')
+    try:
+        buf = io.StringIO()
+        run_sad_string(src, out=buf)
+    finally:
+        compat.set_mode(old)
+    for tag in 'XPYQ':
+        assert np.abs(_nums(buf.getvalue(), tag) - _nums(gs, tag)).max() < 1e-15, tag

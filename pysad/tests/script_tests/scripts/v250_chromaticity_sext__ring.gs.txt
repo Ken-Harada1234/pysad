@@ -1,0 +1,33 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-22 12:11:05 +0900 ***
+ *** Today: 22:44:00 Monday 11/23/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+NPARA=1;
+MOMENTUM = 3GEV;
+DRIFT D1=(L=0.8) D2=(L=0.3);
+BEND B=(L=1.2 ANGLE=0.39269908169872414);
+QUAD QF=(L=0.3 K1=0.35) QD=(L=0.3 K1=-0.33);
+SEXT SF=(L=0.2 K2=2);
+MARK ST=();
+LINE CELL=(QF D1 B D2 SF QD D1 B D2);
+LINE RING=(ST CELL CELL CELL CELL CELL CELL CELL CELL);
+FFS;
+ *** SADScript Initialization: /home/coding/SAD-git/Packages/init.n ***
+ *** Run time Environment:     /home/coding/SAD-git/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING;
+Out[1]:= USE
+ NORFSW; NORAD; NOFLUC; $FORM="22.16";
+ beam = {{0.0, 1e-3, -2e-3, 0.0, 1e-3}, {0.0, 0.0, 1e-4, 0.0, -1e-4}, {0.0, 1e-3, 0.0, -1e-3, 5e-4}, {0.0, 0.0, 1e-4, 1e-4, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}, {1e-3, 1e-3, 1e-3, -2e-3, 3e-3}, {1.0, 1.0, 1.0, 1.0, 1.0}};
+ r = TrackParticles[{1, beam}, 1, 1, 1];
+ Print["X ", r[[2,1]]]; Print["P ", r[[2,2]]]; Print["Y ", r[[2,3]]]; Print["Q ", r[[2,4]]];
+X { -1.52854466552E-5, 8.732467271339E-4, -.001775752451609, 1.413685995329E-5, 7.309975149658E-4}
+P { 3.245997935149E-5, 2.599434389440E-6, 2.001986765896E-4, -1.66175771881E-5, -1.09586553608E-5}
+Y { 1.64472574039E-20,  .001231466143146, 1.026143688896E-4, -.001029017091946, 5.172830555705E-4}
+Q { 4.87475751547E-20, -1.44215605416E-4, 7.955249287593E-5, 2.614006891210E-4, -3.41420899427E-5}
+ Exit;
+ FFS                  end:  CPU time =     0.000 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     F     F     F     T     F     F     T     F     T
+ In[2]:=  ???-getbuf-end of input stream
