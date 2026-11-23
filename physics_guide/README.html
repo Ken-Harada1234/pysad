@@ -53,7 +53,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <li>ほかの文書との分担: 使い方と SAD の機能の仕様は <code>docs/</code>、物理の導出はこのガイド。K64 の式の早見表は <a href="../docs/23_physics_guide.html">docs/23_physics_guide.md</a>、K64 のバグは <a href="../docs/30_sad_bug_report.html">docs/30_sad_bug_report.md</a>、v2 と k64 の違いは <a href="../docs/28_v2_vs_k64.html">docs/28_v2_vs_k64.md</a>。</li>
 </ul>
 <h2 id="目次">目次</h2>
-<p>✓ は書けているもの。「予定」は、まだ書いていないもの。</p>
+<p>✓ は書けているもの。</p>
 <table>
 <thead>
 <tr>
@@ -64,19 +64,19 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </thead>
 <tbody>
 <tr>
+<td><a href="00_overview.html">00_overview.md</a></td>
+<td><strong>全体像</strong>。ハミルトニアンから Fortran・Python までの流れ (表と箇条書き)、3 系統の実装 (追跡 <code>t*.f</code>・行列 <code>t*e.f</code>・解析微分 <code>q*</code>)、要素ルーチンの命名則、章の読み方、<strong>ガイド全体の確認の一覧</strong>、<strong>ガイド全体の未確認・K64 とヘルプの誤りの疑いの一覧</strong> (確定と疑いを分ける)</td>
+<td>✓</td>
+</tr>
+<tr>
 <td><a href="01_variables_and_conventions.html">01_variables_and_conventions.md</a></td>
 <td>変数と約束。正準変数、ラグランジアンから母関数まで、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>d</mi><mi>v</mi></mrow><annotation encoding="application/x-tex">dv</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6944em;"></span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.0359em;">v</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>p</mi><mi>x</mi></msub><mi mathvariant="normal">/</mi><mo stretchy="false">(</mo><mn>1</mn><mo>+</mo><mi>δ</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">p_x/(1+\delta)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">/</span><span class="mopen">(</span><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0379em;">δ</span><span class="mclose">)</span></span></span></span>、K1 の約束 (四極の章に必要な範囲)</td>
-<td>✓ (四極に必要な範囲。ほかは予定)</td>
+<td>✓ (四極に必要な範囲。曲率が効く導出・ソレノイド・加速は各要素の章)</td>
 </tr>
 <tr>
 <td><a href="01a_hamiltonian_derivation.html">01a_hamiltonian_derivation.md</a></td>
 <td><strong>ハミルトニアンの導出</strong>。ラグランジアン、速度依存のポテンシャルと一般化力・一般化運動量、ルジャンドル変換、正準変換、Frenet–Serret 座標、<span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>t</mi><mo>→</mo><mi>s</mi></mrow><annotation encoding="application/x-tex">t \to s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.6151em;"></span><span class="mord mathnormal">t</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span> の入れ替え、2 次の展開と偏向・四極の運動方程式</td>
 <td>✓</td>
-</tr>
-<tr>
-<td><a href="00_overview.html">00_overview.md</a></td>
-<td><strong>全体像</strong>。ハミルトニアンから Fortran・Python までの流れ (表と箇条書き)、3 系統の実装 (追跡 <code>t*.f</code>・行列 <code>t*e.f</code>・解析微分 <code>q*</code>)、要素ルーチンの命名則、章の読み方、<strong>ガイド全体の確認の一覧</strong>、<strong>ガイド全体の未確認・K64 とヘルプの誤りの疑いの一覧</strong> (確定と疑いを分ける)</td>
-<td>✓ (17・18 章は予定として記載)</td>
 </tr>
 <tr>
 <td><a href="02_drift.html">02_drift.md</a></td>
@@ -165,22 +165,22 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 <tr>
 <td><a href="C_poisson_lie.html">C_poisson_lie.md</a></td>
-<td>付録: ポアソン括弧とリー演算子 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mo stretchy="false">(</mo><mo>:</mo><mi>f</mi><mo>:</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\exp(:f:)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">exp</span><span class="mopen">(</span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">)</span></span></span></span> (ドリフト、四極、6 極の例、合成の順序、SAD のヘルプの記法との対応)</td>
+<td>付録 C: ポアソン括弧とリー演算子 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mo stretchy="false">(</mo><mo>:</mo><mi>f</mi><mo>:</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\exp(:f:)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">exp</span><span class="mopen">(</span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.1076em;">f</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">)</span></span></span></span> (ドリフト、四極、6 極の例、合成の順序、BCH の導出、SAD のヘルプの記法との対応)</td>
 <td>✓</td>
 </tr>
 <tr>
-<td>A_help_vs_source.md</td>
-<td>付録: ヘルプの式と K64 のソースの食い違い・誤植の一覧</td>
-<td>予定 (01 章と 04 章の付録 A に先に書いてある)</td>
+<td>(独立した章なし)</td>
+<td>付録 A: ヘルプの式と K64 のソースの食い違い・誤植</td>
+<td>各章の付録 A と、<a href="00_overview.html">00_overview.md</a> §7.1 の集約にある</td>
 </tr>
 <tr>
-<td>B_script_index.md</td>
-<td>付録: 確認スクリプトの一覧</td>
-<td>予定 (下の表)</td>
+<td>(独立した章なし)</td>
+<td>付録 B: 確認スクリプトの一覧</td>
+<td>下の「確認スクリプトの実行方法」</td>
 </tr>
 </tbody>
 </table>
-<p>読む順の目安: <strong>01 → 01a (導出を詳しく追うとき) → 04 → 05</strong>。ヘルプの <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mo stretchy="false">(</mo><mo>:</mo><mi>H</mi><mo>:</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\exp(:H:)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">exp</span><span class="mopen">(</span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">)</span></span></span></span> の記法は付録 C。<strong>01 → 04</strong> (四極を例に、ガイドの書き方を掴む)。そのあと、要素別に拾い読みしてよい。</p>
+<p>読む順の目安: <strong>00 (全体像) → 01 → 01a (導出を詳しく追うとき) → 02 → 04 → 05</strong>。ヘルプの <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>exp</mi><mo>⁡</mo><mo stretchy="false">(</mo><mo>:</mo><mi>H</mi><mo>:</mo><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">\exp(:H:)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">exp</span><span class="mopen">(</span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="katex-base"><span class="katex-strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0813em;">H</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span></span><span class="katex-base"><span class="katex-strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mclose">)</span></span></span></span> の記法は付録 C、分割の一般論は 03。そのあと、要素別に拾い読みしてよい。</p>
 <h2 id="共通の記号の表-最小限">共通の記号の表 (最小限)</h2>
 <p>詳しくは各章の「記号と単位」の表。</p>
 <table>
