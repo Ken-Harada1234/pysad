@@ -15,7 +15,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 |---|---|---|
 | [01_variables_and_conventions.md](01_variables_and_conventions.md) | 変数と約束。正準変数、ラグランジアンから母関数まで、$dv$、$p_x/(1+\delta)$、K1 の約束 (四極の章に必要な範囲) | ✓ (四極に必要な範囲。ほかは予定) |
 | [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) | **ハミルトニアンの導出**。ラグランジアン、速度依存のポテンシャルと一般化力・一般化運動量、ルジャンドル変換、正準変換、Frenet–Serret 座標、$t \to s$ の入れ替え、2 次の展開と偏向・四極の運動方程式 | ✓ |
-| 00_overview.md | 全体像。ハミルトニアンから Fortran・Python までの流れ、3 系統の実装 (追跡・行列・解析微分) | 予定 |
+| [00_overview.md](00_overview.md) | **全体像**。ハミルトニアンから Fortran・Python までの流れ (表と箇条書き)、3 系統の実装 (追跡 `t*.f`・行列 `t*e.f`・解析微分 `q*`)、要素ルーチンの命名則、章の読み方、**ガイド全体の確認の一覧**、**ガイド全体の未確認・K64 とヘルプの誤りの疑いの一覧** (確定と疑いを分ける) | ✓ (17・18 章は予定として記載) |
 | [02_drift.md](02_drift.md) | **ドリフト**。$H$ から $x' = p_x/p_z$、$z$ の更新と $dv$ の項、厳密 = 近軸 × $D$、近軸 (DISKIN)、COD のまわりの 6×6 (`tdrife1`)、最短の例 ($R_{56} = L/\gamma_0^2$) | ✓ |
 | [03_symplectic_integrators.md](03_symplectic_integrators.md) | **シンプレクティックな分割の一般論**。BCH と Strang (2 次)、Yoshida (4 次)、後方誤差解析、力勾配型の係数 $\alpha, \beta, \gamma$ の導出、K64 の刻みの数の式の一覧 | ✓ |
 | [04_quad.md](04_quad.md) | **四極**。$H_2$ の厳密解、運動学的な $\Delta H$、Strang と Yoshida、刻みの数、フリンジ、行列と追跡の関係 | ✓ |
