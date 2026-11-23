@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -48,7 +48,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 04_ffs_small_commands.md</div>
+<div class="meta">元: 04_ffs_small_commands.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="04-ffs-の小さなコマンドと-delcor">04. FFS の小さなコマンドと DELCOR</h1>
 <p><strong>この文書で分かること</strong>: FFS の小さなコマンド (VARIABLES・MATRIX・SHOW・PRINT・OUTPUT など、1 行で使えるもの) の働きと pysad での扱い (§1)、リングに沿った相関のあるずれを入れる DELCOR の使い方・作り方・使える範囲 (§2)、限界 (§3)。
 <strong>前提</strong>: <a href="03_ffs_commands.html">03_ffs_commands.md</a> の FFS の基本 (USE・CALC・FIT・FREE) を読んでいること。

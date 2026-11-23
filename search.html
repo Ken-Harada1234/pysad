@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="site_index"><meta name="viewport" content="width=device-width,initial-scale=1"><title>全文検索</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+main { margin:0 auto; max-width:900px; padding:24px 28px 80px; }
+.row { display:flex; gap:8px; margin:1em 0 .6em; }
+.row input, .row select { font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--fg); }
+.row input { flex:1; }
+#out { list-style:none; padding:0; } #out li { padding:10px 0; border-bottom:1px solid var(--line); }
+#out a { text-decoration:none; } .sn { margin-top:3px; font-size:.93em; overflow-wrap:anywhere; } .d { color:var(--muted); font-size:.82em; }
+mark { background:#fde68a; color:#1f2328; padding:0 1px; border-radius:2px; }
+@media (prefers-color-scheme: dark) { mark { background:#6b5300; color:#fff; } }
+#stat { color:var(--muted); font-size:.9em; }
+</style></head><body class="nonav">
+<main>
+<div class="meta"><a href="index.html">入口</a></div>
+<h1>全文検索</h1>
+<div class="row"><input id="q" type="search" placeholder="例: 共鳴、ハミルトニアン、FODO、Emittance、\nu_x" aria-label="検索語"><select id="scope" aria-label="範囲"><option value="">すべて</option><option value="docs/">docs (解説文書)</option><option value="example/">example (例)</option><option value="pysad/tests/">試験</option><option value="tools/">tools</option><option value="physics_guide/">物理ガイド</option></select></div>
+<div id="stat">読み込み中…</div>
+<ul id="out"></ul>
+</main><script>
+(function () {
+  var box = document.getElementById('q'), out = document.getElementById('out'), stat = document.getElementById('stat');
+  var scope = document.getElementById('scope');
+  var data = null, norm = null;
+  function esc(s) { return s.replace(/[&<>"]/g, function (c) { return {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]; }); }
+  function nfkc(s) { return s.normalize ? s.normalize('NFKC') : s; }
+  function load() {
+    fetch('search_index.json').then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+      data = d;
+      norm = d.sections.map(function (s) {
+        var p = d.pages[s.page];
+        return { t: p.title.toLowerCase(), h: s.heading.toLowerCase(), x: s.text.toLowerCase() };
+      });
+      run();
+    }).catch(function () {
+      stat.textContent = '索引 (search_index.json) を読めません。ファイルを直接開いている (file://) ときは、リポジトリの直下で py -3.12 -m http.server を実行し、http://localhost:8000/search.html を開いてください。';
+    });
+  }
+  function count(s, w) { var n = 0, i = -1; while ((i = s.indexOf(w, i + 1)) >= 0 && n < 50) n++; return n; }
+  function snippet(text, low, words) {
+    var pos = -1;
+    for (var k = 0; k < words.length; k++) { var i = low.indexOf(words[k]); if (i >= 0 && (pos < 0 || i < pos)) pos = i; }
+    if (pos < 0) pos = 0;
+    var a = Math.max(0, pos - 40), b = Math.min(text.length, pos + 120);
+    var raw = text.slice(a, b), l = low.slice(a, b);
+    var marks = [];
+    words.forEach(function (w) { var i = -1; while ((i = l.indexOf(w, i + 1)) >= 0) { marks.push([i, i + w.length]); i += w.length - 1; } });
+    marks.sort(function (x, y) { return x[0] - y[0]; });
+    var res = '', cur = 0;
+    marks.forEach(function (m) { if (m[0] < cur) return; res += esc(raw.slice(cur, m[0])) + '<mark>' + esc(raw.slice(m[0], m[1])) + '</mark>'; cur = m[1]; });
+    res += esc(raw.slice(cur));
+    return (a > 0 ? '…' : '') + res + (b < text.length ? '…' : '');
+  }
+  function run() {
+    if (!data) return;
+    var q = nfkc(box.value).trim();
+    history.replaceState(null, '', q ? '?q=' + encodeURIComponent(q) : location.pathname);
+    if (!q) { out.innerHTML = ''; stat.textContent = data.pages.length + ' ページ・' + data.sections.length + ' 節を索引済み。語を空白で区切ると、すべてを含む節を探します (大文字小文字・全角半角の区別なし、部分一致)。'; return; }
+    var words = q.toLowerCase().split(/\s+/).filter(Boolean), sc = scope.value, hits = [];
+    for (var i = 0; i < data.sections.length; i++) {
+      var s = data.sections[i], p = data.pages[s.page], n = norm[i];
+      if (sc && p.path.indexOf(sc) !== 0) continue;
+      var score = 0, ok = true;
+      for (var k = 0; k < words.length; k++) {
+        var w = words[k], c = count(n.x, w), th = n.t.indexOf(w) >= 0, hh = n.h.indexOf(w) >= 0;
+        if (!c && !th && !hh) { ok = false; break; }
+        score += Math.min(c, 5) + (th ? 6 : 0) + (hh ? 12 : 0);
+      }
+      if (ok) hits.push([score, i]);
+    }
+    hits.sort(function (a, b) { return b[0] - a[0] || a[1] - b[1]; });
+    stat.textContent = hits.length + ' 件の節が見つかりました' + (hits.length > 60 ? ' (上位 60 件を表示)' : '') + '。';
+    out.innerHTML = hits.slice(0, 60).map(function (h) {
+      var s = data.sections[h[1]], p = data.pages[s.page];
+      var href = p.path + (s.id ? '#' + encodeURIComponent(s.id) : '');
+      return '<li><a href="' + esc(href) + '"><b>' + esc(p.title) + '</b>' + (s.id && s.heading !== p.title ? ' › ' + esc(s.heading) : '') + '</a>'
+        + '<div class="sn">' + snippet(s.text, norm[h[1]].x, words) + '</div><div class="d">' + esc(p.path) + '</div></li>';
+    }).join('');
+  }
+  var m = /[?&]q=([^&]*)/.exec(location.search);
+  if (m) box.value = decodeURIComponent(m[1].replace(/\+/g, ' '));
+  box.addEventListener('input', run); scope.addEventListener('change', run);
+  load(); box.focus();
+})();
+</script></body></html>

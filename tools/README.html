@@ -27,33 +27,51 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
 <li><a href="#使い方">使い方</a></li>
 <li><a href="#変換の内容">変換の内容</a></li>
 <li><a href="#折りたたみ">折りたたみ</a></li>
+<li><a href="#数式">数式</a></li>
+<li><a href="#コードの色分け">コードの色分け</a></li>
+<li><a href="#全文検索と入口ページ">全文検索と入口ページ</a></li>
+<li><a href="#図の作り方svg-の方針">図の作り方・SVG の方針</a></li>
 <li><a href="#限界">限界</a></li>
+<li><a href="#github-pages-で公開する">GitHub Pages で公開する</a></li>
 </ul>
 </div>
 </nav>
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="tools-md-を図入りの-html-にする">tools: md を図入りの HTML にする</h1>
 <p>リポジトリ内の md を、目次つき・図入りの 1 枚の HTML にする。使うのは <code>markdown</code> パッケージだけで、外部通信・外部ライブラリの読み込みはない。HTML は md から作る生成物なので、md を直したら作り直す。</p>
 <h2 id="使い方">使い方</h2>
 <pre><code>py -3.12 tools/build_html.py                  # 追跡対象の md をすべて変換
 py -3.12 tools/build_html.py docs README.md   # 指定したファイル・フォルダの分だけ
 py -3.12 tools/build_html.py --changed        # 変更された md だけ
-py -3.12 tools/build_html.py --check          # 壊れたリンクの検査だけ (HTML は書かない)
+py -3.12 tools/build_html.py --check          # 壊れたリンク・索引と入口のリンク先の検査だけ (HTML は書かない)
+py -3.12 tools/build_html.py --require-math   # Node.js がない・数式の変換エラーがあるとエラー終了 (数式は「数式」の節)
 py -3.12 tools/md_to_html.py README.md        # 1 ファイルだけ (-o 出力先、--fold-regex、--fold-level)
 </code></pre>
 <ul>
 <li>出力は、md と同じ名前の <code>.html</code> を同じフォルダに置く (名前に版・日付は付けない)。同名の <code>.html</code> が本ツールの生成物なら上書きする。そうでない既存の <code>.html</code> は、何もせず警告する。</li>
 <li>引数なしの対象は <code>git ls-files '*.md'</code> のうち、作業ツリーに存在するもの。ただし <code>docs/history/</code> の下、<code>CHANGELOG.md</code>、<code>LICENSE</code> 類、<code>example/tools/kek_ls_src/</code> (生成用の断片) は除く。<code>--include-untracked</code> で、追跡されていない md も対象にする (コミット前の検査は <code>--check --include-untracked</code>)。</li>
 <li><code>--changed</code> は、<code>git status</code> に出ている md と、HTML がない・HTML より新しい md を対象にする。ほかの引数と併用すると、その範囲の中で絞る。</li>
+<li>変換の終わりに、全文検索の索引 <code>search_index.json</code>、検索の画面 <code>search.html</code>、入口ページ <code>index.html</code> をリポジトリの直下に作る (下の「全文検索と入口ページ」)。</li>
 <li>終わりに、変換した件数・埋め込んだ図の枚数・警告・壊れたリンクの一覧を表示する。<code>--check</code> は壊れたリンク (md への相対リンク、画像、<code>#</code> のアンカー) があると終了コード 1。</li>
 </ul>
 <h2 id="変換の内容">変換の内容</h2>
@@ -63,21 +81,90 @@ py -3.12 tools/md_to_html.py README.md        # 1 ファイルだけ (-o 出力�
 <li>図: (a) <code>![説明](相対パス)</code> の画像 (png・jpg・gif・svg・webp) は base64 で埋め込む。1 枚が 3 MB を超えるときは埋め込まず相対リンクのままにして警告する。(b) 本文中にバッククォートで書かれた図のファイル名 (<code>fig_xxx.png</code> など) が、md と同じフォルダまたは <code>results/</code> にあれば、最初の言及を含む段落・箇条書き・表などのブロックの直後に図を置く。コードブロックの中の名前は無視する。画像記法で既に載せた図は重ねない。</li>
 <li>文書間リンク <code>[..](xxx.md)</code>・<code>(xxx.md#anchor)</code> は、変換対象の md なら <code>.html</code> に書き換える。対象でなければそのまま。</li>
 <li>見出しのアンカーは GitHub 風 (小文字化し、英数字・日本語・<code>_</code>・<code>-</code> 以外を除き、空白を <code>-</code> にする。同じ見出しは <code>-1</code>、<code>-2</code>)。日本語の見出しでも同じ。リンクの <code>#</code> が大文字小文字だけ違うときは、実在の ID に合わせる。</li>
+<li>コードブロックの色分け (下の「コードの色分け」)。各ページの先頭の注記の行に、検索と入口へのリンクを置く (<code>../search.html</code>・<code>../index.html</code> の相対パス)。</li>
 <li>段落の直後に空行なしで始まる箇条書き・表、2 スペースの入れ子の箇条書きは、GitHub と同じように読めるよう前処理で整える (コードブロックの中は触らない)。</li>
 </ul>
 <h2 id="折りたたみ">折りたたみ</h2>
 <p>既定では折りたたまない。<code>--fold-regex</code> (見出しの文字列に一致する正規表現) と <code>--fold-level</code> (既定 3) で、その階層の見出しの節 (同じか上の階層の見出しまで) を <code>&lt;details&gt;</code> にする。折りたたんだ節の中を指すリンクを開くと、その節が開く。</p>
 <p><code>build_html.py</code> では、<code>tools/html_config.json</code> に「リポジトリの根からの相対パス → オプション」を書く。</p>
 <pre><code class="language-json">{
-  &quot;example/ddba/v07_14/sextupole_v2/README.md&quot;: {&quot;fold_regex&quot;: &quot;^(ラウンド|揺らぎの確認|反省)&quot;, &quot;fold_level&quot;: 3}
+  <span class="k">"example/ddba/v07_14/sextupole_v2/README.md"</span>: {<span class="k">"fold_regex"</span>: <span class="s">"^(ラウンド|揺らぎの確認|反省)"</span>, <span class="k">"fold_level"</span>: <span class="m">3</span>}
 }
 </code></pre>
+<h2 id="数式">数式</h2>
+<p>md の中の TeX の数式は、HTML を作るときに KaTeX (Node.js) で HTML の部品にして埋め込む。できた HTML は、開くときに JavaScript が要らず、外部ファイルも外部通信もない単独のファイルで、オフラインの Chrome などでそのまま数式として見える。</p>
+<p>書き方:</p>
+<ul>
+<li>インライン: <code>$\nu_x = 6.8$</code>。表示数式 (中央に独立した行、複数行も可): <code>$$ ... $$</code>。表の中にも書ける。</li>
+<li>インラインとみなすのは、同じ行の中で、開く <code>$</code> の直後と閉じる <code>$</code> の直前が空白でなく、中身が TeX の命令 (<code>\nu</code>)・<code>_</code>・<code>^</code>・<code>{}</code> を含むか、ASCII だけの短い式 (<code>$x$</code>・<code>$x=1$</code>・<code>$(x,y)$</code>・<code>$j+k+l+m=4$</code>・数だけの <code>$0.36$</code>) のもの。日本語を含む、閉じる <code>$</code> の直後が数字 (<code>$1〜$13</code>)、中身の前後が空白のもの (<code>$5 と $6</code>) は、金額として数式にしない。<code>$$$</code> (3 個以上連続。SAD の出力) も数式にしない。</li>
+<li><strong>コードの中は数式にならない</strong>: <code>` の囲み、字下げ 4 つ以上のコードブロック、バッククォートのインラインコード (</code> <code>$x_1$</code> <code>`) の中の</code>$` は、そのまま。箇条書きの続きの字下げはコードとみなさない。</li>
+<li>数式でない <code>$</code> を本文に書くときは、<code>\$</code> と書く (<code>\$5</code>)。シェルの <code>$HOME</code> のように、閉じる <code>$</code> がなければ、そのままでも数式にならない。</li>
+<li>文書全体で数式を使わないときは、<code>tools/html_config.json</code> に <code>"math": false</code> を書く (SAD のヘルプの原文を貼った表など)。</li>
+<li>変換できない数式は、赤字の TeX のまま残し、どの文書の何行目かを警告に出す。ビルドは止めない。</li>
+</ul>
+<p>実装 (<code>mathtex.py</code>、<code>katex_render.js</code>):</p>
+<ul>
+<li>md を markdown に通す前に数式をプレースホルダーに置き換え (<code>_</code> や <code>*</code> が強調に誤変換されないように)、変換後に戻す。数式は文書ごとに 1 回の Node.js の呼び出し (標準入力に JSON、標準出力に JSON) でまとめて <code>katex.renderToString</code> にかける (<code>throwOnError</code> を使い、失敗した式だけ赤字にする)。出力は <code>htmlAndMathml</code> (見た目の HTML に、読み上げ・検索・コピー用の MathML を併記する。<code>html</code> だけだと読み上げられない。数式の部分は約 18% 増える)。<code>\lambdabar</code> は KaTeX になく、<code>katex_render.js</code> のマクロで <code>\bar{\lambda}</code> にしている。</li>
+<li>数式のある HTML にだけ KaTeX の CSS を入れ、フォントは woff2 を base64 の data URI にして <code>@font-face</code> に直接入れる。入れるのは、数式の HTML の class から判定した使われているフォントの面だけ (Main の標準・Math の斜体・Size1〜3 など。フォントだけで文書あたり約 50〜120 KB)。数式のない HTML には CSS もフォントも入れない。長い表示数式は横にスクロールし、文字色は本文から継承するので暗い配色でも読める。</li>
+<li>数式のための <code>&lt;script&gt;</code> は入らない (入っている <code>&lt;script&gt;</code> は表の並べ替えと折りたたみのためのもの)。</li>
+</ul>
+<p>Node.js:</p>
+<ul>
+<li>探す順は、環境変数 <code>PYSAD_NODE</code> (node 実行ファイルのパス) → PATH の <code>node</code> → <code>D:\work\tools\node-*\node.exe</code> (版が最新のもの)。公式の Windows 用 zip (<code>node-v*-win-x64.zip</code>) をどこかに展開して <code>PYSAD_NODE</code> にパスを入れるのがいちばん簡単。インストーラーは要らない。</li>
+<li>見つからないときは、数式は TeX の文字のままにして、警告を 1 回出す (ビルドは続く)。<code>--require-math</code> (<code>build_html.py</code>・<code>md_to_html.py</code>) を付けると、Node.js が見つからないとき、または変換できない数式があるときに、エラー終了にする。</li>
+<li>KaTeX 0.19.1 (MIT ライセンス。https://katex.org/) の <code>katex.min.js</code>・<code>katex.min.css</code>・フォント (woff2 の 20 個) を <code>tools/katex/</code> に置いてある。ライセンスは <code>tools/katex/LICENSE</code>。ビルドで外部から取得することはない。</li>
+</ul>
+<h2 id="コードの色分け">コードの色分け</h2>
+<p>コードブロックは、ビルドのときに Pygments (<code>codehl.py</code>) で <code>&lt;span class="…"&gt;</code> にする。開くときに JavaScript は要らず、CSS は色分けしたコードのあるページにだけ入る。明暗の配色は OS の設定に従い (<code>prefers-color-scheme</code>)、色相だけに頼らないよう、コメントは斜体、キーワードは太字にしてある。</p>
+<ul>
+<li>対象: <code>```python</code>・<code>```bash</code>・<code>```sh</code>・<code>```json</code>・<code>```sad</code> (SAD の台本)。</li>
+<li>言語指定のないブロックは、SAD の台本と判断できるときだけ SAD として色分けする。判断は、空行を除く各行の 7 割以上が台本の形 (行末の <code>;</code>・FFS の命令・要素の定義・<code>Name[</code> の呼び出し・代入・コメント) で、3 割以上の行が <code>;</code> で終わり、数値の表・出力 (行頭の <code>$$$</code>・罫線・<code>|</code> の表)・コマンドの行 (<code>py</code>・<code>cd</code>・<code>set</code> など) がないこと。迷うものは色分けしない。出力の例・図・<code>text</code> は色分けしない。</li>
+<li>SAD の台本のレキサーは <code>sad_lexer.py</code> (簡易): コメント (<code>!</code> から行末、<code>(* *)</code>)、文字列、数、FFS の命令 (<code>USE</code>・<code>CALC</code>・<code>EMIT</code>・<code>DRAW</code> ほか)、要素 (<code>DRIFT</code>・<code>BEND</code>・<code>QUAD</code>・<code>SEXT</code>・<code>MARK</code>・<code>LINE</code>・<code>CAVI</code> ほか)、制御 (<code>Module</code>・<code>Do</code>・<code>If</code>・<code>With</code> ほか)、組み込み関数 (<code>Print</code>・<code>Fit</code>・<code>Show</code>・<code>Plot</code>・<code>TrackParticles</code> ほか)、記号。文法を解析するものではなく、書いたとおりの大文字小文字で一致したものだけに色が付く。</li>
+<li>色分けしても文字列は変わらない (タグを除いて実体参照を戻すと元の文字列。合わなければ色分けしない)。コピーすると元のコードになる。</li>
+<li>色分けの対象外: 箇条書き・番号つきリストの中に字下げして書いたコードブロック (Markdown の変換器がコードブロックとして扱わない)。</li>
+<li>Pygments がなければ色分けなしで HTML を作る (<code>pip install pygments</code>)。</li>
+</ul>
+<h2 id="全文検索と入口ページ">全文検索と入口ページ</h2>
+<p>ビルドの最後に、次の 3 つをリポジトリの直下に作る (<code>site_index.py</code>)。対象の md は <code>docs/</code>・<code>example/</code>・<code>README.md</code>・<code>tools/README.md</code>・<code>pysad/tests/</code> の README・<code>physics_guide/</code> (<code>_deletable</code> と <code>docs/history/</code> は除く)。物理ガイドなどの md が増えれば、次のビルドで自動で入る。</p>
+<ul>
+<li><code>search_index.json</code>: 索引。ページごとのパス・タイトル・要約・見出しと、節 (h1〜h3 の見出しごと) の本文 (数式は TeX の文字列、コードは文字列のまま。1 節 8000 字まで)。全角半角をそろえ (NFKC)、空白を 1 つに畳んである。</li>
+<li><code>search.html</code>: 検索の画面。JavaScript は検索のためだけで、外部ライブラリはない。入力した語 (空白区切り) をすべて含む節を、大文字小文字・全角半角を区別せず、部分一致で探し (日本語・数式・コードにも効く)、見出し・タイトルに含まれるものを上位にして、周辺の文章つきで 60 件まで出す。範囲 (docs・example など) の絞り込みができる。<code>search.html?q=語</code> で検索語を渡せる。</li>
+<li><code>index.html</code>: 入口ページ。目的 (docs/01_overview.md の最初の段落)、docs の目次 (docs/01_overview.md の目次の表の分類と、各 md の h1)、example の目次 (機能別フォルダの README と最初の段落)、試験・道具・物理ガイドへのリンク、検索へのリンク。md の見出しから自動で作るので、手で書かない。</li>
+<li>一部の md だけを変換したときは、既存の索引のその分だけを入れ替える (入口と検索の画面は毎回作り直す)。<code>--check</code> は、索引の中のパスと、入口・検索のリンク先の存在を確かめる。</li>
+<li>索引は <code>fetch</code> で読むので、<code>search.html</code> は Web サーバ経由で開く (GitHub Pages、または、リポジトリの直下で <code>py -3.12 -m http.server</code> を実行して <code>http://localhost:8000/search.html</code>)。ファイルを直接開く (<code>file://</code>) と、Chrome などは索引を読めない (画面にそのとおり表示する)。ほかの HTML (本文) はファイルを直接開いてよい。</li>
+</ul>
+<h2 id="図の作り方svg-の方針">図の作り方・SVG の方針</h2>
+<p>文書の図は、スクリプトで作る折れ線系の図は SVG、点の非常に多い図や画像は PNG にする。SVG は拡大してもぼけず、文字は読める。</p>
+<ul>
+<li><strong>保存の共通部分</strong>: <code>tools/figures/figsave.py</code> の <code>save_figure</code>。<code>docs/figures/</code> の図 (<code>tools/figures/make_*.py</code>、<code>_common.py</code> の <code>save</code>) と、<code>example/</code> の図 (<code>example/tools/figlib.py</code> の <code>save</code>、<code>example/tools/kek_ls_figs.py</code>、<code>pf_history/make_figs.py</code>、<code>ddba/make_figs.py</code>) が使う。スクリプトには図の名前を <code>.png</code> で渡す。</li>
+<li><strong>SVG にする条件</strong>: 図を SVG と PNG の両方に描き、SVG が PNG 以下、または 150 KB 以下なら SVG だけを置く (同名の PNG は消す)。そうでなければ PNG を置く。点の多い図 (周波数マップなどの散布図・画像・3D 図) は、<code>vector=False</code> を渡すか、SVG が大きくなるので PNG のままになる。</li>
+<li><strong>SVG の作り方</strong>: <code>svg.fonttype = 'path'</code> で文字をパスにする (フォントのない環境でも崩れない。日本語フォントの設定はスクリプト側のまま)。ID は固定 (<code>svg.hashsalt</code>) で、同じ図なら同じ SVG になる。数値は小数 2 桁に丸め、作成情報・コメント・字下げを除く。文字をパスにするので、小さな図でも 40 KB 前後はある (同じ図の PNG の 1.5〜2.5 倍になることが多い)。PNG のほうが小さい図は、SVG が PNG 以下のものだけが SVG になる。</li>
+<li><strong>PNG の圧縮</strong>: PNG は、画素を変えずに小さくして保存する (<code>optimize_png</code>: 不透明な RGBA は RGB に、256 色以下ならパレットに、フィルターは最良のものを選び、zlib 最大)。外部の道具は使わない。</li>
+<li><strong>再生成</strong>: リポジトリの直下から <code>py -3.12 tools/figures/make_&lt;名前&gt;.py</code>、<code>py -3.12 example/&lt;フォルダ&gt;/figures_make_&lt;名前&gt;.py</code> など。<code>make_18_radlight.py</code> は <code>PYTHONPATH=pysad/tests/script_tests</code> が要る。環境変数 <code>PYSAD_FIG_SVG_ONLY=1</code> を付けると、PNG のままの図は書き直さない (SVG にできるかの確認用)。<code>make_09_emittance.py</code> は数分かかる。</li>
+<li><strong>SVG にした図</strong>: <code>docs/figures/</code> の 06・07 (2 枚)・08・09・11・13・14・16・17・18、<code>example/</code> の 01 (3 枚)・02 (2 枚)・03・04・astrid (3 枚)・ddba (セルの光学)・kek_ls (誤差・ラティス・display の 3 枚・design の 2 枚)・pf (整合・履歴ラティスの 2 枚)。md の画像参照は <code>.svg</code>。</li>
+<li><strong>PNG のままの図</strong>: 再生成のスクリプトがない図 (Tk の窓の画面、DRAW・OpticsPlot などの実行結果、周波数マップ・ADTS・RDT・LMA など長い計算の結果の図、DXF の図)、点の多い図、SVG が PNG より大きくなる図 (<code>KEKLS_ring_layout_optics</code>・<code>PF_history_layout</code>・<code>DDBA_overview</code>)。</li>
+</ul>
 <h2 id="限界">限界</h2>
 <ul>
-<li>数式 (TeX) は描画しない。md の中の HTML タグはそのまま通す。</li>
+<li>数式の検出は書き方の規則による (上記)。規則に合わない短い式 (たとえば <code>$x$</code> でなく <code>$ x $</code>) は数式にならない。KaTeX が解釈できない TeX (<code>\lambdabar</code> など、マクロに足していない記法) は赤字になる。</li>
+<li>数式の見た目は Chrome で確認した。MathML は併記しているが、スクリーンリーダーでの読み上げは確かめていない。</li>
+<li>md の中の HTML タグはそのまま通す。</li>
 <li>図の名前の言及は、同じフォルダと <code>results/</code> の直下だけを探す。</li>
+<li>色分けと索引は、md の中の箇条書きに入れたコードブロックには効かない。SAD の台本の判定は、行の形による推定。</li>
 <li>試験は <code>py -3.12 -m pytest pysad/tests/script_tests/test_tools_md_to_html.py -q</code>。</li>
 </ul>
+<h2 id="github-pages-で公開する">GitHub Pages で公開する</h2>
+<p>リポジトリの HTML を、ダウンロードなしで、ブラウザからそのまま読めるようにする。サイトの URL は <code>https://ken-harada1234.github.io/pysad/</code> (入口ページ。全文検索は <code>…/pysad/search.html</code>)。リポジトリ側の準備 (下の 1〜2) はできている。GitHub の画面での設定 (3〜) は、リポジトリの所有者が行う。</p>
+<ol>
+<li><strong>準備 (リポジトリ側)</strong>: ルートの <code>.nojekyll</code> (空のファイル) が Jekyll の処理を止め、アンダースコアで始まるフォルダ・ファイルも、そのまま配る。入口 <code>index.html</code>・<code>search.html</code>・<code>search_index.json</code> と、各 md の <code>.html</code> を、<code>py -3.12 tools/build_html.py --include-untracked</code> で作り、コミットしておく。HTML 内のリンクは、すべて相対パスなので、<code>/pysad/</code> の下でもそのまま動く。</li>
+<li><strong>大きさ</strong>: 公開サイトの上限は約 1 GB (目安)。リポジトリの追跡ファイルの合計は約 110 MB (確認方法: <code>git ls-files -z | xargs -0 du -cb</code>)。余裕がある。</li>
+<li><strong>リポジトリが public であることを確認する</strong>: 無料のプランでは、public のリポジトリだけが公開できる。リポジトリのページの名前の横に <code>Public</code> と出ていれば public。または Settings → General → いちばん下の Danger Zone の Change repository visibility で確かめる。</li>
+<li><strong>公開の設定</strong>: リポジトリの Settings → Pages → Build and deployment → Source を <strong>Deploy from a branch</strong> にし、Branch を <strong>main</strong> (フォルダは <strong>/ (root)</strong>) にして <strong>Save</strong>。HTML が入っているブランチを選ぶ (HTML をコミットしたブランチを main に取り込んでおく)。</li>
+<li><strong>公開まで</strong>: 保存すると、Actions タブに <code>pages build and deployment</code> が走る。1〜数分 (長くても 10 分ほど) で、Settings → Pages の上部に「Your site is live at …」と URL が出る。初回は反映に少し時間がかかることがある。</li>
+<li><strong>更新のしかた</strong>: md を直したら、<code>py -3.12 tools/build_html.py --include-untracked</code> で HTML・索引を作り直し、md と HTML を一緒にコミットして main に push する。push のたびに自動で再公開される (数分)。</li>
+<li><strong>非公開にする</strong>: Settings → Pages → Build and deployment の <strong>Unpublish site</strong> (または Source を None に変更) で、サイトを止める。リポジトリを private にしても、無料のプランでは公開が止まる。止めたあとも、リポジトリそのもの (md・HTML のファイル) は残る。</li>
+<li><strong>公開される範囲</strong>: Pages はリポジトリの中の追跡ファイルをすべて配る (HTML だけではなく、台本・出力・ソースも URL を知っていれば読める)。公開してよい内容か、public にする前に確かめる。</li>
+</ol>
 </main><script>
 document.querySelectorAll('table').forEach(function (t) {
   t.querySelectorAll('th').forEach(function (th, i) {

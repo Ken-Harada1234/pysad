@@ -17,5 +17,6 @@ CALC;
 '''
 ffs, I = run(SRC)
 print(val(I, 'Twiss["NX","$$$"]/(2 Pi)'), val(I, 'Twiss["NY","$$$"]/(2 Pi)'))
-draw_mpl.draw(ffs, "BX BY & EX EY LAT", save=str(OUT / "17_sol_ring_optics.png"), show=False,
-              title="SOL 領域 (SA〜SB、BZ=0.3 T) を含むリングの光学", figsize=(6.5, 4.8), dpi=115)
+fig = draw_mpl.draw(ffs, "BX BY & EX EY LAT", show=False,
+              title="SOL 領域 (SA〜SB、BZ=0.3 T) を含むリングの光学", figsize=(6.5, 4.8))
+save(fig, "17_sol_ring_optics.png")

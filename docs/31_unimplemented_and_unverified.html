@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -53,7 +53,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 31_unimplemented_and_unverified.md</div>
+<div class="meta">元: 31_unimplemented_and_unverified.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="31-オリジナル-sad-k64-に対する-pysad-の未対応未確認の一覧">31. オリジナル SAD (K64) に対する pysad の未対応・未確認の一覧</h1>
 <p><strong>この文書で分かること</strong>: オリジナルの SAD (K64) に対して pysad が「まだ対応していないもの」「対応したが gs で確かめていないもの」「gs が動かず比べられないもの」を、機能の分類ごとに 1 か所にまとめた一覧。pysad で計算する前に、自分の使う機能が使えるか・どこまで確かめられているかを調べるときに使う。
 <strong>前提</strong>: 互換モード (v2 = 既定、k64 = <code>PYSAD_COMPAT=k64</code>) の意味は docs/28 を見る。表の「モード」の欄は下に説明がある。

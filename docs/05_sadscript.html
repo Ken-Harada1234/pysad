@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -64,7 +75,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 05_sadscript.md</div>
+<div class="meta">元: 05_sadscript.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="05-sadscript-言語と-pysad-のインタプリタ">05. SADScript 言語と pysad のインタプリタ</h1>
 <p>最終更新: 2026-11-23 (現状のスナップショット)</p>
 <p><strong>この文書で分かること</strong>: SADScript (SAD に内蔵された式言語) の文法と評価の規則、pysad のインタプリタ (<code>sadscript.py</code>) がどこまで対応しているか、対応していない構文、SAD の <code>Fork</code>・文脈 (<code>BeginPackage</code>) などの特殊な機能の扱い。
@@ -94,12 +105,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <ol>
 <li>式だけ試す (FFS コマンドなしの <code>'script'</code> モード):</li>
 </ol>
-<pre><code class="language-python">import io
-from pysad.sadscript import Interp
-o = io.StringIO()
-I = Interp(out=o)
-I.run('f[x_,y_:2]:=x+y; a={1,2,3}; Print[f[1], &quot; &quot;, a[2], &quot; &quot;, 3&lt;&gt;4, &quot; &quot;, &quot;a&quot;//&quot;b&quot;]', 'script')
-print(o.getvalue())      # → 3 2 1 ab
+<pre><code class="language-python"><span class="k">import</span> io
+<span class="k">from</span> pysad.sadscript <span class="k">import</span> Interp
+o <span class="o">=</span> io<span class="o">.</span>StringIO()
+I <span class="o">=</span> Interp(out<span class="o">=</span>o)
+I<span class="o">.</span>run(<span class="s">'</span><span class="s">f[x_,y_:2]:=x+y; a=</span><span class="s">{</span><span class="s">1,2,3}; Print[f[1], </span><span class="s">"</span> <span class="s">"</span><span class="s">, a[2], </span><span class="s">"</span> <span class="s">"</span><span class="s">, 3&lt;&gt;4, </span><span class="s">"</span> <span class="s">"</span><span class="s">, </span><span class="s">"</span><span class="s">a</span><span class="s">"</span><span class="s">//</span><span class="s">"</span><span class="s">b</span><span class="s">"</span><span class="s">]</span><span class="s">'</span>, <span class="s">'</span><span class="s">script</span><span class="s">'</span>)
+<span class="b">print</span>(o<span class="o">.</span>getvalue())      <span class="c"># → 3 2 1 ab</span>
 </code></pre>
 <ol start="2">
 <li>ラティス付きのスクリプトは <code>py -3.12 run_sad.py lattice.sad script.sad</code> (SAD の <code>gs</code> に複数ファイルを連結して渡すのと同じ)。<code>ffscmd.run_sad</code> が MAIN 部を parser.py に、FFS 部を <code>Interp.run(src, 'ffs')</code> に渡す。Packages を使うときは先に環境変数 <code>PYSAD_SAD_PACKAGES</code> に SAD の <code>Packages</code> のフォルダを指定する。</li>

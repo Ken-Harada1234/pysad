@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,22 +53,22 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_Entry_ListBox_Scale.md</div>
+<div class="meta">元: fn_Entry_ListBox_Scale.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_entry_listbox_scale-entrylistboxscaleradiobutton">fn_Entry_ListBox_Scale (Entry・ListBox・Scale・RadioButton)</h1>
 <p>種別: GUI (Packages/Tkinter.n)・フォルダ 12_gui_tkinter・ラティスなし。pysad でも動く (親の違いが残る)</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>入力欄 (<code>Entry</code>、<code>TextVariable</code> で SAD の変数 <code>ev</code> に結ぶ)、一覧 (<code>ListBox</code>)、スライダ (<code>Scale</code>、<code>Variable</code>)、ラジオボタン 2 個 (<code>RadioButton</code>、<code>Value</code> と <code>Variable</code>)。ウィジェットのメソッド <code>e[Insert]={"end","XY"}</code> も試す。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>e=Entry[w,TextVariable:&gt;ev,Width-&gt;20,Side-&gt;&quot;top&quot;];     lb=ListBox[w,Height-&gt;3,Side-&gt;&quot;top&quot;];
-s=Scale[w,From-&gt;0,To-&gt;10,Orient-&gt;&quot;horizontal&quot;,Variable:&gt;sv,Side-&gt;&quot;top&quot;];
-r1=RadioButton[w,Text-&gt;&quot;A&quot;,Value-&gt;1,Variable:&gt;rv,Side-&gt;&quot;top&quot;];   r2=RadioButton[w,Text-&gt;&quot;B&quot;,Value-&gt;2,Variable:&gt;rv,Side-&gt;&quot;top&quot;];
-e[Insert]={&quot;end&quot;,&quot;XY&quot;};   lb[Insert]={&quot;end&quot;,&quot;item1&quot;};   lb[Insert]={&quot;end&quot;,&quot;item2&quot;};
+<pre><code class="language-sad">e<span class="o">=</span>Entry[w,TextVariable:<span class="o">&gt;</span>ev,Width<span class="o">-&gt;</span><span class="m">20</span>,Side<span class="o">-&gt;</span><span class="s">"top"</span>];     lb<span class="o">=</span>ListBox[w,Height<span class="o">-&gt;</span><span class="m">3</span>,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+s<span class="o">=</span>Scale[w,From<span class="o">-&gt;</span><span class="m">0</span>,To<span class="o">-&gt;</span><span class="m">10</span>,Orient<span class="o">-&gt;</span><span class="s">"horizontal"</span>,Variable:<span class="o">&gt;</span>sv,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+r1<span class="o">=</span>RadioButton[w,Text<span class="o">-&gt;</span><span class="s">"A"</span>,Value<span class="o">-&gt;</span><span class="m">1</span>,Variable:<span class="o">&gt;</span>rv,Side<span class="o">-&gt;</span><span class="s">"top"</span>];   r2<span class="o">=</span>RadioButton[w,Text<span class="o">-&gt;</span><span class="s">"B"</span>,Value<span class="o">-&gt;</span><span class="m">2</span>,Variable:<span class="o">&gt;</span>rv,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+e[<span class="b">Insert</span>]<span class="o">=</span>{<span class="s">"end"</span>,<span class="s">"XY"</span>};   lb[<span class="b">Insert</span>]<span class="o">=</span>{<span class="s">"end"</span>,<span class="s">"item1"</span>};   lb[<span class="b">Insert</span>]<span class="o">=</span>{<span class="s">"end"</span>,<span class="s">"item2"</span>};
 </code></pre>
 <p><code>Insert</code> の位置は Tcl の添字なので小文字の <code>"end"</code> (大文字 <code>"End"</code> は gs で Tcl エラー 1501)。</p>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>entry=</code> は Entry の中身 (<code>ev="abc"</code> が入る)、<code>entry after Insert=</code> は <code>e[Insert]</code> のあと、<code>listbox size=</code> は ListBox の項目数、<code>rv=</code>・<code>sv=</code> はラジオボタン B を押し Scale を 8 にしたあとの変数。</p>
 <h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
-<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAADKCAMAAABAH1h9AAABPlBMVEUAAAAAADQANDQANF0ANIIAXaYPDxAfPWMg/+AtLS0uLi0uWpMwMDAxMTEzMzM0AAA0ADQ0AF00NAA0NDQ0NF00NII0Smg0XYI0XaY0gsg3Nzc4ODg4Tmg5Ozc6Ojc8PDxCV3JEhdlFh9tLS0tMTExPUVFRUVFTU1NUVFRWVlZZWVlZYGFbW1tdAABdADRdAF1dNABdNDRdNF1dXTRdgshdpshdpuhgYGBoa25ubm50dHSBgYGCNACCNDSCXQCCgl2CyOiLi4uSkpKTk5Obm5udx/Oenp6fn5+mXQCmXTSmyOim6OisrKy7u7u/v7/IgjTIgl3Ipl3IyMjI6OjS0tLa29vf39/i4uLj4+Pl5eXm5ubopl3oyILoyKbo6Kbo6Mjo6Ojp6enq6urs7Ozt7e3w8PDx8fHy8vLz8/P////ETAsOAAADB0lEQVR42u3caXfSQBQG4CktWteoadW4G5e6Fa1L3KgNYCwFKyLi0sRk1FbD//8DTgJhN0APzAz0fT809APJc+ZOlgtzIL5EIcAAA8zEMe9vvZAF8/X5ZeuqLJgHlqXflATDLMf0219i37qdy4bJbQ9zoM1qfVvdHBXz64p1WL92J373uW+7YXZyw2Cqb6ttm1Ew9yyL6CfiB8bP7kYv/KE1sZb+mM9HmUVf8ceKCSDxlv6Yl8HAXLoxZgzTxFu6MPUZmT3OLNdP/hGMaWSFYc6+8uUo090a0S/+HTNmvxP4wn1y6MPAved26tufkz21Px0hrwfvntdF77uYm3n/o/6WCeO/w8MVMMAAM5uYKBlxqZHuZKiwADPlGPdhERiZMd6WqpxnmA2VaJQ6a+pSUejIeOumu2pQL224jwtiy1RWVWKEZSpptia2THayQvMRpiQYw47PauSmDOqmTGdJbJncR4lzb9jIPFHnnlFqK4mnuAIDMzWYmsD0YKjA9GLEPQL3wwibMsAAAwwwwAADDDDAAAMMMMAAAwwwwAADDDDAAAMMMMDMAkbct4JU7q8F96LwMzQPCQwwwAAz9ZiPqrpckQQTLGobtKKNH2bN9LZkwdCycmZBljI5bMLYSUkwpeTgBbTcMDarUXlAnTie2ooyX8BFD5gDj+GyUnBozD5bw9j1m91tJFcM6VpLyh3T0SZ2/gcMMMAAA8yBwZC4cMaQiWC4fPiLx87ZwQyRkY40RIABBpiw9ZQEk8nUf1BCBgyjLLKQtmcFL60JwyyGoS2M0/pUnC8msrRrSlrekAXjrZulpCwYe6HinC5KgslrwW8VyDGB3dVgR0kxGEpDS3uV2AnVqBPvi169NWk1KHmt9VfA7aDxZI0bJTDAACMAswcMMMCMqYnjjolr4nhjepo4L51Q5k1RmN5OpbkYgzMmtISDE2kCjLMsDBO8sQPTXNokHhPMmQKVp0w/UqY8EzjqKLljupu4cAKfEjMyPU1cMGfmDGG3g/83cbhrAwMMMARBEIRT/gEQiSyt0Co1tgAAAABJRU5ErkJggg==" /><figcaption>pysad が開いた窓</figcaption></figure>
 <p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
 <strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
 <h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>

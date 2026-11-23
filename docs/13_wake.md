@@ -60,7 +60,7 @@ Do[Print[k, " ", Plus@@res[[k]], " ", res[[k, 1]], " ", res[[k, 77]], " ", res[[
 - `PBUNCH` (バンチあたり粒子数)、`NBUNCH` (バンチ数)、`CHARGE` を使う。`TrackParticles` に渡す粒子数 NP が係数に入る。
 - `TrackParticles[{1, {...}}, 17, 1]` の第 2 引数は終点の要素の位置 (要素数以下)。大きすぎると gs は `Component number must be positive` で失敗する。
 
-![縦ウェイクによるエネルギーの変化](figures/13_wake_longitudinal_kick.png)
+![縦ウェイクによるエネルギーの変化](figures/13_wake_longitudinal_kick.svg)
 
 図の読み方: 左は §2.1 のラインに与えた縦ウェイク関数の表 (横軸 z [m]、縦軸 W [GV/C]。青が `QF.1`、橙が `WK2`。人工的な値)。右は、z = −100〜+100 mm に等間隔に置いた 201 粒子 (他の座標はすべて 0) を、1.7 GeV のこのライン (17 要素、`PBUNCH = 1E12`、`NORAD NOFLUC`) で追跡し、`LWAKE` を ON にしたときと OFF にしたときの最終の δ の差 [1e-6]。横軸は初期の z。差は z = −100 mm で約 −0.03e-6、z = +70 mm で約 −0.26e-6 と、z によって滑らかに変わり、バンチ内の位置によって受けるエネルギー変化が違うことが分かる (縦ウェイクだけ。`TWAKE` は OFF)。
 

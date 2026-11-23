@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -39,13 +50,13 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: bend_k1_definition.md</div>
+<div class="meta">元: bend_k1_definition.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="k10-の-bend-の-k1-の定義のオプションと-calc-の-dk-の修正の例">K1≠0 の BEND の K1 の定義のオプションと CALC の dk の修正の例</h1>
 <p>試験は <code>pysad/tests/script_tests/test_v23_U2_bend_k1_def.py</code>。すべて v2 モード。リポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/touschek_elegant/bend_k1_def_xxx.py</code> (標準出力をファイルにリダイレクトするには <code>PYTHONUTF8=1</code> が要る)。</p>
 <h2 id="使い方">使い方</h2>
-<pre><code class="language-python">from pysad import compat
-compat.set_bend_k1_def('lin')     # B' が x に一様 (elegant CSBEND K2 = 0・MAD SBEND と同じ)。既定は 'log' (K64: (1 + hx)∂b/∂x 一様)
-# 環境変数: PYSAD_BEND_K1_DEF=lin
+<pre><code class="language-python"><span class="k">from</span> pysad <span class="k">import</span> compat
+compat<span class="o">.</span>set_bend_k1_def(<span class="s">'</span><span class="s">lin</span><span class="s">'</span>)     <span class="c"># B' が x に一様 (elegant CSBEND K2 = 0・MAD SBEND と同じ)。既定は 'log' (K64: (1 + hx)∂b/∂x 一様)</span>
+<span class="c"># 環境変数: PYSAD_BEND_K1_DEF=lin</span>
 </code></pre>
 <p>v2 だけで有効 (k64 では無視)。追跡・CALC・<code>Emittance[]</code>・MULT (ANGLE≠0) の K1 に効く。'lin' = 'log' + 6 極 K2 = +hK1 (kick のポテンシャル K1 h (x³/3 − x y²/2))。δ = 0 の設計軌道の光学・行列は変わらない。elegant に変換するとき、'log' (K64 の定義) は K2 = −hK1 を足し、'lin' は K2 = 0 のまま。</p>
 <h2 id="ファイル">ファイル</h2>

@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -39,7 +39,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fmap_resonance_lines.md</div>
+<div class="meta">元: fmap_resonance_lines.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="周波数マップの共鳴線の予想-3-次--4-次--非共鳴の補正-と判別力の評価">周波数マップの共鳴線の予想 (3 次 + 4 次 + 非共鳴の補正) と判別力の評価</h1>
 <p>台本ごとの式・表・原因は <code>FMAP_summary.md</code> §13、導出は <code>docs/25</code> §12、試験は <code>pysad/tests/script_tests/test_v23_S3_fmappred.py</code> (12 件)、コードは <code>pysad/fmappred.py</code> (<code>ResonancePredictorS3</code>・評価の関数)と <code>pysad/fmapres.py</code> (<code>from_lattice(model='s3')</code>)。
 ラティス: FODO (<code>example/00_lattice/FODO_ring.sad</code>、QF の K1 = 0.697・SF・SD の K2 = 4, −6、3 GeV、105.6 m)、ASTRID2 (<code>example/astrid/lattice/ASTRID2_v01_01.sad</code>、0.58 GeV、45.7 m)、ASTRID2 MPW (<code>ASTRID2_v01_02_id.sad</code> の <code>RINGMPW</code>)、KEK-LS (<code>pysad/tests/kek-ls_v03_12.lat</code>、大きなリング A。ESRF 型の HMBA、3 GeV、603 m)。

@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -69,7 +80,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 12_pysad_api.md</div>
+<div class="meta">元: 12_pysad_api.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="12-pysad-公開-api-リファレンス">12. pysad 公開 API リファレンス</h1>
 <p><strong>この文書で分かること</strong>: pysad を Python から使うときの公開 API (関数・クラス・引数・戻り値) の一覧。§0 は単位・座標・位置の約束、§1〜15 はモジュール別の API、§16 は追加のモジュール。
 <strong>前提</strong>: SAD のラティスと FFS の用語 (docs/01・02・03)。例はコピーして実行できる。
@@ -214,11 +225,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 </tbody>
 </table>
-<pre><code class="language-python">from pysad.parser import load_sad_file
-sc = load_sad_file(r'&lt;試験用ラティス&gt;.lat')
-lat = sc.build_lattice('RING')          # Lattice('LATTICE', nelem=3563, C=603.120 m)
-qf = [e for e in lat.elements if e.name == 'QFA1H'][0]
-qf.K1, qf._raw                          # 長さあたりの K1、{'L': .125, 'K1': ...} (SAD の積分値)
+<pre><code class="language-python"><span class="k">from</span> pysad.parser <span class="k">import</span> load_sad_file
+sc <span class="o">=</span> load_sad_file(<span class="s">r</span><span class="s">'</span><span class="s">&lt;試験用ラティス&gt;.lat</span><span class="s">'</span>)
+lat <span class="o">=</span> sc<span class="o">.</span>build_lattice(<span class="s">'</span><span class="s">RING</span><span class="s">'</span>)          <span class="c"># Lattice('LATTICE', nelem=3563, C=603.120 m)</span>
+qf <span class="o">=</span> [e <span class="k">for</span> e <span class="k">in</span> lat<span class="o">.</span>elements <span class="k">if</span> e<span class="o">.</span>name <span class="o">==</span> <span class="s">'</span><span class="s">QFA1H</span><span class="s">'</span>][<span class="m">0</span>]
+qf<span class="o">.</span>K1, qf<span class="o">.</span>_raw                          <span class="c"># 長さあたりの K1、{'L': .125, 'K1': ...} (SAD の積分値)</span>
 </code></pre>
 <h2 id="2-elementspy--要素クラス">2. elements.py — 要素クラス</h2>
 <p><code>@dataclass</code> の <code>Element</code> を基底に <code>Drift, Quadrupole, Bend, Sextupole, Octupole, Decapole, Dodecapole, Multipole, Cavity, TCavity, Solenoid, Monitor, Marker</code>。共通属性 <code>name, L, K0, DX, DY, ROTATION</code> (<code>Element.ROTATE</code> は垂直キック用で SAD の ROTATE ではない)。<code>make_element(etype, name, **kw)</code> は SAD 型名 (<code>'QUAD'</code> 等) から生成する。<code>transfer_matrix(delta)</code> は 6×6 線形行列 (旧 API 用。CALC/追跡は lattice.py / track6.py の非線形写像を使い、この行列は使わない)。</p>
@@ -332,12 +343,12 @@ qf.K1, qf._raw                          # 長さあたりの K1、{'L': .125, 'K
 </tbody>
 </table>
 <p><code>TwissRow</code> の属性 (SAD の <code>twiss(l, 0, 1:28)</code> と同じ順): <code>s, name, alfx, betx, mux, alfy, bety, muy, etx, etpx, ety, etpy, r1, r2, r3, r4, detr, x_cod, px_cod, y_cod, py_cod, z_cod, delta_cod, alfz, betz, muz, zx, zpx, zy, zpy</code>。<code>to_dict()</code> で <code>ax, bx, …</code> の別名も得られる。4D CALC では <code>alfz..zpy</code> は 0 (これらは <code>calc6d</code> が埋める)。</p>
-<pre><code class="language-python">tab = lat.twiss_table()                       # 3563 要素で 0.1 s
-end = tab[-1]
-print(end.mux / 2 / math.pi, end.muy / 2 / math.pi)       # 47.580034, 17.620044
-mkc = [r for r in tab if r.name == 'MKC']     # 同名要素の全出口 (40 行)
-print(mkc[0].s, mkc[0].betx, mkc[0].etx)
-tab2 = lat.twiss_table(delta=0.01)            # DP0=0.01 のオフモメンタム
+<pre><code class="language-python">tab <span class="o">=</span> lat<span class="o">.</span>twiss_table()                       <span class="c"># 3563 要素で 0.1 s</span>
+end <span class="o">=</span> tab[<span class="o">-</span><span class="m">1</span>]
+<span class="b">print</span>(end<span class="o">.</span>mux <span class="o">/</span> <span class="m">2</span> <span class="o">/</span> math<span class="o">.</span>pi, end<span class="o">.</span>muy <span class="o">/</span> <span class="m">2</span> <span class="o">/</span> math<span class="o">.</span>pi)       <span class="c"># 47.580034, 17.620044</span>
+mkc <span class="o">=</span> [r <span class="k">for</span> r <span class="k">in</span> tab <span class="k">if</span> r<span class="o">.</span>name <span class="o">==</span> <span class="s">'</span><span class="s">MKC</span><span class="s">'</span>]     <span class="c"># 同名要素の全出口 (40 行)</span>
+<span class="b">print</span>(mkc[<span class="m">0</span>]<span class="o">.</span>s, mkc[<span class="m">0</span>]<span class="o">.</span>betx, mkc[<span class="m">0</span>]<span class="o">.</span>etx)
+tab2 <span class="o">=</span> lat<span class="o">.</span>twiss_table(delta<span class="o">=</span><span class="m">0.01</span>)            <span class="c"># DP0=0.01 のオフモメンタム</span>
 </code></pre>
 <h2 id="4-emit6dpy--emittance-temit">4. emit6d.py — Emittance[] (temit)</h2>
 <p>対応: <code>temit.f</code> (temit/tecalc/synchm), <code>tturne.f</code> (tquade/tbende/tthine/tcave/tmulte), <code>photons.f tradke</code>。放射込み 6D 一周写像 (T: シンプレクティック部, D: 減衰部, B: 量子励起) → 固有値分解 → 平衡ビーム行列。</p>
@@ -404,9 +415,9 @@ tab2 = lat.twiss_table(delta=0.01)            # DP0=0.01 のオフモメンタ�
 </tbody>
 </table>
 <p><code>rfsw=True</code> が SAD の <code>RFSW; emit</code>。<code>radcod=True</code> は RADCOD (放射込みの閉軌道)。<code>trf0</code> は追跡 (<code>track_particles</code> の <code>trf0</code>) に渡す。下位関数 <code>tturne(elements, cod0, ph, trf0, rfsw, radcod)</code> と <code>tecalc(state, circ, rfsw)</code> も公開。</p>
-<pre><code class="language-python">from pysad.emit6d import emittance6d
-em = emittance6d(lat, 3.0e9, rfsw=True)      # 3563 要素で約 1.6 s
-em['emittance_x'], em['momentum_spread'], em['bunch_length']   # 1.549e-10, 6.947e-4, 3.773e-3
+<pre><code class="language-python"><span class="k">from</span> pysad.emit6d <span class="k">import</span> emittance6d
+em <span class="o">=</span> emittance6d(lat, <span class="m">3.0e9</span>, rfsw<span class="o">=</span><span class="k">True</span>)      <span class="c"># 3563 要素で約 1.6 s</span>
+em[<span class="s">'</span><span class="s">emittance_x</span><span class="s">'</span>], em[<span class="s">'</span><span class="s">momentum_spread</span><span class="s">'</span>], em[<span class="s">'</span><span class="s">bunch_length</span><span class="s">'</span>]   <span class="c"># 1.549e-10, 6.947e-4, 3.773e-3</span>
 </code></pre>
 <p>下位 API: <code>closed_orbit6d(els, ph, rfsw, radcod, close_z=True, norf_trf0=False) -&gt; (cod, trf0, found, st_full)</code> (temit の tcod 部分。<code>emittance6d</code> と <code>calc6d._closed_orbit</code> が共用)、
 <code>_tcod_radcod(els, ph, cod, rfsw)</code> (tcod.f の直訳、RADCOD ON)、<code>beam_tilt_sizes(beam_matrix) -&gt; (tilt, sigx, sigy)</code> (EMIT の Beam tilt / Beam size)、<code>tturne(..., want_db=True, want_jac=True)</code>
@@ -470,13 +481,13 @@ em['emittance_x'], em['momentum_spread'], em['bunch_length']   # 1.549e-10, 6.94
 </tr>
 </tbody>
 </table>
-<pre><code class="language-python">from pysad.match6 import Matcher
-m = Matcher(lat, out=print)
-m.free('QF,QD')                  # 既定キー K1
-m.fit('NX', 2.18); m.fit('NY', 1.84)
-res = m.go()                     # ' Matched. ( 2.5279E-16) DP = 0.01000 ...' を印字
-res.r, res.nstab, m.iterations, m.values()   # {'QF K1': 0.25215, 'QD K1': -0.20305}
-lat.twiss_table()[-1].mux / 2 / math.pi      # 2.18000000
+<pre><code class="language-python"><span class="k">from</span> pysad.match6 <span class="k">import</span> Matcher
+m <span class="o">=</span> Matcher(lat, out<span class="o">=</span><span class="b">print</span>)
+m<span class="o">.</span>free(<span class="s">'</span><span class="s">QF,QD</span><span class="s">'</span>)                  <span class="c"># 既定キー K1</span>
+m<span class="o">.</span>fit(<span class="s">'</span><span class="s">NX</span><span class="s">'</span>, <span class="m">2.18</span>); m<span class="o">.</span>fit(<span class="s">'</span><span class="s">NY</span><span class="s">'</span>, <span class="m">1.84</span>)
+res <span class="o">=</span> m<span class="o">.</span>go()                     <span class="c"># ' Matched. ( 2.5279E-16) DP = 0.01000 ...' を印字</span>
+res<span class="o">.</span>r, res<span class="o">.</span>nstab, m<span class="o">.</span>iterations, m<span class="o">.</span>values()   <span class="c"># {'QF K1': 0.25215, 'QD K1': -0.20305}</span>
+lat<span class="o">.</span>twiss_table()[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>mux <span class="o">/</span> <span class="m">2</span> <span class="o">/</span> math<span class="o">.</span>pi      <span class="c"># 2.18000000</span>
 </code></pre>
 <h2 id="6-match6dpy--解析微分のマッチング-tffsqu--qdcell">6. match6d.py — 解析微分のマッチング (tffsqu / qdcell)</h2>
 <p>対応: <code>qdcell.f</code> (tffsqu, qdcell, dgammag), <code>qdtwis.f</code>, <code>qdquad.f</code>, <code>qdbend.f</code>, <code>qdmdia.f</code>, <code>qgettr.f</code>, <code>tftmat.f</code>, <code>qtent.f</code>, <code>qchg.f</code>。SAD の既定経路 (<code>FFS$NumericalDerivative=False</code>) の直訳。</p>
@@ -542,12 +553,12 @@ lat.twiss_table()[-1].mux / 2 / math.pi      # 2.18000000
 </tbody>
 </table>
 <p>戻りは nturn 周後の座標 <code>(np, 6)</code>。発散すると <code>FloatingPointError</code> (何周目かを含む)。損失判定 (tapert) は TrackParticles でも行う (落ちた粒子は alive=0、座標は落ちた時点の値)。</p>
-<pre><code class="language-python">import numpy as np
-from pysad.track6n import track_particles_fast
-x0 = np.array([[1e-3, 0, 1e-4, 0, 0, 0]])
-x = track_particles_fast(lat.elements, x0, 20, 3.0e9, trf0=em['trf0'], rfsw=True, rad=True, fluc=False)
-# 20 周 0.5 s (3563 要素、初回は numba のコンパイル込み)。track6.track_particles と 1e-15 で一致
-x = track_particles_fast(lat.elements, x0, 10, 3.0e9, trf0=em['trf0'], rad=True, fluc=True, seed=12345)
+<pre><code class="language-python"><span class="k">import</span> numpy <span class="k">as</span> np
+<span class="k">from</span> pysad.track6n <span class="k">import</span> track_particles_fast
+x0 <span class="o">=</span> np<span class="o">.</span>array([[<span class="m">1e-3</span>, <span class="m">0</span>, <span class="m">1e-4</span>, <span class="m">0</span>, <span class="m">0</span>, <span class="m">0</span>]])
+x <span class="o">=</span> track_particles_fast(lat<span class="o">.</span>elements, x0, <span class="m">20</span>, <span class="m">3.0e9</span>, trf0<span class="o">=</span>em[<span class="s">'</span><span class="s">trf0</span><span class="s">'</span>], rfsw<span class="o">=</span><span class="k">True</span>, rad<span class="o">=</span><span class="k">True</span>, fluc<span class="o">=</span><span class="k">False</span>)
+<span class="c"># 20 周 0.5 s (3563 要素、初回は numba のコンパイル込み)。track6.track_particles と 1e-15 で一致</span>
+x <span class="o">=</span> track_particles_fast(lat<span class="o">.</span>elements, x0, <span class="m">10</span>, <span class="m">3.0e9</span>, trf0<span class="o">=</span>em[<span class="s">'</span><span class="s">trf0</span><span class="s">'</span>], rad<span class="o">=</span><span class="k">True</span>, fluc<span class="o">=</span><span class="k">True</span>, seed<span class="o">=</span><span class="m">12345</span>)
 </code></pre>
 <h2 id="8-dapertpy--dynamicaperturesurvey-trackd">8. dapert.py — DynamicApertureSurvey (trackd)</h2>
 <p>対応: <code>Packages/dapert.n</code>, <code>tfdapert.f</code>, <code>trackd.f</code> (スロット順、tapert の損失判定、Score、62 進の地図)。</p>
@@ -591,18 +602,18 @@ x = track_particles_fast(lat.elements, x0, 10, 3.0e9, trf0=em['trf0'], rad=True,
 </tbody>
 </table>
 <p>戻り: <code>score</code> (= <code>Σ nsc</code>) と <code>result = [[[a2min,a2max],[a3min,a3max],[a1min,a1max]], [[a1, nsc, [ntloss×51]], ...]]</code> (SAD の <code>ResultOfDAPERT</code>)。<code>ntloss</code> は損失までの完了周数 (生存は nturn)。未対応: <code>Damping-&gt;True</code>、<code>DAPWIDTH</code> の窓。</p>
-<pre><code class="language-python">from pysad.dapert import dynamic_aperture
-emx = math.sqrt(abs(em['emittance_x']) + abs(em['emittance_y'])); emz = math.sqrt(abs(em['emittance_z']))
-score, result = dynamic_aperture(lat.elements, [[0, 40], [0, 20]], [-0.02, 0.0, 0.02], 50,
-                                 [0.0, 0.0, -math.pi/2], 3, 1, 2.5e9, em, emx, emz, em['trf0'],
-                                 rfsw=True, rad=False, out=sys.stdout.write)
-#  Range    Xmin:   0.000 Xmax:  40.000 ... / -0.02 48 UUUU...  /    Score:   144
+<pre><code class="language-python"><span class="k">from</span> pysad.dapert <span class="k">import</span> dynamic_aperture
+emx <span class="o">=</span> math<span class="o">.</span>sqrt(<span class="b">abs</span>(em[<span class="s">'</span><span class="s">emittance_x</span><span class="s">'</span>]) <span class="o">+</span> <span class="b">abs</span>(em[<span class="s">'</span><span class="s">emittance_y</span><span class="s">'</span>])); emz <span class="o">=</span> math<span class="o">.</span>sqrt(<span class="b">abs</span>(em[<span class="s">'</span><span class="s">emittance_z</span><span class="s">'</span>]))
+score, result <span class="o">=</span> dynamic_aperture(lat<span class="o">.</span>elements, [[<span class="m">0</span>, <span class="m">40</span>], [<span class="m">0</span>, <span class="m">20</span>]], [<span class="o">-</span><span class="m">0.02</span>, <span class="m">0.0</span>, <span class="m">0.02</span>], <span class="m">50</span>,
+                                 [<span class="m">0.0</span>, <span class="m">0.0</span>, <span class="o">-</span>math<span class="o">.</span>pi<span class="o">/</span><span class="m">2</span>], <span class="m">3</span>, <span class="m">1</span>, <span class="m">2.5e9</span>, em, emx, emz, em[<span class="s">'</span><span class="s">trf0</span><span class="s">'</span>],
+                                 rfsw<span class="o">=</span><span class="k">True</span>, rad<span class="o">=</span><span class="k">False</span>, out<span class="o">=</span>sys<span class="o">.</span>stdout<span class="o">.</span>write)
+<span class="c">#  Range    Xmin:   0.000 Xmax:  40.000 ... / -0.02 48 UUUU...  /    Score:   144</span>
 </code></pre>
 <h3 id="8b-maintrackpy--main-の-track-コマンド-acttratracktracka">8b. maintrack.py — MAIN の TRACK コマンド (ActTra/track/tracka)</h3>
 <p>対応: <code>ActTra.f</code>, <code>track.f</code>, <code>tracka.f</code>, <code>tinip</code> (trackd.f), <code>tsmear.f</code>, <code>wjfit.f</code>, <code>wtunem.f</code>, <code>tcftr.f</code>, <code>tapert.f</code> の損失報告 (docs/history/work_main_track.md)。</p>
-<pre><code class="language-python">from pysad.parser import parse_main_commands          # MAIN 部の ON/OFF, EMIT, `NAME=値`, TRACK, STOP を順に読む
-from pysad.maintrack import run_track                  # run_track(ffs, spec, write) → dict
-# 普通は run_sad.py で MAIN だけのスクリプトを実行する (MAIN に TRACK 文があると命令を書かれた順に実行)
+<pre><code class="language-python"><span class="k">from</span> pysad.parser <span class="k">import</span> parse_main_commands          <span class="c"># MAIN 部の ON/OFF, EMIT, `NAME=値`, TRACK, STOP を順に読む</span>
+<span class="k">from</span> pysad.maintrack <span class="k">import</span> run_track                  <span class="c"># run_track(ffs, spec, write) → dict</span>
+<span class="c"># 普通は run_sad.py で MAIN だけのスクリプトを実行する (MAIN に TRACK 文があると命令を書かれた順に実行)</span>
 </code></pre>
 <p>戻りの dict: <code>alive</code> (生存数)、<code>lost_turn[ID]</code>、<code>final</code> (ID 順の最終座標、落ちた粒子は落ちた時点)、<code>smear</code> ((周, ID, [2Jx,2Jy,2Jz,σx,σy,σz]) のリスト)、
 <code>tunes</code> (<code>TunesByTracking</code> と同じ: 粒子ごと <code>[生存, [面 x,y,z ごとに 8 本の [周波数, 振幅]]]</code>)、<code>losses</code> ((ID, 周, 要素番号))、<code>emx</code>, <code>emz</code>, <code>codin</code>。
@@ -681,9 +692,9 @@ from pysad.maintrack import run_track                  # run_track(ffs, spec, wr
 </tbody>
 </table>
 <p>単独で使うより <code>ffscmd.FFS.install(interp)</code> で <code>Twiss[]</code> 等を登録した状態 (= <code>run_sad_string</code>) で使う。</p>
-<pre><code class="language-python">from pysad.sadscript import Interp, fmt_real
-I = Interp(); I.run('a = Table[i^2, {i, 3}]; Print[a];', 'script'); I.get('a')   # [1.0, 4.0, 9.0]
-fmt_real(1.2345678901234e-3, '15.10')   # '    .0012345679'
+<pre><code class="language-python"><span class="k">from</span> pysad.sadscript <span class="k">import</span> Interp, fmt_real
+I <span class="o">=</span> Interp(); I<span class="o">.</span>run(<span class="s">'</span><span class="s">a = Table[i^2, </span><span class="s">{</span><span class="s">i, 3}]; Print[a];</span><span class="s">'</span>, <span class="s">'</span><span class="s">script</span><span class="s">'</span>); I<span class="o">.</span>get(<span class="s">'</span><span class="s">a</span><span class="s">'</span>)   <span class="c"># [1.0, 4.0, 9.0]</span>
+fmt_real(<span class="m">1.2345678901234e-3</span>, <span class="s">'</span><span class="s">15.10</span><span class="s">'</span>)   <span class="c"># '    .0012345679'</span>
 </code></pre>
 <h2 id="11-ffscmdpy--ffs-コマンド層-tffsa-と-run_sad">11. ffscmd.py — FFS コマンド層 (tffsa) と run_sad</h2>
 <p>対応: <code>tffsa.f</code> (1 語の解釈順: tfprint → tflag → tgetfv → terror → 要素名 → コマンド → tfgetv), <code>tftwiss.f</code> (Twiss[]/LINE[]/Element[]), <code>tflag.f</code>, <code>terror.f</code>, <code>tftype.f</code>。</p>
@@ -734,21 +745,21 @@ fmt_real(1.2345678901234e-3, '15.10')   # '    .0012345679'
 </tbody>
 </table>
 <p>FFS 層に接続済みの機能: <code>CalculateOptics</code>、<code>CALC6D</code> フラグ (CELL のみ)、<code>INTRA</code> + <code>emit</code> + <code>TouschekLifetime[]</code>、<code>LINE["GX"..]</code>/<code>ORG</code>、<code>Emittance[OneTurnInformation/Orbit/Matrix-&gt;True]</code> と <code>LINE["SIG..",l]</code>、解析微分 (既定)。詳細は docs/history/work_integration.md。</p>
-<pre><code class="language-python">import io
-from pysad.ffscmd import run_sad_string
-script = open(LAT, encoding='utf-8').read() + '''
-FFS;
-USE RING; CELL; CALC;
-Print[&quot;NX = &quot;, Twiss[&quot;NX&quot;,&quot;$$$&quot;]/2/Pi, &quot;  BX at MKC: &quot;, Twiss[&quot;BX&quot;,&quot;MKC&quot;]];
-Print[&quot;K1 of QFA1H: &quot;, LINE[&quot;K1&quot;,&quot;QFA1H&quot;], &quot;  Element: &quot;, Element[&quot;K1&quot;,&quot;QFA1&quot;]];
-FFS[&quot;fit NX 47.6; fit NY 17.6; free QFA4 QDA5; go;&quot;];
-RFSW; emit;
-Print[&quot;EMITX = &quot;, EMITX, &quot;  SIGE = &quot;, SIGE];
-'''
-buf = io.StringIO()
-ffs, I = run_sad_string(script, out=buf)     # 約 11 s (CALC + GO + emit)
-print(buf.getvalue())                        # SAD と同じ書式の GO 表・EMIT 報告・Print の出力
-I.get('EMITX'), ffs.flags['RFSW'], ffs.twiss_value('BX', ffs.nlat), ffs.rows[-1].betx
+<pre><code class="language-python"><span class="k">import</span> io
+<span class="k">from</span> pysad.ffscmd <span class="k">import</span> run_sad_string
+script <span class="o">=</span> <span class="b">open</span>(LAT, encoding<span class="o">=</span><span class="s">'</span><span class="s">utf-8</span><span class="s">'</span>)<span class="o">.</span>read() <span class="o">+</span> <span class="s">'''</span>
+<span class="s">FFS;</span>
+<span class="s">USE RING; CELL; CALC;</span>
+<span class="s">Print[</span><span class="s">"</span><span class="s">NX = </span><span class="s">"</span><span class="s">, Twiss[</span><span class="s">"</span><span class="s">NX</span><span class="s">"</span><span class="s">,</span><span class="s">"</span><span class="s">$$$</span><span class="s">"</span><span class="s">]/2/Pi, </span><span class="s">"</span><span class="s">  BX at MKC: </span><span class="s">"</span><span class="s">, Twiss[</span><span class="s">"</span><span class="s">BX</span><span class="s">"</span><span class="s">,</span><span class="s">"</span><span class="s">MKC</span><span class="s">"</span><span class="s">]];</span>
+<span class="s">Print[</span><span class="s">"</span><span class="s">K1 of QFA1H: </span><span class="s">"</span><span class="s">, LINE[</span><span class="s">"</span><span class="s">K1</span><span class="s">"</span><span class="s">,</span><span class="s">"</span><span class="s">QFA1H</span><span class="s">"</span><span class="s">], </span><span class="s">"</span><span class="s">  Element: </span><span class="s">"</span><span class="s">, Element[</span><span class="s">"</span><span class="s">K1</span><span class="s">"</span><span class="s">,</span><span class="s">"</span><span class="s">QFA1</span><span class="s">"</span><span class="s">]];</span>
+<span class="s">FFS[</span><span class="s">"</span><span class="s">fit NX 47.6; fit NY 17.6; free QFA4 QDA5; go;</span><span class="s">"</span><span class="s">];</span>
+<span class="s">RFSW; emit;</span>
+<span class="s">Print[</span><span class="s">"</span><span class="s">EMITX = </span><span class="s">"</span><span class="s">, EMITX, </span><span class="s">"</span><span class="s">  SIGE = </span><span class="s">"</span><span class="s">, SIGE];</span>
+<span class="s">'''</span>
+buf <span class="o">=</span> io<span class="o">.</span>StringIO()
+ffs, I <span class="o">=</span> run_sad_string(script, out<span class="o">=</span>buf)     <span class="c"># 約 11 s (CALC + GO + emit)</span>
+<span class="b">print</span>(buf<span class="o">.</span>getvalue())                        <span class="c"># SAD と同じ書式の GO 表・EMIT 報告・Print の出力</span>
+I<span class="o">.</span>get(<span class="s">'</span><span class="s">EMITX</span><span class="s">'</span>), ffs<span class="o">.</span>flags[<span class="s">'</span><span class="s">RFSW</span><span class="s">'</span>], ffs<span class="o">.</span>twiss_value(<span class="s">'</span><span class="s">BX</span><span class="s">'</span>, ffs<span class="o">.</span>nlat), ffs<span class="o">.</span>rows[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>betx
 </code></pre>
 <p>出力の抜粋 (SAD と同じ書式):</p>
 <pre><code> Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP
@@ -762,6 +773,7 @@ Emittance X            = 1.5494E-10 m   Emittance Y            = 1.2747E-21 m
 PYTHONIOENCODING=utf-8 python -u run_sad.py &lt;試験用ラティス&gt;.lat &lt;台本ファイル&gt;
 </code></pre>
 <p>引数のファイルを順に連結して <code>run_sad_string</code> に渡す。SAD の <code>gs</code> に複数ファイルを渡すのと同じ。進捗表示は環境変数 <code>PYSAD_PROGRESS=n</code> または SADScript 変数 <code>PYSAD$PROGRESS</code> (DA の n 周ごと)。</p>
+<p>pip で入れたときのコマンド (<code>pysad/cli.py</code>): <code>pysad-run lattice_file [script_file ...]</code> (上と同じ)、<code>pysad-share</code> (文書・例のフォルダの表示)、<code>pysad-warmup [--check | --clear] [--quiet]</code> (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。<code>--check</code> はキャッシュが有効なら終了コード 0、<code>--clear</code> は pysad のキャッシュを消す。<code>pysad/warmup.py</code>)。</p>
 <h2 id="12-calc6dpy--calc6d-qcell6d">12. calc6d.py — CALC6D (qcell6d)</h2>
 <p>対応: <code>qcell.f qcell6d</code> → <code>temit</code> (tcod, tturne, tecalc) → <code>tsetetwiss</code> / <code>tfetwiss</code> (<code>tffs.f</code>) / <code>tfadjustn</code>、分数位置は <code>qtwiss.f qtwissfrac</code>。</p>
 <table>
@@ -790,10 +802,10 @@ PYTHONIOENCODING=utf-8 python -u run_sad.py &lt;試験用ラティス&gt;.lat &l
 </tr>
 </tbody>
 </table>
-<pre><code class="language-python">from pysad.calc6d import calc6d, twiss_frac
-r6 = calc6d(lat, 2.5e9, rfsw=True)
-r6.stable, r6.tunes, r6.rows[-1].betz, r6.rows[-1].muz / 2 / math.pi
-twiss_frac(r6, 3, 0.5).betx        # 3 番目の要素の中央
+<pre><code class="language-python"><span class="k">from</span> pysad.calc6d <span class="k">import</span> calc6d, twiss_frac
+r6 <span class="o">=</span> calc6d(lat, <span class="m">2.5e9</span>, rfsw<span class="o">=</span><span class="k">True</span>)
+r6<span class="o">.</span>stable, r6<span class="o">.</span>tunes, r6<span class="o">.</span>rows[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>betz, r6<span class="o">.</span>rows[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>muz <span class="o">/</span> <span class="m">2</span> <span class="o">/</span> math<span class="o">.</span>pi
+twiss_frac(r6, <span class="m">3</span>, <span class="m">0.5</span>)<span class="o">.</span>betx        <span class="c"># 3 番目の要素の中央</span>
 </code></pre>
 <h2 id="13-touschekpy--intra-ibs--touschek-寿命表">13. touschek.py — INTRA (IBS + Touschek 寿命表)</h2>
 <p>対応: <code>temit.f</code> (INTRA の converge ループ, tintraconv), <code>tintrb.f</code> (IBS 拡散と touckl/touckm/toucke の積算), <code>Packages/emit.n</code> (Touschek クラス, Spline)。</p>
@@ -827,47 +839,47 @@ twiss_frac(r6, 3, 0.5).betx        # 3 番目の要素の中央
 </tr>
 </tbody>
 </table>
-<pre><code class="language-python">from pysad.touschek import touschek_table, touschek_lifetime
-tt = touschek_table(lat, 2.5e9, em, 1e10, mincoup=1e-2, rfsw=True, verbose=False)
-tt['iterations'], tt['converged'], tt['EMITXC']
-tau = touschek_lifetime(tt['table'], None, None, 10.0, em['momentum_spread'])   # 受容 10 σδ の寿命 [s]
+<pre><code class="language-python"><span class="k">from</span> pysad.touschek <span class="k">import</span> touschek_table, touschek_lifetime
+tt <span class="o">=</span> touschek_table(lat, <span class="m">2.5e9</span>, em, <span class="m">1e10</span>, mincoup<span class="o">=</span><span class="m">1e-2</span>, rfsw<span class="o">=</span><span class="k">True</span>, verbose<span class="o">=</span><span class="k">False</span>)
+tt[<span class="s">'</span><span class="s">iterations</span><span class="s">'</span>], tt[<span class="s">'</span><span class="s">converged</span><span class="s">'</span>], tt[<span class="s">'</span><span class="s">EMITXC</span><span class="s">'</span>]
+tau <span class="o">=</span> touschek_lifetime(tt[<span class="s">'</span><span class="s">table</span><span class="s">'</span>], <span class="k">None</span>, <span class="k">None</span>, <span class="m">10.0</span>, em[<span class="s">'</span><span class="s">momentum_spread</span><span class="s">'</span>])   <span class="c"># 受容 10 σδ の寿命 [s]</span>
 </code></pre>
 <h2 id="14-通しの使用例-python-から直接">14. 通しの使用例 (Python から直接)</h2>
 <p>下の例は <code>load_sad_string</code> の FODO リング (170 要素) で、各段を順に実行したもの (全体で数秒)。実ラティスでも同じ呼び方で動く (§3〜§7 の時間を参照)。</p>
-<pre><code class="language-python">import sys, math, numpy as np
-sys.path.insert(0, r'&lt;repo&gt;')
-from pysad.parser import load_sad_string
-from pysad.emit6d import emittance6d
-from pysad.match6 import Matcher
-from pysad.track6n import track_particles_fast
-from pysad.dapert import dynamic_aperture
+<pre><code class="language-python"><span class="k">import</span> sys<span class="o">,</span> math<span class="o">,</span> numpy <span class="k">as</span> np
+sys<span class="o">.</span>path<span class="o">.</span>insert(<span class="m">0</span>, <span class="s">r</span><span class="s">'</span><span class="s">&lt;repo&gt;</span><span class="s">'</span>)
+<span class="k">from</span> pysad.parser <span class="k">import</span> load_sad_string
+<span class="k">from</span> pysad.emit6d <span class="k">import</span> emittance6d
+<span class="k">from</span> pysad.match6 <span class="k">import</span> Matcher
+<span class="k">from</span> pysad.track6n <span class="k">import</span> track_particles_fast
+<span class="k">from</span> pysad.dapert <span class="k">import</span> dynamic_aperture
 
-SRC = '''
-MOMENTUM = 2.5 GEV;
-DRIFT  D1 =(L=0.3)  D2=(L=0.8);
-BEND   B  =(L=1.5 ANGLE=0.22439947 E1=0.5 E2=0.5);
-QUAD   QF =(L=0.3 K1=0.26)  QD=(L=0.3 K1=-0.24);
-SEXT   SF =(L=0.2 K2=1.0)   SD=(L=0.2 K2=-1.5);
-CAVI   RF =(VOLT=1.0E6 HARM=100 L=0);
-MARK   MK =();
-LINE CELL=(QF D1 SF D1 B D2 QD D2 SD D1 B D1)
-     RING=(MK 14*CELL RF);
-'''
-lat = load_sad_string(SRC).build_lattice('RING')          # 1. ラティスを読む
-tab = lat.twiss_table()                                    # 2. CELL; CALC → Twiss 表
-print(tab[-1].mux / 2 / math.pi, tab[-1].muy / 2 / math.pi)   # 2.0779, 2.2566
-em = emittance6d(lat, 2.5e9, rfsw=True)                    # 3. RFSW; emit
-print(em['emittance_x'], em['momentum_spread'], em['trf0'])   # 1.770e-6, 9.93e-4, 0.0823
-m = Matcher(lat, out=print)                                # 4. FREE QF QD; FIT NX 2.18 NY 1.84; GO
-m.free('QF,QD'); m.fit('NX', 2.18); m.fit('NY', 1.84)
-res = m.go(); print(res.r, m.values())                     # 2.5e-16, {'QF K1': 0.25215, 'QD K1': -0.20305}
-x = track_particles_fast(lat.elements, np.array([[1e-3, 0, 0.5e-3, 0, 0, 0]]),   # 5. TrackParticles 100 周
-                         100, 2.5e9, trf0=em['trf0'], rfsw=True, rad=False)
-emx = math.sqrt(abs(em['emittance_x']) + abs(em['emittance_y'])); emz = math.sqrt(abs(em['emittance_z']))
-score, result = dynamic_aperture(lat.elements, [[0, 40], [0, 20]], [-0.02, 0.0, 0.02], 50,   # 6. DA
-                                 [0.0, 0.0, -math.pi / 2], 3, 1, 2.5e9, em, emx, emz, em['trf0'],
-                                 rfsw=True, rad=False, out=sys.stdout.write)
-print(score)                                               # 144
+SRC <span class="o">=</span> <span class="s">'''</span>
+<span class="s">MOMENTUM = 2.5 GEV;</span>
+<span class="s">DRIFT  D1 =(L=0.3)  D2=(L=0.8);</span>
+<span class="s">BEND   B  =(L=1.5 ANGLE=0.22439947 E1=0.5 E2=0.5);</span>
+<span class="s">QUAD   QF =(L=0.3 K1=0.26)  QD=(L=0.3 K1=-0.24);</span>
+<span class="s">SEXT   SF =(L=0.2 K2=1.0)   SD=(L=0.2 K2=-1.5);</span>
+<span class="s">CAVI   RF =(VOLT=1.0E6 HARM=100 L=0);</span>
+<span class="s">MARK   MK =();</span>
+<span class="s">LINE CELL=(QF D1 SF D1 B D2 QD D2 SD D1 B D1)</span>
+<span class="s">     RING=(MK 14*CELL RF);</span>
+<span class="s">'''</span>
+lat <span class="o">=</span> load_sad_string(SRC)<span class="o">.</span>build_lattice(<span class="s">'</span><span class="s">RING</span><span class="s">'</span>)          <span class="c"># 1. ラティスを読む</span>
+tab <span class="o">=</span> lat<span class="o">.</span>twiss_table()                                    <span class="c"># 2. CELL; CALC → Twiss 表</span>
+<span class="b">print</span>(tab[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>mux <span class="o">/</span> <span class="m">2</span> <span class="o">/</span> math<span class="o">.</span>pi, tab[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>muy <span class="o">/</span> <span class="m">2</span> <span class="o">/</span> math<span class="o">.</span>pi)   <span class="c"># 2.0779, 2.2566</span>
+em <span class="o">=</span> emittance6d(lat, <span class="m">2.5e9</span>, rfsw<span class="o">=</span><span class="k">True</span>)                    <span class="c"># 3. RFSW; emit</span>
+<span class="b">print</span>(em[<span class="s">'</span><span class="s">emittance_x</span><span class="s">'</span>], em[<span class="s">'</span><span class="s">momentum_spread</span><span class="s">'</span>], em[<span class="s">'</span><span class="s">trf0</span><span class="s">'</span>])   <span class="c"># 1.770e-6, 9.93e-4, 0.0823</span>
+m <span class="o">=</span> Matcher(lat, out<span class="o">=</span><span class="b">print</span>)                                <span class="c"># 4. FREE QF QD; FIT NX 2.18 NY 1.84; GO</span>
+m<span class="o">.</span>free(<span class="s">'</span><span class="s">QF,QD</span><span class="s">'</span>); m<span class="o">.</span>fit(<span class="s">'</span><span class="s">NX</span><span class="s">'</span>, <span class="m">2.18</span>); m<span class="o">.</span>fit(<span class="s">'</span><span class="s">NY</span><span class="s">'</span>, <span class="m">1.84</span>)
+res <span class="o">=</span> m<span class="o">.</span>go(); <span class="b">print</span>(res<span class="o">.</span>r, m<span class="o">.</span>values())                     <span class="c"># 2.5e-16, {'QF K1': 0.25215, 'QD K1': -0.20305}</span>
+x <span class="o">=</span> track_particles_fast(lat<span class="o">.</span>elements, np<span class="o">.</span>array([[<span class="m">1e-3</span>, <span class="m">0</span>, <span class="m">0.5e-3</span>, <span class="m">0</span>, <span class="m">0</span>, <span class="m">0</span>]]),   <span class="c"># 5. TrackParticles 100 周</span>
+                         <span class="m">100</span>, <span class="m">2.5e9</span>, trf0<span class="o">=</span>em[<span class="s">'</span><span class="s">trf0</span><span class="s">'</span>], rfsw<span class="o">=</span><span class="k">True</span>, rad<span class="o">=</span><span class="k">False</span>)
+emx <span class="o">=</span> math<span class="o">.</span>sqrt(<span class="b">abs</span>(em[<span class="s">'</span><span class="s">emittance_x</span><span class="s">'</span>]) <span class="o">+</span> <span class="b">abs</span>(em[<span class="s">'</span><span class="s">emittance_y</span><span class="s">'</span>])); emz <span class="o">=</span> math<span class="o">.</span>sqrt(<span class="b">abs</span>(em[<span class="s">'</span><span class="s">emittance_z</span><span class="s">'</span>]))
+score, result <span class="o">=</span> dynamic_aperture(lat<span class="o">.</span>elements, [[<span class="m">0</span>, <span class="m">40</span>], [<span class="m">0</span>, <span class="m">20</span>]], [<span class="o">-</span><span class="m">0.02</span>, <span class="m">0.0</span>, <span class="m">0.02</span>], <span class="m">50</span>,   <span class="c"># 6. DA</span>
+                                 [<span class="m">0.0</span>, <span class="m">0.0</span>, <span class="o">-</span>math<span class="o">.</span>pi <span class="o">/</span> <span class="m">2</span>], <span class="m">3</span>, <span class="m">1</span>, <span class="m">2.5e9</span>, em, emx, emz, em[<span class="s">'</span><span class="s">trf0</span><span class="s">'</span>],
+                                 rfsw<span class="o">=</span><span class="k">True</span>, rad<span class="o">=</span><span class="k">False</span>, out<span class="o">=</span>sys<span class="o">.</span>stdout<span class="o">.</span>write)
+<span class="b">print</span>(score)                                               <span class="c"># 144</span>
 </code></pre>
 <p>同じことを SAD スクリプトとして <code>run_sad_string</code> / <code>run_sad.py</code> に渡す場合は §11 の形 (<code>FFS;</code> 以降に <code>USE RING; CELL; CALC; FIT ...; FREE ...; GO; RFSW; emit; DynamicApertureSurvey[{{-.02,0,.02},{0,40},{0,20}}, 50, Output-&gt;6];</code>) で書く。</p>
 <h2 id="15-旧-api-非推奨">15. 旧 API (非推奨)</h2>
@@ -1151,6 +1163,11 @@ print(score)                                               # 144
 <td><code>naff.py</code></td>
 <td>NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。<code>naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)</code> (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、<code>naff_real(x, nfreq=1, window=1, remove_mean=True)</code> (実数の信号。解析信号にして <code>naff</code>。周波数は 0〜0.5)、<code>twiss_normalize(x, px, alpha, beta)</code>、<code>tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)</code> ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、<code>tunes_from_coords(coords, twiss=None, window=1)</code> (<code>track_particles</code> の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の <code>wtunem</code> (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍</td>
 <td>docs/28、<a href="../example/05_tracking/fn_NAFF_tunes.py"><code>example/05_tracking/fn_NAFF_tunes.py</code></a></td>
+</tr>
+<tr>
+<td><code>warmup.py</code></td>
+<td>numba のカーネルの事前コンパイル (コマンド <code>pysad-warmup</code>、<code>py -3.12 -m pysad.warmup</code> でもよい)。小さな FODO を土台にした埋め込みの台本 10 本 (光学・エミッタンス・追跡・放射、BEND の K1・フリンジ、ステアリング、MULT・OCT・APERT、COORD・TCAVI、UND・PHSROT、空洞の横方向電圧、BEAMBEAM・WAKE、SOL 領域、TRPT の加速) を 1 回ずつ走らせ、カーネル 195 本のうち 191〜192 本の機械語をキャッシュに作る (残りの 3〜4 本は、この入力では呼ばれず、使うときに変換される。SOL の領域内の粒子が早く落ちるかどうかで 1 本変わる)。<code>--check</code> はキャッシュが有効か (CPU・numba の版・ソースが一致するか) を調べて終了コード 0/1、<code>--clear</code> は pysad のキャッシュだけを消す。キャッシュの場所は numba の規則 (<code>NUMBA_CACHE_DIR</code> があればその下、なければ <code>pysad/__pycache__</code>、書き込めなければユーザーのキャッシュ)。<code>pysad.nbcache</code> の依存先の記録も更新する。変換の時間は 1 台の PC (Python 3.12・numba 0.68) で 80〜90 秒 (キャッシュは 27.5 MB。作り直しの 2 回目は 4 秒)。実行時は <code>pysad-warmup</code> と同じ <code>NUMBA_CACHE_DIR</code> にすること。別の CPU・numba の版では使われず再変換される</td>
+<td>docs/01</td>
 </tr>
 <tr>
 <td><code>specfn_cx.py</code></td>

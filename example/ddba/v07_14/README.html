@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -49,7 +60,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="v07_14-チューンのマッチングチューンサーベイ誤差の計算-補正しながら誤差を大きくする手法-の一式">v07_14: チューンのマッチング・チューンサーベイ・誤差の計算 (補正しながら誤差を大きくする手法) の一式</h1>
 <blockquote>
 <p><strong>注意 (6 極の値について)</strong>: この例のラティス台本 (<code>v07_14_*.sad</code>) に入っている 6 極の値と、ここで「完成版」と呼ぶ有効な 6 極のセットは、<strong>論文用の最終版ではない</strong>。設計の途中の版であり、この例は 6 極の最適化の手順を示すためのものである。ここで出した DA・LMA などの数値は、この簡略な設定での比較で、論文や最終設計の値としては使わないこと。</p>
@@ -159,7 +170,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <p>設計の流れ (マッチング → 6 極の補正) は、ラティスの値を決め直す道具で、v07_14 のラティスはその結果をすでに持つ。例の台本は、設計値から出発して、意図的に崩した偏向角を戻す (<code>V0714_match_tune</code>)、または設計のチューンの周りの格子を振る (<code>V0714_tune_survey</code>) 形にした。<strong>6 極の最終設定は、このマッチングの出力ではない</strong> (6 極は別のソフトで別の研究者が最適化した結果で、<code>V0714_match_tune</code> の6 極の補正 (S3・S4 の色収差補正) は設計の出発点と同じ種類の道具)。</p>
 <h2 id="3-スクリプトの一覧">3. スクリプトの一覧</h2>
 <p>走らせ方 (リポジトリ直下から。台本は自己完結で、ラティスは先頭に貼ってあり、<code>modules/</code> を <code>Get["../modules/..."]</code> の相対パスで読むので、台本のあるフォルダをカレントにして走らせる):</p>
-<pre><code class="language-bash">py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/design/V0714_match_tune.sad [--gs-timeout 1800] [--py-timeout 3600] [--only gs|py]
+<pre><code class="language-bash">py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/design/V0714_match_tune.sad <span class="o">[</span>--gs-timeout <span class="m">1800</span><span class="o">]</span> <span class="o">[</span>--py-timeout <span class="m">3600</span><span class="o">]</span> <span class="o">[</span>--only gs|py<span class="o">]</span>
 </code></pre>
 <p>gs は WSL、pysad は k64 モード (<code>PYTHONUTF8=1</code>) で走り、<code>NAME.gs.txt</code>・<code>NAME.pysad.txt</code>・<code>NAME.time.txt</code> ができる。台本は <code>py -3.12 example/tools/mk_ddba_v07_14.py</code> で作る (<code>example/tools/ddba_v07_14_src/&lt;フォルダ&gt;/NAME.body</code> の前に <code>lattice/</code> のラティスを貼る。<code>--full</code> で完全な設定の版 <code>NAME_full.sad</code>)。</p>
 <p>gs と pysad の一致: ○ = 画面表示の数値が 1e-6 (相対) 以内で一致、△ = 一部の数値が違う (理由は下)、× = 走らない。<strong>一致しないものは、追跡や出力に合わせる補正をせず、そのまま書いた。</strong></p>
@@ -382,8 +393,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <p>補正は水平・垂直の COD を、段階の最後で 1 桁以上下げる (補正前 mm → 補正後 数十 μm)。補正の途中経過 (<code>mat x rms</code> の列) は、段階ごとに 3 回の補正で rms が 1/2〜1/4 に下がり、最後の段階の 10 回で収束する (<code>sad x rms</code> は √(Σ COD²)/モニター数で、rms の 1/√300 に当たる値。元の台本の定義)。gs と pysad で補正後のチューンは 2e-5 以内、COD の rms は x が 4 桁、y が 2 桁一致する (補正前の COD は 10 桁一致)。
 <strong>5 GeV の DA の gs と pysad の食い違い (<code>ExpandElementValues</code> の効き)</strong>: 原因は <code>DynamicApertureSurvey</code> の既定 <code>ExpandElementValues-&gt;True</code> が補正磁石 HD・VD の成分ごとの K0 を代表の値に揃え、補正した状態を消すこと (gs も pysad もサーベイのあとはチューン 47.960・COD −1.8 mm・全 HD の K0 が同じ値)。その状態の DA は補正がなく、gs 0〜1σ・pysad 0〜38σ の偶然の値になっていた。<code>DAsv</code> を <code>ExpandElementValues-&gt;False</code> にすると、gs と pysad が DA 29〜36σ で一致する (DDBA の記録 最悪 30σ・平均 40σ の水準)。pysad は <code>ExpandElementValues</code> を読む。出力: <code>errors/V0714_correct_cod.expandfalse.gs.txt</code>・<code>.pysad.txt</code> (既定の <code>ExpandElementValues-&gt;True</code> の DA の出力は <code>V0714_correct_cod.gs.txt</code>・<code>.pysad.txt</code>)。切り分けの経緯は <code>docs/history/v24_A.md</code>。</p>
 <h3 id="44-完全な設定での走らせ方と見込み時間">4.4 完全な設定での走らせ方と見込み時間</h3>
-<pre><code class="language-bash">py -3.12 example/tools/mk_ddba_v07_14.py --full                  # NAME_full.sad を作る (作成済み)
-py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/errors/V0714_correct_cod_full.sad --gs-timeout 100000 --only gs
+<pre><code class="language-bash">py -3.12 example/tools/mk_ddba_v07_14.py --full                  <span class="c"># NAME_full.sad を作る (作成済み)
+</span>py -3.12 example/tools/run_ddba_v07_14.py example/ddba/v07_14/errors/V0714_correct_cod_full.sad --gs-timeout <span class="m">100000</span> --only gs
 </code></pre>
 <table>
 <thead>

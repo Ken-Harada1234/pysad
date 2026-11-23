@@ -3,7 +3,7 @@
 
 - SAD の台本 (.sad) を pysad で走らせて FFS の状態を得る (run_file・run_text)。
 - `pysad.draw_mpl.draw` で光学とラティス配置を描く (optics)。点列は `series` で取り出せる。
-- 保存 (save) は PNG を 1 枚 300 KB 以下に収める (dpi を下げて再保存する)。
+- 保存 (save) は、折れ線系の図は SVG (文字はパス)、点の多い図は PNG (1 枚 300 KB 以下、画素を変えずに圧縮)。
 実行は、リポジトリの直下から `py -3.12 example/<フォルダ>/figures_make_<名前>.py`。環境変数 PYSAD_SAD_PACKAGES が無ければ
 D:/work/SAD-master/SAD-master/Packages を使う。
 """
@@ -18,6 +18,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 EX = ROOT / "example"
 sys.path.insert(0, str(ROOT))
 
+sys.path.insert(0, str(ROOT / "tools" / "figures"))
+import figsave  # noqa: E402
 import matplotlib  # noqa: E402
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
@@ -64,16 +66,11 @@ def optics(ffs, spec, out, title="", region=None, figsize=(7.4, 4.4), tunes=True
     save(fig, out)
 
 
-def save(fig, out, dpi=110):
-    """PNG に保存する。300 KB を超えたら dpi を下げる。out は相対パスなら呼び出し側のフォルダ基準でなく ROOT 基準。"""
+def save(fig, out, dpi=110, vector=True):
+    """折れ線系の図は SVG、そうでなければ PNG で保存する (tools/figures/figsave.py)。out は .png で与える。
+    相対パスなら ROOT 基準。点が非常に多い図 (散布図・画像) は vector=False (PNG のみ。300 KB を超えたら dpi を下げる)。"""
     p = pathlib.Path(out)
     if not p.is_absolute():
         p = ROOT / p
-    p.parent.mkdir(parents=True, exist_ok=True)
-    while True:
-        fig.savefig(p, dpi=dpi, bbox_inches="tight")
-        if p.stat().st_size <= 300 * 1024 or dpi <= 60:
-            break
-        dpi -= 10
-    plt.close(fig)
-    print(p.relative_to(ROOT), p.stat().st_size // 1024, "KB", "dpi", dpi)
+    r = figsave.save_figure(fig, p, dpi=dpi, vector=vector, png_max_kb=300)
+    return r

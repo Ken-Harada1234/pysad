@@ -8,7 +8,7 @@ RINGC のチューンを δ = DP0 = −3%〜+3% (0.5% 刻み) で求める。設
 `KEKLS_chromaticity.sad` (先頭に `../lattice/kek_ls_v03_68.sad` を貼った自己完結のファイル。台本の本体は `FFS;` から。説明のコメントは台本の先頭にある)。
 
 ## 結果の読み方
-`T1 δ νx νy`・`T0 δ νx νy` の行。6 極ありは δ ±1% で Δν ≈ ±0.0x の滑らかな曲線、6 極なしは ξ = (−57.6, −89.3) の自然クロマティシティで Δν = ±1.7 (δ = ±3%) に達する。図: `KEKLS_chromaticity.png`。
+`T1 δ νx νy`・`T0 δ νx νy` の行。6 極ありは δ ±1% で Δν ≈ ±0.0x の滑らかな曲線、6 極なしは ξ = (−57.6, −89.3) の自然クロマティシティで Δν = ±1.7 (δ = ±3%) に達する。図: `KEKLS_chromaticity.svg`。
 
 gs の出力の抜粋 (指定の行だけ。全体は `KEKLS_chromaticity.gs.txt`):
 ```
@@ -21,7 +21,7 @@ T1    -.005   48.5883765069   17.6356676723
 ... (計 26 行)
 ```
 
-![KEKLS_chromaticity.png](KEKLS_chromaticity.png)
+![KEKLS_chromaticity.svg](KEKLS_chromaticity.svg)
 
 ## gs と pysad の比較
 判定: **○** (比べた行 26、最大の相対差 0.0e+00、k64 モードの pysad)。全桁一致 (表の 26 行)。

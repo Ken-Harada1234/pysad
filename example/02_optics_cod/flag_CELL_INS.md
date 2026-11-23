@@ -22,7 +22,7 @@ CELL;  CALC;
 - INS (BX=10, AX=0, …): 末端の BX=31.6069、AX=-19.4439、位置 100 の BX=9.09224。
 - `CELL` に戻すと周期解が戻る。
 
-![CELL と INS の βx](fig_flag_CELL_INS_beta.png)
+![CELL と INS の βx](fig_flag_CELL_INS_beta.svg)
 
 横軸はリングに沿った距離 s [m]、縦軸は βx [m]。青の実線は CELL の周期解で、1 セル (4.4 m) ごとに 1.2〜6.8 m を繰り返す。橙の破線は INS で先頭の初期値を BXI=10、AXI=0 にした場合で、周期解と合っていないため β が大きく振れ、リング 1 周の末端で βx = 31.6 m になる (本文の値)。
 

@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -43,7 +43,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 28_v2_vs_k64.md</div>
+<div class="meta">元: 28_v2_vs_k64.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="28-v2-既定-と-k64-pysad_compatk64-の違い">28. v2 (既定) と k64 (<code>PYSAD_COMPAT=k64</code>) の違い</h1>
 <p><strong>この文書で分かること</strong>: pysad の計算結果が v2 (既定) と k64 でどこが違うか。K64 (SAD の公式配布版の実行系。gs はその実行ファイル) の誤りを v2 が直しているため、同じ入力でも値が変わる機能の一覧である。
 <strong>前提</strong>: 数値を gs (K64) と比べたいとき、または K64 と同じ結果が欲しいときは <code>PYSAD_COMPAT=k64</code> を付ける。それ以外は v2 のままでよい。

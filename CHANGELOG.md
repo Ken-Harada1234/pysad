@@ -6,6 +6,18 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## v2.4.3 (2026-11-23)
+
+**数式の表示 (pysad のコードの動作は変えない)**: md の中の TeX の数式 (`$…$`・`$$…$$`) を、HTML を作る (ビルドの) ときに KaTeX (0.19.1、MIT。`tools/katex/`) で HTML の部品に変換して埋め込む (`tools/mathtex.py`・`tools/katex_render.js`。Node.js が要る。見つからなければ従来どおり TeX の生の文字のまま、警告を 1 回出す)。開くときに JavaScript は要らず、オフラインで単独の HTML として、ブラウザで数式が数式として見える。数式のある HTML だけに CSS とフォント (使われている面だけ、base64) が入る (132 本、合計 +15.5 MB)。数式の検出は、コードブロック・インラインコード・SAD の出力の `$$$`・金額・`\$` を数式にしない (docs・example の `$` を含む 133 文書、2199 個の数式で、誤検出 0・変換エラー 0)。試験 `test_tools_md_to_html.py` (33 件)。
+
+**GitHub Pages の設定**: ルートの `.nojekyll` (Jekyll を使わず、ファイルをそのまま公開する。`CHANGELOG.md` の `{{1,2}` を Jekyll が Liquid の記法と解釈して失敗したため)。
+
+**初回の待ち時間を事前に済ませる (pysad のコードの動作は変えない)**: 計算の核 (numba のカーネル 195 本) は、最初の実行のときに機械語へ変換する (CPU を使い、光学・追跡・エミッタンスの最初の実行で約 57 秒。キャッシュがあると 1〜2 秒)。インストールの直後に 1 回、新しいコマンド `pysad-warmup` (`pysad.cli.warmup_main`・`pysad/warmup.py`) を実行すると、埋め込みの小さなラティスで 191〜192 本の変換を先に済ませる (80〜90 秒、キャッシュ 27.5 MB。`example/` や外部のファイルに依存しない)。`--check` でキャッシュが有効か、`--clear` で消す。キャッシュの場所は numba の規則 (`NUMBA_CACHE_DIR`、パッケージの `__pycache__`、書き込めないときはユーザーのキャッシュ)。この入力で呼ばれない 3〜4 本 (SOL の中の K0 だけの MULT のカーネルなど) は、使うときに変換される。
+
+**文書の HTML を見やすくする (pysad のコードの動作は変えない)**: コードブロックの色分け (ビルドのとき Pygments で。SAD の台本用の簡易レキサー `tools/sad_lexer.py`、明暗の配色)、全文検索 (`search_index.json`・`search.html`)、入口ページ (`index.html`。md の見出しから自動生成)、各ページ先頭の検索・入口へのリンク、GitHub Pages の準備 (`.nojekyll`、手順は `tools/README.md` の「GitHub Pages で公開する」)。
+
+**図を軽く・きれいにする (pysad のコードの動作は変えない)**: PNG を画素を変えずに圧縮した (全 PNG の画素が元と一致することを確認。外部の道具は使わず、フィルターの選択と zlib の最大圧縮と、色数の少ない図のパレット化。143 枚の合計 10.7 MB が 9.0 MB、-1.7 MB)。スクリプトで再生成できる折れ線系の図 32 枚 (`docs/figures/` の 11 枚と `example/` の 21 枚) は SVG にした (文字はパス。`tools/figures/figsave.py`。SVG が PNG 以下か 150 KB 以下のときだけ)。点の多い図・画像・再生成できない図は PNG のまま。図の作り方は `tools/README.md`。
+
 ## v2.4.2 (2026-11-23)
 
 **配布の内容 (パッケージ以外の追加。pysad のコードの動作は変えない)**: `pip install pysad-k64` で、パッケージ本体 (`import pysad`) のほかに、文書 `docs/` (HTML 版を含む) と例 `example/` (図・出力を含む) の全ファイルを `<prefix>/share/pysad/` に入れる (`setup.py` の `data_files`、sdist は `MANIFEST.in`)。全部で約 90 MB。場所は新しいコマンド `pysad-share` (または `pysad.cli.share_dir()`) が表示する。`pysad-run lattice_file [script_file ...]` (`pysad.cli.run_main`) を足した (リポジトリの `run_sad.py` と同じ。pip で入れた人も SAD の台本を実行できる)。

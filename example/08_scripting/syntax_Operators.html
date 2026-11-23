@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,17 +52,17 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: syntax_Operators.md</div>
+<div class="meta">元: syntax_Operators.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="syntax_operators-----など">syntax_Operators (= := == === など)</h1>
 <p>種別: 文法 / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>代入 <code>=</code> (右辺を今評価) と <code>:=</code> (呼ぶたびに評価)、<code>==</code> (等しいか、リストは要素ごと)、<code>===</code> (同一か)、<code>&lt;&gt;</code>・<code>&lt;=&gt;</code>、複合代入、<code>++</code>・<code>--</code>、同時代入、部分への代入、<code>=.</code> (解除)、演算子の優先順位。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>n = 1; a = n + 1; b := n + 1; n = 10;   (* a=2, b=11 *)
-1 == 1; {1,2} == {1,3}; {1,2} === {1,3}; 1 === 1.0;
-v = 10; v += 5; v -= 3; v *= 2; v /= 4;     (* 6 *)
-{p, q} = {q, p};  t[[2]] = 5;  w =.;  h[1] = &quot;one&quot;;
-2 + 3*4^2;  -2^2;  2^3^2;  1 - 2 - 3;
+<pre><code class="language-sad">n <span class="o">=</span> <span class="m">1</span>; a <span class="o">=</span> n <span class="o">+</span> <span class="m">1</span>; b <span class="o">:=</span> n <span class="o">+</span> <span class="m">1</span>; n <span class="o">=</span> <span class="m">10</span>;   <span class="c">(*</span><span class="c"> a=2, b=11 </span><span class="c">*)</span>
+<span class="m">1</span> <span class="o">==</span> <span class="m">1</span>; {<span class="m">1</span>,<span class="m">2</span>} <span class="o">==</span> {<span class="m">1</span>,<span class="m">3</span>}; {<span class="m">1</span>,<span class="m">2</span>} <span class="o">==</span><span class="o">=</span> {<span class="m">1</span>,<span class="m">3</span>}; <span class="m">1</span> <span class="o">==</span><span class="o">=</span> <span class="m">1.0</span>;
+v <span class="o">=</span> <span class="m">10</span>; v <span class="o">+</span><span class="o">=</span> <span class="m">5</span>; v <span class="o">-</span><span class="o">=</span> <span class="m">3</span>; v <span class="o">*</span><span class="o">=</span> <span class="m">2</span>; v <span class="o">/</span><span class="o">=</span> <span class="m">4</span>;     <span class="c">(*</span><span class="c"> 6 </span><span class="c">*)</span>
+{p, q} <span class="o">=</span> {q, p};  t[[<span class="m">2</span>]] <span class="o">=</span> <span class="m">5</span>;  w <span class="o">=</span>.;  h[<span class="m">1</span>] <span class="o">=</span> <span class="s">"one"</span>;
+<span class="m">2</span> <span class="o">+</span> <span class="m">3</span><span class="o">*</span><span class="m">4</span><span class="o">^</span><span class="m">2</span>;  <span class="o">-</span><span class="m">2</span><span class="o">^</span><span class="m">2</span>;  <span class="m">2</span><span class="o">^</span><span class="m">3</span><span class="o">^</span><span class="m">2</span>;  <span class="m">1</span> <span class="o">-</span> <span class="m">2</span> <span class="o">-</span> <span class="m">3</span>;
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>a</code>=2、<code>b</code>=11。<code>==</code>: 1→1、1==2→0、<code>{1,2}=={1,3}</code>→<code>{1,0}</code> (gs)、文字列も <code>==</code> で比較。<code>===</code>: <code>1===1.0</code>→1 (SAD は数値型を区別しない)。<code>2+3*4^2</code>=50、<code>-2^2</code>=-4、<code>2^3^2</code>=512 (右結合)、<code>1-2-3</code>=-4。</p>

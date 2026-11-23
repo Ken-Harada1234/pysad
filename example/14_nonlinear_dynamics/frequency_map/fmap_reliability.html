@@ -27,11 +27,11 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body class="nonav">
 <main>
-<div class="meta">元: fmap_reliability.md</div>
+<div class="meta">元: fmap_reliability.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="周波数マップの信頼性の例">周波数マップの信頼性の例</h1>
 <p>解説は <code>docs/26_frequency_map_lma.md</code> (§3.2・3.3・3.6・§10)、台本ごとのまとめは <a href="FMAP_summary.html"><code>FMAP_summary.md</code></a> §14、試験は <code>pysad/tests/script_tests/test_v23_S2_fmapcheck.py</code>、コードは <code>pysad/fmapcheck.py</code>・<code>freqmap.py</code>・<code>fmapres.py</code> (<code>apply_alignment_errors</code>)。
 実行はリポジトリ直下から <code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_check_xxx.py ...</code> (標準出力をファイルへ落とすときは <code>PYTHONUTF8=1</code>)。結果の数値は <code>example/14_nonlinear_dynamics/frequency_map/fmap_check_data/*.jsonl</code> (1 行 = 1 つの周波数マップ。走った組は飛ばして追記する)。

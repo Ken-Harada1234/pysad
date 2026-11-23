@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,7 +53,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: FFS_wildcards.md</div>
+<div class="meta">元: FFS_wildcards.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="ffs_wildcards-名前のパターン">FFS_wildcards (名前のパターン)</h1>
 <p>種別: FFS の機能 (要素・成分名のパターン照合、tmatch.f)。フォルダ: 01_lattice_elements。ラティス: <code>00_lattice/FODO_ring.sad</code>。エネルギー 3 GeV。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
@@ -83,13 +94,13 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </table>
 <p>成分名は <code>名前.番号</code> (例 <code>QF.3</code>)。複数の名前を並べるには空白ではなく <code>|</code> を使う (空白で区切った 2 つ目の <code>QF.2</code> は、gs では別の式として評価されてしまう)。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>Print[&quot;Q*      : &quot;, Length[LINE[&quot;POSITION&quot;,&quot;Q*&quot;]], &quot; components&quot;];
-Print[&quot;Q%.1    : &quot;, LINE[&quot;NAME&quot;,&quot;Q%.1&quot;]];
-Print[&quot;{QS}F.1 : &quot;, LINE[&quot;NAME&quot;,&quot;{QS}F.1&quot;]];
-Print[&quot;{^QS}*.1: &quot;, LINE[&quot;NAME&quot;,&quot;{^QS}*.1&quot;]];
-Print[&quot;QF.1|QD.2: &quot;, LINE[&quot;NAME&quot;,&quot;QF.1|QD.2&quot;]];
-DISP QF.1|QD.2|Q*.3 1 10;
-SF K2 1.5;     S* K2 2;
+<pre><code class="language-sad"><span class="b">Print</span>[<span class="s">"Q*      : "</span>, <span class="b">Length</span>[<span class="t">LINE</span>[<span class="s">"POSITION"</span>,<span class="s">"Q*"</span>]], <span class="s">" components"</span>];
+<span class="b">Print</span>[<span class="s">"Q%.1    : "</span>, <span class="t">LINE</span>[<span class="s">"NAME"</span>,<span class="s">"Q%.1"</span>]];
+<span class="b">Print</span>[<span class="s">"{QS}F.1 : "</span>, <span class="t">LINE</span>[<span class="s">"NAME"</span>,<span class="s">"{QS}F.1"</span>]];
+<span class="b">Print</span>[<span class="s">"{^QS}*.1: "</span>, <span class="t">LINE</span>[<span class="s">"NAME"</span>,<span class="s">"{^QS}*.1"</span>]];
+<span class="b">Print</span>[<span class="s">"QF.1|QD.2: "</span>, <span class="t">LINE</span>[<span class="s">"NAME"</span>,<span class="s">"QF.1|QD.2"</span>]];
+<span class="t">DISP</span> QF.1<span class="o">|</span>QD.2<span class="o">|</span>Q<span class="o">*</span><span class="m">.3</span> <span class="m">1</span> <span class="m">10</span>;
+SF K2 <span class="m">1.5</span>;     S<span class="o">*</span> K2 <span class="m">2</span>;
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>Q*</code> は QF・QD の全成分 48 個、<code>Q%.1</code> は {QF.1, QD.1}、<code>{QS}F.1</code> は {SF.1, QF.1}、<code>{^QS}*.1</code> は {ORIGIN, RF, DS.1, D2.1, B.1, D1.1} (名前が Q・S で始まらない <code>.1</code> の成分)、<code>QF.1|QD.2</code> は {QF.1, QD.2}。

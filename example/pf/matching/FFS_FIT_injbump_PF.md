@@ -26,7 +26,7 @@ free KK1 K0;  free KK2 K0;  free KK3 K0;  free KK4 K0;  go;
 
 収束は `Matched. (1.4e-10)`。
 
-![入射バンプの軌道](fig_FIT_injbump_PF.png)
+![入射バンプの軌道](fig_FIT_injbump_PF.svg)
 
 横軸は入射部分 (114 要素、27.7 m) の s [m]、縦軸は GO のあとの水平の閉軌道のずれ DX [mm]。点線がキッカー KK1〜KK4 の位置で、橙の点が入射点 INJ (DX = 15 mm)。軌道は KK1 から立ち上がり、INJ を通って最大約 17.5 mm になり、KK4 のあと 0 に戻る。KK3 は INJ の下流にあるが、バンプを閉じるために使う (表のとおり)。
 

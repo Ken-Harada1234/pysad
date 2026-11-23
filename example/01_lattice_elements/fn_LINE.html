@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,19 +53,19 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_LINE.md</div>
+<div class="meta">元: fn_LINE.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_line-line-関数">fn_LINE (LINE 関数)</h1>
 <p>種別: SADScript 関数 (MAIN 部の <code>LINE</code> 定義とは別物)。フォルダ: 01_lattice_elements。ラティス: <code>00_lattice/FODO_ring.sad</code>。エネルギー 3 GeV。フラグ: CELL。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>LINE[キー, 成分]</code>: ビームライン上の<strong>成分</strong> (配置された 1 台ごと) の情報を返す。キー: <code>"LENGTH"</code> (成分数)、<code>"NAME"</code>、<code>"POSITION"</code>、<code>"TYPENAME"</code>、<code>"ELEMENT"</code> (成分が属する要素)、<code>"S"</code> (入口の s)、<code>"MULT"</code> (同じ要素の何番目か)、<code>"GEO"</code> (幾何)、<code>"GAMMA"</code>、そして要素のキーワード (<code>"K1"</code> <code>"L"</code> …)。位置は名前、パターン、番号、リスト、小数 (要素の途中) で与える。
 <code>LINE["K1","QF.1"] = 0.75;</code> のように代入すると<strong>その成分だけ</strong>を変える (要素全体は <code>Element</code>)。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>Print[&quot;NAME 1..8    = &quot;, LINE[&quot;NAME&quot;,{1,2,3,4,5,6,7,8}]];
-Print[&quot;S at QF.1 B.1 $$$ = &quot;, LINE[&quot;S&quot;,{&quot;QF.1&quot;,&quot;B.1&quot;,&quot;$$$&quot;}]];
-Print[&quot;S at 7.5 (mid of B.1) = &quot;, LINE[&quot;S&quot;,7.5]];
-Print[&quot;MULT QF.1..QF.3 = &quot;, LINE[&quot;MULT&quot;,{&quot;QF.1&quot;,&quot;QF.2&quot;,&quot;QF.3&quot;}]];
-LINE[&quot;K1&quot;,&quot;QF.1&quot;] = 0.75;
-Print[&quot;after LINE[K1,QF.1]=0.75: &quot;, LINE[&quot;K1&quot;,{&quot;QF.1&quot;,&quot;QF.2&quot;}]];
+<pre><code class="language-sad"><span class="b">Print</span>[<span class="s">"NAME 1..8    = "</span>, <span class="t">LINE</span>[<span class="s">"NAME"</span>,{<span class="m">1</span>,<span class="m">2</span>,<span class="m">3</span>,<span class="m">4</span>,<span class="m">5</span>,<span class="m">6</span>,<span class="m">7</span>,<span class="m">8</span>}]];
+<span class="b">Print</span>[<span class="s">"S at QF.1 B.1 $$$ = "</span>, <span class="t">LINE</span>[<span class="s">"S"</span>,{<span class="s">"QF.1"</span>,<span class="s">"B.1"</span>,<span class="s">"$$$"</span>}]];
+<span class="b">Print</span>[<span class="s">"S at 7.5 (mid of B.1) = "</span>, <span class="t">LINE</span>[<span class="s">"S"</span>,<span class="m">7.5</span>]];
+<span class="b">Print</span>[<span class="s">"MULT QF.1..QF.3 = "</span>, <span class="t">LINE</span>[<span class="s">"MULT"</span>,{<span class="s">"QF.1"</span>,<span class="s">"QF.2"</span>,<span class="s">"QF.3"</span>}]];
+<span class="t">LINE</span>[<span class="s">"K1"</span>,<span class="s">"QF.1"</span>] <span class="o">=</span> <span class="m">0.75</span>;
+<span class="b">Print</span>[<span class="s">"after LINE[K1,QF.1]=0.75: "</span>, <span class="t">LINE</span>[<span class="s">"K1"</span>,{<span class="s">"QF.1"</span>,<span class="s">"QF.2"</span>}]];
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p>LENGTH = 243 (ORIGIN、RF、24×10 要素、<code>$$$</code>)。名前は ORIGIN, RF, SF.1, DS.1, QF.1, D2.1, B.1, D2.2。<code>S</code> は QF.1 の入口 0.3 m、B.1 の入口 1.1 m、リング末 105.6 m、<code>S</code> の 7.5 (B.1 の途中) は 1.7 m。<code>GAMMA</code> = 5870.85 (3 GeV の電子)。代入後 <code>K1 {QF.1, QF.2}</code> = {0.75, 0.7} (QF.1 だけ変わる)。</p>

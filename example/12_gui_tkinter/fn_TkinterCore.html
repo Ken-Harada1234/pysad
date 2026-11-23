@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,15 +52,15 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_TkinterCore.md</div>
+<div class="meta">元: fn_TkinterCore.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_tkintercore-tkintercoren-の-tcl-インタプリタと環境">fn_TkinterCore (TkinterCore.n の Tcl インタプリタと環境)</h1>
 <p>種別: GUI の土台 (Packages/TkinterCore.n)・フォルダ 12_gui_tkinter・ラティスなし・<strong>窓は開かない</strong></p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>TkinterCore.n</code> が作る Tcl インタプリタ (<code>TclEval</code>)、Tk の版 (<code>Tk$FullVersion</code>)、フォント系 (<code>$FontSystem</code>)、既定のフォント、<code>Tk$Echo</code> (送った Tcl の文を表示)。GUI が無くても標準出力に出る部分。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>Print[&quot;Tk version=&quot;,Tk$FullVersion];  Print[&quot;FontSystem=&quot;,$FontSystem];  Print[&quot;DefaultFont=&quot;,$DefaultFont];
-Print[&quot;expr 6*7=&quot;,TclEval[&quot;expr 6*7&quot;,String]];
-Tk$Echo=1;  TclEval[&quot;set x 5&quot;];  Tk$Echo=0;       (* &quot;Tcl&gt; set x 5&quot; と表示される *)
+<pre><code class="language-sad"><span class="b">Print</span>[<span class="s">"Tk version="</span>,Tk$FullVersion];  <span class="b">Print</span>[<span class="s">"FontSystem="</span>,$FontSystem];  <span class="b">Print</span>[<span class="s">"DefaultFont="</span>,$DefaultFont];
+<span class="b">Print</span>[<span class="s">"expr 6*7="</span>,TclEval[<span class="s">"expr 6*7"</span>,String]];
+Tk$Echo<span class="o">=</span><span class="m">1</span>;  TclEval[<span class="s">"set x 5"</span>];  Tk$Echo<span class="o">=</span><span class="m">0</span>;       <span class="c">(*</span><span class="c"> "Tcl&gt; set x 5" と表示される </span><span class="c">*)</span>
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>Tk version=</code> は Tk の版、<code>FontSystem=X11</code>、<code>DefaultFont={"helvetica neue",12}</code>、<code>expr 6*7=42</code>、<code>Tcl&gt; set x 5</code> (<code>Tk$Echo=1</code> のときの表示)、<code>y=10</code>。</p>

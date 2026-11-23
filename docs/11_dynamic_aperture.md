@@ -191,6 +191,6 @@ res = DynamicApertureSurvey[{{1,400},{1,1},{-0.5,0,0.5}}, 100, Output->6];
 Print["SCORE ", res[1]];  Print["RES ", res[2]];  Print["RDAP ", ResultOfDAPERT];
 ```
 
-![PF リングの x-y ダイナミックアパーチャ](figures/11_dynamic_aperture_pf_xy.png)
+![PF リングの x-y ダイナミックアパーチャ](figures/11_dynamic_aperture_pf_xy.svg)
 
 図の読み方 (PF 2.5 GeV リング、周長 187.035 m、`OFF RAD FLUC; ON COD RFSW RADCOD`。`example/pf/tracking/fn_DynamicApertureSurvey_da_xy_PF.sad`): x-y 面の原点から 24 方向 (7.5° から 15° 刻み) の直線上を 1〜100σ の範囲で `DynamicApertureSurvey` により調べ、1000 周生き残る限界を x [σx]・y [σy] で描いた。青は運動量のずれ 0 の境界で、水平側は約 40σx (7.5° の方向)、垂直側は約 25〜36σy (82.5° の方向で 35.7σy、97.5° の方向で 25.8σy。`fn_DynamicApertureSurvey_da_xy_PF.pysad.txt`)。半径は 2σ 刻みで決まるので、隣り合う方向で数 σ 飛ぶことがある。橙と緑は運動量のずれ ±27.4σE (±2%) で、RF バケット (半高さ 1.18%) の外なので、全方向で最小の格子点 (2σ) の半径しかなく (全滅)、原点のまわりの小さな円になる。放射・量子励起は切ってある。

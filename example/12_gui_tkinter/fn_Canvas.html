@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,20 +53,20 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_Canvas.md</div>
+<div class="meta">元: fn_Canvas.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_canvas-canvas">fn_Canvas (Canvas)</h1>
 <p>種別: GUI (Packages/Tkinter.n の Canvas)・フォルダ 12_gui_tkinter・ラティスなし</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>Canvas[w, Width-&gt;, Height-&gt;, Background-&gt;]</code> を作り、Tk の <code>create</code> 命令 (四角・楕円・線・文字) を <code>TclEval</code> で送って絵を描く。<code>find all</code>・<code>type</code>・<code>bbox</code> で項目を調べる。描画関数 (<code>Plot</code> など) が内部で使う仕組みと同じ (docs/21)。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>c=Canvas[w,Width-&gt;300,Height-&gt;200,Background-&gt;&quot;white&quot;,Side-&gt;&quot;top&quot;];
-TclEval[&quot;set cv [lindex [ff . Canvas] 0]&quot;];
-TclEval[&quot;$cv create rectangle 20 20 120 90 -fill lightblue -outline blue&quot;];   (* 楕円・線・文字も同様 *)
+<pre><code class="language-sad">c<span class="o">=</span>Canvas[w,Width<span class="o">-&gt;</span><span class="m">300</span>,Height<span class="o">-&gt;</span><span class="m">200</span>,Background<span class="o">-&gt;</span><span class="s">"white"</span>,Side<span class="o">-&gt;</span><span class="s">"top"</span>];
+TclEval[<span class="s">"set cv [lindex [ff . Canvas] 0]"</span>];
+TclEval[<span class="s">"$cv create rectangle 20 20 120 90 -fill lightblue -outline blue"</span>];   <span class="c">(*</span><span class="c"> 楕円・線・文字も同様 </span><span class="c">*)</span>
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>items=4</code>、<code>types=rectangle oval line text</code>、<code>bbox oval=149 29 251 91</code> (楕円 2 番目の項目の外接矩形)。窓には水色の四角、ピンクの楕円、緑の太い斜線、「Canvas demo」の文字が出る。</p>
 <h2 id="画面-pysad-の窓">画面 (pysad の窓)</h2>
-<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
+<figure><img alt="pysad が開いた窓" src="data:image/png;base64,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" /><figcaption>pysad が開いた窓</figcaption></figure>
 <p><code>example/tools/gui_shot.py</code> で、pysad が開いたルート窓を <code>PrintWindow</code> で切り取った (画面の切り取り <code>ImageGrab</code> は使えない環境だったため)。窓の枠は Windows の Tk のもの。
 <strong>gs の窓は撮れていない</strong>: gs は WSLg (X11) に窓を開く (<code>winfo ismapped</code>=1)。WSL に撮る道具 (xwd・import) が無い。見た目の比較は、部品の木 (標準出力の <code>tree:</code>) で代えている。</p>
 <h2 id="gs-と-pysad-の比較">gs と pysad の比較</h2>

@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,17 +52,17 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_List_functions.md</div>
+<div class="meta">元: fn_List_functions.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_list_functions-take-drop-join-flatten-sort-">fn_List_functions (Take, Drop, Join, Flatten, Sort, ...)</h1>
 <p>種別: 関数 (リスト) / フォルダ: 08_scripting / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>SADHelp の expression/List-manipulations の項から選んだリスト関数 (<code>Length</code> <code>Take</code> <code>Drop</code> <code>First</code> <code>Last</code> <code>Rest</code> <code>Join</code> <code>Append</code> <code>Prepend</code> <code>Flatten</code> <code>Sort</code> <code>Reverse</code> <code>Range</code> <code>Select</code> <code>Insert</code> <code>Delete</code> <code>Complement</code> <code>Union</code> <code>Intersection</code> <code>Partition</code> <code>Dimensions</code> <code>Depth</code> <code>RotateLeft</code> <code>RotateRight</code> <code>Sum</code> <code>Product</code> <code>Fold</code> <code>Part</code> <code>ReplacePart</code> <code>Difference</code> <code>MapIndexed</code> <code>Extract</code> と、リストの要素ごと演算・内積)。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>l = {5, 3, 8, 1, 9, 2};
-Take[l, 3];  Take[l, -2];  Take[l, {2,4}];  Drop[l, 2];  Join[{1,2},{3},{4,5}];
-Flatten[{1,{2,{3,4}},5}, 1];  Sort[l, Greater];  Range[2, 8, 3];  Select[l, # &gt; 4 &amp;];
-Insert[{a,b,c}, x, 2];  Delete[{a,b,c,d}, 2];  Complement[{1,2,3,4,5}, {2,4}];
-Partition[Range[5], 2, 1];  Fold[f, x, {a,b}];  Difference[{1,4,9,16}];
+<pre><code class="language-sad">l <span class="o">=</span> {<span class="m">5</span>, <span class="m">3</span>, <span class="m">8</span>, <span class="m">1</span>, <span class="m">9</span>, <span class="m">2</span>};
+<span class="b">Take</span>[l, <span class="m">3</span>];  <span class="b">Take</span>[l, <span class="o">-</span><span class="m">2</span>];  <span class="b">Take</span>[l, {<span class="m">2</span>,<span class="m">4</span>}];  <span class="b">Drop</span>[l, <span class="m">2</span>];  <span class="b">Join</span>[{<span class="m">1</span>,<span class="m">2</span>},{<span class="m">3</span>},{<span class="m">4</span>,<span class="m">5</span>}];
+<span class="b">Flatten</span>[{<span class="m">1</span>,{<span class="m">2</span>,{<span class="m">3</span>,<span class="m">4</span>}},<span class="m">5</span>}, <span class="m">1</span>];  <span class="b">Sort</span>[l, Greater];  <span class="b">Range</span>[<span class="m">2</span>, <span class="m">8</span>, <span class="m">3</span>];  <span class="b">Select</span>[l, <span class="o">#</span> <span class="o">&gt;</span> <span class="m">4</span> <span class="o">&amp;</span>];
+<span class="b">Insert</span>[{a,b,c}, x, <span class="m">2</span>];  <span class="b">Delete</span>[{a,b,c,d}, <span class="m">2</span>];  <span class="b">Complement</span>[{<span class="m">1</span>,<span class="m">2</span>,<span class="m">3</span>,<span class="m">4</span>,<span class="m">5</span>}, {<span class="m">2</span>,<span class="m">4</span>}];
+Partition[<span class="b">Range</span>[<span class="m">5</span>], <span class="m">2</span>, <span class="m">1</span>];  <span class="b">Fold</span>[f, x, {a,b}];  Difference[{<span class="m">1</span>,<span class="m">4</span>,<span class="m">9</span>,<span class="m">16</span>}];
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>Take[l,{2,4}]</code>={3,8,1}、<code>Drop[l,-2]</code>={5,3,8,1}、<code>Flatten[..., 1]</code> は 1 段だけ ({1,2,{3,4},5})、<code>Partition[Range[5],2,1]</code>={{1,2},{2,3},{3,4},{4,5}} (重なりあり)、<code>Fold[f,x,{a,b}]</code>=<code>f[f[x,a],b]</code>、<code>Difference[{1,4,9,16}]</code>={3,5,7}、<code>MapIndexed[List,{a,b}]</code>={{a,{1}},{b,{2}}}、<code>{1,2,3}.{4,5,6}</code>=32。</p>

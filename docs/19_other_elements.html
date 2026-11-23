@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -70,7 +81,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 19_other_elements.md</div>
+<div class="meta">元: 19_other_elements.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="その他の要素-coordtcaviund曲げつき-multmap">その他の要素 (COORD・TCAVI・UND・曲げつき MULT・MAP)</h1>
 <p>この文書で分かること: 専用の文書を持たない 5 種類の要素 (座標変換 COORD、横偏向空洞 TCAVI、アンジュレータ UND、曲げつき多極 MULT (ANGLE≠0)、外部写像 MAP) が、pysad のどの計算 (追跡・光学・エミッタンス・幾何) でどう扱われ、何ができないか。
 前提: SAD の要素定義 (<code>要素名 = (キーワード=値 …);</code>、<a href="02_lattice_main.html">02_lattice_main.md</a>) と、追跡・光学の基本 (<a href="07_calc_optics.html">07_calc_optics.md</a>、<a href="10_tracking.html">10_tracking.md</a>、<a href="09_emittance.html">09_emittance.md</a>)。
@@ -122,7 +133,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </table>
 <h2 id="1-coord-座標変換">1. COORD (座標変換)</h2>
 <p>K64 の <code>tcoord.f</code> (追跡)、<code>tcoorde.f</code> / <code>qcoord.f</code> (6 次元の写像と行列)。幾何 (<code>LINE["GX"]</code> など) は <code>geo.py</code> (<code>tfgeo1</code> の icCOORD)。</p>
-<pre><code>COORD CO = (DX=1e-3 DY=-2e-3 DZ=5e-3 CHI1=0.01 CHI2=-0.02 CHI3=0.03 DIR=0);
+<pre><code class="language-sad"><span class="t">COORD</span> CO <span class="o">=</span> (DX<span class="o">=</span><span class="m">1e-3</span> DY<span class="o">=</span><span class="o">-</span><span class="m">2e-3</span> DZ<span class="o">=</span><span class="m">5e-3</span> CHI1<span class="o">=</span><span class="m">0.01</span> CHI2<span class="o">=</span><span class="o">-</span><span class="m">0.02</span> CHI3<span class="o">=</span><span class="m">0.03</span> DIR<span class="o">=</span><span class="m">0</span>);
 </code></pre>
 <ul>
 <li>DIR=0 (既定): 入口で DX DY DZ だけずらして (位置の変換は 1 を引く向き) から CHI1・CHI2・CHI3 で回す。DIR≠0: 逆変換 (回して、出口で戻す)。</li>
@@ -166,7 +177,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </ul>
 <h2 id="2-tcavi-横偏向空洞クラブ空洞">2. TCAVI (横偏向空洞・クラブ空洞)</h2>
 <p>K64 の <code>ttcav.f</code> (追跡)、<code>ttcave.f</code> (6 次元の写像と行列)。</p>
-<pre><code>TCAVI TC = (L=0.4 K0=1e-4 FREQ=4.5e8 PHI=0.1 DX=2e-4 DY=-1e-4 ROTATE=0.05);
+<pre><code class="language-sad"><span class="t">TCAVI</span> TC <span class="o">=</span> (L<span class="o">=</span><span class="m">0.4</span> K0<span class="o">=</span><span class="m">1e-4</span> FREQ<span class="o">=</span><span class="m">4.5e8</span> PHI<span class="o">=</span><span class="m">0.1</span> DX<span class="o">=</span><span class="m">2e-4</span> DY<span class="o">=</span><span class="o">-</span><span class="m">1e-4</span> ROTATE<span class="o">=</span><span class="m">0.05</span>);
 </code></pre>
 <p>次の表は TCAVI の主なキーワード。</p>
 <table>
@@ -242,8 +253,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </ul>
 <h2 id="3-und-アンジュレータ">3. UND (アンジュレータ)</h2>
 <p>K64 の <code>undulator.f</code> (K. Ohmi と E. Forest、KEK Report 92-14)。</p>
-<pre><code>UND U1 = (L=1 KX=0.1 QY=0.2 POLE=10 SLICE=4 PHI=30);              ! 磁場なし (k64 と v2 の両方で書ける)
-UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つき (v2 だけ)
+<pre><code class="language-sad"><span class="t">UND</span> U1 <span class="o">=</span> (L<span class="o">=</span><span class="m">1</span> KX<span class="o">=</span><span class="m">0.1</span> QY<span class="o">=</span><span class="m">0.2</span> POLE<span class="o">=</span><span class="m">10</span> SLICE<span class="o">=</span><span class="m">4</span> PHI<span class="o">=</span><span class="m">30</span>);              <span class="c">! 磁場なし (k64 と v2 の両方で書ける)</span>
+<span class="t">UND</span> U2 <span class="o">=</span> (L<span class="o">=</span><span class="m">1</span> FBX<span class="o">=</span><span class="m">1.8</span> POLE<span class="o">=</span><span class="m">20</span> SLICE<span class="o">=</span><span class="m">2000</span>);                         <span class="c">! 磁場つき (v2 だけ)</span>
 </code></pre>
 <h3 id="31-モードによる違い">3.1 モードによる違い</h3>
 <p><strong>K64 の UND は磁場を設定できない</strong> (<a href="30_sad_bug_report.html">30_sad_bug_report.md</a> B37): <code>initb1.f</code> は <code>kytbl(kwFBX,icUND)=ky_FBX_UND</code> と書くが、<code>kwFBX</code> は未定義の変数 (=0) で、<code>FBX</code> <code>FBY</code> <code>BX</code> <code>BY</code> はどれも "Undefined keyword" になる。そのため F0 = G0 = 0 で、undulator は磁場なしの (正準運動量の近似の) ドリフトを刻みごとに行う。
@@ -370,7 +381,7 @@ UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つ�
 </ul>
 <h2 id="4-mult-angle0曲げつき多極">4. MULT (ANGLE≠0、曲げつき多極)</h2>
 <p>K64 の <code>tmulta.f</code> (追跡 <code>tmulta</code>、Twiss・Emittance[] の <code>tmultae</code>)。</p>
-<pre><code>MULT M1 = (L=1 ANGLE=0.05 K1=0.1 K2=0.5 E1=0.5 E2=0.5);
+<pre><code class="language-sad"><span class="t">MULT</span> M1 <span class="o">=</span> (L<span class="o">=</span><span class="m">1</span> ANGLE<span class="o">=</span><span class="m">0.05</span> K1<span class="o">=</span><span class="m">0.1</span> K2<span class="o">=</span><span class="m">0.5</span> E1<span class="o">=</span><span class="m">0.5</span> E2<span class="o">=</span><span class="m">0.5</span>);
 </code></pre>
 <p>曲げ磁石 (ANGLE) の上に、K0 (双極の過不足)、K1、K2 … と SK0 … (スキュー) の多極をのせる要素。<code>ndiv</code> 個のスライスに割り、
 「半スライスの曲げ → 曲率つきの多極キック → 全スライスの曲げ → キック → … → 半スライスの曲げ」の順に進む。
@@ -416,10 +427,10 @@ UND U2 = (L=1 FBX=1.8 POLE=20 SLICE=2000);                         ! 磁場つ�
 </ul>
 <h2 id="5-map-externalmap">5. MAP (ExternalMap)</h2>
 <p>K64 の <code>temap.f</code> (追跡 <code>temap</code>、Emittance[] <code>temape</code>、Twiss <code>qemap</code>、幾何 <code>tgmap</code>)。</p>
-<pre><code>MAP P1 = (L=0.5);
-ExternalMap[&quot;TRACK&quot;, LINE[&quot;POSITION&quot;,&quot;P1&quot;], nt_, x_] := (...);
-ExternalMap[&quot;EMIT&quot;,  LINE[&quot;POSITION&quot;,&quot;P1&quot;], cod_]    := {cod1, trans [, dtrans, dbeam]};
-ExternalMap[&quot;OPTICS&quot;, LINE[&quot;POSITION&quot;,&quot;P1&quot;], cod_]   := {cod1, trans};
+<pre><code class="language-sad"><span class="t">MAP</span> P1 <span class="o">=</span> (L<span class="o">=</span><span class="m">0.5</span>);
+ExternalMap[<span class="s">"TRACK"</span>, <span class="t">LINE</span>[<span class="s">"POSITION"</span>,<span class="s">"P1"</span>], nt_, x_] <span class="o">:=</span> (...);
+ExternalMap[<span class="s">"EMIT"</span>,  <span class="t">LINE</span>[<span class="s">"POSITION"</span>,<span class="s">"P1"</span>], cod_]    <span class="o">:=</span> {cod1, trans [, dtrans, dbeam]};
+ExternalMap[<span class="s">"OPTICS"</span>, <span class="t">LINE</span>[<span class="s">"POSITION"</span>,<span class="s">"P1"</span>], cod_]   <span class="o">:=</span> {cod1, trans};
 </code></pre>
 <p>MAP はユーザーが SADScript の関数 <code>ExternalMap</code> で写像を与える要素。<strong>定義がなければ恒等で、長さも 0</strong> (<code>L</code> は K64 では使われない。<code>tgmap</code> の既定は <code>pos(l+1)=pos(l)</code>)。
 MAP を長さ L のドリフトにすると周長が L だけ増えるので、pysad は長さ 0 にしている。</p>

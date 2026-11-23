@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -58,7 +69,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 27_benchmarks.md</div>
+<div class="meta">元: 27_benchmarks.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="27-ベンチマーク一覧--sad-k64-と-pysad-の照合">27. ベンチマーク一覧 — SAD (K64) と pysad の照合</h1>
 <p><strong>この文書で分かること</strong>: pysad の計算が、SAD の実行系 K64 (<code>gs</code>) と同じ入力でどこまで同じ結果を出すかの一覧 (ベンチマーク) と、回帰・試験の実行方法と最新の通し結果。
 <strong>前提</strong>: pysad は SAD の Fortran を直訳したもので、検証の基準は gs の出力 (参照値) である。この文書は物理の正しさ (解析式との一致) ではなく、gs との一致を主題にする。物理の式と結果の意味は docs/23 と各機能の文書 (docs/07〜11、13〜18) を見る。
@@ -89,7 +100,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <hr />
 <h2 id="2-実行方法">2. 実行方法</h2>
 <h3 id="21-sad-参照値の生成">2.1 SAD (参照値の生成)</h3>
-<pre><code class="language-bash">wsl -d Ubuntu -- bash -lc 'cd &quot;&lt;repo&gt;&quot; &amp;&amp; &lt;SAD&gt;/bin/gs bench_levelN.sad &gt; bench_levelN.result'
+<pre><code class="language-bash">wsl -d Ubuntu -- bash -lc <span class="s">'cd "&lt;repo&gt;" &amp;&amp; &lt;SAD&gt;/bin/gs bench_levelN.sad &gt; bench_levelN.result'</span>
 </code></pre>
 <ul>
 <li><code>bench_levelN.sad</code> は <strong>ラティス (Mainlevel の素子定義・LINE) と FFS 部 (<code>FFS;</code> 以降の SADScript) を 1 ファイルに連結したもの</strong>。
@@ -114,12 +125,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </ul>
 <h3 id="22-pysad">2.2 pysad</h3>
 <p>Windows (Git Bash / PowerShell)、<code>&lt;repo&gt;</code> で:</p>
-<pre><code class="language-bash">PYTHONIOENCODING=utf-8 python -u bench_levelN_pysad.py            # Level 1〜12 の比較スクリプト (SAD の値を内蔵/または .result を読む)
-PYTHONIOENCODING=utf-8 python -u bench_level12_track_fast.py      # 追跡の numba 版 (track6n)
-PYTHONIOENCODING=utf-8 python -u &lt;repo&gt;/run_sad.py bench_level13a.sad    # SAD スクリプトをそのまま実行 (Level 13 以降)
-PYTHONIOENCODING=utf-8 python -u &lt;repo&gt;/run_sad.py &lt;試験用ラティス&gt;.lat ../bench_extra/bench_level15a.sad   # ラティスとスクリプトを連結 (SAD の gs と同じ)
-PYTHONIOENCODING=utf-8 python -u &lt;repo&gt;/pysad/tests/regression_tests/run_regression.py   # 回帰テスト (全部)。QUICK=1 で遅いものを省略
-</code></pre>
+<pre><code class="language-bash"><span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u bench_levelN_pysad.py            <span class="c"># Level 1〜12 の比較スクリプト (SAD の値を内蔵/または .result を読む)
+</span><span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u bench_level12_track_fast.py      <span class="c"># 追跡の numba 版 (track6n)
+</span><span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u &lt;repo&gt;/run_sad.py bench_level13a.sad    <span class="c"># SAD スクリプトをそのまま実行 (Level 13 以降)
+</span><span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u &lt;repo&gt;/run_sad.py &lt;試験用ラティス&gt;.lat ../bench_extra/bench_level15a.sad   <span class="c"># ラティスとスクリプトを連結 (SAD の gs と同じ)
+</span><span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u &lt;repo&gt;/pysad/tests/regression_tests/run_regression.py   <span class="c"># 回帰テスト (全部)。QUICK=1 で遅いものを省略
+</span></code></pre>
 <ul>
 <li><code>bench_levelN_pysad.py</code> は pysad の API (<code>Lattice</code>, <code>twiss_table</code>, <code>emit6d.emittance6d</code>, <code>track6</code>, <code>match6.Matcher</code> …) を直接呼び、
   SAD の値 (スクリプトに埋め込み、または <code>bench_levelN.result</code> から読む) との差を印字する。出力は <code>bench_levelN_pysad.result</code> に保存してある。</li>
@@ -530,11 +541,11 @@ SAD 側の表示桁 (10 桁、追跡は 5e-11) が比較の下限。後ろの 2 
 </ul>
 <hr />
 <h2 id="4-回帰テスト-run_regressionpy">4. 回帰テスト <code>run_regression.py</code></h2>
-<pre><code class="language-bash">cd &quot;&lt;repo&gt;&quot;
-PYTHONIOENCODING=utf-8 python -u pysad/tests/regression_tests/run_regression.py            # 全部 (目安 約 17 分)
-QUICK=1 PYTHONIOENCODING=utf-8 python -u pysad/tests/regression_tests/run_regression.py    # Level 7, 12t (純 Python 追跡), 13a, 16a を省略 (目安 約 7 分)
-python -u pysad/tests/regression_tests/run_regression.py 3b 12 13a                          # 指定したものだけ (key は表の Level 列。24a〜24f, 22e, 26a〜26d, 27a/27b, 28c/28d/28f, 29a〜29e, 30a/30b も key)
-</code></pre>
+<pre><code class="language-bash"><span class="b">cd</span> <span class="s">"&lt;repo&gt;"</span>
+<span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u pysad/tests/regression_tests/run_regression.py            <span class="c"># 全部 (目安 約 17 分)
+</span><span class="b">QUICK</span><span class="o">=</span><span class="m">1</span> <span class="b">PYTHONIOENCODING</span><span class="o">=</span>utf-8 python -u pysad/tests/regression_tests/run_regression.py    <span class="c"># Level 7, 12t (純 Python 追跡), 13a, 16a を省略 (目安 約 7 分)
+</span>python -u pysad/tests/regression_tests/run_regression.py 3b <span class="m">12</span> 13a                          <span class="c"># 指定したものだけ (key は表の Level 列。24a〜24f, 22e, 26a〜26d, 27a/27b, 28c/28d/28f, 29a〜29e, 30a/30b も key)
+</span></code></pre>
 <ul>
 <li>各 pysad スクリプトを子プロセスで実行し、出力の「差」「最大差」「相対差」「Matched/Residual」「Score」などの行を読んで判定する。
   <code>run_sad.py</code> で動かすもの (13a/13b/14a/16a) は SAD の <code>.result</code> の <code>TAG {...}</code> (Print の出力)、Matched/Residual 行、反復行、

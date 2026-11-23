@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -59,7 +59,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 03_ffs_commands.md</div>
+<div class="meta">元: 03_ffs_commands.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="03-ffs-のコマンド解釈-srctffsaf-と-pysad-の-ffscmdpy">03. FFS のコマンド解釈 (src/tffsa.f) と pysad の ffscmd.py</h1>
 <p><strong>この文書で分かること</strong>: SAD の対話コマンド層 FFS が 1 文をどの順に解釈するか (§1)、フラグ (§2)、マッチング (FIT・FREE・GO、§3)、要素値と誤差のコマンド (§4)、USE・CALC・EMIT・DISP などの主なコマンド (§5)、SADScript 側の組み込み関数 (§7)、pysad の対応表 (§8)、実行上の注意 (§9)。
 <strong>前提</strong>: <a href="02_lattice_main.html">02_lattice_main.md</a> (ラティスの定義) を読んでいること。FFS は <code>FFS;</code> と書いた後に使えるコマンド群で、<code>USE RING; CELL; CALC;</code> のように 1 文ずつ実行する。

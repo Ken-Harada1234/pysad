@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -37,7 +37,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: lma_reliability.md</div>
+<div class="meta">元: lma_reliability.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="局所運動量アクセプタンス-lma-の信頼性の例">局所運動量アクセプタンス (LMA) の信頼性の例</h1>
 <p>解説は <code>docs/26_frequency_map_lma.md</code> §4.5、試験は <code>pysad/tests/script_tests/test_v23_L2_lma.py</code>、コードは <code>pysad/lma.py</code>・<code>pysad/lmabucket.py</code>・<code>pysad/q1cmd.py</code>。
 実行はリポジトリ直下から <code>PYTHONUTF8=1 py -3.12 example/15_lma_touschek/lma/lma_xxx.py ...</code> (標準出力を <code>.out.txt</code> に保存した)。すべて v2 モード、RF・放射つき、LOSSAMPL = ±10 mm (例の値で実機の値ではない)。

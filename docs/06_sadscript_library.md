@@ -65,7 +65,7 @@ StringToStream (文字列を開く)、TemporaryName、ListRandom (`{"SAD"}`)、M
 
 `BBBrem1` (ビーム・ビーム制動放射の 1 事象) は [14_beambeam.md](14_beambeam.md) に書く。
 
-![GaussianCoulomb の力の形](figures/06_sadscript_library_gaussian_coulomb_force.png)
+![GaussianCoulomb の力の形](figures/06_sadscript_library_gaussian_coulomb_force.svg)
 
 図の読み方: 横軸はビームの中心からの距離 (σ 単位)、縦軸は力の大きさ |f| (SAD の `GaussianCoulomb[x, y, sigx, sigy]` の戻り値の符号を反転した値。長さは `sigy = 1` を与えた単位)。青の実線は丸いビーム (σx = σy = 1) の x 軸上の力で、黒の点線の解析式 2(1 − exp(−r²/2σ²))/r に重なる (r = 1.6σ 付近で最大 0.90、遠方で 2/r に近づく)。平たいビーム (σx = 3σy) では、x 軸上 (橙。横軸は x/σx) は最大 0.41、y 軸上 (緑の破線。横軸は y/σy) は最大 0.51 で、細い方向 (y) の力が強い。
 

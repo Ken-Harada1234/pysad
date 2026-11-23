@@ -22,7 +22,7 @@ Print["sigx at QF.1, B.1 (mm) = ", LINE["SIGX",{"QF.1","B.1"}]*1E3];
 `EMIT` の表 (放射損失 U0=1.5633 MV、Vc=6 MV、Emittance X = 1.736E-7 m、Energy spread = 1.192E-3 …)。`EMITX EMITY SIGE SIGZ` の行 = (1.736e-07 m, 2.846e-38 m, 0.001192, 0.012812 m)。
 `sigx at QF.1, B.1` の行が x のビームサイズ [mm]、`sigy` が y。
 
-![1 セルのビームサイズ](fig_FFS_BEAMSIZE_sigma.png)
+![1 セルのビームサイズ](fig_FFS_BEAMSIZE_sigma.svg)
 
 横軸は 1 セルの始点からの距離 s [m]、縦軸は EMIT 後のビームサイズ σx (実線)・σy (破線) [mm] (pysad の計算)。σx は水平のエミッタンスとエネルギー拡がりの分散項の二乗和の平方根で、QF の近く (s ≈ 0.45 m) で約 1.3 mm と最大、QD の近くで約 0.6 mm と最小になる。σy は MINCOUP = 0.01 による結合で決まり、0.06〜0.12 mm と σx より一桁小さい。
 

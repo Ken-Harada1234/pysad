@@ -23,9 +23,9 @@ POINT   48.45   17.6   48.4500660362   17.6000210460     .1370704371    -.001884
 ... (計 25 行)
 ```
 
-![KEKLS_tune_survey_cell_gs.png](KEKLS_tune_survey_cell_gs.png)
+![KEKLS_tune_survey_cell_gs.svg](KEKLS_tune_survey_cell_gs.svg)
 
-![KEKLS_tune_survey_cell_pysad.png](KEKLS_tune_survey_cell_pysad.png)
+![KEKLS_tune_survey_cell_pysad.svg](KEKLS_tune_survey_cell_pysad.svg)
 
 ## gs と pysad の比較
 判定: **△** (比べた行 25、k64 モードの pysad)。νx = 48.3・48.45 の 10 点は εx が gs と 3e-6 以内・K2 が 5e-5 以内で一致。νx ≥ 48.6 の点は εx が 1e-6〜10%・K2 が 1e-5〜5% 違う (6 極の谷が浅く、反復の履歴の数値雑音で別の谷に落ちる。(48.30, 17.30) の εx は gs 411、pysad 411。K2 は SDH・SFH)。

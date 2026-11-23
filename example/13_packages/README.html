@@ -27,11 +27,11 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body class="nonav">
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="13_packages-sad-の-packagesn">13_packages: SAD の Packages/*.n</h1>
 <p><code>correction.n</code>・<code>bump.n</code>・<code>optimize.n</code>・<code>D.n</code>・<code>rational.n</code>・<code>tableform.n</code>・<code>Couple.n</code>・<code>LDSolve.n</code>・<code>Optics.n</code> を使う例。軌道補正とバンプの例は、誤差入りのラティス <code>00_lattice/errors_ring_pkg.sad</code> (FODO_ring と同じ光学に、BPM・ステアラ・四極の据え付け誤差を付けたもの。<code>errors_ring.sad</code> には BPM・ステアラが無いので、別名で作った) を使う。</p>
 <p>一致の記号: ○ 一致 / △ 差あり (md に理由) / ×gs 失敗 / ×pysad 未対応・失敗</p>

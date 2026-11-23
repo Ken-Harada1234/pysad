@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -41,16 +52,16 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: fn_OpenRead_OpenWrite_OpenAppend_Close.md</div>
+<div class="meta">元: fn_OpenRead_OpenWrite_OpenAppend_Close.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
 <h1 id="fn_openread_openwrite_openappend_close">fn_OpenRead_OpenWrite_OpenAppend_Close</h1>
 <p>種別: 関数 / フォルダ: 09_io_system / FFS 内の SADScript (ラティスなし)。gs は SAD 1.4.4.2k64、pysad は <code>run_sad_string</code>。ファイルは <code>TemporaryName[]</code> か実行ディレクトリの作業ファイルで、最後に <code>DeleteFile</code> で消す。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p>ファイルを書き込み (<code>OpenWrite</code>、既存ファイルは空になる)・追記 (<code>OpenAppend</code>)・読み込み (<code>OpenRead</code>) で開き、<code>Close</code> で閉じる。ファイル番号は実数。<code>ReadString</code> が <code>EndOfFile</code> を返すまで読む。<code>FileType</code>・<code>FileQ</code>・<code>DeleteFile</code>。</p>
 <h2 id="スクリプト">スクリプト</h2>
-<pre><code>a = OpenWrite[f]; Write[a, &quot;line 1&quot;]; Write[a, &quot;line 2&quot;]; Close[a];
-b = OpenAppend[f]; Write[b, &quot;line 3 (appended)&quot;]; Close[b];
-c = OpenRead[f]; While[(s = ReadString[c]) &lt;=&gt; EndOfFile, Print[s]]; Close[c];
-CloseFileList: Close[{a, b}];   DeleteFile[f];   FileType[f];
+<pre><code class="language-sad">a <span class="o">=</span> OpenWrite[f]; <span class="b">Write</span>[a, <span class="s">"line 1"</span>]; <span class="b">Write</span>[a, <span class="s">"line 2"</span>]; <span class="b">Close</span>[a];
+b <span class="o">=</span> OpenAppend[f]; <span class="b">Write</span>[b, <span class="s">"line 3 (appended)"</span>]; <span class="b">Close</span>[b];
+c <span class="o">=</span> OpenRead[f]; <span class="k">While</span>[(s <span class="o">=</span> ReadString[c]) <span class="o">&lt;=</span><span class="o">&gt;</span> EndOfFile, <span class="b">Print</span>[s]]; <span class="b">Close</span>[c];
+CloseFileList: <span class="b">Close</span>[{a, b}];   DeleteFile[f];   FileType[f];
 </code></pre>
 <h2 id="結果の読み方">結果の読み方</h2>
 <p><code>OpenWrite</code> はファイル番号 (実数) を返す。書き込み後、3 行が読める (<code>line 1</code>、<code>line 2</code>、<code>line 3 (appended)</code>)。<code>OpenWrite</code> で開き直すと内容が置き換わる (<code>rewritten</code> だけ、次の <code>ReadString</code> は <code>EndOfFile</code>)。<code>FileType</code> は <code>File</code>、削除後は <code>None</code>、<code>FileQ</code> は 1→0。</p>

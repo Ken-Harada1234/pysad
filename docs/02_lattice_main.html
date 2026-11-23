@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -53,7 +64,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: 02_lattice_main.md</div>
+<div class="meta">元: 02_lattice_main.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="02-sad-の-main-レベル-ラティス定義-と-pysad-の-parser">02. SAD の MAIN レベル (ラティス定義) と pysad の parser</h1>
 <p><strong>この文書で分かること</strong>: SAD の入力ファイルの前半 (MAIN レベル: 要素の定義、<code>LINE</code>、<code>MOMENTUM=</code> などの変数) がどう読まれるか、要素型ごとのキーワードと単位、pysad の parser がそれをどう Python の要素に変換するか。
 <strong>前提</strong>: SAD のラティス (<code>QUAD QF=(L=0.25 K1=1.0);</code> のような書き方) を見たことがあること。FFS (対話コマンド) の部分は <a href="03_ffs_commands.html">03_ffs_commands.md</a> と <a href="04_ffs_small_commands.html">04_ffs_small_commands.md</a>。
@@ -127,8 +138,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <h3 id="13-onoff-行-doflagf">1.3 <code>ON</code>/<code>OFF</code> 行 (doflag.f)</h3>
 <p><code>ON ECHO; OFF LOG;</code> は <code>$ECHO$</code>, <code>$LOG$</code> という整数フラグ (icFLAG) に FLAGON/FLAGOF を入れる。未定義の名前は新規フラグとして定義され "New flag … is defined." と表示される (doflag.f:36-48)。MAIN の <code>$RAD$ $FLUC$ $COD$ $RADCOD$ $INTRA$ $POL$ $DAPERT$ $EMIOUT$ …</code> は FFS 入口 (track.f:80-107、<code>IgetGL('$RAD$')</code> 等) で FFS のフラグに写される (実測: <code>OFF RAD FLUC COD RFSW RADCOD;</code> で RAD/FLUC/COD/RADCOD が F)。<strong><code>$RFSW$</code> だけは届かない</strong>: <code>isynch=IgetGL('$RFSW$')</code> を読んだ後、FFS に入るとき <code>rfsw=.true.</code> に固定される (track.f:149)。FFS 入口の表 <code>RFSW RADCOD RAD …</code> の RFSW 列は <code>$RFSW$</code> の値 (既定 F) で、FFS の <code>FLAG[{"RFSW"}]</code> は 1。pysad: <code>run_sad_string</code>/<code>main_exec</code> は RFSW を <code>main_flags</code> (MAIN の TRACK 用) に入れ、FFS の RFSW は ON のまま (docs/history/work_zdp.md)。既定で ON の MAIN フラグは FLUC と COD。</p>
 <h3 id="14-要素定義-doelemf-rdkwdlf-rdexprf">1.4 要素定義 (doelem.f, rdkwdl.f, rdexpr.f)</h3>
-<pre><code>QUAD   QFA1 =(L =.25  K1 =1.0302859090451 )
-       QFA1H=(L =.125 K1 =1.0302859090451/2 )
+<pre><code class="language-sad"><span class="t">QUAD</span>   QFA1 <span class="o">=</span>(L <span class="o">=</span><span class="m">.25</span>  K1 <span class="o">=</span><span class="m">1.0302859090451</span> )
+       QFA1H<span class="o">=</span>(L <span class="o">=</span><span class="m">.125</span> K1 <span class="o">=</span><span class="m">1.0302859090451</span><span class="o">/</span><span class="m">2</span> )
  ;
 </code></pre>
 <ul>
@@ -139,8 +150,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <li>要素の値が LINE 展開にコピーされるのは <code>USE</code> 時 (§1.5) なので、LINE を書いた後で要素を再定義しても反映される (&lt;試験用ラティス&gt;.lat は LINE の後に BEND/QUAD/SEXT を 3 回再定義しており、最後の値が有効)。</li>
 </ul>
 <h3 id="15-line-定義と展開-dolinef-lreadf-explnf">1.5 <code>LINE</code> 定義と展開 (doline.f, lread.f, expln.f)</h3>
-<pre><code>LINE  ARCA = (ARCAH -ARCAH2)
-      RING = (MKS ARCA, ARCA, … RFC, ARCA … MKE)
+<pre><code class="language-sad"><span class="t">LINE</span>  ARCA <span class="o">=</span> (ARCAH <span class="o">-</span>ARCAH2)
+      <span class="k">RING</span> <span class="o">=</span> (MKS ARCA, ARCA, … RFC, ARCA … MKE)
  ;
 </code></pre>
 <ul>

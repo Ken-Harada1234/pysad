@@ -17,11 +17,11 @@ for f in ("Yu Gothic", "Meiryo", "MS Gothic", "Noto Sans CJK JP"):
         break
 plt.rcParams.update({"axes.unicode_minus": False, "figure.dpi": 100, "axes.grid": True, "grid.alpha": 0.3})
 
-def save(fig, name):
-    p = OUT / name
-    fig.savefig(p, dpi=115, bbox_inches="tight")
-    plt.close(fig)
-    print(p, p.stat().st_size // 1024, "KB")
+import figsave   # 折れ線系は SVG、そうでなければ PNG (tools/figures/figsave.py)
+
+def save(fig, name, vector=True):
+    """name は .png で与える。SVG にできる図は .svg を書き、PNG は置かない (figsave.save_figure)。"""
+    return figsave.save_figure(fig, OUT / name, dpi=115, vector=vector)
 
 import io
 

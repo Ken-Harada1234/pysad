@@ -324,6 +324,8 @@ PYTHONIOENCODING=utf-8 python -u run_sad.py <試験用ラティス>.lat <台本�
 
 引数のファイルを順に連結して `run_sad_string` に渡す。SAD の `gs` に複数ファイルを渡すのと同じ。進捗表示は環境変数 `PYSAD_PROGRESS=n` または SADScript 変数 `PYSAD$PROGRESS` (DA の n 周ごと)。
 
+pip で入れたときのコマンド (`pysad/cli.py`): `pysad-run lattice_file [script_file ...]` (上と同じ)、`pysad-share` (文書・例のフォルダの表示)、`pysad-warmup [--check | --clear] [--quiet]` (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。`--check` はキャッシュが有効なら終了コード 0、`--clear` は pysad のキャッシュを消す。`pysad/warmup.py`)。
+
 ## 12. calc6d.py — CALC6D (qcell6d)
 
 対応: `qcell.f qcell6d` → `temit` (tcod, tturne, tecalc) → `tsetetwiss` / `tfetwiss` (`tffs.f`) / `tfadjustn`、分数位置は `qtwiss.f qtwissfrac`。
@@ -521,6 +523,7 @@ print(score)                                               # 144
 | モジュール | 内容 | 文書 |
 |---|---|---|
 | `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/28、[`example/05_tracking/fn_NAFF_tunes.py`](../example/05_tracking/fn_NAFF_tunes.py) |
+| `warmup.py` | numba のカーネルの事前コンパイル (コマンド `pysad-warmup`、`py -3.12 -m pysad.warmup` でもよい)。小さな FODO を土台にした埋め込みの台本 10 本 (光学・エミッタンス・追跡・放射、BEND の K1・フリンジ、ステアリング、MULT・OCT・APERT、COORD・TCAVI、UND・PHSROT、空洞の横方向電圧、BEAMBEAM・WAKE、SOL 領域、TRPT の加速) を 1 回ずつ走らせ、カーネル 195 本のうち 191〜192 本の機械語をキャッシュに作る (残りの 3〜4 本は、この入力では呼ばれず、使うときに変換される。SOL の領域内の粒子が早く落ちるかどうかで 1 本変わる)。`--check` はキャッシュが有効か (CPU・numba の版・ソースが一致するか) を調べて終了コード 0/1、`--clear` は pysad のキャッシュだけを消す。キャッシュの場所は numba の規則 (`NUMBA_CACHE_DIR` があればその下、なければ `pysad/__pycache__`、書き込めなければユーザーのキャッシュ)。`pysad.nbcache` の依存先の記録も更新する。変換の時間は 1 台の PC (Python 3.12・numba 0.68) で 80〜90 秒 (キャッシュは 27.5 MB。作り直しの 2 回目は 4 秒)。実行時は `pysad-warmup` と同じ `NUMBA_CACHE_DIR` にすること。別の CPU・numba の版では使われず再変換される | docs/01 |
 | `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/06 | docs/06 |
 | `specfn_cx2.py` | 複素の特殊関数の追加。scipy の複素対応 (`exp1`・`expi`・`digamma`・`sici`・`fresnel`・`lambertw`・`hyp1f1`・`hyp2f1`)、整数次の ExpIntegralE の漸化式・級数、`polygamma` (Hurwitz ゼータ経由)、複素の次数の BesselJ の級数 (\|x\| ≤ 25)、Whittaker W (`specfn_cx.hyperu_c`)。`specfn.install` が複素の引数で切り替える (実数の引数では切り替えない)。両モード |
 | `spch_k64.py` | `K64Pspac` (k64 モードの PSPAC。`SpaceCharge._kick2d` から呼ぶ)。K64 の形状関数: 横は CIC、縦は「ほぼ最近接」、電位は 5 点差分 (境界 φ = 0) の厳密解と双 3 次補間、線密度は 3 次スプライン。`PSPACNZ < 3` はエラー |

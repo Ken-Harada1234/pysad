@@ -16,12 +16,14 @@
 pip install pysad-k64
 ```
 
+**初回の待ち時間**: 計算の核は numba で書いてあり、最初の実行のときに機械語へ変換する (CPU を使い、全体で約 1〜1.5 分。2 回目以降は保存した結果を読むだけ)。インストールの直後に `pysad-warmup` を 1 回実行すると、小さなラティスで全種類の計算を走らせて先に変換を済ませる (`--check` で有効か確認、`--clear` で消す)。
+
 ### pip で入るもの・入らないもの
 
 | | 内容 | pip |
 |---|---|---|
 | パッケージ本体 | `pysad/` (`import pysad`。約 100 モジュール) | **入る** |
-| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示) | **入る** |
+| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
 | 文書 | `docs/` (36 本の md と、図入りの同名の HTML。`docs/history/` と `docs/figures/` を含む)。場所: `<prefix>/share/pysad/docs` | **入る** |
 | 例 | `example/` (機能別の台本・出力・図・md・HTML。約 2500 ファイル)。場所: `<prefix>/share/pysad/example` | **入る** |
 | `run_sad.py` | 同上 (`<prefix>/share/pysad/run_sad.py`) | **入る** |
@@ -35,6 +37,8 @@ pip install pysad-k64
 全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。
 
 PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作をします (直訳ではありません)。インストールした版は `pysad.__version__` で確認できます。ソースに忠実な翻訳 (v1 系) は `pip install pysad-k64==1.0.0` で入ります。
+
+図入りの HTML (数式・コードの色分けつき) は、ダウンロードなしでブラウザから読めます: <https://ken-harada1234.github.io/pysad/> (入口)。全文検索は <https://ken-harada1234.github.io/pysad/search.html>。公開の設定は [`tools/README.md`](tools/README.md) の「GitHub Pages で公開する」。
 
 ## 必要なもの
 

@@ -27,11 +27,11 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body class="nonav">
 <main>
-<div class="meta">元: fmap_basic.md</div>
+<div class="meta">元: fmap_basic.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="周波数マップの例">周波数マップの例</h1>
 <p>解説は <code>docs/26_frequency_map_lma.md</code>、試験は <code>pysad/tests/script_tests/test_v23_Q1_fmap_lma.py</code> (21 件)、コードは <code>pysad/trksetup.py</code>・<code>freqmap.py</code>・<code>lma.py</code>・<code>q1cmd.py</code>。
 実行はリポジトリ直下から <code>py -3.12 example/14_nonlinear_dynamics/frequency_map/fmap_ring.py astrid2</code> など (Windows では <code>PYTHONIOENCODING=utf-8</code> を付けると日本語の出力がファイルに書ける)。台本 <code>.sad</code> は <code>example/14_nonlinear_dynamics/frequency_map</code> で

@@ -35,7 +35,7 @@ MPW  = (MMPWS BMPW1I BMPW2 10*PMPW BMPW1F MMPWE)    (* PMPW = (BMPW1 BMPW2)、�
 
 MPW の端 (MMPWS・MMPWE) の BY は 1.4079 m、MPW 内の平均 BY は 1.0586 m (MPW を入れないリングでは直線部の中心で 1.6225 m)。水平チューンは変わらず、垂直だけが動くのが挿入光源の線形効果である (MPW は垂直方向に収束する)。
 
-![MPW の有無でのリング全周の βy](../lattice/fig_ASTRID2_ring_beta.png)
+![MPW の有無でのリング全周の βy](../lattice/fig_ASTRID2_ring_beta.svg)
 
 横軸はリングに沿った距離 s [m] (周長 45.7044 m)、縦軸は βy [m]。破線が MPW なし (`RING`)、実線が MPW あり (`RINGMPW`)。MPW は垂直方向にだけ収束する (線形のモデル) ので、MPW を置いたセル (図の中央付近) の βy が変わり、リング全体の βy も周期性が崩れて、最大は 13.09 m から 19.90 m になる。表の垂直チューンの増加 (+0.109) は、この βy の変化の結果である。
 

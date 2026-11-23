@@ -20,7 +20,7 @@ steering HD.2 at s =    9.8725000000: max |COD| [um]    2.9767005451   max |SAD 
 steering HD.3 at s =   11.9530000000: max |COD| [um]     .8126798368   max |SAD + K0*Response| [um]  9.691929474E-5
 ```
 
-![ステアリング 1 個の COD 応答](fig_KEKLS_cod_response.png)
+![ステアリング 1 個の COD 応答](fig_KEKLS_cod_response.svg)
 
 横軸はリングに沿った距離 s [m] (周長 570.72 m)、縦軸は水平ステアリング HD.1 (s = 4.79 m、点線) に K0 = 1 μrad を与えたときの閉軌道 x [μm]。青い線が SAD の COD、橙の点が応答行列の式 −K0 × Response のモニター位置 (PM、201 個) の値で、両者は 1e-4 μm 以内で重なる。軌道の最大は 1.67 μm (本文の `max |COD|`) で、ベータトロン振動がリング全周に広がる (チューン 48.58 なので 48 周ほど振動する)。
 

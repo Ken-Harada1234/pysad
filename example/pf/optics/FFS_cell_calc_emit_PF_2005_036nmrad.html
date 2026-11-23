@@ -27,8 +27,19 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+
+:root { --c-kw:#0550ae; --c-ty:#7a3e9d; --c-st:#8a4b00; --c-nu:#1b7a6e; --c-bi:#1f6f8b; --c-cm:#59636e; --c-fn:#6e4aa5; }
+@media (prefers-color-scheme: dark) { :root { --c-kw:#79c0ff; --c-ty:#d2a8ff; --c-st:#e3b341; --c-nu:#7ee0c8; --c-bi:#56d4dd; --c-cm:#9198a1; --c-fn:#d2a8ff; } }
+pre .c { color:var(--c-cm); font-style:italic; }
+pre .k { color:var(--c-kw); font-weight:600; }
+pre .t { color:var(--c-ty); font-weight:600; }
+pre .s { color:var(--c-st); }
+pre .m { color:var(--c-nu); }
+pre .b { color:var(--c-bi); }
+pre .f { color:var(--c-fn); }
+pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
@@ -42,18 +53,18 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: FFS_cell_calc_emit_PF_2005_036nmrad.md</div>
+<div class="meta">元: FFS_cell_calc_emit_PF_2005_036nmrad.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="ffs-cell--calc--emit-pf-2005-36-nm-rad-履歴ラティスの周期解と平衡パラメータ">FFS cell / calc / emit (PF 2005, 36 nm rad): 履歴ラティスの周期解と平衡パラメータ</h1>
 <p>種別: FFS コマンド。加速器: PF 2.5 GeV リング、直線部増強 (<code>lattice/pf_2005_036nmrad.sad</code>、周長 187.0355 m、チューン 9.5975 / 5.2790)。フラグ: <code>ON LOG; ON RAD FLUC COD RFSW RADCOD;</code>。説明は <a href="../lattice/PF_history.html"><code>lattice/PF_history.md</code></a>。</p>
 <h2 id="何を見る例か">何を見る例か</h2>
 <p><code>FFS_cell_calc_emit_PF</code> と同じ台本の形 (ラティスを先頭に貼って <code>USE RING; cell calc emit;</code>)。PF の履歴ラティスの 1 本を、周長・チューン・エミッタンス・要素の数・直線部と標準セルの Twiss・クロマティシティで調べる。4 本 (1981・1986・1997・2005) は同じ台本で、ラティスと、Twiss を出す MARK の名前だけが違う。</p>
 <h2 id="スクリプト-ffs-以降の要点">スクリプト (<code>FFS;</code> 以降の要点)</h2>
-<pre><code>USE RING;  cell calc emit;
-Print[&quot;circumference [m] = &quot;, LINE[&quot;S&quot;,&quot;$$$&quot;]];  ...            ! 周長・要素数・チューン・EMITX・SIGE・SIGZ
-CountEl[];                                                      ! 偏向磁石・四極・6 極・八極・空洞の数
-ShowAt[&quot;NAME&quot;];                                                 ! その場所の BX BY EX AX と NX NY/2pi (直線部の MARK、標準セルの偏向磁石)
-ChromFD[0.001];                                                 ! 色収差 = 運動量 ±0.1% のチューンの差分 (設計の6 極あり)
-SF* 0; SD* 0; FFS[&quot;cell calc&quot;]; ChromFD[0.001];                 ! 6 極を 0 にした自然値
+<pre><code class="language-sad"><span class="k">USE</span> <span class="k">RING</span>;  cell calc emit;
+<span class="b">Print</span>[<span class="s">"circumference [m] = "</span>, <span class="t">LINE</span>[<span class="s">"S"</span>,<span class="s">"$$$"</span>]];  ...            <span class="c">! 周長・要素数・チューン・EMITX・SIGE・SIGZ</span>
+CountEl[];                                                      <span class="c">! 偏向磁石・四極・6 極・八極・空洞の数</span>
+ShowAt[<span class="s">"NAME"</span>];                                                 <span class="c">! その場所の BX BY EX AX と NX NY/2pi (直線部の MARK、標準セルの偏向磁石)</span>
+ChromFD[<span class="m">0.001</span>];                                                 <span class="c">! 色収差 = 運動量 ±0.1% のチューンの差分 (設計の6 極あり)</span>
+SF<span class="o">*</span> <span class="m">0</span>; SD<span class="o">*</span> <span class="m">0</span>; <span class="k">FFS</span>[<span class="s">"cell calc"</span>]; ChromFD[<span class="m">0.001</span>];                 <span class="c">! 6 極を 0 にした自然値</span>
 </code></pre>
 <ul>
 <li>台本の関数名は <code>ShowAt[]</code> (<code>At[]</code> と名づけると pysad は何も出さない。詳しくは <code>lattice/PF_history.md</code> §g)。</li>

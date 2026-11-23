@@ -16,12 +16,16 @@ CLI:
   最初の言及 (コードブロックの外) を含むブロックの直後に、その図を置く。
 - 文書間リンク [..](xxx.md#anchor) は、変換対象の md なら .html に書き換える。
 - 見出しのアンカーは GitHub 風 (日本語も可。重複は -1, -2)。リンクの # は実在の ID に合わせる。
+- 数式 ($...$、$$...$$) は、Node.js の KaTeX で HTML の部品にして埋め込む (mathtex.py。開くときに JavaScript は要らない)。
+- コードブロック (python・bash・sh・json・sad、言語指定なしの SAD の台本) は、ビルドのときに Pygments で色分けする (codehl.py。開くときに JavaScript は要らない)。
+- root を渡すと、各ページの先頭の注記の行に、検索 (search.html) と入口 (index.html) へのリンクを置く。
 - --fold-regex に一致する見出し (--fold-level の階層) の節を <details> にする。既定は折りたたまない。
 """
 import argparse
 import base64
 import html as _html
 import mimetypes
+import os
 import re
 import sys
 from contextlib import contextmanager
@@ -31,11 +35,17 @@ from urllib.parse import quote, unquote
 import markdown
 import markdown.extensions.toc as _toc
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import mathtex  # noqa: E402
+import codehl  # noqa: E402
+import site_index  # noqa: E402
+
 MAX_EMBED = 3 * 1024 * 1024
 GENERATOR = 'md_to_html'
 IMG_EXT = ('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp')
 MIME = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
         '.svg': 'image/svg+xml', '.webp': 'image/webp'}
+_warned_node = []      # Node.js が見つからない警告は 1 回だけ出す
 _SCHEME = re.compile(r'^(?:[A-Za-z][A-Za-z0-9+.\-]*:|//)')
 
 CSS = """
@@ -66,7 +76,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 """
 JS = """
@@ -182,8 +192,10 @@ def normalize(text):
 
 def _ids_of_text(text):
     md = _new_md()
+    text = text.replace('\r\n', '\n')
+    mtext = mathtex.extract(text)[0] if mathtex.find_node() else text
     with _gh_ids():
-        body = md.convert(normalize(text.replace('\r\n', '\n')))
+        body = md.convert(normalize(mtext))
     ids = set(re.findall(r'<h[1-6] id="([^"]+)"', body))
     return ids | set(re.findall(r'<a\s[^>]*?(?:id|name)="([^"]+)"', text))
 
@@ -387,6 +399,10 @@ class Result:
         self.broken = []     # (種類, リンク先)
         self.out = None
         self.skipped = False
+        self.math_count = 0      # 検出した数式の数
+        self.math_errors = 0     # KaTeX で変換できなかった数式の数
+        self.code_blocks = 0     # 色分けしたコードブロックの数
+        self.index = None        # 全文検索の索引用の、ページの内容 (site_index.extract_page)
 
 
 def _flat(toks):
@@ -396,7 +412,7 @@ def _flat(toks):
 
 
 def convert_text(text, src, is_target=None, anchor_lookup=None, fold_regex=None, fold_level=3,
-                 embed=True):
+                 embed=True, math=True, root=None):
     """md の本文 (str) を HTML (Result.html) にする。src は元の md のパス (相対リンクの基準)。"""
     src = Path(src).resolve()
     res = Result(src)
@@ -404,26 +420,62 @@ def convert_text(text, src, is_target=None, anchor_lookup=None, fold_regex=None,
     anchor_lookup = anchor_lookup or ids_of_md
     text = text.replace('\r\n', '\n')
     md = _new_md()
+    # 数式: markdown の変換の前にプレースホルダーに置き換え (強調などに誤変換されないように)、変換後に戻す
+    items, rendered, prefix, mtext = [], [], '', text
+    if math:
+        node = mathtex.find_node()
+        if node is None:
+            if '$' in text and not _warned_node:
+                _warned_node.append(1)
+                res.warnings.append('Node.js が見つからないので、数式は TeX の文字のまま (PYSAD_NODE、PATH、'
+                                    'D:\\work\\tools\\node-*\\node.exe の順に探す)')
+        else:
+            mtext, items, prefix = mathtex.extract(text)
+            if items:
+                try:
+                    rendered = mathtex.render(items, node)
+                except mathtex.MathError as e:
+                    res.warnings.append('数式を変換できないので、TeX の文字のまま: %s' % e)
+                    mtext, items, rendered, prefix = text, [], [], ''
+    res.math_count = len(items)
+    for it, (h_, err) in zip(items, rendered):
+        if err:
+            res.math_errors += 1
+            res.warnings.append('数式を変換できない (行 %d): %s  [%s]' % (it['line'] + 1, it['tex'][:70], err[:120]))
     with _gh_ids():
-        body = md.convert(normalize(text))
-    own_ids = set(re.findall(r'<h[1-6] id="([^"]+)"', body)) | set(re.findall(r'<a\s[^>]*?(?:id|name)="([^"]+)"', text))
+        body = md.convert(normalize(mtext))
     tm = re.search(r'<h1 id="[^"]*">(.*?)</h1>', body, re.S)
-    res.title = _html.unescape(re.sub(r'<[^>]+>', '', tm.group(1))).strip() if tm else src.name
+    title_src = mathtex.plain(tm.group(1), items, prefix) if tm and items else (tm.group(1) if tm else '')
+    res.title = _html.unescape(re.sub(r'<[^>]+>', '', title_src)).strip() if tm else src.name
+    body = mathtex.restore(body, items, rendered, prefix)
+    body, res.code_blocks = codehl.highlight_body(body)
+    own_ids = set(re.findall(r'<h[1-6] id="([^"]+)"', body)) | set(re.findall(r'<a\s[^>]*?(?:id|name)="([^"]+)"', text))
     body = place_named_figures(body, src.parent)
     body = embed_images(body, src.parent, embed, res)
     body = rewrite_links(body, src, is_target, anchor_lookup, res, own_ids)
+    res.index = site_index.extract_page(body, res.title)
     if fold_regex:
         body = fold_sections(body, fold_regex, fold_level)
-    toc = md.toc
+    toc = mathtex.restore(md.toc, items, rendered, prefix)
     has_nav = any(t['level'] >= 2 for t in _flat(md.toc_tokens))   # h2 以下がなければ目次なし
     nav = ('<nav><div class="ttl">目次</div>%s</nav>\n' % toc) if has_nav else ''
+    css = CSS
+    if any(h_ and 'class="katex' in h_ for h_, _ in rendered):     # 数式のある HTML にだけ、使うフォントを埋めた CSS を入れる
+        css += mathtex.css_for(''.join(h_ for h_, _ in rendered if h_))
+    if res.code_blocks:
+        css += codehl.CSS
+    links = ''
+    if root is not None:
+        up = Path(os.path.relpath(Path(root).resolve(), src.parent)).as_posix()
+        up = '' if up == '.' else up + '/'
+        links = ' <span class="nav-links">| <a href="%ssearch.html">検索</a> | <a href="%sindex.html">入口</a></span>' % (up, up)
     page = ('<!DOCTYPE html>\n<html lang="ja"><head><meta charset="utf-8">'
             '<meta name="generator" content="%s">'
             '<meta name="viewport" content="width=device-width,initial-scale=1">'
             '<title>%s</title><style>%s</style></head><body%s>\n%s<main>\n'
-            '<div class="meta">元: %s</div>\n%s\n</main><script>%s</script></body></html>\n'
-            % (GENERATOR, _html.escape(res.title), CSS, '' if has_nav else ' class="nonav"', nav,
-               _html.escape(src.name), body, JS))
+            '<div class="meta">元: %s%s</div>\n%s\n</main><script>%s</script></body></html>\n'
+            % (GENERATOR, _html.escape(res.title), css, '' if has_nav else ' class="nonav"', nav,
+               _html.escape(src.name), links, body, JS))
     res.html = page
     return res
 
@@ -460,7 +512,16 @@ def main(argv=None):
     ap.add_argument('-o', '--output', help='出力先 (既定: md と同じ名前の .html)')
     ap.add_argument('--fold-regex', help='この正規表現に一致する見出しの節を <details> にする')
     ap.add_argument('--fold-level', type=int, default=3, help='折りたたむ見出しの階層 (既定 3)')
+    ap.add_argument('--require-math', action='store_true', help='Node.js が見つからない、または数式の変換エラーがあるとき、エラー終了にする')
     a = ap.parse_args(argv)
+    for st in (sys.stdout, sys.stderr):
+        try:
+            st.reconfigure(encoding='utf-8', errors='replace')
+        except (AttributeError, ValueError):
+            pass
+    if a.require_math and mathtex.find_node() is None:
+        print('エラー: Node.js が見つからない (PYSAD_NODE、PATH の node、D:/work/tools/node-*/node.exe の順に探した)')
+        return 2
     res = convert_file(a.md, a.output, fold_regex=a.fold_regex, fold_level=a.fold_level)
     for w in res.warnings:
         print('警告:', w)
@@ -468,7 +529,7 @@ def main(argv=None):
         print('壊れた%s: %s' % (k, t))
     if not res.skipped:
         print('作成:', res.out, '%.1f KB' % (len(res.html.encode('utf-8')) / 1024), '図 %d 枚' % res.figures)
-    return 1 if res.skipped else 0
+    return 1 if (res.skipped or (a.require_math and res.math_errors)) else 0
 
 
 if __name__ == '__main__':

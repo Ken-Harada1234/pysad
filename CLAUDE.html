@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -38,9 +38,9 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: CLAUDE.md</div>
+<div class="meta">元: CLAUDE.md <span class="nav-links">| <a href="search.html">検索</a> | <a href="index.html">入口</a></span></div>
 <h1 id="claudemd">CLAUDE.md</h1>
-<p>pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の <code>v2</code> は K64 のバグを直した動作で、<code>PYSAD_COMPAT=k64</code> で K64 と同じ動作に切り替える。最新は v2.4.2 (2026-11-23、<code>pysad.__version__</code> = 2.4.2)。PyPI は v2.4.2 まで公開。作業の前に次を読むこと。</p>
+<p>pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の <code>v2</code> は K64 のバグを直した動作で、<code>PYSAD_COMPAT=k64</code> で K64 と同じ動作に切り替える。最新は v2.4.3 (2026-11-23、<code>pysad.__version__</code> = 2.4.3)。PyPI は v2.4.2 まで公開 (v2.4.3 は公開の準備中)。作業の前に次を読むこと。</p>
 <ol>
 <li><code>docs/history/00_RESUME.md</code>: 引き継ぎメモ (方針、構成、環境、現状、残課題、手順、落とし穴)。未解決の差の最新は <code>docs/history/work_unimpl.md</code>。</li>
 <li><code>docs/01_overview.md</code>: 全体像とモジュールの地図。</li>

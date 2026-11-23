@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """03_matching の図を作る。リポジトリの直下から: py -3.12 example/03_matching/figures_make_matching.py
   fig_FFS_FIT_before_after.png        FFS_FIT.sad: 位相進み 90 度のマッチング前後の β (1 セル)
+"""
 import sys, pathlib, re
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "tools"))
 from figlib import *

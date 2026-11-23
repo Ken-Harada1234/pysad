@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -44,7 +44,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="regression_tests-回帰テスト">regression_tests/ (回帰テスト)</h1>
 <p>SAD (K64) との照合ベンチ 50 本 (Level 1〜14・16・22・24・26〜31) を、子プロセスで順に走らせて合否を一覧にする。
 <strong>基準はあらかじめ SAD (K64) で取って保存した出力 (<code>bench/bench_levelN.result</code>)</strong> で、実行時に SAD (WSL) は要らない。pysad は互換モード k64 (<code>PYSAD_COMPAT</code> が未設定なら自動で k64) で走り、SAD の出力と数値を突き合わせる。

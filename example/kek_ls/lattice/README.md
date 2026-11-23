@@ -7,7 +7,7 @@ KEK-LS (3 GeV、周長 570.72 m、標準セル 20 個) の設計ラティス `ke
 | `kek_ls_v03_68.sad` | ラティス本体。要素・ラインの定義だけ (`FFS;` の前に置く)。元の設計ファイルのコピーで、先頭のコメントを説明つきのヘッダに替え、改行を LF にした。要素の定義の中身は変えていない |
 | `KEKLS_cell_calc_emit` (`.sad`・`.gs.txt`・`.pysad.txt`・`.md`) | RINGC・RING の周期解 (`cell calc emit`)、周長・チューン・εx・σδ・σz |
 | `KEKLS_cell_optics` (同 4 点) | 標準セル (ARCA) の要素ごとの配置とオプティクスの数表 (図の元) |
-| `KEKLS_cell_layout_optics.png` | 標準セル 1 個の配置図とオプティクス |
+| `KEKLS_cell_layout_optics.svg` | 標準セル 1 個の配置図とオプティクス |
 
 台本 (`.sad`) は、このラティスを先頭に貼った自己完結のファイル (`tools/mk_kekls.py` が `tools/kek_ls_src/` の本体と合わせて作る)。
 
@@ -30,7 +30,7 @@ HMBA の特徴 (低磁場の偏向磁石 `BID*` が分散を作り、高磁場�
 
 ## 構成図 (標準セル 1 個)
 
-![標準セルの配置とオプティクス](KEKLS_cell_layout_optics.png)
+![標準セルの配置とオプティクス](KEKLS_cell_layout_optics.svg)
 
 配置図の線は、長直線部 (`DRID1`) を細線 (0.55 pt)、その他の基準軌道を 1.8 pt、偏向磁石を 3 pt で描いた。橙は収束四極、青は発散四極、緑は6 極、紫の枠は勾配つき偏向磁石。下はオプティクス (βx・βy・20×ηx、gs の出力)。リング全体の配置とオプティクスは [`../display/KEKLS_ring_layout_optics.png`](../display/KEKLS_ring_layout_optics.png)。
 

@@ -27,7 +27,7 @@ figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center;
 details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
 details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
 details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
-.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
 @media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
@@ -59,7 +59,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </div>
 </nav>
 <main>
-<div class="meta">元: README.md</div>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../../search.html">検索</a> | <a href="../../../index.html">入口</a></span></div>
 <h1 id="script_tests-スクリプトテスト">script_tests/ (スクリプトテスト)</h1>
 <p>pysad の機能ごとの自動試験 (pytest)。198 本の試験ファイル <code>test_*.py</code>、収集 2534 件 (<code>PYSAD_SAD_PACKAGES</code> を設定し、旧式の 3 本を <code>--ignore</code> した <code>--collect-only</code> の値)。
 各試験は、小さなラティスや SAD スクリプトを pysad で走らせ、(a) SAD (K64) で取って保存した出力、(b) 試験の中の解析式、(c) SAD・pysad のコードを使わない独立な数値計算 (<code>_*_indep.py</code> など) のどれかと比べる。SAD (K64) の実行は要らない。</p>
@@ -1241,8 +1241,8 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 <tbody>
 <tr>
 <td><a href="test_tools_md_to_html.py"><code>test_tools_md_to_html.py</code></a></td>
-<td>12</td>
-<td>md→HTML 変換ツール (tools/md_to_html.py・build_html.py)</td>
+<td>21</td>
+<td>md→HTML 変換ツール (tools/md_to_html.py・build_html.py。数式の KaTeX 変換を含む。描画の試験は Node.js がなければ skip)</td>
 </tr>
 <tr>
 <td><a href="test_packaging_cli.py"><code>test_packaging_cli.py</code></a></td>
