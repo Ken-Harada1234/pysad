@@ -13,7 +13,7 @@
 $$
 \log S_2(h) = h(A + B) + h^3\Bigl(-\tfrac1{24}[A,[A,B]] + \tfrac1{12}[B,[B,A]]\Bigr) + O(h^5)
 $$
- (式 (3.4))。偶数次の項が出ず、誤差は 1 刻み $h^3$、全体 $h^2$ (2 次)。
+ (式 (3.2))。偶数次の項が出ず、誤差は 1 刻み $h^3$、全体 $h^2$ (2 次)。
 - **Yoshida の 4 次**: $S_4(h) = S_2(w_1h)\,S_2(w_0h)\,S_2(w_1h)$、$w_1 = 1/(2 - 2^{1/3}) = 1.351207$、$w_0 = 1 - 2w_1 = -1.702414$。$3$ 次が消えて誤差は $O(h^5)$ (全体 $h^4$)。$w_0 < 0$ (逆向きに進む部分がある)。
 - **どの分割も、$A$・$B$ が厳密な流れ (正準変換) ならシンプレクティック**で、丸め誤差までそのまま保たれる (式 (3.8))。さらに、分割した写像は、元の $H$ に近い**別のハミルトニアン** $\tilde H = H + O(h^2)$ の厳密な流れになる (後方誤差解析。§6)。$H$ が $s$ によらないときの $H$ の誤差は、時間とともに増えずに振動する ([integ_02_order_symplectic.out.txt](outputs/integ_02_order_symplectic.out.txt) (c): 5 万刻みで Strang・Yoshida・力勾配型は比 1.0、RK4 は 7.7 倍に増え続ける)。
 - **力勾配型の 4 次** (K64 の薄い多極 `tthin`、ヘルプの OCT・DECA・DODECA の transformation): $e^{aA}\,e^{B/2}\,e^{tA}\,e^{C}\,e^{tA}\,e^{B/2}\,e^{aA}$ ($a = \tfrac12 - t$、中央に**補正キック** $C$ — 座標だけの関数の流れ)。3 次の 2 つの条件から $t = 1/\sqrt{12}$ と補正の強さ $c_3 = \beta/2$ ($\beta = \tfrac16 - \tfrac{1}{2\sqrt{12}}$) が決まり、5 次の「運動量を含まない項」を消す条件から $c_5 = \gamma/2$ ($\gamma = \tfrac1{40} - \tfrac1{24\sqrt3}$) が決まる (§8)。これが K64 の `alpha`、`alpha1`、`beta`、`gamma` で、補正キックの関数形も K64 の式 (多極の 6 極、8 極) と記号計算で一致した ([integ_01_bch_force_gradient.out.txt](outputs/integ_01_bch_force_gradient.out.txt) (c)(d))。力の評価は 1 刻みで 2 回 + 勾配 1 回 (Yoshida は 3 回)。
@@ -27,13 +27,31 @@ $$
 | 刻みの長さ | $h$ | `aln0`・`aln1`・`aln` (四極の 1 刻み)、`al` (薄い多極は 1 刻みで全体) | `aln1`、`L` |
 | 流れの生成元 (リー演算子) | $A, B$ (§3) | | |
 | 2 次の対称分割 | $S_2(h)$ | `tsolqu` の $D\,B\,D$ | `quadbody` の `group` (方式 0) |
-| 4 次の合成の係数 | $w_1, w_0$ (式 (3.9)) | (K64 になし) | `_W1`、`_W0` (`quadbody.py`) |
+| 4 次の合成の係数 | $w_1, w_0$ (式 (3.6)) | (K64 になし) | `_W1`、`_W0` (`quadbody.py`) |
 | 力勾配型のドリフトの長さ | $a\,h$、$t\,h$ ($t = \alpha$) | `ala = al*alpha1`、`alb = al*alpha` | `ala`、`alb` (`_TT_ALPHA1`、`_TT_ALPHA`) |
 | 補正キックの強さ | $c_3 = \beta/2$、$c_5 = \gamma/2$ | `beta`、`gamma` (`tquad.f:131-135` の `parameter`) | `_TT_BETA`、`_TT_GAMMA` |
 | 精度パラメータ | $\varepsilon$ | `eps`・`eps0`・`epsdef` | `eps0` |
 | 刻みの数 | $n$ | `ndiv` | `quadbody.ndiv()` |
 
 **$\alpha, \beta, \gamma$ の注釈** (K64 `tquad.f:131-135`): `alpha` $= 1/\sqrt{12} = 0.288675\ldots$ (中央のドリフト 2 本の長さの比。数学の標準の記号ではない)、`alpha1` $= \tfrac12 - $ `alpha` $= 0.211325\ldots$ (両端のドリフトの比)、`beta` $= \tfrac16 - \alpha/2 = 0.0223291\ldots$ (補正キックの 3 次の強さ)、`gamma` $= \tfrac1{40} - \tfrac{1}{24\sqrt3} = 9.43739 \times 10^{-4}$ (補正キックの 5 次の強さ)。ソースのコメントは「`alpha=1/sqrt(12), beta=1/6-alpha/2, gamma=1/40-1/24/sqrt(3)`」。それぞれが何を消す係数かは §8 で導く。
+
+**§10 の表に出る名前** (確認できた範囲。定義の場所はソース):
+
+| 名前 | 意味 | 定義の場所 | 確認 |
+|---|---|---|---|
+| `aln0` | 四極の追跡の 1 刻みの長さ $= $ `al/ndiv` | `tsolqu.f:49` | 確認 |
+| `ndiv` (四極) | 刻みの数 $= 1 + \lfloor L\lVert(K, B_z)\rVert/\varepsilon\rfloor$ (`ndiv=1+int(abs(al*hypot(ak,bz)/eps))`) | `tsolqu.f:47` | 確認 |
+| `ak`、`bz` | 四極の積分強度 K1、ソレノイドの $B_z$ (`tsolqu` の引数) | `tsolqu.f:13` (宣言) | 確認 |
+| `ak0x`、`ak0y` | ステアリング (偏向の積分強度) | `tsolqu.f:13` (宣言)。意味は §10 の表の注 | 宣言まで確認 |
+| `eps`、`eps0`、`epsdef` | `eps0` = 台本の EPS、`epsdef = 0.2d0`。`eps0 == 0` なら `eps = epsdef`、そうでなければ `eps = epsdef*eps0` | `tsolqu.f:14`、`:41-46` | 確認 |
+| `ndivmax` | 刻みの数の上限。`tbend.f:549` では 1024、`tbendi.f:16` では 1000 (ファイルごとに別の定数。ほかのファイルは未確認) | `tbend.f:549`、`tbendi.f:16` | 一部確認 |
+| `phic` | 偏向磁石 (CALC) の $\phi_c$ = `phi0*rbc` (`phi0` は偏向角。`rbc` の定義は未確認) | `tbende.f:454` | 式まで確認 |
+| `epsbend` | `eps = merge(epsbend, epsbend*eps0, eps0 == 0.d0)` に出る量。`epsbend` の値の定義は未確認 | `tbende.f:455` | 未確認 |
+| `arad` | 放射の分割 `ndivrad` の係数 0.02 (`real*8, parameter :: arad=0.02d0`) | `tffs.f:644` | 確認 |
+| `trpt` | `ndivrad` に出る真偽値 (`fff%trpt` を指す。意味は未確認) | `tffs.f:589` | 未確認 |
+| `phir`、`f1r`、`f2r` | 放射つき偏向磁石の追跡で使う偏向角と端の長さ (本文 §10 の式のとおり。定義は未確認) | `tbend.f` | 未確認 |
+| `ndiv0` | MULT の要素のパラメータ (`tmulti` の引数。`ndiv=ndiv0` が `tmulti.f:107`) | `tmulti.f:62`、`:107` | 一部確認 |
+| `akf` | (本章の範囲外。未確認) | — | 未確認 |
 
 ## 3. ハミルトニアンの分割と、リー演算子の書き方
 
@@ -96,21 +114,29 @@ S_4(h) = S_2(w_1h)\,S_2(w_0h)\,S_2(w_1h)
 \tag{3.3}
 $$
 
-(3.2) を 3 回使って、$\log S_4$ を求める。3 つの指数の和の形になる (これら 3 つの $\Omega(w_ih) = w_ih(A+B) + w_i^3h^3C_3 + O(h^5)$ の積の BCH では、交換子 $[\Omega_i, \Omega_j]$ のうち $(A + B)$ どうしは 0 (同じ $A + B$ の定数倍どうしは交換)。$(A + B)$ と $h^3C_3$ の交換子 ($h^4$) は残りうるが、積全体が前後対称なので偶数次は消え、残りは $h^5$ 以上):
+(3.2) から、各因子は $S_2(w_ih) = e^{\Omega_i}$、$\Omega_i = w_ih\,X + w_i^3h^3C_3 + O(h^5)$ ($X \equiv A + B$。$h$ の 3 乗の係数は $(w_ih)^3$) と書ける。3 つの積に BCH を使う。$\Omega_1, \Omega_0, \Omega_1$ をこの順に掛けて、次数ごとに整理する。
+
+- **1 次** ($h^1$): $\Omega_1 + \Omega_0 + \Omega_1$ の $X$ の項: $(2w_1 + w_0)\,hX$。
+- **3 次** ($h^3$): 同じく和の $C_3$ の項 $(2w_1^3 + w_0^3)\,h^3C_3$。
+- **交換子の 2 次の項** ($\tfrac12[\Omega_i, \Omega_j]$ の形、BCH を 2 回使うと $\tfrac12\bigl([\Omega_1, \Omega_0] + [\Omega_1, \Omega_1] + [\Omega_0, \Omega_1]\bigr)$ の和になる): $[\Omega_1, \Omega_1] = 0$、$[\Omega_1, \Omega_0] + [\Omega_0, \Omega_1] = 0$ (反対称) なので、**2 次の交換子はすべて消える**。個々の $[\Omega_i, \Omega_j]$ のうち、$X$ どうしは 0 ($X$ の定数倍どうしは交換する)、$X$ と $C_3$ の交換子は $h^4\,(w_iw_j^3 - w_jw_i^3)[X, C_3]$ (和をとると上の反対称性で相殺)。
+- **3 重の交換子** ($\tfrac1{12}[\Omega,[\Omega,\Omega]]$ の形) は、$X$ だけの入れ子 ($[X,[X,X]] = 0$) を除くと、少なくとも $h\cdot h\cdot h^3 = h^5$ 次。
+
+よって、$h^4$ 以下に交換子の項は残らず、
+
 
 $$
 \log S_4 = (2w_1 + w_0)\,h(A+B) + (2w_1^3 + w_0^3)\,h^3 C_3 + O(h^5)
 \tag{3.4}
 $$
 
-(対称な積なので偶数次は出ない。) 正しい $h(A+B)$ の係数 1 と、$h^3$ の消去から
+(上のとおり、偶数次の項は相殺する。) 正しい $h(A+B)$ の係数 1 と、$h^3$ の消去から
 
 $$
 2w_1 + w_0 = 1,\qquad 2w_1^3 + w_0^3 = 0
 \tag{3.5}
 $$
 
-$w_0 = 1 - 2w_1$ を入れ、$(1 - 2w_1)^3 = -2w_1^3$ の実数の立方根 $1 - 2w_1 = -2^{1/3}w_1$ から
+$w_0 = 1 - 2w_1$ を入れると 2 番目の式は $(1 - 2w_1)^3 = -2w_1^3$。実数の範囲で両辺の立方根を取ると $1 - 2w_1 = -2^{1/3}w_1$、これを $w_1$ について解く: $1 = (2 - 2^{1/3})\,w_1$。数値は $2^{1/3} = 1.2599210$、$2 - 2^{1/3} = 0.7400790$、$w_1 = 1.3512072$、$w_0 = 1 - 2\times1.3512072 = -1.7024144$ ([integ_03_expansions.out.txt](outputs/integ_03_expansions.out.txt) (a)。$2w_1^3 + w_0^3 = 2\times10^{-122}$)。
 
 $$
 w_1 = \frac{1}{2 - 2^{1/3}} = 1.3512071919\ldots,\qquad w_0 = 1 - 2w_1 = -1.7024143839\ldots
@@ -119,7 +145,7 @@ $$
 
 (四極の章の (4.20)〜(4.22) と同じ。)
 
-**一般化 (高次への飛び越し)**: 対称な $p$ 次 ($p$ は偶数) の方法 $S$ の誤差が $c\,h^{p+1}$ のとき、$S(w_1h)S(w_0h)S(w_1h)$ の誤差は $(2w_1^{p+1} + w_0^{p+1})\,c\,h^{p+1}$。$2w_1 + w_0 = 1$ と $2w_1^{p+1} + w_0^{p+1} = 0$ から $w_1 = 1/(2 - 2^{1/(p+1)})$。$p = 2$ が (3.6)、$p = 4$ なら $1/(2 - 2^{1/5})$ で 6 次の方法ができる。K64・pysad は 4 次までしか使わない。
+**一般化 (高次への飛び越し)**: 対称な $p$ 次 ($p$ は偶数) の方法 $S$ は、$\log S(h) = hX + c\,h^{p+1} + O(h^{p+3})$ ($c$ は演算子の定数。偶数次は出ない)。(3.4) と同じ議論 (2 次の交換子は反対称性で消え、3 重以上は $h^{p+2}$ 以上) で、$S(w_1h)S(w_0h)S(w_1h)$ の $\log$ は $(2w_1 + w_0)hX + (2w_1^{p+1} + w_0^{p+1})\,c\,h^{p+1} + \cdots$。$2w_1 + w_0 = 1$ と $2w_1^{p+1} + w_0^{p+1} = 0$ から、(3.5) と同じ手順で $(1 - 2w_1)^{p+1} = -2w_1^{p+1}$、$p + 1$ は奇数なので実数の $(p+1)$ 乗根が取れて $1 - 2w_1 = -2^{1/(p+1)}w_1$、したがって $w_1 = 1/(2 - 2^{1/(p+1)})$。$p = 2$ が (3.6)、$p = 4$ なら $1/(2 - 2^{1/5}) = 1.1746718$ で 6 次の方法ができる (数値は同 (a))。K64・pysad は 4 次までしか使わない。
 
 **確認**: 自由代数で、$w_1$ を入れた $S_4$ の $\log$ の 1 次は $A + B$ ($2 w_1 + w_0 = 1$)、2・3・4 次は 0 (係数 $10^{-41}$ 以下)、5 次は残る (語の数 32、最大の係数 0.10)。5 次の関数は、具体的な表現 ($A = -p^2/2$、$B = -V(x)$) で
 
@@ -168,35 +194,43 @@ W \equiv [B,[A,B]]\ (3\text{ 次}),\qquad W_5 \equiv [W, [A,B]]\ (5\text{ 次})
 \tag{3.10}
 $$
 
-を取る。具体的な表現 ($A = -:T:$、$B = -:V:$) では、$[A, B]$ は $-(P/m)\cdot\nabla V$ の流れ、$W$ は $|\nabla V|^2/m$ (座標だけの関数)、$W_5$ は $-2\,V_jV_kV_{jk}/m^2$ (座標だけの関数。$V_j = \partial V/\partial x_j$、$V_{jk}$ は 2 階微分、重複する添字は和) に比例する。**座標だけの関数** $f(\vec x)$ の流れは、運動量を $\Delta p_j = \partial f/\partial x_j$ だけ変える (座標は不変) キックで、閉じた式。
+を取る。具体的な表現 ($A = -:T:$、$B = -:V:$) では、$[A, B]$ は $-(P/m)\cdot\nabla V$ の流れ、$W$ は $|\nabla V|^2/m$ (座標だけの関数)、$W_5$ は $-2\,V_jV_kV_{jk}/m^2$ (座標だけの関数。$V_j = \partial V/\partial x_j$、$V_{jk}$ は 2 階微分、重複する添字は和) に比例する。
+
+導出 (1 自由度、$T = p^2/2$、$m = 1$。ポアソン括弧 $[f, g] = f_xg_p - f_pg_x$。リー演算子は $[:f:, :g:] = :[f,g]:$ と、$[-:f:, -:g:] = [:f:, :g:]$ から):
+
+1. $[A, B] = [:T:, :V:] = :[T, V]:$。$[T, V] = T_xV_p - T_pV_x = 0 - p\,V' = -pV'$。よって $[A, B] = :-pV':$。
+2. $W = [B, [A, B]] = [-:V:, :-pV':] = -:[V, -pV']: = :[V, pV']:$。$[V, pV'] = V_x\,\partial_p(pV') - V_p\,\partial_x(pV') = V'\cdot V' - 0 = V'^2$。よって $W = :V'^2:$ (座標だけの関数 $V'^2 = |\nabla V|^2$)。
+3. $W_5 = [W, [A, B]] = [:V'^2:, :-pV':] = :[V'^2, -pV']:$。$[V'^2, -pV'] = (V'^2)_x\cdot(-V') - 0 = 2V'V''\cdot(-V') = -2V'^2V''$。よって $W_5 = :-2V'^2V'':$。
+
+(sympy: [integ_03_expansions.out.txt](outputs/integ_03_expansions.out.txt) (b)。) 多自由度では、$[A,B]$ の関数は $-\sum_jp_jV_j/m$、$W$ の関数は $\sum_jV_j^2/m$、$W_5$ の関数は $-2\sum_{jk}V_jV_kV_{jk}/m^2$ になる (同じ計算で $V'$ を $V_j$ に、$V'^2V''$ を $V_jV_kV_{jk}$ に置き換える)。**座標だけの関数** $f(\vec x)$ の流れは、運動量を $\Delta p_j = \partial f/\partial x_j$ だけ変える (座標は不変) キックで、閉じた式。
 
 ### 8.2 3 次の条件 (手で)
 
 (3.9) を、Strang の公式 (3.2) を 2 回使って組む。
 
-**内側** $e^{hB/2}\,e^{tA + C/h}\cdots$: 中央の $e^{tA}e^{C}e^{tA} = \exp(2tA + C + O(h^5))$ ($C$ は 3 次、$[A, C]$ は 4 次の項になるが、前後対称な積なので偶数次が消えて、5 次以上に回る)。これを $e^{B/2}\,e^{2tA + C}\,e^{B/2}$ ((3.1) で $A \to B$、$B \to 2tA + C$、$h = 1$ の形) に入れ、(3.2) を使う:
+**内側**: 中央の $e^{tA}e^{C}e^{tA}$ は、(3.1) で $A \to 2tA$、$B \to C$ とした形なので、(3.2) を使うと $\exp\bigl(2tA + C - \tfrac1{24}[2tA,[2tA, C]] + \tfrac1{12}[C,[C, 2tA]] + \cdots\bigr)$。$A$ は 1 次、$C$ は 3 次なので、$[A,[A,C]]$ は 5 次、$[C,[C,A]]$ は 7 次。したがって $e^{tA}e^{C}e^{tA} = \exp(2tA + C + O(5))$ ($[A, C]$ のような 4 次の項は、前後対称なので出ない)。これを $e^{B/2}\,e^{2tA + C}\,e^{B/2}$ ((3.1) で $A \to B$、$B \to 2tA + C$、$h = 1$ の形) に入れ、(3.2) を使う:
 
 $$
 Y = B + (2tA + C) - \tfrac1{24}[B,[B, 2tA]] + \tfrac1{12}[2tA,[2tA, B]] + O(5)
 $$
 
-($C$ は 3 次なので、(3.2) の 3 次の交換子の中では 5 次以上。) $[B,[B, 2tA]] = 2t[B,[B,A]]$、$[2tA,[2tA, B]] = 4t^2[A,[A,B]]$、$C = c_3[B,[A,B]] = -c_3[B,[B,A]]$ なので
+($C$ は 3 次なので、(3.2) の 3 次の交換子の中では 5 次以上。) $[B,[B, 2tA]] = 2t[B,[B,A]]$、$[2tA,[2tA, B]] = 4t^2[A,[A,B]]$、$C = c_3[B,[A,B]] = -c_3[B,[B,A]]$ ($[A,B] = -[B,A]$)。係数をまとめる: $-\tfrac1{24}\cdot 2t = -\tfrac t{12}$、$\tfrac1{12}\cdot4t^2 = \tfrac{t^2}3$。よって
 
 $$
 Y = B + 2tA + \Bigl(\tfrac{t^2}3\,[A,[A,B]] - \bigl(\tfrac{t}{12} + c_3\bigr)[B,[B,A]]\Bigr) + O(5)
 $$
 
-**外側** $e^{aA}\,e^{Y}\,e^{aA}$ ((3.1) で $A \to 2aA$、$B \to Y$): $X \equiv 2aA$ として、$\exp\bigl(X + Y - \tfrac1{24}[X,[X,Y]] + \tfrac1{12}[Y,[Y,X]]\bigr)$。3 次の項だけを集める ($Y$ の 1 次部分 $B + 2tA$ を交換子の中に入れる)。$[X,[X,Y]] = 4a^2[A,[A,B]]$ ($2tA$ は $A$ と交換)。$[Y,[Y,X]] = 2a\,[B + 2tA,[B, A]] = 2a[B,[B,A]] - 4at[A,[A,B]]$。したがって、$\log S_{\rm FG}$ の 3 次の項の係数は
+**外側** $e^{aA}\,e^{Y}\,e^{aA}$ ((3.1) で $A \to 2aA$、$B \to Y$): $X \equiv 2aA$ として、$\exp\bigl(X + Y - \tfrac1{24}[X,[X,Y]] + \tfrac1{12}[Y,[Y,X]]\bigr)$。3 次の項だけを集める ($Y$ の 1 次部分 $B + 2tA$ を交換子の中に入れる)。$[X,[X,Y]] = 4a^2[A,[A,B]]$ ($2tA$ は $A$ と交換)。$[Y,[Y,X]] = 2a\,[B + 2tA,[B, A]] = 2a[B,[B,A]] - 4at[A,[A,B]]$。各項の係数は、$[A,[A,B]]$: $\tfrac{t^2}3$ (内側 $Y$ から)、$-\tfrac1{24}\cdot4a^2 = -\tfrac{a^2}6$、$\tfrac1{12}\cdot(-4at) = -\tfrac{at}3$。$[B,[B,A]]$: $-(\tfrac t{12} + c_3)$ (内側から)、$\tfrac1{12}\cdot2a = \tfrac a6$。$a = \tfrac12 - t$ を代入すると、$[A,[A,B]]$: $\tfrac{t^2}3 - \tfrac{(1/2 - t)^2}6 - \tfrac{(1/2 - t)t}3 = \tfrac{t^2}3 - \tfrac1{24} + \tfrac t6 - \tfrac{t^2}6 - \tfrac t6 + \tfrac{t^2}3 = \tfrac{t^2}2 - \tfrac1{24}$。$[B,[B,A]]$: $-\tfrac t{12} - c_3 + \tfrac1{12} - \tfrac t6 = \tfrac1{12} - \tfrac t4 - c_3$。したがって、$\log S_{\rm FG}$ の 3 次の項の係数は
 
 $$
 \begin{aligned}
-[A,[A,B]]:&\quad \tfrac{t^2}3 - \tfrac{a^2}6 - \tfrac{at}3 = \tfrac{12t^2 - 1}{24}\quad(a = \tfrac12 - t\text{ を代入}),\\
+[A,[A,B]]:&\quad \tfrac{t^2}3 - \tfrac{a^2}6 - \tfrac{at}3 = \tfrac{12t^2 - 1}{24}\quad(a = \tfrac12 - t\text{ を代入。上の計算}),\\
 [B,[B,A]]:&\quad -\tfrac t{12} - c_3 + \tfrac a6 = \tfrac{1}{12} - \tfrac t4 - c_3
 \end{aligned}
 \tag{3.11}
 $$
 
-(sympy の自由代数による直接計算で、同じ式 $c_1 = (12t^2 - 1)/24$、$c_2 = -(12c_3 + 3t - 1)/12$ を得た。[integ_01_bch_force_gradient.out.txt](outputs/integ_01_bch_force_gradient.out.txt) (c)。) **3 次が消える条件**は
+(sympy の自由代数による直接計算で、同じ式 $c_1 = (12t^2 - 1)/24$、$c_2 = -(12c_3 + 3t - 1)/12$ を得た。[integ_01_bch_force_gradient.out.txt](outputs/integ_01_bch_force_gradient.out.txt) (c)。係数の代数は [integ_03_expansions.out.txt](outputs/integ_03_expansions.out.txt) (c) でも確認。) **3 次が消える条件**は
 
 $$
 12t^2 = 1\ \Rightarrow\ t = \frac1{\sqrt{12}} = 0.288675\ldots,\qquad
@@ -217,9 +251,10 @@ H_5^{\rm FG} = \frac{-720\,c_5 + 9 - 5\sqrt3}{360}\,V'^2V''\,p^0 + \left[\Bigl(\
 \tag{3.13}
 $$
 
-(自由代数の $\log S_{\rm FG}$ の 5 次の項を、Dynkin の写像で関数に直したもの。[integ_01_bch_force_gradient.out.txt](outputs/integ_01_bch_force_gradient.out.txt) (c)。)
+(自由代数の $\log S_{\rm FG}$ の 5 次の項を、Dynkin の写像で関数に直したもの。[integ_01_bch_force_gradient.out.txt](outputs/integ_01_bch_force_gradient.out.txt) (c)。5 次の BCH は 6 個の交換子の係数を使う長い計算で、本文では手で追っていない。**代わりに独立な数値検証を足した**: $H = p^2/2 + x^4/4$ ($V' = x^3$、$V'' = 3x^2$、$V''' = 6x$、$V'''' = 6$) で、(3.9) の 1 刻み ($c_3 = \tfrac1{12} - \tfrac t4$、$c_5$ は下の (3.14) の値、補正キックは $f_C = c_3h^3V'^2 - 2c_5h^5V'^2V''$ で $\Delta p = \partial f_C/\partial x$) と厳密な流れ (mpmath 50 桁の ODE) の差を $h^5$ で割ると、$h = 0.04, 0.02, 0.01$ で $x$ 成分 $0.001017, 0.001006, 0.001001$、$p$ 成分 $-0.001416, -0.001395, -0.001385$ と、$h \to 0$ で $(0.000995,\ -0.001374)$ に収束する ($h$ の 1 次の補正を含む)。これは (3.13) の $H_5$ を $x_0 = 0.5$、$p_0 = 0.3$ で評価した $(\partial H_5/\partial p,\ -\partial H_5/\partial x) = (-0.000995,\ +0.001374)$ の**符号を反転した値**。すなわち、1 刻みの誤差は $-h^5\times(H_5\text{ の流れ})$ で、大きさと成分の比は (3.13) と一致する (分割した写像は、$H - h^4H_5$ の流れに近い)。$c_5$ を 0 にしたときも同じ検証をして、(3.13) の $c_5$ 依存 ($p$ 成分 $-0.001204$ 対 $-0.001197$) が合う ([integ_03_expansions.out.txt](outputs/integ_03_expansions.out.txt) (d))。)
 
 - $p^2$、$p^4$ の項は、$C$ に含まれる座標だけの関数ではどうにもならない (運動量を含むので)。これは 4 次の誤差として残る。
+- $c_5$ が $H_5$ に入る係数は、$C \ni c_5h^5W_5 = :-2c_5h^5V'^2V'':$ が $-2c_5\,V'^2V''\,p^0$ として入るだけ。(3.13) の $V'^2V''p^0$ の係数 $(-720c_5 + 9 - 5\sqrt3)/360$ の $c_5$ の部分 $-720/360 = -2$ と一致する。
 - **$p^0$ の項 ($V'^2V''$) は、座標だけの関数なので、$c_5$ を使って消せる**: $-720c_5 + 9 - 5\sqrt3 = 0$ より
 
 $$
@@ -267,7 +302,7 @@ $$
 | 四極の追跡 (`tsolqu`、`tsolqu.f:47`) | $n = 1 + \lfloor L\,\lVert(K, B_z)\rVert/\varepsilon\rfloor$ (`ak` = K1 の積分強度、`bz` = ソレノイド) | $\varepsilon = 0.2\,\mathrm{EPS}$ (`epsdef = 0.2d0`、`tsolqu.f:14`) | 04 章 §6.3 |
 | 四極の CALC (`tsolque`、`tsolque.f:385`) | 同じ式。上限 `ndivmax` | $0.1\,\mathrm{EPS}$ (`tsolque.f:381-383`) | 追跡の半分の $\varepsilon$ |
 | 放射つきの四極の追跡 (`tsolqu.f:400-402`) | $n = \max\bigl(1 + \lfloor L\,K/\varepsilon\rfloor,\ \mathrm{ndivrad}(\lVert(a_{k0x}, a_{k0y})\rVert, K, B_z, \mathrm{EPS})\bigr)$、上限 `ndivmax` | $0.2\,\mathrm{EPS}$ | `ak0x`、`ak0y` はステアリング (偏向の積分強度) |
-| 偏向磁石 (K1 ≠ 0) の CALC (`tbende.f:460`) | $n = 1 + \lfloor\lvert\phi_c/\varepsilon\rvert\rfloor$ ($K1 = 0$ なら 1) | `epsbend` $\times$ EPS (定義は未確認) | $\phi_c$ は偏向角に当たる量 (定義は未確認)。放射・スピン偏極があれば、ほかの条件との大きい方 |
+| 偏向磁石 (K1 ≠ 0) の CALC (`tbende.f:460`) | $n = 1 + \lfloor\lvert\phi_c/\varepsilon\rvert\rfloor$ ($K1 = 0$ なら 1) | `epsbend` $\times$ EPS (`eps0 == 0` なら `epsbend` そのまま。`epsbend` の値は未確認。確認できたのは `tbende.f:454-460` の式まで) | $\phi_c$ = `phi0*rbc` (偏向角に当たる量。`rbc` の定義は未確認)。放射・スピン偏極があれば、ほかの条件との大きい方 |
 | 放射つきの偏向磁石の追跡 (`tbend.f:640`) | $n = \min(\mathrm{ndivmax}, \mathrm{ndivrad}(\phi_r, 0, 0, \varepsilon))$ | EPS | $\phi_r = \phi_b\,(L - f_{1r} - f_{2r})/L$ (端の分を除いた偏向角) |
 | 多極 MULT の追跡 (`tmulti.f:107-124`) | $n = \max(\mathrm{ndiv0}, \mathrm{ndivrad}(\ldots), \ldots)$、上限 `ndivmax` | EPS | `ndiv0` は要素のパラメータ (名前の対応は未確認) |
 | 薄い多極 (`tthin`) | $n = 1$ (本体は 1 刻み) | — | `call setndivelm(l_track, 1)` |
@@ -282,6 +317,7 @@ $$
 | スクリプト | 確認すること | 出力 |
 |---|---|---|
 | `integ_01_bch_force_gradient.py` | (a) Strang の BCH (非可換な級数、sympy)。(b) Yoshida の係数と 3 次の消去、5 次の残り。(c) 力勾配型: 3 次の係数 ((3.11))、$t, c_3$ ((3.12))、$c_5$ ((3.14))、残る 5 次の項 ((3.13))。(d) 2 自由度で、導いた補正キックと K64 の `tthin` の式 ($\Delta q$、$\Delta z$) が 6 極・8 極で記号的に一致。(e) CALC の `tthine` の分割の係数 | [integ_01_bch_force_gradient.out.txt](outputs/integ_01_bch_force_gradient.out.txt) |
+| `integ_03_expansions.py` | 書き足した展開の確認: (a) Yoshida の係数と一般化、(b) 関数表現 ($[A,B]$、$W$、$W_5$)、(c) (3.11) の係数の代数、(d) 力勾配型の 1 刻みの誤差と (3.13) の比較 (50 桁) | [integ_03_expansions.out.txt](outputs/integ_03_expansions.out.txt) |
 | `integ_02_order_symplectic.py` | 誤差の次数 (Strang・Yoshida・力勾配型・RK4)、シンプレクティック性、長時間の $H$ の誤差、力の評価の数あたりの誤差 | [integ_02_order_symplectic.out.txt](outputs/integ_02_order_symplectic.out.txt) |
 
 実行はリポジトリのルートから `py -3.12 physics_guide/scripts/integ_01_bch_force_gradient.py` (sympy。約 12 秒)、`py -3.12 physics_guide/scripts/integ_02_order_symplectic.py` (約 1 秒)。四極の積分器の次数の確認は [quad_03_integrator_order.out.txt](outputs/quad_03_integrator_order.out.txt) (この章とは重複しない)。
@@ -291,12 +327,12 @@ $$
 | 内容 | Fortran (ファイル:行) | pysad |
 |---|---|---|
 | 四極の Strang の構造 ($D\,B\,D$、隣り合う $D$ を 1 つに) | `tsolqu.f:61-95` (本章の範囲では刻みの構造だけ読んだ。式は 04 章) | `quadbody.group` (`quadbody.py:76`)、`ngroup` |
-| Yoshida の係数 | (K64 に無い) | `_W1`、`_W0` (`quadbody.py:41-42`)、`QB_BW` (`:44`) |
-| 方式の選択 (k64 は Strang、v2 は Yoshida) | — | `quadbody.scheme()`、`set_scheme` (`quadbody.py:55-66`) |
+| Yoshida の係数 | (K64 に無い) | `_W1`、`_W0` (`quadbody.py:37-38`)、`QB_BW` (`:40`) |
+| 方式の選択 (k64 は Strang、v2 は Yoshida) | — | `quadbody.scheme()`、`set_scheme` (`quadbody.py:45`)、`scheme` (`:53`) |
 | 力勾配型の係数 | `tquad.f:131-135` (`alpha`、`beta`、`gamma`、`alpha1`) | `track6._TT_ALPHA`・`_TT_ALPHA1`・`_TT_BETA`・`_TT_GAMMA` |
-| 力勾配型の本体 (追跡) | `tquad.f:118-` (`tthin`)。`ala = al*alpha1`、`alb = al*alpha` (`:173-174`)。補正キックは `kord = 2` が `:208-`、`kord = 1` が `:239-`、一般の `kord` が `:261-` | `track6._tthin_sext` (`track6.py:892`)、`_tthin_gen` (`:740`) |
+| 力勾配型の本体 (追跡) | `tquad.f:118-` (`tthin`)。`ala = al*alpha1`、`alb = al*alpha` (`:173-174`)。補正キックは `kord = 2` が `:208-`、`kord = 1` が `:239-`、一般の `kord` が `:261-` | `track6._tthin_sext` (`track6.py:898`)、`_tthin_gen` (`:746`) |
 | CALC の 2 次の分割 | `tthine.f:36-87` (`ala = al/6`、`alb = al/1.5`) | `lattice._tthine_cod` (`lattice.py:1755`)、`elkern._tthine_map` (`:360`) |
-| 刻みの数の式 | §10 | `quadbody.ndiv`・`ndiv_calc` (`quadbody.py:59-71`) |
+| 刻みの数の式 | §10 | `quadbody.ndiv`・`ndiv_calc` (`quadbody.py:59`・`:65`) |
 
 (行番号は参照した K64 のソース、pysad のファイルのもの。)
 
