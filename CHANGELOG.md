@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**COORD の DIR ≠ 0 の行列とヘルプの式の食い違いの調査 (コードの変更なし)**: K64 の DIR ≠ 0 の回転は D M₀ᵀ D = R₁R₂⁽⁻⁾R₃ で、ヘルプの R₃R₂⁽⁻⁾R₁ と積の順序だけが逆。gs で、COORD(DIR = 0) の次に COORD(DX, −DY, −DZ, −CHI1, CHI2, −CHI3; DIR = 1) を置くと入力に戻る (差 7e-18) ことを確認した (ヘルプの順序では真の逆変換のパラメータが単純な符号の反転にならない)。K64 の誤りではなく、ヘルプの誤記の可能性が高い (設計者には未確認)。試験 `test_v250_coord_dir.py`、physics_guide 11 章の付録 B に反映。
+
 **SOL 領域内の QUAD の ΔH の運動量の回転の順序 (B333、v2 のみ。k64 は K64 のまま)**: K64 の `tsolqu`・`tsolqum` は ΔH の運動量の回転 `pxi = a22*pxi + a24*py` のあとに `pyi = -a24*pxi + a22*py` と更新後の pxi を使い、行列式が cos²(wℓ) になる (シンプレクティックでない)。gs の SOL (bz = 1.3 /m) + QUAD + SOL の TrackParticles の中心差分ヤコビアンの 4×4 ブロックの欠陥は px = 0.05 で 1.5e-7、0.1 で 3.4e-6 (det J − 1 = −3.2e-6)。v2 は更新前の px で回し、4×4 の欠陥が 5e-10 (丸め) に下がる。限界: (y, δ)・(x, δ) の欠陥は v2 でも残る (別の原因、未調査)。記録 `docs/history/B333_sol_quad_rotation.md`、試験 `test_v250_sol_quad_rotation.py`。
 
 **CAVI の端のエネルギー変化のあとの q = p_x/p の再スケール (B332、v2 のみ。k64 は K64 のまま)**: K64 の `tcavfrin` は端のエネルギー変化で p を変えるのに、q = p_x/p に p1r/p2r をかけない (本体・TCAVI はかける)。端付きの空洞の追跡写像がシンプレクティックでなくなる (gs の TrackParticles の 13 点の中心差分ヤコビアンで、|JᵀSJ − S| = 0.6 MeV/c で 8.09e-5、3 GeV/c で 1.30e-8。x = 1 mm、px = 1e-2)。v2 は再スケールを入れ、0.6 MeV/c で 5.8e-8 に下がる。限界: 1 つの点のヤコビアンだけ。記録 `docs/history/B332_cavi_edge_q_rescale.md`、試験 `test_v250_cavi_edge_symplectic.py`。

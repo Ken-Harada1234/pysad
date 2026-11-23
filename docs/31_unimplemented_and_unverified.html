@@ -1079,6 +1079,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>v2 は更新前の px</strong> (4×4 の欠陥が px = 0.1 で 3.4e-6 → 5e-10、det J − 1 が −3.2e-6 → −5e-10)。k64 は gs と同じ。限界: 1 つの構成 (3 GeV/c、bz = 1.3 /m、K1 = 0.36、L = 0.4 m の QUAD 1 台) の 2 点。(y, δ)・(x, δ) のシンプレクティック性の欠陥 (7.7e-6・1.7e-6) は v2 でも残る (別の原因、未調査)。<code>tsolqum</code> (K0 つき) は同じ式を使う pysad の経路 (<code>tz_step1</code>) で直したが gs では個別に確かめていない</td>
 </tr>
 <tr>
+<td>COORD の DIR ≠ 0 の行列とヘルプの式</td>
+<td>両</td>
+<td><strong>K64 の誤りではない</strong>。K64 は D M₀ᵀ D = R₁R₂⁽⁻⁾R₃ (出口で (DX, −DY, −DZ) を足す) で、ヘルプの R₃R₂⁽⁻⁾R₁ と積の順序だけが逆。gs で、COORD(DIR = 0) の次の COORD(DX, −DY, −DZ, −CHI1, CHI2, −CHI3; DIR = 1) が入力に戻る (差 7e-18) ことを確認 (pysad の k64 は gs と全桁一致)。ヘルプの順序では真の逆変換のパラメータが単純な符号の反転にならない。ヘルプの積の順序の誤記の可能性が高い (確定ではない。設計者には未確認)。コードは両モードとも変えない。限界: 3 GeV/c・1 組のパラメータ (CHI 0.02〜0.04 rad、DX・DY・DZ mm)</td>
+</tr>
+<tr>
 <td>MULT の AE1・AE2 (CALC・Emittance[]・追跡)・K1≠0・K0≠0 の ANGLE=0 BEND の AE (CALC・Emittance[])</td>
 <td>両</td>
 <td>実装。k64 は gs と全桁一致 (5 通り + 大きなリング A。<strong>K1≠0・K0≠0 の ANGLE=0 BEND は gs の CALC が落ちるので (B290)、この組み合わせは同じ値の MULT で比べた</strong>)。v2 は B140・B141・B142・B143 を直す。大きなリング A で追跡と CALC のチューンが 2e-7 以内</td>
