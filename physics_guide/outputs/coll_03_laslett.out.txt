@@ -1,0 +1,10 @@
+pysad: D:\work\SAD-master\pysad-v250-work\pysad
+Twiss: nux=    2.126392 nuy=    1.436570
+Emittance: ex= 1.977434E-7 ey= 1.69414E-10 sigz=     .018436 sige= 2.387670E-4
+NOWSPAC fractional tune x=     .126438 y=     .436486
+WSPAC   fractional tune x=     .126408 y=     .435283
+tracking: dnux= -2.99093E-5 dnuy=    -.001203
+beam size at ORIGIN: sx=     .001083 sy= 2.105355E-5 sz=     .018436
+Laslett:  dnux= -3.01774E-5 dnuy=    -.001200
+
+追跡/Laslett: Δνx = -2.9909e-05 / -3.0177e-05 (比 0.9911)、Δνy = -1.2030e-03 / -1.2000e-03 (比 1.0025)
