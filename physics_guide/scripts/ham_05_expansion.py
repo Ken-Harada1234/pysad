@@ -48,7 +48,6 @@ print('  x′ = ∂H2/∂p_x = %s' % sp.diff(H2, px))
 print('  p_x′ = -∂H2/∂x = %s' % sp.simplify(-sp.diff(H2, x)))
 print('  p_y′ = -∂H2/∂y = %s' % sp.simplify(-sp.diff(H2, y)))
 print('  δ ≪ 1 で x′ ≈ p_x′ = -x/ρ^2 + δ/ρ。符号: x が曲率の中心から外向き、δ > 0 は偏向が弱いので外へ向かう。')
-print('  参考: 講義ノートの最終式 "x′ = x/ρ^2 - δ/ρ" は H2 の -∂/∂x の符号が逆。上の式が H2 から出る正しい符号')
 
 print('\n== (d) 四極 (K = e B′/P0) ==')
 aSq = -K / 2 * (x**2 - y**2)                                 # a_s = e A_s/P0

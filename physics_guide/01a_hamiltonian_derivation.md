@@ -776,7 +776,7 @@ B_Y = -\frac{1}{1 + X/\rho}\frac{\partial A_s}{\partial X}
 \tag{1a.60a}
 $$
 
-($A_X = A_Y = 0$ のとき。$B_s = 0$。) 以前に求めたデカルト座標のスカラーポテンシャルによる磁場の解は、この関係でベクトルポテンシャルに直してから使う。sympy で、$A_t$ を多項式にして、デカルト座標で $\nabla\times\vec A$ を直接計算した値が (1a.60a) と一致することを、いくつかの点で確かめた ([ham_03_frenet_f3.out.txt](outputs/ham_03_frenet_f3.out.txt) (e))。
+($A_X = A_Y = 0$ のとき。$B_s = 0$。) デカルト座標のスカラーポテンシャルによる磁場の解は、この関係でベクトルポテンシャルに直してから使う。sympy で、$A_t$ を多項式にして、デカルト座標で $\nabla\times\vec A$ を直接計算した値が (1a.60a) と一致することを、いくつかの点で確かめた ([ham_03_frenet_f3.out.txt](outputs/ham_03_frenet_f3.out.txt) (e))。
 
 ### 9.4 偏向磁石
 
@@ -840,11 +840,10 @@ x'' = -\frac{x}{\rho^2} + \frac{\delta}{\rho},\qquad y'' = 0
 \tag{1a.64}
 $$
 
-(sympy の `series` で $\delta$ の 2 次までを確認: [ham_06_series.out.txt](outputs/ham_06_series.out.txt) (c)(e)。) 講義ノートのように $p_x$ を $x'$ とみなして ($\delta \to 0$ の分母で) も同じ式になる。
+(sympy の `series` で $\delta$ の 2 次までを確認: [ham_06_series.out.txt](outputs/ham_06_series.out.txt) (c)(e)。) $p_x$ を $x'$ とみなして ($\delta \to 0$ の分母で) も同じ式になる。
 
 この符号は、偏向磁石の弱い集束 ($-x/\rho^2$) と、運動量の大きい粒子 ($\delta > 0$) が偏向されにくく外側 ($x > 0$ は曲率の中心と逆向き) へずれる効果 ($+\delta/\rho$) と読める。分散関数は、$x'' + x/\rho^2 = \delta/\rho$ の周期解として $\eta(s) = \rho\,[1 - \cos(s/\rho)]$ 型になる。
 
-注意: 出典の講義ノートの最終式は $x'' = x/\rho^2 - \delta/\rho$ と、符号が逆に書かれている。$H$ ((1a.62)) から $-\partial H/\partial x$ を取ると上の符号になり、標準的な Hill の方程式 $x'' + x/\rho^2 = \delta/\rho$ とも合う。sympy でも確認した ([ham_05_expansion.out.txt](outputs/ham_05_expansion.out.txt) (c))。
 
 ### 9.5 四極磁石
 
@@ -943,24 +942,8 @@ sympy (1.14) で式を確かめる。`py -3.12 physics_guide/scripts/ham_01_lore
 - **展開の次数**: (1a.59) の 3 次の項の影響は §9.6 の数値例のとおり。SAD は 2 次の打ち切りの代わりに $H_2 + \Delta H$ の分割を使う (04 章)。
 - **偏向磁石の端部・多極**: 端部 (フリンジ)、複合機能、6 極以上の多極の $A_s$ の展開は、各要素の章で書く。
 - **$z$ の運動と $\delta$**: 縦方向の運動 ($z$、$dv$) は [01_variables_and_conventions.md](01_variables_and_conventions.md) と四極の章。この章では $\delta$ を定数として扱う。
-- **講義ノートとの違い**: 式は、講義ノートの流れに沿って、記号・途中の式を書き直し、sympy で確認した。講義ノートの偏向磁石の最終式の符号 (§9.4 の注意) は、ここでは直してある。また、本章の §9.3 の磁場と $A_s$ の関係は、曲線座標の回転の公式 (講義ノートの「デカルト座標の関係をそのまま使う」書き方とは見た目が違う) で書いた。
-- **参考文献の入手**: 下の参考文献のうち、本章で内容を読んだものはない (講義ノートが挙げているもの)。内容は書いていない。
 
 ## 参考文献
 
-- 講義ノート (ビームダイナミクス基礎講座 02-04 解析力学入門、02-05 ビームのハミルトニアン)。本章は、この 2 つの流れ (仮想仕事、ラグランジュの方程式、変分法、ルジャンドル変換、正準変換、一般化ポテンシャル、$t \to s$ の入れ替え、Frenet–Serret 座標、規格化と展開) に沿って、式を書き直したもの。
-- $t \to s$ の入れ替え (拡張位相空間) の文献。講義ノートは、次を参考文献に挙げている (本章では未入手・未確認):
-  - M. R. Bell, A.E.R.E. T/M 125 (1955)。講義ノートは題名を "Non-linear equations of motion in the synchrotron" としている。
-  - G. Stupakov and G. Penn, "Classical Mechanics and Electromagnetism in Accelerator Physics" (教科書)。
-  - 小磯晴代、OHO (高エネルギー加速器セミナー) の 1991 年の講義テキスト。
 - SAD のヘルプ (CERN 版 SADHelp) の dynamics の節: Independent variable、Lagrangean、Hamiltonian ([01_variables_and_conventions.md](01_variables_and_conventions.md))。
-
-## 付録 A. 出典の式との違い
-
-| 箇所 | 講義ノートの記述 | この章の式 |
-|---|---|---|
-| 偏向磁石の最終式 | $x'' = x/\rho^2 - \delta/\rho$ | $x'' = -x/\rho^2 + \delta/\rho$ (式 (1a.64)。$H = x^2/(2\rho^2) - \delta x/\rho + \ldots$ から $-\partial H/\partial x$) |
-| 陪法線の微分 | $d\vec b/ds = \tau\vec b$ | $d\vec b/ds = -\tau\vec n$ (式 (1a.38) の下の注。$\tau = 0$ の場合は使わない) |
-| 「$x' = P_X/P_0$」 | 規格化した正準運動量を傾き $x'$ と書く | $p_x = P_X/P_0$ と書き、$x' = p_x/(1 + \delta)$ (式 (1a.63))。$\delta \to 0$ では同じ |
-| 磁場と $A_s$ の関係 | $B_y = -\dfrac{1}{1 + x/\rho}\dfrac{\partial A_s}{\partial x}$ を、デカルトの $A_z$ の関係から類推して書く | 直交曲線座標の回転の公式で出した (式 (1a.60a))。sympy で確認 |
-| 運動方程式の規格化 | $H = H'/P_0$ と書き、「単なる変数変換」と呼ぶ | 運動量を $1/P_0$ 倍し、ハミルトニアンも同じ倍率にするスケール変換 (式 (1a.55) の下) |
+- $t \to s$ の入れ替え (拡張位相空間) の文献として、M. R. Bell, A.E.R.E. T/M 125 (1955)、G. Stupakov and G. Penn, "Classical Mechanics and Electromagnetism in Accelerator Physics"、小磯晴代、OHO (高エネルギー加速器セミナー) 1991 年のテキストがある。**いずれも入手しておらず、本章の内容とは照合していない (未確認)**。
