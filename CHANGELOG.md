@@ -10,6 +10,8 @@
 
 - **`TrackParticles` の並列追跡 (pysad 独自。SAD の `NPARA` とは別)**: FFS の変数 `NWORKERS=n;` (または環境変数 `PYSAD_WORKERS=n`、既定 1) と `TrackSetup.track(..., workers=n)`。粒子を連続した塊に分け、塊ごとの `TrackRun` をスレッドで同時に回す (numba の核は GIL を放す。クラス `track6n.ParallelTrackRun`)。FLUC なしの結果は逐次とビット単位で同じ (落ちた粒子の座標・alive も)。FLUC の乱数は塊ごとに種を変える (逐次・NPARA とは別の列)。空間電荷・ウェイク・BEAMBEAM・MAP・RADLIGHT・PHOTONS・POL・track6 の経路は自動で逐次。本数は論理コア数の 90% と 1 本あたり 16 粒子以上で抑える。FODO リング 4000 粒子 × 2000 周で逐次 100.8 s → `NWORKERS=4` 28.4 s。試験 `test_v251_parallel_track.py` (8 件)、文書 `docs/10_tracking.md` §1.3。未確認: 1 台の PC の範囲だけ。
 
+- **空白を含むパスで GUI (Tk) の接点が動かない不具合の修正**: SAD の `KBFrame.n` は、設定ファイルの場所を引用符なしで Tcl の `option readfile` に渡す (`TclEval["option readfile "//confdir//"/KBFrame.res"]`)。pysad を空白を含むフォルダ (`C:/Users/John Doe/...`) に置くと、Tcl が空白で切って `bad priority`・`Tkinter::tclerror: 1501` になっていた。同梱の `.n` は変えずに、`tclbridge.space_free_dir()` が空白のないパス (Windows は 8.3 の短い名前、なければ一時フォルダ `pysad_kbframe_<ハッシュ>` へのコピー) を `KBF$ConfDir` に渡す。試験 `test_v251_space_path.py` (4 件)。`test_tclbridge.py` の 2 件が、空白を含むフォルダ (`Claude outputs`) で落ちていたのも直った。
+
 ## v2.5.1 (2026-11-26)
 
 - pip のパッケージから、KEK-LS のラティス `pysad/data/kek-ls_v03_12.lat` と `pysad.datafiles` を外した (本体は使わず、動作確認用の台本も pip には入らないため)。ラティスは `pysad/tests/kek-ls_v03_12.lat` (clone) にある。v2.5.0 には入っている。

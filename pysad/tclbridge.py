@@ -40,6 +40,39 @@ def packages_dir():
     return None
 
 
+def space_free_dir(path):
+    """Return a folder path without whitespace that holds the same files as `path` (the path itself if it has none).
+    空白を含まない、同じ中身のフォルダのパス。`path` に空白がなければ `path` そのもの。
+    SAD の KBFrame.n は、設定ファイルの場所を引用符なしで Tcl の `option readfile` に渡す (`TclEval["option readfile "//confdir//"/KBFrame.res"]`)。
+    空白を含むパス (`C:/Users/John Doe/...`) だと Tcl が空白で切って `bad priority` になる。同梱の .n は変えないので、こちらで空白のないパスを渡す。
+    Windows は 8.3 の短い名前 (GetShortPathNameW)、使えなければ、空白のない一時フォルダ (tempfile.gettempdir()/pysad_kbframe_<ハッシュ>) へコピーする。
+    どちらも空白のないパスにならなければ、元のパスを返す (GUI の一部だけが動かない)"""
+    path = path.replace(chr(92), '/')
+    if not any(ch.isspace() for ch in path):
+        return path
+    if sys.platform == 'win32':
+        try:
+            import ctypes
+            buf = ctypes.create_unicode_buffer(32768)
+            if ctypes.windll.kernel32.GetShortPathNameW(os.path.abspath(path), buf, len(buf)) and buf.value:
+                short = buf.value.replace(chr(92), '/')
+                if not any(ch.isspace() for ch in short) and os.path.isdir(short):
+                    return short
+        except Exception:
+            pass
+    try:
+        import hashlib
+        import shutil
+        import tempfile
+        dst = os.path.join(tempfile.gettempdir(), 'pysad_kbframe_' + hashlib.sha1(path.encode('utf-8')).hexdigest()[:10]).replace(chr(92), '/')
+        if not any(ch.isspace() for ch in dst):
+            shutil.copytree(path, dst, dirs_exist_ok=True)
+            return dst
+    except Exception:
+        pass
+    return path
+
+
 class TclBridge:
     def __init__(self, interp):
         self.I = interp
@@ -303,6 +336,7 @@ class TclBridge:
         if not os.path.isdir(share):                 # ソース配布 (SAD-master) では <SAD>/KBFrame に置かれている
             share = os.path.join(os.path.dirname(pk.rstrip('/' + chr(92))), 'KBFrame').replace(chr(92), '/')
         if os.path.isdir(share):
+            share = space_free_dir(share)            # KBFrame.n は `option readfile <フォルダ>/KBFrame.res` と引用符なしで Tcl に渡すので、空白のないパスにする
             os.environ.setdefault('KBFRAMEDIR', share)
             I.assign('KBF$ConfDir', share)           # KBFrame の設定ファイル・画像の置き場 (SAD の share/KBFrame)
         # SAD (X11) の既定フォント。init.n が C 側から受け取る値 (WSL の gs で実測)
