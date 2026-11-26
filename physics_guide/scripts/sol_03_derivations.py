@@ -6,7 +6,7 @@ r"""ソレノイドの章 (09_solenoid.md) の展開の補完。
 (c) z の更新 (9.8) の積分を 4 つのモードで閉じた形にし (§5)、K64 の tztafs (係数 aw1, aw2, g1, g2, ca1, cr2, cr3, csw1, csws, dcw1, dcw2, dxs)
     が、その単項式ごとの係数と一致することを sympy の恒等式で示す。
 (d) tsolqu の ΔH の運動量の回転 (pyi の更新順序) の写像の行列と行列式 (付録 B)。
-(e) pysad (v2 既定) の SOL + QUAD + SOL の追跡の 6×6 ヤコビアンのシンプレクティック性の欠陥 |J^T S J - S| (付録 B)。
+(e) pysad の SOL + QUAD + SOL の追跡の 6×6 ヤコビアンのシンプレクティック性の欠陥 |J^T S J - S| (付録 B)。k64 (K64 の動作) と v2 (B333 を直した版)。
 """
 import io
 import math
@@ -250,11 +250,10 @@ Mok = sp.Matrix([[a22, a24], [-a24, a22]])
 print('  正しい回転: 行列式 = %s' % sp.expand(Mok.det()))
 
 # ---------------------------------------------------------------------------------------------------------
-print('\n== (e) SOL + QUAD + SOL の追跡の 6×6 ヤコビアン |J^T S J - S| (pysad v2 既定) ==')
+print('\n== (e) SOL + QUAD + SOL の追跡の 6×6 ヤコビアン |J^T S J - S|。k64 (K64 の動作) と v2 ==')
 from pysad.ffscmd import run_sad_string
 from pysad import compat
 
-print('  compat mode = %s' % getattr(compat, '_mode', '?'))
 brho = 3e9 / 299792458.0
 Kq, Lq = 0.36, 0.4
 
@@ -289,11 +288,14 @@ def jac(ffs, c0, h=1e-6):
     return J
 
 
-rows = []
-for bz_ in (1.3, 5.0, 10.0):
-    ffs = build(bz_)
-    for (pxv, pyv) in ((0.003, 0.0), (0.05, 0.0), (0.1, 0.0), (0.1, 0.05)):
-        c0 = [0.001, pxv, -0.0005, pyv, 0.0, 0.0]
-        J = jac(ffs, c0)
-        err = np.abs(J.T @ Sj @ J - Sj).max()
-        print('  b_z = %5.1f /m、(p_x, p_y) = (%.3f, %.2f): |J^T S J - S| = %.2e、det J - 1 = %+.2e' % (bz_, pxv, pyv, err, np.linalg.det(J) - 1))
+for mode in ('k64', 'v2'):
+    compat.set_mode(mode)
+    print('  -- 互換モード %s' % mode)
+    for bz_ in (1.3, 5.0, 10.0):
+        ffs = build(bz_)
+        for (pxv, pyv) in ((0.003, 0.0), (0.05, 0.0), (0.1, 0.0), (0.1, 0.05)):
+            c0 = [0.001, pxv, -0.0005, pyv, 0.0, 0.0]
+            J = jac(ffs, c0)
+            err = np.abs(J.T @ Sj @ J - Sj).max()
+            print('  b_z = %5.1f /m、(p_x, p_y) = (%.3f, %.2f): |J^T S J - S| = %.2e、det J - 1 = %+.2e' % (bz_, pxv, pyv, err, np.linalg.det(J) - 1))
+compat.set_mode(None)

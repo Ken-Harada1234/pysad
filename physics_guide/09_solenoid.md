@@ -17,7 +17,7 @@ $$
 4. $\Delta H = p - p_z - P^2/(2p)$ の解は**ラーモア回転**: 運動学的運動量 $P$ が角 $w\ell$ ($w = b_z(p - p_z)/(pp_z)$) だけ回り、位置はその間の速度 $P(1/p_z - 1/p)$ で動く。ヘルプの $\Delta x$、$\Delta y$ の式には $1/B_z$ の因子が要る (ヘルプの式のままでは ODE と $1.6 \times 10^{-6}$ ずれ、$1/B_z$ をつけると $3.6 \times 10^{-17}$。付録 A)。
 5. K64 の本体は $\Delta H$ の半ステップ + ($H_2$ の厳密解、$\Delta H$) × $n$ の **Strang 分割 (2 次)**。SOL + QUAD + SOL (3 GeV、$b_z = 1.3$ /m、$K = 0.9$ /m²) の追跡は、独立な基準 (端の厳密な流れ + 全 $H$ の ODE) と $10^{-11}$ で一致 (分割の誤差)。DISFRIN = 1 でフリンジの効果 ($10^{-9}$) が消える ([sol_02_chain.out.txt](outputs/sol_02_chain.out.txt))。
 6. `tztafs` の係数 (`aw1`、`ca1`、`cr2` など) は、(9.8) の積分を 4 つのモードで閉じた形にしたものと、10 個の単項式のすべてで、手で導いた閉じた形と一致する (§5.3。10 個とも手で導出し、sympy・数値積分で検算)。領域と座標の切替は、`trots` (領域の端) と `tsolrot` ($B_z = 0$ の枝) が剛体回転 + 面への戻しと一致することを確認した (§8)。確認できなかったこと: `tsgeo` の幾何の式、放射 (`tsolqur`)・スピンの扱い。§14。
-7. **K64 の疑い** (付録 B): `tsolqu` の $\Delta H$ の運動量の回転が、更新後の `pxi` を使うため、行列式が $\cos^2 w\ell$ になりシンプレクティックでない (ソースの読みと、pysad のヤコビアンの数値で確かめた疑い。gs での確認は未了)。
+7. **K64 の誤り** (付録 B): (a) `tsolqu` の $\Delta H$ の運動量の回転が、更新後の `pxi` を使うため、行列式が $\cos^2 w\ell$ になりシンプレクティックでない (gs のヤコビアンで確認、v2 は修正 = B333)。(b) `tsolrot` の傾いた枝 ($B_z \ne 0$、CHI1・CHI2・DZ ≠ 0) の更新の `dcosphi` の符号が、面の条件の式と逆 (gs で確認。pysad にはこの枝が無い = B337)。
 
 ## 2. 記号と単位
 
@@ -588,7 +588,7 @@ K64 の `tsolqu` (`tsolqu.f:1-166`) は $B_z \ne 0$ のとき:
 
 1. 分割数 `ndiv = 1 + int(abs(al*hypot(ak, bz)/eps))` (`ak` は積分強度 K1、`al` は全長 $L$。$\mathrm{hypot}(K1, b_z)\,L/\varepsilon$ の整数部 + 1)。`eps` $= 0.2\times\mathrm{EPS}$ (EPS = 0 なら 0.2)。スライスの長さ $\ell = $ `aln0` $= L/n$。**この数の根拠**: Strang 分割の局所誤差は、$H_2$ と $\Delta H$ の交換子による $O(\ell^3)$ で ([03_symplectic_integrators.md](03_symplectic_integrators.md) §4 の BCH の展開: $\log S_2(\ell) = \ell(A + B) + \ell^3\bigl(-\tfrac1{24}[A,[A,B]] + \tfrac1{12}[B,[B,A]]\bigr) + O(\ell^5)$。$A$、$B$ は $\Delta H$ と $H_2$ の半ステップの生成子)、$H_2$ の固有の角 ($w_1\ell$、$w_2\ell$。$\ell\,\mathrm{hypot}(K, b_z)$ の程度) が 1 より十分小さいことが分割の条件になる、というところまでは読める。$\mathrm{hypot}(K1, b_z)\,L/n < \varepsilon$ の形はそれに合う。係数 0.2 は経験的な値で、ソースにコメントが無く、$\Delta H$ の大きさ (傾き $q^2$) を含む誤差の見積もりからは導けない (未導出)。
 2. 入射でラーモア系に: `px += bzp*y/2`、`py -= bzp*x/2` ($q \to$ 運動学的運動量 / $p$)。
-3. 各スライス: $\Delta H$ の流れ (回転 + ドリフト、最初と最後は半分、途中は隣り合う 2 つの半分を 1 つにまとめた長さ `aln0`) → $H_2$ の厳密解 (§4。長さ `aln0`) → …、最後に $\Delta H$ の半分。**$\Delta H$ の回転の運動量の更新 (`pyi = -a24*pxi + a22*py(i)`) は、更新後の `pxi` を使っている (付録 B。疑い)**。
+3. 各スライス: $\Delta H$ の流れ (回転 + ドリフト、最初と最後は半分、途中は隣り合う 2 つの半分を 1 つにまとめた長さ `aln0`) → $H_2$ の厳密解 (§4。長さ `aln0`) → …、最後に $\Delta H$ の半分。**$\Delta H$ の回転の運動量の更新 (`pyi = -a24*pxi + a22*py(i)`) は、更新後の `pxi` を使っている (K64 の誤り。gs で確認、v2 は修正 = B333。付録 B)**。
 4. 出射で元に戻す: `px = … - bzp*y/2`、`py = … + bzp*x/2`。
 
 つまり $\Delta H(\tfrac\ell2)\,H_2(\ell)\,\Delta H(\ell)\,H_2(\ell)\cdots H_2(\ell)\,\Delta H(\tfrac\ell2)$ の **Strang 分割 (2 次)** ([03_symplectic_integrators.md](03_symplectic_integrators.md))。$B_z = 0$ の四極 (04 章) も同じ構造だが、$H_2$ は $\cos$、$\cosh$ の厳密解 (`tzsetparam0`: `w1 = sqrt(akkp)`、`phi1`、`phi2` が同じ $\phi_1$)。
@@ -691,7 +691,7 @@ $$
 
 (左辺は $u_{lz}\theta + u_{tz}\sin\theta + u_{bz}(1 - \cos\theta)$ で、$u_{lz}\theta + u_{tz}\sin\theta = u_{lz}(\theta - \sin\theta) + u_z\sin\theta$ と書き換えた。コードの `s=plz*xsinphi+pz0*sinphi-pbz*dcosphi`。) をニュートン法で $\theta$ について解く (`itmax = 10`)。その後 $\vec r$、$\vec u$ の式で更新し、$z \mathrel{-}= \theta/b_p$、最後に正準運動量に戻す (`px -= bzp*y/2`、`bzp = bzs/pr`)。
 
-**確認と疑い** ([sol_04_rotation_branches.out.txt](outputs/sol_04_rotation_branches.out.txt) (c)): Fortran の式を numpy に写し ($b_z = 1.3$ /m、$\chi_1 = 0.03$、$\chi_2 = -0.02$、DZ = 1 cm、半長 0.5 m)、一様磁場中のらせん軌道の ODE (DOP853) が面 $z = s_{0s}$ に着く点と比べた。面の条件を解いた経路長 $l$ は ODE と $2 \times 10^{-17}$ で一致する。一方、位置・運動量の更新は、`xsincos` の戻り値 `dcosphi` $= \cos\theta - 1$ をそのまま使うと ODE と $3 \times 10^{-7} \sim 1.4 \times 10^{-6}$ ずれる ($x$: $-3.2 \times 10^{-7}$、$y$: $+1.1 \times 10^{-6}$、$p_x$: $+1.4 \times 10^{-6}$)。更新だけ `dcosphi` の符号を反転して $1 - \cos\theta$ にすると $10^{-9}$ に下がる (ただし面の条件は合わなくなる)。つまり、面の条件の式と更新の式で `dcosphi` の符号の想定が逆になっている。`tsolrot` のコメントアウトされた古い式 (`dcosphi = 2.d0*sin(.5d0*phi)**2` $= 1 - \cos\theta$) が `xsincos` ($\mathtt{dc} = \cos - 1$) に置き換えられたときの符号の取り違えの可能性がある。**転記の誤りの可能性と、K64 を実行していないことから、「疑い」にとどめる** (差の大きさは $\theta^2 p_t$ の程度で、$\theta = b_pl$ が小さい通常の設定では $10^{-6}$ 以下)。pysad には `tsolrot` の傾いたソレノイド ($B_z \ne 0$) の枝は実装されていない。
+**確認 (K64 の誤り。gs で確認 = B337)** ([sol_04_rotation_branches.out.txt](outputs/sol_04_rotation_branches.out.txt) (c)): Fortran の式を numpy に写し ($b_z = 1.3$ /m、$\chi_1 = 0.03$、$\chi_2 = -0.02$、DZ = 1 cm、半長 0.5 m)、一様磁場中のらせん軌道の ODE (DOP853) が面 $z = s_{0s}$ に着く点と比べた。面の条件を解いた経路長 $l$ は ODE と $2 \times 10^{-17}$ で一致する。一方、位置・運動量の更新は、`xsincos` の戻り値 `dcosphi` $= \cos\theta - 1$ をそのまま使うと ODE と $3 \times 10^{-7} \sim 1.4 \times 10^{-6}$ ずれる ($x$: $-3.2 \times 10^{-7}$、$y$: $+1.1 \times 10^{-6}$、$p_x$: $+1.4 \times 10^{-6}$)。更新だけ `dcosphi` の符号を反転して $1 - \cos\theta$ にすると $10^{-9}$ に下がる (ただし面の条件は合わなくなる)。つまり、面の条件の式と更新の式で `dcosphi` の符号の想定が逆になっている。`tsolrot` のコメントアウトされた古い式 (`dcosphi = 2.d0*sin(.5d0*phi)**2` $= 1 - \cos\theta$) が `xsincos` ($\mathtt{dc} = \cos - 1$) に置き換えられたときの符号の取り違えの可能性がある。**K64 の誤り (確定。gs で確認 = B337)**: 独立な基準 (長さ 0 の傾いた要素は恒等写像でなければならない) で、入口 (`ent`) と出口の写像を numpy に写して合成すると、更新を Fortran のまま ($\cos\theta - 1$) にしたものは恒等から $2.2\times10^{-7}$・$3.9\times10^{-7}$・$1.4\times10^{-6}$・$6.5\times10^{-6}$ (px 最大 0.05 の 4 粒子) ずれ、更新の符号を反転したものは $10^{-17}$ で恒等になる。**gs で確認**: 3 GeV/c、SOL (BZ = 13 T、$b_z$ = 1.3 /m、BOUND = 1) → MULT ($L$ = 0、K2 = $10^{-9}$、CHI1 = 0.03、CHI2 = $-0.02$、DZ = 0.01) → SOL (BZ = 0) の `TrackParticles` は入力に戻らず、同じ $2.2\times10^{-7}$・$3.9\times10^{-7}$・$1.4\times10^{-6}$・$6.5\times10^{-6}$ ずれる (numpy の「Fortran のまま」と 3% 以内。傾きなしは $5\times10^{-16}$〜$6\times10^{-15}$ で戻る)。ずれの大きさは $\theta^2 p_t$ の程度で、$\theta = b_pl$ が小さい通常の設定では $10^{-6}$ 以下。K64 自身の誤りで、pysad の翻訳の誤りではない。**pysad には `tsolrot` の傾いたソレノイド ($B_z \ne 0$) の枝 (SOL 領域内の MULT・QUAD の CHI1・CHI2・DZ) は未実装** (NotImplementedError。k64・v2 とも)。実装するときは、k64 は K64 のまま、v2 は更新の符号を反転する。限界: 1 つの傾き (CHI1 = 0.03、CHI2 = $-0.02$、DZ = 0.01、領域の長さ 0) と $b_z$ = 1.3 /m。傾いた領域の中の MULT ($L \ne 0$) の本体は見ていない。試験 `test_v250_tsolrot_tilt.py`、記録 `docs/history/B337_tsolrot_tilt.md`。
 
 ### 8.4 GEO・CHI3 の決まり方 (未導出)
 
@@ -774,8 +774,8 @@ SOL の境界で $b_z$ が $\mathrm{dbz}$ だけ変わるとき、`tsfrin` ($\ex
 ## 14. 未確認・限界・使った条件
 
 - **使った条件**: $p_0$ = 3 GeV の電子 ($B\rho = 10.007$ T m)。$b_z = 0.3 \sim 2.5$ /m、$K = 0.9 \sim 4$ /m²、$\ell = 0.4$ m、振幅 mm、角 mrad。$\delta = \pm0.02$。$H_2$ の確認は 4×4 の行列指数 (正準変数)、$z$・$\Delta H$ は DOP853。
-- **SAD (gs) との比較はしていない**。ヘルプの式は、K64 版同梱の原文 `Documents/SADHelp.html` の `solution-H2`・`solution-dH`・SOL の `DISFRIN` を直接読んで照合した (付録 A)。
-- **確認できなかった**: (i) `tztafs` の係数の `cr2`・`cr3`・`dcw1`・`dcw2` を単独の積分に対応づけること (K64 の桁落ち回避の書き方で、1 対 1 には対応しない。展開した結果は 10 個の単項式すべてで確認した: §5.3)。(ii) `tsgeo` の幾何 (領域の出口の CHI3 を決める条件など) の式 (§8.4)。`tsolrot` の傾いたソレノイドの枝の `dcosphi` の符号 (§8.3。疑い)。(iii) 放射あり (`tsolqur`)・スピン・CALC (`tsolque` の解析微分)。(iv) 四極自身のフリンジ (`ttfrin` の $B_z$ つきの枝) と SOL の端の合成。(v) $\Delta H$ の $K \ne 0$ との相互作用は分割の誤差 (Strang の 2 次) に任せている。分割数 $n$ の式の係数 ($\varepsilon = 0.2$) の根拠は、ソースに無く導けない (§7)。(vi) `tsolqu` の $\Delta H$ の回転の更新順序 (付録 B) の gs での確認。
+- **SAD (gs) との比較**: `tsolqu` の $\Delta H$ の回転の更新順序 (B333) と `tsolrot` の傾いた枝の `dcosphi` の符号 (B337) だけ、gs の `TrackParticles` と比べた (付録 B)。ほかの式は、行列指数・ODE との比較で、gs とは比べていない。ヘルプの式は、K64 版同梱の原文 `Documents/SADHelp.html` の `solution-H2`・`solution-dH`・SOL の `DISFRIN` を直接読んで照合した (付録 A)。
+- **確認できなかった**: (i) `tztafs` の係数の `cr2`・`cr3`・`dcw1`・`dcw2` を単独の積分に対応づけること (K64 の桁落ち回避の書き方で、1 対 1 には対応しない。展開した結果は 10 個の単項式すべてで確認した: §5.3)。(ii) `tsgeo` の幾何 (領域の出口の CHI3 を決める条件など) の式 (§8.4)。`tsolrot` の傾いたソレノイドの枝の `dcosphi` の符号 (§8.3。K64 の誤りと確定 = B337。傾いた領域の中の MULT の本体は未確認)。(iii) 放射あり (`tsolqur`)・スピン・CALC (`tsolque` の解析微分)。(iv) 四極自身のフリンジ (`ttfrin` の $B_z$ つきの枝) と SOL の端の合成。(v) $\Delta H$ の $K \ne 0$ との相互作用は分割の誤差 (Strang の 2 次) に任せている。分割数 $n$ の式の係数 ($\varepsilon = 0.2$) の根拠は、ソースに無く導けない (§7)。(vi) `tsolqu` の $\Delta H$ の回転の更新順序 (付録 B) は gs で確認済み (B333)。SOL 領域内の QUAD の $(x, \delta)$・$(y, \delta)$ のヤコビアンの欠陥 (下) の原因は未調査。
 - **範囲**: 曲率 $1/\rho = 0$ の領域。$b_z$ は一様。軸上の場と、軸対称の端の場の 3 次までを扱う。
 
 ## 15. この章で使う Fortran の変数名
@@ -793,11 +793,11 @@ SOL の境界で $b_z$ が $\mathrm{dbz}$ だけ変わるとき、`tsfrin` ($\ex
 | ヘルプの SOL の DISFRIN の $H$ | paraxial ($p^2$)。06 章 付録 A |
 | ヘルプに無いもの | (1) 特性方程式の導出と $w_1$・$w_2$ の関係 (§4)。(2) 固有モード $y/x = \pm iw_d$、$\pm1/w_d$。(3) $z$ の更新が $-\tfrac12\int q^2$ であること (§5)。(4) ラーモア回転としての $\Delta H$ の解 (§6)。(5) `tzparams` の変数の定義 (§10) |
 
-## 付録 B. K64 の誤りの疑い (別枠。確定には SAD (gs) での確認が要る)
+## 付録 B. K64 の誤り (確定 = 1・2、疑い (未決) = 3、取り下げは無い)
 
-この章の範囲 ($H_2$ の厳密解、$z$ の更新、$\Delta H$ の解、Strang 分割、SOL + QUAD + SOL の全体、DISFRIN) で、K64 の式は行列指数・ODE・全 $H$ の流れと、分割の誤差の範囲で一致する (§4〜§7)。ただし次の 2 点は**疑い**で、gs での確認はしていない。ヘルプの誤記の疑いは付録 A。
+この章の範囲 ($H_2$ の厳密解、$z$ の更新、$\Delta H$ の解、Strang 分割、SOL + QUAD + SOL の全体、DISFRIN) で、K64 の式は行列指数・ODE・全 $H$ の流れと、分割の誤差の範囲で一致する (§4〜§7)。ただし次の 2 点は **K64 の誤りと確定した** (gs で確認)。3 つ目は疑い (未決)。ヘルプの誤記の疑いは付録 A。
 
-1. **`tsolqu` の $\Delta H$ の運動量の回転がシンプレクティックでない疑い** (ソースの読みと pysad (v2 既定、K64 のまま写してある部分) のヤコビアンの数値)。`tsolqu.f:122-123` (`tsolqum` の `:302-303`、`tsolqur` の `:487-488` も同じ) は
+1. **`tsolqu` の $\Delta H$ の運動量の回転がシンプレクティックでない (確定。gs で確認。docs/30 の B333。v2 は修正)** (ソースの読みと gs・pysad のヤコビアンの数値)。`tsolqu.f:122-123` (`tsolqum` の `:302-303`、`tsolqur` の `:487-488` も同じ) は
 
    - `pxi = a22*pxi + a24*py(i)`
    - `pyi = -a24*pxi + a22*py(i)`
@@ -809,9 +809,9 @@ SOL の境界で $b_z$ が $\mathrm{dbz}$ だけ変わるとき、`tsfrin` ($\ex
    \det = a_{22}(a_{22} - a_{24}^2) + a_{22}a_{24}^2 = a_{22}^2 = \cos^2 w\ell
    $$
 
-   で、正しい回転 (行列式 $a_{22}^2 + a_{24}^2 = 1$) と違い、面積を $\cos^2 w\ell$ 倍する ([sol_03_derivations.out.txt](outputs/sol_03_derivations.out.txt) (d)。sympy)。位置の更新 (`x`、`y`) は更新前の `pxi` を使っていて正しい。ループの後の最後の半ステップ (`tsolqu.f:151-156`) の運動量の更新も更新前の値を使っていて正しい。pysad は `track6.py:2517`・`track6n_ext.py:480` に「SAD のまま: 更新後の pxi を使う」と写している (k64・v2 とも。docs/30 に B 番号は無い)。
+   で、正しい回転 (行列式 $a_{22}^2 + a_{24}^2 = 1$) と違い、面積を $\cos^2 w\ell$ 倍する ([sol_03_derivations.out.txt](outputs/sol_03_derivations.out.txt) (d)。sympy)。位置の更新 (`x`、`y`) は更新前の `pxi` を使っていて正しい。ループの後の最後の半ステップ (`tsolqu.f:151-156`) の運動量の更新も更新前の値を使っていて正しい。pysad の k64 は `track6.py`・`track6n_ext.py` に「SAD のまま: 更新後の pxi を使う」と写している。v2 は更新前の `pxi` で回す (`track6._tsolqu`・`track6n_ext.tz_step1`。`solemit` の Emittance[] の写像も同じ)。
 
-   **数値** (同 (e)。pysad v2 既定、SOL (BOUND = 1、$b_z$) + QUAD ($K_1 = 0.36$ (積分強度)、$L = 0.4$ m、すなわち $K = K_1/L = 0.9$ /m²) + SOL ($B_z = 0$)、3 GeV、$\delta = 0$、$x = 1$ mm、$y = -0.5$ mm、中心差分の刻み $10^{-6}$ の 6×6 ヤコビアン $J$ で $\|J^\top SJ - S\|_{\max}$):
+   **数値** (同 (e) の k64。SOL (BOUND = 1、$b_z$) + QUAD ($K_1 = 0.36$ (積分強度)、$L = 0.4$ m、すなわち $K = K_1/L = 0.9$ /m²) + SOL ($B_z = 0$)、3 GeV、$\delta = 0$、$x = 1$ mm、$y = -0.5$ mm、中心差分の刻み $10^{-6}$ の 6×6 ヤコビアン $J$ で $\|J^\top SJ - S\|_{\max}$):
 
    | $b_z$ [/m] | $p_x = 0.003$ | $p_x = 0.05$ | $p_x = 0.1$ | $p_x = 0.1$、$p_y = 0.05$ |
    |---|---|---|---|---|
@@ -819,6 +819,12 @@ SOL の境界で $b_z$ が $\mathrm{dbz}$ だけ変わるとき、`tsfrin` ($\ex
    | 5 | $6.5 \times 10^{-11}$ | $2.4 \times 10^{-6}$ | $4.0 \times 10^{-5}$ | $3.2 \times 10^{-5}$ |
    | 10 | $7.3 \times 10^{-10}$ | $6.7 \times 10^{-6}$ | $1.1 \times 10^{-4}$ | $1.0 \times 10^{-4}$ |
 
-   傾き $p_x = 3$ mrad の試験 (§7) の領域では $10^{-12} \sim 10^{-9}$ で見えないが、傾き 0.05 で $b_z = 1.3$ /m でも $1.2 \times 10^{-7}$ (ヤコビアンの行列式は $1 - 1.3 \times 10^{-7}$)、強い $B_z$ や大きな傾きで大きくなる。$\det J - 1 = -3.2 \times 10^{-6}$ ($b_z = 1.3$、$p_x = 0.1$、$p_y = 0.05$) は、予想される $\prod\cos^2(w\ell_i) - 1$ (各スライスの回転角の 2 乗の和程度) と同じ桁である。欠陥の大きさは $O\bigl((b_pq^2\ell)^2\bigr)$ ($w\ell \sim b_pq^2\ell/2$、$q = $ 傾き)。**確認の状況**: ソースの読み (確定) と pysad のヤコビアンの数値 (K64 の式を写した部分の挙動) まで。gs (K64) での確認は未了なので、「疑い」にとどめる。v2 で更新前の `pxi` を使うように直すかどうかも、この確認が済むまで決めていない (現状の pysad は K64 のまま写してある)。
+   傾き $p_x = 3$ mrad の試験 (§7) の領域では $10^{-12} \sim 10^{-9}$ で見えないが、傾き 0.05 で $b_z = 1.3$ /m でも $1.2 \times 10^{-7}$ (ヤコビアンの行列式は $1 - 1.3 \times 10^{-7}$)、強い $B_z$ や大きな傾きで大きくなる。$\det J - 1 = -3.2 \times 10^{-6}$ ($b_z = 1.3$、$p_x = 0.1$、$p_y = 0.05$) は、予想される $\prod\cos^2(w\ell_i) - 1$ (各スライスの回転角の 2 乗の和程度) と同じ桁である。欠陥の大きさは $O\bigl((b_pq^2\ell)^2\bigr)$ ($w\ell \sim b_pq^2\ell/2$、$q = $ 傾き)。
 
-2. **`tsolrot` の傾いたソレノイドの枝 ($B_z \ne 0$、CHI1・CHI2・DZ ≠ 0) の `dcosphi` の符号の想定が、面の条件の式と更新の式で逆** (§8.3。転記の誤りの可能性があり、K64 を実行していない)。差は $\theta^2p_t$ の程度。
+   **v2** (更新前の `pxi` を使う。同 (e) の v2): 上の 12 点すべてで $|J^\top SJ - S| \le 6.5 \times 10^{-11}$ (中心差分の丸め。$b_z = 1.3$、$p_x = 0.1$ で $1.2 \times 10^{-11}$、$\det J - 1 = +1.1 \times 10^{-11}$)。
+
+   **gs で確認** (B333): 3 GeV/c、SOL (BZ = 13 T、$b_z$ = 1.3 /m、BOUND = 1) + QUAD ($L$ = 0.4 m、K1 = 0.36 /m²) + SOL の `TrackParticles` の 13 点 ($\pm10^{-6}$) の中心差分ヤコビアンの 4×4 ブロック $(x, p_x, y, p_y)$ の $\|J^\top SJ - S\|$ は、点 $(10^{-3}, 0.05, -5\times10^{-4}, 0.02)$ で $1.54\times10^{-7}$、$(10^{-3}, 0.1, -5\times10^{-4}, 0.05)$ で $3.39\times10^{-6}$、$\det J - 1$ は $-1.50\times10^{-7}$、$-3.23\times10^{-6}$ (回転の角 $\theta = w\ell$ の $\theta^2$ の和 $3.0\times10^{-6}$ の見積りと同じ大きさ)。pysad の k64 の追跡は gs と全桁一致。v2 は 4×4 の欠陥が $4\times10^{-10}$ 以下 (丸め)、$\det J - 1$ が $-6\times10^{-11}$・$-5\times10^{-10}$ に下がる。**限界**: 1 構成 (SOL + QUAD + SOL) ・2 点。$(y, \delta)$・$(x, \delta)$ のヤコビアンの欠陥 ($p_x$ = 0.1 で $7.7\times10^{-6}$・$1.7\times10^{-6}$。gs の点 $\delta = 0.01$) は v2 でも残る (別の原因。$z$ の更新の近似などと思われる。未調査。K64 の疑いは強いが厳密解との比較ができず、**未決**。この章の (e) の点 ($\delta = 0$) では v2 は上のとおり $10^{-11}$)。小さな傾き ($p_x \sim 3\times10^{-3}$) では $\theta^2 \sim 10^{-11}$ で見えない。試験 `test_v250_sol_quad_rotation.py`、記録 `docs/history/B333_sol_quad_rotation.md`。
+
+2. **`tsolrot` の傾いたソレノイドの枝 ($B_z \ne 0$、CHI1・CHI2・DZ ≠ 0) の `dcosphi` の符号の想定が、面の条件の式と更新の式で逆 (確定。gs で確認。docs/30 の B337。pysad は未実装)** (§8.3)。差は $\theta^2p_t$ の程度 (px = 0.05・$b_z$ = 1.3 /m で最大 $6.5\times10^{-6}$)。
+
+3. **SOL 領域内の QUAD の $(x, \delta)$・$(y, \delta)$ のヤコビアンの欠陥 (疑い。未決)**: 上の 1 を直した v2 でも、gs の点 ($\delta = 0.01$、$p_x$ = 0.1) で $7.7\times10^{-6}$・$1.7\times10^{-6}$ 残る。K64 の疑いは強いが、厳密解との比較ができず確定できない。
