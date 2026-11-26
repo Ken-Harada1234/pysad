@@ -34,7 +34,7 @@ Source = "https://github.com/Ken-Harada1234/pysad"
 Changelog = "https://github.com/Ken-Harada1234/pysad/blob/main/CHANGELOG.md"
 
 [tool.setuptools.package-data]
-pysad = ["sad_copy/**/*"]       # SAD のソースからコピーしたファイル (pysad/sad_copy/README.md)
+pysad = ["sad_copy/**/*", "data/*"]       # SAD のソースからコピーしたファイル (pysad/sad_copy/README.md)
 
 [tool.setuptools.packages.find]
 include = ["pysad"]
