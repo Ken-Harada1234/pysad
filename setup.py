@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""pyproject.toml の設定に加えて、文書 (docs/) と例 (example/) を `<prefix>/share/pysad/` に入れる (data_files)。
+"""pyproject.toml の設定に加えて、文書 (docs/)、例 (example/)、物理ガイド (physics_guide/) を `<prefix>/share/pysad/` に入れる (data_files)。
 pip install すると、パッケージ本体 (import pysad) のほかに、文書と例の全ファイル (HTML・図・出力を含む) が入る。
 場所は `pysad-share` が表示する。"""
 import os
@@ -24,7 +24,7 @@ def _collect(top):
 
 
 data_files = []
-for top in ('docs', 'example'):
+for top in ('docs', 'example', 'physics_guide'):
     if os.path.isdir(os.path.join(HERE, top)):
         data_files += _collect(top)
 for f in ('run_sad.py',):

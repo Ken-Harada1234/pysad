@@ -3,5 +3,6 @@ graft pysad/sad_copy
 graft pysad/data
 graft docs
 graft example
+graft physics_guide
 prune example/_deletable
 global-exclude __pycache__ *.pyc *.pyo

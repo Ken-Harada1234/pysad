@@ -28,6 +28,7 @@ pip install pysad-k64
 | コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
 | 文書 | `docs/` (36 本の md と、図入りの同名の HTML。`docs/history/` と `docs/figures/` を含む)。場所: `<prefix>/share/pysad/docs` | **入る** |
 | 例 | `example/` (機能別の台本・出力・図・md・HTML。約 2500 ファイル)。場所: `<prefix>/share/pysad/example` | **入る** |
+| 物理ガイド | `physics_guide/` (ハミルトニアンから運動方程式、各要素の写像、K64 の Fortran、pysad までの導出。00〜18 章と付録 C の md と、数式を描画した同名の HTML、確認 script と出力。約 47 ファイル、展開後 約 63 MB、圧縮で約 7 MB)。場所: `<prefix>/share/pysad/physics_guide` (入口は `README.html`) | **入る** |
 | `run_sad.py` | 同上 (`<prefix>/share/pysad/run_sad.py`) | **入る** |
 | ラティスデータ | KEK-LS (3 GeV、20 セル、ESRF 型の HMBA) のラティス `kek-ls_v03_12.lat` (8 KB)。パッケージの中 `pysad/data/` (`pysad.datafiles.data_path('kek-ls_v03_12.lat')` で場所が取れる) と、例の台本が読む相対パス `pysad/tests/kek-ls_v03_12.lat` の位置 (`<prefix>/share/pysad/pysad/tests/`) の 2 か所。pip で入れたあとは、`<prefix>/share/pysad` (`pysad-share` が表示) をカレントにして例を走らせる | **入る** |
 | 依存ライブラリ | `numpy`・`scipy`・`numba` (自動)。`matplotlib` は `pip install pysad-k64[plot]` のときだけ | 自動 / 任意 |

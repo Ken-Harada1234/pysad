@@ -55,6 +55,20 @@ def test_data_files_cover_docs_and_example():
     assert not any('/_deletable/' in f for f in allfiles)
 
 
+def test_data_files_include_the_physics_guide():
+    """物理ガイド (physics_guide/) の md・HTML・確認 script・出力が、<prefix>/share/pysad/physics_guide に入る設定"""
+    cap = _load_setup()
+    df = cap['data_files']
+    targets = [t for t, _ in df]
+    assert 'share/pysad/physics_guide' in targets
+    allfiles = [f for _, fl in df for f in fl]
+    for name in ('physics_guide/README.md', 'physics_guide/README.html', 'physics_guide/04_quad.md', 'physics_guide/04_quad.html'):
+        assert name in allfiles, name
+    assert any(f.startswith('physics_guide/scripts/') for f in allfiles) and any(f.startswith('physics_guide/outputs/') for f in allfiles)
+    man = open(os.path.join(ROOT, 'MANIFEST.in'), encoding='utf-8').read()
+    assert 'graft physics_guide' in man
+
+
 def test_version_consistent():
     import pysad
     toml = open(os.path.join(ROOT, 'pyproject.toml'), encoding='utf-8').read()
