@@ -94,6 +94,8 @@ class _Particle:
         self.s = np.array([0.0, 0.0, 1.0])     # スピン (sx, sy, sz)。POL のときだけ使う
         self.bsi = 0.0                          # kradlib bsi (磁場の縦成分の積分: tradk のスピン歳差に使う)
         self.bpadd = 0.0                        # v2 (B165): 本体の運動量の向きの磁場の積分 ∫B∥dl/(Bρ) (粒子の運動量で規格化)。次の tradk の sprot が運動量の向きに足す
+        self.bsi_in = 0.0                       # v2 (B137): 入口の端の ψ の積分 (最初の刻みの本体の前に独立な回転で掛ける。BEND)
+        self.bsi_out = 0.0                      # v2 (B137): 出口の端の ψ の積分 (最後の刻みの本体の後に掛ける。BEND)
         self.bpar = None                        # v2 (C2): 運動量の向きの磁場の積分 ∫B∥dl/(Bρ)。None でなければ sprot は bsi の代わりにこれを使う
         self.setr0()
 
@@ -147,7 +149,7 @@ def _sprot(p, pxm, pym, bx0, by0, bz0, bsi, h, pp, ucde, cphi0, sphi0):
             bx0, by0, bz0 = bx0 * f_, by0 * f_, bz0 * f_
     bx = bx0 / pzm
     by = by0 / pzm
-    if p.bpar is None and p.bsi != 0.0 and _compat.v2() and _compat.spin_bpar():
+    if p.bpar is None and bsi != 0.0 and _compat.v2() and _compat.spin_bpar():
         # v2 (B242): 端の縦磁場の積分 bsi (p0 で規格化した ψ) は、粒子の運動量で規格化し直す (回転角 (1+a)ψ/(1+δ))。K64 は割らないので、本体の Δψ/(1+δ) (B165)
         # と合わせた和が δΔψ だけ 0 にならない (δ = 0.02 の QUAD で R01 に 1.2e-7)
         bsi = bsi / (1.0 + p.c[5])
@@ -311,6 +313,27 @@ def _ph_rec(p, xi, pxi, yi, pyi, dp, ppx, ppy, p1, h1, rho, ds):
                         float(c2 * xi30), float(xi2), float(s2 * xi30), float(p.idx + 1), float(l)])
 
 
+def _sprot_edge(p, pxm, pym, psi, h, pp):
+    """v2 (B137): 端の縦磁場の積分 ψ (p0 で規格化) だけの歳差。運動量の向き (pxm, pym) の成分に (1+a)、垂直な成分に (1+aγ)。座標系は回さない"""
+    save = p.bpadd
+    p.bpadd = 0.0
+    _sprot(p, pxm, pym, 0.0, 0.0, 0.0, psi, h, pp, 0.0, 1.0, 0.0)
+    p.bpadd = save
+
+
+def _sprot_step(p, pxm, pym, bx0, by0, bz0, h, pp, ucde, cphi0, sphi0):
+    """1 刻みのスピン歳差。v2 の BEND (B137) は、入口の ψ (bsi_in) を本体の前に、出口の ψ (bsi_out) を本体と座標系の回転の後に、別の回転として掛ける。
+    それ以外は K64 の sprot 1 回 (bsi に端の ψ も入る)"""
+    if p.bsi_in == 0.0 and p.bsi_out == 0.0:
+        _sprot(p, pxm, pym, bx0, by0, bz0, p.bsi, h, pp, ucde, cphi0, sphi0)
+        return
+    if p.bsi_in != 0.0:
+        _sprot_edge(p, p.pxr0, p.pyr0, p.bsi_in, h, pp)
+    _sprot(p, pxm, pym, bx0, by0, bz0, p.bsi, h, pp, ucde, cphi0, sphi0)
+    if p.bsi_out != 0.0:
+        _sprot_edge(p, p.c[1], p.c[3], p.bsi_out, h, pp)
+
+
 def _tradk(p: _Particle, al, phi0):
     """photons.f kradlib tradk → tradkn (rfluct=F, calpol=F)。最後に基準点を更新。"""
     _tradk_core(p, al, phi0)
@@ -318,6 +341,7 @@ def _tradk(p: _Particle, al, phi0):
     p.bpadd = 0.0
     if _POL:
         p.bsi = 0.0                    # tradk: calpol なら bsi=0
+        p.bsi_in = p.bsi_out = 0.0
 
 
 def _tradk_core(p: _Particle, al, phi0):
@@ -360,7 +384,7 @@ def _tradk_core(p: _Particle, al, phi0):
                 dpr_ = rph_ = None
             if an == 0.0:
                 if _POL:
-                    _sprot(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, p.bsi, h1, pp, 0.0, cphi0, sphi0)
+                    _sprot_step(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, h1, pp, 0.0, cphi0, sphi0)
                 return
             rho = al1 / theta
             uc = ph.cuc * h1**3 / ph.p0 / rho * fb
@@ -397,7 +421,7 @@ def _tradk_core(p: _Particle, al, phi0):
         p.dv = -c[5] * (1.0 + pr) / h2 / (h2 + p2) + ph.dvfs       # SAD のまま (h2+p2)。+dvfs (tradkn)
         c[4] = c[4] * p2 / h2 * h1 / pp
         if _POL:
-            _sprot(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, p.bsi, h1, pp, ucde, cphi0, sphi0)
+            _sprot_step(p, px0 + dpx * 0.5, p.pyr0 + dpy * 0.5, ppx, ppy, ppz, h1, pp, ucde, cphi0, sphi0)
 
 
 # ---------------------------------------------------------------------------
@@ -995,7 +1019,10 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     smin = 1e-4
     c = p.c
     if _POL:
-        p.bsi += bsi1 * c[2] / rhob
+        if _compat.spin_edge_split():
+            p.bsi_in += bsi1 * c[2] / rhob          # v2 (B137): 入口の ψ は最初の刻みの本体の前の独立な回転
+        else:
+            p.bsi += bsi1 * c[2] / rhob
     y_in = c[2]
     dp = c[5]
     pp = 1.0 + dp
@@ -1073,7 +1100,10 @@ def _tbendcore(p: _Particle, al, phi0, cosp1, sinp1, cosp2, sinp2, mfring, fring
     if _POL and _compat.spin_bpar():
         p.bpadd = _BPSIGN * (c[2] - y_in) / rhob / (1.0 + c[5])      # v2 (B165): 本体の B∥ ∫B·dr = (y_出 − y_入)/ρ
     if _POL:
-        p.bsi -= bsi2 * c[2] / rhob
+        if _compat.spin_edge_split():
+            p.bsi_out -= bsi2 * c[2] / rhob         # v2 (B137): 出口の ψ は最後の刻みの本体の後の独立な回転
+        else:
+            p.bsi -= bsi2 * c[2] / rhob
     if krad:
         if sinp2 != 0.0 and _compat.v2():
             p.zr0 -= _zr0_edge(p, sinp2 / cosp2, 1.0)      # v2: 出口の端の角で場の中の行路が短い (B220: 面までの直進の行程を厳密に。tradk の al1 = al - z + zr0 に入れる)
@@ -1363,7 +1393,10 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         akx0, alx0, phix0 = akxn[n], alx[n], phixn[n]
         if krad and _POL and v2 and n == n1:
             # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ + k·x·y (K1=0 の tbend と同じ。K64 の tbendi は y/ρ がなく、k·x·y を全スライスで足す)
-            p.bsi += m.yi / m.rhob + ak / al * m.xi * m.yi
+            if _compat.spin_edge_split():
+                p.bsi_in += m.yi / m.rhob + ak / al * m.xi * m.yi      # v2 (B137): 入口の ψ は最初の刻みの本体の前の独立な回転
+            else:
+                p.bsi += m.yi / m.rhob + ak / al * m.xi * m.yi
         if _POL and _bpar_on:
             psi_a = m.yi / m.rhob + ak / al * m.xi * m.yi
         _tbendibody(m, alx0)
@@ -1373,7 +1406,10 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
         if krad and _POL and not v2:
             p.bsi += akxn[n] / alx[n] * m.xi * m.yi          # tbendi: bsi(i) += akxn(n)/alx(n)·xi·yi
         if krad and _POL and v2 and n == n2:
-            p.bsi -= m.yi / m.rhob + ak / al * m.xi * m.yi   # v2 (B58): 出口の端
+            if _compat.spin_edge_split():
+                p.bsi_out -= m.yi / m.rhob + ak / al * m.xi * m.yi   # v2 (B137): 出口の ψ は最後の刻みの本体の後の独立な回転
+            else:
+                p.bsi -= m.yi / m.rhob + ak / al * m.xi * m.yi   # v2 (B58): 出口の端
         if krad and n != n2:
             # tradk1 (cphi0 = cos(phixn(n)))。dp, dv(i) が更新される
             c[0], c[1], c[2], c[3], c[4], c[5] = m.xi, m.pxi, m.yi, m.pyi, m.zi, m.dp
@@ -1387,6 +1423,7 @@ def _tbendi(p: _Particle, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy
                 m.rhoe = m.rhob * (1.0 + m.dp)     # v2: 放射で変わった運動量で曲率半径を更新する (K64 は入口の値のまま: 減衰の和則が崩れる)
             if _POL:
                 p.bsi = 0.0
+                p.bsi_in = p.bsi_out = 0.0
     _tbendicorr(m, akx0 * 0.5, alx0 * 0.5, phix0 * 0.5)
     m.zi = m.zi - p.dv * al
     if v2edge and sinp2 != 0.0:

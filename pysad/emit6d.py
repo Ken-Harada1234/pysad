@@ -237,6 +237,8 @@ class _State:
         # K64 の tradke は bsir0 を定数として扱い、スピン軌道結合 (srot(:,4:9)) にこの微分が入らない (docs/history/v2_changes_A.md の B58)
         self.bsi_d0 = np.zeros(6)
         self.bsi_d1 = np.zeros(6)
+        self.edge_in = None      # v2 (B137): BEND の端の ψ (値, 微分)。tradke_spin が本体の前 (入口)・後 (出口) に独立な回転として掛ける
+        self.edge_out = None
 
     @property
     def u0(self):
@@ -295,6 +297,8 @@ class _State:
         self.bsir0 = 0.0         # tsetr0(trans,cod,bzh,bsi0=0)
         self.bsi_d0 = np.zeros(6)
         self.bsi_d1 = np.zeros(6)
+        self.edge_in = None
+        self.edge_out = None
 
     # photons.f tradke (bzh=0, radcod=F, calpol=F, irad=12)
     def tradke(self, al, phir0, bzh=0.0, tin=0.0, tout=0.0, tiny=0.0, touty=0.0):
@@ -401,10 +405,22 @@ class _State:
         self.bsir0 = 0.0
         self.bsi_d0 = np.zeros(6)
         self.bsi_d1 = np.zeros(6)
+        self.edge_in = None
+        self.edge_out = None
 
-    def add_bsi(self, val, gx, gy, at_r0):
+    def add_bsi(self, val, gx, gy, at_r0, edge=False):
         """v2: bsir0 に端の縦磁場の積分 val = ±ψ(x, y) を足し、その勾配 (gx, gy) = ±(∂ψ/∂x, ∂ψ/∂y) も覚える。
-        at_r0=True は入口 (座標 = 放射の基準点)、False は出口 (座標 = 次の tradke の時点)"""
+        at_r0=True は入口 (座標 = 放射の基準点)、False は出口 (座標 = 次の tradke の時点)。
+        edge=True (BEND) で B137 (compat.spin_edge_split) が有効なら、bsir0 に足さず、入口は本体の前・出口は本体の後の独立な回転として spin.tradke_spin が掛ける"""
+        if edge and _compat.spin_edge_split():
+            d = np.zeros(6)
+            d[0] = gx
+            d[2] = gy
+            if at_r0:
+                self.edge_in = (val, d) if self.edge_in is None else (self.edge_in[0] + val, self.edge_in[1] + d)
+            else:
+                self.edge_out = (val, d) if self.edge_out is None else (self.edge_out[0] + val, self.edge_out[1] + d)
+            return
         self.bsir0 += val
         d = self.bsi_d0 if at_r0 else self.bsi_d1
         d[0] += gx
@@ -1450,7 +1466,7 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
             return J
         st.piece(f, jac=jbody)
         if enarad and st.calpol and first and v2:
-            st.add_bsi(yi0 / rhob, 0.0, 1.0 / rhob, True)   # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ (断片が 1 つでも入れる)
+            st.add_bsi(yi0 / rhob, 0.0, 1.0 / rhob, True, edge=True)   # v2 (B58): 入口の端の縦磁場の積分 ∫Bs ds = y/ρ (断片が 1 つでも入れる)
         if krad_:
             if st.calpol and first and not v2:
                 st.bsir0 += yi0 / rhob                      # tbendebody0: bsi1·yi/rhob (最初の断片だけ)
@@ -1482,7 +1498,7 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
                 phi1 = phin
             first = False
         if enarad and st.calpol and v2:
-            st.add_bsi(-st.cod[2] / rhob, 0.0, -1.0 / rhob, False)   # v2 (B58): 出口の端 -y/ρ (K64 は bsi2 の項が常に捨てられる)
+            st.add_bsi(-st.cod[2] / rhob, 0.0, -1.0 / rhob, False, edge=True)   # v2 (B58): 出口の端 -y/ρ (K64 は bsi2 の項が常に捨てられる)
     else:
         n1 = -1 if f1r != 0.0 else 1
         n2 = ndiv + 2 if f2r != 0.0 else ndiv
@@ -1505,14 +1521,14 @@ def _tbende_core(st: _State, el: Bend, enarad: bool = True):
             if enarad and st.calpol and n == n1 and v2:
                 # v2 (B58): 入口の端の ∫Bs ds = y/ρ + k·x·y (k = K1/L。K64 は積分値 akx を掛けていて次元が合わない)
                 kb = ak / al0
-                st.add_bsi(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2], kb * st.cod[2], 1.0 / rhob + kb * st.cod[0], True)
+                st.add_bsi(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2], kb * st.cod[2], 1.0 / rhob + kb * st.cod[0], True, edge=True)
             _tbendebody(st, alx, phi1, akx, alr, rhob, rho0,
                         enarad and n != n2, 1.0 if n == n1 else 0.0, tin=tin)
             if enarad and n != n2:
                 tin = 0.0
         if enarad and st.calpol and v2:
             kb = ak / al0                                                          # v2 (B58): 出口の端
-            st.add_bsi(-(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2]), -kb * st.cod[2], -(1.0 / rhob + kb * st.cod[0]), False)
+            st.add_bsi(-(st.cod[2] / rhob + kb * st.cod[0] * st.cod[2]), -kb * st.cod[2], -(1.0 / rhob + kb * st.cod[0]), False, edge=True)
         _tbendecorr(st, akx0 * 0.5, alx0 * 0.5, rho0)
         if face_kt is not None:
             st.piece(lambda c: _lat._face_kick_cod(c, face_kt[1]), jac=lambda c: _lat._face_kick_jac(c, face_kt[1]))
