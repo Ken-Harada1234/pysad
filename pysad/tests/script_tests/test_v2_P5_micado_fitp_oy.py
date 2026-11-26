@@ -89,7 +89,7 @@ def test_fitp_final_solution_matches_gs_k64(name):
     rg, kg = final(gs)
     # k64 は gs と 2e-4 (残差)。v2 の既定は、四極の本体の 4 次の合成 (B226) と 6 極 (L ≠ 0) の非線形フリンジの CALC への追加 (B291) で
     # オフモメンタム (δ = ±2%、COD が数 mm〜cm) の光学が 1e-7〜1e-6 動き、最終の残差 (1.8e-5。チューンの 1e-3 程度の合わせ残り) が gs と 6e-4 違う
-    # (K1 は 6 桁一致、K2 は 2e-4 以内)。v2 の許容は残差 2e-3。下の「方式 0・フリンジなし」で k64 と全桁同じになることを確かめる
+    # (K1 は 6 桁一致、K2 は 2e-4 以内)。v2 の許容は残差 2e-3。下の「方式 0・フリンジなし」で k64 と近い解になることを確かめる (B326 以降は全桁同じではない、下)
     for m, rtol in (('k64', 2e-4), ('v2', 2e-3)):
         rp, kp = final(out[m])
         if name != 'one':
@@ -110,7 +110,12 @@ def test_fitp_final_solution_matches_gs_k64(name):
         finally:
             quadbody.set_scheme(old_s)
             lattice._thin_fringe_flag = old_f
-        assert f0 == fk
+        # v2.5.0 (B326): CALC の厚い 6 極 (SF・SD、L≠0) が追跡と同じ 4 次の分割になり、δ = ±2% の COD (数 mm〜cm) が 6 極を通る光学が動く。
+        # 方式 0・フリンジなしの v2 の最終解は k64 と全桁同じでなくなった: 残差 1.8076e-05 → 1.8087e-05 (+6e-4)、K1 は同じ (0.700189、−0.599611)、
+        # K2 SF 1.697386 → 1.697513 (+7.5e-5)、SD −2.441213 → −2.440635 (+2.4e-4)。B326 を無効にすると (elkern・lattice の v2 の枝を False、numba のキャッシュを新しく)
+        # k64 と全桁同じ (f0 == fk) に戻ることを確認した。差は B226・B291 に B326 を加えた分だけ
+        assert f0[0] == pytest.approx(fk[0], rel=2e-3)
+        assert np.allclose(f0[1][:2], fk[1][:2], rtol=0, atol=1e-6) and np.allclose(f0[1][2:], fk[1][2:], rtol=5e-4)
 
 
 def test_fitp_first_iteration_residual_matches_gs_for_fitp_1():
