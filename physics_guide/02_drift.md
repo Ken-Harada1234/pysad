@@ -8,7 +8,7 @@
 
 ## 1. 結論
 
-- **ハミルトニアン** (01 章の式 (1.1) で $1/\rho = 0$、$a_x = a_y = a_s = 0$): $H = -\sqrt{p^2 - p_x^2 - p_y^2} + E/(p_0 v_0)$。$H$ は $x, y, z$ を含まないので、$p_x, p_y, p$ は一定で、座標は一定の速さで進む。**厳密に解ける**。
+- **ハミルトニアン** (01 章の式 (1.1) で $1/\rho = 0$、$a_x = a_y = a_s = 0$): $H = -\sqrt{p^2 - p_x^2 - p_y^2} + E/(P_0 v_0)$。$H$ は $x, y, z$ を含まないので、$p_x, p_y, p$ は一定で、座標は一定の速さで進む。**厳密に解ける**。
 - **厳密な写像** (長さ $L$。$p_z \equiv \sqrt{p^2 - p_x^2 - p_y^2}$):
 
 $$
@@ -18,7 +18,7 @@ z \to z - \left[\frac{p_x^2 + p_y^2}{(p + p_z)\,p_z} + dv\right]L
 $$
 
   ($p_x, p_y, \delta$ は変わらない。式 (2.6)。$z$ の第 1 項は、傾いて進む分の経路の伸び、第 2 項は速度の差 $dv = 1 - v/v_0$ による遅れ。)
-- **設計軌道上の粒子 ($p_x = p_y = 0$) は $\delta$ に比例して $z$ が動く**: $\Delta z = -dv\,L \simeq L\,\delta/\gamma_0^2$ ($\gamma_0$ は設計のローレンツ因子)。電子 3 GeV ($\gamma_0 = 5870.9$) で、1 m あたり $\delta = 10^{-2}$ のとき $+2.858 \times 10^{-10}$ m (近似式 $L\delta/\gamma_0^2$ では $2.901 \times 10^{-10}$。差は $\delta$ の 2 次の項)。10 MeV の電子 ($\gamma_0 = 19.6$) では同じ $\delta$ で $+2.566 \times 10^{-5}$ m (近似式では $2.604 \times 10^{-5}$) ([drift_03_r56_example.out.txt](outputs/drift_03_r56_example.out.txt))。これが転送行列の $R_{56} = \partial z/\partial\delta = L\,h_0/h_1^3$ (式 (2.16)) で、「ドリフトの $R_{56}$」。
+- **設計軌道上の粒子 ($p_x = p_y = 0$) は $\delta$ に比例して $z$ が動く**: $\Delta z = -dv\,L \simeq L\,\delta/\gamma_0^2$ ($\gamma_0$ は設計のローレンツ因子)。電子 3 GeV ($\gamma_0 = 5870.85$) で、1 m あたり $\delta = 10^{-2}$ のとき $+2.858 \times 10^{-10}$ m (近似式 $L\delta/\gamma_0^2$ では $2.901 \times 10^{-10}$。差は $\delta$ の 2 次の項)。10 MeV の電子 ($\gamma_0 = 19.6$) では同じ $\delta$ で $+2.566 \times 10^{-5}$ m (近似式では $2.604 \times 10^{-5}$) ([drift_03_r56_example.out.txt](outputs/drift_03_r56_example.out.txt))。これが転送行列の $R_{56} = \partial z/\partial\delta = L\,h_0/h_1^3$ (式 (2.16)) で、「ドリフトの $R_{56}$」。
 - **厳密なドリフトは、近軸のドリフトと、運動学的ドリフト $D$ (四極の章の $\Delta H$ の流れ) の積**で、両者は交換する (式 (2.10))。四極の本体の分割 ([04_quad.md](04_quad.md) §5〜§6) の $D$ は、$K = 0$ のときのこの差に当たる。
 - **COD のまわりの 6×6 行列**は、(2.6) を正準変数で偏微分したもの (式 (2.11)〜(2.13))。$x, y, z$ の行だけが単位行列と違い、列は $p_x, p_y, \delta$ だけ。COD に傾き $p_x$ があると、$R_{16} = -p_x\,p\,L/p_z^3 \simeq -p_x L$ が現れる ($\delta$ が違うと $x$ が動く: 軌道の傾きによる経路・位置の運動量依存)。シンプレクティックで、$z$ の行はシンプレクティック条件からも組める (§9)。
 - **DISKIN (近軸のドリフト)**: K64 の追跡は、`DISKIN` ≠ 0 のドリフトで近軸の式 ($x \to x + qL$、$z \to z - (q^2/2 + dv)L$) を使う。pysad の追跡は `DISKIN` を読むが使わず、厳密な式のまま (未実装。§7.2)。
@@ -48,20 +48,24 @@ $$
 01 章の式 (1.1) を、直線上 ($1/\rho = 0$)・磁場なし ($a_x = a_y = a_s = 0$) で書くと
 
 $$
-H = -\sqrt{p^2 - p_x^2 - p_y^2} + \frac{E}{p_0 v_0}
+H = -\sqrt{p^2 - p_x^2 - p_y^2} + \frac{E}{P_0 v_0}
 \tag{2.1}
 $$
 
-($E$ は粒子のエネルギー、$p_0 v_0$ は設計運動量と設計速度の積。$E/(p_0v_0)$ は $p$ だけの関数で、$z$ と共役な $p$ の側の量。) ヘルプ (K64 版同梱の `SADHelp.html`) の DRIFT > transformation には $H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ ($L$ をかけた形で、$\exp(:H:)$ に入れる。TeX 版・平文版とも同じ式) とある。**原文で確認**: $\sqrt{\ }$ の項と $L$ は (2.1) と同じ形で、定数 $1$ は運動に影響しない。$E/v_0$ は $p_0$ の規格化を略した書き方 (QUAD の $H_{2n}$ も同じ略記)。ただし**$E/v_0$ の符号は (2.1) と逆**で、これは誤植と判断した (ヘルプの式どうしの整合による判断で、SAD (gs) の実行での確認はしていない。付録 A。$\exp(:H:)$ を「$H$ を時間 1 のハミルトニアンとする流れ」と読む規約は [C_poisson_lie.md](C_poisson_lie.md) §8.2 に確定してある)。
+($E$ は粒子のエネルギー、$P_0 v_0$ は設計運動量と設計速度の積。$E/(P_0v_0)$ は $p$ だけの関数で、$z$ と共役な $p$ の側の量。) ヘルプ (K64 版同梱の `SADHelp.html`) の DRIFT > transformation には $H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ ($L$ をかけた形で、$\exp(:H:)$ に入れる。TeX 版・平文版とも同じ式) とある。**原文で確認**: $\sqrt{\ }$ の項と $L$ は (2.1) と同じ形で、定数 $1$ は運動に影響しない。$E/v_0$ は $P_0$ の規格化を略した書き方 (QUAD の $H_{2n}$ も同じ略記)。ただし**$E/v_0$ の符号は (2.1) と逆**で、これは誤植と判断した (ヘルプの式どうしの整合による判断で、SAD (gs) の実行での確認はしていない。付録 A。$\exp(:H:)$ を「$H$ を時間 1 のハミルトニアンとする流れ」と読む規約は [C_poisson_lie.md](C_poisson_lie.md) §8.2 に確定してある)。
 
-$E$ を $p$ で書く: 設計運動量を $mc$ の単位で $p_0$ ($= \beta_0\gamma_0$)、$h_0 = \gamma_0 = \sqrt{1 + p_0^2}$、$h_1 = \sqrt{1 + p_0^2p^2}$ とすると、$E = h_1\,mc^2$、$p_0v_0 \to p_0\cdot\beta_0 c\cdot mc = p_0^2 mc^2/h_0$ で
+$E$ を $p$ で書く。設計運動量を $mc$ の単位で $p_0$ ($= \beta_0\gamma_0$。無次元。次元のある設計運動量は $P_0 = p_0\,mc$。[01_variables_and_conventions.md](01_variables_and_conventions.md) §2)、$h_0 = \gamma_0 = \sqrt{1 + p_0^2}$、$h_1 = \sqrt{1 + p_0^2p^2}$ とする。
+
+1. $E = \gamma mc^2$ で、粒子の運動量は $p_0p\;mc$ なので $\gamma = \sqrt{1 + (p_0p)^2} = h_1$、すなわち $E = h_1\,mc^2$。
+2. $P_0v_0 = (p_0\,mc)(\beta_0c) = p_0\beta_0\,mc^2$。$\beta_0\gamma_0 = p_0$ から $\beta_0 = p_0/h_0$ なので $P_0v_0 = (p_0^2/h_0)\,mc^2$。
+3. 比を取ると $E/(P_0v_0) = h_1mc^2\cdot h_0/(p_0^2mc^2)$:
 
 $$
-\frac{E}{p_0 v_0} = \frac{h_0\,h_1}{p_0^2}
+\frac{E}{P_0 v_0} = \frac{h_0\,h_1}{p_0^2}
 \tag{2.2}
 $$
 
-($E/(p_0v_0)$ は無次元。$h_1$ は $p$ に依存。)
+($E/(P_0v_0)$ は無次元。$h_1$ は $p$ に依存。[drift_06_steps.out.txt](outputs/drift_06_steps.out.txt) (a) で sympy 確認。)
 
 **$H$ が含む変数**: $p_x, p_y, p$ だけ。$x, y, z$ も $s$ も含まない。したがって $x' = \partial H/\partial p_x$ などの右辺は定数で (次の §4)、方程式は積分できる。
 
@@ -76,7 +80,7 @@ $$
 \tag{2.3}
 $$
 
-$H = T_1 + T_2$、$T_1 = -p_z$、$T_2 = E/(p_0v_0)$ として:
+$H = T_1 + T_2$、$T_1 = -p_z$、$T_2 = E/(P_0v_0)$ として:
 
 | 項 | $\partial/\partial p_x$ | $\partial/\partial p_y$ | $\partial/\partial x,\ \partial/\partial y,\ \partial/\partial z$ | $\partial/\partial p$ |
 |---|---|---|---|---|
@@ -128,7 +132,7 @@ z \to z - \left[\frac{1 - \zeta}{\zeta} + dv\right]L
 \tag{2.7}
 $$
 
-**K64 の追跡 (`tdrift_free`、`tdrift.f:10-23`)** は、これを次のように書く。`dpz = pxy2dpz(px, py)` $= \zeta - 1$ (追跡の `px`、`py` は $q$、$r$。`pxy2dpz` は `tfloor.f:491`。小さい引数 ($q^2 + r^2 < 8 \times 10^{-6}$) では級数 $-x(\tfrac12 + \tfrac18x + \tfrac1{16}x^2)$ ($x = q^2 + r^2$)、そうでなければ $-x/(1 + \sqrt{1 - x})$。$\sqrt{1 - x} - 1$ の桁落ちを避ける形)、`al1 = al/(1+dpz)` $= L/\zeta$:
+**K64 の追跡 (`tdrift_free`、`tdrift.f:10-23`)** は、これを次のように書く。`dpz = pxy2dpz(px, py)` $= \zeta - 1$ (追跡の `px`、`py` は $q$、$r$。`pxy2dpz` は `tfloor.f:491`。小さい引数 ($q^2 + r^2 < 8 \times 10^{-6}$) では級数 $-x(\tfrac12 + \tfrac18x + \tfrac1{16}x^2)$ ($x = q^2 + r^2$)、そうでなければ $-x/(1 + \sqrt{1 - x})$。$\sqrt{1 - x} - 1$ の桁落ちを避ける形。導出は下の段落)、`al1 = al/(1+dpz)` $= L/\zeta$:
 
 ```
 x(i) = x(i) + px(i)*al1            ! x += q L/ζ
@@ -145,6 +149,12 @@ $$
 
 (`al1` $= L/\zeta$、`dpz` $= \zeta - 1$。注: $q, r$ は変数 `px`、`py`。)
 
+**`pxy2dpz` ($= \sqrt{1 - x} - 1$、$x = q^2 + r^2$) の 2 通りの形の導出** (`tfloor.f:491-502`。[drift_06_steps.out.txt](outputs/drift_06_steps.out.txt) (b) で確認)。
+
+- **小さい $x$ の級数**: 二項級数 $\sqrt{1 - x} = \sum_k\binom{1/2}{k}(-x)^k$。$\binom{1/2}{1} = \tfrac12$、$\binom{1/2}{2} = \tfrac{(1/2)(-1/2)}{2!} = -\tfrac18$、$\binom{1/2}{3} = \tfrac{(1/2)(-1/2)(-3/2)}{3!} = \tfrac1{16}$、$\binom{1/2}{4} = -\tfrac5{128}$ なので、$(-x)^k$ の符号を入れて $\sqrt{1 - x} - 1 = -\tfrac x2 - \tfrac{x^2}8 - \tfrac{x^3}{16} - \tfrac{5x^4}{128} - \cdots = -x\bigl(\tfrac12 + \tfrac18x + \tfrac1{16}x^2\bigr) - \tfrac{5x^4}{128} - \cdots$。K64 は $x^3$ までの 3 項を取り、$x^4$ 以降を捨てる。捨てた項の相対的な大きさは $(5x^4/128)/(x/2) = 5x^3/64$ で、閾値 $x = 8\times10^{-6}$ では $4\times10^{-17}$ (絶対値で $1.6\times10^{-22}$)。倍精度の丸め ($1.1\times10^{-16}$) より小さい。
+- **有理形**: 分子分母に $\sqrt{1 - x} + 1$ をかけて $\sqrt{1 - x} - 1 = \dfrac{(1 - x) - 1}{\sqrt{1 - x} + 1} = -\dfrac{x}{1 + \sqrt{1 - x}}$。引き算 $\sqrt{1 - x} - 1$ を直接行わないので、小さい $x$ でも桁落ちしない。直接の式は $x = 8\times10^{-6}$ で相対誤差が $1.1\times10^{-16}/(8\times10^{-6}) \approx 1.4\times10^{-11}$ 程度まで悪化する。
+- **閾値 $8\times10^{-6}$ の根拠**: 級数の打ち切りの相対誤差 $5x^3/64$ が倍精度の丸めより小さくなる範囲の上限付近 ($5x^3/64 \sim 10^{-16}$ で $x \sim 10^{-5}$)。ソースには値だけが書いてあり、選び方の説明はない (推定)。
+
 **確認** ([drift_01_h_to_map.out.txt](outputs/drift_01_h_to_map.out.txt) (b)): 長さ 1 m、3 GeV で、傾きと $\delta$ の違う 4 通り (最大 $q = 0.3$) の粒子について、(i) 閉じた式 (2.6)、(ii) 正準方程式 (2.4) を DOP853 ($rtol = 10^{-13}$) で積分した結果、(iii) pysad の追跡 (DRIFT 1 台) を比べた。(i) と (ii) の差は $1.8 \times 10^{-16}$ 以下、(i) と (iii) の差は $5.6 \times 10^{-17}$ 以下 (4 通りの差は $6.9 \times 10^{-18}$、0、0、$5.6 \times 10^{-17}$)。
 
 ## 7. 近軸のドリフトと運動学的ドリフト、DISKIN
@@ -154,7 +164,7 @@ $$
 四極の章 ([04_quad.md](04_quad.md) §3.2〜§5) は、$H = H_2 + \Delta H$ に分けた。$K = 0$ のとき、
 
 $$
-H_2 = -p + \frac{p_x^2 + p_y^2}{2p} + \frac{E}{p_0v_0},\qquad
+H_2 = -p + \frac{p_x^2 + p_y^2}{2p} + \frac{E}{P_0v_0},\qquad
 \Delta H = p - \sqrt{p^2 - p_x^2 - p_y^2} - \frac{p_x^2 + p_y^2}{2p}
 \tag{2.9}
 $$
@@ -166,7 +176,7 @@ $$
   - $x' = \partial\Delta H/\partial p_x = p_x/p_z - p_x/p = q(1/\zeta - 1)$ ($p_x/p_z = q/\zeta$、$p_x/p = q$)。
   - $z' = \partial\Delta H/\partial p = 1 - p/p_z + (p_x^2 + p_y^2)/(2p^2) = 1 - 1/\zeta + (1 - \zeta^2)/2$ ($(p_x^2 + p_y^2)/p^2 = q^2 + r^2 = 1 - \zeta^2$)。
   - 通分: $[\,2\zeta - 2 + \zeta - \zeta^3\,]/(2\zeta) = -(\zeta^3 - 3\zeta + 2)/(2\zeta)$。$\zeta^3 - 3\zeta + 2 = (\zeta - 1)^2(\zeta + 2)$ (展開して確認できる: $(\zeta^2 - 2\zeta + 1)(\zeta + 2) = \zeta^3 - 3\zeta + 2$) なので $z' = -(2 + \zeta)(1 - \zeta)^2/(2\zeta)$。
-  - 小さい傾きの展開 ($u = q^2 + r^2$、$\zeta = \sqrt{1 - u}$): $1/\zeta - 1 = u/2 + 3u^2/8 + \cdots$、$z' = -3u^2/8 - 5u^3/16 - \cdots$ (どちらも sympy。[drift_05_expansions.out.txt](outputs/drift_05_expansions.out.txt) (a)(b))。$x$ は $u$ の 1 次から、$z$ は 2 次から効く。
+  - 小さい傾きの展開 ($u = q^2 + r^2$、$\zeta = \sqrt{1 - u}$): $1/\zeta = (1 - u)^{-1/2} = \sum_k\binom{-1/2}{k}(-u)^k$ の係数は $1,\ \tfrac12,\ \tfrac38,\ \tfrac5{16},\ \tfrac{35}{128}$ ($\tfrac{(1/2)(3/2)}{2!} = \tfrac38$、$\tfrac{(1/2)(3/2)(5/2)}{3!} = \tfrac5{16}$)。よって $1/\zeta = 1 + \tfrac u2 + \tfrac{3u^2}8 + \tfrac{5u^3}{16} + O(u^4)$、$1/\zeta - 1 = \tfrac u2 + \tfrac{3u^2}8 + \cdots$。$z'$ は、上の $z' = 1 - 1/\zeta + (1 - \zeta^2)/2$ に $(1 - \zeta^2)/2 = u/2$ を入れて $z' = 1 - 1/\zeta + \tfrac u2 = -\tfrac{3u^2}8 - \tfrac{5u^3}{16} - O(u^4)$ (1 次の項は $-\tfrac u2 + \tfrac u2$ で相殺し 2 次から残る。捨てた次の項は $-\tfrac{35}{128}u^4$)。$x$ の進みは $q(1/\zeta - 1) = q(\tfrac u2 + \tfrac{3u^2}8 + \cdots)$。$x$ は $u$ の 1 次から、$z$ は 2 次から効く ([drift_05_expansions.out.txt](outputs/drift_05_expansions.out.txt) (a)(b)、[drift_06_steps.out.txt](outputs/drift_06_steps.out.txt) (c))。
 
 2 つの流れは、運動量だけの関数の流れなので**交換する** (ポアソン括弧 $[H_2, \Delta H] = 0$: どちらも座標を含まず、括弧 $\sum(\partial_q f\,\partial_p g - \partial_p f\,\partial_q g)$ の各項が 0)。したがって、順序によらず、
 
@@ -187,7 +197,7 @@ K64 の追跡 (`tturn.f:287-301`) は、`DISKIN` $\neq 0$ の DRIFT で、$D$ �
 x = x + px*al ; y = y + py*al ; z = z - ((px**2 + py**2)*0.5 + dv)*al   ! (px, py は規格化した運動量 q, r)
 ```
 
-つまり $H_2$ ($K = 0$) の流れ。四極 (`tsolqu` の引数 `kin`) も `DISKIN` $\neq 0$ で $D$ を落とす (`tturn.f:368`、`tturne.f:576`、`qtwiss.f:309` が `cmp%value(ky_KIN_QUAD) == 0.d0` を渡す)。DRIFT の CALC (`qtwiss.f:205`、`tdrife.f`) は、`DISKIN` を見ない (常に厳密)。
+つまり $H_2$ ($K = 0$) の流れ。四極 (`tsolqu` の引数 `kin`) も `DISKIN` $\neq 0$ で $D$ を落とす (`tturn.f:368`、`tturne.f:576`、`qtwiss.f:309` が `cmp%value(ky_KIN_QUAD) == 0.d0` を渡す)。DRIFT の CALC (`qtwiss.f:205`、`tdrife.f`) は、`DISKIN` を見ない (常に厳密)。(`ky_KIN_DRFT`・`ky_KIN_QUAD` は、DRIFT・QUAD の `DISKIN` の値を指す要素の属性の名前、`kin` は四極の追跡ルーチンの論理引数。§15 の表。)
 
 **pysad は `DISKIN` を読むが (`sadkw.py`)、追跡に使っていない**。`DRIFT` に `DISKIN=1` を付けた 1 m のドリフトで、$q = 0.3$ の粒子の追跡は、`DISKIN` なしと同じ (差 0)、厳密な式との差 $5.6 \times 10^{-17}$、近軸の式との差 $2.2 \times 10^{-2}$ ([drift_01_h_to_map.out.txt](outputs/drift_01_h_to_map.out.txt) (d))。`DISKIN` を使う台本では、傾きが大きい粒子 (数 mrad 以上。差は $q^3L/2$) で K64 と pysad が違う。傾きが小さければ ($q = 10^{-3}$ で $5 \times 10^{-10}$ m) 見えない。四極の `DISKIN` も pysad に無い (grep で、`DISKIN` を使う追跡のコードが無いことを確認。四極の追跡との比較はしていない)。付録 A に疑いではなく**未実装**として書く。
 
@@ -256,7 +266,7 @@ $$
 trans(1:5:2, 1:irad) = trans(1:5:2, 1:irad) + matmul(trans1(1:5:2, 2:6:2), trans(2:6:2, 1:irad))
 ```
 
-$M = 1 + N$ で、$N$ は行 (1, 3, 5) と列 (2, 4, 6) にだけ成分を持つ。$T_{\rm new} = M T = T + N T$ の行 (1, 3, 5) の更新が、この 1 行 (`1:5:2` は 1, 3, 5。`2:6:2` は 2, 4, 6)。
+$M = 1 + N$ で、$N$ は行 (1, 3, 5) と列 (2, 4, 6) にだけ成分を持つ。$T_{\rm new} = M T = T + N T$ の行 (1, 3, 5) の更新が、この 1 行 (`1:5:2` は 1, 3, 5。`2:6:2` は 2, 4, 6。`1:irad` の `irad` は、更新する列の数で、§15 の表)。
 
 **$\delta$ の列の意味**: 正準運動量 $p_x$ が $p_x = q\,p$ なので、$\delta$ が違うと同じ $q$ でも $x$ の動き方が違う。$T_{16} = -p_x\,p\,L/p_z^3$ は、$p_x$ を固定して $\delta$ だけを動かしたときの $x$ の変化 (傾き $x' = p_x/p_z$ が、$p_z$ が大きいほど小さい)。設計軌道上 ($p_x = 0$) では 0。
 
@@ -293,12 +303,14 @@ $$
 
 | 運動量 | $\gamma_0$ | $\delta$ | $dv$ (1.9) | 1 回後の $z$ | 4 回後の $z$ | $L\delta/\gamma_0^2$ (近似) |
 |---|---|---|---|---|---|---|
-| 3 GeV/$c$ | 5870.9 | $+10^{-3}$ | $-2.897 \times 10^{-11}$ | $+2.897 \times 10^{-11}$ | $+1.159 \times 10^{-10}$ | $+2.901 \times 10^{-11}$ |
-| 3 GeV/$c$ | 5870.9 | $+10^{-2}$ | $-2.858 \times 10^{-10}$ | $+2.858 \times 10^{-10}$ | $+1.143 \times 10^{-9}$ | $+2.901 \times 10^{-10}$ |
-| 10 MeV/$c$ | 19.6 | $+10^{-3}$ | $-2.601 \times 10^{-6}$ | $+2.601 \times 10^{-6}$ | $+1.040 \times 10^{-5}$ | $+2.604 \times 10^{-6}$ |
-| 10 MeV/$c$ | 19.6 | $-10^{-2}$ | $+2.644 \times 10^{-5}$ | $-2.644 \times 10^{-5}$ | $-1.058 \times 10^{-4}$ | $-2.604 \times 10^{-5}$ |
+| 3 GeV/$c$ | 5870.85 | $+10^{-3}$ | $-2.897 \times 10^{-11}$ | $+2.897 \times 10^{-11}$ | $+1.159 \times 10^{-10}$ | $+2.901 \times 10^{-11}$ |
+| 3 GeV/$c$ | 5870.85 | $+10^{-2}$ | $-2.858 \times 10^{-10}$ | $+2.858 \times 10^{-10}$ | $+1.143 \times 10^{-9}$ | $+2.901 \times 10^{-10}$ |
+| 3 GeV/$c$ | 5870.85 | $-10^{-2}$ | $+2.945 \times 10^{-10}$ | $-2.945 \times 10^{-10}$ | $-1.178 \times 10^{-9}$ | $-2.901 \times 10^{-10}$ |
+| 10 MeV/$c$ | 19.595 | $+10^{-3}$ | $-2.601 \times 10^{-6}$ | $+2.601 \times 10^{-6}$ | $+1.040 \times 10^{-5}$ | $+2.604 \times 10^{-6}$ |
+| 10 MeV/$c$ | 19.595 | $+10^{-2}$ | $-2.566 \times 10^{-5}$ | $+2.566 \times 10^{-5}$ | $+1.026 \times 10^{-4}$ | $+2.604 \times 10^{-5}$ |
+| 10 MeV/$c$ | 19.595 | $-10^{-2}$ | $+2.644 \times 10^{-5}$ | $-2.644 \times 10^{-5}$ | $-1.058 \times 10^{-4}$ | $-2.604 \times 10^{-5}$ |
 
-  追跡の $z$ と $k\cdot(-dv\,L)$ の差は $10^{-20}$ 以下 (表の 4 回後の列。丸め誤差)。$\delta$ の符号を変えると $z$ の符号が変わり、大きさは近似 $L\delta/\gamma_0^2$ と ($\delta$ の 1 次の補正の範囲で) 一致する ($\delta = 10^{-2}$ の非対称 2.858 対 2.945 は、$\delta$ の 2 次の項)。
+  追跡の $z$ と $k\cdot(-dv\,L)$ の差は $10^{-20}$ 以下 (表の 4 回後の列。丸め誤差)。$\delta$ の符号を変えると $z$ の符号が変わり、大きさは近似 $L\delta/\gamma_0^2$ と ($\delta$ の 1 次の補正の範囲で) 一致する (表の 2 行目と 3 行目、5 行目と 6 行目のように、$\delta = \pm10^{-2}$ で大きさが違う (3 GeV で 2.858 対 2.945、10 MeV で 2.566 対 2.644) のは、$\delta$ の 2 次の項)。
 - 行列: 4 つのドリフト (4 m) の $T_{56} = 1.160533 \times 10^{-7}$ (= $4L/\gamma_0^2$)。$\delta = 10^{-3}$ の粒子の $z$ の変化は、行列で $1.1605 \times 10^{-10}$、追跡で $1.1588 \times 10^{-10}$ (差は $\delta$ の 2 次)。
 - 傾いた COD ($p_x = 10^{-2}$) では、$T_{56} = L\,h_0/h_1^3 + p_x^2L/p_z^3$ に傾きの項が加わる (3 GeV で $1.0004 \times 10^{-4}$ 対 $\gamma_0^{-2}$ の項 $2.9 \times 10^{-8}$)。軌道の傾きが $10^{-2}$ なら、傾きの項が運動量の項 $L/\gamma_0^2$ より 3 桁以上大きい ([drift_02_linearization.out.txt](outputs/drift_02_linearization.out.txt) (d))。ビームラインの $R_{56}$ (等時性) の議論で、軌道の傾いた直線部では、このドリフトの項を忘れない。
 
@@ -342,14 +354,13 @@ $$
 | `drift_02_linearization.py` | (a) sympy: (2.6) の 6×6 偏微分と `tdrife1` の式 (2.13) の一致。(b) pysad の行列と追跡の数値微分。(c) シンプレクティック性と $z$ の行 (2.15)。(d) 設計軌道と傾いた COD の成分 | [drift_02_linearization.out.txt](outputs/drift_02_linearization.out.txt) |
 | `drift_03_r56_example.py` | 最短の例: 3 GeV・10 MeV の電子で、ドリフトを 1〜4 回通った後の $z$。4 つのドリフトの行列 $T_{56}$ | [drift_03_r56_example.out.txt](outputs/drift_03_r56_example.out.txt) |
 | `drift_04_help_convention.py` | ヘルプの $\exp(:H:)$ の向き (流れ) の確定と、DRIFT の $E/v_0$ の符号の食い違い (sympy。DRIFT・QUAD・SEXT・BEND の $V$ の 4 つの式を同じ読みで検証) | [drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) |
-| `drift_05_expansions.py` | 書き足した展開の確認 (sympy): (a) $D$ の流れ (§7.1)、(b) 小さい傾きの展開、(c) 近軸 + $D$ = 厳密、(d) (2.15) の導出と、$T_{66} 
-e 1$ の行列で成り立たない例 (§9) | [drift_05_expansions.out.txt](outputs/drift_05_expansions.out.txt) |
+| `drift_05_expansions.py` | 書き足した展開の確認 (sympy): (a) $D$ の流れ (§7.1)、(b) 小さい傾きの展開、(c) 近軸 + $D$ = 厳密、(d) (2.15) の導出と、$T_{66} \neq 1$ の行列で成り立たない例 (§9) | [drift_05_expansions.out.txt](outputs/drift_05_expansions.out.txt) |
 
 主な数字: (2.6) と DOP853 の差 $\le 1.8 \times 10^{-16}$、pysad の追跡との差 $\le 5.6 \times 10^{-17}$ (傾き最大 0.3)。(2.10) の分解の差 $\le 1.4 \times 10^{-17}$。sympy の 6×6 と (2.13) の差 $6.4 \times 10^{-18}$。pysad の行列と追跡の数値微分 (中心差分 $10^{-6}$) の差 $\le 3.9 \times 10^{-11}$ (傾き 0.3 の COD で最大)。
 
 ## 14. 未確認・限界・使った条件
 
-**使った条件**: 数値例は電子 3 GeV/$c$ と 10 MeV/$c$、長さ 1 m、傾きは最大 $q = 0.3$。ドリフトは理想的 (磁場なし、孔径・散乱なし)。加速はない ($p_0$ 一定)。
+**使った条件**: 数値例は電子 3 GeV/$c$ と 10 MeV/$c$、長さ 1 m、傾きは最大 $q = 0.3$。ドリフトは理想的 (磁場なし、孔径・散乱なし)。加速はない ($P_0$ 一定)。
 
 **この章の範囲外 (別の章)**:
 - 磁場のあるドリフト (ソレノイドの `tsoldz`・`tdrift_solenoid`、ステアリング $ak_{0x}$・$ak_{0y}$) は、ソレノイドの章 ([09_solenoid.md](09_solenoid.md))。`tdrife.f` の `bz` ≠ 0 の分岐は読んでいるが、この章では導出していない。
@@ -358,7 +369,7 @@ e 1$ の行列で成り立たない例 (§9) | [drift_05_expansions.out.txt](out
 
 **未確認・限界**:
 - **DISKIN** は、Fortran の `tturn.f` の分岐 (近軸式) を読んだだけで、gs (K64 の実行) で数値を比べていない。pysad が `DISKIN` を使わないことは確認した (§7.2)。
-- **ヘルプの $H$**: 原文 (DRIFT > transformation) を確認した。$E/v_0$ の規格化 ($p_0$ の略) は読み替え、符号は誤植と判断して (2.1) を使った (ヘルプの式どうしの整合による判断で、gs の実行での確認はしていない)。ヘルプにポアソン括弧の定義は無いが、$\exp(:H:)$ の向きは式どうしの整合から読んだ ([C_poisson_lie.md](C_poisson_lie.md) §8.2、[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt))。
+- **ヘルプの $H$**: 原文 (DRIFT > transformation) を確認した。$E/v_0$ の規格化 ($P_0$ の略) は読み替え、符号は誤植と判断して (2.1) を使った (ヘルプの式どうしの整合による判断で、gs の実行での確認はしていない)。ヘルプにポアソン括弧の定義は無いが、$\exp(:H:)$ の向きは式どうしの整合から読んだ ([C_poisson_lie.md](C_poisson_lie.md) §8.2、[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt))。
 - **`tdrife.f` の `tdrife`** と `tdrife0` の違い (ステアリングの有無) は、引数と分岐を読んだだけ。
 - **確認の範囲**: 閉じた式 (2.6) と DOP853 の比較は、同じ $H$ (2.1) から出した運動方程式 (2.4) を積分しており、「$H$ から写像への導出の正しさ」の確認である。$H$ そのもの (ヘルプの式、01 章の導出) の独立な確認ではない。$H$ の妥当性は [01_variables_and_conventions.md](01_variables_and_conventions.md)・[01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) の導出による。
 - 行列の確認は、pysad の追跡の数値微分と sympy の偏微分で行い、K64 (gs) の `trans` との比較は、この章ではしていない。
@@ -383,6 +394,11 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `dv` | $dv = 1 - v/v_0$ | `tgetdv`、`tconvm.f` | `dv` |
 | `dvemit` | Emittance[]・Twiss 側が持つ $dv$。`tesetdv(dp)` が `dvemit = -(p1+p0)/h1emit/(p0*h1emit+p1*h0)*dp + dvfs` ($p_1 = p_0(1+\delta)$、`h1emit` $= h_1$) を作る (`tgetdv` と同じ式)。`qtwiss.f` の COD の $z$ の更新 (`cod(5)+dpz*ale-dvemit*al`)、`tbende.f` も使う | `tturne.f:847-856` (`tesetdv`) | `_Phys.dv()`・`elkern._dv` |
 | `trans1` | 1 つの要素の 6×6 行列 (単位行列から出発) | `toplvl.f:1368` | `t`、`J` |
+| `irad` | `tdrife` の引数。行列 `trans` の、更新する列の数。`qtwiss.f:83` と `INTGRL.f:355` では 6 (T の 6 列)。`photons.f:370` の呼び出しでは `ir0`。6 を超えるとき (放射の微分の列を含むと読める) の列の用途は未確認 | `tdrife.f:6`、`:14`、`:34-35` | 未確認 (pysad の行列は 6×6) |
+| `kin` | 四極の追跡ルーチン `tquad` の論理引数。偽なら $\Delta H$ ($D$) を落とした近軸の式 (`DISKIN` ≠ 0 に当たる)。`tturn.f:368` が `cmp%value(ky_KIN_QUAD) == 0.d0` を渡す | `tturn.f:368` | 引数を渡す側まで確認 |
+| `ky_KIN_DRFT`、`ky_KIN_QUAD` | DRIFT・QUAD の `DISKIN` の値 (`cmp%value(...)`) を指す要素の属性の識別子。0 なら厳密な式 | `tturn.f:293`、`:368` | 使い方まで確認 |
+| `bz` | $B_z$ (ソレノイドの縦磁場。`tdrife` の引数)。0 でなければ `tsoldz` の分岐 | `tdrife.f:6` | 引数まで確認。分岐は 09 章 |
+| `spac` | 空間電荷を入れる追跡かの論理変数。真なら DRIFT は `spdrift_free` | `tturn.f:287-` | 使い方まで確認。どこで真になるかは未確認 |
 | `ampmax` | $0.9999$ (`tdrift.f:4`。$(p_x/p_0)^2 + (p_y/p_0)^2$ の最大値と書かれている。使い方は未確認) | `tdrift.f` | 未確認 |
 
 ## 付録 A. ヘルプの記述・K64 との違い (ドリフト)
@@ -391,7 +407,7 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 
 | 箇所 | 内容 |
 |---|---|
-| ヘルプ DRIFT > transformation の $H$ | **原文で確認** (`SADHelp.html`、DRIFT の transformation。TeX 版・平文版で同じ)。$H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ は $L$ をかけた形で、$E/v_0$ は $E/(p_0v_0)$ ($p_0$ の規格化を略した書き方。QUAD の $H_{2n}$ と同じ略記)。**ヘルプの式どうしの食い違い (確定)**: $E/v_0$ の符号が QUAD・dynamics・BEND の式と逆。これを誤植と判断したのは、式どうしの整合による (gs での確認はしていない)。$\exp(:H:)$ を「$H$ の時間 1 の流れ」と読むと ($\sqrt{\ }$ の項から $x' = p_x/p_z$ が出る向き)、$\Delta z = \partial H/\partial p = -(p/p_z)L - (v/v_0)L$ になり、正しい $\Delta z = (-p/p_z + v/v_0)L$ (BEND > body の $z_2 = z_1 - s\,p_1/\sqrt{\cdot} + (v_1/v_0)L'$ の直線の極限、QUAD の $H_{2n}$ の $+E/v_0$、dynamics の $H$ の $+E/(p_0v_0)$ と同じ) より $2(v/v_0)L$ ずれる ([drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1))。$+1$ は $H$ を $-p + \ldots$ に近づけるための定数で運動に影響しない。 |
+| ヘルプ DRIFT > transformation の $H$ | **原文で確認** (`SADHelp.html`、DRIFT の transformation。TeX 版・平文版で同じ)。$H = (-\sqrt{p^2 - p_x^2 - p_y^2} + 1 - E/v_0)L$ は $L$ をかけた形で、$E/v_0$ は $E/(P_0v_0)$ ($P_0$ の規格化を略した書き方。QUAD の $H_{2n}$ と同じ略記)。**ヘルプの式どうしの食い違い (式どうしの整合から誤植と判断。gs 未確認)**: $E/v_0$ の符号が QUAD・dynamics・BEND の式と逆。これを誤植と判断したのは、式どうしの整合による (gs での確認はしていない)。$\exp(:H:)$ を「$H$ の時間 1 の流れ」と読むと ($\sqrt{\ }$ の項から $x' = p_x/p_z$ が出る向き)、$\Delta z = \partial H/\partial p = -(p/p_z)L - (v/v_0)L$ になり、正しい $\Delta z = (-p/p_z + v/v_0)L$ (BEND > body の $z_2 = z_1 - s\,p_1/\sqrt{\cdot} + (v_1/v_0)L'$ の直線の極限、QUAD の $H_{2n}$ の $+E/v_0$、dynamics の $H$ の $+E/(P_0v_0)$ と同じ) より $2(v/v_0)L$ ずれる ([drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1))。$+1$ は $H$ を $-p + \ldots$ に近づけるための定数で運動に影響しない。 |
 | ヘルプに無いもの | (1) 写像の具体式 (2.6)。(2) $dv$ の式 (1.9) と $z$ の整理 (2.5)。(3) COD のまわりの行列 (2.11)〜(2.13)。(4) 近軸の式との関係 (2.10)。(5) `DISKIN`: **原文 (`SADHelp.html`) に DISKIN は出てこない** (DRIFT のキーワードは `L` と `RADIUS` だけ。要素の一覧表にも無い)。意味は `tturn.f` から |
 
 **K64 の実装の癖・誤りの疑い**
