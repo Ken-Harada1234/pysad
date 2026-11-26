@@ -1137,6 +1137,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>v2 は pr²</strong> (δ = 0.05 の偏向磁石のスピン軌道結合 D が追跡の差分と 1.2%、K64 の式は 13%)。k64 は K64 のまま。<strong>gs では確認できない</strong> (K64 の Polarization は NaN、srot の微分列は出力されない)。限界: 15° の矩形の偏向磁石 (K1 = 0・0.3) と四極の 1 要素 + ドリフト 1 m、δ = 0〜0.1。δ = 0.1 の K1 = 0 の偏向磁石の v2 の 2.2% の残りは別の項 (未調査)</td>
 </tr>
 <tr>
+<td>Polarization の側帯の和の打ち切り (B341)</td>
+<td>v2</td>
+<td><strong>v2 は補正した</strong> (同じ K の線形の和との差だけを足す)。放射減衰が弱いリング (ASTRID2:</td>
+</tr>
+<tr>
 <td>WSPAC の縦の力の電位の基準</td>
 <td>v2</td>
 <td><strong>K64 の基準に合わせた (翻訳の誤りの修正)</strong>: K64 の <code>fu</code> は軸上で ln((1 + r)/2) (r = σ2/σ1。丸いビームで 0)。pysad の v2 は軸上 0 としていた。gs で、0.5 GeV の結合のあるリング (r ≈ 0.06) の 1 周の追跡 (PBUNCH = 2e10・4e10、WSPAC ON と OFF の差) の軸上の粒子が縦のキックを受け (z = σz で +9.69e-10。z に奇・PBUNCH に比例)、−z/σz² az ln((1+r)/2) と 1% で合う。修正後の v2 は 8 粒子の Δδ が gs と 2.5% 以内、Δx・Δy が 3% 以内。<strong>仕様か誤りか未決のまま</strong>: K64 の WSPAC は壁のない自由空間のモデルで、壁の半径に依る ln(b/σ) の項を持たない (落ちる定数は b/σ = 30 で軸から σ までの電位差の 15 倍)。壁の半径を変える実験は K64 に壁のパラメータが無く gs でできない。v2 は <code>WSPACRADIUS</code> (&gt; 0) で基準を壁の半径にできる (K64 にない)。限界: 0.5 GeV・結合のある 1 つのリング・1 周。1 周後の z の差は gs が v2 の約 2 倍 (未調査)。台本の <code>Do</code> の中の <code>WSPAC;</code> は gs で効かない (<code>Do</code> の外に並べる)</td>

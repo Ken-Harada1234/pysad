@@ -753,7 +753,17 @@ def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, mod
         u = u @ T.T
         G = Gn
         rate += 0.5 * float(np.mean(np.einsum('si,ij,sj->s', G, B, G.conj()).real))
-    return dict(rate=rate, spread=0.5 * float(np.mean(np.abs(a0) ** 2)), kturns=K, xi=xi, chromatic=chrom, G0=G0, a0=a0, mod_spin=mod_spin, mod_chrom=mod_chrom, nus=nus)
+    out = dict(rate=rate, spread=0.5 * float(np.mean(np.abs(a0) ** 2)), kturns=K, xi=xi, chromatic=chrom, G0=G0, a0=a0, mod_spin=mod_spin, mod_chrom=mod_chrom, nus=nus)
+    # v2 (B341): 和の打ち切り (K が kmax で止まる: |λ|max^K > tol) の補正用に、同じ K・同じ試料の線形の和 (modulate=False) を添える。
+    # 放射減衰が弱いリング (ASTRID2: |λ|max = 0.9999927、tol 1e-7 に 2.2e6 周が要るのに kmax = 3e5) では、打ち切った和が e^{-K/τ} ≈ 0.1 の大きさの残りを持ち、
+    # 残りの位相 e^{-iμK}λ^K が 1e-6 のチューンの変化で回る (線形の和そのものが厳密な値から 6% ずれた)。厳密な線形の値は呼び出し側にあるので、
+    # 側帯の効果は「変調あり − 変調なし (同じ K)」の差として足す (和の残りは変調の有無でほぼ共通で、差では打ち消す)
+    out['truncated'] = bool(math.log(tol) / math.log(lam) > kmax)
+    if modulate and out['truncated']:
+        lin = sideband_depolarization(secs, n0, s0, nsamp=nsamp, tol=tol, kmax=kmax, modulate=False, seed=seed, C6=None, us=us)
+        out['rate_lin_sameK'] = lin['rate']
+        out['spread_lin_sameK'] = lin['spread']
+    return out
 
 
 def _spin_frames(secs, n0):
@@ -899,7 +909,14 @@ def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_m
                 C6 = _chromatic_matrix(els, ph, cod, trf0, rfsw, radcod, secs)
             sb = sideband_depolarization([(T, B, R, D) for (T, B, R, D) in secs], n0, np.asarray(beam_matrix, dtype=float), C6=C6)
             # 要素の出口の N での値 sb['rate'] に、刻みごとの積分との差 (rate_step − rate_el: n が傾いたリングだけ 0 でない) を足す
-            out_.update(rate=sb['rate'] + (out_['rate'] - out_['rate_el']), spread_sb=sb['spread'], sideband_kturns=sb['kturns'],
+            sb_rate = sb['rate']
+            sb_spread = sb['spread']
+            if sb.get('truncated') and 'rate_lin_sameK' in sb:
+                # v2 (B341): 和が打ち切られている (K = kmax で未収束) ので、sb['rate'] の「線形の厳密な値 (rate_el)」からのずれを、同じ K の線形の和との差で置き換える
+                sb_rate = rate + (sb['rate'] - sb['rate_lin_sameK'])
+                npp0 = (np.eye(3) - np.outer(n0, n0)) @ nn0
+                sb_spread = 0.5 * float(np.trace(npp0 @ np.asarray(beam_matrix, dtype=float) @ npp0.T)) + (sb['spread'] - sb['spread_lin_sameK'])
+            out_.update(rate=sb_rate + (out_['rate'] - out_['rate_el']), spread_sb=sb_spread, sideband_kturns=sb['kturns'], sideband_truncated=bool(sb.get('truncated')),
                         chromatic_xi=sb['xi'], chromatic=sb['chromatic'], mod_spin=sb['mod_spin'], mod_chrom=sb['mod_chrom'])
         except Exception as exc:
             out_['sideband_error'] = str(exc)
