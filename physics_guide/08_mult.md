@@ -122,7 +122,7 @@ $$
 
 $B(a)$ は長さ $a$ の分の $H_{\rm body}'$ の流れ (`tsolqu(al1, ak1, bzs, ak01x, ak01y, …)`、K1・K0 の強さは $a/L$ 倍)、$\mathcal K$ は強さが $1/\mathrm{ndiv}$ の $n \ge 2$ の薄いキック (8.3)。コードでは、`do m=1,ndiv` の中で本体を呼んだあとに `al1=al*wm` を更新し (`wm` は $m = \mathrm{ndiv}$ だけ $w_i/2$、それ以外 $w_i = 1/\mathrm{ndiv}$。`tmulti.f:205`)、キック (`akrm(n)=akr(n)*wi`) を入れる。最初の本体は `al1=al*wi*.5` (`tmulti.f:157-163`)、最後の半分はループの外 (`tmulti.f:244-248`)。キックの式は Horner 形 $\sum_{n\ge2}\mathrm{akrm}(n)\,z^n/n!\,/(1+\delta)$ で (`tmulti.f:209-221`)、07 章のキックと同じ。**3 次以上の力勾配型の補正 (07 章 §6) は MULT には無い**。K1 ≠ 0 のとき $B$ は $\mathcal K$ と**可換でない**ので、誤差は 2 次 (Strang) になる。
 
-**誤差の次数の導出**。(8.7) の 1 刻み (長さ $h$) は、隣り合う本体 $B(h/2)B(h/2) = B(h)$ をまとめると $e^{hX/2}\,e^{hY}\,e^{hX/2}$ の形 ($X$ = 本体 (運動学 + K1・K0) の生成、$Y$ = キックの生成 (強さを長さあたりにしたもの。$e^{hY}$ が 1 刻みのキック)) である。対称な 3 つの積の BCH 展開 ([03_symplectic_integrators.md](03_symplectic_integrators.md) §4) は、$[X, Y]$ の入れ子の括弧を使って
+**誤差の次数の導出**。(8.7) の 1 刻み (長さ $h$) は、隣り合う本体 $B(h/2)B(h/2) = B(h)$ をまとめると $e^{hX/2}\,e^{hY}\,e^{hX/2}$ の形 ($X$ = 本体 (運動学 + K1・K0) の生成、$Y$ = キックの生成 (強さを長さあたりにしたもの。$e^{hY}$ が 1 刻みのキック)) である。対称な 3 つの積の BCH 展開 ([03_symplectic_integrators.md](03_symplectic_integrators.md) §4。係数 $-1/24$、$1/12$ の導出と、ランダムな行列での数値確認は [04_quad.md](04_quad.md) §6.1) は、$[X, Y]$ の入れ子の括弧を使って
 
 $$
 e^{hX/2}e^{hY}e^{hX/2} = \exp\Bigl\{h(X + Y) + h^3\Bigl(-\tfrac1{24}[X,[X,Y]] + \tfrac1{12}[Y,[Y,X]]\Bigr) + O(h^5)\Bigr\}
@@ -150,23 +150,56 @@ $$
 
 (`fact(n-1)` は階乗の表、`hypot` は絶対値。) $n = 0, 1$ は厳密な本体で処理するので入らない。
 
-**各因子の意味 (導出)**。$n$ 極 ($n \ge 2$) の力は、横方向の座標 $x$ で $F_x = -\mathrm{Re}\,C \to -\mathrm{K}n\,x^n/(n!\,L)$ (長さあたり、(8.2)(8.3) で $y = 0$)。その $x$ での勾配 (力の傾き) は $\omega^2(x) \equiv |\partial_xF_x| = |\mathrm{K}n|\,x^{n-1}/((n-1)!\,L)$。振幅 $x = a_{\max} = 0.05$ m で、長さ $L$ をかけて無次元にした
+**各因子の意味 (導出)**。$n$ 極 ($n \ge 2$) の力は、横方向の座標 $x$ で $F_x = -\mathrm{Re}\,C \to -\mathrm{K}n\,x^n/(n!\,L)$ (長さあたり、(8.2)(8.3) で $y = 0$)。ポテンシャルを $V(x)$ ($F_x = -V'$) とすると、その $x$ での勾配 (力の傾き) は $\omega^2(x) \equiv V''(x) = |\mathrm{K}n|\,x^{n-1}/((n-1)!\,L)$。振幅 $x = a_{\max} = 0.05$ m で、長さ $L$ をかけて無次元にした
 
 $$
 Q \equiv \omega^2L^2 = \frac{a_{\max}^{\,n-1}\,|\mathrm{K}n|\,L}{(n-1)!}
 $$
 
-が、(8.8) の根号の中の分子。この $\omega^2$ を持つ調和振動子で $\mathrm{ndiv}$ 刻みの Strang 分割 (§4.2) の位相誤差は $(\omega L)^3/(24\,\mathrm{ndiv}^2) = Q^{3/2}/(24\,\mathrm{ndiv}^2)$。(8.8) は $\mathrm{ndiv}^2 \ge Q/(6\varepsilon)$ すなわち $\varepsilon \ge Q/(6\,\mathrm{ndiv}^2)$ を要求する形で、**$\mathrm{ndiv}^{-2}$ への依存と、$Q$ が力の勾配 $\times L^2$ であることまでは導出と合う**が、係数 $1/6$ と $Q$ の冪 ($Q^1$ 対 $Q^{3/2}$) は上の見積りから出ない。係数 6 の根拠は**ソースに書かれておらず、導出できていない** (足りないもの: $\varepsilon$ が何の誤差の上限か (位相、座標、運動量のどれか) の定義。K64 のソースにその説明が無い)。
+が、(8.8) の根号の中の分子 ($Q$ は、$n$ 極の力の傾きの $a_{\max}$ での値 $\times L^2$)。(8.8) は $\mathrm{ndiv}^2 \ge Q/(6\varepsilon)$、すなわち
 
-数値例 (K2 = 40 /m²、$L$ = 1 m、$n = 2$): $Q = 0.05 \times 40 \times 1/1! = 2$。EPS = 4, 2, 1, 0.5, 0.25 ($\varepsilon = 0.005\,\mathrm{EPS} = 0.02, 0.01, 0.005, 0.0025, 0.00125$) に対し $\sqrt{Q/(6\varepsilon)} = 4.08, 5.77, 8.16, 11.5, 16.3$、$\mathrm{ndiv} = 1 + \lfloor\cdot\rfloor = 5, 6, 9, 12, 17$ (pysad の `ndiv` と一致、[mult_04_derivations.out.txt](outputs/mult_04_derivations.out.txt) (f3))。実際の振幅 4 mm では $(\omega L)^2 = 40 \times 0.004 \times 1 = 0.16$ で、位相誤差の見積り $a\,(\omega L)^3/(24\,\mathrm{ndiv}^2)$ は $\mathrm{ndiv} = 5, 17$ で $4.3 \times 10^{-7}$、$3.7 \times 10^{-8}$。下の厳密解との差の測定値 $6.4 \times 10^{-7}$、$5.5 \times 10^{-8}$ は、どちらも見積りの約 1.5 倍 (力が $x^2$ に比例する非線形のため、調和振動子の見積りに係数が付く。この 1.5 は導出していない) で、次数と大きさの目安として合う。
+$$
+\varepsilon \;\ge\; \frac{Q}{6\,\mathrm{ndiv}^2} = \frac{(\omega h)^2}{6}\qquad(h = L/\mathrm{ndiv})
+\tag{8.8a}
+$$
+
+を要求する形。K64 のソースとヘルプには、$\varepsilon$ が何の誤差の上限かの説明が無い。以下では、**$\varepsilon$ を「$a_{\max}$ での $n$ 極の運動量の跳び (偏向) の相対誤差の上限」と読む (推定)** と、係数 $1/6$・$Q$ の冪 $Q^1$・$(n-1)!$ がすべて導出できることを示す (確認: [mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) (a))。
+
+**段 1: 分割の実効ハミルトニアン**。(8.7) の 1 刻みは $e^{hX/2}e^{hY}e^{hX/2}$。2 自由度 $(x, y)$ で、本体の運動学を放物近似した $X$ の生成関数を $f_X = -T$ ($T = p^2/2$)、キックを $f_Y = -V$ とおく (C 付録の約束 $f = -H$)。ポアソン括弧 $[f, g] = \sum_i(\partial_{q_i}f\,\partial_{p_i}g - \partial_{p_i}f\,\partial_{q_i}g)$ を 1 つずつ計算する:
+
+- $[f_X, f_Y] = [T, V] = -\,p_i\,\partial_iV$ ($T$ は $q$ に依らず、$V$ は $p$ に依らないので、第 2 項だけ残る)。
+- $[f_X, [f_X, f_Y]] = [-T,\ -p_j\partial_jV] = [T,\ p_j\partial_jV] = -\,p_ip_j\,\partial_i\partial_jV$ (添字は和)。
+- $[f_Y, f_X] = [V, T] = +\,p_i\,\partial_iV$、$[f_Y, [f_Y, f_X]] = [-V,\ p_j\partial_jV] = -\,|\nabla V|^2$ ($p$ について微分されるのは $p_j\partial_jV$ だけで $\partial_{p_j}(p_k\partial_kV) = \partial_jV$)。
+
+§4.2 の BCH の $h^3$ の項 $-\tfrac1{24}[f_X,[f_X,f_Y]] + \tfrac1{12}[f_Y,[f_Y,f_X]]$ に入れると $\tfrac1{24}p_ip_j\partial_i\partial_jV - \tfrac1{12}|\nabla V|^2$。$f = -h\tilde H$ なので 1 刻みの実効ハミルトニアン $\tilde H$ は
+
+$$
+\tilde H = T + V + h^2\Bigl[\frac1{12}\,|\nabla V|^2 - \frac1{24}\,p_ip_j\,\partial_i\partial_jV\Bigr] + O(h^4)
+\tag{8.8b}
+$$
+
+(sympy で (8.8b) の BCH の計算と一致。**確認**: 6 極 ($n = 2$、$K2 = 40$ /m²、$L = 1$ m、初期値 $(4, 0.8, -3, -0.4)$ mm・mrad) の $\tilde H$ の厳密な流れと、厳密な運動方程式との差は、`ndiv` = 5 で $(-4.14, -6.35, -4.48, 5.75)\times10^{-7}$、分割の追跡と厳密解との差は $(-4.15, -6.35, -4.48, 5.74)\times10^{-7}$ (最大の差 $1.4\times10^{-9}$)、`ndiv` = 17 でも $3.6\times10^{-10}$ 以内で一致。つまり (8.8b) が分割の誤差の主要項を全部持つ。)
+
+**段 2: 調和振動子 ($V = \omega^2x^2/2$)**。(8.8b) は $\tilde H = A\,p^2/2 + B\,x^2/2$、$A = 1 - (\omega h)^2/12$、$B = \omega^2\bigl[1 + (\omega h)^2/6\bigr]$ ($|\nabla V|^2/12 = \omega^4x^2/12$ が $x^2$ に、$-p^2V''/24$ が $p^2$ に入る)。この $\tilde H$ の運動は $\dot x = A\,p$、$\dot p = -B\,x$ なので、周波数は $\Omega = \sqrt{AB} = \omega\bigl[1 + (\omega h)^2/24 + \cdots\bigr]$ (位相誤差 $(\omega h)^2/24$ が、(§4.2) の $\theta = \omega h[1 + (\omega h)^2/24]$ と同じ)。長さ $L$ の後の運動量は $p(L) = -x_0\,\Omega\sin(\Omega L)/A$ (運動の解 $x = x_0\cos\Omega t$ と $p = \dot x/A$ から) で、$\Omega L \ll 1$ では $\sin(\Omega L) \simeq \Omega L$ なので $p(L) \simeq -x_0\,(\Omega^2/A)\,L = -B\,x_0L$ ($\Omega^2 = AB$)。厳密な (分割なしの) 跳びは $-\omega^2x_0L$ なので、**運動量の跳びの相対誤差 $= B/\omega^2 - 1 = (\omega h)^2/6$**。この $1/6$ は、$|\nabla V|^2/12 = \omega^4x^2/12$ が $\tfrac12Bx^2$ の $x^2$ の係数に入るので $B$ では 2 倍の $\omega^4h^2/6$ になる、という $\tfrac1{12}\times2$ (位相の $1/24$ だけではない)。この $(\omega h)^2/6$ が (8.8a) の右辺そのもの: 係数 $1/6$ は上の 3 行の括弧から出た $\tfrac1{12}\times2$ で、$Q^1$ なのは、跳び $\propto \omega^2L \propto Q$ の相対値だから ($Q^{3/2}$ は位相の絶対値の冪で、別の量)。
+
+**一般の $n$ 極**。1 自由度の $V' = \mathrm{K}n\,x^n/(n!\,L)$ で、運動量の跳びは $-V'\,L$ の分割誤差を持つ。$-p^2V''$ の項は $\omega L\ll1$ で $O(p^2)$ なので落とし、(8.8b) の力は $-\partial_x\bigl[V + \tfrac{h^2}{12}V'^2\bigr] = -V'\bigl[1 + \tfrac{h^2}6V''\bigr]$。したがって跳びの相対誤差は $h^2V''(a_{\max})/6 = Q/(6\,\mathrm{ndiv}^2)$ で、**(8.8) の $a_{\max}^{n-1}$ と $(n-1)!$ ($V'' = K_na^{n-1}/((n-1)!L)$ から) を含めて (8.8a) と同じ**。2 自由度の 6 極 ($V = \tfrac{K}{6L}(x^3 - 3xy^2)$) では、$\Delta\vec p = -\tfrac{h^2L}{6}(\nabla\nabla V)(\nabla V)$ (静止の近似)。経路の中点で評価した値 ($\mathrm{ndiv} = 5$: $(-6.9, 5.1)\times10^{-7}$、17: $(-6.0, 4.4)\times10^{-8}$) が、測定 ($(-6.35, 5.74)\times10^{-7}$、$(-5.50, 4.97)\times10^{-8}$) と 10% 程度で合う (残りは経路上の勾配の変化と $p^2V''$ の項)。
+
+**注意**: この読みが成り立つのは $\omega L \ll 1$ (軌道が 1 回の通過で大きく曲がらない) のとき。$a_{\max}$ では $Q = 2$、$\omega L = 1.4$ で、$\varepsilon = Q/(6\,\mathrm{ndiv}^2)$ は目安に過ぎない (例: EPS = 1 ($\varepsilon = 0.005$) で $\mathrm{ndiv} = 9$、$Q/(6\cdot81) = 0.0041 \le 0.005$)。この読みは、K64 の式の形と全部の数字 (係数、$Q$ の冪、階乗) と合うという意味での推定で、K64 の著者の定義を確認したものではない。(8.8) を「全位相誤差 $Q^{3/2}/(24\,\mathrm{ndiv}^2) \le \varepsilon$」と読むと $\mathrm{ndiv}^2 = Q^{3/2}/(24\varepsilon)$ で、(8.8) の $\mathrm{ndiv}^2$ との比は $4/\sqrt Q$ ($Q = 2$ で 2.8) になり、係数も冪も合わない。
+
+数値例 (K2 = 40 /m²、$L$ = 1 m、$n = 2$): $Q = 0.05 \times 40 \times 1/1! = 2$。EPS = 4, 2, 1, 0.5, 0.25 ($\varepsilon = 0.005\,\mathrm{EPS} = 0.02, 0.01, 0.005, 0.0025, 0.00125$) に対し $\sqrt{Q/(6\varepsilon)} = 4.08, 5.77, 8.16, 11.5, 16.3$、$\mathrm{ndiv} = 1 + \lfloor\cdot\rfloor = 5, 6, 9, 12, 17$ (pysad の `ndiv` と一致、[mult_04_derivations.out.txt](outputs/mult_04_derivations.out.txt) (f3))。実際の振幅 4 mm では $(\omega L)^2 = 40 \times 0.004 \times 1 = 0.16$ で、運動量の跳びの見積り $a\,Q^2/(6\,\mathrm{ndiv}^2L)$ ($a = 4$ mm、$Q = 0.16$) は $\mathrm{ndiv} = 5, 17$ で $6.8\times10^{-7}$、$5.9\times10^{-8}$。下の厳密解との差の測定値 $6.4\times10^{-7}$、$5.5\times10^{-8}$ は、その 0.93 倍 (残りは上の 10%)。
+
+**位相誤差だけの見積りが測定の約 1.5 倍になる理由**。位相誤差だけの見積り $a\,(\omega L)^3/(24\,\mathrm{ndiv}^2)$ ($4.3\times10^{-7}$、$3.7\times10^{-8}$) は、運動量の跳びの誤差のうち位相の $1/24$ 分だけを数え、運動量と座標の比 ($p = \dot x/A$ の $A$ など) の変化を数えていない (調和振動子で、運動量の跳びの相対誤差は位相の $1/24$ ではなく $1/6$)。2 つの見積りの比は $[Q^2/6]/[Q^{3/2}/24] = 4\sqrt Q = 4\,\omega L = 1.6$ ($Q = 0.16$) で、測定/位相の見積り $= 1.49$ (`ndiv` = 5 でも 17 でも) に近い (残り 7% は上の 10% と同じ原因)。つまり**約 1.5 倍は、非線形の力 ($x^2$) の 1 次の振幅依存ではなく、位相の見積りが誤差の一部しか数えていなかったため**。
 
 **誤差の次数**: ANGLE = 0、K2 = 40 /m² (積分強度)、$L$ = 1 m、初期値 $(4, 0.8, -3, -0.4)\times$ (mm, mrad, mm, mrad) で、厳密な運動方程式 (DOP853) との差は、EPS が 4 → 0.25 のとき $6.4 \times 10^{-7} \to 5.5 \times 10^{-8}$。誤差の比は `ndiv` の比の 2 乗とほぼ等しい (1.44 対 1.44、2.25 対 2.25、1.78 対 1.78、2.01 対 2.01)。**2 次**である ([mult_02_tracking.out.txt](outputs/mult_02_tracking.out.txt) (a))。K1 = 0.8 を加えた (b) でも、`ndiv` を 6 → 12 で $1.7 \times 10^{-6} \to 4.2 \times 10^{-7}$ (2 次)。
 
 ### 4.4 フリンジ
 
-- **非線形フリンジ**: `fringe` (DISFRIN = 0) のとき、`mfring ≠ 2` で入口、`mfring ≠ 1` で出口に、$n$ ごとに `ttfrins(…, n*2+2, ±akr(n), al, bzs)` を呼ぶ (`tmulti.f:124-132, 273-281`。`n*2+2` は極の数 $2(n+1)$)。対象は `dofr(n)` が真の成分 (`tffs.f:1436-1443`): K$n$ ≠ 0 かつ ($n \le 2$ か、$\|K_n\|/L\cdot a_{\max}^{n+1}\,\texttt{aninv}(n+1) > \varepsilon$。`aninv(n+1)` は $1/(n+1)$ で、$1/(n+1)!$ ではない。判定量 $(\|K_n\|/L)\,a_{\max}^{n+1}/(n+1)$ は、$n$ 極の場 $K_n x^n/(n!\,L)$ を $x$ で積分した大きさ ($\sim K_na^{n+1}/((n+1)!\,L)$) に近いが $n!$ が無い見積りで、ソースに根拠は書かれていない)。式は [07 章](07_thin_multipole.md) §9 (Maxwell から)。
+- **非線形フリンジ**: `fringe` (DISFRIN = 0) のとき、`mfring ≠ 2` で入口、`mfring ≠ 1` で出口に、$n$ ごとに `ttfrins(…, n*2+2, ±akr(n), al, bzs)` を呼ぶ (`tmulti.f:124-132, 273-281`。`n*2+2` は極の数 $2(n+1)$)。対象は `dofr(n)` が真の成分 (`tffs.f:1436-1443`): K$n$ ≠ 0 かつ ($n \le 2$ か、$\|K_n\|/L\cdot a_{\max}^{n+1}\,\texttt{aninv}(n+1) > \varepsilon$。`aninv(n+1)` は $1/(n+1)$ で、$1/(n+1)!$ ではない。判定量 $(\|K_n\|/L)\,a_{\max}^{n+1}/(n+1)$ は、$n$ 極の場 $K_n x^n/(n!\,L)$ を $x$ で積分した大きさ ($\sim K_na^{n+1}/((n+1)!\,L)$) に近いが $n!$ が無い見積りで、ソースに根拠は書かれていない)。判定量を $D_n \equiv (\|K_n\|/L)\,a_{\max}^{n+1}/(n+1)$ と書き、フリンジの位置のずれ ((7.17) の $m = n + 1$、$\kappa = K_n/L$。第 1 項の大きさ $|\Delta w|/a = \kappa\,a^{m}/(4\,m!\,(m+1))$) と比べると $D_n\big/(|\Delta w|/a) = 4\,n!\,(n + 2)$ (sympy: [mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) (b))。つまり $D_n > \varepsilon$ は、「フリンジの位置のずれが $a_{\max}$ の $\varepsilon/(4\,n!\,(n+2))$ 倍より大きい」と読め、$\varepsilon = 0.005$ で $n = 2$: $1.6\times10^{-4}$、$n = 3$: $4.2\times10^{-5}$、$n = 4$: $8.7\times10^{-6}$、$n = 5$: $1.5\times10^{-6}$ (次数が上がると、より小さいずれまで入れる。$n!$ が無いことの効果)。**ソースの意図 ($n!$ を入れなかった理由) は確認できず、この読みは式の変形である**。
+
+(足りないもの: K64 の著者が $\varepsilon$ をフリンジの何の誤差の上限としたかの定義。上の $n$ ごとの閾値が意図した値かどうかは、このソースからは決まらない。) 非線形フリンジの式は [07 章](07_thin_multipole.md) §9 (Maxwell から)。
+
 - **線形フリンジ (F1・F2)**: 四極 (K1) の線形フリンジ ([04 章](04_quad.md) §7.4 と同じ式)。`f1in`・`f2in`・`f1out`・`f2out` は `tsetfringep` が $\mathrm{K1}/L$ から決める (`tffs.f:1380-1385`)。出口は $a \to -a$。`mfring = 1, 3` が入口、`2, 3` が出口。
-- **K0 の端 (FB1・FB2)**: `tblfri(…, al, ±akr(0), fb)` (入口は `akr(0)`・`fb1`、出口は `-akr(0)`・`fb2`)。偏向磁石の線形フリンジ V ([05 章](05_bend.md) 式 (5.42)) を、$\rho_b = L/\mathrm{K0}$ ($x$ 方向)・$L/\mathrm{SK0}$ ($y$ 方向) で入れる。
+- **K0 の端 (FB1・FB2)**: `tblfri(…, al, ±akr(0), fb)` (入口は `akr(0)`・`fb1`、出口は `-akr(0)`・`fb2`)。偏向磁石の線形フリンジ V ([05 章](05_bend.md) 式 (5.42)) を、$\rho_b = L/\mathrm{K0}$ ($x$ 方向)・$L/\mathrm{SK0}$ ($y$ 方向) で入れる。 垂直 (SK0) への拡張が (5.42) を $+90°$ 回したものになることは [06 章](06_edge_fringe.md) §9.2。
 - **端面の角 (AE1・AE2)**: `tmulk(…, al, akr, psi, nmmax)` (`tmulti.f:4-31, 166-168, 250-252`。`fe` は 16 行目):
 
 $$
@@ -177,19 +210,32 @@ $$
 
 ($\texttt{fe} = -\tan\psi/L$、`cx=fe*(cx+akn(0))*cx0`。§3.1 の Horner 形から、`tmulk` の `cx` は $-(\tan\psi/L)\,z\,C(z)$ に等しい。sympy で差 0、[mult_04_derivations.out.txt](outputs/mult_04_derivations.out.txt) (a)(c)。) **この式の高次の項 ($z\,C(z)$ の形) は、ソースに根拠が書かれていない**。次の手順で導ける (仮定つき)。以下 $t \equiv \tan\psi$。
 
-1. **中央面 ($y = 0$) の値: 余分な長さ × 力**。入口の面は軌道に垂直な平面から $\psi$ だけ傾いていて、面上の点では $s = x\,t$ (矩形偏向磁石 $\psi = \mathrm{ANGLE}/2 > 0$ では、曲げの外側が $x > 0$ で、そこでは磁場の領域が短い。05 章 §5 の符号と同じ向き)。この粒子が受ける磁場の長さは、全長 $L$ に対して $-x\,t$ だけ違う (出口も、`tmulk` に同じ符号の `psi2` を渡すので、$-x\,t$)。長さあたりの力は (8.3) を $L$ で割った $(-\mathrm{Re}\,C,\ +\mathrm{Im}\,C)/L$ なので、
+1. **中央面 ($y = 0$) の値: 余分な長さ × 力**。入口の面は軌道に垂直な平面から $\psi$ だけ傾いていて、面上の点では $s = x\,t$ (矩形偏向磁石 $\psi = \mathrm{ANGLE}/2 > 0$ では、曲げの外側が $x > 0$ で、そこでは磁場の領域が短い。05 章 §5 の符号と同じ向き)。面の方程式を $s = s_f(x) = x\,t$ ($t \equiv \tan\psi$。面は $x$–$s$ 平面の直線で、$y$ に依らない) とおくと、この粒子が磁場の中を走る区間は $s_f \le s \le L$ で、その長さは $\int_{x t}^{L}ds = L - x\,t$。公称の全長 $L$ に対する差が**余分な長さ $-x\,t$** (出口も、`tmulk` に同じ符号の `psi2` を渡すので、$-x\,t$)。長さあたりの力は (8.3) を $L$ で割った $(-\mathrm{Re}\,C,\ +\mathrm{Im}\,C)/L$ なので、
 $$
 \Delta p_x = -(-x\,t)\,\frac{\mathrm{Re}\,C(x)}{L} = \frac{t\,x}{L}\,\mathrm{Re}\,C(x),\qquad
 \Delta p_y = (-x\,t)\,\frac{\mathrm{Im}\,C(x)}{L} = -\frac{t\,x}{L}\,\mathrm{Im}\,C(x)
 $$
-(中央面では縦方向の磁場 $B_s$ は進行方向の速度と平行で力に寄与しない。粒子の経路は $s$ 軸に平行な直線とした。) これが (8.9) の $y = 0$ での値に一致する (sympy で差 0、同 (c) の最終行)。
+(縦方向の磁場 $B_s$ による力は $\vec v\times\vec B_s$ の横成分で、横方向の速度 $v_\perp$ に比例する ($\propto v_\perp B_s$)。$v_\perp \ll 1$ の 1 次の近似では力に寄与しない。経路は $s$ 軸に平行な直線とした。) これが (8.9) の $y = 0$ での値に一致する (sympy で差 0、同 (c) の最終行)。
 2. **$y \ne 0$ への拡張: 調和性**。面を横切る薄い層で積分した横方向の磁場がキックを決めるとして、キックの場 $(\Delta p_x, \Delta p_y)$ は、真空の Maxwell 方程式から、$\nabla\times\vec B = 0$ の $s$ 成分で $\partial_x\Delta p_y - \partial_y\Delta p_x = 0$ (勾配)、$\nabla\cdot\vec B = 0$ を $s$ で積分した式 ($B_s$ は領域の外で 0) から $\partial_x\Delta p_x + \partial_y\Delta p_y = 0$ (調和) を満たす。この 2 式は、複素量 $\Delta p_x - i\,\Delta p_y$ が $z$ の**解析関数**であるという条件 (コーシー・リーマンの式) と同じ。解析関数は実軸 ($y = 0$) の値で一意に決まるので、1. の値 $(t/L)\,x\,C(x)$ の $x \to z$ の拡張
 $$
 \Delta p_x - i\,\Delta p_y = \frac tL\,z\,C(z)\ \Longleftrightarrow\ C_\psi = -\frac tL\,z\,C(z)
 $$
 がただ一つの答えで、(8.9) と一致する。sympy で、(8.9) がコーシー・リーマンの式、$\mathrm{rot} = 0$、$\mathrm{div} = 0$ を満たすこと、ポテンシャル $\Phi = -(t/L)\,\mathrm{Re}\sum_n a_n z^{n+2}/((n+2)\,n!)$ ($\Delta p = -\nabla\Phi$、$\nabla^2\Phi = 0$) を持つことを確認した (同 (c))。C 付録の約束では、$\exp(:f:)\,p_x = p_x + \partial f/\partial x$ なので、この端面の薄いキックは $f = -\Phi = (t/L)\,\mathrm{Re}\sum_n a_n z^{n+2}/((n+2)\,n!)$。
 3. **例**。K0 だけ: $\Delta p_x = +(t\,\mathrm{K0}/L)\,x$、$\Delta p_y = -(t\,\mathrm{K0}/L)\,y$ で、偏向磁石の端面の標準の収束 (水平 $\tan\psi/\rho$、垂直 $-\tan\psi/\rho$、[05 章](05_bend.md) §5) と同じ向き・大きさ。K1 だけ: $\Delta p_x = (t\,\mathrm{K1}/L)(x^2 - y^2)$、$\Delta p_y = -2(t\,\mathrm{K1}/L)\,xy$。
-4. **仮定と限界**。(a) キックは横磁場の面通過の 1 次の積分 (経路は直線)。(b) 層の厚さは 0 の極限 (硬い端)。$n \ge 1$ の磁場では、この硬い端の $y \ne 0$ の値が 1. の「長さ × 力」だけでは決まらないことは、「長さ × 力」だけの式 (K1: $\Delta p_x = t\,\mathrm{K1}\,x^2/L$、$\Delta p_y = -t\,\mathrm{K1}\,xy/L$) の $\mathrm{rot} = -t\,\mathrm{K1}\,y/L \ne 0$ (勾配でない) と、それを調和に直す項 $(-t\,\mathrm{K1}\,y^2/L,\ -t\,\mathrm{K1}\,xy/L)$ で見える (同 (c))。調和性が必要とする補正を、(8.9) は 2 の拡張として全部入れている。
+4. **仮定と限界**。(a) キックは横磁場の面通過の 1 次の積分 (経路は直線)。(b) 層の厚さは 0 の極限 (硬い端)。$n \ge 1$ の磁場では、この硬い端の $y \ne 0$ の値が 1. の「長さ × 力」だけでは決まらない。これを式で見る。「長さ × 力」を $y \ne 0$ へ素直に延ばす (余分な長さ $-x\,t$ は面が $x$ だけで決まるので $y$ に依らず、力は $z = x + iy$ での値) と
+
+$$
+\Delta p_x = \frac{t\,x}{L}\,\mathrm{Re}\,C(x + iy),\qquad \Delta p_y = -\frac{t\,x}{L}\,\mathrm{Im}\,C(x + iy)
+\tag{8.9a}
+$$
+
+(複素の形では $\Delta p_x - i\,\Delta p_y = \dfrac{t\,x}{L}\,C(z)$)。この場の回転 $\mathrm{rot} \equiv \partial_x\Delta p_y - \partial_y\Delta p_x$ を、積の微分と、$C$ が解析的であることによるコーシー・リーマンの式 ($\partial_x\mathrm{Im}\,C = \mathrm{Im}\,C'$、$\partial_y\mathrm{Re}\,C = -\mathrm{Im}\,C'$) で計算する。$\partial_x\Delta p_y = -\dfrac tL\bigl[\mathrm{Im}\,C + x\,\mathrm{Im}\,C'\bigr]$、$\partial_y\Delta p_x = \dfrac{t\,x}L\,(-\mathrm{Im}\,C')$ なので
+
+$$
+\mathrm{rot} = -\frac tL\bigl[\mathrm{Im}\,C + x\,\mathrm{Im}\,C'\bigr] + \frac{t\,x}{L}\,\mathrm{Im}\,C' = -\frac tL\,\mathrm{Im}\,C(z),\qquad \mathrm{div} = \partial_x\Delta p_x + \partial_y\Delta p_y = \frac tL\,\mathrm{Re}\,C(z)
+$$
+
+K0 だけ ($C = \mathrm{K0}$ は実数) では $\mathrm{Im}\,C = 0$ で $\mathrm{rot} = 0$ (一様な力に長さの差をかけたもので、勾配)。K1 では $C = \mathrm{K0} + \mathrm{K1}\,z$、$\mathrm{Im}\,C = \mathrm{K1}\,y$ なので **$\mathrm{rot} = -t\,\mathrm{K1}\,y/L \ne 0$** (K1 の式 $\Delta p_x = t\,\mathrm{K1}\,x^2/L$、$\Delta p_y = -t\,\mathrm{K1}\,xy/L$ は勾配でなく、調和でもない)。(8.9) との差は、複素の形で $\dfrac tL\,z\,C - \dfrac{t\,x}L\,C = \dfrac{i\,t\,y}{L}\,C(z)$。K1 だけなら $\dfrac{i\,t\,y}L\,\mathrm{K1}\,(x + iy)$ の実部と (符号を替えた) 虚部から、$(\Delta p_x,\ \Delta p_y)$ に **$(-t\,\mathrm{K1}\,y^2/L,\ -t\,\mathrm{K1}\,xy/L)$** を足したものが (8.9) で、$\Delta p_x = t\,\mathrm{K1}(x^2 - y^2)/L$、$\Delta p_y = -2\,t\,\mathrm{K1}\,xy/L$ となり、rot・div が 0 の調和な場になる ([mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) (c)。$C = \mathrm{K0} + \mathrm{K1}z + \mathrm{K2}z^2/2$ でも $\mathrm{rot} = -(t/L)\,\mathrm{Im}\,C$、(8.9) $-$ (8.9a) $= (i\,t\,y/L)\,C$ を sympy で確認)。調和性が必要とする補正を、(8.9) は 2 の拡張として全部入れている。
 
 **pysad の v2 との違い**。pysad の v2 は、この端を面の厳密な幾何 ($z_f = x\tan\psi/(1 - (p_x/p_z)\tan\psi)$ の位置まで進み、本体の場で $-z_f$ だけ戻す。`_mult_edge_exact`、`track6.py:2040-2088`) と、縦方向の収束 $\Delta p_y = -(\tan(\psi \pm \theta) - \tan(\pm\theta))\,\mathrm{Im}\,\psi_{\rm pot}$ ($\psi_{\rm pot} = \sum_n(\mathrm{K}n/L)\,z^{n+1}/(n+1)!$、$\theta = \arctan(p_x/p_z)$。入口が $+$、出口が $-$) で置き換える (docs/30 の B223・B224・B292。k64 は `tmulk` のまま)。両者を小さな振幅で比べた ([mult_05_edge_v2_vs_k64.out.txt](outputs/mult_05_edge_v2_vs_k64.out.txt)。$L = 0.02$ m、AE1 = 0.05、$(x, y) = (a, a)$): K0 は $p_x$ の差が 0、$p_y$ の差 $< 3 \times 10^{-11}$ (v2 = K64 の収束)。K1 = 0.3 は $p_y$ の差が $2 \times 10^{-10}$ 以下で合い、**$p_x$ の差が $+t\,\mathrm{K1}\,y^2/L$** ($t\,\mathrm{K1}\,a^2/L = 7.51 \times 10^{-7}$ に対し、測定は $a = 1$ mm で $7.48 \times 10^{-7}$、$a = 2$ mm で $2.99 \times 10^{-6}$ (4 倍)) になる。つまり v2 は $\Delta p_x = t\,\mathrm{K1}\,x^2/L$ (余分な長さの項だけ) で、(8.9) の $-t\,\mathrm{K1}\,y^2/L$ を持たない。2 の調和性の議論からは、この項が運動量だけのキックを勾配 (シンプレクティック) にするために要る項に当たる。v2 の端の写像が $K1 \ne 0$ でシンプレクティックでないこと (docs/30 B224) とも整合するが、**どちらが硬い端の厳密な答えかは、この章の導出 (1 次・硬い端の仮定) からは確定できない** (v2 の基準は、B292 の独立な Maxwell 場の数値積分。$p_x$ の $y^2$ 項をその基準で検証したかは未確認)。
 
@@ -218,11 +264,17 @@ $$
 
 となる。コードは、第 1 成分を `x(i)=cchi1*x-schi1*(s0s-dz)` (一致)、第 3 成分を中心からの値 $(R_1v_0)_s$ でなく原点 (面の位置 `s0s`) からの変位 `ds1` $= (R_1v_0)_s - \mathtt{s0s}$ $= s_1x' + (c_1 - 1)\mathtt{s0s} - c_1\mathrm{DZ}$ (`schi1*x+dcchi1*s0s-cchi1*dz`、$x' = x - \mathrm{DX}$) として持ち、第 2 成分を `y=cchi2*y-schi2*(ds1+s0s)` $= c_2y' - s_2(R_1v_0)_s$ (一致)、`ds2=schi2*y+cchi2*ds1+dcchi2*s0s` $= (R_2R_1v_0)_s - \mathtt{s0s}$ とする。sympy で、`x`・`y`・`ds2` が $R_2R_1v_0$ の成分から $\mathtt{s0s}$ を引いたものに一致することを確認した ([mult_04_derivations.out.txt](outputs/mult_04_derivations.out.txt) (d))。
 
-運動量は、$p_z = \sqrt{1 - p_x^2 - p_y^2}$ (`pz0`) として、方向ベクトル $(p_x, p_y, p_z)$ に同じ $R_2R_1$ をかける ($p_x' = c_1p_x - s_1p_z$、$p_{z1} = s_1p_x + c_1p_z$、$p_y' = c_2p_y - s_2p_{z1}$。コードの `px`・`pz1`・`py` と一致、同 (d))。回転後の位置は、粒子の面 (要素の入口面、回転後の座標で第 3 成分 $= \mathtt{s0s}$) の上にはなく、第 3 成分が $\mathtt{s0s} + \mathtt{ds2}$ にある。そこで、新しい方向 $(p_x', p_y', p_{z2})$ に沿って**面まで戻す**: 戻す距離 (第 3 成分の差 `ds2` を $p_{z2}$ で割った経路長) が $a = \mathtt{ds2}/p_{z2}$ で、$x \to x - a\,p_x'$、$y \to y - a\,p_y'$、$z \to z + a$ ($z$ に加える符号は K64 のコードのとおり。$z$ の約束は [01 章](01_variables_and_conventions.md))。
+運動量は、$p_z = \sqrt{1 - p_x^2 - p_y^2}$ (`pz0`) として、方向ベクトル $(p_x, p_y, p_z)$ に同じ $R_2R_1$ をかける ($p_x' = c_1p_x - s_1p_z$、$p_{z1} = s_1p_x + c_1p_z$、$p_y' = c_2p_y - s_2p_{z1}$。コードの `px`・`pz1`・`py` と一致、同 (d))。回転後の位置は、粒子の面 (要素の入口面、回転後の座標で第 3 成分 $= \mathtt{s0s}$) の上にはなく、第 3 成分が $\mathtt{s0s} + \mathtt{ds2}$ にある。そこで、新しい方向 $(p_x', p_y', p_{z2})$ に沿って**面まで戻す**: 戻す距離 (第 3 成分の差 `ds2` を $p_{z2}$ で割った経路長) が $a = \mathtt{ds2}/p_{z2}$ で、$x \to x - a\,p_x'$、$y \to y - a\,p_y'$、$z \to z + a$。$z$ の符号は [01 章](01_variables_and_conventions.md) の約束 $z = -v\,(t - t_0)$ (先頭が $z > 0$) から決まる: 点を直線に沿って $a$ ($a > 0$ は面を越えている) だけ**後ろ**へ戻すと、その粒子が面を通る時刻は $a/v$ だけ**早い**ので、$z = -v(t - t_0)$ は $+a$ だけ増える。逆に前へ進めれば $z$ は減る。この「$-a\,(\text{位置の移動量})$ だけ $z$ が変わる」関係は、出口でも同じ (次の段)。
 
-**出口** (`ent = .false.`、$\mathtt{s0s} = \mathtt{alg} - L = -L/2$) は、順序が逆で、CHI3 の回転、続いて $R_1^{-1}R_2^{-1}$ (`pz1=-schi2*py+cchi2*pz0` など、符号の反転した行列)、面からの直進、`+dx`、`+dy`。**入口と出口が正確に逆変換であること**を、空の要素 (中は長さ $L$ の直進だけ) で調べた: 入口 → 要素内の直進 $L$ → 出口が、実験室での長さ $L$ の直進に $10^{-17}$ 以下で一致する ((DX, DY, DZ, CHI1, CHI2) = (0, 0, 0, 0.01, 0.02)、(1 mm, 2 mm, 3 mm, 0.01, 0.02)、(1 mm, 2 mm, 3 mm, −0.03, 0.05) など 5 組、同 (d))。これで、**回転の支点は要素の中心 ($\mathtt{alg} = L/2$) で、DZ の符号は ($v_0$ の第 3 成分の) 要素の中心を下流へずらす向き**、と確定した。
+**出口** (`ent = .false.`、$\mathtt{s0s} = \mathtt{alg} - L = -L/2$。要素の中心を原点にした出口の面の第 3 成分は $-\mathtt{s0s} = +L/2$) は、(8.10) の逆変換で、次の 3 行になる (ここでは CHI3 = 0 とする。CHI3 を含めると第 1 行の先頭に $R_3^{-1}$ が付く)。入口の順序 (平行移動 → $R_1$ → $R_2$ → 面へ → CHI3) の逆順で、各段をその逆に置き換える。
 
-**CHI1・CHI2 の向き (ヘルプの (8.10) を文字どおりに読んだとき)**。$R_1^{T}$ の第 3 列から、要素の進行方向の単位ベクトルは実験室で $(\sin\mathrm{CHI}1,\ 0,\ \cos\mathrm{CHI}1)$ (CHI1 > 0 は要素の軸が $+x$ 側へ向く)。さらに $R_2$ を合わせると $R_1^TR_2^T(0, 0, 1)^T = (s_1c_2,\ s_2,\ c_1c_2)$ (CHI2 > 0 は $+y$ 側)。**未確認**: MULT が `tsolrot` に $-\mathrm{CHI}1$、$-\mathrm{CHI}2$ を渡す (`tmulti.f:93, 305, 379, 661`) ので、MULT の実際の向きは上の読みの逆になる可能性がある。この符号が、MULT のヘルプの定義 (CHI1・CHI2 の向き) と合うか、それとも QUAD・BEND など別の要素との向きをそろえるためか、K64 のソースにもヘルプにも説明が無く、確かめていない (pysad の追跡は CHI1・CHI2 を実装していないので数値でも確かめられない。DZ・CHI1・CHI2 の符号を ODE で検証するには、傾いた要素の磁場を実験室の座標で積分する基準が要る)。
+1. **回転 (CHI3 → $R_1^{-1}R_2^{-1}$)**。要素の出口の面にいる粒子の位置 $v = (x, y, +L/2)$ と方向 $\vec p = (p_x, p_y, p_z)$ に ($R_3(\mathrm{CHI}3)^{-1}$ のあと) $(R_2R_1)^{-1} = R_1^{-1}R_2^{-1} = R_1^{\top}R_2^{\top}$ をかける: $v' = R_1^{\top}R_2^{\top}v$、$\vec p' = R_1^{\top}R_2^{\top}\vec p$。成分では $p_y' $ の中間量が `pz1=-schi2*py+cchi2*pz0`、$p_y^{\rm out} = c_2p_y + s_2p_z$ のように、入口の式の $s_i \to -s_i$ に当たる (入口が $R_i$、出口が $R_i^{\top}$)。
+2. **実験室の出口の面まで**。回転した位置 $v'$ の第 3 成分は、実験室の面 (中心が DZ だけずれているので $v'_s + \mathrm{DZ} = +L/2$) からずれている。第 3 成分の残り $a = (v'_s + \mathrm{DZ} - L/2)/p'_z$ を、方向 $\vec p'$ に沿って戻す: $x \to v'_x - a\,p'_x$、$y \to v'_y - a\,p'_y$、$z \to z + a$ (符号は入口と同じ。上の約束から)。
+3. **平行移動を戻す**: $x \to x + \mathrm{DX}$、$y \to y + \mathrm{DY}$ (入口の $x - \mathrm{DX}$、$y - \mathrm{DY}$ の逆)。運動量は第 1 行の $p'_x$、$p'_y$ のまま。
+
+この 3 行を書き下した写像は、K64 の `tsolrot` の出口の枝を書き写したものと、ランダムな DX・DY・DZ・CHI1・CHI2 の 6 組で $1.8\times10^{-17}$ 以内で一致する ([mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) (d))。**入口と出口が正確に逆変換であること**を、空の要素 (中は長さ $L$ の直進だけ) で調べた: 入口 → 要素内の直進 $L$ → 出口が、実験室での長さ $L$ の直進に $10^{-17}$ 以下で一致する ((DX, DY, DZ, CHI1, CHI2) = (0, 0, 0, 0.01, 0.02)、(1 mm, 2 mm, 3 mm, 0.01, 0.02)、(1 mm, 2 mm, 3 mm, −0.03, 0.05) など 5 組、同 (d))。これで、**回転の支点は要素の中心 ($\mathtt{alg} = L/2$) で、DZ の符号は ($v_0$ の第 3 成分の) 要素の中心を下流へずらす向き**、と確定した。
+
+**CHI1・CHI2 の向き**。ヘルプの (8.10) を文字どおりに読むと、$R_1^{T}$ の第 3 列から、要素の進行方向の単位ベクトルは実験室で $(\sin\mathrm{CHI}1,\ 0,\ \cos\mathrm{CHI}1)$ (CHI1 > 0 は要素の軸が $+x$ 側へ向く)。さらに $R_2$ を合わせると $R_1^TR_2^T(0, 0, 1)^T = (s_1c_2,\ s_2,\ c_1c_2)$ (CHI2 > 0 は $+y$ 側)。MULT は `tsolrot` に $-\mathrm{CHI}1$、$-\mathrm{CHI}2$ を渡す (`tmulti.f:93, 305, 379, 661`) ので、**MULT の実際の向きは、この文字どおりの読みの逆** ($(-s_1c_2,\ -s_2,\ c_1c_2)$)。この符号の理由を、コードから次のように決めた ([mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) (e))。ANGLE $\neq 0$ の MULT は `tmulta` で、CHI2 を `tbrot` (BEND 系の回転。`dchi2 = chi2`、符号反転なし) に渡す。$\phi_g = 0$、$\Delta\theta = 0$ の入口で `tbrot` を書き下すと $p_y' = c_2p_y + s_2p_z$、$y' = c_2y - s_2\,\mathtt{alg}$ で、これは `tsolrot` に $-\mathrm{CHI}2$ を渡したときの式 ($p_y' = c_2p_y - s_2^{(ts)}p_{z1}$、$s_2^{(ts)} = \sin(-\mathrm{CHI}2)$) と $5\times10^{-20}$ で一致する (+CHI2 を渡すと $0.11$ 違う)。つまり **$-\mathrm{CHI}$ は、同じ MULT の ANGLE = 0 の経路 (`tsolrot`) と ANGLE $\neq 0$ の経路 (`tbrot`) で CHI2 の向きを同じにするため** (BEND 系にそろえるため。SOL は `tsolrot` に $+$CHI を渡すので、MULT と SOL は逆向き)。CHI1 は `tmulta` が使わない (§6.4) ので、独立な対応物が無く、$-\mathrm{CHI}1$ も CHI2 と同じ呼び出しで同時に反転されていることしか確認できない。**未確認**: ヘルプの定義 (CHI の向き) と MULT の実際の向きが、(8.10) を文字どおりに読んだ向きの逆であること自体が、ヘルプの記述の流儀 (受動/能動の違い) か K64 の符号の取り方かは、gs での傾き要素の追跡が無いと決まらない (pysad の追跡は CHI1・CHI2・DZ を実装していない)。
 
 **確認したこと** (追跡): DX・DY は、$(x - \mathrm{DX}, y - \mathrm{DY})$ で通して $\mathrm{DX}$、$\mathrm{DY}$ を足すのと同じ (差 0)。ROTATE は、入口で座標を $+\theta$ 回し出口で戻すのと同じ (差 0、逆向きは $6 \times 10^{-4}$)。
 
@@ -340,7 +392,16 @@ $$
 3. 刻み: $n_{\min}$〜$n_{\max}$ (`ak` の 0 でない最小・最大の次数) について $\mathrm{ndiv} = 1 + \lfloor\max_n\sqrt{a_{\max}^{\,n-1}|\mathrm{ak}(n)L|/(6(n-1)!\,\varepsilon)}\rfloor$ ((8.8) と同じ形、`tmulta.f:69-78`。$n$ の下限が 0 からで、$n = 0$ では `fact(-1)` が要る。SK0 > 0 の MULT が pysad で未対応な理由)。上限 2000。
 4. 各スライス: `tbend` (半分、入口の端面と Maxwell フリンジ込み) → [キック (8.16) → `tbend` (全体)] を $\mathrm{ndiv} - 1$ 回 → キック → `tbend` (半分、出口の端面)。BEND の $L'$ の補正 ([05 章](05_bend.md) 式 (5.43)) は、`aln` から $(\phi\,\mathrm{fb})^2/(48L)\,\sin(\ldots)/\sin(\phi/2)/\mathrm{ndiv}$ ずつ引く形 (`tmulta.f:82-90`)。**同じ補正が `tffs.f:1366-1371` でも `p_L_MULT` に入っている**。呼び出しの連鎖を追うと、`tturn.f:761` が `tmulti` に `cmp%value(p_L_MULT)` ($= L'$) を渡し、`tmulti.f:79` が `tmulta` にその `al` をそのまま渡す。つまり**追跡の `tmulta` は補正済みの $L'$ を受け取り、さらに引く**。1 回目 ($L' = L - c_1$、$c_1 = ((\phi\,\mathrm{fb}_1)^2 + (\phi\,\mathrm{fb}_2)^2)\,\sin(w/2)/(48\,L\sin(\phi/2))$) に続いて、2 回目は $c_2 = (\ldots)/(48L')\ldots$ (分母が $L'$) を、$\mathrm{ndiv}$ 個のスライスの $\mathtt{aln}$ から $c_2/\mathrm{ndiv}$ ずつ引くので、円弧の合計は $L' - c_2 = L - c_1 - c_2$。pysad は同じ構造 (`multa.compile_multa` が $L'$ を作り、`multa.k_multa` がさらに引く)。数値例 ($L = 1$ m、ANGLE = 0.2、FB1 = FB2 = 0.2、E1 = E2 = 0): $c_1 = 6.667 \times 10^{-5}$、$c_2 = 6.667 \times 10^{-5}$、円弧の合計は $0.99986666$ ($L' = 0.99993333$ から $6.667 \times 10^{-5}$ 短い)。`compile_multa` が渡す `al` が $L'$ に一致することも確認した ([mult_03_Lprime.out.txt](outputs/mult_03_Lprime.out.txt) (1)(2))。
 
-これが**意図か二重補正かは確定できない**: (i) 1 回目の $L'$ は、`tfgeo.f:229` の設計軌道の幾何の長さの補正と同じ式で、$L'$ を「磁場の領域の円弧長」とする定義の側の補正に見える。(ii) 2 回目はスライスの円弧長 ($\mathtt{aln}$) の側の補正で、BEND の追跡 (`tbend`) には無い (BEND では 1 回だけ。`tbend.f` に $\mathtt{fb}^2/48$ の式は無い)。(iii) MULT と BEND (同じ値、K2 = 0) を追跡で比べると、FB1 = FB2 = 0 の対照では差が 0 ($10^{-18}$)、FB1 = FB2 = 0.2 では $\delta = 1\%$ の $x$ で $6.6 \times 10^{-8}$、$x = 1$ mm の $p_x$ で $2.7 \times 10^{-9}$ の差が出るが、BEND の FB の扱いが別経路 (F1 と一緒に `tbend` の中) なので、**この差が 2 回目の補正だけによるとは言い切れない** (同 (3)。原因は未分離)。CALC 側 (`tmultae`、`tmulta.f:327-336`) にも同じ補正があり、`qmult.f:28` が `tmulte` に渡す `al` が $L$ か $L'$ かは未確認。確かめるには、FB ≠ 0 の ANGLE ≠ 0 の MULT で、2 回目の補正を除いた追跡 (pysad の `k_multa` の引き算を外した版) と、独立な硬い端 + 線形フリンジの基準 (05 章の ODE) を比べる必要がある (この章ではしていない)。
+**ODE との比較で確定できたこと** ([mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) (f))。条件: 扇形 (E1 = E2 = 0)、ANGLE = 0.2、$L = 1$ m、FB1 = FB2 = 0.2 m (線形の立ち上がり、$\mathrm{F1} = 0.2$ m)、平面 ($y = 0$)。実験室 $(X, Z)$ で、入口の面からの距離 $s_{\rm in} = Z$ と、出口の面からの距離 $s_{\rm out}$ の、2 つの線形の立ち上がり $g_{\rm in}(s_{\rm in})g_{\rm in}(-s_{\rm out})/\rho'$ の磁場 (磁場の円の半径 $\rho' = L'/\phi$、$L'$ は (5.43) の 1 回だけの補正) の中で、$P' = P\times b$ を DOP853 で積分する ($y = 0$ の中央面では Maxwell フリンジの非線形項は 0)。設計粒子は出口で $x = 7\times10^{-10}$、$p_x = 1.5\times10^{-9}$ に出る (05 章の $L'$ と合う)。$\delta = \pm0.01$ の粒子の出口 $x$ (出口の面の座標) は
+
+| | ODE | MULT | BEND | MULT − ODE | BEND − ODE |
+|---|---|---|---|---|---|
+| $\delta = +0.01$ | $9.8678\times10^{-4}$ | $9.8671\times10^{-4}$ | $9.8677\times10^{-4}$ | $-7.6\times10^{-8}$ | $-1.0\times10^{-8}$ |
+| $\delta = -0.01$ | $-1.00651\times10^{-3}$ | $-1.00644\times10^{-3}$ | $-1.00650\times10^{-3}$ | $+7.3\times10^{-8}$ | $+5.4\times10^{-9}$ |
+
+$\delta$ の奇数部分 ($x$ の分散 $R_{16}$ の誤差) は MULT − ODE $= -7.4\times10^{-6}$、BEND − ODE $= -7.9\times10^{-7}$、MULT − BEND $= -6.65\times10^{-6}$。一方、2 回目の補正 $c_2 = 6.667\times10^{-5}$ m を、角を変えずに円弧の長さから引くと、半径が $c_2/\phi$ だけ小さくなり $R_{16} = \rho(1 - \cos\phi)$ が $-c_2(1 - \cos\phi)/\phi = -6.645\times10^{-6}$ 変わる。**MULT と BEND の差は、この予想と 0.2% で一致する**。BEND (補正は 1 回) は ODE と $10^{-8}$ 以内 (残り $7.9\times10^{-7}$ は、$F1$ の 1 次の近似と、この ODE の違いで、未分離)、MULT は ODE から 10 倍離れる。したがって、**この条件では、`tmulta` の 2 回目の補正は物理的に過剰 (二重補正) で、円弧が $c_2$ 短すぎることによる $R_{16}$ の誤差 $-6.6\times10^{-6}$ を生む**。(意図かどうかは、ソースに説明が無いので決められないが、結果は ODE と合わない。pysad の k64 は K64 のまま、v2 はこの補正を直していない。)
+
+**確認していないこと**: (i) CALC 側 (`tmultae`、`tmulta.f:327-336`) の補正と、`qmult.f:28` が渡す `al` が $L$ か $L'$ か。(ii) $\psi \neq 0$ (矩形)、K2 $\neq 0$、$y \neq 0$、斜め入射。(iii) FB が小さい / 大きいときの $c_2$ の比例 (理論上 $\mathrm{FB}^2$)。(iv) $L'$ 自体の ODE 確認は 05 章 §6.4。
 5. 逆のずれ。
 
 CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。キックを $(1+\delta)$ で割らないなど、追跡と違う点がある (読みだけ)。
@@ -357,6 +418,7 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 | `mult_02_tracking.py` | (a) ANGLE = 0、K2: `ndiv` の式と誤差の次数 (2 次)。(b) K1 + K2。(c) SK$n$ = K$n$・ROTATE $90°/(n+1)$、DX・DY、ROTATE の向き。(d) ANGLE ≠ 0、K2: (8.15) から作った曲線座標の ODE との比較 | [mult_02_tracking.out.txt](outputs/mult_02_tracking.out.txt) |
 | `mult_03_Lprime.py` | ANGLE ≠ 0 の $L'$ の補正が 2 回入る構造 (§6.4 項 4): 補正量、`compile_multa` が渡す `al`、MULT と BEND の追跡の比較 | [mult_03_Lprime.out.txt](outputs/mult_03_Lprime.out.txt) |
 | `mult_04_derivations.py` | 途中式の確認 (sympy・数値): (a) Horner 形 = $C(z)$ (b) 回転 (8.4) (c) 端面の角 (8.9): 解析性・ポテンシャル・K0・K1 の展開 (d) `tsolrot` = (8.10)、入口と出口が逆変換 (e) 漸化式 (8.14)・閉じた形・(8.16) の微分 (f) Strang の誤差 (調和振動子・BCH・ndiv の数値) | [mult_04_derivations.out.txt](outputs/mult_04_derivations.out.txt) |
+| `mult_06_gaps.py` | (a) (8.8) の $\varepsilon$ の読み: 実効ハミルトニアン (8.8b) (BCH、sympy)・その厳密な流れと追跡の誤差の一致・調和振動子と 6 極の見積り。(b) `dofr(n)` の判定量と位置のずれの比 $4n!(n+2)$。(c) (8.9a) の rot・div と (8.9) との差。(d) 出口の 3 行と `tsolrot` の出口の一致。(e) `tbrot(+CHI2)` = `tsolrot(-CHI2)`。(f) ANGLE $\neq 0$ の $L'$ の二重補正: 平面 ODE と MULT・BEND の比較 | [mult_06_gaps.out.txt](outputs/mult_06_gaps.out.txt) |
 | `mult_05_edge_v2_vs_k64.py` | 端面の角の kick: K64 の `tmulk` (8.9) と pysad v2 の厳密な面の幾何の比較 (K0 は一致、K1 は $p_x$ の $y^2$ 項が違う) | [mult_05_edge_v2_vs_k64.out.txt](outputs/mult_05_edge_v2_vs_k64.out.txt) |
 
 実行: リポジトリのルートから `py -3.12 physics_guide/scripts/mult_01_as_expansion.py` (数十秒、sympy)、`py -3.12 physics_guide/scripts/mult_02_tracking.py` (数十秒)、`mult_03`・`mult_05` (数秒)、`mult_04_derivations.py` (数十秒、sympy)。
@@ -372,11 +434,11 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 **この章の範囲外**: ソレノイド中の MULT (`bzs ≠ 0`)、RF つきの MULT (`tmultiacc`。10 章)、放射 (`tradk`、`ndivrad`)、空間電荷 (`spkick`)、MULT の `tmulte` の行列と追跡の比較 (§7)。
 
 **未確認・限界**:
-- **CHI1・CHI2・DZ** (§5.1): `tsolrot` の式が (8.10) の $R_2R_1$ と一致すること、支点が要素の中心 ($L/2$)、入口と出口が逆変換であることは確認した。**未確認**は、MULT が `tsolrot` に $-\mathrm{CHI}1$、$-\mathrm{CHI}2$ を渡す理由 (向きの定義) と、ヘルプの CHI の向きとの対応。pysad の追跡は CHI1・CHI2・DZ を実装していないので数値の確認ができない。
+- **CHI1・CHI2・DZ** (§5.1): `tsolrot` の式が (8.10) の $R_2R_1$ と一致すること、支点が要素の中心 ($L/2$)、入口と出口が (8.10) の逆変換であること (出口の 3 行)、MULT が $-\mathrm{CHI}$ を渡す理由 (ANGLE = 0 の `tsolrot` と ANGLE $\neq 0$ の `tbrot` の向きをそろえる。CHI2 で数値確認) は確認した。**未確認**は、ヘルプの CHI の向きと MULT の実際の向きの対応 (文字どおりの読みの逆) と、CHI1 の独立な確認。pysad の追跡は CHI1・CHI2・DZ を実装していないので数値の確認ができない。
 - **端面の角の式 (8.9)**: 中央面の値と調和性から導出した (§4.4。1 次・硬い端の仮定)。K0 の極限は標準の端面収束と一致。pysad v2 の式は K1 で $p_x$ の $y^2$ 項が違い、どちらが厳密かは確定できない。
-- **刻み数の式 (8.8)**: 因子 $Q = \omega^2L^2$ の意味と $\mathrm{ndiv}^{-2}$ の次数は導出した。**係数 6 は未導出** (足りないもの: $\varepsilon$ が何の誤差の上限か、K64 のソースの説明)。実測は調和振動子の見積りの約 1.5 倍 (理由は未導出)。
+- **刻み数の式 (8.8)**: $\varepsilon$ を「$a_{\max}$ での $n$ 極の運動量の跳びの相対誤差の上限」と読むと、係数 6、$Q^1$、$(n-1)!$ がすべて導出でき、実測 (位相誤差だけの見積りの約 1.5 倍) も位相の $1/24$ だけを数えた見積りの不足で説明できる (§4.3)。ただし $\varepsilon$ の読みは推定で、K64 の著者の定義は未確認。$\omega L \ll 1$ の近似なので、$a_{\max}$ ($\omega L = 1.4$) では目安。`dofr(n)` の判定量に $n!$ が無い理由も未確認 (閾値の読みは §4.4)。
 - **ANGLE ≠ 0**: (8.15) は Maxwell 方程式の厳密な解 ($k$ について無限級数) の $n + k \le 21$ での打ち切り。K0・K1 の ($k \ge 1$ の) 項は入れず、本体 (BEND の円弧) で扱う。追跡との比較 (§8) は、Maxwell フリンジに起因する $\sim 2 \times 10^{-7}$ の残りまでで、これ以上は分離していない。複数の多極 ($n \ge 3$) や、スキュー (SK$n$)・K1 ≠ 0 の ANGLE ≠ 0 は、ODE との比較をしていない。
-- **$L'$ の補正の二重適用の疑い** (§6.4)。ソースの呼び出しの連鎖と pysad の構造から、追跡の `tmulta` が補正済みの $L'$ をさらに補正することは確認した。意図かどうかと、CALC 側 (`tmultae`) の `al` が $L$ か $L'$ かは未確認。
+- **$L'$ の補正の二重適用** (§6.4): ソースの呼び出しの連鎖から追跡の `tmulta` が補正済みの $L'$ をさらに補正することを確認し、平面の ODE (扇形、線形の立ち上がり) との比較で、2 回目の補正が円弧を短くしすぎ ($R_{16}$ の誤差 $-6.6\times10^{-6}$。MULT と BEND の差と 0.2% で一致)、BEND (1 回) の方が ODE に合うことを確認した。CALC 側 (`tmultae`) の `al` が $L$ か $L'$ か、矩形・K2 $\neq 0$ での確認は未。
 - **`tmulk` の高次項** (§4.4): $n \ge 1$ の項は K64 の式と、pysad v2 の幾何厳密な式で水平方向が違う (上記)。F1・F2・FB の端の線形フリンジと (8.9) の重なり (二重に数えていないか) は調べていない。
 - **ずれの CHI の ANGLE ≠ 0 版**: `tmulta` は CHI1・DZ を使わない (§6.4)。この場合の幾何は扱っていない。
 
@@ -388,14 +450,14 @@ CALC (`tmultae`) は `tmulta` と同じ分割で行列を作る (`multae.py`)。
 |---|---|
 | MULT の説明 (reference plane) | **原文で確認**: 「the reference plane is defined so that the skew quadrupole component becomes zero」。§3.3 のとおり ($\theta_1$)。 |
 | SK$n$ の説明 (「ROTATE = $90/(n+1)$ DEG」) | **原文で確認**、数値で一致 (§3.2)。ROTATE の値は $90/(n+1)$ 度 (K1 なら 45、K2 なら 30、…。K6 では 12.857…) と書かれている。「rotated around z-axis by $-90/(n+1)$ degree」は、座標を $+\theta$ 回すことに当たる。 |
-| `misalignments` | **原文で確認**: (8.10) の 3×3 の式 (TeX 版・平文版とも)。「The inverse is applied at the exit」「the geometry of the design orbit is determined by the saved values of CHI1, CHI2, and DZ」。`tsolrot` の式が (8.10) の $R_2R_1$ と一致し、入口・出口が逆変換であることは確認した (§5.1)。MULT が $-\mathrm{CHI}1$、$-\mathrm{CHI}2$ を渡す理由 (ヘルプの向きとの対応) は未確認。 |
+| `misalignments` | **原文で確認**: (8.10) の 3×3 の式 (TeX 版・平文版とも)。「The inverse is applied at the exit」「the geometry of the design orbit is determined by the saved values of CHI1, CHI2, and DZ」。`tsolrot` の式が (8.10) の $R_2R_1$ と一致し、入口・出口が逆変換であることは確認した (§5.1)。MULT が $-\mathrm{CHI}1$、$-\mathrm{CHI}2$ を渡す理由は、ANGLE = 0 と ANGLE $\neq 0$ (`tbrot`) の向きをそろえるためと確認 (§5.1)。ヘルプの向きとの対応 (MULT の実際の向きは (8.10) の文字どおりの読みの逆) は未確認。 |
 | `multipole_with_nonzero_ANGLE` の $g_{kn}$ | **原文で確認、確定した食い違い**: $(2k-1)!!$ は $(2k+1)!!$ の誤り (§6.3)。 |
 | 同じ節の $(x + iy)^{n+k}$ | **原文で確認、確定した食い違い**: $z$ の冪は $n + k + 1$。 |
 | 同じ節の「$n + k \le 21$」 | 原文で確認 (HTML では不等号が欠けて見える)。K64 の `nmult` = 21 と整合。 |
 | `K0`・`K1` の説明 | 「Positive sign means horizontal focusing」は K0 にも付く (K0 は偏向であって収束ではない。コピーの誤記とみられる。確認していない)。SK$n$ の説明の「$L$ is the length」(K$n$ は effective length)。 |
 | ヘルプに無いもの | (1) ANGLE = 0 の分割の構成 (8.7) と刻み数の式 (8.8)。(2) $A_s$ の導出と $g_{kn}$ の漸化式 (§6.2)。(3) 端面の角の式 (8.9)、FB1・FB2 の式。(4) ずれの `tsolrot` の式の詳細。 |
 
-**K64 の実装の癖・疑い**: §6.4 の $L'$ の二重補正 (疑い)。(8.9) の $n \ge 1$ の項と pysad v2 の厳密な幾何の水平方向の違い (§4.4。どちらが厳密かは未確認)。K1 の暗黙の定義 (B160) は MULT の K1 にも同じ。pysad の k64 は `tmulk` (K64)、v2 は面の厳密な幾何 (B223・B224・B292)。
+**K64 の実装の癖・疑い**: §6.4 の $L'$ の二重補正 (ODE との比較で、2 回目の補正は過剰と確認。pysad は K64 のまま)。(8.9) の $n \ge 1$ の項と pysad v2 の厳密な幾何の水平方向の違い (§4.4。どちらが厳密かは未確認)。K1 の暗黙の定義 (B160) は MULT の K1 にも同じ。pysad の k64 は `tmulk` (K64)、v2 は面の厳密な幾何 (B223・B224・B292)。
 
 ## 付録 B. この章で使う Fortran の変数名
 
@@ -425,5 +487,14 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `s0s`・`cchi1`・`schi1`・`dcchi1` | $-\mathtt{alg}$ (入口) / $\mathtt{alg}$ (出口、引数 `alg-al` の符号反転を含む)、$\cos\mathrm{CHI}1$、$\sin\mathrm{CHI}1$、$\cos\mathrm{CHI}1 - 1$。`dcchi2`・`cchi2`・`schi2` も同様 | `tsol.f:30-165` (`tsolrot`)、`xsincos` (`tfloor.f:260`) | — (pysad の追跡は CHI1・CHI2・DZ 未実装) |
 | `ds1`・`ds2` | 回転後の第 3 成分の面からの変位 (§5.1)。`a = ds2/pz2` が面まで戻す経路長 | `tsol.f` | — |
 | `tsolrot`・`tsolqu`・`tdrift` | ずれ・回転 (入口 `ent = .true.`、出口 `.false.`)、四極 + 双極の厳密な本体、K1 = 0 のときのドリフト (K0・SK0 のキック付き) | `tsol.f`、`tsolqu.f`、`tmulti.f:93, 305` | (内部)。入口の回転・ずらしは `lattice._mult_rot_in` ほか |
-| `ampmax`・`eps00`・`ndivmax` (`tmulta`) | ANGLE ≠ 0 の (8.8) の $a_{\max} = 0.05$、$\varepsilon_{00} = 0.005$、上限 2000 (ANGLE = 0 は上の `ampmaxm`・`eps00m`・`ndivmaxm` で上限 1000) | `tmulta.f:15-16, 260` | `multa.AMPMAX`・`EPS00` |
+| `ampmax`・`eps00`・`ndivmax` (`tmulta`) | (8.8) の $a_{\max} = 0.05$ m、$\varepsilon_{00} = 0.005$、上限 2000 (`parameter` 文で `tmulta` の中に定数として持つ。ANGLE = 0 は `tffs.f` の `ampmaxm`・`eps00m`・`ndivmaxm` (上限 1000))。$\varepsilon = \varepsilon_{00}\cdot\mathrm{EPS}$ (EPS = 0 は 1)。$\varepsilon$ の意味は §4.3 | `tmulta.f:15-16, 260` | `multa.AMPMAX`・`EPS00` |
+| `rtaper` | テーパー比。放射と COD の補正 (`RAD`・`RADCOD`・`RADTAPER`) が有効なとき $1 + (\delta_{\rm COD}\text{ の要素の両端の平均}) + \mathtt{dptaper}$ (磁場を局所の運動量に比例させる)、そうでなければ 1。全成分に $\mathtt{akr}(n) \to \mathtt{akr}(n)\cdot\mathtt{rtaper}$、`tmulta` では $\mathrm{ak}(0) \mathrel{+}= (\mathtt{rtaper} - 1)\,\phi$ (ANGLE の分の場もテーパーする) | `tturn.f:389-392`、`tmulti.f:95, 102`、`tmulta.f:50-51` | (内部) |
+| `psi1`・`psi2` | 入口・出口の端面の角 $\mathrm{E1}\cdot\phi + \mathrm{AE1}$、$\mathrm{E2}\cdot\phi + \mathrm{AE2}$ ($\psi$ は数学の標準記号と同じ向きの角。逆向きに置いた要素は入れ替わる)。`tmulk` の `apsi` に渡る | `tffs.f:1339-1351`、`tmulti.f:166, 250` | `pm['psi1']` ほか |
+| `phia`・`phi` | ANGLE (曲げ角 [rad])。`tmulti` の引数が `phia`、`tmulta` の中では `phi` | `tmulti.f:78`、`tmulta.f` | `multa.k_multa` |
+| `dtheta`・`theta`・`chi2` | DROTATE、ROTATE、CHI2 (ANGLE $\neq 0$ では `tbshift`・`tbrot` に渡す。CHI1・DZ は使わない) | `tmulta.f:40-43` | (内部) |
+| `eps0` | 台本の EPS (0 は 1 として扱う)。(8.8) の $\varepsilon = \varepsilon_{00}\cdot\mathrm{EPS}$ に掛かる | `tmulta.f:43-47` | `eps0` |
+| `fb1`・`fb2` | K0 の端 (FB1・FB2) の幅 (偏向磁石の F1 に当たる)。`tblfri` と $L'$ の補正に使う | `tffs.f:1344-1367` | `pm['fb1']` ほか |
+| `mfring` | FRINGE の値 (1 入口、2 出口、3 両方 の判定に使う。§4.4) | `tmulti.f:126, 135, 253, 274` | `mfring` |
+| `trans` | CALC の `tmulte`・`tmultae` の引数の転送行列 (6×12。§7)。数学の標準記号ではなく、Fortran の配列名 | `tmulte.f:66, 92` | `lattice` の行列 |
+| `tmultr5` | K64 のソース (`tmulti.f`・`tmulte.f`・`tmulta.f`) に見つからず、この章では使わない (名前だけの指摘は未確認) | — | — |
 | `fact(k)`・`aninv(k)` | $k!$、$1/k$ (`aninv(0)=aninv(1)=1`)。(8.8)・Horner 形で使う | `tffs.f:1155-1186` | `_FACT` |
