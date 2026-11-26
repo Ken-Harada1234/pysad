@@ -43,7 +43,11 @@ _GS_TL = [20.241775326529364, -4.547386967584856, 12.782565754236398, 1.29162155
 def test_dispersion_through_accelerating_cavity_matches_gs(mode):
     """加速 (減速) する空洞を通る分散。qmat2twiss の gr = gammab(出口)/gammab(入口)。
     薄い空洞では x は変わらず δ = Δp/p が p0/p1 倍になるので、分散は p1/p0 倍 (× SAD の座標の規格化 sqrt(p1/p0)):
-    0.1 → 0.1·(p1/p0)^1.5 = 0.0733855"""
+    0.1 → 0.1·(p1/p0)^1.5 = 0.0733855
+
+    v2 (B330): 厚い空洞 (L=0.5) の端の収束・エネルギー変化に粒子の 1/β が入る (gs・K64 は 1/β なし)。1 GeV の電子で 1/β − 1 = 1.3e-7 なので
+    gs との差は相対 3e-8 (T3 の BX で 2.5e-8)。L=0 の空洞 (T2) は端がないので変わらない。k64 は gs と 1e-11 で一致、v2 は 1e-6 以内で一致し、
+    かつ T3 では B330 による差 (>1e-10) が出る"""
     from pysad import compat
     old = compat._mode
     compat.set_mode(mode)
@@ -56,14 +60,21 @@ def test_dispersion_through_accelerating_cavity_matches_gs(mode):
         v = _nums(out, tag)
         assert len(v) == len(ref)
         for a, b in zip(v, ref):
-            assert abs(a - b) <= 1e-11 * max(1.0, abs(b)), (tag, a, b)
+            if mode == 'k64' or tag == 'T2':
+                assert abs(a - b) <= 1e-11 * max(1.0, abs(b)), (tag, a, b)
+            else:                                           # v2, 厚い空洞: B330 の 1/β による差 (~1e-7 のオーダー)
+                assert abs(a - b) <= 1e-6 * max(1.0, abs(b)), (tag, a, b)
+    if mode == 'v2':
+        assert abs(_nums(out, 'T3')[3] - _GS_T3[3]) > 1e-10 * _GS_T3[3]     # B330 の差が実際に出ている
     g = 5.822268844140862 / 7.15625               # 薄い空洞の β の比 = p1/p0
     assert abs(_GS_T2[8] - 0.1 * g ** 1.5) < 1e-9
 
 
 @pytest.mark.parametrize('mode', ['k64', 'v2'])
 def test_calculate_optics_includes_trpt_acceleration(mode):
-    """N3: CalculateOptics (cell=0) は CALC と同じ結果 (TRPT かつ RFSW の加速を入れる)。区間の途中からでも同じ"""
+    """N3: CalculateOptics (cell=0) は CALC と同じ結果 (TRPT かつ RFSW の加速を入れる)。区間の途中からでも同じ
+    v2 (B330): 空洞の端の 1/β (1 GeV で 1.3e-7) のため gs との差が出る (BX で相対 2e-7)。k64 は gs と 1e-11、v2 は 1e-5 以内。
+    CALC と CalculateOptics の一致 (v[8], v[9] < 1e-13) は v2 でも保たれる"""
     from pysad import compat
     old = compat._mode
     compat.set_mode(mode)
@@ -82,8 +93,9 @@ Exit;
     finally:
         compat.set_mode(old)
     v = _nums(out, 'RES')
+    tol = 1e-11 if mode == 'k64' else 1e-5          # v2: B330 (空洞の端の 1/β)
     for a, b in zip(v[:8], _GS_TL):
-        assert abs(a - b) <= 1e-11 * max(1.0, abs(b))
+        assert abs(a - b) <= tol * max(1.0, abs(b))
     assert v[8] < 1e-13 and v[9] < 1e-13
 
 

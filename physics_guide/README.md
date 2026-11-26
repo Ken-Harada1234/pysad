@@ -115,6 +115,7 @@ py -3.12 physics_guide/scripts/ham_01_lorentz_potential.py      # 01a、付録 C
 | `mult_01_as_expansion.py` | 08 | ANGLE ≠ 0 の $A_s$: ヘルプと K64 の $g_{kn}$、Maxwell 方程式の残差 (sympy) |
 | `mult_02_tracking.py` | 08 | MULT の追跡と厳密な ODE の比較 (`ndiv` の式・2 次の誤差、SK$n$ と ROTATE、DX・DY、ANGLE ≠ 0 の K2) |
 | `cav_01_energy_map.py` | 10 | CAVI の薄い写像 (追跡との一致)、シンプレクティック性、非相対論の補正と $I_0$、重み `ws`、TCAVI、端の収束の $1/\beta$ |
+| `cav_02_edge_lorentz.py` | 10 | CAVI の端の収束・エネルギー変化の $1/\beta$ を、Maxwell の場のローレンツ力の数値積分と gs の保存した出力で確認 (K64 の誤り、v2 は修正) |
 | `mis_01_coord_geometry.py` | 11 | ヘルプの回転行列と `tcoord.f` の $r_{ij}$ (DIR ≠ 0 は不一致)、独立な剛体運動 + 面への戻しと追跡・CALC の一致、6×6 の解析式と数値微分、シンプレクティック性、DIR の非可逆 |
 | `mis_02_element_misalign.py` | 11 | QUAD の DX・DY・ROTATE の順序と符号、BEND の `tbrot` (DROTATE・CHI2) と支点まわりの剛体回転、直線の MULT の CHI1・CHI2・DZ が追跡で無視されること、MARK・APERT |
 | `opt_01_linear_optics.py` | 12 | 閉軌道の Newton 法の収束、分散 $(1-M_4)^{-1}m_6$ と追跡の差分、$BAB^{-1}=P(\mu)$ と Twiss の伝搬 (sympy)、`qmdiag` の式で $RMR^{-1}$ がブロック対角、色収差、ヘルプの $H$ のシンプレクティック性 |

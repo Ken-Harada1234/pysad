@@ -81,7 +81,7 @@ qf.K1, qf._raw                          # 長さあたりの K1、{'L': .125, 'K
 | `set_element(family, key, value)` | 台数 | ファミリー全台に `setattr` (値は pysad 単位: K1 は長さあたり) |
 | `set_error(instance, key, value)` | `Element` | `'QD.3'` 形式で 1 台だけ。SAD の `QD.3 DX 1E-4` |
 | `transfer_matrix(delta)`, `partial_transfer_matrix(i_from, i_to, delta)` | 6×6 | 線形行列の積 (旧 API 系) |
-| `chromaticity()`, `summary()`, `radiation_integrals()`, `emittance(energy_eV)` | | 旧 API 系で SAD 未照合。色収差は `Matcher`/FFS の DP 走査か `emit6d` を使う |
+| `chromaticity()`, `summary()`, `radiation_integrals()`, `emittance(energy_eV)` | | `chromaticity()` は dν/dδ (`twiss_table(±1e-4)` の位相進みの差分。BEND・6 極を含む。追跡のヤコビアン・gs の `Twiss["NX",-1]` の DP0 差分と一致。3 GeV の 1 リング構成で確認、docs/30 B325)。他は旧 API 系で SAD 未照合。FFS の `CHROMATICITY` は QUAD・SEXT・MULT だけ・単位 4π·ξ |
 
 `TwissRow` の属性 (SAD の `twiss(l, 0, 1:28)` と同じ順): `s, name, alfx, betx, mux, alfy, bety, muy, etx, etpx, ety, etpy, r1, r2, r3, r4, detr, x_cod, px_cod, y_cod, py_cod, z_cod, delta_cod, alfz, betz, muz, zx, zpx, zy, zpy`。`to_dict()` で `ax, bx, …` の別名も得られる。4D CALC では `alfz..zpy` は 0 (これらは `calc6d` が埋める)。
 

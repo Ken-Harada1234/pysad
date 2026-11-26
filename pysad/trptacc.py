@@ -76,6 +76,12 @@ def gammab_profile(elements: List, p0: float, charge: float = 1.0, amass: float 
 # ---------------------------------------------------------------- tcavfrie (解析ヤコビアン付き)
 def _cavfrie_piece(st: _State, al, v, w, dphis, s0, p0):
     """tcave.f tcavfrie (autophi=F)。出口は v → −v で呼ぶ"""
+    from . import compat as _cmp
+    if _cmp.v2():
+        # v2 (B330): 1/β つきの写像 (emit6d._tcavfrie_map)。解析ヤコビアンは K64 の式のままなので、数値微分に任せる
+        from .emit6d import _tcavfrie_map
+        st.piece(_tcavfrie_map(al, v, w, dphis, s0, p0), symp_z=False)
+        return
     vf = v / al / p0 * 0.5
 
     def f(c):

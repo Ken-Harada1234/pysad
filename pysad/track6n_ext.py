@@ -431,7 +431,7 @@ def tztafs(zwu, pxt, pyt, zw1, wst, w12t, swss, g1t,
 
 
 @njit(**NJ)
-def tz_step1(i, S, aln0, akk, bz, first):
+def tz_step1(i, S, aln0, akk, bz, first, v2f=False):
     """tsolqu/tsolqur の bz≠0 分岐の 1 スライス (tzsetparams + 本体)。戻り: この粒子の bzp"""
     # --- tzsetparams (track6 _TZ.__init__)
     pr = 1.0 + S[i, 5]
@@ -476,8 +476,13 @@ def tz_step1(i, S, aln0, akk, bz, first):
     pxi = S[i, 1]
     S[i, 0] += (a24 * pxi - a14 * S[i, 3]) / bzp
     S[i, 2] += (a14 * pxi + a24 * S[i, 3]) / bzp
-    pxi = a22 * pxi + a24 * S[i, 3]
-    pyi = -a24 * pxi + a22 * S[i, 3]          # SAD のまま: 更新後の pxi を使う
+    if v2f:
+        # v2 (B333): 更新前の px で回転 (track6._tsolqu と同じ)
+        pyi = -a24 * pxi + a22 * S[i, 3]
+        pxi = a22 * pxi + a24 * S[i, 3]
+    else:
+        pxi = a22 * pxi + a24 * S[i, 3]
+        pyi = -a24 * pxi + a22 * S[i, 3]          # SAD のまま: 更新後の pxi を使う
     S[i, 4] -= (3.0 + dpz) * ap / 2.0 / (2.0 + dpz) * r
     xi = S[i, 0]; yi = S[i, 2]
     a = (w2 * ws * xi - bzp * pyi) * wss
@@ -538,7 +543,7 @@ def tsolqu_bz_all(S, n, al, ak, bz, eps0, krad, fluc, rs, p0, h0, anrad, cuc):
     bzp_last = 0.0
     for m in range(ndiv):
         for i in range(n):
-            bzp_last = tz_step1(i, S, aln0, akk, bz, m == 0)
+            bzp_last = tz_step1(i, S, aln0, akk, bz, m == 0, rs.shape[0] > 1 and rs[1] == 1)
         if krad:
             tradk_all(S, n, aln0, 0.0, fluc, rs, p0, anrad, cuc)
     if krad and not (rs.shape[0] > 1 and rs[1] == 1):
@@ -799,7 +804,7 @@ def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True,
     ak01 = akr0 * ws[1] * 0.5
     if nz and fringe and fr_in:
         if use_rf:
-            _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+            _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0, _n._cav_b2())
         mult_fringe_all(S, n, akr, dofr, nmmax, al, 1.0, False)
     fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
     fw_save = kick.fw if kick is not None else 0.0
@@ -848,7 +853,7 @@ def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True,
         if fringe and fr_out:
             mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
             if use_rf:
-                _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+                _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0, _n._cav_b2())
         if krad:
             if hook is not None:
                 hook.last = True
@@ -1059,7 +1064,7 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
     al1 = al * ws[1] * 0.5
     ak01 = akr0 * ws[1] * 0.5
     if nz and fringe:
-        _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0)
+        _n.cav_frin_all(S, n, al, v, w, dphis, offset, p0, h0, _n._cav_b2())
         mult_fringe_all(S, n, akr, dofr, nmmax, al, 1.0, False)
     fw0 = 2.0 * kick.fw if kick is not None else 0.0          # kick_factor は 1/2 込み
     fw_save = kick.fw if kick is not None else 0.0
@@ -1101,7 +1106,7 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
         mult_qu_all(S, n, al1, ak1, eps0, ak01.real, ak01.imag, _qb.sch_of(rs))
         if fringe:
             mult_fringe_all(S, n, akr, dofr, nmmax, al, -1.0, True)
-            _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0)
+            _n.cav_frin_all(S, n, al, -v, w, dphis, offset, p0, h0, _n._cav_b2())
         if krad:
             tradk_all(S, n, al1, 0.0, fluc, rs, p0, ph.anrad, ph.cuc)
     mult_rot_out(S, n, dx, dy, ct, st)
@@ -1310,9 +1315,9 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, 
     elif kind == _n.K_UND:
         from . import und as _un
         if pr[1] != 0.0 or pr[2] != 0.0:
-            _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc)
+            _un.k_und_field(S, n, *pr, p0, h0, rad, fluc, rs, anrad, cuc, _n._cav_b2())
         else:
-            _un.k_und(S, n, *pr, p0, h0)
+            _un.k_und(S, n, *pr, p0, h0, _n._cav_b2())
     elif kind == _n.K_DRIFT:
         _n.k_drift(S, n, pr[0])
     elif kind == _n.K_QUAD:
@@ -1345,7 +1350,7 @@ def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, 
             offset = math.sin(dphis) - math.sin(phis)
             offset1 = math.sin(phis)
         tlim = 1e4 if rfsw else 0.0
-        _n.k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0)
+        _n.k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, _n._cav_b2())
     elif kind == _n.K_STEER0:
         _n.k_steer0(S, n, pr[0], pr[1], pr[2], pr[3], pr[4], pr[5])
     elif kind == _n.K_STEER:

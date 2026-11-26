@@ -261,20 +261,22 @@ Exit;
 
 @pytest.mark.parametrize('mode', ['k64', 'v2'])
 def test_response_matrix_trpt_matches_gs(mode):
-    """pgrmat.f: TRPT では応答に sqrt(gammab(stt+1)/gammab(mon)) が掛かる (加速による断熱減衰)。1 → 1.2 GeV の加速"""
+    """pgrmat.f: TRPT では応答に sqrt(gammab(stt+1)/gammab(mon)) が掛かる (加速による断熱減衰)。1 → 1.2 GeV の加速
+    v2 (B330): 空洞の端の 1/β (1 GeV で 1.3e-7) のため応答が gs と相対 4e-9 (RM[0] で 1.9e-8) 違う。k64 は gs と 1e-9 以内、v2 は 1e-7 以内"""
     old = compat._mode
     compat.set_mode(mode)
     try:
         out = _out(RM)
     finally:
         compat.set_mode(old)
+    tol = 1e-9 if mode == 'k64' else 1e-7
     g = lambda t: _nums([l for l in out.splitlines() if l.startswith(t + ' =')][0])
     for a, b in zip(g('RM'), [-5.180683831097, -1.896985774280]):
-        assert abs(a - b) < 1e-9
+        assert abs(a - b) < tol
     for a, b in zip(g('R1'), [-1.459575549598, 0.0]):
-        assert abs(a - b) < 1e-9
+        assert abs(a - b) < tol
     for a, b in zip(g('RN'), [-5.675154846643, -1.896985774280]):
-        assert abs(a - b) < 1e-9
+        assert abs(a - b) < tol
     assert abs(g('RM')[0] / g('RN')[0] - math.sqrt(1.0 / 1.2)) < 2e-5        # 運動量の比の平方根
 
 

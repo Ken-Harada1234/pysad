@@ -511,7 +511,10 @@ def _tbedgebody_cod(cod: np.ndarray, rhob: float, psi: float) -> np.ndarray:
 
 def _tbedgemaxwell_cod(cod: np.ndarray, rhob: float) -> np.ndarray:
     """SADのtbedgemaxwell COD更新のみ (Fortranソース直訳)。
-    tbfrie.f subroutine tbedgemaxwell"""
+    tbfrie.f subroutine tbedgemaxwell
+
+    k64: Δx = bf·p、Δz = −bf·px (K64 の式。因子 p = 1+δ が 1 つ足りない)。
+    v2 (B324): Δx = bf·p²、Δz = −bf·px·p (追跡 tbendcore の式、(5.36)、解析行列 trans の微分と一致)"""
     cod = cod.copy()
     pr = 1.0 + cod[5]
     pxi = np.clip(cod[1], -pr, pr)
@@ -524,9 +527,10 @@ def _tbedgemaxwell_cod(cod: np.ndarray, rhob: float) -> np.ndarray:
     af = a * yi / rhob / pvi
     b = 0.5 - yr / 24.0
     bf = b * yi**2 / rhob / pvi2 / pvi
-    cod[0] = cod[0] + bf * pr
+    pp = pr if _compat.v2() else 1.0
+    cod[0] = cod[0] + bf * pr * pp
     cod[3] = np.clip(cod[3] - af * pxi, -pr, pr)
-    cod[4] = cod[4] - bf * pxi
+    cod[4] = cod[4] - bf * pxi * pp
     return cod
 
 
@@ -1752,6 +1756,72 @@ def _exact_drift_cod(c: np.ndarray, L: float) -> np.ndarray:
     return c
 
 
+# 4 次の力勾配型の分割の係数 (K64 tquad.f tthin。追跡 track6._TT_* と同じ値)
+_TT_ALPHA = 2.88675134594812882e-1
+_TT_BETA = 2.23290993692602255e-2
+_TT_GAMMA = 9.43738783765593145e-4
+_TT_ALPHA1 = 0.5 - _TT_ALPHA
+
+
+def _thin4_active(L: float, ak: float, kord: int) -> bool:
+    """v2 (B326): L≠0 の 6 極以上 (kord ≥ 2) の CALC・Emittance[] の厚いキックを追跡 (tthin) と同じ 4 次の分割にする。
+    K64 の tthine は 2 次 (L/6 → 2L/3 → L/6、補正キックなし) なので、動いた軌道のまわりの線形化 (チューン・クロマティシティ) が追跡とずれた"""
+    return bool(_compat.v2() and L != 0.0 and ak != 0.0 and kord >= 2)
+
+
+def _thin4_corr(x: float, y: float, pr: float, aki: float, kord: int, L: float, want_jac: bool = False):
+    """tthin の中央の補正キック (力勾配型。追跡の c[1] += aki²(f1 rk x − aki(f2 rk1 x rcx1 + f3 rk Re cx)) ほか、zi += ...) の、
+    正準運動量 (CALC の px・py = 追跡の px・py × (1+δ)) での (Δpx, Δpy, Δz) と、want_jac=True のときは (x, y, δ) に対する 3×3 の微分。
+    aki = ak/kord! (全強度)、pr = 1+δ。追跡の A = aki/pr として Δp_正準 = pr·ΔP_追跡 = (aki²/pr)·f1·rk·(x, y) − (aki³/pr²)·(f2 rk1 (x, y) R + f3 rk (Re, Im)(cx))、
+    Δz = (aki²/pr²)·f4 rk r − (aki³/pr³)·f5 rk R  (R = rcx1 = Re((x − iy)^(kord+1)))"""
+    k = kord
+    f1 = _TT_BETA * k * L
+    f2 = 2.0 * _TT_GAMMA * k * (k - 1) * L**2
+    f3 = _TT_GAMMA * k * (k + 1) * L**2
+    f4 = 0.5 * _TT_BETA * L
+    f5 = 2.0 * _TT_GAMMA * k * L**2
+    r = x * x + y * y
+    rk1 = r**(k - 2)
+    rk = r * rk1
+    w = complex(x, -y)
+    cx = w**k
+    R = x * cx.real + y * cx.imag
+    B1 = aki * aki / pr
+    B2 = aki**3 / pr**2
+    Sx = f2 * rk1 * x * R + f3 * rk * cx.real
+    Sy = f2 * rk1 * y * R + f3 * rk * cx.imag
+    d3 = aki**2 / pr**2
+    d4 = aki**3 / pr**3
+    dp = np.array([B1 * f1 * rk * x - B2 * Sx, B1 * f1 * rk * y - B2 * Sy, d3 * f4 * rk * r - d4 * f5 * rk * R])
+    if not want_jac:
+        return dp, None
+    g = k * w**(k - 1)
+    gr, gi = g.real, g.imag
+    drk_x = 2.0 * (k - 1) * rk1 * x
+    drk_y = 2.0 * (k - 1) * rk1 * y
+    r3 = r**(k - 3) if k >= 3 else 0.0
+    drk1_x = 2.0 * (k - 2) * r3 * x
+    drk1_y = 2.0 * (k - 2) * r3 * y
+    R_x = cx.real + x * gr + y * gi
+    R_y = cx.imag + x * gi - y * gr
+    Sx_x = f2 * (drk1_x * x * R + rk1 * R + rk1 * x * R_x) + f3 * (drk_x * cx.real + rk * gr)
+    Sx_y = f2 * (drk1_y * x * R + rk1 * x * R_y) + f3 * (drk_y * cx.real + rk * gi)
+    Sy_x = f2 * (drk1_x * y * R + rk1 * y * R_x) + f3 * (drk_x * cx.imag + rk * gi)
+    Sy_y = f2 * (drk1_y * y * R + rk1 * R + rk1 * y * R_y) + f3 * (drk_y * cx.imag - rk * gr)
+    A = B1 * f1
+    Jd = np.zeros((3, 3))
+    Jd[0, 0] = A * (drk_x * x + rk) - B2 * Sx_x
+    Jd[0, 1] = A * drk_y * x - B2 * Sx_y
+    Jd[0, 2] = -A / pr * rk * x + 2.0 * B2 / pr * Sx
+    Jd[1, 0] = A * drk_x * y - B2 * Sy_x
+    Jd[1, 1] = A * (drk_y * y + rk) - B2 * Sy_y
+    Jd[1, 2] = -A / pr * rk * y + 2.0 * B2 / pr * Sy
+    Jd[2, 0] = d3 * f4 * (drk_x * r + rk * 2.0 * x) - d4 * f5 * (drk_x * R + rk * R_x)
+    Jd[2, 1] = d3 * f4 * (drk_y * r + rk * 2.0 * y) - d4 * f5 * (drk_y * R + rk * R_y)
+    Jd[2, 2] = -2.0 * d3 / pr * f4 * rk * r + 3.0 * d4 / pr * f5 * rk * R
+    return dp, Jd
+
+
 def _tthine_cod(c: np.ndarray, L: float, ak: float, kord: int) -> np.ndarray:
     """
     SAD tthine.f の COD 更新のみ (放射なし, dx=dy=theta=0)。
@@ -1759,10 +1829,29 @@ def _tthine_cod(c: np.ndarray, L: float, ak: float, kord: int) -> np.ndarray:
     ak = 積分強度 (SAD の K)。aki = ak/kord!。
     長さありのとき: ドリフト L/6 → キック(aki/2) → ドリフト 2L/3 → キック(aki/2) → ドリフト L/6
     キック: cx = (x − i y)^kord,  px −= aki·Re(cx),  py −= aki·Im(cx)  (正準運動量、1/(1+δ) なし)
+    v2 (B326): L≠0 の kord ≥ 2 は追跡 (tthin) と同じ 4 次: ドリフト L(1/2−α) → キック(aki/2) → ドリフト αL → 補正キック (_thin4_corr) → ドリフト αL → キック(aki/2) → ドリフト L(1/2−α)
     """
     if ak == 0.0:
         return _exact_drift_cod(c, L)
     aki = ak / math.factorial(kord)
+    if _thin4_active(L, ak, kord):
+        def kick4(c, a):
+            c = c.copy()
+            cx = complex(c[0], -c[2]) ** kord
+            c[1] -= a * cx.real
+            c[3] -= a * cx.imag
+            return c
+        c = _exact_drift_cod(c, L * _TT_ALPHA1)
+        c = kick4(c, aki * 0.5)
+        c = _exact_drift_cod(c, L * _TT_ALPHA)
+        dp, _ = _thin4_corr(c[0], c[2], 1.0 + c[5], aki, kord, L)
+        c = c.copy()
+        c[1] += dp[0]
+        c[3] += dp[1]
+        c[4] += dp[2]
+        c = _exact_drift_cod(c, L * _TT_ALPHA)
+        c = kick4(c, aki * 0.5)
+        return _exact_drift_cod(c, L * _TT_ALPHA1)
 
     def kick(c, a):
         c = c.copy()
@@ -4087,43 +4176,34 @@ class Lattice:
 
     def chromaticity(self, ddelta: float = 1e-4) -> tuple:
         """
-        色収差 (ξx, ξy)。10/11 系から移植した pysad 独自の計算法
-        (SAD の直訳ではない。SAD との照合は未実施 = 次のベンチ Level 3 の対象)。
+        一次の色収差 (ξx, ξy) = dν/dδ。δ = ±ddelta で閉軌道と光学を求め (twiss_table = SAD の CALC と同じ流れ)、
+        1 周の位相進みの中心差分 (ν(+ddelta) − ν(−ddelta)) / (2 ddelta) を返す (ν = μ/2π。整数部を含む連続値)。
 
-        自然色収差: 線形一周行列のトレースの数値微分
-            ξ = (1/2π)·(−1/sin 2πQ)·d(cos 2πQ)/dδ
-        6 極の寄与: 解析式 ±Σ K2 η β L/(4π) を加算 (線形行列に K2 が現れないため)
+        閉軌道が分散で動くので、四極の自然な色収差、偏向磁石 (本体の弱収束・端面・K1≠0 の複合機能) が動いた軌道上で見る
+        δ 依存、6 極 (分散による軌道のずれ × K2) をまとめて含む。追跡の 1 周写像のヤコビアンから出したチューンの差分、
+        gs (K64) の ``Twiss["NX",-1]`` の DP0 差分と一致する (docs/12 の線形光学の章 §7)。
+        FFS の ``CHROMATICITY`` コマンドとは別の量: コマンドは QUAD・SEXT・MULT だけの閉形式 (ヘルプの「simplest formula」、
+        BEND を数えない) で、値は 4π·ξ の単位 (四極だけなら TOTAL = 4π·ξ)。
+
+        RF は無視 (RFSW を一時的に OFF)。閉軌道の初期値・安定判定の状態は呼ぶ前に戻す。
+        不安定な δ では twiss_table が例外を出す。
         """
-        from .elements import Sextupole
-        M_p = np.eye(6)
-        M_m = np.eye(6)
-        M_0 = np.eye(6)
-        for el in self.elements:
-            M_p = el.transfer_matrix(+ddelta) @ M_p
-            M_m = el.transfer_matrix(-ddelta) @ M_m
-            M_0 = el.transfer_matrix(0.0) @ M_0
-        cos_x0 = (M_0[0, 0] + M_0[1, 1]) / 2.0
-        cos_y0 = (M_0[2, 2] + M_0[3, 3]) / 2.0
-        sign_sin_x = np.sign(M_0[0, 1]) if abs(M_0[0, 1]) > 1e-15 else 1.0
-        sign_sin_y = np.sign(M_0[2, 3]) if abs(M_0[2, 3]) > 1e-15 else 1.0
-        sin_x0 = np.sqrt(max(1e-30, 1.0 - cos_x0**2)) * sign_sin_x
-        sin_y0 = np.sqrt(max(1e-30, 1.0 - cos_y0**2)) * sign_sin_y
-        d_cos_x = ((M_p[0, 0] + M_p[1, 1]) - (M_m[0, 0] + M_m[1, 1])) / (2.0 * ddelta) / 2.0
-        d_cos_y = ((M_p[2, 2] + M_p[3, 3]) - (M_m[2, 2] + M_m[3, 3])) / (2.0 * ddelta) / 2.0
-        xi_x = (1.0 / (2.0 * np.pi)) * (-1.0 / sin_x0) * d_cos_x
-        xi_y = (1.0 / (2.0 * np.pi)) * (-1.0 / sin_y0) * d_cos_y
-
-        tw_list = self.twiss(delta=0.0, full=True)
-        for i, el in enumerate(self.elements):
-            if isinstance(el, Sextupole) and abs(el.K2) > 1e-15:
-                tw_in  = tw_list[i]
-                tw_out = tw_list[i + 1]
-                bx = 0.5 * (tw_in['bx'] + tw_out['bx'])
-                by = 0.5 * (tw_in['by'] + tw_out['by'])
-                ex = 0.5 * (tw_in['ex'] + tw_out['ex'])  # η_x
-                xi_x += el.K2 * ex * bx * el.L / (4.0 * np.pi)
-                xi_y -= el.K2 * ex * by * el.L / (4.0 * np.pi)
-
+        global RFSW
+        cod0 = None if self._cod_prev is None else self._cod_prev.copy()
+        q0 = getattr(self, '_qstat', None)
+        rf0 = RFSW
+        RFSW = False
+        try:
+            mu = []
+            for sgn in (1.0, -1.0):
+                t = self.twiss_table(delta=sgn * ddelta)[-1]
+                mu.append((float(t.mux), float(t.muy)))
+        finally:
+            RFSW = rf0
+            self._cod_prev = cod0
+            self._qstat = q0
+        xi_x = (mu[0][0] - mu[1][0]) / (4.0 * np.pi * ddelta)
+        xi_y = (mu[0][1] - mu[1][1]) / (4.0 * np.pi * ddelta)
         return xi_x, xi_y
 
     # ------------------------------------------------------------------

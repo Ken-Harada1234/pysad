@@ -1,0 +1,10 @@
+MOMENTUM = 3GEV;
+UND UN=(L=1 KX=0.1 QY=0.2 POLE=10 SLICE=4 PHI=30);
+MARK ST = ();
+LINE ONE = (ST UN);
+FFS; NORFSW; NORAD; NOFLUC;
+$FORM = "22.16";
+beam = {{1e-4, 0.0, 0.0, 0.0, 0.0}, {2e-4, 0.0, 0.0, 0.0, 0.0}, {0.0, 1e-4, 0.0, 0.0, 0.0}, {0.0, 0.0, 2e-4, 0.0, 0.0}, {0.0, 0.0, 0.0, 0.0, 0.0}, {1e-3, 1e-3, 1e-2, -1e-2, 0.0}, {1.0, 1.0, 1.0, 1.0, 1.0}};
+USE ONE; CELL;
+r = TrackParticles[{1, beam}, 1, 1, 1];
+Print["R ", r[[2]]];

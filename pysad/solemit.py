@@ -173,7 +173,7 @@ def _tsolque(st, aln, akn, bz, eps0, enarad, psi_out=None, kq=None):
 
         def body(S, i, first=first):
             _tomech(S, i, bz)
-            _x.tz_step1(i, S, aln1, akk, bz, first)       # 半 (または全) ドリフト + 本体 (K64 の tqente + 本体)
+            _x.tz_step1(i, S, aln1, akk, bz, first, _compat.v2())       # 半 (または全) ドリフト + 本体 (K64 の tqente + 本体)
             _tocan(S, i, bz)
         _piece(st, body)
         if enarad and n != ndiv:

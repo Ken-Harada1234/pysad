@@ -1,4 +1,4 @@
-pysad: D:\work\SAD-master\pysad-v250-work\pysad
+pysad: D:\work\SAD-master\pysad-v250-chrom\pysad
 リング: 8 セル、周長 41.600 m、チューン (νx, νy) = (1.9403, 1.0280)
 
 == (a) 閉軌道の Newton 法 (非線形: 6 極を 1 台、ずれた四極を 1 台) ==
@@ -30,10 +30,11 @@ Riccati 式 Q + r̂P - K r̂ - r̂ N r̂ の残差 = 5.3e-17
 r̂ = κ (Q - N̄)、κ = -2/(tr(P-K) + sgn √(trab2)) との差 = 1.4e-17
 
 == (e) 色収差 ==
-SAD の CHROMATICITY の TOTAL (四極・6 極だけの閉形式、BEND は数えない。SAD の位相 [rad] の δ 微分): TOTAL                  -30.589          -34.332
-  -> 2π で割ると (dνx/dδ, dνy/dδ) = (-4.8684, -5.4641)
+SAD の CHROMATICITY の TOTAL (CELL; CALC のあと。四極・6 極だけの閉形式、BEND は数えない。四極だけなら 4π dν/dδ の単位): TOTAL                  -10.613          -14.827
+  -> 4π で割ると (BEND の寄与を含まない) (-0.8446, -1.1799)
 追跡 + Newton + 1 周の Jacobian の μ (符号は M12 で決める) から: dν/dδ = (-0.7797, -0.8787) (小数部。整数部は 1 周の行列では決まらない)
-lat.chromaticity() (pysad 独自の計算、要素の transfer_matrix(δ) による): (ξx, ξy) = (-1.4563, -1.1799)
+lat.chromaticity() (twiss_table(±δ) の位相進みの差分): (ξx, ξy) = (-0.7797, -0.8787)
+  gs (K64) の Twiss["NX",-1] の DP0 = ±1e-4 の差分 (CELL; NORFSW): (-0.7797363826, -0.8786795941) (保存した値。この環境で別に実行)
 
 == (e2) 四極だけのリング (偏向なし): 追跡の色収差と閉形式 -(1/4π) Σ K1L β の比較 ==
 チューン (νx, νy) = (1.1995, 1.0280)。薄いレンズの近似: dνx/dδ = -1.1664、dνy/dδ = -1.1273 (= -(1/4π) Σ ±K1L β、β は要素の両端の平均)
