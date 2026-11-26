@@ -449,3 +449,13 @@ def test_repo_index_lists_all_docs():
         assert 'href="%s"' % (r[:-3] + '.html') in ix, r
     if (root / 'index.html').exists() and (root / 'search_index.json').exists():
         assert site_index.check_site(root) == []
+
+
+def test_heading_ids_with_math_do_not_depend_on_the_number_of_formulas(tmp_path):
+    """見出しの数式は、TeX の文字から ID を作る。前に式が増えても、ページ内リンクの ID は変わらない (置き換え名の通し番号に依らない)"""
+    from md_to_html import _ids_of_text
+    a = '# 題\n\n## 1. $H_2$ の厳密解\n\n本文 $x$\n'
+    b = '# 題\n\n式 $a$ と $b$ と $c$。\n\n## 1. $H_2$ の厳密解\n\n本文 $x$\n'
+    ia, ib = _ids_of_text(a), _ids_of_text(b)
+    assert ia == ib
+    assert '1-h_2-の厳密解' in ia and not any('zzmathzz' in i for i in ia)
