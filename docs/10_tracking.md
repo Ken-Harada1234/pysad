@@ -58,6 +58,18 @@ npara = min(NPARA, npz/npparamin + 1, ne*npz/npnlatmin + 1)     npparamin = 9, n
 - 子プロセスごとに `kseed = kseed + 2` として `tfaddseed(kseed)` を呼び、`SeedRandom[現在の種 + kseed]` で乱数の種をずらす (tftrack.f:629-)。したがって FLUC の乱数列を SAD と pysad で一致させるには **`NPARA = 1` をスクリプトに入れる**か、**`NPARA=n;` で同じ分け方を再現する** (pysad の既定は NPARA=1)。子 k (k = 1, 2, …、条件 `ipn + np1 < np` かつ `npr < npara`) は乱数の種 = 親の種 + 2k で粒子 `[ipn, ipn + np1)` を追い、親は残りを元の種で追う (有効な並列数 = min(NPARA, np/9 + 1, ne·np/3000 + 1))。pysad の分け方は RAD + FLUC の追跡だけ (POL・RADLIGHT・PHOTONS・WAKE は分けない)。FODO リング (np = 200、1・10・100 周) の rms dp と最終の乱数の種が NPARA=1 と 4 の両方で gs と全桁一致、np = 16 (有効 npara = 2) の粒子ごとの dp も 12 桁一致、PF リング (760 要素、6 極つき、np = 40) も一致 (k64 モード。v2 は放射の式の修正で rms が 6e-6〜1e-3 違うが、乱数の引き方・最終の種は同じ。例 [`example/05_tracking/flag_FLUC_nparallel.sad`](../example/05_tracking/flag_FLUC_nparallel.sad))。
 - wake 有効時は並列化しない (tftrack.f:133)。wake は実装済み ([13_wake.md](13_wake.md))。
 
+### 1.3 pysad の並列追跡 (NWORKERS)
+
+pysad は SAD の `NPARA` (fork による並列) を実際には並列にしない (上の分け方は、RAD + FLUC のときの乱数列の再現のために `NPARA` > 1 で入れてある)。かわりに、**pysad 独自の並列追跡**を持つ。SAD にはない。
+
+- 使い方: FFS の変数 `NWORKERS=4;` (または環境変数 `PYSAD_WORKERS=4`。既定 1 = 並列にしない)。`TrackSetup.track(..., workers=4)` (Python) も同じ。
+- 仕組み: 粒子を連続した塊に分け、塊ごとの `TrackRun` を**スレッド**で同時に回す (numba の核は GIL を放す)。メモリは共有で、プロセスの起動・転送は要らない。
+- 使う本数: `NWORKERS` を、CPU の論理コア数の 90% と、1 本あたり 16 粒子以上で抑える。粒子が少ないときは逐次になる。
+- **FLUC なしの結果は逐次とビット単位で同じ** (粒子は互いに独立で、落ちた粒子 (LOSSAMPL・LOSSDZ) の座標と alive も同じ)。FLUC (放射の量子ゆらぎ) の乱数は塊ごとに種を (現在の種 + 2k) に変えるので、逐次とは別の列になる (統計は同じ程度)。SAD の `NPARA` の乱数列とも別。
+- 並列にしないもの (自動で逐次になる): 粒子どうしの相互作用や Python のコールバックがあるもの。空間電荷 (SPAC・PSPAC・WSPAC)、ウェイク (LWAKE・TWAKE)、BEAMBEAM、MAP、RADLIGHT、PHOTONS、POL (スピン追跡)、SOL などで numba の表に無い要素 (track6 の経路)。
+- 実測 (FODO リング、4000 粒子 × 2000 周、`NORFSW NOFLUC`、この PC): 逐次 100.8 s、`NWORKERS=4` 28.4 s (起動・numba の読み込みを含む全体)。
+- 未確認: 1 台の PC の CPU コアの範囲だけ (複数台 (MPI) は対象外)。FLUC の統計の一致は rms の概算の試験だけ。周波数マップ・LMA は従来どおりプロセス並列 (`workers` 引数) で、`NWORKERS` とは別。入れ子にしないこと (本数が掛け算になる)。
+
 ---
 
 ## 2. 内部座標と要素ループ (tturn.f)
@@ -271,7 +283,7 @@ SAD の MAIN の `TRACK USE=RING NPART= TURNS= NX=(..) NY=(..) NZ=(..);` (`ActTr
 | tune | zbuf (x+i px, y+i py, z+i dp、周の頭、長さ nts=TURNS+1 以上の 2 のべき) を `tcftr` (exp(+i…)) で FFT、パワーを (.5,1,.5) で平滑して極大を放物線補間、8 本 |
 | K64 | MAIN の EMIT/TRACK は動かない (EMIT は何もせず TRACK は `tinip`→`tmap` で SIGSEGV)。参照は SADScript で同じ手順を書いた `bench_level27a.sad` / `27b` |
 | 照合 | 27a: RFSW ON/RAD OFF、RAD ON/FLUC OFF、RAD ON/FLUC ON の 6 粒子 250 周。27b: 粒子が落ちるケース。smear・最終座標・tune・損失周が SAD と一致 (座標・tune ≤5e-11、smear・振幅 相対 ≤7e-9) |
-| 未対応 | FOURIE ON の多項式フィット、`ResultsOfTracking` フック、NPARA>1、PHSPLOTS の描画 (無視)。TURNS<0 (trpt) は k64 モードでは未対応 (リングの追跡として扱う)、v2 モードでは `TURNS=-1` が輸送路の 1 回通過 (`Statistics at Entrance` / `Exit`。docs/03 の「v2 モードの MEASURE・TRCOD」)。空間電荷・MEASURE 系は MAIN の TRACK (リング) では使えない |
+| 未対応 | FOURIE ON の多項式フィット、`ResultsOfTracking` フック、NPARA>1 の fork の並列 (乱数列の分け方だけ再現。実際の並列は 1.3 の NWORKERS)、PHSPLOTS の描画 (無視)。TURNS<0 (trpt) は k64 モードでは未対応 (リングの追跡として扱う)、v2 モードでは `TURNS=-1` が輸送路の 1 回通過 (`Statistics at Entrance` / `Exit`。docs/03 の「v2 モードの MEASURE・TRCOD」)。空間電荷・MEASURE 系は MAIN の TRACK (リング) では使えない |
 
 - TRPT の放射の分割: gs の ndivrad (tffs.f) は TRPT で `int(1+h0/100*aka*10)` (そうでなければ 10 倍なし)。track6n は TRPT のとき ndivrad に渡す h0 を 10 倍にして合わせる。RAD FLUC のあとの乱数の状態が gs と一致する (pysad/tests/script_tests/test_beambeam.py)。
 

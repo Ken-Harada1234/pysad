@@ -6,6 +6,10 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## 未公開
+
+- **`TrackParticles` の並列追跡 (pysad 独自。SAD の `NPARA` とは別)**: FFS の変数 `NWORKERS=n;` (または環境変数 `PYSAD_WORKERS=n`、既定 1) と `TrackSetup.track(..., workers=n)`。粒子を連続した塊に分け、塊ごとの `TrackRun` をスレッドで同時に回す (numba の核は GIL を放す。クラス `track6n.ParallelTrackRun`)。FLUC なしの結果は逐次とビット単位で同じ (落ちた粒子の座標・alive も)。FLUC の乱数は塊ごとに種を変える (逐次・NPARA とは別の列)。空間電荷・ウェイク・BEAMBEAM・MAP・RADLIGHT・PHOTONS・POL・track6 の経路は自動で逐次。本数は論理コア数の 90% と 1 本あたり 16 粒子以上で抑える。FODO リング 4000 粒子 × 2000 周で逐次 100.8 s → `NWORKERS=4` 28.4 s。試験 `test_v251_parallel_track.py` (8 件)、文書 `docs/10_tracking.md` §1.3。未確認: 1 台の PC の範囲だけ。
+
 ## v2.5.1 (2026-11-26)
 
 - pip のパッケージから、KEK-LS のラティス `pysad/data/kek-ls_v03_12.lat` と `pysad.datafiles` を外した (本体は使わず、動作確認用の台本も pip には入らないため)。ラティスは `pysad/tests/kek-ls_v03_12.lat` (clone) にある。v2.5.0 には入っている。

@@ -2727,6 +2727,134 @@ class TrackRun:
         return out, alive
 
 
+_POOL = None
+_POOL_N = 0
+
+
+def _thread_pool(n):
+    """Return a shared ThreadPoolExecutor with at least n threads.
+    n 本以上のスレッドを持つ共有のスレッドプール"""
+    global _POOL, _POOL_N
+    if _POOL is None or _POOL_N < n:
+        from concurrent.futures import ThreadPoolExecutor
+        old = _POOL
+        _POOL, _POOL_N = ThreadPoolExecutor(max_workers=n, thread_name_prefix='pysad-track'), n
+        if old is not None:
+            old.shutdown(wait=False)
+    return _POOL
+
+
+def max_workers(requested, nitems=None, per_worker=16):
+    """Return the number of workers actually used: capped by 90% of the CPU count (at least 1) and by nitems // per_worker.
+    実際に使う本数: 要求の本数を、CPU の論理コア数の 90% (最低 1) と、nitems // per_worker (1 本あたり最低 per_worker 個) で抑える"""
+    import os
+    try:
+        w = int(float(requested))
+    except (TypeError, ValueError):
+        return 1
+    if w <= 1:
+        return 1
+    w = min(w, max(1, int((os.cpu_count() or 1) * 0.9)))
+    if nitems is not None:
+        w = min(w, max(1, int(nitems) // max(1, per_worker)))
+    return max(1, w)
+
+
+class ParallelTrackRun:
+    """Runs one `TrackRun` per block of particles in threads (the numba kernels release the GIL); same interface as `TrackRun` for what the callers use.
+    粒子を連続した塊に分け、塊ごとの TrackRun をスレッドで同時に回す (numba の核は nogil)。呼び出し側が使う範囲は TrackRun と同じ
+    (segment・next_turn・n・ph・lost_turn・lossmap・result・l_track0・lmap)。粒子は互いに独立なので、乱数を使わない追跡 (FLUC なし) の結果は
+    逐次の TrackRun とビット単位で同じ。FLUC (放射の量子ゆらぎ) の乱数は塊ごとに種を変えるので、逐次とは別の列になる (統計は同じ)。
+    空間電荷・ウェイク・BEAMBEAM・MAP (粒子どうしの相互作用や Python のコールバックがあるもの) は扱わない (呼び出し側が使わない)"""
+
+    def __init__(self, runs, bounds):
+        self.runs = list(runs)
+        self.bounds = list(bounds)
+        self.npart = self.bounds[-1][1]
+        self.ph = self.runs[0].ph
+        self.alive_in = [v for r in self.runs for v in r.alive_in]
+
+    @property
+    def n(self):
+        return sum(r.n for r in self.runs)
+
+    @property
+    def l_track0(self):
+        return getattr(self.runs[0], 'l_track0', None)
+
+    @l_track0.setter
+    def l_track0(self, v):
+        for r in self.runs:
+            r.l_track0 = v
+
+    @property
+    def lmap(self):
+        return getattr(self.runs[0], 'lmap', None)
+
+    @lmap.setter
+    def lmap(self, v):
+        for r in self.runs:
+            r.lmap = None if v is None else [v[0]]
+
+    @property
+    def lost_turn(self):
+        return np.concatenate([np.asarray(r.lost_turn[:b - a]) for r, (a, b) in zip(self.runs, self.bounds)])
+
+    def _each(self, fn):
+        if len(self.runs) == 1:
+            return [fn(self.runs[0])]
+        futs = [_thread_pool(len(self.runs)).submit(fn, r) for r in self.runs]
+        return [f.result() for f in futs]
+
+    def segment(self, a, b):
+        self._each(lambda r: r.segment(a, b))
+
+    def next_turn(self):
+        for r in self.runs:
+            r.next_turn()
+
+    def lossmap(self, tend, nlat, v2=False):
+        el, tn = [], []
+        for r in self.runs:
+            e_, t_ = r.lossmap(tend, nlat, v2=v2)
+            el += e_
+            tn += t_
+        return el, tn
+
+    def result(self):
+        outs = [r.result() for r in reversed(self.runs)][::-1]      # 先頭の塊が最後に乱数の状態を書く
+        return np.concatenate([o[0] for o in outs]), [v for o in outs for v in o[1]]
+
+
+def split_blocks(npart, nworkers):
+    """Split 0..npart into nworkers contiguous blocks of nearly equal size, returned as [(a, b), ...].
+    0..npart を、ほぼ同じ大きさの連続した nworkers 個の塊 [(a, b), ...] に分ける"""
+    nworkers = max(1, min(nworkers, npart))
+    base, rem = divmod(npart, nworkers)
+    out, a = [], 0
+    for k in range(nworkers):
+        b = a + base + (1 if k < rem else 0)
+        out.append((a, b))
+        a = b
+    return out
+
+
+def make_parallel_run(mk, coords, flags, nworkers):
+    """Build a ParallelTrackRun from `mk(coords_block, flags_block)` (which returns a TrackRun); the FLUC seed of block k is the current seed + 2k.
+    mk(粒子の塊の座標, フラグ) が TrackRun を返す関数のとき、塊ごとに TrackRun を作って ParallelTrackRun にする。塊 k の FLUC の種は現在の種 + 2k"""
+    coords = np.asarray(coords, dtype=float).reshape(-1, 6)
+    flags = list(flags) if flags is not None else [1.0] * len(coords)
+    bounds = split_blocks(len(coords), nworkers)
+    seed0 = _t6.RNG.seed
+    runs = []
+    for k, (a, b) in enumerate(bounds):
+        r = mk(coords[a:b], flags[a:b])
+        if k > 0:
+            r.rs = make_rs(seed0 + 2 * k)
+        runs.append(r)
+    return ParallelTrackRun(runs, bounds)
+
+
 def track_particles_fast(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=True, rad=False, fluc=False,
                          seed=None, charge=1.0, amass=None, progress=0, fshift=0.0, circ=None, links=None, links_off=0):
     """Numba `track_particles` with the same specification as track6.track_particles (falls back to track6 for MULT/SOL).

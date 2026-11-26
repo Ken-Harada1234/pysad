@@ -26,6 +26,7 @@ import numpy as np
 from . import compat
 from . import track6 as _t6
 from .track6n import TrackRun, state_out, MAXTURN_LOST
+from .track6n import make_parallel_run as _make_parallel_run, max_workers as _max_workers
 from .emit6d import _emit_circ
 
 _SKIP = ('Marker', 'Monitor', 'Cavity', 'Coord', 'Map')
@@ -174,6 +175,10 @@ class TrackSetup:
         c = np.atleast_2d(np.asarray(coords, dtype=float))
         if self.seed is not None:
             _t6.RNG.restore(self.seed)
+        return self._run_of(c, alost, zlost)
+
+    def _run_of(self, c, alost=None, zlost=None):
+        c = np.atleast_2d(np.asarray(c, dtype=float))
         return TrackRun(self.els, c, [1.0] * len(c), self.p0, alost=self.alost if alost is None else alost,
                         zlost=self.zlost if zlost is None else zlost, kturn0=1, trf0=self.trf0, rfsw=self.rfsw,
                         rad=self.rad, fluc=self.fluc, fshift=self.fshift, circ=self.circ, **self.mass_charge)
@@ -213,20 +218,28 @@ class TrackSetup:
             if loc > 1 and tr.n > 0:
                 self._seg(tr, 1, loc)
 
-    def track(self, loc, coords, nturn, record=False, alost=None, zlost=None, schedule=None):
+    def track(self, loc, coords, nturn, record=False, alost=None, zlost=None, schedule=None, workers=1):
         """Track nturn turns from location loc; returns a dict with lost_turn, final coordinates and optionally per-turn records.
         位置 loc から nturn 周追跡する。戻り dict:
            lost_turn  (n,) 落ちた周 (1 始まり。0 は最後まで残った)
            final      (n, 6) 最後の座標 (落ちた粒子は落ちた時点の値)
            rec        (nturn, n, 6) 周ごとの座標 (record=True。落ちたあとは NaN。座標は位置 loc、1 周ごと)
         schedule: 'call' (既定、record=False のとき。TrackParticles[{loc, beam}, loc, 1, nturn] の 1 回の呼び出しと同じ区間の分け方)、
-        'turn' (record=True のとき。1 周ずつ loc から回す = 1 周ずつ TrackParticles[{loc, beam}, loc] を呼ぶのと同じ)"""
+        'turn' (record=True のとき。1 周ずつ loc から回す = 1 周ずつ TrackParticles[{loc, beam}, loc] を呼ぶのと同じ)
+        workers > 1: 粒子を塊に分けてスレッドで同時に追う (record=False のときだけ。CPU の論理コア数の 90% と 1 本あたり 16 粒子以上で抑える)。
+        FLUC なしの結果は workers = 1 とビット単位で同じ。FLUC の乱数は塊ごとに種が違う"""
         c = np.atleast_2d(np.asarray(coords, dtype=float))
         n = len(c)
         sch = schedule or ('turn' if record else 'call')
         if record and sch != 'turn':
             raise ValueError('record=True は schedule=turn だけ')
-        tr = self.make_run(c, alost, zlost)
+        nw = 1 if record else _max_workers(workers, n)
+        if nw > 1:
+            if self.seed is not None:
+                _t6.RNG.restore(self.seed)
+            tr = _make_parallel_run(lambda c_, f_: self._run_of(c_, alost, zlost), c, [1.0] * n, nw)
+        else:
+            tr = self.make_run(c, alost, zlost)
         rec = np.full((nturn, n, 6), np.nan) if record else None
         if sch == 'call':
             self.run_call(tr, loc, nturn)

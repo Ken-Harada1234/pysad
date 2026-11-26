@@ -2708,9 +2708,11 @@ class FFS:
             if pol and self.flags['RAD']:
                 raise NotImplementedError('POL: スピンは Python の追跡 (track6) で追う')
             from .track6n import TrackRun
-            tr = TrackRun(els, x, flags, self.momentum(), alost=float(g.get('LOSSAMPL', 1.0) or 0.0),
-                          zlost=float(g.get('LOSSDZ', 100.0) or 0.0), kturn0=nt,
-                          trpt=bool(self.flags['TRPT'] or radlight), **kw)
+            def _mk_run(x_, f_):
+                return TrackRun(els, x_, f_, self.momentum(), alost=float(g.get('LOSSAMPL', 1.0) or 0.0),
+                                zlost=float(g.get('LOSSDZ', 100.0) or 0.0), kturn0=nt,
+                                trpt=bool(self.flags['TRPT'] or radlight), **kw)
+            tr = _mk_run(x, flags)
             if _compat.k64() and not getattr(self, '_tracked_once', False):   # v2 (B33): 最初の tapert でも落とす
                 tr.l_track0 = 0                    # セッションの最初の TrackParticles: l_track=0 (gs で確かめた: 最初から LOSSAMPL の外の粒子は最初の tapert で落ちない)
             self._tracked_once = True
@@ -2721,6 +2723,15 @@ class FFS:
                 if lt_ is None:
                     lt_ = 0 if not _compat_v2() else (ls - 1 if ls > 1 else nlat - 1)
                 tr.lmap = [lt_]
+            nw_ = self._track_workers(npart, els, pol, radlight, photons_on)
+            if nw_ > 1:
+                # 独自の並列化 (NWORKERS): 粒子を塊に分け、塊ごとの TrackRun をスレッドで同時に回す。
+                # FLUC の乱数は塊ごとに種を変える (NPARA の分け方 (gs の fork) の再現ではない)
+                from .track6n import make_parallel_run
+                _l0, _lm = getattr(tr, 'l_track0', None), getattr(tr, 'lmap', None)
+                tr = make_parallel_run(_mk_run, x, flags, nw_)
+                tr.l_track0 = _l0
+                tr.lmap = _lm
         except NotImplementedError:
             tr = None                            # numba の表に無い要素 (SOL 等): 損失なしの track6 で追う (以前どおり)
         from . import track6n as _t6n
@@ -2877,6 +2888,27 @@ class FFS:
             syn = [sv[1] / math.sqrt(sv[0]**2 + sv[1]**2 + sv[2]**2) for sv in spin_in]
             res = res[:6] + [ang, syn, list(alive)] + (lm_rows or [])
         return [float(ld if normal else ls), res]
+
+    def _track_workers(self, npart, els, pol, radlight, photons_on):
+        """Return the number of threads for TrackParticles: `NWORKERS` (FFS variable) or the environment variable `PYSAD_WORKERS`, 1 if unused.
+        TrackParticles に使うスレッドの本数。FFS の変数 NWORKERS、なければ環境変数 PYSAD_WORKERS (既定 1 = 並列にしない)。
+        粒子どうしの相互作用や Python のコールバックがある追跡 (空間電荷・ウェイク・BEAMBEAM・MAP・RADLIGHT・PHOTONS・POL・LOSSMAP の
+        SOL など) は並列にしない。CPU の論理コア数の 90% と、1 本あたり 16 粒子以上で抑える"""
+        import os
+        from .track6n import max_workers
+        req = self.I.globals.get('NWORKERS', None)
+        if req is None or not is_num(req):
+            req = os.environ.get('PYSAD_WORKERS', '1')
+        nw = max_workers(req, npart)
+        if nw <= 1:
+            return 1
+        fl = self.flags
+        if (pol or radlight or photons_on or fl.get('SPAC') or fl.get('PSPAC') or fl.get('WSPAC') or fl['LWAKE'] or fl['TWAKE']
+                or getattr(self, '_in_npara', False)):
+            return 1
+        if any(type(e).__name__ in ('Map', 'BeamBeam') for e in els):
+            return 1
+        return nw
 
     def _npara_chunks(self, npart, ls, ld, nlat):
         """tftrack.f:124-195 の NPARA (fork による並列) の粒子の分け方。RAD と FLUC の追跡だけで結果 (乱数列) が変わる。
