@@ -6,7 +6,7 @@
 
 **読む順**: §1 (結論) → §2〜§4 (記法の意味) → §5 (例。ここが中心) → §6〜§7 (合成の順序、線形写像) → §8 (SAD での対応)。
 
-数式の番号 $(C.n)$ は、この付録の中と他の章からの参照に使う。確認の sympy スクリプトは `physics_guide/scripts/ham_07_lie_operator.py` (出力は [ham_07_lie_operator.out.txt](outputs/ham_07_lie_operator.out.txt)) と、途中式の確認を足した `physics_guide/scripts/ham_08_bch_jacobi.py` (出力は [ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt))。
+数式の番号 $(C.n)$ は、この付録の中と他の章からの参照に使う。確認の sympy スクリプトは `physics_guide/scripts/ham_07_lie_operator.py` (出力は [ham_07_lie_operator.out.txt](outputs/ham_07_lie_operator.out.txt)) と、途中式の確認を足した `physics_guide/scripts/ham_08_bch_jacobi.py` (出力は [ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt))、BCH の 3 次の語の表・ライプニッツ則・(C.15) の帰納法・§8.2 の偏微分を足した `physics_guide/scripts/ham_10_audit_steps.py` (出力は [ham_10_audit_steps.out.txt](outputs/ham_10_audit_steps.out.txt))。
 
 ## 1. 結論
 
@@ -187,9 +187,30 @@ $$
 ($e^Xe^Y$ の積で、$X$ の項は必ず左、$Y$ の項は必ず右)。$\log(1 + u) = u - u^2/2 + u^3/3 - \cdots$ で次数ごとに集める。
 
 - **2 次**: $u_2 - \tfrac12u_1^2 = \tfrac12X^2 + XY + \tfrac12Y^2 - \tfrac12(X^2 + XY + YX + Y^2) = \tfrac12(XY - YX) = \tfrac12[X, Y]$。
-- **3 次**: $u_3 - \tfrac12(u_1u_2 + u_2u_1) + \tfrac13u_1^3$。語 (非可換な積) ごとの係数を数える。例: $XXY$ は、$u_3$ から $\tfrac12$、$u_1u_2$ から 1 ($X\cdot XY$)、$u_2u_1$ から $\tfrac12$ ($\tfrac12X^2\cdot Y$)、$u_1^3$ から 1。合計 $\tfrac12 - \tfrac12(1 + \tfrac12) + \tfrac13 = \tfrac1{12}$。$XYX$ は、$u_3$ から 0、$u_1u_2$ から 0、$u_2u_1$ から 1 ($XY\cdot X$)、$u_1^3$ から 1。合計 $-\tfrac12 + \tfrac13 = -\tfrac16$。同様に $YXX$: $\tfrac1{12}$、$XYY$: $\tfrac1{12}$、$YXY$: $-\tfrac16$、$YYX$: $\tfrac1{12}$。全語の係数は sympy の非可換記号で数えた ([ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt) (b))。
-- 交換子で書く: $[X,[X,Y]] = XXY - 2XYX + YXX$、$[Y,[Y,X]] = YYX - 2YXY + XYY$。上の係数 ($XXY$、$YXX$、$YYX$、$XYY$ が $\tfrac1{12}$、$XYX$、$YXY$ が $-\tfrac16$) は、$\tfrac1{12}\bigl([X,[X,Y]] + [Y,[Y,X]]\bigr)$ に一致する。
+- **3 次**: $u_3 - \tfrac12(u_1u_2 + u_2u_1) + \tfrac13u_1^3$。まず積を展開する ($u_1u_2$ は、$(X + Y)$ の $X$ と $Y$ を、$u_2 = \tfrac12XX + XY + \tfrac12YY$ の各項の左にかけたもの。$u_2u_1$ は各項の右にかけたもの):
 
+$$
+\begin{aligned}
+u_1u_2 &= \tfrac12XXX + XXY + \tfrac12XYY + \tfrac12YXX + YXY + \tfrac12YYY,\\
+u_2u_1 &= \tfrac12XXX + \tfrac12XXY + XYX + XYY + \tfrac12YYX + \tfrac12YYY
+\end{aligned}
+$$
+
+  $u_1^3 = (X + Y)^3$ は、8 つの語がすべて係数 1。語 (非可換な積。$XXY$ は $X$ を 2 回かけてから $Y$) ごとに、$u_3$、$u_1u_2$、$u_2u_1$、$u_1^3$ の係数を拾って $u_3 - \tfrac12(u_1u_2 + u_2u_1) + \tfrac13u_1^3$ を作る:
+
+| 語 | $u_3$ | $u_1u_2$ | $u_2u_1$ | $u_1^3$ | 3 次の係数 |
+|---|---|---|---|---|---|
+| $XXX$ | $\tfrac16$ | $\tfrac12$ | $\tfrac12$ | 1 | $\tfrac16 - \tfrac12(\tfrac12 + \tfrac12) + \tfrac13 = 0$ |
+| $XXY$ | $\tfrac12$ | 1 | $\tfrac12$ | 1 | $\tfrac12 - \tfrac12(1 + \tfrac12) + \tfrac13 = \tfrac1{12}$ |
+| $XYX$ | 0 | 0 | 1 | 1 | $0 - \tfrac12(0 + 1) + \tfrac13 = -\tfrac16$ |
+| $YXX$ | 0 | $\tfrac12$ | 0 | 1 | $0 - \tfrac12(\tfrac12 + 0) + \tfrac13 = \tfrac1{12}$ |
+| $XYY$ | $\tfrac12$ | $\tfrac12$ | 1 | 1 | $\tfrac12 - \tfrac12(\tfrac12 + 1) + \tfrac13 = \tfrac1{12}$ |
+| $YXY$ | 0 | 1 | 0 | 1 | $0 - \tfrac12(1 + 0) + \tfrac13 = -\tfrac16$ |
+| $YYX$ | 0 | 0 | $\tfrac12$ | 1 | $0 - \tfrac12(0 + \tfrac12) + \tfrac13 = \tfrac1{12}$ |
+| $YYY$ | $\tfrac16$ | $\tfrac12$ | $\tfrac12$ | 1 | $\tfrac16 - \tfrac12(\tfrac12 + \tfrac12) + \tfrac13 = 0$ |
+
+  純粋な冪 $XXX$、$YYY$ の係数は 0 (3 次に $X^3$、$Y^3$ は残らない。$Y = 0$ なら $\log e^X = X$ だから当然)。語ごとの係数は sympy の非可換記号でも数えた ([ham_08_bch_jacobi.out.txt](outputs/ham_08_bch_jacobi.out.txt) (b))。表は [ham_10_audit_steps.out.txt](outputs/ham_10_audit_steps.out.txt) (a) で再計算した。
+- 交換子で書く: $[X,[X,Y]] = X(XY - YX) - (XY - YX)X = XXY - 2XYX + YXX$、$[Y,[Y,X]] = YYX - 2YXY + XYY$。表の係数 ($XXY$、$YXX$、$YYX$、$XYY$ が $\tfrac1{12}$、$XYX$、$YXY$ が $-\tfrac16$、$XXX$、$YYY$ が 0) は、$\tfrac1{12}\bigl([X,[X,Y]] + [Y,[Y,X]]\bigr)$ の各語の係数 ($XXY$: $\tfrac1{12}$、$XYX$: $-\tfrac2{12}$、$YXX$: $\tfrac1{12}$、$YYX$: $\tfrac1{12}$、$YXY$: $-\tfrac2{12}$、$XYY$: $\tfrac1{12}$、$XXX$・$YYY$: 0) に一致する。
 よって $\log(e^Xe^Y) = X + Y + \tfrac12[X,Y] + \tfrac1{12}([X,[X,Y]] + [Y,[Y,X]]) + \cdots$ (これが (C.14) の $X = :f:$、$Y = :g:$ の場合。上の交換子の関係で、演算子の交換子 $\to$ 関数の括弧 $:[f,g]:$ に直す)。
 
 上のドリフトとキックの例 ($f = -\varepsilon p^2/2$、$g = -\varepsilon x^2/2$) で、$[f, g]/2$ までの $\exp$ が $\varepsilon^3$ の差を残し、3 次の項 $\frac{1}{12}([f,[f,g]] + [g,[g,f]])$ を足すとその差が消えることを、sympy で確認した ((f))。$[:f:, :g:] = :[f, g]:$ も、いくつかの多項式の $f$、$g$、$h$ で確認した。
@@ -202,16 +223,45 @@ $$
 
 ## 7. 線形写像と 2 次の $f$、シンプレクティック性
 
-$f$ が $z = (q_1, p_1, \ldots)$ の**2 次の斉次多項式**なら、$:f:\,z_k$ は $z$ の 1 次式なので、$:f:$ は行列で表せる。$H = \frac12\mathbf z^TA\mathbf z$ ($A$ は対称行列) で、(C.3) は $z_k' = \sum_l J_{kl}\,\partial H/\partial z_l$ ($J$ は $\begin{pmatrix}0 & 1\\ -1 & 0\end{pmatrix}$ の直和) だから、$\mathbf z' = JA\mathbf z$。したがって
+$f$ が $z = (q_1, p_1, \ldots)$ の**2 次の斉次多項式**なら、$:f:\,z_k$ は $z$ の 1 次式なので、$:f:$ は行列で表せる。$H = \frac12\mathbf z^TA\mathbf z$ ($A$ は対称行列) で、(C.3) は $z_k' = \sum_l J_{kl}\,\partial H/\partial z_l$ ($J$ は $\begin{pmatrix}0 & 1\\ -1 & 0\end{pmatrix}$ の直和) だから、$\mathbf z' = JA\mathbf z$。次の 3 段で、$(-:H:)^n$ が行列のべきになることを示す。
+
+1. (C.3) を $g = z_k$ に使うと、$-:H:\,z_k = z_k' = \sum_lJ_{kl}\,\partial H/\partial z_l = \sum_l(JA)_{kl}\,z_l$ ($\partial H/\partial z_l = (A\mathbf z)_l$)。
+2. $-:H:$ は、関数の線形結合に線形に作用する (定数係数は外に出る)。1. の右辺は $z_l$ の 1 次式なので、$(-:H:)^2z_k = \sum_l(JA)_{kl}\,(-:H:\,z_l) = \sum_l(JA)_{kl}\sum_m(JA)_{lm}\,z_m = \sum_m[(JA)^2]_{km}\,z_m$。
+3. $(-:H:)^nz_k = \sum_m[(JA)^n]_{km}\,z_m$ と仮定する。両辺に $-:H:$ を作用させて、$(-:H:)^{n+1}z_k = \sum_m[(JA)^n]_{km}\,(-:H:\,z_m) = \sum_m\sum_l[(JA)^n]_{km}(JA)_{ml}\,z_l = \sum_l[(JA)^{n+1}]_{kl}\,z_l$ (帰納法。$n = 1$ は 1.)。
+
+(C.7) の級数に入れると、$\exp(-s:H:)\,z_k = \sum_n\frac{s^n}{n!}\sum_m[(JA)^n]_{km}z_m = \sum_m[\exp(sJA)]_{km}\,z_m$。したがって
 
 $$
 \exp(-s:H:)\,\mathbf z = \exp(sJA)\,\mathbf z = M\,\mathbf z,\qquad M = \exp(F),\;\;F = sJA
 \tag{C.15}
 $$
 
+(確認: 2 自由度の一般の対称行列 $A$ で $n = 1\ldots5$ を sympy で確認。[ham_10_audit_steps.out.txt](outputs/ham_10_audit_steps.out.txt) (c)。)
+
 5.2 の例 ($A = \mathrm{diag}(k, 1)$) では $F = \begin{pmatrix}0 & s\\ -ks & 0\end{pmatrix}$ で、行列指数は (C.10)(C.11) の行列に一致する (sympy (g))。**3 次以上の $f$ のリー変換は非線形写像**になる ($:f:$ が次数を保たず、(C.12) のように、高次の項を作る)。
 
-**シンプレクティック性**。$M = \exp(F)$、$F = sJA$ とすると、$A$ が対称、$J^TJ = 1$、$J^2 = -1$ から $F^TJ + JF = s(AJ^TJ + J\,JA) = s(A - A) = 0$。したがって $\frac{d}{ds}\left(M^TJM\right) = M^T(F^TJ + JF)M = 0$ で、$s = 0$ では $M = 1$ なので $M^TJM = J$ ($M$ はシンプレクティック行列)。(5.2 の例で、$\det M = 1$、$M^TJM = J$ を確認。) 一般の (非線形の) $\exp(:f:)$ も、座標のポアソン括弧 $[Z_i, Z_j] = [z_i, z_j]$ を保つ (正準変換)。(C.12) で、$[x, p - k_2x^2] = 1$ を確認した。これが、リー変換の積で作る写像が、丸め誤差までシンプレクティックに保たれる理由。
+**シンプレクティック性**。$M = \exp(F)$、$F = sJA$ とすると、$A$ が対称、$J^TJ = 1$、$J^2 = -1$ から $F^TJ + JF = s(AJ^TJ + J\,JA) = s(A - A) = 0$。したがって $\frac{d}{ds}\left(M^TJM\right) = M^T(F^TJ + JF)M = 0$ で、$s = 0$ では $M = 1$ なので $M^TJM = J$ ($M$ はシンプレクティック行列)。(5.2 の例で、$\det M = 1$、$M^TJM = J$ を確認。) 一般の (非線形の) $\exp(:f:)$ については、次の小節で証明する。
+
+### 7.1 非線形な $\exp(:f:)$ も括弧を保つ (正準変換)
+
+$f$ を任意の (形式的な) 関数とし、座標の関数 $a$、$b$ について次を示す。
+
+$$
+\exp(:f:)\,[a, b] = \bigl[\exp(:f:)\,a,\ \exp(:f:)\,b\bigr]
+\tag{C.16}
+$$
+
+1. **$:f:$ は括弧のライプニッツ則を満たす**。ヤコビ恒等式 $[f,[a,b]] + [a,[b,f]] + [b,[f,a]] = 0$ で、$[b,f] = -[f,b]$、$[b,[f,a]] = -[[f,a],b]$ を使うと、$[f,[a,b]] = [a,[f,b]] + [[f,a],b]$。すなわち $:f:[a,b] = [:f:a,\ b] + [a,\ :f:b]$。
+2. **$n$ 回の作用**: $:f:^n[a,b] = \sum_{k=0}^n\binom nk\,[:f:^ka,\ :f:^{n-k}b]$。$n = 0$ は自明。$n$ で成り立つと仮定して両辺に $:f:$ を作用させ、各項に 1. を使うと、$\sum_k\binom nk\bigl([:f:^{k+1}a,\ :f:^{n-k}b] + [:f:^ka,\ :f:^{n-k+1}b]\bigr)$。$[:f:^ka,\ :f:^{n+1-k}b]$ の係数は $\binom n{k-1} + \binom nk = \binom{n+1}k$ (パスカルの関係) で、$n + 1$ の式になる (帰納法)。
+3. **指数に直す**: $\exp(:f:)[a,b] = \sum_n\frac1{n!}\sum_k\binom nk[:f:^ka,\ :f:^{n-k}b]$。$\frac1{n!}\binom nk = \frac1{k!\,(n-k)!}$ なので、$m = n - k$ として、$\sum_{k,m}\bigl[\frac{:f:^ka}{k!},\ \frac{:f:^mb}{m!}\bigr] = [\exp(:f:)a,\ \exp(:f:)b]$ (括弧は双線形)。これが (C.16)。
+4. **座標に適用する**: $a = z_i$、$b = z_j$ とする。右辺は、新しい座標 $Z_i = \exp(:f:)z_i$ の括弧 $[Z_i, Z_j]$。左辺の $[z_i, z_j]$ は定数 ($0$ か $\pm1$) で、定数 $c$ には $:f:\,c = [f, c] = 0$ なので $\exp(:f:)c = c$。したがって
+
+$$
+[Z_i, Z_j] = [z_i, z_j]
+\tag{C.17}
+$$
+
+ヤコビ行列を $M_{ik} = \partial Z_i/\partial z_k$ とすると、(C.1) から $[Z_i, Z_j] = (MJM^{\mathsf T})_{ij}$ ($J$ は $[z_i, z_j]$ を並べた行列)。(C.17) は $MJM^{\mathsf T} = J$ と同じで、$J^{-1} = -J$ を使って転置・逆行列を取ると $M^{\mathsf T}JM = J$ と同値。つまり**非線形の $\exp(:f:)$ のヤコビ行列は、各点でシンプレクティック行列**。リー変換の積 (§6.1 の順) も同じ性質を持つので、積で作る写像は、丸め誤差を除いてシンプレクティックに保たれる。(C.12) の $[x, p - k_2x^2] = 1$ は、この (C.17) の例。多項式の $f$、$a$、$b$ で、ライプニッツ則、二項展開、(C.16) の $\varepsilon^6$ までの展開、$[Z_x, Z_p] = 1$ を sympy で確認した ([ham_10_audit_steps.out.txt](outputs/ham_10_audit_steps.out.txt) (b))。
 
 ## 8. SAD のヘルプ、pysad・Fortran との対応
 
@@ -232,7 +282,15 @@ K64 版同梱のヘルプ原文 (`Documents/SADHelp.html`) で、$\exp(:\cdot:)$
 
 この付録の規約では、転送は $\exp(-s:H_{\rm ham}:)$、つまり $\exp(:f:)$ の $f$ は $-sH_{\rm ham}$ ((C.7))。ヘルプは、$f = +L\,H_{\rm ham}$ を $\exp(:f:)$ に入れている (例: DRIFT の $H$ は、ハミルトニアン $-\sqrt{p^2 - p_x^2 - p_y^2} + \ldots$ に $L$ をかけたもの)。ヘルプの $:f:$ は、この付録の $:f:$ と符号が逆、$:f:_{\rm SAD}\,g = -[f, g] = [g, f]$、すなわち **$\exp(:H:)$ は「$H$ を時間 1 のハミルトニアンとする流れ」** ($x \to x + \partial H/\partial p_x$、$p_x \to p_x - \partial H/\partial x$)。
 
-**確認** (ヘルプ原文には括弧の定義が無い。式どうしの整合から読んだもので、gs での確認はしていない。[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1)): (i) DRIFT の $\sqrt{\ }$ の項から $x' = p_x/p_z$ が正しい向きで出る。(ii) QUAD の $H_{2n}$ の $K1(x^2 - y^2)/2$ から $\Delta p_x = -K1\,x$ (K1 > 0 で水平収束。ヘルプの K1 の説明と一致)。(iii) SEXT の $H_2 = K2/3!\,\mathrm{Re}(x - iy)^3$ から $\Delta p_x = -(K2/2)(x^2 - y^2)$。(iv) BEND の線形フリンジ $V$ (平文版) から、ヘルプ自身の $x_2$、$p_{y2}$ の式が出る。(v) 04 章・07 章・03 章の数値 ($V_n$ の符号) とも整合 ([thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。標準の括弧で $\exp(:H:)$ と読むと、これらはすべて逆向きになる。唯一の例外が DRIFT の $E/v_0$ の符号 (QUAD・dynamics・BEND の body と逆。式どうしの整合から誤植と判断した。gs での確認なし)。
+**確認** (ヘルプ原文には括弧の定義が無い。式どうしの整合から読んだもので、gs での確認はしていない。[drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1)、[ham_10_audit_steps.out.txt](outputs/ham_10_audit_steps.out.txt) (d))。ヘルプの $\exp(:H:)$ を「$H$ を時間 1 のハミルトニアンとする流れ」($\Delta x_i = \partial H/\partial p_i$、$\Delta p_i = -\partial H/\partial x_i$) と読んで、各式の偏微分を取る:
+
+- (i) **DRIFT**: $H = \bigl(-\sqrt{p^2 - p_x^2 - p_y^2} + \cdots\bigr)L$ の $p_x$ 微分は、$\partial_{p_x}\bigl[-(p^2 - p_x^2 - p_y^2)^{1/2}\bigr] = -\tfrac12(\cdots)^{-1/2}\cdot(-2p_x) = p_x/\sqrt{p^2 - p_x^2 - p_y^2}$。よって $\Delta x = L\,p_x/p_z$ ($p_z = \sqrt{p^2 - p_x^2 - p_y^2}$) で、$x' = p_x/p_z$ が正しい向きに進む。逆の読み ($\Delta x = -\partial H/\partial p_x$) では $x$ が戻る。
+- (ii) **QUAD**: $H_{2n}$ の座標を含む部分は $\dfrac{K1}{2n}(x^2 - y^2)$。$\Delta p_x = -\partial_xH = -\dfrac{K1}{n}\,x$、$\Delta p_y = -\partial_yH = +\dfrac{K1}{n}\,y$ ($n$ 個のスライスの合計で $\Delta p_x = -K1\,x$)。$K1 > 0$ で水平収束、垂直発散 (ヘルプの K1 の説明と一致)。
+- (iii) **SEXT**: $\mathrm{Re}(x - iy)^3 = x^3 - 3xy^2$ ($(x - iy)^3 = x^3 - 3ix^2y - 3xy^2 + iy^3$ の実部)。$H_2 = \dfrac{K2}{3!}(x^3 - 3xy^2)$ から、$\Delta p_x = -\partial_xH_2 = -\dfrac{K2}6(3x^2 - 3y^2) = -\dfrac{K2}2(x^2 - y^2)$、$\Delta p_y = -\partial_yH_2 = -\dfrac{K2}6(-6xy) = K2\,xy$。
+- (iv) **BEND の線形フリンジ** (平文版): $V = -\dfrac1p\Bigl(\dfrac{F1^2}{24\rho_b}\,p_x + \dfrac{F1}{12\rho_b^2}\,y^2 - \dfrac{y^4}{6F1\rho_b^2}\Bigr)$。$\Delta x = \partial V/\partial p_x = -\dfrac{F1^2}{24\,p\,\rho_b}$。$\Delta p_y = -\partial V/\partial y = \dfrac1p\Bigl(\dfrac{F1}{6\rho_b^2}\,y - \dfrac{2y^3}{3F1\rho_b^2}\Bigr) = \dfrac{y\,(F1^2 - 4y^2)}{6\,F1\,p\,\rho_b^2}$ (通分: $\dfrac{F1}{6} - \dfrac{2y^2}{3F1} = \dfrac{F1^2 - 4y^2}{6F1}$)。これがヘルプ自身の線形フリンジの式 ($x_2 = x_1 + \mathtt{dxfr}\,(p - p_0)/p$ の $p$ 依存部分 $-\mathtt{dxfr}/p$、$p_{y2} = p_{y1} + y\,(\mathtt{dyfr} - \mathtt{dyfra}\,y^2)/p_1^2$ の $y(\mathtt{dyfr} - \mathtt{dyfra}\,y^2)/p$ の形) と一致する ([drift_04_help_convention.out.txt](outputs/drift_04_help_convention.out.txt) (1))。
+- (v) 04 章・07 章・03 章の数値 ($V_n$ の符号) とも整合 ([thin_04_help_order.out.txt](outputs/thin_04_help_order.out.txt))。
+
+標準の括弧で $\exp(:H:)$ と読む ($\Delta x = [H, x] = -\partial H/\partial p_x$) と、上の (i)〜(iv) はすべて逆向きになる。唯一の例外が DRIFT の $E/v_0$ の符号 (QUAD・dynamics・BEND の body と逆。式どうしの整合から誤植と判断した。gs での確認なし)。
 
 式を $\exp(:H_{\rm help}:)$ から本付録の記法に直すときは、$H_{\rm help} \to -H_{\rm help}$ とする。
 
@@ -246,7 +304,7 @@ K64 版同梱のヘルプ原文 (`Documents/SADHelp.html`) で、$\exp(:\cdot:)$
 ## 9. 未確認・限界
 
 - 級数 (C.6) (C.7) は**形式的なもの**として扱った (収束の議論はしていない)。ドリフト (C.8) や 6 極 (C.12) のように級数が止まる場合と、(C.10) のようにテイラー級数が既知の関数になる場合だけを例にした。
-- BCH (C.14) は 3 次の項までを確認した。それ以上の項と、実際に使う分割の精度の議論は、[03_symplectic_integrators.md](03_symplectic_integrators.md) に書いてある。
+- BCH (C.14) は 3 次の項までをこの付録で導いた。5 次までの項 (自由リー代数の基底とヤコビ恒等式を使った展開) と、実際に使う分割の精度の議論は、[03_symplectic_integrators.md](03_symplectic_integrators.md) §4.1・§5・§8.3 に書いてある。
 - ヘルプの $\exp(:\cdot:)$ の向きは、ヘルプに括弧の定義が無いので、式どうしの整合 (DRIFT・QUAD・SEXT・BEND の 4 つ) から読んだもの (gs での確認なし)。定義の明記は原文に無い (§8.2)。順序の規約も明記が無い。
 - マグヌス展開 ($H$ が $s$ に依存する場合) は、名前の紹介だけで、式を導いていない。
 - 多自由度 (結合、$x$-$y$) の例は書いていない。2 次の $f$ の一般的な対応 (C.15) は、1 自由度の例だけ確認した。

@@ -1,0 +1,28 @@
+(a) BCH の 3 次の語ごとの係数: u3 - (1/2)(u1 u2 + u2 u1) + (1/3) u1^3
+  語   u3     u1u2   u2u1   u1^3   合計
+  XXX  1/6    1/2    1/2    1      0
+  XXY  1/2    1      1/2    1      1/12
+  XYX  0      0      1      1      -1/6
+  XYY  1/2    1/2    1      1      1/12
+  YXX  0      1/2    0      1      1/12
+  YXY  0      1      0      1      -1/6
+  YYX  0      0      1/2    1      1/12
+  YYY  1/6    1/2    1/2    1      0
+  [X,[X,Y]] の語: -2*X*Y*X + X**2*Y + Y*X**2 / [Y,[Y,X]] の語: X*Y**2 - 2*Y*X*Y + Y**2*X
+
+(b) :f: のライプニッツ則と exp(:f:) が括弧を保つこと (1 自由度、多項式の f, a, b)
+  :f:[a,b] = [:f:a, b] + [a, :f:b]: True
+  n = 0..6 で :f:^n[a,b] = Σ_k C(n,k) [:f:^k a, :f:^(n-k) b]: True
+  exp(eps:f:)[a,b] - [exp(eps:f:)a, exp(eps:f:)b] の eps^0..eps^6 の項 (展開の打ち切り eps^6): True
+  [Z_x, Z_p] - 1 の eps^1..eps^6 の係数 (すべて 0 のはず): [True, True, True, True, True, True]
+
+(c) (C.15) の帰納法: (-:H:)^n z_k = Σ_m [(JA)^n]_{km} z_m (2 自由度。z = (x, px, y, py)、H = z^T A z / 2)
+  k = 0..3、n = 1..5 で (-:H:)^n z_k = Σ_m [(JA)^n]_km z_m: True
+  z_k' = [z_k, H] = Σ_l J_kl ∂H/∂z_l (n = 1): True
+
+(d) §8.2 の確認: ヘルプの式の偏微分
+  (ii) QUAD H_2n の K1(x^2-y^2)/(2n): Δpx = -∂H/∂x = -K1*x/n 、Δpy = -∂H/∂y = K1*y/n
+  (iii) SEXT: Re(x-iy)^3 = x**3 - 3*x*y**2 、Δpx = -K2*(x - y)*(x + y)/2 、Δpy = K2*x*y
+  (iv) BEND: Δx = ∂V/∂px = -F1**2/(24*p*rho_b) 、Δpy = -∂V/∂y = -y*(-F1 + 2*y)*(F1 + 2*y)/(6*F1*p*rho_b**2)
+       y(F1^2 - 4y^2)/(6 F1 p rho_b^2) との差: 0
+  (i) DRIFT: Δx = ∂H/∂px = L*px/sqrt(p**2 - px**2 - py**2) (= L px/pz)
