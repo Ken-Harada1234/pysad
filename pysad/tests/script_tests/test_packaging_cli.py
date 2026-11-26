@@ -45,13 +45,13 @@ def test_run_main_help(capsys):
 
 def test_docs_examples_and_physics_guide_are_not_shipped_with_pip():
     """文書 (docs/)・例 (example/)・物理ガイド (physics_guide/)・試験は pip に入れない (GitHub と GitHub Pages にある)。setup.py に data_files が無く、
-    MANIFEST.in も graft しない。パッケージの中に入るのは、本体 (pysad/)・同梱の SAD のコピー (pysad/sad_copy)・小さなデータ (pysad/data) だけ"""
+    MANIFEST.in も graft しない。パッケージの中に入るのは、本体 (pysad/)・同梱の SAD のコピー (pysad/sad_copy)だけ"""
     cap = _load_setup()
     assert not cap.get('data_files'), cap.get('data_files')
     man = open(os.path.join(ROOT, 'MANIFEST.in'), encoding='utf-8').read()
     for top in ('docs', 'example', 'physics_guide'):
         assert 'graft ' + top not in man, top
-    assert 'graft pysad/sad_copy' in man and 'graft pysad/data' in man
+    assert 'graft pysad/sad_copy' in man and 'graft pysad/data' not in man
 
 
 def test_share_main_prints_urls_when_not_in_a_clone(monkeypatch, capsys):

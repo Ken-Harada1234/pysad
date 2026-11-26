@@ -28,7 +28,6 @@ pip install pysad-k64
 | コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。pip では入っていないので、GitHub と GitHub Pages の URL を表示する)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
 | 文書・例・物理ガイド | `docs/` (36 本の解説文書)、`example/` (機能別の台本・出力・図。約 2500 ファイル)、`physics_guide/` (ハミルトニアンから運動方程式、各要素の写像、K64 の Fortran、pysad までの導出。00〜18 章と付録 C) | **省かれる** (大きい (展開後 約 170 MB) ので、pip には入れない。GitHub (<https://github.com/Ken-Harada1234/pysad>) と GitHub Pages (<https://ken-harada1234.github.io/pysad/>) で読める。起動時の案内と `pysad-share` が URL を表示する。数式を描画した HTML は GitHub Pages で読める) |
 | `run_sad.py` | リポジトリの直下の台本の実行 script | **省かれる** (pip では `pysad-run` を使う) |
-| ラティスデータ | KEK-LS (3 GeV、20 セル、ESRF 型の HMBA) のラティス `kek-ls_v03_12.lat` (8 KB)。パッケージの中 `pysad/data/` (`pysad.datafiles.data_path('kek-ls_v03_12.lat')` で場所が取れる)。例 (`example/`) の台本が読むラティスの相対パス `pysad/tests/kek-ls_v03_12.lat` は、clone したリポジトリで動く | **入る** |
 | 依存ライブラリ | `numpy`・`scipy`・`numba` (自動)。`matplotlib` は `pip install pysad-k64[plot]` のときだけ | 自動 / 任意 |
 | 試験 | `pysad/tests/` (`script_tests/` の pytest 約 2500 件、`regression_tests/` の SAD との照合ベンチ 50 本) | **省かれる** (GitHub にだけある) |
 | 道具 | `tools/` (md から HTML を作る `build_html.py`・図を作るスクリプト) | **省かれる** |
