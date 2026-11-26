@@ -1336,7 +1336,7 @@ pysad 自身の不具合は K64 のバグではないのでここには入れな
 <td>扇形 (E1=E2=0)・K1=0・L = 1.2 m・15°・0.5 GeV・py = 5e-3 で R[0,1] が厳密 −1.462e-3、追跡・Emittance[] −4.05e-3・−4.07e-3 (差 −2.58e-3 ≈ −(2+a) θ py)。D[z,py] の差は −(2+a)θ。n0 の傾き・SpinTune・脱偏極の D に効く。軸上・x・δ は 1e-12〜1e-7 で厳密に一致。Emittance[] の D と追跡の D が鉛直の軌道・分散が大きいリング (0.5 GeV・y 軌道 6 mm) で食い違う (追跡の δ キックへの応答 0.0963 に対し、Emittance[] の N の δ 列 0.0025) 原因の一部と推定</td>
 <td>中</td>
 <td>確定 (厳密な Thomas-BMT の積分 <a href="../example/16_spin_polarization/spin_bend_vertical_angle.py"><code>example/16_spin_polarization/spin_bend_vertical_angle.py</code></a>。原因の分解のうち θ py の項は推定)</td>
-<td><strong>直していない</strong> (要判断。直すには tradke・tradk・tbend の全ての要素の本体に B∥ を足し、フレームの系の扱いを揃える必要があり、B58・B64・B130 のスピンの結果が全部動く)。k64・v2 とも K64 のまま</td>
+<td><strong>v2 で修正 (B165 が原因を特定し、本体の B∥ を足した)</strong>。k64 は K64 のまま。残る追跡の差は B165・B235</td>
 </tr>
 <tr>
 <td>B137</td>
