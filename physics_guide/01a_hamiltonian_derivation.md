@@ -88,7 +88,12 @@ Q_k \equiv \sum_{i=1}^{N}\vec F^a_i\cdot\frac{\partial\vec x_i}{\partial q_k}
 \tag{1a.6}
 $$
 
-を使うと、(1a.3) は $\sum_k\left[Q_k - \dfrac{d}{dt}\dfrac{\partial T}{\partial\dot q_k} + \dfrac{\partial T}{\partial q_k}\right]\delta q_k = 0$ になる。$\delta q_k$ が独立なので、各 $k$ について
+を使い、(1a.3) の 2 つの項を $\delta q_k$ で書き直す。$\delta\vec x_i = \sum_k(\partial\vec x_i/\partial q_k)\,\delta q_k$ ((1a.4)) を代入して $i$ と $k$ の和の順序を入れ替える。
+
+- **慣性項**: $\sum_i\dot{\vec P}_i\cdot\delta\vec x_i = \sum_k\Bigl[\sum_im_i\ddot{\vec x}_i\cdot\dfrac{\partial\vec x_i}{\partial q_k}\Bigr]\delta q_k$ ($\dot{\vec P}_i = m_i\ddot{\vec x}_i$)。(1a.5) の両辺に $m_i$ をかけて $i$ で足すと、右辺は $\sum_i\tfrac12m_i\dot{\vec x}_i^{\,2} = T$ の微分になり、$\sum_im_i\ddot{\vec x}_i\cdot\dfrac{\partial\vec x_i}{\partial q_k} = \dfrac{d}{dt}\dfrac{\partial T}{\partial\dot q_k} - \dfrac{\partial T}{\partial q_k}$。
+- **有効力の項**: $\sum_i\vec F^a_i\cdot\delta\vec x_i = \sum_k\Bigl[\sum_i\vec F^a_i\cdot\dfrac{\partial\vec x_i}{\partial q_k}\Bigr]\delta q_k = \sum_kQ_k\,\delta q_k$ ((1a.6) の $Q_k$ の定義そのもの)。
+
+したがって (1a.3) は $\sum_k\left[Q_k - \dfrac{d}{dt}\dfrac{\partial T}{\partial\dot q_k} + \dfrac{\partial T}{\partial q_k}\right]\delta q_k = 0$ になる。$\delta q_k$ が独立なので、各 $k$ について
 
 $$
 \frac{d}{dt}\frac{\partial T}{\partial\dot q_k} - \frac{\partial T}{\partial q_k} = Q_k
@@ -591,7 +596,7 @@ $$
 
 **$s$ を独立変数にできる条件**: $s$ が時間 $t$ の単調な関数 ($\dot s = ds/dt > 0$。粒子が $+s$ 向きに進み、後戻りしない) であること。そうでないと $t \to s$ の逆関数 $t(s)$ が 1 価に定まらず、$t' = dt/ds = 1/\dot s$ が定義できない。(1a.52) で $+s$ 向きの枝の平方根を選ぶのは、この条件に当たる。
 
-**必要なのは入れ替え**: $s$ を座標から独立変数に移し、$t$ を独立変数から**座標に戻す**。「座標」が減る代わりに「座標」が増え、位相空間の次元は同じ (6 次元) になる。これは、同じ $t$ のもとの相空間 $(q, p) \to (Q, P)$ の写像 (§6) ではなく、座標とパラメータの役割を交換する変換 (一般の正準変換の枠に入らない) で、次のように組む。この手続きは Bell (1955) の Appendix 1 に書かれている手続きと同じで、記号の対応は §8.6。
+**必要なのは入れ替え**: $s$ を座標から独立変数に移し、$t$ を独立変数から**座標に戻す**。「座標」が減る代わりに「座標」が増え、位相空間の次元は同じ (6 次元) になる。これは、同じ $t$ のもとの相空間 $(q, p) \to (Q, P)$ の写像 (§6) ではなく、座標とパラメータの役割を交換する変換 (一般の正準変換の枠に入らない) で、次のように組む。この手続きは A.E.R.E. T/M 125 (1955) の付録 1 に書かれている手続きと同じで、記号の対応は §8.6。
 
 ### 8.2 拡張位相空間と新しいラグランジアン
 
@@ -703,17 +708,17 @@ $$
 
 ### 8.5 $t$ と $z$
 
-$t$ の運動 ($dt/ds = \partial\tilde H/\partial P_t$) を、粒子の「バンチ内の位置」$z$ に変える変換は別にある。SAD は、母関数 $G(p_t, z; s) = z\,p(p_t) + p_t\,t_0(s)$ ([01_variables_and_conventions.md](01_variables_and_conventions.md) §3 の式 (1.6)) で $(t, p_t) \to (z, p)$ とし、ハミルトニアンに $E/(p_0v_0)$ の項が加わる (式 (1.1))。この章は、そこに行く前の、横方向の運動だけを扱う ($\delta$ は一定の定数)。
+$t$ の運動 ($dt/ds = \partial\tilde H/\partial P_t$) を、粒子の「バンチ内の位置」$z$ に変える変換は別にある。SAD は、母関数 $G(p_t, z; s) = z\,p(p_t) + p_t\,t_0(s)$ ([01_variables_and_conventions.md](01_variables_and_conventions.md) §3 の式 (1.6)) で $(t, p_t) \to (z, p)$ とし、ハミルトニアンに $E/(P_0v_0)$ の項が加わる (式 (1.1))。この章は、そこに行く前の、横方向の運動だけを扱う ($\delta$ は一定の定数)。
 
-### 8.6 Bell (1955) Appendix 1 との対応
+### 8.6 A.E.R.E. T/M 125 (1955) 付録 1 との対応
 
-M. R. Bell, "Non-linear equations of motion in the synchrotron", A.E.R.E. T/M 125 (1955) の Appendix 1 は、$t$ 以外の座標を独立変数に取り替えたときの新しいハミルトニアンを、次の流れで導いている。この節は、その流れと §8.2〜§8.3 の対応を示す。
+報告書 "Non-linear equations of motion in the synchrotron" (A.E.R.E. T/M 125, 1955) の付録 1 は、$t$ 以外の座標を独立変数に取り替えたときの新しいハミルトニアンを、次の流れで導いている。この節は、その流れと §8.2〜§8.3 の対応を示す。
 
-1. **作用の書き換え**。ハミルトンの原理 $\delta\int L\,dt = 0$ (Bell の (14)) で、独立変数を $t$ から別の変数 $u$ に替えると $\delta\int L\,\dfrac{dt}{du}\,du = 0$、すなわち $\delta\int M\,du = 0$ ((14)')。$M = L\,dt/du$ は $(q_n, t, \partial q_n/\partial u, \partial t/\partial u)$ の関数。$L = \sum p_n\dot q_n - H$ を使うと、(14)' は $\delta\int\left(\sum p_n\dfrac{dq_n}{du} - H\dfrac{dt}{du}\right)du = 0$。(本章の (1a.46) に当たる。)
-2. **対称性の議論**。この式は、$-H$ を運動量、$t$ を座標とみなすと、$\sum p\,dq$ の形と対称になる。この対称性から、「$t$ が独立変数のときのハミルトニアンが $H$ なら、$q_n$ が独立変数のときのハミルトニアンは $-p_n$」と Bell は言う。
+1. **作用の書き換え**。ハミルトンの原理 $\delta\int L\,dt = 0$ (同付録の (14)) で、独立変数を $t$ から別の変数 $u$ に替えると $\delta\int L\,\dfrac{dt}{du}\,du = 0$、すなわち $\delta\int M\,du = 0$ ((14)')。$M = L\,dt/du$ は $(q_n, t, \partial q_n/\partial u, \partial t/\partial u)$ の関数。$L = \sum p_n\dot q_n - H$ を使うと、(14)' は $\delta\int\left(\sum p_n\dfrac{dq_n}{du} - H\dfrac{dt}{du}\right)du = 0$。(本章の (1a.46) に当たる。)
+2. **対称性の議論**。この式は、$-H$ を運動量、$t$ を座標とみなすと、$\sum p\,dq$ の形と対称になる。この対称性から、「$t$ が独立変数のときのハミルトニアンが $H$ なら、$q_n$ が独立変数のときのハミルトニアンは $-p_n$」と書いている。
 3. **計算による確認**。独立変数を $q_r$ にとり ($u = q_r$)、$M = L\,t'$ ($' = d/dq_r$)。$t$ に共役な運動量 $P = \partial M/\partial t' = L - \sum_n(\partial L/\partial\dot q_n)\,q_n'/t' = L - \sum p_n\dot q_n = -H$。ほかの座標 ($q_r$ 以外) の運動量は $P_j = \partial M/\partial q_j' = p_j$ (古い運動量のまま)。新しいハミルトニアンは $R = \sum_jP_jq_j' - M = -t'p_r\dot q_r = -p_r$ ($p_r$ は $q_r$ に共役な、古い運動量。新しい独立変数 $q_r$ に対応する運動量で、**符号が逆になる**)。
 
-| Bell (1955) | この章 | 備考 |
+| T/M 125 付録 1 | この章 | 備考 |
 |---|---|---|
 | $L$、$H$ (原文は花文字)、$p_n$、$q_n$ | $L$、$H$、$p_i$、$q_i$ | 時間 $t$ を独立変数とする古い系 |
 | 新しい独立変数 $u$、特に $q_r$ | $s$ ($q_r = s$) | |
@@ -722,7 +727,7 @@ M. R. Bell, "Non-linear equations of motion in the synchrotron", A.E.R.E. T/M 12
 | $P_j = \partial M/\partial q_j' = p_j$ | $P_x = p_x$、$P_y = p_y$ (式 (1a.49)) | $j$ は $q_r$ 以外の座標 |
 | $R = \sum P_jq_j' - M = -p_r$ | $\tilde H = -p_s$ (式 (1a.50)(1a.51)) | 新しいハミルトニアン。符号が逆 |
 
-**Bell の Appendix 1 と本章の違い**: (i) 本章は、$p_s$ を $P_t = -H$ から解いて $(x, y, P_x, P_y, t, P_t)$ の関数にする段階 ((1a.52)(1a.53)) と、元の方程式との一致の確認 ((1a.54)) を加えている。Appendix 1 には、この部分は見当たらない (照合した範囲)。(ii) 本章の Frenet–Serret 座標、規格化、展開 (§7、§9) に当たる記述は、Appendix 1 にはない。**Appendix 1 以外の部分は、本章では内容を照合していない (未確認)**。
+**付録 1 と本章の違い**: (i) 本章は、$p_s$ を $P_t = -H$ から解いて $(x, y, P_x, P_y, t, P_t)$ の関数にする段階 ((1a.52)(1a.53)) と、元の方程式との一致の確認 ((1a.54)) を加えている。Appendix 1 には、この部分は見当たらない (照合した範囲)。(ii) 本章の Frenet–Serret 座標、規格化、展開 (§7、§9) に当たる記述は、Appendix 1 にはない。**Appendix 1 以外の部分は、本章では内容を照合していない (未確認)**。
 
 ## 9. 規格化と展開、偏向磁石と四極の運動方程式
 
@@ -772,6 +777,8 @@ $$
 \tag{1a.58b}
 $$
 
+(係数は二項級数 $\sum_k\binom{1/2}{k}(-u)^k$ から。$\binom{1/2}{1} = \tfrac12$ なので $k = 1$ は $-\tfrac u2$。$\binom{1/2}{2} = \tfrac{(1/2)(-1/2)}{2!} = -\tfrac18$ なので $k = 2$ は $-\tfrac18u^2$。$\binom{1/2}{3} = \tfrac{(1/2)(-1/2)(-3/2)}{3!} = \tfrac1{16}$ で $(-u)^3 = -u^3$ だから $k = 3$ は $-\tfrac1{16}u^3$。次の項は $\binom{1/2}{4}u^4 = -\tfrac5{128}u^4$。確認: [ham_11_curvilinear_steps.out.txt](outputs/ham_11_curvilinear_steps.out.txt) (a)。)
+
 $u$ は 2 次、$u^2$ は 4 次、$u^3$ は 6 次。**$u$ の 1 次まで (つまり 2 次まで) 残し**、$u^2$ 以降 (4 次以上) を捨てる。捨てた最初の項は $-u^2/8$ で、残した $u/2$ に対する比は $u/4$ (角度が 1 mrad なら $\sim 2.5\times10^{-7}$)。
 
 **手順 3: $(1+\delta)$ をかける**:
@@ -809,22 +816,32 @@ $$
 
 ### 9.3 ベクトルポテンシャルと磁場の関係
 
-$a_s$ に入れる $A_s$ は、**Frenet 座標のベクトルポテンシャルの $s$ 成分** ((1a.44)、$A_s = (1 + x/\rho)A_z$) である。磁場との関係は、直交曲線座標での回転の公式から出る。座標 $(q_1, q_2, q_3) = (X, Y, s)$ のスケール因子 $h_i = |\partial\vec r/\partial q_i|$ は、(1a.42) から $h_X = |\vec n| = 1$、$h_Y = |\vec b| = 1$、$h_s = 1 + X/\rho$。直交曲線座標で、ベクトル $\vec A$ の物理成分 $A_{(i)}$ (各基底方向への射影) に対し $(\nabla\times\vec A)_{(1)} = \dfrac{1}{h_2h_3}\left[\dfrac{\partial(h_3A_{(3)})}{\partial q_2} - \dfrac{\partial(h_2A_{(2)})}{\partial q_3}\right]$ ($(2, 3, 1)$ の巡回で同じ形)。ここで $h_sA_{(s)} = (1 + X/\rho)\,\vec A\cdot\vec t = A_s$ ((1a.44) の共変成分)。$A_X = A_Y = 0$ なら
+$a_s$ に入れる $A_s$ は、**Frenet 座標のベクトルポテンシャルの $s$ 成分** ((1a.44)、共変成分 $A_s = (1 + x/\rho)A_t$。$A_t$ は接線方向の物理成分) である。磁場との関係を、微小な面の周回積分 (ストークスの定理 $\oint\vec A\cdot d\vec r = \int(\nabla\times\vec A)\cdot d\vec S$) から、成分で導く。
+
+**座標と線素**。(1a.39)(1a.42) から $d\vec r = \vec n\,dX + \vec b\,dY + (1 + X/\rho)\vec t\,ds$。3 つのベクトル $\vec n$、$\vec b$、$\vec t$ は互いに直交する単位ベクトルで、**$\vec n\times\vec b = \vec t$** (右手系。$\vec b = \vec t\times\vec n$ から $(\vec t, \vec n, \vec b)$ が巡回)。座標方向の長さの因子 (スケール因子) は $h_X = h_Y = 1$、$h_s = 1 + X/\rho$。線積分は共変成分で書ける: $\vec A\cdot d\vec r = A_X\,dX + A_Y\,dY + A_s\,ds$ ($A_X = \vec A\cdot\vec n$、$A_Y = \vec A\cdot\vec b$、$A_s = (1 + X/\rho)\vec A\cdot\vec t$ が (1a.44))。
+
+**$B_X$** ($\vec n$ 方向の成分)。$X$ 一定の面で、$(Y, s)$ から $(Y + dY, s + ds)$ の長方形をつくり、$Y \to s$ の向きに回る (右手系の $(\vec n, \vec b, \vec t)$ で $\vec n$ に垂直な面は $\vec b \to \vec t$ の向きが正)。4 辺の寄与:
 
 $$
-B_X = (\nabla\times\vec A)_{(X)} = \frac{1}{h_Yh_s}\frac{\partial(h_sA_{(s)})}{\partial Y} = \frac{1}{1 + X/\rho}\frac{\partial A_s}{\partial Y},\quad
-B_Y = (\nabla\times\vec A)_{(Y)} = -\frac{1}{h_sh_X}\frac{\partial(h_sA_{(s)})}{\partial X} = -\frac{1}{1 + X/\rho}\frac{\partial A_s}{\partial X}
+\oint\vec A\cdot d\vec r = \underbrace{A_Y(Y, s)\,dY}_{\text{辺 1}} + \underbrace{A_s(Y + dY, s)\,ds}_{\text{辺 2}} - \underbrace{A_Y(Y, s + ds)\,dY}_{\text{辺 3}} - \underbrace{A_s(Y, s)\,ds}_{\text{辺 4}}
+= \left(\frac{\partial A_s}{\partial Y} - \frac{\partial A_Y}{\partial s}\right)dY\,ds
 $$
 
-($B_s$ は $A_X = A_Y = 0$ と $\partial_s$ がないので 0)。すなわち
+(辺 2 と辺 4 の差が $\partial_YA_s\,dY\,ds$、辺 1 と辺 3 の差が $-\partial_sA_Y\,dY\,ds$。$dY$、$ds$ の 2 次まで。) 長方形の面積は $dY\cdot h_s\,ds$ (辺の長さは $dY$ と $h_s\,ds$)、法線は $\vec n$ なので、$B_X = \oint/(\text{面積}) = \dfrac1{h_s}\left(\dfrac{\partial A_s}{\partial Y} - \dfrac{\partial A_Y}{\partial s}\right)$。
+
+**$B_Y$** ($\vec b$ 方向)。$Y$ 一定の面で $(s, X)$ の長方形 ($\vec t \to \vec n$ の向きが $\vec b$ に対して正。$\vec t\times\vec n = \vec b$)。同じ手順で $\oint = A_s(X)\,ds + A_X(s + ds)\,dX - A_s(X + dX)\,ds - A_X(s)\,dX = \left(\dfrac{\partial A_X}{\partial s} - \dfrac{\partial A_s}{\partial X}\right)ds\,dX$、面積 $h_s\,ds\,dX$ なので $B_Y = \dfrac1{h_s}\left(\dfrac{\partial A_X}{\partial s} - \dfrac{\partial A_s}{\partial X}\right)$。
+
+**$B_s$** (接線方向 $\vec t$)。$s$ 一定の面で $(X, Y)$ の長方形 (面積 $dX\,dY$。$h_Xh_Y = 1$)。$\oint = \left(\dfrac{\partial A_Y}{\partial X} - \dfrac{\partial A_X}{\partial Y}\right)dX\,dY$ なので $B_t = \dfrac{\partial A_Y}{\partial X} - \dfrac{\partial A_X}{\partial Y}$ (この面の周回積分には $s$ に沿う辺がないので、$\partial_s$ はそもそも入らない)。
+
+ここまでは一般の場。$A_X = A_Y = 0$ (進行方向以外のポテンシャルがない。§12) なら、$B_X$ の $\partial_sA_Y$、$B_Y$ の $\partial_sA_X$、$B_t$ の全項が 0 になり、
 
 $$
 B_X = \frac{1}{1 + X/\rho}\frac{\partial A_s}{\partial Y},\qquad
-B_Y = -\frac{1}{1 + X/\rho}\frac{\partial A_s}{\partial X}
+B_Y = -\frac{1}{1 + X/\rho}\frac{\partial A_s}{\partial X},\qquad B_t = 0
 \tag{1a.60a}
 $$
 
-(sympy で、この変換を一般の $A_s(X, Y)$ について確認: [ham_09_derivation_steps.out.txt](outputs/ham_09_derivation_steps.out.txt) (d)。) デカルト座標のスカラーポテンシャルによる磁場の解は、この関係でベクトルポテンシャルに直してから使う。sympy で、$A_t$ を多項式にして、デカルト座標で $\nabla\times\vec A$ を直接計算した値が (1a.60a) と一致することを、いくつかの点で確かめた ([ham_03_frenet_f3.out.txt](outputs/ham_03_frenet_f3.out.txt) (e))。
+(この式は直交曲線座標の回転の公式 $(\nabla\times\vec A)_{(1)} = \frac1{h_2h_3}[\partial_2(h_3A_{(3)}) - \partial_3(h_2A_{(2)})]$ ($(1, 2, 3) = (X, Y, s)$ の巡回) と同じ。ここでは $h_sA_{(s)} = A_s$ なので $\partial_Y(h_sA_{(s)}) = \partial_YA_s$ が出る。) 確認: (i) 周回積分の展開を sympy で ([ham_11_curvilinear_steps.out.txt](outputs/ham_11_curvilinear_steps.out.txt) (b-i))。(ii) 円弧の基準軌道で、実際の長方形の周回積分 (4 辺の線積分を数値で作り、面積で割る。辺を $10^{-3}$ から $10^{-4}$ へ縮めると $B_n$ が $-7.99732$ から $-7.99869$ に動き、デカルト座標の $\nabla\times\vec A$ の $\vec n$ 成分 $-7.99885$ に近づく。$B_b$、$B_t$ も同様) ((b-ii))。(iii) 一般の $A_s(X, Y)$ について、変換を sympy で確認 ([ham_09_derivation_steps.out.txt](outputs/ham_09_derivation_steps.out.txt) (d))。デカルト座標のスカラーポテンシャルによる磁場の解は、この関係でベクトルポテンシャルに直してから使う。sympy で、$A_t$ を多項式にして、デカルト座標で $\nabla\times\vec A$ を直接計算した値が (1a.60a) と一致することを、いくつかの点で確かめた ([ham_03_frenet_f3.out.txt](outputs/ham_03_frenet_f3.out.txt) (e))。
 
 ### 9.4 偏向磁石
 
@@ -835,14 +852,20 @@ A_s = -\left(x + \frac{x^2}{2\rho}\right)B_0
 \tag{1a.60b}
 $$
 
-(確認: $B_X = 0$、$B_Y = -(1 + X/\rho)^{-1}\cdot(-(1 + X/\rho)B_0) = B_0$。[ham_05_expansion.out.txt](outputs/ham_05_expansion.out.txt) (b)、[ham_09_derivation_steps.out.txt](outputs/ham_09_derivation_steps.out.txt) (d)。) 設計軌道が基準軌道 (曲率半径 $\rho$) であること、つまり設計軌道に沿って運動量 $P_0$ の粒子が曲がる条件は
+(確認: $B_X = 0$、$B_Y = -(1 + X/\rho)^{-1}\cdot(-(1 + X/\rho)B_0) = B_0$。[ham_05_expansion.out.txt](outputs/ham_05_expansion.out.txt) (b)、[ham_09_derivation_steps.out.txt](outputs/ham_09_derivation_steps.out.txt) (d)。) 設計軌道が基準軌道 (曲率半径 $\rho$) であること、つまり設計軌道に沿って運動量 $P_0$ の粒子が曲がる条件を、(1a.57) から導く。設計軌道は $x = p_x = p_y = 0$、$\delta = 0$ で、そこで $p_x' = -\partial H/\partial x$ が 0 でなければならない。(1a.57) の $x$ 微分は
+
+$$
+\frac{\partial H}{\partial x} = -\frac{\partial a_s}{\partial x} - \frac1\rho\sqrt{(1 + \delta)^2 - p_x^2 - p_y^2}\ \xrightarrow{\ x = p_x = p_y = \delta = 0\ }\ -\frac{\partial a_s}{\partial x}\Big|_0 - \frac1\rho
+$$
+
+(根号は設計軌道で 1。$\sqrt{\ }$ の $x$ 依存は $(1 + x/\rho)$ の因子だけ。) (1a.60b) から $a_s = eA_s/P_0 = -(x + x^2/2\rho)\,eB_0/P_0$、$\partial a_s/\partial x|_0 = -eB_0/P_0$ なので $\partial H/\partial x|_0 = eB_0/P_0 - 1/\rho$。$p_x' = -\partial H/\partial x|_0 = 1/\rho - eB_0/P_0 = 0$ から
 
 $$
 \frac{eB_0}{P_0} = \frac{1}{\rho}
 \tag{1a.61}
 $$
 
-($e$ の符号を含めて $\rho$ の符号が決まる。)
+(確認: sympy [ham_11_curvilinear_steps.out.txt](outputs/ham_11_curvilinear_steps.out.txt) (c)。) **符号の約束**は、力の向きでも確かめられる。粒子は $\vec v = c\,\vec t$、磁場は $\vec B = B_0\vec b$ ($B_Y = B_0$) で、ローレンツ力は $e\vec v\times\vec B = ecB_0\,(\vec t\times\vec b)$。$(\vec t, \vec n, \vec b)$ が巡回なので $\vec t\times\vec b = -\vec n$ で、力は $-ecB_0\,\vec n$。$\vec n$ は曲率の中心と逆向き (外向き、(1a.37)) なので、$eB_0 > 0$ なら力は内向きで、$\rho > 0$ の円軌道に一致する (逆符号なら $\rho < 0$ とみて同じ式)。
 
 **ステップ 1: $a_s$ を求める**。$a_s = eA_s/P_0 = -\left(x + \dfrac{x^2}{2\rho}\right)\dfrac{eB_0}{P_0} = -\dfrac{1}{\rho}\left(x + \dfrac{x^2}{2\rho}\right)$ ((1a.61) を使った)。この $a_s$ は $x$ の 2 次までで終わっている (1 次と 2 次の項だけ)。
 
@@ -890,7 +913,11 @@ $$
 
 (sympy の `series` で $\delta$ の 2 次までを確認: [ham_06_series.out.txt](outputs/ham_06_series.out.txt) (c)(e)。) $p_x$ を $x'$ とみなして ($\delta \to 0$ の分母で) も同じ式になる。
 
-この符号は、偏向磁石の弱い集束 ($-x/\rho^2$) と、運動量の大きい粒子 ($\delta > 0$) が偏向されにくく外側 ($x > 0$ は曲率の中心と逆向き) へずれる効果 ($+\delta/\rho$) と読める。分散関数は、$x'' + x/\rho^2 = \delta/\rho$ の周期解として $\eta(s) = \rho\,[1 - \cos(s/\rho)]$ 型になる。
+この符号は、偏向磁石の弱い集束 ($-x/\rho^2$) と、運動量の大きい粒子 ($\delta > 0$) が偏向されにくく外側 ($x > 0$ は曲率の中心と逆向き) へずれる効果 ($+\delta/\rho$) と読める。分散関数 ($x = \eta\,\delta$ と書く。$x'' + x/\rho^2 = \delta/\rho$ から $\eta'' + \eta/\rho^2 = 1/\rho$) については、次の 3 つを区別する (確認: [ham_11_curvilinear_steps.out.txt](outputs/ham_11_curvilinear_steps.out.txt) (d))。
+
+- **一般解**: 特解 $\eta = \rho$ (代入: $0 + \rho/\rho^2 = 1/\rho$) と、同次方程式 $\eta'' + \eta/\rho^2 = 0$ の解 $\cos(s/\rho)$、$\sin(s/\rho)$ の和、$\eta = \rho + a\cos(s/\rho) + b\sin(s/\rho)$。
+- **初期条件 $\eta(0) = \eta'(0) = 0$ の解** (設計軌道から、運動量が $\delta$ だけ違う粒子が出発したとき): $a = -\rho$、$b = 0$ から $\eta(s) = \rho\,[1 - \cos(s/\rho)]$ (代入: $\eta'' = \cos(s/\rho)/\rho$、$\eta/\rho^2 = [1 - \cos(s/\rho)]/\rho$、和は $1/\rho$)。**これは初期値問題の解であって、「周期解」ではない** (周期が $2\pi\rho$ の関数ではあるが、リングの閉軌道の分散ではない)。
+- **一様な偏向磁石だけのリングの閉軌道の分散**: 定数の特解 $\eta = \rho$。運動量の違う粒子の閉軌道が半径 $\rho(1 + \delta)$ の円 ($x = \rho\delta$ だけ外側) であることに当たる。初期値問題の解は、この閉軌道 $\eta = \rho$ のまわりを振幅 $\rho$ で振動する ($\eta - \rho = -\rho\cos(s/\rho)$、水平のベータトロン振動)。強い集束のあるリングの分散関数は、$x'' + K_x(s)x = \delta/\rho(s)$ の周期解で、集束のない一様な偏向磁石のリング ($K_x = 1/\rho^2$ だけ。チューン 1) は、同次解も周期 $2\pi\rho$ を持つので一意でない特別な場合。
 
 
 ### 9.5 四極磁石
@@ -933,7 +960,7 @@ $$
 
 ### 9.6 展開の次数の目安 (数値)
 
-(1a.59) は、$H$ の 3 次の項 $x(p_x^2 + p_y^2)/(2\rho(1 + \delta))$ などを落としている。偏向磁石 ($\rho = 10$ m、$\delta = 0$) で、厳密な (1a.57) の運動方程式を DOP853 で 3 m 積分した結果と、(1a.62) の線形の運動方程式の差は、初期振幅 $a$ ($x = a$、$p_x = a/2$) が 1・2・4・8 mm のとき $1.9\times10^{-7}$、$7.6\times10^{-7}$、$3.1\times10^{-6}$、$1.2\times10^{-5}$ で、振幅が 2 倍になるごとに 4 倍になる ([ham_05_expansion.out.txt](outputs/ham_05_expansion.out.txt) (e))。落とした項は $H$ の 3 次で、運動方程式への寄与 (力) は振幅の 2 次、という予想どおり。
+(1a.59) は、$H$ の 3 次の項 $x(p_x^2 + p_y^2)/(2\rho(1 + \delta))$ などを落としている。偏向磁石 ($\rho = 10$ m、$\delta = 0$) で、厳密な (1a.57) の運動方程式を DOP853 で 3 m 積分した結果と、(1a.62) の線形の運動方程式の差は、初期振幅 $a$ ($x = a$、$p_x = a/2$) が 1・2・4・8 mm のとき $1.9\times10^{-7}$、$7.6\times10^{-7}$、$3.1\times10^{-6}$、$1.2\times10^{-5}$ で、振幅が 2 倍になるごとに 4 倍になる ([ham_05_expansion.out.txt](outputs/ham_05_expansion.out.txt) (e))。落とした項は $H$ の 3 次で、運動方程式への寄与 (力) は振幅の 2 次、という見積もりと合う。根拠: 落とした $H_3 = x(p_x^2 + p_y^2)/(2\rho(1 + \delta))$ の寄与は、$x' \ni \partial H_3/\partial p_x = x\,p_x/(\rho(1 + \delta))$ と $p_x' \ni -\partial H_3/\partial x = -(p_x^2 + p_y^2)/(2\rho(1 + \delta))$ で、どちらも $x$、$p_x$ の 2 次 (振幅 $a$ の 2 乗)。数値の見積もり ($\rho = 10$ m、$\delta = 0$、$x = a$、$p_x = a/2$): $a = 1$ mm で $\partial H_3/\partial p_x = 5\times10^{-8}$ /m、$-\partial H_3/\partial x = -1.25\times10^{-8}$ /m で、3 m 進むと $1.5\times10^{-7}$、$-3.8\times10^{-8}$。上の差 $1.9\times10^{-7}$ と同じ桁で、$a$ が 2 倍になるごとに寄与が 4 倍 ($a = 2, 4, 8$ mm で $6.0\times10^{-7}$、$2.4\times10^{-6}$、$9.6\times10^{-6}$) になる ([ham_11_curvilinear_steps.out.txt](outputs/ham_11_curvilinear_steps.out.txt) (e))。
 
 ## 10. SAD のヘルプ、pysad・K64 との対応
 
@@ -942,7 +969,7 @@ $$
 SAD のヘルプ (dynamics > Hamiltonian) の式は、[01_variables_and_conventions.md](01_variables_and_conventions.md) の式 (1.1):
 
 $$
-H_{\rm SAD} = -\left(\sqrt{p^2 - (p_x - a_x)^2 - (p_y - a_y)^2} + a_s\right)\left(1 + \frac{x}{\rho}\right) + \frac{E}{p_0v_0}
+H_{\rm SAD} = -\left(\sqrt{p^2 - (p_x - a_x)^2 - (p_y - a_y)^2} + a_s\right)\left(1 + \frac{x}{\rho}\right) + \frac{E}{P_0v_0}
 $$
 
 この章の (1a.55) $H = -a_s^{\rm (本章)} - (1 + x/\rho)\sqrt{p^2 - p_x^2 - p_y^2}$ ($p = p_{\rm m}/P_0 = 1 + \delta$、$a_x = a_y = 0$) との対応は次のとおり。
@@ -951,11 +978,11 @@ $$
 |---|---|---|
 | 運動量 | $P_X, P_Y$ を $P_0$ で割った $p_x, p_y$ | $p_x, p_y$ (同じ) |
 | 全運動量の規格化値 | $p = p_{\rm m}/P_0 = 1 + \delta$ | $p = 1 + \delta$ (同じ) |
-| ベクトルポテンシャルの $s$ 成分 | **共変成分** $A_s = (1 + x/\rho)A_t$。式 (1a.55) の $-a_s^{\rm (本章)}$ | **接線方向の物理成分** $A_t$ ($a_s = eA_t/p_0$)。式 (1.1) は $-a_s(1 + x/\rho)$ |
+| ベクトルポテンシャルの $s$ 成分 | **共変成分** $A_s = (1 + x/\rho)A_t$。式 (1a.55) の $-a_s^{\rm (本章)}$ | **接線方向の物理成分** $A_t$ ($a_s = eA_t/P_0$)。式 (1.1) は $-a_s(1 + x/\rho)$ |
 | 同じ量の書き方 | $-a_s^{\rm (本章)} = -(1 + x/\rho)\,a_s^{\rm (SAD)}$ | |
-| 縦方向 | $(t, P_t = -E)$ をそのまま座標・運動量にする (§8)。静的な場では $E$ は定数 | $(z, p)$ に正準変換 ([01_variables_and_conventions.md](01_variables_and_conventions.md) §3)。そのとき $+E/(p_0v_0)$ の項が加わる |
+| 縦方向 | $(t, P_t = -E)$ をそのまま座標・運動量にする (§8)。静的な場では $E$ は定数 | $(z, p)$ に正準変換 ([01_variables_and_conventions.md](01_variables_and_conventions.md) §3)。そのとき $+E/(P_0v_0)$ の項が加わる |
 
-したがって、**この章の式 (1a.55) は、SAD のヘルプの式から、$E/(p_0v_0)$ の項 (経路の遅れ $z$ の運動を作る項。$\delta$ が一定のとき横方向の運動に影響しない) を除いたもの**になる (記号 $a_s$ の意味の違いを揃えれば)。横方向の運動方程式は、どちらから出しても同じ。01 章は、ヘルプのラグランジアンから $(t, p_t) \to (z, p)$ の母関数まで書く。この章は、それより基本的な解析力学の部分 (速度依存のポテンシャル、ローレンツ力の一般化ポテンシャル、$t \to s$ の入れ替え) と、偏向・四極の運動方程式への展開を詳しく書く。
+したがって、**この章の式 (1a.55) は、SAD のヘルプの式から、$E/(P_0v_0)$ の項 (経路の遅れ $z$ の運動を作る項。$\delta$ が一定のとき横方向の運動に影響しない) を除いたもの**になる (記号 $a_s$ の意味の違いを揃えれば)。横方向の運動方程式は、どちらから出しても同じ。01 章は、ヘルプのラグランジアンから $(t, p_t) \to (z, p)$ の母関数まで書く。この章は、それより基本的な解析力学の部分 (速度依存のポテンシャル、ローレンツ力の一般化ポテンシャル、$t \to s$ の入れ替え) と、偏向・四極の運動方程式への展開を詳しく書く。
 
 ### 10.2 pysad・K64 の対応
 
@@ -978,9 +1005,10 @@ sympy (1.14) で式を確かめる。`py -3.12 physics_guide/scripts/ham_01_lore
 | `ham_05_expansion.py` | §9 | $\varepsilon$ 展開 (各次の係数)、$A_s \to B$、偏向磁石と四極の運動方程式、厳密な $\tilde H$ と 2 次の展開の差の振幅依存性 |
 | `ham_06_series.py` | §9.2、§9.4、§9.5 | $\sqrt{1 \pm u}$ と $1/(1+\delta)$ の展開、$H$ の因子ごとの展開と次数、偏向磁石・四極の偏微分の 1 項ずつの表、$x'' = p_x'/(1+\delta)$ の展開、$\Delta H$ の展開 (四極の章の (4.6)) |
 | `ham_09_derivation_steps.py` | §3.1、§4.2、§7.1、§9.3〜§9.5 | 書き足した展開の確認: (1a.13) の組み立て、Frenet–Serret の 3 式、(1a.21) の $x$ 成分、曲線座標の回転と偏向・四極の $A_s$ |
+| `ham_11_curvilinear_steps.py` | §9.2〜§9.4、§9.6 | 書き足した展開の確認: $\sqrt{1-u}$ の二項係数、微小な長方形の周回積分 (記号と、円弧の基準軌道での数値の線積分)、設計軌道の条件 (1a.61)、分散の方程式の解、落とした $H_3$ の寄与の見積もり |
 | `ham_07_lie_operator.py` | 付録 C | ポアソン括弧、$\exp(:f:)$ のドリフト・集束四極・6 極の例、合成の順序、BCH、2 次の $f$ と行列 ([C_poisson_lie.md](C_poisson_lie.md)) |
 
-確認できたこと: 上の各行。確認できなかったこと (または確認が間接的なもの): (i) §8 の「同じ作用の別の書き方」(1a.46)(1a.51) は、$P_t = -H$ と $\tilde H = -p_s$ の代数の確認で、作用の変分 (境界条件を含む) の厳密な議論は行っていない。(ii) Bell (1955) は Appendix 1 だけを照合した (§8.6)。(iii) 他の文献との照合 (参考文献) は、本文の式との目視の照合で、sympy ではない。
+確認できたこと: 上の各行。確認できなかったこと (または確認が間接的なもの): (i) §8 の「同じ作用の別の書き方」(1a.46)(1a.51) は、$P_t = -H$ と $\tilde H = -p_s$ の代数の確認で、作用の変分 (境界条件を含む) の厳密な議論は行っていない。(ii) A.E.R.E. T/M 125 (1955) は付録 1 だけを照合した (§8.6)。(iii) 他の文献との照合 (参考文献) は、本文の式との目視の照合で、sympy ではない。
 
 ## 12. 未確認・限界・使った条件
 
@@ -995,8 +1023,5 @@ sympy (1.14) で式を確かめる。`py -3.12 physics_guide/scripts/ham_01_lore
 ## 参考文献
 
 - SAD のヘルプ (CERN 版 SADHelp) の dynamics の節: Independent variable、Lagrangean、Hamiltonian ([01_variables_and_conventions.md](01_variables_and_conventions.md))。
-- M. R. Bell, "Non-linear equations of motion in the synchrotron", A.E.R.E. T/M 125 (1955)。Appendix 1 は、独立変数を $t$ から別の座標に替えたときの新しいハミルトニアン ($M = Lt'$、$P = -H$、$R = -p_r$) を導く。本章 §8 と同じ手続きで、対応は §8.6。Appendix 1 以外は照合していない。
-- 高エネルギー加速器セミナー (OHO) 1991 年のテキスト「ビーム貯蔵リングの基礎」(KEK): ラグランジアンと正準運動量、Frenet–Serret 座標と母関数 $-\vec p\cdot\vec r$、$s$ を独立変数とする正準方程式、運動量とハミルトニアンの規格化、偏向・四極・ソレノイドなどの $A_s$、$H$ の 3 次までの展開とディスパージョンの方程式。本章の §3〜§5、§7〜§9 と同じ内容 (式との照合は目視で、導出の道筋と符号を確認した範囲)。次の点が本章と違う:
-  - 規格化の仕方: そのテキストは $\delta \equiv (p - p_0)/p$ で、運動量を設計運動量 $P_0$ ではなく粒子自身の全運動量 $p$ で規格化する (本章・SAD は $(p - P_0)/P_0$、$P_0$ で規格化)。
-  - $s$ を独立変数にできる条件として、座標 $q_j$ が $t$ の単調関数であること ($dq_j/dt \neq 0$) を挙げている (本章 §8.1)。
-  - ねじれ $\tau$ の符号の約束は、本章 (1a.38) の下の注と同じ。
+- 報告書 "Non-linear equations of motion in the synchrotron", A.E.R.E. T/M 125 (1955)。付録 1 は、独立変数を $t$ から別の座標に替えたときの新しいハミルトニアン ($M = Lt'$、$P = -H$、$R = -p_r$) を導く。本章 §8 と同じ手続きで、対応は §8.6。Appendix 1 以外は照合していない。
+(規格化の流儀の注意: SAD と本章は $\delta$ を設計運動量 $P_0$ で規格化して $(p - P_0)/P_0$ とする。粒子自身の全運動量 $p$ で規格化して $(p - P_0)/p$ とおく流儀もあるので、ほかの文書を読むときは確認する。)
