@@ -1085,6 +1085,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>翻訳の抜けを補った</strong> (パーサが BEND の CHI2 を読まず、tchge の CALC・スピンは dchi2 = 0 固定、MULT (ANGLE≠0) の CHI2 の Emittance[] は NotImplementedError だった)。gs と、追跡 1e-15・1 周のスピン行列 7 桁 (CHI2 = 0.03 で直交性の欠陥 1.9e-3 も再現)・Emittance[] 5e-13・Twiss の ν 6e-14 (k64)。v2 は追跡が gs と一致、スピン行列は直交 (7.5e-8)。限界: CHI2 = 0.03 rad・3 GeV・1 台。ANGLE = 0 の BEND の CHI2 は K64 も使わない。<strong>未実装のまま</strong>: MULT (ANGLE = 0) の CHI1・CHI2・DZ (<code>tsolrot</code>。追跡・CALC・スピンとも無視。gs で L = 1 m・CHI2 = 0.03 の MULT が追跡で 7.8e-4 動く)、MULT (ANGLE≠0) のスピン、ampnf の BEND の CHI2</td>
 </tr>
 <tr>
+<td>SOL 内の QUAD の (x, δ)・(y, δ) のシンプレクティック欠陥 (B333 のあと v2 に残る)</td>
+<td>両</td>
+<td><strong>不確定</strong> (K64 の誤りの疑いは強い)。gs の 6×6 ヤコビアンで、スライスを 260 枚に細かくしても欠陥が減らない ((y, δ) 6.5e-6、(x, δ) 1.9e-7、p = 0.1。4×4 の欠陥は EPS に比例して減る)。p の約 3 乗・K1 に比例。ソレノイドだけ・四極だけでは出ない (1e-10)。k64 は gs と 1e-15、v2 は gs と同じ欠陥なので pysad の翻訳の誤りではない。厳密なハミルトン流との比較は、SOL の境界の取り扱いが合わず (K1 = 0 でも 9e-5) 四極の効果だけを切り出せていない。コードは変えない。<strong>別に</strong>: pysad は SOL 内の QUAD の EPS を使わない (K64 の <code>tquad.f:83</code> は eps0 を渡す。EPS = 0.1 で k64 と gs が 4.7e-7、既定 EPS では一致)</td>
+</tr>
+<tr>
 <td>CAVI の端の q の再スケール (B332)</td>
 <td>両</td>
 <td><strong>v2 は再スケールする</strong> (gs のヤコビアンの</td>
