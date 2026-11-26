@@ -134,7 +134,25 @@ $$
 
 **確認** ((c)): 解析式の行列 (`coord.coord_map` の $T$) と、独立な写像の中心差分 (刻み $10^{-6}$) の最大の差は $5 \times 10^{-12}$。$|J^\top SJ - S|$ は解析式で $1.7 \times 10^{-18}$、数値微分で $5 \times 10^{-12}$ (シンプレクティック)。
 
-**シンプレクティック性の理由**: 6 変数 $(x, p_x, \ldots)$ は、自由空間のハミルトニアン (経路を独立変数に取る) の流れの、ある面での値である。同じ流れの別の面での値への写像は、面の取り替えに関わらずシンプレクティックである (ポアンカレ断面間の写像の一般的な性質)。剛体運動 (11.2) は正準変換なので、その合成も正準。上の数値の確認はこの議論と整合する。数値で確かめたのは (b)(c) の範囲 (角度 $\le 0.5$ rad、$\delta = O(10^{-3})$、$z = O(0.05$ m$)$) であり、一般の証明ではない。
+**シンプレクティック性の理由 (式で)**。写像は 3 段 (§3.4) の合成 $M = C'^{-1}\circ T\circ C$ である。ここで
+
+- $C$: SAD の 6 変数 → 3 次元の位相空間 $(\vec r, \vec P)$ (スナップショット (11.3))。
+- $T$: 剛体運動 $(\vec r, \vec P) \to (R(\vec r - \vec d),\,R\vec P)$ (11.2)。正準 (§3.1)。
+- $C'$: 回転後の座標系で、同じ形 (11.3) ($x', p_x', \ldots$ から $(\vec r', \vec P')$ を作る) の写像。$C'^{-1}$ が (11.4)。
+
+$T$ が正準であることは §3.1 で示した。$C$ と $C'$ がともに、$(\vec r, \vec P)$ の標準のシンプレクティック形式 $\Omega_3 = d\vec r\wedge d\vec P$ を、SAD の標準形 $dx\wedge dp_x + dy\wedge dp_y + dz\wedge d\delta$ に写すこと ($C^*\Omega_3 = \Omega_6$) を確かめれば足りる。$\Omega_6 = C'^*\Omega_3$ なので、$M^*\Omega_6 = C^*\,T^*\,(C'^{-1})^*C'^*\Omega_3 = C^*\,T^*\Omega_3 = C^*\Omega_3 = \Omega_6$ ($T^*\Omega_3 = \Omega_3$ は $T$ が正準なこと)、行列で書けば $J^\top\Omega_6J = \Omega_6$ である。$C$ のヤコビ行列を $J_0 = \partial(\vec r,\vec P)/\partial(x, p_x, y, p_y, z, \delta)$ ((11.3) の各成分の偏微分は §3.4 段 1 で書いた) として $J_0^\top\Omega_3J_0$ を計算すると、成分はすべて §3.4 段 1 の偏微分の積と和で、$p_z^2 = p^2 - p_x^2 - p_y^2$ を使うと打ち消し合って
+
+$$
+J_0^\top\Omega_3J_0 = \begin{pmatrix}0&1&&&&\\-1&0&&&&\\&&0&1&&\\&&-1&0&&\\&&&&0&1\\&&&&-1&0\end{pmatrix} = \Omega_6
+$$
+
+になる。成分 $(J_0^\top\Omega_3J_0)_{ab} = \sum_{k=x,y,z}\bigl(\partial_ar_k\,\partial_bP_k - \partial_br_k\,\partial_aP_k\bigr)$ を、代表的な 3 つについて書き下す ($\vec u = (p_x, p_y, p_z)/p$、$\vec P = (p_x, p_y, p_z)$。$P_k$ は $x$、$z$ に依らず、$\partial\vec r/\partial z = \vec u$、$\partial\vec P/\partial\delta = (0, 0, p/p_z)$、$\partial\vec P/\partial p_x = (1, 0, -p_x/p_z)$):
+
+1. $(z, \delta)$: $\partial_z\vec r\cdot\partial_\delta\vec P - \partial_\delta\vec r\cdot\partial_z\vec P = u_z\cdot\dfrac{p}{p_z} - 0 = \dfrac{p_z}{p}\cdot\dfrac p{p_z} = 1$ ($\partial_z\vec P = 0$)。
+2. $(p_x, z)$: $\partial_{p_x}\vec r\cdot\partial_z\vec P - \partial_z\vec r\cdot\partial_{p_x}\vec P = 0 - \vec u\cdot(1, 0, -p_x/p_z) = -\Bigl(\dfrac{p_x}p - \dfrac{p_z}p\dfrac{p_x}{p_z}\Bigr) = 0$。
+3. $(p_x, \delta)$: $\partial_{p_x}r_z = z\,\partial_{p_x}(p_z/p) = -zp_x/(p\,p_z)$ なので第 1 項 $= -\dfrac{zp_x}{p\,p_z}\cdot\dfrac p{p_z} = -\dfrac{zp_x}{p_z^2}$。第 2 項 $\partial_\delta\vec r\cdot\partial_{p_x}\vec P$ は、$\partial_\delta\vec r = z\bigl(-\tfrac{p_x}{p^2},\ -\tfrac{p_y}{p^2},\ \tfrac1{p_z} - \tfrac{p_z}{p^2}\bigr)$ (§3.4 段 1) を使って $z\Bigl[-\dfrac{p_x}{p^2} + \Bigl(\dfrac1{p_z} - \dfrac{p_z}{p^2}\Bigr)\Bigl(-\dfrac{p_x}{p_z}\Bigr)\Bigr] = z\Bigl[-\dfrac{p_x}{p^2} - \dfrac{p_x}{p_z^2} + \dfrac{p_x}{p^2}\Bigr] = -\dfrac{zp_x}{p_z^2}$。差は $-\dfrac{zp_x}{p_z^2} + \dfrac{zp_x}{p_z^2} = 0$。
+
+(残りの成分も同じ型。全成分を sympy で記号のまま計算: [mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (E)。$\Omega_6$ との差は 0。) $C'$ も同じ形なので、同じ恒等式が成り立つ。したがって $M$ は、シンプレクティック形式を保つ 3 つの写像 ($C$、$T$、$C'^{-1}$) の合成で、**シンプレクティック**である。この議論は $p_x, p_y, \delta$ の任意の値で成り立つ (小さな角度の仮定は使わない)。ただし、**粒子の軌跡が自由な直線である** (§3.2) という前提 (端の面の近くに場が無い) は、この議論の前提として残る。数値の確認 ((b)(c)) は上の通り: 角度 $\le 0.5$ rad、$\delta = O(10^{-3})$、$z = O(0.05$ m$)$ で $|J^\top SJ - S| \lesssim 10^{-12}$。
 
 ### 3.5 小さな角度の 1 次
 
@@ -184,7 +202,24 @@ R_1 = \begin{pmatrix} c_1&0&s_1\\ 0&1&0\\ -s_1&0&c_1\end{pmatrix}
 \tag{11.6}
 $$
 
-行列の積を展開すると (sympy で確認)
+行列の積を展開する。まず右の 2 つ $R_2R_1$ ($R_2$ の各行を $R_1$ の各列に掛ける):
+
+$$
+R_2R_1 = \begin{pmatrix}1&0&0\\0&c_2&s_2\\0&-s_2&c_2\end{pmatrix}\begin{pmatrix}c_1&0&s_1\\0&1&0\\-s_1&0&c_1\end{pmatrix}
+= \begin{pmatrix}c_1 & 0 & s_1\\ -s_1s_2 & c_2 & s_2c_1\\ -s_1c_2 & -s_2 & c_1c_2\end{pmatrix}
+$$
+
+(第 1 行は $R_1$ の第 1 行そのまま。第 2 行は $0\cdot R_1^{(1)} + c_2R_1^{(2)} + s_2R_1^{(3)} = (-s_1s_2,\ c_2,\ c_1s_2)$。第 3 行は $-s_2R_1^{(2)} + c_2R_1^{(3)} = (-s_1c_2,\ -s_2,\ c_1c_2)$。ここで $R_1^{(i)}$ は $R_1$ の第 $i$ 行。) 次に $R_3$ の各行を $R_2R_1$ の行の線形結合で:
+
+$$
+\begin{aligned}
+\text{第 1 行} &= c_3\,(c_1, 0, s_1) - s_3\,(-s_1s_2,\ c_2,\ c_1s_2) = (c_1c_3 + s_1s_2s_3,\ -c_2s_3,\ s_1c_3 - c_1s_2s_3),\\
+\text{第 2 行} &= s_3\,(c_1, 0, s_1) + c_3\,(-s_1s_2,\ c_2,\ c_1s_2) = (-s_1s_2c_3 + c_1s_3,\ c_2c_3,\ c_1s_2c_3 + s_1s_3),\\
+\text{第 3 行} &= (-s_1c_2,\ -s_2,\ c_1c_2)\qquad(R_3\ \text{の第 3 行は}\ (0, 0, 1))
+\end{aligned}
+$$
+
+すなわち
 
 $$
 R_3R_2R_1 = \begin{pmatrix}
@@ -194,7 +229,7 @@ c_1c_3 + s_1s_2s_3 & -c_2s_3 & s_1c_3 - c_1s_2s_3\\
 \end{pmatrix}
 $$
 
-で、`tcoord.f` の `r11`〜`r33` (`dir = .true.`) と一致する。DX・DY・DZ は `dx0 = dx`・`dy0 = dy`・`dz0 = dz` として、回転の前に引く (`zi = pzi*z - dz0`、`xi = x + pxi*z - dx0`)。ヘルプの式は DZ を書かない (キーワード表にも DZ が無い) が、K64 は DZ を持つ。
+で (sympy でも同じ: [mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (A))、`tcoord.f` の `r11`〜`r33` (`dir = .true.`) と一致する。DX・DY・DZ は `dx0 = dx`・`dy0 = dy`・`dz0 = dz` として、回転の前に引く (`zi = pzi*z - dz0`、`xi = x + pxi*z - dx0`)。ヘルプの式は DZ を書かない (キーワード表にも DZ が無い) が、K64 は DZ を持つ。
 
 DIR ≠ 0 のヘルプの式 (原文で確認。付録 A) は、$(x, y, z)_1 = R_3\,R_2^{(-)}R_1\,(x, y, z)_0 + (\mathrm{DX}, -\mathrm{DY}, 0)$ で、$R_2^{(-)} = \begin{pmatrix}1&0&0\\0&c_2&-s_2\\0&s_2&c_2\end{pmatrix}$ ($R_2$ の $s_2$ の符号を逆にしたもの)。一方、K64 の `dir = .false.` の行列は
 
@@ -207,9 +242,34 @@ c_2s_3 & c_2c_3 & -s_2\\
 \tag{11.7}
 $$
 
-である。**(11.7) はヘルプの式 $R_3R_2^{(-)}R_1$ とは一致しないが、$R_1R_2^{(-)}R_3$ (積の順序を逆にしたもの) とは一致する** (sympy: [mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (a)。$R_1R_2^{(-)}R_3 - (11.7) = 0$ は成り立ち、$R_3R_2^{(-)}R_1 - (11.7) = 0$ は成り立たない)。成分で見ると、$R_3R_2^{(-)}R_1$ の (1,1) 成分は $c_1c_3 - s_1s_2s_3$ で、(11.7) の $c_1c_3 + s_1s_2s_3$ と符号が違う。
+である。**(11.7) はヘルプの式 $R_3R_2^{(-)}R_1$ とは一致しないが、$R_1R_2^{(-)}R_3$ (積の順序を逆にしたもの) とは一致する**。手で積を取る。まず左の 2 つ $R_1R_2^{(-)}$ ($R_1$ の各行を $R_2^{(-)}$ の各列に掛ける):
 
-**DIR = 0 の行列 $M_0 = R_3R_2R_1$ との関係**。真の逆は $M_0^\top = R_1^\top R_2^\top R_3^\top = R_1(-\chi_1)\,R_2^{(-)}\,R_3(-\chi_3)$ ($R_2^\top = R_2^{(-)}$、$R_1^\top$ は $s_1$ の符号を替えたもの)。(11.7) は、これの $R_1$ と $R_3$ の符号だけ ($s_1 \to -s_1$、$s_3 \to -s_3$) を元に戻した $R_1(\chi_1)\,R_2^{(-)}\,R_3(\chi_3)$ に等しい。$D = \mathrm{diag}(1, -1, -1)$ ($y$ と $z$ を反転) で挟むと $D\,M_0^\top D = R_1(\chi_1)R_2^{(-)}R_3(\chi_3)$ ($D$ による共役は、$z$ を含む回転 ($R_1$) と $y$ を含む回転 ($R_3$) の角の符号を反転し、$R_2$ は変えない): K64 の DIR ≠ 0 は、**「$y$ と $z$ を反転した座標で書いた逆変換」**。平行移動 $(+\mathrm{DX}, -\mathrm{DY}, -\mathrm{DZ})$ も $y$・$z$ の成分の符号が反転していて、整合する。
+$$
+R_1R_2^{(-)} = \begin{pmatrix}c_1&0&s_1\\0&1&0\\-s_1&0&c_1\end{pmatrix}\begin{pmatrix}1&0&0\\0&c_2&-s_2\\0&s_2&c_2\end{pmatrix}
+= \begin{pmatrix}c_1 & s_1s_2 & s_1c_2\\ 0 & c_2 & -s_2\\ -s_1 & c_1s_2 & c_1c_2\end{pmatrix}
+$$
+
+(第 1 行: $c_1(1,0,0) + s_1(0, s_2, c_2)$。第 2 行は $R_2^{(-)}$ の第 2 行。第 3 行: $-s_1(1,0,0) + c_1(0, s_2, c_2)$。) これに右から $R_3$ を掛ける。各列は $R_3$ の列の線形結合 ($R_3$ の第 1 列 $= (c_3, s_3, 0)^\top$、第 2 列 $= (-s_3, c_3, 0)^\top$、第 3 列 $= (0,0,1)^\top$):
+
+$$
+\begin{aligned}
+\text{第 1 列} &= c_3\begin{pmatrix}c_1\\0\\-s_1\end{pmatrix} + s_3\begin{pmatrix}s_1s_2\\c_2\\c_1s_2\end{pmatrix} = \begin{pmatrix}c_1c_3 + s_1s_2s_3\\ c_2s_3\\ -s_1c_3 + c_1s_2s_3\end{pmatrix},\\
+\text{第 2 列} &= -s_3\begin{pmatrix}c_1\\0\\-s_1\end{pmatrix} + c_3\begin{pmatrix}s_1s_2\\c_2\\c_1s_2\end{pmatrix} = \begin{pmatrix}s_1s_2c_3 - c_1s_3\\ c_2c_3\\ s_1s_3 + c_1s_2c_3\end{pmatrix},\qquad
+\text{第 3 列} = \begin{pmatrix}s_1c_2\\-s_2\\c_1c_2\end{pmatrix}
+\end{aligned}
+$$
+
+これが (11.7) の 3 列と一致する。逆の順序の $R_3R_2^{(-)}R_1$ では、$R_2^{(-)}R_1$ の第 2 行が $(s_1s_2, c_2, -c_1s_2)$ で、$R_3$ の第 1 行との積の (1,1) 成分は $c_1c_3 - s_1s_2s_3$ になり (積 $R_3R_2R_1$ の (1,1) 成分 $c_1c_3 + s_1s_2s_3$ で $s_2 \to -s_2$ とした形)、(11.7) の $c_1c_3 + s_1s_2s_3$ と符号が違う。sympy: $R_1R_2^{(-)}R_3 - (11.7) = 0$、$R_3R_2^{(-)}R_1 - (11.7) \neq 0$ ([mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (a)、[mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (A))。
+
+**DIR = 0 の行列 $M_0 = R_3R_2R_1$ との関係**。真の逆は $M_0^\top = R_1^\top R_2^\top R_3^\top = R_1(-\chi_1)\,R_2^{(-)}\,R_3(-\chi_3)$ ($R_2^\top = R_2^{(-)}$、$R_1^\top$ は $s_1$ の符号を替えたもの)。(11.7) は、これの $R_1$ と $R_3$ の符号だけ ($s_1 \to -s_1$、$s_3 \to -s_3$) を元に戻した $R_1(\chi_1)\,R_2^{(-)}\,R_3(\chi_3)$ に等しい。$D = \mathrm{diag}(1, -1, -1)$ ($y$ と $z$ を反転) で挟むと $D\,M_0^\top D = R_1(\chi_1)R_2^{(-)}R_3(\chi_3)$。
+
+**$D$ による共役の成分** ($D_{ii} = \pm1$ なので $(DRD)_{ij} = D_{ii}R_{ij}D_{jj}$、すなわち $R_{ij}$ に $D_{ii}D_{jj}$ をかけるだけ。$D_{11} = 1$、$D_{22} = D_{33} = -1$):
+
+- $R_1$ (成分 $(1,1)$、$(1,3)$、$(3,1)$、$(3,3)$、$(2,2)$): $(1,3)$ と $(3,1)$ は $D_{11}D_{33} = -1$ 倍、$(1,1)$・$(3,3)$ は $D_{11}^2 = D_{33}^2 = 1$ 倍、$(2,2)$ は $D_{22}^2 = 1$ 倍。したがって $s_1 \to -s_1$ ($c_1$ は不変)。
+- $R_3$ (成分 $(1,1)$、$(1,2)$、$(2,1)$、$(2,2)$、$(3,3)$): $(1,2)$ と $(2,1)$ は $D_{11}D_{22} = -1$ 倍、他は $+1$ 倍。したがって $s_3 \to -s_3$。
+- $R_2$ (成分 $(2,2)$、$(2,3)$、$(3,2)$、$(3,3)$、$(1,1)$): $(2,3)$ と $(3,2)$ は $D_{22}D_{33} = +1$ 倍、他も $+1$ 倍。したがって **$R_2$ は変わらない** ($y$ と $z$ をともに反転しているので、$y$–$z$ 混合の符号は保たれる)。
+
+(sympy で確認: [mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (B)。$DR_1D - R_1(s_1\to-s_1) = 0$、$DR_3D - R_3(s_3\to-s_3) = 0$、$DR_2D - R_2 = 0$、$R_1R_2^{(-)}R_3 - DM_0^\top D = 0$。) つまり $D$ による共役は、$z$ を含む回転 ($R_1$) と $y$ を含む回転 ($R_3$) の角の符号を反転し、$R_2$ は変えない。K64 の DIR ≠ 0 は、**「$y$ と $z$ を反転した座標で書いた逆変換」**。平行移動 $(+\mathrm{DX}, -\mathrm{DY}, -\mathrm{DZ})$ も $y$・$z$ の成分の符号が反転していて、整合する。
 
 **どちらが意図か**。(i) ヘルプの平行移動 $(\mathrm{DX}, -\mathrm{DY}, 0)$ も $y$ 成分が反転しているので、ヘルプも「$y$ を反転した座標」の記述である。(ii) DIR ≠ 0 は「逆向きに使う」ための変換 (ヘルプ: "when you use a line with this element in the reverse direction") なので、回転の順序が DIR = 0 の逆 ($R_1$ が最後) になるのが自然で、ヘルプの $R_3R_2^{(-)}R_1$ (DIR = 0 と同じ順序) は**ヘルプの記述の誤記の可能性が高い**。(iii) ただし、gs で DIR ≠ 0 の COORD を試して確かめてはいない (**未確認**)。ヘルプの行列で作った写像は追跡と $x$ で $5 \times 10^{-5}$、$p_x$ で $6 \times 10^{-4}$ 違い、K64 の行列で作った写像は $10^{-18}$ で一致する ([mis_01_coord_geometry.out.txt](outputs/mis_01_coord_geometry.out.txt) (a)(b2))。付録 B に書く。
 
@@ -252,7 +312,7 @@ CALC (`tchge.f`、入口 `ent = .true.`) は同じ操作を、閉軌道 `cod` �
 
 1. 角度 `th`: 直線の要素 (`phig = 0`) では `th = theta + dtheta` (ROTATE と DROTATE の和)、偏向磁石 (`phig ≠ 0`) では `th = theta` (DROTATE は §6 の `tbrote` で別に扱う)。
 2. `th ≠ 0` のとき: `cod(1) = cos·x - sin·y`、`cod(3) = sin·x + cos·y`、`cod(2)`・`cod(4)` も同じ回転、`trans1` は $\mathrm{diag}(R, R)$ (4×4 の部分だけ。`trans1(1,1) = cost`、`trans1(1,3) = -sint`、`trans1(3,1) = sint`、`trans1(3,3) = cost` と、運動量の対)。
-3. 変位の引き算: `dx = cost*dx0 - sint*dy`、`cod(3) -= sint*dx0 + cost*dy`。これは (11.8) $= R(\theta)(\vec x - \vec d)$ の分解で、$\vec x \to R\vec x$ の後に $R\vec d$ を引く ($R\vec d = (c\,d_x - s\,d_y,\ s\,d_x + c\,d_y)$) 形。$x$ 成分は `tbrote` の中の `cod(1) = cod(1) - dx1` で、$y$ 成分は上で引く。
+3. 変位の引き算: `dx = cost*dx0 - sint*dy`、`cod(3) -= sint*dx0 + cost*dy`。これは (11.8) $= R(\theta)(\vec x - \vec d)$ の分解で、$\vec x \to R\vec x$ の後に $R\vec d$ を引く ($R\vec d = (c\,d_x - s\,d_y,\ s\,d_x + c\,d_y)$) 形。$x$ 成分は `tbrote` の中の `cod(1) = cod(1) - dx1` で、$y$ 成分は上で引く。`dx1` は、`tchge` から渡された変位 $(\mathtt{dx}, \mathtt{dz})$ ($\mathtt{dx} = c\,\mathtt{dx0} - s\,\mathtt{dy}$ は上の `dx`、`dz` は DZ) を、弦の半分の偏向角 $\phi_g$ だけ $x$–$z$ 面で回した成分: 入口 `dx1 = dx*c0 - dz*s0`、`dz1 = dz*c0 + dx*s0` ($c_0 = \cos\phi_g$、$s_0 = \sin\phi_g$。`tchge.f:165-166`)。すなわち $(\mathtt{dx1}, \mathtt{dz1})^\top = \begin{pmatrix}c_0&-s_0\\s_0&c_0\end{pmatrix}(\mathtt{dx}, \mathtt{dz})^\top$ (sympy で確認: [mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (F))。出口は逆回転 `dx1 = dx*c0 + dz*s0`、`dz1 = dz*c0 - dx*s0` (`tchge.f:189-190`)。`dz1 ≠ 0` のときは `tdrife1` で長さ $dz1$ のドリフトが別に入る。
 4. 出口 (`ent = .false.`): 逆の順序 (`cod(3) += ...` のあとで $R^\top$)。
 
 **K64 の既知の欠陥** ([docs/30_sad_bug_report.md](../docs/30_sad_bug_report.md)): B09 (`tchge` の入口で `tbrote` などが `trans` を上書きし、一周行列に入口の回転が入らない)、B114 (`tbrote` の出口の `dz1 = dz*c0 - dx*s0` の符号が入口と逆で、出口のドリフトが逆向きになる)。この章の式は、回転 + 面への戻しの写像としての定義で、これらの欠陥を含む K64 の行列そのものではない。
@@ -282,24 +342,104 @@ $$
 
 (`xf = dr11*xi + r12*yi + dxz + x`、`zf = r31*xi + r32*yi + dzz`、$x_i = x + \mathtt{xl0}$、`xl0` $= d_ls_0$、$z_i = -d_lc_0$、`dxz = r13*zi`、`dzz = dr33*zi`。)
 
-**(11.9) の代数的な確認**。軸 $\vec t = (-s_0, 0, c_0)$ のまわりの角 $\Theta$ の回転と、軸 $\vec n = (c_0, 0, s_0)$ のまわりの角 $-\chi_2$ の回転は、ロドリゲスの式 $R_{\vec a}(\alpha) = 1 + \sin\alpha\,[\vec a]_\times + (1 - \cos\alpha)\,[\vec a]_\times^2$ ($[\vec a]_\times$ は外積の行列) で書ける。この 2 つの積 $R_{\vec t}(\Theta)R_{\vec n}(-\chi_2)$ を成分ごとに展開すると、Fortran の行列 `rr` (入口) の 9 成分
+**(11.9) の代数的な確認** (ロドリゲスの式で 9 成分を全部展開する)。
+
+**(1) 外積の行列とロドリゲスの式**。軸 $\vec a$ のまわりの角 $\alpha$ の回転は $R_{\vec a}(\alpha) = 1 + \sin\alpha\,[\vec a]_\times + (1 - \cos\alpha)\,[\vec a]_\times^2$。$[\vec a]_\times$ は $[\vec a]_\times\vec v = \vec a\times\vec v$ の行列 $\begin{pmatrix}0&-a_z&a_y\\a_z&0&-a_x\\-a_y&a_x&0\end{pmatrix}$ で、単位ベクトルでは $[\vec a]_\times^2 = \vec a\vec a^\top - 1$。軸 $\vec t = (-s_0, 0, c_0)$、$\vec n = (c_0, 0, s_0)$ について
+
+$$
+[\vec t]_\times = \begin{pmatrix}0&-c_0&0\\c_0&0&s_0\\0&-s_0&0\end{pmatrix},\quad
+[\vec t]_\times^2 = \begin{pmatrix}-c_0^2&0&-s_0c_0\\0&-1&0\\-s_0c_0&0&-s_0^2\end{pmatrix},\quad
+[\vec n]_\times = \begin{pmatrix}0&-s_0&0\\s_0&0&-c_0\\0&c_0&0\end{pmatrix},\quad
+[\vec n]_\times^2 = \begin{pmatrix}-s_0^2&0&s_0c_0\\0&-1&0\\s_0c_0&0&-c_0^2\end{pmatrix}
+$$
+
+($[\vec t]_\times^2 = \vec t\vec t^\top - 1$ の (1,1) 成分は $s_0^2 - 1 = -c_0^2$、(1,3) 成分は $-s_0c_0$、(3,3) 成分は $c_0^2 - 1 = -s_0^2$。$[\vec n]_\times^2$ も同様。) $c_\Theta = \cos\Theta$、$s_\Theta = \sin\Theta$、$c_2 = \cos\chi_2$、$s_2 = \sin\chi_2$、$d_\Theta = c_\Theta - 1$、$d_2 = c_2 - 1$ として (角が小さいとき $d_\Theta$、$d_2$ は桁落ちしない形で持つ。これが Fortran の `dct`、`dc2`)、$c_0^2 + s_0^2 = 1$ を使うと
+
+$$
+A \equiv R_{\vec t}(\Theta) = \begin{pmatrix}1 + d_\Theta c_0^2 & -s_\Theta c_0 & d_\Theta s_0c_0\\ s_\Theta c_0 & c_\Theta & s_\Theta s_0\\ d_\Theta s_0c_0 & -s_\Theta s_0 & 1 + d_\Theta s_0^2\end{pmatrix},\qquad
+B \equiv R_{\vec n}(-\chi_2) = \begin{pmatrix}1 + d_2s_0^2 & s_2s_0 & -d_2s_0c_0\\ -s_2s_0 & c_2 & s_2c_0\\ -d_2s_0c_0 & -s_2c_0 & 1 + d_2c_0^2\end{pmatrix}
+$$
+
+(例: $A_{13} = (1 - c_\Theta)\cdot(-s_0c_0) = d_\Theta s_0c_0$、$A_{22} = 1 - (1 - c_\Theta)(c_0^2 + s_0^2) = c_\Theta$。$B$ は $\sin(-\chi_2) = -s_2$ なので $[\vec n]_\times$ の項の符号が $A$ の $[\vec t]_\times$ と逆。例: $B_{12} = -s_2\cdot(-s_0) = s_2s_0$。)
+
+**(2) 積 $R = AB$ の 9 成分**。$R_{ij} = \sum_kA_{ik}B_{kj}$ を、各成分で 3 項を書いて整理する。
 
 $$
 \begin{aligned}
-R_{11} &= 1 + (\cos\Theta - 1)c_0^2 + (\cos\chi_2 - 1)s_0^2 + c_0s_0\sin\chi_2\sin\Theta,\quad
-R_{22} = \cos\chi_2\cos\Theta,\\
-R_{33} &= 1 + (\cos\chi_2 - 1)c_0^2 + (\cos\Theta - 1)s_0^2 - c_0s_0\sin\chi_2\sin\Theta,\\
-R_{12} &= s_0\sin\chi_2 - c_0\cos\chi_2\sin\Theta,\quad R_{21} = -\cos\Theta\,s_0\sin\chi_2 + c_0\sin\Theta,\ \ \text{ほか}
+R_{11} &= (1 + d_\Theta c_0^2)(1 + d_2s_0^2) + (-s_\Theta c_0)(-s_2s_0) + (d_\Theta s_0c_0)(-d_2s_0c_0)\\
+&= 1 + d_\Theta c_0^2 + d_2s_0^2 + d_\Theta d_2c_0^2s_0^2 + c_0s_0s_\Theta s_2 - d_\Theta d_2s_0^2c_0^2\\
+&= 1 + d_\Theta c_0^2 + d_2s_0^2 + c_0s_0\,s_\Theta s_2\qquad(d_\Theta d_2\ \text{の項が打ち消す})\\
+R_{12} &= (1 + d_\Theta c_0^2)\,s_2s_0 + (-s_\Theta c_0)\,c_2 + (d_\Theta s_0c_0)(-s_2c_0)\\
+&= s_2s_0 + d_\Theta c_0^2s_2s_0 - c_0c_2s_\Theta - d_\Theta s_0c_0^2s_2 = s_0s_2 - c_0c_2\,s_\Theta\\
+R_{13} &= (1 + d_\Theta c_0^2)(-d_2s_0c_0) + (-s_\Theta c_0)(s_2c_0) + (d_\Theta s_0c_0)(1 + d_2c_0^2)\\
+&= -d_2s_0c_0 - d_\Theta d_2s_0c_0^3 - c_0^2s_\Theta s_2 + d_\Theta s_0c_0 + d_\Theta d_2s_0c_0^3
+= c_0\bigl[(d_\Theta - d_2)s_0 - c_0\,s_\Theta s_2\bigr]\\
+R_{21} &= (s_\Theta c_0)(1 + d_2s_0^2) + c_\Theta(-s_2s_0) + (s_\Theta s_0)(-d_2s_0c_0)
+= c_0s_\Theta + d_2s_\Theta c_0s_0^2 - c_\Theta s_0s_2 - d_2s_\Theta c_0s_0^2 = c_0s_\Theta - c_\Theta s_0s_2\\
+R_{22} &= (s_\Theta c_0)(s_2s_0) + c_\Theta c_2 + (s_\Theta s_0)(-s_2c_0) = c_\Theta c_2\\
+R_{23} &= (s_\Theta c_0)(-d_2s_0c_0) + c_\Theta(s_2c_0) + (s_\Theta s_0)(1 + d_2c_0^2) = c_\Theta c_0s_2 + s_0s_\Theta\\
+R_{31} &= (d_\Theta s_0c_0)(1 + d_2s_0^2) + (-s_\Theta s_0)(-s_2s_0) + (1 + d_\Theta s_0^2)(-d_2s_0c_0)\\
+&= d_\Theta s_0c_0 + d_\Theta d_2s_0^3c_0 + s_0^2s_\Theta s_2 - d_2s_0c_0 - d_\Theta d_2s_0^3c_0
+= s_0\bigl[c_0(d_\Theta - d_2) + s_0\,s_\Theta s_2\bigr]\\
+R_{32} &= (d_\Theta s_0c_0)(s_2s_0) + (-s_\Theta s_0)\,c_2 + (1 + d_\Theta s_0^2)(-s_2c_0)
+= d_\Theta s_0^2c_0s_2 - c_2s_0s_\Theta - c_0s_2 - d_\Theta s_0^2c_0s_2 = -c_0s_2 - c_2s_0\,s_\Theta\\
+R_{33} &= (d_\Theta s_0c_0)(-d_2s_0c_0) + (-s_\Theta s_0)(s_2c_0) + (1 + d_\Theta s_0^2)(1 + d_2c_0^2)\\
+&= -d_\Theta d_2s_0^2c_0^2 - c_0s_0s_\Theta s_2 + 1 + d_2c_0^2 + d_\Theta s_0^2 + d_\Theta d_2s_0^2c_0^2
+= 1 + d_2c_0^2 + d_\Theta s_0^2 - c_0s_0\,s_\Theta s_2
 \end{aligned}
+\tag{11.9a}
 $$
 
-($R_{22} = 1 + \mathtt{dr}_{22} = 1 + c_2(c_\Theta - 1) + (c_2 - 1) = c_2c_\Theta$)と**すべて一致する** (sympy で差を簡約して 0: [mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (b))。順序を入れ替えた $R_{\vec n}(-\chi_2)R_{\vec t}(\Theta)$ は $2.7 \times 10^{-2}$、$R_{\vec t}(\Theta)R_{\vec n}(+\chi_2)$ は $0.24$、$R_{\vec t}(-\Theta)R_{\vec n}(-\chi_2)$ は $0.39$ ずれる ($\phi = 0.37$、$\Theta = 0.21$、$\chi_2 = -0.13$)。出口の `rr` は入口の転置 (Fortran の `ent = .false.` の代入で $(1,2) \leftrightarrow (2,1)$ などを入れ替えたもの) である。したがって、(11.9) の軸・符号・順序は、数値の総当たりではなく、Fortran の行列からの代数的な恒等式として確定した。$\Theta$ のみのとき $R_{11} = 1 + (\cos\Theta - 1)c_0^2$ は、軸 $\vec t$ の $x$ 成分が $-s_0$ なので $1 - t_x^2 = c_0^2$ から出る ($R_{11} = \cos\Theta + (1 - \cos\Theta)t_x^2 = 1 + (\cos\Theta - 1)(1 - t_x^2)$)。
+(各行で 2 次の積 $d_\Theta d_2$ の項は 2 つが逆符号で打ち消す。)
+
+**(3) Fortran との比較** (`tchge.f:161-172`、入口)。`rr(1,1) = dct*c0**2 + dc2*s0**2 + c0*s0*s2*st` は $R_{11} - 1 = d_\Theta c_0^2 + d_2s_0^2 + c_0s_0s_2s_\Theta$ ($1+$ は `tbgrote` の `r11 = 1 + dr(1,1)` で足される)、`rr(2,2) = c2*dct + dc2` は $R_{22} - 1 = c_2(c_\Theta - 1) + (c_2 - 1) = c_2c_\Theta - 1$、`rr(3,3) = dc2*c0**2 + dct*s0**2 - c0*s0*s2*st` は $R_{33} - 1$、`rr(1,2) = s0*s2 - c0*c2*st` は $R_{12}$、`rr(1,3) = c0*((dct - dc2)*s0 - c0*s2*st)` は $R_{13}$、`rr(2,1) = -ct*s0*s2 + c0*st` は $R_{21}$、`rr(2,3) = c0*ct*s2 + s0*st` は $R_{23}$、`rr(3,1) = s0*(c0*(dct - dc2) + s0*s2*st)` は $R_{31}$、`rr(3,2) = -c0*s2 - c2*s0*st` は $R_{32}$。**9 成分すべてが (11.9a) と一致する** (sympy で差を簡約して 0: [mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (b)、各成分の 3 項の和は [mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (C))。出口の `rr` は入口の転置 (`ent = .false.` の代入: `rr(2,1) = s0*s2 - c0*c2*st` ($= R_{12}$)、`rr(3,1) = c0*((dct-dc2)*s0 - c0*s2*st)` ($= R_{13}$)、`rr(1,2) = -ct*s0*s2 + c0*st` ($= R_{21}$)、`rr(3,2) = c0*ct*s2 + s0*st` ($= R_{23}$)、`rr(1,3) = s0*(c0*(dct-dc2) + s0*s2*st)` ($= R_{31}$)、`rr(2,3) = -c0*s2 - c2*s0*st` ($= R_{32}$)。対角は同じ) で、$R_{\rm exit} = R_{\rm ent}^\top = B^\top A^\top$ ($= R_{\vec n}(+\chi_2)R_{\vec t}(-\Theta)$)。
+
+順序を入れ替えた $R_{\vec n}(-\chi_2)R_{\vec t}(\Theta)$ は $2.7 \times 10^{-2}$、$R_{\vec t}(\Theta)R_{\vec n}(+\chi_2)$ は $0.24$、$R_{\vec t}(-\Theta)R_{\vec n}(-\chi_2)$ は $0.39$ ずれる ($\phi = 0.37$、$\Theta = 0.21$、$\chi_2 = -0.13$)。したがって、(11.9) の軸・符号・順序は、数値の総当たりだけでなく、Fortran の行列からの代数的な恒等式として確定した。$\Theta$ のみ ($\chi_2 = 0$ で $d_2 = s_2 = 0$) のとき (11.9a) の $R_{11} = 1 + d_\Theta c_0^2$ は、軸 $\vec t$ の $x$ 成分が $-s_0$ なので $R_{11} = \cos\Theta + (1 - \cos\Theta)t_x^2 = 1 + (\cos\Theta - 1)(1 - t_x^2)$、$1 - t_x^2 = c_0^2$ とも一致する。
 
 **(11.10) の位置の式**。$\vec r = (x, y, 0)$、支点 $\vec r_p = d_l\vec t = d_l(-s_0, 0, c_0)$ として、回転した位置は $\vec r' = \vec r_p + R(\vec r - \vec r_p) = \vec r + (R - 1)(\vec r - \vec r_p)$。$\vec r - \vec r_p = (x + d_ls_0,\ y,\ -d_lc_0) = (x_i, y_i, z_i)$ (Fortran の `xi = x + xl0`、`zi = -dl*c0`) なので、$x_f = x + (R_{11} - 1)x_i + R_{12}y_i + R_{13}z_i$ ((11.10) の `xf = dr11*xi + r12*yi + dxz + x`) となる。3 成分とも、$(x_f, y_f, z_f) = \vec r_p + R(\vec r - \vec r_p)$ との差が $4 \times 10^{-17}$ (同 (b)。$z_f$ は元の面 $z = 0$ からの値で、$\vec r' - \vec r$ の $z$ 成分 $+\,\vec r$ の $z$ 成分 0)。向き $\vec P' = R\vec P$ のあと、(11.4) の面への戻しをする。
 
-**確認** ([mis_02_element_misalign.out.txt](outputs/mis_02_element_misalign.out.txt) (c)): `track6._tbrot` (`ent` = 真と偽) を、(11.9) の形で独立に作った写像と比べた。DROTATE のみ、CHI2 のみ、両方の 3 通りで、差は $10^{-17}$ 程度 (入口は DROTATE が $\vec t$ まわり $+\Theta$、CHI2 が $\vec n$ まわり $-\chi_2$ で、$R_{\vec n}$ を先に掛ける。出口は逆)。符号と順序は、上のとおり Fortran の行列 `rr` からも代数的に確かめた。
+**確認** ([mis_02_element_misalign.out.txt](outputs/mis_02_element_misalign.out.txt) (c)): `track6._tbrot` (`ent` = 真と偽) を、軸 $\vec t$、$\vec n$ の符号と合成の順序・$R$ か $R^\top$ か・回転角の符号を総当たりした候補の写像 (支点まわりの剛体回転 + 面への戻し) と比べ、最小の差を出した。DROTATE のみ、CHI2 のみ、両方の 3 通り × 入口・出口で、最小の差は $10^{-17}$ 程度 (6 行とも)。**両方を指定した行 (入口・出口)** の最小の候補が (11.9) の組 (入口は $R_{\vec t}(+\Theta)R_{\vec n}(-\chi_2)$、出口はその転置) に当たり、DROTATE のみ・CHI2 のみの行では $R_{\vec n}(0) = 1$ や $R_{\vec t}(0) = 1$ のため順序の候補が区別できず、最小の候補の表記が行ごとに違う (等価な候補が複数ある)。したがって符号と順序を**数値の総当たりだけから決める**ことはせず、上のとおり Fortran の行列 `rr` からの代数的な恒等式 (11.9a) で確定し、総当たりの最小が (11.9) と矛盾しないことを確認した、という位置づけである。
 
-**`tbgrote` の 6×6 行列** (CALC)。$(R - 1, \vec d, \text{面への戻し})$ の 6×6 の行列で、§3.4 と同じ連鎖律で書かれている (`dpzidpx = -pxi/pzi` など)。Fortran の `trans` の 36 成分のうち、$\partial z/\partial\delta$ の成分 $(5, 6)$ を除く 35 成分を、写像の中心差分 (刻み $10^{-6}$、5 つの乱数点。$x, y \sim 2$ mm、$p_x, p_y \sim 3$ mrad、$z \sim 1$ cm、$\delta \sim 2\times10^{-3}$、$\phi = 0.0654$、$\Theta = 0.02$、$\chi_2 = -0.015$) と比べると、差の最大は $2.7 \times 10^{-12}$ ([mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (c))。**$(5, 6)$ 成分だけは一致しない**: K64 の現在の式 `trans(5,6)=r33*(dpzf*prpzf+dpzi/pzi)-dr(3,3)` は、数値微分と $10^{-5}$ ずれる (値は $-8.5 \times 10^{-5}$ に対し数値微分 $-5.7 \times 10^{-9}$)。同じソースにコメントアウトされた式 `zfpzf*(1 - pr/pzf*r33*dpzidp)` は数値微分と 4 桁で一致する。回転がなくても (`dr = 0`) $dp_{zi}(p_r + 1)/p_{zi}$ が残る。これは K64 の欠陥として既に記録されている (docs/30 の B109。v2 は修正済み、k64 モードは K64 のまま)。pysad の対応関数 (`lattice._tbgrote_mat`) は、v2 で修正した式 (コメントアウトされた式) を持つ。**本章では、解析式 `trans` の各成分を 1 つずつ手で導出するところまでは行っていない** ($\partial z/\partial\delta$ は上のとおり)。35 成分が連鎖律の写像の微分に一致することを数値で確認した。
+**`tbgrote` の 6×6 行列** (CALC)。$(R - 1, \vec d, \text{面への戻し})$ の 6×6 の行列を、§3.4 と同じ連鎖律で作る。Fortran の `trans` の 36 成分を、(i) 写像を式で書く、(ii) 部品の偏微分、(iii) 各行の導出、の順に導き、コード (`tchge.f:249-289`) と成分ごとに照合する。以下 $p = p_r = 1 + \delta$ (`pr`)、$p_{zi} = \sqrt{p^2 - p_x^2 - p_y^2}$ (`pzi`、入口の $p_z$)、$r_{ii} = 1 + \mathtt{dr}_{ii}$ ($\mathtt{dr} = R - 1$)、$x_i = x + \mathtt{xl0}$ (`xi`)、$z_i = -d_lc_0 \equiv \zeta$ (定数。`zi = dz`) とする。
+
+**(i) 写像** (§6 の位置の式 (11.10) と、運動量の回転、(11.4) の面への戻し):
+
+$$
+\begin{aligned}
+x_f &= x + \mathtt{dr}_{11}x_i + \mathtt{dr}_{12}\,y + \mathtt{dr}_{13}\zeta,\quad
+y_f = y + \mathtt{dr}_{21}x_i + \mathtt{dr}_{22}\,y + \mathtt{dr}_{23}\zeta,\quad
+z_f = \mathtt{dr}_{31}x_i + \mathtt{dr}_{32}\,y + \mathtt{dr}_{33}\zeta,\\
+P'_x &= r_{11}p_x + \mathtt{dr}_{12}p_y + \mathtt{dr}_{13}p_{zi},\quad
+P'_y = \mathtt{dr}_{21}p_x + r_{22}p_y + \mathtt{dr}_{23}p_{zi},\quad
+P'_z = \mathtt{dr}_{31}p_x + \mathtt{dr}_{32}p_y + r_{33}p_{zi},\\
+x_{\rm new} &= x_f - \frac{P'_x}{P'_z}z_f,\quad y_{\rm new} = y_f - \frac{P'_y}{P'_z}z_f,\quad
+p_{x,\rm new} = P'_x,\quad p_{y,\rm new} = P'_y,\quad
+z_{\rm new} = z + \frac{p}{P'_z}z_f,\quad \delta_{\rm new} = \delta
+\end{aligned}
+$$
+
+(Fortran: `pxf`、`pyf`、`pzf` $= P'_x, P'_y, P'_z$。`pzf = pr + dpzf` の `dpzf` $= \mathtt{dr}_{31}p_x + \mathtt{dr}_{32}p_y + r_{33}\,\mathtt{dpzi} + \mathtt{dr}_{33}\,p$ は、$p_{zi} = p + \mathtt{dpzi}$ ($\mathtt{dpzi} = p_{zi} - p$) を $P'_z$ に入れて $r_{33}p_{zi} = r_{33}p + r_{33}\mathtt{dpzi}$、$r_{33}p - p = \mathtt{dr}_{33}p$ とした桁落ち回避の形。`zfpzf` $= z_f/P'_z$、`pxfpzf` $= P'_x/P'_z$、`prpzf` $= p/P'_z$。$z_{\rm new}$ は `cod(5) + pr*zfpzf`、(11.4) の $z' = z + z_f/q_{zf}$ で $q_{zf} = P'_z/p$。)
+
+**(ii) 部品の偏微分** (入力は $x, p_x, y, p_y, z, \delta$ の順):
+
+- 位置の部品: $\partial z_f/\partial x = \mathtt{dr}_{31}$、$\partial z_f/\partial y = \mathtt{dr}_{32}$ (ほかの入力には $z_f$ は依らない)。$\partial x_f/\partial x = r_{11}$、$\partial x_f/\partial y = \mathtt{dr}_{12}$、$\partial y_f/\partial x = \mathtt{dr}_{21}$、$\partial y_f/\partial y = r_{22}$。$P'_{x,y,z}$ は $x, y, z$ に依らない。
+- $p_{zi}$ の偏微分: $\partial p_{zi}/\partial p_x = -p_x/p_{zi}$ (`dpzidpx`)、$\partial p_{zi}/\partial p_y = -p_y/p_{zi}$ (`dpzidpy`)、$\partial p_{zi}/\partial\delta = p/p_{zi}$ (`dpzidp`、$\partial p/\partial\delta = 1$)。
+- 運動量の部品: $\dfrac{\partial P'_x}{\partial p_x} = r_{11} + \mathtt{dr}_{13}\,\mathtt{dpzidpx}$、$\dfrac{\partial P'_x}{\partial p_y} = \mathtt{dr}_{12} + \mathtt{dr}_{13}\,\mathtt{dpzidpy}$、$\dfrac{\partial P'_x}{\partial\delta} = \mathtt{dr}_{13}\,\mathtt{dpzidp}$。$P'_y$ は添字 $1\leftrightarrow2$ の入れ替え。$\dfrac{\partial P'_z}{\partial p_x} = \mathtt{dr}_{31} + r_{33}\,\mathtt{dpzidpx}$、$\dfrac{\partial P'_z}{\partial p_y} = \mathtt{dr}_{32} + r_{33}\,\mathtt{dpzidpy}$、$\dfrac{\partial P'_z}{\partial\delta} = r_{33}\,\mathtt{dpzidp}$。
+
+**(iii) 各行**。
+
+- **$p_x$ の行 (2 行目)・$p_y$ の行 (4 行目)**: $p_{x,\rm new} = P'_x$ なので (ii) そのまま: `trans(2,2) = r11 + dr13*dpzidpx`、`trans(2,4) = dr12 + dr13*dpzidpy`、`trans(2,6) = dr13*dpzidp`、`trans(2,1) = trans(2,3) = trans(2,5) = 0` ($P'_x$ は $x, y, z$ に依らない)。4 行目は添字の入れ替え (`trans(4,2) = dr21 + dr23*dpzidpx`、`trans(4,4) = r22 + dr23*dpzidpy`、`trans(4,6) = dr23*dpzidp`)。
+- **$x$ の行 (1 行目)**: 入力が位置 ($v = x, y$) のとき $P'_x/P'_z$ は $v$ に依らないので $\partial x_{\rm new}/\partial v = \partial x_f/\partial v - (P'_x/P'_z)\,\partial z_f/\partial v$:
+  $\texttt{trans(1,1)} = r_{11} - \mathtt{dr}_{31}\,\mathtt{pxfpzf}$、$\texttt{trans(1,3)} = \mathtt{dr}_{12} - \mathtt{dr}_{32}\,\mathtt{pxfpzf}$。$z$ には依らないので `trans(1,5) = 0`。入力が運動量 ($w = p_x, p_y, \delta$) のとき $x_f$ は依らず $z_f$ も依らないので $\partial x_{\rm new}/\partial w = -z_f\,\partial(P'_x/P'_z)/\partial w = -\dfrac{z_f}{P'_z}\Bigl[\dfrac{\partial P'_x}{\partial w} - \dfrac{P'_x}{P'_z}\dfrac{\partial P'_z}{\partial w}\Bigr]$:
+  $\texttt{trans(1,2)} = -\mathtt{zfpzf}\bigl[\mathtt{trans(2,2)} - \mathtt{pxfpzf}\,(\mathtt{dr}_{31} + r_{33}\,\mathtt{dpzidpx})\bigr]$、$\texttt{trans(1,4)}$ は $p_y$ で同様、$\texttt{trans(1,6)} = -\mathtt{zfpzf}\,(\mathtt{dr}_{13} - r_{33}\,\mathtt{pxfpzf})\,\mathtt{dpzidp}$ (第 2 式: $[\mathtt{dr}_{13}\mathtt{dpzidp} - \mathtt{pxfpzf}\,r_{33}\mathtt{dpzidp}]$ を $\mathtt{dpzidp}$ でくくった)。**$y$ の行 (3 行目)** は $1\leftrightarrow2$ の入れ替え。
+- **$z$ の行 (5 行目)**: $z_{\rm new} = z + p\,z_f/P'_z$。$\partial/\partial x = p\,\mathtt{dr}_{31}/P'_z = \mathtt{dr}_{31}\,\mathtt{prpzf}$ (`trans(5,1)`)、$\partial/\partial y = \mathtt{dr}_{32}\,\mathtt{prpzf}$ (`trans(5,3)`)、$\partial/\partial z = 1$ (`trans(5,5)`)、$\partial/\partial p_x = -p\,z_f\,P_z'^{-2}\,\partial P'_z/\partial p_x = -\mathtt{zfpzf}\,\mathtt{prpzf}\,(\mathtt{dr}_{31} + r_{33}\mathtt{dpzidpx})$ (`trans(5,2)`)、$p_y$ で同様 (`trans(5,4)`)。**$\delta$ では $p = 1 + \delta$ 自身も動く**ので、積の微分で
+  $$\frac{\partial z_{\rm new}}{\partial\delta} = \frac{z_f}{P'_z} - \frac{p\,z_f}{P_z'^2}\,r_{33}\,\mathtt{dpzidp} = \mathtt{zfpzf}\,\bigl(1 - \mathtt{prpzf}\,r_{33}\,\mathtt{dpzidp}\bigr)$$
+  これが、ソースにコメントアウトされた式 `trans(5,6) = zfpzf*(1 - pr/pzf*r33*dpzidp)` である。**現在の式** `trans(5,6) = r33*(dpzf*prpzf + dpzi/pzi) - dr(3,3)` はこれと違う。回転がなくても (`dr` $= 0$: $z_f = 0$ なので正しい微分は $0$) $r_{33} = 1$、$\mathtt{dpzf} = \mathtt{dpzi}$、$\mathtt{pzf} = p_{zi}$ で $\mathtt{dpzi}\,(p/p_{zi}) + \mathtt{dpzi}/p_{zi} = \mathtt{dpzi}\,(p + 1)/p_{zi}$ が残る (記号微分の確認で使った乱数点で $-5.0\times10^{-6}$。正しい値は 0)。
+- **$\delta$ の行 (6 行目)**: $\delta_{\rm new} = \delta$ なので `trans(6,6) = 1`、ほかは 0。
+
+**(5,6) を除く 35 成分が (iii) の式で書け、コードの式と同じ形になる**。記号のまま ($\mathtt{dr}$ の 9 成分を独立な記号として) 写像を微分した 6×6 と、コードの式 (ここで書いた形) の差は、乱数の有理数で評価して $10^{-143}$ 以下 (35 成分。$(5,6)$ だけが一致しない: 上のコメントアウトされた式との差は $10^{-130}$ 以下、現在の式との差は $1.8\times10^{-5}$。[mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) (D))。
+
+数値微分との照合 ([mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) (c)。中心差分、刻み $10^{-6}$、5 つの乱数点。$x, y \sim 2$ mm、$p_x, p_y \sim 3$ mrad、$z \sim 1$ cm、$\delta \sim 2\times10^{-3}$、$\phi = 0.0654$、$\Theta = 0.02$、$\chi_2 = -0.015$): 35 成分の差の最大は $2.7 \times 10^{-12}$。**$(5, 6)$ 成分だけは K64 の現在の式が数値微分と $10^{-5}$ ずれる** (値は $-8.5 \times 10^{-5}$ に対し数値微分 $-5.7 \times 10^{-9}$)。コメントアウトされた式は数値微分と 4 桁で一致する。これは K64 の欠陥として既に記録されている (docs/30 の B109。v2 は修正済み、k64 モードは K64 のまま)。pysad の対応関数 (`lattice._tbgrote_mat`) は、v2 で修正した式 (コメントアウトされた式) を持つ。
 
 ## 7. $z$ の符号と DZ
 
@@ -323,6 +463,7 @@ pysad の追跡は直線の MULT の CHI1・CHI2・DZ を使わない ((d): 差 
 |---|---|---|
 | `mis_01_coord_geometry.py` | (a) ヘルプの行列と `tcoord.f` の $r_{ij}$ (DIR = 0 は一致、DIR ≠ 0 は不一致、`D Mᵀ D` との関係、sympy)、(b) 独立な 3 次元の写像と追跡・CALC の写像の比較、(b2) DIR ≠ 0 のヘルプの式、(c) 6×6 の解析式と数値微分・シンプレクティック性、(d) 小さな角度の 1 次、(e) 逆変換でないこと | [mis_01_coord_geometry.out.txt](outputs/mis_01_coord_geometry.out.txt) |
 | `mis_03_derivations.py` | (a) DIR ≠ 0 の K64 の行列 = $R_1R_2^{(-)}R_3$ (sympy)、(b) `tbrot` の `rr` = $R_{\vec t}(\Theta)R_{\vec n}(-\chi_2)$ (ロドリゲスの式) と支点まわりの位置の式、(c) `tbgrote` の 6×6 行列と数値微分 ((5,6) 成分は K64 の式が合わない: B109)、(d) (11.3)(11.4) の 1 次の係数 | [mis_03_derivations.out.txt](outputs/mis_03_derivations.out.txt) |
+| `mis_04_gaps.py` | (A) $R_3R_2R_1$・$R_1R_2^{(-)}R_3$・$R_3R_2^{(-)}R_1^{(-)}$ の積の中間式、(B) $D$ による共役、(C) ロドリゲスの積の 9 成分と Fortran の `rr` の差、(D) `tbgrote` の 6×6 を記号のまま微分してコードの式と比較 ((5,6) の導出)、(E) (11.3) のシンプレクティック形式の pullback、(F) `dx1`・`dz1` | [mis_04_gaps.out.txt](outputs/mis_04_gaps.out.txt) |
 | `mis_02_element_misalign.py` | (a) QUAD の DX・DY・ROTATE の順序と符号、(b) $\mathrm{diag}(R, R)$、(c) BEND の `tbrot` (DROTATE・CHI2) と剛体回転の比較、(d) 直線の MULT の CHI1・CHI2・DZ が追跡で無視されること、(e) MARK・APERT | [mis_02_element_misalign.out.txt](outputs/mis_02_element_misalign.out.txt) |
 
 実行: リポジトリのルートから `py -3.12 physics_guide/scripts/mis_01_coord_geometry.py` (数秒)。
@@ -333,7 +474,7 @@ pysad の追跡は直線の MULT の CHI1・CHI2・DZ を使わない ((d): 差 
 
 **未確認**:
 - `tsolrot` (CHI1・CHI2・DZ) は、pysad に実装がなく、K64 も動かしていない。K64 の式を numpy に写した範囲で、剛体運動 + 面への戻しと一致することは確認した (09 章 §8.2)。**ヘルプの MULT の式との CHI1・CHI2 の符号の関係は未確認** (§7)。
-- 偏向磁石の (11.9) は、Fortran の行列から代数的に確かめた (§6)。CALC の `tbgrote` の 6×6 行列は、35 成分を数値微分と照合し、$(5, 6)$ 成分は K64 の誤り (B109) と確認した。各成分の手による導出はしていない。
+- 偏向磁石の (11.9) は、Fortran の行列から代数的に確かめた (§6)。CALC の `tbgrote` の 6×6 行列は、36 成分を連鎖律から導いて (§6)、35 成分がコードの式と記号のまま一致し数値微分とも一致すること、$(5, 6)$ 成分は K64 の誤り (B109) であることを確認した。`tchge` の `trans1`・`trans2` (4×4 の回転の部分) は §5.3 で書いたが、全成分の導出はしていない。
 - DIR ≠ 0 の COORD: K64 の行列がヘルプの式と積の順序が逆であること (確定)。どちらが意図かは (ヘルプの誤記の可能性が高いが) gs での確認が未了 (付録 B)。
 - ソレノイド中の変位による $p_x$ のゲージのずれ ($f_x$) の数値確認。
 - CALC の `tchge` の `trans1`・`trans2` の全成分の導出、`calpol` (スピン) の回転。
@@ -346,7 +487,7 @@ pysad の追跡は直線の MULT の CHI1・CHI2・DZ を使わない ((d): 差 
 | COORD の DIR = 0 の行列 | **原文で確認** (TeX 版・平文版とも): $R_3R_2R_1$、(11.6)。K64 と一致。 |
 | COORD の DIR ≠ 0 | **原文で確認**: $R_3 R_2^{(-)} R_1\,(x, y, z)_0 + (\mathrm{DX}, -\mathrm{DY}, 0)$。K64 の行列は $R_1R_2^{(-)}R_3$ で、積の順序が逆 (付録 B)。「these transformations are NOT the inverse to each other」は正しい (§4.2)。 |
 | COORD のキーワード | ヘルプの用法 `COORD name=(DX DY CHI1 CHI2 CHI3 DIR)` とキーワード一覧に DZ が無い。K64 の `tcoord` は DZ を使う。 |
-| MULT の misalignments | **原文で確認**: $(x, y, \Delta s)_1 = R_3R_2R_1^{(-)}(x - \mathrm{DX}, y - \mathrm{DY}, -\mathrm{DZ})_0$。「The inverse is applied at the exit」「The geometry of the design orbit is determined by the saved values of CHI1, CHI2, and DZ, while the current values are used for DX, DY, and ROTATE」。コード (`tsolrot` に渡す $-\chi_1$、$-\chi_2$) では、MULT の回転は COORD の DIR = 0 と同じ符号になり、この式と CHI1・CHI2 の符号が逆 (§7。未確認)。 |
+| MULT の misalignments | **原文で確認**: $(x, y, \Delta s)_1 = R_3R_2^{(-)}R_1^{(-)}(x - \mathrm{DX}, y - \mathrm{DY}, -\mathrm{DZ})_0$ (§7 と同じ。$R_3R_2^{(-)}R_1^{(-)} = R_3R_2R_1$ の $s_1, s_2$ を $-s_1, -s_2$ にしたもの。mis_04 (A))。「The inverse is applied at the exit」「The geometry of the design orbit is determined by the saved values of CHI1, CHI2, and DZ, while the current values are used for DX, DY, and ROTATE」。コード (`tsolrot` に渡す $-\chi_1$、$-\chi_2$) では、MULT の回転は COORD の DIR = 0 と同じ符号になり、この式と CHI1・CHI2 の符号が逆 (§7。未確認)。 |
 | BEND の ROTATE・DROTATE | **原文で確認**: ROTATE は「rotate the magnet around the local s-axis by $-$(ROTATE)」。DROTATE は「does not affect the geometry of the ring」(§6)。DX は「applied before the rotation by ROTATE」(§5.2 の順序と一致)。 |
 | APERT | **原文で確認**: 楕円と箱の条件 (TeX 版・平文版)。平文版の最後の式が `Max[DY2, DY2]` で、TeX 版の $\max(\mathrm{DY1}, \mathrm{DY2})$ の誤植とみられる。 |
 | ヘルプに無いもの | (1) 面への戻しと $z$ の更新 (§3)。(2) 6×6 の行列 (§3.4)。(3) 偏向磁石の支点まわりの回転 (§6)。 |
@@ -371,6 +512,12 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `xf`・`yf`・`zf` | 回転後の位置 $\vec r'$ | 同上 | 同上 |
 | `pzi`・`pzf` | $p_z$ (回転前・後)。追跡では $1 + \mathtt{sqrt1}(-a)$、CALC では $p\sqrt{1 - a/p^2}$ | 同上 | 同上 |
 | `trans1`・`trans2` | 段 1・段 3 の偏微分 (§3.4) | `tcoorde.f` | `coord.coord_map` |
+| `dpzi`・`dpzf` | $p_{zi} - p$、$P'_z - p$ (桁落ちを避けるため、$p_z$ を $p$ からの差で持つ。`dpzi = pxy2dpz(px/pr, py/pr)*pr`) | `tchge.f:220, 237` (`tbgrote`) | 未確認 |
+| `dpzidpx`・`dpzidpy`・`dpzidp` | $\partial p_{zi}/\partial p_x = -p_x/p_{zi}$、$\partial p_{zi}/\partial p_y$、$\partial p_{zi}/\partial\delta = p/p_{zi}$ (§6 (ii)) | `tchge.f:249-251` | 未確認 |
+| `pxfpzf`・`pyfpzf` | $P'_x/P'_z$、$P'_y/P'_z$ (面への戻しの傾き) | `tchge.f:239-240` | 未確認 |
+| `zfpzf`・`prpzf` | $z_f/P'_z$、$p/P'_z$ | `tchge.f:241-242` | 未確認 |
+| `dx1`・`dz1` | $(\mathtt{dx}, \mathtt{dz})$ を $\phi_g$ だけ回した成分 (§5.3) | `tchge.f:165-166, 189-190` | 未確認 |
+| `kptbl` | APERT・追跡で外れた粒子の記録 (`kptbl(i,4)` = 失った位置、`kptbl(i,5)` = 周回数。§8) | `tapert` | 未確認 |
 | `th` | `tchge` の $s$ 軸まわりの角 (直線: `theta + dtheta`、偏向: `theta`) | `tchge.f` | `lattice._tchge_cod` |
 | `ent` | 入口 (真) か出口 (偽) か | `tchge`、`tbrote` | `ent` |
 | `alg`・`phig` | 弦の半分の弧長・半分の偏向角 | `tbrote`、`tbrot` | `alg`・`phig` |
