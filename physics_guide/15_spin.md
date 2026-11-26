@@ -17,6 +17,7 @@
 - **SLIM**: スピン軸の座標依存 $n(x) = n_0 + Nx$ は $N M = R_0 N + [n_0]_\times D$ を満たし (導出 §6.1、確認 (d): 1 次の代数の整合)、放射の跳び $\xi$ ($\langle\xi\xi^\top\rangle = B_i$) による偏極の減りは 1 回あたり $\tfrac12|N\xi|^2$、脱偏極率 $= \tfrac12\sum_i\mathrm{tr}(N_iB_iN_i^\top)$ (1 周あたり)。この率は、確率的な軌道とスピンの玩具のモンテカルロで 5% 以内に確かめた ([spin_03_slim_mc.out.txt](outputs/spin_03_slim_mc.out.txt)、§6.2)。正規座標では $N$ の分母が $|e^{-a_k+i(\mu_s\pm\mu_k)}-1|$ になる (§6.4)。
 - **Sokolov-Ternov**: K64 の定数は $c_{\rm ave}\,a_{\rm nrad}\,c_{\rm uc}^2 = r_e\bar\lambda_C$、$s_{\rm flc}\,a_{\rm nrad} = c_{\rm fpd}\,r_e\bar\lambda_C$ ($c_{\rm fpd} = 5\sqrt3/8$) で、相対 $10^{-12}$ で一致する (確認 (c))。偏極時間 $1/\tau_{ST} = \tfrac{5\sqrt3}{8}r_e\bar\lambda_Cc\gamma^5\langle\rho^{-3}\rangle$ は、平面リングで `PolarizationTime` $= 123.8153$ s と 6 桁以上一致。平衡偏極度は $8/(5\sqrt3) = 0.92376$ (v2 の `Polarization` $= 0.923760431$)。
 - **DK との対応**: SLIM の $\delta$ の寄与 $\tfrac12 B_{\delta\delta}$ の係数 $\tfrac12 c_{\rm uu}\,a_{\rm nrad}c_{\rm uc}^2/(s_{\rm flc}\,a_{\rm nrad}) = 11/18$ は、DK の式の $\tfrac{11}{18}|\gamma\,\partial n/\partial\gamma|^2$ の係数に一致する (確認 (c))。
+- **K64 の誤り** (確定。v2 は修正): `tradke` の `dbtz` の微分が $\mathrm{pr}^2$ でなく $\mathrm{pr}$ で割る (B336。ソースと数値で確認、gs では確認できない)。`tbrote` の行の逐次更新 (B56。gs で確認)。付録 B。
 - **K64 の限界**: `Polarization` は k64 で NaN (`spdepol` の `exp(cb²−cφ)·cerfc(cb)` の桁あふれ、B55。機構は §6.5)。v2 は SLIM + 側帯の式で置き換えた。高エネルギー・大きな RF 電圧では v2 の脱偏極率が追跡 (FLUC) の 0.4 倍に過小評価される例があり ([docs/16_spin_pol.md](../docs/16_spin_pol.md) §5.3)、確認は追跡で行う。
 
 ## 2. 記号と単位
@@ -642,7 +643,7 @@ SAD スクリプトでは、`POL` を有効にして `Emittance[]` の `Polariza
 
 ## 付録 B. K64 の実装の癖・疑い (別枠)
 
-各項目の根拠の程度を、docs/30 の記述に合わせて分けて書く。gs での確認が済んでいないものは、「疑い」または「ソースの読み」のままにしてある。
+各項目の根拠の程度を、docs/30 の記述に合わせて分けて書く。確定 (B336 を含む)、ソースの読み・部分的な確認、疑い (未決) の順。取り下げは無い。gs での確認が済んでいないものは、「疑い」または「ソースの読み」のままにしてある。
 
 **独立な基準 (解析式・独立な数値計算・gs との比較) で確かめたもの**:
 - **`Polarization` が NaN** (`spdepol`、B55): NaN になること自体は gs で再現済み。**原因は推定**: pysad で同じ式を写すと同じ NaN になり、`exp(cb²)·erfc(cb)` を桁あふれしない形で評価すると有限になる (docs/30)。本章の §6.5 は、倍精度での桁あふれの閾値 ($|c_b|\simeq26.6$) を確かめただけで、実際のリングの $c_b$ の値は未確認。
@@ -650,14 +651,16 @@ SAD スクリプトでは、`POL` を有効にして `Emittance[]` の `Polariza
 - **弦 $2\sin(\theta/2)$** (B83): 刻みが粗いと歳差の角が $\theta^2/24$ だけ小さい。ソースの読みと解析式で、本章の確認 (b2)・§4.1 の (j) が一致する。docs/30 では、偏向磁石に `EPS=1E-5` を付けたときの gs と v2 の 1 周のスピン角が $10^{-8}$ で一致して、k64 の誤差は刻みを細かくすると消える。
 - **磁石の本体の運動量の向きの磁場 $(1+a)B_\parallel\,ds$ が入らない** (B136・B165): K64 は、本体の中のスピンの歳差に $B_\parallel$ の積分を入れず、端の $\psi$ だけを入れる。傾いた軌道 ($p_y\ne0$) で厳密な値と食い違う。docs/30 では、スカラーポテンシャルから作った Maxwell 場の中の Thomas-BMT の数値積分と比べて確定している。v2 は本体の分を足す (切り替え `compat.set_spin_bpar`)。本章の (15.9) の $\vec b_l$ は、端の $\psi$ と、SOL・UND の縦磁場だけである。
 
+- **B55・B125 の gs の追加の実測** (docs/30): 結合・垂直の曲げの無い 24 セルの FODO は gs が有限の $92.3760430\%$ (ST の上限)、四極を 0.5 rad ロールすると NaN、偏向磁石を 0.8 rad ロールすると有限だが $2.098\times10^{-4}\%$ (pysad の k64 と全桁一致、v2 は $1.994\%$、独立な値は未確認)。B55 の原因 (`cerfc` の桁あふれ) は gs では確認できない (推定のまま)。
+- **`tradke` の `dbtz` が $\mathrm{pr}$ で割る** (B336。**確定、v2 は修正**。gs では確認できない): `dbtz = dxpzb/pr - dblz` (`photons.f:1550`) は、$x$ 成分・$y$ 成分 (`dxpx/pr**2`) と違い $z$ 成分だけ `pr` で割る。自分の `btz = xpzb/pr**2 - blz` の微分として不整合 (誤植) で、$\delta \ne 0$ の軌道で Emittance[] (POL) のスピン軌道結合 $D = \mathtt{srot}(:,4{:}9)$ の $z$ の行 (縦の歳差) が $\delta$ に比例して誤る。追跡のスピン回転の中心差分から作った $D$ との最大値の相対差は、3 GeV/c、15° の矩形の偏向磁石 ($K_1 = 0$、$L$ = 1.2 m)・軌道 $(x, p_x, y, p_y) = (8, 1, 6, -1)\times10^{-3}$ の周りで、$\delta$ = 0.05 に $\mathrm{pr}$ で割る式 13.2%、$\mathrm{pr}^2$ で割る式 1.20%、$\delta$ = 0.10 に 26.9% 対 2.24% ($K_1$ = 0.3 は 6.3% 対 0.18%、12.4% 対 0.15%)。$\delta$ = 0 は同じ (0.8%、0.24%)。四極は 0.2% で $\delta$ に依らない。TrackParticles のスピン追跡には影響しない (別のコード)。**gs では確認できない**: K64 の `Polarization` は NaN (B55)、`srot` の微分列 (4:9) は Emittance[] の他の出力 (`SpinPrecessionMatrix` は `srot(:,1:3)`) に出ない。pysad の k64 は誤植をそのまま写している。v2 は `spin.tradke_spin` の `dbtz = dxpzb/pr² − dblz` (`spin.DBTZ_PR2` で戻せる)。限界: 1 要素 + ドリフトの比較 ($\delta$ = 0.1 の $K_1 = 0$ の偏向磁石の v2 の 2.2% の残りは別の項、未調査)。試験 `test_v250_spin_dbtz.py`、記録 `docs/history/B336_spin_dbtz.md`。
+
 **ソースの読み (gs での確認が部分的、または未確認)**:
 - **B125**: `Polarization` の脱偏極率が、桁あふれを直しても、追跡・独立な式の約 1000 倍になる (docs/30 に数値)。**「二重数え」(位相が打ち消し合う 2 次の項の和 $1/(1-e^{-2a})$ が、すでに $1/(2a)$ を含む平衡エミッタンスにさらに掛かる、ガウスの項の $2\pi$ も余分) は推定**。docs/30 では、位置の特定は数値の依存性 (エミッタンスに比例、減衰率に反比例、`ssprd` に依らない) による。K64 の式の導出 (Mathematica 由来の展開) には戻っていない。本章 §6.5 の再導出は、2 次の相関和が (1 周の励起) で決まる SLIM に一致することと、$a\to0$ の極限で `a ≠ 0` の枝の $2\pi$ が `a = 0` の枝と合わないことで、この推定と整合するが、K64 の係数までは再導出していない。
-- **B56**: `tbrote` (`tchge.f:197-202`)・`serot` (`photons.f:850-857`)・`tradke` の末尾 (`photons.f:1614-1615`) の `srot` の行を、更新後の値で逐次更新する。ソースの読み。gs での確認は `serot` と `tradke` の末尾だけで、`tbrote` は未確認 (`tradke` の末尾は平面リングの gs と一致したので意図かもしれない)。
+- **B56**: `tbrote` (`tchge.f:197-202`)・`serot` (`photons.f:850-857`)・`tradke` の末尾 (`photons.f:1614-1615`) の `srot` の行を、更新後の値で逐次更新する。ソースの読み。**`tbrote` は gs で確認した**: DROTATE = 0.05 rad の偏向磁石のある 24 セルの FODO リング (3 GeV) の `EMIT` の「Spin precession matrix」(1 周のスピンの回転行列) の直交性の欠陥が gs で $9.8\times10^{-3}$ (ずれなしは $1.3\times10^{-7}$)。pysad の k64 は gs と全桁一致、v2 は $8\times10^{-8}$ (試験 `test_v250_spin_tbrote_gs.py`)。限界: CHI2・DX・DZ のずれでは pysad の k64 が gs と合わない別の差がある (未調査)。`serot` と `tradke` の末尾の gs での確認は従来のまま (`tradke` の末尾は平面リングの gs と一致したので意図かもしれない)。
 - **B57**: `tradke` の `call tadddsg(dsg,srot,dgx,dgy,dgx,dbeam)` は `dgz` の引数に `dgx` を渡す (`photons.f:1589`)。`dsg` は使われない旧ルーチンでしか読まれないので影響なし。ソースの読み。
 - **B58**: 偏向磁石の出口の `bsi2` の項が捨てられる。ソースの読みと、gs の追跡との比較 (出口の項だけを足すと SpinTune の差が $3.9\times10^{-4}\to2.7\times10^{-5}$。pysad を一時的に書き換えた試験で、恒久の変更ではない。docs/30)。
 
-**疑い**:
-- `tradke` の `dbtz = dxpzb/pr - dblz` (`photons.f:1550`): $x$ 成分・$y$ 成分は `dxpx/pr**2` だが、$z$ 成分だけ `pr` で割っている。$\delta\ne0$ での $\partial b_{tz}/\partial x$ の誤りになる (大きさは $\delta$ の程度)。誤植の可能性 (docs/16 は「写している」とだけ書く)。ソースの読みで、この章では数値で確かめていない。
+**疑い (未決)**: この章に残るものは無い (`dbtz` は上で確定した)。
 
 ## 付録 C. この章で使う Fortran の変数名
 
