@@ -1,4 +1,4 @@
-"""
+"""Special and mathematical functions replacing K64 built-ins and Packages/D.n SADScript definitions, via scipy.special.
 特殊関数・数学関数。K64 の組み込み (src/tfinitn.f の itfunaloc、tfunc*.f) と Packages/D.n の SADScript 定義の置き換え。
 
 SAD の実数引数の結果を scipy.special で計算する (K64 は Fortran の自前実装)。値は標準の数学的な値で、
@@ -458,7 +458,8 @@ def _besseljzero(n, k):
 
 
 def inverseerf(x):
-    """gamma.f inverseerf の直訳。K64 は Newton の係数に sqrt(pi/2) を使い (正しくは sqrt(pi)/2)、反復を df^2 <= no f1^2 eps で止めるので、
+    """Translation of `inverseerf` in gamma.f, keeping the K64 Newton coefficient and stopping rule (relative error about 1e-8).
+    gamma.f inverseerf の直訳。K64 は Newton の係数に sqrt(pi/2) を使い (正しくは sqrt(pi)/2)、反復を df^2 <= no f1^2 eps で止めるので、
     真値から相対 1e-8 ほどずれる (InverseErf[.3] = .272462711811; 真値は .272462714727)。Fit.n の FitGaussian がこれを使う"""
     from . import compat
     if compat.v2():

@@ -1,4 +1,4 @@
-"""
+"""UND element (undulator, K64 undulator.f by K.Ohmi and E.Forest, KEK Report 92-14); tracking only.
 UND 要素 (アンジュレータ、K64 の undulator.f: K.Ohmi と E.Forest、KEK Report 92-14)。追跡だけ。
 
 K64 では UND に磁場のキーワードが無い: initb1.f は `kytbl(kwFBX,icUND)=ky_FBX_UND` と書くが kwFBX は未定義の変数 (=0) で、
@@ -21,7 +21,8 @@ _C = 299792458.0
 
 
 def compile_und(el, pgev):
-    """undinit。戻り値は k_und の引数 (nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds)"""
+    """Compile a UND (`undinit`); returns the arguments of `k_und` (nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds).
+    undinit。戻り値は k_und の引数 (nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds)"""
     p = el.params
     g = lambda k: float(p.get(k, 0.0) or 0.0)
     from . import compat
@@ -135,7 +136,8 @@ def _und_a(x, y, sj, F0, G0, dph, Kz, Kx, Ky, Qx, Qy):
 
 @njit(**NJ)
 def und_seg1(i, S, j0, j1, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, rad, fluc, rs, p0, anrad, cuc):
-    """1 粒子を刻み j0+1..j1 だけ進める。S[i, 1], S[i, 3] は出入りとも力学的運動量の向き (px/p)。
+    """Advance one particle through slices j0+1..j1 of an undulator, with kinetic-momentum directions at input and output.
+    1 粒子を刻み j0+1..j1 だけ進める。S[i, 1], S[i, 3] は出入りとも力学的運動量の向き (px/p)。
     アンジュレータの両端 (j0=0、j1=nslice) では undulator.f と同じく正準運動量を外の運動量につなぐ (端でのポテンシャルの飛びは蹴りになる)"""
     if True:
         g = S[i, 5]
@@ -236,7 +238,8 @@ def und_seg1(i, S, j0, j1, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, rad, flu
 
 @njit(**NJ)
 def k_und_field(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0, rad, fluc, rs, anrad, cuc, b2=False):
-    """v2: 磁場のある UND (F0 か G0 が 0 でない)。写像は undulator.f の刻み (k_und と同じ式)。
+    """v2: UND with a magnetic field (F0 or G0 nonzero), mapped slice by slice as in undulator.f, optionally with radiation.
+    v2: 磁場のある UND (F0 か G0 が 0 でない)。写像は undulator.f の刻み (k_und と同じ式)。
     H = [(px-ax)² + (py-ay)²]/(2(1+δ))、ax = ff、ay = gg。By(軸上) = F0·cos(kz s)、Bx(軸上) = G0·cos(kz s + dph) (1/ρ の単位)。
     rad が真なら、刻みごとに運動量の向きの変化から放射 (tradk_core1: SAD の tradk と同じ式、FLUC は tdusrn) を入れる。
     K64 の undulator.f に放射は無い (v2 の追加)。"""
@@ -251,7 +254,8 @@ def k_und_field(S, n, nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds, p0, h0, rad, 
 
 # ---------------------------------------------------------------------------- 光学・エミッタンス (v2)
 def annotate(els, momentum_eV):
-    """v2: UND (SLICE>0) に el._solmap = (K_UND, params, momentum) を付ける (CALC の Twiss は solmap.step が追跡の写像を数値微分し、
+    """v2: attach el._solmap = (K_UND, params, momentum) to UND elements with SLICE>0 so optics and tracking use the same map.
+    v2: UND (SLICE>0) に el._solmap = (K_UND, params, momentum) を付ける (CALC の Twiss は solmap.step が追跡の写像を数値微分し、
     Emittance[] は solemit.emit → und.emit が刻みごとに放射 tradke を入れる)。v2 では光学と追跡が同じ写像になる (磁場なしでも長さ L のドリフト)。
     k64 モードでは付けない (K64 の qtwiss・tturne は UND を恒等として扱い、追跡だけがドリフトさせる)"""
     from . import compat
@@ -278,7 +282,8 @@ def annotate(els, momentum_eV):
 
 
 def emit(st, pr):
-    """Emittance[]・EMIT の UND (v2、磁場あり)。1 周期を 64 個以上に分けた区間ごとに、写像 (und_seg1 の数値微分) → tradke。
+    """`Emittance[]` / EMIT for a UND (v2, with field): map and `tradke` per segment of at least 64 divisions per period.
+    Emittance[]・EMIT の UND (v2、磁場あり)。1 周期を 64 個以上に分けた区間ごとに、写像 (und_seg1 の数値微分) → tradke。
     tradke (photons.f の放射の式) は区間の前後の運動量の向きの変化から、エネルギー損失・減衰・量子励起を入れる"""
     from . import solemit as _se
     nslice, F0, G0, dph, Kz, Kx, Ky, Qx, Qy, ds = pr

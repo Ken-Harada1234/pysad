@@ -1,4 +1,4 @@
-"""
+"""COORD element (coordinate transformation with offsets DX DY DZ and rotations CHI1 CHI2 CHI3), after tcoord.f and tcoorde.f.
 COORD 要素 (座標変換: ずれ DX DY DZ と回転 CHI1 CHI2 CHI3)。K64 の tcoord.f (追跡)、tcoorde.f / qcoord.f (6 次元の写像と行列)。
 幾何 (LINE["GX"] など) は geo.py `_coord`。
 
@@ -17,7 +17,8 @@ _KEYS = ('DX', 'DY', 'DZ', 'CHI1', 'CHI2', 'CHI3')
 
 
 def params(el):
-    """要素から (dx, dy, dz, chi1, chi2, chi3, dir0) (dir0: DIR==0 → 順変換)"""
+    """Return the element parameters (dx, dy, dz, chi1, chi2, chi3, dir0) of a COORD element.
+    要素から (dx, dy, dz, chi1, chi2, chi3, dir0) (dir0: DIR==0 → 順変換)"""
     p = el.params
     g = lambda k: float(p.get(k, 0.0) or 0.0)
     return g('DX'), g('DY'), g('DZ'), g('CHI1'), g('CHI2'), g('CHI3'), g('DIR') == 0.0
@@ -66,7 +67,8 @@ def _sqrt1m(a):
 
 @njit(**NJ)
 def k_coord(S, n, dx, dy, dz, chi1, chi2, chi3, direct):
-    """tcoord.f (追跡: S の x,px,y,py,z。px,py は斜率)"""
+    """Track a particle through a COORD element, after tcoord.f (px, py are slopes).
+    tcoord.f (追跡: S の x,px,y,py,z。px,py は斜率)"""
     (r11, r12, r13, r21, r22, r23, r31, r32, r33, dx0, dy0, dz0, dx1, dy1, dz1) = _rot(dx, dy, dz, chi1, chi2, chi3, direct)
     for i in range(n):
         pxi = S[i, 1]
@@ -92,7 +94,8 @@ def k_coord(S, n, dx, dy, dz, chi1, chi2, chi3, direct):
 
 
 def coord_map(c, prm):
-    """tcoorde の COD 写像と 6×6 の行列 (T, c_out)。c = (x, px, y, py, z, δ) (px,py は正準運動量)"""
+    """Return the COD map and 6x6 matrix (T, c_out) of a COORD element, after tcoorde (px, py canonical).
+    tcoorde の COD 写像と 6×6 の行列 (T, c_out)。c = (x, px, y, py, z, δ) (px,py は正準運動量)"""
     dx, dy, dz, chi1, chi2, chi3, direct = prm
     (r11, r12, r13, r21, r22, r23, r31, r32, r33, dx0, dy0, dz0, dx1, dy1, dz1) = _rot(dx, dy, dz, chi1, chi2, chi3, direct)
     p = 1.0 + c[5]

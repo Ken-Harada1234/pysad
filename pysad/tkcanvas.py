@@ -1,4 +1,4 @@
-"""
+"""Tk Canvas built-in functions (TkCanvas* in tfTkInter_.c, CanvasClipLine and CanvasSymbolDirect in tfcanvasclip.f).
 Tk の Canvas の組み込み関数 (src/tfTkInter_.c の TkCanvas*、src/tfcanvasclip.f の CanvasClipLine・CanvasSymbolDirect)。
 Packages/Canvas.n (ListPlot・Plots・CSR.n の描画) が使う。K64 は Tk の内部構造を直接たたくが、pysad は tkinter の Tcl に create を送る。
 

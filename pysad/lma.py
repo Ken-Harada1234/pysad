@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""局所運動量アクセプタンス (LMA: local momentum acceptance) (v2.3.0 Q1)。
+"""Local momentum acceptance (LMA) by tracking with radiation and RF, found by coarse scan and bisection.
+局所運動量アクセプタンス (LMA: local momentum acceptance) (v2.3.0 Q1)。
 
 位置 s (要素の入口) ごとに、そこで運動量偏差 δ を正・負に変えた粒子 (横方向は閉軌道、z は閉軌道) を放射・RF つきで追跡し、
 nturn 周のあいだ失われない δ の限界 δ+(s)・δ−(s) を、粗い走査と二分法で求める。損失の判定は SAD の TrackParticles と同じ
@@ -205,7 +206,8 @@ def _track_points(setup, loc, cod, pts, nturn, zb, x0, y0, alost):
 
 
 class LMAResult:
-    """momentum_acceptance の結果。配列 (位置の順): loc、s、name、dp_plus (δ+ ≥ 0)、dp_minus (δ− ≤ 0 の値を負で)、
+    """Result of `momentum_acceptance`: arrays of location, s, name, delta+ and delta-, loss reasons and the conditions used.
+    momentum_acceptance の結果。配列 (位置の順): loc、s、name、dp_plus (δ+ ≥ 0)、dp_minus (δ− ≤ 0 の値を負で)、
     hi_plus・hi_minus (最初に失われた δ の絶対値。nan は上限まで残った)、reason_plus・reason_minus ('aper'・'rf'・'sat')、
     cond (使った条件の辞書)"""
 
@@ -231,7 +233,8 @@ class LMAResult:
         self.warnings = list(warnings or [])
 
     def flags(self, i):
-        """位置 i の注意の旗: W+/W− (verify で窓を見つけた)、T+/T− (周回数を 2 倍にすると、限界より tol 手前の粒子が失われる = 限界が tol より大きく下がる)、S+/S− (走査の上限まで残った)、0 (δ = 0 で失われた)"""
+        """Return the caution flags for location i (W, T, S and 0) that mark possibly unreliable acceptance limits.
+        位置 i の注意の旗: W+/W− (verify で窓を見つけた)、T+/T− (周回数を 2 倍にすると、限界より tol 手前の粒子が失われる = 限界が tol より大きく下がる)、S+/S− (走査の上限まで残った)、0 (δ = 0 で失われた)"""
         f = []
         for sg, nm, rs, dp in (('+', 'plus', self.reason_plus, self.dp_plus), ('-', 'minus', self.reason_minus, self.dp_minus)):
             if getattr(self, 'nwin_' + nm)[i] > 0:
@@ -248,7 +251,8 @@ class LMAResult:
         return len(self.loc)
 
     def table(self):
-        """列 (loc, s, name, dp_plus, dp_minus, reason_plus, reason_minus) の文字列表 (ヘッダーに条件)"""
+        """Return a text table of loc, s, name, delta+, delta- and loss reasons, with the conditions in the header.
+        列 (loc, s, name, dp_plus, dp_minus, reason_plus, reason_minus) の文字列表 (ヘッダーに条件)"""
         lines = ['# LMA: local momentum acceptance (dp_plus >= 0, dp_minus <= 0). bracket width <= tol, value = largest surviving dp']
         for k, v in self.cond.items():
             lines.append('# %s = %s' % (k, v))
@@ -266,11 +270,13 @@ class LMAResult:
             f.write(self.table())
 
     def touschek_input(self):
-        """既存の Touschek の機能 (touschek_lifetime_local) に渡す形: (s, δ+, δ−) (δ− は負)"""
+        """Return the acceptance as (s, delta+, delta-) in the form accepted by `touschek_lifetime_local`.
+        既存の Touschek の機能 (touschek_lifetime_local) に渡す形: (s, δ+, δ−) (δ− は負)"""
         return self.s.copy(), self.dp_plus.copy(), self.dp_minus.copy()
 
     def touschek_lifetime(self, table, ssel=None, period=None, s0=0.0, sig_by_cell=None, **kw):
-        """touschek_lifetime_local(table, 全要素の s, ...) を、この結果の補間 (period があれば周期的) で呼ぶ"""
+        """Call `touschek_lifetime_local` with the interpolation of this result, periodic if a period is given.
+        touschek_lifetime_local(table, 全要素の s, ...) を、この結果の補間 (period があれば周期的) で呼ぶ"""
         return touschek_lifetime_local(table, self, setup=self.setup, period=period, s0=s0, **kw)
 
     def plot(self, path, setup=None, title=None):
@@ -311,7 +317,8 @@ def _jfont(plt):
 def momentum_acceptance(setup, locs=None, nturn=None, nsynch=2.0, dpmax=None, ncoarse=12, nsub=3, tol=1e-4, bucket=True,
                         bucket_margin=1.0, x0=0.0, y0=0.0, workers=2, progress=0, alost=None, signs=(1, -1), check_every=None,
                         verify=0, turncheck=2.0, quiet=False):
-    """局所運動量アクセプタンスを求める。
+    """Compute the local momentum acceptance at the given locations of a `TrackSetup` by scan and bisection.
+    局所運動量アクセプタンスを求める。
     setup: trksetup.TrackSetup。locs: 位置 (要素の入口、1 始まり) のリスト (None なら要素の境界すべて: select_locations(setup))。
     nturn: 周回数 (None なら nsynch 周期分: ceil(nsynch/|νs|))。RF なし (RFSW OFF) のときは nturn を指定する (既定 512)。
     dpmax: 走査の上限 (None なら RF ありは バケット高さの 1.25 倍、なしは 0.05)。ncoarse: 粗い走査の点数。nsub: 二分の 1 回の追跡点数 (1 は二分法)。
@@ -383,7 +390,8 @@ def momentum_acceptance(setup, locs=None, nturn=None, nsynch=2.0, dpmax=None, nc
 
 
 def lma_warnings(setup, res, check_every_explicit=None, alost_arg=None, nturn_given=False):
-    """結果と条件から、信頼できない・使えない条件の警告 (文字列のリスト) を作る (momentum_acceptance が呼ぶ)"""
+    """Build warning strings for unreliable or unusable conditions from the result and conditions.
+    結果と条件から、信頼できない・使えない条件の警告 (文字列のリスト) を作る (momentum_acceptance が呼ぶ)"""
     w = []
     c = res.cond
     n = len(res)
@@ -426,7 +434,8 @@ def lma_warnings(setup, res, check_every_explicit=None, alost_arg=None, nturn_gi
 
 
 def periodicity_report(setup, cod_tol=None, warn=True):
-    """1 セルの結果を全周に延ばしてよいかの確認 (v2.3.0 L2)。find_periodicity の結果に、閉軌道 (x, px, y, py) が各セルの最初の位置で同じかを足す。
+    """Check whether one-cell results may be extended to the full ring, adding a closed-orbit comparison.
+    1 セルの結果を全周に延ばしてよいかの確認 (v2.3.0 L2)。find_periodicity の結果に、閉軌道 (x, px, y, py) が各セルの最初の位置で同じかを足す。
     閉軌道の許容 cod_tol (None なら 1e-7 + 2 U0/E0 max(|ηx|, |η'x|, |ηy|, |η'y|)): RF が 1 か所なので、閉軌道の δ がセルごとに U0/E0 ずつ変わり、分散の分だけ
     x が変わる (正常な周期的なリングでもこの大きさの差が出る) ことを許す。
     戻り dict: nper、starts、cell_length、s_starts、ok (セルの長さが同じ)、periodic (nper > 1 かつ ok かつ閉軌道が同じ)、cod_spread (セルの最初の位置の閉軌道の
@@ -466,7 +475,8 @@ def periodicity_report(setup, cod_tol=None, warn=True):
 
 
 def cell_locations(setup, ds=0.0, step=1, warn=True):
-    """1 セル (周期的なとき) の要素の境界の位置。周期的でなければ警告して全周の位置を返す。戻り (locs, report)。report['periodic'] が真なら、結果を
+    """Return the element-boundary locations of one cell if periodic, otherwise warn and return the full-ring locations, with a report.
+    1 セル (周期的なとき) の要素の境界の位置。周期的でなければ警告して全周の位置を返す。戻り (locs, report)。report['periodic'] が真なら、結果を
     `period = report['cell_length']`、`s0 = report['s_starts'][0]` で全周に延ばせる (touschek_lifetime_local の period・s0)。
     1 セルの結果と別のセルの同じ位置の差の目安は report['delta_sawtooth'] (= U0/E0。RF の位置が 1 か所なので、閉軌道の δ がセルごとに U0/E0 ずつ変わる)"""
     from .trksetup import select_locations
@@ -483,7 +493,8 @@ def cell_locations(setup, ds=0.0, step=1, warn=True):
 # ---------------------------------------------------------------------------------------------------------------------
 
 def acceptance_at(s_query, s, dpp, dpm, period=None, s0=0.0):
-    """位置 s_query での (δ+, |δ−|) を、LMA の点 (s, δ+, δ−) から線形補間する。period (セルの長さ) を渡すと周期的 (s0 から period の範囲を
+    """Linearly interpolate (delta+, |delta-|) at position s_query from the LMA points, periodic if a period is given.
+    位置 s_query での (δ+, |δ−|) を、LMA の点 (s, δ+, δ−) から線形補間する。period (セルの長さ) を渡すと周期的 (s0 から period の範囲を
     1 セルとして、s の外は折り返す)。period なしは範囲の外で端の値"""
     s = np.asarray(s, dtype=float)
     q = np.asarray(s_query, dtype=float)
@@ -497,7 +508,8 @@ def acceptance_at(s_query, s, dpp, dpm, period=None, s0=0.0):
 
 
 def touschek_lifetime_local(table, lma, setup=None, period=None, s0=0.0, s_el=None, dp_floor=None):
-    """位置ごとの運動量アクセプタンス (δ+(s), δ−(s)) を使った Touschek 寿命。
+    """Compute the Touschek lifetime using position-dependent momentum acceptances delta+(s) and delta-(s).
+    位置ごとの運動量アクセプタンス (δ+(s), δ−(s)) を使った Touschek 寿命。
     table: touschek.touschek_table()['table'] (または ffs.touschek['table']): table[3] は要素ごと (nlat × 120) の損失率、table[1][0] は
     一様な運動量アクセプタンス dp (0.004 … 0.242、0.002 刻み) の表。SAD の TouschekTable は、各要素 l の損失率 R_l(a) を
     一様な受容 a (正負対称) の関数として持つ。ここでは要素 l に正負の受容 δ+(l)・|δ−(l)| がある場合を、
@@ -544,7 +556,8 @@ def touschek_lifetime_local(table, lma, setup=None, period=None, s0=0.0, s_el=No
 
 
 def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s_el=None, dp_floor=None, npan=40, bunch_delta=None, bunch_floor=0.25, bunch_qs=None):
-    """touschek_lifetime_local と同じ受け渡し (位置ごとの δ+(s)・δ−(s)) で、損失率に K64 の表ではなく Piwinski 型の式 (touschek.touschek_piwinski、v2.3.0 T2) を使う。
+    """Compute the local Touschek lifetime like `touschek_lifetime_local`, but with the Piwinski-type loss rate instead of the K64 table.
+    touschek_lifetime_local と同じ受け渡し (位置ごとの δ+(s)・δ−(s)) で、損失率に K64 の表ではなく Piwinski 型の式 (touschek.touschek_piwinski、v2.3.0 T2) を使う。
     tt: touschek_table(..., record_rest=True) の戻り (FFS の INTRA ON の Emittance[] の結果 ffs.touschek)。
     要素ごとの受容は touschek_lifetime_local と同じ (要素の中央の s での線形補間、period があれば周期的)。戻り dict: rate・lifetime・dp_plus・dp_minus・s_el。
     対称な一様 a (δ+ = |δ−| = a) では touschek_piwinski(tt, a=a) と一致する。
@@ -581,7 +594,8 @@ def touschek_lifetime_local_piwinski(tt, lma, setup=None, period=None, s0=0.0, s
 # ---------------------------------------------------------------------------------------------------------------------
 
 def linear_momentum_limit(setup, locs, aper=None):
-    """線形光学での、水平の開口 ±aper による δ の限界の見積もり (検証用)。位置 s で運動量が δ ずれた粒子は、閉軌道 (x=x_co, px=px_co) から出発すると、
+    """Estimate the delta limit from the horizontal aperture in linear optics, for verification.
+    線形光学での、水平の開口 ±aper による δ の限界の見積もり (検証用)。位置 s で運動量が δ ずれた粒子は、閉軌道 (x=x_co, px=px_co) から出発すると、
     δ の閉軌道 (η δ, η' δ) のまわりに振幅 √(H(s) β(s')) δ のベータトロン振動をする (H = γη² + 2αηη' + βη'² は分散の不変量)。
     位置 s' の |x| の最大は δ (|η(s')| + √(H(s) β(s')))。これが aper を超える最小の |δ|:
         δ_lin(s) = aper / max_{s'} (|η(s')| + √(H(s) β(s')))

@@ -1,4 +1,4 @@
-"""
+"""Singular value decomposition solver `tsvd` (SAD src/tsolvg.f, svd=.false. path), a literal translation.
 tsvd.py — SAD の特異値分解ソルバ tsvd (src/tsolvg.f) の直訳 (svd=.false. の経路)
 
 FFS のマッチング (tffsmatch.f の tfsolv → tsolva → tsvd) が使う線形最小二乗の解法。numpy の SVD (特異値の硬い打ち切り) とは
@@ -26,7 +26,8 @@ def _sign(a: float, b: float) -> float:
 
 
 def tsvd(a_in, b_in, epslon: float, svd: bool = False, itmax: int = 256, warn=None):
-    """a_in: (n, m) 配列、b_in: (n,)。戻り: x (m,)。svd=True の分岐 (V, W^-1 の返却) は未対応"""
+    """Solve the least-squares problem a x = b (a_in: (n, m), b_in: (n,)); returns x (m,); the svd=True branch is unsupported.
+    a_in: (n, m) 配列、b_in: (n,)。戻り: x (m,)。svd=True の分岐 (V, W^-1 の返却) は未対応"""
     if svd:
         raise NotImplementedError('tsvd(svd=True) は未移植')
     a0 = np.asarray(a_in, dtype=float)

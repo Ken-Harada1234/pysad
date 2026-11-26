@@ -1,4 +1,4 @@
-"""
+"""Literal translation of the default `SAD` random-number plugin of K64 (`random_plugin_sad.c`), including Random and GaussRandom.
 sadrandom.py — SAD (K64) の既定の乱数プラグイン "SAD" の直訳 (src/random_plugin_sad.c)
 
 - 32 bit 符号付き合同法: seed ← 48828125·seed (mod 2^32, int32 で折り返し)。SeedRandom[n] は
@@ -42,7 +42,8 @@ class SadRandom:
         self.next = 0.0
 
     def dump(self):
-        """SeedRandom[] の戻りの数値部分 {seed, filled, next} 相当"""
+        """Return the numeric part {seed, filled, next} of the value returned by `SeedRandom[]`.
+        SeedRandom[] の戻りの数値部分 {seed, filled, next} 相当"""
         return (self.seed, 1 if self.filled else 0, self.next)
 
     # RANDOM_UNIFORM0: [0, 1)   (tran(), Random[])
@@ -113,7 +114,8 @@ class SadRandom:
 # ---------------------------------------------------------------------------
 
 def drndsr(rng: SadRandom) -> float:
-    """drndsr: x = (光子エネルギー)/(臨界エネルギー) の乱数。tran() を 1 回引く"""
+    """Draw a random x = (photon energy)/(critical energy) with drndsr, consuming one tran() call.
+    drndsr: x = (光子エネルギー)/(臨界エネルギー) の乱数。tran() を 1 回引く"""
     p = rng.tran()
     if p < 0.658:
         p2 = p * p
@@ -131,7 +133,8 @@ _NPMAX = 10000
 
 
 def tdusrn(rng: SadRandom, anp: float):
-    """tdusrn: 期待光子数 anp のポアソン分布で光子を出し、
+    """Emit photons for the expected photon number anp (Poisson) as in tdusrn; return dph, r1, r2 and the photon count an.
+    tdusrn: 期待光子数 anp のポアソン分布で光子を出し、
     dph = Σ u_n/uc, r1 = Σ r_n u_n / Σ u_n, r2 = Σ r_n² u_n / Σ r_n u_n / 2, an = 光子数。
     乱数は p (1 回) と光子ごとに drndsr (1 回) + r (1 回)。"""
     from . import compat
@@ -163,7 +166,8 @@ def tdusrn(rng: SadRandom, anp: float):
 
 
 def tdusrnpl(rng: SadRandom, anp: float):
-    """drndsr.f tdusrnpl (tdusrn と同じ乱数の引き方で、光子ごとのエネルギー dpr (uc 単位) と位置 rph (0..1) も返す)。
+    """Same as tdusrn (drndsr.f tdusrnpl), also returning per-photon energy dpr (in uc units) and position rph (0..1).
+    drndsr.f tdusrnpl (tdusrn と同じ乱数の引き方で、光子ごとのエネルギー dpr (uc 単位) と位置 rph (0..1) も返す)。
     戻り (dph, r1, r2, an, dpr, rph)"""
     from . import compat
     if compat.v2() and not math.isfinite(anp):

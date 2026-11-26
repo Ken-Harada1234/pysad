@@ -1,4 +1,4 @@
-"""
+"""Small built-in functions and the translation of Packages/optimize.n (`DownhillSimplex`, `Amoeba`, and others).
 小さな組み込み関数と Packages/optimize.n の翻訳。
 
   DownhillSimplex / Amoeba / Amoebar (optimize.n の Simplex クラス): ダウンヒルシンプレックス法。K64 の SADScript をそのまま移植
@@ -209,7 +209,8 @@ _ALLOW_SYSTEM_ENV = os.environ.get('PYSAD_ALLOW_SYSTEM', '').strip().lower() in 
 
 
 def allow_system(flag=True):
-    """System[cmd] (任意のシェルコマンドの実行) を許可する (True) / 禁止する (False) / 環境変数に従う (None)。
+    """Allow, forbid, or defer to the environment the execution of `System[cmd]` shell commands.
+    System[cmd] (任意のシェルコマンドの実行) を許可する (True) / 禁止する (False) / 環境変数に従う (None)。
     既定は禁止。環境変数 PYSAD_ALLOW_SYSTEM=1 (pysad の起動前に設定) でも許可できる。SADScript の中からは変えられない (スクリプトが自分で許可できないように)"""
     global _ALLOW_SYSTEM
     _ALLOW_SYSTEM = None if flag is None else bool(flag)
@@ -243,7 +244,8 @@ def _system_test(I, cmd):
 
 
 def system_command(I, a):
-    """System[cmd] (tfProcess_.c System)。任意のコマンドを実行するので、既定では実行しない。
+    """Run `System[cmd]` (tfProcess_.c System) as a shell command only when execution is allowed; disabled by default.
+    System[cmd] (tfProcess_.c System)。任意のコマンドを実行するので、既定では実行しない。
     許可 (allow_system(True) か PYSAD_ALLOW_SYSTEM=1) があるときだけ、シェルで実行する (作業ディレクトリは Interp.cwd、標準出力は出力先へ)。
     シェルは既定で OS のもの (Windows は cmd.exe、ほかは /bin/sh)。環境変数 PYSAD_SYSTEM_SHELL に sh・bash の実行ファイルを書くと `<shell> -c cmd`。
     戻り値: v2 は終了コード (SADHelp の "system return code"。成功は 0)。k64 は K64 と同じ 1 (K64 は起動できれば終了コードに関係なく True を返す)。
@@ -280,7 +282,8 @@ def system_command(I, a):
 
 
 def install_small(I):
-    """Short[x, n] (出力: x を書いて Null。n は無視 — gs で確認)、Inequality[a, op1, b, op2, c, …] (連なった比較)"""
+    """Install `Short[x, n]` and `Inequality[a, op1, b, op2, c, ...]` (chained comparisons).
+    Short[x, n] (出力: x を書いて Null。n は無視 — gs で確認)、Inequality[a, op1, b, op2, c, …] (連なった比較)"""
     B = I.builtins
     from .sadscript import Expr, S, Sym, truthy
 
@@ -404,7 +407,8 @@ def install_small(I):
 
 
 def install_matrix(I):
-    """Packages/Matrix.n の SingularValues と MatrixBalance (SingularValues1 は K64 の組み込み。特異ベクトルの符号は numpy の SVD を、
+    """Install `SingularValues` and `MatrixBalance` from Packages/Matrix.n.
+    Packages/Matrix.n の SingularValues と MatrixBalance (SingularValues1 は K64 の組み込み。特異ベクトルの符号は numpy の SVD を、
     各 u の先頭成分が負になるよう揃えて K64 の出力に合わせる)"""
     import numpy as np
     B = I.builtins
@@ -459,7 +463,8 @@ def install_matrix(I):
 
 
 def install_system(I):
-    """K64 の小さな組み込み (tfinitn.f): Directory SetDirectory Replace FindIndex Attributes ToInputString Context SetEnv GetEnv GetGID
+    """Install small K64 built-ins from tfinitn.f (`Directory`, `SetEnv`, `GetEnv`, `ToDate`, and others) and `$Version`.
+    K64 の小さな組み込み (tfinitn.f): Directory SetDirectory Replace FindIndex Attributes ToInputString Context SetEnv GetEnv GetGID
     GarbageCollect ToDate FromDate と $Version。pysad に不要なもの (メモリ・共有メモリ) は含めない"""
     import datetime
     import numpy as np
@@ -564,7 +569,8 @@ def install_system(I):
 
 
 def install_spline(I):
-    """K64 の Spline$[{{x1..},{y1..}}, Derivative->{dy1,dy2}] (spline.f: 自然スプライン。戻りは {x, y, y''/6})。
+    """Install `Spline$[...]` from K64 spline.f (natural spline, returns {x, y, y''/6}); used by `Spline` and `SplineData`.
+    K64 の Spline$[{{x1..},{y1..}}, Derivative->{dy1,dy2}] (spline.f: 自然スプライン。戻りは {x, y, y''/6})。
     Spline・SplineData は Packages/D.n (自動読み込み) がこれを使う。Derivative->Periodic (mode 4) は未対応"""
     import numpy as np
     B = I.builtins

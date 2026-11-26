@@ -1,4 +1,4 @@
-"""
+"""Literal translation of the return rules of SAD `Emittance[]` (OneTurnInformation, Orbit, Matrix) in emit_extra.py.
 emit_extra.py — SAD Emittance[] の戻り規則一式 (OneTurnInformation / Orbit / Matrix) の直訳
 ==========================================================================================
 
@@ -306,7 +306,8 @@ def _emittance_rules(lattice, momentum_eV: float, rfsw: bool = False, radcod: bo
 
 
 def emittance_rules(lattice, momentum_eV: float, *args, **kw) -> dict:
-    """Emittance[] の規則一式 (引数は _emittance_rules と同じ。pol=True は POL フラグ: 閉軌道の反復も含め全周でスピンの分割数などを変える)"""
+    """Return the full set of `Emittance[]` rules; pol=True is the POL flag that changes spin divisions over the whole turn.
+    Emittance[] の規則一式 (引数は _emittance_rules と同じ。pol=True は POL フラグ: 閉軌道の反復も含め全周でスピンの分割数などを変える)"""
     from . import emit6d as _e6
     pol0 = _e6.POL_MODE
     _e6.POL_MODE = bool(kw.get('pol', False))
@@ -322,7 +323,8 @@ def _spin_results(st, em, ph, **kw) -> dict:
 
 
 def beam_size_at(e: dict, l: int, key: str = '') -> np.ndarray | float:
-    """SAD の LINE["SIG"//key, l] 相当 (tftwiss.f:982-): key='' → 6×6、'X' 等 → sqrt(Σ_ii)、'XY' 等 → Σ_ij。
+    """Return the beam size at element entrance l, as `LINE["SIG"//key, l]` (tftwiss.f): 6x6 for key '', sqrt(Sigma_ii), or Sigma_ij.
+    SAD の LINE["SIG"//key, l] 相当 (tftwiss.f:982-): key='' → 6×6、'X' 等 → sqrt(Σ_ii)、'XY' 等 → Σ_ij。
     l は 1 始まり (要素入口)。小数位置は未対応。"""
     B = e['BeamMatrices'][l - 1]
     idx = {'X': 0, 'PX': 1, 'Y': 2, 'PY': 3, 'Z': 4, 'DP': 5, 'P': 5}
@@ -341,7 +343,8 @@ def beam_size_at(e: dict, l: int, key: str = '') -> np.ndarray | float:
 
 
 def rules_to_sad_list(e: dict, mode: int = 3) -> list:
-    """SAD の Emittance[] と同じ順の [(名前, 値), …] に並べる (ffscmd/sadscript への接続用)。
+    """Arrange the rules as a list of (name, value) pairs in the order of SAD `Emittance[]` (for ffscmd/sadscript).
+    SAD の Emittance[] と同じ順の [(名前, 値), …] に並べる (ffscmd/sadscript への接続用)。
     ExtendedTwissParameters は SAD と同じく {AX->v, …} の規則リスト (ここでは [(名前, 値)])。"""
     res = []
     for k in RULE_ORDER:

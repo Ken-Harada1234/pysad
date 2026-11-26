@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""周波数マップ (frequency map、FMA) (v2.3.0 Q1)。
+"""Frequency map analysis (FMA) module: track a grid of initial conditions and measure tune diffusion with NAFF.
+周波数マップ (frequency map、FMA) (v2.3.0 Q1)。
 
 1 つの位置 loc (要素の入口) から、初期条件の格子 (x, y) (または x–δ、y–δ) を追跡し、NAFF (pysad/naff.py) で、追跡の前半・後半のチューン
 (νx, νy) を求め、チューンの拡散の指標
@@ -27,7 +28,8 @@ from . import trksetup as _ts
 
 
 class FMapWarning(UserWarning):
-    """周波数マップを信頼して使えない・信頼度が低い条件の警告 (v2.3.0 S2)。warnings.simplefilter('ignore', FMapWarning) で消せる。結果の FMapResult.warnings にも入る"""
+    """Warning for conditions where a frequency map cannot be trusted or has low reliability.
+    周波数マップを信頼して使えない・信頼度が低い条件の警告 (v2.3.0 S2)。warnings.simplefilter('ignore', FMapWarning) で消せる。結果の FMapResult.warnings にも入る"""
 
 _WSET = {}
 
@@ -109,7 +111,8 @@ def _chunk_job(args):
 
 
 class FMapResult:
-    """frequency_map の結果。配列 (点の数 n): x, y, dp (閉軌道からの初期のずれ)、nux1, nuy1, nux2, nuy2 (端数のチューン)、D (log10 の拡散)、
+    """Result of frequency_map: initial offsets, fractional tunes of both halves, diffusion D, lost turn and conditions.
+    frequency_map の結果。配列 (点の数 n): x, y, dp (閉軌道からの初期のずれ)、nux1, nuy1, nux2, nuy2 (端数のチューン)、D (log10 の拡散)、
     lost_turn (0: 最後まで残った、k>0: k 周目に失われた)、amp (前半の x・y の振幅の規格化した値)。grid: (nx, ny, ndp)、cond: 使った条件"""
 
     def __init__(self, x, y, dp, nu, lost, grid, cond, setup=None, loc=None):
@@ -139,7 +142,8 @@ class FMapResult:
 
     @classmethod
     def load_table(cls, path):
-        """table() / save() が書いた表から作る (条件の行 `# key = value` は cond に文字列で入る。setup は None)"""
+        """Build an FMapResult from a table written by `table()` / `save()`; condition lines go to cond as strings and setup is None.
+        table() / save() が書いた表から作る (条件の行 `# key = value` は cond に文字列で入る。setup は None)"""
         cond = {}
         rows = []
         for l in open(path, encoding='utf-8'):
@@ -161,7 +165,8 @@ class FMapResult:
 
     @property
     def slope(self):
-        """D の周回数への依存の傾き (D − D_half)/log10(2) (周回数 1 桁あたりの D の変化)。D_half がない点は nan"""
+        """Return the slope of D against the number of turns, (D - D_half)/log10(2), or nan where D_half is missing.
+        D の周回数への依存の傾き (D − D_half)/log10(2) (周回数 1 桁あたりの D の変化)。D_half がない点は nan"""
         with np.errstate(all='ignore'):
             return (self.D - self.D_half) / math.log10(2.0)
 
@@ -174,13 +179,15 @@ class FMapResult:
 
     @property
     def D_norm(self):
-        """1024 周に換算した D: D + κ log2(nturn/1024) (κ = fmapcheck.SCALING_KAPPA = 1.0。規則的な点の D は周回数が 2 倍になると約 1 下がる。S2 の測定 (512〜4096 周))。
+        """Return D converted to 1024 turns, D + kappa log2(nturn/1024), for comparing results with different numbers of turns.
+        1024 周に換算した D: D + κ log2(nturn/1024) (κ = fmapcheck.SCALING_KAPPA = 1.0。規則的な点の D は周回数が 2 倍になると約 1 下がる。S2 の測定 (512〜4096 周))。
         周回数の違う結果を比べるとき、D > −5 などの閾値は、周回数に依らず D_norm に対して使う (D > −5 − κ log2(nturn/1024) と同じ)"""
         from .fmapcheck import SCALING_KAPPA
         return self.D + SCALING_KAPPA * math.log2(self.nturn / 1024.0)
 
     def chaotic(self, thr=-5.0):
-        """周回数に依らないカオス的な点の判定: D_norm > thr (1024 周に換算した D が thr より大きい)。点ごとの傾き slope は単独では判定に使えない
+        """Classify points as chaotic independently of the number of turns: D_norm greater than thr.
+        周回数に依らないカオス的な点の判定: D_norm > thr (1024 周に換算した D が thr より大きい)。点ごとの傾き slope は単独では判定に使えない
         (点ごとの推定の揺れが大きく、周回数を変えたときの判定の一致率が低い。D の閾値を周回数で換算する方が一致する、S2)"""
         with np.errstate(all='ignore'):
             return np.isfinite(self.D) & (self.D_norm > thr)
@@ -213,7 +220,8 @@ class FMapResult:
                     lost_turn=self.lost_turn)
 
     def plot(self, path, vmin=-8.0, vmax=-2.0, order=4, lines=True, title=None, axes=None, tune_window=None, scale=1e3):
-        """2 枚の図 (1 つのファイル): 左 = チューン平面 (νx1, νy1) を D で色づけ (共鳴線 order 次以下を重ねる)、右 = 初期条件の平面を D で
+        """Plot two panels: the tune plane colored by D with resonance lines, and the initial-condition plane (lost points as black x).
+        2 枚の図 (1 つのファイル): 左 = チューン平面 (νx1, νy1) を D で色づけ (共鳴線 order 次以下を重ねる)、右 = 初期条件の平面を D で
         色づけ (失われた点は黒い x)。axes: 初期条件平面の 2 軸 ('x','y')・('x','dp')・('y','dp') (None なら配列の長さが 1 でない 2 つ)"""
         import matplotlib
         matplotlib.use('Agg')
@@ -279,7 +287,8 @@ def _arr(v):
 
 
 def frequency_map(setup, loc, x=0.0, y=0.0, dp=0.0, nturn=1024, window=1, workers=1, chunk=400, progress=0, orbit='auto', norm='data', scaling=True, warn=True):
-    """周波数マップ。setup: trksetup.TrackSetup (通常 rfsw=False・rad=False の複製: setup.copy(rad=False, rfsw=False))。loc: 位置 (1 始まり)。
+    """Compute a frequency map from a TrackSetup over a grid of initial offsets (x, y, dp) using NAFF tunes of two halves.
+    周波数マップ。setup: trksetup.TrackSetup (通常 rfsw=False・rad=False の複製: setup.copy(rad=False, rfsw=False))。loc: 位置 (1 始まり)。
     x, y, dp: 数または配列 (閉軌道からの初期のずれ [m, m, δ])。nturn: 周回数の合計 (前半・後半に nturn//2 周ずつ。偶数にする)。
     window: NAFF の窓の次数 (1 = Hann)。workers: 子プロセスの数 (1 なら親プロセスで)。chunk: 一度に追跡する粒子の数。
     norm: 'data' (既定。(x, px) の楕円の規格化を標本から求める) または 'twiss' (位置 loc の Twiss の δ = 0 の値)。
@@ -414,7 +423,8 @@ def _mn_list(order):
 
 
 def resonance_lines(order, window=((0.0, 1.0), (0.0, 1.0))):
-    """m νx + n νy = p の線で、(νx, νy) の窓 window = ((x0, x1), (y0, y1)) と交わるもの。戻り [(m, n, p)]。order 次以下 (|m|+|n| ≤ order)"""
+    """Return the resonance lines m nux + n nuy = p of order up to `order` that cross the tune window, as [(m, n, p)].
+    m νx + n νy = p の線で、(νx, νy) の窓 window = ((x0, x1), (y0, y1)) と交わるもの。戻り [(m, n, p)]。order 次以下 (|m|+|n| ≤ order)"""
     (x0, x1), (y0, y1) = window
     out = []
     for (m, n) in _mn_list(order):
@@ -443,7 +453,8 @@ def _draw_line(ax, m, n, p, window, col, lw):
 
 
 def resonance_check(nux, nuy, order=4, maxn=12):
-    """作動点 (νx, νy) (整数部を含む) に近い共鳴線 m νx + n νy = p (|m|+|n| ≤ order) の表。距離 = |m νx + n νy − p| / sqrt(m²+n²) (チューン平面の
+    """Return a table of resonance lines near the working point, always including the integer and half-integer lines.
+    作動点 (νx, νy) (整数部を含む) に近い共鳴線 m νx + n νy = p (|m|+|n| ≤ order) の表。距離 = |m νx + n νy − p| / sqrt(m²+n²) (チューン平面の
     距離)。距離の小さい順に maxn 個 (整数 (νx = p, νy = p)・半整数 (2νx = p, 2νy = p) の 4 本は、順位に関わらず必ず入れる)。整数・半整数の名前は 'integer'・'half-integer'。
     戻り [(m, n, p, 距離, 次数, 名前)]"""
     rows = []
@@ -463,7 +474,8 @@ def resonance_check(nux, nuy, order=4, maxn=12):
 
 
 def line_distance(nux, nuy, order=4):
-    """各点 (νx, νy) (配列、端数) から、order 次以下の共鳴線 (どの p でも) までの最短距離 (チューン平面の距離)"""
+    """Return the shortest tune-plane distance from each fractional-tune point to resonance lines of the given order or lower.
+    各点 (νx, νy) (配列、端数) から、order 次以下の共鳴線 (どの p でも) までの最短距離 (チューン平面の距離)"""
     nux = np.asarray(nux, dtype=float)
     nuy = np.asarray(nuy, dtype=float)
     best = np.full(nux.shape, np.inf)

@@ -1,4 +1,4 @@
-"""
+"""Write a plan view of the lattice as a text DXF (ASCII, AutoCAD R12 equivalent) file.
 dxf_lattice.py — ラティスの平面図 (上から見た図) をテキストの DXF (ASCII、AutoCAD R12 相当) で書き出す (v2.4.1)
 
 K. Oide の `drawmagvw3d.n` (SAD の 3GSR/esrf。CAD ソフト Vectorworks の VectorScript を書き出す `DrawMagnets3D`) の
@@ -154,7 +154,8 @@ _FOOTER = ['  0', 'ENDSEC', '  0', 'EOF']
 
 # ---------------------------------------------------------------- ラティスの読み込み
 def load_ffs(src: str, use: Optional[str] = None, cwd: Optional[str] = None):
-    """SAD の台本 (ファイル名または本文) を読み、USE して FFS オブジェクトを返す (CALC はしない。幾何だけなら不要)。
+    """Read a SAD script (file name or text), apply USE and return the FFS object (no CALC).
+    SAD の台本 (ファイル名または本文) を読み、USE して FFS オブジェクトを返す (CALC はしない。幾何だけなら不要)。
     src が存在するファイル名ならその内容、そうでなければ本文とみなす。`FFS;` の行が無ければ補う。use は LINE 名。"""
     import io
     import re
@@ -415,7 +416,8 @@ def build_dxf(ffs, region=None, scale: float = 1.0, text_height: float = 0.15, n
               mark_size: float = 0.1, mark_text: bool = False, arc_step: float = 0.05, text_side: float = -1,
               spec: Optional[Dict] = None, overlap: str = 'keep', magnet_spec=None, magnet_type=None,
               mode: str = 'plan', parts: str = 'body') -> Tuple[List[str], Dict]:
-    """DXF の本文 (行のリスト) と、要素数などの情報の dict を返す。引数は write_dxf を見よ"""
+    """Return the DXF text lines and a dict of information such as the number of elements; see `write_dxf`.
+    DXF の本文 (行のリスト) と、要素数などの情報の dict を返す。引数は write_dxf を見よ"""
     spec = spec or {}
     mode = str(mode).lower()
     if mode in ('2d', 'plan'):
@@ -644,7 +646,8 @@ def write_dxf(src, path: str, region=None, scale: float = 1.0, text_height: floa
               mark_size: float = 0.1, mark_text: bool = False, arc_step: float = 0.05, text_side: float = -1,
               spec: Optional[Dict] = None, overlap: str = 'keep', magnet_spec=None, magnet_type=None,
               mode: str = 'plan', parts: str = 'body') -> Dict:
-    """ラティスの平面図を DXF (ASCII、R12 相当) に書く。戻り値は {'nmagnets','nmarks','ntraj','nentities',...}
+    """Write a plan view of the lattice to a DXF (ASCII, R12 equivalent) file and return a dict of entity counts.
+    ラティスの平面図を DXF (ASCII、R12 相当) に書く。戻り値は {'nmagnets','nmarks','ntraj','nentities',...}
 
     src        USE 済みの `FFS` オブジェクト (`load_ffs(...)` または `run_sad_string(...)[0]`)
     region     (始点, 終点) の要素 (位置の番号または `NAME.n` の名前)。終点の要素も含む。None なら全周 (1 〜 LINE["LENGTH"]-1)
@@ -682,7 +685,8 @@ def write_dxf(src, path: str, region=None, scale: float = 1.0, text_height: floa
 
 # ---------------------------------------------------------------- 最小の読み戻し (検証用。ezdxf は使わない)
 def read_dxf(path: str) -> Dict:
-    """write_dxf の DXF を読み戻す最小のパーサ。戻り {'insunits','layers': {名前: 色}, 'entities': [dict ...]}
+    """Minimal parser that reads back a DXF written by `write_dxf`, returning insunits, layers and entities.
+    write_dxf の DXF を読み戻す最小のパーサ。戻り {'insunits','layers': {名前: 色}, 'entities': [dict ...]}
     entity: {'type','layer','pts' (POLYLINE・LINE の頂点 (x, y)。3DFACE は 4 頂点の (x, y, z)), 'closed', 'text', 'height', 'rot', 'at'}"""
     with open(path, encoding='ascii') as fh:
         raw = [ln.rstrip('\r\n') for ln in fh]
@@ -784,7 +788,8 @@ def read_dxf(path: str) -> Dict:
 
 
 def check_solids(entities, faces_per_solid: int = 6) -> List[Dict]:
-    """3DFACE を、ファイルの順に `faces_per_solid` 枚 (6 面体 = 6) ずつ 1 個の立体とみなして、閉じた立体か確かめる (検証用)。
+    """Check that groups of faces_per_solid 3DFACE entities form closed solids (for verification).
+    3DFACE を、ファイルの順に `faces_per_solid` 枚 (6 面体 = 6) ずつ 1 個の立体とみなして、閉じた立体か確かめる (検証用)。
     `entities` は read_dxf の戻りの 'entities' (3DFACE 以外は無視)。立体ごとに dict を返す:
       'layer'・'nfaces'・'nverts' (相異なる頂点の数)・'closed' (すべての有向辺が 1 回ずつ現れ、逆向きの辺も 1 回ずつ現れる = 各辺が 2 面で共有され、
       向きが外向きにそろう)・'volume' (符号つきの体積。外向きの法線なら正)・'bbox'。頂点は小数 6 桁に丸めた値で同一とする"""

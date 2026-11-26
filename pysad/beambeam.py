@@ -1,4 +1,4 @@
-"""
+"""Tracking of the BEAMBEAM element (strong-weak beam-beam interaction), a literal translation of bbstrhl.f and related files of K64.
 BEAMBEAM 要素 (強弱ビームのビーム・ビーム相互作用) の追跡。K64 の bbstrhl.f (beambeam, bbinit)、bbtool.f (cerrf, gauinv)、
 matrix.f (包絡行列) の直訳。ビームストラールング (BSTRL>0) は乱数 (tran) の引き方まで直訳。光子の出力 (photons) は未対応。ルミノシティは LuminosityMonitor に渡す。光学 (Twiss) には効かない。
 
@@ -165,7 +165,8 @@ def _powi32(x, n):
 
 
 def besseltab():
-    """bbstrhl.f mkbesseltab: (xi, SwI) の 1 始まりの表 (長さ 1002)。光子のエネルギー分布 S(x) の積分の逆引き。
+    """Build the 1-based table (xi, SwI), length 1002, for the inverse lookup of the photon energy distribution (mkbesseltab).
+    bbstrhl.f mkbesseltab: (xi, SwI) の 1 始まりの表 (長さ 1002)。光子のエネルギー分布 S(x) の積分の逆引き。
     1.1**40、1.02、5./3. は単精度の定数のまま"""
     global _TABLE, _TABLE_V2
     if compat.v2():
@@ -236,7 +237,8 @@ def _besseltab_v2():
 
 
 def gauinv(p0):
-    """bbtool.f GAUINV (最大相対誤差 6.4e-4 の近似。そのまま)"""
+    """Compute GAUINV, the approximate inverse Gaussian distribution function of bbtool.f (maximum relative error 6.4e-4).
+    bbtool.f GAUINV (最大相対誤差 6.4e-4 の近似。そのまま)"""
     PP1, QQ2, QQ3, QQ4, QQ5 = 0.334624883253, 0.090230446775, 0.049905685242, 0.027852994157, 0.015645650215
     A3, A2, A1, A0 = 4.5585614e+01, 2.1635544e+00, 2.7724523e+00, 2.5050240e+00
     B4, B3, B2, B1, B0 = 4.0314354e+02, -2.7713713e+02, 7.9731883e+01, -1.4946512e+01, 2.2157257e+00
@@ -330,7 +332,8 @@ def m_H(ex, epx, ey, epy, zx, zpx, zy, zpy):
 
 
 def setup(params: dict, momentum_eV: float, photon=None):
-    """bbinit。戻り値は追跡カーネルに渡す辞書 (nslice=0 なら相互作用なし)"""
+    """Perform bbinit and return the dictionary passed to the tracking kernel (no interaction if nslice=0).
+    bbinit。戻り値は追跡カーネルに渡す辞書 (nslice=0 なら相互作用なし)"""
     p = {k: float(params.get(k, 0.0) or 0.0) for k in _KEYS}
     nsli = int(p['SLICE'])
     if nsli > NSLIMAX:
@@ -428,7 +431,8 @@ def setup(params: dict, momentum_eV: float, photon=None):
 
 @njit(**NJ)
 def cerrf(xx, yy):
-    """bbtool.f CERRF (複素誤差関数 w(z) の Koelbig 版)。(wx, wy)"""
+    """Compute CERRF, the complex error function w(z) (Koelbig version) of bbtool.f, returning (wx, wy).
+    bbtool.f CERRF (複素誤差関数 w(z) の Koelbig 版)。(wx, wy)"""
     CC = 1.1283791670955
     XLIM = 5.33
     YLIM = 4.29
@@ -501,7 +505,8 @@ def _limitnan(a, lim):
 @njit(**NJ)
 def bb_kick(S, n, nsli, gamma, gambet, ce, xangle, cod, benv5, vcen, zc, sigz, tilt, icross, deform, codf,
             bstrl, cnbs, cubs, dszs, xitab, switab, rs, info, photon, prec):
-    """beambeam の本体。S[:, (x, px, y, py, z, g, dv, ..., dvfs)] (px, py は px/(1+δ))"""
+    """Apply the main beam-beam kick on the particle array S, as in beambeam of K64.
+    beambeam の本体。S[:, (x, px, y, py, z, g, dv, ..., dvfs)] (px, py は px/(1+δ))"""
     sinx, cosx, tanx = xangle[1], xangle[2], xangle[3]
     sint, cost = xangle[4], xangle[5]            # K64 のまま (sint = 傾き角、cost = sin(傾き角))
     for i in range(n):
@@ -734,7 +739,8 @@ def _photon_rows(rec, bb):
 
 
 def apply(S, n, bb, rs=None):
-    """bb = setup() の戻り値。rs: 乱数の状態 (int64 の 1 要素の配列、BSTRL>0 のとき)。
+    """Apply the beam-beam interaction using the result of `setup`, returning the luminosity and the number of radiated photons.
+    bb = setup() の戻り値。rs: 乱数の状態 (int64 の 1 要素の配列、BSTRL>0 のとき)。
     戻り値は (ルミノシティ Σ dLum / スライス数 / 粒子数、放射した光子の数)"""
     ns = bb['nslice']
     if ns <= 0 or n <= 0:

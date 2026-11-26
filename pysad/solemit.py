@@ -1,4 +1,4 @@
-"""
+"""Maps for SOL regions used by `Emittance[]`, CALC6D and EMIT, corresponding to tsole1 (tsole.f) in K64.
 SOL 領域 (BOUND≠0 の SOL から次の BOUND≠0 の SOL まで) の Emittance[] / CALC6D / EMIT 用の写像。K64 の tsole1 (tsole.f) 相当。
 
 領域内の要素は solmap.annotate が el._solmap = (kind, params, momentum) を付けておく。ここではその kind ごとに
@@ -276,7 +276,8 @@ def _cav_fringe(st, el, al, sgn):
 
 
 def emit(st, el):
-    """emit6d.tturne などの要素ループから: el._solmap のある要素 (SOL 領域内) の写像と放射"""
+    """Apply the map and radiation of an element with el._solmap (inside a SOL region) from the element loops of emit6d.tturne.
+    emit6d.tturne などの要素ループから: el._solmap のある要素 (SOL 領域内) の写像と放射"""
     kind, pr, _mom = el._solmap
     if kind == _n.K_NONE:
         return

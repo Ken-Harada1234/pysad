@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""SADScript の `Graphics[…]` (Plot・ListPlot・OpticsPlot・GeometryPlot ほか) を matplotlib に描く `$DisplayFunction` (v2.4.1)。
+"""Matplotlib `$DisplayFunction` that draws SADScript `Graphics[...]` (Plot, ListPlot, OpticsPlot, GeometryPlot, ...).
+SADScript の `Graphics[…]` (Plot・ListPlot・OpticsPlot・GeometryPlot ほか) を matplotlib に描く `$DisplayFunction` (v2.4.1)。
 
 SAD の `$DisplayFunction` は、`Show1$` (ListPlot.n) が `df[opt, list, init, w, rect, last, ini]` の形で呼ぶ関数で、K64 では `CanvasDrawer`
 (Canvas.n、Tk のキャンバス) が実体。pysad はこの関数の名前 `MatplotlibDrawer` を組み込み関数として足し、同じ引数を受けて
@@ -58,7 +59,8 @@ def _clamp(v: float, lo: float, hi: float) -> float:
 
 
 def make_window(plot_region, rect, ar) -> Tuple[float, float, float, float]:
-    """Canvas.n の MakeWindow。plot_region {{px1,px2},{py1,py2}}・rect (Automatic か {{x1,y1},{x2,y2}}、PlotRegion の窓の割合)・
+    """Compute the window (x1, x2, y1, y2) in canvas inches from the plot region, rect, and aspect ratio (Canvas.n MakeWindow).
+    Canvas.n の MakeWindow。plot_region {{px1,px2},{py1,py2}}・rect (Automatic か {{x1,y1},{x2,y2}}、PlotRegion の窓の割合)・
     ar (縦横比 = 幅/高さ。実数でなければ Automatic)。返り値は窓 (x1, x2, y1, y2) (キャンバスのインチ、y は下から)"""
     (px1, px2), (py1, py2) = plot_region
     wx1, wx2 = ORIGIN[0], ORIGIN[0] + RAW[0]
@@ -101,7 +103,8 @@ def _fr1(scale: str, r, x1: float, x2: float) -> float:
 
 
 def frame_range(scale: str, r, b) -> Tuple[float, float]:
-    """FrameRange + FrameRange2。r = (r1, r2) (None は Automatic)、b = DataRange の (b1, b2)。返り値は軸の範囲 (Log は log10)"""
+    """Compute the axis range from FrameRange and FrameRange2 given the user range r and the DataRange b (log10 for Log axes).
+    FrameRange + FrameRange2。r = (r1, r2) (None は Automatic)、b = DataRange の (b1, b2)。返り値は軸の範囲 (Log は log10)"""
     r1, r2 = r
     b1, b2 = b
     if r1 is None and r2 is None:
@@ -133,7 +136,8 @@ PALETTE = ['royal blue', 'tomato3', 'forest green', 'dark goldenrod', 'dodger bl
 
 
 def sad_color(name) -> Optional[Tuple[float, float, float]]:
-    """Tk (X11) の色名・#rrggbb を matplotlib の RGB にする。空文字・文字列でないもの・未知の名前は None。
+    """Convert a Tk (X11) color name or #rrggbb string to a matplotlib RGB value; return None if empty, non-string, or unknown.
+    Tk (X11) の色名・#rrggbb を matplotlib の RGB にする。空文字・文字列でないもの・未知の名前は None。
     `dodger blue` のような空白つき、`tomato3` のような末尾の数字 (1〜4 = 明るさ 100・93.2・80.4・54.5%)、`gray40`、
     `#rgb`・`#rrggbb`・`#rrrgggbbb` を受ける"""
     if not isinstance(name, str):
@@ -194,7 +198,8 @@ def _mathtext_ok(txt: str) -> bool:
 
 
 def sad_text(s) -> str:
-    r"""SAD の文字の書式を matplotlib の mathtext にする (`fh`n`dx`n → η$_{x}$)。書式がなければそのまま。
+    r"""Convert SAD text formatting to matplotlib mathtext (e.g. subscripts and LaTeX titles), falling back to plain text if unreadable.
+    SAD の文字の書式を matplotlib の mathtext にする (`fh`n`dx`n → η$_{x}$)。書式がなければそのまま。
     バックスラッシュ + @ で始まる LaTeX の文字 (FitPlot の題など) は、先頭のそれと centering の指定を取り、二重のバックスラッシュを改行にして
     `$…$` を mathtext に任せる。
     mathtext に読めない文字は `$` を打ち消した平文にする (描画で落ちない)"""
@@ -1270,7 +1275,8 @@ def _tick_kind(v) -> str:
 # 5. インタプリタへの登録・環境変数・Python API
 # ---------------------------------------------------------------------------------------------------------------------
 def display_mode_from_env() -> Optional[str]:
-    """環境変数 PYSAD_DISPLAY → 'mpl'・'tk'・'none'。未設定・知らない値は None (従来の決め方)"""
+    """Read the display mode ('mpl', 'tk', 'none') from the environment variable PYSAD_DISPLAY; None if unset or unknown.
+    環境変数 PYSAD_DISPLAY → 'mpl'・'tk'・'none'。未設定・知らない値は None (従来の決め方)"""
     v = os.environ.get('PYSAD_DISPLAY', '').strip().lower()
     if v in ('mpl', 'matplotlib'):
         return 'mpl'
@@ -1282,7 +1288,8 @@ def display_mode_from_env() -> Optional[str]:
 
 
 def install(I):
-    """組み込み関数 MatplotlibDrawer を I に登録する (matplotlib はまだ読まない)。何度呼んでもよい"""
+    """Register the built-in function `MatplotlibDrawer` in the interpreter I without importing matplotlib yet; safe to call repeatedly.
+    組み込み関数 MatplotlibDrawer を I に登録する (matplotlib はまだ読まない)。何度呼んでもよい"""
     drv = getattr(I, '_mpl_display', None)
     if drv is None:
         drv = _Driver(I)
@@ -1292,17 +1299,20 @@ def install(I):
 
 
 def MatplotlibDrawer(I, *args):
-    """Python から直接 (opt, list, init, w, rect, last, ini) を渡す"""
+    """Call the drawer directly from Python with the arguments (opt, list, init, w, rect, last, ini).
+    Python から直接 (opt, list, init, w, rect, last, ini) を渡す"""
     return install(I).call(list(args))
 
 
 def last_figure():
-    """最後に描いた Figure (保存して閉じたあとでも、線・箱・文字は `fig._pysad_display['frames']` の rec から取れる)"""
+    """Return the last Figure drawn; its lines, boxes, and texts remain available from the records in `fig._pysad_display['frames']`.
+    最後に描いた Figure (保存して閉じたあとでも、線・箱・文字は `fig._pysad_display['frames']` の rec から取れる)"""
     return _LAST
 
 
 def render(I, g, save: Optional[str] = None, show: Optional[bool] = None, dpi: Optional[float] = None):
-    """Graphics[…] の式 g (Plot・ListPlot・OpticsPlot などを DisplayFunction->Identity で作ったもの) を matplotlib に描いて
+    """Draw a `Graphics[...]` expression g with matplotlib and return the Figure; optionally save it (numbered) or show it interactively.
+    Graphics[…] の式 g (Plot・ListPlot・OpticsPlot などを DisplayFunction->Identity で作ったもの) を matplotlib に描いて
     Figure を返す (matplotlib が無ければ ImportError)。save があればその名前で保存 (番号つき)。show=True で対話表示"""
     from . import draw_mpl
     if draw_mpl._import_mpl() is None:

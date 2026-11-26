@@ -1,4 +1,4 @@
-"""
+"""SADScript functions of FFS for elements and beam lines, such as `Element`, `SetElement`, `FLAG`, `ExtractBeamLine` and `BeamLine`.
 sadelem.py — SADScript の FFS 専用関数のうち、要素とビームラインに関するもの
 
   Element[key, element(s)]            要素 (ファミリー) の値の取得・代入 (tfelement)
@@ -36,7 +36,8 @@ def _remove_paren(s: str) -> str:
 
 
 def install(ffs):
-    """FFS インスタンスに関数を登録 (ffscmd.FFS.install から呼ばれる)"""
+    """Install the functions into the FFS instance (called from `ffscmd.FFS.install`).
+    FFS インスタンスに関数を登録 (ffscmd.FFS.install から呼ばれる)"""
     from . import ffscmd as _fc
     I = ffs.I
     B = I.builtins

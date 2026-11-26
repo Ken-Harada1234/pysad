@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""6 極 (と 8 極) による共鳴駆動項 h_jklmp、振幅依存チューンシフト (ADTS)、クロマティシティの高次項 (v2.3.0 Q2、K64 にない機能)。
+"""Resonance driving terms h_jklmp, ADTS and higher-order chromaticity from sextupoles and octupoles.
+6 極 (と 8 極) による共鳴駆動項 h_jklmp、振幅依存チューンシフト (ADTS)、クロマティシティの高次項 (v2.3.0 Q2、K64 にない機能)。
 
 解説と式は docs/25_resonance_terms_adts.md。ここは実装の要約。
 
@@ -100,7 +101,8 @@ def _term_names(t):
 
 
 def parse_term(name):
-    """'h21000' → (2,1,0,0,0)、'h11001' → (1,1,0,0,1)。5 文字目まで (j,k,l,m,p)。タプルはそのまま通す"""
+    """Parse a term name such as 'h21000' into the tuple (j, k, l, m, p); pass tuples through unchanged.
+    'h21000' → (2,1,0,0,0)、'h11001' → (1,1,0,0,1)。5 文字目まで (j,k,l,m,p)。タプルはそのまま通す"""
     if isinstance(name, (tuple, list)):
         t = tuple(int(v) for v in name)
         return t if len(t) == 5 else t + (0,) * (5 - len(t))
@@ -125,7 +127,8 @@ def _tn(el):
 
 
 def collect_nonlinear(elements, rows, delta=0.0, ref_phase=(0.0, 0.0), warnings=None):
-    """多極成分をもつ素子の一覧。rows は Lattice.twiss_table() の行 (rows[i] = i 番目の素子の入口)。
+    """Collect the elements that have multipole components; rows are the `Lattice.twiss_table()` rows. Return list[_Elem].
+    多極成分をもつ素子の一覧。rows は Lattice.twiss_table() の行 (rows[i] = i 番目の素子の入口)。
     強さは積分値 (薄レンズでも厚くても同じ意味)。戻り: list[_Elem]"""
     warnings = warnings if warnings is not None else []
     sc = 1.0 / (1.0 + delta)         # 追跡の素子の kick は正準運動量 px (p0 で規格化) に対する場の強さそのもので、δ に依らない (v2.3.0 R6: gs と pysad の追跡で確認。多極の強さは scs=1)。MULT の K1 だけ内部の光学のために 1/(1+δ)
@@ -313,7 +316,8 @@ _IM_I = (0.0, 1.0, 0.0, -1.0)
 
 
 def poly_coeffs(n, c):
-    """H_n = (1/(n+1)!) Re[c (x+iy)^(n+1)] の x^a y^b の係数 (a+b = n+1)。c = K_n + i S_n (積分値、または密度)"""
+    """Return the coefficients of x^a y^b (a+b = n+1) in H_n = (1/(n+1)!) Re[c (x+iy)^(n+1)], with c = K_n + i S_n.
+    H_n = (1/(n+1)!) Re[c (x+iy)^(n+1)] の x^a y^b の係数 (a+b = n+1)。c = K_n + i S_n (積分値、または密度)"""
     N = n + 1
     P = {}
     for b in range(N + 1):
@@ -323,7 +327,8 @@ def poly_coeffs(n, c):
 
 
 def mono_coef(strengths, q):
-    """素子の強さ (積分値の辞書) から、単項式 q = (j,k,l,m,p) の H の係数 (∫ds の前の因子、(2J) のべきを付ける前の形)"""
+    """Return the H coefficient of monomial q = (j,k,l,m,p) from the element strengths, before the (2J) power factor.
+    素子の強さ (積分値の辞書) から、単項式 q = (j,k,l,m,p) の H の係数 (∫ds の前の因子、(2J) のべきを付ける前の形)"""
     j, k, l, m, p = q
     a = j + k + p
     b = l + m
@@ -336,7 +341,8 @@ def mono_coef(strengths, q):
 
 
 def elem_integrals(e, monos, method='analytic', nslice=8):
-    """素子 e について、各単項式 q の ∫ w^j w̄^k w_y^l w̄_y^m η^r ds (薄レンズは強さを掛けた「値」の形ではなく、
+    """Compute, for element e, the integral of each monomial w^j wbar^k w_y^l wbar_y^m eta^r ds (strengths applied by the caller).
+    素子 e について、各単項式 q の ∫ w^j w̄^k w_y^l w̄_y^m η^r ds (薄レンズは強さを掛けた「値」の形ではなく、
     ここでは「厚さの積分」の形: 厚い素子は ∫ds、薄い素子は 1 × 値)。強さ (密度または積分値) は呼び出し側で掛ける"""
     if e.L == 0.0:
         f = _thin_funcs(e)
@@ -350,7 +356,8 @@ def elem_integrals(e, monos, method='analytic', nslice=8):
 
 
 def elem_pair_integrals(e, monos, method='analytic', nslice=8):
-    """素子内の二重積分 Igt[q, q'] = ∬_{s1>s2} mono_q(s1) conj(mono_q'(s2)) ds1 ds2 (薄レンズは ½ a_q conj(a_q'))"""
+    """Compute the double integral Igt[q, q'] of mono_q(s1) conj(mono_q'(s2)) over s1 > s2 inside an element.
+    素子内の二重積分 Igt[q, q'] = ∬_{s1>s2} mono_q(s1) conj(mono_q'(s2)) ds1 ds2 (薄レンズは ½ a_q conj(a_q'))"""
     n = len(monos)
     out = np.zeros((n, n), dtype=complex)
     if e.L == 0.0:
@@ -388,7 +395,8 @@ def _dens_strengths(e):
 # 作動点の確認
 # ---------------------------------------------------------------------------------------------
 def working_point_check(qx, qy, tol=0.01, order=3):
-    """整数・半整数共鳴と 3 次までの共鳴線 (m Qx + n Qy = p、|m|+|n| ≤ order) への距離。戻り: dict"""
+    """Return the distance of the working point to integer and half-integer resonances and to lines m Qx + n Qy = p, as a dict.
+    整数・半整数共鳴と 3 次までの共鳴線 (m Qx + n Qy = p、|m|+|n| ≤ order) への距離。戻り: dict"""
     qx, qy = float(qx), float(qy)
     d = lambda v: abs(v - round(v))
     info = {'dist_x_int': d(qx), 'dist_y_int': d(qy), 'dist_x_half': d(2 * qx) / 2, 'dist_y_half': d(2 * qy) / 2}
@@ -464,7 +472,8 @@ BEND_RDT_DEFAULT = True
 
 
 def bend_rdt(elements, rows, monos, nslice=16, momentum=3e9, mu_ref=(0.0, 0.0), warnings=None, delta=0.0):
-    """偏向磁石の 3 次の項 (曲率 (h/2)x(px²+py²)・硬い端 ±(h/2)px y²・複合機能の本体・E1/E2≠0 の端。`bendnl.py` が K64 の追跡の写像から取り出す) の
+    """Compute the contribution of bend third-order terms to the resonance driving terms h_(j,k,l,m,p); return a list.
+    偏向磁石の 3 次の項 (曲率 (h/2)x(px²+py²)・硬い端 ±(h/2)px y²・複合機能の本体・E1/E2≠0 の端。`bendnl.py` が K64 の追跡の写像から取り出す) の
     共鳴駆動項 h_(j,k,l,m,p) への寄与 (p ≥ 1 は分散による軌道のずれ x → x + ηδ の展開)。j+k+l+m+p = 3 の項だけが 0 でない。
     戻り: list[(素子の添字, 名前, s 入口, ndarray(len(monos)) 複素)] (対象の偏向磁石だけ)"""
     from . import bendnl
@@ -619,7 +628,8 @@ def _resonance_terms_cubic(lat, terms=DEFAULT_TERMS, method='analytic', nslice=8
 # v2.4.0 F1: ROTATE した偏向磁石 (・四極) = 結合した光学・垂直分散。ampnf の 4×4 固有モードの正規形で通す
 # ---------------------------------------------------------------------------------------------
 def rolled_elements(lat):
-    """ロール角 (ROTATE + ROTATION) があり、傾きが効く BEND・QUAD (BEND は ANGLE・K1・K0 のどれか≠0、QUAD は K1≠0) の名前のリスト。
+    """Return the names of rolled BEND and QUAD elements (ROTATE + ROTATION) whose tilt matters, which produce coupled optics.
+    ロール角 (ROTATE + ROTATION) があり、傾きが効く BEND・QUAD (BEND は ANGLE・K1・K0 のどれか≠0、QUAD は K1≠0) の名前のリスト。
     結合した光学を作る素子 (resdrive の解析式は結合なしの前提)。ANGLE = K1 = K0 = 0 の BEND (傾けたステアリングの空の磁石など) は数えない"""
     out = []
     for el in getattr(lat, 'elements', []):
@@ -636,7 +646,8 @@ def rolled_elements(lat):
 
 
 def unrolled_lattice(lat):
-    """BEND・QUAD のロール角を 0 にした新しい Lattice (元は変えない)"""
+    """Return a new Lattice with the roll angles of BEND and QUAD set to 0, leaving the original unchanged.
+    BEND・QUAD のロール角を 0 にした新しい Lattice (元は変えない)"""
     import dataclasses
     from .lattice import Lattice
     out = []
@@ -737,7 +748,8 @@ ORDER2_DEFAULT = True
 
 def resonance_terms(lat, terms=DEFAULT_TERMS, method='analytic', nslice=8, delta=0.0, ref=None, rows=None,
                     bend_cubic=None, bend_nslice=None, momentum_eV=3e9, order2=None, rdt4_options=None, coupled=None):
-    """共鳴駆動項 h_jklmp。3 次 (j+k+l+m = 3) と δ の項 (p ≥ 1) は 6 極の 1 次 (+ 偏向磁石の 3 次の項、R4)。
+    """Compute resonance driving terms h_jklmp: sextupole (plus bend) terms to third order, `rdt2nd.rdt4` for fourth order.
+    共鳴駆動項 h_jklmp。3 次 (j+k+l+m = 3) と δ の項 (p ≥ 1) は 6 極の 1 次 (+ 偏向磁石の 3 次の項、R4)。
     **v2.3.0 R5: j+k+l+m = 4 (p=0) の名前 ('h22000'、'h31000'…) は 4 次の項 (写像の 4 次の生成関数の係数: 8 極 1 次 + 運動学 + 端のフリンジ + 偏向磁石の 4 次の項 + 3 次 (6 極・偏向磁石) の 2 次、
     `rdt2nd.rdt4`、docs/25 §10)**。order2=True (既定) で 3 次の 2 次 (Magnus の第 2 項) を入れる、False で 4 次のハミルトニアンの 1 次だけ。
     4 次の項は ref=None・δ=0 のリング先頭が位相の基準。rdt4_options: rdt4 への追加のオプション (dict)。戻り: RDTResult
@@ -844,7 +856,8 @@ class ADTSResult:
 
     @property
     def total(self):
-        """6 極 2 次 + 8 極 1 次 + 運動学的な項 + 端部のフリンジ + (v2.3.0 R3、bend_cubic=True の既定) 偏向磁石の 3 次どうし + 6 極との交差項
+        """Return the total ADTS {'xx','xy','yy'} with sextupole, octupole, kinematic, fringe and bend cubic terms.
+        6 極 2 次 + 8 極 1 次 + 運動学的な項 + 端部のフリンジ + (v2.3.0 R3、bend_cubic=True の既定) 偏向磁石の 3 次どうし + 6 極との交差項
         (追跡の ADTS に対応する全部入りの値): {'xx','xy','yy'}"""
         b4 = getattr(self, 'bend4', None) or {'xx': 0.0, 'xy': 0.0, 'yy': 0.0}
         rt = getattr(self, 'rotate', None) or {'xx': 0.0, 'xy': 0.0, 'yy': 0.0}
@@ -912,7 +925,8 @@ FOURTH_DEFAULT = 'r3'
 
 
 def bend_cubic_adts(elements, rows, nl3, a_sext, igt_sext, qx, qy, nslice=BEND_NSLICE_DEFAULT, momentum=3e9, warnings=None, delta=0.0, orbit_policy='auto'):
-    """偏向磁石の 3 次の項 (R3): K64 の追跡の写像から取り出した偏向磁石のリー生成関数 (`bendnl.py`) を、6 極 (nl3 の厚い・薄い要素。解析式) と s の順に並べて、
+    """Compute the ADTS from the bend third-order terms (R3), paired with the sextupoles as a second-order perturbation; return a dict.
+    偏向磁石の 3 次の項 (R3): K64 の追跡の写像から取り出した偏向磁石のリー生成関数 (`bendnl.py`) を、6 極 (nl3 の厚い・薄い要素。解析式) と s の順に並べて、
     2 次の摂動 (対の項) にかける。戻り dict: 'bend' (偏向磁石の 3 次の項どうしの対)、'cross' (6 極 × 偏向磁石)、'sext' (6 極だけ。adts の .sext と一致するはず)、
     'all' (全部)。各 {'xx','xy','yy'} [1/(m rad)]。nslice: 偏向磁石の本体の分割数 (誤差 ~ 1/nslice²)"""
     from . import bendnl
@@ -1035,7 +1049,8 @@ def _adts_rolled(lat, names, kw):
 
 def adts(lat, method='analytic', nslice=8, delta=0.0, include_octupole=True, rows=None, detail=False, include_kinematic=True,
          bend_cubic=None, bend_nslice=None, momentum_eV=3e9, fourth=None, optics=None, rolls=None):
-    """6 極の 2 次 + 8 極の 1 次の ADTS ∂νx/∂Jx、∂νx/∂Jy (= ∂νy/∂Jx)、∂νy/∂Jy。J はアクション (x = √(2Jβ) cos φ)。
+    """Compute the ADTS from second-order sextupole and first-order octupole terms; return an ADTSResult.
+    6 極の 2 次 + 8 極の 1 次の ADTS ∂νx/∂Jx、∂νx/∂Jy (= ∂νy/∂Jx)、∂νy/∂Jy。J はアクション (x = √(2Jβ) cos φ)。
     delta≠0 ならそのエネルギーでの Twiss・閉軌道の光学を使う (6 極の強さは 1/(1+δ) 倍、閉軌道のずれによる 8 極→6 極のフィードダウンは入れない)。
     戻り: ADTSResult (.sext・.octu の辞書 'xx','xy','yy'、.dnux_dJx など (6 極 + 8 極)、.per_element・.by_harmonic)。
     v2.3.0 R2: 追跡の全部入りの値に近づけるため、磁石の多極以外の 1 次の項を別に出す: .kin (運動学的な項 p⁴/8、kinematic_adts)、
@@ -1173,7 +1188,8 @@ def _slice_for_optics(el, l):
 
 
 def kinematic_adts(lat_or_elements, rows=None, nsub=8, warnings=None):
-    """運動学的な項 H4 = (px² + py²)²/8 (厳密なドリフトの展開 −√(1−p²) の 4 次) の 1 次の ADTS。px = x' = √(2J) Re[w' e^{iφ}]、|w'|² = γ = (1+α²)/β として
+    """Compute the ADTS from the first-order kinematic term H4 = (px^2 + py^2)^2/8; return a dict 'xx', 'xy', 'yy' in 1/(m rad).
+    運動学的な項 H4 = (px² + py²)²/8 (厳密なドリフトの展開 −√(1−p²) の 4 次) の 1 次の ADTS。px = x' = √(2J) Re[w' e^{iφ}]、|w'|² = γ = (1+α²)/β として
       ∂νx/∂Jx = (3/16π) ∮ γx² ds、∂νx/∂Jy = (1/8π) ∮ γx γy ds、∂νy/∂Jy = (3/16π) ∮ γy² ds。
     γ(s) は素子の内部を線形の転送行列で伝播する (四極・偏向磁石は nsub 区間の Simpson 則、ドリフト・6 極・8 極は γ 一定)。
     戻り dict 'xx'、'xy'、'yy' [1/(m rad)]。偏向磁石の曲率の項 (h x p²/2) と端部の非線形は入っていない"""
@@ -1230,7 +1246,8 @@ def kinematic_adts(lat_or_elements, rows=None, nsub=8, warnings=None):
 
 
 def quad_fringe_adts(elements, rows, warnings=None):
-    """四極磁石と、K1≠0 の偏向磁石 (複合機能) の端部 (K64 の ttfrin4: Lee-Whiting の非線形のフリンジ、SAD の既定は ON = DISFRIN=0) の 1 次の ADTS。
+    """Compute the first-order ADTS from the nonlinear fringe at quadrupole and K1 bend edges (K64 ttfrin4, default ON).
+    四極磁石と、K1≠0 の偏向磁石 (複合機能) の端部 (K64 の ttfrin4: Lee-Whiting の非線形のフリンジ、SAD の既定は ON = DISFRIN=0) の 1 次の ADTS。
     端部は H_f = σ (K1/12)[(x³ + 3xy²) px − (y³ + 3x²y) py] δ(s − s_edge) の時間 1 の流れ (σ = +1 入口、−1 出口。K1 は符号つきの勾配 [1/m²]。
     pysad の ttfrin4_1 の写像の 3 次の項と一致)。平均すると
       ⟨H_f⟩ = σ (K1/12)[−(3/2) αx βx Jx² + (3/2) αy βy Jy² + 3 (αy βx − αx βy) Jx Jy]
@@ -1267,7 +1284,8 @@ def quad_fringe_adts(elements, rows, warnings=None):
 # クロマティシティ
 # ---------------------------------------------------------------------------------------------
 def chromaticity_sextupole(lat, method='analytic', nslice=8, rows=None):
-    """6 極の 1 次のクロマティシティ ξx = h11001/π、ξy = h00111/π (= (1/4π)Σ K2L η β。η は分散、1 次の分散だけ)。戻り (ξx, ξy)"""
+    """Return the first-order sextupole chromaticity (xi_x, xi_y) = (h11001/pi, h00111/pi).
+    6 極の 1 次のクロマティシティ ξx = h11001/π、ξy = h00111/π (= (1/4π)Σ K2L η β。η は分散、1 次の分散だけ)。戻り (ξx, ξy)"""
     r = resonance_terms(lat, ('h11001', 'h00111'), method=method, nslice=nslice, rows=rows, bend_cubic=False)
     return r.total['h11001'].real / math.pi, r.total['h00111'].real / math.pi
 
@@ -1296,7 +1314,8 @@ def _beta_integrals(el, row, nsub=8):
 
 
 def chromaticity_natural(lat, rows=None, nsub=8):
-    """自然クロマティシティの解析式 (v2.3.0 R4): 四極・K1 つきの偏向磁石・MULT の K1 と偏向磁石の弱収束 h² と端の収束 (角度 E1・E2 [rad]、h tan E)
+    """Return the analytic natural chromaticity (xi_x, xi_y) from K1, bend weak focusing and edge focusing.
+    自然クロマティシティの解析式 (v2.3.0 R4): 四極・K1 つきの偏向磁石・MULT の K1 と偏向磁石の弱収束 h² と端の収束 (角度 E1・E2 [rad]、h tan E)
       ξx = −(1/4π) [∮ (K1 + h²) βx ds − Σ_端 h tan E βx]、  ξy = +(1/4π) [∮ K1 βy ds − Σ_端 h tan E βy]。
     (δ に対する 1/(1+δ) の依存は K1 と端の収束、h² は δ に依らない。**偏向磁石の 3 次の項を分散の軌道のずれで展開した分** (`chromaticity_bend`、h11001/π など)
     を足すと、CALC の δ 依存の 1 次 (6 極なし) と一致する)。K0≠0 の偏向磁石は飛ばす (v2.4.0 A2: `chromaticity_bend` の全体の値が自然な項を含むので二重に数えない)。入っていない: ROTATE した素子・F1/F2・FRINGE の指定・ソレノイド。戻り (ξx, ξy)"""
@@ -1333,13 +1352,15 @@ def chromaticity_natural(lat, rows=None, nsub=8):
 
 
 def chromaticity_bend(lat, rows=None, nslice=None, momentum_eV=3e9):
-    """偏向磁石の 3 次の項 (曲率・硬い端・複合機能の本体・E1/E2) の、分散による軌道のずれの寄与 (h11001/π、h00111/π の偏向磁石の分。追跡の写像から取り出す)。戻り (ξx, ξy)"""
+    """Compute the dispersion-orbit-shift contribution of bend third-order terms to chromaticity; return (xi_x, xi_y).
+    偏向磁石の 3 次の項 (曲率・硬い端・複合機能の本体・E1/E2) の、分散による軌道のずれの寄与 (h11001/π、h00111/π の偏向磁石の分。追跡の写像から取り出す)。戻り (ξx, ξy)"""
     r = resonance_terms(lat, ('h11001', 'h00111'), rows=rows, bend_cubic=True, bend_nslice=nslice, momentum_eV=momentum_eV)
     return r.total_bend['h11001'].real / math.pi, r.total_bend['h00111'].real / math.pi
 
 
 def chromaticity_numeric(lat, order=3, dmax=2e-3, ncheck=True):
-    """CALC (4 次元の閉軌道 + 光学) の δ 依存から ∂^n ν/∂δ^n (n = 1..order) を数値微分で求める。δ = ±dmax·(Chebyshev 節点) の
+    """Compute the derivatives of the tunes with respect to delta by numerical differentiation of CALC with a polynomial fit.
+    CALC (4 次元の閉軌道 + 光学) の δ 依存から ∂^n ν/∂δ^n (n = 1..order) を数値微分で求める。δ = ±dmax·(Chebyshev 節点) の
     (2·order+1) 点を多項式でフィット。戻り dict: {'nu0': (νx,νy), 'd1': (..), 'd2': (..), ..., 'dmax': dmax}
     (チューンは小数部の連続値、閉軌道が見つからない δ では例外)。微分は ∂^n ν/∂δ^n (テイラー係数ではなく n! 倍した値)"""
     npts = 2 * order + 3
@@ -1362,7 +1383,8 @@ def chromaticity_numeric(lat, order=3, dmax=2e-3, ncheck=True):
 # 追跡による基準値
 # ---------------------------------------------------------------------------------------------
 def tracking_tunes(elements, momentum_eV, twiss0, jx, jy, nturn=1024, phix=0.0, phiy=0.0, delta=0.0, tracker=None):
-    """アクション (jx, jy) の粒子を nturn 周追跡 (放射・RF なし) して NAFF で (νx, νy) (符号つき、端数) を返す。
+    """Track a particle of given actions (jx, jy) for nturn turns without RF or radiation and return the tunes (nux, nuy) by NAFF.
+    アクション (jx, jy) の粒子を nturn 周追跡 (放射・RF なし) して NAFF で (νx, νy) (符号つき、端数) を返す。
     twiss0 = ((αx, βx), (αy, βy)) はリング先頭 (追跡の始点) の Twiss。位相 (phix, phiy) は x = √(2Jβ) cos φ、px = −√(2J/β)(sin φ + α cos φ)"""
     from .track6n import track_particles_fast
     from . import naff
@@ -1391,7 +1413,8 @@ def tracking_tunes(elements, momentum_eV, twiss0, jx, jy, nturn=1024, phix=0.0, 
 
 
 def adts_tracking(elements, momentum_eV, twiss0, jref=(1e-8, 1e-8), nturn=1024, delta=0.0, tracker=None):
-    """追跡の NAFF のチューンから ADTS を求める (小振幅の極限)。基準点 (b, b)、b = s·jref (s = 1, 2) のまわりで、
+    """Compute the ADTS from NAFF tunes of tracking in the small-amplitude limit, by central differences of 8 particles.
+    追跡の NAFF のチューンから ADTS を求める (小振幅の極限)。基準点 (b, b)、b = s·jref (s = 1, 2) のまわりで、
     Jx を b ± b/2 (Jy は b)、Jy を b ± b/2 (Jx は b) と動かした 8 粒子の中心差分 f(s) = ∂ν/∂J |_(b,b) = q + c·s を作り、
     q = 2 f(1) − f(2) (J の 1 次の補正を消す)。どちらの振幅も同程度にするのは、片方を極小にすると 6 極の強制振動 (2νy など) が
     もう一方の面の NAFF のピークを乱すため。戻り: dict 'xx' = ∂νx/∂Jx、'xy' = ∂νx/∂Jy、'yx' = ∂νy/∂Jx、'yy' = ∂νy/∂Jy
@@ -1416,7 +1439,8 @@ def adts_tracking(elements, momentum_eV, twiss0, jref=(1e-8, 1e-8), nturn=1024, 
 # 薄レンズ列への分割 (検証用)
 # ---------------------------------------------------------------------------------------------
 def slice_thin(lat, n, names=None):
-    """厚い SEXT (と K2≠0 の厚い MULT) を n 個の薄い MULT (KnL[2] = K2L/n) とドリフトの列に置き換えた新しい Lattice (元は変えない)。
+    """Return a new Lattice with thick SEXT (and thick MULT with K2 != 0) replaced by n thin MULT and drifts.
+    厚い SEXT (と K2≠0 の厚い MULT) を n 個の薄い MULT (KnL[2] = K2L/n) とドリフトの列に置き換えた新しい Lattice (元は変えない)。
     線形光学は元と同じ (SEXT の内部は線形ではドリフト)。K1≠0 の厚い MULT は未対応 (例外)。n 個の薄レンズは等分した各区間の中央"""
     from .elements import Drift, Multipole
     from .lattice import Lattice
@@ -1442,7 +1466,8 @@ def slice_thin(lat, n, names=None):
 # SAD の台本から: FFS の関数
 # ---------------------------------------------------------------------------------------------
 def ffs_momentum(ffs):
-    """FFS の運動量 [eV] (偏向磁石の写像を取り出す追跡に渡すだけ。4 次元・δ=0 の写像は運動量によらない)"""
+    """Return the FFS momentum [eV], passed only to the tracking that extracts bend maps (the 4-D, delta = 0 map does not depend on it).
+    FFS の運動量 [eV] (偏向磁石の写像を取り出す追跡に渡すだけ。4 次元・δ=0 の写像は運動量によらない)"""
     for k in ('_momentum_eV', 'momentum', 'p0'):
         v = getattr(ffs, k, None)
         if isinstance(v, (int, float)) and v > 0:
@@ -1451,7 +1476,8 @@ def ffs_momentum(ffs):
 
 
 def install(ffs):
-    """FFS の組み込み関数: ResonanceDrivingTerms[opts]、AmplitudeTuneShift[opts]、ChromaticityTerms[opts]"""
+    """Install the FFS built-in functions `ResonanceDrivingTerms[opts]`, `AmplitudeTuneShift[opts]` and `ChromaticityTerms[opts]`.
+    FFS の組み込み関数: ResonanceDrivingTerms[opts]、AmplitudeTuneShift[opts]、ChromaticityTerms[opts]"""
     from .sadscript import Rule, Sym, is_num
     from .sadscript import SADError
     B = ffs.I.builtins

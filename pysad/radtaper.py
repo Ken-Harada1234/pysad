@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""RADTAPER (radtaper of tcod.f, tturne.f, tturn.f in K64): scale magnet strengths with the local closed-orbit momentum.
 RADTAPER (K64 の tcod.f・tturne.f・tturn.f の radtaper): 放射で運動量が周の途中で変わる (エネルギーの鋸歯) のに合わせて、
 磁石の強さを閉軌道の局所の運動量に比例させる。フラグ RAD・RADCOD・RADTAPER・RFSW がすべて ON のとき Emittance[]・EMIT と
 TrackParticles に効く。
@@ -35,7 +35,8 @@ def _clip(t):
 
 
 def scaled(el, t):
-    """要素 el の磁場を t 倍にした写し (掛ける対象でなければ el そのもの)"""
+    """Return element `el` with its field scaled by t, or `el` itself if it is not a scaled type.
+    要素 el の磁場を t 倍にした写し (掛ける対象でなければ el そのもの)"""
     if t == 1.0 or hasattr(el, '_solmap'):
         return el
     tn = type(el).__name__
@@ -70,7 +71,8 @@ def scaled(el, t):
 
 
 def factors(els, ddp, u, tracking=False):
-    """係数 t_l (要素ごと)。ddp[l] は要素 l (0 始まり) の入口の δ − δ(入口)、ddp[len(els)] は出口"""
+    """Compute the per-element scale factors t_l; ddp[l] is the entry delta offset of element l and ddp[len(els)] the exit.
+    係数 t_l (要素ごと)。ddp[l] は要素 l (0 始まり) の入口の δ − δ(入口)、ddp[len(els)] は出口"""
     out = []
     for l, el in enumerate(els):
         a, b = ddp[l], ddp[l + 1]
@@ -102,7 +104,8 @@ def _profile(els, cod, ph, trf0):
 
 
 def solve(els, momentum_eV, dp0=0.0, fshift=0.0, charge=1.0, amass=None, tol=1e-10, maxit=30):
-    """戻り値 dict(ddp=δ_l (入口ごと + 出口。δ_1 = dp0)、u、dptaper、els=Emittance 用の要素の列、found、iterations)"""
+    """Solve the RADTAPER closed orbit and return a dict (ddp, u, dptaper, els for Emittance, found, iterations).
+    戻り値 dict(ddp=δ_l (入口ごと + 出口。δ_1 = dp0)、u、dptaper、els=Emittance 用の要素の列、found、iterations)"""
     from . import emit6d as _e
     kw = {} if amass is None else {'amass': amass}
     ph = _e._Phys(momentum_eV, _e._emit_circ(els), charge=charge, **kw)

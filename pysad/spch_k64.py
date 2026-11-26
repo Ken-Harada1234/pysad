@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""spch_k64.py — PSPAC (K64 の tspch_.c tpspac + spch.c + psn.c) の k64 モードの直訳 (形状関数まで K64 のまま)。
+"""Direct k64-mode translation of PSPAC space charge (tpspac in K64 tspch_.c, spch.c, psn.c), including the K64 shape function.
+spch_k64.py — PSPAC (K64 の tspch_.c tpspac + spch.c + psn.c) の k64 モードの直訳 (形状関数まで K64 のまま)。
 
 v2 の PSPAC (`spch.Solver2D`・`kick2d`) は K64 と同じ物理モデル (横 2 次元のポアソン方程式 × 縦の線密度) を、別の形状関数
 (2 次の B スプライン) と正しい係数で書き直したもの。粗いメッシュ (横の rms が数セル以下、縦が数セル以下) では gs (K64) と値が違う。
@@ -60,7 +61,8 @@ _WT = np.array([
 
 
 def splined(x, y, yp1=0.0, ypn=0.0):
-    """spch.c の splined (Numerical Recipes の spline。端の 1 階微分が yp1・ypn (0 なら傾き 0 の 3 次スプライン)。n = len(x))"""
+    """Cubic spline coefficients as in `splined` of spch.c (Numerical Recipes spline with end first derivatives yp1, ypn).
+    spch.c の splined (Numerical Recipes の spline。端の 1 階微分が yp1・ypn (0 なら傾き 0 の 3 次スプライン)。n = len(x))"""
     n = len(x)
     y2 = np.zeros(n)
     u = np.zeros(n)
@@ -87,7 +89,8 @@ def splined(x, y, yp1=0.0, ypn=0.0):
 
 
 class K64Pspac:
-    """K64 の PSPAC (tpspac_)。SpaceCharge._kick2d から呼ぶ。1 回の TrackParticles に 1 つ"""
+    """K64 PSPAC space-charge solver (tpspac_), called from `SpaceCharge._kick2d`; one instance per TrackParticles run.
+    K64 の PSPAC (tpspac_)。SpaceCharge._kick2d から呼ぶ。1 回の TrackParticles に 1 つ"""
 
     def __init__(self, nx, ny, nz, dx, dy, dz, rnp, amass, nturnend=1, nturncalc=0, warn=None):
         nx, ny, nz = max(1, int(nx)), max(1, int(ny)), max(1, int(nz))
@@ -122,7 +125,8 @@ class K64Pspac:
 
     # ---- 1 回の呼び出し (tpspac_)
     def kick(self, S, n, al, ph):
-        """S の先頭 n 個にキック (長さ al)。戻り: n。SpaceCharge の 1 回の SPCH 要素 (または区間の終わり) ごとに 1 回呼ぶ"""
+        """Apply the space-charge kick of length al to the first n particles of S; returns n.
+        S の先頭 n 個にキック (長さ al)。戻り: n。SpaceCharge の 1 回の SPCH 要素 (または区間の終わり) ごとに 1 回呼ぶ"""
         if self.kcoeff is None:                              # SpaceChargeBPSet(rnp, Mass, h0): 最初の呼び出しの h0
             r0 = R_E * M_E / self.mass
             beta = math.sqrt(1.0 - 1.0 / ph.h0 / ph.h0)
@@ -156,7 +160,8 @@ class K64Pspac:
         return n
 
     def end_of_turn(self):
-        """tpspac_ の「nlat == nlatend」: isp を 0 に戻し、ターンを進める"""
+        """Reset isp to 0 and advance the turn, as in the nlat == nlatend branch of tpspac_.
+        tpspac_ の「nlat == nlatend」: isp を 0 に戻し、ターンを進める"""
         self.ispend = self.isp
         self.isp = 0
         self.nturn += 1

@@ -1,4 +1,4 @@
-"""
+"""Per-element 6D/4D tracking kernels (numba) combining the Python pieces of `emit6d.tturne` and `lattice._el_cod_step`.
 elkern.py — 要素ごとの 6D/4D 追跡カーネル (numba) (2026-11-05, docs/history/work_perf2.md)
 
 emit6d.tturne (6D: 放射・dv 項・D/B 行列) と lattice._el_cod_step (4D の CALC: 放射なし・dv なし・z 行の組み直しなし) の
@@ -44,7 +44,8 @@ U0, H1EMIT, DVEMIT = range(3)
 
 
 def phys_array(ph):
-    """emit6d._Phys → PH 配列"""
+    """Convert emit6d._Phys to the PH array.
+    emit6d._Phys → PH 配列"""
     from . import compat as _cmp
     return np.array([ph.p0, ph.h0, ph.anrad, ph.cuc, ph.crad, ph.brhoz, ph.emidiv, ph.emidib, ph.emidiq,
                      ph.dvfs, ph.pgev, -1.0 if _cmp.v2() else 1.0, 1.0 if _cmp.v2() else 0.0, float(_qb.scheme())], dtype=float)
@@ -578,7 +579,8 @@ def _tchge_simple(c, T, D, B, dx0, dy, th, ent, want_jac, want_db, symp_fix, v2=
 
 @njit(**NJ)
 def k_drift(cod, T, D, B, S, PH, L, use_dv, symp_fix, want_jac, want_db):
-    """tdrife0。戻り 0: 成功、1: 解析ヤコビアン不可 (Python に戻す)"""
+    """Kernel of tdrife0 (drift); returns 0 on success, 1 if the analytic Jacobian is unavailable (fall back to Python).
+    tdrife0。戻り 0: 成功、1: 解析ヤコビアン不可 (Python に戻す)"""
     if L == 0.0:
         return 0
     if want_jac:
@@ -679,7 +681,8 @@ def _fringe_step(c, ak, al, n, want_jac):
 
 @njit(**NJ)
 def k_thin(cod, T, D, B, S, PH, L, ak, kord, dx, dy, th, use_dv, symp_fix, want_jac, want_db, v2=False, fringe=False):
-    """tthine (emit6d._tthine_gen): tchge(入口) → [フリンジ] → ドリフト/キック + dv → [フリンジ] → tchge(出口)。状態の複製で計算し成功時だけ書き戻す。
+    """Kernel of tthine (`emit6d._tthine_gen`): tchge, optional fringe, drift/kick with dv terms, tchge; writes back on success.
+    tthine (emit6d._tthine_gen): tchge(入口) → [フリンジ] → ドリフト/キック + dv → [フリンジ] → tchge(出口)。状態の複製で計算し成功時だけ書き戻す。
     fringe=True (v2 の L≠0 の 6 極以上。追跡の ttfrin と同じ非線形フリンジをヤコビアンと COD の写像に入れる。K64 の tthine は入れない): n = kord + 1"""
     c = cod.copy()
     Tl = T.copy()
@@ -1692,7 +1695,8 @@ def _wrapj(Jc, Rin, Rout, plain):
 @njit(**NJ)
 def k_quad(cod, T, D, B, codr0, transr, S, PH, L, K1, dx, dy, th, fringe, f1in, f2in, f1out, f2out, mfring,
            krad, use_dv, symp_fix, want_jac, want_db, radcod):
-    """emit6d._tquade (L≠0, K1≠0)。戻り 0: 成功、1: Python に戻す"""
+    """Kernel of `emit6d._tquade` (L nonzero, K1 nonzero); returns 0 on success, 1 to fall back to Python.
+    emit6d._tquade (L≠0, K1≠0)。戻り 0: 成功、1: Python に戻す"""
     c = cod.copy()
     Tl = T.copy()
     Dl = D.copy()
@@ -1962,7 +1966,8 @@ def _bend_core(c, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2, enar
 def k_bend(cod, T, D, B, codr0, transr, S, PH, al0, phi0, k0, k1, e1, e2,
            has_chg, dx, dy, dz, th, dth, alg, phig,
            enarad, use_dv, symp_fix, want_jac, want_db, radcod, edgefix=False, klin=0):
-    """emit6d._tbende: (has_chg なら tchge 入口) → _bend_core → (tchge 出口)。状態の複製で計算し成功時だけ書き戻す。
+    """Kernel of `emit6d._tbende`: tchge entrance, `_bend_core`, tchge exit; writes back only on success.
+    emit6d._tbende: (has_chg なら tchge 入口) → _bend_core → (tchge 出口)。状態の複製で計算し成功時だけ書き戻す。
     edgefix = compat.v2(): 端の角の放射の行路 (JX1) と tchge の入口の回転行列 (B09) を直した動作にする。
     klin = compat.bend_ecorr_flags(): bit0 = K1≠0 の本体の K1 の定義を B' 一様にする (v2 のオプション、B160)、bit1 = B161 の dk の修正 (v2)。
     戻り 0: 成功、それ以外: Python に戻す"""

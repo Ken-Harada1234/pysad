@@ -1,4 +1,4 @@
-"""
+"""SADScript list and expression functions, behaving as a literal translation of SAD's Mathematica-compatible implementation.
 sadlist.py — SADScript のリスト・式操作関数 (SAD の Mathematica 互換実装を直訳した挙動)
 
 sadscript.Interp._install_builtins の最後で install(interp) が呼ばれ、同名の既存関数を上書きする。
@@ -142,7 +142,8 @@ def _chars_key(s):
 
 
 def ckey(x):
-    """SAD の標準順序: 数 < 文字列 < シンボル < 複合式 < リスト (リストは長さ優先)"""
+    """Return the SAD standard ordering key: numbers < strings < symbols < compound expressions < lists (lists by length first).
+    SAD の標準順序: 数 < 文字列 < シンボル < 複合式 < リスト (リストは長さ優先)"""
     if is_num(x):
         if isinstance(x, complex):
             return (0, x.real, x.imag)

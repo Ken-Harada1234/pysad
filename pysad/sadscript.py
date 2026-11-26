@@ -1,4 +1,4 @@
-"""
+"""Interpreter of SADScript (the Mathematica-like language of SAD): lexer, parser and evaluator for scripts in the FFS section.
 sadscript.py — SADScript (SAD の Mathematica 風言語) のインタプリタ
 
 SAD の FFS 区間 (FFS; 以降) のスクリプトを実行するための字句解析・構文解析・評価器。
@@ -71,7 +71,8 @@ Null = _Null()
 
 
 class Expr:
-    """未評価の式 head[args]"""
+    """Unevaluated expression head[args].
+    未評価の式 head[args]"""
     __slots__ = ('head', 'args')
 
     def __init__(self, head, args):
@@ -107,7 +108,8 @@ class Rule:
 
 
 class Func:
-    """純関数 (body&) または Function[{x..}, body]"""
+    """Pure function (body&) or Function[{x..}, body].
+    純関数 (body&) または Function[{x..}, body]"""
     __slots__ = ('params', 'body', 'env')
 
     def __init__(self, params, body, env=None):
@@ -120,7 +122,8 @@ class Func:
 
 
 class Seq:
-    """x__ / x___ に束縛された引数列"""
+    """Holds the argument sequence bound to x__ or x___.
+    x__ / x___ に束縛された引数列"""
     __slots__ = ('items',)
 
     def __init__(self, items):
@@ -255,7 +258,8 @@ class Tok:
 
 
 def strip_comments(src: str) -> str:
-    """! から行末、(* ... *) を除く (文字列の中は除かない)。改行は残す"""
+    """Remove comments from ! to end of line and (* ... *), except inside strings, keeping newlines.
+    ! から行末、(* ... *) を除く (文字列の中は除かない)。改行は残す"""
     out = []
     i, n = 0, len(src)
     while i < n:
@@ -505,7 +509,8 @@ class Parser:
 
     # ---- 文の列 (トップレベル / ファイル)
     def parse_statements(self) -> List[Any]:
-        """トップレベル: 改行または ; で区切った文のリスト。各要素は AST か ('ffs', text)"""
+        """Parse top-level statements separated by newlines or semicolons into a list of ASTs or ('ffs', text).
+        トップレベル: 改行または ; で区切った文のリスト。各要素は AST か ('ffs', text)"""
         stmts = []
         while True:
             self.skip_nl()
@@ -527,7 +532,8 @@ class Parser:
 
     # ---- 式
     def parse_expr(self, rbp=9999):
-        """優先度 rbp より強く結合する式を読む (値が小さいほど強い)"""
+        """Parse an expression binding tighter than priority rbp (a smaller value binds tighter).
+        優先度 rbp より強く結合する式を読む (値が小さいほど強い)"""
         if self.depth > 0:
             self.skip_nl()
         left = self.parse_prefix()
@@ -781,7 +787,8 @@ class Parser:
         raise SADError(f'line {t.line}: unexpected token {t.val!r}')
 
     def parse_compound(self, close):
-        """( e1; e2; ... ) — ; 区切り。改行も区切りになる"""
+        """Parse a compound expression ( e1; e2; ... ) separated by semicolons or newlines.
+        ( e1; e2; ... ) — ; 区切り。改行も区切りになる"""
         exprs = []
         while True:
             self.skip_nl()
@@ -812,7 +819,8 @@ class Parser:
         return Expr(_SY_CompoundExpression, exprs)
 
     def parse_symbol(self, name):
-        """シンボル。x_, x__, x___, x_Real, _Real などのパターンも"""
+        """Parse a symbol, including patterns such as x_, x__, x___, x_Real and _Real.
+        シンボル。x_, x__, x___, x_Real, _Real などのパターンも"""
         # 名前の中の '_' はトークナイザで分けていない: SYMCH に '_' を含めないので x_ は sym 'x' + op? '_' は OPS にない
         return S(name)
 
@@ -831,7 +839,8 @@ _PAT = re.compile(r'^([A-Za-z$`][A-Za-z0-9$`]*)?(_{1,3})([A-Za-z$`][A-Za-z0-9$`]
 
 
 def tokenize_full(src: str) -> List[Tok]:
-    """'_' をシンボル文字として読み、パターン語を分解する"""
+    """Tokenize fully, reading '_' as a symbol character and splitting pattern words.
+    '_' をシンボル文字として読み、パターン語を分解する"""
     global _SYMCH
     saved = _SYMCH
     _SYMCH = re.compile(r'[A-Za-z$`_][A-Za-z0-9$`_]*')
@@ -1013,7 +1022,8 @@ def _roundnumstr(s: str, icol: int):
 
 
 def fmt_real(x: float, form: str = '') -> str:
-    """SAD の autofg(x, form)。form: '15.10' / 'S15.10' / '' (= 最短表現)"""
+    """Format a real number like SAD autofg(x, form), with form such as '15.10', 'S15.10' or '' (shortest representation).
+    SAD の autofg(x, form)。form: '15.10' / 'S15.10' / '' (= 最短表現)"""
     if form == '' or form == 'S' or form.strip() == '':      # K64: $FORM=" " は既定と同じ (最短表現。fm1.sad で確認)
         return _autos(x)
     if form[0] in 'FG':
@@ -1142,7 +1152,8 @@ def fmt_real(x: float, form: str = '') -> str:
 
 
 def fmt_g(x: float, w: int = 11, d: int = 4) -> str:
-    """Fortran の 1PGw.d (SAD の tffsmatch の表示): 0.1 ≤ |x| < 10^d は F(w-4).(d-k) + 4 空白、他は 1PE 形式"""
+    """Format a number like Fortran 1PGw.d (the tffsmatch display of SAD).
+    Fortran の 1PGw.d (SAD の tffsmatch の表示): 0.1 ≤ |x| < 10^d は F(w-4).(d-k) + 4 空白、他は 1PE 形式"""
     ax = abs(x)
     if x == 0.0:
         return ('0.' + '0' * (d - 1)).rjust(w - 4) + ' ' * 4
@@ -1507,7 +1518,8 @@ class Interp:
 
     # ------------------------------------------------------------------ 実行
     def run(self, src: str, mode: str = 'ffs'):
-        """mode 'ffs': 文の先頭語が FFS コマンドなら ffs_handler へ。'script': SADScript のみ"""
+        """Run the source: in mode 'ffs' pass statements starting with an FFS command to ffs_handler; in mode 'script' run SADScript only.
+        mode 'ffs': 文の先頭語が FFS コマンドなら ffs_handler へ。'script': SADScript のみ"""
         result = Null
         global _CUR
         cur_saved = _CUR
@@ -1727,7 +1739,8 @@ class Interp:
         return k
 
     def split_statements(self, src: str):
-        """ソースを文 (文字列) に分ける: 括弧の外の ; と改行で区切る。演算子で終わる行は次の行に続く"""
+        """Split source into statements at semicolons and newlines outside brackets; a line ending in an operator continues on the next line.
+        ソースを文 (文字列) に分ける: 括弧の外の ; と改行で区切る。演算子で終わる行は次の行に続く"""
         src = strip_comments(src)
         out = []
         semis = self._last_semis = []          # 各文が ; で終わっていたか (最上位の Out[n]:= 表示の判定)
@@ -2003,7 +2016,8 @@ class Interp:
         self.load_package(path)
 
     def load_package(self, path):
-        """SAD のパッケージ (.n) を SADScript として 1 文ずつ評価する。文のエラーは (SAD と同じく) 表示して次の文へ進む。
+        """Load a SAD package (.n) as SADScript, evaluating statement by statement and printing errors before continuing as SAD does.
+        SAD のパッケージ (.n) を SADScript として 1 文ずつ評価する。文のエラーは (SAD と同じく) 表示して次の文へ進む。
         環境変数 PYSAD_TRACE があれば、エラーになった文の先頭を stderr に出す (パッケージを動かすための調査用)"""
         if not os.path.exists(path):
             return
@@ -2939,7 +2953,8 @@ class Interp:
         return t
 
     def wrap(self, s: str) -> str:
-        """PageWidth で折り返す (SAD は ', ' の後で改行し、続きの行は 1 空白から)"""
+        """Wrap output at PageWidth (SAD breaks after ', ' and continues lines with one space).
+        PageWidth で折り返す (SAD は ', ' の後で改行し、続きの行は 1 空白から)"""
         try:
             pw = int(self.get('PageWidth', 131.0))
         except Exception:
@@ -5236,7 +5251,8 @@ def _eval2(self, node):
 Interp.eval = _eval2
 Interp._expr_reeval = True
 class RuleList(list):
-    """downvalues の規則の並び。先頭の引数がリテラル (実数・文字列・記号) の規則を、その値で引く索引を持つ (f[k] = v の記憶が何百・何千と並ぶとき、
+    """Holds the list of downvalue rules, with an index by literal first argument to avoid linear scans.
+    downvalues の規則の並び。先頭の引数がリテラル (実数・文字列・記号) の規則を、その値で引く索引を持つ (f[k] = v の記憶が何百・何千と並ぶとき、
     線形に走査しない)。並びを変える操作のたびに版を進めて索引を作り直すので、索引が古いまま使われることはない。普通の list の代わりに使える"""
     __slots__ = ('ver', 'ixver', 'bucket', 'wild', 'cand', 'hint')
 
@@ -5272,7 +5288,8 @@ class RuleList(list):
     del _mut
 
     def candidates(self, a0):
-        """第 1 引数が a0 (実数・文字列・記号) のとき合う可能性のある規則 (元の順)。先頭がリテラルで a0 と違う規則は含まない"""
+        """Return the rules that may match when the first argument is a0 (real, string or symbol), in original order.
+        第 1 引数が a0 (実数・文字列・記号) のとき合う可能性のある規則 (元の順)。先頭がリテラルで a0 と違う規則は含まない"""
         if self.ixver != self.ver:
             bucket = {}
             wild = []
@@ -5602,5 +5619,6 @@ def _symb(name, a, b):
 # ----------------------------------------------------------------------------
 # パターン照合で Expr の args に _Lit が混ざった場合のための表示
 def expr_to_source(v) -> str:
-    """デバッグ用"""
+    """Convert an expression to source text, for debugging.
+    デバッグ用"""
     return repr(v)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.3.0 R5: 追跡の 1 周の多項式の写像から、数値の正規形で ADTS を取り出す (実装の範囲: J の 1 次 = ∂ν/∂J まで。3 次の写像 = f3・f4)。
+"""Extract ADTS by numerical normal form from the one-turn polynomial tracking map (to first order in J).
+v2.3.0 R5: 追跡の 1 周の多項式の写像から、数値の正規形で ADTS を取り出す (実装の範囲: J の 1 次 = ∂ν/∂J まで。3 次の写像 = f3・f4)。
 
 写像 (正規化座標、リング先頭) M = R e^{−:h3 + h4:}。追跡の 1 周の写像の 2 次・3 次のテイラー展開 (rdttrack.ring_map3) から f3 の係数 h3 (rdttrack.rdt_from_map)・
 f4 の係数 h4 (rdttrack.rdt4_from_map、Dragt-Finn) を数値で取り出し、
@@ -15,7 +16,8 @@ from . import rdt2nd as Q
 
 
 def adts_from_map(rm):
-    """ring_map3 の結果 rm から数値の正規形の ADTS {'xx','xy','yy'} [1/(m rad)] と、使った h3 (MONOS3 の順 20 成分)・h4 の対角 (dict)。
+    """Return the ADTS {'xx','xy','yy'} [1/(m rad)] by numerical normal form from a `ring_map3` result, with the h3 and h4 terms used.
+    ring_map3 の結果 rm から数値の正規形の ADTS {'xx','xy','yy'} [1/(m rad)] と、使った h3 (MONOS3 の順 20 成分)・h4 の対角 (dict)。
     rm.R の位相進み (チューン) は R の固有値から求める"""
     h3d = T.rdt_from_map(rm)
     h3 = np.array([h3d['h%d%d%d%d0' % q] for q in Q.MONOS3])
@@ -31,7 +33,8 @@ def adts_from_map(rm):
 
 
 def adts_at_delta(lat, momentum_eV, delta, amp3=1e-4, amp=1e-5):
-    """v2.3.0 R6: δ のエネルギーの ADTS を、追跡の光学 (rdttrack.tracked_rows) と δ の閉軌道のまわりの 1 周の写像 (ring_map3(delta=δ)) の数値の正規形で求める
+    """Compute ADTS at energy offset delta from tracked optics and the one-turn map about the delta closed orbit.
+    v2.3.0 R6: δ のエネルギーの ADTS を、追跡の光学 (rdttrack.tracked_rows) と δ の閉軌道のまわりの 1 周の写像 (ring_map3(delta=δ)) の数値の正規形で求める
     (解析式を使わない。直接の追跡 + NAFF と 1e-4 以内: ASTRID2・FODO の δ = ±0.002)。amp3: 3 次のテイラー展開の振幅 (大きなリングは 1e-5)。戻り ({'xx','xy','yy'}, info)"""
     base = lat.twiss_table(delta=delta)
     rows = T.tracked_rows(lat.elements, momentum_eV, delta, base)
@@ -40,7 +43,8 @@ def adts_at_delta(lat, momentum_eV, delta, amp3=1e-4, amp=1e-5):
 
 
 def adts_delta_derivative(lat, momentum_eV=3e9, delta0=2e-3, method='analytic', **kw):
-    """v2.3.0 R6: ∂(∂ν/∂J)/∂δ (δ = 0) の中心差分 (δ = ±delta0)。method: 'analytic' = `resdrive.adts(delta=±delta0)` (解析式。偏向磁石・四極・ドリフトの δ の閉軌道のまわりの項。光学は既定で CALC、`optics='tracked'` を渡すと追跡の光学)、
+    """Compute the central-difference derivative of ADTS with respect to delta at delta = 0, by 'analytic' or 'nform' method.
+    v2.3.0 R6: ∂(∂ν/∂J)/∂δ (δ = 0) の中心差分 (δ = ±delta0)。method: 'analytic' = `resdrive.adts(delta=±delta0)` (解析式。偏向磁石・四極・ドリフトの δ の閉軌道のまわりの項。光学は既定で CALC、`optics='tracked'` を渡すと追跡の光学)、
     'nform' = 追跡の写像の数値の正規形 (`adts_at_delta`)。戻り {'xx','xy','yy'} [1/(m rad)]。差分の誤差は O(delta0²) (δ の 3 次の項)"""
     from . import resdrive as R
     out = {}

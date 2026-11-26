@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.4.1: ampnf の限界を広げる拡張 (5・6 次の共鳴の駆動項の表・1 本の共鳴の島)。`ampnf.py` の正規形の枠組みの延長。解説は docs/25 §15。
+"""Extension of `ampnf` for tables of fifth- and sixth-order resonance driving terms and for the island of a single resonance.
+v2.4.1: ampnf の限界を広げる拡張 (5・6 次の共鳴の駆動項の表・1 本の共鳴の島)。`ampnf.py` の正規形の枠組みの延長。解説は docs/25 §15。
 
 【J² と 5・6 次の駆動項】 J² (∂²ν/∂J²) は `ampnf.amplitude_tune` の D ≥ 5 で既に入る (`r.adts2`、`r.d2nu(plane)`、`r.nu(..., jorder=)`)。J³ は D ≥ 7、J^k は D ≥ 2k+1。
   5・6 次の共鳴 (nν = 整数、n = 5・6) の駆動項は、1 周の写像の次数 n−1 の単項式 ζ̄^(n−1) の係数 (D ≥ n−1)。Birkhoff の正規形で、その共鳴の単項式を消さずに残すと
@@ -23,18 +24,21 @@ from . import ampnf as A
 
 
 def resonance_keep(plane, alpha):
-    """plane (0 = x、1 = y) の方程式の単項式 alpha = (a, b, c, d) (ζx^a ζ̄x^b ζy^c ζ̄y^d) とその複素共役の方程式の単項式の集合 (normal_form の keep)"""
+    """Return the set of monomials (and their complex conjugates) to keep in the normal form for a resonance of a given plane.
+    plane (0 = x、1 = y) の方程式の単項式 alpha = (a, b, c, d) (ζx^a ζ̄x^b ζy^c ζ̄y^d) とその複素共役の方程式の単項式の集合 (normal_form の keep)"""
     a, b, c, d = alpha
     return {(2 * plane, (a, b, c, d, 0)), (2 * plane + 1, (b, a, d, c, 0))}
 
 
 def pure_alpha(n, plane=0):
-    """純粋な n 次の共鳴 (n ν_plane = 整数) の単項式: ζ̄^(n−1) (方程式 ζ' = λζ + r ζ̄^(n−1))"""
+    """Return the monomial of a pure n-th order resonance (n nu = integer), zeta-bar to the power n-1.
+    純粋な n 次の共鳴 (n ν_plane = 整数) の単項式: ζ̄^(n−1) (方程式 ζ' = λζ + r ζ̄^(n−1))"""
     return (0, n - 1, 0, 0) if plane == 0 else (0, 0, 0, n - 1)
 
 
 def resonance_normal_form(res, plane, alpha):
-    """res (`ampnf.one_turn_series`) の正規形を、共鳴の単項式 alpha だけ残して作る。戻り nf (`ampnf.normal_form` と同じ。nf['keep_index'] = (i, m))"""
+    """Build the normal form of the one-turn series keeping only the monomial of a given resonance.
+    res (`ampnf.one_turn_series`) の正規形を、共鳴の単項式 alpha だけ残して作る。戻り nf (`ampnf.normal_form` と同じ。nf['keep_index'] = (i, m))"""
     nf = A.normal_form(res, keep=resonance_keep(plane, alpha))
     tab = res['tab']
     nf['keep_index'] = (2 * plane, tab.idx[tuple(alpha) + (0,)])
@@ -42,7 +46,8 @@ def resonance_normal_form(res, plane, alpha):
 
 
 def drive_table(res, orders=(3, 4, 5, 6), planes=(0, 1)):
-    """純粋な n 次の共鳴 (n ν_plane = 整数) の駆動項の係数の表 (3〜6 次。5・6 次は D ≥ 5・6 が要る: n 次の共鳴の単項式は次数 n−1、H の n 次)。
+    """Compute a table of driving-term coefficients of pure resonances of orders 3 to 6 (n nu = integer) from a single normal form.
+    純粋な n 次の共鳴 (n ν_plane = 整数) の駆動項の係数の表 (3〜6 次。5・6 次は D ≥ 5・6 が要る: n 次の共鳴の単項式は次数 n−1、H の n 次)。
     全部の共鳴の単項式を同時に残した 1 回の正規形で作る (残した項どうしの交差は、次数 n1 + n2 − 1 以上の変換に入るので最低次の係数 r には効かない)。
     戻り dict {(plane, n): dict(r (複素)、abs (|r|、ζ̃ の規格化、s = res['s'])、dist (共鳴の分母 |λ^α − λ| = |e^{i(n−1)... } − e^{iμ}|)、nu_dist (n ν − 最寄りの整数))}。
     |r| は線形のチューンでの 1 周の写像の係数 (対称性で禁止された共鳴は 0 に近い)"""
@@ -88,7 +93,8 @@ def _dnu(r_nu, jx, jy, jorder=None):
 
 
 def island_theory(r_nu, nf, plane, alpha, jother=0.0, solve_for=None, jmax=1e-3, jorder=None):
-    """1 本の共鳴の島 (包絡の理論)。r_nu = AmpTuneResult (ν の級数と res)、nf = resonance_normal_form の正規形、plane・alpha = 共鳴の単項式。
+    """Compute the island of a single resonance (envelope theory): fixed-point actions, half-widths, and driving-term amplitude.
+    1 本の共鳴の島 (包絡の理論)。r_nu = AmpTuneResult (ν の級数と res)、nf = resonance_normal_form の正規形、plane・alpha = 共鳴の単項式。
     jother: 共鳴の面でない方 (または固定する方) の作用。solve_for: 固定点の作用を解く面 (既定: k が 0 でない面。k の成分が両方 0 でなければ指定する)。
     戻り dict: k (共鳴のベクトル)、p (整数)、Jr = (Jx, Jy) 固定点の作用、r (駆動項の係数)、A (Hamiltonian の共鳴項の振幅 [rad])、M、
     half_J = k の方向の島の半幅 (ΔJx, ΔJy)、Jlo・Jhi = (固定点の作用 ∓ 半幅) の共鳴の面の値、nu_lock = 島の中で固定される ν の幅"""
@@ -196,7 +202,8 @@ def _jac(f, z, n, h=1e-7):
 
 
 def action_nf(r_nu, Z, plane=0):
-    """面内の座標 Z (m×2) の正規形の作用 (その面だけ、他の面は 0)。`ampnf.nf_action` の T の逆を m 点まとめて"""
+    """Compute the normal-form action of in-plane coordinates Z (m x 2), with the other plane set to 0, for m points at once.
+    面内の座標 Z (m×2) の正規形の作用 (その面だけ、他の面は 0)。`ampnf.nf_action` の T の逆を m 点まとめて"""
     res, nf = r_nu.res, r_nu.nf
     tab, s, sd = res['tab'], res['s'], res['sd']
     Ainv = res['Ainv']
@@ -224,7 +231,8 @@ def action_nf(r_nu, Z, plane=0):
 
 
 def track_island(lat, r_nu, n, plane=0, momentum_eV=3e9, jr=None, nturn_sep=40, nth=8, eps=3e-6, nturn_max=3000):
-    """追跡で島を測る。周期 n の固定点 (n 周の写像の不動点) を、理論の J_r のまわりの位相の格子から Newton 法で探し、n 周の写像のヤコビ行列の跡で O (|tr| < 2)・X (> 2) に分け、
+    """Measure a resonance island by tracking: find period-n fixed points by Newton's method and compute the range of separatrix actions.
+    追跡で島を測る。周期 n の固定点 (n 周の写像の不動点) を、理論の J_r のまわりの位相の格子から Newton 法で探し、n 周の写像のヤコビ行列の跡で O (|tr| < 2)・X (> 2) に分け、
     X から不安定多様体の方向に eps ずらして nturn_sep 周期 (n × nturn_sep 周) 追跡した点の正規形の作用の範囲 (分離線の J の最大・最小) を返す。
     戻り dict: O・X (各 (座標, 作用, 跡))、sep・Jmin・Jmax (分離線の作用の範囲)。nturn_sep は周期数の下限 (X の不安定な固有値から必要な周期数を見積もり、nturn_max まで増やす)"""
     f = _plane_map(lat, momentum_eV, plane)

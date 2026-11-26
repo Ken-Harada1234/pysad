@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""PHSROT element (phase-space rotation by six-dimensional Twiss, K64 phsrot.f); works only in v2 because it fails in K64.
 PHSROT 要素 (6 次元 Twiss による位相空間の回転、K64 の phsrot.f、K. Ohmi 1994)。v2 だけで動く。
 
 K64 では動作しない (docs/30 B38): phsinit の行列がどんな入力でも 0 になり粒子の座標が 0 になる。位相 PX PY PZ は名前表に
@@ -37,7 +37,8 @@ def _g(p, k, d=0.0):
 
 
 def matrices(params, rad=False, fluc=False):
-    """戻り値: dict(N, Ninv, rot, M0, M, dJ, G)。M0: シンプレクティック、M: 減衰つき (rad のとき)、dJ = M - M0、
+    """Return a dict of matrices (N, Ninv, rot, M0, M, dJ, G) for PHSROT: symplectic M0, damped M, and the diffusion square root G.
+    戻り値: dict(N, Ninv, rot, M0, M, dJ, G)。M0: シンプレクティック、M: 減衰つき (rad のとき)、dJ = M - M0、
     G: 拡散の平方根 (6×6、x ← x + G ξ。fluc でないとき None)"""
     p = params
     bx = _g(p, 'BX')
@@ -82,7 +83,8 @@ def matrices(params, rad=False, fluc=False):
 
 
 def compile_phsrot(el):
-    """追跡用: (M0 と減衰つき M、拡散 G) を rad・fluc の組ごとに作っておく"""
+    """Precompute the symplectic M0, damped M, and diffusion G for tracking, for each combination of rad and fluc.
+    追跡用: (M0 と減衰つき M、拡散 G) を rad・fluc の組ごとに作っておく"""
     from . import compat
     if not compat.v2():
         raise NotImplementedError('track6n: PHSROT は K64 では行列 (PtoN など) がすべて 0 になり、粒子の座標が 0 になる (docs/30 B38)。写さない')
@@ -94,7 +96,8 @@ def compile_phsrot(el):
 
 @njit(**NJ)
 def k_phsrot(S, n, M0, Md, G, hasg, rad, fluc, rs, p0, h0):
-    """S[:, (x, px/(1+δ), y, py/(1+δ), z, δ, dv, ..)]。乱数は SAD の正規乱数 (Box-Muller、粒子ごとに 6 個 = 3 組)"""
+    """Track particles through PHSROT using the matrices, with SAD normal random numbers (Box-Muller) for diffusion.
+    S[:, (x, px/(1+δ), y, py/(1+δ), z, δ, dv, ..)]。乱数は SAD の正規乱数 (Box-Muller、粒子ごとに 6 個 = 3 組)"""
     M = Md if rad else M0
     v = np.empty(6)
     xi = np.empty(6)
@@ -129,7 +132,8 @@ def k_phsrot(S, n, M0, Md, G, hasg, rad, fluc, rs, p0, h0):
 
 # ---------------------------------------------------------------------------- 光学・エミッタンス
 def annotate(els, momentum_eV):
-    """v2: PHSROT に el._solmap = (K_PHSROT, params, momentum) と transfer_matrix を付ける (CALC の Twiss は M0、
+    """Attach `_solmap` and a transfer matrix to PHSROT in v2 (M0 for `CALC`, `emit()` for `Emittance[]`); not in k64 mode.
+    v2: PHSROT に el._solmap = (K_PHSROT, params, momentum) と transfer_matrix を付ける (CALC の Twiss は M0、
     Emittance[] は emit())。k64 モードでは付けない (恒等のまま)"""
     from . import compat
     for el in els:
@@ -149,13 +153,15 @@ def annotate(els, momentum_eV):
 
 
 def step(el, cod):
-    """solmap.step から: (行列, 出口 COD)。CALC (4 次元の光学) はシンプレクティックな M0"""
+    """Return (matrix, exit COD) from solmap.step; `CALC` (4D optics) uses the symplectic M0.
+    solmap.step から: (行列, 出口 COD)。CALC (4 次元の光学) はシンプレクティックな M0"""
     M0 = matrices(el.params)['M0']
     return M0.copy(), M0 @ np.asarray(cod, dtype=float)
 
 
 def emit(st, params):
-    """Emittance[]・EMIT: T ← M0 T、放射ありなら D ← M0 D + dJ (T + D)、B ← M0 B M0ᵀ + G Gᵀ (emit6d._State の約束: 全体の行列は T + D)"""
+    """Update the emittance state for `Emittance[]` and `EMIT`: T, D, and B propagate with M0, damping dJ, and diffusion G.
+    Emittance[]・EMIT: T ← M0 T、放射ありなら D ← M0 D + dJ (T + D)、B ← M0 B M0ᵀ + G Gᵀ (emit6d._State の約束: 全体の行列は T + D)"""
     rad = bool(getattr(st, 'radiation', True))
     m = matrices(params, rad=rad, fluc=rad)
     M0, dJ = m['M0'], m['dJ']

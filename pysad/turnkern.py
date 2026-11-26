@@ -1,4 +1,5 @@
-"""turnkern.py — 4D 閉軌道 (CALC: SAD qtwiss1 mat=.true.) の 1 周を numba 1 回の呼び出しで回す。
+"""Numba kernel that runs one turn of the 4D closed orbit (`CALC`, SAD qtwiss1 mat=.true.) in a single call.
+turnkern.py — 4D 閉軌道 (CALC: SAD qtwiss1 mat=.true.) の 1 周を numba 1 回の呼び出しで回す。
 
 lattice._one_turn_cod_matrix が要素ごとのパラメータを配列に詰めて (lattice._TurnPack) `turn4` を呼ぶ。
 要素ごとの処理は lattice._el_cod_step と同じ (DRIFT の式、薄い多極 = elkern.k_thin、QUAD = elkern._quad_full、
@@ -70,7 +71,8 @@ def _drift_at_cod(L, delta, pxi, pyi, M, cod, move):
 
 @njit(**NJ)
 def turn4(i0, kind, has_off, P, Mlin, Klin, T0, hasT0, cod, Mtot, mats, cods, delta, PH, S3, v2=False, klin=0):
-    """要素 i0 から最後まで回す。戻り (i, why): i == n なら完了。why=1: 要素 i の T0 (設計軌道の線形行列) が要る、
+    """Run elements from i0 to the end; returns (i, why), where i == n means done and why says what the caller must handle.
+    要素 i0 から最後まで回す。戻り (i, why): i == n なら完了。why=1: 要素 i の T0 (設計軌道の線形行列) が要る、
     why=2: 要素 i は Python で処理してから i+1 で再開。cod・Mtot は in-place、mats[i]・cods[i] (入口 cod) を埋める"""
     n = kind.shape[0]
     Z66 = np.zeros((6, 6))

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""spch.py — 空間電荷の追跡 (v2 で新しく実装。K64 の spkick.f / tspch_.c + spch.c の物理を、正しい係数で書き直したもの)。
+"""Space-charge tracking newly written for v2: SPAC (3D), PSPAC (2D Poisson mesh) and WSPAC (Gaussian beam-matrix) kicks.
+spch.py — 空間電荷の追跡 (v2 で新しく実装。K64 の spkick.f / tspch_.c + spch.c の物理を、正しい係数で書き直したもの)。
 
 K64 には空間電荷のモデルが 3 つある (詳細と K64 の誤りは docs/history/v2_changes_C_spch.md)。
 
@@ -230,7 +231,8 @@ def _image(Qh, k, X, Y, R):
 
 # ============================================================================ 3 次元 (SPAC)
 class Field3D:
-    """メッシュの上の静止系の電位 φ' (単位: マクロ粒子の個数/長さ) と、その補間"""
+    """Holds the rest-frame potential phi' on the mesh and its interpolation.
+    メッシュの上の静止系の電位 φ' (単位: マクロ粒子の個数/長さ) と、その補間"""
 
     def __init__(self, phi, xc, yc, hx, hy, hz, nzb):
         self.phi = phi                       # (nx, ny, Nz)
@@ -245,7 +247,8 @@ class Field3D:
         return ux, uy, uz
 
     def grad(self, x, y, zeta, selfsub=False):
-        """(φ', ∂φ'/∂x, ∂φ'/∂y, ∂φ'/∂ζ) を粒子の位置で (メッシュの外の粒子は端の値)。
+        """Return (phi', dphi'/dx, dphi'/dy, dphi'/dzeta) at particle positions; selfsub=True removes the self-force of the macro-particles.
+        (φ', ∂φ'/∂x, ∂φ'/∂y, ∂φ'/∂ζ) を粒子の位置で (メッシュの外の粒子は端の値)。
         selfsub=True: この電位を作ったマクロ粒子自身に使うとき。粒子が自分で作った電位の分 (メッシュに対する位置で決まる
         見かけの自己力) を引く。残りは「他の粒子との対のエネルギーの勾配」で、ハミルトン系のまま"""
         ux, uy, uz = self.coords(x, y, zeta)
@@ -314,7 +317,8 @@ def _deposit3(ux, uy, uz, nx, ny, nz):
 
 
 class Solver3D:
-    """SPAC のソルバー。nx, ny: 横のノード数 (偶数)、nz: バンチの中の ζ のノード数 (偶数)。None なら粒子数から決める"""
+    """Solver for SPAC; nx, ny are even transverse node counts and nz is the even number of zeta nodes (None: from particle count).
+    SPAC のソルバー。nx, ny: 横のノード数 (偶数)、nz: バンチの中の ζ のノード数 (偶数)。None なら粒子数から決める"""
 
     def __init__(self, nx=None, ny=None, nz=None, warn=None):
         self.nx, self.ny, self.nz = nx, ny, nz
@@ -334,7 +338,8 @@ class Solver3D:
         return nx, nx, nz
 
     def solve(self, x, y, zeta, R):
-        """マクロ粒子 (x, y, ζ: 静止系の縦の位置) の電位。R: 円筒の壁の半径 (>0)。戻り: Field3D"""
+        """Solve the potential of macro-particles (x, y, zeta) in a cylinder of wall radius R; return Field3D.
+        マクロ粒子 (x, y, ζ: 静止系の縦の位置) の電位。R: 円筒の壁の半径 (>0)。戻り: Field3D"""
         n = x.size
         ax, ay, az = self.auto_mesh(n)
         nx = int(self.nx or ax)
@@ -390,7 +395,8 @@ _DIF2 = np.abs(_OFF2[:, None, :] - _OFF2[None, :, :])
 
 
 class Field2D:
-    """Φ(x,y) (全マクロ粒子の −2 ln d の和に当たる 2 次元の電位、矩形の境界で 0) と線密度 λ(z) (個数/m、実験室系)"""
+    """Holds the 2D potential Phi(x, y) (zero at the rectangular boundary) and the line density lambda(z) in the lab frame.
+    Φ(x,y) (全マクロ粒子の −2 ln d の和に当たる 2 次元の電位、矩形の境界で 0) と線密度 λ(z) (個数/m、実験室系)"""
 
     def __init__(self, phi, dx, dy, lam, z0, dz, nxy):
         self.phi, self.dx, self.dy = phi, dx, dy        # phi: (nx+1, ny+1)。ノード i は x = (i − nx/2) dx
@@ -398,7 +404,8 @@ class Field2D:
         self.lam, self.z0, self.dz = lam, z0, dz        # lam: (nzn,)。ノード k は z = z0 + k dz
 
     def eval(self, x, y, z, selfsub=False):
-        """(Φ, ∂Φ/∂x, ∂Φ/∂y, λ, dλ/dz, 中にあるか)。selfsub=True: Φ を作った粒子自身に使うとき、自分の作った Φ の分を引く"""
+        """Evaluate (Phi, dPhi/dx, dPhi/dy, lambda, dlambda/dz, inside flag); selfsub=True removes the self contribution.
+        (Φ, ∂Φ/∂x, ∂Φ/∂y, λ, dλ/dz, 中にあるか)。selfsub=True: Φ を作った粒子自身に使うとき、自分の作った Φ の分を引く"""
         nx = self.phi.shape[0] - 1
         ny = self.phi.shape[1] - 1
         ux = x / self.dx + nx // 2
@@ -443,7 +450,8 @@ class Field2D:
 
 
 class Solver2D:
-    """PSPAC のソルバー (K64 の spch.c と同じモデル)。nx, ny: セル数 (ノードは nx+1)、dx, dy: 幅。境界 (ノード 0 と nx) で Φ=0。
+    """Solver for PSPAC with the same model as spch.c in K64; nx, ny are cell counts, dx, dy widths, and Phi = 0 on the boundary.
+    PSPAC のソルバー (K64 の spch.c と同じモデル)。nx, ny: セル数 (ノードは nx+1)、dx, dy: 幅。境界 (ノード 0 と nx) で Φ=0。
     nz, dz: 縦のメッシュ (K64: 中心 0、ノード k は z = (k − nz/2) dz)。nz<4 なら、バンチに合わせて自動で 64 ノードを張る"""
 
     def __init__(self, nx=128, ny=128, nz=1, dx=1e-3, dy=1e-3, dz=1e-3, warn=None):
@@ -480,7 +488,8 @@ class Solver2D:
                 self.warn(msg)
 
     def check_resolution(self, x, y, z):
-        """メッシュに対してバンチが粗いと、キックが小さく出る (K64 の gs との差もここから: docs/history/v2next_A1.md 項目 8)。
+        """Check the mesh resolution against the bunch size, since a coarse mesh underestimates the kick (a source of the gs difference).
+        メッシュに対してバンチが粗いと、キックが小さく出る (K64 の gs との差もここから: docs/history/v2next_A1.md 項目 8)。
         一様な円のビームで、半径 a が 1 セル (DX) で −13%、2 セルで −3%、4 セルで −1%、10 セルで −0.6%。縦のメッシュを与えたとき
         (PSPACNZ≥4) は、一様なバンチの長さ lb が 4 セル (DZ) で −12%、10 セルで −4%、20 セルで −2%"""
         sx, sy = float(np.std(x)), float(np.std(y))
@@ -563,7 +572,8 @@ def _apply(S, n, dpx, dpy, dgam, p0, h0):
 
 
 def bunch_frame(S, n, p0):
-    """バンチの平均の β0、γ0 と、粒子の静止系の縦の位置 ζ = γ0 β0 z/β_i (z/β_i = −c t)"""
+    """Return the bunch mean beta0 and gamma0 and each particle's rest-frame longitudinal position zeta = gamma0 beta0 z/beta_i.
+    バンチの平均の β0、γ0 と、粒子の静止系の縦の位置 ζ = γ0 β0 z/β_i (z/β_i = −c t)"""
     dl = S[:n, 5]
     pm = p0 * (1.0 + float(dl.mean()))
     g0 = math.sqrt(1.0 + pm * pm)
@@ -574,14 +584,16 @@ def bunch_frame(S, n, p0):
 
 
 def kick3d(S, n, field, al, rcw, p0, h0, b0, g0, zeta, selfsub=True):
-    """SPAC のキック。rcw = r_c·(PBUNCH/NP0)、al: 長さ [m]。selfsub: S の粒子が field を作った粒子そのもののとき True"""
+    """Apply the SPAC kick with rcw = r_c (PBUNCH/NP0) and length al [m]; selfsub is True when S is the same set that made the field.
+    SPAC のキック。rcw = r_c·(PBUNCH/NP0)、al: 長さ [m]。selfsub: S の粒子が field を作った粒子そのもののとき True"""
     _, gx, gy, gz = field.grad(S[:n, 0], S[:n, 2], zeta, selfsub=selfsub)
     c = rcw * al / (b0 * g0) ** 2
     _apply(S, n, -c * gx, -c * gy, -rcw * al * gz, p0, h0)
 
 
 def kick2d(S, n, field, al, rcw, p0, h0, b0, g0, selfsub=True):
-    """PSPAC のキック。静止系の電位 φ' = (λ(z)/γ0)·Φ(x,y)/N (N = Φ に載せたマクロ粒子の数) に当たる:
+    """Apply the PSPAC kick corresponding to the rest-frame potential phi' = (lambda(z)/gamma0) Phi(x, y)/N.
+    PSPAC のキック。静止系の電位 φ' = (λ(z)/γ0)·Φ(x,y)/N (N = Φ に載せたマクロ粒子の数) に当たる:
     Δ(px/p0) = −r_c w L/(β²γ³)·λ ∂Φ/∂x / N、Δγ = −r_c w L/γ²·(dλ/dz) Φ / N"""
     dl = S[:n, 5]
     p = p0 * (1.0 + dl)
@@ -603,7 +615,8 @@ def _ein(u):
 
 
 def gauss_field(x, y, sx, sy):
-    """2 次元のガウス分布 (σx = sx、σy = sy、単位の線密度) の場 (Fx, Fy) = ∇U。遠方で 2 (x, y)/r²、中心で
+    """Return the field (Fx, Fy) = grad U of a 2D Gaussian with unit line density by the Bassetti-Erskine formula.
+    2 次元のガウス分布 (σx = sx、σy = sy、単位の線密度) の場 (Fx, Fy) = ∇U。遠方で 2 (x, y)/r²、中心で
     Fx = 2x/(σx(σx+σy))。Bassetti-Erskine の式 (複素誤差関数 w)。円 (|σx−σy| ≤ 1e-6 σx) は 2 (1 − e^(−r²/2σ²))/r²"""
     if sx < sy:
         fy, fx = gauss_field(y, x, sy, sx)
@@ -626,7 +639,8 @@ _GAUSS64 = np.polynomial.legendre.leggauss(64)
 
 
 def gauss_potential(x, y, sx, sy):
-    """U(x, y) = φ(0,0) − φ(x,y) ≥ 0 (∇U = gauss_field)。
+    """Return the potential U(x, y) = phi(0,0) - phi(x,y) >= 0 (grad U = gauss_field) by Gauss-Legendre integration.
+    U(x, y) = φ(0,0) − φ(x,y) ≥ 0 (∇U = gauss_field)。
     U = ∫_0^∞ [1 − exp(−x²/(2σx²+t) − y²/(2σy²+t))] / sqrt((2σx²+t)(2σy²+t)) dt。
     s = sqrt((2σy²+t)/(2σx²+t)) と置くと U = ∫_r^1 2 (1 − e^(−E))/(1 − s²) ds、E = (x² + y²/s²)(1 − s²)/(2(σx²−σy²))、r = σy/σx。
     さらに 1 − s = (1 − r) e^(−q) と置き、q を Gauss-Legendre (64 点) で積分する (q > Q の残りは 1 次の式)。円は Ein(r²/2σ²)"""
@@ -656,7 +670,8 @@ def gauss_potential(x, y, sx, sy):
 
 
 class WSpace:
-    """WSPAC (tintrb.f twspac)。mats: 要素 1..nlat の入口のビーム行列 (6×6、(x, px, y, py, z, δ))、cod: (nlat, 6) の閉軌道。
+    """Gaussian beam-matrix space-charge (WSPAC, twspac of tintrb.f); rwall sets the reference of the longitudinal-force potential.
+    WSPAC (tintrb.f twspac)。mats: 要素 1..nlat の入口のビーム行列 (6×6、(x, px, y, py, z, δ))、cod: (nlat, 6) の閉軌道。
     rcn = r_c·PBUNCH。rwall: 縦の力の電位の基準 (真空ダクトの半径。0 なら K64 と同じ基準: 軸上で ln((1 + r)/2)、r = σ2/σ1)"""
 
     def __init__(self, mats, cod, rcn, selfcod=False, rwall=0.0):
@@ -694,14 +709,16 @@ class WSpace:
             self.sigz2[i] = zz
 
     def linear_k(self, l, al, p0):
-        """中心の線形のレンズの強さ (twspace と同じ): Δpx = kx·x1、Δpy = ky·y1 (主軸の座標)"""
+        """Return the central linear lens strengths kx, ky (as in twspace), with dpx = kx x1 and dpy = ky y1 in principal-axis coordinates.
+        中心の線形のレンズの強さ (twspace と同じ): Δpx = kx·x1、Δpy = ky·y1 (主軸の座標)"""
         cd = self.cod[l]
         p1 = p0 * (1.0 + cd[5])
         f = 2.0 * self.rcn * al / (p1 * p1 * _p2h(p1) * (self.sig1[l] + self.sig2[l]) * math.sqrt(2.0 * math.pi * self.sigz2[l]))
         return f / self.sig1[l], f / self.sig2[l]
 
     def kick(self, S, n, l, al, p0, h0):
-        """要素 l (0 始まり) の入口のビーム行列で、長さ al の分のキック"""
+        """Compute the kick of length al using the beam matrix at the entrance of element l (0-based).
+        要素 l (0 始まり) の入口のビーム行列で、長さ al の分のキック"""
         if al == 0.0 or n <= 0 or self.rcn == 0.0:
             return
         cd = self.cod[l]
@@ -741,7 +758,8 @@ K_SOL_DRIFT = 12
 
 
 class SpaceCharge:
-    """track6n.turn が呼ぶ。els: 追跡する要素の列 (全体)、types: 要素ごとの SAD の型名 ('DRIFT', 'SPCH', …)"""
+    """Space-charge object called by track6n.turn; els is the full element list and types the SAD type name of each element.
+    track6n.turn が呼ぶ。els: 追跡する要素の列 (全体)、types: 要素ごとの SAD の型名 ('DRIFT', 'SPCH', …)"""
 
     def __init__(self, els, types, pbunch, np0, charge=1.0, amass=ELMASS, spac=False, pspac=False, conf=None, warn=None,
                  wspace=None, k64=False):
@@ -806,7 +824,8 @@ class SpaceCharge:
             self._turn0 = apert[2]
 
     def wkick(self, S, n, l, ph):
-        """WSPAC: 要素 l の入口で、前の要素の中点 (区間の始め) からこの要素の中点までの長さの分のキック (tturn.f:270-278)"""
+        """Apply the WSPAC kick at the entrance of element l, from the previous element midpoint to this element midpoint.
+        WSPAC: 要素 l の入口で、前の要素の中点 (区間の始め) からこの要素の中点までの長さの分のキック (tturn.f:270-278)"""
         s = 0.5 * (self.pos[l] + self.pos[l + 1])
         if s != self.s_wlast:
             self.wspace.kick(S, n, l, s - self.s_wlast, ph.p0, ph.h0)
@@ -927,7 +946,8 @@ class SpaceCharge:
         return n
 
     def end(self, S, n, l_end, ph, apert):
-        """区間の終わり: PSPAC は最後の SPCH から終点までの分のキック、WSPAC は最後の要素の中点から終点までの分"""
+        """At the section end, apply the PSPAC kick from the last SPCH, or the WSPAC kick from the last element midpoint, to the endpoint.
+        区間の終わり: PSPAC は最後の SPCH から終点までの分のキック、WSPAC は最後の要素の中点から終点までの分"""
         if self.wspac and n > 0:
             s = self.pos[l_end]
             if s != self.s_wlast:
@@ -985,7 +1005,8 @@ class SpaceCharge:
 
 
 def element_radius(el):
-    """DRIFT の RADIUS (FFS で変えた属性 → 定義の値 の順)"""
+    """Return the RADIUS of a DRIFT, taking an attribute changed in FFS before the defined value.
+    DRIFT の RADIUS (FFS で変えた属性 → 定義の値 の順)"""
     v = getattr(el, 'RADIUS', None)
     if v is None:
         v = (getattr(el, '_raw', None) or {}).get('RADIUS', 0.0)
@@ -996,7 +1017,8 @@ def element_radius(el):
 
 
 def mult_unsupported(el):
-    """RADIUS≠0 の MULT に空間電荷を入れられない理由 (入れられるなら '')"""
+    """Return the reason why space charge cannot be applied to a MULT with RADIUS != 0, or '' if it can.
+    RADIUS≠0 の MULT に空間電荷を入れられない理由 (入れられるなら '')"""
     def g(k):
         try:
             return float(getattr(el, k, 0.0) or 0.0)
@@ -1010,7 +1032,8 @@ def mult_unsupported(el):
 
 
 def twiss_beam_matrix(r, emx, emy, sigz, sige):
-    """Twiss の行 r (ffscmd の row) とエミッタンスから、物理座標のビーム行列 (6×6)。tfbeam.f (ffscmd.beam_matrix_twiss) と同じ形:
+    """Build the 6x6 beam matrix in physical coordinates from a Twiss row and emittances, as in tfbeam.f.
+    Twiss の行 r (ffscmd の row) とエミッタンスから、物理座標のビーム行列 (6×6)。tfbeam.f (ffscmd.beam_matrix_twiss) と同じ形:
     ノーマルモードの (β, α, 分散) の行列を R1-R4 で物理座標に移す。x-z、y-z の相関は 0、Σzz = σz²"""
     ax, bx, ay, by = r.alfx, r.betx, r.alfy, r.bety
     ex, epx, ey, epy = r.etx, r.etpx, r.ety, r.etpy
@@ -1045,7 +1068,8 @@ def twiss_beam_matrix(r, emx, emy, sigz, sige):
 
 
 def make_wspace(ffs, tr, g):
-    """WSPAC の設定: ビーム行列 (WSPACBEAM = {εx, εy, σz, σδ} があれば Twiss から、無ければ Emittance の平衡のビーム行列) と閉軌道"""
+    """Set up WSPAC with a beam matrix (from WSPACBEAM or the Emittance equilibrium) and the closed orbit.
+    WSPAC の設定: ビーム行列 (WSPACBEAM = {εx, εy, σz, σδ} があれば Twiss から、無ければ Emittance の平衡のビーム行列) と閉軌道"""
     nlat = len(ffs.els) + 1
     wb = g.get('WSPACBEAM')
     rows = [ffs.row(k) for k in range(1, nlat + 1)]
@@ -1072,7 +1096,8 @@ def make_wspace(ffs, tr, g):
 
 
 def make(ffs, tr, npart):
-    """ffscmd の TrackParticles から: フラグ SPAC / PSPAC / WSPAC が ON なら SpaceCharge を作って返す (無ければ None)。v2 モードだけ"""
+    """Create a SpaceCharge from `TrackParticles` in ffscmd if flag SPAC, PSPAC or WSPAC is ON, else None (v2 mode only).
+    ffscmd の TrackParticles から: フラグ SPAC / PSPAC / WSPAC が ON なら SpaceCharge を作って返す (無ければ None)。v2 モードだけ"""
     spac = bool(ffs.flags.get('SPAC'))
     pspac = bool(ffs.flags.get('PSPAC'))
     wspac = bool(ffs.flags.get('WSPAC'))

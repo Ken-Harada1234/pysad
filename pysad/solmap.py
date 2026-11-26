@@ -1,4 +1,4 @@
-"""
+"""COD maps and matrices for SOL regions (CALC / INS Twiss), corresponding to tsole1 (tsole.f) in K64.
 SOL 領域 (BOUND≠0 の SOL から次の BOUND≠0 の SOL まで) の COD 写像と行列 (CALC / INS の Twiss)。K64 の tsole1 (tsole.f) 相当。
 
 領域内の要素の写像は追跡 (track6n_ext の K_SOL_FRIN / K_SOL_DRIFT / K_SOL_QUAD、K64 の tsol.f) と同じ座標 (ソレノイド内の
@@ -27,7 +27,8 @@ class _Collect:
 
 
 def annotate(els, momentum_eV):
-    """SOL 領域内の各要素に el._solmap = (kind, params) を付ける (領域外は消す)。領域がなければ False"""
+    """Attach el._solmap = (kind, params) to each element in a SOL region and clear it outside; return False if there is no region.
+    SOL 領域内の各要素に el._solmap = (kind, params) を付ける (領域外は消す)。領域がなければ False"""
     found = False
     for el in els:
         if hasattr(el, '_solmap') and type(el).__name__ not in ('Undulator', 'PhsRot'):   # UND・PHSROT は und.annotate / phsrot.annotate が管理
@@ -74,7 +75,8 @@ def _kick0(el, delta):
 
 
 def cod_map(kind, pr, momentum_eV=None, p0=None, trpt=False):
-    """(kind, params) → c (6) → c (6) の写像。
+    """Return the map (kind, params) -> c(6) -> c(6) for a SOL-region element, with an optional reference momentum p0 (TRPT).
+    (kind, params) → c (6) → c (6) の写像。
     C2 (TRPT の加速): p0 (この要素の入口の基準運動量、amass 単位) を与えると、bz を compile のときの運動量からその運動量に
     規格化し直す。trpt が真なら RF を入れ (領域内の CAVI・RF つき MULT の加速)、出口の座標は空洞の後の基準運動量で規格化"""
     ph = _e._Phys(momentum_eV or 1.0e9, 1.0)
@@ -94,7 +96,8 @@ def cod_map(kind, pr, momentum_eV=None, p0=None, trpt=False):
 
 
 def step(el, cod, p0=None, trpt=False):
-    """_el_cod_step 用: (M_el, 出口 COD)"""
+    """Return (M_el, exit COD) for use by _el_cod_step.
+    _el_cod_step 用: (M_el, 出口 COD)"""
     from . import lattice as _lat
     kind, pr, momentum_eV = el._solmap
     if p0 is not None or trpt:

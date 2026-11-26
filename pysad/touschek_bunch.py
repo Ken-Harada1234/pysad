@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 A3: Touschek の損失率に、バンチ内の δ の分布 (対の重心の δ_c) を入れる。v2.4.0 F2 (B200) から v2 の既定 (k64 は入れない。->False で切る)。
+"""Touschek loss rate including the in-bunch delta distribution of pair centers, the v2 default and off in k64.
+v2.4.0 A3: Touschek の損失率に、バンチ内の δ の分布 (対の重心の δ_c) を入れる。v2.4.0 F2 (B200) から v2 の既定 (k64 は入れない。->False で切る)。
 
 【原理】 ビームの静止系で 2 粒子の相対運動量はほぼ横方向 (縦は σδ/γ で小さい)。散乱後の 2 粒子の実験室系の δ は
   δ1' = δ_c + Δ、  δ2' = δ_c − Δ,   δ_c = (δ1 + δ2)/2,
@@ -43,7 +44,8 @@ def _slice_parts(sl):
 
 
 def slice_sigma_delta(sl):
-    """スライスの実験室系の σδ (lab 共分散の δδ 成分)"""
+    """Return the lab-frame sigma_delta of a slice (the delta-delta component of the lab covariance).
+    スライスの実験室系の σδ (lab 共分散の δδ 成分)"""
     lab = sl.get('lab')
     if lab is None:
         raise ValueError('スライスに lab 共分散が無い (touschek_table(record_rest=True) の結果が要る)')
@@ -51,7 +53,8 @@ def slice_sigma_delta(sl):
 
 
 def piwinski_slice_rate_bunch(sl, ap, am, circ, pbunch, sigd=None, floor=0.25, nq=13, npan=40, var_factor=0.5):
-    """touschek.piwinski_slice_rate にバンチ内の対の重心の δ_c ~ N(0, var_factor σδ²) (既定 var_factor = 0.5) の平均を入れた 1 スライスの損失率 [1/s]。
+    """Compute the one-slice loss rate [1/s], averaging `piwinski_slice_rate` over pair-center delta_c ~ N(0, var_factor sigma_delta^2).
+    touschek.piwinski_slice_rate にバンチ内の対の重心の δ_c ~ N(0, var_factor σδ²) (既定 var_factor = 0.5) の平均を入れた 1 スライスの損失率 [1/s]。
     sigd: σδ (省略するとスライスの lab 共分散から)、floor: a ∓ δ_old の下限 = floor × a、nq: Gauss-Hermite の点数、var_factor: δ_c の分散の倍率 (既定 0.5 = (δ1+δ2)/2 の分散。1 は診断用)。σδ = 0 なら piwinski_slice_rate と同じ"""
     p0, h0 = sl['p0'], sl['h0']
     beta, vol, l1, l2, a1, a2 = _slice_parts(sl)
@@ -73,7 +76,8 @@ def piwinski_slice_rate_bunch(sl, ap, am, circ, pbunch, sigd=None, floor=0.25, n
 
 
 def touschek_piwinski_bunch(result, a=None, ap=None, am=None, floor=0.25, nq=13, npan=40, sigd=None, var_factor=0.5, qs=False, qs_nsample=12, qs_nu=2048):
-    """touschek.touschek_piwinski のバンチ内の δ 分布つき版 (戻り値は同じ形 + 'increase' = (損失率 / δ_c=0 の損失率) − 1、'rate0' = δ_c=0 の損失率、'amin_over_sigma' = min(a/σδ))。
+    """Compute `touschek_piwinski` with the in-bunch delta distribution; adds increase, rate0 and amin_over_sigma to the result.
+    touschek.touschek_piwinski のバンチ内の δ 分布つき版 (戻り値は同じ形 + 'increase' = (損失率 / δ_c=0 の損失率) − 1、'rate0' = δ_c=0 の損失率、'amin_over_sigma' = min(a/σδ))。
     警告: a/σδ < 3 のスライスがあれば warnings に書く"""
     import warnings
     if 'rest' not in result:
@@ -171,7 +175,8 @@ def _what(t, ca, absmode):
 
 
 def qs_ratio(sl, ap, am, sigd=None, nu=2048, ngh=7, floor=0.25, seed=1, nk=40):
-    """1 スライスの、絶対値の判定 (δ_c ~ N(0, σδ²/2) の平均、相対運動量の縦成分 q_s を含む) の損失率 / kick の判定の損失率 (3 次元の積分、同じ標本)。
+    """Compute the ratio of slice loss rate with absolute-value acceptance (with longitudinal q_s) to that with the kick criterion.
+    1 スライスの、絶対値の判定 (δ_c ~ N(0, σδ²/2) の平均、相対運動量の縦成分 q_s を含む) の損失率 / kick の判定の損失率 (3 次元の積分、同じ標本)。
     1 次元の式 (touschek_piwinski) は kick の判定の q_s = 0 の値で、3 次元の kick の判定と 1e-3 で一致する (T2) ので、この比を 1 次元の損失率にかけると、
     δ_c と q_s の両方の効果が入る (piwinski_slice_rate_bunch は δ_c だけ)。戻り (比, 比の統計誤差 (標本の相関を使わない上限))。
     sl['pl'] (位置を固定したときの運動量の共分散、3×3、p0 で規格化)・sl['p0']・sl['h0'] を使う"""

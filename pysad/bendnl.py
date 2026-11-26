@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.3.0 R3: 偏向磁石の 3 次の非線形 (曲率の項・硬い端・複合機能の本体・E1/E2≠0 の端) のリー生成関数を、
+"""Extract third-order bend nonlinearities as Lie generators from K64 tracking, for the second-order ADTS perturbation.
+v2.3.0 R3: 偏向磁石の 3 次の非線形 (曲率の項・硬い端・複合機能の本体・E1/E2≠0 の端) のリー生成関数を、
 K64 の追跡 (track6n) の写像の 2 次のテイラー展開から取り出して、`resdrive.adts()` の 2 次の摂動に渡す。K64 にない新機能。
 
 考え方
@@ -40,7 +41,8 @@ class Taylor2:
         self.T = np.asarray(T, dtype=float)
 
     def then(self, other):
-        """self を先に、other を後に掛けた写像 other ∘ self"""
+        """Compose maps, applying this map first and the other map afterwards.
+        self を先に、other を後に掛けた写像 other ∘ self"""
         R = other.R @ self.R
         T = np.einsum('ij,jab->iab', other.R, self.T) + np.einsum('ca,icd,db->iab', self.R, other.T, self.R)
         return Taylor2(R, T)
@@ -52,7 +54,8 @@ class Taylor2:
 
 
 def maxwell_in(rho):
-    """K64 の硬い端 (E=0) の入口の写像の 2 次の部分: Δx = y²/(2ρ)、Δpy = −px·y/ρ (H = +(h/2) px y² の流れ、h = 1/ρ)。線形部分なし"""
+    """Return the second-order part of the K64 hard-edge (E=0) entrance map: dx = y^2/(2 rho) and dpy = -px y/rho.
+    K64 の硬い端 (E=0) の入口の写像の 2 次の部分: Δx = y²/(2ρ)、Δpy = −px·y/ρ (H = +(h/2) px y² の流れ、h = 1/ρ)。線形部分なし"""
     T = np.zeros((4, 4, 4))
     h = 1.0 / rho
     T[0, 2, 2] = 0.5 * h
@@ -61,7 +64,8 @@ def maxwell_in(rho):
 
 
 def extract_map(f, amp=5e-3, hlin=1e-4):
-    """ブラックボックス f(Z (n × 4)) → (n × 4) から Taylor2 を取り出す。R: 中心差分の Richardson、T: ±z の平均の Richardson (振幅 amp と 2·amp)"""
+    """Extract the Taylor map to second order from a black-box function f of n x 4 coordinates.
+    ブラックボックス f(Z (n × 4)) → (n × 4) から Taylor2 を取り出す。R: 中心差分の Richardson、T: ±z の平均の Richardson (振幅 amp と 2·amp)"""
     def central(h):
         e = np.eye(4) * h
         fp, fm = f(e), f(-e)
@@ -94,7 +98,8 @@ def extract_map(f, amp=5e-3, hlin=1e-4):
 
 
 def cubic_from_kick(Tk):
-    """kick z → z + τ(z) (τ_i = z^T Tk[i] z) の生成関数 f (3 次の同次多項式) を {(ea, eb, ec, ed): 係数} で返す (変数 x, px, y, py)。
+    """Return the generating function f (cubic homogeneous polynomial) of a kick z to z + tau(z) as a dictionary of coefficients.
+    kick z → z + τ(z) (τ_i = z^T Tk[i] z) の生成関数 f (3 次の同次多項式) を {(ea, eb, ec, ed): 係数} で返す (変数 x, px, y, py)。
     ∇f = −S τ、f = (1/3) z·∇f"""
     f = {}
     for j in range(4):
@@ -138,7 +143,8 @@ def _mode_key():
 
 
 def bend_decomposition(el, nslice=16, momentum=3e9):
-    """偏向磁石 el (L>0、ANGLE≠0、K0=0) を 入口の端・nslice 個の本体・出口の端 に分ける。戻り dict:
+    """Decompose a bend (L>0, ANGLE not 0, K0=0) into an entrance edge, nslice body slices, and an exit edge.
+    偏向磁石 el (L>0、ANGLE≠0、K0=0) を 入口の端・nslice 個の本体・出口の端 に分ける。戻り dict:
       'R_e1'・'f_e1' (入口の端の線形写像と kick の生成関数)、'R_h' (本体の半スライスの線形写像)、'R_b' (スライス)、'f_b' (スライスの中央の生成関数)、
       'R_e2'・'f_e2'。生成関数は {(ex, epx, ey, epy): 係数} (スライス・端とも 1 つ分の積分値)"""
     dis = float(getattr(el, 'DISFRIN', 0.0) or 0.0)
@@ -206,7 +212,8 @@ def _pmul(p, q):
 
 
 def harmonic_amplitudes(f, w, monos):
-    """生成関数 f ({(ex, epx, ey, epy): 係数}、座標 (x, px, y, py) の 3 次式) の、位置 (w = (wx, wpx, wy, wpy)、複素 (4, N) または (4,)) での
+    """Compute the angle-action harmonic amplitudes A_jklm of a cubic generating function f at given positions.
+    生成関数 f ({(ex, epx, ey, epy): 係数}、座標 (x, px, y, py) の 3 次式) の、位置 (w = (wx, wpx, wy, wpy)、複素 (4, N) または (4,)) での
     角度・作用の単項式 z^j z̄^k v^l v̄^m (z = √(2Jx) e^{iφx}、v = √(2Jy) e^{iφy}) の係数 A_jklm (monos の順)。
     x = (wx z + 共役)/2、px = (wpx z + 共役)/2、y = (wy v + 共役)/2、py = (wpy v + 共役)/2。戻り: (len(monos), N) の複素配列"""
     w = np.asarray(w, dtype=complex)
@@ -237,7 +244,8 @@ def harmonic_amplitudes(f, w, monos):
 
 
 def w_from_row(r):
-    """Twiss の行から複素の w = (wx, wpx, wy, wpy) (x = √(2J) Re[wx e^{iφ}]、px = √(2J) Re[wpx e^{iφ}])"""
+    """Return the complex vector w = (wx, wpx, wy, wpy) from a Twiss row.
+    Twiss の行から複素の w = (wx, wpx, wy, wpy) (x = √(2J) Re[wx e^{iφ}]、px = √(2J) Re[wpx e^{iφ}])"""
     bx, ax, mx = float(r.betx), float(r.alfx), float(r.mux)
     by, ay, my = float(r.bety), float(r.alfy), float(r.muy)
     ex, ey = np.exp(1j * mx), np.exp(1j * my)
@@ -245,7 +253,8 @@ def w_from_row(r):
 
 
 def bend_atoms(el, row_in, row_out, monos, nslice=16, momentum=3e9, check=True):
-    """偏向磁石 el の入口 (row_in) の Twiss から、入口の端の kick、nslice 個のスライス、出口の端の kick を、線形写像で伝播した位置の w で並べた
+    """Compute harmonic amplitudes of the thin kicks (entrance edge, slices, exit edge) of a bend from the Twiss row at its entrance.
+    偏向磁石 el の入口 (row_in) の Twiss から、入口の端の kick、nslice 個のスライス、出口の端の kick を、線形写像で伝播した位置の w で並べた
     薄い kick の列 (Natom = nslice + 2) の調和の振幅。戻り (a (len(monos), Natom)、info dict)。a は 2^{3/2} を含む
     (resdrive.adts の a_all と同じ規格化: (2J)^{3/2} → J^{3/2} 2^{3/2})。check=True: 出口の w が row_out と一致するか (info['w_err'])"""
     d = bend_decomposition(el, nslice, momentum)
@@ -272,7 +281,8 @@ def bend_atoms(el, row_in, row_out, monos, nslice=16, momentum=3e9, check=True):
 # v2.3.0 R4: 共鳴駆動項 h_jklmp への寄与 (δ の項を含む)。偏向磁石の 3 次の生成関数 f を、分散による軌道のずれ z → z + e δ で展開する
 # ---------------------------------------------------------------------------------------------
 def harmonic_amplitudes_shift(f, w, e, monos):
-    """f(z + e δ) の δ^p の係数の、角度・作用の単項式 z^j z̄^k v^l v̄^m の振幅 (monos の各要素は (j, k, l, m, p))。
+    """Compute the amplitudes of the angle-action monomials for the delta^p coefficients of f(z + e delta).
+    f(z + e δ) の δ^p の係数の、角度・作用の単項式 z^j z̄^k v^l v̄^m の振幅 (monos の各要素は (j, k, l, m, p))。
     f: {(ex, epx, ey, epy): 係数} (任意の次数)、w: 複素 (4, N)、e: 実 (4, N) (各位置の分散ベクトル (η, η', η_y, η_y'))。
     x = (wx z + 共役)/2 + ex δ など。p = 0 は harmonic_amplitudes と同じ。戻り (len(monos), N) の複素配列"""
     w = np.asarray(w, dtype=complex)
@@ -314,7 +324,8 @@ def harmonic_amplitudes_shift(f, w, e, monos):
 
 
 def bend_atoms_rdt(el, row_in, row_out, monos, nslice=16, momentum=3e9, mu_ref=(0.0, 0.0)):
-    """偏向磁石 el の、共鳴駆動項 h_(j,k,l,m,p) (monos の各要素 (j, k, l, m, p)、j+k+l+m+p = 3 のものだけが 0 でない) への寄与を、
+    """Return the contributions of a bend to the resonance driving terms h_(j,k,l,m,p), per thin kick of edge and slices.
+    偏向磁石 el の、共鳴駆動項 h_(j,k,l,m,p) (monos の各要素 (j, k, l, m, p)、j+k+l+m+p = 3 のものだけが 0 でない) への寄与を、
     入口の端・nslice 個のスライス・出口の端の薄い kick ごとに返す (a: (len(monos), nslice + 2)、2^{3/2} を含まない = h の定義そのまま)。
     w は Twiss の行から線形写像で伝播 (位相は mu_ref を引く)、分散ベクトル e = (η, η', 0, 0) は入口の行から線形写像と生成された分散 (d_h・d_b) で伝播する。
     info: w_err (出口の w と row_out の差)、e_err (出口の分散と row_out の差。相対)"""
@@ -355,7 +366,8 @@ _ORB_CACHE = {}
 
 
 def jac_at(f, z, h=1e-4):
-    """f(Z (n × 4)) → (n × 4) の z でのヤコビ行列 (中心差分の Richardson)"""
+    """Compute the Jacobian matrix of f at z by Richardson-extrapolated central differences.
+    f(Z (n × 4)) → (n × 4) の z でのヤコビ行列 (中心差分の Richardson)"""
     z = np.asarray(z, dtype=float)
 
     def cen(hh):
@@ -384,7 +396,8 @@ def _taylor_about(f, z):
 
 
 def orbit_decomposition(el, z_in, delta=0.0, nslice=16, momentum=3e9):
-    """偏向磁石 el (L>0。K0≠0 でもよい) の 入口の端・nslice 個の本体・出口の端 への分解を、入口の閉軌道 z_in (物理座標 (x, px, y, py)) と δ のまわりで作る。
+    """Decompose a bend (L>0, K0 may be nonzero) into entrance edge, slices, and exit edge about the entrance closed orbit and delta.
+    偏向磁石 el (L>0。K0≠0 でもよい) の 入口の端・nslice 個の本体・出口の端 への分解を、入口の閉軌道 z_in (物理座標 (x, px, y, py)) と δ のまわりで作る。
     戻り dict: 'units' = [(種類 'e1'|'b'|'e2', R_pre, f, R_post)] (原子 1 個 = 線形写像 R_pre → kick (生成関数 f、R_pre の後の座標で) → 線形写像 R_post。端は R_pre = 1)、
     'z_out' (出口の閉軌道)、'z_mid' (原子の位置の閉軌道)、'n'"""
     z_in = np.asarray(z_in, dtype=float)
@@ -431,12 +444,14 @@ def orbit_decomposition(el, z_in, delta=0.0, nslice=16, momentum=3e9):
 
 
 def row_orbit(r):
-    """Twiss の行の閉軌道 (x, px, y, py)"""
+    """Return the closed orbit (x, px, y, py) of a Twiss row.
+    Twiss の行の閉軌道 (x, px, y, py)"""
     return np.array([float(r.x_cod), float(r.px_cod), float(r.y_cod), float(r.py_cod)])
 
 
 def bend_atoms_orbit(el, row_in, row_out, monos, nslice=16, momentum=3e9, delta=0.0, check=True):
-    """`bend_atoms` の閉軌道・δ 版 (R6)。入口の閉軌道 (row_in)・δ のまわりで取り出した原子 (端・スライス・端) の調和の振幅 (len(monos), Natom) (2^{3/2} を含む)。
+    """Closed-orbit and delta version of `bend_atoms`: harmonic amplitudes of the atoms extracted about the entrance closed orbit (R6).
+    `bend_atoms` の閉軌道・δ 版 (R6)。入口の閉軌道 (row_in)・δ のまわりで取り出した原子 (端・スライス・端) の調和の振幅 (len(monos), Natom) (2^{3/2} を含む)。
     info: w_err (出口の w と row_out)、z_err (出口の閉軌道と row_out の差、m・rad)"""
     d = orbit_decomposition(el, row_orbit(row_in), delta, nslice, momentum)
     w = w_from_row(row_in)
@@ -460,12 +475,14 @@ ORBIT_TOL = 1e-8
 
 
 def needs_orbit(el, row_in, delta=0.0):
-    """K0≠0 (挿入光源)・δ≠0・入口の閉軌道がずれている偏向磁石は、閉軌道のまわりの取り出し (bend_atoms_orbit) が要る"""
+    """Return whether a bend needs extraction about the closed orbit (K0 not 0, delta not 0, or displaced entrance orbit).
+    K0≠0 (挿入光源)・δ≠0・入口の閉軌道がずれている偏向磁石は、閉軌道のまわりの取り出し (bend_atoms_orbit) が要る"""
     return (float(getattr(el, 'K0', 0.0) or 0.0) != 0.0 or float(delta) != 0.0 or float(np.abs(row_orbit(row_in)).max()) > ORBIT_TOL)
 
 
 def bend_atoms_auto(el, row_in, row_out, monos, nslice=16, momentum=3e9, delta=0.0, check=True, policy='auto'):
-    """`bend_atoms` (閉軌道 0、δ=0、K0=0。R3) と `bend_atoms_orbit` (R6) を選ぶ。どちらも同じ形の戻り値 (a (len(monos), Natom)、info)。
+    """Choose between `bend_atoms` (R3) and `bend_atoms_orbit` (R6), which return values of the same form.
+    `bend_atoms` (閉軌道 0、δ=0、K0=0。R3) と `bend_atoms_orbit` (R6) を選ぶ。どちらも同じ形の戻り値 (a (len(monos), Natom)、info)。
     閉軌道 0・δ=0・K0=0 では両者は 1e-14 で一致 (試験)。policy='k0' は K0≠0 の磁石だけ bend_atoms_orbit (δ・閉軌道のずれは原点のまわりの R3 の分解のまま)"""
     # policy='k0': K0≠0 の磁石だけ閉軌道のまわり (fourth='r3' 用。内部の対の項の分け方を原点のまわりの R3 の分解と合わせる)
     if (float(getattr(el, 'K0', 0.0) or 0.0) != 0.0) if policy == 'k0' else needs_orbit(el, row_in, delta):
@@ -478,7 +495,8 @@ def _row_disp(r):
 
 
 def element_delta_terms(el, row_in, row_out, momentum=3e9, d=1e-4, mu_ref=(0.0, 0.0), slope=True):
-    """K0≠0 の偏向磁石 (挿入光源) 1 台の、δ の項 (p=1: δ·(ζ の 2 次形式)、p=2: δ²·(ζ の 1 次)) の生成関数を、要素の追跡の写像から直接取り出す (R6)。
+    """Extract directly from element tracking the generating functions of the delta terms (p=1 and p=2) of a bend with K0 not 0 (R6).
+    K0≠0 の偏向磁石 (挿入光源) 1 台の、δ の項 (p=1: δ·(ζ の 2 次形式)、p=2: δ²·(ζ の 1 次)) の生成関数を、要素の追跡の写像から直接取り出す (R6)。
     展開の中心は 1 次の分散の軌道 z(δ) = z_co + e δ (入口 row_in・出口 row_out の Twiss の行の閉軌道と分散)。
       p=1: ヤコビ行列の δ 微分 X = ∂J(z(δ); δ)/∂δ (中心差分の Richardson、δ = ±d・±2d)。R⁻¹X = S Q (R = δ=0 のヤコビ行列) から g2 = ½ ζᵀQζ。
            **自然なクロマティックな項 (K0 の磁場の 1/(1+δ)・端の収束・傾いた軌道) と分散による軌道のずれの分の全体** (K0≠0 の偏向磁石は自然な項の解析式に入っていない)。
@@ -558,7 +576,8 @@ def _plain(el):
 
 
 def other_atoms(el, row_in, row_out, monos, delta=0.0, nslice_drift=2, momentum=3e9, check=True):
-    """四極・ドリフト・K1 だけの MULT の閉軌道・δ のまわりの原子 (ドリフトは nslice_drift 個の等分、それ以外は要素全体で 1 個。四極は端部のフリンジが
+    """Return the harmonic amplitudes of atoms about the closed orbit and delta for quadrupoles, drifts, and K1-only MULT.
+    四極・ドリフト・K1 だけの MULT の閉軌道・δ のまわりの原子 (ドリフトは nslice_drift 個の等分、それ以外は要素全体で 1 個。四極は端部のフリンジが
     要素の両端にあるので分割しない)。戻り (a (len(monos), Natom) (2^{3/2} を含む)、info)"""
     z = row_orbit(row_in)
     L = float(el.L)
@@ -594,7 +613,8 @@ def other_atoms(el, row_in, row_out, monos, delta=0.0, nslice_drift=2, momentum=
 # v2.3.0 R6: 偏向磁石の 3 次の生成関数の解析式 (閉形式)。追跡から取り出した係数 (bend_decomposition) との比較用で、K64 の追跡の写像の 2 次のテイラー展開から導いた
 # ---------------------------------------------------------------------------------------------
 def bend_edge_generators(el):
-    """偏向磁石 (K0=0、E1・E2・曲率 h = ANGLE/L) の端の kick の生成関数 (bend_decomposition の f_e1・f_e2 と同じ規約: 端 = A_in ∘ (極薄い偏向磁石 E1)、
+    """Return closed-form generating functions of the edge kicks of a bend (K0=0, E1, E2, curvature h = ANGLE/L).
+    偏向磁石 (K0=0、E1・E2・曲率 h = ANGLE/L) の端の kick の生成関数 (bend_decomposition の f_e1・f_e2 と同じ規約: 端 = A_in ∘ (極薄い偏向磁石 E1)、
     (極薄い偏向磁石 E2) ∘ A_out、座標 (x, px, y, py)) の閉形式。t = tan E:
       入口  f_e1 = (h/2) sec²E1 · px y²  + h t² · x y py − (h t²/2) x² px − (h² t³/2) x y² − (h² t³/6) x³
       出口  f_e2 = −(h/2) sec²E2 · px y² − h t² · x y py + (h t²/2) x² px − (h² t/2) x y² + (h² t³/3) x³
@@ -615,7 +635,8 @@ def bend_edge_generators(el):
 
 
 def bend_analytic_h3(el, row_in, row_out, monos, ngl=16):
-    """偏向磁石 (K0=0、ROTATE なし、閉軌道 0・δ=0) の 3 次の項の調和の振幅 (len(monos),) を、解析式の積分で求める (追跡の写像から取り出す `bend_atoms` の和との比較用)。
+    """Compute the cubic harmonic amplitudes of a bend by analytic integrals, for comparison with the sum from `bend_atoms`.
+    偏向磁石 (K0=0、ROTATE なし、閉軌道 0・δ=0) の 3 次の項の調和の振幅 (len(monos),) を、解析式の積分で求める (追跡の写像から取り出す `bend_atoms` の和との比較用)。
     本体 (E=0 の部分偏向磁石 = A_in ∘ S ∘ A_out の連続極限): H_B3 = (h/2) x (px² + py²) + (K1 h/6) x³ を、素子内の w(s) (厳密な線形の転送行列、Gauss-Legendre ngl 点) で積分。
     端: `bend_edge_generators` (入口は row_in、出口は row_out の w で評価)。戻り: 振幅 (2^{3/2} を含まない h の定義そのまま)"""
     from . import resdrive as R

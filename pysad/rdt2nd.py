@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.3.0 R5: 4 次の共鳴駆動項 h_jklm (j+k+l+m = 4、p = 0) の解析式 (6 極の 2 次を含む)。K64 にない新機能。導出と式は docs/25 §10。
+"""Analytic fourth-order resonance driving terms h_jklm (j+k+l+m = 4, p = 0), including sextupole second order.
+v2.3.0 R5: 4 次の共鳴駆動項 h_jklm (j+k+l+m = 4、p = 0) の解析式 (6 極の 2 次を含む)。K64 にない新機能。導出と式は docs/25 §10。
 
 定義 (リング先頭 s=0 の 1 周の写像): 角度・作用 ζ = √(2Jx) e^{iφx}、v = √(2Jy) e^{iφy} (正規化座標で ζ = x_n − i p_n)。ハミルトニアン H(s) の
 相互作用表示 (線形の流れで動く座標) の 1 周の写像は、関数 g に対して g∘Φ = e^{:F:} g (:f: g = {f, g})、F = −h3 − h4 − … で、
@@ -61,7 +62,8 @@ _BR_C = np.array([t[3] for t in _BR])
 
 
 def omega2_from_units(A, IG):
-    """順序つきの単位の列 (s の順、各単位 = 薄い kick または厚い要素) の 2 次の項 ½ Σ_{later > earlier} {H_l, H_e} の h4 の 35 成分 (複素)。
+    """Compute the 35 complex h4 components of the second-order term (1/2) sum {H_l, H_e} over an ordered list of units.
+    順序つきの単位の列 (s の順、各単位 = 薄い kick または厚い要素) の 2 次の項 ½ Σ_{later > earlier} {H_l, H_e} の h4 の 35 成分 (複素)。
     A: (20, N) 各単位の ∫H3 の単項式の係数 (MONOS3 の順)、IG: (20, 20, N) 各単位の内部の ∬_{s1>s2} F_q(s1) F_q'(s2) (薄い kick は ½ A_q A_q')。
     P[q, q'] = Σ_{l>e} A_q(l) A_q'(e) + Σ_u IG[q, q', u]"""
     C = np.cumsum(A, axis=1) - A
@@ -76,7 +78,8 @@ def _monos5(ms):
 
 
 def sext_units(nl3, method='analytic', nslice=8):
-    """6 極 (K2≠0 の厚い・薄い要素) の単位: (A (20, Ne), IG (20, 20, Ne))。素子内の対の積分は resdrive.elem_pair_integrals (conj つき) から
+    """Build the sextupole units (thick and thin, K2 != 0) as (A, IG), using `resdrive.elem_pair_integrals` inside elements.
+    6 極 (K2≠0 の厚い・薄い要素) の単位: (A (20, Ne), IG (20, 20, Ne))。素子内の対の積分は resdrive.elem_pair_integrals (conj つき) から
     ∬ F_q(s1) F_q'(s2) = c_q c_q' · pi[q, q̄'] (q̄ = (k, j, m, l)) で作る (係数 c は実数)"""
     m5 = _monos5(MONOS3)
     Ne = len(nl3)
@@ -94,7 +97,8 @@ def sext_units(nl3, method='analytic', nslice=8):
 
 
 def bend_units(elements, rows, nslice=16, momentum=3e9, warnings=None, delta=0.0):
-    """偏向磁石の 3 次の項の薄い kick の単位 (入口の端・nslice 個のスライス・出口の端): list[(素子の添字, a (20, nslice+2))] (a は H3 の係数、2^{3/2} を含まない)"""
+    """Build the thin-kick units of the bend third-order term (entrance edge, nslice slices, exit edge) as a list of (element index, a).
+    偏向磁石の 3 次の項の薄い kick の単位 (入口の端・nslice 個のスライス・出口の端): list[(素子の添字, a (20, nslice+2))] (a は H3 の係数、2^{3/2} を含まない)"""
     warnings = warnings if warnings is not None else []
     out = []
     skipped = {}
@@ -123,7 +127,8 @@ def bend_units(elements, rows, nslice=16, momentum=3e9, warnings=None, delta=0.0
 
 
 def assemble_units(elements, nl3, Asx, IGsx, bunits):
-    """6 極の単位と偏向磁石の単位を s の順に並べる。戻り: A (20, N)、IG (20, 20, N)、kind (N,) (0: 6 極、1: 偏向磁石)"""
+    """Merge the sextupole and bend units in order of s; return A, IG and kind (0: sextupole, 1: bend).
+    6 極の単位と偏向磁石の単位を s の順に並べる。戻り: A (20, N)、IG (20, 20, N)、kind (N,) (0: 6 極、1: 偏向磁石)"""
     sext_at = {e.idx: ie for ie, e in enumerate(nl3)}
     bend_at = {i: a for i, a in bunits}
     cols_A, cols_IG, kinds = [], [], []
@@ -144,7 +149,8 @@ def assemble_units(elements, nl3, Asx, IGsx, bunits):
 
 
 def octupole_h4(nl4, method='analytic', nslice=8):
-    """8 極 (K3≠0) の 4 次のハミルトニアンの 1 次: h_jklm = Σ c_jklm ∫ w^j w̄^k w_y^l w̄_y^m ds。戻り (35 成分)"""
+    """Compute the first-order fourth-order Hamiltonian terms h_jklm of octupoles (K3 != 0) and return the 35 components.
+    8 極 (K3≠0) の 4 次のハミルトニアンの 1 次: h_jklm = Σ c_jklm ∫ w^j w̄^k w_y^l w̄_y^m ds。戻り (35 成分)"""
     h = np.zeros(35, dtype=complex)
     m5 = _monos5(MONOS4)
     for e in nl4:
@@ -172,7 +178,8 @@ def _quad_ndiv(el, eps=0.2):
 
 
 def kinematic_h4(elements, rows, warnings=None, ngl=8, quad_rule='k64', eps=0.2, skip=()):
-    """運動学的な項 H4 = (px² + py²)²/8 (厳密なドリフトの展開の 4 次) の 1 次: h_jklm = ∫ H4 ds (px = Re[w' ζ] など。素子内の w' は線形の転送行列)。
+    """Compute the first-order kinematic term H4 = (px^2 + py^2)^2/8 as h_jklm and return the 35 components (quad_rule 'k64' or 'exact').
+    運動学的な項 H4 = (px² + py²)²/8 (厳密なドリフトの展開の 4 次) の 1 次: h_jklm = ∫ H4 ds (px = Re[w' ζ] など。素子内の w' は線形の転送行列)。
     積分は Gauss-Legendre ngl 点 (厳密)。quad_rule='k64' (既定) では K64 の四極の積分器の台形則 (節点 `_quad_ndiv(el)+1` 個) で足す
     (K64 の追跡と比べるとき。'exact' は厳密な積分で、四極の積分器の誤差 ~ ds² 分だけ追跡と違う。v2 の追跡 (四極の本体が 4 次の合成。B226) では 'k64' も厳密な積分と同じ)。
     四極・偏向磁石 (端部なし)・MULT (K1) は内部の転送行列、それ以外はドリフトとして扱う。戻り (35 成分)"""
@@ -215,7 +222,8 @@ def kinematic_h4(elements, rows, warnings=None, ngl=8, quad_rule='k64', eps=0.2,
 
 
 def fringe_edges(elements, rows, warnings=None, skip=()):
-    """四極・K1 つき偏向磁石の端部の非線形フリンジ (K64 の既定 ON) の一覧: [(σ, K1, row)]。resdrive.quad_fringe_adts と同じ選択"""
+    """List the nonlinear fringe edges of quadrupoles and K1 bends as [(sigma, K1, row)], selected as in `resdrive.quad_fringe_adts`.
+    四極・K1 つき偏向磁石の端部の非線形フリンジ (K64 の既定 ON) の一覧: [(σ, K1, row)]。resdrive.quad_fringe_adts と同じ選択"""
     g = lambda el, k: float(getattr(el, k, 0.0) or 0.0)
     out = []
     for i, el in enumerate(elements):
@@ -233,7 +241,8 @@ def fringe_edges(elements, rows, warnings=None, skip=()):
 
 
 def fringe_h4(elements, rows, warnings=None, skip=()):
-    """端部のフリンジ H_f = σ (K1/12)[(x³ + 3xy²) px − (y³ + 3x²y) py] δ(s − s端) の 1 次。戻り (35 成分)"""
+    """Compute the first-order contribution of the edge fringe Hamiltonian H_f to h_jklm and return the 35 components.
+    端部のフリンジ H_f = σ (K1/12)[(x³ + 3xy²) px − (y³ + 3x²y) py] δ(s − s端) の 1 次。戻り (35 成分)"""
     h = np.zeros(35, dtype=complex)
     for sig, k1, r in fringe_edges(elements, rows, warnings, skip):
         c = sig * k1 / 12.0
@@ -244,7 +253,8 @@ def fringe_h4(elements, rows, warnings=None, skip=()):
 
 
 def bend_h4_extracted(elements, rows, bunits, momentum=3e9, warnings=None, delta=0.0):
-    """偏向磁石の 4 次のハミルトニアンの 1 次の項 (運動学的な項・端 (E1/E2 の楔と硬い端)・K1 つきの本体と端のフリンジ・積分器の誤差を全部含む):
+    """Extract the first-order bend h4 from single-element tracking maps; return h and the set of bends extracted.
+    偏向磁石の 4 次のハミルトニアンの 1 次の項 (運動学的な項・端 (E1/E2 の楔と硬い端)・K1 つきの本体と端のフリンジ・積分器の誤差を全部含む):
     要素ごとに、その要素 1 個の追跡の写像の 3 次のテイラー展開から取り出した h4 (`rdttrack.element_h4`) から、要素の内部の 3 次どうしの対の項
     (同じ薄い kick の列 = bend_units の原子による Ω2) を引いた残り。入口の Twiss の w で ζ の単項式にする。
     戻り (h (35 成分)、取り出せた偏向磁石の添字の集合)"""
@@ -284,14 +294,16 @@ class RDT4Result:
     __str__ = table
 
     def adts(self):
-        """対角部分から ∂ν/∂J (写像の h だけ。正規形の補正を含まない): {'xx','xy','yy'}"""
+        """Return the ADTS {'xx','xy','yy'} from the diagonal part of the map h, without the normal-form correction.
+        対角部分から ∂ν/∂J (写像の h だけ。正規形の補正を含まない): {'xx','xy','yy'}"""
         h = self.total_arr
         return {'xx': 4.0 * h[_IDX4[(2, 2, 0, 0)]].real / math.pi, 'xy': 2.0 * h[_IDX4[(1, 1, 1, 1)]].real / math.pi, 'yy': 4.0 * h[_IDX4[(0, 0, 2, 2)]].real / math.pi}
 
 
 def rdt4(lat, terms=None, order2=True, octupole=True, kinematic=True, fringe=True, bend=True, bend4=True, method='analytic', nslice=8,
          bend_nslice=16, rows=None, momentum_eV=3e9):
-    """4 次の共鳴駆動項 h_jklm0 (j+k+l+m=4)。戻り RDT4Result:
+    """Compute the fourth-order resonance driving terms h_jklm0 (j+k+l+m = 4) and return an RDT4Result with totals and per-source parts.
+    4 次の共鳴駆動項 h_jklm0 (j+k+l+m=4)。戻り RDT4Result:
       .total[名前] (複素数)、.total_arr (MONOS4 の順 35 成分)、.parts (辞書: 'sext2' 6 極どうし、'bend2' 偏向磁石の 3 次どうし、'cross' 6 極 × 偏向磁石、
       'octupole'、'kinematic'、'fringe' 各 35 成分)、.names、.warnings。
     order2=True: 3 次 (6 極・偏向磁石) の 2 次の項 (Magnus の第 2 項) を入れる。False で 4 次のハミルトニアンの 1 次 (8 極・運動学・フリンジ) だけ。
@@ -337,7 +349,8 @@ def rdt4(lat, terms=None, order2=True, octupole=True, kinematic=True, fringe=Tru
 
 
 def nf_correction(h3, qx, qy, with_i=True):
-    """3 次の項の 1 周の和 h3 (MONOS3 の順 20 成分、複素) から、写像の対角部分 (4 h22000/π など) に足す正規形の補正 (3 次の非共鳴の摂動、docs/25 §10.4):
+    """Compute the normal-form correction from the one-turn sum h3 of third-order terms, to add to the diagonal part of the map.
+    3 次の項の 1 周の和 h3 (MONOS3 の順 20 成分、複素) から、写像の対角部分 (4 h22000/π など) に足す正規形の補正 (3 次の非共鳴の摂動、docs/25 §10.4):
       S_k = (1/(4π sin πx_k)) ∬ F_q(s1) F̄_q'(s2) [e^{−iπx_k} (s1>s2) + e^{+iπx_k} (s1<s2)] = −i P_>/(2π) + e^{iπx_k} T/(4π sin πx_k)
     (P_> = Σ_{s1>s2} F_q F̄_q'、T = (ΣF_q)(ΣF̄_q') = 全周の和の積)。−i P_>/(2π) の部分は Magnus の第 2 項 (写像の対角部分) に等しく、
     残りの (cot πx_k + i) T/(4π) が補正。K = −½ Σ_k Σ_(q,q') (k·∇_J)(J の単項式) · (cot πx_k + i) T_qq'/(4π)、∂ν/∂J = ∂²K/∂J²。戻り {'xx','xy','yy'} [1/(m rad)]"""
@@ -365,7 +378,8 @@ def nf_correction(h3, qx, qy, with_i=True):
 
 
 def fourth_order_adts(elements, rows, bunits, momentum=3e9, delta=0.0, quad_rule='k64', warnings=None):
-    """v2.3.0 R6: `resdrive.adts` の 4 次のハミルトニアンの 1 次の部分 (運動学的な項・端部のフリンジ・偏向磁石の 4 次の項) の ADTS。対角 h22000・h11110・h00220 から
+    """Compute the ADTS from the first-order fourth-order Hamiltonian (kinematic, fringe, bend) via h22000, h11110, h00220.
+    v2.3.0 R6: `resdrive.adts` の 4 次のハミルトニアンの 1 次の部分 (運動学的な項・端部のフリンジ・偏向磁石の 4 次の項) の ADTS。対角 h22000・h11110・h00220 から
     ∂νx/∂Jx = 4 h22000/π、∂νx/∂Jy = 2 h11110/π、∂νy/∂Jy = 4 h00220/π。
       kin    : 運動学的な項 (px²+py²)²/8。四極は K64 の積分器の台形則 (quad_rule='k64'、'exact' で厳密な積分)。偏向磁石以外の素子
       fringe : 四極の端部のフリンジ (偏向磁石以外)
@@ -386,7 +400,8 @@ def fourth_order_adts(elements, rows, bunits, momentum=3e9, delta=0.0, quad_rule
 
 
 def nf_correction_h4(h3, qx, qy, eps=1e-9):
-    """v2.3.0 R6 (非対角の調和への拡張): 3 次の項 h3 (1 周の和、MONOS3 の順 20 成分) の非共鳴の摂動が 4 次の項 (MONOS4 の順 35 成分、複素) に足す補正。
+    """Compute the correction that non-resonant third-order terms add to the fourth-order terms, for off-diagonal harmonics.
+    v2.3.0 R6 (非対角の調和への拡張): 3 次の項 h3 (1 周の和、MONOS3 の順 20 成分) の非共鳴の摂動が 4 次の項 (MONOS4 の順 35 成分、複素) に足す補正。
     1 周の写像 M = R e^{:F:}、F = F3 + F4 (F3 = −h3 の符号の規約は rdt2nd の docstring と同じ、F4 = `rdt4().total_arr`) で、F3 の各調和 q (位相 φ_q = 2π[(j−k)νx + (l−m)νy]) を
     正準変換 e^{:W:}、W_q = h_q/(1 − e^{+iφ_q}) で消す (共鳴 φ_q ∈ 2πZ の項は消せず、ここでは 0 とする = 共鳴の近くでは使えない)と、BCH から 4 次の項は
         F4' = F4 + ½ {R⁻¹W, W}    (R⁻¹W の各項は W_q × e^{+iφ_q}、括弧は {ζ^a ζ̄^b, ζ^c ζ̄^d} = 2i(ad − bc) ζ^{a+c−1} ζ̄^{b+d−1}、v も同様)
@@ -403,7 +418,8 @@ def nf_correction_h4(h3, qx, qy, eps=1e-9):
 
 
 def rdt4_normal_form(lat, rows=None, **kw):
-    """4 次の項 (`rdt4`) に非共鳴の 3 次の摂動 (`nf_correction_h4`) を足した正規形の値 F4' (35 成分の dict と RDT4Result)。h3 は order2=True で得る"""
+    """Return the normal-form fourth-order value F4': `rdt4` plus the non-resonant correction `nf_correction_h4`.
+    4 次の項 (`rdt4`) に非共鳴の 3 次の摂動 (`nf_correction_h4`) を足した正規形の値 F4' (35 成分の dict と RDT4Result)。h3 は order2=True で得る"""
     kw.setdefault('order2', True)
     r = rdt4(lat, rows=rows, **kw)
     if r.h3 is None:
@@ -414,7 +430,8 @@ def rdt4_normal_form(lat, rows=None, **kw):
 
 
 def adts_from_rdt4(lat, rows=None, **kw):
-    """4 次の写像の h (対角部分) + 3 次の項の正規形の補正 (`nf_correction`) から ∂ν/∂J を作る。`resdrive.adts` の 6 極 2 次 + 偏向磁石の 3 次 + 交差項に対応
+    """Build d(nu)/dJ from the fourth-order map h plus the third-order normal-form correction `nf_correction`.
+    4 次の写像の h (対角部分) + 3 次の項の正規形の補正 (`nf_correction`) から ∂ν/∂J を作る。`resdrive.adts` の 6 極 2 次 + 偏向磁石の 3 次 + 交差項に対応
     (8 極・運動学・フリンジ・偏向磁石の 4 次の項の 1 次の分も写像の h に入っているので、adts の .total と比べる)。戻り ({'xx','xy','yy'}, RDT4Result)"""
     r = rdt4(lat, rows=rows, **kw)
     a = r.adts()

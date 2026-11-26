@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""周波数マップを信頼して使うための補助 (v2.3.0 S2、K64 にない新機能。互換モードによらず同じ)。
+"""Helpers for trusting frequency maps: error statistics, feed-down estimates and warnings.
+周波数マップを信頼して使うための補助 (v2.3.0 S2、K64 にない新機能。互換モードによらず同じ)。
 
   誤差 (位置のずれ・ロール) の統計と、フィードダウンの見積もり
     closed_orbit_all(setup, dp)            全要素の入口の閉軌道 (RFSW OFF の 4 次元)
@@ -24,7 +25,8 @@ from .track6n import state_out
 # 閉軌道・線形のチューン
 # ---------------------------------------------------------------------------------------------------------------------
 def closed_orbit_all(setup, dp=0.0, locs=None):
-    """RFSW OFF の δ = dp の閉軌道 (4 次元) を、位置 1 で Newton 法で求め、全要素の入口 (locs、1 始まり。既定は 1〜nlat) へ運ぶ。戻り (len(locs), 6)"""
+    """Compute the 4D closed orbit with RFSW OFF at delta = dp by Newton's method and transport it to the entrance of each element.
+    RFSW OFF の δ = dp の閉軌道 (4 次元) を、位置 1 で Newton 法で求め、全要素の入口 (locs、1 始まり。既定は 1〜nlat) へ運ぶ。戻り (len(locs), 6)"""
     c1 = setup.refine_orbit(np.zeros(6), dp=dp, loc=1)
     if locs is None:
         locs = list(range(1, setup.nlat + 1))
@@ -51,7 +53,8 @@ def _jacobian4(setup, c, loc=1, h=1e-8):
 
 
 def linear_tunes(setup, dp=0.0, loc=1, design=None):
-    """閉軌道まわりの 1 周の行列 (4 × 4、数値微分) の固有値から (νa, νb) (端数、design = (νx, νy) の端数に近い順に x 的・y 的)。
+    """Compute the fractional tunes (including coupling) from the eigenvalues of the one-turn 4x4 matrix around the closed orbit.
+    閉軌道まわりの 1 周の行列 (4 × 4、数値微分) の固有値から (νa, νb) (端数、design = (νx, νy) の端数に近い順に x 的・y 的)。
     戻り dict: nu (x 的、y 的の端数)、trace_x・trace_y (固有値の絶対値からのずれ 最大 = 線形の安定性)。design 省略は setup の Twiss の端数"""
     c = setup.refine_orbit(np.zeros(6), dp=dp, loc=loc if loc == 1 else 1)
     M = _jacobian4(setup, c, 1)
@@ -80,7 +83,8 @@ def linear_tunes(setup, dp=0.0, loc=1, design=None):
 # フィードダウンの見積もり
 # ---------------------------------------------------------------------------------------------------------------------
 def feeddown_estimate(setup, dp=0.0, orbit=None):
-    """6 極 (と 8 極) のフィードダウンによる実効の四極・スキュー四極と、四極のロールによるスキュー四極から、線形のチューンのずれ (Δνx, Δνy) と結合の強さ |c−|
+    """Estimate tune shifts and coupling strength |c-| from sextupole/octupole feed-down and quadrupole roll (thin-lens formulas).
+    6 極 (と 8 極) のフィードダウンによる実効の四極・スキュー四極と、四極のロールによるスキュー四極から、線形のチューンのずれ (Δνx, Δνy) と結合の強さ |c−|
     (差の共鳴) を見積もる。式 (薄いレンズ。6 極の中心の β は入口・出口の平均):
       実効の四極の積分強さ ΔK1L = K2L·x_rel (x_rel = 6 極の中心の閉軌道 − 6 極のずれ DX)、スキュー四極 ΔK1sL = K2L·y_rel、四極のロール θ → 2·K1L·θ。
       Δνx = Σ βx ΔK1L/(4π)、Δνy = −Σ βy ΔK1L/(4π)、c− = (1/2π) Σ ΔK1sL √(βxβy) exp(i[μx − μy − (νx − νy − p)·2πs/C])
@@ -135,7 +139,8 @@ def feeddown_estimate(setup, dp=0.0, orbit=None):
 
 
 def center_sextupoles(setup, dp=0.0, iters=6, tol=1e-9, kinds=('Sextupole',)):
-    """フィードダウンを切る切り分け用: 6 極 (kinds に Octupole も入れれば 8 極も) のずれ DX・DY を、その中心の閉軌道 (入口・出口の平均) に合わせる (x_rel = y_rel = 0)。
+    """Shift sextupole offsets DX and DY onto the closed orbit at their centers to remove feed-down, returning a new TrackSetup.
+    フィードダウンを切る切り分け用: 6 極 (kinds に Octupole も入れれば 8 極も) のずれ DX・DY を、その中心の閉軌道 (入口・出口の平均) に合わせる (x_rel = y_rel = 0)。
     6 極のずれで閉軌道が少し変わるので、不動点の反復 (iters 回、ずれの変化が tol 以下で止める)。戻り 新しい TrackSetup (元は変えない)。
     6 極を通る粒子の軌道は閉軌道に載るので、閉軌道のずれ・四極のロールなどの他の誤差は残したまま、6 極のフィードダウン (実効の四極・スキュー四極) だけが消える"""
     import copy
@@ -158,7 +163,8 @@ def center_sextupoles(setup, dp=0.0, iters=6, tol=1e-9, kinds=('Sextupole',)):
 
 
 def errors_summary(setup, dp=0.0, loc=None):
-    """誤差つきの TrackSetup の線形の性質: 閉軌道 (全要素の入口) の rms・最大 (x, y)、線形のチューンのずれ、結合 (チューンの最小の距離の見積もり)、
+    """Summarize the linear properties of an error-laden TrackSetup: closed-orbit rms and maximum, tune shift, coupling, feed-down.
+    誤差つきの TrackSetup の線形の性質: 閉軌道 (全要素の入口) の rms・最大 (x, y)、線形のチューンのずれ、結合 (チューンの最小の距離の見積もり)、
     フィードダウンの見積もり。loc: 閉軌道を報告する位置 (既定 2)"""
     nux, nuy = setup.tunes_full()
     try:
@@ -186,7 +192,8 @@ def errors_summary(setup, dp=0.0, loc=None):
 # 結果の統計
 # ---------------------------------------------------------------------------------------------------------------------
 def map_stats(res, thr=-5.0):
-    """FMapResult の統計: n、nlost、lost_frac、frac_hi (D > thr の割合、残った点のうち)、frac_hi_all (失われた点を D > thr とみなした割合)、D の中央値・最小・最大・百分位"""
+    """Compute statistics of an FMapResult: counts, lost fraction, fraction with D above a threshold, and D percentiles.
+    FMapResult の統計: n、nlost、lost_frac、frac_hi (D > thr の割合、残った点のうち)、frac_hi_all (失われた点を D > thr とみなした割合)、D の中央値・最小・最大・百分位"""
     ok = np.isfinite(res.D)
     n = len(res)
     nl = int((res.lost_turn > 0).sum())
@@ -208,7 +215,8 @@ SCALING_KAPPA = 1.0                 # 規則的な点の D の周回数の依存
 
 
 def threshold_for_nturn(nturn, thr1024=-5.0, kappa=None):
-    """D の閾値 (規則的/カオス的の境) の周回数への換算: 規則的な点の D は周回数が 2 倍になると約 κ 下がる (NAFF の誤差が周回数のべきで下がるため)
+    """Convert the D threshold between regular and chaotic points to the given number of turns, using thr1024 - kappa log2(nturn/1024).
+    D の閾値 (規則的/カオス的の境) の周回数への換算: 規則的な点の D は周回数が 2 倍になると約 κ 下がる (NAFF の誤差が周回数のべきで下がるため)
     ので、閾値も thr1024 − κ log2(nturn / 1024)。カオス的な点の D は周回数にほとんど依らない"""
     k = SCALING_KAPPA if kappa is None else kappa
     return thr1024 - k * math.log2(float(nturn) / D_THRESHOLD_NTURN)
@@ -232,7 +240,8 @@ def _has_errors(els):
 
 
 def check_setup(setup, nturn=1024, window=1, loc=None, thr_tune=0.03):
-    """追跡の前に分かる条件の警告 (setup と周回数・窓から)。戻り [(コード, 文)]。コード:
+    """Return warnings about conditions known before tracking (turns, window, RFSW, RAD, FLUC, tunes near resonances, errors, orbit).
+    追跡の前に分かる条件の警告 (setup と周回数・窓から)。戻り [(コード, 文)]。コード:
     nturn_short (周回数 < 512)、window_none (窓なし)、rfsw (RFSW ON)、rad (RAD ON)、fluc (FLUC ON)、tune_integer (作動点が整数・半整数に近い)、
     tune_lowres (作動点が 3 次・4 次の共鳴に近い)、errors (誤差つき: 周期性なし・位置依存)、orbit (閉軌道が収束していない)、coupling (結合が強い)、orbit_large (閉軌道が大きい)"""
     from .freqmap import resonance_check
@@ -287,7 +296,8 @@ def check_setup(setup, nturn=1024, window=1, loc=None, thr_tune=0.03):
 
 
 def check_result(res, nturn=None, thr_lost=0.2, thr_naff=0.0, thr_edge=0.02):
-    """周波数マップの結果の警告。コード: lost_many (失われた点が多い)、lost_all (全部失われた)、naff_fail (NAFF が収束しない・非有限)、tune_edge (チューンが 0・0.5 に近い点が多い)"""
+    """Return warnings about a frequency-map result (many lost points, all lost, NAFF failure, tunes near 0 or 0.5).
+    周波数マップの結果の警告。コード: lost_many (失われた点が多い)、lost_all (全部失われた)、naff_fail (NAFF が収束しない・非有限)、tune_edge (チューンが 0・0.5 に近い点が多い)"""
     w = []
     n = len(res)
     nl = int((res.lost_turn > 0).sum())

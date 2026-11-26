@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""SAD の Tcl/Tk 接点 (src/tfTkInter_.c, src/tfTclArg.f) を Python の tkinter で実装する。
+"""Tcl/Tk interface of SAD (tfTkInter_.c, tfTclArg.f) implemented with Python tkinter.
+SAD の Tcl/Tk 接点 (src/tfTkInter_.c, src/tfTclArg.f) を Python の tkinter で実装する。
 
 GUI のコードそのもの (Packages/Tkinter.n、KBFrame.n、KBMainFrame.n、TabFrame.n、Canvas.n ほか) は SADScript なので、翻訳せずに pysad のインタプリタで読む。
 ここに書いたのは、それらが一番下で呼ぶ C / Fortran の組み込み関数だけ:
@@ -27,7 +28,8 @@ _AUTOLOAD_FILES = ('TkinterCore.n', 'Tkinter.n', 'TkPhoto.n', 'Canvas.n', 'KBMai
 
 
 def packages_dir():
-    """Tcl/Tk の接点 (GUI) に使う SAD の Packages。環境変数 PYSAD_SAD_PACKAGES (最優先)、なければ、環境変数 PYSAD_GUI=1 のときだけ
+    """Return the SAD Packages directory for the Tcl/Tk interface (PYSAD_SAD_PACKAGES, or the bundled copy when PYSAD_GUI=1), else None.
+    Tcl/Tk の接点 (GUI) に使う SAD の Packages。環境変数 PYSAD_SAD_PACKAGES (最優先)、なければ、環境変数 PYSAD_GUI=1 のときだけ
     pysad に同梱した SAD のコピー (pysad/sad_copy/Packages)。どちらも無いときは None で、GUI の接点は付かない (画面を開かない)"""
     p = os.environ.get('PYSAD_SAD_PACKAGES')
     if p and os.path.isdir(p):
@@ -200,7 +202,8 @@ class TclBridge:
         return Null
 
     def define_bitmap(self, a):
-        """TkDefineBitmap[name, data, width, height] (Tk_DefineBitmap)。Windows の Tcl には名前つきビットマップを登録する手段が無いので、
+        """Implement `TkDefineBitmap[name, data, width, height]` by writing an XBM file and remembering its name for -stipple / -bitmap.
+        TkDefineBitmap[name, data, width, height] (Tk_DefineBitmap)。Windows の Tcl には名前つきビットマップを登録する手段が無いので、
         XBM ファイルに書いて名前を覚えておく。-stipple / -bitmap の値にその名前が来たら `@ファイル` に置き換える (tkcanvas.create)"""
         import tempfile
         name, data, w, h = a[0], a[1], int(a[2]), int(a[3])
@@ -289,7 +292,8 @@ class TclBridge:
 
     # ------------------------------------------------------------------ SAD のパッケージの自動読み込み (init.n の AutoLoad)
     def setup_autoload(self):
-        """<SAD>/Packages/init.n から Tk / KBFrame 関係の AutoLoad[…] だけを実行して、最初に使われたときに .n を読み込む"""
+        """Run only the Tk and KBFrame AutoLoad entries of <SAD>/Packages/init.n so the .n files load on first use.
+        <SAD>/Packages/init.n から Tk / KBFrame 関係の AutoLoad[…] だけを実行して、最初に使われたときに .n を読み込む"""
         I = self.I
         pk = self.packages
         if not pk:
@@ -329,7 +333,8 @@ class TclBridge:
 
 
 def install(I):
-    """Interp に Tcl/Tk の接点を付ける (PYSAD_SAD_PACKAGES か PYSAD_GUI=1 が指定されているときだけ)"""
+    """Attach the Tcl/Tk interface to the Interp (only when PYSAD_SAD_PACKAGES or PYSAD_GUI=1 is set).
+    Interp に Tcl/Tk の接点を付ける (PYSAD_SAD_PACKAGES か PYSAD_GUI=1 が指定されているときだけ)"""
     if packages_dir() is None:
         return None
     if sys.getrecursionlimit() < 30000:

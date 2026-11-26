@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""numba のカーネルの事前コンパイル (`pysad-warmup`)。
+"""Precompilation of numba kernels (`pysad-warmup`), run once after installation so later calls load cached machine code.
+numba のカーネルの事前コンパイル (`pysad-warmup`)。
 
 pysad の計算の核 (光学・追跡・放射・エミッタンスなど約 200 本) は numba の `@njit(cache=True)` で書いてある。
 最初に呼ばれたときに機械語へ変換する (CPU 依存、全体で 1 分ほど)。変換した結果はディスクにキャッシュされ、2 回目以降は読み込むだけ (1 秒以下)。
@@ -129,7 +130,8 @@ Exit;
 
 
 def kernel_modules():
-    """numba のカーネルを持つモジュール名 (pysad/*.py のうち njit を使うもの)"""
+    """Return the names of the pysad modules that contain numba kernels (those using njit).
+    numba のカーネルを持つモジュール名 (pysad/*.py のうち njit を使うもの)"""
     from . import nbcache
     out = []
     for f in sorted(os.listdir(_PKG)):
@@ -140,7 +142,8 @@ def kernel_modules():
 
 
 def dispatchers():
-    """[(モジュール名, 関数名, numba の Dispatcher)]。Python から見える (モジュール直下の) カーネルだけ"""
+    """Return [(module name, function name, numba Dispatcher)] for kernels visible at module level.
+    [(モジュール名, 関数名, numba の Dispatcher)]。Python から見える (モジュール直下の) カーネルだけ"""
     from numba.core.registry import CPUDispatcher
     out = []
     for m in kernel_modules():
@@ -165,7 +168,8 @@ def _cache_file(disp):
 
 
 def kernel_cached(disp, magic=None):
-    """この CPU・この版の numba・この内容のソースで使えるキャッシュが、ディスクにあるか"""
+    """Tell whether a usable cache exists on disk for this CPU, numba version and source content.
+    この CPU・この版の numba・この内容のソースで使えるキャッシュが、ディスクにあるか"""
     cf = _cache_file(disp)
     if cf is None:
         return False
@@ -224,7 +228,8 @@ def _read_record(dirs):
 
 
 def run_scripts(scripts=None, verbose=True, out=None):
-    """埋め込みの台本を 1 回ずつ走らせる。戻り値: [(名前, 秒, エラーの行 or None)]"""
+    """Run each embedded script once; returns [(name, seconds, error line or None)].
+    埋め込みの台本を 1 回ずつ走らせる。戻り値: [(名前, 秒, エラーの行 or None)]"""
     from .ffscmd import run_sad_string
     out = out or sys.stdout
     res = []
@@ -250,7 +255,8 @@ def run_scripts(scripts=None, verbose=True, out=None):
 
 
 def status(ds=None):
-    """{モジュール: (キャッシュのあるカーネル数, カーネル数)} と、全体の (あり, 全体)"""
+    """Return {module: (cached kernels, kernels)} and the overall (cached, total) counts.
+    {モジュール: (キャッシュのあるカーネル数, カーネル数)} と、全体の (あり, 全体)"""
     ds = dispatchers() if ds is None else ds
     magic = _magic()
     per = {}
@@ -285,7 +291,8 @@ def do_clear(out=None):
 
 
 def do_check(out=None):
-    """キャッシュが有効なら 0、そうでなければ 1"""
+    """Return 0 if the cache is valid, 1 otherwise.
+    キャッシュが有効なら 0、そうでなければ 1"""
     out = out or sys.stdout
     ds = dispatchers()
     dirs = cache_dirs(ds)

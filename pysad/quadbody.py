@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""
+"""Common part of the quadrupole body integrators (B226): Strang-split integration of H = H_lin + H_nl as in K64 tsolqu and tsolque.
 quadbody.py — 四極の本体の積分器の共通部 (B226)
 
 K64 の四極の本体 (tsolqu・tsolque の bz=0 の枝) は、ハミルトニアン H = H_lin(x, y, px, py) + H_nl(px, py)
@@ -43,7 +43,8 @@ _override = None
 
 
 def set_scheme(s):
-    """0 (K64 の Strang)・1 (4 次の Yoshida)・None (compat に従う) に固定する。戻り値: 以前の設定"""
+    """Fix the integration scheme to 0 (K64 Strang), 1 (4th-order Yoshida), or None (follow compat); return the previous setting.
+    0 (K64 の Strang)・1 (4 次の Yoshida)・None (compat に従う) に固定する。戻り値: 以前の設定"""
     global _override
     old = _override
     _override = s
@@ -57,24 +58,28 @@ def scheme() -> int:
 
 
 def ndiv(alak: float, eps: float, sch: int) -> int:
-    """追跡の刻みの数 1 + int(|al·ak|/ε) (al = 長さ、ak = |K1|·長さ、ε = 0.2 (EPS 倍))。v2 は ε を半分 (0.1) にする: 4 次の合成で
+    """Return the number of tracking steps, 1 + int(|al*ak|/eps); v2 halves eps (B226).
+    追跡の刻みの数 1 + int(|al·ak|/ε) (al = 長さ、ak = |K1|·長さ、ε = 0.2 (EPS 倍))。v2 は ε を半分 (0.1) にする: 4 次の合成で
     本体の評価が 3 倍、刻みが 1〜2 倍で、1 台の誤りは 1/16〜1/100 (docs/30 B226)。呼び出し側が従来どおり min(1000, ·) などをかける"""
     return 1 + int(abs(alak) / (eps if sch == 0 else eps * 0.5))
 
 
 def ndiv_calc(alak: float, sch: int) -> int:
-    """CALC (tsolque) の刻みの数。k64 は ε = 0.1 (K64 のまま)、v2 は ε = 0.05 (刻みは 2 倍。3 mm・2 mrad ずれた四極のヤコビアンの誤りが
+    """Return the number of steps for `CALC` (tsolque): eps = 0.1 in k64, and 0.05 in v2.
+    CALC (tsolque) の刻みの数。k64 は ε = 0.1 (K64 のまま)、v2 は ε = 0.05 (刻みは 2 倍。3 mm・2 mrad ずれた四極のヤコビアンの誤りが
     7e-8 → 1.7e-10 になる)"""
     return 1 + int(abs(alak) / (0.1 if sch == 0 else 0.05))
 
 
 def ngroup(ndiv_: int, sch: int) -> int:
-    """群の数 (m 個の「D → B」× ndiv と、最後の D)"""
+    """Return the number of groups (m pairs of 'D then B' times ndiv, plus the final D).
+    群の数 (m 個の「D → B」× ndiv と、最後の D)"""
     return QB_M[sch] * ndiv_ + 1
 
 
 def group(g, aln1, ndiv_, sch):
-    """g 番目の群: (D の長さ, B の長さ, B の係数の番号 jb, 放射点 rad, 最後の D か)。
+    """Return the g-th group: lengths of D and B, B coefficient index jb, radiation point, and whether it is the final D.
+    g 番目の群: (D の長さ, B の長さ, B の係数の番号 jb, 放射点 rad, 最後の D か)。
     刻みの先頭の D は、最初の刻みだけ半分、以降は前の刻みの最後の半分と合わせて全部 (K64 と同じ)。
     方式 0 では D = 0.5·aln1 (最初)・aln1 (以降)、B = aln1、最後の D = 0.5·aln1 で、従来の式とビット単位で同じ"""
     m = QB_M[sch]
@@ -101,12 +106,14 @@ ndiv_calc_nb = njit(**NJ)(ndiv_calc)
 
 @njit(**NJ)
 def sch_of(rs):
-    """njit カーネルの状態配列 rs から積分の方式を読む (rs[4]。配列が短ければ 0 = K64)"""
+    """Read the integration scheme from the numba kernel state array rs (rs[4]; 0 = K64 if the array is short).
+    njit カーネルの状態配列 rs から積分の方式を読む (rs[4]。配列が短ければ 0 = K64)"""
     return 1 if (rs.shape[0] > 4 and rs[4] == 1) else 0
 
 
 def make_track(sqrt1, tzsetparam0, jit=None):
-    """追跡 (規格化した運動量 px/(1+δ)、スカラーの座標) の D と B を作る。
+    """Build the D and B maps for tracking (normalized momentum px/(1+delta), scalar coordinates) as a translation of tsolqu.f.
+    追跡 (規格化した運動量 px/(1+δ)、スカラーの座標) の D と B を作る。
     sqrt1・tzsetparam0 は呼び出し側のもの (python 版は track6、numba 版は track6n。k64 のビット列を保つため実装が違う)。
     jit は numba の njit (numba 版) か None (python 版)。式は track6._tsolqu・_tsolqur_ens (K64 の tsolqu.f) の直訳"""
     if jit is None:

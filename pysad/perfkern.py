@@ -1,4 +1,4 @@
-"""
+"""Numba performance kernels for lattice.py, giving bitwise the same results as the pure Python versions.
 perfkern.py — lattice.py の性能用 numba カーネル (結果は pure Python 版と同じ演算順で、ビット単位で一致させる)
 
 - twiss_chain: lattice._transport_twiss (SAD qmat2twiss の直訳) を全要素に順に適用する。
@@ -231,7 +231,8 @@ def _step(st, M, clamp, out, v2):
 
 @njit(**NJ)
 def twiss_chain(tw0, mats, clamp, check, v2=False):
-    """tw0 (15,) を mats (n,6,6) で順に伝搬。戻り (out (n,15), nbad)。
+    """Propagate the initial Twiss tw0 through the matrices mats in sequence and return (out, nbad), stopping at the first bad element.
+    tw0 (15,) を mats (n,6,6) で順に伝搬。戻り (out (n,15), nbad)。
     check=True (SAD 流の続行): 各要素の入口で βx>0 かつ βy>0 でなければ、または出力が非有限なら、その要素 i で打ち切って nbad=i
     (out[:i] が有効)。check=False: 出力に非有限が出たらその要素 i を nbad として最後まで続ける (呼び出し側が pure Python に戻す)。
     nbad=-1 は異常なし"""
@@ -275,7 +276,8 @@ def _mm(a, b):
 
 @njit(**NJ)
 def edge_len(tx, ty, x, y, px, py, dl, sgn):
-    """edge_free の行程 ℓ だけ (微分なし。追跡の zr0 用)"""
+    """Compute only the path length l of edge_free (no derivatives; used for tracking zr0).
+    edge_free の行程 ℓ だけ (微分なし。追跡の zr0 用)"""
     pr = 1.0 + dl
     u = tx * x + ty * y
     pz2 = pr * pr - px * px - py * py
@@ -287,7 +289,8 @@ def edge_len(tx, ty, x, y, px, py, dl, sgn):
 
 @njit(**NJ)
 def edge_free(tx, ty, x, y, px, py, dl, sgn):
-    """v2 (B220): 硬い端の面 (面は軸に対して角 e 傾いた平面、tx + ty の方向の tan e) の手前・先の自由な飛行の行程 ℓ とその座標微分 g (x, px, y, py, z, δ)。
+    """Compute the free-flight path l and its coordinate derivatives g before and after a hard-edge face tilted by angle e (v2 B220).
+    v2 (B220): 硬い端の面 (面は軸に対して角 e 傾いた平面、tx + ty の方向の tan e) の手前・先の自由な飛行の行程 ℓ とその座標微分 g (x, px, y, py, z, δ)。
     入口 (sgn = -1): 面までの直進 z_f = X tan e = (x + px/pz z_f) tan e → ℓ = z_f p/pz = u/(1 - v/pz)·p/pz。
     出口 (sgn = +1): 面から z = L の面までの直進。x(L) = X (1 + px/pz tan e) → ℓ = u/(1 + v/pz)·p/pz。u = tx x + ty y、v = tx px + ty py。
     tan e → 0 の極限が従来の線形の式 (ℓ = tan e·x)。戻り (ℓ, g)。"""
@@ -319,7 +322,8 @@ def edge_free(tx, ty, x, y, px, py, dl, sgn):
 def tradke_db(T, transr, D, B, pr, px, py, pxi, pyi, pz, pz00, pz0, pxr0, cp, sp, xpx, xpy, xpz, xpa, anp, uc, uct,
               al1, dg, ddpx, ddpy, c1, h1, p, p0, anrad, cave, cuu, bzh=0.0, bzhr0=0.0, tin=0.0, tout=0.0, fixb39=False, rsgn=1.0, exactd=False,
               tiny=0.0, touty=0.0, dla=0.0, dlb=0.0, gin=None, gout=None):
-    """gin, gout: v2 (B220) 端の面の手前・先の自由な行程 ℓ (perfkern.edge_free) の座標微分 (始点の座標・終点の座標)。与えると tin・tout の線形の式に代わる。
+    """Compute radiation-derivative contributions using edge-path and beta < 1 coefficient derivatives; return (changed, D, B).
+    gin, gout: v2 (B220) 端の面の手前・先の自由な行程 ℓ (perfkern.edge_free) の座標微分 (始点の座標・終点の座標)。与えると tin・tout の線形の式に代わる。
     dla, dlb: v2 (B167) の β < 1 の係数 a (光子数)・b (光子エネルギー) の d ln/dγ (anp・uct は a・b を含み、anrad は abs(anrad)·a)。
     戻り (changed, D, B)。changed=False (xpa == 0) のとき D・B は変えない (呼び出し側が元のまま使う)"""
     exactd = exactd and bzh == 0.0 and bzhr0 == 0.0      # v2 の厳密な微分は SOL の外だけ (SOL 領域内の tradke は未確認)

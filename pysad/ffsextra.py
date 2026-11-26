@@ -1,4 +1,4 @@
-"""
+"""Small FFS commands: VARIABLES, ATTRIBUTE, MATRIX, SHOW, VARY, RECOVER, REVERSE, PRINT and EXECUTE (translation of K64 sources).
 FFS の小さなコマンド: VARIABLES(VAR/VARS)、ATTRIBUTE(ATTR)、MATRIX(MAT)、SHOW、VARY、RECOVER(REC)、REVERSE(REV)、PRINT(PRI)、EXECUTE(EXEC)。
 K64 の tfvars.f、tfattr.f、tfmat.f、tshow.f、tffsa.f の直訳 (出力の書式は autofg ('12.9' など) まで gs と同じ)。
 
@@ -124,7 +124,8 @@ def cmd_attribute(ffs, words, i):
 
 
 def cmd_matrix(ffs, words, i):
-    """MATRIX [S|P] [from to]: 転送行列 (4×5。CALC6D は 6×6)"""
+    """Implement `MATRIX [S|P] [from to]`: show the transfer matrix (4x5, or 6x6 for CALC6D).
+    MATRIX [S|P] [from to]: 転送行列 (4×5。CALC6D は 6×6)"""
     import numpy as np
     from .sadscript import S
     n = 1
@@ -203,7 +204,8 @@ def cmd_show(ffs, words, i):
 
 
 def cmd_vary(ffs, words, i):
-    """VARY keyword element-pattern: 要素の既定キーを変える"""
+    """Implement `VARY keyword element-pattern`: change the default keyword of elements.
+    VARY keyword element-pattern: 要素の既定キーを変える"""
     from .sadkw import KEYWORDS
     if i + 2 >= len(words):
         ffs.write('?Missing keyword or element pattern for VARY\n')
@@ -237,7 +239,8 @@ def cmd_recover(ffs, words, i):
 
 
 def cmd_reverse(ffs, words, i):
-    """REVERSE: ビームラインの入口で AX AY EPX EPY R2 R3 DPX DPY の符号を反転"""
+    """Implement `REVERSE`: flip the signs of AX AY EPX EPY R2 R3 DPX DPY at the beamline entrance.
+    REVERSE: ビームラインの入口で AX AY EPX EPY R2 R3 DPX DPY の符号を反転"""
     ini = ffs.I.globals
     for k in ('AX', 'AY', 'EPX', 'EPY', 'R2', 'R3', 'DPX', 'DPY'):
         if k in ini and isinstance(ini[k], float):
@@ -250,7 +253,8 @@ def cmd_reverse(ffs, words, i):
 
 
 def cmd_print(ffs, words, i):
-    """PRINT expr: 式を評価して `Out[n]:= 値` を出す"""
+    """Implement `PRINT expr`: evaluate an expression and print it as `Out[n]:= value`.
+    PRINT expr: 式を評価して `Out[n]:= 値` を出す"""
     text = ' '.join(words[i + 1:])
     try:
         v = ffs.I.run(text, 'script')
@@ -299,7 +303,8 @@ def _open_target(ffs, words, i, mode):
 
 
 def cmd_output(ffs, words, i, append=False):
-    """OUTPUT(OUT) file / APPEND(APP) file: 出力 (FFS の表示と Print) をファイルへ切り替える。CLOSE OUTPUT で前の出力に戻す"""
+    """Implement `OUTPUT(OUT) file` / `APPEND(APP) file`: redirect FFS display and Print output to a file.
+    OUTPUT(OUT) file / APPEND(APP) file: 出力 (FFS の表示と Print) をファイルへ切り替える。CLOSE OUTPUT で前の出力に戻す"""
     name = 'APP_END' if append else 'OUT_PUT'
     f, own = _open_target(ffs, words, i, 'a' if append else 'w')
     if f is None:
@@ -344,7 +349,8 @@ def cmd_close(ffs, words, i):
 
 
 def cmd_input(ffs, words, i, rewind=False):
-    """INPUT(IN) file / READ file: ファイルの FFS・SADScript の文を続けて実行 (末尾で元の入力に戻る)"""
+    """Implement `INPUT(IN) file` / `READ file`: execute FFS and SADScript statements from a file, then return to the original input.
+    INPUT(IN) file / READ file: ファイルの FFS・SADScript の文を続けて実行 (末尾で元の入力に戻る)"""
     import os
     if i + 1 >= len(words):
         ffs.write(' ???-FFS-Error-?Missing filename for IN_PUT ' + chr(10))
@@ -401,7 +407,8 @@ class _Twbuf:
 
 
 def cmd_status(ffs, words, i):
-    """STATUS: フラグ、変数、特別変数の一覧 (tffsa.f の STAT_US)。CTIME・DT は gs と一致しない (実行時間)"""
+    """Implement `STATUS`: list flags, variables and special variables (STAT_US in tffsa.f).
+    STATUS: フラグ、変数、特別変数の一覧 (tffsa.f の STAT_US)。CTIME・DT は gs と一致しない (実行時間)"""
     import time
     from .ffscmd import _FLAGS_DEFAULT, _SINO
     g = ffs.I.globals

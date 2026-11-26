@@ -1,4 +1,4 @@
-"""
+"""Automatic loading of SAD Packages/*.n as SADScript; the Packages directory comes from an environment variable or a bundled copy.
 SAD の Packages/*.n を SADScript のまま使うための自動読み込み。
 Packages ディレクトリは、環境変数 PYSAD_SAD_PACKAGES (指定があれば最優先)、なければ pysad に同梱した SAD のコピー (pysad/sad_copy/Packages。
 SAD のソースからコピーしたもの。pysad/sad_copy/README.md)、それも無ければ pysad の隣の SAD-master/Packages。
@@ -27,7 +27,8 @@ _INIT = re.compile(r'AutoLoad(?:Set)?\[(.*?)PackagesDirectory//"([^"]+)"\s*\]', 
 
 
 def bundled_packages_dir():
-    """pysad に同梱した SAD のコピー (pysad/sad_copy/Packages)。無ければ None"""
+    """Return the SAD copy bundled with pysad (pysad/sad_copy/Packages), or None if absent.
+    pysad に同梱した SAD のコピー (pysad/sad_copy/Packages)。無ければ None"""
     d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sad_copy', 'Packages')
     if os.path.isfile(os.path.join(d, _TARGET)):
         return os.path.abspath(d).replace(chr(92), '/') + '/'

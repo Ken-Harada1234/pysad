@@ -1,4 +1,4 @@
-"""
+"""COD map and matrices (Twiss, `Emittance[]`) for MULT with ANGLE not equal to 0 (translation of K64 tmultae in tmulta.f).
 MULT (ANGLE≠0) の COD 写像と行列 (Twiss / Emittance[])。K64 の tmultae (tmulta.f 後半)。
 
 分割スライスごとに「曲げ磁石 (tbende) → 曲率つきの多極キック」を繰り返す。曲げは emit6d._tbende_core / lattice._bend_core_cod_matrix
@@ -23,7 +23,8 @@ TRADKE_CALLS = _NM1        # K64 の tmultae は tradke を m ループ内 (nmul
 
 
 def prep(el):
-    """tmultae の前処理 (tpara の MULT と tmultae の先頭)。分割数・スライス長・係数など"""
+    """Preprocess for tmultae (MULT in tpara and the start of tmultae): number of divisions, slice length, coefficients.
+    tmultae の前処理 (tpara の MULT と tmultae の先頭)。分割数・スライス長・係数など"""
     from .elements import Bend
     from . import lattice as _lat
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
@@ -112,7 +113,8 @@ def _bend(P, kind):
 
 
 def kick(c, P):
-    """曲率つきの多極キック (tmultae): 出口 COD と trans1"""
+    """Apply the curved multipole kick (tmultae) and return the exit COD and trans1.
+    曲率つきの多極キック (tmultae): 出口 COD と trans1"""
     akn, nmmin, nmmax, rho0 = P['akn'], P['nmmin'], P['nmmax'], P['rho0']
     cx1 = complex(c[0], c[2])
     csl = csr = csxx = csxy = csyy = 0j
@@ -173,7 +175,8 @@ def _shift(c, P):
 
 
 def lattice_step(el, cod, delta):
-    """CALC (qtwiss): (M, 出口 COD)。M は各段の行列の積"""
+    """Compute (M, exit COD) for `CALC` (qtwiss), where M is the product of the per-stage matrices.
+    CALC (qtwiss): (M, 出口 COD)。M は各段の行列の積"""
     from . import lattice as _lat
     P = prep(el)
     M = np.eye(6)
@@ -203,7 +206,8 @@ def lattice_step(el, cod, delta):
 
 
 def emit(st, el, enarad=True):
-    """tturne / tecalc 用 (emit6d._State に段ごとに積む)"""
+    """Accumulate the per-stage contributions into emit6d._State for tturne and tecalc.
+    tturne / tecalc 用 (emit6d._State に段ごとに積む)"""
     from . import emit6d as _e
     P = prep(el)
     f, j = _chg_in(P, True)

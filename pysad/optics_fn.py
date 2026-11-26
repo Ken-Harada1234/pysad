@@ -1,4 +1,4 @@
-"""
+"""Optics and tracking helpers for SADScript (Python rewrite of Packages/Optics.n, emit.n, dapert.n, and `SurvivedParticles`).
 SADScript の光学・追跡の補助関数 (Packages/Optics.n, emit.n, dapert.n の Python 書き直し、SurvivedParticles は tftrack.f):
   TransferMatrix[from, to, opts]  Optics.n TransferMatrixPrimitive (4D: Twiss と R1-R4 から、CALC6D: NormalCoordinate6 = etwiss2ri)
   BeamMatrix[i]                   Optics.n: SymplecticInverse[NormalCoordinates[i]] . Diag(EMITX,EMITX,EMITY,EMITY,0,DP²) . ᵀ
@@ -24,7 +24,8 @@ ROWATTR = ('alfx', 'betx', 'mux', 'alfy', 'bety', 'muy', 'etx', 'etpx', 'ety', '
 
 
 def row28(r) -> np.ndarray:
-    """TwissRow → Twiss["*", k] の 28 成分"""
+    """Return the 28 components of a TwissRow as in `Twiss["*", k]`.
+    TwissRow → Twiss["*", k] の 28 成分"""
     return np.array([float(getattr(r, a, 0.0) or 0.0) for a in ROWATTR])
 
 
@@ -45,7 +46,8 @@ def symplectic_inverse(m: np.ndarray) -> np.ndarray:
 
 
 def rmatrix4(p: np.ndarray) -> np.ndarray:
-    """TransferMatrixPrimitive の rmatrix (4×4、結合 R1-R4、DETR<1 で分岐)"""
+    """Compute the 4x4 rmatrix of `TransferMatrixPrimitive` (coupling R1-R4, branching on DETR < 1).
+    TransferMatrixPrimitive の rmatrix (4×4、結合 R1-R4、DETR<1 で分岐)"""
     r1, r2, r3, r4 = p[10], p[11], p[12], p[13]
     a1 = math.sqrt(max(0.0, 1.0 - (r1 * r4 - r2 * r3)))
     if p[14] < 1.0:
@@ -54,7 +56,8 @@ def rmatrix4(p: np.ndarray) -> np.ndarray:
 
 
 def normal_coordinates4(p: np.ndarray) -> np.ndarray:
-    """Optics.n NormalCoordinatesPrimitive (4D): bmatrix.hmatrix.rmatrix (6×6、物理 → 正規モード座標)"""
+    """Compute the 6x6 `NormalCoordinatesPrimitive` (4D) matrix from physical to normal-mode coordinates.
+    Optics.n NormalCoordinatesPrimitive (4D): bmatrix.hmatrix.rmatrix (6×6、物理 → 正規モード座標)"""
     r1, r2, r3, r4 = p[10], p[11], p[12], p[13]
     a1 = math.sqrt(max(0.0, 1.0 - (r1 * r4 - r2 * r3)))
     if p[14] < 1.0:
@@ -73,7 +76,8 @@ def normal_coordinates4(p: np.ndarray) -> np.ndarray:
 
 
 def normal_coordinates6(p: np.ndarray) -> np.ndarray:
-    """NormalCoordinate6 (tfinitn.f 1023 = etwiss2ri): 拡張 Twiss 28 成分 → 物理 → 正規モード座標の 6×6"""
+    """Compute the 6x6 `NormalCoordinate6` (tfinitn.f etwiss2ri) from the 28 extended Twiss components.
+    NormalCoordinate6 (tfinitn.f 1023 = etwiss2ri): 拡張 Twiss 28 成分 → 物理 → 正規モード座標の 6×6"""
     from .calc6d import etwiss2ri
     ri = etwiss2ri(p)
     return np.asarray(ri[0] if isinstance(ri, tuple) else ri, dtype=float)
@@ -81,7 +85,8 @@ def normal_coordinates6(p: np.ndarray) -> np.ndarray:
 
 def transfer_matrix(p1: np.ndarray, p2: np.ndarray, g1: float, g2: float, nx_tot: float = 0.0, ny_tot: float = 0.0,
                     fold: bool = False, symp: bool = False, c6d: bool = False) -> np.ndarray:
-    """Optics.n TransferMatrixPrimitive: 位置 1 と 2 の Twiss (28) と gammab から転送行列 (4×4 / 6×6)"""
+    """Compute the 4x4 or 6x6 transfer matrix from Twiss (28 components) at positions 1 and 2 and gammab (`TransferMatrixPrimitive`).
+    Optics.n TransferMatrixPrimitive: 位置 1 と 2 の Twiss (28) と gammab から転送行列 (4×4 / 6×6)"""
     gr = 1.0 if symp else math.sqrt(g1 / g2)
     dpsix = p2[2] - p1[2]
     dpsiy = p2[5] - p1[5]
@@ -117,7 +122,8 @@ def transfer_matrix(p1: np.ndarray, p2: np.ndarray, g1: float, g2: float, nx_tot
 
 
 def beam_matrix(p: np.ndarray, emx: float, emy: float, dp: float, d: float, gauss: bool, c6d: bool) -> np.ndarray:
-    """Optics.n BeamMatrix[i]: r = SymplecticInverse[NormalCoordinates[i]]、r.Diag({emx,emx,emy,emy,0,d·(dp か dp/√3)²}·d).rᵀ。
+    """Compute `BeamMatrix[i]` from `SymplecticInverse[NormalCoordinates[i]]` and the diagonal emittance and energy-spread matrix.
+    Optics.n BeamMatrix[i]: r = SymplecticInverse[NormalCoordinates[i]]、r.Diag({emx,emx,emy,emy,0,d·(dp か dp/√3)²}·d).rᵀ。
     d = gammab(1)/gammab(i)"""
     nc = normal_coordinates6(p) if c6d else normal_coordinates4(p)
     r = symplectic_inverse(nc)
@@ -127,7 +133,8 @@ def beam_matrix(p: np.ndarray, emx: float, emy: float, dp: float, d: float, gaus
 
 
 def geo_base(chi) -> np.ndarray:
-    """Optics.n GeoBase[{chi1,chi2,chi3}]: r3.r2.r1.g0 の基底ベクトル (行 = x_g, y_g, z_g)"""
+    """Compute the basis vectors of `GeoBase[{chi1, chi2, chi3}]` from r3.r2.r1.g0.
+    Optics.n GeoBase[{chi1,chi2,chi3}]: r3.r2.r1.g0 の基底ベクトル (行 = x_g, y_g, z_g)"""
     c1, c2, c3 = (math.cos(float(v)) for v in chi)
     s1, s2, s3 = (math.sin(float(v)) for v in chi)
     return np.array([[c3 * s1 - c1 * s2 * s3, -c1 * c3 - s1 * s2 * s3, c2 * s3],
@@ -145,7 +152,8 @@ def orbit_geo(gxyz, chi, cod6) -> np.ndarray:
 
 
 def survived_particles(x: list) -> list:
-    """tftrack.f tfsurvivedparticles: {x, px, y, py, z, dp, flag[, lost..]} (7 か 9 列) から flag≠0 の粒子だけ。全部落ちていれば空のリスト ×列数"""
+    """Return only the surviving particles (flag not 0) from tracking output, as in tftrack.f tfsurvivedparticles.
+    tftrack.f tfsurvivedparticles: {x, px, y, py, z, dp, flag[, lost..]} (7 か 9 列) から flag≠0 の粒子だけ。全部落ちていれば空のリスト ×列数"""
     if not isinstance(x, list) or len(x) not in (7, 9) or not all(isinstance(c, list) for c in x):
         raise SADError('General::wrongtype: "{loc,{{x1,..},{px1,..},{y1,..},{py1,..},{z1,..},{dp1,..},{flg1,..}}}"')
     fl = x[6]
@@ -176,7 +184,8 @@ def _truthy(v):
 
 
 class OpticsFunctions:
-    """FFS に組み込む関数群 (ffscmd.install から登録)"""
+    """Holds the optics functions installed into FFS (registered from ffscmd.install).
+    FFS に組み込む関数群 (ffscmd.install から登録)"""
 
     def __init__(self, ffs):
         self.ffs = ffs
@@ -234,7 +243,8 @@ class OpticsFunctions:
         return m.tolist()
 
     def fn_normal_coordinates(self, args):
-        """NormalCoordinates[i]: {物理 → 正規モード座標の 6×6, 軌道 (DX..DDP)}"""
+        """Implement `NormalCoordinates[i]`: return the 6x6 physical-to-normal-mode matrix and the orbit.
+        NormalCoordinates[i]: {物理 → 正規モード座標の 6×6, 軌道 (DX..DDP)}"""
         ffs = self.ffs
         k, fr = self._one_loc(args[0], 'NormalCoordinates')
         p = self._p28(k, fr)
@@ -263,7 +273,8 @@ class OpticsFunctions:
         raise SADError('General::wrongtype: Argument must be {chi1, chi2, chi3} in GeoBase')
 
     def fn_orbit_geo(self, args):
-        """OrbitGeo[location]: 設計幾何 LINE["GEO"] と軌道 (Twiss DX..DDP) から現在の軌道の幾何 {GX, GY, GZ}"""
+        """Implement `OrbitGeo[location]`: return the current orbit geometry {GX, GY, GZ} from the design geometry and orbit.
+        OrbitGeo[location]: 設計幾何 LINE["GEO"] と軌道 (Twiss DX..DDP) から現在の軌道の幾何 {GX, GY, GZ}"""
         ffs = self.ffs
         locs = ffs._resolve_loc(args[0].name if isinstance(args[0], Sym) else args[0]) if args else [(k, 0.0) for k in range(1, ffs.nlat + 1)]
         geo = ffs.ensure_geo()
@@ -277,7 +288,8 @@ class OpticsFunctions:
         return out
 
     def fn_accelerate_particles(self, args):
-        """dapert.n AccelerateParticles[beam, mom, {n, nturn}, Synchronize->f] (HoldAll: mom は周ごとに n を入れて評価)。
+        """Implement `AccelerateParticles[beam, mom, {n, nturn}, Synchronize->f]` (dapert.n), tracking with momentum changed each turn.
+        dapert.n AccelerateParticles[beam, mom, {n, nturn}, Synchronize->f] (HoldAll: mom は周ごとに n を入れて評価)。
         周ごとに p0=MOMENTUM, MOMENTUM=p1=mom, u=p0/p1, v=u·sqrt((p1²+m²)/(p0²+m²)) として
         b = TrackParticles[{1,{x, px·u, y, py·u, z/v, dp·u−(1−u), flag}}, 1][[2]]。戻りは {1, b}"""
         ffs = self.ffs

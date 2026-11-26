@@ -1,4 +1,4 @@
-"""
+"""Tracking of MULT with ANGLE not equal to 0 (translation of K64 tmulta.f), called by tmulti when phia is nonzero.
 MULT (ANGLE≠0) の追跡。K64 の tmulta.f (tmulta)。tmulti が phia≠0 のとき呼ぶ。
 
 曲げ磁石 (tbend の分割スライス: K1=0 は k_bend0、K1≠0 は k_bendi) と、曲率つきの多極キック (gkn の表) を、
@@ -40,7 +40,8 @@ GKN = _make_gkn()
 
 
 def compile_multa(el, ph=None):
-    """MULT ANGLE≠0 → (K_MULTA, params)。tffs.f tpara (icMULT) の前処理を写す"""
+    """Compile a MULT element with ANGLE not equal to 0 into (K_MULTA, params), following the tffs.f tpara (icMULT) preprocessing.
+    MULT ANGLE≠0 → (K_MULTA, params)。tffs.f tpara (icMULT) の前処理を写す"""
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     if g('BZ') != 0.0:
         raise NotImplementedError('track6n: MULT の ANGLE≠0 と BZ≠0 は K64 も未対応 (abort)')

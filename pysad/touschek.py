@@ -1,4 +1,4 @@
-"""
+"""Translation of SAD INTRA (intra-beam scattering and Touschek lifetime table), from temit through tturne and the IBS iteration.
 touschek.py — SAD の INTRA (バンチ内散乱 + Touschek 寿命表) の直訳
 ====================================================================
 
@@ -52,7 +52,8 @@ _DCMIN = 1e-6
 
 
 def initialize_tampl() -> np.ndarray:
-    """temit.f initialize_tampl: 振幅表 tampl(34, 3) (列 0:x, 1:y, 2:z)。0 始まりの配列で返す。"""
+    """Build the amplitude table tampl(34, 3) of initialize_tampl in temit.f (columns x, y, z), returned zero-based.
+    temit.f initialize_tampl: 振幅表 tampl(34, 3) (列 0:x, 1:y, 2:z)。0 始まりの配列で返す。"""
     t = np.zeros((NTOUCKX, 3))
     t[0:4, 0] = [1.0, 2.0, 3.0, 4.0]
     t[4:9, 0] = [5.0, 6.0, 7.0, 8.0, 9.0]
@@ -76,7 +77,8 @@ _TB = 0.75159
 
 
 def touschek_f(x):
-    """tintrb.f touckf / emit.n TouschekF: C(x)/x ∝ 1/τ の近似 (x=0 では 1e200)。
+    """Compute the approximation touschek_f of C(x)/x proportional to 1/tau (tintrb.f touckf, emit.n TouschekF); accepts numpy arrays.
+    tintrb.f touckf / emit.n TouschekF: C(x)/x ∝ 1/τ の近似 (x=0 では 1e200)。
     numpy 配列も受け付ける。"""
     x = np.asarray(x, dtype=float)
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -90,7 +92,8 @@ touckf = touschek_f
 
 
 def fintrbu(u, a1, a2):
-    """tintrb.f fintrbu: IBS 積分の被積分関数 (u 変数版)"""
+    """Compute the IBS integrand (u-variable version) of fintrbu in tintrb.f.
+    tintrb.f fintrbu: IBS 積分の被積分関数 (u 変数版)"""
     u21 = 1.0 - u**2
     u214 = u21**4
     u2141 = 1.0 - u214
@@ -99,7 +102,8 @@ def fintrbu(u, a1, a2):
 
 
 def bint(f, a, b, epslon, epsabs):
-    """bint.f: 台形則の逐次細分 + Simpson 外挿による数値積分 (直訳)。
+    """Translation of bint.f: numerical integration by trapezoid refinement with Simpson extrapolation.
+    bint.f: 台形則の逐次細分 + Simpson 外挿による数値積分 (直訳)。
     収束判定が |s - s20| < max(epslon|s|, epsabs) なので、SAD と同じ値を得るには
     同じ反復をたどる必要がある。"""
     itmax = 30
@@ -570,7 +574,8 @@ def touschek_table(lattice, momentum_eV: float, em: dict, pbunch: float,
                    rfsw: bool = True, radcod: bool = False,
                    charge: float = 1.0, amass: float = _e.ELMASS,
                    verbose: bool = True, intra: bool = True, wspac: bool = False, record_rest: bool = False) -> dict:
-    """SAD の `emit` (INTRA ON) 相当: IBS 反復を収束させ、TouschekTable を作る。
+    """Converge the IBS iteration as SAD `emit` with INTRA ON and build the TouschekTable.
+    SAD の `emit` (INTRA ON) 相当: IBS 反復を収束させ、TouschekTable を作る。
 
     Parameters
     ----------
@@ -861,7 +866,8 @@ def _find_index(xl, v):
 
 
 class SadSpline:
-    """Spline[{{x,y},...}] (D.n) の直訳。y はスカラー列でもベクトル列でもよい。"""
+    """Translation of Spline[{{x,y},...}] in D.n; y may be a scalar or vector sequence.
+    Spline[{{x,y},...}] (D.n) の直訳。y はスカラー列でもベクトル列でもよい。"""
 
     def __init__(self, x, y):
         self.x = np.asarray(x, dtype=float)
@@ -895,7 +901,8 @@ def _restrict(v, lo, hi):
 
 
 class TouschekLifetimeCalculator:
-    """emit.n の Touschek クラス。Setup[TouschekTable] でスプラインを準備する。"""
+    """Touschek class of emit.n; prepares splines with Setup[TouschekTable].
+    emit.n の Touschek クラス。Setup[TouschekTable] でスプラインを準備する。"""
 
     def __init__(self, table=None):
         self.id = None
@@ -919,7 +926,8 @@ class TouschekLifetimeCalculator:
         self.nzmin, self.nzmax = float(self.zl.min()), float(self.zl.max())
 
     def lifetime(self, nx, ny, nz, sige):
-        """TouschekLifetime[nx, ny, nz] (INF は None か math.inf)。SIGE は引数で渡す。"""
+        """Compute `TouschekLifetime[nx, ny, nz]` (INF as None or math.inf); SIGE is passed as an argument.
+        TouschekLifetime[nx, ny, nz] (INF は None か math.inf)。SIGE は引数で渡す。"""
         if _is_inf(nx) and _is_inf(ny):
             sz = nz * sige
             if sz < self.dpmin:
@@ -939,7 +947,8 @@ class TouschekLifetimeCalculator:
 
 
 def touschek_lifetime(table, nx, ny, nz, sige) -> float:
-    """emit.n TouschekLifetime[nx, ny, nz] の直訳。
+    """Translation of `TouschekLifetime[nx, ny, nz]` of emit.n using the table of `touschek_table()`.
+    emit.n TouschekLifetime[nx, ny, nz] の直訳。
     table: touschek_table()['table'] (SAD の TouschekTable と同じ構造)
     nx, ny: None または math.inf で INF。両方 INF なら nz*sige の運動量受容に対する寿命 [s]、
     片方だけ INF なら横振幅 nx (または ny) と縦振幅 nz に対する寿命。
@@ -990,7 +999,8 @@ def _piw_J(c, alpha1, alpha2, npan=40):
 
 
 def piwinski_slice_rate(sl, ap, am, circ, pbunch, npan=40):
-    """1 つのスライス (touschek_table(record_rest=True) の 'rest' の要素) の 1/τ への寄与 [1/s]。ap・am: 正・負の運動量受容 (正の値)。"""
+    """Return the contribution [1/s] of one slice (an element of rest from touschek_table(record_rest=True)) to 1/tau.
+    1 つのスライス (touschek_table(record_rest=True) の 'rest' の要素) の 1/τ への寄与 [1/s]。ap・am: 正・負の運動量受容 (正の値)。"""
     p0, h0 = sl['p0'], sl['h0']
     beta = p0 / h0
     vol = (4.0 * math.pi)**1.5 * math.sqrt(abs(np.linalg.det(sl['xx'])))
@@ -1009,7 +1019,8 @@ def piwinski_slice_rate(sl, ap, am, circ, pbunch, npan=40):
 
 
 def touschek_piwinski(result, a=None, ap=None, am=None, npan=40):
-    """Piwinski 型の Touschek 寿命 (v2.3.0 T2)。K64 の `touschek_f` の当てはめの代わりに、2 粒子の Møller 散乱の積分を 1 次元積分で評価する。
+    """Compute the Piwinski-type Touschek lifetime by a 1D integral of Moller scattering, not of the `touschek_f` fit.
+    Piwinski 型の Touschek 寿命 (v2.3.0 T2)。K64 の `touschek_f` の当てはめの代わりに、2 粒子の Møller 散乱の積分を 1 次元積分で評価する。
     result: touschek_table(..., record_rest=True) の戻り (FFS では ffs.touschek)。'rest' (各スライスの静止系のビーム) を使う。
     受容: a (一様、正負対称)、または ap・am (正・負の受容の大きさ。スカラーか、要素 l (1 始まり) ごとの配列 [長さ nlat]、位置ごとの LMA 用)。
     戻り dict: rate [1/s]、lifetime [s]、rate_per_slice、l (スライスの要素番号)。

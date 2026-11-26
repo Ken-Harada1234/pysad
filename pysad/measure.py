@@ -1,4 +1,4 @@
-"""
+"""Translation of the FFS commands MEASURE / TRCOD / LOGMEASURE and their parts (`tlum.f`, `ttinit.f`, `ttstat.f`, etc.).
 MEASURE / TRCOD / LOGMEASURE (FFS のコマンド) と、その部品 (tlum.f、ttinit.f、ttstat.f、tbdecoup.f、tracke.f、trackb.f、trcoda.f) の翻訳。
 
 K64 (gs) では MEASURE は何も出力せず、TRCOD は SIGSEGV で落ちる (docs/30 B42) ので、gs の参照は取れない。
@@ -32,7 +32,8 @@ from . import compat
 
 
 def tluma(x, y, xm, ym, sigx, sigy0, nmesh):
-    """tluma: x[j, i], y[j, i] (j=0,1: 二つのビーム、i: 粒子)。戻り tluma"""
+    """Translate `tluma` of tlum.f: take x[j, i], y[j, i] for the two beams j and particles i, and return `tluma`.
+    tluma: x[j, i], y[j, i] (j=0,1: 二つのビーム、i: 粒子)。戻り tluma"""
     x = np.asarray(x, dtype=float)
     y = np.asarray(y, dtype=float)
     np_ = x.shape[1]
@@ -80,7 +81,8 @@ def tluma(x, y, xm, ym, sigx, sigy0, nmesh):
 
 
 def tlum(x, y, xm, ym, sigx, sigy):
-    """tlum: nmesh = max(int(sqrt(np)), 6)。戻り (tlum, nmesh)"""
+    """Translate `tlum`: compute nmesh = max(int(sqrt(np)), 6) and return (tlum, nmesh).
+    tlum: nmesh = max(int(sqrt(np)), 6)。戻り (tlum, nmesh)"""
     np_ = np.asarray(x).shape[1]
     nmesh = max(int(math.sqrt(np_)), 6)
     return tluma(x, y, xm, ym, sigx, sigy, nmesh), nmesh
@@ -90,7 +92,8 @@ def tlum(x, y, xm, ym, sigx, sigy):
 # tbdecoup.f
 # =============================================================================================
 def tbdecoup(beam):
-    """tbdecoup.f の直訳。beam: 6×6 の分散行列 (x, px, y, py, z, dp)。書き換えない (写しを使う)。
+    """Literal translation of `tbdecoup.f`: decouple the 6x6 beam matrix into Twiss parameters, emittances and energy spread.
+    tbdecoup.f の直訳。beam: 6×6 の分散行列 (x, px, y, py, z, dp)。書き換えない (写しを使う)。
     戻り (param, param1, emix, emiy, emix1, emiy1, sigp)。param / param1 は 1 始まり (添字 0 は使わない、長さ 22):
       param(1)=ax (2)=bx (4)=ay (5)=by (7..10)=ex epx ey epy   … x-y に射影した (結合を無視した) 値
       param1(同上) … x-y を非結合にした値 (u, v)。param1(11..14) = r1..r4
@@ -164,7 +167,8 @@ def tbdecoup(beam):
 # =============================================================================================
 def ttinit(mark, np0, rng, gcut=1.0e300, *, gauss=False, trgauss=True, jitter=True, dp0=0.0, wake=False,
            b41=None, center_fix=None):
-    """ttinit.f: 先頭 MARK の値から np0 個の粒子の初期分布を作る。戻り (np0, 6) の配列 (x, px/p0, y, py/p0, z, dp/p0: 正準変数。
+    """Translate `ttinit.f`: build the initial distribution of np0 particles from the values of the first MARK.
+    ttinit.f: 先頭 MARK の値から np0 個の粒子の初期分布を作る。戻り (np0, 6) の配列 (x, px/p0, y, py/p0, z, dp/p0: 正準変数。
     K64 は最後に tconvm で px/p に直すが、pysad の追跡 (TrackParticles) は正準変数を受けるので直さない)。
 
     mark: dict。AX BX AY BY EX EPX EY EPY R1 R2 R3 R4 DETR DX DPX DY DPY AZ (先頭 MARK の値)、
@@ -285,7 +289,8 @@ _TAG = ('        x ', '    px/p0 ', '        y ', '    py/p0 ', '        z ', ' 
 
 
 def ttstat(coords):
-    """ttstat.f の統計: coords (n, 6) = 正準変数 (x, px/p0, y, py/p0, z, dp/p0)。戻り (sa, ss): 重心 (6) と分散行列 (6×6、1/n で割る)。
+    """Translate the statistics of `ttstat.f`: return the centroid (6) and the 6x6 covariance matrix of the coordinates.
+    ttstat.f の統計: coords (n, 6) = 正準変数 (x, px/p0, y, py/p0, z, dp/p0)。戻り (sa, ss): 重心 (6) と分散行列 (6×6、1/n で割る)。
     K64 は内部変数 (px/p) に (1+dp) を掛けて px/p0 に戻してから積算する。ここは始めから px/p0。"""
     c = np.asarray(coords, dtype=float)
     n = c.shape[0]
@@ -309,7 +314,8 @@ def _e103(v):
 
 
 def ttstat_lines(coords, title, info=None, mat=True, lum=False):
-    """ttstat.f の表示 (書式 9001, 9002, 9003, 9006, 9004, 9005)。戻り (行のリスト, sa, ss, es)。
+    """Translate the printout of `ttstat.f` and return the lines, centroid, covariance and effective area.
+    ttstat.f の表示 (書式 9001, 9002, 9003, 9006, 9004, 9005)。戻り (行のリスト, sa, ss, es)。
     info: {'RAD','RFSW','GAUSS','DP','DP0','GCUT'} (見出しの 2 行目)。lum=True なら実効面積 (tlum: 奇数番と偶数番の粒子を二つのビームとみなす)
     と垂直の 4・6・8 次のモーメントも出す (K64 の MEASURE・TRACK は lum=.false. で呼ぶので出ない)。es = 実効面積 (lum のときだけ)。"""
     from .maintrack import fmt_g
@@ -368,7 +374,8 @@ def ttstat_lines(coords, title, info=None, mat=True, lum=False):
 # FFS のコマンド (tffsa.f の MEA_SURE / TRC_OD / LOGM_EASURE、trackb.f、tracke.f、trcoda.f)
 # =============================================================================================
 def mark_values(ffs, main=False):
-    """先頭 MARK の値 (ttinit が読む rlist(latt(1)+…))。FFS では tfsetparam のとおり EMITX EMITY SIGZ DP は大域変数から。
+    """Return the values of the first MARK that `ttinit` reads, or None if the first element is not a MARK.
+    先頭 MARK の値 (ttinit が読む rlist(latt(1)+…))。FFS では tfsetparam のとおり EMITX EMITY SIGZ DP は大域変数から。
     main=True (MAIN の TRACK: tfsetparam を通らない) なら MARK の定義のキーワード EMITX EMITY SIGMAZ DP から。
     先頭が MARK でなければ None (ttinit: 'Missing entrance condition of beam.')"""
     if not ffs.els or type(ffs.els[0]).__name__ != 'Marker':
@@ -432,7 +439,8 @@ def _adjust_l2(ffs, l20):
 
 
 class Tracker:
-    """tracke.f tracker の状態 (STANDBY / TRACK / CONT / POS / DISP / RESET)。追跡は FFS の TrackParticles (fn_track) と同じ経路。
+    """State of the `tracke.f` tracker (STANDBY / TRACK / CONT / POS / DISP / RESET), tracking along the `TrackParticles` path of FFS.
+    tracke.f tracker の状態 (STANDBY / TRACK / CONT / POS / DISP / RESET)。追跡は FFS の TrackParticles (fn_track) と同じ経路。
     粒子は (n, 6) の正準変数と生死のフラグで持つ。統計は生きている粒子だけ (K64 は落ちた粒子を配列の後ろへ回して np を減らす)。"""
 
     def __init__(self, ffs, jitter=None):
@@ -462,7 +470,8 @@ class Tracker:
         return self.x[self.alive != 0.0]
 
     def track(self, l20, cont=True):
-        """TRACK (cont=False: 保存した初期分布から) / CONT (前回の位置から) で l2 の入口まで追う"""
+        """Track from the saved initial distribution (TRACK) or from the previous position (CONT) up to the entrance of l2.
+        TRACK (cont=False: 保存した初期分布から) / CONT (前回の位置から) で l2 の入口まで追う"""
         l2 = _adjust_l2(self.ffs, l20)
         if not cont:
             self.x = self.x0.copy()
@@ -478,7 +487,8 @@ class Tracker:
             self.alive = np.array(r[6], dtype=float)
 
     def stat(self, title, write=None):
-        """ttstat (mat=.true., lum=.false.)。戻り (np, sv): sv = (xa, ya, xxa, yya, xya)。np<=1 なら sv は 1e20"""
+        """Compute the statistics of `ttstat` (mat=.true., lum=.false.) and return (np, sv) with sv = (xa, ya, xxa, yya, xya).
+        ttstat (mat=.true., lum=.false.)。戻り (np, sv): sv = (xa, ya, xxa, yya, xya)。np<=1 なら sv は 1e20"""
         xs = self.alive_x()
         n = xs.shape[0]
         if n <= 1:
@@ -490,7 +500,8 @@ class Tracker:
         return n, [float(self.sa[0]), float(self.sa[2]), float(self.ss[0, 0]), float(self.ss[2, 2]), float(self.ss[0, 2])]
 
     def reset(self):
-        """RESET と、FIXSEED のときの乱数の種の復元 (NISTACK$FIXSEED@Pop[])"""
+        """Implement RESET and restore the random-number seed for FIXSEED.
+        RESET と、FIXSEED のときの乱数の種の復元 (NISTACK$FIXSEED@Pop[])"""
         # k64: gs は FIXSEED でも種を戻さない (MEASURE を続けて呼ぶと分布が変わる。NISTACK$FIXSEED@Push/Pop が効かない: K64 の誤りの候補 P5-2)
         if compat.v2() and self.ffs.flags.get('FIXSEED', True):
             rng = self.ffs.rng
@@ -586,7 +597,8 @@ def _k64_trcod(ffs, measp, name):
 
 
 def cmd_measure(ffs, words, i):
-    """MEA_SURE [位置] (tffsa.f → trackb.f): 先頭 MARK の入口条件 (Twiss、EMITX、EMITY、DP、SIGZ、AZ) の分布の NP 個の粒子を
+    """Implement `MEASURE [position]`: track NP particles of the first-MARK distribution and print statistics, emittances and Twiss.
+    MEA_SURE [位置] (tffsa.f → trackb.f): 先頭 MARK の入口条件 (Twiss、EMITX、EMITY、DP、SIGZ、AZ) の分布の NP 個の粒子を
     位置 (既定は終端。前回の MEASURE/TRCOD の位置を覚える) の入口まで追い、重心・分散行列・射影/非結合の emittance と Twiss を表示する。
     FFS["MEASURE …"] の戻り値は {np, {重心 6}, {分散行列 6×6}}。LOGMEASURE 用に xa ya xxa xya yya を覚える。
     K64 は MEASURE で TRPT を ON にしたままにする。pysad は追跡の間だけ ON にして戻す (CALC などへの副作用を残さない)。"""
@@ -618,7 +630,8 @@ def cmd_measure(ffs, words, i):
 
 
 def cmd_trcod(ffs, words, i):
-    """TRC_OD [位置] (tffsa.f → trcoda.f): 分布 (JITTER は OFF 扱い = 重心を設計値に合わせる) を先頭から位置まで要素ごとに追い、
+    """Implement `TRCOD [position]`: track the distribution element by element and write the centroid and dp correlation into the Twiss.
+    TRC_OD [位置] (tffsa.f → trcoda.f): 分布 (JITTER は OFF 扱い = 重心を設計値に合わせる) を先頭から位置まで要素ごとに追い、
     各要素の入口での重心 (x, px, y, py) を Twiss の DX DPX DY DPY に、dp との相関 <u·dp>/<dp²> を EX EPX EY EPY に書く
     (dp の分散が 0 なら EX.. は書かない)。最後に位置での統計を表示する。位置より後ろの Twiss は変えない。
     次の CALC で Twiss は計算し直される (K64 と同じ)。
@@ -686,7 +699,8 @@ def cmd_trcod(ffs, words, i):
 
 
 def cmd_logmeasure(ffs, words, i):
-    """LOGM_EASURE (tffsa.f 9771): 直前の MEASURE / TRCOD の xa ya xxa xya yya (重心 x, y と分散 <xx> <xy> <yy>) を 1p,5g15.7 で表示"""
+    """Implement `LOGMEASURE`: print xa, ya, xxa, xya, yya from the last MEASURE / TRCOD.
+    LOGM_EASURE (tffsa.f 9771): 直前の MEASURE / TRCOD の xa ya xxa xya yya (重心 x, y と分散 <xx> <xy> <yy>) を 1p,5g15.7 で表示"""
     from .maintrack import fmt_g
     sv = getattr(ffs, '_measure_sv', None) or [0.0] * 5
     xa, ya, xxa, yya, xya = sv
@@ -695,7 +709,8 @@ def cmd_logmeasure(ffs, words, i):
 
 
 def ffs_command(ffs, W, words, i):
-    """ffscmd の FFS のコマンド分岐から (v2 モードだけ) 呼ばれる。対象でなければ None"""
+    """Dispatch FFS commands for this module (v2 mode only); return None if the command is not handled.
+    ffscmd の FFS のコマンド分岐から (v2 モードだけ) 呼ばれる。対象でなければ None"""
     from .ffscmd import _abbrev
     if compat.k64() and not (_abbrev(W, 'MEA_SURE') or _abbrev(W, 'TRC_OD') or _abbrev(W, 'LOGM_EASURE')):
         return None                                         # k64: ORBITJITTER・PUTMEASURE・GETMEASURE は従来どおり (無視)
@@ -763,7 +778,8 @@ def _ref_rows(ffs):
 
 
 def trcod_fix(ffs, measp):
-    """TRCOD FIXCOD [位置] (trcodf): 位置 1..measp の今の Twiss の EX EPX EY EPY DX DPX DY DPY (CALC か TRCOD が入れた値) を基準にする。
+    """Implement `TRCOD FIXCOD [position]` (trcodf): take the current EX..DPY Twiss values as the reference.
+    TRCOD FIXCOD [位置] (trcodf): 位置 1..measp の今の Twiss の EX EPX EY EPY DX DPX DY DPY (CALC か TRCOD が入れた値) を基準にする。
     K64 は添字 7..10 と 15..18 を写す。15..18 は DETR を入れる前の番号で、今の番号では DETR DX DPX DY (DPY が入らない)。
     v2 は意図どおり DX DPX DY DPY (trcodm は mfitdx..mfitdpy の名前で書いてあり、こちらは正しい)。"""
     rows = ffs.ensure_rows()
@@ -787,7 +803,8 @@ def trcod_fix(ffs, measp):
 
 
 def trcod_move(ffs, pos):
-    """TRCOD MVCOD [位置] (trcodm): 位置 pos (省略すると MEASURE / TRCOD の位置) の 1 点だけ、基準の DX DPX DY DPY を今の値にする
+    """Implement `TRCOD MVCOD [position]` (trcodm): reset the reference DX DPX DY DPY at a single position to current values.
+    TRCOD MVCOD [位置] (trcodm): 位置 pos (省略すると MEASURE / TRCOD の位置) の 1 点だけ、基準の DX DPX DY DPY を今の値にする
     (EX.. は変えない。私用の写しがあればそれも)。"""
     rows = ffs.ensure_rows()
     ref = _ref_rows(ffs)
@@ -802,7 +819,8 @@ def trcod_move(ffs, pos):
 
 
 def trcod_restore(ffs):
-    """TRCOD STNCOD (trcods): 私用の写し (FIXCOD・MVCOD が入れた基準) を参照光学の 8 関数へ戻す (REFERENCE で上書きした後など)。
+    """Implement `TRCOD STNCOD` (trcods): restore the reference optics from the private copy saved by FIXCOD and MVCOD.
+    TRCOD STNCOD (trcods): 私用の写し (FIXCOD・MVCOD が入れた基準) を参照光学の 8 関数へ戻す (REFERENCE で上書きした後など)。
     K64 は戻す範囲を、値の定まらない局所変数 meas0 で決める。v2 は FIXCOD で保存した範囲。FIXCOD がまだなら何もしない (K64 と同じ) が、注意を出す。"""
     sav = getattr(ffs, '_trcod_sav', None)
     rows = ffs.ensure_rows()
@@ -817,7 +835,8 @@ def trcod_restore(ffs):
 
 
 def trcod_reference(ffs):
-    """Python から: TRCOD の基準 (参照光学の EX EPX EY EPY DX DPX DY DPY) を (nlat, 8) の配列で返す。列の順は COD8_KEYS"""
+    """Return the TRCOD reference (EX EPX EY EPY DX DPX DY DPY) as an (nlat, 8) array, with columns in the order of `COD8_KEYS`.
+    Python から: TRCOD の基準 (参照光学の EX EPX EY EPY DX DPX DY DPY) を (nlat, 8) の配列で返す。列の順は COD8_KEYS"""
     ref = _ref_rows(ffs)
     return np.array([[float(getattr(r, a, 0.0)) for a in _COD8] for r in ref])
 
@@ -830,7 +849,8 @@ _ALIGN_V2 = _ALIGN_K64 + ('Decapole', 'Dodecapole', 'Multipole')        # v2 の
 
 
 def cmd_align(ffs, words, i):
-    """TRCOD ALIGN 要素1 要素2 (nalign.f)。i は ALIGN の語の位置。戻りは ALIGN から数えた消費語数。
+    """Implement `TRCOD ALIGN elem1 elem2` (`nalign.f`): set DX and DY of the magnets between the two elements to those of the first.
+    TRCOD ALIGN 要素1 要素2 (nalign.f)。i は ALIGN の語の位置。戻りは ALIGN から数えた消費語数。
     要素1 (最初に合う位置 is) の DX・DY を、is+1 から 要素2 (最初に合う位置 ie) までの磁石の DX・DY に書く (区間の磁石を先頭の磁石の
     ずれに揃える。同じ架台に載った磁石の並び)。is > ie なら入れ替える。要素1 が磁石でなければ 0 に揃える (K64 と同じ)。
     対象は BEND QUAD SEXT OCT (K64) と、v2 の拡張で DECA DODECA MULT。分割された磁石 (同じ名前が隙間なく並ぶ) は、
@@ -897,7 +917,8 @@ def cmd_align(ffs, words, i):
 # ORBITJITTER x y (tfojit.f)
 # =============================================================================================
 def cmd_orbitjitter(ffs, words, i):
-    """ORBITJ_ITTER xj yj (tfojit.f): 今の Twiss の DX に xj·tgauss()、DY に yj·tgauss() を、位置 1..nlat の順に (各位置で x、y の順に乱数を
+    """Implement `ORBITJ_ITTER xj yj` (`tfojit.f`): add Gaussian random jitter to DX and DY of the current Twiss at every position.
+    ORBITJ_ITTER xj yj (tfojit.f): 今の Twiss の DX に xj·tgauss()、DY に yj·tgauss() を、位置 1..nlat の順に (各位置で x、y の順に乱数を
     引いて) 足す。tgauss は GCUT で切った正規乱数 (FFS の乱数列を進める)。DPX・DPY と要素は変えない。次の CALC で Twiss は計算し直される。
     測定の読みの揺らぎ (各位置で独立) を Twiss の軌道に重ねる用途。値が 2 つ無ければ K64 と同じ文を出して行の残りを捨てる。"""
     if not _lat_ok(ffs, 'ORBITJITTER'):
@@ -927,7 +948,8 @@ def _putm_line(v5):
 
 
 def close_measure_files(ffs):
-    """PUTMEASURE / GETMEASURE が開いたままにしているファイルを閉じる (Python から。次の PUTMEASURE / GETMEASURE は開き直す:
+    """Close the files left open by PUTMEASURE / GETMEASURE (called from Python).
+    PUTMEASURE / GETMEASURE が開いたままにしているファイルを閉じる (Python から。次の PUTMEASURE / GETMEASURE は開き直す:
     GETMEASURE はファイルの先頭から読み直す)"""
     for a in ('_putm', '_getm'):
         st = getattr(ffs, a, None)
@@ -940,7 +962,8 @@ def close_measure_files(ffs):
 
 
 def cmd_putmeasure(ffs, words, i):
-    """PUTM_EASURE (nfputm_): 直前の MEASURE / TRCOD の xa ya xxa xya yya (重心 x、y と <xx> <xy> <yy>) を、環境変数 SADPOUT の名前の
+    """Implement `PUTM_EASURE`: append xa, ya, xxa, xya, yya of the last MEASURE / TRCOD to the file named by `SADPOUT`.
+    PUTM_EASURE (nfputm_): 直前の MEASURE / TRCOD の xa ya xxa xya yya (重心 x、y と <xx> <xy> <yy>) を、環境変数 SADPOUT の名前の
     ファイル (Unix なら FIFO でもよい) に 1 行 `%15.7g` 5 個のコンマ区切りで追記する。ファイルは最初の PUTMEASURE で追記用に開き、開いたまま
     にする (行ごとに flush)。標準エラーに `Putting data:…` を出す (K64 と同じ)。
     K64 との違い: SADPOUT が無い・開けないとき K64 は落ちる (exit(1)、または NULL の参照)。v2 は理由を表示して続ける。
@@ -973,7 +996,8 @@ def cmd_putmeasure(ffs, words, i):
 
 
 def read_measure_record(ffs):
-    """nfgetm_: 環境変数 SADPIN のファイルから次の 1 組 (xa ya xxa xya yya: コンマ区切りの 5 個) を読む。戻り 5 個のリスト、無ければ None
+    """Translate `nfgetm_`: read the next record (xa ya xxa xya yya) from the file named by `SADPIN`, or None if none.
+    nfgetm_: 環境変数 SADPIN のファイルから次の 1 組 (xa ya xxa xya yya: コンマ区切りの 5 個) を読む。戻り 5 個のリスト、無ければ None
     (理由を表示)。ファイルは最初の呼び出しで開き、開いたままにする (呼ぶたびに次の行)。"""
     path = os.environ.get('SADPIN', '')
     if not path:
@@ -1010,7 +1034,8 @@ def read_measure_record(ffs):
 
 
 def cmd_getmeasure(ffs, words, i):
-    """GET_MEASURE [alpha] (tfgetm.f + nfgetm_): SADPIN のファイルから相手の測定値 xa1 ya1 xxa1 xya1 yya1 を 1 組読み、
+    """Implement `GET_MEASURE [alpha]`: read a partner measurement from `SADPIN` and update the DX and DY fit targets at measp.
+    GET_MEASURE [alpha] (tfgetm.f + nfgetm_): SADPIN のファイルから相手の測定値 xa1 ya1 xxa1 xya1 yya1 を 1 組読み、
     MEASURE / TRCOD の位置 measp の 1 点の fit 条件 (FIT measp; DX …; DY …) の目標値を
         DX の目標 = (xa1 − xa)/2·alpha + 今の目標·(1 − alpha)、DY の目標 = (ya1 − ya)/2·alpha + 今の目標·(1 − alpha)
     に書き換える (xa、ya は自分の直前の MEASURE / TRCOD の重心。alpha の既定は 1)。二つのビームをそれぞれ別の SAD で追い、互いの重心の差の半分ずつ
@@ -1049,7 +1074,8 @@ def cmd_getmeasure(ffs, words, i):
 # MAIN の TRACK … TURNS=-1 (track.f: trpt=.true., rfsw=.true., nturn=1 → tracka.f の trpt の枝)
 # =============================================================================================
 def track_trpt(ffs, spec, write):
-    """MAIN の `TRACK USE=line NPART=n TURNS=-1;` (輸送路の 1 回通過)。maintrack.run_track から v2 モードだけ呼ばれる。
+    """Run the MAIN `TRACK USE=line NPART=n TURNS=-1` (single pass of a transport line), called in v2 mode only.
+    MAIN の `TRACK USE=line NPART=n TURNS=-1;` (輸送路の 1 回通過)。maintrack.run_track から v2 モードだけ呼ばれる。
     tracka.f: ttinit (先頭 MARK の Twiss と EMITX EMITY DP SIGMAZ AZ の分布) → `Statistics at Entrance` → tturn(1, nlat) を 1 回
     → `Statistics at Exit`。乱数の種は戻さない (tracka は NISTACK$FIXSEED を使わない)。
     粒子種の語 (PROTON など) は見ない (質量・電荷は大域変数 MASS・CHARGE)。

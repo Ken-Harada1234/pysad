@@ -1,4 +1,4 @@
-"""
+"""Matching by literal translation of SAD FIT / FREE / FIX / GO (`tffsmatch.f`, `tffscalc.f`, `qdcell.f` and related).
 match6.py — SAD の FIT / FREE / FIX / GO (tffsmatch.f, tffscalc.f, qdcell.f tdfun, tffsmatch.f tweigh/tfsolv/tgrad,
 tgetfv.f, tffsfreefix.f) の直訳によるマッチング
 
@@ -232,7 +232,8 @@ def _fmin(a, b):
 
 
 class Matcher:
-    """SAD の FIT/FREE/FIX/GO。lattice は pysad.lattice.Lattice (CELL のリング)。
+    """SAD FIT / FREE / FIX / GO matcher operating on a `pysad.lattice.Lattice` ring (CELL).
+    SAD の FIT/FREE/FIX/GO。lattice は pysad.lattice.Lattice (CELL のリング)。
 
     emx, emy, dpmax は SAD と同じく先頭 MARK の EMITX/EMITY/DP (なければ既定 EMITX=EMITY=0, DP=0.01) を使う。
     fit_value(loc, fun, dp, vgoal, vnow) → None なら条件を外す、数値なら目標を置き換える (SAD の FitValue)。
@@ -305,7 +306,8 @@ class Matcher:
         return seen
 
     def locate(self, name: str) -> int:
-        """ielmf: 要素名 → SAD の位置 (1 始まり、入口)。'NAME' はファミリーの最初、'NAME.n' は n 台目、$$$ は末尾"""
+        """Translate an element name into the SAD position (1-based entrance), as `ielmf`.
+        ielmf: 要素名 → SAD の位置 (1 始まり、入口)。'NAME' はファミリーの最初、'NAME.n' は n 台目、$$$ は末尾"""
         if name in ('$$$', '***'):
             return self.nlat
         if name == '^^^':
@@ -319,7 +321,8 @@ class Matcher:
 
     # ------------------------------------------------------------------ FREE / FIX
     def free(self, pattern: str, key: Optional[str] = None):
-        """FREE pattern [keyword]: pattern は SAD のワイルドカード (* ?)。複数はカンマ区切り"""
+        """Implement `FREE pattern [keyword]` with SAD wildcards (* ?), comma-separated for several patterns.
+        FREE pattern [keyword]: pattern は SAD のワイルドカード (* ?)。複数はカンマ区切り"""
         fams = self._families()
         for pat in pattern.split(','):
             pat = pat.strip()
@@ -354,7 +357,8 @@ class Matcher:
 
     # ------------------------------------------------------------------ FIT
     def fit_at(self, loc: Optional[str] = None, loc1: Optional[str] = None):
-        """FIT [loc [loc1]]: 以後の条件の位置 (省略時は $$$ / 直前の位置を保持)"""
+        """Implement `FIT [loc [loc1]]`: set the location for subsequent conditions.
+        FIT [loc [loc1]]: 以後の条件の位置 (省略時は $$$ / 直前の位置を保持)"""
         if loc is None:
             self._mfpnt = self.nlat
             self._mfpnt1 = self.nlat
@@ -364,7 +368,8 @@ class Matcher:
 
     def fit(self, fun: str, value, npoints: Optional[int] = None, loc: Optional[str] = None,
             loc1: Optional[str] = None):
-        """条件を登録: fun は 'BX', 'NX', ... ('M' を付けると最大フィット)。value は数値または (min, max)。
+        """Register a fit condition for function fun (e.g. `BX`, `NX`) with a value or (min, max) range.
+        条件を登録: fun は 'BX', 'NX', ... ('M' を付けると最大フィット)。value は数値または (min, max)。
         loc を与えると fit_at(loc[, loc1]) も行う (SAD: fit loc fun value)。"""
         if loc is not None:
             self.fit_at(loc, loc1)
@@ -393,7 +398,8 @@ class Matcher:
                                     mfitp=-abs(mfitp) if maxfit else abs(mfitp)))
 
     def fit_clear(self):
-        """FIT; (条件を消す: SAD では mfitp=0 にする)"""
+        """Implement `FIT;`: clear the fit conditions (sets mfitp=0 in SAD).
+        FIT; (条件を消す: SAD では mfitp=0 にする)"""
         self.conditions = []
         self._mfpnt = self._mfpnt1 = self.nlat
 
@@ -1117,7 +1123,8 @@ class Matcher:
 
     # ------------------------------------------------------------------ GO (tffsmatch)
     def go(self, calc_only: bool = False) -> _Res:
-        """GO: マッチング。calc_only=True は CALC (残差の評価だけ)。戻りは残差 _Res。
+        """Implement `GO`: run the matching, or only evaluate residuals with calc_only=True, and return the residuals.
+        GO: マッチング。calc_only=True は CALC (残差の評価だけ)。戻りは残差 _Res。
         CELL では tffsa.f の tfsetupcell と同じく、条件の最後に「周期性」の 2 条件 AX(1→$$$)=0, AY(1→$$$)=0 を加える
         (点数は既存条件の最大 |mfitp|)。周期解が安定なら AX, AY が 1 周で閉じて |df|<1e-8 で捨てられる (tdfun: cell かつ ka が
         この 2 条件で |df|<abmax なら cycle) ので効かないが、不安定で cosμ→1/cosμ に置き換えた「周期解」では 1 周で閉じず、

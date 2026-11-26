@@ -1,4 +1,4 @@
-"""
+"""Element geometry of SAD (literal translation of tfgeo.f tfgeo/tfgeo1 and tgrot.f module geolib).
 geo.py — SAD の要素幾何 (src/tfgeo.f tfgeo/tfgeo1, src/tgrot.f module geolib) の直訳
 
 SAD は各要素の「入口」について
@@ -82,7 +82,8 @@ _CLS2SADTYPE = {'Drift': 'DRIFT', 'Bend': 'BEND', 'Quadrupole': 'QUAD', 'Sextupo
 
 # ---------------------------------------------------------------- 数学関数 (tfloor.f mathfun)
 def xsincos(x: float) -> Tuple[float, float, float, float]:
-    """tfloor.f xsincos の直訳: (sin x, x−sin x, cos x, cos x − 1) を小さい x でも桁落ちなく返す"""
+    """Return (sin x, x - sin x, cos x, cos x - 1) without cancellation for small x (tfloor.f xsincos).
+    tfloor.f xsincos の直訳: (sin x, x−sin x, cos x, cos x − 1) を小さい x でも桁落ちなく返す"""
     ax = abs(x)
     if ax < _XTHCS1:
         x2 = x * x
@@ -106,7 +107,8 @@ def xsincos(x: float) -> Tuple[float, float, float, float]:
 
 
 def asinz(x: float) -> float:
-    """tfloor.f asinz の直訳: |x|<0.0032 は級数、それ以外は [-1,1] に切って asin"""
+    """Return asin with a series for |x| < 0.0032 and clipping to [-1, 1] otherwise (tfloor.f asinz).
+    tfloor.f asinz の直訳: |x|<0.0032 は級数、それ以外は [-1,1] に切って asin"""
     if abs(x) < 0.0032:
         x2 = x * x
         return x + x * x2 * (1.0 / 6.0 + x2 * 3.0 / 40.0)
@@ -120,7 +122,8 @@ def _atan(y: float, x: float) -> float:
 
 # ---------------------------------------------------------------- geolib (tgrot.f) の直訳
 def tfchi(geo: np.ndarray, i: int) -> float:
-    """tgrot.f tfchi: geo (3×3 以上) から CHI_i (i=1,2,3) を求める"""
+    """Compute CHI_i (i = 1, 2, 3) from a geo matrix of size 3x3 or larger (tgrot.f tfchi).
+    tgrot.f tfchi: geo (3×3 以上) から CHI_i (i=1,2,3) を求める"""
     if i == 2:
         return asinz(float(geo[2, 2]))
     if i == 1:
@@ -133,7 +136,8 @@ def tfchi(geo: np.ndarray, i: int) -> float:
 
 
 def tfchitogeo(chi: Sequence[float]) -> np.ndarray:
-    """tgrot.f tfchitogeo: CHI1..3 → 3×3 の軸ベクトル (geoini を回したもの)"""
+    """Convert CHI1..3 to 3x3 axis vectors by rotating geoini (tgrot.f tfchitogeo).
+    tgrot.f tfchitogeo: CHI1..3 → 3×3 の軸ベクトル (geoini を回したもの)"""
     c1, c2, c3 = math.cos(chi[0]), math.cos(chi[1]), math.cos(chi[2])
     s1, s2, s3 = math.sin(chi[0]), math.sin(chi[1]), math.sin(chi[2])
     g = np.empty((3, 3))
@@ -150,7 +154,8 @@ def tfchitogeo(chi: Sequence[float]) -> np.ndarray:
 
 
 def tfchitorot(chi: Sequence[float]) -> np.ndarray:
-    """tgrot.f tfchitorot: CHI1..3 → 回転行列"""
+    """Convert CHI1..3 to a rotation matrix (tgrot.f tfchitorot).
+    tgrot.f tfchitorot: CHI1..3 → 回転行列"""
     c1, c2, c3 = math.cos(chi[0]), math.cos(chi[1]), math.cos(chi[2])
     s1, s2, s3 = math.sin(chi[0]), math.sin(chi[1]), math.sin(chi[2])
     r = np.empty((3, 3))
@@ -167,7 +172,8 @@ def tfchitorot(chi: Sequence[float]) -> np.ndarray:
 
 
 def tfrotgeo(geo: np.ndarray, chi: Sequence[float]) -> np.ndarray:
-    """tgrot.f tfrotgeo: 軸ベクトル geo(3×3) を chi1 (y まわり) → chi2 → chi3 の順に回す"""
+    """Rotate the 3x3 axis vectors by chi1 (about y), chi2, then chi3 (tgrot.f tfrotgeo).
+    tgrot.f tfrotgeo: 軸ベクトル geo(3×3) を chi1 (y まわり) → chi2 → chi3 の順に回す"""
     c1, s1 = math.cos(chi[0]), math.sin(chi[0])
     c2, s2 = math.cos(chi[1]), math.sin(chi[1])
     c3, s3 = math.cos(chi[2]), math.sin(chi[2])
@@ -182,7 +188,8 @@ def tfrotgeo(geo: np.ndarray, chi: Sequence[float]) -> np.ndarray:
 
 
 def tfderotgeo(geo: np.ndarray, chi: Sequence[float]) -> np.ndarray:
-    """tgrot.f tfderotgeo: tfrotgeo の逆順 (chi3 → chi2 → chi1 を戻す)"""
+    """Undo tfrotgeo by rotating back in the order chi3, chi2, chi1 (tgrot.f tfderotgeo).
+    tgrot.f tfderotgeo: tfrotgeo の逆順 (chi3 → chi2 → chi1 を戻す)"""
     c1, s1 = math.cos(chi[0]), math.sin(chi[0])
     c2, s2 = math.cos(chi[1]), math.sin(chi[1])
     c3, s3 = math.cos(chi[2]), math.sin(chi[2])
@@ -197,7 +204,8 @@ def tfderotgeo(geo: np.ndarray, chi: Sequence[float]) -> np.ndarray:
 
 
 def tgrot(geo0: np.ndarray, geo1: np.ndarray) -> np.ndarray:
-    """tgrot.f tgrot: geo0 の軸系から見た geo1 の向きを (chi1, chi2, chi3) で返す"""
+    """Return the orientation (chi1, chi2, chi3) of geo1 as seen from the axes of geo0 (tgrot.f tgrot).
+    tgrot.f tgrot: geo0 の軸系から見た geo1 の向きを (chi1, chi2, chi3) で返す"""
     a = np.zeros(3)
     a[1] = asinz(-float(geo0[0, 1] * geo1[0, 2] + geo0[1, 1] * geo1[1, 2] + geo0[2, 1] * geo1[2, 2]))
     a13 = float(geo0[0, 0] * geo1[0, 2] + geo0[1, 0] * geo1[1, 2] + geo0[2, 0] * geo1[2, 2])
@@ -210,7 +218,8 @@ def tgrot(geo0: np.ndarray, geo1: np.ndarray) -> np.ndarray:
 
 
 def tforbitgeo(geo: np.ndarray, cod: Sequence[float]) -> np.ndarray:
-    """tgrot.f tforbitgeo: 設計幾何 geo(3×4) と閉軌道 (x,px,y,py) から軌道の幾何 (OGX.. / OCHI..) を作る"""
+    """Build the orbit geometry (OGX.. / OCHI..) from the design geometry geo(3x4) and the closed orbit (tgrot.f tforbitgeo).
+    tgrot.f tforbitgeo: 設計幾何 geo(3×4) と閉軌道 (x,px,y,py) から軌道の幾何 (OGX.. / OCHI..) を作る"""
     chi2i = -asinz(float(cod[3]))
     c2, s2 = math.cos(chi2i), math.sin(chi2i)
     chi1i = -asinz(float(cod[1]) / c2)
@@ -412,7 +421,8 @@ def _frac_values(el, sad_type: str, fr: float):
 # ---------------------------------------------------------------- 結果
 @dataclass
 class GeoResult:
-    """compute_geo の結果。geo[k-1] が SAD の geo(:,:,k) (k=1..nlat; nlat は要素数+1 で末尾 $$$)"""
+    """Result of compute_geo; geo[k-1] corresponds to SAD geo(:,:,k) for k = 1..nlat.
+    compute_geo の結果。geo[k-1] が SAD の geo(:,:,k) (k=1..nlat; nlat は要素数+1 で末尾 $$$)"""
     geo: np.ndarray          # (nlat, 3, 4)
     pos: np.ndarray          # (nlat,)  入口の s
     elements: Sequence       # 要素列 (部分要素の計算に使う)
@@ -424,20 +434,24 @@ class GeoResult:
         return int(self.geo.shape[0])
 
     def gxyz(self, k: int) -> np.ndarray:
-        """位置 k (1 始まり) の入口位置 (gx, gy, gz)"""
+        """Return the entrance position (gx, gy, gz) at position k (1-based).
+        位置 k (1 始まり) の入口位置 (gx, gy, gz)"""
         return self.geo[k - 1, :, 3]
 
     def axes(self, k: int) -> np.ndarray:
-        """位置 k の方向余弦 3×3 (列 0: x 軸, 1: y 軸, 2: z 軸)"""
+        """Return the 3x3 direction cosines at position k (columns are the x, y and z axes).
+        位置 k の方向余弦 3×3 (列 0: x 軸, 1: y 軸, 2: z 軸)"""
         return self.geo[k - 1, :, 0:3]
 
     def chi(self, k: int) -> Tuple[float, float, float]:
-        """位置 k の (CHI1, CHI2, CHI3) (tfchi)"""
+        """Return (CHI1, CHI2, CHI3) at position k (tfchi).
+        位置 k の (CHI1, CHI2, CHI3) (tfchi)"""
         g = self.geo[k - 1]
         return tfchi(g, 1), tfchi(g, 2), tfchi(g, 3)
 
     def geo_frac(self, k: int, fr: float) -> np.ndarray:
-        """tfgeofrac: 要素 k の入口から割合 fr の位置の幾何 (3×4)。fr=0 なら入口そのもの"""
+        """Return the geometry (3x4) at fraction fr of element k from its entrance (tfgeofrac); fr=0 gives the entrance.
+        tfgeofrac: 要素 k の入口から割合 fr の位置の幾何 (3×4)。fr=0 なら入口そのもの"""
         if fr == 0.0 or k >= self.nlat:
             return self.geo[min(k, self.nlat) - 1]
         el = self.elements[k - 1]
@@ -456,7 +470,8 @@ class GeoResult:
         return float(self.pos[k - 1] + _geo_length(part, st))
 
     def line_value(self, key: str, k: int, fr: float = 0.0):
-        """LINE["GX"/"GY"/"GZ"/"GCHI1"/"GCHI2"/"GCHI3"/"GEO", k+fr] (tftwiss.f tfline) と同じ値"""
+        """Return the same value as `LINE["GX"/"GY"/"GZ"/"GCHI1"/"GCHI2"/"GCHI3"/"GEO", k+fr]` (tftwiss.f tfline).
+        LINE["GX"/"GY"/"GZ"/"GCHI1"/"GCHI2"/"GCHI3"/"GEO", k+fr] (tftwiss.f tfline) と同じ値"""
         key = key.upper()
         gv = self.geo_frac(k, fr)
         if key == 'GX':
@@ -477,7 +492,8 @@ class GeoResult:
         raise KeyError(key)
 
     def orbit_value(self, key: str, k: int, cod: Sequence[float], fr: float = 0.0):
-        """LINE["OGX".."OCHI3"/"OGEO", k+fr]: 閉軌道 cod=(x,px,y,py) を乗せた幾何 (tforbitgeo)"""
+        """Return `LINE["OGX".."OCHI3"/"OGEO", k+fr]`: the geometry carrying the closed orbit cod=(x, px, y, py) (tforbitgeo).
+        LINE["OGX".."OCHI3"/"OGEO", k+fr]: 閉軌道 cod=(x,px,y,py) を乗せた幾何 (tforbitgeo)"""
         key = key.upper()
         og = tforbitgeo(self.geo_frac(k, fr), cod)
         m = {'OGX': ('G', 0), 'OGY': ('G', 1), 'OGZ': ('G', 2), 'OCHI1': ('C', 1), 'OCHI2': ('C', 2), 'OCHI3': ('C', 3)}
@@ -491,7 +507,8 @@ class GeoResult:
 def compute_geo(elements: Sequence, gx0: float = 0.0, gy0: float = 0.0, gz0: float = 0.0,
                 chi0: Sequence[float] = (0.0, 0.0, 0.0), iorg: int = 1,
                 geo_init: Optional[np.ndarray] = None, warn=None, momentum_eV: Optional[float] = None) -> GeoResult:
-    """SAD tfgeo (GEOCAL 時, calgeo=.true.) の直訳。
+    """Compute the element geometry as in SAD tfgeo (GEOCAL, calgeo=.true.) and return a GeoResult.
+    SAD tfgeo (GEOCAL 時, calgeo=.true.) の直訳。
 
     elements: pysad の要素列 (lat.elements / FFS.els)。要素数 n に対し nlat=n+1 で末尾が $$$。
     gx0, gy0, gz0, chi0, iorg: FFS の ORG コマンド (ORG 要素名 gx gy gz chi1 chi2 chi3; chi は度で与えるので

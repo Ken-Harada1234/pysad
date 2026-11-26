@@ -1,4 +1,4 @@
-"""
+"""Acceleration in TRPT (transport lines): reference momentum profile gammab and maps for accelerating CAVI / MULT(VOLT) in 4D Twiss.
 TRPT (輸送線) の加速: 基準運動量の分布 gammab と、加速のある CAVI / MULT(VOLT) の 4D Twiss 用の写像。
 
 SAD:
@@ -31,7 +31,8 @@ def _g(el, k):
 
 
 def rf_params(el):
-    """(vc, harm, freq, phi): CAVI は VOLT (+DVOLT)、HARM か _harm、FREQ、PHI。MULT も同じキー"""
+    """Return (vc, harm, freq, phi) of a CAVI (VOLT+DVOLT, HARM or _harm, FREQ, PHI); MULT uses the same keys.
+    (vc, harm, freq, phi): CAVI は VOLT (+DVOLT)、HARM か _harm、FREQ、PHI。MULT も同じキー"""
     tn = type(el).__name__
     if tn not in ('Cavity', 'Multipole'):
         return 0.0, 0.0, 0.0, 0.0
@@ -41,12 +42,14 @@ def rf_params(el):
 
 
 def is_acc_element(el) -> bool:
-    """TRPT で基準運動量を変える要素 (CAVI / MULT で VOLT≠0)"""
+    """Tell whether an element changes the reference momentum in TRPT (CAVI, or MULT with VOLT nonzero).
+    TRPT で基準運動量を変える要素 (CAVI / MULT で VOLT≠0)"""
     return rf_params(el)[0] != 0.0
 
 
 def tfacc(el, p1: float, h1: float, charge: float, amass: float):
-    """tfgeo.f tfacc (dir=.true.): 要素 el の出口の基準運動量 (単位 amass) と h"""
+    """Return the reference momentum (in amass units) and h at the exit of element el (tfgeo.f `tfacc`, dir=.true.).
+    tfgeo.f tfacc (dir=.true.): 要素 el の出口の基準運動量 (単位 amass) と h"""
     vc, harm, freq, phi = rf_params(el)
     v = abs(charge) * vc / amass
     if v == 0.0:
@@ -60,7 +63,8 @@ def tfacc(el, p1: float, h1: float, charge: float, amass: float):
 
 
 def gammab_profile(elements: List, p0: float, charge: float = 1.0, amass: float = ELMASS) -> np.ndarray:
-    """tfgeo1(acconly): gammab(1..nlat)。gammab(1)=p0 (単位 amass)、CAVI/MULT のたびに tfacc"""
+    """Compute gammab(1..nlat) with gammab(1)=p0, advancing by `tfacc` at each CAVI/MULT (tfgeo1 acconly).
+    tfgeo1(acconly): gammab(1..nlat)。gammab(1)=p0 (単位 amass)、CAVI/MULT のたびに tfacc"""
     n = len(elements)
     gb = np.empty(n + 1)
     gb[0] = p0
@@ -223,7 +227,8 @@ def _tgetdvh(p0, h0, dh):
 
 def acc_step(el, cod_in, gb0: float, gb1: float, charge: float = 1.0, amass: float = ELMASS,
              omega0: float = 0.0, trf0: float = 0.0, radcod: bool = False, rfsw: bool = True):
-    """加速のある CAVI / MULT(VOLT, K=0) の 1 要素: (6×6 の cod まわりのヤコビアン, 出口 cod)。
+    """Compute the 6x6 Jacobian and exit cod of one accelerating CAVI / MULT(VOLT, K=0) (translation of tcave.f / tmulte.f acc part).
+    加速のある CAVI / MULT(VOLT, K=0) の 1 要素: (6×6 の cod まわりのヤコビアン, 出口 cod)。
     tcave.f (CAVI) / tmulte.f の acc 部分 (MULT) の直訳。gb0 = gammab(l)、gb1 = gammab(l+1) (単位 amass)。
     基準運動量の規格化は出口で rg2 = gb0/gb1 を px, py, δ に掛けて gb1 に移す (trans も同じ)。
     行列は qcopymatg の sqrt(gb1/gb0) 倍は掛けていない (呼び出し側 ins_twiss で掛ける)"""
@@ -336,7 +341,8 @@ def acc_step(el, cod_in, gb0: float, gb1: float, charge: float = 1.0, amass: flo
 
 def make_acc(elements, p0: float, charge: float = 1.0, amass: float = ELMASS, omega0: float = 0.0,
              trf0: float = 0.0, radcod: bool = False, rfsw: bool = True):
-    """ins_twiss の acc 引数: {'gb': gammab, 'idx': 加速要素の添字の集合, 'step': (el, i, cod) → (M, cod_out)}。
+    """Build the acc argument of `ins_twiss` ({'gb', 'idx', 'step'}); return None if there are no accelerating elements.
+    ins_twiss の acc 引数: {'gb': gammab, 'idx': 加速要素の添字の集合, 'step': (el, i, cod) → (M, cod_out)}。
     加速要素が無ければ None"""
     idx = {i for i, el in enumerate(elements) if is_acc_element(el)}
     if not idx:

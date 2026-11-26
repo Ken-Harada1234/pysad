@@ -1,4 +1,4 @@
-"""
+"""`calc6d.py`: literal translation of the FFS flag CALC6D (6D CALC) of SAD.
 calc6d.py — SAD の FFS フラグ CALC6D (6 次元 CALC) の直訳
 ========================================================
 
@@ -66,7 +66,8 @@ PI2 = 2.0 * math.pi
 # ---------------------------------------------------------------------------
 
 def tfetwiss(r: np.ndarray, cod, normi: bool = True) -> np.ndarray:
-    """tffs.f tfetwiss の直訳。
+    """Literal translation of tfetwiss in tffs.f: compute the 28-component extended Twiss from r, cod, and normal.
+    tffs.f tfetwiss の直訳。
     r : 6×6 (物理座標 → 正規モード座標 の行列。temw の ri に相当)
     cod : 閉軌道 6 成分
     normi : etwiss2ri が返す normal (x-y モードが入れ替わっていない)
@@ -206,7 +207,8 @@ def tfetwiss(r: np.ndarray, cod, normi: bool = True) -> np.ndarray:
 
 
 def etwiss2ri(tw) -> tuple:
-    """tffs.f etwiss2ri の直訳。拡張 Twiss 28 成分 → ri (物理 → 正規モード座標) と normal (detr < 1)。"""
+    """Literal translation of etwiss2ri in tffs.f: convert the 28-component extended Twiss to ri and normal.
+    tffs.f etwiss2ri の直訳。拡張 Twiss 28 成分 → ri (物理 → 正規モード座標) と normal (detr < 1)。"""
     tw = np.asarray(tw, dtype=float)
     r1, r2, r3, r4, detr = tw[10], tw[11], tw[12], tw[13], tw[14]
     normal = detr < 1.0
@@ -293,12 +295,14 @@ _TW_FIELDS = ('alfx', 'betx', 'mux', 'alfy', 'bety', 'muy', 'etx', 'etpx', 'ety'
 
 
 def row_from_tw(tw, s: float, name: str) -> TwissRow:
-    """長さ 28 の twiss 配列 → TwissRow (lattice.py の列構成)"""
+    """Convert a 28-component twiss array into a TwissRow (column layout of lattice.py).
+    長さ 28 の twiss 配列 → TwissRow (lattice.py の列構成)"""
     return TwissRow(s=s, name=name, **{k: float(v) for k, v in zip(_TW_FIELDS, tw)})
 
 
 def tw_from_row(row: TwissRow) -> np.ndarray:
-    """TwissRow → 長さ 28 の twiss 配列"""
+    """Convert a TwissRow into a 28-component twiss array.
+    TwissRow → 長さ 28 の twiss 配列"""
     return np.array([getattr(row, k) for k in _TW_FIELDS], dtype=float)
 
 
@@ -452,7 +456,8 @@ def _closed_orbit(els, ph, rfsw, radcod, radiation, k64_continue=True):
 
 @dataclass
 class Calc6DResult:
-    """calc6d の結果。rows[l-1] = 要素 l の入口 (SAD の twiss(l,0,1:28))、rows[-1] = $$$"""
+    """Result of calc6d: rows[l-1] is the entrance of element l (twiss(l,0,1:28) in SAD), rows[-1] is the end.
+    calc6d の結果。rows[l-1] = 要素 l の入口 (SAD の twiss(l,0,1:28))、rows[-1] = $$$"""
     rows: List[TwissRow]
     stable: bool
     closed_orbit: np.ndarray
@@ -510,7 +515,7 @@ def calc6d(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False
            rad: bool = True, charge: float = 1.0, amass: float = ELMASS,
            twiss0: Optional[TwissRow] = None, radiation: Optional[bool] = None,
            out=None, with_emit: bool = True, fshift: float = 0.0, sc: Optional[dict] = None) -> Calc6DResult:
-    """
+    """Literal translation of CELL; CALC6D; CALC; (qcell6d) of SAD, computing the 6D closed orbit and extended Twiss.
     SAD の CELL; CALC6D; CALC; (qcell6d) の直訳。
 
     Parameters
@@ -610,7 +615,7 @@ def calc6d(lattice, momentum_eV: float, rfsw: bool = False, radcod: bool = False
 def calc6d_ins(lattice, momentum_eV: float, tw0, rfsw: bool = False, radcod: bool = False,
                trf0: float = 0.0, rad: bool = True, charge: float = 1.0, amass: float = ELMASS,
                radiation: Optional[bool] = None, fshift: float = 0.0) -> Calc6DResult:
-    """
+    """Literal translation of INS; CALC6D; CALC; (the cell=.false. branch of qcell6d in qcell.f) of SAD.
     SAD の INS; CALC6D; CALC; (qcell.f:404 qcell6d の cell=.false. の枝) の直訳。docs/history/work_emit_unstable.md B 節。
 
       qcell: `if(calc6d) call qcell6d` — CELL か INS かに関わらず 6D 経路に入る (qcell.f:62)。INS (cell=.false.) では
@@ -656,7 +661,8 @@ def calc6d_ins(lattice, momentum_eV: float, tw0, rfsw: bool = False, radcod: boo
 # ---------------------------------------------------------------------------
 
 def twiss_frac(res: Calc6DResult, l: int, fr: float) -> TwissRow:
-    """qtwiss.f qtwissfrac (calc6d=.true.) の直訳:
+    """Literal translation of qtwissfrac (calc6d=.true.) in qtwiss.f: extended Twiss at fraction fr from the entrance of element l.
+    qtwiss.f qtwissfrac (calc6d=.true.) の直訳:
     要素 l (1 始まり) の入口から割合 fr の位置の拡張 Twiss。
     trans = inv(etwiss2ri(twiss(l))) を部分要素 (qfracseg → ffscmd.FFS.frac_element) で伝搬し、
     ftwiss = tfetwiss(inv(trans), cod, normal)、位相は twiss(l) の NX/NY/NZ を足す。

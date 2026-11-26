@@ -1,4 +1,4 @@
-"""
+"""FFS command layer (literal translation of tffsa.f) and the FFS-related built-in functions of SAD.
 ffscmd.py — SAD の FFS コマンド層 (tffsa.f の直訳的な再現) と FFS 系組み込み関数
 
 SAD の FFS では各文の先頭語が
@@ -581,7 +581,8 @@ class FFS:
         return float(self.I.get('DP0', 0.0))
 
     def momentum(self, warn: bool = True):
-        """設計運動量 [eV/c]。v2 (B67): MAIN でも FFS でも MOMENTUM が設定されないまま、運動量を使う計算
+        """Return the design momentum [eV/c], warning once in v2 if MOMENTUM was never set before a calculation that uses it.
+        設計運動量 [eV/c]。v2 (B67): MAIN でも FFS でも MOMENTUM が設定されないまま、運動量を使う計算
         (EMIT・Emittance・追跡・RADINT・CALC6D・DA ほか) に入ったら、1 度だけ警告する (K64 は黙って 30 GeV)"""
         m = self.I.get('MOMENTUM', 30e9)
         if warn and type(m) is _DefaultMomentum and not getattr(self, '_mom_warned', False) and _compat.v2():
@@ -670,7 +671,8 @@ class FFS:
         return None
 
     def fn_renumber_element(self, args):
-        """RenumberElement[name, {n1, n2, ..}] (tfrenumber_element.f): 名前が name の要素の連番 (NAME.n の n) を n1 n2 .. に付け替える。
+        """Implement `RenumberElement[name, {n1, n2, ..}]`: renumber the NAME.n suffixes of the elements called name.
+        RenumberElement[name, {n1, n2, ..}] (tfrenumber_element.f): 名前が name の要素の連番 (NAME.n の n) を n1 n2 .. に付け替える。
         足りない分は最大の番号から続ける。USE のやり直しで元に戻る"""
         if len(args) != 2:
             raise SADError('General::narg: Number of arguments is expected to be 2 in RenumberElement')
@@ -735,7 +737,8 @@ class FFS:
         return 2
 
     def positions(self, pat: str) -> List[int]:
-        """パターン (または名前) に合う位置 (1 始まり) のリスト。tflinenamestk 相当"""
+        """Return the 1-based positions of the elements matching a pattern or name (like tflinenamestk).
+        パターン (または名前) に合う位置 (1 始まり) のリスト。tflinenamestk 相当"""
         p = pat.upper()
         if p in ('$$$', '***'):
             return [self.nlat]
@@ -769,7 +772,8 @@ class FFS:
         return self._nidx()['ords'][i]
 
     def families(self, pat: str) -> List[str]:
-        """パターンに合うファミリー名 (tfgetlineps mode 1)"""
+        """Return the family names matching a pattern (tfgetlineps mode 1).
+        パターンに合うファミリー名 (tfgetlineps mode 1)"""
         seen = []
         for k in self.positions(pat):
             if k <= len(self.els):
@@ -784,7 +788,8 @@ class FFS:
         return [els[i - 1] for i in lst if els[i - 1].name == fam]
 
     def elname(self, k):
-        """SAD の elname: 同名が 1 台だけなら NAME、複数なら NAME.n"""
+        """Return the SAD elname of an element: NAME if unique, NAME.n if the name occurs several times.
+        SAD の elname: 同名が 1 台だけなら NAME、複数なら NAME.n"""
         if k >= self.nlat:
             return '$$$'
         nm = self.els[k - 1].name
@@ -959,7 +964,8 @@ class FFS:
             self._in_ev = False
 
     def calc(self, quiet: bool = False, ini: bool = False):
-        """CELL/INS の光学計算。self.rows[l-1] = 要素 l の入口 (SAD の twiss(l))。
+        """Run the CELL/INS optics calculation, storing the entrance Twiss of each element in self.rows.
+        CELL/INS の光学計算。self.rows[l-1] = 要素 l の入口 (SAD の twiss(l))。
         CELL は不安定 (|cos μ|>1 等) でも SAD の qcell1 と同じく Twiss を作って続行する (判定は self.lat._qstat)。quiet=True は qcod の報告を出さない"""
         self._check_sol_optics(calc_only=True)
         if self.lat is None:
@@ -1159,7 +1165,8 @@ class FFS:
 
     # ------------------------------------------------------------------ InitialOrbits / WAKEOPT (tffsinitialcond, tffswake)
     def initial_orbits(self):
-        """tffsinitialcond: シンボル InitialOrbits = {{x, px, y, py, z, dp}, ...} (6 個) か {{28 個の Twiss}, ...} のリスト。
+        """Parse the symbol `InitialOrbits` (tffsinitialcond) into a dict of orbit and Twiss initial conditions, or None.
+        tffsinitialcond: シンボル InitialOrbits = {{x, px, y, py, z, dp}, ...} (6 個) か {{28 個の Twiss}, ...} のリスト。
         未定義 (シンボルのまま、Null) なら None。形が違えば SADError ('Error in InitialOrbits')。
         軌道は idp = nfr1..nfr (0 を除く) の順に入る (nfr=(n+1)/2、nfr1=−(n/2))。0 は中心の軌道 (ずれなし)。
         戻り: dict(nfr, nfam1, nfam, uini={idp: 28 個の配列}, has_tw={idp: 28 個形式で BX>0}, iuid={idp: 1 始まりの番号})"""
@@ -1225,7 +1232,8 @@ class FFS:
         return out
 
     def ini_optics(self, ini, dp0):
-        """tffscalc の InitialOrbits の部分 (INS): 中心 (idp=0) と各軌道の Twiss と軌道を計算する。
+        """Compute the Twiss parameters and orbits for the InitialOrbits part of tffscalc (INS), with optional wake coupling.
+        tffscalc の InitialOrbits の部分 (INS): 中心 (idp=0) と各軌道の Twiss と軌道を計算する。
         WAKEOPT (wake_optics_on) で WakeFunction を持つ要素があれば、要素の前後で全軌道が互いにキックを与え合う (wakeopt.wake_orbits)。
         そうでなければ各軌道は独立 (qcell1(fam=.true.) = 中心の入口の Twiss (28 個形式なら自分の Twiss) と、中心の入口の軌道 + ずれ)。
         戻り: {idp: TwissRow のリスト (位置 1..nlat)}"""
@@ -1374,7 +1382,8 @@ class FFS:
         return rows
 
     def ensure_geo(self):
-        """tfgeo: 要素の幾何 (geo.compute_geo)。GEOCAL (既定) なら CALC/USE/ORG などの後に計算し直し、
+        """Compute the element geometry (tfgeo, `geo.compute_geo`), recalculating or holding it according to GEOCAL/GEOFIX.
+        tfgeo: 要素の幾何 (geo.compute_geo)。GEOCAL (既定) なら CALC/USE/ORG などの後に計算し直し、
         GEOFIX なら最初の USE 直後の結果を保持する (tffsa.f:114-118: USE 直後は GEOFIX でも一度だけ計算)"""
         if self.lat is None:
             raise SADError('No beam line (USE first)')
@@ -1440,13 +1449,15 @@ class FFS:
         return self.rows
 
     def row(self, k):
-        """位置 k (1 始まり) の入口の Twiss"""
+        """Return the Twiss row at the entrance of position k (1-based).
+        位置 k (1 始まり) の入口の Twiss"""
         rows = self.ensure_rows()
         return rows[k - 1]
 
     @staticmethod
     def frac_element(el, fr):
-        """SAD qfraccomp (qtwiss.f) の直訳: 要素 el の入口から割合 fr (rx1=0, rx2=fr) までの部分要素を作る。
+        """Build the partial element from the entrance to a fraction fr of element el (literal translation of SAD qfraccomp).
+        SAD qfraccomp (qtwiss.f) の直訳: 要素 el の入口から割合 fr (rx1=0, rx2=fr) までの部分要素を作る。
         f1=1 (入口側あり), f2=0 (出口側なし)。pysad の K1/K2/K3 は長さあたりなので L を縮めれば積分値は r 倍になる。
         BEND: ANGLE·r, K0·r, E1 はそのまま (E1·f1/r × ANGLE·r = E1·ANGLE), E2=0,
               FRMD=0 なら F1=0、FRMD≠0 なら FRMD=-f1-2f2=-1。
@@ -1508,7 +1519,8 @@ class FFS:
         return part
 
     def row_frac(self, k, fr, rows=None):
-        """要素 k の中 (入口から fr の割合) の Twiss。SAD qtwissfrac の直訳: qfraccomp で部分要素を作り、
+        """Return the Twiss parameters inside element k at fraction fr of its length (literal translation of SAD qtwissfrac).
+        要素 k の中 (入口から fr の割合) の Twiss。SAD qtwissfrac の直訳: qfraccomp で部分要素を作り、
         入口の閉軌道から qtwiss (閉軌道まわりの転送行列) で伝搬する。rows: 使う Twiss の行 (既定は ensure_rows)"""
         if fr == 0.0 or k >= self.nlat:
             return self.row(k) if rows is None else rows[k - 1]
@@ -1709,7 +1721,8 @@ class FFS:
         return v
 
     def fn_synchrobeta(self, args):
-        """SynchroBetaEmittance1[nus0, nus1, dnus, mphi] (tfemit.f tfemits → temits.f)。Packages/emit.n の SynchroBetaEmittance が呼ぶ。
+        """Implement `SynchroBetaEmittance1[nus0, nus1, dnus, mphi]` (tfemit.f tfemits, temits.f), called by SynchroBetaEmittance.
+        SynchroBetaEmittance1[nus0, nus1, dnus, mphi] (tfemit.f tfemits → temits.f)。Packages/emit.n の SynchroBetaEmittance が呼ぶ。
         戻り: {{nus, emitx, emity, emitxp, emityp, conv}, …} (pysad/synchrobeta.py)"""
         if len(args) != 4 or not all(is_num(a) for a in args):
             raise SADError('General::wrongtype: "[{nusstart,nusstop,nusstep},mphi]"')
@@ -1764,7 +1777,8 @@ class FFS:
 
 
     def fn_master(self, args):
-        """Master[] (pgmast.f): 各要素の「マスター」。分割された要素 (同じ icomp が続くもの) の先頭は最後の分割の位置、残りは -先頭。
+        """Implement `Master[]` (pgmast.f): return the master index of each element for split elements.
+        Master[] (pgmast.f): 各要素の「マスター」。分割された要素 (同じ icomp が続くもの) の先頭は最後の分割の位置、残りは -先頭。
         BEND/QUAD/SEXT/OCT/MULT(22)/31/SOL 以外は 0。pysad は SPLIT を持たないので、対象の要素は自分自身 (長さ 0 の要素が続いても同じ)"""
         if len(args) > 1:
             raise SADError('General::narg: Number of arguments is expected to be 1 in Master')
@@ -1778,7 +1792,8 @@ class FFS:
         return out
 
     def fn_response_matrix(self, args):
-        """ResponseMatrix[mon, st, stt, opt, periodic, kind (, tune)] (pgrmat.f)。mon がリストなら行ごと"""
+        """Implement `ResponseMatrix[mon, st, stt, opt, periodic, kind (, tune)]` (pgrmat.f).
+        ResponseMatrix[mon, st, stt, opt, periodic, kind (, tune)] (pgrmat.f)。mon がリストなら行ごと"""
         from . import corr as _corr
         if len(args) < 6 or len(args) > 7:
             raise SADError('General::narg: Number of arguments is expected to be 6 or 7 in ResponseMatrix')
@@ -1848,7 +1863,8 @@ class FFS:
         self.invalidate()
 
     def spread_pending(self, fams=None):
-        """CALC の前に、LINE[key,"NAME.n"]= で設定されたファミリーの値を代表 (最初の 1 台) の値で全台に揃える。
+        """Before CALC, copy the value of the representative element to all elements of families set by `LINE[key, "NAME.n"]=`.
+        CALC の前に、LINE[key,"NAME.n"]= で設定されたファミリーの値を代表 (最初の 1 台) の値で全台に揃える。
         SAD の tftouch/tffsadjust と同じく、触ったキーは USE まで残り、CALC のたびに揃える
         (後から DELX/DELY 等で非代表に入れた誤差や tfadjst の共有値は、次の CALC で代表の値に戻る: bench_level31a の R11)"""
         pend = list(self._spread_pending)
@@ -1926,7 +1942,8 @@ class FFS:
 
 
     def ffs_var_list(self):
-        """FFS["VAR"] (tfvars.f): 変数ごとに {名前, キー, Now, Previous, Saved(要素の現在値), Minimum, Maximum, 結合先の要素名, 係数}"""
+        """Return `FFS["VAR"]` (tfvars.f): per-variable name, key, Now, Previous, Saved, Minimum, Maximum, linked element and coefficient.
+        FFS["VAR"] (tfvars.f): 変数ごとに {名前, キー, Now, Previous, Saved(要素の現在値), Minimum, Maximum, 結合先の要素名, 係数}"""
         m = self.matcher_()
         rows = []
         for v in m.variables:
@@ -1938,14 +1955,16 @@ class FFS:
         return rows
 
     def elname_of(self, el):
-        """要素オブジェクトの '.n' 付き名前 (最初の 1 台なら NAME.1)"""
+        """Return the element name with its '.n' suffix for an element object (NAME.1 for the first one).
+        要素オブジェクトの '.n' 付き名前 (最初の 1 台なら NAME.1)"""
         for k in range(1, self.nlat):
             if self.els[k - 1] is el:
                 return self.elname(k)
         return el.name
 
     def ffs_show_list(self):
-        """FFS$SHOW[] / FFS["SHOW"] (tfinitn.f 1025): 現在の fit 条件のリスト。各要素は SAD の出力どおり
+        """Return `FFS$SHOW[]` / `FFS["SHOW"]` (tfinitn.f): the list of current fit conditions in SAD's output format.
+        FFS$SHOW[] / FFS["SHOW"] (tfinitn.f 1025): 現在の fit 条件のリスト。各要素は SAD の出力どおり
         {comp1, comp2 ("" なら 1 点), fun (maxfit なら名前+'M'), goal, 運動量点の数 |mfitp|, scale (NX/NY/NZ は 2π、CHI は π/180、他 1)}"""
         m = self.matcher_()
         conds = []
@@ -1986,7 +2005,8 @@ class FFS:
         return Expr(S('Hold'), [first + lit[::-1] + pat[::-1]])
 
     def flag_query(self, name) -> float:
-        """?FLAG: フラグの値 (True → 1.0、False → 0.0)。NOxxx と sino (RING/INS/UNIFORM …) も受ける"""
+        """Return the value of a flag for `?FLAG` (True as 1.0, False as 0.0), also accepting NOxxx and sino flags.
+        ?FLAG: フラグの値 (True → 1.0、False → 0.0)。NOxxx と sino (RING/INS/UNIFORM …) も受ける"""
         w = str(name).upper()
         neg = False
         if w in _FLAG_ALT:
@@ -2028,11 +2048,13 @@ class FFS:
         self.I.globals['OMEGA0'] = 2.0 * math.pi * 299792458.0 * p0 / math.sqrt(1.0 + p0 * p0) / circ
 
     def run_text(self, text: str):
-        """FFS["..."] / Get の中の FFS コマンド列"""
+        """Run a sequence of FFS commands given in `FFS["..."]` or `Get`.
+        FFS["..."] / Get の中の FFS コマンド列"""
         return self.I.run(text, 'ffs')
 
     def fn_seedrandom(self, args):
-        """SeedRandom[n] は種 (n を uint32 に切り捨て)、SeedRandom["SAD"] は乱数の種類の選択 (状態は変えない。"SAD" 以外は System::error)、
+        """Implement `SeedRandom[n]`: set the random seed or select the generator type, or return the state with no argument.
+        SeedRandom[n] は種 (n を uint32 に切り捨て)、SeedRandom["SAD"] は乱数の種類の選択 (状態は変えない。"SAD" 以外は System::error)、
         SeedRandom[] は状態 {"SAD", seed, filled, next の下位語, 上位語} を返す。tfRandom_.c の癖 (gs で確認): リストは先頭が文字列なら種類の選択だけ
         (状態は変わらず、続く数は読まない)、数のリストは要素の値を未初期化のまま詰める (gs では 0 になり種 1)"""
         import struct
@@ -2059,7 +2081,8 @@ class FFS:
 
     # ------------------------------------------------------------------ Emittance[] / TrackParticles[]
     def fn_emittance(self, args):
-        """Emittance[opt] (Packages/emit.n): 規則のリストを返す。mode は Matrix→3, Orbit→2, OneTurnInformation→1, 既定 0
+        """Implement `Emittance[opt]` (Packages/emit.n): return the list of rules, with mode and SaveEMIT handling.
+        Emittance[opt] (Packages/emit.n): 規則のリストを返す。mode は Matrix→3, Orbit→2, OneTurnInformation→1, 既定 0
         (emit_extra.emittance_rules)。SaveEMIT->False (既定) のとき EMITX/EMITY/EMITZ/SIGE/SIGZ は Emittance[] の前の値に戻す
         (emit.n: `If[~(SaveEMIT/.op),EMITX=ex0;...]`)。EnergyLossU0 は eV (SAD で確認)。INTRA ON なら TouschekTable も作る"""
         from .emit_extra import emittance_rules, rules_to_sad_list
@@ -2153,7 +2176,8 @@ class FFS:
                 Rule(S('MomentumSpread'), e['momentum_spread']), Rule(S('BunchLength'), e['bunch_length'])]
 
     def beam_size_value(self, suffix: str, k: int, fr: float = 0.0):
-        """Twiss["SIG"//suffix, l] / LINE["SIG"//suffix, l] の値 (tftwiss.f:982-1005 + tfbeamkey): suffix 空 → 6×6 のリスト、
+        """Return the value of `Twiss["SIG"//suffix, l]` / `LINE["SIG"//suffix, l]` (tftwiss.f, tfbeamkey): beam sizes or matrix elements.
+        Twiss["SIG"//suffix, l] / LINE["SIG"//suffix, l] の値 (tftwiss.f:982-1005 + tfbeamkey): suffix 空 → 6×6 のリスト、
         'X' 'PX' 'Y' 'PY' 'Z' 'DP' → sqrt(Σ_ii)、'XY' 等 → Σ_ij。ビーム行列は beam_matrix_twiss (CALC6D なら beam_matrix_at)"""
         from .emit_extra import beam_size_at
         kk = min(k, self.nlat)
@@ -2170,7 +2194,8 @@ class FFS:
         return v.tolist() if hasattr(v, 'tolist') else float(v)
 
     def beam_matrix_twiss(self, k: int, fr: float = 0.0) -> np.ndarray:
-        """tfbeam (tfbeam.f、非 CALC6D) の直訳: 位置 k (+fr) の物理座標のビーム行列 Σ (6×6)。
+        """Build the 6x6 beam matrix in physical coordinates at position k (+fr), literal translation of tfbeam.f (non-CALC6D).
+        tfbeam (tfbeam.f、非 CALC6D) の直訳: 位置 k (+fr) の物理座標のビーム行列 Σ (6×6)。
         pysad の仕様 (11/05 ユーザー指示): SAD はグローバル EMITX/EMITY/SIGE をそのまま使うが、ここでは **EMIT を先に実行していること** を
         条件にし、EMIT が決めたエミッタンス・エネルギー広がりと現在の Twiss からビームサイズを作る。
         基準座標 (ノーマルモード) のビーム行列と物理座標への射影 (qtent の R1-R4 の変換、MINCOUP の下限、gauss の pfi=SIGE²) は SAD のまま。
@@ -2224,7 +2249,8 @@ class FFS:
         return dict(pbunch=float(g.get('PBUNCH', 0.0) or 0.0), mincoup=float(g.get('MINCOUP', 1e-2) or 0.0), intra=bool(self.flags['INTRA']))
 
     def beam_matrix_at(self, k):
-        """LINE["SIG..", k] 用: 要素 k の入口の平衡ビーム行列 Σ (6x6)。emit_extra の BeamMatrices (temit.f:214-222) を遅延計算してキャッシュ"""
+        """Return the equilibrium beam matrix at the entrance of element k for `LINE["SIG..", k]`, computed lazily and cached.
+        LINE["SIG..", k] 用: 要素 k の入口の平衡ビーム行列 Σ (6x6)。emit_extra の BeamMatrices (temit.f:214-222) を遅延計算してキャッシュ"""
         # v2 (P4): WSPAC ON かつ大域変数 WSPACSC≠0 なら、空間電荷つきの自己無撞着なビーム行列 (MINCOUP の下限つき。temit の反復の最終パス) を返す。
         # 既定 (WSPACSC = 0) は従来どおりゼロ電流の平衡値 (gs の追跡 (CODPLOT; WSPAC; EMIT; のあと) と 1% で合う。gs の追跡のビーム行列には MINCOUP の下限が
         # 入らない: 平らなリングは NaN)。k64 は従来どおり
@@ -2577,7 +2603,8 @@ class FFS:
         w('    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m\n\n')
 
     def fn_track(self, args):
-        """TrackParticles[{ls, beam}, ld, nt, nend] (tftrack.f:40-115, 233-300)。
+        """Implement `TrackParticles[{ls, beam}, ld, nt, nend]` (tftrack.f): track particles from position ls to ld over the given turns.
+        TrackParticles[{ls, beam}, ld, nt, nend] (tftrack.f:40-115, 233-300)。
         ls: 始点、ld: 終点 (既定 nlat)、nt..nend: 周の番号 (mt = nend−nt+1 周、既定 1)。
         ls, ld は nlat−1 を法にして正規化 (ls∈[1,nlat]、ld∈[2,nlat])。ld<=ls なら mt+1。
         mt>1 なら ls→nlat、(mt−2) 周、1→ld。mt==1 なら ls→ld。戻りの先頭は正規化した ld (merge(ld,ls,normal))。
@@ -2953,7 +2980,8 @@ class FFS:
         return out
 
     def fn_calculate_optics(self, args):
-        """CalculateOptics[lb, le, inicond, cell, idim (, geocal)] (tfoptics.f → qcell1)。
+        """Implement `CalculateOptics[lb, le, inicond, cell, idim (, geocal)]` (tfoptics.f, qcell1): compute Twiss over a section.
+        CalculateOptics[lb, le, inicond, cell, idim (, geocal)] (tfoptics.f → qcell1)。
         区間 lb..le の Twiss を inicond (28 個: Twiss["*",loc] の並び) から計算し、
         {各位置 lb..le の 28 個の Twiss のリスト, {stabx, staby, stabz}, {tracex, tracey, tracez}} を返す。
         cell≠0: 区間を周期系として周期解 (閉軌道 + Twiss) を求める (inicond は閉軌道探索の初期値と位相 PSIX/PSIY のみ使う)。
@@ -3102,7 +3130,8 @@ class FFS:
         return list(new), [True, True]
 
     def fn_dasurvey(self, args):
-        """DynamicApertureSurvey[range, nt, opt...] (Packages/dapert.n): 既定 Output->0, ExpandElementValues->True (k64。v2.4.0 F2: v2 の既定は False、B201),
+        """Implement `DynamicApertureSurvey[range, nt, opt...]` (Packages/dapert.n) with its default options.
+        DynamicApertureSurvey[range, nt, opt...] (Packages/dapert.n): 既定 Output->0, ExpandElementValues->True (k64。v2.4.0 F2: v2 の既定は False、B201),
         ReferenceOrbit->Default, PhaseX->0, PhaseY->0, PhaseZ->-Pi/2, Axes->"ZX", Damping->False, DampEnough->0"""
         from .dapert import dynamic_aperture
         if len(args) < 2:
@@ -3165,7 +3194,8 @@ class FFS:
         return [score, [rng, result[1]]]
 
     def fn_touschek(self, args):
-        """TouschekLifetime[nx, ny, nz, Formula->"K64"|"Piwinski"] (Packages/emit.n): TouschekTable (INTRA ON の emit/Emittance[] が作る) をスプライン補間して寿命 [s]。
+        """Implement `TouschekLifetime[nx, ny, nz, Formula->...]` (Packages/emit.n): the Touschek lifetime [s] from TouschekTable.
+        TouschekLifetime[nx, ny, nz, Formula->"K64"|"Piwinski"] (Packages/emit.n): TouschekTable (INTRA ON の emit/Emittance[] が作る) をスプライン補間して寿命 [s]。
         nx, ny は INF (= sadscript.INF) か実数、sige は SIGE グローバル。
         v2.3.0 T2: nx = ny = INF (運動量受容 nz·SIGE だけ) の寿命は、v2 の既定では Piwinski 型の式 (touschek.touschek_piwinski、独立に導出した式。
         K64 の当てはめの式は結合・丸いビームで ±20% 違う、docs/history/v23_T2.md)。k64 モードと Formula->"K64" は K64 の表のまま。
@@ -3201,7 +3231,8 @@ class FFS:
 
     # ------------------------------------------------------------------ MAIN レベルの命令 (FFS; の前)
     def main_exec(self, c: dict):
-        """parser.parse_main_commands の 1 命令を実行する (ON/OFF, EMIT, SET, TRACK)。
+        """Execute one command from `parser.parse_main_commands` (ON/OFF, EMIT, SET, TRACK) in the MAIN part.
+        parser.parse_main_commands の 1 命令を実行する (ON/OFF, EMIT, SET, TRACK)。
         MAIN の EMIT は USE=名前 でラインを選び EMIT を実行 (報告も出す)。TRACK は maintrack.run_track。"""
         from .maintrack import run_track
         k = c['cmd']
@@ -3859,7 +3890,8 @@ class FFS:
         return self.geo
 
     def fit_fun_value(self, kf: str, kp: int) -> float:
-        """条件表示用の関数値: 幾何 (GX..CHI3) は geo から、それ以外は twiss_value"""
+        """Return the function value shown in the fit-condition display: geometry from geo, otherwise `twiss_value`.
+        条件表示用の関数値: 幾何 (GX..CHI3) は geo から、それ以外は twiss_value"""
         if kf in ('GX', 'GY', 'GZ', 'CHI1', 'CHI2', 'CHI3'):
             g = self.ensure_geo()
             if kf[0] == 'G':
@@ -4106,7 +4138,8 @@ class FFS:
         self._sort_vars(m)
 
     def set_var(self, v, val):
-        """変数 v の値を要素に入れる。成分の変数はその成分だけ、ほかは同じ名前の要素すべて (と COUPLE の相手)"""
+        """Set the value of variable v into the elements (one component or all elements of the same name, plus the COUPLE partner).
+        変数 v の値を要素に入れる。成分の変数はその成分だけ、ほかは同じ名前の要素すべて (と COUPLE の相手)"""
         if v.get('noop'):
             return                                     # 先頭でない成分の既定のキーの変数: gs は値を持たず効かない
         if v.get('comp') and not v.get('compdef'):
@@ -4202,7 +4235,8 @@ class FFS:
         return r
 
     def print_unstable(self):
-        """tffsa.f: CELL で、最後の tffscalc の optstat のどれかが不安定なら 'Horizontal' / 'Vertical' / 'Horizontal/Vertical' + ' Unstable.'"""
+        """Print 'Horizontal', 'Vertical' or 'Horizontal/Vertical' plus ' Unstable.' after CELL if the last optics is unstable.
+        tffsa.f: CELL で、最後の tffscalc の optstat のどれかが不安定なら 'Horizontal' / 'Vertical' / 'Horizontal/Vertical' + ' Unstable.'"""
         m = self.matcher
         if m is None or not self.flags['CELL']:
             return
@@ -4347,7 +4381,8 @@ class FFS:
         return dict(form=form, jshow=jshow, lf=lf, lfs=lfs)
 
     def print_fit_table(self):
-        """CALC/GO 後の条件表示 (SAD の twelm 風): 位置ごとに、$$$ は AX BX NX AY BY NY LENG を全部、
+        """Print the fit-condition table after CALC/GO, per position, in the style of SAD twelm.
+        CALC/GO 後の条件表示 (SAD の twelm 風): 位置ごとに、$$$ は AX BX NX AY BY NY LENG を全部、
         他は fit した関数だけ。書式: 名前 a10, 'f '/'  ', 関数 a5, 目標 a10 (S 書式), 点数 1 桁 or '#', 1x, 現在値 (10.6)"""
         m = self.matcher
         if m is None or not self.rows:
@@ -4958,7 +4993,8 @@ class FFS:
             return None
 
     def type_cmd(self, pats):
-        """TYPE [pattern ...]: SAD の tftype の書式。パターンごとに、型 (tftype.f ltyp 順) のグループの前に ' ;' を出し、
+        """Implement `TYPE [pattern ...]`: print the nonzero keywords of matching elements in the format of SAD tftype.
+        TYPE [pattern ...]: SAD の tftype の書式。パターンごとに、型 (tftype.f ltyp 順) のグループの前に ' ;' を出し、
         値が 0 でないキーワード (と既定の変数 ival: BEND の ANGLE、QUAD の K1、DRIFT の L など。これは 0 でも出す) を
         SAD のキーワード順 (sadkw.KEYWORDS) で並べる。ROTATE は度で ' DEG' を付ける。値は最短表現、値の後は 5 の倍数の幅まで空白
         (最後は ' )')、全部の後に ' ;'"""
@@ -5133,7 +5169,8 @@ class FFS:
                    ('R_MATRIX', 'R'), ('B_EAM', 'B'), ('P_HYSICAL', 'P'), ('D_UMPOPTICS', 'D'))
 
     def disp_cmd(self, words, i):
-        """DISP [パターン] [モード] [loc1 [loc2]]: tfdisp.f の直訳 (表示範囲)。
+        """Implement `DISP [pattern] [mode] [loc1 [loc2]]` (literal translation of tfdisp.f), including the display range.
+        DISP [パターン] [モード] [loc1 [loc2]]: tfdisp.f の直訳 (表示範囲)。
         語を 1 つずつ読み、パターン (| < { * % を含む) は表示する要素名の絞り込み (temat)、ALL は範囲 1..nlat、モード語 (R_MATRIX O_RBIT E_XTREMUM ...)、
         それ以外は位置 (数式・NAME・NAME.n・NAME.n+2・$$$・^^^) として 1 つ目を loc1、続く 1 語が位置なら loc2 (そうでなければ loc2=loc1)。
         範囲 (id1, id2) は FFS に保持され (USE で 1..nlat に戻る)、位置を省くと前回の範囲が使われる。
@@ -5482,7 +5519,8 @@ class FFS:
             lines += 1
 
     def radint_cmd(self):
-        """RADINT: INTGRL.f の直訳 (pysad/radint.py)。直前の CALC の Twiss (DP0 の行) を使う。"""
+        """Implement `RADINT`: radiation integrals (literal translation of INTGRL.f) using the Twiss of the last CALC.
+        RADINT: INTGRL.f の直訳 (pysad/radint.py)。直前の CALC の Twiss (DP0 の行) を使う。"""
         from . import radint as _radint
         rows = self.ensure_rows()
         chrom = None
@@ -5528,7 +5566,8 @@ class FFS:
             self.lat._qstat = q0
 
     def chro_cmd(self):
-        """CHROMATICITY: tfchro.f の直訳。四極・6 極・多極 (MULT) の寄与を 1 要素ずつ表示し、最後に合計。
+        """Implement `CHROMATICITY` (tfchro.f): show the chromaticity contribution of each quadrupole, sextupole and multipole.
+        CHROMATICITY: tfchro.f の直訳。四極・6 極・多極 (MULT) の寄与を 1 要素ずつ表示し、最後に合計。
         現在の Twiss (直前の CALC、dp0 の行) の要素入口/出口の α β と分散 EX から閉形式で求める。BEND は寄与に数えない (SAD も同じ)。
         四極 / MULT の K1:  -(v β + (1+α²)/β L + α(i+1) - α(i)) / 2   (水平)、  -(-v β + (1+α²)/β L + Δα) / 2 (垂直)
         6 極 / MULT の K2:   ±(β(i) η(i) + β(i+1) η(i+1)) v / 2        (水平 +、垂直 -)"""
@@ -5562,7 +5601,8 @@ class FFS:
         self.write(f' {"TOTAL":12s} {gx:17.3f}{gy:17.3f}' + chr(10))
 
     def save_cmd(self, pats):
-        """SAVE [ALL] [pattern..]: 現在値を設計値に (誤差の基準、RESET の戻り先)"""
+        """Implement `SAVE [ALL] [pattern..]`: store the current values as design values (the reference for errors and RESET).
+        SAVE [ALL] [pattern..]: 現在値を設計値に (誤差の基準、RESET の戻り先)"""
         fams = []
         for p in pats or ['*']:
             if p.upper() == 'ALL':
@@ -5678,7 +5718,8 @@ def _locate_ffs(src: str):
 
 
 def split_main_ffs(src: str):
-    """FFS の文で MAIN 部と FFS 部に分ける (_locate_ffs)。MAIN 部の ON/OFF 行は [(flag, bool)] で返す"""
+    """Split an FFS statement into its MAIN part and FFS part (`_locate_ffs`), returning the ON/OFF flags of the MAIN part.
+    FFS の文で MAIN 部と FFS 部に分ける (_locate_ffs)。MAIN 部の ON/OFF 行は [(flag, bool)] で返す"""
     loc = _locate_ffs(src)
     if loc is None:
         main, rest = src.split('\n'), []
@@ -5701,7 +5742,8 @@ def split_main_ffs(src: str):
 
 
 def run_sad(paths: List[str], out=None, cwd: Optional[str] = None):
-    """複数ファイルを連結して (SAD の `gs lattice script` の慣習) 実行する"""
+    """Run several lattice and script files concatenated, following the SAD `gs lattice script` convention.
+    複数ファイルを連結して (SAD の `gs lattice script` の慣習) 実行する"""
     from . import parser as _parser
     src = ''
     for p in paths:
@@ -5710,7 +5752,8 @@ def run_sad(paths: List[str], out=None, cwd: Optional[str] = None):
 
 
 def main_part(src: str) -> str:
-    """FFS の文より前 (MAIN 部) の原文 (ON/OFF も残す)"""
+    """Return the original text of the MAIN part (before the FFS statement), keeping ON/OFF lines.
+    FFS の文より前 (MAIN 部) の原文 (ON/OFF も残す)"""
     loc = _locate_ffs(src)
     return src if loc is None else src[:loc['main_end']]
 

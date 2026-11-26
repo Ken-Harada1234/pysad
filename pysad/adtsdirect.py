@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.3.0 R2: 実際の強さの追跡 + NAFF から ADTS・チューンの δ 依存を直接求める (多項式フィット)。K64 にない機能 (解析値 resdrive.adts との比較用)。
+"""Direct ADTS and tune dependence on delta from tracking with actual strengths plus NAFF and polynomial fits (not in K64).
+v2.3.0 R2: 実際の強さの追跡 + NAFF から ADTS・チューンの δ 依存を直接求める (多項式フィット)。K64 にない機能 (解析値 resdrive.adts との比較用)。
 
 Q2 の比較 (6 極の強さを ×(+1,-1,0) にした偶数次の差) は交差項を消す間接的な方法だった。ここは**強さを変えず**に、
 アクション (Jx, Jy) の格子 (各 ±位相の対) を追跡し、各粒子の NAFF のチューンを J の多項式でフィットして ∂ν/∂J を取る。
@@ -23,12 +24,14 @@ TWO_PI = 2.0 * math.pi
 
 
 def fr(a):
-    """端数 (−0.5〜0.5)"""
+    """Return the fractional part of a tune folded into the range -0.5 to 0.5.
+    端数 (−0.5〜0.5)"""
     return (np.asarray(a) + 0.5) % 1.0 - 0.5
 
 
 def grid_actions(jmax, nstep=5):
-    """Jx, Jy ∈ {0..nstep}·jmax/nstep の (nstep+1)² 点 (Jx, Jy の配列)。(0, 0) は含めない"""
+    """Build the grid of actions (Jx, Jy) on (nstep+1)^2 points up to jmax, excluding (0, 0).
+    Jx, Jy ∈ {0..nstep}·jmax/nstep の (nstep+1)² 点 (Jx, Jy の配列)。(0, 0) は含めない"""
     a = np.arange(nstep + 1) * jmax / nstep
     jx, jy = np.meshgrid(a, a, indexing='ij')
     jx, jy = jx.ravel(), jy.ravel()
@@ -37,7 +40,8 @@ def grid_actions(jmax, nstep=5):
 
 
 def initial_coords(twiss0, jx, jy, phix=0.0, phiy=0.0, delta=0.0, orbit=None):
-    """アクション・位相から (x, px, y, py, z, δ)。twiss0 = ((αx, βx), (αy, βy))。orbit = (x, px, y, py) の閉軌道 (δ≠0 の追跡)"""
+    """Compute initial coordinates (x, px, y, py, z, delta) from actions and phases, using the Twiss parameters and the closed orbit.
+    アクション・位相から (x, px, y, py, z, δ)。twiss0 = ((αx, βx), (αy, βy))。orbit = (x, px, y, py) の閉軌道 (δ≠0 の追跡)"""
     (ax, bx), (ay, by) = twiss0
     jx = np.atleast_1d(np.asarray(jx, dtype=float))
     jy = np.atleast_1d(np.asarray(jy, dtype=float))
@@ -55,7 +59,8 @@ def initial_coords(twiss0, jx, jy, phix=0.0, phiy=0.0, delta=0.0, orbit=None):
 
 
 def track_record(elements, momentum_eV, coords, nturn=1024, tracker=None):
-    """coords (粒子数 × 6) を nturn 周追跡 (RF 空洞は止める rfsw=False、放射なし) し、各周の始点の座標 (nturn, n, 6) を返す。
+    """Track particles for nturn turns (RF off, no radiation) and return the coordinates at the start of each turn.
+    coords (粒子数 × 6) を nturn 周追跡 (RF 空洞は止める rfsw=False、放射なし) し、各周の始点の座標 (nturn, n, 6) を返す。
     tracker(c) は 1 周の写像 (省略すると pysad の track6n = k64 の追跡)"""
     from .track6n import track_particles_fast
     tr = tracker or (lambda cc: track_particles_fast(elements, cc, 1, momentum_eV, 0.0, False, False, False))
@@ -68,7 +73,8 @@ def track_record(elements, momentum_eV, coords, nturn=1024, tracker=None):
 
 
 def record_tunes(rec, twiss0, window=1, guess=None, halfwidth=0.02, nturn=None, skip=0, orbit=None):
-    """座標列 rec (ターン × 粒子 × 6) の各粒子の NAFF のチューン (νx, νy) (符号つき端数、粒子数 × 2)。
+    """Compute the NAFF tune (nux, nuy) of each particle from a turn-by-turn coordinate record, as signed fractional parts.
+    座標列 rec (ターン × 粒子 × 6) の各粒子の NAFF のチューン (νx, νy) (符号つき端数、粒子数 × 2)。
     窓の次数 window (Laskar の Hann^p)、周数 nturn (先頭から)、skip (先頭の捨てる周数 = 初期位相の位置をずらす)。
     guess = (fx0, fy0) (線形のチューンの端数) を与えると fx0 ± halfwidth の範囲のピークを探す (強制振動のピークを避ける)。
     orbit は閉軌道の座標 (差し引く。省略すると平均を引く)"""
@@ -101,7 +107,8 @@ def _terms(order, need_x, need_y):
 
 
 def fit_tune_surface(jx, jy, nu, order=3, jscale=None, weights=None):
-    """ν(Jx, Jy) = ν0 + Σ_{1≤a+b≤order} c_ab Jx^a Jy^b の最小二乗。戻り dict: nu0、c (キー (a,b) → c_ab、単位 1/(m rad)^(a+b))、rms (フィットの残差の rms)、
+    """Least-squares fit of the tune as a polynomial in the actions Jx and Jy, returning coefficients and residuals.
+    ν(Jx, Jy) = ν0 + Σ_{1≤a+b≤order} c_ab Jx^a Jy^b の最小二乗。戻り dict: nu0、c (キー (a,b) → c_ab、単位 1/(m rad)^(a+b))、rms (フィットの残差の rms)、
     maxres、n (点数)、terms。jscale (J の規格化、既定 max J) で条件数を保つ"""
     jx = np.asarray(jx, dtype=float)
     jy = np.asarray(jy, dtype=float)
@@ -118,13 +125,15 @@ def fit_tune_surface(jx, jy, nu, order=3, jscale=None, weights=None):
 
 
 def pair_average(nu, npair_axis=0):
-    """±位相の対 (前半 = (φ, φ)、後半 = (φ+π, φ+π)) のチューンの平均 (粒子数が偶数、前半と後半が対)"""
+    """Average the tunes over pairs of particles with opposite phases (phi, phi) and (phi+pi, phi+pi).
+    ±位相の対 (前半 = (φ, φ)、後半 = (φ+π, φ+π)) のチューンの平均 (粒子数が偶数、前半と後半が対)"""
     n = len(nu) // 2
     return 0.5 * (nu[:n] + nu[n:2 * n])
 
 
 def adts_from_tunes(jx, jy, nu, order=3, nu_lin=None):
-    """nu (粒子数 × 2、符号つき端数。jx, jy はその粒子のアクション) から ADTS を求める。
+    """Compute the ADTS coefficients from the particle tunes by polynomial fitting in the actions.
+    nu (粒子数 × 2、符号つき端数。jx, jy はその粒子のアクション) から ADTS を求める。
     νx のフィットは Jx>0 の点、νy は Jy>0 の点 (その面の信号がある粒子) だけを使う。nu_lin (線形のチューン端数 (fx, fy)) があれば、
     フィットの前に ν から fr(ν − nu_lin) + nu_lin にして整数・折り返しを揃える。戻り dict (ν0、xx = ∂νx/∂Jx、xy = ∂νx/∂Jy、yx = ∂νy/∂Jx、yy = ∂νy/∂Jy、rms、フィット)"""
     jx = np.asarray(jx, dtype=float)
@@ -143,7 +152,8 @@ def adts_from_tunes(jx, jy, nu, order=3, nu_lin=None):
 
 
 def fit_delta_curve(delta, nu, order=3):
-    """ν(δ) = Σ_{n≤order} c_n δ^n の最小二乗。戻り dict: nu0、d1 = ∂ν/∂δ、d2 = ∂²ν/∂δ²、d3 (n! 倍)、rms"""
+    """Least-squares fit of the tune as a polynomial in delta, returning nu0 and the derivatives d1, d2, d3.
+    ν(δ) = Σ_{n≤order} c_n δ^n の最小二乗。戻り dict: nu0、d1 = ∂ν/∂δ、d2 = ∂²ν/∂δ²、d3 (n! 倍)、rms"""
     delta = np.asarray(delta, dtype=float)
     nu = np.asarray(nu, dtype=float)
     s = np.abs(delta).max()
@@ -159,7 +169,8 @@ def fit_delta_curve(delta, nu, order=3):
 # パラキシャルなハミルトニアンだけの追跡 (resdrive の解析式と同じ模型): 線形の転送行列 + 薄い 6 極・8 極の kick
 # ---------------------------------------------------------------------------------------------
 def paraxial_ops(lat, nslice=40, bend_cubic=False, bend_edge=False):
-    """lat の各素子を、線形の 4×4 転送行列 (δ=0、素子の transfer_matrix の x, px, y, py の部分) と、薄い 6 極・8 極の kick
+    """Split lattice elements into linear 4x4 transfer matrices and thin sextupole and octupole kicks as a list of operations.
+    lat の各素子を、線形の 4×4 転送行列 (δ=0、素子の transfer_matrix の x, px, y, py の部分) と、薄い 6 極・8 極の kick
     に分けた操作列 [(M4, kind, k)]。SEXT・OCT・薄い MULT (K2L・K3L) が kick。厚い SEXT・OCT は nslice 個の薄レンズ (中点則: ドリフト h/2, kick, h/2 …)。
     kick は pysad の追跡と同じ向き: 6 極 Δpx = −(K2L/2)(x²−y²)、Δpy = +K2L·x·y。8 極 Δpx = −(K3L/6)(x³−3xy²)、Δpy = −(K3L/6)(y³−3x²y)。
     厚い MULT (K1≠0 で K2・K3 つき)、スキュー・回転・DX・DY つきの多極は未対応 (例外)。他の素子 (BEND・QUAD・DRIFT・...) は線形の行列だけ"""
@@ -228,7 +239,8 @@ def paraxial_ops(lat, nslice=40, bend_cubic=False, bend_edge=False):
 
 
 def paraxial_tracker(lat, nslice=40, bend_cubic=False, bend_edge=False):
-    """paraxial_ops から 1 周の写像 tracker(coords (n × 6)) → coords を作る (z, δ は変えない)"""
+    """Build a one-turn map tracker (n x 6 coordinates) from the operations of `paraxial_ops`, leaving z and delta unchanged.
+    paraxial_ops から 1 周の写像 tracker(coords (n × 6)) → coords を作る (z, δ は変えない)"""
     ops = paraxial_ops(lat, nslice, bend_cubic, bend_edge)
 
     def tr(c):
@@ -263,7 +275,8 @@ def paraxial_tracker(lat, nslice=40, bend_cubic=False, bend_edge=False):
 # まとめ: ラティスから直接 (追跡 + NAFF + フィット) の ADTS
 # ---------------------------------------------------------------------------------------------
 def lattice_start(lat, delta=0.0, rows=None):
-    """リング先頭の (twiss0 = ((αx, βx), (αy, βy)), orbit = (x, px, y, py) の閉軌道, 線形のチューンの端数 guess, 線形のチューン (νx, νy))。
+    """Return the Twiss parameters, closed orbit, and linear tune at the start of the ring, using `CALC` at the given delta.
+    リング先頭の (twiss0 = ((αx, βx), (αy, βy)), orbit = (x, px, y, py) の閉軌道, 線形のチューンの端数 guess, 線形のチューン (νx, νy))。
     delta≠0 ならそのエネルギーの CALC (閉軌道・光学)"""
     rows = rows if rows is not None else lat.twiss_table(delta=delta)
     r0 = rows[0]
@@ -274,7 +287,8 @@ def lattice_start(lat, delta=0.0, rows=None):
 
 
 def direct_adts(lat, momentum_eV, jmax, delta=0.0, nturn=1024, order=2, nstep=5, window=1, phase=(0.0, 0.0), tracker=None, halfwidth=0.02, rows=None):
-    """ラティス lat の δ における ADTS を追跡 + NAFF + 多項式フィットで直接求める (J の格子 (nstep+1)² 点 × ±位相の対、RF 止め、放射なし)。
+    """Compute the ADTS of a lattice directly by tracking, NAFF, and polynomial fitting on an action grid with RF off and no radiation.
+    ラティス lat の δ における ADTS を追跡 + NAFF + 多項式フィットで直接求める (J の格子 (nstep+1)² 点 × ±位相の対、RF 止め、放射なし)。
     戻り dict: adts_from_tunes の結果 + 'nu_lin'。xy は ∂νx/∂Jy と ∂νy/∂Jx の平均"""
     tw, orb, g, nu = lattice_start(lat, delta, rows)
     jx, jy = grid_actions(jmax, nstep)
@@ -292,7 +306,8 @@ def direct_adts(lat, momentum_eV, jmax, delta=0.0, nturn=1024, order=2, nstep=5,
 
 
 def tune_vs_delta(lat, momentum_eV, deltas, j=1e-12, nturn=1024, window=1, halfwidth=0.05):
-    """微小振幅 (J=j、x・y とも) の NAFF のチューンの δ 依存。粒子は δ ごとの閉軌道から出す。戻り (n, 2) のチューン (符号つき端数) と CALC の線形のチューン (n, 2)"""
+    """Compute the delta dependence of the NAFF tune for small amplitude, with particles started on the closed orbit at each delta.
+    微小振幅 (J=j、x・y とも) の NAFF のチューンの δ 依存。粒子は δ ごとの閉軌道から出す。戻り (n, 2) のチューン (符号つき端数) と CALC の線形のチューン (n, 2)"""
     from .track6n import track_particles_fast
     out, ref = [], []
     for d in deltas:

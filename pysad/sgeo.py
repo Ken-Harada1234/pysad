@@ -1,4 +1,4 @@
-"""
+"""Geometry of SOL regions (from a BOUND != 0 SOL to the next), translation of tsgeo.f (tsgeo, tsgeo1) in K64.
 SOL 領域 (BOUND≠0 の SOL から次の BOUND≠0 の SOL まで) の幾何。K64 の tsgeo.f (tsgeo、tsgeo1)。
 
 GEO≠0 の SOL (領域の始端か終端のどちらか一方) を基準に、SOL のずれ (DX DY) と向き (DPX DPY = CHI1 CHI2) で与えた軌道を
@@ -33,7 +33,8 @@ def _val(el, key, default=0.0):
 
 
 class SolRegion:
-    """tsgeo の結果: ke (領域の終点、1 始まり)、SOL ごとの CHI1..3・DX DY DZ (K64 が要素に書く値。追跡の tsconv が使う)"""
+    """Result of tsgeo: region end ke and per-SOL CHI1..3 and DX DY DZ written by K64 into the elements.
+    tsgeo の結果: ke (領域の終点、1 始まり)、SOL ごとの CHI1..3・DX DY DZ (K64 が要素に書く値。追跡の tsconv が使う)"""
     def __init__(self, ke):
         self.ke = ke
         self.sol_values = {}
@@ -76,7 +77,8 @@ def _kernel_step(kind, pr, xi, pxi, yi, pyi, dir_, f, ph):
 
 
 def rot33(chi1, chi2, chi3):
-    """tffs.f tpara の icSOL: CHI1..3 → R11..R33 (trots が使う回転行列。sol モジュールの trot33(ent=.true.) と同じ)"""
+    """Build the rotation matrix R11..R33 from CHI1..3 (icSOL of tpara in tffs.f), as used by trots.
+    tffs.f tpara の icSOL: CHI1..3 → R11..R33 (trots が使う回転行列。sol モジュールの trot33(ent=.true.) と同じ)"""
     c1, c2, c3 = math.cos(chi1), math.cos(chi2), math.cos(chi3)
     s1, s2, s3 = math.sin(chi1), math.sin(chi2), math.sin(chi3)
     return np.array([[c1 * c3 + s1 * s2 * s3, -c2 * s3, s1 * c3 - c1 * s2 * s3],
@@ -85,7 +87,8 @@ def rot33(chi1, chi2, chi3):
 
 
 def region_frames(elements, i, ph):
-    """SOL 領域 (elements[i] が始端の BOUND≠0 の SOL) の両端の座標変換 (tsol.f の trots の引数)。
+    """Return the coordinate transforms (ent, ext) at both ends of a SOL region, as used by trots in tsol.f.
+    SOL 領域 (elements[i] が始端の BOUND≠0 の SOL) の両端の座標変換 (tsol.f の trots の引数)。
     戻り値 (ent, ext): それぞれ (R (3×3), dx, dy, dz) か None (恒等)。
     K64 は tsgeo が SOL の要素に書いた値を使う: GEO≠0 の SOL は利用者の DX DY (と DPX DPY から決まる CHI1..3、DZ = 0)、
     もう一方の SOL は領域の中の設計軌道の出口の位置 (DX, DY) と行路長の差 DZ、幾何から決まる CHI1..3。
@@ -135,7 +138,8 @@ def _bz_after(elements, k, ke, ph):
 
 
 def tsgeo(elements, k1, geo, pos, ph, warn):
-    """k1: SOL の位置 (1 始まり)。戻り: (SolRegion, ke1) か None (K64 の sol=.false.: 領域として扱わない)。geo (nlat,3,4)、pos (nlat) を直接更新する。
+    """Compute the geometry of a SOL region from SOL position k1; return (SolRegion, ke1) or None, updating geo and pos in place.
+    k1: SOL の位置 (1 始まり)。戻り: (SolRegion, ke1) か None (K64 の sol=.false.: 領域として扱わない)。geo (nlat,3,4)、pos (nlat) を直接更新する。
     geo[k-1] = K64 の geo(:,:,k)"""
     nlat = len(elements) + 1
     k = k1 - 1                                           # 0 始まりの要素の添字 (K64 の k に対応するのは k+1)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""[試作] 6 極ファミリーの K2 に対する RDT・ADTS の解析式の「多項式モデル」と、それを目的関数にした6 極の最適化 (R7)。
+"""Prototype polynomial model of RDT and ADTS versus sextupole-family K2, and sextupole optimization (R7) on it.
+[試作] 6 極ファミリーの K2 に対する RDT・ADTS の解析式の「多項式モデル」と、それを目的関数にした6 極の最適化 (R7)。
 
 考え方: 6 極の強さ k = (K2L_1, ..., K2L_F) (ファミリーごとの積分強さ) に対して、
   - 3 次の共鳴駆動項 h_jklm (1 次) とクロマティシティ・δ の項 (p ≥ 1) は k に **線形**:  h(k) = h_B + Σ_f k_f H_f
@@ -48,7 +49,8 @@ XI_TERMS = ('xi_x', 'xi_y')
 # ファミリーと K2 の読み書き
 # ---------------------------------------------------------------------------------------------
 def sextupole_families(lat, names=None):
-    """K2≠0 の6 極のファミリー (素子名) の一覧 (最初に現れる順)、{名前: [素子の添字]}、K2L の配列 [1/m²] を返す。"""
+    """Return the sextupole families with K2 != 0 (names, element indices) and the K2L array [1/m^2].
+    K2≠0 の6 極のファミリー (素子名) の一覧 (最初に現れる順)、{名前: [素子の添字]}、K2L の配列 [1/m²] を返す。"""
     fam = {}
     for i, e in enumerate(lat.elements):
         if type(e).__name__ == 'Sextupole' and float(e.K2) != 0.0:
@@ -59,7 +61,8 @@ def sextupole_families(lat, names=None):
 
 
 def with_k2l(lat, names, k):
-    """ファミリー names の K2L を k [1/m²] にした Lattice の複製 (6 極の K2 = K2L/L)。"""
+    """Return a copy of the Lattice with the K2L of the families `names` set to k [1/m^2].
+    ファミリー names の K2L を k [1/m²] にした Lattice の複製 (6 極の K2 = K2L/L)。"""
     out = copy.deepcopy(lat)
     for n, kk in zip(names, k):
         for e in out.elements:
@@ -69,7 +72,8 @@ def with_k2l(lat, names, k):
 
 
 def replace_k2_in_source(src, names, k):
-    """SAD のラティス定義の文字列 src の中の SEXT 定義 `NAME =(L =... K2 =...)` の K2 (K2L) を k に置き換えた文字列 (同名の定義がいくつあっても全部)。
+    """Replace K2 (K2L) of SEXT definitions in a SAD lattice source string with k, for every definition of the same name.
+    SAD のラティス定義の文字列 src の中の SEXT 定義 `NAME =(L =... K2 =...)` の K2 (K2L) を k に置き換えた文字列 (同名の定義がいくつあっても全部)。
     追跡 (TrackSetup.from_source) に同じ K2 を渡すのに使う。置き換えが 0 回の名前があると ValueError。"""
     out = src
     for n, kk in zip(names, k):
@@ -84,7 +88,8 @@ def replace_k2_in_source(src, names, k):
 # 二次形式のフィット (偏極化)。f: k → 実または複素のベクトル。f が厳密に k の二次式であることを使う
 # ---------------------------------------------------------------------------------------------
 def quad_fit(fun, n):
-    """f(k) = c + b·k + kᵀ S k (S は対称) の c (m,)、b (n, m)、S (n, n, m) を、1 + 2n + n(n−1)/2 回の f の呼び出しで厳密に求める。"""
+    """Exactly fit f(k) = c + b.k + k^T S k (S symmetric), returning c, b and S from 1 + 2n + n(n-1)/2 evaluations of f.
+    f(k) = c + b·k + kᵀ S k (S は対称) の c (m,)、b (n, m)、S (n, n, m) を、1 + 2n + n(n−1)/2 回の f の呼び出しで厳密に求める。"""
     c = np.asarray(fun(np.zeros(n)))
     m = c.shape[0]
     cdt = c.dtype
@@ -111,7 +116,8 @@ def quad_eval(cbS, k):
 
 
 def quad_jac(cbS, k):
-    """∂f_m/∂k_i = b_im + 2 Σ_j S_ijm k_j。形 (m, n)"""
+    """Return the Jacobian df_m/dk_i = b_im + 2 sum_j S_ijm k_j, of shape (m, n).
+    ∂f_m/∂k_i = b_im + 2 Σ_j S_ijm k_j。形 (m, n)"""
     c, b, S = cbS
     return (b + 2.0 * np.einsum('ijm,j->im', S, k)).T
 
@@ -120,7 +126,8 @@ def quad_jac(cbS, k):
 # モデル
 # ---------------------------------------------------------------------------------------------
 class SxtModel:
-    """6 極ファミリーの K2L に対する RDT・ADTS の多項式モデル。
+    """Polynomial model of RDT and ADTS as functions of the sextupole-family K2L.
+    6 極ファミリーの K2L に対する RDT・ADTS の多項式モデル。
 
     属性: names (ファミリー名)、k_ref (組み立てたときの K2L)、qx・qy、
       .h1(k) → 1 次の項 (CUBIC5 + CHROM3 + DELTA_XI、複素 dict。偏向磁石の 3 次の項を含む)
@@ -257,7 +264,8 @@ class SxtModel:
         return np.array([4.0 * h[i[(2, 2, 0, 0)]].real / math.pi, 2.0 * h[i[(1, 1, 1, 1)]].real / math.pi, 4.0 * h[i[(0, 0, 2, 2)]].real / math.pi])
 
     def adts(self, k):
-        """ADTS {'xx','xy','yy'} [1/(m rad)]。`resdrive.adts(fourth=self.fourth、optics='calc')` の .total と同じ (既定 'r3' = 物理的な項だけ)"""
+        """Compute ADTS {xx, xy, yy} [1/(m rad)], equal to the total of `resdrive.adts` (default r3 physical terms only).
+        ADTS {'xx','xy','yy'} [1/(m rad)]。`resdrive.adts(fourth=self.fourth、optics='calc')` の .total と同じ (既定 'r3' = 物理的な項だけ)"""
         a = self._adts_of(self.h4nf(k)) + self.adts_offset
         return {'xx': a[0], 'xy': a[1], 'yy': a[2]}
 
@@ -267,13 +275,15 @@ class SxtModel:
         return (self.xi_nat[0] + v[ix].real / math.pi, self.xi_nat[1] + v[iy].real / math.pi)
 
     def err_rms(self, k, eps_rms):
-        """K2L のランダム誤差 (台ごとに独立、相対 rms eps_rms) による 1 次の項の rms の期待値 {項: rms} (CUBIC5・CHROM3・δ の ξ の項も)。"""
+        """Compute the expected rms of the first-order terms for random K2L errors (independent per magnet, relative rms eps_rms).
+        K2L のランダム誤差 (台ごとに独立、相対 rms eps_rms) による 1 次の項の rms の期待値 {項: rms} (CUBIC5・CHROM3・δ の ξ の項も)。"""
         k = np.asarray(k, dtype=float)
         v = eps_rms * np.sqrt((k ** 2) @ self.errB)
         return {t: float(v[i]) for i, t in enumerate(self.terms1)}
 
     def xi_matrix(self):
-        """ξ(k) = ξ0 + M k (M は 2 × F)。"""
+        """Return the chromaticity xi(k) = xi0 + M k, with M of size 2 x F.
+        ξ(k) = ξ0 + M k (M は 2 × F)。"""
         ix, iy = self.terms1.index('h11001'), self.terms1.index('h00111')
         M = np.vstack([self.H1[:, ix].real, self.H1[:, iy].real]) / math.pi
         xi0 = np.array([self.xi_nat[0] + self.h1_const[ix].real / math.pi, self.xi_nat[1] + self.h1_const[iy].real / math.pi])
@@ -281,7 +291,8 @@ class SxtModel:
 
     # ---- 二次形式 ---------------------------------------------------------------------------
     def build_forms(self):
-        """h4nf (複素 35 成分) の二次形式を作る (偏極化)。"""
+        """Build the quadratic forms of the 35-component complex h4nf using the polarization identity.
+        h4nf (複素 35 成分) の二次形式を作る (偏極化)。"""
         self._forms = quad_fit(self.h4nf, self.F)
         return self._forms
 
@@ -290,7 +301,8 @@ class SxtModel:
 
     # ---- 検証 -------------------------------------------------------------------------------
     def check(self, k=None, lat=None):
-        """モデルと、解析式の直接の呼び出し (resonance_terms・rdt4・adts) の相対差を返す (k = None なら組み立てたときの K2L)。"""
+        """Return the relative difference between the model and direct calls of the analytic formulas (resonance_terms, rdt4, adts).
+        モデルと、解析式の直接の呼び出し (resonance_terms・rdt4・adts) の相対差を返す (k = None なら組み立てたときの K2L)。"""
         k = self.k_ref if k is None else np.asarray(k, dtype=float)
         lat2 = with_k2l(self.lat, self.names, k) if lat is None else lat
         out = {}
@@ -312,7 +324,8 @@ class SxtModel:
 # 目的関数
 # ---------------------------------------------------------------------------------------------
 class SxtObjective:
-    """物理的な重みの目的関数 (docs 先頭の説明)。値・勾配・項ごとの内訳。"""
+    """Objective function with physical weights (value, gradient and per-term breakdown).
+    物理的な重みの目的関数 (docs 先頭の説明)。値・勾配・項ごとの内訳。"""
 
     def __init__(self, model, J_ref=1e-6, delta_ref=0.01, weights=None, terms=('w3', 'w4', 'adts', 'chrom')):
         self.m = model
@@ -395,7 +408,8 @@ class SxtObjective:
 
 
 def optimize(obj, k0, xi_target, kmax, method='SLSQP', maxiter=300, ftol=1e-14):
-    """ξ = xi_target の等式制約と |K2L| ≤ kmax の範囲で obj.value を最小化 (scipy の SLSQP。勾配は解析)。戻り (k, 結果の OptimizeResult)。"""
+    """Minimize obj.value under the equality xi = xi_target and bounds |K2L| <= kmax (scipy SLSQP, analytic gradient).
+    ξ = xi_target の等式制約と |K2L| ≤ kmax の範囲で obj.value を最小化 (scipy の SLSQP。勾配は解析)。戻り (k, 結果の OptimizeResult)。"""
     from scipy.optimize import minimize
     xi0, M = obj.m.xi_matrix()
     tgt = np.asarray(xi_target, dtype=float)
@@ -408,7 +422,8 @@ def optimize(obj, k0, xi_target, kmax, method='SLSQP', maxiter=300, ftol=1e-14):
 
 
 def project_to_xi(model, k, xi_target):
-    """k を、ξ = xi_target を満たす最も近い点 (最小ノルムの補正) に射影する。"""
+    """Project k onto the nearest point satisfying xi = xi_target (minimum-norm correction).
+    k を、ξ = xi_target を満たす最も近い点 (最小ノルムの補正) に射影する。"""
     xi0, M = model.xi_matrix()
     r = np.asarray(xi_target) - (xi0 + M @ k)
     return k + M.T @ np.linalg.solve(M @ M.T, r)
@@ -453,7 +468,8 @@ def _w4_names(qx, qy, dmin=1e-3):
 
 @dataclass
 class TermSpec:
-    """1 項の指定。mode: 'objective' (目的関数に入れる: weight × |scale (q − target)|²)、'constraint' (制約。tol=None なら q = target の等式、tol があれば |q − target| ≤ tol)、'ignore'。
+    """Specification of one term: mode (objective, constraint or ignore), target value, weight and tolerance.
+    1 項の指定。mode: 'objective' (目的関数に入れる: weight × |scale (q − target)|²)、'constraint' (制約。tol=None なら q = target の等式、tol があれば |q − target| ≤ tol)、'ignore'。
     target: 目標値 (RDT の項は複素数も可。単位は項の単位: h は RDT の単位、ADTS は [1/(m rad)]、xi は無次元)。None (既定) は RDT・ADTS では 0 (0 へ近づける)、xi では optimize の xi_target。
     scale: 目的関数の規格化 (None = 自動: 共鳴の分母と基準の作用 J_ref・δ_ref で決まる物理的な重み。SxtObjective と同じ)。"""
     mode: str = 'objective'
@@ -497,7 +513,8 @@ def _term_from_any(v):
 
 @dataclass
 class SxtSpec:
-    """項の指定の全体。terms: {名前: TermSpec}。名前は個別の項 (h21000・h30000・h10110・h10020・h10200、h20001・h00201・h10002、4 次 h31000 など、adts_xx・adts_xy・adts_yy、xi_x・xi_y) か
+    """Specification of all terms as {name: TermSpec}, with individual terms or groups (w3, chrom, w4, adts, xi).
+    項の指定の全体。terms: {名前: TermSpec}。名前は個別の項 (h21000・h30000・h10110・h10020・h10200、h20001・h00201・h10002、4 次 h31000 など、adts_xx・adts_xy・adts_yy、xi_x・xi_y) か
     グループ ('w3'・'chrom'・'w4'・'adts'・'xi')。個別の指定はグループより優先。書かれていない項は 'ignore'。
 
     作り方 (`SxtSpec.parse` が全部受ける。SAD の台本のオプションと同じ形):
@@ -555,7 +572,8 @@ class SxtSpec:
         return json.dumps(self.to_dict(), ensure_ascii=False)
 
     def expand(self, qx, qy):
-        """グループを個別の項に展開した {名前: TermSpec} (個別の指定が優先。'ignore' は残す)。"""
+        """Expand groups into individual terms as {name: TermSpec}, with individual specifications taking precedence.
+        グループを個別の項に展開した {名前: TermSpec} (個別の指定が優先。'ignore' は残す)。"""
         out = {}
         for n, t in self.terms.items():
             if n in GROUPS or n == 'w4':
@@ -586,7 +604,8 @@ def _check_name(n):
 
 
 def legacy_spec(weights=None, terms=('w3', 'w4', 'adts', 'chrom')):
-    """従来の `SxtObjective(weights=…、terms=…)` と同じ指定 (グループごとの重みで目的関数、ξ は optimize の xi_target の等式制約)。"""
+    """Return the legacy specification equivalent to `SxtObjective(weights=..., terms=...)`.
+    従来の `SxtObjective(weights=…、terms=…)` と同じ指定 (グループごとの重みで目的関数、ξ は optimize の xi_target の等式制約)。"""
     wt = dict(w3=1.0, w4=1.0, adts=1.0, chrom=1.0)
     if weights:
         wt.update(weights)
@@ -623,7 +642,8 @@ def _drive_terms():
 
 
 def near_resonances(qx, qy, max_order=4, radius=0.05):
-    """作動点 (qx, qy) の周りの共鳴 a νx + b νy = p (|a|+|b| = 次数 ≤ max_order) のうち、チューン面の距離が radius 以内のものの一覧 (近い順)。
+    """List resonances a*nux + b*nuy = p up to max_order within radius of the working point (qx, qy) in the tune plane, nearest first.
+    作動点 (qx, qy) の周りの共鳴 a νx + b νy = p (|a|+|b| = 次数 ≤ max_order) のうち、チューン面の距離が radius 以内のものの一覧 (近い順)。
     各要素: dict(order, a, b, p, dist (チューン面での距離 |aνx+bνy−p|/√(a²+b²))、detune (aνx+bνy−p、符号つき)、terms ([(項の名前, 種類)])、sextupole_driven (駆動項があるか)、
     midplane_forbidden (b が奇数: 水平面に対称な磁石 (6 極・八極・K2L のランダム誤差を含む) では y の次数が偶数だけなので、何次でも駆動されない線。連成・スキュー・垂直の偏向があるときだけ駆動される))。
     「どの駆動項が効くか」は 3 次の h_jklm (6 極の 1 次)、δ の 1 次の項、4 次の h_jklm (6 極の 2 次・八極) のうち (j−k, l−m) = ±(a, b) のもの。
@@ -660,7 +680,8 @@ def format_near_resonances(res):
 
 
 def resonance_warnings(qx, qy, max_order=4, thresholds=None):
-    """作動点が低次の共鳴に近いときの警告文の一覧。しきい値 (チューン面の距離): 1〜2 次 0.03、3 次 0.02、4 次 0.01 (既定)。作動点の整数・半整数共鳴は必ず確認する。
+    """Return warnings for working points near low-order resonances; integer and half-integer resonances must always be checked.
+    作動点が低次の共鳴に近いときの警告文の一覧。しきい値 (チューン面の距離): 1〜2 次 0.03、3 次 0.02、4 次 0.01 (既定)。作動点の整数・半整数共鳴は必ず確認する。
     b が奇数の線 (水平面に対称な磁石では駆動されない) は除く。"""
     thr = thresholds or {1: 0.03, 2: 0.03, 3: 0.02, 4: 0.01}
     out = []
@@ -678,7 +699,8 @@ def resonance_warnings(qx, qy, max_order=4, thresholds=None):
 # 指定つきの目的関数
 # ---------------------------------------------------------------------------------------------
 class SxtSpecObjective:
-    """`SxtSpec` に従う目的関数。値 Σ_{objective} w |scale (q − target)|²、勾配、項ごとの内訳 (`table`)、制約 (`scipy_constraints`)。
+    """Objective function following a `SxtSpec`: value, gradient, per-term breakdown (`table`) and constraints (`scipy_constraints`).
+    `SxtSpec` に従う目的関数。値 Σ_{objective} w |scale (q − target)|²、勾配、項ごとの内訳 (`table`)、制約 (`scipy_constraints`)。
     scale は既定で SxtObjective と同じ物理的な重み (共鳴の分母は model の作動点のチューンから自動、J_ref・δ_ref)。
 
     ξ (xi_x・xi_y): 'constraint' なら ξ = target の等式 (target=None なら optimize の xi_target)、'objective' なら w (ξ − target)² (規格化なし。無次元)。
@@ -807,7 +829,8 @@ class SxtSpecObjective:
         return g
 
     def table(self, k, xi_target=None):
-        """項ごとの内訳: list of dict(name, mode, weight, target, value, residual |q−target|、scaled |scale·residual|、contribution = weight × scaled² (objective のみ)、den)。"""
+        """Return the per-term breakdown (name, mode, weight, target, value, residual, scaled residual, contribution, den).
+        項ごとの内訳: list of dict(name, mode, weight, target, value, residual |q−target|、scaled |scale·residual|、contribution = weight × scaled² (objective のみ)、den)。"""
         k = np.asarray(k, dtype=float)
         ev = self._eval(k, False)
         rows = []
@@ -822,7 +845,8 @@ class SxtSpecObjective:
 
     # ---- 制約 --------------------------------------------------------------------------------
     def scipy_constraints(self, k0, xi_target=None):
-        """scipy.optimize.minimize 用の制約の辞書の列。"""
+        """Return the list of constraint dictionaries for scipy.optimize.minimize.
+        scipy.optimize.minimize 用の制約の辞書の列。"""
         m = self.m
         k0 = np.asarray(k0, dtype=float)
         cons = []
@@ -887,7 +911,8 @@ class SxtSpecObjective:
         return cons
 
     def max_constraint_violation(self, k, xi_target=None):
-        """制約の項ごとの |q − target| (tol つきは |q−target|−tol) の最大値 (項の単位)。"""
+        """Return the maximum constraint violation over terms (|q - target|, or |q - target| - tol with a tolerance), in term units.
+        制約の項ごとの |q − target| (tol つきは |q−target|−tol) の最大値 (項の単位)。"""
         ev = self._eval(np.asarray(k, dtype=float), False)
         v = 0.0
         for it in self.con_items:
@@ -897,7 +922,8 @@ class SxtSpecObjective:
 
 
 def optimize_spec(obj, k0, xi_target=None, kmax=40.0, method='SLSQP', maxiter=400, ftol=1e-14, dk=None):
-    """`SxtSpecObjective` の最適化 (scipy の SLSQP。勾配は解析)。制約は obj.spec の 'constraint' の項 (ξ は xi_target を既定の目標値に使う)、|K2L| ≤ kmax (スカラーか配列)。
+    """Optimize a `SxtSpecObjective` with scipy SLSQP (analytic gradient) under its constraint terms and |K2L| <= kmax.
+    `SxtSpecObjective` の最適化 (scipy の SLSQP。勾配は解析)。制約は obj.spec の 'constraint' の項 (ξ は xi_target を既定の目標値に使う)、|K2L| ≤ kmax (スカラーか配列)。
     戻り (k, OptimizeResult)。k0 は制約を満たさなくてよい (SLSQP が寄せる)。"""
     from scipy.optimize import minimize
     k0 = np.asarray(k0, dtype=float)
@@ -915,7 +941,8 @@ def optimize_spec(obj, k0, xi_target=None, kmax=40.0, method='SLSQP', maxiter=40
 
 
 def design_k2l(model, spec, k0=None, xi_target=None, kmax=40.0, J_ref=1e-6, delta_ref=0.01, maxiter=400, warn=True, err_rms=0.03, dk=None):
-    """項の指定 spec (SxtSpec・辞書・文字列・JSON。`SxtSpec.parse` が受ける形) を入力して、6 極の K2L [1/m²] (ファミリーごと) を計算して返す。
+    """Compute the sextupole K2L [1/m^2] per family from a term specification `spec` with a single SLSQP optimization.
+    項の指定 spec (SxtSpec・辞書・文字列・JSON。`SxtSpec.parse` が受ける形) を入力して、6 極の K2L [1/m²] (ファミリーごと) を計算して返す。
     項と重みの選択は呼ぶ側 (人) が決める (周波数マップ・RDT の一覧・ADTS を見て)。この関数は反復も探索もしない。1 回の最適化 (SLSQP) だけ。
 
     k0: 出発点 (既定は model.k_ref)。xi_target: ξ の目標 (None なら k0 の ξ)。spec に xi の項がなければ ξ = xi_target の等式制約を足す ('xi=ignore' で外せる)。kmax: |K2L| の上限 (スカラーか配列)。

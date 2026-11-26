@@ -1,4 +1,4 @@
-"""
+"""`RadiationField` and `RadiationSpectrum`, translated from K64 tlinit.f (tlfield, tlcalc, tlspect).
 RadiationField / RadiationSpectrum。K64 の tlinit.f (tlfield、tlcalc、tlspect) の直訳。
 RadiationField[traj, obs]: traj = {{t1..tm},{x1..xm},{y1..ym},{z1..zm}} (TrackParticles の RADLIGHT の軌道。GEO 座標)、obs = 観測点 {x,y,z}。
   Feynman-Heaviside の式 (E = (mu0 e CHARGE/4π)(c²n/R² + R/c d(c²n/R²)/dt + d²n/dt²)) の時間領域の場。微分は自然スプライン (K64 の spline: y''/6)。
@@ -46,7 +46,8 @@ def _drop_repeated_points(xt):
 
 
 def radiation_field(traj, obs, charge=-1.0, e=_ELEMCH):
-    """tlcalc。traj: (m, 4) = [t, x, y, z]。戻り: (m, 10)"""
+    """Compute the radiation field from a trajectory [t, x, y, z] (tlcalc); returns an (m, 10) array.
+    tlcalc。traj: (m, 4) = [t, x, y, z]。戻り: (m, 10)"""
     xt = np.array(traj, dtype=float)
     xt = _drop_repeated_points(xt)
     m = xt.shape[0]
@@ -95,7 +96,8 @@ def radiation_field(traj, obs, charge=-1.0, e=_ELEMCH):
 
 
 def radiation_spectrum(tau, f, rng):
-    """tlspect (逐次)。rng = {λ1, λ2, dλ}。戻り: (k, c, s)"""
+    """Compute the radiation spectrum (tlspect, sequential) for the wavelength range rng = {l1, l2, dl}; returns (k, c, s).
+    tlspect (逐次)。rng = {λ1, λ2, dλ}。戻り: (k, c, s)"""
     t = np.asarray(tau, dtype=float)
     y = np.asarray(f, dtype=float)
     m = len(t)

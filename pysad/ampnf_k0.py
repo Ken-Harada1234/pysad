@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 G: K0≠0 の偏向磁石 (挿入光源・逆曲げ・MPW) の 1 周の写像のべき級数 (ampnf の TPSA) への取り込み。
+"""Incorporate bends with K0 not 0 (insertion devices, reverse bends, MPW) into the TPSA power series of the one-turn map.
+v2.4.0 G: K0≠0 の偏向磁石 (挿入光源・逆曲げ・MPW) の 1 周の写像のべき級数 (ampnf の TPSA) への取り込み。
 
 【問題】 K0≠0 の偏向磁石の中の基準軌道 x0(s) は 0 でなく (K0 の双極子の軌道)、磁石の出口は原点でない (x ≠ 0, px ≠ 0)。K0=0 の磁石は原点のまわりの
   ハミルトニアンの項 (曲率 3 次・運動学・端の生成関数) を Lie 級数の流れで入れていたが、原点のまわりの展開は軌道が原点から離れた磁石の内部では使えない
@@ -23,7 +24,8 @@ import numpy as np
 
 
 class TP:
-    """定数部分を持つべき級数 (ampnf.get_tab の 5 変数・次数 D)。演算は + − × ÷ と sqrt・asin"""
+    """Power series with a constant part (five variables, order D), supporting + - * / and sqrt and asin.
+    定数部分を持つべき級数 (ampnf.get_tab の 5 変数・次数 D)。演算は + − × ÷ と sqrt・asin"""
     __slots__ = ('tab', 'a')
 
     def __init__(self, tab, a):
@@ -169,7 +171,8 @@ def _g(el, k):
 
 
 def bend_k0_params(el):
-    """K0≠0 の BEND (L>0) の写像のパラメータ (track6n.Prog._compile と同じ導出)。戻り dict。未対応の条件は NotImplementedError"""
+    """Compute the map parameters of a BEND (L>0) with K0 not 0, derived the same way as in track6n.Prog._compile.
+    K0≠0 の BEND (L>0) の写像のパラメータ (track6n.Prog._compile と同じ導出)。戻り dict。未対応の条件は NotImplementedError"""
     from . import lattice as _lat
     L, phi0, k0 = _g(el, 'L'), _g(el, 'ANGLE'), _g(el, 'K0')
     if L <= 0.0:
@@ -185,7 +188,8 @@ def bend_k0_params(el):
 
 
 def bend_k0_map(el, v2=None, linear=False):
-    """K0≠0 の BEND (L>0) の写像 f(S, tab, sd) → S'。S = [x, px, y, py] (TPSA の係数配列、px は正準 (p0 で規格化))。
+    """Compute the map f(S, tab, sd) -> S' of a BEND (L>0) with K0 not 0 on TPSA coefficient arrays.
+    K0≠0 の BEND (L>0) の写像 f(S, tab, sd) → S'。S = [x, px, y, py] (TPSA の係数配列、px は正準 (p0 で規格化))。
     ANGLE≠0・K1=0 は K64 の tbendcore1 (扇形の厳密な写像 + 楔 E1・E2 + 硬い端の Maxwell の項 + F1 のフリンジ)、ANGLE≠0・K1≠0 は tbendi (K64 の数値積分器そのものを TPSA で評価。
     スライス数 ndiv = 1 + |ANGLE|/1e-3)、ANGLE=0 は k_steer (直線の磁石の曲がる軌道 + 楔 + Maxwell + F1)。DX・DY・ROTATE・DROTATE・CHI2 は tbshift・tbrot の TPSA 版
     (ANGLE=0 の磁石は ampnf._expand_rolls が ('shift')・('rot') に展開する)。ANGLE + K0 = 0 (場が 0) は K64 の式が phib = 0 で割るので、phib → 0 の極限 (phib = 1e-9 ANGLE)。
@@ -229,7 +233,8 @@ def bend_k0_map(el, v2=None, linear=False):
 
 
 def linearize(f, s_loc=1e-3):
-    """写像 f (S → S') を、入口の軌道 c0 (S の定数項) のまわりの 1 次 (S' = F0(δ) + J(δ)·(S − c0)。F0・J は δ の全次数) にする。
+    """Linearize the map f about the entrance orbit c0 to first order, with F0 and J as series in delta.
+    写像 f (S → S') を、入口の軌道 c0 (S の定数項) のまわりの 1 次 (S' = F0(δ) + J(δ)·(S − c0)。F0・J は δ の全次数) にする。
     bend_cubic・kin・fringe を全部切った模型 (磁石自身の非線形を落とす。軌道・線形の光学は残す)。F0・J は局所の級数 (c0 + s_loc u) から取る"""
     def g(S, tab, sd):
         c = [float(np.real(a[0])) for a in S]
@@ -451,7 +456,8 @@ def _tsteer(S, tab, sd, al, phib, tanp1, tanp2, fb1=0.0, fb2=0.0, fringe=True, p
 
 
 def numeric_map(el, delta=0.0, momentum=3e9):
-    """素子 el 1 台の pysad の追跡の写像 (n×4 → n×4、正準運動量。δ 固定)。模型の数値の追跡 (ampnf.model_tracker) と検証に使う"""
+    """Return the pysad tracking map of a single element (n x 4 to n x 4, canonical momenta, fixed delta).
+    素子 el 1 台の pysad の追跡の写像 (n×4 → n×4、正準運動量。δ 固定)。模型の数値の追跡 (ampnf.model_tracker) と検証に使う"""
     from .track6n import track_particles_fast
 
     def f(Z):
@@ -464,7 +470,8 @@ def numeric_map(el, delta=0.0, momentum=3e9):
 
 
 def check_against_tracker(el, amp=1e-3, orbit=(0.0, 0.0, 0.0, 0.0), delta=0.0, D=5, sd=1e-2, s=1e-3, npts=24, seed=1):
-    """K0≠0 の BEND 1 台のべき級数の写像を、追跡の写像と、入口の軌道 orbit のまわりの無作為な点 (振幅 amp) で比べる。戻り (最大の差, 軌道の出口の値)。
+    """Compare the series map of a single BEND with K0 not 0 against the tracking map at random points around the entrance orbit.
+    K0≠0 の BEND 1 台のべき級数の写像を、追跡の写像と、入口の軌道 orbit のまわりの無作為な点 (振幅 amp) で比べる。戻り (最大の差, 軌道の出口の値)。
     級数は変数 u (x = orbit + s·u、δ = sd·δ̃) の次数 D までなので、差は (amp/長さの目盛り)^(D+1) の程度"""
     from . import ampnf as A
     tab = A.get_tab(5, D)
@@ -485,7 +492,8 @@ def check_against_tracker(el, amp=1e-3, orbit=(0.0, 0.0, 0.0, 0.0), delta=0.0, D
 
 
 def bend_k0_map_for(el):
-    """ROTATE なしの素子の写像 (TPSA の係数配列のリスト S → S')。ROTATE があれば呼び側 (ampnf._expand_rolls) が先に展開する"""
+    """Return the map of an element without ROTATE as a list of TPSA coefficient arrays.
+    ROTATE なしの素子の写像 (TPSA の係数配列のリスト S → S')。ROTATE があれば呼び側 (ampnf._expand_rolls) が先に展開する"""
     return bend_k0_map(el)
 
 

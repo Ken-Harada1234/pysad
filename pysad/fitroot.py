@@ -1,4 +1,4 @@
-"""
+"""Root finding and fitting (FindRoot, Fit, FitGaussian, FitEmit, NIntegrate), translation of tffindroot.f, Fit.n and D.n.
 FindRoot / Fit / FitGaussian / FitEmit / NIntegrate。K64 の tffindroot.f (tffindroot, tfnewton, tffit, tffit1)、Packages/Fit.n、Packages/D.n の直訳。
 
 K64 は式を記号微分 (D) して導関数を作り、微分できなかったときだけ数値微分に落ちる。ここでは常に数値微分の経路を使う

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""コマンドライン: `pysad-run` (SAD の台本を pysad で実行する)、`pysad-share` (文書・例のある場所を表示する)、`pysad-warmup` (numba のカーネルを先に変換する)。
+"""Command-line entry points `pysad-run`, `pysad-share` and `pysad-warmup` of pysad.
+コマンドライン: `pysad-run` (SAD の台本を pysad で実行する)、`pysad-share` (文書・例のある場所を表示する)、`pysad-warmup` (numba のカーネルを先に変換する)。
 
 pip で入れると、文書 (docs/) と例 (example/) はパッケージとは別に `<prefix>/share/pysad/` に入る
 (`pysad-share` がその場所を表示する)。リポジトリを clone して使うときは、リポジトリの直下の docs/ と example/ を返す。
@@ -10,7 +11,8 @@ import sysconfig
 
 
 def share_dir():
-    """文書 (docs/) と例 (example/) を含むフォルダ。clone したリポジトリならリポジトリの直下。pip で入れたなら <prefix>/share/pysad。
+    """Return the folder holding docs/ and example/ (repository root or <prefix>/share/pysad), or None if not found.
+    文書 (docs/) と例 (example/) を含むフォルダ。clone したリポジトリならリポジトリの直下。pip で入れたなら <prefix>/share/pysad。
     見つからなければ None。"""
     here = os.path.dirname(os.path.abspath(__file__))
     repo = os.path.dirname(here)
@@ -34,7 +36,8 @@ def share_dir():
 
 
 def run_main(argv=None):
-    """`pysad-run lattice_file [script_file ...]`: SAD の `gs` に複数のファイルを連結して渡すのと同じ。"""
+    """Run `pysad-run lattice_file [script_file ...]`, equivalent to passing concatenated files to SAD `gs`.
+    `pysad-run lattice_file [script_file ...]`: SAD の `gs` に複数のファイルを連結して渡すのと同じ。"""
     from .ffscmd import run_sad
     args = list(sys.argv[1:] if argv is None else argv)
     if not args or args[0] in ('-h', '--help'):
@@ -45,7 +48,8 @@ def run_main(argv=None):
 
 
 def share_main(argv=None):
-    """`pysad-share`: 文書 (docs/) と例 (example/) のあるフォルダを表示する。"""
+    """Run `pysad-share`: print the folder containing docs/ and example/.
+    `pysad-share`: 文書 (docs/) と例 (example/) のあるフォルダを表示する。"""
     d = share_dir()
     if d is None:
         print('文書・例のフォルダが見つかりません (pip で入れた場合は <prefix>/share/pysad/ にあるはずです)', file=sys.stderr)
@@ -55,7 +59,8 @@ def share_main(argv=None):
 
 
 def warmup_main(argv=None):
-    """`pysad-warmup [--check | --clear] [--quiet]`: numba のカーネルを事前に機械語へ変換してキャッシュを作る (最初の実行の待ち時間をなくす)。
+    """Run `pysad-warmup [--check | --clear] [--quiet]`: precompile and cache the numba kernels.
+    `pysad-warmup [--check | --clear] [--quiet]`: numba のカーネルを事前に機械語へ変換してキャッシュを作る (最初の実行の待ち時間をなくす)。
     `--check` はキャッシュが有効か調べ、`--clear` はキャッシュを消す。詳細は `pysad/warmup.py`。"""
     from .warmup import main
     return main(argv)

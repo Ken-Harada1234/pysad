@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""放射の β の因子 (v2.4.0、docs/30 B112 → B167): β < 1 の粒子 (陽子・イオン、低い γ) の放射。
+"""Beta factors for radiation of particles with beta < 1 (protons, ions, low gamma).
+放射の β の因子 (v2.4.0、docs/30 B112 → B167): β < 1 の粒子 (陽子・イオン、低い γ) の放射。
 
 K64 (tradkn・tradke) は超相対論 (β = 1) の式で、(1) 光子の平均エネルギー損失が古典式 (2/3) r mc² β³γ⁴ θ²/L の 1/β³ 倍、
 (2) 運動量の損失を Δp = ΔE/c (正しくは Δp = ΔE/(βc)、エネルギー保存 dE = v dp)、(3) 量子励起の 2 次モーメント N<u²> が厳密な放射のスペクトルと違う。
@@ -91,7 +92,8 @@ _DINF = 2.08
 
 @njit(**NJ)
 def ab(g):
-    """γ = g での (a, b, d ln a/dγ, d ln b/dγ): 光子数に a、光子エネルギーに b を掛ける (a b = β²、a b² = r2/β²)。γ → ∞ で (1, 1, 0, 0)"""
+    """Return (a, b, d ln a/d gamma, d ln b/d gamma) at gamma = g: factors on photon number and photon energy.
+    γ = g での (a, b, d ln a/dγ, d ln b/dγ): 光子数に a、光子エネルギーに b を掛ける (a b = β²、a b² = r2/β²)。γ → ∞ で (1, 1, 0, 0)"""
     g = max(g, 1.0005)
     g2 = g * g
     b2 = 1.0 - 1.0 / g2
@@ -113,7 +115,8 @@ def ab(g):
 
 
 def r2_of_gamma(g):
-    """厳密なスペクトルの 2 次モーメント比 r2(γ) (表)"""
+    """Return the table of the exact spectrum's second-moment ratio r2(gamma).
+    厳密なスペクトルの 2 次モーメント比 r2(γ) (表)"""
     g = max(g, 1.0005)
     b2 = 1.0 - 1.0 / (g * g)
     if g <= 30.0:
@@ -135,13 +138,15 @@ def _intj(nu, x):
 
 
 def schott_s(n, beta):
-    """S_n (n は実数でもよい)。P_n = (α ħ ω0² / β) n S_n"""
+    """Compute the Schott sum S_n (n may be real), with P_n = (alpha hbar omega0^2 / beta) n S_n.
+    S_n (n は実数でもよい)。P_n = (α ħ ω0² / β) n S_n"""
     from scipy.special import jvp
     return 2.0 * beta ** 2 * jvp(2.0 * n, 2.0 * n * beta, 1) - (1.0 - beta ** 2) * _intj(2.0 * n, 2.0 * n * beta)
 
 
 def r2_exact(g, discrete=None):
-    """r2(γ) を Schott の式から直接計算する (離散和 or 連続の n の積分。discrete=None で γ < 2 を離散和)"""
+    """Compute r2(gamma) directly from Schott's formula (discrete sum or continuous n integral).
+    r2(γ) を Schott の式から直接計算する (離散和 or 連続の n の積分。discrete=None で γ < 2 を離散和)"""
     beta = math.sqrt(1.0 - 1.0 / g ** 2)
     nc = 1.5 * g ** 3
     if discrete is None:
@@ -161,7 +166,8 @@ def r2_exact(g, discrete=None):
 
 
 def build_table(npts=300):
-    """表 (_LG0.._LG1 の ln γ の npts 点の r2/β³) を作り直す (数十秒)"""
+    """Rebuild the table of r2/beta^3 over npoints of ln gamma (takes tens of seconds).
+    表 (_LG0.._LG1 の ln γ の npts 点の r2/β³) を作り直す (数十秒)"""
     lg = np.linspace(_LG0, _LG1, npts)
     ys = []
     for l in lg:

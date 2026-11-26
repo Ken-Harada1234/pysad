@@ -1,4 +1,5 @@
-"""MAIN の TRACK の FOURIER 解析 (K64 の wjfit.f・wfres.f・wfbin.f・wiord.f の直訳)。
+"""FOURIER analysis of MAIN TRACK (translation of K64 wjfit.f, wfres.f, wfbin.f, wiord.f): fit of particle coordinates.
+MAIN の TRACK の FOURIER 解析 (K64 の wjfit.f・wfres.f・wfbin.f・wiord.f の直訳)。
 
 `ON SMEAR; ON FOURIER;` で TRACK した粒子ごとの複素座標 z = (x+i px, y+i py, z+i g) (規格化座標、周ごと) を、
 作用変数 J の多項式 + 共鳴項 (mx, my, mz の整数の組ごとの exp(i(mx φx + my φy + mz φz))) でフィットする。
@@ -26,14 +27,16 @@ LABEL = ('  |mx|+|my|   ', '|mx|+|my|+|mz|')
 
 
 def lcoeff_of(maxord: int, nres: int, rfsw: bool) -> int:
-    """tracka.f の lcoeff (係数の数 + J の数。J は 2 または 3 本)"""
+    """Return lcoeff of tracka.f: the number of coefficients plus the number of J terms (2 or 3).
+    tracka.f の lcoeff (係数の数 + J の数。J は 2 または 3 本)"""
     if rfsw:
         return ((maxord + 1) * (3 + maxord * (1 + maxord * 2))) // 3 + 2 + nres
     return maxord * (maxord + 1) + 2 + nres
 
 
 def wiord(maxord: int, rfsw: bool, lcoeff: int | None = None) -> np.ndarray:
-    """wiord.f: iord (3, lcoeff) (列 0.. は Fortran の l = 1..)。先頭の ndim 本は J の項 (0, 0, 0)"""
+    """Build the iord array (3, lcoeff) of wiord.f; the first ndim entries are the J terms (0, 0, 0).
+    wiord.f: iord (3, lcoeff) (列 0.. は Fortran の l = 1..)。先頭の ndim 本は J の項 (0, 0, 0)"""
     rows: List[Tuple[int, int, int]] = [(0, 0, 0), (0, 0, 0)]
     if rfsw:
         rows.append((0, 0, 0))
@@ -66,7 +69,8 @@ def wiord(maxord: int, rfsw: bool, lcoeff: int | None = None) -> np.ndarray:
 
 
 def wtune(z: np.ndarray) -> float:
-    """wtune.f: FFT (exp(+2πi nk/N)) のパワー最大の 3 点の放物線補間。[-.5, .5] の tune 単位"""
+    """Find tunes by FFT peak with parabolic interpolation over the 3 points of maximum power (wtune.f), in [-0.5, 0.5].
+    wtune.f: FFT (exp(+2πi nk/N)) のパワー最大の 3 点の放物線補間。[-.5, .5] の tune 単位"""
     lsp = z.shape[0]
     X = np.fft.ifft(z) * lsp
     a = X.real ** 2 + X.imag ** 2
@@ -98,7 +102,8 @@ def _wfbin(f1, f2, f3, n1, n2, n3, fmax, ip, iord) -> int:
 
 def wfres(z: np.ndarray, minord: int, lcoeff: int, nres: int, iord: np.ndarray, aord: np.ndarray,
           ndim: int, adddense: float):
-    """wfres.f: チューン (f1, f2, f3) を返し、nres > 0 なら iord の末尾 nres 本を整数に近い組で埋める (ip は 0 始まり)"""
+    """Return the tunes (f1, f2, f3) of wfres.f and fill the last nres entries of iord with combinations near integers.
+    wfres.f: チューン (f1, f2, f3) を返し、nres > 0 なら iord の末尾 nres 本を整数に近い組で埋める (ip は 0 始まり)"""
     f1 = wtune(z[:, 0])
     f2 = wtune(z[:, 1])
     f3 = wtune(z[:, 2]) if ndim >= 3 else 0.0
@@ -168,7 +173,8 @@ def wfres(z: np.ndarray, minord: int, lcoeff: int, nres: int, iord: np.ndarray, 
 
 
 def fit_particle(z: np.ndarray, iord: np.ndarray, aord: np.ndarray, lcoeff: int, ndim: int, rfsw: bool):
-    """wjfit.f の当てはめ (1 粒子)。z (lsp, 3) 複素。戻り: b (lv)・zave・sj (3)・srms (3)・smax (3)・big (16 本の l の 0 始まり添字)"""
+    """Fit one particle as in wjfit.f, returning the coefficients b, average, sj, srms, smax and the indices of the 16 largest terms.
+    wjfit.f の当てはめ (1 粒子)。z (lsp, 3) 複素。戻り: b (lv)・zave・sj (3)・srms (3)・smax (3)・big (16 本の l の 0 始まり添字)"""
     lsp = z.shape[0]
     lv = (lcoeff - ndim) * 2 + ndim
     b = np.zeros(lv)
@@ -272,7 +278,8 @@ def _g(x, w, d):
 
 
 def fourier_report(zbuf: np.ndarray, lost: np.ndarray, maxord: int, nres: int, rfsw: bool, adddense: float = 6.0):
-    """wjfit.f (maxord > 0) の全部。zbuf (np0, lsp, 3) 複素、lost (np0) 真なら失った粒子。
+    """Produce the full wjfit.f report (maxord > 0) for all particles, returning the table rows and a per-particle dict.
+    wjfit.f (maxord > 0) の全部。zbuf (np0, lsp, 3) 複素、lost (np0) 真なら失った粒子。
     戻り (行のリスト, 粒子ごとの辞書: tune・b・iord・sj・srms・smax・zave・big)"""
     np0, lsp = zbuf.shape[0], zbuf.shape[1]
     ndim = 3 if rfsw else 2

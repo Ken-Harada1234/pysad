@@ -1,4 +1,4 @@
-"""
+"""Literal translation of `DynamicApertureSurvey` (SAD Packages/dapert.n, tfdapert.f, trackd.f).
 dapert.py — DynamicApertureSurvey (SAD の Packages/dapert.n → tfdapert.f → trackd.f) の直訳
 
 trackd の流れ (NPARA=1):
@@ -61,7 +61,8 @@ def dynamic_aperture(elements, range3: list, r1: list, nturn: int, phi, ivar1: i
                      momentum_eV: float, emit: dict, emx: float, emz: float, trf0: float, rfsw: bool, rad: bool,
                      fluc: bool = True, alost: float = 1.0, zlost: float = 100.0, out=None, progress: int = 0,
                      fshift: float = 0.0, dapwidth: float = 51.0, np0=None, ref_orbit=None, damping: bool = False, dampenough: float = 0.0):
-    """trackd 相当。range3: [[a2min,a2max],[a3min,a3max]] (ivar2, ivar3 の順)、r1: ivar1 の値。
+    """Compute the dynamic aperture survey as in trackd, returning (score, result) with result = ResultOfDAPERT.
+    trackd 相当。range3: [[a2min,a2max],[a3min,a3max]] (ivar2, ivar3 の順)、r1: ivar1 の値。
     戻り: (score, result) result = ResultOfDAPERT"""
     ivar3 = 6 - ivar1 - ivar2
     a2min, a2max = range3[0]

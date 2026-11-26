@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""FFS の `DRAW` コマンドを matplotlib で実装する (v2.4.1)。
+"""Implementation of the FFS `DRAW` command with matplotlib, following CANVASDRAW.n and OpticsPlot.
+FFS の `DRAW` コマンドを matplotlib で実装する (v2.4.1)。
 
 SAD K64 の `DRAW` は `src/tffsa.f` が `System`CANVASDRAW[]` を評価し、実体は `Packages/CANVASDRAW.n` (K. Oide) が
 `OpticsPlot[list, Region->{r1,r2}, Lattice->…, Names->…, GridLines->{None,Automatic}, InfoLabel->True, PlotLabel->TITLE]` を呼ぶ。
@@ -56,7 +57,8 @@ _SIZE_RX = re.compile(r'^(SIG|SIZE)([XYZPDE]{1,4})$')
 
 
 def is_label(name: str) -> bool:
-    """`Twiss$Label[name] <=> ""` (CANVASDRAW.n が関数名かどうかを決める)。SIG・SIZE で始まるサイズの名前も含む"""
+    """Return whether name is a Twiss label (Twiss$Label[name] is not empty), as decided in CANVASDRAW.n.
+    `Twiss$Label[name] <=> ""` (CANVASDRAW.n が関数名かどうかを決める)。SIG・SIZE で始まるサイズの名前も含む"""
     n = name.upper()
     return n in TWISS_FUNCTIONS or n in XTWISS_FUNCTIONS or n in _LABELLED_LINE or bool(_SIZE_RX.match(n))
 
@@ -101,7 +103,8 @@ def _size_unit(name: str) -> str:
 
 
 def twiss_unit(name: str) -> str:
-    """Twiss$Unit[name] (OpticsPlot.n)。単位なしは '1'"""
+    """Return the unit of a Twiss function name (Twiss$Unit in OpticsPlot.n); '1' if unitless.
+    Twiss$Unit[name] (OpticsPlot.n)。単位なしは '1'"""
     n = name.upper()
     if _SIZE_RX.match(n):
         return _size_unit(n)
@@ -210,7 +213,8 @@ _LABEL_LINE = {'BMAGX': r'B_{\mathrm{MAG}x}', 'BMAGY': r'B_{\mathrm{MAG}y}', 'BM
 
 
 def twiss_label(name: str) -> str:
-    """Twiss$Label[name] (mathtext。`$…$` で囲んだ文字列)。未定義の名前は名前そのもの"""
+    """Return the mathtext label of a Twiss function name (Twiss$Label); the name itself if undefined.
+    Twiss$Label[name] (mathtext。`$…$` で囲んだ文字列)。未定義の名前は名前そのもの"""
     n = name.upper()
     if n in _LABEL_LINE:
         return '$' + _LABEL_LINE[n] + '$'
@@ -234,7 +238,8 @@ def twiss_label(name: str) -> str:
 # 2. DRAW の構文解析 (CANVASDRAW.n の移植)
 # ---------------------------------------------------------------------------------------------------------------------
 def separate_ampsnd(w: str) -> Tuple[str, str]:
-    """CANVASDRAW.n の SeparateAmpsnd: 先頭から最初の & か ; の手前までと、残り (& か ; から) に分ける。
+    """Split a word at the first & or ; as in `SeparateAmpsnd` of CANVASDRAW.n.
+    CANVASDRAW.n の SeparateAmpsnd: 先頭から最初の & か ; の手前までと、残り (& か ; から) に分ける。
     & か ; が先頭なら {その 1 文字, 残り}、無ければ {w, ""}"""
     ps = [p for p in (w.find('&'), w.find(';')) if p >= 0]
     if not ps:
@@ -246,7 +251,8 @@ def separate_ampsnd(w: str) -> Tuple[str, str]:
 
 
 class DrawSpec:
-    """`DRAW` の解析結果。r1・r2 は位置 (整数)。panels は図ごとの関数名のリスト、lattice・names はラティス図と名前の表示。
+    """Parsed result of a `DRAW` command (region, panel functions, lattice and name display, consumed words).
+    `DRAW` の解析結果。r1・r2 は位置 (整数)。panels は図ごとの関数名のリスト、lattice・names はラティス図と名前の表示。
     consumed はコマンドの語 (DRAW の次から数えて) のうち使った数、leftover は DRAW が読み過ぎて FFS に返す語 (無ければ '')"""
 
     def __init__(self):
@@ -311,7 +317,8 @@ def _int_or_position(ffs, w: str):
 
 
 def parse_draw(ffs, words: Sequence[str], start: int = 0) -> DrawSpec:
-    """CANVASDRAW.n の `Draw[]` の構文解析。words[start:] は `DRAW` の次の語から (先頭が DRAW でも読み飛ばす)。
+    """Parse the `Draw[]` syntax of CANVASDRAW.n starting from the word after `DRAW`.
+    CANVASDRAW.n の `Draw[]` の構文解析。words[start:] は `DRAW` の次の語から (先頭が DRAW でも読み飛ばす)。
 
     [r1 [r2]] 関数… [& 関数…]… [LAT|LATTICE|要素名]
       - r1: 整数か要素名 (LINE["POSITION"])。読めなければ r1=1 でその語は関数として読む。r2 も同様 (失敗は LINE["LENGTH"])
@@ -406,7 +413,8 @@ def _element_color(typ: int, v: float):
 
 
 class PanelData:
-    """1 つの図 (枠) の中身。series は関数ごとの (x のリスト, y のリスト) (x は s×ss、y は単位 unit で割った値)"""
+    """Contents of one plot panel: per-function lists of x and y values.
+    1 つの図 (枠) の中身。series は関数ごとの (x のリスト, y のリスト) (x は s×ss、y は単位 unit で割った値)"""
 
     def __init__(self):
         self.funcs: List[str] = []
@@ -420,7 +428,8 @@ class PanelData:
 
 
 class LatticeData:
-    """ラティス図。rects: (x0, y0, x1, y1, 塗りの色 (無しは None), 要素名)、names: (表示位置 x (s×ss), 名前)"""
+    """Data of the lattice plot: rectangles with fill colors and element name positions.
+    ラティス図。rects: (x0, y0, x1, y1, 塗りの色 (無しは None), 要素名)、names: (表示位置 x (s×ss), 名前)"""
 
     def __init__(self):
         self.rects: List[Tuple[float, float, float, float, Optional[str], str]] = []
@@ -500,7 +509,8 @@ def _function_kind(f: str):
 
 
 def optics_list(ffs, f: str, i1: int, i2: int, dl: float, off: float):
-    """OpticsList[f, i1, i2, dl, off, …]: 位置 i1..i2 の各要素を ndiv 個に割り、(S + L j/ndiv + off, f(i + j/ndiv)) を返す"""
+    """Compute `OpticsList[f, i1, i2, dl, off, ...]`: divide each element in i1..i2 into ndiv points and return (S + L j/ndiv + off, f).
+    OpticsList[f, i1, i2, dl, off, …]: 位置 i1..i2 の各要素を ndiv 個に割り、(S + L j/ndiv + off, f(i + j/ndiv)) を返す"""
     kind, div = _function_kind(f)
     xs: List[float] = []
     ys: List[float] = []
@@ -522,7 +532,8 @@ def optics_list(ffs, f: str, i1: int, i2: int, dl: float, off: float):
 
 
 def resolve_region(ffs, r1, r2) -> Tuple[int, int]:
-    """OpticsPlot の `pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]}`。整数・要素名・None を位置の整数にする"""
+    """Resolve the region of OpticsPlot (integer, element name or None) to an integer position.
+    OpticsPlot の `pr=LINE["POSITION",pr]/.{0->1,{}->LINE["LENGTH"]}`。整数・要素名・None を位置の整数にする"""
     nlat = int(ffs.nlat)
     out = []
     for r, dflt in ((r1, 1), (r2, nlat)):
@@ -611,7 +622,8 @@ def _wild_match(pat: str, name: str) -> bool:
 
 
 def lattice_data(ffs, pr: Tuple[int, int], ss: float, names: Optional[str] = '*') -> LatticeData:
-    """LatticePlot (LatticePlot1$ と LatticeNames)。領域 pr (周回をまたぐなら 2 つに分ける)。
+    """Build the lattice plot data (`LatticePlot1$` and `LatticeNames`) for the region pr, with optional name patterns.
+    LatticePlot (LatticePlot1$ と LatticeNames)。領域 pr (周回をまたぐなら 2 つに分ける)。
     names: 名前を出す要素のパターン (StringMatchQ。既定 "*" = 全部)。None・False なら名前なし"""
     ld = LatticeData()
     nlat = int(ffs.nlat)
@@ -677,7 +689,8 @@ def _lattice_names(ffs, ld: LatticeData, pr1: int, pr2: int, off: float, w: floa
 
 def build_plot_data(lat, panels: Sequence[Sequence[str]], region=(None, None), lattice: bool = False,
                     names: Optional[str] = '*', title: str = '', warn=None, ylim=None) -> PlotData:
-    """OpticsPlot[panels, Region->region, Lattice->lattice, Names->names] が描く点・箱・名前を作る (描画はしない)。
+    """Build the points, boxes and names drawn by `OpticsPlot[panels, Region, Lattice, Names]` without drawing them.
+    OpticsPlot[panels, Region->region, Lattice->lattice, Names->names] が描く点・箱・名前を作る (描画はしない)。
     CALC していなければ先に光学を計算する (pysad の Twiss[] と同じ。gs の OpticsPlot は計算していない光学の 0 を描く)"""
     ffs = _ffs_of(lat)
     if getattr(ffs, 'lat', None) is None:
@@ -721,7 +734,8 @@ def _f10(x) -> str:
 
 
 def element_info(lat, s: float) -> str:
-    """OP$InfoLabel のポップアップの文字: s (m) の位置を含む要素の入口の名前・位置・種類の値・光学関数 (βx,y・αx,y・νx,y・ηx,y・η′・R)。
+    """Return the popup text of `OP$InfoLabel` for the element at position s: name, position, kind values and optics functions.
+    OP$InfoLabel のポップアップの文字: s (m) の位置を含む要素の入口の名前・位置・種類の値・光学関数 (βx,y・αx,y・νx,y・ηx,y・η′・R)。
     OpticsPlot.n は R3,4 の行の 2 つ目に R2 を出している (R4 の誤記と思われる)。ここでは R4 を出す"""
     ffs = _ffs_of(lat)
     nlat = int(ffs.nlat)
@@ -763,7 +777,8 @@ def element_info(lat, s: float) -> str:
 
 
 def tune_text(lat) -> str:
-    """図に添える情報: 周回のチューン νx, νy (Twiss["NX","$$$"]/2π)・周長"""
+    """Return the figure caption with the one-turn tunes nu_x, nu_y and the circumference.
+    図に添える情報: 周回のチューン νx, νy (Twiss["NX","$$$"]/2π)・周長"""
     ffs = _ffs_of(lat)
     n = int(ffs.nlat)
     nx = ffs.twiss_value('NX', n) / 2 / math.pi
@@ -797,7 +812,8 @@ def _interactive_backend(matplotlib) -> bool:
 
 def render(data: PlotData, lat=None, info: bool = True, grid=(False, True), figsize=None, tunes: bool = False,
            names_overlap: bool = True):
-    """PlotData を matplotlib の Figure にする (pyplot の Figure。表示も保存もしない)。
+    """Render PlotData into a matplotlib Figure with stacked panels sharing the s axis and the lattice plot at the bottom.
+    PlotData を matplotlib の Figure にする (pyplot の Figure。表示も保存もしない)。
     枠は縦に積み、s の軸を共有する。ラティス図は一番下 (枠の高さの 0.23 倍。OpticsPlot.n の LatticeRegion {-0.15, 0.08})。
     info=True なら、図をクリックするとその位置の要素と光学関数を出す (OP$InfoLabel)。lat はそのときと tunes に使う"""
     mpl = _import_mpl()
@@ -957,7 +973,8 @@ def _show(fig, mpl):
 def draw(lat, spec='', region=None, save: Optional[str] = None, show: Optional[bool] = None, lattice: Optional[bool] = None,
          names=None, title: Optional[str] = None, grid=(False, True), info: bool = True, tunes: bool = False,
          figsize=None, dpi: Optional[float] = None, warn=None):
-    """`DRAW` を Python から呼ぶ。Figure を返す (matplotlib が無ければ ImportError)。
+    """Call `DRAW` from Python and return a Figure (raises ImportError if matplotlib is unavailable).
+    `DRAW` を Python から呼ぶ。Figure を返す (matplotlib が無ければ ImportError)。
 
     lat:     FFS の状態 (`run_sad_string` が返す ffs)。USE・CALC のあとに呼ぶ (CALC していなければ計算する)
     spec:    DRAW の引数と同じ構文の文字列 `"[r1 [r2]] BX BY & EX [LAT|名前]"` (リストでも可。先頭の DRAW は付けても付けなくてもよい)
@@ -1036,7 +1053,8 @@ def _title_of(ffs) -> str:
 
 
 def run_draw(ffs, words: List[str], i: int) -> int:
-    """FFS の `DRAW` の本体 (ffscmd.py から呼ぶ)。words[i] が DRAW。使った語の数を返す (DRAW が読まない語は残して次のコマンドに回す)。
+    """Run the body of the FFS `DRAW` command (called from ffscmd.py) and return the number of words consumed.
+    FFS の `DRAW` の本体 (ffscmd.py から呼ぶ)。words[i] が DRAW。使った語の数を返す (DRAW が読まない語は残して次のコマンドに回す)。
 
     CANVASDRAW.n と同じ: 領域・関数・LAT・要素名を読み、Draw$Option (SAD の Rule のリスト) を最優先にして OpticsPlot 相当を描く。
     出力: 保存先 (環境変数 PYSAD_DRAW_FILE か Draw$Option の `File->"x.png"`) があれば保存 (表示しない)。無ければ対話の backend なら plt.show。
@@ -1122,7 +1140,8 @@ def _headname(e) -> str:
 
 
 def graphics_lines(g) -> List[List[Tuple[float, float]]]:
-    """Graphics の Line[{{x,y},…}] の点列を、現れる順に全部返す (OpticsPlot では 枠 1 → 枠 2 … の関数の順)"""
+    """Return all Line[{{x,y},...}] point lists of a Graphics object in order of appearance.
+    Graphics の Line[{{x,y},…}] の点列を、現れる順に全部返す (OpticsPlot では 枠 1 → 枠 2 … の関数の順)"""
     out = []
     for e in _walk(g):
         if _headname(e) == 'Line' and e.args and isinstance(e.args[0], list):
@@ -1133,7 +1152,8 @@ def graphics_lines(g) -> List[List[Tuple[float, float]]]:
 
 
 def graphics_rectangles(g) -> List[Tuple[float, float, float, float]]:
-    """ラティス図の Rectangle[{x0,y0},{x1,y1}, 選択肢…] (中に Graphics を持たない箱)。(x0, y0, x1, y1) を返す"""
+    """Return (x0, y0, x1, y1) of the lattice-plot Rectangle boxes that contain no Graphics.
+    ラティス図の Rectangle[{x0,y0},{x1,y1}, 選択肢…] (中に Graphics を持たない箱)。(x0, y0, x1, y1) を返す"""
     out = []
     for e in _walk(g):
         if _headname(e) == 'Rectangle' and len(e.args) >= 2 and all(isinstance(a, list) and len(a) == 2 for a in e.args[:2]):
@@ -1145,7 +1165,8 @@ def graphics_rectangles(g) -> List[Tuple[float, float, float, float]]:
 
 
 def graphics_texts(g) -> List[Tuple[str, float]]:
-    """ラティス図の名前 Text[{name,{Scaled[x],Scaled[y]}}, …]。(名前, x) を返す"""
+    """Return (name, x) of the lattice-plot names Text[{name,{Scaled[x],Scaled[y]}}, ...].
+    ラティス図の名前 Text[{name,{Scaled[x],Scaled[y]}}, …]。(名前, x) を返す"""
     out = []
     for e in _walk(g):
         if _headname(e) == 'Text' and e.args and isinstance(e.args[0], list) and len(e.args[0]) == 2:

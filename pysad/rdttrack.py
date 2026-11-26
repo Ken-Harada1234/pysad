@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.3.0 R4: 追跡から共鳴駆動項 (RDT) h_jklmp を取り出す (K64 にない新機能。`resdrive.resonance_terms` の検証用)。
+"""Extract resonance driving terms (RDT) h_jklmp from tracking, to verify `resdrive.resonance_terms`.
+v2.3.0 R4: 追跡から共鳴駆動項 (RDT) h_jklmp を取り出す (K64 にない新機能。`resdrive.resonance_terms` の検証用)。
 
 方法 (a) 1 周の写像の 2 次のテイラー展開 (有限振幅の追跡の差分)
   リング 1 周の追跡の写像 M(z) = R z + T(z, z) + ... (z = (x, px, y, py)、RF・放射なし) の 2 次の部分 T は、各要素の kick の 2 次の部分の和そのもの
@@ -24,7 +25,8 @@ def mono_name(q):
 
 
 def normalizing_matrix(row):
-    """z = A zn (zn = (x/√β, (αx + βpx)/√β, y/√β_y, (α_y y + β_y py)/√β_y))。row: Twiss の行 (betx, alfx, bety, alfy)。
+    """Return the normalizing matrix A (z = A zn) from a Twiss row, or from a given 4x4 matrix for coupled optics.
+    z = A zn (zn = (x/√β, (αx + βpx)/√β, y/√β_y, (α_y y + β_y py)/√β_y))。row: Twiss の行 (betx, alfx, bety, alfy)。
     v2.4.0 F1: row に 4×4 の行列を渡すと、それを A (z = A zn) として使う (結合した光学の固有モードの正規化: `ampnf.linear_modes` の Am)"""
     if isinstance(row, np.ndarray):
         return np.asarray(row, dtype=float), np.linalg.inv(row)
@@ -35,7 +37,8 @@ def normalizing_matrix(row):
 
 
 def one_turn(elements, momentum, delta=0.0):
-    """リング 1 周の追跡 f(Z (n×4)) → (n×4)。RF・放射なし、δ は一定"""
+    """Track particles Z (n x 4) one turn around the ring, without RF or radiation and with constant delta, returning an (n x 4) array.
+    リング 1 周の追跡 f(Z (n×4)) → (n×4)。RF・放射なし、δ は一定"""
     from .track6n import track_particles_fast
 
     def f(Z):
@@ -48,7 +51,8 @@ def one_turn(elements, momentum, delta=0.0):
 
 
 def jacobian(f, z, h=1e-6):
-    """z でのヤコビ行列 (中心差分の Richardson)"""
+    """Compute the Jacobian matrix at z by central differences with Richardson extrapolation.
+    z でのヤコビ行列 (中心差分の Richardson)"""
     z = np.asarray(z, dtype=float)
 
     def cen(hh):
@@ -57,7 +61,8 @@ def jacobian(f, z, h=1e-6):
 
 
 def closed_orbit(elements, momentum, delta=0.0, tol=1e-14, maxit=40):
-    """4 次元の閉軌道 (Newton 法)。戻り (z_co, f)"""
+    """Find the four-dimensional closed orbit by Newton's method and return (z_co, f).
+    4 次元の閉軌道 (Newton 法)。戻り (z_co, f)"""
     f = one_turn(elements, momentum, delta)
     z = np.zeros(4)
     for _ in range(maxit):
@@ -69,12 +74,14 @@ def closed_orbit(elements, momentum, delta=0.0, tol=1e-14, maxit=40):
 
 
 class RingMap:
-    """正規化座標の 1 周の写像 (R: 線形、T: 2 次、orbit: 展開の中心 (物理座標)、A: z = A zn)"""
+    """Holds the one-turn map in normalized coordinates (linear R, quadratic T, expansion center orbit, and A).
+    正規化座標の 1 周の写像 (R: 線形、T: 2 次、orbit: 展開の中心 (物理座標)、A: z = A zn)"""
     pass
 
 
 def ring_map(elements, momentum, row0, delta=0.0, amp=1e-5, hlin=1e-6, orbit=None, tracker=None):
-    """リング先頭の Twiss の行 row0 の正規化座標で、閉軌道 (または orbit) のまわりの 1 周の写像の 2 次のテイラー展開 (bendnl.extract_map)。
+    """Compute the second-order Taylor expansion of the one-turn map around the closed orbit in normalized coordinates.
+    リング先頭の Twiss の行 row0 の正規化座標で、閉軌道 (または orbit) のまわりの 1 周の写像の 2 次のテイラー展開 (bendnl.extract_map)。
     amp: 正規化座標 (√m) での振幅 (Richardson の振幅 amp と 2·amp。誤差 ~ amp⁴、大きなリング A (603 m) で amp = 1e-4: 8e-4、3e-5: 6e-6、1e-5: 4e-7)。J = amp²/2 の程度の振幅の追跡。
     tracker: 1 周の追跡 f(Z (n×4)) → (n×4) (物理座標、δ=0) を差し替える (gs との照合用。orbit も与える)"""
     A, Ai = normalizing_matrix(row0)
@@ -93,19 +100,22 @@ def ring_map(elements, momentum, row0, delta=0.0, amp=1e-5, hlin=1e-6, orbit=Non
 
 
 def cubic_generator(rm):
-    """1 周の kick の生成関数 f_eff (正規化座標の 3 次式 {(ex, ep, ey, eq): 係数}): ∇f = −S R⁻¹ T、f = (1/3) z·∇f"""
+    """Return the cubic generating function f_eff of the one-turn kick in normalized coordinates, a dict {(ex, ep, ey, eq): coefficient}.
+    1 周の kick の生成関数 f_eff (正規化座標の 3 次式 {(ex, ep, ey, eq): 係数}): ∇f = −S R⁻¹ T、f = (1/3) z·∇f"""
     Tk = np.einsum('ij,jab->iab', np.linalg.inv(rm.R), rm.T)
     return B.cubic_from_kick(Tk)
 
 
 def rdt_from_map(rm, monos=CUBIC_MONOS):
-    """1 周の写像から取り出した h_jklm (p=0 の 3 次の項、全部の和 = 6 極 + 偏向磁石 + その他の 2 次の kick)。戻り {名前: 複素数}"""
+    """Extract the third-order terms h_jklm (p = 0) of the sum of all quadratic kicks from the one-turn map; return {name: complex}.
+    1 周の写像から取り出した h_jklm (p=0 の 3 次の項、全部の和 = 6 極 + 偏向磁石 + その他の 2 次の kick)。戻り {名前: 複素数}"""
     amp = B.harmonic_amplitudes(cubic_generator(rm), W_NORM, monos)[:, 0]
     return {mono_name(q): complex(a) for q, a in zip(monos, amp)}
 
 
 def quad_to_h(Q, monos):
-    """2 次の生成関数 g2 = ½ zᵀ Q z (正規化座標) の h_(j,k,l,m,1) (monos の各要素は p=1)。戻り {名前: 複素数}"""
+    """Return h_(j,k,l,m,1) for a quadratic generating function g2 = (1/2) z^T Q z in normalized coordinates, as {name: complex}.
+    2 次の生成関数 g2 = ½ zᵀ Q z (正規化座標) の h_(j,k,l,m,1) (monos の各要素は p=1)。戻り {名前: 複素数}"""
     f2 = {}
     for a in range(4):
         for b in range(4):
@@ -121,7 +131,8 @@ DELTA1_MONOS = [(1, 1, 0, 0, 1), (0, 0, 1, 1, 1), (2, 0, 0, 0, 1), (0, 2, 0, 0, 
 
 
 def delta_quadratic_total(elements, momentum, row0, d=1e-4):
-    """δ の 1 次の 2 次形式 (閉軌道でのヤコビ行列の δ 微分): R0⁻¹ ∂J(z_co(δ); δ)/∂δ = S Q (正規化座標、中心差分の Richardson、δ = d と 2d)、g2 = ½ zᵀ Q z。
+    """Compute the quadratic form linear in delta (delta derivative of the closed-orbit Jacobian); return (Q, h) for the total.
+    δ の 1 次の 2 次形式 (閉軌道でのヤコビ行列の δ 微分): R0⁻¹ ∂J(z_co(δ); δ)/∂δ = S Q (正規化座標、中心差分の Richardson、δ = d と 2d)、g2 = ½ zᵀ Q z。
     **全体** = 四極・偏向磁石の自然なクロマティックな項 + 6 極 + 偏向磁石の曲率・端 (分散による軌道のずれ)。6 極の分は強さを ×1 と ×0 にした結果の差
     (T は kick の和で、この 1 次の量は 6 極の強さに厳密に比例)。戻り (Q (4×4)、dict h (名前 → 複素数))"""
     A, Ai = normalizing_matrix(row0)
@@ -139,7 +150,8 @@ def delta_quadratic_total(elements, momentum, row0, d=1e-4):
 
 
 def delta2_orbit_h10002(elements, momentum, row0, d=1e-4):
-    """2 次の閉軌道の係数 c2 = ½ ∂²z_co/∂δ² (正規化座標) から、固定点の式 z* = (1−R)⁻¹ R S ∇g δ² の線形項 g = ∇g·z の h10002 (複素数) を返す。
+    """Compute h10002 from the second-order closed-orbit coefficient c2 via the fixed-point formula; return (h10002, c2).
+    2 次の閉軌道の係数 c2 = ½ ∂²z_co/∂δ² (正規化座標) から、固定点の式 z* = (1−R)⁻¹ R S ∇g δ² の線形項 g = ∇g·z の h10002 (複素数) を返す。
     **全体 (自然な 2 次の分散 + 6 極 + 偏向磁石)**。6 極の分は 6 極の強さを ×1 と ×0 にした結果の差 (呼び出し側)。戻り (h10002, c2)"""
     A, Ai = normalizing_matrix(row0)
     f0 = one_turn(elements, momentum, 0.0)
@@ -158,7 +170,8 @@ def delta2_orbit_h10002(elements, momentum, row0, d=1e-4):
 
 
 def tracked_rdt_table(elements, momentum, row0, with_delta=True, amp=1e-5, d=1e-4):
-    """追跡から取り出した h の表 (全体 = 6 極 + 偏向磁石 + 自然な項): {'cubic': {名前: 複素数 (p=0)}、'delta1': {名前: 複素数 (p=1、自然なクロマティックな項を含む)}、
+    """Build the table of h extracted from tracking: 'cubic' (p=0), 'delta1' (p=1) and 'h10002' (p=2), as totals.
+    追跡から取り出した h の表 (全体 = 6 極 + 偏向磁石 + 自然な項): {'cubic': {名前: 複素数 (p=0)}、'delta1': {名前: 複素数 (p=1、自然なクロマティックな項を含む)}、
     'h10002': 複素数 (p=2、自然な 2 次の分散の分を含む)}。6 極だけの分は強さ ×1 と ×0 の差"""
     rm = ring_map(elements, momentum, row0, amp=amp)
     out = {'cubic': rdt_from_map(rm), 'R': rm.R}
@@ -173,7 +186,8 @@ def tracked_rdt_table(elements, momentum, row0, with_delta=True, amp=1e-5, d=1e-
 # 方法 (b): 共鳴線の近くの周期点
 # ---------------------------------------------------------------------------------------------
 def periodic_points(elements, momentum, row0, nper, jguess, nphase=24, tol=1e-12):
-    """y = 0 の x の運動で、nper 周の写像 T^nper の固定点 (周期点) を Newton 法で探す (位相 nphase 通りの初期値)。
+    """Find fixed (periodic) points of the nper-turn map T^nper for motion at y = 0 by Newton's method; return a list of (J, phi).
+    y = 0 の x の運動で、nper 周の写像 T^nper の固定点 (周期点) を Newton 法で探す (位相 nphase 通りの初期値)。
     戻り: list[(J, φ)] (J = アクション (x = √(2Jβ) cos φ)、重複は除く)"""
     from scipy.optimize import fsolve
     f = one_turn(elements, momentum, 0.0)
@@ -204,7 +218,8 @@ def periodic_points(elements, momentum, row0, nper, jguess, nphase=24, tol=1e-12
 
 
 def predict_periodic_J(eps, a, hmag, nint=3):
-    """3 周写像の周期点の振幅 J の予測: 1 周の生成関数 G = 2π ν J + π a J² + 2|h|(2J)^{3/2} cos(3φ+θ) (ν = 共鳴の整数/3 + ε) の固定点の条件
+    """Predict the amplitude J of the periodic points of the three-turn map from the fixed-point condition; return up to two J values.
+    3 周写像の周期点の振幅 J の予測: 1 周の生成関数 G = 2π ν J + π a J² + 2|h|(2J)^{3/2} cos(3φ+θ) (ν = 共鳴の整数/3 + ε) の固定点の条件
     2π(ε + aJ) = ∓ 6|h| √(2J) (a = ∂ν/∂J)。戻り: 昇順の J のリスト (最大 2 つ)"""
     from scipy.optimize import brentq
     out = []
@@ -230,7 +245,8 @@ def _evalmon(Z, exps):
 
 
 def ring_map3(elements, momentum, row0, delta=0.0, amp=1e-5, amp3=2e-4, hlin=1e-6, orbit=None, tracker=None, ndir=48, seed=1):
-    """リング先頭の Twiss の行 row0 の正規化座標で、閉軌道のまわりの 1 周の写像の 3 次までのテイラー展開 (R、T (2 次)、T3 (3 次))。
+    """Compute the Taylor expansion of the one-turn map to third order (R, T, T3) around the closed orbit in normalized coordinates.
+    リング先頭の Twiss の行 row0 の正規化座標で、閉軌道のまわりの 1 周の写像の 3 次までのテイラー展開 (R、T (2 次)、T3 (3 次))。
     R・T は `ring_map` (amp)。T3[i] は 3 次の同次式の係数 {(ea, eb, ec, ed): 係数} (i = 0..3 の出力成分、正規化座標)。取り出し: 方向 v (ndir 個の乱数の単位ベクトル) で
     奇関数 o(a) = ½(f(a v) − f(−a v)) (= a R v + a³ T3(v) + a⁵ T5(v) …) の差 u1 = o(2a) − 2 o(a) = 6a³T3 + 30a⁵T5、u2 = o(3a) − 3 o(a) = 24a³T3 + 240a⁵T5 から
     T3(v) = (8 u1 − u2)/(24 a³) (誤差 ~ a⁴ T7、線形項は差で厳密に消える。丸め誤差 ~ 1e-16/a²)。a = amp3 (正規化座標 √m)。T3 は 3 次の同次式に最小二乗フィット"""
@@ -298,7 +314,8 @@ def _quad_poly(Tk_i):
 
 
 def f4_from_map3(rm):
-    """3 次のテイラー展開から 4 次の生成関数 h4 (正規化座標の 4 次式 {(ex, ep, ey, eq): 係数}) を作る。kick の 3 次の部分 τ3 = R⁻¹ T3 から、2 次の kick u = R⁻¹T (= S∇h3) の流れの
+    """Build the fourth-order generating function h4 in normalized coordinates from the third-order Taylor map; return (h4, info).
+    3 次のテイラー展開から 4 次の生成関数 h4 (正規化座標の 4 次式 {(ex, ep, ey, eq): 係数}) を作る。kick の 3 次の部分 τ3 = R⁻¹ T3 から、2 次の kick u = R⁻¹T (= S∇h3) の流れの
     2 次 ½(u·∇)u を引き (Dragt–Finn: 写像 = e^{−:h3 + h4:}、3 次の部分 = S∇h4 + ½(u·∇)u)、∇h4 = −S v (v = S∇h4)、h4 = (1/4) z·∇h4。
     戻り (h4, info): info['symp'] = ∇h4 の可積分条件 (∂_k g_j = ∂_j g_k) の相対残差 (写像が 4 次までシンプレクティックなら ~0)"""
     Ri = np.linalg.inv(rm.R)
@@ -339,7 +356,8 @@ MONOS4V = [(j, k, l, 4 - j - k - l) for j in range(5) for k in range(5 - j) for 
 
 
 def rdt4_from_map(rm, monos=MONOS4V):
-    """追跡の 1 周の写像の 3 次のテイラー展開 (ring_map3) から取り出した h4_jklm (p=0。全体 = 8 極 + 運動学 + フリンジ + 3 次の 2 次 + 四極・偏向磁石の本体の 4 次の項)。
+    """Extract h4_jklm (p = 0) from the third-order Taylor map of the tracked one-turn map (`ring_map3`); return (dict, info).
+    追跡の 1 周の写像の 3 次のテイラー展開 (ring_map3) から取り出した h4_jklm (p=0。全体 = 8 極 + 運動学 + フリンジ + 3 次の 2 次 + 四極・偏向磁石の本体の 4 次の項)。
     戻り ({名前: 複素数}, info)"""
     h4, info = f4_from_map3(rm)
     amp = B.harmonic_amplitudes(h4, W_NORM, [tuple(q) + (0,) for q in monos])[:, 0]
@@ -350,7 +368,8 @@ _ELEM_H4_CACHE = {}
 
 
 def element_h4(el, momentum=3e9, amp3=2e-4, orbit=None, delta=0.0):
-    """1 要素の写像 (入口の物理座標 (x, px, y, py)、閉軌道 0) の 4 次の生成関数 h4 (物理座標の 4 次式 {(ex, epx, ey, epy): 係数})。
+    """Extract the fourth-order generating function h4 of a single-element map in physical coordinates; return (h4, info).
+    1 要素の写像 (入口の物理座標 (x, px, y, py)、閉軌道 0) の 4 次の生成関数 h4 (物理座標の 4 次式 {(ex, epx, ey, epy): 係数})。
     N = R_el⁻¹ M_el (要素自身の線形写像を除いた相互作用表示の写像) の 3 次のテイラー展開から `f4_from_map3` で取り出す。
     要素の内部の 3 次どうしの 2 次の項 (Magnus の第 2 項) と 4 次のハミルトニアンの 1 次 (運動学・端のフリンジなど) の両方を含む。
     入口の Twiss に依らない (物理座標) ので、素子の種類ごとに 1 回 (キャッシュ)。戻り (h4, info)
@@ -375,7 +394,8 @@ def element_h4(el, momentum=3e9, amp3=2e-4, orbit=None, delta=0.0):
 # v2.3.0 R6: 追跡の光学 (δ のまわり): CALC ではなく、追跡の写像のヤコビ行列から閉軌道・Twiss を作る
 # ---------------------------------------------------------------------------------------------
 def tracked_rows(elements, momentum, delta=0.0, base_rows=None, h=1e-5):
-    """δ の閉軌道を追跡 (Newton 法) で求め、各素子の追跡の写像 (`bendnl._tracker_map`) のヤコビ行列 (閉軌道の各点で、中心差分の Richardson) を掛けて
+    """Find the closed orbit for delta by tracking and build Twiss rows (beta, alpha, phase advance) and orbit at each element entrance.
+    δ の閉軌道を追跡 (Newton 法) で求め、各素子の追跡の写像 (`bendnl._tracker_map`) のヤコビ行列 (閉軌道の各点で、中心差分の Richardson) を掛けて
     各素子の入口の Twiss (β、α、位相進み μ) と閉軌道を作る (結合なしの 2×2 ブロック)。戻り: 行のリスト (長さ N+1、`resdrive` が使う属性を持つ SimpleNamespace)。
     CALC の δ の光学 (`lat.twiss_table(delta=)`) との違い: 追跡の閉軌道は 6 極の 2 次の kick (2 次の分散) を含み、ヤコビ行列は追跡そのもの。
     ASTRID2 (δ = 0.002) で CALC と追跡のチューンは 5e-5〜8e-5 違う (CALC は 2 次の分散・6 極の 2 次のクロマティシティの分を含まない)。

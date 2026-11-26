@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""pysad の互換モード (v2.0.0 から)。
+"""Compatibility modes of pysad: `v2` (fixed behavior, default) and `k64` (reproduces K64 gs behavior).
+pysad の互換モード (v2.0.0 から)。
 
 v1 系は SAD (K64 版) のソースに忠実な翻訳で、K64 のバグや癖も gs の実動作どおりに再現した。
 v2 系は、K64 のバグの修正・物理の誤りの修正・機能の追加を行う。結果が gs と変わる箇所は、次の 2 つのモードで切り替える。
@@ -16,7 +17,8 @@ _mode = None
 
 
 def mode():
-    """現在のモード ('v2' または 'k64')。環境変数 PYSAD_COMPAT を毎回読む (set_mode で上書き可)。"""
+    """Return the current compatibility mode ('v2' or 'k64'), reading the PYSAD_COMPAT environment variable each time.
+    現在のモード ('v2' または 'k64')。環境変数 PYSAD_COMPAT を毎回読む (set_mode で上書き可)。"""
     if _mode is not None:
         return _mode
     m = os.environ.get('PYSAD_COMPAT', 'v2').strip().lower()
@@ -24,7 +26,8 @@ def mode():
 
 
 def set_mode(m):
-    """モードを設定する ('v2' | 'k64')。None で環境変数に戻す。"""
+    """Set the compatibility mode ('v2' or 'k64'); None reverts to the environment variable.
+    モードを設定する ('v2' | 'k64')。None で環境変数に戻す。"""
     global _mode
     if m is not None and m not in ('v2', 'k64'):
         raise ValueError("mode must be 'v2' or 'k64'")
@@ -49,7 +52,8 @@ _bend_k1_edge = None
 
 
 def bend_k1_edge():
-    """K1≠0 の BEND の端の模型 ('radial' | 'face')。k64 モードでは常に 'radial'"""
+    """Return the edge model of a BEND with K1 nonzero ('radial' or 'face'); always 'radial' in k64 mode.
+    K1≠0 の BEND の端の模型 ('radial' | 'face')。k64 モードでは常に 'radial'"""
     if mode() != 'v2':
         return 'radial'
     if _bend_k1_edge is not None:
@@ -59,7 +63,8 @@ def bend_k1_edge():
 
 
 def set_bend_k1_edge(m):
-    """K1≠0 の BEND の端の模型を設定する ('radial' | 'face')。None で環境変数に戻す"""
+    """Set the edge model of a BEND with K1 nonzero ('radial' or 'face'); None reverts to the environment variable.
+    K1≠0 の BEND の端の模型を設定する ('radial' | 'face')。None で環境変数に戻す"""
     global _bend_k1_edge
     if m is not None and m not in ('radial', 'face'):
         raise ValueError("bend_k1_edge must be 'radial' or 'face'")
@@ -78,7 +83,8 @@ _bend_k1_def = None
 
 
 def bend_k1_def():
-    """K1≠0 の BEND の K1 の定義 ('log' | 'lin')。k64 モードでは常に 'log'"""
+    """Return the definition of K1 for a BEND with K1 nonzero ('log' or 'lin'); always 'log' in k64 mode.
+    K1≠0 の BEND の K1 の定義 ('log' | 'lin')。k64 モードでは常に 'log'"""
     if mode() != 'v2':
         return 'log'
     if _bend_k1_def is not None:
@@ -88,12 +94,14 @@ def bend_k1_def():
 
 
 def bend_k1_lin():
-    """B' 一様の定義 ('lin') を使うか (v2 かつ bend_k1_def() == 'lin')"""
+    """Return whether the uniform-B' definition of K1 ('lin') is used (v2 and bend_k1_def() == 'lin').
+    B' 一様の定義 ('lin') を使うか (v2 かつ bend_k1_def() == 'lin')"""
     return bend_k1_def() == 'lin'
 
 
 def set_bend_k1_def(m):
-    """K1≠0 の BEND の K1 の定義を設定する ('log' | 'lin')。None で環境変数に戻す"""
+    """Set the definition of K1 for a BEND with K1 nonzero ('log' or 'lin'); None reverts to the environment variable.
+    K1≠0 の BEND の K1 の定義を設定する ('log' | 'lin')。None で環境変数に戻す"""
     global _bend_k1_def
     if m is not None and m not in ('log', 'lin'):
         raise ValueError("bend_k1_def must be 'log' or 'lin'")
@@ -115,13 +123,15 @@ def bend_dk_fix():
 
 
 def set_bend_dk_fix(m):
-    """測定・試験用: B161 の dk の修正を強制 (True/False)。None で既定 (v2 なら True) に戻す"""
+    """Force the B161 dk fix on or off for measurement and tests; None restores the default (True in v2).
+    測定・試験用: B161 の dk の修正を強制 (True/False)。None で既定 (v2 なら True) に戻す"""
     global _bend_dk_fix
     _bend_dk_fix = m
 
 
 def bend_ecorr_flags():
-    """CALC の BEND (K1≠0) の補正カーネル (perfkern_bend.bendecorr) に渡す整数の旗: 1 = K1 の定義 'lin' (B160)、2 = B161 の dk の修正"""
+    """Return the integer flags passed to the BEND (K1 nonzero) correction kernel `perfkern_bend.bendecorr` of CALC.
+    CALC の BEND (K1≠0) の補正カーネル (perfkern_bend.bendecorr) に渡す整数の旗: 1 = K1 の定義 'lin' (B160)、2 = B161 の dk の修正"""
     return (1 if bend_k1_lin() else 0) | (2 if bend_dk_fix() else 0) | (4 if v2() else 0)       # 4 = B250 (xsxkx の符号。bendebody だけが見る。v2 のとき)
 
 
@@ -143,7 +153,8 @@ def radiation_beta():
 
 
 def set_radiation_beta(m):
-    """B167 の β の因子を強制 (True/False)。None で既定 (v2 なら True) に戻す。Emittance[]・追跡に使う _Phys は作った時点の値を持つ"""
+    """Force the beta factor of B167 on or off; None restores the default (True in v2).
+    B167 の β の因子を強制 (True/False)。None で既定 (v2 なら True) に戻す。Emittance[]・追跡に使う _Phys は作った時点の値を持つ"""
     global _radiation_beta
     _radiation_beta = m
 
@@ -170,7 +181,8 @@ def spin_bpar():
 
 
 def set_spin_bpar(m):
-    """B165 の本体の B∥ を強制 (True/False)。None で既定 (v2 なら True) に戻す"""
+    """Force the B-parallel treatment in the main part of B165 on or off; None restores the default (True in v2).
+    B165 の本体の B∥ を強制 (True/False)。None で既定 (v2 なら True) に戻す"""
     global _spin_bpar
     _spin_bpar = m
 
@@ -182,7 +194,8 @@ def set_spin_bpar(m):
 # 環境変数 PYSAD_EMITDIV_DEFAULT で変えられる (1 で K64 と同じ)。EMITDIVB・EMITDIVQ の既定は 1 のまま。
 # ---------------------------------------------------------------------------------------------
 def emitdiv_default(pol=False):
-    """EMITDIV の既定 (台本が EMITDIV を与えないとき)。k64 は 1、v2 は 4 (POL ON のスピンの計算は 16: 線形の脱偏極率の刻みの誤差が EMITDIV = 1 で +24%、
+    """Return the default EMITDIV used when the script does not give EMITDIV (1 in k64, 4 in v2, 16 for POL ON spin).
+    EMITDIV の既定 (台本が EMITDIV を与えないとき)。k64 は 1、v2 は 4 (POL ON のスピンの計算は 16: 線形の脱偏極率の刻みの誤差が EMITDIV = 1 で +24%、
     4 で +20%、16 で +4% (64 で収束 1.87e-8。4.2 GeV・12 MV の FODO。docs/history/v24_RAD.md §4))"""
     if mode() != 'v2':
         return 1.0

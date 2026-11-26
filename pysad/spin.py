@@ -1,4 +1,4 @@
-"""
+"""Translation of the SAD spin (POL flag) code: tradke spin part, spnorm, srequpol, spdepol and srot of tchge.f.
 スピン (POL フラグ) の直訳: photons.f の tradke のスピン部、tspin の spnorm / srequpol / spdepol、tchge.f の srot 回転。
 
 状態 (temw / temit の srot(3,9), gintd(3)):
@@ -52,7 +52,8 @@ def srotinit():
 
 
 def xsincos(x):
-    """tfloor.f xsincos: sin, cos と 1−cos の精度の良い形 (s, c, dc)"""
+    """Compute sin, cos and the accurate form of 1 - cos (s, c, dc), as in xsincos of tfloor.f.
+    tfloor.f xsincos: sin, cos と 1−cos の精度の良い形 (s, c, dc)"""
     s = math.sin(x)
     c = math.cos(x)
     dc = -2.0 * math.sin(0.5 * x) ** 2
@@ -69,7 +70,8 @@ def _pxy2dpz(px, py):
 # ---------------------------------------------------------------------------
 
 def tradke_spin(st, c):
-    """c: _State.tradke のローカル量の dict。st.srot / st.gintd を更新する。transr は更新前の値 (st.transr)"""
+    """Update the spin one-turn matrix and depolarization vector (st.srot, st.gintd) from the local quantities of tradke.
+    c: _State.tradke のローカル量の dict。st.srot / st.gintd を更新する。transr は更新前の値 (st.transr)"""
     pr = c['pr']
     px, py, pz = c['px'], c['py'], c['pz']
     pxi, pyi, pz00, pz0, pxr0 = c['pxi'], c['pyi'], c['pz00'], c['pz0'], c['pxr0']
@@ -307,7 +309,8 @@ def _acc_step(st, c, bhx, bhy, bhz, w):
 # ---------------------------------------------------------------------------
 
 def tchge_rotate_spin(st, th, ent):
-    """tchge: ent → srot(1,:)= c·sx − s·srot(2,:); srot(2,:)= s·sx + c·srot(2,:)。出口は逆回転"""
+    """Rotate the spin matrix srot at element entrance (inverse rotation at exit), as in tchge.
+    tchge: ent → srot(1,:)= c·sx − s·srot(2,:); srot(2,:)= s·sx + c·srot(2,:)。出口は逆回転"""
     if th == 0.0:
         return
     ct, sn = math.cos(th), math.sin(th)
@@ -322,7 +325,8 @@ def tchge_rotate_spin(st, th, ent):
 
 
 def tbrote_rr(alg, phig, dtheta, dchi2, ent):
-    """tbrote の rr (単位行列からの差。対角は cos−1 の形)"""
+    """Compute the rr rotation matrix of tbrote as the difference from the identity (diagonal in cos-1 form).
+    tbrote の rr (単位行列からの差。対角は cos−1 の形)"""
     from .lattice import _xsincos
     if phig == 0.0:
         c0, s0 = 1.0, 0.0
@@ -366,7 +370,8 @@ def tbrote_spin(st, alg, phig, dtheta, dchi2, ent):
 
 
 def tchge_spin(st, dx0, dy, dz, theta, dtheta, alg, phig, ent, dchi2=0.0):
-    """tchge の calpol 部 (cod の更新は lattice._tchge_cod が別にやる)"""
+    """Spin (calpol) part of tchge; the cod update is done separately by `lattice._tchge_cod`.
+    tchge の calpol 部 (cod の更新は lattice._tchge_cod が別にやる)"""
     th = theta if phig != 0.0 else theta + dtheta
     if ent:
         tchge_rotate_spin(st, th, True)
@@ -395,7 +400,8 @@ def _abs3(a, b, c):
 
 
 def spnorm(srot, gintd):
-    """spnorm: srot(:,1:3) を直交化し、スピン歳差の不変軸 sps(:,1) と歳差角 smu、減衰率 sdamp = n·gintd を返す。srot は更新される"""
+    """Orthogonalize srot(:,1:3); return the invariant spin axis sps(:,1), precession angle smu and damping rate sdamp (`spnorm`).
+    spnorm: srot(:,1:3) を直交化し、スピン歳差の不変軸 sps(:,1) と歳差角 smu、減衰率 sdamp = n·gintd を返す。srot は更新される"""
     from .emit6d import _tsvd_tsolva
     srot[:, 1] = srot[:, 1] / np.linalg.norm(srot[:, 1])
     s = srot[0, 0] * srot[0, 1] + srot[1, 0] * srot[1, 1] + srot[2, 0] * srot[2, 1]
@@ -551,7 +557,8 @@ def _spdotrm(rma, rmb, rmc):
 
 
 def spdepol(gxr, gxi, gyr, gyi, gzr, gzi, e1, e2, dx, ssprd, amx, ams):
-    """spdepol: 2 次までの摂動 (K64 は spcalcres を k=2 だけ呼ぶ)。rmd(3,3,1) = rm1 を返す"""
+    """Compute the second-order perturbative depolarization matrix (`spdepol`) and return rmd(3,3,1) = rm1.
+    spdepol: 2 次までの摂動 (K64 は spcalcres を k=2 だけ呼ぶ)。rmd(3,3,1) = rm1 を返す"""
     rm1 = {}
     cI = 1j
     for i in (1, 2, 3):
@@ -592,7 +599,8 @@ def spdepol(gxr, gxi, gyr, gyi, gzr, gzi, e1, e2, dx, ssprd, amx, ams):
 
 
 def srequpol(srot, sps, params, demit, sdamp, r):
-    """srequpol: 平衡偏極 equpol(3) と脱偏極行列 rm1(3,3)。
+    """Compute the equilibrium polarization equpol(3) and depolarization matrix rm1(3,3) (`srequpol`).
+    srequpol: 平衡偏極 equpol(3) と脱偏極行列 rm1(3,3)。
     params: dict(emit=(ex,ey,ez), damp=(3), tunes=(3), smu)。demit は規格化モード座標のビーム行列 (21 個の packed)"""
     smu = params['smu']
     drot = sps.T @ srot[:, 3:9] @ r
@@ -623,7 +631,8 @@ def _cross_mat(v):
 
 
 def sideband_depolarization(secs, n0, s0, nsamp=1024, tol=1e-7, kmax=300000, modulate=True, seed=20261118, C6=None, us=None):
-    """シンクロトロン側帯 (スピンの位相変調) を入れた 1 周あたりの脱偏極率 (v2 の Polarization、B3)。独立な導出 (docs/history/v2next_B3.md §2)。
+    """Compute the per-turn depolarization rate including synchrotron sideband (spin phase modulation) effects (v2 Polarization, B3).
+    シンクロトロン側帯 (スピンの位相変調) を入れた 1 周あたりの脱偏極率 (v2 の Polarization、B3)。独立な導出 (docs/history/v2next_B3.md §2)。
 
     線形の式 (slim_depolarization) は、スピン軸の場 n(u) = n0 + N u を軌道 u の 1 次で置き、放射の跳び ξ (共分散 B_i) あたり ½|N ξ|² だけ偏極が減ると
     数える。スピンの 1 周の歳差の位相は 2π ν(u) = 2π ν0 + P·u (P はエネルギー (δ) 依存が主) で、シンクロトロン振動で δ が振動すると位相が変調され
@@ -793,7 +802,8 @@ def _chromatic_matrix(els, ph, cod, trf0, rfsw, radcod, secs, eps=1e-4):
 
 
 def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_matrix=None, sideband=False):
-    """線形のスピン軌道結合 (SLIM / Derbenev-Kondratenko の脱偏極項) による 1 周あたりの脱偏極率 (v2 の Polarization が使う)。
+    """Compute the per-turn depolarization rate from linear spin-orbit coupling (SLIM / Derbenev-Kondratenko term) for v2 Polarization.
+    線形のスピン軌道結合 (SLIM / Derbenev-Kondratenko の脱偏極項) による 1 周あたりの脱偏極率 (v2 の Polarization が使う)。
 
     要素 i ごとに emit6d.tturne (POL) で、軌道の行列 T_i (減衰込み)、その要素の放射の拡散行列 B_i (要素の出口での共分散)、
     スピンの回転 R_i、スピン軌道結合 D_i (軌道のずれ u による余分の回転ベクトル D_i u。K64 の回転の向きは ds = s × g なので
@@ -897,7 +907,8 @@ def slim_depolarization(els, ph, cod, trf0=0.0, rfsw=False, radcod=False, beam_m
 
 
 def spin_results(st, em, ph, els=None, cod=None, trf0=0.0, rfsw=False, radcod=False) -> dict:
-    """temit.f tecalc の calpol 部: srot1 = srot(:,1:3) → spnorm → srequpol。偏極時間 = 1/sdamp/revolution frequency [s]。
+    """Compute the spin results of tecalc in temit.f (spnorm, srequpol), with polarization time and, in v2, SLIM polarization.
+    temit.f tecalc の calpol 部: srot1 = srot(:,1:3) → spnorm → srequpol。偏極時間 = 1/sdamp/revolution frequency [s]。
     v2 (B55) で els・cod が渡されたとき: 平衡偏極度は線形のスピン軌道結合 (slim_depolarization) の脱偏極率から
     P = (8/5√3)·sdamp/(sdamp + rate) とする (K64 の spdepol は NaN、桁あふれを直しても追跡と 3 桁以上合わない)"""
     from . import compat

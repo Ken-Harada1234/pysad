@@ -1,4 +1,4 @@
-"""
+"""Literal translation of the SAD MAIN-level `TRACK` command (toplvl, ActTra.f, track.f, tracka.f).
 maintrack.py — SAD の MAIN レベルの TRACK コマンド (toplvl → ActTra.f → track.f → tracka.f) の直訳
 
 SAD の経路
@@ -53,7 +53,8 @@ def _fit(body: str, w: int) -> str:
 
 
 def fmt_g(x: float, w: int, d: int) -> str:
-    """Fortran の 1P,Gw.d (gfortran と照合済み): 0.1 <= |x| < 10^d は F(w-4).(d-指数) + 4 空白、他は E 形式"""
+    """Format a number like Fortran `1P,Gw.d` (checked against gfortran).
+    Fortran の 1P,Gw.d (gfortran と照合済み): 0.1 <= |x| < 10^d は F(w-4).(d-指数) + 4 空白、他は E 形式"""
     if x != x:
         return 'NaN'.rjust(w)
     if math.isinf(x):
@@ -80,7 +81,8 @@ def fmt_f(x: float, w: int, d: int) -> str:
 
 
 def ordinal(m: int) -> str:
-    """tday.f の ord"""
+    """Return the ordinal form of a number, as `ord` in `tday.f`.
+    tday.f の ord"""
     mm = m % 100
     if 3 < mm < 21:
         return 'th'
@@ -90,7 +92,8 @@ def ordinal(m: int) -> str:
 
 # ---------------------------------------------------------------------------- 解析 (tsmear / wtunem)
 def smear_report(n: int, nsmear: int, sj, sjj, alive_ids, np0: int):
-    """tsmear.f。sj/sjj は粒子 (ID 順) ごとの 2J の和と 2 乗和 (3 面)、alive_ids は生きている粒子の ID (0 始まり、昇順)。
+    """Build the smear report of `tsmear.f` from per-particle sums of 2J and their squares.
+    tsmear.f。sj/sjj は粒子 (ID 順) ごとの 2J の和と 2 乗和 (3 面)、alive_ids は生きている粒子の ID (0 始まり、昇順)。
     表示は ID 昇順 (kptbl(i,1) <= np の粒子)。戻り: (行のリスト, [(ID(1 始まり), [2Jx, 2Jy, 2Jz, σx, σy, σz])])"""
     out = []
     recs = []
@@ -116,7 +119,8 @@ def smear_report(n: int, nsmear: int, sj, sjj, alive_ids, np0: int):
 
 
 def wtunem(z: np.ndarray, nfre: int = NFRE):
-    """wtunem.f: z は (lsp, 3) の複素座標 (x+i px, y+i py, z+i g)。面ごとに FFT (tcftr: exp(+2πi nk/N)、正規化なし) のパワーを
+    """Translate `wtunem.f`: find the tune frequencies and amplitudes of each plane by FFT with parabolic interpolation of the peaks.
+    wtunem.f: z は (lsp, 3) の複素座標 (x+i px, y+i py, z+i g)。面ごとに FFT (tcftr: exp(+2πi nk/N)、正規化なし) のパワーを
     重み (.5, 1, .5) で平滑し、その極大の位置を放物線補間した周波数と振幅 (fa = r/lsp²) を大きい順に nfre 本。
     戻り f1[3][nfre], fa[3][nfre] (周波数は [-.5, .5] の tune 単位)"""
     lsp = z.shape[0]
@@ -164,7 +168,8 @@ def wtunem(z: np.ndarray, nfre: int = NFRE):
 
 
 def tune_table(zbuf: np.ndarray, alive_mask: np.ndarray, lines: List[str]):
-    """wjfit.f (maxord=0): 粒子ごとに wtunem の結果を表示し、TunesByTracking 用のリストを返す。
+    """Translate `wjfit.f` (maxord=0): print per-particle `wtunem` results and return the list for `TunesByTracking`.
+    wjfit.f (maxord=0): 粒子ごとに wtunem の結果を表示し、TunesByTracking 用のリストを返す。
     zbuf は (np0, lsp, 3)、alive_mask は ID ごとの生存。"""
     res = []
     for i in range(zbuf.shape[0]):
@@ -179,7 +184,8 @@ def tune_table(zbuf: np.ndarray, alive_mask: np.ndarray, lines: List[str]):
 
 # ---------------------------------------------------------------------------- 本体
 def initial_distribution(np0, nx, ny, nz, rmat, codin, emx, emz, tdx=0.0, tdy=0.0, tdz=0.0):
-    """ActTra.f の規格化振幅 + tracka.f/tinip の変換: 物理座標 (np0, 6)。
+    """Build the initial physical coordinates (np0, 6) from the normalized amplitudes NX, NY, NZ (`ActTra.f`, `tracka.f`/`tinip`).
+    ActTra.f の規格化振幅 + tracka.f/tinip の変換: 物理座標 (np0, 6)。
     j 番目の粒子の振幅 = (x, px, y, py, z, g) = (NX[j mod n], 0, NY[j mod n], 0, 0, NZ[j mod n])。リストが無ければ x=y=1, g=0"""
     amp = np.zeros((np0, 6))
     for j in range(np0):
@@ -195,7 +201,8 @@ def initial_distribution(np0, nx, ny, nz, rmat, codin, emx, emz, tdx=0.0, tdy=0.
 
 
 def echo_lists(nx, ny, nz, fmt_real) -> List[str]:
-    """ActTra.f の最後: NX= / NY= / NZ= のリストを autofg(x,'S7.4') を 7 桁ずつにして 70 桁を超えたら改行して表示"""
+    """Echo the NX=, NY=, NZ= lists as at the end of `ActTra.f`.
+    ActTra.f の最後: NX= / NY= / NZ= のリストを autofg(x,'S7.4') を 7 桁ずつにして 70 桁を超えたら改行して表示"""
     lines = []
     for tag, lst in (('NX=', nx), ('NY=', ny), ('NZ=', nz)):
         mess = ''
@@ -210,7 +217,8 @@ def echo_lists(nx, ny, nz, fmt_real) -> List[str]:
 
 
 def run_track(ffs, spec: dict, write):
-    """MAIN の TRACK を 1 回実行する。ffs: ffscmd.FFS (フラグ・emit・要素・大域変数を持つ)、write: 出力関数"""
+    """Run the MAIN `TRACK` command once, using an FFS object and an output function.
+    MAIN の TRACK を 1 回実行する。ffs: ffscmd.FFS (フラグ・emit・要素・大域変数を持つ)、write: 出力関数"""
     from .sadscript import fmt_real, SADError
     g = ffs.I.globals
     fl = ffs.flags

@@ -229,7 +229,8 @@ class SADEnvironment:
         return self._beamlines.get(name)
 
     def resolve_beamline(self, name: str) -> Optional[str]:
-        """LINE 名を登録名に直す: 書かれたとおり → 大文字 → 大文字小文字を無視 (SAD は書かれたとおりの名前で引くが、
+        """Resolve a LINE name to its registered name, trying exact, upper-case, then case-insensitive; return None if not found.
+        LINE 名を登録名に直す: 書かれたとおり → 大文字 → 大文字小文字を無視 (SAD は書かれたとおりの名前で引くが、
         pysad は FFS 内で名前を大文字にして扱う所があるので、その両方を受ける)。無ければ None"""
         if name in self._beamlines:
             return name
@@ -247,7 +248,7 @@ class SADEnvironment:
     # ---- Build pysad Lattice ----
 
     def build_lattice(self, name_or_refs) -> 'Lattice':
-        """
+        """Convert a BeamLine (name or list) to a pysad Lattice, setting FREQ = HARM c / C for RF cavities with HARM.
         BeamLine (名前またはリスト) を pysad Lattice に変換する。
 
         HARM パラメータ付き RF 空洞は周長 C を計算してから
@@ -1522,7 +1523,7 @@ class SADScript:
 
     @property
     def ffs(self) -> 'FFSState':  # type: ignore[name-defined]
-        """
+        """Return the FFS state object bound to this interpreter's environment.
         FFS 状態オブジェクトを返す。
 
         Returns
@@ -1545,7 +1546,7 @@ class SADScript:
         return self._ffs_state
 
     def run_ffs(self, cmd: str, nsteps: int = 6) -> Any:
-        """
+        """Execute an SAD FFS command string (such as `cell calc` or `fit NX 9.5`) from Python.
         SAD FFS コマンド文字列を実行する。
 
         SAD スクリプト内の ``FFS["cell calc"]`` 等を Python から
@@ -1653,7 +1654,7 @@ def load_sad_string(source: str, verbose: bool = False) -> SADScript:
 
 
 def load_sad_files(*paths: str, verbose: bool = False) -> SADScript:
-    """
+    """Load several SAD files in order into the same interpreter, e.g. a main lattice file and a command file.
     複数の SAD ファイルを同一インタープリタに順番にロードする。
 
     SAD では通常、メインファイル（要素・ビームライン定義）と
@@ -1966,7 +1967,8 @@ _TRACK_KV = re.compile(r'([A-Za-z_$][\w$]*)\s*=\s*(\([^)]*\)|\{[^}]*\}|[^\s=(){}
 
 
 def parse_track_statement(stmt: str) -> dict:
-    """`TRACK USE=RING NPART=21 TURNS=1000 NX=(1,10,20) NY=(0) NZ=(1)` → dict (track.f の引数表: initbl.f の TRACK 行)。
+    """Parse a `TRACK` statement of the MAIN section (USE, NPART, TURNS, NX, NY, NZ, particle type, ...) into a dict (track.f, initbl.f).
+    `TRACK USE=RING NPART=21 TURNS=1000 NX=(1,10,20) NY=(0) NZ=(1)` → dict (track.f の引数表: initbl.f の TRACK 行)。
 
     キーワード (USE TURNS NPART XEMI YEMI SIGS SIGE ELEC POSI PROTON RADI SPAN CENTER AFTER AXIS SYNC NX NY NZ) のうち
     追跡に効くのは USE / NPART / TURNS / NX / NY / NZ と粒子種 (ELEC POSI PROTON)。XEMI YEMI SIGS SIGE は ActTra.f が読むだけで
@@ -1994,7 +1996,8 @@ def parse_track_statement(stmt: str) -> dict:
 
 
 def parse_main_commands(src: str) -> List[dict]:
-    """MAIN 部 (FFS; より前) の命令を順に拾う。拾うもの:
+    """Collect the commands of the MAIN part before `FFS;` in order (ON/OFF flags, `EMIT`, `TRACK`, `NAME=value`, STOP).
+    MAIN 部 (FFS; より前) の命令を順に拾う。拾うもの:
         ON/OFF フラグ…、EMIT [USE=名前]、TRACK …、`NAME=値` (_MAIN_SET_NAMES)、STOP 類 (これ以降は読まない)
     要素/ビームラインの定義など他の文は SADScript の読み込み (load_sad_string) に任せるのでここでは無視する。"""
     cmds: List[dict] = []
@@ -2224,7 +2227,8 @@ def _eval_main_expr(text: str, vars_: dict) -> float:
 
 
 def parse_main_assignments(src: str) -> List[dict]:
-    """MAIN 部の `NAME = 式;` を書かれた順に拾う (要素・ビームラインの定義、`:=`、括弧の中の文は拾わない)。
+    """Collect the `NAME = expression;` assignments of the MAIN part in written order, with their evaluated values and source positions.
+    MAIN 部の `NAME = 式;` を書かれた順に拾う (要素・ビームラインの定義、`:=`、括弧の中の文は拾わない)。
     戻り値の各項: {'name' (書かれたままの名前), 'kind' ('MOMENTUM' | 'SET' (_MAIN_SET_NAMES) | 'VAR'), 'value' (float。評価できなければ None),
                   'start', 'end' (右辺の src の中の位置)}。式の中の変数は、それより前の代入の値 (gs と同じく定義の時点の値)"""
     b = _blank_comments(src)
@@ -2273,7 +2277,8 @@ def parse_main_assignments(src: str) -> List[dict]:
 
 
 def rewrite_main_assignments(src: str, assigns: List[dict]) -> str:
-    """一般の代入のうち、右辺が MAIN の関数 `SIN(…)` や PI を含むもの (下の SADScript 風の読み取りでは評価できない) を、評価した数値に書き換える。
+    """Rewrite general assignments whose right side contains MAIN functions such as `SIN(...)` or PI into evaluated numbers.
+    一般の代入のうち、右辺が MAIN の関数 `SIN(…)` や PI を含むもの (下の SADScript 風の読み取りでは評価できない) を、評価した数値に書き換える。
     後の要素定義 `L=名前` がその値を使えるようにするため。ほかの文は変えない"""
     for a in reversed(assigns):
         if a['kind'] != 'VAR' or a['value'] is None:

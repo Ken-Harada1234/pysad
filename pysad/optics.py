@@ -33,7 +33,7 @@ from numpy.linalg import det
 # ---------------------------------------------------------------------------
 
 def symplectic_j(n: int) -> np.ndarray:
-    """
+    """Return the 2n x 2n symplectic unit matrix J, equivalent to `SymplecticJ[n]` in SAD.
     2n × 2n のシンプレクティック単位行列 J を返す。
     SAD の SymplecticJ[n] に相当。
 
@@ -55,7 +55,7 @@ def symplectic_j(n: int) -> np.ndarray:
 
 
 def symplectic_inverse(M: np.ndarray) -> np.ndarray:
-    """
+    """Return the inverse M^{-1} = -J M^T J of a symplectic matrix M, equivalent to `SymplecticInverse[M]`.
     シンプレクティック行列 M の逆行列 M^{-1} = -J M^T J を返す。
     SAD の SymplecticInverse[M] に相当。
 
@@ -77,7 +77,7 @@ def symplectic_inverse(M: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def normal_coordinates(twiss: dict) -> np.ndarray:
-    """
+    """Return the normal-coordinate transformation matrix N from Twiss parameters, equivalent to `NormalCoordinatesPrimitive`.
     Twiss パラメータから正規座標変換行列 N を返す。
     座標変換: u_normal = N . u_phys
     SAD の NormalCoordinatesPrimitive に相当 (4D, 結合あり)。
@@ -152,7 +152,7 @@ def transfer_matrix(twiss1: dict, twiss2: dict,
                     gamma1: float = 1.0, gamma2: float = 1.0,
                     symplectic: bool = False,
                     calc6d: bool = False) -> np.ndarray:
-    """
+    """Compute the transfer matrix between two points from their Twiss parameters, equivalent to `TransferMatrix[from, to]`.
     2点間の転送行列を Twiss パラメータから計算する。
     SAD の TransferMatrix[from, to] に相当。
 
@@ -268,7 +268,7 @@ def beam_matrix(twiss: dict,
                 emitz: float = 0.0,
                 gamma_beta: float = 1.0,
                 gauss: bool = True) -> np.ndarray:
-    """
+    """Return the 6x6 beam matrix Sigma from Twiss parameters and emittances, equivalent to `BeamMatrix[i]`.
     Twiss パラメータとエミッタンスからビーム行列 Σ (6×6) を返す。
     SAD の BeamMatrix[i] に相当。
 
@@ -301,7 +301,7 @@ def beam_matrix(twiss: dict,
 # ---------------------------------------------------------------------------
 
 def periodic_r(M: np.ndarray) -> tuple:
-    """
+    """Compute the coupling matrix R and the x-plane matrix A and y-plane matrix B from a 4x4 one-turn matrix (`PeriodicR[m]`).
     4×4 一周転送行列 M から結合行列 R、および
     x 面行列 A・y 面行列 B を求める。
     SAD の PeriodicR[m] に相当。
@@ -342,7 +342,7 @@ def periodic_r(M: np.ndarray) -> tuple:
 
 def periodic_optics(M: np.ndarray,
                     closed_orbit: np.ndarray | None = None) -> dict:
-    """
+    """Compute Twiss parameters from a 4x4 one-turn transfer matrix, equivalent to `PeriodicOptics[m]`.
     4×4 一周転送行列から Twiss パラメータを計算する。
     SAD の PeriodicOptics[m] に相当。
 
@@ -415,7 +415,7 @@ def periodic_optics(M: np.ndarray,
 # ---------------------------------------------------------------------------
 
 def dispersion_from_6d(M6: np.ndarray) -> tuple:
-    """
+    """Compute the dispersion functions (eta_x, eta_x', eta_y, eta_y') from a 6x6 one-turn matrix.
     6×6 一周転送行列から分散関数 (ηx, η'x, ηy, η'y) を求める。
 
     Parameters
@@ -439,7 +439,7 @@ def dispersion_from_6d(M6: np.ndarray) -> tuple:
 # ---------------------------------------------------------------------------
 
 def geo_base(chi: np.ndarray) -> np.ndarray:
-    """
+    """Return the 3x3 rotation matrix from three Euler angles, equivalent to `GeoBase[{chi1, chi2, chi3}]`.
     3 つの Euler 角から 3×3 回転行列を返す。
     SAD の GeoBase[{chi1, chi2, chi3}] に相当。
 

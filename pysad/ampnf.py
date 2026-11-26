@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 A1: 振幅・δ に依る (J²、δ 依存、交差項まで) チューンを、ハミルトニアン模型の 1 周の写像のべき級数 (TPSA) の Birkhoff 正規形で求める。
+"""Tunes depending on amplitude and delta (up to cross terms) from a Birkhoff normal form of the one-turn Hamiltonian map by TPSA.
+v2.4.0 A1: 振幅・δ に依る (J²、δ 依存、交差項まで) チューンを、ハミルトニアン模型の 1 周の写像のべき級数 (TPSA) の Birkhoff 正規形で求める。
 
 【何を求めるか】 ν_x(Jx, Jy, δ)、ν_y(Jx, Jy, δ) を J・δ のべき級数 Σ c_abp Jx^a Jy^b δ^p として、全次数 a・b・p の係数。
   J¹ の係数 (a+b = 1、p = 0) = ADTS (resdrive.adts と同じ量)、J の係数 (a=b=0、p) = クロマティシティ ξ_p (∂ᵖν/∂δᵖ = p! c_00p)、
@@ -214,14 +215,16 @@ def _lin4(Mx, dx, My, dy):
 
 
 def rot_matrix(theta):
-    """ROTATE (ロール角 θ) の座標変換 R (4×4): 素子座標 = R · 実験室座標 (x' = cosθ x − sinθ y、y' = sinθ x + cosθ y、px・py も同じ。K64 の tchge と同じ向き。
+    """Return the 4x4 coordinate rotation matrix R for a ROTATE roll angle theta (same direction as tchge in K64).
+    ROTATE (ロール角 θ) の座標変換 R (4×4): 素子座標 = R · 実験室座標 (x' = cosθ x − sinθ y、y' = sinθ x + cosθ y、px・py も同じ。K64 の tchge と同じ向き。
     ROTATE した素子の写像は R⁻¹ ∘ (回していない素子の写像) ∘ R (pysad の追跡のヤコビ行列と 2e-15 で一致、v2.4.0 F1)"""
     c, s = math.cos(theta), math.sin(theta)
     return np.array([[c, 0.0, -s, 0.0], [0.0, c, 0.0, -s], [s, 0.0, c, 0.0], [0.0, s, 0.0, c]])
 
 
 def roll_angle(el):
-    """素子のロール角 ROTATE + ROTATION [rad] (BEND・QUAD・SEXT・OCT)。DROTATE≠0 は未対応"""
+    """Return the roll angle of an element, ROTATE plus ROTATION [rad], for BEND, QUAD, SEXT, and OCT.
+    素子のロール角 ROTATE + ROTATION [rad] (BEND・QUAD・SEXT・OCT)。DROTATE≠0 は未対応"""
     if float(getattr(el, 'DROTATE', 0.0) or 0.0):
         raise NotImplementedError('ampnf: DROTATE≠0: %s' % el.name)
     return float(getattr(el, 'ROTATE', 0.0) or 0.0) + float(getattr(el, 'ROTATION', 0.0) or 0.0)
@@ -270,7 +273,8 @@ def _expand_rolls(elements):
 
 
 def element_linear(el, dl):
-    """素子の線形の写像 (M (n,4,4), d (n,4)) を複素 δ の配列 dl で返す。None = 非線形の kick だけの素子 (薄い 6 極・8 極)。
+    """Return the linear map (M, d) of an element for an array of complex delta values, with its kind.
+    素子の線形の写像 (M (n,4,4), d (n,4)) を複素 δ の配列 dl で返す。None = 非線形の kick だけの素子 (薄い 6 極・8 極)。
     戻り (M, d, kind)。kind: 'drift'|'quad'|'bend'|'other'"""
     tn = type(el).__name__
     L = float(getattr(el, 'L', 0.0) or 0.0)
@@ -325,7 +329,8 @@ def _series_from_values(vals, D, dl):
 
 
 class Seg:
-    """線形の区間: x_out = M(δ) x_in + d(δ)。M・d は δ の級数 (D+1, 4, 4)・(D+1, 4)。δ̃ = δ/sd で規格化した係数"""
+    """Linear section x_out = M(delta) x_in + d(delta), with M and d as series in the normalized delta.
+    線形の区間: x_out = M(δ) x_in + d(δ)。M・d は δ の級数 (D+1, 4, 4)・(D+1, 4)。δ̃ = δ/sd で規格化した係数"""
 
     def __init__(self, D, sd):
         self.D, self.sd = D, sd
@@ -343,7 +348,8 @@ class Seg:
         return s
 
     def then(self, other):
-        """self の後に other"""
+        """Compose this section followed by another section.
+        self の後に other"""
         D = self.D
         M = np.zeros_like(self.M)
         d = np.zeros_like(self.d)
@@ -453,7 +459,8 @@ def _edge_series(h, E, hgap, fint, D):
 
 
 class NSeg:
-    """固定した数値の δ での線形の区間 (M (4,4)、d (4,))"""
+    """Linear section at a fixed numerical delta, with a 4x4 matrix M and a 4-vector d.
+    固定した数値の δ での線形の区間 (M (4,4)、d (4,))"""
 
     def __init__(self, M=None, d=None):
         self.M = np.eye(4) if M is None else M
@@ -464,7 +471,8 @@ class NSeg:
 
 
 def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8, Dnl=5, kin=False, fringe=False, nslice_quad=4, k0_nonlinear=None):
-    """素子列を [('lin', Seg) | ('kick', k2l, k3l)] に。厚い 6 極・8 極は nslice 分割 (中点則 = 厳密な極限は nslice→∞、誤差 O(1/nslice²))"""
+    """Convert the element list into a sequence of linear sections and thin sextupole and octupole kicks, slicing thick elements.
+    素子列を [('lin', Seg) | ('kick', k2l, k3l)] に。厚い 6 極・8 極は nslice 分割 (中点則 = 厳密な極限は nslice→∞、誤差 O(1/nslice²))"""
     dl = RAD * np.exp(2j * np.pi * np.arange(NTH) / NTH)
 
     def seg_of(el):
@@ -637,7 +645,8 @@ def build_ops(lat, D, sd, nslice=8, delta=None, bend_cubic=False, nslice_bend=8,
 
 
 def linear_modes(A):
-    """1 周の線形写像 A (4×4、実、シンプレクティック) の正規化: 物理座標 = Am · zn、zn = (x̂, p̂, ŷ, q̂)、モード ζ = x̂ − i p̂ (固有値 e^{iμ})。
+    """Normalize the 4x4 one-turn linear map into modes, returning Twiss parameters or eigenvectors if the planes are coupled.
+    1 周の線形写像 A (4×4、実、シンプレクティック) の正規化: 物理座標 = Am · zn、zn = (x̂, p̂, ŷ, q̂)、モード ζ = x̂ − i p̂ (固有値 e^{iμ})。
     横方向の結合がなければ (A の非対角ブロック < 1e-12) 各面の Twiss (α, β)、結合があれば 4×4 の固有ベクトル (v2.4.0 F1): Am = [Re e1, Im e1, Re e2, Im e2]、
     e は ē^T S e = 2i (S = (0 1; −1 0) の直和。正のクレイン符号) に規格化し、e1 は x 成分、e2 は y 成分が実で正になる位相。
     戻り (Am, Ai, (μ1, μ2) ∈ [0, 2π)、tw = (αx, βx, αy, βy) (結合があれば None)、結合の大きさ)"""
@@ -754,7 +763,8 @@ def _fixed_point(tab, Fp, s, maxit=40, tol=1e-15):
 
 
 def one_turn_series(lat, D=5, nslice=8, sd=1e-2, s=3e-4, nsplit=None, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4, k0_nonlinear=None):
-    """1 周の写像を 5 変数 (ζx, ζ̄x, ζy, ζ̄y, δ̃) のべき級数で返す (ζ = s ζ̃、δ = sd δ̃ の規格化)。戻り dict(G (4 成分の TPSA)、tab、mux、muy、
+    """Return the one-turn map as a power series in five variables (zeta_x, zeta_x*, zeta_y, zeta_y*, delta) by TPSA.
+    1 周の写像を 5 変数 (ζx, ζ̄x, ζy, ζ̄y, δ̃) のべき級数で返す (ζ = s ζ̃、δ = sd δ̃ の規格化)。戻り dict(G (4 成分の TPSA)、tab、mux、muy、
     twiss0 = (αx, βx, αy, βy)、coupling (線形の結合の最大値)、warnings)"""
     tab = get_tab(5, D)
     if ops is None:
@@ -843,7 +853,8 @@ def _compose(tab, P_list, Q, nmax):
 
 
 def normal_form(res, warn_den=1e-4, skip_den=0.0, keep=None):
-    """res = one_turn_series の結果。戻り dict: Gn (正規形の写像 4 成分)、phi (変換)、min_den (共鳴の分母の最小値)、near (近い共鳴の項)。
+    """Compute the Birkhoff normal form of the one-turn series, with the option to keep selected monomials for one resonance.
+    res = one_turn_series の結果。戻り dict: Gn (正規形の写像 4 成分)、phi (変換)、min_den (共鳴の分母の最小値)、near (近い共鳴の項)。
     keep (v2.4.1): 消さずに残す単項式の集合 {(i, (e0, e1, e2, e3, e4))} (i = 方程式 0〜3、e = ζx, ζ̄x, ζy, ζ̄y, δ̃ のべき)。
     1 本の共鳴を残した正規形 (島の幅。`ampnf_ext.resonance_normal_form`)。残した係数 Gn[i][m] はその共鳴の駆動項 (低い次数の非共鳴の項の変換を含む)"""
     keep = set(keep) if keep else None
@@ -887,7 +898,8 @@ def normal_form(res, warn_den=1e-4, skip_den=0.0, keep=None):
 
 
 def tune_series(res, nf, plane=0):
-    """正規形から ν_plane の級数。戻り dict {(a, b, p): c_abp} (物理の単位: Jx^a Jy^b δ^p。J の単位 m·rad)、ν0 (端数)"""
+    """Compute the series of the tune of a plane from the normal form, as coefficients c_abp of Jx^a Jy^b delta^p.
+    正規形から ν_plane の級数。戻り dict {(a, b, p): c_abp} (物理の単位: Jx^a Jy^b δ^p。J の単位 m·rad)、ν0 (端数)"""
     tab = res['tab']
     D = res['D']
     s, sd = res['s'], res['sd']
@@ -941,12 +953,14 @@ class AmpTuneResult:
         self.warnings = list(res['warnings'])
 
     def nu(self, plane, jx=0.0, jy=0.0, delta=0.0, jorder=None):
-        """ν_plane(Jx, Jy, δ)。jorder (v2.4.1): J のべきの和 a+b ≤ jorder だけの級数 (1 = J¹ のみ = ADTS、2 = J² まで。比較・次数の違いの表示用)"""
+        """Evaluate the tune of a plane as a function of (Jx, Jy, delta), optionally truncated to a given order in J.
+        ν_plane(Jx, Jy, δ)。jorder (v2.4.1): J のべきの和 a+b ≤ jorder だけの級数 (1 = J¹ のみ = ADTS、2 = J² まで。比較・次数の違いの表示用)"""
         ser = self.nux if plane == 0 else self.nuy
         return self.nu0[plane] + sum(v * jx ** a * jy ** b * delta ** p for (a, b, p), v in ser.items() if jorder is None or a + b <= jorder)
 
     def d2nu(self, plane):
-        """J の 2 次の ADTS (v2.4.1): ∂²ν_plane/∂Ji∂Jj (δ = 0) の 2×2 行列 [1/(m rad)²] (J² の係数 c_20・c_11・c_02 の ∂ 二階微分: [[2c_20, c_11], [c_11, 2c_02]])。D ≥ 5 で入る"""
+        """Return the 2x2 matrix of second-order ADTS, the second derivatives of the tune with respect to the actions at delta = 0.
+        J の 2 次の ADTS (v2.4.1): ∂²ν_plane/∂Ji∂Jj (δ = 0) の 2×2 行列 [1/(m rad)²] (J² の係数 c_20・c_11・c_02 の ∂ 二階微分: [[2c_20, c_11], [c_11, 2c_02]])。D ≥ 5 で入る"""
         c20, c11, c02 = self.coef(plane, 2, 0, 0), self.coef(plane, 1, 1, 0), self.coef(plane, 0, 2, 0)
         return np.array([[2 * c20, c11], [c11, 2 * c02]])
 
@@ -955,12 +969,14 @@ class AmpTuneResult:
 
     @property
     def adts(self):
-        """J¹ の ADTS {'xx','xy','yx','yy'} [1/(m rad)] (∂νx/∂Jx = c_100 …)"""
+        """Return the first-order ADTS in J (xx, xy, yx, yy) in 1/(m rad).
+        J¹ の ADTS {'xx','xy','yx','yy'} [1/(m rad)] (∂νx/∂Jx = c_100 …)"""
         return {'xx': self.coef(0, 1, 0), 'xy': self.coef(0, 0, 1), 'yx': self.coef(1, 1, 0), 'yy': self.coef(1, 0, 1)}
 
     @property
     def adts2(self):
-        """J² の項の係数 c_ab (∂²ν/∂J²/2 型。ν = … + c_20 Jx² + c_11 JxJy + c_02 Jy²) [1/(m rad)²]"""
+        """Return the coefficients of the J^2 terms of the tune series (c_20, c_11, c_02).
+        J² の項の係数 c_ab (∂²ν/∂J²/2 型。ν = … + c_20 Jx² + c_11 JxJy + c_02 Jy²) [1/(m rad)²]"""
         return {pl + k: self.coef(i, *ab) for i, pl in enumerate(('x', 'y')) for k, ab in (('20', (2, 0, 0)), ('11', (1, 1, 0)), ('02', (0, 2, 0)))}
 
     def chrom(self, plane, p=1):
@@ -968,12 +984,14 @@ class AmpTuneResult:
         return math.factorial(p) * self.coef(plane, 0, 0, p)
 
     def adts_delta(self, plane, a, b, p=1):
-        """∂ᵖ/∂δᵖ の ADTS (J^aJ^b の係数) p! c_abp"""
+        """Return the delta-derivative ADTS, the p-th derivative with respect to delta of the J coefficients, p! c_abp.
+        ∂ᵖ/∂δᵖ の ADTS (J^aJ^b の係数) p! c_abp"""
         return math.factorial(p) * self.coef(plane, a, b, p)
 
 
 def amplitude_tune(lat, D=5, nslice=8, sd=1e-2, s=3e-4, ops=None, bend_cubic=False, nslice_bend=8, kin=False, fringe=False, nslice_quad=4, skip_den=0.0, k0_nonlinear=None):
-    """lat の ν_x, ν_y(Jx, Jy, δ) の級数 (D 次の 1 周の写像の Birkhoff 正規形)。戻り AmpTuneResult"""
+    """Compute the tune series nu_x, nu_y(Jx, Jy, delta) of a lattice from the Birkhoff normal form of the order-D one-turn map.
+    lat の ν_x, ν_y(Jx, Jy, δ) の級数 (D 次の 1 周の写像の Birkhoff 正規形)。戻り AmpTuneResult"""
     if ops is None:
         # v2.4.0 G: DX・DY (・DZ・DROTATE) のある素子 (BEND・QUAD・SEXT・OCT) は、以前は黙って無視されていた (pysad 自身の不具合)。H1 の `ampnf_coupled` (tchge の TPSA 版、
         # 閉軌道 ≠ 0 の展開) に渡す。D は 4 以上、skip_den は未対応
@@ -1028,7 +1046,8 @@ def _quad_mats(res):
 
 
 def rdt_series(res, with_delta=True):
-    """1 周の写像の 2 次の部分 (D ≥ 2 の one_turn_series の結果) から、共鳴駆動項 h_jklmp (3 次: p=0 の 20 項、δ: p=1 の 8 項と h10002)。
+    """Compute the resonance driving terms (third order and delta terms) from the second-order part of the one-turn map.
+    1 周の写像の 2 次の部分 (D ≥ 2 の one_turn_series の結果) から、共鳴駆動項 h_jklmp (3 次: p=0 の 20 項、δ: p=1 の 8 項と h10002)。
     結合した線形光学 (4×4 の固有モード、linear_modes) でも同じ式 (モード変数 ζ1・ζ2 が基準)。方法は `rdttrack` と同じ (写像の 2 次の部分 → kick の生成関数
     → 角度・作用の調和)。**模型の写像の 2 次の部分は、6 極と偏向磁石の 3 次の項 (bend_cubic=True の曲率・端) の kick の和そのもの**で、追跡との違いは入れた効果だけ。
     δ の項は閉軌道のまわりのヤコビ行列の δ 微分と 2 次の閉軌道 (rdttrack.delta_quadratic_total・delta2_orbit_h10002 と同じ定義)。戻り {名前: 複素数}"""
@@ -1068,7 +1087,8 @@ def rdt_series(res, with_delta=True):
 # 同じ模型の数値の追跡 (検証用): 固定した δ で 1 周の写像 (線形 + kick) を数値で作る
 # ---------------------------------------------------------------------------------------------
 def model_tracker(lat, delta=0.0, nslice=8, ops=None, bend_cubic=False, nslice_bend=8, Dnl=5, kin=False, fringe=False, nslice_quad=4):
-    """模型の 1 周の写像 v(n,4) → v (δ 固定、厳密な線形の行列 + 薄い 6 極・8 極の kick)。ops を省略すると build_ops(delta=δ)"""
+    """Apply the one-turn model map (exact linear matrices plus thin sextupole and octupole kicks) at fixed delta.
+    模型の 1 周の写像 v(n,4) → v (δ 固定、厳密な線形の行列 + 薄い 6 極・8 極の kick)。ops を省略すると build_ops(delta=δ)"""
     if ops is None:
         ops, _ = build_ops(lat, 0, 1.0, nslice, delta=delta, bend_cubic=bend_cubic, nslice_bend=nslice_bend, Dnl=Dnl, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
     tabn = get_tab(5, Dnl)
@@ -1119,7 +1139,8 @@ def model_closed_orbit(tr, tol=1e-14):
 
 
 def model_tune(lat, jx, jy, delta=0.0, nturn=1024, nslice=8, window=1, phase=(0.3, 0.9), ops=None, nfres=None, bend_cubic=False, nslice_bend=8, Dnl=5, kin=False, fringe=False, nslice_quad=4):
-    """模型の追跡 + NAFF の (νx, νy) の端数。リング先頭の Twiss と閉軌道から、Jx, Jy (m rad) の粒子。ν0 に近い側 (線形の端数) に揃えて返す"""
+    """Compute the fractional tunes (nux, nuy) from model tracking plus NAFF for particles of given actions started at the ring start.
+    模型の追跡 + NAFF の (νx, νy) の端数。リング先頭の Twiss と閉軌道から、Jx, Jy (m rad) の粒子。ν0 に近い側 (線形の端数) に揃えて返す"""
     from . import naff
     tr = model_tracker(lat, delta, nslice, ops=ops, bend_cubic=bend_cubic, nslice_bend=nslice_bend, Dnl=Dnl, kin=kin, fringe=fringe, nslice_quad=nslice_quad)
     # Twiss (δ=0 の模型の線形の 1 周): ops の線形の積から
@@ -1157,7 +1178,8 @@ def model_tune(lat, jx, jy, delta=0.0, nturn=1024, nslice=8, window=1, phase=(0.
 
 
 def initial_from_nf(r, jx, jy, phx, phy, delta):
-    """正規形の座標 (J, φ, δ) に対応する物理の初期座標 (x, px, y, py)。変換 T (正規形の計算で得た φ) で戻す (T は次数 D まで)。
+    """Compute the physical initial coordinates (x, px, y, py) corresponding to normal-form coordinates (J, phi, delta).
+    正規形の座標 (J, φ, δ) に対応する物理の初期座標 (x, px, y, py)。変換 T (正規形の計算で得た φ) で戻す (T は次数 D まで)。
     r = AmpTuneResult。J・φ から解析式の ν(J, δ) に対応する粒子を作る (追跡の初期条件の J が正規形の J と O(√J) 違う影響を除く)"""
     res, nf = r.res, r.nf
     tab, s, sd = res['tab'], res['s'], res['sd']
@@ -1171,7 +1193,8 @@ def initial_from_nf(r, jx, jy, phx, phy, delta):
 
 
 def nf_action(r, coords, delta=0.0, niter=60):
-    """物理の座標 (x, px, y, py) (リング先頭) に対応する正規形のアクション (Jx, Jy) [m rad] と位相。T の逆を不動点の反復 w = z − φ(w) で求める (T は次数 D まで)。
+    """Compute the normal-form actions (Jx, Jy) and phases for physical coordinates at the ring start by inverting the transformation.
+    物理の座標 (x, px, y, py) (リング先頭) に対応する正規形のアクション (Jx, Jy) [m rad] と位相。T の逆を不動点の反復 w = z − φ(w) で求める (T は次数 D まで)。
     初期条件の J と正規形の J が O(√J) 違うことを補正して、追跡のチューンと ν(J, δ) の級数を比べるために使う"""
     res, nf = r.res, r.nf
     tab, s, sd = res['tab'], res['s'], res['sd']
@@ -1193,7 +1216,8 @@ def nf_action(r, coords, delta=0.0, niter=60):
 # 検証用: 実際の追跡 (pysad の追跡、全非線形・全素子) + NAFF の ADTS (結合した光学でも使える。v2.4.0 F1)
 # ---------------------------------------------------------------------------------------------
 def tracked_tunes(lat, r, jx, jy, phase=(0.3, 0.9), delta=0.0, nturn=1024, momentum_eV=3e9):
-    """AmpTuneResult r の正規形の座標 (Jx, Jy, φ) から出発した、pysad の追跡 (k64・v2 の track6n。RF・放射なし) + NAFF の (νx, νy)。
+    """Compute the tunes (nux, nuy) by pysad tracking plus NAFF from normal-form coordinates (Jx, Jy, phi), with RF and radiation off.
+    AmpTuneResult r の正規形の座標 (Jx, Jy, φ) から出発した、pysad の追跡 (k64・v2 の track6n。RF・放射なし) + NAFF の (νx, νy)。
     ν は r.nu0 に近い側の端数。結合した光学では、モード ζ1・ζ2 の正規化座標 (r.res['Ainv']) の NAFF"""
     from . import adtsdirect as D, naff
     c0 = initial_from_nf(r, jx, jy, phase[0], phase[1], delta)
@@ -1215,7 +1239,8 @@ def tracked_tunes(lat, r, jx, jy, phase=(0.3, 0.9), delta=0.0, nturn=1024, momen
 
 
 def tracked_adts(lat, r, j=3e-7, nturn=1024, momentum_eV=3e9):
-    """追跡 + NAFF の J¹ の ADTS {'xx','xy','yx','yy'}: 正規形の J の格子 (j, 2j, 3j の組 8 点。両方の面に振幅) の ν を、ν0 + c10 Jx + c01 Jy + c20 Jx² + c11 JxJy + c02 Jy² で最小二乗フィット
+    """Compute the first-order ADTS by tracking plus NAFF, fitting tunes on a grid of normal-form actions with a quadratic polynomial.
+    追跡 + NAFF の J¹ の ADTS {'xx','xy','yx','yy'}: 正規形の J の格子 (j, 2j, 3j の組 8 点。両方の面に振幅) の ν を、ν0 + c10 Jx + c01 Jy + c20 Jx² + c11 JxJy + c02 Jy² で最小二乗フィット
     (初期条件を正規形の J・φ から作るので、O(√J) の J のずれの影響を受けない)"""
     pts = [(j, j), (2 * j, j), (j, 2 * j), (2 * j, 2 * j), (3 * j, j), (j, 3 * j), (3 * j, 2 * j), (2 * j, 3 * j)]       # 両方の面に振幅 (振幅 0 の面の NAFF は雑音を拾う)
     nus = np.array([tracked_tunes(lat, r, a, b, nturn=nturn, momentum_eV=momentum_eV) for a, b in pts])

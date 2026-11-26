@@ -1,4 +1,5 @@
-"""複素引数の特殊関数の追加 (v2next P5 項目 3)。両モード (K64 の動作の追加。gs が正しく返すものは gs と一致し、gs が誤るものは真値)。
+"""Additional complex-argument special functions (v2next P5 item 3) for both modes, built from scipy.special, series and recurrences.
+複素引数の特殊関数の追加 (v2next P5 項目 3)。両モード (K64 の動作の追加。gs が正しく返すものは gs と一致し、gs が誤るものは真値)。
 
 追加するもの (どれも scipy.special の複素対応と、級数・漸化式・既存の specfn_cx で書く。mpmath は使わない):
   ExpIntegralE[n,z] (整数 n >= 0)、ExpIntegralEi[z]、PolyGamma[z]・PolyGamma[n,z]、HarmonicNumber[z]、ProductLog[z]、SinIntegral[z]・CosIntegral[z]、
@@ -29,7 +30,8 @@ def _c(z):
 
 
 def expn_c(n, z):
-    """E_n(z) = ∫_1^∞ e^{-zt} t^{-n} dt (整数 n >= 0)。E_0 = e^{-z}/z、E_1 = exp1(z)、E_{k+1} = (e^{-z} - z E_k)/k (|z| が小さい / n が大きい時は下向きに安定でないので、
+    """Compute the generalized exponential integral E_n(z) for integer n >= 0 and complex z, using a series when n > |z|.
+    E_n(z) = ∫_1^∞ e^{-zt} t^{-n} dt (整数 n >= 0)。E_0 = e^{-z}/z、E_1 = exp1(z)、E_{k+1} = (e^{-z} - z E_k)/k (|z| が小さい / n が大きい時は下向きに安定でないので、
     n > |z| のときは級数 E_n = (-z)^{n-1}/(n-1)! (-ln z + ψ(n)) - Σ_{k != n-1} (-z)^k / ((k - n + 1) k!) を使う)"""
     z = _c(z)
     n = int(round(n.real if isinstance(n, complex) else n))
@@ -79,7 +81,8 @@ def lambertw_c(z):
 
 
 def sici_c(z):
-    """(Si(z), Ci(z))。scipy の sici は複素数に対応する"""
+    """Compute the sine and cosine integrals (Si(z), Ci(z)) for complex z via scipy.
+    (Si(z), Ci(z))。scipy の sici は複素数に対応する"""
     si, ci = sp.sici(_c(z))
     return complex(si), complex(ci)
 
@@ -99,7 +102,8 @@ def factorial_c(z):
 
 
 def hyp1f1_c(a, b, z):
-    """1F1(a; b; z) (実数の a・b、複素の z)。|z| < 6 は scipy。それより大きい |z| の scipy は複素数で不正確 (|z| = 25〜30 で相対 1e-4〜1) なので、
+    """Compute the confluent hypergeometric function 1F1(a; b; z) for complex z, using multiprecision power series for large |z|.
+    1F1(a; b; z) (実数の a・b、複素の z)。|z| < 6 は scipy。それより大きい |z| の scipy は複素数で不正確 (|z| = 25〜30 で相対 1e-4〜1) なので、
     べき級数を十進の多倍長 (桁数 = 25 + 0.45|z|。項の最大値 e^{|z|} の桁落ちを吸収) で足す (v2.4.0 E。独立な基準は mpmath との比較)"""
     z = _c(z)
     a = float(a)
@@ -128,7 +132,8 @@ def hyp1f1_c(a, b, z):
 
 
 def gamma_p_c(a, z):
-    """P(a, z) = γ(a, z)/Γ(a) = z^a e^{-z}/Γ(a+1) 1F1(1; a+1; z) (複素の z、実数の a > 0)"""
+    """Compute the regularized incomplete gamma function P(a, z) for complex z and real a > 0 via 1F1.
+    P(a, z) = γ(a, z)/Γ(a) = z^a e^{-z}/Γ(a+1) 1F1(1; a+1; z) (複素の z、実数の a > 0)"""
     z = _c(z)
     a = float(a)
     if z == 0:
@@ -173,7 +178,8 @@ def gamma_upper_c(a, z):
 
 
 def legendre_c(nu, z):
-    """P_ν(z) = 2F1(-ν, ν+1; 1; (1-z)/2) (複素の z。|1-z|/2 < 1 の外は scipy の解析接続)"""
+    """Compute the Legendre function P_nu(z) for complex z using 2F1 and scipy analytic continuation outside |1-z|/2 < 1.
+    P_ν(z) = 2F1(-ν, ν+1; 1; (1-z)/2) (複素の z。|1-z|/2 < 1 の外は scipy の解析接続)"""
     return complex(sp.hyp2f1(-float(nu), float(nu) + 1.0, 1.0, (1.0 - _c(z)) / 2.0))
 
 
@@ -189,7 +195,8 @@ def whittaker_w_c(k, m, z):
 
 
 def besselj_cord(nu, x):
-    """J_ν(x) の複素の次数 ν (実数 x > 0 か複素数 x): (x/2)^ν Σ (-x²/4)^k / (k! Γ(ν+k+1))。|x| <~ 20 で使える (それ以上は SADError)"""
+    """Compute the Bessel function J_nu(x) of complex order nu by its power series (usable for |x| up to about 20).
+    J_ν(x) の複素の次数 ν (実数 x > 0 か複素数 x): (x/2)^ν Σ (-x²/4)^k / (k! Γ(ν+k+1))。|x| <~ 20 で使える (それ以上は SADError)"""
     nu, x = _c(nu), _c(x)
     if abs(x) > 25.0:
         raise SADError('General::wrongval: BesselJ with a complex order is limited to |x| <= 25')
@@ -206,7 +213,8 @@ def besselj_cord(nu, x):
 
 # ---------------------------------------------------------------- v2.4.0 E: 複素の次数 (PolyLog・ExpIntegralE)
 def polylog_cs(s, z):
-    """Li_s(z) (複素の次数 s、複素の z)。|z| ≤ 0.5 は級数、それ以外で |ln z| ≤ 5 は μ = ln z の展開
+    """Compute the polylogarithm Li_s(z) for complex order s and complex z using series, a mu = ln z expansion or the inversion formula.
+    Li_s(z) (複素の次数 s、複素の z)。|z| ≤ 0.5 は級数、それ以外で |ln z| ≤ 5 は μ = ln z の展開
     Li_s(z) = Γ(1-s)(-μ)^{s-1} + Σ ζ(s-k) μ^k/k! (s が正の整数でないとき)。|Log z| > 5 は反転公式 (|z| ≥ 2 なので |1/z| ≤ 0.5 の級数)。独立な基準は mpmath"""
     from . import specfn_cx
     s = _c(s)
@@ -307,7 +315,8 @@ def _gamma_upper_ca(a, z):
 
 
 def expn_cn(n, z):
-    """E_ν(z) = z^{ν-1} Γ(1-ν, z) (複素の次数 ν・複素の z。ν が正の整数なら expn_c)"""
+    """Compute the generalized exponential integral E_nu(z) = z^(nu-1) Gamma(1-nu, z) for complex order nu and complex z.
+    E_ν(z) = z^{ν-1} Γ(1-ν, z) (複素の次数 ν・複素の z。ν が正の整数なら expn_c)"""
     n, z = _c(n), _c(z)
     if n.imag == 0.0 and n.real == int(n.real) and n.real >= 0:
         return expn_c(int(n.real), z)

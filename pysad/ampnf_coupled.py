@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""v2.4.0 H1: 結合した光学 (ROTATE した磁石) の共鳴駆動項の拡張: 4 次の h、δ≠0、ref≠None、DX・DY・DZ・DROTATE (据え付けのずれ・ロール誤差)。
+"""Extension of the resonance driving terms to coupled optics: fourth-order h, delta not 0, ref, and misalignment or roll errors.
+v2.4.0 H1: 結合した光学 (ROTATE した磁石) の共鳴駆動項の拡張: 4 次の h、δ≠0、ref≠None、DX・DY・DZ・DROTATE (据え付けのずれ・ロール誤差)。
 `ampnf.py` (A1・F1・G の領域) は編集せず、その部品 (`build_ops`・`_compose`・`linear_modes`・`Seg`) を呼ぶ別ファイル。
 
 【方法 (入れている効果と摂動論の次数)】
@@ -38,7 +39,8 @@ _DL = A.RAD * np.exp(2j * np.pi * np.arange(A.NTH) / A.NTH)
 
 
 def err_args(el):
-    """素子の tchge の引数 (dx, dy, dz, theta, dtheta, alg, phig)。誤差・ロールがなければ None"""
+    """Return the tchge arguments (dx, dy, dz, theta, dtheta, alg, phig) of an element, or None if there are no errors.
+    素子の tchge の引数 (dx, dy, dz, theta, dtheta, alg, phig)。誤差・ロールがなければ None"""
     tn = type(el).__name__
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     if tn == 'Bend':
@@ -57,7 +59,8 @@ def err_args(el):
 
 
 def has_errors(lat):
-    """DX・DY (BEND・QUAD・SEXT・OCT)・DZ・DROTATE (ANGLE≠0 の BEND だけ。SAD の tchge が使うのはそこだけ) のあるずれ・ロール誤差の素子の名前 (ROTATE・ROTATION だけの傾きは数えない)"""
+    """Return the names of elements with misalignment or roll errors (DX, DY, DZ, DROTATE), not counting ROTATE-only tilts.
+    DX・DY (BEND・QUAD・SEXT・OCT)・DZ・DROTATE (ANGLE≠0 の BEND だけ。SAD の tchge が使うのはそこだけ) のあるずれ・ロール誤差の素子の名前 (ROTATE・ROTATION だけの傾きは数えない)"""
     out = []
     for el in getattr(lat, 'elements', []):
         tn = type(el).__name__
@@ -261,7 +264,8 @@ def _quad_k64_ops(el, D, sd, fringe):
 
 
 def build_ops_ext(elements, D, sd, nslice=16, bend_cubic=True, nslice_bend=8, kin=True, fringe=True, nslice_quad=4, quad_rule='exact'):
-    """quad_rule='k64': 四極の運動学の項を K64 の積分器の台形則 (分割数 1 + int(L |K1 L| / 0.2)、運動学の流れを両端に半分・内部の節点に 1 つ) で入れる (K64 の追跡との比較・原因の切り分け用。
+    """Build the list of operations for the elements, wrapping misaligned or rolled elements in tchge entry and exit frames.
+    quad_rule='k64': 四極の運動学の項を K64 の積分器の台形則 (分割数 1 + int(L |K1 L| / 0.2)、運動学の流れを両端に半分・内部の節点に 1 つ) で入れる (K64 の追跡との比較・原因の切り分け用。
     既定 'exact' は nslice_quad 分割の中点則 (nslice_quad → ∞ で厳密な積分)。
     素子列 → ops (ampnf の ('lin', Seg)・('nlphi', 流れ)・('kick', k2l, k3l) と ('frame', 関数))。ずれ・ロール (ROTATE・ROTATION・DX・DY・DZ・DROTATE) は tchge の入口・出口で包む"""
     ops = []
@@ -308,7 +312,8 @@ def build_ops_ext(elements, D, sd, nslice=16, bend_cubic=True, nslice_bend=8, ki
 
 
 def propagate(ops, tab, S, sd, D):
-    """ops を TPSA の S (4 成分 + 変数 4 = δ̃) に作用させる (ampnf.one_turn_series の本体と同じ。'frame' を追加)"""
+    """Apply the operations to the TPSA variables (same as the body of `ampnf.one_turn_series`, with frames added).
+    ops を TPSA の S (4 成分 + 変数 4 = δ̃) に作用させる (ampnf.one_turn_series の本体と同じ。'frame' を追加)"""
     for o in ops:
         if o[0] == 'lin':
             sg = o[1]
@@ -347,7 +352,8 @@ def propagate(ops, tab, S, sd, D):
 
 
 def element_index(lat, ref):
-    """素子の名前 (最初の一致) または添字 → 添字"""
+    """Convert an element name (first match) or index into an index.
+    素子の名前 (最初の一致) または添字 → 添字"""
     if isinstance(ref, str):
         idx = [i for i, e in enumerate(lat.elements) if e.name == ref]
         if not idx:
@@ -357,7 +363,8 @@ def element_index(lat, ref):
 
 
 def numeric_track(ops, tabn, x4, delta, sd):
-    """ops の数値の追跡 (模型の写像。δ 固定、x4 = (x, px, y, py))。閉軌道の探索用 (TPSA と同じ打ち切りの模型)"""
+    """Track numerically through the operations (model map at fixed delta), used for the closed-orbit search.
+    ops の数値の追跡 (模型の写像。δ 固定、x4 = (x, px, y, py))。閉軌道の探索用 (TPSA と同じ打ち切りの模型)"""
     v = np.array(x4, dtype=float)
     dt = delta / sd
     for o in ops:
@@ -390,7 +397,8 @@ def numeric_track(ops, tabn, x4, delta, sd):
 
 
 def closed_orbit_numeric(ops, tabn, delta, sd, tol=1e-14, maxit=40, h=1e-7):
-    """模型の写像の閉軌道 (Newton 法、数値微分)"""
+    """Compute the closed orbit of the model map by Newton's method with numerical derivatives.
+    模型の写像の閉軌道 (Newton 法、数値微分)"""
     z = np.zeros(4)
     for _ in range(maxit):
         f0 = numeric_track(ops, tabn, z, delta, sd) - z
@@ -407,7 +415,8 @@ def closed_orbit_numeric(ops, tabn, delta, sd, tol=1e-14, maxit=40, h=1e-7):
 
 
 def taylor_map(lat, delta=0.0, start=None, D=None, nslice=16, bend_cubic=True, nslice_bend=8, kin=True, fringe=True, nslice_quad=4, sd=1e-2, s=3e-4, ops=None, quad_rule='exact'):
-    """模型の 1 周の写像 (リング先頭または start の素子の入口から) を、δ = delta の閉軌道のまわりの 3 次のテイラー展開 (正規化座標、結合したモード) にする。
+    """Compute the third-order Taylor expansion of the one-turn model map about the closed orbit at a given delta.
+    模型の 1 周の写像 (リング先頭または start の素子の入口から) を、δ = delta の閉軌道のまわりの 3 次のテイラー展開 (正規化座標、結合したモード) にする。
     閉軌道は模型の数値の追跡の Newton 法で求め、TPSA はその閉軌道から出発する (閉軌道が数 mm でも各素子の展開は閉軌道のまわりで厳密)。
     D は TPSA の次数 (既定 4: 運動学・フリンジ・偏向磁石の 4 次のハミルトニアンの写像への寄与は D−1 次まで正しいので、3 次の写像 T3 には D ≥ 4 が要る。
     δ≠0 では T3 の δ^p の係数が p ≤ D−4 まで正しいので、既定は D = 6 (p ≤ 2、誤差 O(δ³))。
@@ -468,7 +477,8 @@ def taylor_map(lat, delta=0.0, start=None, D=None, nslice=16, bend_cubic=True, n
 
 
 def ref_phases(lat, ref, rm, nslice=16, bend_cubic=True, nslice_bend=8, kin=True, fringe=True, nslice_quad=4, sd=1e-2):
-    """位相の基準 ref (素子の添字・名前。その素子の入口) でのモードの位相進み (ψ1, ψ2)。リング先頭の固有モード e_k (rm.A の列: e1 = A[:,0] + i A[:,1]、e2 = A[:,2] + i A[:,3]) を、
+    """Return the mode phase advances (psi1, psi2) at the entrance of a reference element used as the phase reference.
+    位相の基準 ref (素子の添字・名前。その素子の入口) でのモードの位相進み (ψ1, ψ2)。リング先頭の固有モード e_k (rm.A の列: e1 = A[:,0] + i A[:,1]、e2 = A[:,2] + i A[:,3]) を、
     閉軌道 (rm.orbit・rm.delta) のまわりのリング先頭から ref までの線形写像 M で運んだ M e_k の位相: ψ1 = arg (M e1)_x、ψ2 = arg (M e2)_y (結合がなければ Floquet の μx(ref)・μy(ref))"""
     idx = element_index(lat, ref)
     els = list(lat.elements)[:idx]
@@ -488,7 +498,8 @@ def ref_phases(lat, ref, rm, nslice=16, bend_cubic=True, nslice_bend=8, kin=True
 
 
 def rotate_to_ref(h, psi):
-    """h の各項 (名前 'hjklmp') に、ref を位相の基準にする因子 exp(−i[(j−k)ψ1 + (l−m)ψ2]) を掛ける (resdrive の ref と同じ定義: h の絶対値は変わらず、角度の原点だけが動く)"""
+    """Multiply each term h of the driving terms by the phase factor that makes ref the phase reference.
+    h の各項 (名前 'hjklmp') に、ref を位相の基準にする因子 exp(−i[(j−k)ψ1 + (l−m)ψ2]) を掛ける (resdrive の ref と同じ定義: h の絶対値は変わらず、角度の原点だけが動く)"""
     out = {}
     for nm, v in h.items():
         j, k, l, m = (int(c) for c in nm[1:5])
@@ -497,7 +508,8 @@ def rotate_to_ref(h, psi):
 
 
 def one_turn_series_ext(lat, D=5, nslice=16, bend_cubic=True, nslice_bend=8, kin=True, fringe=True, nslice_quad=4, sd=1e-2, s=3e-4, ops=None):
-    """`ampnf.one_turn_series` の閉軌道 ≠ 0 版 (DX・DY・DZ・DROTATE のあるリング): 閉軌道 (δ=0、模型の数値の追跡の Newton 法) から TPSA を出発させ、閉軌道での結合したモードの
+    """Version of `ampnf.one_turn_series` for a nonzero closed orbit (DX, DY, DZ, DROTATE), returning the normalized one-turn map.
+    `ampnf.one_turn_series` の閉軌道 ≠ 0 版 (DX・DY・DZ・DROTATE のあるリング): 閉軌道 (δ=0、模型の数値の追跡の Newton 法) から TPSA を出発させ、閉軌道での結合したモードの
     正規化座標の 1 周の写像 res (G = ζ の 4 成分、ampnf の normal_form・tune_series・initial_from_nf・nf_action がそのまま使える dict) を返す。res['orbit'] = 閉軌道 (物理座標)。
     D ≥ 4 (運動学・フリンジのハミルトニアンは写像より 1 次高い)"""
     D = max(int(D), 4)
@@ -523,7 +535,8 @@ def one_turn_series_ext(lat, D=5, nslice=16, bend_cubic=True, nslice_bend=8, kin
 
 
 def amplitude_tune_ext(lat, D=5, **kw):
-    """`ampnf.amplitude_tune` の閉軌道 ≠ 0 版 (据え付けのずれ・DROTATE のあるリング)。ν(Jx, Jy, δ) のべき級数 (J は閉軌道のまわりの結合したモードのアクション)。戻り AmpTuneResult (.res['orbit'])"""
+    """Version of `ampnf.amplitude_tune` for a nonzero closed orbit (rings with misalignments or DROTATE), returning an AmpTuneResult.
+    `ampnf.amplitude_tune` の閉軌道 ≠ 0 版 (据え付けのずれ・DROTATE のあるリング)。ν(Jx, Jy, δ) のべき級数 (J は閉軌道のまわりの結合したモードのアクション)。戻り AmpTuneResult (.res['orbit'])"""
     res = one_turn_series_ext(lat, D=D, **kw)
     nf = A.normal_form(res)
     nux = A.tune_series(res, nf, 0)
@@ -533,7 +546,8 @@ def amplitude_tune_ext(lat, D=5, **kw):
 
 
 def tracked_adts_fit(lat, r, j=1e-7, mult=(1, 2, 3), nturn=1024, momentum_eV=3e9):
-    """検証用: 追跡 + NAFF の J¹ の ADTS の安定なフィット (v2.4.0 H4)。`ampnf.tracked_adts` との違いは **フィットに定数項 ν(0) − ν0 を自由に入れる**こと。
+    """Validation helper: stable fit of the first-order ADTS from tracking plus NAFF with a free constant term nu(0) - nu0.
+    検証用: 追跡 + NAFF の J¹ の ADTS の安定なフィット (v2.4.0 H4)。`ampnf.tracked_adts` との違いは **フィットに定数項 ν(0) − ν0 を自由に入れる**こと。
     模型の ν0 と追跡 (K64 の積分器) の線形のチューンは 5e-7〜1e-6 違い、定数項なしのフィットではこの差が ADTS に ~ δν/J として入り、J が小さいほど悪化する
     (J = 3e-8 で 2〜6%)。定数項を入れると J = 3e-8〜1e-7 で 0.04〜0.15%、J = 3e-7 で 0.08〜0.3%。格子は J の倍数 mult × mult (J の 2 次式 + 定数でフィット)。
     戻り ({'xx','xy','yy'}, {'x': ν(0)−ν0, 'y': …})"""
@@ -551,7 +565,8 @@ def tracked_adts_fit(lat, r, j=1e-7, mult=(1, 2, 3), nturn=1024, momentum_eV=3e9
 
 
 def unerrored_lattice(lat):
-    """ロール (ROTATE・ROTATION) とずれ・ロール誤差 (DX・DY・DZ・DROTATE) を 0 にした新しい Lattice (BEND・QUAD・SEXT・OCT。元は変えない)"""
+    """Return a new Lattice with the roll and misalignment errors set to zero, leaving the original unchanged.
+    ロール (ROTATE・ROTATION) とずれ・ロール誤差 (DX・DY・DZ・DROTATE) を 0 にした新しい Lattice (BEND・QUAD・SEXT・OCT。元は変えない)"""
     from .lattice import Lattice
     out = []
     for el in lat.elements:
@@ -568,10 +583,12 @@ def unerrored_lattice(lat):
 
 
 def rdt3(rm):
-    """3 次の h_jklm (p=0 の 20 項。共役 (j,k,l,m) ↔ (k,j,m,l) も入る) {名前 'hjklm0': 複素数}"""
+    """Compute the third-order resonance driving terms h_jklm (20 terms at p=0) as complex numbers.
+    3 次の h_jklm (p=0 の 20 項。共役 (j,k,l,m) ↔ (k,j,m,l) も入る) {名前 'hjklm0': 複素数}"""
     return T.rdt_from_map(rm)
 
 
 def rdt4(rm):
-    """4 次の h_jklm (p=0 の 35 項)。戻り ({'hjklm0': 複素数}, info)"""
+    """Compute the fourth-order resonance driving terms h_jklm (35 terms at p=0), returning the terms and an info dict.
+    4 次の h_jklm (p=0 の 35 項)。戻り ({'hjklm0': 複素数}, info)"""
     return T.rdt4_from_map(rm)

@@ -1,4 +1,4 @@
-"""
+"""`Vector` / `ReleaseVector` (K64 vector evaluation): component-wise arithmetic and functions on `Vector[{x1,x2,..}]`.
 Vector / ReleaseVector (K64 のベクトル評価)。`Vector[{x1,x2,..}]` はベクトル値の引数で、その上の算術・初等関数は成分ごとに働き、
 結果も Vector になる。`ReleaseVector[v]` は成分のリストを返す (Plots.n の PlotInterpolate が関数を一度にたくさんの点で評価するのに使う)。
 

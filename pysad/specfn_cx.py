@@ -1,4 +1,5 @@
-"""複素引数の Zeta・HurwitzZeta・PolyLog・HypergeometricU (v2 の追加。K64 の gamma.f の複素版は誤る範囲があるので、真値を返す)。
+"""Complex-argument Zeta, HurwitzZeta, PolyLog and HypergeometricU (v2 additions) returning true values, without mpmath.
+複素引数の Zeta・HurwitzZeta・PolyLog・HypergeometricU (v2 の追加。K64 の gamma.f の複素版は誤る範囲があるので、真値を返す)。
 
 mpmath が無い環境でも動くよう、級数・Euler–Maclaurin・解析接続の公式・積分表示だけで書いた。数値の根拠 (独立な参照) は
 `pysad/tests/script_tests/test_v2_B2_specfn_cx.py` (別の方法: Borwein のアルゴリズム、関数等式、scipy.special.spence の複素版、積分表示、漸近展開) で確かめる。
@@ -43,7 +44,8 @@ def _zeta_real(s):
 
 # ---------------------------------------------------------------- Hurwitz ζ (複素の s・a)
 def hurwitz_c(s, a):
-    """ζ(s, a) (s ≠ 1、a は非正の整数でない)。複素の s・a。Re a < 1/2 なら Σ_{k<m} (a+k)^-s の項を足して Re a ≥ 1/2 に移す"""
+    """Compute the Hurwitz zeta function for complex s and a, shifting Re a to at least 1/2 by adding leading terms.
+    ζ(s, a) (s ≠ 1、a は非正の整数でない)。複素の s・a。Re a < 1/2 なら Σ_{k<m} (a+k)^-s の項を足して Re a ≥ 1/2 に移す"""
     s = complex(s)
     a = complex(a)
     if s == 1.0:
@@ -82,7 +84,8 @@ def hurwitz_c(s, a):
 
 
 def zeta_c(s):
-    """ζ(s) (複素の s ≠ 1)。Re s ≥ 0 は Hurwitz (a = 1)、Re s < 0 は関数等式 ζ(s) = 2^s π^{s-1} sin(πs/2) Γ(1-s) ζ(1-s)"""
+    """Compute the Riemann zeta function for complex s (Hurwitz for Re s >= 0, functional equation for Re s < 0).
+    ζ(s) (複素の s ≠ 1)。Re s ≥ 0 は Hurwitz (a = 1)、Re s < 0 は関数等式 ζ(s) = 2^s π^{s-1} sin(πs/2) Γ(1-s) ζ(1-s)"""
     s = complex(s)
     if s == 1.0:
         return complex(INF, 0.0)
@@ -141,7 +144,8 @@ def _li_mu(s, z):
 
 
 def polylog_c(s, z, _depth=0):
-    """Li_s(z) (実数の s、複素数の z、z ∉ [1, ∞))。主値"""
+    """Compute the polylogarithm Li_s(z) (principal value) for real s and complex z outside [1, inf).
+    Li_s(z) (実数の s、複素数の z、z ∉ [1, ∞))。主値"""
     z = complex(z)
     s = float(s)
     if z == 0.0:
@@ -221,7 +225,8 @@ def _u_poly(n, b, z):
 
 
 def hyperu_c(a, b, z):
-    """U(a, b, z)。z は複素数 (実数の負の値は上側 arg z = +π)。a・b は実数 (複素の a・b は Re a > 0 だけ)"""
+    """Compute the Tricomi confluent hypergeometric function U(a, b, z) for complex z and real a, b.
+    U(a, b, z)。z は複素数 (実数の負の値は上側 arg z = +π)。a・b は実数 (複素の a・b は Re a > 0 だけ)"""
     z = complex(z)
     if z == 0.0:
         raise SADError('HypergeometricU: z = 0 is not supported')

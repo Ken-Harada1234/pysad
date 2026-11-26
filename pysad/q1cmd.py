@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""SAD の台本から使う周波数マップ・局所運動量アクセプタンスの関数 (v2.3.0 Q1。K64 にない pysad の追加機能)。
+"""SADScript functions `FrequencyMap` and `MomentumAcceptance` (local momentum acceptance).
+SAD の台本から使う周波数マップ・局所運動量アクセプタンスの関数 (v2.3.0 Q1。K64 にない pysad の追加機能)。
 
   FrequencyMap[ls, nturn, X->{xmin, xmax, n}, Y->{...}, DP->{...}, opts]
       位置 ls (番号または名前) から (x, y) (または x–DP、y–DP) の格子を nturn 周追跡し、前半・後半のチューンから拡散 D を出す。

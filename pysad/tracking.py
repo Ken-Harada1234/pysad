@@ -35,7 +35,7 @@ from .constants import SpeedOfLight, Cgamma, Cq, ElectronMass, TwoPi
 
 @dataclass
 class SimulationFlags:
-    """
+    """Set of flags corresponding to `type flagset` in SAD src/tffs.f, with the initial values of src/initb1.f.
     SAD の src/tffs.f で定義される type flagset に相当するフラグ集合。
     デフォルト値は SAD の src/initb1.f による起動時初期値と一致。
 
@@ -72,7 +72,7 @@ class SimulationFlags:
 # ---------------------------------------------------------------------------
 
 def pxy2dpz(px: np.ndarray, py: np.ndarray) -> np.ndarray:
-    """
+    """Compute the longitudinal momentum deviation dpz = sqrt(1 - px^2 - py^2) - 1 from canonical momenta (SAD `pxy2dpz`).
     正準運動量 (px, py) から縦成分偏差 dpz を計算。
     SAD の pxy2dpz() に相当。
 
@@ -95,7 +95,7 @@ def pxy2dpz(px: np.ndarray, py: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def track_drift_exact(x, px, y, py, z, g, L: float) -> tuple:
-    """
+    """Exact tracking through a drift space (SAD `tdrift_free`) with signed length L.
     ドリフト空間の厳密トラッキング (SAD tdrift_free に相当)。
 
     x_out  = x  + px · L / (1 + dpz)
@@ -114,7 +114,7 @@ def track_drift_exact(x, px, y, py, z, g, L: float) -> tuple:
 
 
 def track_thin_quad(x, px, y, py, z, g, K1L: float) -> tuple:
-    """
+    """Apply a thin-lens quadrupole kick: dpx = -K1L/(1+delta) x, dpy = +K1L/(1+delta) y.
     薄レンズ四極キック。
     Δpx = -K1L/(1+δ) · x
     Δpy = +K1L/(1+δ) · y
@@ -129,7 +129,7 @@ def track_thin_quad(x, px, y, py, z, g, K1L: float) -> tuple:
 
 
 def track_thin_sext(x, px, y, py, z, g, K2L: float) -> tuple:
-    """
+    """Apply a thin-lens sextupole kick: dpx = -K2L/(2(1+delta)) (x^2 - y^2), dpy = +K2L/(1+delta) x y.
     薄レンズ6 極キック。
     Δpx = -K2L/(2(1+δ)) · (x² - y²)
     Δpy = +K2L/(1+δ) · x·y
@@ -151,7 +151,7 @@ def track_thin_sext(x, px, y, py, z, g, K2L: float) -> tuple:
 def track_cavity(el: 'Cavity',
                  x, px, y, py, z, g,
                  rfsw: bool = True) -> tuple:
-    """
+    """Nonlinear symplectic tracking through an RF cavity with a longitudinal kick delta += (VOLT/E0) sin(PHI - k_rf z).
     RF 空洞の非線形シンプレクティックトラッキング。
 
     縦方向キック (非線形):
@@ -206,7 +206,7 @@ def track_cavity(el: 'Cavity',
 
 def track_tcav(el: 'TCavity',
                x, px, y, py, z, g) -> tuple:
-    """
+    """Nonlinear symplectic tracking through a traveling-wave transverse deflecting cavity (translation of SAD ttcav.f).
     進行波横偏向空洞 (TCAV) の非線形シンプレクティックトラッキング。
 
     SAD の ttcav.f を Python/NumPy に忠実に翻訳したもの。
@@ -395,7 +395,7 @@ def _radiation_kick(x, px, y, py, z, g,
 
 
 def radiation_loss_per_turn(E0_GeV: float, rho: float) -> float:
-    """
+    """Compute the radiated energy loss per turn U0 [GeV] in an isomagnetic ring, U0 = Cgamma E0^4 I2.
     等磁場リングでの 1 周あたり放射エネルギー損失 U0 [GeV]。
 
     U0 = Cgamma * E0⁴ * I2,  I2 = 2π/ρ (等磁場)
@@ -415,7 +415,7 @@ def radiation_loss_per_turn(E0_GeV: float, rho: float) -> float:
 
 def damping_times(E0_GeV: float, circumference: float,
                   I2: float, I4: float) -> dict:
-    """
+    """Compute the radiation damping times tau_x, tau_y, tau_s [turns] from E0, circumference and the radiation integrals.
     放射ダンピング時間 τ_x, τ_y, τ_s [turns] を計算。
 
     α_i = Cgamma * E0³ * I2 * (1 - I4/I2) / T0   (Sands の式)
@@ -451,7 +451,7 @@ def damping_times(E0_GeV: float, circumference: float,
 
 
 def track_multipole_kick(x, px, y, py, z, g, KnL: dict) -> tuple:
-    """
+    """Apply a multipole element kick in complex form, px + i py += -sum_n KnL[n]/n! w^n with w = x - i y.
     多極キック (Multipole 要素)。
     複素数形式: w = x - i·y,  F = -sum_n KnL[n]/(n!) · w^n
     px + i·py += F
@@ -603,7 +603,7 @@ def track_thick_quad(x, px, y, py, z, g,
                      nsteps: int = 4,
                      E0_GeV: float = 0.0,
                      rng=None) -> tuple:
-    """
+    """Exact-matrix tracking through a thick quadrupole, reproducing SAD `tsolqu` for bz=0 with Strang splitting.
     厚肉四極電磁石の厳密行列トラッキング。
     SAD の tsolqu() (bz=0 の場合) を忠実に再現する。
 
@@ -667,7 +667,7 @@ def track_thick_bend(x, px, y, py, z, g,
                      nsteps: int = 10,
                      E0_GeV: float = 0.0,
                      rng=None) -> tuple:
-    """
+    """Tracking through a sector bend, an approximation of SAD tbend.f (leap-frog body, standard edge focusing, optional radiation).
     偏向電磁石 (セクターベンド) の厳密トラッキング。
     SAD の tbend.f の近似実装。
 
@@ -753,7 +753,7 @@ def track_thick_bend(x, px, y, py, z, g,
 # ---------------------------------------------------------------------------
 
 def track_thin_multipole(x, px, y, py, z, g, kord: int, akL: float) -> tuple:
-    """
+    """Thin-lens multipole kick of SAD `tthin` using the complex representation cx = (x - i y)^kord.
     SAD の tthin() 薄レンズ多極キック。
 
     複素表現:
@@ -787,7 +787,7 @@ def track_thin_multipole(x, px, y, py, z, g, kord: int, akL: float) -> tuple:
 # ---------------------------------------------------------------------------
 
 def track_tthin(x, px, y, py, z, g, nord: int, L: float, ak: float) -> tuple:
-    """
+    """Thick mode of SAD `tthin` as a fourth-order Yoshida drift-kick-drift sequence (7 steps).
     SAD の tthin() 厚肉モード (Yoshida 4 次 Drift-Kick-Drift) に相当。
 
     DKD 構造 (7 ステップ):
@@ -827,7 +827,7 @@ def track_tthin(x, px, y, py, z, g, nord: int, L: float, ak: float) -> tuple:
 # ---------------------------------------------------------------------------
 
 def track_solenoid(x, px, y, py, z, g, L: float, KS: float) -> tuple:
-    """
+    """Track through a solenoid (simplified `tsolrot` of SAD tsol.f) as a linear rotation of (x, px, y, py) with effective Ks.
     ソレノイド磁石のトラッキング (SAD tsol.f: tsolrot の簡略版)。
 
     ソレノイドは (x, px, y, py) の線形回転変換であるため、
@@ -886,7 +886,7 @@ def track_element(el: Element,
                   E0_GeV: float = 0.0,
                   rng=None,
                   rfsw: bool = True) -> tuple:
-    """
+    """Update particle coordinates through element el, by exact tracking or the linear matrix.
     要素 el を通して粒子座標を更新する。
 
     Parameters
@@ -979,7 +979,8 @@ def track_element(el: Element,
 
 @dataclass
 class TrackResult:
-    """トラッキング結果コンテナ"""
+    """Container for tracking results.
+    トラッキング結果コンテナ"""
     coords: np.ndarray      # shape (nturns+1, 6, nparticles)
     survived: np.ndarray    # shape (nparticles,) bool
 
@@ -1009,7 +1010,7 @@ def track_particles(elements: List[Element],
                     quantum: bool = True,
                     seed: Optional[int] = None,
                     flags: Optional['SimulationFlags'] = None) -> TrackResult:
-    """
+    """Multi-particle long-term tracking corresponding to SAD `TrackParticles[]`.
     SAD の TrackParticles[] に相当する多粒子長期トラッキング。
 
     Parameters
@@ -1146,7 +1147,7 @@ def dynamic_aperture(elements: List[Element],
                      x_max: float = 0.05,
                      dp: float = 0.0,
                      exact: bool = True) -> dict:
-    """
+    """Compute the dynamic aperture (corresponding to SAD `DynamicAperture[]`) by bisection on amplitude at each azimuth angle.
     動的アパーチャ計算 (SAD の DynamicAperture[] に相当)。
 
     各方位角ごとに振幅を二分法で探索し、
@@ -1197,7 +1198,7 @@ def dynamic_aperture(elements: List[Element],
 
 def tune_by_fft(track_result: TrackResult,
                 particle: int = 0) -> dict:
-    """
+    """Measure the tunes by FFT (corresponding to SAD `FrequencyAnalysis`); returns {'tune_x', 'tune_y'}.
     FFT によるチューン測定 (SAD の FrequencyAnalysis に相当)。
 
     Parameters

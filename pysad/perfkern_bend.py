@@ -1,4 +1,4 @@
-"""
+"""Numba kernels for emit6d: in-place `apply_tdb` and the `bendecorr` and `bendebody` bend kernels (from tbende.f).
 perfkern_bend.py — emit6d の性能用 numba カーネル (11/05)
 
 - apply_tdb: _State.apply (tmultr5 + tmulbs) の in-place 版 (T ← t·T, D ← t·D, B ← t·B·t^T)
@@ -63,7 +63,8 @@ def _sqrt1(x):
 
 @njit(**NJ)
 def bendecorr(cod, ak1, al, rho0, psqmax, flags=0):
-    """tbende.f tbendecorr: (t, 出口 cod)。flags の bit0 (lin) は v2 のオプション (compat.bend_k1_def() == 'lin'、B160): K1 の定義を B' 一様にする
+    """Translate tbende.f tbendecorr for bends with K1 not equal to 0, returning (t, exit cod), with optional v2 fixes selected by flags.
+    tbende.f tbendecorr: (t, 出口 cod)。flags の bit0 (lin) は v2 のオプション (compat.bend_k1_def() == 'lin'、B160): K1 の定義を B' 一様にする
     (kick のポテンシャル ak1 h (x³/3 − x y²/2): Δpx = −ak1 h (x² − y²/2)、Δpy = +ak1 h x y (正準運動量)。行列は y・x–y の要素まで)。
     bit1 は B161 (v2 の修正): dk を kick の導関数 −ak1 xr (1 − xr/2 + xr²/3) にする (K64 は −ak1 xr (1 − xr (1 − 2 xr)))。flags=0 は K64 のまま (ビット単位で同じ)。"""
     lin = (flags & 1) != 0
@@ -136,7 +137,8 @@ def bendecorr(cod, ak1, al, rho0, psqmax, flags=0):
 
 @njit(**NJ)
 def bendebody(cod, al, phin, ak1, rhob, rho0, h0, h1emit, dvemit, psqmax, flags=0):
-    """tbende.f tbendebody (tbinit=.true. で毎回 tbendiinit/tbendeinit): (t, 出口 cod)。flags の bit2 (値 4) は B250 (v2 の修正): akxsq < 0 の枝の xsxkx の符号を連続な式にする (K64 は逆)"""
+    """Translate tbende.f tbendebody, returning (t, exit cod), with an optional v2 fix (B250) for the akxsq < 0 branch.
+    tbende.f tbendebody (tbinit=.true. で毎回 tbendiinit/tbendeinit): (t, 出口 cod)。flags の bit2 (値 4) は B250 (v2 の修正): akxsq < 0 の枝の xsxkx の符号を連続な式にする (K64 は逆)"""
     dp = cod[5]
     p = 1.0 + dp
     xi = cod[0]

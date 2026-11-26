@@ -1,4 +1,4 @@
-"""
+"""Orbit-correction built-ins `ResponseMatrix` and `LinearSolveConditioned` (translation of pgrmat.f, pgsolvcond.f, pmicad.f).
 軌道補正の組み込み関数: ResponseMatrix (K64 の pgrmat.f)、LinearSolveConditioned (pgsolvcond.f、pmicad.f)。
 Packages/correction.n・bump.n・corutility.n (CorrectOrbit、Monitor、Steer 等の SADScript) がこれらを呼ぶ。
 
@@ -26,7 +26,8 @@ def _sign1(n):
 
 
 def response_row(im, st, stt, rows, rot, periodic, keyword, psix_t=0.0, psiy_t=0.0, bend_idx=None):
-    """pgrmat1 の 1 モニタ分。im は 1 始まり。st・stt は 1 始まりの位置の配列。rows[k-1] は要素 k の optics (28 要素)。
+    """Compute the response of one monitor, as in pgrmat1, to the steering positions st and stt.
+    pgrmat1 の 1 モニタ分。im は 1 始まり。st・stt は 1 始まりの位置の配列。rows[k-1] は要素 k の optics (28 要素)。
     rot(js): 要素 js が BEND なら -ROTATE、そうでなければ None。戻り: 長さ len(st) の配列"""
     kw = keyword.upper()
     normalmode = kw[0] == 'M'
@@ -153,7 +154,8 @@ def response_row(im, st, stt, rows, rot, periodic, keyword, psix_t=0.0, psiy_t=0
 
 
 def psvdcond(a, b, c, d, eps):
-    """pgsolvcond.f psvdcond: 条件 c.x=d の下での最小二乗。a, b, c は破壊されてよいコピー"""
+    """Solve the least-squares problem under the condition c.x=d, as in psvdcond of pgsolvcond.f.
+    pgsolvcond.f psvdcond: 条件 c.x=d の下での最小二乗。a, b, c は破壊されてよいコピー"""
     epsc = 1e-13
     nc, m = c.shape
     c1 = c.copy()
@@ -178,7 +180,8 @@ def psvdcond(a, b, c, d, eps):
 
 
 def pmicad(a, b, nx0, norm, eps, solvf=True):
-    """pmicad.f の直訳 (ベストコレクタ法)。a は (m, n) で破壊される。戻り x (n)"""
+    """Literal translation of pmicad.f (best corrector method).
+    pmicad.f の直訳 (ベストコレクタ法)。a は (m, n) で破壊される。戻り x (n)"""
     prec = 1e-6
     m, n = a.shape
     nx = min(int(nx0), m, n)

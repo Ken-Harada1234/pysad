@@ -1,4 +1,4 @@
-"""
+"""TCAVI element (transverse deflecting and crab cavity): translation of ttcav.f (tracking) and ttcave.f (6D map and matrix).
 TCAVI 要素 (横偏向空洞・クラブ空洞)。K64 の ttcav.f (追跡)、ttcave.f (6 次元の写像と行列)。
 RFSW OFF では長さ L のドリフト (tturn、ttcave とも)。追跡は RANKICK / RANPHASE (tgauss) 未対応。
 
@@ -83,7 +83,8 @@ def _texit(S, n, dx, dy, theta):
 
 @njit(**NJ)
 def k_tcav(S, n, al, ak, w, phic, p0, h0, krad, fluc, rs, anrad, cuc):
-    """ttcav.f 本体 (TENT/TEXIT は呼び出し側)。w: 波数、phic = (PHI + 周回の位相)·sign(charge)"""
+    """Compute the core of ttcav.f (TENT/TEXIT done by the caller), with wave number w and phase phic.
+    ttcav.f 本体 (TENT/TEXIT は呼び出し側)。w: 波数、phic = (PHI + 周回の位相)·sign(charge)"""
     if al != 0.0:
         _n.k_drift(S, n, al * 0.5)
         if krad:
@@ -125,7 +126,8 @@ def compile_tcav(el):
 
 
 def apply_tcav(S, n, pr, ph, rad, fluc, rs, kturn):
-    """tturn.f icTCAV (RFSW ON のとき)。ph: _Phys"""
+    """Apply the TCAVI element in tturn.f (icTCAV) when RFSW is ON.
+    tturn.f icTCAV (RFSW ON のとき)。ph: _Phys"""
     harm = pr['harm']
     w = 2.0 * math.pi * pr['freq'] / CVELOC if harm == 0.0 else ph.omega0 * harm / CVELOC
     harmf = harm - int(harm)
@@ -149,7 +151,8 @@ def apply_tcav(S, n, pr, ph, rad, fluc, rs, kturn):
 
 
 def tcav_kick(pr, ph):
-    """ttcave.f のキック: (COD 写像 f(c), 解析行列 J(c))。RFSW ON 用 (t=-z/v1)"""
+    """Compute the kick of ttcave.f (COD map f(c) and analytic matrix J(c)) for RFSW ON.
+    ttcave.f のキック: (COD 写像 f(c), 解析行列 J(c))。RFSW ON 用 (t=-z/v1)"""
     harm = pr['harm']
     w = 2.0 * math.pi * pr['freq'] / CVELOC if harm == 0.0 else ph.omega0 * harm / CVELOC
     ak = pr['ak']

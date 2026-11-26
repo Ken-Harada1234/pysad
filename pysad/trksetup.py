@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""周回追跡の設定 (v2.3.0 Q1: 周波数マップと局所運動量アクセプタンスの共通部分)。
+"""Ring-tracking setup shared by the frequency map and the local momentum acceptance.
+周回追跡の設定 (v2.3.0 Q1: 周波数マップと局所運動量アクセプタンスの共通部分)。
 
 FFS の状態 (要素の並び、運動量、RF、フラグ、Emittance[] の結果) から、周回追跡に要るものを 1 つの束 (TrackSetup) にまとめる。
 追跡は track6n.TrackRun (numba) を使う。これは SAD の TrackParticles と同じ損失判定 (tapert: 最初の要素・15 要素ごと・区間の終わりで
@@ -31,7 +32,8 @@ _SKIP = ('Marker', 'Monitor', 'Cavity', 'Coord', 'Map')
 
 
 def lower_priority():
-    """この処理の優先度を下げる (Windows: BELOW_NORMAL、それ以外: nice)。並列の子プロセスと、重い計算の本体で使う"""
+    """Lower the priority of this process (BELOW_NORMAL on Windows, nice elsewhere).
+    この処理の優先度を下げる (Windows: BELOW_NORMAL、それ以外: nice)。並列の子プロセスと、重い計算の本体で使う"""
     try:
         if os.name == 'nt':
             import ctypes
@@ -44,7 +46,8 @@ def lower_priority():
 
 
 class TrackSetup:
-    """周回追跡の設定。属性: els、nlat (= 要素の数 + 1)、p0 (運動量 eV)、circ、trf0、rfsw、rad、fluc、fshift、mass_charge、
+    """Ring-tracking setup holding els, nlat, p0, circ, trf0, rf/rad/fluc flags, loss limits, cod1, bucket and Twiss rows.
+    周回追跡の設定。属性: els、nlat (= 要素の数 + 1)、p0 (運動量 eV)、circ、trf0、rfsw、rad、fluc、fshift、mass_charge、
     alost・zlost (LOSSAMPL・LOSSDZ)、cod1 (位置 1 の閉軌道)、bucket (RF バケットの情報)、rows (位置ごとの Twiss: s・βx・αx・βy・αy・ηx・η'x・μx・μy)"""
 
     def __init__(self, els, momentum_eV, trf0, rfsw, rad, fluc, fshift, mass_charge, alost, zlost, cod1, bucket, rows,
@@ -86,7 +89,8 @@ class TrackSetup:
     # ------------------------------------------------------------------ 作る
     @classmethod
     def from_ffs(cls, ffs, rad=None, rfsw=None, fluc=False, alost=None, zlost=None, refit_orbit=True):
-        """ffscmd の FFS オブジェクト (USE・CALC 済み) から作る。
+        """Build a `TrackSetup` from an FFS object of ffscmd (after `USE` and `CALC`).
+        ffscmd の FFS オブジェクト (USE・CALC 済み) から作る。
         rad・rfsw: None なら FFS のフラグ (RAD・RFSW)。指定すると、そのフラグで Emittance[] (閉軌道・同期位相の決定) を走らせ直す
         (フラグはあとで元に戻す)。Emittance[] が未実行なら走らせる。alost・zlost: None なら LOSSAMPL・LOSSDZ (SAD の既定は 1 m と 100 m)"""
         if ffs.lat is None:
@@ -140,7 +144,8 @@ class TrackSetup:
 
     @classmethod
     def from_source(cls, src, ring='RING', rad=True, rfsw=True, fluc=False, alost=None, zlost=None, extra=''):
-        """SAD のラティス定義の文字列から作る (USE ring; CELL; CALC; Emittance)。extra: USE の前に実行する SAD の文 (例: 'MOMENTUM=3GEV;')。
+        """Build a `TrackSetup` from SAD lattice source text (USE ring; CELL; CALC; Emittance); returns (TrackSetup, FFS object).
+        SAD のラティス定義の文字列から作る (USE ring; CELL; CALC; Emittance)。extra: USE の前に実行する SAD の文 (例: 'MOMENTUM=3GEV;')。
         戻り (TrackSetup, FFS オブジェクト)"""
         import io
         from . import ffscmd
@@ -149,7 +154,8 @@ class TrackSetup:
         return cls.from_ffs(ffs, rad=rad, rfsw=rfsw, fluc=fluc, alost=alost, zlost=zlost), ffs
 
     def copy(self, **kw):
-        """一部を変えた複製 (rad・rfsw・fluc・alost・zlost・check_every)。rad・rfsw を変えたときの閉軌道は、cod1 を出発点に求め直す"""
+        """Return a copy with some settings changed (rad, rfsw, fluc, alost, zlost, check_every), re-solving the closed orbit if needed.
+        一部を変えた複製 (rad・rfsw・fluc・alost・zlost・check_every)。rad・rfsw を変えたときの閉軌道は、cod1 を出発点に求め直す"""
         import copy as _copy
         o = _copy.copy(self)
         o._orbits = {}
@@ -182,7 +188,8 @@ class TrackSetup:
             tr.segment(a, b)
 
     def one_turn(self, tr, loc):
-        """位置 loc (要素 loc の入口) から 1 周: tturn(loc, nlat)、tturn(1, loc) (TrackParticles と同じ)"""
+        """Track one turn from location loc (entrance of element loc) as `tturn(loc, nlat)` then `tturn(1, loc)`, like `TrackParticles`.
+        位置 loc (要素 loc の入口) から 1 周: tturn(loc, nlat)、tturn(1, loc) (TrackParticles と同じ)"""
         with np.errstate(all='ignore'):
             self._seg(tr, loc, self.nlat)
             if loc > 1:
@@ -190,7 +197,8 @@ class TrackSetup:
         tr.next_turn()
 
     def run_call(self, tr, loc, nturn):
-        """TrackParticles[{loc, beam}, loc, 1, nturn] (1 回の呼び出し) と同じ区間の分け方: tturn(loc, nlat)、(nturn−1) 回の tturn(1, nlat)、tturn(1, loc)。
+        """Track like one `TrackParticles[{loc, beam}, loc, 1, nturn]` call, with the same splitting into `tturn` segments.
+        TrackParticles[{loc, beam}, loc, 1, nturn] (1 回の呼び出し) と同じ区間の分け方: tturn(loc, nlat)、(nturn−1) 回の tturn(1, nlat)、tturn(1, loc)。
         tapert (最初の要素・15 要素ごと・区間の終わり) の判定の位置は区間の始めから数えるので、1 周ずつ loc から回す one_turn とは、判定の位置が違う
         (損失ぎりぎりの粒子の判定が違いうる)。gs の 1 回の TrackParticles と同じ判定を得るにはこちら"""
         nlat = self.nlat
@@ -206,7 +214,8 @@ class TrackSetup:
                 self._seg(tr, 1, loc)
 
     def track(self, loc, coords, nturn, record=False, alost=None, zlost=None, schedule=None):
-        """位置 loc から nturn 周追跡する。戻り dict:
+        """Track nturn turns from location loc; returns a dict with lost_turn, final coordinates and optionally per-turn records.
+        位置 loc から nturn 周追跡する。戻り dict:
            lost_turn  (n,) 落ちた周 (1 始まり。0 は最後まで残った)
            final      (n, 6) 最後の座標 (落ちた粒子は落ちた時点の値)
            rec        (nturn, n, 6) 周ごとの座標 (record=True。落ちたあとは NaN。座標は位置 loc、1 周ごと)
@@ -241,7 +250,8 @@ class TrackSetup:
         return out
 
     def refine_orbit(self, c0, dp=None, loc=1, tol=1e-12, itmax=8):
-        """位置 loc の周期解 (1 周の写像の不動点) を Newton 法で求める。RFSW ON (または放射つき) は 6 次元、RFSW OFF は δ = dp を決めた 4 次元。
+        """Compute the periodic solution (fixed point of the one-turn map) at loc by Newton's method (6D with RFSW ON, else 4D).
+        位置 loc の周期解 (1 周の写像の不動点) を Newton 法で求める。RFSW ON (または放射つき) は 6 次元、RFSW OFF は δ = dp を決めた 4 次元。
         戻り: 閉軌道 (6)。残差 (1 周後との差) を self.info['orbit_resid'] に書く"""
         c = np.array(c0, dtype=float)
         six = self.rfsw
@@ -270,7 +280,8 @@ class TrackSetup:
         return c
 
     def closed_orbit(self, locs):
-        """位置 locs (1 始まりの整数のリスト) の閉軌道 (len(locs), 6)。位置 1 の cod1 から 1 粒子を放射 (FLUC なし) で運ぶ。
+        """Compute the closed orbit at the given locations by carrying one particle from cod1 at location 1 with radiation (no FLUC).
+        位置 locs (1 始まりの整数のリスト) の閉軌道 (len(locs), 6)。位置 1 の cod1 から 1 粒子を放射 (FLUC なし) で運ぶ。
         RFSW OFF は δ=0 の 4 次元の閉軌道 (cod1 は δ=0)"""
         locs = [int(l) for l in locs]
         out = {}
@@ -292,7 +303,8 @@ class TrackSetup:
         return np.array([self._orbits[l] for l in locs])
 
     def closed_orbit_dp(self, loc, dp):
-        """RFSW OFF: 位置 loc の δ = dp の閉軌道 (4 次元、Newton 法)。位置 1 で解いて loc へ運ぶ"""
+        """Compute the 4D closed orbit at loc for delta = dp with RFSW OFF by Newton's method, solving at location 1 and carrying to loc.
+        RFSW OFF: 位置 loc の δ = dp の閉軌道 (4 次元、Newton 法)。位置 1 で解いて loc へ運ぶ"""
         c1 = self.refine_orbit(np.zeros(6), dp=dp, loc=1)
         if loc == 1:
             return c1
@@ -303,7 +315,8 @@ class TrackSetup:
 
     # ------------------------------------------------------------------ 位置
     def tunes_full(self):
-        """整数部を含む周回のチューン (νx, νy) (Twiss の位相の進み/2π)"""
+        """Return the full tunes (nu_x, nu_y) including the integer part, from the Twiss phase advance over 2 pi.
+        整数部を含む周回のチューン (νx, νy) (Twiss の位相の進み/2π)"""
         r = self.rows[-1]
         return r[7] / (2 * math.pi), r[8] / (2 * math.pi)
 
@@ -316,7 +329,8 @@ class TrackSetup:
 
     # ------------------------------------------------------------------ バケット
     def bucket_zlimit(self, margin=1.0):
-        """RF バケットから出た粒子を落とす |z| の限界: バケットの長さの半分 + 同期位相のずれ。(π + 2|φs|)/k_rf (バケットは安定固定点の周りに
+        """Return the |z| limit beyond which particles leave the RF bucket, (pi + 2|phi_s|)/k_rf; None with RFSW OFF or no RF.
+        RF バケットから出た粒子を落とす |z| の限界: バケットの長さの半分 + 同期位相のずれ。(π + 2|φs|)/k_rf (バケットは安定固定点の周りに
         ψ = −π−2φs … π−2φs。φs = trf0·k_rf)。RFSW OFF か RF なしは None"""
         b = self.bucket
         if not self.rfsw or not b or b.get('k_rf', 0.0) <= 0.0:
@@ -324,7 +338,8 @@ class TrackSetup:
         return margin * (math.pi + 2.0 * abs(b['phis'])) / b['k_rf']
 
     def nturn_for_synchrotron(self, nsynch=2.0, nmin=100):
-        """シンクロトロン振動 nsynch 周期分の周回数 (周期 = 1/|νs|)。RF なしは None"""
+        """Return the number of turns for nsynch synchrotron oscillation periods (period = 1/|nu_s|); None without RF.
+        シンクロトロン振動 nsynch 周期分の周回数 (周期 = 1/|νs|)。RF なしは None"""
         b = self.bucket
         if not self.rfsw or not b:
             return None
@@ -360,7 +375,8 @@ def _sig(el):
 
 
 def find_periodicity(els, rows=None):
-    """要素の並びの周期: マーカー・モニター・空洞 (L=0 の長さのない要素) を除いた並びが、同じ列の n 回の繰り返しになる最大の n を探す。
+    """Find the largest n for which the element sequence (ignoring zero-length markers, monitors, cavities) repeats n times.
+    要素の並びの周期: マーカー・モニター・空洞 (L=0 の長さのない要素) を除いた並びが、同じ列の n 回の繰り返しになる最大の n を探す。
     戻り dict: nper (セルの数、1 なら周期的でない)、starts (各セルの最初の要素の位置 (1 始まり))、s_starts (その s)、cell_length (s の周期、
     rows (Twiss の行) を渡したとき)、ok (セルの長さが全部同じ)。同じ n でも、セルの中の要素の並び・磁場の値が全部同じことだけを調べる
     (誤差・補正は見ない。セルの鏡映の対称性は見ない)"""
@@ -389,7 +405,8 @@ def find_periodicity(els, rows=None):
 
 
 def select_locations(setup, ls=1, le=None, step=1, ds=0.0, sort=True, unique_s=True):
-    """追跡を始める位置 (要素の入口、1 始まり) の選び方。ls〜le (le は含む。既定は最後の要素)、step 要素おき、
+    """Select starting locations for tracking (element entrances, 1-based) by range, step, minimum s spacing ds and unique s.
+    追跡を始める位置 (要素の入口、1 始まり) の選び方。ls〜le (le は含む。既定は最後の要素)、step 要素おき、
     隣の選んだ位置と s が ds [m] 以上離れたものだけ (ds>0)、同じ s の位置 (長さ 0 の要素の列) は最初の 1 つだけ (unique_s)"""
     nel = setup.nlat - 1
     if le is None:

@@ -1,4 +1,4 @@
-"""
+"""Analytic derivatives for matching, a literal translation of the SAD default path (`FFS$NumericalDerivative=False`).
 match6d.py — SAD の解析微分 (FFS$NumericalDerivative=False の既定経路) の直訳
 
 SAD 側の対応:
@@ -105,7 +105,8 @@ def _sign(a: float, b: float) -> float:
 
 
 def tmultr45(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """toplvl.f tmultr45: c = b∘a (先に a、次に b)。c(:,1:4) = b(:,1:4)·a, c(:,5) = b(:,1:4)·a(:,5) + b(:,5)"""
+    """Compose two 4x5 maps c = b o a (a first, then b), as `tmultr45` in `toplvl.f`.
+    toplvl.f tmultr45: c = b∘a (先に a、次に b)。c(:,1:4) = b(:,1:4)·a, c(:,5) = b(:,1:4)·a(:,5) + b(:,5)"""
     c = b[:, 0:4] @ a
     c[:, 4] += b[:, 4]
     return c
@@ -117,7 +118,8 @@ def _resetnan(a: np.ndarray) -> np.ndarray:
 
 
 def build_utwiss(rows) -> np.ndarray:
-    """twiss_table の行 (rows[l-1] = SAD の位置 l、1 始まり) → utwiss(l, 1..ntwissfun) 配列 (行 0 は未使用)"""
+    """Convert `twiss_table` rows into the SAD `utwiss(l, 1..ntwissfun)` array.
+    twiss_table の行 (rows[l-1] = SAD の位置 l、1 始まり) → utwiss(l, 1..ntwissfun) 配列 (行 0 は未使用)"""
     n = len(rows)
     u = np.zeros((n + 1, NTWISSFUN + 1))
     for l, r in enumerate(rows, start=1):
@@ -136,7 +138,8 @@ def build_utwiss(rows) -> np.ndarray:
 # qtent.f qtentu / qchg.f qchg
 # ---------------------------------------------------------------------------
 def qtentu(u1: np.ndarray, disp: bool) -> Tuple[np.ndarray, np.ndarray]:
-    """位置の R 変換 (物理座標 → 正規モード) 4×4 と、disp なら分散列 (5 列目)、閉軌道 cod(6)"""
+    """Return the 4x4 R transformation at a location, with the dispersion column if disp is set, and the closed orbit cod(6).
+    位置の R 変換 (物理座標 → 正規モード) 4×4 と、disp なら分散列 (5 列目)、閉軌道 cod(6)"""
     r1, r2, r3, r4 = u1[R1], u1[R2], u1[R3], u1[R4]
     detr = r1 * r4 - r2 * r3
     cc = math.sqrt(1.0 - detr)
@@ -169,7 +172,8 @@ def qtentu(u1: np.ndarray, disp: bool) -> Tuple[np.ndarray, np.ndarray]:
 
 
 def qchg(trans: np.ndarray, cod: np.ndarray, dx: float, dy: float, theta: float, enter: bool) -> None:
-    """qchg.f: 要素のずれ (dx, dy) と回転 theta。in place"""
+    """Apply an element offset (dx, dy) and rotation theta in place, as `qchg.f`.
+    qchg.f: 要素のずれ (dx, dy) と回転 theta。in place"""
     if enter:
         cod[0] += dx
         cod[2] += dy
@@ -197,7 +201,8 @@ def qchg(trans: np.ndarray, cod: np.ndarray, dx: float, dy: float, theta: float,
 # ---------------------------------------------------------------------------
 def qgettru(u1: np.ndarray, u2: np.ndarray, amux: float, amuy: float, k1: int, k2: int,
             disp: bool, fold: bool, trpt: bool) -> np.ndarray:
-    """Twiss (u1 at k1, u2 at k2) から k1→k2 の 4×5 転送行列。k2<k1 (または k2==k1 で fold) は一周をまたぐ。
+    """Build the 4x5 transfer matrix from k1 to k2 from the Twiss at the two locations, wrapping around the ring if needed.
+    Twiss (u1 at k1, u2 at k2) から k1→k2 の 4×5 転送行列。k2<k1 (または k2==k1 で fold) は一周をまたぐ。
     disp=True なら 5 列目は k2 の分散そのもの、False なら分散の非斉次項 η2 − M·η1 (gammab は一定 → gr=1)。
     出口側 (u2) の R で正規モード → 物理座標に戻す。"""
     trans = np.zeros((4, 5))
@@ -255,7 +260,8 @@ def qgettru(u1: np.ndarray, u2: np.ndarray, amux: float, amuy: float, k1: int, k
 
 def tftmatu(u1: np.ndarray, u2: np.ndarray, amux: float, amuy: float, l1: int, l2: int,
             fold: bool, trpt: bool) -> np.ndarray:
-    """tftmat.f tftmatu: qgettru (disp=.false.) に入口側 (u1) の R 変換を右から掛け、物理座標 l1 → 物理座標 l2 にする"""
+    """Translate `tftmatu` of `tftmat.f`: `qgettru` with the entrance R transformation applied, mapping physical coordinates l1 to l2.
+    tftmat.f tftmatu: qgettru (disp=.false.) に入口側 (u1) の R 変換を右から掛け、物理座標 l1 → 物理座標 l2 にする"""
     trans = qgettru(u1, u2, amux, amuy, l1, l2, False, fold, trpt)
     r1, r2, r3, r4 = u1[R1], u1[R2], u1[R3], u1[R4]
     detr = r1 * r4 - r2 * r3
@@ -279,7 +285,8 @@ def tftmatu(u1: np.ndarray, u2: np.ndarray, amux: float, amuy: float, l1: int, l
 # ---------------------------------------------------------------------------
 def qdquad(al: float, ak: float, u_k: np.ndarray, u_k1: np.ndarray, amux: float, amuy: float, k1: int,
            dx: float, dy: float, theta: float, iv: int, trpt: bool) -> Tuple[np.ndarray, np.ndarray]:
-    """QUAD の微分行列 dtrans(4,5) と閉軌道の微分 dcod(6)。iv=2: K1 (ak は SAD の積分値)、iv=4: ROTATE。
+    """Compute the derivative matrix dtrans(4,5) and orbit derivative dcod(6) of a QUAD for K1 (iv=2) or ROTATE (iv=4).
+    QUAD の微分行列 dtrans(4,5) と閉軌道の微分 dcod(6)。iv=2: K1 (ak は SAD の積分値)、iv=4: ROTATE。
     dtrans = (∂M/∂v)·S_k (S_k = 入口の R 変換、5 列目は ∂M/∂v·η_k + 閉軌道由来の項)"""
     dtrans = np.zeros((4, 5))
     dcod = np.zeros(6)
@@ -365,7 +372,8 @@ def qdquad(al: float, ak: float, u_k: np.ndarray, u_k1: np.ndarray, amux: float,
 
 def qdrotate(u_k: np.ndarray, u_k1: np.ndarray, amux: float, amuy: float, k1: int,
              dx: float, dy: float, trpt: bool) -> Tuple[np.ndarray, np.ndarray]:
-    """qdquad.f qdrotate: QUAD の ROTATE による微分 (要素 k1→k1+1 の転送行列を回転の生成子で挟む)"""
+    """Translate `qdrotate` of `qdquad.f`: derivative of a QUAD with respect to ROTATE.
+    qdquad.f qdrotate: QUAD の ROTATE による微分 (要素 k1→k1+1 の転送行列を回転の生成子で挟む)"""
     trans2, cod = qtentu(u_k, True)
     _, cod2 = qtentu(u_k1, True)
     cod[0] -= dx
@@ -410,7 +418,8 @@ def qdrotate(u_k: np.ndarray, u_k1: np.ndarray, amux: float, amuy: float, k1: in
 # ---------------------------------------------------------------------------
 def qdbend(al: float, phib0: float, phi0: float, psi1: float, psi2: float, ak: float, u: np.ndarray,
            dx: float, dy: float, theta: float, iv: int) -> Tuple[np.ndarray, np.ndarray]:
-    """BEND の微分行列。iv=2: ANGLE、iv=8: K1。psi1, psi2 は SAD の E1, E2 (ANGLE に対する比)。
+    """Compute the derivative matrix of a BEND for ANGLE (iv=2) or K1 (iv=8).
+    BEND の微分行列。iv=2: ANGLE、iv=8: K1。psi1, psi2 は SAD の E1, E2 (ANGLE に対する比)。
     phib0 = ANGLE + K0 (実際の曲げ角)、phi0 = ANGLE (設計角)、ak = K1 (積分値)"""
     dtrans = np.zeros((4, 5))
     dcod = np.zeros(6)
@@ -695,7 +704,8 @@ def qdbend(al: float, phib0: float, phi0: float, psi1: float, psi2: float, ak: f
 # qdmdia.f qdmdia
 # ---------------------------------------------------------------------------
 def qdmdia(tm: np.ndarray, dtm: np.ndarray, r1: float) -> Tuple[float, float, float, float]:
-    """4×4 一周行列 tm とその微分 dtm から、対角化行列 S = ((c, J·rᵗ·J), (r, c)) の r の微分 dr1..dr4 を返す。
+    """Return the derivatives dr1..dr4 of the diagonalizing-matrix block r from the 4x4 one-turn matrix tm and its derivative dtm.
+    4×4 一周行列 tm とその微分 dtm から、対角化行列 S = ((c, J·rᵗ·J), (r, c)) の r の微分 dr1..dr4 を返す。
     tm = S⁻¹·diag(A, B)·S。通常は (TrA−TrB)² > 0 の分岐。縮退分岐も SAD のまま (1300 の dr4 未設定の癖も含む)"""
     eps = 1e-7
     (tm11, tm12, tm13, tm14), (tm21, tm22, tm23, tm24), (tm31, tm32, tm33, tm34), (tm41, tm42, tm43, tm44) = tm
@@ -893,7 +903,8 @@ def qdmdia(tm: np.ndarray, dtm: np.ndarray, r1: float) -> Tuple[float, float, fl
 # qdcell.f dgammag
 # ---------------------------------------------------------------------------
 def dgammag(da: float, db: float, a: float, b: float, a1: float, b1: float) -> Tuple[float, float]:
-    """(dγ/γ 相当, dBMAG): da = dα/(1+α²), db = dβ/β。a1, b1 は参照 Twiss (BMAG 用)"""
+    """Compute the derivatives of the gamma-like quantity and of BMAG: da = d(alpha)/(1+alpha^2), db = d(beta)/beta.
+    (dγ/γ 相当, dBMAG): da = dα/(1+α²), db = dβ/β。a1, b1 は参照 Twiss (BMAG 用)"""
     dg = 2.0 * a * da - db
     g = (1.0 + a**2) / b
     g1 = (1.0 + a1**2) / b1
@@ -905,7 +916,8 @@ def dgammag(da: float, db: float, a: float, b: float, a1: float, b1: float) -> T
 # 要素情報 → 微分行列 (qdtwis の select case 部分)
 # ---------------------------------------------------------------------------
 class DerivContext:
-    """qdcell/qdtwis が参照する SAD のモジュール変数の束: utwiss (位置 l → Twiss)、nlat、nut、cell、trpt と要素列"""
+    """Holds the SAD module variables referenced by `qdcell`/`qdtwis`: utwiss, nlat, nut, cell, trpt and the element list.
+    qdcell/qdtwis が参照する SAD のモジュール変数の束: utwiss (位置 l → Twiss)、nlat、nut、cell、trpt と要素列"""
 
     def __init__(self, elements, u: np.ndarray, cell: bool = True):
         self.elements = elements           # pysad の要素列 (SAD の位置 k = elements[k-1])
@@ -916,7 +928,8 @@ class DerivContext:
         self.trpt = not cell
 
     def element_dtrans(self, k: int, iv: int) -> Optional[Tuple[np.ndarray, np.ndarray]]:
-        """要素 k (1 始まり) の変数 iv に対する微分行列 (dtrans, dcod)。未対応なら None (数値微分へ)"""
+        """Return the derivative matrices (dtrans, dcod) of element k for variable iv, or None if unsupported.
+        要素 k (1 始まり) の変数 iv に対する微分行列 (dtrans, dcod)。未対応なら None (数値微分へ)"""
         el = self.elements[k - 1]
         tn = type(el).__name__
         u = self.u
@@ -957,7 +970,8 @@ class DerivContext:
 # qdtwis.f qdtwis (輸送の微分)
 # ---------------------------------------------------------------------------
 def qdtwis(ctx: DerivContext, k0: int, l: int, iv: int) -> np.ndarray:
-    """要素 k0 の変数 iv による位置 l の Twiss の微分 (k0 の入口 Twiss は固定とみなす = INS 的)。
+    """Compute the Twiss derivative at location l for variable iv of element k0, holding the entrance Twiss of k0 fixed.
+    要素 k0 の変数 iv による位置 l の Twiss の微分 (k0 の入口 Twiss は固定とみなす = INS 的)。
     戻り dtwiss[1..mfittry]: AX は dα/(1+α²)、BX は dβ/β、NX は dψ (rad)、EX.. は dη、R1.. は dR、DX.. は d(閉軌道)"""
     u = ctx.u
     nut = ctx.nut
@@ -1092,7 +1106,8 @@ def qdtwis(ctx: DerivContext, k0: int, l: int, iv: int) -> np.ndarray:
 # qdcell.f qdcell (周期解の補正)
 # ---------------------------------------------------------------------------
 def qdcell(ctx: DerivContext, kk: int, ll: int, iv: int) -> np.ndarray:
-    """要素 kk の変数 iv による位置 ll の Twiss 微分 dtwiss (CELL なら周期解として)。
+    """Compute the Twiss derivative dtwiss at location ll for variable iv of element kk, as a periodic solution for CELL.
+    要素 kk の変数 iv による位置 ll の Twiss 微分 dtwiss (CELL なら周期解として)。
     流れ: qdtwis で「kk の入口を固定した輸送」の微分 dtwiss を得る → それで ll の一周行列の微分 dM を作る
     (dM = d(M_{kk→ll})·M_{ll→kk}) → R の微分 (qdmdia) と正規モードブロック A, B の微分 da, db →
     tr A = 2cos μ, a12 = β sin μ, a11−a22 = 2α sin μ から dμ, dβ/β, dα → 位相 ψ_ll の微分 (dμ と ll→終端 の
@@ -1329,7 +1344,8 @@ _QDX_TYPES = ('Quadrupole', 'Sextupole', 'Octupole', 'Decapole', 'Dodecapole', '
 
 
 def tdgeo_term(geo, kfname, ne, k, el, tname, key, s, iorgr=1, dcod=None, kbe=0):
-    """tdgeo.f の直訳 (DRIFT の L、BEND の ANGLE・L、四極などの DX・DY)。geo[k-1, j, i] は geo(j+1, i+1, k) (i=0..2 が向きの行列の列、i=3 が位置)。
+    """Literal translation of `tdgeo.f`: geometry term for the derivative of a condition location with respect to an element variable.
+    tdgeo.f の直訳 (DRIFT の L、BEND の ANGLE・L、四極などの DX・DY)。geo[k-1, j, i] は geo(j+1, i+1, k) (i=0..2 が向きの行列の列、i=3 が位置)。
     ne は条件の位置、k は変数の要素。返り値は qu に足す量 (s = couple·sign を掛けたもの。呼び出し側が渡す s は ±coup)。
     四極などの DX・DY (v2next B3): SOL 領域 (BOUND≠0 の SOL の間) の外 (kbe=0) は幾何を動かさないので 0。領域の中 (kbe = 領域の終端の SOL の位置)
     は、要素の出口の軌道の変化 dcod0 を終端まで運んだ dcod = (dx, dpx, dy, dpy) (呼び出し側が sol_dcod で作る) で、終端の位置・向きの変化から
@@ -1451,7 +1467,8 @@ def _sol_region_end(elements, k):
 
 
 def sol_dcod(elements, rows, k, kbe, key):
-    """qdtrans + tftmatu (tdgeo.f): SOL 領域の中の四極などのずれ DX・DY (key) を変えたときの、領域の終端 kbe の軌道の変化 (dx, dpx, dy, dpy)。
+    """Compute the change of the orbit at the end of a SOL region when a DX or DY of an element inside it is varied.
+    qdtrans + tftmatu (tdgeo.f): SOL 領域の中の四極などのずれ DX・DY (key) を変えたときの、領域の終端 kbe の軌道の変化 (dx, dpx, dy, dpy)。
     解析微分 (v2next B3): 要素の写像は c_out = F(c − t) + t (座標をずらし、一様磁場のゲージが変わる分だけ正準運動量もずらす:
     t = (DX, −(bz/2)DY, DY, (bz/2)DX))。したがって d c_out/d DX = (I − J) ∂t/∂DX、J は要素の Jacobian (ずれた軌道での値)。
     K64 の qdtrans は eps=1e-6 の中心差分 (qtwiss1 を 2 回)。終端までの運び方は tftmatu (utwiss からの写像) の代わりに、
@@ -1491,7 +1508,8 @@ def _sol_region_positions(elements):
 
 
 def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.ndarray, List[int]]:
-    """tffsqu の直訳。ids は match6._tffscalc が返す dfs のキー [(cid, idp), ...] (行の順序)。
+    """Literal translation of `tffsqu`: build qu(condition, variable) from analytic Twiss derivatives.
+    tffsqu の直訳。ids は match6._tffscalc が返す dfs のキー [(cid, idp), ...] (行の順序)。
     rows_by[idp] は各オフモメンタム点の twiss_table。戻り: (qu0 [条件, 変数] (wiq, wvar を掛ける前), 数値微分が必要な列)。
     SAD: rlist(kqu) = Σ_k coup(k) · (dtwiss(kf) at lfp(1)) − Σ_k coup(k) · (dtwiss(kf) at lfp(2))"""
     nvar = len(m.variables)
@@ -1581,7 +1599,8 @@ def tffsqu(m: Matcher, ids: List[tuple], rows_by: Dict[int, list]) -> Tuple[np.n
 
 def analytic_qu(m: Matcher, ids: List[tuple], rows, wvar: np.ndarray,
                 rows_by: Optional[Dict[int, list]] = None) -> Tuple[np.ndarray, List[int]]:
-    """match6.Matcher.go の数値微分ブロックの代替: qu[i, kc] = tffsqu·wiq[i]/wvar[kc] (tffsmatch.f 400-403 行目)。
+    """Replace the numerical-derivative block of `match6.Matcher.go` with analytic derivatives qu[i, kc] (`tffsmatch.f` lines 400-403).
+    match6.Matcher.go の数値微分ブロックの代替: qu[i, kc] = tffsqu·wiq[i]/wvar[kc] (tffsmatch.f 400-403 行目)。
     rows は idp=0 の twiss_table (直前の _tffscalc の戻り)。オフモメンタム条件があれば rows_by を渡す
     (無ければ m._optics_all で計算する)。戻り (qu, 数値微分で埋めるべき列の番号)。FitFunction 行 (cid<0) は 0 のまま"""
     if rows_by is None:
@@ -1603,7 +1622,8 @@ def analytic_qu(m: Matcher, ids: List[tuple], rows, wvar: np.ndarray,
 # match6.Matcher の go() を解析微分に置き換えたサブクラス
 # ---------------------------------------------------------------------------
 class AnalyticMatcher(Matcher):
-    """互換のための別名。解析微分は match6.Matcher の既定になった (Matcher._derivative が analytic_qu を呼ぶ)。
+    """Alias kept for compatibility: analytic derivatives are now the default of `match6.Matcher`.
+    互換のための別名。解析微分は match6.Matcher の既定になった (Matcher._derivative が analytic_qu を呼ぶ)。
     Twiss 条件は tffsqu の解析微分、FitFunction 行は片側差分、未対応の変数列・条件は中心差分。
     numerical_derivative=True で中心差分のみ (FFS$NumericalDerivative=True)。"""
     # go() / _derivative() / _numeric_columns() は match6.Matcher に統合済み (既定が解析微分)
@@ -1611,7 +1631,8 @@ class AnalyticMatcher(Matcher):
 
 
 def numeric_qu(m: Matcher, ids: List[tuple], dfs: dict, wvar: np.ndarray, step_scale: float = 1.0) -> np.ndarray:
-    """検証用: match6.Matcher.go と同じ中心差分で qu を作る (dfs は現在点の _tffscalc の戻り)。
+    """Build qu by central differences as in `match6.Matcher.go`, for verification.
+    検証用: match6.Matcher.go と同じ中心差分で qu を作る (dfs は現在点の _tffscalc の戻り)。
     step_scale で刻み dvkc を何倍かにできる (雑音判定用)"""
     nvar = len(m.variables)
     qu = np.zeros((len(ids), nvar))
@@ -1632,7 +1653,8 @@ def numeric_qu(m: Matcher, ids: List[tuple], dfs: dict, wvar: np.ndarray, step_s
 
 
 def compare_derivatives(m: Matcher, verbose: bool = True, tol: float = 1e-6):
-    """現在の変数・条件で解析微分と数値微分を比べる。戻り (qu_analytic, qu_numeric, ids, 最大相対差)。
+    """Compare analytic and numerical derivatives at the current variables and conditions and return the maximum relative difference.
+    現在の変数・条件で解析微分と数値微分を比べる。戻り (qu_analytic, qu_numeric, ids, 最大相対差)。
     数値微分は刻み dvkc と 2·dvkc の 2 通りで計算し、両者が 1% 以上違う成分は数値微分の雑音 (閉軌道探索の
     収束誤差や対称点でゼロになる微分の丸め) とみなして比較から外す ("noise" と表示)。"""
     m.lat_brho = getattr(m.lat, 'brho', 1.0)

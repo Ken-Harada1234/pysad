@@ -1,4 +1,4 @@
-"""
+"""FFS command `RADINT` (translation of SAD src/INTGRL.f): 4D radiation integrals including x-y coupling and chromatic terms.
 radint.py — FFS コマンド RADINT (SAD src/INTGRL.f の直訳)
 ==========================================================
 
@@ -68,7 +68,8 @@ def _symps(z, n):
 
 
 class RadInt:
-    """INTGRL モジュール (module radint) の状態。プロセス中で使い回される (SAD も同じ: 2 回目の RADINT の DL の初期値は前回の最後の値)"""
+    """State of the INTGRL module (module radint), reused across calls within the process as in SAD.
+    INTGRL モジュール (module radint) の状態。プロセス中で使い回される (SAD も同じ: 2 回目の RADINT の DL の初期値は前回の最後の値)"""
 
     def __init__(self):
         self.DL = 0.0
@@ -153,7 +154,8 @@ class RadInt:
         return r0, self._r2inv(r0)
 
     def tmatrs(self, R0, R0I):
-        """R0, R0I は呼び出し側の配列を書き換える (TCAL は save 変数、TEDGE は局所)"""
+        """Compute the matrices R0 and R0I for TCAL and TEDGE, overwriting the caller's arrays.
+        R0, R0I は呼び出し側の配列を書き換える (TCAL は save 変数、TEDGE は局所)"""
         tw = self.TWPMG
         TR = self.TO @ R0I
         A, C = TR[0:2, 0:2], TR[2:4, 0:2]
@@ -240,7 +242,8 @@ class RadInt:
 
     # ------------------------------------------------------------------ TCAL
     def tcal(self, i, iflg):
-        """FUNI(i,*) を現在の TWPMG で作り、iflg=0 なら次の点へ Twiss を伝搬する。i は 1 始まり"""
+        """Build FUNI(i,*) with the current TWPMG and propagate the Twiss to the next point if iflg is 0.
+        FUNI(i,*) を現在の TWPMG で作り、iflg=0 なら次の点へ Twiss を伝搬する。i は 1 始まり"""
         tw = self.TWPMG
         DL = np.float64(self.DL)
         with np.errstate(all='ignore'):
@@ -288,7 +291,8 @@ class RadInt:
 
     # ------------------------------------------------------------------ 要素ごとのスライス行列
     def bmag(self, teta1, rhob, rho0):
-        """BMAG: tbendebody(trans, cod=0, al=DL, phin=DKL0, ak1=DKL1) の 1 次の行列 (TM) と分散ベクトル (VM)"""
+        """Compute `BMAG`: the first-order matrix TM and dispersion vector VM of tbendebody for a slice.
+        BMAG: tbendebody(trans, cod=0, al=DL, phin=DKL0, ak1=DKL1) の 1 次の行列 (TM) と分散ベクトル (VM)"""
         m = _E._BendIBody(self.DKL1, self.DL, 0.0, rhob, rho0)
         p = 1.0
         tm = np.zeros((4, 4))
@@ -317,7 +321,8 @@ class RadInt:
         self.TO, self.VO = self.trot(self.TM, self.VM, teta1)
 
     def bmag_pole(self, teta1):
-        """v2: ANGLE=0・K0≠0 の BEND (挿入光源の極) のスライス。基準軌道は直線で、場 (DKL0/DL = h、K1) だけがある。
+        """Handle v2 slices of BEND with ANGLE=0 and K0 not 0 (insertion-device poles), with a straight reference orbit and field h, K1.
+        v2: ANGLE=0・K0≠0 の BEND (挿入光源の極) のスライス。基準軌道は直線で、場 (DKL0/DL = h、K1) だけがある。
         水平: x'' = -k x + h (δ 依存は η'' + k η = h)。扇形磁石の幾何学的な収束 h² も、曲線座標の行路の項 (I4 の h³) も無い。
         垂直: y'' = +k y。"""
         DL = self.DL
@@ -443,7 +448,8 @@ _DEBUG = None        # デバッグ用: list を入れると要素ごとの DI (
 
 
 def default_stale_rho(els):
-    """INTGRL が使う bendib の rhob/rho0 の既定値: 直前に tbend 系が設定した値 = 最後に処理した曲率のある BEND の (L/ANGLE)"""
+    """Return the default of bendib rhob/rho0 used by INTGRL: L/ANGLE of the last curved BEND processed.
+    INTGRL が使う bendib の rhob/rho0 の既定値: 直前に tbend 系が設定した値 = 最後に処理した曲率のある BEND の (L/ANGLE)"""
     rho = None
     for el in els:
         if type(el).__name__ == 'Bend' and float(getattr(el, 'ANGLE', 0.0) or 0.0) != 0.0 and el.L != 0.0:
@@ -457,7 +463,8 @@ def _has_poles(els):
 
 
 def compute(ffs, rows, stale_rho=None):
-    """INTGRL の本体。戻り: 結果の辞書 (RI, 補助量) と出力する行のリスト。
+    """Main body of INTGRL: return the result dict and output lines, with a v2 dispersion correction for ANGLE=0, K0 not 0 poles (B115).
+    INTGRL の本体。戻り: 結果の辞書 (RI, 補助量) と出力する行のリスト。
     v2 (B115): ANGLE=0・K0≠0 の極 (挿入光源) があるとき、CALC の分散 (rows。正準運動量の分散 EPX = η' + px_cod で、K64 の CALC は誤っていない: docs/30 B222) は、放射積分の線形の理論が使う角度の分散 η' の極の中の発生 (η' += K0 δ) を含まない。
     そこで、要素ごとの 4x4 行列 T と極の分散ベクトル V を集める 1 周目で、周期解の補正 Δ (Δ = T Δ + V_pole) を求め、
     2 周目で各要素の分散の初期値に Δ を足す。I1・I4・I5 が極の中も含めた正しい分散で積分される"""
@@ -685,7 +692,8 @@ def _fd(x, w, d):
 
 
 def report(ffs, rows, stale_rho=None, chrom=None) -> List[str]:
-    """INTGRL の出力 (1 行 1 要素のリスト、末尾の改行なし)。
+    """Return the INTGRL output as a list of lines, one per element, using chrom = (GX, GY) from ffscmd when given.
+    INTGRL の出力 (1 行 1 要素のリスト、末尾の改行なし)。
     chrom = (GX, GY): v2 (R2) で ffscmd が渡す、運動量をずらした光学のチューンの微分 dν/dδ。None なら K64 の積分 -I9/4π (磁石の中だけの ∮γ ds で、色収差にならない)"""
     res, msgs = compute(ffs, rows, stale_rho)
     RI = res['RI']

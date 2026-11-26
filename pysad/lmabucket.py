@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""RF バケットの限界とアパーチャの限界の区別 (v2.3.0 L2)。局所運動量アクセプタンス (lma.py) の限界が、どちらで決まるかを独立に調べる。
+"""Distinguish RF bucket limits from aperture limits to find which one sets the local momentum acceptance.
+RF バケットの限界とアパーチャの限界の区別 (v2.3.0 L2)。局所運動量アクセプタンス (lma.py) の限界が、どちらで決まるかを独立に調べる。
 
 LMA の限界は 2 つの限界の小さい方になる:
   (a) RF バケットの限界 δ_bucket: 縦方向の運動だけで、バケットの外へ出る (位相がすべる) δ。横のアパーチャを無限大にして追跡する
@@ -20,7 +21,8 @@ from . import trksetup as _ts
 
 
 def rf_bucket_analytic(setup):
-    """理想化した RF バケットの高さ (解析式)。α 一定、U0 一定、放射の減衰なし。H = −(kCα/2) δ² + A (cos ψ + ψ sin φs)、A = V/E0 (E0 = p0 c)、ψ = φs + k z。
+    """Compute the height of an idealized RF bucket analytically (constant alpha and U0, no radiation damping).
+    理想化した RF バケットの高さ (解析式)。α 一定、U0 一定、放射の減衰なし。H = −(kCα/2) δ² + A (cos ψ + ψ sin φs)、A = V/E0 (E0 = p0 c)、ψ = φs + k z。
     不安定固定点 ψ = π − φs を通るセパラトリクスの、安定固定点での δ:
         δ_rf² = (2A/(k C α)) [2 cos φs − (π − 2 φs) sin φs]
     戻り dict: delta_rf、A (= V/E0)、k_rf、C、alpha、phis、h (調和数 kC/2π)、zlimit (バケットの |z| の限界 (π + 2|φs|)/k)、emit_bucket_height (Emittance[] の値)"""
@@ -43,7 +45,8 @@ def _cavity_exit_loc(setup):
 
 
 def longitudinal_params(setup, dps=None, loc=None):
-    """追跡で測る縦方向の写像のパラメーター (空洞のすぐ後ろの位置から 1 周):
+    """Measure the longitudinal one-turn map parameters by tracking (path-length a1, a2 and radiation r0, r1, r2).
+    追跡で測る縦方向の写像のパラメーター (空洞のすぐ後ろの位置から 1 周):
       a1・a2: 1 周の経路長 Δz = z' − z = −C (a1 δ + a2 δ²) (RF ON・放射なし、δ の閉軌道の上、RF の力は周の最後の空洞で 1 回だけなので経路長に入らない)。a1 ≈ αc
       r1・r2・r0: 放射による 1 周の δ の変化 (RF なし。空洞は U0 の定数で補償する SAD の NORFSW の扱いなので、δ の依存だけが出る): Δδ = r0 + r1 δ + r2 δ²
                   (−r1 が 1 周あたりの δ の減衰率、理想的な U ∝ (1 + δ)² なら −r1 = 2U0/E0、r2 = −U0/E0)
@@ -143,7 +146,8 @@ def _map_limit(par, setup, nturn, sign, dp_top, ngrid=600, nref=48, levels=3, a2
 
 
 def bucket_limits_1d(setup, nturn, par=None, dp_top=None, **kw):
-    """縦方向の 1 次元の写像で求めた RF バケットの限界 (δ+, |δ−|) (nturn 周で |z| がバケットを出ない最大の δ)。LMA の損失判定の |z| と同じ基準。
+    """Compute the RF bucket limits (delta+, |delta-|) with a one-dimensional longitudinal map.
+    縦方向の 1 次元の写像で求めた RF バケットの限界 (δ+, |δ−|) (nturn 周で |z| がバケットを出ない最大の δ)。LMA の損失判定の |z| と同じ基準。
     par: longitudinal_params の戻り (None なら測る)。戻り dict: dp_plus、dp_minus (負で)、par。a2=0・r_on=False などで項の寄与を切り分けられる"""
     if par is None:
         par = longitudinal_params(setup)
@@ -157,7 +161,8 @@ def bucket_limits_1d(setup, nturn, par=None, dp_top=None, **kw):
 
 
 def bucket_limits_6d(setup, locs, nturn=None, workers=1, **kw):
-    """6 次元の追跡の RF バケットの限界: 横のアパーチャを無限大 (alost = 1e30) にして、|z| がバケットを出る (LMA の bucket 判定) δ を位置ごとに求める (momentum_acceptance を使う)"""
+    """Compute the RF bucket limit at each location by 6D tracking with infinite transverse aperture.
+    6 次元の追跡の RF バケットの限界: 横のアパーチャを無限大 (alost = 1e30) にして、|z| がバケットを出る (LMA の bucket 判定) δ を位置ごとに求める (momentum_acceptance を使う)"""
     from .lma import momentum_acceptance
     kw.setdefault('check_every', 0)
     kw.setdefault('verify', 0)
@@ -166,7 +171,8 @@ def bucket_limits_6d(setup, locs, nturn=None, workers=1, **kw):
 
 
 def aperture_limits_4d(setup, locs, nturn=256, dpmax=None, workers=1, check_every=1, **kw):
-    """横のアパーチャの限界: RF・放射なしの 4 次元の追跡 (δ を固定)。nturn 周のあいだ |x|,|y| < alost に収まる最大の δ を位置ごとに求める (RF のすべりを含まない)"""
+    """Compute the transverse aperture limit of delta at each location by 4D tracking without RF or radiation.
+    横のアパーチャの限界: RF・放射なしの 4 次元の追跡 (δ を固定)。nturn 周のあいだ |x|,|y| < alost に収まる最大の δ を位置ごとに求める (RF のすべりを含まない)"""
     from .lma import momentum_acceptance
     s4 = setup.copy(rad=False, rfsw=False)
     if dpmax is None:
@@ -177,7 +183,8 @@ def aperture_limits_4d(setup, locs, nturn=256, dpmax=None, workers=1, check_ever
 
 
 class LimitTypes:
-    """limit_types の結果。配列 (位置の順): loc、s、lma_plus・lma_minus (LMA の値、δ− は負)、rf_plus・rf_minus (6 次元の RF バケットの限界)、
+    """Result of `limit_types`: per-location LMA, RF bucket and aperture limits, expected limits and the limit type.
+    limit_types の結果。配列 (位置の順): loc、s、lma_plus・lma_minus (LMA の値、δ− は負)、rf_plus・rf_minus (6 次元の RF バケットの限界)、
     ap_plus・ap_minus (4 次元のアパーチャの限界、δ− は負)、ap_eff (実効のアパーチャの限界 = min(δ+_aper, |δ−_aper|))、expect_plus・expect_minus (min(rf, ap_eff))、type_plus・type_minus ('rf'・'aper'・'both')、
     reason_plus・reason_minus (LMA の直接の損失の理由)。dev_plus・dev_minus (LMA − expect)。par (1 次元の写像のパラメーター)、
     map1d (1 次元の写像の限界 {dp_plus, dp_minus}、LMA の nturn)、analytic (rf_bucket_analytic)"""
@@ -195,7 +202,8 @@ class LimitTypes:
 
 
 def limit_types(setup, result, nturn_aper=256, workers=1, tol=None, rf6=None, ap4=None):
-    """LMA の結果 (LMAResult) の位置ごとに、RF バケットの限界 (6 次元) とアパーチャの限界 (4 次元) を求め、どちらで決まっているか (type) を返す。
+    """Determine at each location of an `LMAResult` whether the RF bucket or the aperture sets the limit, and return the type.
+    LMA の結果 (LMAResult) の位置ごとに、RF バケットの限界 (6 次元) とアパーチャの限界 (4 次元) を求め、どちらで決まっているか (type) を返す。
     type: 'rf' = バケットの限界の方が実効のアパーチャの限界より小さい (差 > 2 tol)、'aper' = 実効のアパーチャの限界の方が小さい、'both' = 差が 2 tol 以内。
     LMA の値が min(rf, aper) と tol の数倍以内で合えば、損失の原因は 2 つの限界で説明できる (dev)。rf6・ap4: 計算済みの LMAResult を渡すと再計算しない"""
     c = result.cond

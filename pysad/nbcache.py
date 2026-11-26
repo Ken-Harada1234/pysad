@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""numba のキャッシュ (`pysad/__pycache__/*.nbi`・`*.nbc`) のうち、呼ぶ先のファイルが変わって古くなったものを捨てる道具 (v2next D2)。
+"""Tool that discards stale numba caches (.nbi, .nbc) whose called files have changed (v2next D2).
+numba のキャッシュ (`pysad/__pycache__/*.nbi`・`*.nbc`) のうち、呼ぶ先のファイルが変わって古くなったものを捨てる道具 (v2next D2)。
 
 numba (0.68 で確認) の `cache=True` の索引 (.nbi) は、**関数を定義したファイル 1 つの内容のハッシュ**で無効になる (更新時刻ではない)。
 別のファイルの njit 関数や定数 (大域の値はコンパイル時に埋め込まれる) を使うカーネルは、呼ばれる側を編集しても呼ぶ側のキャッシュが無効にならず、
@@ -98,7 +99,8 @@ def _snapshot(mod: str) -> dict:
 
 
 def stale_modules(record: dict | None = None) -> dict:
-    """{モジュール名: [変わった依存先]}。record は前に記録したハッシュ ({モジュール: {依存先: ハッシュ}})"""
+    """Return {module name: [changed dependencies]} by comparing current dependency hashes with a recorded set.
+    {モジュール名: [変わった依存先]}。record は前に記録したハッシュ ({モジュール: {依存先: ハッシュ}})"""
     if record is None:
         try:
             record = json.load(open(_RECORD))
@@ -116,7 +118,8 @@ def stale_modules(record: dict | None = None) -> dict:
 
 
 def purge(dry_run: bool = False, force: bool = False) -> list:
-    """古いキャッシュ (.nbi・.nbc) を削除し、記録を更新する。戻り値は削除した (または削除する) ファイル名"""
+    """Delete stale numba cache files (.nbi, .nbc) and update the record; return the deleted (or to-be-deleted) file names.
+    古いキャッシュ (.nbi・.nbc) を削除し、記録を更新する。戻り値は削除した (または削除する) ファイル名"""
     try:
         record = json.load(open(_RECORD))
     except (OSError, ValueError):

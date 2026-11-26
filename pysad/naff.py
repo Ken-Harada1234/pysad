@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。追跡の座標列からチューンを取り出す Python の関数 (v2next B3、項目 5)。
+"""NAFF-style tune extraction (Laskar numerical frequency analysis) from tracking coordinate sequences (v2next B3).
+NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。追跡の座標列からチューンを取り出す Python の関数 (v2next B3、項目 5)。
 
 K64 の MAIN の TRACK には wtunem (FFT のピークの放物線補間、`maintrack.wtunem`) と、FOURIER フラグの wjfit (wfres・wfbin・wiord、
 作用変数の Fourier のフィット) がある。どちらも FFS から呼べず、精度は FFT の分解能 (1/N) の数分の 1 から 1/N² 程度。
@@ -44,7 +45,8 @@ def _refine(z, w, nu0, width):
 
 
 def naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14):
-    """複素信号 z の NAFF。戻り (freqs, amps): freqs は 1/周回 (大きい振幅の順)、amps は exp(2πiνn) の複素振幅。
+    """Compute the NAFF frequencies and complex amplitudes of a complex signal z, returned in order of decreasing amplitude.
+    複素信号 z の NAFF。戻り (freqs, amps): freqs は 1/周回 (大きい振幅の順)、amps は exp(2πiνn) の複素振幅。
     fmin・fmax で探す周波数の範囲 (既定は −0.5〜0.5)。amps は、見つけた周波数を固定した窓つきの最小二乗で求める
     (Gram-Schmidt で直交化した基底への射影と同じ)"""
     z = np.asarray(z, dtype=complex)
@@ -84,7 +86,8 @@ def naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14):
 
 
 def naff_real(x, nfreq=1, window=1, remove_mean=True, **kw):
-    """実数の信号 x_n = Σ A_k cos(2πν_k n + φ_k) の周波数 ν_k (0〜0.5) と振幅 A_k (cos の振幅)、位相 φ_k。
+    """Compute frequencies, real amplitudes, and phases of a real signal by applying `naff` to its analytic signal.
+    実数の信号 x_n = Σ A_k cos(2πν_k n + φ_k) の周波数 ν_k (0〜0.5) と振幅 A_k (cos の振幅)、位相 φ_k。
     解析信号 (FFT の正の周波数側だけ) にして naff を呼ぶ。戻り (freqs, amps (実数の振幅), phases)"""
     x = np.asarray(x, dtype=float)
     if remove_mean:
@@ -111,7 +114,8 @@ def twiss_normalize(x, px, alpha=0.0, beta=1.0):
 
 
 def tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1):
-    """(x, px) の列から符号つきのチューン ν (−0.5〜0.5) を返す。z = x̂ − i p̂。SAD の位相の向き (x̂ = a cos ψ, p̂ = −a sin ψ、ψ = 2πνn) で ν>0。
+    """Return the signed tune from an (x, px) sequence, optionally with its amplitude, or several frequencies when nfreq > 1.
+    (x, px) の列から符号つきのチューン ν (−0.5〜0.5) を返す。z = x̂ − i p̂。SAD の位相の向き (x̂ = a cos ψ, p̂ = −a sin ψ、ψ = 2πνn) で ν>0。
     戻り (ν, 振幅 |a|) (nfreq=1)、または nfreq>1 のとき (freqs, |amps|)"""
     xh, ph = twiss_normalize(x, px, alpha, beta)
     z = (xh - xh.mean()) - 1j * (ph - ph.mean())
@@ -122,7 +126,8 @@ def tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1):
 
 
 def tunes_from_coords(coords, twiss=None, window=1):
-    """coords: ターン × 6 (x, px, y, py, z, dp)。twiss: ((αx, βx), (αy, βy), (αz, βz)) (省略すると α=0、β=1)。
+    """Return the signed tunes (nu_x, nu_y, nu_z) and per-plane amplitudes from turn-by-turn six-dimensional coordinates.
+    coords: ターン × 6 (x, px, y, py, z, dp)。twiss: ((αx, βx), (αy, βy), (αz, βz)) (省略すると α=0、β=1)。
     戻り (νx, νy, νz) (−0.5〜0.5 の符号つき) と各面の振幅 (3 個)。"""
     c = np.asarray(coords, dtype=float)
     tw = twiss if twiss is not None else ((0.0, 1.0),) * 3

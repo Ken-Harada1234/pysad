@@ -1,4 +1,4 @@
-"""
+"""Numba version of track6.py (translation of SAD `tturn`): kernels operating on particle arrays.
 track6n.py — track6.py (SAD tturn の直訳) の numba 版: 粒子配列に対するカーネル
 
 track6.py と同じ演算を同じ順序で行う (結果は同一になるはず)。要素は compile_lattice() で
@@ -42,7 +42,8 @@ NJ = dict(cache=True, error_model='numpy', nogil=True)
 
 @njit(**NJ)
 def zr0_edge(S, i, tan, sgn):
-    """v2 (B220): 端の面の手前 (sgn = -1) か先 (+1) の自由な飛行の行程 (track6._zr0_edge と同じ。perfkern.edge_len)"""
+    """Compute the free-flight path before (sgn = -1) or after (+1) an edge face (v2, B220).
+    v2 (B220): 端の面の手前 (sgn = -1) か先 (+1) の自由な飛行の行程 (track6._zr0_edge と同じ。perfkern.edge_len)"""
     pr = 1.0 + S[i, 5]
     return edge_len(tan, 0.0, S[i, 0], S[i, 2], S[i, 1] * pr, S[i, 3] * pr, S[i, 5], sgn)
 
@@ -81,7 +82,8 @@ def fmin(a, b):
 # ============================================================================ mathfun
 @njit(**NJ)
 def gfloor(v):
-    """max(gmin, g+dg) (tradkfn/tradkn)。SAD (resync 検証、scratch_rng2) では g+dg が NaN のとき gmin が返る
+    """Return max(gmin, g+dg) as in tradkfn/tradkn, returning gmin when g+dg is NaN as SAD does.
+    max(gmin, g+dg) (tradkfn/tradkn)。SAD (resync 検証、scratch_rng2) では g+dg が NaN のとき gmin が返る
     (maxsd のオペランド順が fmax(GMIN, v) = 'b if not a > b' と逆)。NaN の粒子が g=NaN のままだと次の要素の tdusrn が
     anp=NaN で 10000 回ループして乱数を 20001 個消費してしまう"""
     return v if v > GMIN else GMIN
@@ -89,7 +91,8 @@ def gfloor(v):
 
 @njit(**NJ)
 def sqrt1(x):
-    """mathfun sqrt1: sqrt(1+x)-1 (SAD と同じ級数の分岐と max(xmin, 1+x) のガード。
+    """Port of mathfun `sqrt1`: sqrt(1+x)-1 with SAD's series branch and a max(xmin, 1+x) guard.
+    mathfun sqrt1: sqrt(1+x)-1 (SAD と同じ級数の分岐と max(xmin, 1+x) のガード。
     1+x<0 でも NaN にならず有限値を返す = 落ちる粒子の挙動が SAD と同じになる)"""
     ax = abs(x)
     if ax < 8e-6:
@@ -101,7 +104,8 @@ def sqrt1(x):
 
 @njit(**NJ)
 def pxy2dpz(px, py):
-    """mathfun pxy2dpz: sqrt(1-px^2-py^2)-1 (同上)"""
+    """Port of mathfun `pxy2dpz`: sqrt(1-px^2-py^2)-1 (same guard as `sqrt1`).
+    mathfun pxy2dpz: sqrt(1-px^2-py^2)-1 (同上)"""
     x = px * px + py * py
     if x < 8e-6:
         return -x * (0.5 + x * (0.125 + x * 0.0625))
@@ -118,7 +122,8 @@ def p2h(p):
 
 @njit(**NJ)
 def asinz(x):
-    """mathfun asinz: |x|<0.0032 は級数、それ以外は asin(min(1, max(-1, x))) (tradkfn, tbendcore が使う)"""
+    """Port of mathfun `asinz`: series for |x|<0.0032, otherwise asin(min(1, max(-1, x))).
+    mathfun asinz: |x|<0.0032 は級数、それ以外は asin(min(1, max(-1, x))) (tradkfn, tbendcore が使う)"""
     if abs(x) < 0.0032:
         x2 = x * x
         return x + x * x2 * (1.0 / 6.0 + x2 * 3.0 / 40.0)
@@ -135,7 +140,8 @@ asinz_l = asinz
 
 @njit(**NJ)
 def norm2_3(a, b, c):
-    """gfortran の norm2([a,b,c]) (インライン展開: scale/ssq 法)。tradkfn の ppa に使う。
+    """Compute norm2([a,b,c]) the way gfortran inlines it (scale/ssq method), used for ppa in tradkfn.
+    gfortran の norm2([a,b,c]) (インライン展開: scale/ssq 法)。tradkfn の ppa に使う。
     成分に ±inf が 2 つ以上あると (inf/inf)^2 で NaN になる (発散した粒子で SAD と同じ結果にするため必要:
     NaN → asinz = -π/2 → anp<0 → 光子なし。math.sqrt(a²+b²+c²) だと inf → +π/2 → 光子が出て乱数消費がずれる)"""
     scale = 0.0
@@ -155,7 +161,8 @@ def norm2_3(a, b, c):
 
 @njit(**NJ)
 def dvfun(p0, h0, dp):
-    """_Phys.dv (dvfs=0。dvfs は呼び出し側で足す)"""
+    """Compute `_Phys.dv` with dvfs=0 (the caller adds dvfs).
+    _Phys.dv (dvfs=0。dvfs は呼び出し側で足す)"""
     p1 = p0 * (1.0 + dp)
     h1 = p2h(p1)
     return -(p1 + p0) / h1 / (p0 * h1 + p1 * h0) * dp
@@ -191,7 +198,8 @@ def drndsr(rs):
 
 
 def make_rs(seed):
-    """乱数の状態の配列 [seed, v2 の印, ..., rs[4] = 四極の本体の積分の方式 (quadbody.scheme(): 0 = K64、1 = 4 次の合成)]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
+    """Build the random-state array (seed, v2 flag, ..., rs[4] = quadrupole body integration scheme) passed to njit kernels.
+    乱数の状態の配列 [seed, v2 の印, ..., rs[4] = 四極の本体の積分の方式 (quadbody.scheme(): 0 = K64、1 = 4 次の合成)]。rs[1]=1 (compat.v2) なら tdusrn は非有限の anp で光子を出さない (B10 の修正)。
     njit の中からは compat を読めないので、状態の配列に印を載せて渡す (k64 では 0 で、今までと同じ動作)"""
     from . import compat
     return np.array([seed, 1 if compat.v2() else 0, 1 if compat.bend_k1_edge() == 'face' else 0,
@@ -235,7 +243,8 @@ def tdusrn(rs, anp):
 # ============================================================================ 放射 (tradk)
 @njit(**NJ)
 def tradk_core1(i, S, al, phi0, fluc, rs, p0, anrad, cuc):
-    """S: (n, 11) [x, px, y, py, z, g, dv, pxr0, pyr0, zr0, dvfs]。基準点は更新しない"""
+    """Core of `tradk` radiation for the state array S (n, 11) without updating the reference point.
+    S: (n, 11) [x, px, y, py, z, g, dv, pxr0, pyr0, zr0, dvfs]。基準点は更新しない"""
     if al == 0.0:
         return
     x = S[i, 0]; px = S[i, 1]; y = S[i, 2]; py = S[i, 3]; z = S[i, 4]; g = S[i, 5]
@@ -306,7 +315,8 @@ def setr0_1(i, S):
 
 @njit(**NJ)
 def tradk_all(S, n, al, phi0, fluc, rs, p0, anrad, cuc):
-    """tradk: 全粒子 (SAD と同じ順で乱数を引く) + setr0"""
+    """Apply `tradk` to all particles (drawing random numbers in the same order as SAD) and then `setr0`.
+    tradk: 全粒子 (SAD と同じ順で乱数を引く) + setr0"""
     for i in range(n):
         tradk_core1(i, S, al, phi0, fluc, rs, p0, anrad, cuc)
         setr0_1(i, S)
@@ -403,7 +413,8 @@ R3628800 = 1.0 / 3628800.0
 
 @njit(**NJ)
 def xsincos(x):
-    """mathfun xsincos の直訳: 小さい |x| は級数 (s=x-xs, dc, c=1+dc)、それ以外は sin/cos。
+    """Literal translation of mathfun `xsincos`: series for small |x|, otherwise sin/cos; returns (s, xs, c, dc).
+    mathfun xsincos の直訳: 小さい |x| は級数 (s=x-xs, dc, c=1+dc)、それ以外は sin/cos。
     戻り (s, xs, c, dc)。ライブラリ関数だけで書くと SAD と下位ビットが変わり、カオス的な粒子で増幅される"""
     if abs(x) < XTHCS1:
         x2 = x * x
@@ -426,7 +437,8 @@ def xsincos(x):
 
 @njit(**NJ)
 def xsincosh(x):
-    """mathfun xsincosh の直訳。戻り (sh, xsh, ch, dch)"""
+    """Literal translation of mathfun `xsincosh`; returns (sh, xsh, ch, dch).
+    mathfun xsincosh の直訳。戻り (sh, xsh, ch, dch)"""
     if abs(x) < XTHCS1:
         x2 = x * x
         xsh = -x * x2 * (1.0 / 6.0 + x2 * (1.0 / 120.0 + x2 * R5040))
@@ -458,7 +470,8 @@ _qb_drift, _qb_body, _qb_nonrad = _qb.make_track(sqrt1, tzsetparam0, njit(**NJ))
 
 @njit(**NJ)
 def tsolqu1(i, S, al, ak, eps0, qum, sch):
-    """tsolqu / tsolqum (bz=0, ak0=0, ak>0)。本体の積分は quadbody (sch: 0 = K64、1 = 4 次の合成。rs[4])"""
+    """Kernel for `tsolqu` / `tsolqum` with bz=0, ak0=0, ak>0, with the body integral from `quadbody`.
+    tsolqu / tsolqum (bz=0, ak0=0, ak>0)。本体の積分は quadbody (sch: 0 = K64、1 = 4 次の合成。rs[4])"""
     x, px, y, py, z = _qb_nonrad(S[i, 0], S[i, 1], S[i, 2], S[i, 3], S[i, 4], S[i, 5], S[i, 6],
                                  al, ak, eps0, 0.0, 0.0, qum, sch)
     S[i, 0] = x; S[i, 1] = px; S[i, 2] = y; S[i, 3] = py; S[i, 4] = z
@@ -641,7 +654,8 @@ def ttfrin_n_1(i, S, nord, ak, al):
 
 @njit(**NJ)
 def k_thin(S, n, L, ak, kord, dx, dy, theta, cost, sint, fringe, krad, fluc, rs, p0, anrad, cuc):
-    """tthin (SEXT kord=2 と一般 kord)。ak = 積分強度"""
+    """Kernel for `tthin` (SEXT with kord=2 and general kord); ak is the integrated strength.
+    tthin (SEXT kord=2 と一般 kord)。ak = 積分強度"""
     if ak == 0.0:
         for i in range(n):
             drift1(i, S, L)
@@ -939,7 +953,8 @@ def tbendal(n, ndiv, f1r, f2r, aln):
 def k_bend0(S, n, al, phi0, ak0, phib, psi1, psi2, cosp1, sinp1, cosp2, sinp2,
             cosw, sinw, sqwh, sinwp1, fb1, fb2, mfring, fringe, krad, first, last, eps0,
             dx, dy, cost, sint, dtheta, dchi2, alg, phig, fluc, rs, p0, h0, anrad, cuc, ini=True):
-    """tbend (K1=0): tbshift/tbrot → tbendcore (放射ありは tbendr のスライス) → 戻し"""
+    """Kernel for `tbend` with K1=0: tbshift/tbrot, `tbendcore` (sliced `tbendr` with radiation), then undo.
+    tbend (K1=0): tbshift/tbrot → tbendcore (放射ありは tbendr のスライス) → 戻し"""
     for i in range(n):
         tbshift1(i, S, dx, dy, phi0, cost, sint, True)
         if dtheta != 0.0 or dchi2 != 0.0:
@@ -1078,7 +1093,8 @@ def _edge_body1(i, S, rhob, psi):
 
 @njit(**NJ)
 def edge_exact1(i, S, rhob, psi, entrance):
-    """tbfrie.f tbedge (psi≠0): 入口は drift → maxwell(rhob) → body、出口は body → maxwell(−rhob) → drift。
+    """Exact bend edge map of tbfrie.f `tbedge` (psi nonzero), used for K1-nonzero BEND edges in v2.
+    tbfrie.f tbedge (psi≠0): 入口は drift → maxwell(rhob) → body、出口は body → maxwell(−rhob) → drift。
     v2 (v2next B1): K1≠0 の BEND の追跡 (tbendi) の端に、K64 の薄い端の写像の代わりに使う (CALC の tbende と同じ厳密な端)"""
     p = 1.0 + S[i, 5]
     S[i, 1] = S[i, 1] * p            # 追跡の px・py は運動量で割ったもの (tbendi の pxi = px/p)。tbedge は正準運動量 (/p0)
@@ -1099,7 +1115,8 @@ def edge_exact1(i, S, rhob, psi, entrance):
 def k_bendi(S, n, al, phib, phi0, cosp1, sinp1, cosp2, sinp2, ak, dx, dy, theta, dtheta, cost, sint,
             dchi2, alg, phig, fb1, fb2, mfring, enarad, fringe, eps0, first, last,
             fluc, rs, p0, h0, anrad, cuc):
-    """tbendi (K1≠0 の BEND)。粒子外側・スライス内側、最後の tradk は全粒子分まとめて"""
+    """Kernel for `tbendi` (BEND with K1 nonzero): particles in the outer loop, slices inside, `tradk` for all particles at the end.
+    tbendi (K1≠0 の BEND)。粒子外側・スライス内側、最後の tradk は全粒子分まとめて"""
     tanp1 = sinp1 / cosp1
     tanp2 = sinp2 / cosp2
     rhob = al / phib
@@ -1398,7 +1415,8 @@ def tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2):
 
 @njit(**NJ)
 def tent_all(S, n, dx, dy, theta):
-    """inc/TENT.inc (全粒子): ずらす → 回す。|cos|≥|sin| では y を更新後の x から求める SAD の書き方のまま (tcav の DX・DY・ROTATE)"""
+    """Apply inc/TENT.inc to all particles: shift, then rotate (as in `tcav` DX, DY, ROTATE).
+    inc/TENT.inc (全粒子): ずらす → 回す。|cos|≥|sin| では y を更新後の x から求める SAD の書き方のまま (tcav の DX・DY・ROTATE)"""
     cost = 1.0
     sint = 0.0
     if theta != 0.0:
@@ -1426,7 +1444,8 @@ def tent_all(S, n, dx, dy, theta):
 
 @njit(**NJ)
 def texit_all(S, n, dx, dy, theta):
-    """inc/TEXIT.inc (全粒子): 回し戻す → ずらし戻す"""
+    """Apply inc/TEXIT.inc to all particles: rotate back, then shift back.
+    inc/TEXIT.inc (全粒子): 回し戻す → ずらし戻す"""
     cost = 1.0
     sint = 0.0
     if theta != 0.0:
@@ -1454,7 +1473,8 @@ def texit_all(S, n, dx, dy, theta):
 
 @njit(**NJ)
 def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, b2=False):
-    """tcav (vnominal=0, ndiv=1)。v = vc/amass·|charge|、w = 2π f/c、dphis = phis − phic、offset は rad で切替済み"""
+    """Kernel for `tcav` with vnominal=0 and ndiv=1.
+    tcav (vnominal=0, ndiv=1)。v = vc/amass·|charge|、w = 2π f/c、dphis = phis − phic、offset は rad で切替済み"""
     wsn = 1.0
     vcorr = v * (w * (0.5 / p0 + 0.5 / p0))**2 / 4.0
     v20a = vcorr
@@ -1497,7 +1517,8 @@ def k_cav(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, 
 
 @njit(**NJ)
 def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0, h0, v1a, v20q, v11a, v02q, b2=False):
-    """k_cav (vnominal=0, ndiv=1) に CAVI の V1・V20・V11・V02 (横方向の電圧の依存。tcav.f の v1a, v20a, v11a, v02a) を入れたもの。
+    """Variant of `k_cav` that adds the CAVI transverse voltage dependence V1, V20, V11, V02 (v1a, v20a, v11a, v02a of tcav.f).
+    k_cav (vnominal=0, ndiv=1) に CAVI の V1・V20・V11・V02 (横方向の電圧の依存。tcav.f の v1a, v20a, v11a, v02a) を入れたもの。
     v20q = V20/2·|charge|/amass、v02q = V02/2·|charge|/amass (vcorr は中で足す)。V1=V20=V11=V02=0 なら k_cav と同じ式だが丸めが違うので、呼び出し側が分ける"""
     wsn = 1.0
     vcorr = v * (w * (0.5 / p0 + 0.5 / p0))**2 / 4.0
@@ -1541,7 +1562,8 @@ def k_cav_q(S, n, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, p0
 
 @njit(**NJ)
 def k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, b2=False):
-    """k_cav の前段: 入口のフリンジ (tcav.f:80-83)。WakeFunction のある CAVI で k_cav を 3 段に分けて使う"""
+    """First stage of `k_cav`: the entrance fringe (tcav.f:80-83), used when a CAVI has a WakeFunction.
+    k_cav の前段: 入口のフリンジ (tcav.f:80-83)。WakeFunction のある CAVI で k_cav を 3 段に分けて使う"""
     if al != 0.0 and fringe and mfring >= 0 and mfring != 2:
         for i in range(n):
             tcavfrin1(i, S, al, v, w, dphis, offset, p0, h0, b2)
@@ -1549,7 +1571,8 @@ def k_cav_in(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, b2=False):
 
 @njit(**NJ)
 def k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0):
-    """k_cav の中段: 前半のドリフトと電圧キック (ndiv=1、vnominal=0)。前段と後段の間に wake のキックが 2 回入る (tcav.f:94-170)"""
+    """Middle stage of `k_cav`: first-half drift and voltage kick, with wake kicks applied around it (tcav.f:94-170).
+    k_cav の中段: 前半のドリフトと電圧キック (ndiv=1、vnominal=0)。前段と後段の間に wake のキックが 2 回入る (tcav.f:94-170)"""
     wsn = 1.0
     vcorr = v * (w * (0.5 / p0 + 0.5 / p0))**2 / 4.0
     v20a = vcorr
@@ -1586,7 +1609,8 @@ def k_cav_mid(S, n, al, v, w, wi, dphis, offset, offset1, tlim, p0, h0):
 
 @njit(**NJ)
 def k_cav_out(S, n, al, v, w, dphis, offset, fringe, mfring, p0, h0, b2=False):
-    """k_cav の後段: 後半のドリフトと出口のフリンジ"""
+    """Last stage of `k_cav`: second-half drift and the exit fringe.
+    k_cav の後段: 後半のドリフトと出口のフリンジ"""
     if al != 0.0:
         for i in range(n):
             cav_drift1(i, S, al * 0.5)
@@ -1608,7 +1632,8 @@ def cav_drift_all(S, n, alx):
 
 @njit(**NJ)
 def cav_kick_all(S, n, v, v1a, v20a, v11a, v02a, w, wi, dphis, offset, offset1, tlim, wsn, dzn, p0, h0):
-    """tcav.f の do 20 (電圧キック 1 分割)"""
+    """Apply one division of the voltage kick (do 20 loop of tcav.f) to all particles.
+    tcav.f の do 20 (電圧キック 1 分割)"""
     for i in range(n):
         dp1r = S[i, 5]
         p1r = 1.0 + dp1r
@@ -1640,7 +1665,8 @@ def cav_kick_all(S, n, v, v1a, v20a, v11a, v02a, w, wi, dphis, offset, offset1, 
 
 @njit(**NJ)
 def cav_to_exit_momentum(S, n, p0, pe, dpepe, he):
-    """tcav.f の do 210: g、dv を空洞後の基準運動量 pe に対するものに直す"""
+    """Convert g and dv to values relative to the reference momentum pe after the cavity (do 210 of tcav.f).
+    tcav.f の do 210: g、dv を空洞後の基準運動量 pe に対するものに直す"""
     for i in range(n):
         dp = S[i, 5]
         dp1 = dp * p0 / pe - dpepe
@@ -1658,7 +1684,8 @@ def _h2p(h):
 
 
 def cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfring, vnom, vq, kick, wk):
-    """tcav.f の全体 (vnominal≠0、ndiv 分割)。空洞の後の基準運動量に直した新しい ph を返す (tturn が周の終わりに元へ戻す)。
+    """Whole `tcav` (vnominal nonzero, ndiv divisions); returns the new ph with the post-cavity reference momentum.
+    tcav.f の全体 (vnominal≠0、ndiv 分割)。空洞の後の基準運動量に直した新しい ph を返す (tturn が周の終わりに元へ戻す)。
     kick (WakeKick) と wk があれば分割ごとに txwake (tcav.f:94-102, 167-173)"""
     import copy
     p0, h0 = ph.p0, ph.h0
@@ -1728,7 +1755,8 @@ def cav_full(S, n, ph, al, v, w, wi, dphis, offset, offset1, tlim, fringe, mfrin
 
 @njit(**NJ)
 def k_steer0(S, n, phib, dx, dy, theta, cost, sint):
-    """tthin(nord=2, ak=K0): px −= K0/(1+δ) (K0>0 は px を減らす)。ずれ・ロールは TENT/TEXIT (tthin の tent/texit)"""
+    """Kernel for `tthin` (nord=2, ak=K0) steering kick: px -= K0/(1+delta); offsets and roll via TENT/TEXIT.
+    tthin(nord=2, ak=K0): px −= K0/(1+δ) (K0>0 は px を減らす)。ずれ・ロールは TENT/TEXIT (tthin の tent/texit)"""
     for i in range(n):
         tent1(i, S, dx, dy, theta, cost, sint)
         S[i, 1] -= phib / (1.0 + S[i, 5])
@@ -1740,7 +1768,8 @@ XTHASX = (2.0**-52 * 13312.0 / 231.0 / 6.0)**0.1       # tfloor.f xthasx
 
 @njit(**NJ)
 def asinx(x):
-    """mathfun asinx = asin(x) − x (小さい x は級数)"""
+    """Port of mathfun `asinx` = asin(x) - x, using a series for small x.
+    mathfun asinx = asin(x) − x (小さい x は級数)"""
     if abs(x) < XTHASX:
         x2 = x * x
         return x * x2 * (1.0 / 6.0 + x2 * (3.0 / 40.0 + x2 * (5.0 / 112.0 + x2 * (35.0 / 1152.0 + x2 * 63.0 / 2816.0))))
@@ -1749,7 +1778,8 @@ def asinx(x):
 
 @njit(**NJ)
 def steer_edge_exact1(S, i, rhoc, psi, entrance):
-    """v2 (B221): ANGLE=0 の BEND (tsteer) の端の面の厳密な写像 (track6._steer_edge_exact と同じ。elkern の硬い端の鎖。追跡の座標 px/(1+δ) と
+    """Exact edge-face map for a BEND with ANGLE=0 (`tsteer`), as in track6._steer_edge_exact (v2, B221).
+    v2 (B221): ANGLE=0 の BEND (tsteer) の端の面の厳密な写像 (track6._steer_edge_exact と同じ。elkern の硬い端の鎖。追跡の座標 px/(1+δ) と
     正準運動量の変換つき)。rhoc = CALC の rhoe = L/K0"""
     c = np.empty(6)
     pr = 1.0 + S[i, 5]
@@ -1785,7 +1815,8 @@ def steer_edge_exact(S, n, rhoc, psi, entrance):
 @njit(**NJ)
 def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, rs, p0, h0, anrad, cuc,
             fb1, fb2, fringe, tanp2e, v2c):
-    """tsteer.f (track6._tsteer_ens と同じ)。スライス外側・粒子内側、各スライスの後に全粒子 tradk。
+    """Kernel for tsteer.f (same as track6._tsteer_ens): slices outside, particles inside, `tradk` for all particles after each slice.
+    tsteer.f (track6._tsteer_ens と同じ)。スライス外側・粒子内側、各スライスの後に全粒子 tradk。
     入口エッジは tanp1 (最初のスライスだけ)。出口の tanp2 (= tanp2e) は fb2≠0 のときだけ入る (fb2=0 なら 0 のまま)。
     fb1・fb2 = F1+FB1・F1+FB2 (FRINGE による 0 化済み)。入口 dxfr1 = -fb1^2/rhob/24、dyfr1 = fb1/rhob^2/6、放射ありは断片 n=-1, 0 (長さ fb1/2)、
     出口は断片 ndiv+1, ndiv+2 と dxfr2 = -fb2^2/rhob/24 (v2next P3: F1 の追跡)"""
@@ -1934,7 +1965,8 @@ def k_steer(S, n, al, phib, dx, dy, theta, cost, sint, tanp1, krad, eps0, fluc, 
 @njit(**NJ)
 def k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
                 ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta, dolog):
-    """limittrack + tapert (tapert.f の全引数。直訳)。落ちた粒子は末尾の生きている粒子と入れ替え (SAD と同じ)。
+    """Literal translation of `limittrack` + `tapert` with all its arguments; lost particles are swapped with the last live one.
+    limittrack + tapert (tapert.f の全引数。直訳)。落ちた粒子は末尾の生きている粒子と入れ替え (SAD と同じ)。
     kid[i] は粒子の ID (スロット→ID)、lost_turn[ID] に kturn を記録。戻り: 新しい n
     ax ay dx dy: 楕円 (APERT の AX AY DX DY)、xl yl xh yh: 矩形 (min/max 済みの DX1 DY1 DX2 DY2)、pxj pyj dpj: JDPX JDPY DP、theta: ROTATE。
     pxj≠0 または pyj≠0 のときは落とさず、外の粒子を境界上に乱数 (tran: rs) で再入射する (tapert.f:32-60)。
@@ -2036,7 +2068,8 @@ def k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
 
 @njit(**NJ)
 def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, dolog=True):
-    """tturn の tapert 呼び出し (最初の要素・la<=0・周末): 矩形 ±LOSSAMPL、楕円なし、ずれなし"""
+    """Aperture check as called from `tturn` (first element, la<=0, end of turn): rectangle +-LOSSAMPL, no ellipse, no offset.
+    tturn の tapert 呼び出し (最初の要素・la<=0・周末): 矩形 ±LOSSAMPL、楕円なし、ずれなし"""
     rs = np.zeros(1, dtype=np.int64)
     return k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
                        0.0, 0.0, 0.0, 0.0, -alost, -alost, alost, alost, 0.0, 0.0, 0.0, 0.0, dolog)
@@ -2044,20 +2077,23 @@ def k_apert(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, dolog=Tr
 
 @njit(**NJ)
 def k_apert_el(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs, pr, dolog):
-    """APERT 要素 (tapert1)。pr = [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta]"""
+    """Kernel for an APERT element (`tapert1`), with parameters pr = [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta].
+    APERT 要素 (tapert1)。pr = [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta]"""
     return k_apert_gen(S, n, kid, lost_turn, kturn, alost, zlost, log, nlog, lcur, rs,
                        pr[0], pr[1], pr[2], pr[3], pr[4], pr[5], pr[6], pr[7], pr[8], pr[9], pr[10], pr[11], dolog)
 
 
 def apert_params(el):
-    """tapert1: APERT 要素の値 [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta] (xl.. は DX1 DX2 の min/max、DY1 DY2 も同様)"""
+    """Compute the `tapert1` parameter vector of an APERT element (ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta).
+    tapert1: APERT 要素の値 [ax, ay, dx, dy, xl, yl, xh, yh, pxj, pyj, dpj, theta] (xl.. は DX1 DX2 の min/max、DY1 DY2 も同様)"""
     f = lambda k: float(getattr(el, k, 0.0) or 0.0)
     return np.array([f('AX'), f('AY'), f('DX'), f('DY'), min(f('DX1'), f('DX2')), min(f('DY1'), f('DY2')),
                      max(f('DX1'), f('DX2')), max(f('DY1'), f('DY2')), f('JDPX'), f('JDPY'), f('DP'), f('ROTATION')])
 
 
 def drop_particles(S, n, kid, drop):
-    """drop[i] の粒子を末尾の生きている粒子と入れ替えて追跡から外す (k_apert と同じ並べ替え)。戻り: 新しい n"""
+    """Remove particles flagged in drop[i] from tracking by swapping them with the last live one; returns the new n.
+    drop[i] の粒子を末尾の生きている粒子と入れ替えて追跡から外す (k_apert と同じ並べ替え)。戻り: 新しい n"""
     drop = drop.copy()
     i = 0
     np_ = n
@@ -2087,7 +2123,8 @@ AUTOPHI_DZ = None
 
 
 def autophi_dz(k):
-    """位置 k (0 始まりの要素番号) の入口の Twiss の DZ"""
+    """Return the Twiss DZ at the entrance of the element at position k (0-based element index).
+    位置 k (0 始まりの要素番号) の入口の Twiss の DZ"""
     if AUTOPHI_DZ is None or k < 0 or k >= len(AUTOPHI_DZ):
         return 0.0
     return float(AUTOPHI_DZ[k])
@@ -2108,7 +2145,8 @@ def _bend_type(el):
 
 
 def bend_links(elements):
-    """tfgeo.f の inext・iprev (BEND の前後に長さ 0 の要素だけを挟んで隣り合う BEND がいるか) から、BEND ごとの (first, last) を返す。
+    """Return (first, last) per BEND from the tfgeo.f inext/iprev links to adjacent BENDs separated only by zero-length elements.
+    tfgeo.f の inext・iprev (BEND の前後に長さ 0 の要素だけを挟んで隣り合う BEND がいるか) から、BEND ごとの (first, last) を返す。
     first = iprev(l) == 0、last = inext(l) == 0。K64 の tbend・tbendi は放射のとき、F1 (FB1・FB2) の端の分割 (長さ F1/2 の 2 つの断片に放射を入れる)
     を first なら入口側、last なら出口側にだけ入れる (隣の BEND と続いているときは入れない)。リングの終わりは先頭に回って探す (1 個しかない BEND や
     輸送路の先頭 MARK が長さ 0 のときは自分自身に繋がる)。戻り: {要素の番号 (0 始まり): (first, last)} (BEND だけ)"""
@@ -2140,7 +2178,8 @@ def bend_links(elements):
 
 
 class Prog:
-    """要素ごとの (種類, パラメータ) の列。MULT (K_MULT) とソレノイド領域 (K_SOL_*) は track6n_ext で compile する"""
+    """Per-element list of (kind, parameters); MULT and solenoid-region elements are compiled in track6n_ext.
+    要素ごとの (種類, パラメータ) の列。MULT (K_MULT) とソレノイド領域 (K_SOL_*) は track6n_ext で compile する"""
     def __init__(self, elements, ph, l0=0, links=None):
         self.kinds = []
         self.params = []
@@ -2353,7 +2392,8 @@ _NONLOG = np.zeros(1, dtype=np.int64)
 
 
 def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None, trpt=False, lt0=None, spch=None, lmap=None):
-    """1 周。apert=(kid, lost_turn, kturn, alost, zlost[, log, nlog]) を渡すと tapert を最初の要素・15 要素ごと・周末に行い、
+    """Track one turn, applying `tapert` at the first element, every 15 elements and at the turn end; returns the new n.
+    1 周。apert=(kid, lost_turn, kturn, alost, zlost[, log, nlog]) を渡すと tapert を最初の要素・15 要素ごと・周末に行い、
     新しい n を返す。ソレノイド領域の la の扱いは SAD のまま:
       tturn1 の主ループは始点 SOL k で tapert 判定 → tsol → (1020) la-1、その後 l=k+1..ke も主ループを通り
       (`sol=l<ke; go to 1020`) 各 l で「la<=0 なら tapert, la=15」→ la-1 (座標は変わらないので判定は領域の出口で)。
@@ -2554,7 +2594,8 @@ def turn(prog: Prog, S, n, ph, trf0, rfsw, rad, fluc, rs, apert=None, wake=None,
 
 
 def make_state(coords, ph):
-    """物理座標 (np, 6) → S (np, 11)。最後の列は dvfs (ph.dvfs: tsetdvfs = RFSW ON のとき FSHIFT。tconvm/tradk/tcav の dv に足される)"""
+    """Convert physical coordinates (np, 6) into the state array S (np, 11), whose last column is dvfs.
+    物理座標 (np, 6) → S (np, 11)。最後の列は dvfs (ph.dvfs: tsetdvfs = RFSW ON のとき FSHIFT。tconvm/tradk/tcav の dv に足される)"""
     c = np.array(coords, dtype=float)
     npart = c.shape[0]
     S = np.zeros((npart, 11))
@@ -2586,7 +2627,8 @@ MAXTURN_LOST = 2**62            # lost_turn の「落ちていない」印
 
 
 class TrackRun:
-    """TrackParticles (tftrack.f) 用: tturn を区間 (ls..ld) ごとに呼び、tapert (LOSSAMPL/LOSSDZ、最初の要素・15 要素ごと・周末) で
+    """Runs `TrackParticles` (tftrack.f): calls `tturn` per segment and drops lost particles via `tapert` as SAD does.
+    TrackParticles (tftrack.f) 用: tturn を区間 (ls..ld) ごとに呼び、tapert (LOSSAMPL/LOSSDZ、最初の要素・15 要素ごと・周末) で
     落ちた粒子を SAD と同じく末尾へ寄せて追跡から外す。初期フラグ 0 の粒子は追跡しない (座標はそのまま)。
     結果は粒子の番号順に戻し、alive は落ちていなければ 1、落ちた粒子の座標は落ちた時点の値 (limittrack で |x|,|y|≤3·LOSSAMPL、
     |px|,|py|≤0.9999、|z|≤1e10 に抑えたもの)。Prog が未対応の要素を含むときは NotImplementedError (呼び出し側が track6 に落とす)"""
@@ -2621,11 +2663,13 @@ class TrackRun:
         self.spch = None                         # v2: 空間電荷 (spch.SpaceCharge。ffscmd が SPAC / PSPAC のとき入れる)
 
     def set_wake(self, kick, table):
-        """WakeFunction (wake.py)。CAVI / MULT(VOLT≠0) / SOL 領域の要素は未対応 (呼び出し側が確かめる)"""
+        """Set the WakeFunction tables (wake.py); CAVI, MULT(VOLT nonzero) and SOL-region elements are unsupported.
+        WakeFunction (wake.py)。CAVI / MULT(VOLT≠0) / SOL 領域の要素は未対応 (呼び出し側が確かめる)"""
         self.wake = (kick, table)
 
     def segment(self, a, b):
-        """tturn(ls=a, ld=b): 要素 a..b−1 を 1 回通す (tapert 付き)"""
+        """Pass once through elements a..b-1 as `tturn(ls=a, ld=b)` does, with `tapert`.
+        tturn(ls=a, ld=b): 要素 a..b−1 を 1 回通す (tapert 付き)"""
         if self.n <= 0 or b <= a:
             return
         key = (a, b)
@@ -2652,7 +2696,8 @@ class TrackRun:
         self.kturn += 1
 
     def lossmap(self, tend, nlat, v2=False):
-        """LOSSMAP (tftrack.f ktfresetparticles): (落ちた要素の番号, 落ちた周) を粒子の番号順に返す。self.lmap = [l_track] を設定して追跡したとき。
+        """Return LOSSMAP (lost element index, lost turn) per particle in particle order, as in tftrack.f `ktfresetparticles`.
+        LOSSMAP (tftrack.f ktfresetparticles): (落ちた要素の番号, 落ちた周) を粒子の番号順に返す。self.lmap = [l_track] を設定して追跡したとき。
         落ちていない粒子は (0, tend+1)。K64 は要素の番号が 0 の粒子 (l_track=0 のときに落ちた) も (0, tend+1) にする (v2 は落ちた周を返す)"""
         n = len(self.alive_in)
         el = [0.0] * n
@@ -2668,7 +2713,8 @@ class TrackRun:
         return el, tn
 
     def result(self):
-        """(座標 (npart,6) 粒子の番号順, alive のリスト)"""
+        """Return the coordinates (npart, 6) in particle order and the alive list.
+        (座標 (npart,6) 粒子の番号順, alive のリスト)"""
         _t6.RNG.seed = int(self.rs[0])
         out = self.coords0.copy()
         alive = [1.0 if a else 0.0 for a in self.alive_in]
@@ -2683,7 +2729,8 @@ class TrackRun:
 
 def track_particles_fast(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=True, rad=False, fluc=False,
                          seed=None, charge=1.0, amass=None, progress=0, fshift=0.0, circ=None, links=None, links_off=0):
-    """track6.track_particles と同じ仕様 (MULT/SOL があれば track6 にフォールバック)。
+    """Numba `track_particles` with the same specification as track6.track_particles (falls back to track6 for MULT/SOL).
+    track6.track_particles と同じ仕様 (MULT/SOL があれば track6 にフォールバック)。
     circ: 全周長 (omega0 = 2πc/circ、空洞の周波数)。elements が区間のときに渡す。None なら elements の長さの和"""
     import time
     if circ is None:

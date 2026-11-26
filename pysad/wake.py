@@ -1,4 +1,5 @@
-"""WakeFunction (縦・横のウェイク場) の追跡への適用。K64 の txwake.f (module wakez) の直訳。
+"""Application of `WakeFunction` (longitudinal and transverse wake fields) to tracking (translation of K64 txwake.f, module wakez).
+WakeFunction (縦・横のウェイク場) の追跡への適用。K64 の txwake.f (module wakez) の直訳。
 
 SAD の使い方 (SADHelp の WakeFunction):
     WakeFunction[Longitudinal, "要素名"] = {{z1, wl1}, ..., {zn, wln}};   (z: m、w: V/C)
@@ -242,7 +243,8 @@ def _rot(S, n, cost, sint):
 
 
 class WakeKick:
-    """追跡 1 回 (tturn 1 区間) の間の txwake の状態 (itab、izs、dzwr)。区間の始めに reset() する (tturn.f:200 の dzwr=0)"""
+    """State of `txwake` (itab, izs, dzwr) during one tracking segment (one `tturn` call); reset() at the segment start.
+    追跡 1 回 (tturn 1 区間) の間の txwake の状態 (itab、izs、dzwr)。区間の始めに reset() する (tturn.f:200 の dzwr=0)"""
 
     def __init__(self, p0, h0, fw, nb):
         self.p0, self.h0, self.fw, self.nb = p0, h0, fw, max(int(nb), 1)
@@ -256,7 +258,8 @@ class WakeKick:
         self.np = -1
 
     def apply(self, S, n, wl, wt, dx, dy, init, p0=None, h0=None, theta=0.0):
-        """wl, wt: (行数, 2) の配列か None (そのウェイクなし)。dx, dy: 要素のずれ (TENT/TEXIT)"""
+        """Apply the wake kick, with wl and wt arrays (rows, 2) or None, and element offsets dx, dy (TENT/TEXIT).
+        wl, wt: (行数, 2) の配列か None (そのウェイクなし)。dx, dy: 要素のずれ (TENT/TEXIT)"""
         # twxiwp (tffs.f:1686): lwl0 = (ブロック長-2)/2 は表の行数より 1 少ない (ブロック長 = 2 行数 + 1)。追跡では最後の行を使わない (gs で確認)
         wl = None if wl is None else wl[:-1]
         wt = None if wt is None else wt[:-1]

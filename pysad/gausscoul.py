@@ -1,4 +1,4 @@
-"""
+"""Gaussian-bunch Coulomb force and potential: GaussianCoulomb, GaussianCoulombU, GaussianCoulombFitted (K64 translation).
 GaussianCoulomb[x, y, sigx, sigy] / GaussianCoulombU[x, y, sigx, sigy]。K64 の tspac.f (bbkick1、cwerf)、tintrb.f (twspu)、bint.f (rombint、polint)、gamma.f (gamma0log)。
 
 GaussianCoulomb: ガウス分布のバンチが (x, y) に作る力 f_x + i f_y (bbkick1。Yokoya の cwerf)。
@@ -16,7 +16,8 @@ _EULER = 0.57721566490153286061
 
 
 def cwerf(z: complex) -> complex:
-    """tspac.f CWERF (Gautschi の方法。w(z) = exp(-z²) erfc(-iz))"""
+    """Compute w(z) = exp(-z^2) erfc(-iz) by Gautschi's method (tspac.f CWERF).
+    tspac.f CWERF (Gautschi の方法。w(z) = exp(-z²) erfc(-iz))"""
     const = 1.1283791670955
     xx, yy = z.real, z.imag
     x, y = abs(xx), abs(yy)
@@ -67,7 +68,8 @@ def cwerf(z: complex) -> complex:
 
 
 def bbkick1(dx: float, dy: float, sx: float, sy: float) -> complex:
-    """tspac.f bbkick1: ガウスバンチの力 (px + i py)。sx < sy は x と y を入れ替える"""
+    """Compute the force (px + i py) of a Gaussian bunch (tspac.f bbkick1), swapping x and y if sx < sy.
+    tspac.f bbkick1: ガウスバンチの力 (px + i py)。sx < sy は x と y を入れ替える"""
     if sx < sy:
         return 1j * bbkick1(dy, dx, sy, sx).conjugate()
     ex = 0.5 * ((dx / sx) ** 2 + (dy / sy) ** 2)
@@ -142,7 +144,8 @@ def _gamma0cf(x):
 
 
 def gamma0log(x):
-    """gamma.f gamma0log (オイラー定数込み)"""
+    """Compute gamma0log including the Euler constant (gamma.f).
+    gamma.f gamma0log (オイラー定数込み)"""
     if x < 0.0:
         return float('-inf')
     if x < 1.0:
@@ -183,7 +186,8 @@ def _polint(xa, ya, x):
 
 
 def rombint(f, a, b, epslon, epsabs):
-    """bint.f rombint (k=5 の多項式外挿)"""
+    """Romberg integration with polynomial extrapolation of order k=5 (bint.f rombint).
+    bint.f rombint (k=5 の多項式外挿)"""
     k = 5
     itmax = 30
     ba = b - a
@@ -223,7 +227,8 @@ def rombint(f, a, b, epslon, epsabs):
 
 
 def twspu(x, y, sigx, sigy, epslon, epsabs):
-    """tintrb.f twspu: ガウスバンチのポテンシャル U"""
+    """Compute the potential U of a Gaussian bunch (tintrb.f twspu).
+    tintrb.f twspu: ガウスバンチのポテンシャル U"""
     if sigx < sigy:
         return twspu(y, x, sigy, sigx, epslon, epsabs)
     sig2 = sigx * (sigx + sigy)
@@ -270,7 +275,8 @@ def twspu(x, y, sigx, sigy, epslon, epsabs):
 # ---------------------------------------------------------------------------
 
 def spline1m(y, ddy, mode1, mode2):
-    """spline.f spline1(np,y,ddy,work,mode1,mode2): dx=1 の自然スプライン。ddy は入出力 (mode1=1・2 は ddy[0]、mode2=1・2 は ddy[np-1] を境界の値として読む)。
+    """Natural cubic spline with dx=1 (spline.f spline1), with ddy holding y''/6 as input and output, and 0-based arrays.
+    spline.f spline1(np,y,ddy,work,mode1,mode2): dx=1 の自然スプライン。ddy は入出力 (mode1=1・2 は ddy[0]、mode2=1・2 は ddy[np-1] を境界の値として読む)。
     ddy は y''/6。配列は 0 始まり"""
     n = len(y)
     work = np.zeros(n)
@@ -317,7 +323,8 @@ _TABLES = {}
 
 
 def twspfuinit():
-    """tintrb.f twspfuinit: (nx+1, ny+1, nr+1) の表 u、uxx、uyy、uxxyy、urr、uxxrr、uyyrr、uxxyyrr。K64 は ktaloc の記憶 (0 とみなす) を spline1 の境界値に読む"""
+    """Build the tables u, uxx, uyy, uxxyy, urr, uxxrr, uyyrr and uxxyyrr of shape (nx+1, ny+1, nr+1) (tintrb.f twspfuinit).
+    tintrb.f twspfuinit: (nx+1, ny+1, nr+1) の表 u、uxx、uyy、uxxyy、urr、uxxrr、uyyrr、uxxyyrr。K64 は ktaloc の記憶 (0 とみなす) を spline1 の境界値に読む"""
     if _TABLES:
         return _TABLES
     nr, nx, ny = _NR, _NX, _NY
@@ -371,7 +378,8 @@ def twspfuinit():
 
 
 def twspfu0(x, y, sigx, sigy):
-    """tintrb.f twspfu0: (fx, fy, fu, fxx, fyy, fxy)。表の外は bbkick1 と twspu (fxx = fyy = fxy = 0)"""
+    """Return (fx, fy, fu, fxx, fyy, fxy) from the table, or from bbkick1 and twspu outside it (tintrb.f twspfu0).
+    tintrb.f twspfu0: (fx, fy, fu, fxx, fyy, fxy)。表の外は bbkick1 と twspu (fxx = fyy = fxy = 0)"""
     nr, nx, ny = _NR, _NX, _NY
     r = sigy / sigx
     rl = math.sqrt(-math.log10(r) / _RSTEP)
@@ -465,7 +473,8 @@ def _twspfu_out(x, y, sigx, sigy):
 
 
 def twspfu(x, y, sigx, sigy):
-    """tintrb.f twspfu: (fx, fy, fu, fxx, fyy, fxy)。sigx < sigy は x と y を入れ替えて twspfu0 を呼ぶ (K64 は fxx・fyy の位置を入れ替えない)"""
+    """Return (fx, fy, fu, fxx, fyy, fxy) (tintrb.f twspfu), swapping x and y for sigx < sigy before calling twspfu0.
+    tintrb.f twspfu: (fx, fy, fu, fxx, fyy, fxy)。sigx < sigy は x と y を入れ替えて twspfu0 を呼ぶ (K64 は fxx・fyy の位置を入れ替えない)"""
     if sigx < sigy:
         a, b, c, d, e, f = twspfu0(y, x, sigy, sigx)
         return b, a, c, d, e, f

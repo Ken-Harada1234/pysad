@@ -1,4 +1,4 @@
-"""
+"""Literal translation of SAD `Emittance[]` (6D equilibrium emittance) in emit6d.py, via temit and tturne.
 emit6d.py — SAD の Emittance[] (6D 平衡エミッタンス) の直訳
 ==========================================================
 
@@ -2029,7 +2029,8 @@ def _tcoord(st, el):
 
 def tturne(elements: List[Element], cod0, ph: _Phys, trf0: float = 0.0,
            rfsw: bool = False, radcod: bool = False, want_db: bool = True, want_jac: bool = True) -> _State:
-    """tturne1 相当: 放射込み 6D 一周追跡。want_db=False は SAD の irad=6 (tcod の反復用: D・B 行列を作らない)"""
+    """Perform a 6D one-turn tracking with radiation, as tturne1; want_db=False corresponds to irad=6 (no D and B matrices).
+    tturne1 相当: 放射込み 6D 一周追跡。want_db=False は SAD の irad=6 (tcod の反復用: D・B 行列を作らない)"""
     st = _State(cod0, ph)
     st.want_jac = want_jac
     st.want_db = want_db and want_jac
@@ -2653,7 +2654,8 @@ def _qcod_accepts_start(els, dp, dcod4):
 
 
 def beam_tilt_sizes(emitp):
-    """temitprint (temit.f:1126-1141) の Beam tilt / Beam size xi, eta。emitp は入口の平衡ビーム行列 (6x6, tecalc の 'beam_matrix')。
+    """Compute the beam tilt and rms beam sizes xi, eta as in temitprint (temit.f); return (btilt, sigx, sigy).
+    temitprint (temit.f:1126-1141) の Beam tilt / Beam size xi, eta。emitp は入口の平衡ビーム行列 (6x6, tecalc の 'beam_matrix')。
     btilt = atan2(-2 σxy, σxx-σyy)/2 (どちらかが 0 なら 0)、xi/eta は主軸方向の rms ビームサイズ [m]。
     戻り値 (btilt, sigx, sigy)。"""
     xxs = emitp[0, 0] - emitp[2, 2]
@@ -2678,7 +2680,8 @@ def _qcod_start(els):
 
 
 def closed_orbit6d(els, ph: _Phys, rfsw: bool, radcod: bool, close_z: bool = True, norf_trf0: bool = False, k64_continue: bool = True):
-    """temit の tcod 部分 (放射あり)。戻り値 (cod, trf0, found, st_full)。
+    """Compute the radiative closed orbit part of temit (tcod); return (cod, trf0, found, st_full).
+    temit の tcod 部分 (放射あり)。戻り値 (cod, trf0, found, st_full)。
     st_full は RFSW+RADCOD の tcod の最後の反復が D・B 付きの完全な一周のときその状態 (temit の最後の tturne と同じ)、なければ None。
 
       RFSW ON, RADCOD ON  : tcod の直訳 (_tcod_radcod)。CALC (4D の閉軌道, z=0, dp=0) を初期値に、z のずれを trf0 に移しながら反復する。
@@ -2803,7 +2806,7 @@ def emittance6d(lattice, momentum_eV: float, charge: float = 1.0,
                 amass: float = ELMASS, close_z: bool = True,
                 rfsw: bool = False, radcod: bool = False, fshift: float = 0.0, emit_floor=(0.0, 0.0, 0.0),
                 pol: bool = False) -> dict:
-    """
+    """Compute the equilibrium emittance as SAD `Emittance[]` does (temit: tcod, tturne with irad=12, tecalc).
     SAD の Emittance[] 相当 (temit: tcod → tturne (irad=12) → tecalc)。emit_floor = (EMITXE, EMITYE, EMITZE)。
 
     Parameters

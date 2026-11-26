@@ -1,4 +1,5 @@
-"""SAD のクラス (Class[...]、x = c[引数]、x@メンバー、This、Constructor / Destructor)。SADHelp の「Class」の節に合わせた実装。
+"""SAD classes (`Class[...]`, x = c[args], x@member, This, Constructor / Destructor), following the Class section of SADHelp.
+SAD のクラス (Class[...]、x = c[引数]、x@メンバー、This、Constructor / Destructor)。SADHelp の「Class」の節に合わせた実装。
 
 方式: 「クラスのメンバーが出てきたら This@メンバー と読む」という SAD の規則を、メンバーの記号をインスタンスごとに一意な記号
 (`c$i12` のようなもの) へ置き換えることで実現する。インスタンスの作成時に

@@ -1,4 +1,4 @@
-"""
+"""Particle tracking for `TrackParticles` (translation of tftrack.f / tturn.f `tturn`, `tturn1` in SAD).
 track6.py — SAD TrackParticles (tftrack.f → tturn.f tturn / tturn1) の直訳による粒子追跡
 
 SAD の追跡は Emittance[]/CALC (tturne: tquade, tbende, tthine, tcave, tradke) とは別のルーチンを使う:
@@ -2318,7 +2318,8 @@ def _tmulti(p: _Particle, el, krad):
 # ---------------------------------------------------------------------------
 
 class SolRegionError(NotImplementedError):
-    """SOL 領域 (BOUND≠0 の SOL の間) に置けない要素がある (v2: K64 の tsol.f が出すはずの文で止める。K64 は SIGSEGV、docs/30 B35)"""
+    """Raised when an element cannot be placed inside a SOL region (between SOL elements with BOUND nonzero).
+    SOL 領域 (BOUND≠0 の SOL の間) に置けない要素がある (v2: K64 の tsol.f が出すはずの文で止める。K64 は SIGSEGV、docs/30 B35)"""
 
 
 _SOL_OK = ('Drift', 'Bend', 'Quadrupole', 'Solenoid', 'Multipole', 'Cavity', 'Map', 'Marker', 'Monitor')
@@ -3442,7 +3443,8 @@ def track_particles(elements: List, coords, nturn: int, momentum_eV: float,
                     alive=None, zlost: float = 100.0, alost=None, l0: int = 0, kturn0: int = 1, lt_prev: int = 0,
                     lost_info=None, nodrop_first: bool = False, links=None, links_off: int = 0, photons=None, photon_geo=None,
                     trpt: bool = False):
-    """TrackParticles[{1, coords}, 1, 1, nturn] 相当 (始点 = 終点 = ラティスの先頭)。
+    """Track particles as `TrackParticles[{1, coords}, 1, 1, nturn]` does, from the lattice start for nturn turns.
+    TrackParticles[{1, coords}, 1, 1, nturn] 相当 (始点 = 終点 = ラティスの先頭)。
     coords: (np, 6) の {x, px/p0, y, py/p0, z, δ}。nturn 周後の座標を返す。
     trf0: Emittance[] (emit) で決まった同期位置 (SAD の global trf0)。
     rad: RAD フラグ。fluc: FLUC フラグ (RAD と併用。乱数 RNG から引く)。seed: SeedRandom[seed] 相当

@@ -1,4 +1,4 @@
-"""
+"""Translation of `CSRTrack` and `CSRHaissin` (csrtrack.f): longitudinal CSR wake tracking and Haissinski equation solver.
 CSRTrack / CSRHaissin (csrtrack.f) の直訳: CSR ウェイクによる縦方向のマクロ粒子追跡と Haissinski 方程式の解。
 Packages/CSR.n (Track、InitializeParticles) が呼ぶ。CSRInit / CSRMatrix / CSROy* は別 (docs/15)。
 
@@ -27,7 +27,8 @@ def _tcftr(ca, conj):
 
 
 def trftr(a, conj):
-    """trftr(a,m,conj): 実数列 a(0:m-1) の実FFT (K64 の詰め方)。a を書き換えて返す"""
+    """Real FFT of the sequence a(0:m-1) in the packing of K64, as `trftr`; a is overwritten and returned.
+    trftr(a,m,conj): 実数列 a(0:m-1) の実FFT (K64 の詰め方)。a を書き換えて返す"""
     m = len(a)
     ca = a[0::2] + 1j * a[1::2]
     ca = _tcftr(ca, conj)
@@ -54,7 +55,8 @@ def trftr(a, conj):
 
 
 def tftrr(a, conj):
-    """tftrr(a,m,conj): trftr の逆 (tftrr(trftr(f)) = m f)。a を書き換えて返す"""
+    """Inverse of `trftr`, as `tftrr` (tftrr(trftr(f)) = m f); a is overwritten and returned.
+    tftrr(a,m,conj): trftr の逆 (tftrr(trftr(f)) = m f)。a を書き換えて返す"""
     m = len(a)
     w = (2.0 if conj else -2.0) * math.pi / m
     i = np.arange(1, m // 4 + 1)
@@ -85,7 +87,8 @@ def tftrr(a, conj):
 # ---------------------------------------------------------------------------
 
 def spline1(y):
-    """spline1(np,y,ddy,work,0,0): y(1..np) → ddy(1..np) (mode1=mode2=0)。配列は 0 始まり (y[0] = y(1))"""
+    """Compute the second derivatives ddy(1..np) from y(1..np), as `spline1` with mode1=mode2=0 (0-based arrays).
+    spline1(np,y,ddy,work,0,0): y(1..np) → ddy(1..np) (mode1=mode2=0)。配列は 0 始まり (y[0] = y(1))"""
     n = len(y)
     ddy = np.zeros(n)
     if n <= 2:
@@ -108,7 +111,8 @@ def spline1(y):
 # ---------------------------------------------------------------------------
 
 def csrwake(rho, zl):
-    """rho ← IFFT(zl · FFT(rho)) / nr (rho はその場で更新)"""
+    """Update rho in place by the CSR wake convolution rho <- IFFT(zl * FFT(rho)) / nr.
+    rho ← IFFT(zl · FFT(rho)) / nr (rho はその場で更新)"""
     nr = len(rho)
     trftr(rho, True)
     i = np.arange(2, nr // 2 + 1)
@@ -147,7 +151,8 @@ def csrrho(z, dz, nr):
 # ---------------------------------------------------------------------------
 
 def csrtrack(z, dp, zl, dz, ndiv, aw, r56, r65, frf, phirf, damp, sigmae, nt, gauss):
-    """z, dp: np.ndarray (その場で更新)。zl: 実FFT 形式のインピーダンス。gauss(np) は乱数 (tgauss_array)。
+    """Track macro-particles with the CSR wake and RF, returning per-turn sigma_z and sigma_delta in data (2, nt).
+    z, dp: np.ndarray (その場で更新)。zl: 実FFT 形式のインピーダンス。gauss(np) は乱数 (tgauss_array)。
     戻り: data (2, nt) = {σz, σδ} の各周回 (発散したらそれ以降は 0)"""
     np_ = len(z)
     nr = len(zl)
@@ -220,7 +225,8 @@ def csrtrack(z, dp, zl, dz, ndiv, aw, r56, r65, frf, phirf, damp, sigmae, nt, ga
 # ---------------------------------------------------------------------------
 
 def csrhaissin(zl, aw, dz, sigz):
-    """Haissinski 方程式を Newton 法で解く。戻り: rho (nr)。収束しなければ None (K64 は irtc=-1)"""
+    """Solve the Haissinski equation by Newton's method and return rho; None if it does not converge.
+    Haissinski 方程式を Newton 法で解く。戻り: rho (nr)。収束しなければ None (K64 は irtc=-1)"""
     from .tsvd import tsvd
     nr = len(zl)
     imax = 100
@@ -296,7 +302,8 @@ def csrhaissin(zl, aw, dz, sigz):
 # ---------------------------------------------------------------------------
 
 def csrwkick(nrh, z, zc, dz, v, ddv, aw, r65):
-    """csrwkick: ウェイクとRFの 1 回分の dp のキック (z はスカラー)"""
+    """Compute the dp kick of one pass of the wake and RF (`csrwkick`) for a scalar z.
+    csrwkick: ウェイクとRFの 1 回分の dp のキック (z はスカラー)"""
     zk = (z + zc) / dz
     m = int(zk)
     if 0 < m < nrh:
@@ -310,7 +317,8 @@ def csrwkick(nrh, z, zc, dz, v, ddv, aw, r65):
 
 
 def csrgetj(nrh, z1, zc, dz, v, ddv, aw, r56, r65, dt):
-    """csrgetj: 位相空間の周回軌道 (z1 から出発) の作用 J と角周波数 omega"""
+    """Compute the action J and angular frequency omega of an orbit in phase space starting from z1 (`csrgetj`).
+    csrgetj: 位相空間の周回軌道 (z1 から出発) の作用 J と角周波数 omega"""
     z = z1
     p = 0.5 * dt * csrwkick(nrh, z, zc, dz, v, ddv, aw, r65)
     p0 = p
@@ -330,7 +338,8 @@ def csrgetj(nrh, z1, zc, dz, v, ddv, aw, r56, r65, dt):
 
 
 def csroysetup(rho, zl, aw, r56, r65, dz, nj, mphi, zspan, dt):
-    """戻り: (wi, aj, omega, zjn(nj,mphi), dpjn(nj,mphi), rhoj, irtc)。
+    """Set up the csroy quantities and return (wi, aj, omega, zjn, dpjn, rhoj, irtc), with K64 storage aliasing of zjn and dpjn.
+    戻り: (wi, aj, omega, zjn(nj,mphi), dpjn(nj,mphi), rhoj, irtc)。
     K64 は dpjn を zjn と同じ記憶域に割り当てる (tfcsroysetup: c_loc(rlist(kazjn)) を 2 回) ので、zjn(k,i) の後に dpjn(k,i) を書くと
     zjn が dp の値で上書きされる (docs/30 B59)。返す zjn は dp の値、dpjn の記憶域は書かれない (0)"""
     nr = len(rho)
@@ -422,7 +431,8 @@ def csroysetup(rho, zl, aw, r56, r65, dz, nj, mphi, zspan, dt):
 
 
 def csroymat(wi0, omega, zjn, rhoj, bw, dz, nj, nphi, nr):
-    """csroymat: bm(nj·nphi, nj·nphi)。zjn は (nj, mphi) の配列 (K64 の zjn(mphi,nj))"""
+    """Build the matrix bm of size (nj*nphi, nj*nphi) for `csroymat`.
+    csroymat: bm(nj·nphi, nj·nphi)。zjn は (nj, mphi) の配列 (K64 の zjn(mphi,nj))"""
     mphi = nphi * 16
     dphi = math.pi / mphi
     nrh = nr // 2
@@ -462,7 +472,8 @@ def csroymat(wi0, omega, zjn, rhoj, bw, dz, nj, nphi, nr):
 # ---------------------------------------------------------------------------
 
 def csrind(pipe):
-    """csrind: ind(0:m+1, 0:n+1) (行 i = x 方向の列、j = y 方向) と点の総数 mm"""
+    """Build the index array ind(0:m+1, 0:n+1) and the total number of points mm (`csrind`).
+    csrind: ind(0:m+1, 0:n+1) (行 i = x 方向の列、j = y 方向) と点の総数 mm"""
     m = len(pipe)
     n = int(max(pipe)) if m else 0
     ind = np.zeros((m + 2, n + 2), dtype=np.int64)
@@ -475,7 +486,8 @@ def csrind(pipe):
 
 
 def csrmat(ind, dx, dy, omega, rho, fudge0, fudge1, fudge2, fudge3, tilt, mode, mm, m, n, ic):
-    """csrmat: 差分行列 acm(mm,mm)。mode 110/220/330 (抵抗壁) は第 1 列だけ使う"""
+    """Build the difference matrix acm(mm,mm) of `csrmat`; modes 110/220/330 (resistive wall) use only the first column.
+    csrmat: 差分行列 acm(mm,mm)。mode 110/220/330 (抵抗壁) は第 1 列だけ使う"""
     acm = np.zeros((mm, mm))
     if mode == 110:
         pass
@@ -618,7 +630,8 @@ def csrmat(ind, dx, dy, omega, rho, fudge0, fudge1, fudge2, fudge3, tilt, mode, 
 # ---------------------------------------------------------------------------
 
 def csrphimesh(pipe, dx, dy, ic, nphimax):
-    """csrtest.f csrphimesh: ビームパイプ (列ごとの高さ pipe) の境界の点列 (phix, phiy) (1 始まり。0 番は未使用)。戻り: (phix, phiy, nphi, my)。
+    """Build the boundary point list (phix, phiy) of the beam pipe, as `csrphimesh` of csrtest.f.
+    csrtest.f csrphimesh: ビームパイプ (列ごとの高さ pipe) の境界の点列 (phix, phiy) (1 始まり。0 番は未使用)。戻り: (phix, phiy, nphi, my)。
     nphimax を超えたら途中で打ち切り (nphi >= nphimax)"""
     mx = len(pipe)
     phix = np.zeros(nphimax + 2)
@@ -663,7 +676,8 @@ def csrphimesh(pipe, dx, dy, ic, nphimax):
 
 
 def csr2dpoisson(phix, phiy, dx, dy, pipe, nphi, ic, mx, my, rho0, itern):
-    """csrtest.f csr2dpoisson: 境界 (phix, phiy: 1 始まり) と電荷分布 (itern 回の繰り返しで空間電荷 q1 を入れる) から、
+    """Compute the electric field ex, ey on the mesh from the boundary and charge distribution, as `csr2dpoisson` of csrtest.f.
+    csrtest.f csr2dpoisson: 境界 (phix, phiy: 1 始まり) と電荷分布 (itern 回の繰り返しで空間電荷 q1 を入れる) から、
     メッシュ上の電場 ex(mx, my)・ey(mx, my)。境界の電荷は tsolva (= tsvd(.false.)) の最小ノルム解"""
     from .tsvd import tsvd
     pipe = np.asarray(pipe, dtype=float)
@@ -769,7 +783,8 @@ def _phi1y(x, y):
 
 
 def csrdoublephimesh(phix, phiy, nphi):
-    """csrtest.f csrdoublephimesh: 点列の間に中点を足して 2 倍 (配列は 0 始まりの添字 0..2nphi)。戻り: (phix, phiy, nphi_new)"""
+    """Double the boundary point list by inserting midpoints, as `csrdoublephimesh` of csrtest.f.
+    csrtest.f csrdoublephimesh: 点列の間に中点を足して 2 倍 (配列は 0 始まりの添字 0..2nphi)。戻り: (phix, phiy, nphi_new)"""
     px = np.zeros(nphi * 2 + 1)
     py = np.zeros(nphi * 2 + 1)
     px[:nphi + 1] = phix[:nphi + 1]
@@ -792,7 +807,8 @@ def _tsolvm_minnorm(a, b, eps):
 
 
 def csrhelmat(pipe, dx, dy, ic, nm):
-    """csrtest.f csrhelmat + csr2dpoisson1: らせん断面 (CSRMatrix mode 1000) の (2nm × 2nm) の行列 psi。
+    """Build the (2nm x 2nm) matrix psi of the helical cross section (CSRMatrix mode 1000), as `csrhelmat` and `csr2dpoisson1`.
+    csrtest.f csrhelmat + csr2dpoisson1: らせん断面 (CSRMatrix mode 1000) の (2nm × 2nm) の行列 psi。
     境界の点列 (中点を足した 2 倍の細かさ) から、メッシュの各セル (xc, yc) の電場への応答を境界要素法で求める"""
     mx = len(pipe)
     nphimax = 4000

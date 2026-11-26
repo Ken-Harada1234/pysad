@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""teigen.f (SAD の実行列の固有値・固有ベクトル、K. Oide) の直訳。
+"""Translation of teigen.f (eigenvalues and eigenvectors of a real matrix in SAD, K. Oide): tbal, thess, tqr.
+teigen.f (SAD の実行列の固有値・固有ベクトル、K. Oide) の直訳。
 
 teigen(a) = tbal (釣り合いの重み vx のみ求める) → thess (Hessenberg 化, 高速 Givens) → tqr (QR 法)。
 固有値の並び・実固有値の対の並び・固有ベクトルの符号と大きさは numpy.linalg.eig とは異なる。
@@ -478,7 +479,8 @@ def _tqr(a, w, vx, n):
 
 
 def teigen(a_in):
-    """teigen(a,w,eig,n,ndim): 実行列 a_in (n×n) の固有値 (複素配列) と固有ベクトル (列, n×n) を返す。
+    """Compute eigenvalues and eigenvectors (columns) of the real n x n matrix a_in, ordered as in SAD.
+    teigen(a,w,eig,n,ndim): 実行列 a_in (n×n) の固有値 (複素配列) と固有ベクトル (列, n×n) を返す。
     複素固有値は SAD と同じ並び (共役の対で虚部が正 → 負)"""
     a_in = np.asarray(a_in, dtype=float)
     n = a_in.shape[0]

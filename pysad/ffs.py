@@ -53,7 +53,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 # ---------------------------------------------------------------------------
 
 class SADList:
-    """
+    """SAD-style 1-based index list (a 0-based Python index is also usable).
     SAD スタイルの 1-based インデックスリスト。
 
     SAD では配列インデックスが 1 から始まる。
@@ -169,7 +169,7 @@ def _match_pattern(name: str, pattern: str) -> bool:
 # ---------------------------------------------------------------------------
 
 class FFSState:
-    """
+    """Python implementation of the SAD FFS command level, operating on a SADEnvironment.
     SAD FFS コマンドレベルの Python 実装。
 
     SADEnvironment を受け取り、その上で FFS 計算を行う。
@@ -219,7 +219,7 @@ class FFSState:
     # ------------------------------------------------------------------
 
     def use(self, beamline_name: str) -> 'FFSState':
-        """
+        """Set the active beamline (`USE beamline_name`); the name is case-insensitive; returns self.
         USE beamline_name — アクティブなビームラインを設定する。
 
         Parameters
@@ -252,7 +252,7 @@ class FFSState:
     # ------------------------------------------------------------------
 
     def cell_calc(self) -> 'FFSState':
-        """
+        """Compute the periodic Twiss parameters (closed-orbit solution), equivalent to SAD `FFS["cell calc"]`.
         cell calc — 周期 Twiss (閉軌道解) を計算する。
 
         SAD の "FFS[\"cell calc\"]" に相当。
@@ -306,7 +306,7 @@ class FFSState:
         return self
 
     def ins_calc(self, twiss_init: Optional[dict] = None) -> 'FFSState':
-        """
+        """Propagate Twiss from given initial conditions (`ins calc`, equivalent to SAD `FFS["ins calc"]`).
         ins calc — 指定した初期条件から Twiss を伝播する。
 
         SAD の "FFS[\"ins calc\"]" に相当。
@@ -352,7 +352,7 @@ class FFSState:
         return self
 
     def emit_calc(self, momentum_eV: Optional[float] = None) -> dict:
-        """
+        """Compute the radiation integrals and emittance (the emit part of SAD `FFS["cell calc emit"]`).
         emit — 放射積分・エミッタンスを計算する。
 
         SAD の "FFS[\"cell calc emit\"]" の emit 部分に相当。
@@ -382,7 +382,7 @@ class FFSState:
         return {**ri, **em}
 
     def calc(self, mode: str = 'cell') -> 'FFSState':
-        """
+        """Run the FFS `calc` command in 'cell' or 'ins' mode.
         calc — FFS の calc コマンド。
 
         Parameters
@@ -396,7 +396,7 @@ class FFSState:
         return self
 
     def calc_cod(self) -> 'FFSState':
-        """
+        """Compute the closed orbit distortion (COD) from K0, ROTATE, DX and DY and store it in the Twiss data of each element.
         K0 / ROTATE / DX / DY から閉軌道偏差 (COD) を計算して
         各要素位置の _twiss[i]['dx'], _twiss[i]['dy'] に格納する。
 
@@ -487,7 +487,7 @@ class FFSState:
         K0_kick: float = 0.5e-3,
         plane: str = 'both',
     ) -> dict:
-        """
+        """Compute the COD response matrix numerically (equivalent to the SAD write_response_COD script).
         COD 応答行列を数値計算する。
 
         SAD の write_response_COD スクリプト相当:
@@ -639,7 +639,7 @@ class FFSState:
     }
 
     def Twiss(self, param: str, element_arg) -> Any:
-        """
+        """Get a Twiss parameter at an element, as `Twiss["BX", element]`.
         Twiss["BX", element] — 要素位置での Twiss パラメータを取得する。
 
         Parameters
@@ -856,7 +856,7 @@ class FFSState:
     # ------------------------------------------------------------------
 
     def free(self, pattern: str, param: str = 'K1') -> 'FFSState':
-        """
+        """Set the free parameters of fitting (`free Q* K1`) for elements matching a pattern.
         free Q* K1 — フィッティングのフリーパラメータを設定する。
 
         Parameters
@@ -875,7 +875,7 @@ class FFSState:
     def fit_add(self, element: str, param: str,
                 target: float, nsteps: int = 3,
                 npoints: Optional[int] = None) -> 'FFSState':
-        """
+        """Add a fit target on an element parameter (NX, NY, BX, BY, EX, ...) with a target value.
         fit target を追加する。
 
         Parameters
@@ -908,13 +908,14 @@ class FFSState:
         return self
 
     def fit_clear(self) -> 'FFSState':
-        """フィット制約をすべてクリア。"""
+        """Clear all fit constraints.
+        フィット制約をすべてクリア。"""
         self._constraints = []
         self._free_params = []
         return self
 
     def go(self, niter: int = 10) -> bool:
-        """
+        """Run the fitter (`go`): optimize the free parameters with scipy Nelder-Mead, including multi-point matching.
         go — フィッターを実行する。
 
         scipy.optimize.minimize (Nelder-Mead) でフリーパラメータを
@@ -1095,7 +1096,7 @@ class FFSState:
     _PRIMARY_PARAMS: dict = {}   # クラス変数として初期化は後で行う
 
     def save(self, all_params: bool = False) -> 'FFSState':
-        """
+        """Store the matching result as new defaults (`SAVE` / `SAVE ALL`, equivalent to SAD `FFS["SAVE"]` / `FFS["SAVE ALL"]`).
         SAVE / SAVE ALL — マッチング計算で求めた値を新しいデフォルトとして格納する。
 
         SAD の FFS["SAVE"] / FFS["SAVE ALL"] に相当。
@@ -1182,7 +1183,7 @@ class FFSState:
         return self
 
     def restore_saved(self) -> 'FFSState':
-        """
+        """Restore the element values stored by `save()`; do nothing if `save()` was not called; returns self.
         save() / save(all_params=True) で保存した値を要素に復元する。
 
         エラーばらまき後に名目値に戻す場合などに使う。
@@ -1223,16 +1224,18 @@ class FFSState:
 
     @property
     def dp(self) -> float:
-        """DP — 多点マッチング用の運動量範囲 ±DP (Δp/p)。"""
+        """Return DP, the momentum range +-DP (delta p/p) for multi-point matching.
+        DP — 多点マッチング用の運動量範囲 ±DP (Δp/p)。"""
         return self._dp
 
     @dp.setter
     def dp(self, value: float):
-        """DP を設定する。"""
+        """Set DP, the momentum range for multi-point matching.
+        DP を設定する。"""
         self._dp = float(value)
 
     def fitp(self, n: int) -> 'FFSState':
-        """
+        """Set the number of momentum sample points for subsequent fits (`FITP N`, equivalent to SAD `FFS["FITP N"]`).
         FITP N — 以降のフィット計算で使う運動量サンプル点数を設定する。
 
         SAD の FFS["FITP N"] に相当。
@@ -1267,7 +1270,7 @@ class FFSState:
     # ------------------------------------------------------------------
 
     def disp(self, element_arg=None, verbose: bool = True) -> Optional[dict]:
-        """
+        """Display the Twiss parameters at an element (`disp element`) and return them as a dict.
         disp element — 要素位置での Twiss を表示する。
 
         Parameters
@@ -1357,21 +1360,25 @@ class FFSState:
 
     @property
     def EMITX(self) -> Optional[float]:
-        """水平エミッタンス [m·rad] (emit_calc() 後に有効)。"""
+        """Return the horizontal emittance [m rad] (valid after `emit_calc()`).
+        水平エミッタンス [m·rad] (emit_calc() 後に有効)。"""
         return self._emitx
 
     @property
     def EMITY(self) -> Optional[float]:
-        """垂直エミッタンス [m·rad]。"""
+        """Return the vertical emittance [m rad].
+        垂直エミッタンス [m·rad]。"""
         return self._emity
 
     @property
     def SIGE(self) -> Optional[float]:
-        """エネルギー広がり (σ_E/E)。"""
+        """Return the energy spread (sigma_E/E).
+        エネルギー広がり (σ_E/E)。"""
         return self._sige
 
     def summary(self) -> str:
-        """現在の状態のサマリーを返す。"""
+        """Return a summary of the current state.
+        現在の状態のサマリーを返す。"""
         lines = [f"FFSState — beamline: {self._beamline_name}"]
         if self._twiss0:
             tw = self._twiss0
@@ -1403,7 +1410,7 @@ class FFSState:
                            dy_sigma: float = 0.0,
                            gcut: float = 3.0,
                            seed: Optional[int] = None) -> 'FFSState':
-        """
+        """Apply random alignment errors (DX/DY) to elements matching a pattern, equivalent to SAD `FFS["DELX ae Q*;"]` and `DELY`.
         アライメント誤差 (DX/DY) を指定パターンの要素にばらまく。
 
         SAD の FFS["DELX ae Q*;"] / FFS["DELY ae Q*;"] に相当。
@@ -1457,7 +1464,7 @@ class FFSState:
                           relative: bool = True,
                           gcut: float = 3.0,
                           seed: Optional[int] = None) -> 'FFSState':
-        """
+        """Apply random field strength errors (K0/K1/K2) to elements matching a pattern, equivalent to SAD `FFS["DK fe B*;"]`.
         強さ誤差 (K0/K1/K2 の相対/絶対誤差) を指定パターンの要素にばらまく。
 
         SAD の FFS["DK fe B*;"] (二極偏向角誤差) に相当。
@@ -1512,7 +1519,7 @@ class FFSState:
                        sigma: float = 0.0,
                        gcut: float = 3.0,
                        seed: Optional[int] = None) -> 'FFSState':
-        """
+        """Apply random roll errors (ROTATION) to elements matching a pattern, equivalent to SAD `FFS["DTHETA te B*;"]`.
         ロール誤差 (ROTATION) を指定パターンの要素にばらまく。
 
         SAD の FFS["DTHETA te B*;"] に相当。
@@ -1559,7 +1566,7 @@ class FFSState:
                      dy: bool = True,
                      rotation: bool = True,
                      field: Optional[List[str]] = None) -> 'FFSState':
-        """
+        """Reset the error parameters (DX, DY, ROTATION, field errors) to zero for elements matching a pattern.
         誤差パラメータをゼロにリセットする。
 
         Parameters

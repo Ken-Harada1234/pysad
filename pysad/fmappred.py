@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""周波数マップの共鳴線の予想の作り直し (v2.3.0 S3、K64にない新機能。互換モードによらず同じ)。
+"""Rebuilt resonance-line prediction for frequency maps using RDT and non-resonant corrections.
+周波数マップの共鳴線の予想の作り直し (v2.3.0 S3、K64にない新機能。互換モードによらず同じ)。
 
 S1 (`fmapres.ResonancePredictor`) は 1 次の RDT (3 次の h) の振り子の式、R5 は 4 次の h (写像の係数) も足した。S3 は R6 の道具で次を変える:
   (a) 駆動項: 3 次の h (`resonance_terms`) + 4 次の h に**非共鳴の 3 次の摂動の補正** (`rdt2nd.nf_correction_h4`、F4' = F4 + ½{R⁻¹W, W}) を足した値。
@@ -34,7 +35,8 @@ def _mon_exps(q):
 
 
 class ResonancePredictorS3(FR.ResonancePredictor):
-    """S3 の共鳴線の予想。属性: h3 (MONOS3 の順 20 複素)、h4 (MONOS4 の順 35 複素、写像の係数)、h3sum (正規形の補正に使う 3 次の 1 周の和)、A (2×2 線形の ADTS)、
+    """S3 resonance-line predictor holding the third- and fourth-order harmonic coefficients, linear ADTS matrix, tunes and Twiss.
+    S3 の共鳴線の予想。属性: h3 (MONOS3 の順 20 複素)、h4 (MONOS4 の順 35 複素、写像の係数)、h3sum (正規形の補正に使う 3 次の 1 周の和)、A (2×2 線形の ADTS)、
     nu0 (νx0, νy0)・tw (αx, βx, αy, βy, μx, μy: 位置 loc)・harms ({調和: [(j,k,l,m,h)]}: 3 次と 4 次の写像の係数、補正前)"""
 
     def __init__(self, h3, h4, h3sum, A, nu0, tw, nf=True, nf_local=False, rowsinfo=None):
@@ -63,7 +65,8 @@ class ResonancePredictorS3(FR.ResonancePredictor):
     # ------------------------------------------------------------------
     @classmethod
     def from_lattice(cls, lat, loc, rows=None, delta=0.0, bend_cubic=None, nf=True, nf_local=False, order_adts=True, order2=True, amin2=1e-3, **kw):
-        """lat: Lattice、loc: 位置 (1 始まり)、rows: lat.twiss_table() (省略可)。RDT は resonance_terms (3 次)・rdt2nd.rdt4 (4 次)、A は adts() の既定 (R6)。
+        """Build the predictor from a lattice, a location and Twiss rows, using the RDTs (resonance_terms, rdt2nd.rdt4) and ADTS.
+        lat: Lattice、loc: 位置 (1 始まり)、rows: lat.twiss_table() (省略可)。RDT は resonance_terms (3 次)・rdt2nd.rdt4 (4 次)、A は adts() の既定 (R6)。
         nf=True: 4 次に非共鳴の 3 次の補正 (非対角の正規形) を入れる。nf_local=True: 補正を初期条件ごとの ν(J) で評価する (False なら作動点 ν0)。δ ≠ 0 は未対応 (RDT は δ = 0)"""
         if delta != 0.0:
             raise NotImplementedError('S3 の予想は δ = 0 だけ (4 次の h が δ = 0 だけ)')
@@ -102,11 +105,13 @@ class ResonancePredictorS3(FR.ResonancePredictor):
 
     # ------------------------------------------------------------------
     def tunes_model(self, Jx, Jy, quad=False):
-        """ν(J) = ν0 + A·J (整数部つき。A = adts() の既定)。J² の項は未実装 (摂動論の定義された次数は ADTS の J の 1 次まで)。quad は互換のための引数 (無視)"""
+        """Return the tune model nu(J) = nu0 + A.J with integer parts, where A is the default ADTS matrix.
+        ν(J) = ν0 + A·J (整数部つき。A = adts() の既定)。J² の項は未実装 (摂動論の定義された次数は ADTS の J の 1 次まで)。quad は互換のための引数 (無視)"""
         return self.tunes_lin(Jx, Jy)
 
     def dnu_dJ(self, Jx, Jy, quad=False):
-        """∂νi/∂Jj (定数 A を J の形に広げた (2, 2, ...) 配列)"""
+        """Return the derivative d nu_i / d J_j as an array built from the constant ADTS matrix A.
+        ∂νi/∂Jj (定数 A を J の形に広げた (2, 2, ...) 配列)"""
         shp = np.shape(Jx)
         return np.broadcast_to(self.A.reshape((2, 2) + (1,) * len(shp)), (2, 2) + shp).copy()
 
@@ -139,7 +144,8 @@ class ResonancePredictorS3(FR.ResonancePredictor):
         return F
 
     def predict(self, x, y, nu=None, quad=True, nf=None, nf_local=None):
-        """初期条件 (x, y) [m] (同じ形の配列、px = py = 0) の予想。nu: (νx, νy) (整数部つき、配列) を渡すと ν(J) を実測のチューンにする (G0 は J のモデルの値)。
+        """Predict resonance trapping for initial conditions (x, y) [m]; return a dict of scores, envelopes and reliability.
+        初期条件 (x, y) [m] (同じ形の配列、px = py = 0) の予想。nu: (νx, νy) (整数部つき、配列) を渡すと ν(J) を実測のチューンにする (G0 は J のモデルの値)。
         (quad は無視)。戻り dict: any (位相つきで島に捕らえられる)、envelope (|Δ0| < W)、score (log10(W/|Δ0|) の調和にわたる最大。≥ 0 で包絡の中)、
         n_env (包絡に入る調和の数)、score_order (最大の調和の次数 |a1|+|a2|)、reliability (0/1/2、`reliability()`)、by_harmonic {a: dict(trapped, envelope, delta0, W, p, G0, g, score)}、
         nu_model (ν(J) の配列 2 つ)"""
@@ -198,7 +204,8 @@ class ResonancePredictorS3(FR.ResonancePredictor):
 
     # ------------------------------------------------------------------
     def reliability(self, m, Jx, Jy, dnu_max=0.02, d_first=0.01, dline=0.003):
-        """点ごとの信頼度 (0 = 信頼できない、1 = 注意、2 = 信頼できる)。判定の基準 (docs/25 §12.5):
+        """Return the per-point reliability (0 unreliable, 1 caution, 2 reliable) of the prediction.
+        点ごとの信頼度 (0 = 信頼できない、1 = 注意、2 = 信頼できる)。判定の基準 (docs/25 §12.5):
           (1) 線形の ν(J) の外れ: |ν_model − ν_lin| (J² の項の寄与) の最大 > 0.005 → 注意、> 0.02 または |ν_lin − ν0| > 0.1 → 信頼できない
               (J² の項を fit していないときは線形の移動 |A·J| で判定: > 0.02 → 注意、> 0.05 → 信頼できない)
           (2) 共鳴の重なり: 包絡に入る調和が 2 つ以上 (カオスの領域) → 信頼できない
@@ -219,7 +226,8 @@ class ResonancePredictorS3(FR.ResonancePredictor):
         return rel
 
     def warnings_for(self, m, Jx=None, Jy=None):
-        """予想全体の警告 (文字列のリスト)"""
+        """Return the list of warning strings for the whole prediction.
+        予想全体の警告 (文字列のリスト)"""
         w = []
         rel = m['reliability']
         n = rel.size
@@ -269,7 +277,8 @@ def _rank(v):
 
 
 def auc_score(score, positive):
-    """ROC 曲線の AUC (正例の score が負例より大きい確率。同点は 0.5)。score: 配列、positive: 真偽の配列。正例か負例が無ければ nan"""
+    """Compute the AUC of the ROC curve: the probability that a positive score exceeds a negative one (ties count 0.5).
+    ROC 曲線の AUC (正例の score が負例より大きい確率。同点は 0.5)。score: 配列、positive: 真偽の配列。正例か負例が無ければ nan"""
     score = np.asarray(score, dtype=float)
     pos = np.asarray(positive, dtype=bool)
     n1, n0 = int(pos.sum()), int((~pos).sum())
@@ -288,14 +297,16 @@ def spearman(a, b):
 
 
 def partial_spearman(a, b, c):
-    """c (例: 振幅) の順位を除いた a と b の順位偏相関"""
+    """Compute the partial rank correlation of a and b with the rank of c removed.
+    c (例: 振幅) の順位を除いた a と b の順位偏相関"""
     rab, rac, rbc = spearman(a, b), spearman(a, c), spearman(b, c)
     den = math.sqrt(max((1 - rac ** 2) * (1 - rbc ** 2), 1e-300))
     return float((rab - rac * rbc) / den)
 
 
 def score_stats(D, score, thr=-5.0, top=0.1, amp=None, nboot=0, seed=1):
-    """スコア (大きいほど共鳴が強い) の評価。D (nan は除く)。戻り dict: auc (D > thr の点を正例)、rho (D との Spearman)、top の D の中央値・D > thr の割合 (全体の割合と)、
+    """Evaluate scores (larger means stronger resonance) against D: AUC, Spearman rho, and amplitude-based statistics.
+    スコア (大きいほど共鳴が強い) の評価。D (nan は除く)。戻り dict: auc (D > thr の点を正例)、rho (D との Spearman)、top の D の中央値・D > thr の割合 (全体の割合と)、
     amp (振幅の指標) があれば amp だけのスコアの auc・rho と、amp の順位を除いた偏相関 rho_partial、amp の層ごと (3 層) の auc"""
     D = np.asarray(D, dtype=float)
     s = np.asarray(score, dtype=float)
@@ -317,7 +328,8 @@ def score_stats(D, score, thr=-5.0, top=0.1, amp=None, nboot=0, seed=1):
 
 
 def evaluate_prediction(r, m, thr=-5.0, key='envelope', nshift=400, amp=None):
-    """FMapResult r に対する予想 m (`ResonancePredictorS3.predict` の戻り) の判別力: coverage_stats (領域 key の cov・面積・対照・p) と score_stats。
+    """Evaluate a prediction against an FMapResult r, returning coverage statistics and score statistics.
+    FMapResult r に対する予想 m (`ResonancePredictorS3.predict` の戻り) の判別力: coverage_stats (領域 key の cov・面積・対照・p) と score_stats。
     amp 省略時は規格化した振幅 √(Jx/Jxmax + Jy/Jymax) (m['Jx'], m['Jy'] から)。戻り {'cov': coverage_stats の dict, 'score': score_stats の dict}"""
     cs = FR.coverage_stats(r.D, m[key], r.grid, thr=thr, nshift=nshift)
     if amp is None:
@@ -328,14 +340,16 @@ def evaluate_prediction(r, m, thr=-5.0, key='envelope', nshift=400, amp=None):
 
 
 def line_distance_score(nux, nuy, N=4):
-    """比較用 (予想の強さを使わない) のスコア: −log10(次数 N 以下の共鳴線までの距離)。線への近さだけ"""
+    """Return the comparison score -log10(distance to the nearest resonance line of order N or lower), using proximity only.
+    比較用 (予想の強さを使わない) のスコア: −log10(次数 N 以下の共鳴線までの距離)。線への近さだけ"""
     from .freqmap import _mn_list
     d = FR.lines_distance(nux, nuy, _mn_list(N))
     return -np.log10(np.maximum(d, 1e-9))
 
 
 def nearest_order_stats(D, nux, nuy, thr=-5.0, tol=0.003, orders=(1, 2, 3, 4, 5, 6)):
-    """各点の測ったチューン (端数でよい) から、距離 < tol の共鳴線のうち最小の次数 |m|+|n| を求め、D > thr の点と全点の次数の分布を返す。
+    """Find the lowest resonance order of lines within tol of each measured tune and return its distribution for D > thr and all points.
+    各点の測ったチューン (端数でよい) から、距離 < tol の共鳴線のうち最小の次数 |m|+|n| を求め、D > thr の点と全点の次数の分布を返す。
     戻り dict: orders (配列)、frac_hi・frac_all (最小次数が k の割合、'none' = どの次数 ≤ max にも近くない)、enrich (hi/all)"""
     D = np.asarray(D, dtype=float)
     ok = np.isfinite(D) & np.isfinite(nux)

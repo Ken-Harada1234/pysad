@@ -1,4 +1,4 @@
-"""
+"""File and directory functions of Packages/FileSystem.n (FileQ, FileNames, CopyFile, ...) implemented with Python os and shutil.
 Packages/FileSystem.n のファイル・ディレクトリ関数 (K64 は System["cp ..."] などの外部コマンドで実装。pysad は Python の os・shutil)。
 
 FileQ DirectoryQ FileNames DirectoryName ToFileName CreateDirectory DeleteDirectory RenameDirectory CopyDirectory
@@ -154,7 +154,8 @@ def install(I):
 
 
 def install_misc(I):
-    """init.n・functions.n の小さな関数: ARRAY Len Put Environment HomeDirectory StringInsert Diagonal Expand SymbolNameRoot HeldPart MkSecureTemp"""
+    """Install small functions from init.n and functions.n (ARRAY, Len, Put, Environment, StringInsert, Diagonal, Expand, ...).
+    init.n・functions.n の小さな関数: ARRAY Len Put Environment HomeDirectory StringInsert Diagonal Expand SymbolNameRoot HeldPart MkSecureTemp"""
     import tempfile
     from .sadscript import Expr, _Lit
     B = I.builtins
@@ -241,7 +242,8 @@ def install_misc(I):
 
 
 def install_parallel(I):
-    """shared.n の Parallelize (逐次実行) と、共有メモリ OpenShared / Shared / ReadShared / WriteShared / SharedSize、
+    """Install `Parallelize`, shared memory (OpenShared, Shared, ...) and process functions (Fork, Wait, Kill, Sleep) from shared.n.
+    shared.n の Parallelize (逐次実行) と、共有メモリ OpenShared / Shared / ReadShared / WriteShared / SharedSize、
     プロセスの関数 Fork / Wait / Wait4 / Kill / Sleep (K64 の tfProcess_.c、tfrbuf.f、tfshared.f)。
 
     - 共有メモリは無名の mmap (POSIX では fork した子と共有される)。値は符号化して書く。OpenShared[n] の n はバイト数で、

@@ -38,7 +38,7 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 class Vary:
-    """
+    """Definition of a variable varied in matching (element name, parameter, bounds, step).
     マッチングで変化させる変数の定義。
 
     Parameters
@@ -68,7 +68,7 @@ class Vary:
 # ---------------------------------------------------------------------------
 
 class Constraint:
-    """
+    """A matching constraint: a function of the lattice, its target value, weight and label.
     マッチングの制約条件。
 
     Parameters
@@ -102,7 +102,7 @@ class Constraint:
 # ---------------------------------------------------------------------------
 
 class MatchResult:
-    """
+    """Result container of `Match.minimize()` (success, matched lattice, residuals, iterations, final value).
     Match.minimize() の結果コンテナ。
 
     Attributes
@@ -143,7 +143,7 @@ class MatchResult:
 # ---------------------------------------------------------------------------
 
 class Match:
-    """
+    """Optics matching corresponding to the SAD `Match[]` command.
     SAD の Match[] コマンドに相当する光学マッチング。
 
     使い方
@@ -168,7 +168,8 @@ class Match:
     def vary(self, element_name: str, param: str,
              lower: float = None, upper: float = None,
              step: float = 1e-4) -> 'Match':
-        """変化させる要素パラメータを登録する。"""
+        """Register an element parameter to be varied.
+        変化させる要素パラメータを登録する。"""
         self._vary_list.append(
             Vary(element_name, param, lower, upper, step))
         return self
@@ -179,7 +180,8 @@ class Match:
 
     def constraint_tune(self, Qx: float = None, Qy: float = None,
                         weight: float = 1.0) -> 'Match':
-        """チューン Qx, Qy の制約。"""
+        """Add a constraint on the tunes Qx and Qy.
+        チューン Qx, Qy の制約。"""
         targets = []
         components = []
         if Qx is not None:
@@ -208,7 +210,8 @@ class Match:
     def constraint_beta(self, element_idx: int,
                         bx: float = None, by: float = None,
                         weight: float = 1.0) -> 'Match':
-        """特定要素位置での β 関数の制約。"""
+        """Add a constraint on the beta functions at a given element position.
+        特定要素位置での β 関数の制約。"""
         targets = []
         components = []
         if bx is not None:
@@ -231,7 +234,8 @@ class Match:
     def constraint_dispersion(self, element_idx: int,
                                eta: float = None, etap: float = None,
                                weight: float = 1.0) -> 'Match':
-        """特定位置での分散 η, η' の制約。"""
+        """Add a constraint on the dispersion eta and eta' at a given position.
+        特定位置での分散 η, η' の制約。"""
         targets, comps = [], []
         if eta is not None:
             targets.append(eta); comps.append('ex')
@@ -249,7 +253,8 @@ class Match:
 
     def constraint_chromaticity(self, Cx: float = None, Cy: float = None,
                                  weight: float = 1.0) -> 'Match':
-        """色収差 ξx, ξy の制約。"""
+        """Add a constraint on the chromaticities xi_x and xi_y.
+        色収差 ξx, ξy の制約。"""
         targets, comps = [], []
         if Cx is not None:
             targets.append(Cx); comps.append('chrom_x')
@@ -267,7 +272,8 @@ class Match:
 
     def constraint_custom(self, func: Callable, target,
                            weight: float = 1.0, label: str = '') -> 'Match':
-        """任意の制約関数を登録する。"""
+        """Register an arbitrary constraint function.
+        任意の制約関数を登録する。"""
         self._constr_list.append(
             Constraint(func, target, weight, label=label))
         return self
@@ -329,7 +335,7 @@ class Match:
                  tol: float = 1e-8,
                  maxiter: int = 2000,
                  verbose: bool = False) -> MatchResult:
-        """
+        """Run the matching with the chosen method ('auto', 'nelder-mead', 'cobyla', 'lbfgsb' or 'simplex') and return a `MatchResult`.
         マッチングを実行する。
 
         Parameters
@@ -505,7 +511,7 @@ def _nelder_mead(func, x0, bounds=None, tol=1e-8, maxiter=2000,
 # ---------------------------------------------------------------------------
 
 class DynamicApertureSurvey:
-    """
+    """Enhanced SAD `DynamicAperture[]` that scans the momentum deviation dp to study the dp dependence of the dynamic aperture.
     SAD の DynamicAperture[] の強化版。
     運動量偏差 dp をスキャンして動的アパーチャの dp 依存性を調べる。
 
@@ -548,7 +554,8 @@ class DynamicApertureSurvey:
         self._results: Dict[float, dict] = {}
 
     def run(self, verbose: bool = True) -> 'DynamicApertureSurvey':
-        """動的アパーチャサーベイを実行する。"""
+        """Run the dynamic aperture survey.
+        動的アパーチャサーベイを実行する。"""
         from .tracking import dynamic_aperture as _da
         for dp in self.dp_values:
             if verbose:
@@ -563,14 +570,15 @@ class DynamicApertureSurvey:
         return self
 
     def result(self) -> Dict[float, dict]:
-        """
+        """Return the result dictionary keyed by dp value with angles, amplitudes, x and y.
         結果辞書を返す。
         {dp_value: {'angles': [...], 'amplitudes': [...], 'x': [...], 'y': [...]}}
         """
         return dict(self._results)
 
     def max_aperture(self) -> Dict[float, float]:
-        """各 dp での最大振幅 [m] を返す。"""
+        """Return the maximum amplitude in meters at each dp.
+        各 dp での最大振幅 [m] を返す。"""
         return {dp: r['amplitudes'].max()
                 for dp, r in self._results.items()}
 
@@ -586,7 +594,7 @@ class DynamicApertureSurvey:
                   f"  {ax.max()*1e3:>9.3f}  {ay.max()*1e3:>9.3f}")
 
     def to_array(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """
+        """Return (dp_array, angles, amplitudes_2d) with amplitudes_2d of shape (ndp, nangles).
         (dp_array, angles, amplitudes_2d) を返す。
         amplitudes_2d.shape = (ndp, nangles)
         """

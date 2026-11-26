@@ -31,7 +31,7 @@ from typing import Optional
 
 @dataclass
 class Element:
-    """
+    """Base class of SAD elements; every element returns a 6x6 transfer matrix by `transfer_matrix()`.
     SAD 要素の基底クラス。
     全要素は transfer_matrix() メソッドで 6×6 転送行列を返す。
     """
@@ -46,7 +46,8 @@ class Element:
                               # 向きは SAD の ROT (tsolrote/tchge) と同じ: x' = cosθ·x − sinθ·y。
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """6×6 一次転送行列 (delta: 運動量偏差 δ = Δp/p)"""
+        """Return the 6x6 first-order transfer matrix (delta is the momentum deviation).
+        6×6 一次転送行列 (delta: 運動量偏差 δ = Δp/p)"""
         return np.eye(6)
 
     def _apply_rotation(self, M: np.ndarray) -> np.ndarray:
@@ -68,11 +69,12 @@ class Element:
         return Rt6 @ M @ R6
 
     def radiation_integrals(self) -> dict:
-        """放射積分への寄与 I1..I5 を返す (デフォルト: 0)"""
+        """Return the contributions to the radiation integrals I1..I5 (default: 0).
+        放射積分への寄与 I1..I5 を返す (デフォルト: 0)"""
         return {f'I{i}': 0.0 for i in range(1, 6)}
 
     def constant_kick(self, delta: float = 0.0) -> np.ndarray:
-        """
+        """Return the constant orbit kick 6-vector used by `find_cod` (K0 and ROTATE steering kicks, DX/DY feed-down in subclasses).
         定常軌道キック 6-vector (閉軌道計算 find_cod に使用)。
 
         K0     : 水平ステアリング補正コイルキック [rad]
@@ -96,12 +98,12 @@ class Element:
 
 @dataclass
 class Drift(Element):
-    """
+    """DRIFT element (`DRIFT L=<length>;`).
     DRIFT 要素。
     SAD コマンド: DRIFT L=<長さ>;
     """
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """
+        """Return the linear DRFT matrix of qtwiss.f (COD = 0), using the effective length L/(1+delta) for delta nonzero.
         qtwiss.f の DRFT 線形行列 (COD = 0 の場合)。
         delta ≠ 0 の場合は有効長 L/(1+delta) を使用 (色収差補正)。
         """
@@ -118,7 +120,7 @@ class Drift(Element):
 
 @dataclass
 class Quadrupole(Element):
-    """
+    """QUAD element (`QUAD L=<length> K1=<strength>;`) with K1 as local gradient B'/(B rho) in 1/m^2.
     QUAD 要素。
     SAD コマンド: QUAD L=<長さ> K1=<四極強度>;
     K1 > 0: x-focusing (水平集束), K1 < 0: y-focusing
@@ -180,7 +182,7 @@ class Quadrupole(Element):
         return M
 
     def constant_kick(self, delta: float = 0.0) -> np.ndarray:
-        """
+        """Return the constant feed-down kick of a quadrupole caused by the DX/DY offset.
         四極電磁石 DX/DY 据え付け誤差オフセットによる定常フィードダウンキック。
 
         磁石中心が (DX, DY) だけ設計軌道からずれている場合、
@@ -214,7 +216,7 @@ class Quadrupole(Element):
 
 @dataclass
 class Bend(Element):
-    """
+    """BEND element (SBEND equivalent) with ANGLE, K1, E1, E2, HGAP and FINT.
     BEND 要素 (SBEND 相当)。
     SAD コマンド: BEND L=<長さ> ANGLE=<偏向角> K1=<四極> E1=<入口角> E2=<出口角>;
 
@@ -295,14 +297,16 @@ class Bend(Element):
         return M
 
     def constant_kick(self, delta: float = 0.0) -> np.ndarray:
-        """Bend の ROTATE は設計ロール角 (transfer_matrix 内で処理) であってキックではない。
+        """Return only K0 as a horizontal kick for a Bend, since ROTATE is the design roll angle and not a kick.
+        Bend の ROTATE は設計ロール角 (transfer_matrix 内で処理) であってキックではない。
         基底クラスの d[3] += ROTATE (垂直キック) を継がない。K0 だけ水平キックとして返す (旧 ffs.py の線形 COD 用)。"""
         d = np.zeros(6)
         d[1] += self.K0
         return d
 
     def radiation_integrals(self) -> dict:
-        """放射積分 I1..I5 への寄与 (横方向分散 η は外部から渡す必要あり)"""
+        """Return the contributions to the radiation integrals I1..I5 of a Bend (dispersion eta must be supplied).
+        放射積分 I1..I5 への寄与 (横方向分散 η は外部から渡す必要あり)"""
         # η が未知のため完全計算は lattice.py 側で行う
         return {f'I{i}': 0.0 for i in range(1, 6)}
 
@@ -405,7 +409,7 @@ def _edge_matrix(h: float, e: float,
 
 @dataclass
 class Sextupole(Element):
-    """
+    """SEXT element (`SEXT L=<length> K2=<strength>;`); in the thin-lens picture the linear matrix is a drift.
     SEXT 要素。薄レンズ近似では転送行列は非線形項のみ。
     通常の線形転送行列はドリフトと同じ。
     SAD コマンド: SEXT L=<長さ> K2=<6 極強度>;
@@ -413,7 +417,8 @@ class Sextupole(Element):
     K2: float = 0.0        # 6 極強度 [1/m³]
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """6 極の 1 次転送行列はドリフト (qthin() 相当)。色収差補正あり。"""
+        """Return the first-order transfer matrix of a sextupole, which is a drift (as `qthin()`) with chromatic correction.
+        6 極の 1 次転送行列はドリフト (qthin() 相当)。色収差補正あり。"""
         M = np.eye(6)
         Leff = self.L / (1.0 + delta)
         M[0, 1] = Leff
@@ -421,7 +426,7 @@ class Sextupole(Element):
         return M
 
     def thin_kick(self, x: float, y: float, delta: float = 0.0) -> tuple:
-        """
+        """Return the nonlinear thin-lens sextupole kick.
         薄レンズ近似での6 極キック (非線形)。
         Δx' = -K2*L/2 * (x² - y²)
         Δy' = +K2*L * x*y
@@ -438,7 +443,7 @@ class Sextupole(Element):
 
 @dataclass
 class Cavity(Element):
-    """
+    """CAVI element (RF cavity) with FREQ, VOLT, PHI and E0.
     CAVI 要素 (RF 空洞)。
     SAD コマンド: CAVI FREQ=<周波数[Hz]> VOLT=<電圧[eV]> PHI=<位相[rad]> E0=<ビームエネルギー[eV]>;
 
@@ -465,7 +470,7 @@ class Cavity(Element):
     E0: float   = 1.0e9    # 基準エネルギー [eV]  (デフォルト: 1 GeV)
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """
+        """Return the 6x6 linear transfer matrix of a cavity (transverse drift, longitudinal focusing linearized about the phase PHI).
         空洞の 6×6 線形転送行列。
 
         横方向: 空洞長 L のドリフト (通常 L ≈ 0 の薄レンズ近似)
@@ -490,18 +495,20 @@ class Cavity(Element):
 
     @property
     def k_rf(self) -> float:
-        """RF 波数 [1/m]"""
+        """Return the RF wave number [1/m].
+        RF 波数 [1/m]"""
         from .constants import SpeedOfLight
         return 2.0 * np.pi * self.FREQ / SpeedOfLight if self.FREQ > 0 else 0.0
 
     @property
     def v0(self) -> float:
-        """規格化電圧 VOLT/E0 (無次元)"""
+        """Return the normalized voltage VOLT/E0 (dimensionless).
+        規格化電圧 VOLT/E0 (無次元)"""
         return self.VOLT / self.E0 if self.E0 != 0 else 0.0
 
     def synchrotron_tune(self, alpha_c: float, circumference: float,
                          n_cav: int = 1) -> float:
-        """
+        """Return an approximate estimate of the synchrotron tune Qs from the momentum compaction and circumference.
         シンクロトロン振動チューン Qs の近似推定。
 
         Qs ≈ sqrt(-α_c * h_rf * v0 * cos(PHI) / (2π))
@@ -530,7 +537,7 @@ class Cavity(Element):
 
 @dataclass
 class TCavity(Element):
-    """
+    """TCAVI element (transverse deflecting or crab cavity, after ttcav.f and ttcave.f); see tcav.py.
     TCAVI 要素 (横偏向空洞・クラブ空洞、K64 の ttcav.f / ttcave.f)。tcav.py。
     params: 要素定義の数値キーワード (K0 HARM PHI FREQ DX DY ROTATE RANKICK RANPHASE RAD ...)。
     RFSW OFF では長さ L のドリフト (tturn / ttcave とも)。
@@ -549,7 +556,8 @@ class TCavity(Element):
 
 @dataclass
 class Monitor(Element):
-    """MONI: ビーム位置モニタ (転送行列はドリフト)"""
+    """MONI element: beam position monitor (the transfer matrix is a drift).
+    MONI: ビーム位置モニタ (転送行列はドリフト)"""
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
         M = np.eye(6)
         Leff = self.L / (1.0 + delta)
@@ -560,7 +568,7 @@ class Monitor(Element):
 
 @dataclass
 class Marker(Element):
-    """
+    """MARK element (marker, identity matrix); DX/DY/DPX/DPY of a leading MARK serve as the initial orbit of `ins calc`.
     MARK: マーカー要素 (単位行列)。
 
     ビームライン先頭の MARK の DX/DY/DPX/DPY は、アライメント誤差ではなく
@@ -576,13 +584,14 @@ class Marker(Element):
         return np.eye(6)
 
     def constant_kick(self, delta: float = 0.0) -> np.ndarray:
-        """MARK はキックを与えない (常にゼロ)。"""
+        """Return zero kick, since MARK gives no kick.
+        MARK はキックを与えない (常にゼロ)。"""
         return np.zeros(6)
 
 
 @dataclass
 class Undulator(Element):
-    """
+    """UND element (undulator, after undulator.f); tracking only, identity in Twiss and `Emittance[]`; see und.py.
     UND 要素 (アンジュレータ、K64 の undulator.f)。und.py。追跡だけ。Twiss・Emittance[] では恒等 (長さは幾何にだけ入る)。
     K64 では磁場のキーワード (FBX FBY) が使えず、磁場なしのドリフトになる (und.py の説明)。
     params: 要素定義の数値キーワード (KX QY PHI SLICE POLE)。
@@ -598,7 +607,7 @@ class Undulator(Element):
 
 @dataclass
 class PhsRot(Marker):
-    """
+    """PHSROT element (phase-space rotation by 6D Twiss, after phsrot.f); tracking is not implemented, identity in Twiss.
     PHSROT 要素 (6 次元 Twiss による位相空間の回転、K64 の phsrot.f)。K64 では行列がすべて 0 になり動作しないので、追跡は
     NotImplementedError (docs/30 B38)。Twiss・Emittance[] では恒等。
     params: 要素定義の数値キーワード (AX BX PX AY BY PY R1..R4 EX.. ZX.. EMIX.. D11..D66 B11..B66 など)
@@ -608,7 +617,7 @@ class PhsRot(Marker):
 
 @dataclass
 class Map(Marker):
-    """
+    """MAP element (user-defined map via `ExternalMap`, after temap.f); identity with zero length if ExternalMap is undefined.
     MAP 要素 (K64 の temap.f: ユーザー定義の写像 ExternalMap["TRACK"/"EMIT"/"OPTICS"/"GEO", ...])。docs/19_other_elements.md。
     ExternalMap が定義されていなければ恒等で、長さも 0 (pos(l+1)=pos(l)。MAP の L は K64 では使われない)。
     params: 要素定義の数値キーワード (L だけ)。_pos は USE が付ける要素の位置 (1 始まり、LINE["POSITION"])。
@@ -630,7 +639,7 @@ class Map(Marker):
 
 @dataclass
 class Coord(Marker):
-    """
+    """COORD element (coordinate transformation DX DY DZ CHI1 CHI2 CHI3 DIR, after tcoord.f and tcoorde.f); see coord.py.
     COORD 要素 (座標変換 DX DY DZ CHI1 CHI2 CHI3 DIR、K64 の tcoord.f / tcoorde.f)。coord.py。
     params: 要素定義の数値キーワード (ずれ・回転の誤差ではなく変換のパラメータなので、DX 等は属性にせず params に置く)
     """
@@ -652,7 +661,7 @@ class Coord(Marker):
 
 @dataclass
 class BeamBeam(Marker):
-    """
+    """BEAMBEAM element (strong-weak beam-beam interaction, after bbstrhl.f); no effect on optics, kicks only in tracking (track6n).
     BEAMBEAM 要素 (強弱ビームのビーム・ビーム相互作用、K64 の bbstrhl.f)。
     光学 (Twiss) には効かない (恒等)。追跡 (track6n) だけがキックを与える。
     params: 要素定義の数値キーワード (AX BX AY BY R1..R4 EX.. DX.. XANGLE EMIX EMIY DP AZ DZ SIGZ SLICE NP R11..R66 BSTRL)
@@ -666,14 +675,15 @@ class BeamBeam(Marker):
 
 @dataclass
 class Multipole(Element):
-    """
+    """MULT element (lumped multipole kick) with coefficients given as a dict of KnL.
     MULT 要素 (集中多極キック)。
     係数は {KnL} の辞書で与える (n: 次数, 値: 強度×長さ)。
     """
     KnL: dict = field(default_factory=dict)   # {次数: 強度}
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """多極子の 1 次転送行列 (ドリフト + 四極成分キック)"""
+        """Return the first-order transfer matrix of a multipole (drift plus quadrupole-component kick).
+        多極子の 1 次転送行列 (ドリフト + 四極成分キック)"""
         M = np.eye(6)
         # ドリフト成分 (L > 0 の場合, 色収差補正あり)
         Leff = self.L / (1.0 + delta)
@@ -696,7 +706,7 @@ class Multipole(Element):
 
 @dataclass
 class Octupole(Element):
-    """
+    """OCTU element (octupole, `OCTU L=<length> K3=<strength>;`); the matrix is a drift, nonlinear tracking corresponds to tthin(nord=8).
     OCTU 要素 (八極電磁石)。
     SAD コマンド: OCTU L=<長さ> K3=<強度>;
     転送行列はドリフトと同じ。非線形トラッキングは tthin(nord=8) に相当。
@@ -713,7 +723,7 @@ class Octupole(Element):
 
 @dataclass
 class Decapole(Element):
-    """
+    """DECA element (decapole, `DECA L=<length> K4=<strength>;`); the matrix is a drift, tracking is tthin(nord=10).
     DECA 要素 (十極電磁石)。
     SAD コマンド: DECA L=<長さ> K4=<強度>;
     転送行列はドリフトと同じ。非線形トラッキングは tthin(nord=10) に相当。
@@ -730,7 +740,7 @@ class Decapole(Element):
 
 @dataclass
 class Dodecapole(Element):
-    """
+    """DODECA element (dodecapole, `DODECA L=<length> K5=<strength>;`); the matrix is a drift, tracking corresponds to tthin(nord=12).
     DODECA 要素 (十二極電磁石)。
     SAD コマンド: DODECA L=<長さ> K5=<強度>;
     転送行列はドリフトと同じ。非線形トラッキングは tthin(nord=12) に相当。
@@ -754,7 +764,7 @@ class Dodecapole(Element):
 
 @dataclass
 class Solenoid(Element):
-    """
+    """SOL element (solenoid, `SOL L=<length> BZ=<axial field> P0=<momentum>;`) with the linear matrix in a rotating frame.
     SOL 要素 (ソレノイド電磁石)。
     SAD コマンド: SOL L=<長さ> BZ=<軸方向磁場[T]> P0=<基準運動量[eV/c]>;
 
@@ -781,7 +791,7 @@ class Solenoid(Element):
             self.KS = self.BZ * self.L / (2.0 * Brho)
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """
+        """Return the 6x6 linear transfer matrix of a solenoid (after Wolski, Beam Dynamics in High-Energy Particle Accelerators, 2014).
         ソレノイドの 6×6 線形転送行列。
         参照: Wolski, Beam Dynamics in High-Energy Particle Accelerators, 2014.
         """
@@ -868,7 +878,7 @@ ELEMENT_TYPES = {
 
 
 def make_element(etype: str, name: str = '', **kwargs) -> Element:
-    """
+    """Build an element from the element type name and parameters.
     要素タイプ名と引数から要素を生成する。
 
     Parameters

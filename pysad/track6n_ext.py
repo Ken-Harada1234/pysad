@@ -1,4 +1,4 @@
-"""
+"""Extension of track6n.py: numba kernels for MULT (`tmulti`) and solenoid regions (`tsol`).
 track6n_ext.py — track6n.py の拡張: MULT (tmulti) とソレノイド領域 (tsol) の numba カーネル
 
 track6.py の _tmulti_ens / _tsol_region (SAD tmulti.f / tsol.f / tdrift.f / tsolqu.f の直訳) を、
@@ -47,7 +47,8 @@ K_MULT, K_SOL_FRIN, K_SOL_DRIFT, K_SOL_QUAD = 10, 11, 12, 13
 # ============================================================================ tdrift (tsolconv 付きの双極キック)
 @njit(**NJ)
 def tsolconv(pz0, plz, pbz, bpr, phi):
-    """tdrift.f tsolconv: phi の Newton 反復。戻りの sin 等は最後に評価した phi (更新前) の値 (SAD のまま)"""
+    """Newton iteration for phi in tdrift.f `tsolconv`; the returned sine etc. are from the last evaluated phi, as in SAD.
+    tdrift.f tsolconv: phi の Newton 反復。戻りの sin 等は最後に評価した phi (更新前) の値 (SAD のまま)"""
     sn, xs, cs, dc = xsincos(phi)
     if plz == 0.0:
         return phi, sn, xs, cs, dc
@@ -68,7 +69,8 @@ def tsolconv(pz0, plz, pbz, bpr, phi):
 
 @njit(**NJ)
 def tdrift_kick1(i, S, al, ak0x, ak0y):
-    """tdrift.f tdrift (bz=0, ak0x/ak0y≠0, 放射なし): 一定の双極キック付きの厳密ドリフト (track6 _tdrift_kick)"""
+    """Exact drift with a constant dipole kick (tdrift.f `tdrift`, bz=0, ak0x/ak0y nonzero, no radiation).
+    tdrift.f tdrift (bz=0, ak0x/ak0y≠0, 放射なし): 一定の双極キック付きの厳密ドリフト (track6 _tdrift_kick)"""
     if ak0x == 0.0 and ak0y == 0.0:
         drift1(i, S, al)
         return
@@ -107,7 +109,8 @@ def tdrift_kick1(i, S, al, ak0x, ak0y):
 # ============================================================================ tsolqu / tsolqum (MULT 用: K0 付き)
 @njit(**NJ)
 def tsolqu_m1(i, S, al, ak, eps0, ak0x, ak0y, qum, sch):
-    """tsolqu.f tsolqu / tsolqum (bz=0, 放射なし) の MULT 用 (track6 _tsolqu と同じ)。
+    """MULT version of `tsolqu` / `tsolqum` (bz=0, no radiation), equivalent to track6 `_tsolqu`.
+    tsolqu.f tsolqu / tsolqum (bz=0, 放射なし) の MULT 用 (track6 _tsolqu と同じ)。
     ak = |K1|L ≥ 0、ak0x/ak0y は分割あたりの K0 (dx0 = ak0x/ak)。ak = 0 なら tdrift_kick1。
     qum=True は tsolqum (tsolqu と違い z の dv の項が −0.25·(ap − dv)·aln0。SAD のまま)。
     本体の積分は quadbody (sch: 0 = K64、1 = 4 次の合成。rs[4])"""
@@ -122,7 +125,8 @@ def tsolqu_m1(i, S, al, ak, eps0, ak0x, ak0y, qum, sch):
 # ============================================================================ フリンジ (ttfrins: 複素 ak)
 @njit(**NJ)
 def ttfrins1(i, S, nord, akre, akim, al):
-    """tquad.f ttfrins: 複素 ak (回した座標系の係数) のフリンジ。主軸へ回して ttfrin、戻す"""
+    """Fringe of tquad.f `ttfrins` for a complex ak (coefficient in the rotated frame): rotate to principal axes, `ttfrin`, rotate back.
+    tquad.f ttfrins: 複素 ak (回した座標系の係数) のフリンジ。主軸へ回して ttfrin、戻す"""
     if (akre == 0.0 and akim == 0.0) or al == 0.0:
         return
     if akre == 0.0:
@@ -147,7 +151,8 @@ def ttfrins1(i, S, nord, akre, akim, al):
 # ============================================================================ 多極キック
 @njit(**NJ)
 def mult_kick1(i, S, akrm, nmmax, nmin):
-    """tmulti の多極キック (Horner)。nmin=2: 長さあり (n≥2 の項、最後に ·cx1/(1+δ))、
+    """Multipole kick of `tmulti` by Horner's method (nmin=2 for thick, nmin=1 for thin L=0 multipoles).
+    tmulti の多極キック (Horner)。nmin=2: 長さあり (n≥2 の項、最後に ·cx1/(1+δ))、
     nmin=1: 薄い (L=0) 多極 (n≥1 の項 + akrm[0]、/(1+δ))"""
     cx1 = complex(S[i, 0], S[i, 2])
     cx = akrm[nmmax] * cx1 / float(nmmax)
@@ -165,7 +170,8 @@ def mult_kick1(i, S, akrm, nmmax, nmin):
 @njit(**NJ)
 def k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
            krad, fluc, rs, p0, h0, anrad, cuc):
-    """tmulti.f tmulti (ANGLE=0, BZ=0, F1/RF なし) = track6 _tmulti_ens。
+    """Kernel for tmulti.f `tmulti` (ANGLE=0, BZ=0, no F1/RF), equal to track6 `_tmulti_ens`.
+    tmulti.f tmulti (ANGLE=0, BZ=0, F1/RF なし) = track6 _tmulti_ens。
     akr: 複素 K_n·cr1^(n+1) (n=0..nmmax)、dofr: フリンジを掛ける次数、ndiv0: tpara の ndiv、eps_rad: EPS (ndivrad 用)"""
     for i in range(n):                   # tsolrot (ent, bz=0): ずらす → 回す
         S[i, 0] -= dx
@@ -229,7 +235,8 @@ def k_mult(S, n, al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps_rad,
 # ============================================================================ ソレノイド: tsfrin, tdrift_solenoid
 @njit(**NJ)
 def tsfrin1(i, S, dbz):
-    """tsol.f tsfrin: ソレノイドの端のフリンジ (bz の変化 dbz)"""
+    """Solenoid edge fringe of tsol.f `tsfrin` for a bz change dbz.
+    tsol.f tsfrin: ソレノイドの端のフリンジ (bz の変化 dbz)"""
     x0 = S[i, 0]; px0 = S[i, 1]; y0 = S[i, 2]; py0 = S[i, 3]
     bq = -0.125 * dbz / (1.0 + S[i, 5])
     bp = -2.0 * bq
@@ -255,7 +262,8 @@ def k_sol_frin(S, n, dbz):
 
 @njit(**NJ)
 def tdrift_solenoid1(i, S, al, bz, enarad, fluc, rs, p0, anrad, cuc):
-    """tdrift.f tdrift_solenoid (放射は tradk1: 基準 (pxi, pyi, zi)、cphi0=1)"""
+    """Kernel for tdrift.f `tdrift_solenoid`, with radiation via `tradk1`.
+    tdrift.f tdrift_solenoid (放射は tradk1: 基準 (pxi, pyi, zi)、cphi0=1)"""
     pr = 1.0 + S[i, 5]
     bzp = bz / pr
     pxi = S[i, 1] + bzp * S[i, 2] * 0.5
@@ -284,7 +292,8 @@ def tdrift_solenoid1(i, S, al, bz, enarad, fluc, rs, p0, anrad, cuc):
 
 @njit(**NJ)
 def k_sol_drift(S, n, al, bz, krad, fluc, rs, p0, anrad, cuc):
-    """ソレノイド領域内の DRIFT: bz≠0 は tdrift_solenoid、bz=0 は tdrift_free"""
+    """DRIFT inside a solenoid region: `tdrift_solenoid` if bz is nonzero, `tdrift_free` if bz=0.
+    ソレノイド領域内の DRIFT: bz≠0 は tdrift_solenoid、bz=0 は tdrift_free"""
     if bz == 0.0:
         for i in range(n):
             drift1(i, S, al)
@@ -305,7 +314,8 @@ def k_sol_drift(S, n, al, bz, krad, fluc, rs, p0, anrad, cuc):
 
 @njit(**NJ)
 def tdrift_bz1(i, S, al, bz, ak0x, ak0y, enarad, fluc, rs, p0, anrad, cuc):
-    """tdrift.f tdrift (bz と ak0x・ak0y の両方がある一様磁場の中の厳密な運動: らせん)。tsol.f の領域内の BEND が呼ぶ
+    """Exact helical motion in a uniform field with both bz and ak0x/ak0y (tdrift.f `tdrift`), called by BENDs in a tsol.f region.
+    tdrift.f tdrift (bz と ak0x・ak0y の両方がある一様磁場の中の厳密な運動: らせん)。tsol.f の領域内の BEND が呼ぶ
     (tdrift(al, bzs, phiy, phix, krad))。S の px, py は正準運動量 (ソレノイドのゲージ)、中では力学的運動量にして使う。
     放射は tradk1 (基準は入口の力学的運動量)。出口で正準運動量に戻すときの p は放射の後の値 (K64 は放射の前の値)"""
     if ak0x == 0.0 and ak0y == 0.0:
@@ -360,7 +370,8 @@ def tdrift_bz1(i, S, al, bz, ak0x, ak0y, enarad, fluc, rs, p0, anrad, cuc):
 
 @njit(**NJ)
 def k_sol_bend(S, n, al, bz, ak0x, ak0y, krad, fluc, rs, p0, anrad, cuc):
-    """ソレノイド領域内の BEND (直線の座標のまま一様な双極磁場: tsol.f の icBEND → tdrift(al, bzs, phiy, phix))"""
+    """BEND inside a solenoid region: uniform dipole field in straight coordinates (tsol.f icBEND via `tdrift`).
+    ソレノイド領域内の BEND (直線の座標のまま一様な双極磁場: tsol.f の icBEND → tdrift(al, bzs, phiy, phix))"""
     if not krad:
         for i in range(n):
             tdrift_bz1(i, S, al, bz, ak0x, ak0y, False, fluc, rs, p0, anrad, cuc)
@@ -432,7 +443,8 @@ def tztafs(zwu, pxt, pyt, zw1, wst, w12t, swss, g1t,
 
 @njit(**NJ)
 def tz_step1(i, S, aln0, akk, bz, first, v2f=False):
-    """tsolqu/tsolqur の bz≠0 分岐の 1 スライス (tzsetparams + 本体)。戻り: この粒子の bzp"""
+    """One slice of the bz-nonzero branch of `tsolqu` / `tsolqur` (`tzsetparams` plus body); returns bzp for the particle.
+    tsolqu/tsolqur の bz≠0 分岐の 1 スライス (tzsetparams + 本体)。戻り: この粒子の bzp"""
     # --- tzsetparams (track6 _TZ.__init__)
     pr = 1.0 + S[i, 5]
     bzp = bz / pr
@@ -510,7 +522,8 @@ def tz_step1(i, S, aln0, akk, bz, first, v2f=False):
 
 @njit(**NJ)
 def tsolqu_bz_final1(i, S, aln0, bzp):
-    """tsolqu/tsolqur の bz≠0 分岐の最後の半ステップ (bzp は呼び出し側が決める: 癖の再現はそこで)"""
+    """Final half step of the bz-nonzero branch of `tsolqu` / `tsolqur`, with bzp chosen by the caller.
+    tsolqu/tsolqur の bz≠0 分岐の最後の半ステップ (bzp は呼び出し側が決める: 癖の再現はそこで)"""
     px = S[i, 1]; py = S[i, 3]
     ap = px * px + py * py
     dpz = sqrt1(-ap)
@@ -526,7 +539,8 @@ def tsolqu_bz_final1(i, S, aln0, bzp):
 
 @njit(**NJ)
 def tsolqu_bz_all(S, n, al, ak, bz, eps0, krad, fluc, rs, p0, h0, anrad, cuc):
-    """tsolqu.f tsolqu / tsolqur の bz≠0 分岐 (ak0x=ak0y=0)。スライス外側・粒子内側、各スライス後に全粒子 tradk。
+    """bz-nonzero branch of tsolqu.f `tsolqu` / `tsolqur` (ak0x=ak0y=0), slices outside, particles inside, `tradk` after each slice.
+    tsolqu.f tsolqu / tsolqur の bz≠0 分岐 (ak0x=ak0y=0)。スライス外側・粒子内側、各スライス後に全粒子 tradk。
     最後の半ステップ: tsolqur (krad) では最後に tzsetparams を呼んだ粒子 (最後のスライスの最後の粒子) の bzp を
     全粒子に使う (SAD tsolqu.f:519-531 の癖)。tsolqu (放射なし) は粒子ごとの値"""
     eps = 0.2 if eps0 == 0.0 else 0.2 * eps0
@@ -557,7 +571,8 @@ def tsolqu_bz_all(S, n, al, ak, bz, eps0, krad, fluc, rs, p0, h0, anrad, cuc):
 
 @njit(**NJ)
 def k_sol_quad(S, n, L, ak, ct, st, fringe, bz, krad, fluc, rs, p0, h0, anrad, cuc, dx, dy):
-    """tsol.f の icQUAD → tquad (bz=bzs; F1=FRINGE=0) = track6 _tquad_sol。ak = |K1|L > 0。
+    """Kernel for a QUAD inside a solenoid (tsol.f icQUAD -> `tquad` with bz=bzs), equal to track6 `_tquad_sol`.
+    tsol.f の icQUAD → tquad (bz=bzs; F1=FRINGE=0) = track6 _tquad_sol。ak = |K1|L > 0。
     dx, dy (v2next B3): 四極のずれ。tsolrot の (dx, dy) = 座標をずらし (x − dx、y − dy)、ソレノイドの一様磁場のベクトルポテンシャルのゲージが
     変わる分だけ正準運動量もずらす (px + (bz/2)dy、py − (bz/2)dx、bz は運動量で規格化)。出口は逆。回転 (ROTATE) はずらしの後 (出口は前)"""
     for i in range(n):
@@ -606,7 +621,8 @@ K_SOL_EDGE = 17
 
 @njit(**NJ)
 def trots1(i, S, r, dx, dy, dz, ent):
-    """tsol.f trots: SOL の端の座標変換。r (3×3) は tpara の R11..R33 (CHI1..3 から)、dx dy dz は SOL の DX DY DZ。
+    """Coordinate transform at a SOL edge (tsol.f `trots`): rotation by R, straight flight to the z=0 plane, and the (dx, dy) shift.
+    tsol.f trots: SOL の端の座標変換。r (3×3) は tpara の R11..R33 (CHI1..3 から)、dx dy dz は SOL の DX DY DZ。
     入口 (ent): 回して、新しい z=0 の面まで直進し、(dx, dy) を足す。出口: (dx, dy) を引いて回し、直進する。
     運動量 (S[:,1], S[:,3] は p で割った値) は回すだけ。SOL の外側 (bz=0) で使うので正準運動量 = 力学的運動量。
     z: 設計の行路長が dz だけ伸びる分は dz·(1 − dv) (z = −v(t − t0) で、基準粒子の時刻が dz/v0 進む)。
@@ -639,7 +655,8 @@ def trots1(i, S, r, dx, dy, dz, ent):
 
 @njit(**NJ)
 def k_sol_edge(S, n, rot, r, dx, dy, dz, dbz, bz0, bz1, f1, krad, fluc, rs, p0, anrad, cuc):
-    """SOL の端 (tsol.f): rot = 1 入口 (trots → tsfrin → 放射)、−1 出口 (tsfrin → 放射 → trots)、0 領域内の SOL (回転なし)。
+    """SOL edge kernel of tsol.f: entrance (`trots`, `tsfrin`, radiation), exit, or an inner SOL without rotation.
+    SOL の端 (tsol.f): rot = 1 入口 (trots → tsfrin → 放射)、−1 出口 (tsfrin → 放射 → trots)、0 領域内の SOL (回転なし)。
     dbz はフリンジの bz の段差 (DISFRIN なら 0)、bz0・bz1 は端の前後の bz。
     放射 (krad: RAD かつ F1≠0 かつ RAD=0 かつ bz が変わる): 端の前の力学的運動量の向きを基準に、tsfrin の後の向きとの差を
     長さ F1 の間の一様な偏向として tradk に渡す (tradks)"""
@@ -671,7 +688,8 @@ K_SOL_BEND, K_SOL_MULT = 15, 16
 
 @njit(**NJ)
 def sol_body_all(S, n, al, ak1, bz, ak0x, ak0y, rs):
-    """領域内の MULT の本体 (放射なし): K1=0 は一様磁場 (ソレノイド + 双極) の厳密解 tdrift_bz1、
+    """Body of a MULT inside a solenoid region without radiation: exact `tdrift_bz1` for K1=0, `tsolqu` bz-nonzero branch for K1 nonzero.
+    領域内の MULT の本体 (放射なし): K1=0 は一様磁場 (ソレノイド + 双極) の厳密解 tdrift_bz1、
     K1≠0 は ソレノイド + 四極 の厳密解 tsolqu の bz≠0 の枝 (双極は四極の中心のずれとして入れる)"""
     if al == 0.0:
         return
@@ -710,7 +728,8 @@ def sol_k0_kick_all(S, n, kre, kim):
 
 @njit(**NJ)
 def sol_setr0_kin(S, n, bz):
-    """放射の基準点 (力学的運動量の向き)"""
+    """Set the radiation reference point (direction of the kinetic momentum).
+    放射の基準点 (力学的運動量の向き)"""
     for i in range(n):
         bzp = bz / (1.0 + S[i, 5])
         S[i, 7] = S[i, 1] + bzp * S[i, 2] * 0.5
@@ -720,7 +739,8 @@ def sol_setr0_kin(S, n, bz):
 
 @njit(**NJ)
 def sol_tradk_all(S, n, al, bz, fluc, rs, p0, anrad, cuc):
-    """tradk を力学的運動量で (正準 → 力学 → tradk → 基準点の更新 → 正準。正準へ戻すときの p は放射の後の値)"""
+    """Apply `tradk` using kinetic momenta (canonical to kinetic, `tradk`, update reference point, back to canonical).
+    tradk を力学的運動量で (正準 → 力学 → tradk → 基準点の更新 → 正準。正準へ戻すときの p は放射の後の値)"""
     for i in range(n):
         bzp = bz / (1.0 + S[i, 5])
         S[i, 1] += bzp * S[i, 2] * 0.5
@@ -733,7 +753,8 @@ def sol_tradk_all(S, n, al, bz, fluc, rs, p0, anrad, cuc):
 
 
 def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True, fr_out=True, hook=None, kick=None, wk=None):
-    """v2: ソレノイド領域 (bz≠0) の中の MULT と CAVI (tsol.f の icMULT → tmulti1、icCAVI → tmultiacc を bz つきで)。
+    """v2: MULT and CAVI inside a solenoid region (bz nonzero), as tsol.f icMULT -> `tmulti1` and icCAVI -> `tmultiacc` with bz.
+    v2: ソレノイド領域 (bz≠0) の中の MULT と CAVI (tsol.f の icMULT → tmulti1、icCAVI → tmultiacc を bz つきで)。
     K64 の tmulti の骨組み (半分の本体、[多極の蹴り、RF の蹴り、本体] × ndiv、端のフリンジ) はそのままで、本体を
     「ソレノイド + 四極」または「ソレノイド + 双極」の厳密解にする。蹴りは位置を変えないので正準運動量にそのまま足せる。
     放射 (RAD) は本体と蹴りを合わせた向きの変化から、分割ごとに力学的運動量で tradk。
@@ -876,7 +897,8 @@ def sol_mult_full(S, n, ph, pr, bz, trf0, trpt, rfsw, rad, fluc, rs, fr_in=True,
 
 # ============================================================================ ラティスの表 (track6n.Prog の拡張)
 def compile_mult(el, ph=None, dz=0.0):
-    """MULT → (K_MULT, params) / nmmax<0 → (K_DRIFT, (L,))。track6 _tmulti_ens と同じ前処理 (_lat._mult_params)。
+    """Compile a MULT into (K_MULT, params), or (K_DRIFT, (L,)) if nmmax<0, with the same preprocessing as track6 `_tmulti_ens`.
+    MULT → (K_MULT, params) / nmmax<0 → (K_DRIFT, (L,))。track6 _tmulti_ens と同じ前処理 (_lat._mult_params)。
     VOLT+DVOLT≠0 の MULT は ph (基準運動量 ph.omega0、charge、amass) を渡すと RF の引数 rf (tmulti1 → tmultiacc) を付ける。
     実行時に (TRPT か RFSW) なら tmultiacc (mult_full)、そうでなければ RF なしの tmulti (k_mult)"""
     g = _t6._g
@@ -953,7 +975,8 @@ def mult_rot_out(S, n, dx, dy, ct, st):
 
 @njit(**NJ)
 def mult_fringe_all(S, n, akr, dofr, nmmax, al, sgn, rev):
-    """ttfrins: 入口は n=0..nmmax の順に +akr、出口は n=nmmax..0 の順に −akr"""
+    """Apply the `ttfrins` fringe: +akr for n=0..nmmax at entrance, -akr for n=nmmax..0 at exit.
+    ttfrins: 入口は n=0..nmmax の順に +akr、出口は n=nmmax..0 の順に −akr"""
     for i in range(n):
         if rev:
             for m in range(nmmax, -1, -1):
@@ -967,7 +990,8 @@ def mult_fringe_all(S, n, akr, dofr, nmmax, al, sgn, rev):
 
 @njit(**NJ)
 def mult_rf_kick_all(S, n, v, v20a, w, wi, dphis, offset, offset1, wsn, dzn, p0, h0):
-    """tmultiacc の do concurrent (電圧キック 1 分割。v1a=v11a=0、v20a=v02a)"""
+    """One division of the `tmultiacc` voltage kick (do concurrent loop; v1a=v11a=0, v20a=v02a).
+    tmultiacc の do concurrent (電圧キック 1 分割。v1a=v11a=0、v20a=v02a)"""
     pmin = 1e-10
     oneev = 1.0 + 1e-6
     tlim = 1e4
@@ -1012,7 +1036,8 @@ def mult_exit_momentum(S, n, p0, p2, dp2p2, h2):
 
 
 def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
-    """tmulti.f tmultiacc (ANGLE=0、F1/FRINGE なし)。RF のある MULT (TRPT か RFSW のとき)。
+    """Kernel for tmulti.f `tmultiacc` (ANGLE=0, no F1/FRINGE): a MULT with RF when TRPT or RFSW; returns the new ph.
+    tmulti.f tmultiacc (ANGLE=0、F1/FRINGE なし)。RF のある MULT (TRPT か RFSW のとき)。
     kick (WakeKick) と wk があれば分割ごとに txwake。新しい ph (空洞の後の基準運動量) を返す (tturn が周の終わりに元へ戻す)"""
     import copy
     (al, nmmax, akr, dofr, ndiv0, dx, dy, ct, st, fringe, eps0, radok, rf) = pr
@@ -1122,7 +1147,8 @@ def mult_full(S, n, ph, pr, trf0, trpt, rad, fluc, rs, kick, wk):
 
 
 def compile_sol_quad(el, bzs):
-    """ソレノイド内の QUAD → (K_SOL_QUAD, params) (track6 _tquad_sol と同じ制限)"""
+    """Compile a QUAD inside a solenoid into (K_SOL_QUAD, params), with the same restrictions as track6 `_tquad_sol`.
+    ソレノイド内の QUAD → (K_SOL_QUAD, params) (track6 _tquad_sol と同じ制限)"""
     g = _t6._g
     L = el.L
     K1L = g(el, 'K1') * L
@@ -1137,7 +1163,8 @@ def compile_sol_quad(el, bzs):
 
 
 def compile_sol_region(prog, elements, i, ph):
-    """elements[i] (BOUND≠0 の SOL) から終点 (次の BOUND≠0 の SOL) までを compile して prog に足し、終点の添字を返す
+    """Compile elements from a SOL with BOUND nonzero to the next one into prog and return the end index.
+    elements[i] (BOUND≠0 の SOL) から終点 (次の BOUND≠0 の SOL) までを compile して prog に足し、終点の添字を返す
     (track6 _tsol_region と同じ制限)。track6n.Prog.__init__ から呼ばれる"""
     g = _t6._g
     sb = elements[i]
@@ -1270,7 +1297,8 @@ ProgExt = _n.Prog
 
 
 def step_kind(kind, pr, S, n, ph, trf0, rfsw, rad, fluc, rs, tm=1.0, kick=None, wk=None):
-    """1 要素分のカーネル呼び出し (track6n.turn の分岐 + 新しい kind)。
+    """Call the kernel for one element (the track6n.turn branches plus new kinds); returns a new ph for accelerating CAVI/MULT with TRPT.
+    1 要素分のカーネル呼び出し (track6n.turn の分岐 + 新しい kind)。
     C2: 領域内の CAVI・MULT が TRPT で加速したときは新しい ph を返す (ほかは None)。SOL 領域の bz は compile のときの基準運動量
     (ph.p0_ref) で規格化してあるので、上流で加速していれば p0_ref/p0 を掛ける (K64 の tfbzs(l) は要素 l の入口の運動量で規格化)"""
     p0, h0, anrad, cuc = ph.p0, ph.h0, ph.anrad, ph.cuc
@@ -1364,7 +1392,8 @@ turn_ext = _n.turn
 
 def track_particles_ext(elements, coords, nturn, momentum_eV, trf0=0.0, rfsw=True, rad=False, fluc=False,
                         seed=None, charge=1.0, amass=None, progress=0, fshift=0.0):
-    """track6.track_particles / track6n.track_particles_fast と同じ仕様 (MULT/SOL 対応、フォールバックなし)"""
+    """`track_particles` with MULT and SOL support and no fallback, same specification as track6.track_particles.
+    track6.track_particles / track6n.track_particles_fast と同じ仕様 (MULT/SOL 対応、フォールバックなし)"""
     import time
     circ = sum(el.L for el in elements)
     kw = {} if amass is None else {'amass': amass}

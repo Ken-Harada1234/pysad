@@ -1,4 +1,5 @@
-"""WAKEOPT: 光学計算 (CALC) での wake (tffswake.f)。
+"""WAKEOPT: wake kicks on InitialOrbits in the `CALC` optics calculation (translation of tffswake.f).
+WAKEOPT: 光学計算 (CALC) での wake (tffswake.f)。
 
 InitialOrbits の各軌道 (と中心の軌道) を INS で伝搬し、WakeFunction を持つ要素の前後で、全軌道の z・x・y から
 各軌道の dpx, dpy, ddp へのキックを与える。軌道は FFS の idp (nfam1..nfam、中心 0) で区別する。
@@ -156,7 +157,8 @@ def _propagate(els, lb: int, le: int, st, rows_tw: dict):
 
 def wake_orbits(els, slots: Dict[int, tuple], tables: Dict[int, tuple], *, sigz: float, nbunch: float, charge: float,
                 pbunch: float, lwake: bool, twake: bool, gammab, amass: float) -> Dict[int, Dict[int, dict]]:
-    """tffswake。slots: {idp: (tw, cod[6])} (昇順に並べて使う)、tables: {要素番号: (縦の表, 横の表, dx, dy)}、
+    """Compute `tffswake`: propagate all orbits (slots) and apply wake kicks at elements with tables; returns states by idp and position.
+    tffswake。slots: {idp: (tw, cod[6])} (昇順に並べて使う)、tables: {要素番号: (縦の表, 横の表, dx, dy)}、
     gammab(k): 位置 k の基準運動量 (p/mc)。戻り: {idp: {位置: 状態の辞書 (cod 付き)}} (位置 1..nlat)"""
     nlat = len(els) + 1
     ids = sorted(slots)

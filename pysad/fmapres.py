@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""周波数マップと共鳴駆動項 (RDT)・ADTS の定量的な接続 (v2.3.0 S1、K64 にない新機能。互換モードによらず同じ)。
+"""Quantitative link between frequency maps, resonance driving terms (RDT) and ADTS.
+周波数マップと共鳴駆動項 (RDT)・ADTS の定量的な接続 (v2.3.0 S1、K64 にない新機能。互換モードによらず同じ)。
 
 目的: 周波数マップ (freqmap.py) の D の大きい領域が、RDT (resdrive.resonance_terms) の大きさと ADTS (resdrive.adts) から予想される共鳴の
 位置と太さに入るか、を数で調べる。共鳴 m νx + n νy = p のまわりの「その振幅でその共鳴に入る」初期条件 (x, y) の領域を計算する。
@@ -35,7 +36,8 @@ def _canon(a1, a2):
 
 
 def first_order_terms(lat, rows=None, delta=0.0, bend_cubic=None, amin=1e-6):
-    """6 極 (と偏向磁石の 3 次) の 1 次の RDT を調和ごとにまとめる。戻り {(a1, a2): [(j, k, l, m, h)]} (代表の調和だけ。|h| < amin × (最大の |h|) の項は除く)"""
+    """Collect the first-order RDTs of sextupoles (and third order of bends) per harmonic, as {(a1, a2): [(j, k, l, m, h)]}.
+    6 極 (と偏向磁石の 3 次) の 1 次の RDT を調和ごとにまとめる。戻り {(a1, a2): [(j, k, l, m, h)]} (代表の調和だけ。|h| < amin × (最大の |h|) の項は除く)"""
     res = _R.resonance_terms(lat, terms=_MONOS3, rows=rows, delta=delta, bend_cubic=bend_cubic)
     out = {}
     hmax = max(abs(v) for v in res.total.values())
@@ -52,7 +54,8 @@ def first_order_terms(lat, rows=None, delta=0.0, bend_cubic=None, amin=1e-6):
 
 
 def second_order_terms(lat, rows=None, amin=1e-3, order2=True, **kw):
-    """v2.3.0 R5: 4 次の RDT h_jklm0 (j+k+l+m = 4。6 極の 2 次 + 8 極 + 運動学 + フリンジ + 偏向磁石の 4 次の項、`rdt2nd.rdt4`) を調和 (j−k, l−m) ごとにまとめる。
+    """Collect the fourth-order RDTs h_jklm0 per harmonic, excluding the diagonal ADTS harmonic.
+    v2.3.0 R5: 4 次の RDT h_jklm0 (j+k+l+m = 4。6 極の 2 次 + 8 極 + 運動学 + フリンジ + 偏向磁石の 4 次の項、`rdt2nd.rdt4`) を調和 (j−k, l−m) ごとにまとめる。
     戻り {(a1, a2): [(j, k, l, m, h)]} (代表の調和。対角 (0, 0) は ADTS なので除く。|h| < amin × (最大の |h|) は除く)。
     注意: 写像の 4 次の生成関数の係数で、正規形の補正 (3 次の項の非共鳴の摂動、`rdt2nd.nf_correction` は対角だけ) は非対角の調和には入れていない"""
     from . import rdt2nd
@@ -79,7 +82,8 @@ def _egcd(a, b):
 
 
 class ResonancePredictor:
-    """共鳴ごとの予想の領域。属性: harms {(a1, a2): [(j, k, l, m, h)]}、A (2 × 2)、nu0 (νx0, νy0) 整数部を含む線形のチューン、
+    """Prediction region for each resonance, holding the harmonics, ADTS matrix A, linear tunes nu0 and Twiss at the location.
+    共鳴ごとの予想の領域。属性: harms {(a1, a2): [(j, k, l, m, h)]}、A (2 × 2)、nu0 (νx0, νy0) 整数部を含む線形のチューン、
     tw (αx, βx, αy, βy, μx, μy: 位置 loc の Twiss)"""
 
     def __init__(self, harms, A, nu0, tw):
@@ -90,7 +94,8 @@ class ResonancePredictor:
 
     @classmethod
     def from_lattice(cls, lat, loc, rows=None, delta=0.0, bend_cubic=None, order_adts=True, order2=False, amin2=1e-3, model=None):
-        """lat: Lattice。loc: 位置 (1 始まり、要素の入口)。rows: lat.twiss_table(delta=delta) (省略可)。RDT は resonance_terms、A は adts().total。
+        """Build the predictor from a Lattice at a location, optionally adding fourth-order RDTs or returning the S3 model.
+        lat: Lattice。loc: 位置 (1 始まり、要素の入口)。rows: lat.twiss_table(delta=delta) (省略可)。RDT は resonance_terms、A は adts().total。
         order2=True (v2.3.0 R5): 4 次の RDT (second_order_terms) も調和ごとに足す (1 次だけでは予想できなかった νx−νy・2νx±2νy・4νx・νx±3νy などの島の領域)
         model='s3' (v2.3.0 S3): `fmappred.ResonancePredictorS3` を返す (4 次の h に非共鳴の 3 次の補正、連続のスコア、信頼度のフラグ。docs/25 §12)"""
         if model == 's3':
@@ -113,7 +118,8 @@ class ResonancePredictor:
 
     # ------------------------------------------------------------------
     def actions(self, x, y):
-        """px = py = 0 の初期条件 (x, y) [m] の作用 (Jx, Jy) と、基準 (リングの先頭) での角度 (φx, φy)"""
+        """Return the actions (Jx, Jy) of initial conditions (x, y) with px = py = 0 and the angles at the lattice start.
+        px = py = 0 の初期条件 (x, y) [m] の作用 (Jx, Jy) と、基準 (リングの先頭) での角度 (φx, φy)"""
         ax, bx, ay, by, mux, muy = self.tw
         x = np.asarray(x, dtype=float)
         y = np.asarray(y, dtype=float)
@@ -134,7 +140,8 @@ class ResonancePredictor:
         return F
 
     def predict(self, x, y, nu=None):
-        """初期条件 (x, y) の配列 (同じ形) に対し、各調和で「捕らえられる (位相つき)」「包絡 (位相を問わない)」の真偽の配列と、Δ0・W・p を返す。
+        """Return, for initial conditions (x, y), whether each harmonic traps them (with phase) or contains them in its envelope.
+        初期条件 (x, y) の配列 (同じ形) に対し、各調和で「捕らえられる (位相つき)」「包絡 (位相を問わない)」の真偽の配列と、Δ0・W・p を返す。
         nu: (νx, νy) の配列 (整数部を含む) を渡すと、ν(J) を線形の式の代わりにそれ (実測のチューン) にする (G0 は A から)。
         戻り {'any': 位相つきの和集合、'envelope': 包絡の和集合、'by_harmonic': {a: dict(trapped, envelope, delta0, W, p, G0)}}"""
         x = np.asarray(x, dtype=float)
@@ -179,7 +186,8 @@ class ResonancePredictor:
 
 
 def coverage_stats(D, mask, grid, thr=-5.0, nshift=400, seed=1):
-    """D (点のリスト、格子の順 = meshgrid(ij) の ravel、(nx, ny))、mask (同じ形の真偽の配列、共鳴の予想の領域)。
+    """Compute coverage statistics of a resonance prediction mask against D: area, hit count, coverage and enrichment.
+    D (点のリスト、格子の順 = meshgrid(ij) の ravel、(nx, ny))、mask (同じ形の真偽の配列、共鳴の予想の領域)。
     戻り dict: area (領域の割合)、n_hi (D > thr の点数)、cov (D > thr の点が領域に入る割合)、enrich (cov/area)、p_in・p_out (領域の中・外の D > thr の割合)、
     shift: 領域を格子の上で巡回ずらし (nshift 回、領域と同じ形・面積) して得た cov の平均・標準偏差・最大、pval (ずらしの cov ≥ cov の割合)。nan の点は除く"""
     nx, ny = grid[0], grid[1]
@@ -212,7 +220,8 @@ FIRST_ORDER_MN = [(3, 0), (1, 0), (1, 2), (1, -2)]          # 6 極 (normal) の
 
 
 def lines_distance(nux, nuy, mn_list):
-    """各点 (νx, νy) (端数でも整数部つきでもよい) から、mn_list = [(m, n)] の共鳴線 m νx + n νy = p (どの整数 p でも) までの最短距離 (チューン平面の距離)"""
+    """Return the shortest tune-plane distance from each point (nux, nuy) to the resonance lines m nux + n nuy = p in mn_list.
+    各点 (νx, νy) (端数でも整数部つきでもよい) から、mn_list = [(m, n)] の共鳴線 m νx + n νy = p (どの整数 p でも) までの最短距離 (チューン平面の距離)"""
     nux = np.asarray(nux, dtype=float)
     nuy = np.asarray(nuy, dtype=float)
     best = np.full(nux.shape, np.inf)
@@ -223,14 +232,16 @@ def lines_distance(nux, nuy, mn_list):
 
 
 def other_mn(order=4, exclude=FIRST_ORDER_MN):
-    """order 次以下で、1 次の RDT が駆動しない (m, n) (差の共鳴 νx − νy、4 次など)。(m, n) と (−m, −n) は 1 つ"""
+    """Return the (m, n) up to a given order that the first-order RDT does not drive (difference resonance, fourth order, etc.).
+    order 次以下で、1 次の RDT が駆動しない (m, n) (差の共鳴 νx − νy、4 次など)。(m, n) と (−m, −n) は 1 つ"""
     from .freqmap import _mn_list
     ex = set(exclude) | set((-a, -b) for a, b in exclude)
     return [mn for mn in _mn_list(order) if mn not in ex and (-mn[0], -mn[1]) not in ex]
 
 
 def apply_alignment_errors(setup, seed=1, quad_dxy=0.0, quad_rot=0.0, sext_dxy=0.0, bend_dxy=0.0, bend_rot=0.0, sext_rot=0.0, oct_dxy=0.0, streams='single'):
-    """TrackSetup の複製に、乱数 (正規分布、標準偏差 = 引数) の位置のずれ (DX・DY [m])・ロール (四極・6 極の ROTATION・偏向磁石の DROTATE [rad]) の誤差を、
+    """Return a copy of a TrackSetup with random position offsets (DX, DY) and rolls applied independently to each element.
+    TrackSetup の複製に、乱数 (正規分布、標準偏差 = 引数) の位置のずれ (DX・DY [m])・ロール (四極・6 極の ROTATION・偏向磁石の DROTATE [rad]) の誤差を、
     要素ごとに別々に (周期性を使わずに) 与える。戻り (新しい TrackSetup, 辞書: 要素の数と誤差の rms)。元の setup は変えない (要素を複製して書き換える)。
     閉軌道は frequency_map が (RFSW OFF では) 4 次元の Newton 法で求め直す。Twiss (setup.rows) は誤差なしの設計値のまま (frequency_map の規格化は標本から求める)。
     streams: 'single' (S1 の既定、乱数の列が 1 本で、要素の順に四極のずれ・ロール、6 極のずれ、偏向磁石のずれ・ロールを引く。どれかの引数を 0 にすると列がずれる)、
@@ -312,7 +323,8 @@ def apply_alignment_errors(setup, seed=1, quad_dxy=0.0, quad_rot=0.0, sext_dxy=0
 
 
 def plot_with_prediction(res, masks, path, vmin=-8.0, vmax=-2.0, title=None, axes=None):
-    """周波数マップ (res: FMapResult、x–y・x–δ・y–δ のどれか) の D の図に、共鳴の予想の領域の輪郭を重ねる。
+    """Plot the D map of a frequency map (x-y, x-delta or y-delta) with contours of the predicted resonance regions overlaid.
+    周波数マップ (res: FMapResult、x–y・x–δ・y–δ のどれか) の D の図に、共鳴の予想の領域の輪郭を重ねる。
     masks: [(ラベル, 真偽の配列 (点の順), 色, 線種)]。axes: 軸の名前 2 つ ('x','y')・('x','dp')・('y','dp') (None なら格子の長さが 1 でない 2 つ)"""
     import matplotlib
     matplotlib.use('Agg')

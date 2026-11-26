@@ -1,4 +1,4 @@
-"""
+"""Keyword lists per SAD element type (order of `SetElement` and `Element['KEYWORDS']`), obtained by running SAD (K64 gs).
 sadkw.py — SAD の要素型ごとのキーワード一覧 (SetElement / Element["KEYWORDS"] の順序)。
 SAD (K64 gs) で `SetElement["Zname",type]` を型ごとに実行して得た一覧 (bench の gen_kw.sad)。値の既定はすべて 0 (下の NONZERO 以外)。
 """

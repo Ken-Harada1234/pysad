@@ -55,7 +55,7 @@ MFITZY  = 27; MFITZPY = 28                 # z-y 結合
 
 @dataclass
 class TwissRow:
-    """
+    """One row of the SAD `twiss(i, j, 28)` array, with columns in the same order as the `mfit*` constants (1-based).
     SAD の twiss(i, j, 28) 配列の 1 行分。
 
     SAD の mfit* 定数と同じ列順序 (1-based) に対応。
@@ -116,7 +116,8 @@ class TwissRow:
     zpy:   float = 0.0
 
     def to_dict(self) -> dict:
-        """辞書形式に変換 (後方互換性のため)"""
+        """Convert the row to a dictionary (kept for backward compatibility).
+        辞書形式に変換 (後方互換性のため)"""
         return {
             's': self.s, 'name': self.name,
             'ax': self.alfx, 'bx': self.betx, 'nx': self.mux,
@@ -137,7 +138,8 @@ class TwissRow:
 
 
 def nan_rows(lattice):
-    """qcod が溢れて直前の twiss も無いときの表: 全要素 + 末尾 ($$$) の行を NaN で埋める (name と s だけ入れる)。
+    """Build a Twiss table filled with NaN (all elements plus the final `$$$` row) when `qcod` overflows and no earlier twiss exists.
+    qcod が溢れて直前の twiss も無いときの表: 全要素 + 末尾 ($$$) の行を NaN で埋める (name と s だけ入れる)。
     SAD は壊れた値 (1e200 や前回の値) で続行するので、pysad は NaN で続行して Twiss[] を NaN にする"""
     import dataclasses
     nan = float('nan')
@@ -3700,7 +3702,7 @@ def _qcell_periodic_sad(M_cod: np.ndarray, intres: bool, halfres: bool, init: Op
 
 
 def ins_twiss(elements, twiss0: dict, cod0=None, delta: float = 0.0, acc: dict = None) -> List[dict]:
-    """
+    """Compute Twiss parameters and orbit along a transport line (SAD INS mode) from the entrance Twiss and orbit.
     輸送ライン (SAD の INS モード) の Twiss と軌道。
     入口の Twiss (twiss0: ax, bx, ay, by, ex, epx, (ey, epy)) と軌道 cod0 (x,px,y,py) から、
     各要素の非線形 COD 写像 (CELL と同じ _one_turn_cod_matrix の要素処理) で軌道を追い、
@@ -3792,7 +3794,7 @@ def _ins_twiss_acc(elements, twiss0: dict, c0: np.ndarray, delta: float, acc: di
 
 
 class Lattice:
-    """
+    """Accelerator lattice class corresponding to `LINE[]` in SAD.
     SAD の LINE[] に相当する加速器格子クラス。
 
     Parameters
@@ -3835,7 +3837,8 @@ class Lattice:
 
     @property
     def circumference(self) -> float:
-        """周長 [m]"""
+        """Return the circumference of the lattice in meters.
+        周長 [m]"""
         return sum(el.L for el in self.elements)
 
     @property
@@ -3843,7 +3846,8 @@ class Lattice:
         return len(self.elements)
 
     def positions(self) -> np.ndarray:
-        """各要素出口の s 座標 [m]、長さ nelem+1 (先頭は 0)"""
+        """Return the s coordinate of each element exit in meters, as an array of length nelem+1 starting at 0.
+        各要素出口の s 座標 [m]、長さ nelem+1 (先頭は 0)"""
         pos = np.zeros(len(self.elements) + 1)
         for i, el in enumerate(self.elements):
             pos[i+1] = pos[i] + el.L
@@ -3854,12 +3858,14 @@ class Lattice:
     # ------------------------------------------------------------------
 
     def transfer_matrix(self, delta: float = 0.0) -> np.ndarray:
-        """全格子の 6×6 一周転送行列を返す。"""
+        """Return the 6x6 one-turn transfer matrix of the whole lattice.
+        全格子の 6×6 一周転送行列を返す。"""
         return _transport_6x6(self.elements, delta)
 
     def partial_transfer_matrix(self, i_from: int, i_to: int,
                                 delta: float = 0.0) -> np.ndarray:
-        """i_from 番目の要素出口から i_to 番目の要素出口までの転送行列。"""
+        """Return the transfer matrix from the exit of element i_from to the exit of element i_to.
+        i_from 番目の要素出口から i_to 番目の要素出口までの転送行列。"""
         return _transport_6x6(self.elements[i_from:i_to], delta)
 
     # ------------------------------------------------------------------
@@ -3868,7 +3874,7 @@ class Lattice:
 
     def twiss(self, delta: float = 0.0,
               full: bool = True, sad_stab: Optional[dict] = None, fixed_cod: Optional[np.ndarray] = None) -> List[dict]:
-        """
+        """Compute the Twiss parameters at each element exit, corresponding to the SAD `Twiss[]` command.
         各要素出口の Twiss パラメータを計算する。
         SAD の Twiss[] コマンドに相当。
 
@@ -4177,7 +4183,7 @@ class Lattice:
     # ------------------------------------------------------------------
 
     def tune(self, delta: float = 0.0) -> tuple:
-        """
+        """Return the tunes (Qx, Qy), corresponding to `Twiss["NX","$$$"]/2/Pi` in SAD.
         チューン (Qx, Qy) を返す。SAD の Twiss["NX","$$$"]/2/Pi に相当。
         (10/11 系から移植。twiss() の最後の行の位相 = 一周分の位相)
         """
@@ -4186,7 +4192,7 @@ class Lattice:
                 tw_list[-1]['ny'] / (2.0 * np.pi))
 
     def chromaticity(self, ddelta: float = 1e-4) -> tuple:
-        """
+        """Compute the first-order chromaticity (xi_x, xi_y) = d(nu)/d(delta) by central difference of the one-turn phase advance.
         一次の色収差 (ξx, ξy) = dν/dδ。δ = ±ddelta で閉軌道と光学を求め (twiss_table = SAD の CALC と同じ流れ)、
         1 周の位相進みの中心差分 (ν(+ddelta) − ν(−ddelta)) / (2 ddelta) を返す (ν = μ/2π。整数部を含む連続値)。
 
@@ -4224,7 +4230,7 @@ class Lattice:
     def find_cod(self, delta: float = 0.0,
                  tol: float = 1e-10,
                  max_iter: int = 20) -> np.ndarray:
-        """
+        """Compute the closed orbit (COD) with a literal translation of SAD `qcod` (`_qcod_periodic`).
         閉軌道 (COD) を SAD の qcod 直訳 (_qcod_periodic) で求める。
         四極の DX/DY は tsolrote と同じく座標をずらして非線形 tquade を通す。
         初期値は直前の計算の閉軌道 (SAD と同じ)。tol, max_iter は互換用 (未使用;
@@ -4247,7 +4253,7 @@ class Lattice:
         return [el for el in self.elements if el.name == family]
 
     def set_element(self, family: str, key: str, value: float) -> int:
-        """
+        """Set a parameter of an element family on all instances of the same name, as `Element["DX","QD"]=v` in SAD.
         要素 (ファミリー) のパラメータ設定。同名の全インスタンスに入る。
         SAD の Element["DX","QD"]=v、または LINE["DX","QD.1"]=v の後の
         CELL; CALC (要素値が全インスタンスに展開される) に相当。
@@ -4262,7 +4268,7 @@ class Lattice:
         return len(els)
 
     def set_error(self, instance: str, key: str, value: float) -> Element:
-        """
+        """Set an error on a single element instance given in SAD form such as `QD.1`, as `FFS["QD.1 DX 1E-4"]` in SAD.
         誤差として 1 台だけに設定する。instance は SAD 形式 "QD.1"
         (同名要素の出現順, 1 始まり)。SAD の FFS["QD.1 DX 1E-4"] に相当。
         """
@@ -4283,7 +4289,7 @@ class Lattice:
                     cod: Optional[np.ndarray] = None,
                     full: bool = True, sad_stab: Optional[dict] = None,
                     fixed_cod: Optional[np.ndarray] = None) -> List[TwissRow]:
-        """
+        """Compute the Twiss table corresponding to SAD `twiss(nlat, -1:1, 28)` and return it as `TwissRow` objects.
         SAD の twiss(nlat, -1:1, 28) に相当する Twiss テーブルを計算する。
 
         twiss() (SAD qcod + qtwiss) と同じ計算で、各要素出口の Twiss と
@@ -4412,7 +4418,7 @@ class Lattice:
         return table
 
     def summary(self, delta: float = 0.0) -> dict:
-        """
+        """Return a dictionary of the main lattice parameters (circumference, tunes, beta extrema, alpha, chromaticities).
         格子の主要パラメータをまとめた辞書を返す。
 
         Returns
@@ -4467,7 +4473,7 @@ class Lattice:
     # ------------------------------------------------------------------
 
     def radiation_integrals(self, delta: float = 0.0) -> dict:
-        """
+        """Compute the radiation integrals I1..I5, corresponding to the calculation part of SAD `CalculateEmittance[]`.
         放射積分 I1..I5 を計算する。
         SAD の CalculateEmittance[] の計算部分に相当。
 
@@ -4508,7 +4514,7 @@ class Lattice:
 
     def emittance(self, energy_eV: float,
                   delta: float = 0.0) -> dict:
-        """
+        """Compute the equilibrium emittance, energy spread and damping constants, corresponding to SAD `CalculateEmittance[]`.
         平衡エミッタンス・エネルギースプレッド・減衰定数を計算する。
         SAD の CalculateEmittance[] に相当。
 
@@ -4591,7 +4597,7 @@ class Lattice:
 
     def track_linear(self, coords_in: np.ndarray,
                      nturns: int = 1) -> np.ndarray:
-        """
+        """Track particles for a number of turns with the linear transfer matrix.
         線形転送行列による粒子トラッキング。
 
         Parameters
@@ -4618,7 +4624,7 @@ class Lattice:
         return traj
 
     def track_through(self, coords_in: np.ndarray) -> np.ndarray:
-        """
+        """Propagate linearly once around the lattice and return the coordinates at each element exit.
         格子を 1 周して各要素出口の座標を返す (線形)。
 
         Parameters
@@ -4655,7 +4661,7 @@ class Lattice:
     def print_twiss(self, delta: float = 0.0,
                     fmt: str = '{:>6} {:>8.4f} {:>8.4f} {:>8.4f} '
                                '{:>8.4f} {:>8.4f} {:>8.4f} {:>8.4f}'):
-        """
+        """Print the Twiss parameters in SAD style.
         Twiss パラメータを SAD 風に表示する。
         """
         tw = self.twiss(delta)
@@ -4683,7 +4689,7 @@ def fodo_cell(L_half: float = 5.0,
               K1D: float = -0.5,
               L_bend: float = 0.0,
               angle: float = 0.0) -> Lattice:
-    """
+    """Build a FODO cell lattice from the drift length, quadrupole K1 values, bend length and bend angle.
     FODO セルを生成する。
 
     Parameters

@@ -1,4 +1,4 @@
-"""
+"""`BBBrem1`: generation of one beam-beam bremsstrahlung event (Kleiss-Burkhardt), translation of tbbbrem.f in K64.
 BBBrem1[sqrt(s) (eV), ds/s min]: ビーム・ビーム制動放射 1 事象の生成 (Kleiss-Burkhardt)。K64 の tbbbrem.f (bcube1、tbcube1)。
 戻り値は {散乱した陽電子の 4 元運動量 (eV, 符号反転と x y z の入れ替えなし: (-1,-1,-1,1)*p2), 近似断面積 (mbarn × 1e-31)}。
 乱数は SAD の tran() (nran=3)。パッケージ bbbrem.n (BBBrem クラス) はこの関数を使う。
@@ -19,7 +19,8 @@ _TWOPI = 2.0 * math.pi
 
 
 def bcube1(roots, rk0, random):
-    """bcube1 (roots は GeV)。戻り: (p2[4], qk[4], q2[4], weight, sigapp)。random() は tran()"""
+    """Compute the bcube1 event generation (roots in GeV), returning p2, qk, q2, weight, and sigapp.
+    bcube1 (roots は GeV)。戻り: (p2[4], qk[4], q2[4], weight, sigapp)。random() は tran()"""
     alpha = _MACPHYS_FINEST
     rme2 = _RME2
     s = roots ** 2

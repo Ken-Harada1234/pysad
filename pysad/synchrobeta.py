@@ -1,4 +1,4 @@
-"""
+"""Translation of SynchroBetaEmittance (tfemits, temits, temits1 and helpers in K64): equilibrium emittance with synchrotron motion.
 SynchroBetaEmittance (K64 の tfemit.f tfemits → temits.f temits・temits1・tefsetup・tesolvd・tevdif・tesumb …) の直訳。
 
 シンクロトロン運動と色収差の下での平衡エミッタンス。運動量のずれ δ ごとに閉軌道・1 周写像・拡散行列を求め (2·ndims+1 点)、
@@ -19,7 +19,8 @@ C_LIGHT = 299792458.0
 
 
 def iaidx(m, n):
-    """packed 対称行列の添字 (1 始まり、m >= n)"""
+    """Return the index of a packed symmetric matrix (1-based, m >= n).
+    packed 対称行列の添字 (1 始まり、m >= n)"""
     return m * (m - 1) // 2 + n
 
 
@@ -42,7 +43,8 @@ def tetrig(amu, mphi2):
 # ---------------------------------------------------------------------------
 
 def teintp1(ip, f, tws, tw0, ri, ndims, helpers):
-    """teintp1: tws の ip, ip+1 (Fortran の -ndims..ndims の添字) を f で補間した tr1(5,5) と h1(4)"""
+    """Interpolate tws at ip, ip+1 with f to give tr1(5,5) and h1(4), as in teintp1.
+    teintp1: tws の ip, ip+1 (Fortran の -ndims..ndims の添字) を f で補間した tr1(5,5) と h1(4)"""
     etwiss2ri, tinv6, mfit = helpers
     twf = f * tws[ip + 1 + ndims] + (1.0 - f) * tws[ip + ndims]
     twf = twf.copy()
@@ -74,7 +76,8 @@ def tmov65(a):
 
 
 def tefsetup(ndp, mphi, mphi2, nz, ndims, beams, trads, tws, dj, dpndim, sigea, tw0, ri, helpers, jump=None):
-    """tefsetup: ha(4,4,mphi,ndp), hb(4,mphi2,ndp), ba(10,10,mphi,ndp), bb(10,mphi2,ndp), bd(10,4,mphi,ndp) (0 始まりで [.., m-1, j-1])
+    """Set up ha, hb, ba, bb, bd of tefsetup; in v2 takes a `jump` dict for the per-turn variance of delta.
+    tefsetup: ha(4,4,mphi,ndp), hb(4,mphi2,ndp), ba(10,10,mphi,ndp), bb(10,mphi2,ndp), bd(10,4,mphi,ndp) (0 始まりで [.., m-1, j-1])
     jump (v2: dict {'dd': δ の 1 周あたりの跳びの分散}): K64 は 1 周の写像を X' = T X + h1 (h1 = 閉軌道 c(δ)) と書き、平均 <X> を 1 次のモーメントの方程式で解いて
     2 次のモーメントの源泉 (T <X> h1 + h1 <X> T + h1 h1) に入れるが、固定点が c にならず (X = c は X' = T X + c を満たさない)、平均の数値誤差が
     減衰時間の逆数倍に増幅される。v2 は平均を解かず (h1 = 0)、軌道の δ 依存 c(δ) の効果を 2 つの解析的な項に分ける:
@@ -171,7 +174,8 @@ def _diff2(d, eps, aj, m):
 
 
 def tespl(bx, nd, ndp, dj, e, damp, j0, m):
-    """tespl: bx[nd, mphi2, ndp] の (j0, m) での (bdx, bddx)。j0, m は 1 始まり"""
+    """Return bdx and bddx of bx[nd, mphi2, ndp] at (j0, m) as in tespl (j0, m 1-based).
+    tespl: bx[nd, mphi2, ndp] の (j0, m) での (bdx, bddx)。j0, m は 1 始まり"""
     d = abs(2.0 * damp)
     ajj = (j0 - 0.5) * dj
     f2 = d * 0.5
@@ -260,7 +264,8 @@ def _fwd_diag(bc, bs, aj, d, eps, mphi2):
 
 
 def tevdif(bb, bc, bs, ba, amuj, bd, hc, hs, ndp, mphi2, mphi, nd, dj, damp0, sige):
-    """tevdif: bc, bs (nd, mphi2, ndp) をその場で更新する (1 周ぶんの拡散・移送)"""
+    """Update bc, bs (nd, mphi2, ndp) in place for one turn of diffusion and transport, as in tevdif.
+    tevdif: bc, bs (nd, mphi2, ndp) をその場で更新する (1 周ぶんの拡散・移送)"""
     nsb = nd * mphi2
     eps = sige ** 2
     damp = damp0 * 0.5
@@ -331,7 +336,8 @@ def tevdif(bb, bc, bs, ba, amuj, bd, hc, hs, ndp, mphi2, mphi, nd, dj, damp0, si
 
 
 def tesolvd(bb, bc, bs, ba, amuj, bd, hc, hs, ndp, mphi2, mphi, nd, dj, damp0, sige, tsolva):
-    """tesolvd: 各 j で (2·nd·mphi2) の連立方程式を解いて bc, bs を求める"""
+    """Solve the (2*nd*mphi2) linear system for each j to obtain bc and bs, as in tesolvd.
+    tesolvd: 各 j で (2·nd·mphi2) の連立方程式を解いて bc, bs を求める"""
     nsb = nd * mphi2
     eps = sige ** 2
     damp = damp0 * 0.5
@@ -465,7 +471,8 @@ def tesolvd(bb, bc, bs, ba, amuj, bd, hc, hs, ndp, mphi2, mphi, nd, dj, damp0, s
 
 
 def tesumb(bc, hc, mphi2, ndp, w, dj, sige, dispp, fj):
-    """tesumb: 平衡のビーム行列 beam(21) (packed 6×6)"""
+    """Assemble the equilibrium beam matrix beam(21) (packed 6x6), as in tesumb.
+    tesumb: 平衡のビーム行列 beam(21) (packed 6×6)"""
     e = sige ** 2
     beam = np.zeros(21)
     for j in range(1, ndp + 1):
@@ -484,7 +491,8 @@ def tesumb(bc, hc, mphi2, ndp, w, dj, sige, dispp, fj):
 
 
 def tesumb_v2(bc, hc, mphi2, ndp, w, dj, sige, dispp, fj, jump=None):
-    """tesumb の v2 版。bc・hc は分散を除いたベータトロン座標 x_b = x - η δ の 2 次・1 次のモーメント。物理座標のビーム行列 (x = x_b + η δ) に組み立てる。
+    """v2 version of tesumb, assembling the physical-coordinate beam matrix from betatron-coordinate moments x_b = x - eta*delta.
+    tesumb の v2 版。bc・hc は分散を除いたベータトロン座標 x_b = x - η δ の 2 次・1 次のモーメント。物理座標のビーム行列 (x = x_b + η δ) に組み立てる。
     K64 の tesumb は x_b の 2 次のモーメントに η η σδ² だけを足し (x_b と δ の相関 η σδ² を入れない)、ri の変換で分散が引き切れない"""
     e = sige ** 2
     beam = np.zeros(21)
@@ -512,7 +520,8 @@ def tesumb_v2(bc, hc, mphi2, ndp, w, dj, sige, dispp, fj, jump=None):
 
 
 def beam6(beam21):
-    """packed (iaidx) 21 要素 → 6×6 対称行列"""
+    """Convert a packed (iaidx) 21-element array to a 6x6 symmetric matrix.
+    packed (iaidx) 21 要素 → 6×6 対称行列"""
     M = np.zeros((6, 6))
     for m in range(1, 7):
         for n in range(1, m + 1):
@@ -521,7 +530,8 @@ def beam6(beam21):
 
 
 def physdisp(tw):
-    """tgfun.f tgetphysdispu: tws の 1 点から物理の分散 (4 成分)"""
+    """Compute the physical dispersion (4 components) from one tws point, as in tgetphysdispu of tgfun.f.
+    tgfun.f tgetphysdispu: tws の 1 点から物理の分散 (4 成分)"""
     r1, r2, r3, r4 = tw[10], tw[11], tw[12], tw[13]
     detr = r1 * r4 - r2 * r3
     cc = math.sqrt(1.0 - detr)
@@ -546,7 +556,8 @@ def _tsolva(a, b, eps=1.0e-20):
 
 
 def synchro_beta_emittance(lat, momentum, amus0, amus1, amusstep, mphi2, verbose=False):
-    """tfemits → temits → temits1。amus0, amus1, amusstep は [rad] (SAD の引数 × 2π)。戻り: [[nus, emix, emiy, emixp, emiyp, conv], …]"""
+    """Compute `SynchroBetaEmittance` via tfemits, temits and temits1; returns [[nus, emix, emiy, emixp, emiyp, conv], ...].
+    tfemits → temits → temits1。amus0, amus1, amusstep は [rad] (SAD の引数 × 2π)。戻り: [[nus, emix, emiy, emixp, emiyp, conv], …]"""
     from .emit6d import emittance6d, tturne, _tcod_radcod, _Phys, _tinv6, ELMASS
     from .calc6d import tfetwiss, etwiss2ri
     mphi2 = int(max(1, min(32, mphi2)))

@@ -1,4 +1,5 @@
-"""起動時の案内 (バナー)。
+"""Startup banner shown once on standard error when the SAD interpreter is first called from Python.
+起動時の案内 (バナー)。
 
 Python から SAD のインタプリタ (`Interp`、`run_sad`、`pysad-run`、FFS・SADScript の実行) を呼んだとき、プロセスの中で最初の 1 回だけ、
 数行を標準エラー出力に出す。バージョン、元になっている SAD (K. Oide 氏の K64 版) のこと、ソースが GitHub にあること。
@@ -16,7 +17,8 @@ _shown = False
 
 
 def text() -> str:
-    """バナーの文字列 (数行)"""
+    """Return the banner text (a few lines).
+    バナーの文字列 (数行)"""
     from . import __version__, compat
     mode = compat.mode() if hasattr(compat, 'mode') else getattr(compat, '_mode', 'v2')
     return (
@@ -28,7 +30,8 @@ def text() -> str:
 
 
 def show(force: bool = False, file=None) -> bool:
-    """最初の 1 回だけ、バナーを標準エラー出力に出す。出したとき True。`PYSAD_QUIET` が設定されているときは出さない"""
+    """Print the banner to standard error only the first time, returning True if printed (suppressed when `PYSAD_QUIET` is set).
+    最初の 1 回だけ、バナーを標準エラー出力に出す。出したとき True。`PYSAD_QUIET` が設定されているときは出さない"""
     global _shown
     if _shown and not force:
         return False
