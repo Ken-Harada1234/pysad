@@ -1308,6 +1308,8 @@ _FAST2 = {'Plus': _op.add, 'Times': _op.mul, 'Subtract': _op.sub, 'Divide': _fdi
 
 class Interp:
     def __init__(self, out=None):
+        from . import banner
+        banner.show()                      # プロセスの中で最初の 1 回だけ、バージョン・出所・ソースの場所を標準エラー出力に出す (PYSAD_QUIET=1 で出さない)
         self.globals: Dict[str, Any] = {}
         self.frames: List[Frame] = []
         self.downvalues: Dict[str, List[Tuple[list, Any, bool]]] = {}   # name → [(patterns, body, delayed)]
