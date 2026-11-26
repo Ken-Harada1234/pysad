@@ -27,13 +27,34 @@
 | `cuc` | $\tfrac32 r_e/\mathtt{rcratio} = \tfrac32\lambda_C$ | `tfsetparam.f` | |
 | `cave`・`cuu` | $\langle u\rangle/u_c$、$\langle u^2\rangle/u_c^2$ | `photons.f:381`: `cave = 8/15/sqrt(3)`、`cuu = 11/27` | |
 | `gmin` | $g$ の下限 | `-0.999999` | |
-| `urad`・`crad`・`erad` | 放射の定数 ($p_0$ で規格化したもの) | `tfsetparam.f` | 未確認 |
+| `urad` | $\tfrac32\lambda_C/p_0$ ($= \mathtt{cuc}/p_0$。$u_c/(p_0c) = \mathtt{urad}\,\gamma^3/\rho$ の係数。符号は電荷) | `tfsetparam.f:118` (`urad = sign(1.5d0*hp*cveloc/p0/amass/e, charge)`。$hp\,c/(\mathtt{amass}\,e) = \lambda_C$) | 未確認 |
+| `erad` | $\tfrac{55}{24\sqrt3}\,\mathtt{urad} = (\mathtt{cuu}/\mathtt{cave})\,\mathtt{urad}$ ($\langle u^2\rangle/\langle u\rangle$ の係数。$\tfrac{11}{27}\cdot\tfrac{15\sqrt3}{8} = \tfrac{55\sqrt3}{72} = \tfrac{55}{24\sqrt3}$ で確認) | `tfsetparam.f:119` | 未確認 (本章の経路では使わない) |
+| `crad` | $r_{\rm classic}(c/\mathtt{amass})^2/p_0/1.5$ (符号は電荷。§4.6 の分割数の第 2 項に入る) | `tfsetparam.f:117` | 未確認 (単位の計算は §4.6 のとおり未了) |
 
 ## 3. 古典の式
 
 ### 3.1 臨界エネルギーと光子数
 
-曲率半径 $\rho$ の円運動 (向心加速度 $\gamma^2c^2/\rho$ の相対論的な電荷) の放射は、パワー (Liénard) $P = \tfrac23 r_emc^2\,\gamma^4c/\rho^2$、スペクトル $dP/du = (P/u_c)\,\dfrac{9\sqrt3}{8\pi}\,F(u/u_c)$ ($F(\xi) = \xi\int_\xi^\infty K_{5/3}(t)\,dt$、$K_{5/3}$ は変形ベッセル関数)、臨界エネルギー $u_c = \tfrac32\hbar c\gamma^3/\rho$ である。$F$ の積分は
+**引用の範囲**: この節の出発点のうち、(i) 相対論的 Larmor の式 (Liénard の結果) $P = \tfrac23\,\dfrac{e^2}{4\pi\varepsilon_0c^3}\,\gamma^6\bigl[\bm a^2 - (\bm v\times\bm a)^2/c^2\bigr]$ と、(ii) 円運動の放射スペクトルの形 $dP/du \propto F(u/u_c)$、$F(\xi) = \xi\int_\xi^\infty K_{5/3}(t)\,dt$ ($K_{5/3}$ は変形ベッセル関数)、臨界エネルギー $u_c = \tfrac32\hbar c\gamma^3/\rho$ は、標準の結果 (電磁気学の標準的な教科書のシンクロトロン放射の章) として**引用する (この文書では導かない)**。以下で導くのは、この 2 つから先 (パワーの具体形、スペクトルの規格化、光子数、各モーメント) である。
+
+**パワー**。向心加速度は速度に垂直 ($\bm a\perp\bm v$) なので $|\bm v\times\bm a| = va$:
+
+$$
+\begin{aligned}
+P &= \tfrac23\,k\,\gamma^6\Bigl[a^2 - \frac{v^2a^2}{c^2}\Bigr] && (k = e^2/4\pi\varepsilon_0c^3)\\
+&= \tfrac23\,k\,\gamma^6a^2\,(1 - \beta^2) = \tfrac23\,k\,\gamma^4a^2 && (1 - \beta^2 = 1/\gamma^2)\\
+&= \tfrac23\,k\,\gamma^4\,\frac{\beta^4c^4}{\rho^2} && (a = v^2/\rho = \beta^2c^2/\rho)\\
+&= \tfrac23\,r_emc^2\,\gamma^4\beta^4\,\frac{c}{\rho^2} \simeq \tfrac23\,r_emc^2\,\frac{\gamma^4c}{\rho^2} && (k = r_emc^2/c^3,\ \beta\to1)
+\end{aligned}
+$$
+
+(1 行目から 2 行目: $\gamma^6\cdot\gamma^{-2}$。3 行目: $r_e = e^2/4\pi\varepsilon_0mc^2$ より $k\,c^4 = r_emc^2\,c$。sympy で同じ式になることを確認した: [rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (b)。) スペクトルは、この $P$ で規格化した形で書く:
+
+$$
+\frac{dP}{du} = \frac{P}{u_c}\,\frac{9\sqrt3}{8\pi}\,F(u/u_c)
+$$
+
+**規格化の確認**: $\xi = u/u_c$ とおくと $\displaystyle\int_0^\infty\frac{dP}{du}\,du = P\,\frac{9\sqrt3}{8\pi}\int_0^\infty F(\xi)\,d\xi = P\cdot\frac{9\sqrt3}{8\pi}\cdot\frac{8\pi}{9\sqrt3} = P$ (下の (13.1) の第 1 式。数値: $\tfrac{9\sqrt3}{8\pi}\int F\,d\xi = 1.0000000000$、rad_03 (b))。つまり係数 $9\sqrt3/8\pi$ は「全エネルギーが $P$」という条件から決まる。$F$ の積分は
 
 $$
 \int_0^\infty F\,d\xi = \frac{8\pi}{9\sqrt3},\qquad
@@ -84,7 +105,19 @@ $$
 \tag{13.4}
 $$
 
-(平均 $N_\gamma$ のポアソン分布の合計 $\sum_{i=1}^{n}u_i$ の分散は $\langle n\rangle\langle u^2\rangle$。) $\gamma^4$ が出る確認: $\langle\Delta u\rangle = \tfrac{5}{2\sqrt3}\alpha\gamma\phi\cdot\tfrac{8}{15\sqrt3}\cdot\tfrac32\lambda_Cmc^2\gamma^3/\rho = \tfrac23\alpha\lambda_C\,mc^2\gamma^4\phi/\rho = \tfrac23 r_emc^2\gamma^4\phi/\rho$ (古典の 1 区間のエネルギー損失)。
+**(13.4) の導出** (全分散の法則)。$\Delta u = \sum_{i=1}^{n}u_i$ ($n$ はポアソン分布 (平均 $N_\gamma$、分散も $N_\gamma$)、$u_i$ は $n$ に依らず独立同分布で平均 $\langle u\rangle$、分散 $\langle u^2\rangle - \langle u\rangle^2$) とする。$n$ を固定した条件つき期待値と分散は $E[\Delta u\,|\,n] = n\langle u\rangle$、$\mathrm{Var}[\Delta u\,|\,n] = n(\langle u^2\rangle - \langle u\rangle^2)$。全期待値・全分散の法則 $E[\Delta u] = E\bigl[E[\Delta u|n]\bigr]$、$\mathrm{Var} = E\bigl[\mathrm{Var}[\Delta u|n]\bigr] + \mathrm{Var}\bigl[E[\Delta u|n]\bigr]$ に入れて
+
+$$
+\begin{aligned}
+E[\Delta u] &= E[n]\,\langle u\rangle = N_\gamma\langle u\rangle,\\
+\mathrm{Var}[\Delta u] &= E[n]\bigl(\langle u^2\rangle - \langle u\rangle^2\bigr) + \mathrm{Var}[n]\,\langle u\rangle^2
+= N_\gamma\bigl(\langle u^2\rangle - \langle u\rangle^2\bigr) + N_\gamma\langle u\rangle^2 = N_\gamma\langle u^2\rangle
+\end{aligned}
+$$
+
+(最後の等号: ポアソン分布で $\mathrm{Var}[n] = E[n] = N_\gamma$ のとき $\langle u\rangle^2$ の項が打ち消す。$n$ を固定すると $N_\gamma\langle u^2\rangle$ ではなく $N_\gamma(\langle u^2\rangle - \langle u\rangle^2)$ になり、光子数のゆらぎが $N_\gamma\langle u\rangle^2$ を足す。) 累積母関数 $K(t) = \ln E[e^{t\Delta u}] = N_\gamma\bigl(E[e^{tu}] - 1\bigr)$ の 1・2 階微分 $K'(0) = N_\gamma\langle u\rangle$、$K''(0) = N_\gamma\langle u^2\rangle$ としても同じ。モンテカルロ ($N_\gamma = 24.283$、$2\times10^5$ 試行) で分散 $10.03$ ($N_\gamma\langle u^2\rangle = 9.89$、$N_\gamma(\langle u^2\rangle - \langle u\rangle^2) = 7.59$。標本誤差 0.5%。ただし逆関数に使った $pp(y)$ の数表の積分が 1 でなく $0.9826$ で、規格化し直した分だけ平均・分散とも 1〜2% 高く出る: 平均 $7.61$ (期待 $7.48$)) : 差は 1〜2% で、光子数のゆらぎを含まない値 $7.59$ とは 30% 違うので、$N_\gamma\langle u^2\rangle$ の側に合うことは区別できる ([rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (c))。
+
+$\gamma^4$ が出る確認: $\langle\Delta u\rangle = \tfrac{5}{2\sqrt3}\alpha\gamma\phi\cdot\tfrac{8}{15\sqrt3}\cdot\tfrac32\lambda_Cmc^2\gamma^3/\rho = \tfrac23\alpha\lambda_C\,mc^2\gamma^4\phi/\rho = \tfrac23 r_emc^2\gamma^4\phi/\rho$ (古典の 1 区間のエネルギー損失)。
 
 ## 4. 追跡 (`tradk1`、`tradk`、`tradkf1`)
 
@@ -96,7 +129,7 @@ $$
 4. 横運動量・位置: `ddpx = -0.5*dpx*dg`、`px += ddpx`、`x += ddpx*al1/3` ($y$ も同様)。
 5. $dv = -g(1 + p_r)/[h_2(h_2 + p_2)] + \mathtt{dvfs}$ ($p_r = 1 + g$、**$p_2 = p_0p_r$** (`p2=p0*pr`、$mc$ 単位の運動量))、$z \leftarrow z\,\dfrac{p_2/h_2}{p_1/h_1}$ (速度の比 $\beta_2/\beta_1$ をかける。時間を保つ: [10_cavity.md](10_cavity.md) の式と同じ)。
 
-**$dv$ の式は 01 章 (1.9) と同じではない**: (1.9) と 10 章 §4 の $dv = -\delta(1 + p_r)/[h(h + p_rh_0)]$ は、$h = \sqrt{1 + p_r^2p_0^2}$ について厳密な $1 - v/v_0$ で、分母の第 2 項は $p_rh_0$ ($h_0 = \gamma_0$)。`tradk1` (`photons.f:1199-1202`) は $p_rh_0$ の代わりに $p_2 = p_0p_r$ を使う。差は $p_r(h_0 - p_0) = p_r/(h_0 + p_0)$ で、$h \simeq 2h_0$ に対して相対 $O(1/\gamma^2)$。数値 ([rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) (c)): $p_0 = 1\,mc$ ($0.51$ MeV/c)、$p_r = 1.1$ で、厳密な $1 - \beta/\beta_0 = -0.046433$、(1.9) は $-0.046433$ (一致)、`tradk1` の式は $-0.054613$ (相対 18% 違う)。$p_0 = 50\,mc$、$\delta = -0.01$ で相対 $10^{-4}$、3 GeV では (1.9) と `tradk1` の式の差は相対 $7 \times 10^{-9}$ で見えない。pysad は `track6.py:397` で「SAD のまま ($h_2 + p_2$)」と写す。この差は**低エネルギーで効く K64 の癖の疑い** (ソースの読みと数値例で確定。docs/30 に B 番号は無い。gs での確認はしていない)。
+**$dv$ の式は 01 章 (1.9) と同じではない**: (1.9) と 10 章 §4 の $dv = -\delta(1 + p_r)/[h(h + p_rh_0)]$ は、$h = \sqrt{1 + p_r^2p_0^2}$ について厳密な $1 - v/v_0$ で、分母の第 2 項は $p_rh_0$ ($h_0 = \gamma_0$)。`tradk1` (`photons.f:1199-1202`) は $p_rh_0$ の代わりに $p_2 = p_0p_r$ を使う。差は $p_r(h_0 - p_0) = p_r/(h_0 + p_0)$ で、$h \simeq 2h_0$ に対して相対 $O(1/\gamma^2)$。数値 ([rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) (c)): $p_0 = 1\,mc$ ($0.51$ MeV/c)、$p_r = 1.1$ で、厳密な $1 - \beta/\beta_0 = -0.046433$、(1.9) は $-0.046433$ (一致)、`tradk1` の式は $-0.054613$ (相対 18% 違う)。$p_0 = 50\,mc$、$\delta = -0.01$ で相対 $10^{-4}$。**相対差の式** ($dv$ の分子 $-(p_r-1)(1+p_r)/h_2$ は共通なので、分母の比だけ): $\dfrac{dv_{\rm tradk1} - dv_{(1.9)}}{dv_{(1.9)}} = \dfrac{h_2 + p_rh_0}{h_2 + p_0p_r} - 1 = \dfrac{p_r(h_0 - p_0)}{h_2 + p_0p_r}$。ここで $h_0 - p_0 = (h_0^2 - p_0^2)/(h_0 + p_0) = 1/(h_0 + p_0) \simeq 1/(2p_0)$、$h_2 + p_0p_r \simeq 2p_0$ ($p_r \simeq 1$) なので $\simeq 1/(4p_0^2) = 1/(4\gamma^2)$ (見積もり)。3 GeV ($p_0 = 5871\,mc$) で $1/(4p_0^2) = 7.25\times10^{-9}$ で、桁落ちしない 40 桁計算 (mpmath) の相対差 $7.2533\times10^{-9}$ と一致する ([rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (a))。したがって 3 GeV では見えない。($p_0 = 50$、$\delta = -0.01$: 計算 $9.998\times10^{-5}$、見積もり $1.0\times10^{-4}$。$p_0 = 1$、$\delta = 0.1$: 計算 0.176、見積もり 0.25 で $p_r \ne 1$ の効果が大きい。) なお rad_02 (c) の 3 GeV の行は、厳密な $1 - \beta/\beta_0$ を倍精度の引き算で作るので桁落ちで相対 $1.9\times10^{-5}$ ずれる。これは式の差ではなく倍精度の丸めである。pysad は `track6.py:397` で「SAD のまま ($h_2 + p_2$)」と写す。この差は**低エネルギーで効く K64 の癖の疑い** (ソースの読みと数値例で確定。docs/30 に B 番号は無い。gs での確認はしていない)。
 
 追跡の運動量変数は $q = p_x/p$ (01 章) なので、光子が速度の向きに出るとき $q$ は変わらず、$p_x = q\,p$ だけが $p$ に比例して縮む。
 
@@ -108,7 +141,18 @@ $$
 \frac{du}{d\tau} = -de\,u^4,\qquad u(0) = 1\ \Longrightarrow\ u^{-3} = 1 + 3\,de\,\tau,\qquad dg = u(1) - 1 = (1 + 3de)^{-1/3} - 1
 $$
 
-($u^{-4}du = -de\,d\tau$ の積分。) 展開すると $(1 + 3de)^{-1/3} - 1 = -de + 2de^2 - \tfrac{14}3de^3 + \cdots$ (二項展開 $(1 + x)^{-1/3} = 1 - x/3 + \tfrac29x^2 - \tfrac{14}{81}x^3$、$x = 3de$)。K64 の $dg = -de/(1 + 2de) = -de(1 - 2de + 4de^2 - \cdots) = -de + 2de^2 - 4de^3 + \cdots$。**2 次まで一致し、3 次 ($-14/3$ 対 $-4$) から違う**。したがって `dg = -de/(1+2de)` は、$de^2$ までの近似で、$dg$ を $dg = -de(1 + 2dg)$ の陰的な形 ($dg(1 + 2de) = -de$) に書き換えたものと読める。数値 ([rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) (b)。$du/d\tau = -de\,u^4$ の ODE との比較): $de = 5 \times 10^{-5}$ で K64 との差 $8 \times 10^{-14}$、$de = 0.01$ で $6 \times 10^{-7}$、$0.05$ で $6 \times 10^{-5}$、$0.2$ で $2 \times 10^{-3}$ (3 次の差)。例の $|de| \sim 5 \times 10^{-5}$ では 3 次の差は見えない。ただし $\gamma \propto p$ の近似 ($1/\gamma^2$ の補正) は、この導出に含まれる。
+($u^{-4}du = -de\,d\tau$ の積分。) 展開すると $(1 + 3de)^{-1/3} - 1 = -de + 2de^2 - \tfrac{14}3de^3 + \cdots$ (二項展開 $(1 + x)^{-1/3} = 1 - x/3 + \tfrac29x^2 - \tfrac{14}{81}x^3$、$x = 3de$)。K64 の $dg = -de/(1 + 2de) = -de(1 - 2de + 4de^2 - \cdots) = -de + 2de^2 - 4de^3 + \cdots$。**2 次まで一致し、3 次 ($-14/3$ 対 $-4$) から違う**。したがって `dg = -de/(1+2de)` は、$de^2$ までの近似で、$dg$ を $dg = -de(1 + 2dg)$ の陰的な形 ($dg(1 + 2de) = -de$) に書き換えたものと読める。数値 ([rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) (b)。$du/d\tau = -de\,u^4$ の ODE との比較): $de = 5 \times 10^{-5}$ で K64 との差 $8 \times 10^{-14}$、$de = 0.01$ で $6 \times 10^{-7}$、$0.05$ で $6 \times 10^{-5}$、$0.2$ で $2 \times 10^{-3}$ (3 次の差)。例の $|de| \sim 5 \times 10^{-5}$ では 3 次の差は見えない。
+
+**$\gamma \propto p$ の近似の補正の大きさ**。曲率半径 $\rho_r$ 一定のとき、§3.1 のパワー $P = \tfrac23r_emc^2\,c\,\gamma^4\beta^4/\rho_r^2$ ($\beta$ を残した形)。エネルギー損失 $dE = v\,dp$ ($E$ と $p$ の関係 $dE = v\,dp$)、$ds = v\,dt$ なので $dp/ds = (dE/dt)/v^2$。$mc$ 単位 ($p = \beta\gamma$、$h = \gamma = \sqrt{1 + p^2}$) で
+
+$$
+\frac{dp}{ds} = -\frac23\frac{r_e}{\rho_r^2}\,\frac{\gamma^4\beta^4}{\beta^2}
+= -\frac23\frac{r_e}{\rho_r^2}\,\gamma^4\beta^2
+= -\frac23\frac{r_e}{\rho_r^2}\,\gamma^2p^2
+= -\frac23\frac{r_e}{\rho_r^2}\,p^4\Bigl(1 + \frac1{p^2}\Bigr)
+$$
+
+(2 番目の等号: $\beta^4/\beta^2 = \beta^2$。3 番目: $\gamma\beta = p$。4 番目: $\gamma^2 = 1 + p^2$。sympy で $\gamma^4\beta^2/p^4 - (1 + 1/p^2) = 0$。) したがって $du/d\tau = -de\,u^4\,[1 + O(1/p^2)]$ と書け、$\gamma \propto p$ の近似の相対誤差は $1/p^2 = \beta^2/\gamma^2$ のオーダーで、この導出の $dg$ への補正は $de\cdot|1/u^2 - 1|/p_1^2 \sim 2\,de^2/p_1^2$ ($u \simeq 1 - de\,\tau$、入口の値 $p_1$ で規格化) なので、$de$ の 2 次よりさらに $1/\gamma^2$ だけ小さい。ODE を両方の形で解いた比較 ([rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (e)): 3 GeV ($p_1 = 5870.85$、$de = 5\times10^{-5}$) で差は相対 $4.4\times10^{-12}$、$p_1 = 50$、$de = 5\times10^{-3}$ で $2.0\times10^{-6}$、$p_1 = 10$ で $4.9\times10^{-5}$、$p_1 = 3$ で $4.9\times10^{-4}$ (見積もり $4.0\times10^{-6}$、$1.0\times10^{-4}$、$1.1\times10^{-3}$ の約半分で同じ桁)。$\beta \ne 1$ の補正は、K64 の `dg` の式に入っていない (§10 の未確認に記載)。
 
 ### 4.3 横運動量の補正 ($-\tfrac12dp_x\,dg$) と位置の補正 ($al/3$)
 
@@ -142,6 +186,14 @@ FLUC では、スライスごとに光子数 $n$ をポアソン分布 (平均 `
 `tdusrn`: $P(n) = e^{-N}N^n/n!$ を累積して、一様乱数 $p$ に対し $p \le \sum_{k\le n}P(k)$ となる最小の $n$ を選ぶ (`p0 = exp(-anp)`、`x = x*anp/an`、`pn = pn + x*p0`)。累積が `cutoff` $= 0.9999$ を超えたら打ち切る (`npmax` $= 10^4$ 個まで)。出力は $\sum u_i/u_c$ (`dph`)、位置の重みつき平均 (`r1`、`r2`: 光子がスライス内のどこで出たか) と光子数 `an`。
 
 `drndsr` (有理式による近似): 一様乱数 $p$ から、$P(y) = \int_0^y pp(y')dy'$ ($pp(y) = \dfrac{3}{5\pi}\int_y^\infty K_{5/3}(t)dt$、$y = u/u_c$) の逆関数 $y(p)$ を、3 つの区間の有理式で与える (近似の相対誤差 $< 2\times10^{-4}$)。
+
+**規格化定数 $3/(5\pi)$**: 光子数の分布 $dN/du \propto (dP/du)/u \propto F(\xi)/\xi = G(\xi)$ ($G = \int_\xi^\infty K_{5/3}\,dt$、§3.1)。規格化は積分の順序を入れ替えて
+
+$$
+\int_0^\infty\!dy\int_y^\infty\!K_{5/3}(t)\,dt = \int_0^\infty\!dt\,K_{5/3}(t)\int_0^t\!dy = \int_0^\infty t\,K_{5/3}(t)\,dt = \Gamma\bigl(\tfrac{11}6\bigr)\Gamma\bigl(\tfrac16\bigr) = \frac{5\pi}3
+$$
+
+(領域 $0 < y < t < \infty$ の積分で、内側の $y$ 積分が $t$。最後の 2 つは (13.1) の第 2 式と同じメリン変換 ($s = 1$、$\nu = 5/3$): $2^0\,\Gamma(\tfrac{1+1+5/3}{2})\Gamma(\tfrac{1+1-5/3}{2}) = \Gamma(\tfrac{11}6)\Gamma(\tfrac16)$、$=\tfrac56\,\pi/\sin(\pi/6) = 5\pi/3$)。よって $pp(y) = \tfrac{3}{5\pi}\,G(y)$ が $\int pp\,dy = 1$ になる ([rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (d): $\int_0^\infty tK_{5/3}\,dt = 5.23598772$、$5\pi/3 = 5.23598776$)。同じ入れ替えで平均 $\int y\,G\,dy = \tfrac12\int t^2K_{5/3}\,dt$ から $\langle y\rangle = 0.30792015$ (= `cave`) になる (同 (d))。
 
 **確認** ((c)): 乱数 $2\times10^6$ 個の標本の平均と 2 次モーメントは $0.30791$、$0.40787$ (コメントの値 $0.30792$、$0.40741$。標本誤差 $4\times10^{-4}$ の範囲)。(d) の FLUC ON の標準偏差 $2.046\times10^{-5}$ は理論 (13.4) $2.055\times10^{-5}$ と標本誤差の範囲で一致。(h): 初期の $p_x = 3\times10^{-3}$ でも $\mathrm{Var}(\delta) = 4.206\times10^{-10}$ (理論 $4.223\times10^{-10}$)。
 
@@ -178,7 +230,22 @@ CALC (`tradke`) は、追跡 (`tradk1`) と同じ幾何で、$\theta$、$\rho_r$
 
 ### 6.2 励起 (`dee`、`dbeam`)
 
-**励起** (`dee = anp*uc**2*cuu`): 区間の $\delta$ の分散 $\mathrm{Var}(\Delta u) = N_\gamma\langle u^2\rangle$ ((13.4)、$p_0c$ 単位)。光子は速度の向きに出るので、$q$ は変わらず、$p_x = q\,p$ が $p$ に比例して変わる: 粒子 1 個について $\Delta p_x = p_x\,\Delta\delta/p_r \simeq p_x\Delta\delta$、$\Delta p_y \simeq p_y\Delta\delta$。したがって、粒子の集団についてスライス内で平均した
+**励起** (`dee = anp*uc**2*cuu`): 区間の $\delta$ の分散 $\mathrm{Var}(\Delta u) = N_\gamma\langle u^2\rangle$ ((13.4)、$p_0c$ 単位)。**(13.7) の導出**。
+
+1. 光子は速度の向きに出るので、$q = p_x/p$ は変わらず、$p_x = q\,p$ が $p$ に比例して変わる。粒子 1 個について、$\delta$ が $\Delta\delta$ だけ変わると $p_r = 1 + \delta$ が $\Delta\delta$ 変わるので $\Delta p_x = q\,\Delta p_r = (p_x/p_r)\Delta\delta \simeq p_x\Delta\delta$、同様に $\Delta p_y \simeq p_y\Delta\delta$ ($p_r \simeq 1$)。
+2. **仮定** (独立性): 損失 $\Delta\delta$ は、光子数と各光子のエネルギー ($u/p_0c$。$u_c$ は区間の軌道の幾何 ($\theta$、$al_1$、$h_1$) で決まる) だけで決まり、集団の中の個々の粒子の $p_x$、$p_y$ には依らない。すなわち $\Delta\delta$ と $(p_x, p_y)$ は独立で、$E[f(p_x,p_y)\,\Delta\delta^2] = E[f]\,E[\Delta\delta^2]$。言い換えると、粒子ごとの軌道からの偏差が $u_c$ を変える効果は無視する (この無視の大きさは見積もっていない。**未確認**)。
+3. 2 次のモーメントは各因子を並べて
+
+$$
+\begin{aligned}
+\langle\Delta\delta^2\rangle &= E[\Delta\delta^2] = \mathtt{dee}\ \ (13.4\ の\ \mathrm{Var}(\Delta u)\ を\ p_0c\ で割ったもの),\\
+\langle\Delta p_x\,\Delta\delta\rangle &= \langle p_x\,\Delta\delta^2\rangle = \langle p_x\rangle\langle\Delta\delta^2\rangle,\\
+\langle\Delta p_x\Delta p_y\rangle &= \langle p_xp_y\,\Delta\delta^2\rangle = \langle p_xp_y\rangle\langle\Delta\delta^2\rangle,\qquad
+\langle\Delta p_x^2\rangle = \langle p_x^2\,\Delta\delta^2\rangle = \langle p_x^2\rangle\langle\Delta\delta^2\rangle
+\end{aligned}
+$$
+
+($\Delta\delta$ の 1 次の平均 $\langle\Delta\delta\rangle$ は平均損失 $dg$ で別に扱い、$\Delta\delta$ のゆらぎのみ $\Delta\delta^2 \to \mathrm{Var}$ とする。) すなわち
 
 $$
 \langle\Delta\delta^2\rangle = \mathtt{dee},\qquad
@@ -188,17 +255,35 @@ $$
 \tag{13.7}
 $$
 
+仮定の数値確認 ([rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (g)): $\Delta\delta$ を $p$ に依らず引くと $\langle\Delta p_x\Delta p_y\rangle = 3.963\times10^{-14}$ ($\langle p_xp_y\rangle\langle\Delta\delta^2\rangle = 3.972\times10^{-14}$)、$\langle\Delta p_x\Delta\delta\rangle = 7.987\times10^{-11}$ ($7.999\times10^{-11}$) で一致する。$\Delta\delta$ が $p_x$ に依る場合 ($\Delta\delta \to \Delta\delta\,(1 + 300p_x)$ の人工例) は $\langle\Delta p_x^2\rangle$ が積と 78% 違う。仮定が破れる場合は (13.7) が成り立たない。
+
 ここで $\langle\cdot\rangle$ は粒子の集団と、スライス内の位置 ($s$) の両方についての平均。$p_x$ は軌道 ($p_{xi}$ から $p_x$ まで線形に変わるとする) と、集団の広がり $\delta p_x$ の和なので、$\langle p_x\rangle = (p_{xi} + p_x)/2$、$\langle p_x^2\rangle = \dfrac{p_{xi}^2 + p_{xi}p_x + p_x^2}3 + \langle\delta p_x^2\rangle$ (軌道の $s$ 平均 $\tfrac1L\int p_x(s)^2ds$ に、ビーム行列の $\langle\delta p_x^2\rangle$ が加わる)。Fortran (`photons.f:1506-1516`): $pxm = p_{xi} + p_x$ として
 
 - `dbeam(21) = dee` ($\langle\delta^2\rangle$)、`dbeam(17) = pxm*dee*0.5` ($\langle p_x\delta\rangle$)、`dbeam(19) = pym*dee*0.5` ($\langle p_y\delta\rangle$)。
 - `dbeam(3) = (beam(3) + b*(2*beam(5) + b*beam(6)) + (pxm**2 + pxi**2 + px**2)/6)*dee`: $(pxm^2 + p_{xi}^2 + p_x^2)/6 = [(p_{xi} + p_x)^2 + p_{xi}^2 + p_x^2]/6 = (p_{xi}^2 + p_{xi}p_x + p_x^2)/3$ が軌道の $s$ 平均。**`beam(3)`** $= \langle p_x^2\rangle$ (ビーム行列の $\langle xx\rangle = $ `beam(1)`、$\langle xp_x\rangle = $ `beam(2)`、$\langle p_xp_x\rangle = $ `beam(3)`、$\langle xy\rangle = $ `beam(4)`、…の 21 成分の並び) は、集団の広がりの $\langle\delta p_x^2\rangle$。ソレノイドの磁場 $b_{zh}$ があるとき、力学的運動量は $p_x + b\,y$ ($b = b_{zh}/2$) なので $\langle(p_x + by)^2\rangle = \langle p_x^2\rangle + 2b\langle p_xy\rangle + b^2\langle y^2\rangle$ (`beam(3) + b*(2*beam(5) + b*beam(6))`)。
 - `dbeam(10)` (py の対応する式)。`dbeam(8)` $= \langle\Delta p_x\Delta p_y\rangle$ は $\langle(p_x + by)(p_y - bx)\rangle = \langle p_xp_y\rangle - b\langle xp_x\rangle + b\langle yp_y\rangle - b^2\langle xy\rangle$ のはずだが、K64 は `beam(2) - beam(10) + b*beam(4)` と $\langle yp_y\rangle$ (`beam(9)`) の代わりに $\langle p_y^2\rangle$ (`beam(10)`) と書く (B39。$b_{zh} = 0$ では効かない)。
 
+**Fortran の 1 行 (`photons.f:1509-1510`) と、正しい式の対応**:
+
+```
+dbeam(8) =(beam(8)-b*(beam(2)-beam(10)+b*beam(4))
+     $     +(pxm*pym+pxi*pyi+px*py)/6.d0)*dee
+```
+
+ビーム行列 `beam(1..21)` は $(x, p_x, y, p_y, z, \delta)$ の 2 次モーメントを、行ごとの下三角に並べたもの: `beam(1)` $= \langle x^2\rangle$、`beam(2)` $= \langle xp_x\rangle$、`beam(3)` $= \langle p_x^2\rangle$、`beam(4)` $= \langle xy\rangle$、`beam(5)` $= \langle p_xy\rangle$、`beam(6)` $= \langle y^2\rangle$、`beam(7)` $= \langle xp_y\rangle$、`beam(8)` $= \langle p_xp_y\rangle$、`beam(9)` $= \langle yp_y\rangle$、`beam(10)` $= \langle p_y^2\rangle$、…、`beam(17)` $= \langle p_x\delta\rangle$、`beam(19)` $= \langle p_y\delta\rangle$、`beam(21)` $= \langle\delta^2\rangle$。これを (13.7) の $\langle(p_x + by)(p_y - bx)\rangle$ の展開
+
+$$
+\langle p_xp_y\rangle - b\langle xp_x\rangle + b\langle yp_y\rangle - b^2\langle xy\rangle
+= \mathtt{beam(8)} - b\,\bigl(\mathtt{beam(2)} - \mathtt{beam(9)} + b\,\mathtt{beam(4)}\bigr)
+$$
+
+と並べると、Fortran は括弧の中の `beam(9)` を `beam(10)` と書いている。差は (Fortran) $-$ (正しい式) $= b\,(\mathtt{beam(10)} - \mathtt{beam(9)})$ ($b \ne 0$ のときだけ残る)。同じ対応で `dbeam(3)` の $\langle(p_x + by)^2\rangle$ = `beam(3) + b*(2*beam(5) + b*beam(6))` と、`dbeam(10)` の $\langle(p_y - bx)^2\rangle$ = `beam(10) + b*(-2*beam(7) + b*beam(1))` は正しい式と差 0 (sympy。[rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (g))。軌道の項 $(pxm^2 + pxi^2 + px^2)/6$ と `dbeam(17)` $= pxm\cdot dee\cdot0.5$ は上の $s$ 平均の結果 (sympy で $\int_0^1p_x(t)^2dt - (pxm^2 + pxi^2 + px^2)/6 = 0$、$\int_0^1p_x\,dt - pxm/2 = 0$、$p_xp_y$ の積も同様)。
+
 したがって励起が「軌道の $p_x$ だけで決まる」のではなく、**集団の広がり**にも依存する ($\langle\Delta p_x^2\rangle$ の $\langle\delta p_x^2\rangle\,\mathtt{dee}$ の項)。
 
 この励起の行列を、1 周の $\Sigma = M\Sigma M^\top + \Delta$ に組む話は [14_emittance.md](14_emittance.md)。
 
-**確認**: (13.7) の $\langle\Delta\delta^2\rangle$ の部分 (`dee`) は (d)(h) の標準偏差・分散で確認した。$\langle\Delta p_x\Delta\delta\rangle$、$\langle\Delta p_x^2\rangle$ の係数は、その後の輸送で位相空間の相関が混ざる (偏向磁石内の $R_{26}$ による $\delta$ と $p_x$ の相関: 初期 $p_x$ ゼロでも出る) ので、追跡の統計から直接は読めない。**数値では未確認**。上は (13.7) の導出 ($\Delta p_x = p_x\Delta\delta$ と軌道・集団の平均) と、Fortran の式の項ごとの読みである。
+**確認**: (13.7) の $\langle\Delta\delta^2\rangle$ の部分 (`dee`) は (d)(h) の標準偏差・分散で確認した。$\langle\Delta p_x\Delta\delta\rangle$、$\langle\Delta p_x^2\rangle$ の係数は、厚い要素ではその後の輸送で位相空間の相関が混ざる (偏向磁石内の $R_{26}$ による $\delta$ と $p_x$ の相関: 初期 $p_x$ ゼロでも出る) ので、追跡の統計から直接は読めない。そこで**薄い偏向磁石** ($\theta = 10^{-3}$、$L = 6\times10^{-4}$ m、$N_\gamma = 0.0618$、粒子 $4\times10^5$ 個。入口の $p_x$ は出口までにほぼ変わらない) の FLUC ON の追跡で、出口の分散・共分散を $\mathrm{Var}(\delta)$ で割った値を調べた ([rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (h)): $(p_{x0}, p_{y0}) = (0.20, 0.10)$ で $\langle\Delta p_x\Delta\delta\rangle/\mathrm{Var} = 0.2005$ ($p_{x0} = 0.20$)、$\langle\Delta p_x^2\rangle/\mathrm{Var} = 0.0402$ ($p_{x0}^2 = 0.0400$)、$\langle\Delta p_x\Delta p_y\rangle/\mathrm{Var} = 0.02005$ ($p_{x0}p_{y0} = 0.0200$)。$(-0.15, 0.20)$ では $-0.1495$ ($-0.15$)、$0.0224$ ($0.0225$)、$-0.0299$ ($-0.0300$)。(13.7) の係数が 1% 程度で確認できた (標本誤差 2〜3%)。**確認の範囲**: 偏向磁石 1 台で、集団の広がり $\langle\delta p_x^2\rangle$ の項 (`beam(3)` など) とソレノイドの項は確認していない (**未確認**)。(13.7) は $\Delta p_x = p_x\Delta\delta$ と軌道・集団の平均の導出と、Fortran の式の項ごとの読みである。
 
 ### 6.3 減衰 ($B$): 連鎖律
 
@@ -210,7 +295,24 @@ du_c = u_{ct}\,d\theta - u_c\,\frac{d\,al_1}{al_1} + 3u_c\,\mathtt{dh1r}\,dp_r,\
 d(dg) = -\mathtt{cave}\,(dN_\gamma\,u_c + N_\gamma\,du_c)
 $$
 
-($u_{ct} = u_c/\theta$。) コードの `danp = anrad*h1*dtheta`、`danp(6) += anp*dh1r`、`duc = uct*dtheta - uc*dal/al1`、`duc(6) += 3*uc*dh1r`、`ddg = -cave*(danp*uc + anp*duc)` は、この連鎖律そのままである (sympy で、$dg$ の $\theta$、$al_1$、$p_r$ での偏微分とコードの式の差が 0: [rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) (d))。$\theta = \arcsin(x_{pa})$、$x_{pa} = |\vec x_p|/p_r^2$ ($\vec x_p$ は外積 `xpx, xpy, xpz`) の微分は $d\theta = dx_{pa}/\sqrt{1 - x_{pa}^2}$ (`das`)、$dx_{pa} = \dfrac{\vec x_p\cdot d\vec x_p}{x_{pa}\,p_r^4} - \dfrac{2x_{pa}}{p_r}dp_r$ (sympy で確認、同 (d))。横運動量の更新 $\Delta p_x' = \tfrac12dp_x\,dg$ (符号は上のとおり) の微分は $d(\Delta p_x') = \tfrac12[(dp_x^{\rm end} - dp_{xr0})\,dg + dp_x\,d(dg)]$。
+($u_{ct} = u_c/\theta$。) コードの `danp = anrad*h1*dtheta`、`danp(6) += anp*dh1r`、`duc = uct*dtheta - uc*dal/al1`、`duc(6) += 3*uc*dh1r`、`ddg = -cave*(danp*uc + anp*duc)` は、この連鎖律そのままである (sympy で、$dg$ の $\theta$、$al_1$、$p_r$ での偏微分とコードの式の差が 0: [rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) (d))。$\theta = \arcsin(x_{pa})$、$x_{pa} = |\vec x_p|/p_r^2$ ($\vec x_p$ は外積 `xpx, xpy, xpz`) の微分は $d\theta = dx_{pa}/\sqrt{1 - x_{pa}^2}$ (`das`)、$dx_{pa}$ は次のとおり導く (結果は下の式)。$dx_{pa}$ の導出 (1 行ずつ): $x_{pa} = |\vec x_p|/p_r^2$ から $\ln x_{pa} = \tfrac12\ln(\vec x_p\cdot\vec x_p) - 2\ln p_r$ なので、微分して
+
+$$
+\frac{dx_{pa}}{x_{pa}} = \frac{\vec x_p\cdot d\vec x_p}{|\vec x_p|^2} - \frac{2\,dp_r}{p_r}
+\ \Longrightarrow\
+dx_{pa} = \frac{\vec x_p\cdot d\vec x_p}{|\vec x_p|}\,\frac1{p_r^2} - \frac{2x_{pa}}{p_r}dp_r
+= \frac{\vec x_p\cdot d\vec x_p}{x_{pa}\,p_r^4} - \frac{2x_{pa}}{p_r}dp_r
+$$
+
+($|\vec x_p| = x_{pa}p_r^2$ を使った。) 外積の成分の微分は $\vec x_p = (p_yp_{z0} - p_zp_{yi},\ p_zp_{xr0} - p_xp_{z0},\ p_xp_{yi} - p_yp_{xr0})$ (Fortran `xpx, xpy, xpz`、`photons.f:1401-1403`) の積の微分で、$dp_z = (p_r\,dp_r - p_x\,dp_x - p_y\,dp_y)/p_z$ ($p_z = \sqrt{p_r^2 - p_x^2 - p_y^2}$ の微分)。数値 (中心差分との比較、[rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) (f)、$p_{xi} = 0.012$、$p_{yi} = -0.004$、$p_x = 0.017$、$p_y = 0.006$、$p_r = 0.997$): $\partial x_{pa}/\partial p_{xi} = +0.982727973$ (中心差分と $6\times10^{-12}$ 差)、$\partial/\partial p_x = -0.982809560$、$\partial/\partial p_r = +4.42501855\times10^{-3}$ (差 $3\times10^{-11}$) など 5 つの変数すべてで $3\times10^{-11}$ 以内。K64 の式 ($x_{pa}p_r^2$ で割る) では $p_r \ne 1$ で $\partial/\partial p_r$ が $2.07\times10^{-3}$ と大きくずれる (上の (4))。
+
+**横運動量の更新の微分**。$\Delta p_x' = \tfrac12dp_x\,dg$ (符号は上のとおり) の中の $dp_x$ は、スライスの**出口の $p_x$** (コードの `px`、`cod(2) + bzh*cod(3)`) から**入口の運動量を断面の回転角 $\varphi$ ($c_p = \cos\varphi$、$s_p = \sin\varphi$) だけ回した $p_{xr0}$** を引いたもの: `dpx = px - pxr0`、`pxr0 = cp*pxi + sp*pz00` (`photons.f:1394, 1399`、$p_{z00}$ は入口の $p_z$)。$p_{xr0}$ の微分は `dpxr0 = cp*dpxi + sp*dpz00` で、$dp_{z00} = (-p_{xi}\,dp_{xi} - p_{yi}\,dp_{yi} + p_r\,dp_r)/p_{z00}$ (`photons.f:1445-1447`)。出口の $p_x$ の微分は伝搬の行列 `tr2` の 2 行目 `tr2(2,:)`。したがって $dp_x$ の微分は $d(dp_x) = \texttt{tr2(2,:)} - dp_{xr0}$ (**この $dp_x^{\rm end}$ は `tr2(2,:)`、$dp_{xr0}$ は `dpxr0`**)、積の微分で
+
+$$
+d(\Delta p_x') = \tfrac12\bigl[d(dp_x)\,dg + dp_x\,d(dg)\bigr] = \tfrac12\bigl[(dp_x^{\rm end} - dp_{xr0})\,dg + dp_x\,d(dg)\bigr]
+$$
+
+K64 の `dddpx` (`photons.f:1467`) は第 2 項が `ddpx*ddg` ($= \tfrac12dp_x\,dg\,d(dg)$) で、$dg$ が余計にかかる (誤りの (2))。
 
 **K64 の `tradke` の微分の 4 点の誤り・近似** (B138): (1) 区間の始点の座標に関する微分 `tr1` を、終点の座標に関する微分を要する $D$・$B$ の更新にそのまま使う (正しくは $\mathtt{tr1}\cdot\mathtt{tr2}^{-1}$)。(2) `dddpx` の第 2 項が `ddpx*ddg` ($= \tfrac12dp_xdg\,d(dg)$) で、上の $dp_x\,d(dg)$ ではない。(3) `tr1(1,:)` の $x' = x + \Delta p_x'\,c_1$ ($c_1 = al_1/(3p_r)$) の $c_1$ の微分が無い。(4) `dxpa` の第 1 項が `/xpa/pr**2` で、上の $/(x_{pa}p_r^4)$ ではない ($\delta \ne 0$ の軌道で $2\delta$ の相対誤差)。(2)(4) は上の連鎖律との比較で確認した。(1)(3) は docs/30 の記述による (ここでは導出していない)。v2 は修正済み (`exactd`)、k64 モードは K64 のまま。**`tr1` の各成分を 1 つずつ手で導出し、数値微分と照合することはしていない** (**未確認**)。
 
@@ -243,6 +345,7 @@ SAD の RADINT は kinematical method (本体のずれた四極なども含め�
 | スクリプト | 確認すること | 出力 |
 |---|---|---|
 | `rad_02_derivations.py` | (a) (13.1) のメリン変換、(b) $dg$ の導出と ODE、(c) $dv$ の分母、(d) `tradke` の連鎖律 (sympy)、(e) 分割数 | [rad_02_derivations.out.txt](outputs/rad_02_derivations.out.txt) |
+| `rad_03_gaps.py` | (a) $dv$ の式の差 (40 桁)、(b) Liénard のパワーとスペクトルの規格化、(c) 複合ポアソンの分散、(d) $3/(5\pi)$、(e) $\gamma\propto p$ の補正、(f) `tradke` の微分 (中心差分)、(g) (13.7) の途中式と `dbeam(8)`、(h) 薄い偏向磁石の FLUC の共分散 | [rad_03_gaps.out.txt](outputs/rad_03_gaps.out.txt) |
 | `rad_01_kinematical.py` | (a) 定数の対応、(b) 放射スペクトルのモーメント (13.1)(13.2)、(c) `drndsr` のモーメント、(d) 偏向磁石 1 台の平均・分散、(e) ずれた四極の損失、(f) 横運動量・位置の補正 (13.6)、(g) $U_0 = C_\gamma E^4I_2/2\pi$、(h) $\delta$ の分散 | [rad_01_kinematical.out.txt](outputs/rad_01_kinematical.out.txt) |
 
 実行: リポジトリのルートから `py -3.12 physics_guide/scripts/rad_01_kinematical.py` (数秒〜十数秒)。
@@ -253,7 +356,7 @@ SAD の RADINT は kinematical method (本体のずれた四極なども含め�
 
 **未確認**:
 - 分割数の `crad` を含む第 2 項の実際の値 (§4.6)。
-- (13.7) の係数の数値確認、減衰の行列 `tr1` の各成分の手による導出と数値微分との照合 (§6)。$dg$ の式 (§4.2)、`dee`・`dbeam` の構造と連鎖律 (§6) は導出した。ソレノイドがあるときの項は読みだけ。
+- (13.7) の集団の広がりの項とソレノイドの項の数値確認 (軌道の項は薄い偏向磁石で確認した)、減衰の行列 `tr1` の各成分の手による導出と数値微分との照合 (§6。$dx_{pa}$ は確認した)。$dg$ の式 (§4.2)、`dee`・`dbeam` の構造と連鎖律 (§6) は導出した。ソレノイドがあるときの項は読みだけ。
 - RADCOD・RADTAPER の分岐、`tradkn` (多粒子の同時処理)、スピンの項 (`sprot`)、`tphrec` (光子の記録)。
 - 軸からずれた四極の、$\gamma$ が大きい極限での古典放射の式の適用範囲 (臨界エネルギーに比べて十分短い、半古典 (量子) の補正は無視)。
 - $\gamma$ が小さい (低エネルギー) とき、$N_\gamma$ の式、$u_c$ の式の適用。3 GeV 以外のエネルギーは確認していない。
@@ -298,4 +401,16 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `dee` | $N_\gamma\,\mathtt{cuu}\,u_c^2$ ($\delta$ の分散の増加) | `tradke` | |
 | `dbeam` | 励起の増分 (ビーム行列 21 成分の並び) | `tradke` | |
 | `tr1`・`tr2` | 減衰・伝搬の行列 | `tradke` | |
+| `danp`・`duc`・`ddg` | $dN_\gamma$、$du_c$、$d(dg)$ の位相空間の微分 (連鎖律 §6.3) | `photons.f:1461-1466` | |
+| `dh1r` | $d\ln h_1/dp_r = p\,p_0/h_1^2$ (コードは `p*p0/h1**2`) | `photons.f:1453` | |
+| `dal` | $d\,al_1 = -\mathtt{tr2(5,:)}$ ($al_1 = al - z + z_{r0}$ の出口の $z$ に関する微分) | `photons.f:1457` | |
+| `das` | $1/\sqrt{1 - x_{pa}^2}$ ($d\theta = \mathtt{das}\,dx_{pa}$) | `photons.f:1459` | |
+| `xpa` | $|\vec x_p|/p_r^2 = \sin\theta$ (`xpx, xpy, xpz` の大きさ) | `photons.f:1404` | |
+| `dxpx`・`dxpy`・`dxpz` | $\vec x_p$ の成分の微分 (§6.3) | `photons.f:1451-1452` | |
+| `dpxr0`・`dpz00` | $p_{xr0}$ (入口の $p_x$ を断面の回転角で回したもの)、入口 $p_z$ の微分 | `photons.f:1445-1447` | |
+| `pxr0`・`pz0`・`pz00` | 入口の $p_x$ を回した $p_{xr0} = c_pp_{xi} + s_pp_{z00}$、$p_{z0} = -s_pp_{xi} + c_pp_{z00}$、入口の $p_z$ | `photons.f:1393-1395` | |
+| `dpxi`・`dpyi` | 入口の $p_x$、$p_y$ の微分 | `tradke` | |
+| `erad` | $\tfrac{55}{24\sqrt3}$`urad` (§2) | `tfsetparam.f:119` | |
+| `urad` | $\tfrac32\lambda_C/p_0$ | `tfsetparam.f:118` | |
+| `crad` | $r_{\rm classic}(c/\mathtt{amass})^2/p_0/1.5$ | `tfsetparam.f:117` | |
 | `cutoff`・`npmax` | ポアソンの累積の打ち切り ($0.9999$)・光子数の上限 ($10^4$) | `drndsr.f` | |
