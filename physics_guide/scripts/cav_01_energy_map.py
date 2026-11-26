@@ -16,6 +16,7 @@ import _common as C
 C.start(__file__)
 from pysad.ffscmd import run_sad_string
 from pysad import track6, track6n_ext
+from pysad import compat
 
 MC2 = 0.51099895e6
 c_light = 299792458.0
@@ -178,8 +179,10 @@ print('   (3 GeV では z の変化が 1e-15 以下で、H の流れと「時間
 print('\n== (f) 入口の端 (tcavfrin) の収束を、位相を選ばずに測る (参考。1/β の判定には使わない) ==')
 print('   FRINGE = 1 (入口だけ)、L = 0.1 m の、DISFRIN = 0 と 1 の差を、K64 の式 x v/(2 L p0) (sin(ωt - dphis)) (正準 px、p0 規格化) と比べる。')
 print('   この測り方では、端のキックで動いた x に本体の x 依存のキック (V20・V02 の補正) が反応する分が混ざり、低エネルギーで比が 1 からずれる。')
-print('   1/β の有無の判定は、本体のキックが 0 の位相に粒子を置く cav_02_derivations.py (d) で行う (比は β によらず 1)。')
-for mom, name in ((3.0e9, '3GEV'), (2.0e6, '2MEV'), (0.6e6, '600KEV')):
+print('   1/β の有無の判定は、本体のキックが 0 の位相に粒子を置く cav_02_derivations.py (d) で行う (k64 の比は β によらず 1)。')
+print('   k64 は K64 の動作 (1/β なし)、v2 は 1/β (粒子の β) を入れた版 (B330)。v2 の比は、本体の x 依存のキックの混ざりのほかに 1/β の分だけ 1 を超える。')
+for mode, mom, name in [(m_, a_, b_) for m_ in ('k64', 'v2') for a_, b_ in ((3.0e9, '3GEV'), (2.0e6, '2MEV'), (0.6e6, '600KEV'))]:
+    compat.set_mode(mode)
     pp = mom / MC2
     hh = math.sqrt(1 + pp * pp)
     beta = pp / hh
@@ -194,5 +197,6 @@ for mom, name in ((3.0e9, '3GEV'), (2.0e6, '2MEV'), (0.6e6, '600KEV')):
     ww = 2 * math.pi * 500e6 / c_light
     vv = 1e5 / MC2
     formula = cc[0] * vv / (2 * Lc * pp) * (math.sin(ww * tt - (0 - ph_)) + 0.0)
-    print('   p = %-7s βγ = %.3f、β = %.4f: Δpx(端) = %.4e、K64 の式 x v/(2 L p0)(sin(ωt - dphis)) = %.4e (比 %.4f)、(参考) 1/β をかけた式 %.4e' % (
-        name, pp, beta, d, formula, d / formula, formula / beta))
+    print('   [%s] p = %-7s βγ = %.3f、β = %.4f: Δpx(端) = %.4e、K64 の式 x v/(2 L p0)(sin(ωt - dphis)) = %.4e (比 %.4f)、(参考) 1/β をかけた式 %.4e' % (
+        mode, name, pp, beta, d, formula, d / formula, formula / beta))
+compat.set_mode(None)

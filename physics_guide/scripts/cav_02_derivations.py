@@ -4,8 +4,8 @@
 (a) 端の項 H_f から ΔE = ∂_t H_f、Δp_x = -∂_x H_f を取り、K64 の tcavfrin の式 (dh、dpt) と比べる (sympy、§7.2)。
 (b) tcavfrin を numpy で組み直し (入口の端だけ)、運動学的な傾き q の再スケール q *= p1r/p2r の有無でシンプレクティック性
     |J^T S J - S| を比べる。K64 の tcavfrin は再スケールが無い (本体 tcav の px=(px*p1r+dpx)/p2r との対比)。
-(c) pysad (v2 既定) の CAVI (フリンジあり) の追跡の同じ量 (端付きの空洞全体)。
-(d) 端の収束 Δpx の β 依存 (§7.1 (f) の見直し): 端だけを取り出して、K64 の式と比べる。
+(c) pysad の CAVI (フリンジあり) の追跡の同じ量 (端付きの空洞全体)。k64 (K64 の動作) と v2 (B330 の 1/β と B332 の q の再スケールを直した版) の両方。
+(d) 端の収束 Δpx の β 依存 (§7.1 (f) の見直し): 端だけを取り出して、K64 の式と比べる。k64 と v2 の両方。
 (e) 重み ws: wl = ln(1+r)、dpepe の導出 (§6.2)。
 """
 import io
@@ -17,6 +17,7 @@ import _common as C
 C.start(__file__)
 from pysad.ffscmd import run_sad_string
 from pysad import track6
+from pysad import compat
 
 MC2 = 0.51099895e6
 c_light = 299792458.0
@@ -107,7 +108,7 @@ for lab, pe in (('3 GeV/c', 3.0e9), ('2 MeV/c', 2.0e6), ('0.6 MeV/c', 0.6e6)):
 print('  (中心差分の精度が 1e-10 〜 1e-11 なので、それ以下は 0 と読む。)')
 
 # ---------------------------------------------------------------------------------------------------- (c)
-print('\n== (c) pysad (v2 既定) の CAVI 全体 (入口・出口の端つき、L = 0.1 m) のヤコビアン ==')
+print('\n== (c) pysad の CAVI 全体 (入口・出口の端つき、L = 0.1 m) のヤコビアン。k64 (K64 の動作) と v2 ==')
 
 
 def mk(el, momentum):
@@ -122,31 +123,39 @@ def trk(ffs, c):
     return np.asarray(track6.track_particles(ffs.lat.elements, a, 1, ffs.momentum(), 0.0, True, False, False))[0]
 
 
-for lab, mom in (('3 GeV/c', '3GEV'), ('2 MeV/c', '2MEV'), ('0.6 MeV/c', '600KEV')):
-    for fr in ('', 'DISFRIN=1'):
-        ffs = mk('CAVI CV=(L=%g VOLT=%g FREQ=%g PHI=%g %s);' % (al, V, f_rf, phi, fr), mom)
-        for xv in (1e-3, 1e-2):
-            c0 = np.array([xv, 0.01, 0.0, 0.0, 0.02, 1e-3])
-            J = jac(lambda cc: trk(ffs, cc), c0)
-            print('   %-10s %-10s x = %4.0f mm: |J^T S J - S| = %.1e' % (lab, 'フリンジあり' if not fr else 'DISFRIN=1', xv * 1e3, np.abs(J.T @ S @ J - S).max()))
+for mode in ('k64', 'v2'):
+    compat.set_mode(mode)
+    print('  -- 互換モード %s' % mode)
+    for lab, mom in (('3 GeV/c', '3GEV'), ('2 MeV/c', '2MEV'), ('0.6 MeV/c', '600KEV')):
+        for fr in ('', 'DISFRIN=1'):
+            ffs = mk('CAVI CV=(L=%g VOLT=%g FREQ=%g PHI=%g %s);' % (al, V, f_rf, phi, fr), mom)
+            for xv in (1e-3, 1e-2):
+                c0 = np.array([xv, 0.01, 0.0, 0.0, 0.02, 1e-3])
+                J = jac(lambda cc: trk(ffs, cc), c0)
+                print('   %-10s %-10s x = %4.0f mm: |J^T S J - S| = %.1e' % (lab, 'フリンジあり' if not fr else 'DISFRIN=1', xv * 1e3, np.abs(J.T @ S @ J - S).max()))
+compat.set_mode(None)
 
 # ---------------------------------------------------------------------------------------------------- (d)
 print('\n== (d) 端の収束の β 依存 (§7.1 (f) の見直し): pysad の入口の端だけ (FRINGE = 1 と DISFRIN = 1 の差) ==')
 print('  本体のキックが 0 になる位相 (cos(ωt - dphis) = 0、すなわち ωt - dphis = π/2) に粒子を置く。')
 print('  そのとき K64 の端の式は Δp_x = x v/(2 L p0) (sin(ωt - dphis) = 1、s0 = 0)。δ = 0、x = 1 mm、p_x = 0。')
-for lab, mom, pe in (('3 GeV/c', '3GEV', 3.0e9), ('2 MeV/c', '2MEV', 2.0e6), ('0.6 MeV/c', '600KEV', 0.6e6)):
-    p0_ = pe / MC2
-    beta = p0_ / h_of(p0_)
-    tt = (math.pi / 2 - phi) / w_              # ωt - dphis = π/2、dphis = -PHI
-    z0 = -beta * tt
-    c0 = np.array([1e-3, 0.0, 0.0, 0.0, z0, 0.0])
-    o1 = trk(mk('CAVI CV=(L=%g VOLT=%g FREQ=%g PHI=%g FRINGE=1);' % (al, V, f_rf, phi), mom), c0)
-    o0 = trk(mk('CAVI CV=(L=%g VOLT=%g FREQ=%g PHI=%g DISFRIN=1);' % (al, V, f_rf, phi), mom), c0)
-    dpx_end = o1[1] - o0[1]
-    k64 = c0[0] * v_ / al / p0_ * .5
-    print('   %-10s β = %.4f: Δp_x(端) = %.5e、K64 の式 = %.5e、比 = %.6f、(1/β をかけた式との比 = %.4f)' % (lab, beta, dpx_end, k64, dpx_end / k64, dpx_end / (k64 / beta)))
-print('  (本体のキックが 0 の位相では、比は 1 に近く (エネルギーによらない)、1/β は入っていない。§7.1 の (f) の 0.9993・0.9734 は、')
-print('   端のキックで動いた x に、本体の x 依存のキック (V20・V02 の補正) が反応する分が混ざったもの。)')
+for mode in ('k64', 'v2'):
+    compat.set_mode(mode)
+    print('  -- 互換モード %s' % mode)
+    for lab, mom, pe in (('3 GeV/c', '3GEV', 3.0e9), ('2 MeV/c', '2MEV', 2.0e6), ('0.6 MeV/c', '600KEV', 0.6e6)):
+        p0_ = pe / MC2
+        beta = p0_ / h_of(p0_)
+        tt = (math.pi / 2 - phi) / w_              # ωt - dphis = π/2、dphis = -PHI
+        z0 = -beta * tt
+        c0 = np.array([1e-3, 0.0, 0.0, 0.0, z0, 0.0])
+        o1 = trk(mk('CAVI CV=(L=%g VOLT=%g FREQ=%g PHI=%g FRINGE=1);' % (al, V, f_rf, phi), mom), c0)
+        o0 = trk(mk('CAVI CV=(L=%g VOLT=%g FREQ=%g PHI=%g DISFRIN=1);' % (al, V, f_rf, phi), mom), c0)
+        dpx_end = o1[1] - o0[1]
+        k64 = c0[0] * v_ / al / p0_ * .5
+        print('   %-10s β = %.4f: Δp_x(端) = %.5e、K64 の式 = %.5e、比 = %.6f、(1/β をかけた式との比 = %.4f)' % (lab, beta, dpx_end, k64, dpx_end / k64, dpx_end / (k64 / beta)))
+compat.set_mode(None)
+print('  (本体のキックが 0 の位相では、k64 の比は 1 (エネルギーによらない。1/β は入っていない)、v2 は 1/β (粒子の β) の値に一致する (B330)。')
+print('   §7.1 の (f) の k64 の 0.9993・0.9734 は、端のキックで動いた x に、本体の x 依存のキック (V20・V02 の補正) が反応する分が混ざったもの。)')
 
 # ---------------------------------------------------------------------------------------------------- (e)
 print('\n== (e) 重みの wl と dpepe (§6.2) ==')
