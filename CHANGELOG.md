@@ -8,6 +8,8 @@
 
 ## v2.5.0 (開発中)
 
+**WSPAC の縦の力の電位の基準を K64 に合わせた (v2 の翻訳の誤りの修正。k64 は追跡に WSPAC を入れないので変更なし)**: K64 の縦のキック (`twspac` の `dg = −(z − zc)/σz²·az·fu`) の `fu` は、軸上で 0 ではなく ln((1 + r)/2) (r = σ2/σ1、丸いビームで 0)。pysad の v2 は軸上 0 としていた。gs で、0.5 GeV の結合のあるリングの軸上の粒子が縦のキックを受け (z = σz で +9.69e-10)、−z/σz² az ln((1+r)/2) と 1% で合うことを確認 (前の作業で動かなかった台本の原因は、gs で `Do` の中の `WSPAC;` が効かないこと)。修正後の v2 は gs と 8 粒子の Δδ が 2.5% 以内、Δx・Δy が 3% 以内。壁の半径 (K64 にない) に依る ln(b/σ) の項が入らないことが仕様か誤りかは未決のまま。記録 `docs/history/V250_wspac_axis.md`、試験 `test_v250_wspac_axis.py`。
+
 **BEND の CHI2 (tchge の tbrote の dchi2) の翻訳の抜けの修正 (k64・v2 とも。K64 の誤りではない)**: パーサが BEND の CHI2 を読まず、CALC・Emittance[]・スピンの `tchge` は dchi2 = 0 固定、ANGLE ≠ 0 の MULT の CHI2 の Emittance[] は未対応だった。BEND の CHI2 = 0.03 は gs で追跡を 4.5e-4、1 周のスピン行列を 2.8e-3、ν を 1.3e-4 動かす (直交性の欠陥は 1.9e-3)。修正後、k64 は gs と追跡 1e-15・スピン行列 7 桁・Emittance[] 5e-13・ν 6e-14 で一致する。DX・DY・DZ・ROTATE・DROTATE のずれのスピン行列は元から gs と一致していた (B56 の確認で見た 3.8e-3〜1.1e-2 の食い違いは CHI2・CHI1 の未実装が原因)。未実装のまま: ANGLE = 0 の MULT の CHI1・CHI2・DZ、ANGLE ≠ 0 の MULT のスピン。記録 `docs/history/V250_bend_chi2.md`、試験 `test_v250_bend_chi2.py`。
 
 **K1 ≠ 0・ANGLE ≠ 0 の MULT の FB1・FB2 の端が MULT の途中にも入る (B340、v2 のみ。k64 は K64 のまま) と BEND・MULT の FRINGE の対応**: K64 の `tmulta` は前半・後半の半スライスの `tbend` に fb1・fb2 の両方を渡す。K1 = 0 は mfr で選ぶが、K1 ≠ 0 の `tbendi` は mfr を見ず、MULT の途中に FB2・FB1 の端が余計に入る (gs で、ANGLE = 0.3・K1 = 0.3・F1 = 0.5 の BEND と MULT が両端で 1.41e-4、入口のみ・出口のみで各 7.0e-5 違い、F1 = 0 では 2.2e-11)。v2 は途中に渡さず、MULT が BEND と 1e-12 以内で一致する。BEND と MULT の FRINGE = 1・2 の x の食い違い (3e-5 級) は誤りではなく仕様の違い (BEND の FRINGE ≠ 0 は F1 を両端に、MULT の 1・2 は片側。BEND の -1・-2 と MULT の 1・2 を対にすると差は B331 の分だけ)。記録 `docs/history/B340_mult_k1_fringe.md`、試験 `test_v250_mult_k1_fringe.py`。

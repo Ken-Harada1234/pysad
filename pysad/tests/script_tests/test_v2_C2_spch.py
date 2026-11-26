@@ -478,7 +478,8 @@ def test_wspac_kick_formula_tilted_beam():
     assert S[:, 1] * (1 + S[:, 5]) - S0[:, 1] * (1 + S0[:, 5]) == pytest.approx(dpx, rel=1e-7, abs=1e-16)
     assert S[:, 3] * (1 + S[:, 5]) - S0[:, 3] * (1 + S0[:, 5]) == pytest.approx(dpy, rel=1e-7, abs=1e-16)
     u = np.array([_pot_quad(x1[i], y1[i], w.sig1[0], w.sig2[0]) for i in range(200)])
-    assert dd == pytest.approx(-zb / szz * A * u * b / (pi / np.sqrt(1 + pi * pi)), rel=1e-5, abs=1e-18)       # 縦: 軸上で電位 0 (K64 と同じ)
+    u = u + math.log(0.5 + 0.5 * w.sig2[0] / w.sig1[0])                                                      # K64 の基準: 軸上で ln((1 + r)/2) (gs で確認)
+    assert dd == pytest.approx(-zb / szz * A * u * b / (pi / np.sqrt(1 + pi * pi)), rel=1e-5, abs=1e-18)       # 縦: K64 の電位の基準
     assert np.array_equal(S[:, 0], S0[:, 0]) and np.array_equal(S[:, 2], S0[:, 2])
     # 線形の極限
     kx, ky = w.linear_k(0, al, p0)
@@ -527,7 +528,7 @@ def test_wspac_kick_is_symplectic():
 def test_wspac_longitudinal_wall_potential():
     """WSPACRADIUS (v2 で追加): 縦の力の電位の基準。円いガウスビーム (σ) が半径 R の円筒にあるとき、軸上の電位は
     U(R) = Ein(R²/2σ²) (R ≫ σ で 2 ln(R/σ) − ln 2 + γ)。SPAC の 3 次元のソルバー (Solver3D、独立な計算) の軸上の電位/線密度と 1% で合う。
-    WSPACRADIUS = 0 (K64 と同じ) では軸上の粒子の Δδ は 0"""
+    WSPACRADIUS = 0 (K64 と同じ基準: 軸上で ln((1 + r)/2)、r = σ2/σ1) では、丸いビーム (r = 1) の軸上の粒子の Δδ は 0"""
     sig, R, sz = 1e-3, 0.02, 0.05
     uw = spch.gauss_potential(np.array([R]), np.array([0.0]), sig, sig)[0]
     assert uw == pytest.approx(2 * math.log(R / sig) - math.log(2) + 0.5772156649, rel=1e-9)
