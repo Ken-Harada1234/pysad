@@ -117,11 +117,6 @@ pre .o { opacity:.8; }
 <td><strong>省かれる</strong> (pip では <code>pysad-run</code> を使う)</td>
 </tr>
 <tr>
-<td>ラティスデータ</td>
-<td>KEK-LS (3 GeV、20 セル、ESRF 型の HMBA) のラティス <code>kek-ls_v03_12.lat</code> (8 KB)。パッケージの中 <code>pysad/data/</code> (<code>pysad.datafiles.data_path('kek-ls_v03_12.lat')</code> で場所が取れる)。例 (<code>example/</code>) の台本が読むラティスの相対パス <code>pysad/tests/kek-ls_v03_12.lat</code> は、clone したリポジトリで動く</td>
-<td><strong>入る</strong></td>
-</tr>
-<tr>
 <td>依存ライブラリ</td>
 <td><code>numpy</code>・<code>scipy</code>・<code>numba</code> (自動)。<code>matplotlib</code> は <code>pip install pysad-k64[plot]</code> のときだけ</td>
 <td>自動 / 任意</td>
