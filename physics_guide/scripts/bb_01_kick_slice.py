@@ -16,6 +16,7 @@ import _common as C
 C.start(__file__)
 print('pysad:', C.pysad_src())
 from pysad import beambeam as BB
+from pysad import compat
 from scipy.integrate import quad
 
 mom = 1.7e9
@@ -151,14 +152,17 @@ cuc = 1.5 * lamC
 bbs = BB.setup(dict(BX=1.0, BY=1.0, EMIX=1e-8, EMIY=1e-8, DP=1e-3, SIGZ=0.01, SLICE=1, NP=1e10, BSTRL=1), mom)
 print('cnbs = %.6e、anrad γ = %.6e (比 %.9f)  [N_γ = cnbs/ρ_i dsz = anrad γ θ]' % (bbs['cnbs'], anrad * gam, bbs['cnbs'] / (anrad * gam)))
 print('cubs = %.6e、cuc γ² = %.6e (比 %.9f)  [u_c/E = cubs/ρ]' % (bbs['cubs'], cuc * gam**2, bbs['cubs'] / (cuc * gam**2)))
-xit, swit = BB.besseltab()
-print('光子エネルギーの表: 点数 %d、SwI の範囲 %.3f〜%.3f' % (len(xit), swit.min(), swit.max()))
-# xx ∈ (0,1) の一様乱数 → ln(u/u_c) = xi を表の線形補間
+# xx ∈ (0,1) の一様乱数 → ln(u/u_c) = xi を表の線形補間。k64 (K64 の表: 累積が矩形則 + 裾を捨てる) と v2 (B335 で直した表)
 uu = (np.arange(200000) + 0.5) / 200000
-xi_s = np.interp(uu, swit[1:1001], xit[1:1001])      # SwI は x が大きい側から積算した光子数の分布 (1 始まりの表)
-e1 = np.mean(np.exp(xi_s))
-e2 = np.mean(np.exp(2 * xi_s))
-print('<u>/u_c = %.6f (cave = 8/(15√3) = %.6f)、<u²>/u_c² = %.6f (cuu = 11/27 = %.6f)' % (e1, 8 / (15 * math.sqrt(3)), e2, 11 / 27))
+for mode in ('k64', 'v2'):
+    compat.set_mode(mode)
+    xit, swit = BB.besseltab()
+    print('[%s] 光子エネルギーの表: 点数 %d、SwI の範囲 %.3f〜%.3f' % (mode, len(xit), swit.min(), swit.max()))
+    xi_s = np.interp(uu, swit[1:1001], xit[1:1001])      # SwI は x が大きい側から積算した光子数の分布 (1 始まりの表)
+    e1 = np.mean(np.exp(xi_s))
+    e2 = np.mean(np.exp(2 * xi_s))
+    print('[%s] <u>/u_c = %.6f (cave = 8/(15√3) = %.6f)、<u²>/u_c² = %.6f (cuu = 11/27 = %.6f)' % (mode, e1, 8 / (15 * math.sqrt(3)), e2, 11 / 27))
+compat.set_mode(None)
 
 # 表の精度: 同じ格子 (x_i = 1.1^40 / 1.02^i) で、S(x) = ∫_x^∞ K_{5/3} と累積 ∫_x^∞ S dx を scipy で厳密に作り直して同じ手順でモーメントを取る
 from scipy.special import kv

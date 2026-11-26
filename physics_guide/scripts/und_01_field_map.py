@@ -144,8 +144,10 @@ print('  K = (F0/Kz) γ = %.4f、周期 %.2f m、B = F0 Bρ = %.3f T' % (F1 / Kz
 # ---------------------------------------------------------------- (d)
 print('\n== (d) UND (磁場なし) と DRIFT の z の更新 ==')
 from pysad.ffscmd import run_sad_string
+from pysad import compat
 res = {}
-for name, el in (('UND', 'UND U=(L=1 KX=0.0 QY=0.0 POLE=10 SLICE=4);'), ('DRIFT', 'DRIFT U=(L=1);')):
+for mode, name, el in [(m_, n_, e_) for m_ in ('k64', 'v2') for n_, e_ in (('UND', 'UND U=(L=1 KX=0.0 QY=0.0 POLE=10 SLICE=4);'), ('DRIFT', 'DRIFT U=(L=1);'))]:
+    compat.set_mode(mode)
     src = ('MOMENTUM = 3GEV;\n' + el + '\nMARK ST=();\nLINE BL=(ST U);\nFFS;\nUSE BL;\nTRPT; INS; NORAD; NOFLUC;\n$FORM="18.14";\n'
            'x0={1e-4};px0={2e-4};y0={0};py0={0};z0={0};dp0={1e-3};fl0={1};\nr=TrackParticles[{1,{x0,px0,y0,py0,z0,dp0,fl0}},3,1];\nPrint["R ",r[[2]]];\nExit;\n')
     b = io.StringIO()
@@ -154,8 +156,10 @@ for name, el in (('UND', 'UND U=(L=1 KX=0.0 QY=0.0 POLE=10 SLICE=4);'), ('DRIFT'
         if l.startswith('R'):
             import re as _re
             nums = [float(t) for t in _re.findall(r'[-+]?\d*\.\d+(?:[eE][-+]?\d+)?', l)]
-            res[name] = nums
-            print(name, 'x, px, y, py, z =', nums[:5])
-dz = res['UND'][4] - res['DRIFT'][4]
+            res[(mode, name)] = nums
+            print('[%s]' % mode, name, 'x, px, y, py, z =', nums[:5])
+compat.set_mode(None)
 dvL = 1e-3 * (2 + 1e-3) / math.sqrt(1 + (p0 * (1 + 1e-3))**2) / (math.sqrt(1 + (p0 * (1 + 1e-3))**2) + (1 + 1e-3) * h0)
-print('z(UND) - z(DRIFT) = %.3e m。−dv L (dv = -δ(2+δ)/h1/(h1+pn h0)、L = 1) の大きさ = %.3e m' % (dz, dvL))
+for mode in ('k64', 'v2'):
+    dz = res[(mode, 'UND')][4] - res[(mode, 'DRIFT')][4]
+    print('[%s] z(UND) - z(DRIFT) = %.3e m。−dv L (dv = -δ(2+δ)/h1/(h1+pn h0)、L = 1) の大きさ = %.3e m' % (mode, dz, dvL))
