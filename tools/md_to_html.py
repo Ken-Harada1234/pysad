@@ -106,8 +106,14 @@ window.addEventListener('hashchange', openTarget); openTarget();
 
 
 # ---------------------------------------------------------------- 見出しの ID
+_SLUG_MATH = None        # (items, prefix): 見出しの数式の置き換え名 (prefix+番号+END) を、TeX の文字に戻して ID を作る (番号は文書内の式の通し番号で、編集でずれるため)
+
+
 def gh_slug(value, separator='-'):
-    """GitHub 風: 小文字にし、英数字・日本語・_・- と空白以外を除き、空白を - にする。"""
+    """GitHub 風: 小文字にし、英数字・日本語・_・- と空白以外を除き、空白を - にする。
+    見出しの数式は、置き換え名ではなく TeX の文字から作る (`$H_2$ の厳密解` は `h_2-の厳密解`。式の数が変わっても ID は変わらない)。"""
+    if _SLUG_MATH and _SLUG_MATH[0]:
+        value = mathtex.plain(value, _SLUG_MATH[0], _SLUG_MATH[1])
     v = _html.unescape(value).strip().lower()
     v = re.sub(r'[^\w\- ]', '', v)
     return v.replace(' ', '-')
@@ -193,9 +199,17 @@ def normalize(text):
 def _ids_of_text(text):
     md = _new_md()
     text = text.replace('\r\n', '\n')
-    mtext = mathtex.extract(text)[0] if mathtex.find_node() else text
-    with _gh_ids():
-        body = md.convert(normalize(mtext))
+    global _SLUG_MATH
+    if mathtex.find_node():
+        mtext, items_, prefix_ = mathtex.extract(text)
+    else:
+        mtext, items_, prefix_ = text, [], ''
+    _SLUG_MATH = (items_, prefix_) if items_ else None
+    try:
+        with _gh_ids():
+            body = md.convert(normalize(mtext))
+    finally:
+        _SLUG_MATH = None
     ids = set(re.findall(r'<h[1-6] id="([^"]+)"', body))
     return ids | set(re.findall(r'<a\s[^>]*?(?:id|name)="([^"]+)"', text))
 
@@ -442,8 +456,13 @@ def convert_text(text, src, is_target=None, anchor_lookup=None, fold_regex=None,
         if err:
             res.math_errors += 1
             res.warnings.append('数式を変換できない (行 %d): %s  [%s]' % (it['line'] + 1, it['tex'][:70], err[:120]))
-    with _gh_ids():
-        body = md.convert(normalize(mtext))
+    global _SLUG_MATH
+    _SLUG_MATH = (items, prefix) if items else None
+    try:
+        with _gh_ids():
+            body = md.convert(normalize(mtext))
+    finally:
+        _SLUG_MATH = None
     tm = re.search(r'<h1 id="[^"]*">(.*?)</h1>', body, re.S)
     title_src = mathtex.plain(tm.group(1), items, prefix) if tm and items else (tm.group(1) if tm else '')
     res.title = _html.unescape(re.sub(r'<[^>]+>', '', title_src)).strip() if tm else src.name
