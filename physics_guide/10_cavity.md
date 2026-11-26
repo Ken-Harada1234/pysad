@@ -476,13 +476,7 @@ SAD の変数名の注釈の規約は [01_variables_and_conventions.md](01_varia
 | `rad`・`trpt`・`autophi` | 論理変数: 放射 (RADCOD)、輸送路 (TRPT)、自動位相 (`APHI` ≠ 0)。`offset`・`phis` の場合分け (§3.3) | `tffs.f:585-589` (`fff%rad`、`fff%trpt`)、`tturn.f:438` (`autophi`) | `rad`・`trpt`・`autophi` |
 | `mfring`・`frmd` | 端の有無の整数。`frmd` = `FRINGE`、逆向きの要素では 1 ↔ 2 を入れ替えて `mfring` にする。入口は `mfring ≥ 0` かつ `≠ 2`、出口は `≥ 0` かつ `≠ 1` | `tffs.f:1447-1451`、`tcav.f:82`・`185` | `mfring` |
 | `dvfs`・`al`・`alx` | RFSW の周波数ずらしによる $dv$ への足し込み、空洞の長さ $L$、刻みの中のドリフトの長さ | `tturne.f:859-866` (`tsetdvfs`)、`tcav.f` | `dvfs`・`al` |
-| `h1`・`p1`・`p1r` | 入口のエネルギー ($mc^2$)、運動量 ($mc$)、$1 + \delta$ | `tcav.f` | `amass` | 粒子の静止エネルギー $mc^2$ [eV] (電圧を割って $v$ を作る) | `tfsetparam.f:70` (`amass=rgetgl1('MASS')`) | `amass` |
-| `charge` | 電荷 (電子 $-1$)。`abs(charge)` が $v$ に、`sign(charge)` が位相に入る | `tfsetparam.f` (`rgetgl1('CHARGE')`) | `charge` |
-| `pgev`・`tphyzp` | $p_0c$ [eV] (名前は gev だが eV)。`tphyzp` は `pgev` から $p_0$ ($=$ `pgev/amass`)、$h_0$、磁気剛性、放射の定数、$\omega_0$ を作り直すサブルーチン (TRPT で空洞のあとに呼ぶ) | `tfsetparam.f:105` (`tphyzp`)、`tcav.f:202-203` | `p0`・`h0` ほか |
-| `rad`・`trpt`・`autophi` | 論理変数: 放射 (RADCOD)、輸送路 (TRPT)、自動位相 (`APHI` ≠ 0)。`offset`・`phis` の場合分け (§3.3) | `tffs.f:585-589` (`fff%rad`、`fff%trpt`)、`tturn.f:438` (`autophi`) | `rad`・`trpt`・`autophi` |
-| `mfring`・`frmd` | 端の有無の整数。`frmd` = `FRINGE`、逆向きの要素では 1 ↔ 2 を入れ替えて `mfring` にする。入口は `mfring ≥ 0` かつ `≠ 2`、出口は `≥ 0` かつ `≠ 1` | `tffs.f:1447-1451`、`tcav.f:82`・`185` | `mfring` |
-| `dvfs`・`al`・`alx` | RFSW の周波数ずらしによる $dv$ への足し込み、空洞の長さ $L$、刻みの中のドリフトの長さ | `tturne.f:859-866` (`tsetdvfs`)、`tcav.f` | `dvfs`・`al` |
-| `h1`・`p1`・`p1r` |
+| `h1`・`p1`・`p1r` | 入口のエネルギー ($mc^2$)、運動量 ($mc$)、$1 + \delta$ | `tcav.f` | 同名 |
 | `dh`・`h2`・`a`・`dpr`・`p2r` | $\Delta h$、$h_1 + \Delta h$、$\Delta h(h_1 + h_2)/p_1^2$、$\sqrt{1 + a} - 1$、$p_{1r}(1 + \mathtt{dpr})$ | `tcav.f` | 同名 |
 | `t`・`ph`・`tlim` | $t = -z\,h_1/p_1$、$\omega t/2$、$|t|$ の上限 (RFSW OFF で 0) | `tcav.f` | 同名 |
 | `v1a`・`v20a`・`v11a`・`v02a` | $V_1$、$V_{20}/2$、$V_{11}$、$V_{02}/2$ ($/\mathtt{amass}$) | `tcav.f` | 同名 |

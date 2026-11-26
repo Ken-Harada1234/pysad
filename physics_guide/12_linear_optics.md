@@ -472,8 +472,7 @@ $$
 |---|---|---|
 | `opt_02_chromaticity.py` | 偏向磁石のあるリングの色収差: 厳密な $H$ の写像、pysad の追跡、`lat.chromaticity()` の比較、単独の偏向磁石の追跡と厳密な $H$ の差 | [opt_02_chromaticity.out.txt](outputs/opt_02_chromaticity.out.txt) |
 | `opt_03_qmdiag_etwiss.py` | (12.6) の代数的な証明に使う恒等式、`qmdiag` の特別な場合、`etwiss2ri`・`tfetwiss` と (12.10)、(12.9) と位相の進み・薄いレンズの色収差 (sympy) | [opt_03_qmdiag_etwiss.out.txt](outputs/opt_03_qmdiag_etwiss.out.txt) |
-| `opt_04_gaps.py` | 導出の途中式の確認: (A) $BAB^{-1}$ の行列の積 (§6.1)、(B) $A_2 = TA_1T^{-1}$ の成分と $\alpha_2$ (§6.2)、(C) 2×2 の恒等式と (F1)〜(F5) (§5.2・§5.3)、(D) 厚い四極の $\bar\beta$ (12.12) と端の平均との差 (12.13)・例のリングの数値 (§7)、(E) Newton 法の収束係数 $C \simeq 250$ (§3.2)、(F) $H$ のシンプレクティック性の手計算の中間式・全ブロックの記号計算と有理数での確認 (§8)、(G) `qmdiag` の $\det N 
-e 0$、$= 0$ の分岐の式が $X_fN^{-1}$、$Y_f(\cdots)$ であること (§5.3) | [opt_04_gaps.out.txt](outputs/opt_04_gaps.out.txt) |
+| `opt_04_gaps.py` | 導出の途中式の確認: (A) $BAB^{-1}$ の行列の積 (§6.1)、(B) $A_2 = TA_1T^{-1}$ の成分と $\alpha_2$ (§6.2)、(C) 2×2 の恒等式と (F1)〜(F5) (§5.2・§5.3)、(D) 厚い四極の $\bar\beta$ (12.12) と端の平均との差 (12.13)・例のリングの数値 (§7)、(E) Newton 法の収束係数 $C \simeq 250$ (§3.2)、(F) $H$ のシンプレクティック性の手計算の中間式・全ブロックの記号計算と有理数での確認 (§8)、(G) `qmdiag` の $\det N \ne 0$、$= 0$ の分岐の式が $X_fN^{-1}$、$Y_f(\cdots)$ であること (§5.3) | [opt_04_gaps.out.txt](outputs/opt_04_gaps.out.txt) |
 | `opt_01_linear_optics.py` | (a) 閉軌道の Newton 法 (2 次収束)、(b) 分散 (12.2) と追跡の差分・pysad の Twiss、(c) $BAB^{-1} = P(\mu)$ と (12.9) (sympy)・ドリフトでの伝搬、(d) `qmdiag` の式 (12.6)(12.7) の確認 (ブロック対角、Riccati 式)、(e) 色収差 (偏向あり)、(e2) 四極だけのリングの色収差、(f) ヘルプの $H$ のシンプレクティック性 | [opt_01_linear_optics.out.txt](outputs/opt_01_linear_optics.out.txt) |
 
 実行: リポジトリのルートから `py -3.12 physics_guide/scripts/opt_01_linear_optics.py` (十数秒)。
