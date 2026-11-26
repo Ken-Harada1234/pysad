@@ -6,6 +6,10 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## 未公開
+
+- **BEND のスピン軌道結合 D が刻みの数に依る問題を直した** (B137・B342、v2 のみ。k64 は K64 のまま、ビット単位で同じ)。原因は、BEND の入口・出口の縦磁場 ψ の歳差を本体の回転と 1 回で回す合成の非可換 (D の y の列が n 刻みで −D/n ずれる)。v2 は端の ψ を本体の前後の独立な回転にした (追跡 `_sprot_edge`、Emittance[] `spin._edge_rot`。切り替え `compat.set_spin_edge_split`・`PYSAD_SPIN_EDGE_SPLIT=0`)。0.5 GeV・15° 扇形の D の y の列は Maxwell 場の基準と 3e-5 以内 (K64 の足し方は既定の刻みで 1.9% 小さい)。BEND を断片に切っても結果が変わらない (R の差 7e-5 → 2e-8)。傾いた MPW の ASTRID2 の P_eq/P_dk − 1 の約 −0.9% の残りはこれ (DK の側の刻み依存) だった: P_dk が刻み 0.2〜0.0125 m で 0.5838〜0.5819 に収まり (K64 の足し方は 0.5855〜0.6035)、P_eq/P_dk − 1 = +0.04%。限界: 追跡の py の列の 1 刻みの 1 次の誤差 (既定で 0.2%)、Emittance[] の py の列の z 成分 (EMITDIV = 16 で 1.1%、原因未特定)、QUAD・MULT・SOL の端の ψ は未確認、追跡 (FLUC) の脱偏極との比較は未実施。試験 `test_v250_spin_edge_split.py`。
+
 ## v2.5.2 (2026-11-26)
 
 - **`TrackParticles` の並列追跡 (pysad 独自。SAD の `NPARA` とは別)**: FFS の変数 `NWORKERS=n;` (または環境変数 `PYSAD_WORKERS=n`、既定 1) と `TrackSetup.track(..., workers=n)`。粒子を連続した塊に分け、塊ごとの `TrackRun` をスレッドで同時に回す (numba の核は GIL を放す。クラス `track6n.ParallelTrackRun`)。FLUC なしの結果は逐次とビット単位で同じ (落ちた粒子の座標・alive も)。FLUC の乱数は塊ごとに種を変える (逐次・NPARA とは別の列)。空間電荷・ウェイク・BEAMBEAM・MAP・RADLIGHT・PHOTONS・POL・track6 の経路は自動で逐次。本数は論理コア数の 90% と 1 本あたり 16 粒子以上で抑える。FODO リング 4000 粒子 × 2000 周で逐次 100.8 s → `NWORKERS=4` 28.4 s。試験 `test_v251_parallel_track.py` (8 件)、文書 `docs/10_tracking.md` §1.3。未確認: 1 台の PC の範囲だけ。
