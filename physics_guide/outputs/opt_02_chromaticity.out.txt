@@ -2,8 +2,8 @@
   dν/dδ = (-0.77973, -0.83429)   (δ = ±1e-4 の差分。閉軌道は分散で動かす)
 
 == (2)(3) pysad: 追跡 (閉軌道 + ヤコビアン) と lat.chromaticity() ==
-  既定 (BEND・QUAD とも DISFRIN = 0)           : 追跡 dν/dδ = (-0.77974, -0.87868)、lat.chromaticity() = [-1.45631 -1.1799 ]
-  DISFRIN = 1 (BEND・QUAD)                 : 追跡 dν/dδ = (-0.77974, -0.87868)、lat.chromaticity() = [-1.45631 -1.1799 ]
+  既定 (BEND・QUAD とも DISFRIN = 0)           : 追跡 dν/dδ = (-0.77974, -0.87868)、lat.chromaticity() = [-0.77974 -0.87868]
+  DISFRIN = 1 (BEND・QUAD)                 : 追跡 dν/dδ = (-0.77974, -0.87868)、lat.chromaticity() = [-0.77974 -0.87868]
   (四極だけのリングでは追跡と lat.chromaticity() が一致する (opt_01 (e2))。偏向磁石があると lat.chromaticity() だけが合わない。)
 
 == 単独の偏向磁石 (L = 1.2 m、ANGLE = 2π/16、DISFRIN = 1) の追跡と厳密な H の写像の差 ==
