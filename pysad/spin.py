@@ -365,7 +365,7 @@ def tbrote_spin(st, alg, phig, dtheta, dchi2, ent):
         srot[2, i] = rr[2, :] @ srot[:, i] + srot[2, i]
 
 
-def tchge_spin(st, dx0, dy, dz, theta, dtheta, alg, phig, ent):
+def tchge_spin(st, dx0, dy, dz, theta, dtheta, alg, phig, ent, dchi2=0.0):
     """tchge の calpol 部 (cod の更新は lattice._tchge_cod が別にやる)"""
     th = theta if phig != 0.0 else theta + dtheta
     if ent:
@@ -374,15 +374,15 @@ def tchge_spin(st, dx0, dy, dz, theta, dtheta, alg, phig, ent):
             dx = math.cos(th) * dx0 - math.sin(th) * dy
         else:
             dx = dx0
-        if dx != 0.0 or dz != 0.0 or dtheta != 0.0:
-            tbrote_spin(st, alg, phig, dtheta, 0.0, True)
+        if dx != 0.0 or dz != 0.0 or dtheta != 0.0 or dchi2 != 0.0:
+            tbrote_spin(st, alg, phig, dtheta, dchi2, True)
     else:
         if th != 0.0:
             dx = math.cos(th) * dx0 - math.sin(th) * dy
         else:
             dx = dx0
-        if dx != 0.0 or dz != 0.0 or dtheta != 0.0:
-            tbrote_spin(st, alg, phig, dtheta, 0.0, False)
+        if dx != 0.0 or dz != 0.0 or dtheta != 0.0 or dchi2 != 0.0:
+            tbrote_spin(st, alg, phig, dtheta, dchi2, False)
         tchge_rotate_spin(st, th, False)
 
 

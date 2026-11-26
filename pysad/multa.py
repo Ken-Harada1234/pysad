@@ -164,7 +164,9 @@ def k_multa(S, n, al, phi, psi1, psi2, ak0, dx, dy, theta, dtheta, dchi2, alg, p
                 mfr = 0
             elif mfring != 0:
                 mfr = -1
-            _tbend(S, n, aln * 0.5, ak0n * 0.5, phin * 0.5, psi1, 0.0, ak1n * 0.5, fb1, fb2, mfr, fringe,
+            # v2 (B340): tbendi (K1≠0) は mfr に関係なく fb1 を入口・fb2 を出口に入れる。K64 は半スライスにも両方渡すので、
+            # MULT の途中に FB2 (前半の終わり)・FB1 (後半の始め) の端が入る。v2 は前半に fb2、後半に fb1 を渡さない
+            _tbend(S, n, aln * 0.5, ak0n * 0.5, phin * 0.5, psi1, 0.0, ak1n * 0.5, fb1, 0.0 if b2 else fb2, mfr, fringe,
                    krad, eps0, fluc, rs, p0, h0, anrad, cuc)
         else:
             _tbend(S, n, aln, ak0n, phin, 0.0, 0.0, ak1n, 0.0, 0.0, 0, False, krad, eps0, fluc, rs, p0, h0,
@@ -199,7 +201,7 @@ def k_multa(S, n, al, phi, psi1, psi2, ak0, dx, dy, theta, dtheta, dchi2, alg, p
         mfr = 0
     elif mfring != 0:
         mfr = -2
-    _tbend(S, n, aln * 0.5, ak0n * 0.5, phin * 0.5, 0.0, psi2, ak1n * 0.5, fb1, fb2, mfr, fringe,
+    _tbend(S, n, aln * 0.5, ak0n * 0.5, phin * 0.5, 0.0, psi2, ak1n * 0.5, 0.0 if b2 else fb1, fb2, mfr, fringe,
            krad, eps0, fluc, rs, p0, h0, anrad, cuc)
     for i in range(n):
         if dtheta != 0.0 or dchi2 != 0.0:

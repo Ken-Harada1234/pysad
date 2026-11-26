@@ -1,0 +1,201 @@
+ *** Welcome to SAD Ver.1.4.4.2k64 built at 2026-10-19 14:46:59 +0900 ***
+ *** Today: 00:09:04 Tuesday 11/24/2026 ***
+ OFF LOG;ON ECHO;READ 77 ;           1
+MOMENTUM = 3GEV;
+DRIFT D1 = (L=1.0) D2 = (L=0.5) DS = (L=0.1);
+QUAD  QF = (L=0.3 K1=0.7) QD = (L=0.3 K1=-0.6) QX = (L=0.3 K1=0.7 );
+BEND B = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5)
+ BR = (L=1.2 ANGLE=0.2617993877991494 E1=0.5 E2=0.5 );
+MULT MM = (L=0.2 K1=0.05 K2=0.3 );
+MARK  ORIGIN = ();
+CAVI RF = (L=0 VOLT=4E6 FREQ=5.0E8 PHI=0);
+LINE CELL = (QF D2 B D2 QD DS D1 DS MM);
+LINE CELLR = (QF D2 B D2 QD DS D1 DS MM);
+LINE CELLX = (QF D2 B D2 QD DS D1 DS MM);
+LINE RING = (ORIGIN RF 23*CELL CELLX);
+FFS;
+ *** SADScript Initialization: /mnt/d/work/SAD-master/SAD-master/Packages/init.n ***
+ *** Run time Environment:     /mnt/d/work/SAD-master/SAD-master/Packages/init.local.n ***
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   F     F     F     T     F     F     T     F     F     T     F     T
+ USE RING; CELL; CALC; RFSW; RAD; NOFLUC; POL;
+Out[1]:= USE
+ Matched. (  0.000    ) DP = 0.01000  DP0 = 0.00000  ExponentOfResidual = 2.0  OffMomentumWeight =   1.000  CALEXP  
+$$$       f AX    #######  #  -2.246177 $$$       f BX    #######  #   6.085144 $$$       f NX    #######  #   6.549447
+$$$       f AY    #######  #    .934735 $$$       f BY    #######  #   1.988529 $$$       f NY    #######  #   4.648108
+$$$       f LENG  #######  #  100.80000
+ $FORM = "22.15";
+ PageWidth = 1999;
+ EMIOUT;
+ EMIT;
+
+    Closed orbit:
+                  x     px/p0         y     py/p0         z     dp/p0 
+  Entrance :  6.65E-17  1.05E-17  2.60E-32  -2.0E-32  -1.4E-17   .000000
+      Exit :  1.18E-16  3.17E-17  9.29E-33  2.27E-35  -5.8E-17  -2.2E-19
+
+    Symplectic part of the transfer matrix:
+                  x     px/p0         y     py/p0         z     dp/p0 
+         x :  -.265438  -1.86030  5.70E-17  5.63E-16   .013706  1.065720
+     px/p0 :   .303712  -1.63880  -6.6E-18  1.90E-16   .003195   .248459
+         y :  -2.7E-16  5.98E-16  -1.34699  -1.59474  -8.5E-19  -6.6E-17
+     py/p0 :  1.65E-16  -4.1E-16   .755675   .152273  6.30E-19  4.90E-17
+         z :   .389622  -1.28430  -5.0E-18  1.31E-16   .970863  -2.26550
+     dp/p0 :  -2.4E-41   .000000  -9.2E-57   .000000   .012861  1.000000
+
+                  X        Px         Y        Py         Z        Pz 
+         X :  3.914399  -11.3153  1.59E-15  2.34E-15   .070482  9.671183
+        Px :  2.100716  -5.81732  5.51E-16  8.27E-16   .027266  3.755233
+         Y :  -1.0E-15  2.49E-15  -2.83765  -3.17120  5.38E-18  5.84E-16
+        Py :  1.05E-15  -2.6E-15  1.785476  1.642939  -1.6E-18  -1.6E-16
+         Z :  5.614740  -13.7685  -9.4E-18  -2.9E-16   .775215  -30.3593
+        Pz :  -.035867   .088128  -7.8E-19  1.26E-18   .002410  1.194323
+
+                  x     px/p0         y     py/p0         z     dp/p0 
+         x :  1.000000   .000000  7.64E-29  3.62E-29  -1.1E-15  -3.7E-14
+     px/p0 :   .000000  1.000000  6.12E-29  6.93E-29  -2.3E-16  -2.4E-14
+         y :  6.93E-29  -3.6E-29  1.000000   .000000  7.79E-32  -7.3E-29
+     py/p0 :  -6.1E-29  7.64E-29   .000000  1.000000  1.76E-31  3.63E-29
+         z :  -2.4E-14  3.70E-14  3.63E-29  7.26E-29  1.000000   .000000
+     dp/p0 :  2.33E-16  -1.1E-15  -1.8E-31  7.79E-32   .000000  1.000000
+
+    Extended Twiss Parameters
+AX: -2.24584 BX: 6.080176                            ZX:  .003537  EX:  .606365
+           PSIX: 3.09E-17                           ZPX: 8.245E-4 EPX: -1.4E-16
+R1: -1.2E-16 R2: 4.86E-17 AY:  .934735 BY: 1.988529  ZY: -7.3E-19  EY: -1.4E-16
+R3: 2.42E-16 R4: -5.0E-16            PSIY: 3.94E-17 ZPY: 7.39E-19 EPY: 9.21E-17
+                                                     AZ:  .085186  BZ: 13.24717
+                                                                 PSIZ: 1.08E-16
+    Units: B(X,Y,Z), E(X,Y), R2: m | PSI(X,Y,Z): radian | ZP(X,Y), R3: 1/m
+
+Design momentum      P0 = 3.0000000 GeV Revolution freq.     f0 = 2974131.4 Hz 
+Energy loss per turn U0 = 1.5632657 MV  Effective voltage    Vc = 4.0000000 MV 
+Equilibrium position dz = 38.315657 mm  Momentum compact. alpha =  .0222827
+Orbit dilation       dl =  .0000000 mm  Effective harmonic #  h = 168.11630
+Bucket height     dV/P0 =  .0102481     Synchrotron frequency   = 80451.316 Hz 
+
+    Eigen values and eigen vectors:
+
+       Real:-0.9522833-0.9522833-0.5973600-0.5973600 0.9855911 0.9855911
+  Imaginary:-0.3052156 0.3052156-0.8019732 0.8019732-0.1691453 0.1691453
+  Imag.tune: 0.0000000          -0.0000000           0.0000000
+  Real tune:-0.4506357          -0.3518918          -0.0270504
+
+                  X        Px         Y        Py         Z        Pz 
+         x :  2.465700  7.63E-17  -6.8E-16  -3.5E-17  -.001320   .166599
+     px/p0 :   .910760   .405531  -2.6E-16  -8.3E-17  -8.52E-4   .045235
+         y :  2.45E-16  -2.0E-17  1.410152  5.55E-17  5.07E-19  -2.1E-17
+     py/p0 :  -1.4E-16  2.04E-16  -.662861   .709143  4.24E-19  7.75E-18
+         z :   .146303   .245910  -3.7E-17  -9.9E-17  3.639517  3.94E-16
+     dp/p0 :  -.001188  -.001434  5.60E-19  5.15E-19  -.023404   .274739
+
+                  x     px/p0         y     py/p0         z     dp/p0 
+         X :   .405531  -7.6E-17  2.04E-16  1.97E-17  -.001434  -.245910
+        Px :  -.910760  2.465700  1.39E-16  2.45E-16   .001188   .146303
+         Y :  -8.3E-17  3.45E-17   .709143  -5.6E-17  5.15E-19  9.89E-17
+        Py :  2.63E-16  -6.8E-16   .662861  1.410152  -5.6E-19  -3.7E-17
+         Z :   .045235  -.166599  7.75E-18  2.10E-17   .274739  -3.9E-16
+        Pz :  8.525E-4  -.001320  -4.2E-19  5.07E-19   .023404  3.639517
+
+                  X        Px         Y        Py         Z        Pz 
+         X :  3.914399  -11.3153  1.59E-15  2.34E-15   .070482  9.671183
+        Px :  2.100716  -5.81732  5.51E-16  8.27E-16   .027266  3.755233
+         Y :  -1.0E-15  2.49E-15  -2.83765  -3.17120  5.38E-18  5.84E-16
+        Py :  1.05E-15  -2.6E-15  1.785476  1.642939  -1.6E-18  -1.6E-16
+         Z :  5.614740  -13.7685  -9.4E-18  -2.9E-16   .775215  -30.3593
+        Pz :  -.035867   .088128  -7.8E-19  1.26E-18   .002410  1.194323
+
+    Radiation part of the transfer matrix:
+                  x     px/p0         y     py/p0         z     dp/p0 
+         x :  -6.68E-4   .002283  4.29E-21  2.13E-19  -7.38E-6  -5.74E-4
+     px/p0 :  -3.75E-4   .001025  -4.5E-20  4.84E-20  -1.43E-6  -1.11E-4
+         y :  -1.1E-19  2.37E-19  4.314E-4  5.973E-5  1.77E-21  1.38E-19
+     py/p0 :  7.60E-20  -2.6E-19  -8.25E-6  3.924E-4  -5.7E-22  -4.5E-20
+         z :  -1.10E-4  2.093E-4  -3.7E-20  -3.3E-20  1.433E-5   .001114
+     dp/p0 :  -7.04E-6  2.318E-5  9.26E-23  -2.4E-21  -1.28E-5  -9.95E-4
+
+                  X        Px         Y        Py         Z        Pz 
+         X :  1.743E-4  3.731E-4  -4.9E-21  8.56E-21  -1.85E-7  -3.54E-7
+        Px :  -3.71E-4  1.832E-4  -3.8E-21  -5.9E-21  2.462E-6  -3.91E-6
+         Y :  -1.6E-21  9.19E-21  4.033E-4  3.004E-5  1.23E-21  8.64E-22
+        Py :  -5.8E-21  -5.1E-21  -6.20E-6  4.204E-4  2.44E-22  1.38E-21
+         Z :  -3.70E-6  -3.53E-6  1.49E-21  1.36E-21  6.998E-6  8.198E-5
+        Pz :  9.627E-6  3.023E-5  2.82E-22  -1.0E-20  -8.42E-5  -9.88E-4
+
+    Damping per one revolution:
+          X : -2.837693E-04   Y : -2.605608E-04   Z : -4.976204E-04
+    Damping time (sec):
+          X :  1.184880E-03   Y :  1.290419E-03   Z :  6.756809E-04
+    Tune shift due to radiation:
+          X : -4.768094E-05   Y :  5.084614E-05   Z : -1.768494E-07
+    Damping partition number:
+          X :    1.0894       Y :    1.0003       Z :    1.9103
+
+    Beam matrix by radiation fluctuation:
+                  x     px/p0         y     py/p0         z     dp/p0 
+         x  1.6594E-9
+     px/p0  5.100E-10 1.733E-10
+         y  -9.08E-26 -2.05E-26 5.255E-41
+     py/p0  2.121E-26 1.044E-26 -2.36E-41 2.143E-41
+         z  -2.048E-9 -5.62E-10 2.799E-25 -1.02E-25 4.9849E-9
+     dp/p0  1.8516E-9 5.183E-10 -2.40E-25 8.566E-26 -3.341E-9 3.0000E-9
+
+                  X        Px         Y        Py         Z        Pz 
+         X  8.505E-11
+        Px  -6.15E-13 8.451E-11
+         Y  1.598E-27 8.069E-28 1.370E-41
+        Py  2.406E-28 1.863E-27 -3.74E-43 1.366E-41
+         Z  -7.76E-12 -6.59E-12 5.777E-27 1.264E-27 3.773E-10
+        Pz  6.501E-11 9.666E-11 -3.98E-26 -4.23E-26 -3.319E-9 3.9178E-8
+
+    Equiliblium beam matrix:
+                  x     px/p0         y     py/p0         z     dp/p0 
+         x  1.4604E-6
+     px/p0  4.8543E-7 1.8922E-7
+         y  -3.72E-23 -6.47E-24 5.454E-38
+     py/p0  6.881E-24 1.636E-23 -2.71E-38 3.792E-38
+         z  -4.150E-8 -2.681E-8 3.900E-23 3.939E-23 2.6337E-4
+     dp/p0  9.1022E-7 2.4725E-7 -1.15E-22 4.211E-23 -1.693E-6 1.5116E-6
+
+                  X        Px         Y        Py         Z        Pz 
+         X  1.4943E-7
+        Px  -2.91E-12 1.4943E-7
+         Y  -1.67E-23 2.903E-24 2.435E-38
+        Py  2.922E-24 1.658E-23 -2.57E-39 2.817E-38
+         Z  -6.71E-12 2.789E-11 2.458E-26 -1.01E-26 1.9882E-5
+        Pz  2.586E-11 1.416E-11 -5.87E-27 -6.38E-27 2.843E-10 1.9882E-5
+
+Emittance X            = 1.49431E-7 m   Emittance Y            = 2.6066E-38 m
+Emittance Z            = 1.98821E-5 m   Energy spread          =  .00122948
+Bunch Length           = 16.2287990 mm  Beam tilt              = 2.5457E-17 rad
+Beam size xi           = 1.20845706 mm  Beam size eta          =  .00000000 mm
+Nominal spin tune      =  6.8081482     Polarization time      =  2.2808100 min
+
+   Polarization vector at entrance:
+          x :  3.448725E-31   y :   1.00000       z : -1.453862E-31
+ 
+   Spin precession matrix:
+                 sx             sy             sz
+        sx  0.3572656      3.5745260E-31  0.9340029    
+        sy  1.1062108E-31   1.000000     -4.1778413E-31
+        sz -0.9340029      2.2866722E-31  0.3572656    
+ 
+   One-turn depolarization vectors:
+                 x              px             y              py             z              pz
+        gx  7.3761368E-15  4.6076255E-15   14.97669       9.184638     -5.2539052E-17 -4.0851247E-15
+        gy  -2.371426       20.60421      5.1601689E-17 -1.4867070E-15  0.5252059       40.83689    
+        gz  2.0060675E-14 -5.0919243E-14  -4.955278      -2.429026     -4.7885383E-17 -3.7232830E-15
+ 
+                 X              Px             Y              Py             Z              Pz
+        gx  2.4776007E-14  3.4366612E-15   15.03126       6.513225     -9.7784219E-17  7.1879872E-17
+        gy   12.94658       8.426230     -2.7572059E-15 -2.7176774E-15  0.9413131       11.75645    
+        gz  2.2087557E-15 -2.1052743E-14  -5.377587      -1.722528     -7.3754966E-17  1.0096609E-16
+
+Spin tune              = -.19185456     Equil. polarization    =        NaN %
+
+ Exit;
+ FFS                  end:  CPU time =     0.007 sec
+ Design orbit length =   1.0000000000000000     
+ RFSW RADCOD RAD  FLUC  INTRA POL   COD  DAPER EMIOU K64   FOURI SMEAR
+   T     F     T     F     F     T     T     F     T     T     F     T
+ In[2]:=  ???-getbuf-end of input stream

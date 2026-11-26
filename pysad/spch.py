@@ -657,7 +657,7 @@ def gauss_potential(x, y, sx, sy):
 
 class WSpace:
     """WSPAC (tintrb.f twspac)。mats: 要素 1..nlat の入口のビーム行列 (6×6、(x, px, y, py, z, δ))、cod: (nlat, 6) の閉軌道。
-    rcn = r_c·PBUNCH。rwall: 縦の力の電位の基準 (真空ダクトの半径。0 なら K64 と同じく軸上で電位 0)"""
+    rcn = r_c·PBUNCH。rwall: 縦の力の電位の基準 (真空ダクトの半径。0 なら K64 と同じ基準: 軸上で ln((1 + r)/2)、r = σ2/σ1)"""
 
     def __init__(self, mats, cod, rcn, selfcod=False, rwall=0.0):
         m = len(mats)
@@ -723,7 +723,10 @@ class WSpace:
         y1 = -dx * s1 + dy * c1
         az = f * np.exp(-0.5 * dz * dz / sz2)
         fx, fy = gauss_field(x1, y1, sg1, sg2)
-        uw = 0.0
+        # 縦の力の電位の基準: K64 (twspfu/twspu) の電位は、軸上で ln((1 + r)/2) (r = σ2/σ1)、遠方で丸いビームの形に合わせた値
+        # (gs で確認: 軸上の粒子も縦のキックを受け、−z/σz² az·ln((1+r)/2) と一致)。U (軸上 0) に ln((1+r)/2) を足す。
+        # rwall > 0 のときは基準を壁の半径にする (K64 にないオプション)
+        uw = -math.log(0.5 + 0.5 * sg2 / sg1)
         if self.rwall > 0.0:
             uw = 0.5 * float(gauss_potential(np.array([self.rwall, 0.0]), np.array([0.0, self.rwall]), sg1, sg2).sum())
         dd = dz / sz2 * az * (uw - gauss_potential(x1, y1, sg1, sg2))           # Δδ (Δγ = p0 β1 Δδ)

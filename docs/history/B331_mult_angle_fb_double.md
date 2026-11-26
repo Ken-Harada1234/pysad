@@ -25,6 +25,6 @@ L = 1.00018814134845 は、c(L) = ((φ FB1)² + (φ FB2)²)/(48 L)·sin(w/2)/sin
 ## 4. 限界・未確認
 
 - 確認は FRINGE = 3・K1 = 0・K2 以上なし・RAD OFF・3 GeV/c。
-- FRINGE = 1・2 (片側だけ) の MULT と BEND は、v2 でも x (δ = 1e-2) で 3e-5 違う。長さの補正と別の原因 (MULT の FRMD と BEND の FRINGE の端の対応の違いか。未調査)。K1 ≠ 0 の MULT と BEND は y で 1e-5 級違う (BEND の K1 の端のフリンジと MULT の違いと思われる。未調査)。
+- FRINGE = 1・2 (片側だけ) の MULT と BEND の x の 3e-5 級の食い違いは、仕様の違い (BEND は FRINGE ≠ 0 で F1 を両端に使う。対にすれば差はこの項の分だけ) で、誤りではない。K1 ≠ 0 の y の食い違いは別の誤り (B340、`B340_mult_k1_fringe.md`)。
 - CALC `tmultae` (`tmulta.f:327-333`) も同じ式を持つが、pysad は FB1/FB2 の CALC を未対応で、gs の CALC では確かめていない。
 - L' の式そのもの (ヘルプの BEND の F1 の定義) の導出は未確認。「1 回が正しい」の根拠は、同じ磁場・同じフリンジの BEND (ヘルプの定義) との一致。

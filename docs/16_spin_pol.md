@@ -327,7 +327,7 @@ B55 を参照。gs で再現し、**k64 モードの** pysad も同じ式で NaN
 - `Polarization` は k64 モードでは NaN (5.2)。v2 モードの有限値の限界は 5.3。`Polarization2/4/6` は実装していない。
 - ROTATE 付き空洞の `Emittance[]` のスピン回転は照合していない (4.4)。
 - 追跡は (k64 モードでは) 損失の処理なし。numba の高速追跡 (`TrackRun`) を使わないので遅い (Python の追跡)。
-- `tbrote` の更新 (ずれ・DROTATE・CHI2 のある偏向磁石) は gs で確認していない (B56)。
+- `tbrote` の更新は DX・DY・DZ・ROTATE・DROTATE・CHI2 のある偏向磁石 (24 セルの FODO リング、3 GeV) の 1 周のスピン行列で gs と一致 (k64。ROTATE・DX・DY・DZ・DROTATE は 7 桁、CHI2 は修正後)。MULT (ANGLE = 0) の CHI1・CHI2・DZ (`tsolrot`) と MULT (ANGLE≠0) のスピンは未対応のまま。
 - `Emittance[]` が SOL を含むときの偏極の量は上記の SOL の例 (四極 1 つ + ドリフト) だけ照合している。SOL の中の BEND・MULT・CAVI がないリングに限る。
 - スロー経路 (`PYSAD_NO_ELKERN=1` 相当) の `_tquade` は、ずれだけで回転のない四極のヤコビアンを、ずらした後の座標で評価する (ずらす前だと POL は numba の速い経路を使えないので εy に 7e-5 の誤差が出る)。
 - `MAP` のスピンは未対応 (SOL の領域内の要素は 4.2・5.3)。

@@ -1325,18 +1325,19 @@ def _tbende(st: _State, el: Bend, enarad: bool = True):
         _tbende_core(st, el, enarad)
         return
     dx, dy, dz, th, dth, alg, phig = chg
+    dchi2 = _lat._bend_dchi2(el)
     core = _lat._bend_noerr(el)
-    st.piece(lambda c: _lat._tchge_cod(c, dx, dy, dz, th, dth, alg, phig, True),
-             jac=lambda c: _lat._tchge_jac(c, dx, dy, dz, th, dth, alg, phig, True))
+    st.piece(lambda c: _lat._tchge_cod(c, dx, dy, dz, th, dth, alg, phig, True, dchi2),
+             jac=lambda c: _lat._tchge_jac(c, dx, dy, dz, th, dth, alg, phig, True, dchi2))
     if st.calpol:
         from . import spin as _spin
-        _spin.tchge_spin(st, dx, dy, dz, th, dth, alg, phig, True)
+        _spin.tchge_spin(st, dx, dy, dz, th, dth, alg, phig, True, dchi2)
     _tbende_core(st, core, enarad)
     al0, phi0 = (el.L, float(el.ANGLE)) if phig != 0.0 else (0.0, 0.0)
-    st.piece(lambda c: _lat._tchge_cod(c, dx, dy, dz, th, dth, alg - al0, phig - phi0, False),
-             jac=lambda c: _lat._tchge_jac(c, dx, dy, dz, th, dth, alg - al0, phig - phi0, False))
+    st.piece(lambda c: _lat._tchge_cod(c, dx, dy, dz, th, dth, alg - al0, phig - phi0, False, dchi2),
+             jac=lambda c: _lat._tchge_jac(c, dx, dy, dz, th, dth, alg - al0, phig - phi0, False, dchi2))
     if st.calpol:
-        _spin.tchge_spin(st, dx, dy, dz, th, dth, alg - al0, phig - phi0, False)
+        _spin.tchge_spin(st, dx, dy, dz, th, dth, alg - al0, phig - phi0, False, dchi2)
 
 
 def _tbendal(n, ndiv, f1r, f2r, aln):
@@ -1908,6 +1909,8 @@ def _bende_fast(st, el, enarad):
     if _lat._face_kt(el) is not None:
         return 1        # 端面から四極が始まる模型 (v2 のオプション、compat.bend_k1_edge) は Python の経路
     chg = _lat._bend_chg_args(el)
+    if _lat._bend_dchi2(el) != 0.0:
+        return 1        # CHI2 (tbrote の dchi2) は Python の経路 (_tbende)
     if chg is None:
         has_chg = False
         dx = dy = dz = th = dth = alg = phig = 0.0

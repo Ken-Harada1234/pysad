@@ -184,7 +184,7 @@ MULT M1 = (L=1 ANGLE=0.05 K1=0.1 K2=0.5 E1=0.5 E2=0.5);
 
 - 未対応 (NotImplementedError): BZ≠0 (K64 自体が abort)、VOLT (RF)、F1、TAPER、スキュー双極 SK0 (K64 の ndiv 計算が `fact(-1)` を読む。結果が定まらない)、L=0。
 - 追跡の光子 (PHOTONS) は未対応 (ffscmd が SADError で拒否)。偏極 (CALPOL・POL) のスピンは、ANGLE=0 の MULT は [16_spin_pol.md](16_spin_pol.md) のとおり gs と一致し、ANGLE≠0 の MULT (`tmultae`) も gs と一致した (2026-11-16: 偏極時間 14 桁、スピンチューン 1e-14。平面リングなので偏極ベクトルは 0,1,0 で、縦成分のある偏極ベクトルは確かめていない。TrackParticles のスピン追跡での ANGLE≠0 の MULT は未確認)。
-- Twiss・Emittance[] で FB1/FB2 (tblfre) と CHI2 は未対応 (NotImplementedError)。追跡は対応。
+- Twiss・Emittance[] で FB1/FB2 (tblfre) は未対応 (NotImplementedError)。CHI2 は対応 (追跡・CALC・Emittance[]。gs と 5e-13)。追跡は FB1/FB2 も対応。
 - DROTATE≠0 の Emittance[] は ε で 5e-6 ずれる (チューン 1e-9)。追跡は一致。tchge の DROTATE の行列が数値微分のため (BEND と同じ)。
 - K0 + DX DY + ROTATE を同時に与えたリングの Emittance[] は gs と一致しない (δ の閉軌道が 4e-3 と 5e-4 に分かれる)。水平チューンが 1e-3 で整数に近く、閉軌道の探索が不安定なためとみて追っていない。2 つずつの組み合わせはすべて一致する。
 - tmultae の tradke は m ループの中にあり 22 回/スライス呼ばれる。結果に影響しない (1 回でも同じ) が、そのまま写してある (`multae.TRADKE_CALLS`)。
