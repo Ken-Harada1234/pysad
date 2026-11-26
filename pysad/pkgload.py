@@ -1,6 +1,7 @@
 """
 SAD の Packages/*.n を SADScript のまま使うための自動読み込み。
-Packages ディレクトリは環境変数 PYSAD_SAD_PACKAGES、なければ pysad の隣の SAD-master/Packages (見つからなければ何もしない)。
+Packages ディレクトリは、環境変数 PYSAD_SAD_PACKAGES (指定があれば最優先)、なければ pysad に同梱した SAD のコピー (pysad/sad_copy/Packages。
+SAD のソースからコピーしたもの。pysad/sad_copy/README.md)、それも無ければ pysad の隣の SAD-master/Packages。
 
 - correction.n・bump.n・corutility.n (CorrectOrbit、MakeBump、Monitor、Steer ...): そのファイルが定義する関数名
   (`Name[...]:=` と `Name=` の最上位) を登録する (init.n の AutoLoad の表より広い。correction.n は bump.n と corutility.n も読む)。
@@ -25,10 +26,21 @@ _ALLOW = ('D.n', 'rational.n', 'tableform.n', 'LDSolve.n', 'Couple.n', 'optimize
 _INIT = re.compile(r'AutoLoad(?:Set)?\[(.*?)PackagesDirectory//"([^"]+)"\s*\]', re.S)
 
 
+def bundled_packages_dir():
+    """pysad に同梱した SAD のコピー (pysad/sad_copy/Packages)。無ければ None"""
+    d = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sad_copy', 'Packages')
+    if os.path.isfile(os.path.join(d, _TARGET)):
+        return os.path.abspath(d).replace(chr(92), '/') + '/'
+    return None
+
+
 def packages_dir():
     p = os.environ.get('PYSAD_SAD_PACKAGES')
     if p and os.path.isdir(p):
         return p.rstrip('/' + chr(92)) + '/'
+    b = bundled_packages_dir()
+    if b:
+        return b
     here = os.path.dirname(os.path.abspath(__file__))
     for rel in ('..', '../..'):
         for base in (os.path.join(here, rel, 'SAD-master', 'Packages'), os.path.join(here, rel, '..', 'SAD-master', 'Packages')):
@@ -101,7 +113,9 @@ def register(I):
         elif mode in ('tk', 'none'):
             I.globals['$DisplayFunction'] = Sym('CanvasDrawer' if mode == 'tk' else 'Identity')
         else:
-            gui = not os.environ.get('PYSAD_NO_DISPLAY') and (os.name == 'nt' or os.environ.get('DISPLAY'))
+            from . import tclbridge as _tcl
+            gui = (not os.environ.get('PYSAD_NO_DISPLAY') and (os.name == 'nt' or os.environ.get('DISPLAY'))
+                   and _tcl.packages_dir() is not None)         # Tk の接点が付かないとき (同梱のコピーだけで PYSAD_GUI が無いとき) は画面を開かない
             I.globals['$DisplayFunction'] = Sym('CanvasDrawer' if gui else 'Identity')
     _protect_builtins(I)
     return n > 0

@@ -8,6 +8,9 @@ v2 で修正した動作の試験は、``compat.set_mode('v2')`` か ``PYSAD_COM
 import os
 
 os.environ.setdefault('PYSAD_COMPAT', 'k64')
+# SAD の Packages は、環境変数が無ければ pysad に同梱したコピー (pysad/sad_copy) を使う。GUI 系の試験が skip されないよう、
+# 試験の中では環境変数の既定を同梱のコピーにする (元の SAD の Packages を試すときは、環境変数で上書きする)
+os.environ.setdefault('PYSAD_SAD_PACKAGES', os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'sad_copy', 'Packages'))
 
 import pytest
 

@@ -1,4 +1,5 @@
 include README.md LICENSE run_sad.py
+graft pysad/sad_copy
 graft docs
 graft example
 prune example/_deletable

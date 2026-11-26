@@ -1,0 +1,170 @@
+(* emit.n 12/10/2018 *)
+InitEmit[];
+InitTwiss[];
+EMITX;EMITY;EMITZ;SIGE;SIGZ;?INTRA;
+SetAttributes[{OneTurnInformation,Orbit,Matrix,ExpandElementValues,
+  SaveEMIT,InitialOrbit,InitialBeamMatrix,
+  Stable,Tunes,EnergyLossU0,RfVoltageVc,
+  EquilibriumPosition,MomentumCompaction,
+  OrbitDilation,BucketHeight,OrbitAtExit,
+  DampingRate,Emittances,MomentumSpread,BunchLength,
+  TuneShiftByRadiation,OrbitAtEntrance,OneTurnTransferMatrix,
+  OneTurnDampingMatrix,ExtendedTwissParameters,
+  OneTurnExcitation,EquilibriumBeamMatrix,ClosedOrbit,
+  NominalSpinTune,PolarizationTime,
+  TransferMatrices,IntrabeamExcitation,SaveEMIT,AzimuthalModes,SpinTune,
+  SpinPrecessionMatrix,Polarization,Polarizations,
+  PolarizationVector,Region},
+  Constant];
+
+BeginPackage[emit$`,tws$`,`];
+
+Begin[emit$`];
+
+With[{default={OneTurnInformation->False,
+  Orbit->False,Matrix->False,ExpandElementValues->True,
+  Emittance->True,SaveEMIT->False,InitialOrbit->Null,Region->{1,-1},
+  InitialBeamMatrix->Null,Output->0}},
+
+  Emittance[opt___]:=Module[{
+    e,r,op,mode,ex0=EMITX,ey0=EMITY,ez0=EMITZ,sz0=SIGZ,se0=SIGE,
+    iniorbit,inibeam,out,reg,codpl0=?CODPLOT},
+    Check[
+      op=Override[opt,default];
+      If[ExpandElementValues/.op,Element["EXPAND"]];
+      mode=
+        If[Matrix/.op,3,
+          If[Orbit/.op,2,
+            If[OneTurnInformation/.op,1,
+              If[Emittance/.op,0,-1,0],0],0],0];
+      {iniorbit,inibeam,out,reg}={InitialOrbit,InitialBeamMatrix,Output,Region}/.op;
+      reg=LINE["POSITION",reg];
+      If[inibeam<=>Null,
+        inibeam=Flatten[Table[inibeam[[i,j]],{i,6},{j,i}]]];
+      If[mode>=2,FFS["CODPLOT;"]];
+      e=CalculateEmittance[mode,out,{iniorbit,inibeam},reg];
+      r={Stable->e[[1]],Region->reg,Tunes->e[[2,{ipnx,ipny,ipnz}]],
+        EnergyLossU0->e[[2,ipu0]],RfVoltageVc->e[[2,ipvceff]],
+        EquilibriumPosition->e[[2,iptrf0]],MomentumCompaction->e[[2,ipalphap]],
+        OrbitDilation->e[[2,ipdleng]],BucketHeight->e[[2,ipbh]],
+        HarmonicNumber->e[[2,ipheff]],OrbitAtExit->e[[2,Range[ipdx,ipddp]]]};
+      If[mode>=0,
+        r=Join[r,
+          {DampingRate->e[[2,{ipdampx,ipdampy,ipdampz}]],Emittances->e[[2,{ipemx,ipemy,ipemz}]],
+            MomentumSpread->e[[2,ipsige]],BunchLength->e[[2,ipsigz]],
+            TuneShiftByRadiation->e[[2,{ipdnux,ipdnuy,ipdnuz}]]/Pi/2,
+            NominalSpinTune->e[[2,ipnnup]],PolarizationTime->e[[2,iptaup]],
+            SpinTune->e[[2,ipnup]],Polarization->e[[2,ipequpol]],
+            Polarizations->e[[2,{ipequpol2,ipequpol4,ipequpol6}]],
+            PolarizationVector->e[[2,{ippolx,ippoly,ippolz}]]}]];
+      If[mode>0,
+        r=Join[r,{
+          OrbitAtEntrance->e[[3,1]],OneTurnTransferMatrix->e[[3,2]],
+          OneTurnDampingMatrix->e[[3,3]],NormalCoordinates->e[[3,4]],
+          ExtendedTwissParameters->
+            Thread[FFS$TwissFuns->Take[e[[2]],{iptwiss,iptws0+mfzpy}]],
+          OneTurnExcitation->
+            Table[e[[3,5,((m+n+Abs[m-n])^2+2*(m+n)-6*Abs[m-n])/8]],
+              {m,6},{n,6}],
+          EquilibriumBeamMatrix->(e06=e[[3,6]];
+            Table[e[[3,6,((m+n+Abs[m-n])^2+2*(m+n)-6*Abs[m-n])/8]],
+              {m,6},{n,6}]),
+          SpinPrecessionMatrix->e[[3,7]]}];
+        If[mode>1,
+          AppendTo[r,ClosedOrbit->e[[4]]];
+          If[mode>2,
+            AppendTo[r,TransferMatrices->e[[5]]];
+            If[?INTRA,
+              AppendTo[r,IntrabeamExcitation->e[[6]]]]]]];
+      If[codpl0,FFS["CODPLOT;"],FFS["NOCODPLOT;"]];
+      If[~(SaveEMIT/.op),EMITX=ex0;EMITY=ey0;EMITZ=ez0;SIGE=se0;SIGZ=sz0];
+      r,
+      EMITX=ex0;EMITY=ey0;EMITZ=ez0;SIGE=se0;SIGZ=sz0;{}]]
+
+  ];
+
+    End[];
+
+  EndPackage[];
+
+With[{default={AzimuthalModes->9}},
+  SynchroBetaEmittance[nustart_Real,opt___]:=SynchroBetaEmittance[{nustart},opt];
+  SynchroBetaEmittance[{nustart_,nustop_:Null,nustep_:Null},opt___]:=With[
+    {am=AzimuthalModes/.{opt}/.default},
+    SynchroBetaEmittance1[nustart,
+      If[nustop===Null,nustart,nustop],
+      If[nustep===Null,1,nustep],
+      am]]];
+
+SymplecticJ[n_]:=(SymplecticJ[n]=Module[{m=Table[0,{n},{n}],i},
+  Do[m[[i,i+1]]=1;m[[i+1,i]]=-1,{i,1,Floor[n/2]*2-1,2}];
+  m]);
+
+SymplecticInverse[m_]:=
+  -SymplecticJ[Length[m]].Transpose[m].SymplecticJ[Length[m]];
+
+Protect[Emittance,SynchroBetaEmittance,SymplecticInverse];
+
+Touschek=Class[{},{},{id,sp,spz,spxz,spyz,zl,
+  dpmin,dpmax,
+  nzmin,nzmax,nxmin,nxmax,nymin,nymax},
+
+ Setup[___]:=Message[999,Touschek::undef];
+ Setup[d_List]:=
+   If[d[[1]]<=>id,
+     id=d[[1]];
+     spz=Spline[Thread[d[[2]]]];
+     spxz=Spline[Thread[{d[[3,1,1]],d[[3,2]]}]];
+     spyz=Spline[Thread[{d[[3,1,2]],d[[3,3]]}]];
+     zl=Take[d[[3,1,3]],Length[spxz[[1,2,1]]]];
+     {dpmin,dpmax}=MinMax[d[[2,1]]];
+     {nxmin,nxmax}=MinMax[d[[3,1,1]]];
+     {nymin,nymax}=MinMax[d[[3,1,2]]];
+     {nzmin,nzmax}=MinMax[zl]];
+
+  (* Approximation of C[x]/x \propto 1/tau *)
+  With[{eeuler=7.982212789187259,a=5.62966,b=0.75159},
+    TouschekF[x_]:=(Log[1/x/eeuler+1]*Exp[-x]*(b+eeuler*x)/(b+x*(a+2*x)))/x];
+
+  TouschekLifetime[INF,INF,nz_Real]:=(Setup[TouschekTable];
+    Module[{sz=nz*SIGE},
+      Which[
+        sz<dpmin,
+        (sz/dpmin)^2/spz[dpmin],
+        True,
+        1/spz[sz]]]);
+
+  TouschekLifetime[nx_Real,INF,nz_Real]:=(Setup[TouschekTable];
+    Which[
+      nz<nzmin,
+      (nz/nzmin)^2*TouschekLifetime[nx,INF,nzmin],
+      nx<nxmin,
+      (nx/nxmin)^2*TouschekLifetime[nxmin,INF,nz],
+      True,
+      1/Spline[
+        Thread[{zl,spxz[Min[nx,nxmax]]}]][Min[nz,nzmax]]]);
+
+  TouschekLifetime[INF,ny_Real,nz_Real]:=(Setup[TouschekTable];1/Spline[
+    Thread[{zl,spyz[Restrict[ny,nymin,nymax]]}]][Restrict[nz,nzmin,nzmax]]);
+
+  TouschekLifetime[__]=NaN;
+
+  ];
+
+The$Touschek=Touschek[];
+TouschekLifetime=The$Touschek@TouschekLifetime;
+TouschekF=The$Touschek@TouschekF;
+
+Touschek::undef="TouschekTable Undefined; Do Emittance[] with INTRA;";
+
+Protect[TouschekLifetime,TouschekF,Touschek,The$Touschek];
+
+With[{gamma:=e/ElectronMass,lambdae=ElectronRadius/FineStructureConstant},
+  BeamstrahlungUpsilon[e_,nb_,sigx_,sigy_,sigz_]:=5/6*ElectronRadius^2*gamma*nb/(FineStructureConstant*sigz*(sigx+sigy));
+  BeamstrahlungU0[ups_]:=1/Sqrt[1+ups^(2/3)];
+  BeamstrahlungU1[ups_]:=1/(1+(1.5 ups)^(2/3))^2;
+  BeamstrahlungNGamma[e_,ups_,sigz_]=2.54*(sigz/lambdae/gamma)*ups*BeamstrahlungU0[ups];
+  BeamstrahlungDeltaGamma[ups_]=4*Sqrt[3]/15*ups*BeamstrahlungU1[ups]/BeamstrahlungU0[ups]];
+
+Protect[BeamstrahlungUpsilon, BeamstrahlungNGamma, BeamstrahlungDeltaGamma,
+  BeamstrahlungU0, BeamstrahlungU1];

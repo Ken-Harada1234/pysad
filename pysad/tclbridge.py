@@ -11,7 +11,7 @@ GUI のコードそのもの (Packages/Tkinter.n、KBFrame.n、KBMainFrame.n、T
   TkEventLoop[] / TkQuitEventLoop[]   イベントループ (mainloop / quit)
   そのほか TkCreateFileHandler、TkDefineBitmap、TkPhotoPutBlock$、TkCanvas* は最小限
 
-SAD のパッケージ (`<SAD>/Packages`) の場所は環境変数 PYSAD_SAD_PACKAGES で指定する (リポジトリには含めていない)。指定が無いときは何も有効にならず、従来どおり TkWait[] などは何もしない。
+SAD のパッケージ (`<SAD>/Packages`) の場所は環境変数 PYSAD_SAD_PACKAGES で指定する。pysad に同梱した SAD のコピー (pysad/sad_copy) を使うときは、環境変数 PYSAD_GUI=1 を指定する。どちらも無いときは何も有効にならず、従来どおり TkWait[] などは何もしない (画面を開かない)。
 環境変数 PYSAD_TK_NOLOOP=1 なら TkEventLoop[] は 1 回 update するだけで戻る (自動テスト・ウィジェット木の比較用)。
 """
 from __future__ import annotations
@@ -27,9 +27,14 @@ _AUTOLOAD_FILES = ('TkinterCore.n', 'Tkinter.n', 'TkPhoto.n', 'Canvas.n', 'KBMai
 
 
 def packages_dir():
+    """Tcl/Tk の接点 (GUI) に使う SAD の Packages。環境変数 PYSAD_SAD_PACKAGES (最優先)、なければ、環境変数 PYSAD_GUI=1 のときだけ
+    pysad に同梱した SAD のコピー (pysad/sad_copy/Packages)。どちらも無いときは None で、GUI の接点は付かない (画面を開かない)"""
     p = os.environ.get('PYSAD_SAD_PACKAGES')
     if p and os.path.isdir(p):
         return p.rstrip('/\\') + '/'
+    if os.environ.get('PYSAD_GUI', '').strip().lower() in ('1', 'true', 'yes', 'on'):
+        from .pkgload import bundled_packages_dir
+        return bundled_packages_dir()
     return None
 
 
@@ -324,7 +329,7 @@ class TclBridge:
 
 
 def install(I):
-    """Interp に Tcl/Tk の接点を付ける (PYSAD_SAD_PACKAGES が指定されているときだけ)"""
+    """Interp に Tcl/Tk の接点を付ける (PYSAD_SAD_PACKAGES か PYSAD_GUI=1 が指定されているときだけ)"""
     if packages_dir() is None:
         return None
     if sys.getrecursionlimit() < 30000:

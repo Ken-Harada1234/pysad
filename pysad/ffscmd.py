@@ -951,7 +951,7 @@ class FFS:
             return
         from . import pkgload
         if pkgload.packages_dir() is None:
-            raise SADError('ElementValues: SAD の Packages (Couple.n) が必要 (PYSAD_SAD_PACKAGES)')
+            raise SADError('ElementValues: SAD の Packages (Couple.n) が見つからない (pysad/sad_copy/Packages か PYSAD_SAD_PACKAGES)')
         self._in_ev = True
         try:
             self.I.eval(Sym('SetCoupledElements'))
