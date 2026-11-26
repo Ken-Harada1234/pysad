@@ -13,7 +13,7 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 
 | 章 | 内容 | 状態 |
 |---|---|---|
-| [00_overview.md](00_overview.md) | **全体像**。ハミルトニアンから Fortran・Python までの流れ (表と箇条書き)、3 系統の実装 (追跡 `t*.f`・行列 `t*e.f`・解析微分 `q*`)、要素ルーチンの命名則、章の読み方、**ガイド全体の確認の一覧**、**ガイド全体の未確認・K64 とヘルプの誤りの疑いの一覧** (確定と疑いを分ける) | ✓ |
+| [00_overview.md](00_overview.md) | **全体像**。ハミルトニアンから Fortran・Python までの流れ (表と箇条書き)、3 系統の実装 (追跡 `t*.f`・行列 `t*e.f`・解析微分 `q*`)、要素ルーチンの命名則、章の読み方、**ガイド全体の確認の一覧**、**ガイド全体の未確認・K64 とヘルプの誤りの疑いの一覧** (K64 の誤りは確定・取り下げ・未決に分ける。付録 A は章ごとの総覧) | ✓ |
 | [01_variables_and_conventions.md](01_variables_and_conventions.md) | 変数と約束。正準変数、ラグランジアンから母関数まで、$dv$、$p_x/(1+\delta)$、K1 の約束 (四極の章に必要な範囲) | ✓ (四極に必要な範囲。曲率が効く導出・ソレノイド・加速は各要素の章) |
 | [01a_hamiltonian_derivation.md](01a_hamiltonian_derivation.md) | **ハミルトニアンの導出**。ラグランジアン、速度依存のポテンシャルと一般化力・一般化運動量、ルジャンドル変換、正準変換、Frenet–Serret 座標、$t \to s$ の入れ替え、2 次の展開と偏向・四極の運動方程式 | ✓ |
 | [02_drift.md](02_drift.md) | **ドリフト**。$H$ から $x' = p_x/p_z$、$z$ の更新と $dv$ の項、厳密 = 近軸 × $D$、近軸 (DISKIN)、COD のまわりの 6×6 (`tdrife1`)、最短の例 ($R_{56} = L/\gamma_0^2$) | ✓ |
@@ -25,8 +25,8 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 | [08_mult.md](08_mult.md) | **多極 MULT**。ポテンシャルの展開と K・SK の意味、基準面 ($\theta_1$)、ANGLE = 0 の分割 (厳密な四極 + 双極の本体と薄いキックの対称な 2 次分割)、刻みの数、フリンジ、ずれ、ANGLE ≠ 0 の $A_s$ を Maxwell 方程式から導く (ヘルプの $g_{kn}$ との食い違い) | ✓ (CHI1・CHI2・DZ、RF・放射・ソレノイドつきは読みだけ・範囲外) |
 | [09_solenoid.md](09_solenoid.md) | **ソレノイド**。$H_2$ の厳密解 ($w_1$、$w_2$、固有モード)、$z$ の更新、$\Delta H$ のラーモア回転、Strang 分割、端部 (DISFRIN)、ヘルプ ↔ `tzparams` の対応表 | ✓ (領域・座標の切替 `tsolrot` は読みだけ) |
 | [10_cavity.md](10_cavity.md) | **加速空洞 (CAVI)・TCAVI**。$\Delta E$ から $\delta$・$z$・$p_x$ の更新 (時間を保つ)、同期位相と `offset`、横方向の依存と Panofsky–Wenzel、非相対論の補正 ($I_0$)、長い空洞の分割 (重み `ws`)、$p_0(s)$ の変化、端の効果 $H_f$ (Maxwell からの導出)、TCAVI | ✓ (TRPT の写像・CALC は読みだけ) |
-| [11_misalignment_and_coord.md](11_misalignment_and_coord.md) | **取り付け誤差と COORD**。剛体運動 + 直線の面への戻し (スナップショットと $z$)、`tcoord`・`tcoorde` の 6×6、COORD の DIR (K64 とヘルプの食い違いの疑い)、DX・DY・ROTATE の順序と符号、偏向磁石のロール (`tbrot`)、MARK・APERT・MAP は力学でないこと | ✓ (CHI1・CHI2・DZ の `tsolrot` は読みだけ) |
-| [12_linear_optics.md](12_linear_optics.md) | **行列から光学へ**。閉軌道の Newton 法 (`tcod`、2 次収束)、周期解と分散 $(1-M_4)^{-1}m_6$、x–y 結合の分解 (`qmdiag`: ヘルプの $R$ と K64 の閉じた式)、Twiss と伝搬、色収差、拡張 Twiss の $H$ | ✓ (`qmdiag` の特別な場合・RADCOD・`tecalc` の $V$ は読みだけ。偏向ありの色収差は未決) |
+| [11_misalignment_and_coord.md](11_misalignment_and_coord.md) | **取り付け誤差と COORD**。剛体運動 + 直線の面への戻し (スナップショットと $z$)、`tcoord`・`tcoorde` の 6×6、COORD の DIR (積の順序がヘルプと逆。gs で K64 の形が逆変換を作ることを確認、ヘルプの誤記の可能性が高い)、DX・DY・ROTATE の順序と符号、偏向磁石のロール (`tbrot`)、MARK・APERT・MAP は力学でないこと | ✓ (`tsolrot` の DZ・CHI3 の符号は読みだけ。CHI1・CHI2 の符号は gs で確認) |
+| [12_linear_optics.md](12_linear_optics.md) | **行列から光学へ**。閉軌道の Newton 法 (`tcod`、2 次収束)、周期解と分散 $(1-M_4)^{-1}m_6$、x–y 結合の分解 (`qmdiag`: ヘルプの $R$ と K64 の閉じた式)、Twiss と伝搬、色収差、拡張 Twiss の $H$ | ✓ (`qmdiag` の特別な場合・RADCOD・`tecalc` の $V$ は読みだけ。偏向ありの色収差は gs・追跡と一致 (B325)) |
 | [13_radiation.md](13_radiation.md) | **放射 (kinematical method)**。曲げ角 $\phi$ と $\rho_r$ (ヘルプ)、$N_\gamma$・$u_c$・$\langle u\rangle$・$\langle u^2\rangle$ の古典の式と `anrad`・`cuc`・`cave`・`cuu`、追跡の 1 スライス (`tradk1`: 運動量の縮み、$-\tfrac12dp_x\,dg$ と $al/3$ の導出)、FLUC のポアソン過程と `drndsr`、CALC の励起 (`tradke` の `dee`)、放射積分 | ✓ (RADCOD・RADTAPER・`tr1` の導出・分割の定数は未確認) |
 | [14_emittance.md](14_emittance.md) | **平衡エミッタンス**。$\Sigma = M\Sigma M^\top + \Delta$ の導出、$\Delta$ の組み立て (`tmulbs`)、`tecalc` (固有値・正規座標・減衰率・分配数)、各モードの $\varepsilon_k = \bar\Delta_k/(1-e^{-2a_k})$、同期運動と RFSW、MINCOUP | ✓ (`tnorm`・`btr` の導出・IBS・SynchroBeta は未確認) |
 | [15_spin.md](15_spin.md) | **スピンと偏極**。Thomas-BMT (静止系の歳差 + Thomas 歳差、縦・横の係数 $(1+a)$・$(1+a\gamma)$)、1 スライスの回転 `sprot` (Rodrigues、刻みの 2 次、弦の誤差)、軌道との結合 $D$ (`tradke` の積算)、`spnorm` (偏極ベクトル・スピンチューン)、SLIM の $N$ の式と脱偏極率、Sokolov-Ternov の定数 (`pst`・`cfpd`・`sflc` が `anrad`・`cuc`・`cave`・`cuu` から出る)、DK との対応、平衡偏極度 | ✓ (ST・DK の QED の導出、`spdepol` の級数、高次共鳴は未確認) |
@@ -61,6 +61,8 @@ SAD のヘルプには、各要素の転送や計算の元になるハミルト�
 ## 確認スクリプトの実行方法
 
 **前提**: 確認 script の v2 の結果は、四極の線形フリンジの F1 の符号を修正した pysad (B323。v2 の追跡が CALC と一致する) で得た。修正前の pysad で実行すると、`quad_04_matrix_vs_map.py` の (f) の v2 の行が k64 と同じ値になる。その場合は、環境変数 `PYSAD_SRC` に修正後の pysad のルートを指定して実行する (`scripts/_common.py` が読む)。
+
+**k64 と v2 の結果**: K64 の誤りを測る script は、k64 (K64 と同じ動作) と v2 (誤りを直した動作) の結果を分けて出す。`cav_01`・`cav_02_derivations`・`mult_03`・`mult_06`・`sol_03`・`bb_01`・`und_01`・`coll_01` は 1 回の実行で両方 (出力の `k64`・`v2` の行)。`bend_03`・`bend_04`・`bend_07`・`edge_03` は、既定が k64 (`outputs/<名前>.out.txt`)、環境変数 `GUIDE_MODE=v2` で v2 (`outputs/<名前>.v2.out.txt`)。再実行は `outputs/` の保存した出力と照らすこと (数値は、数値微分の刻みと丸めの範囲で変わる)。
 
 スクリプトは `physics_guide/scripts/` にあり、リポジトリのルートから実行する (Python 3.12。pysad は同じフォルダのものを使うので、インストールや `PYTHONPATH` は要らない。numpy・scipy・matplotlib が要る):
 
