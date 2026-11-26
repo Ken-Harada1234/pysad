@@ -14,7 +14,7 @@ import sympy as sp
 from scipy.integrate import solve_ivp, quad
 import _common as C
 
-C.start(__file__)
+C.start_modes(__file__)
 
 print('== (a) 端の磁場 (b = eB/P0、直線座標 (x, y, s)、一様な B0 = 1/ρ の端) ==')
 y_, s_ = sp.symbols('y s', real=True)

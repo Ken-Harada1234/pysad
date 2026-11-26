@@ -12,7 +12,7 @@ import math
 import numpy as np
 import _common as C
 
-C.start(__file__)
+C.start_modes(__file__)
 from pysad import lattice as lat
 
 S6 = np.zeros((6, 6))

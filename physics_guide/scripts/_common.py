@@ -47,6 +47,19 @@ def start(script_file):
     return name
 
 
+def start_modes(script_file):
+    """K64 の動作 (k64) を測るスクリプト用。既定は k64 で outputs/<名前>.out.txt に書く。環境変数 GUIDE_MODE=v2 なら v2 で
+    outputs/<名前>.v2.out.txt に書く (同じ手順を v2 でも実行して、K64 の誤りを v2 が直したことを示す)。戻り値: 名前"""
+    name = os.path.splitext(os.path.basename(script_file))[0]
+    os.makedirs(OUT_DIR, exist_ok=True)
+    mode = 'v2' if os.environ.get('GUIDE_MODE', '').lower() == 'v2' else 'k64'
+    from pysad import compat
+    compat.set_mode(mode)
+    sys.stdout = _Tee(os.path.join(OUT_DIR, name + ('.v2' if mode == 'v2' else '') + '.out.txt'))
+    print('互換モード: %s' % mode)
+    return name
+
+
 def font():
     """matplotlib の日本語フォント設定 (Windows の既定フォントから選ぶ)"""
     import matplotlib

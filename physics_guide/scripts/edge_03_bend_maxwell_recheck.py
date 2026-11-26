@@ -14,7 +14,7 @@ import sympy as sp
 from scipy.integrate import solve_ivp
 import _common as C
 
-C.start(__file__)
+C.start_modes(__file__)
 from pysad import lattice as lat
 
 rho = 50.0
