@@ -10,3 +10,30 @@ Redistribution and use in source and binary forms, with or without modification,
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 https://acc-physics.kek.jp/SAD/how-to-get-sources/licensing/
+
+
+----------------------------------------------------------------------
+Files copied from SAD (bundled in this package) / SAD からコピーして同梱しているファイル
+----------------------------------------------------------------------
+
+The folder pysad/sad_copy/ of this package contains files copied verbatim from the
+source distribution of SAD (Strategic Accelerator Design, K64 version) of the KEK
+Accelerator Laboratory:
+
+  - pysad/sad_copy/Packages/   SAD's SADScript packages (*.n, 71 files incl. SADInspect.sad)
+  - pysad/sad_copy/KBFrame/    SAD's KBFrame resource files (44 files)
+  - pysad/sad_copy/LICENSE     SAD's own copy of the license above
+
+These files were not written by the authors of pysad. Their copyright belongs to
+KEK Accelerator Laboratory ("Copyright (c) 1986-2016, KEK Accelerator Laboratory.
+All rights reserved."), and they are redistributed under the license text at the
+top of this file (the same BSD 3-clause terms), whose copyright notice, list of
+conditions and disclaimer are retained. Their contents are unchanged; see
+pysad/sad_copy/README.md for what was copied and what was not, and
+pysad/sad_copy/MANIFEST.sha256 for the SHA-256 of each copied file.
+
+本パッケージの pysad/sad_copy/ フォルダには、KEK 加速器研究施設の SAD (K64 版) のソース配布から
+そのままコピーしたファイル (Packages の *.n、KBFrame の設定・画像、SAD の LICENSE) が入っています。
+これらは pysad の作者が書いたものではなく、著作権は KEK Accelerator Laboratory にあります。
+上のライセンス (BSD 3 条項) の条件のもとで再配布しており、著作権表示・条件・免責条項を残しています。
+内容は変更していません。詳しくは pysad/sad_copy/README.md を参照してください。

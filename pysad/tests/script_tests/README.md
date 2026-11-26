@@ -32,7 +32,7 @@ SAD (K64) との照合ベンチは姉妹フォルダ [`../regression_tests/`](..
 リポジトリのルートから実行する (Python 3.12)。
 
 ```
-set PYSAD_SAD_PACKAGES=<SAD の Packages フォルダ>        (PowerShell: $env:PYSAD_SAD_PACKAGES="...")
+(環境変数は要らない。別の SAD の Packages を試すときだけ: set PYSAD_SAD_PACKAGES=<SAD の Packages フォルダ>。PowerShell: $env:PYSAD_SAD_PACKAGES="...")
 py -3.12 -m pysad.nbcache --force                          (numba のキャッシュを作り直す。初回・カーネルを直したあと)
 py -3.12 -m pytest pysad/tests/script_tests -q -p no:cacheprovider `
     --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py
@@ -40,7 +40,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 ```
 
 - `--ignore` する 3 本は旧式のスクリプト形式で、import 時に `sys.exit` を呼ぶため pytest の収集を止める。
-- `PYSAD_SAD_PACKAGES` が無いと GUI 系 (`test_plot.py`・`test_tclbridge.py` ほか) が skip する。
+- `conftest.py` が `PYSAD_SAD_PACKAGES` の既定を同梱の SAD のコピー (`pysad/sad_copy/Packages`) にするので、環境変数なしでも GUI 系 (`test_plot.py`・`test_tclbridge.py` ほか) が走る (画面が無く `tkinter.Tk()` が作れないときは skip)。別の SAD の `Packages` を使うときだけ環境変数で指定する (指定が優先)。
 - 環境変数: `PYSAD_SLOW=1` (遅い試験も走らせる)、`PYSAD_ERR_LATTICE` (`test_elkern.py` の誤差入りラティス 2 件)、`PYSAD_PY314` (`test_v2_P5_tk90.py` の Tk 9.0 用 Python)、`V241_POL_CACHE` (偏光の比較の部品)。
 - 全部で 1 時間 45 分ほど (FITP の five が約 10 分以上)。
 
@@ -94,6 +94,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 | [`test_v241_quad_integrator.py`](test_v241_quad_integrator.py) | 31 | 四極本体の積分器の構造と、追跡の写像の正確さ |
 | [`test_v244_quad_linear_fringe_f1.py`](test_v244_quad_linear_fringe_f1.py) | 68 | 四極・MULT の線形フリンジの係数 F1 の符号 (追跡と CALC・数値積分・gs の保存した出力、B323) |
 | [`test_v250_chromaticity_bend.py`](test_v250_chromaticity_bend.py) | 19 | `Lattice.chromaticity()` の dν/dδ が偏向磁石 (なし・E1/E2・K1≠0・6 極つき) で追跡のヤコビアン・gs の `Twiss["NX",-1]` の差分と一致。`CHROMATICITY` コマンドの単位と BEND の寄与の欠落 (B325)、厚い 6 極の CALC と追跡のずれの切り分け (k64 は 4.4e-4 ずれ、v2 は 4 次にして追跡と一致)・gs の TrackParticles (B326) |
+| [`test_v250_bundled_sad_copy.py`](test_v250_bundled_sad_copy.py) | 9 | 同梱の SAD のコピー (`pysad/sad_copy`): 各ファイルが `MANIFEST.sha256` と同じ・LICENSE と出所の README・機械固有のファイルを含まない・環境変数が無いと `packages_dir()` が同梱のコピー (あれば環境変数が優先)・環境変数なしの子プロセスで `fn_CorrectOrbit_Monitor_Steer` が走る・元の SAD の Packages との出力一致 (元の SAD が手元にあるとき。比べるのはこの 1 例だけ)・`PYSAD_GUI=1` だけで GUI の接点が動く (Tk のバージョンとフォント系の取得。画面があるとき)・`PYSAD_GUI` も環境変数も無いと GUI は付かない・パッケージ外を参照しない |
 | [`test_v250_calc_thick_sext_4th.py`](test_v250_calc_thick_sext_4th.py) | 35 | v2 の CALC・Emittance[] の厚い多極 (SEXT〜DODECA) が追跡と同じ 4 次の分割 (B326): 写像が追跡の 1 刻みと一致、行列が厳密な積分と L⁵ で一致 (k64 は L³)、シンプレクティック性、numba 版・python 版の一致、k64 のビット同一、L = 0 は不変、リングの dν/dδ が追跡と 1e-5 以内 |
 | [`test_v250_bend_maxwell_calc_p.py`](test_v250_bend_maxwell_calc_p.py) | 27 | 偏向磁石の端の Maxwell フリンジの COD の更新の因子 p (閉じた式・解析行列との整合・numba と python の一致・gs の保存した出力、B324) |
 | [`test_v2_P3_ae.py`](test_v2_P3_ae.py) | 24 | MULT の端の角 AE1・AE2 と K0 つき MULT のエミッタンス (SAD 照合) |
@@ -301,7 +302,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 | ファイル | 件数 | 何を確かめるか |
 |---|---|---|
 | [`test_plot.py`](test_plot.py) | 8 | ListPlot・Plot と Tk キャンバスの描画 (SAD 照合。GUI 環境が要る) |
-| [`test_tclbridge.py`](test_tclbridge.py) | 7 | Tcl/Tk の接点と Tkinter.n・KBMainFrame.n の動作 (要 `PYSAD_SAD_PACKAGES`) |
+| [`test_tclbridge.py`](test_tclbridge.py) | 7 | Tcl/Tk の接点と Tkinter.n・KBMainFrame.n の動作 (Tk が使えること。Packages は同梱のコピーが既定) |
 | [`test_v241_mpl_display.py`](test_v241_mpl_display.py) | 32 | `$DisplayFunction` = MatplotlibDrawer で Graphics を matplotlib に描く |
 | [`test_v25_draw_mpl.py`](test_v25_draw_mpl.py) | 33 | FFS の DRAW (matplotlib) の構文解析と描画データ |
 | [`test_dxf_lattice.py`](test_dxf_lattice.py) | 28 | ラティス平面図の DXF の読み戻し・偏向磁石の外形の幾何 |

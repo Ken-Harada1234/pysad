@@ -493,7 +493,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <tr>
 <td><code>ElementValues</code> (<code>Couple.n</code>)・<code>FREE</code> の成分</td>
 <td>両</td>
-<td><code>ElementValues</code> とフィット変数の連動を実装している (光学の計算のたびに <code>SetCoupledElements</code> を実行し、ElementValues があるときは数値微分を使う。<code>ElementValues={"K1"["QD"]-&gt;-0.8*"K1"["QF"]}</code> のまま <code>FREE QF; FIT NX 7.0; GO;</code> すると gs と同じく QF の変化に QD が追随して NX = 7.0000013 に収束する)。2 段の GO (NX → NY) を含め、K1 (QF・QD)・チューンが gs と 1e-9 で一致 (試験 <code>test_v24_A_parser_fit.py</code>、PYSAD_SAD_PACKAGES が要る)。FFS の <code>COUPLE QD QF -0.8; FREE QF; FIT NX 7.0; GO;</code> も K1 とチューンが 1e-8 以内で一致。先頭でない成分の既定のキーの変数も作る (gs と全桁一致、§6)。<code>VISIT</code>・<code>BYE</code> の退避・復元を実装。未確認・限界: <code>USE NOEXPAND</code> の成分の値の保存 (gs の <code>RenumberElement</code> が SIGSEGV になる状況でしか確かめられない)、<code>BYE ALL</code> (gs が SIGSEGV で比べられない)、VISIT の未定義の LINE のメッセージ (gs は <code>Missing beamline in VISIT.</code>。pysad は違う)。反復の途中の <code>qcod</code>・<code>qtwiss</code> のオーバーフロー行の数が gs と違う (値には影響しない)</td>
+<td><code>ElementValues</code> とフィット変数の連動を実装している (光学の計算のたびに <code>SetCoupledElements</code> を実行し、ElementValues があるときは数値微分を使う。<code>ElementValues={"K1"["QD"]-&gt;-0.8*"K1"["QF"]}</code> のまま <code>FREE QF; FIT NX 7.0; GO;</code> すると gs と同じく QF の変化に QD が追随して NX = 7.0000013 に収束する)。2 段の GO (NX → NY) を含め、K1 (QF・QD)・チューンが gs と 1e-9 で一致 (試験 <code>test_v24_A_parser_fit.py</code>、Packages は同梱のコピー)。FFS の <code>COUPLE QD QF -0.8; FREE QF; FIT NX 7.0; GO;</code> も K1 とチューンが 1e-8 以内で一致。先頭でない成分の既定のキーの変数も作る (gs と全桁一致、§6)。<code>VISIT</code>・<code>BYE</code> の退避・復元を実装。未確認・限界: <code>USE NOEXPAND</code> の成分の値の保存 (gs の <code>RenumberElement</code> が SIGSEGV になる状況でしか確かめられない)、<code>BYE ALL</code> (gs が SIGSEGV で比べられない)、VISIT の未定義の LINE のメッセージ (gs は <code>Missing beamline in VISIT.</code>。pysad は違う)。反復の途中の <code>qcod</code>・<code>qtwiss</code> のオーバーフロー行の数が gs と違う (値には影響しない)</td>
 <td>13_packages/fn_Couple、03_matching/flag_FREE_component.sad</td>
 </tr>
 <tr>
@@ -559,6 +559,9 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tbody>
 </table>
 <h2 id="3-未確認-コードはあるが-gs-と数値で比べていない">3. 未確認 (コードはあるが gs と数値で比べていない)</h2>
+<ul>
+<li>同梱の SAD のコピー (<code>pysad/sad_copy</code>): 同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</li>
+</ul>
 <table>
 <thead>
 <tr>

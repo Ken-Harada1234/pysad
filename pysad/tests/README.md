@@ -27,7 +27,7 @@ pysad の試験は、目的の違う 2 つのサブフォルダに分けてあ�
 リポジトリのルートから (Python 3.12)。
 
 ```
-set PYSAD_SAD_PACKAGES=<SAD の Packages フォルダ>              (PowerShell: $env:PYSAD_SAD_PACKAGES="...")
+(環境変数は要らない。別の SAD の Packages を試すときだけ: set PYSAD_SAD_PACKAGES=<SAD の Packages フォルダ>。PowerShell: $env:PYSAD_SAD_PACKAGES="...")
 py -3.12 -m pysad.nbcache --force                                numba のキャッシュを作り直す (初回・カーネルを直したあと)
 
 # script_tests (pytest)
@@ -41,7 +41,7 @@ set QUICK=1
 py -3.12 -u pysad/tests/regression_tests/run_regression.py
 ```
 
-- `PYSAD_SAD_PACKAGES` (SAD の `Packages` のフォルダ) を設定しないと、GUI 系 (`test_plot.py`・`test_tclbridge.py` ほか) が skip する。SAD 本体が無くても、それ以外は通る。
+- `script_tests/conftest.py` が `PYSAD_SAD_PACKAGES` の既定を、pysad に同梱した SAD のコピー (`pysad/sad_copy/Packages`) にするので、環境変数なしでも GUI 系 (`test_plot.py`・`test_tclbridge.py` ほか) が走る (画面が無く `tkinter.Tk()` が作れないときは skip)。別の SAD の `Packages` で試すときは `PYSAD_SAD_PACKAGES` で指定する (指定が優先)。同梱のコピーの試験は `script_tests/test_v250_bundled_sad_copy.py`。SAD 本体 (gs) が無くても通る。
 - `--ignore` する旧式の 3 本 (`test_bend_feeddown.py`・`test_coord.py`・`test_sext_radiation.py`) は、スクリプト形式で import 時に `sys.exit` を呼ぶため、pytest の収集を止める。
 - `PYSAD_SLOW=1` を設定すると、遅い試験 (CSR MakeZL など) も走る。ほかの環境変数 (`PYSAD_ERR_LATTICE`・`PYSAD_PY314`・`V241_POL_CACHE`) は [`script_tests/README.md`](script_tests/README.md) にある。
 - 試験と回帰を同時に走らせると、`test_plot.py::test_fitgaussian_plot_matches_gs` が PermissionError で落ちることがある (単独では通る)。続けて走らせる。

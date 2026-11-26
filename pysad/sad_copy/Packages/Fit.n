@@ -1,0 +1,223 @@
+(* Fit.n 7/7/2024 *)
+{MaxIterations,AccuracyGoal,D};
+
+Fit[`data:{{{__Real},_Real,_Real},___},`fun_,{`v__},`para__]:=Module[
+  {{`x$,`y$,`dy$}=Thread[data],`ff,`k,`l=Length[data]},
+  ff[k_]:=Function[{v},fun]@@x$[[k]];
+  Fit$[Thread[{Range[l],y$,dy$}],ff[k],k,para]];
+
+Fit[`data:{{{__Real},_Real,_Real,_Real},___},`fun_,{`v__},`para__]:=Module[
+  {{`x$,`y$,`dx$,`dy$}=Thread[data],`ff,`k,`l=Length[data]},
+  ff[k_]:=Function[{v},fun]@@x$[[k]];
+  Fit[Thread[{Range[l],y$,dx$,dy$}],ff[k],k,para]];
+
+Fit[`data:{{{__Real},_Real},___},`fun_,{`v__},`para__]:=Module[
+  {{`x$,`y$}=Thread[data],`ff,`k,`l=Length[data]},
+  ff[k_]:=Function[{v},fun]@@x$[[k]];
+  Fit$[Thread[{Range[l],y$}],ff[k],k,para]];
+
+With[{csl=0.001},
+  Fit[`data:{{_Real,_Real,_Real,_Real},___},`fun_,`v_,`para__]:=Module[
+    {{`x$,`y$,`dx$,`dy$}=Thread[data],`df,`cs0=1e-100,`d,`f1,`dy1,`cs},
+    df[v_]=D[fun,v];
+    d=dy$^2+(dx$*(df/@x$))^2;
+    dy1=dy$;
+    cs=1/cs0;
+    While[Abs[cs/cs0-1]>csl,
+      cs0=cs;
+      f1=Fit$[Thread[{x$,y$,dy1}],fun,v,para];
+      {cs,dy1}={ChiSquare,d}/.f1;
+!      Print["Fit with x-error, chi square: ",cs];
+      dy1=Sqrt[dy1]];
+    f1]];
+
+Fit[a__]:=Fit$[a];
+SetAttributes[Fit,{HoldRest,Constant}];
+
+PolynomialFit[d_,nord_]:=Module[{{x,b}=Thread[d],
+  s=Table[1,{Length[d]}],a,xa,sl,xl,cm,n,m,sx},
+  xa=(Plus@@x)/Length[x];
+  scale=1/Max[Abs[x-xa]];
+  If[Abs[xa]*scale<0.1,
+    xa=0;
+    scale=1/Max[Abs[x]]];
+  x=(x-xa)*scale;
+  a=Transpose[Table[First[{s,s*=x}],{nord+1}]];
+  s=LinearSolve[a,b];
+  sl=xl=1;
+  sl=s*Table[First[{sl,sl*=scale}],{nord+1}];
+  xl=If[xa,Table[First[{xl,xl*=-xa}],{nord+1}],
+      1];
+  sx=sl*xl;
+  cm=Table[
+    Take[sx,{m+1,nord+1}].
+    Table[Factorial[n]/Factorial[n-m]/Factorial[m],{n,m,nord}],
+    {m,0,nord}]/xl;
+  {cm,{Residual->Sqrt[(Plus@@((a.s-b)^2))/Length[d]]}}];
+SetAttributes[{PolynomialFit,Residual},Constant];
+
+FindRoot[eq_,vars__List,opt:(_Rule|_RuleDelayed)...]:=Module[{vlist,vs,def,blk},
+  vlist=MapAt[Hold,Hold[vars],{,1}];
+  vlist=Append[#,{-INF,INF}]&/@vlist;
+  vs=Flatten[Thread[vlist][[1]]];
+  def=Definition/@vs;
+  blk=Extract[def,{,1,1,1},Hold]<=>Extract[def,{,1,1,2},Hold];
+  With[{vlist,vs},
+    FindRoot$$[eq,vlist,vs,blk,{opt},vars]]
+  ];
+
+With[{def={MaxIterations->50,AccuracyGoal->1.d-20,Trace->False,D->True,Complex->False}},
+  FindRoot$$[eqs:((eq1_==eq2_)|(eql_List)),vlist_,Hold[vs__],blk_,opt_,vars__]:=
+    Module[
+      {vl,leq=0,eq,df,res,{mi,ag,tr,d,cmpl}={MaxIterations,AccuracyGoal,Trace,D,Complex}/.opt/.def},
+      With[{ba=If[blk,Unevaluated$[{vs}],{}]},
+        Block[ba,
+          With[{var=(With[{v=##},Hold[Set[v]]]&@@[vlist[[,{1,2}]],{1}])},
+            If[Length[Hold[eql]]==0,
+              vl=ReleaseHold[Hold[Unevaluated$[Block[var,{eq1,eq2}]]/.Hold->Null]];
+              If[List===Head[vl[[1]]]===Head[vl[[2]]] && (leq=Length[vl[[1]]])<>Length[vl[[2]]],
+                Message[General::equalleng,"both sides of eqs"];
+                Return[]],
+              eq=Hold[eql]/.Equal->Subtract;
+              With[{eq},
+                vl=Unevaluated$[Block[var,eq]]/.Hold->Null];
+              leq=-1]];
+          If[~cmpl && (RealListQ[vl] || RealQ[vl]),
+            Return[If[leq<=0,
+              FindRoot$[eqs,vars,{mi,ag,tr,d,cmpl}],
+              With[{eq=Thread[eq1==eq2]},
+                FindRoot$[eq,vars,{mi,ag,tr,d,cmpl}]]]]];
+          Which[
+            leq<0,eq=ReleaseHold[eq],
+            leq,eq:=eq1-eq2,
+            True,eq:={eq1-eq2}];
+          With[{vlist,mi,ag,tr,df=If[d,Outer[D,eq,{vs}],False]},
+            res=FR$Newton[eq,{vs},vlist[[,2]],vlist[[,3]],mi,ag,df,tr]];
+          FRN$Eval[eq,{vs},res[[2]]]
+          ]];
+      If[blk,
+        Block[{vs},
+          Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]],
+        Unset/@Hold[vs];
+        Append[MapThread[Rule,{{vs},res[[2]]}],Residual->res[[3]]]]
+      ]
+  ];
+
+FRN$Eval[f_,var_,v_]:=Module[{v1=v,f1},
+  With[{v1},
+    MapThread[Set,Hold[var,v1]]];
+  f1=f;
+  If[~RealListQ[f1],f1=Flatten[f1]];
+  {f1,Re[f1.Conjugate[f1]]}];
+
+FRN$D[f_,var_,v0_,d_]:=d;
+
+With[{frac=1d-7,svmin=1d-7},
+  FRN$D[f_,var_,v0_,False]:=Module[{sv=(Plus@@Abs[v0*frac])/Length[v0],f0=f,k,svi,v1},
+    svi=Restrict[Abs[v0]*frac,sv,INF];
+    Transpose[
+      Parallelize[
+        (v1=v0;
+        v1[[#]]+=svi[[#]];
+        (FRN$Eval[f,var,v1][[1]]-f0)/svi[[#]])&,
+        Length[v0],100000,NPARA]]]];
+
+FRN$Reduction[f1_,f2_,g1_,g2_,g0_,dg_]:=Module[{a,b},
+  Restrict[
+    If[f2,
+      a=((g1-g0)/f1^2-(g2-g0)/f2^2)/(f1-f2)+dg/f1/f2;
+      b=(-f2*(g1-g0)/f1^2+f1*(g2-g0)/f2^2)-dg*(f1+f2)/f1/f2;
+      If[b>0,
+        -dg/(Sqrt[Max[0,b^2-3*a*dg]]+b),
+        (Sqrt[Max[0,b^2-3*a*dg]]-b)/3/a],
+      -0.5*f1*dg/((g1-g0)/f1-dg)],
+    f1/16,0.577*f1]];
+
+With[{tol=1e-4,rmin=1d-4},
+  FR$Newton[f_,var_,vini_,lim_,mi_,ag_,d_,tr_]:=Module[
+    {v0=vini,v1,r1,r0,df,f1,f0,red=1,dv,red1,red2,r2,dg,iter=0,cmpl},
+    {f0,r0}=FRN$Eval[f,var,v0];
+    red1=0;
+    r2=r0;
+    While[r0>ag,
+      If[tr,
+        Print["FindRoot Residual: "//r0//" Reduction: "//red]];
+      If[++iter>mi,Return[{f0,v0,r0}]];
+      df=FRN$D[f,var,v0,d];
+      dv=If[cmpl=(ComplexQ[df] || ComplexQ[f0]),
+        LinearSolve[Join[Re[df],Im[df]],Join[Re[f0],Im[f0]],Tolerance->tol],
+        LinearSolve[df,f0,Tolerance->tol]];
+      r1=r0*2;
+      red1=0;
+      dg=Null;
+      While[r1>r0,
+        v1=MapThread[Restrict[#,#2[[1]],#2[[2]]]&,{v0-dv*red,lim}];
+        r2=r1;
+        {f1,r1}=FRN$Eval[f,var,v1];
+        If[r1>r0,
+          If[dg===Null,
+            dg=-2*If[cmpl,
+              Re[Conjugate[f0].df.dv],
+              f0.df.dv]
+            ];
+          {red2,red1}={red1,red};
+          red=FRN$Reduction[red1,red2,r1,r2,r0,dg];
+          If[red<rmin,Return[{f0,v0,r0}]]]];
+      {f0,v0,r0}={f1,v1,r1};
+      red=Min[1,red*4]];
+    {f0,v0,r0}
+    ];
+  ];
+
+With[{ylim=0.9999},
+  FitGaussian[d_,opt___]:=Module[{data=CreateBin[d],a,b,x,f,g1,g2},
+    f={a/Sqrt[2],b,ConfidenceInterval*{1/Sqrt[2],1},ChiSquare}/.
+    Fit[data,a InverseErf[x]+b,x,
+      {a,(data[[-1,2]]-data[[1,2]])/4},{b,(data[[1,2]]+data[[-1,2]])/2},opt];
+    If[Plot/.{opt},
+      With[{f},
+        g1=Plot[InverseErf[x] f[[1]] Sqrt[2]+f[[2]],{x,-ylim,ylim},DisplayFunction->Identity]];
+      g2=ListPlot[data,DisplayFunction->Identity];
+      Append[f,Show[g1,g2,opt]],
+      f,
+      f]]];
+
+CreateBin[x_]:=Module[
+  {xs=Sort[x],n=Length[x],x0,x1,nb,xp,lxp,ym,yms,sn=0,xm},
+  nb=Floor[Sqrt[n]];
+  {x0,x1}=xs[[{1,-1}]];
+  xp=Partition[xs,nb];
+  lxp=Length/@xp;
+  ym=Plus@@[xp,{1}]/lxp;
+  yms=Sqrt[Plus@@[(xp-ym)^2,{1}]]/lxp;
+  xm=(sn+=#&)/@lxp;
+  xm=(2*(xm-xm[[1]]/2)/sn-1);
+  Thread[{xm,ym,yms}]
+  ];
+
+FitEmit[x_,px_]:=Module[{
+  x1,px1,sigx,sigpx,xm,pxm,xm1,pxm1,sigx1,sigpx1,
+  cx,rx,cpx,rpx,cx1,rx1,cpx1,rpx1,em,beta,dsigx1,dsigpx1,demr,sr},
+  {sigx,xm,cx,rx}=FitGaussian[x];
+  {sigpx,pxm,cpx,rpx}=FitGaussian[px];
+!  Print["FitEmit-1 ",{sigx,sigpx}];
+  x1=(x-xm)/sigx;
+  px1=(px-pxm)/sigpx;
+  {sigx1,xm1,cx1,rx1}=FitGaussian[x1+px1];
+  {sigpx1,pxm1,cpx1,rpx1}=FitGaussian[x1-px1];
+!  Print["FitEmit-2 ",{sigx1,sigpx1}];
+  em=sigx1*sigpx1*sigx*sigpx/2;
+  beta=sigx^2/em;
+  dsigx1=cx1[[1]]/sigx1;
+  dsigpx1=cpx1[[1]]/sigpx1;
+  demr=Sqrt[(cx[[1]]/sigx)^2+(cpx[[1]]/sigpx)^2+dsigx1^2+dsigpx1^2];
+  sr=sigpx1/sigx1;
+  {{xm,pxm,(sr-1/sr)/2,beta,em},
+    {cx[[2]],cpx[[2]],(sr+1/sr) Sqrt[dsigx1^2+dsigpx1^2]/4,beta demr,demr*em}}];
+
+PoissonError[n_]:={n,(1/2 Erf[1/Sqrt[2]]*
+  If[n>50, Sqrt[2Pi n] Exp[0.5/(12n+1)+0.5/12/n],(E/n)^n Factorial[n]])};
+PoissonError[0]=(-(1/2) Log[1 - Erf[1/Sqrt[2]]])*{1,1};
+
+SetAttributes[{FindRoot,FindRoot$$,FRN$Eval,FR$Newton,FRN$D},{HoldAll,Constant}];
+SetAttributes[{FRN$Reduction,FitGaussian,FitEmit,CreateBin,PoissonError},Constant];

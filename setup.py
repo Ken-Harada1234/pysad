@@ -30,5 +30,8 @@ for top in ('docs', 'example'):
 for f in ('run_sad.py',):
     if os.path.isfile(os.path.join(HERE, f)):
         data_files.append(('share/pysad', [f]))
+# 例の台本が相対パス pysad/tests/kek-ls_v03_12.lat で読むラティス (pip で入れたとき、share/pysad をカレントにして例が動くように、同じ相対パスに置く)
+if os.path.isfile(os.path.join(HERE, 'pysad', 'tests', 'kek-ls_v03_12.lat')):
+    data_files.append(('share/pysad/pysad/tests', ['pysad/tests/kek-ls_v03_12.lat']))
 
 setup(data_files=data_files)

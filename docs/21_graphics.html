@@ -65,7 +65,7 @@ pre .o { opacity:.8; }
 <div class="meta">元: 21_graphics.md <span class="nav-links">| <a href="../search.html">検索</a> | <a href="../index.html">入口</a></span></div>
 <h1 id="グラフィック描画-plotlistplotopticsplot-ほかと-tk-のキャンバスdrawmatplotlib">グラフィック描画 (Plot・ListPlot・OpticsPlot ほかと Tk のキャンバス、DRAW、matplotlib)</h1>
 <p>この文書で分かること: SAD の描画関数 (<code>Plot</code>、<code>ListPlot</code>、<code>ListContourPlot</code>、<code>HistoPlot</code>、<code>FitPlot</code>、<code>OpticsPlot</code>、<code>LatticePlot</code>、<code>BeamPlot</code>、<code>GeometryPlot</code>、<code>FitGaussian</code> の <code>Plot-&gt;True</code>、<code>Canvas</code> 系) を pysad がどう動かすか、使い方の例、オプション、FFS の <code>DRAW</code> と matplotlib への出力、K64 の癖と限界。
-前提: SAD の <code>Packages</code> が使えること (<code>PYSAD_SAD_PACKAGES</code>)。GUI (Tk) の土台は <a href="20_tcltk_gui.html">20_tcltk_gui.md</a>。SADScript の評価器は <a href="05_sadscript.html">05_sadscript.md</a>。
+前提: SAD の <code>Packages</code> が使えること (pysad に同梱した SAD のコピー <code>pysad/sad_copy/Packages</code>。別の SAD を使うときは <code>PYSAD_SAD_PACKAGES</code>)。窓を開く GUI は <code>PYSAD_GUI=1</code> か <code>PYSAD_SAD_PACKAGES</code> があるときだけ有効。GUI (Tk) の土台は <a href="20_tcltk_gui.html">20_tcltk_gui.md</a>。SADScript の評価器は <a href="05_sadscript.html">05_sadscript.md</a>。
 読む順: 1 (何ができるか) → 2 (仕組み) → 3 (動く例) → 4 (オプション)。保存・図の出力は 5 (DRAW) と 6 (matplotlib)。実装を触る人は 10。
 用語: <strong>Graphics[…]</strong> は SAD の描画の式 (線・文字・箱の並び)。<strong><code>$DisplayFunction</code></strong> はその式を実際に描く関数 (<code>CanvasDrawer</code> = Tk のキャンバス、<code>Identity</code> = 描かず式を返す、<code>MatplotlibDrawer</code> = matplotlib)。<strong>gs</strong> は K64 (SAD のソース) から作った SAD の実行体。</p>
 <p>最終更新: 2026-11-22</p>
@@ -91,7 +91,7 @@ Canvas.n の描画 (座標変換、枠、目盛り、格子、文字)
 tkinter の Tcl に  `.c create line …` を送る → キャンバス (tclbridge.py の Tk の窓)
 </code></pre>
 <ul>
-<li>読む場所: <code>PYSAD_SAD_PACKAGES</code> (SAD の <code>Packages</code> のフォルダ) が要る。<code>pkgload.py</code> が <code>init.n</code> と同じ自動読み込みの表を持ち、<code>Plot</code>・<code>ListPlot</code> を最初に使うときにそのファイルを読む。</li>
+<li>読む場所: <code>PYSAD_SAD_PACKAGES</code> (別の SAD の <code>Packages</code> のフォルダ。最優先)、無ければ同梱のコピー。<code>pkgload.py</code> が <code>init.n</code> と同じ自動読み込みの表を持ち、<code>Plot</code>・<code>ListPlot</code> を最初に使うときにそのファイルを読む。</li>
 <li><code>$DisplayFunction</code>: Windows、または Linux で <code>DISPLAY</code> があれば <code>CanvasDrawer</code> (tkinter に描く)。画面がない環境と <code>PYSAD_NO_DISPLAY=1</code> では <code>Identity</code>
   (<code>Graphics[…]</code> の式を返すだけ)。引数の <code>DisplayFunction-&gt;Identity</code> でも同じ (<code>pkgload.py</code>)。
   環境変数 <code>PYSAD_DISPLAY=mpl</code> で <code>MatplotlibDrawer</code> (Graphics を matplotlib に描く。§6)、<code>tk</code>・<code>none</code> で <code>CanvasDrawer</code>・<code>Identity</code> に固定。</li>
@@ -108,7 +108,7 @@ tkinter の Tcl に  `.c create line …` を送る → キャンバス (tclbrid
 <li>評価器の側で描画のために gs に合わせた細目 (連鎖した比較、<code>With</code>・<code>Block</code> の局所化、<code>Literal</code>、<code>Override</code> の順、定義の特殊さの順など) は §10.2 に全部ある。</li>
 </ul>
 <h2 id="3-使い方の例-動く-sadscript">3. 使い方の例 (動く SADScript)</h2>
-<p>画面のある環境では、窓が開いて描かれる。<code>PYSAD_SAD_PACKAGES</code> を設定して <code>FFS;</code> から。</p>
+<p>画面のある環境では、窓が開いて描かれる。<code>PYSAD_GUI=1</code> (または <code>PYSAD_SAD_PACKAGES</code>) を設定して <code>FFS;</code> から。</p>
 <pre><code class="language-sad"><span class="k">FFS</span>;
 g<span class="o">=</span><span class="b">ListPlot</span>[{<span class="m">1</span>,<span class="m">4</span>,<span class="m">9</span>,<span class="m">16</span>},PlotJoined<span class="o">-&gt;</span><span class="k">True</span>];       <span class="c">(*</span><span class="c"> 折れ線。戻り値は Graphics[…] (長さ 2</span><span class="c">)</span> <span class="c">*)</span>
 h<span class="o">=</span><span class="b">Plot</span>[<span class="b">Sin</span>[x],{x,<span class="m">0</span>,<span class="m">6</span>}];                          <span class="c">(*</span><span class="c"> Plot[f,{x,xmin,xmax}]。変数名は x でなくてよい </span><span class="c">*)</span>
@@ -371,8 +371,13 @@ fig <span class="o">=</span> draw_mpl<span class="o">.</span>draw(ffs, <span cla
 </ul>
 <h2 id="9-未対応限界未確認">9. 未対応・限界・未確認</h2>
 <ul>
-<li>未対応: <code>CanvasSymbol</code> (Tcl 文字列を返す版。<code>CanvasSymbolDirect</code> は実装)、<code>Canvas3DClipTriangle</code>・<code>Canvas3DLightTriangle</code>・<code>Canvas3DProjection</code> (<code>Canvas3D.n</code>)、
-  <code>UseBG-&gt;True</code> の文字の背景 (描かない)。</li>
+<li>
+<p>同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</p>
+</li>
+<li>
+<p>未対応: <code>CanvasSymbol</code> (Tcl 文字列を返す版。<code>CanvasSymbolDirect</code> は実装)、<code>Canvas3DClipTriangle</code>・<code>Canvas3DLightTriangle</code>・<code>Canvas3DProjection</code> (<code>Canvas3D.n</code>)、
+  <code>UseBG-&gt;True</code> の文字の背景 (描かない)。</p>
+</li>
 <li>未確認: <code>BeamPlot</code> の描画 (上記)、<code>LatticePlot</code> を単独で呼ぶ使い方 (<code>OpticsPlot</code> の 3 枠目として動くことだけ確認)、上記の各オプションを窓に描いたときの見た目 (式は gs と一致するが、描画は未確認)、
   <code>CanvasCM.n</code>・<code>CANVASDRAW.n</code>、<code>TabFrame.n</code> の描画、色・フォント・大きさの見た目、マウス操作。</li>
 <li>gs の実動作に合わせた細目 (2026-11-17): <code>ParametricPlot[…,{t,0,2*Pi}]</code> のように範囲に Pi などの定数式を書いても <code>x_Real</code> に照合する (HoldAll の引数の定数式 (Pi・E・Degree と数値関数) は値で照合する)。
@@ -385,7 +390,7 @@ fig <span class="o">=</span> draw_mpl<span class="o">.</span>draw(ffs, <span cla
 <li>文字の数と外接矩形は Tk のフォントで決まるので、<code>OpticsPlot</code> の text 項目の数は gs と一致しない (pysad は +5〜14)。枠・矩形・線は一致する。</li>
 <li>比較したのは 3 GeV の 12 セルの小さなリング (E1=E2=θ/2 の BEND を持つ FODO) と、数値の列だけ。実ラティスの <code>OpticsPlot</code> は比べていない。</li>
 <li>描画の窓は tkinter。Windows のほかは試していない (gs の比較は WSLg の X11)。</li>
-<li>GUI の試験は全体実行で不安定なことがある (§7)。環境変数がないと skip になるので、評価器を変えたら <code>PYSAD_SAD_PACKAGES</code> を付けて試験を回すこと。</li>
+<li>GUI の試験は全体実行で不安定なことがある (§7)。評価器を変えたら GUI 系の試験も回すこと (環境変数なしでも、同梱のコピーで走る)。</li>
 </ul>
 <h2 id="10-実装の細目-開発者向け">10. 実装の細目 (開発者向け)</h2>
 <h3 id="101-tk-のキャンバスの組み込み関数-tkcanvaspy">10.1 Tk のキャンバスの組み込み関数 (<code>tkcanvas.py</code>)</h3>

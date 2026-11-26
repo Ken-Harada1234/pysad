@@ -1,0 +1,141 @@
+`Format;
+`$LTPDF;
+`$LTPNG;
+
+BeginPackage[LaTeX`];
+
+Begin[LaTeX`];
+
+LaTeX=Class[{},{eqn=0,pre0="\
+\\usepackage{color} %used for font color\n\
+\\usepackage{amssymb} %maths\n\
+\\usepackage{amsmath,bm,mathtools}\n\
+\\usepackage{txfonts} \n\
+%\\usepackage{stackengine} \n\
+%\\usepackage{newtxmath} \n\
+%\\usepackage[utf8]{inputenc} \n\
+\\definecolor{red}{rgb}{1,0,0}\n\
+\\thispagestyle{empty}\n",imv6=True},
+
+  {style="align",pt=11,margins="'3 3 3 0'",dpi=150,maxtext=50,
+    tw="22 cm",pw="23 cm", th="40 cm", ph="45 cm",
+    ldir=Environment["SAD_ROOTPATH"]//"/Documents/LaTeX/",wdir=False},
+
+  Constructor[]:=(ReleaseHold/@Get[ldir//"LTData.sad"];
+    wdir=(style==="standalone" && Check[Module[{f=OpenRead["!echo '0' > "//ldir//"dummy"]},Close[f];1],0]);
+    If[Environmrnt["MAGICK_TEMPORARY_PATH"]==="",
+      Environmrnt["MAGICK_TEMPORARY_PATH"]="/tmp"];
+    {style,pt,margins,dpi,eqn};
+    imv6=(IMVersion[][1]==="6"));
+
+  Preamble["align"]:=StandardForm["\
+\\documentclass["//pt//"pt]{article}\n"//pre0//"\
+\\setlength{\\paperwidth}{"//pw//"}\n\
+\\setlength{\\pdfpagewidth}{"//pw//"}\n\
+\\setlength{\\textwidth}{"//tw//"}\n\
+\\setlength{\\paperheight}{"//ph//"}\n\
+\\setlength{\\pdfpageheight}{"//ph//"}\n\
+\\setlength{\\textheight}{"//th//"}\n\
+\\begin{document}\n\
+\\begin{align}\n\
+\\begin{split}\n"];
+
+  Postamble["align"]="\
+\\end{split}\n\
+\\end{align}\n\
+\\end{document}\n";
+
+  Preamble["text"]:=StandardForm["\
+\\documentclass["//pt//"pt]{article}\n"//pre0//"\
+\\setlength{\\paperwidth}{"//pw//"}\n\
+\\setlength{\\pdfpagewidth}{"//pw//"}\n\
+\\setlength{\\textwidth}{"//tw//"}\n\
+\\setlength{\\paperheight}{"//ph//"}\n\
+\\setlength{\\pdfpageheight}{"//ph//"}\n\
+\\setlength{\\textheight}{"//th//"}\n\
+\\begin{document}\n"];
+
+  Postamble["text"]="\
+\\end{document}\n";
+
+  Preamble["standalone"]:=StandardForm["\
+\\documentclass[varwidth,border={0pt 1pt 1pt 2pt}]{standalone}\n"//pre0//"\
+\\setlength{\\paperwidth}{"//pw//"}\n\
+\\setlength{\\pdfpagewidth}{"//pw//"}\n\
+\\setlength{\\textwidth}{"//tw//"}\n\
+\\begin{document}\n"];
+
+  Postamble["standalone"]="\
+\\end{document}\n";
+
+  IMVersion[]:=Module[{f=OpenRead["!convert --version"],s},
+    s=Read[f,{3*Word}];
+    Close[f];
+    s[[3]][1,StringPosition[s[[3]],"-"][[1,1]]]];
+
+  With[{def={`Format->"png",`Rotate->0,`Resize->"",`UseBG->True}},
+    CVOption[opt___]:=Module[{{rot,res,bg}={`Rotate,`Resize,`UseBG}/.{opt}/.def,s=""},
+      StandardForm[
+        If[rot<=>0,s=" -rotate "//rot];
+        If[res<=>"",s=s//" -resize "//res];
+        If[~bg,s=s//" -alpha set "]];
+      s//" "];
+
+    TypesetPDF[text_]:=(TypesetPDF[text]=
+      If[FileQ[ldir//`$LTPDF[text]],ldir//`$LTPDF[text],
+        StandardForm[
+          Module[{f,fn=TemporaryName[],fnr,fn1,pdf,dir0=Directory[],out},
+            SetDirectory["/tmp"];
+            fnr=fn[6,-1];
+            pdf=fnr//".pdf";
+            f=OpenWrite[fn//".tex"];
+            Write[f,Preamble[style]];
+            Write[f,"\\setcounter{equation}{"//eqn++//"}\n"];
+            Write[f,text,"\n"];
+            Write[f,Postamble[style]];
+            Close[f];
+!            Print[`$HaveLaTeX//" -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"];
+            {If[System[`$HaveLaTeX//" -interaction nonstopmode "//fn//" "//pdf//" > /dev/null"],
+              If[style <=> "standalone",
+!                Print[`$HaveLaTeX[1,-6]//"crop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"];
+                System[`$HaveLaTeX[1,-6]//"crop --margins "//margins//" "//pdf//" "//pdf//" > /dev/null"]];
+              If[wdir && StringLength[text] < maxtext && text[1,5] <=> "{\\tt ",
+                System["mv "//pdf//" "//(fn1=ldir//pdf)//"; rm "//fnr//".log "//";rm "//fnr//".aux"];
+                `$LTPDF[text]=pdf;
+                PageWidth=131;Put[{?`$LTPDF,?`$LTPNG},ldir//"LTData.sad"]; 
+                fn1,
+                "/tmp/"//pdf],
+              Null],
+              SetDirectory[dir0]}[[1]]]]]);
+
+    Typeset[text_,opt___]:=(Typeset[text,opt]=
+      Module[{out,form=`Format/.{opt}/.def,fn,
+        s=CVOption[opt],pdf=TypesetPDF[text]},
+        If[form==="pdf",Return[pdf]];
+        fn=TemporaryName[];
+        out=fn//"."//form;
+        Switch[form,
+          "svg",
+          System["pdf2svg "//pdf//" "//out//" > /dev/null"];
+          System["svgcleaner --quiet "//out//" "//out//" > /dev/null"],
+          _,
+!          System["cp "//pdf//" ~/Desktop"];
+!          Print[">>> convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
+!            " -adaptive-sharpen 0 "//
+!              If[imv6," -morphology Erode Disk:2.0 ",""]//out//" > /dev/null"];
+          System["convert -quiet -density "//dpi//" -quality 100 "//pdf//s//
+            " -adaptive-sharpen 0 "//
+              If[imv6," -morphology Erode Disk:2.0 ",""]//out//" > /dev/null"];
+!          System["cp "//out//" ~/Desktop"];
+          ];
+        System["rm "//fn];
+        out
+        ]);
+    
+    ];
+
+  ];
+
+End[];
+
+EndPackage[];

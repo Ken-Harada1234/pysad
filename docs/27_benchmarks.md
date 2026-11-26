@@ -186,7 +186,7 @@ python -u pysad/tests/regression_tests/run_regression.py 3b 12 13a              
   `QUICK=1` は遅いもの (7, 12t, 13a, 16a) を SKIP する。その 4 件も単独で実行すると PASS (最大差: 7 が 5.0e-11、12t が 3.5e-11、13a が 4.3e-21、16a が 1.4e-31。2026-11-17 の単独実行の値)。
   KNOWN (PASS*) は §4 の 3 件 (14A の EMIT dz、16A の損失周数 1 個、13A-2 の TWB)。
 - 全試験 (pytest。`py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py`): **2620 通過・14 skip・失敗 0** (2634 件収集。通しは 2618 通過・2 失敗で、その 2 件 (版番号・索引の html) を直して再実行し通過)。gs との数値比較の試験は k64 モード (既定の v2 でなく `PYSAD_COMPAT=k64`) で走る (`pysad/tests/script_tests/conftest.py` が既定を k64 にする。docs/28)。
-  - GUI 系 ([`test_plot.py`](../pysad/tests/script_tests/test_plot.py), [`test_tclbridge.py`](../pysad/tests/script_tests/test_tclbridge.py)) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数 `PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>` がないと GUI 系は skip する。
+  - GUI 系 ([`test_plot.py`](../pysad/tests/script_tests/test_plot.py), [`test_tclbridge.py`](../pysad/tests/script_tests/test_tclbridge.py)) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数がなくても、同梱の SAD のコピーで走る (画面が無く `tkinter.Tk()` が作れないときは skip)。
   - `PYSAD_SLOW=1` で遅い試験 (CSR の MakeZL、約 7 分) も走る。通常の全試験 (2521 通過) にはこれは含まれない。
   - SAD 本体 (gs) が無くても通る (gs の値は試験の中か [`pysad/tests/`](../pysad/tests/) のデータに埋め込み)。
 
@@ -217,6 +217,8 @@ SAD のレベル別ベンチ (§3) とは別に、要素・機能ごとに gs (W
 | ListPlot・Plot のオプション 10 例 | 戻りの Graphics 式が文字列で完全一致 (見た目ではない。`Options[g]` は差あり) | (試験なし) | docs/21 |
 
 ### 6.1 限界・未確認 (上の表の裏側)
+
+- 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 - 上の一致はどれも、特定のエネルギー・リング (12 セルのリング、小リング、603 m の 3GLS 型 など。試験のラティスごとに異なる) と、試験に固定した入力での値で、一般の入力での一致ではない。
 - SynchroBetaEmittance: 2026-11-16 に 24 セルの平面リング + CAVI (AzimuthalModes->7) の 4 点で emitx が gs と相対 1.4e-7〜1.4e-6 で一致。結合のあるラティスは gs が SIGSEGV で落ちて比較できず、pysad も NaN→整数の ValueError で失敗する。不安定なチューン、`emiout`、RFSW の組み合わせは未確認。条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) と閉軌道の収束履歴が差の原因と考えているが、確かめていない。

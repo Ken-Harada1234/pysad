@@ -71,7 +71,7 @@ StringToStream (文字列を開く)、TemporaryName、ListRandom (`{"SAD"}`)、M
 
 ## 5. SAD の Packages/*.n を SADScript のまま使う
 
-pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に使われたときに読む ([`pysad/pkgload.py`](../pysad/pkgload.py))。Packages ディレクトリは環境変数 `PYSAD_SAD_PACKAGES` (SAD の `Packages` のフォルダ)、なければ pysad の隣の `SAD-master/Packages`。見つからなければ何も登録しない (組み込みだけで動く)。
+pysad の SADScript インタプリタが、SAD の `Packages/*.n` を最初に使われたときに読む ([`pysad/pkgload.py`](../pysad/pkgload.py))。Packages ディレクトリは、環境変数 `PYSAD_SAD_PACKAGES` (SAD の `Packages` のフォルダ。最優先)、なければ pysad に同梱した SAD のコピー `pysad/sad_copy/Packages` (SAD の `Packages/*.n` をそのままコピーしたもの。出所とライセンス (BSD、KEK) は [`pysad/sad_copy/README.md`](../pysad/sad_copy/README.md))、それも無ければ pysad の隣の `SAD-master/Packages`。見つからなければ何も登録しない (組み込みだけで動く)。通常は同梱のコピーが使われるので、環境変数は要らない。
 
 次の表は、Packages のファイルと、提供する関数・pysad での状況。
 
@@ -184,6 +184,8 @@ K64 が誤値を返す、または pysad の不具合だったもの。k64 モ�
 - 実数引数の値は変えていない (`test_real_arguments_are_unchanged`)。
 
 ## 7. 未対応・限界
+
+- 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 - 複素の特殊関数: 複素の次数の PolyLog、Re a ≤ 0 の複素の a・b の HypergeometricU (SADError)、z = 0 の U、\|s\| > 500 (Zeta・HurwitzZeta)、\|z\| > 1e8 (PolyLog)・\|z\| > 30 (HypergeometricU) は未対応・未確認。
 - 記号式の標準形は SAD と同じではない (`0*x` は K64 が `(0 x)` のまま、`x^0` も `x^0` のまま、pysad は 0 と 1 にする)。D の出力は 59 式で一致するが、別の式では形が違いうる。パターンの Orderless 照合は、数を先頭にした標準順→順列 (6 引数まで)、素の Blank と列パターンが両方あるときは標準順だけ (K64 の挙動に合わせて経験的に決めた)。

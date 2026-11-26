@@ -1,7 +1,7 @@
 # グラフィック描画 (Plot・ListPlot・OpticsPlot ほかと Tk のキャンバス、DRAW、matplotlib)
 
 この文書で分かること: SAD の描画関数 (`Plot`、`ListPlot`、`ListContourPlot`、`HistoPlot`、`FitPlot`、`OpticsPlot`、`LatticePlot`、`BeamPlot`、`GeometryPlot`、`FitGaussian` の `Plot->True`、`Canvas` 系) を pysad がどう動かすか、使い方の例、オプション、FFS の `DRAW` と matplotlib への出力、K64 の癖と限界。
-前提: SAD の `Packages` が使えること (`PYSAD_SAD_PACKAGES`)。GUI (Tk) の土台は [20_tcltk_gui.md](20_tcltk_gui.md)。SADScript の評価器は [05_sadscript.md](05_sadscript.md)。
+前提: SAD の `Packages` が使えること (pysad に同梱した SAD のコピー `pysad/sad_copy/Packages`。別の SAD を使うときは `PYSAD_SAD_PACKAGES`)。窓を開く GUI は `PYSAD_GUI=1` か `PYSAD_SAD_PACKAGES` があるときだけ有効。GUI (Tk) の土台は [20_tcltk_gui.md](20_tcltk_gui.md)。SADScript の評価器は [05_sadscript.md](05_sadscript.md)。
 読む順: 1 (何ができるか) → 2 (仕組み) → 3 (動く例) → 4 (オプション)。保存・図の出力は 5 (DRAW) と 6 (matplotlib)。実装を触る人は 10。
 用語: **Graphics[…]** は SAD の描画の式 (線・文字・箱の並び)。**`$DisplayFunction`** はその式を実際に描く関数 (`CanvasDrawer` = Tk のキャンバス、`Identity` = 描かず式を返す、`MatplotlibDrawer` = matplotlib)。**gs** は K64 (SAD のソース) から作った SAD の実行体。
 
@@ -31,7 +31,7 @@ Canvas.n の描画 (座標変換、枠、目盛り、格子、文字)
 tkinter の Tcl に  `.c create line …` を送る → キャンバス (tclbridge.py の Tk の窓)
 ```
 
-- 読む場所: `PYSAD_SAD_PACKAGES` (SAD の `Packages` のフォルダ) が要る。`pkgload.py` が `init.n` と同じ自動読み込みの表を持ち、`Plot`・`ListPlot` を最初に使うときにそのファイルを読む。
+- 読む場所: `PYSAD_SAD_PACKAGES` (別の SAD の `Packages` のフォルダ。最優先)、無ければ同梱のコピー。`pkgload.py` が `init.n` と同じ自動読み込みの表を持ち、`Plot`・`ListPlot` を最初に使うときにそのファイルを読む。
 - `$DisplayFunction`: Windows、または Linux で `DISPLAY` があれば `CanvasDrawer` (tkinter に描く)。画面がない環境と `PYSAD_NO_DISPLAY=1` では `Identity`
   (`Graphics[…]` の式を返すだけ)。引数の `DisplayFunction->Identity` でも同じ (`pkgload.py`)。
   環境変数 `PYSAD_DISPLAY=mpl` で `MatplotlibDrawer` (Graphics を matplotlib に描く。§6)、`tk`・`none` で `CanvasDrawer`・`Identity` に固定。
@@ -49,7 +49,7 @@ tkinter の Tcl に  `.c create line …` を送る → キャンバス (tclbrid
 
 ## 3. 使い方の例 (動く SADScript)
 
-画面のある環境では、窓が開いて描かれる。`PYSAD_SAD_PACKAGES` を設定して `FFS;` から。
+画面のある環境では、窓が開いて描かれる。`PYSAD_GUI=1` (または `PYSAD_SAD_PACKAGES`) を設定して `FFS;` から。
 
 ```
 FFS;
@@ -230,6 +230,8 @@ fig = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(1, 40), save="optics.png")   
 
 ## 9. 未対応・限界・未確認
 
+- 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
+
 - 未対応: `CanvasSymbol` (Tcl 文字列を返す版。`CanvasSymbolDirect` は実装)、`Canvas3DClipTriangle`・`Canvas3DLightTriangle`・`Canvas3DProjection` (`Canvas3D.n`)、
   `UseBG->True` の文字の背景 (描かない)。
 - 未確認: `BeamPlot` の描画 (上記)、`LatticePlot` を単独で呼ぶ使い方 (`OpticsPlot` の 3 枠目として動くことだけ確認)、上記の各オプションを窓に描いたときの見た目 (式は gs と一致するが、描画は未確認)、
@@ -244,7 +246,7 @@ fig = draw_mpl.draw(ffs, "BX BY & EX LAT", region=(1, 40), save="optics.png")   
 - 文字の数と外接矩形は Tk のフォントで決まるので、`OpticsPlot` の text 項目の数は gs と一致しない (pysad は +5〜14)。枠・矩形・線は一致する。
 - 比較したのは 3 GeV の 12 セルの小さなリング (E1=E2=θ/2 の BEND を持つ FODO) と、数値の列だけ。実ラティスの `OpticsPlot` は比べていない。
 - 描画の窓は tkinter。Windows のほかは試していない (gs の比較は WSLg の X11)。
-- GUI の試験は全体実行で不安定なことがある (§7)。環境変数がないと skip になるので、評価器を変えたら `PYSAD_SAD_PACKAGES` を付けて試験を回すこと。
+- GUI の試験は全体実行で不安定なことがある (§7)。評価器を変えたら GUI 系の試験も回すこと (環境変数なしでも、同梱のコピーで走る)。
 
 ## 10. 実装の細目 (開発者向け)
 

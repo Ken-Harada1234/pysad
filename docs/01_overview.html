@@ -160,9 +160,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </li>
 </ol>
 <p><code>cd "&lt;repo&gt;"
-   set PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;
    py -3.12 run_sad.py example/00_lattice/FODO_ring.sad example/02_optics_cod/FFS_CALCULATE.sad</code></p>
-<p>24 セルの FODO リング (3 GeV、周長 105.6 m) の最後に <code>NX=  6.696329  NY=  4.906056</code> と出る。これは水平・垂直のチューン (νx, νy) = (6.696, 4.906) である。<code>PYSAD_SAD_PACKAGES</code> は SAD 自身の <code>Packages/*.n</code> (CorrectOrbit・GUI など) を使うときに要る。
+<p>24 セルの FODO リング (3 GeV、周長 105.6 m) の最後に <code>NX=  6.696329  NY=  4.906056</code> と出る。これは水平・垂直のチューン (νx, νy) = (6.696, 4.906) である。SAD 自身の <code>Packages/*.n</code> (CorrectOrbit など) は pysad に同梱したコピー (<code>pysad/sad_copy/Packages</code>。出所は <a href="../pysad/sad_copy/README.html"><code>pysad/sad_copy/README.md</code></a>) を使うので、環境変数は要らない。<code>PYSAD_SAD_PACKAGES</code> は、別の SAD の <code>Packages</code> を使うときに指定する (指定があれば最優先)。GUI (Tk の窓) は <code>PYSAD_GUI=1</code> を付けたときだけ有効になる。<strong>未確認・限界</strong>: 同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 2. Python から使う (詳細は <a href="12_pysad_api.html">12_pysad_api.md</a>)。</p>
 <p><code>python
    from pysad.parser import load_sad_file          # → SADScript (env に Lattice と LINE)

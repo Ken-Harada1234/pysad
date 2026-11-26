@@ -1143,11 +1143,12 @@ score, result <span class="o">=</span> dynamic_aperture(lat<span class="o">.</sp
 <li><code>emit6d.emittance6d(lat, p, rfsw=True, radcod=True, pol=True)['spin']</code> に、v2 の平衡偏極度の量が入る: <code>equpol</code> (偏極度)、<code>depol_rate</code> (1 周あたりの脱偏極率)、<code>taudep</code> (脱偏極時間 [s])、<code>spin_spread</code> (平衡分布での n の広がり)、<code>spin_orbit</code> (入口の ∂n/∂u、3x6)、<code>equpol_k64</code> (K64 の式の参考値)。docs/16 §5.3。</li>
 <li><code>miscfn.allow_system(True)</code>: <code>System[cmd]</code> の実行を許可する (環境変数 <code>PYSAD_ALLOW_SYSTEM=1</code> でも)。許可がなければ v2 は実行しない。docs/05。</li>
 <li><code>track6.SolRegionError</code>: SOL 領域内に置けない要素 (v2)。</li>
-<li>環境変数: <code>PYSAD_COMPAT</code>、<code>PYSAD_ALLOW_SYSTEM</code>、<code>PYSAD_SYSTEM_SHELL</code> (許可があるときのシェル。sh・bash の実行ファイルを書くと <code>&lt;shell&gt; -c cmd</code>)、<code>PYSAD_SAD_PACKAGES</code> (SAD の <code>Packages</code> のある場所。GUI 系の試験・読み込みが使う)。</li>
+<li>環境変数: <code>PYSAD_COMPAT</code>、<code>PYSAD_ALLOW_SYSTEM</code>、<code>PYSAD_SYSTEM_SHELL</code> (許可があるときのシェル。sh・bash の実行ファイルを書くと <code>&lt;shell&gt; -c cmd</code>)、<code>PYSAD_SAD_PACKAGES</code> (別の SAD の <code>Packages</code> のフォルダ。あれば最優先。無ければ pysad に同梱した SAD のコピー <code>pysad/sad_copy/Packages</code> を使うので、通常は要らない。GUI の接点はこの変数があるときも有効になる)、<code>PYSAD_GUI</code> (<code>1</code> で、環境変数なしでも同梱のコピーから Tcl/Tk の GUI の接点 (Tkinter.n・KBFrame.n・Canvas.n。Plot などを画面に描く) を有効にする。無いときは画面を開かず、<code>$DisplayFunction</code> は Identity)。</li>
 <li>FFS の変数・フラグ (v2): <code>SPACSTEP</code>・<code>SPACNX/NY/NZ</code>・<code>PSPACNX/NY/DX/DY/NZ/DZ/NTURNCALC</code>・<code>WSPACBEAM</code>・<code>WSPACRADIUS</code>・<code>PBUNCH</code>、<code>RADLIGHTDIV</code>、<code>EMITDIV</code>・<code>EMITDIVB</code>・<code>EMITDIVQ</code> (両モード)。</li>
 <li><code>ffs.track_results</code> (MAIN の <code>TRACK … TURNS=-1</code> の戻り): entrance / exit の (重心, 分散行列)、final、alive (v2)。</li>
 </ul>
 <p><strong>使えない範囲・未確認</strong>: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。<code>spch.py</code> の電子以外の粒子の式は 100 MeV の陽子で確かめた (<code>TrackParticles</code> は <code>MASS</code>・<code>CHARGE</code> を追跡に渡す。SAD スクリプトからの空間電荷の使用は未確認)。上のモジュールの公開関数名はソースの <code>def</code>・<code>class</code> から書いたもので、引数の細部は各ファイルの docstring を見ること。</p>
+<p><strong>同梱のコピーの未確認・限界</strong>: 同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</p>
 <h3 id="167-互換モードと切り替えないモジュール-pysadpy">16.7 互換モードと切り替えないモジュール (<code>pysad/*.py</code>)</h3>
 <p>互換モード (<code>pysad.compat</code>) と切り替えない追加 (どちらのモードでも同じ関数)。使い方・範囲は docs/28。</p>
 <table>

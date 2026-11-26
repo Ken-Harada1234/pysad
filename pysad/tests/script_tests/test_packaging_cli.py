@@ -123,3 +123,16 @@ def test_warmup_full_run_then_check(capsys):
     from pysad import warmup
     assert warmup.do_warmup(verbose=False) == 0
     assert warmup.do_check() == 0
+
+
+def test_sad_copy_is_included_in_wheel_and_sdist_configuration():
+    """pysad/sad_copy/** (SAD からコピーした Packages・KBFrame・LICENSE) が wheel (package-data) と sdist (MANIFEST.in) に入る設定になっている"""
+    import tomllib
+    with open(os.path.join(ROOT, 'pyproject.toml'), 'rb') as f:
+        cfg = tomllib.load(f)
+    pd = cfg['tool']['setuptools']['package-data']['pysad']
+    assert any('sad_copy' in p for p in pd), pd
+    man = open(os.path.join(ROOT, 'MANIFEST.in'), encoding='utf-8').read().splitlines()
+    assert 'graft pysad/sad_copy' in [ln.strip() for ln in man]
+    for rel in ('Packages/correction.n', 'KBFrame', 'LICENSE', 'README.md', 'MANIFEST.sha256'):
+        assert os.path.exists(os.path.join(ROOT, 'pysad', 'sad_copy', rel)), rel

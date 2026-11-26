@@ -89,7 +89,7 @@ r=CSRInit[{{0.5e-3,0.5e-3},4,1e-3,{4,6,8,8,8,8,6,4}}];   (* {{dx,dy}, 中心列,
 
 ### 2.5 CSR.n: ダクトから ZL を作る
 
-`CSR`、`CSRStability` は `init.n` の AutoLoad の表にあり、pysad も最初に使われたときだけ `Packages/CSR.n` を読む (`PYSAD_SAD_PACKAGES` か、pysad の隣の `SAD-master/Packages` が必要)。
+`CSR`、`CSRStability` は `init.n` の AutoLoad の表にあり、pysad も最初に使われたときだけ `Packages/CSR.n` を読む (pysad に同梱した SAD のコピー `pysad/sad_copy/Packages` を使う。環境変数は要らない。別の SAD の `Packages` は `PYSAD_SAD_PACKAGES` で指定)。
 
 ```
 FFS;
@@ -193,7 +193,7 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 ## 6. 検証
 
 - `CSRTrack`・`CSRHaissin` は K64 (gs) と相対 1e-11、`CSRMatrix`・`CSRConvert`・`CSRInit` は 1e-10〜1e-13、`CSRSetupOY` は 1e-9〜1e-7、`MakeZL` (3 周波数・1 区間) は 1e-10 以内で一致する。
-- 試験は `py -3.12 -m pytest pysad/tests/script_tests/test_csr.py` (`PYSAD_SAD_PACKAGES` 付きで 6 通過・1 skip。skip は `PYSAD_SLOW=1` が要る `MakeZL`)。
+- 試験は `py -3.12 -m pytest pysad/tests/script_tests/test_csr.py` (6 通過・1 skip。Packages は同梱のコピーが既定。skip は `PYSAD_SLOW=1` が要る `MakeZL`)。
 - 試験の量は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、実際のダクト、周長) での物理的な妥当性の検証ではない。`MakeZL` の照合は 3 周波数・1 区間だけ。
 - 一致の表は [`docs/history/15_csr_validation.md`](history/15_csr_validation.md)。
 
@@ -207,6 +207,8 @@ r=s@OYStability[aw,nj,nphi];                     (* {安定か, 成長率, 固�
 - `CSRTrack` と `CSRHaissin` の中の `tsvd` (ヤコビアン) は numpy で速い。`CSRSetupOY` は nj・nphi に比例して重い。
 
 ### 7.2 限界・未確認
+
+- 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 
 - `ScanTrack`・`OYStability`・`OYScan`・`GuessOYStability*`・`ScanBL`・`TrackAnimate` (画像の生成は pysad では不可、上記)・`SetupZL`・`GetZL`・`CSRStability` のコンストラクタ・`ReadWake`・`MakeEz` の長い流れは、gs と照合していない (pysad での完走の試験もない)。`OYStability` は B60 により gs では参照が取れない。

@@ -1,0 +1,179 @@
+?CALC6D;?GAUSS;EMITX;EMITY;NormalCoordinatesPrimitive;PeriodicR;
+
+SetAttributes[{Fold,Symplectic},Constant];
+
+BeginPackage[tws$`,`];
+
+Begin[tws$`];
+
+NormalCoordinates[i_Real|i_String]:=NormalCoordinatesPrimitive[Twiss['*',i]];
+
+NormalCoordinates[param_List]:=NormalCoordinatesPrimitive[param];
+
+NormalCoordinatesPrimitive[param_]:=If[?CALC6D,
+  {NormalCoordinate6[param],Take[param,{mfdx,mfddp}]},
+  Module[
+  {a1,f1,{r1,r2,r3,r4}=Take[param,{mfr1,mfr4}],detr,
+    xy=param[[mfdetr]],
+    rmatrix,bmatrix,hmatrix},
+  detr=r1*r4-r2*r3;
+  a1=Sqrt[1-detr];
+  rmatrix=
+    If[xy<1,
+      {{a1,0,-r4, r2,0,0},
+        {0,a1, r3,-r1,0,0},
+        {r1,r2,a1,0,0,0},
+        {r3,r4,0,a1,0,0},
+        {0,0,0,0,1,0},
+        {0,0,0,0,0,1}},
+      {{-r4,r2,a1,0,0,0},
+        { r3,-r1,0,a1,0,0},
+        {a1,0,r1,r2,0,0},
+        {0,a1,r3,r4,0,0},
+        {0,0,0,0,1,0},
+        {0,0,0,0,0,1}}];
+  bmatrix={{1/Sqrt[param[[mfbx]]],0,0,0,0,0},
+    {param[[mfax]]/Sqrt[param[[mfbx]]],Sqrt[param[[mfbx]]],0,0,0,0},
+    {0,0,1/Sqrt[param[[mfby]]],0,0,0},
+    {0,0,param[[mfay]]/Sqrt[param[[mfby]]],Sqrt[param[[mfby]]],0,0},
+    {0,0,0,0,1,0},
+    {0,0,0,0,0,1}};
+  hmatrix={{1,0,0,0,0,-param[[mfex]]},
+    {0,1,0,0,0,-param[[mfepx]]},
+    {0,0,1,0,0,-param[[mfey]]},
+    {0,0,0,1,0,-param[[mfepy]]},
+    {param[[mfepx]],-param[[mfex]],param[[mfepy]],-param[[mfey]],1,0},
+    {0,0,0,0,0,1}};
+  {bmatrix.hmatrix.rmatrix,Take[param,{mfdx,mfddp}]}]];
+
+BeamMatrix[i_]:=Module[
+  {r=SymplecticInverse[NormalCoordinates[i][[1]]],
+    d=LINE["GAMMABETA",1]/LINE["GAMMABETA",i]},
+  r.DiagonalMatrix[
+    {EMITX,EMITX,EMITY,EMITY,0,d*If[?GAUSS,DP,DP/Sqrt[3]]^2}*d].
+  Transpose[r]];
+
+TransferMatrix[from_,to_,param1_List,opt___]:=
+  TransferMatrixPrimitive[param1[[{from,to}]],{1,1},opt];
+
+TransferMatrix[from_,to_,opt___]:=
+  TransferMatrixPrimitive[Twiss["*",{from,to}],LINE["GAMMABETA",{from,to}],opt];
+
+With[{def={Fold->False,Symplectic->False,Calc6D->False}},
+  TransferMatrixPrimitive[param_,g_List:LINE["GAMMABETA",{"^^^","$$$"}],opt___]:=Module[
+    {dpsix,dpsiy,cospsix,cospsiy,sinpsix,sinpsiy,m4,rmatrix,det,a1,gr,
+      {fold,symp,c6d}={Fold,Symplectic,Calc6D}/.opt/.def,dpsiz,cospisz,sinpsiz,m6,m},
+    gr=If[symp,
+      1,
+      Sqrt[g[[1]]/g[[2]]]];
+    dpsix=param[[2,mfnx]]-param[[1,mfnx]];
+    dpsiy=param[[2,mfny]]-param[[1,mfny]];
+    If[fold,
+      If[dpsix<=0,
+        dpsix=dpsix+Twiss["NX","$$$"]];
+      If[dpsiy<=0,
+        dpsiy=dpsiy+Twiss["NY","$$$"]]];
+    cospsix=Cos[dpsix];
+    sinpsix=Sin[dpsix];
+    cospsiy=Cos[dpsiy];
+    sinpsiy=Sin[dpsiy];
+    If[?CALC6D || c6d,
+      dpsiz=param[[2,mfnz]]-param[[1,mfnz]];
+      cospsiz=Cos[dpsiz];
+      sinpsiz=Sin[dpsiz];
+      rmatrix=NormalCoordinate6/@param;
+      m6={
+          cospsix*rmatrix[[1,1]]+sinpsix*rmatrix[[1,2]],
+          -sinpsix*rmatrix[[1,1]]+cospsix*rmatrix[[1,2]],
+          cospsiy*rmatrix[[1,3]]+sinpsiy*rmatrix[[1,4]],
+          -sinpsiy*rmatrix[[1,3]]+cospsiy*rmatrix[[1,4]],
+          cospsiz*rmatrix[[1,5]]+sinpsiz*rmatrix[[1,6]],
+          -sinpsiz*rmatrix[[1,5]]+cospsiz*rmatrix[[1,6]]};
+      m=SymplecticInverse[rmatrix[[2]]].m6;
+      gr*If[(1-param[[1,mfdetr]])*(1-param[[2,mfdetr]])>0,
+        m,
+        {m[[3]],m[[4]],m[[1]],m[[2]],m[[5]],m[[6]]}],
+      
+      m4={{Sqrt[param[[2,mfbx]]/param[[1,mfbx]]]*
+        (cospsix+param[[1,mfax]] sinpsix),
+        Sqrt[param[[2,mfbx]] param[[1,mfbx]]] sinpsix,0,0},
+        {-((param[[2,mfax]]-param[[1,mfax]])*
+          cospsix+(1+param[[2,mfax]] param[[1,mfax]]) sinpsix)/
+            Sqrt[param[[2,mfbx]] param[[1,mfbx]]],
+          Sqrt[param[[1,mfbx]]/param[[2,mfbx]]]*(cospsix-param[[2,mfax]] sinpsix),0,0},
+        {0,0,Sqrt[param[[2,mfby]]/param[[1,mfby]]]*
+          (cospsiy+param[[1,mfay]] sinpsiy),
+          Sqrt[param[[2,mfby]] param[[1,mfby]]] sinpsiy},
+        {0,0,-((param[[2,mfay]]-param[[1,mfay]])*
+          cospsiy+(1+param[[2,mfay]] param[[1,mfay]]) sinpsiy)/
+            Sqrt[param[[2,mfby]] param[[1,mfby]]],
+          Sqrt[param[[1,mfby]]/param[[2,mfby]]]*(cospsiy-param[[2,mfay]] sinpsiy)}};
+      rmatrix=Map[
+        (det=#[[mfr1]]*#[[mfr4]]-#[[mfr2]]*#[[mfr3]];
+          a1=Sqrt[1-det];
+          If[#[[mfdetr]]<1,
+            {{a1,0, -#[[mfr4]], #[[mfr2]]},
+              {0,a1, #[[mfr3]],-#[[mfr1]]},
+              {#[[mfr1]],#[[mfr2]],a1,0},
+              {#[[mfr3]],#[[mfr4]],0,a1}},
+            {{-#[[mfr4]], #[[mfr2]],a1,0},
+              {#[[mfr3]],-#[[mfr1]],0,a1},
+              {a1,0,#[[mfr1]],#[[mfr2]]},
+              {0,a1,#[[mfr3]],#[[mfr4]]}}])&,param];
+      gr*SymplecticInverse[rmatrix[[2]]].m4.rmatrix[[1]]]
+    ]];
+
+PeriodicR[m_]:=Module[{a,d,P,T,S,Q,A,B,R,J={{0,1},{-1,0}},x,pq,ds,st},
+  {{P,T},{S,Q}}=Thread/@(Partition[#,2]&/@[Partition[m,2],{2}]);
+  d=(8 (ds=Det[S])+4 Tr[st=S.T]+(pq=Tr[P-Q])^2);
+  a=Sqrt[(1+Abs[pq]/Sqrt[d])/2];
+  R=(x=(2a^2-1)/a/pq)*(J.Transpose[T].J-S);
+  A=P+x/a*({{ds,0},{0,ds}}+T.S);
+  B=Q-x/a*({{ds,0},{0,ds}}+st);
+  {R,A,B}
+  ];
+
+With[{z9=Table[0,{9}]},
+  PeriodicOptics[m_,z_:{0,0,0,0}]:=Module[{{R,A,B}=PeriodicR[m],ax,bx,mux,ay,by,muy,c,s},
+    c=Tr[A]/2;
+    s=Sqrt[(1-c)(1+c)]*Sign[A[[1,2]]];
+    bx=A[[1,2]]/s;
+    ax=(A[[1,1]]-c)/s;
+    mux=ArcTan[c,s];
+    c=Tr[B]/2;
+    s=Sqrt[(1-c)(1+c)]*Sign[B[[1,2]]];
+    by=B[[1,2]]/s;
+    ay=(B[[1,1]]-c)/s;
+    muy=ArcTan[c,s];
+    {ax,bx,mux,ay,by,muy,0,0,0,0,R[[1,1]],R[[1,2]],R[[2,1]],R[[2,2]],Det[R],
+      Null@@LinearSolve[IdentityMatrix[4]-m,z],Null@@z9}]
+  ];
+
+End[];
+
+EndPackage[];
+
+(*
+g0 = {{0, -1, 0}, {0, 0, -1}, {1, 0, 0}},
+r1 = {{c1, 0, s1}, {0, 1, 0}, {-s1, 0, c1}},
+r2 = {{1, 0, 0}, {0, c2, s2}, {0, -s2, c2}},
+r3 = {{c3, -s3, 0}, {s3, c3, 0}, {0, 0, 1}}},
+r3.r2.r1.g0
+*)
+GeoBase[x:{chi1_Real,chi2_Real,chi3_Real}]:=Module[
+  {{c1,c2,c3}=Cos[x],{s1,s2,s3}=Sin[x]},
+  {{c3 s1 - c1 s2 s3, -c1 c3 - s1 s2 s3, c2 s3}, {c1 c3 s2 + s1 s3, 
+    c3 s1 s2 - c1 s3, -c2 c3}, {c1 c2, c2 s1, s2}}];
+GeoBase[x_List]:=GeoBase/@x;
+
+OrbitGeo[k___]:=Module[{g=LINE["GEO",k],dp=Twiss["DDP",k]},
+  If[Length[dp]>0,
+    g[[,1]]+Plus@@[GeoBase[g[[,2]]]*(Thread[{Twiss["DX",k],Twiss["DY",k],Table[0,{Length[dp]}]}]+
+      Thread[{Twiss["DPX",k],Twiss["DPY",k],
+        Sqrt[(1+dp)^2-Twiss["DPX",k]^2-Twiss["DPY",k]^2]}]/(1+dp)*Twiss["DZ",k]),{1}],
+    g[[1]]+Plus@@(GeoBase[g[[2]]]*({Twiss["DX",k],Twiss["DY",k],0}+
+      {Twiss["DPX",k],Twiss["DPY",k],
+        Sqrt[(1+dp)^2-Twiss["DPX",k]^2-Twiss["DPY",k]^2]}/(1+dp)*Twiss["DZ",k]))]];
+
+Protect[NormalCoordinates,NormalCoordinatesPrimitive,PeriodicR,PeriodicOptics,
+  TransferMatrix,TransferMatrixPrimitive,GeoBase,OrbitGeo];

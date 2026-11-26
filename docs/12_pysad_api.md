@@ -510,11 +510,13 @@ print(score)                                               # 144
 - `emit6d.emittance6d(lat, p, rfsw=True, radcod=True, pol=True)['spin']` に、v2 の平衡偏極度の量が入る: `equpol` (偏極度)、`depol_rate` (1 周あたりの脱偏極率)、`taudep` (脱偏極時間 [s])、`spin_spread` (平衡分布での n の広がり)、`spin_orbit` (入口の ∂n/∂u、3x6)、`equpol_k64` (K64 の式の参考値)。docs/16 §5.3。
 - `miscfn.allow_system(True)`: `System[cmd]` の実行を許可する (環境変数 `PYSAD_ALLOW_SYSTEM=1` でも)。許可がなければ v2 は実行しない。docs/05。
 - `track6.SolRegionError`: SOL 領域内に置けない要素 (v2)。
-- 環境変数: `PYSAD_COMPAT`、`PYSAD_ALLOW_SYSTEM`、`PYSAD_SYSTEM_SHELL` (許可があるときのシェル。sh・bash の実行ファイルを書くと `<shell> -c cmd`)、`PYSAD_SAD_PACKAGES` (SAD の `Packages` のある場所。GUI 系の試験・読み込みが使う)。
+- 環境変数: `PYSAD_COMPAT`、`PYSAD_ALLOW_SYSTEM`、`PYSAD_SYSTEM_SHELL` (許可があるときのシェル。sh・bash の実行ファイルを書くと `<shell> -c cmd`)、`PYSAD_SAD_PACKAGES` (別の SAD の `Packages` のフォルダ。あれば最優先。無ければ pysad に同梱した SAD のコピー `pysad/sad_copy/Packages` を使うので、通常は要らない。GUI の接点はこの変数があるときも有効になる)、`PYSAD_GUI` (`1` で、環境変数なしでも同梱のコピーから Tcl/Tk の GUI の接点 (Tkinter.n・KBFrame.n・Canvas.n。Plot などを画面に描く) を有効にする。無いときは画面を開かず、`$DisplayFunction` は Identity)。
 - FFS の変数・フラグ (v2): `SPACSTEP`・`SPACNX/NY/NZ`・`PSPACNX/NY/DX/DY/NZ/DZ/NTURNCALC`・`WSPACBEAM`・`WSPACRADIUS`・`PBUNCH`、`RADLIGHTDIV`、`EMITDIV`・`EMITDIVB`・`EMITDIVQ` (両モード)。
 - `ffs.track_results` (MAIN の `TRACK … TURNS=-1` の戻り): entrance / exit の (重心, 分散行列)、final、alive (v2)。
 
 **使えない範囲・未確認**: k64 モードでは上の v2 だけの機能は動かないか無視される (それぞれの文書の「k64 モード」の欄)。`spch.py` の電子以外の粒子の式は 100 MeV の陽子で確かめた (`TrackParticles` は `MASS`・`CHARGE` を追跡に渡す。SAD スクリプトからの空間電荷の使用は未確認)。上のモジュールの公開関数名はソースの `def`・`class` から書いたもので、引数の細部は各ファイルの docstring を見ること。
+
+**同梱のコピーの未確認・限界**: 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 ### 16.7 互換モードと切り替えないモジュール (`pysad/*.py`)
 
