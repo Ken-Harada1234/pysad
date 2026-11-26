@@ -282,6 +282,8 @@ print('  (参考) tbrot(+CHI2) と tsolrot(+CHI2) の最大差 = %.2e (0 でな�
 print('\n== (f) M-06: ANGLE ≠ 0 の MULT の L\' の二重補正 (実験室の平面 ODE との比較) ==')
 from pysad.ffscmd import run_sad_string
 from pysad import track6n_ext
+from pysad import compat
+compat.set_mode('k64')      # この比較は K64 の動作 (B331 の二重補正) を測る。v2 の結果は末尾
 
 L0, phi, ell = 1.0, 0.2, 0.2
 c1_ = ((phi * ell)**2 * 2) / L0 / 48.0
@@ -357,3 +359,9 @@ pred = -c2_ / phi * (1 - math.cos(phi))                              # 円弧が
 print('  分散 (δ の奇数部分 / δ) の誤差: MULT - ODE = %.3e、BEND - ODE = %.3e、MULT - BEND = %.3e' % (
     disp(1) - disp(0), disp(2) - disp(0), disp(1) - disp(2)))
 print('  2 回目の補正 c2 = %.4e を円弧の長さから引くことによる R16 の変化の予想 = -c2 (1 - cos φ)/φ = %.3e' % (c2_, pred))
+compat.set_mode('v2')
+mv = {d: (track('MULT', [0, 0, 0, 0, 0, d]), track('BEND', [0, 0, 0, 0, 0, d])) for d in (0.01, -0.01)}
+dv = lambda i: (mv[0.01][i][0] - mv[-0.01][i][0]) / 2 / 0.01
+print('  [v2] 分散の誤差: MULT - ODE = %.3e、BEND - ODE = %.3e、MULT - BEND = %.3e (v2 は 2 回目の補正を省く。B331)' % (
+    dv(0) - disp(0), dv(1) - disp(0), dv(0) - dv(1)))
+compat.set_mode(None)

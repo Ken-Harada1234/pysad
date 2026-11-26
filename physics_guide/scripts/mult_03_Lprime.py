@@ -15,7 +15,7 @@ import _common as C
 
 C.start(__file__)
 from pysad.ffscmd import run_sad_string
-from pysad import track6n_ext, multa
+from pysad import track6n_ext, multa, compat
 
 L0, phi, fb = 1.0, 0.2, 0.2
 src = ('MOMENTUM = 3GEV;\n%s MP=(L=%.15g %s);\nMARK ST = ();\nLINE ONE = (ST MP);\nFFS;\nUSE ONE;\n')
@@ -48,14 +48,17 @@ for K2 in (0.0, 40.0):
     print("   K2 = %-4g al = %.12f (L' = %.12f と %s)" % (K2, par[0], Lp, '一致' if abs(par[0] - Lp) < 1e-12 else '不一致'))
 print("   つまり k_multa は補正済みの L' を受け取り、さらに aln から引く (K64 の tturn → tmulti → tmulta の連鎖と同じ構造)。")
 
-print("\n== (3) 追跡: 設計軌道からずれた粒子で、MULT (ANGLE、K2 = 0) と BEND (同じ値。補正は 1 回) を比べる ==")
+print("\n== (3) 追跡: 設計軌道からずれた粒子で、MULT (ANGLE、K2 = 0) と BEND (同じ値。補正は 1 回) を比べる。k64 (K64 の動作) と v2 (B331 を直した版) ==")
 print("   (x = px = 0 の粒子は、追跡が基準軌道を引くので 0 のまま。FB1 = FB2 = 0 の対照は MULT と BEND が一致する。)")
-for lab, e in (('FB1 = FB2 = 0 (対照)', 'ANGLE=%g E1=0 E2=0 FRINGE=3 FB1=0 FB2=0 DISFRIN=1' % phi),
-               ('FB1 = FB2 = %g' % fb, ex)):
-    print('   ' + lab)
-    for c in ([1e-3, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0.01]):
-        rm = track(build('MULT', e), c)
-        rb = track(build('BEND', e), c)
-        print('     初期値 %s: |MULT - BEND| の (x, px, z) = %.2e %.2e %.2e' % (c, abs(rm[0] - rb[0]), abs(rm[1] - rb[1]), abs(rm[4] - rb[4])))
-print("   FB ≠ 0 のときだけ差が出る。ただし BEND の FB1・FB2 は F1 と一緒に別の経路 (tbend 側) で扱われるので、")
-print("   この差が 2 回目の補正だけによるとは言い切れない (原因は未分離)。")
+for mode in ('k64', 'v2'):
+    compat.set_mode(mode)
+    print('  -- 互換モード %s' % mode)
+    for lab, e in (('FB1 = FB2 = 0 (対照)', 'ANGLE=%g E1=0 E2=0 FRINGE=3 FB1=0 FB2=0 DISFRIN=1' % phi),
+                   ('FB1 = FB2 = %g' % fb, ex)):
+        print('   ' + lab)
+        for c in ([1e-3, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0.01]):
+            rm = track(build('MULT', e), c)
+            rb = track(build('BEND', e), c)
+            print('     初期値 %s: |MULT - BEND| の (x, px, z) = %.2e %.2e %.2e' % (c, abs(rm[0] - rb[0]), abs(rm[1] - rb[1]), abs(rm[4] - rb[4])))
+compat.set_mode(None)
+print("   k64 では FB ≠ 0 のときだけ差が出る (2 回目の補正による。gs でも確認: B331)。v2 は 2 回目の補正を省き、MULT が BEND と一致する。")
