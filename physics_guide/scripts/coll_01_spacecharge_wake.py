@@ -76,9 +76,11 @@ for label, (sxm, sym_) in (('丸い (σ = 1 mm)', (1e-3, 1e-3)), ('楕円 (σx =
         sx2, sy2 = sxm**2, sym_**2
         dUx = (U_pot(xx + h, yy, sx2, sy2) - U_pot(xx - h, yy, sx2, sy2)) / (2 * h)
         dUy = (U_pot(xx, yy + h, sx2, sy2) - U_pot(xx, yy - h, sx2, sy2)) / (2 * h)
-        # Δδ = (z/σz²) A (U_wall - U)。U_wall = 0 (rwall = 0: K64 と同じく軸上で電位 0 → U_wall - U = -U)。S の px は p/p0 の内部変数ではなく
+        # Δδ = (z/σz²) A (U_ref - U)。K64 の基準 (rwall = 0): -U_ref = ln((1 + r)/2)、r = σ小/σ大 (twspu の log(0.5 + 0.5 r)。丸いビームでは 0、軸上で
+        # 0 でない。gs で確認)。S の px は p/p0 の内部変数ではなく
         # px/(1+δ) (追跡の内部変数) だが、δ0 = 0 の入力なので、Δpx は新しい δ で割る前の値と δ の差 (~1e-12) 以内で等しい
-        dd_ex = (zz / sigz**2) * A * (0.0 - U_pot(xx, yy, sx2, sy2))
+        u_ref = -math.log(0.5 + 0.5 * min(sxm, sym_) / max(sxm, sym_))
+        dd_ex = (zz / sigz**2) * A * (u_ref - U_pot(xx, yy, sx2, sy2))
         print('  (x, y, z) = (%+.1e, %+.1e, %+.1e): Δpx = %+.6e (式 %+.6e、差 %.1e)、Δpy = %+.6e (式 %+.6e、差 %.1e)、Δδ = %+.5e (式 %+.5e、差 %.1e)' % (
             xx, yy, zz, S[i, 1], A * dUx, S[i, 1] - A * dUx, S[i, 3], A * dUy, S[i, 3] - A * dUy, S[i, 5], dd_ex, S[i, 5] - dd_ex))
     kx, ky = ws.linear_k(0, al, p0)

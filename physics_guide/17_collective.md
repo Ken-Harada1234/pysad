@@ -36,7 +36,7 @@ $$
 - **IBS** (§9): 小角クーロン散乱の拡散と摩擦から、静止系の運動量の共分散の増加率は $\propto\langle(q^2\delta_{ij}-3q_iq_j)/|q|^3\rangle$。K64 の `tintrb` の係数 $e_i = f_j+f_k-2f_i$ は、モンテカルロの平均と 4 組の固有値で $\pm0.3\%$ (統計誤差の範囲) で一致する。
 - **CSR** (§10): 単一電子のシンクロトロン放射の低周波のスペクトルと因果律から、自由空間の定常ウェイクは $dE/ds = \dfrac{2Ne^2}{4\pi\epsilon_0\,3^{1/3}R^{2/3}}\displaystyle\int_0^\infty\lambda_z(z+s)\,s^{-1/3}ds$ (符号は §10 の約束)。ガウス分布の平均の損失は $-\dfrac{\Gamma(2/3)}{3^{1/3}\Gamma(1/3)}\dfrac{Ne^2}{4\pi\epsilon_0R^{2/3}\sigma_z^{4/3}}$ ($=-0.3505\ldots$)。周波数領域と時間領域の数値積分が 8 桁で一致する。
 - **定常分布の方程式** (§11): $\rho(z) = K\exp[-z^2/(2\sigma_{z0}^2) - a_wV(z)]$。K64 の `csrhaissin` の解は、独立に書いた Newton 解と $\sigma_z$ で $0.5\%$ 以内 (強い結合で $10^{-4}$)、K64 の追跡の平衡と、ウェイクの強さ $a_{wH} \le 1.25$ で $\sigma_z$ が $0.2\%$ 以内で一致する。$a_{wH} = 2.5$ では追跡の $\sigma_z$ が時間変動し (15%)、$\sigma_\delta$ も 24% 増えて、$\sigma_z$ は定常解より 3% 大きい。定常解が不安定で、追跡は揺らぐ状態になっている可能性がある (安定性は未解析。§11.3)。
-- **K64 の疑い** (§17): WSPAC の縦の力の電位の基準が軸上 (壁の半径に依る $\ln(b/\sigma)$ の項が無い)、WSPAC の Emittance[] の最後のスライスでレンズが 8 倍 (B127)、SPAC の力が $1/\gamma$ 倍 (B89)、IBS の係数の $\gamma^4$ (導出は $(\beta\gamma)^4$、§9.3)。
+- **K64 の疑い・誤り** (§17): WSPAC の縦の力の電位が壁の半径に依る $\ln(b/\sigma)$ の項を持たない (基準は軸上で $\ln\frac{1+r}{2}$。仕様か誤りか**未決**)、WSPAC の Emittance[] の最後のスライスでレンズが 8 倍 (B127。確定)、SPAC の力が $1/\gamma$ 倍 (B89。確定)、IBS の係数の $\gamma^4$ (導出は $(\beta\gamma)^4$、§9.3。疑い)。
 
 ## 2. 記号と単位
 
@@ -168,7 +168,7 @@ $$
 \tag{17.11}
 $$
 
-(ここで $A = r_eL\lambda(z)/(\beta^2\gamma^3)$ と、実験室系の線密度の $z$ 微分 $\lambda_z\equiv d\lambda/dz$、$A_z\equiv dA/dz = r_eL\lambda_z/(\beta^2\gamma^3)$ を使った。$\lambda_z$ は微分を表す記号で、静止系の線密度 $\lambda' = \lambda/\gamma$ (本節の (17.1) 以降) とは別のもの。) これは標準の縦の空間電荷の式、$E_z = -\dfrac{g\,e}{4\pi\epsilon_0\gamma^2}\dfrac{d\lambda}{dz}$ ($g \simeq 2\ln(b/\sigma)$ + 定数) と $\Delta\delta = eE_zL/(\beta^2\gamma mc^2)$ で一致する。導出は §7.2 (静止系の縦の電場 $E'_z = -\partial\phi'/\partial\zeta$、$\partial/\partial\zeta = \gamma^{-1}\partial/\partial z$、$\lambda' = \lambda/\gamma$ から $\gamma^{-2}$)。**符号の物理**: $U_{\rm ref} = U(b)$ のとき、先頭 ($z > z_c$) の $\Delta\delta$ は正 (加速)、後尾は負 (減速) で、縦の空間電荷の向き (先頭が前へ押され、後尾が後ろへ押される) になる。K64 の $U_{\rm ref} = U(0,0) = 0$ では、軸外 ($U > 0$) で先頭が減速される向きになるが、これは基準の取り方の違い (定数 $U(b)$ の項を落とした) で、軸上の縦の力が 0 になる。K64 がこの定数を意図して落としたのか誤りかは、ソースだけでは決まらない (§17)。pysad (v2) は `WSPACRADIUS` ($> 0$) で $U_{\rm ref} = U(b)$ にする。**確認** (b): pysad の $\Delta\delta$ は、(17.9) を $U_{\rm ref} = 0$ として数値積分の $U$ から作った値と、**絶対差 $3\times10^{-16}$ 以下** (値 $\sim10^{-6}$) で一致する。
+(ここで $A = r_eL\lambda(z)/(\beta^2\gamma^3)$ と、実験室系の線密度の $z$ 微分 $\lambda_z\equiv d\lambda/dz$、$A_z\equiv dA/dz = r_eL\lambda_z/(\beta^2\gamma^3)$ を使った。$\lambda_z$ は微分を表す記号で、静止系の線密度 $\lambda' = \lambda/\gamma$ (本節の (17.1) 以降) とは別のもの。) これは標準の縦の空間電荷の式、$E_z = -\dfrac{g\,e}{4\pi\epsilon_0\gamma^2}\dfrac{d\lambda}{dz}$ ($g \simeq 2\ln(b/\sigma)$ + 定数) と $\Delta\delta = eE_zL/(\beta^2\gamma mc^2)$ で一致する。導出は §7.2 (静止系の縦の電場 $E'_z = -\partial\phi'/\partial\zeta$、$\partial/\partial\zeta = \gamma^{-1}\partial/\partial z$、$\lambda' = \lambda/\gamma$ から $\gamma^{-2}$)。**符号の物理**: $U_{\rm ref} = U(b)$ のとき、先頭 ($z > z_c$) の $\Delta\delta$ は正 (加速)、後尾は負 (減速) で、縦の空間電荷の向き (先頭が前へ押され、後尾が後ろへ押される) になる。K64 の `fu` (`twspfu`) の基準は軸上で 0 ではなく、$-U_{\rm ref} = \ln\frac{1+r}{2}$ ($r = \sigma_2/\sigma_1$。`twspu` の $\log(0.5+0.5r)$ の項。遠方で丸いビームの形に合う基準): $\Delta\delta = \frac{z-z_c}{\sigma_z^2}A\,\bigl(-\ln\frac{1+r}{2} - U\bigr)$ ((17.9) の $U_{\rm ref}$ を $-\ln\frac{1+r}{2}$ にしたもの)。丸いビーム ($r = 1$) では軸上 0。**gs で確認**: 0.5 GeV の結合のあるリング ($r \approx 0.06$) の軸上の粒子も縦のキックを受け ($z = \sigma_z$ で $+9.7\times10^{-10}$)、$-\frac{z}{\sigma_z^2}A\ln\frac{1+r}{2}$ と 1% で合う。pysad (v2) は K64 のこの基準を使う。K64 の基準 ($U_{\rm ref} \ne U(b)$) では、丸いビームの軸上の縦の力が 0 になり、軸外 ($U > 0$) で先頭が減速される向きになるが、これは基準の取り方の違い (壁の半径に依る定数 $U(b)$ の項を落とした) である。K64 がこの定数を意図して落としたのか誤りかは、ソースだけでは決まらない (§17。**未決**)。pysad (v2) は `WSPACRADIUS` ($> 0$) で $U_{\rm ref} = U(b)$ にする (K64 にないオプション)。**確認** (b): pysad の $\Delta\delta$ は、(17.9) を K64 の基準 ($-U_{\rm ref} = \ln\frac{1+r}{2}$) として数値積分の $U$ から作った値と、**絶対差 $2\times10^{-16}$ 以下** (値 $\sim10^{-6}$。丸いビームは $r = 1$ で $U_{\rm ref} = 0$) で一致する。
 
 **運動量の更新** (`twspac` の末尾): SAD の内部変数 $p_x$ は $P_x/(p_0(1+\delta))$。キックの前の正準運動量は $p_xp_r$ ($p_r = 1+\delta_{\rm old}$)、キック後は $\delta_{\rm new} = \delta_{\rm old} + \Delta\delta$ なので
 
@@ -215,7 +215,7 @@ $$
 
 (バンチ中心の粒子。$f'/L = 2r_e\lambda_0/(\beta^2\gamma^3(\sigma_x+\sigma_y))$ で、係数 $\frac{1}{4\pi}\times2 = \frac1{2\pi}$。標準の空間電荷チューンシフトの式。)
 
-**確認** ([coll_03_laslett.out.txt](outputs/coll_03_laslett.out.txt)): 例 `example/05_tracking/flag_WSPAC_tune_shift.sad` の前半 (0.5 GeV の電子、8 セルのリング、周長 35.3 m、$N = 2\times10^{10}$、弱いスキュー四極 QS で結合を入れて $\varepsilon_y \neq 0$ にしてある。$\varepsilon_x = 1.98\times10^{-7}$、$\sigma_z = 18.4$ mm) を走らせた。WSPAC を入れた追跡の 1 周の行列から求めたチューンシフトは $\Delta\nu_x = -2.991\times10^{-5}$、$\Delta\nu_y = -1.203\times10^{-3}$。各要素の入口の $(17.13)$ のレンズ ($\Delta p = kx$ の $k$、(17.8) の主軸の傾き込み) と Twiss から作った (17.14) の和は $\Delta\nu_x = -3.018\times10^{-5}$、$\Delta\nu_y = -1.200\times10^{-3}$。比は $0.9911$ ($x$)、$1.0025$ ($y$)。$y$ は垂直のエミッタンスが小さく ($\sigma_y = 21\ \mu$m)、空間電荷が強い方向で、一致は 0.25%。$x$ は 0.9% で、$\Delta\nu_x$ の絶対値は $\Delta\nu_y$ の 1/40 しかなく、結合 (QS) による $x$–$y$ の混合や試験粒子の差分の誤差が相対的に効く可能性がある (原因は確認していない)。K64 は、一周の最後のスライスで `gammab(nlat+1)` が配列の外で 0 になり、$p_1$ が半分、レンズが 8 倍強い (B127。$p_1^2h_1$ が 1/8 になる)。
+**確認** ([coll_03_laslett.out.txt](outputs/coll_03_laslett.out.txt)): 例 `example/05_tracking/flag_WSPAC_tune_shift.sad` の前半 (0.5 GeV の電子、8 セルのリング、周長 35.3 m、$N = 2\times10^{10}$、弱いスキュー四極 QS で結合を入れて $\varepsilon_y \neq 0$ にしてある。$\varepsilon_x = 1.98\times10^{-7}$、$\sigma_z = 18.4$ mm) を走らせた。WSPAC を入れた追跡の 1 周の行列から求めたチューンシフトは $\Delta\nu_x = -2.992\times10^{-5}$、$\Delta\nu_y = -1.203\times10^{-3}$。各要素の入口の $(17.13)$ のレンズ ($\Delta p = kx$ の $k$、(17.8) の主軸の傾き込み) と Twiss から作った (17.14) の和は $\Delta\nu_x = -3.018\times10^{-5}$、$\Delta\nu_y = -1.200\times10^{-3}$。比は $0.9913$ ($x$)、$1.0025$ ($y$)。$y$ は垂直のエミッタンスが小さく ($\sigma_y = 21\ \mu$m)、空間電荷が強い方向で、一致は 0.25%。$x$ は 0.9% で、$\Delta\nu_x$ の絶対値は $\Delta\nu_y$ の 1/40 しかなく、結合 (QS) による $x$–$y$ の混合や試験粒子の差分の誤差が相対的に効く可能性がある (原因は確認していない)。K64 は、一周の最後のスライスで `gammab(nlat+1)` が配列の外で 0 になり、$p_1$ が半分、レンズが 8 倍強い (B127。$p_1^2h_1$ が 1/8 になる)。
 
 ## 5. ウェイク
 
@@ -859,7 +859,7 @@ K64 の `tfcsrhaissin` は `aw = rbody(2)/r65/sigz**2` (`rbody(2)` = `inten`、`
 
 | 関数 | 対応する Fortran | 注意 |
 |---|---|---|
-| `spch.WSpace` (`kick`、`linear_k`) | `twspac`、`twspace` | v2 は縦の力の基準 `rwall` (`WSPACRADIUS`) とバンチの速度での位置 `dz` を追加 (K64 は粒子の $z$ そのまま。差は $\delta/\gamma^2$)。`selfcod` |
+| `spch.WSpace` (`kick`、`linear_k`) | `twspac`、`twspace` | 縦の力の基準は K64 の $\ln\frac{1+r}{2}$ (軸上)。v2 は縦の力の基準 `rwall` (`WSPACRADIUS`) とバンチの速度での位置 `dz` を追加 (K64 は粒子の $z$ そのまま。差は $\delta/\gamma^2$)。`selfcod` |
 | `spch.gauss_field`、`gauss_potential` | `twspfu`、`twspu` | 楕円ガウス分布の複素誤差関数と数値積分 |
 | `spch.Solver3D`・`Solver2D` | `spkick.f`・`tspch_.c`+`spch.c` | v2 で正しい係数に書き直し (K64 の誤りは §17) |
 | `wake.WakeKick`、`wake._kick` | `txwake` | K64 の癖をそのまま残す (§17)。切片の方法も直訳 |
@@ -869,7 +869,7 @@ K64 の `tfcsrhaissin` は `aw = rbody(2)/r65/sigz**2` (`rbody(2)` = `inten`、`
 
 ## 16. 使った条件
 
-- WSPAC (確認 (b)): 20 MeV の電子 ($\gamma = 40.139$、$\beta = 0.99969$)、$N = 10^{10}$、$\sigma_z = 5$ mm、区間の長さ 0.3 m、$\sigma = 1$ mm (丸い)、$\sigma_x = 1.5$ mm・$\sigma_y = 0.5$ mm (楕円)、$z$ は $0$、$\pm3$〜$6$ mm、$x, y$ は $0.4$〜$2.5$ mm。壁の半径は 0 (K64 と同じく軸上で電位 0)。
+- WSPAC (確認 (b)): 20 MeV の電子 ($\gamma = 40.139$、$\beta = 0.99969$)、$N = 10^{10}$、$\sigma_z = 5$ mm、区間の長さ 0.3 m、$\sigma = 1$ mm (丸い)、$\sigma_x = 1.5$ mm・$\sigma_y = 0.5$ mm (楕円)、$z$ は $0$、$\pm3$〜$6$ mm、$x, y$ は $0.4$〜$2.5$ mm。壁の半径は 0 (K64 と同じ基準: 軸上で $\ln\frac{1+r}{2}$、丸いビームでは 0)。
 - チューンシフト (§4.4): 0.5 GeV の電子、8 セル、周長 35.3 m、$N = 2\times10^{10}$、CAVI 0.2 MV・harmonic 20、RFSW・RAD・RADCOD、追跡は放射なしで、$d = 10^{-7}$ の試験粒子 4 本の 1 周の行列から $\cos$ の平均でチューン。
 - ウェイク (確認 (c)): 1.7 GeV の電子、20000 個のガウス分布 ($\sigma_z = 5$ mm、種 5)、$N = 10^{10}$、$W_0 = 10^{12}$ V/C ($W_{0t} = 10^{13}$ V/C/m)、$\ell = 2, 5, 20$ mm。表は 4001 点 (0.05 mm 刻み、0〜0.2 m)。バンチ数 `nb` = 1。粗視化の粒子数依存 (§6.2) は同じ設定で、$n_p = 2500$〜160000、種 1〜3。
 - 空間電荷の確認 (§7): 単位系は $\epsilon_0$ または $Q/4\pi\epsilon_0 = 1$。3 次元ガウス分布は $\sigma_x = 1$、$\sigma_y = 0.6$。箱は正方形、中心に丸いガウス分布。
@@ -889,7 +889,7 @@ K64 の `tfcsrhaissin` は `aw = rbody(2)/r65/sigz**2` (`rbody(2)` = `inten`、`
 - Haissinski: 方程式の安定性、有限の $\mu_s$・$d$ の補正、強い結合での解の一意性。
 
 **疑い (K64。ソースの読みと一部の数値)**:
-- **WSPAC の縦の力の電位の基準が軸上** (`fu` が中心で 0): 縦の空間電荷の主要項 ($\ln(b/\sigma)$ に比例する、壁の半径に依る項。(17.11)) が入らない。K64 は軸上の縦の力が 0 になる。pysad v2 は `WSPACRADIUS` で基準を壁の半径にできる。K64 の仕様か誤りかは未決 (ヘルプに説明が無い。物理的には (17.10) の定数項が正しい基準)。
+- **WSPAC の縦の力の電位の基準** (`fu` は中心で $\ln\frac{1+r}{2}$。丸いビームで 0。`tintrb.f:440` の `dg = -(z-zc)/sigzsq*az*fu`。pysad v2 は K64 の基準を使う。gs で軸上の粒子の縦のキックが $-\frac{z}{\sigma_z^2}A\ln\frac{1+r}{2}$ と 1% で合う): 縦の空間電荷の主要項 ($\ln(b/\sigma)$ に比例する、壁の半径に依る項。(17.11)) が入らない。pysad v2 は `WSPACRADIUS` で基準を壁の半径にできる。**仕様か誤りか未決 (コードは変えない)**。理由: (1) K64 の WSPAC はダクトの半径を持たない「壁のない自由空間」の 2 次元ガウス分布のモデルで、自由空間の線電荷のポテンシャルは対数発散し、基準 (定数) が定義できない。軸の電位に $\ln\frac{1+r}{2}$ を取るのは、その定数を決める 1 つの選択で、符号や式の誤りではない (横の位置に依る部分 $U(x_1, y_1) - U(0, 0)$ は、2 次元ポテンシャルの数値積分と絶対差 $2\times10^{-16}$ 以下で一致する: 確認 (b))。(2) ただし、落ちる定数は大きい: 丸いガウス分布 (rms $\sigma$) で、軸の電位は壁 (半径 $b$) に対して $(\lambda/4\pi\varepsilon_0)\,[\ln(b^2/2\sigma^2) + \gamma_E + E_1(b^2/2\sigma^2)]$ ($\gamma_E$: オイラー定数。数値積分で確認)、軸から $\sigma$ までの電位差の $(\lambda/4\pi\varepsilon_0)\times0.444$ に対し、$b/\sigma = 10, 30, 100$ で 10 倍・15 倍・20 倍。したがって、壁のあるリング・輸送路の縦の空間電荷 (縦のインピーダンスの空間電荷の項、ポテンシャルウェルのゆがみ) は WSPAC (k64) に入らない。(3) K64 の作者の意図 (自由空間の横方向の力だけを使う、縦は補助) を示すものはヘルプにもソースのコメントにも無い。(4) gs で、軸上 ($x = y = 0$) の粒子の縦のキックを測った (台本の `Do` の中の `WSPAC;` は効かないので、`Do` を使わず上から並べる): 軸上の粒子も縦のキックを受け、基準が軸上 0 でないことが分かった (上記)。壁の半径を変える実験は、K64 に壁のパラメータが無いので gs ではできない。pysad の k64 の WSPAC の追跡は未実装 (v2 が実装)。結論: **未決**。解析は数値積分で確認済みの公式の範囲。
 - **B127**: WSPAC の `twspace` が最後のスライスで `gammab(nlat+1) = 0` を読み、レンズが 8 倍強い (docs/09 に記載。v2 はこの誤りを入れない)。
 - **B133**: WSPAC ON の CALC・CALC6D は入口以外の Twiss が NaN (gs で再現、原因は未調査。v2 は CALC6D と RFSW ON の CALC に空間電荷を入れた)。
 - **B89〜B92・B98**: SPAC の力が $1/\gamma$ 倍に弱い (電場の $\gamma$ の抜け。gs での実測は docs/10 §9.7、本章では導出の係数 (17.23) と比べる形)、キック後の $p_x$ の二重の割り算、MULT の `RADIUS` の呼び出しの引数 (B91)、メッシュの整数の割り算、少数の粒子で落ちる (docs/10、docs/30。v2 は書き直し)。
