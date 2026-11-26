@@ -31,8 +31,6 @@ def prep(el):
         raise NotImplementedError('MULT の ANGLE≠0 と BZ≠0 は K64 も未対応 (abort)')
     if g('VOLT') + g('DVOLT') != 0.0 or g('F1') != 0.0 or g('TAPER') != 0.0:
         raise NotImplementedError('ANGLE≠0 の MULT の RF (VOLT)・F1・TAPER は未対応')
-    if g('CHI2') != 0.0:
-        raise NotImplementedError('ANGLE≠0 の MULT の CHI2 は Twiss / Emittance[] では未対応')
     al = float(el.L)
     phi = g('ANGLE')
     if al == 0.0:
@@ -89,7 +87,7 @@ def prep(el):
     dtheta = g('DROTATE')
     P = dict(al=al, phi=phi, ndiv=ndiv, aln=aln, phin=phin, phibn=phibn, ak1n=ak1n, rho0=aln / phin, akn=akn,
              nmmin=nmmin, nmmax=nmmax, psi1=psi1, psi2=psi2, fringe=fringe, mf1=mf1, mf2=mf2,
-             dx=g('DX'), dy=g('DY'), theta=theta, dtheta=dtheta,
+             dx=g('DX'), dy=g('DY'), theta=theta, dtheta=dtheta, dchi2=g('CHI2'),
              alg=0.5 * float(el.L), phig=0.5 * phi)
     if dtheta != 0.0:
         P['dphix'] = phi * math.sin(0.5 * dtheta)**2
@@ -158,12 +156,13 @@ def kick(c, P):
 def _chg_in(P, ent):
     from . import lattice as _lat
     dx, dy, th, dth, alg, phig = P['dx'], P['dy'], P['theta'], P['dtheta'], P['alg'], P['phig']
+    dchi2 = P['dchi2']
     if ent:
-        return (lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, dth, alg, phig, True),
-                lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, dth, alg, phig, True))
+        return (lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, dth, alg, phig, True, dchi2),
+                lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, dth, alg, phig, True, dchi2))
     a, p = alg - P['al'], phig - P['phi']
-    return (lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, dth, a, p, False),
-            lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, dth, a, p, False))
+    return (lambda c: _lat._tchge_cod(c, dx, dy, 0.0, th, dth, a, p, False, dchi2),
+            lambda c: _lat._tchge_jac(c, dx, dy, 0.0, th, dth, a, p, False, dchi2))
 
 
 def _shift(c, P):

@@ -382,6 +382,8 @@ class SADEnvironment:
             v = params.get(k)
             if self._numv(v):
                 setattr(el, k, float(v))
+        if tn == 'Bend' and self._numv(params.get('CHI2')):
+            el.CHI2 = float(params['CHI2'])      # BEND の CHI2 (tchge の tbrote の dchi2。ANGLE≠0 だけ使う。K64 の tbende.f)
         rot = params.get('ROTATE')
         if self._numv(rot) and tn != 'Bend':
             el.ROTATION = float(rot)

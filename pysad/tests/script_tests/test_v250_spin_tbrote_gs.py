@@ -6,8 +6,8 @@ K64 の `tbrote` (`tchge.f:197-202`) は rr (回転行列から単位行列を�
 gs の保存した出力 (scripts/v250_spin_tbrote__{base,droll}.{sad,gs.txt}: 3 GeV、24 セルの FODO リング (周長 105.6 m、矩形の偏向磁石)、
 POL・RAD・RFSW、`EMIOUT; EMIT;` の「Spin precession matrix」(1 周のスピンの回転行列 srot(:,1:3)) の最後の 1 台の偏向磁石に DROTATE = 0.05 rad を与えたもの):
 行列の直交性の欠陥 max|M Mᵀ − 1| は、ずれなし (base) で 1.26e-7 (表示の桁)、DROTATE = 0.05 で **9.76e-3** (gs)。pysad の k64 は gs と全桁一致、v2 は 8.4e-8。
-限界: 1 つの要素・1 つの大きさ (DROTATE = 0.05 rad は大きめ。欠陥は回転角の 2 乗で効く)。CHI2 と DX・DZ のずれでは k64 と gs の比較が別の理由で合わない
-(CHI2 = 0.03 で gs の欠陥 1.9e-3 に対し pysad の k64 は 1.3e-7、k64 と gs が 3.8e-3 違う。pysad の k64 が gs の CHI2 のスピンを再現していない。未調査)。
+限界: 1 つの要素・1 つの大きさ (DROTATE = 0.05 rad は大きめ。欠陥は回転角の 2 乗で効く)。DX・DY・DZ・ROTATE のずれは k64 が gs と一致 (test_v250_bend_chi2.py の記録)。
+CHI2 は pysad が BEND の CHI2 を読んでいなかった (翻訳の抜け。直した。test_v250_bend_chi2.py)。
 """
 import io
 import os

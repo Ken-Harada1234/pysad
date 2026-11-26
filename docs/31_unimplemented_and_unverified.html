@@ -1080,6 +1080,11 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td><strong>仕様の違いで誤りではない</strong> (BEND は FRINGE ≠ 0 で F1 を両端に使い、片側は -1 (入口)・-2 (出口)。MULT は FRINGE = 1・2・3 が入口のみ・出口のみ・両端。<code>tffs.f:1263-1277</code>・<code>1346-1364</code>、SADHelp の BEND の FRINGE は「両端」)。BEND の -1・-2・3 と MULT の 1・2・3 を対にすると、gs の差は B331 の分だけ (1e-6 級、v2 は差 0)。BEND の -1・-2 はヘルプにない (K64 のソースと gs で確認)</td>
 </tr>
 <tr>
+<td>BEND の CHI2 (tbrote の dchi2) と ANGLE≠0 の MULT の CHI2 の CALC</td>
+<td>両</td>
+<td><strong>翻訳の抜けを補った</strong> (パーサが BEND の CHI2 を読まず、tchge の CALC・スピンは dchi2 = 0 固定、MULT (ANGLE≠0) の CHI2 の Emittance[] は NotImplementedError だった)。gs と、追跡 1e-15・1 周のスピン行列 7 桁 (CHI2 = 0.03 で直交性の欠陥 1.9e-3 も再現)・Emittance[] 5e-13・Twiss の ν 6e-14 (k64)。v2 は追跡が gs と一致、スピン行列は直交 (7.5e-8)。限界: CHI2 = 0.03 rad・3 GeV・1 台。ANGLE = 0 の BEND の CHI2 は K64 も使わない。<strong>未実装のまま</strong>: MULT (ANGLE = 0) の CHI1・CHI2・DZ (<code>tsolrot</code>。追跡・CALC・スピンとも無視。gs で L = 1 m・CHI2 = 0.03 の MULT が追跡で 7.8e-4 動く)、MULT (ANGLE≠0) のスピン、ampnf の BEND の CHI2</td>
+</tr>
+<tr>
 <td>CAVI の端の q の再スケール (B332)</td>
 <td>両</td>
 <td><strong>v2 は再スケールする</strong> (gs のヤコビアンの</td>
@@ -1117,7 +1122,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <tr>
 <td>POL の B55・B56・B78・B125 の確度 (独立レビューの指摘)</td>
 <td>両</td>
-<td>B56 の <code>tbrote</code> は <strong>gs で確認</strong> (DROTATE = 0.05 の偏向磁石のあるリングの 1 周のスピン行列の直交性の欠陥が gs で 9.76e-3、v2 は 8.4e-8)。B55 は NaN を gs で再現済みで、原因 (<code>cerfc</code> の桁あふれ) は推定のまま (gs で内部関数を呼べない)。結合のない平面 FODO は gs が有限の 92.376 % を返す。B125 の「二重数え」は数値の依存性からの位置の特定のまま (gs で偏向磁石を 0.8 rad ロールしたリングの有限値 2.098e-4 % が v2 の 1.994 % と 1e4 倍違うことは確認、独立な値は未確認)。B78 (UND の <code>dpds</code> の二重) は K64 の UND に磁場のキーワードが無く gs では確認できない (ソースの読み + 刻み数を変えた pysad の数値実験のまま)。CHI2・DX・DZ のずれのある偏向磁石の POL のスピン行列は、pysad の k64 が gs と 3.8e-3〜1.1e-2 違う (未調査)</td>
+<td>B56 の <code>tbrote</code> は <strong>gs で確認</strong> (DROTATE = 0.05 の偏向磁石のあるリングの 1 周のスピン行列の直交性の欠陥が gs で 9.76e-3、v2 は 8.4e-8)。B55 は NaN を gs で再現済みで、原因 (<code>cerfc</code> の桁あふれ) は推定のまま (gs で内部関数を呼べない)。結合のない平面 FODO は gs が有限の 92.376 % を返す。B125 の「二重数え」は数値の依存性からの位置の特定のまま (gs で偏向磁石を 0.8 rad ロールしたリングの有限値 2.098e-4 % が v2 の 1.994 % と 1e4 倍違うことは確認、独立な値は未確認)。B78 (UND の <code>dpds</code> の二重) は K64 の UND に磁場のキーワードが無く gs では確認できない (ソースの読み + 刻み数を変えた pysad の数値実験のまま)。DX・DY・DZ・ROTATE・DROTATE のある偏向磁石・四極・MULT の 1 周のスピン行列は k64 が gs と 7 桁で一致 (24 セルの FODO リング・3 GeV)。BEND の CHI2 は pysad が読んでおらず gs と 2.8e-3 違った (翻訳の抜け、直した。下の行)。MULT (ANGLE = 0) の CHI1・CHI2 (gs の 1 周のスピン行列で 3.8e-4・2.9e-5 動く) は未実装のまま</td>
 </tr>
 <tr>
 <td><code>tsolrot</code> の傾いた枝の更新の符号 (B337) と MULT の CHI1・CHI2 の符号</td>

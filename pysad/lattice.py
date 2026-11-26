@@ -2020,6 +2020,13 @@ def _bend_theta(el) -> float:
     return float(getattr(el, 'ROTATE', 0.0) or 0.0) + float(getattr(el, 'ROTATION', 0.0) or 0.0)
 
 
+def _bend_dchi2(el):
+    """BEND の CHI2 (tchge の tbrote の dchi2)。K64 は ANGLE≠0 の BEND だけ使う (ANGLE=0 の tsteee・tquade・tmulte には渡らない)"""
+    if float(getattr(el, 'ANGLE', 0.0) or 0.0) == 0.0:
+        return 0.0
+    return float(getattr(el, 'CHI2', 0.0) or 0.0)
+
+
 def _bend_chg_args(el):
     """BEND の tchge の引数 (dx, dy, dz, theta, dtheta, alg, phig)。要らなければ None (tchge を呼ばない/恒等)。
     tbende.f の分岐に合わせる:
@@ -2027,11 +2034,11 @@ def _bend_chg_args(el):
       ANGLE=0, K1=0 : tsteee。K0≠0 のときだけ tchge(dx,dy,0,theta,0,...)。K0=0 はドリフト (ずれ・回転とも効かない)。DROTATE は渡らない
       ANGLE=0, K1≠0, K0=0 : tquade(dx,dy,theta) (DROTATE は渡らない)
       ANGLE=0, K1≠0, K0≠0 : tmulte (theta2 = theta + dtheta + akang → ここでは theta+dtheta をまとめて回す)
-    CHI2 は未対応 (parser が読まない)。"""
+    CHI2 は引数に含めない (`_bend_dchi2`)。"""
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     dx, dy, dz, dth, th = g('DX'), g('DY'), g('DZ'), g('DROTATE'), _bend_theta(el)
     if g('ANGLE') != 0.0:
-        if dx == 0.0 and dy == 0.0 and dz == 0.0 and dth == 0.0 and th == 0.0:
+        if dx == 0.0 and dy == 0.0 and dz == 0.0 and dth == 0.0 and th == 0.0 and g('CHI2') == 0.0:
             return None
         return (dx, dy, dz, th, dth, 0.5 * el.L, 0.5 * g('ANGLE'))
     k0, k1 = g('K0'), g('K1')
@@ -2052,13 +2059,13 @@ def _bend_noerr(el):
     """ずれ・ロールを 0 にした BEND のコピー (tchge の外側で扱った後に中身へ渡す)。"""
     import copy
     e = copy.copy(el)
-    for k in ('DX', 'DY', 'DZ', 'DROTATE', 'ROTATE', 'ROTATION'):
+    for k in ('DX', 'DY', 'DZ', 'DROTATE', 'ROTATE', 'ROTATION', 'CHI2'):
         if hasattr(e, k):
             setattr(e, k, 0.0)
     return e
 
 
-def _tchge_cod(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
+def _tchge_cod(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent, dchi2=0.0):
     """SAD tchge.f の COD 更新 (dchi2=0)。ent=True 入口、False 出口 (出口は alg, phig に alg−al0, phig−phi0 を渡す)。
     th = theta (phig≠0) / theta+dtheta (phig=0)。入口: theta で回す (x'=c x − s y, y'=s x + c y。px, py も) → 回した座標系でずらす
     (x −= c dx0 − s dy, y −= s dx0 + c dy) → tbrote。出口はその逆。"""
@@ -2077,8 +2084,8 @@ def _tchge_cod(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
         else:
             dx = dx0
             c[2] -= dy
-        if dx != 0.0 or dz != 0.0 or dtheta != 0.0:
-            c = _tbrote_cod(c, alg, phig, dx, dz, dtheta, 0.0, True)
+        if dx != 0.0 or dz != 0.0 or dtheta != 0.0 or dchi2 != 0.0:
+            c = _tbrote_cod(c, alg, phig, dx, dz, dtheta, dchi2, True)
         return c
     if th != 0.0:
         ct, st = math.cos(th), math.sin(th)
@@ -2086,8 +2093,8 @@ def _tchge_cod(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
     else:
         ct, st = 1.0, 0.0
         dx = dx0
-    if dx != 0.0 or dz != 0.0 or dtheta != 0.0:
-        c = _tbrote_cod(c, alg, phig, dx, dz, dtheta, 0.0, False)
+    if dx != 0.0 or dz != 0.0 or dtheta != 0.0 or dchi2 != 0.0:
+        c = _tbrote_cod(c, alg, phig, dx, dz, dtheta, dchi2, False)
     if th != 0.0:
         c[2] += st * dx0 + ct * dy
         xi, pxi = c[0], c[1]
@@ -2241,7 +2248,7 @@ def _tbrote_jac(cod, alg, phig, dx, dz, dtheta, dchi2, ent):
     return cod, J
 
 
-def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
+def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent, dchi2=0.0):
     """_tchge_cod の cod での 6x6 Jacobian (SAD tchge.f の trans の作り方。11/05 から解析式: _tbrote_jac/_tbgrote_mat)。
     tbrote を呼ぶのは「回した座標系のずれ dxr = cosθ·dx0−sinθ·dy」「dz」「dtheta」のどれかが非 0 のとき。
     tbrote の trans は、dz1 = dz·cosφ + dxr·sinφ ≠ 0 なら先に tdrife1 (長さ dz1 のドリフト) が入り、dz=dtheta=0 かつ φ=0 (または dxr=0) なら単位行列。
@@ -2255,8 +2262,8 @@ def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
     else:
         ct, st = 1.0, 0.0
         dxr = dx0
-    brote = (dxr != 0.0 or dz != 0.0 or dtheta != 0.0)
-    simple = (dz == 0.0 and dtheta == 0.0 and (phig == 0.0 or dxr == 0.0))   # tbrote の trans が単位行列 (tbgrote の (5,6) を除く)
+    brote = (dxr != 0.0 or dz != 0.0 or dtheta != 0.0 or dchi2 != 0.0)
+    simple = (dz == 0.0 and dtheta == 0.0 and dchi2 == 0.0 and (phig == 0.0 or dxr == 0.0))   # tbrote の trans が単位行列 (tbgrote の (5,6) を除く)
     c = np.array(cod, dtype=float)
     if ent and th != 0.0 and brote:
         # 回して y をずらした後の COD で tbrote の行列だけ (回転は入らない)
@@ -2275,7 +2282,7 @@ def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
             if not _compat.v2():
                 J[4, 5] = dpzi * (pr + 1.0) / (pr + dpzi)       # v2 (B109): dr=0 の写像は恒等なので (5,6) = 0
         else:
-            J = _tbrote_jac(c, alg, phig, dxr, dz, dtheta, 0.0, True)[1]
+            J = _tbrote_jac(c, alg, phig, dxr, dz, dtheta, dchi2, True)[1]
         if _compat.v2():
             # v2 (B09): 入口の回転を行列に掛ける (行列 = 軌道の写像の微分)。K64 は tbrote が回転行列を上書きして落とす
             R = np.eye(6)
@@ -2293,9 +2300,9 @@ def _tchge_jac(cod, dx0, dy, dz, theta, dtheta, alg, phig, ent):
     if ent:
         # th == 0 (th≠0 は上で返した): y をずらして tbrote
         c[2] -= dy
-        return _tbrote_jac(c, alg, phig, dxr, dz, dtheta, 0.0, True)[1]
+        return _tbrote_jac(c, alg, phig, dxr, dz, dtheta, dchi2, True)[1]
     # 出口: tbrote → 回転 (tmultr5 で掛かるので回転が入る)
-    _, J = _tbrote_jac(c, alg, phig, dxr, dz, dtheta, 0.0, False)
+    _, J = _tbrote_jac(c, alg, phig, dxr, dz, dtheta, dchi2, False)
     if th != 0.0:
         R = np.eye(6)
         R[:4, :4] = [[ct, 0., st, 0.], [0., ct, 0., st], [-st, 0., ct, 0.], [0., -st, 0., ct]]
@@ -2384,7 +2391,7 @@ def _bend_k1_cod_matrix(el, cod: np.ndarray):
     from .emit6d import _Phys, _State, _tbende, _tbendecorr, _tbendebody, EPSBEND
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     st = _State(cod, _Phys(1e9, 1.0))
-    if (g('DX') != 0.0 or g('DY') != 0.0 or g('DROTATE') != 0.0 or g('ANGLE') == 0.0 or g('K1') == 0.0
+    if (g('DX') != 0.0 or g('DY') != 0.0 or g('DROTATE') != 0.0 or _bend_dchi2(el) != 0.0 or g('ANGLE') == 0.0 or g('K1') == 0.0
             or g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0):
         _tbende(st, el, enarad=False)
         return st.cod.copy(), st.T.copy()
@@ -2470,14 +2477,15 @@ def _bend_element_cod_matrix(el, cod: np.ndarray, delta: float = 0.0):
     if chg is None:
         return _bend_core_cod_matrix(el, cod)
     dx, dy, dz, th, dth, alg, phig = chg
+    dchi2 = _bend_dchi2(el)
     core = _bend_noerr(el)
-    c1 = _tchge_cod(cod, dx, dy, dz, th, dth, alg, phig, True)
-    J1 = _tchge_jac(cod, dx, dy, dz, th, dth, alg, phig, True)
+    c1 = _tchge_cod(cod, dx, dy, dz, th, dth, alg, phig, True, dchi2)
+    J1 = _tchge_jac(cod, dx, dy, dz, th, dth, alg, phig, True, dchi2)
     c2, M = _bend_core_cod_matrix(core, c1)
     # 出口は alg−al0, phig−phi0 (tbende.f)。ANGLE=0 では (0, 0)
     al0, phi0 = (el.L, float(el.ANGLE)) if phig != 0.0 else (0.0, 0.0)
-    c3 = _tchge_cod(c2, dx, dy, dz, th, dth, alg - al0, phig - phi0, False)
-    J2 = _tchge_jac(c2, dx, dy, dz, th, dth, alg - al0, phig - phi0, False)
+    c3 = _tchge_cod(c2, dx, dy, dz, th, dth, alg - al0, phig - phi0, False, dchi2)
+    J2 = _tchge_jac(c2, dx, dy, dz, th, dth, alg - al0, phig - phi0, False, dchi2)
     return c3, J2 @ M @ J1
 
 
@@ -2522,6 +2530,8 @@ def _bend_step_fast(el, cod):
     g = lambda k: float(getattr(el, k, 0.0) or 0.0)
     if g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0:
         return None
+    if _bend_dchi2(el) != 0.0:
+        return None             # CHI2 (tbrote の dchi2) は Python の経路 (emit6d._tbende)
     if float(el.ANGLE) == 0.0 and g('FRINGE') in (-1.0, -2.0):
         return None
     if _face_kt(el) is not None:
@@ -2595,6 +2605,7 @@ def _el_has_offset(el, delta) -> bool:
             or float(getattr(el, 'ROTATION', 0.0) or 0.0) != 0.0
             or float(getattr(el, 'ROTATE', 0.0) or 0.0) != 0.0
             or float(getattr(el, 'DROTATE', 0.0) or 0.0) != 0.0
+            or (type(el).__name__ == 'Bend' and _bend_dchi2(el) != 0.0)       # BEND の CHI2 (tbrote の dchi2)
             or float(getattr(el, 'F1', 0.0) or 0.0) != 0.0
             or float(getattr(el, 'FRINGE', 0.0) or 0.0) != 0.0
             or (type(el).__name__ == 'Quadrupole' and el.L == 0.0
@@ -2821,7 +2832,7 @@ def _pack_el(pk: '_TurnPack', i: int, el, delta: float):
     elif isinstance(el, Bend):
         ang, k0, k1 = float(el.ANGLE), g('K0'), g('K1')
         if (g('F1') != 0.0 or g('FB1') != 0.0 or g('FB2') != 0.0 or (ang == 0.0 and k1 != 0.0 and k0 != 0.0)
-                or (ang == 0.0 and g('FRINGE') in (-1.0, -2.0))):
+                or _bend_dchi2(el) != 0.0 or (ang == 0.0 and g('FRINGE') in (-1.0, -2.0))):
             pk.kind[i] = _tk.K_PY
             return
         pk.kind[i] = _tk.K_BEND

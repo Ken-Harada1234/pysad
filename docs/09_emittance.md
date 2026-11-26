@@ -236,7 +236,7 @@ K64 の `tfemits`・`temits` ほか (`tevdif`・`tesolvd`・`tesumb` など) の
 - SOL の限界: CALC6D・RADCOD つきの CALC・Touschek (INTRA) との組み合わせは未対応、RADCOD の閉軌道探索中に K64 が内部分割の間で固定するパラメータを pysad は毎スライスの δ で計算し直す (影響は 2 次とみているが未確認)、
   領域内の MULT・BEND・CAVI は k64 モードでは未対応 (v2 モードでは solemit が扱う。docs/17)、行列は数値微分なので解析行列の gs と 1e-10 程度の差。
 - v2 モードの SOL 領域: 領域内の BEND・MULT・CAVI (RF つき MULT を含む)・F1 つきの端の放射・ずれて傾いたソレノイド・TRPT の加速・AUTOPHI が Emittance[]・EMIT に入る (docs/17)。**POL の量 (SpinTune・Polarization など)**: k64 は領域の中が K64 の式 (縦磁場を z 軸の向きに足す: B130) のままで、ずれて傾いたソレノイドではスピンチューンが追跡と 1.5e-4〜1.1e-3、n0 の向きが 2.5e-3〜1.5e-2 rad 違う。**v2 は修正してある** (B⊥ と B∥ を運動量の向きに分けて足す。`spin.tradke_spin`・`solemit._trk`): 追跡との差は SpinTune で 1e-13〜5e-7、n0 で 0〜1e-5 rad (小さな FODO・大きなリング A・PF・ASTRID2・MPW 入りで確認)。回転した縦磁場の歳差の閉じた式とも 5e-7。条件 1〜3 T・0.3〜3 GeV。bz ≥ 3 1/m の QUAD・MULT の D は 1e-4 台 (docs/17)。
-- MULT (ANGLE≠0) の限界: FB1/FB2・CHI2 は Twiss・Emittance[] で未対応、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/19)。
+- MULT (ANGLE≠0) の限界: FB1/FB2 は Twiss・Emittance[] で未対応 (CHI2 は対応。gs と Emittance[] 5e-13・ν 6e-14。スピンは MULT (ANGLE≠0) に未対応)、DROTATE≠0 は ε で 5e-6 ずれる、K0 + DX DY + ROTATE の同時指定は gs と閉軌道が一致しない (docs/19)。
 
 ### v2 モードで変わった放射・エミッタンス (RADINT・Jx・MomentumCompaction・EMITDIV ほか)
 
