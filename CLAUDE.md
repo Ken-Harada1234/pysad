@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の `v2` は K64 のバグを直した動作で、`PYSAD_COMPAT=k64` で K64 と同じ動作に切り替える。最新は v2.4.4 (2026-11-23、`pysad.__version__` = 2.4.4。v2.4.3 の内容を含む)。PyPI・GitHub とも v2.4.4 まで公開済み (v2.4.3 は単独では公開しない。v2.4.4 に含む)。作業の前に次を読むこと。
+pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の `v2` は K64 のバグを直した動作で、`PYSAD_COMPAT=k64` で K64 と同じ動作に切り替える。最新は v2.5.0 (2026-11-26、`pysad.__version__` = 2.5.0。物理ガイド `physics_guide/` を含む)。PyPI・GitHub とも v2.4.4 まで公開済み (v2.5.0 は公開の準備中。v2.4.3 は単独では公開せず、v2.4.4 に含む)。pip のパッケージには、例 (`example/`)・文書 (`docs/`)・物理ガイド (`physics_guide/`)・試験を入れない (GitHub と GitHub Pages にある)。作業の前に次を読むこと。
 
 1. `docs/history/00_RESUME.md`: 引き継ぎメモ (方針、構成、環境、現状、残課題、手順、落とし穴)。未解決の差の最新は `docs/history/work_unimpl.md`。
 2. `docs/01_overview.md`: 全体像とモジュールの地図。
@@ -30,6 +30,6 @@ pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定
 - elegant との比較 (`example/15_lma_touschek/touschek_elegant/`、`docs/history/v23_T1.md`): LMA は ASTRID2・kek-ls とも elegant と 0.5% 以内、Touschek 寿命の式は ±5% 違う。B160 (K1≠0 の BEND の K1 の暗黙の定義) は誤りではなく、elegant には K2 = −hK1 を足す (`docs/history/v23_U1.md`)。
 - 6 極の検討の試作 (`pysad/sxtopt.py`、例 `example/ddba/v07_14/sextupole/`、試験 `test_ddba_sextupole.py` 8 件): 6 極の組 32 通りで、解析式の目的関数と追跡の x–y DA 面積の順位相関は ρ = −0.89。検証 (小〜中振幅の DA の健全性チェック) には条件つきで使える。LMA の予測には使えない。最適化の試作は、最終設定より DA の広い解を出せない (DA 面積は最終設定の 0.60〜0.71 倍)。不足は、J² の ADTS・δ 依存・5 次以上の駆動項。
 - パーサ・評価器・FIT の扱い (docs/31 §4): ユーザー定義の関数名 `At` (メンバー参照の内部の頭は `SAD$Member`)、`FitFunction` を併用する `fit` (NaN の行は条件にしない・末尾の数 `3.` のパース・FitFunction の行は k64 で不等式型・USE のたびに DP を MARK に戻す)、`pm1.sad` の NaN (qcod が見つからないとき tcod は 0 から始める)。パーサは、逆向きの文脈の `-LINE` を二重に反転せず、k64 の `1.7MV` など数に隣接する単位を解釈する。
-- 文書・例に出してよいラティス: `pysad/tests/kek-ls_v03_12.lat` (KEK-LS、大きなリング A。ESRF 型の HMBA で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した)・`example/kek_ls/lattice/*` (KEK-LS v03_68。3 GeV、周長 570.72 m)・`example/pf/lattice/*` (PF の履歴ラティス `pf_1981_460nmrad`・`pf_1986_128nmrad`・`pf_1997_036nmrad`・`pf_2005_036nmrad` を含む)・`example/astrid/lattice/*`・`example/ddba/lattice/*` (DDBA のラティス。5 GeV・2.5 GeV、周長 731〜757 m。複雑なセルの設計手順の例集 `example/ddba/`、最終版 `v07_14/`) と、名前だけ「SP8 (大きなリング B)」(SPring-8 型。デザインレポートより再現。8 GeV、周長 1436 m、矩形の偏向磁石 88 台。ラティスのファイルは追跡外なので、パスは書かない) だけ。それ以外の大きなリングはエネルギーと周長で書き、名前・パスを書かない。
+- 文書・例に出してよいラティス: `pysad/tests/kek-ls_v03_12.lat` (同じ内容を `pysad/data/` に同梱して pip に入れる) (KEK-LS、大きなリング A。ESRF 型の HMBA で、ESRF の Pantaleo Raimondi 氏と Simone Liuzzo 氏の協力で設計した)・`example/kek_ls/lattice/*` (KEK-LS v03_68。3 GeV、周長 570.72 m)・`example/pf/lattice/*` (PF の履歴ラティス `pf_1981_460nmrad`・`pf_1986_128nmrad`・`pf_1997_036nmrad`・`pf_2005_036nmrad` を含む)・`example/astrid/lattice/*`・`example/ddba/lattice/*` (DDBA のラティス。5 GeV・2.5 GeV、周長 731〜757 m。複雑なセルの設計手順の例集 `example/ddba/`、最終版 `v07_14/`) と、名前だけ「SP8 (大きなリング B)」(SPring-8 型。デザインレポートより再現。8 GeV、周長 1436 m、矩形の偏向磁石 88 台。ラティスのファイルは追跡外なので、パスは書かない) だけ。それ以外の大きなリングはエネルギーと周長で書き、名前・パスを書かない。
 - gs の 10-19 ビルドは、保存済みの参照 (10-14) と値が違うことがある (00_RESUME.md §8)。
 - コミットしてよいのは追跡対象 (00_RESUME.md §9) だけ。出力や中間ファイルを入れない。

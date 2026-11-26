@@ -30,6 +30,7 @@ def test_banner_text_has_version_origin_and_github():
     assert __version__ in t
     assert 'K64' in t and 'SAD' in t and 'Oide' in t
     assert 'https://github.com/Ken-Harada1234/pysad' in t
+    assert 'https://ken-harada1234.github.io/pysad/' in t and 'not in the pip package' in t      # 例・文書・物理ガイド・試験は pip に入れない
     assert 2 <= len(t.strip().split('\n')) <= 6                  # 数行
 
 

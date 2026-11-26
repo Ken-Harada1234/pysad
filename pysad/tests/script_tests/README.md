@@ -339,7 +339,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 | ファイル | 件数 | 何を確かめるか |
 |---|---|---|
 | [`test_tools_md_to_html.py`](test_tools_md_to_html.py) | 21 | md→HTML 変換ツール (tools/md_to_html.py・build_html.py。数式の KaTeX 変換を含む。描画の試験は Node.js がなければ skip) |
-| [`test_packaging_cli.py`](test_packaging_cli.py) | 5 | 配布の内容: `pysad-run`・`pysad-share`、文書・例を `share/pysad/` に入れる `setup.py`、版番号の一貫性 |
+| [`test_packaging_cli.py`](test_packaging_cli.py) | 5 | 配布の内容: `pysad-run`・`pysad-share`、文書・例・物理ガイドを pip に入れない設定 (`setup.py` に `data_files` が無い、`MANIFEST.in` に `graft` が無い) と、clone でない (pip の) ときの `pysad-share` の URL 表示、版番号の一貫性 |
 | [`test_measure.py`](test_measure.py) | 1 | tlum が二つのガウスビームの重なり面積の解析値に近い |
 | [`test_v2_C_measure.py`](test_v2_C_measure.py) | 19 | MEASURE・TRCOD・LOGMEASURE と MAIN の TRACK TURNS=-1 |
 | [`test_v2_C2_measure.py`](test_v2_C2_measure.py) | 20 | FIXCOD・MVCOD・STNCOD・ALIGN・PUTMEASURE/GETMEASURE |

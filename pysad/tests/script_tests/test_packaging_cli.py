@@ -43,30 +43,24 @@ def test_run_main_help(capsys):
     assert run_main([]) == 2
 
 
-def test_data_files_cover_docs_and_example():
+def test_docs_examples_and_physics_guide_are_not_shipped_with_pip():
+    """文書 (docs/)・例 (example/)・物理ガイド (physics_guide/)・試験は pip に入れない (GitHub と GitHub Pages にある)。setup.py に data_files が無く、
+    MANIFEST.in も graft しない。パッケージの中に入るのは、本体 (pysad/)・同梱の SAD のコピー (pysad/sad_copy)・小さなデータ (pysad/data) だけ"""
     cap = _load_setup()
-    df = cap['data_files']
-    targets = [t for t, _ in df]
-    assert 'share/pysad/docs' in targets
-    assert any(t.startswith('share/pysad/example/14_nonlinear_dynamics') for t in targets)
-    allfiles = [f for _, fl in df for f in fl]
-    assert 'docs/01_overview.md' in allfiles and 'run_sad.py' in allfiles
-    assert not any('__pycache__' in f or f.endswith('.pyc') for f in allfiles)
-    assert not any('/_deletable/' in f for f in allfiles)
-
-
-def test_data_files_include_the_physics_guide():
-    """物理ガイド (physics_guide/) の md・HTML・確認 script・出力が、<prefix>/share/pysad/physics_guide に入る設定"""
-    cap = _load_setup()
-    df = cap['data_files']
-    targets = [t for t, _ in df]
-    assert 'share/pysad/physics_guide' in targets
-    allfiles = [f for _, fl in df for f in fl]
-    for name in ('physics_guide/README.md', 'physics_guide/README.html', 'physics_guide/04_quad.md', 'physics_guide/04_quad.html'):
-        assert name in allfiles, name
-    assert any(f.startswith('physics_guide/scripts/') for f in allfiles) and any(f.startswith('physics_guide/outputs/') for f in allfiles)
+    assert not cap.get('data_files'), cap.get('data_files')
     man = open(os.path.join(ROOT, 'MANIFEST.in'), encoding='utf-8').read()
-    assert 'graft physics_guide' in man
+    for top in ('docs', 'example', 'physics_guide'):
+        assert 'graft ' + top not in man, top
+    assert 'graft pysad/sad_copy' in man and 'graft pysad/data' in man
+
+
+def test_share_main_prints_urls_when_not_in_a_clone(monkeypatch, capsys):
+    """pip で入れた (docs/・example/ が無い) とき、pysad-share は、GitHub と GitHub Pages の URL を表示する"""
+    from pysad import cli
+    monkeypatch.setattr(cli, 'share_dir', lambda: None)
+    assert cli.share_main([]) == 0
+    out = capsys.readouterr().out
+    assert 'https://github.com/Ken-Harada1234/pysad' in out and 'https://ken-harada1234.github.io/pysad/' in out
 
 
 def test_version_consistent():

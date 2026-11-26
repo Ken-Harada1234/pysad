@@ -324,7 +324,7 @@ PYTHONIOENCODING=utf-8 python -u run_sad.py <試験用ラティス>.lat <台本�
 
 引数のファイルを順に連結して `run_sad_string` に渡す。SAD の `gs` に複数ファイルを渡すのと同じ。進捗表示は環境変数 `PYSAD_PROGRESS=n` または SADScript 変数 `PYSAD$PROGRESS` (DA の n 周ごと)。
 
-pip で入れたときのコマンド (`pysad/cli.py`): `pysad-run lattice_file [script_file ...]` (上と同じ)、`pysad-share` (文書・例のフォルダの表示)、`pysad-warmup [--check | --clear] [--quiet]` (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。`--check` はキャッシュが有効なら終了コード 0、`--clear` は pysad のキャッシュを消す。`pysad/warmup.py`)。
+pip で入れたときのコマンド (`pysad/cli.py`): `pysad-run lattice_file [script_file ...]` (上と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。clone ならフォルダ、pip では入っていないので GitHub と GitHub Pages の URL)、`pysad-warmup [--check | --clear] [--quiet]` (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。`--check` はキャッシュが有効なら終了コード 0、`--clear` は pysad のキャッシュを消す。`pysad/warmup.py`)。
 
 ## 12. calc6d.py — CALC6D (qcell6d)
 

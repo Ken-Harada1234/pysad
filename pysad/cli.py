@@ -48,13 +48,16 @@ def run_main(argv=None):
 
 
 def share_main(argv=None):
-    """Run `pysad-share`: print the folder containing docs/ and example/.
-    `pysad-share`: 文書 (docs/) と例 (example/) のあるフォルダを表示する。"""
+    """Run `pysad-share`: print where the docs, examples and physics guide are (the folder in a clone, otherwise the GitHub and GitHub Pages URLs).
+    `pysad-share`: 文書・例・物理ガイドのある場所を表示する。clone したリポジトリならそのフォルダ。pip で入れたときは、これらは pip に入れていないので、GitHub と GitHub Pages の URL を表示する。"""
+    from .banner import PAGES, URL
     d = share_dir()
-    if d is None:
-        print('文書・例のフォルダが見つかりません (pip で入れた場合は <prefix>/share/pysad/ にあるはずです)', file=sys.stderr)
-        return 1
-    print(d)
+    if d is not None:
+        print(d)
+        return 0
+    print('文書 (docs/)・例 (example/)・物理ガイド (physics_guide/)・試験 (pysad/tests/) は、pip には入っていません。')
+    print(f'  ソース、例、文書、試験: {URL}')
+    print(f'  読みやすい HTML (数式つき): {PAGES}   (docs/、example/、physics_guide/ の README.html)')
     return 0
 
 

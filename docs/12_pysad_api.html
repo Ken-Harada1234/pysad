@@ -773,7 +773,7 @@ Emittance X            = 1.5494E-10 m   Emittance Y            = 1.2747E-21 m
 PYTHONIOENCODING=utf-8 python -u run_sad.py &lt;試験用ラティス&gt;.lat &lt;台本ファイル&gt;
 </code></pre>
 <p>引数のファイルを順に連結して <code>run_sad_string</code> に渡す。SAD の <code>gs</code> に複数ファイルを渡すのと同じ。進捗表示は環境変数 <code>PYSAD_PROGRESS=n</code> または SADScript 変数 <code>PYSAD$PROGRESS</code> (DA の n 周ごと)。</p>
-<p>pip で入れたときのコマンド (<code>pysad/cli.py</code>): <code>pysad-run lattice_file [script_file ...]</code> (上と同じ)、<code>pysad-share</code> (文書・例のフォルダの表示)、<code>pysad-warmup [--check | --clear] [--quiet]</code> (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。<code>--check</code> はキャッシュが有効なら終了コード 0、<code>--clear</code> は pysad のキャッシュを消す。<code>pysad/warmup.py</code>)。</p>
+<p>pip で入れたときのコマンド (<code>pysad/cli.py</code>): <code>pysad-run lattice_file [script_file ...]</code> (上と同じ)、<code>pysad-share</code> (文書・例・物理ガイドの場所の表示。clone ならフォルダ、pip では入っていないので GitHub と GitHub Pages の URL)、<code>pysad-warmup [--check | --clear] [--quiet]</code> (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。<code>--check</code> はキャッシュが有効なら終了コード 0、<code>--clear</code> は pysad のキャッシュを消す。<code>pysad/warmup.py</code>)。</p>
 <h2 id="12-calc6dpy--calc6d-qcell6d">12. calc6d.py — CALC6D (qcell6d)</h2>
 <p>対応: <code>qcell.f qcell6d</code> → <code>temit</code> (tcod, tturne, tecalc) → <code>tsetetwiss</code> / <code>tfetwiss</code> (<code>tffs.f</code>) / <code>tfadjustn</code>、分数位置は <code>qtwiss.f qtwissfrac</code>。</p>
 <table>

@@ -25,12 +25,10 @@ pip install pysad-k64
 | | 内容 | pip |
 |---|---|---|
 | パッケージ本体 | `pysad/` (`import pysad`。約 100 モジュール) | **入る** |
-| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例のある場所の表示)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
-| 文書 | `docs/` (36 本の md と、図入りの同名の HTML。`docs/history/` と `docs/figures/` を含む)。場所: `<prefix>/share/pysad/docs` | **入る** |
-| 例 | `example/` (機能別の台本・出力・図・md・HTML。約 2500 ファイル)。場所: `<prefix>/share/pysad/example` | **入る** |
-| 物理ガイド | `physics_guide/` (ハミルトニアンから運動方程式、各要素の写像、K64 の Fortran、pysad までの導出。00〜18 章と付録 C の md と、数式を描画した同名の HTML、確認 script と出力。約 47 ファイル、展開後 約 63 MB、圧縮で約 7 MB)。場所: `<prefix>/share/pysad/physics_guide` (入口は `README.html`) | **入る** |
-| `run_sad.py` | 同上 (`<prefix>/share/pysad/run_sad.py`) | **入る** |
-| ラティスデータ | KEK-LS (3 GeV、20 セル、ESRF 型の HMBA) のラティス `kek-ls_v03_12.lat` (8 KB)。パッケージの中 `pysad/data/` (`pysad.datafiles.data_path('kek-ls_v03_12.lat')` で場所が取れる) と、例の台本が読む相対パス `pysad/tests/kek-ls_v03_12.lat` の位置 (`<prefix>/share/pysad/pysad/tests/`) の 2 か所。pip で入れたあとは、`<prefix>/share/pysad` (`pysad-share` が表示) をカレントにして例を走らせる | **入る** |
+| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。pip では入っていないので、GitHub と GitHub Pages の URL を表示する)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
+| 文書・例・物理ガイド | `docs/` (36 本の解説文書)、`example/` (機能別の台本・出力・図。約 2500 ファイル)、`physics_guide/` (ハミルトニアンから運動方程式、各要素の写像、K64 の Fortran、pysad までの導出。00〜18 章と付録 C) | **省かれる** (大きい (展開後 約 170 MB) ので、pip には入れない。GitHub (<https://github.com/Ken-Harada1234/pysad>) と GitHub Pages (<https://ken-harada1234.github.io/pysad/>) で読める。起動時の案内と `pysad-share` が URL を表示する。数式を描画した HTML は GitHub Pages で読める) |
+| `run_sad.py` | リポジトリの直下の台本の実行 script | **省かれる** (pip では `pysad-run` を使う) |
+| ラティスデータ | KEK-LS (3 GeV、20 セル、ESRF 型の HMBA) のラティス `kek-ls_v03_12.lat` (8 KB)。パッケージの中 `pysad/data/` (`pysad.datafiles.data_path('kek-ls_v03_12.lat')` で場所が取れる)。例 (`example/`) の台本が読むラティスの相対パス `pysad/tests/kek-ls_v03_12.lat` は、clone したリポジトリで動く | **入る** |
 | 依存ライブラリ | `numpy`・`scipy`・`numba` (自動)。`matplotlib` は `pip install pysad-k64[plot]` のときだけ | 自動 / 任意 |
 | 試験 | `pysad/tests/` (`script_tests/` の pytest 約 2500 件、`regression_tests/` の SAD との照合ベンチ 50 本) | **省かれる** (GitHub にだけある) |
 | 道具 | `tools/` (md から HTML を作る `build_html.py`・図を作るスクリプト) | **省かれる** |
@@ -39,7 +37,7 @@ pip install pysad-k64
 | SAD の `Packages/*.n` と `KBFrame` | KEK の SAD のソースからコピーした SADScript の補助スクリプト (CorrectOrbit・Steer・Monitor・MakeBump・OptimizeOptics・Couple・Tkinter.n・KBFrame.n など。`Packages` 71 本、`KBFrame` 44 本)。`pysad/sad_copy/` (118 ファイル、約 1.4 MB: `Packages` 71・`KBFrame` 44・`LICENSE`・`README.md`・`MANIFEST.sha256`)。SAD の `LICENSE` (BSD 3 条項、KEK Accelerator Laboratory) つき | **入る** (SAD からのコピー。中身は変えていない。出所・省いたものは [`pysad/sad_copy/README.md`](pysad/sad_copy/README.md)。環境変数なしで使える) |
 | SAD の Fortran のソース (`src/*.f`)・実行ファイル `gs` | K64 版のソースと実行ファイル | **含まれない** (別に入手。pysad は `gs` なしで動く。gs との比較の試験は、保存した gs の出力と比べる) |
 
-全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。
+全体で約 5 MB です (展開後。ダウンロードは約 2 MB。うち、同梱の SAD のコピーが約 1.2 MB)。例・文書・物理ガイド・試験・`tools/` を使うとき、試験と回帰を動かすとき、HTML を作り直すとき、変更履歴を見るときは、リポジトリを clone してください (clone すると、`docs/`・`example/`・`physics_guide/` が、リポジトリの直下にあります)。
 
 **同梱の SAD のコピー** (`pysad/sad_copy/`): `CorrectOrbit`・`Steer`・`Monitor`・`MakeBump` などの SADScript のパッケージは、環境変数なしで、このコピーの `Packages/*.n` が最初に使われたときに読まれます。コピーは SAD (KEK Accelerator Laboratory、K64 版のソース配布) のファイルをそのまま (バイト単位で同じに) 置いたもので、pysad が書いたものではありません。ライセンスは SAD の `LICENSE` (BSD 3 条項) で、`pysad/sad_copy/LICENSE` にあります。出所・コピーした日・コピーしていないもの (`init.local.n`、バックアップ、`*.py`、`CVS`、Fortran のソース、`gs`) は [`pysad/sad_copy/README.md`](pysad/sad_copy/README.md) に書いてあります。別の SAD の `Packages` を使うときは、環境変数 `PYSAD_SAD_PACKAGES` にそのフォルダを指定します (指定があれば最優先)。Tcl/Tk の GUI (Plot などを画面に描く) は、画面を勝手に開かないよう、`PYSAD_GUI=1` か `PYSAD_SAD_PACKAGES` があるときだけ有効になります (`PYSAD_GUI=1` なら環境変数なしで同梱のコピーを使う)。**未確認・限界**: 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
@@ -117,7 +115,7 @@ pysad は直訳に加えて、**オリジナルの SAD (K64) にない解析機�
 
 **注意**
 - これらは **pysad のみ**で、gs (SAD 本体) では走りません。上の表の機能 (K64 にない新機能) は互換モード (`PYSAD_COMPAT=k64`) によらず同じ動作です。K64 の動作と変えたもの (互換モードで切り替わる) は [`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md) に区別して書いてあります。
-- PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は `pysad.__version__`)。SAD の台本は、pip で入れた場合は `pysad-run lattice.sad script.sad`、リポジトリでは `py -3.12 run_sad.py lattice.sad script.sad` で動かせます (PyPI のパッケージには `run_sad.py`・`example/`・`docs/` が入ります。試験と `tools/` は clone が必要です)。
+- PyPI で公開している版は、リポジトリの最新と同じとは限りません (リポジトリの版は `pysad.__version__`)。SAD の台本は、pip で入れた場合は `pysad-run lattice.sad script.sad`、リポジトリでは `py -3.12 run_sad.py lattice.sad script.sad` で動かせます (PyPI のパッケージには `run_sad.py`・`example/`・`docs/`・`physics_guide/` は入りません。それらと、試験・`tools/` は、clone するか、GitHub Pages (<https://ken-harada1234.github.io/pysad/>) で読んでください)。
 - 検証の範囲と未確認は [`docs/31_unimplemented_and_unverified.md`](docs/31_unimplemented_and_unverified.md)・[`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md)・docs/24〜26・[`example/14_nonlinear_dynamics/`](example/14_nonlinear_dynamics/README.md) の各まとめを参照してください。
 
 ## 構成

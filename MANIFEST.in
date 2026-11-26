@@ -1,8 +1,4 @@
-include README.md LICENSE run_sad.py
+include README.md LICENSE
 graft pysad/sad_copy
 graft pysad/data
-graft docs
-graft example
-graft physics_guide
-prune example/_deletable
 global-exclude __pycache__ *.pyc *.pyo

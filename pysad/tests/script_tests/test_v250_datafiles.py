@@ -2,7 +2,7 @@
 """pysad に同梱した小さなデータファイル (pysad/data/、pysad/datafiles.py) の試験。
 
 KEK-LS (3 GeV、20 セル) のラティス `kek-ls_v03_12.lat` が、パッケージの中にあり (pip で入る)、`pysad/tests/` のものと同じ内容で、
-`pip install` で、例の台本が相対パス `pysad/tests/kek-ls_v03_12.lat` で読める場所 (`<prefix>/share/pysad/pysad/tests/`) にも置かれる設定であること。
+pip では、パッケージの中 (pysad/data) にだけ入る (例 (example/) は pip に入れないので、例の相対パスの位置には置かない)。
 """
 import filecmp
 import os
@@ -43,8 +43,6 @@ def test_packaging_includes_the_data_file():
     assert 'package-data' in toml and '"data/*"' in toml, 'package-data に data/* が無い'
     man = open(os.path.join(ROOT, 'MANIFEST.in'), encoding='utf-8').read()
     assert 'graft pysad/data' in man
-    setup_py = open(os.path.join(ROOT, 'setup.py'), encoding='utf-8').read()
-    assert 'share/pysad/pysad/tests' in setup_py and NAME in setup_py        # 例の相対パスで読める場所
 
 
 def test_examples_refer_to_the_lattice_by_the_documented_relative_path():

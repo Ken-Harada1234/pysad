@@ -1272,7 +1272,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 <tr>
 <td><a href="test_packaging_cli.py"><code>test_packaging_cli.py</code></a></td>
 <td>5</td>
-<td>配布の内容: <code>pysad-run</code>・<code>pysad-share</code>、文書・例を <code>share/pysad/</code> に入れる <code>setup.py</code>、版番号の一貫性</td>
+<td>配布の内容: <code>pysad-run</code>・<code>pysad-share</code>、文書・例・物理ガイドを pip に入れない設定 (<code>setup.py</code> に <code>data_files</code> が無い、<code>MANIFEST.in</code> に <code>graft</code> が無い) と、clone でない (pip の) ときの <code>pysad-share</code> の URL 表示、版番号の一貫性</td>
 </tr>
 <tr>
 <td><a href="test_measure.py"><code>test_measure.py</code></a></td>
