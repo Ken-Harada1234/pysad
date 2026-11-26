@@ -92,10 +92,10 @@ Python の tkinter (Tk 8.6) が窓を表示
 <p>対象のファイル: <a href="../pysad/tclbridge.py"><code>pysad/tclbridge.py</code></a>、<a href="../pysad/tkcanvas.py"><code>pysad/tkcanvas.py</code></a>、<a href="../pysad/sadclass.py"><code>pysad/sadclass.py</code></a>、<a href="../pysad/sadscript.py"><code>pysad/sadscript.py</code></a> / <code>sadlist.py</code> の言語機能。</p>
 <h2 id="2-使い方">2. 使い方</h2>
 <ol>
-<li>SAD の <code>Packages</code> の場所を環境変数で渡す。<strong><code>PYSAD_SAD_PACKAGES</code> が無いと、GUI は何も有効にならず、GUI の自動試験は skip になる。</strong></li>
+<li>GUI を有効にする。<strong>画面を勝手に開かないよう、<code>PYSAD_GUI=1</code> か <code>PYSAD_SAD_PACKAGES</code> のどちらかが無いと、GUI は何も有効にならない</strong> (<code>TkWait[]</code> などは何もせず、<code>$DisplayFunction</code> は Identity)。<code>PYSAD_GUI=1</code> なら、pysad に同梱した SAD のコピー (<code>pysad/sad_copy/Packages</code> と <code>pysad/sad_copy/KBFrame</code>。出所は <a href="../pysad/sad_copy/README.html"><code>pysad/sad_copy/README.md</code></a>) を使うので、SAD を別に用意しなくてよい。別の SAD の <code>Packages</code> を使うときは <code>PYSAD_SAD_PACKAGES</code> にそのフォルダを指定する (最優先)。</li>
 <li>台本を <code>Interp</code> で走らせる。</li>
 </ol>
-<pre><code>set PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;
+<pre><code>set PYSAD_GUI=1
 py -3.12 -c &quot;from pysad.sadscript import Interp; I=Interp(); I.run(open('demo.sad').read(),'script')&quot;
 </code></pre>
 <p><code>Interp()</code> を作ると、<code>Tkinter.n</code> などの名前 (<code>Window</code>、<code>Button</code>、<code>KBMainFrame</code>、…) は <code>init.n</code> の <code>AutoLoad</code> と同じく、最初に使われたときに読み込まれる。</p>
@@ -108,8 +108,12 @@ py -3.12 -c &quot;from pysad.sadscript import Interp; I=Interp(); I.run(open('de
 </thead>
 <tbody>
 <tr>
+<td><code>PYSAD_GUI</code></td>
+<td><code>1</code> のとき、環境変数なしで同梱の SAD のコピーから GUI の接点を有効にする (<code>tclbridge.install</code> が働く)。無く <code>PYSAD_SAD_PACKAGES</code> も無ければ働かない</td>
+</tr>
+<tr>
 <td><code>PYSAD_SAD_PACKAGES</code></td>
-<td>SAD の <code>Packages</code> (例: <code>&lt;SAD のソース&gt;/Packages</code>)。これがあるときだけ <code>tclbridge.install</code> が働く</td>
+<td>別の SAD の <code>Packages</code> (例: <code>&lt;SAD のソース&gt;/Packages</code>)。あれば最優先で使い、これがあるときも <code>tclbridge.install</code> が働く</td>
 </tr>
 <tr>
 <td><code>PYSAD_TK_NOLOOP=1</code></td>
@@ -364,22 +368,27 @@ TclEval[<span class="s">"update"</span>];
 <p>試験: <a href="../pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a> 7、<a href="../pysad/tests/script_tests/test_sadclass.py"><code>test_sadclass.py</code></a> 16、<a href="../pysad/tests/script_tests/test_gui_lang.py"><code>test_gui_lang.py</code></a> 10、<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a> 8。リポジトリ全体の試験の通しは 2552 通過・14 skip・失敗 0 (2566 件収集、2026-11-23)。gs との比較の詳細は <a href="history/20_tcltk_gui_validation.md">history/20_tcltk_gui_validation.md</a>。</p>
 <h3 id="71-ヘッドレスでの試験の実行">7.1 ヘッドレスでの試験の実行</h3>
 <ol>
-<li><code>set PYSAD_SAD_PACKAGES=&lt;SAD のソース&gt;/Packages</code> を設定する。</li>
+<li>環境変数は要らない (試験の <code>conftest.py</code> が <code>PYSAD_SAD_PACKAGES</code> の既定を同梱のコピーにする)。別の SAD の <code>Packages</code> で試すときは <code>PYSAD_SAD_PACKAGES=&lt;SAD のソース&gt;/Packages</code> を設定する。</li>
 <li><code>py -3.12 -m pytest pysad/tests/script_tests/test_tclbridge.py pysad/tests/script_tests/test_sadclass.py pysad/tests/script_tests/test_gui_lang.py pysad/tests/script_tests/test_plot.py -q</code>。
    全体は <code>py -3.12 -m pytest pysad/tests -q</code> (手順は <code>docs/history/00_RESUME.md</code> §4)。</li>
 </ol>
 <ul>
-<li><code>PYSAD_SAD_PACKAGES</code> が無いか、tkinter が使えない (画面が無い) ときは GUI の試験は skip になる (GUI を使わない言語機能の試験は常に走る)。試験の fixture は <code>PYSAD_TK_NOLOOP=1</code> を設定し、<code>tkinter.Tk()</code> が作れなければ skip する。</li>
+<li>tkinter が使えない (画面が無い) ときは GUI の試験は skip になる (環境変数が無くても、同梱のコピーで走る) (GUI を使わない言語機能の試験は常に走る)。試験の fixture は <code>PYSAD_TK_NOLOOP=1</code> を設定し、<code>tkinter.Tk()</code> が作れなければ skip する。</li>
 <li>Windows の Tcl はまれに起動直後に "Can't find a usable tk.tcl" で失敗するので、<code>tkinter.Tk()</code> は最大 5 回やり直す (ブリッジ側は 4 回)。</li>
 <li><strong>窓を出さずに描画だけ確かめる</strong>: <code>PYSAD_NO_DISPLAY=1</code> で <code>ListPlot</code> などを呼ぶと <code>Graphics[...]</code> の式 (<code>Head</code> = Graphics、<code>Length</code> = 2) が返る (<code>test_listplot_returns_graphics_and_plot_matches_gs</code>)。この方式では Tk を使わない。</li>
-<li><strong>ウィジェット木で比べる</strong>: <code>PYSAD_SAD_PACKAGES</code> を設定して台本を走らせたあと、<code>TclEval</code> で <code>winfo children</code> を再帰して、クラス・<code>-text</code>・<code>-state</code>・<code>-title</code> を書き出し、SAD (gs) の同じ台本の木と比べる。</li>
+<li><strong>ウィジェット木で比べる</strong>: <code>PYSAD_GUI=1</code> (または <code>PYSAD_SAD_PACKAGES</code>) を設定して台本を走らせたあと、<code>TclEval</code> で <code>winfo children</code> を再帰して、クラス・<code>-text</code>・<code>-state</code>・<code>-title</code> を書き出し、SAD (gs) の同じ台本の木と比べる。</li>
 <li><strong>キャンバスの項目で比べる</strong>: <code>$c find all</code> と <code>$c type</code>・<code>$c coords</code>・<code>$c gettags</code> を書き出す (<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a> の台本)。</li>
 <li><strong>サンプル一括</strong>: 台本の写し (EPICS と <code>System[]</code> を <code>$off</code> の名前に替えたもの) を 1 本ずつ 120 秒の制限で走らせる。</li>
 <li>全体試験では GUI 系 (<code>test_plot</code>、<code>test_tclbridge</code>) が数回に 1 回、単独なら通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら単独で回し直す。</li>
 </ul>
 <h2 id="8-限界未確認">8. 限界・未確認</h2>
 <ul>
-<li><strong>見た目 (色、大きさ、フォント) と操作 (ボタンを押す、メニューを開く、拡大) は SAD と比べていない。</strong> 比べたのはウィジェット木とキャンバスの項目の座標。Windows の Tk は X11 の Tk と違う (フォント名、<code>-scriptfont</code>、<code>wm</code> の挙動、X のウィンドウ木)。表示の違いはここから出る。</li>
+<li>
+<p><strong>同梱のコピー</strong>: 同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</p>
+</li>
+<li>
+<p><strong>見た目 (色、大きさ、フォント) と操作 (ボタンを押す、メニューを開く、拡大) は SAD と比べていない。</strong> 比べたのはウィジェット木とキャンバスの項目の座標。Windows の Tk は X11 の Tk と違う (フォント名、<code>-scriptfont</code>、<code>wm</code> の挙動、X のウィンドウ木)。表示の違いはここから出る。</p>
+</li>
 <li>木を gs と比べたのは、§7 の表の台本 (Window 系、KBMainFrame、demo-LabelFrame、キャンバス系)。残りのサンプルは「エラー無しで木ができた」までで、gs とは未比較。</li>
 <li><code>Entry</code>・<code>ListBox</code>・<code>Scale</code>・<code>RadioButton</code>・<code>TextEditor</code>・<code>SpinBox</code>・<code>PanedWindow</code>・<code>OptionMenu</code>・<code>TextMessage</code>・<code>ScrollBar</code> は、単体の台本で gs と木を比べていない (<code>Entry</code>・<code>ListBox</code>・<code>Scale</code>・<code>RadioButton</code> の例は、メソッドの結果は gs と一致し、木は root と Toplevel の段が違う。§3.1)。<code>TextVariable</code> で結んだ変数への値の反映は確認していない。</li>
 <li><code>TabFrame.n</code> の描画 (<code>KBFTabFrame</code>、<code>KBFToggleFrame</code>) は未検証。demo-KBFrame1 は入れ子の部品の配置で失敗する (<code>cf[13]</code> が未定義。原因は未解決)。</li>

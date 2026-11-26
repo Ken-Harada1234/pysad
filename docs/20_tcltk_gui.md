@@ -27,11 +27,11 @@ Python の tkinter (Tk 8.6) が窓を表示
 
 ## 2. 使い方
 
-1. SAD の `Packages` の場所を環境変数で渡す。**`PYSAD_SAD_PACKAGES` が無いと、GUI は何も有効にならず、GUI の自動試験は skip になる。**
+1. GUI を有効にする。**画面を勝手に開かないよう、`PYSAD_GUI=1` か `PYSAD_SAD_PACKAGES` のどちらかが無いと、GUI は何も有効にならない** (`TkWait[]` などは何もせず、`$DisplayFunction` は Identity)。`PYSAD_GUI=1` なら、pysad に同梱した SAD のコピー (`pysad/sad_copy/Packages` と `pysad/sad_copy/KBFrame`。出所は [`pysad/sad_copy/README.md`](../pysad/sad_copy/README.md)) を使うので、SAD を別に用意しなくてよい。別の SAD の `Packages` を使うときは `PYSAD_SAD_PACKAGES` にそのフォルダを指定する (最優先)。
 2. 台本を `Interp` で走らせる。
 
 ```
-set PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>
+set PYSAD_GUI=1
 py -3.12 -c "from pysad.sadscript import Interp; I=Interp(); I.run(open('demo.sad').read(),'script')"
 ```
 
@@ -39,7 +39,8 @@ py -3.12 -c "from pysad.sadscript import Interp; I=Interp(); I.run(open('demo.sa
 
 | 環境変数 | 意味 |
 | --- | --- |
-| `PYSAD_SAD_PACKAGES` | SAD の `Packages` (例: `<SAD のソース>/Packages`)。これがあるときだけ `tclbridge.install` が働く |
+| `PYSAD_GUI` | `1` のとき、環境変数なしで同梱の SAD のコピーから GUI の接点を有効にする (`tclbridge.install` が働く)。無く `PYSAD_SAD_PACKAGES` も無ければ働かない |
+| `PYSAD_SAD_PACKAGES` | 別の SAD の `Packages` (例: `<SAD のソース>/Packages`)。あれば最優先で使い、これがあるときも `tclbridge.install` が働く |
 | `PYSAD_TK_NOLOOP=1` | `TkEventLoop[]` が 1 回 `update` して戻る (自動試験・ウィジェット木の比較用)。無ければ本物の mainloop (窓を閉じるまで戻らない) |
 | `PYSAD_NO_DISPLAY=1` | `$DisplayFunction` を `Identity` にする。`ListPlot` などは窓を開かず `Graphics[...]` の式を返すだけ (`pkgload.py`)。Linux で `DISPLAY` が無いときも同じ |
 | `PYSAD_TRACE=1` | パッケージの読み込み中に失敗した文を標準エラーに出す |
@@ -211,19 +212,21 @@ pysad が合わせた K64 の挙動。
 
 ### 7.1 ヘッドレスでの試験の実行
 
-1. `set PYSAD_SAD_PACKAGES=<SAD のソース>/Packages` を設定する。
+1. 環境変数は要らない (試験の `conftest.py` が `PYSAD_SAD_PACKAGES` の既定を同梱のコピーにする)。別の SAD の `Packages` で試すときは `PYSAD_SAD_PACKAGES=<SAD のソース>/Packages` を設定する。
 2. `py -3.12 -m pytest pysad/tests/script_tests/test_tclbridge.py pysad/tests/script_tests/test_sadclass.py pysad/tests/script_tests/test_gui_lang.py pysad/tests/script_tests/test_plot.py -q`。
    全体は `py -3.12 -m pytest pysad/tests -q` (手順は `docs/history/00_RESUME.md` §4)。
 
-- `PYSAD_SAD_PACKAGES` が無いか、tkinter が使えない (画面が無い) ときは GUI の試験は skip になる (GUI を使わない言語機能の試験は常に走る)。試験の fixture は `PYSAD_TK_NOLOOP=1` を設定し、`tkinter.Tk()` が作れなければ skip する。
+- tkinter が使えない (画面が無い) ときは GUI の試験は skip になる (環境変数が無くても、同梱のコピーで走る) (GUI を使わない言語機能の試験は常に走る)。試験の fixture は `PYSAD_TK_NOLOOP=1` を設定し、`tkinter.Tk()` が作れなければ skip する。
 - Windows の Tcl はまれに起動直後に "Can't find a usable tk.tcl" で失敗するので、`tkinter.Tk()` は最大 5 回やり直す (ブリッジ側は 4 回)。
 - **窓を出さずに描画だけ確かめる**: `PYSAD_NO_DISPLAY=1` で `ListPlot` などを呼ぶと `Graphics[...]` の式 (`Head` = Graphics、`Length` = 2) が返る (`test_listplot_returns_graphics_and_plot_matches_gs`)。この方式では Tk を使わない。
-- **ウィジェット木で比べる**: `PYSAD_SAD_PACKAGES` を設定して台本を走らせたあと、`TclEval` で `winfo children` を再帰して、クラス・`-text`・`-state`・`-title` を書き出し、SAD (gs) の同じ台本の木と比べる。
+- **ウィジェット木で比べる**: `PYSAD_GUI=1` (または `PYSAD_SAD_PACKAGES`) を設定して台本を走らせたあと、`TclEval` で `winfo children` を再帰して、クラス・`-text`・`-state`・`-title` を書き出し、SAD (gs) の同じ台本の木と比べる。
 - **キャンバスの項目で比べる**: `$c find all` と `$c type`・`$c coords`・`$c gettags` を書き出す ([`test_plot.py`](../pysad/tests/script_tests/test_plot.py) の台本)。
 - **サンプル一括**: 台本の写し (EPICS と `System[]` を `$off` の名前に替えたもの) を 1 本ずつ 120 秒の制限で走らせる。
 - 全体試験では GUI 系 (`test_plot`、`test_tclbridge`) が数回に 1 回、単独なら通るのに落ちることがある (Tk の窓の更新の待ち)。落ちたら単独で回し直す。
 
 ## 8. 限界・未確認
+
+- **同梱のコピー**: 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 - **見た目 (色、大きさ、フォント) と操作 (ボタンを押す、メニューを開く、拡大) は SAD と比べていない。** 比べたのはウィジェット木とキャンバスの項目の座標。Windows の Tk は X11 の Tk と違う (フォント名、`-scriptfont`、`wm` の挙動、X のウィンドウ木)。表示の違いはここから出る。
 - 木を gs と比べたのは、§7 の表の台本 (Window 系、KBMainFrame、demo-LabelFrame、キャンバス系)。残りのサンプルは「エラー無しで木ができた」までで、gs とは未比較。

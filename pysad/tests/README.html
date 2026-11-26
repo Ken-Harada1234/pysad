@@ -84,7 +84,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </ul>
 <h2 id="全体の実行方法">全体の実行方法</h2>
 <p>リポジトリのルートから (Python 3.12)。</p>
-<pre><code>set PYSAD_SAD_PACKAGES=&lt;SAD の Packages フォルダ&gt;              (PowerShell: $env:PYSAD_SAD_PACKAGES=&quot;...&quot;)
+<pre><code>(環境変数は要らない。別の SAD の Packages を試すときだけ: set PYSAD_SAD_PACKAGES=&lt;SAD の Packages フォルダ&gt;。PowerShell: $env:PYSAD_SAD_PACKAGES=&quot;...&quot;)
 py -3.12 -m pysad.nbcache --force                                numba のキャッシュを作り直す (初回・カーネルを直したあと)
 
 # script_tests (pytest)
@@ -98,7 +98,7 @@ set QUICK=1
 py -3.12 -u pysad/tests/regression_tests/run_regression.py
 </code></pre>
 <ul>
-<li><code>PYSAD_SAD_PACKAGES</code> (SAD の <code>Packages</code> のフォルダ) を設定しないと、GUI 系 (<code>test_plot.py</code>・<code>test_tclbridge.py</code> ほか) が skip する。SAD 本体が無くても、それ以外は通る。</li>
+<li><code>script_tests/conftest.py</code> が <code>PYSAD_SAD_PACKAGES</code> の既定を、pysad に同梱した SAD のコピー (<code>pysad/sad_copy/Packages</code>) にするので、環境変数なしでも GUI 系 (<code>test_plot.py</code>・<code>test_tclbridge.py</code> ほか) が走る (画面が無く <code>tkinter.Tk()</code> が作れないときは skip)。別の SAD の <code>Packages</code> で試すときは <code>PYSAD_SAD_PACKAGES</code> で指定する (指定が優先)。同梱のコピーの試験は <code>script_tests/test_v250_bundled_sad_copy.py</code>。SAD 本体 (gs) が無くても通る。</li>
 <li><code>--ignore</code> する旧式の 3 本 (<code>test_bend_feeddown.py</code>・<code>test_coord.py</code>・<code>test_sext_radiation.py</code>) は、スクリプト形式で import 時に <code>sys.exit</code> を呼ぶため、pytest の収集を止める。</li>
 <li><code>PYSAD_SLOW=1</code> を設定すると、遅い試験 (CSR MakeZL など) も走る。ほかの環境変数 (<code>PYSAD_ERR_LATTICE</code>・<code>PYSAD_PY314</code>・<code>V241_POL_CACHE</code>) は <a href="script_tests/README.html"><code>script_tests/README.md</code></a> にある。</li>
 <li>試験と回帰を同時に走らせると、<code>test_plot.py::test_fitgaussian_plot_matches_gs</code> が PermissionError で落ちることがある (単独では通る)。続けて走らせる。</li>

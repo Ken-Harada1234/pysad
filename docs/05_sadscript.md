@@ -29,7 +29,7 @@ SAD のスクリプトは MAIN 部 (ラティス定義) と `FFS;` 以降の FFS
 モジュールは `Get["file"]` で読み込む。SAD は起動時に `Packages/init.n` を読み、`functions.n`,
 `MessageName.n` を `Get` し、`Fit.n` (`PolynomialFit`, `FindRoot`) や `Matrix.n`, `Optics.n` などは
 `AutoLoad[symbol, file]` で最初に使われたときに読む。pysad では `Get` はファイルを読んで
-`run(src, 'ffs')` するだけ。Packages は、環境変数 `PYSAD_SAD_PACKAGES` (無ければ pysad の隣の `SAD-master/Packages`) が見つかるときだけ `pkgload.py` が `AutoLoad` と同じく最初に使われたときに読む (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational・tableform など。[06_sadscript_library.md](06_sadscript_library.md) §5)。見つからなければ何も登録せず、必要な関数は Python 側の組み込みで動く (PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価する。Python で持つ関数はパッケージの定義で上書きしない `pkgload._protect_builtins`)。Tkinter.n・KBFrame.n・ListPlot.n・Plots.n・Canvas.n も同じ方法で読む ([20_tcltk_gui.md](20_tcltk_gui.md)、[04_ffs_small_commands.md](04_ffs_small_commands.md))。
+`run(src, 'ffs')` するだけ。Packages は、環境変数 `PYSAD_SAD_PACKAGES` のフォルダ (最優先)、無ければ pysad に同梱した SAD のコピー (`pysad/sad_copy/Packages`)、それも無ければ pysad の隣の `SAD-master/Packages` が見つかるとき `pkgload.py` が `AutoLoad` と同じく最初に使われたときに読む (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational・tableform など。[06_sadscript_library.md](06_sadscript_library.md) §5)。見つからなければ何も登録せず、必要な関数は Python 側の組み込みで動く (PolynomialFit は Fit.n の定義文字列 `_PRELUDE` を起動時に評価する。Python で持つ関数はパッケージの定義で上書きしない `pkgload._protect_builtins`)。Tkinter.n・KBFrame.n・ListPlot.n・Plots.n・Canvas.n も同じ方法で読む ([20_tcltk_gui.md](20_tcltk_gui.md)、[04_ffs_small_commands.md](04_ffs_small_commands.md))。
 
 ### 1.1 動かし方 (最小の例)
 
@@ -44,7 +44,7 @@ I.run('f[x_,y_:2]:=x+y; a={1,2,3}; Print[f[1], " ", a[2], " ", 3<>4, " ", "a"//"
 print(o.getvalue())      # → 3 2 1 ab
 ```
 
-2. ラティス付きのスクリプトは `py -3.12 run_sad.py lattice.sad script.sad` (SAD の `gs` に複数ファイルを連結して渡すのと同じ)。`ffscmd.run_sad` が MAIN 部を parser.py に、FFS 部を `Interp.run(src, 'ffs')` に渡す。Packages を使うときは先に環境変数 `PYSAD_SAD_PACKAGES` に SAD の `Packages` のフォルダを指定する。
+2. ラティス付きのスクリプトは `py -3.12 run_sad.py lattice.sad script.sad` (SAD の `gs` に複数ファイルを連結して渡すのと同じ)。`ffscmd.run_sad` が MAIN 部を parser.py に、FFS 部を `Interp.run(src, 'ffs')` に渡す。Packages は同梱のコピーが使われる (環境変数は要らない。別の SAD の `Packages` を使うときだけ `PYSAD_SAD_PACKAGES` にそのフォルダを指定する)。
 
 ## 2. 演算子と字句
 
@@ -238,7 +238,7 @@ parse はできるが未実装、または parse できないもの:
 - `Check[Return[1], 2]` は SAD では Return を失敗として捕まえて 2 を返す。pysad は Return を `General::unexpbreak` で文ごと打ち切る (2 を返さない)。`Thread[a==b]` (a が値、b が未定義) は SAD が `3==b` を返すが、pysad は `==` が 0 を返すので Thread の引数にならない。リストと記号の ==・数どうしでない `==` の未評価形は一部だけ (`{1,2}==1` は未評価、記号どうしは 0)。
 - `Out[n]:=` の表示は、最上位 (run_sad_string) の `;` なしの式文だけ。未定義の記号 1 つだけの文での SAD の表示 (前の Out の値を繰り返す) は未対応。`%%` は SAD でも記号のまま。
 - SAD に無い関数 (`Mean` `Cross` `StringSplit` など) は未評価のまま返る (SAD と同じ。`Total` は pysad の拡張で動く)
-- FFS 側: `MCOD/TCOD/MON` の COD 補正は K64 でも式として評価されて何もしない。`Steer`/`Monitor`/`CorrectOrbit` は `Packages/correction.n` を SADScript のまま実行する ([06_sadscript_library.md](06_sadscript_library.md) §5。`PYSAD_SAD_PACKAGES` が必要)。FFS コマンド・関数の対応状況と未対応の一覧は [03_ffs_commands.md](03_ffs_commands.md) §8
+- FFS 側: `MCOD/TCOD/MON` の COD 補正は K64 でも式として評価されて何もしない。`Steer`/`Monitor`/`CorrectOrbit` は `Packages/correction.n` を SADScript のまま実行する ([06_sadscript_library.md](06_sadscript_library.md) §5。同梱の SAD のコピーを使う。環境変数は要らない)。FFS コマンド・関数の対応状況と未対応の一覧は [03_ffs_commands.md](03_ffs_commands.md) §8
 - **Packages の関数** (`Log2$`・`FunctionDefinition`・`Fill$String`・`Remove$Paren`・`Union` の `SameTest`・`Names`・`Emittance->False` ほか): [06_sadscript_library.md](06_sadscript_library.md) §5。除算 `a/b` は K64 が `a*(1/b)` で計算するので最後の桁が違うことがある (`Log[100]/Log[10]` は K64 1.9999999999999998、pysad 2)。評価器全体は変えていない (全試験の基準値に影響するため。要判断)。
 - **複素引数の `PolyLog`・`HypergeometricU`・`Zeta`・`HurwitzZeta`** ([06_sadscript_library.md](06_sadscript_library.md) §1): [`pysad/specfn_cx.py`](../pysad/specfn_cx.py)。
 
@@ -274,5 +274,6 @@ parse はできるが未実装、または parse できないもの:
 - 試験は [`pysad/tests/`](../pysad/tests/) (pytest。収集 941 件、2026-11-17 に 937 通過・4 skip。この件数は k64 モードを既定にした実行のもので、現在の既定の v2 での件数は未再確認) と `pysad/tests/regression_tests/run_regression.py` (`QUICK=1` で 50 ベンチ FAIL 0。k64 モード)。
 - K64 (SAD の gs) との比較では、FIT/FREE/GO の台本 (`bench_level13a`・`13b`) の出力、色収差スキャンの台本 (`bench_level14a`、チューン 21 点が 2e-8 以内)、Element/BeamLine 系 (`bench_level24f`、164 タグ一致) が一致する。詳細な突き合わせは [27_benchmarks.md](27_benchmarks.md)。
 - 未確認・限界は §6 の各項と [31_unimplemented_and_unverified.md](31_unimplemented_and_unverified.md)。
+- 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 関連文書: [03_ffs_commands.md](03_ffs_commands.md) (FFS の語と関数)、[06_sadscript_library.md](06_sadscript_library.md) (特殊関数・Fit・Packages)、[12_pysad_api.md](12_pysad_api.md) (Python API)、[28_v2_vs_k64.md](28_v2_vs_k64.md) (v2 と k64 の違い)、[29_sad_quirks.md](29_sad_quirks.md) (SAD の癖)、[30_sad_bug_report.md](30_sad_bug_report.md) (B 番号の目録)。

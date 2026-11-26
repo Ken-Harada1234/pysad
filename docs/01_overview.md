@@ -57,11 +57,10 @@ pysad は、加速器コード SAD (K64 版) の計算 (光学・エミッタン
 
    ```
    cd "<repo>"
-   set PYSAD_SAD_PACKAGES=<SAD の Packages のフォルダ>
    py -3.12 run_sad.py example/00_lattice/FODO_ring.sad example/02_optics_cod/FFS_CALCULATE.sad
    ```
 
-   24 セルの FODO リング (3 GeV、周長 105.6 m) の最後に `NX=  6.696329  NY=  4.906056` と出る。これは水平・垂直のチューン (νx, νy) = (6.696, 4.906) である。`PYSAD_SAD_PACKAGES` は SAD 自身の `Packages/*.n` (CorrectOrbit・GUI など) を使うときに要る。
+   24 セルの FODO リング (3 GeV、周長 105.6 m) の最後に `NX=  6.696329  NY=  4.906056` と出る。これは水平・垂直のチューン (νx, νy) = (6.696, 4.906) である。SAD 自身の `Packages/*.n` (CorrectOrbit など) は pysad に同梱したコピー (`pysad/sad_copy/Packages`。出所は [`pysad/sad_copy/README.md`](../pysad/sad_copy/README.md)) を使うので、環境変数は要らない。`PYSAD_SAD_PACKAGES` は、別の SAD の `Packages` を使うときに指定する (指定があれば最優先)。GUI (Tk の窓) は `PYSAD_GUI=1` を付けたときだけ有効になる。**未確認・限界**: 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 2. Python から使う (詳細は [12_pysad_api.md](12_pysad_api.md))。
 
    ```python

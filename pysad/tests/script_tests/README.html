@@ -87,7 +87,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </ol>
 <h2 id="実行方法">実行方法</h2>
 <p>リポジトリのルートから実行する (Python 3.12)。</p>
-<pre><code>set PYSAD_SAD_PACKAGES=&lt;SAD の Packages フォルダ&gt;        (PowerShell: $env:PYSAD_SAD_PACKAGES=&quot;...&quot;)
+<pre><code>(環境変数は要らない。別の SAD の Packages を試すときだけ: set PYSAD_SAD_PACKAGES=&lt;SAD の Packages フォルダ&gt;。PowerShell: $env:PYSAD_SAD_PACKAGES=&quot;...&quot;)
 py -3.12 -m pysad.nbcache --force                          (numba のキャッシュを作り直す。初回・カーネルを直したあと)
 py -3.12 -m pytest pysad/tests/script_tests -q -p no:cacheprovider `
     --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py
@@ -95,7 +95,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 </code></pre>
 <ul>
 <li><code>--ignore</code> する 3 本は旧式のスクリプト形式で、import 時に <code>sys.exit</code> を呼ぶため pytest の収集を止める。</li>
-<li><code>PYSAD_SAD_PACKAGES</code> が無いと GUI 系 (<code>test_plot.py</code>・<code>test_tclbridge.py</code> ほか) が skip する。</li>
+<li><code>conftest.py</code> が <code>PYSAD_SAD_PACKAGES</code> の既定を同梱の SAD のコピー (<code>pysad/sad_copy/Packages</code>) にするので、環境変数なしでも GUI 系 (<code>test_plot.py</code>・<code>test_tclbridge.py</code> ほか) が走る (画面が無く <code>tkinter.Tk()</code> が作れないときは skip)。別の SAD の <code>Packages</code> を使うときだけ環境変数で指定する (指定が優先)。</li>
 <li>環境変数: <code>PYSAD_SLOW=1</code> (遅い試験も走らせる)、<code>PYSAD_ERR_LATTICE</code> (<code>test_elkern.py</code> の誤差入りラティス 2 件)、<code>PYSAD_PY314</code> (<code>test_v2_P5_tk90.py</code> の Tk 9.0 用 Python)、<code>V241_POL_CACHE</code> (偏光の比較の部品)。</li>
 <li>全部で 1 時間 45 分ほど (FITP の five が約 10 分以上)。</li>
 </ul>
@@ -307,6 +307,11 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 <td><a href="test_v250_chromaticity_bend.py"><code>test_v250_chromaticity_bend.py</code></a></td>
 <td>19</td>
 <td><code>Lattice.chromaticity()</code> の dν/dδ が偏向磁石 (なし・E1/E2・K1≠0・6 極つき) で追跡のヤコビアン・gs の <code>Twiss["NX",-1]</code> の差分と一致。<code>CHROMATICITY</code> コマンドの単位と BEND の寄与の欠落 (B325)、厚い 6 極の CALC と追跡のずれの切り分け (k64 は 4.4e-4 ずれ、v2 は 4 次にして追跡と一致)・gs の TrackParticles (B326)</td>
+</tr>
+<tr>
+<td><a href="test_v250_bundled_sad_copy.py"><code>test_v250_bundled_sad_copy.py</code></a></td>
+<td>9</td>
+<td>同梱の SAD のコピー (<code>pysad/sad_copy</code>): 各ファイルが <code>MANIFEST.sha256</code> と同じ・LICENSE と出所の README・機械固有のファイルを含まない・環境変数が無いと <code>packages_dir()</code> が同梱のコピー (あれば環境変数が優先)・環境変数なしの子プロセスで <code>fn_CorrectOrbit_Monitor_Steer</code> が走る・元の SAD の Packages との出力一致 (元の SAD が手元にあるとき。比べるのはこの 1 例だけ)・<code>PYSAD_GUI=1</code> だけで GUI の接点が動く (Tk のバージョンとフォント系の取得。画面があるとき)・<code>PYSAD_GUI</code> も環境変数も無いと GUI は付かない・パッケージ外を参照しない</td>
 </tr>
 <tr>
 <td><a href="test_v250_calc_thick_sext_4th.py"><code>test_v250_calc_thick_sext_4th.py</code></a></td>
@@ -1148,7 +1153,7 @@ py -3.12 -m pytest pysad/tests/script_tests/test_wake.py -q  (1 ファイルだ�
 <tr>
 <td><a href="test_tclbridge.py"><code>test_tclbridge.py</code></a></td>
 <td>7</td>
-<td>Tcl/Tk の接点と Tkinter.n・KBMainFrame.n の動作 (要 <code>PYSAD_SAD_PACKAGES</code>)</td>
+<td>Tcl/Tk の接点と Tkinter.n・KBMainFrame.n の動作 (Tk が使えること。Packages は同梱のコピーが既定)</td>
 </tr>
 <tr>
 <td><a href="test_v241_mpl_display.py"><code>test_v241_mpl_display.py</code></a></td>

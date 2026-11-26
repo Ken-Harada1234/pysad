@@ -567,7 +567,7 @@ SAD 側の表示桁 (10 桁、追跡は 5e-11) が比較の下限。後ろの 2 
   <code>QUICK=1</code> は遅いもの (7, 12t, 13a, 16a) を SKIP する。その 4 件も単独で実行すると PASS (最大差: 7 が 5.0e-11、12t が 3.5e-11、13a が 4.3e-21、16a が 1.4e-31。2026-11-17 の単独実行の値)。
   KNOWN (PASS*) は §4 の 3 件 (14A の EMIT dz、16A の損失周数 1 個、13A-2 の TWB)。</li>
 <li>全試験 (pytest。<code>py -3.12 -m pytest pysad/tests -q --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py</code>): <strong>2620 通過・14 skip・失敗 0</strong> (2634 件収集。通しは 2618 通過・2 失敗で、その 2 件 (版番号・索引の html) を直して再実行し通過)。gs との数値比較の試験は k64 モード (既定の v2 でなく <code>PYSAD_COMPAT=k64</code>) で走る (<code>pysad/tests/script_tests/conftest.py</code> が既定を k64 にする。docs/28)。<ul>
-<li>GUI 系 (<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>, <a href="../pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数 <code>PYSAD_SAD_PACKAGES=&lt;SAD の Packages のフォルダ&gt;</code> がないと GUI 系は skip する。</li>
+<li>GUI 系 (<a href="../pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>, <a href="../pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>) は全体実行で数回に 1 回失敗することがある (単独なら通る)。環境変数がなくても、同梱の SAD のコピーで走る (画面が無く <code>tkinter.Tk()</code> が作れないときは skip)。</li>
 <li><code>PYSAD_SLOW=1</code> で遅い試験 (CSR の MakeZL、約 7 分) も走る。通常の全試験 (2521 通過) にはこれは含まれない。</li>
 <li>SAD 本体 (gs) が無くても通る (gs の値は試験の中か <a href="../pysad/tests/"><code>pysad/tests/</code></a> のデータに埋め込み)。</li>
 </ul>
@@ -703,7 +703,12 @@ SAD 側の表示桁 (10 桁、追跡は 5e-11) が比較の下限。後ろの 2 
 </table>
 <h3 id="61-限界未確認-上の表の裏側">6.1 限界・未確認 (上の表の裏側)</h3>
 <ul>
-<li>上の一致はどれも、特定のエネルギー・リング (12 セルのリング、小リング、603 m の 3GLS 型 など。試験のラティスごとに異なる) と、試験に固定した入力での値で、一般の入力での一致ではない。</li>
+<li>
+<p>同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</p>
+</li>
+<li>
+<p>上の一致はどれも、特定のエネルギー・リング (12 セルのリング、小リング、603 m の 3GLS 型 など。試験のラティスごとに異なる) と、試験に固定した入力での値で、一般の入力での一致ではない。</p>
+</li>
 <li>SynchroBetaEmittance: 2026-11-16 に 24 セルの平面リング + CAVI (AzimuthalModes-&gt;7) の 4 点で emitx が gs と相対 1.4e-7〜1.4e-6 で一致。結合のあるラティスは gs が SIGSEGV で落ちて比較できず、pysad も NaN→整数の ValueError で失敗する。不安定なチューン、<code>emiout</code>、RFSW の組み合わせは未確認。条件数 3e6 の連立方程式の解き方 (K64 の tsvd と numpy の SVD) と閉軌道の収束履歴が差の原因と考えているが、確かめていない。</li>
 <li>POL のスピン追跡は、SOL (BZ≠0) 内の四極のスピンを gs と照合できていない (§6.3)。SOL 領域内の MULT・BEND・CAVI は未対応。<code>Polarization</code> は K64 が NaN を返す (B55)。</li>
 <li>CSR の ScanTrack・OYStability などの長い流れは未照合。<code>CSR.n</code> の <code>TrackAnimate</code> は <code>System["import …"]</code> (ImageMagick) と <code>System["mkdir …"]</code> を呼ぶため Windows の pysad では画像が作れない (2026-11-16 にソースで確認)。<code>Wait[mem]</code> の <code>FreeMem[]</code> は gs がこの環境で top が無く OpenRead エラー、pysad は psutil で 1.0 を返す。並列を増やすと速くなるかは未確認 (pysad は fork しない)。</li>

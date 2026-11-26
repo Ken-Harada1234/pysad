@@ -181,7 +181,7 @@ r<span class="o">=</span>CSRInit[{{<span class="m">0.5e-3</span>,<span class="m"
 <li><code>CSRInit</code> の第 1 要素に実数 1 つを渡すと、K64 は dx を読まず 0 のまま (バグ) で常に <code>wrongtype</code>。必ず <code>{dx, dy}</code> で渡す。</li>
 </ul>
 <h3 id="25-csrn-ダクトから-zl-を作る">2.5 CSR.n: ダクトから ZL を作る</h3>
-<p><code>CSR</code>、<code>CSRStability</code> は <code>init.n</code> の AutoLoad の表にあり、pysad も最初に使われたときだけ <code>Packages/CSR.n</code> を読む (<code>PYSAD_SAD_PACKAGES</code> か、pysad の隣の <code>SAD-master/Packages</code> が必要)。</p>
+<p><code>CSR</code>、<code>CSRStability</code> は <code>init.n</code> の AutoLoad の表にあり、pysad も最初に使われたときだけ <code>Packages/CSR.n</code> を読む (pysad に同梱した SAD のコピー <code>pysad/sad_copy/Packages</code> を使う。環境変数は要らない。別の SAD の <code>Packages</code> は <code>PYSAD_SAD_PACKAGES</code> で指定)。</p>
 <pre><code class="language-sad"><span class="k">FFS</span>;
 $FORM<span class="o">=</span><span class="s">"18.14"</span>;
 PageWidth<span class="o">=</span><span class="m">1999</span>;
@@ -304,7 +304,7 @@ r<span class="o">=</span>s<span class="o">@</span>OYStability[aw,nj,nphi];      
 <h2 id="6-検証">6. 検証</h2>
 <ul>
 <li><code>CSRTrack</code>・<code>CSRHaissin</code> は K64 (gs) と相対 1e-11、<code>CSRMatrix</code>・<code>CSRConvert</code>・<code>CSRInit</code> は 1e-10〜1e-13、<code>CSRSetupOY</code> は 1e-9〜1e-7、<code>MakeZL</code> (3 周波数・1 区間) は 1e-10 以内で一致する。</li>
-<li>試験は <code>py -3.12 -m pytest pysad/tests/script_tests/test_csr.py</code> (<code>PYSAD_SAD_PACKAGES</code> 付きで 6 通過・1 skip。skip は <code>PYSAD_SLOW=1</code> が要る <code>MakeZL</code>)。</li>
+<li>試験は <code>py -3.12 -m pytest pysad/tests/script_tests/test_csr.py</code> (6 通過・1 skip。Packages は同梱のコピーが既定。skip は <code>PYSAD_SLOW=1</code> が要る <code>MakeZL</code>)。</li>
 <li>試験の量は小さい値の人工的な ZL・断面で、実機のパラメータ (エネルギー、実際のダクト、周長) での物理的な妥当性の検証ではない。<code>MakeZL</code> の照合は 3 周波数・1 区間だけ。</li>
 <li>一致の表は <a href="history/15_csr_validation.md"><code>docs/history/15_csr_validation.md</code></a>。</li>
 </ul>
@@ -317,7 +317,12 @@ r<span class="o">=</span>s<span class="o">@</span>OYStability[aw,nj,nphi];      
 </ul>
 <h3 id="72-限界未確認">7.2 限界・未確認</h3>
 <ul>
-<li><code>ScanTrack</code>・<code>OYStability</code>・<code>OYScan</code>・<code>GuessOYStability*</code>・<code>ScanBL</code>・<code>TrackAnimate</code> (画像の生成は pysad では不可、上記)・<code>SetupZL</code>・<code>GetZL</code>・<code>CSRStability</code> のコンストラクタ・<code>ReadWake</code>・<code>MakeEz</code> の長い流れは、gs と照合していない (pysad での完走の試験もない)。<code>OYStability</code> は B60 により gs では参照が取れない。</li>
+<li>
+<p>同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</p>
+</li>
+<li>
+<p><code>ScanTrack</code>・<code>OYStability</code>・<code>OYScan</code>・<code>GuessOYStability*</code>・<code>ScanBL</code>・<code>TrackAnimate</code> (画像の生成は pysad では不可、上記)・<code>SetupZL</code>・<code>GetZL</code>・<code>CSRStability</code> のコンストラクタ・<code>ReadWake</code>・<code>MakeEz</code> の長い流れは、gs と照合していない (pysad での完走の試験もない)。<code>OYStability</code> は B60 により gs では参照が取れない。</p>
+</li>
 <li>描画 (<code>WLPlot</code> <code>ZLPlot</code> <code>PipePlot</code> <code>EzPlot</code> <code>Er0Plot</code>) の出力は確認していない。</li>
 <li><code>CSROYMatrix</code> の値は、手で作った入力 (nr=64、nj=3、nphi=2) で gs と一致、<code>CSRSetupOY</code> の出力から作ったものは gs が作れず未照合。nj・nphi が大きい手作りの入力、<code>OYStability</code>・<code>OYScan</code> の gs との比較は未確認。</li>
 <li>抵抗壁 (<code>Resistive-&gt;True</code>、<code>ResDamp</code>) と <code>Adaptive-&gt;True</code> の経路は gs と照合していない。</li>

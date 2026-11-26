@@ -6,6 +6,8 @@
 
 > **注意 / Notice**: PyPI のパッケージ名は `pysad-k64` です。PyPI にある異常検知ライブラリ `pysad` (Streaming anomaly detection) とは**無関係の別物**です。import 名はどちらも `pysad` なので、**同じ Python 環境に両方をインストールしないでください** (仮想環境を分けてください)。 / The PyPI package `pysad-k64` is **unrelated** to the streaming anomaly-detection library `pysad`. Both use the import name `pysad`; do not install both into the same environment.
 
+> **SAD のコピーを同梱 / Bundled copy of SAD files**: この pysad には、**SAD のソースからコピーした `Packages/*.n` (71 本) と KBFrame の設定・画像 (44 本)** が `pysad/sad_copy/` に同梱されています (`pysad/sad_copy/` 全体で 118 ファイル、約 1.4 MB。中身は変更していません)。KEK Accelerator Laboratory の著作物で、SAD と同じ BSD 3 条項で再配布しています。出所・コピーしたもの・しなかったものは [`pysad/sad_copy/README.md`](pysad/sad_copy/README.md)、ライセンスは `LICENSE` (末尾の節も) を参照してください。 This package bundles unmodified copies of SAD's `Packages/*.n` (71 files) and KBFrame resources (44 files) under `pysad/sad_copy/` (118 files, about 1.4 MB in total). They are the work of KEK Accelerator Laboratory and are redistributed under SAD's BSD 3-clause license; see `LICENSE` and `pysad/sad_copy/README.md` for provenance and for what was and was not copied.
+
 # pysad — SAD (K64 版) の Python 直訳
 
 > **直訳と v2 の違い (注釈)**: 以下の「直訳」は、K64 に忠実な翻訳 (v1 系) の方針です。**現在の pysad (v2 系) は直訳ではありません。** v2 は K64 を出発点に、K64 のバグの修正、物理の誤りの修正、機能の追加を行ったもので、**gs (K64) と結果が変わる箇所があります** ([`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md))。gs と同じ結果が要るときは、環境変数 `PYSAD_COMPAT=k64` (互換モード。K64 と同じ動作) を指定してください。なお、v2 でも、K64 の式・分割数・反復順序を写したコードの大部分は、そのままです。
@@ -32,9 +34,12 @@ pip install pysad-k64
 | 道具 | `tools/` (md から HTML を作る `build_html.py`・図を作るスクリプト) | **省かれる** |
 | 変更履歴・ライセンス | `CHANGELOG.md` (GitHub にある)。`LICENSE` は配布物のメタデータに入る | CHANGELOG は省かれる |
 | 作業用のファイル | `example/_deletable/` (削除してよい作業ファイル)・`local/`・ビルドの中間物 | **省かれる** |
-| SAD 本体 | K64 版のソース (`src/*.f`・`Packages/*.n`)・実行ファイル `gs` | **含まれない** (別に入手。pysad は SAD なしで動く。SAD の `Packages/*.n` を使う機能 (GUI・CorrectOrbit など) は、`PYSAD_SAD_PACKAGES` に `Packages` のフォルダを指定する) |
+| SAD の `Packages/*.n` と `KBFrame` | KEK の SAD のソースからコピーした SADScript の補助スクリプト (CorrectOrbit・Steer・Monitor・MakeBump・OptimizeOptics・Couple・Tkinter.n・KBFrame.n など。`Packages` 71 本、`KBFrame` 44 本)。`pysad/sad_copy/` (118 ファイル、約 1.4 MB: `Packages` 71・`KBFrame` 44・`LICENSE`・`README.md`・`MANIFEST.sha256`)。SAD の `LICENSE` (BSD 3 条項、KEK Accelerator Laboratory) つき | **入る** (SAD からのコピー。中身は変えていない。出所・省いたものは [`pysad/sad_copy/README.md`](pysad/sad_copy/README.md)。環境変数なしで使える) |
+| SAD の Fortran のソース (`src/*.f`)・実行ファイル `gs` | K64 版のソースと実行ファイル | **含まれない** (別に入手。pysad は `gs` なしで動く。gs との比較の試験は、保存した gs の出力と比べる) |
 
 全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。
+
+**同梱の SAD のコピー** (`pysad/sad_copy/`): `CorrectOrbit`・`Steer`・`Monitor`・`MakeBump` などの SADScript のパッケージは、環境変数なしで、このコピーの `Packages/*.n` が最初に使われたときに読まれます。コピーは SAD (KEK Accelerator Laboratory、K64 版のソース配布) のファイルをそのまま (バイト単位で同じに) 置いたもので、pysad が書いたものではありません。ライセンスは SAD の `LICENSE` (BSD 3 条項) で、`pysad/sad_copy/LICENSE` にあります。出所・コピーした日・コピーしていないもの (`init.local.n`、バックアップ、`*.py`、`CVS`、Fortran のソース、`gs`) は [`pysad/sad_copy/README.md`](pysad/sad_copy/README.md) に書いてあります。別の SAD の `Packages` を使うときは、環境変数 `PYSAD_SAD_PACKAGES` にそのフォルダを指定します (指定があれば最優先)。Tcl/Tk の GUI (Plot などを画面に描く) は、画面を勝手に開かないよう、`PYSAD_GUI=1` か `PYSAD_SAD_PACKAGES` があるときだけ有効になります (`PYSAD_GUI=1` なら環境変数なしで同梱のコピーを使う)。**未確認・限界**: 同梱の SAD のコピー (`pysad/sad_copy`) を元の SAD と比べたのは、3 つの例 (`fn_CorrectOrbit_Monitor_Steer`・`fn_CorrectLocal`・`fn_CSROYMatrix`) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、`PYSAD_GUI=1`) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。
 
 PyPI: <https://pypi.org/project/pysad-k64/>。import 名は `pysad` です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード `PYSAD_COMPAT=k64` で K64 と同じ動作をします (直訳ではありません)。インストールした版は `pysad.__version__` で確認できます。ソースに忠実な翻訳 (v1 系) は `pip install pysad-k64==1.0.0` で入ります。
 
@@ -368,7 +373,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 - 試験: `py -3.12 -m pytest pysad/tests -q -p no:cacheprovider --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py` (`--ignore` する旧式の 3 本)。
   回帰ベンチ: リポジトリのルートから `QUICK=1 py -3.12 -u pysad/tests/regression_tests/run_regression.py` (遅い 4 本を省略。目安 約 7 分。省略しないと約 17 分。SAD の実行は不要)。
   説明は [`pysad/tests/README.md`](pysad/tests/README.md)・[`script_tests/README.md`](pysad/tests/script_tests/README.md)・[`regression_tests/README.md`](pysad/tests/regression_tests/README.md)。
-  GUI 系 ([`test_plot.py`](pysad/tests/script_tests/test_plot.py)、[`test_tclbridge.py`](pysad/tests/script_tests/test_tclbridge.py)) は環境変数 `PYSAD_SAD_PACKAGES` (K64 の `Packages` の場所) が無いと skip。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL、約 7 分) も走る。
+  GUI 系 ([`test_plot.py`](pysad/tests/script_tests/test_plot.py)、[`test_tclbridge.py`](pysad/tests/script_tests/test_tclbridge.py)) は、試験の `conftest.py` が環境変数 `PYSAD_SAD_PACKAGES` の既定を同梱のコピー (`pysad/sad_copy/Packages`) にするので、環境変数なしでも走る (別の SAD の `Packages` を試すときだけ環境変数で指定。画面が無く `tkinter.Tk()` が作れないときは skip)。`PYSAD_SLOW=1` で遅い試験 (CSR MakeZL、約 7 分) も走る。
   回帰ベンチの基準結果 (`bench/*.result`) は、あらかじめ SAD (K64) で取って保存したもの。
   誤差入りラティスを使う [`test_elkern.py`](pysad/tests/script_tests/test_elkern.py) の 2 件は環境変数 `PYSAD_ERR_LATTICE` (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。
 
@@ -407,7 +412,8 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 | [`test_spin.py`](pysad/tests/script_tests/test_spin.py)、[`test_spin_track.py`](pysad/tests/script_tests/test_spin_track.py) | POL (Emittance のスピン、TrackParticles のスピン追跡) |
 | [`test_radfield.py`](pysad/tests/script_tests/test_radfield.py)、[`test_radlight.py`](pysad/tests/script_tests/test_radlight.py) | RadiationField、RADLIGHT |
 | [`test_delcor.py`](pysad/tests/script_tests/test_delcor.py)、[`test_corr.py`](pysad/tests/script_tests/test_corr.py)、[`test_optics_fn.py`](pysad/tests/script_tests/test_optics_fn.py) | DELCOR、軌道補正、光学の補助関数 |
-| [`test_sadclass.py`](pysad/tests/script_tests/test_sadclass.py)、[`test_gui_lang.py`](pysad/tests/script_tests/test_gui_lang.py)、[`test_tclbridge.py`](pysad/tests/script_tests/test_tclbridge.py)、[`test_plot.py`](pysad/tests/script_tests/test_plot.py) | Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は `PYSAD_SAD_PACKAGES` が必要) |
+| [`test_sadclass.py`](pysad/tests/script_tests/test_sadclass.py)、[`test_gui_lang.py`](pysad/tests/script_tests/test_gui_lang.py)、[`test_tclbridge.py`](pysad/tests/script_tests/test_tclbridge.py)、[`test_plot.py`](pysad/tests/script_tests/test_plot.py) | Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は Tk が使えることが必要。Packages は同梱のコピーが既定) |
+| [`test_v250_bundled_sad_copy.py`](pysad/tests/script_tests/test_v250_bundled_sad_copy.py) | 同梱の SAD のコピー (`pysad/sad_copy`) の試験 (中身が `MANIFEST.sha256` と同じ・LICENSE と出所の README・環境変数なしで Packages が使える・`PYSAD_GUI=1` で GUI の接点が動く) |
 
 ## [`docs/history/`](docs/history/) (作業履歴)
 

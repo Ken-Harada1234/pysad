@@ -76,6 +76,7 @@ pre .o { opacity:.8; }
 </ul>
 <blockquote>
 <p><strong>注意 / Notice</strong>: PyPI のパッケージ名は <code>pysad-k64</code> です。PyPI にある異常検知ライブラリ <code>pysad</code> (Streaming anomaly detection) とは<strong>無関係の別物</strong>です。import 名はどちらも <code>pysad</code> なので、<strong>同じ Python 環境に両方をインストールしないでください</strong> (仮想環境を分けてください)。 / The PyPI package <code>pysad-k64</code> is <strong>unrelated</strong> to the streaming anomaly-detection library <code>pysad</code>. Both use the import name <code>pysad</code>; do not install both into the same environment.</p>
+<p><strong>SAD のコピーを同梱 / Bundled copy of SAD files</strong>: この pysad には、<strong>SAD のソースからコピーした <code>Packages/*.n</code> (71 本) と KBFrame の設定・画像 (44 本)</strong> が <code>pysad/sad_copy/</code> に同梱されています (<code>pysad/sad_copy/</code> 全体で 118 ファイル、約 1.4 MB。中身は変更していません)。KEK Accelerator Laboratory の著作物で、SAD と同じ BSD 3 条項で再配布しています。出所・コピーしたもの・しなかったものは <a href="pysad/sad_copy/README.html"><code>pysad/sad_copy/README.md</code></a>、ライセンスは <code>LICENSE</code> (末尾の節も) を参照してください。 This package bundles unmodified copies of SAD's <code>Packages/*.n</code> (71 files) and KBFrame resources (44 files) under <code>pysad/sad_copy/</code> (118 files, about 1.4 MB in total). They are the work of KEK Accelerator Laboratory and are redistributed under SAD's BSD 3-clause license; see <code>LICENSE</code> and <code>pysad/sad_copy/README.md</code> for provenance and for what was and was not copied.</p>
 </blockquote>
 <h1 id="pysad--sad-k64-版-の-python-直訳">pysad — SAD (K64 版) の Python 直訳</h1>
 <blockquote>
@@ -146,13 +147,19 @@ pre .o { opacity:.8; }
 <td><strong>省かれる</strong></td>
 </tr>
 <tr>
-<td>SAD 本体</td>
-<td>K64 版のソース (<code>src/*.f</code>・<code>Packages/*.n</code>)・実行ファイル <code>gs</code></td>
-<td><strong>含まれない</strong> (別に入手。pysad は SAD なしで動く。SAD の <code>Packages/*.n</code> を使う機能 (GUI・CorrectOrbit など) は、<code>PYSAD_SAD_PACKAGES</code> に <code>Packages</code> のフォルダを指定する)</td>
+<td>SAD の <code>Packages/*.n</code> と <code>KBFrame</code></td>
+<td>KEK の SAD のソースからコピーした SADScript の補助スクリプト (CorrectOrbit・Steer・Monitor・MakeBump・OptimizeOptics・Couple・Tkinter.n・KBFrame.n など。<code>Packages</code> 71 本、<code>KBFrame</code> 44 本)。<code>pysad/sad_copy/</code> (118 ファイル、約 1.4 MB: <code>Packages</code> 71・<code>KBFrame</code> 44・<code>LICENSE</code>・<code>README.md</code>・<code>MANIFEST.sha256</code>)。SAD の <code>LICENSE</code> (BSD 3 条項、KEK Accelerator Laboratory) つき</td>
+<td><strong>入る</strong> (SAD からのコピー。中身は変えていない。出所・省いたものは <a href="pysad/sad_copy/README.html"><code>pysad/sad_copy/README.md</code></a>。環境変数なしで使える)</td>
+</tr>
+<tr>
+<td>SAD の Fortran のソース (<code>src/*.f</code>)・実行ファイル <code>gs</code></td>
+<td>K64 版のソースと実行ファイル</td>
+<td><strong>含まれない</strong> (別に入手。pysad は <code>gs</code> なしで動く。gs との比較の試験は、保存した gs の出力と比べる)</td>
 </tr>
 </tbody>
 </table>
 <p>全体で約 90 MB です (展開後。ダウンロードは約 46 MB)。試験と回帰を動かす・文書と HTML を作り直す・変更履歴を見るときは、リポジトリを clone してください。</p>
+<p><strong>同梱の SAD のコピー</strong> (<code>pysad/sad_copy/</code>): <code>CorrectOrbit</code>・<code>Steer</code>・<code>Monitor</code>・<code>MakeBump</code> などの SADScript のパッケージは、環境変数なしで、このコピーの <code>Packages/*.n</code> が最初に使われたときに読まれます。コピーは SAD (KEK Accelerator Laboratory、K64 版のソース配布) のファイルをそのまま (バイト単位で同じに) 置いたもので、pysad が書いたものではありません。ライセンスは SAD の <code>LICENSE</code> (BSD 3 条項) で、<code>pysad/sad_copy/LICENSE</code> にあります。出所・コピーした日・コピーしていないもの (<code>init.local.n</code>、バックアップ、<code>*.py</code>、<code>CVS</code>、Fortran のソース、<code>gs</code>) は <a href="pysad/sad_copy/README.html"><code>pysad/sad_copy/README.md</code></a> に書いてあります。別の SAD の <code>Packages</code> を使うときは、環境変数 <code>PYSAD_SAD_PACKAGES</code> にそのフォルダを指定します (指定があれば最優先)。Tcl/Tk の GUI (Plot などを画面に描く) は、画面を勝手に開かないよう、<code>PYSAD_GUI=1</code> か <code>PYSAD_SAD_PACKAGES</code> があるときだけ有効になります (<code>PYSAD_GUI=1</code> なら環境変数なしで同梱のコピーを使う)。<strong>未確認・限界</strong>: 同梱の SAD のコピー (<code>pysad/sad_copy</code>) を元の SAD と比べたのは、3 つの例 (<code>fn_CorrectOrbit_Monitor_Steer</code>・<code>fn_CorrectLocal</code>・<code>fn_CSROYMatrix</code>) の出力の一致だけ。SAD の最新版との差は確認していない。GUI の接点を同梱のコピーだけ (環境変数なし、<code>PYSAD_GUI=1</code>) で動かした確認は、1 つの試験 (Tk のバージョンとフォント系の取得) だけ。</p>
 <p>PyPI: <a href="https://pypi.org/project/pysad-k64/">https://pypi.org/project/pysad-k64/</a>。import 名は <code>pysad</code> です (パッケージ名と違います)。K64 のバグの修正と機能の追加を含み、互換モード <code>PYSAD_COMPAT=k64</code> で K64 と同じ動作をします (直訳ではありません)。インストールした版は <code>pysad.__version__</code> で確認できます。ソースに忠実な翻訳 (v1 系) は <code>pip install pysad-k64==1.0.0</code> で入ります。</p>
 <p>図入りの HTML (数式・コードの色分けつき) は、ダウンロードなしでブラウザから読めます: <a href="https://ken-harada1234.github.io/pysad/">https://ken-harada1234.github.io/pysad/</a> (入口)。全文検索は <a href="https://ken-harada1234.github.io/pysad/search.html">https://ken-harada1234.github.io/pysad/search.html</a>。公開の設定は <a href="tools/README.html"><code>tools/README.md</code></a> の「GitHub Pages で公開する」。</p>
 <h2 id="必要なもの">必要なもの</h2>
@@ -1177,7 +1184,7 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 <li>試験: <code>py -3.12 -m pytest pysad/tests -q -p no:cacheprovider --ignore=pysad/tests/script_tests/test_bend_feeddown.py --ignore=pysad/tests/script_tests/test_coord.py --ignore=pysad/tests/script_tests/test_sext_radiation.py</code> (<code>--ignore</code> する旧式の 3 本)。
   回帰ベンチ: リポジトリのルートから <code>QUICK=1 py -3.12 -u pysad/tests/regression_tests/run_regression.py</code> (遅い 4 本を省略。目安 約 7 分。省略しないと約 17 分。SAD の実行は不要)。
   説明は <a href="pysad/tests/README.html"><code>pysad/tests/README.md</code></a>・<a href="pysad/tests/script_tests/README.html"><code>script_tests/README.md</code></a>・<a href="pysad/tests/regression_tests/README.html"><code>regression_tests/README.md</code></a>。
-  GUI 系 (<a href="pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>、<a href="pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>) は環境変数 <code>PYSAD_SAD_PACKAGES</code> (K64 の <code>Packages</code> の場所) が無いと skip。<code>PYSAD_SLOW=1</code> で遅い試験 (CSR MakeZL、約 7 分) も走る。
+  GUI 系 (<a href="pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a>、<a href="pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>) は、試験の <code>conftest.py</code> が環境変数 <code>PYSAD_SAD_PACKAGES</code> の既定を同梱のコピー (<code>pysad/sad_copy/Packages</code>) にするので、環境変数なしでも走る (別の SAD の <code>Packages</code> を試すときだけ環境変数で指定。画面が無く <code>tkinter.Tk()</code> が作れないときは skip)。<code>PYSAD_SLOW=1</code> で遅い試験 (CSR MakeZL、約 7 分) も走る。
   回帰ベンチの基準結果 (<code>bench/*.result</code>) は、あらかじめ SAD (K64) で取って保存したもの。
   誤差入りラティスを使う <a href="pysad/tests/script_tests/test_elkern.py"><code>test_elkern.py</code></a> の 2 件は環境変数 <code>PYSAD_ERR_LATTICE</code> (SAD スクリプトのパス) を指定したときだけ走る (無ければ skip)。</li>
 </ul>
@@ -1302,7 +1309,11 @@ SADScript のインタプリタと FFS のコマンド層を持ち、SAD のス�
 </tr>
 <tr>
 <td><a href="pysad/tests/script_tests/test_sadclass.py"><code>test_sadclass.py</code></a>、<a href="pysad/tests/script_tests/test_gui_lang.py"><code>test_gui_lang.py</code></a>、<a href="pysad/tests/script_tests/test_tclbridge.py"><code>test_tclbridge.py</code></a>、<a href="pysad/tests/script_tests/test_plot.py"><code>test_plot.py</code></a></td>
-<td>Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は <code>PYSAD_SAD_PACKAGES</code> が必要)</td>
+<td>Class、GUI の言語機能、Tcl/Tk の接点、描画 (後 2 本は Tk が使えることが必要。Packages は同梱のコピーが既定)</td>
+</tr>
+<tr>
+<td><a href="pysad/tests/script_tests/test_v250_bundled_sad_copy.py"><code>test_v250_bundled_sad_copy.py</code></a></td>
+<td>同梱の SAD のコピー (<code>pysad/sad_copy</code>) の試験 (中身が <code>MANIFEST.sha256</code> と同じ・LICENSE と出所の README・環境変数なしで Packages が使える・<code>PYSAD_GUI=1</code> で GUI の接点が動く)</td>
 </tr>
 </tbody>
 </table>
