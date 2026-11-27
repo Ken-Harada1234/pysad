@@ -69,6 +69,46 @@ def _pxy2dpz(px, py):
 # tradke のスピン部 (photons.f 1521-1616)
 # ---------------------------------------------------------------------------
 
+def _edge_rot(st, psi, dpsi, pv, dpv, pr, h1, dh1r, transr):
+    """v2 (B137): 端の縦磁場の積分 ψ (p0 で規格化。粒子の運動量 (1+δ) で規格化し直す) だけのスピンの歳差を srot (3x9) に掛ける。
+    運動量の向き pv (3 成分、単位ベクトル) の成分に (1+a)、垂直な成分に (1+aγ)。dpsi・dpv はローカルな 6 成分座標 (放射の基準点) についての微分 (6 / 3x6)。
+    座標系は回さない。srot[:, 3:9] に回転ベクトルの微分を足し (transr 経由)、9 列全部を回す (tradke_spin の本体の歳差と同じ式)"""
+    beta = psi / pr
+    dbeta = dpsi / pr
+    dbeta[5] -= psi / pr ** 2
+    b = np.array([0.0, 0.0, beta])
+    db = np.zeros((3, 6))
+    db[2, :] = dbeta
+    bpk = float(b @ pv)
+    dbpk = db.T @ pv + dpv.T @ b
+    bl = bpk * pv
+    dbl = np.outer(pv, dbpk) + bpk * dpv
+    bt = b - bl
+    dbt = db - dbl
+    ct = h1 * GSPIN
+    dct = ct * dh1r
+    ct += 1.0
+    g3 = ct * bt + CL * bl
+    dg3 = ct * dbt + CL * dbl
+    dg3[:, 5] += dct * bt
+    srot = st.srot
+    for i in range(3):
+        srot[i, 3:9] += dg3[i] @ transr
+    g = math.sqrt(float(g3 @ g3))
+    if g != 0.0:
+        sinu, cosu, dcosu = xsincos(g)
+        sinu = sinu / g
+        gx, gy, gz = g3
+        sx, sy, sz = srot[0].copy(), srot[1].copy(), srot[2].copy()
+        sw = -(sx * gx + sy * gy + sz * gz) * dcosu / g ** 2
+        sux = sy * gz - sz * gy
+        suy = sz * gx - sx * gz
+        suz = sx * gy - sy * gx
+        srot[0] = cosu * sx + sinu * sux + sw * gx
+        srot[1] = cosu * sy + sinu * suy + sw * gy
+        srot[2] = cosu * sz + sinu * suz + sw * gz
+
+
 def tradke_spin(st, c):
     """Update the spin one-turn matrix and depolarization vector (st.srot, st.gintd) from the local quantities of tradke.
     c: _State.tradke のローカル量の dict。st.srot / st.gintd を更新する。transr は更新前の値 (st.transr)"""
@@ -97,6 +137,16 @@ def tradke_spin(st, c):
     dxpy = ddpz * pxr0 + pz * dpxr0 - tr2[1, :] * pz0 - px * dpz0
     dxpz = tr2[1, :] * pyi + px * dpyi - tr2[3, :] * pxr0 - py * dpxr0
     dh1r = p * p0 / h1 ** 2
+    from . import compat as _compat0
+    ein = getattr(st, 'edge_in', None)
+    eout = getattr(st, 'edge_out', None)
+    st.edge_in = st.edge_out = None
+    if ein is not None and _compat0.spin_edge_split():
+        # v2 (B137): 入口の端の ψ は、刻みの本体の前の独立な回転 (放射の基準点の運動量の向き)
+        pv_in = np.array([pxi, pyi, pz00]) / pr
+        dpv_in = np.array([dpxi, dpyi, dpz00]) / pr
+        dpv_in[:, 5] -= pv_in / pr
+        _edge_rot(st, ein[0], ein[1].copy(), pv_in, dpv_in, pr, h1, dh1r, transr)
 
     bsir0 = st.bsir0
     pxh = (pxr0 + px) / pr * 0.5
@@ -262,6 +312,12 @@ def tradke_spin(st, c):
             _acc_step(st, c, btx / bt, bty / bt, btz / bt, _w)
     srot[0] = cp * srot[0] + sp * srot[2]
     srot[2] = (-sp * srot[0] + srot[2]) / cp       # 更新後の 1 行目を使う (K64 のまま)
+    if eout is not None and _compat0.spin_edge_split():
+        # v2 (B137): 出口の端の ψ は、刻みの本体と座標系の回転の後の独立な回転 (刻みの終わりの運動量の向き)。ψ の座標の微分は刻みの終わりの座標 → tr2 で基準点に戻す
+        pv_out = np.array([px, py, pz]) / pr
+        dpv_out = np.array([tr2[1, :], tr2[3, :], ddpz]) / pr
+        dpv_out[:, 5] -= pv_out / pr
+        _edge_rot(st, eout[0], eout[1] @ tr2, pv_out, dpv_out, pr, h1, dh1r, transr)
 
 
 def _acc_step(st, c, bhx, bhy, bhz, w):

@@ -151,7 +151,7 @@ def test_sideband_is_small_at_low_energy_and_planar_ring_is_unchanged(v2_mode):
     assert abs(sp['equpol'][0] - PST) < 1e-7
     ffs, _ = ffscmd.run_sad_string(_lat(3.0, 1.5), out=io.StringIO())
     sp = emit6d.emittance6d(ffs.lat, ffs.momentum(), rfsw=True, radcod=True, pol=True)['spin']
-    assert abs(sp['depol_rate_linear'] / 5.8504e-11 - 1) < 0.02      # v2.4.0 D (B165): 5.52e-11 → 5.850e-11 (+6%。垂直の D への本体の B∥。以前はこの値が「平面リングで変わらない」基準だった。B∥ なしとの差は spin_bpar=False で戻る)
+    assert abs(sp['depol_rate_linear'] / 5.9759e-11 - 1) < 0.02      # v2.4.0 D (B165): 5.52e-11 → 5.850e-11 (+6%。垂直の D への本体の B∥。B342 (端の ψ の独立な回転) で 5.976e-11 (+2.1%)。以前はこの値が「平面リングで変わらない」基準だった。B∥ なしとの差は spin_bpar=False で戻る)
     assert 1.05 < sp['depol_rate'] / sp['depol_rate_linear'] < 1.25
 
 

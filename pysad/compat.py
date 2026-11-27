@@ -188,6 +188,31 @@ def set_spin_bpar(m):
 
 
 # ---------------------------------------------------------------------------------------------
+# B137 (v2): BEND の端の縦磁場 ψ の歳差を、刻みの本体の歳差と別の回転として順に掛ける (追跡)。K64 の tradk の sprot は入口の ψ を最初の刻みの、
+# 出口の ψ を最後の刻みの回転ベクトルに足して 1 回で回す。回転は非可換なので、刻み 1 つ分の偏向角 θ_n に比例する誤差 (ψ θ_n の 1 次) が残り、
+# スピン軌道結合 D (y・py の列) が刻みの数に反比例してずれる (0.5 GeV・15° 扇形・K1=0 で D[x,y] の誤差が −D/n)。v2 は入口の ψ を最初の刻みの本体の前に、
+# 出口の ψ を最後の刻みの本体の後に、独立な回転として掛ける。v2 かつ B165 (spin_bpar) が有効なときだけ。k64 は K64 のまま。
+# 切り替え: 環境変数 PYSAD_SPIN_EDGE_SPLIT=0 で無効、または pysad.compat.set_spin_edge_split(False)。
+# ---------------------------------------------------------------------------------------------
+_spin_edge_split = None
+
+
+def spin_edge_split():
+    if not spin_bpar():
+        return False
+    if _spin_edge_split is not None:
+        return bool(_spin_edge_split)
+    return os.environ.get('PYSAD_SPIN_EDGE_SPLIT', '1').strip().lower() not in ('0', 'false', 'off', 'no')
+
+
+def set_spin_edge_split(m):
+    """Force the separate edge rotation of B137 on or off; None restores the default (True in v2 with B165).
+    B137 の端の ψ の独立な回転を強制 (True/False)。None で既定 (v2 かつ B165 なら True) に戻す"""
+    global _spin_edge_split
+    _spin_edge_split = m
+
+
+# ---------------------------------------------------------------------------------------------
 # EMITDIV の既定 (v2.4.0)。Emittance[]・EMIT の放射の刻みの倍率。K64 の既定は 1 (k64 は常に 1)。
 # 1 では 1 刻みの放射の入れ方が粗く、εx が +1e-3〜+2e-2 大きい (大きなリング A +2.2%、PF +2.2e-3、矩形磁石の小リング +1.4e-3。
 # EMITDIV = 4 で 2e-4 以下、実行時間の増加は 0.1 s 以下。docs/28 v2.4.0)。v2 の既定は 4 (大域変数 EMITDIV を台本で与えれば、その値)。

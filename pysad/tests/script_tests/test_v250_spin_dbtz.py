@@ -6,7 +6,8 @@ dbtz = dxpzb/pr − dblz (δ の列に −2 xpzb/pr³ = pr⁻² の微分の形)
 スピン軌道結合 D = srot(:,4:9) の z の行 (縦の歳差) が δ に比例して誤る。δ = 0 では pr = 1 で同じ。
 独立な基準 (pysad の Emittance[] の解析式を使わない): 追跡のスピン回転 (`track6.track_particles` の spins) の中心差分から作る D (`test_v2_A_spin._spin_orbit_d` と同じ手順)。
 結果 (3 GeV/c、1 要素 + ドリフト 1 m、軌道 (x, px, y, py) = (8e-3, 1e-3, 6e-3, −1e-3) の周りの D): 偏向磁石 (K1 = 0)・δ = 0.05 で、解析式と追跡の差が最大値の相対で
-K64 の式 13.2%、直した式 1.20% (δ = 0.10 で 26.9% 対 2.24%)。K1 ≠ 0 の偏向磁石は 6.3% 対 0.18% (δ = 0.10 で 12.4% 対 0.15%)。δ = 0 は同じ (0.8%、0.2%)。
+K64 の式 6.6%、直した式 1.1% (δ = 0.10 で 12.5% 対 2.2%)。K1 ≠ 0 の偏向磁石は 2.9% 対 0.18% (δ = 0.10 で 5.4% 対 0.16%)。δ = 0 は同じ (0.8%、0.2%)。
+(追跡の基準は、端の ψ を本体の前後の独立な回転にしたもの (B342))
 gs では確認できない: K64 の Polarization は NaN (B55)、srot の微分列は Emittance[] の出力に出ない。k64 は K64 のまま (pysad の k64 の式は誤植をそのまま写している)。
 限界: 3 つの要素 (BEND の K1 = 0・≠ 0、QUAD) のうち、δ の効果が見えるのは偏向磁石だけ (四極は 0.2% で δ に依らない)。追跡 (TrackParticles) のスピンは別のコードで影響しない。
 v2 の δ = 0.1 の偏向磁石の 2.2% の残りは別の項 (未調査)。
@@ -75,8 +76,8 @@ def rel_err(kind, delta, mode, pr2=True):
     return float(np.abs(de - dt).max() / np.abs(dt).max())
 
 
-@pytest.mark.parametrize('kind,delta,fixed_max,typo_min', [('bend0', 0.05, 0.02, 0.10), ('bend0', 0.10, 0.03, 0.20),
-                                                           ('bendk', 0.05, 0.01, 0.05), ('bendk', 0.10, 0.01, 0.10)])
+@pytest.mark.parametrize('kind,delta,fixed_max,typo_min', [('bend0', 0.05, 0.02, 0.045), ('bend0', 0.10, 0.03, 0.09),
+                                                           ('bendk', 0.05, 0.01, 0.02), ('bendk', 0.10, 0.01, 0.04)])
 def test_spin_orbit_coupling_at_nonzero_delta(kind, delta, fixed_max, typo_min):
     """δ ≠ 0 の偏向磁石 (v2 の他の修正はそのまま): dbtz を pr² で割ると D が追跡の差分と fixed_max 以内、pr で割る (K64 の式) と typo_min 以上ずれる"""
     assert rel_err(kind, delta, 'v2', True) < fixed_max

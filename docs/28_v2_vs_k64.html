@@ -531,6 +531,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>B136・B137・B165</td>
 </tr>
 <tr>
+<td>BEND の端の縦磁場 ψ の歳差 (追跡・Emittance[])</td>
+<td>入口の ψ を最初の刻みの本体の前に、出口の ψ を最後の刻みの本体の後に、独立な回転として掛ける (D の y の列が刻みの数に依らない)</td>
+<td>本体の回転ベクトルに足して 1 回で回す (D が刻みの数 n に対し −D/n ずれる)</td>
+<td>B137・B342</td>
+</tr>
+<tr>
 <td>QUAD・MULT の本体の B∥</td>
 <td>刻みごとに Δψ/(1+δ) を足す (追跡 <code>p.bpadd</code>、Emittance[] <code>st.bpot</code>)</td>
 <td>端の ψ だけ (ndiv=1 の四極は入口の +ψ を出口の −ψ が上書き)</td>

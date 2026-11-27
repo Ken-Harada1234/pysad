@@ -11,7 +11,7 @@ GS = 0.001159652181280002; ME = 0.51099895e6
 def make(E, L, TH, w):
     p = None
     return None
-def maxwell_R(Ep, L, TH, PY, w=2e-3, zs=1.0e-2, dp=0.0, perp_only=False):
+def maxwell_R(Ep, L, TH, PY, w=2e-3, zs=1.0e-2, dp=0.0, perp_only=False, y0=0.0):
     """Ep: momentum eV/c.  Returns 3x3 spin map in (x,y,z) of entrance / exit frames"""
     b = TH / L; rho = L / TH
     C = np.array([-rho, 0.0, 0.0])
@@ -36,7 +36,7 @@ def maxwell_R(Ep, L, TH, PY, w=2e-3, zs=1.0e-2, dp=0.0, perp_only=False):
     ev = lambda l, u: (u[:3] - C) @ zex - zs
     ev.terminal = True
     def one(s0):
-        u0 = np.concatenate([[0, -PY * zs / pz, -zs], [0, PY, pz], s0])
+        u0 = np.concatenate([[0, y0 - PY * zs / pz, -zs], [0, PY, pz], s0])
         sol = solve_ivp(rhs, (0, 4 * L + 1), u0, events=ev, rtol=1e-12, atol=1e-15, method='DOP853', max_step=w / 4)
         S = sol.y_events[0][0][6:]
         return np.array([S @ xex, S @ yex, S @ zex])
