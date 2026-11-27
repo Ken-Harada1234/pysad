@@ -282,14 +282,14 @@ def test_polarization_with_orbit_errors_v2(v2_mode):
 
 def test_p1_terms_account_for_the_change_of_polarization_v2(v2_mode, monkeypatch):
     """P1 の 3 つの項 (spin.KINETIC・STEP_RATE・ST_EXACT) を全て切ると v2.1.0 (A2・B3) の値 0.8798 に戻る (内訳: 運動論的偏極 −7.1e-3、
-    刻みごとの脱偏極率 −2.5e-4、厳密な緩和率 −3.0e-3。合計 −1.0e-2)。緩和率の τ は ST_EXACT で 124.18 → 123.73 s (平面リングの 123.8 s に近づく)"""
+    刻みごとの脱偏極率 −2.5e-4、厳密な緩和率 −3.0e-3。合計 −1.0e-2)。緩和率の τ は ST_EXACT で 124.11 → 123.73 s (平面リングの 123.8 s に近づく)"""
     _f, pol, tau = _pol('3e-3')
     monkeypatch.setattr(spin, 'KINETIC', False)
     monkeypatch.setattr(spin, 'STEP_RATE', False)
     monkeypatch.setattr(spin, 'ST_EXACT', False)
     _f, pol0, tau0 = _pol('3e-3')
     assert abs(pol0 - 0.8763) < 3e-3       # v2.4.0 D3 (B230・B242: 四極の本体の B∥): 0.8798 → 0.8763 (−0.35%)。内訳の差 pol − pol0 は下の範囲のまま
-    assert abs(tau0 - 124.18) < 0.05 and abs(tau - 123.73) < 0.05
+    assert abs(tau0 - 124.11) < 0.05 and abs(tau - 123.73) < 0.05
     assert -1.3e-2 < pol - pol0 < -0.7e-2
 
 

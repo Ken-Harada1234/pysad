@@ -35,7 +35,7 @@ def test_v2_pol_default_emitdiv_is_16(v2_mode, monkeypatch):
     r16 = _lin(16.0)
     r1 = _lin(1.0)
     assert d == pytest.approx(r16, rel=1e-12)
-    assert r1 == pytest.approx(2.40612e-8, rel=2e-4)      # v2.4.0 D (B165): 2.3138e-8 → 2.3423e-8 (+1.2%)、D3 (B230: 四極の本体の B∥): → 2.4076e-8 (+2.8%)、B336 (dbtz の pr²): → 2.40612e-8 (−0.03%)
+    assert r1 == pytest.approx(2.41032e-8, rel=2e-4)      # v2.4.0 D (B165): 2.3138e-8 → 2.3423e-8 (+1.2%)、D3 (B230: 四極の本体の B∥): → 2.4076e-8 (+2.8%)、B336 (dbtz の pr²): → 2.40612e-8 (−0.03%)、B342 (端の ψ の独立な回転): → 2.41032e-8 (+0.17%)
     assert 0.83 < r16 / r1 < 0.87      # 0.848
 
 
