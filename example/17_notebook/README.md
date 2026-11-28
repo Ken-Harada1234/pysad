@@ -4,7 +4,7 @@ SAD のラティスファイルとコマンドファイルの中身を、noteboo
 
 | ファイル | 内容 |
 |---|---|
-| [`sad_in_notebook.ipynb`](sad_in_notebook.ipynb) | 5 つの使い方の例 (出力つきで保存してあります): (1) `%%sad lattice` でラティスを貼る、(2) `%%sad` でコマンドを貼って実行する、(3) `sad.value()` で結果を Python に取り出して matplotlib で描く、(4) `%%sad --continue` で前の状態の続きを流す、(5) マジックを使わずに `pysad.run()` に文字列で渡す |
+| [`sad_in_notebook.ipynb`](sad_in_notebook.ipynb) | 6 つの使い方の例 (出力つきで保存してあります): (1) `%%sad lattice` でラティスを貼る、(2) `%%sad` でコマンドを貼って実行する、(3) `sad.value()` で結果を Python に取り出して matplotlib で描く、(4) `%%sad --continue` で前の状態の続きを流す、(5) マジックを使わずに `pysad.run()` に文字列で渡す、(6) `%sad_help` で SAD の関数・コマンドの説明を引く (名前のタブ補完・`--search`・`--full`) |
 
 ## 動かし方
 
@@ -20,5 +20,6 @@ notebook の最初のセルで `%load_ext pysad.notebook` を実行します。�
 - 例のラティスは `example/00_lattice/FODO_ring.sad` の中身 (3 GeV、24 セル、周長 105.6 m) です。(4) は QF の K1 を 0.7 から 0.75 に変えた計算で、水平チューンは 42.07 から 46.19 に変わりました。この値の物理的な意味は、この例では見ていません (使い方の例です)。
 - (5) の格子は、(1) と別の簡単な FODO リング (1 セルに偏向磁石 1 台、24 セル) です。
 - `--continue` で流せるのは FFS 部の文だけです。要素・LINE の定義は、新しい `%%sad` のセルに書きます。
+- (6) の `%sad_help` の全文 (`--full`) は、同梱の SAD のコピーの `HelpMessages.n` から出る分だけです (SADHelp 由来の 538 項目のうち 363 項目)。タブ補完の候補の見え方 (JupyterLab の画面) は確認していません。
 - Tk の GUI は notebook では動きません。SAD の描画関数 (Plot 系) の notebook 内の表示は未確認です。
 - notebook を開き直したときは、`%load_ext pysad.notebook` と、ラティスのセルを、もう一度実行してください (保存したラティスは、カーネルの中にあります)。

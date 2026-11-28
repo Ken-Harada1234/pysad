@@ -167,6 +167,61 @@ def test_cell_magic_continue_and_reset_and_errors(capsys):
         ip.run_line_magic('sad', '')
 
 
+def test_sad_help_magic_and_session_help(capsys):
+    ip = _shell()
+    from IPython.core.error import UsageError
+    ip.run_line_magic('sad_help', 'Twiss')
+    assert 'Twiss  [function' in capsys.readouterr().out
+    ip.run_line_magic('sad_help', '--search chromaticity')
+    assert 'ChromaticityTerms' in capsys.readouterr().out
+    ip.run_line_magic('sad_help', 'BEND AE1')
+    assert 'BEND.AE1' in capsys.readouterr().out
+    ip.run_line_magic('sad_help', 'CAL --full')
+    assert '全文 (' in capsys.readouterr().out
+    ip.run_line_magic('sad_help', '')
+    assert 'pysad ヘルプ' in capsys.readouterr().out
+    ip.user_ns['sad'].help('CAL')
+    assert 'CALCULATE(CAL)' in capsys.readouterr().out
+    ip.user_ns['sad'].help(search='tune')
+    assert '件' in capsys.readouterr().out
+    for bad in ('--bogus', '--search', '--kind'):
+        with pytest.raises(UsageError):
+            ip.run_line_magic('sad_help', bad)
+
+
+def test_magic_docstrings_are_the_help_shown_by_question_mark():
+    ip = _shell()
+    cell = ip.magics_manager.magics['cell']['sad'].__doc__
+    line = ip.magics_manager.magics['line']['sad_help'].__doc__
+    assert '--continue' in cell and '--reset' in cell and 'lattice' in cell and 'sad.value' in cell and '%sad_help' in cell
+    assert '--search' in line and '--full' in line and 'SADHELP_HTML' in line
+
+
+def _complete(ip, text):
+    from IPython.core.completer import provisionalcompleter
+    with provisionalcompleter():
+        return [c.text for c in ip.Completer.completions(text, len(text))]
+
+
+def test_tab_completion_of_sad_names_in_sad_cells_and_in_sad_help():
+    ip = _shell()
+    assert 'Twiss' in _complete(ip, '%%sad\nFFS;\nUSE RING; CELL; Twi')
+    assert {'CALC4D', 'CALCULATE'} <= set(_complete(ip, '%%sad\nFFS;\nCAL'))
+    assert 'RFSW' in _complete(ip, '%%sad\nFFS;\nRFS')
+    assert 'Twiss' in _complete(ip, '%sad_help Twi')
+    assert 'Twiss' not in _complete(ip, 'x = Twi')                   # ふつうの Python のセルには入らない
+    assert 'Twiss' not in _complete(ip, '%%sad Twi')                  # 1 行目 (マジックの指定) には入らない
+
+
+def test_unload_extension_removes_magics_and_completer(capsys):
+    ip = _shell()
+    ip.run_line_magic('unload_ext', 'pysad.notebook')
+    assert 'sad_help' not in ip.magics_manager.magics['line'] and 'sad' not in ip.magics_manager.magics['cell']
+    assert 'Twiss' not in _complete(ip, '%%sad\nFFS;\nTwi')
+    ip.run_line_magic('load_ext', 'pysad.notebook')
+    assert 'Twiss' in _complete(ip, '%%sad\nFFS;\nTwi')
+
+
 # ---------------------------------------------------------------------- 本物の Jupyter のカーネル
 def test_notebook_executes_in_a_real_kernel():
     """nbclient で notebook を実行する。セルの本文に `!` のコメント行と `%` を含め、実際の経路で壊れないことを確かめる"""
@@ -181,6 +236,8 @@ def test_notebook_executes_in_a_real_kernel():
         nbformat.v4.new_code_cell('%%sad\n' + body),
         nbformat.v4.new_code_cell('%%sad --continue\nPrint["cont=", Twiss["NX","$$$"]];'),
         nbformat.v4.new_code_cell('sad.value(\'Twiss["NX","$$$"]\')'),
+        nbformat.v4.new_code_cell('%sad_help Twiss'),
+        nbformat.v4.new_code_cell('sad.help(search="chromaticity")'),
     ]
     env_old = os.environ.get('PYSAD_QUIET')
     os.environ['PYSAD_QUIET'] = '1'
@@ -203,3 +260,39 @@ def test_notebook_executes_in_a_real_kernel():
     assert 'cont=' in text(nb.cells[3])
     res = nb.cells[4].outputs[0]
     assert res.output_type == 'execute_result' and float(res['data']['text/plain']) == pytest.approx(NX, abs=1e-9)
+    assert 'Twiss  [function' in text(nb.cells[5]) and 'SADHelp :' in text(nb.cells[5])
+    assert 'ChromaticityTerms' in text(nb.cells[6])
+
+
+def test_tab_completion_in_a_real_kernel():
+    """本物のカーネルに complete_request を送り、%%sad のセルの中で SAD の名前が補完されることを確かめる"""
+    pytest.importorskip('ipykernel')
+    jc = pytest.importorskip('jupyter_client')
+    from jupyter_client.manager import start_new_kernel
+    env_old = os.environ.get('PYSAD_QUIET')
+    os.environ['PYSAD_QUIET'] = '1'
+    try:
+        try:
+            km, kc = start_new_kernel(kernel_name='python3', cwd=ROOT, startup_timeout=120)
+        except Exception as e:
+            if 'No such kernel' in str(e) or type(e).__name__ == 'NoSuchKernel':
+                pytest.skip('python3 のカーネルがありません: %s' % e)
+            raise
+        try:
+            kc.execute_interactive('%load_ext pysad.notebook', timeout=120)
+            code = '%%sad\nFFS;\nUSE RING; CELL; Twi'
+            msg_id = kc.complete(code, len(code))
+            reply = kc.get_shell_msg(timeout=60)
+            assert reply['content']['status'] == 'ok' and 'Twiss' in reply['content']['matches']
+            code2 = '%sad_help Twi'
+            kc.complete(code2, len(code2))
+            reply2 = kc.get_shell_msg(timeout=60)
+            assert 'Twiss' in reply2['content']['matches']
+        finally:
+            kc.stop_channels()
+            km.shutdown_kernel(now=True)
+    finally:
+        if env_old is None:
+            os.environ.pop('PYSAD_QUIET', None)
+        else:
+            os.environ['PYSAD_QUIET'] = env_old

@@ -594,6 +594,18 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <td>—</td>
 </tr>
 <tr>
+<td>sadhelp.py</td>
+<td style="text-align: right;">%d</td>
+<td>pysad ヘルプ (SAD の関数・コマンドの説明を引く。<code>pysad.sad_help</code>・<code>%sad_help</code>・<code>pysad-help</code>。docs/12 §11c)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>notebook.py</td>
+<td style="text-align: right;">329</td>
+<td>Jupyter の notebook に貼った SAD のラティスとコマンドの実行 (<code>%%sad</code>)・<code>%sad_help</code>・タブ補完 (docs/12 §11b)</td>
+<td>—</td>
+</tr>
+<tr>
 <td>fitroot.py / miscfn.py / fileops.py</td>
 <td style="text-align: right;">692 / 599 / 616</td>
 <td>Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/06)</td>
@@ -685,8 +697,8 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 <tr>
 <td>diag_fit.py / diag_trace.py</td>
-<td style="text-align: right;">245 / 267</td>
-<td>照合用の診断 (fit の反復表、追跡の途中値)</td>
+<td style="text-align: right;">254 / 276</td>
+<td>旧い照合用の診断 (fit の反復表、追跡の途中値)。<code>py -3.12 -m pysad.diag_trace</code> で走る (import だけでは何も出さない)。<code>diag_fit</code> は <code>scipy</code> の <code>fsolve</code> の呼び出しで途中でエラー終了する</td>
 <td>—</td>
 </tr>
 <tr>

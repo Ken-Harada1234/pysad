@@ -138,6 +138,8 @@ class RadInt:
 
     # ------------------------------------------------------------------ R0CAL / TMATRS / TWTRANS / TROT
     def r0cal(self):
+        """Compute the 4x4 coupling transformation r0 and its inverse from the coupling block (R1..R4) of the current optics parameters TWPMG; returns (r0, inverse).
+        現在の光学パラメータ TWPMG の結合の 4 成分 (R1..R4) から 4x4 の結合の変換 r0 とその逆行列を求める。(r0, 逆行列) を返す。"""
         tw = self.TWPMG
         rc0 = np.array([[tw[R1], tw[R2]], [tw[R3], tw[R4]]])
         detr = rc0[0, 0] * rc0[1, 1] - rc0[0, 1] * rc0[1, 0]
@@ -191,6 +193,8 @@ class RadInt:
         self.VU = R0 @ self.VO
 
     def twtrans(self):
+        """Propagate the optics parameters TWPMG (alpha, beta, dispersion) through the element's 4x4 map TU and offset vector VU.
+        光学パラメータ TWPMG (α・β・分散) を、要素の 4x4 の写像 TU とオフセット VU で次へ送る。"""
         tw = self.TWPMG
         TU = self.TU
         ttx = np.array([
@@ -225,6 +229,8 @@ class RadInt:
 
     @staticmethod
     def trot(tm, vm, teta):
+        """Rotate the map tm and offset vm by the angle teta about the axis (R^-1 tm R, R^-1 vm); returns (tm', vm').
+        写像 tm とオフセット vm を、ビーム軸のまわりに角 teta だけ回した系で表す (R^-1 tm R、R^-1 vm)。(tm', vm') を返す。"""
         ctet = math.cos(teta)
         stet = math.sin(teta)
         rot = np.eye(4) * ctet
@@ -357,6 +363,8 @@ class RadInt:
         self.TO, self.VO = self.trot(self.TM, self.VM, teta1)
 
     def quadru(self, teta1, dx, dy):
+        """Set up the transfer map (TM, TO) and the kick coefficients CKL0/CKL1 of a quadrupole of strength DKL1 and length DL, rotated by teta1 and offset by (dx, dy).
+        強さ DKL1・長さ DL の四極の転送行列 (TM, TO) とキック係数 CKL0/CKL1 を設定する (回転 teta1、ずれ (dx, dy))。"""
         self.VM = np.zeros(4)
         tm = np.eye(4)
         DL = self.DL
@@ -401,6 +409,8 @@ class RadInt:
         self.TO, self.VO = self.trot(self.TM, self.VM, teta1)
 
     def bedge(self, eang):
+        """Set up the map and kick coefficients of a bend edge with edge angle eang (TM from the curvature DKL0/DL and tan(eang); TO is rotated by TETA).
+        偏向磁石の端 (端角 eang) の写像とキック係数を設定する (曲率 DKL0/DL と tan(eang) から TM、TETA で回した TO)。"""
         curv = self.DKL0 / self.DL
         self.VM = np.zeros(4)
         tm = np.eye(4)
@@ -414,6 +424,8 @@ class RadInt:
         self.CKL1Y = 0.0
 
     def sextu(self, teta1, dx, dy):
+        """Set up the kick coefficients CKL0/CKL1 of a sextupole of strength DKL2 rotated by teta1 and offset by (dx, dy); the maps TM and TO are the identity.
+        強さ DKL2 の 6 極 (回転 teta1、ずれ (dx, dy)) のキック係数 CKL0/CKL1 を設定する (写像 TM・TO は単位行列)。"""
         self.TM = np.eye(4)
         self.TO = np.eye(4)
         self.VM = np.zeros(4)
@@ -426,6 +438,8 @@ class RadInt:
         self.CKL1Y = -self.DKL2 * dy
 
     def tedge(self, dieg):
+        """Update the radiation-integral work array dieg for an edge (terms from the dispersion, TO and TM) and then transform the optics (tmatrs, twtrans).
+        端の効果として、放射積分の作業配列 dieg を更新し (分散・TO・TM の項)、そのあと光学を変換する (tmatrs・twtrans)。"""
         tw = self.TWPMG
         au, bu, av, bv = tw[AX], tw[BX], tw[AY], tw[BY]
         eu, epu, ev, epv = tw[EX], tw[EPX], tw[EY], tw[EPY]

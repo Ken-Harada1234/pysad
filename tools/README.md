@@ -99,6 +99,17 @@ Node.js:
 - **SVG にした図**: `docs/figures/` の 06・07 (2 枚)・08・09・11・13・14・16・17・18、`example/` の 01 (3 枚)・02 (2 枚)・03・04・astrid (3 枚)・ddba (セルの光学)・kek_ls (誤差・ラティス・display の 3 枚・design の 2 枚)・pf (整合・履歴ラティスの 2 枚)。md の画像参照は `.svg`。
 - **PNG のままの図**: 再生成のスクリプトがない図 (Tk の窓の画面、DRAW・OpticsPlot などの実行結果、周波数マップ・ADTS・RDT・LMA など長い計算の結果の図、DXF の図)、点の多い図、SVG が PNG より大きくなる図 (`KEKLS_ring_layout_optics`・`PF_history_layout`・`DDBA_overview`)。
 
+## pysad ヘルプのデータ (build_help_data.py)
+
+HTML の変換とは別に、pysad ヘルプ (`pysad.sad_help`・`%sad_help`・`pysad-help`。docs/12 §11c) のデータ `pysad/helpdata/sadhelp_index.json` を作る。
+
+```
+py -3.12 tools/build_help_data.py            # pysad/helpdata/sadhelp_index.json を作り直す
+py -3.12 tools/build_help_data.py --check    # 今のファイルと同じかだけ確かめる (試験 test_sadhelp.py も確かめる)
+```
+
+元は `docs/34_sad_help_index.md`・`docs/35_pysad_vs_sadhelp.md` の表と、`pysad/sad_copy/Packages/*.n` の定義。docs/34・35 を直したら、作り直して、JSON も一緒にコミットする。SADHelp の全文は、JSON には入れない。
+
 ## 限界
 
 - 数式の検出は書き方の規則による (上記)。規則に合わない短い式 (たとえば `$x$` でなく `$ x $`) は数式にならない。KaTeX が解釈できない TeX (`\lambdabar` など、マクロに足していない記法) は赤字になる。

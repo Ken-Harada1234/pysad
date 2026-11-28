@@ -60,6 +60,7 @@ pre .o { opacity:.8; }
 <li><a href="#11-ffscmdpy--ffs-コマンド層-tffsa-と-run_sad">11. ffscmd.py — FFS コマンド層 (tffsa) と run_sad</a><ul>
 <li><a href="#run_sadpy--直下--コマンドライン">run_sad.py ( 直下) — コマンドライン</a></li>
 <li><a href="#11b-notebookpy--jupyter--ipython-のセルに貼った-sad-の実行-sad">11b. notebook.py — Jupyter / IPython のセルに貼った SAD の実行 (%%sad)</a></li>
+<li><a href="#11c-sadhelppy--pysad-ヘルプ-sad-の関数コマンドの説明">11c. sadhelp.py — pysad ヘルプ (SAD の関数・コマンドの説明)</a></li>
 </ul>
 </li>
 <li><a href="#12-calc6dpy--calc6d-qcell6d">12. calc6d.py — CALC6D (qcell6d)</a></li>
@@ -775,6 +776,7 @@ PYTHONIOENCODING=utf-8 python -u run_sad.py &lt;試験用ラティス&gt;.lat &l
 </code></pre>
 <p>引数のファイルを順に連結して <code>run_sad_string</code> に渡す。SAD の <code>gs</code> に複数ファイルを渡すのと同じ。進捗表示は環境変数 <code>PYSAD_PROGRESS=n</code> または SADScript 変数 <code>PYSAD$PROGRESS</code> (DA の n 周ごと)。</p>
 <p>pip で入れたときのコマンド (<code>pysad/cli.py</code>): <code>pysad-run lattice_file [script_file ...]</code> (上と同じ)、<code>pysad-share</code> (文書・例・物理ガイドの場所の表示。clone ならフォルダ、pip では入っていないので GitHub と GitHub Pages の URL)、<code>pysad-warmup [--check | --clear] [--quiet]</code> (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。<code>--check</code> はキャッシュが有効なら終了コード 0、<code>--clear</code> は pysad のキャッシュを消す。<code>pysad/warmup.py</code>)。</p>
+<p><code>pysad-help [名前] [--search キーワード] [--kind 種類] [--full]</code> (SAD の関数・コマンドの説明を引く。§11c)。<code>python -m pysad &lt;help|run|share|warmup&gt;</code> でも同じ。各コマンドの <code>--help</code> は英語と日本語で書いてある (以前は <code>pysad-share --help</code> が help を無視して実行していた)。</p>
 <h3 id="11b-notebookpy--jupyter--ipython-のセルに貼った-sad-の実行-sad">11b. notebook.py — Jupyter / IPython のセルに貼った SAD の実行 (<code>%%sad</code>)</h3>
 <p>SAD のラティスファイルとコマンドファイルの中身を、notebook のセルにそのまま貼って実行する。セルのマジックの本文は変換されずに渡るので、引用符・バックスラッシュ・<code>!</code> で始まる SAD のコメント行を書き直す必要がない。</p>
 <pre><code>%load_ext pysad.notebook          # 最初に 1 回 (名前空間に `sad` = Session が入る)
@@ -820,6 +822,10 @@ FFS; USE RING; CELL; CALC; ...
 <td>最後の実行の <code>FFS</code> と <code>Interp</code></td>
 </tr>
 <tr>
+<td><code>%sad_help 名前</code>、<code>sad.help('名前')</code></td>
+<td>SAD の関数・コマンドの説明を引く (§11c)。<code>%sad_help --search キーワード</code>・<code>--full</code> も。<code>%sad_help?</code>・<code>%%sad?</code> に使い方 (英語・日本語)</td>
+</tr>
+<tr>
 <td><code>pysad.run(文字列, lattice=None, cont=False, reset=False)</code></td>
 <td>マジックを使わない書き方 (<code>pysad.notebook.run</code> と同じ)。<code>r'''...'''</code> の生文字列なら引用符・バックスラッシュをそのまま書ける。<code>Session</code> を返す</td>
 </tr>
@@ -828,7 +834,8 @@ FFS; USE RING; CELL; CALC; ...
 <ul>
 <li>出力は今のセルの標準出力に出る。SAD のエラーは、SAD と同じく表示して次の文へ進む。</li>
 <li>起動時の案内 (バナー) は、プロセスの最初の 1 回だけ標準エラー出力に出る (標準エラー出力なので、notebook では stderr の出力として表示される。<code>PYSAD_QUIET=1</code> で出さない)。</li>
-<li>例: <a href="../example/17_notebook/README.md"><code>example/17_notebook/</code></a>。試験: <code>test_notebook_magic.py</code> (13 件。IPython・nbclient・ipykernel がない環境では 3 件が skip)。</li>
+<li><strong>タブ補完</strong>: <code>%%sad</code> のセルの 2 行目以降で、SAD の名前 (FFS コマンド・関数・特別変数・フラグ・要素。<code>Twi</code> → <code>Twiss</code>、<code>CAL</code> → <code>CALCULATE</code> など) を補完する。<code>%sad_help</code> の後も同じ。普通の Python のセルと、<code>%%sad</code> の 1 行目には入らない。補完するのは名前だけで、引数やオプションは補完しない。文字列の中でも名前が候補に出る。</li>
+<li>例: <a href="../example/17_notebook/README.html"><code>example/17_notebook/</code></a>。試験: <code>test_notebook_magic.py</code> (18 件。IPython・nbclient・ipykernel がない環境では 8 件が skip)。</li>
 </ul>
 <p><strong>限界・未確認</strong></p>
 <ul>
@@ -837,6 +844,52 @@ FFS; USE RING; CELL; CALC; ...
 <li>実行は最初からやり直すので、<code>%%sad</code> のセルごとに <code>CALC</code> が走る (結果は再現できるが、重い計算は毎回走る)。<code>--continue</code> は実行の順序で結果が変わる。</li>
 <li>Tk の GUI は notebook では動かない。SAD の描画関数 (Plot 系) の notebook 内の表示は未確認 (<code>sad.value()</code> で値を取り出して matplotlib で描く例は動く)。</li>
 <li>セルを実行中の中断 (Interrupt) で、インタプリタが途中の状態のまま残るかどうかは未確認。</li>
+<li>タブ補完は、本物のカーネル (ipykernel 7.4.0) に補完の要求を送って確かめた。JupyterLab・VS Code の画面での補完の表示 (候補の見え方) は未確認。IPython 8.6 より前では、<code>%%sad</code> のセルの中の補完は入らない (<code>%sad_help</code> の補完は入る)。</li>
+</ul>
+<h3 id="11c-sadhelppy--pysad-ヘルプ-sad-の関数コマンドの説明">11c. sadhelp.py — pysad ヘルプ (SAD の関数・コマンドの説明)</h3>
+<p>SAD の FFS コマンド・SADScript の関数・特別変数・フラグ・要素と、同梱の SAD の <code>.n</code> の関数・Tkinter のウィジェットを、名前で引いて、説明と pysad の状態を出す。オリジナルの SAD の <code>Help</code> に当たる。Python の関数・クラスの説明は、Python の <code>help()</code>・Jupyter の <code>?</code> で読む (別のもの)。</p>
+<table>
+<thead>
+<tr>
+<th>引き方</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Python</td>
+<td><code>pysad.sad_help('Twiss')</code>、<code>pysad.sad_help(search='tune')</code>、<code>pysad.sad_help('FIT', full=True)</code>、引数なしで概要</td>
+</tr>
+<tr>
+<td>notebook</td>
+<td><code>%sad_help Twiss</code>、<code>%sad_help --search tune</code>、<code>%sad_help BEND AE1</code>、<code>%sad_help CAL --full</code>、<code>sad.help('Twiss')</code>。名前はタブ補完できる (§11b)</td>
+</tr>
+<tr>
+<td>コマンド</td>
+<td><code>pysad-help Twiss</code>、<code>pysad-help --search tune --kind ffs-command</code>、<code>python -m pysad help CAL --full</code></td>
+</tr>
+</tbody>
+</table>
+<p>名前は大文字・小文字を区別せず、略形 (<code>CAL</code> = <code>CALCULATE</code>)・<code>Twiss[]</code> の形・要素のキーワード (<code>BEND.AE1</code>・<code>BEND AE1</code>) も引ける。<code>FIT</code> のように、FFS コマンドと関数の両方にある名前は、両方を出す (<code>kind=</code> で絞る)。
+引数は <code>name</code>、<code>search</code> (名前・説明の最初の行・分類・注記・親の要素に含まれる語)、<code>full</code>、<code>kind</code> (<code>ffs-command</code>・<code>function</code>・<code>special-variable</code>・<code>flag</code>・<code>element</code>・<code>element-keyword</code>・<code>package-function</code>・<code>tk-widget</code> など)。</p>
+<p><strong>表示するもの</strong>: 名前と種類・分類、SADHelp の説明の最初の行 (英語。長いものは途中で切れていて、切れたものには <code>...</code> を付ける)、pysad の状態 (実装・未対応・無視・pysad のみ など) と注記 (日本語)、SAD 側の定義場所 (Fortran・.n)、
+詳しい文書 (docs の該当ファイルと GitHub Pages の URL)、<code>.n</code> の関数は署名と定義されているファイル。pysad だけの関数 (<code>FrequencyMap[]</code> など) は英語と日本語の 1 行ずつ。</p>
+<p><strong>全文 (<code>full=True</code>)</strong>: SAD 自身のヘルプの本文 <code>Packages/HelpMessages.n</code> (同梱の SAD のコピー <code>pysad/sad_copy</code> の一部。<code>PYSAD_SAD_PACKAGES</code> を設定していればその Packages のもの) を読んで出す。ファイルの中のコードは評価せず、構文だけを解析して取り出す
+(<code>{名前, 本文, 関連する名前, {下位の項目}}</code> の入れ子。変数に入れた文字列への参照 <code>IF$Message</code> などは追う。実行時に作る部分は項目として取れない)。手元に <code>SADHelp.html</code> があれば、それも使える。探す順は、
+環境変数 <code>SADHELP_HTML</code> (ファイルのパス) → 同梱の HelpMessages.n → <code>PYSAD_SAD_PACKAGES</code> の隣の <code>Documents/SADHelp.html</code> → pysad の隣の <code>SAD-master/Documents/SADHelp.html</code>。SADHelp の全文は、索引 (JSON) には入れていない。</p>
+<p><strong>データ</strong>: <code>pysad/helpdata/sadhelp_index.json</code> (約 370 KB、1050 項目)。<code>docs/34_sad_help_index.md</code> (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出した、名前と説明の最初の行) と <code>docs/35_pysad_vs_sadhelp.md</code> (SAD 側の定義場所と pysad の状態)、
+同梱の <code>Packages/*.n</code> の定義から、<code>py -3.12 tools/build_help_data.py</code> で作る (<code>--check</code> で今のファイルと同じかを確かめる。docs/34・35 を作り直したら、これも作り直す)。wheel・sdist に入る (<code>pyproject.toml</code> の package-data と <code>MANIFEST.in</code>)。
+<code>.n</code> からは、行頭の <code>Name[...] := ...</code>・<code>Name = ...</code> の定義のうち、大文字で始まり <code>$</code> を含まない名前だけを入れた (487 件。<code>Tkinter.n</code> が 378 定義で最多)。Tkinter のウィジェットは <code>Tkinter.n</code> の <code>Widgets=Join[...]</code> の一覧 (19 件、元の Tk の C ファイル名つき)。</p>
+<p>試験: <code>test_sadhelp.py</code> (43 件。引き方・表示・全文 (偽の SADHelp.html と偽の HelpMessages.n。構文だけの解析で、コードが走らないこと)・<code>.n</code> の項目・コマンド・<code>python -m pysad</code>・import の副作用・説明文・<code>help(pysad)</code> の例の実行)。</p>
+<p><strong>限界・未確認</strong></p>
+<ul>
+<li>全文を同梱の HelpMessages.n から出せるのは、SADHelp 由来の 538 項目のうち 363 項目 (FFS コマンド 55/56、関数 94/98 (pysad だけの 6 つの関数は HelpMessages.n にない)、特別変数 48/48、フラグ 60/60、要素 11/15、要素のキーワード 45/155、演算子などの式 2/46、dynamics の章 1/13)。
+  取れない項目は HelpMessages.n で実行時に作る部分にあり、手元の SADHelp.html があれば全文が出る。<code>.n</code> の関数 (487 件) と Tk のウィジェット (19 件) には、説明がない (署名と定義されているファイルだけ)。</li>
+<li>説明の最初の行は英語 (SADHelp のまま)、pysad の状態の注記は日本語。全文は英語だけ。最初の行は、docs/34 が切り出した長さで切れている (全文は上のとおり)。</li>
+<li>pysad の状態の「実装」は、名前の登録があるという意味で、K64 と挙動が一致するかは各要素の文書による (docs/35)。docs/35 の手で直した行は、<code>perf_work/pysad_vs_sadhelp.py</code> で作り直すと消える (docs/35 の注意を見ること)。</li>
+<li><code>.n</code> の関数の「利用者が呼ぶもの」の見分けは、名前の形 (大文字で始まり <code>$</code> を含まない) だけで決めた。内部の補助の関数が混ざり、利用者が呼ぶ小文字の名前が抜けている可能性がある。</li>
+<li>SAD 自身の対話の <code>Help</code> (<code>Packages/help.n</code>) を pysad で動かせるかは未確認 (<code>%sad_help</code> はそれとは別の実装)。CERN の SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html) は、版が違う (1.4.0.0k64、2025-07-14) ので、項目名で探す。</li>
+<li>確認した環境は Windows・Python 3.12。IPython・JupyterLab の画面での表示は §11b のとおり。</li>
 </ul>
 <h2 id="12-calc6dpy--calc6d-qcell6d">12. calc6d.py — CALC6D (qcell6d)</h2>
 <p>対応: <code>qcell.f qcell6d</code> → <code>temit</code> (tcod, tturne, tecalc) → <code>tsetetwiss</code> / <code>tfetwiss</code> (<code>tffs.f</code>) / <code>tfadjustn</code>、分数位置は <code>qtwiss.f qtwissfrac</code>。</p>
@@ -1233,6 +1286,16 @@ score, result <span class="o">=</span> dynamic_aperture(lat<span class="o">.</sp
 <td><code>warmup.py</code></td>
 <td>numba のカーネルの事前コンパイル (コマンド <code>pysad-warmup</code>、<code>py -3.12 -m pysad.warmup</code> でもよい)。小さな FODO を土台にした埋め込みの台本 10 本 (光学・エミッタンス・追跡・放射、BEND の K1・フリンジ、ステアリング、MULT・OCT・APERT、COORD・TCAVI、UND・PHSROT、空洞の横方向電圧、BEAMBEAM・WAKE、SOL 領域、TRPT の加速) を 1 回ずつ走らせ、カーネル 195 本のうち 191〜192 本の機械語をキャッシュに作る (残りの 3〜4 本は、この入力では呼ばれず、使うときに変換される。SOL の領域内の粒子が早く落ちるかどうかで 1 本変わる)。<code>--check</code> はキャッシュが有効か (CPU・numba の版・ソースが一致するか) を調べて終了コード 0/1、<code>--clear</code> は pysad のキャッシュだけを消す。キャッシュの場所は numba の規則 (<code>NUMBA_CACHE_DIR</code> があればその下、なければ <code>pysad/__pycache__</code>、書き込めなければユーザーのキャッシュ)。<code>pysad.nbcache</code> の依存先の記録も更新する。変換の時間は 1 台の PC (Python 3.12・numba 0.68) で 80〜90 秒 (キャッシュは 27.5 MB。作り直しの 2 回目は 4 秒)。実行時は <code>pysad-warmup</code> と同じ <code>NUMBA_CACHE_DIR</code> にすること。別の CPU・numba の版では使われず再変換される</td>
 <td>docs/01</td>
+</tr>
+<tr>
+<td><code>sadhelp.py</code></td>
+<td>pysad ヘルプ (<code>pysad.sad_help</code>・<code>%sad_help</code>・<code>pysad-help</code>)。SAD の関数・コマンドの説明の最初の行と pysad の状態を <code>helpdata/sadhelp_index.json</code> から引き、全文は同梱の <code>Packages/HelpMessages.n</code> (構文だけ解析) か手元の SADHelp.html から出す。§11c</td>
+<td>互換モードによらない</td>
+</tr>
+<tr>
+<td><code>notebook.py</code></td>
+<td>Jupyter の notebook のセルに貼った SAD のラティスとコマンドの実行 (<code>%%sad</code>・<code>pysad.run</code>・<code>sad.value</code>・<code>sad.help</code>)、<code>%sad_help</code>、SAD の名前のタブ補完。§11b</td>
+<td>互換モードによらない</td>
 </tr>
 <tr>
 <td><code>specfn_cx.py</code></td>

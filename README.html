@@ -48,7 +48,11 @@ pre .o { opacity:.8; }
 </ul>
 </li>
 <li><a href="#必要なもの">必要なもの</a></li>
-<li><a href="#使い方">使い方</a></li>
+<li><a href="#使い方">使い方</a><ul>
+<li><a href="#jupyter-の-notebook-ipynb-でファイルを丸ごとコピペして実行する">Jupyter の notebook (ipynb) で、ファイルを丸ごとコピペして実行する</a></li>
+<li><a href="#pysad-ヘルプ-sad-の関数コマンドの説明">pysad ヘルプ (SAD の関数・コマンドの説明)</a></li>
+</ul>
+</li>
 <li><a href="#オリジナルの-sad-にない機能-pysad-で追加">オリジナルの SAD にない機能 (pysad で追加)</a></li>
 <li><a href="#構成">構成</a><ul>
 <li><a href="#トップ">トップ</a></li>
@@ -79,6 +83,7 @@ pre .o { opacity:.8; }
 <p><strong>SAD のコピーを同梱 / Bundled copy of SAD files</strong>: この pysad には、<strong>SAD のソースからコピーした <code>Packages/*.n</code> (71 本) と KBFrame の設定・画像 (44 本)</strong> が <code>pysad/sad_copy/</code> に同梱されています (<code>pysad/sad_copy/</code> 全体で 118 ファイル、約 1.4 MB。中身は変更していません)。KEK Accelerator Laboratory の著作物で、SAD と同じ BSD 3 条項で再配布しています。出所・コピーしたもの・しなかったものは <a href="pysad/sad_copy/README.html"><code>pysad/sad_copy/README.md</code></a>、ライセンスは <code>LICENSE</code> (末尾の節も) を参照してください。 This package bundles unmodified copies of SAD's <code>Packages/*.n</code> (71 files) and KBFrame resources (44 files) under <code>pysad/sad_copy/</code> (118 files, about 1.4 MB in total). They are the work of KEK Accelerator Laboratory and are redistributed under SAD's BSD 3-clause license; see <code>LICENSE</code> and <code>pysad/sad_copy/README.md</code> for provenance and for what was and was not copied.</p>
 </blockquote>
 <h1 id="pysad--sad-k64-版-の-python-直訳">pysad — SAD (K64 版) の Python 直訳</h1>
+<p><strong>はじめての方へ</strong>: SAD のラティスとコマンドを Jupyter の notebook にコピペして動かす手順を、画面つきで <a href="GUIDE.md"><code>GUIDE.md</code></a> にまとめました。</p>
 <blockquote>
 <p><strong>直訳と v2 の違い (注釈)</strong>: 以下の「直訳」は、K64 に忠実な翻訳 (v1 系) の方針です。<strong>現在の pysad (v2 系) は直訳ではありません。</strong> v2 は K64 を出発点に、K64 のバグの修正、物理の誤りの修正、機能の追加を行ったもので、<strong>gs (K64) と結果が変わる箇所があります</strong> (<a href="docs/28_v2_vs_k64.html"><code>docs/28_v2_vs_k64.md</code></a>)。gs と同じ結果が要るときは、環境変数 <code>PYSAD_COMPAT=k64</code> (互換モード。K64 と同じ動作) を指定してください。なお、v2 でも、K64 の式・分割数・反復順序を写したコードの大部分は、そのままです。</p>
 </blockquote>
@@ -103,7 +108,7 @@ pre .o { opacity:.8; }
 </tr>
 <tr>
 <td>コマンド</td>
-<td><code>pysad-run lattice_file [script_file ...]</code> (SAD の台本の実行。リポジトリの <code>run_sad.py</code> と同じ)、<code>pysad-share</code> (文書・例・物理ガイドの場所の表示。pip では入っていないので、GitHub と GitHub Pages の URL を表示する)、<code>pysad-warmup</code> (numba のカーネルの事前コンパイル)</td>
+<td><code>pysad-run lattice_file [script_file ...]</code> (SAD の台本の実行。リポジトリの <code>run_sad.py</code> と同じ)、<code>pysad-share</code> (文書・例・物理ガイドの場所の表示。pip では入っていないので、GitHub と GitHub Pages の URL を表示する)、<code>pysad-warmup</code> (numba のカーネルの事前コンパイル)、<code>pysad-help</code> (SAD の関数・コマンドの説明を引く)。<code>python -m pysad &lt;help|run|share|warmup&gt;</code> でも同じ</td>
 <td><strong>入る</strong></td>
 </tr>
 <tr>
@@ -171,8 +176,65 @@ ffs, I <span class="o">=</span> run_sad_string(<span class="b">open</span>(<span
 <span class="b">print</span>(I<span class="o">.</span>get(<span class="s">'</span><span class="s">EMITX</span><span class="s">'</span>), ffs<span class="o">.</span>rows[<span class="o">-</span><span class="m">1</span>]<span class="o">.</span>betx)
 ffs<span class="o">.</span>run_text(<span class="s">'</span><span class="s">fit NX 47.3; free QF* K1; go;</span><span class="s">'</span>)
 </code></pre>
-<p>Jupyter の notebook からは、ラティスファイルとコマンドファイルの中身をセルにそのまま貼って実行できます (<code>%load_ext pysad.notebook</code> のあと、<code>%%sad lattice</code> と <code>%%sad</code> のセル)。Python の文字列で渡す <code>pysad.run(r'''...''')</code> もあります。説明は <a href="docs/12_pysad_api.html"><code>docs/12_pysad_api.md</code></a> §11b、例は <a href="example/17_notebook/README.md"><code>example/17_notebook/</code></a>。</p>
 <p>下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は <a href="docs/12_pysad_api.html"><code>docs/12_pysad_api.md</code></a>。</p>
+<h3 id="jupyter-の-notebook-ipynb-でファイルを丸ごとコピペして実行する">Jupyter の notebook (ipynb) で、ファイルを丸ごとコピペして実行する</h3>
+<p>SAD のラティスファイルとコマンドファイルの中身を、notebook のセルに<strong>そのまま貼って</strong>実行できます (引用符・バックスラッシュ・<code>!</code> のコメントを書き直す必要はありません)。画面つきの手順は <a href="GUIDE.md"><code>GUIDE.md</code></a>。</p>
+<pre><code>%load_ext pysad.notebook          ← 最初のセル (1 回だけ)
+</code></pre>
+<pre><code>%%sad lattice                     ← 1 行目にこれを書き、2 行目以降にラティスファイルの中身を全部貼る
+(ラティスファイルの中身)
+</code></pre>
+<pre><code>%%sad                             ← 1 行目にこれを書き、2 行目以降にコマンドファイルの中身を全部貼る
+FFS;
+USE RING; CELL; CALC;
+...
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>こうしたい</th>
+<th>こう書く</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ラティスとコマンドが 1 つのファイル</td>
+<td>ファイル全体を 1 つの <code>%%sad</code> セルに貼る</td>
+</tr>
+<tr>
+<td>前の状態のまま、FFS の文を足す</td>
+<td><code>%%sad --continue</code> のセル</td>
+</tr>
+<tr>
+<td>結果を Python で使う</td>
+<td><code>sad.value('Twiss["NX","$$$"]')</code> (数は <code>float</code>、並びは <code>list</code>)</td>
+</tr>
+<tr>
+<td>マジックを使わずに Python の文字列で渡す</td>
+<td><code>pysad.run(r'''...''')</code></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>確認した環境は Windows・Python 3.12・JupyterLab 4.6.6 (ipykernel 7.4.0)。VS Code の notebook・Colab・他の OS は未確認です。</li>
+<li><code>%%sad</code> は GitHub の <code>main</code> に入っていますが、PyPI の最新の公開版 (2.5.3) には、まだ入っていません (次の公開で入ります)。</li>
+<li>仕様と限界は <a href="docs/12_pysad_api.html"><code>docs/12_pysad_api.md</code></a> §11b、出力つきの notebook は <a href="example/17_notebook/README.html"><code>example/17_notebook/</code></a>。</li>
+<li><code>%%sad</code> のセルの中では、SAD の名前 (<code>Twi</code> → <code>Twiss</code>) がタブ補完できます。説明は <code>%sad_help Twiss</code> (下の「pysad ヘルプ」)。</li>
+</ul>
+<h3 id="pysad-ヘルプ-sad-の関数コマンドの説明">pysad ヘルプ (SAD の関数・コマンドの説明)</h3>
+<p>SAD の FFS コマンド・関数・特別変数・フラグ・要素と、同梱の SAD の <code>.n</code> の関数・Tkinter のウィジェットを、名前で引けます (オリジナルの SAD の <code>Help</code> に当たります)。</p>
+<pre><code>pysad-help Twiss                       ← コマンド (python -m pysad help Twiss でも)
+pysad-help --search tune               ← キーワードで探す
+pysad-help CAL --full                  ← 全文も出す (同梱の SAD の HelpMessages.n から)
+%sad_help Twiss                        ← notebook (sad.help('Twiss') でも。名前はタブ補完できます)
+pysad.sad_help('Twiss')                ← Python
+</code></pre>
+<ul>
+<li>表示するもの: SADHelp の説明の最初の行 (英語)、pysad の状態と注記 (日本語)、SAD 側の定義場所、詳しい文書の場所。<code>.n</code> の関数は署名と定義されているファイル。</li>
+<li>全文は、同梱の SAD のコピーの <code>HelpMessages.n</code> から出せるものと出せないものがあります (SADHelp 由来の 538 項目のうち 363 項目)。出せないものは、手元の <code>SADHelp.html</code> (環境変数 <code>SADHELP_HTML</code>) があれば出ます。</li>
+<li>Python の関数・クラスの説明は、Python の <code>help()</code>・Jupyter の <code>?</code> で読めます (英語と日本語)。</li>
+<li>仕様と限界は <a href="docs/12_pysad_api.html"><code>docs/12_pysad_api.md</code></a> §11c。</li>
+</ul>
 <h2 id="オリジナルの-sad-にない機能-pysad-で追加">オリジナルの SAD にない機能 (pysad で追加)</h2>
 <p>pysad は直訳に加えて、<strong>オリジナルの SAD (K64) にない解析機能</strong>を持ちます。入門は <a href="docs/24_adts_rdt_primer.html"><code>docs/24_adts_rdt_primer.md</code></a>、台本ごとの数値のまとめは <a href="example/14_nonlinear_dynamics/adts_rdt/ADTS_summary.html"><code>ADTS_summary.md</code></a>・<a href="example/14_nonlinear_dynamics/frequency_map/FMAP_summary.html"><code>FMAP_summary.md</code></a>、例の索引は <a href="example/14_nonlinear_dynamics/README.html"><code>example/14_nonlinear_dynamics/README.md</code></a>・<a href="example/15_lma_touschek/README.html"><code>example/15_lma_touschek/README.md</code></a> です。</p>
 <table>
@@ -330,6 +392,10 @@ ffs<span class="o">.</span>run_text(<span class="s">'</span><span class="s">fit 
 <tr>
 <td><a href="README.html"><code>README.md</code></a></td>
 <td>この文書</td>
+</tr>
+<tr>
+<td><a href="GUIDE.md"><code>GUIDE.md</code></a>・<code>guide_images/</code></td>
+<td>はじめてのガイド (notebook にラティスとコマンドを貼って動かす。実際の画面つき)。pip のパッケージには入らない</td>
 </tr>
 <tr>
 <td><a href="CLAUDE.html"><code>CLAUDE.md</code></a></td>

@@ -9,6 +9,14 @@
 ## 未公開
 
 - **Jupyter の notebook から SAD のラティスとコマンドを実行する `%%sad` セルのマジック** (`pysad/notebook.py`、`pysad.run()`)。ラティスファイルとコマンドファイルの中身を、そのままセルに貼って実行する: `%load_ext pysad.notebook` のあと、`%%sad lattice` (ラティスを保存)、`%%sad` (保存したラティス + このセルを最初から実行。SAD の `gs ラティス コマンド` と同じ)、`%%sad --continue` (前の状態の続きに FFS 部の文を流す)。`sad.value('式')` で SAD の式の値を Python の値で取り出す。マジックを使わずに `pysad.run(r'''...''')` に文字列で渡すこともできる。確認: IPython と、本物のカーネルを起動して notebook を実行する試験 (nbclient)。環境は Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0。JupyterLab・VS Code・Colab・他の OS は未確認。試験 `test_notebook_magic.py` (13 件)、例 `example/17_notebook/`、文書 `docs/12_pysad_api.md` §11b。
+- **pysad ヘルプ (SAD の関数・コマンドの説明を引く)** (`pysad/sadhelp.py`、`pysad/helpdata/sadhelp_index.json`、`tools/build_help_data.py`): `pysad.sad_help('Twiss')`、notebook の `%sad_help Twiss`・`sad.help()`、コマンド `pysad-help`・`python -m pysad help`。名前 (大文字・小文字を区別しない。`CAL` のような略形・`Twiss[]`・`BEND.AE1`)・`--search キーワード` で引く。SADHelp (1.4.4.2k64 Updated: 10/19/2026) の説明の最初の行 (英語)、pysad の状態と注記 (docs/35)、SAD 側の定義場所、文書の場所を出す。同梱の SAD の `Packages/*.n` の関数 (487 件) と Tkinter のウィジェット (19 件) は、署名と定義されているファイルを出す。
+- **全文は、同梱の SAD のコピーの `Packages/HelpMessages.n` から出す** (`--full`): ファイルの中のコードは評価せず、構文だけを解析して取り出す。SADHelp 由来の 538 項目のうち 363 項目で全文が出る (FFS コマンド 55/56、関数 94/98、特別変数 48/48、フラグ 60/60、要素 11/15、要素のキーワード 45/155、演算子などの式 2/46)。残りは、手元の `SADHelp.html` (環境変数 `SADHELP_HTML`) があれば出る。SADHelp の全文は、索引 (JSON) には入れていない。
+- **notebook の補助**: SAD の名前のタブ補完 (`%%sad` のセルの 2 行目以降と `%sad_help ` の後。本物のカーネルで補完の要求を送って確かめた)、`%%sad?`・`%sad_help?` に使い方 (英語・日本語)、`sad.help()`。
+- **コマンドライン**: `pysad-help` を追加。`python -m pysad <help|run|share|warmup>` を追加。`pysad-share --help` が help を無視して実行していたのを直し、`pysad-run`・`pysad-share`・`pysad-warmup` の `--help` を英語と日本語にした。
+- **説明文 (docstring) の補充**: 公開の関数・クラス・メソッドの説明文を、英語 1 行 + 日本語 1 行にそろえた。英語と日本語の両方があるものが 860 → 1072 (全 1160 個)、説明なしが 255 → 82、英語のみ・日本語のみが 43 → 6。コードは変えていない (説明文を除いた構文木が元と同じことを、変えた 23 ファイルで確かめた)。numba のカーネルを含むファイル (`track6n.py`・`beambeam.py` など。変えるとキャッシュが無効になる) は、まだ補っていない。
+- **パッケージの説明文 (`help(pysad)`) を現状に直した**: 古い API の例 (`fodo_cell(L=2.0, theta=0.1, k1=1.2)`。いまの引数は `L_half`・`K1F` など) が動かず、「GUI は除外」「純粋な Python と NumPy」とも書いてあった。入口 (`pysad.run`・`pysad.sad_help`・`%load_ext pysad.notebook`・コマンド・互換モード) を英語と日本語で書き、動く例に置き換えた (試験が例を取り出して実行する)。
+- **修正**: `import pysad.diag_trace`・`import pysad.diag_fit` が、import しただけで診断を走らせて表を出していたのを直した (`py -3.12 -m pysad.diag_trace` で走らせる。出力は変更の前後で同じ)。`diag_fit` は、変更の前から、`scipy` の `fsolve` の呼び出しで途中でエラー終了する (未調査)。
+- 試験: `test_sadhelp.py` (43 件)、`test_notebook_magic.py` (18 件。IPython・nbclient・ipykernel がない環境では 8 件が skip)。文書: `docs/12_pysad_api.md` §11c、`GUIDE.md` 手順 6、README。
 
 ## v2.5.3 (2026-11-27)
 

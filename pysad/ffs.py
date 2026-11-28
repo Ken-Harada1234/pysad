@@ -95,9 +95,13 @@ class SADList:
         return NotImplemented
 
     def to_list(self) -> list:
+        """Return the items as a Python list.
+        要素を Python のリストで返す。"""
         return list(self._items)
 
     def to_array(self) -> np.ndarray:
+        """Return the items as a numpy array.
+        要素を numpy の配列で返す。"""
         return np.array(self._items)
 
 

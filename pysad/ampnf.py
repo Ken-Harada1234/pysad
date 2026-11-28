@@ -147,6 +147,8 @@ def _comps(nvar, d):
 
 
 def get_tab(nvar, D):
+    """Return the cached monomial table _Tab(nvar, D) for nvar variables and order D, creating it on first use.
+    変数の数 nvar・次数 D の単項式の表 _Tab(nvar, D) を返す (最初の 1 回だけ作ってキャッシュする)。"""
     if (nvar, D) not in _TAB:
         _TAB[(nvar, D)] = _Tab(nvar, D)
     return _TAB[(nvar, D)]
@@ -340,6 +342,8 @@ class Seg:
 
     @staticmethod
     def from_series(M, d, sd):
+        """Build a Seg from the series M (D+1, 4, 4) and d (D+1, 4) in delta, rescaling the p-th coefficients by sd**p (normalized delta = delta/sd).
+        δ の級数 M (D+1, 4, 4)・d (D+1, 4) から Seg を作る (p 次の係数に sd**p を掛けて δ/sd で規格化する)。"""
         D = M.shape[0] - 1
         s = Seg(D, sd)
         sc = (sd ** np.arange(D + 1))
@@ -467,6 +471,8 @@ class NSeg:
         self.d = np.zeros(4) if d is None else d
 
     def then(self, o):
+        """Return the section that applies this section first and then o (M = o.M M, d = o.M d + o.d).
+        この区間のあとに o を続けた区間を返す (M = o.M M、d = o.M d + o.d)。"""
         return NSeg(o.M @ self.M, o.M @ self.d + o.d)
 
 
@@ -946,6 +952,8 @@ def tune_series(res, nf, plane=0):
 
 
 class AmpTuneResult:
+    """Result of the amplitude- and momentum-dependent tune expansion: series coefficients nux, nuy ({(a, b, p): coefficient of Jx^a Jy^b delta^p}), the base tunes nu0, the normal-form data nf and the warnings.
+    振幅・運動量に依存するチューンの展開の結果。級数の係数 nux・nuy ({(a, b, p): Jx^a Jy^b δ^p の係数})、基準チューン nu0、正規形のデータ nf、警告を持つ。"""
     def __init__(self, nux, nuy, nu0, nf, res):
         self.nux, self.nuy, self.nu0, self.nf, self.res = nux, nuy, nu0, nf, res
         self.min_den = nf['min_den']
@@ -965,6 +973,8 @@ class AmpTuneResult:
         return np.array([[2 * c20, c11], [c11, 2 * c02]])
 
     def coef(self, plane, a, b, p=0):
+        """Return the coefficient of Jx^a Jy^b delta^p in the tune series of the plane (0 = x, 1 = y); 0 if absent.
+        平面 plane (0 = x、1 = y) のチューンの級数の Jx^a Jy^b δ^p の係数を返す (無ければ 0)。"""
         return (self.nux if plane == 0 else self.nuy).get((a, b, p), 0.0)
 
     @property
@@ -980,7 +990,8 @@ class AmpTuneResult:
         return {pl + k: self.coef(i, *ab) for i, pl in enumerate(('x', 'y')) for k, ab in (('20', (2, 0, 0)), ('11', (1, 1, 0)), ('02', (0, 2, 0)))}
 
     def chrom(self, plane, p=1):
-        """∂ᵖν/∂δᵖ (p! c_00p)"""
+        """Return the p-th derivative of the tune with respect to delta, p! c_00p (p = 1 is the chromaticity).
+        ∂ᵖν/∂δᵖ (p! c_00p)。チューンの δ による p 階微分 (p = 1 がクロマティシティ)。"""
         return math.factorial(p) * self.coef(plane, 0, 0, p)
 
     def adts_delta(self, plane, a, b, p=1):
@@ -1121,6 +1132,8 @@ def model_tracker(lat, delta=0.0, nslice=8, ops=None, bend_cubic=False, nslice_b
 
 
 def model_closed_orbit(tr, tol=1e-14):
+    """Find the 4D closed orbit of the tracking map tr (array of shape (n, 4) -> same shape) by Newton iteration with central-difference Jacobians; returns the 4-vector.
+    追跡の写像 tr ((n, 4) の配列 → 同形) の 4 次元の閉軌道を、中心差分のヤコビ行列を使ったニュートン法で求める。4 成分のベクトルを返す。"""
     z = np.zeros((1, 4))
     for _ in range(30):
         f = tr(z) - z

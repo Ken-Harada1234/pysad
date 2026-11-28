@@ -326,6 +326,8 @@ PYTHONIOENCODING=utf-8 python -u run_sad.py <試験用ラティス>.lat <台本�
 
 pip で入れたときのコマンド (`pysad/cli.py`): `pysad-run lattice_file [script_file ...]` (上と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。clone ならフォルダ、pip では入っていないので GitHub と GitHub Pages の URL)、`pysad-warmup [--check | --clear] [--quiet]` (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。`--check` はキャッシュが有効なら終了コード 0、`--clear` は pysad のキャッシュを消す。`pysad/warmup.py`)。
 
+`pysad-help [名前] [--search キーワード] [--kind 種類] [--full]` (SAD の関数・コマンドの説明を引く。§11c)。`python -m pysad <help|run|share|warmup>` でも同じ。各コマンドの `--help` は英語と日本語で書いてある (以前は `pysad-share --help` が help を無視して実行していた)。
+
 ### 11b. notebook.py — Jupyter / IPython のセルに貼った SAD の実行 (`%%sad`)
 
 SAD のラティスファイルとコマンドファイルの中身を、notebook のセルにそのまま貼って実行する。セルのマジックの本文は変換されずに渡るので、引用符・バックスラッシュ・`!` で始まる SAD のコメント行を書き直す必要がない。
@@ -353,11 +355,13 @@ FFS; USE RING; CELL; CALC; ...
 | `%%sad --reset` (`-r`)、`%sad --reset` | 保存したラティスと実行の状態を捨てる (`%%sad --reset` は捨ててからこのセルを実行) |
 | `sad.value('式')` | SAD の式を評価して Python の値で返す (数は `float`、並びは `list`、Null は `None`)。出力は書かない。`PI` は未評価の記号なので `Pi` と書く |
 | `sad.ffs`・`sad.interp` | 最後の実行の `FFS` と `Interp` |
+| `%sad_help 名前`、`sad.help('名前')` | SAD の関数・コマンドの説明を引く (§11c)。`%sad_help --search キーワード`・`--full` も。`%sad_help?`・`%%sad?` に使い方 (英語・日本語) |
 | `pysad.run(文字列, lattice=None, cont=False, reset=False)` | マジックを使わない書き方 (`pysad.notebook.run` と同じ)。`r'''...'''` の生文字列なら引用符・バックスラッシュをそのまま書ける。`Session` を返す |
 
 - 出力は今のセルの標準出力に出る。SAD のエラーは、SAD と同じく表示して次の文へ進む。
 - 起動時の案内 (バナー) は、プロセスの最初の 1 回だけ標準エラー出力に出る (標準エラー出力なので、notebook では stderr の出力として表示される。`PYSAD_QUIET=1` で出さない)。
-- 例: [`example/17_notebook/`](../example/17_notebook/README.md)。試験: `test_notebook_magic.py` (13 件。IPython・nbclient・ipykernel がない環境では 3 件が skip)。
+- **タブ補完**: `%%sad` のセルの 2 行目以降で、SAD の名前 (FFS コマンド・関数・特別変数・フラグ・要素。`Twi` → `Twiss`、`CAL` → `CALCULATE` など) を補完する。`%sad_help ` の後も同じ。普通の Python のセルと、`%%sad` の 1 行目には入らない。補完するのは名前だけで、引数やオプションは補完しない。文字列の中でも名前が候補に出る。
+- 例: [`example/17_notebook/`](../example/17_notebook/README.md)。試験: `test_notebook_magic.py` (18 件。IPython・nbclient・ipykernel がない環境では 8 件が skip)。
 
 **限界・未確認**
 - 確認した環境は、Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 (本物のカーネルを起動して notebook を実行する試験を含む)。JupyterLab・VS Code の notebook・Colab・他の OS では未確認。
@@ -365,6 +369,42 @@ FFS; USE RING; CELL; CALC; ...
 - 実行は最初からやり直すので、`%%sad` のセルごとに `CALC` が走る (結果は再現できるが、重い計算は毎回走る)。`--continue` は実行の順序で結果が変わる。
 - Tk の GUI は notebook では動かない。SAD の描画関数 (Plot 系) の notebook 内の表示は未確認 (`sad.value()` で値を取り出して matplotlib で描く例は動く)。
 - セルを実行中の中断 (Interrupt) で、インタプリタが途中の状態のまま残るかどうかは未確認。
+- タブ補完は、本物のカーネル (ipykernel 7.4.0) に補完の要求を送って確かめた。JupyterLab・VS Code の画面での補完の表示 (候補の見え方) は未確認。IPython 8.6 より前では、`%%sad` のセルの中の補完は入らない (`%sad_help` の補完は入る)。
+
+### 11c. sadhelp.py — pysad ヘルプ (SAD の関数・コマンドの説明)
+
+SAD の FFS コマンド・SADScript の関数・特別変数・フラグ・要素と、同梱の SAD の `.n` の関数・Tkinter のウィジェットを、名前で引いて、説明と pysad の状態を出す。オリジナルの SAD の `Help` に当たる。Python の関数・クラスの説明は、Python の `help()`・Jupyter の `?` で読む (別のもの)。
+
+| 引き方 | 例 |
+|---|---|
+| Python | `pysad.sad_help('Twiss')`、`pysad.sad_help(search='tune')`、`pysad.sad_help('FIT', full=True)`、引数なしで概要 |
+| notebook | `%sad_help Twiss`、`%sad_help --search tune`、`%sad_help BEND AE1`、`%sad_help CAL --full`、`sad.help('Twiss')`。名前はタブ補完できる (§11b) |
+| コマンド | `pysad-help Twiss`、`pysad-help --search tune --kind ffs-command`、`python -m pysad help CAL --full` |
+
+名前は大文字・小文字を区別せず、略形 (`CAL` = `CALCULATE`)・`Twiss[]` の形・要素のキーワード (`BEND.AE1`・`BEND AE1`) も引ける。`FIT` のように、FFS コマンドと関数の両方にある名前は、両方を出す (`kind=` で絞る)。
+引数は `name`、`search` (名前・説明の最初の行・分類・注記・親の要素に含まれる語)、`full`、`kind` (`ffs-command`・`function`・`special-variable`・`flag`・`element`・`element-keyword`・`package-function`・`tk-widget` など)。
+
+**表示するもの**: 名前と種類・分類、SADHelp の説明の最初の行 (英語。長いものは途中で切れていて、切れたものには `...` を付ける)、pysad の状態 (実装・未対応・無視・pysad のみ など) と注記 (日本語)、SAD 側の定義場所 (Fortran・.n)、
+詳しい文書 (docs の該当ファイルと GitHub Pages の URL)、`.n` の関数は署名と定義されているファイル。pysad だけの関数 (`FrequencyMap[]` など) は英語と日本語の 1 行ずつ。
+
+**全文 (`full=True`)**: SAD 自身のヘルプの本文 `Packages/HelpMessages.n` (同梱の SAD のコピー `pysad/sad_copy` の一部。`PYSAD_SAD_PACKAGES` を設定していればその Packages のもの) を読んで出す。ファイルの中のコードは評価せず、構文だけを解析して取り出す
+(`{名前, 本文, 関連する名前, {下位の項目}}` の入れ子。変数に入れた文字列への参照 `IF$Message` などは追う。実行時に作る部分は項目として取れない)。手元に `SADHelp.html` があれば、それも使える。探す順は、
+環境変数 `SADHELP_HTML` (ファイルのパス) → 同梱の HelpMessages.n → `PYSAD_SAD_PACKAGES` の隣の `Documents/SADHelp.html` → pysad の隣の `SAD-master/Documents/SADHelp.html`。SADHelp の全文は、索引 (JSON) には入れていない。
+
+**データ**: `pysad/helpdata/sadhelp_index.json` (約 370 KB、1050 項目)。`docs/34_sad_help_index.md` (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出した、名前と説明の最初の行) と `docs/35_pysad_vs_sadhelp.md` (SAD 側の定義場所と pysad の状態)、
+同梱の `Packages/*.n` の定義から、`py -3.12 tools/build_help_data.py` で作る (`--check` で今のファイルと同じかを確かめる。docs/34・35 を作り直したら、これも作り直す)。wheel・sdist に入る (`pyproject.toml` の package-data と `MANIFEST.in`)。
+`.n` からは、行頭の `Name[...] := ...`・`Name = ...` の定義のうち、大文字で始まり `$` を含まない名前だけを入れた (487 件。`Tkinter.n` が 378 定義で最多)。Tkinter のウィジェットは `Tkinter.n` の `Widgets=Join[...]` の一覧 (19 件、元の Tk の C ファイル名つき)。
+
+試験: `test_sadhelp.py` (43 件。引き方・表示・全文 (偽の SADHelp.html と偽の HelpMessages.n。構文だけの解析で、コードが走らないこと)・`.n` の項目・コマンド・`python -m pysad`・import の副作用・説明文・`help(pysad)` の例の実行)。
+
+**限界・未確認**
+- 全文を同梱の HelpMessages.n から出せるのは、SADHelp 由来の 538 項目のうち 363 項目 (FFS コマンド 55/56、関数 94/98 (pysad だけの 6 つの関数は HelpMessages.n にない)、特別変数 48/48、フラグ 60/60、要素 11/15、要素のキーワード 45/155、演算子などの式 2/46、dynamics の章 1/13)。
+  取れない項目は HelpMessages.n で実行時に作る部分にあり、手元の SADHelp.html があれば全文が出る。`.n` の関数 (487 件) と Tk のウィジェット (19 件) には、説明がない (署名と定義されているファイルだけ)。
+- 説明の最初の行は英語 (SADHelp のまま)、pysad の状態の注記は日本語。全文は英語だけ。最初の行は、docs/34 が切り出した長さで切れている (全文は上のとおり)。
+- pysad の状態の「実装」は、名前の登録があるという意味で、K64 と挙動が一致するかは各要素の文書による (docs/35)。docs/35 の手で直した行は、`perf_work/pysad_vs_sadhelp.py` で作り直すと消える (docs/35 の注意を見ること)。
+- `.n` の関数の「利用者が呼ぶもの」の見分けは、名前の形 (大文字で始まり `$` を含まない) だけで決めた。内部の補助の関数が混ざり、利用者が呼ぶ小文字の名前が抜けている可能性がある。
+- SAD 自身の対話の `Help` (`Packages/help.n`) を pysad で動かせるかは未確認 (`%sad_help` はそれとは別の実装)。CERN の SADHelp (https://hep-project-sad.web.cern.ch/SADHelp/SADHelp.html) は、版が違う (1.4.0.0k64、2025-07-14) ので、項目名で探す。
+- 確認した環境は Windows・Python 3.12。IPython・JupyterLab の画面での表示は §11b のとおり。
 
 ## 12. calc6d.py — CALC6D (qcell6d)
 
@@ -566,6 +606,8 @@ print(score)                                               # 144
 |---|---|---|
 | `naff.py` | NAFF 風のチューン抽出 (Laskar の数値的な周波数解析)。周波数の単位は 1/周回、符号は exp(+2πiνn) の向き。`naff(z, nfreq=1, window=1, fmin=-0.5, fmax=0.5, pad=8, tol=1e-14)` (複素信号 z_n = Σ a_k exp(2πi ν_k n) の周波数 ν_k と複素振幅 a_k を大きい順に nfreq 個。Hann 窓つき、FFT のピークをゼロ詰めで探し、窓つきの内積の最大化 (Brent 法) で精密化し、見つけた成分を Gram-Schmidt で引いて次へ。振幅は窓つき最小二乗)、`naff_real(x, nfreq=1, window=1, remove_mean=True)` (実数の信号。解析信号にして `naff`。周波数は 0〜0.5)、`twiss_normalize(x, px, alpha, beta)`、`tune_xp(x, px, alpha=0.0, beta=1.0, window=1, nfreq=1)` ((x, px) の列と Twiss から z = x̂ − i p̂ を作り符号つきのチューン ν (−0.5〜0.5) を返す。SAD の追跡の座標は px = dx/ds なので x̂ = x/√β、p̂ = (α x + β px)/√β に直す)、`tunes_from_coords(coords, twiss=None, window=1)` (`track_particles` の座標列 (ターン × 6) から (νx, νy, νz))。確認: 既知の信号で周波数 1e-11、追跡の座標列 (1024 周) が CALC と 12 セル FODO 3e-9・大きなリング A 6e-10・PF 1.4e-10・ASTRID2 5e-11。MAIN の TRACK の `wtunem` (FFT の放物線補間) は 4e-5〜2e-4。限界: 周波数の間隔が約 2/N 未満の成分は分離できない、放射減衰のある列 (放射を切って使う)、共鳴線の近傍 | docs/28、[`example/05_tracking/fn_NAFF_tunes.py`](../example/05_tracking/fn_NAFF_tunes.py) |
 | `warmup.py` | numba のカーネルの事前コンパイル (コマンド `pysad-warmup`、`py -3.12 -m pysad.warmup` でもよい)。小さな FODO を土台にした埋め込みの台本 10 本 (光学・エミッタンス・追跡・放射、BEND の K1・フリンジ、ステアリング、MULT・OCT・APERT、COORD・TCAVI、UND・PHSROT、空洞の横方向電圧、BEAMBEAM・WAKE、SOL 領域、TRPT の加速) を 1 回ずつ走らせ、カーネル 195 本のうち 191〜192 本の機械語をキャッシュに作る (残りの 3〜4 本は、この入力では呼ばれず、使うときに変換される。SOL の領域内の粒子が早く落ちるかどうかで 1 本変わる)。`--check` はキャッシュが有効か (CPU・numba の版・ソースが一致するか) を調べて終了コード 0/1、`--clear` は pysad のキャッシュだけを消す。キャッシュの場所は numba の規則 (`NUMBA_CACHE_DIR` があればその下、なければ `pysad/__pycache__`、書き込めなければユーザーのキャッシュ)。`pysad.nbcache` の依存先の記録も更新する。変換の時間は 1 台の PC (Python 3.12・numba 0.68) で 80〜90 秒 (キャッシュは 27.5 MB。作り直しの 2 回目は 4 秒)。実行時は `pysad-warmup` と同じ `NUMBA_CACHE_DIR` にすること。別の CPU・numba の版では使われず再変換される | docs/01 |
+| `sadhelp.py` | pysad ヘルプ (`pysad.sad_help`・`%sad_help`・`pysad-help`)。SAD の関数・コマンドの説明の最初の行と pysad の状態を `helpdata/sadhelp_index.json` から引き、全文は同梱の `Packages/HelpMessages.n` (構文だけ解析) か手元の SADHelp.html から出す。§11c | 互換モードによらない |
+| `notebook.py` | Jupyter の notebook のセルに貼った SAD のラティスとコマンドの実行 (`%%sad`・`pysad.run`・`sad.value`・`sad.help`)、`%sad_help`、SAD の名前のタブ補完。§11b | 互換モードによらない |
 | `specfn_cx.py` | 複素の特殊関数 (mpmath が無いので自前)。`zeta_c(s)`・`hurwitz_c(s, a)` (Euler–Maclaurin)、`polylog_c(s, z)` (冪級数・μ = ln z の展開・倍角の公式の再帰)、`hyperu_c(a, b, z)` (積分表示・多項式・漸化式と Kummer の変換)。SADScript の `Zeta`・`HurwitzZeta`・`PolyLog`・`HypergeometricU` が複素の引数のときに呼ぶ。範囲は docs/06 | docs/06 |
 | `specfn_cx2.py` | 複素の特殊関数の追加。scipy の複素対応 (`exp1`・`expi`・`digamma`・`sici`・`fresnel`・`lambertw`・`hyp1f1`・`hyp2f1`)、整数次の ExpIntegralE の漸化式・級数、`polygamma` (Hurwitz ゼータ経由)、複素の次数の BesselJ の級数 (\|x\| ≤ 25)、Whittaker W (`specfn_cx.hyperu_c`)。`specfn.install` が複素の引数で切り替える (実数の引数では切り替えない)。両モード |
 | `spch_k64.py` | `K64Pspac` (k64 モードの PSPAC。`SpaceCharge._kick2d` から呼ぶ)。K64 の形状関数: 横は CIC、縦は「ほぼ最近接」、電位は 5 点差分 (境界 φ = 0) の厳密解と双 3 次補間、線密度は 3 次スプライン。`PSPACNZ < 3` はエラー |

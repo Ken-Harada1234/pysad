@@ -74,6 +74,8 @@ def space_free_dir(path):
 
 
 class TclBridge:
+    """Bridge between the SAD script interpreter and Tcl/Tk (tkinter): provides the Tcl*, TclArg and TkEventLoop builtins used by the bundled SAD GUI packages.
+    SAD 台本の評価器と Tcl/Tk (tkinter) の接点。同梱の SAD の GUI パッケージが使う Tcl*・TclArg・TkEventLoop などの組み込み関数を提供する。"""
     def __init__(self, interp):
         self.I = interp
         self.root = None
@@ -83,6 +85,8 @@ class TclBridge:
 
     # ------------------------------------------------------------------ 組み込みの登録
     def install(self, B):
+        """Register the Tcl/Tk builtins (TclCreateInterp, Tcl, TclArg, TkEventLoop, Xlib stand-ins, ...) in the builtin table B.
+        Tcl/Tk 関係の組み込み関数 (TclCreateInterp・Tcl・TclArg・TkEventLoop・Xlib の代用など) を組み込み表 B に登録する。"""
         B['TclCreateInterp'] = self.create_interp
         B['Tcl'] = self.tcl
         B['TclSetResult'] = self.set_result
@@ -135,6 +139,8 @@ class TclBridge:
 
     # ------------------------------------------------------------------ Tcl インタプリタ
     def create_interp(self, a):
+        """TclCreateInterp: create the Tk root window on first use (retrying a few times) and the sadeval/sadcommand commands; returns 1.
+        TclCreateInterp。最初の呼び出しで Tk のルート窓 (数回やり直す) と sadeval・sadcommand を作る。戻り値は 1。"""
         import tkinter
         if self.root is None:
             for k_ in range(4):                       # Windows の Tcl は、まれに起動直後の Tk の初期化 (tk.tcl の探索) に失敗する。数回やり直す
@@ -185,6 +191,8 @@ class TclBridge:
         return self._result()
 
     def tcl(self, a):
+        """Tcl[cmd] or Tcl[cmd, ...]: evaluate the Tcl command string a[0] in the Tk interpreter and return its result (SADError on a wrong argument list).
+        Tcl[cmd]。Tcl のコマンド文字列 a[0] を Tk の評価器で実行して結果を返す (引数が不正なら SADError)。"""
         if len(a) not in (1, 2):
             raise SADError('General::narg: Number of arguments is expected to be 1 or 2 in Tcl')
         if not isinstance(a[0], str):
@@ -211,6 +219,8 @@ class TclBridge:
         return Null
 
     def set_result(self, a):
+        """TclSetResult[str]: store the string to be returned as the result of the pending Tcl command; returns Null.
+        TclSetResult[str]。実行中の Tcl コマンドの結果として返す文字列を保存する (戻り値は Null)。"""
         if len(a) != 1 or not isinstance(a[0], str):
             raise SADError('General::wrongtype: Argument must be Character-string in TclSetResult')
         self.pending_result = a[0]
@@ -218,6 +228,8 @@ class TclBridge:
 
     # ------------------------------------------------------------------ イベントループ
     def event_loop(self, a):
+        """TkEventLoop[]: run the Tk main loop (a single update() if PYSAD_TK_NOLOOP is set; nothing without a root window).
+        TkEventLoop[]。Tk のメインループを回す (PYSAD_TK_NOLOOP があれば update() を 1 回だけ。ルート窓がなければ何もしない)。"""
         if self.root is None:
             return Null
         if self.noloop:
@@ -227,6 +239,8 @@ class TclBridge:
         return Null
 
     def quit_loop(self, a):
+        """TkQuitEventLoop[]: leave the Tk main loop (root.quit()).
+        TkQuitEventLoop[]。Tk のメインループを抜ける (root.quit())。"""
         if self.root is not None:
             try:
                 self.root.quit()
@@ -318,6 +332,8 @@ class TclBridge:
             parts.append(I.to_str(x))
 
     def tclarg(self, a, single):
+        """TclArg / TclArg1: convert the SAD arguments a into a Tcl argument string (single=True wraps it in braces as one word).
+        TclArg / TclArg1。SAD の引数 a を Tcl の引数の文字列にする (single=True なら全体を 1 語として {} で包む)。"""
         parts = []
         self._arg(a, single, parts)
         s = ' '.join(parts)

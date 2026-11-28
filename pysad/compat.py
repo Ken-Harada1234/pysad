@@ -35,10 +35,14 @@ def set_mode(m):
 
 
 def v2():
+    """True if the compatibility mode is 'v2' (K64 bugs fixed).
+    互換モードが 'v2' (K64 のバグを直した動作) なら True。"""
     return mode() == 'v2'
 
 
 def k64():
+    """True if the compatibility mode is 'k64' (same behaviour as SAD K64).
+    互換モードが 'k64' (SAD K64 と同じ動作) なら True。"""
     return mode() == 'k64'
 
 
@@ -117,6 +121,8 @@ _bend_dk_fix = None
 
 
 def bend_dk_fix():
+    """True if the bend dk correction is active (v2 only; default on unless set otherwise).
+    偏向磁石の dk の修正が有効なら True (v2 のみ。設定しなければ有効)。"""
     if mode() != 'v2':
         return False
     return True if _bend_dk_fix is None else bool(_bend_dk_fix)
@@ -145,6 +151,8 @@ _radiation_beta = None
 
 
 def radiation_beta():
+    """True if the radiation-beta option is active (v2 only; set by the setter or PYSAD_RAD_BETA, default on).
+    放射の β のオプションが有効なら True (v2 のみ。設定関数か PYSAD_RAD_BETA で決まり、既定は有効)。"""
     if mode() != 'v2':
         return False
     if _radiation_beta is not None:
@@ -173,6 +181,8 @@ _spin_bpar = None
 
 
 def spin_bpar():
+    """True if the spin bpar option is active (v2 only; set by the setter or PYSAD_SPIN_BPAR, default on).
+    スピンの bpar のオプションが有効なら True (v2 のみ。設定関数か PYSAD_SPIN_BPAR で決まり、既定は有効)。"""
     if mode() != 'v2':
         return False
     if _spin_bpar is not None:
@@ -198,6 +208,8 @@ _spin_edge_split = None
 
 
 def spin_edge_split():
+    """True if the spin edge-split option is active (needs spin_bpar; set by the setter or PYSAD_SPIN_EDGE_SPLIT, default on).
+    スピンの端の分割のオプションが有効なら True (spin_bpar が必要。設定関数か PYSAD_SPIN_EDGE_SPLIT で決まり、既定は有効)。"""
     if not spin_bpar():
         return False
     if _spin_edge_split is not None:

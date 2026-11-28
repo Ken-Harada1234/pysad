@@ -37,7 +37,8 @@ from .constants import SpeedOfLight, ElectronMass
 # ---------------------------------------------------------------------------
 
 class Token:
-    """A lexical token from a SADScript file."""
+    """A lexical token from a SADScript file.
+    SADScript ファイルの字句 (トークン)。種類・値・行番号・原文の位置を持つ。"""
     __slots__ = ('type', 'value', 'line', 'pos', 'end')
 
     def __init__(self, type_: str, value: str, line: int = 0, pos: int = -1, end: int = -1):
@@ -109,7 +110,8 @@ _TOKEN_RE = re.compile(
 
 
 def tokenize(source: str) -> List[Token]:
-    """Tokenize SADScript source, stripping comments and whitespace."""
+    """Tokenize SADScript source, stripping comments and whitespace.
+    SADScript のソース文字列を、コメントと空白を除いて Token のリストに分ける。"""
     tokens = []
     line = 1
     for m in _TOKEN_RE.finditer(source):
@@ -129,7 +131,8 @@ def tokenize(source: str) -> List[Token]:
 # ---------------------------------------------------------------------------
 
 class SADEnvironment:
-    """Execution environment for SADScript evaluation."""
+    """Execution environment for SADScript evaluation.
+    SADScript の評価の環境。変数・要素定義・ビームラインの表を持つ。"""
 
     # Physical constants available in SAD
     _BUILTINS = {
@@ -182,18 +185,25 @@ class SADEnvironment:
     # ---- Variable access ----
 
     def get(self, name: str) -> Any:
+        """Return the value of variable name (None if undefined).
+        変数 name の値を返す (未定義なら None)。"""
         return self._vars.get(name)
 
     def set(self, name: str, value: Any) -> None:
+        """Set variable name to value.
+        変数 name に value を設定する。"""
         self._vars[name] = value
 
     def has(self, name: str) -> bool:
+        """True if variable name is defined.
+        変数 name が定義されていれば True。"""
         return name in self._vars
 
     # ---- Element registry ----
 
     def define_element(self, name: str, etype: str, params: dict) -> None:
-        """Register a new element with type and parameters."""
+        """Register a new element with type and parameters.
+        要素を型 etype とパラメータ params で登録する (同じ型の再定義は書いたキーだけ上書き)。"""
         # SAD doelem.f:57-60: 同じ型で再定義したときは書いたキーワードだけ上書き (rdkwdl)。別の型なら SAD はエラー、ここでは置き換える
         old = self._elements.get(name)
         if old is not None and old.get('TYPE') == etype.upper():
@@ -204,28 +214,39 @@ class SADEnvironment:
         self._elements[name] = entry
 
     def set_element_param(self, name: str, param: str, value: Any) -> None:
-        """Set a parameter on an existing element."""
+        """Set a parameter on an existing element.
+        既存の要素 name のパラメータ param を value にする (未定義の要素は KeyError)。"""
         if name not in self._elements:
             raise KeyError(f"Element '{name}' not defined")
         self._elements[name][param.upper()] = value
 
     def get_element_param(self, name: str, param: str) -> Any:
+        """Return parameter param of element name (None if the element or parameter is missing).
+        要素 name のパラメータ param を返す (要素かパラメータがなければ None)。"""
         if name not in self._elements:
             return None
         return self._elements[name].get(param.upper())
 
     def get_element(self, name: str) -> Optional[Dict]:
+        """Return the parameter dict of element name (None if undefined).
+        要素 name のパラメータの dict を返す (未定義なら None)。"""
         return self._elements.get(name)
 
     def element_names(self) -> List[str]:
+        """Return the list of defined element names.
+        定義済みの要素名のリストを返す。"""
         return list(self._elements.keys())
 
     # ---- BeamLine registry ----
 
     def define_beamline(self, name: str, element_refs: List) -> None:
+        """Register beamline name as the list of element references element_refs.
+        ビームライン name を要素参照のリスト element_refs として登録する。"""
         self._beamlines[name] = element_refs
 
     def get_beamline(self, name: str) -> Optional[List]:
+        """Return the element reference list of beamline name (None if undefined).
+        ビームライン name の要素参照のリストを返す (未定義なら None)。"""
         return self._beamlines.get(name)
 
     def resolve_beamline(self, name: str) -> Optional[str]:
@@ -243,6 +264,8 @@ class SADEnvironment:
         return None
 
     def beamline_names(self) -> List[str]:
+        """Return the list of defined beamline names.
+        定義済みのビームライン名のリストを返す。"""
         return list(self._beamlines.keys())
 
     # ---- Build pysad Lattice ----
@@ -562,6 +585,8 @@ class SADEnvironment:
             return Drift(name=name, L=L)
 
     def summary(self) -> str:
+        """Return a text summary of the elements, beamlines and user variables.
+        要素・ビームライン・ユーザ変数の要約の文字列を返す。"""
         lines = [
             f"SADEnvironment: {len(self._elements)} elements, "
             f"{len(self._beamlines)} beamlines, "
@@ -1453,6 +1478,7 @@ class _Parser:
 class SADScript:
     """
     SADScript interpreter.
+    SADScript (SAD の .n 台本) のインタープリタ。
 
     Load and evaluate SAD .n lattice files, then build pysad Lattice objects.
 
@@ -1469,13 +1495,15 @@ class SADScript:
         self.verbose = verbose
 
     def load_file(self, path: str) -> None:
-        """Parse and evaluate a SADScript .n file."""
+        """Parse and evaluate a SADScript .n file.
+        SADScript の .n ファイルを読んで評価する。"""
         with open(path, 'r', encoding='utf-8', errors='replace') as f:
             source = f.read()
         self.load_string(source)
 
     def load_string(self, source: str) -> None:
-        """Parse and evaluate SADScript source text."""
+        """Parse and evaluate SADScript source text.
+        SADScript のソース文字列を読んで評価する。"""
         tokens = tokenize(source)
         parser = _Parser(tokens, self.env)
         results = parser.parse_program()
@@ -1483,38 +1511,50 @@ class SADScript:
             print(f"[pysad] Parsed {len(results)} statements")
 
     def set_variable(self, name: str, value: Any) -> None:
-        """Set a variable in the interpreter environment."""
+        """Set a variable in the interpreter environment.
+        評価環境の変数 name を value にする。"""
         self.env.set(name, value)
 
     def get_variable(self, name: str) -> Any:
-        """Get a variable value from the interpreter environment."""
+        """Get a variable value from the interpreter environment.
+        評価環境の変数 name の値を返す。"""
         return self.env.get(name)
 
     def define_element(self, name: str, etype: str, **params) -> None:
-        """Manually define an element (alternative to loading from file)."""
+        """Manually define an element (alternative to loading from file).
+        要素を直接定義する (ファイルを読む代わり。パラメータはキーワード引数)。"""
         self.env.define_element(name, etype, params)
 
     def define_beamline(self, name: str, refs: List[str]) -> None:
-        """Manually define a beamline."""
+        """Manually define a beamline.
+        ビームラインを直接定義する (refs は要素名のリスト)。"""
         self.env.define_beamline(name, refs)
 
     def build_lattice(self, name: str) -> 'Lattice':
-        """Build a pysad Lattice from a BeamLine defined in the environment."""
+        """Build a pysad Lattice from a BeamLine defined in the environment.
+        環境に定義したビームライン name から pysad の Lattice を作る。"""
         return self.env.build_lattice(name)
 
     def eval(self, expr: str) -> Any:
-        """Evaluate a single SADScript expression."""
+        """Evaluate a single SADScript expression.
+        SADScript の式を 1 つ評価する。"""
         tokens = tokenize(expr + ';')
         parser = _Parser(tokens, self.env)
         return parser.parse_statement()
 
     def element_names(self) -> List[str]:
+        """Return the list of defined element names.
+        定義済みの要素名のリストを返す。"""
         return self.env.element_names()
 
     def beamline_names(self) -> List[str]:
+        """Return the list of defined beamline names.
+        定義済みのビームライン名のリストを返す。"""
         return self.env.beamline_names()
 
     def summary(self) -> str:
+        """Return a text summary of the environment.
+        環境の要約の文字列を返す。"""
         return self.env.summary()
 
     # ------------------------------------------------------------------
@@ -1581,6 +1621,7 @@ class SADScript:
 def load_sad_file(path: str, verbose: bool = False) -> SADScript:
     """
     Load a SAD .n lattice file and return a SADScript interpreter ready to use.
+    SAD の .n ラティスファイルを読み込み、すぐ使える SADScript インタープリタを返す。
 
     Parameters
     ----------

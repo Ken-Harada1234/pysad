@@ -30,7 +30,8 @@ def row28(r) -> np.ndarray:
 
 
 def symplectic_j(n: int) -> np.ndarray:
-    """emit.n SymplecticJ[n]: {{0,1,..},{-1,0,..},{0,0,0,1,..},{0,0,-1,0,..},..}"""
+    """emit.n SymplecticJ[n]: {{0,1,..},{-1,0,..},{0,0,0,1,..},{0,0,-1,0,..},..}
+    emit.n の SymplecticJ[n]。n 次のシンプレクティック基本行列 J (2x2 ブロック {{0,1},{-1,0}} が対角に並ぶ)"""
     m = np.zeros((n, n))
     for i in range(0, (n // 2) * 2 - 1, 2):
         m[i, i + 1] = 1.0
@@ -39,7 +40,8 @@ def symplectic_j(n: int) -> np.ndarray:
 
 
 def symplectic_inverse(m: np.ndarray) -> np.ndarray:
-    """emit.n SymplecticInverse[m] = -J.mᵀ.J"""
+    """emit.n SymplecticInverse[m] = -J.mᵀ.J
+    emit.n の SymplecticInverse[m] = -J.mᵀ.J。シンプレクティックな行列 m の逆行列"""
     n = m.shape[0]
     J = symplectic_j(n)
     return -J @ m.T @ J
@@ -143,7 +145,8 @@ def geo_base(chi) -> np.ndarray:
 
 
 def orbit_geo(gxyz, chi, cod6) -> np.ndarray:
-    """Optics.n OrbitGeo: g + Σ GeoBase(chi)[i]·v[i]、v = {DX,DY,0} + {DPX,DPY,pz}/(1+dp)·DZ"""
+    """Optics.n OrbitGeo: g + Σ GeoBase(chi)[i]·v[i]、v = {DX,DY,0} + {DPX,DPY,pz}/(1+dp)·DZ
+    Optics.n の OrbitGeo。幾何の位置 gxyz に、閉軌道 cod6 のずれ (DX・DY と DPX・DPY・pz の方向の DZ) を GeoBase(chi) の基底で足した位置を返す"""
     dx, dpx, dy, dpy, dz, dp = (float(v) for v in cod6)
     pz = math.sqrt(max(0.0, (1.0 + dp)**2 - dpx**2 - dpy**2))
     v = np.array([dx + dpx / (1.0 + dp) * dz, dy + dpy / (1.0 + dp) * dz, pz / (1.0 + dp) * dz])
@@ -191,6 +194,8 @@ class OpticsFunctions:
         self.ffs = ffs
 
     def install(self, B):
+        """Register the optics builtins (TransferMatrix, BeamMatrix, OrbitGeo, GeoBase, SymplecticJ, SymplecticInverse, SurvivedParticles, AccelerateParticles, NormalCoordinates) in the builtin table B.
+        光学の組み込み関数 (TransferMatrix・BeamMatrix・OrbitGeo・GeoBase・SymplecticJ・SymplecticInverse・SurvivedParticles・AccelerateParticles・NormalCoordinates) を組み込み表 B に登録する。"""
         B['TransferMatrix'] = self.fn_transfer_matrix
         B['BeamMatrix'] = self.fn_beam_matrix
         B['OrbitGeo'] = self.fn_orbit_geo
@@ -217,7 +222,8 @@ class OpticsFunctions:
         return row28(r)
 
     def fn_transfer_matrix(self, args):
-        """TransferMatrix[from, to, Fold->, Symplectic->, Calc6D->]"""
+        """TransferMatrix[from, to, Fold->, Symplectic->, Calc6D->]
+        TransferMatrix[from, to, Fold->, Symplectic->, Calc6D->]。位置 from から to への転送行列を返す"""
         ffs = self.ffs
         if len(args) < 2:
             raise SADError('General::narg: Number of arguments is expected to be "2 or more" in TransferMatrix')
@@ -252,6 +258,8 @@ class OpticsFunctions:
         return [nc.tolist(), p[15:21].tolist()]
 
     def fn_beam_matrix(self, args):
+        """Builtin BeamMatrix[loc]: the beam matrix at location loc from EMITX, EMITY, DP and the optics (GAUSS and CALC6D flags honoured), as a nested list.
+        組み込み関数 BeamMatrix[loc]。EMITX・EMITY・DP と光学から位置 loc のビーム行列を入れ子のリストで返す (GAUSS・CALC6D フラグに従う)。"""
         ffs = self.ffs
         if not args:
             raise SADError('General::narg: Number of arguments is expected to be "1" in BeamMatrix')
@@ -265,6 +273,8 @@ class OpticsFunctions:
         return beam_matrix(p, emx, emy, dp, d, bool(ffs.flags.get('GAUSS')), bool(ffs.flags.get('CALC6D'))).tolist()
 
     def fn_geo_base(self, args):
+        """Builtin GeoBase[{chi1, chi2, chi3}]: the geometry basis matrix of the angles (a list of angle triples gives a list of matrices).
+        組み込み関数 GeoBase[{chi1, chi2, chi3}]。角度から幾何の基底行列を返す (角度の組のリストならリストごとに返す)。"""
         a = args[0] if args else None
         if isinstance(a, list) and len(a) == 3 and all(is_num(v) for v in a):
             return geo_base(a).tolist()

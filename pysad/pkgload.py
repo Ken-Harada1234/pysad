@@ -36,6 +36,8 @@ def bundled_packages_dir():
 
 
 def packages_dir():
+    """Return the folder of SAD's Packages/*.n (with a trailing slash): $PYSAD_SAD_PACKAGES, else the bundled copy (pysad/sad_copy/Packages), else a SAD-master/Packages folder next to pysad; None if none is found.
+    SAD の Packages/*.n のあるフォルダ (末尾に /) を返す。環境変数 PYSAD_SAD_PACKAGES、同梱のコピー (pysad/sad_copy/Packages)、pysad の隣の SAD-master/Packages の順。見つからなければ None。"""
     p = os.environ.get('PYSAD_SAD_PACKAGES')
     if p and os.path.isdir(p):
         return p.rstrip('/' + chr(92)) + '/'
@@ -51,6 +53,8 @@ def packages_dir():
 
 
 def register(I):
+    """Register SAD's own Packages/*.n functions on the interpreter `I` to be loaded when first used (I.autoload), and set PackagesDirectory, $HaveLaTeX and $DisplayFunction. Returns True if the Packages folder was found.
+    インタプリタ I に、SAD 自身の Packages/*.n の関数を、最初に使われたときに読み込む形 (I.autoload) で登録し、PackagesDirectory・$HaveLaTeX・$DisplayFunction を設定する。Packages が見つかれば True。"""
     pk = packages_dir()
     if pk is None or not os.path.isfile(pk + _TARGET):
         return False

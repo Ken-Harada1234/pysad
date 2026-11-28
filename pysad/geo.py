@@ -462,6 +462,8 @@ class GeoResult:
         return _advance(self.geo[k - 1], part, st, _geo_length(part, st))
 
     def pos_frac(self, k: int, fr: float) -> float:
+        """Return the position of the point at the fraction `fr` of element `k` (1-based): pos[k-1] plus the geometry length of that fraction (fr = 0 or k >= nlat gives pos[min(k, nlat)-1]).
+        素子 k (1 始まり) の割合 `fr` の点の位置を返す: pos[k-1] に、その一部の幾何の長さを足す (fr = 0 か k >= nlat のときは pos[min(k, nlat)-1])。"""
         if fr == 0.0 or k >= self.nlat:
             return float(self.pos[min(k, self.nlat) - 1])
         el = self.elements[k - 1]

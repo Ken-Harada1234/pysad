@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="generator" content="md_to_html"><meta name="viewport" content="width=device-width,initial-scale=1"><title>17. Jupyter の notebook から SAD を実行する</title><style>
+:root { --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --bg:#ffffff; --bg2:#f6f8fa; --acc:#0969da; }
+@media (prefers-color-scheme: dark) { :root { --fg:#e6edf3; --muted:#9198a1; --line:#3d444d; --bg:#0d1117; --bg2:#151b23; --acc:#4493f8; } }
+* { box-sizing: border-box; }
+body { margin:0; color:var(--fg); background:var(--bg); font:15px/1.7 "Yu Gothic UI","Meiryo","Hiragino Sans",system-ui,sans-serif; }
+nav { position:fixed; top:0; left:0; bottom:0; width:300px; overflow:auto; padding:16px 14px; border-right:1px solid var(--line); background:var(--bg2); font-size:13px; }
+nav ul { list-style:none; margin:0; padding-left:12px; } nav > ul, nav .toc > ul { padding-left:0; }
+nav a { color:var(--fg); text-decoration:none; display:block; padding:2px 4px; border-radius:4px; } nav a:hover { background:var(--line); }
+nav .ttl { font-weight:700; margin-bottom:8px; color:var(--muted); }
+main { margin-left:300px; padding:24px 40px 80px; max-width:1180px; }
+body.nonav main { margin-left:0; margin-right:auto; }
+a { color:var(--acc); }
+h1 { font-size:1.7em; border-bottom:1px solid var(--line); padding-bottom:.3em; }
+h2 { font-size:1.35em; border-bottom:1px solid var(--line); padding-bottom:.25em; margin-top:2em; }
+h3 { font-size:1.12em; margin-top:1.6em; }
+code { background:var(--bg2); padding:.15em .35em; border-radius:4px; font-size:.9em; font-family:Consolas,"Cascadia Mono",monospace; }
+pre { background:var(--bg2); padding:12px 14px; border-radius:6px; overflow:auto; border:1px solid var(--line); }
+pre code { background:none; padding:0; }
+blockquote { margin:1em 0; padding:.6em 1em; border-left:4px solid #d29922; background:var(--bg2); color:var(--fg); }
+table { border-collapse:collapse; margin:1em 0; display:block; overflow:auto; max-width:100%; font-size:13.5px; }
+th, td { border:1px solid var(--line); padding:5px 10px; } th { background:var(--bg2); position:sticky; top:0; cursor:pointer; white-space:nowrap; }
+th:hover { color:var(--acc); } tr:nth-child(even) td { background:var(--bg2); }
+figure { margin:1.2em 0; padding:10px; border:1px solid var(--line); border-radius:6px; background:#fff; }
+figure img { max-width:100%; height:auto; display:block; margin:0 auto; }
+figcaption { color:#59636e; font-size:12.5px; margin-top:6px; text-align:center; }
+details { margin:1em 0; border:1px solid var(--line); border-radius:6px; padding:0 14px; }
+details > summary { cursor:pointer; font-weight:700; padding:10px 0; font-size:1.05em; }
+details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px; }
+.meta { color:var(--muted); font-size:12.5px; margin-bottom:1.5em; } .meta a { color:var(--acc); }
+@media (max-width: 900px) { nav { position:static; width:auto; border-right:0; } main { margin-left:0; padding:16px; } }
+</style></head><body>
+<nav><div class="ttl">目次</div><div class="toc">
+<ul>
+<li><a href="#動かし方">動かし方</a></li>
+<li><a href="#確認した範囲と限界">確認した範囲と限界</a></li>
+</ul>
+</div>
+</nav>
+<main>
+<div class="meta">元: README.md <span class="nav-links">| <a href="../../search.html">検索</a> | <a href="../../index.html">入口</a></span></div>
+<h1 id="17-jupyter-の-notebook-から-sad-を実行する">17. Jupyter の notebook から SAD を実行する</h1>
+<p>SAD のラティスファイルとコマンドファイルの中身を、notebook のセルにそのまま貼って実行する例です。説明と限界は <a href="../../docs/12_pysad_api.html"><code>docs/12_pysad_api.md</code></a> §11b。</p>
+<table>
+<thead>
+<tr>
+<th>ファイル</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="sad_in_notebook.ipynb"><code>sad_in_notebook.ipynb</code></a></td>
+<td>6 つの使い方の例 (出力つきで保存してあります): (1) <code>%%sad lattice</code> でラティスを貼る、(2) <code>%%sad</code> でコマンドを貼って実行する、(3) <code>sad.value()</code> で結果を Python に取り出して matplotlib で描く、(4) <code>%%sad --continue</code> で前の状態の続きを流す、(5) マジックを使わずに <code>pysad.run()</code> に文字列で渡す、(6) <code>%sad_help</code> で SAD の関数・コマンドの説明を引く (名前のタブ補完・<code>--search</code>・<code>--full</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="動かし方">動かし方</h2>
+<pre><code>pip install pysad-k64 ipykernel jupyterlab
+</code></pre>
+<p>notebook の最初のセルで <code>%load_ext pysad.notebook</code> を実行します。そのあと、セルの先頭に <code>%%sad lattice</code> (ラティス) または <code>%%sad</code> (コマンド) を書いて、中身を貼ります。</p>
+<h2 id="確認した範囲と限界">確認した範囲と限界</h2>
+<ul>
+<li>出力は、Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 で、本物のカーネルを起動して notebook を実行して作りました。JupyterLab・VS Code の notebook・Colab・他の OS は未確認です。</li>
+<li>例のラティスは <code>example/00_lattice/FODO_ring.sad</code> の中身 (3 GeV、24 セル、周長 105.6 m) です。(4) は QF の K1 を 0.7 から 0.75 に変えた計算で、水平チューンは 42.07 から 46.19 に変わりました。この値の物理的な意味は、この例では見ていません (使い方の例です)。</li>
+<li>(5) の格子は、(1) と別の簡単な FODO リング (1 セルに偏向磁石 1 台、24 セル) です。</li>
+<li><code>--continue</code> で流せるのは FFS 部の文だけです。要素・LINE の定義は、新しい <code>%%sad</code> のセルに書きます。</li>
+<li>(6) の <code>%sad_help</code> の全文 (<code>--full</code>) は、同梱の SAD のコピーの <code>HelpMessages.n</code> から出る分だけです (SADHelp 由来の 538 項目のうち 363 項目)。タブ補完の候補の見え方 (JupyterLab の画面) は確認していません。</li>
+<li>Tk の GUI は notebook では動きません。SAD の描画関数 (Plot 系) の notebook 内の表示は未確認です。</li>
+<li>notebook を開き直したときは、<code>%load_ext pysad.notebook</code> と、ラティスのセルを、もう一度実行してください (保存したラティスは、カーネルの中にあります)。</li>
+</ul>
+</main><script>
+document.querySelectorAll('table').forEach(function (t) {
+  t.querySelectorAll('th').forEach(function (th, i) {
+    th.title = 'クリックで並べ替え';
+    th.addEventListener('click', function () {
+      var tb = t.querySelector('tbody'); if (!tb) return;
+      var rows = Array.from(tb.querySelectorAll('tr')); var asc = th.dataset.asc !== '1'; th.dataset.asc = asc ? '1' : '0';
+      var num = function (s) { var v = parseFloat(String(s).replace(/[,×倍%]/g, '')); return isNaN(v) ? null : v; };
+      rows.sort(function (a, b) {
+        var x = (a.children[i] || {textContent: ''}).textContent.trim(), y = (b.children[i] || {textContent: ''}).textContent.trim();
+        var nx = num(x), ny = num(y);
+        var c = (nx !== null && ny !== null) ? nx - ny : x.localeCompare(y, 'ja'); return asc ? c : -c; });
+      rows.forEach(function (r) { tb.appendChild(r); });
+    });
+  });
+});
+function openTarget() {
+  var id = decodeURIComponent(location.hash.slice(1)); if (!id) return;
+  var el = document.getElementById(id); if (!el) return;
+  for (var p = el.parentElement; p; p = p.parentElement) { if (p.tagName === 'DETAILS') p.open = true; }
+  el.scrollIntoView();
+}
+window.addEventListener('hashchange', openTarget); openTarget();
+</script></body></html>

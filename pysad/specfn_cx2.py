@@ -57,14 +57,20 @@ def expn_c(n, z):
 
 
 def ei_c(z):
+    """Exponential integral Ei(z) for complex z (scipy.special.expi).
+    複素数 z の指数積分 Ei(z) (scipy.special.expi)。"""
     return complex(sp.expi(_c(z)))
 
 
 def digamma_c(z):
+    """Digamma function psi(z) for complex z (scipy.special.digamma).
+    複素数 z のディガンマ関数 ψ(z) (scipy.special.digamma)。"""
     return complex(sp.digamma(_c(z)))
 
 
 def polygamma_c(n, z):
+    """Polygamma function psi^(n)(z) for complex z (n = 0 is digamma; n >= 1 via the Hurwitz zeta function).
+    複素数 z のポリガンマ関数 ψ^(n)(z)。n = 0 はディガンマ、n >= 1 は Hurwitz ゼータ関数から (-1)^(n+1) n! ζ(n+1, z)。"""
     n = int(round(n))
     if n == 0:
         return digamma_c(z)
@@ -73,10 +79,14 @@ def polygamma_c(n, z):
 
 
 def harmonic_c(z):
+    """Harmonic number H(z) = psi(z + 1) + gamma for complex z.
+    複素数 z の調和数 H(z) = ψ(z + 1) + γ。"""
     return digamma_c(_c(z) + 1.0) + EULER
 
 
 def lambertw_c(z):
+    """Lambert W function (principal branch) for complex z (scipy.special.lambertw).
+    複素数 z のランベルト W 関数 (主枝。scipy.special.lambertw)。"""
     return complex(sp.lambertw(_c(z)))
 
 
@@ -88,16 +98,22 @@ def sici_c(z):
 
 
 def fresnel_c(z):
+    """Fresnel integrals for complex z; returns the pair (S(z), C(z)) as complex numbers.
+    複素数 z のフレネル積分。(S(z), C(z)) の組を複素数で返す。"""
     s, c = sp.fresnel(_c(z))
     return complex(s), complex(c)
 
 
 def beta_c(a, b):
+    """Beta function B(a, b) = Gamma(a) Gamma(b) / Gamma(a + b) for complex a and b.
+    複素数 a, b のベータ関数 B(a, b) = Γ(a) Γ(b) / Γ(a + b)。"""
     a, b = _c(a), _c(b)
     return complex(sp.gamma(a)) * complex(sp.gamma(b)) / complex(sp.gamma(a + b))
 
 
 def factorial_c(z):
+    """Factorial z! = Gamma(z + 1) for complex z.
+    複素数 z の階乗 z! = Γ(z + 1)。"""
     return complex(sp.gamma(_c(z) + 1.0))
 
 
@@ -166,7 +182,8 @@ def _gamma_q_cf(a, z):
 
 
 def gamma_reg_c(a, z):
-    """Q(a, z) = Γ(a, z)/Γ(a)"""
+    """Regularized upper incomplete gamma function Q(a, z) = Gamma(a, z)/Gamma(a) for complex z (continued fraction for large |z|, else 1 - P).
+    複素数 z の正則化された上側不完全ガンマ関数 Q(a, z) = Γ(a, z)/Γ(a) (|z| が大きいときは連分数、それ以外は 1 - P)。"""
     zc = _c(z)
     if zc.real > 0.0 and abs(zc) >= 10.0 and float(a) > 0.0:
         return _gamma_q_cf(float(a), zc)
@@ -174,6 +191,8 @@ def gamma_reg_c(a, z):
 
 
 def gamma_upper_c(a, z):
+    """Upper incomplete gamma function Gamma(a, z) = Gamma(a) Q(a, z) for real a and complex z.
+    上側不完全ガンマ関数 Γ(a, z) = Γ(a) Q(a, z) (a は実数、z は複素数)。"""
     return float(sp.gamma(a)) * gamma_reg_c(a, z)
 
 
@@ -184,11 +203,15 @@ def legendre_c(nu, z):
 
 
 def whittaker_m_c(k, m, z):
+    """Whittaker function M_{k,m}(z) = exp(-z/2) z^(m+1/2) 1F1(m-k+1/2; 2m+1; z) for complex z.
+    複素数 z のホイッタカー関数 M_{k,m}(z) = exp(-z/2) z^(m+1/2) 1F1(m-k+1/2; 2m+1; z)。"""
     z = _c(z)
     return cmath.exp(-z / 2.0 + (m + 0.5) * cmath.log(z)) * hyp1f1_c(m - k + 0.5, 2.0 * m + 1.0, z)
 
 
 def whittaker_w_c(k, m, z):
+    """Whittaker function W_{k,m}(z) = exp(-z/2) z^(m+1/2) U(m-k+1/2, 2m+1, z) for complex z (Tricomi U from specfn_cx.hyperu_c).
+    複素数 z のホイッタカー関数 W_{k,m}(z) = exp(-z/2) z^(m+1/2) U(m-k+1/2, 2m+1, z) (U は specfn_cx.hyperu_c)。"""
     from . import specfn_cx
     z = _c(z)
     return cmath.exp(-z / 2.0 + (m + 0.5) * cmath.log(z)) * complex(specfn_cx.hyperu_c(m - k + 0.5, 2.0 * m + 1.0, z))

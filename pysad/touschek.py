@@ -910,6 +910,8 @@ class TouschekLifetimeCalculator:
             self.setup(table)
 
     def setup(self, d):
+        """Set up the splines from the TouschekTable `d` (from Emittance[] with INTRA); raises ValueError if `d` is None, and does nothing if the same table id is already set up.
+        Emittance[] (INTRA) の TouschekTable `d` からスプラインを作る。`d` が None なら ValueError。同じ表の id が設定済みなら何もしない。"""
         if d is None:
             raise ValueError('TouschekTable Undefined; Do Emittance[] with INTRA;')
         if self.id is not None and d[0] == self.id:

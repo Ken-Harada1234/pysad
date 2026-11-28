@@ -172,6 +172,8 @@ class TrackSetup:
 
     # ------------------------------------------------------------------ 追跡
     def make_run(self, coords, alost=None, zlost=None):
+        """Build a tracking run for the initial coordinates coords (N x 6), restoring the random seed first; alost and zlost override the loss limits.
+        初期座標 coords (N x 6) から追跡の実行体を作る (先に乱数の種を戻す。alost・zlost は損失の限界値の上書き)。"""
         c = np.atleast_2d(np.asarray(coords, dtype=float))
         if self.seed is not None:
             _t6.RNG.restore(self.seed)
@@ -334,9 +336,13 @@ class TrackSetup:
         return r[7] / (2 * math.pi), r[8] / (2 * math.pi)
 
     def s_of(self, loc):
+        """Return the position s [m] of lattice location loc (1-based).
+        ラティスの位置 loc (1 始まり) の s [m] を返す。"""
         return self.rows[loc - 1][0]
 
     def twiss_at(self, loc):
+        """Return the optics at location loc as a dict (s, betx, alfx, bety, alfy, etx, etpx).
+        位置 loc の光学関数を dict (s, betx, alfx, bety, alfy, etx, etpx) で返す。"""
         r = self.rows[loc - 1]
         return dict(s=r[0], betx=r[1], alfx=r[2], bety=r[3], alfy=r[4], etx=r[5], etpx=r[6])
 
@@ -363,6 +369,8 @@ class TrackSetup:
 
     # ------------------------------------------------------------------ 条件の記録
     def conditions(self):
+        """Return a dict of the conditions used (compat mode, momentum, circumference, RFSW/RAD/FLUC, loss limits, orbit residual, RF bucket values) to be recorded with results.
+        使った条件 (互換モード・運動量・周長・RFSW/RAD/FLUC・損失の限界・軌道の残差・RF バケットの値) を dict で返す (結果に添えて記録する)。"""
         b = self.bucket
         d = dict(compat_mode=self.mode, momentum_GeV=self.p0 * 1e-9, circumference_m=self.circ, nlat=self.nlat,
                  rfsw=self.rfsw, rad=self.rad, fluc=self.fluc, check_every=self.check_every, LOSSAMPL_m=self.alost, LOSSDZ_m=self.zlost,

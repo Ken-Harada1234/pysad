@@ -25,11 +25,15 @@ def _lcg(seed: int) -> int:
 
 
 class SadRandom:
+    """Reproduction of the SAD random number generator (linear congruential, with Gaussian pairs); seed is an integer.
+    SAD の乱数発生器の再現 (線形合同法、ガウス分布は 2 個組)。seed は整数。"""
     def __init__(self, seed: int = 17):
         self.restore(seed)
 
     # random_plugin_sad.c restore_internal_state (length 1)
     def restore(self, seed: int):
+        """Reset the generator state from the integer seed (as random_plugin_sad.c restore_internal_state); discards a cached Gaussian value.
+        整数 seed から発生器の状態を戻す (random_plugin_sad.c の restore_internal_state と同じ)。保存していたガウス値は捨てる。"""
         seed = int(seed)
         if seed < 0:
             self.seed = -(abs(seed // 2 if seed % 2 == 0 else -(-seed // 2)) * 2 + 1)
@@ -48,6 +52,8 @@ class SadRandom:
 
     # RANDOM_UNIFORM0: [0, 1)   (tran(), Random[])
     def uniform0(self) -> float:
+        """Return one uniform random number in [0, 1) (RANDOM_UNIFORM0).
+        [0, 1) の一様乱数を 1 つ返す (RANDOM_UNIFORM0)。"""
         self.seed = _lcg(self.seed)
         return (self.seed + 2147483648.0) * (1.0 / 4294967296.0)
 
@@ -55,11 +61,15 @@ class SadRandom:
 
     # RANDOM_UNIFORM: (0, 1)
     def uniform(self) -> float:
+        """Return one uniform random number in the open interval (0, 1) (RANDOM_UNIFORM).
+        (0, 1) の一様乱数を 1 つ返す (RANDOM_UNIFORM)。"""
         self.seed = _lcg(self.seed)
         return (self.seed + 2147483648.5) * (1.0 / 4294967296.0)
 
     # RANDOM_GAUSS (GCUT 付き)。n 個まとめて生成 (length の扱いが C と同じになるように)
     def gauss(self, n: int = 1, gcut: float = 1.0e300):
+        """Return n Gaussian random numbers (a list; values with |x| > gcut are redrawn); the second of each pair is cached.
+        ガウス乱数を n 個返す (リスト。|x| が gcut を超えた値は引き直す)。2 個組の残りは保存する。"""
         out = []
         i = 0
         while i < n:
@@ -96,6 +106,8 @@ class SadRandom:
 
     # RANDOM_PARABOLA (random_plugin_sad.c, USE_PARABOLA_TRANSFORM なし): x∈[-1,1), y∈[0,1) を x² ≤ y まで引き直す
     def parabola(self, n: int = 1):
+        """Return n random numbers from the parabolic distribution (a single float when n is 1, else a list).
+        放物線分布の乱数を n 個返す (n=1 なら数 1 つ、それ以外はリスト)。"""
         out = []
         for _ in range(n):
             while True:

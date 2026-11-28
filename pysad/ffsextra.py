@@ -56,6 +56,8 @@ def _saved_value(ffs, el0, key, default):
 
 
 def cmd_variables(ffs, words, i):
+    """FFS command VARIABLES [pattern]: print the table of matching variables (Now, Previous, Saved, limits, couple, coefficient); returns the number of words consumed.
+    FFS コマンド VARIABLES [pattern]。条件に合う変数の表 (Now・Previous・Saved・上下限・Couple・係数) を表示する。戻り値は使った語の数。"""
     m = ffs.matcher_()
     pat = None
     n = 1
@@ -96,6 +98,8 @@ def _stop_words():
 
 
 def cmd_attribute(ffs, words, i):
+    """FFS command ATTRIBUTE [patterns]: print the default keyword, value, limits and couple of each matching element family; returns the number of words consumed.
+    FFS コマンド ATTRIBUTE [patterns]。合う要素ファミリーごとに既定のキー・値・上下限・Couple を表示する。戻り値は使った語の数。"""
     pats = []
     n = 1
     stop = _stop_words()
@@ -184,6 +188,8 @@ def cmd_matrix(ffs, words, i):
 
 
 def cmd_show(ffs, words, i):
+    """FFS command SHOW: list the fitting conditions (FIT lines with components, function, goal value, scale); returns 1.
+    FFS コマンド SHOW。フィットの条件 (FIT の行: 成分・関数・目標値・倍率) を一覧する。戻り値は 1。"""
     ffs.write('!    component1   component2   fun         goal-value     np     scale\n')
     m = ffs.matcher_()
     for c in m.conditions:
@@ -228,6 +234,8 @@ def cmd_vary(ffs, words, i):
 
 
 def cmd_recover(ffs, words, i):
+    """FFS command RECOVER: swap every variable's current value with its previous value (the value before the last GO) and invalidate the optics; returns 1.
+    FFS コマンド RECOVER。各変数の現在値と直前の値 (GO の前の値) を入れ替えて光学を無効にする。戻り値は 1。"""
     m = ffs.matcher_()
     for v in m.variables:
         now = float(v.get('val', 0.0))
@@ -267,6 +275,8 @@ def cmd_print(ffs, words, i):
 
 
 def cmd_execute(ffs, words, i):
+    """FFS command EXECUTE text: run the rest of the line as a SAD script expression and, if it returns a string, run that string as FFS commands; consumes the rest of the line.
+    FFS コマンド EXECUTE text。行の残りを SAD 台本として実行し、文字列が返れば FFS のコマンドとして実行する。行の残りを使い切る。"""
     text = ' '.join(words[i + 1:]).strip()
     try:
         s = ffs.I.run(text, 'script')
@@ -335,7 +345,8 @@ def _close_output(ffs):
 
 
 def cmd_close(ffs, words, i):
-    """CLOSE [INPUT] / CLOSE OUTPUT / TERMINATE [INPUT|OUTPUT]"""
+    """CLOSE [INPUT] / CLOSE OUTPUT / TERMINATE [INPUT|OUTPUT]
+    CLOSE [INPUT] / CLOSE OUTPUT / TERMINATE [INPUT|OUTPUT]。OUTPUT のときだけ出力ファイルを閉じる。戻り値は使った語の数。"""
     n = 1
     what = 'IN'
     if i + 1 < len(words) and re.fullmatch(r'(?i)OUT(?:P(?:U(?:T)?)?)?', words[i + 1]):
@@ -491,6 +502,8 @@ COMMANDS = {
 
 
 def run(ffs, W, words, i):
+    """Run the extra FFS command named W (key of COMMANDS) with words and position i; returns the number of words consumed, or None if W is not an extra command.
+    追加の FFS コマンド W (COMMANDS の名前) を、語の列 words と位置 i で実行する。使った語の数を返す (W が該当しなければ None)。"""
     f = COMMANDS.get(W)
     if f is None:
         return None

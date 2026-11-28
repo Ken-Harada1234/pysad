@@ -197,6 +197,8 @@ pysad は `pysad/` の 102 本の Python ファイル (計 78235 行。2026-11-2
 | constants.py | 10 | 物理定数 (光速、電子の古典半径、電子・陽子の質量、Cγ、Cq など) | pysad の定数 |
 | nbcache.py | 146 | numba のキャッシュの無効化 (`py -3.12 -m pysad.nbcache`。kernel を編集したら試験の前に 1 回走らせる。docs/12 §16.7) | — |
 | warmup.py | 398 | numba のカーネルの事前コンパイル (コマンド `pysad-warmup`。インストールの直後に 1 回走らせると、初回の約 1 分の変換待ち (測定: 光学・追跡・エミッタンスの最初の実行で約 57 秒、キャッシュがあると 1〜2 秒)がなくなる。`--check`・`--clear`。docs/12 §16.7) | — |
+| sadhelp.py | %d | pysad ヘルプ (SAD の関数・コマンドの説明を引く。`pysad.sad_help`・`%sad_help`・`pysad-help`。docs/12 §11c) | — |
+| notebook.py | 329 | Jupyter の notebook に貼った SAD のラティスとコマンドの実行 (`%%sad`)・`%sad_help`・タブ補完 (docs/12 §11b) | — |
 | fitroot.py / miscfn.py / fileops.py | 692 / 599 / 616 | Fit・FindRoot・NIntegrate・FitGaussian、DownhillSimplex、SingularValues、システム・ファイル関数、Parallelize (docs/06) | tffindroot.f, Fit.n, D.n, optimize.n, Matrix.n, FileSystem.n, shared.n |
 | corr.py / pkgload.py | 293 / 148 | ResponseMatrix・LinearSolveConditioned・Master と、Packages/*.n (CorrectOrbit・MakeBump・Monitor・Steer・OptimizeOptics・D・rational など) の自動読み込み (docs/06) | pgrmat.f, pgsolvcond.f, pmicad.f, pgmast.f, correction.n ほか |
 | ffsextra.py | 490 | FFS の VARIABLES・ATTRIBUTE・MATRIX・SHOW・VARY・RECOVER・REVERSE・STATUS・PRINT・EXECUTE・OUTPUT/APPEND/CLOSE・INPUT/READ (docs/04) | tfvars.f, tfattr.f, tfmat.f, tshow.f, tffsa.f |
@@ -212,7 +214,7 @@ pysad は `pysad/` の 102 本の Python ファイル (計 78235 行。2026-11-2
 | wake.py | 308 | 追跡へのウェイク場の適用 (WakeFunction、LWAKE/TWAKE。TrackParticles の TRPT のみ) ([13_wake.md](13_wake.md)) | txwake.f, tffssetupwake (tffswake.f), tcav.f / tturn.f の呼び出し箇所 |
 | tclbridge.py / sadclass.py | 330 / 424 | Tcl/Tk の接点 (tkinter) と SAD の Class。SAD 自身の Tkinter.n / KBFrame.n を SADScript として解釈して GUI を動かす ([20_tcltk_gui.md](20_tcltk_gui.md)) | tfTkInter_.c, tfTclArg.f, tfXlib_.c, Tkinter.n, KBFrame.n, KBMainFrame.n, TabFrame.n, SADHelp の Class |
 | ffscmd.py | 5785 | FFS コマンド層 (tffsa の解釈順)、USE/CELL/INS/CALC/CALC6D/GO/EMIT/TYPE/DISP/SAVE/RESET/RADINT/CHROMATICITY/誤差コマンド (DELX…)、Twiss[]/LINE[]/FFS[]/Element[]/Emittance[]/TrackParticles[]/CalculateOptics/SeedRandom[]、EMIT の結果変数、`FFS$SHOW` | tffsa.f, tftwiss.f, tflag.f, terror.f, tftype.f, tfdisp.f |
-| diag_fit.py / diag_trace.py | 245 / 267 | 照合用の診断 (fit の反復表、追跡の途中値) | — |
+| diag_fit.py / diag_trace.py | 254 / 276 | 旧い照合用の診断 (fit の反復表、追跡の途中値)。`py -3.12 -m pysad.diag_trace` で走る (import だけでは何も出さない)。`diag_fit` は `scipy` の `fsolve` の呼び出しで途中でエラー終了する | — |
 | ampnf.py・ampnf_coupled.py・ampnf_ext.py・ampnf_k0.py | 1230 / 577 / 309 / 884 | 1 周の写像のべき級数 (TPSA) の Birkhoff 正規形で、振幅・δ に依るチューン (ADTS の J¹・J² の項、クロマティシティの全次数、振幅と δ の交差項) を求める (`ampnf`)。結合した光学 (ROTATE した磁石)・DX/DY/DZ/DROTATE の誤差・4 次の共鳴駆動項 (`ampnf_coupled`)、5・6 次の共鳴の駆動項の表と 1 本の共鳴の島の幅 (`ampnf_ext`)、K0≠0 の偏向磁石 (挿入光源・逆曲げ・MPW) の取り込み (`ampnf_k0`)。docs/25 | K64 にない追加 |
 | fourier_fit.py | 320 | MAIN の TRACK の FOURIER 解析 (作用変数の多項式 + 共鳴項の最小二乗フィット。FFS からは呼べない。docs/31) | wjfit.f, wfres.f, wfbin.f, wiord.f |
 | quadbody.py | 175 | 四極の本体の積分器の共通部 (K64 の Strang 分割と、v2 モードの方式の切り替え) | tsolqu.f, tsolque.f の bz=0 の枝 |

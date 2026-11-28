@@ -27,6 +27,7 @@ plot = ["matplotlib"]       # FFS の DRAW (pysad/draw_mpl.py、v2.4.1)。無く
 pysad-run = "pysad.cli:run_main"
 pysad-share = "pysad.cli:share_main"
 pysad-warmup = "pysad.cli:warmup_main"
+pysad-help = "pysad.cli:help_main"
 
 [project.urls]
 Homepage = "https://github.com/Ken-Harada1234/pysad"
@@ -34,7 +35,7 @@ Source = "https://github.com/Ken-Harada1234/pysad"
 Changelog = "https://github.com/Ken-Harada1234/pysad/blob/main/CHANGELOG.md"
 
 [tool.setuptools.package-data]
-pysad = ["sad_copy/**/*"]       # SAD のソースからコピーしたファイル (pysad/sad_copy/README.md)
+pysad = ["sad_copy/**/*", "helpdata/*.json"]       # sad_copy: SAD のソースからコピーしたファイル (pysad/sad_copy/README.md)。helpdata: pysad ヘルプのデータ (tools/build_help_data.py で作る)
 
 [tool.setuptools.packages.find]
 include = ["pysad"]

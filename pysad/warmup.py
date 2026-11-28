@@ -185,6 +185,8 @@ def kernel_cached(disp, magic=None):
 
 
 def cache_dirs(ds=None):
+    """Return the numba cache folders of the pysad kernels (a list of paths).
+    pysad のカーネルの numba キャッシュのフォルダ (パスの並び) を返す。"""
     ds = dispatchers() if ds is None else ds
     out = []
     for _, _, d in ds:
@@ -206,6 +208,8 @@ def _cache_files(dirs):
 
 
 def cache_size(dirs):
+    """Return the total size in bytes of the cache files in `dirs`.
+    `dirs` の中のキャッシュのファイルの合計の大きさ (バイト) を返す。"""
     return sum(os.path.getsize(f) for f in _cache_files(dirs))
 
 
@@ -267,6 +271,8 @@ def status(ds=None):
 
 
 def do_clear(out=None):
+    """Delete the pysad numba cache files and their records (the warmup record and the dependency record), and print what was removed. Returns 0.
+    pysad の numba キャッシュのファイルと記録 (変換の記録・依存の記録) を消し、消した数と大きさを表示する。0 を返す。"""
     out = out or sys.stdout
     ds = dispatchers()
     dirs = cache_dirs(ds)
@@ -330,6 +336,8 @@ def do_check(out=None):
 
 
 def do_warmup(verbose=True, out=None):
+    """Run every pysad numba kernel once on small embedded lattices to create the cache (an existing cache is only loaded), write the record used by `--check`, and print a summary. Returns 0, or 1 if some script failed.
+    全カーネルを小さな埋め込みのラティスで 1 回ずつ走らせて numba のキャッシュを作り (あるキャッシュは読み込むだけ)、`--check` が使う記録を書いて要約を表示する。失敗した台本があれば 1、なければ 0 を返す。"""
     out = out or sys.stdout
     import numba
     t0 = time.perf_counter()
@@ -381,9 +389,16 @@ def do_warmup(verbose=True, out=None):
 
 
 def main(argv=None):
+    """Command `pysad-warmup [--check | --clear] [--quiet]`: precompile the numba kernels (create the cache), check it, or clear it.
+    コマンド `pysad-warmup [--check | --clear] [--quiet]`: numba のカーネルを事前に変換してキャッシュを作る。`--check` で有効か調べ、`--clear` で消す。"""
     args = list(sys.argv[1:] if argv is None else argv)
     if '-h' in args or '--help' in args:
-        print('使い方: pysad-warmup [--check | --clear] [--quiet]\n'
+        print('usage: pysad-warmup [--check | --clear] [--quiet]\n'
+              '  (none)   run every kernel once on a small lattice to create the numba cache\n'
+              '  --check  check whether the cache is valid (exit code 0 if valid); no compilation\n'
+              '  --clear  delete the pysad numba cache\n'
+              '  --quiet  do not show progress\n'
+              '使い方: pysad-warmup [--check | --clear] [--quiet]\n'
               '  (なし)   全カーネルを小さなラティスで 1 回ずつ走らせ、numba のキャッシュを作る\n'
               '  --check  キャッシュが有効か調べる (有効なら終了コード 0)。変換はしない\n'
               '  --clear  pysad の numba キャッシュを消す\n'

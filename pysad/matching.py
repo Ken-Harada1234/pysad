@@ -90,6 +90,8 @@ class Constraint:
         self.label = label
 
     def residual(self, lat) -> np.ndarray:
+        """Return the weighted residual weight * (func(lat) - target) as a 1-D array.
+        重み付きの残差 weight * (func(lat) − target) を 1 次元の配列で返す。"""
         val = np.atleast_1d(np.asarray(self.func(lat), dtype=float))
         return self.weight * (val - self.target)
 
@@ -127,6 +129,8 @@ class MatchResult:
                 f"niter={self.niter})")
 
     def print_summary(self):
+        """Print a summary of the match: status, merit, iterations, message and residuals.
+        マッチングの要約 (成否・評価値・反復数・メッセージ・残差) を表示する。"""
         print(f"{'Match result':=^50}")
         print(f"  Status : {'OK' if self.success else 'FAILED'}")
         print(f"  Merit  : {self.fun:.4e}")
@@ -583,6 +587,8 @@ class DynamicApertureSurvey:
                 for dp, r in self._results.items()}
 
     def print_summary(self):
+        """Print the survey summary: for each dp, the maximum amplitude and the maximum x and y apertures in mm.
+        動的口径の調査の要約 (dp ごとの最大振幅と x・y の最大値。mm) を表示する。"""
         print(f"{'Dynamic Aperture Survey':=^50}")
         print(f"  nturns={self.nturns}, nangles={self.nangles}")
         print(f"  {'dp':>8}  {'Amax[mm]':>10}  {'Ax[mm]':>9}  {'Ay[mm]':>9}")

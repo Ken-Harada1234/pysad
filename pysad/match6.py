@@ -350,6 +350,8 @@ class Matcher:
         self.variables.sort(key=lambda v: self.lat.elements.index(v['els'][0]))
 
     def fix(self, pattern: str = '*', key: Optional[str] = None):
+        """FIX: remove from the variable list the variables whose family matches the comma-separated glob pattern (and whose key equals key, if given).
+        FIX。ファミリー名がコンマ区切りのパターン pattern (glob) に合う変数 (key があればキーも一致するもの) を変数のリストから外す。"""
         pats = [p.strip() for p in pattern.split(',') if p.strip()]
         self.variables = [v for v in self.variables
                           if not any(fnmatch.fnmatchcase(v['family'], p) and (key is None or v['key'] == key.upper())
@@ -404,6 +406,8 @@ class Matcher:
         self._mfpnt = self._mfpnt1 = self.nlat
 
     def fitp(self, n: int):
+        """Set the number of fit points nfp to n and update the point counts of the conditions that have more than 2 (keeping their sign).
+        フィットの点の数 nfp を n にし、点の数が 2 を超える条件の点数も更新する (符号は保つ)。"""
         self.nfp = n
         for c in self.conditions:
             if abs(c['mfitp']) > 2:
@@ -1473,4 +1477,6 @@ class Matcher:
         return qu
 
     def values(self) -> Dict[str, float]:
+        """Return the current values of the variables as a dict {'family key': value}.
+        変数の現在値を {'family key': 値} の dict で返す。"""
         return {f"{v['family']} {v['key']}": v['val'] for v in self.variables}

@@ -266,6 +266,8 @@ class LMAResult:
         return '\n'.join(lines) + '\n'
 
     def save(self, path):
+        """Write the acceptance table (`self.table()`) as text to `path`.
+        受け入れ幅の表 (`self.table()`) を文字列として `path` に書く。"""
         with open(path, 'w', encoding='utf-8') as f:
             f.write(self.table())
 
@@ -280,6 +282,8 @@ class LMAResult:
         return touschek_lifetime_local(table, self, setup=self.setup, period=period, s0=s0, **kw)
 
     def plot(self, path, setup=None, title=None):
+        """Save a PNG plot of the local momentum acceptance (dp+ and dp- in % along s, with the RF bucket height if known) to `path`.
+        局所運動量アクセプタンス (s に沿った dp+・dp- (%)。RF バケットの高さがあれば線で) の図を `path` に PNG で保存する。"""
         import matplotlib
         matplotlib.use('Agg')
         import matplotlib.pyplot as plt

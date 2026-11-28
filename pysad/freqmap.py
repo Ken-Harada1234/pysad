@@ -172,6 +172,8 @@ class FMapResult:
 
     @property
     def nturn(self):
+        """Return the number of tracking turns of the map from its conditions (1024 if not recorded).
+        周波数マップの追跡の周回数を条件から返す (記録がなければ 1024)。"""
         try:
             return int(self.cond.get('nturn', 1024))
         except Exception:
@@ -194,12 +196,16 @@ class FMapResult:
 
     @property
     def survived(self):
+        """Return a boolean array that is True for the points that did not get lost (lost_turn == 0).
+        失われなかった点 (lost_turn == 0) で True になる配列を返す。"""
         return self.lost_turn == 0
 
     def __len__(self):
         return len(self.x)
 
     def table(self):
+        """Return the map as text: header comments (conditions, warnings) and one row per point (x, y, dp, tunes of both halves, D, lost_turn, D_half).
+        マップを文字列で返す (条件・警告のコメント行と、点ごとの行 x・y・dp・前半後半のチューン・D・lost_turn・D_half)。"""
         lines = ['# frequency map: D = log10 sqrt(dnux^2 + dnuy^2), first half vs second half of the turns (NAFF); lost: lost_turn > 0 (D = nan)']
         for k, v in self.cond.items():
             lines.append('# %s = %s' % (k, v))
@@ -212,10 +218,14 @@ class FMapResult:
         return '\n'.join(lines) + '\n'
 
     def save(self, path):
+        """Write the text table of the map to the file path.
+        マップの文字列の表をファイル path に書く。"""
         with open(path, 'w', encoding='utf-8') as f:
             f.write(self.table())
 
     def as_columns(self):
+        """Return the map columns (x, y, dp, nux1, nuy1, nux2, nuy2, D, lost_turn) as a dict of arrays.
+        マップの列 (x・y・dp・nux1・nuy1・nux2・nuy2・D・lost_turn) を配列の dict で返す。"""
         return dict(x=self.x, y=self.y, dp=self.dp, nux1=self.nux1, nuy1=self.nuy1, nux2=self.nux2, nuy2=self.nuy2, D=self.D,
                     lost_turn=self.lost_turn)
 

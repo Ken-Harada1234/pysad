@@ -29,10 +29,14 @@ PK4 = [(k, l) for k in range(1, 5) for l in range(1, k + 1)]
 
 
 def pack10(M):
+    """Pick the 10 independent elements of the matrix M given by the index pairs PK4 (1-based) as a vector.
+    行列 M から、添字の組 PK4 (1 始まり) で決まる 10 個の独立な成分をベクトルに取り出す。"""
     return np.array([M[k - 1, l - 1] for k, l in PK4])
 
 
 def tetrig(amu, mphi2):
+    """Return cos(m*amu) and sin(m*amu) for m = 0 .. mphi2-1.
+    m = 0 .. mphi2-1 について cos(m·amu) と sin(m·amu) を返す。"""
     m = np.arange(mphi2)
     phim = m * amu
     return np.cos(phim), np.sin(phim)
@@ -68,6 +72,8 @@ def teintp1(ip, f, tws, tw0, ri, ndims, helpers):
 
 
 def tmov65(a):
+    """Reduce the 6x6 matrix a to 5x5 by dropping the fifth (z) row and column (column 6 becomes the fifth column).
+    6x6 の行列 a から 5 番目 (z) の行と列を除いて 5x5 にする (6 列目が 5 列目になる)。"""
     b = np.zeros((5, 5))
     b[0:4, 0:4] = a[0:4, 0:4]
     b[0:4, 4] = a[0:4, 5]
@@ -200,6 +206,8 @@ def tespl(bx, nd, ndp, dj, e, damp, j0, m):
 
 
 def tevdifj(bc, bs, ndp, mphi2, nd, dj, eps, damp):
+    """Forward recurrence step that adds the spline derivative terms (tespl) to the cos/sin coefficient arrays bc and bs in place, for j = 1..ndp and m = 1..mphi2.
+    cos/sin の係数配列 bc・bs に、スプラインの微分の項 (tespl) を j = 1..ndp、m = 1..mphi2 の順に加える漸化の 1 段 (配列を直接更新する)。"""
     for j in range(1, ndp + 1):
         for m in range(1, mphi2 + 1):
             fbc, dfbc = tespl(bc, nd, ndp, dj, eps, damp, j, m)
@@ -216,6 +224,8 @@ def tevdifj(bc, bs, ndp, mphi2, nd, dj, eps, damp):
 
 
 def tevdifj1(bc, bs, ndp, mphi2, nd, dj, eps, damp):
+    """Backward counterpart of tevdifj: adds the spline derivative terms to bc and bs in place, running j and m downwards.
+    tevdifj の逆向き版。bc・bs にスプラインの微分の項を、j・m を減らす順に加える (配列を直接更新する)。"""
     for j in range(ndp, 0, -1):
         for m in range(mphi2, 0, -1):
             fbc, dfbc = tespl(bc, nd, ndp, dj, eps, damp, j, m)
@@ -231,7 +241,8 @@ def tevdifj1(bc, bs, ndp, mphi2, nd, dj, eps, damp):
 
 
 def tesetdm(j, bd, hc, hs, mphi, mphi2):
-    """tesetdm: bfb(20*mphi2)"""
+    """tesetdm: bfb(20*mphi2)
+    tesetdm。係数 bd と hc・hs から長さ 20*mphi2 のベクトル bfb (cos 部と sin 部が 10 成分ずつ) を作って返す。"""
     nsb = 10 * mphi2
     bfb = np.zeros(2 * nsb)
     for m in range(1, mphi2 + 1):

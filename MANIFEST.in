@@ -1,3 +1,4 @@
 include README.md LICENSE
 graft pysad/sad_copy
+graft pysad/helpdata
 global-exclude __pycache__ *.pyc *.pyo

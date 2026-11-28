@@ -10,6 +10,8 @@
 
 # pysad — SAD (K64 版) の Python 直訳
 
+**はじめての方へ**: SAD のラティスとコマンドを Jupyter の notebook にコピペして動かす手順を、画面つきで [`GUIDE.md`](GUIDE.md) にまとめました。
+
 > **直訳と v2 の違い (注釈)**: 以下の「直訳」は、K64 に忠実な翻訳 (v1 系) の方針です。**現在の pysad (v2 系) は直訳ではありません。** v2 は K64 を出発点に、K64 のバグの修正、物理の誤りの修正、機能の追加を行ったもので、**gs (K64) と結果が変わる箇所があります** ([`docs/28_v2_vs_k64.md`](docs/28_v2_vs_k64.md))。gs と同じ結果が要るときは、環境変数 `PYSAD_COMPAT=k64` (互換モード。K64 と同じ動作) を指定してください。なお、v2 でも、K64 の式・分割数・反復順序を写したコードの大部分は、そのままです。
 
 ## インストール (PyPI)
@@ -25,7 +27,7 @@ pip install pysad-k64
 | | 内容 | pip |
 |---|---|---|
 | パッケージ本体 | `pysad/` (`import pysad`。約 100 モジュール) | **入る** |
-| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。pip では入っていないので、GitHub と GitHub Pages の URL を表示する)、`pysad-warmup` (numba のカーネルの事前コンパイル) | **入る** |
+| コマンド | `pysad-run lattice_file [script_file ...]` (SAD の台本の実行。リポジトリの `run_sad.py` と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。pip では入っていないので、GitHub と GitHub Pages の URL を表示する)、`pysad-warmup` (numba のカーネルの事前コンパイル)、`pysad-help` (SAD の関数・コマンドの説明を引く)。`python -m pysad <help|run|share|warmup>` でも同じ | **入る** |
 | 文書・例・物理ガイド | `docs/` (36 本の解説文書)、`example/` (機能別の台本・出力・図。約 2500 ファイル)、`physics_guide/` (ハミルトニアンから運動方程式、各要素の写像、K64 の Fortran、pysad までの導出。00〜18 章と付録 C) | **省かれる** (大きい (展開後 約 170 MB) ので、pip には入れない。GitHub (<https://github.com/Ken-Harada1234/pysad>) と GitHub Pages (<https://ken-harada1234.github.io/pysad/>) で読める。起動時の案内と `pysad-share` が URL を表示する。数式を描画した HTML は GitHub Pages で読める) |
 | `run_sad.py` | リポジトリの直下の台本の実行 script | **省かれる** (pip では `pysad-run` を使う) |
 | 依存ライブラリ | `numpy`・`scipy`・`numba` (自動)。`matplotlib` は `pip install pysad-k64[plot]` のときだけ | 自動 / 任意 |
@@ -68,9 +70,55 @@ print(I.get('EMITX'), ffs.rows[-1].betx)
 ffs.run_text('fit NX 47.3; free QF* K1; go;')
 ```
 
-Jupyter の notebook からは、ラティスファイルとコマンドファイルの中身をセルにそのまま貼って実行できます (`%load_ext pysad.notebook` のあと、`%%sad lattice` と `%%sad` のセル)。Python の文字列で渡す `pysad.run(r'''...''')` もあります。説明は [`docs/12_pysad_api.md`](docs/12_pysad_api.md) §11b、例は [`example/17_notebook/`](example/17_notebook/README.md)。
-
 下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は [`docs/12_pysad_api.md`](docs/12_pysad_api.md)。
+
+### Jupyter の notebook (ipynb) で、ファイルを丸ごとコピペして実行する
+
+SAD のラティスファイルとコマンドファイルの中身を、notebook のセルに**そのまま貼って**実行できます (引用符・バックスラッシュ・`!` のコメントを書き直す必要はありません)。画面つきの手順は [`GUIDE.md`](GUIDE.md)。
+
+```
+%load_ext pysad.notebook          ← 最初のセル (1 回だけ)
+```
+```
+%%sad lattice                     ← 1 行目にこれを書き、2 行目以降にラティスファイルの中身を全部貼る
+(ラティスファイルの中身)
+```
+```
+%%sad                             ← 1 行目にこれを書き、2 行目以降にコマンドファイルの中身を全部貼る
+FFS;
+USE RING; CELL; CALC;
+...
+```
+
+| こうしたい | こう書く |
+|---|---|
+| ラティスとコマンドが 1 つのファイル | ファイル全体を 1 つの `%%sad` セルに貼る |
+| 前の状態のまま、FFS の文を足す | `%%sad --continue` のセル |
+| 結果を Python で使う | `sad.value('Twiss["NX","$$$"]')` (数は `float`、並びは `list`) |
+| マジックを使わずに Python の文字列で渡す | `pysad.run(r'''...''')` |
+
+- 確認した環境は Windows・Python 3.12・JupyterLab 4.6.6 (ipykernel 7.4.0)。VS Code の notebook・Colab・他の OS は未確認です。
+- `%%sad` は GitHub の `main` に入っていますが、PyPI の最新の公開版 (2.5.3) には、まだ入っていません (次の公開で入ります)。
+- 仕様と限界は [`docs/12_pysad_api.md`](docs/12_pysad_api.md) §11b、出力つきの notebook は [`example/17_notebook/`](example/17_notebook/README.md)。
+- `%%sad` のセルの中では、SAD の名前 (`Twi` → `Twiss`) がタブ補完できます。説明は `%sad_help Twiss` (下の「pysad ヘルプ」)。
+
+### pysad ヘルプ (SAD の関数・コマンドの説明)
+
+SAD の FFS コマンド・関数・特別変数・フラグ・要素と、同梱の SAD の `.n` の関数・Tkinter のウィジェットを、名前で引けます (オリジナルの SAD の `Help` に当たります)。
+
+```
+pysad-help Twiss                       ← コマンド (python -m pysad help Twiss でも)
+pysad-help --search tune               ← キーワードで探す
+pysad-help CAL --full                  ← 全文も出す (同梱の SAD の HelpMessages.n から)
+%sad_help Twiss                        ← notebook (sad.help('Twiss') でも。名前はタブ補完できます)
+pysad.sad_help('Twiss')                ← Python
+```
+
+- 表示するもの: SADHelp の説明の最初の行 (英語)、pysad の状態と注記 (日本語)、SAD 側の定義場所、詳しい文書の場所。`.n` の関数は署名と定義されているファイル。
+- 全文は、同梱の SAD のコピーの `HelpMessages.n` から出せるものと出せないものがあります (SADHelp 由来の 538 項目のうち 363 項目)。出せないものは、手元の `SADHelp.html` (環境変数 `SADHELP_HTML`) があれば出ます。
+- Python の関数・クラスの説明は、Python の `help()`・Jupyter の `?` で読めます (英語と日本語)。
+- 仕様と限界は [`docs/12_pysad_api.md`](docs/12_pysad_api.md) §11c。
+
 
 ## オリジナルの SAD にない機能 (pysad で追加)
 
@@ -130,6 +178,7 @@ Git で追跡するのは [`pysad/`](pysad/)、[`docs/`](docs/)、`run_sad.py`�
 |---|---|
 | [`run_sad.py`](run_sad.py) | SAD スクリプトの実行 (`gs` と同じ引数: `py -3.12 run_sad.py lattice.sad script.sad`) |
 | [`README.md`](README.md) | この文書 |
+| [`GUIDE.md`](GUIDE.md)・`guide_images/` | はじめてのガイド (notebook にラティスとコマンドを貼って動かす。実際の画面つき)。pip のパッケージには入らない |
 | [`CLAUDE.md`](CLAUDE.md) | AI アシスタント向けの読み順と要点 |
 | [`CHANGELOG.md`](CHANGELOG.md) | 変更履歴 (リリースごとの内容、未対応・未確認の要点) |
 | [`LICENSE`](LICENSE) | SAD の利用条件 (KEK Accelerator Laboratory) |

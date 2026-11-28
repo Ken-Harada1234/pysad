@@ -36,6 +36,8 @@ NAN = float('nan')
 
 
 class Sym:
+    """Symbol (identifier) of the SAD script language; equal when the names are equal.
+    SAD 台本の記号 (識別子)。名前が同じなら等しい。"""
     __slots__ = ('name',)
 
     def __init__(self, name):
@@ -90,6 +92,8 @@ class Expr:
 
 
 class Rule:
+    """Replacement rule lhs -> rhs (or delayed lhs :> rhs when delayed is True).
+    置換規則 lhs -> rhs (delayed=True なら遅延規則 lhs :> rhs)。"""
     __slots__ = ('lhs', 'rhs', 'delayed')
 
     def __init__(self, lhs, rhs, delayed=False):
@@ -150,6 +154,8 @@ class _Throw(Exception):
 
 
 class SADError(Exception):
+    """Exception raised for errors in parsing or evaluating a SAD script.
+    SAD 台本の構文解析・評価で出るエラー。"""
     pass
 
 
@@ -157,6 +163,8 @@ _SYMS = {}
 
 
 def S(name):
+    """Return the shared Sym for name (the same name always gives the same object).
+    名前 name の Sym を返す (同じ名前は同じ Sym を共有する)。"""
     # 記号は変更されない (name を書き換える箇所はない) ので、同じ名前は同じ Sym を共有する (パターン照合が毎回 S('Pattern') などを作っていた)
     s = _SYMS.get(name)
     if s is None:
@@ -245,6 +253,8 @@ _NUM = re.compile(r'(\d+\.?\d*|\.\d+)([eEdD][-+]?\d+)?')
 
 
 class Tok:
+    """Token of the tokenizer: kind ('num', 'str', 'sym', 'op', 'nl', 'eof'), value, line number and a flag for preceding whitespace.
+    字句解析のトークン。種別 (num/str/sym/op/nl/eof)・値・行番号・直前に空白があるかの旗。"""
     __slots__ = ('kind', 'val', 'line', 'pre')
 
     def __init__(self, kind, val, line, pre=False):
@@ -350,6 +360,8 @@ def _unescape_at(src, j, n):
 
 
 def tokenize(src: str) -> List[Tok]:
+    """Split SAD source text src into a list of Tok (comments are stripped first).
+    SAD 台本の文字列 src を Tok のリストに分ける (先にコメントを除く)。"""
     src = strip_comments(src)
     toks = []
     i, n, line = 0, len(src), 1
@@ -480,28 +492,40 @@ _BIN = {
 
 
 class Parser:
+    """Recursive-descent parser that turns a Tok list into expressions (Expr, numbers, strings, Sym).
+    Tok のリストを式 (Expr・数・文字列・Sym) にする再帰下降の構文解析器。"""
     def __init__(self, toks: List[Tok]):
         self.toks = toks
         self.i = 0
         self.depth = 0
 
     def peek(self, k=0):
+        """Return the token k positions ahead without consuming it (clamped to the last token).
+        k 個先のトークンを消費せずに返す (最後のトークンで止まる)。"""
         return self.toks[min(self.i + k, len(self.toks) - 1)]
 
     def next(self):
+        """Consume and return the current token.
+        現在のトークンを消費して返す。"""
         t = self.toks[self.i]
         self.i += 1
         return t
 
     def skip_nl(self):
+        """Skip consecutive newline tokens.
+        続く改行トークンを読み飛ばす。"""
         while self.peek().kind == 'nl':
             self.i += 1
 
     def at_op(self, *vals):
+        """True if the current token is an operator token whose value is one of vals.
+        現在のトークンが vals のどれかの演算子なら True。"""
         t = self.peek()
         return t.kind == 'op' and t.val in vals
 
     def expect(self, val):
+        """Consume the operator token val, or raise SADError with the line number if it is something else.
+        演算子トークン val を消費する。違えば行番号付きの SADError。"""
         t = self.next()
         if not (t.kind == 'op' and t.val == val):
             raise SADError(f'line {t.line}: expected {val!r}, got {t.val!r}')
@@ -661,6 +685,8 @@ class Parser:
         return left
 
     def make_bin(self, head, left, right):
+        """Build the expression for binary operator head with operands left and right (Pattern/Optional, flattening of Plus/Times and chained comparisons, At).
+        二項演算子 head の式を left・right から作る (Pattern/Optional、Plus/Times と連なる比較の平坦化、At)。"""
         if head == 'At':
             return Expr(left, [right])
         if head == 'Pattern':
@@ -680,6 +706,8 @@ class Parser:
         return Expr(S(head), [left, right])
 
     def parse_args(self, close):
+        """Parse a comma-separated argument list up to the closing token close; an empty slot becomes Null.
+        閉じ括弧 close までのコンマ区切りの引数を読む (空の位置は Null)。"""
         args = []
         self.skip_nl()
         if self.at_op(close):
@@ -707,6 +735,8 @@ class Parser:
             raise SADError(f'line {t.line}: expected , or {close}, got {t.val!r}')
 
     def parse_call(self, head):
+        """Parse the argument list after '[' and return the call Expr(head, args).
+        '[' に続く引数を読み、呼び出し式 Expr(head, args) を返す。"""
         self.next()   # [
         self.depth += 1
         args = self.parse_args(']')
@@ -715,6 +745,8 @@ class Parser:
         return Expr(head, args)
 
     def parse_prefix(self):
+        """Parse a primary or prefix expression (number, string, symbol, prefix operator, bracket, ...).
+        項または前置の式 (数・文字列・記号・前置演算子・括弧など) を読む。"""
         if self.depth > 0:
             self.skip_nl()
         t = self.next()
@@ -825,6 +857,8 @@ class Parser:
         return S(name)
 
     def parse_blank(self, name):
+        """Return the Blank[] expression for a blank pattern (the name argument is not used).
+        ブランク (_) のパターン式 Blank[] を返す (name は使わない)。"""
         return Expr(_SY_Blank, [])
 
 
@@ -940,6 +974,8 @@ Parser.parse_prefix = _parse_prefix2
 
 
 def parse(src: str) -> List[Any]:
+    """Parse SAD source text src into a list of statements (Expr, numbers, strings, Sym).
+    SAD 台本の文字列 src を文の列 (Expr・数・文字列・Sym) に構文解析する。"""
     return Parser(tokenize_full(src)).parse_statements()
 
 
@@ -1279,10 +1315,14 @@ _HOLD = {'Fit', 'FindRoot', 'NIntegrate', 'AccelerateParticles', 'Set', 'SetDela
 
 
 def is_num(v):
+    """True if v is a number (int, float or complex; bool is excluded).
+    v が数 (int・float・complex。bool は除く) なら True。"""
     return isinstance(v, (float, int, complex)) and not isinstance(v, bool)
 
 
 def truthy(v):
+    """Return v != 0 for a number v, or None if v is not a number (truth value undecided).
+    数 v なら v != 0 を返し、数でなければ None (真偽が決まらない)。"""
     if is_num(v):
         return v != 0
     return None
@@ -1300,6 +1340,8 @@ class _HeldArg:
 
 
 class Frame(dict):
+    """Variable scope (dict) of a function call or With; flags boundary (user-function call) and immut (arguments, With variables).
+    関数呼び出しや With の変数の入れ物 (dict)。boundary はユーザ定義関数の呼び出し、immut は引数・With の変数を表す旗。"""
     boundary = False       # True: ユーザ定義関数の呼び出し (定義の中へ値を埋め込むとき、これより外側の呼び出しの引数は見ない)
     immut = False          # True: 関数の引数・With の変数 (定義の中へ値を埋め込める)
 
@@ -1318,6 +1360,8 @@ _FAST2 = {'Plus': _op.add, 'Times': _op.mul, 'Subtract': _op.sub, 'Divide': _fdi
 
 
 class Interp:
+    """Interpreter of the SAD (Mathematica-like) script language: globals, scope frames, user definitions, builtins and output files.
+    SAD 台本 (Mathematica 風) の評価器。大域変数・スコープ・ユーザ定義・組み込み関数・出力ファイルを持つ。"""
     def __init__(self, out=None):
         from . import banner
         banner.show()                      # プロセスの中で最初の 1 回だけ、バージョン・出所・ソースの場所を標準エラー出力に出す (PYSAD_QUIET=1 で出さない)
@@ -1478,6 +1522,8 @@ class Interp:
 
     # ------------------------------------------------------------------ 変数
     def lookup(self, name):
+        """Return the value of variable name (innermost frame first, then globals); raise KeyError if undefined.
+        変数 name の値を返す (内側のフレームから、次に大域)。未定義なら KeyError。"""
         for fr in reversed(self.frames):
             if name in fr:
                 return fr[name]
@@ -1486,12 +1532,16 @@ class Interp:
         raise KeyError(name)
 
     def has(self, name):
+        """True if variable name is defined in any frame or in the globals.
+        変数 name がフレームか大域で定義されていれば True。"""
         for fr in reversed(self.frames):
             if name in fr:
                 return True
         return name in self.globals
 
     def assign(self, name, value):
+        """Assign value to variable name (to the innermost frame that has it, else the globals; set hooks are honoured).
+        変数 name に value を代入する (持っている最も内側のフレーム、なければ大域。set フックがあればそれを通る)。"""
         skip = False
         for fr in reversed(self.frames):
             if name in fr:
@@ -1511,6 +1561,8 @@ class Interp:
         self.globals[name] = value
 
     def get(self, name, default=None):
+        """Return the value of variable name, or default if it is undefined.
+        変数 name の値を返す。未定義なら default。"""
         try:
             return self.lookup(name)
         except KeyError:
@@ -1824,6 +1876,8 @@ class Interp:
 
     # ------------------------------------------------------------------ eval
     def eval(self, node):
+        """Evaluate a parsed node (number, string, Sym, Expr, list, ...) and return its value.
+        構文解析した node (数・文字列・Sym・Expr・リストなど) を評価して値を返す。"""
         if isinstance(node, (float, int, str, complex, Rule, Func, _Null)) or node is None:
             return node
         if isinstance(node, Sym):
@@ -2046,6 +2100,8 @@ class Interp:
             self.frames = saved_frames
 
     def eval_args(self, args):
+        """Evaluate each argument in args and return the list of values (a Sequence result is spliced in).
+        args の各引数を評価して値のリストを返す (Sequence は展開して並べる)。"""
         out = []
         for a in args:
             v = self.eval(a)
@@ -2056,6 +2112,8 @@ class Interp:
         return out
 
     def eval_expr(self, node: Expr):
+        """Evaluate a call expression: hold forms, List, user definitions, builtins and pure functions.
+        呼び出し式を評価する (Hold 系・List・ユーザ定義・組み込み関数・純関数)。"""
         head = node.head
         if isinstance(head, Sym):
             name = head.name
@@ -2167,6 +2225,8 @@ class Interp:
         return self.apply_value(hv, args, head)
 
     def apply_value(self, hv, args, head=None):
+        """Apply the value hv (symbol, pure function, expression head, ...) to the already evaluated args.
+        評価済みの引数 args に、値 hv (記号・純関数・式の頭部など) を適用する。"""
         if hv is Null:
             return Seq(list(args))                # Hold[x] /. Hold -> Null は Null[x] で、Null[a, b] は a, b を並べる Sequence
         if isinstance(hv, Expr) and hv.head == _SY_Unevaluated_D_ and len(hv.args) == 1:
@@ -2246,6 +2306,8 @@ class Interp:
 
     # ------------------------------------------------------------------ 純関数・ユーザ定義
     def apply_func(self, fn: Func, args):
+        """Apply the pure function fn (named parameters, or #-slots) to args and return the result.
+        純関数 fn (名前付き引数、または # のスロット) を args に適用して結果を返す。"""
         if fn.params is not None:
             fr = Frame()
             fr.immut = True
@@ -2260,6 +2322,8 @@ class Interp:
         return self.eval(body)
 
     def subst_slots(self, node, args):
+        """Replace the slots # / #n / ## in node by args (not inside nested pure functions or Hold).
+        node の中のスロット # / #n / ## を args で置き換える (入れ子の純関数・Hold の中は置換しない)。"""
         if isinstance(node, Expr):
             if node.head == _SY_Slot:
                 k = int(node.args[0]) if node.args else 1
@@ -2276,6 +2340,8 @@ class Interp:
         return node
 
     def apply_downvalues(self, name, dv, args):
+        """Try the user-defined rules dv of function name on args in order and evaluate the body of the first matching rule.
+        関数 name のユーザ定義の規則 dv を args に順に試し、最初に合った規則の本体を評価する。"""
         # 規則が多い定義 (f["x"] = … の記憶、UpValue の Set など) は、合わない規則を照合の機構に入れずに捨てる (_quick_reject。結果は同じ)
         prefilter = len(dv) > 1 and bool(args)
         symv = None
@@ -2484,6 +2550,8 @@ class Interp:
         return False
 
     def subst_bindings(self, node, b):
+        """Replace the pattern variables bound in b by their values inside node.
+        node の中のパターン変数を、束縛 b の値で置き換える。"""
         if isinstance(node, Sym) and node.name in b:
             return b[node.name].node if isinstance(b[node.name], _HeldArg) else _Lit(b[node.name])
         if isinstance(node, Expr):
@@ -2497,6 +2565,8 @@ class Interp:
 
     # ---- パターン照合
     def match_args(self, pats, args) -> Optional[dict]:
+        """Match the pattern list pats against args; return the bindings (dict) or None if they do not match.
+        パターンの列 pats を args に照合する。合えば束縛 (dict)、合わなければ None。"""
         b = {}
         if self._match_seq(pats, list(args), b):
             return b
@@ -2822,6 +2892,8 @@ class Interp:
 
     @staticmethod
     def same(a, b):
+        """Structural equality of two values (numbers compare by value; lists element-wise; different types are unequal).
+        2 つの値の構造的な一致 (数は値で、リストは要素ごと。型が違えば不一致)。"""
         if is_num(a) and is_num(b):
             return a == b
         if type(a) != type(b):
@@ -2832,6 +2904,8 @@ class Interp:
 
     # ------------------------------------------------------------------ Part
     def part(self, lst, idx):
+        """Return lst[[idx]] (1-based, negative from the end; also All by an empty index, list indices and the head by 0).
+        lst[[idx]] を返す (1 始まり、負は末尾から。空の添字は全要素、リストの添字、0 は頭部)。"""
         v = lst
         for ci_, k in enumerate(idx):
             if k is Null:                         # l[[, 2]]: 空の添字は全要素 (All)
@@ -2867,6 +2941,8 @@ class Interp:
         return v
 
     def set_part(self, name, idx, value):
+        """Assign value to element idx (1-based, negative from the end) of the list variable name; return value.
+        リスト変数 name の要素 idx (1 始まり、負は末尾から) に value を代入し、value を返す。"""
         lst = self.lookup(name)
         if not isinstance(lst, list):
             raise SADError(f'Part assignment to non-list {name}')
@@ -2884,10 +2960,14 @@ class Interp:
 
     # ------------------------------------------------------------------ 文字列化
     def form(self):
+        """Return the current output format $FORM (an empty string if it is not a string).
+        現在の出力形式 $FORM を返す (文字列でなければ空文字列)。"""
         f = self.get('$FORM', '')
         return f if isinstance(f, str) else ''
 
     def to_str(self, v, form=None, quote=False) -> str:
+        """Convert value v to its output text (numbers by $FORM, lists as {a,b}; quote=True quotes strings).
+        値 v を出力用の文字列にする (数は $FORM に従う、リストは {a,b}。quote=True で文字列に引用符)。"""
         if form is None:
             form = self.form()
         if isinstance(v, str):
@@ -2975,6 +3055,8 @@ class Interp:
         return '\n'.join(lines)
 
     def write_unit(self, unit, text):
+        """Write text to unit (6, None or -1 is the standard output; otherwise an open file; SADError if not open).
+        装置 unit に text を書く (6・None・-1 は標準出力、それ以外は開いているファイル。開いていなければ SADError)。"""
         if unit == 6 or unit is None or unit == -1:        # $Output = -1
             self.out.write(text)
             self.out.flush()

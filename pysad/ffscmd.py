@@ -402,6 +402,8 @@ class _RadLight:
 
 
 class FFS:
+    """FFS (SAD optics/matching) command interpreter: holds the current beam line, optics rows, flags and the Matcher, and executes FFS commands and functions.
+    FFS (SAD の光学・マッチング) のコマンド解釈器。現在のビームライン・光学の行・フラグ・Matcher を持ち、FFS のコマンドと関数を実行する。"""
     def __init__(self, script_env, interp: Interp, out=None):
         self.env = script_env           # parser.SADEnvironment (要素定義・ビームライン)
         self.I = interp
@@ -477,6 +479,8 @@ class FFS:
 
     # ------------------------------------------------------------------ 組み込み関数の登録
     def install(self, I: Interp):
+        """Register this FFS's functions (Twiss, LINE, Element, FFS, ...) as builtins of the script interpreter I.
+        この FFS の関数 (Twiss・LINE・Element・FFS など) を台本の評価器 I の組み込み関数に登録する。"""
         I.ffs_handler = self.execute
         I.ffs_words = self.is_word
         B = I.builtins
@@ -567,17 +571,25 @@ class FFS:
 
     # ------------------------------------------------------------------ ユーティリティ
     def write(self, s: str):
+        """Write the text s to the output stream and flush it.
+        文字列 s を出力に書いて flush する。"""
         self.out.write(s)
         self.out.flush()
 
     def gcut(self):
+        """Return the global GCUT (1e300 if it is not a positive number).
+        大域変数 GCUT を返す (正の数でなければ 1e300)。"""
         g = self.I.get('GCUT', 1e300)
         return float(g) if is_num(g) and g > 0 else 1e300
 
     def dp(self):
+        """Return the global DP (momentum deviation of the matching, default 0.01).
+        大域変数 DP (マッチングの運動量偏差。既定 0.01) を返す。"""
         return float(self.I.get('DP', 0.01))
 
     def dp0(self):
+        """Return the global DP0 (reference momentum deviation, default 0).
+        大域変数 DP0 (基準の運動量偏差。既定 0) を返す。"""
         return float(self.I.get('DP0', 0.0))
 
     def momentum(self, warn: bool = True):
@@ -592,6 +604,8 @@ class FFS:
         return float(m)
 
     def is_word(self, word: str) -> bool:
+        """True if word is an FFS command, flag, function name or element/position name, so the script parser treats it as an FFS word.
+        word が FFS のコマンド・フラグ・関数名・要素名・位置名なら True (台本の構文解析が FFS の語として扱う)。"""
         w = word.upper()
         if w in _COMMANDS or w in _ERRCMDS or w in self.flags or (w.startswith('NO') and w[2:] in self.flags) or w in _FLAG_ALT:
             return True
@@ -783,6 +797,8 @@ class FFS:
         return seen
 
     def instances(self, fam):
+        """Return the list of elements of the current line whose name is exactly fam.
+        現在のラインで名前が fam に一致する要素のリストを返す。"""
         lst = self._nidx()['fam'].get(fam.upper(), ())
         els = self.els
         return [els[i - 1] for i in lst if els[i - 1].name == fam]
@@ -799,6 +815,8 @@ class FFS:
 
     # ------------------------------------------------------------------ 要素値 (SAD 単位)
     def get_value(self, el, key: str):
+        """Return the numeric value of attribute key (K1, ANGLE, L, VOLT, ...) of element el.
+        要素 el の属性 key (K1・ANGLE・L・VOLT など) の数値を返す。"""
         key = key.upper()
         tn = type(el).__name__
         if getattr(el, '_sad_type', None) and not hasattr(el, _amap(el).get(key, key)):
@@ -849,6 +867,8 @@ class FFS:
         return bool(raw)
 
     def set_value(self, el, key: str, v: float):
+        """Set attribute key of element el to v (keeps the E1/E2 ratio when ANGLE changes; Marker values go to the element definition).
+        要素 el の属性 key を v にする (ANGLE を変えても E1/E2 の比を保つ。Marker の値は要素定義へ)。"""
         key = key.upper()
         tn = type(el).__name__
         if tn == 'Marker':
@@ -901,6 +921,8 @@ class FFS:
         self.invalidate()
 
     def default_key(self, el) -> Optional[str]:
+        """Return the default variable key of element el (the VARY key if set, L for Drift, else the main strength key; None for Marker).
+        要素 el の既定の変数キーを返す (VARY で変えたキー、Drift は L、それ以外は主な強さのキー。Marker は None)。"""
         vk = getattr(el, '_vary_key', None)
         if vk:
             return vk                            # VARY で変えた既定のキー
@@ -913,6 +935,8 @@ class FFS:
         return keys[1]
 
     def set_family(self, fam: str, key: str, v: float):
+        """Set key to v for every element named fam and for the slaves coupled to fam (value multiplied by the coupling coefficient).
+        名前が fam の全要素と、fam に結合した従属要素 (結合係数を掛けた値) の key を v にする。"""
         for el in self.instances(fam):
             self.set_value(el, key, v)
         for slave, (master, co) in self.couples.items():
@@ -921,6 +945,8 @@ class FFS:
                     self.set_value(el, key, v * co)
 
     def invalidate(self):
+        """Discard the computed optics, geometry and caches so that they are recomputed at the next use (the last rows are kept for failure).
+        計算済みの光学・幾何・キャッシュを捨てて次の使用時に再計算させる (直前の光学の行は失敗時のために残す)。"""
         if self.rows is not None:
             self._last_rows = self.rows         # 光学の計算 (qcod) が失敗したとき SAD は直前の twiss を残す
         self.rows = None
@@ -1206,7 +1232,8 @@ class FFS:
         return dict(nfr=nfr, nfam1=nfam1, nfam=nfam, uini=uini, has_tw=has_tw, iuid=iuid)
 
     def wake_optics_on(self):
-        """tffsa.f:1186: wake = (TWAKE | LWAKE) & TRPT & WAKEOPT"""
+        """tffsa.f:1186: wake = (TWAKE | LWAKE) & TRPT & WAKEOPT
+        ウェイクを光学計算に含めるか (TWAKE か LWAKE が ON で、TRPT と WAKEOPT も ON のとき True)。"""
         return bool((self.flags['TWAKE'] or self.flags['LWAKE']) and self.flags['TRPT'] and self.flags['WAKEOPT'])
 
     def _wake_opt_tables(self):
@@ -1444,6 +1471,8 @@ class FFS:
         return consumed
 
     def ensure_rows(self):
+        """Return the optics rows, running calc() first if they have not been computed.
+        光学の行を返す (未計算なら先に calc() を実行する)。"""
         if self.rows is None:
             self.calc()
         return self.rows
@@ -1553,6 +1582,8 @@ class FFS:
     _TWKEY_ALL = frozenset(list(_TWKEY) + ['GMX', 'GMY', 'GMZ'])
 
     def twiss_value(self, key: str, k: int, fr: float = 0.0):
+        """Return the optical function key at component k (fraction fr of the element) for Twiss[key, k]; supports R.../D... (reference/difference) and SIG... (beam size).
+        Twiss[key, k] 用に、位置 k (要素内の割合 fr) の光学関数 key を返す (R…/D… は参照・差、SIG… はビームサイズ)。"""
         key = key.upper()
         r = self.row_frac(k, fr) if fr else self.row(k)
         if key in self._TWKEY:
@@ -1623,6 +1654,8 @@ class FFS:
         raise SADError(f'bad location {loc!r}')
 
     def fn_twiss(self, args):
+        """Builtin Twiss[key, loc]: optical function(s) at the location(s); with a key only, the values at all components; "LENGTH" gives the number of components.
+        組み込み関数 Twiss[key, loc]。位置 loc の光学関数を返す (key だけなら全要素の値、"LENGTH" は要素数)。"""
         if not args:
             raise SADError('Twiss: keyword required')
         key = args[0]
@@ -1655,6 +1688,8 @@ class FFS:
         return vals
 
     def line_value(self, key: str, k: int, fr: float = 0.0):
+        """Return LINE[key, k] (fraction fr of the element): element attribute, name, position, geometry (GX..), beam size (SIG..) or optics value.
+        LINE[key, k] (要素内の割合 fr) の値を返す (要素の属性・名前・位置・幾何 (GX..)・ビームサイズ (SIG..)・光学の値)。"""
         key = key.upper()
         if len(key) > 4 and key.endswith('$SUM'):
             # tffs.f tfkeyv: KEY$SUM は KEY の値。値が実数のリスト (SPLIT した要素の分割ごとの値) ならその和 (pysad は SPLIT を持たないので値そのもの)
@@ -1748,6 +1783,8 @@ class FFS:
         return [[float(v) for v in row] for row in res]
 
     def fn_line(self, args):
+        """Builtin LINE[key, loc]: value(s) of key at the location(s); with a key only, the values at all components; "LENGTH" gives the number of components.
+        組み込み関数 LINE[key, loc]。位置 loc の key の値を返す (key だけなら全要素の値、"LENGTH" は要素数)。"""
         key = args[0]
         if isinstance(key, list):
             return [self.fn_line([k] + list(args[1:])) for k in key]
@@ -1844,6 +1881,8 @@ class FFS:
         return float(ar[0]) if scalar else [float(v) for v in ar]
 
     def set_line(self, args, v):
+        """Assignment LINE[key, loc] = v: set key at the matching element(s) (whole family for a plain family name) and invalidate the optics.
+        代入 LINE[key, loc] = v。合う要素の key を設定する (単純なファミリー名ならファミリー全体)。光学は無効にする。"""
         key = args[0].upper()
         locs = self._resolve_loc(args[1])
         if not locs:
@@ -1879,6 +1918,8 @@ class FFS:
                 self.set_value(el, key, v)
 
     def fn_element(self, args):
+        """Builtin Element[key, name]: value of attribute key of the element (family) name; Null for unsupported forms.
+        組み込み関数 Element[key, name]。要素 (ファミリー) name の属性 key の値を返す (未対応の形は Null)。"""
         if not args:
             return Null
         key = args[0]
@@ -1898,10 +1939,14 @@ class FFS:
         return Null
 
     def set_element(self, args, v):
+        """Assignment Element[key, name] = v: set key of the family name to v.
+        代入 Element[key, name] = v。ファミリー name の key を v にする。"""
         fam = args[1]
         self.set_family(fam.upper(), args[0].upper(), float(v))
 
     def fn_ffs(self, args):
+        """Builtin FFS["commands", unit]: run the FFS command text, sending its output to unit (default 0 = discarded). Returns a list for "SHOW" and "VAR" (and the result of MEASURE in v2), otherwise Null; raises FFS::error if a command prints an FFS error.
+        組み込み関数 FFS["コマンド", unit]。FFS のコマンド文字列を実行し、出力は unit へ (既定 0 は表示しない)。"SHOW"・"VAR" (v2 では MEASURE も) はリストを返し、それ以外は Null。コマンドが FFS のエラーを出したら FFS::error を投げる。"""
         cmd = args[0]
         if not isinstance(cmd, str):
             return Null
@@ -2320,6 +2365,8 @@ class FFS:
         return lat
 
     def run_emit(self, quiet=False):
+        """Run the 6D emittance calculation (EMIT) for the current line, store the results in the globals (EMITX, SIGE, ...) and print them unless quiet; returns the result dict.
+        現在のラインの 6 次元エミッタンス計算 (EMIT) を実行し、結果を大域変数 (EMITX・SIGE など) に入れる。quiet でなければ表示する。結果の dict を返す。"""
         self._check_sol_optics(emit=True)
         from .emit6d import emittance6d
         if self.lat is None:
@@ -2473,6 +2520,8 @@ class FFS:
                 w(f'{int(tampl[col][k]):4d}!' + ''.join(f'{cell(float(v)):4d}' for v in m[k]) + '\n')
 
     def print_emit(self, e, before9102=None, no_orbit=False):
+        """Print the EMIT report (closed orbit, tunes, damping, emittances, ...) of the result e in the SAD format; before9102 and no_orbit adjust what is printed.
+        EMIT の結果 e の報告 (閉軌道・チューン・減衰・エミッタンスなど) を SAD の書式で表示する (before9102・no_orbit は表示内容の切り替え)。"""
         p0 = self.momentum()
         circ = self.lat.circumference
         # temitprint: f0 = omega0/2π = c β / C (β = p/h)。以前は β を落としていて SAD と 4e-8 ずれ、桁も丸めていた
@@ -3299,6 +3348,8 @@ class FFS:
 
     # ------------------------------------------------------------------ コマンドの実行
     def execute(self, stmt: str):
+        """Execute one FFS statement stmt: split it into words and run the commands in order (nothing if stopped).
+        FFS の 1 文 stmt を実行する (語に分けて順にコマンドを実行する。停止中は何もしない)。"""
         if self.stopped:
             return
         words = self._split_words(stmt)
@@ -3671,6 +3722,8 @@ class FFS:
                 'd': {k: I.downvalues.pop(k) for k in _BLOCKED_SYMS if k in I.downvalues}}
 
     def use(self, name: str, expand: bool = True):
+        """USE name: build the beam line name (expanded unless expand is False) and make it the current line, resetting optics, matcher and couplings.
+        USE name。ビームライン name を作って現在のラインにし、光学・Matcher・結合を初期化する (expand=False なら展開しない)。"""
         name = self.env.resolve_beamline(name) or name.upper()      # LINE 名は書かれたとおり (LinacPFBT)
         # tffsa.f: ilist(2,idval(iuse)) <= 0 .or. expnd のときだけ expnln (展開済みの LINE を NOEXPAND で USE すると成分ごとの値が残る)
         cache = self.__dict__.setdefault('_built_lines', {})
@@ -3855,6 +3908,8 @@ class FFS:
 
 
     def matcher_(self) -> Matcher:
+        """Return the Matcher of the current line, creating and configuring it on first use (SAD error if no line is selected).
+        現在のラインの Matcher を返す (初回は作って設定する。ラインがなければ SAD エラー)。"""
         if self.lat is None:
             raise SADError('No beam line (USE first)')
         if self.matcher is not None:
@@ -4209,6 +4264,8 @@ class FFS:
         self._sort_vars(m)
 
     def go(self, fit: bool):
+        """Run GO (fit=True: fit the variables) or CALC-only matching (fit=False) with the Matcher, update MatchingResidual/NetResidual and print the result table.
+        Matcher でマッチング GO (fit=True なら変数を合わせる、False なら条件の計算のみ) を実行し、MatchingResidual・NetResidual を更新して結果の表を表示する。"""
         m = self.matcher_()
         m.cell = self.flags['CELL']
         m.dp0 = self.dp0()
@@ -5663,6 +5720,8 @@ class FFS:
                 v['val'] = self.get_value(v['els'][0], v['key'])
 
     def reset_cmd(self):
+        """RESET: restore the saved element values and error factors, reset the variables' Now values and invalidate the optics.
+        RESET。保存した要素の値と誤差係数を元に戻し、変数の Now 欄も戻して光学を無効にする。"""
         for el in self.els:
             sv = getattr(el, '_saved', None)
             if sv:
@@ -5791,6 +5850,8 @@ def main_part(src: str) -> str:
 
 
 def run_sad_string(src: str, out=None, cwd: Optional[str] = None):
+    """Run a whole SAD script string src (MAIN part and FFS part), writing to out with working directory cwd; returns (ffs, interpreter).
+    SAD 台本の文字列 src 全体 (MAIN 部と FFS 部) を実行する (出力は out、作業フォルダは cwd)。(FFS, 評価器) を返す。"""
     from . import parser as _parser
     out = out or sys.stdout
     main, ffs_src, flags = split_main_ffs(src)

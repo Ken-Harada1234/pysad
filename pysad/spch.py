@@ -68,6 +68,8 @@ _CSMOOTH_Z = 0.5                 # 縦: TSC 1/4 ×2
 
 
 class SpaceChargeError(SADError):
+    """Exception raised for errors in the space-charge (SPAC/PSPAC) calculation.
+    空間電荷 (SPAC/PSPAC) の計算のエラー。"""
     pass
 
 
@@ -240,6 +242,8 @@ class Field3D:
         self.zc = 0.0
 
     def coords(self, x, y, zeta):
+        """Convert the physical coordinates (x, y, zeta) to fractional grid indices (ux, uy, uz), clipped to the interior of the mesh.
+        物理座標 (x, y, zeta) を格子の小数の番号 (ux, uy, uz) にする (格子の内側に収まるよう clip する)。"""
         nx, ny, _ = self.phi.shape
         ux = np.clip((x - self.xc) / self.hx + 0.5 * (nx - 1), 0.5 + 1e-9, nx - 1.5 - 1e-9)
         uy = np.clip((y - self.yc) / self.hy + 0.5 * (ny - 1), 0.5 + 1e-9, ny - 1.5 - 1e-9)
@@ -333,6 +337,8 @@ class Solver3D:
 
     @staticmethod
     def auto_mesh(n):
+        """Choose the mesh (nx, nx, nz) automatically for n particles (each between 24 and 64, even).
+        粒子数 n から格子 (nx, nx, nz) を自動で決める (各 24〜64、偶数)。"""
         nz = int(min(64, max(24, 2 * round(n ** (1.0 / 3.0)))))
         nx = int(min(64, max(24, 2 * round(math.sqrt(n / nz)))))
         return nx, nx, nz
@@ -509,6 +515,8 @@ class Solver2D:
                         % (sz, sz / self.dz, self.dz) + chr(10))
 
     def solve(self, x, y, z):
+        """Deposit the particles (x, y, z) on the 2D mesh with the TSC scheme, solve the Poisson equation and return the Field2D with the potential and the line density.
+        粒子 (x, y, z) を TSC 法で 2 次元格子に割り振り、ポアソン方程式を解いて、電位と線密度を持つ Field2D を返す。"""
         self.check_resolution(x, y, z)
         nx, ny = self.nx, self.ny
         ux = x / self.dx + nx // 2
@@ -815,6 +823,8 @@ class SpaceCharge:
 
     # ---- track6n.turn から
     def begin(self, prog, apert):
+        """Start a tracking run with the program prog: check that the element table matches, and initialise the start index l0 and the last kick positions.
+        追跡プログラム prog の実行を始める。要素の表が追跡の表と合うか確かめ、開始の番号 l0 と直前のキックの位置を初期化する。"""
         if prog.l0 + len(prog.kinds) > len(self.radius):
             raise SpaceChargeError('SPAC/PSPAC: 要素の表が追跡の表と合わない')
         self.l0 = prog.l0
@@ -832,6 +842,8 @@ class SpaceCharge:
             self.s_wlast = s
 
     def handles(self, kind, l):
+        """True if the element l of kind kind is treated by space charge (MULT with SPAC, a drift with a radius, or an element with PSPAC).
+        種類 kind の要素 l を空間電荷で扱うなら True (SPAC の MULT、半径のあるドリフト、PSPAC の要素)。"""
         if kind == K_MULT:
             return self.spac and self.is_mult[l]
         if kind == K_DRIFT or kind == K_SOL_DRIFT:
@@ -842,6 +854,8 @@ class SpaceCharge:
         return False
 
     def element(self, S, n, kind, pr, l, ph, apert, kdrift, ksol):
+        """Track the n particles of S through element l with space-charge kicks (PSPAC 2D kick, MULT, or a drift split into steps with the 3D kick and aperture); returns the new particle count.
+        要素 l の中で n 個の粒子 S を空間電荷のキックつきで追跡する (PSPAC の 2 次元キック、MULT、または 3 次元キックと絞りを入れて分割したドリフト)。残った粒子数を返す。"""
         if self.pspac and self.is_spch[l]:
             s = 0.5 * (self.pos[l] + self.pos[l + 1])
             n = self._kick2d(S, n, s - self.s_last, l, ph, apert)
