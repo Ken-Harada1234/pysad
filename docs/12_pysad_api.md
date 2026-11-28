@@ -326,6 +326,46 @@ PYTHONIOENCODING=utf-8 python -u run_sad.py <試験用ラティス>.lat <台本�
 
 pip で入れたときのコマンド (`pysad/cli.py`): `pysad-run lattice_file [script_file ...]` (上と同じ)、`pysad-share` (文書・例・物理ガイドの場所の表示。clone ならフォルダ、pip では入っていないので GitHub と GitHub Pages の URL)、`pysad-warmup [--check | --clear] [--quiet]` (numba のカーネルを先に機械語へ変換してキャッシュを作る。最初の実行の約 1 分の待ちがなくなる。`--check` はキャッシュが有効なら終了コード 0、`--clear` は pysad のキャッシュを消す。`pysad/warmup.py`)。
 
+### 11b. notebook.py — Jupyter / IPython のセルに貼った SAD の実行 (`%%sad`)
+
+SAD のラティスファイルとコマンドファイルの中身を、notebook のセルにそのまま貼って実行する。セルのマジックの本文は変換されずに渡るので、引用符・バックスラッシュ・`!` で始まる SAD のコメント行を書き直す必要がない。
+
+```
+%load_ext pysad.notebook          # 最初に 1 回 (名前空間に `sad` = Session が入る)
+```
+```
+%%sad lattice                     # ラティスの中身を貼る。実行せず保存する (同じ名前のセルを再実行すると置き換わる)
+...
+```
+```
+%%sad                             # コマンドの中身を貼る。保存したラティス + このセルを最初から実行する (gs の `ラティス コマンド` と同じ)
+FFS; USE RING; CELL; CALC; ...
+```
+```
+%%sad --continue                  # 前の実行の状態の続きに、FFS 部の文を流す
+```
+
+| 書き方 | 動作 |
+|---|---|
+| `%%sad lattice [名前]` | ラティスを名前 (既定 `main`) で保存。複数あれば保存順に連結する |
+| `%%sad` | 保存したラティスとこのセルを連結して `run_sad_string` で最初から実行する。FFS の文の前に `FFS;` が要る |
+| `%%sad --continue` (`-c`) | 前の実行のインタプリタに `Interp.run(本文, 'ffs')` で流す。`stop;` のあとでも使える (停止の印を解除する)。まだ実行していなければエラー |
+| `%%sad --reset` (`-r`)、`%sad --reset` | 保存したラティスと実行の状態を捨てる (`%%sad --reset` は捨ててからこのセルを実行) |
+| `sad.value('式')` | SAD の式を評価して Python の値で返す (数は `float`、並びは `list`、Null は `None`)。出力は書かない。`PI` は未評価の記号なので `Pi` と書く |
+| `sad.ffs`・`sad.interp` | 最後の実行の `FFS` と `Interp` |
+| `pysad.run(文字列, lattice=None, cont=False, reset=False)` | マジックを使わない書き方 (`pysad.notebook.run` と同じ)。`r'''...'''` の生文字列なら引用符・バックスラッシュをそのまま書ける。`Session` を返す |
+
+- 出力は今のセルの標準出力に出る。SAD のエラーは、SAD と同じく表示して次の文へ進む。
+- 起動時の案内 (バナー) は、プロセスの最初の 1 回だけ標準エラー出力に出る (標準エラー出力なので、notebook では stderr の出力として表示される。`PYSAD_QUIET=1` で出さない)。
+- 例: [`example/17_notebook/`](../example/17_notebook/README.md)。試験: `test_notebook_magic.py` (13 件。IPython・nbclient・ipykernel がない環境では 3 件が skip)。
+
+**限界・未確認**
+- 確認した環境は、Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 (本物のカーネルを起動して notebook を実行する試験を含む)。JupyterLab・VS Code の notebook・Colab・他の OS では未確認。
+- `--continue` で流せるのは FFS 部の文だけ。要素・LINE の定義は、新しい `%%sad` のセル (最初からの実行) に書く。
+- 実行は最初からやり直すので、`%%sad` のセルごとに `CALC` が走る (結果は再現できるが、重い計算は毎回走る)。`--continue` は実行の順序で結果が変わる。
+- Tk の GUI は notebook では動かない。SAD の描画関数 (Plot 系) の notebook 内の表示は未確認 (`sad.value()` で値を取り出して matplotlib で描く例は動く)。
+- セルを実行中の中断 (Interrupt) で、インタプリタが途中の状態のまま残るかどうかは未確認。
+
 ## 12. calc6d.py — CALC6D (qcell6d)
 
 対応: `qcell.f qcell6d` → `temit` (tcod, tturne, tecalc) → `tsetetwiss` / `tfetwiss` (`tffs.f`) / `tfadjustn`、分数位置は `qtwiss.f qtwissfrac`。

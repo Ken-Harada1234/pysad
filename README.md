@@ -68,6 +68,8 @@ print(I.get('EMITX'), ffs.rows[-1].betx)
 ffs.run_text('fit NX 47.3; free QF* K1; go;')
 ```
 
+Jupyter の notebook からは、ラティスファイルとコマンドファイルの中身をセルにそのまま貼って実行できます (`%load_ext pysad.notebook` のあと、`%%sad lattice` と `%%sad` のセル)。Python の文字列で渡す `pysad.run(r'''...''')` もあります。説明は [`docs/12_pysad_api.md`](docs/12_pysad_api.md) §11b、例は [`example/17_notebook/`](example/17_notebook/README.md)。
+
 下位の API (Lattice, Matcher, emittance6d, TrackParticles など) は [`docs/12_pysad_api.md`](docs/12_pysad_api.md)。
 
 ## オリジナルの SAD にない機能 (pysad で追加)

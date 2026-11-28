@@ -6,6 +6,10 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
+## 未公開
+
+- **Jupyter の notebook から SAD のラティスとコマンドを実行する `%%sad` セルのマジック** (`pysad/notebook.py`、`pysad.run()`)。ラティスファイルとコマンドファイルの中身を、そのままセルに貼って実行する: `%load_ext pysad.notebook` のあと、`%%sad lattice` (ラティスを保存)、`%%sad` (保存したラティス + このセルを最初から実行。SAD の `gs ラティス コマンド` と同じ)、`%%sad --continue` (前の状態の続きに FFS 部の文を流す)。`sad.value('式')` で SAD の式の値を Python の値で取り出す。マジックを使わずに `pysad.run(r'''...''')` に文字列で渡すこともできる。確認: IPython と、本物のカーネルを起動して notebook を実行する試験 (nbclient)。環境は Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0。JupyterLab・VS Code・Colab・他の OS は未確認。試験 `test_notebook_magic.py` (13 件)、例 `example/17_notebook/`、文書 `docs/12_pysad_api.md` §11b。
+
 ## v2.5.3 (2026-11-27)
 
 - **BEND のスピン軌道結合 D が刻みの数に依る問題を直した** (B137・B342、v2 のみ。k64 は K64 のまま、ビット単位で同じ)。原因は、BEND の入口・出口の縦磁場 ψ の歳差を本体の回転と 1 回で回す合成の非可換 (D の y の列が n 刻みで −D/n ずれる)。v2 は端の ψ を本体の前後の独立な回転にした (追跡 `_sprot_edge`、Emittance[] `spin._edge_rot`。切り替え `compat.set_spin_edge_split`・`PYSAD_SPIN_EDGE_SPLIT=0`)。0.5 GeV・15° 扇形の D の y の列は Maxwell 場の基準と 3e-5 以内 (K64 の足し方は既定の刻みで 1.9% 小さい)。BEND を断片に切っても結果が変わらない (R の差 7e-5 → 2e-8)。傾いた MPW の ASTRID2 の P_eq/P_dk − 1 の約 −0.9% の残りはこれ (DK の側の刻み依存) だった: P_dk が刻み 0.2〜0.0125 m で 0.5838〜0.5819 に収まり (K64 の足し方は 0.5855〜0.6035)、P_eq/P_dk − 1 = +0.04%。限界: 追跡の py の列の 1 刻みの 1 次の誤差 (既定で 0.2%)、Emittance[] の py の列の z 成分 (EMITDIV = 16 で 1.1%、原因未特定)、QUAD・MULT・SOL の端の ψ は未確認、追跡 (FLUC) の脱偏極との比較は未実施。v2 の `Polarization[]` の値が動く: 3 GeV・1.5 MV のずれつきリングの線形の脱偏極率 5.850e-11 → 5.976e-11 (+2.1%)、12 セル FODO (4.2 GeV・12 MV) の EMITDIV = 1 で 2.4061e-8 → 2.4103e-8 (+0.17%)、τ (P1 の項なし) 124.18 → 124.11 s。これに合わせて、スピン関係 4 ファイルの試験の基準値を更新した。試験 `test_v250_spin_edge_split.py`。

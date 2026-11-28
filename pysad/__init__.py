@@ -118,4 +118,12 @@ __all__ = [
     "DynamicApertureSurvey",
     # ffs
     "FFSState", "SADList",
+    # run SAD text from Python (notebook)
+    "run",
 ]
+
+
+def run(src, **kwargs):
+    """Run SAD lattice/command text given as a Python string (see pysad.notebook.run; use r-strings for backslashes)."""
+    from .notebook import run as _run
+    return _run(src, **kwargs)
