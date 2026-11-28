@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の `v2` は K64 のバグを直した動作で、`PYSAD_COMPAT=k64` で K64 と同じ動作に切り替える。最新は v2.6.0 (2026-11-28、`pysad.__version__` = 2.6.0。物理ガイド `physics_guide/` を含む)。GitHub (main・タグ `v2.6.0`・ブランチ `release/pypi-v2.6.0`) に push 済み。PyPI は v2.5.3 まで公開済みで、v2.6.0 はビルドと `twine check` まで (アップロードは未。v2.4.3 は単独では公開せず、v2.4.4 に含む)。pip のパッケージには、例 (`example/`)・文書 (`docs/`)・物理ガイド (`physics_guide/`)・試験を入れない (GitHub と GitHub Pages にある)。作業の前に次を読むこと。
+pysad は加速器設計コード SAD (K64 版) の Python への翻訳。既定の `v2` は K64 のバグを直した動作で、`PYSAD_COMPAT=k64` で K64 と同じ動作に切り替える。最新は v2.6.0 (2026-11-28、`pysad.__version__` = 2.6.0。物理ガイド `physics_guide/` を含む)。PyPI・GitHub (main・タグ `v2.6.0`・リリース (Latest)・ブランチ `release/pypi-v2.6.0`) とも v2.6.0 まで公開済み (2026-11-28。v2.4.3 は単独では公開せず、v2.4.4 に含む)。pip のパッケージには、例 (`example/`)・文書 (`docs/`)・物理ガイド (`physics_guide/`)・試験を入れない (GitHub と GitHub Pages にある)。作業の前に次を読むこと。
 
 1. `docs/history/00_RESUME.md`: 引き継ぎメモ (方針、構成、環境、現状、残課題、手順、落とし穴)。未解決の差の最新は `docs/history/work_unimpl.md`。
 2. `docs/01_overview.md`: 全体像とモジュールの地図。
