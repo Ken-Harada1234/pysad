@@ -6,7 +6,15 @@
 - **v1 系: ソースに忠実な翻訳。** SAD (K64 版) のソースの動作を、そのまま Python に写すことを目的とします。K64 のバグや癖も、gs の実動作に合わせて再現します (癖は [`docs/11_sad_quirks.md`](docs/11_sad_quirks.md)、K64 側の不具合の記録は [`docs/21_sad_bug_report.md`](docs/21_sad_bug_report.md))。v1.x のマイナー・パッチは、翻訳の漏れの追加と、翻訳の誤りの修正です。
 - **v2 系: ソースのバグの修正と機能の追加。** K64 のバグを直し、ソースにない機能を加えた版です。gs と同じ結果にならない箇所が出てきます。v1 との違いは、リリースごとにここに書きます。
 
-## 未公開
+## v2.6.0 (2026-11-28)
+
+- **コンバインドベンド (K1≠0 の BEND) の解析式を、追跡と独立に確認した** (docs/25 §11.8)。コードの動作は変えていない。(1) K1≠0 かつ E1・E2≠0 の偏向磁石の 3 次の閉形式 (`bendnl.bend_analytic_h3`) は、v2 の追跡の写像から取り出した値と 6e-7 以内 (FODO、3 GeV、|K1| ≤ 0.2 [1/m²]、E = −0.25〜0.4 rad)。k64 では E≠0 かつ K1≠0 で 6e-4 (E2 だけ)〜6e-3 (E1) ずれる (k64 は端を薄い端で通し、閉形式は CALC (tbende) と同じ厳密な端の式のため。RDT・ADTS は追跡の写像から取り出すので、追跡とは整合する)。(2) `adts(fourth='r6')` と追跡 + NAFF + フィットの直接値 (`adtsdirect.direct_adts`) は、FODO + 6 極で v2 が 1e-4 以内、k64 が 1.2e-4 以内。実リング (1.5 GeV・400 m の ALSU9BA 型 N=20 と DDBA 型 N=24、K1 = −5〜−18 T/m、6 極 8〜10 台) でも v2・k64 とも 1% 以内 (Jmax = 1e-9。大振幅 2e-7 では追跡の J² の寄与でずれる)。確認の範囲は FODO の |K1| ≤ 0.2 と、E=0 の実リング 2 つ。大きなリング A・ASTRID2 以外の E≠0 の複合機能磁石は未確認。試験 `test_v253_bend_k1_edge_closed_form.py` (9 件)。
+- **RDT の警告の誤報を直した**: 「偏向磁石 …: スライスの線形写像で伝播した w・分散が Twiss と違う」が、出口の分散が 0 の磁石 (DDBA の鏡像の側など) で、相対誤差の分母が 1e-12 に落ちて出ていた (伝播は正しく、絶対値 1e-12 m の残差が相対 1.4 に見えていた)。分母を出口・入口の分散と偏向角の最大にした (`bendnl.dispersion_err`)。RDT の値は変わらない。DDBA の例で警告 96 件が 0 件になった。
+- **ring の例を notebook にした** (`example/pf/PF_in_notebook.ipynb`・`example/astrid/ASTRID2_in_notebook.ipynb`・`example/kek_ls/KEKLS_in_notebook.ipynb`。出力つき): 冒頭でラティスを `%%sad lattice` に貼り、`%%sad`・`%%sad --continue` で例のコマンド (セルの計算・放射積分・分散の確認・振幅依存/運動量依存チューンシフトなど。ASTRID2 は pysad 独自の ADTS・RDT も) を順に流す。元の `.sad` からコマンドを取り出して作る (`example/tools/make_ring_notebooks.py`)。`PYSAD_COMPAT=k64` で実行すると、εx・σδ・ダンピング分配数・U0 が gs と全桁で一致する (PF・ASTRID2・KEK-LS)。保存した出力は v2 の既定の結果。確認: Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0。
+- **docs/24 に NAFF の説明を追加** (手法の名前であること、出所)。歴史・採用先は記憶に基づき、原論文の確認はしていない。
+- **ヘルプに `NAFF` (手法) と `NormalFormTune[]` (pysad 独自の関数。一覧から漏れていた) を追加**。試験 `test_sadhelp.py` は 44 件。
+- **試験の修正**: `test_ddba_v07_14.py::test_correct_cod_small` が、例のフォルダの追跡対象の出力 (`example/ddba/v07_14/errors/outtag_*.txt`) を上書きして残していたのを、試験のあとで元に戻すようにした。
+- 通しの試験: 2918 通過・23 skip・失敗 0 (2026-11-28、Windows、`PYSAD_SAD_PACKAGES` なし。回帰 `QUICK=1` 50 ベンチ FAIL 0)。
 
 - **Jupyter の notebook から SAD のラティスとコマンドを実行する `%%sad` セルのマジック** (`pysad/notebook.py`、`pysad.run()`)。ラティスファイルとコマンドファイルの中身を、そのままセルに貼って実行する: `%load_ext pysad.notebook` のあと、`%%sad lattice` (ラティスを保存)、`%%sad` (保存したラティス + このセルを最初から実行。SAD の `gs ラティス コマンド` と同じ)、`%%sad --continue` (前の状態の続きに FFS 部の文を流す)。`sad.value('式')` で SAD の式の値を Python の値で取り出す。マジックを使わずに `pysad.run(r'''...''')` に文字列で渡すこともできる。確認: IPython と、本物のカーネルを起動して notebook を実行する試験 (nbclient)。環境は Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0。JupyterLab・VS Code・Colab・他の OS は未確認。試験 `test_notebook_magic.py` (13 件)、例 `example/17_notebook/`、文書 `docs/12_pysad_api.md` §11b。
 - **pysad ヘルプ (SAD の関数・コマンドの説明を引く)** (`pysad/sadhelp.py`、`pysad/helpdata/sadhelp_index.json`、`tools/build_help_data.py`): `pysad.sad_help('Twiss')`、notebook の `%sad_help Twiss`・`sad.help()`、コマンド `pysad-help`・`python -m pysad help`。名前 (大文字・小文字を区別しない。`CAL` のような略形・`Twiss[]`・`BEND.AE1`)・`--search キーワード` で引く。SADHelp (1.4.4.2k64 Updated: 10/19/2026) の説明の最初の行 (英語)、pysad の状態と注記 (docs/35)、SAD 側の定義場所、文書の場所を出す。同梱の SAD の `Packages/*.n` の関数 (487 件) と Tkinter のウィジェット (19 件) は、署名と定義されているファイルを出す。
@@ -16,7 +24,7 @@
 - **説明文 (docstring) の補充**: 公開の関数・クラス・メソッドの説明文を、英語 1 行 + 日本語 1 行にそろえた。英語と日本語の両方があるものが 860 → 1072 (全 1160 個)、説明なしが 255 → 82、英語のみ・日本語のみが 43 → 6。コードは変えていない (説明文を除いた構文木が元と同じことを、変えた 23 ファイルで確かめた)。numba のカーネルを含むファイル (`track6n.py`・`beambeam.py` など。変えるとキャッシュが無効になる) は、まだ補っていない。
 - **パッケージの説明文 (`help(pysad)`) を現状に直した**: 古い API の例 (`fodo_cell(L=2.0, theta=0.1, k1=1.2)`。いまの引数は `L_half`・`K1F` など) が動かず、「GUI は除外」「純粋な Python と NumPy」とも書いてあった。入口 (`pysad.run`・`pysad.sad_help`・`%load_ext pysad.notebook`・コマンド・互換モード) を英語と日本語で書き、動く例に置き換えた (試験が例を取り出して実行する)。
 - **修正**: `import pysad.diag_trace`・`import pysad.diag_fit` が、import しただけで診断を走らせて表を出していたのを直した (`py -3.12 -m pysad.diag_trace` で走らせる。出力は変更の前後で同じ)。`diag_fit` は、変更の前から、`scipy` の `fsolve` の呼び出しで途中でエラー終了する (未調査)。
-- 試験: `test_sadhelp.py` (43 件)、`test_notebook_magic.py` (18 件。IPython・nbclient・ipykernel がない環境では 8 件が skip)。文書: `docs/12_pysad_api.md` §11c、`GUIDE.md` 手順 6、README。
+- 試験: `test_sadhelp.py` (43 件。のち 44 件)、`test_notebook_magic.py` (18 件。IPython・nbclient・ipykernel がない環境では 8 件が skip)。文書: `docs/12_pysad_api.md` §11c、`GUIDE.md` 手順 6、README。
 
 ## v2.5.3 (2026-11-27)
 

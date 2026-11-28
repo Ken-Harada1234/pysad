@@ -98,7 +98,7 @@ USE RING; CELL; CALC;
 | マジックを使わずに Python の文字列で渡す | `pysad.run(r'''...''')` |
 
 - 確認した環境は Windows・Python 3.12・JupyterLab 4.6.6 (ipykernel 7.4.0)。VS Code の notebook・Colab・他の OS は未確認です。
-- `%%sad` は GitHub の `main` に入っていますが、PyPI の最新の公開版 (2.5.3) には、まだ入っていません (次の公開で入ります)。
+- `%%sad` は GitHub の `main` に入っていますが、PyPI の公開版 (2.5.3) には、まだ入っていません (2.6.0 で入ります。2.6.0 の PyPI への公開は、このファイルを書いた時点では未)。
 - 仕様と限界は [`docs/12_pysad_api.md`](docs/12_pysad_api.md) §11b、出力つきの notebook は [`example/17_notebook/`](example/17_notebook/README.md)。
 - `%%sad` のセルの中では、SAD の名前 (`Twi` → `Twiss`) がタブ補完できます。説明は `%sad_help Twiss` (下の「pysad ヘルプ」)。
 
