@@ -6,6 +6,7 @@ PF のラティスを使った、SAD の基本的な使い方と計算の例で�
 
 | フォルダ | 例 | 内容 | gs と pysad |
 |---|---|---|---|
+| [`PF_in_notebook.ipynb`](PF_in_notebook.ipynb) | notebook 版 | ラティスを冒頭で読み込み、セルの計算・放射積分・分散の確認・振幅依存・運動量依存チューンを順に流す (出力つき) | ○ (`PYSAD_COMPAT=k64` で gs と一致) |
 | [`lattice/`](lattice/README.md) | ラティス | PF のラティス (v9_16 の 2 本と、履歴ラティス 4 本。説明は [`PF_history.md`](lattice/PF_history.md)) | |
 | [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF`](optics/FFS_cell_calc_emit_PF.md) | 実行、`cell calc emit`、`SAVE`、周長・チューン・エミッタンス | ○ |
 | [`optics/`](optics/README.md) | [`FFS_cell_calc_emit_PF_1981_460nmrad`](optics/FFS_cell_calc_emit_PF_1981_460nmrad.md) | 履歴ラティス (1981 年・建設時) の `cell calc emit`、直線部・標準セルの Twiss、クロマティシティ | ○ (k64) |
@@ -35,3 +36,10 @@ PF のラティスを使った、SAD の基本的な使い方と計算の例で�
 | [`injection/`](injection/README.md) | [`calc_traj_02_PF`](injection/calc_traj_02_PF.md) | 入射軌道 (計算の関数化と Courant-Snyder 不変量) | ○ |
 | [`injection/`](injection/README.md) | [`calc_traj_03_PF`](injection/calc_traj_03_PF.md) | 入射軌道 (Tk の窓 (KBMainFrame・Canvas・OpticsPlot) と入力欄・ボタン) | ○ (計算も窓の項目数 114・115 も一致。2026-11-17 に修正) |
 | [`injection/`](injection/README.md) | [`calc_traj_03b_PF`](injection/calc_traj_03b_PF.md) | 入射軌道 (pysad でも動く ListPlot の窓) | ○ (Canvas の項目数 382 → 384 が一致) |
+
+## notebook 版
+
+[`PF_in_notebook.ipynb`](PF_in_notebook.ipynb) は、このリングのラティスを冒頭で読み込み、このフォルダの例のコマンドを `%%sad` と `%%sad --continue` で順に流す notebook です (出力つきで保存してあります。`example/tools/make_ring_notebooks.py` が、元の `.sad` からコマンドを取り出して作ります。動かし方は [`../17_notebook/README.md`](../17_notebook/README.md))。
+
+- 保存した出力は pysad の既定 (`v2`) の実行結果です。`PYSAD_COMPAT=k64` で実行すると、εx・σδ・ダンピング分配数・U0 は gs と全桁で一致しました (確認した量: εx 3.45380e-8 m、σδ 7.33656e-4、Jx 1.0313、U0 0.3991454 MV。出力の数値の行のうち、gs の出力に同じ値がある割合は 196 行中 188 行。残りは、書式の違いと 1e-12 以下の数値雑音と、gs にない出力 (pysad 独自の解析式など))。`v2` との差は、`v2` が K64 のバグを直した動作であることによります (docs/28)。
+- 確認した範囲: Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 で、本物のカーネルを起動して実行しました。実行時間は約 20 秒です。

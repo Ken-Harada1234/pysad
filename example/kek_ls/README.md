@@ -4,12 +4,20 @@ KEK-LS の設計・修正・パラメータ表示のための SAD スクリプ�
 
 | フォルダ | 内容 |
 |---|---|
+| [`KEKLS_in_notebook.ipynb`](KEKLS_in_notebook.ipynb) | notebook 版: ラティスを冒頭で読み込み、リングのパラメータ・クロマティシティ・振幅依存チューンシフトを順に流す (出力つき。`example/kek_ls/` で実行する) |
 | [`lattice/`](lattice/README.md) | ラティス `kek_ls_v03_68.sad`、構成図、パラメータ表、旧版 (v03_12) との違い、入射セル |
 | [`design/`](design/README.md) | 設計・マッチング (セルのチューン、6 極、入射セル、リングを閉じる、縮小、セル数、チューンサーベイ) |
 | [`display/`](display/README.md) | パラメータ表示 (εx・σδ・ξ・αc・U0、オプティクス、チューンシフト) |
 | [`errors/`](errors/README.md) | 誤差入りの計算と COD の補正 |
 | `modules/` | 共通の関数 (`modules_general.n`・`modules_amp_dep_ts.n`・`modules_cell_match.n`・`modules_errors.n`) |
 | [`ORIGINAL_MAP.md`](ORIGINAL_MAP.md) | 新しい名前と元のスクリプトの対応表 |
+
+## notebook 版
+
+[`KEKLS_in_notebook.ipynb`](KEKLS_in_notebook.ipynb) は、このリングのラティスを冒頭で読み込み、このフォルダの例のコマンドを `%%sad` と `%%sad --continue` で順に流す notebook です (出力つきで保存してあります。`example/tools/make_ring_notebooks.py` が、元の `.sad` からコマンドを取り出して作ります。動かし方は [`../17_notebook/README.md`](../17_notebook/README.md))。
+
+- 保存した出力は pysad の既定 (`v2`) の実行結果です。`PYSAD_COMPAT=k64` で実行すると、εx・σδ・ダンピング分配数・U0 は gs と全桁で一致しました (確認した量: εx 1.3432e-10 m、σδ 6.40516e-4、Jx 1.3116、U0 0.2960749 MV。出力の数値の行のうち、gs の出力に同じ値がある割合は 193 行中 174 行。残りは、書式の違いと 1e-12 以下の数値雑音と、gs にない出力 (pysad 独自の解析式など))。`v2` との差は、`v2` が K64 のバグを直した動作であることによります (docs/28)。
+- 確認した範囲: Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 で、本物のカーネルを起動して実行しました。`modules/modules_amp_dep_ts.n` を相対パスで読むので、`example/kek_ls/` を作業フォルダにして実行してください。
 
 ## 全体の流れ
 

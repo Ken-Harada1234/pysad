@@ -34,6 +34,7 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
 <li><a href="#索引">索引</a></li>
+<li><a href="#notebook-版">notebook 版</a></li>
 </ul>
 </div>
 </nav>
@@ -52,6 +53,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="PF_in_notebook.ipynb"><code>PF_in_notebook.ipynb</code></a></td>
+<td>notebook 版</td>
+<td>ラティスを冒頭で読み込み、セルの計算・放射積分・分散の確認・振幅依存・運動量依存チューンを順に流す (出力つき)</td>
+<td>○ (<code>PYSAD_COMPAT=k64</code> で gs と一致)</td>
+</tr>
 <tr>
 <td><a href="lattice/README.html"><code>lattice/</code></a></td>
 <td>ラティス</td>
@@ -228,6 +235,12 @@ details[open] > summary { border-bottom:1px solid var(--line); margin-bottom:8px
 </tr>
 </tbody>
 </table>
+<h2 id="notebook-版">notebook 版</h2>
+<p><a href="PF_in_notebook.ipynb"><code>PF_in_notebook.ipynb</code></a> は、このリングのラティスを冒頭で読み込み、このフォルダの例のコマンドを <code>%%sad</code> と <code>%%sad --continue</code> で順に流す notebook です (出力つきで保存してあります。<code>example/tools/make_ring_notebooks.py</code> が、元の <code>.sad</code> からコマンドを取り出して作ります。動かし方は <a href="../17_notebook/README.html"><code>../17_notebook/README.md</code></a>)。</p>
+<ul>
+<li>保存した出力は pysad の既定 (<code>v2</code>) の実行結果です。<code>PYSAD_COMPAT=k64</code> で実行すると、εx・σδ・ダンピング分配数・U0 は gs と全桁で一致しました (確認した量: εx 3.45380e-8 m、σδ 7.33656e-4、Jx 1.0313、U0 0.3991454 MV。出力の数値の行のうち、gs の出力に同じ値がある割合は 196 行中 188 行。残りは、書式の違いと 1e-12 以下の数値雑音と、gs にない出力 (pysad 独自の解析式など))。<code>v2</code> との差は、<code>v2</code> が K64 のバグを直した動作であることによります (docs/28)。</li>
+<li>確認した範囲: Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 で、本物のカーネルを起動して実行しました。実行時間は約 20 秒です。</li>
+</ul>
 </main><script>
 document.querySelectorAll('table').forEach(function (t) {
   t.querySelectorAll('th').forEach(function (th, i) {

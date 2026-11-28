@@ -6,6 +6,8 @@ SAD のラティスファイルとコマンドファイルの中身を、noteboo
 |---|---|
 | [`sad_in_notebook.ipynb`](sad_in_notebook.ipynb) | 6 つの使い方の例 (出力つきで保存してあります): (1) `%%sad lattice` でラティスを貼る、(2) `%%sad` でコマンドを貼って実行する、(3) `sad.value()` で結果を Python に取り出して matplotlib で描く、(4) `%%sad --continue` で前の状態の続きを流す、(5) マジックを使わずに `pysad.run()` に文字列で渡す、(6) `%sad_help` で SAD の関数・コマンドの説明を引く (名前のタブ補完・`--search`・`--full`) |
 
+実在のリングの例 (ラティスを冒頭で読み込み、例のコマンドを `%%sad --continue` で順に流す): [`pf/PF_in_notebook.ipynb`](../pf/PF_in_notebook.ipynb)・[`astrid/ASTRID2_in_notebook.ipynb`](../astrid/ASTRID2_in_notebook.ipynb)・[`kek_ls/KEKLS_in_notebook.ipynb`](../kek_ls/KEKLS_in_notebook.ipynb)。
+
 ## 動かし方
 
 ```

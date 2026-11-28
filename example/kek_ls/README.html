@@ -43,6 +43,7 @@ pre .o { opacity:.8; }
 </style></head><body>
 <nav><div class="ttl">目次</div><div class="toc">
 <ul>
+<li><a href="#notebook-版">notebook 版</a></li>
 <li><a href="#全体の流れ">全体の流れ</a></li>
 <li><a href="#スクリプトの一覧">スクリプトの一覧</a></li>
 <li><a href="#使い方">使い方</a></li>
@@ -64,6 +65,10 @@ pre .o { opacity:.8; }
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="KEKLS_in_notebook.ipynb"><code>KEKLS_in_notebook.ipynb</code></a></td>
+<td>notebook 版: ラティスを冒頭で読み込み、リングのパラメータ・クロマティシティ・振幅依存チューンシフトを順に流す (出力つき。<code>example/kek_ls/</code> で実行する)</td>
+</tr>
 <tr>
 <td><a href="lattice/README.html"><code>lattice/</code></a></td>
 <td>ラティス <code>kek_ls_v03_68.sad</code>、構成図、パラメータ表、旧版 (v03_12) との違い、入射セル</td>
@@ -90,6 +95,12 @@ pre .o { opacity:.8; }
 </tr>
 </tbody>
 </table>
+<h2 id="notebook-版">notebook 版</h2>
+<p><a href="KEKLS_in_notebook.ipynb"><code>KEKLS_in_notebook.ipynb</code></a> は、このリングのラティスを冒頭で読み込み、このフォルダの例のコマンドを <code>%%sad</code> と <code>%%sad --continue</code> で順に流す notebook です (出力つきで保存してあります。<code>example/tools/make_ring_notebooks.py</code> が、元の <code>.sad</code> からコマンドを取り出して作ります。動かし方は <a href="../17_notebook/README.html"><code>../17_notebook/README.md</code></a>)。</p>
+<ul>
+<li>保存した出力は pysad の既定 (<code>v2</code>) の実行結果です。<code>PYSAD_COMPAT=k64</code> で実行すると、εx・σδ・ダンピング分配数・U0 は gs と全桁で一致しました (確認した量: εx 1.3432e-10 m、σδ 6.40516e-4、Jx 1.3116、U0 0.2960749 MV。出力の数値の行のうち、gs の出力に同じ値がある割合は 193 行中 174 行。残りは、書式の違いと 1e-12 以下の数値雑音と、gs にない出力 (pysad 独自の解析式など))。<code>v2</code> との差は、<code>v2</code> が K64 のバグを直した動作であることによります (docs/28)。</li>
+<li>確認した範囲: Windows・Python 3.12・IPython 9.19.1・ipykernel 7.4.0・nbclient 0.11.0 で、本物のカーネルを起動して実行しました。<code>modules/modules_amp_dep_ts.n</code> を相対パスで読むので、<code>example/kek_ls/</code> を作業フォルダにして実行してください。</li>
+</ul>
 <h2 id="全体の流れ">全体の流れ</h2>
 <pre><code>ラティス (kek_ls_v03_68.sad)
    │  cell calc emit: 周長・チューン・εx          lattice/KEKLS_cell_calc_emit
