@@ -31,6 +31,10 @@ PYSAD_ONLY = [
     ('ResonanceDrivingTerms', 'Resonance driving terms (sextupoles and bends) from the optics.', 'ラティスの光学から求める共鳴駆動項 (6 極と偏向磁石)。', 'docs/25'),
     ('AmplitudeTuneShift', 'Amplitude-dependent tune shift (ADTS) from the optics.', 'ラティスの光学から求める振幅依存チューンシフト (ADTS)。', 'docs/25'),
     ('ChromaticityTerms', 'Chromaticity terms from the optics.', 'ラティスの光学から求めるクロマティシティの項。', 'docs/25'),
+    ('NormalFormTune', 'Power series of the tunes in the amplitudes and delta (numerical normal form of the one-turn map).', '振幅と δ に依るチューン ν(Jx, Jy, δ) のべき級数 (1 周の写像の正規形)。', 'docs/25'),
+    # 手法の名前 (関数ではない)。5 番目の要素は種別、6 番目は注記
+    ('NAFF', 'Numerical Analysis of Fundamental Frequencies (Laskar): the tune of a turn-by-turn signal from the maximum of a windowed inner product.', '基本周波数の数値解析 (Laskar)。周回ごとの信号のチューンを、窓つきの内積の最大から求める手法。pysad/naff.py。', 'docs/24',
+     'method', 'pysad の関数ではなく手法の名前 (FrequencyMap[]・ADTS の追跡の検証が使う)'),
 ]
 
 _KIND_BY_34 = {
@@ -298,9 +302,10 @@ def build():
         if links:
             e['docs'] = links
         entries.append(e)
-    for name, en, ja, doc in PYSAD_ONLY:
-        entries.append({'name': name, 'keys': [name], 'kind': 'function', 'category': 'pysad only', 'summary': en, 'summary_ja': ja,
-                        'parent': '', 'status': 'pysad のみ', 'note': 'SAD (gs) には無い pysad の関数', 'docs': doc_links(doc)})
+    for name, en, ja, doc, *more in PYSAD_ONLY:
+        kind, note = more if more else ('function', 'SAD (gs) には無い pysad の関数')
+        entries.append({'name': name, 'keys': [name], 'kind': kind, 'category': 'pysad only', 'summary': en, 'summary_ja': ja,
+                        'parent': '', 'status': 'pysad のみ', 'note': note, 'docs': doc_links(doc)})
     entries = add_n_packages(entries)
     for e in entries:
         for k in [kk for kk in ('parent', 'category') if not e.get(kk)]:

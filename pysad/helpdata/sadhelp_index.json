@@ -6125,6 +6125,36 @@
    ]
   },
   {
+   "name": "NormalFormTune",
+   "keys": [
+    "NormalFormTune"
+   ],
+   "kind": "function",
+   "category": "pysad only",
+   "summary": "Power series of the tunes in the amplitudes and delta (numerical normal form of the one-turn map).",
+   "summary_ja": "振幅と δ に依るチューン ν(Jx, Jy, δ) のべき級数 (1 周の写像の正規形)。",
+   "status": "pysad のみ",
+   "note": "SAD (gs) には無い pysad の関数",
+   "docs": [
+    "25_resonance_terms_adts.md"
+   ]
+  },
+  {
+   "name": "NAFF",
+   "keys": [
+    "NAFF"
+   ],
+   "kind": "method",
+   "category": "pysad only",
+   "summary": "Numerical Analysis of Fundamental Frequencies (Laskar): the tune of a turn-by-turn signal from the maximum of a windowed inner product.",
+   "summary_ja": "基本周波数の数値解析 (Laskar)。周回ごとの信号のチューンを、窓つきの内積の最大から求める手法。pysad/naff.py。",
+   "status": "pysad のみ",
+   "note": "pysad の関数ではなく手法の名前 (FrequencyMap[]・ADTS の追跡の検証が使う)",
+   "docs": [
+    "24_adts_rdt_primer.md"
+   ]
+  },
+  {
    "name": "ActionName",
    "keys": [
     "ActionName"

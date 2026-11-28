@@ -385,20 +385,20 @@ SAD の FFS コマンド・SADScript の関数・特別変数・フラグ・要�
 引数は `name`、`search` (名前・説明の最初の行・分類・注記・親の要素に含まれる語)、`full`、`kind` (`ffs-command`・`function`・`special-variable`・`flag`・`element`・`element-keyword`・`package-function`・`tk-widget` など)。
 
 **表示するもの**: 名前と種類・分類、SADHelp の説明の最初の行 (英語。長いものは途中で切れていて、切れたものには `...` を付ける)、pysad の状態 (実装・未対応・無視・pysad のみ など) と注記 (日本語)、SAD 側の定義場所 (Fortran・.n)、
-詳しい文書 (docs の該当ファイルと GitHub Pages の URL)、`.n` の関数は署名と定義されているファイル。pysad だけの関数 (`FrequencyMap[]` など) は英語と日本語の 1 行ずつ。
+詳しい文書 (docs の該当ファイルと GitHub Pages の URL)、`.n` の関数は署名と定義されているファイル。pysad だけの関数 (`FrequencyMap[]`・`NormalFormTune[]` など) と手法の名前 `NAFF` は、英語と日本語の 1 行ずつ。
 
 **全文 (`full=True`)**: SAD 自身のヘルプの本文 `Packages/HelpMessages.n` (同梱の SAD のコピー `pysad/sad_copy` の一部。`PYSAD_SAD_PACKAGES` を設定していればその Packages のもの) を読んで出す。ファイルの中のコードは評価せず、構文だけを解析して取り出す
 (`{名前, 本文, 関連する名前, {下位の項目}}` の入れ子。変数に入れた文字列への参照 `IF$Message` などは追う。実行時に作る部分は項目として取れない)。手元に `SADHelp.html` があれば、それも使える。探す順は、
 環境変数 `SADHELP_HTML` (ファイルのパス) → 同梱の HelpMessages.n → `PYSAD_SAD_PACKAGES` の隣の `Documents/SADHelp.html` → pysad の隣の `SAD-master/Documents/SADHelp.html`。SADHelp の全文は、索引 (JSON) には入れていない。
 
-**データ**: `pysad/helpdata/sadhelp_index.json` (約 370 KB、1050 項目)。`docs/34_sad_help_index.md` (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出した、名前と説明の最初の行) と `docs/35_pysad_vs_sadhelp.md` (SAD 側の定義場所と pysad の状態)、
+**データ**: `pysad/helpdata/sadhelp_index.json` (約 370 KB、1052 項目)。`docs/34_sad_help_index.md` (SADHelp 1.4.4.2k64 Updated: 10/19/2026 から機械的に抽出した、名前と説明の最初の行) と `docs/35_pysad_vs_sadhelp.md` (SAD 側の定義場所と pysad の状態)、
 同梱の `Packages/*.n` の定義から、`py -3.12 tools/build_help_data.py` で作る (`--check` で今のファイルと同じかを確かめる。docs/34・35 を作り直したら、これも作り直す)。wheel・sdist に入る (`pyproject.toml` の package-data と `MANIFEST.in`)。
 `.n` からは、行頭の `Name[...] := ...`・`Name = ...` の定義のうち、大文字で始まり `$` を含まない名前だけを入れた (487 件。`Tkinter.n` が 378 定義で最多)。Tkinter のウィジェットは `Tkinter.n` の `Widgets=Join[...]` の一覧 (19 件、元の Tk の C ファイル名つき)。
 
-試験: `test_sadhelp.py` (43 件。引き方・表示・全文 (偽の SADHelp.html と偽の HelpMessages.n。構文だけの解析で、コードが走らないこと)・`.n` の項目・コマンド・`python -m pysad`・import の副作用・説明文・`help(pysad)` の例の実行)。
+試験: `test_sadhelp.py` (44 件。引き方・表示・全文 (偽の SADHelp.html と偽の HelpMessages.n。構文だけの解析で、コードが走らないこと)・`.n` の項目・コマンド・`python -m pysad`・import の副作用・説明文・`help(pysad)` の例の実行)。
 
 **限界・未確認**
-- 全文を同梱の HelpMessages.n から出せるのは、SADHelp 由来の 538 項目のうち 363 項目 (FFS コマンド 55/56、関数 94/98 (pysad だけの 6 つの関数は HelpMessages.n にない)、特別変数 48/48、フラグ 60/60、要素 11/15、要素のキーワード 45/155、演算子などの式 2/46、dynamics の章 1/13)。
+- 全文を同梱の HelpMessages.n から出せるのは、SADHelp 由来の 538 項目のうち 363 項目 (FFS コマンド 55/56、関数 94/98 (pysad だけの 7 つの関数は HelpMessages.n にない)、特別変数 48/48、フラグ 60/60、要素 11/15、要素のキーワード 45/155、演算子などの式 2/46、dynamics の章 1/13)。
   取れない項目は HelpMessages.n で実行時に作る部分にあり、手元の SADHelp.html があれば全文が出る。`.n` の関数 (487 件) と Tk のウィジェット (19 件) には、説明がない (署名と定義されているファイルだけ)。
 - 説明の最初の行は英語 (SADHelp のまま)、pysad の状態の注記は日本語。全文は英語だけ。最初の行は、docs/34 が切り出した長さで切れている (全文は上のとおり)。
 - pysad の状態の「実装」は、名前の登録があるという意味で、K64 と挙動が一致するかは各要素の文書による (docs/35)。docs/35 の手で直した行は、`perf_work/pysad_vs_sadhelp.py` で作り直すと消える (docs/35 の注意を見ること)。

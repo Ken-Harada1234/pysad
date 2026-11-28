@@ -119,9 +119,14 @@ def test_status_note_and_docs_link_come_from_docs35():
 
 
 def test_pysad_only_functions_have_english_and_japanese_lines():
-    for n in ('FrequencyMap', 'MomentumAcceptance', 'TouschekLifetimeLMA', 'ResonanceDrivingTerms', 'AmplitudeTuneShift', 'ChromaticityTerms'):
+    for n in ('FrequencyMap', 'MomentumAcceptance', 'TouschekLifetimeLMA', 'ResonanceDrivingTerms', 'AmplitudeTuneShift', 'ChromaticityTerms', 'NormalFormTune', 'NAFF'):
         e = sadhelp.lookup(n)[0]
         assert e['status'] == 'pysad のみ' and e['summary'] and not JA.search(e['summary']) and JA.search(e['summary_ja'])
+
+
+def test_naff_is_a_method_entry_linked_to_the_primer():
+    e = sadhelp.lookup('NAFF')[0]
+    assert e['kind'] == 'method' and any('24_adts_rdt_primer' in d for d in e['docs'])
 
 
 def test_search_finds_names_summaries_and_notes():

@@ -3,6 +3,8 @@
 縮小版が pysad (k64) で走って補正が効くこと、`USE RING NOEXPAND` で補正磁石の成分ごとの K0 が効くこと。
 gs の保存値 (example/ddba/v07_14/*/NAME.gs.txt) があれば、チューンの出力を照合する。スクリプトは `Get["../modules/..."]` を相対パスで読むので、
 台本のあるフォルダをカレントにして走らせる (cwd 引数)。"""
+import contextlib
+import glob
 import io
 import os
 import re
@@ -19,6 +21,22 @@ def _run_text(src, cwd):
     buf = io.StringIO()
     ffscmd.run_sad_string(src, out=buf, cwd=cwd)
     return buf.getvalue()
+
+
+@contextlib.contextmanager
+def _keep_example_outputs(folder):
+    """台本が folder に書く出力ファイル (`outtag_*`) を、試験のあとで元に戻す (追跡対象の例の出力を、試験が上書きして残さない)。
+    台本は `Get["../modules/..."]` を相対パスで読むので、コピーしたフォルダでは走らせられず、この方法にした。試験が作った新しいファイルは消す"""
+    snap = {f: open(f, 'rb').read() for f in glob.glob(os.path.join(folder, 'outtag_*'))}
+    try:
+        yield
+    finally:
+        for f, b in snap.items():
+            with open(f, 'wb') as fh:
+                fh.write(b)
+        for f in glob.glob(os.path.join(folder, 'outtag_*')):
+            if f not in snap:
+                os.remove(f)
 
 
 def _lat(name):
@@ -98,7 +116,8 @@ def test_correct_cod_small():
     for a, b in (('nseed = 2;', 'nseed = 1;'), ('nitr = 3;', 'nitr = 1;'), ('nitrlast = 10;', 'nitrlast = 3;'), ('daOn = 1;', 'daOn = 0;')):
         assert a in src
         src = src.replace(a, b)
-    out = _run_text(src, os.path.dirname(p))
+    with _keep_example_outputs(os.path.dirname(p)):
+        out = _run_text(src, os.path.dirname(p))
     rows = re.findall(r'^mat x rms =\s+(\S+)\s+mat y rms =\s+(\S+)\s+sad x rms =\s+(\S+)\s+sadt y rms =\s+(\S+)', out, re.M)
     assert len(rows) == 4 * 1 + 3
     first = (float(rows[0][2]), float(rows[0][3]))
