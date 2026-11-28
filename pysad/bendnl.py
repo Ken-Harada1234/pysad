@@ -351,8 +351,16 @@ def bend_atoms_rdt(el, row_in, row_out, monos, nslice=16, momentum=3e9, mu_ref=(
     w1 = w_from_row(row_out) * ph
     e1 = np.array([float(row_out.etx), float(row_out.etpx), 0.0, 0.0])
     info = {'w_err': float(np.abs(w - w1).max() / np.abs(w1).max()),
-            'e_err': float(np.abs(e - e1).max() / max(np.abs(e1).max(), 1e-12))}
+            'e_err': dispersion_err(e, e1, e0, float(el.ANGLE))}
     return np.concatenate(amps, axis=1), info
+
+
+def dispersion_err(e, e1, e0, angle):
+    """Return the relative error of the propagated dispersion vector `e` against the Twiss value `e1` at a bend exit.
+    偏向磁石の出口の分散ベクトル e (線形写像と生成分散で伝播) と Twiss の e1 の差の相対値。分母は出口 e1・入口 e0 の大きさと偏向角 (生成される分散 η' の尺度) の最大。
+    出口の分散が 0 (アクロマット端。DDBA の鏡像の側の磁石など、分散が 0 に戻る磁石) でも、分母が 1e-12 に落ちて数値の残差 (絶対値 1e-12 m 程度) が相対 1 に見えないようにする"""
+    scale = max(float(np.abs(e1).max()), float(np.abs(e0).max()), abs(float(angle)), 1e-12)
+    return float(np.abs(e - e1).max() / scale)
 
 
 # ---------------------------------------------------------------------------------------------

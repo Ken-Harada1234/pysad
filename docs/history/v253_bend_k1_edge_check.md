@@ -6,3 +6,4 @@
 - 試験: `pysad/tests/script_tests/test_v253_bend_k1_edge_closed_form.py` (6 件)。R6 の試験とあわせて 21 件通過。
 - 未確認: K1 が大きい場合 (ASTRID2 の 1e-5 の原因)、積分器の式との照合、k64 の薄い端の閉形式。
 - 追加 (同日): 解析の ADTS (`adts(fourth='r6')`) と追跡 + NAFF + フィットの直接値の比較。FODO + 6 極で v2 は 1e-4 以内、k64 も 1.2e-4 以内。K1 = 0.2・E = 0 の Jmax = 1e-7 の 6.9e-3 の差は追跡の J² の寄与 (Jmax を下げると収束)。試験は同じファイルの 3 件 (合計 8 件)。
+- 追加 (同日): 実リング (ALSU9BA N=20・DDBA N=24、リング設計セッションの確認) で ADTS は追跡と 1% 以内 (v2・k64)。RDT の警告「分散が Twiss と違う (分散 1.4)」は、出口の分散が 0 の磁石で `e_err` の分母が 1e-12 に落ちる規格化の誤報だった。`bendnl.dispersion_err` で分母を直した (RDT の値は変えない)。DDBA snapshot_v009 の警告 96 件 (48 台 × 2 回) が 0 件になった。試験 `test_dispersion_check_is_not_fooled_by_achromatic_exit`。

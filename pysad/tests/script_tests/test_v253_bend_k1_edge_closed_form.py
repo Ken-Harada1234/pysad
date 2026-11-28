@@ -65,3 +65,13 @@ def test_v2_combined_function_bend_adts_matches_tracking(v2_mode):
 
 def test_k64_combined_function_bend_adts_matches_tracking():
     assert _adts_rel_diff(0.1, 0.3, 0.1, 1e-7, 512) < 2e-4
+
+
+def test_dispersion_check_is_not_fooled_by_achromatic_exit():
+    """出口の分散が 0 (アクロマット端) の偏向磁石で、伝播の残差 1e-12 m が相対 1 に見える警告 (以前は分母が 1e-12 に落ちた。DDBA の B_B1Ba の鏡像の側: 入口の η = 0.0297 m、η' = −0.0735、出口 0) の防止。
+    本当の差 (0.1 m 相当) は検出する"""
+    import numpy as np
+    e0 = np.array([0.0297, -0.0735, 0.0, 0.0])
+    e1 = np.array([2e-14, 5e-14, 0.0, 0.0])
+    assert B.dispersion_err(e1 + np.array([1.4e-12, 1e-12, 0, 0]), e1, e0, 0.0654) < 1e-10
+    assert B.dispersion_err(e1 + np.array([0.1, 0.0, 0, 0]), e1, e0, 0.0654) > 1e-4
