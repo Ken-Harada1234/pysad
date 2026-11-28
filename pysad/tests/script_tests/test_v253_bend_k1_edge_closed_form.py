@@ -43,3 +43,25 @@ def test_k64_combined_function_bend_with_edges_differs_from_closed_form():
     assert rel_diff(0.1, 0.0, 0.0) < 1e-6
     assert 1e-3 < rel_diff(0.1, 0.3, 0.1) < 1e-2
     assert 1e-4 < rel_diff(0.1, 0.0, 0.1) < 2e-3
+
+
+# --- 追跡 + NAFF + フィットの直接の ADTS との比較 (独立な基準)。FODO + 6 極 (K2=4・-6) の B に K1・E を足したもの。
+# 精密版 adts(fourth='r6') と直接の ADTS (adtsdirect.direct_adts) の相対差: (K1, E1, E2) = (0.1, 0.3, 0.1) は v2 で −4e-5・−1e-5・−4e-5、k64 で −5e-5・−6e-6・−6e-5 (Jmax=1e-7、512 周)。
+# K1=0.2・E=0 は νx ≈ −0.046 が整数に近く ADTS が 1.4e4 と大きいので、Jmax=1e-7 では追跡の J² の寄与で 6.9e-3 ずれる (解析の誤りではない)。Jmax を 3e-8・1e-8 にすると 5e-4・5e-5 に収束する。
+def _adts_rel_diff(k1, e1, e2, jmax, nturn):
+    from pysad import adtsdirect as D
+    from pysad import resdrive as R
+    s = FODO.replace(BLANK, 'SF = (L=0.2 K2=4) SD = (L=0.2 K2=-6)').replace(OLD, 'K1=%r E1=%r E2=%r' % (k1, e1, e2))
+    lat = load_sad_string(s).build_lattice('RING')
+    a = R.adts(lat, rows=lat.twiss_table(), fourth='r6').total
+    t = D.direct_adts(lat, 3e9, jmax, order=2, nturn=nturn, nstep=3)
+    return max(abs(a[k] - t[k]) / abs(t[k]) for k in ('xx', 'xy', 'yy'))
+
+
+def test_v2_combined_function_bend_adts_matches_tracking(v2_mode):
+    assert _adts_rel_diff(0.1, 0.3, 0.1, 1e-7, 512) < 2e-4
+    assert _adts_rel_diff(0.2, 0.0, 0.0, 1e-8, 1024) < 2e-4
+
+
+def test_k64_combined_function_bend_adts_matches_tracking():
+    assert _adts_rel_diff(0.1, 0.3, 0.1, 1e-7, 512) < 2e-4
